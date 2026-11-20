@@ -1,4 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.CorrectedTransition
-public import proofs.HordijkSteelThreshold.StaticSurvivalContinuity
-public import proofs.HordijkSteelThreshold.CanonicalParameterMonotonicity

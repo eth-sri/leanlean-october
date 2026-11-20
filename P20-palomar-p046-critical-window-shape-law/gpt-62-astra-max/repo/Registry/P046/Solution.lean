@@ -1,11 +1,6 @@
 module
 
-public import Registry.P046.SupportingObligations
-public import proofs.RAFCriticalWindowQuantitative.SourceCalibration
-public import proofs.RAFCriticalWindowQuantitative.UniformApproximation
-public import proofs.RAFCriticalWindowQuantitative.LowIntensity
-public import proofs.RAFCriticalWindowQuantitative.ProductiveHistory
-public import proofs.RAFCriticalWindowQuantitative.WorkedBound
+public import proofs.RAFCriticalWindowQuantitative.SourceContract
 
 @[expose] public section
 
@@ -27,35 +22,8 @@ structure ProfileGuarantees (S : I → ENNReal) (escape : I → ℕ → ENNReal)
   intensity_flatness : ∀ d ε, 0 < ε → ∃ δ : ℝ, 0 < δ ∧
     ∀ lam : ℝ, ∀ hlam : 0 < lam, lam < δ → (S (criticalOpenness lam hlam)).toReal < ε*lam^d
 
-theorem split_profile_guarantees : ProfileGuarantees staticSurvival splitEscapeProbability
-    splitTotalInterval splitEvaluationCap splitSparseCoefficient :=
-  ⟨splitTotalInterval_correct,split_uniform_approximation,split_sparse_real,split_low_intensity_flatness⟩
-
-theorem quotient_profile_guarantees : ProfileGuarantees quotientSurvival quotientEscapeProbability
-    quotientTotalInterval quotientEvaluationCap quotientSparseCoefficient :=
-  ⟨quotientTotalInterval_correct,quotient_uniform_approximation,quotient_sparse_real,quotient_low_intensity_flatness⟩
-
-/-- The source contract uses actual catalytic inputs, not an assumed convergence rate. -/
-def SourceGuarantees : Prop :=
-  (∀ n m K, ∀ _hn : 4 ≤ n, ∀ _hm : 0 < m,
-    ∀ p hp hp1 q hq hq1, ∀ _hk : 6 < nearFullPoolSize n m,
-    ∀ _hpool : q ≤ rationalPool p (nearFullPoolSize n m),
-    ∀ s hs hs1 ε hε,
-    |(splitCatalyticProbability n (rationalParameter p hp hp1)).toReal -
-      (staticSurvival (rationalParameter s hs hs1)).toReal| ≤
-      (rationalIntervalError (splitSourceInterval n m K p q hq hq1)
-        (splitTotalInterval s hs hs1 ε hε) : ℝ)) ∧
-  (∀ n m K, ∀ _hn : 0 < n, ∀ _hm : 0 < m,
-    ∀ p hp hp1 q hq hq1, ∀ _hk : 6 < nearFullPoolSize n m,
-    ∀ _hpool : q ≤ rationalPool p (nearFullPoolSize n m),
-    ∀ s hs hs1 ε hε,
-    |(quotientRAFProbability n (rationalParameter p hp hp1)).toReal -
-      (quotientSurvival (rationalParameter s hs hs1)).toReal| ≤
-      (rationalIntervalError (quotientSourceInterval n m K p q hq hq1)
-        (quotientTotalInterval s hs hs1 ε hε) : ℝ))
-
-theorem finite_source_guarantees : SourceGuarantees :=
-  ⟨split_source_profile_error,quotient_source_profile_error⟩
+theorem Model.profile (M : Model) : ProfileGuarantees M.survival M.escapeProb M.total M.cap M.coefficient :=
+  ⟨M.total_correct, M.uniform, M.sparse_real, M.flatness⟩
 
 /-- Compiled minimum quantitative/computability successor for both literal RAF models.
 The programs are explicit definitions; no desired bound or validity oracle is assumed. -/
@@ -70,7 +38,7 @@ theorem quantitative_critical_window_resolution :
     (∀ N k S x, x ∈ quotientClosure N 2 S → 2^(k+1) < molLength x →
       ∃ T, ProductiveHistory (repositoryCRS N 2) S k T ∧ T.card = k ∧ T ⊆ S) ∧
     (∀ a : I, (a : ℝ) ≤ 1/10^20 → (staticSurvival a).toReal < 8/10^26) :=
-  ⟨split_profile_guarantees,quotient_profile_guarantees,finite_source_guarantees,
-    split_long_target_history,quotient_long_target_history,worked_low_openness_bound⟩
+  ⟨Model.split.profile,Model.quotient.profile,⟨Model.split.source_case,Model.quotient.source_case⟩,
+    Model.split.long_history,Model.quotient.long_history,worked_low_openness_bound⟩
 
 end RAFCriticalWindowQuantitative

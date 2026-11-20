@@ -1,54 +1,107 @@
 module
+public import proofs.RAFCriticalWindowQuantitative.Models
 
-public import proofs.RAFCriticalWindowQuantitative.FiniteEventProbability
-public import proofs.RAFCriticalWindowQuantitative.FiniteEscapeAdapters
+/-! Exact finite-sum programs for rational escape and seed probabilities. -/
 
 @[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open HordijkSteelThreshold RAFReactionQuotient RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
-open MeasureTheory
+open HordijkSteelThreshold MeasureTheory unitInterval RAFReactionQuotient OverlapCorrectedRAF.Source RAF.Polymer RAF.Concrete
+open scoped ENNReal
 
-def splitEscapeBool (N K : ℕ) (ω : Reaction N → Bool) : Bool :=
+variable (J : Type*) [Fintype J] [DecidableEq J] (q : ℚ)
+
+def rationalEventProbability
+    (event : (J → Bool) → Bool) : ℚ :=
+  ∑ ω : J → Bool, if event ω then ∏ j, if ω j then q else 1-q else 0
+
+open Classical in
+/-- Exact probability semantics for an arbitrary executable Boolean event. -/
+theorem rationalEventProbability_correct (a : I) (ha : (q:ℝ) = a) (event : (J → Bool) → Bool) :
+    ((RAFEmergenceApprox.Generic.colLaw J a)
+      {ω | event (fun j => decide (ω j))}).toReal =
+      (rationalEventProbability J q event : ℝ) := by
+  classical
+  let E := {ω : J → Prop | event (fun j => decide (ω j))}
+  change (Measure.pi (fun _ : J => ambientCoordLaw a)).real E = _
+  rw [← integral_indicator_one (Set.toFinite E).measurableSet,integral_fintype .of_finite]
+  let e := Equiv.piCongrRight (fun _ : J => Equiv.propEquivBool.symm)
+  rw [← e.sum_comp]
+  simp [e,E,Equiv.propEquivBool,Set.indicator_apply,Measure.real,Measure.pi_singleton,rationalEventProbability]
+  apply Finset.sum_congr rfl; intro ω _
+  split <;> simp_all
+  apply Finset.prod_congr rfl; intro j _
+  cases ω j <;> simp [ambientCoordLaw,ha]
+
+section
+variable (N K : ℕ)
+def splitEscapeBool (ω : Reaction N → Bool) : Bool :=
   decide (∃ x ∈ computedClosure N 2 (Finset.univ.filter (fun r => ω r)), K < molLength x)
 
-def quotientEscapeBool (N K : ℕ) (ω : RepositoryChannel N → Bool) : Bool :=
+def quotientEscapeBool (ω : RepositoryChannel N → Bool) : Bool :=
   splitEscapeBool N K (fun r => ω (splitToQuotient r))
 
-def splitEscapeEval (q : ℚ) (K : ℕ) : ℚ :=
+end
+variable (q : ℚ) (K : ℕ)
+
+def splitEscapeEval : ℚ :=
   rationalEventProbability (Reaction (2*(K+2))) q (splitEscapeBool _ (K+2))
 
-def quotientEscapeEval (q : ℚ) (K : ℕ) : ℚ :=
+def quotientEscapeEval : ℚ :=
   rationalEventProbability (RepositoryChannel (2*(K+2))) q (quotientEscapeBool _ (K+2))
 
-theorem splitEscapeEval_correct (q : ℚ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (K : ℕ) :
-    (splitEscapeEval q K : ℝ) =
-      (staticReactionMeasure (2*(K+2)) (rationalParameter q hq hq1) (staticEscapeEvent 2 K)).toReal := by
-  classical
-  have h := rationalEventProbability_correct (Reaction (2*(K+2))) q hq hq1 (splitEscapeBool _ (K+2))
-  have he : {ω : Reaction (2*(K+2)) → Prop | splitEscapeBool _ (K+2) (fun r => decide (ω r))} =
-      staticEscapeEvent 2 K := by
-    ext ω
-    simp [splitEscapeBool,computedClosure_eq,staticEscapeEvent,staticOpenReactions,moleculeWord_length]
-  rw [he] at h
-  simpa only [splitEscapeEval,staticReactionMeasure,Measure.infinitePi_eq_pi] using h.symm
+variable (N L : ℕ) (q : ℚ)
 
-theorem quotientEscapeEval_correct (q : ℚ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (K : ℕ) :
-    (quotientEscapeEval q K : ℝ) =
-      (quotientStaticMeasure (2*(K+2)) (rationalParameter q hq hq1) (quotientEscapeEvent 2 K)).toReal := by
+def splitSeedBool (ω : Reaction N → Bool) : Bool :=
+  decide (binaryFood N L ⊆ computedClosure N 2 (Finset.univ.filter (fun r => ω r)))
+
+def quotientSeedBool (ω : RepositoryChannel N → Bool) : Bool :=
+  splitSeedBool N L (fun r => ω (splitToQuotient r))
+
+def splitSeedEval : ℚ :=
+  rationalEventProbability (Reaction N) q (splitSeedBool N L)
+
+def quotientSeedEval : ℚ :=
+  rationalEventProbability (RepositoryChannel N) q (quotientSeedBool N L)
+
+namespace Model
+variable (M : Model) {N : ℕ}
+
+def foodClosure (N : ℕ) (ω : M.Channel N → Bool) :=
+  computedClosure N 2 (Finset.univ.filter fun r => ω (M.project r))
+
+def evalStat (P : Finset (Molecule N) → Prop) [DecidablePred P] (q : ℚ) :=
+  rationalEventProbability _ q (fun ω => decide (P (M.foodClosure N ω)))
+
+def seedEval (N L : ℕ) := M.evalStat (binaryFood N L ⊆ ·)
+
+
+abbrev escapeEval := M.pick splitEscapeEval quotientEscapeEval
+
+variable (q : ℚ) (a : I) (ha : (q:ℝ) = a)
+
+include ha in
+theorem eval_stat (P : Finset (Molecule N) → Prop) [DecidablePred P] :
+    (M.evalStat P q : ℝ) =
+    (M.static N a {ω | P (M.closure 2 ω)}).toReal := by
   classical
-  have h := rationalEventProbability_correct (RepositoryChannel (2*(K+2))) q hq hq1
-    (quotientEscapeBool _ (K+2))
-  have he : {ω : RepositoryChannel (2*(K+2)) → Prop |
-      quotientEscapeBool _ (K+2) (fun r => decide (ω r))} = quotientEscapeEvent 2 K := by
-    ext ω
-    simp only [Set.mem_ofPred_eq,quotientEscapeBool,splitEscapeBool,decide_eq_true_eq,
-      computedClosure_eq]
-    change (∃ x ∈ temporaryReactionClosure 2 (staticOpenReactions (fun r => ω (splitToQuotient r))),
-      K+2 < molLength x) ↔ _
-    rw [← quotientClosure_pullback]
-    simp only [quotientEscapeEvent,Set.mem_ofPred_eq,moleculeWord_length]
-  rw [he] at h
-  exact h.symm
+  simpa [evalStat, static, foodClosure, M.closure_eq, ←full_eq_temporary, computedClosure, fullClosure] using
+    (rationalEventProbability_correct _ q a ha (fun ω => decide (P (M.foodClosure N ω)))).symm
+
+lemma escape_eq (a : I) (K : ℕ) : M.escapeProb a (K+2) =
+    M.static (2*(K+2)) a {ω | hasLonger (K+2) (M.closure 2 ω)} := by
+  rw [M.restrict_stat a 2 (hasLonger (K+2))]
+  unfold escapeProb
+  congr 1; ext ω
+  exact escape_iff_large (by omega) _
+
+include ha in
+lemma escapeEval_eq (K : ℕ) : (M.escapeEval q K : ℝ) = (M.escapeProb a (K+2)).toReal := by
+  rw [M.escape_eq]
+  rw [← M.eval_stat q a ha (hasLonger (K+2))]
+  cases M <;> simp only [escapeEval,pick,splitEscapeEval,quotientEscapeEval,evalStat] <;> congr 2 <;>
+    funext ω <;> simp [hasLonger,quotientEscapeBool,splitEscapeBool,foodClosure,project] <;> congr!
+
+end Model
 
 end RAFCriticalWindowQuantitative

@@ -1,3 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.ReversibleEscapeProbability
-public import proofs.HordijkSteelThreshold.StaticParameterMonotonicity

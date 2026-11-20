@@ -1,112 +1,128 @@
 module
+public import proofs.HordijkSteelThreshold.InfiniteStaticLaw
 
-public import proofs.RAFCriticalWindowQuantitative.BoundedRecords
-public import proofs.RAFCriticalWindowQuantitative.FiniteRepair
+/-! Disjoint repairs beyond a completed record and their iterated failure bound. -/
 
 @[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open Classical HordijkSteelThreshold MeasureTheory unitInterval
-open scoped ENNReal
+open Classical HordijkSteelThreshold RAF.Polymer RAF.Concrete MeasureTheory unitInterval
 
-def escapedMissing (B : ℕ) (v : List Bool) : Set SplitField :=
-  {ω | (∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w) ∧
-    ¬ FiniteReversibleGenerated B 2 (currySplitField ω) v}
+/-- Both models read marks from the same product space. The coordinate encoding
+respects completed prefixes and preserves the product length of a repair. -/
+structure ChannelMap where
+  index : Coord → Coord
+  product : ∀ z, (index z).1 = z.1
+  half : ∀ w i, 2*i ≤ w.length → index (w,i) = (w,i)
 
-theorem finite_missing_determined (B : ℕ) (v : List Bool) :
-    SplitPrefixDetermined (splitPrefixCoordinates B)
-      {ω | ¬ FiniteReversibleGenerated B 2 (currySplitField ω) v} := by
-  intro ω η he
-  have ht (x y : SplitField)
-      (hxy : ∀ z ∈ splitPrefixCoordinates B, x z = y z)
-      (hg : FiniteReversibleGenerated B 2 (currySplitField x) v) :
-      FiniteReversibleGenerated B 2 (currySplitField y) v := by
-    apply finiteReversibleGenerated_transfer_prefix (M := B) le_rfl ?_ hg
-    intro w hw k hk
-    exact hxy (w,k) ((mem_splitPrefixCoordinates _ _).mpr ⟨hw,hk⟩)
-  exact not_congr ⟨ht ω η he, ht η ω (fun z hz => (he z hz).symm)⟩
+namespace ChannelMap
+variable (f : ChannelMap)
 
-theorem escape_mem_record_atoms {B : ℕ} (hB : 2 ≤ B) {ω : SplitField}
-    (h : ∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w) :
-    ω ∈ ⋃ i : RecordPrefixIndex, recordPrefixAtom B i := by
-  have hex : ∃ M, B < M ∧ currySplitField ω ∈ reversibleRecordEvent 2 M := by
-    obtain ⟨w,hw,_,hg⟩ := escape_has_bounded_record hB h
-    exact ⟨w.length,hw,w,rfl,hg⟩
-  let M := Nat.find hex
-  have hrec : currySplitField ω ∈ firstRecordEvent 2 B M := by
-    refine ⟨(Nat.find_spec hex).1,(Nat.find_spec hex).2,?_⟩
-    intro k hBk hk hr
-    exact Nat.find_min hex hk ⟨hBk,hr⟩
-  exact Set.mem_iUnion.mpr ⟨⟨M,fun z => ω z.val⟩,hrec,fun _ => rfl⟩
+abbrev field (ω : SplitField) := currySplitField (ω ∘ f.index)
+abbrev generated (B : ℕ) (v : List Bool) : Set SplitField :=
+  {ω | FiniteReversibleGenerated B 2 (f.field ω) v}
+abbrev escape (B : ℕ) : Set SplitField :=
+  {ω | ∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (f.field ω) w}
 
-theorem first_record_cap {B M : ℕ} (hB : 2 ≤ B) {ω : SplitField}
-    (h : currySplitField ω ∈ firstRecordEvent 2 B M) : M ≤ 2*B := by
-  obtain ⟨w,hw,hg⟩ := h.2.1
-  have hBM := h.1
-  have he : ∃ w, B < w.length ∧ InfiniteReversibleGenerated 2 (currySplitField ω) w :=
-    ⟨w,by omega,finiteReversibleGenerated_to_infinite hg⟩
-  obtain ⟨v,hv,hvB,hvg⟩ := escape_has_bounded_record hB he
-  by_contra hn
-  exact h.2.2 v.length hv (by omega) ⟨v,rfl,hvg⟩
+variable {N B : ℕ} {w v : List Bool}
 
-/-- The deterministic-cap contraction; no conditioning on future escape. -/
-theorem escaped_missing_contraction (a : I) (v : List Bool) (hv : 0 < v.length)
-    (B : ℕ) (hB : 2 ≤ B) :
-    infiniteSplitPi a (escapedMissing (2*B+v.length) v) ≤
-      infiniteSplitPi a (escapedMissing B v) * (1-(toNNReal a : ENNReal)^(v.length+1)) := by
-  let C : Set SplitField := {ω | ¬ FiniteReversibleGenerated B 2 (currySplitField ω) v}
-  let D : RecordPrefixIndex → Set SplitField := fun i => C ∩ recordPrefixAtom B i
-  have hC := finite_missing_determined B v
-  have hmeasC := measurableSet_of_splitPrefixDetermined _ C hC
-  have hmeas (i : RecordPrefixIndex) : MeasurableSet (D i) :=
-    hmeasC.inter (measurableSet_of_splitPrefixDetermined _ _ (recordPrefixAtom_determined B i))
-  have hdis : Pairwise (fun i j => Disjoint (D i) (D j)) := by
-    intro i j hij
-    exact (recordPrefixAtoms_disjoint B hij).mono Set.inter_subset_right Set.inter_subset_right
-  have hpiece (i : RecordPrefixIndex) :
-      infiniteSplitPi a (escapedMissing (2*B+v.length) v ∩ D i) ≤
-        infiniteSplitPi a (D i) * (1-(toNNReal a : ENNReal)^(v.length+1)) := by
-    by_cases hn : (D i).Nonempty
-    · obtain ⟨ω,hω⟩ := hn
-      have hBM : B < i.1 := hω.2.1.1
-      have hMB := first_record_cap hB hω.2.1
-      obtain ⟨w,hw,hBw,hrecord⟩ := recordPrefixAtom_word B i ⟨ω,hω.2⟩
-      have hd : SplitPrefixDetermined (splitPrefixCoordinates w.length) (D i) := by
-        rw [hw]
-        intro η ξ he
-        apply and_congr
-        · apply hC
-          intro z hz
-          have hz' := (mem_splitPrefixCoordinates B z).mp hz
-          exact he z ((mem_splitPrefixCoordinates i.1 z).mpr ⟨by omega,by omega⟩)
-        · exact recordPrefixAtom_determined B i η ξ he
-      apply (measure_mono (show escapedMissing (2*B+v.length) v ∩ D i ⊆
-        D i ∩ {η | ¬ FiniteReversibleGenerated (2*B+v.length) 2 (currySplitField η) v}
-        from fun η hη => ⟨hη.2,hη.1.2⟩)).trans
-      exact finite_record_failure_bound a w v (by omega) hv (2*B+v.length)
-        (by omega) (D i) hd (fun η hη => hrecord η hη.2)
-    · have he : D i = ∅ := Set.not_nonempty_iff_eq_empty.mp hn
-      simp [he]
-  have hcover : escapedMissing (2*B+v.length) v ⊆
-      ⋃ i : RecordPrefixIndex, escapedMissing (2*B+v.length) v ∩ D i := by
-    intro ω hω
-    obtain ⟨w,hw,hg⟩ := hω.1
-    obtain ⟨i,hi⟩ := Set.mem_iUnion.mp (escape_mem_record_atoms hB ⟨w,by omega,hg⟩)
-    exact Set.mem_iUnion.mpr ⟨i,hω,
-      (fun hgen => hω.2 (finiteReversibleGenerated_mono_cap (by omega) hgen)),hi⟩
-  have hsub : (⋃ i : RecordPrefixIndex, D i) ⊆ escapedMissing B v := by
-    intro ω hω
-    obtain ⟨i,hi⟩ := Set.mem_iUnion.mp hω
-    obtain ⟨w,hw,hg⟩ := hi.2.1.2.1
-    exact ⟨⟨w,by have hb := hi.2.1.1; omega,finiteReversibleGenerated_to_infinite hg⟩,hi.1⟩
+/-- Following a word by its successive one-letter extensions uses at most one
+fresh mark per appended letter. -/
+private lemma path (hN : (w++v).length ≤ N) : ∃ T : Finset Coord, T.card ≤ v.length ∧
+    Disjoint (past w.length) (T : Set Coord) ∧ ∀ ω ∈ f.generated N w,
+    (∀ z ∈ T, ω z) → ω ∈ f.generated N (w++v) := by
+  induction v using List.reverseRecOn with
+  | nil => simp_all
+  | append_singleton v b ih =>
+    rw [←List.append_assoc] at hN ⊢
+    obtain ⟨T,hc,hd,hg⟩ := ih (by grind)
+    let z := f.index ((w++v)++[b],(w++v).length)
+    refine ⟨insert z T,(Finset.card_insert_le ..).trans (by simpa),
+      by simpa [Set.disjoint_insert_right,past,z,f.product] using hd,?_⟩
+    intro ω hw ho
+    rw [Finset.forall_mem_insert] at ho
+    exact .ligate (hg ω hw ho.2) (.food (by simp) (by grind)) ⟨ho.1,hN⟩
+
+lemma failure (a : I) (hw : w ≠ []) (hv : v ≠ []) (hN : (w++v).length ≤ N)
+    {E : Set SplitField} (hE : MeasurableSet[observed (past w.length)] E) (hrec : E ⊆ f.generated w.length w) :
+    infiniteSplitPi a (E ∩ (f.generated N v)ᶜ) ≤ infiniteSplitPi a E * missRate a (v.length+1) := by
+  obtain ⟨T,hc,hd,hg⟩ := f.path hN
+  let z := f.index (w++v,w.length)
+  have dis : Disjoint (past w.length) ((insert z T : Finset Coord) : Set _) := by
+    simpa [Set.disjoint_insert_right,z,past,f.product,hv] using hd
+  have law := fresh_law a dis hE {b | ∀ j, b j}ᶜ
+  simp only [fail_open,Fintype.card_coe] at law
+  apply (measure_mono ?_).trans (law.le.trans (mul_le_mul_right (miss_mono a ((Finset.card_insert_le ..).trans (by omega))) _))
+  rintro ω ⟨he,hm⟩; refine ⟨he,fun ho => hm ?_⟩
+  exact InfiniteReversibleGenerated.right hw hv (hg _ (finiteReversibleGenerated_mono_cap (by grind) (hrec he))
+    fun y hy => ho ⟨y,Finset.mem_insert_of_mem hy⟩) ⟨ho ⟨z,by simp⟩,hN⟩
+
+abbrev missing (B : ℕ) (v : List Bool) := f.escape B ∩ (f.generated B v)ᶜ
+
+private lemma generated_meas {N M : ℕ} (h : N ≤ M) (w : List Bool) : MeasurableSet[observed (past M)] (f.generated N w) := by
+  let E := {η : Reaction N → Prop | ∃ x ∈ temporaryReactionClosure 2 (Finset.univ.filter η), moleculeWord x = w}
+  have m := observed_read (S := past M) (fun r : Reaction N => f.index (literalSplitCoordinate r))
+    (fun r => by simpa [past,literalSplitCoordinate,f.product] using (moleculeWord_cap (reactionProduct r)).trans h)
+  convert! m (Set.toFinite E).measurableSet using 1; ext; exact finiteReversible_iff_literalClosure _ _
+
+/-- Contract on disjoint, completed record atoms, not conditional on future escape. -/
+theorem contraction (a : I) (hv : v ≠ []) (hB : 2 ≤ B) (hN : 2*B+v.length ≤ N) :
+    infiniteSplitPi a (f.missing N v) ≤ infiniteSplitPi a (f.missing B v) * missRate a (v.length+1) := by
+  obtain ⟨e,sorted⟩ := enumerate_by (fun x : RecordWord B => (moleculeWord x.val).length)
+  let w i := moleculeWord (e i).val
+  have len i : B < (w i).length := by simpa [w,moleculeWord_length] using (e i).property
+  let hit i := f.generated (w i).length (w i) ∩ (f.generated B v)ᶜ
+  have part : (⋃ i, disjointed hit i) = f.missing B v := by
+    simp only [iUnion_disjointed,hit,←Set.iUnion_inter,missing]; congr 1; ext ω
+    rw [Set.mem_iUnion]; change (∃ i, ω ∈ f.generated _ (w i)) ↔ Escapes 2 B _
+    rw [escape_iff_record hB]; exact (e.surjective.exists (p := fun x => ω ∈ f.generated (moleculeWord x.val).length (moleculeWord x.val))).symm
+  have det i : MeasurableSet[observed (past (w i).length)] (disjointed hit i) := by
+    have m j (h : j ≤ i) := (f.generated_meas (sorted h) (w j)).inter (f.generated_meas (len i).le v).compl
+    rw [disjointed_eq_inter_compl]
+    exact (m i le_rfl).inter (MeasurableSet.iInter fun j => MeasurableSet.iInter fun h => (m j h.le).compl)
+  let μ := infiniteSplitPi a
   calc
-    _ ≤ infiniteSplitPi a (⋃ i : RecordPrefixIndex, escapedMissing (2*B+v.length) v ∩ D i) := measure_mono hcover
-    _ ≤ ∑' i : RecordPrefixIndex, infiniteSplitPi a (escapedMissing (2*B+v.length) v ∩ D i) := measure_iUnion_le _
-    _ ≤ ∑' i : RecordPrefixIndex, infiniteSplitPi a (D i) *
-        (1-(toNNReal a : ENNReal)^(v.length+1)) := ENNReal.tsum_le_tsum hpiece
-    _ = infiniteSplitPi a (⋃ i : RecordPrefixIndex, D i) *
-        (1-(toNNReal a : ENNReal)^(v.length+1)) := by
-      rw [ENNReal.tsum_mul_right,measure_iUnion hdis hmeas]
-    _ ≤ _ := mul_le_mul_left (measure_mono hsub) _
+    _ ≤ μ (⋃ i, disjointed hit i ∩ (f.generated N v)ᶜ) := by
+      rw [←Set.iUnion_inter,part]; apply measure_mono; rintro ω ⟨⟨u,hl,hg⟩,hn⟩
+      exact ⟨⟨⟨u,by omega,hg⟩,fun hv => hn (finiteReversibleGenerated_mono_cap (by omega) hv)⟩,hn⟩
+    _ ≤ _ := (measure_iUnion_le _).trans (ENNReal.tsum_le_tsum fun i => f.failure a (moleculeWord_nonempty _) hv
+      (by have := moleculeWord_cap (e i).val; grind) (det i) ((disjointed_subset hit i).trans Set.inter_subset_left))
+    _ = _ := by rw [ENNReal.tsum_mul_right,←measure_iUnion (disjoint_disjointed hit) (fun i => observed_le _ _ (det i)),part]
 
+end ChannelMap
+
+def recordCap (ell : ℕ) : ℕ → ℕ :=
+  Nat.rec 2 (fun _ cap => 2*cap+ell)
+
+theorem recordCap_ge_two (ell j : ℕ) : 2 ≤ recordCap ell j := by
+  induction j with
+  | zero => rfl
+  | succ j ih => grind [recordCap]
+
+namespace ChannelMap
+variable (f : ChannelMap) (a : I)
+
+theorem target_failure {L : ℕ} (x : Molecule L) (r : ℕ) :
+    let v := moleculeWord x;
+    infiniteSplitPi a (f.missing (recordCap L r) v) ≤ (missRate a (L+1))^r := by
+  induction r with
+  | zero => rw [pow_zero]; exact prob_le_one
+  | succ r ih =>
+    rw [pow_succ]
+    apply (f.contraction a (moleculeWord_nonempty x) (recordCap_ge_two L r) (Nat.add_le_add_left (moleculeWord_cap x) _)).trans
+    exact mul_le_mul' ih (miss_mono a (Nat.add_le_add_right (moleculeWord_cap x) 1))
+
+abbrev seed (L K : ℕ) : Set SplitField := {ω | ∀ x : Molecule L, ω ∈ f.generated K (moleculeWord x)}
+
+theorem seed_failure (L r : ℕ) :
+    let K := recordCap L r
+    infiniteSplitPi a (f.escape K ∩ (f.seed L K)ᶜ) ≤
+      2^(L+1)*(missRate a (L+1))^r := by
+  let K := recordCap L r
+  apply (finite_cover _ (fun x : Molecule L => f.missing K (moleculeWord x)) ?_
+    (fun x => f.target_failure a x r)).trans
+  · gcongr; exact_mod_cast card_molecules_le L
+  · rintro ω ⟨he,hn⟩; obtain ⟨x,hx⟩ := Classical.not_forall.mp hn; exact ⟨x,he,hx⟩
+
+end ChannelMap
 end RAFCriticalWindowQuantitative
