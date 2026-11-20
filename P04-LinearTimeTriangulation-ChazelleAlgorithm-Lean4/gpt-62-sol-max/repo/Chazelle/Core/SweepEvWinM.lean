@@ -37,13 +37,11 @@ theorem sia_iff_off {n a b z : ℝ} (hab : a ≠ b) (han : a < n) (hb0 : 0 ≤ b
   by_cases hlt : a < b
   · rw [ite_eq_left hlt, ite_eq_left hlt.le]
     by_cases haz : a ≤ z
-    · rw [ite_eq_left haz]; constructor
-      · rintro ⟨h1, h2⟩; constructor <;> linarith
-      · rintro ⟨h1, h2⟩; constructor <;> linarith
+    · simp_all
     · rw [ite_eq_right haz]; constructor
       · rintro ⟨h1, h2⟩; linarith
       · rintro ⟨h1, h2⟩; linarith
-  · have hba : ¬ a ≤ b := fun h => hab (le_antisymm h (not_lt.1 hlt))
+  · have hba := fun h => hab (le_antisymm h (not_lt.1 hlt))
     rw [ite_eq_right hlt, ite_eq_right hba]
     by_cases haz : a ≤ z
     · rw [ite_eq_left haz]; constructor
@@ -62,12 +60,8 @@ theorem cIn_of_off {n a b x y : ℝ} (han : a < n) (hb0 : 0 ≤ b) (hbn : b < n)
     rcases hx with hx | rfl
     · exact ((sia_iff_off hab han hb0 hbn hx0 hxn).1 hx).2
     · rw [off_self n a]
-      unfold off; split_ifs with h
-      · rcases lt_or_eq_of_le h with h | h
-        · linarith
-        · exact absurd h hab
-      · linarith
-  have e1 : off n x b = off n a b - off n a x := off_eq_sub hx0 hbn hxb.le
+      linarith
+  have e1 := off_eq_sub hx0 hbn hxb.le
   have hay : off n a y = off n a x + off n x y := by
     unfold off at *; split_ifs at * <;> linarith
   by_cases hyb : y = b
@@ -82,53 +76,53 @@ section Gap
 
 variable {J : Merge.Junction}
 
-theorem win_n_eq : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+theorem win_n_eq : J.wholeModel.W.n = 2 * J.whole.m + 7 := cm_n J.whole
 
-theorem win_n₁_eq : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
+theorem win_n₁_eq : J.leftModel.W.n = 2 * J.left.m + 7 := cm_n J.left
 
 theorem win_lδ_cases : lδ J = 0 ∨ lδ J = 7 := by unfold lδ; split_ifs <;> simp
 
-theorem win_Lst_lt : Lst J < (chainModel J.whole).W.n := by
+theorem win_Lst_lt : Lst J < J.wholeModel.W.n := by
   rw [Lst_rlen, win_n_eq]
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have := J.one_le_m₁
   unfold rlen; split_ifs <;> omega
 
-theorem win_gW_lt : gW J < (chainModel J.whole).W.n := by
+theorem win_gW_lt : gW J < J.wholeModel.W.n := by
   have := tpos_lt J.whole J.m₁
   rw [win_n_eq]; unfold gW; omega
 
-theorem win_E₁_eq : E₁ J = (chainModel J.whole).W.n - Lst J + lδ J := rfl
+theorem win_E₁_eq : E₁ J = J.wholeModel.W.n - Lst J + lδ J := rfl
 
 /-- **The facts of the left gap** (case G). -/
 theorem gap_facts (hP : J.P.Simple) (hδ : 0 < lδ J) :
     VNotTop J ∧ lδ J = 7 ∧ lL1 J = 2 * J.m₁ - tpos J.left J.m₁ ∧ b₁ J = 6 + tpos J.left J.m₁ ∧
       0 < tpos J.left J.m₁ ∧ tpos J.left J.m₁ < 2 * J.m₁ ∧
-      Lst J + lL1 J < (chainModel J.whole).W.n ∧
-      (gW J + (Lst J + lL1 J)) % (chainModel J.whole).W.n =
+      Lst J + lL1 J < J.wholeModel.W.n ∧
+      (gW J + (Lst J + lL1 J)) % J.wholeModel.W.n =
         6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J ∧
-      6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J < (chainModel J.whole).W.n := by
+      6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J < J.wholeModel.W.n := by
   have hv : VNotTop J := by
     by_contra h; have := (nvt_left J hP h).2.1; omega
   obtain ⟨h7, hl1, hl2, hτp, hτl⟩ := left_G hδ
   have hb : b₁ J = 6 + tpos J.left J.m₁ := by
     unfold b₁; rw [ite_eq_right (fun h => (caseB_facts J h).1 hv)]
   have hlOff : lOff J = Lst J := by rw [lOff_of_vnt J hv, Lst_rlen]
-  have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
+  have hlen : Lst J + llen J = J.wholeModel.W.n := by
     rw [Lst_rlen]; exact rlen_add_llen J hv
   have hL := lL1_add_lL2 J
   have hA : ¬ 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 * J.m₁ := by
     intro h; unfold lδ at hδ; rw [ite_eq_left h] at hδ; omega
   have hτ := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   have hn := win_n_eq (J := J)
-  have hlt : 6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J < (chainModel J.whole).W.n := by
+  have hlt : 6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J < J.wholeModel.W.n := by
     rw [hn]; omega
   refine ⟨hv, h7, hl1, hb, hτp, hτl, by omega, ?_, hlt⟩
   rw [← add_assoc, ← Nat.mod_add_mod, ← hlOff, gL_eq, Nat.mod_eq_of_lt hlt]
 
 /-- `Lst + ψ d < n` on the `C₁` part. -/
 theorem Lst_ψ_lt (hP : J.P.Simple) {d : ℕ} (hd : d < E₁ J) :
-    Lst J + ψ J d < (chainModel J.whole).W.n := by
+    Lst J + ψ J d < J.wholeModel.W.n := by
   have hL := win_Lst_lt (J := J)
   rw [win_E₁_eq] at hd
   unfold ψ
@@ -138,7 +132,7 @@ theorem Lst_ψ_lt (hP : J.P.Simple) {d : ℕ} (hd : d < E₁ J) :
   · rcases win_lδ_cases (J := J) with h | h
     · omega
     · have := (gap_facts hP (by omega)).2.2.2.2.2.2.1
-      have : d ≤ lL1 J := by by_contra h'; exact h1 ⟨by omega, by omega⟩
+      have : d ≤ lL1 J := by simp_all 
       omega
 
 end Gap
@@ -154,7 +148,7 @@ theorem dOf_add_mod {n g d : ℕ} (hg : g < n) (hd : d < n) : dOf n g ((g + d) %
 
 /-- The part offset `D - Lst` of the key edge `e` (as the RAM computes it). -/
 noncomputable def kr (J : Merge.Junction) (e : ℕ) : ℕ :=
-  dOf (chainModel J.whole).W.n ((gW J + Lst J) % (chainModel J.whole).W.n) e
+  dOf J.wholeModel.W.n ((gW J + Lst J) % J.wholeModel.W.n) e
 
 /-- The `b₁`-offset of a part offset (beyond the gap if at or after its start). -/
 noncomputable def d0Of (J : Merge.Junction) (r : ℕ) : ℕ := if lL1 J ≤ r then r + lδ J else r
@@ -163,27 +157,32 @@ noncomputable def d0Of (J : Merge.Junction) (r : ℕ) : ℕ := if lL1 J ≤ r th
 noncomputable def kd (J : Merge.Junction) (e : ℕ) : ℕ := d0Of J (kr J e)
 
 /-- The edge of the walk of `C₁` of the key edge. -/
-noncomputable def ke₁ (J : Merge.Junction) (e : ℕ) : ℕ := (b₁ J + kd J e) % (chainModel J.left).W.n
+noncomputable def ke₁ (J : Merge.Junction) (e : ℕ) : ℕ := (b₁ J + kd J e) % J.leftModel.W.n
 
-theorem win_offK_eq {P : Polygon} {e h : ℕ} (he : e < (chainModel J.whole).W.n)
-    (hpp : ProperPos (chainModel J.whole) (Qof P) P.n ⟨e, h⟩) :
-    offK P J e h = (dOf (chainModel J.whole).W.n (gW J) e : ℝ) +
-      (chainModel J.whole).param (Qof P) ⟨e, h⟩ := by
+theorem win_offK_eq {P : Polygon} {e h : ℕ} (he : e < J.wholeModel.W.n)
+    (hpp : ProperPos J.wholeModel (Qof P) P.n ⟨e, h⟩) :
+    offK P J e h = (dOf J.wholeModel.W.n (gW J) e : ℝ) +
+      J.wholeModel.param (Qof P) ⟨e, h⟩ := by
   unfold offK
   exact off_key' win_gW_lt he hpp.1 hpp.2.1
 
+section
+
+variable {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
+    (hL : (Lst J : ℝ) ≤ offK P J e h)
+include hP hpw hL
+
 /-- **The key in the walk of `C₁`.** -/
-theorem key_map {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
-    (hL : (Lst J : ℝ) ≤ offK P J e h) :
-    offK P J e h = (Lst J : ℝ) + (kr J e : ℝ) + (chainModel J.whole).param (Qof P) ⟨e, h⟩ ∧
+theorem key_map :
+    offK P J e h = (Lst J : ℝ) + (kr J e : ℝ) + J.wholeModel.param (Qof P) ⟨e, h⟩ ∧
       kd J e < E₁ J ∧ (0 < lδ J → kd J e < lL1 J ∨ lL1 J + lδ J ≤ kd J e) ∧
       ψ J (kd J e) = kr J e ∧ mEdge J (kd J e) = e ∧ MValid J (kd J e) (1 / 2) ∧
-      (chainModel J.left).param (Qof P) ⟨ke₁ J e, h⟩ = (chainModel J.whole).param (Qof P) ⟨e, h⟩ ∧
-      (∀ s, sidePt (chainModel J.whole).W e s = sidePt (chainModel J.left).W (ke₁ J e) s) := by
+      J.leftModel.param (Qof P) ⟨ke₁ J e, h⟩ = J.wholeModel.param (Qof P) ⟨e, h⟩ ∧
+      (∀ s, sidePt J.wholeModel.W e s = sidePt J.leftModel.W (ke₁ J e) s) := by
   obtain ⟨he, hpp, -⟩ := hpw
   have hg := win_gW_lt (J := J)
   have hLn := win_Lst_lt (J := J)
-  set n := (chainModel J.whole).W.n with hn
+  set n := J.wholeModel.W.n with hn
   set D := dOf n (gW J) e with hD
   have hDn : D < n := dOf_lt (by omega) _ _
   have hoff := win_offK_eq (J := J) he hpp
@@ -207,25 +206,26 @@ theorem key_map {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
   have hv : MValid J (kd J e) (1 / 2) := by
     refine ⟨hE, fun h => ?_, fun h => ?_, fun h => absurd h (by norm_num)⟩
     · rcases hgap h.1 with h' | h' <;> omega
-    · rcases hgap h.1 with h' | h' <;> omega
+    simp_all 
   refine ⟨?_, hE, hgap, hψ, hm, hv, ?_, fun s => ?_⟩
-  · rw [hoff, hr]; push_cast [hLD]; ring
+  · simp_all
   · have := param_corr hP hv (by norm_num) (Qof P) h
     rw [hm] at this; exact this.symm
   · have := edge_corr hP hv (by norm_num) s
-    rw [hm] at this; exact this
+    rwa [hm] at this
 
 /-- The key of the key position in the walk of `C₁` has `b₁`-offset `kd + t₀`. -/
-theorem key₁_off {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
-    (hL : (Lst J : ℝ) ≤ offK P J e h) :
-    off (chainModel J.left).W.n (b₁ J) ((chainModel J.left).key (Qof P) ⟨ke₁ J e, h⟩) =
-      (kd J e : ℝ) + (chainModel J.whole).param (Qof P) ⟨e, h⟩ := by
+theorem key₁_off :
+    off J.leftModel.W.n (b₁ J) (J.leftModel.key (Qof P) ⟨ke₁ J e, h⟩) =
+      (kd J e : ℝ) + J.wholeModel.param (Qof P) ⟨e, h⟩ := by
   obtain ⟨-, hE, -, -, -, -, hpar, -⟩ := key_map hP hpw hL
   have hpp := hpw.2.1
   unfold Model.key
   simp only
   rw [hpar]
   exact off_key b₁_lt (lt_of_lt_of_le hE (E₁_le hP)) hpp.1 hpp.2.1
+
+end
 
 end Key
 
@@ -297,14 +297,12 @@ theorem lex_le_gap {d : ℕ} {t : ℝ} (hδ : 0 < lδ J)
     have : ((d + 1 : ℕ) : ℝ) ≤ lL1 J := by exact_mod_cast h1
     push_cast at this; linarith
   · by_cases h2 : d = lL1 J
-    · left
-      have t0 : t = 0 := by by_contra h'; exact hv3 ⟨hδ, h2, h'⟩
-      rw [t0, h2]; simp
+    · simp_all
     · right
       have h3 : lL1 J + lδ J ≤ d := by
         by_contra h'; exact hv2 ⟨hδ, by omega, by omega⟩
       have hψ : ψ J d = d - lδ J := by
-        unfold ψ; rw [ite_eq_left ⟨hδ, by omega⟩, ite_eq_right (by omega)]
+        unfold ψ; ram_rw [ite_eq_left ⟨hδ, by omega⟩, ite_eq_right]
       rw [hψ] at h
       have h4 : lL1 J ≤ d - lδ J := by omega
       have h5 : (lL1 J : ℝ) ≤ ((d - lδ J : ℕ) : ℝ) := by exact_mod_cast h4
@@ -338,10 +336,7 @@ section Arc
 
 variable {C : Chain} {Q : Polygon} {N : NF}
 
-theorem not_sia_end (a b : ℝ) : ¬ sideInArc a b b := by
-  unfold sideInArc; split_ifs <;> intro h
-  · linarith [h.2]
-  · rcases h with h | h <;> linarith
+abbrev not_sia_end := @Chazelle.Core.DownHost.not_sideInArc_right
 
 /-- **The arc of a located key, if the key is not its end.** -/
 theorem arc_of_loc {o : ℕ} {x : ℝ}
@@ -377,8 +372,7 @@ section End
 
 variable {J : Merge.Junction} {P : Polygon}
 
-theorem win_pos_eq_sidePt (M : Model) (Q : Polygon) (x : WPos) :
-    M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
+abbrev win_pos_eq_sidePt := @Chazelle.Core.SweepPrim.pos_eq_sidePt
 
 theorem mvalid_half {d : ℕ} (hd : d < E₁ J) (hg : GapOut J d) : MValid J d (1 / 2) := by
   refine ⟨hd, fun h => ?_, fun h => ?_, fun h => absurd h (by norm_num)⟩
@@ -387,25 +381,24 @@ theorem mvalid_half {d : ℕ} (hd : d < E₁ J) (hg : GapOut J d) : MValid J d (
 
 /-- **The window end at an arc end** of `N₁`: its image `(mEdge dE, hE)` in the walk of `C`. -/
 theorem wend_map (hP : J.P.Simple) {dE eE hE : ℕ} (hdE : dE < E₁ J) (hg : GapOut J dE)
-    (heE : (b₁ J + dE) % (chainModel J.left).W.n = eE)
-    (hpp : ProperPos (chainModel J.left) (Qof P) P.n ⟨eE, hE⟩)
-    (hy : |((chainModel J.left).pos (Qof P) ⟨eE, hE⟩).2| < J.left.radius) :
+    (heE : (b₁ J + dE) % J.leftModel.W.n = eE)
+    (hpp : ProperPos J.leftModel (Qof P) P.n ⟨eE, hE⟩)
+    (hy : |(J.leftModel.pos (Qof P) ⟨eE, hE⟩).2| < J.left.radius) :
     PosW P J (mEdge J dE) hE ∧ offK P J (mEdge J dE) hE =
-      (Lst J : ℝ) + ψ J dE + (chainModel J.left).param (Qof P) ⟨eE, hE⟩ := by
+      (Lst J : ℝ) + ψ J dE + J.leftModel.param (Qof P) ⟨eE, hE⟩ := by
   have hv := mvalid_half hdE hg
   have hpar := param_corr hP hv (by norm_num) (Qof P) hE
   rw [heE] at hpar
-  have hpt := edge_corr hP hv (by norm_num) ((chainModel J.left).param (Qof P) ⟨eE, hE⟩)
+  have hpt := edge_corr hP hv (by norm_num) (J.leftModel.param (Qof P) ⟨eE, hE⟩)
   rw [heE] at hpt
-  have hm : mEdge J dE < (chainModel J.whole).W.n := by
+  have hm : mEdge J dE < J.wholeModel.W.n := by
     unfold mEdge; exact Nat.mod_lt _ (by have := win_gW_lt (J := J); omega)
-  have hpp' : ProperPos (chainModel J.whole) (Qof P) P.n ⟨mEdge J dE, hE⟩ := by
-    rw [ProperPos, hpar]; exact hpp
+  have hpp' : ProperPos J.wholeModel (Qof P) P.n ⟨mEdge J dE, hE⟩ := by
+    rwa [ProperPos, hpar]
   refine ⟨posW_of_inner hm hpp' ?_, ?_⟩
   · rw [win_pos_eq_sidePt, hpar]
     simp only
-    rw [hpt]
-    exact hy
+    rwa [hpt]
   · rw [win_offK_eq hm hpp', hpar]
     unfold mEdge
     rw [dOf_add_mod win_gW_lt (Lst_ψ_lt hP hdE)]
@@ -415,26 +408,26 @@ theorem win_pred_mod {n b d e : ℕ} (hb : b < n) (hd : d < n) (h1 : 1 ≤ d) (h
     (he0 : e ≠ 0) : (b + (d - 1)) % n + 1 = e := by
   by_cases h : b + d < n
   · rw [Nat.mod_eq_of_lt h] at he
-    rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at he
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    ram_rw [Nat.mod_eq_of_lt]; omega
+  · ram_rw [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt] at he
+    ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt] <;> omega
 
 /-- **The cut witness of a window end at an arc end.** -/
 theorem wend_cut {dE eE : ℕ} {tE : ℝ} {G : Set (Set Point)} (hdE : dE < E₁ J)
-    (hheE : (b₁ J + dE) % (chainModel J.left).W.n = eE) (htE0 : 0 ≤ tE) (htE1 : tE ≤ 1)
-    (hcut : (chainModel J.left).IsCut G ((eE : ℝ) + tE))
+    (hheE : (b₁ J + dE) % J.leftModel.W.n = eE) (htE0 : 0 ≤ tE) (htE1 : tE ≤ 1)
+    (hcut : J.leftModel.IsCut G ((eE : ℝ) + tE))
     (hg : GapOut J dE)
     (h0 : tE = 0 → 1 ≤ dE ∧ eE ≠ 0 ∧ (0 < lδ J → dE < lL1 J ∨ lL1 J + lδ J < dE))
-    (hn₁ : dE < (chainModel J.left).W.n) :
+    (hn₁ : dE < J.leftModel.W.n) :
     ∃ (d : ℕ) (t : ℝ), MValid J d t ∧ 0 ≤ t ∧ t ≤ 1 ∧
       (Lst J : ℝ) + ψ J dE + tE = (Lst J : ℝ) + ψ J d + t ∧
-      (chainModel J.left).IsCut G (((b₁ J + d) % (chainModel J.left).W.n : ℕ) + t) := by
+      J.leftModel.IsCut G (((b₁ J + d) % J.leftModel.W.n : ℕ) + t) := by
   rcases lt_or_eq_of_le htE0 with hpos | hz
   · refine ⟨dE, tE, ⟨hdE, fun h => ?_, fun h => ?_, fun h => absurd h hpos.ne'⟩, htE0, htE1,
       rfl, ?_⟩
     · rcases hg h.1 with h' | h' <;> omega
     · rcases hg h.1 with h' | h' <;> omega
-    · rw [hheE]; exact hcut
+    · rwa [hheE]
   · obtain ⟨h1, he0, hg'⟩ := h0 hz.symm
     refine ⟨dE - 1, 1, ⟨by omega, fun h => ?_, fun h => ?_, fun h => absurd h one_ne_zero⟩,
       zero_le_one, le_rfl, ?_, ?_⟩
@@ -449,12 +442,12 @@ theorem wend_cut {dE eE : ℕ} {tE : ℝ} {G : Set (Set Point)} (hdE : dE < E₁
 
 /-- **The window end at the gap start.** -/
 theorem wend_gap (hP : J.P.Simple) (hδ : 0 < lδ J) :
-    PosW P J ((((gW J + Lst J) % (chainModel J.whole).W.n) + lL1 J) % (chainModel J.whole).W.n) 0 ∧
-      offK P J ((((gW J + Lst J) % (chainModel J.whole).W.n) + lL1 J) %
-        (chainModel J.whole).W.n) 0 = (Lst J : ℝ) + lL1 J := by
+    PosW P J ((((gW J + Lst J) % J.wholeModel.W.n) + lL1 J) % J.wholeModel.W.n) 0 ∧
+      offK P J ((((gW J + Lst J) % J.wholeModel.W.n) + lL1 J) %
+        J.wholeModel.W.n) 0 = (Lst J : ℝ) + lL1 J := by
   obtain ⟨-, -, -, -, -, -, hlt, heq, hlt'⟩ := gap_facts hP hδ
   rw [Nat.mod_add_mod, add_assoc, heq]
-  have hpp : ProperPos (chainModel J.whole) (Qof P) P.n
+  have hpp : ProperPos J.wholeModel (Qof P) P.n
       ⟨6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J, 0⟩ :=
     ⟨le_refl _, by simp [Model.param], Nat.zero_le _⟩
   refine ⟨⟨hlt', hpp, fun _ => by omega⟩, ?_⟩
@@ -463,8 +456,8 @@ theorem wend_gap (hP : J.P.Simple) (hδ : 0 < lδ J) :
 
 /-- **The two ends of the gap are the same point** (the copies of the top of `C₁`). -/
 theorem gap_pt (hP : J.P.Simple) (hδ : 0 < lδ J) :
-    sidePt (chainModel J.left).W ((b₁ J + (lL1 J + lδ J)) % (chainModel J.left).W.n) 0 =
-      sidePt (chainModel J.left).W ((b₁ J + lL1 J) % (chainModel J.left).W.n) 0 := by
+    sidePt J.leftModel.W ((b₁ J + (lL1 J + lδ J)) % J.leftModel.W.n) 0 =
+      sidePt J.leftModel.W ((b₁ J + lL1 J) % J.leftModel.W.n) 0 := by
   obtain ⟨-, h7, hl1, hb, hτp, hτl, -⟩ := gap_facts hP hδ
   have hn₁ := win_n₁_eq (J := J)
   have hm1 : J.left.m = J.m₁ := rfl
@@ -501,15 +494,11 @@ theorem mem_loSet {M : Model} {Q : Polygon} {N : NF} {n' : ℕ} {m : ℕ → ℕ
     (hc : CIn (M.key Q (N.arc a).s) (M.key Q (N.arc a).e) (p + t)) :
     sidePt M.W p t ∈ ShotList.loSet M Q m A l.length [] := by
   obtain ⟨k, hk, rfl⟩ := List.mem_iff_getElem.1 ha
-  have hkd : l.getD k 0 = l[k] := by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk]; rfl
+  have hkd : l.getD k 0 = l[k] := by simp_all
   have hal := hl _ ha
   obtain ⟨hs, he⟩ := hpp _ hal
   refine ⟨p, t, hp, ht0, ht1, ⟨k, hk, ?_⟩, fun g hg' => absurd hg' (List.not_mem_nil), rfl⟩
-  rw [hg k hk, hkd]
-  unfold nArc
-  simp only
-  rw [(Restore.normOf_facts hs).2.2.2.1, (Restore.normOf_facts he).2.2.2.1]
-  exact hc
+  simp only [hg k hk, hkd, nArc, (Restore.normOf_facts hs).2.2.2.1, (Restore.normOf_facts he).2.2.2.1] <;> omega
 
 end Gath
 
@@ -528,33 +517,32 @@ theorem key₁_range {M : Model} {Q : Polygon} {n' : ℕ} {x : WPos} (hx : x.edg
   constructor <;> [positivity; linarith]
 
 /-- **Coverage by the arc after the key.** -/
-theorem cover_arc (hP : J.P.Simple) (hN : IsNF (chainModel J.left) (Qof P) N₁)
-    {m : ℕ → ℕ} {A : ℕ} {l : List ℕ} (hg : Gath (chainModel J.left) (Qof P) N₁ m A l)
+theorem cover_arc (hP : J.P.Simple) (hN : IsNF J.leftModel (Qof P) N₁)
+    {m : ℕ → ℕ} {A : ℕ} {l : List ℕ} (hg : Gath J.leftModel (Qof P) N₁ m A l)
     (hl : ∀ a ∈ l, a < N₁.arcs.length) {o : ℕ} (ho : o < N₁.arcs.length)
-    (hol : OracleQ.sj N₁ o ∈ l) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < (chainModel J.left).W.n)
-    (hab : OracleQ.sk (chainModel J.left) (Qof P) N₁ o ≠ OracleQ.ek (chainModel J.left) (Qof P) N₁ o)
-    (hin : sideInArc (OracleQ.sk (chainModel J.left) (Qof P) N₁ o)
-        (OracleQ.ek (chainModel J.left) (Qof P) N₁ o) x ∨
-      OracleQ.sk (chainModel J.left) (Qof P) N₁ o = x)
+    (hol : OracleQ.sj N₁ o ∈ l) {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < J.leftModel.W.n)
+    (hab : OracleQ.sk J.leftModel (Qof P) N₁ o ≠ OracleQ.ek J.leftModel (Qof P) N₁ o)
+    (hin : sideInArc (OracleQ.sk J.leftModel (Qof P) N₁ o)
+        (OracleQ.ek J.leftModel (Qof P) N₁ o) x ∨
+      OracleQ.sk J.leftModel (Qof P) N₁ o = x)
     {d : ℕ} {t : ℝ} (hd : d < E₁ J) (ht0 : 0 ≤ t) (ht1 : t < 1)
-    (hlt : off (chainModel J.left).W.n (b₁ J) x < d + t)
-    (hup : (d : ℝ) + t ≤ off (chainModel J.left).W.n (b₁ J)
-        (OracleQ.ek (chainModel J.left) (Qof P) N₁ o) ∨
-      off (chainModel J.left).W.n (b₁ J) (OracleQ.ek (chainModel J.left) (Qof P) N₁ o) <
-        off (chainModel J.left).W.n (b₁ J) x) :
-    sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) t ∈
-      ShotList.loSet (chainModel J.left) (Qof P) m A l.length [] := by
-  set M := chainModel J.left with hM
+    (hlt : off J.leftModel.W.n (b₁ J) x < d + t)
+    (hup : (d : ℝ) + t ≤ off J.leftModel.W.n (b₁ J)
+        (OracleQ.ek J.leftModel (Qof P) N₁ o) ∨
+      off J.leftModel.W.n (b₁ J) (OracleQ.ek J.leftModel (Qof P) N₁ o) <
+        off J.leftModel.W.n (b₁ J) x) :
+    sidePt J.leftModel.W ((b₁ J + d) % J.leftModel.W.n) t ∈
+      ShotList.loSet J.leftModel (Qof P) m A l.length [] := by
+  set M := J.leftModel with hM
   have hn₁ : 0 < M.W.n := by rw [hM, win_n₁_eq]; omega
-  have hdn : d < M.W.n := lt_of_lt_of_le hd (E₁_le hP)
+  have hdn := lt_of_lt_of_le hd (E₁_le hP)
   have hpp : ∀ j, j < N₁.arcs.length → ProperPos M (Qof P) (Qof P).n (N₁.arc j).s ∧
       ProperPos M (Qof P) (Qof P).n (N₁.arc j).e := fun j hj => by
     obtain ⟨-, -, -, reg, -, -, -, -, -, -, h⟩ := hN; exact h j hj
   obtain ⟨reg, -, -, harc⟩ := OracleQ.isArc_sj hN ho
   obtain ⟨hs0, hsn, he0, hen, -⟩ := harc
   have hp := Nat.mod_lt (b₁ J + d) hn₁
-  have hy : off M.W.n (b₁ J) (((b₁ J + d) % M.W.n : ℕ) + t) = d + t :=
-    off_key b₁_lt hdn ht0 ht1
+  have hy := off_key b₁_lt hdn ht0 ht1
   have hyr : 0 ≤ (((b₁ J + d) % M.W.n : ℕ) : ℝ) + t ∧ (((b₁ J + d) % M.W.n : ℕ) : ℝ) + t < M.W.n := by
     have : (((b₁ J + d) % M.W.n + 1 : ℕ) : ℝ) ≤ M.W.n := by exact_mod_cast hp
     push_cast at this
@@ -562,8 +550,8 @@ theorem cover_arc (hP : J.P.Simple) (hN : IsNF (chainModel J.left) (Qof P) N₁)
   have hb0 : (0 : ℝ) ≤ b₁ J := Nat.cast_nonneg _
   have hbn : (b₁ J : ℝ) < M.W.n := by exact_mod_cast b₁_lt
   refine mem_loSet hg hl hpp hol hp ht0 ht1.le ?_
-  refine cIn_of_U hb0 hbn hsn he0 hen hx0 hxn hyr.1 hyr.2 hab hin (by rw [hy]; exact hlt) ?_
-  rw [hy]; exact hup
+  refine cIn_of_U hb0 hbn hsn he0 hen hx0 hxn hyr.1 hyr.2 hab hin (by rwa [hy]) ?_
+  rwa [hy]
 
 end Cover
 

@@ -55,7 +55,7 @@ theorem cover {D : ℕ} (hT : Dec.RecTree N D) {k : ℕ} (hk : k < N.nChords) {r
 /-- A point of the open part of a chord record. -/
 theorem exists_chord_pt (hM : WalkAx M) (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) :
     ∃ z, z ∈ (N.chord i).toSet M Q ∧ z ∈ M.D := by
-  have hc : (N.chord i).toSet M Q ∈ M.Adm := hN.1.2.1 ⟨N.chord i, Dec.chord_mem hi, rfl⟩
+  have hc := hN.1.2.1 ⟨N.chord i, Dec.chord_mem hi, rfl⟩
   obtain ⟨a, b, -, heq, -, hopen, -, -⟩ := hM.ends _ hc
   refine ⟨Geometry.lerp a b (1 / 2), ?_, hopen _ ⟨by norm_num, by norm_num⟩⟩
   rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
@@ -67,9 +67,14 @@ theorem sub_comp {A : Set Point} {X : Set Point} (hX : IsPreconnected X) (hXA : 
   rw [connectedComponentIn_eq hzw]
   exact hX.subset_connectedComponentIn hz hXA
 
+section
+
+variable (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
+    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q))
+include hM hN hS hR
+
 /-- **Neighbours through another chord are in the same component.** -/
-theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
-    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q)) {k i : ℕ} (hk : k < N.nChords)
+theorem adj_same_comp {k i : ℕ} (hk : k < N.nChords)
     (hi : i < N.nChords) (_hik : i ≠ k) (hne : (N.chord i).toSet M Q ≠ (N.chord k).toSet M Q)
     {w : Point} :
     reg (N.chord i).up ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) w ↔
@@ -79,9 +84,9 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
   have hci : (N.chord i).toSet M Q ∈ N.F M Q := ⟨N.chord i, Dec.chord_mem hi, rfl⟩
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
   obtain ⟨z, hzc, hzD⟩ := exists_chord_pt hM hN hi
-  have hzc' : z ∉ c := fun h => hsys.inter_subset_compl hci hck hne ⟨hzc, h⟩ hzD
-  have hcl : IsClosed c := hsys.isClosed_chord hck
-  have hopen : IsOpen (M.D \ c) := hM.isOpen.sdiff hcl
+  have hzc' := fun h => hsys.inter_subset_compl hci hck hne ⟨hzc, h⟩ hzD
+  have hcl := hsys.isClosed_chord hck
+  have hopen := hM.isOpen.sdiff hcl
   obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hopen z ⟨hzD, hzc'⟩
   obtain ⟨hup, hdn, hside⟩ := hS i hi
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
@@ -98,18 +103,17 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
     rw [max_eq_right hε0.le]; linarith [min_le_right (ε₀ / 2) (ρ / 2)]
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
     ⟨(regionsIn_subset (hR r hr) hx).1, fun hxc => (regionsIn_subset (hR r hr) hx).2 ⟨c, hck, hxc⟩⟩
-  have hballP : IsPreconnected (ball z ρ) := (convex_ball z ρ).isPreconnected
+  have hballP := (convex_ball z ρ).isPreconnected
   constructor
   · intro h
-    have hb : ball z ρ ⊆ connectedComponentIn (M.D \ c) w := sub_comp hballP hball hbu (h hu)
+    have hb := sub_comp hballP hball hbu (h hu)
     exact sub_comp (regionsIn_isPreconnected (hR _ hdn)) (hregsub _ hdn) hd (hb hbd)
   · intro h
-    have hb : ball z ρ ⊆ connectedComponentIn (M.D \ c) w := sub_comp hballP hball hbd (h hd)
+    have hb := sub_comp hballP hball hbd (h hd)
     exact sub_comp (regionsIn_isPreconnected (hR _ hup)) (hregsub _ hup) hu (hb hbu)
 
 /-- The components of `D \ c` of the regions below and above a chord `c`. -/
-theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
-    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q)) {k : ℕ} (hk : k < N.nChords) :
+theorem comps_of {k : ℕ} (hk : k < N.nChords) :
     ∃ zd zu : Point,
       reg (N.chord k).dn ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) zd ∧
       reg (N.chord k).up ⊆ connectedComponentIn (M.D \ (N.chord k).toSet M Q) zu ∧
@@ -121,7 +125,7 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
   obtain ⟨z, hzc, hzD⟩ := exists_chord_pt hM hN hk
   obtain ⟨hup, hdn, hside⟩ := hS k hk
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
-  have hsub : ({c} : Set (Set Point)) ⊆ N.F M Q := singleton_subset_iff.2 hck
+  have hsub := singleton_subset_iff.2 hck
   obtain ⟨ε₁, hε₁, hsep⟩ := hsys.chord_separates_in hsub (mem_singleton c) hzc hzD
   set ε := min (ε₀ / 2) (ε₁ / 2) with hεdef
   have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
@@ -138,8 +142,7 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
 
 /-- **The regions of the low side lie in the component of the region below the chord** (and
 those of the high side in the component of the region above). -/
-theorem side_sub (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
-    (hR : ∀ r, r < N.nRegions → reg r ∈ M.regions (N.F M Q))
+theorem side_sub
     (hinj : ∀ i i', i < N.nChords → i' < N.nChords →
       (N.chord i).toSet M Q = (N.chord i').toSet M Q → i = i')
     {k : ℕ} (hk : k < N.nChords) {w : Point} {r₀ : ℕ}
@@ -150,11 +153,13 @@ theorem side_sub (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
   | refl => exact h₀
   | @tail s s' _ hadj ih =>
     obtain ⟨i, hi, hik, hh⟩ := hadj
-    have hne : (N.chord i).toSet M Q ≠ (N.chord k).toSet M Q := fun e => hik (hinj i k hi hk e)
+    have hne := fun e => hik (hinj i k hi hk e)
     have key := adj_same_comp hM hN hS hR hk hi hik hne (w := w)
     rcases hh with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · rw [← h2]; rw [← h1] at ih; exact key.1 ih
     · rw [← h1]; rw [← h2] at ih; exact key.2 ih
+
+end
 
 /-- **Deciding the side of a region.**  Let the walk position `(p, t)` inside an edge face the
 region `reg r`, and the position `(p₀, t₀)` inside an edge face the region below the chord `k`.
@@ -180,7 +185,7 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
   have hR := hcorr.1
   set c := (N.chord k).toSet M Q with hc
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
-  have hcA : c ∈ M.Adm := hN.1.2.1 hck
+  have hcA := hN.1.2.1 hck
   obtain ⟨K₁, K₂, hK, ⟨c₁, hK₁⟩, ⟨c₂, hK₂⟩, hsec₁, hsec₂⟩ := hM.split hcA hA hB hAB
   obtain ⟨zd, zu, hdK, huK, hdisj⟩ := comps_of hM hN hS hR hk
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
@@ -198,7 +203,7 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
     side_sub hM hN hS hR hN.2.1 hk (w := zd) hdK h
   have hhigh := fun r' (h : r' ∈ N.highSide k) =>
     side_sub hM hN hS hR hN.2.1 hk (w := zu) huK h
-  have hne : ∀ r', r' < N.nRegions → (reg r').Nonempty := fun r' hr' =>
+  have hne := fun r' hr' =>
     regionsIn_nonempty (hR r' hr')
   -- two regions in a common component `K`: if one is on the low side, so is the other, etc.
   have ceq : ∀ {x w w' : Point}, x ∈ connectedComponentIn (M.D \ c) w →
@@ -215,10 +220,8 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
       obtain ⟨x, hx⟩ := hne r hr
       obtain ⟨y, hy⟩ := hne _ hdn
       -- `K` is the component of `zu` (through `x`) and of `zd` (through `y`)
-      have e1 : connectedComponentIn (M.D \ c) zu = K :=
-        (ceq (h1 hx) (hKw ▸ hrK hx)).trans hKw.symm
-      have e2 : connectedComponentIn (M.D \ c) zd = K :=
-        (ceq (hdK hy) (hKw ▸ hdK' hy)).trans hKw.symm
+      have e1 := (ceq (h1 hx) (hKw ▸ hrK hx)).trans hKw.symm
+      have e2 := (ceq (hdK hy) (hKw ▸ hdK' hy)).trans hKw.symm
       exact hdisj.notMem_of_mem_left (hdK hy) (by rw [e1, ← e2]; exact hdK hy)
   have diff : ∀ K K' : Set Point, ∀ w w', K = connectedComponentIn (M.D \ c) w →
       K' = connectedComponentIn (M.D \ c) w' → Disjoint K K' →
@@ -229,10 +232,8 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
       have h1 := hlow r h
       obtain ⟨x, hx⟩ := hne r hr
       obtain ⟨y, hy⟩ := hne _ hdn
-      have e1 : connectedComponentIn (M.D \ c) zd = K :=
-        (ceq (h1 hx) (hKw ▸ hrK hx)).trans hKw.symm
-      have e2 : connectedComponentIn (M.D \ c) zd = K' :=
-        (ceq (hdK hy) (hKw' ▸ hdK' hy)).trans hKw'.symm
+      have e1 := (ceq (h1 hx) (hKw ▸ hrK hx)).trans hKw.symm
+      have e2 := (ceq (hdK hy) (hKw' ▸ hdK' hy)).trans hKw'.symm
       exact hKK.notMem_of_mem_left (e1 ▸ hdK hy) (e2 ▸ hdK hy)
     · exact h
   have hdisj12 : Disjoint K₁ K₂ := by

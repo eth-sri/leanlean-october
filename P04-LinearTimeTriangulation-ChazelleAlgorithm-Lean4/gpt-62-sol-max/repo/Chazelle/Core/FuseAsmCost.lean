@@ -20,7 +20,7 @@ open MergeAsm
 
 theorem piece_le (κ T S Fg : ℕ) (hT : T ≤ 8 * S) :
     κ * T * (Fg + Nat.clog 2 T + 1) ≤ 32 * κ * (S * (Fg + Nat.clog 2 S + 1)) := by
-  have hc : Nat.clog 2 T ≤ 3 + Nat.clog 2 S := (clog_mono hT).trans (clog_8 S)
+  have hc := (clog_mono hT).trans (clog_8 S)
   have h4 : Fg + Nat.clog 2 T + 1 ≤ 4 * (Fg + Nat.clog 2 S + 1) := by omega
   calc κ * T * (Fg + Nat.clog 2 T + 1) ≤ κ * (8 * S) * (4 * (Fg + Nat.clog 2 S + 1)) :=
         Nat.mul_le_mul (Nat.mul_le_mul le_rfl hT) h4
@@ -48,26 +48,25 @@ theorem fuse_total {κs : ℕ → ℕ} {κB D K₁ K₂ L₀ L₁ Kc Kd Fg k₁ 
     (h₇ : k₇ ≤ 40 + κB * (Kd * (Nat.clog 2 Kd + 1) + 1)) :
     k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + k₇))))) ≤
       fuseκ κs κB D * (K₁ + K₂ + 1) * (Fg + Nat.clog 2 (K₁ + K₂ + 1) + 1) := by
-  obtain ⟨S, hS⟩ : ∃ S, S = K₁ + K₂ + 1 := ⟨_, rfl⟩
-  obtain ⟨Y, hY⟩ : ∃ Y, Y = Fg + Nat.clog 2 S + 1 := ⟨_, rfl⟩
+  obtain ⟨S, hS⟩ := exists_eq (a' := K₁ + K₂ + 1)
+  obtain ⟨Y, hY⟩ := exists_eq (a' := Fg + Nat.clog 2 S + 1)
   rw [← hS, ← hY]
   have p₂ := piece_le (κs D) (K₁ + K₂ + L₀ + 1) S Fg (by omega)
   have p₄ := piece_le (κs D) (K₁ + K₂ + L₁ + 1) S Fg (by omega)
   have p₆ := nlog_le Kc S Fg (by omega)
   have p₇ := nlog_le Kd S Fg (by omega)
   rw [← hY] at p₂ p₄ p₆ p₇
-  obtain ⟨SY, hSY⟩ : ∃ x, x = S * Y := ⟨_, rfl⟩
+  obtain ⟨SY, hSY⟩ := exists_eq (a' := S * Y)
   rw [← hSY] at p₂ p₄ p₆ p₇
-  have hS1 : S ≤ SY := by rw [hSY]; exact Nat.le_mul_of_pos_right _ (by omega)
+  have hS1 : S ≤ SY := by simp_all <;> omega
   have hS0 : 1 ≤ S := by omega
   unfold SortR.sortCost at h₆
   have e7 : κB * (Kd * (Nat.clog 2 Kd + 1) + 1) ≤ κB * (32 * SY + 1) :=
     Nat.mul_le_mul le_rfl (by omega)
   have e7' : κB * (32 * SY + 1) ≤ 33 * (κB * SY) := by nlinarith
-  have e6 : (40 + 30) * (Kc * (Nat.clog 2 Kc + 1) + 1) ≤ 70 * (32 * SY + 1) :=
-    Nat.mul_le_mul le_rfl (by omega)
-  obtain ⟨A, hA⟩ : ∃ x, x = κs D * SY := ⟨_, rfl⟩
-  obtain ⟨B, hB⟩ : ∃ x, x = κB * SY := ⟨_, rfl⟩
+  
+  obtain ⟨A, hA⟩ := exists_eq (a' := κs D * SY)
+  obtain ⟨B, hB⟩ := exists_eq (a' := κB * SY)
   have eA : 32 * κs D * SY = 32 * A := by rw [hA]; ring
   rw [eA] at p₂ p₄
   rw [← hB] at e7'

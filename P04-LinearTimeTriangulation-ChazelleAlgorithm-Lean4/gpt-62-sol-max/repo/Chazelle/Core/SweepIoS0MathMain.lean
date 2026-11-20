@@ -43,82 +43,79 @@ theorem end_off_right {c : Set Point} (hc : c ∈ Merge.augChords J.right) :
 /-- **(C4): the endpoint table.** -/
 theorem case_C4 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF} {T : ℕ → Option (ℕ × ℝ)}
     (hT : TabOK J Q N₂ T) {z : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzR : z ∈ J.right.dom)
-    {c : Set Point} (hc : c ∈ N₂.F (chainModel J.right) Q) {o : Point} {d : ℝ}
+    {c : Set Point} (hc : c ∈ N₂.F J.rightModel Q) {o : Point} {d : ℝ}
     (ho : (d = 1 ∧ o = Merge.lend c) ∨ (d = -1 ∧ o = Merge.rend c)) (hfo : FreeAt J.whole o d)
     (hoR : o ∈ J.right.set) (hov : o ≠ J.shared) (hot : o ≠ J.right.top) (hdσ : d = -σ)
     (hoz : rayPt o d (J.whole.hitParam o d) = z) {pz : ℕ} {tz : ℝ}
-    (hA : Arrival (chainModel J.whole).W z (-σ) pz tz)
+    (hA : Arrival J.wholeModel.W z (-σ) pz tz)
     (hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ Merge.shoot J.whole o d) :
     ∃ j, j < 2 * N₂.nChords ∧ T j = some (pz, tz) ∧ endDir j = -σ ∧
       endOrigin J Q N₂ j ∈ J.right.set ∧ endOrigin J Q N₂ j ≠ J.shared ∧
       endOrigin J Q N₂ j ≠ J.right.top ∧ endOrigin J Q N₂ j = o := by
   have hd : d = 1 ∨ d = -1 := by rcases ho with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
-  have ho2 : o.2 ≤ J.right.top.2 := J.right.snd_le_top_of_mem_set hoR
-  have ho2' : o.2 ≤ J.whole.top.2 := ho2.trans J.right_top_le
+  have ho2 := J.right.snd_le_top_of_mem_set hoR
+  have ho2' := ho2.trans J.right_top_le
   have key : ∀ j, j < 2 * N₂.nChords → endOrigin J Q N₂ j = o → endDir j = d →
       ∃ j, j < 2 * N₂.nChords ∧ T j = some (pz, tz) ∧ endDir j = -σ ∧
         endOrigin J Q N₂ j ∈ J.right.set ∧ endOrigin J Q N₂ j ≠ J.shared ∧
         endOrigin J Q N₂ j ≠ J.right.top ∧ endOrigin J Q N₂ j = o := by
     intro j hj hoj hdj
-    obtain ⟨-, hm⟩ := hT j hj (by rw [hoj]; exact hoR) (by rw [hoj]; exact hov)
-      (by rw [hoj]; exact hot)
+    obtain ⟨-, hm⟩ := hT j hj (by rwa [hoj]) (by rwa [hoj])
+      (by rwa [hoj])
     rw [hoj, hdj] at hm
     rcases hTj : T j with _ | ⟨p, t⟩
     · rw [hTj] at hm
       exfalso
       have hfr₂ : FreeAt J.right o d := by
         filter_upwards [hfo] with s hs
-        exact dom_right J hs (by rw [rayPt_snd]; exact ho2)
+        exact dom_right J hs (by rwa [rayPt_snd])
       obtain ⟨-, hD₂, -⟩ := Merge.hit_of_freeAt J.right ho2 hd hfr₂
-      have hm' : J.whole.hitParam o d = J.right.hitParam o d := hm
-      rw [← hm', hoz] at hD₂
-      exact hD₂ hzR
+      simp_all
     · rw [hTj] at hm
       obtain ⟨hatt, hpt, -⟩ := hm
       rw [hoz] at hpt
-      have harr : Arrival (chainModel J.whole).W z (-σ) p t := arrival_of_attach hσ hatt hpt hev
-      have hg : Genuine J.whole o d (J.whole.hitParam o d) :=
-        (genuine_iff J.whole ho2' hd).2 ⟨hfo, rfl⟩
-      have h1 : Arrival (chainModel J.whole).W (rayPt o d (J.whole.hitParam o d)) d p t := by
-        rw [hoz, hdσ]; exact harr
-      have h2 : Arrival (chainModel J.whole).W (rayPt o d (J.whole.hitParam o d)) d pz tz := by
-        rw [hoz, hdσ]; exact hA
+      have harr : Arrival J.wholeModel.W z (-σ) p t := arrival_of_attach hσ hatt hpt hev
+      have hg := (genuine_iff J.whole ho2' hd).2 ⟨hfo, rfl⟩
+      have h1 : Arrival J.wholeModel.W (rayPt o d (J.whole.hitParam o d)) d p t := by
+        rwa [hoz, hdσ]
+      have h2 : Arrival J.wholeModel.W (rayPt o d (J.whole.hitParam o d)) d pz tz := by
+        rwa [hoz, hdσ]
       obtain ⟨rfl, rfl⟩ := arrival_unique hP ho2' hd hg h1 h2
-      exact ⟨j, hj, hTj, by rw [hdj, hdσ], by rw [hoj]; exact hoR, by rw [hoj]; exact hov,
-        by rw [hoj]; exact hot, hoj⟩
+      exact ⟨j, hj, hTj, by rw [hdj, hdσ], by rwa [hoj], by rwa [hoj],
+        by rwa [hoj], hoj⟩
   obtain ⟨r, hr, rfl⟩ := hc
   obtain ⟨k, hk, hkr⟩ := List.mem_iff_getElem.1 hr
-  have hck : N₂.chord k = r := by unfold NF.chord; rw [List.getD_eq_getElem _ _ hk, hkr]
+  have hck : N₂.chord k = r := by ram_finish [NF.chord, List.getD_eq_getElem, hkr]
   have hkn : k < N₂.nChords := hk
   rcases ho with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · refine key (2 * k) (by omega) ?_ ?_
     · unfold endOrigin
       rw [ite_eq_left (by omega), show 2 * k / 2 = k by omega, hck]
-    · unfold endDir; rw [ite_eq_left (by omega)]
+    simp [endDir, ite_eq_left]
   · refine key (2 * k + 1) (by omega) ?_ ?_
     · unfold endOrigin
       rw [ite_eq_right (by omega), show (2 * k + 1) / 2 = k by omega, hck]
-    · unfold endDir; rw [ite_eq_right (by omega)]
+    simp [endDir]
 
 /-- **(C3): the top chords.** -/
 theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
-    (hN : IsNF (chainModel J.right) Q N₂) {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    (hS : StopsOK J (N₂.F (chainModel J.right) Q) (stopsOf J Q N₂ rs)) {z : Point} {σ : ℝ}
+    (hN : IsNF J.rightModel Q N₂) {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
+    (hS : StopsOK J (N₂.F J.rightModel Q) (stopsOf J Q N₂ rs)) {z : Point} {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) (hzR : z ∈ J.right.dom) {e : Set Point}
-    (he : e ∈ F₂plus J (N₂.F (chainModel J.right) Q)) (hfo : FreeAt J.whole J.right.top (-σ))
+    (he : e ∈ F₂plus J (N₂.F J.rightModel Q)) (hfo : FreeAt J.whole J.right.top (-σ))
     (heo : e = Merge.shoot J.whole J.right.top (-σ)) (hze : z ∈ e)
     (hends : ∀ p ∈ e, p ∉ J.whole.dom → p = z ∨ p = J.right.top) (hey : ∀ p ∈ e, p.2 = z.2)
     (htopL : J.right.top ∉ J.left.set) (hT0 : 0 < J.whole.hitParam z σ)
     (hw : rayPt z σ (J.whole.hitParam z σ) = J.right.top) {pz : ℕ} {tz : ℝ}
-    (hA : Arrival (chainModel J.whole).W z (-σ) pz tz) (hLst : (Lst J : ℝ) ≤ oW J (pz + tz))
+    (hA : Arrival J.wholeModel.W z (-σ) pz tz) (hLst : (Lst J : ℝ) ≤ oW J (pz + tz))
     (hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ e) :
-    ∃ r ∈ rs, r.1 = pz ∧ (chainModel J.whole).param Q ⟨r.1, r.2.1⟩ = tz ∧
+    ∃ r ∈ rs, r.1 = pz ∧ J.wholeModel.param Q ⟨r.1, r.2.1⟩ = tz ∧
       dirOf r.2.2.2.2 = -σ ∧
       SweepIo.stopOrig J Q N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 = J.right.top := by
-  have hS₂ : N₂.F (chainModel J.right) Q ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ : N₂.F J.rightModel Q ⊆ Merge.augChords J.right := hN.1.2.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hstop : StopChord2 J (N₂.F (chainModel J.right) Q) e := Or.inr ⟨-σ, hnσ, hfo, heo⟩
-  have hatt : SideAttach (chainModel J.whole).W e pz tz := by
+  have hstop : StopChord2 J (N₂.F J.rightModel Q) e := Or.inr ⟨-σ, hnσ, hfo, heo⟩
+  have hatt : SideAttach J.wholeModel.W e pz tz := by
     obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
     rw [neg_neg] at hsec
     refine sideAttach_of_along J.whole hP (F₂plus_subset J hS₂ he) hp ht0 ht1 hσ ?_ ?_
@@ -159,8 +156,8 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
       have hj2 : j / 2 = r.2.2.2.1 := by rw [hj]; split_ifs <;> omega
       by_cases hk : r.2.2.2.1 < N₂.nChords
       · -- a chord of `S₂`: its end is off the domain of `C₂`
-        have hcF : (N₂.chord (j / 2)).toSet (chainModel J.right) Q ∈
-            N₂.F (chainModel J.right) Q := by
+        have hcF : (N₂.chord (j / 2)).toSet J.rightModel Q ∈
+            N₂.F J.rightModel Q := by
           refine ⟨N₂.chord (j / 2), ?_, rfl⟩
           unfold NF.chord
           rw [hj2, List.getD_eq_getElem _ _ hk]
@@ -213,35 +210,35 @@ open WalkEmbed Sweep S0Math
 /-- **The cases of the first hit of a side-0 query.** -/
 theorem side0Math : Side0MathSpec := by
   intro P J N₂ rs ls T _hG hP hN hlog hstops htab z σ hσ hzL hzv hz2 hfree pz tz hA
-  have hS₂ : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : (N₂.F (chainModel J.right) (Qof P)).Finite := hN.1.1
+  have hS₂ : N₂.F J.rightModel (Qof P) ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂f : (N₂.F J.rightModel (Qof P)).Finite := hN.1.1
   have hzR := left_pt_right_dom J hP hzL hzv hz2
   obtain ⟨hpz, htz0, htz1, hpt, hsec⟩ := hA
   have hLst : (Lst J : ℝ) < oW J (pz + tz) :=
-    Lst_lt_of_dom hP hpz htz0 htz1 (by rw [hpt]; exact hzR)
+    Lst_lt_of_dom hP hpz htz0 htz1 (by rwa [hpt])
   refine ⟨hLst.le, fun i hi => ?_⟩
-  have hz₁ : z.2 ≤ J.left.top.2 := J.left.snd_le_top_of_mem_set hzL
-  have hzD : z ∉ J.whole.dom := fun h =>
+  have hz₁ := J.left.snd_le_top_of_mem_set hzL
+  have hzD := fun h =>
     J.whole.not_mem_set_of_mem_dom h (J.left_set_subset hzL)
   by_cases hc : rayPt z σ (J.whole.hitParam z σ) ∈ J.right.set ∧
       rayPt z σ (J.whole.hitParam z σ) ∉ J.left.set
   swap
   · exact Or.inl (left_hit_of J hz₁ hσ hfree hc)
   have hR2 := right_hit_of J hz2 hσ hfree hc.1
-  by_cases hB : ∃ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)),
+  by_cases hB : ∃ e ∈ F₂plus J (N₂.F J.rightModel (Qof P)),
       ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ e
   · -- the ray runs along a chord of `F₂⁺`
     obtain ⟨e, he, hev⟩ := hB
     obtain ⟨o, d, hd, hfo, heo, hkind⟩ := F₂plus_origin J he
     have hoe : o ∈ e := by rw [heo]; exact origin_mem J
-    have ho2 : o.2 ≤ J.right.top.2 := F₂plus_snd_le J hS₂ he hoe
+    have ho2 := F₂plus_snd_le J hS₂ he hoe
     have hoR' : o ∉ J.right.dom := by
       rcases hkind with rfl | rfl | ⟨c, hc', ⟨-, rfl⟩ | ⟨-, rfl⟩⟩
       · exact fun h => J.right.not_mem_set_of_mem_dom h J.shared_mem_right
       · exact fun h => J.right.not_mem_set_of_mem_dom h J.right.top_mem_set
       · exact (end_off_right J (hS₂ hc')).1
       · exact (end_off_right J (hS₂ hc')).2.1
-    have hoD : o ∉ J.whole.dom := fun h => hoR' (J.mem_right_dom_of_whole ho2 h)
+    have hoD := fun h => hoR' (J.mem_right_dom_of_whole ho2 h)
     have hzo : z ≠ o := fun h => hoR' (h ▸ hzR)
     obtain ⟨hwo, hdσ, hoz, hT0, hends, hey⟩ :=
       along_end J (F₂plus_subset J hS₂ he) hσ hd hzD hoD hzo heo hfo hev
@@ -252,7 +249,7 @@ theorem side0Math : Side0MathSpec := by
       subst hot
       right; right; left
       have heo' : e = Merge.shoot J.whole J.right.top (-σ) := by rw [heo, hdσ]
-      have hfo' : FreeAt J.whole J.right.top (-σ) := by rw [← hdσ]; exact hfo
+      have hfo' : FreeAt J.whole J.right.top (-σ) := by rwa [← hdσ]
       obtain ⟨r, hr, h1, h2, h3, h4⟩ := case_C3 J hP hN hstops hσ hzR he hfo' heo' hze
         (fun p hp hpD => hends p hp hpD) hey hc.2 hT0 hwo ⟨hpz, htz0, htz1, hpt, hsec⟩ hLst.le hev
       exact ⟨r, hr, h1, h2, h3, by rw [h4, hwo]⟩
@@ -263,15 +260,15 @@ theorem side0Math : Side0MathSpec := by
         right; right; right
         have hov : o ≠ J.shared := fun h => hc.2 (h ▸ J.shared_mem_left)
         obtain ⟨j, hj, hTj, hdj, h1, h2, h3, h4⟩ := case_C4 J hP htab hσ hzR hc' hco hfo hc.1
-          hov hot hdσ hoz ⟨hpz, htz0, htz1, hpt, hsec⟩ (by rw [← heo]; exact hev)
+          hov hot hdσ hoz ⟨hpz, htz0, htz1, hpt, hsec⟩ (by rwa [← heo])
         exact ⟨j, hj, hTj, hdj, h1, h2, h3, by rw [h4, hwo]⟩
   · -- the ray starts in a region of `F₂⁺`
     rw [neg_neg] at hsec
     have hFam := chordFamily_hPoly J.whole (F₂plus_finite J hS₂f) (F₂plus_subset J hS₂)
     obtain ⟨U, hU, hray, hface⟩ := leave_region J.whole hP hFam hσ hpz htz0 htz1 hpt hsec
       (left_pt_abs J hzL) (fun e he h => hB ⟨e, he, h⟩)
-    have hface' : AfterFaces (chainModel J.whole) pz tz U ∨
-        BeforeFaces (chainModel J.whole) pz tz U := by
+    have hface' : AfterFaces J.wholeModel pz tz U ∨
+        BeforeFaces J.wholeModel pz tz U := by
       rcases hface with ⟨-, h⟩ | ⟨-, -, h⟩ | ⟨-, -, h⟩
       · exact Or.inl h
       · exact Or.inl h
@@ -279,8 +276,8 @@ theorem side0Math : Side0MathSpec := by
     obtain ⟨V, hV, hVray, hlab⟩ := query_right J hP hS₂ hS₂f hU hz2 hσ hray hc.1 hc.2
     obtain ⟨hil, hlo, hhi⟩ := hi
     have hlen : (logOf J (Qof P) N₂ ls).length = ls.length := List.length_map _
-    have hres := labels_of_log J hP hS₂ hS₂f hlog (i := i) (by rw [hlen]; exact hil) hpz htz0
-      htz1 hLst hlo (fun h => hhi (by rw [hlen] at h; exact h)) hU hface' V hV hlab
+    have hres := labels_of_log J hP hS₂ hS₂f hlog (i := i) (by rwa [hlen]) hpz htz0
+      htz1 hLst hlo (fun h => hhi (by rwa [hlen] at h)) hU hface' V hV hlab
     right; left
     exact ⟨hR2, V, hV, hres, hVray⟩
 

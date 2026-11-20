@@ -86,12 +86,12 @@ theorem shift_div_lt {l cs k μ : ℕ} (hk : 0 < k) (hcs : cs < k) (_hkμ : k �
 theorem cntBelow_congr {f f' : ℕ → ℕ} {n r : ℕ} (h : ∀ v, v < n → f v = f' v) :
     cntBelow f n r = cntBelow f' n r := by
   unfold cntBelow; congr 1
-  exact Finset.filter_congr (fun v hv => by rw [h v (Finset.mem_range.mp hv)])
+  exact Finset.filter_congr (fun v hv => by simp_all)
 
 theorem cntLt_congr {f f' : ℕ → ℕ} {n j : ℕ} (h : ∀ v, v < n → f v = f' v) :
     cntLt f n j = cntLt f' n j := by
   unfold cntLt; congr 1
-  exact Finset.filter_congr (fun v hv => by rw [h v (Finset.mem_range.mp hv)])
+  exact Finset.filter_congr (fun v hv => by simp_all)
 
 theorem plPos_congr {μ : ℕ} {bo bo' key key' : ℕ → ℕ} (hb : ∀ w, w < μ → bo w = bo' w)
     (hk : ∀ w, w < μ → key w = key' w) {v : ℕ} (hv : v < μ) :
@@ -100,7 +100,7 @@ theorem plPos_congr {μ : ℕ} {bo bo' key key' : ℕ → ℕ} (hb : ∀ w, w < 
   rw [cntLt_congr hb, hb v hv]
   congr 2
   exact Finset.filter_congr (fun w hw => by
-    simp only [hb w (Finset.mem_range.mp hw), hk w (Finset.mem_range.mp hw), hk v hv])
+    simp_all)
 
 end
 

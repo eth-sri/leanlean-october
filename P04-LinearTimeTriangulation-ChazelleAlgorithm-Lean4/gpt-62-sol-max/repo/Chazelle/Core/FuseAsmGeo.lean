@@ -33,7 +33,7 @@ theorem sideE_succ_m {m : ℕ} (hm : 1 ≤ m) : sideE m ((m + 1) % (2 * m)) = m 
     subst this; simp
 
 /-- The walk vertex after the shared vertex in the walk of `C₁` is `u`. -/
-theorem left_next : (chainModel J.left).W.vtx (6 + tpos J.left J.m₁ + 1) = sharedU J := by
+theorem left_next : J.leftModel.W.vtx (6 + tpos J.left J.m₁ + 1) = sharedU J := by
   have hn := cm_n J.left
   have hτ := tpos_lt J.left J.m₁
   have := walk_tour J.left J.m₁ 1 (by omega)
@@ -45,7 +45,7 @@ theorem left_next : (chainModel J.left).W.vtx (6 + tpos J.left J.m₁ + 1) = sha
   rfl
 
 /-- The walk vertex after the shared vertex in the walk of `C₂` is `w`. -/
-theorem right_next : (chainModel J.right).W.vtx (6 + tpos J.right 0 + 1) = sharedW J := by
+theorem right_next : J.rightModel.W.vtx (6 + tpos J.right 0 + 1) = sharedW J := by
   have hn := cm_n J.right
   have hτ := tpos_lt J.right 0
   have := walk_tour J.right 0 1 (by omega)
@@ -65,8 +65,7 @@ theorem pos_edge {M : Model} {Q : Polygon} {e h : ℕ} {a b : Point} (ha : M.W.v
     (hb : M.W.vtx ((e + 1) % M.W.n) = b) (hne : a.2 ≠ b.2) :
     M.pos Q ⟨e, h + 1⟩ = Geometry.lerp a b (((Q.vtx h).2 - a.2) / (b.2 - a.2)) := by
   unfold Model.pos Model.param Model.wa Model.wb
-  simp only
-  rw [ha, hb, ite_eq_right hne]
+  simp_all
 
 end
 

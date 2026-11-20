@@ -81,8 +81,8 @@ theorem AncX.pos_le {a b : ℕ} (hab : AncX R prg pch rem a b) (hb : b < R) :
   | tail hax hxc ih =>
     rename_i x c
     obtain ⟨hc, hc0, hpc, -⟩ := hxc
-    have hxR : x < R := hpc ▸ h.prg_lt c hc hc0
-    have hlt : pos x < pos c := hpc ▸ h.pos_prg c hc hc0
+    have hxR := hpc ▸ h.prg_lt c hc hc0
+    have hlt := hpc ▸ h.pos_prg c hc hc0
     obtain ⟨ha, hle, -⟩ := ih hxR
     exact ⟨ha, by omega, fun _ => by omega⟩
 
@@ -118,8 +118,7 @@ theorem AncX.chain {a b u : ℕ} (hau : AncX R prg pch rem a u) (hbu : AncX R pr
     rcases (AncX.back_iff h).1 hbu with rfl | ⟨-, -, -, hbx⟩
     · exact Or.inl (hax.tail hxc)
     · obtain ⟨-, -, hpc, -⟩ := hxc
-      rw [hpc] at hbx
-      exact ih hbx
+      simp_all
 
 omit h in
 /-- A proper descendant is not a top. -/
@@ -180,12 +179,12 @@ theorem AncX.of_keep {rem' : ℕ → ℕ} {a b : ℕ} (hab : AncX R prg pch rem 
   | refl => exact ReflTransGen.refl
   | tail hax hxc ih =>
     rename_i x c
-    have hc : AncX R prg pch rem a c := hax.tail hxc
+    have hc := hax.tail hxc
     refine (ih fun w hw1 hw2 hw3 => hkeep w hw1 (hw2.tail hxc) hw3).tail ?_
     obtain ⟨h1, h2, h3, _⟩ := hxc
     refine ⟨h1, h2, h3, hkeep c hc ReflTransGen.refl ?_⟩
     intro hca
-    have hxR : x < R := h3 ▸ h.prg_lt c h1 h2
+    have hxR := h3 ▸ h.prg_lt c h1 h2
     have h5 := (AncX.pos_le h hax hxR).2.1
     have h6 := h.pos_prg c h1 h2
     rw [h3, hca] at h6
@@ -234,11 +233,11 @@ theorem Rooted.pch_inj {s s' : ℕ} (hs : s < R) (hs' : s' < R) (h0 : s ≠ 0) (
     rcases h.ends s' hs' h0' with ⟨b1, b2⟩ | ⟨b1, b2⟩ <;> rw [he] at a1 a2
   · exact hne (a2.symm.trans b2)
   · -- `s = prg s'` and `s' = prg s`
-    have e1 : s = prg s' := a2.symm.trans b2
-    have e2 : s' = prg s := b1.symm.trans a1
+    have e1 := a2.symm.trans b2
+    have e2 := b1.symm.trans a1
     rw [← e1] at p2; rw [← e2] at p1; omega
-  · have e1 : s = prg s' := a1.symm.trans b1
-    have e2 : s' = prg s := b2.symm.trans a2
+  · have e1 := a1.symm.trans b1
+    have e2 := b2.symm.trans a2
     rw [← e1] at p2; rw [← e2] at p1; omega
   · exact hne (a1.symm.trans b1)
 
@@ -350,9 +349,7 @@ theorem sz_rec {u : ℕ} (hu : u < R) :
       · rw [mem_kids] at hc
         rw [mem_sub] at hv
         exact ⟨hv.1, ReflTransGen.head hc hv.2⟩
-  unfold sz
-  rw [heq, Finset.card_insert_of_notMem hnot, Finset.card_biUnion hdisj]
-  omega
+  ram_finish [sz, heq, Finset.card_insert_of_notMem hnot, Finset.card_biUnion hdisj]
 
 /-- A proper descendant has a strictly smaller subtree. -/
 theorem sz_lt {a c : ℕ} (hac : AncX R prg pch rem a c) (hne : a ≠ c) (hc : c < R) :
@@ -371,8 +368,7 @@ theorem sz_lt {a c : ℕ} (hac : AncX R prg pch rem a c) (hne : a ≠ c) (hc : c
     rintro ⟨-, hca⟩
     exact hne (AncX.antisymm h hac hca hc)
   have := Finset.card_le_card hsub
-  rw [Finset.card_insert_of_notMem hna] at this
-  exact this
+  rwa [Finset.card_insert_of_notMem hna] at this
 
 end sizes2
 
@@ -388,7 +384,7 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
   by_contra hno
   simp only [not_or, not_exists, not_and, not_le] at hno
   obtain ⟨h1, h2⟩ := hno
-  have hs : ∑ c ∈ s, D * f c ≤ ∑ c ∈ s, m := Finset.sum_le_sum fun c hc => (h1 c hc).le
+  have hs := Finset.sum_le_sum fun c hc => (h1 c hc).le
   rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul] at hs
   by_cases he : e
   · have h2' := h2 he
@@ -404,7 +400,7 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
       rcases Finset.eq_empty_or_nonempty s with h0 | h0
       · rw [h0, Finset.sum_empty] at hsum; omega
       · exact h0
-    have hs' : ∑ c ∈ s, D * f c < ∑ c ∈ s, m := Finset.sum_lt_sum_of_nonempty hne h1
+    have hs' := Finset.sum_lt_sum_of_nonempty hne h1
     rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul, hsum] at hs'
     have h4 : s.card * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
@@ -463,7 +459,7 @@ theorem exists_good
     have hd := hdeg v hvR
     by_cases e : v = t
     · rw [ite_eq_right (not_not.2 e)]
-      have : 0 ≤ (if v = 0 then 0 else 1) := Nat.zero_le _
+      
       omega
     · rw [ite_eq_left e]
       rw [ite_eq_right (hvt e)] at hd
@@ -489,12 +485,12 @@ theorem exists_good
       omega
     · have : min (sz R prg pch rem c) (n - sz R prg pch rem c) = sz R prg pch rem c :=
         min_eq_left (by omega)
-      rw [this]; exact hc'
+      rwa [this]
   · rw [ite_eq_left hne] at hu
     refine ⟨v, hvR, htv, hne, ?_⟩
     have : min (sz R prg pch rem v) (n - sz R prg pch rem v) = n - sz R prg pch rem v :=
       min_eq_right (by omega)
-    rw [this]; exact hu
+    rwa [this]
 
 end sep
 

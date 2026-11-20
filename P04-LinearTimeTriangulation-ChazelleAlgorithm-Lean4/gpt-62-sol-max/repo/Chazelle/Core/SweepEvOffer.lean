@@ -1,5 +1,11 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvLab
 public import Chazelle.Core.SweepEvSpec
 
@@ -20,20 +26,20 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 
 @[expose] public section
 
-def kE : ℕ := sw 2400
-def kH : ℕ := sw 2401
-def bF : ℕ := sw 2410
-def bE : ℕ := sw 2411
-def bH : ℕ := sw 2412
-def bN : ℕ := sw 2413
-def bL : ℕ := sw 2414
-def cO : ℕ := sw 2280
-def cO2 : ℕ := sw 2282
-def cGW : ℕ := sw 659
+@[ram_layout] def kE : ℕ := sw 2400
+@[ram_layout] def kH : ℕ := sw 2401
+@[ram_layout] def bF : ℕ := sw 2410
+@[ram_layout] def bE : ℕ := sw 2411
+@[ram_layout] def bH : ℕ := sw 2412
+@[ram_layout] def bN : ℕ := sw 2413
+@[ram_layout] def bL : ℕ := sw 2414
+@[ram_layout] def cO : ℕ := sw 2280
+@[ram_layout] def cO2 : ℕ := sw 2282
+@[ram_layout] def cGW : ℕ := sw 659
 
 /-- The offset (from `gW`) of a position of the walk of `C`. -/
 noncomputable def offK (P : Polygon) (J : Merge.Junction) (e h : ℕ) : ℝ :=
-  off (chainModel J.whole).W.n (gW J : ℝ) ((chainModel J.whole).key (Qof P) ⟨e, h⟩)
+  off J.wholeModel.W.n (gW J : ℝ) (J.wholeModel.key (Qof P) ⟨e, h⟩)
 
 /-- Take the candidate. -/
 def takeL : List Instr :=
@@ -81,24 +87,24 @@ theorem takeL_val (m f : ℕ → ℕ) :
     regB m takeL f bN = 2 ∧ regB m takeL f bL = f oUp ∧ regB m takeL f (bL + 1) = f oDn ∧
     (∀ q, ¬ BestR q → regB m takeL f q = f q) := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, fun q hq => regB_other _ _ _ (fun i hi => ?_)⟩
-  · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
-  · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
-  · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
-  · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
-  · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
-  · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
+  · rfl
   · simp only [takeL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;> apply hq
     · exact Or.inl h.symm
     · exact Or.inr (Or.inl h.symm)
     · exact Or.inr (Or.inr (Or.inl h.symm))
     · exact Or.inr (Or.inr (Or.inr (Or.inl h.symm)))
-    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩)))
-    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩)))
+    · exact Or.inr (by register_guard)
+    · exact Or.inr (by register_guard)
 
 theorem lblOf_take {c c' : Config} (h1 : c'.nreg bN = 2) (h2 : c'.nreg bL = c.nreg oUp)
     (h3 : c'.nreg (bL + 1) = c.nreg oDn) : lblOf c' bN bL = [c.nreg oUp, c.nreg oDn] := by
-  unfold lblOf; rw [h1]; simp [List.range_succ, h2, h3]
+  simp [lblOf, h1, List.range_succ, h2, h3]
 
 theorem lblOf_congr {c c' : Config} (h : ∀ q, LblR bN bL q → c'.nreg q = c.nreg q) :
     lblOf c' bN bL = lblOf c bN bL := by
@@ -107,18 +113,18 @@ theorem lblOf_congr {c c' : Config} (h : ∀ q, LblR bN bL q → c'.nreg q = c.n
   apply List.map_congr_left
   intro i hi
   rw [List.mem_range] at hi
-  exact h _ (Or.inr ⟨by omega, by omega⟩)
+  exact h _ (Or.inr (by omega))
 
 theorem bestR_reg {q : ℕ} (h : BestR q ∨ (cO ≤ q ∧ q ≤ cO2 + 1)) : sw 2280 ≤ q ∧ q ≤ sw 2417 := by
   unfold BestR LblR bF bE bH bN bL cO cO2 sw at h
-  unfold sw; omega
+  register_guard
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 100000 in
 /-- **The offer of a candidate.** -/
 theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
     (hctx : ChainCtx P W c (sw 2) J.whole) (hgw : c.nreg cGW = gW J)
-    (hgn : gW J < (chainModel J.whole).W.n)
+    (hgn : gW J < J.wholeModel.W.n)
     (hc : PosW P J (c.nreg cME) (c.nreg (eA + 2))) (hk : PosW P J (c.nreg kE) (c.nreg kH))
     (hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH)) (hbF : c.nreg bF ≤ 1)
     (hbN : c.nreg bN ≤ 4) (hroom : c.nreg ALLOC + 22200 ≤ W) :
@@ -133,11 +139,11 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
   -- 1. candidate against the key
   refine IRS.seq (K₁ := 11008) (K₂ := 11192) (callOff_irs (dsc := sw 2) (ex := cME) (hx := eA + 2)
     (ey := kE) (hy := kH) (g := cGW) (o := cO) hI hctx
-    ⟨by norm_num [sw], by norm_num [sw], by unfold cME sw; norm_num, by unfold cME sw; norm_num,
-      by unfold eA sw; norm_num, by unfold eA sw; norm_num, by unfold kE sw; norm_num,
-      by unfold kE sw; norm_num, by unfold kH sw; norm_num, by unfold kH sw; norm_num,
-      by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-    ⟨by unfold cO sw; norm_num, by unfold cO sw; norm_num⟩ hc.1 hk.1 (by rw [hgw]; exact hgn)
+    ⟨by norm_num [sw], by norm_num [sw], by register_guard, by register_guard,
+      by register_guard, by register_guard, by register_guard,
+      by register_guard, by register_guard, by register_guard,
+      by register_guard, by register_guard⟩
+    ⟨by register_guard, by register_guard⟩ hc.1 hk.1 (by rwa [hgw])
     hc.2.1 hk.2.1 hc.2.2 hk.2.2 (by omega)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨b1, b2, k₁, ha₁, hm₁⟩
   rw [hgw'] at b1 b2
@@ -145,16 +151,15 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
   change BitIs c₁ (cO + 1) (ok < oc) at b2
   have kk₁ : ∀ r, ¬ (cO ≤ r ∧ r ≤ cO2 + 1) → bandOf r ∉ oracleBands → r ≠ ALLOC →
       c₁.nreg r = c.nreg r := fun r h1 h2 h3 => k₁ r h2 (fun h => h1 ⟨by omega, by
-        unfold cO cO2 sw at *; omega⟩) (fun h => h1 ⟨by omega, by unfold cO cO2 sw at *; omega⟩) h3
-  have ksw₁ : ∀ r, 240000 ≤ r → r < 250000 → ¬ (cO ≤ r ∧ r ≤ cO2 + 1) → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => kk₁ r h3 (not_oracle_sw h1 h2) (by unfold ALLOC; omega)
-  have k01 : c₁.nreg K0 = 0 := (hK₀.fix hI₁).1
+        ram_finish⟩) (fun h => h1 ⟨by omega, by ram_finish⟩) h3
+  have ksw₁ := fun r h1 h2 h3 => kk₁ r h3 (not_oracle_sw h1 h2) (by register_guard)
+  have k01 := (hK₀.fix hI₁).1
   have fr1 : EFr (fun q => BestR q ∨ (cO ≤ q ∧ q ≤ cO2 + 1)) c c₁ :=
     ⟨fun r hr hX hra => kk₁ r (fun h => hX (Or.inr h)) hr hra, ha₁, hm₁⟩
   have same1 : ∀ r, BestR r → c₁.nreg r = c.nreg r := fun r hr => ksw₁ r
     (by have := bestR_reg (Or.inl hr); unfold sw at this; omega)
     (by have := bestR_reg (Or.inl hr); unfold sw at this; omega)
-    (by unfold BestR LblR bF bE bH bN bL cO cO2 sw at *; omega)
+    (by register_guard)
   have bs1 : BestSame c c₁ := ⟨same1 _ (Or.inl rfl), same1 _ (Or.inr (Or.inl rfl)),
     same1 _ (Or.inr (Or.inr (Or.inl rfl))), lblOf_congr (fun q hq => same1 q (Or.inr (Or.inr (Or.inr hq)))),
     same1 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))⟩
@@ -165,26 +170,26 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       IRS P W c₀ (block takeL) c₂ 6 (OfferOut P J c) := by
     intro c₂ hI₂ fr2 hr2 hlt0 hcase
     have hok : okB W c₂.nmem takeL c₂.nreg := by
-      simp only [takeL, okB, okI]
+      simp only [takeL, reg_check]
       exact ⟨⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩, iscr_sw' (by norm_num) (by norm_num),
         iscr_sw' (by norm_num) (by norm_num), ⟨iscr_sw' (by norm_num) (by norm_num), by omega⟩,
-        iscr_sw' (by norm_num) (by norm_num), iscr_sw (by unfold bL sw; norm_num)
-          (by unfold bL sw; norm_num), trivial⟩
+        iscr_sw' (by norm_num) (by norm_num), iscr_sw (by register_guard)
+          (by register_guard), trivial⟩
     refine (IRS.block takeL hI₂ hok).mono le_rfl ?_
     rintro c' hc'
     obtain ⟨t1, t2, t3, t4, t5, t6, tO⟩ := takeL_val c₂.nmem c₂.nreg
-    have e1 : c'.nreg bF = 1 := by rw [hc']; exact t1
-    have e2 : c'.nreg bE = c.nreg cME := by rw [hc']; exact t2.trans (hr2 _ (Or.inl rfl))
-    have e3 : c'.nreg bH = c.nreg (eA + 2) := by rw [hc']; exact t3.trans (hr2 _ (Or.inr (Or.inl rfl)))
-    have e4 : c'.nreg bN = 2 := by rw [hc']; exact t4
-    have e5 : c'.nreg bL = c.nreg oUp := by rw [hc']; exact t5.trans (hr2 _ (Or.inr (Or.inr (Or.inl rfl))))
+    have e1 : c'.nreg bF = 1 := by rwa [hc']
+    have e2 : c'.nreg bE = c.nreg cME := by ram_finish
+    have e3 : c'.nreg bH = c.nreg (eA + 2) := by ram_finish
+    have e4 : c'.nreg bN = 2 := by rwa [hc']
+    have e5 : c'.nreg bL = c.nreg oUp := by ram_finish [hc']
     have e6 : c'.nreg (bL + 1) = c.nreg oDn := by
-      rw [hc']; exact t6.trans (hr2 _ (Or.inr (Or.inr (Or.inr rfl))))
+      ram_finish [hc']
     have hlb := lblOf_take e4 e5 e6
     refine ⟨by omega, by omega, fun h => absurd hlt0 h, fun _ _ => ⟨e1, e2, e3, hlb, e4⟩,
       fun h hb1 heq => ?_, fun h hb1 hlt => ?_, fr2.trans ⟨fun r hr hX hra => by
         rw [hc']; exact tO r (fun h => hX (Or.inl h)),
-        by rw [hc']; exact (tO ALLOC (by unfold BestR LblR bF bE bH bN bL ALLOC sw; omega)).ge,
+        by ram_post,
         fun a _ => by rw [hc']⟩⟩
     · rcases hcase with h' | h'
       · exact absurd hb1 h'
@@ -194,114 +199,112 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       · exact absurd hlt (not_lt.2 h'.le)
   have keepc₁ : ∀ r, r = cME ∨ r = eA + 2 ∨ r = oUp ∨ r = oDn → c₁.nreg r = c.nreg r := by
     rintro r (rfl | rfl | rfl | rfl)
-    · exact ksw₁ _ (by unfold cME sw; norm_num) (by unfold cME sw; norm_num) (by unfold cME cO cO2 sw; omega)
-    · exact ksw₁ _ (by unfold eA sw; norm_num) (by unfold eA sw; norm_num) (by unfold eA cO cO2 sw; omega)
-    · exact ksw₁ _ (by unfold oUp sw; norm_num) (by unfold oUp sw; norm_num) (by unfold oUp cO cO2 sw; omega)
-    · exact ksw₁ _ (by unfold oDn sw; norm_num) (by unfold oDn sw; norm_num) (by unfold oDn cO cO2 sw; omega)
+    · ram_finish [cME, sw, cO, cO2]
+    · ram_finish [eA, sw, cO, cO2]
+    · ram_finish [oUp, sw, cO, cO2]
+    ram_finish [oDn, sw, cO, cO2]
   by_cases h2 : c₁.nreg K0 < c₁.nreg (cO + 1)
   · rw [k01] at h2
-    have hlt : ok < oc := b2.2.1 (by have := b2.1; omega)
-    refine IRS.mono (K := 11190 + 2) (IRS.ifT (by rw [k01]; exact h2) ?_) (by norm_num) (fun _ h => h)
-    have bF1 : c₁.nreg bF = c.nreg bF := bs1.1
+    have hlt := b2.2.1 (by have := b2.1; omega)
+    refine IRS.mono (K := 11190 + 2) (IRS.ifT (by rwa [k01]) ?_) (by norm_num) (fun _ h => h)
+    have bF1 := bs1.1
     by_cases h3 : c₁.nreg K0 < c₁.nreg bF
     · rw [k01, bF1] at h3
       have hbF1 : c.nreg bF = 1 := by omega
-      refine IRS.mono (K := 11188 + 2) (IRS.ifT (by rw [k01, bF1]; exact h3) ?_) le_rfl (fun _ h => h)
+      refine IRS.mono (K := 11188 + 2) (IRS.ifT (by rwa [k01, bF1]) ?_) le_rfl (fun _ h => h)
       have hbP := hb hbF1
-      have eBE : c₁.nreg bE = c.nreg bE := bs1.2.1
-      have eBH : c₁.nreg bH = c.nreg bH := bs1.2.2.1
-      have hctx₁ : ChainCtx P W c₁ (sw 2) J.whole := hctx.transport
-        (ksw₁ _ (by norm_num [sw]) (by norm_num [sw]) (by unfold cO sw; omega)) hm₁ ha₁
-      have egw : c₁.nreg cGW = gW J := (ksw₁ _ (by unfold cGW sw; norm_num)
-        (by unfold cGW sw; norm_num) (by unfold cGW cO cO2 sw; omega)).trans hgw
+      have eBE := bs1.2.1
+      have eBH := bs1.2.2.1
+      have hctx₁ := hctx.transport
+        (ksw₁ _ (by norm_num [sw]) (by norm_num [sw]) (by register_guard)) hm₁ ha₁
+      have egw : c₁.nreg cGW = gW J := (ksw₁ _ (by register_guard)
+        (by register_guard) (by reg_omega)).trans hgw
       have eME := keepc₁ _ (Or.inl rfl)
       have eE2 := keepc₁ _ (Or.inr (Or.inl rfl))
       refine IRS.seq (K₁ := 11008) (K₂ := 180) (callOff_irs (dsc := sw 2) (ex := cME) (hx := eA + 2)
         (ey := bE) (hy := bH) (g := cGW) (o := cO2) hI₁ hctx₁
-        ⟨by norm_num [sw], by norm_num [sw], by unfold cME sw; norm_num, by unfold cME sw; norm_num,
-          by unfold eA sw; norm_num, by unfold eA sw; norm_num, by unfold bE sw; norm_num,
-          by unfold bE sw; norm_num, by unfold bH sw; norm_num, by unfold bH sw; norm_num,
-          by unfold cGW sw; norm_num, by unfold cGW sw; norm_num⟩
-        ⟨by unfold cO2 sw; norm_num, by unfold cO2 sw; norm_num⟩ (by rw [eME]; exact hc.1)
-        (by rw [eBE]; exact hbP.1) (by rw [egw]; exact hgn) (by rw [eME, eE2]; exact hc.2.1)
+        ⟨by norm_num [sw], by norm_num [sw], by register_guard, by register_guard,
+          by register_guard, by register_guard, by register_guard,
+          by register_guard, by register_guard, by register_guard,
+          by register_guard, by register_guard⟩
+        ⟨by register_guard, by register_guard⟩ (by rw [eME]; exact hc.1)
+        (by rw [eBE]; exact hbP.1) (by rwa [egw]) (by rw [eME, eE2]; exact hc.2.1)
         (by rw [eBE, eBH]; exact hbP.2.1) (by rw [eME, eE2]; exact hc.2.2)
         (by rw [eBE, eBH]; exact hbP.2.2) (by omega)) ?_
       rintro c₂ hI₂ hA₂ hA₂' ⟨d1, d2, k₂, ha₂, hm₂⟩
       rw [egw, eME, eE2, eBE, eBH] at d1 d2
       change BitIs c₂ cO2 (oc < ob) at d1
       change BitIs c₂ (cO2 + 1) (ob < oc) at d2
-      have kk₂ : ∀ r, 240000 ≤ r → r < 250000 → r ≠ cO2 → r ≠ cO2 + 1 → c₂.nreg r = c₁.nreg r :=
-        fun r h1 h2 h3 h4 => k₂ r (not_oracle_sw h1 h2) h3 h4 (by unfold ALLOC; omega)
+      have kk₂ := fun r h1 h2 h3 h4 => k₂ r (not_oracle_sw h1 h2) h3 h4 (by register_guard)
       have fr2 : EFr (fun q => BestR q ∨ (cO ≤ q ∧ q ≤ cO2 + 1)) c c₂ := fr1.trans
-        ⟨fun r hr hX hra => k₂ r hr (fun h => hX (Or.inr ⟨by rw [h]; unfold cO cO2 sw; omega,
-          by rw [h]; omega⟩)) (fun h => hX (Or.inr ⟨by rw [h]; unfold cO cO2 sw; omega, by rw [h]⟩))
+        ⟨fun r hr hX hra => k₂ r hr (fun h => hX (Or.inr ⟨by simp [h, cO, cO2, sw],
+          by rw [h]; omega⟩)) (fun h => hX (Or.inr ⟨by simp [h, cO, cO2, sw], by rw [h]⟩))
           hra, ha₂, hm₂⟩
       have keepc₂ : ∀ r, r = cME ∨ r = eA + 2 ∨ r = oUp ∨ r = oDn → c₂.nreg r = c.nreg r := by
         intro r hr
         rw [← keepc₁ r hr]
         rcases hr with rfl | rfl | rfl | rfl
-        · exact kk₂ _ (by unfold cME sw; norm_num) (by unfold cME sw; norm_num) (by unfold cME cO2 sw; omega)
-            (by unfold cME cO2 sw; omega)
-        · exact kk₂ _ (by unfold eA sw; norm_num) (by unfold eA sw; norm_num) (by unfold eA cO2 sw; omega)
-            (by unfold eA cO2 sw; omega)
-        · exact kk₂ _ (by unfold oUp sw; norm_num) (by unfold oUp sw; norm_num) (by unfold oUp cO2 sw; omega)
-            (by unfold oUp cO2 sw; omega)
-        · exact kk₂ _ (by unfold oDn sw; norm_num) (by unfold oDn sw; norm_num) (by unfold oDn cO2 sw; omega)
-            (by unfold oDn cO2 sw; omega)
+        · exact kk₂ _ (by register_guard) (by register_guard) (by reg_omega)
+            (by reg_omega)
+        · ram_post
+        · exact kk₂ _ (by register_guard) (by register_guard) (by reg_omega)
+            (by reg_omega)
+        · exact kk₂ _ (by register_guard) (by register_guard) (by reg_omega)
+            (by reg_omega)
       have same2 : ∀ r, BestR r → c₂.nreg r = c.nreg r := fun r hr => by
         rw [← same1 r hr]
         have := bestR_reg (Or.inl hr)
-        exact kk₂ r (by unfold sw at this; omega) (by unfold sw at this; omega)
-          (by unfold BestR LblR bF bE bH bN bL cO2 sw at *; omega)
-          (by unfold BestR LblR bF bE bH bN bL cO2 sw at *; omega)
+        exact kk₂ r (by register_guard) (by register_guard)
+          (by register_guard)
+          (by register_guard)
       have bs2 : BestSame c c₂ := ⟨same2 _ (Or.inl rfl), same2 _ (Or.inr (Or.inl rfl)),
         same2 _ (Or.inr (Or.inr (Or.inl rfl))),
         lblOf_congr (fun q hq => same2 q (Or.inr (Or.inr (Or.inr hq)))),
         same2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))⟩
-      have k02 : c₂.nreg K0 = 0 := (hK₀.fix hI₂).1
+      have k02 := (hK₀.fix hI₂).1
       by_cases h4 : c₂.nreg K0 < c₂.nreg cO2
       · rw [k02] at h4
-        have hlt2 : oc < ob := d1.2.1 (by have := d1.1; omega)
-        exact (IRS.ifT (by rw [k02]; exact h4) (takeIRS c₂ hI₂ fr2 keepc₂ hlt (Or.inr hlt2))).mono
+        have hlt2 := d1.2.1 (by have := d1.1; omega)
+        exact (IRS.ifT (by rwa [k02]) (takeIRS c₂ hI₂ fr2 keepc₂ hlt (Or.inr hlt2))).mono
           (by norm_num) (fun _ h => h)
       · rw [k02] at h4
         have hnlt2 : ¬ oc < ob := fun h => by have := d1.2.2 h; omega
-        refine IRS.mono (K := 176 + 2) (IRS.ifF (by rw [k02]; exact h4) ?_) (by norm_num) (fun _ h => h)
+        refine IRS.mono (K := 176 + 2) (IRS.ifF (by rwa [k02]) ?_) (by norm_num) (fun _ h => h)
         by_cases h5 : c₂.nreg K0 < c₂.nreg (cO2 + 1)
         · rw [k02] at h5
-          have hlt3 : ob < oc := d2.2.1 (by have := d2.1; omega)
-          refine IRS.mono (K := 0 + 2) (IRS.ifT (by rw [k02]; exact h5) (IRS.skip hI₂ rfl)) (by norm_num) ?_
+          have hlt3 := d2.2.1 (by have := d2.1; omega)
+          refine IRS.mono (K := 0 + 2) (IRS.ifT (by rwa [k02]) (IRS.skip hI₂ rfl)) (by norm_num) ?_
           rintro c' rfl
-          exact ⟨by rw [bs2.1]; exact hbF, by rw [bs2.2.2.2.2]; exact hbN, fun h => absurd hlt h,
+          exact ⟨by rwa [bs2.1], by rwa [bs2.2.2.2.2], fun h => absurd hlt h,
             fun _ h => by rcases h with h | h; exact absurd hbF1 h; exact absurd hlt3 (not_lt.2 h.le),
             fun _ _ heq => absurd heq (ne_of_gt hlt3), fun _ _ _ => bs2, fr2⟩
         · rw [k02] at h5
           have heq : oc = ob := by
             have : ¬ ob < oc := fun h => by have := d2.2.2 h; omega
             linarith [not_lt.1 this, not_lt.1 hnlt2]
-          refine IRS.mono (K := 60 + 2) (IRS.ifF (by rw [k02]; exact h5) ?_) (by norm_num) (fun _ h => h)
+          refine IRS.mono (K := 60 + 2) (IRS.ifF (by rwa [k02]) ?_) (by norm_num) (fun _ h => h)
           have hsN : IScr bN := iscr_sw' (by norm_num) (by norm_num)
           have hsL : ∀ i, i < 4 → IScr (bL + i) := fun i hi =>
-            iscr_sw (by unfold bL sw; omega) (by unfold bL sw; omega)
-          have hNL : ∀ i, i < 4 → bN ≠ bL + i := fun i hi => by unfold bN bL sw; omega
+            iscr_sw (by register_guard) (by register_guard)
+          have hNL : ∀ i, i < 4 → bN ≠ bL + i := fun i hi => by register_guard
           have hKN : ∀ k, k = K1 ∨ k = K2 ∨ k = K3 ∨ k = K4 → ¬ LblR bN bL k := by
-            rintro k (rfl | rfl | rfl | rfl) <;> simp only [LblR, bN, bL, K1, K2, K3, K4, sw] <;> omega
-          have hN2 : c₂.nreg bN ≤ 4 := by rw [bs2.2.2.2.2]; exact hbN
+            simp [LblR, bN, bL, K1, K2, K3, K4, sw]
+          have hN2 : c₂.nreg bN ≤ 4 := by rwa [bs2.2.2.2.2]
           refine IRS.seq (K₁ := 30) (K₂ := 30) (addLab_irs (r := oUp) hI₂ (hK₀.fix hI₂) hsN hsL hNL
-            (by unfold oUp bN sw; omega) (fun i hi => by unfold oUp bL sw; omega) hKN hN2 hW4) ?_
+            (by register_guard) (fun i hi => by register_guard) hKN hN2 hW4) ?_
           rintro c₃ hI₃ hA₃ hA₃' ⟨g1, g2, g3, g4⟩
           refine (addLab_irs (r := oDn) hI₃ (hK₀.fix hI₃) hsN hsL hNL
-            (by unfold oDn bN sw; omega) (fun i hi => by unfold oDn bL sw; omega) hKN g1 hW4).mono
+            (by register_guard) (fun i hi => by register_guard) hKN g1 hW4).mono
             le_rfl ?_
           rintro c' ⟨f1, f2, f3, f4⟩
-          have nLF : ¬ LblR bN bL bF := by unfold LblR bN bL bF sw; omega
-          have nLE : ¬ LblR bN bL bE := by unfold LblR bN bL bE sw; omega
-          have nLH : ¬ LblR bN bL bH := by unfold LblR bN bL bH sw; omega
-          have eUp : c₂.nreg oUp = c.nreg oUp := keepc₂ _ (Or.inr (Or.inr (Or.inl rfl)))
+          have nLF : ¬ LblR bN bL bF := by register_guard
+          have nLE : ¬ LblR bN bL bE := by register_guard
+          have nLH : ¬ LblR bN bL bH := by register_guard
+          have eUp := keepc₂ _ (Or.inr (Or.inr (Or.inl rfl)))
           have eDn : c₃.nreg oDn = c.nreg oDn := by
-            rw [g3 _ (by unfold LblR bN bL oDn sw; omega)]; exact keepc₂ _ (Or.inr (Or.inr (Or.inr rfl)))
+            ram_rw [g3]; exact keepc₂ _ (Or.inr (Or.inr (Or.inr rfl)))
           have e1 : c'.nreg bF = c.nreg bF := by rw [f3 _ nLF, g3 _ nLF]; exact bs2.1
-          refine ⟨by rw [e1]; exact hbF, f1, fun h => absurd hlt h,
+          refine ⟨by rwa [e1], f1, fun h => absurd hlt h,
             fun _ h => by rcases h with h | h; exact absurd hbF1 h; exact absurd h hnlt2,
             fun _ _ _ => ⟨by rw [e1, hbF1], by rw [f3 _ nLE, g3 _ nLE]; exact bs2.2.1,
               by rw [f3 _ nLH, g3 _ nLH]; exact bs2.2.2.1, by rw [f2, g2, eDn, eUp, bs2.2.2.2.1]⟩,
@@ -309,16 +312,16 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
               ⟨fun r hr hX hra => g3 r (fun h => hX (Or.inl (Or.inr (Or.inr (Or.inr h))))), hA₃, ?_⟩
               ⟨fun r hr hX hra => f3 r (fun h => hX (Or.inl (Or.inr (Or.inr (Or.inr h))))), ?_, ?_⟩)⟩
           · intro a _; rw [g4]
-          · exact (f3 ALLOC (by unfold LblR bN bL ALLOC sw; omega)).ge
+          · exact (f3 ALLOC (by register_guard)).ge
           · intro a _; rw [f4]
     · rw [k01, bF1] at h3
-      refine IRS.mono (K := 6 + 2) (IRS.ifF (by rw [k01, bF1]; exact h3)
-        (takeIRS c₁ hI₁ fr1 keepc₁ hlt (Or.inl (by omega)))) (by norm_num) (fun _ h => h)
+      refine IRS.mono (K := 6 + 2) (IRS.ifF (by rwa [k01, bF1])
+        (takeIRS c₁ hI₁ fr1 keepc₁ hlt ((by omega)))) (by norm_num) (fun _ h => h)
   · rw [k01] at h2
     have hnlt : ¬ ok < oc := fun h => by have := b2.2.2 h; omega
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact h2) (IRS.skip hI₁ rfl)) (by norm_num) ?_
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) (by norm_num) ?_
     rintro c' rfl
-    exact ⟨by rw [bs1.1]; exact hbF, by rw [bs1.2.2.2.2]; exact hbN, fun _ => bs1,
+    exact ⟨by rwa [bs1.1], by rwa [bs1.2.2.2.2], fun _ => bs1,
       fun h => absurd h hnlt, fun h => absurd h hnlt, fun h => absurd h hnlt, fr1⟩
 
 end

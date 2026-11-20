@@ -44,34 +44,40 @@ theorem rec_ends {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
     unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
     exact List.getElem_mem _
-  obtain ⟨y, a, b, hH, -, heq, -, -⟩ := Merge.augChords_spec (show _ ∈ Merge.augChords C from hN.1.2.1 hmem)
+  obtain ⟨y, a, b, hH, -, heq, -, -⟩ := Merge.augChords_spec ((hN.1.2.1 hmem))
   obtain ⟨h1, h2, h3⟩ := rec_pos_ends (hN.2.2.1 k hk) heq hH.lt
   exact ⟨y, a, b, hH.lt, heq, h1, h2, h3⟩
 
-theorem endOrigin_eq (J : Merge.Junction) {Q : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) Q N) {j : ℕ} (hj : j < 2 * N.nChords) :
-    endOrigin J Q N j = (chainModel J.right).pos Q (endPos N (j / 2) (j % 2)) ∧
+section
+
+variable (J : Merge.Junction) {Q : Polygon} {N : NF}
+    (hN : IsNF J.rightModel Q N) {j : ℕ} (hj : j < 2 * N.nChords)
+include hN hj
+
+theorem endOrigin_eq :
+    endOrigin J Q N j = J.rightModel.pos Q (endPos N (j / 2) (j % 2)) ∧
       (endDir j = 1 ↔ j % 2 = 0) := by
   obtain ⟨y, a, b, hab, heq, hl, hr, -⟩ := rec_ends hN (show j / 2 < N.nChords by omega)
   unfold endOrigin endDir endPos
   rw [heq]
   by_cases h : j % 2 = 0
-  · rw [ite_eq_left h, ite_eq_left h, ite_eq_left h, Merge.lend_hseg hab.le, hl]; exact ⟨rfl, by simp [h]⟩
+  · simp [Merge.lend_hseg hab.le, hl, h]
   · rw [ite_eq_right h, ite_eq_right h, ite_eq_right h, Merge.rend_hseg hab.le, hr]
     exact ⟨rfl, by simp only [h, iff_false]; norm_num⟩
 
 /-- The far end of an end is the other end of the chord. -/
-theorem farOrigin_eq (J : Merge.Junction) {Q : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) Q N) {j : ℕ} (hj : j < 2 * N.nChords) :
-    (if j % 2 = 0 then Merge.rend ((N.chord (j / 2)).toSet (chainModel J.right) Q)
-      else Merge.lend ((N.chord (j / 2)).toSet (chainModel J.right) Q)) =
-      (chainModel J.right).pos Q (farEnd N (j / 2) (j % 2)) := by
+theorem farOrigin_eq :
+    (if j % 2 = 0 then Merge.rend ((N.chord (j / 2)).toSet J.rightModel Q)
+      else Merge.lend ((N.chord (j / 2)).toSet J.rightModel Q)) =
+      J.rightModel.pos Q (farEnd N (j / 2) (j % 2)) := by
   obtain ⟨y, a, b, hab, heq, hl, hr, -⟩ := rec_ends hN (show j / 2 < N.nChords by omega)
   unfold farEnd
   rw [heq]
   by_cases h : j % 2 = 0
-  · rw [ite_eq_left h, ite_eq_left h, Merge.rend_hseg hab.le, hr]
-  · rw [ite_eq_right h, ite_eq_right h, Merge.lend_hseg hab.le, hl]
+  · simp [ite_eq_left h, Merge.rend_hseg hab.le, hr]
+  simp [ite_eq_right h, Merge.lend_hseg hab.le, hl]
+
+end
 
 end Ends
 
@@ -86,7 +92,7 @@ theorem pos_mem_set_iff (_hP : C.P.Simple) {Q : Polygon} {x : WPos}
     (h1 : (chainModel C).param Q x < 1) (hnorm : x.hgt = 0 ↔ (chainModel C).param Q x = 0) :
     (chainModel C).pos Q x ∈ C.set ↔
       (6 ≤ x.edge ∧ x.edge ≤ 2 * C.m + 5) ∨ (x.edge = 2 * C.m + 6 ∧ x.hgt = 0) := by
-  have hn := cm_n C
+  
   show sidePt (chainModel C).W x.edge ((chainModel C).param Q x) ∈ C.set ↔ _
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   rw [hW] at hx ⊢
@@ -96,11 +102,11 @@ theorem pos_mem_set_iff (_hP : C.P.Simple) {Q : Polygon} {x : WPos}
     · exact absurd hm (C.sideWalk_box_pt C.sideBeta hb h0 h1).1
     · rcases hi.lt_or_eq with hi | hi
       · left; omega
-      · right; exact ⟨by omega, hnorm.2 (hit hi)⟩
+      · simp_all 
   · rintro (⟨h6, h5⟩ | ⟨he, h0'⟩)
     · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := (chainModel C).param Q x)
         (by omega) (fun h => absurd h (by omega)) h0 h1
-      rwa [show x.edge - 6 + 6 = x.edge by omega] at this
+      simp_all 
     · have := C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := (chainModel C).param Q x)
         le_rfl (fun _ => hnorm.1 h0') h0 h1
       rwa [← he] at this

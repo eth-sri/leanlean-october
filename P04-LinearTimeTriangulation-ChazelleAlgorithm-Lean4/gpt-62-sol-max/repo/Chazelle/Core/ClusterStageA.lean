@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.ClusterSetupRam
 public import Chazelle.Core.ClusterFirst
 
@@ -26,7 +28,7 @@ def fillWith (rb rn rv : ℕ) : Stmt :=
   .seq (block [.copyN 130150 rb, .copyN 130151 rn, .copyN 130152 rv]) fillStmt
 
 /-- The registers of `fillWith`. -/
-def FillRG (r : ℕ) : Prop := 130150 ≤ r ∧ r ≤ 130154
+@[ram_layout] def FillRG (r : ℕ) : Prop := 130150 ≤ r ∧ r ≤ 130154
 
 section proofs
 
@@ -80,7 +82,7 @@ theorem primalEnv_enc {m : ℕ → ℕ} {bO bR bV bF bDB bVB : ℕ}
   · obtain ⟨h1, h2⟩ := hF v v.2
     refine ⟨⟨m (bF + v), h1⟩, by show view m bF μ v = _; rw [view_lt v.2], ?_⟩
     apply Fin.ext
-    rw [← h.vert h1]; exact h2
+    rwa [← h.vert h1]
 
 end enc
 
@@ -146,17 +148,16 @@ theorem firstP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     · simp only [Machine.upd_apply]; unfold StARG at hr; split_ifs <;> omega
   obtain ⟨c', k, e, hk, hf', hI⟩ := firstStmt_exec (P := P) hw1 hone1 (bV := g.bV)
     (bF := g.base 0) (N := g.N) r1 r2 r3
-    (nv := g.μ) (fun d hd => by rw [hf1.2.2.2.2 _ (by omega)]; exact hvlt d hd)
+    (nv := g.μ) (fun d hd => by ram_rw [hf1.2.2.2.2]; exact hvlt d hd)
     (fun u hu => by
       obtain ⟨d, hd, hdu⟩ := hsurj u hu
-      exact ⟨d, hd, by rw [hf1.2.2.2.2 _ (by omega)]; exact hdu⟩)
+      exact ⟨d, hd, by ram_simp [hf1.2.2.2.2] <;> omega⟩)
     (by right; omega) (by omega) (by omega) (by omega)
   refine ⟨c', k1 + k, .seq e1 e, by omega, e.wb_right,
     hf1.trans (hf'.mono (fun r h => by unfold FirstRG at h; unfold StARG; omega) (fun a h => h)),
     fun u hu => ⟨(hI u hu).1, ?_⟩⟩
   have := (hI u hu).2
-  rw [hf1.2.2.2.2 _ (by have := (hI u hu).1; omega)] at this
-  exact this
+  rwa [hf1.2.2.2.2 _ (by have := (hI u hu).1; omega)] at this
 
 /-- The layout of the primal search. -/
 def primalLay (g : GV) : Lay := ⟨g.bO, g.bR, g.bV, g.base 0, g.base 1, g.base 1, g.base 2,
@@ -213,7 +214,7 @@ theorem bfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     case fr =>
       simp only
       unfold StARG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat (ram_rw [Machine.upd_other _ _])
     all_goals try (config_simp <;>
                    first
                    | exact hG.one
@@ -237,7 +238,7 @@ theorem bfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hpre : (Y.env c1.nmem).Pre 0 0 (labV Y c1.nmem) := by
     refine ⟨hok, hμ, ?_, hμ, fun w hw' _ => ?_⟩
     · show view c1.nmem (g.base 1) g.μ 0 ≠ 1
-      rw [view_lt hμ, hm1, hzero 0 (by omega)]; omega
+      ram_rw [view_lt hμ, hm1, hzero 0]; omega
     · show view c1.nmem (g.base 2) g.μ w = g.μ
       rw [view_lt (show w < g.μ from hw'), hm1]; exact hlab w hw'
   obtain ⟨c', k, e, hk, ⟨hw', hfr', hI⟩, hht⟩ := bfs_exec (P := P) hYg hR1 hpre hw1
@@ -251,7 +252,7 @@ theorem bfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hvb : ∀ v, v < g.μ → (Y.env c1.nmem).vb v ≠ 1 := by
     intro v hv
     show view c1.nmem (g.base 1) g.μ v ≠ 1
-    rw [view_lt hv, hm1, hzero v (by omega)]; omega
+    ram_rw [view_lt hv, hm1, hzero v]; omega
   obtain ⟨T, hroot, hlev, hpar, hhead, hlt⟩ := primal_tree hM hμ rfl hGenc hdb hvb hI
   -- the cost
   have hsum := hI.sum_deg_le hok (le_refl _)
@@ -303,13 +304,13 @@ theorem parP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
                    | exact hG.rbase 6 (by omega))
     simp only
     unfold StARG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat ram_simp []
   obtain ⟨c', k, e, hk, hw', hf', h0, hx⟩ := parStmt_exec (P := P) hw1 hone1 hzero1 r0 r1 r2 r3
     hμ (by omega) (by omega) (by omega) (fun x h1 h2 => by
       rw [hm1]; have := hpar x h1 h2; omega)
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw',
     hf1.trans (hf'.mono (fun r h => by unfold ParRG at h; unfold StARG; omega) (fun a h => h)),
-    by rw [show g.base 6 = g.base 6 + 0 by omega] at h0 ⊢; simpa using h0,
+    by assumption,
     fun x h1 h2 => by rw [hx x h1 h2, hm1]⟩
 
 theorem upP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hμ : 0 < g.μ)
@@ -338,10 +339,10 @@ theorem upP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h�
                    | exact hG.rL
                    | exact hG.rμ
                    | exact hG.rbase 6 (by omega)
-                   | (rw [hG.rbase 54 (by omega)]; rfl))
+                   | (ram_rw [hG.rbase 54]; rfl))
     simp only
     unfold StARG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat ram_simp []
   obtain ⟨c', k, e, hk, hw', hf', htab⟩ := upStmt_exec (P := P) hw1 hone1 r0 r1 r2 r3 hL
     (fun x hx => by rw [hm1]; exact hpv x hx) (by omega) (by omega) (by omega) (by omega) hμ
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw',
@@ -354,13 +355,11 @@ theorem iterate_congr_lt {f f' : ℕ → ℕ} {n : ℕ} (h : ∀ x, x < n → f 
   induction k with
   | zero => intro x hx; exact ⟨rfl, hx⟩
   | succ k ih =>
-    intro x hx
-    rw [Function.iterate_succ_apply, Function.iterate_succ_apply, h x hx]
-    exact ih _ (hf x hx)
+    simp_all
 
 theorem upTf_lt {μ N : ℕ} {F : Type} {M : CombMap (Fin μ) F (Fin N)} (T : SpanTree M) {x : ℕ}
     (hx : x < μ) : upTf T x < μ := by
-  unfold upTf; rw [dite_eq_left hx]; exact Fin.isLt _
+  unfold upTf; simp_all
 
 /-- **The facts of stage A.** -/
 structure AF (g : GV) {F : Type} (M : CombMap (Fin g.μ) F (Fin g.N)) (T : SpanTree M)
@@ -393,7 +392,7 @@ theorem AF.congr {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : S
   have hLμ : ∀ j, j < g.L → j * g.μ + g.μ ≤ g.L * g.U := by
     intro j hj
     have : (j + 1) * g.μ ≤ g.L * g.U := Nat.mul_le_mul (by omega) (by omega)
-    rw [Nat.succ_mul] at this; exact this
+    rwa [Nat.succ_mul] at this
   refine ⟨fun d => ?_, fun d hd => ?_, fun u hu => ?_, fun u hu => ?_, h.root, fun v => ?_,
     h.lev_lt, fun v hv => ?_, fun v hv => ?_, fun v => ?_, fun j hj x hx => ?_, h.head_le⟩
   · have hd := d.2
@@ -428,7 +427,7 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       WordsBounded W c' ∧ GR g c' ∧ PFr StARG (WrA g) c c' ∧ ∃ T, AF g M T c'.nmem := by
   have hU := g.U_ge
   have hE := g.END_eq
-  have hLU := g.L_le_U
+  
   have hLμ : g.L * g.μ ≤ g.L * g.U := Nat.mul_le_mul_left _ (by omega)
   have b0 := g.base_eq 0; have b1 := g.base_eq 1; have b2 := g.base_eq 2; have b3 := g.base_eq 3
   have b4 := g.base_eq 4; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
@@ -450,34 +449,34 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hf2' : PFr StARG (WrA g) c1 c2 := hmono (hf2.mono (fun r h => by
     unfold FillRG at h; unfold StARG; omega) (fun a h => h)) (fun a h => by unfold WrA; omega)
   have hG2 := hGR (hf1'.trans hf2')
-  have m2 : ∀ a, a < g.A0 → c2.nmem a = c.nmem a := fun a ha =>
+  have m2 : MemEqBelow g.A0 c2.nmem c.nmem := fun a ha =>
     (hf1'.trans hf2').2.2.2.2 a (by unfold WrA; omega)
   have hmap2 : MapArrays c2.nmem g.bO g.bR g.bV g.μ g.N M := fun d => by
     have := d.2
-    rw [m2 _ (by omega), m2 (g.bR + d) (by omega), m2 (g.bV + d) (by omega)]; exact hmap d
+    ram_rw [m2, m2 (g.bR + d), m2 (g.bV + d)]; exact hmap d
   -- the first darts
   obtain ⟨c3, k3, x3, hk3, hw3, hf3, hF3⟩ := firstP_exec (P := P) hw2 hG2
-    (fun d hd => by rw [hmap2.vert hd]; exact Fin.isLt _)
+    (fun d hd => by simp [hmap2.vert hd])
     (fun u hu => by
       obtain ⟨d, hd⟩ := M.vert_surj ⟨u, hu⟩
       exact ⟨d, d.2, by rw [hmap2.vert d.2, hd]⟩) hV hW
   have hf3' : PFr StARG (WrA g) c2 c3 := hmono hf3 (fun a h => by unfold WrA; omega)
   have hG3 := hGR ((hf1'.trans hf2').trans hf3')
-  have m3 : ∀ a, a < g.A0 → c3.nmem a = c.nmem a := fun a ha =>
+  have m3 : MemEqBelow g.A0 c3.nmem c.nmem := fun a ha =>
     ((hf1'.trans hf2').trans hf3').2.2.2.2 a (by unfold WrA; omega)
   have hmap3 : MapArrays c3.nmem g.bO g.bR g.bV g.μ g.N M := fun d => by
     have := d.2
-    rw [m3 _ (by omega), m3 (g.bR + d) (by omega), m3 (g.bV + d) (by omega)]; exact hmap d
+    ram_rw [m3, m3 (g.bR + d), m3 (g.bV + d)]; exact hmap d
   have hF3' : ∀ u, u < g.μ → c3.nmem (g.base 0 + u) < g.N ∧
       c3.nmem (g.bV + c3.nmem (g.base 0 + u)) = u := by
     intro u hu
     obtain ⟨a1, a2⟩ := hF3 u hu
     refine ⟨a1, ?_⟩
-    rw [m3 _ (by omega)]; rw [m2 _ (by omega)] at a2; exact a2
+    ram_rw [m3]; ram_rw [m2] at a2; exact a2
   have hz3 : ∀ d, d < g.N → c3.nmem (g.base 1 + d) = 0 := fun d hd => by
-    rw [hf3.2.2.2.2 _ (by omega), hf2.2.2.2.2 _ (by omega)]; exact hz1 d hd
+    ram_rw [hf3.2.2.2.2, hf2.2.2.2.2]; exact hz1 d hd
   have hl3 : ∀ v, v < g.μ → c3.nmem (g.base 2 + v) = g.μ := fun v hv => by
-    rw [hf3.2.2.2.2 _ (by omega)]; exact hl2 v hv
+    ram_rw [hf3.2.2.2.2]; exact hl2 v hv
   -- the primal search
   obtain ⟨c4, k4, x4, hk4, hw4, hf4, T, hroot, hlev, hlt, hpar, hhead⟩ :=
     bfsP_exec (P := P) hw3 hG3 hmap3 hM hμ hμN hO hR hV hF3' hz3 hl3 hW
@@ -485,7 +484,7 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hG4 := hGR (((hf1'.trans hf2').trans hf3').trans hf4')
   have hrootv : ∀ x (_ : 1 ≤ x) (h2 : x < g.μ), (⟨x, h2⟩ : Fin g.μ) ≠ T.root := by
     intro x h1 h2 h; have := congrArg Fin.val h; rw [hroot] at this; simp at this; omega
-  have m4 : ∀ a, a < g.A0 → c4.nmem a = c.nmem a := fun a ha =>
+  have m4 : MemEqBelow g.A0 c4.nmem c.nmem := fun a ha =>
     (((hf1'.trans hf2').trans hf3').trans hf4').2.2.2.2 a (by unfold WrA; omega)
   -- the parent array
   obtain ⟨c5, k5, x5, hk5, hw5, hf5, hp0, hp5⟩ := parP_exec (P := P) hw4 hG4 hμ hV
@@ -497,43 +496,43 @@ theorem stageA_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     by_cases hv : v = T.root
     · subst hv
       rw [SpanTree.parent_root, hroot]
-      have := hp0; simpa using this
+      assumption
     · have h1 : 1 ≤ (v : ℕ) := by
         by_contra h0
         exact hv (Fin.ext (by rw [hroot]; omega))
       rw [hp5 v h1 v.2, (hpar v hv).2.2]
       have := (hpar v hv).1
-      rw [m4 _ (by omega), m3 _ (by omega)]
+      ram_rw [m4, m3]
   -- the table
   obtain ⟨c6, k6, x6, hk6, hw6, hf6, ht6⟩ := upP_exec (P := P) hw5 hG5 hμ hL
-    (fun x hx => by rw [hpv5 ⟨x, hx⟩]; exact Fin.isLt _) hW
+    (fun x hx => by simp [hpv5 ⟨x, hx⟩]) hW
   have hf6' : PFr StARG (WrA g) c5 c6 := hmono hf6 (fun a h => by unfold WrA; omega)
   have hfall := ((((hf1'.trans hf2').trans hf3').trans hf4').trans hf5').trans hf6'
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + k6)))),
     .seq x1 (.seq x2 (.seq x3 (.seq x4 (.seq x5 x6)))), by omega, hw6, hGR hfall, hfall, T, ?_⟩
-  have m6 : ∀ a, a < g.A0 → c6.nmem a = c.nmem a := fun a ha =>
+  have m6 : MemEqBelow g.A0 c6.nmem c.nmem := fun a ha =>
     hfall.2.2.2.2 a (by unfold WrA; omega)
   refine ⟨fun d => ?_, fun d hd => ?_, fun u hu => ?_, fun u hu => ?_, hroot, fun v => ?_, hlt,
     fun v hv => ?_, fun v hv => ?_, fun v => ?_, fun j hj x hx => ?_, hhead⟩
   · have := d.2
-    rw [m6 _ (by omega), m6 (g.bR + d) (by omega), m6 (g.bV + d) (by omega)]; exact hmap d
-  · rw [hf6.2.2.2.2 _ (by omega), hf5.2.2.2.2 _ (by omega), hf4.2.2.2.2 _ (by omega)]
+    ram_rw [m6, m6 (g.bR + d), m6 (g.bV + d)]; exact hmap d
+  · ram_rw [hf6.2.2.2.2, hf5.2.2.2.2, hf4.2.2.2.2]
     exact hz3 d hd
-  · rw [hf6.2.2.2.2 _ (by omega), hf5.2.2.2.2 _ (by omega), hf4.2.2.2.2 _ (by omega)]
+  · ram_rw [hf6.2.2.2.2, hf5.2.2.2.2, hf4.2.2.2.2]
     exact (hF3' u hu).1
   · have := (hF3' u hu).1
-    rw [hf6.2.2.2.2 (g.base 0 + u) (by omega), hf5.2.2.2.2 (g.base 0 + u) (by omega),
-      hf4.2.2.2.2 (g.base 0 + u) (by omega), m6 _ (by omega), ← m3 _ (by omega)]
+    ram_rw [hf6.2.2.2.2 (g.base 0 + u), hf5.2.2.2.2 (g.base 0 + u),
+      hf4.2.2.2.2 (g.base 0 + u), m6, ← m3]
     exact (hF3' u hu).2
   · have := v.2
-    rw [hf6.2.2.2.2 _ (by omega), hf5.2.2.2.2 _ (by omega)]; exact hlev v
+    ram_rw [hf6.2.2.2.2, hf5.2.2.2.2]; exact hlev v
   · have := v.2
-    rw [hf6.2.2.2.2 _ (by omega), hf5.2.2.2.2 _ (by omega)]; exact (hpar v hv).1
+    ram_rw [hf6.2.2.2.2, hf5.2.2.2.2]; exact (hpar v hv).1
   · have := v.2; have := (hpar v hv).1
-    rw [hf6.2.2.2.2 (g.base 4 + v) (by omega), hf5.2.2.2.2 (g.base 4 + v) (by omega),
-      m6 _ (by omega), (hpar v hv).2.1, m3 _ (by omega)]
+    ram_rw [hf6.2.2.2.2 (g.base 4 + v), hf5.2.2.2.2 (g.base 4 + v),
+      m6, (hpar v hv).2.1, m3]
   · have := v.2
-    rw [hf6.2.2.2.2 _ (by omega)]; exact hpv5 v
+    ram_rw [hf6.2.2.2.2]; exact hpv5 v
   · rw [ht6 j hj x hx]
     have hagree : ∀ y, y < g.μ → c5.nmem (g.base 6 + y) = upTf T y := by
       intro y hy

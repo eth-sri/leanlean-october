@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SpecNF
 public import Chazelle.Final.Interface
 public import Chazelle.Machine.Structured
@@ -45,27 +47,41 @@ open Chazelle.Machine (Stmt Exec)
 
 /-! ## Registers and bands -/
 
+/-- Two memory maps have identical contents at every address below `A`. -/
+abbrev _root_.Chazelle.MemEqBelow {α : Type*} (A : ℕ) (m' m : ℕ → α) : Prop :=
+  ∀ a, a < A → m' a = m a
+
+theorem _root_.Chazelle.MemEqBelow.refl {α : Type*} (A : ℕ) (m : ℕ → α) : MemEqBelow A m m :=
+  fun _ _ => rfl
+
+theorem _root_.Chazelle.MemEqBelow.trans {α : Type*} {A : ℕ} {m₀ m₁ m₂ : ℕ → α}
+    (h : MemEqBelow A m₂ m₁) (g : MemEqBelow A m₁ m₀) : MemEqBelow A m₂ m₀ :=
+  fun a ha => (h a ha).trans (g a ha)
+
+theorem _root_.Chazelle.MemEqBelow.mono {α : Type*} {A B : ℕ} {m' m : ℕ → α}
+    (h : MemEqBelow B m' m) (hAB : A ≤ B) : MemEqBelow A m' m :=
+  fun a ha => h a (ha.trans_le hAB)
+
 /-- The allocator register. -/
-def ALLOC : ℕ := 9999
+@[ram_layout] def ALLOC : ℕ := 9999
 
 /-- Hand-off: base address of the trapezoid table. -/
-def REG_TRAP : ℕ := 9990
+@[ram_layout] def REG_TRAP : ℕ := 9990
 /-- Hand-off: length of the trapezoid table. -/
-def REG_TRAPLEN : ℕ := 9991
+@[ram_layout] def REG_TRAPLEN : ℕ := 9991
 /-- Hand-off: base address of the vertex-chord table. -/
-def REG_CHORD : ℕ := 9992
+@[ram_layout] def REG_CHORD : ℕ := 9992
 /-- Hand-off: length of the vertex-chord table. -/
-def REG_CHORDLEN : ℕ := 9993
+@[ram_layout] def REG_CHORDLEN : ℕ := 9993
 
 /-- The band of a register. -/
-def bandOf (r : ℕ) : ℕ := r / 10000
+@[ram_layout] def bandOf (r : ℕ) : ℕ := r / 10000
 
 /-- Register `i` of band `b`. -/
-def bandReg (b i : ℕ) : ℕ := 10000 * b + i
+@[ram_layout] def bandReg (b i : ℕ) : ℕ := 10000 * b + i
 
 theorem bandOf_bandReg (b i : ℕ) (hi : i < 10000) : bandOf (bandReg b i) = b := by
-  unfold bandOf bandReg
-  omega
+  reg_omega
 
 theorem bandOf_alloc : bandOf ALLOC = 0 := by decide
 
@@ -77,8 +93,8 @@ are unchanged, memory below the entry value of `ALLOC` is unchanged, nothing is 
 def Frame (bands : Finset ℕ) (c c' : Config) (k : ℕ) : Prop :=
   (∀ r, bandOf r ∉ bands → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
     (∀ r, bandOf r ∉ bands → c'.rreg r = c.rreg r) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
-    (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.rmem c.rmem) ∧
     c'.output = c.output ∧
     c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
@@ -148,7 +164,7 @@ def NFAt (m : ℕ → ℕ) (B : ℕ) (N : NF) : Prop :=
 
 /-- **Robust memory facts**: `Φ` holds of every memory that agrees with `m` below `A`. -/
 def Robust (A : ℕ) (m : ℕ → ℕ) (Φ : (ℕ → ℕ) → Prop) : Prop :=
-  ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → Φ m'
+  ∀ m' : ℕ → ℕ, (MemEqBelow A m' m) → Φ m'
 
 /-- **The normal form at `B` is protected below `E`**: it can be read at `B` from every memory
 agreeing with `m` below `E`, so it survives every later frame once `E` is at most the allocator.
@@ -158,17 +174,17 @@ def NFWithin (m : ℕ → ℕ) (B E : ℕ) (N : NF) : Prop := Robust E m fun m' 
 
 /-- A robust fact holds. -/
 theorem Robust.holds {A : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop} (h : Robust A m Φ) : Φ m :=
-  h m fun _ _ => rfl
+  h m (MemEqBelow.refl A m)
 
 /-- A robust fact survives any change of the memory at or above its bound. -/
 theorem Robust.transport {A : ℕ} {m m' : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop} (h : Robust A m Φ)
-    (hm : ∀ a, a < A → m' a = m a) : Robust A m' Φ :=
-  fun m'' h'' => h m'' fun a ha => (h'' a ha).trans (hm a ha)
+    (hm : MemEqBelow A m' m) : Robust A m' Φ :=
+  fun m'' h'' => h m'' (h''.trans hm)
 
 /-- A robust fact is robust for any larger bound. -/
 theorem Robust.mono {A A' : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop} (h : Robust A m Φ)
     (hA : A ≤ A') : Robust A' m Φ :=
-  fun m'' h'' => h m'' fun a ha => h'' a (lt_of_lt_of_le ha hA)
+  fun m'' h'' => h m'' (h''.mono hA)
 
 /-- A robust fact at the allocator survives a frame. -/
 theorem Robust.frame {B : Finset ℕ} {c c' : Config} {k : ℕ} {Φ : (ℕ → ℕ) → Prop}
@@ -179,6 +195,82 @@ theorem Robust.frame {B : Finset ℕ} {c c' : Config} {k : ℕ} {Φ : (ℕ → �
 /-- A normal form protected below `E` can be read. -/
 theorem NFWithin.nfAt {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) : NFAt m B N :=
   Robust.holds h
+
+/-! A read which is stable on every memory agreeing below `E` cannot depend on any
+word at or above `E`. The proof changes only such inaccessible words. -/
+
+theorem Robust.address {E : ℕ} {m : ℕ → ℕ} {f : (ℕ → ℕ) → ℕ} {v : ℕ}
+    (hf : ∀ m', (MemEqBelow E m' m) → f m' = f m)
+    (h : Robust E m fun m' => m' (f m') = v) : f m < E := by
+  by_contra hg
+  have hm : ∀ a, a < E → Function.update m (f m) (v + 1) a = m a := fun a ha => by
+    ram_rw [Function.update_of_ne]
+  have e := h _ hm
+  change Function.update m (f m) (v + 1) (f (Function.update m (f m) (v + 1))) = v at e
+  rw [hf _ hm, Function.update_self] at e
+  omega
+
+theorem Robust.fixedAddress {E : ℕ} {m : ℕ → ℕ} {a v : ℕ}
+    (h : Robust E m fun m' => m' a = v) : a < E :=
+  Robust.address (f := fun _ => a) (fun _ _ => rfl) h
+
+/-- For an indirect read, both the pointer and its target are below the bound. -/
+theorem Robust.ptrAddress {E : ℕ} {m : ℕ → ℕ} {b o v : ℕ}
+    (h : Robust E m fun m' => m' (m' b + o) = v) : b < E ∧ m b + o < E := by
+  have hb : b < E := by
+    by_contra hg
+    let d := b + 1
+    have := h (Function.update (Function.update m b d) (d + o) (v + 1)) (fun a ha => by
+      ram_rw [Function.update_of_ne (by dsimp [d]; omega), Function.update_of_ne])
+    simp only at this
+    rw [Function.update_of_ne (show b ≠ d + o by dsimp [d]; omega),
+      Function.update_self, Function.update_self] at this
+    omega
+  exact ⟨hb, Robust.address (f := fun mm => mm b + o) (fun _ hm => congrArg (· + o) (hm b hb)) h⟩
+
+/-- Indirect read with a memory-dependent offset already known to be stable. -/
+theorem Robust.ptrAddress_of {E : ℕ} {m : ℕ → ℕ} {b v : ℕ} {off : (ℕ → ℕ) → ℕ}
+    (hf : ∀ m', (MemEqBelow E m' m) → off m' = off m)
+    (h : Robust E m fun m' => m' (m' b + off m') = v) : b < E ∧ m b + off m < E :=
+  Robust.ptrAddress (v := v) fun m' hm => by simpa only [hf m' hm] using h m' hm
+
+/-- Bounds on the occupied areas of a normal form protected below `E`. -/
+structure NFBounds (m : ℕ → ℕ) (B E : ℕ) (N : NF) : Prop where
+  hdr : B + 11 < E
+  chord : ∀ i, i < N.chords.length → m (B + 3) + 5 * i + 4 < E
+  arc : ∀ i, i < N.arcs.length → m (B + 4) + 5 * i + 4 < E
+  region : ∀ i, i < N.regions.length → m (B + 5) + 5 * i + 4 < E
+  regionArc : ∀ r t, r < N.regions.length → t < (N.region r).arcs.length →
+    m (B + 7) + m (m (B + 5) + 5 * r + 1) + t < E
+  regionChord : ∀ r t, r < N.regions.length → t < (N.region r).chords.length →
+    m (B + 7) + m (m (B + 5) + 5 * r + 3) + t < E
+  seq : ∀ i, i < N.seq.length → m (B + 6) + i < E
+  dec : ∀ i, i < N.dec.length → m (B + 8) + 3 * i + 2 < E
+
+theorem NFWithin.bounds {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) :
+    NFBounds m B E N := by
+  have hB := Robust.fixedAddress (v := N.dec.length) fun mm hm => (h mm hm).2.2.2.2.1
+  have ptr (b i j v : ℕ) (hp : Robust E m fun mm => mm (mm b + i + j) = v) : m b + i + j < E := by
+    rw [Nat.add_assoc]; exact (Robust.ptrAddress (fun mm hm => by simpa only [Nat.add_assoc] using hp mm hm)).2
+  have hR (r : ℕ) (hr : r < N.regions.length) := ptr (B + 5) (5 * r) 4 (N.region r).wt
+    fun mm hm => ((h mm hm).2.2.2.2.2.2.2.1 r hr).2.2.1
+  have hlst (r t i v : ℕ) (hr : r < N.regions.length) (hi : i ≤ 4)
+      (hl : Robust E m fun mm => mm (mm (B + 7) + mm (mm (B + 5) + 5 * r + i) + t) = v) :
+      m (B + 7) + m (m (B + 5) + 5 * r + i) + t < E := by
+    have hp := hR r hr
+    have hs (mm : ℕ → ℕ) (hm : ∀ a, a < E → mm a = m a) :
+        mm (mm (B + 5) + 5 * r + i) + t = m (m (B + 5) + 5 * r + i) + t := by
+      ram_rw [hm (B + 5) (by omega), hm]
+    rw [Nat.add_assoc]
+    exact (Robust.ptrAddress_of (b := B + 7) hs (fun mm hm => by simpa only [Nat.add_assoc] using hl mm hm)).2
+  refine ⟨hB, fun i hi => ?_, fun i hi => ?_, hR, fun r t hr ht => ?_, fun r t hr ht => ?_,
+    fun i hi => ?_, fun i hi => ?_⟩
+  · exact ptr _ _ 4 _ fun mm hm => ((h mm hm).2.2.2.2.2.1 i hi).2.2.2.2
+  · exact ptr _ _ 4 _ fun mm hm => ((h mm hm).2.2.2.2.2.2.1 i hi).2.2.2.2
+  · exact hlst r t 1 _ hr (by decide) fun mm hm => ((h mm hm).2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht
+  · exact hlst r t 3 _ hr (by decide) fun mm hm => ((h mm hm).2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
+  · exact (Robust.ptrAddress (fun mm hm => (h mm hm).2.2.2.2.2.2.2.2.1 i hi)).2
+  · exact ptr _ _ 2 _ fun mm hm => ((h mm hm).2.2.2.2.2.2.2.2.2.1 i hi).2.2
 
 /-! ## Hosts and chains in memory -/
 
@@ -191,12 +283,53 @@ def HostAt (m : ℕ → ℕ) (B : ℕ) (H : Host) : Prop :=
     | .pt (.vtx j) => m (B + 1 + 3 * i) = 1 ∧ m (B + 2 + 3 * i) = j
     | .pt (.onEdge e h) => m (B + 1 + 3 * i) = 2 ∧ m (B + 2 + 3 * i) = e ∧ m (B + 3 + 3 * i) = h
 
+/-- A host record depends only on the words of its contiguous layout. -/
+theorem HostAt.copy {m m' : ℕ → ℕ} {B B' : ℕ} {H : Host} (h : HostAt m B H)
+    (he : ∀ j, j ≤ 3 * H.length → m' (B' + j) = m (B + j)) : HostAt m' B' H := by
+  have h0 : m' B' = m B := by simpa using he 0 (Nat.zero_le _)
+  refine ⟨h0.trans h.1, fun i hi => ?_⟩
+  have e₁ : m' (B' + 1 + 3 * i) = m (B + 1 + 3 * i) := by
+    simpa only [Nat.add_assoc] using he (1 + 3 * i) (by omega)
+  have e₂ : m' (B' + 2 + 3 * i) = m (B + 2 + 3 * i) := by
+    simpa only [Nat.add_assoc] using he (2 + 3 * i) (by omega)
+  have e₃ : m' (B' + 3 + 3 * i) = m (B + 3 + 3 * i) := by
+    simpa only [Nat.add_assoc] using he (3 + 3 * i) (by omega)
+  have hh := h.2 i hi
+  generalize H.getD i (.run 0 0) = x at hh ⊢
+  cases x with
+  | run => simpa only [e₁, e₂, e₃] using hh
+  | pt y => cases y <;> simpa only [e₁, e₂, e₃] using hh
+
+theorem HostAt.agree {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B H)
+    (hE : B + 3 * H.length + 4 ≤ E) (hm : MemEqBelow E m' m) : HostAt m' B H :=
+  h.copy fun j hj => hm _ (by omega)
+
 /-- **Chain descriptor** at `B`: host handle, start `s`, number of edges `m`, top index (relative
 to the chain) and the orientation bit `sideBeta` (`1` = true).  The descriptor describes the chain
 `C` of the host `H` realised in `Q`. -/
 def ChainDescAt (m : ℕ → ℕ) (B : ℕ) (Q : Polygon) (H : Host) (C : Chain) : Prop :=
   HostAt m (m B) H ∧ C.P = H.poly Q ∧ m (B + 1) = C.s ∧ m (B + 2) = C.m ∧
     m (B + 3) = C.topIdx ∧ (m (B + 4) = 1 ↔ C.sideBeta = true)
+
+/-- Rebase a descriptor to another slot and (if its layout still describes `H`) another host
+handle. This leaves its geometric chain unchanged. -/
+theorem ChainDescAt.rebase {m m' : ℕ → ℕ} {B B' : ℕ} {Q : Polygon} {H : Host} {C : Chain}
+    (h : ChainDescAt m B Q H C) (hh : HostAt m' (m' B') H)
+    (hc : ∀ j, 0 < j → j < 5 → m' (B' + j) = m (B + j)) : ChainDescAt m' B' Q H C := by
+  obtain ⟨_, hp, hs, hm, ht, hb⟩ := h
+  refine ⟨hh, hp, ?_, ?_, ?_, ?_⟩ <;> ram_rw [hc] <;> assumption
+
+theorem ChainDescAt.copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
+    (h : ChainDescAt m bw Q H C) (hE : m bw + 3 * H.length + 4 ≤ E)
+    (he : MemEqBelow E m' m) (hc : ∀ j, j < 5 → m' (d + j) = m (bw + j)) :
+    ChainDescAt m' d Q H C := by
+  have h0 : m' d = m bw := by simpa using hc 0 (by omega)
+  exact h.rebase (h0.symm ▸ h.1.agree hE he) fun j _ hj => hc j hj
+
+theorem ChainDescAt.agree {m m' : ℕ → ℕ} {B E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
+    (h : ChainDescAt m B Q H C) (hB : B + 5 ≤ E) (hH : m B + 3 * H.length + 4 ≤ E)
+    (hm : MemEqBelow E m' m) : ChainDescAt m' B Q H C :=
+  h.copy hH hm fun j hj => hm _ (by omega)
 
 /-- **Model descriptor** at `B`: `m B = 0` and a chain descriptor at `B + 1` (chain model), or
 `m B = 1` (interior model of `Q`) with the orientation bit `m (B + 1) = 1 ↔ LeftInside Q`, which
@@ -215,7 +348,7 @@ The phases get this bound from their budget `κ (n + 1)` (take `κ ≥ 272`).  (
 rather than `+ 3`, since walk edges of a chain model of `≤ 64 n` host points reach `128 n + 4`.
 Finding R-W1: the search of Lemma 3.2 adds two walk positions of a chain model, `< 2 (128 n + 7)`,
 hence `256 n + 16`.) -/
-def hostWords (n : ℕ) : ℕ := 256 * n + 16
+@[ram_layout] def hostWords (n : ℕ) : ℕ := 256 * n + 16
 
 /-- **A well-formed chain descriptor** at `B`, stored below `E` (findings C7, C8): the
 descriptor words `B … B + 4` and the host layout lie below `E`; the host has at most `64` items
@@ -235,7 +368,7 @@ theorem ChainWF.mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ} (h :
     (hE : E ≤ E') : ChainWF P E' m B :=
   ⟨by have := h.1; omega, fun H C hC => by
     obtain ⟨h1, h2, h3, h4⟩ := h.2 H C hC
-    exact ⟨h1, h2, by omega, h4⟩⟩
+    ram_finish⟩
 
 theorem ModelDescWF.mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ} (h : ModelDescWF P E m B)
     (hE : E ≤ E') : ModelDescWF P E' m B :=

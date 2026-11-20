@@ -322,8 +322,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
   obtain ⟨pa0, pa1⟩ := par_mem hE ha
   obtain ⟨pb0, pb1⟩ := par_mem hE hb
   rw [key_edge, key_edge, arcWt_formula hE.hcd ea eb pa0 pa1 pb0 pb1, ← key_edge, ← key_edge]
-  have hcnt : E.M.counted (E.edge b) ↔ (E.ch = false ∨ (6 ≤ E.edge b ∧ E.edge b < 2 * E.m + 6)) :=
-    hE.hcd.2 _ eb
+  have hcnt := hE.hcd.2 _ eb
   obtain ⟨hpz1, hpz⟩ := h.pz b hb
   have hn := hE.hn
   -- the bump and the stored bit
@@ -346,7 +345,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
   rw [h.eg a ha, h.eg b hb]
   by_cases hab : a = b
   · subst hab; simp
-  have hk : E.key a ≠ E.key b := fun e => hab (key_inj hE ha hb e)
+  have hk := fun e => hab (key_inj hE ha hb e)
   rw [ite_eq_right hab, ite_eq_right hk]
   by_cases hlt : a < b
   · have hkl := key_strict hE hlt hb
@@ -354,10 +353,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     rw [ite_eq_left hlt, ite_eq_left hkl]
     cases hch : E.ch with
     | false =>
-      have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
-      have := hbx.1 hc
-      unfold cntIn bB; simp only [Bool.false_eq_true, ite_false]
-      omega
+      simp_all [cntIn, bB, Bool.false_eq_true, ite_false] <;> omega
     | true =>
       have hn' := hn hch
       rw [hch] at hcnt
@@ -379,7 +375,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     rw [ite_eq_right hlt, ite_eq_right (not_lt.2 hkl.le)]
     cases hch : E.ch with
     | false =>
-      have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
+      have hc := hcnt.2 (Or.inl hch)
       have := hbx.1 hc
       unfold cntIn bB; simp only [Bool.false_eq_true, ite_false]
       omega
@@ -406,9 +402,7 @@ theorem size_eq (hE : E.Good) : E.M.size = cntIn E.ch E.m 0 E.n := by
   congr 1
   ext p
   simp only [mem_ofPred_eq]
-  constructor
-  · rintro ⟨h1, h2⟩; exact ⟨h1, h2, Nat.zero_le _, h1⟩
-  · rintro ⟨h1, h2, -, -⟩; exact ⟨h1, h2⟩
+  simp_all
 
 /-! ## The end of the run -/
 

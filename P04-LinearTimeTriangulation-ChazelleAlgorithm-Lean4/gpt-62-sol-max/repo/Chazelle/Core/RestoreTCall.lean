@@ -33,7 +33,7 @@ theorem frame_copies {l : List (ℕ × ℕ)} {c c₁ : Config} {k : ℕ}
     (h1 : ∀ r, r ∉ l.map Prod.fst → c₁.nreg r = c.nreg r) (h2 : c₁.rreg = c.rreg)
     (h3 : c₁.nmem = c.nmem) (h4 : c₁.rmem = c.rmem) (h5 : c₁.output = c.output) :
     Frame {bLocate} c c₁ k := by
-  have hA : c₁.nreg ALLOC = c.nreg ALLOC := h1 ALLOC (by
+  have hA := h1 ALLOC (by
     intro h
     obtain ⟨q, hq, hq'⟩ := List.mem_map.1 h
     have := hl q hq
@@ -44,7 +44,7 @@ theorem frame_copies {l : List (ℕ × ℕ)} {c c₁ : Config} {k : ℕ}
   obtain ⟨q, hq, rfl⟩ := List.mem_map.1 h
   apply hr
   have := hl q hq
-  simp only [bandOf, bLocate, Finset.mem_singleton]
+  simp only [ram_layout, Finset.mem_singleton]
   omega
 
 /-- **Calling a chain primitive**: copy the inputs (among them the descriptor address), run the
@@ -67,26 +67,22 @@ theorem callPrim {p : Stmt} {K : ℕ} {Inp : Polygon → ℕ → Chain → Confi
       Frame primBands c c' k := by
   obtain ⟨c₁, e₁, h1, h2, h3, h4, h5, h6⟩ := copies_exec (P := P) l c hw hd hnd
   have hf₁ : Frame {bLocate} c c₁ l.length := frame_copies hl h2 h3 h4 h5 h6
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := h2 ALLOC (by
+  have hA₁ := h2 ALLOC (by
     intro h
     obtain ⟨q, hq, hq'⟩ := List.mem_map.1 h
     have := hl q hq
     unfold ALLOC at hq'; omega)
-  have h00 : c₁.nreg 50200 = c.nreg src := h1 _ hsrc
+  have h00 := h1 _ hsrc
   have hpre : PrimPre Inp P W c₁ := by
     refine ⟨hG, hW, ?_, H, C, ?_, hInp c₁ h1 h2 h4⟩
-    · rw [h00, hA₁, h4]; exact hwf
-    · rw [h00, h4]; exact hC
-  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rw [hA₁]; exact hroom)
+    · rwa [h00, hA₁, h4]
+    · rwa [h00, h4]
+  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rwa [hA₁])
   refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by simp only at hk; omega, hpost H C ?_, ?_⟩
-  · rw [h00, h4]; exact hC
+  · rwa [h00, h4]
   · have := hf₁.trans hf
     exact this.mono (by
-      intro b hb
-      simp only [Finset.mem_union, Finset.mem_singleton] at hb
-      rcases hb with rfl | hb
-      · simp [primBands]
-      · exact hb) le_rfl
+      rfl) le_rfl
 
 end
 

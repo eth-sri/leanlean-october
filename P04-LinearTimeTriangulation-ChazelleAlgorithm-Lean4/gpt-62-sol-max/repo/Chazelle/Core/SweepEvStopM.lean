@@ -38,8 +38,7 @@ variable {C : Chain}
 /-- **The far end of the chord seen from `a`** in the direction `σ`. -/
 noncomputable def farPt (C : Chain) (a : Point) (σ : ℝ) : Point := rayPt a σ (C.hitParam a σ)
 
-theorem dirOf_cases' (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
-  unfold dirOf; split_ifs <;> simp
+abbrev dirOf_cases' := @Chazelle.Core.Restore.dirOf_pm
 
 theorem neg_cases {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) : -σ = 1 ∨ -σ = -1 := by
   rcases hσ with rfl | rfl <;> norm_num
@@ -50,14 +49,13 @@ theorem rayPt_mem_shoot (C : Chain) (a : Point) (σ : ℝ) {s : ℝ} (hs0 : 0 �
   unfold Merge.shoot
   rw [Geometry.mem_segment_iff_lerp]
   rcases hs0.lt_or_eq with hs0 | rfl
-  · have hT : 0 < C.hitParam a σ := lt_of_lt_of_le hs0 hs
+  · have hT := lt_of_lt_of_le hs0 hs
     refine ⟨s / C.hitParam a σ, div_nonneg hs0.le hT.le, (div_le_one hT).2 hs, ?_⟩
     apply Geometry.point_ext
     · simp only [Geometry.lerp_fst, rayPt_fst]; field_simp; ring
-    · simp only [Geometry.lerp_snd, rayPt_snd]; ring
+    simp
   · refine ⟨0, le_rfl, zero_le_one, ?_⟩
-    rw [Geometry.lerp_zero]
-    apply Geometry.point_ext <;> simp [rayPt]
+    simp_all
 
 /-- The chord seen from `a` is the segment of the ray points up to the first hit. -/
 theorem mem_shoot_iff (C : Chain) (a : Point) {σ : ℝ} (_hσ : σ = 1 ∨ σ = -1)
@@ -70,7 +68,7 @@ theorem mem_shoot_iff (C : Chain) (a : Point) {σ : ℝ} (_hσ : σ = 1 ∨ σ =
     refine ⟨u * C.hitParam a σ, mul_nonneg hu0 hT, by nlinarith, ?_⟩
     apply Geometry.point_ext
     · simp only [Geometry.lerp_fst, rayPt_fst]; ring
-    · simp only [Geometry.lerp_snd, rayPt_snd]; ring
+    · simp
   · rintro ⟨s, hs0, hs, rfl⟩
     exact rayPt_mem_shoot C a σ hs0 hs
 
@@ -84,7 +82,7 @@ theorem shoot_off_dom (C : Chain) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ}
   · rcases hs.lt_or_eq with hs | rfl
     · exact absurd (hin s hs0 hs) hxD
     · right; rfl
-  · left; apply Geometry.point_ext <;> simp [rayPt]
+  simp
 
 /-- **The sector of an attachment** contains the direction of the chord from the position's point. -/
 theorem sideLeft_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ}
@@ -93,7 +91,7 @@ theorem sideLeft_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ}
     sideLeft W p t (rayPt (sidePt W p t) δ 1) := by
   obtain ⟨-, -, -, -, r, hr, hsec⟩ := hA
   set s := min (r / 2) (ε / 2) with hsdef
-  have hs : 0 < s := lt_min (half_pos hr) (half_pos hε)
+  have hs := lt_min (half_pos hr) (half_pos hε)
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsε : s ≤ ε / 2 := min_le_right _ _
   have hd : dist (rayPt (sidePt W p t) δ s) (sidePt W p t) = s :=
@@ -106,33 +104,39 @@ theorem sideLeft_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ}
 variable (hP : C.P.Simple)
 include hP
 
-/-- **The arrival position of the origin** (direction `-σ`) is an attachment of the chord. -/
-theorem attach_of_origin {a : Point} (ha : a.2 ≤ C.top.2) (haD : a ∉ C.dom) {σ : ℝ}
+section
+
+variable {a : Point} (ha : a.2 ≤ C.top.2) (haD : a ∉ C.dom) {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) (hf : FreeAt C a σ) {p : ℕ} {t : ℝ}
+include ha haD hσ hf p t
+
+/-- **The arrival position of the origin** (direction `-σ`) is an attachment of the chord. -/
+theorem attach_of_origin
     (hA : Arrival (chainModel C).W a (-σ) p t) : SideAttach (chainModel C).W (Merge.shoot C a σ) p t := by
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
   rw [neg_neg] at hsec
   have he := Merge.shoot_mem_augChords C ha haD hσ hf
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C ha hσ hf
-  refine sideAttach_of_along C hP he hp ht0 ht1 hσ (by rw [hpt]; exact hsec) ?_
+  refine sideAttach_of_along C hP he hp ht0 ht1 hσ (by rwa [hpt]) ?_
   rw [hpt]
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
   exact rayPt_mem_shoot C a σ hs.1.le hs.2.le
 
 /-- **The arrival position of the far end** (direction `σ`) is an attachment of the chord. -/
-theorem attach_of_far {a : Point} (ha : a.2 ≤ C.top.2) (haD : a ∉ C.dom) {σ : ℝ}
-    (hσ : σ = 1 ∨ σ = -1) (hf : FreeAt C a σ) {p : ℕ} {t : ℝ}
+theorem attach_of_far
     (hA : Arrival (chainModel C).W (farPt C a σ) σ p t) :
     SideAttach (chainModel C).W (Merge.shoot C a σ) p t := by
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
   have he := Merge.shoot_mem_augChords C ha haD hσ hf
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C ha hσ hf
-  refine sideAttach_of_along C hP he hp ht0 ht1 (neg_cases hσ) (by rw [hpt]; exact hsec) ?_
+  refine sideAttach_of_along C hP he hp ht0 ht1 (neg_cases hσ) (by rwa [hpt]) ?_
   rw [hpt]
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
   unfold farPt
   rw [Sweep.rayPt_back]
   exact rayPt_mem_shoot C a σ (by linarith [hs.2]) (by linarith [hs.1])
+
+end
 
 /-- **Every attachment of the chord** is the arrival position of its origin or of its far end. -/
 theorem attach_cases {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ}
@@ -141,9 +145,9 @@ theorem attach_cases {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ}
     (sidePt (chainModel C).W p t = a ∧ Arrival (chainModel C).W a (-σ) p t) ∨
       (sidePt (chainModel C).W p t = farPt C a σ ∧
         Arrival (chainModel C).W (farPt C a σ) σ p t) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM := FactsChain.walkAx C hP
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C ha hσ hf
-  have hxD : sidePt (chainModel C).W p t ∉ C.dom := hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
+  have hxD := hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
   rcases shoot_off_dom C ha hσ hf hA.2.2.2.1 hxD with h | h
   · refine Or.inl ⟨h, hA.1, hA.2.1, hA.2.2.1, h, ?_⟩
     rw [neg_neg]
@@ -162,7 +166,7 @@ theorem ends_shoot_pos (C : Chain) {a : Point} (hT : 0 ≤ C.hitParam a 1) :
     Merge.lend (Merge.shoot C a 1) = a ∧ Merge.rend (Merge.shoot C a 1) = farPt C a 1 := by
   unfold Merge.shoot farPt
   rw [Merge.segment_rayPt_pos a hT, Merge.lend_hseg (by linarith), Merge.rend_hseg (by linarith)]
-  exact ⟨rfl, by apply Geometry.point_ext <;> simp [rayPt]⟩
+  simp [rayPt]
 
 omit hP in
 /-- The ends of the chord seen in the direction `-1`. -/
@@ -170,7 +174,7 @@ theorem ends_shoot_neg (C : Chain) {a : Point} (hT : 0 ≤ C.hitParam a (-1)) :
     Merge.lend (Merge.shoot C a (-1)) = farPt C a (-1) ∧ Merge.rend (Merge.shoot C a (-1)) = a := by
   unfold Merge.shoot farPt
   rw [Merge.segment_rayPt_neg a hT, Merge.lend_hseg (by linarith), Merge.rend_hseg (by linarith)]
-  refine ⟨by apply Geometry.point_ext <;> simp [rayPt, sub_eq_add_neg], rfl⟩
+  simp [rayPt, sub_eq_add_neg]
 
 omit hP in
 /-- **Two augmented chords with the same left end are equal.** -/

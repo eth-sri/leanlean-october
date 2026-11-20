@@ -1,6 +1,8 @@
 module
 
-public import Chazelle.Machine.Structured
+public import Chazelle.Machine.RegBlock
+public import Chazelle.Programs.RamSimp
+public meta import Lean.Elab.Tactic
 
 /-!
 # Verification support for straight-line blocks
@@ -202,41 +204,62 @@ end spec
     (rmem : ℕ → ℝ) (output : List Polygon.Triangle) :
     (Config.mk pc nreg rreg nmem rmem output).pc = pc := rfl
 
-/-- `simp only` with the configuration-projection and `upd` lemmas.  Reduces
-`({ c with nreg := upd c.nreg 0 5, … } : Config).nreg 0` to `5`, and `.nreg 1` to `c.nreg 1`
-(the inequality `1 ≠ 0` between literals is decided by `simp`'s arithmetic simprocs).
-Also normalises costs `0 + 1 + 1` to `2`. -/
-macro "config_simp" : tactic =>
-  `(tactic| simp (config := { failIfUnchanged := false }) only [Config.nreg_mk, Config.rreg_mk,
-      Config.nmem_mk, Config.rmem_mk, Config.output_mk, Config.pc_mk, Machine.upd_same,
-      Machine.upd_other, Machine.upd_upd_same, Machine.upd_eq_self, ne_eq, Nat.succ_ne_zero,
-      Nat.zero_ne_one, not_false_eq_true, Nat.reduceEqDiff, Nat.zero_add, Nat.reduceAdd,
-      and_true, true_and])
+attribute [ram_cfg] Config.nreg_mk Config.rreg_mk Config.nmem_mk Config.rmem_mk
+  Config.output_mk Config.pc_mk Machine.upd_same Machine.upd_other Machine.upd_upd_same
+  Machine.upd_eq_self ne_eq Nat.succ_ne_zero Nat.zero_ne_one not_false_eq_true
 
-/-- `config_simp` at a hypothesis. -/
-macro "config_simp" "at" h:ident : tactic =>
-  `(tactic| simp (config := { failIfUnchanged := false }) only [Config.nreg_mk, Config.rreg_mk,
-      Config.nmem_mk, Config.rmem_mk, Config.output_mk, Config.pc_mk, Machine.upd_same,
-      Machine.upd_other, Machine.upd_upd_same, Machine.upd_eq_self, ne_eq, Nat.succ_ne_zero,
-      Nat.zero_ne_one, not_false_eq_true, Nat.reduceEqDiff, Nat.zero_add, Nat.reduceAdd,
-      and_true, true_and] at $h:ident)
+attribute [reg_check] okRegB okRegI
 
-/-- Flatten a nested configuration in a hypothesis to a single
-`{ pc := …, nreg := upd (upd …) …, … }` (without this the term after `k` instructions would
-have printed size exponential in `k`). -/
+open Lean.Parser.Tactic
+
+/-- Normalize configuration projections and updates before reasoning about a RAM instruction.
+Additional rules (often register equalities) and locations are optional. -/
+syntax "config_simp" (simpArgs)? (location)? : tactic
+macro_rules
+  | `(tactic| config_simp $[[$rules,*]]? $[$loc]?) =>
+      let rules := (rules.map (·.getElems)).getD #[]
+      `(tactic| simp (config := { failIfUnchanged := false }) only
+        [ram_cfg, Nat.reduceEqDiff, Nat.zero_add, Nat.reduceAdd, and_true, true_and, $rules,*] $[$loc]?)
+
+/-- Simplify configuration updates and conditional register equalities. Disjoint addresses and
+register indices are checked by computation for literals and by `omega` for symbolic indices. -/
+syntax "ram_simp" (simpArgs)? (location)? : tactic
+macro_rules
+  | `(tactic| ram_simp $[[$rules,*]]? $[$loc]?) =>
+      let rules := (rules.map (·.getElems)).getD #[]
+      `(tactic| simp (disch := first | assumption | decide | omega) only
+        [ram_cfg, Nat.reduceEqDiff, Nat.zero_add, Nat.reduceAdd, and_true, true_and, $rules,*] $[$loc]?)
+
+/-- Linear arithmetic on literal or symbolic register numbers. -/
+macro "reg_omega" : tactic =>
+  `(tactic| first | assumption | decide | omega |
+    (simp only [ram_layout, Nat.reduceAdd, Nat.reduceSub, Nat.reduceMul] at *; omega))
+
+/-- Discharge register, frame, and word-bound goals after symbolic execution.
+Local postcondition equalities provide the rewrite rules; `rules` adds domain-specific ones. -/
+syntax "ram_finish" (simpArgs)? : tactic
+macro_rules
+  | `(tactic| ram_finish $[[$rules,*]]?) =>
+      let rules := (rules.map (·.getElems)).getD #[]
+      `(tactic| focus (
+        repeat (first | assumption | rfl | apply And.intro | intro)
+        all_goals first
+          | decide
+          | omega
+          | (ram_simp [reg_check, regB, regI, dstI, List.length_cons, List.length_nil, *, $rules,*] <;>
+              first | assumption | rfl | decide | omega)
+          | (simp (disch := reg_omega) only
+              [ram_cfg, ram_layout, reg_check, regB, regI, dstI, List.length_cons, List.length_nil,
+                Nat.reduceAdd, Nat.reduceSub, Nat.reduceMul, Nat.reduceEqDiff, and_true, true_and,
+                ite_true, ite_false, if_pos, if_neg, *, $rules,*] <;> reg_omega)))
+
+/-- Flatten the state in the word-bound hypothesis between successive machine instructions. -/
 macro "config_flatten_at" h:ident : tactic =>
-  `(tactic| simp (config := { failIfUnchanged := false }) only [Config.nreg_mk, Config.rreg_mk,
-      Config.nmem_mk, Config.rmem_mk, Config.output_mk, Config.pc_mk, Machine.upd_same,
-      Machine.upd_other, Machine.upd_upd_same, ne_eq, Nat.succ_ne_zero, Nat.zero_ne_one,
-      not_false_eq_true, Nat.reduceEqDiff] at $h:ident)
+  `(tactic| simp (config := { failIfUnchanged := false }) only [ram_cfg, Nat.reduceEqDiff] at $h:ident)
 
-/-- On a spec goal `∃ c' k, Exec P W s c c' k ∧ Q c' k`, flatten the starting configuration
-`c` only (the postcondition `Q` is left untouched). -/
+/-- Flatten just the starting configuration, not the postcondition of the remaining code. -/
 macro "spec_flatten" : tactic =>
-  `(tactic| try (conv => enter [1, c', 1, k, 1, 4]; simp only [Config.nreg_mk, Config.rreg_mk,
-      Config.nmem_mk, Config.rmem_mk, Config.output_mk, Config.pc_mk, Machine.upd_same,
-      Machine.upd_other, Machine.upd_upd_same, ne_eq, Nat.succ_ne_zero, Nat.zero_ne_one,
-      not_false_eq_true, Nat.reduceEqDiff]))
+  `(tactic| try (conv => enter [1, c', 1, k, 1, 4]; simp only [ram_cfg, Nat.reduceEqDiff]))
 
 /-! ### The block tactic
 
@@ -296,10 +319,132 @@ Leaves the side conditions (in program order) and then the postcondition goal. -
 macro "exec_block" : tactic =>
   `(tactic| focus ((exec_block_step; repeat exec_block_step); rotate_left))
 
-/-! ### Worked example
+/-- Symbolically execute a block and prove its instruction side conditions and postcondition. -/
+syntax "verify_block" (simpArgs)? : tactic
+macro_rules
+  | `(tactic| verify_block $[$rs]?) => `(tactic| (exec_block <;> ram_finish $[$rs]?))
 
-The block `nreg 0 := n; nreg 1 := 1; rreg 0 := x_{nreg 0}; rreg 1 := rreg 0 * rreg 0;
-nreg 2 := nreg 0 + nreg 1`, executed from any word-bounded `c` with `P.n + 1 ≤ W`. -/
+/-- Execute the block and discharge its word-bound and other instruction side conditions,
+leaving exactly the postcondition. With `disch` the caller can specify additional reasoning. -/
+syntax "exec_block!" (discharger)? : tactic
+
+open Lean Elab Tactic in
+elab_rules : tactic
+  | `(tactic| exec_block! $[$discharge]?) => do
+      let goals ← getGoals
+      setGoals (goals.take 1)
+      evalTactic (← `(tactic| exec_block))
+      let post :: conditions := (← getGoals).reverse |
+        throwError "exec_block! expected a postcondition"
+      for g in conditions.reverse do
+        unless ← g.isAssigned do
+          setGoals [g]
+          match discharge with
+          | some d => evalTactic d.raw[3]
+          | none => evalTactic (← `(tactic| first | omega | (config_simp <;> omega) | assumption | decide))
+          unless (← getUnsolvedGoals).isEmpty do
+            throwError "exec_block! could not discharge an instruction side condition"
+      setGoals (post :: goals.drop 1)
+
+end
+
+public meta section
+
+open Lean Meta Elab Tactic Parser.Tactic
+
+/-- Rewrite with frame lemmas, discharging the address conditions after matching the read.
+The `assumption` variant also closes a goal matching a rewritten hypothesis. -/
+syntax "ram_rw" ("assumption")? rwRuleSeq (location)? : tactic
+
+elab_rules : tactic
+  | `(tactic| ram_rw $[assumption%$a]? $rules $[$loc]?) => do
+    let goal :: pending ← getUnsolvedGoals | throwNoGoalsToBeSolved
+    setGoals [goal]
+    evalTactic (← `(tactic| rewrite $rules:rwRuleSeq $[$loc:location]?))
+    let main :: sides ← getUnsolvedGoals | throwNoGoalsToBeSolved
+    setGoals sides
+    evalTactic (← `(tactic| all_goals first | with_reducible assumption | decide | omega | reg_omega))
+    unless (← getUnsolvedGoals).isEmpty do
+      throwError "ram_rw could not discharge a rewrite side condition"
+    setGoals [main]
+    if a.isSome then
+      evalTactic (← `(tactic| first | with_reducible rfl | assumption))
+    else
+      evalTactic (← `(tactic| try (with_reducible rfl)))
+    setGoals ((← getUnsolvedGoals) ++ pending)
+
+/-! `state_simp` follows the register and memory equalities of preceding RAM steps.
+It uses the changing register values and the unchanged fields of frames, without
+unfolding the geometric propositions in the context. -/
+
+private def readsState (e : Expr) : Bool :=
+  (e.find? fun a => a.isConstOf ``Config.nreg || a.isConstOf ``Config.rreg ||
+    a.isConstOf ``Config.nmem || a.isConstOf ``Config.rmem || a.isConstOf ``Config.output ||
+    a.isConstOf ``Config.pc || a.isConstOf ``upd).isSome
+
+private partial def isStateEq (e : Expr) : Bool :=
+  match e with
+  | .forallE _ _ b _ => isStateEq b
+  | .app (.app (.app (.const ``Eq _) _) lhs) _ => readsState lhs
+  | .app (.app (.const ``And _) l) r => isStateEq l || isStateEq r
+  | _ => false
+
+private partial def frameRules (h : Expr) (depth : Nat) : MetaM (Array Expr) := do
+  if depth == 0 then return #[]
+  let ty ← inferType h
+  if ty.isForall then return if isStateEq ty then #[h] else #[]
+  if isStateEq ty && !ty.isAppOf ``And then return #[h]
+  let some n := ty.getAppFn.constName? | return #[]
+  if !((`Chazelle).isPrefixOf n || n == ``And) then return #[]
+  let t ← whnf ty
+  if t.isAppOf ``And then
+    let left ← frameRules (← mkAppM ``And.left #[h]) (depth - 1)
+    let right ← frameRules (← mkAppM ``And.right #[h]) (depth - 1)
+    return left ++ right
+  let some n := t.getAppFn.constName? | return #[]
+  let some info := getStructureInfo? (← getEnv) n | return #[]
+  if depth < 7 then return #[]
+  let mut rules := #[]
+  for field in info.fieldNames do
+    try
+      let some f := getProjFnForField? (← getEnv) n field | continue
+      let e ← mkAppM f #[h]
+      if isStateEq (← inferType e) then rules := rules.push e
+    catch _ => pure ()
+  return rules
+
+/-- Simplify the goal using the local register/memory equalities, including frame projections. -/
+syntax "state_simp" (simpArgs)? : tactic
+elab_rules : tactic
+  | `(tactic| state_simp $[[$rules,*]]?) => withMainContext do
+    let rules := (rules.map (·.getElems)).getD #[]
+    let stx ← `(tactic| simp (config := { maxSteps := 2500, maxDischargeDepth := 1 })
+      (disch := first | assumption | decide | omega |
+        (simp [ram_layout, *] at * <;> omega)) only
+      [ram_cfg, Nat.reduceAdd, Nat.reduceSub, Nat.reduceMul, Nat.reduceEqDiff, Nat.zero_add,
+        and_true, true_and, ne_eq, * , $rules,*])
+    -- The `*` adds plain equalities and branch conditions; unpack only the local frames.
+    let r ← mkSimpContext stx (eraseLocal := false) (ignoreStarArg := false)
+    let mut thms := r.ctx.simpTheorems
+    for decl in ← getLCtx do
+      unless decl.isImplementationDetail do
+        for h in ← frameRules decl.toExpr 10 do
+          if h.isFVar then continue
+          try
+            thms ← thms.addTheorem (.other (← mkFreshUserName `frame)) h
+          catch _ => pure ()
+    let goal ← getMainGoal
+    let (g, _) ← r.dischargeWrapper.with (fun d => simpTarget goal (r.ctx.setSimpTheorems thms)
+      r.simprocs d)
+    replaceMainGoal g.toList
+
+/-- Discharge arithmetic and framing goals after a machine step. -/
+syntax "ram_state" (simpArgs)? : tactic
+macro_rules
+  | `(tactic| ram_state $[$args]?) => `(tactic| solve
+    | (repeat (first | assumption | rfl | apply And.intro | intro)
+       all_goals first | assumption | decide | omega |
+         (state_simp $[$args]? <;> first | assumption | rfl | decide | reg_omega | ring)))
 
 end
 

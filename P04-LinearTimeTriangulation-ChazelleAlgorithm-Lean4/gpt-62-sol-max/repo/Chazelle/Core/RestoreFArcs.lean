@@ -50,7 +50,8 @@ theorem FGood.end_ok (hE : FGood E c₀) {x : WPos}
     rw [hM] at hxe hx hy' ⊢
     exact innerPt_chain_walk C (Qof E.P) hxe hx.1 hx.2.1.le hy'
   · rw [hM] at hxe hx ⊢
-    have hn3 : 3 ≤ (Qof E.P).n := by rw [hQn]; exact hE.hG.1.1
+    have hn3 := hE.hG.1.1
+    rw [← hQn] at hn3
     obtain ⟨e, h⟩ := x
     exact innerPt_mi_edge (ShootCut.goodEnv_distinct hE.hG) hn3
       (by rw [IOrc.mi_n] at hxe; exact hxe) (by rw [hM] at hp'; exact hp') hx.2.1
@@ -96,8 +97,10 @@ theorem FGood.arcOK (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
   obtain ⟨sy, ey⟩ := hE.arc_abs hne hj
   have hs := hE.end_ok (hpp j hj).1 ha sy
   have he := hE.end_ok (hpp j hj).2 hb ey
-  have hps : ProperPos E.M (Qof E.P) E.P.n (E.N.arc j).s := by rw [← hQn]; exact (hpp j hj).1
-  have hpe : ProperPos E.M (Qof E.P) E.P.n (E.N.arc j).e := by rw [← hQn]; exact (hpp j hj).2
+  have hps := (hpp j hj).1
+  rw [hQn] at hps
+  have hpe := (hpp j hj).2
+  rw [hQn] at hpe
   exact ⟨ht, hj, hs.1, he.1, hps, hpe, sy, ey, hs.2, he.2,
     (BoxT.arcWt_le_weight (hArcs.1 j hj).2).trans (hE.hsg _ hU)⟩
 

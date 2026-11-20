@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepIoRun
 public import Chazelle.Core.SweepPrimArr
 public import Chazelle.Core.SweepPrimAbs
@@ -44,7 +46,7 @@ theorem regB_cps (m : ℕ → ℕ) : ∀ (l : List (ℕ × ℕ)) (f : ℕ → �
   | [], f, _, _ => ⟨fun p hp => by simp at hp, fun r _ => rfl⟩
   | (d, s) :: l, f, hnd, hsrc => by
     have hnd' := List.nodup_cons.1 hnd
-    have hsrc' : ∀ p ∈ l, ∀ q ∈ l, p.2 ≠ q.1 := fun p hp q hq =>
+    have hsrc' := fun p hp q hq =>
       hsrc p (List.mem_cons_of_mem _ hp) q (List.mem_cons_of_mem _ hq)
     obtain ⟨ih1, ih2⟩ := regB_cps m l (upd f d (f s)) hnd'.2 hsrc'
     have hcps : cps ((d, s) :: l) = .copyN d s :: cps l := rfl
@@ -55,11 +57,10 @@ theorem regB_cps (m : ℕ → ℕ) : ∀ (l : List (ℕ × ℕ)) (f : ℕ → �
       · rw [ih2 _ (by simpa using hnd'.1)]
         simp
       · rw [ih1 p hp]
-        have : p.2 ≠ d := hsrc p (List.mem_cons_of_mem _ hp) (d, s) List.mem_cons_self
+        have := hsrc p (List.mem_cons_of_mem _ hp) (d, s) List.mem_cons_self
         simp [upd, this]
     · simp only [List.map_cons, List.mem_cons, not_or] at hr
-      rw [ih2 r hr.2]
-      simp [upd, hr.1]
+      simp [ih2 r hr.2, upd, hr.1]
 
 /-- The side conditions of a block of copies into scratch registers. -/
 theorem okB_cps (W : ℕ) (m : ℕ → ℕ) : ∀ (l : List (ℕ × ℕ)) (f : ℕ → ℕ),
@@ -86,7 +87,7 @@ def ChainCtx (P : Polygon) (W : ℕ) (c : Config) (dsc : ℕ) (C : Chain) : Prop
 below the allocator, and does not lower the allocator. -/
 theorem ChainCtx.transport {P : Polygon} {W : ℕ} {c c' : Config} {dsc dsc' : ℕ} {C : Chain}
     (h : ChainCtx P W c dsc C) (hr : c'.nreg dsc' = c.nreg dsc)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     ChainCtx P W c' dsc' C := by
   obtain ⟨hG, hW, hwf, ⟨H, hC, hreg⟩, hP, hWm⟩ := h
   obtain ⟨hC', hwf'⟩ := chainDesc_keep hwf hC hm hA
@@ -106,8 +107,7 @@ theorem ChainCtx.hostReg {P : Polygon} {W : ℕ} {c : Config} {dsc : ℕ} {C : C
     ∀ H', HostAt c.nmem (c.nmem (c.nreg dsc)) H' → HostRegular P.n H' := by
   obtain ⟨-, -, -, ⟨H, hC, hreg⟩, -, -⟩ := h
   intro H' hH'
-  rw [← NFLoc.hostAt_unique hC.1 hH']
-  exact hreg
+  rwa [← NFLoc.hostAt_unique hC.1 hH']
 
 /-! ## A generic call -/
 
@@ -137,23 +137,22 @@ theorem callP_irs {ins outs : List (ℕ × ℕ)} {s : Stmt} {B' : Finset ℕ}
         (∀ p ∈ outs, c'.nreg p.1 = c₂.nreg p.2) ∧
         (∀ r, bandOf r ∉ oracleBands → r ∉ outs.map Prod.fst → r ≠ ALLOC →
           c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have hsc1 : ∀ p ∈ ins, IScr p.1 := fun p hp => Or.inr (hin3 p hp)
-  have hsc2 : ∀ p ∈ outs, IScr p.1 := fun p hp => iscr_sw (hout3 p hp).1 (hout3 p hp).2
+  have hsc2 := fun p hp => iscr_sw (hout3 p hp).1 (hout3 p hp).2
   refine (IRS.seq (K₂ := K + outs.length)
     (IRS.block (P := P) (cps ins) hI (okB_cps W _ ins _ hsc1)) ?_).mono
     (by rw [cps_length]; omega) (fun _ h => h)
   intro c₁ hI₁ hA₁ hA₁' hc₁
   subst hc₁
   obtain ⟨e1, e2⟩ := regB_cps c.nmem ins c.nreg hin1 hin2
-  have hA1 : regB c.nmem (cps ins) c.nreg ALLOC = c.nreg ALLOC :=
-    e2 ALLOC (fun h => by
+  have hA1 := e2 ALLOC (fun h => by
       obtain ⟨p, hp, hpa⟩ := List.mem_map.1 h
       have := hin3 p hp
       rw [hpa] at this
       exact absurd this (by decide))
   set c₁ : Config := { c with nreg := regB c.nmem (cps ins) c.nreg } with hc₁def
-  have hpre₁ : Pre P W c₁ := hpre c₁ rfl hA1 e1 e2
+  have hpre₁ := hpre c₁ rfl hA1 e1 e2
   refine IRS.seq (IRS.callO hs hB hI₁ hpre₁ (by
     show regB c.nmem (cps ins) c.nreg ALLOC + K ≤ W
     rw [hA1]; rw [cps_length] at hA₁'; omega)) ?_
@@ -174,11 +173,9 @@ theorem callP_irs {ins outs : List (ℕ × ℕ)} {s : Stmt} {B' : Finset ℕ}
     rw [f2 ALLOC (fun h => by
       obtain ⟨p, hp, hpa⟩ := List.mem_map.1 h
       have := hout3 p hp; rw [hpa] at this; unfold ALLOC at this; omega)]
-    have : c₁.nreg ALLOC = c.nreg ALLOC := hA1
+    have := hA1
     omega
-  · intro a ha
-    show c₂.nmem a = c.nmem a
-    exact hm₂ a (by show a < regB c.nmem (cps ins) c.nreg ALLOC; rw [hA1]; exact ha)
+  · simpa [hc₁def, hA1] using hm₂
 
 end
 
@@ -202,7 +199,7 @@ theorem nodup2 {a b : ℕ} (h1 : a ≠ b) : [a, b].Nodup := by simp [h1]
 theorem primBands_oracle : primBands ⊆ oracleBands := by decide
 
 theorem band5_oracle {r : ℕ} (h1 : 50000 ≤ r) (h2 : r < 60000) : bandOf r ∈ oracleBands := by
-  have : bandOf r = bLocate := by unfold bandOf bLocate; omega
+  have : bandOf r = bLocate := by reg_omega
   rw [this]; decide
 
 theorem nodup3 {a b d : ℕ} (h1 : a ≠ b) (h2 : a ≠ d) (h3 : b ≠ d) : [a, b, d].Nodup := by
@@ -210,7 +207,7 @@ theorem nodup3 {a b d : ℕ} (h1 : a ≠ b) (h2 : a ≠ d) (h3 : b ≠ d) : [a, 
 
 theorem nodup4 {a b d e : ℕ} (h1 : a ≠ b) (h2 : a ≠ d) (h3 : a ≠ e) (h4 : b ≠ d) (h5 : b ≠ e)
     (h6 : d ≠ e) : [a, b, d, e].Nodup := by
-  simp [h1, h2, h3, h4, h5, h6]
+  simp_all
 
 /-! ## `arrivalPos` -/
 
@@ -244,7 +241,7 @@ theorem callArr_irs {dsc re rh rd o : ℕ} {C : Chain} (hI : IInv W c₀ c)
           (c'.nreg (o + 2)) ∧
         (∀ r, bandOf r ∉ oracleBands → r ≠ o → r ≠ o + 1 → r ≠ o + 2 → r ≠ ALLOC →
           c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have h := callP_irs (P := P) (c₀ := c₀) (c := c)
     (ins := [(50200, dsc), (50201, re), (50202, rh), (50203, rd)])
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212)]) arrivalPos_meets primBands_oracle hI
@@ -253,7 +250,7 @@ theorem callArr_irs {dsc re rh rd o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
           band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num)⟩)
-    (nodup3 (by omega) (by omega) (by omega))
+    ((ram_app% (nodup3 ?_ ?_ ?_)))
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (fun c₁ hm hA e1 e2 => by
@@ -261,22 +258,22 @@ theorem callArr_irs {dsc re rh rd o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2, g3⟩ := e1
       refine primPre_of (hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])) ?_
       refine ⟨⟨?_, ?_, ?_⟩, hctx.2.2.2.2.1, hctx.2.2.2.2.2⟩
-      · rw [g1]; exact he
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hy)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2])
+    (by assumption)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2, g3⟩ := e1
   obtain ⟨k0, k1, k2⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   have hres := hpost H C hC₁
   unfold ArrOut ArrRes at hres
   rw [g1, g2, g3] at hres
   obtain ⟨r1, r2, r3⟩ := hres
-  refine ⟨⟨by rw [k0]; exact r1, fun hf => ?_, fun hf => ?_⟩, fun r hr h0 h1 h2 hra => hk r hr
+  refine ⟨⟨by rwa [k0], fun hf => ?_, fun hf => ?_⟩, fun r hr h0 h1 h2 hra => hk r hr
     (by simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]; omega)
     hra, hA, hm'⟩
   · rw [k0] at hf; rw [k1, k2]; exact r2 hf
@@ -292,13 +289,13 @@ theorem absRec_transport {c c' : Config} {r r' : ℕ} {x R : ℝ} (h : AbsRec P 
   obtain ⟨hR, h⟩ := h
   refine ⟨hR, ?_⟩
   rcases h with ⟨k, hx⟩ | ⟨k, hx⟩ | ⟨k, hx, s, hs, hl, he⟩
-  · exact Or.inl ⟨by rw [h0, k], hx⟩
-  · exact Or.inr (Or.inl ⟨by rw [h0, k], hx⟩)
+  · simp_all
+  · simp_all
   · refine Or.inr (Or.inr ⟨by rw [h0, k], hx, s, ?_, hl, he⟩)
     have e2 : c'.nreg (r' + 1 + 1) = c.nreg (r + 1 + 1) := by
-      rw [show r' + 1 + 1 = r' + 2 by ring, show r + 1 + 1 = r + 2 by ring]; exact h2
+      assumption
     have e3 : c'.nreg (r' + 1 + 2) = c.nreg (r + 1 + 2) := by
-      rw [show r' + 1 + 2 = r' + 3 by ring, show r + 1 + 2 = r + 3 by ring]; exact h3
+      assumption
     cases s with
     | vtx i => exact ⟨by rw [h1]; exact hs.1, by rw [e2]; exact hs.2⟩
     | onEdge e k => exact ⟨by rw [h1]; exact hs.1, by rw [e2]; exact hs.2.1, by rw [e3]; exact hs.2.2⟩
@@ -321,7 +318,7 @@ theorem callAbs_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       (fun c' => AbsRec P c' o ((chainModel C).pos (Qof P) ⟨c.nreg re, c.nreg rh⟩).1 C.radius ∧
         (∀ r, bandOf r ∉ oracleBands → (r < o ∨ o + 3 < r) → r ≠ ALLOC →
           c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have h := callP_irs (P := P) (c₀ := c₀) (c := c)
     (ins := [(50200, dsc), (50201, re), (50202, rh)])
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212), (o + 3, 50213)]) absKey_meets
@@ -331,7 +328,7 @@ theorem callAbs_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
           band5_oracle (by norm_num) (by norm_num)⟩)
-    (nodup4 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega))
+    ((ram_app% (nodup4 ?_ ?_ ?_ ?_ ?_ ?_)))
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (fun c₁ hm hA e1 e2 => by
@@ -339,18 +336,18 @@ theorem callAbs_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨⟨?_, ?_, ?_⟩, ?_⟩
-      · rw [g1]; exact he
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hy
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+    (by assumption)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2, k3⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   have hres := hpost H C hC₁
   unfold AbsKeyOut at hres
   rw [g1, g2] at hres
@@ -371,7 +368,7 @@ theorem callAbsCmp_irs {a b o : ℕ} (hI : IInv W c₀ c) (hG : GoodEnv P) (hW :
     IRS P W c₀ (callAbsCmp a b o) c 269
       (fun c' => BitIs c' o (x₁ < x₂) ∧
         (∀ r, bandOf r ∉ oracleBands → r ≠ o → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have hb : ∀ r, 50201 ≤ r → r ≤ 50208 → bandOf r ∈ oracleBands := fun r h1 h2 =>
     band5_oracle (by omega) (by omega)
   have h := callP_irs (P := P) (c₀ := c₀) (c := c)
@@ -381,19 +378,16 @@ theorem callAbsCmp_irs {a b o : ℕ} (hI : IInv W c₀ c) (hG : GoodEnv P) (hW :
     (by simp)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
-        exact ⟨hb _ le_rfl (by norm_num), hb _ (by norm_num) (by norm_num),
-          hb _ (by norm_num) (by norm_num), hb _ (by norm_num) (by norm_num),
-          hb _ (by norm_num) (by norm_num), hb _ (by norm_num) (by norm_num),
-          hb _ (by norm_num) (by norm_num), hb _ (by norm_num) le_rfl⟩)
+        simp_all)
     (by simp)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq]; omega)
-    (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq]; omega)
+    (by simp_all <;> omega)
+    (by simp_all)
     (fun c₁ hm hA e1 e2 => by
       simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1
       obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8⟩ := e1
       exact ⟨hG, hW, x₁, x₂, R, absRec_transport h₁ g1 g2 g3 g4,
         absRec_transport h₂ g5 g6 g7 g8⟩)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+    (by assumption)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
@@ -432,7 +426,7 @@ theorem callOff_irs {dsc ex hx ey hy g o : ℕ} {C : Chain} (hI : IInv W c₀ c)
             ((chainModel C).key (Qof P) ⟨c.nreg ey, c.nreg hy⟩) <
           off (chainModel C).W.n (c.nreg g) ((chainModel C).key (Qof P) ⟨c.nreg ex, c.nreg hx⟩)) ∧
         (∀ r, bandOf r ∉ oracleBands → r ≠ o → r ≠ o + 1 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have hb : ∀ r, 50200 ≤ r → r ≤ 50205 → bandOf r ∈ oracleBands := fun r h1 h2 =>
     band5_oracle (by omega) (by omega)
   have h := callP_irs (P := P) (c₀ := c₀) (c := c)
@@ -441,9 +435,7 @@ theorem callOff_irs {dsc ex hx ey hy g o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (by simp)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
-        exact ⟨hb _ le_rfl (by norm_num), hb _ (by norm_num) (by norm_num),
-          hb _ (by norm_num) (by norm_num), hb _ (by norm_num) (by norm_num),
-          hb _ (by norm_num) (by norm_num), hb _ (by norm_num) le_rfl⟩)
+        simp_all)
     (nodup2 (by omega))
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
@@ -452,21 +444,21 @@ theorem callOff_irs {dsc ex hx ey hy g o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2, g3, g4, g5⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, hctx.2.2.2.2.2⟩
-      · rw [g1]; exact hex
-      · rw [g3]; exact hey
-      · rw [g5]; exact hg
-      · rw [g1, g2]; exact hpx
-      · rw [g3, g4]; exact hpy
-      · rw [g1, g2]; exact h6x
-      · rw [g3, g4]; exact h6y)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+      · rwa [g1]
+      · rwa [g3]
+      · rwa [g5]
+      · rwa [g1, g2]
+      · rwa [g3, g4]
+      · rwa [g1, g2]
+      · rwa [g3, g4])
+    (by assumption)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2, g3, g4, g5⟩ := e1
   obtain ⟨k0, k1⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   have hres := hpost H C hC₁
   unfold OffOut at hres
   simp only [g1, g2, g3, g4, g5] at hres

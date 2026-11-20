@@ -40,19 +40,7 @@ theorem BQ_band {r : ℕ} (h : BQ r = true) : bandOf r = bSign ∨ bandOf r = bL
 /-- **The query meets its specification.** -/
 theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ bands ∧ bOQuery ∈ bands)
     {κ : ℕ} (hκ : κq ≤ κ) :
-    Meets qry bands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ OAt P c.nmem (rd c bOQuery 0) ∧
-        ∃ o : QOrigin, o.Lt P.n ∧ QOriginIn c (bandReg bOQuery 1) o)
-      (fun P c c' => ∀ H C (o : QOrigin),
-        ChainDescAt c.nmem (c.nmem (rd c bOQuery 0)) (Qof P) H C →
-        QOriginIn c (bandReg bOQuery 1) o →
-          let z := o.eval (Qof P) C (dirOf (rd c bOQuery 4))
-          (rd c' bOQuery 5 = 1 → ∃ t, FirstHit C.set z (dirOf (rd c bOQuery 4)) t ∧
-            rd c' bOQuery 6 < P.n ∧
-            Visibility.rayPt z (dirOf (rd c bOQuery 4)) t ∈ (Qof P).edge (rd c' bOQuery 6)) ∧
-          (rd c' bOQuery 5 ≠ 1 → NoHit C.set z (dirOf (rd c bOQuery 4))))
-      (fun _ c => ⌈(κ : ℝ) * ((c.nmem (rd c bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
-        ((c.nmem (c.nmem (rd c bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊) := by
+    OracleQueryMeets qry bands κ OAt := by
   intro P W c hw ⟨hG, hHW, ⟨E, hE, hOE, hrob⟩, o, hol, ho⟩ _
   set O := rd c bOQuery 0 with hOdef
   obtain ⟨V, H, C, N, B, k, hA⟩ := hrob.holds
@@ -81,8 +69,8 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
     exact_mod_cast this.trans (Nat.le_ceil _)
   · -- the answer
     intro H' C' o' hC' ho'
-    have hCC : C' = C := NFLoc.chain_eq_of_desc hC' (by rw [hA.lD]; exact hA.desc)
-    have hoo : o' = o := qOriginIn_unique ho' ho
+    have hCC := NFLoc.chain_eq_of_desc hC' (by rw [hA.lD]; exact hA.desc)
+    have hoo := qOriginIn_unique ho' ho
     subst hCC hoo
     exact hans
   · rcases BQ_band hr with h | h | h <;> rw [h]

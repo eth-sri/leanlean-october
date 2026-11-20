@@ -66,7 +66,7 @@ theorem bCore_notin_drvBands : bCore ∉ drvBands := by
   unfold drvBands; simp
 
 theorem bDownDrv_mem_drvBands : bDownDrv ∈ drvBands := by
-  unfold drvBands phaseBands bDownDrv bCore; decide
+  decide
 
 theorem drvBands_subset : drvBands ⊆ phaseBands := Finset.erase_subset _ _
 
@@ -89,7 +89,7 @@ theorem coreReg_ne_alloc (i : ℕ) (hi : i < 10000) : coreReg i ≠ ALLOC := by
 
 /-- The setup record survives a change of memory at or above its bound and a larger bound. -/
 theorem setup_transport {A A' : ℕ} {m m' : ℕ → ℕ} {S n : ℕ}
-    (h : Robust A m (fun m => SetupAt m S n A)) (hm : ∀ a, a < A → m' a = m a) (hA : A ≤ A') :
+    (h : Robust A m (fun m => SetupAt m S n A)) (hm : MemEqBelow A m' m) (hA : A ≤ A') :
     Robust A' m' (fun m => SetupAt m S n A') := by
   intro m'' h''
   have := h m'' (fun a ha => (h'' a (lt_of_lt_of_le ha hA)).trans (hm a ha))
@@ -99,19 +99,19 @@ theorem setup_transport {A A' : ℕ} {m m' : ℕ → ℕ} {S n : ℕ}
 theorem EnvD.transport {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {c c' : Config}
     (h : EnvD X P W c) (h0 : c'.nreg (coreReg 0) = c.nreg (coreReg 0))
     (h1 : c'.nreg (coreReg 1) = c.nreg (coreReg 1)) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : EnvD X P W c' := by
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) : EnvD X P W c' := by
   obtain ⟨hG, hW3, hWh, hS, hXh, hcap⟩ := h
   refine ⟨hG, hW3, hWh, ?_, ?_, ?_⟩
   · rw [h0]; exact setup_transport hS hm hA
   · rw [h1]
     exact X.mono P _ _ _ _ hA (X.local_ P c.nmem c'.nmem _ _ (fun a ha => (hm a ha).symm) hXh)
-  · rw [h1, hX P c.nmem c'.nmem _ _ hm hXh]; exact hcap
+  · rwa [h1, hX P c.nmem c'.nmem _ _ hm hXh]
 
 /-- **The environment survives every frame that does not write the core band.** -/
 theorem EnvD.frame {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {B : Finset ℕ}
     {c c' : Config} {k : ℕ} (h : EnvD X P W c) (hf : Frame B c c' k) (hB : bCore ∉ B) :
     EnvD X P W c' := by
-  have hr : ∀ i, i < 10000 → c'.nreg (coreReg i) = c.nreg (coreReg i) := fun i hi =>
+  have hr := fun i hi =>
     hf.1 _ (by rw [coreReg_band i hi]; exact hB) (coreReg_ne_alloc i hi)
   exact h.transport hX (hr 0 (by norm_num)) (hr 1 (by norm_num)) hf.2.2.2.2.2.1 hf.2.2.1
 
@@ -127,22 +127,22 @@ admissible, distinct and attached (`ChordTriplesOK`).  With `S = N.F I Q`:
 def InvAt (cnt : ℕ → ℕ) (P : Polygon) (c : Config) (lam : ℕ) : Prop :=
   rd c bDownDrv 1 + 6 ≤ c.nreg ALLOC ∧
     Robust (c.nreg ALLOC) c.nmem
-      (fun m => ModelDescAt m (rd c bDownDrv 1) (Qof P) (interiorModel (Qof P))) ∧
+      (fun m => ModelDescAt m (rd c bDownDrv 1) (Qof P) (inputModel P)) ∧
     ∃ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ),
       rd c bDownDrv 3 = L.length ∧
       rd c bDownDrv 2 + 3 * L.length ≤ c.nreg ALLOC ∧
       Robust (c.nreg ALLOC) c.nmem (fun m => ChordListAt m (rd c bDownDrv 2) L) ∧
       rd c bDownDrv 4 + 2 * L.length ≤ c.nreg ALLOC ∧
       Robust (c.nreg ALLOC) c.nmem (fun m => seg m (rd c bDownDrv 4) (2 * L.length) = E) ∧
-      ChordTriplesOK (interiorModel (Qof P)) (Qof P) L ∧
+      ChordTriplesOK (inputModel P) (Qof P) L ∧
       E.Perm (List.range (2 * L.length)) ∧
-      E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L) ∧
+      E.Pairwise (codeLe (inputModel P) (Qof P) L) ∧
       NFWithin c.nmem (rd c bDownDrv 5) (c.nreg ALLOC)
-        (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) ∧
-      (interiorModel (Qof P)).DegLe
-        ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) 4 ∧
-      (interiorModel (Qof P)).Semigranular
-        ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P))
+        (inputNF P L E) ∧
+      P.inputModel.DegLe
+        (inputChords P L E) 4 ∧
+      P.inputModel.Semigranular
+        (inputChords P L E)
         (2 ^ (Cost.ceilBeta lam + 12)) ∧
       L.length * 2 ^ Cost.ceilBeta lam ≤
         cnt lam * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta lam)
@@ -151,18 +151,18 @@ def InvAt (cnt : ℕ → ℕ) (P : Polygon) (c : Config) (lam : ℕ) : Prop :=
 below the allocator is kept, and the allocator is not lowered. -/
 theorem InvAt.transport {cnt : ℕ → ℕ} {P : Polygon} {c c' : Config} {lam : ℕ}
     (h : InvAt cnt P c lam) (hr : ∀ i, 1 ≤ i → i ≤ 5 → rd c' bDownDrv i = rd c bDownDrv i)
-    (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) :
+    (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) :
     InvAt cnt P c' lam := by
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := h
   have h1 := hr 1 le_rfl (by norm_num)
   refine ⟨by rw [h1]; omega, by rw [h1]; exact (hDa.transport hm).mono hA, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_,
     hdeg, hwt, hcnt⟩
-  · rw [hr 3 (by norm_num) (by norm_num)]; exact hK
-  · rw [hr 2 (by norm_num) (by norm_num)]; omega
-  · rw [hr 2 (by norm_num) (by norm_num)]; exact (hLa.transport hm).mono hA
-  · rw [hr 4 (by norm_num) (by norm_num)]; omega
-  · rw [hr 4 (by norm_num) (by norm_num)]; exact (hEa.transport hm).mono hA
-  · rw [hr 5 (by norm_num) (by norm_num)]; exact (hN.transport hm).mono hA
+  · simp_all
+  · simp_all <;> omega
+  · ram_rw [hr 2]; exact (hLa.transport hm).mono hA
+  · simp_all <;> omega
+  · ram_rw [hr 4]; exact (hEa.transport hm).mono hA
+  · ram_rw [hr 5]; exact (hN.transport hm).mono hA
 
 /-- (I3) as a bound on `K`: `K ≤ cnt λ (2^p + 2^⌈βλ⌉) / 2^⌈βλ⌉`. -/
 theorem InvAt.len_le {cnt : ℕ → ℕ} {P : Polygon} {c : Config} {lam : ℕ}
@@ -170,8 +170,7 @@ theorem InvAt.len_le {cnt : ℕ → ℕ} {P : Polygon} {c : Config} {lam : ℕ}
     rd c bDownDrv 3 ≤
       cnt lam * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta lam) / 2 ^ Cost.ceilBeta lam := by
   obtain ⟨-, -, L, E, hK, -, -, -, -, -, -, -, -, -, -, hcnt⟩ := h
-  rw [hK, Nat.le_div_iff_mul_le (by positivity)]
-  exact hcnt
+  rwa [hK, Nat.le_div_iff_mul_le (by positivity)]
 
 /-! ## The component contracts -/
 
@@ -208,8 +207,8 @@ def BaseSpec (X : MemCtx) (cnt : ℕ → ℕ) (n₀ : ℕ) : Prop :=
     (fun P W c => EnvD X P W c ∧
       ∃ lam, lam ≤ topGrade P.n ∧ (lam < 16 ∨ P.n < n₀) ∧ InvAt cnt P c lam)
     (fun P _ c' => ∃ N, Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bDownDrv 6) N) ∧
-      IsNF (interiorModel (Qof P)) (Qof P) N ∧
-      N.F (interiorModel (Qof P)) (Qof P) = (interiorModel (Qof P)).Full)
+      IsNF (inputModel P) (Qof P) N ∧
+      N.F (inputModel P) (Qof P) = P.inputModel.Full)
     (fun P _ => κ * (P.n + 1))
 
 end

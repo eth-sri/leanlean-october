@@ -39,33 +39,35 @@ section Gen
 
 variable (J : Merge.Junction)
 
+section
+
+variable (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) {z : Point} {σ : ℝ}
+    (hzq : (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩ = z) (hσq : dirOf q.2.2 = σ)
+include hzq hσq
+
 /-- **Answer of a free direction, either side**: flag `1`, the first hit parameter `T` of `C`, and
 the record data. -/
-theorem seesInWhole_hit (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) {z : Point} {σ : ℝ}
-    (hzq : (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩ = z) (hσq : dirOf q.2.2 = σ)
+theorem seesInWhole_hit
     (hzt : z.2 ≤ J.whole.top.2) {T : ℝ} (hhit : FreeAt J.whole z σ ∧ J.whole.hitParam z σ = T)
     {h pz pw lp rp : ℕ} (hR : RecordData J Q z σ T h pz pw lp rp) :
     SeesInWhole J Q i q (1, h, lp, rp) := by
   obtain ⟨hh, hz, hw, hAz, hAw, hl, hr⟩ := hR
-  have hσ : σ = 1 ∨ σ = -1 := hσq ▸ dirOf_cases q.2.2
+  have hσ := hσq ▸ dirOf_cases q.2.2
   obtain ⟨hT0, -, -⟩ := Merge.hit_of_freeAt J.whole hzt hσ hhit.1
   rw [hhit.2] at hT0
-  obtain ⟨hs, hat⟩ := record_ok (chainModel J.whole) Q hσ hT0 hh hz hw hAz hAw ⟨hl, hr⟩
+  obtain ⟨hs, hat⟩ := record_ok J.wholeModel Q hσ hT0 hh hz hw hAz hAw ⟨hl, hr⟩
   refine seesInWhole_of_answer J Q i q _ ?_ ?_ <;> simp only [hzq, hσq]
   · exact ⟨fun _ => hhit.1, fun _ => trivial⟩
-  · intro _
-    refine ⟨?_, hat⟩
-    rw [hs]
-    unfold Merge.shoot
-    rw [hhit.2]
+  · intros; simp [hs, Merge.shoot, hhit.2, *]
 
 /-- **Answer of a direction that is not free, either side**: any flag other than `1`. -/
-theorem seesInWhole_notFree' (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) {z : Point} {σ : ℝ}
-    (hzq : (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩ = z) (hσq : dirOf q.2.2 = σ)
+theorem seesInWhole_notFree'
     (hnf : ¬ FreeAt J.whole z σ) (r : ℕ × ℕ × ℕ × ℕ) (hr : r.1 ≠ 1) : SeesInWhole J Q i q r := by
   refine seesInWhole_of_answer J Q i q r ?_ ?_ <;> simp only [hzq, hσq]
   · exact ⟨fun h => absurd h hr, fun h => absurd h hnf⟩
   · exact fun h => absurd h hr
+
+end
 
 /-! ## The candidate principle -/
 
@@ -112,10 +114,10 @@ theorem not_sideLeft_horizontal {W : Polygon} {p : ℕ} {t : ℝ} (ht0 : 0 < t) 
     rw [hv]; show a.2 + t * ((W.vtx ((p + 1) % W.n)).2 - a.2) = a.2; rw [← hh]; ring
   have hb2 : b.2 = a.2 := by rw [hb']; exact hh.symm
   have eB1 : (b - v).1 = (1 - t) * (b.1 - a.1) := by simp only [Prod.fst_sub]; rw [hv1]; ring
-  have eB2 : (b - v).2 = 0 := by simp only [Prod.snd_sub]; rw [hb2, hv2]; ring
-  have eA1 : (a - v).1 = -t * (b.1 - a.1) := by simp only [Prod.fst_sub]; rw [hv1]; ring
-  have eA2 : (a - v).2 = 0 := by simp only [Prod.snd_sub]; rw [hv2]; ring
-  have eX2 : (rayPt v σ 1 - v).2 = 0 := by simp only [Prod.snd_sub, rayPt_snd]; ring
+  have eB2 : (b - v).2 = 0 := by simp_all
+  have eA1 : (a - v).1 = -t * (b.1 - a.1) := by simp_all
+  have eA2 : (a - v).2 = 0 := by simp_all
+  have eX2 : (rayPt v σ 1 - v).2 = 0 := by simp
   have hBA : sideCross (b - v) (a - v) = 0 := by unfold sideCross; rw [eB2, eA2]; ring
   have hBX : sideCross (b - v) (rayPt v σ 1 - v) = 0 := by unfold sideCross; rw [eB2, eX2]; ring
   have hdot : sideDot (b - v) (a - v) ≤ 0 := by
@@ -132,12 +134,17 @@ theorem not_sideLeft_horizontal {W : Polygon} {p : ℕ} {t : ℝ} (ht0 : 0 < t) 
 
 variable {M : Model}
 
+section
+
+variable (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) {h : ℕ}
+    (hy : (Q.vtx h).2 = (sidePt M.W p t).2) {σ : ℝ}
+    (hsec : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1))
+include ht0 ht1 hy hsec
+
 /-- **The height code of a point**: at a position `(p, t)` whose point has the height of vertex
 `h` of `Q`, the position with the height code `h + 1` on edge `p` is the same position (inside a
 horizontal edge only the start vertex has a horizontal ray in its left sector). -/
-theorem param_of_arrival (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) {h : ℕ}
-    (hy : (Q.vtx h).2 = (sidePt M.W p t).2) {σ : ℝ}
-    (hsec : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1)) :
+theorem param_of_arrival :
     M.param Q ⟨p, h + 1⟩ = t := by
   by_cases hh : (M.wa p).2 = (M.wb p).2
   · have ht : t = 0 := by
@@ -145,24 +152,19 @@ theorem param_of_arrival (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 
       exact not_sideLeft_horizontal (lt_of_le_of_ne ht0 (Ne.symm hne)) ht1 hh σ hsec
     rw [ht]
     unfold Model.param
-    simp only
-    rw [ite_eq_left hh]
+    simp_all
   · unfold Model.param
     simp only
     rw [ite_eq_right hh, hy]
-    have : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
+    have := sub_ne_zero.2 (Ne.symm hh)
     have e : (sidePt M.W p t).2 = (M.wa p).2 + t * ((M.wb p).2 - (M.wa p).2) := rfl
-    rw [e]
-    field_simp
-    ring
+    simp_all
 
-theorem pos_of_arrival (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) {h : ℕ}
-    (hy : (Q.vtx h).2 = (sidePt M.W p t).2) {σ : ℝ}
-    (hsec : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1)) :
+theorem pos_of_arrival :
     M.pos Q ⟨p, h + 1⟩ = sidePt M.W p t := by
-  unfold Model.pos
-  rw [param_of_arrival Q ht0 ht1 hy hsec]
-  rfl
+  ram_finish [Model.pos, param_of_arrival Q ht0 ht1 hy hsec]
+
+end
 
 end Record
 
@@ -175,17 +177,20 @@ of the query point `z` whose left sector contains the ray, `(pw, tw)` an arrival
 hit point `w = rayPt z σ T`, `h` a vertex of `Q` at the height of `z`. -/
 theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) {T : ℝ}
     (hT : 0 < T) {h : ℕ} (hh : (Q.vtx h).2 = z.2) {pz pw : ℕ} {tz tw : ℝ}
-    (hAz : Arrival (chainModel J.whole).W z (-σ) pz tz)
-    (hAw : Arrival (chainModel J.whole).W (rayPt z σ T) σ pw tw) :
+    (hAz : Arrival J.wholeModel.W z (-σ) pz tz)
+    (hAw : Arrival J.wholeModel.W (rayPt z σ T) σ pw tw) :
     RecordData J Q z σ T h pz pw (if σ = 1 then pz else pw) (if σ = 1 then pw else pz) := by
-  set M := chainModel J.whole
+  set M := J.wholeModel
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨hpz, htz0, htz1, hptz, hsecz⟩ := hAz
   obtain ⟨hpw, htw0, htw1, hptw, hsecw⟩ := hAw
   rw [neg_neg] at hsecz
-  have hsz : sideLeft M.W pz tz (rayPt (sidePt M.W pz tz) σ 1) := by rw [hptz]; exact hsecz
-  have hsw : sideLeft M.W pw tw (rayPt (sidePt M.W pw tw) (-σ) 1) := by rw [hptw]; exact hsecw
-  have hyz : (Q.vtx h).2 = (sidePt M.W pz tz).2 := by rw [hptz]; exact hh
+  have hsz := hsecz
+  rw [← hptz] at hsz
+  have hsw := hsecw
+  rw [← hptw] at hsw
+  have hyz := hh
+  rw [← hptz] at hyz
   have hyw : (Q.vtx h).2 = (sidePt M.W pw tw).2 := by rw [hptw]; exact hh
   have ez := param_of_arrival Q htz0 htz1 hyz hsz
   have ew := param_of_arrival Q htw0 htw1 hyw hsw

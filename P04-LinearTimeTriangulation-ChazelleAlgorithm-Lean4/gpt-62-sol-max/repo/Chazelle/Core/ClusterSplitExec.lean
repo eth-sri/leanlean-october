@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterStepMain
 
 /-!
@@ -25,17 +27,13 @@ theorem cntIn_congr {κ κ' : ℕ → ℕ} {lo hi a b : ℕ} (h : ∀ i, lo ≤ 
   unfold cntIn
   congr 1
   refine Finset.filter_congr (fun i hi' => ?_)
-  simp only [Finset.mem_Ico] at hi'
-  rw [h i hi'.1 hi'.2]
+  simp_all
 
 theorem SS.Regs.of_frame2 {S : SS} {c c' : Config} (h : S.Regs c)
     (hr : ∀ r, ¬ SplitRG r → r ≠ 130701 → r ≠ 130704 → c'.nreg r = c.nreg r) : S.Regs c' := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16, h17, h18, h19,
-    h20, h21, h22, h23, h24, h25, h26, h27, h28, h29, h30, h31, h32, h33, h34, h35, h36, h37, h38,
-    h39, h40, h41, h42, h43, h44⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold SplitRG; omega) (by omega) (by omega)]; assumption)
+  cases h
+  constructor <;>
+    (ram_rw [hr]; assumption)
 
 /-- Pop the top entry: `tp := tp - 2`, `lo := STK[tp]`, `hi := STK[tp + 1]`. -/
 def popB : Stmt := block [.subN 130701 130701 130001, .subN 130701 130701 130001,
@@ -64,10 +62,10 @@ theorem popB_exec {S : SS} {c : Config} (hw : WordsBounded W c) (hR : S.Regs c) 
   exec_block
   all_goals try (config_simp; simp only [htp, h1, hs]; omega)
   refine ⟨rfl, ‹_›, rfl, ?_, ?_, ?_, fun r a b c d => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [htp, h1]; omega
-  · config_simp; simp only [htp, h1, hs]; rw [show tp + 2 - 1 - 1 = tp by omega]
-  · config_simp; simp only [htp, h1, hs]; rw [show tp + 2 - 1 - 1 = tp by omega]
-  · simp only [Machine.upd_apply]; split_ifs <;> omega
+  · ram_finish
+  · ram_finish
+  · ram_finish
+  · ram_finish
 
 end proofs
 
@@ -78,20 +76,24 @@ variable {μ N : ℕ} {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin �
   {C : CoTree (starTree T a ha)} {R : BTree} {first : Fin μ → Fin N} {preE slot : ℕ → ℕ}
   {upT : ℕ → ℕ} {k c : ℕ} {P : Polygon} {W : ℕ}
 
+section
+
+variable {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
+    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m)
+include hSF
+
 /-- The keys of the items of a segment are preorders. -/
-theorem SFacts.key_eq {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
-    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m) {i : ℕ}
+theorem SFacts.key_eq {i : ℕ}
     (hv : m (S.bACT + i) < μ) :
     keyOf m S.bACT S.bFIRST S.bFPRE i = preE (m (S.bFIRST + m (S.bACT + i))) ∧
       m (S.bFIRST + m (S.bACT + i)) < N := by
   have hf := hSF.first ⟨_, hv⟩
   simp only at hf
-  have hN : m (S.bFIRST + m (S.bACT + i)) < N := by rw [hf]; exact Fin.isLt _
+  have hN : m (S.bFIRST + m (S.bACT + i)) < N := by simp_all
   exact ⟨by unfold keyOf; rw [hSF.pre _ hN], hN⟩
 
 /-- The good test in memory is the good test of the preorder tree. -/
-theorem SFacts.gdF_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
-    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m) {lo hi : ℕ}
+theorem SFacts.gdF_iff {lo hi : ℕ}
     (hlt : ∀ i, lo ≤ i → i < hi → m (S.bACT + i) < μ) {z : ℕ} (hz : z < N) :
     GdF m S.bACT S.bFIRST S.bFPRE S.bFSZ lo hi z ↔
       BTree.GdN preE (fun g => (R.sub g).card) (fun i => preE (m (S.bFIRST + m (S.bACT + i))))
@@ -99,6 +101,8 @@ theorem SFacts.gdF_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
   unfold GdF BTree.GdN
   rw [hSF.pre z hz, hSF.sz z hz,
     cntIn_congr (fun i h1 h2 => (hSF.key_eq (hlt i h1 h2)).1)]
+
+end
 
 open Classical in
 /-- **One iteration of the split driver.** -/
@@ -204,7 +208,7 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
   have hroot : GdF c2.nmem S.bACT S.bFIRST S.bFPRE S.bFSZ lo hi (R.up^[2 ^ S.L] y) := by
     have hyR : y < R.n := by rw [hRn]; exact hyN
     have hpos := (hSF.R_ok.pos_spec hyR).1
-    rw [BTree.iterate_up_root hSF.R_ok hyR (by omega), hm2', hSF.R_root,
+    ram_rw [BTree.iterate_up_root hSF.R_ok hyR, hm2', hSF.R_root,
       hSF.gdF_iff (fun i i1 i2 => hactμ i i1 i2) (by omega), ← hSF.R_root]
     exact BTree.good_root hSF.R_ok hSF.R_pre
       (φ := fun i => m (S.bFIRST + m (S.bACT + i)))
@@ -275,8 +279,8 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
       (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega)]; exact hb2)
       (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega)]; exact ht2) rfl
       (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega), hr2 _ (by unfold SplitRG; omega)]; exact htp1)
-      (by rw [hr3 _ (by unfold ClimbRG GoodRG; omega), hr2 _ (by unfold SplitRG; omega),
-        hr1 _ (by omega) (by omega) (by omega) (by omega)]; exact hnsp)
+      (by ram_rw [hr3 _ (by unfold ClimbRG GoodRG; omega), hr2 _ (by unfold SplitRG; omega),
+        hr1]; exact hnsp)
       hlh (by rw [hμ]; exact hhi) (by rw [hN]; exact hfN)
       (by rw [hm3']; exact hSF.markMem)
       (fun d hd => by
@@ -293,7 +297,7 @@ theorem splitBody_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W 
       (by rw [hm3']; exact hsum)
       (by omega) hnspW
   rw [hm3'] at hq4
-  refine ⟨c4, k1 + (k2 + (k3 + k4)), .seq x1 (.seq x2 (.seq x3 x4)), ?_, hw4, ?_,
+  refine ⟨c4, k1 + (k2 + (k3 + k4)), (by ram_path), ?_, hw4, ?_,
     ⟨news, fin', D', ?_, ?_, hpot⟩, hnsp4, ?_, ?_, ?_, ?_, ?_⟩
   · unfold splitC
     omega

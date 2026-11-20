@@ -62,7 +62,7 @@ theorem downOverhead_eq (lam : ℕ) :
 
 theorem downOverhead_nonneg (lam : ℕ) : 0 ≤ downOverhead lam := by
   rw [downOverhead_eq]
-  have := two_rpow_pos (-(lam : ℝ) / 375)
+  
   positivity
 
 /-- `downOverhead λ ≤ λ³ 2^(-λ/375)`. -/
@@ -132,9 +132,9 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
       4096 * K * k * ((2 : ℝ) ^ l * downOverhead lam) := by
   set c := ceilBeta lam with hcdef
   set μ := c + 11 with hμdef
-  have hμl : μ ≤ lam := ceilBeta_add_eleven_le h14
+  have hμl := ceilBeta_add_eleven_le h14
   have hcl : c ≤ lam := by omega
-  have hX : 0 ≤ k * lemma41Bound μ := mul_nonneg hk (lemma41Bound_nonneg μ)
+  have hX := mul_nonneg hk (lemma41Bound_nonneg μ)
   refine le_trans (mul_le_mul_of_nonneg_right hR hX) ?_
   rw [lemma41Bound_eq, downOverhead_eq]
   -- polynomial part
@@ -143,19 +143,19 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
     have h2 : (Nat.clog 2 μ : ℝ) ≤ Nat.clog 2 lam := by
       exact_mod_cast Nat.clog_mono_right 2 hμl
     have h0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg μ
-    have h3 : (μ : ℝ) ^ 2 ≤ (lam : ℝ) ^ 2 := pow_le_pow_left₀ h0 h1 2
+    have h3 := pow_le_pow_left₀ h0 h1 2
     exact mul_le_mul h3 h2 (Nat.cast_nonneg _) (by positivity)
   -- exponential part: (2^l/2^c + 1) 2^((74/75)μ) ≤ 4096 · 2^l 2^(-λ/375)
   have hexp : ((2 : ℝ) ^ l / (2 : ℝ) ^ c + 1) * (2 : ℝ) ^ ((74 / 75 : ℝ) * μ) ≤
       4096 * ((2 : ℝ) ^ l * (2 : ℝ) ^ (-(lam : ℝ) / 375)) := by
-    have hμR : ((μ : ℕ) : ℝ) = (c : ℝ) + 11 := by rw [hμdef]; push_cast; ring
+    have hμR : ((μ : ℕ) : ℝ) = (c : ℝ) + 11 := by simp_all
     have hsplit : (2 : ℝ) ^ ((74 / 75 : ℝ) * μ) =
         (2 : ℝ) ^ c * ((2 : ℝ) ^ (11 : ℝ) * (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75)) := by
       rw [← Real.rpow_natCast (2 : ℝ) c, two_rpow_mul_two_rpow, two_rpow_mul_two_rpow]
       congr 1
       rw [hμR]
       ring
-    have h2c : (0 : ℝ) < (2 : ℝ) ^ c := by positivity
+    
     have hcl' : (2 : ℝ) ^ c ≤ (2 : ℝ) ^ l := pow_le_pow_right₀ (by norm_num) (hcl.trans hl)
     have hq : (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75) ≤ (2 : ℝ) ^ (-(lam : ℝ) / 375) := by
       refine le_trans (two_rpow_le_two_rpow ?_) (two_rpow_neg_ceilBeta_le lam)
@@ -168,12 +168,12 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
         2048 * (((2 : ℝ) ^ l + (2 : ℝ) ^ c) * (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75)) := by
       field_simp
     rw [e]
-    have h2l : (0 : ℝ) ≤ (2 : ℝ) ^ l := by positivity
+    
     have : ((2 : ℝ) ^ l + (2 : ℝ) ^ c) * (2 : ℝ) ^ (-((μ : ℕ) : ℝ) / 75) ≤
         (2 * (2 : ℝ) ^ l) * (2 : ℝ) ^ (-(lam : ℝ) / 375) :=
       mul_le_mul (by linarith) hq hq0 (by positivity)
     nlinarith
-  have hP0 : (0 : ℝ) ≤ (μ : ℝ) ^ 2 * (Nat.clog 2 μ : ℝ) := by positivity
+  
   have hE0 : (0 : ℝ) ≤ (2 : ℝ) ^ l / (2 : ℝ) ^ c + 1 := by positivity
   have hq75 : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 / 75 : ℝ) * μ) := (two_rpow_pos _).le
   calc K * ((2 : ℝ) ^ l / (2 : ℝ) ^ c + 1) *
@@ -191,11 +191,6 @@ theorem downStep_cost_le {K k : ℝ} (hK : 0 ≤ K) (hk : 0 ≤ k) {lam l : ℕ}
 /-! ### The recurrence of Lemma 4.2 and its solution -/
 
 /-! ### Theorem 4.3: the linear total -/
-
-/-- The explicit constant of the whole algorithm:
-`304 (c₀ + 34200³ c₁ + 27 c₂) + b + 4500³ · 3000 · a + c₃`. -/
-@[expose] noncomputable def totalConst (c₀ c₁ c₂ a b c₃ : ℝ) : ℝ :=
-  304 * upSlackConst c₀ c₁ c₂ + (b + 4500 ^ 3 * 3000 * a) + c₃
 
 end
 

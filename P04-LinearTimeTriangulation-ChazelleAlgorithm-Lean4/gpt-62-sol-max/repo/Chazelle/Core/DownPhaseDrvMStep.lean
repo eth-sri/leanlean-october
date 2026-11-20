@@ -46,11 +46,9 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       stepFam Q S F \ S ⊆ ⋃ R ∈ (interiorModel Q).regions S, F R := by
   set I := interiorModel Q with hI
   set T := stepFam Q S F with hT
-  have hM : WalkAx I := walkAx_interiorModel hQ
-  have hRfin : (I.regions S).Finite :=
-    (hM.sys S hFam.2.1 hFam.1).regionsIn_finite hM.preconn hM.nonempty subset_rfl
-  have hloc : ∀ R (hR : R ∈ I.regions S), ∀ c ∈ Extract.kept R (F R), c ∈ I.Adm ∧ c ∩ I.D ⊆ R :=
-    fun R hR c hc => (hEx R hR).loc (hF R hR).1.2.1 c hc
+  have hM := walkAx_interiorModel hQ
+  have hRfin := (hM.sys S hFam.2.1 hFam.1).regionsIn_finite hM.preconn hM.nonempty subset_rfl
+  have hloc := fun R hR c hc => (hEx R hR).loc (hF R hR).1.2.1 c hc
   have hmem : ∀ c, c ∈ T → c ∈ S ∨ ∃ R ∈ I.regions S, c ∈ Extract.kept R (F R) := by
     rintro c (hc | hc)
     · exact Or.inl hc
@@ -78,21 +76,19 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have key : ∀ V ∈ I.regions T, I.deg T V ≤ D + d₀ ∧ I.weight T V ≤ γ := by
     intro V hV
     obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
-    have hVS : V ⊆ freeIn I.D S :=
-      (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti I.D hST)
+    have hVS := (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti I.D hST)
     set R := connectedComponentIn (freeIn I.D S) v with hRdef
     have hR : R ∈ I.regions S := ⟨v, hVS hv, rfl⟩
-    have hVR : V ⊆ R :=
-      (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVS
+    have hVR := (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVS
     set G := S ∪ Extract.kept R (F R) with hG
     have hSG : S ⊆ G := subset_union_left
-    have hGT : G ⊆ T := union_subset hST (hkT R hR)
+    have hGT := union_subset hST (hkT R hR)
     have hK : OutOther I.D S G T R := by
       intro c hc hcG
       rcases hmem c hc with hcS | ⟨R', hR', hcR'⟩
       · exact absurd (Or.inl hcS) hcG
       · refine ⟨R', hR', fun e => hcG (Or.inr (e ▸ hcR')), (hloc R' hR' c hcR').2⟩
-    have hVG : V ∈ I.regions G := region_restrict hSG hGT hR hK hV hVR
+    have hVG := region_restrict hSG hGT hR hK hV hVR
     obtain ⟨U, hU, hVU⟩ := (hEx R hR).region hVG hVR
     have hsys := hM.sys T hTadm hTfin
     refine ⟨?_, ?_⟩

@@ -45,7 +45,7 @@ theorem ga_onArc {P : Polygon} {li : Bool} {N : NF} {r : ℕ}
     ∃ t, t < (N.region r).arcs.length ∧ OnArcP (Qof P) li N (rasOf N r t) x := by
   obtain ⟨t, ht, rfl⟩ := List.mem_iff_getElem.1 hj
   have e : rasOf N r t = (N.region r).arcs[t] := by
-    unfold rasOf; rw [List.getD_eq_getElem _ _ ht]
+    ram_finish [rasOf, List.getD_eq_getElem]
   have hjA := hras t ht
   rw [List.getD_eq_getElem _ _ ht] at hjA
   refine ⟨t, ht, ?_⟩
@@ -70,9 +70,9 @@ theorem xeGlue : XEGlue := by
   obtain ⟨i0, g, Y⟩ := X.ctx
   obtain ⟨hgood, hinc, hnext, hfree⟩ := X.arc_facts
   obtain ⟨hras1, -, -⟩ := DownMath.regArcs_facts hQ hok hperm hsort X.hK X.hregs hr
-  have hras : ∀ t, t < ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length →
-      ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.getD t 0 <
-        (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length := fun t ht => (hras1 t ht).1
+  have hras : ∀ t, t < ((inputNF P L E).region (c.nreg 217001)).arcs.length →
+      ((inputNF P L E).region (c.nreg 217001)).arcs.getD t 0 <
+        (inputNF P L E).arcs.length := fun t ht => (hras1 t ht).1
   -- memory
   have hNat := hNW.holds
   have hNRat := hNRW.holds
@@ -89,32 +89,32 @@ theorem xeGlue : XEGlue := by
   have hCD := hCDa.holds
   obtain ⟨hlen64, hwfP, -, -⟩ := (hMDwf.2 hMD0).2 _ _ hCD
   have hwf : HostWF (Qof P).n (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-      (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) := by
+      (inputNF P L E) (c.nreg 217001)) := by
     have h := hwfP; rwa [← hn] at h
   have hmp : C.m + 1 = ((regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-      (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).pts (Qof P).n).length := by
+      (inputNF P L E) (c.nreg 217001)).pts (Qof P).n).length := by
     rw [hCm, hCP]; simp [Host.poly, Polygon.n]
   have hm1 := C.one_le
   have hptsle := Host.pts_length_le hwf
   have hptsle' : (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-      (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).length * (Qof P).n ≤
+      (inputNF P L E) (c.nreg 217001)).length * (Qof P).n ≤
       64 * (Qof P).n := Nat.mul_le_mul_right _ hlen64
   -- the region has an arc
-  have hnRA1 : 1 ≤ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length := by
+  have hnRA1 : 1 ≤ ((inputNF P L E).region (c.nreg 217001)).arcs.length := by
     by_contra h0
     have hnil := ga_regHost_nil (decide (c.nreg 217002 = 1)) (Qof P).n
-      (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001) (by omega)
+      (inputNF P L E) (c.nreg 217001) (by omega)
     rw [hnil] at hmp
     simp [Host.pts] at hmp
   have hnRA32 := regHost_length_ge (decide (c.nreg 217002 = 1)) (Qof P).n
-    (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)
-  have hr' : c.nreg 217001 < (buildNF (interiorModel (Qof P)) (Qof P) L E).regions.length := hr
+    (inputNF P L E) (c.nreg 217001)
+  have hr' : c.nreg 217001 < (inputNF P L E).regions.length := hr
   have hreg4 := b4 _ hr
-  have hRA := b5 _ hr _ (show ((buildNF (interiorModel (Qof P)) (Qof P) L E).region
+  have hRA := b5 _ hr _ (show ((inputNF P L E).region
     (c.nreg 217001)).arcs.length - 1 < _ by omega)
-  have hA1 : 1 ≤ (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length := by
+  have hA1 : 1 ≤ (inputNF P L E).arcs.length := by
     have := hras 0 (by omega); omega
-  have hAB := b3 _ (show (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length - 1 < _ by omega)
+  have hAB := b3 _ (show (inputNF P L E).arcs.length - 1 < _ by omega)
   refine ⟨⟨hG, hli, hdh, by omega, by rw [hn]; exact hWn, rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
     fun mm hmm => hHost mm hmm, hwf, hlen64, hHB, hm1, hmp, C.topIdx_le, ?_, ?_, ?_, rfl,
     fun j hj => hgood j hj, hinc, hnext, hfree, ?_, ?_, fun t ht => hras t ht, ?_, ?_, ?_, ?_, ?_,
@@ -143,19 +143,19 @@ theorem xeGlue : XEGlue := by
       hmm (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1) (by omega)] at h
     exact h
   · intro j hj; exact b3 j hj
-  · show (c.nmem (c.nreg 217000 + 7) + c.nmem (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1)) + ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length ≤ c.nreg ALLOC; omega
-  · show ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length ≤ 32; omega
-  · show 2 * (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length + 2 ≤ W; omega
+  · show (c.nmem (c.nreg 217000 + 7) + c.nmem (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1)) + ((inputNF P L E).region (c.nreg 217001)).arcs.length ≤ c.nreg ALLOC; omega
+  · show ((inputNF P L E).region (c.nreg 217001)).arcs.length ≤ 32; omega
+  · show 2 * (inputNF P L E).arcs.length + 2 ≤ W; omega
   · -- the kept chords
     intro i hi hk
     have hkeep := (Y.kept_iff hi).1 hk
     obtain ⟨-, -, -, hpl, hpr, ⟨j1, hj1, ho1⟩, ⟨j2, hj2, ho2⟩⟩ := Y.kept_pos hi hkeep
-    have hgp : ∀ p, ProperPos (interiorModel (Qof P)) (Qof P) (Qof P).n
+    have hgp : ∀ p, ProperPos (inputModel P) (Qof P) (Qof P).n
         (xPos (Qof P).n (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-          (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) (decide (c.nreg 217002 = 1))
+          (inputNF P L E) (c.nreg 217001)) (decide (c.nreg 217002 = 1))
           C.m C.topIdx C.sideBeta (NR.chord i).h p) →
         GoodPos (Qof P) (xPos (Qof P).n (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-          (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) (decide (c.nreg 217002 = 1))
+          (inputNF P L E) (c.nreg 217001)) (decide (c.nreg 217002 = 1))
           C.m C.topIdx C.sideBeta (NR.chord i).h p) := fun p hp => by
       refine ⟨hp, by simp [xPos], ?_⟩
       show pEdge _ _ _ < _

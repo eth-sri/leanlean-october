@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepPrimSecRam
 public import Chazelle.Core.NFLocateSpec
 
@@ -49,7 +51,7 @@ def primBands : Finset ℕ := {bSign, bLocate}
 theorem Bprim_band (r : ℕ) (h : Bprim r = true) : bandOf r ∈ primBands ∧ r ≠ ALLOC := by
   simp only [Bprim, Bool.or_eq_true, decide_eq_true_eq] at h
   refine ⟨?_, by unfold ALLOC; omega⟩
-  simp only [primBands, bandOf, bSign, bLocate, Finset.mem_insert, Finset.mem_singleton]
+  simp only [ram_layout, primBands, Finset.mem_insert, Finset.mem_singleton]
   omega
 
 /-- **The precondition of a primitive**: good environment, word bound, a well-formed chain
@@ -88,8 +90,7 @@ theorem prim_meets {core : Stmt} {B : ℕ → Bool} {K : ℕ}
   have ex : Exec P W (.seq pHead core) c c₂ (k₁ + k₂) := .seq e₁ e₂
   refine ⟨c₂, _, ex, by simp only; omega, fun H' C' hC' => ?_, frame_of_frameB (exec_frameB ex hwr)
     (fun r hr => Bprim_band r (hB r hr)) _⟩
-  rw [← chain_eq_of_desc hC hC']
-  exact hout
+  rwa [← chain_eq_of_desc hC hC']
 
 /-! ## The direction of a walk edge -/
 
@@ -132,8 +133,8 @@ theorem dirAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       c₁.nreg 10502 = dirCode (chainModel C) e := by
     by_cases hsm : e < 6
     · obtain ⟨c₂, k₂, e₂, hk₂, d₂⟩ := smallDir_exec (P := P) c hw (by omega) hE.r32 hE.r82
-        hE.r83 hE.r84 hE.r85 (by rw [h02]; exact hsm)
-      refine ⟨c₂, _, .ifLtN_true (by rw [h02, hE.r81]; exact hsm) e₂, by omega, ?_⟩
+        hE.r83 hE.r84 hE.r85 (by rwa [h02])
+      refine ⟨c₂, _, (by ram_path), by omega, ?_⟩
       rw [d₂, h02, chain_dirCode_small C hsm]
     obtain ⟨c₂, k₂, e₂, hk₂, q56, q57, r₂⟩ : ∃ c₂ k₂, Exec P W
         (block [.subN 50056 50002 50081, .subN 50057 50056 50053]) c c₂ k₂ ∧ k₂ = 2 ∧
@@ -143,80 +144,77 @@ theorem dirAt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       refine ⟨rfl, by config_simp; rw [h02, hE.r81], by config_simp; rw [h02, hE.r81, hE.r53],
         fun r h1 h2 => by simp [h1, h2]⟩
     have w₂ := e₂.wb_right
-    have p53 : c₂.nreg 50053 = C.m := by rw [r₂ _ (by omega) (by omega), hE.r53]
+    have p53 : c₂.nreg 50053 = C.m := by frame_finish
     by_cases hg : e - 6 - C.m < C.m
     · have hi : e - 6 < 2 * C.m := by omega
       have hH₂ : HostAt c₂.nmem (c.nreg 50060) H := by
         have f₂ := exec_frameB e₂ (B := Bl [50056, 50057]) (by decide)
         rw [f₂.2.2.1]; exact hE.hH
       obtain ⟨c₃, k₃, e₃, hk₃, sp₁, sp₂, hsp₁, hsp₂, d₃⟩ := chGeneral_exec (P := P) hG hW c₂ w₂
-        hH₂ hE.wf hE.aW hE.NW hE.hs (by rw [← hNlen]; exact hmN) hT hi
-        (by rw [r₂ _ (by omega) (by omega), hE.r32]) (by rw [r₂ _ (by omega) (by omega)])
-        (by rw [r₂ _ (by omega) (by omega), hE.r52]) p53
-        (by rw [r₂ _ (by omega) (by omega), hE.r54]) rfl q56
-      refine ⟨c₃, _, .ifLtN_false (by rw [h02, hE.r81]; exact hsm)
-        (.seq e₂ (.ifLtN_true (by rw [q57, p53]; exact hg) e₃)), by omega, ?_⟩
+        hH₂ hE.wf hE.aW hE.NW hE.hs (by rwa [← hNlen]) hT hi
+        (by frame_finish) (by simp_all)
+        (by frame_finish) p53
+        (by frame_finish) rfl q56
+      refine ⟨c₃, _, .ifLtN_false (by rwa [h02, hE.r81])
+        (by ram_path), by omega, ?_⟩
       rw [d₃, show e = (e - 6) + 6 by omega, chain_dirCode_tour C hi]
       obtain ⟨i1, i2⟩ := sideIdx_pair C (e - 6)
       have hS : (if c₂.nreg 50055 = 1 then C.topIdx else 2 * C.m - C.topIdx) =
           C.sideS C.sideBeta := by
-        rw [r₂ _ (by omega) (by omega)]
+        ram_rw [r₂]
         unfold Chain.sideS
         by_cases hb : C.sideBeta = true
         · rw [ite_eq_left (hE.r55.2 hb), ite_eq_left hb]
         · rw [ite_eq_right (mt hE.r55.1 hb), ite_eq_right hb]
       rw [hS, ← hNlen, ← i1] at hsp₁
       rw [hS, ← hNlen, ← i2] at hsp₂
-      rw [chain_vertex_host C hE.hP _ (by rw [hQn]; exact hsp₁),
-        chain_vertex_host C hE.hP _ (by rw [hQn]; exact hsp₂)]
+      rw [chain_vertex_host C hE.hP _ (by rwa [hQn]),
+        chain_vertex_host C hE.hP _ (by rwa [hQn])]
     · have hlast : e = 2 * C.m + 6 := by omega
-      have hsm' : ¬ c.nreg 50002 < c.nreg 50081 := by rw [h02, hE.r81]; exact hsm
-      have hg' : ¬ c₂.nreg 50057 < c₂.nreg 50053 := by rw [q57, p53]; exact hg
+      have hsm' : ¬ c.nreg 50002 < c.nreg 50081 := by rwa [h02, hE.r81]
+      have hg' : ¬ c₂.nreg 50057 < c₂.nreg 50053 := by rwa [q57, p53]
       refine ⟨{ c₂ with nreg := upd c₂.nreg 10502 1 }, _, .ifLtN_false hsm'
         (.seq e₂ (.ifLtN_false hg' (Exec.constN w₂ _ _ (by omega)))), by omega, ?_⟩
-      simp only [upd_same]
-      rw [hlast, chain_dirCode_last]
+      ram_finish [hlast, chain_dirCode_last]
   have f₁ := exec_frameB e₁ wr_dirCore
   have w₁ := e₁.wb_right
   -- restoring the environment
   have e₂ := Exec.constN (P := P) w₁ 50032 1 (by omega)
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 50032 1 } with hc₂
-  have w₂ : WordsBounded W c₂ := e₂.wb_right
+  have w₂ := e₂.wb_right
   have m₂ : c₂.nmem = c.nmem := by rw [hc₂]; exact f₁.2.2.1
   have k₂ : ∀ r, Bdc r = false → r ≠ 50032 → c₂.nreg r = c.nreg r := fun r hr h => by
-    rw [hc₂]; simp only [upd]; rw [ite_eq_right h]; exact f₁.1 r hr
+    frame_finish [hc₂, ite_eq_right h]
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, n63, E₃⟩ := cnt_exec (P := P) (n := P.n) c₂ w₂
     (by rw [m₂]; exact hE.hH) (k₂ _ (by decide) (by decide))
     hE.aW (by have := hE.NW; omega)
   have w₃ := e₃.wb_right
   have e₄ := Exec.copyN (P := P) w₃ 50087 50063
   set c₄ : Config := { c₃ with nreg := upd c₃.nreg 50087 (c₃.nreg 50063) } with hc₄
-  have ex : Exec P W dirAt c c₄ (k₁ + (1 + (k₃ + 1))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
+  have ex : Exec P W dirAt c c₄ (k₁ + (1 + (k₃ + 1))) := (by ram_path)
   have r₄ : ∀ r, r ≠ 50087 → c₄.nreg r = c₃.nreg r := fun r hr => by rw [hc₄]; simp [hr]
-  have hlen := hE.hlen
+  
   refine ⟨c₄, _, ex, by omega, exec_frameB ex wr_dirAt, ?_, ?_⟩
-  · refine hE.keep e₄.wb_right (by rw [hc₄]; show c₃.nmem = c.nmem; rw [f₃.2.2.1, m₂])
+  · refine hE.keep e₄.wb_right (by ram_finish [hc₄, f₃.2.2.1, m₂])
       fun r hr => ?_
-    simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-    rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl | rfl | rfl
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), hc₂]; simp [hE.r32]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), E₃.h61, hE.host.h61]
-    · rw [r₄ _ (by decide), E₃.h67, hE.host.h67]
-    · rw [r₄ _ (by decide), E₃.h68, hE.host.h68]
-    · rw [r₄ _ (by decide), E₃.h69, hE.host.h69]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
-    · rw [r₄ _ (by decide), f₃.1 _ (by decide), k₂ _ (by decide) (by decide)]
+    fin_cases hr
+    · ram_finish [r₄, f₃.1, hc₂, hE.r32]
+    · frame_finish
+    · frame_finish
+    · frame_finish
+    · frame_finish
+    · frame_finish
+    · ram_rw [r₄, E₃.h61, hE.host.h61]
+    · ram_rw [r₄, E₃.h67, hE.host.h67]
+    · ram_rw [r₄, E₃.h68, hE.host.h68]
+    · ram_rw [r₄, E₃.h69, hE.host.h69]
+    · frame_finish
+    · frame_finish
+    · frame_finish
+    · frame_finish
+    · frame_finish
     · rw [hc₄]; simp [n63, hE.r87]
-  · rw [r₄ _ (by decide), f₃.1 _ (by decide), hc₂]; simp [d₁]
+  · ram_simp [r₄, f₃.1, hc₂, d₁]
 
 /-! ## Turning tests -/
 
@@ -251,38 +249,36 @@ theorem turnOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   · obtain ⟨c', k, e, hk, h1, h2⟩ := fin 0 (by omega) (by rw [h32] at h0; simp [show c.nreg 10502 = 0 by omega])
     exact ⟨c', _, .ifLtN_true h0 e, by omega, h1, h2⟩
   rw [h32] at h0
-  have g0 : ¬ c.nreg 10502 < c.nreg 50032 := by rw [h32]; exact h0
+  have g0 : ¬ c.nreg 10502 < c.nreg 50032 := by rwa [h32]
   by_cases hs : c.nreg 50203 < c.nreg 50032
   · rw [h32] at hs
-    have gs : c.nreg 50203 < c.nreg 50032 := by rw [h32]; exact hs
+    have gs : c.nreg 50203 < c.nreg 50032 := by rwa [h32]
     by_cases h2 : c.nreg 50032 < c.nreg 10502
     · rw [h32] at h2
       obtain ⟨c', k, e, hk, h1, h3⟩ := fin 2 le_rfl (by split_ifs <;> omega)
-      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_true (by rw [h32]; exact h2) e)),
+      exact ⟨c', _, (by ram_path),
         by omega, h1, h3⟩
     · rw [h32] at h2
       obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 (by omega) (by split_ifs <;> omega)
-      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_false (by rw [h32]; exact h2) e)),
+      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_true gs (.ifLtN_false (by rwa [h32]) e)),
         by omega, h1, h3⟩
   rw [h32] at hs
-  have gs : ¬ c.nreg 50203 < c.nreg 50032 := by rw [h32]; exact hs
+  have gs : ¬ c.nreg 50203 < c.nreg 50032 := by rwa [h32]
   by_cases hs2 : 1 < c.nreg 50203
-  · have gs2 : c.nreg 50032 < c.nreg 50203 := by rw [h32]; exact hs2
+  · have gs2 : c.nreg 50032 < c.nreg 50203 := by rwa [h32]
     by_cases h2 : 1 < c.nreg 10502
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 2 le_rfl (by split_ifs <;> omega)
-      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_true gs2
-        (.ifLtN_true (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
+      exact ⟨c', _, .ifLtN_false g0 (by ram_path), by omega, h1, h3⟩
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 (by omega) (by split_ifs <;> omega)
       exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_true gs2
-        (.ifLtN_false (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
-  · have gs2 : ¬ c.nreg 50032 < c.nreg 50203 := by rw [h32]; exact hs2
+        (.ifLtN_false (by rwa [h32]) e))), by omega, h1, h3⟩
+  · have gs2 : ¬ c.nreg 50032 < c.nreg 50203 := by rwa [h32]
     by_cases h2 : 1 < c.nreg 10502
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 (by omega) (by split_ifs <;> omega)
-      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_false gs2
-        (.ifLtN_true (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
+      exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (by ram_path)), by omega, h1, h3⟩
     · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 2 le_rfl (by split_ifs <;> omega)
       exact ⟨c', _, .ifLtN_false g0 (.ifLtN_false gs (.ifLtN_false gs2
-        (.ifLtN_false (by rw [h32]; exact h2) e))), by omega, h1, h3⟩
+        (.ifLtN_false (by rwa [h32]) e))), by omega, h1, h3⟩
 
 theorem dirCode_le_two (M : Model) (e : ℕ) : dirCode M e ≤ 2 := by
   unfold dirCode; split_ifs <;> omega
@@ -306,11 +302,8 @@ theorem sgnCode_turnPrev (M : Model) {p : ℕ} (hp : p < M.W.n) (σ : ℕ) :
   have hq : ((p + M.W.n - 1) % M.W.n + 1) % M.W.n = p := by
     have hn : 0 < M.W.n := by omega
     rcases Nat.eq_zero_or_pos p with rfl | h0
-    · rw [Nat.zero_add, Nat.mod_eq_of_lt (show M.W.n - 1 < M.W.n by omega),
-        Nat.sub_add_cancel hn, Nat.mod_self]
-    · rw [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (show p - 1 < M.W.n by omega), Nat.sub_add_cancel h0,
-        Nat.mod_eq_of_lt hp]
+    · simp [Nat.mod_eq_of_lt, Nat.sub_add_cancel hn, Nat.mod_self]
+    simp [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right, Nat.sub_add_cancel h0, Nat.mod_eq_of_lt hp]
   rw [← sgnCode_turnNext M _ σ, hq]
   congr 1
   unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; ring

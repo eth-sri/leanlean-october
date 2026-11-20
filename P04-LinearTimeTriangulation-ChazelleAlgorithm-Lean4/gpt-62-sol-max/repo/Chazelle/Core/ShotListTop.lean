@@ -3,10 +3,8 @@ module
 public import Chazelle.Core.ShotListLev
 
 /-!
-# Shooting at a list of arcs with holes, part 8: holes, pieces and the loop rule
+# Shooting at a list of arcs with holes, part 8: holes and pieces
 
-* `whileLtN_rel`: a `whileLtN` loop rule that also composes a cost-indexed relation (the named
-  frames `FrameR`) along the iterations.
 * `holesFrom`: the holes of the levels from `ℓ` on, read in the registers; `levLeaves_eq`: the
   pieces of the recursion are the pieces `leaves` of `ShotListMath`.
 * `holeList`, `arcAt`, `hiSet`, `loSet`: the vocabulary of the contract; `pcSet_leaves_sub`,
@@ -22,36 +20,6 @@ open Machine Machine.Stmt Programs SignK SweepPrim
 open Chazelle.Chain (sideInArc)
 
 @[expose] public section
-
-/-! ## A loop rule composing frames -/
-
-/-- **A `whileLtN` loop with a relation along the iterations**: the body keeps the invariant,
-costs at most `B`, decreases `μ`, and relates its ends by `Rel` (reflexive at cost `0`,
-transitive with the loop overhead, monotone in the cost). -/
-theorem whileLtN_rel {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : Config → Prop)
-    (Rel : Config → Config → ℕ → Prop) (μ : Config → ℕ) (B : ℕ)
-    (hI : ∀ c, I c → WordsBounded W c) (hrefl : ∀ c, Rel c c 0)
-    (htrans : ∀ c c₁ c₂ k₁ k₂, Rel c c₁ k₁ → Rel c₁ c₂ k₂ → Rel c c₂ (k₁ + k₂))
-    (hmono : ∀ c c' k k', Rel c c' k → k ≤ k' → Rel c c' k')
-    (hbody : ∀ c, I c → c.nreg a < c.nreg b →
-      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ k ≤ B ∧ μ c' < μ c ∧ Rel c c' k) :
-    ∀ n (c : Config), μ c = n → I c →
-      ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
-        k ≤ (B + 2) * μ c + 2 ∧ Rel c c' k := by
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    intro c hn hc
-    by_cases ht : c.nreg a < c.nreg b
-    · obtain ⟨c₁, k₁, hb, hI₁, hk₁, hμ, hr₁⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂, hr₂⟩ := ih (μ c₁) (by omega) c₁ rfl hI₁
-      refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', ?_,
-        hmono _ _ _ _ (htrans _ _ _ _ _ hr₁ hr₂) (by omega)⟩
-      have : (B + 2) * (μ c₁ + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
-      rw [Nat.mul_add, Nat.mul_one] at this
-      omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega,
-        hmono _ _ _ _ (hrefl c) (by omega)⟩
 
 /-! ## The holes -/
 
@@ -70,7 +38,7 @@ def holesFrom (c : Config) (R : ℕ) : ℕ → ℕ → List (WPos × WPos)
 theorem levLeaves_eq (M : Model) (Q : Polygon) (c : Config) (R : ℕ)
     (hk : ∀ ℓ, ℓ ≤ 3 → c.nreg (R + 30 + ℓ) = ℓ) :
     ∀ f ℓ, f + ℓ ≤ 3 → ∀ q, levLeaves M Q c R f ℓ q = leaves (M.key Q) (holesFrom c R f ℓ) q
-  | 0, _, _, q => by simp [levLeaves, holesFrom, leaves]
+  | 0, _, _, q => by rfl
   | f + 1, ℓ, hf, q => by
     simp only [levLeaves, holesFrom]
     by_cases hp : c.nreg (R + 30 + ℓ) < c.nreg (R + 9)
@@ -105,15 +73,12 @@ theorem holesFrom_eq (c : Config) (R : ℕ) (hk : ∀ ℓ, ℓ ≤ 3 → c.nreg 
   rw [show R + 30 + (0 + 1) = R + 30 + 1 by omega, show R + 30 + (0 + 1 + 1) = R + 30 + 2 by omega]
   rw [h0, h1, h2]
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 1 with hH | hH
-  · rw [ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 0 by omega]; rfl
+  · simp_all
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 2 with hH2 | hH2
-  · rw [ite_yes _ _ (by omega), ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 1 by omega]
-    rfl
+  · ram_finish [ite_yes, ite_no, show min (c.nreg (R + 9)) 3 = 1 by omega]
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 3 with hH3 | hH3
-  · rw [ite_yes _ _ (by omega), ite_yes _ _ (by omega), ite_no _ _ (by omega),
-      show min (c.nreg (R + 9)) 3 = 2 by omega]; rfl
-  · rw [ite_yes _ _ (by omega), ite_yes _ _ (by omega), ite_yes _ _ (by omega),
-      show min (c.nreg (R + 9)) 3 = 3 by omega]; rfl
+  · ram_finish [ite_yes, ite_no, show min (c.nreg (R + 9)) 3 = 2 by omega]
+  · ram_finish [ite_yes, show min (c.nreg (R + 9)) 3 = 3 by omega]
 
 /-! ## The vocabulary of the contract -/
 
@@ -137,11 +102,15 @@ def loSet (M : Model) (Q : Polygon) (m : ℕ → ℕ) (A K : ℕ) (hs : List (WP
 theorem arcSet_iff (M : Model) (a b : ℝ) (x : Point) :
     x ∈ M.arcSet a b ↔ ∃ p : ℕ, ∃ t : ℝ, p < M.W.n ∧ 0 ≤ t ∧ t ≤ 1 ∧ CIn a b (p + t) ∧
       x = Geometry.lerp (M.wa p) (M.wb p) t := by
-  unfold Model.arcSet CIn
   rfl
 
+section
+
+variable (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
+include M Q hs
+
 /-- Keys of vertex holes. -/
-theorem holesOK_of (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
+theorem holesOK_of
     (h : ∀ g ∈ hs, g.1.hgt = 0 ∧ g.2.hgt = 0 ∧ g.1.edge ≠ g.2.edge) : HolesOK (M.key Q) hs := by
   intro g hg
   obtain ⟨h1, h2, h3⟩ := h g hg
@@ -152,7 +121,7 @@ theorem holesOK_of (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
   exact_mod_cast h3
 
 /-- **The pieces lie in the arc.** -/
-theorem pcSet_leaves_sub (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
+theorem pcSet_leaves_sub
     (hh : HolesOK (M.key Q) hs) (q : WPos × WPos) :
     pcSet M Q (leaves (M.key Q) hs q) ⊆ M.arcSet (M.key Q q.1) (M.key Q q.2) := by
   intro x hx
@@ -162,7 +131,7 @@ theorem pcSet_leaves_sub (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
   exact (arcSet_iff M _ _ x).2 ⟨p', t, h1, h2, h3, (leaves_sub (M.key Q) hh hp h4).1, h5⟩
 
 /-- **The pieces cover the arc outside the closed holes.** -/
-theorem mem_pcSet_leaves (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
+theorem mem_pcSet_leaves
     (hh : HolesOK (M.key Q) hs) (q : WPos × WPos) {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht0 : 0 ≤ t)
     (ht1 : t ≤ 1) (hq : CIn (M.key Q q.1) (M.key Q q.2) (p + t))
     (hno : ∀ g ∈ hs, ¬ CIn (M.key Q g.1) (M.key Q g.2) (p + t)) :
@@ -172,13 +141,13 @@ theorem mem_pcSet_leaves (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
   exact ⟨u, hu, (arcSet_iff M _ _ _).2 ⟨p, t, hp, ht0, ht1, hu', rfl⟩⟩
 
 /-- **A piece weighs at most its arc.** -/
-theorem leaf_wt (M : Model) (Q : Polygon) {hs : List (WPos × WPos)} (hh : HolesOK (M.key Q) hs)
+theorem leaf_wt (hh : HolesOK (M.key Q) hs)
     {q u : WPos × WPos} (hu : u ∈ leaves (M.key Q) hs q) :
     M.arcWt (M.key Q u.1) (M.key Q u.2) ≤ M.arcWt (M.key Q q.1) (M.key Q q.2) :=
   M.arcWt_mono fun _ hk => leaves_open (M.key Q) hh hu hk
 
 /-- **A piece avoids the origin**, if every position of the origin in the arc is inside a hole. -/
-theorem leaf_avoid (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
+theorem leaf_avoid
     (hh : HolesOK (M.key Q) hs) {q u : WPos × WPos} (hu : u ∈ leaves (M.key Q) hs q) {z : Point}
     (hz : ∀ p : ℕ, ∀ t : ℝ, p < M.W.n → 0 ≤ t → t ≤ 1 → Geometry.lerp (M.wa p) (M.wb p) t = z →
       CIn (M.key Q q.1) (M.key Q q.2) (p + t) → ∃ g ∈ hs, sideInArc (M.key Q g.1) (M.key Q g.2) (p + t)) :
@@ -188,6 +157,8 @@ theorem leaf_avoid (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
   obtain ⟨hq, hno⟩ := leaves_sub (M.key Q) hh hu h4
   obtain ⟨g, hg, hg'⟩ := hz p t h1 h2 h3 h5.symm hq
   exact hno g hg hg'
+
+end
 
 end
 

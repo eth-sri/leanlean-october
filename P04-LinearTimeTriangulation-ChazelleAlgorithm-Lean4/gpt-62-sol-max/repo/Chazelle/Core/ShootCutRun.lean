@@ -44,7 +44,7 @@ theorem uOf_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) {r a 
     (hr : r < H.length) (hrun : H[r] = .run a ℓ)
     (hu : (C.s + sideE C.m (tJ C i)) % C.P.n = NFLoc.preLen Q.n H r + t) (ht : t + d ≤ ℓ) :
     (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t + d) := by
-  have hN : C.P.n = (H.pts Q.n).length := by rw [hP]; simp [Host.poly, Polygon.n]
+  have hN : C.P.n = (H.pts Q.n).length := by simp [hP, Host.poly, Polygon.n]
   have hsucc := NFLoc.preLen_succ Q.n H hr
   have hlen := NFLoc.preLen_mono Q.n H (show r + 1 ≤ H.length by omega)
   rw [NFLoc.preLen_length] at hlen
@@ -60,7 +60,7 @@ theorem uOf_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
     (hu : (C.s + sideE C.m (tJ C i)) % C.P.n = NFLoc.preLen Q.n H r + t) (ht : t ≤ ℓ)
     (hdt : d ≤ t) :
     (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t - d) := by
-  have hN : C.P.n = (H.pts Q.n).length := by rw [hP]; simp [Host.poly, Polygon.n]
+  have hN : C.P.n = (H.pts Q.n).length := by simp [hP, Host.poly, Polygon.n]
   have hsucc := NFLoc.preLen_succ Q.n H hr
   have hlen := NFLoc.preLen_mono Q.n H (show r + 1 ≤ H.length by omega)
   rw [NFLoc.preLen_length] at hlen
@@ -68,11 +68,11 @@ theorem uOf_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
   simp only [NFLoc.itemCnt] at hsucc
   have hkd : d ≤ sideE C.m (tJ C i) := by
     have := sideE_down C (d := d) hm hJ
-    have hle := Chazelle.Chain.sideE_le (m := C.m) (j := tJ C i) (tJ_lt C i).le
+    
     unfold sideE at *
     split_ifs at * <;> omega
   rw [sideE_down C hm hJ]
-  have hpos : 0 < C.P.n := C.n_pos
+  
   have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
   rw [hu] at e
   have e2 : C.s + (sideE C.m (tJ C i) - d) =
@@ -93,10 +93,7 @@ theorem brk_run {n : ℕ} {i r a ℓ t : ℕ} (hr : r < H.length) (hrun : H[r] =
   rw [hrun] at hsucc
   simp only [NFLoc.itemCnt] at hsucc
   refine ⟨r, hr, by omega, by omega, ?_⟩
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hrun]
-  simp only
-  rw [hu, show NFLoc.preLen n H r + t - NFLoc.preLen n H r = t by omega]
-  exact hc
+  simp_all
 
 /-- **A point item is a break.** -/
 theorem brk_pt {n : ℕ} {i r : ℕ} {x : SymPt} (hr : r < H.length) (hpt : H[r] = .pt x)
@@ -104,8 +101,7 @@ theorem brk_pt {n : ℕ} {i r : ℕ} {x : SymPt} (hr : r < H.length) (hpt : H[r]
     Brk C n H i := by
   right; right
   refine ⟨r, hr, hu1, hu2, ?_⟩
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hpt]
-  trivial
+  simp_all
 
 end Run
 

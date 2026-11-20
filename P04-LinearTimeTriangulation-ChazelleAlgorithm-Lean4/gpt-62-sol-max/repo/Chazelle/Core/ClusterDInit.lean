@@ -31,8 +31,7 @@ theorem div_succ_eq {a k : ℕ} (hk : 0 < k) (h : a % k ≠ k - 1) : (a + 1) / k
   rw [Nat.dvd_iff_mod_eq_zero, Nat.add_mod]
   have := Nat.mod_lt a hk
   have hk1 : k ≠ 1 := by rintro rfl; exact h (Nat.mod_one a)
-  rw [Nat.one_mod_eq_one.mpr hk1, Nat.mod_eq_of_lt (by omega)]
-  omega
+  ram_simp [Nat.one_mod_eq_one.mpr hk1, Nat.mod_eq_of_lt]
 
 /-- Adjacent levels off the boundary levels are in one slab. -/
 theorem div_eq_of_adj {a b k : ℕ} (hk : 0 < k) (h1 : b ≤ a + 1) (h2 : a ≤ b + 1)
@@ -151,7 +150,7 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp
     obtain ⟨v, hv, hbv, rfl⟩ := exists_plPos (key := key) hinj h1 h2
     show m (g.base 44 + m (g.base 43 + plPos g.μ bo key v)) = plPos g.μ bo key v
-    rw [hact v hv (by omega), hpos v hv, ite_eq_left (by omega)]
+    ram_rw [hact v hv, hpos v hv, ite_eq_left]
   · show m (g.base 44 + w) = g.μ ∨ _
     by_cases hb : bo w < g.μ
     · right
@@ -167,7 +166,7 @@ theorem dinv_init {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     obtain ⟨v', hv', hbv', rfl⟩ := exists_plPos (key := key) hinj (by omega) h3
     show m (g.base 29 + m (g.base 0 + m (g.base 43 + plPos g.μ bo key v))) ≤
       m (g.base 29 + m (g.base 0 + m (g.base 43 + plPos g.μ bo key v')))
-    rw [hact v hv (by omega), hact v' hv' (by omega)]
+    ram_rw [hact v hv, hact v' hv']
     exact key_le_of_plPos (bo := bo) (key := key) hv' (by rw [hbv, hbv']) h2
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp
     exact cntLt_le bo g.μ (b + 1)

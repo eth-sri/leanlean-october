@@ -101,15 +101,13 @@ theorem convexHull_inter_level_le (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
     -- all weight sits on vertices with `φ y = u`
     have hsum : ∑ y ∈ s, w y * (u - φ y) = 0 := by
       have hφx : φ x = ∑ y ∈ s, w y * φ y := by
-        rw [← hwx, map_sum]
-        simp only [map_smul, smul_eq_mul]
+        simp [← hwx, map_sum, map_smul, smul_eq_mul]
       have : ∑ y ∈ s, w y * (u - φ y) = u * ∑ y ∈ s, w y - ∑ y ∈ s, w y * φ y := by
         rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
         apply Finset.sum_congr rfl
         intro y _; ring
-      rw [this, hw1, ← hφx, hxu]; ring
-    have hzero : ∀ y ∈ s, w y * (u - φ y) = 0 :=
-      (Finset.sum_eq_zero_iff_of_nonneg
+      simp_all
+    have hzero := (Finset.sum_eq_zero_iff_of_nonneg
         (fun y hy => mul_nonneg (hw0 y hy) (sub_nonneg.2 (hs y hy)))).1 hsum
     have hw' : ∀ y ∈ s, w y ≠ 0 → φ y = u := by
       intro y hy hwy
@@ -138,10 +136,10 @@ theorem convexHull_inter_level_ge (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
     convexHull ℝ (s : Set Point) ∩ {x | φ x = u} =
       convexHull ℝ ((s : Set Point) ∩ {x | φ x = u}) := by
   have hL : {x : Point | (-φ) x = -u} = {x | φ x = u} := by
-    ext x; simp only [Set.mem_ofPred_eq, LinearMap.neg_apply, neg_inj]
+    simp
   rw [← hL]
   exact convexHull_inter_level_le s (-φ) (-u)
-    (fun y hy => by rw [LinearMap.neg_apply]; linarith [hs y hy])
+    (fun y hy => by simp_all)
 
 /-- The triangle version of `convexHull_inter_level_le`. -/
 theorem triangle_inter_level_le (a b c : Point) (φ : Point →ₗ[ℝ] ℝ) (u : ℝ)
@@ -150,10 +148,8 @@ theorem triangle_inter_level_le (a b c : Point) (φ : Point →ₗ[ℝ] ℝ) (u 
       convexHull ℝ (({a, b, c} : Set Point) ∩ {x | φ x = u}) := by
   classical
   have h := convexHull_inter_level_le ({a, b, c} : Finset Point) φ u (by
-    intro y hy
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hy
-    rcases hy with rfl | rfl | rfl <;> assumption)
-  simpa only [Finset.coe_insert, Finset.coe_singleton] using h
+    simp_all)
+  simp_all
 
 /-- The triangle version of `convexHull_inter_level_ge`. -/
 theorem triangle_inter_level_ge (a b c : Point) (φ : Point →ₗ[ℝ] ℝ) (u : ℝ)
@@ -162,10 +158,8 @@ theorem triangle_inter_level_ge (a b c : Point) (φ : Point →ₗ[ℝ] ℝ) (u 
       convexHull ℝ (({a, b, c} : Set Point) ∩ {x | φ x = u}) := by
   classical
   have h := convexHull_inter_level_ge ({a, b, c} : Finset Point) φ u (by
-    intro y hy
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hy
-    rcases hy with rfl | rfl | rfl <;> assumption)
-  simpa only [Finset.coe_insert, Finset.coe_singleton] using h
+    simp_all)
+  simp_all
 
 /-! ### Intersections of convex hulls on a line -/
 
@@ -184,7 +178,7 @@ theorem exists_le_le_of_mem_convexHull_real {A : Set ℝ} {x : ℝ} (hx : x ∈ 
 theorem mem_convexHull_real_of_between {A : Set ℝ} {a₁ a₂ y : ℝ} (h₁ : a₁ ∈ A) (h₂ : a₂ ∈ A)
     (hy₁ : a₁ ≤ y) (hy₂ : y ≤ a₂) : y ∈ convexHull ℝ A := by
   have : y ∈ _root_.segment ℝ a₁ a₂ := by
-    rw [segment_eq_Icc (hy₁.trans hy₂)]; exact ⟨hy₁, hy₂⟩
+    rw [segment_eq_Icc (hy₁.trans hy₂)]; tauto
   exact _root_.segment_subset_convexHull h₁ h₂ this
 
 /-- On the real line: if no point of `B` lies in the hull of `A` unless it belongs to `A`,
@@ -220,8 +214,8 @@ theorem convexHull_inter_convexHull_of_injOn {L : Set Point} (hL : Convex ℝ L)
     (hAB : ∀ y ∈ B, y ∈ convexHull ℝ A → y ∈ A)
     (hBA : ∀ y ∈ A, y ∈ convexHull ℝ B → y ∈ B) :
     convexHull ℝ A ∩ convexHull ℝ B = convexHull ℝ (A ∩ B) := by
-  have hAL : convexHull ℝ A ⊆ L := convexHull_min hA hL
-  have hBL : convexHull ℝ B ⊆ L := convexHull_min hB hL
+  have hAL := convexHull_min hA hL
+  have hBL := convexHull_min hB hL
   have hABL : convexHull ℝ (A ∩ B) ⊆ L := convexHull_min (Set.inter_subset_left.trans hA) hL
   apply Set.Subset.antisymm
   · rintro x ⟨hxA, hxB⟩
@@ -230,14 +224,14 @@ theorem convexHull_inter_convexHull_of_injOn {L : Set Point} (hL : Convex ℝ L)
       rintro _ ⟨y, hy, rfl⟩ hmem
       rw [← LinearMap.image_convexHull] at hmem
       obtain ⟨z, hz, hzy⟩ := hmem
-      have : z = y := hψ (hAL hz) (hB hy) hzy
+      have := hψ (hAL hz) (hB hy) hzy
       subst this
       exact ⟨z, hAB z hy hz, rfl⟩
     have hBA' : ∀ y ∈ ψ '' A, y ∈ convexHull ℝ (ψ '' B) → y ∈ ψ '' B := by
       rintro _ ⟨y, hy, rfl⟩ hmem
       rw [← LinearMap.image_convexHull] at hmem
       obtain ⟨z, hz, hzy⟩ := hmem
-      have : z = y := hψ (hBL hz) (hA hy) hzy
+      have := hψ (hBL hz) (hA hy) hzy
       subst this
       exact ⟨z, hBA z hy hz, rfl⟩
     have hx' : ψ x ∈ convexHull ℝ (ψ '' A) ∩ convexHull ℝ (ψ '' B) := by
@@ -246,7 +240,7 @@ theorem convexHull_inter_convexHull_of_injOn {L : Set Point} (hL : Convex ℝ L)
     rw [convexHull_inter_convexHull_real hAB' hBA', ← hψ.image_inter hA hB,
       ← LinearMap.image_convexHull] at hx'
     obtain ⟨z, hz, hzx⟩ := hx'
-    have : z = x := hψ (hABL hz) (hAL hxA) hzx
+    have := hψ (hABL hz) (hAL hxA) hzx
     subst this
     exact hz
   · exact Set.subset_inter (convexHull_mono Set.inter_subset_left)
@@ -295,7 +289,7 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
     simp at h1 h2
     linarith
   set L : Set Point := {x | φl x = u} with hLdef
-  have hL : Convex ℝ L := convex_level φl u
+  have hL := convex_level φl u
   obtain ⟨ψ, hψ⟩ := exists_injOn_level hφ0 u
   -- the intersection lies on the line
   have hsub : convexHull ℝ ({a, b, c} : Set Point) ∩ convexHull ℝ ({d, e, f} : Set Point) ⊆ L :=

@@ -25,7 +25,7 @@ def DoneNoCut : Prop :=
     (P : Polygon) (W : ℕ) (c₀ : Config) (J : Merge.Junction) (N₁ N₂ : NF)
     (c cw cs co c' : Config), EvEnv sh Bs F X Ok P W c₀ J N₁ N₂ →
     LoopInv P J N₁ N₂ c₀ c → IterRel P J N₁ N₂ c cw cs co c' → c'.nreg dF = 1 →
-    NoCutIn J (N₂.F (chainModel J.right) (Qof P)) (keyOff P J c) (chainModel J.whole).W.n
+    NoCutIn J (N₂.F J.rightModel (Qof P)) (keyOff P J c) J.wholeModel.W.n
 
 /-- **Task L2 from the absence of cuts after the last key.** -/
 theorem doneTask_of (h : DoneNoCut) : DoneTask := by

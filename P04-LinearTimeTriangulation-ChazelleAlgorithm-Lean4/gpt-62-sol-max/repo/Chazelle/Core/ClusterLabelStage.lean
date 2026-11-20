@@ -79,17 +79,17 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by unfold GRReg at hr; omega))
   have cp : ∀ d s, (d, s) ∈ labCopies → c1.nreg d = c.nreg s := fun d s h => h1 _ h
   have hR0 : Regs0 Y c1 := ⟨hG1.one,
-    by rw [cp 130100 130021 (by decide)]; exact hG.rO,
-    by rw [cp 130101 130022 (by decide)]; exact hG.rR,
-    by rw [cp 130102 130023 (by decide)]; exact hG.rV,
-    by rw [cp 130103 130030 (by decide)]; exact hG.rbase 0 (by omega),
-    by rw [cp 130104 130031 (by decide)]; exact hG.rbase 1 (by omega),
-    by rw [cp 130105 130078 (by decide)]; exact hG.rbase 48 (by omega),
-    by rw [cp 130106 130032 (by decide)]; exact hG.rbase 2 (by omega),
-    by rw [cp 130107 130033 (by decide)]; exact hG.rbase 3 (by omega),
-    by rw [cp 130108 130034 (by decide)]; exact hG.rbase 4 (by omega),
-    by rw [cp 130109 130035 (by decide)]; exact hG.rbase 5 (by omega),
-    by rw [cp 130110 130011 (by decide)]; exact hG.rμ⟩
+    by ram_rw [cp 130100 130021]; exact hG.rO,
+    by ram_rw [cp 130101 130022]; exact hG.rR,
+    by ram_rw [cp 130102 130023]; exact hG.rV,
+    by ram_rw [cp 130103 130030]; exact hG.rbase 0 (by omega),
+    by ram_rw [cp 130104 130031]; exact hG.rbase 1 (by omega),
+    by ram_rw [cp 130105 130078]; exact hG.rbase 48 (by omega),
+    by ram_rw [cp 130106 130032]; exact hG.rbase 2 (by omega),
+    by ram_rw [cp 130107 130033]; exact hG.rbase 3 (by omega),
+    by ram_rw [cp 130108 130034]; exact hG.rbase 4 (by omega),
+    by ram_rw [cp 130109 130035]; exact hG.rbase 5 (by omega),
+    by ram_rw [cp 130110 130011]; exact hG.rμ⟩
   have henv : Y.env c1.nmem =
       primalEnv c.nmem g.bO g.bR g.bV (g.base 0) (g.base 1) (g.base 48) g.μ g.N := by
     rw [hm1]; rfl

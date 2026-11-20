@@ -76,15 +76,13 @@ def LocDPre (P : Polygon) (W : ℕ) (c : Config) : Prop :=
 /-- The layout determines the chain. -/
 theorem chain_eq_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host} {C C' : Chain}
     (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
-  have hH : H = H' := hostAt_unique h.1 h'.1
+  have hH := hostAt_unique h.1 h'.1
   have hP : C.P = C'.P := by rw [h.2.1, h'.2.1, hH]
-  have hs : C.s = C'.s := h.2.2.1.symm.trans h'.2.2.1
-  have hm : C.m = C'.m := h.2.2.2.1.symm.trans h'.2.2.2.1
+  have hs := h.2.2.1.symm.trans h'.2.2.1
+  have hm := h.2.2.2.1.symm.trans h'.2.2.2.1
   cases C
   cases C'
-  simp only at hP hs hm
-  subst hP hs hm
-  rfl
+  simp_all
 
 /-- **The descriptor determines the model.** -/
 theorem modelDesc_unique {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} {M M' : Model}
@@ -96,6 +94,60 @@ theorem modelDesc_unique {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} {M M' : Model
   · omega
   · rfl
 
+/-- Well-formedness is preserved by copying the descriptor and keeping the host record. -/
+theorem _root_.Chazelle.Core.ChainWF.copy {P : Polygon} {m m' : ℕ → ℕ} {bw d E E' : ℕ}
+    {H : Host} {C : Chain} (hwf : ChainWF P E m bw) (hC : ChainDescAt m bw (Qof P) H C)
+    (he : MemEqBelow E m' m) (hc : ∀ j, j < 5 → m' (d + j) = m (bw + j))
+    (hd : d + 5 ≤ E') (hEE : E ≤ E') : ChainWF P E' m' d := by
+  obtain ⟨hl, hHW, hEb, hs⟩ := hwf.2 H C hC
+  refine ⟨hd, fun H' C' hC' => ?_⟩
+  have hD := hC.copy hEb he hc
+  cases hostAt_unique hC'.1 hD.1
+  cases chain_eq_of_desc hC' hD
+  have h0 : m' d = m bw := by simpa using hc 0 (by omega)
+  exact ⟨hl, hHW, by omega, hs⟩
+
+theorem _root_.Chazelle.Core.ChainWF.agree {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ}
+    {H : Host} {C : Chain} (hwf : ChainWF P E m bw) (hC : ChainDescAt m bw (Qof P) H C)
+    (he : MemEqBelow E m' m) (hEE : E ≤ E') : ChainWF P E' m' bw :=
+  hwf.copy hC he (fun j hj => he _ (by have := hwf.1; omega)) (hwf.1.trans hEE) hEE
+
+/-- A well-formed model descriptor survives changes above its bound. -/
+theorem _root_.Chazelle.Core.ModelDescWF.agree {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ}
+    {M : Model} (hwf : ModelDescWF P E m D) (hM : ModelDescAt m D (Qof P) M)
+    (hm : MemEqBelow E m' m) : ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E m' D := by
+  have hD := hwf.1
+  have e0 := hm D (by omega)
+  rcases hM with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, hbit, rfl⟩
+  · have hcw := hwf.2 h0
+    exact ⟨Or.inl ⟨e0.trans h0, H, C, hC.agree hcw.1 (hcw.2 H C hC).2.2.1 hm, rfl⟩,
+      hD, fun _ => hcw.agree hC hm le_rfl⟩
+  · exact ⟨Or.inr ⟨e0.trans h1, by rwa [hm _ (by omega)], rfl⟩, hD, fun h0 => by omega⟩
+
+/-- Transport a chain descriptor and its well-formedness together. -/
+theorem _root_.Chazelle.Core.ChainWF.transport {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ}
+    {H : Host} {C : Chain} (hwf : ChainWF P E m bw) (hC : ChainDescAt m bw (Qof P) H C)
+    (he : MemEqBelow E m' m) (hEE : E ≤ E') :
+    ChainDescAt m' bw (Qof P) H C ∧ ChainWF P E' m' bw :=
+  ⟨hC.agree hwf.1 (hwf.2 H C hC).2.2.1 he, hwf.agree hC he hEE⟩
+
+/-- Transport a model descriptor while enlarging the protected region. -/
+theorem _root_.Chazelle.Core.ModelDescWF.transport {P : Polygon} {E E' : ℕ} {m m' : ℕ → ℕ}
+    {D : ℕ} {M : Model} (hwf : ModelDescWF P E m D) (hM : ModelDescAt m D (Qof P) M)
+    (hm : MemEqBelow E m' m) (hEE : E ≤ E') :
+    ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E' m' D :=
+  let ⟨hf, hw⟩ := hwf.agree hM hm
+  ⟨hf, hw.mono hEE⟩
+
+/-- If the model descriptor contains a chain descriptor, retain it explicitly. -/
+theorem _root_.Chazelle.Core.ModelDescWF.transportChain {P : Polygon} {m m' : ℕ → ℕ}
+    {D E E' : ℕ} {H : Host} {C : Chain} (hwf : ModelDescWF P E m D) (h0 : m D = 0)
+    (hC : ChainDescAt m (D + 1) (Qof P) H C) (he : MemEqBelow E m' m) (hEE : E ≤ E') :
+    ModelDescWF P E' m' D ∧ m' D = 0 ∧ ChainDescAt m' (D + 1) (Qof P) H C := by
+  have hD := hwf.1
+  obtain ⟨hd, hw⟩ := (hwf.2 h0).transport hC he hEE
+  exact ⟨⟨by omega, fun _ => hw⟩, (he D (by omega)).trans h0, hd⟩
+
 /-- **The direction procedure meets its contract** (at most `5100` steps). -/
 theorem locDir_ok : DirOK locDir 5100 LocDPre := by
   intro P W c hw ⟨hG, hW, hDW, hCW, M, hM, he⟩
@@ -103,9 +155,8 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
       (block [.constN 50032 1, .loadN 50033 50000]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 50032 = 1 ∧
       c₁.nreg 50033 = c.nmem (c.nreg 50000) ∧
       (∀ r, r ≠ 50032 → r ≠ 50033 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
-    exec_block
-    · omega
-    · exact ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => by simp [h1, h2], rfl⟩
+    exec_block!
+    · simp_all
   obtain ⟨r₁, m₁⟩ := r₁
   have w₁ := e₁.wb_right
   have d₁ : c₁.nreg 50000 = c.nreg 50000 := r₁ _ (by omega) (by omega)
@@ -120,7 +171,7 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
     have he' : c₁.nreg 50002 < 2 * C.m + 7 := by
       rw [x₁]; simpa [chainModel, C.sideWalk_n] using he
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := chainDir_exec (P := P) hG hW c₁ w₁ (H := H) (C := C)
-      (by rw [d₁, m₁]; exact hC) (by rw [d₁]; exact hDW) (by rw [d₁, m₁]; exact hHW) hwf hs hNW
+      (by rwa [d₁, m₁]) (by rwa [d₁]) (by rwa [d₁, m₁]) hwf hs hNW
       he'
     refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [q33, q32, h0]; omega) e₂), by omega, ?_⟩
     rw [d₂, x₁]
@@ -132,7 +183,7 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
       have hn : (Qof P).n = P.n := shear_n _ _
       omega
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := intDir_exec (P := P) hG hW c₁ w₁ he'
-      (by rw [d₁]; omega) (by rw [d₁, m₁]; exact hbit)
+      (by rw [d₁]; omega) (by rwa [d₁, m₁])
     refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q33, q32, h1]; omega) e₂), by omega, ?_⟩
     rw [d₂, x₁]
 
@@ -140,51 +191,21 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
 
 /-! ## Robust layouts are addressable -/
 
-/-- A word that robustly holds a value lies below the bound. -/
-theorem robust_addr {E : ℕ} {m : ℕ → ℕ} {a v : ℕ} (h : Robust E m fun m' => m' a = v) :
-    a < E := by
-  by_contra hge
-  have := h (Function.update m a (v + 1)) (fun b hb => by
-    rw [Function.update_of_ne (by omega)])
-  simp at this
+abbrev robust_addr := @Robust.fixedAddress
 
-/-- A word reached through a pointer that robustly holds a value: the pointer and the word lie
-below the bound. -/
-theorem robust_addr2 {E : ℕ} {m : ℕ → ℕ} {b o v : ℕ}
-    (h : Robust E m fun m' => m' (m' b + o) = v) : b < E ∧ m b + o < E := by
-  have hb : b < E := by
-    by_contra hge
-    have hX : b ≠ E + b + 1 + o := by omega
-    have := h (Function.update (Function.update m b (E + b + 1)) (E + b + 1 + o) (v + 1))
-      (fun a ha => by
-        rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp only at this
-    rw [Function.update_of_ne hX, Function.update_self, Function.update_self] at this
-    omega
-  refine ⟨hb, ?_⟩
-  by_contra hge
-  have := h (Function.update m (m b + o) (v + 1)) (fun a ha => by
-    rw [Function.update_of_ne (by omega)])
-  simp only at this
-  rw [Function.update_of_ne (show b ≠ m b + o by omega), Function.update_self] at this
-  omega
+abbrev robust_addr2 := @Robust.ptrAddress
 
 /-- **A normal form readable below `E`** has its header, arc area and sequence table below
 `E`. -/
 theorem nfWithin_bounds {m : ℕ → ℕ} {B E : ℕ} {M : Model} {Q : Polygon} {N : NF}
     (h : NFWithin m B E N) (hNF : IsNF M Q N) (hA : 0 < N.arcs.length) :
     B + 7 ≤ E ∧ m (B + 4) + 5 * N.arcs.length ≤ E ∧ m (B + 6) + N.arcs.length ≤ E := by
+  have hb := h.bounds
   have hsl := seq_length hNF
-  have h1 : Robust E m fun m' => m' (m' (B + 4) + 5 * (N.arcs.length - 1) + 4) =
-      (N.arc (N.arcs.length - 1)).e.hgt := fun m' hm' =>
-    ((h m' hm').2.2.2.2.2.2.1 _ (by omega)).2.2.2.2
-  have h2 : Robust E m fun m' => m' (m' (B + 6) + (N.arcs.length - 1)) =
-      N.seq.getD (N.arcs.length - 1) 0 := fun m' hm' =>
-    (h m' hm').2.2.2.2.2.2.2.2.1 _ (by omega)
-  have a1 := robust_addr2 (b := B + 4) (o := 5 * (N.arcs.length - 1) + 4)
-    (by simpa only [Nat.add_assoc] using h1)
-  have a2 := robust_addr2 h2
-  refine ⟨by omega, by omega, by omega⟩
+  have ha := hb.arc (N.arcs.length - 1) (by omega)
+  have hs := hb.seq (N.arcs.length - 1) (by omega)
+  have hh := hb.hdr
+  omega
 
 /-- A well-formed host of a chain of the geometry polygon has at most `64 n` points. -/
 theorem chain_n_le {P : Polygon} {m : ℕ → ℕ} {B : ℕ} {H : Host} {C : Chain}
@@ -194,7 +215,7 @@ theorem chain_n_le {P : Polygon} {m : ℕ → ℕ} {B : ℕ} {H : Host} {C : Cha
   have e : C.P.n = (H.pts P.n).length := by
     rw [hC.2.1]
     show ((H.pts (Qof P).n).map (SymPt.eval (Qof P))).length = _
-    rw [List.length_map, hQn]
+    simp_all
   rw [e]
   exact (Host.pts_length_le hwf).trans (Nat.mul_le_mul_right _ hlen)
 

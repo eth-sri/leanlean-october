@@ -67,17 +67,13 @@ theorem fst_eq_crossX {v a p : Point} (hp : p ∈ Chazelle.segment v a) (hh : p.
   obtain ⟨t, -, -, rfl⟩ := hp
   simp only at hh ⊢
   have hne : a.2 - v.2 ≠ 0 := by
-    intro h0
-    apply hh
-    rw [h0, mul_zero, add_zero]
-  unfold crossX
-  rw [show v.2 + t * (a.2 - v.2) - v.2 = t * (a.2 - v.2) by ring, mul_div_assoc, div_self hne,
-    mul_one]
+    simp_all
+  simp [crossX, mul_div_assoc, div_self hne, mul_one]
 
 /-- An open interval contains a point different from two given reals. -/
 theorem exists_Ioo_avoid {lo hi : ℝ} (h : lo < hi) (c₁ c₂ : ℝ) :
     ∃ x, lo < x ∧ x < hi ∧ x ≠ c₁ ∧ x ≠ c₂ := by
-  have hd : 0 < hi - lo := by linarith
+  
   by_cases hA : lo + (hi - lo) / 4 ≠ c₁ ∧ lo + (hi - lo) / 4 ≠ c₂
   · exact ⟨_, by linarith, by linarith, hA.1, hA.2⟩
   by_cases hB : lo + (hi - lo) / 2 ≠ c₁ ∧ lo + (hi - lo) / 2 ≠ c₂
@@ -98,8 +94,8 @@ theorem piece3_between_aux {m M x x' z : ℝ} (hmM : m ≤ M) (hxm : x ≠ m) (h
     (hxm' : x' ≠ m) (hxM' : x' ≠ M) (h : piece3 m M x = piece3 m M x')
     (hz1 : min x x' ≤ z) (hz2 : z ≤ max x x') : z ≠ m ∧ z ≠ M := by
   unfold piece3 at h
-  have hz1' := hz1
-  have hz2' := hz2
+  
+  
   by_cases ha : x < m
   · by_cases hb : x' < m
     · have := max_lt ha hb
@@ -110,20 +106,18 @@ theorem piece3_between_aux {m M x x' z : ℝ} (hmM : m ≤ M) (hxm : x ≠ m) (h
     · rw [ite_eq_right ha, ite_eq_left hb] at h
       split_ifs at h <;> exact absurd h (by decide)
     · rw [ite_eq_right ha, ite_eq_right hb] at h
-      have h1 : m < x := lt_of_le_of_ne (not_lt.1 ha) (Ne.symm hxm)
-      have h2 : m < x' := lt_of_le_of_ne (not_lt.1 hb) (Ne.symm hxm')
+      have h1 := lt_of_le_of_ne (not_lt.1 ha) (Ne.symm hxm)
+      have h2 := lt_of_le_of_ne (not_lt.1 hb) (Ne.symm hxm')
       by_cases hc : x < M
       · by_cases hd : x' < M
         · have h3 := lt_min h1 h2
           have h4 := max_lt hc hd
           constructor <;> intro hz <;> linarith
-        · rw [ite_eq_left hc, ite_eq_right hd] at h
-          exact absurd h (by decide)
+        simp_all
       · by_cases hd : x' < M
-        · rw [ite_eq_right hc, ite_eq_left hd] at h
-          exact absurd h (by decide)
-        · have h5 : M < x := lt_of_le_of_ne (not_lt.1 hc) (Ne.symm hxM)
-          have h6 : M < x' := lt_of_le_of_ne (not_lt.1 hd) (Ne.symm hxM')
+        · simp_all
+        · have h5 := lt_of_le_of_ne (not_lt.1 hc) (Ne.symm hxM)
+          have h6 := lt_of_le_of_ne (not_lt.1 hd) (Ne.symm hxM')
           have h3 := lt_min h5 h6
           constructor <;> intro hz <;> linarith
 
@@ -232,61 +226,51 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
 
 /-! ### The regions touching a vertex from below and from above -/
 
-/-- **A trapezoid with `v` on its closed top side reaches `v` from below**: for all heights `h`
-slightly below `v.2`, it contains a point `(x, h)` with `x` within `r` of `v.1` and different from
-two prescribed abscissae. -/
-theorem trapData_eventually_below {P : Polygon} (hP : P.Simple) (D : TrapData P) {k : ℕ}
+section
+
+variable {P : Polygon} (hP : P.Simple) (D : TrapData P)
+    {k : ℕ}
+include hP D k
+
+/-- At heights approaching a closed horizontal side from within the trapezoid, we can
+choose a nearby point while avoiding two abscissae. -/
+private theorem trapData_eventually_of {y r : ℝ} (hk : k ∈ sideVtxSet P D.i D.j y) (hr : 0 < r) (c₁ c₂ : ℝ → ℝ)
+    {f : Filter ℝ} (hf : f ≤ 𝓝 y) (hy : Ioo D.y₁ D.y₂ ∈ f) :
+    ∀ᶠ h in f, ∃ x, |x - (P.vtx k).1| < r ∧ ((x, h) : Point) ∈ D.region ∧
+      x ≠ c₁ h ∧ x ≠ c₂ h := by
+  obtain ⟨-, -, hk1, hk2⟩ := hk
+  have hL : ∀ᶠ h in 𝓝 y, edgeX P D.i h < (P.vtx k).1 + r :=
+    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
+  have hR : ∀ᶠ h in 𝓝 y, (P.vtx k).1 - r < edgeX P D.j h :=
+    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt (by linarith)
+  filter_upwards [hy, hf hL, hf hR] with h hh hl hr'
+  have hgap := D.isTrap.edgeX_lt hP D.free hh.1 hh.2
+  have hab := max_lt (lt_min hgap hl) (lt_min hr' (by linarith : (P.vtx k).1 - r < (P.vtx k).1 + r))
+  obtain ⟨x, hx, hx', h1, h2⟩ := exists_Ioo_avoid hab (c₁ h) (c₂ h)
+  rw [max_lt_iff] at hx
+  rw [lt_min_iff] at hx'
+  exact ⟨x, abs_lt.mpr ⟨by linarith [hx.2], by linarith [hx'.2]⟩,
+    ⟨hh.1, hh.2, hx.1, hx'.1⟩, h1, h2⟩
+
+/-- A trapezoid with `v` on its closed top side reaches `v` from below. -/
+theorem trapData_eventually_below
     (hk : k ∈ sideVtxSet P D.i D.j D.y₂) {r : ℝ} (hr : 0 < r) (c₁ c₂ : ℝ → ℝ) :
     ∀ᶠ h in 𝓝[<] (P.vtx k).2, ∃ x, |x - (P.vtx k).1| < r ∧ ((x, h) : Point) ∈ D.region ∧
       x ≠ c₁ h ∧ x ≠ c₂ h := by
-  obtain ⟨-, hky, hk1, hk2⟩ := hk
-  rw [hky]
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
-  have e2 : ∀ᶠ h in 𝓝 D.y₂, edgeX P D.i h < (P.vtx k).1 + r :=
-    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
-  have e3 : ∀ᶠ h in 𝓝 D.y₂, (P.vtx k).1 - r < edgeX P D.j h :=
-    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt (by linarith)
-  filter_upwards [Ioo_mem_nhdsLT h12, nhdsWithin_le_nhds e2, nhdsWithin_le_nhds e3]
-    with h hh hh3 hh4
-  have hij := D.isTrap.edgeX_lt hP D.free hh.1 hh.2
-  have hlohi : max (edgeX P D.i h) ((P.vtx k).1 - r) < min (edgeX P D.j h) ((P.vtx k).1 + r) :=
-    max_lt (lt_min hij hh3) (lt_min hh4 (by linarith))
-  obtain ⟨x, hx1, hx2, hxc1, hxc2⟩ := exists_Ioo_avoid hlohi (c₁ h) (c₂ h)
-  have l1 := le_max_left (edgeX P D.i h) ((P.vtx k).1 - r)
-  have l2 := le_max_right (edgeX P D.i h) ((P.vtx k).1 - r)
-  have u1 := min_le_left (edgeX P D.j h) ((P.vtx k).1 + r)
-  have u2 := min_le_right (edgeX P D.j h) ((P.vtx k).1 + r)
-  refine ⟨x, ?_, ⟨hh.1, hh.2, by show edgeX P D.i h < x; linarith,
-    by show x < edgeX P D.j h; linarith⟩, hxc1, hxc2⟩
-  rw [abs_lt]
-  constructor <;> linarith
+  rw [hk.2.1]
+  exact trapData_eventually_of hP D hk hr c₁ c₂ nhdsWithin_le_nhds
+    (Ioo_mem_nhdsLT (D.isTrap.bot_lt.trans D.isTrap.lt_top))
 
-/-- **A trapezoid with `v` on its closed bottom side reaches `v` from above.** -/
-theorem trapData_eventually_above {P : Polygon} (hP : P.Simple) (D : TrapData P) {k : ℕ}
+/-- A trapezoid with `v` on its closed bottom side reaches `v` from above. -/
+theorem trapData_eventually_above
     (hk : k ∈ sideVtxSet P D.i D.j D.y₁) {r : ℝ} (hr : 0 < r) (c₁ c₂ : ℝ → ℝ) :
     ∀ᶠ h in 𝓝[>] (P.vtx k).2, ∃ x, |x - (P.vtx k).1| < r ∧ ((x, h) : Point) ∈ D.region ∧
       x ≠ c₁ h ∧ x ≠ c₂ h := by
-  obtain ⟨-, hky, hk1, hk2⟩ := hk
-  rw [hky]
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
-  have e2 : ∀ᶠ h in 𝓝 D.y₁, edgeX P D.i h < (P.vtx k).1 + r :=
-    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
-  have e3 : ∀ᶠ h in 𝓝 D.y₁, (P.vtx k).1 - r < edgeX P D.j h :=
-    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt (by linarith)
-  filter_upwards [Ioo_mem_nhdsGT h12, nhdsWithin_le_nhds e2, nhdsWithin_le_nhds e3]
-    with h hh hh3 hh4
-  have hij := D.isTrap.edgeX_lt hP D.free hh.1 hh.2
-  have hlohi : max (edgeX P D.i h) ((P.vtx k).1 - r) < min (edgeX P D.j h) ((P.vtx k).1 + r) :=
-    max_lt (lt_min hij hh3) (lt_min hh4 (by linarith))
-  obtain ⟨x, hx1, hx2, hxc1, hxc2⟩ := exists_Ioo_avoid hlohi (c₁ h) (c₂ h)
-  have l1 := le_max_left (edgeX P D.i h) ((P.vtx k).1 - r)
-  have l2 := le_max_right (edgeX P D.i h) ((P.vtx k).1 - r)
-  have u1 := min_le_left (edgeX P D.j h) ((P.vtx k).1 + r)
-  have u2 := min_le_right (edgeX P D.j h) ((P.vtx k).1 + r)
-  refine ⟨x, ?_, ⟨hh.1, hh.2, by show edgeX P D.i h < x; linarith,
-    by show x < edgeX P D.j h; linarith⟩, hxc1, hxc2⟩
-  rw [abs_lt]
-  constructor <;> linarith
+  rw [hk.2.1]
+  exact trapData_eventually_of hP D hk hr c₁ c₂ nhdsWithin_le_nhds
+    (Ioo_mem_nhdsGT (D.isTrap.bot_lt.trans D.isTrap.lt_top))
+
+end
 
 /-- The regions whose trapezoid has vertex `k` on its closed top side. -/
 def topRegions (P : Polygon) (k : ℕ) : Set (Set Point) :=
@@ -296,18 +280,23 @@ def topRegions (P : Polygon) (k : ℕ) : Set (Set Point) :=
 def botRegions (P : Polygon) (k : ℕ) : Set (Set Point) :=
   {R | ∃ D : TrapData P, D.region = R ∧ k ∈ sideVtxSet P D.i D.j D.y₁}
 
+section
+
+variable {P : Polygon} (hP : P.Simple) (k : ℕ)
+include hP k
+
 /-- The regions touching a vertex from below are regions. -/
-theorem topRegions_subset {P : Polygon} (hP : P.Simple) (k : ℕ) : topRegions P k ⊆ regions P := by
+theorem topRegions_subset : topRegions P k ⊆ regions P := by
   rintro _ ⟨D, rfl, -⟩
   exact D.region_mem_regions hP
 
 /-- The regions touching a vertex from above are regions. -/
-theorem botRegions_subset {P : Polygon} (hP : P.Simple) (k : ℕ) : botRegions P k ⊆ regions P := by
+theorem botRegions_subset : botRegions P k ⊆ regions P := by
   rintro _ ⟨D, rfl, -⟩
   exact D.region_mem_regions hP
 
 /-- **At most three regions have a given vertex on the closed top side of their trapezoid.** -/
-theorem topRegions_ncard_le {P : Polygon} (hP : P.Simple) (k : ℕ) : (topRegions P k).ncard ≤ 3 := by
+theorem topRegions_ncard_le : (topRegions P k).ncard ≤ 3 := by
   by_cases hk : k < P.n
   · refine ncard_le_three_of_near hP hk (𝓝[<] (P.vtx k).2)
       (nhdsWithin_mono _ fun _ h => ne_of_lt h) (topRegions_subset hP k) ?_
@@ -318,11 +307,10 @@ theorem topRegions_ncard_le {P : Polygon} (hP : P.Simple) (k : ℕ) : (topRegion
       simp only [mem_empty_iff_false, iff_false]
       rintro ⟨D, -, hD⟩
       exact hk hD.1
-    rw [this, ncard_empty]
-    omega
+    simp_all
 
 /-- **At most three regions have a given vertex on the closed bottom side of their trapezoid.** -/
-theorem botRegions_ncard_le {P : Polygon} (hP : P.Simple) (k : ℕ) : (botRegions P k).ncard ≤ 3 := by
+theorem botRegions_ncard_le : (botRegions P k).ncard ≤ 3 := by
   by_cases hk : k < P.n
   · refine ncard_le_three_of_near hP hk (𝓝[>] (P.vtx k).2)
       (nhdsWithin_mono _ fun _ h => ne_of_gt h) (botRegions_subset hP k) ?_
@@ -333,8 +321,9 @@ theorem botRegions_ncard_le {P : Polygon} (hP : P.Simple) (k : ℕ) : (botRegion
       simp only [mem_empty_iff_false, iff_false]
       rintro ⟨D, -, hD⟩
       exact hk hD.1
-    rw [this, ncard_empty]
-    omega
+    simp_all
+
+end
 
 /-! ### Counting the incident diagonals -/
 
@@ -342,8 +331,13 @@ theorem botRegions_ncard_le {P : Polygon} (hP : P.Simple) (k : ℕ) : (botRegion
 def incident (P : Polygon) (v : ℕ) : Set (ℕ × ℕ) :=
   {d | d ∈ allDiagonals P ∧ (d.1 = v ∨ d.2 = v)}
 
+section
+
+variable {P : Polygon} (hP : P.Simple) (v : ℕ)
+
+include hP v in
 /-- The set of incident diagonals is finite. -/
-theorem incident_finite {P : Polygon} (hP : P.Simple) (v : ℕ) : (incident P v).Finite :=
+theorem incident_finite : (incident P v).Finite :=
   (allDiagonals_finite hP).subset fun _ h => h.1
 
 /-- The trapezoid-diagonal map `d ↦ regionOfDiag P d` is injective. -/
@@ -355,8 +349,9 @@ theorem regionOfDiag_injOn {P : Polygon} (hP : P.Simple) :
   rw [hD, hD'] at heq
   exact TrapData.diag_eq_of_region_eq hP D D' heq
 
+include hP v in
 /-- **At most three trapezoid diagonals have top vertex `v`.** -/
-theorem ncard_trapDiagonals_fst_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
+theorem ncard_trapDiagonals_fst_le :
     {d | d ∈ trapDiagonals P ∧ d.1 = v}.ncard ≤ 3 := by
   refine le_trans (ncard_le_ncard_of_injOn (regionOfDiag P) ?_
     ((regionOfDiag_injOn hP).mono fun _ h => h.1)
@@ -365,8 +360,9 @@ theorem ncard_trapDiagonals_fst_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
   obtain ⟨D, -, rfl, hD⟩ := regionOfDiag_spec hd
   exact ⟨D, hD.symm, D.isTrap.topVtx_mem hP D.free⟩
 
+include hP v in
 /-- **At most three trapezoid diagonals have bottom vertex `v`.** -/
-theorem ncard_trapDiagonals_snd_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
+theorem ncard_trapDiagonals_snd_le :
     {d | d ∈ trapDiagonals P ∧ d.2 = v}.ncard ≤ 3 := by
   refine le_trans (ncard_le_ncard_of_injOn (regionOfDiag P) ?_
     ((regionOfDiag_injOn hP).mono fun _ h => h.1)
@@ -375,8 +371,9 @@ theorem ncard_trapDiagonals_snd_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
   obtain ⟨D, -, rfl, hD⟩ := regionOfDiag_spec hd
   exact ⟨D, hD.symm, D.isTrap.botVtx_mem hP D.free⟩
 
+include hP v in
 /-- **At most two vertex-to-vertex chords start at `v`** (one per direction). -/
-theorem ncard_vtxChords_fst_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
+theorem ncard_vtxChords_fst_le :
     {d | d ∈ vtxChords P ∧ d.1 = v}.ncard ≤ 2 := by
   have hsub : {d | d ∈ vtxChords P ∧ d.1 = v} ⊆
       {(v, vtxIndex P (chordEnd P v 1)), (v, vtxIndex P (chordEnd P v (-1)))} := by
@@ -430,18 +427,20 @@ theorem chord_src_unique {P : Polygon} (hP : P.Simple) {i i' : ℕ} (hi : i < P.
     rw [he] at hmem
     exact hmem.2 (vtx_mem_boundary P hi')
 
+include hP v in
 /-- The vertex-to-vertex chords in direction `σ` ending at `v` form a subsingleton. -/
-theorem ncard_vtxChords_snd_dir_le {P : Polygon} (hP : P.Simple) (v : ℕ) (σ : ℝ) :
+theorem ncard_vtxChords_snd_dir_le (σ : ℝ) :
     {d | d ∈ vtxChords P ∧ d.2 = v ∧ DirInterior P d.1 σ ∧
       chordEnd P d.1 σ = P.vtx d.2}.ncard ≤ 1 := by
   rw [ncard_le_one_iff ((vtxChords_finite hP).subset fun _ h => h.1)]
   rintro d d' ⟨hd, hdv, hdir, hend⟩ ⟨hd', hdv', hdir', hend'⟩
   have h1 : d.1 = d'.1 := chord_src_unique hP hd.1 hd'.1 hdir hdir'
-    (by rw [hend, hend', hdv, hdv'])
+    (by simp_all)
   exact Prod.ext h1 (hdv.trans hdv'.symm)
 
+include hP v in
 /-- **At most two vertex-to-vertex chords end at `v`** (one per direction). -/
-theorem ncard_vtxChords_snd_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
+theorem ncard_vtxChords_snd_le :
     {d | d ∈ vtxChords P ∧ d.2 = v}.ncard ≤ 2 := by
   have hsub : {d | d ∈ vtxChords P ∧ d.2 = v} ⊆
       {d | d ∈ vtxChords P ∧ d.2 = v ∧ DirInterior P d.1 1 ∧ chordEnd P d.1 1 = P.vtx d.2} ∪
@@ -458,9 +457,10 @@ theorem ncard_vtxChords_snd_le {P : Polygon} (hP : P.Simple) (v : ℕ) :
     _ ≤ 1 + 1 := Nat.add_le_add (ncard_vtxChords_snd_dir_le hP v 1)
         (ncard_vtxChords_snd_dir_le hP v (-1))
 
+include hP v in
 /-- **Bounded degree**: at most `10` inserted diagonals are incident to any vertex of a simple
 polygon (at most `3 + 3` trapezoid diagonals, `2 + 2` vertex-to-vertex chords). -/
-theorem card_incident_le {P : Polygon} (hP : P.Simple) (v : ℕ) : (incident P v).ncard ≤ 10 := by
+theorem card_incident_le : (incident P v).ncard ≤ 10 := by
   set A := {d | d ∈ trapDiagonals P ∧ d.1 = v}
   set B := {d | d ∈ trapDiagonals P ∧ d.2 = v}
   set C := {d | d ∈ vtxChords P ∧ d.1 = v}
@@ -487,6 +487,8 @@ theorem card_incident_le {P : Polygon} (hP : P.Simple) (v : ℕ) : (incident P v
           (ncard_trapDiagonals_snd_le hP v))
           (Nat.add_le_add (ncard_vtxChords_fst_le hP v) (ncard_vtxChords_snd_le hP v))
     _ = 10 := by norm_num
+
+end
 
 /-! ### Degrees in the final-stage input -/
 

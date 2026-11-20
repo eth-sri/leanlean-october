@@ -82,10 +82,10 @@ theorem recsAt_of {m : ℕ → ℕ} {T : ℕ} {L : List (ℕ × ℕ × ℕ)}
   have r : ∀ k, k < 4 → (4 * c + k) % 4 = k ∧ (4 * c + k) / 4 = c := fun k hk => ⟨by omega, by omega⟩
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := w 0 (by norm_num); rw [Nat.add_zero] at this
-    rw [this, recWord, ite_eq_left (by omega), (r 0 (by norm_num)).2]
-  · rw [w 1 (by norm_num), recWord, (r 1 (by norm_num)).1, (r 1 (by norm_num)).2]; simp
-  · rw [w 2 (by norm_num), recWord, (r 2 (by norm_num)).1, (r 2 (by norm_num)).2]; simp
-  · rw [w 3 (by norm_num), recWord, (r 3 (by norm_num)).1, (r 3 (by norm_num)).2]; simp
+    ram_rw [this, recWord, ite_eq_left, (r 0 (by norm_num)).2]
+  · simp [w, recWord, (r 1 (by norm_num)).1, (r 1 (by norm_num)).2]
+  · simp [w, recWord, (r 2 (by norm_num)).1, (r 2 (by norm_num)).2]
+  simp [w, recWord, (r 3 (by norm_num)).1, (r 3 (by norm_num)).2]
 
 section exec
 
@@ -122,26 +122,26 @@ theorem recStep_mem {m₀ m : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {T S�
     · exact Or.inr (Or.inr (Or.inl ⟨a - (T + 8 * i), by omega, by omega⟩))
     · omega
   rcases hr with h | h | ⟨k, hk, rfl⟩ | h | h | h | h | h
-  · repeat' (first | rw [if_pos (by omega)] | rw [ite_eq_right (by omega)])
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+  · repeat' ram_simp [if_pos, ite_eq_right]
+  · repeat' ram_simp [ite_eq_left, ite_eq_right]
   · interval_cases k <;>
-    · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+    · repeat' (first | ram_rw [ite_eq_left] | ram_rw [ite_eq_right])
       first
-        | (rw [show T + 8 * i + 0 - T = 8 * i + 0 by omega, recWord_eq L i 0 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 1 - T = 8 * i + 1 by omega, recWord_eq L i 1 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 2 - T = 8 * i + 2 by omega, recWord_eq L i 2 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 3 - T = 8 * i + 3 by omega, recWord_eq L i 3 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 4 - T = 8 * i + 4 by omega, recWord_eq L i 4 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 5 - T = 8 * i + 5 by omega, recWord_eq L i 5 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 6 - T = 8 * i + 6 by omega, recWord_eq L i 6 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 7 - T = 8 * i + 7 by omega, recWord_eq L i 7 (by norm_num)]; rfl)
-  · repeat' (first | rw [if_pos (by omega)] | rw [ite_eq_right (by omega)])
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+        | (ram_rw [show T + 8 * i + 0 - T = 8 * i + 0 by omega, recWord_eq L i 0]; rfl)
+        | (ram_rw [show T + 8 * i + 1 - T = 8 * i + 1 by omega, recWord_eq L i 1]; rfl)
+        | (ram_rw [show T + 8 * i + 2 - T = 8 * i + 2 by omega, recWord_eq L i 2]; rfl)
+        | (ram_rw [show T + 8 * i + 3 - T = 8 * i + 3 by omega, recWord_eq L i 3]; rfl)
+        | (ram_rw [show T + 8 * i + 4 - T = 8 * i + 4 by omega, recWord_eq L i 4]; rfl)
+        | (ram_rw [show T + 8 * i + 5 - T = 8 * i + 5 by omega, recWord_eq L i 5]; rfl)
+        | (ram_rw [show T + 8 * i + 6 - T = 8 * i + 6 by omega, recWord_eq L i 6]; rfl)
+        | (ram_rw [show T + 8 * i + 7 - T = 8 * i + 7 by omega, recWord_eq L i 7]; rfl)
+  · repeat' (first | ram_rw [if_pos] | ram_rw [ite_eq_right])
+  · repeat' ram_simp [ite_eq_left, ite_eq_right]
+  · repeat' (first | ram_rw [ite_eq_left] | ram_rw [ite_eq_right])
     omega
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+  · repeat' (first | ram_rw [ite_eq_left] | ram_rw [ite_eq_right])
     omega
-  · repeat' (first | rw [if_pos (by omega)] | rw [ite_eq_right (by omega)])
+  · repeat' ram_simp [if_pos, ite_eq_right]
 
 /-- The invariant of the record loop. -/
 structure RecInv (m₀ : ℕ → ℕ) (L : List (ℕ × ℕ × ℕ)) (B T S₀ : ℕ) (c₀ d : Config) : Prop where
@@ -167,7 +167,7 @@ theorem recLoop_exec {m₀ : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {B T S�
     ∃ c' k, Exec P W recLoop c c' k ∧ k ≤ 32 * L.length + 2 ∧ 30 * L.length ≤ k ∧
       WordsBounded W c' ∧
       RecInv m₀ L B T S₀ c₀ c' ∧ c'.nreg 43020 = L.length := by
-  obtain ⟨c', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
+  obtain ⟨c', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := Exec.whileLtN_growth (P := P) (W := W)
     (a := 43020) (b := 43002) (body := recBody)
     (fun d => WordsBounded W d ∧ RecInv m₀ L B T S₀ c₀ d)
     (fun d => 32 * (L.length - d.nreg 43020)) (fun d => 30 * d.nreg 43020) (fun d hd => hd.1)
@@ -179,14 +179,14 @@ theorem recLoop_exec {m₀ : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {B T S�
       rw [hi] at ha21 ha22 ha23 ha24
       have o := hId.r1; have z := hId.r0
       obtain ⟨l1, l2, l3⟩ := hL i htest
-      have hx : L.getD i (0, 0, 0) ∈ L := BuildOrder.getD_mem htest
+      have hx := BuildOrder.getD_mem htest
       have hh := hhW _ hx
       have m21 : d.nmem (B + 3 * i) = (L.getD i (0, 0, 0)).1 := by
-        rw [hId.mem, recMem, ite_eq_right (by omega), ite_eq_right (by omega), l1]
+        ram_rw [hId.mem, recMem, ite_eq_right, ite_eq_right, l1]
       have m22 : d.nmem (B + 3 * i + 1) = (L.getD i (0, 0, 0)).2.1 := by
-        rw [hId.mem, recMem, ite_eq_right (by omega), ite_eq_right (by omega), l2]
+        ram_rw [hId.mem, recMem, ite_eq_right, ite_eq_right, l2]
       have m23 : d.nmem (B + 3 * i + 2) = (L.getD i (0, 0, 0)).2.2 := by
-        rw [hId.mem, recMem, ite_eq_right (by omega), ite_eq_right (by omega), l3]
+        ram_rw [hId.mem, recMem, ite_eq_right, ite_eq_right, l3]
       unfold recBody
       exec_block
       all_goals first

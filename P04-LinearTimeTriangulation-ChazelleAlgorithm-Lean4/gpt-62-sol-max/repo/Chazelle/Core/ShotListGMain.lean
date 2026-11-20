@@ -57,7 +57,7 @@ def shotCostG (Fg K A : ℕ) : ℕ := (A + 1) * (16 * nodeG Fg K)
 /-- **The contract of the model-generic wrapper**, with the register frame: besides the oracle
 bands, only the block `R … R + 299` changes. -/
 theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
-    {Ok : Polygon → Model → Prop} {Bo : Finset ℕ} (hsh' : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ Bo)
+    {Ok : Polygon → Model → Prop} {Bo : Finset ℕ} (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ Bo)
     (hXl : X.CapLocal) {R : ℕ} (hR : RegsOK R) {P : Polygon} {W : ℕ} {M : Model}
     (hRB : bandOf R ∉ Bo) (hBo : oracleBands ⊆ Bo) {E : Config → Prop} (hS : Stable Bo W R E) {Y : ℝ → Prop} {kc xc : ℕ → ℕ → ℕ → ℕ → Stmt}
     {Bk Bx : ℕ → Bool} {K : ℕ} (hk : KeyG P W M R E kc Bk K) (hBk : OpW Bk)
@@ -67,7 +67,6 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     ∃ c' k, Exec P W (shotListG kc xc sh R) c c' k ∧
       k ≤ shotCostG (F (c.nreg (R + 7))) K (c.nreg (R + 2)) ∧ ShotPost R P c c' ∧
       FrameR Bo (fun r => R ≤ r ∧ r < R + 300) c c' k := by
-  have hsh := shooterOKE_of hsh'
   obtain ⟨hG, hHW, hX, hcap, hmwf, hMD, hreg, hE, hOk, hAB, hH3, harcs, hholes, o, ho,
     hol, hof, hoy, havoid⟩ := pre
   have hR' := hR; unfold RegsOK at hR'
@@ -81,7 +80,7 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   set z := o.eval M Q
   set σ := dirOf (c.nreg (R + 6))
   set Bi := levCostG G 3 + 20 with hBi
-  have hlc : levCostG G 3 = 15 * G := by simp [levCostG]
+  have hlc : levCostG G 3 = 15 * G := by simp [levCostG, treeCost]
   have hG1 : 1000 ≤ G := by rw [hG']; unfold nodeG; omega
   have hW8 : 8 ≤ W := by unfold hostWords at hHW; omega
   have hD6 := hmwf.1
@@ -111,7 +110,7 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     WordsBounded W cc ∧ (∀ i, i < 20 → cc.nreg (R + i) = c.nreg (R + i)) ∧
     cc.nreg (R + 30) = 0 ∧ cc.nreg (R + 31) = 1 ∧ cc.nreg (R + 32) = 2 ∧ cc.nreg (R + 33) = 3 ∧
     cc.nreg (R + 37) = 4 ∧ cc.nreg (R + 28) ≤ A ∧ cc.nreg (R + 36) = AB + 4 * cc.nreg (R + 28) ∧
-    (∀ a, a < c.nreg ALLOC → cc.nmem a = c.nmem a) ∧ c.nreg ALLOC ≤ cc.nreg ALLOC ∧
+    (MemEqBelow (c.nreg ALLOC) cc.nmem c.nmem) ∧ c.nreg ALLOC ≤ cc.nreg ALLOC ∧
     cc.nreg ALLOC + (A - cc.nreg (R + 28)) * Bi ≤ W ∧ ShotCtxG P W X Ok R M E cc ∧
     OriginIn cc (R + 3) o ∧ BestG P M R cc (sofJ M Q hl c.nmem AB (cc.nreg (R + 28))) z σ
   let Wr : ℕ → Prop := fun r => R + 16 ≤ r ∧ r < R + 300
@@ -124,13 +123,13 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
         exact Nat.mul_le_mul (by omega) (by omega)
       omega
     · refine ⟨⟨hS c c₁ k₁ hE e₁.wb_right F01, hG, hHW, ?_, ?_, i30, i31, ?_⟩, ?_, ?_, hOk, ?_, ?_⟩
-      · rw [hM1, k1 R (by omega)]; exact hMD
-      · rw [hM1, hA1, k1 _ (by omega)]; exact hmwf
-      · rw [i34, k1 R (by omega)]
-      · rw [hM1, hA1, k1 _ (by omega)]; exact hX
-      · rw [hM1, k1 _ (by omega), k1 _ (by omega)]; exact hcap
-      · rw [k1 _ (by omega)]; exact i35
-      · rw [hM1, k1 R (by omega)]; exact hreg
+      · ram_rw [hM1, k1 R]; exact hMD
+      · ram_rw [hM1, hA1, k1]; exact hmwf
+      · ram_rw [i34, k1 R]
+      · ram_rw [hM1, hA1, k1]; exact hX
+      · ram_rw [hM1, k1, k1]; exact hcap
+      · ram_rw [k1]; exact i35
+      · ram_rw [hM1, k1 R]; exact hreg
     · exact originIn_copy ho (k1 _ (by omega)) (k1 _ (by omega)) (k1 _ (by omega))
     · rw [i28, sofJ_zero]
       refine ⟨by rw [i20]; omega, fun h => by rw [i20] at h; omega, fun _ => fun t _ h => ?_⟩
@@ -160,27 +159,27 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       (fun r hr => ⟨by omega, hr.2⟩) (fun i hi => k2 _ (by omega))
     have ho₂ : OriginIn c₂ (R + 3) o := originIn_copy hoc (k2 _ (by omega)) (k2 _ (by omega))
       (k2 _ (by omega))
-    have g6 : c₂.nreg (R + 6) = c.nreg (R + 6) := by rw [k2 _ (by omega), hin 6 (by omega)]
-    have g7 : c₂.nreg (R + 7) = c.nreg (R + 7) := by rw [k2 _ (by omega), hin 7 (by omega)]
+    have g6 : c₂.nreg (R + 6) = c.nreg (R + 6) := by ram_rw [k2, hin 6]
+    have g7 : c₂.nreg (R + 7) = c.nreg (R + 7) := by ram_rw [k2, hin 7]
     have hkl : ∀ ℓ, ℓ ≤ 3 → c₂.nreg (R + 30 + ℓ) = ℓ := by
       intro ℓ hℓ
       interval_cases ℓ
-      · rw [k2 _ (by omega)]; exact c30
-      · rw [k2 _ (by omega)]; exact c31
-      · rw [k2 _ (by omega)]; exact c32
-      · rw [k2 _ (by omega)]; exact c33
+      · ram_rw [k2]; exact c30
+      · ram_rw [k2]; exact c31
+      · ram_rw [k2]; exact c32
+      · ram_rw [k2]; exact c33
     have hhl2 : holeList c₂ R = hl := by
       simp only [hhl, holeList]
-      rw [k2 _ (by omega), hin 9 (by omega)]
+      ram_rw [k2, hin 9]
       refine List.map_congr_left (fun i hi => ?_)
       simp only [List.mem_range] at hi
       simp only [holeAt, Prod.mk.injEq, WPos.mk.injEq, and_true]
       refine ⟨?_, ?_⟩
-      · rw [k2 _ (by omega), show R + 10 + 2 * i = R + (10 + 2 * i) by omega, hin _ (by omega)]
-      · rw [k2 _ (by omega), show R + 11 + 2 * i = R + (11 + 2 * i) by omega, hin _ (by omega)]
+      · ram_rw [k2, show R + 10 + 2 * i = R + (10 + 2 * i) by omega, hin]
+      · ram_rw [k2, show R + 11 + 2 * i = R + (11 + 2 * i) by omega, hin]
     have hlv : levLeaves M Q c₂ R 3 0 (pieceR c₂ (rL R 0)) =
         leaves (M.key Q) hl (arcAt c.nmem AB j) := by
-      rw [levLeaves_eq M Q c₂ R hkl 3 0 (by omega), holesFrom_eq c₂ R hkl, hhl2, harc]
+      ram_rw [levLeaves_eq M Q c₂ R hkl 3 0, holesFrom_eq c₂ R hkl, hhl2, harc]
     have hjK' : j < A := hlt
     have best₂ : BestG P M R c₂ (sofJ M Q hl c.nmem AB j) z (dirOf (c₂.nreg (R + 6))) := by
       rw [g6]
@@ -194,11 +193,11 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       3 0 c₂ (sofJ M Q hl c.nmem AB j) (by omega) e₂.wb_right ctx₂ ho₂
       (by rw [harc]; exact hpok)
       (fun j' _ hj' hj'' => by
-        rw [hkl j' (by omega), k2 _ (by omega), hin 9 (by omega)] at hj''
+        ram_rw [hkl j', k2, hin 9] at hj''
         have := hholes j' (by omega)
-        rw [k2 _ (by omega), k2 _ (by omega),
-          show R + 10 + 2 * j' = R + (10 + 2 * j') by omega, hin _ (by omega),
-          show R + 11 + 2 * j' = R + (11 + 2 * j') by omega, hin _ (by omega)]
+        ram_rw [k2, k2,
+          show R + 10 + 2 * j' = R + (10 + 2 * j') by omega, hin,
+          show R + 11 + 2 * j' = R + (11 + 2 * j') by omega, hin]
         rw [show R + 10 + 2 * j' = R + (10 + 2 * j') by omega,
           show R + 11 + 2 * j' = R + (11 + 2 * j') by omega] at this
         exact ⟨this.1, this.2.1⟩)
@@ -217,12 +216,12 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       unfold WrLev rL; omega
     -- advance
     have d31 : c₃.nreg (R + 31) = 1 := by
-      rw [k3 31 (by omega) (nw 31 (by omega)), k2 _ (by omega), c31]
+      ram_rw [k3 31 (by omega) (nw 31 (by omega)), k2, c31]
     have d37 : c₃.nreg (R + 37) = 4 := by
-      rw [k3 37 (by omega) (nw 37 (by omega)), k2 _ (by omega), c37]
-    have d28 : c₃.nreg (R + 28) = j := by rw [k3 28 (by omega) (nw 28 (by omega)), k2 _ (by omega)]
+      ram_rw [k3 37 (by omega) (nw 37 (by omega)), k2, c37]
+    have d28 : c₃.nreg (R + 28) = j := by ram_rw [k3 28 (by omega) (nw 28 (by omega)), k2]
     have d36 : c₃.nreg (R + 36) = AB + 4 * j := by
-      rw [k3 36 (by omega) (nw 36 (by omega)), k2 _ (by omega), hptr]
+      ram_rw [k3 36 (by omega) (nw 36 (by omega)), k2, hptr]
     have hAc : AB + 4 * A ≤ W := by have := hw.1 ALLOC; omega
     obtain ⟨c₄, k₄, e₄, hk₄, s28, s36, f₄⟩ := stepArc_exec (P := P) (R := R) c₃ e₃.wb_right d31 d37
       (by rw [d28]; omega) (by rw [d36]; omega)
@@ -237,14 +236,14 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       (k₂ + (k₃ + k₄)) := .seq e₂ (.seq e₃ e₄)
     have reg4 : ∀ i, (i < 20 ∨ (29 ≤ i ∧ i < 36) ∨ i = 37) → c₄.nreg (R + i) = cc.nreg (R + i) :=
       fun i hi => by
-        rw [k4 _ (by omega) (by omega), k3 i (by omega) (nw i (by omega)), k2 _ (by omega)]
-    refine ⟨c₄, _, ex, ⟨e₄.wb_right, fun i hi => by rw [reg4 i (by omega), hin i hi],
-      by rw [reg4 30 (by omega), c30], by rw [reg4 31 (by omega), c31],
-      by rw [reg4 32 (by omega), c32], by rw [reg4 33 (by omega), c33],
-      by rw [reg4 37 (by omega), c37], by rw [s28, d28]; omega,
+        ram_rw [k4, k3 i (by omega) (nw i (by omega)), k2]
+    refine ⟨c₄, _, ex, ⟨e₄.wb_right, fun i hi => by ram_rw [reg4 i, hin i hi],
+      by ram_rw [reg4 30, c30], by ram_rw [reg4 31, c31],
+      by ram_rw [reg4 32, c32], by ram_rw [reg4 33, c33],
+      by ram_rw [reg4 37, c37], by rw [s28, d28]; omega,
       by rw [s36, s28, d36, d28]; ring, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_⟩,
       by omega, by rw [s28, d28]; omega, F04⟩
-    · rw [F04.2.2.1 a (by omega), hmem a ha]
+    · ram_rw [F04.2.2.1 a, hmem a ha]
     · have := F04.2.2.2.2.2.1; omega
     · have := F04.2.2.2.2.2.2; rw [s28, d28]
       have hsub : (A - (j + 1)) * Bi + Bi = (A - j) * Bi := by
@@ -257,11 +256,10 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
       exact b₃.congr (k4 (R + 20) (by omega) (by omega)) (k4 (R + 21) (by omega) (by omega))
         (k4 (R + 22) (by omega) (by omega))
   -- the loop
-  obtain ⟨c', kL, eL, hIc, hnt, hkL, frL⟩ := whileLtN_rel (P := P) (W := W) (a := R + 28)
+  obtain ⟨c', kL, eL, hIc, hnt, hkL, frL⟩ := Exec.whileLtN_bounded_frame (P := P) (W := W) (a := R + 28)
     (b := R + 2) (body := .seq (loadArc R) (.seq (levFG kc xc sh R 3 0) (stepArc R))) I
-    (FrameR Bo Wr) (fun cc => A - cc.nreg (R + 28)) Bi (fun cc h => h.1)
-    (FrameR.refl _ _) (fun _ _ _ _ _ h1 h2 => h1.trans h2)
-    (fun _ _ _ _ h hk => h.mono le_rfl (fun _ h => h) hk) body _ c₁ rfl I₁
+    (fun cc => A - cc.nreg (R + 28)) Bi (FrameR Bo Wr) (fun _ h => h.1)
+    (fun d => (FrameR.refl _ _ d).mono le_rfl (fun _ h => h) (by decide)) (fun f g => (f.trans g).mono le_rfl (fun _ h => h) (by omega)) body I₁
   obtain ⟨-, hin, -, -, -, -, -, hjK, -, -, -, -, -, -, hbest⟩ := hIc
   have hK2 : c'.nreg (R + 2) = A := hin 2 (by omega)
   have hjE : c'.nreg (R + 28) = A := by rw [hK2] at hnt; omega

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvPCost
 
 /-!
@@ -22,70 +26,6 @@ namespace DrvP
 open Machine Machine.Stmt Programs
 
 @[expose] public section
-
-/-! ## The contracts of the sub-procedures -/
-
-/-- The judgement of `Lemma41Spec O` for the program `s` and the constant `κ`. -/
-def L41M (O : OracleIface) (s : Stmt) (κ : ℕ) : Prop :=
-  Meets s l41Bands
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-      (gradeCtx O).holds P c.nmem (rd c bL41 0) (c.nreg ALLOC) ∧
-      rd c bL41 3 ≤ c.nmem (rd c bL41 0) ∧ lemma41Start ≤ rd c bL41 3 ∧
-      rd c bL41 1 + rd c bL41 2 + 1 ≤ P.n ∧
-      2 ^ (rd c bL41 3 - 1) < rd c bL41 2 ∧ rd c bL41 2 ≤ 2 ^ rd c bL41 3)
-    (fun P c c' => ∃ C N, C.P = Qof P ∧ C.s = rd c bL41 1 ∧ C.m = rd c bL41 2 ∧
-      Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bL41 4) N) ∧
-      IsCanonicalNF (chainModel C) (Qof P) N (gradeGran (rd c bL41 3)) 4)
-    (fun _ c => κ * (lemma41Nat (rd c bL41 3) + 1))
-
-theorem lemma41Spec_iff (O : OracleIface) : Lemma41Spec O ↔ ∃ s κ, L41M O s κ := Iff.rfl
-
-/-- The judgement of `BruteSpec`. -/
-def BruteM (s : Stmt) (κ : ℕ) : Prop :=
-  Meets s bruteBands
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bBrute 1 ∧
-      rd c bBrute 0 + rd c bBrute 1 + 1 ≤ P.n ∧ 1 ≤ rd c bBrute 2 ∧
-      (rd c bBrute 1 = 1 ∨ 2 ≤ rd c bBrute 2))
-    (fun P c c' => ∃ C N, C.P = Qof P ∧ C.s = rd c bBrute 0 ∧ C.m = rd c bBrute 1 ∧
-      Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bBrute 3) N) ∧
-      IsCanonicalNF (chainModel C) (Qof P) N (rd c bBrute 2) 4)
-    (fun _ c => κ * (rd c bBrute 1 + 1) ^ 3)
-
-theorem bruteSpec_iff : BruteSpec ↔ ∃ s κ, BruteM s κ := Iff.rfl
-
-/-- The judgement of `BuildNFSpec`. -/
-def BuildM (s : Stmt) (κ : ℕ) : Prop :=
-  Meets s {bBuild, bSort, bSign}
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bBuild 0) ∧
-      ∃ M L, ModelDescAt c.nmem (rd c bBuild 0) (Qof P) M ∧
-      GoodModel M ∧ rd c bBuild 2 = L.length ∧ rd c bBuild 1 + 3 * L.length ≤ c.nreg ALLOC ∧
-      ChordListAt c.nmem (rd c bBuild 1) L ∧ ChordTriplesOK M (Qof P) L)
-    (fun P c c' => ∀ M L, ModelDescAt c.nmem (rd c bBuild 0) (Qof P) M →
-      rd c bBuild 2 = L.length → ChordListAt c.nmem (rd c bBuild 1) L →
-        ∃ N, c.nreg ALLOC ≤ rd c' bBuild 3 ∧ NFWithin c'.nmem (rd c' bBuild 3) (c'.nreg ALLOC) N ∧
-          IsNF M (Qof P) N ∧ N.chords.map (fun r => (r.h, r.lp, r.rp)) = L ∧ N.dec = [])
-    (fun _ c => κ * (rd c bBuild 2 * (Nat.clog 2 (rd c bBuild 2) + 1) + 1))
-
-theorem buildNFSpec_iff : BuildNFSpec ↔ ∃ s κ, BuildM s κ := Iff.rfl
-
-/-- The judgement of `GranularizeSpec`. -/
-def GranM (s : Stmt) (κ : ℕ → ℕ) : Prop :=
-  Meets s granBands
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bGran 2 ∧
-      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bGran 0) ∧
-      ∃ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M ∧ GoodModel M ∧
-        NFWithin c.nmem (rd c bGran 1) (c.nreg ALLOC) N ∧ IsNF M (Qof P) N ∧
-        M.DegLe (N.F M (Qof P)) (rd c bGran 2) ∧
-        M.Semigranular (N.F M (Qof P)) (rd c bGran 3))
-    (fun P c c' => ∀ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M → NFAt c.nmem (rd c bGran 1) N →
-      ∃ N', c.nreg ALLOC ≤ rd c' bGran 4 ∧ NFWithin c'.nmem (rd c' bGran 4) (c'.nreg ALLOC) N' ∧
-        N'.F M (Qof P) ⊆ N.F M (Qof P) ∧
-        IsCanonicalNF M (Qof P) N' (rd c bGran 3) (rd c bGran 2))
-    (fun _ c => κ (rd c bGran 2) *
-      (c.nmem (rd c bGran 1) * (Nat.clog 2 (c.nmem (rd c bGran 1)) + 1) + 1))
-
-theorem granularizeSpec_iff : GranularizeSpec ↔ ∃ s κ, GranM s κ := Iff.rfl
 
 /-! ## The program -/
 
@@ -142,16 +82,12 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
     (hm : 1 ≤ m) (h21 : c.nreg 218021 = 1) (hmW : 2 * m ≤ W) :
     ∃ c' k, Exec P W clogS c c' k ∧ k ≤ 4 * Nat.clog 2 m + 4 ∧
       c'.nreg 218019 = Nat.clog 2 m ∧
-      (∀ r, r ≠ 218019 → r ≠ 218023 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (∀ r, r ≠ 218019 → r ≠ 218023 → c'.nreg r = c.nreg r) ∧ Machine.NatRegFrame c c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, v19, v23, r₁, m₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.constN 218019 0, .constN 218023 1]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 218019 = 0 ∧
       c₁.nreg 218023 = 1 ∧ (∀ r, r ≠ 218019 → r ≠ 218023 → c₁.nreg r = c.nreg r) ∧
-      c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
-    exec_block
-    all_goals first | omega | skip
-    refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+      Machine.NatRegFrame c c₁ := by
+    ram_exec
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 218023 = 2 ^ d.nreg 218019 ∧
     (1 ≤ d.nreg 218019 → 2 ^ (d.nreg 218019 - 1) < m) ∧
     (∀ r, r ≠ 218019 → r ≠ 218023 → d.nreg r = c.nreg r) ∧ d.nmem = c.nmem ∧
@@ -161,15 +97,15 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
     Exec.whileLtN_bounded (P := P) (W := W) (a := 218023) (b := 218002)
     (body := block [.addN 218023 218023 218023, .addN 218019 218019 218021]) I
     (fun d => Nat.clog 2 m - d.nreg 218019) 2 (fun d hd => hd.1) (fun d ⟨wd, pd, ld, rd', md, rrd, rmd, od⟩ ht => by
-      have h2 : d.nreg 218002 = m := by rw [rd' _ (by norm_num) (by norm_num), h02]
-      have h21' : d.nreg 218021 = 1 := by rw [rd' _ (by norm_num) (by norm_num), h21]
+      have h2 : d.nreg 218002 = m := by frame_finish
+      have h21' : d.nreg 218021 = 1 := by frame_finish
       rw [h2] at ht
       have hw := wd
       obtain ⟨d', k, e, hk, v23', v19', r', m'⟩ : ∃ d' k, Exec P W
           (block [.addN 218023 218023 218023, .addN 218019 218019 218021]) d d' k ∧ k = 2 ∧
           d'.nreg 218023 = 2 * d.nreg 218023 ∧ d'.nreg 218019 = d.nreg 218019 + 1 ∧
           (∀ r, r ≠ 218019 → r ≠ 218023 → d'.nreg r = d.nreg r) ∧
-          (d'.nmem = d.nmem ∧ d'.rreg = d.rreg ∧ d'.rmem = d.rmem ∧ d'.output = d.output) := by
+          (Machine.NatRegFrame d d') := by
         exec_block
         · config_simp; omega
         · config_simp; rw [h21']
@@ -192,7 +128,7 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
           have h4 : 2 ^ Nat.clog 2 m ≤ 2 ^ d.nreg 218019 := Nat.pow_le_pow_right (by norm_num) hc
           omega
         omega) hI₁
-  have h2 : c₂.nreg 218002 = m := by rw [r₂ _ (by norm_num) (by norm_num), h02]
+  have h2 : c₂.nreg 218002 = m := by frame_finish
   rw [h2, p₂] at hx₂
   have hg : c₂.nreg 218019 = Nat.clog 2 m := by
     apply le_antisymm

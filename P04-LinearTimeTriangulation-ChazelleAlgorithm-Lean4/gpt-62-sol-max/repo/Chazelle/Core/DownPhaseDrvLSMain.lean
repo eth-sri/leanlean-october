@@ -1,7 +1,10 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRTailSpec
-public import Chazelle.Core.DownPhaseDrvRLvC
+public import Chazelle.Core.DownPhaseDrvRLvB
+public import Chazelle.Core.DownPhaseDrvRRoundSpec
 public import Chazelle.Core.DownPhaseDrvRCostSpec
 public import Chazelle.Core.DownPhaseDrvBSize
 public import Chazelle.Core.DownPhaseMathRec
@@ -102,8 +105,8 @@ theorem rd21 (c : Config) (i : ℕ) : rd c bDownDrv i = c.nreg (210000 + i) := r
 /-- `L ≠ []` above the threshold. -/
 theorem ne_nil_of_big {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {lam : ℕ}
     (hG : GoodEnv P) (hperm : E.Perm (List.range (2 * L.length)))
-    (hwt : (interiorModel (Qof P)).Semigranular
-      ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P))
+    (hwt : P.inputModel.Semigranular
+      (inputChords P L E)
       (2 ^ (Cost.ceilBeta lam + 12)))
     (hlp : lam ≤ topGrade P.n)
     (hbig : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) + 200 ≤ P.n) : L ≠ [] := by
@@ -160,7 +163,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   obtain ⟨hE, hn, h16, hlp, hInv⟩ := hpre
   beta_reduce at hroom ⊢
   obtain ⟨hG, hW3, hWh, hS, hXh, hcap⟩ := hE
-  obtain ⟨lam, hlam⟩ : ∃ lam, c.nreg 210000 = lam := ⟨_, rfl⟩
+  obtain ⟨lam, hlam⟩ := exists_eq' (a' := c.nreg 210000)
   simp only [rd21, Nat.reduceAdd] at h16 hlp hInv hroom
   rw [hlam] at h16 hlp hInv hroom
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := hInv
@@ -188,15 +191,15 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
           generalize κT * (K + 1) * X = w at hcost
           omega) hW11
   have keep : ∀ q, 210000 ≤ q → q ≤ 210005 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
+    hreg q (by omega) (by omega) (by omega) (by reg_omega)
   have k230 : ∀ q, 230000 ≤ q → q ≤ 230001 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
+    hreg q (by omega) (by omega) (by omega) (by reg_omega)
   have hc0 : c₁.nreg (coreReg 0) = c.nreg (coreReg 0) := k230 230000 le_rfl (by norm_num)
   have hc1 : c₁.nreg (coreReg 1) = c.nreg (coreReg 1) := k230 230001 (by norm_num) le_rfl
   -- 2. the context
   have ctx : LvCtx O P W c₁ L E reg lam := by
     refine ⟨hG, hW3, hWh, ?_, ?_, ?_, h16, hlp, ne_nil_of_big hG hperm hwt hlp (hn₀ _ hn), hok,
-      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by rw [keep _ le_rfl (by norm_num), hlam],
+      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by ram_rw [keep _ le_rfl, hlam],
       a02, a04, a06, a07, b08, ?_, ?_, a14, (big_of h16 hlp (hn₀ _ hn)).1,
       (big_of h16 hlp (hn₀ _ hn)).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · rw [d09, hmm, hc0]; exact hS
@@ -205,20 +208,20 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
     · rw [d09, hmm, keep _ (by norm_num) le_rfl]; exact hN
     · rw [b08']; exact li_of_desc hDa.holds
     · rw [d09, d99]
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hDa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hD
-    · rw [keep _ (by norm_num) (by norm_num)]; exact hK
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hLb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hLa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hEb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hEa
+    · ram_rw [d09, hmm, keep]; exact hDa
+    · ram_rw [d09, keep]; exact hD
+    · frame_finish [keep]
+    · ram_rw [d09, keep]; exact hLb
+    · ram_rw [d09, hmm, keep]; exact hLa
+    · ram_rw [d09, keep]; exact hEb
+    · ram_rw [d09, hmm, keep]; exact hEa
   -- 3. the loop invariant at the start
   have hn3 : 3 ≤ (Qof P).n := hQ.1
   have inv0 : LvInv O P W c₁ L E reg Kb 0 c₁ := by
     refine ⟨w₁, d10, by rw [d11], fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl,
       fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by simp,
       fun _ => ⟨Qof P, 0, 1, le_rfl, by omega⟩,
-      fun _ => BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E, fun _ => 0, fun _ => [],
+      fun _ => inputNF P L E, fun _ => 0, fun _ => [],
       by rw [d12]; simp, fun r hr => absurd hr (Nat.not_lt_zero r), Or.inl d13,
       fun r hr => absurd hr (Nat.not_lt_zero r)⟩
   -- 4. the loop
@@ -259,8 +262,8 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
         simp only [Finset.mem_singleton] at h; rw [h]; exact b21)) hrA]
     · rw [F₃.2.1 r hr, rr₂ r hr, F₁.2.1 r (fun h => hr (by
         simp only [Finset.mem_singleton] at h; rw [h]; exact b21))]
-    · rw [F₃.2.2.1 a (by omega), m₂ a (by omega), hmm]
-    · rw [F₃.2.2.2.1 a (by omega), rm₂ a (by omega), F₁.2.2.2.1 a ha]
+    · ram_rw [F₃.2.2.1 a, m₂ a, hmm]
+    · ram_rw [F₃.2.2.2.1 a, rm₂ a, F₁.2.2.2.1 a ha]
     · rw [F₃.2.2.2.2.1, o₂, F₁.2.2.2.2.1]
     · have := F₃.2.2.2.2.2.1; omega
     · have := F₃.2.2.2.2.2.2; have := F₁.2.2.2.2.2.2; omega

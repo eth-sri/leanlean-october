@@ -40,17 +40,17 @@ form `buildNF I Q L E`, all robust below the allocator; the triples are valid. -
 def StateAt (P : Polygon) (c : Config) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) : Prop :=
   rd c bDownDrv 1 + 6 ≤ c.nreg ALLOC ∧
     Robust (c.nreg ALLOC) c.nmem
-      (fun m => ModelDescAt m (rd c bDownDrv 1) (Qof P) (interiorModel (Qof P))) ∧
+      (fun m => ModelDescAt m (rd c bDownDrv 1) (Qof P) (inputModel P)) ∧
     rd c bDownDrv 3 = L.length ∧
     rd c bDownDrv 2 + 3 * L.length ≤ c.nreg ALLOC ∧
     Robust (c.nreg ALLOC) c.nmem (fun m => ChordListAt m (rd c bDownDrv 2) L) ∧
     rd c bDownDrv 4 + 2 * L.length ≤ c.nreg ALLOC ∧
     Robust (c.nreg ALLOC) c.nmem (fun m => seg m (rd c bDownDrv 4) (2 * L.length) = E) ∧
-    ChordTriplesOK (interiorModel (Qof P)) (Qof P) L ∧
+    ChordTriplesOK (inputModel P) (Qof P) L ∧
     E.Perm (List.range (2 * L.length)) ∧
-    E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L) ∧
+    E.Pairwise (codeLe (inputModel P) (Qof P) L) ∧
     NFWithin c.nmem (rd c bDownDrv 5) (c.nreg ALLOC)
-      (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
+      (inputNF P L E)
 
 /-- **The contract of the restoration rounds (D8)**, for interior oracles of costs `F`, `G`, `H`
 on the context `X`. -/
@@ -59,26 +59,22 @@ def RoundsSpec (X : MemCtx) (F G H : ℕ → ℕ) : Prop :=
     (fun P W c => EnvD X P W c ∧ 4 ≤ c.nreg 216000 ∧ 1 ≤ c.nreg 216001 ∧
       c.nreg 216001 ≤ P.n - 1 ∧
       ∃ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ), StateAt P c L E ∧
-        (interiorModel (Qof P)).DegLe
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-            (Qof P)) (c.nreg 216000) ∧
-        (interiorModel (Qof P)).Semigranular
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-            (Qof P)) (c.nreg 216001))
+        P.inputModel.DegLe
+          (inputChords P L E) (c.nreg 216000) ∧
+        P.inputModel.Semigranular
+          (inputChords P L E) (c.nreg 216001))
     (fun P c c' =>
       (∀ r, (r = 210000 ∨ r = 210001 ∨ 211000 ≤ r ∧ r < 216000 ∨ 217000 ≤ r ∧ r < 220000) →
         c'.nreg r = c.nreg r) ∧
       ∀ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ), StateAt P c L E →
         ∃ (L' : List (ℕ × ℕ × ℕ)) (E' : List ℕ), StateAt P c' L' E' ∧
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P) ⊆
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L' E').F (interiorModel (Qof P))
+          (inputNF P L E).F (inputModel P) (Qof P) ⊆
+            (inputNF P L' E').F (inputModel P)
               (Qof P) ∧
-          (interiorModel (Qof P)).DegLe
-            ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L' E').F (interiorModel (Qof P))
-              (Qof P)) 4 ∧
-          (interiorModel (Qof P)).Semigranular
-            ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L' E').F (interiorModel (Qof P))
-              (Qof P)) (c.nreg 216001) ∧
+          P.inputModel.DegLe
+            (inputChords P L' E') 4 ∧
+          P.inputModel.Semigranular
+            (inputChords P L' E') (c.nreg 216001) ∧
           L'.length + 1 ≤ 2 ^ c.nreg 216000 * (L.length + 1))
     (fun _ c => κ (c.nreg 216000) * (rd c bDownDrv 3 + 1) * F (c.nreg 216001) *
       G (c.nreg 216001) * (H (c.nreg 216001) + Nat.clog 2 (c.nreg 216001) + 1))

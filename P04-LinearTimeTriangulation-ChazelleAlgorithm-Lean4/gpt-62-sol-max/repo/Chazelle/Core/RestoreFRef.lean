@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.RestoreFChord
 
 /-!
@@ -58,8 +60,13 @@ def kidLoad : Stmt := Stmt.block kidL
 
 variable {E : FEnv} {c₀ c : Config}
 
-theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
+section
+
+variable (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
     {N : NF} (hN : NFWithin c₀.nmem (c.nreg 81134) (c₀.nreg ALLOC) N)
+include hE hB hI hN
+
+theorem refLoad_fs
     (hdn : c.nreg 81156 < N.nRegions) (har : 0 < (N.region (c.nreg 81156)).arcs.length)
     (hj : (N.region (c.nreg 81156)).arcs.getD 0 0 < N.arcs.length) :
     FRS B E.P E.W c₀ refLoad c 25 (fun c' =>
@@ -70,9 +77,9 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
   obtain ⟨hB7, -, hab, hrb, hlb, -⟩ := nf_bounds hN'
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hrl : c.nreg 81156 < N.regions.length := hdn
+  have hA0 := hI.hA
+  have hAW := hI.hw.1 ALLOC
+  have hrl := hdn
   obtain ⟨-, -, -, hl, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have rj := hl 0 har
   rw [Nat.add_zero] at rj
@@ -83,12 +90,12 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have b3 := hab _ hj
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81015 = 5 ∧ c'.nreg 81016 = 7 ∧ c'.nreg 81014 = 3 ∧
       c'.nreg 81012 = 1 := fun c' h =>
-    ⟨by rw [h.hin _ (by unfold FFix; omega), hE.k5], by rw [h.hin _ (by unfold FFix; omega), hE.k7],
-      by rw [h.hin _ (by unfold FFix; omega), hE.k3], by rw [h.hin _ (by unfold FFix; omega), hE.k1]⟩
+    ⟨by ram_rw [h.hin, hE.k5], by ram_rw [h.hin, hE.k7],
+      by ram_rw [h.hin, hE.k3], by ram_rw [h.hin, hE.k1]⟩
   obtain ⟨k5, k7, k3, k1⟩ := fx c hI
   -- stage 1
   have ok1 : okB E.W c.nmem refL1 c.nreg := by
-    simp only [refL1, okB, okI, regI, upd]
+    simp only [refL1, reg_check, regI, upd]
     simp only [FScr, FOut, k5, k1]
     norm_num
     (repeat' apply And.intro) <;> omega
@@ -99,13 +106,12 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     rw [e₁]; simp [refL1, regB, regI, upd, k5, k1]; congr 1; ring
   have f₁ : ∀ q, q ≠ 81116 → c₁.nreg q = c.nreg q := fun q hq => by
     rw [e₁]; refine regB_other _ _ _ (fun i hi => ?_)
-    simp only [refL1, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
+    fin_cases hi <;> simp only [dstI] <;> omega
   obtain ⟨-, k7₁, -, -⟩ := fx c₁ hI₁
   have w34 := f₁ 81134 (by norm_num)
   -- stage 2
   have ok2 : okB E.W c₁.nmem refL2 c₁.nreg := by
-    simp only [refL2, okB, okI, regI, upd]
+    simp only [refL2, reg_check, regI, upd]
     simp only [FScr, FOut, k7₁, w34, v16, m₁]
     norm_num
     (repeat' apply And.intro) <;> omega
@@ -124,7 +130,7 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   generalize hjdef : (N.region (c.nreg 81156)).arcs.getD 0 0 = j at v16' b3 s1 s2 ⊢
   -- stage 3
   have ok3 : okB E.W c₂.nmem refL3 c₂.nreg := by
-    simp only [refL3, okB, okI, regI, upd]
+    simp only [refL3, reg_check, regI, upd]
     simp only [FScr, FOut, k3₂, k1₂, x34, v16', m₂]
     norm_num
     rw [e4]
@@ -136,15 +142,12 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   refine ⟨?_, ?_, fun q h1 h2 h3 h4 => ?_⟩
   · rw [e₃]; simp [refL3, regB, regI, upd, k3₂, k1₂, x34, v16', m₂, e4]; rw [ea, s1]
   · rw [e₃]; simp [refL3, regB, regI, upd, k3₂, k1₂, x34, v16', m₂, e4]
-    rw [ea, show c.nmem (c.nreg 81134 + 4) + 5 * j + 1 + 1 = c.nmem (c.nreg 81134 + 4) + 5 * j + 2
-      by ring, s2]
+    ram_finish [ea, s2]
   · rw [e₃, regB_other _ _ _ (fun i hi => ?_), f₂ q h3 h4]
-    simp only [refL3, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    fin_cases hi <;>
       simp only [dstI] <;> omega
 
-theorem kidLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
-    {N : NF} (hN : NFWithin c₀.nmem (c.nreg 81134) (c₀.nreg ALLOC) N)
+theorem kidLoad_fs
     (hk : c.nreg 81121 < N.dec.length) :
     FRS B E.P E.W c₀ kidLoad c 10 (fun c' =>
       c'.nreg 81118 = (N.dnode (c.nreg 81121)).lo ∧ c'.nreg 81119 = (N.dnode (c.nreg 81121)).hi ∧
@@ -159,17 +162,17 @@ theorem kidLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   obtain ⟨-, r1, r2⟩ := hNA.2.2.2.2.2.2.2.2.2.1 _ hk
-  have k7 : c.nreg 81016 = 7 := by rw [hI.hin _ (by unfold FFix; omega), hE.k7]
-  have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
+  have k7 : c.nreg 81016 = 7 := by ram_rw [hI.hin, hE.k7]
+  have k1 : c.nreg 81012 = 1 := by ram_rw [hI.hin, hE.k1]
   set k := c.nreg 81121
   set B8 := c.nmem (c.nreg 81134 + 8)
   have e8 : c.nreg 81134 + 7 + 1 = c.nreg 81134 + 8 := by ring
   have ok : okB E.W c.nmem kidL c.nreg := by
-    simp only [kidL, okB, okI, regI, upd]
+    simp only [kidL, reg_check, regI, upd]
     simp only [FScr, FOut, k7, k1]
     norm_num
     rw [e8]
-    refine ⟨by omega, by omega, by omega, by omega, by omega, by omega, by omega⟩
+    refine (by omega)
   refine (FRS.block hB _ hI ok).mono (by simp [kidL]) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem kidL c.nreg q := fun q => by rw [h']
   have ea : B8 + k + k + k + 1 = B8 + 3 * k + 1 := by ring
@@ -178,10 +181,9 @@ theorem kidLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   · rw [e']; simp [kidL, regB, regI, upd, k7, k1, e8]; rw [ea, show B8 + 3 * k + 1 + 1 = B8 + 3 * k + 2
       by ring, r2]
   · rw [e']
-    refine regB_other _ _ _ (fun i hi => ?_)
-    simp only [kidL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      omega
+    register_keep [kidL]
+
+end
 
 end
 

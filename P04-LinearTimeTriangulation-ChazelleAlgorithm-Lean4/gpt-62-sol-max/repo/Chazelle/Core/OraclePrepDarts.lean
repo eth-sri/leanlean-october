@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OraclePrepPlanar
 
 /-!
@@ -54,14 +56,14 @@ theorem view_even (B : BookData) (_hV : B.Valid) {e : ℕ} (_he : e < B.E) :
   unfold view
   rw [h2]
   by_cases a : e < B.N
-  · rw [ite_eq_left a, ite_eq_left h3]; simp [View.tail, View.key, eU, eKind, dKey0, a]
+  · simp [ite_eq_left h3, View.tail, View.key, eU, eKind, dKey0, a]
   · rw [ite_eq_right a]
-    have hL : B.I.length ≤ e - B.N ∨ e - B.N < B.I.length := by omega
+    
     by_cases b : e < B.N + B.I.length
-    · rw [ite_eq_left b, ite_eq_left h3, getD_I (by omega)]
+    · ram_rw [ite_eq_left b, ite_eq_left h3, getD_I]
       simp [View.tail, View.key, eU, eV, eKind, dKey0, a, show e - B.N < B.I.length by omega]
-    · rw [ite_eq_right b, ite_eq_left h3, show e - B.N - B.I.length = (e - B.N) - B.I.length by omega,
-        getD_O (by omega)]
+    · ram_rw [ite_eq_right b, ite_eq_left h3, show e - B.N - B.I.length = (e - B.N) - B.I.length by omega,
+        getD_O]
       simp [View.tail, View.key, eU, eV, eKind, dKey0, a, show ¬ e - B.N < B.I.length by omega]
 
 /-- **The odd dart of an edge.** -/
@@ -83,19 +85,16 @@ theorem view_odd (B : BookData) (hV : B.Valid) {e : ℕ} (he : e < B.E) :
     · simp [View.key, eKind, dKey1, a]
   · rw [ite_eq_right a]
     by_cases b : e < B.N + B.I.length
-    · rw [ite_eq_left b, ite_eq_right h3, getD_I (by omega)]
-      simp only [View.tail, View.key, eU, eV, eKind, dKey1, ite_eq_right a,
-        ite_eq_left (show e - B.N < B.I.length by omega)]
-      refine ⟨trivial, ?_⟩
-      simp
-    · rw [ite_eq_right b, ite_eq_right h3, show e - B.N - B.I.length = (e - B.N) - B.I.length by omega,
-        getD_O (by omega)]
+    · ram_rw [ite_eq_left b, ite_eq_right h3, getD_I]
+      simp [View.tail, View.key, eU, eV, eKind, dKey1, ite_eq_right a, ite_eq_left (show e - B.N < B.I.length by omega)]
+    · ram_rw [ite_eq_right b, ite_eq_right h3, show e - B.N - B.I.length = (e - B.N) - B.I.length by omega,
+        getD_O]
       simp only [View.tail, View.key, eU, eV, eKind, dKey1, ite_eq_right a,
         ite_eq_right (show ¬ e - B.N < B.I.length by omega)]
       refine ⟨trivial, ?_⟩
       -- the outer chords have increasing ends
       have hmem : (B.I ++ B.O).getD (e - B.N) (0, 0) ∈ B.O := by
-        rw [← getD_O (by omega)]
+        ram_rw [← getD_O]
         exact getD_mem (by unfold E at he; omega)
       obtain ⟨h1, -, -⟩ := hV.2.2.2.2.1 _ hmem
       simp only [show (2 = 0) = False from by decide, show (2 = 1) = False from by decide, ite_false]
@@ -115,47 +114,48 @@ def edgeS : Stmt :=
 /-- The registers written by `edgeS`. -/
 def BEd (r : ℕ) : Bool := decide ((60031 ≤ r ∧ r ≤ 60033) ∨ r = 60035 ∨ r = 60036)
 
-theorem edgeS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N nI CH1 CH2 e : ℕ}
+section
+
+variable {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
+
+include P hw in
+theorem edgeS_exec {N nI CH1 CH2 e : ℕ}
     {L : List (ℕ × ℕ)} (hN : c.nreg 60034 = N) (hI : c.nreg 60008 = nI) (h1 : c.nreg 60001 = CH1)
     (h2 : c.nreg 60002 = CH2) (hone : c.nreg 120011 = 1) (he : c.nreg 60030 = e)
     (heL : e < N + L.length) (hP : PairsAt c.nmem CH1 CH2 L) (hW1 : CH1 + L.length ≤ W)
     (hW2 : CH2 + L.length ≤ W) (hNW : N + 2 ≤ W) :
     ∃ c' k, Exec P W edgeS c c' k ∧ k ≤ 12 ∧ FrameB BEd c c' ∧ c'.nreg 60031 = eU N L e ∧
       c'.nreg 60032 = eV N L e ∧ c'.nreg 60033 = eKind N nI e := by
-  have hwr : wr BEd edgeS = true := by decide
-  suffices H : ∃ c' k, Exec P W edgeS c c' k ∧ k ≤ 12 ∧ c'.nreg 60031 = eU N L e ∧
-      c'.nreg 60032 = eV N L e ∧ c'.nreg 60033 = eKind N nI e by
-    obtain ⟨c', k, ex, hk, a, b, d⟩ := H
-    exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b, d⟩
+  refine spec_frame ?_
   unfold edgeS eU eV eKind
   by_cases hs : e < N
-  · refine spec_ifLtN_true (by rw [he, hN]; exact hs) ?_
+  · refine spec_ifLtN_true (by rwa [he, hN]) ?_
     refine spec_seq ?_
     exec_block
-    · config_simp; rw [he, hone]; omega
+    · ram_finish
     · refine spec_seq ?_
       by_cases h' : e + 1 < N
-      · refine spec_ifLtN_true (by config_simp; rw [he, hone, hN]; exact h') (spec_skip ‹_› ?_)
+      · refine spec_ifLtN_true (by simp_all) (spec_skip ‹_› ?_)
         refine spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩ <;>
           config_simp <;> simp [hs, h', he, hone]
-      · refine spec_ifLtN_false (by config_simp; rw [he, hone, hN]; exact h')
+      · refine spec_ifLtN_false (by simp_all)
           (spec_instr (Exec.constN ‹_› _ 0 (Nat.zero_le _)) fun _ => ?_)
         refine spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩ <;>
           config_simp <;> simp [hs, h', he]
-  · refine spec_ifLtN_false (by rw [he, hN]; exact hs) ?_
+  · refine spec_ifLtN_false (by rwa [he, hN]) ?_
     have hj : e - N < L.length := by omega
     obtain ⟨p1, p2⟩ := hP (e - N) hj
     refine spec_seq ?_
     exec_block
-    · config_simp; rw [he, hN, h1]; omega
-    · config_simp; rw [he, hN, h2]; omega
+    · simp_all <;> omega
+    · simp_all <;> omega
     · by_cases h' : e - N < nI
-      · refine spec_ifLtN_true (by config_simp; rw [he, hN, hI]; exact h')
+      · refine spec_ifLtN_true (by config_simp; rwa [he, hN, hI])
           (spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩) <;>
-          config_simp <;> simp only [he, hN, h1, h2, p1, p2, ite_eq_right hs, ite_eq_left h']
-      · refine spec_ifLtN_false (by config_simp; rw [he, hN, hI]; exact h')
+          config_simp <;> ram_finish
+      · refine spec_ifLtN_false (by config_simp; rwa [he, hN, hI])
           (spec_instr (Exec.constN ‹_› _ _ (by omega)) fun _ => ⟨by omega, ?_, ?_, ?_⟩) <;>
-          config_simp <;> simp only [he, hN, h1, h2, p1, p2, ite_eq_right hs, ite_eq_right h']
+          config_simp <;> ram_finish
 
 /-! ## The values of the darts -/
 
@@ -190,7 +190,8 @@ def dVal (k N e u v kd : ℕ) : ℕ :=
 /-- The registers written by `dvS`. -/
 def BDV (r : ℕ) : Bool := decide (60040 ≤ r ∧ r ≤ 60042)
 
-theorem dvS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {k : ℕ} (hk : k < 6)
+include P hw in
+theorem dvS_exec {k : ℕ} (hk : k < 6)
     {N e u v kd base : ℕ} (hb : c.nreg (dBase k) = base) (he : c.nreg 60030 = e)
     (hu : c.nreg 60031 = u) (hv : c.nreg 60032 = v) (hkd : c.nreg 60033 = kd) (hkd2 : kd ≤ 2)
     (hN : c.nreg 60034 = N) (h1 : c.nreg 120011 = 1) (h2 : c.nreg 120048 = 2) (huN : u ≤ N)
@@ -198,36 +199,33 @@ theorem dvS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {k
     ∃ c' kk, Exec P W (dvS k) c c' kk ∧ kk ≤ 12 ∧ FrameB BDV c c' ∧
       c'.nreg 60040 = base + 2 * e + k % 2 ∧ c'.nreg 60041 = dVal k N e u v kd := by
   have hwr : wr BDV (dvS k) = true := by interval_cases k <;> decide
-  suffices H : ∃ c' kk, Exec P W (dvS k) c c' kk ∧ kk ≤ 12 ∧
-      c'.nreg 60040 = base + 2 * e + k % 2 ∧ c'.nreg 60041 = dVal k N e u v kd by
-    obtain ⟨c', kk, ex, hkk, a, b⟩ := H
-    exact ⟨c', kk, ex, hkk, exec_frameB ex hwr, a, b⟩
+  refine spec_frame ?_ hwr
   interval_cases k <;> simp only [dBase] at hb <;> norm_num at hb <;> unfold dvS dVal
   · exec_block
     · rw [he]; omega
-    · config_simp; rw [he, hb]; omega
+    · simp_all <;> omega
     · exact ⟨by omega, by config_simp; rw [he, hb]; ring, by config_simp; exact hu⟩
   · exec_block
     · rw [he]; omega
-    · config_simp; rw [he, hb]; omega
+    · simp_all <;> omega
     · config_simp; rw [he, hb, h1]; omega
     · exact ⟨by omega, by config_simp; rw [he, hb, h1]; ring, by config_simp; exact hv⟩
   · refine spec_seq ?_
     exec_block
     · rw [he]; omega
-    · config_simp; rw [he, hb]; omega
+    · simp_all <;> omega
     · simp only [dKey0]
       by_cases a0 : kd = 0
-      · refine spec_ifLtN_true (by config_simp; rw [hkd, h1]; omega)
+      · refine spec_ifLtN_true (by simp_all)
           (spec_instr (Exec.constN ‹_› _ _ (Nat.zero_le _)) fun _ => ⟨by omega, ?_, ?_⟩)
         · config_simp; rw [he, hb]; ring
         · config_simp; simp [a0]
-      · refine spec_ifLtN_false (by config_simp; rw [hkd, h1]; omega) ?_
+      · refine spec_ifLtN_false (by simp_all) ?_
         by_cases a1 : kd = 1
-        · refine spec_ifLtN_true (by config_simp; rw [hkd, h2]; omega)
+        · refine spec_ifLtN_true (by simp_all)
             (spec_instr (Exec.copyN ‹_› _ _) fun _ => ⟨by omega, ?_, ?_⟩)
           · config_simp; rw [he, hb]; ring
-          · config_simp; rw [hu, hv]; simp [a1]
+          simp_all
         · refine spec_ifLtN_false (by config_simp; rw [hkd, h2]; omega) ?_
           exec_block
           · config_simp; rw [hN]; omega
@@ -237,40 +235,40 @@ theorem dvS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {k
   · refine spec_seq ?_
     exec_block
     · rw [he]; omega
-    · config_simp; rw [he, hb]; omega
+    · simp_all <;> omega
     · config_simp; rw [he, hb, h1]; omega
     · simp only [dKey1]
       by_cases a0 : kd = 0
-      · refine spec_ifLtN_true (by config_simp; rw [hkd, h1]; omega)
+      · refine spec_ifLtN_true (by simp_all)
           (spec_instr (Exec.subN ‹_› _ _ _) fun _ => ⟨by omega, ?_, ?_⟩)
         · config_simp; rw [he, hb, h1]; ring
-        · config_simp; rw [hN, h1]; simp [a0]
-      · refine spec_ifLtN_false (by config_simp; rw [hkd, h1]; omega) ?_
+        simp_all
+      · refine spec_ifLtN_false (by simp_all) ?_
         by_cases a1 : kd = 1
-        · refine spec_ifLtN_true (by config_simp; rw [hkd, h2]; omega) ?_
+        · refine spec_ifLtN_true (by simp_all) ?_
           exec_block
-          · config_simp; rw [hN, hv, hu]; omega
+          · simp_all <;> omega
           · refine ⟨by omega, ?_, ?_⟩
             · config_simp; rw [he, hb, h1]; ring
-            · config_simp; rw [hN, hu, hv]; simp [a1]
+            simp [hN, hu, hv, a1]
         · refine spec_ifLtN_false (by config_simp; rw [hkd, h2]; omega) ?_
           exec_block
           · config_simp; rw [hN, h2, hu, hv]; omega
           · refine ⟨by omega, ?_, ?_⟩
             · config_simp; rw [he, hb, h1]; ring
-            · config_simp; rw [hN, h2, hu, hv]; simp [a0, a1]
+            simp [hN, h2, hu, hv, a0, a1]
   · exec_block
     · rw [he]; omega
-    · config_simp; rw [he, hb]; omega
+    · simp_all <;> omega
     · config_simp; rw [he]; omega
     · config_simp; rw [he, h1]; omega
-    · exact ⟨by omega, by config_simp; rw [he, hb]; ring, by config_simp; rw [he, h1]; simp; omega⟩
+    · exact ⟨by omega, by config_simp; rw [he, hb]; ring, by simp_all <;> omega⟩
   · exec_block
     · rw [he]; omega
-    · config_simp; rw [he, hb]; omega
+    · simp_all <;> omega
     · config_simp; rw [he, hb, h1]; omega
     · config_simp; rw [he]; omega
-    · exact ⟨by omega, by config_simp; rw [he, hb, h1]; ring, by config_simp; rw [he]; simp; omega⟩
+    · exact ⟨by omega, by config_simp; rw [he, hb, h1]; ring, by simp_all <;> omega⟩
 
 /-! ## One pass over the edges -/
 
@@ -302,17 +300,17 @@ def DKeep (r : ℕ) : Bool :=
 
 theorem DartEnv.stable {N nI CH1 CH2 VT E lo : ℕ} {L : List (ℕ × ℕ)} {c c' : Config}
     (h : DartEnv N nI CH1 CH2 VT E lo L c) (hr : ∀ r, DKeep r = true → c'.nreg r = c.nreg r)
-    (hm : ∀ a, a < lo → c'.nmem a = c.nmem a) : DartEnv N nI CH1 CH2 VT E lo L c' where
-  rN := by rw [hr _ (by decide)]; exact h.rN
-  rI := by rw [hr _ (by decide)]; exact h.rI
-  r1 := by rw [hr _ (by decide)]; exact h.r1
-  r2 := by rw [hr _ (by decide)]; exact h.r2
-  one := by rw [hr _ (by decide)]; exact h.one
-  two := by rw [hr _ (by decide)]; exact h.two
-  rV := by rw [hr _ (by decide)]; exact h.rV
-  rK := by rw [hr _ (by decide)]; exact h.rK
-  rO := by rw [hr _ (by decide)]; exact h.rO
-  rE := by rw [hr _ (by decide)]; exact h.rE
+    (hm : MemEqBelow lo c'.nmem c.nmem) : DartEnv N nI CH1 CH2 VT E lo L c' where
+  rN := by ram_rw [hr]; exact h.rN
+  rI := by ram_rw [hr]; exact h.rI
+  r1 := by ram_rw [hr]; exact h.r1
+  r2 := by ram_rw [hr]; exact h.r2
+  one := by ram_rw [hr]; exact h.one
+  two := by ram_rw [hr]; exact h.two
+  rV := by ram_rw [hr]; exact h.rV
+  rK := by ram_rw [hr]; exact h.rK
+  rO := by ram_rw [hr]; exact h.rO
+  rE := by ram_rw [hr]; exact h.rE
   pairs := PairsAt.congr h.pairs fun t ht => ⟨hm _ (by have := h.hC1; omega),
     hm _ (by have := h.hC2; omega)⟩
   hE := h.hE
@@ -333,7 +331,8 @@ def passS (k : ℕ) : Stmt := scatS 60030 60037 120011 60040 60041 (.seq edgeS (
 /-- The base of the dart array `k`. -/
 def dBaseV (VT E k : ℕ) : ℕ := if k < 2 then VT else if k < 4 then VT + 2 * E else VT + 4 * E
 
-theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {k : ℕ} (hk : k < 6)
+include P hw in
+theorem passS_exec {k : ℕ} (hk : k < 6)
     {N nI CH1 CH2 VT E lo : ℕ} {L : List (ℕ × ℕ)} (h : DartEnv N nI CH1 CH2 VT E lo L c)
     (hNW : 2 * N + 2 ≤ W) (hVW : VT + 6 * E + 2 ≤ W) :
     ∃ c' kk, Exec P W (passS k) c c' kk ∧ kk ≤ E * 40 + 3 ∧
@@ -342,8 +341,7 @@ theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       c'.nmem = scat c.nmem (fun e => dBaseV VT E k + 2 * e + k % 2)
         (fun e => dVal k N e (eU N L e) (eV N L e) (eKind N nI e)) E ∧
       c'.rmem = c.rmem ∧ c'.output = c.output ∧ DartEnv N nI CH1 CH2 VT E lo L c' := by
-  have hB : ∀ r, (BEd r || BDV r) = false → BEd r = false ∧ BDV r = false := fun r hr => by
-    simpa using hr
+  
   obtain ⟨c', kk, ex, hkk, r', rr', mm, rm, o, J', -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60030) (rn := 60037) (r1 := 120011) (ra := 60040) (rv := 60041)
     (body := .seq edgeS (dvS k)) (B := fun r => BEd r || BDV r) (by decide) (by decide)
@@ -356,10 +354,10 @@ theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       have := h.hlo; unfold dBaseV; split_ifs <;> omega)
     (fun i d hi hJ hwd hri => by
       obtain ⟨d₁, k₁, e₁, hk₁, f₁, v1, v2, v3⟩ := edgeS_exec (P := P) hwd hJ.rN hJ.rI hJ.r1 hJ.r2 hJ.one hri
-        (by rw [← hJ.hE]; exact hi) hJ.pairs (by have := hJ.hC1; have := hJ.hlo; omega)
+        (by rwa [← hJ.hE]) hJ.pairs (by have := hJ.hC1; have := hJ.hlo; omega)
         (by have := hJ.hC2; have := hJ.hlo; omega) (by omega)
       have K : ∀ r, DKeep r = true → d₁.nreg r = d.nreg r := fun r hr => f₁.1 r (by
-        have := (DKeep_B hr).1; simp only [Bool.or_eq_false_iff] at this; exact this.1)
+        have := (DKeep_B hr).1; simp_all)
       have hJ₁ := hJ.stable K (fun a _ => by rw [f₁.2.2.1])
       have hkd : eKind N nI i ≤ 2 := by unfold eKind; split_ifs <;> omega
       have huN : eU N L i ≤ N := by
@@ -378,11 +376,10 @@ theorem passS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
         · exact hJ₁.rK
         · exact hJ₁.rO
       obtain ⟨d₂, k₂, e₂, hk₂, f₂, a2, b2⟩ := dvS_exec (P := P) (e := i) e₁.wb_right hk hb
-        (by rw [f₁.1 _ (by decide)]; exact hri) v1 v2 v3 hkd hJ₁.rN hJ₁.one hJ₁.two huN hvN hNW
+        (by ram_rw assumption [f₁.1]) v1 v2 v3 hkd hJ₁.rN hJ₁.one hJ₁.two huN hvN hNW
         (by unfold dBaseV; split_ifs <;> omega)
       have ex : Exec P W (.seq edgeS (dvS k)) d d₂ _ := .seq e₁ e₂
-      refine ⟨d₂, _, ex, by omega, (FrameB.mono f₁ fun r hr => by simp [hr]).trans
-        (FrameB.mono f₂ fun r hr => by simp [hr]), a2, b2⟩)
+      refine ⟨d₂, _, ex, by omega, (by ram_frame), a2, b2⟩)
     hw h h.rE h.one (by omega)
   exact ⟨c', kk, ex, by nlinarith, fun r a b c'' => r' r (by simp [a, b]) c'',
     fun r a b => rr' r (by simp [a, b]), mm, rm, o, J'⟩
@@ -409,8 +406,9 @@ theorem dAddr_range {VT E k e : ℕ} (_hk : k < 6) (he : e < E) :
     VT ≤ dBaseV VT E k + 2 * e + k % 2 ∧ dBaseV VT E k + 2 * e + k % 2 < VT + 6 * E := by
   unfold dBaseV; split_ifs <;> omega
 
+include P hw in
 /-- **The passes.** -/
-theorem passesS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {j : ℕ}
+theorem passesS_exec {j : ℕ}
     (hj : j ≤ 6) {N nI CH1 CH2 VT E lo : ℕ} {L : List (ℕ × ℕ)}
     (h : DartEnv N nI CH1 CH2 VT E lo L c) (hNW : 2 * N + 2 ≤ W) (hVW : VT + 6 * E + 2 ≤ W) :
     ∃ c' kk, Exec P W (passesS j) c c' kk ∧ kk ≤ j * (E * 40 + 3) ∧
@@ -440,6 +438,8 @@ theorem passesS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       rw [m₂, scat_other fun i hi e => by
         have := dAddr_range (VT := VT) (k := j) (by omega) hi; omega]
       exact m₁ a ha
+
+end
 
 /-- **The dart arrays**: the tails at `VT`, the keys at `VT + 2 E`, the opposite darts at
 `VT + 4 E`. -/
@@ -472,7 +472,7 @@ theorem darts_of (B : BookData) (hV : B.Valid) {VT : ℕ} {m : ℕ → ℕ}
     · rw [hd', a, ← x1]; congr 1
     · rw [hd', b, ← x3]; congr 1
     · rw [show VT + 4 * B.E + d = VT + 4 * B.E + 2 * (d / 2) + 1 by omega, x5]
-      unfold oppN; rw [ite_eq_right (by omega)]; omega
+      ram_simp [oppN, ite_eq_right] <;> omega
 
 end
 

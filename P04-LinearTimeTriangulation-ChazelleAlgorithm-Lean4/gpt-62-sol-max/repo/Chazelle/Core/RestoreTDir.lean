@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.RestoreTOps
 
 /-!
@@ -38,7 +40,7 @@ theorem Bturn_band (r : ℕ) (h : Bturn r = true) : bandOf r ∈ primBands ∧ r
     tauto
   all_goals
     subst h
-    exact ⟨by simp [primBands, bandOf, bLocate], by unfold ALLOC; omega⟩
+    tauto
 
 /-- The tail of a turning test: `50210 := turnCode (10502) σ`. -/
 def turnTail : Stmt := .seq (block [.copyN 50203 83008, .constN 50032 1]) turnOut
@@ -65,8 +67,8 @@ theorem locDPre_of (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {c₁ : Config
   obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
   have hAW := hI.hw.1 ALLOC
   obtain ⟨h6, hloc⟩ := locChainWF_of hwf hAW hE.hW
-  refine ⟨hE.hG, by have := hE.hW; unfold hostWords at this; omega, by rw [h00]; exact h6,
-    by rw [h00, hm]; exact hloc, M, by rw [h00, hm]; exact hMD, he⟩
+  refine ⟨hE.hG, by have := hE.hW; reg_omega, by rwa [h00],
+    by simp_all, M, by rwa [h00, hm], he⟩
 
 /-- The turn code is `1` iff the turn is positive. -/
 theorem sgnCode_eq_one {x : ℝ} : sgnCode x = 1 ↔ 0 < x := by
@@ -80,8 +82,7 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
         (block [.copyN 50000 83000, .copyN 50002 83005]) c c₁ k₁ ∧ k₁ = 2 ∧
         (c₁.nreg 50000 = c.nreg 83000 ∧ c₁.nreg 50002 = c.nreg 83005 ∧ c₁.nmem = c.nmem ∧
           c₁.nreg ALLOC = c.nreg ALLOC ∧ c₁.nreg 83008 = c.nreg 83008) := by
-      exec_block
-      exact ⟨rfl, by config_simp, by config_simp, rfl, by config_simp; rfl, by config_simp⟩
+      ram_exec
     obtain ⟨q00, q02, qm, qA, q08⟩ := q
     have i5 := hI.hin 83005 (by norm_num) (by norm_num)
     have i8 := hI.hin 83008 (by norm_num) (by norm_num)
@@ -95,17 +96,15 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
     obtain ⟨c₃, k₃, e₃, hk₃, q3⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 50203 83008,
         .constN 50032 1]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 50203 = c₂.nreg 83008 ∧
         c₃.nreg 50032 = 1 ∧ c₃.nreg 10502 = c₂.nreg 10502) := by
-      exec_block
-      · omega
-      · exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
+      ram_exec
     obtain ⟨q3a, q3b, q3c⟩ := q3
     obtain ⟨c₄, k₄, e₄, hk₄, o₄, -⟩ := turnOut_exec (P := P) c₃ e₃.wb_right (by omega) q3b
       (by rw [q3c, hd]; exact dirCode_le_two _ _)
-    have ex : Exec P W tTurnN c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
+    have ex : Exec P W tTurnN c c₄ (k₁ + (k₂ + (k₃ + k₄))) := (by ram_path)
     have hfr : FrameB Bturn c c₄ := exec_frameB ex wr_tTurnN
     refine ⟨c₄, _, ex, by omega, ?_, hI.prim ex.wb_right (frame_of_frameB hfr Bturn_band _)⟩
     have e08 : c₂.nreg 83008 = c₀.nreg 83008 := by
-      rw [f₂.1 83008 (by decide), q08, i8]
+      ram_rw [f₂.1 83008, q08, i8]
     rw [o₄, q3c, q3a, hd, e08, ← sgnCode_turnNext, sgnCode_eq_one]
     rfl
   · have hw := hI.hw
@@ -124,9 +123,9 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
         · exact absurd h0 (by have := hn C hM; omega)
         · have : n = P.n := by
             simp only [n, hI', interiorModel, NFLoc.interiorWalk_n]; exact shear_n _ _
-          rw [h0, this, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
-      · rw [show c₀.nreg 83005 + n - 1 = (c₀.nreg 83005 - 1) + n by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)]
+          ram_rw [h0, this, Nat.zero_add, Nat.mod_eq_of_lt]
+      · ram_rw [show c₀.nreg 83005 + n - 1 = (c₀.nreg 83005 - 1) + n by omega, Nat.add_mod_right,
+          Nat.mod_eq_of_lt]
     obtain ⟨pe, hpe, hpen, hp0, hp1⟩ := hpe
     obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W
         (.seq (block [.copyN 50000 83000, .constN 50032 1])
@@ -140,10 +139,7 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
           c'.nreg 50032 = 1 ∧ c'.nmem = c.nmem ∧ c'.nreg ALLOC = c.nreg ALLOC ∧
           c'.nreg 83008 = c.nreg 83008 ∧ c'.nreg 83005 = c.nreg 83005 ∧
           c'.nreg 83023 = c.nreg 83023) := by
-        exec_block
-        · omega
-        · exact ⟨rfl, by config_simp, by config_simp, rfl, by config_simp; rfl, by config_simp,
-            by config_simp, by config_simp⟩
+        ram_exec
       obtain ⟨p00, p32, pm, pA, p08, p05, p23⟩ := q'
       refine ⟨c', k', e', ?_⟩
       have w' := e'.wb_right
@@ -172,17 +168,15 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
     obtain ⟨c₃, k₃, e₃, hk₃, q3⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 50203 83008,
         .constN 50032 1]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 50203 = c₂.nreg 83008 ∧
         c₃.nreg 50032 = 1 ∧ c₃.nreg 10502 = c₂.nreg 10502) := by
-      exec_block
-      · omega
-      · exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
+      ram_exec
     obtain ⟨q3a, q3b, q3c⟩ := q3
     obtain ⟨c₄, k₄, e₄, hk₄, o₄, -⟩ := turnOut_exec (P := P) c₃ e₃.wb_right (by omega) q3b
       (by rw [q3c, hd]; exact dirCode_le_two _ _)
-    have ex : Exec P W tTurnP c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
+    have ex : Exec P W tTurnP c c₄ (k₁ + (k₂ + (k₃ + k₄))) := (by ram_path)
     have hfr : FrameB Bturn c c₄ := exec_frameB ex wr_tTurnP
     refine ⟨c₄, _, ex, by omega, ?_, hI.prim ex.wb_right (frame_of_frameB hfr Bturn_band _)⟩
     have e08 : c₂.nreg 83008 = c₀.nreg 83008 := by
-      rw [f₂.1 83008 (by decide), q08, i8]
+      ram_rw [f₂.1 83008, q08, i8]
     rw [o₄, q3c, q3a, hd, e08, hpe, ← sgnCode_turnPrev M hxe, sgnCode_eq_one]
     rfl
 

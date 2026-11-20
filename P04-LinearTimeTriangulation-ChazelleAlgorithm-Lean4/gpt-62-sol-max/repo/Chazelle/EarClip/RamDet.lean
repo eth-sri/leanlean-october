@@ -38,9 +38,6 @@ open Machine Machine.Stmt Programs
 
 /-! ### The cyclic list and the successor table -/
 
-/-- The element of `l` at cyclic position `q`: `l[q % l.length]` (`0` for the empty list). -/
-def cyc (l : List ℕ) (q : ℕ) : ℕ := l.getD (q % l.length) 0
-
 /-! ### The determinant kernel -/
 
 /-- `rreg dst := det (rreg a1, rreg a2) (rreg v1, rreg v2) (rreg b1, rreg b2)`, with scratch
@@ -73,8 +70,7 @@ theorem detInto_exec {P : Polygon} {W : ℕ} (dst t1 t2 a1 a2 v1 v2 b1 b2 : ℕ)
   unfold detInto
   exec_block
   refine ⟨by omega, ?_, ?_, rfl, rfl, rfl, rfl⟩
-  · simp [hdt1, hdt2, ht12, hdt1.symm, hdt2.symm, ht12.symm, ha1d, ha1t1, ha1t2, ha2d, ha2t1,
-      ha2t2, hv1d, hv1t1, hv1t2, hv2d, hv2t1, hv2t2, hb1d, hb1t1, hb1t2, hb2d, hb2t1, hb2t2, det]
+  · simp [ht12, hdt1.symm, hdt2.symm, ha1t1, ha1t2, ha2t1, ha2t2, hv2t1, hv2t2, hb1t1, hb1t2, hb2t1, det]
   · intro r h1 h2 h3
     simp [h1, h2, h3]
 

@@ -29,8 +29,8 @@ variable (J : Merge.Junction)
 
 /-- **The first position of the left stretch is the shared vertex.** -/
 theorem start_pt (hP : J.P.Simple) :
-    sidePt (chainModel J.whole).W
-      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + 0) % (chainModel J.whole).W.n) 0 = J.shared := by
+    sidePt J.wholeModel.W
+      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + 0) % J.wholeModel.W.n) 0 = J.shared := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
   have hd : 0 < lL1 J + lL2 J := by
     rw [lL1_add_lL2]; unfold llen; have := J.one_le_m₁; split_ifs <;> omega

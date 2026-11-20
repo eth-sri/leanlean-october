@@ -29,14 +29,14 @@ set_option maxHeartbeats 8000000 in
 /-- **The mathematics of the window.** -/
 theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw : PosW P J e h)
     (hL : (Lst J : ℝ) ≤ offK P J e h) {o' : ℕ} (ho' : o' < N₁.arcs.length) {c' : Config}
-    (hne : (N₁.F (chainModel J.left) (Qof P)).Nonempty →
-      (sideInArc (OracleQ.sk (chainModel J.left) (Qof P) N₁ o')
-          (OracleQ.ek (chainModel J.left) (Qof P) N₁ o') ((chainModel J.left).key (Qof P) ⟨ke₁ J e, h⟩) ∨
-        OracleQ.sk (chainModel J.left) (Qof P) N₁ o' = (chainModel J.left).key (Qof P) ⟨ke₁ J e, h⟩) ∧
+    (hne : (N₁.F J.leftModel (Qof P)).Nonempty →
+      (sideInArc (OracleQ.sk J.leftModel (Qof P) N₁ o')
+          (OracleQ.ek J.leftModel (Qof P) N₁ o') (J.leftModel.key (Qof P) ⟨ke₁ J e, h⟩) ∨
+        OracleQ.sk J.leftModel (Qof P) N₁ o' = J.leftModel.key (Qof P) ⟨ke₁ J e, h⟩) ∧
       DecOut J (U₁ P J (N₁.arc (OracleQ.sj N₁ o')).e < U₁ P J ⟨ke₁ J e, h⟩) (kd J e)
         (N₁.arc (OracleQ.sj N₁ o')).e.edge (N₁.arc (OracleQ.sj N₁ o')).e.hgt c')
-    (hemp : N₁.F (chainModel J.left) (Qof P) = ∅ → c'.nreg wX = 1)
-    (hg : Gath (chainModel J.left) (Qof P) N₁ c'.nmem (c'.nreg wGB)
+    (hemp : N₁.F J.leftModel (Qof P) = ∅ → c'.nreg wX = 1)
+    (hg : Gath J.leftModel (Qof P) N₁ c'.nmem (c'.nreg wGB)
       (regArcs N₁ [(N₁.arc (OracleQ.sj N₁ o')).reg])) :
     c'.nreg wX ≤ 1 ∧
     (c'.nreg wX = 0 → PosW P J (c'.nreg wE) (c'.nreg wH) ∧
@@ -44,21 +44,21 @@ theorem win_math (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {e h : ℕ} (hpw 
       (offK P J (c'.nreg wE) (c'.nreg wH) = (Lst J : ℝ) + lL1 J ∨
         ∃ (d : ℕ) (t : ℝ), MValid J d t ∧ 0 ≤ t ∧ t ≤ 1 ∧
           offK P J (c'.nreg wE) (c'.nreg wH) = (Lst J : ℝ) + ψ J d + t ∧
-          (chainModel J.left).IsCut (N₁.F (chainModel J.left) (Qof P))
-            (((b₁ J + d) % (chainModel J.left).W.n : ℕ) + t))) ∧
+          J.leftModel.IsCut (N₁.F J.leftModel (Qof P))
+            (((b₁ J + d) % J.leftModel.W.n : ℕ) + t))) ∧
     (∀ (d : ℕ) (t : ℝ), MValid J d t → 0 ≤ t → t < 1 →
       offK P J e h < (Lst J : ℝ) + ψ J d + t →
       (c'.nreg wX = 0 → (Lst J : ℝ) + ψ J d + t ≤ offK P J (c'.nreg wE) (c'.nreg wH)) →
-      sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) t ∈
-        ShotList.loSet (chainModel J.left) (Qof P) c'.nmem (c'.nreg wGB)
+      sidePt J.leftModel.W ((b₁ J + d) % J.leftModel.W.n) t ∈
+        ShotList.loSet J.leftModel (Qof P) c'.nmem (c'.nreg wGB)
           (regArcs N₁ [(N₁.arc (OracleQ.sj N₁ o')).reg]).length []) := by
-  set M := chainModel J.left with hMd
+  set M := J.leftModel with hMd
   have hP : J.P.Simple := E.hP
   have hP₁ : J.left.P.Simple := E.hP
   have hNF := E.hNF₁
   set x₀ := M.key (Qof P) ⟨ke₁ J e, h⟩ with hx₀
   obtain ⟨hoff, hkdE, hgap0, hψ0, hm0, hv0, hpar, hpt⟩ := key_map hP hpw hL
-  set t₀ := (chainModel J.whole).param (Qof P) ⟨e, h⟩ with ht₀
+  set t₀ := J.wholeModel.param (Qof P) ⟨e, h⟩ with ht₀
   have ht00 : 0 ≤ t₀ := hpw.2.1.1
   have ht01 : t₀ < 1 := hpw.2.1.2.1
   have hu0 : off M.W.n (b₁ J) x₀ = (kd J e : ℝ) + t₀ := key₁_off hP hpw hL

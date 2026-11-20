@@ -40,25 +40,25 @@ theorem SFacts.of_static {S : SS} {A0 U : ℕ} {m m' : ℕ → ℕ}
     h.r0, fun g hg => ?_, fun g hg => ?_, h.R_ok, h.R_n, h.R_up, h.R_root, h.R_pre,
     fun j hj g hg => ?_, h.upT_eq, h.upT_lt, fun x hx => ?_, fun j hj x hx => ?_,
     fun j hj => ?_, h.pow_big, h.pow_U, h.L_pos, fun w hw => ?_, fun v x hvx => ?_, fun v => ?_⟩
-  · have := hltN d; rw [he _ (by omega)]; exact h.vert d
-  · have := hltN d; rw [he _ (by omega)]; exact h.opp d
-  · have := hlt v; rw [he _ (by omega)]; exact h.first v
-  · have := hlt v; rw [he _ (by omega)]; exact h.lev v
-  · have := hltN d; rw [he _ (by omega)]; exact h.att d
-  · have := hltN d; rw [he _ (by omega)]; exact h.fp d
+  · have := hltN d; ram_rw [he]; exact h.vert d
+  · have := hltN d; ram_rw [he]; exact h.opp d
+  · have := hlt v; ram_rw [he]; exact h.first v
+  · have := hlt v; ram_rw [he]; exact h.lev v
+  · have := hltN d; ram_rw [he]; exact h.att d
+  · have := hltN d; ram_rw [he]; exact h.fp d
   · have := enc_lt x
-    rw [he _ (by omega)]; exact h.so x
+    ram_rw [he]; exact h.so x
   · have := enc_lt x
-    rw [he _ (by omega)]; exact h.sf x
-  · have := hltN g; rw [he _ (by omega)]; exact h.fpar g hg
-  · rw [he _ (by omega)]; exact h.fpar_lt g hg
-  · rw [he _ (by omega)]; exact h.pre g hg
-  · rw [he _ (by omega)]; exact h.sz g hg
-  · rw [he _ (by omega)]; exact h.up_tab j hj g hg
-  · rw [he _ (by omega)]; exact h.pv x hx
-  · rw [he _ (by omega)]; exact h.upt_tab j hj x hx
-  · rw [he _ (by omega)]; exact h.pow j hj
-  · rw [he _ (by omega)]; exact h.half w hw
+    ram_rw [he]; exact h.sf x
+  · have := hltN g; ram_rw [he]; exact h.fpar g hg
+  · ram_rw [he]; exact h.fpar_lt g hg
+  · ram_rw [he]; exact h.pre g hg
+  · ram_rw [he]; exact h.sz g hg
+  · ram_rw [he]; exact h.up_tab j hj g hg
+  · ram_rw [he]; exact h.pv x hx
+  · ram_rw [he]; exact h.upt_tab j hj x hx
+  · ram_rw [he]; exact h.pow j hj
+  · ram_rw [he]; exact h.half w hw
   · have := h.lev_lt v
     rw [he (S.bLBOT + _) (by omega), he (S.bLTOP + _) (by omega)]; exact h.win v x hvx
   · have := h.lev_lt v
@@ -113,7 +113,7 @@ theorem m2_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : L
   have := hL.hLEV
   have hN := hSF.hN; have hμ := hSF.hμ
   have hlv : Lv ((lo, hi) :: rest) fin (lo, hi) := Or.inl List.mem_cons_self
-  have hhi : hi ≤ μ := hD.rng _ hlv
+  have hhi := hD.rng _ hlv
   have hmk := fun (y : ℕ) (hy : y < μ) => marksF_df (m0 := m) (S := S) (lo := lo) (hi := hi)
     (lbot := lbot) (ltop := ltop) T hSF.upT_eq (fun x hx => by rw [hμ] at hx ⊢; exact hSF.upT_lt x hx)
     hμ (fun x hx => hD.pos_iff hlv hx) hwin hSF.lev hSF.vert hSF.opp hSF.att
@@ -136,14 +136,14 @@ theorem m2_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : L
   refine ⟨hm2, fun i h1 h2 => ?_, fun y hy => ?_, ?_⟩
   · show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_left ⟨by omega, by omega⟩, hmo _ (by omega)]
+    ram_rw [ite_eq_left ⟨by omega, by omega⟩, hmo]
     congr 2; omega
   · show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_right (by omega)]
+    ram_rw [ite_eq_right]
     exact hmk y hy
-  · have hf : (f : ℕ) < N := f.2
-    rw [hm2 _ (by omega) (by omega)]; exact hSF.fp f
+  · have hf := f.2
+    ram_rw [hm2]; exact hSF.fp f
 
 end m2
 

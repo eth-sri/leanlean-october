@@ -56,14 +56,11 @@ theorem seg_add (n₁ n₂ : ℕ) : seg m a (n₁ + n₂) = seg m a n₁ ++ seg 
   induction n₁ generalizing a with
   | zero => simp
   | succ k ih =>
-    rw [show k + 1 + n₂ = (k + n₂) + 1 by omega, seg_succ, ih, seg_succ,
-      show a + 1 + k = a + (k + 1) by omega]
-    simp only [List.cons_append]
+    simp [show k + 1 + n₂ = (k + n₂) + 1 by omega, seg_succ, ih, show a + 1 + k = a + (k + 1) by omega, List.cons_append]
 
 /-- Reading a segment from its last word. -/
 theorem seg_snoc : seg m a (n + 1) = seg m a n ++ [m (a + n)] := by
-  rw [seg_add n 1, seg_succ]
-  simp
+  simp [seg_add n 1, seg_succ]
 
 /-- Segments agree when the memories agree on them. -/
 theorem seg_congr (h : ∀ i, i < n → m (a + i) = m' (a + i)) : seg m a n = seg m' a n := by
@@ -93,8 +90,7 @@ theorem seg_take (d : ℕ) : (seg m a n).take d = seg m a (min d n) := by
     cases n with
     | zero => simp
     | succ n =>
-      rw [seg_succ, List.take_succ_cons, ih, show min (k + 1) (n + 1) = min k n + 1 by omega,
-        seg_succ]
+      simp [seg_succ, List.take_succ_cons, ih, show min (k + 1) (n + 1) = min k n + 1 by omega]
 
 /-- The words of a segment. -/
 theorem seg_getD (i : ℕ) (hi : i < n) : (seg m a n).getD i 0 = m (a + i) := by
@@ -151,8 +147,7 @@ theorem mpass_eq {w : ℕ} {l : List α} (hw : 0 < w) (hl : l ≠ []) :
 /-- A list is its first block, its second block and the rest. -/
 theorem take_append_take_drop (w : ℕ) (l : List α) :
     l.take w ++ (l.drop w).take w ++ l.drop (2 * w) = l := by
-  rw [List.append_assoc, show 2 * w = w + w by omega, ← List.drop_drop, List.take_append_drop,
-    List.take_append_drop]
+  simp [List.append_assoc, show 2 * w = w + w by omega, ← List.drop_drop, List.take_append_drop]
 
 /-- **A pass is a permutation.** -/
 theorem mpass_perm (w : ℕ) (l : List α) : (mpass le w l).Perm l := by
@@ -173,9 +168,7 @@ theorem mpass_perm (w : ℕ) (l : List α) : (mpass le w l).Perm l := by
 /-- The first block of a pass has length `min (2 w) |l|`. -/
 theorem merge_block_length (w : ℕ) (l : List α) :
     (List.merge (l.take w) ((l.drop w).take w) le).length = min (2 * w) l.length := by
-  rw [List.length_merge]
-  simp only [List.length_take, List.length_drop]
-  omega
+  simp_all <;> omega
 
 /-- **A pass works block by block**: a prefix made of whole double blocks is passed
 separately. -/
@@ -188,7 +181,7 @@ theorem mpass_append {w : ℕ} (hw : 0 < w) (t : ℕ) (l₁ l₂ : List α)
     simp [mpass_nil]
   | succ t ih =>
     have h2w : 2 * w ≤ l₁.length := by
-      rw [h]; exact Nat.le_mul_of_pos_left _ (Nat.succ_pos t)
+      simp_all
     have hl₁ : l₁ ≠ [] := by
       intro h'; subst h'; simp at h2w; omega
     have hl : l₁ ++ l₂ ≠ [] := by simp [hl₁]
@@ -200,7 +193,7 @@ theorem mpass_append {w : ℕ} (hw : 0 < w) (t : ℕ) (l₁ l₂ : List α)
         List.take_append_of_le_length (by simp only [List.length_drop]; omega)]
     have ht3 : (l₁ ++ l₂).drop (2 * w) = l₁.drop (2 * w) ++ l₂ := by
       rw [List.drop_append_of_le_length (by omega)]
-    rw [ht1, ht2, ht3, ih _ (by simp only [List.length_drop]; rw [h, Nat.succ_mul]; omega),
+    rw [ht1, ht2, ht3, ih _ (by simp [List.length_drop, h, Nat.succ_mul]),
       List.append_assoc]
 
 /-- A list of at most two blocks is passed by one merge. -/
@@ -236,7 +229,7 @@ theorem take_mpass {w : ℕ} (hw : 0 < w) (l : List α) :
   rw [mpass_eq hw hne]
   have hB := merge_block_length (le := le) w l
   by_cases hlen : 2 * w ≤ l.length
-  · rw [List.take_left' (by rw [hB]; omega)]
+  · simp_all
   · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
     rw [h1, mpass_nil, List.append_nil, List.take_of_length_le (by rw [hB]; omega)]
 
@@ -281,7 +274,7 @@ theorem merge_step_left {out a b xs ys : List α} {x : α}
   rw [← h]
   cases ys with
   | nil => simp
-  | cons y ys' => rw [List.cons_merge_cons_pos _ _ _ (hxy y ys' rfl)]; simp
+  | cons y ys' => simp_all
 
 /-- Taking the head of the right list in a merge. -/
 theorem merge_step_right {out a b xs ys : List α} {y : α}
@@ -291,7 +284,7 @@ theorem merge_step_right {out a b xs ys : List α} {y : α}
   rw [← h]
   cases xs with
   | nil => simp
-  | cons x xs' => rw [List.cons_merge_cons_neg _ _ _ (hxy x xs' rfl)]; simp
+  | cons x xs' => simp_all
 
 end
 

@@ -35,23 +35,27 @@ theorem topR_eq (E : List ℕ) (m : ℕ) :
   generalize BuildStack.run ((cw E).take m) = S
   rcases S with _ | ⟨y, S⟩
   · rfl
-  · simp only [head?_cons, ridx, reverse_cons, length_append, length_reverse, length_cons,
-      length_nil, Nat.add_eq_zero_iff, one_ne_zero, and_false, ite_false, Nat.add_sub_cancel]
-    rw [getD_eq_getElem?_getD, getElem?_append_right (by simp), length_reverse, Nat.sub_self]
-    rfl
+  · aesop
 
-theorem cw_getElem {E : List ℕ} {m : ℕ} (hm : m < E.length) :
+section
+
+variable {E : List ℕ} {m : ℕ} (hm : m < E.length)
+
+include hm in
+theorem cw_getElem :
     (cw E)[m]'(by simp [cw, hm]) = E.getD m 0 / 2 := by
   simp [cw, getD_eq_getElem?_getD, getElem?_eq_getElem hm]
 
-theorem run_succ {E : List ℕ} {m : ℕ} (hm : m < E.length) :
+include hm in
+theorem run_succ :
     BuildStack.run ((cw E).take (m + 1)) =
       BuildStack.step (BuildStack.run ((cw E).take m)) (E.getD m 0 / 2) := by
   rw [take_add_one, getElem?_eq_getElem (by simp [cw, hm]), Option.toList_some,
     BuildStack.run_snoc, cw_getElem hm]
 
+include hm in
 /-- A pop. -/
-theorem stk_pop {E : List ℕ} {m : ℕ} (hm : m < E.length)
+theorem stk_pop
     (hh : (BuildStack.run ((cw E).take m)).head? = some (E.getD m 0 / 2)) :
     stk E (m + 1) = (stk E m).dropLast ∧ (stk E m).length = (stk E (m + 1)).length + 1 := by
   unfold stk
@@ -61,16 +65,17 @@ theorem stk_pop {E : List ℕ} {m : ℕ} (hm : m < E.length)
   generalize BuildStack.run ((cw E).take m) = S at hh ⊢
   rcases S with _ | ⟨y, S⟩
   · simp at hh
-  · simp [dropLast_append_of_ne_nil]
+  · simp
 
+include hm in
 /-- A push. -/
-theorem stk_push {E : List ℕ} {m : ℕ} (hm : m < E.length)
+theorem stk_push
     (hh : ¬ (BuildStack.run ((cw E).take m)).head? = some (E.getD m 0 / 2)) :
     stk E (m + 1) = stk E m ++ [E.getD m 0 / 2] := by
   unfold stk
   rw [run_succ hm]
   unfold BuildStack.step
-  rw [ite_eq_right hh, reverse_cons]
+  simp_all
 
 /-- The label is `x + 1` iff the stack top is `x`. -/
 theorem topR_eq_succ_iff (E : List ℕ) (m x : ℕ) :
@@ -111,7 +116,7 @@ theorem Input.gapP_iff {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} 
   rw [decide_eq_true_iff]
   by_cases h1 : m + 1 = E.length
   · simp [h1]
-  · rw [Nat.mod_eq_of_lt (by omega), h.key_s hm, h.key_s (by omega)]
+  ram_simp [Nat.mod_eq_of_lt, h.key_s hm, h.key_s]
 
 /-- The word `f` of a chord record. -/
 def cf (r : CRec) (f : ℕ) : ℕ :=
@@ -123,23 +128,29 @@ def af (a : ARec) (f : ℕ) : ℕ :=
   if f = 0 then a.reg else if f = 1 then a.s.edge else if f = 2 then a.s.hgt
   else if f = 3 then a.e.edge else a.e.hgt
 
-theorem take_succ_cw {E : List ℕ} {m : ℕ} (hm : m < E.length) :
+include hm in
+theorem take_succ_cw :
     (cw E).take (m + 1) = (cw E).take m ++ [E.getD m 0 / 2] := by
   rw [take_add_one, getElem?_eq_getElem (by simp [cw, hm]), Option.toList_some, cw_getElem hm]
 
+end
+
+section
+
+variable {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
+    (h : Input M Q L E) {m : ℕ} (hm : m < E.length)
+include h hm
+
 /-- **The pass pops** at `m` iff the chord occurred before. -/
-theorem Input.pop_iff {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
-    (h : Input M Q L E) {m : ℕ} (hm : m < E.length) :
+theorem Input.pop_iff :
     topR E m = E.getD m 0 / 2 + 1 ↔ E.getD m 0 / 2 ∈ (cw E).take m := by
   rw [topR_eq_succ_iff]
   obtain ⟨hnc, htw⟩ := h.word_ok
   have := push_iff (w := cw E) htw hnc (m := m) (by simp [cw, hm])
-  rw [cw_getElem hm] at this
-  exact this
+  rwa [cw_getElem hm] at this
 
 /-- **The chord record written at the first occurrence** `m` of a chord. -/
-theorem Input.chordRec_new {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
-    (h : Input M Q L E) {m : ℕ} (hm : m < E.length) (hx : E.getD m 0 / 2 < L.length)
+theorem Input.chordRec_new (hx : E.getD m 0 / 2 < L.length)
     (hn : E.getD m 0 / 2 ∉ (cw E).take m) :
     chordRec M Q L E (E.getD m 0 / 2) =
       { h := (L.getD (E.getD m 0 / 2) (0, 0, 0)).1, lp := (L.getD (E.getD m 0 / 2) (0, 0, 0)).2.1,
@@ -147,14 +158,15 @@ theorem Input.chordRec_new {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × �
         up := if E.getD m 0 % 2 < 1 then topR E m else E.getD m 0 / 2 + 1,
         dn := if E.getD m 0 % 2 < 1 then E.getD m 0 / 2 + 1 else topR E m } := by
   have hidx : (E.map (· / 2)).idxOf (E.getD m 0 / 2) = m := by
-    have := idxOf_new (w := cw E) (m := m) (by simp [cw, hm]) (by rw [cw_getElem hm]; exact hn)
-    rw [cw_getElem hm] at this
-    exact this
+    have := idxOf_new (w := cw E) (m := m) (by simp [cw, hm]) (by rwa [cw_getElem hm])
+    rwa [cw_getElem hm] at this
   rw [h.chordRec_eq hx, hidx]
   unfold topR cw
   by_cases hp : E.getD m 0 % 2 = 0
-  · rw [ite_eq_left hp, ite_eq_left hp, ite_eq_left (by omega), ite_eq_left (by omega)]
-  · rw [ite_eq_right hp, ite_eq_right hp, ite_eq_right (by omega), ite_eq_right (by omega)]
+  · simp
+  simp
+
+end
 
 /-- The arc record of a gap start. -/
 theorem arcRec_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (m : ℕ) :

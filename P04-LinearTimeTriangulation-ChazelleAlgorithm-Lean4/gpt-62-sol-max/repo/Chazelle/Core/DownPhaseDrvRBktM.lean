@@ -96,7 +96,7 @@ def bktPre (bk : ℕ → ℕ) (n b base : ℕ) : List ℕ :=
 
 theorem getD_append_right' {l₁ l₂ : List ℕ} {i d : ℕ} (h : l₁.length ≤ i) :
     (l₁ ++ l₂).getD i d = l₂.getD (i - l₁.length) d := by
-  simp only [List.getD_eq_getElem?_getD, List.getElem?_append_right h]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_append_right h]
 
 theorem bktPre_succ (n b base : ℕ) :
     bktPre bk n (b + 1) base = bktPre bk n b base ++ (bfilt bk n b).map (base + ·) := by
@@ -125,7 +125,7 @@ theorem bfilt_getD {n q b : ℕ} (hq : q < n) (hb : bk q = b) :
       rcases Nat.lt_or_ge q m with h | h
       · obtain ⟨t, ht⟩ := ih h
         rw [bfilt_succ, ht]
-        exact ⟨t ++ (if bk m = b then [m] else []), by simp⟩
+        simp
       · have hqm : q = m := by omega
         subst hqm
         exact ⟨[], by rw [bfilt_succ, ite_eq_left hb]⟩
@@ -151,14 +151,14 @@ theorem bktList_getD_slot {n A base q : ℕ} (hq : q < n) (hA : bk q ≤ A) :
         List.range'_concat, List.flatMap_append]
       simp
   rw [hd, hpre, List.append_assoc, getD_append_right' (by
-    rw [bktPre_length]; unfold slot; omega)]
+    simp [bktPre_length, slot])]
   rw [bktPre_length, show slot bk n q - bstart bk n (bk q) = bcnt bk q (bk q) by unfold slot; omega]
   have hlt : bcnt bk q (bk q) < (bfilt bk n (bk q)).length := by
     have h1 := bcnt_mono (bk := bk) (show q + 1 ≤ n by omega) (bk q)
     rw [bcnt_succ, ite_eq_left rfl] at h1
-    unfold bcnt at h1 ⊢; omega
-  rw [List.getD_append _ _ _ _ (by rw [List.length_map]; exact hlt)]
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hlt), List.getElem_map]
+    assumption
+  rw [List.getD_append _ _ _ _ (by simp_all)]
+  rw [List.getD_eq_getElem _ _ (by simp_all), List.getElem_map]
   have := bfilt_getD (bk := bk) hq rfl
   rw [List.getD_eq_getElem _ _ hlt] at this
   rw [this]
@@ -175,8 +175,7 @@ theorem slot_lt {n A q : ℕ} (hq : q < n) (hA : ∀ q, q < n → bk q ≤ A) : 
 theorem slot_range {n q : ℕ} (hq : q < n) :
     bstart bk n (bk q) ≤ slot bk n q ∧ slot bk n q < bstart bk n (bk q + 1) := by
   have h1 := bcnt_mono (bk := bk) (show q + 1 ≤ n by omega) (bk q)
-  rw [bcnt_succ, ite_eq_left rfl] at h1
-  rw [bstart_succ]; unfold slot; omega
+  simp_all [bcnt_succ, ite_eq_left rfl, bstart_succ, slot] <;> omega
 
 /-- Slots are injective. -/
 theorem slot_inj {n q q' : ℕ} (hq : q < n) (hq' : q' < n) (h : slot bk n q = slot bk n q') :
@@ -211,10 +210,10 @@ theorem seg_eq_bktList {m : ℕ → ℕ} {R n A base : ℕ} (hA : ∀ q, q < n �
   intro p hp _
   rw [seg_length] at hp
   obtain ⟨q, hq, rfl⟩ := exists_slot hA hp
-  have e1 : (seg m R n)[slot bk n q]'(by rw [seg_length]; exact hp) = m (R + slot bk n q) := by
+  have e1 : (seg m R n)[slot bk n q]'(by simp_all) = m (R + slot bk n q) := by
     simp [seg]
   have e2 := bktList_getD_slot (bk := bk) (base := base) hq (hA q hq)
-  rw [List.getD_eq_getElem _ _ (by rw [bktList_length hA]; exact hp)] at e2
+  rw [List.getD_eq_getElem _ _ (by assumption)] at e2
   rw [e1, e2, h q hq]
 
 end

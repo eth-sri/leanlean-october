@@ -67,7 +67,7 @@ theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.
         omega
       refine ⟨0, by omega, 0, le_rfl, zero_le_one, ?_⟩
       unfold Model.wa
-      rw [ht, hwb p (by omega), hpp]
+      ram_rw [ht, hwb p, hpp]
       simp [lerp]
     by_cases hhi : p₀ + w ≤ p
     · -- `p = p₀ + w`, `t = 0`: the vertex `p₀ + w`
@@ -83,9 +83,7 @@ theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.
       rw [ht, hpp, show p₀ + (w - 1) + 1 = p₀ + w by omega]
       simp [lerp]
     · refine ⟨p - p₀, by omega, t, ht0, ht1, ?_⟩
-      unfold Model.wa
-      rw [hwb p (by omega), show p₀ + (p - p₀) = p by omega]
-      rfl
+      ram_finish [Model.wa, hwb, show p₀ + (p - p₀) = p by omega]
   · rintro ⟨d, hd, t, ht0, ht1, rfl⟩
     refine ⟨p₀ + d, t, by omega, ht0, ht1, ?_, ?_⟩
     · have hk0 : (p₀ : ℝ) ≤ ((p₀ + d : ℕ) : ℝ) + t := by push_cast; linarith [(Nat.cast_nonneg d : (0 : ℝ) ≤ d)]
@@ -94,38 +92,35 @@ theorem arcSet_nat {M : Model} {p₀ w : ℕ} (hw : 1 ≤ w) (hn : p₀ + w < M.
         push_cast; linarith
       rcases hk0.lt_or_eq with hk0 | hk0
       · rcases hk1.lt_or_eq with hk1 | hk1
-        · left; unfold sideInArc; rw [ite_eq_left hab]; exact ⟨hk0, hk1⟩
+        · left; ram_finish [sideInArc, ite_eq_left hab]
         · right; right; exact hk1
       · right; left; exact hk0.symm
-    · unfold Model.wa
-      rw [hwb (p₀ + d) (by omega)]
-      rfl
+    · ram_finish
 
 /-! ## Stretches along the tour of a chain -/
 
 theorem tourV_up (Cα : Chain) {d : ℕ} (hd : d ≤ Cα.m) : WalkEmbed.tourV Cα 0 d = Cα.vertex d := by
   unfold WalkEmbed.tourV
   have := Cα.one_le
-  rw [zero_add, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [zero_add, Nat.mod_eq_of_lt]
   unfold sideE; rw [ite_eq_left hd]
 
 theorem tourV_down (Cα : Chain) {d : ℕ} (hd : d ≤ Cα.m) :
     WalkEmbed.tourV Cα Cα.m d = Cα.vertex (Cα.m - d) := by
   unfold WalkEmbed.tourV
-  have := Cα.one_le
+  
   rcases hd.lt_or_eq with hd | rfl
-  · rw [Nat.mod_eq_of_lt (by omega)]
+  · ram_rw [Nat.mod_eq_of_lt]
     unfold sideE
     by_cases h : Cα.m + d ≤ Cα.m
     · have : d = 0 := by omega
       subst this; simp
     · rw [ite_eq_right h]; congr 1; omega
-  · rw [show Cα.m + Cα.m = 2 * Cα.m by ring, Nat.mod_self]
-    unfold sideE; simp
+  simp [show Cα.m + Cα.m = 2 * Cα.m by ring, Nat.mod_self, sideE]
 
 theorem segment_mem_set (Cα : Chain) {k : ℕ} (hk : k < Cα.m) {x : Point}
     (hx : x ∈ Chazelle.segment (Cα.vertex k) (Cα.vertex (k + 1))) : x ∈ Cα.set :=
-  ⟨k, hk, by rw [Cα.chainEdge_eq]; exact hx⟩
+  ⟨k, hk, by rwa [Cα.chainEdge_eq]⟩
 
 /-- **The point set of a kind-1 piece**: a stretch of `Cα.m` walk edges whose vertices are those
 of the tour of `Cα` read upward (`J = 0`) or downward (`J = Cα.m`) has the point set `Cα.set`. -/
@@ -146,8 +141,7 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
     · rintro ⟨k, hk, hx⟩
       rw [Cα.chainEdge_eq] at hx
       refine ⟨k, hk, ?_⟩
-      rw [hV' k hk.le, show p₀ + k + 1 = p₀ + (k + 1) by ring, hV' (k + 1) hk]
-      exact hx
+      rwa [hV' k hk.le, show p₀ + k + 1 = p₀ + (k + 1) by ring, hV' (k + 1) hk]
   · have hV' : ∀ d, d ≤ Cα.m → M.W.vtx (p₀ + d) = Cα.vertex (Cα.m - d) := fun d hd => by
       rw [hV d hd, tourV_down Cα hd]
     constructor
@@ -159,28 +153,27 @@ theorem arcSet_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hJ : J = 0 ∨ J =
     · rintro ⟨k, hk, hx⟩
       rw [Cα.chainEdge_eq] at hx
       refine ⟨Cα.m - (k + 1), by omega, ?_⟩
-      rw [hV' _ (by omega), show p₀ + (Cα.m - (k + 1)) + 1 = p₀ + (Cα.m - k) by omega,
-        hV' _ (by omega), show Cα.m - (Cα.m - (k + 1)) = k + 1 by omega,
+      ram_rw assumption [hV', show p₀ + (Cα.m - (k + 1)) + 1 = p₀ + (Cα.m - k) by omega,
+        hV', show Cα.m - (Cα.m - (k + 1)) = k + 1 by omega,
         show Cα.m - (Cα.m - k) = k by omega, Chazelle.Geometry.segment_comm]
-      exact hx
 
 /-- **The walk of a kind-1 piece** (`PieceWalk`, finding E5): a stretch of `Cα.m` walk edges of
 `M` agreeing with the tour of `Cα` read from any tour position `J`. -/
 theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < M.W.n)
     (hV : ∀ d, d ≤ Cα.m → M.W.vtx ((p₀ + d) % M.W.n) = WalkEmbed.tourV Cα J d) :
     PieceWalk M Cα ⟨p₀, 0⟩ ⟨(p₀ + Cα.m) % M.W.n, 0⟩ := by
-  have h1 := Cα.one_le
+  
   have ht := WalkEmbed.tpos_lt Cα J
   have hn' := WalkEmbed.cm_n Cα
   refine ⟨rfl, rfl, hp₀, rfl, ?_⟩
   by_cases hs : WalkEmbed.tpos Cα J + Cα.m ≤ 2 * Cα.m
   · refine ⟨6 + WalkEmbed.tpos Cα J, by omega, Or.inl ?_⟩
     intro d hd
-    rw [hV d hd, WalkEmbed.walk_tour Cα J d (by omega)]
+    ram_rw [hV d hd, WalkEmbed.walk_tour Cα J d]
   · set L₁ := 2 * Cα.m - WalkEmbed.tpos Cα J with hL₁
     refine ⟨6 + WalkEmbed.tpos Cα J, by omega, Or.inr ⟨L₁, by omega, by omega, by omega, ?_, ?_⟩⟩
     · intro d hd
-      rw [hV d (by omega), WalkEmbed.walk_tour Cα J d (by omega)]
+      ram_rw [hV d, WalkEmbed.walk_tour Cα J d]
     · intro d hd
       have e1 : ((p₀ + L₁) % M.W.n + d) % M.W.n = (p₀ + (L₁ + d)) % M.W.n := by
         rw [Nat.mod_add_mod, Nat.add_assoc]
@@ -189,7 +182,7 @@ theorem pieceWalk_tour {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ < 
             (chainModel Cα).W.n := by
         rw [hn', show 6 + WalkEmbed.tpos Cα J + (2 * Cα.m - WalkEmbed.tpos Cα J) + 7 + d =
           (6 + d) + (2 * Cα.m + 7) by omega, Nat.add_mod_right]
-      rw [e1, hV _ (by omega), e2, WalkEmbed.walk_after Cα J d (by omega)]
+      ram_rw [e1, hV, e2, WalkEmbed.walk_after Cα J d]
 
 /-! ## Weights in a chain model -/
 

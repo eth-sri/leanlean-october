@@ -1,5 +1,11 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoLH
 public import Chazelle.Core.RestoreTArcs
 public import Chazelle.Core.RestoreTRead
@@ -35,43 +41,41 @@ theorem IRS.whileP {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ : Config 
       ∃ K, IRS P W c₀ body c K (fun c' => I c' ∧ Φ c' + K + 2 ≤ Φ c))
     (hI : IInv W c₀ c) (hc : I c) (hroom : c.nreg ALLOC + Φ c ≤ W) :
     IRS P W c₀ (.whileLtN a b body) c (Φ c + 2) (fun c' => I c' ∧ ¬ c'.nreg a < c'.nreg b) := by
-  induction hn : Φ c using Nat.strong_induction_on generalizing c with
-  | _ n ih =>
-    by_cases ht : c.nreg a < c.nreg b
-    · obtain ⟨K, c₁, k₁, e₁, hk₁, hI₁, hfr₁, hc₁, hΦ₁⟩ := hbody c hI hc ht hroom
-      have hA₁ := hfr₁.2.2.2.2
-      have hroom₁ : c₁.nreg ALLOC + Φ c₁ ≤ W := by omega
-      obtain ⟨c', k₂, e₂, hk₂, hI', hfr₂, hq⟩ := ih (Φ c₁) (by omega) hI₁ hc₁ hroom₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht e₁ e₂, by omega, hI',
-        (hfr₁.trans hfr₂).mono (by omega), hq⟩
-    · exact ⟨c, 2, .whileLtN_false ht hI.hw, by omega, hI, IFr.refl c 2, hc, ht⟩
+  obtain ⟨d, k, e, ⟨hd, hi, -⟩, ht, hf, hk⟩ := Exec.whileLtN_with_frame
+    (fun d => IInv W c₀ d ∧ I d ∧ d.nreg ALLOC + Φ d ≤ W) Φ IFr
+    (fun _ h => h.1.hw) (fun d => IFr.refl d 2) (fun f g => (f.trans g).mono (by omega))
+    (fun d h ht => by
+      obtain ⟨K, d', k, e, hk, hd', hf, hi, hΦ⟩ := hbody d h.1 h.2.1 ht h.2.2
+      have := hf.2.2.2.2
+      exact ⟨d', k, e, ⟨hd', hi, by omega⟩, hf, by omega⟩) ⟨hI, hc, hroom⟩
+  exact ⟨d, k, e, by omega, hd, hf, hi, ht⟩
 
 /-! ## Registers of the gather -/
 
 /-- Inputs: the normal form handle, the address and length of the region list, the chain
 descriptor register (a register number, read by `normS`). -/
-def gNF : ℕ := sw 1000
-def gL : ℕ := sw 1001
-def gC : ℕ := sw 1002
+@[ram_layout] def gNF : ℕ := sw 1000
+@[ram_layout] def gL : ℕ := sw 1001
+@[ram_layout] def gC : ℕ := sw 1002
 /-- Outputs: the base of the arc array and the number of arcs. -/
-def gBase : ℕ := sw 1004
-def gK : ℕ := sw 1005
+@[ram_layout] def gBase : ℕ := sw 1004
+@[ram_layout] def gK : ℕ := sw 1005
 /-- Working registers. -/
-def gI : ℕ := sw 1006
-def gR : ℕ := sw 1007
-def gT : ℕ := sw 1008
-def gN : ℕ := sw 1009
-def gLs : ℕ := sw 1010
-def gA4 : ℕ := sw 1011
-def gR5 : ℕ := sw 1012
-def gL7 : ℕ := sw 1013
-def gA : ℕ := sw 1014
-def gX : ℕ := sw 1015
-def gS : ℕ := sw 1016
-def gS1 : ℕ := sw 1017
-def gE : ℕ := sw 1018
-def gE1 : ℕ := sw 1019
-def gO : ℕ := sw 1020
+@[ram_layout] def gI : ℕ := sw 1006
+@[ram_layout] def gR : ℕ := sw 1007
+@[ram_layout] def gT : ℕ := sw 1008
+@[ram_layout] def gN : ℕ := sw 1009
+@[ram_layout] def gLs : ℕ := sw 1010
+@[ram_layout] def gA4 : ℕ := sw 1011
+@[ram_layout] def gR5 : ℕ := sw 1012
+@[ram_layout] def gL7 : ℕ := sw 1013
+@[ram_layout] def gA : ℕ := sw 1014
+@[ram_layout] def gX : ℕ := sw 1015
+@[ram_layout] def gS : ℕ := sw 1016
+@[ram_layout] def gS1 : ℕ := sw 1017
+@[ram_layout] def gE : ℕ := sw 1018
+@[ram_layout] def gE1 : ℕ := sw 1019
+@[ram_layout] def gO : ℕ := sw 1020
 
 /-- The registers the gather writes (outside the oracle bands). -/
 def GSet (r : ℕ) : Prop := sw 1004 ≤ r ∧ r ≤ sw 1021
@@ -107,10 +111,8 @@ theorem put4_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 4 
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, fun r hr => ?_, ?_, rfl, rfl, rfl⟩
     · config_simp; omega
-    · config_simp
-      simp only [upd, ite_eq_right hr]
-    · config_simp
-      simp only [k1, mem4]
+    · ram_post
+    ram_finish
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6⟩ := ex
   refine IRS.ofExec hI ex (by omega) (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
     (by show c.nreg 9999 ≤ c'.nreg 9999; omega) (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega)
@@ -120,7 +122,7 @@ theorem put4_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 4 
   have ha' : a < c₀.nreg 9999 := ha
   unfold mem4
   simp only [upd]
-  rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+  ram_rw [ite_eq_right, ite_eq_right, ite_eq_right, ite_eq_right]
 
 /-! ## Exact frames from write sets -/
 
@@ -140,7 +142,8 @@ def BnS (ph o : ℕ) (r : ℕ) : Bool :=
 theorem normS_wr (dsc pe ph o : ℕ) : SignK.wr (BnS ph o) (normS dsc pe ph o) = true := by
   have hoff : SignK.wr (BnS ph o) offCmp = true :=
     wr_mono wr_offCmp (fun r h => by simp [BnS, h])
-  simp [normS, normBox, callOff, callP, cps, block, SignK.wr, SignK.wrOK, BnS, hoff]
+  unfold SignK.wr at hoff ⊢
+  simp [normS, normBox, callOff, callP, cps, block, write_check, BnS, hoff]
 
 /-- `normS` keeps the allocator and the memory. -/
 theorem normS_exact {dsc pe ph o : ℕ} {Q : Config → Prop} {K : ℕ}
@@ -167,10 +170,7 @@ noncomputable def nArc (M : Model) (Q : Polygon) (N : NF) (a : ℕ) : WPos × WP
 
 theorem regArcs_take_succ (N : NF) (rs : List ℕ) {i : ℕ} (hi : i < rs.length) :
     regArcs N (rs.take (i + 1)) = regArcs N (rs.take i) ++ (N.region (rs.getD i 0)).arcs := by
-  unfold regArcs
-  rw [List.take_add_one, List.flatMap_append, List.getElem?_eq_getElem hi]
-  simp only [Option.toList_some, List.flatMap_cons, List.flatMap_nil, List.append_nil]
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  ram_finish [regArcs, List.take_add_one, List.flatMap_append, List.getElem?_eq_getElem hi, Option.toList_some, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.getD_eq_getElem?_getD, Option.getD_some]
 
 /-- **The ends of an arc** of a valid normal form of a chain model: proper positions on walk
 edges, inside the height band of the box unless on a horizontal box edge. -/
@@ -200,11 +200,10 @@ theorem arc_end_facts {C : Chain} (hP : C.P.Simple) {N : NF}
     intro x hx hk
     have hkey : (chainModel C).key (Qof P) x = x.edge + (chainModel C).param (Qof P) x := rfl
     have : ((x.edge : ℕ) : ℝ) ≤ 0 := by linarith [hx.1]
-    have : x.edge ≤ 0 := by exact_mod_cast this
-    omega
+    simp_all 
   rcases (N.F (chainModel C) (Qof P)).eq_empty_or_nonempty with hF | hF
   · rcases hcase with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, h1, h2⟩
-    · rw [hF] at hc; exact absurd hc (Set.notMem_empty c)
+    · simp_all
     have zs := hzero _ hps h1
     have ze := hzero _ hpe h2
     exact ⟨⟨hps, hedge _ hps hsn, fun _ h => absurd zs h⟩,
@@ -226,7 +225,7 @@ def gArc (dsc : ℕ) : Stmt :=
     (.seq put4 (block [.addN gK gK K1, .addN gT gT K1]))))
 
 /-- The cost of one arc. -/
-def arcK : ℕ := 22060
+@[ram_layout] def arcK : ℕ := 22060
 
 /-- The head of a region: its arc count and arc list. -/
 def gRegHead : List Instr :=
@@ -257,7 +256,7 @@ def GW (M : Model) (Q : Polygon) (N : NF) (cS c : Config) (pre : List ℕ) : Pro
     c.nreg ALLOC = cS.nreg ALLOC + 4 * pre.length ∧
     (∀ k, k < pre.length →
       ShotList.arcAt c.nmem (cS.nreg ALLOC) k = nArc M Q N (pre.getD k 0)) ∧
-    (∀ a, a < cS.nreg ALLOC → c.nmem a = cS.nmem a) ∧
+    (MemEqBelow (cS.nreg ALLOC) c.nmem cS.nmem) ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ GSet r → r ≠ ALLOC → c.nreg r = cS.nreg r) ∧
     c.nreg gA4 = cS.nmem (cS.nreg gNF + 4) ∧ c.nreg gR5 = cS.nmem (cS.nreg gNF + 5) ∧
     c.nreg gL7 = cS.nmem (cS.nreg gNF + 7)
@@ -274,45 +273,33 @@ def GIn (M : Model) (Q : Polygon) (N : NF) (cS : Config) (rs : List ℕ) (i : �
 
 /-! ## The register effect of the blocks -/
 
-theorem gRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
+section
+
+variable (m f : ℕ → ℕ) (hk1 : f K1 = 1)
+
+include m hk1 in
+theorem gRead_val :
     regB m gRead f gS = m (f gA4 + 5 * m (f gLs + f gT) + 1) ∧
     regB m gRead f gS1 = m (f gA4 + 5 * m (f gLs + f gT) + 2) ∧
     regB m gRead f gE = m (f gA4 + 5 * m (f gLs + f gT) + 3) ∧
     regB m gRead f gE1 = m (f gA4 + 5 * m (f gLs + f gT) + 4) := by
-  have e1 : f 240611 = 1 := hk1
-  simp only [gRead, regB, regI, upd, gX, gLs, gT, gA, gA4, gS, gS1, gE, gE1, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  register_block normalized [gRead]
 
 theorem gRead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ gX) (h2 : q ≠ gA) (h3 : q ≠ gS)
     (h4 : q ≠ gS1) (h5 : q ≠ gE) (h6 : q ≠ gE1) : regB m gRead f q = f q :=
-  regB_other m gRead f (fun i hi => by
-    simp only [gRead, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all)
+  (by register_keep [gRead])
 
-theorem gRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f gLs + f gT ≤ W)
+include m hk1 in
+theorem gRead_ok (hb : f gLs + f gT ≤ W)
     (hb2 : f gA4 + 5 * m (f gLs + f gT) + 4 ≤ W) : okB W m gRead f := by
-  have e1 : f 240611 = 1 := hk1
-  have s1 : IScr (240000 + 1015) := iscr_sw (by norm_num) (by norm_num)
-  have s2 : IScr (240000 + 1014) := iscr_sw (by norm_num) (by norm_num)
-  have s3 : IScr (240000 + 1016) := iscr_sw (by norm_num) (by norm_num)
-  have s4 : IScr (240000 + 1017) := iscr_sw (by norm_num) (by norm_num)
-  have s5 : IScr (240000 + 1018) := iscr_sw (by norm_num) (by norm_num)
-  have s6 : IScr (240000 + 1019) := iscr_sw (by norm_num) (by norm_num)
-  have hb' : f 241010 + f 241008 ≤ W := hb
-  have hb2' : f 241011 + 5 * m (f 241010 + f 241008) + 4 ≤ W := hb2
-  simp only [gRead, okB, okI, regI, upd, gX, gLs, gT, gA, gA4, gS, gS1, gE, gE1, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1] at s1 s2 s3 s4 s5 s6 ⊢
-  refine ⟨⟨s1, hb'⟩, s2, ⟨s1, by omega⟩, ⟨s1, by omega⟩, ⟨s1, by omega⟩, ⟨s1, by omega⟩,
-    ⟨s1, by omega⟩, s3, ⟨s1, by omega⟩, s4, ⟨s1, by omega⟩, s5, ⟨s1, by omega⟩, s6, trivial⟩
+  register_block normalized [gRead]
 
 theorem getD_append_left {l l' : List ℕ} {n d : ℕ} (h : n < l.length) :
     (l ++ l').getD n d = l.getD n d := by
   simp [List.getD_eq_getElem?_getD, List.getElem?_append_left h]
 
 theorem getD_append_last {l : List ℕ} {a d : ℕ} : (l ++ [a]).getD l.length d = a := by
-  simp [List.getD_eq_getElem?_getD]
+  simp
 
 /-! ## One arc -/
 
@@ -334,22 +321,21 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   set r := rs.getD i 0 with hr
   set t := c.nreg gT with htd
   set pre := regArcs N (rs.take i) ++ (N.region r).arcs.take t with hpre
-  have htl : t < (N.region r).arcs.length := by rw [← hgN]; exact ht
+  have htl : t < (N.region r).arcs.length := by rwa [← hgN]
   set a := (N.region r).arcs.getD t 0 with had
   have ham : a ∈ (N.region r).arcs := by
-    rw [had, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem htl, Option.getD_some]
-    exact List.getElem_mem htl
+    simp [had, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem htl, Option.getD_some]
   have ha : a < N.arcs.length := by
     obtain ⟨-, -, -, reg, -, -, hArcs, -⟩ := hNF
     exact ((hArcs.2.2.2 r hri a).1 ham).1
   -- the memory of the normal form
-  have hAW : cS.nreg ALLOC ≤ c.nreg ALLOC := by rw [w3]; omega
+  
   have hNWc : NFWithin c.nmem B E N := hNW.transport (fun a' ha' => w5 a' (by omega))
   have hNA : NFAt c.nmem B N := hNWc.holds
   obtain ⟨b1, -, b3, b4, b5, -⟩ := Restore.nf_bounds hNWc
   have hgNF : c.nreg gNF = B := by
-    rw [w6 gNF (not_oracle_sw (by unfold gNF sw; norm_num) (by unfold gNF sw; norm_num))
-      (fun h => by unfold GSet gNF sw at h; omega) (by unfold gNF ALLOC sw; omega), hBS]
+    rw [w6 gNF (by register_guard)
+      (fun h => by register_guard) (by register_guard), hBS]
   have m4 : cS.nmem (B + 4) = c.nmem (B + 4) := (w5 _ (by omega)).symm
   have m5 : cS.nmem (B + 5) = c.nmem (B + 5) := (w5 _ (by omega)).symm
   have m7 : cS.nmem (B + 7) = c.nmem (B + 7) := (w5 _ (by omega)).symm
@@ -357,7 +343,7 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   have mr1 : cS.nmem (c.nmem (B + 5) + 5 * r + 1) = c.nmem (c.nmem (B + 5) + 5 * r + 1) :=
     (w5 _ (by have := b4 r hri; omega)).symm
   have vLs : c.nreg gLs = c.nmem (B + 7) + c.nmem (c.nmem (B + 5) + 5 * r + 1) := by
-    rw [hgLs (by omega), hBS, m7, m5, mr1]
+    ram_rw [hgLs, hBS, m7, m5, mr1]
   have vA4 : c.nreg gA4 = c.nmem (B + 4) := by rw [w7, hBS, m4]
   have hblt := b5 r hri t htl
   have hat : c.nmem (c.nreg gLs + c.nreg gT) = a := by
@@ -385,54 +371,52 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
       (fun h => hq (by subst h; unfold GSet gA sw; omega)) (fun h => hq (by subst h; unfold GSet gS sw; omega))
       (fun h => hq (by subst h; unfold GSet gS1 sw; omega)) (fun h => hq (by subst h; unfold GSet gE sw; omega))
       (fun h => hq (by subst h; unfold GSet gE1 sw; omega))
-  have hm₁ : c₁.nmem = c.nmem := rfl
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold GSet ALLOC sw; omega)
+  
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by register_guard)
   have hctx₁ : ChainCtx P W c₁ dsc C := hctx.transport (k1 _ hd.2.2) (fun _ _ => rfl) hA1.ge
   -- normalise the start
   have hy1 : c₁.nreg gS < 6 → c₁.nreg gS ≠ 0 → c₁.nreg gS ≠ 2 → c₁.nreg gS ≠ 4 →
       |((chainModel C).pos (Qof P) ⟨c₁.nreg gS, c₁.nreg gS1⟩).2| < C.radius := by
-    rw [v1s, v1s1]; exact hsy
+    rwa [v1s, v1s1]
   refine IRS.seq (normS_exact (normS_irs (dsc := dsc) (pe := gS) (ph := gS1) (o := gO) hI₁
-    (hK.fix hI₁) hctx₁ ⟨hd.1, hd.2.1, by unfold gS sw; norm_num, by unfold gS sw; norm_num,
-      by unfold gS1 sw; norm_num, by unfold gS1 sw; norm_num⟩
-    ⟨by unfold gO sw; norm_num, by unfold gO sw; norm_num, by unfold gO gS sw; norm_num,
-      by unfold gO gS1 sw; norm_num, by unfold gO gS sw; norm_num, by unfold gO gS1 sw; norm_num,
-      by unfold gS gS1 sw; norm_num⟩
-    (by rw [v1s]; exact hse) (by rw [v1s, v1s1]; exact hps) hy1
-    (by rw [hA1]; unfold arcK at hroom; omega)) ⟨by unfold gS1 sw; norm_num, by unfold gO sw; norm_num⟩) ?_
+    (hK.fix hI₁) hctx₁ ⟨hd.1, hd.2.1, by register_guard, by register_guard,
+      by register_guard, by register_guard⟩
+    ⟨by register_guard, by register_guard, by register_guard,
+      by register_guard, by register_guard, by register_guard,
+      by register_guard⟩
+    (by rwa [v1s]) (by rwa [v1s, v1s1]) hy1
+    (by rw [hA1]; unfold arcK at hroom; omega)) ⟨by register_guard, by register_guard⟩) ?_
   rintro c₂ hI₂ - - ⟨⟨n2s, n2s1, k2, -, -⟩, hA2, hm2⟩
   have hctx₂ : ChainCtx P W c₂ dsc C := hctx₁.transport
     (k2 _ (not_oracle_sw hd.1 hd.2.1) (fun h => hd.2.2 (by subst h; unfold GSet gS1 sw; omega))
       (fun h => hd.2.2 (by subst h; unfold GSet gO sw; omega))
-      (fun h => hd.2.2 (by subst h; unfold GSet gO sw; omega)) (by unfold ALLOC; omega))
+      (fun h => hd.2.2 (by subst h; unfold GSet gO sw; omega)) (by register_guard))
     (fun a' _ => by rw [hm2]) hA2.ge
   have v2e : c₂.nreg gE = (N.arc a).e.edge := by
-    rw [k2 _ (not_oracle_sw (by unfold gE sw; norm_num) (by unfold gE sw; norm_num))
-      (by unfold gE gS1 sw; norm_num) (by unfold gE gO sw; norm_num) (by unfold gE gO sw; norm_num)
-      (by unfold gE ALLOC sw; norm_num), v1e]
+    rw [k2 _ (by register_guard)
+      (by register_guard) (by register_guard) (by register_guard)
+      (by reg_omega), v1e]
   have v2e1 : c₂.nreg gE1 = (N.arc a).e.hgt := by
-    rw [k2 _ (not_oracle_sw (by unfold gE1 sw; norm_num) (by unfold gE1 sw; norm_num))
-      (by unfold gE1 gS1 sw; norm_num) (by unfold gE1 gO sw; norm_num)
-      (by unfold gE1 gO sw; norm_num) (by unfold gE1 ALLOC sw; norm_num), v1e1]
+    rw [k2 _ (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), v1e1]
   -- normalise the end
   have hy2 : c₂.nreg gE < 6 → c₂.nreg gE ≠ 0 → c₂.nreg gE ≠ 2 → c₂.nreg gE ≠ 4 →
       |((chainModel C).pos (Qof P) ⟨c₂.nreg gE, c₂.nreg gE1⟩).2| < C.radius := by
-    rw [v2e, v2e1]; exact hey
+    rwa [v2e, v2e1]
   refine IRS.seq (normS_exact (normS_irs (dsc := dsc) (pe := gE) (ph := gE1) (o := gO) hI₂
-    (hK.fix hI₂) hctx₂ ⟨hd.1, hd.2.1, by unfold gE sw; norm_num, by unfold gE sw; norm_num,
-      by unfold gE1 sw; norm_num, by unfold gE1 sw; norm_num⟩
-    ⟨by unfold gO sw; norm_num, by unfold gO sw; norm_num, by unfold gO gE sw; norm_num,
-      by unfold gO gE1 sw; norm_num, by unfold gO gE sw; norm_num, by unfold gO gE1 sw; norm_num,
-      by unfold gE gE1 sw; norm_num⟩
-    (by rw [v2e]; exact hee) (by rw [v2e, v2e1]; exact hpe) hy2
-    (by rw [hA2, hA1]; unfold arcK at hroom; omega)) ⟨by unfold gE1 sw; norm_num, by unfold gO sw; norm_num⟩) ?_
+    (hK.fix hI₂) hctx₂ ⟨hd.1, hd.2.1, by register_guard, by register_guard,
+      by register_guard, by register_guard⟩
+    ⟨by register_guard, by register_guard, by register_guard,
+      by register_guard, by register_guard, by register_guard,
+      by register_guard⟩
+    (by rwa [v2e]) (by rwa [v2e, v2e1]) hy2
+    (by rw [hA2, hA1]; unfold arcK at hroom; omega)) ⟨by register_guard, by register_guard⟩) ?_
   rintro c₃ hI₃ - - ⟨⟨n3e, n3e1, k3, -, -⟩, hA3, hm3⟩
-  have v3s : c₃.nreg gS = c₂.nreg gS := k3 _ (not_oracle_sw (by unfold gS sw; norm_num)
-    (by unfold gS sw; norm_num)) (by unfold gS gE1 sw; norm_num) (by unfold gS gO sw; norm_num)
-    (by unfold gS gO sw; norm_num) (by unfold gS ALLOC sw; norm_num)
-  have v3s1 : c₃.nreg gS1 = c₂.nreg gS1 := k3 _ (not_oracle_sw (by unfold gS1 sw; norm_num)
-    (by unfold gS1 sw; norm_num)) (by unfold gS1 gE1 sw; norm_num) (by unfold gS1 gO sw; norm_num)
-    (by unfold gS1 gO sw; norm_num) (by unfold gS1 ALLOC sw; norm_num)
+  have v3s : c₃.nreg gS = c₂.nreg gS := k3 _ (by register_guard) (by register_guard) (by register_guard)
+    (by register_guard) (by reg_omega)
+  have v3s1 : c₃.nreg gS1 = c₂.nreg gS1 := k3 _ (by register_guard) (by register_guard) (by register_guard)
+    (by register_guard) (by reg_omega)
   have ns : (⟨c₃.nreg gS, c₃.nreg gS1⟩ : WPos) = Restore.normOf (chainModel C) (Qof P) (N.arc a).s := by
     rw [v3s, v3s1, n2s1, n2s, v1s, v1s1]
     unfold nhgt
@@ -456,27 +440,26 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   rintro c₄ hI₄ - - ⟨hA4, k4, hm4, -, -, -⟩
   -- advance
   have k4K : c₄.nreg gK = c.nreg gK := by
-    rw [k4 _ (by unfold gK ALLOC sw; norm_num),
-      k3 _ (not_oracle_sw (by unfold gK sw; norm_num) (by unfold gK sw; norm_num))
-        (by unfold gK gE1 sw; norm_num) (by unfold gK gO sw; norm_num) (by unfold gK gO sw; norm_num)
-        (by unfold gK ALLOC sw; norm_num),
-      k2 _ (not_oracle_sw (by unfold gK sw; norm_num) (by unfold gK sw; norm_num))
-        (by unfold gK gS1 sw; norm_num) (by unfold gK gO sw; norm_num) (by unfold gK gO sw; norm_num)
-        (by unfold gK ALLOC sw; norm_num),
-      k1' _ (by unfold gK gX sw; norm_num) (by unfold gK gA sw; norm_num)
-        (by unfold gK gS sw; norm_num) (by unfold gK gS1 sw; norm_num)
-        (by unfold gK gE sw; norm_num) (by unfold gK gE1 sw; norm_num)]
+    ram_rw [k4,
+      k3 _ (by register_guard)
+        (by register_guard) (by register_guard) (by register_guard)
+        (by reg_omega),
+      k2 _ (by register_guard)
+        (by register_guard) (by register_guard) (by register_guard)
+        (by reg_omega),
+      k1' _ (by register_guard) (by register_guard)
+        (by register_guard) (by register_guard)
+        (by register_guard) (by register_guard)]
   -- the frame from `c` to `c₄`
   have k14 : ∀ q, bandOf q ∉ oracleBands → q ≠ gX → q ≠ gA → q ≠ gS → q ≠ gS1 → q ≠ gE →
       q ≠ gE1 → q ≠ gO → q ≠ gO + 1 → q ≠ ALLOC → c₄.nreg q = c.nreg q := by
     intro q hq h1 h2 h3 h4 h5 h6 h7 h8 h9
     rw [k4 _ h9, k3 _ hq h6 h7 h8 h9, k2 _ hq h4 h7 h8 h9, k1' _ h1 h2 h3 h4 h5 h6]
   have hA4' : c₄.nreg ALLOC = c.nreg ALLOC + 4 := by rw [hA4, hA3']
-  have k4T : c₄.nreg gT = t := k14 _ (not_oracle_sw (by unfold gT sw; norm_num)
-    (by unfold gT sw; norm_num)) (by unfold gT gX sw; norm_num) (by unfold gT gA sw; norm_num)
-    (by unfold gT gS sw; norm_num) (by unfold gT gS1 sw; norm_num) (by unfold gT gE sw; norm_num)
-    (by unfold gT gE1 sw; norm_num) (by unfold gT gO sw; norm_num) (by unfold gT gO sw; norm_num)
-    (by unfold gT ALLOC sw; norm_num)
+  have k4T : c₄.nreg gT = t := k14 _ (by register_guard) (by register_guard) (by register_guard)
+    (by register_guard) (by register_guard) (by register_guard)
+    (by register_guard) (by register_guard) (by register_guard)
+    (by reg_omega)
   have hK1₄ : c₄.nreg K1 = 1 := (hK.fix hI₄).2.1
   have hpl : pre.length + 1 ≤ W := by
     have := w3; unfold arcK at hroom; omega
@@ -484,51 +467,47 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
     have := hI.hw.1 gN; rw [hgN] at this; omega
   have hok5 : okB W c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg := by
     have e1 : c₄.nreg 240611 = 1 := hK1₄
-    have e2 : c₄.nreg 241005 = pre.length := by rw [← w2]; exact k4K
+    have e2 : c₄.nreg 241005 = pre.length := by rwa [← w2]
     have e3 : c₄.nreg 241008 = t := k4T
-    simp only [okB, okI, regI, upd, gK, gT, K1, sw]
+    simp only [reg_check, regI, upd, gK, gT, K1, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_false, e1, e2, e3]
     exact ⟨⟨iscr_sw (by norm_num) (by norm_num), hpl⟩, ⟨iscr_sw (by norm_num) (by norm_num), htW⟩,
       trivial⟩
   refine (IRS.block _ hI₄ hok5).mono (by simp) ?_
   rintro c₅ rfl
   have r5 : ∀ q, q ≠ gK → q ≠ gT → regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg q =
-      c₄.nreg q := fun q h1 h2 => regB_other _ _ _ (fun i hi => by
-        simp only [List.mem_cons, List.not_mem_nil, or_false] at hi
-        rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all)
+      c₄.nreg q := fun q h1 h2 => (by register_keep)
   have v5K : regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg gK = pre.length + 1 := by
     have e1 : c₄.nreg 240611 = 1 := hK1₄
-    have e2 : c₄.nreg 241005 = pre.length := by rw [← w2]; exact k4K
-    simp only [regB, regI, upd, gK, gT, K1, sw]
+    have e2 : c₄.nreg 241005 = pre.length := by rwa [← w2]
+    simp only [ram_layout, regB, regI, upd]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e2]
   have v5T : regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg gT = t + 1 := by
     have e1 : c₄.nreg 240611 = 1 := hK1₄
     have e3 : c₄.nreg 241008 = t := k4T
-    simp only [regB, regI, upd, gK, gT, K1, sw]
+    simp only [ram_layout, regB, regI, upd]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
   -- the frame from `c` to `c₅`
   have k15 : ∀ q, bandOf q ∉ oracleBands → ¬ GSet q → q ≠ ALLOC →
       regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg q = c.nreg q := by
     intro q hq hg hqa
     have ne : ∀ g, GSet g → q ≠ g := fun g hgs h => hg (h ▸ hgs)
-    rw [r5 q (ne _ (by unfold GSet gK sw; omega)) (ne _ (by unfold GSet gT sw; omega)),
-      k14 q hq (ne _ (by unfold GSet gX sw; omega)) (ne _ (by unfold GSet gA sw; omega))
-        (ne _ (by unfold GSet gS sw; omega)) (ne _ (by unfold GSet gS1 sw; omega))
-        (ne _ (by unfold GSet gE sw; omega)) (ne _ (by unfold GSet gE1 sw; omega))
-        (ne _ (by unfold GSet gO sw; omega)) (ne _ (by unfold GSet gO sw; omega)) hqa]
+    rw [r5 q (ne _ (by register_guard)) (ne _ (by register_guard)),
+      k14 q hq (ne _ (by register_guard)) (ne _ (by register_guard))
+        (ne _ (by register_guard)) (ne _ (by register_guard))
+        (ne _ (by register_guard)) (ne _ (by register_guard))
+        (ne _ (by register_guard)) (ne _ (by register_guard)) hqa]
   have kk : ∀ g, bandOf g ∉ oracleBands → g ≠ gK → g ≠ gT → g ≠ gX → g ≠ gA → g ≠ gS →
       g ≠ gS1 → g ≠ gE → g ≠ gE1 → g ≠ gO → g ≠ gO + 1 → g ≠ ALLOC →
       regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg g = c.nreg g :=
     fun g hg h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 =>
       (r5 g h1 h2).trans (k14 g hg h3 h4 h5 h6 h7 h8 h9 h10 h11)
   have nob : ∀ j, 1000 ≤ j → j ≤ 1021 → bandOf (sw j) ∉ oracleBands := fun j h1 h2 =>
-    not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)
+    not_oracle_sw (by register_guard) (by register_guard)
   have hpre' : regArcs N (rs.take i) ++ (N.region r).arcs.take (t + 1) = pre ++ [a] := by
-    rw [hpre, List.take_add_one, List.getElem?_eq_getElem htl, List.append_assoc]
-    simp only [Option.toList_some]
-    rw [had, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem htl, Option.getD_some]
+    ram_simp [hpre, List.take_add_one, List.getElem?_eq_getElem htl, List.append_assoc, Option.toList_some, had, List.getD_eq_getElem?_getD, Option.getD_some]
   have hA5 : regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg ALLOC = c.nreg ALLOC + 4 := by
-    rw [r5 _ (by unfold gK ALLOC sw; norm_num) (by unfold gT ALLOC sw; norm_num), hA4']
+    assumption
   have hmem5 : c₄.nmem = mem4 c.nmem (cS.nreg ALLOC + 4 * pre.length) (c₃.nreg gS) (c₃.nreg gS1)
       (c₃.nreg gE) (c₃.nreg gE1) := by rw [hm4, hm3', hA3', w3]
   have hT5 : ({ c₄ with nreg := regB c₄.nmem [.addN gK gK K1, .addN gT gT K1] c₄.nreg } :
@@ -539,15 +518,13 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   rw [hT5, hpre'']
   refine ⟨⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_⟩
   · show regB _ _ _ gBase = _
-    rw [kk gBase (nob 1004 (by norm_num) (by norm_num)) (by unfold gBase gK sw; norm_num)
-      (by unfold gBase gT sw; norm_num) (by unfold gBase gX sw; norm_num)
-      (by unfold gBase gA sw; norm_num) (by unfold gBase gS sw; norm_num)
-      (by unfold gBase gS1 sw; norm_num) (by unfold gBase gE sw; norm_num)
-      (by unfold gBase gE1 sw; norm_num) (by unfold gBase gO sw; norm_num)
-      (by unfold gBase gO sw; norm_num) (by unfold gBase ALLOC sw; norm_num), w1]
-  · show regB _ _ _ gK = _
-    rw [v5K]
-    simp
+    rw [kk gBase (nob 1004 (by norm_num) (by norm_num)) (by reg_omega)
+      (by reg_omega) (by reg_omega)
+      (by reg_omega) (by reg_omega)
+      (by reg_omega) (by reg_omega)
+      (by reg_omega) (by reg_omega)
+      (by reg_omega) (by reg_omega), w1]
+  · simp [v5K]
   · show regB _ _ _ ALLOC = _
     rw [hA5, w3]
     simp; ring
@@ -560,78 +537,76 @@ theorem gArc_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
     · rw [Restore.arcAt_upd4 hl, w4 k hl, getD_append_left hl]
     · have hk' : k = pre.length := by omega
       subst hk'
-      rw [Restore.arcAt_upd4_new, getD_append_last]
-      unfold nArc
-      rw [← ns, ← ne']
+      simp [Restore.arcAt_upd4_new, getD_append_last, nArc, ← ns, ← ne']
   · intro a' ha'
     show c₄.nmem a' = _
     rw [hmem5]
     unfold mem4
     simp only [upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), w5 a' ha']
+    ram_rw [ite_eq_right, ite_eq_right, ite_eq_right, ite_eq_right, w5 a' ha']
   · intro q hq hg hqa
     show regB _ _ _ q = _
     rw [k15 q hq hg hqa, w6 q hq hg hqa]
   · show regB _ _ _ gA4 = _
-    rw [kk gA4 (nob 1011 (by norm_num) (by norm_num)) (by unfold gA4 gK sw; norm_num)
-      (by unfold gA4 gT sw; norm_num) (by unfold gA4 gX sw; norm_num)
-      (by unfold gA4 gA sw; norm_num) (by unfold gA4 gS sw; norm_num)
-      (by unfold gA4 gS1 sw; norm_num) (by unfold gA4 gE sw; norm_num)
-      (by unfold gA4 gE1 sw; norm_num) (by unfold gA4 gO sw; norm_num)
-      (by unfold gA4 gO sw; norm_num) (by unfold gA4 ALLOC sw; norm_num), w7]
+    rw [kk gA4 (nob 1011 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), w7]
   · show regB _ _ _ gR5 = _
-    rw [kk gR5 (nob 1012 (by norm_num) (by norm_num)) (by unfold gR5 gK sw; norm_num)
-      (by unfold gR5 gT sw; norm_num) (by unfold gR5 gX sw; norm_num)
-      (by unfold gR5 gA sw; norm_num) (by unfold gR5 gS sw; norm_num)
-      (by unfold gR5 gS1 sw; norm_num) (by unfold gR5 gE sw; norm_num)
-      (by unfold gR5 gE1 sw; norm_num) (by unfold gR5 gO sw; norm_num)
-      (by unfold gR5 gO sw; norm_num) (by unfold gR5 ALLOC sw; norm_num), w8]
+    rw [kk gR5 (nob 1012 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), w8]
   · show regB _ _ _ gL7 = _
-    rw [kk gL7 (nob 1013 (by norm_num) (by norm_num)) (by unfold gL7 gK sw; norm_num)
-      (by unfold gL7 gT sw; norm_num) (by unfold gL7 gX sw; norm_num)
-      (by unfold gL7 gA sw; norm_num) (by unfold gL7 gS sw; norm_num)
-      (by unfold gL7 gS1 sw; norm_num) (by unfold gL7 gE sw; norm_num)
-      (by unfold gL7 gE1 sw; norm_num) (by unfold gL7 gO sw; norm_num)
-      (by unfold gL7 gO sw; norm_num) (by unfold gL7 ALLOC sw; norm_num), w9]
+    rw [kk gL7 (nob 1013 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), w9]
   · show regB _ _ _ gI = _
-    rw [kk gI (nob 1006 (by norm_num) (by norm_num)) (by unfold gI gK sw; norm_num)
-      (by unfold gI gT sw; norm_num) (by unfold gI gX sw; norm_num)
-      (by unfold gI gA sw; norm_num) (by unfold gI gS sw; norm_num)
-      (by unfold gI gS1 sw; norm_num) (by unfold gI gE sw; norm_num)
-      (by unfold gI gE1 sw; norm_num) (by unfold gI gO sw; norm_num)
-      (by unfold gI gO sw; norm_num) (by unfold gI ALLOC sw; norm_num), hgI]
+    rw [kk gI (nob 1006 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), hgI]
   · show regB _ _ _ gR = _
-    rw [kk gR (nob 1007 (by norm_num) (by norm_num)) (by unfold gR gK sw; norm_num)
-      (by unfold gR gT sw; norm_num) (by unfold gR gX sw; norm_num)
-      (by unfold gR gA sw; norm_num) (by unfold gR gS sw; norm_num)
-      (by unfold gR gS1 sw; norm_num) (by unfold gR gE sw; norm_num)
-      (by unfold gR gE1 sw; norm_num) (by unfold gR gO sw; norm_num)
-      (by unfold gR gO sw; norm_num) (by unfold gR ALLOC sw; norm_num), hgR]
+    rw [kk gR (nob 1007 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), hgR]
   · show regB _ _ _ gN = _
-    rw [kk gN (nob 1009 (by norm_num) (by norm_num)) (by unfold gN gK sw; norm_num)
-      (by unfold gN gT sw; norm_num) (by unfold gN gX sw; norm_num)
-      (by unfold gN gA sw; norm_num) (by unfold gN gS sw; norm_num)
-      (by unfold gN gS1 sw; norm_num) (by unfold gN gE sw; norm_num)
-      (by unfold gN gE1 sw; norm_num) (by unfold gN gO sw; norm_num)
-      (by unfold gN gO sw; norm_num) (by unfold gN ALLOC sw; norm_num), hgN]
+    rw [kk gN (nob 1009 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega), hgN]
   · intro hpos
     show regB _ _ _ gLs = _
-    rw [kk gLs (nob 1010 (by norm_num) (by norm_num)) (by unfold gLs gK sw; norm_num)
-      (by unfold gLs gT sw; norm_num) (by unfold gLs gX sw; norm_num)
-      (by unfold gLs gA sw; norm_num) (by unfold gLs gS sw; norm_num)
-      (by unfold gLs gS1 sw; norm_num) (by unfold gLs gE sw; norm_num)
-      (by unfold gLs gE1 sw; norm_num) (by unfold gLs gO sw; norm_num)
-      (by unfold gLs gO sw; norm_num) (by unfold gLs ALLOC sw; norm_num)]
+    rw [kk gLs (nob 1010 (by norm_num) (by norm_num)) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard)
+      (by register_guard) (by reg_omega)]
     exact hgLs hpos
   · exact htl
   · rfl
-  · refine hctx.transport (k15 _ (not_oracle_sw hd.1 hd.2.1) hd.2.2 (by unfold ALLOC; omega))
-      (fun a' ha' => ?_) (by show c.nreg ALLOC ≤ regB _ _ _ ALLOC; rw [hA5]; omega)
+  · refine hctx.transport (k15 _ (not_oracle_sw hd.1 hd.2.1) hd.2.2 (by register_guard))
+      (fun a' ha' => ?_) (by simp [hA5])
     show c₄.nmem a' = _
     rw [hm4, hm3', hA3']
     unfold mem4
     simp only [upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+    ram_rw [ite_eq_right, ite_eq_right, ite_eq_right, ite_eq_right]
 
 /-- The working registers of the gather (not the outputs and not the bases). -/
 def GFree (q : ℕ) : Prop :=
@@ -641,7 +616,7 @@ def GFree (q : ℕ) : Prop :=
 theorem gfree_gset {q : ℕ} (h : GFree q) : GSet q := by
   unfold GFree at h; unfold GSet
   rcases h with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp [gI, gR, gT, gN, gLs, gA, gX, gS, gS1, gE, gE1, gO, sw]
+    simp [ram_layout]
 
 /-- The written state survives a step that keeps the memory and the registers outside the
 working registers. -/
@@ -653,50 +628,39 @@ theorem GW.step {M : Model} {Q : Polygon} {N : NF} {cS c c' : Config} {pre : Lis
     intro q hq hf
     unfold GFree at hf
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp [gI, gR, gT, gN, gLs, gA, gX, gS, gS1, gE, gE1, gO, gBase, gK, ALLOC, gA4, gR5, gL7,
-        sw] at hf
+      tauto
   refine ⟨by rw [hr _ (nf _ (by simp)), w1], by rw [hr _ (nf _ (by simp)), w2],
-    by rw [hr _ (nf _ (by simp)), w3], fun k hk => by rw [hm]; exact w4 k hk,
-    fun a ha => by rw [hm]; exact w5 a ha, fun q hq hg hqa => ?_,
+    by rw [hr _ (nf _ (by simp)), w3], (by ram_finish),
+    (by ram_finish), fun q hq hg hqa => ?_,
     by rw [hr _ (nf _ (by simp)), w7], by rw [hr _ (nf _ (by simp)), w8],
     by rw [hr _ (nf _ (by simp)), w9]⟩
   rw [hr q (fun hf => hg (gfree_gset hf)), w6 q hq hg hqa]
 
 /-! ## One region -/
 
-theorem gRegHead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
+include m hk1 in
+theorem gRegHead_val :
     regB m gRegHead f gR = m (f gL + f gI) ∧
     regB m gRegHead f gN = m (f gR5 + 5 * m (f gL + f gI)) ∧
     regB m gRegHead f gLs = m (f gR5 + 5 * m (f gL + f gI) + 1) := by
   have e1 : f 240611 = 1 := hk1
-  simp only [gRegHead, regB, regI, upd, gX, gL, gI, gR, gR5, gN, gLs, K1, sw]
+  simp only [ram_layout, gRegHead, regB, regI, upd]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
   exact ⟨trivial, congrArg m (by ring), congrArg m (by ring)⟩
 
 theorem gRegHead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ gX) (h2 : q ≠ gR) (h3 : q ≠ gN)
     (h4 : q ≠ gLs) : regB m gRegHead f q = f q :=
-  regB_other m gRegHead f (fun i hi => by
-    simp only [gRegHead, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      intro h <;> subst h <;> simp_all)
+  (by register_keep [gRegHead])
 
-theorem gRegHead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f gL + f gI ≤ W)
+include m hk1 in
+theorem gRegHead_ok (hb : f gL + f gI ≤ W)
     (hb2 : f gR5 + 5 * m (f gL + f gI) + 1 ≤ W) : okB W m gRegHead f := by
-  have e1 : f 240611 = 1 := hk1
-  have s1 : IScr (240000 + 1015) := iscr_sw (by norm_num) (by norm_num)
-  have s2 : IScr (240000 + 1007) := iscr_sw (by norm_num) (by norm_num)
-  have s3 : IScr (240000 + 1009) := iscr_sw (by norm_num) (by norm_num)
-  have s4 : IScr (240000 + 1010) := iscr_sw (by norm_num) (by norm_num)
-  have hb' : f 241001 + f 241006 ≤ W := hb
-  have hb2' : f 241012 + 5 * m (f 241001 + f 241006) + 1 ≤ W := hb2
-  simp only [gRegHead, okB, okI, regI, upd, gX, gL, gI, gR, gR5, gN, gLs, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1] at s1 s2 s3 s4 ⊢
-  refine ⟨⟨s1, hb'⟩, s2, ⟨s1, by omega⟩, ⟨s1, by omega⟩, ⟨s1, by omega⟩, ⟨s1, by omega⟩,
-    s3, ⟨s1, by omega⟩, s4, trivial⟩
+  register_block normalized [gRegHead]
+
+end
 
 theorem getD_mem_of_lt {l : List ℕ} {i : ℕ} (h : i < l.length) : l.getD i 0 ∈ l := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h, Option.getD_some]
-  exact List.getElem_mem h
+  simp_all
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -720,17 +684,16 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   set r := rs.getD i 0 with hrd
   have hr : r < N.nRegions := hrs r (getD_mem_of_lt hi)
   set na := (N.region r).arcs.length with hna
-  have hAW : cS.nreg ALLOC ≤ c.nreg ALLOC := by rw [w3]; omega
+  
   have hNWc : NFWithin c.nmem B E N := hNW.transport (fun a' ha' => w5 a' (by omega))
   have hNA : NFAt c.nmem B N := hNWc.holds
   obtain ⟨b1, -, -, b4, b5, -⟩ := Restore.nf_bounds hNWc
-  have nob : ∀ q, ¬ GSet q → 240000 ≤ q → q < 250000 → bandOf q ∉ oracleBands :=
-    fun q _ h1 h2 => not_oracle_sw h1 h2
-  have hgL : c.nreg gL = cS.nreg gL := w6 gL (not_oracle_sw (by unfold gL sw; norm_num)
-    (by unfold gL sw; norm_num)) (fun h => by unfold GSet gL sw at h; omega)
-    (by unfold gL ALLOC sw; omega)
+  
+  have hgL : c.nreg gL = cS.nreg gL := w6 gL ((ram_app% (not_oracle_sw ?_
+    ?_))) (fun h => by register_guard)
+    (by register_guard)
   have hmL : c.nmem (c.nreg gL + i) = r := by
-    rw [hgL, w5 _ (by omega), hL i hi]
+    ram_rw [hgL, w5, hL i hi]
   have m5 : cS.nmem (B + 5) = c.nmem (B + 5) := (w5 _ (by omega)).symm
   have m7 : cS.nmem (B + 7) = c.nmem (B + 7) := (w5 _ (by omega)).symm
   have vR5 : c.nreg gR5 = c.nmem (B + 5) := by rw [w8, hBS, m5]
@@ -752,8 +715,8 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
       regB c.nmem gRegHead c.nreg q = c.nreg q := fun q h1 h2 h3 h4 =>
     gRegHead_other _ _ h1 h2 h3 h4
   set c₁ : Config := { c with nreg := regB c.nmem gRegHead c.nreg } with hc₁
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 ALLOC (by unfold gX ALLOC sw; omega)
-    (by unfold gR ALLOC sw; omega) (by unfold gN ALLOC sw; omega) (by unfold gLs ALLOC sw; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := (ram_app% (k1 ALLOC ?_
+    ?_ ?_ ?_))
   -- the list start
   have step2 : IRS P W c₀ (.ifLtN K0 gN (.instr (.addN gLs gLs gL7)) .skip) c₁ 3
       (fun c' => c'.nmem = c₁.nmem ∧ (∀ q, q ≠ gLs → c'.nreg q = c₁.nreg q) ∧
@@ -761,14 +724,13 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
     have k0 : c₁.nreg K0 = 0 := (hK.fix hI₁).1
     by_cases hp : 0 < na
     · have hlt : c₁.nreg K0 < c₁.nreg gN := by
-        rw [k0, show c₁.nreg gN = na from v1N]; exact hp
+        rwa [k0, show c₁.nreg gN = na from v1N]
       have hL7 : c₁.nreg gL7 = c.nmem (B + 7) := by
-        rw [show c₁.nreg gL7 = c.nreg gL7 from k1 gL7 (by unfold gL7 gX sw; omega)
-          (by unfold gL7 gR sw; omega) (by unfold gL7 gN sw; omega) (by unfold gL7 gLs sw; omega),
+        rw [show c₁.nreg gL7 = c.nreg gL7 from (ram_app% (k1 gL7 ?_
+          ?_ ?_ ?_)),
           w9, hBS, m7]
       have hb := b5 r hr 0 hp
-      refine (IRS.ifT hlt (IRS.reg hI₁ (iscr_sw (by unfold gLs sw; norm_num)
-        (by unfold gLs sw; norm_num)) (Exec.addN hI₁.hw gLs gLs gL7 ?_))).mono (by omega) ?_
+      refine (IRS.ifT hlt (IRS.reg hI₁ (by register_guard) (Exec.addN hI₁.hw gLs gLs gL7 ?_))).mono (by omega) ?_
       · show regB c.nmem gRegHead c.nreg gLs + c₁.nreg gL7 ≤ W
         rw [v1Ls, hL7]; have := hI.hw.1 ALLOC; omega
       · rintro c' rfl
@@ -784,7 +746,7 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   rintro c₂ hI₂ hA₂ hA₂' ⟨hm2, k2, v2Ls⟩
   have hfr : ∀ g, GFree g → dsc ≠ g := fun g hg h => hd.2.2 (by rw [h]; exact gfree_gset hg)
   -- the arc place
-  refine IRS.seq (IRS.reg hI₂ (iscr_sw (by unfold gT sw; norm_num) (by unfold gT sw; norm_num))
+  refine IRS.seq (IRS.reg hI₂ (by register_guard)
     (Exec.constN hI₂.hw gT 0 (Nat.zero_le _))) ?_
   rintro c₃ hI₃ hA₃ hA₃' rfl
   have k3 : ∀ q, q ≠ gT → q ≠ gLs → q ≠ gX → q ≠ gR → q ≠ gN →
@@ -793,14 +755,12 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
     rw [upd_other _ _ _ h1, k2 q h2]
     exact k1 q h3 h4 h5 h2
   have v3R : (upd c₂.nreg gT 0) gR = r := by
-    rw [upd_other _ _ _ (by unfold gR gT sw; norm_num), k2 _ (by unfold gR gLs sw; norm_num)]
-    exact v1R
+    ram_simp [k2] <;> reg_omega
   have v3N : (upd c₂.nreg gT 0) gN = na := by
-    rw [upd_other _ _ _ (by unfold gN gT sw; norm_num), k2 _ (by unfold gN gLs sw; norm_num)]
-    exact v1N
-  have v3I : (upd c₂.nreg gT 0) gI = i := k3 _ (by unfold gI gT sw; norm_num)
-    (by unfold gI gLs sw; norm_num) (by unfold gI gX sw; norm_num) (by unfold gI gR sw; norm_num)
-    (by unfold gI gN sw; norm_num)
+    rwa [upd_other _ _ _ (by register_guard), k2 _ (by register_guard)]
+  have v3I : (upd c₂.nreg gT 0) gI = i := k3 _ (by register_guard)
+    (by register_guard) (by register_guard) (by register_guard)
+    (by register_guard)
   have hm3 : c₂.nmem = c.nmem := hm2
   have hGW3 : GW (chainModel C) (Qof P) N cS { c₂ with nreg := upd c₂.nreg gT 0 }
       (regArcs N (rs.take i) ++ (N.region r).arcs.take 0) := by
@@ -812,16 +772,13 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
     hctx.transport (k3 _ (hfr gT (by simp [GFree])) (hfr gLs (by simp [GFree]))
       (hfr gX (by simp [GFree])) (hfr gR (by simp [GFree])) (hfr gN (by simp [GFree])))
       (fun _ _ => by simp only; rw [hm3])
-      (by simp only
-          rw [k3 ALLOC (by unfold gT ALLOC sw; omega) (by unfold gLs ALLOC sw; omega)
-            (by unfold gX ALLOC sw; omega) (by unfold gR ALLOC sw; omega)
-            (by unfold gN ALLOC sw; omega)])
+      (by assumption)
   have hIn3 : GIn (chainModel C) (Qof P) N cS rs i { c₂ with nreg := upd c₂.nreg gT 0 } := by
-    refine ⟨by simp only [upd_same]; exact hGW3, v3I, v3R, v3N,
+    refine ⟨by assumption, v3I, v3R, v3N,
       fun hp => ?_, by simp only [upd_same]; omega⟩
     simp only
     rw [← hrd] at hp ⊢
-    rw [upd_other _ _ _ (by unfold gLs gT sw; norm_num), v2Ls hp, hBS, m7, m5,
+    rw [upd_other _ _ _ (by register_guard), v2Ls hp, hBS, m7, m5,
       ← w5 (c.nmem (B + 5) + 5 * r + 1) (by omega)]
   -- the arcs
   refine IRS.seq (IRS.while (fun c' => GIn (chainModel C) (Qof P) N cS rs i c' ∧
@@ -835,9 +792,9 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
         rw [hgN', ← hrd] at hlt; rw [ht']; omega⟩))
     hI₃ ⟨hIn3, hctx₃⟩ (by
       show (upd c₂.nreg gT 0) ALLOC + (arcK + 2) * (na - (upd c₂.nreg gT 0) gT) ≤ W
-      rw [upd_same, Nat.sub_zero, upd_other _ _ _ (by unfold gT ALLOC sw; omega),
-        k2 _ (by unfold gLs ALLOC sw; omega), hA1]
-      unfold regK at hroom; omega)) ?_
+      rw [upd_same, Nat.sub_zero, upd_other _ _ _ (by register_guard),
+        k2 _ (by register_guard), hA1]
+      register_guard)) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨⟨hIn4, hctx₄⟩, hnlt⟩
   obtain ⟨hGW4, hgI4, hgR4, hgN4, -, hgT4⟩ := hIn4
   have hT4 : c₄.nreg gT = (N.region (rs.getD i 0)).arcs.length := by
@@ -847,15 +804,14 @@ theorem gReg_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {rs 
   have hiW : c₄.nreg gI + c₄.nreg K1 ≤ W := by
     rw [hgI4, (hK.fix hI₄).2.1]; have := hI.hw.1 ALLOC; omega
   have hok6 : okB W c₄.nmem [.addN gI gI K1] c₄.nreg :=
-    ⟨⟨iscr_sw (by unfold gI sw; norm_num) (by unfold gI sw; norm_num), hiW⟩, trivial⟩
+    ⟨⟨iscr_sw (by register_guard) (by register_guard), hiW⟩, trivial⟩
   refine (IRS.block _ hI₄ hok6).mono (by simp) ?_
   rintro c₅ rfl
   simp only [regB, regI, upd_same]
   rw [hgI4, (hK.fix hI₄).2.1]
   refine ⟨GW.step hGW4 rfl (fun q hq => upd_other _ _ _ (fun h => hq (by simp [h, GFree]))), rfl,
     hctx₄.transport (upd_other _ _ _ (hfr gI (by simp [GFree]))) (fun _ _ => rfl)
-      (by show c₄.nreg ALLOC ≤ upd c₄.nreg gI (i + 1) ALLOC
-          rw [upd_other _ _ _ (by unfold gI ALLOC sw; omega)])⟩
+      (by frame_finish)⟩
 
 /-! ## The gather -/
 
@@ -877,16 +833,10 @@ theorem gHead_val (m f : ℕ → ℕ) :
     regB m gHead f gBase = f ALLOC ∧ regB m gHead f gK = 0 ∧ regB m gHead f gI = 0 ∧
     regB m gHead f gA4 = m (f gNF + f K4) ∧ regB m gHead f gR5 = m (f gNF + f K5) ∧
     regB m gHead f gL7 = m (f gNF + f K5 + f K2) := by
-  simp only [gHead, regB, regI, upd, gX, gNF, gBase, gK, gI, gA4, gR5, gL7, K4, K5, K2, ALLOC, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨trivial, trivial, trivial, trivial, trivial, trivial⟩
+  tauto
 
 theorem gHead_other (m f : ℕ → ℕ) {q : ℕ} (h : ¬ GSet q) : regB m gHead f q = f q :=
-  regB_other m gHead f (fun i hi => by
-    simp only [gHead, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      intro he <;> subst he <;> apply h <;>
-      simp [GSet, gX, gBase, gK, gI, gA4, gR5, gL7, sw])
+  (by register_keep [gHead, GSet])
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -913,7 +863,7 @@ theorem gather_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {rs : List ℕ}
     have eB : c.nreg 241000 = B := hB
     have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
       iscr_sw (by omega) (by omega)
-    simp only [gHead, okB, okI, regI, upd, gX, gNF, gBase, gK, gI, gA4, gR5, gL7, K4, K5, K2,
+    simp only [gHead, reg_check, regI, upd, gX, gNF, gBase, gK, gI, gA4, gR5, gL7, K4, K5, K2,
       ALLOC, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e4, e5, e2, eB]
     refine ⟨s 1004 (by norm_num) (by norm_num), ⟨s 1005 (by norm_num) (by norm_num), by omega⟩,
@@ -927,23 +877,23 @@ theorem gather_irs {dsc : ℕ} {C : Chain} {N : NF} {B E : ℕ} {rs : List ℕ}
   obtain ⟨vB, vK, vI, vA4, vR5, vL7⟩ := gHead_val c.nmem c.nreg
   set c₁ : Config := { c with nreg := regB c.nmem gHead c.nreg } with hc₁
   have ko : ∀ q, ¬ GSet q → c₁.nreg q = c.nreg q := fun q hq => gHead_other _ _ hq
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := ko _ (by unfold GSet ALLOC sw; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := ko _ (by register_guard)
   have hGW1 : GW (chainModel C) (Qof P) N c c₁ (regArcs N (rs.take (c₁.nreg gI))) := by
     rw [show c₁.nreg gI = 0 from vI, List.take_zero]
     refine ⟨vB, vK, by rw [hA1]; simp [regArcs], fun k hk => by simp [regArcs] at hk,
       fun _ _ => rfl, fun q _ hq _ => ko q hq, ?_, ?_, ?_⟩
-    · show regB c.nmem gHead c.nreg gA4 = _; rw [vA4, k4]
-    · show regB c.nmem gHead c.nreg gR5 = _; rw [vR5, k5]
-    · show regB c.nmem gHead c.nreg gL7 = _; rw [vL7, k5, k2]
+    · simp_all
+    · simp_all
+    simp_all
   have hctx₁ : ChainCtx P W c₁ dsc C := hctx.transport (ko _ hd.2.2) (fun _ _ => rfl) hA1.ge
   have hgC : ∀ c', GW (chainModel C) (Qof P) N c c' (regArcs N (rs.take (c'.nreg gI))) →
       c'.nreg gC = rs.length := fun c' hg => by
-    rw [hg.2.2.2.2.2.1 gC (not_oracle_sw (by unfold gC sw; norm_num) (by unfold gC sw; norm_num))
-      (by unfold GSet gC sw; omega) (by unfold gC ALLOC sw; omega), hC]
+    rw [hg.2.2.2.2.2.1 gC ((ram_app% (not_oracle_sw ?_ ?_)))
+      (by register_guard) (by register_guard), hC]
   refine (IRS.whileP (fun c' => GW (chainModel C) (Qof P) N c c' (regArcs N (rs.take (c'.nreg gI))) ∧
       c'.nreg gI ≤ rs.length ∧ ChainCtx P W c' dsc C) (fun c' => gPot N rs (c'.nreg gI))
     (fun c' hI' ⟨hg, hle, hc'⟩ hlt hr' => ?_) hI₁ ⟨hGW1, by
-      rw [show c₁.nreg gI = 0 from vI]; omega, hctx₁⟩
+      simp_all , hctx₁⟩
     (by rw [hA1, show c₁.nreg gI = 0 from vI]; unfold gatherK at hroom; unfold gPot; simp at hroom ⊢;
         omega)).mono le_rfl ?_
   · rw [hgC c' hg] at hlt

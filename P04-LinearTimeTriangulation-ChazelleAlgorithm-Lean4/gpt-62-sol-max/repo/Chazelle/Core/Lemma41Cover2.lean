@@ -65,7 +65,7 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
       have hs := nextG_spec (lam := lam) hx
       rw [← hg] at hs
       have hgl : g ≤ lam - 1 := nextG_le _ _ _
-      have hd' : 2 ^ g ∣ x + 2 ^ g := Nat.dvd_add hs.1 dvd_rfl
+      have hd' := Nat.dvd_add hs.1 dvd_rfl
       have hle : ∑ k ∈ range (g + 1), f k ≤ ∑ k ∈ range lam, f k :=
         Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
       rw [Finset.sum_range_succ] at hle
@@ -110,8 +110,7 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
             rw [hge, ← pow_succ']; congr 1; omega
           rw [pow_succ] at hA
           by_cases hC : b - (x + 2 ^ g) < 2 ^ g
-          · have := cover_weight_desc (lam := lam) (b := b) f g (x + 2 ^ g) (by omega) hd' hC
-            omega
+          · omega
           · have heq : x + 2 ^ g + 2 ^ g = b := by omega
             have hx' : x + 2 ^ g < b := by have := Nat.one_le_two_pow (n := g); omega
             rw [cover_of_lt hx']

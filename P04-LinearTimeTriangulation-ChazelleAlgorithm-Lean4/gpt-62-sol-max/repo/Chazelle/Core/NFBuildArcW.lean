@@ -35,9 +35,9 @@ theorem Input.key_first_le (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.lengt
   rcases Nat.eq_zero_or_pos m with rfl | hpos
   · exact le_rfl
   rw [h.key_s (by omega), h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
-    BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
+    BuildSort.kap_eq (by rwa [h.length_evs])]
   exact BuildSort.key_le_of_evLe (List.pairwise_iff_getElem.1 h.sorted 0 m (by
-    rw [length_map]; omega) (by rw [length_map]; exact hm) hpos)
+    rw [length_map]; omega) (by simp_all) hpos)
 
 /-- **The weight of an arc record** by the machine formula. -/
 theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
@@ -50,12 +50,9 @@ theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
         (if m + 1 < E.length then 1 else 0) := by
   have hlen := h.length_E
   have hm2 : (m + 1) % E.length < E.length := Nat.mod_lt _ (by omega)
-  have ps := BuildRam.properPos_ev h.valid (c := E.getD m 0) (by
-    exact getD_lt_of_perm h.perm hm)
-  have pe := BuildRam.properPos_ev h.valid (c := E.getD ((m + 1) % E.length) 0) (by
-    exact getD_lt_of_perm h.perm hm2)
-  have he := BuildRam.edge_lt h.valid (c := E.getD ((m + 1) % E.length) 0) (by
-    exact getD_lt_of_perm h.perm hm2)
+  have ps := BuildRam.properPos_ev h.valid (c := E.getD m 0) (getD_lt_of_perm h.perm hm)
+  have pe := BuildRam.properPos_ev h.valid (c := E.getD ((m + 1) % E.length) 0) (getD_lt_of_perm h.perm hm2)
+  have he := BuildRam.edge_lt h.valid (c := E.getD ((m + 1) % E.length) 0) (getD_lt_of_perm h.perm hm2)
   unfold arcW arcRec
   simp only
   rw [M.arcWt_key hc hhi (Qof P) ⟨ps.1, ps.2.1⟩ ⟨pe.1, pe.2.1⟩]

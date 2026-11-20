@@ -172,24 +172,23 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       · exact hQmk 2 i ((hQ2 i i1 i2).mp h))
   set mS := sepMem (passC m2 S lo hi f).1 S.bTMP S.bPOS S.bDF S.μ lo (hi - lo) with hmS
   clear_value mS
-  have SM1' : ∀ x, ¬ (S.bACT + lo ≤ x ∧ x < S.bACT + e3) → ¬ (S.bPOS ≤ x ∧ x < S.bPOS + S.μ) →
-      mS x = m2 x := by
-    rw [he3, he2, he1]; exact SM1
+  have SM1' := SM1
+  rw [← he1, ← he2, ← he3] at SM1'
   -- uniform statements
   have hA : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       mS (S.bACT + (E t + cntS (Q t) lo i)) = m (S.bACT + i) := by
     intro t ht i i1 i2 h
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
-    · rw [hE0, ← hc0 i (by omega)]; exact SM2 i i1 i2 ((hQ0 i i1 i2).mpr h)
-    · rw [hE1, ← hc1 i (by omega), he1]; exact SM3 i i1 i2 ((hQ1 i i1 i2).mpr h)
-    · rw [hE2, ← hc2 i (by omega), he2, he1]; exact SM4 i i1 i2 ((hQ2 i i1 i2).mpr h)
+    · ram_rw [hE0, ← hc0 i]; exact SM2 i i1 i2 ((hQ0 i i1 i2).mpr h)
+    · ram_rw [hE1, ← hc1 i, he1]; exact SM3 i i1 i2 ((hQ1 i i1 i2).mpr h)
+    · ram_rw [hE2, ← hc2 i, he2, he1]; exact SM4 i i1 i2 ((hQ2 i i1 i2).mpr h)
   have hP : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       mS (S.bPOS + m (S.bACT + i)) = E t + cntS (Q t) lo i := by
     intro t ht i i1 i2 h
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
-    · rw [hE0, ← hc0 i (by omega)]; exact SM6 i i1 i2 ((hQ0 i i1 i2).mpr h)
-    · rw [hE1, ← hc1 i (by omega), he1]; exact SM7 i i1 i2 ((hQ1 i i1 i2).mpr h)
-    · rw [hE2, ← hc2 i (by omega), he2, he1]; exact SM8 i i1 i2 ((hQ2 i i1 i2).mpr h)
+    · ram_rw [hE0, ← hc0 i]; exact SM6 i i1 i2 ((hQ0 i i1 i2).mpr h)
+    · ram_rw [hE1, ← hc1 i, he1]; exact SM7 i i1 i2 ((hQ1 i i1 i2).mpr h)
+    · ram_rw [hE2, ← hc2 i, he2, he1]; exact SM8 i i1 i2 ((hQ2 i i1 i2).mpr h)
   have hdec : ∀ t, t < 3 → ∀ x, E t ≤ x → x < E (t + 1) →
       ∃ i, lo ≤ i ∧ i < hi ∧ Q t i ∧ E t + cntS (Q t) lo i = x := by
     intro t ht x h1 h2
@@ -217,7 +216,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   have hrest : rest = stkList mS S.bSTK rest.length := by
     rw [stkList_congr _ (fun x h1 h2 => ?_)]
     · exact hstk0
-    · rw [SM1' x (by omega) (by omega), h2o x (by omega) (by omega)]
+    · ram_rw [SM1' x, h2o x]
   have P1 := pushF_stk (bS := S.bSTK) (s := S.s) (a := lo) (b := e1) (q := (mS, tp)) hrest htp
   have P2 := pushF_stk (bS := S.bSTK) (s := S.s) (a := e1) (b := e2) P1.1 P1.2.1
   have P3 := pushF_stk (bS := S.bSTK) (s := S.s) (a := e2) (b := e3) P2.1 P2.2.1
@@ -237,25 +236,25 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       simp only [List.length_append]; omega
     have l2 : (optSeg S.s e1 e2 ++ (optSeg S.s lo e1 ++ rest)).length ≤ rest.length + 3 := by
       simp only [List.length_append]; omega
-    rw [P3.2.2 x (by omega), P2.2.2 x (by omega), P1.2.2 x (by omega)]
+    ram_rw [P3.2.2 x, P2.2.2 x, P1.2.2 x]
   have hact_out : ∀ i, i < μ → (i < lo ∨ e3 ≤ i) → q.1 (S.bACT + i) = m (S.bACT + i) := by
     intro i h1 h2
-    rw [hqS _ (Or.inl (by omega)), SM1' _ (by omega) (by omega), h2o _ (by omega) (by omega)]
+    ram_rw [hqS _ (Or.inl (by omega)), SM1', h2o]
   have hact_in : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       q.1 (S.bACT + (E t + cntS (Q t) lo i)) = m (S.bACT + i) := by
     intro t ht i i1 i2 h
     have := hin t ht i i1 i2 h
     have := (hEle (t + 1) (by omega)).2
-    rw [hqS _ (Or.inl (by omega))]
+    rw [hqS _ ((by omega))]
     exact hA t ht i i1 i2 h
   have hpos' : ∀ w, w < μ → q.1 (S.bPOS + w) = mS (S.bPOS + w) :=
-    fun w hw => hqS _ (Or.inl (by omega))
+    fun w hw => hqS _ ((by omega))
   have hdf' : ∀ y, y < μ → q.1 (S.bDF + y) = m2 (S.bDF + y) := by
     intro y hy
-    rw [hqS _ (Or.inr (by omega)), SM1' _ (by omega) (by omega)]
+    ram_rw [hqS _ (Or.inr (by omega)), SM1']
   have hstat : StaticEq A0 U m q.1 := by
     intro x hx
-    rw [hqS _ (by omega), SM1' _ (by omega) (by omega), h2o _ (by omega) (by omega)]
+    ram_rw [hqS, SM1', h2o]
   -- the split
   have hdec' : ∀ x, lo ≤ x → x < e3 → ∃ t i, t < 3 ∧ lo ≤ i ∧ i < hi ∧ Q t i ∧
       E t + cntS (Q t) lo i = x ∧ q.1 (S.bACT + x) = m (S.bACT + i) := by
@@ -390,7 +389,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     simp only at hf
     have hfN : m (S.bFIRST + v) < N := by rw [hf]; exact Fin.isLt _
     unfold keyOf
-    rw [h, hstat (S.bFIRST + v) (Or.inl (by omega)), hstat _ (Or.inl (by omega))]
+    rw [h, hstat (S.bFIRST + v) ((by omega)), hstat _ ((by omega))]
   refine ⟨news, fin', D ∪ sep, ⟨SI', ?_, ?_, ?_, ?_, ?_, P3.1, ?_⟩, P3.2.1, hstat, ?_⟩
   · -- the separator flags
     intro v hv
@@ -408,7 +407,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     intro p' hp' i h1 h2
     rcases hlive p' hp' with ⟨hold, hne⟩ | ⟨t, ht, rfl, hlen⟩
     · obtain ⟨hio, hiμ⟩ := hold_pos p' hold hne i h1 h2
-      rw [hact_out i hiμ (by omega)]
+      ram_rw [hact_out i hiμ]
       have hw : m (S.bACT + i) < μ := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i, h1, h2, rfl⟩)
       have hpi := hD.pos_in p' hold i h1 h2
       rw [hpos' _ hw, SM9 _ (by rw [hμ]; exact hw) (fun j j1 j2 e => ?_),
@@ -432,8 +431,8 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
         rw [hP t ht j j1 j2 hQt]
         exact ⟨scls E t, hcls_live t ht (by unfold len scls; omega), hi'.1, hi'.2,
           hact_in t ht j j1 j2 hQt⟩
-    · rw [SM9 w (by rw [hμ]; exact hw) (fun j j1 j2 e => hex ⟨j, j1, j2, e⟩),
-        h2o _ (by omega) (by omega)]
+    · ram_rw [SM9 w (by rw [hμ]; exact hw) (fun j j1 j2 e => hex ⟨j, j1, j2, e⟩),
+        h2o]
       rcases hD.pos_out w hw with h | ⟨p'', hp'', h1, h2, h3⟩
       · exact Or.inl h
       · right
@@ -447,7 +446,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
             · exact Or.inl (List.mem_append_right _ h)
           · exact Or.inr (Finset.mem_union_left _ h)
         obtain ⟨hio, hiμ⟩ := hold_pos p'' hp'' hne _ h1 h2
-        exact ⟨p'', hlv', h1, h2, by rw [hact_out _ hiμ (by omega)]; exact h3⟩
+        exact ⟨p'', hlv', h1, h2, by ram_rw [hact_out _ hiμ]; exact h3⟩
   · -- the stack entries are sorted
     intro p' hp' i i' h1 h2 h3
     rcases List.mem_append.mp hp' with hn | hr

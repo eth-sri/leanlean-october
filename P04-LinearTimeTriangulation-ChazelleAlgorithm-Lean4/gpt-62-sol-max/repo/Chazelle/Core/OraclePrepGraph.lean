@@ -38,8 +38,7 @@ theorem graphOK_of {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) 
     obtain ⟨h1, h2, h3⟩ := mem_starList.1 hc
     obtain ⟨f1, f2, f3⟩ := fpos_spec (rgi N) c.2
     refine ⟨by omega, h1, by rw [h2, f1], fun q _ hq => ?_⟩
-    rw [h2] at hq ⊢
-    exact f3 q (hq.trans f1)
+    simp_all
   O_zip := fun c hc => by
     obtain ⟨h1, h2, h3⟩ := zipRaw_sound hN hP ((hDm c).1 hc)
     exact ⟨by omega, h2, h3⟩

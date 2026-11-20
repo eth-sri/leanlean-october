@@ -28,26 +28,6 @@ namespace Cand1
 
 /-! ## The bodies of the contracts of the parts -/
 
-/-- The body of `BruteSpec`. -/
-def BruteBody (bruteS : Stmt → Stmt) (κB : ℕ) : Prop :=
-  ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
-    (Ok : Polygon → Model → Prop), ShooterOK sh Bs F X Ok → Bs ⊆ oracleBands → X.CapLocal →
-    ∀ (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction) (H : Host) (N₁ N₂ : NF)
-      (E : ℕ) (L : Set ℝ) (s : SymPt) (z : Point),
-      AEnv P W X Ok J H N₁ N₂ E c₀ → IInv W c₀ c →
-      SymPtIn c sO s → s.Lt P.n → s.eval (Qof P) = z → z ∉ J.left.set →
-      |z.1| < J.whole.radius → |z.2| < J.whole.radius → z.2 ≤ J.left.top.2 → c.nreg bL = 1 →
-      AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z (dirOf (c.nreg qD)) L c →
-      c.nreg ALLOC + κB * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1) ≤ W →
-      IRS P W c₀ (bruteS sh) c (κB * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1))
-        (fun c' =>
-          (∃ L', AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z
-              (dirOf (c.nreg qD)) L' c' ∧ L ⊆ L' ∧
-            (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB J.left (rayPt z (dirOf (c.nreg qD)) τ))) ∧
-            (FreeAt J.left z (dirOf (c.nreg qD)) →
-              J.left.hitParam z (dirOf (c.nreg qD)) ∈ L')) ∧
-          PartFr c c')
-
 theorem bruteBody_of (h : BruteSpec) : ∃ bruteS κB, BruteBody bruteS κB := h
 
 /-- The body of `TabStepSpec`. -/
@@ -71,27 +51,6 @@ def TabBody (tabB : Stmt) (κT : ℕ) : Prop :=
         CandFr c c')
 
 theorem tabBody_of (h : TabStepSpec) : ∃ tabB κT, TabBody tabB κT := h
-
-/-- The body of `ShrStepSpec`. -/
-def ShrBody (shrB : Stmt → Stmt) (κS : ℕ) : Prop :=
-  ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
-    (Ok : Polygon → Model → Prop), ShooterOK sh Bs F X Ok → Bs ⊆ oracleBands → X.CapLocal →
-    ∀ (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction) (H : Host) (N₁ N₂ : NF)
-      (E : ℕ) (L : Set ℝ),
-      AEnv P W X Ok J H N₁ N₂ E c₀ → IInv W c₀ c →
-      1 ≤ c.nreg qH → c.nreg qH ≤ P.n → ((Qof P).vtx (c.nreg qH - 1)).2 = J.shared.2 →
-      FreeAt J.whole J.shared (dirOf (c.nreg qD)) → c.nreg bL = 1 →
-      AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius J.shared
-        (dirOf (c.nreg qD)) L c →
-      c.nreg ALLOC + (κS + Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) ≤ W →
-      IRS P W c₀ (shrB sh) c
-        (κS + Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)))
-        (fun c' =>
-          (∃ L', AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius J.shared
-              (dirOf (c.nreg qD)) L' c' ∧ L ⊆ L' ∧
-            (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB J.left (rayPt J.shared (dirOf (c.nreg qD)) τ))) ∧
-            J.left.hitParam J.shared (dirOf (c.nreg qD)) ∈ L') ∧
-          CandFr c c')
 
 theorem shrBody_of (h : ShrStepSpec) : ∃ shrB κS, ShrBody shrB κS := h
 
@@ -129,9 +88,9 @@ theorem boxB_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl 
   refine IRS.ite (fun hb => ?_) (fun hb => ?_)
   · have hb1 := bL_one hq hK fr hb
     have h₁ : z.2 ≤ J.left.top.2 := (hq.hbL.2).1 hb1
-    obtain ⟨hgL, hposL, hparL⟩ := lhGeo_boxL hbox hgeo (by rw [hzpos]; exact habs)
+    obtain ⟨hgL, hposL, hparL⟩ := lhGeo_boxTwin (C₂ := J.left) hbox hgeo rfl (by rw [hzpos]; exact habs)
       (by rw [hzpos]; exact h₁)
-    have h := lhsL_irs (e := qE) (t := 0) hsh hBs hXl hA (by unfold OutL qE sw; omega) hI₂
+    have h := lhs_irs (e := qE) (t := 0) hsh hBs hXl hA (sideD₁ hA) (by unfold OutL qE sw; omega) hI₂
       (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (L := L) (z := z)
       (by rw [eE, cm_n]; rcases hbox with h | h <;> rw [h] <;> omega)
       (by rw [eE, eH]; unfold ProperPos; rw [hparL]; exact hpp)
@@ -172,7 +131,7 @@ theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS 
   · have hb1 := bL_one hq hK fr hb
     have h₁ : z.2 ≤ J.left.top.2 := (hq.hbL.2).1 hb1
     have hsym := callSym_irs (dsc := sw 21) (re := qE) (rh := qH) (o := sw 3230) hI₂
-      (AEnv.ctxR hA hI₂) (by unfold qE qH sw; omega) (by unfold sw; omega)
+      (AEnv.ctxR hA hI₂) (by reg_omega) (by reg_omega)
       (by rw [eE]; exact hqE) (by rw [eE, eH]; exact hpp)
       (by rw [eE, eH, hzpos]; exact habs) (by rw [eE, eH]; exact hcls) (by omega)
     refine IRS.seq hsym ?_
@@ -189,8 +148,8 @@ theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS 
         (dirOf (c₃.nreg qD)) L c₃ := by
       rw [eD3, eL3, eR3]
       exact hM.1.transport (fun j hj => by
-        rw [hfr3 _ (not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega))
-          (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega)])
+        rw [hfr3 _ (not_oracle_sw (by reg_omega) (by reg_omega))
+          (by reg_omega) (by reg_omega)])
     have hab := abs_lt_whole hzC
     have h := hBr sh Bs F X Ok hsh hBs hXl P W c₀ c₃ J H N₁ N₂ E L sp z hA hI₃
       (by rw [show sO = sw 3230 + 1 from rfl]; exact hsp) hlt hev (not_mem_left hA.hP hzC hns)

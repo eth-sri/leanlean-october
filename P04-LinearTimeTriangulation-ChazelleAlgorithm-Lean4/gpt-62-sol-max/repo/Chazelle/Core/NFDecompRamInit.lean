@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.NFDecompProg
 
 /-!
@@ -91,8 +93,13 @@ section init
 
 variable {P : Polygon} {W : ℕ}
 
-theorem initBody_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
-    (hR : DRegs A R K CB RB LB c) (hi : c.nreg 60020 < R) (hroom : A + 12 + 20 * R ≤ W) :
+section
+
+variable {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
+    (hR : DRegs A R K CB RB LB c)
+include hw hR
+
+theorem initBody_exec (hi : c.nreg 60020 < R) (hroom : A + 12 + 20 * R ≤ W) :
     ∃ c' k, Exec P W initBody c c' k ∧ k = 9 ∧ DFr (A + 12) (A + 12 + 19 * R) c c' ∧
       c'.nreg 60020 = c.nreg 60020 + 1 ∧
       ∀ f j, f < 19 → j < R → fv c'.nmem A R f j =
@@ -111,8 +118,7 @@ theorem initBody_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c
   refine ⟨rfl, ?_, by config_simp; rw [o], fun f j hf hj => ?_⟩
   · refine ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩
     · unfold Prot at hr
-      config_simp
-      simp (disch := omega) only [Machine.upd_other]
+      frame_finish
     · config_simp
       simp only [b2, b7, b11, b12]
       simp (disch := omega) only [Machine.upd_other]
@@ -125,8 +131,7 @@ theorem initBody_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c
     · simp [hji]
 
 /-- The initialisation loop. -/
-theorem initLoop_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
-    (hR : DRegs A R K CB RB LB c) (h0 : c.nreg 60020 = 0) (hroom : A + 12 + 20 * R ≤ W) :
+theorem initLoop_exec (h0 : c.nreg 60020 = 0) (hroom : A + 12 + 20 * R ≤ W) :
     ∃ c' k, Exec P W (.whileLtN 60020 60013 initBody) c c' k ∧ k ≤ 11 * R + 2 ∧
       WordsBounded W c' ∧ DFr (A + 12) (A + 12 + 19 * R) c c' ∧
       ∀ j, j < R → fv c'.nmem A R 2 j = 0 ∧ fv c'.nmem A R 7 j = 1 ∧ fv c'.nmem A R 11 j = 0 ∧
@@ -156,8 +161,7 @@ theorem initLoop_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c
   refine ⟨c', k, e, by rw [h0] at hk; omega, hw', hf', fun j hj => hv j (by omega)⟩
 
 /-- **The initialisation.** -/
-theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
-    (hR : DRegs A R K CB RB LB c) (hR1 : 1 ≤ R) (hroom : A + 12 + 20 * R ≤ W) :
+theorem initS_exec (hR1 : 1 ≤ R) (hroom : A + 12 + 20 * R ≤ W) :
     ∃ c' k, Exec P W initS c c' k ∧ k ≤ 11 * R + 11 ∧
       WordsBounded W c' ∧ DFr (A + 12) (A + 12 + 19 * R) c c' ∧
       (∀ j, j < R → fv c'.nmem A R 2 j = (if j = 0 then 1 else 0) ∧ fv c'.nmem A R 7 j = 1 ∧
@@ -184,7 +188,7 @@ theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
   have hR0 : 0 < R := by omega
   refine ⟨by omega, ‹_›, hf1.trans (hf2.trans ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩),
     fun j hj => ?_, ?_, ?_, ?_⟩
-  · unfold Prot at hr; config_simp; simp (disch := omega) only [Machine.upd_other]
+  · unfold Prot at hr; ram_finish
   · config_simp; simp only [b1, b2, b13, b15, z]
     simp (disch := omega) only [Machine.upd_other]
   · config_simp; simp only [b1, b2, b13, b15, z, o, t]
@@ -194,11 +198,9 @@ theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
     · subst e; simp [v2, v3, v4]
     · simp [e, v1, v2, v3, v4]
   all_goals
-    config_simp
-    simp only [b1, b2, b13, b15, z, o, t]
-    unfold fv
-    simp only [Machine.upd_apply]
-    split_ifs <;> omega
+    ram_finish [b1, b2, b13, b15, z, o, t, fv]
+
+end
 
 end init
 

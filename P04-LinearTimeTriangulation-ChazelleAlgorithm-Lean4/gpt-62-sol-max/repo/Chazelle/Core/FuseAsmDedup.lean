@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.FuseAsmSort
 
 /-!
@@ -47,14 +49,13 @@ theorem mem_dd (l : List α) (d : α) (x : α) : x ∈ dd l d ↔ x ∈ l := by
   simp only [List.mem_map, List.mem_filter, List.mem_range]
   constructor
   · rintro ⟨j, ⟨hj, -⟩, rfl⟩
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]
-    exact List.getElem_mem hj
+    simp_all
   · intro hx
     obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hx
     -- the first occurrence
     classical
-    let P : ℕ → Prop := fun i => i < l.length ∧ l.getD i d = l[j]
-    have hP : ∃ i, P i := ⟨j, hj, by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]; rfl⟩
+    let P := fun i => i < l.length ∧ l.getD i d = l[j]
+    have hP : ∃ i, P i := ⟨j, hj, by simp_all⟩
     let i := Nat.find hP
     have hi : P i := Nat.find_spec hP
     refine ⟨i, ⟨hi.1, ?_⟩, hi.2⟩
@@ -94,7 +95,7 @@ theorem dd_nodup {r : α → α → Prop} (hanti : ∀ x y, r x y → r y x → 
     rw [gb, gc]
     rw [ga, gb] at heq
     rcases Nat.lt_or_ge a (b - 1) with h | h
-    · have h1 : r l[a] l[b - 1] := List.pairwise_iff_getElem.1 hs _ _ (by omega) (by omega) h
+    · have h1 := List.pairwise_iff_getElem.1 hs _ _ (by omega) (by omega) h
       have h2 : r l[b - 1] l[b] := List.pairwise_iff_getElem.1 hs _ _ (by omega) hb (by omega)
       rw [heq] at h1
       exact (hanti _ _ h2 h1).symm
@@ -118,7 +119,7 @@ structure IXI (W K S : ℕ) (c₀ c : Config) : Prop where
   i_le : c.nreg 70200 ≤ K
   alloc : c.nreg ALLOC = S + c.nreg 70200
   regs : ∀ r, r ≠ 70200 → r ≠ ALLOC → c.nreg r = c₀.nreg r
-  low : ∀ a, a < S → c.nmem a = c₀.nmem a
+  low : MemEqBelow S c.nmem c₀.nmem
   done : ∀ j, j < c.nreg 70200 → c.nmem (S + j) = j
   rr : c.rreg = c₀.rreg
   rm : c.rmem = c₀.rmem
@@ -130,12 +131,12 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
     ∀ (n : ℕ) (c : Config), IXI W K S c₀ c → c.nreg 70200 + n = K →
       ∃ c' k, Exec P W ixLoop c c' k ∧ k ≤ 5 * n + 2 ∧ n ≤ k ∧ IXI W K S c₀ c' ∧ c'.nreg 70200 = K
   | 0, c, hI, hn => by
-    have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
+    have h01' : c.nreg 70201 = K := by frame_finish
     exact ⟨c, 2, .whileLtN_false (by rw [h01']; omega) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
-    have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
-    have h05' : c.nreg 70105 = 1 := by rw [hI.regs 70105 (by decide) (by decide), h05]
-    obtain ⟨i, hi⟩ : ∃ i, c.nreg 70200 = i := ⟨_, rfl⟩
+    have h01' : c.nreg 70201 = K := by frame_finish
+    have h05' : c.nreg 70105 = 1 := by frame_finish
+    obtain ⟨i, hi⟩ := exists_eq' (a' := c.nreg 70200)
     have hA : c.nreg 9999 = S + i := by rw [← hi]; exact hI.alloc
     have hw := hI.wb
     obtain ⟨c', k, e, hk, q⟩ : ∃ c' k, Exec P W ixBody c c' k ∧ k = 3 ∧
@@ -148,17 +149,14 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
       all_goals try (simp (disch := omega) only [Machine.upd_same,
         Machine.upd_other, hA, hi, h05', ALLOC]; omega)
       refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, ?_, rfl, rfl, rfl⟩
-      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hi,
-          h05', ALLOC]
-      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA,
-          h05', ALLOC]; ring
-      · have a2' : r ≠ 9999 := a2
-        simp (disch := omega) only [Machine.upd_other]
-      · simp (disch := omega) only [hA, hi, ALLOC]
+      · ram_finish
+      · ram_finish [hA, h05', ALLOC]
+      · simp_all
+      simp [hA, hi, ALLOC]
     obtain ⟨q0, qA, qr, qm, qrr, qrm, qo⟩ := q
     have hI' : IXI W K S c₀ c' := by
-      refine ⟨e.wb_right, by omega, by rw [qA, q0], fun r a1 a2 => by rw [qr r a1 a2,
-        hI.regs r a1 a2], fun a ha => by rw [qm, upd_other _ _ _ (by omega), hI.low a ha],
+      refine ⟨e.wb_right, by omega, by rw [qA, q0], fun r a1 a2 => by frame_finish,
+        fun a ha => by ram_finish [qm, hI.low a ha],
         fun j hj => ?_, by rw [qrr, hI.rr], by rw [qrm, hI.rm], by rw [qo, hI.out]⟩
       rw [q0] at hj
       rw [qm]
@@ -174,7 +172,7 @@ theorem seg_range {m : ℕ → ℕ} {S K : ℕ} (h : ∀ j, j < K → m (S + j) 
   apply List.ext_getElem (by simp [SortL.seg])
   intro j h1 h2
   simp only [SortL.seg, List.getElem_map, List.getElem_range]
-  exact h j (by simpa using h2)
+  simp_all
 
 end
 

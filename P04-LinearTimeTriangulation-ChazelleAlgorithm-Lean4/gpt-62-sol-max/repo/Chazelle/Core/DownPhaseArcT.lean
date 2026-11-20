@@ -82,9 +82,8 @@ theorem nonVtx_of_wrapK {n : ℕ} {x : ℝ} (hx : NonVtx (wrapK n x)) : NonVtx x
   split_ifs at hx with h
   · exact hx k e
   · have hk : n ≤ k := by
-      have : (n : ℝ) ≤ k := by rw [← e]; exact not_lt.1 h
-      exact_mod_cast this
-    exact hx (k - n) (by rw [e]; push_cast [hk]; ring)
+      simp_all
+    exact hx (k - n) (by simp_all)
 
 namespace ArcCorr
 
@@ -101,7 +100,7 @@ theorem floor_eq {x x' : ℝ} (hx : x ∈ Ioo lo hi) (hx' : x' ∈ Ioo lo hi) (h
       ⌊κ z⌋₊ = ⌊κ z'⌋₊ → ⌊z⌋₊ = ⌊z'⌋₊ := by
     intro z z' hz hz' hvz hvz' hle hf
     by_contra hne
-    have hlt : ⌊z⌋₊ < ⌊z'⌋₊ := lt_of_le_of_ne (Nat.floor_le_floor hle) hne
+    have hlt := lt_of_le_of_ne (Nat.floor_le_floor hle) hne
     set k : ℕ := ⌊z⌋₊ + 1
     have hz1 := floor_lt_of_nonVtx (h0 z hz) hvz
     have hz2 := floor_lt_of_nonVtx (h0 z' hz') hvz'
@@ -115,13 +114,13 @@ theorem floor_eq {x x' : ℝ} (hx : x ∈ Ioo lo hi) (hx' : x' ∈ Ioo lo hi) (h
     simp only [NonVtx, not_forall, not_not] at hkk
     obtain ⟨K, hK⟩ := hkk
     have hIcc : ∀ w ∈ Ioo lo hi, w ∈ Icc lo hi := fun w hw => ⟨hw.1.le, hw.2.le⟩
-    have m1 : κ z < κ k := h.mono (hIcc z hz) (hIcc _ hkI) hk1
-    have m2 : κ k < κ z' := h.mono (hIcc _ hkI) (hIcc z' hz') hk2
-    have hy0 : 0 ≤ κ z := (h.range z (hIcc z hz)).1
-    have hy0' : 0 ≤ κ z' := (h.range z' (hIcc z' hz')).1
+    have m1 := h.mono (hIcc z hz) (hIcc _ hkI) hk1
+    have m2 := h.mono (hIcc _ hkI) (hIcc z' hz') hk2
+    have hy0 := (h.range z (hIcc z hz)).1
+    
     have f1 : (⌊κ z⌋₊ : ℝ) + 1 ≤ K := by
       have : ⌊κ z⌋₊ < K := by
-        rw [Nat.floor_lt hy0]; rw [← hK]; exact m1
+        rw [Nat.floor_lt hy0]; rwa [← hK]
       exact_mod_cast this
     have f2 : (K : ℝ) ≤ ⌊κ z'⌋₊ := by
       have : K ≤ ⌊κ z'⌋₊ := Nat.le_floor (by rw [← hK]; exact m2.le)
@@ -139,8 +138,8 @@ theorem image_free {a b : ℝ} (hlo : lo ≤ a) (hab : a < b) (hhi : b ≤ hi)
   intro y hy hc
   have hIa : a ∈ Icc lo hi := ⟨hlo, le_trans hab.le hhi⟩
   have hIb : b ∈ Icc lo hi := ⟨le_trans hlo hab.le, hhi⟩
-  have hlo' : κ lo ≤ κ a := h.mono.monotoneOn ⟨le_rfl, le_trans hlo hIa.2⟩ hIa hlo
-  have hhi' : κ b ≤ κ hi := h.mono.monotoneOn hIb ⟨le_trans hIb.1 hIb.2, le_rfl⟩ hhi
+  have hlo' := h.mono.monotoneOn ⟨le_rfl, le_trans hlo hIa.2⟩ hIa hlo
+  have hhi' := h.mono.monotoneOn hIb ⟨le_trans hIb.1 hIb.2, le_rfl⟩ hhi
   obtain ⟨x, hx, rfl⟩ := h.onto y (by linarith [hy.1]) (by linarith [hy.2])
   have hxa : a < x := by
     by_contra hxa; push Not at hxa
@@ -190,12 +189,12 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       M₂.Faces p t V) :
     M₂.arcWt a b ≤ M₁.weight F₁ U := by
   set n₂ := M₂.W.n
-  have hn₂ : (0 : ℝ) < n₂ := lt_of_le_of_lt h.lo_nonneg h.lo_lt
+  have hn₂ := lt_of_le_of_lt h.lo_nonneg h.lo_lt
   have hIcc : ∀ w, w ∈ Ioo aa bb → w ∈ Icc lo hi := fun w hw =>
     ⟨le_trans hlo hw.1.le, le_trans hw.2.le hhi⟩
   have hIoo : ∀ w, w ∈ Ioo aa bb → w ∈ Ioo lo hi := fun w hw =>
     ⟨lt_of_le_of_lt hlo hw.1, lt_of_lt_of_le hw.2 hhi⟩
-  have hx0 : ∀ w, w ∈ Ioo aa bb → 0 ≤ w := fun w hw => le_trans h.lo_nonneg (hIcc w hw).1
+  have hx0 := fun w hw => le_trans h.lo_nonneg (hIcc w hw).1
   have hx2 : ∀ w, w ∈ Ioo aa bb → w < 2 * n₂ := fun w hw => by
     have := (hIcc w hw).2; have := h.hi_le; have := h.lo_lt; linarith
   -- the image interval is cut-free
@@ -221,7 +220,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       refine ⟨xx, hxx, nonVtx_of_wrapK hvw, ?_⟩
       rw [hw, Nat.floor_eq_iff hxn]
       exact ⟨by linarith, by linarith⟩
-    have e : g p = hex.choose := by rw [hg]; simp only [dite_eq_left hex]
+    have e : g p = hex.choose := by ram_simp [hg, dite_eq_left hex]
     rw [e]
     exact hex.choose_spec
   by_cases hE : (edgesIn M₂ a b).Nonempty
@@ -233,12 +232,12 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
   set y₀ := κ (g p₀)
   have hy₀r := h.range _ (hIcc _ hx₀)
   have hy₀v := h.vtx _ (hIoo _ hx₀) hv₀
-  have hy₀c : ¬ M₁.IsCut F₁ y₀ := fun hc =>
+  have hy₀c := fun hc =>
     hfree _ (hout _ hx₀) (h.cut _ (hIoo _ hx₀) hc)
   have hIa : aa ∈ Icc lo hi := ⟨hlo, le_trans hab.le hhi⟩
   have hIb : bb ∈ Icc lo hi := ⟨le_trans hlo hab.le, hhi⟩
-  have hya : κ aa < y₀ := h.mono hIa (hIcc _ hx₀) hx₀.1
-  have hyb : y₀ < κ bb := h.mono (hIcc _ hx₀) hIb hx₀.2
+  have hya := h.mono hIa (hIcc _ hx₀) hx₀.1
+  have hyb := h.mono (hIcc _ hx₀) hIb hx₀.2
   -- the arc of `U` around `y₀`
   obtain ⟨l, r, harc, hlr⟩ : ∃ l r, M₁.IsArc F₁ U l r ∧ ∀ y ∈ Ioo (κ aa) (κ bb), sideInArc l r y := by
     have hfac₀ : ∀ y ∈ Ioo (κ aa) (κ bb), NonVtx y → M₁.Faces ⌊y⌋₊ (y - ⌊y⌋₊) U := by
@@ -260,7 +259,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       have hwv := nonVtx_wrapK (n := n₂) hvx
       have hfl := floor_lt_of_nonVtx hw0 hwv
       apply hfac
-      · have : (⌊wrapK n₂ x⌋₊ : ℝ) < n₂ := lt_of_le_of_lt (Nat.floor_le hw0) hwl
+      · have := lt_of_le_of_lt (Nat.floor_le hw0) hwl
         exact_mod_cast this
       · linarith [hfl.1]
       · linarith [hfl.2]
@@ -272,20 +271,20 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       -- `X = U`: both are faced just at `y₀`
       have hXU : X = U := by
         have hpn : ⌊y₀⌋₊ < M₁.W.n := by
-          have : (⌊y₀⌋₊ : ℝ) < M₁.W.n := lt_of_le_of_lt hp hy₀r.2
+          have := lt_of_le_of_lt hp hy₀r.2
           exact_mod_cast this
         have ht0 : 0 < y₀ - ⌊y₀⌋₊ := by linarith [hy₀p.1]
         have ht1 : y₀ - ⌊y₀⌋₊ < 1 := by linarith [hy₀p.2]
-        have hfX := harcX.2.2.2.2.2.2 _ _ hpn ht0 ht1 (by rw [add_sub_cancel]; exact hin₀)
+        have hfX := harcX.2.2.2.2.2.2 _ _ hpn ht0 ht1 (by rwa [add_sub_cancel])
         exact WalkAx.faces_unique hX hU hfX (hfac₀ y₀ ⟨hya, hyb⟩ hy₀v)
       subst hXU
       refine ⟨l, r, harcX, ?_⟩
-      have hl : ¬ (κ aa < l ∧ l < κ bb) := fun hl =>
+      have hl := fun hl =>
         hfreeI l hl (by
           rcases harcX.2.2.2.2.1 with ⟨hl', -⟩ | ⟨hF', -⟩
           · exact hl'
           · exact absurd hF' hF.ne_empty)
-      have hr : ¬ (κ aa < r ∧ r < κ bb) := fun hr =>
+      have hr := fun hr =>
         hfreeI r hr (by
           rcases harcX.2.2.2.2.1 with ⟨-, hr', -⟩ | ⟨hF', -⟩
           · exact hr'
@@ -294,23 +293,23 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       exact linear_sub_arc hin₀ hya hyb hl hr y hy.1 hy.2
     · -- the empty family: the pinned arc
       rw [Set.not_nonempty_iff_eq_empty] at hF
-      have hn1 : (0 : ℝ) < M₁.W.n := lt_of_le_of_lt (h.range aa hIa).1 (h.range aa hIa).2
+      have hn1 := lt_of_le_of_lt (h.range aa hIa).1 (h.range aa hIa).2
       refine ⟨0, 0, ⟨le_rfl, hn1, le_rfl, hn1, Or.inr ⟨hF, rfl, rfl⟩,
-        fun x _ hc => by obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact hc, ?_⟩, ?_⟩
+        fun x _ hc => by obtain ⟨c, hc, -⟩ := hc; rwa [hF] at hc, ?_⟩, ?_⟩
       · intro p t hp ht0 ht1 _
         obtain ⟨X, hX, hfX⟩ := hM₁.exists_faces_of_not_cut hF₁ hfin₁ hp ⟨ht0, ht1⟩
-          (fun hc => by obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact hc)
+          (fun hc => by obtain ⟨c, hc, -⟩ := hc; rwa [hF] at hc)
         -- a single region
         have hXU : X = U := by
           obtain ⟨x, hx, rfl⟩ := hX
           obtain ⟨u, hu, rfl⟩ := hU
           have hfr : Chazelle.Chain.freeIn M₁.D F₁ = M₁.D := by
-            rw [hF]; unfold Chazelle.Chain.freeIn; simp
-          have hpre : IsPreconnected M₁.D := hM₁.preconn
+            simp [hF, Chazelle.Chain.freeIn]
+          have hpre := hM₁.preconn
           rw [hfr] at hx hu ⊢
           rw [connectedComponentIn_eq (hpre.subset_connectedComponentIn hx subset_rfl
-            (show u ∈ M₁.D from hu) |> fun h' => by exact h')]
-        rw [← hXU]; exact hfX
+            (hu) |> fun h' => h')]
+        rwa [← hXU]
       · intro y hy
         unfold sideInArc
         rw [ite_eq_right (lt_irrefl _)]
@@ -328,7 +327,7 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
     have hfl := floor_lt_of_nonVtx hr.1 hyv
     refine ⟨?_, h.counted _ (hIoo _ hx) hv, κ (g p) - ⌊κ (g p)⌋₊, by linarith [hfl.1],
       by linarith [hfl.2], ?_⟩
-    · have : (⌊κ (g p)⌋₊ : ℝ) < M₁.W.n := lt_of_le_of_lt (Nat.floor_le hr.1) hr.2
+    · have := lt_of_le_of_lt (Nat.floor_le hr.1) hr.2
       exact_mod_cast this
     · rw [add_sub_cancel]
       exact hlr _ ⟨h.mono hIa (hIcc _ hx) hx.1, h.mono (hIcc _ hx) hIb hx.2⟩
@@ -341,16 +340,16 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
     have hx0' := hx0 _ hx; have hy0' := hx0 _ hy
     unfold wrapK
     by_cases h1 : g p < n₂ <;> by_cases h2 : g q < n₂
-    · simp only [h1, h2, ↓reduceIte, hfl]
+    · simp [h1, h2, ↓reduceIte, hfl]
     · exfalso
       have a1 : ⌊g p⌋₊ < n₂ := by
         have := Nat.floor_lt hx0' |>.2 h1; exact_mod_cast this
-      have a2 : n₂ ≤ ⌊g q⌋₊ := Nat.le_floor (by push Not at h2; exact_mod_cast h2)
+      have a2 := Nat.le_floor (by push Not at h2; exact_mod_cast h2)
       omega
     · exfalso
       have a1 : ⌊g q⌋₊ < n₂ := by
         have := Nat.floor_lt hy0' |>.2 h2; exact_mod_cast this
-      have a2 : n₂ ≤ ⌊g p⌋₊ := Nat.le_floor (by push Not at h1; exact_mod_cast h1)
+      have a2 := Nat.le_floor (by push Not at h1; exact_mod_cast h1)
       omega
     · simp only [h1, h2, ↓reduceIte]
       push Not at h1 h2

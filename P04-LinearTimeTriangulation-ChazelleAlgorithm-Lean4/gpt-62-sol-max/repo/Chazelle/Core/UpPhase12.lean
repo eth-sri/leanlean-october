@@ -88,44 +88,15 @@ theorem single_child {n g i : ℕ} (hn : 2 ≤ n) (hg : 1 ≤ g) (hi : i < grade
     have := gradeLen_pos (g := g - 1) (i := 2 * i + 1) hn h
     omega
   · refine ⟨by omega, ?_⟩
-    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rw [hgg]; exact hi) (by omega)
-    rw [hgg] at this; exact this.symm
+    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rwa [hgg]) (by omega)
+    simp_all
 
 set_option maxHeartbeats 32000000 in
 /-- **The normal form of chain `(g, i)`**, all three cases. -/
 theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
-    (hB : Meets sB bruteBands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bBrute 1 ∧
-        rd c bBrute 0 + rd c bBrute 1 + 1 ≤ P.n ∧ 1 ≤ rd c bBrute 2 ∧
-        (rd c bBrute 1 = 1 ∨ 2 ≤ rd c bBrute 2))
-      (fun P c c' => ∃ C N, C.P = Qof P ∧ C.s = rd c bBrute 0 ∧ C.m = rd c bBrute 1 ∧
-        Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bBrute 3) N) ∧
-        IsCanonicalNF (chainModel C) (Qof P) N (rd c bBrute 2) 4)
-      (fun _ c => κB * (rd c bBrute 1 + 1) ^ 3))
-    (hL : Meets sL l41Bands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-        (gradeCtx O).holds P c.nmem (rd c bL41 0) (c.nreg ALLOC) ∧
-        rd c bL41 3 ≤ c.nmem (rd c bL41 0) ∧ lemma41Start ≤ rd c bL41 3 ∧
-        rd c bL41 1 + rd c bL41 2 + 1 ≤ P.n ∧
-        2 ^ (rd c bL41 3 - 1) < rd c bL41 2 ∧ rd c bL41 2 ≤ 2 ^ rd c bL41 3)
-      (fun P c c' => ∃ C N, C.P = Qof P ∧ C.s = rd c bL41 1 ∧ C.m = rd c bL41 2 ∧
-        Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bL41 4) N) ∧
-        IsCanonicalNF (chainModel C) (Qof P) N (gradeGran (rd c bL41 3)) 4)
-      (fun _ c => κL * (lemma41Nat (rd c bL41 3) + 1)))
-    (hGr : Meets sG granBands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bGran 2 ∧
-        ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bGran 0) ∧
-        ∃ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M ∧ GoodModel M ∧
-          NFWithin c.nmem (rd c bGran 1) (c.nreg ALLOC) N ∧ IsNF M (Qof P) N ∧
-          M.DegLe (N.F M (Qof P)) (rd c bGran 2) ∧
-          M.Semigranular (N.F M (Qof P)) (rd c bGran 3))
-      (fun P c c' => ∀ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M →
-        NFAt c.nmem (rd c bGran 1) N →
-        ∃ N', c.nreg ALLOC ≤ rd c' bGran 4 ∧ NFWithin c'.nmem (rd c' bGran 4) (c'.nreg ALLOC) N' ∧
-          N'.F M (Qof P) ⊆ N.F M (Qof P) ∧
-          IsCanonicalNF M (Qof P) N' (rd c bGran 3) (rd c bGran 2))
-      (fun _ c => κG (rd c bGran 2) *
-        (c.nmem (rd c bGran 1) * (Nat.clog 2 (c.nmem (rd c bGran 1)) + 1) + 1)))
+    (hB : BruteM sB κB)
+    (hL : L41M O sL κL)
+    (hGr : GranM sG κG)
     (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hn : 2 ≤ P.n) {c : Config}
     (hw : WordsBounded W c) {hp h g i R A d : ℕ}
     (hu : URegs c P.n hp h g (gradeCount P.n g) (gradeGran g) (gradeCount P.n (g - 1)) R)
@@ -143,8 +114,8 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       (∀ C : Chain, C.P = Qof P → C.s = gradeStart g i → C.m = gradeLen P.n g i →
         ∃ N, NFWithin c'.nmem (c'.nreg 170031) (c'.nreg ALLOC) N ∧
           IsCanonicalNF (chainModel C) (Qof P) N (gradeGran g) 4) ∧
-      (∀ a, a < A → c'.nmem a = c.nmem a) ∧
-      (∀ a, a < A → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
+      (MemEqBelow A c'.nmem c.nmem) ∧
+      (MemEqBelow A c'.rmem c.rmem) ∧ c'.output = c.output ∧
       (∀ r, Kept r ∨ r = 170030 → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
   have hAl : ALLOC = 9999 := rfl

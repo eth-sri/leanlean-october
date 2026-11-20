@@ -42,9 +42,7 @@ theorem chordL_eff (m f : ℕ → ℕ) (h3 : f 81014 = 3) (h1 : f 81012 = 1) :
     by simp [chordL, regB, regI, upd, h3, h1, a], by simp [chordL, regB, regI, upd, h3, h1, a],
     by simp [chordL, regB, regI, upd, h3, h1, a], fun q q1 q2 q3 q4 q5 q6 q7 =>
       regB_other m _ f (fun i hi => ?_)⟩
-  simp only [chordL, List.mem_cons, List.not_mem_nil, or_false] at hi
-  rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl <;> simp only [dstI] <;> omega
+  fin_cases hi <;> simp only [dstI] <;> omega
 
 variable {E : FEnv} {c₀ c : Config}
 
@@ -61,20 +59,20 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
       c'.nreg 81156 = (N.chord (x / 2)).dn ∧
       ∀ q, ¬ (81120 ≤ q ∧ q ≤ 81124) → ¬ (81152 ≤ q ∧ q ≤ 81158) → c'.nreg q = c.nreg q) := by
   have ok0 : okB E.W c.nmem [.copyN 81120 81150] c.nreg := by
-    simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
+    simp only [reg_check]; exact ⟨Or.inl (Or.inl (by decide)), trivial⟩
   refine (FRS.seq (K₂ := halfK E.P.n x + 15) (FRS.block hB _ hI ok0)
-    (fun c₁ hI₁ hA₁ h₁ => ?_)).mono (by simp [clK]; omega) (fun _ h => h)
+    (fun c₁ hI₁ hA₁ h₁ => ?_)).budget (by simp [clK]; omega)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81120 81150] c.nreg q := fun q => by rw [h₁]
   have v20 : c₁.nreg 81120 = x := by rw [e₁]; simp [regB, regI, upd, hx]
   have f₁ : ∀ q, q ≠ 81120 → c₁.nreg q = c.nreg q := fun q hq => by
     rw [e₁]; simp [regB, regI, upd, hq]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by reg_omega)
   refine (FRS.seq (K₂ := 15) (halfS_fs hE hB hI₁ v20 (by rw [hA₁']; unfold clK at hroom; omega))
-    (fun c₂ hI₂ hA₂ ⟨k2, _, f₂⟩ => ?_)).mono (by omega) (fun _ h => h)
+    (fun c₂ hI₂ hA₂ ⟨k2, _, f₂⟩ => ?_)).budget
   have hN₂ : NFWithin c₂.nmem (c₂.nreg 81134) (c₀.nreg ALLOC) N := by
-    rw [f₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      f₁ _ (by norm_num)]
+    ram_rw [f₂,
+      f₁]
     exact Robust.transport hN (fun a ha => hI₂.hm a ha)
   have hNA := hN₂.nfAt
   obtain ⟨-, hch, -⟩ := nf_bounds hN₂
@@ -84,8 +82,8 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
   have hA0 : c₀.nreg ALLOC ≤ c₂.nreg ALLOC := hI₂.hA
   have hAW : c₂.nreg ALLOC ≤ E.W := hI₂.hw.1 ALLOC
   obtain ⟨r1, r2, r3, r4, r5⟩ := hNA.2.2.2.2.2.1 _ hk'
-  have k3 : c₂.nreg 81014 = 3 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k3]
-  have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
+  have k3 : c₂.nreg 81014 = 3 := by ram_rw [hI₂.hin, hE.k3]
+  have k1 : c₂.nreg 81012 = 1 := by ram_rw [hI₂.hin, hE.k1]
   set k := x / 2
   have hm5 : k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3) + 4 < E.W := by omega
   have hh' : c₂.nmem (k + k + (k + k) + k + c₂.nmem (c₂.nreg 81134 + 3)) + 1 ≤ E.W := by
@@ -93,7 +91,7 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
       c₂.nmem (c₂.nreg 81134 + 3) + 5 * k by ring, r1]; exact hh
   have hb3 : c₂.nreg 81134 + 3 ≤ E.W := by omega
   have ok : okB E.W c₂.nmem chordL c₂.nreg := by
-    simp only [chordL, okB, okI, regI, upd]
+    simp only [chordL, reg_check, regI, upd]
     simp only [FScr, FOut, k2, k3, k1]
     norm_num
     refine ⟨by omega, by omega, by omega, by omega, by omega, by omega, by omega, by omega,
@@ -105,14 +103,13 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
   have ea : c₂.nreg 81121 + c₂.nreg 81121 + (c₂.nreg 81121 + c₂.nreg 81121) + c₂.nreg 81121 +
       c₂.nmem (c₂.nreg 81134 + 3) = c₂.nmem (c₂.nreg 81134 + 3) + 5 * k := by rw [k2]; ring
   rw [ea] at u52 u53 u54 u56 u55
-  refine ⟨by rw [e₃, uf _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), k2], by rw [e₃, u52, r1], by rw [e₃, u53, r2],
+  refine ⟨by ram_rw [e₃, uf, k2], by rw [e₃, u52, r1], by rw [e₃, u53, r2],
     by rw [e₃, u54, show c₂.nmem (c₂.nreg 81134 + 3) + 5 * k + 1 + 1 = c₂.nmem (c₂.nreg 81134 + 3) + 5 * k + 2 by ring,
       r3], by rw [e₃, u55, r1],
     by rw [e₃, u56, show c₂.nmem (c₂.nreg 81134 + 3) + 5 * k + 1 + 1 + 1 + 1 = c₂.nmem (c₂.nreg 81134 + 3) + 5 * k + 4
       by ring, r5], fun q h1 h2 => ?_⟩
-  rw [e₃, uf q (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-    f₂ q (by omega) (by omega) (by omega) (by omega) (by omega), f₁ q (by omega)]
+  ram_rw [e₃, uf q,
+    f₂ q, f₁ q]
 end
 
 end Restore

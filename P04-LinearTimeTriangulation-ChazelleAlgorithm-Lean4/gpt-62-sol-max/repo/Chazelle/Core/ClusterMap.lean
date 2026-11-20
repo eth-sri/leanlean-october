@@ -40,10 +40,7 @@ theorem view_lt {m : ℕ → ℕ} {b n i : ℕ} (h : i < n) : view m b n i = m (
 theorem view_upd_out (m : ℕ → ℕ) (b n a x : ℕ) (h : a < b ∨ b + n ≤ a) :
     view (upd m a x) b n = view m b n := by
   funext i
-  unfold view
-  split_ifs with hi
-  · rw [Machine.upd_other _ _ _ (by omega)]
-  · rfl
+  ram_finish [view]
 
 /-- A write inside the array updates its view. -/
 theorem view_upd_in (m : ℕ → ℕ) (b n w x : ℕ) (hw : w < n) :
@@ -52,19 +49,13 @@ theorem view_upd_in (m : ℕ → ℕ) (b n w x : ℕ) (hw : w < n) :
   unfold view
   by_cases hiw : i = w
   · subst hiw; simp [hw]
-  · rw [Function.update_of_ne hiw]
-    split_ifs with hi
-    · rw [Machine.upd_other _ _ _ (by omega)]
-    · rfl
+  simp_all
 
 /-- Views agreeing memories: agreement on `[b, b + n)` gives equal views. -/
 theorem view_congr {m m' : ℕ → ℕ} {b n : ℕ} (h : ∀ i, i < n → m' (b + i) = m (b + i)) :
     view m' b n = view m b n := by
   funext i
-  unfold view
-  split_ifs with hi
-  · exact h i hi
-  · rfl
+  ram_finish [view]
 
 /-! ## Iterating an injective self-map of `[0, N)` -/
 
@@ -116,7 +107,12 @@ open Classical in
 noncomputable def per (f : ℕ → ℕ) (_N x : ℕ) : ℕ :=
   if h : ∃ p, 0 < p ∧ f^[p] x = x then Nat.find h else 1
 
-theorem per_spec (hf : InjOn f N) {x : ℕ} (hx : x < N) :
+section
+
+variable (hf : InjOn f N) {x : ℕ} (hx : x < N)
+
+include hf hx in
+theorem per_spec :
     0 < per f N x ∧ per f N x ≤ N ∧ f^[per f N x] x = x := by
   classical
   obtain ⟨p, hp, hpN, hpx⟩ := exists_iterate_eq_self hf hx
@@ -127,12 +123,15 @@ theorem per_spec (hf : InjOn f N) {x : ℕ} (hx : x < N) :
   refine ⟨(Nat.find_spec hex).1, le_trans (Nat.find_min' hex ⟨hp, hpx⟩) hpN,
     (Nat.find_spec hex).2⟩
 
-theorem iterate_per (hf : InjOn f N) {x : ℕ} (hx : x < N) : f^[per f N x] x = x :=
+include hf hx in
+theorem iterate_per : f^[per f N x] x = x :=
   (per_spec hf hx).2.2
 
-theorem per_pos (hf : InjOn f N) {x : ℕ} (hx : x < N) : 0 < per f N x := (per_spec hf hx).1
+include hf hx in
+theorem per_pos : 0 < per f N x := (per_spec hf hx).1
 
-theorem per_le (hf : InjOn f N) {x : ℕ} (hx : x < N) : per f N x ≤ N := (per_spec hf hx).2.1
+include hf hx in
+theorem per_le : per f N x ≤ N := (per_spec hf hx).2.1
 
 /-- No return before the period. -/
 theorem iterate_ne_of_lt_per (_hf : InjOn f N) {x : ℕ} (_hx : x < N) {j : ℕ} (hj0 : 0 < j)
@@ -140,12 +139,11 @@ theorem iterate_ne_of_lt_per (_hf : InjOn f N) {x : ℕ} (_hx : x < N) {j : ℕ}
   classical
   intro h
   have hex : ∃ p, 0 < p ∧ f^[p] x = x := ⟨j, hj0, h⟩
-  have hper : per f N x = Nat.find hex := by unfold per; rw [dite_eq_left hex]
-  have := Nat.find_min' hex ⟨hj0, h⟩
-  omega
+  simp_all [per] 
 
+include hf hx in
 /-- The iterates below the period are distinct. -/
-theorem iterate_inj_of_lt_per (hf : InjOn f N) {x : ℕ} (hx : x < N) {i j : ℕ}
+theorem iterate_inj_of_lt_per {i j : ℕ}
     (hi : i < per f N x) (hj : j < per f N x) (h : f^[i] x = f^[j] x) : i = j := by
   rcases Nat.lt_trichotomy i j with hij | hij | hij
   · exact absurd (hf.iterate_cancel hx hij.le h) (iterate_ne_of_lt_per hf hx (by omega) (by omega))
@@ -153,8 +151,9 @@ theorem iterate_inj_of_lt_per (hf : InjOn f N) {x : ℕ} (hx : x < N) {i j : ℕ
   · exact absurd (hf.iterate_cancel hx hij.le h.symm)
       (iterate_ne_of_lt_per hf hx (by omega) (by omega))
 
+include hf hx in
 /-- Iterates reduce modulo the period. -/
-theorem iterate_mod_per (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :
+theorem iterate_mod_per (n : ℕ) :
     f^[n] x = f^[n % per f N x] x := by
   conv_lhs => rw [← Nat.mod_add_div n (per f N x)]
   rw [Function.iterate_add_apply]
@@ -164,10 +163,13 @@ theorem iterate_mod_per (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :
   | succ q ih =>
     rw [Nat.mul_succ, Function.iterate_add_apply, iterate_per hf hx, ih]
 
+include hf hx in
 /-- Every iterate is an iterate below the period. -/
-theorem exists_lt_per_of_iterate (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :
+theorem exists_lt_per_of_iterate (n : ℕ) :
     ∃ j, j < per f N x ∧ f^[n] x = f^[j] x :=
   ⟨n % per f N x, Nat.mod_lt _ (per_pos hf hx), iterate_mod_per hf hx n⟩
+
+end
 
 end Iter
 
@@ -240,13 +242,11 @@ theorem OK.sum_deg (h : G.OK) : ∑ u ∈ Finset.range G.nv, G.deg u = G.N := by
       constructor
       · rintro ⟨_, _, hd, _⟩; exact hd
       · intro hd; exact ⟨G.vert d, h.vert_lt d hd, hd, rfl⟩
-    rw [this, Finset.card_range]
+    simp_all
   · intro u _ v _ huv
     simp only [Function.onFun]
     rw [Finset.disjoint_left]
-    intro d h1 h2
-    simp only [Finset.mem_filter] at h1 h2
-    exact huv (h1.2.symm.trans h2.2)
+    simp_all
 
 /-- The degree sum over a set of distinct vertices is at most `N`. -/
 theorem OK.sum_deg_le (h : G.OK) (S : Finset ℕ) (hS : ∀ u ∈ S, u < G.nv) :

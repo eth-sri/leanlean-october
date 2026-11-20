@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvGLoop
 
 /-!
@@ -28,9 +30,7 @@ theorem rgInit0_exec (c : Config) (hw : WordsBounded W c) :
       FrameM (fun q => decide (q = 219000 ∨ q = 219002)) c c' ∧ c'.rreg = c.rreg := by
   obtain ⟨c', k, ex, hk, h1, h2, hm⟩ : ∃ c' k, Exec P W rgInit0 c c' k ∧ k = 2 ∧
       c'.nreg 219000 = c.nreg 219200 ∧ c'.nreg 219002 = c.nreg 219203 ∧ c'.nmem = c.nmem := by
-    unfold rgInit0
-    exec_block
-    refine ⟨rfl, ?_, ?_, rfl⟩ <;> config_simp
+    ram_exec
   exact ⟨c', k, ex, hk, h1, h2, hm, exec_frameM ex (by decide),
     funext fun r => exec_frameM2 ex (BN := fun q => decide (q = 219000 ∨ q = 219002))
       (BR := fun _ => false) (by decide) r rfl⟩
@@ -47,14 +47,14 @@ theorem rgPadLoop_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg
   | m + 1, c, hw, h51, hle, hd => by
     have e := Exec.addN (P := P) hw 219250 219250 219251 (by rw [h51]; have := hw.1 9999; omega)
     have h1 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219251 = 1 := by
-      rw [upd_other _ _ _ (by decide), h51]
+      assumption
     have h2 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 9999 = c.nreg 9999 :=
       upd_other _ _ _ (by decide)
     have h3 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219250 = c.nreg 219250 + 1 := by
       rw [upd_same, h51]
-    have e' := rgPadLoop_exec m _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
+    have e' := rgPadLoop_exec m _ e.wb_right h1 (by ram_finish)
       (by dsimp only; rw [h2, h3]; omega)
-    refine ((Exec.whileLtN_true (by omega) (Exec.seq e (.skip e.wb_right)) e').cast
+    refine ((Exec.whileLtN_true (by omega) (by ram_path) e').cast
       (by ring)).cast_end ?_
     simp only [h2, upd_upd_same]
 
@@ -67,11 +67,11 @@ theorem rgPad_exec (c : Config) (hw : WordsBounded W c) (hs : c.nreg 219003 ≤ 
   have e₁ := Exec.copyN (P := P) hw 219250 219003
   have e₂ := Exec.constN (P := P) e₁.wb_right 219251 1 hW
   have a50 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219250 = c.nreg 219003 := by
-    rw [upd_other _ _ _ (by decide), upd_same]
+    rfl
   have a51 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219251 = 1 := upd_same _ _ _
   have aA : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 9999 = c.nreg 9999 := by
-    rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rw [a50, aA]; exact hs)
+    rfl
+  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by assumption)
     rfl
   refine ⟨_, (Exec.seq (Exec.seq e₁ (Exec.seq e₂ (.skip e₂.wb_right))) e₃).cast
     (by dsimp only; rw [a50, aA]; ring), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩

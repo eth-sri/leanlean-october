@@ -20,7 +20,7 @@ open Machine Machine.Stmt Programs SweepPrim
 
 variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ c : Config}
 
-theorem chainModel_n' (C : Chain) : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
+abbrev chainModel_n' := @Chazelle.Core.WalkEmbed.cm_n
 
 /-- **The walk of a chain model fits the word bound.** -/
 theorem walk_le_W {m : ℕ → ℕ} {MD A : ℕ} (hMD : ModelDescAt m MD (Qof P) M)
@@ -70,15 +70,9 @@ theorem tSetup_exec (hw : WordsBounded W c) (hMD : c.nreg 83000 + 6 ≤ c.nreg A
       (∀ r, r ≠ 83020 → r ≠ 83021 → r ≠ 83022 → r ≠ 83023 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
     unfold tSetup
-    exec_block
-    · omega
-    · omega
-    · config_simp; omega
-    · refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, ?_, rfl, rfl,
-        rfl, rfl⟩
-      intro r h1 h2 h3 h4
-      simp [upd, h1, h2, h3, h4]
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+    exec_block!
+    simp_all
+  have hA := hr ALLOC (by unfold ALLOC; omega)
     (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
   refine ⟨c', k, ex, hk, ⟨ex.wb_right, fun q h1 h2 => hr q (by omega) (by omega) (by omega)
     (by omega), by omega, fun a _ => by rw [hm], q20, q21, q22, q23⟩, ?_⟩

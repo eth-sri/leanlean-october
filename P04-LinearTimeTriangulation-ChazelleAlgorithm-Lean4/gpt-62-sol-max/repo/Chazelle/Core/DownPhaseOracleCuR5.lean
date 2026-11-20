@@ -73,11 +73,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     exec_block
     · config_simp; rw [h11, hA9]; omega
     · omega
-    refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩
-    · config_simp; exact hA9
-    · config_simp; rw [h11, hA9]
-    · config_simp
-    · config_simp; simp [upd, h1, h2, h3]
+    simp_all
   have F₁ : BuildRam.FrameM Basm' c c₁ := BuildRam.exec_frameM x₁ (by decide)
   have A₁ : AsmSt c.nmem n O (slotsOf c 0) c₁ :=
     ⟨a21, by simp [slotsOf, a22], by simp [slotsOf, a23], fun a _ => by rw [am],
@@ -99,7 +95,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       (fun hf => SlotsOK.mem hok _ (mem_slotsOf_of hf (by omega))) hn hnW
       (by have := hLle (k + 1) (by omega); simp only [hLf] at this; omega)
     exact ⟨d', k', e', h1, h2, hA', hF.trans (frameM_mono F' (fun r hr => by
-      simp only [Basm', hr, Bool.true_or]))⟩
+      simp [Basm', hr, Bool.true_or]))⟩
   obtain ⟨c₂, k₂, e₂, p2, q2, A₂, F₂⟩ := step 0 (by norm_num) c₁ x₁.wb_right A₁ F₁
   obtain ⟨c₃, k₃, e₃, p3, q3, A₃, F₃⟩ := step 1 (by norm_num) c₂ e₂.wb_right A₂ F₂
   obtain ⟨c₄, k₄, e₄, p4, q4, A₄, F₄⟩ := step 2 (by norm_num) c₃ e₃.wb_right A₃ F₃
@@ -118,7 +114,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
     · config_simp; exact g21
-    · config_simp; rw [g22, show (ALLOC : ℕ) = 9999 from rfl, upd_same]
+    · assumption
     · config_simp; rw [g21, g23]
     · config_simp; unfold ALLOC at h2; simp [upd, h1, h2]
   have ex : Exec P W asmC c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
@@ -135,7 +131,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       cases hB : Basm' r
       · rfl
       · exact absurd (basm_io hB).1 hr
-    rw [br r (fun h => hr (by rw [h]; unfold bandOf ioBands oracleBands; decide)) ha]
+    rw [br r (fun h => hr (by rw [h]; decide)) ha]
     exact F₅.1 r hb
   · have hb : Basm' r = false := by
       cases hB : Basm' r

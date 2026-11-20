@@ -35,9 +35,9 @@ theorem logRec_labels {m : ℕ → ℕ} {AL : ℕ} {ls : List (ℕ × ℕ × ℕ
   refine ⟨a2, fun k hk => ?_⟩
   interval_cases k
   · simpa using a3
-  · simpa [show AL + 7 * i + 3 + 1 = AL + 7 * i + 4 by ring] using a4
-  · simpa [show AL + 7 * i + 3 + 2 = AL + 7 * i + 5 by ring] using a5
-  · simpa [show AL + 7 * i + 3 + 3 = AL + 7 * i + 6 by ring] using a6
+  · assumption
+  · assumption
+  assumption
 
 /-- **A label of a log record** (place below its count) is a region index of `N₂`. -/
 theorem label_valid (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {e k : ℕ} (he : e < rd c₀ bSweep 301)
@@ -64,24 +64,21 @@ theorem logLab_eq {Q : Polygon} {N : NF} {ls : List (ℕ × ℕ × ℕ × ℕ ×
       (ls.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.1 (ls.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.1
       (ls.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.2.1
       (ls.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.2.2 := by
-  unfold logLab logOf
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hi,
-    List.getD_eq_getElem _ _ hi]
-  simp
+  ram_finish [logLab, logOf, List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hi, List.getD_eq_getElem]
 
 /-- **A region of the label set of a log entry** is the region of a label in memory. -/
 theorem label_mem {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {m : ℕ → ℕ} {AL : ℕ}
     (hls : LogRecsAt m AL ls) {i : ℕ} (hi : i < ls.length) {V : Set Point}
     (hV : V ∈ logLab J (Qof P) N₂ ls i) :
     ∃ k, k ≤ 3 ∧ k < m (AL + 7 * i + 2) ∧
-      regOf (chainModel J.right) (Qof P) N₂ (m (AL + 7 * i + 3 + k)) = V := by
+      regOf J.rightModel (Qof P) N₂ (m (AL + 7 * i + 3 + k)) = V := by
   rw [logLab_eq hi] at hV
   obtain ⟨n2, hlab⟩ := logRec_labels hls hi
   obtain ⟨l, hl, rfl⟩ := hV
   rcases hl with ⟨h0, rfl⟩ | ⟨h1, rfl⟩ | ⟨h2, rfl⟩ | ⟨h3, rfl⟩
   · exact ⟨0, by norm_num, by omega, by rw [hlab 0 (by norm_num)]; rfl⟩
-  · exact ⟨1, by norm_num, by omega, by rw [hlab 1 (by norm_num)]; rfl⟩
-  · exact ⟨2, by norm_num, by omega, by rw [hlab 2 (by norm_num)]; rfl⟩
+  · exact ⟨1, by norm_num, by omega, by simp_all⟩
+  · exact ⟨2, by norm_num, by omega, by simp_all⟩
   · exact ⟨3, le_rfl, by omega, by rw [hlab 3 le_rfl]; rfl⟩
 
 /-- **Every entry register and label place has a slot.** -/
@@ -107,8 +104,7 @@ theorem slotPairs_facts : ∀ p ∈ slotPairs,
     (p.1 = eR0 ∨ p.1 = eR1 ∨ p.1 = eR2) ∧
       (p.2 = K0 ∨ p.2 = K1 ∨ p.2 = K2 ∨ p.2 = K3) := by
   intro p hp
-  simp only [slotPairs, List.mem_cons, List.not_mem_nil, or_false] at hp
-  rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp
+  fin_cases hp <;> simp
 
 end
 

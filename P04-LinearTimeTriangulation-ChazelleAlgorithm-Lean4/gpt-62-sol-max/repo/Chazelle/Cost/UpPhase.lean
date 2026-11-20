@@ -70,7 +70,7 @@ theorem beta_mul_le_ceilBeta (g : ℕ) : beta * g ≤ ceilBeta g := Nat.le_ceil 
 theorem ceilBeta_le (g : ℕ) : ceilBeta g ≤ g := by
   unfold ceilBeta
   rw [Nat.ceil_le, beta_eq]
-  have : (0 : ℝ) ≤ g := Nat.cast_nonneg g
+  
   linarith
 
 /-- `⌈βg⌉ ≥ 1` for `g ≥ 1`. -/
@@ -101,8 +101,7 @@ theorem slack76_cubic (g : ℕ) :
   have hpos : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 75) := (two_rpow_pos _).le
   have h' : (g : ℝ) ^ 3 ≤ 34200 ^ 3 * (2 : ℝ) ^ ((g : ℝ) / 5700) := by
     have e : (2 * ((3 : ℕ) : ℝ) * ((5700 : ℕ) : ℝ)) = 34200 := by norm_num
-    rw [e] at h
-    exact_mod_cast h
+    simp_all
   calc (g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75)
       ≤ (34200 ^ 3 * (2 : ℝ) ^ ((g : ℝ) / 5700)) * (2 : ℝ) ^ (-(g : ℝ) / 75) :=
         mul_le_mul_of_nonneg_right h' hpos
@@ -117,7 +116,7 @@ theorem slack76_linear (g : ℕ) :
     (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5) ≤ 12 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
   have h := nat_le_two_rpow 6 (by norm_num) g
   have hpos : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 5) := (two_rpow_pos _).le
-  have hg : (0 : ℝ) ≤ g := Nat.cast_nonneg g
+  
   calc (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)
       ≤ (2 * ((6 : ℕ) : ℝ) * (2 : ℝ) ^ ((g : ℝ) / ((6 : ℕ) : ℝ))) * (2 : ℝ) ^ (-(g : ℝ) / 5) :=
         mul_le_mul_of_nonneg_right h hpos
@@ -144,11 +143,6 @@ i.e. `λ² ⌈log₂ λ⌉ 2^((74/75)λ)`. -/
 @[expose] noncomputable def lemma41Bound (g : ℕ) : ℝ :=
   (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * (2 : ℝ) ^ ((1 - beta / 3 + 4 * beta ^ 2 / 3) * g)
 
-/-- Lemma 3.6's preprocessing bound (without its constant) for a grade-`g` chain:
-`m ⌈log₂ m⌉ / γ + 1` with `m = 2^g + 1` vertices and `γ = 2^⌈βg⌉`. -/
-@[expose] noncomputable def lemma36PrepBound (g : ℕ) : ℝ :=
-  ((2 : ℝ) ^ g + 1) * (Nat.clog 2 (2 ^ g + 1) : ℝ) / (2 : ℝ) ^ (ceilBeta g) + 1
-
 theorem lemma41Bound_eq (g : ℕ) :
     lemma41Bound g = (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * (2 : ℝ) ^ ((74 / 75 : ℝ) * g) := by
   unfold lemma41Bound
@@ -156,24 +150,10 @@ theorem lemma41Bound_eq (g : ℕ) :
 
 theorem lemma41Bound_nonneg (g : ℕ) : 0 ≤ lemma41Bound g := by
   rw [lemma41Bound_eq]
-  have := two_rpow_pos ((74 / 75 : ℝ) * g)
+  
   positivity
 
 /-! ### Processing a grade; the whole up phase -/
-
-/-- Time to process grade `g` (Chazelle p. 516–518), for `n = 2^p + 1`: there are `2^(p-g)`
-chains in grade `g`; for each we pay a constant `c₀` (naive processing of the early grades and
-bookkeeping), `c₁` times Lemma 4.1's bound (computing its canonical submap), and `c₂` times
-Lemma 3.6's preprocessing bound (with `γ = 2^⌈βg⌉`). -/
-@[expose] noncomputable def upGradeCost (c₀ c₁ c₂ : ℝ) (p g : ℕ) : ℝ :=
-  (2 : ℝ) ^ (p - g) * (c₀ + c₁ * lemma41Bound g + c₂ * lemma36PrepBound g)
-
-/-- Total up-phase time: processing grades `0, 1, …, p`. -/
-@[expose] noncomputable def upPhaseCost (c₀ c₁ c₂ : ℝ) (p : ℕ) : ℝ :=
-  ∑ g ∈ range (p + 1), upGradeCost c₀ c₁ c₂ p g
-
-/-- The explicit up-phase per-grade constant `c₀ + 34200³ c₁ + 27 c₂`. -/
-@[expose] noncomputable def upSlackConst (c₀ c₁ c₂ : ℝ) : ℝ := c₀ + 34200 ^ 3 * c₁ + 27 * c₂
 
 /-! ### Lemma 4.1's internal arithmetic -/
 
@@ -196,7 +176,7 @@ theorem resetCost_le (lam : ℕ) :
     (two_rpow_one_div_pow 5 (by norm_num))
   have hr1 : (2 : ℝ) ^ ((1 : ℝ) / ((5 : ℕ) : ℝ)) ≤ r := by
     rw [hr]; apply two_rpow_le_two_rpow; norm_num
-  have hr11 : 1 + 1 / 10 ≤ r := by push_cast at hu hr1 ⊢; linarith
+  
   have hr0 : 1 < r := by linarith
   rw [geom_sum_eq hr0.ne']
   have hrl : r ^ lam = (2 : ℝ) ^ ((1 - beta) * lam) := by
@@ -209,22 +189,7 @@ theorem resetCost_le (lam : ℕ) :
   have h2 : 0 < (2 : ℝ) ^ ((1 - beta) * lam) := two_rpow_pos _
   nlinarith
 
-/-- The time of one merge at grade `λ` (Lemma 3.5 with `f(γ) = λ2^(β²λ/3 + 2βλ/3)`,
-`g(γ) = λ`, `h(γ) = 2^(β²λ)`, input curves with `m` vertices in total; p. 518):
-`λ² (m / 2^(βλ)) 2^(β²λ/3 + 2βλ/3) (2^(β²λ) + ⌈log₂ m⌉)`. -/
-@[expose] noncomputable def mergeCost (lam m : ℕ) : ℝ :=
-  (lam : ℝ) ^ 2 * ((m : ℝ) / (2 : ℝ) ^ (beta * lam)) *
-    (2 : ℝ) ^ (beta ^ 2 * lam / 3 + 2 * beta * lam / 3) *
-      ((2 : ℝ) ^ (beta ^ 2 * lam) + (Nat.clog 2 m : ℝ))
-
 /-! ### Lemma 4.1 with the `+1` terms of Lemma 3.5, and the assembled per-chain bound -/
-
-/-- Lemma 3.5's bound for one merge at grade `λ`, keeping the `+1` of `(n₁/γ₁ + n₂/γ₂ + 1)`:
-`λ² (m / 2^(βλ) + 1) 2^(β²λ/3 + 2βλ/3) (2^(β²λ) + ⌈log₂ m⌉)` (the paper drops the `+1`). -/
-@[expose] noncomputable def mergeCostFull (lam m : ℕ) : ℝ :=
-  (lam : ℝ) ^ 2 * ((m : ℝ) / (2 : ℝ) ^ (beta * lam) + 1) *
-    (2 : ℝ) ^ (beta ^ 2 * lam / 3 + 2 * beta * lam / 3) *
-      ((2 : ℝ) ^ (beta ^ 2 * lam) + (Nat.clog 2 m : ℝ))
 
 end
 

@@ -71,7 +71,7 @@ theorem lstF_congr {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key 
   unfold lstF
   apply List.filter_congr
   intro j hj
-  rw [h j (List.mem_range.1 hj)]
+  simp_all
 
 theorem cntF_congr {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key j = key' j) :
     cntF key n = cntF key' n := by
@@ -88,16 +88,22 @@ theorem wmaxF_congr {key key' w w' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n �
   unfold lstF at hj
   exact hw j (List.mem_range.1 (List.mem_filter.1 hj).1)
 
-theorem lst2F_congr {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i)
-    (hv : ∀ i, i < n → v i = v' i) (r : ℕ) : lst2F u v n r = lst2F u' v' n r := by
+section
+
+variable {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i)
+    (hv : ∀ i, i < n → v i = v' i)
+include hu hv
+
+theorem lst2F_congr (r : ℕ) : lst2F u v n r = lst2F u' v' n r := by
   unfold lst2F
   apply List.filter_congr
   intro i hi
-  rw [hu i (List.mem_range.1 hi), hv i (List.mem_range.1 hi)]
+  simp_all
 
-theorem cnt2F_congr {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i)
-    (hv : ∀ i, i < n → v i = v' i) : cnt2F u v n = cnt2F u' v' n := by
+theorem cnt2F_congr : cnt2F u v n = cnt2F u' v' n := by
   funext r; unfold cnt2F; rw [lst2F_congr hu hv]
+
+end
 
 /-- The counted interval of a chain descriptor fits the word bound. -/
 theorem twice_m_le {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {D : ℕ} {M : Model}
@@ -105,7 +111,7 @@ theorem twice_m_le {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {D : ℕ} {M : Mode
     2 * m (D + 3) ≤ W := by
   rcases hM with ⟨-, H, C, hC, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, -, -, h2⟩ := hCW h0 H C hC
-    have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
+    have hm := hC.2.2.2.1
     rw [show D + 3 = D + 1 + 2 by omega, hm]
     have := C.m_lt
     omega

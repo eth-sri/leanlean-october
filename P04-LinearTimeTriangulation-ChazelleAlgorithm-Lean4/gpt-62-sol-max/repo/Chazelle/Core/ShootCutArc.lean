@@ -82,7 +82,7 @@ theorem key_range {N : ℕ} {x : WPos} (hx : ProperPos (chainModel C) Q N x)
   have := key_bounds hx
   have e : (x.edge : ℝ) + 1 ≤ ((2 * C.m + 7 : ℕ) : ℝ) := by exact_mod_cast h1
   constructor
-  · linarith [show (0 : ℝ) ≤ x.edge by positivity]
+  · linarith
   · linarith
 
 theorem T_unw (k k' : ℝ) (n : ℝ) : ∃ j : ℤ, k + len n k k' = k' + j * n := by
@@ -101,7 +101,7 @@ theorem arcOK_single {N : ℕ} {s e : WPos} (hs : ProperPos (chainModel C) Q N s
   refine ⟨by simp, hps, by simp [hpe], fun i hi => by simp at hi, fun i hi => by simp at hi, ?_,
     fun pc hpc => ?_⟩
   swap
-  · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inl hps, Or.inl hpe⟩
+  · simp_all
   have hl := len_pos ((2 * C.m + 7 : ℕ) : ℝ) ((chainModel C).key Q s) ((chainModel C).key Q e)
     ks.2 ke.1
   refine ⟨⟨0, by simp [hps]⟩, (chainModel C).key Q s + len ((2 * C.m + 7 : ℕ) : ℝ)
@@ -122,7 +122,7 @@ theorem UPath.ends {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPath n 
   | _, [], _, _, _, h => by simp at h
   | _, _ :: _, _, ⟨h1, _, _, h2, h3⟩, pc, hpc => by
     rcases List.mem_cons.1 hpc with rfl | hpc
-    · exact ⟨by rw [h1], by rw [h2]⟩
+    · simp_all
     · exact UPath.ends h3 pc hpc
 
 /-- **The general case**: the first piece to the walk vertex of `U₀`, the main loop from `U₀`
@@ -178,9 +178,9 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
       have hl := upath_chained hloop
       rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · exact ⟨e, hp₁s, by rw [hp₁e]; exact Chained.append' hl ⟨rfl, rfl⟩⟩
-      · exact ⟨_, hp₁s, by rw [hp₁e, List.append_nil]; exact hl⟩
+      · exact ⟨_, hp₁s, by rwa [hp₁e, List.append_nil]⟩
     obtain ⟨y, hy⟩ := hc
-    rw [Chained.last hy hne]; exact hy
+    rwa [Chained.last hy hne]
   refine ⟨hne, hp₁s, hlast, fun i hi => Chained.get hch i hi, fun i hi => ?_, hkp, ?_⟩
   swap
   · intro pc hpc
@@ -192,8 +192,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
       · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inr rfl, Or.inl rfl⟩
       · simp at hpc
   have := e6_of_kpath hn0 hkp (by linarith) (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
-  rw [hlast] at this
-  exact this
+  rwa [hlast] at this
 
 end ShootCut
 

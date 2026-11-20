@@ -73,17 +73,7 @@ theorem block_top {m : ℕ → ℕ} {h A : ℕ} (hR : Robust A m fun m' => Grade
 /-- **The top of a chain is its unique highest vertex** (distinct heights): a chain vertex at
 least as high as all chain vertices is the top. -/
 theorem topIdx_of_max {C : Chain} (hD : DistinctHeights C.P) {j : ℕ} (hj : j ≤ C.m)
-    (hmax : ∀ k, k ≤ C.m → (C.vertex k).2 ≤ (C.vertex j).2) : C.topIdx = j := by
-  have h1 := C.topIdx_min hj hmax
-  have h2 := C.vertex_snd_le_top hj
-  have h3 := hmax C.topIdx C.topIdx_le
-  have heq : (C.vertex j).2 = (C.vertex C.topIdx).2 := le_antisymm h2 h3
-  by_contra hne
-  have hlt : C.topIdx < j := lt_of_le_of_ne h1 hne
-  refine hD _ _ (C.edgeIdx_lt j) (C.edgeIdx_lt C.topIdx) ?_ heq
-  intro he
-  have := C.sideEdgeIdx_inj hj C.topIdx_le he
-  omega
+    (hmax : ∀ k, k ≤ C.m → (C.vertex k).2 ≤ (C.vertex j).2) : C.topIdx = j := by intros; solve_by_elim [Chazelle.Core.Brute.topIdx_eq_of_max]
 
 end
 

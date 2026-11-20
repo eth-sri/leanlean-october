@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvBFar1
 public import Chazelle.Core.DownPhaseDrvRLib
 
@@ -121,7 +123,7 @@ theorem ESr_next (n : ℕ) (stF cntF : ℕ → ℕ) (t w : ℕ) :
     · omega
 
 theorem ESr_zero (n : ℕ) (stF cntF : ℕ → ℕ) (w : ℕ) : ¬ ESr n stF cntF 0 0 w := by
-  unfold ESr; rintro (⟨t', ht', -⟩ | ⟨u', hu', -⟩) <;> omega
+  simp [ESr]
 
 /-! ## The program -/
 
@@ -152,18 +154,6 @@ def farS : Stmt :=
 
 /-- The registers the scan writes. -/
 def Bfar (r : ℕ) : Bool := Bk r || decide (212036 ≤ r ∧ r ≤ 212038) || decide (212091 ≤ r ∧ r ≤ 212112)
-
-theorem bfar_vis (r : ℕ) (h : Bvis r = true) : Bfar r = true := by
-  unfold Bvis at h; unfold Bfar
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
-  rcases h with (h | h) | h
-  · exact Or.inl (Or.inl h)
-  · exact Or.inr ⟨by omega, by omega⟩
-  · exact Or.inr ⟨by omega, by omega⟩
-
-theorem bfar_of {r : ℕ} (h : (212036 ≤ r ∧ r ≤ 212038) ∨ (212091 ≤ r ∧ r ≤ 212112)) :
-    Bfar r = true := by
-  unfold Bfar; simp only [Bool.or_eq_true, decide_eq_true_eq]; tauto
 
 theorem wr_ldRange : wr (fun r => decide (r = 212037) || decide (r = 212038) ||
     decide (r = 212092) || decide (r = 212093)) ldRange = true := by decide
@@ -203,10 +193,7 @@ theorem ldRange_exec (c : Config) (hw : WordsBounded W c) {n t st cnt : ℕ}
   rcases hld with ⟨hK, hs, hc⟩ | ⟨hK, hs, hsn, hen, hc⟩
   · obtain ⟨c', k, ex, hk, v1, v2⟩ : ∃ c' k, Exec P W ldAll c c' k ∧ k = 2 ∧
         c'.nreg 212093 = st ∧ c'.nreg 212092 = cnt := by
-      unfold ldAll
-      exec_block
-      · omega
-      · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [hn, hs, hc]
+      ram_exec
     have ex' : Exec P W ldRange c c' _ := .ifLtN_false (by rw [c1, hK]; omega) ex
     exact ⟨c', _, ex', by omega, v1, v2, exec_frameB ex' wr_ldRange⟩
   · have hAB := hAB hK
@@ -228,33 +215,31 @@ theorem ldRange_exec (c : Config) (hw : WordsBounded W c) {n t st cnt : ℕ}
       all_goals try (config_simp; (try simp only [hn, ht, c0, c2]); omega)
       all_goals (config_simp; simp only [hn, ht, c0, c2, ← hj])
       · rw [hA3]; omega
-      · exact ⟨hA1, by rw [hA1, hA3], trivial⟩
+      · frame_finish
     have w₁ := e₁.wb_right
     have f₁ : FrameB (fun r => decide (r = 212037) || decide (r = 212038) ||
         decide (r = 212092) || decide (r = 212093)) c c₁ := exec_frameB e₁ (by decide)
-    have c0' : c₁.nreg 212000 = 1 := by rw [f₁.1 _ (by decide), c0]
+    have c0' : c₁.nreg 212000 = 1 := by ram_rw [f₁.1, c0]
     by_cases hlt : e + n - st < n
     · have e₂ := Exec.addN (P := P) w₁ 212092 212092 212000 (by rw [v2, c0']; omega)
       have ex : Exec P W ldArcR c _ (k₁ + ((0 + 1) + 1)) :=
-        .seq e₁ (.seq (.ifLtN_true (by rw [v2, v38]; exact hlt) (.skip w₁)) e₂)
-      have ex' : Exec P W ldRange c _ _ := .ifLtN_true (by rw [c1]; exact hK) ex
+        .seq e₁ (.seq (.ifLtN_true (by rwa [v2, v38]) (.skip w₁)) e₂)
+      have ex' : Exec P W ldRange c _ _ := (by ram_path)
       refine ⟨_, _, ex', by omega, ?_, ?_, exec_frameB ex' wr_ldRange⟩
-      · dsimp only; rw [Machine.upd_other _ _ _ (by norm_num), v1]
-      · simp only [Machine.upd_same]; rw [v2, c0', hc, Nat.mod_eq_of_lt hlt]
+      · assumption
+      · ram_simp [v2, c0', hc, Nat.mod_eq_of_lt hlt] <;> reg_omega
     · have e₂ := Exec.subN (P := P) w₁ 212092 212092 212010
       have w₂ := e₂.wb_right
       have e₃ := Exec.addN (P := P) w₂ 212092 212092 212000 (by
-        simp only [Machine.upd_same]
-        rw [Machine.upd_other _ _ _ (by norm_num), v2, v38, c0']; omega)
+        frame_finish)
       have ex : Exec P W ldArcR c _ (k₁ + ((1 + 2) + 1)) :=
-        .seq e₁ (.seq (.ifLtN_false (by rw [v2, v38]; exact hlt) e₂) e₃)
-      have ex' : Exec P W ldRange c _ _ := .ifLtN_true (by rw [c1]; exact hK) ex
+        .seq e₁ (.seq (.ifLtN_false (by rwa [v2, v38]) e₂) e₃)
+      have ex' : Exec P W ldRange c _ _ := (by ram_path)
       refine ⟨_, _, ex', by omega, ?_, ?_, exec_frameB ex' wr_ldRange⟩
-      · dsimp only
-        rw [Machine.upd_other _ _ _ (by norm_num), Machine.upd_other _ _ _ (by norm_num), v1]
+      · assumption
       · simp only [Machine.upd_same]
-        rw [Machine.upd_other _ _ _ (by norm_num), v2, v38, c0', hc,
-          Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+        ram_rw [Machine.upd_other _ _, v2, v38, c0', hc,
+          Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 
 set_option maxHeartbeats 4000000 in
@@ -272,7 +257,7 @@ theorem visLoop_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 �
       FrameB Bvis c c' ∧
       BestOK (Qof P) P.n i (sgnD d) li (ESr P.n stF cntF (t + 1) 0)
         (c'.nreg 212099) (c'.nreg 212097) (c'.nreg 212098) := by
-  let Inv : ℕ → Config → Prop := fun u e => WordsBounded W e ∧ e.nreg 212091 = u ∧
+  let Inv := fun u e => WordsBounded W e ∧ e.nreg 212091 = u ∧
     e.nreg 212092 = cntF t ∧ FrameB Bvis c e ∧
     BestOK (Qof P) P.n i (sgnD d) li (ESr P.n stF cntF t u)
       (e.nreg 212099) (e.nreg 212097) (e.nreg 212098)
@@ -280,16 +265,16 @@ theorem visLoop_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 �
   obtain ⟨c', k, ex, ⟨-, -, -, hf, hb'⟩, hk⟩ := DrvR.forLoop (P := P) (W := W) (ir := 212091)
     (nr := 212092) Inv visK (cntF t) (fun j e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun u e hu ⟨hw, h1, h2, hf, hbe⟩ => by
-      have g : ∀ r, Bvis r = false → e.nreg r = c.nreg r := hf.1
+      have g := hf.1
       obtain ⟨hb1, hb2, hb3⟩ := id hbe
       obtain ⟨e', k, ex, hk, hf', v91, u1, u2⟩ := visitS_exec (P := P) hG hW hW2 e hw
         (st := stF t) (u := u) (i := i) (d := d) (li := li)
-        (by rw [g _ (by decide), hn]) (by rw [g _ (by decide), hst]) h1 hsn (by omega)
-        (by rw [g _ (by decide), hli]) (by rw [g _ (by decide), hi]) hin
-        (by rw [g _ (by decide), hd]) hd1 (by rw [g _ (by decide), c0])
-        (by rw [g _ (by decide), c1]) (by rw [g _ (by decide), c2]) hb1
+        (by ram_rw [g, hn]) (by ram_rw [g, hst]) h1 hsn (by omega)
+        (by ram_rw [g, hli]) (by ram_rw [g, hi]) hin
+        (by ram_rw [g, hd]) hd1 (by ram_rw [g, c0])
+        (by ram_rw [g, c1]) (by ram_rw [g, c2]) hb1
         (fun h => by obtain ⟨a1, -, a3, -⟩ := hb2 h; rw [a3]; exact DownMath.qE_lt li a1)
-      refine ⟨e', k, ex, ⟨ex.wb_right, v91, by rw [hf'.1 _ (by decide), h2], hf.trans hf', ?_⟩,
+      refine ⟨e', k, ex, ⟨ex.wb_right, v91, by ram_rw [hf'.1, h2], hf.trans hf', ?_⟩,
         hk⟩
       refine (bestOK_step hbe (w' := (stF t + u) % P.n) (Nat.mod_lt _ (by omega))
         (fun h => ?_) (fun h => ?_)).congr (fun w => (ESr_succ P.n stF cntF t u w).symm)
@@ -302,7 +287,7 @@ theorem visLoop_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 �
 theorem LdOK.congr {c e : Config} {n t st cnt : ℕ} (h : LdOK c n t st cnt)
     (h12 : e.nreg 212012 = c.nreg 212012) (h14 : e.nreg 216014 = c.nreg 216014)
     (h33 : e.nreg 212033 = c.nreg 212033) (hm : e.nmem = c.nmem) : LdOK e n t st cnt := by
-  unfold LdOK; rw [h12, h14, h33, hm]; exact h
+  unfold LdOK; rwa [h12, h14, h33, hm]
 
 set_option maxHeartbeats 4000000 in
 /-- **The far-end scan**: the σ-nearest candidate over the walk edges of all ranges. -/
@@ -323,39 +308,37 @@ theorem farS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤ W
   -- the initialisation
   obtain ⟨c₁, k₁, e₁, hk₁, v99, v36⟩ : ∃ c₁ k₁, Exec P W (block [.constN 212099 0,
       .constN 212036 0]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 212099 = 0 ∧ c₁.nreg 212036 = 0 := by
-    exec_block
-    all_goals try omega
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp
+    ram_exec
   have f₁ : FrameB Bfar c c₁ := exec_frameB e₁ (by decide)
-  have g₁ : ∀ r, Bfar r = false → c₁.nreg r = c.nreg r := f₁.1
-  let Inv : ℕ → Config → Prop := fun t e => WordsBounded W e ∧ e.nreg 212036 = t ∧
+  have g₁ := f₁.1
+  let Inv := fun t e => WordsBounded W e ∧ e.nreg 212036 = t ∧
     e.nreg 212034 = nR ∧ FrameB Bfar c e ∧
     BestOK (Qof P) P.n i (sgnD d) li (ESr P.n stF cntF t 0)
       (e.nreg 212099) (e.nreg 212097) (e.nreg 212098)
-  have I0 : Inv 0 c₁ := ⟨e₁.wb_right, v36, by rw [g₁ _ (by decide), hnR], f₁,
+  have I0 : Inv 0 c₁ := ⟨e₁.wb_right, v36, by ram_rw [g₁, hnR], f₁,
     ⟨by rw [v99]; omega, fun h => absurd h (by rw [v99]; omega),
       fun _ w hw => absurd hw (ESr_zero P.n stF cntF w)⟩⟩
   obtain ⟨c', k, ex, ⟨-, -, -, hf, hb'⟩, hk⟩ := DrvR.forLoop (P := P) (W := W) (ir := 212036)
     (nr := 212034) (body := rangeB) Inv ((visK + 2) * Cm + 22) nR (fun j e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun t e ht ⟨hw, h1, h2, hf, hbe⟩ => by
-      have g : ∀ r, Bfar r = false → e.nreg r = c.nreg r := hf.1
+      have g := hf.1
       have hld' := (hld t ht).congr (g _ (by decide)) (g _ (by decide)) (g _ (by decide))
         hf.2.2.1
       have hsn := (hld t ht).st_lt hn0
       have hcn := (hld t ht).cnt_le hn0
       -- the range
       obtain ⟨e₁, k₁, x₁, hk₁, s₁, s₂, f₁⟩ := ldRange_exec (P := P) e hw
-        (by rw [g _ (by decide), hn]) hn0 h1 hld' (by rw [g _ (by decide), c0])
-        (by rw [g _ (by decide), c1]) (by rw [g _ (by decide), c2]) (by omega)
+        (by ram_rw [g, hn]) hn0 h1 hld' (by ram_rw [g, c0])
+        (by ram_rw [g, c1]) (by ram_rw [g, c2]) (by omega)
         (fun hK => by
-          rw [g _ (by decide), g _ (by decide), hf.2.2.1]
-          exact hAB t ht (by rwa [g _ (by decide)] at hK))
+          ram_rw [g, g, hf.2.2.1]
+          exact hAB t ht (by ram_rw assumption [g] at hK))
         (fun hK => by
-          rw [g _ (by decide)]
-          have := hlp (by rwa [g _ (by decide)] at hK); omega)
+          ram_rw [g]
+          have := hlp (by ram_rw assumption [g] at hK); omega)
       have g₁ : ∀ r, r ≠ 212037 → r ≠ 212038 → r ≠ 212092 → r ≠ 212093 →
           e₁.nreg r = e.nreg r := fun r a b c d => f₁.1 r (by
-            simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
+            simp_all )
       -- the counter
       have x₂ := Exec.constN (P := P) x₁.wb_right 212091 0 (Nat.zero_le _)
       set e₂ : Config := { e₁ with nreg := upd e₁.nreg 212091 0 } with he₂
@@ -364,44 +347,34 @@ theorem farS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤ W
       have G : ∀ r, Bfar r = false → e₂.nreg r = c.nreg r := fun r h => by
         have h' := h
         simp only [Bfar, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h'
-        rw [g₂ r (by omega), g₁ r (by omega) (by omega) (by omega) (by omega), g r h]
+        ram_rw [g₂ r, (ram_app% (g₁ r ?_ ?_ ?_ ?_)), g r h]
       -- the walk edges
       obtain ⟨e₃, k₃, x₃, hk₃, f₃, hb₃⟩ := visLoop_exec (P := P) hG hW hW2 e₂ x₂.wb_right
         (stF := stF) (cntF := cntF) (t := t) (i := i) (d := d) (li := li)
-        (by rw [G _ (by decide), hn]) (by rw [g₂ _ (by decide), s₁])
-        (by rw [g₂ _ (by decide), s₂]) (by rw [he₂]; simp) hsn hcn
-        (by rw [G _ (by decide), hli]) (by rw [G _ (by decide), hi]) hin
-        (by rw [G _ (by decide), hd]) hd1 (by rw [G _ (by decide), c0])
-        (by rw [G _ (by decide), c1]) (by rw [G _ (by decide), c2])
-        (by rw [g₂ _ (by decide), g₂ _ (by decide), g₂ _ (by decide),
-          g₁ _ (by decide) (by decide) (by decide) (by decide),
-          g₁ _ (by decide) (by decide) (by decide) (by decide),
-          g₁ _ (by decide) (by decide) (by decide) (by decide)]; exact hbe)
+        (by ram_rw [G, hn]) (by assumption)
+        (by assumption) (by rw [he₂]; simp) hsn hcn
+        (by ram_rw [G, hli]) (by ram_rw [G, hi]) hin
+        (by ram_rw [G, hd]) hd1 (by ram_rw [G, c0])
+        (by ram_rw [G, c1]) (by ram_rw [G, c2])
+        (by ram_rw assumption [g₂, g₂, g₂,
+          g₁,
+          g₁,
+          g₁])
       -- the range counter
       have v36 : e₃.nreg 212036 = t := by
-        rw [f₃.1 _ (by decide), g₂ _ (by decide),
-          g₁ _ (by decide) (by decide) (by decide) (by decide), h1]
-      have v00 : e₃.nreg 212000 = 1 := by rw [f₃.1 _ (by decide), G _ (by decide), c0]
-      have hnRW : nR ≤ W := by have := hw.1 212034; rw [h2] at this; exact this
+        ram_finish [f₃.1, g₂, g₁, h1]
+      have v00 : e₃.nreg 212000 = 1 := by ram_simp [f₃.1, G, c0]
+      have hnRW : nR ≤ W := by have := hw.1 212034; rwa [h2] at this
       have x₄ := Exec.addN (P := P) x₃.wb_right 212036 212036 212000 (by rw [v36, v00]; omega)
       have f₄ : FrameB (fun r => decide (r = 212036)) e₃ _ := exec_frameB x₄ (by decide)
-      have ex : Exec P W rangeB e _ (k₁ + (1 + (k₃ + 1))) := .seq x₁ (.seq x₂ (.seq x₃ x₄))
+      have ex : Exec P W rangeB e _ (k₁ + (1 + (k₃ + 1))) := (by ram_path)
       have hk₃' : k₃ ≤ (visK + 2) * Cm + 2 := by
         have := Nat.mul_le_mul_left (visK + 2) (hCm t ht); omega
       refine ⟨_, _, ex, ⟨x₄.wb_right, ?_, ?_, ?_, ?_⟩, by omega⟩
-      · simp only [Machine.upd_same, v36, v00]
-      · rw [f₄.1 _ (by decide), f₃.1 _ (by decide), G _ (by decide), hnR]
-      · refine hf.trans ((fbMono f₁ fun r h => ?_).trans ((fbMono (exec_frameB x₂ (by decide :
-          wr (fun r => decide (r = 212091)) (.instr (.constN 212091 0)) = true)) fun r h => ?_).trans
-          ((fbMono f₃ bfar_vis).trans (fbMono f₄ fun r h => ?_))))
-        · simp only [Bool.or_eq_true, decide_eq_true_eq] at h; exact bfar_of (by omega)
-        · simp only [decide_eq_true_eq] at h; exact bfar_of (by omega)
-        · simp only [decide_eq_true_eq] at h; exact bfar_of (by omega)
-      · have e99 : ∀ r, r ≠ 212036 → (upd e₃.nreg 212036 (e₃.nreg 212036 + e₃.nreg 212000)) r =
-            e₃.nreg r := fun r h => Machine.upd_other _ _ _ h
-        dsimp only
-        rw [e99 _ (by norm_num), e99 _ (by norm_num), e99 _ (by norm_num)]
-        exact hb₃)
+      · ram_finish
+      · ram_simp [f₄.1, f₃.1, G, hnR]
+      · ram_frame
+      · assumption)
     I0 (Nat.zero_le _)
   have e : ((visK + 2) * Cm + 22 + 2) * (nR - 0) = ((visK + 2) * Cm + 24) * nR := by
     rw [Nat.sub_zero]

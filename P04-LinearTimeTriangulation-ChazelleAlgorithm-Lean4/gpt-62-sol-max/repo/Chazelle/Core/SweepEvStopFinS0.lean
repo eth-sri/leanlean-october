@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopTasks3
 
 /-!
@@ -20,45 +22,47 @@ open Chazelle.Chain (SideAttach)
 
 @[expose] public section
 
-def slfSE : ℕ := sw 4116
-def slfSH : ℕ := sw 4117
+@[ram_layout] def slfSE : ℕ := sw 4116
+@[ram_layout] def slfSH : ℕ := sw 4117
 
 /-- The registers the stretch labels may write. -/
 def StrR (r : ℕ) : Prop :=
   FRR r ∨ (sw 4096 ≤ r ∧ r < sw 4100) ∨ (sw 4110 ≤ r ∧ r < sw 4200)
 
 /-- **Task SL: the stretch labels.** -/
-def StrLabTask : Prop :=
-  ∃ (sl : Stmt) (κ : ℕ → ℕ), ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
+def StrLabSpec (sl : Stmt) (κ : ℕ → ℕ) : Prop :=
+  ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction)
     (N₁ N₂ : NF), EvEnv sh Bs F X Ok P W c₀ J N₁ N₂ → IInv W c₀ c →
-      c.nreg slfSE < (chainModel J.whole).W.n →
-      ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg slfSE, c.nreg slfSH⟩ →
-      |((chainModel J.whole).pos (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩).2| < J.whole.radius →
-      (∃ e, e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)) ∧
-        (∀ c ∈ N₂.F (chainModel J.right) (Qof P), ¬ e ⊆ c) ∧
-        SideAttach (chainModel J.whole).W e (c.nreg slfSE)
-          ((chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩)) →
-      0 < oW J (c.nreg slfSE + (chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩) →
-      oW J (c.nreg slfSE + (chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩) < Lst J →
+      c.nreg slfSE < J.wholeModel.W.n →
+      ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg slfSE, c.nreg slfSH⟩ →
+      |(J.wholeModel.pos (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩).2| < J.whole.radius →
+      (∃ e, e ∈ F₂plus J (N₂.F J.rightModel (Qof P)) ∧
+        (∀ c ∈ N₂.F J.rightModel (Qof P), ¬ e ⊆ c) ∧
+        SideAttach J.wholeModel.W e (c.nreg slfSE)
+          (J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩)) →
+      0 < oW J (c.nreg slfSE + J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩) →
+      oW J (c.nreg slfSE + J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩) < Lst J →
       c.nreg ALLOC + κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) ≤ W →
       IRS P W c₀ sl c (κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1)) (fun c' =>
         c'.nreg frA < N₂.nRegions ∧ c'.nreg frB < N₂.nRegions ∧
         (∃ d, d < Lst J ∧
-          ((chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩ = 0 → d ≠ 0) ∧
-          c.nreg slfSE = (gW J + d) % (chainModel J.whole).W.n ∧
-          AfterFaces (chainModel J.right) (cpA J d)
-            ((chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩)
-            (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frA)) ∧
-          (0 < (chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩ →
-            BeforeFaces (chainModel J.right) (cpA J d)
-              ((chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩)
-              (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frB))) ∧
-          ((chainModel J.whole).param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩ = 0 →
-            BeforeFaces (chainModel J.right) (cpB J d) 0
-              (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frB)))) ∧
-        (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
+          (J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩ = 0 → d ≠ 0) ∧
+          c.nreg slfSE = (gW J + d) % J.wholeModel.W.n ∧
+          AfterFaces J.rightModel (cpA J d)
+            (J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩)
+            (regOf J.rightModel (Qof P) N₂ (c'.nreg frA)) ∧
+          (0 < J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩ →
+            BeforeFaces J.rightModel (cpA J d)
+              (J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩)
+              (regOf J.rightModel (Qof P) N₂ (c'.nreg frB))) ∧
+          (J.wholeModel.param (Qof P) ⟨c.nreg slfSE, c.nreg slfSH⟩ = 0 →
+            BeforeFaces J.rightModel (cpB J d) 0
+              (regOf J.rightModel (Qof P) N₂ (c'.nreg frB)))) ∧
+        (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
         (∀ r, bandOf r ∉ oracleBands → ¬ StrR r → r ≠ ALLOC → c'.nreg r = c.nreg r))
+
+def StrLabTask : Prop := ∃ sl κ, StrLabSpec sl κ
 
 end
 

@@ -27,7 +27,7 @@ open Chazelle.Merge (lend rend FreeAt shoot freeAt_vertex shoot_vertex)
 
 theorem getD_lt {α : Type*} {l : List α} {i : ℕ} (h : i < l.length) (d : α) :
     l.getD i d = l[i] := by
-  simp [List.getD_eq_getElem?_getD, h]
+  simp_all
 
 variable (J : Merge.Junction)
 
@@ -72,14 +72,7 @@ theorem shots_vtxQ (k : ℕ) :
       d = J.whole.chordSet k σ} := by
   ext d
   simp only [shots, vtxQ, Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨x, hx, hf, rfl⟩
-    rcases hx with rfl | rfl
-    · exact ⟨1, Or.inl rfl, (freeAt_vertex _ _ _).1 hf, (shoot_vertex _ _ _)⟩
-    · exact ⟨-1, Or.inr rfl, (freeAt_vertex _ _ _).1 hf, (shoot_vertex _ _ _)⟩
-  · rintro ⟨σ, hσ | hσ, hf, rfl⟩ <;> subst hσ
-    · exact ⟨_, Or.inl rfl, (freeAt_vertex _ _ _).2 hf, (shoot_vertex _ _ _).symm⟩
-    · exact ⟨_, Or.inr rfl, (freeAt_vertex _ _ _).2 hf, (shoot_vertex _ _ _).symm⟩
+  aesop
 
 theorem shared_eq_shots : J.sharedChords = shots J (vtxQ J J.m₁) := by
   rw [shots_vtxQ]; rfl
@@ -89,35 +82,19 @@ theorem top_eq_shots : topChords J = shots J (topQ J) := by
   ext d
   simp only [topChords, topIdxs, Finset.mem_insert, Finset.mem_singleton, Set.mem_union,
     Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨k, hk | hk, h⟩ <;> subst hk
-    · exact Or.inl h
-    · exact Or.inr h
-  · rintro (h | h)
-    · exact ⟨_, Or.inl rfl, h⟩
-    · exact ⟨_, Or.inr rfl, h⟩
+  simp
 
 theorem cap_eq_shots : capChords J = shots J (capQ J) := by
   ext d
   simp only [capChords, shots, capQ, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨he, hf, rfl⟩; exact ⟨_, ⟨he, rfl⟩, hf, rfl⟩
-  · rintro ⟨x, ⟨he, rfl⟩, hf, rfl⟩; exact ⟨he, hf, rfl⟩
+  simp
 
 theorem fusion_eq_shots (S₁ S₂ : Set (Set Point)) :
     J.fusion S₁ S₂ = shots J (endQ (S₁ ∪ S₂)) ∪ shots J (vtxQ J J.m₁) := by
   rw [← shared_eq_shots, endQ, shots_union]
   ext d
   simp only [Merge.Junction.fusion, shots, Set.mem_union, Set.mem_ofPred_eq]
-  constructor
-  · rintro ((⟨c, hc, hf, rfl⟩ | ⟨c, hc, hf, rfl⟩) | h)
-    · exact Or.inl (Or.inl ⟨_, ⟨c, hc, rfl⟩, hf, rfl⟩)
-    · exact Or.inl (Or.inr ⟨_, ⟨c, hc, rfl⟩, hf, rfl⟩)
-    · exact Or.inr h
-  · rintro ((⟨x, ⟨c, hc, rfl⟩, hf, rfl⟩ | ⟨x, ⟨c, hc, rfl⟩, hf, rfl⟩) | h)
-    · exact Or.inl (Or.inl ⟨c, hc, hf, rfl⟩)
-    · exact Or.inl (Or.inr ⟨c, hc, hf, rfl⟩)
-    · exact Or.inr h
+  simp
 
 /-- **The fused family as a set of shots.** -/
 theorem fused_eq_shots (S₁ S₂ : Set (Set Point)) :
@@ -128,10 +105,6 @@ theorem fused_eq_shots (S₁ S₂ : Set (Set Point)) :
   ac_rfl
 
 /-! ## The answers of the sweep -/
-
-/-- The triples of the answers with flag `1`. -/
-def collect (R : List (ℕ × ℕ × ℕ × ℕ)) : List (ℕ × ℕ × ℕ) :=
-  (R.filter (fun r => r.1 == 1)).map (fun r => r.2)
 
 /-- The geometric queries of a query list of side `i`. -/
 def geoQ (Q : Polygon) (i : ℕ) (L : List (ℕ × ℕ × ℕ)) : Set (Point × ℝ) :=

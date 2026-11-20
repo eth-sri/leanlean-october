@@ -94,7 +94,7 @@ theorem cover_sum {lam b : ℕ} (x : ℕ) :
     by_cases hx : x < b
     · rw [cover_of_lt hx, List.map_cons, List.sum_cons, ih _ (step_lt hx)]
       have := (nextG_spec (lam := lam) hx).2; dsimp only; omega
-    · rw [cover_of_ge (by omega)]; simp; omega
+    simp_all [cover_of_ge] <;> omega
 
 /-- The descending phase: from a position aligned to `2^h` with less than `2^h` to go, at most
 `h` pieces. -/
@@ -139,7 +139,7 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
       have hs := nextG_spec (lam := lam) hx
       rw [← hg] at hs
       have hgl : g ≤ lam - 1 := nextG_le _ _ _
-      have hd' : 2 ^ g ∣ x + 2 ^ g := Nat.dvd_add hs.1 dvd_rfl
+      have hd' := Nat.dvd_add hs.1 dvd_rfl
       by_cases hA : b < x + 2 ^ (g + 1)
       · have hr : b - (x + 2 ^ g) < 2 ^ g := by rw [pow_succ] at hA; omega
         have := cover_length_desc (lam := lam) (b := b) g (x + 2 ^ g) (by omega) hd' hr
@@ -176,8 +176,7 @@ theorem cover_length_asc {lam b : ℕ} (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < l
             rw [hge, ← pow_succ']; congr 1; omega
           rw [pow_succ] at hA
           by_cases hC : b - (x + 2 ^ g) < 2 ^ g
-          · have := cover_length_desc (lam := lam) (b := b) g (x + 2 ^ g) (by omega) hd' hC
-            omega
+          · omega
           · have heq : x + 2 ^ g + 2 ^ g = b := by omega
             have hx' : x + 2 ^ g < b := by have := Nat.one_le_two_pow (n := g); omega
             rw [cover_of_lt hx']

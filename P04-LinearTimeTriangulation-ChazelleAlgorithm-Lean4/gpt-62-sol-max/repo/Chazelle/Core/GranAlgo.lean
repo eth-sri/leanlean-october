@@ -92,7 +92,7 @@ theorem measure_step (hE : E.Good) (h : Inv E st) (htop : 0 < st.top) :
     have e : (E.D + 1) * st.nlive = (E.D + 1) * (st.nlive - 1) + (E.D + 1) := by
       rw [← Nat.mul_succ]; congr 1; omega
     omega
-  · unfold St.pop; simp only; omega
+  simp only [St.pop] <;> omega
 
 /-! ## The initial state -/
 
@@ -128,7 +128,7 @@ theorem Inv.init (hE : E.Good) {nd0 nd1 eg pz : ℕ → ℕ}
     Inv E (initSt E nd0 nd1 eg pz) := by
   set st := initSt E nd0 nd1 eg pz
   have hL : st.L E = {i | i < E.K} := by
-    ext i; simp [St.L, st, initSt]
+    simp [St.L, st, initSt]
   have hF : st.F E = E.N.F E.M E.Q := by
     unfold St.F; rw [hL, ← fam_univ]
     ext d; simp [fam]
@@ -145,12 +145,8 @@ theorem Inv.init (hE : E.Good) {nd0 nd1 eg pz : ℕ → ℕ}
     rintro x ⟨i, hi, rfl | rfl⟩
     · exact (hupdn i hi.1).1
     · exact (hupdn i hi.1).2
-  have hK1 : 1 ≤ E.K := by
-    obtain ⟨d, hd⟩ := hE.hne
-    obtain ⟨i, hi, -⟩ := mem_F_iff.1 hd
-    show 1 ≤ E.N.nChords
-    omega
-  refine ⟨hstat, fun _ _ => le_rfl, ?_, by rw [hF]; exact hdeg, by rw [hF]; exact hsemi,
+  
+  refine ⟨hstat, fun _ _ => le_rfl, ?_, by rwa [hF], by rwa [hF],
     fun i hi => ?_, fun x hx => ?_, fun x y hx hy he => ?_, fun j hj => rfl, ?_,
     fun t ht => ht, by simp [st, initSt], fun i hi hno => absurd rfl (hno i hi.1)⟩
   · show E.K = _
@@ -179,8 +175,7 @@ theorem Inv.init (hE : E.Good) {nd0 nd1 eg pz : ℕ → ℕ}
   · -- classes
     have hx' := href x hx
     obtain ⟨hmem, hnd, -, hwt⟩ := hE.hRO x hx'
-    have hexl : st.exl x = (E.N.region x).chords :=
-      exl_of_list st x rfl fun t _ => rfl
+    have hexl := exl_of_list st x rfl fun t _ => rfl
     rw [hcl x hx', hF, hexl]
     refine ⟨(deg_region hE.hNF hE.hRC hE.hRO hx').symm, hwt, hnd, fun i => ?_, ?_⟩
     · rw [hmem i, hL]; rfl

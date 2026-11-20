@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SpecKernels
 public import Chazelle.Core.SpecFacts
 
@@ -91,25 +93,25 @@ theorem sideInArc_split {a b g x : ℝ} (hx : sideInArc a b x) (hg : sideInArc a
   by_cases hab : a < b
   · simp only [hab, ↓reduceIte] at hx hg
     rcases lt_trichotomy x g with h | h | h
-    · left; simp only [hg.1, ↓reduceIte]; exact ⟨hx.1, h⟩
+    · simp_all
     · exact Or.inr (Or.inl h)
-    · right; right; simp only [hg.2, ↓reduceIte]; exact ⟨h, hx.2⟩
+    simp_all
   · simp only [hab, ↓reduceIte] at hx hg
     by_cases hag : a < g
-    · have hgb : ¬ g < b := fun h => hab (lt_trans hag h)
+    · have hgb := fun h => hab (lt_trans hag h)
       rcases hx with hx | hx
       · rcases lt_trichotomy x g with h | h | h
-        · left; simp only [hag, ↓reduceIte]; exact ⟨hx, h⟩
+        · simp_all
         · exact Or.inr (Or.inl h)
-        · right; right; simp only [hgb, ↓reduceIte]; exact Or.inl h
-      · right; right; simp only [hgb, ↓reduceIte]; exact Or.inr hx
-    · have hgb : g < b := hg.resolve_left hag
+        simp_all
+      simp_all
+    · have hgb := hg.resolve_left hag
       rcases hx with hx | hx
-      · left; simp only [hag, ↓reduceIte]; exact Or.inl hx
+      · simp_all
       · rcases lt_trichotomy x g with h | h | h
-        · left; simp only [hag, ↓reduceIte]; exact Or.inr h
+        · simp_all
         · exact Or.inr (Or.inl h)
-        · right; right; simp only [hgb, ↓reduceIte]; exact ⟨h, hx⟩
+        simp_all
 
 namespace Model
 
@@ -246,7 +248,7 @@ end Glue
 /-! ## The revised mathematical obligations of WP-D -/
 
 /-- The additive granularity loss of one fusion (`c₀` of design doc §9.6, option 2). -/
-def fuseLoss : ℕ := 1
+@[ram_layout] def fuseLoss : ℕ := 1
 
 /-- **WP-D (math), the weight bound of the revised fusion.**  The fusion of a γ-semigranular
 submap of `C₁` and one of `C₂`, together with the glue chords, is `(γ + 1)`-semigranular.
@@ -259,9 +261,9 @@ by the argument and was dropped.) -/
 def FusionWeightSpec : Prop :=
   ∀ (J : Merge.Junction) (Q : Polygon) (S₁ S₂ : Set (Set Point)) (γ : ℕ),
     J.P.Simple → SharedGeneric J →
-    (chainModel J.left).ChordFamily Q S₁ → (chainModel J.right).ChordFamily Q S₂ →
-    (chainModel J.left).Semigranular S₁ γ → (chainModel J.right).Semigranular S₂ γ →
-    (chainModel J.whole).Semigranular (J.fusion S₁ S₂ ∪ glueChords J) (γ + fuseLoss)
+    J.leftModel.ChordFamily Q S₁ → J.rightModel.ChordFamily Q S₂ →
+    J.leftModel.Semigranular S₁ γ → J.rightModel.Semigranular S₂ γ →
+    J.wholeModel.Semigranular (J.fusion S₁ S₂ ∪ glueChords J) (γ + fuseLoss)
 
 /-- **WP-D (math), the degree bound (finding D4).**  The degree of the revised fusion is bounded
 by a function of the degree bound of the inputs.  The paper (p. 508) gives two runs of at most
@@ -272,9 +274,9 @@ one side.) -/
 def FusionDegSpec : Prop :=
   ∃ capF : ℕ → ℕ, ∀ (J : Merge.Junction) (Q : Polygon) (S₁ S₂ : Set (Set Point)) (D : ℕ),
     J.P.Simple → SharedGeneric J →
-    (chainModel J.left).ChordFamily Q S₁ → (chainModel J.right).ChordFamily Q S₂ →
-    (chainModel J.left).DegLe S₁ D → (chainModel J.right).DegLe S₂ D →
-    (chainModel J.whole).DegLe (J.fusion S₁ S₂ ∪ glueChords J) (capF D)
+    J.leftModel.ChordFamily Q S₁ → J.rightModel.ChordFamily Q S₂ →
+    J.leftModel.DegLe S₁ D → J.rightModel.DegLe S₂ D →
+    J.wholeModel.DegLe (J.fusion S₁ S₂ ∪ glueChords J) (capF D)
 
 /-! ## RAM contracts -/
 
@@ -328,8 +330,8 @@ def SeesInWhole (J : Merge.Junction) (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × 
     (r : ℕ × ℕ × ℕ × ℕ) : Prop :=
   let z := (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩
   (r.1 = 1 ↔ Merge.FreeAt J.whole z (dirOf q.2.2)) ∧
-    (r.1 = 1 → (recOf r.2).toSet (chainModel J.whole) Q = Merge.shoot J.whole z (dirOf q.2.2) ∧
-      (recOf r.2).Attached (chainModel J.whole) Q)
+    (r.1 = 1 → (recOf r.2).toSet J.wholeModel Q = Merge.shoot J.whole z (dirOf q.2.2) ∧
+      (recOf r.2).Attached J.wholeModel Q)
 
 /-- **WP-D: the fusion** (Lemma 3.1 with glue chords).  Registers of band `bFuse`: `0, 1, 2`
 junction descriptors, `3, 4` normal forms of `S₁`, `S₂`, `5` a bound `γ` on their weights, `6` a
@@ -350,26 +352,26 @@ def FuseSpec : Prop :=
         rd c bFuse 5 ≤ X.cap P c.nmem (rd c bFuse 8) ∧
         JunctionWF P (c.nreg ALLOC) c.nmem (rd c bFuse 0) (rd c bFuse 1) (rd c bFuse 2) ∧
         ∃ H J N₁ N₂, JunctionAt c.nmem (rd c bFuse 0) (rd c bFuse 1) (rd c bFuse 2) (Qof P) H J ∧
-          J.P.Simple ∧ SharedGeneric J ∧ Ok P (chainModel J.left) ∧ Ok P (chainModel J.right) ∧
-          Ok P (chainModel J.whole) ∧
+          J.P.Simple ∧ SharedGeneric J ∧ Ok P J.leftModel ∧ Ok P J.rightModel ∧
+          Ok P J.wholeModel ∧
           NFWithin c.nmem (rd c bFuse 3) (c.nreg ALLOC) N₁ ∧
           NFWithin c.nmem (rd c bFuse 4) (c.nreg ALLOC) N₂ ∧
-          IsNF (chainModel J.left) (Qof P) N₁ ∧ IsNF (chainModel J.right) (Qof P) N₂ ∧
-          (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (rd c bFuse 6) ∧
-          (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (rd c bFuse 6) ∧
-          (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (rd c bFuse 5) ∧
-          (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (rd c bFuse 5))
+          IsNF J.leftModel (Qof P) N₁ ∧ IsNF J.rightModel (Qof P) N₂ ∧
+          J.leftModel.DegLe (N₁.F J.leftModel (Qof P)) (rd c bFuse 6) ∧
+          J.rightModel.DegLe (N₂.F J.rightModel (Qof P)) (rd c bFuse 6) ∧
+          J.leftModel.Semigranular (N₁.F J.leftModel (Qof P)) (rd c bFuse 5) ∧
+          J.rightModel.Semigranular (N₂.F J.rightModel (Qof P)) (rd c bFuse 5))
       (fun P c c' => ∀ H J N₁ N₂,
         JunctionAt c.nmem (rd c bFuse 0) (rd c bFuse 1) (rd c bFuse 2) (Qof P) H J →
         NFAt c.nmem (rd c bFuse 3) N₁ → NFAt c.nmem (rd c bFuse 4) N₂ →
         ∃ N, c.nreg ALLOC ≤ rd c' bFuse 7 ∧ NFWithin c'.nmem (rd c' bFuse 7) (c'.nreg ALLOC) N ∧
-          IsNF (chainModel J.whole) (Qof P) N ∧
-          N.F (chainModel J.whole) (Qof P) =
-            J.fusion (N₁.F (chainModel J.left) (Qof P)) (N₂.F (chainModel J.right) (Qof P)) ∪
+          IsNF J.wholeModel (Qof P) N ∧
+          N.F J.wholeModel (Qof P) =
+            J.fusion (N₁.F J.leftModel (Qof P)) (N₂.F J.rightModel (Qof P)) ∪
               glueChords J ∧
           N.nChords ≤ 2 * (N₁.nChords + N₂.nChords) + 7 ∧
-          (chainModel J.whole).DegLe (N.F (chainModel J.whole) (Qof P)) (capF (rd c bFuse 6)) ∧
-          (chainModel J.whole).Semigranular (N.F (chainModel J.whole) (Qof P))
+          J.wholeModel.DegLe (N.F J.wholeModel (Qof P)) (capF (rd c bFuse 6)) ∧
+          J.wholeModel.Semigranular (N.F J.wholeModel (Qof P))
             (rd c bFuse 5 + fuseLoss))
       (fun _ c => κ (rd c bFuse 6) * (c.nmem (rd c bFuse 3) + c.nmem (rd c bFuse 4) + 1) *
         (F (rd c bFuse 5) + Nat.clog 2 (c.nmem (rd c bFuse 3) + c.nmem (rd c bFuse 4) + 1) + 1))
@@ -428,8 +430,8 @@ def RestoreSpec : Prop :=
 neighbour's degree below `3`: design doc §7) and computing the tree decomposition.  Registers of
 band `bGran`: `0` model descriptor, `1` normal form, `2` degree cap `D`, `3` target `γ`; output
 `4`: a γ-canonical normal form of a coarser submap.  Cost `κ D (K (⌈log₂ K⌉ + 1) + 1)`. -/
-def GranularizeSpec : Prop :=
-  ∃ (s : Stmt) (κ : ℕ → ℕ), Meets s granBands
+def GranM (s : Stmt) (κ : ℕ → ℕ) : Prop :=
+  Meets s granBands
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bGran 2 ∧
       ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bGran 0) ∧
       ∃ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M ∧ GoodModel M ∧
@@ -442,6 +444,52 @@ def GranularizeSpec : Prop :=
         IsCanonicalNF M (Qof P) N' (rd c bGran 3) (rd c bGran 2))
     (fun _ c => κ (rd c bGran 2) *
       (c.nmem (rd c bGran 1) * (Nat.clog 2 (c.nmem (rd c bGran 1)) + 1) + 1))
+
+/-- The GranularizeSpec contract for one program and cost constant. -/
+def GranularizeSpec : Prop :=
+  ∃ (s : Stmt) (κ : ℕ → ℕ), GranM s κ
+
+namespace L41
+
+/-- The precondition of a merge. -/
+def MergePre (X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c : Config) :
+    Prop :=
+  GoodEnv P ∧ hostWords P.n ≤ W ∧
+    X.holds P c.nmem (rd c bMerge 9) (c.nreg ALLOC) ∧
+    rd c bMerge 5 + fuseLoss ≤ X.cap P c.nmem (rd c bMerge 9) ∧ 4 ≤ rd c bMerge 7 ∧
+    rd c bMerge 5 + fuseLoss ≤ rd c bMerge 6 ∧
+    JunctionWF P (c.nreg ALLOC) c.nmem (rd c bMerge 0) (rd c bMerge 1) (rd c bMerge 2) ∧
+    ∃ Hs J N₁ N₂, JunctionAt c.nmem (rd c bMerge 0) (rd c bMerge 1) (rd c bMerge 2) (Qof P) Hs J ∧
+      J.P.Simple ∧ SharedGeneric J ∧
+      Ok P J.leftModel ∧ Ok P J.rightModel ∧
+      Ok P J.wholeModel ∧ J.wholeModel.FullDegLe (Qof P) (rd c bMerge 7) ∧
+      NFWithin c.nmem (rd c bMerge 3) (c.nreg ALLOC) N₁ ∧
+      NFWithin c.nmem (rd c bMerge 4) (c.nreg ALLOC) N₂ ∧
+      (∃ γ₁, γ₁ ≤ rd c bMerge 5 ∧
+        IsCanonicalNF J.leftModel (Qof P) N₁ γ₁ (rd c bMerge 7)) ∧
+      (∃ γ₂, γ₂ ≤ rd c bMerge 5 ∧
+        IsCanonicalNF J.rightModel (Qof P) N₂ γ₂ (rd c bMerge 7))
+
+/-- The postcondition of a merge. -/
+def MergePost (P : Polygon) (c c' : Config) : Prop :=
+  ∀ Hs J N₁ N₂,
+    JunctionAt c.nmem (rd c bMerge 0) (rd c bMerge 1) (rd c bMerge 2) (Qof P) Hs J →
+    NFAt c.nmem (rd c bMerge 3) N₁ → NFAt c.nmem (rd c bMerge 4) N₂ →
+    ∃ N, c.nreg ALLOC ≤ rd c' bMerge 8 ∧ NFWithin c'.nmem (rd c' bMerge 8) (c'.nreg ALLOC) N ∧
+      IsCanonicalNF J.wholeModel (Qof P) N (rd c bMerge 6) (rd c bMerge 7)
+
+/-- The cost of a merge. -/
+def mergeCost (κ F G H : ℕ → ℕ) (c : Config) : ℕ :=
+  κ (rd c bMerge 7) * (c.nmem (rd c bMerge 3) + c.nmem (rd c bMerge 4) + 1) *
+    F (rd c bMerge 5 + fuseLoss) * G (rd c bMerge 5 + fuseLoss) *
+    (H (rd c bMerge 5 + fuseLoss) + Nat.clog 2 (c.nmem (rd c bMerge 2 + 2) + 1) + 1)
+
+/-- **One merge program** meets the contract of `MergeSpec`. -/
+def MergeMeets (s : Stmt) (κ F G H : ℕ → ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop) : Prop :=
+  Meets s (mergeBands ∪ oracleBands) (fun P W c => MergePre X Ok P W c)
+    (fun P c c' => MergePost P c c') (fun _ c => mergeCost κ F G H c)
+
+end L41
 
 /-- **WP-F: the merge** (Lemma 3.5).  Registers of band `bMerge`: `0, 1, 2` junction descriptors,
 `3, 4` γ₁- and γ₂-canonical normal forms of the two chains, `5` a bound `γ₀ ≥ γ₁, γ₂` (review
@@ -458,29 +506,7 @@ def MergeSpec : Prop :=
     X.CapLocal → X.Halves → (∀ P M, Ok P M → OkModel P M) → Monotone F → Monotone G →
     Monotone H →
     Bs ⊆ oracleBands → Bc ⊆ oracleBands → ShooterOK sh Bs F X Ok → CutterOK cu Bc G H X Ok →
-    Meets (mk sh cu) (mergeBands ∪ oracleBands)
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-        X.holds P c.nmem (rd c bMerge 9) (c.nreg ALLOC) ∧
-        rd c bMerge 5 + fuseLoss ≤ X.cap P c.nmem (rd c bMerge 9) ∧ 4 ≤ rd c bMerge 7 ∧
-        rd c bMerge 5 + fuseLoss ≤ rd c bMerge 6 ∧
-        JunctionWF P (c.nreg ALLOC) c.nmem (rd c bMerge 0) (rd c bMerge 1) (rd c bMerge 2) ∧
-        ∃ Hs J N₁ N₂, JunctionAt c.nmem (rd c bMerge 0) (rd c bMerge 1) (rd c bMerge 2) (Qof P) Hs J ∧
-          J.P.Simple ∧ SharedGeneric J ∧ Ok P (chainModel J.left) ∧ Ok P (chainModel J.right) ∧
-          Ok P (chainModel J.whole) ∧ (chainModel J.whole).FullDegLe (Qof P) (rd c bMerge 7) ∧
-          NFWithin c.nmem (rd c bMerge 3) (c.nreg ALLOC) N₁ ∧
-          NFWithin c.nmem (rd c bMerge 4) (c.nreg ALLOC) N₂ ∧
-          (∃ γ₁, γ₁ ≤ rd c bMerge 5 ∧
-            IsCanonicalNF (chainModel J.left) (Qof P) N₁ γ₁ (rd c bMerge 7)) ∧
-          (∃ γ₂, γ₂ ≤ rd c bMerge 5 ∧
-            IsCanonicalNF (chainModel J.right) (Qof P) N₂ γ₂ (rd c bMerge 7)))
-      (fun P c c' => ∀ Hs J N₁ N₂,
-        JunctionAt c.nmem (rd c bMerge 0) (rd c bMerge 1) (rd c bMerge 2) (Qof P) Hs J →
-        NFAt c.nmem (rd c bMerge 3) N₁ → NFAt c.nmem (rd c bMerge 4) N₂ →
-        ∃ N, c.nreg ALLOC ≤ rd c' bMerge 8 ∧ NFWithin c'.nmem (rd c' bMerge 8) (c'.nreg ALLOC) N ∧
-          IsCanonicalNF (chainModel J.whole) (Qof P) N (rd c bMerge 6) (rd c bMerge 7))
-      (fun _ c => κ (rd c bMerge 7) * (c.nmem (rd c bMerge 3) + c.nmem (rd c bMerge 4) + 1) *
-        F (rd c bMerge 5 + fuseLoss) * G (rd c bMerge 5 + fuseLoss) *
-        (H (rd c bMerge 5 + fuseLoss) + Nat.clog 2 (c.nmem (rd c bMerge 2 + 2) + 1) + 1))
+    L41.MergeMeets (mk sh cu) κ F G H X Ok
 
 end
 

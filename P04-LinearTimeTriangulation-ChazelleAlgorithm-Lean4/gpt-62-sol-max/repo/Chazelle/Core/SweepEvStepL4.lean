@@ -28,9 +28,9 @@ theorem addLs_append' (l a b : List ℕ) : addLs l (a ++ b) = addLs (addLs l a) 
 theorem stp_mem_full {l : List ℕ} {U : Finset ℕ} (hnd : l.Nodup) (hl : l.length = 4)
     (hU : ∀ x ∈ l, x ∈ U) (hc : U.card ≤ 4) {x : ℕ} (hx : x ∈ U) : x ∈ l := by
   classical
-  have hsub : l.toFinset ⊆ U := fun y hy => hU y (List.mem_toFinset.1 hy)
+  have hsub := fun y hy => hU y (List.mem_toFinset.1 hy)
   have hcard : l.toFinset.card = 4 := by rw [List.toFinset_card_of_nodup hnd, hl]
-  have heq : l.toFinset = U := Finset.eq_of_subset_of_card_le hsub (by omega)
+  have heq := Finset.eq_of_subset_of_card_le hsub (by omega)
   rw [← heq] at hx
   exact List.mem_toFinset.1 hx
 
@@ -48,7 +48,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
     intro l hnd hl hU hV
     obtain ⟨h1, h2, h3, h4, h5⟩ := ih l hnd hl hU (fun x hx => hV x (List.mem_append_left _ hx))
     rw [addLs_append']
-    have hvU : v ∈ U := hV v (List.mem_append_right _ (List.mem_singleton_self v))
+    have hvU := hV v (List.mem_append_right _ (List.mem_singleton_self v))
     set l' := addLs l vs with hl'
     have hsame : addLs l' [v] = addL l' v := rfl
     rw [hsame]
@@ -56,7 +56,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
       fun x hx => ?_⟩
     · rcases mem_addL hx with h | h
       · exact h3 x h
-      · rw [h]; exact hvU
+      · rwa [h]
     · rcases List.mem_append.1 hx with h | h
       · exact mem_addL_of_mem (h5 x h)
       · rw [List.mem_singleton] at h
@@ -71,7 +71,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
 /-- **The label set of a key** is the image of its label list. -/
 theorem stp_curLab_eq {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config}
     (h4 : c.nreg kN ≤ 4) :
-    curLab P J N₂ c = regOf (chainModel J.right) (Qof P) N₂ '' {l | l ∈ lblOf c kN kL} := by
+    curLab P J N₂ c = regOf J.rightModel (Qof P) N₂ '' {l | l ∈ lblOf c kN kL} := by
   unfold curLab labSet
   congr 1
   ext l
@@ -85,10 +85,10 @@ theorem stp_curLab_eq {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config
   · rintro ⟨i, hi, rfl⟩
     have : i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 := by omega
     rcases this with rfl | rfl | rfl | rfl
-    · exact Or.inl ⟨by omega, by rw [add_zero]⟩
-    · exact Or.inr (Or.inl ⟨by omega, rfl⟩)
-    · exact Or.inr (Or.inr (Or.inl ⟨by omega, rfl⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨by omega, rfl⟩))
+    · simp_all
+    · simp_all 
+    · simp_all 
+    simp_all 
 
 /-- The registers of a label list are its entries. -/
 theorem stp_mem_lblOf {c : Config} {i : ℕ} (hi : i < c.nreg kN) (h4 : c.nreg kN ≤ 4) :

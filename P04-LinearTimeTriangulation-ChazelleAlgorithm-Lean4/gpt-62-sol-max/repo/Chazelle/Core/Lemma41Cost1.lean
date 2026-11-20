@@ -48,8 +48,8 @@ theorem sum_pairs (g : ℕ → ℕ) : ∀ p : ℕ,
 theorem sublist_sum_le {l₁ l₂ : List ℕ} (h : l₁.Sublist l₂) : l₁.sum ≤ l₂.sum := by
   induction h with
   | slnil => simp
-  | cons a _ ih => simp only [List.sum_cons]; omega
-  | cons_cons a _ ih => simp only [List.sum_cons]; omega
+  | cons a _ ih => simp_all <;> omega
+  | cons_cons a _ ih => simp_all
 
 /-- Two entries weigh at most the total. -/
 theorem pair_le_sum (ns : List Shp) {q : ℕ} (hq : q < ns.length / 2) :
@@ -57,13 +57,17 @@ theorem pair_le_sum (ns : List Shp) {q : ℕ} (hq : q < ns.length / 2) :
   rw [← sum_range_nd]
   have hsub : ({2 * q, 2 * q + 1} : Finset ℕ) ⊆ range ns.length := by
     intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
-    simp only [Finset.mem_range]; omega
+    simp_all <;> omega
   have := Finset.sum_le_sum_of_subset (f := fun k => (nd ns k).2.1) hsub
-  rw [Finset.sum_pair (by omega)] at this
-  exact this
+  simp_all
 
+section
+
+variable (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
+
+include κ hF hG hH in
 /-- **One merge.** -/
-theorem pairCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
+theorem pairCost_le
     (ns : List Shp) {γ₀ Gl q : ℕ} (hq : q < ns.length / 2) (hγ : γ₀ + fuseLoss ≤ Gl) :
     pairCost κ F G H ns γ₀ q ≤ (kb (nd ns (2 * q)) + kb (nd ns (2 * q + 1)) + 1) *
       phiL κ F G H Gl (ns.map fun x => x.2.1).sum := by
@@ -77,8 +81,9 @@ theorem pairCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G)
         (H Gl + Nat.clog 2 ((ns.map fun x => x.2.1).sum + 1) + 1) := by gcongr
     _ = _ := by ring
 
+include κ hF hG hH in
 /-- **One level.** -/
-theorem lvCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
+theorem lvCost_le
     (ns : List Shp) {γ₀ Gl : ℕ} (hγ : γ₀ + fuseLoss ≤ Gl) :
     lvCost κ F G H ns γ₀ ≤ phiL κ F G H Gl (ns.map fun x => x.2.1).sum *
       ((ns.map kb).sum + ns.length) + 344 * ns.length + 40 := by
@@ -88,8 +93,7 @@ theorem lvCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (
       ∑ q ∈ range p, ((kb (nd ns (2 * q)) + kb (nd ns (2 * q + 1))) * Φ + (Φ + 331)) :=
     Finset.sum_le_sum fun q hq => by
       have := pairCost_le κ F G H hF hG hH ns (Finset.mem_range.mp hq) hγ
-      rw [← hΦ] at this
-      nlinarith
+      linarith
   have h2 : ∑ q ∈ range p, ((kb (nd ns (2 * q)) + kb (nd ns (2 * q + 1))) * Φ + (Φ + 331)) =
       (∑ k ∈ range (2 * p), kb (nd ns k)) * Φ + p * (Φ + 331) := by
     rw [Finset.sum_add_distrib, ← Finset.sum_mul, sum_pairs (fun k => kb (nd ns k)),
@@ -151,11 +155,10 @@ theorem leaves_pairUp_sublist {G0 t : ℕ} (ht : G0 < t) : ∀ ns : List Shp,
   | a :: b :: rest => by
     have ih := leaves_pairUp_sublist ht rest
     have hm : leafP G0 (a.1, a.2.1 + b.2.1, t) = false := by
-      unfold leafP; simp only [decide_eq_false_iff_not]; omega
+      ram_finish [leafP, decide_eq_false_iff_not]
     simp only [pairUp, List.filter_cons, hm, Bool.false_eq_true, ite_false]
     refine ih.trans ?_
-    have h1 : rest.Sublist (a :: b :: rest) :=
-      (List.sublist_cons_self b rest).trans (List.sublist_cons_self a _)
+    have h1 := (List.sublist_cons_self b rest).trans (List.sublist_cons_self a _)
     have := h1.filter (leafP G0)
     simpa [List.filter_cons] using this
 
@@ -176,8 +179,9 @@ def PInv (G0 Gl J L LS0 : ℕ) (ns : List Shp) (γ₀ : ℕ) : Prop :=
     γ₀ + Nat.clog 2 ns.length ≤ Gl ∧ G0 ≤ γ₀ ∧ ((ns.filter (leafP G0)).map kb).sum ≤ LS0 ∧
     ∀ x ∈ ns, leafP G0 x = false → G0 + 1 ≤ x.2.2
 
+include κ hF hG hH in
 /-- **The cost of the merge tree.** -/
-theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
+theorem totCost_le
     {G0 Gl J L LS0 : ℕ} : ∀ (f : ℕ) (ns : List Shp) (γ₀ : ℕ), ns.length ≤ f →
     PInv G0 Gl J L LS0 ns γ₀ →
     totCost κ F G H Gl f ns γ₀ ≤ Nat.clog 2 ns.length * (lvBound κ F G H Gl G0 J L LS0 + 2) := by
@@ -188,7 +192,7 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
     intro ns γ₀ hf h
     obtain ⟨h1, hJ, hL, hcl, hG0, hLS, hnl⟩ := h
     by_cases hlen : ns.length ≤ 1
-    · rw [totCost, ite_eq_left hlen]; exact Nat.zero_le _
+    · simp [totCost, ite_eq_left hlen]
     · have hj2 : 2 ≤ ns.length := by omega
       set t := lvTgt Gl ns.length γ₀ with ht
       have hcl2 := clog_half hj2
@@ -213,13 +217,13 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
           Nat.mul_le_mul_left _ (by omega)
         omega
       -- the next level
-      have hlen' : (pairUp ns t).length = (ns.length + 1) / 2 := pairUp_length ns t
+      have hlen' := pairUp_length ns t
       have hinv : PInv G0 Gl J L LS0 (pairUp ns t) t := by
-        refine ⟨by omega, by omega, by rw [pairUp_sum]; exact hL, ?_, by omega,
+        refine ⟨by omega, by omega, by rwa [pairUp_sum], ?_, by omega,
           le_trans (sublist_sum_le ((leaves_pairUp_sublist (by omega) ns).map kb)) hLS,
           fun x hx hxl => ?_⟩
         · rw [hlen', ht]; unfold lvTgt; split_ifs with h3
-          · rw [show (ns.length + 1) / 2 = 1 by omega, Nat.clog_one_right]; omega
+          · simp [show (ns.length + 1) / 2 = 1 by omega, Nat.clog_one_right]
           · omega
         · rcases mem_pairUp hx with h' | h'
           · exact hnl x h' hxl
@@ -228,6 +232,8 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
       rw [hlen'] at this
       rw [hcl2]
       nlinarith
+
+end
 
 end
 

@@ -108,12 +108,12 @@ theorem i0_le : i0 C li ≤ C.m := by
   by_cases h : li = true
   · rw [ite_eq_left h]
     rcases hL1 (hli.1 h) with h0 | h0
-    · rw [h0, Nat.sub_zero, Nat.mod_self]; omega
-    · rw [Nat.mod_eq_of_lt (by omega)]; omega
+    · simp_all
+    ram_simp [Nat.mod_eq_of_lt] <;> omega
   · rw [ite_eq_right h]
     have h1 := hL2 (fun h' => h (hli.2 h'))
-    rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+    ram_rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
+      Nat.add_mod_right, Nat.mod_eq_of_lt]
     omega
 
 /-- **Chain walk vertex `j + c₀` is interior walk vertex `j`.** -/
@@ -124,8 +124,8 @@ theorem vtx_c0 {j : ℕ} (hj : j ≤ C.m) :
   have hle := i0_le hQ T hD hli
   have hr := mod_i0 (C := C) li
   unfold c0
-  rw [show j + (i0 C li + 6) = (j + i0 C li) + 6 by ring,
-    C.sideWalk_vtx_tour _ (by omega), iw_vtx_idx hli (by omega)]
+  ram_rw [show j + (i0 C li + 6) = (j + i0 C li) + 6 by ring,
+    C.sideWalk_vtx_tour, iw_vtx_idx hli]
   unfold Chain.sideTour
   rw [Chain.sideIdx_eq, show C.sideS C.sideBeta + (j + i0 C li) =
       (C.sideS C.sideBeta + i0 C li) + j by ring, Nat.add_mod, hr]
@@ -133,19 +133,17 @@ theorem vtx_c0 {j : ℕ} (hj : j ≤ C.m) :
   unfold idxI
   by_cases h : li = true
   · simp only [h, ite_true, zero_add, Nat.mod_mod]
-    rw [Nat.mod_eq_of_lt (by omega)]
-    unfold sideE; rw [ite_eq_left hj]; exact hv j hj
+    ram_rw [Nat.mod_eq_of_lt]
+    ram_finish [sideE, ite_eq_left hj]
   · simp only [h, Bool.false_eq_true, ite_false]
     rw [Nat.mod_eq_of_lt (show j < 2 * C.m by omega)]
     rcases hj.lt_or_eq with hj' | rfl
-    · rw [Nat.mod_eq_of_lt (by omega)]
+    · ram_rw [Nat.mod_eq_of_lt]
       unfold sideE
       rw [hv _ (by split_ifs <;> omega)]
       congr 1
       split_ifs <;> omega
-    · rw [show C.m + C.m = 2 * C.m by ring,
-        Nat.mod_self, Chazelle.Chain.sideE_zero, hv 0 (by omega)]
-      congr 1; omega
+    simp_all [show C.m + C.m = 2 * C.m by ring, Nat.mod_self, Chazelle.Chain.sideE_zero, hv] <;> omega
 
 /-- **The explicit shift.** -/
 theorem shift_c0 : Trans.Shift Q C (c0 C li) := by
@@ -169,25 +167,25 @@ theorem uturn_zero (hne : (interiorWalk Q).vtx 0 ≠ C.top) :
     push Not at h0
     have hi0 : i0 C li = 0 := by omega
     apply hne
-    rw [htop, iw_vtx_idx hli (by omega)]
+    ram_rw [htop, iw_vtx_idx hli]
     unfold idxI
     rw [i0_eq] at hi0
     by_cases h : li = true
     · rw [ite_eq_left h] at hi0 ⊢
       have : sA C C.sideBeta = 0 := by
         by_contra hne0
-        rw [Nat.mod_eq_of_lt (by omega)] at hi0; omega
+        ram_rw [Nat.mod_eq_of_lt] at hi0; omega
       rw [sA_zero_iff.1 this]
     · rw [ite_eq_right h] at hi0 ⊢
       have h2 := hL2 (fun h' => h (hli.2 h'))
-      rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at hi0
-      rw [sA_m_iff.1 (by omega)]
+      ram_rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
+        Nat.add_mod_right, Nat.mod_eq_of_lt] at hi0
+      ram_rw [sA_m_iff.1]
       congr 1; omega
   refine ⟨h1, ?_⟩
   unfold c0
-  rw [show i0 C li + 6 - 1 = (i0 C li - 1) + 6 by omega, C.sideWalk_vtx_tour _ (by omega),
-    iw_vtx_idx hli (by omega)]
+  ram_rw [show i0 C li + 6 - 1 = (i0 C li - 1) + 6 by omega, C.sideWalk_vtx_tour,
+    iw_vtx_idx hli]
   unfold Chain.sideTour
   rw [Chain.sideIdx_eq]
   -- the residue before `i0`
@@ -232,26 +230,26 @@ theorem uturn_last (hne : (interiorWalk Q).vtx C.m ≠ C.top) :
     push Not at h0
     have hi0 : i0 C li = C.m := by omega
     apply hne
-    rw [htop, iw_vtx_idx hli (by omega)]
+    ram_rw [htop, iw_vtx_idx hli]
     unfold idxI
     rw [i0_eq] at hi0
     by_cases h : li = true
     · rw [ite_eq_left h] at hi0 ⊢
       have : sA C C.sideBeta = C.m := by
         by_cases h00 : sA C C.sideBeta = 0
-        · rw [h00, Nat.sub_zero, Nat.mod_self] at hi0; omega
-        · rw [Nat.mod_eq_of_lt (by omega)] at hi0; omega
+        · simp_all
+        · ram_rw [Nat.mod_eq_of_lt] at hi0; omega
       rw [sA_m_iff.1 this]
     · rw [ite_eq_right h] at hi0 ⊢
       have h2 := hL2 (fun h' => h (hli.2 h'))
-      rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at hi0
-      rw [sA_zero_iff.1 (by omega)]
+      ram_rw [show 3 * C.m - sA C C.sideBeta = (C.m - sA C C.sideBeta) + 2 * C.m by omega,
+        Nat.add_mod_right, Nat.mod_eq_of_lt] at hi0
+      ram_rw [sA_zero_iff.1]
       congr 1; omega
   refine ⟨h1, ?_⟩
   unfold c0
-  rw [show i0 C li + 6 + C.m + 1 = (i0 C li + C.m + 1) + 6 by ring,
-    C.sideWalk_vtx_tour _ (by omega), iw_vtx_idx hli (by omega)]
+  ram_rw [show i0 C li + 6 + C.m + 1 = (i0 C li + C.m + 1) + 6 by ring,
+    C.sideWalk_vtx_tour, iw_vtx_idx hli]
   unfold Chain.sideTour
   rw [Chain.sideIdx_eq, show C.sideS C.sideBeta + (i0 C li + C.m + 1) =
       (C.sideS C.sideBeta + i0 C li) + (C.m + 1) by ring, Nat.add_mod, hr]
@@ -261,14 +259,14 @@ theorem uturn_last (hne : (interiorWalk Q).vtx C.m ≠ C.top) :
     rcases (show C.m + 1 < 2 * C.m ∨ C.m + 1 = 2 * C.m by omega) with h2 | h2
     · rw [Nat.mod_eq_of_lt h2, hv _ (by unfold sideE; split_ifs <;> omega)]
       congr 1; unfold sideE; split_ifs <;> omega
-    · rw [h2, Nat.mod_self, Chazelle.Chain.sideE_zero, hv 0 (by omega)]
+    · ram_rw [h2, Nat.mod_self, Chazelle.Chain.sideE_zero, hv 0]
       congr 1; omega
   · simp only [h, Bool.false_eq_true, ite_false]
     rcases (show C.m + 1 < 2 * C.m ∨ C.m + 1 = 2 * C.m by omega) with h2 | h2
-    · rw [Nat.mod_eq_of_lt h2, show C.m + (C.m + 1) = 1 + 2 * C.m by ring, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega), hv _ (by unfold sideE; split_ifs; omega)]
+    · ram_rw [Nat.mod_eq_of_lt h2, show C.m + (C.m + 1) = 1 + 2 * C.m by ring, Nat.add_mod_right,
+        Nat.mod_eq_of_lt, hv _ (by unfold sideE; split_ifs; omega)]
       congr 1; unfold sideE; split_ifs; omega
-    · rw [h2, Nat.mod_self, add_zero, Nat.mod_eq_of_lt (by omega),
+    · ram_rw [h2, Nat.mod_self, add_zero, Nat.mod_eq_of_lt,
         hv _ (by unfold sideE; split_ifs <;> omega)]
       congr 1; unfold sideE; split_ifs <;> omega
 
@@ -284,7 +282,7 @@ theorem sideLeft_uturn {W : Polygon} {p : ℕ} {a : Point}
   have hB : a - W.vtx p ≠ 0 := by
     intro h; apply ha; have := congrArg Prod.snd h; simp at this; linarith
   refine ⟨Chazelle.Chain.sideCross_self _, Chazelle.Chain.sideDot_self_pos hB, Or.inl ?_⟩
-  have hx1 : x.1 ≠ (W.vtx p).1 := fun h => hxv (Prod.ext h hx)
+  have hx1 := fun h => hxv (Prod.ext h hx)
   unfold sideCross
   simp only [Prod.fst_sub, Prod.snd_sub]
   rw [hx, sub_self, mul_zero, zero_sub, neg_ne_zero]

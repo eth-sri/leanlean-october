@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OracleAtFacts
 
 /-!
@@ -65,10 +67,15 @@ def BLd (r : ℕ) : Bool := decide (120010 ≤ r ∧ r ≤ 120049) || decide (12
 
 theorem wr_qLoad : wr BLd qLoad = true := by decide
 
-/-- The values loaded by `qLoadA`. -/
-theorem qLoadA_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
+section
+
+variable {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
     {N : NF} {B : OracleBook.BookData} {k : ℕ} (hA : QAt P m O E V H C N B k) (hEW : E ≤ W)
-    (c : Config) (hw : WordsBounded W c) (hm : c.nmem = m) (hO : c.nreg 120000 = O)
+    (c : Config) (hw : WordsBounded W c) (hm : c.nmem = m)
+
+include hA hEW hw hm in
+/-- The values loaded by `qLoadA`. -/
+theorem qLoadA_exec (hO : c.nreg 120000 = O)
     (hW : P.n + 8 ≤ W) :
     ∃ c' k, Exec P W qLoadA c c' k ∧ k = 39 ∧
       c'.nreg 120010 = P.n ∧ c'.nreg 120011 = 1 ∧ c'.nreg 120012 = 0 ∧ c'.nreg 120048 = 2 ∧
@@ -92,10 +99,9 @@ def BLdB (r : ℕ) : Bool :=
 
 theorem wr_qLoadB : wr BLdB qLoadB = true := by decide
 
+include hA hEW hw hm in
 /-- The values loaded by `qLoadB`. -/
-theorem qLoadB_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
-    {N : NF} {B : OracleBook.BookData} {k : ℕ} (hA : QAt P m O E V H C N B k) (hEW : E ≤ W)
-    (c : Config) (hw : WordsBounded W c) (hm : c.nmem = m) (h11 : c.nreg 120011 = 1)
+theorem qLoadB_exec (h11 : c.nreg 120011 = 1)
     (h13 : c.nreg 120013 = V.D) (h14 : c.nreg 120014 = V.NB) (hmW : 2 * V.m + 7 ≤ W) :
     ∃ c' k, Exec P W qLoadB c c' k ∧ k = 25 ∧
       c'.nreg 120015 = V.s ∧ c'.nreg 120016 = V.m ∧ c'.nreg 120017 = V.tIdx ∧
@@ -148,22 +154,22 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     by_cases hb : β = 1
     · obtain ⟨c₁, e₁, v₁, r₁⟩ := copy_exec (P := P) hw 120021 120017
       exact ⟨c₁, _, ifEq_eq_exec (by rw [hβ, h11, hb]) e₁, by omega,
-        by rw [v₁, ht, ite_eq_left hb], r₁⟩
+        by simp_all, r₁⟩
     · obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120021 120017))
-        (show c.nreg 120018 ≠ c.nreg 120011 by rw [hβ, h11]; exact hb)
+        (show c.nreg 120018 ≠ c.nreg 120011 by rwa [hβ, h11])
         (Exec.subN (P := P) hw 120021 120019 120017)
       refine ⟨_, _, e', by omega, ?_, fun r hr => ?_⟩
-      · config_simp; rw [h19, ht, ite_eq_right hb]
-      · config_simp; rw [Machine.upd_other _ _ _ hr]
+      · simp_all
+      simp_all
   have w₁ := e₁.wb_right
   -- 2. the top vertex
   obtain ⟨c₂, e₂, v₂, r₂, -⟩ := add_exec (P := P) w₁ 120022 120015 120017 (by
-    rw [r₁ _ (by decide), r₁ _ (by decide), hs, ht]; exact hsW)
-  rw [r₁ _ (by decide), r₁ _ (by decide), hs, ht] at v₂
+    simp_all)
+  ram_rw [r₁, r₁, hs, ht] at v₂
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, r₃, -⟩ := modSub_exec (P := P) (r := 120022) (nr := 120010)
-    (by decide) c₂ e₂.wb_right (by rw [v₂, r₂ _ (by decide), r₁ _ (by decide), hn]; exact hst)
-  rw [v₂, r₂ _ (by decide), r₁ _ (by decide), hn] at v₃
-  have R₃ : ∀ r, r ≠ 120021 → r ≠ 120022 → c₃.nreg r = c.nreg r := fun r a b =>
+    (by decide) c₂ e₂.wb_right (by simp_all)
+  ram_rw [v₂, r₂, r₁, hn] at v₃
+  have R₃ := fun r a b =>
     (r₃ r b).trans ((r₂ r b).trans (r₁ r a))
   have w₃ := e₃.wb_right
   -- 3. the height vertex
@@ -172,7 +178,7 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c₄.nreg 120023 = qhzOf o ∧ (∀ r, r ≠ 120023 → c₄.nreg r = c₃.nreg r) := by
     obtain ⟨cA, eA, vA, rA⟩ := copy_exec (P := P) w₃ 120023 120003
     obtain ⟨cB, eB, vB, rB⟩ := copy_exec (P := P) w₃ 120023 120002
-    have g1 : c₃.nreg 120011 = 1 := by rw [R₃ _ (by decide) (by decide), h11]
+    have g1 : c₃.nreg 120011 = 1 := by ram_finish
     have g : ∀ r, 120001 ≤ r → r ≤ 120003 → c₃.nreg r = c.nreg r := fun r a b =>
       R₃ r (by omega) (by omega)
     rw [show bandReg bOQuery 1 = 120001 from rfl] at ho
@@ -180,36 +186,36 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     · obtain ⟨o1, o2⟩ := ho
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120023 120003))
         (show c₃.nreg 120001 ≠ c₃.nreg 120011 by
-          rw [g1, g _ (by norm_num) (by norm_num)];  omega) eB
+          ram_simp [g1, g] <;> omega) eB
       refine ⟨cB, k', e', by omega, ?_, rB⟩
-      rw [vB, g _ (by norm_num) (by norm_num)]; exact o2
+      ram_rw assumption [vB, g]
     · obtain ⟨o1, o2, o3⟩ := ho
       refine ⟨cA, _, ifEq_eq_exec (by
-        rw [g1, g _ (by norm_num) (by norm_num)]; exact o1) eA,
+        ram_finish [g1, g]) eA,
         by omega, ?_, rA⟩
-      rw [vA, g _ (by norm_num) (by norm_num)]; exact o3
+      ram_rw assumption [vA, g]
     · obtain ⟨o1, o2⟩ := ho
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.copyN 120023 120003))
         (show c₃.nreg 120001 ≠ c₃.nreg 120011 by
-          rw [g1, g _ (by norm_num) (by norm_num)];  omega) eB
+          ram_simp [g1, g] <;> omega) eB
       refine ⟨cB, k', e', by omega, ?_, rB⟩
-      rw [vB, g _ (by norm_num) (by norm_num)]; exact o2
+      ram_rw assumption [vB, g]
   have w₄ := e₄.wb_right
   -- 4. the direction bit
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ : ∃ c₅ k₅, Exec P W (ifEq 120004 120011
       (.instr (.constN 120024 1)) (.instr (.constN 120024 0))) c₄ c₅ k₅ ∧ k₅ ≤ 5 ∧
       c₅.nreg 120024 = σbOf (c.nreg 120004) ∧ (∀ r, r ≠ 120024 → c₅.nreg r = c₄.nreg r) := by
-    have g1 : c₄.nreg 120011 = 1 := by rw [r₄ _ (by decide), R₃ _ (by decide) (by decide), h11]
+    have g1 : c₄.nreg 120011 = 1 := by ram_finish
     have g4 : c₄.nreg 120004 = c.nreg 120004 := by
-      rw [r₄ _ (by decide), R₃ _ (by decide) (by decide)]
+      ram_finish
     by_cases hd : c.nreg 120004 = 1
     · obtain ⟨cA, eA, vA, rA⟩ := const_exec (P := P) w₄ 120024 1 hW
       exact ⟨cA, _, ifEq_eq_exec (by rw [g1, g4, hd]) eA, by omega,
-        by rw [vA]; unfold σbOf; rw [ite_eq_left hd], rA⟩
+        by ram_finish, rA⟩
     · obtain ⟨cB, eB, vB, rB⟩ := const_exec (P := P) w₄ 120024 0 (by omega)
       obtain ⟨k', e', hk'⟩ := ifEq_ne_exec (S := .instr (.constN 120024 1))
-        (show c₄.nreg 120004 ≠ c₄.nreg 120011 by rw [g1, g4]; exact hd) eB
-      exact ⟨cB, k', e', by omega, by rw [vB]; unfold σbOf; rw [ite_eq_right hd], rB⟩
+        (show c₄.nreg 120004 ≠ c₄.nreg 120011 by rwa [g1, g4]) eB
+      exact ⟨cB, k', e', by omega, by simp [vB, σbOf, ite_eq_right hd], rB⟩
   have w₅ := e₅.wb_right
   -- 5. the origin
   obtain ⟨c₆, k₆, e₆, hk₆, v₆⟩ : ∃ c₆ k₆, Exec P W
@@ -220,18 +226,17 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, fun r hr => by
       config_simp; upd_solve⟩
   obtain ⟨v25, v26, v27, r₆⟩ := v₆
-  have ex : Exec P W qLoadC c c₆ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
+  have ex : Exec P W qLoadC c c₆ _ := (by ram_path)
   have G : ∀ r, 120001 ≤ r → r ≤ 120004 → c₅.nreg r = c.nreg r := fun r a b => by
-    rw [r₅ r (by omega), r₄ r (by omega), R₃ r (by omega) (by omega)]
-  refine ⟨c₆, _, ex, by omega, exec_frameB ex wr_qLoadC, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [r₆ _ (by omega), r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide),
-      r₂ _ (by decide)]; exact v₁
-  · rw [r₆ _ (by omega), r₅ _ (by decide), r₄ _ (by decide)]; exact v₃
-  · rw [r₆ _ (by omega), r₅ _ (by decide)]; exact v₄
-  · rw [r₆ _ (by omega)]; exact v₅
-  · rw [v25, G _ (by norm_num) (by norm_num)]
-  · rw [v26, G _ (by norm_num) (by norm_num)]
-  · rw [v27, G _ (by norm_num) (by norm_num)]
+    frame_finish
+  refine ⟨c₆, _, ex, by omega, exec_frameB ex wr_qLoadC, ?_⟩; and_intros
+  · ram_simp [r₆, r₅, r₄, r₃, r₂] <;> omega
+  · ram_simp [r₆, r₅, r₄] <;> omega
+  · ram_simp [r₆, r₅] <;> omega
+  · ram_simp [r₆] <;> omega
+  · simp [v25, G]
+  · simp [v26, G]
+  · simp [v27, G]
 
 /-- The values of the query: the structure's, with the origin and the direction. -/
 noncomputable def qV (V : QV) (P : Polygon) (o : QOrigin) (d : ℕ) : QV :=
@@ -239,10 +244,9 @@ noncomputable def qV (V : QV) (P : Polygon) (o : QOrigin) (d : ℕ) : QV :=
 
 theorem wr_qLoadA : wr BLd qLoadA = true := by decide
 
+include hA hEW hw hm in
 /-- **Loading the constants of the query.** -/
-theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
-    {N : NF} {B : OracleBook.BookData} {k : ℕ} (hA : QAt P m O E V H C N B k) (hEW : E ≤ W)
-    (c : Config) (hw : WordsBounded W c) (hm : c.nmem = m) (hO : c.nreg 120000 = O)
+theorem qLoad_exec (hO : c.nreg 120000 = O)
     (hW : 8 * P.n + 32 ≤ W) {o : QOrigin} (ho : QOriginIn c (bandReg bOQuery 1) o)
     (hol : o.Lt P.n) :
     ∃ c' k, Exec P W qLoad c c' k ∧ k ≤ 100 ∧ FrameB BLd c c' ∧
@@ -252,8 +256,8 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
   have hVm : V.m = C.m := by rw [← hA.dm, hd2]
   have hVs : V.s = C.s := by rw [← hA.ds, hd1]
   have hVt : V.tIdx = C.topIdx := by rw [← hA.dt, hd3]
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hA.CQ, hQn] at this; exact this
-  have hsn : C.s < P.n := by have := hA.s_lt; rw [hA.CQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; rwa [hA.CQ, hQn] at this
+  have hsn : C.s < P.n := by have := hA.s_lt; rwa [hA.CQ, hQn] at this
   have htl := C.topIdx_le
   obtain ⟨c₁, k₁, e₁, hk₁, a10, a11, a12, a48, a28, a13, a14, a30, a31, a32, a33, a34, a35, a36,
     a37, a38, a39, a40, a41, a42, a49⟩ := qLoadA_exec hA hEW c hw hm hO (by omega)
@@ -261,7 +265,7 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
   obtain ⟨c₂, k₂, e₂, hk₂, b15, b16, b17, b18, b19, b20, b29, b43, b44, b45, b46, b47⟩ :=
     qLoadB_exec hA hEW c₁ e₁.wb_right (by rw [f₁.2.2.1, hm]) a11 a13 a14 (by omega)
   have f₂ := exec_frameB e₂ wr_qLoadB
-  have g₂ : ∀ r, BLdB r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂ := f₂.1
   have ho₂ : QOriginIn c₂ (bandReg bOQuery 1) o := by
     have hr : ∀ r, 120001 ≤ r → r ≤ 120004 → c₂.nreg r = c.nreg r := fun r a b => by
       rw [g₂ r (by simp only [BLdB, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), f₁.1 r (by simp only [BLd, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
@@ -270,21 +274,20 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
       norm_num at ho ⊢ <;> simp only [hr 120001 (by norm_num) (by norm_num), hr 120002 (by norm_num) (by norm_num), hr 120003 (by norm_num) (by norm_num)] <;> exact ho
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, v21, v22, v23, v24, v25, v26, v27⟩ := qLoadC_exec (P := P) c₂
     e₂.wb_right (n := P.n) (s := V.s) (m := V.m) (t := V.tIdx) (β := V.β)
-    (by rw [g₂ _ (by decide)]; exact a10) (by rw [g₂ _ (by decide)]; exact a11) b15 b17 b18 b19
+    (by ram_rw assumption [g₂]) (by ram_rw assumption [g₂]) b15 b17 b18 b19
     (by omega) (by omega) (by omega) ho₂
   have ex : Exec P W qLoad c c₃ _ := .seq e₁ (.seq e₂ e₃)
-  have f : FrameB BLd c c₃ := exec_frameB ex wr_qLoad
+  have f := exec_frameB ex wr_qLoad
   -- the values after all three phases
-  have K2 : ∀ r, BLdC r = false → c₃.nreg r = c₂.nreg r := f₃.1
-  have K1 : ∀ r, BLdC r = false → BLdB r = false → c₃.nreg r = c₁.nreg r := fun r a b =>
+  have K2 := f₃.1
+  have K1 := fun r a b =>
     (K2 r a).trans (g₂ r b)
   have hd4 : c₂.nreg 120004 = c.nreg 120004 := by
-    rw [g₂ _ (by decide), f₁.1 _ (by decide)]
+    ram_rw [g₂, f₁.1]
   have hr0 : ∀ r, 120001 ≤ r → r ≤ 120003 → c₂.nreg r = c.nreg r := fun r a b => by
     rw [g₂ r (by simp only [BLdB, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), f₁.1 r (by simp only [BLd, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
   refine ⟨c₃, _, ex, by omega, f, ?_⟩
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  constructor
   all_goals first
     | (rw [K1 _ (by decide) (by decide)]; assumption)
     | (rw [K2 _ (by decide)]; assumption)
@@ -293,7 +296,7 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
   · rw [v22]; exact hA.tv.symm
   · exact v23
   · rw [v24, hd4]; rfl
-  · rw [hr0 _ (by norm_num) (by norm_num)] at v25 v26 v27
+  · ram_rw [hr0] at v25 v26 v27
     rw [show bandReg bOQuery 1 = 120001 from rfl] at ho
     rcases o with (i | ⟨e, h⟩) | h <;> simp only [QOriginIn, SymPtIn] at ho <;> norm_num at ho
     · exact Or.inr ⟨by rw [v25, ho.1]; norm_num, .vtx i, hol,
@@ -302,26 +305,29 @@ theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV
         ⟨by rw [v25, ho.1], by rw [v26, ho.2.1], by rw [v27, ho.2.2]⟩, rfl⟩
     · exact Or.inl ⟨by rw [v25, ho.1], rfl⟩
 
+end
+
+section
+
+variable {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
+    {N : NF} {B : OracleBook.BookData} {k : ℕ} (hA : QAt P m O E V H C N B k)
+include hA
+
 /-- The structure facts do not read the origin and direction of the values. -/
-theorem QAt.withQ {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
-    {N : NF} {B : OracleBook.BookData} {k : ℕ} (hA : QAt P m O E V H C N B k) (o : QOrigin)
+theorem QAt.withQ (o : QOrigin)
     (d : ℕ) : QAt P m O E (qV V P o d) H C N B k := { hA with }
 
 /-- The value facts of the query. -/
-theorem QAt.qvok {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
-    {N : NF} {B : OracleBook.BookData} {k : ℕ} (hA : QAt P m O E V H C N B k) {o : QOrigin}
+theorem QAt.qvok {o : QOrigin}
     (hol : o.Lt P.n) (d : ℕ) : QVOK P C (qV V P o d) := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, -, hd1, hd2, hd3, hd4⟩ := hA.desc
-  have hsn : C.s < P.n := by have := hA.s_lt; rw [hA.CQ, hQn] at this; exact this
+  have hsn : C.s < P.n := by have := hA.s_lt; rwa [hA.CQ, hQn] at this
   refine ⟨hA.CQ, by show V.s = C.s; rw [← hA.ds, hd1], by show V.m = C.m; rw [← hA.dm, hd2],
-    ?_, ?_, ?_, by show V.s < P.n; rw [← hA.ds, hd1]; exact hsn⟩
+    ?_, ?_, ?_, by show V.s < P.n; rwa [← hA.ds, hd1]⟩
   · show V.sS = C.sideS C.sideBeta
     rw [hA.sS, ← hA.dβ, ← hA.dt, hd3, ← hA.dm, hd2]
-    unfold Chain.sideS
-    by_cases hb : C.sideBeta = true
-    · rw [ite_eq_left (hd4.2 hb), ite_eq_left hb]
-    · rw [ite_eq_right (fun h => hb (hd4.1 h)), ite_eq_right hb]
+    ram_finish
   · show qhzOf o < P.n
     rcases o with (i | ⟨e, h⟩) | h
     · exact hol
@@ -329,6 +335,8 @@ theorem QAt.qvok {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host}
     · exact hol
   · show σbOf d ≤ 1
     unfold σbOf; split_ifs <;> omega
+
+end
 
 end
 

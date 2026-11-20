@@ -54,13 +54,13 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
     · have hc := seg_on hσ hUV hzU hzS
       by_cases hA : 0 < σ * (U.1 - z.1)
       · by_cases hn : σ * U.1 ≤ σ * V.1
-        · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, hn, ↓reduceIte]
+        · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hA, hn, ↓reduceIte]
           rw [this]; simp only [one_ne_zero, ↓reduceIte, selX]
           simpa [hA, hn] using hc
-        · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, hn, ↓reduceIte]
+        · have : sel = 2 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hA, hn, ↓reduceIte]
           rw [this]; simp only [OfNat.ofNat_ne_zero, ↓reduceIte, selX]
           simpa [hA, hn] using hc
-      · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
+      · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hA, ↓reduceIte]
         rw [this]; simp only [↓reduceIte]
         exact e0 0 _ (by simpa [hA] using hc)
     · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; rw [ite_eq_left hUV, ite_eq_right hzU]
@@ -70,9 +70,9 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
   by_cases hzU : z.2 = U.2
   · have hc := seg_at hσ hUV (U_mem_seg U V) hzU.symm
     by_cases hA : 0 < σ * (U.1 - z.1)
-    · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
+    · have : sel = 1 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hA, ↓reduceIte]
       rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hA, ↓reduceIte]
+    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hA, ↓reduceIte]
       rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
   by_cases hzV : z.2 = V.2
   · have hc := seg_at hσ hUV (V_mem_seg U V) hzV.symm
@@ -85,11 +85,11 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
   · obtain ⟨hXS, hXy⟩ := hX hmid
     have hc := seg_at hσ hUV hXS hXy
     by_cases hA : 0 < σ * (X.1 - z.1)
-    · have : sel = 3 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
+    · have : sel = 3 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hzV, hmid, hA, ↓reduceIte]
       rw [this]; simpa [selX, hA] using hc
-    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, hA, ↓reduceIte]
+    · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hzV, hmid, hA, ↓reduceIte]
       rw [this]; simp only [↓reduceIte]; exact e0 0 _ (by simpa [hA] using hc)
-  · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; unfold edgeSel; simp only [hUV, hzU, hzV, hmid, ↓reduceIte]
+  · have : sel = 0 := by show edgeSel _ _ _ _ _ _ _ _ = _; ram_finish [edgeSel, hUV, hzU, hzV, hmid, ↓reduceIte]
     rw [this]; simp only [↓reduceIte]
     refine e0 0 0 (seg_out ?_ 0)
     rintro ⟨h1, h2⟩
@@ -117,7 +117,7 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
     simp only [lerp_snd] at hmid
     rw [he] at hmid
     rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
-  have hd : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
+  have hd := sub_ne_zero.2 (Ne.symm hne)
   have hpar : M.param Q ⟨p, h + 1⟩ = ((Q.vtx h).2 - a.2) / (b.2 - a.2) := by
     show (if (M.wa p).2 = (M.wb p).2 then 0 else _) = _
     rw [ite_eq_right hne]
@@ -136,7 +136,7 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
       · rw [← hty] at h1 h2
         constructor <;> nlinarith
       · exfalso; rw [← hty] at h1 h2; nlinarith
-  refine ⟨?_, by rw [hpos, lerp_snd, hty], by linarith [hαt.1], by linarith [hαt.2]⟩
+  refine ⟨?_, by assumption, by linarith [hαt.1], by linarith [hαt.2]⟩
   rw [hpos, ← subSeg_eq_seg M p hαβ]
   exact ⟨t, hαt.1.le, hαt.2.le, rfl⟩
 

@@ -34,7 +34,7 @@ theorem slb_shoot_pt {C : Chain} {a w : Point} {σ : ℝ} (hw : w ∈ Merge.shoo
   unfold Merge.shoot at hw
   obtain ⟨u, hu0, hu1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hw
   have hT : 0 ≤ C.hitParam a σ := Real.sInf_nonneg fun _ ht => ht.1.le
-  refine ⟨by simp [Geometry.lerp_snd, Visibility.rayPt_snd], u * C.hitParam a σ,
+  refine ⟨by simp, u * C.hitParam a σ,
     mul_nonneg hu0 hT, ?_⟩
   simp only [Geometry.lerp_fst, Visibility.rayPt_fst]
   ring
@@ -74,7 +74,7 @@ theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
   have hs0 : s = 0 := by
     have := (mul_eq_zero.1 hss).resolve_left hσ0
     linarith
-  have hwa : w = a := Prod.ext (by rw [h1, hs0]; ring) h2
+  have hwa := Prod.ext (by rw [h1, hs0]; ring) h2
   rcases ha with rfl | rfl
   · exact hwv hwa
   · exact hwt hwa
@@ -82,29 +82,29 @@ theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
 /-- **No tie of two non-fused chords** at a vertex position of the open right stretch other than
 the split vertex. -/
 theorem slb_nonfused_tie (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) {e e' : Set Point}
+    (hS₂ : J.rightModel.ChordFamily Q S₂) {e e' : Set Point}
     (he : e ∈ F₂plus J S₂) (he' : e' ∈ F₂plus J S₂) (hne : e' ≠ e)
     (hnf : ∀ c ∈ S₂, ¬ e ⊆ c) (hnf' : ∀ c ∈ S₂, ¬ e' ⊆ c) {d : ℕ} (hd : d < Lst J)
     (hd0 : d ≠ 0) (hdr : d ≠ rL1 J)
-    (hA : SideAttach (chainModel J.whole).W e ((gW J + d) % (chainModel J.whole).W.n) 0)
-    (hA' : SideAttach (chainModel J.whole).W e' ((gW J + d) % (chainModel J.whole).W.n) 0) :
+    (hA : SideAttach J.wholeModel.W e ((gW J + d) % J.wholeModel.W.n) 0)
+    (hA' : SideAttach J.wholeModel.W e' ((gW J + d) % J.wholeModel.W.n) 0) :
     False := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hoff := hC.off_M hd le_rfl zero_lt_one
   have h1 : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd0
   have h2 : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by
-    have : d + 1 ≤ rL1 J + rL2 J := hd
+    have := hd
     exact_mod_cast this
-  have hin : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
-      ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + 0) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
-        ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + 0) <
+  have hin : 0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
+      ((((6 + tpos J.whole J.m₁ + d) % J.wholeModel.W.n : ℕ) : ℝ) + 0) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
+        ((((6 + tpos J.whole J.m₁ + d) % J.wholeModel.W.n : ℕ) : ℝ) + 0) <
         ((rL1 J + rL2 J : ℕ) : ℝ) := by
     rw [hoff]; constructor <;> linarith
-  have hwv : sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 ≠
+  have hwv : sidePt J.wholeModel.W ((gW J + d) % J.wholeModel.W.n) 0 ≠
       J.shared := fun h =>
     off_shared_out J hP hS₂.2.1 hS₂.1 (Nat.mod_lt _ hC.n_pos) le_rfl zero_lt_one h hin
-  by_cases hwt : sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 =
+  by_cases hwt : sidePt J.wholeModel.W ((gW J + d) % J.wholeModel.W.n) 0 =
       J.right.top
   · exact no_tie_at_top2 J hP hS₂.2.1 hS₂.1 hd ⟨hd0, hdr⟩ he he' (Ne.symm hne) hA hA' hwt
   · exact slb_nonfused_pt hS₂.2.1 he he' hne hnf hnf' hA.2.2.2.1 hA'.2.2.2.1 hwv hwt
@@ -118,37 +118,37 @@ theorem slb_rδ_pos (h : rL1 J < Lst J) : 0 < rδ J := by
 
 /-- **The tie at the split vertex leaving the stretch** (`TieOut`). -/
 theorem slb_tieOut (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {e e' : Set Point}
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {e e' : Set Point}
     (he : e ∈ F₂plus J S₂) (he' : e' ∈ F₂plus J S₂) (hne : e' ≠ e) (hlt : rL1 J < Lst J)
     (hd0 : rL1 J ≠ 0)
-    (hA : SideAttach (chainModel J.whole).W e ((gW J + rL1 J) % (chainModel J.whole).W.n) 0)
-    (hA' : SideAttach (chainModel J.whole).W e' ((gW J + rL1 J) % (chainModel J.whole).W.n) 0)
-    (hK : ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ (Lst J : ℝ) ≤ oW J (q + s))
-    (hOff : OffOut J e' ((gW J + rL1 J) % (chainModel J.whole).W.n) 0)
+    (hA : SideAttach J.wholeModel.W e ((gW J + rL1 J) % J.wholeModel.W.n) 0)
+    (hA' : SideAttach J.wholeModel.W e' ((gW J + rL1 J) % J.wholeModel.W.n) 0)
+    (hK : ∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s ∧ (Lst J : ℝ) ≤ oW J (q + s))
+    (hOff : OffOut J e' ((gW J + rL1 J) % J.wholeModel.W.n) 0)
     {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point}
-    (hS : SideOf (chainModel J.whole) ρ e G) (hS' : SideOf (chainModel J.whole) ρ e' G) :
+    (hS : SideOf J.wholeModel ρ e G) (hS' : SideOf J.wholeModel ρ e' G) :
     TieOut J S₂ G := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hsplit : sidePt (chainModel J.whole).W ((gW J + rL1 J) % (chainModel J.whole).W.n) 0 =
+  have hsplit : sidePt J.wholeModel.W ((gW J + rL1 J) % J.wholeModel.W.n) 0 =
       J.right.top := sidePt_split J hP hS₂.2.1 hS₂.1 hlt
   have hsplit' := sidePt_split J hP hS₂.2.1 hS₂.1 hlt
   obtain ⟨q, s, hB, hBo⟩ := hK
   obtain ⟨pb', tb', hB', hBne'⟩ := far_attach hM (hF.2.1 he') J.right.top
   have hoff := hC.off_M hlt le_rfl zero_lt_one
-  have hBne : sidePt (chainModel J.whole).W q s ≠
-      sidePt (chainModel J.whole).W ((gW J + rL1 J) % (chainModel J.whole).W.n) 0 := by
+  have hBne : sidePt J.wholeModel.W q s ≠
+      sidePt J.wholeModel.W ((gW J + rL1 J) % J.wholeModel.W.n) 0 := by
     intro h
     obtain ⟨rfl, rfl⟩ := hM.attach_unique (hC.hF he) hB hA h
-    have : oW J (((gW J + rL1 J) % (chainModel J.whole).W.n : ℕ) + 0) = rL1 J + 0 := hoff
+    have : oW J (((gW J + rL1 J) % J.wholeModel.W.n : ℕ) + 0) = rL1 J + 0 := hoff
     rw [this] at hBo
     have : (rL1 J : ℝ) < (Lst J : ℝ) := by exact_mod_cast hlt
     linarith
   refine ⟨e, e', rL1 J, q, pb', s, tb', ρ, he, he', hne, hd0, hlt, hA, hA', hB, hB', hBne,
     by first | (rw [hsplit']; exact hBne'), fun h => ?_, hOff pb' tb' hB' (by first | (rw [hsplit]; exact hBne')), hρ,
     hS, hS', hsplit ▸ hA.2.2.2.1, hsplit ▸ hA'.2.2.2.1⟩
-  have : (Lst J : ℝ) ≤ off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (q + s) :=
+  have : (Lst J : ℝ) ≤ off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (q + s) :=
     hBo
   have h2 := h.2
   have : ((rL1 J + rL2 J : ℕ) : ℝ) = (Lst J : ℝ) := rfl

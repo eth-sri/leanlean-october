@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranSize
 public import Chazelle.Core.SortRam
 
@@ -48,7 +50,12 @@ theorem wr_hdrStmt : wr Bhdr hdrStmt = true := by decide
 /-- The number of counted edges computed by `szStmt`. -/
 def szOf (P : Polygon) (kind m : ℕ) : ℕ := if kind = 0 then 2 * m else P.n
 
-theorem hdr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {MD B : ℕ}
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+
+include P hw in
+theorem hdr_exec {MD B : ℕ}
     (h0 : c.nreg 90000 = MD) (h1 : c.nreg 90001 = B) (hB : B + 7 ≤ W) (hMD : MD + 3 ≤ W)
     (hn : P.n ≤ W) (hm : c.nmem MD = 0 → 2 * c.nmem (MD + 3) ≤ W) :
     ∃ c' k, Exec P W hdrStmt c c' k ∧ k ≤ 30 ∧
@@ -92,15 +99,14 @@ theorem hdr_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M
     all_goals try (config_simp; rw [h0]; omega)
     refine ⟨rfl, ?_⟩
     config_simp
-    rw [h0, h1]
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl, ?_, rfl, rfl⟩ <;> ring_nf
+    frame_finish
   obtain ⟨q10, q11, q12, q13, q15, q16, q17, q22, q23, q24, q14, q19, q20, q21, q50, q51,
     qm⟩ := q
   have w₁ := e₁.wb_right
   by_cases hk : c.nmem MD = 0
   · have t : c₁.nreg 90023 < c₁.nreg 90019 := by rw [q23, q19, hk]; omega
     have e₂ := Exec.addN (P := P) w₁ 90018 90024 90024 (by rw [q24]; have := hm hk; omega)
-    refine ⟨_, _, .seq e₁ (.ifLtN_true t e₂), by omega, ?_⟩
+    refine ⟨_, _, (by ram_path), by omega, ?_⟩
     config_simp
     refine ⟨q10, q11, q12, q13, q15, q16, q17, q22, q23, q24, ?_, q14, q19, q20, q21, q50, q51⟩
     rw [q24]; unfold szOf; rw [ite_eq_left hk]; ring
@@ -118,7 +124,8 @@ def mulS (dst a b cnt : ℕ) : Stmt :=
   .seq (block [.constN dst 0, .constN cnt 0])
     (.whileLtN cnt a (block [.addN dst dst b, .addN cnt cnt 90019]))
 
-theorem mul_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {dst a b cnt : ℕ}
+include P hw in
+theorem mul_exec {dst a b cnt : ℕ}
     (h1 : dst ≠ cnt) (h2 : dst ≠ a) (h3 : dst ≠ b) (h4 : cnt ≠ a) (h5 : cnt ≠ b)
     (h6 : dst ≠ 90019) (h7 : cnt ≠ 90019) (h19 : c.nreg 90019 = 1)
     (hW : c.nreg a * c.nreg b ≤ W) (ha : c.nreg a ≤ W) :
@@ -130,7 +137,7 @@ theorem mul_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d
       c'.nreg dst = c.nreg a * c.nreg b by
     obtain ⟨c', k, e, hk, hd⟩ := hh
     have F := exec_frameB e (B := fun r => decide (r = dst) || decide (r = cnt))
-      (by simp [mulS, wr, block, wrOK])
+      (by simp [mulS, write_check, block])
     exact ⟨c', k, e, hk, hd, fun r a1 a2 => F.1 r (by simp [a1, a2]), F.2.2.1, F⟩
   have hW0 : 0 ≤ W := Nat.zero_le _
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (block [.constN dst 0, .constN cnt 0]) c c₁ k₁ ∧
@@ -217,9 +224,9 @@ structure Bases (c : Config) (d : Dm) : Prop where
 
 theorem Bases.frame {c c' : Config} {d : Dm} (h : Bases c d)
     (hr : ∀ r, 90030 ≤ r → r < 90045 → c'.nreg r = c.nreg r) : Bases c' d := by
-  obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by norm_num) (by norm_num)]; assumption)
+  cases h
+  constructor <;>
+    simp_all
 
 /-- The constants and the bases give `Cst`. -/
 theorem Cst.of_bases {c : Config} {E : Env} {d : Dm} (h : Bases c d) (hγ : c.nreg 90014 = E.γ)
@@ -273,7 +280,8 @@ theorem baseBlock_exec {P : Polygon} {W : ℕ} (c₂ : Config) (w₂ : WordsBoun
       o6, o7, o8, o9, o10, o11, o12, o13, o14, o15, o16, hE] <;> omega
 
 
-theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {K A R D : ℕ}
+include P hw in
+theorem base_exec {K A R D : ℕ}
     (h10 : c.nreg 90010 = K) (h11 : c.nreg 90011 = A) (h12 : c.nreg 90012 = R)
     (h02 : c.nreg 90002 = D) (h19 : c.nreg 90019 = 1)
     (hroom : c.nreg ALLOC + (dmOf K A R D (c.nreg ALLOC)).oEnd ≤ W) :
@@ -294,31 +302,31 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
   -- the products
   obtain ⟨c₁, k₁, e₁, hk₁, d₁, r₁, m₁, F₁⟩ := mul_exec (P := P) (dst := 90025) (a := 90012)
     (b := 90002) (cnt := 90061) c hw (by decide) (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) h19 (by rw [h12, h02]; exact hRD) (by rw [h12]; omega)
+    (by decide) (by decide) h19 (by rwa [h12, h02]) (by rw [h12]; omega)
   rw [h12, h02] at d₁
   rw [h12] at hk₁
   obtain ⟨c₂, k₂, e₂, hk₂, d₂, r₂, m₂, F₂⟩ := mul_exec (P := P) (dst := 90026) (a := 90002)
     (b := 90010) (cnt := 90061) c₁ e₁.wb_right (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide) (by rw [r₁ _ (by decide) (by decide), h19])
-    (by rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10]; exact hDK)
-    (by rw [r₁ _ (by decide) (by decide), h02]; omega)
-  rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), h02, h10] at d₂
-  rw [r₁ _ (by decide) (by decide), h02] at hk₂
+    (by decide) (by decide) (by decide) (by simp_all)
+    (by simp_all)
+    (by ram_simp [r₁, h02] <;> omega)
+  ram_rw [r₁, r₁, h02, h10] at d₂
+  ram_rw [r₁, h02] at hk₂
   have g : ∀ r, r ≠ 90025 → r ≠ 90026 → r ≠ 90061 → c₂.nreg r = c.nreg r := fun r a1 a2 a3 => by
     rw [r₂ r a2 a3, r₁ r a1 a3]
   have w₂ := e₂.wb_right
-  have g10 : c₂.nreg 90010 = K := by rw [g _ (by decide) (by decide) (by decide), h10]
-  have g11 : c₂.nreg 90011 = A := by rw [g _ (by decide) (by decide) (by decide), h11]
-  have g12 : c₂.nreg 90012 = R := by rw [g _ (by decide) (by decide) (by decide), h12]
-  have g02 : c₂.nreg 90002 = D := by rw [g _ (by decide) (by decide) (by decide), h02]
-  have g19 : c₂.nreg 90019 = 1 := by rw [g _ (by decide) (by decide) (by decide), h19]
-  have g25 : c₂.nreg 90025 = R * D := by rw [r₂ _ (by decide) (by decide), d₁]
-  have gA : c₂.nreg 9999 = b0 := by rw [g _ (by decide) (by decide) (by decide)]; rfl
+  have g10 : c₂.nreg 90010 = K := by simp [g, h10]
+  have g11 : c₂.nreg 90011 = A := by simp [g, h11]
+  have g12 : c₂.nreg 90012 = R := by simp [g, h12]
+  have g02 : c₂.nreg 90002 = D := by simp [g, h02]
+  have g19 : c₂.nreg 90019 = 1 := by simp [g, h19]
+  have g25 : c₂.nreg 90025 = R * D := by simp [r₂, d₁]
+  have gA : c₂.nreg 9999 = b0 := by frame_finish
   -- the bases
   obtain ⟨c₃, k₃, e₃, hk₃, q⟩ := baseBlock_exec (P := P) c₂ w₂ g10 g11 g12 g02 g19 g25 d₂ gA
     hroom
   have F₃ := exec_frameB e₃ (B := fun r => decide (90027 ≤ r ∧ r < 90045))
-    (by simp [baseBlock, wr, block, wrOK])
+    (by simp [baseBlock, write_check, block])
   have r₃ : ∀ r, (r < 90025 ∨ 90045 ≤ r) → c₃.nreg r = c₂.nreg r := fun r hr =>
     F₃.1 r (by simp; omega)
   have m₃ : c₃.nmem = c₂.nmem := F₃.2.2.1
@@ -328,7 +336,7 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
   have t29 : c₃.nreg 90029 = b0 + (dmOf K A R D b0).oEnd := q29
   rw [hE] at t29
   obtain ⟨c₄, k₄, e₄, ⟨hw₄, hle₄, hr₄, hm₄, hrr₄, hrm₄, ho₄⟩, hx, hk₄, hlb⟩ :=
-    SortR.whileLtN_potential_lb (P := P) (W := W) (a := 9999) (b := 90029)
+    Exec.whileLtN_growth (P := P) (W := W) (a := 9999) (b := 90029)
     (body := .instr (.addN 9999 9999 90019))
     (fun d => WordsBounded W d ∧ d.nreg 9999 ≤ c₃.nreg 90029 ∧
       (∀ r, r ≠ 9999 → d.nreg r = c₃.nreg r) ∧ d.nmem = c₃.nmem ∧ d.rreg = c₃.rreg ∧
@@ -336,19 +344,19 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
     (fun d => 3 * (c₃.nreg 90029 - d.nreg 9999)) (fun d => d.nreg 9999) (fun d h => h.1)
     (fun d ⟨hwd, hled, hrd, hmd, hrrd, hrmd, hod⟩ ht => by
       have h1d : d.nreg 90019 = 1 := by
-        rw [hrd _ (by decide), r₃ 90019 (by left; decide), g19]
+        simp [hrd, r₃ 90019 (by left; decide), g19]
       have h29 : d.nreg 90029 = c₃.nreg 90029 := hrd _ (by decide)
       rw [h29] at ht
       refine spec_instr (Exec.addN hwd _ _ _ (by rw [h1d]; omega)) fun hw2 => ?_
       refine ⟨⟨hw2, by config_simp; omega, fun r hr => ?_, hmd, hrrd, hrmd, hod⟩, ?_, ?_⟩
-      · config_simp; rw [Machine.upd_other _ _ _ hr]; exact hrd r hr
+      · ram_post
       · config_simp; rw [h1d]; omega
       · config_simp; rw [h1d])
-    ⟨w₃, by rw [r₃ 9999 (by left; decide), gA, t29]; omega, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+    ⟨w₃, by simp [r₃ 9999 (by left; decide), gA, t29], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   have h29 : c₄.nreg 90029 = c₃.nreg 90029 := hr₄ _ (by decide)
   rw [h29] at hx
-  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, B₃.frame fun r a1 a2 => hr₄ r (by omega),
-    ?_, ?_, ?_, ?_, ?_, fun r hr a1 a2 => ?_, ?_, exec_frameS (.seq e₁ (.seq e₂ (.seq e₃ e₄)))
+  refine ⟨c₄, _, (by ram_path), ?_, B₃.frame fun r a1 a2 => hr₄ r (by omega),
+    ?_, ?_, ?_, ?_, ?_, fun r hr a1 a2 => ?_, ?_, exec_frameS (by ram_path)
       wrS_baseStmt⟩
   · rw [r₃ 9999 (by left; decide), gA, t29, Nat.add_sub_cancel_left] at hk₄
     clear * - hk₁ hk₂ hk₃ hk₄
@@ -358,14 +366,16 @@ theorem base_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
     show c₄.nreg 9999 = _
     clear * - h1 hx
     omega
-  · rw [hr₄ _ (by decide), q27]
-  · rw [hr₄ _ (by decide), q28]
-  · rw [hr₄ _ (by decide), F₃.1 _ (by decide), d₂]
+  · simp [hr₄, q27]
+  · simp [hr₄, q28]
+  · simp [hr₄, F₃.1, d₂]
   · rw [r₃ 9999 (by left; decide), gA] at hlb
     show c₄.nreg 9999 ≤ b0 + _
     omega
-  · rw [hr₄ r a2, r₃ r hr, g r (by omega) (by omega) a1]
+  · ram_post [hr₄ r a2, r₃ r hr, g]
   · rw [hm₄, m₃, m₂, m₁]
+
+end
 
 end
 

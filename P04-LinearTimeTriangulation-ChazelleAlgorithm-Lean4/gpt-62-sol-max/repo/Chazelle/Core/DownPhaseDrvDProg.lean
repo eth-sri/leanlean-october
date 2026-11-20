@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Core.RestoreDrvProg
+
 public import Chazelle.Core.DownPhaseDrvRSplH
 public import Chazelle.Core.NFBuildCmpRam
 
@@ -55,13 +57,8 @@ def hdS : Stmt := block [.copyN 216012 210005, .addN 216033 216012 216002, .load
   .addN 216033 216033 216005, .loadN 216016 216033, .copyN 216018 9999, .copyN 216021 9999,
   .constN 216020 0, .constN 216023 0]
 
-/-- Reserve five words. -/
-def resBody : Stmt := block [.addN 9999 9999 216002, .addN 9999 9999 216002,
-  .addN 9999 9999 216002, .addN 9999 9999 216002, .addN 9999 9999 216002,
-  .addN 216023 216023 216002]
-
-/-- The reservation loop (`5 R` words). -/
-def resS : Stmt := .whileLtN 216023 216013 resBody
+/-- Reserve five words for each record. -/
+def resS : Stmt := Restore.reserveLoop 5 216023 216013 216002
 
 /-- The bucket base `L₂ base + 3 R`; the region loop set-up. -/
 def midS : Stmt := block [.addN 216033 216013 216013, .addN 216033 216033 216013,
@@ -148,8 +145,8 @@ def Bscan (r : ℕ) : Bool :=
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; simp_all),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; simp_all),
     h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
 /-- The registers `ldArc` writes. -/
@@ -162,10 +159,10 @@ theorem wr_ldArc : wr BldArc ldArc = true := by decide
 theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := by decide
 
 theorem bldArc_scan (r : ℕ) (h : BldArc r = true) : Bscan r = true := by
-  simp only [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] <;> omega
 
 theorem b53_scan (r : ℕ) (h : decide (r = 216053) = true) : Bscan r = true := by
-  simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp_all [Bscan, Bool.or_eq_true, decide_eq_true_eq] <;> omega
 
 theorem bhalf_scan {dd dst : ℕ} (hdd : 42100 ≤ dd ∧ dd < 42110) (hdst : 42100 ≤ dst ∧ dst < 42110)
     (r : ℕ) (h : BuildRam.BhalfS dd dst r = true) : Bscan r = true := by

@@ -41,11 +41,11 @@ theorem descS_exec (c : Config) (hw : WordsBounded W c) (h20 : c.nreg 218020 = 0
       c'.nreg ALLOC = c.nreg ALLOC + 6 ∧
       (∀ r, r ≠ 218010 → r ≠ 218060 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       c'.nmem (c.nreg ALLOC) = 0 ∧ c'.nmem (c.nreg ALLOC + 1) = c.nreg 218000 ∧
       c'.nmem (c.nreg ALLOC + 2) = c.nreg 218001 ∧ c'.nmem (c.nreg ALLOC + 3) = c.nreg 218002 ∧
       c'.nmem (c.nreg ALLOC + 4) = c.nreg 218013 ∧ c'.nmem (c.nreg ALLOC + 5) = c.nreg 218014 := by
-  obtain ⟨A, hA'⟩ : ∃ A, c.nreg ALLOC = A := ⟨_, rfl⟩
+  obtain ⟨A, hA'⟩ := exists_eq' (a' := c.nreg ALLOC)
   rw [hA'] at hA ⊢
   have e : ALLOC = 9999 := rfl
   rw [e] at hA'

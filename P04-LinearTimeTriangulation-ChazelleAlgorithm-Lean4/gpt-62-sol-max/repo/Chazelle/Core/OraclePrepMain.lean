@@ -27,7 +27,7 @@ theorem chords_mul_le {C : Chain} {Q : Polygon} {N : NF} {γ : ℕ} (hP : C.P.Si
   have hM := walkAx_of_goodModel hGM
   have hF := hC.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hC.2.1 hC.2.2.1
-  rw [chords_ncard hC.1, walk_n] at this
+  rw [hC.1.ncard_chords, walk_n] at this
   linarith
 
 /-- **The preprocessing.** -/
@@ -40,17 +40,7 @@ theorem prepBands_sub : prepBands ⊆ oracleBands ∪ {bOPrep} := by decide
 
 set_option maxHeartbeats 64000000 in
 /-- **The preprocessing meets its specification.** -/
-theorem prep_meets : Meets prepMainS prepBands
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ ChainWF P (c.nreg ALLOC) c.nmem (rd c bOPrep 0) ∧
-      ∃ H C N, ChainDescAt c.nmem (rd c bOPrep 0) (Qof P) H C ∧
-      C.P = Qof P ∧ NFWithin c.nmem (rd c bOPrep 1) (c.nreg ALLOC) N ∧
-      IsCanonicalNF (chainModel C) (Qof P) N (rd c bOPrep 2) 4)
-    (fun P c c' => c.nreg ALLOC ≤ rd c' bOPrep 3 ∧ rd c' bOPrep 3 + 3 ≤ c'.nreg ALLOC ∧
-      c'.nmem (rd c' bOPrep 3) = rd c bOPrep 0 ∧ c'.nmem (rd c' bOPrep 3 + 1) = rd c bOPrep 1 ∧
-      c'.nmem (rd c' bOPrep 3 + 2) = rd c bOPrep 2 ∧
-      ∀ m', (∀ a, a < c'.nreg ALLOC → m' a = c'.nmem a) → OAt P m' (rd c' bOPrep 3))
-    (fun _ c => κq * (c.nmem (rd c bOPrep 1) *
-      (Nat.clog 2 (c.nmem (rd c bOPrep 0 + 2)) + 1) + 1)) := by
+theorem prep_meets : OraclePrepMeets prepMainS prepBands κq OAt := by
   intro P W c hw ⟨hG, hHW, hwf, H, C, N, hD, hCQ, hNFw, hcan⟩ hroom
   have hAL : ALLOC = 9999 := rfl
   have hr0 : rd c bOPrep 0 = c.nreg 110000 := rfl
@@ -105,7 +95,7 @@ theorem prep_meets : Meets prepMainS prepBands
   set MD := cA.nreg 120040 with hMD
   set CH := cA.nreg 120038 with hCH
   set A₁ := cA.nreg 9999 with hA₁
-  have agA : ∀ a, a < A₀ → cA.nmem a = c.nmem a := fun a ha => FA.2.2.1 a ha
+  have agA : MemEqBelow A₀ cA.nmem c.nmem := fun a ha => FA.2.2.1 a ha
   -- phase B
   obtain ⟨cB, kB, eB, hkB, GB, k12B, alB1, alB2, CH1, CH2, Dl, hCH1, v1, v2, v8, v34, v37,
       pairsB, hC1, hC2, hnd, hmem, hDl⟩ :=
@@ -130,10 +120,10 @@ theorem prep_meets : Meets prepMainS prepBands
     clCost_le (by show N.arcs.length + 3 + B.E ≤ 64 * (N.chords.length + 1); omega)
   have hclK : Cluster.clusterK = 200000 := rfl
   rw [hclK] at hcl
-  have b11 : cB.nreg 120011 = 1 := by rw [k12B _ (by norm_num) (by norm_num), PLA.one]
-  have b12 : cB.nreg 120012 = 0 := by rw [k12B _ (by norm_num) (by norm_num), PLA.zero]
-  have b48 : cB.nreg 120048 = 2 := by rw [k12B _ (by norm_num) (by norm_num), PLA.two]
-  have b39 : cB.nreg 120039 = N.chords.length := by rw [k12B _ (by norm_num) (by norm_num), PLA.rK]
+  have b11 : cB.nreg 120011 = 1 := by ram_rw [k12B, PLA.one]
+  have b12 : cB.nreg 120012 = 0 := by ram_rw [k12B, PLA.zero]
+  have b48 : cB.nreg 120048 = 2 := by ram_rw [k12B, PLA.two]
+  have b39 : cB.nreg 120039 = N.chords.length := by ram_rw [k12B, PLA.rK]
   obtain ⟨cK, kK, eK, hkK, GK, k12K, v34K, alK1, alK2, hFLa, hLABa, hFLb, hLABb, hclF⟩ :=
     bookS_exec (P := P) (c := cB) eB.wb_right hG hCQ hcan hgok rfl v1 v2 v8 v34
       (by rw [v37, hBE]) b11 b12 b48 b39 rfl pairsB
@@ -149,24 +139,24 @@ theorem prep_meets : Meets prepMainS prepBands
   -- the order by label
   obtain ⟨cO, kO, eO, hkO, FO, alO1, alO2, KO, memO, hDLO, hORDO, hRKO, hordF⟩ :=
     ordStage_exec (P := P) (c := cK) eK.wb_right v34K rfl rfl
-      (by rw [k12K _ (by norm_num) (by norm_num), b11]) rfl hFLb hLABb
+      (by ram_rw [k12K, b11]) rfl hFLb hLABb
       (by omega)
   set O := cO.nreg ALLOC with hOd
   have hO9 : cO.nreg 9999 = O := rfl
   -- the header
   obtain ⟨cH, kH, eH, hkH, h3H, h9H, RH, hdrH, hdr3, memH, rrH, rmH, oH⟩ :=
     hdrS_exec (P := P) (c := cO) (O := O) eO.wb_right rfl
-      (by rw [FO.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide),
-        k12K _ (by norm_num) (by norm_num), b11]) (by omega)
+      (by ram_rw [FO.1,
+        k12K, b11]) (by omega)
   -- the payment
   have hH26 : cH.nreg 120026 = A₀ := by
-    rw [RH _ (by decide) (by decide) (by decide) (by decide),
-      FO.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide),
-      k12K _ (by norm_num) (by norm_num), k12B _ (by norm_num) (by norm_num), r26]
+    ram_rw [RH,
+      FO.1,
+      k12K, k12B, r26]
   have hH11 : cH.nreg 120011 = 1 := by
-    rw [RH _ (by decide) (by decide) (by decide) (by decide),
-      FO.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide),
-      k12K _ (by norm_num) (by norm_num), b11]
+    ram_rw [RH,
+      FO.1,
+      k12K, b11]
   obtain ⟨cP, kP, eP, hkP1, hkP2, RP, mP, rrP, rmP, oP⟩ := payS_exec (P := P) (c := cH) eH.wb_right
     hH26 h9H hH11
   have ex : Exec P W prepMainS c cP _ := .seq eA (.seq eB (.seq eK (.seq eO (.seq eH eP))))
@@ -174,24 +164,24 @@ theorem prep_meets : Meets prepMainS prepBands
   have kO12 : ∀ r, 120010 ≤ r → r ≤ 120049 → cO.nreg r = cA.nreg r := fun r a b => by
     rw [FO.1 r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by rw [hAL]; omega),
       k12K r a b, k12B r a b]
-  have hP9 : cP.nreg ALLOC = O + 18 := by rw [hAL, RP _ (by decide) (by decide), h9H]
-  have hP3 : cP.nreg 110003 = O := by rw [RP _ (by decide) (by decide), h3H]
+  have hP9 : cP.nreg ALLOC = O + 18 := by ram_rw [hAL, RP, h9H]
+  have hP3 : cP.nreg 110003 = O := by ram_rw [RP, h3H]
   -- memory transports
   have mPH : ∀ a, cP.nmem a = cH.nmem a := fun a => by rw [mP]
-  have mHO : ∀ a, a < O → cH.nmem a = cO.nmem a := fun a ha => memH a (Or.inl ha)
-  have mOK : ∀ a, a < AK → cO.nmem a = cK.nmem a := memO
-  have mKB : ∀ a, a < AB → cK.nmem a = cB.nmem a := GK.2.2.1
-  have mBA : ∀ a, a < A₁ → cB.nmem a = cA.nmem a := GB.2.2.1
+  have mHO : MemEqBelow O cH.nmem cO.nmem := fun a ha => memH a (Or.inl ha)
+  have mOK : MemEqBelow AK cO.nmem cK.nmem := memO
+  have mKB : MemEqBelow AB cK.nmem cB.nmem := GK.2.2.1
+  have mBA : MemEqBelow A₁ cB.nmem cA.nmem := GB.2.2.1
   have hA₁B : A₁ ≤ AB := by omega
   have hABK : AB ≤ AK := alK1
   have hAKO : AK ≤ O := alO1
-  have mPA : ∀ a, a < A₁ → cP.nmem a = cA.nmem a := fun a ha => by
-    rw [mPH, mHO a (by omega), mOK a (by omega), mKB a (by omega), mBA a ha]
-  have mP0 : ∀ a, a < A₀ → cP.nmem a = c.nmem a := fun a ha => by
-    rw [mPA a (by omega), agA a ha]
-  have mPO : ∀ a, a < O → cP.nmem a = cO.nmem a := fun a ha => by rw [mPH, mHO a ha]
-  have mPK : ∀ a, a < AK → cP.nmem a = cK.nmem a := fun a ha => by
-    rw [mPO a (by omega), mOK a ha]
+  have mPA : MemEqBelow A₁ cP.nmem cA.nmem := fun a ha => by
+    ram_rw [mPH, mHO a, mOK a, mKB a, mBA a ha]
+  have mP0 : MemEqBelow A₀ cP.nmem c.nmem := fun a ha => by
+    ram_rw [mPA a, agA a ha]
+  have mPO : MemEqBelow O cP.nmem cO.nmem := fun a ha => by rw [mPH, mHO a ha]
+  have mPK : MemEqBelow AK cP.nmem cK.nmem := fun a ha => by
+    ram_rw [mPO a, mOK a ha]
   -- the cost
   have hz : 2 * N.arcs.length * (5500 * ((Nat.clog 2 (N.arcs.length + N.chords.length + 1)) + 1) + 410) = 11000 * (N.arcs.length * ((Nat.clog 2 (N.arcs.length + N.chords.length + 1)) + 1)) + 820 * N.arcs.length := by ring
   have hkPE : kP ≤ 3 * (O + 18 - A₀) + 4 := hkP1
@@ -205,26 +195,28 @@ theorem prep_meets : Meets prepMainS prepBands
       rw [hz] at hkB
       unfold κq at *
       omega
-    unfold κq; nlinarith
+    change _ ≤ κq * X
+    unfold κq
+    omega
   · -- the post-condition
     refine ⟨by show A₀ ≤ cP.nreg 110003; rw [hP3]; omega,
       (by show cP.nreg 110003 + 3 ≤ _; rw [hP3, hP9]; omega), ?_, ?_, ?_, fun m' hm' => ?_⟩
     · show cP.nmem (cP.nreg 110003) = c.nreg 110000
-      rw [hP3, mPH, show O = O + 0 from rfl, hdrH 0 (by norm_num) (by norm_num)]
+      ram_rw [hP3, mPH, show O = O + 0 from rfl, hdrH 0]
       show cO.nreg 120013 = _
-      rw [kO12 _ (by norm_num) (by norm_num), PLA.rD]
+      ram_rw [kO12, PLA.rD]
     · show cP.nmem (cP.nreg 110003 + 1) = c.nreg 110001
-      rw [hP3, mPH, hdrH 1 (by norm_num) (by norm_num)]
+      ram_rw [hP3, mPH, hdrH 1]
       show cO.nreg 120014 = _
-      rw [kO12 _ (by norm_num) (by norm_num), PLA.rNB]
+      ram_rw [kO12, PLA.rNB]
     · show cP.nmem (cP.nreg 110003 + 2) = c.nreg 110002
-      rw [hP3, mPH, hdrH 2 (by norm_num) (by norm_num)]
+      ram_rw [hP3, mPH, hdrH 2]
       show cO.nreg 120049 = _
-      rw [kO12 _ (by norm_num) (by norm_num), r49]
+      ram_rw [kO12, r49]
     · show OAt P m' (cP.nreg 110003)
       rw [hP3]
       rw [hP9] at hm'
-      refine ⟨O + 18, by rw [hm' _ (by omega), mPH, hdr3], by omega, ?_⟩
+      refine ⟨O + 18, by ram_rw [hm', mPH, hdr3], by omega, ?_⟩
       refine Robust.transport ?_ hm'
       refine qat_of (m := cP.nmem) (m₀ := c.nmem) (A₀ := A₀) (D := D) (NB := NB) (γ := γ) (O := O)
         (E := O + 18) (H := H) (C := C) (N := N) (B := B) (k := cK.nreg 60090)
@@ -233,20 +225,20 @@ theorem prep_meets : Meets prepMainS prepBands
         (TB := cA.nreg 120041) (L := (Nat.clog 2 (N.arcs.length + N.chords.length + 1))) (Vc := qvOf cA) hG hCQ hD ⟨hDA, hall⟩ hNFw hcan mP0
         ?_ rfl (by omega) ch2 tbA (by rw [posA]) (by rw [posA, tbA]; omega)
         (by omega) (by omega) hDLO hORDO hRKO
-        (by rw [mPA _ (by omega)]; exact m0A)
-        (fun i hi => by rw [mPA _ (by omega)]; exact mdcA i hi)
+        (by ram_rw [mPA]; exact m0A)
+        (fun i hi => by ram_rw [mPA]; exact mdcA i hi)
         (fun j hj => by rw [mPA _ (by rw [a9A, tbA]; omega)]; exact tabA j hj)
         Alt Klt rfl
         (fun j hj => by rw [mPA _ (by rw [a9A, posA, tbA]; omega)]; exact pfA j hj)
-        (fun q hq => by rw [mPA _ (by omega)]; exact chltA q hq)
+        (fun q hq => by ram_rw [mPA]; exact chltA q hq)
         (fun q q' hq hq' e => by
-          rw [mPA _ (by omega), mPA _ (by omega)] at e
+          ram_rw [mPA, mPA] at e
           exact chinjA q q' hq hq' e)
         ⟨PLA.rCB, by show cA.nreg 120016 = _; rw [PLA.rm, hcm],
           by show cA.nreg 120015 = _; rw [PLA.rs, hD.2.2.1],
           by show cA.nreg 120022 = _; rw [PLA.tv, hD.2.2.1, hD.2.2.2.2.1]⟩
         (fun q q' hqq hq' => by
-          rw [mPA _ (by omega), mPA _ (by omega)]
+          ram_rw [mPA, mPA]
           exact chsA q q' hqq hq')
         hgok rfl (hclF.mono mPK hFLb hLABb)
         (hordF.mono mPO (by rw [hBN] at hFLb; omega) (by rw [hBN] at hLABb; omega) hDLO hORDO
@@ -260,7 +252,7 @@ theorem prep_meets : Meets prepMainS prepBands
       · subst h17
         rw [hdrH 17 hi h3]
         simp only [hdrRegs, hdrVals, List.getD_cons_zero, List.getD_cons_succ]
-        rw [KO _ (by unfold bandOf; norm_num) (by unfold OKeep; omega)]; exact v34K
+        rw [KO _ (by reg_omega) (by unfold OKeep; omega)]; exact v34K
       · rw [hdrH i hi h3]
         interval_cases i <;> simp only [hdrRegs, hdrVals, List.getD_cons_zero,
           List.getD_cons_succ] <;>
@@ -277,20 +269,20 @@ theorem prep_meets : Meets prepMainS prepBands
                  | exact PLA.rK
                  | exact lA
                  | rfl)
-            | (rw [FO.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide)])
+            | (ram_rw [FO.1])
   · -- the frame
     have hS : ∀ S, S ⊆ prepBands → ∀ r, bandOf r ∉ prepBands → bandOf r ∉ S :=
       fun S hS r hr h => hr (hS h)
     refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => mP0 a ha, fun a ha => ?_, ?_, ?_, ?_⟩
     · have h11 : bandOf r ≠ 11 := fun h => hr (by simp [prepBands, bOPrep, h])
       unfold bandOf at h11
-      rw [RP r (by omega) (by omega), RH r (by omega) (by omega) (by omega) (by rw [hAL] at hra; exact hra),
+      ram_rw [RP r, RH r (by omega) (by omega) (by omega) (by rw [hAL] at hra; exact hra),
         FO.1 r (hS _ (by decide) r hr) hra, GK.1 r (hS _ (by decide) r hr) hra,
         GB.1 r (hS _ (by decide) r hr) hra, FA.1 r (hS _ (by decide) r hr) hra]
     · rw [rrP, rrH, FO.2.1 r (hS _ (by decide) r hr), GK.2.1 r (hS _ (by decide) r hr),
         GB.2.1 r (hS _ (by decide) r hr), FA.2.1 r (hS _ (by decide) r hr)]
-    · rw [rmP, rmH, FO.2.2.2.1 a (by omega), GK.2.2.2.1 a (by omega),
-        GB.2.2.2.1 a (by omega), FA.2.2.2.1 a ha]
+    · ram_rw [rmP, rmH, FO.2.2.2.1 a, GK.2.2.2.1 a,
+        GB.2.2.2.1 a, FA.2.2.2.1 a ha]
     · rw [oP, oH, FO.2.2.2.2, GK.2.2.2.2, GB.2.2.2.2, FA.2.2.2.2]
     · rw [hP9]; omega
     · rw [hP9]; omega
@@ -306,7 +298,7 @@ noncomputable def lemma36Oracle : OracleIface where
 /-- **Lemma 3.6** (WP-H): the oracle is valid. -/
 theorem lemma36Oracle_valid : lemma36Oracle.Valid :=
   ⟨prepBands_sub, prep_meets,
-    query_meets ⟨by decide, by decide, by decide⟩ le_rfl⟩
+    query_meets (by decide) le_rfl⟩
 
 end
 

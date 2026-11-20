@@ -45,9 +45,6 @@ def sgnD (d : ℕ) : ℝ := if d = 0 then 1 else -1
 theorem sgnD_cases (d : ℕ) : sgnD d = 1 ∨ sgnD d = -1 := by
   unfold sgnD; split_ifs <;> simp
 
-theorem sgnD_mul_self (d : ℕ) : sgnD d * sgnD d = 1 := by
-  rcases sgnD_cases d with h | h <;> rw [h] <;> norm_num
-
 /-! ## Candidates -/
 
 variable {Q : Polygon}
@@ -88,16 +85,20 @@ theorem rayPt_cross {v : Point} {σ x : ℝ} (hσ : σ = 1 ∨ σ = -1) :
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   ext
   · simp only [Visibility.rayPt_fst]; rw [← mul_assoc, hσσ]; ring
-  · simp only [Visibility.rayPt_snd]
+  rfl
 
+section
+
+variable (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+    (hdir : DirInterior Q i σ) {q : ℕ} (hc : Cand Q i σ q)
+
+include hQ hi hσ hdir hc in
 /-- **No candidate crossing is strictly before the far end.** -/
-theorem cand_le (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (hdir : DirInterior Q i σ) {q : ℕ} (hc : Cand Q i σ q) :
+theorem cand_le :
     σ * (chordEnd Q i σ).1 ≤ σ * edgeXAt Q q i := by
   obtain ⟨hq, hs, hside⟩ := hc
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hX : ((edgeXAt Q q i, (Q.vtx i).2) : Point) ∈ Q.boundary :=
-    (strad_open hs).mem_boundary hq
+  have hX := (strad_open hs).mem_boundary hq
   have hle : chordParam Q i σ ≤ σ * (edgeXAt Q q i - (Q.vtx i).1) := by
     by_contra hlt
     push Not at hlt
@@ -148,18 +149,18 @@ theorem far_cand (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
   · rw [hxq, hz, Visibility.chordEnd_fst, add_sub_cancel_left, ← mul_assoc, hσσ, one_mul]
     exact Visibility.chordParam_pos hQ hi hdir
 
+include hQ hi hσ hdir hc in
 /-- **A candidate not after the far end carries it.** -/
-theorem cand_min (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (hdir : DirInterior Q i σ) {q : ℕ} (hc : Cand Q i σ q)
+theorem cand_min
     (hmin : σ * edgeXAt Q q i ≤ σ * (chordEnd Q i σ).1) :
     OpenEdgePt Q q (chordEnd Q i σ) := by
   have h1 := cand_le hQ hi hσ hdir hc
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
-  have hx : edgeXAt Q q i = (chordEnd Q i σ).1 :=
-    mul_left_cancel₀ hσ0 (le_antisymm hmin h1)
+  have hx := mul_left_cancel₀ hσ0 (le_antisymm hmin h1)
   have := strad_open hc.2.1
-  rw [hx] at this
-  exact this
+  rwa [hx] at this
+
+end
 
 /-! ## Walk edges -/
 
@@ -187,8 +188,7 @@ theorem scan_min (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
       σ * edgeXAt Q (qE li Q.n w) i ≤ σ * edgeXAt Q (qE li Q.n w') i) :
     OpenEdgePt Q (qE li Q.n w) (chordEnd Q i σ) := by
   obtain ⟨q, hcq, hxq, hoq⟩ := far_cand hQ hDH hi hσ hdir
-  have hq₀ : q = qE li Q.n w₀ :=
-    openEdge_unique hQ hcq.1 (DownMath.qE_lt li hw₀) hoq hz₀
+  have hq₀ := openEdge_unique hQ hcq.1 (DownMath.qE_lt li hw₀) hoq hz₀
   subst hq₀
   have := hmin w₀ hw₀E hw₀ hcq
   rw [hxq] at this
@@ -215,7 +215,7 @@ theorem openEdge_walk {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (h
   have hw1 : (w + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
   have hv0 := DownMath.walk_vtx hli hw
   have hv1 := DownMath.walk_vtx hli hw1
-  have hWn : (interiorWalk Q).n = Q.n := DownMath.walk_n Q
+  have hWn := DownMath.walk_n Q
   rcases DownMath.edge_ends li (by omega) hw with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · refine ⟨s, hs, ?_⟩
     unfold sidePt; rw [hWn, hv0, hv1, h1, h2]
@@ -239,15 +239,15 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   set σ := sgnD d with hσdef
   have hσ := sgnD_cases d
   have hn3 := simple_three_le hQ
-  have hWn : W.n = Q.n := DownMath.walk_n Q
-  have hWs : W.Simple := (FactsInterior.interiorWalk_spec hQ).1
+  have hWn := DownMath.walk_n Q
+  have hWs := (FactsInterior.interiorWalk_spec hQ).1
   set wv := ivB li Q.n i with hwv
   have hwvn : wv < Q.n := DownMath.ivB_lt li hi
   -- the vertex end
   have hWv : W.vtx wv = Q.vtx i := by
     rw [hWdef, DownMath.walk_vtx hli hwvn, hwv, ivB_ivB li hi]
   have hst : i = DownBase.wStart li Q.n wv := by rw [wStart_eq_ivB, hwv, ivB_ivB li hi]
-  have hposv : I.pos Q ⟨wv, i + 1⟩ = Q.vtx i := DownBase.pos_start hQ hDH hli hwvn hst
+  have hposv := DownBase.pos_start hQ hDH hli hwvn hst
   have hparv : I.param Q ⟨wv, i + 1⟩ = 0 := by
     rw [DownBase.param_eq hQ hDH hli hwvn, DownBase.wa_eq hQ hDH hli hwvn, ← hst, sub_self,
       zero_div]
@@ -255,7 +255,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   set z := chordEnd Q i σ with hzdef
   obtain ⟨t, ht, hzt⟩ := openEdge_walk hli hn3 hw hz
   have hne := DownBase.wa_wb_snd_ne hQ hDH hli hw
-  have hd0 : (I.wb w).2 - (I.wa w).2 ≠ 0 := sub_ne_zero.2 hne.symm
+  have hd0 := sub_ne_zero.2 hne.symm
   have hzt' : Geometry.lerp (I.wa w) (I.wb w) t = z := hzt
   have hpart : I.param Q ⟨w, i + 1⟩ = t := by
     rw [DownBase.param_eq hQ hDH hli hw]
@@ -271,14 +271,14 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   -- the chord as a segment between its two ends
   have hc : chordSet Q i σ ∈ chords Q := ⟨i, σ, hi, hσ, hdir, rfl⟩
   have hHC := FullDegInt.hc_full hQ hc
-  have hadm : chordSet Q i σ ∈ I.Adm := hHC
+  have hadm := hHC
   have hM := walkAx_interiorModel hQ
   obtain ⟨A, B, hAB, hcAB, -, hopen, hWA, hWB⟩ := hM.ends _ hadm
-  have hσσ : σ * σ = 1 := sgnD_mul_self d
+  
   have hpos := Visibility.chordParam_pos hQ hi hdir
   have hvb : Q.vtx i ∈ Q.boundary := ⟨i, hi, Geometry.left_mem_segment _ _⟩
-  have hzb : z ∈ Q.boundary := Visibility.chordEnd_mem_boundary hQ hi hdir
-  have hD : I.D = Q.filled \ Q.boundary := rfl
+  have hzb := Visibility.chordEnd_mem_boundary hQ hi hdir
+  
   have hend : ∀ x ∈ chordSet Q i σ, x ∈ Q.boundary → x = A ∨ x = B := by
     intro x hx hxb
     rw [hcAB] at hx
@@ -286,11 +286,11 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     rcases hs0.lt_or_eq with hs0 | hs0
     · rcases hs1.lt_or_eq with hs1 | hs1
       · exact absurd hxb (hs ▸ (hopen s ⟨hs0, hs1⟩).2)
-      · right; rw [hs, hs1, Geometry.lerp_one]
-    · left; rw [hs, ← hs0, Geometry.lerp_zero]
+      simp [hs, hs1, Geometry.lerp_one]
+    simp [hs, ← hs0, Geometry.lerp_zero]
   have hvA := hend _ (Geometry.left_mem_segment _ _) hvb
   have hzA := hend _ (Geometry.right_mem_segment _ _) hzb
-  have hvz : Q.vtx i ≠ z := (Visibility.chordEnd_ne_vtx hQ hi hdir).symm
+  
   have hWEv : WalkEnd I.W (chordSet Q i σ) (Q.vtx i) := by
     rcases hvA with h | h <;> rw [h] <;> assumption
   have hWEz : WalkEnd I.W (chordSet Q i σ) z := by
@@ -301,7 +301,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     obtain ⟨p, s, hA, hps⟩ := hWEv.1
     rw [hIW] at hA hps
     obtain ⟨hp, hs0, hs1, -⟩ := id hA
-    have := FactsInterior.pos_unique hWs hp (by rw [hWn]; exact hwvn) hs0 hs1 le_rfl one_pos
+    have := FactsInterior.pos_unique hWs hp (by rwa [hWn]) hs0 hs1 le_rfl one_pos
       (by rw [hps, Chazelle.Chain.sidePt_zero, hWv])
     obtain ⟨rfl, rfl⟩ := this
     exact hA
@@ -316,7 +316,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   have pv : ProperPos I Q Q.n ⟨wv, i + 1⟩ := ⟨by rw [hparv], by rw [hparv]; exact one_pos, hi⟩
   have pz : ProperPos I Q Q.n ⟨w, i + 1⟩ := ⟨by rw [hpart]; exact ht.1.le,
     by rw [hpart]; exact ht.2, hi⟩
-  have hv1 : (Q.vtx i).1 = ((Q.vtx i).1, (Q.vtx i).2).1 := rfl
+  
   -- the two directions
   unfold vtrip
   by_cases hd0 : d = 0
@@ -334,10 +334,10 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     unfold CRec.Attached
     rw [hset]
     refine ⟨?_, ?_⟩
-    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rw [hparv]; exact attv
-    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rw [hpart]; exact attz
+    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rwa [hparv]
+    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rwa [hpart]
   · rw [ite_eq_right hd0]
-    have hσ1 : σ = -1 := by rw [hσdef]; unfold sgnD; rw [ite_eq_right hd0]
+    have hσ1 : σ = -1 := by simp [hσdef, sgnD, ite_eq_right hd0]
     have hlt : z.1 < (Q.vtx i).1 := by
       rw [hzdef, Visibility.chordEnd_fst,
         show σ * chordParam Q i σ = -chordParam Q i σ by rw [hσ1, neg_one_mul]]
@@ -350,8 +350,8 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
     unfold CRec.Attached
     rw [hset]
     refine ⟨?_, ?_⟩
-    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rw [hpart]; exact attz
-    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rw [hparv]; exact attv
+    · show SideAttach W _ w (I.param Q ⟨w, i + 1⟩); rwa [hpart]
+    · show SideAttach W _ wv (I.param Q ⟨wv, i + 1⟩); rwa [hparv]
 
 end
 

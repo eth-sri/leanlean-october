@@ -31,9 +31,7 @@ theorem ncard_F (hN : IsNF M Q N) : (N.F M Q).ncard = N.nChords := by
     ext c
     rw [mem_F_iff]
     simp only [mem_image, mem_ofPred_eq]
-    constructor
-    · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
-    · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
+    tauto
   have hinj : Set.InjOn (fun i => cs M Q N i) {i | i < N.nChords} :=
     fun i hi i' hi' h => cs_inj hN hi hi' h
   rw [e, hinj.ncard_image, show {i | i < N.nChords} = ((Finset.range N.nChords : Finset ℕ) :
@@ -94,27 +92,34 @@ theorem chords_le {reg : ℕ → Set Point} (hN : IsNF M Q N) (hRC : RegionCorr 
   rw [← deg_region hN hRC hRO hr]
   exact hD _ (hRC.1 r hr)
 
+section
+
+variable (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords)
+include hN hi
+
 /-- The left end of a chord record is a position of the walk proper. -/
-theorem lpos_proper (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) :
+theorem lpos_proper :
     ProperPos M Q Q.n (N.chord i).lpos := by
   obtain ⟨-, h0, h1, -⟩ := attach_l hN hi
   obtain ⟨-, -, -, -, -, -, -, -, -, hh, -⟩ := hN
-  exact ⟨h0, h1, by have := hh i hi; show (N.chord i).h + 1 ≤ Q.n; omega⟩
+  exact ⟨h0, h1, by have := hh i hi; assumption⟩
 
-theorem rpos_proper (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) :
+theorem rpos_proper :
     ProperPos M Q Q.n (N.chord i).rpos := by
   obtain ⟨-, h0, h1, -⟩ := attach_r hN hi
   obtain ⟨-, -, -, -, -, -, -, -, -, hh, -⟩ := hN
-  exact ⟨h0, h1, by have := hh i hi; show (N.chord i).h + 1 ≤ Q.n; omega⟩
+  exact ⟨h0, h1, by have := hh i hi; assumption⟩
 
 /-- The ends of a chord record are cut keys. -/
-theorem lkey_cut (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) :
+theorem lkey_cut :
     M.IsCut (N.F M Q) (M.key Q (N.chord i).lpos) :=
   ⟨cs M Q N i, cs_mem hi, _, _, attach_l hN hi, rfl⟩
 
-theorem rkey_cut (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) :
+theorem rkey_cut :
     M.IsCut (N.F M Q) (M.key Q (N.chord i).rpos) :=
   ⟨cs M Q N i, cs_mem hi, _, _, attach_r hN hi, rfl⟩
+
+end
 
 /-- The start of a listed arc lies on a walk edge. -/
 theorem edge_lt' (hN : IsNF M Q N) (hne : (N.F M Q).Nonempty) {j : ℕ} (hj : j < N.arcs.length) :

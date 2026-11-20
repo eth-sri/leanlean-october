@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRMgB
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -85,24 +87,23 @@ theorem mgDesc_exec (c : Config) (hw : WordsBounded W c) {A HB ma mp : ℕ}
     ∃ c' k, Exec P W mgDesc c c' k ∧ k = 14 ∧ c'.nreg 219137 = A ∧ c'.nreg 9999 = A + 6 ∧
       c'.nmem A = 0 ∧ c'.nmem (A + 1) = HB ∧ c'.nmem (A + 2) = 0 ∧
       c'.nmem (A + 3) = ma + mp ∧ c'.nmem (A + 4) = c.nreg 219138 ∧
-      c'.nmem (A + 5) = c.nreg 219139 ∧ (∀ a, a < A → c'.nmem a = c.nmem a) ∧
+      c'.nmem (A + 5) = c.nreg 219139 ∧ (MemEqBelow A c'.nmem c.nmem) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have aT := hw.1 219138
-  have aB := hw.1 219139
+  
+  
   unfold mgDesc
   exec_block
   all_goals try (config_simp; (try simp only [a40, a41, a46, a00, a12, a16, aA]); omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · config_simp; simp only [aA]
-  · config_simp; simp only [aA, a46]
-  · config_simp; simp only [aA, a41, a40, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [aA, a41, a40, a00, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [aA, a41, a40, a00, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [aA, a41, a40, a00, a12, a16, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [aA, a41, a40, a00, a12, a16, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [aA, a41, a40, a00, a12, a16, Machine.upd_apply]; split_ifs <;> omega
-  · intro a ha; config_simp; simp only [aA, a41, Machine.upd_apply]
-    split_ifs <;> first | rfl | omega
+  refine ⟨rfl, ?_⟩; and_intros
+  · assumption
+  · ram_finish
+  · config_simp; ram_post
+  · simp_all 
+  · simp_all 
+  · simp_all 
+  · simp_all 
+  · simp_all 
+  · intro a ha; ram_post
   · config_simp
   · config_simp
   · config_simp
@@ -127,10 +128,7 @@ theorem mgOut_exec (c : Config) (hw : WordsBounded W c) {A ma mp γ : ℕ}
     (b13 : c.nreg 219113 = γ) (b41 : c.nreg 219141 = 1) (h1 : ma + mp ≤ W) (h2 : γ + 1 ≤ W) :
     ∃ c' k, Exec P W mgOut c c' k ∧ k = 4 ∧ c'.nreg 219110 = A ∧
       c'.nreg 219111 = c.nreg 100008 ∧ c'.nreg 219112 = ma + mp ∧ c'.nreg 219113 = γ + 1 := by
-  unfold mgOut
-  exec_block
-  all_goals try (config_simp; (try simp only [b37, b12, b16, b13, b41]); omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [b37, b12, b16, b13, b41])
+  ram_exec
 
 set_option maxHeartbeats 8000000 in
 /-- **One merge step**: the union of the accumulated chain `C₁ = ⟨H.poly Q, 0, m₁⟩` (descriptor
@@ -189,7 +187,8 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   have hP1 : C1.P = H.poly (Qof P) := hd1.holds.2.2.1
   have hP2 : C2.P = H.poly (Qof P) := hd2.holds.2.2.1
   have hC1n : C1.P.n = NP := by rw [hP1, DownMath.host_poly_n, hQn, hNP]
-  have hlen' : ma + C2.m + 1 ≤ NP := by rw [← hC1n, ← hm1]; exact hlen
+  have hlen' := hlen
+  rw [hm1, hC1n] at hlen'
   have hNW : NP ≤ 64 * P.n := by
     have h1 := Host.pts_length_le hwf
     have h2 : H.length * P.n ≤ 64 * P.n := Nat.mul_le_mul_right _ hHok
@@ -202,57 +201,57 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   have u : ∀ r, Btop r = false → c₁.nreg r = c.nreg r := g₁.1
   have hm₁ : c₁.nmem = c.nmem := g₁.2.2.1
   -- the descriptor of the union
-  have a40 : c₁.nreg 219140 = 0 := by rw [u _ (by decide), hK.r40]
-  have a41 : c₁.nreg 219141 = 1 := by rw [u _ (by decide), hK.r41]
-  have a46 : c₁.nreg 219146 = 6 := by rw [u _ (by decide), hK.r46]
-  have a00 : c₁.nreg 219100 = HB := by rw [u _ (by decide), h00]
-  have a12 : c₁.nreg 219112 = ma := by rw [u _ (by decide), h12]
-  have a16 : c₁.nreg 219116 = mp := by rw [u _ (by decide), h16]
-  have aA : c₁.nreg 9999 = A₀ := by rw [u _ (by decide)]; rfl
+  have a40 : c₁.nreg 219140 = 0 := by ram_rw [u, hK.r40]
+  have a41 : c₁.nreg 219141 = 1 := by ram_rw [u, hK.r41]
+  have a46 : c₁.nreg 219146 = 6 := by ram_rw [u, hK.r46]
+  have a00 : c₁.nreg 219100 = HB := by ram_rw [u, h00]
+  have a12 : c₁.nreg 219112 = ma := by ram_rw [u, h12]
+  have a16 : c₁.nreg 219116 = mp := by ram_rw [u, h16]
+  have aA : c₁.nreg 9999 = A₀ := by ram_rw [u]; rfl
   obtain ⟨c₂, k₂, e₂, hk₂, d37, dA, w0, w1, w2, w3, w4, w5, wlt, drr, drm, dout⟩ :=
     mgDesc_exec (P := P) c₁ hw₁ a40 a41 a46 a00 a12 a16 aA hAW (by omega)
   have hw₂ := e₂.wb_right
   have g₂ : FrameM Bdesc c₁ c₂ := exec_frameM e₂ wrM_mgDesc
   have v : ∀ r, Btop r = false → Bdesc r = false → c₂.nreg r = c.nreg r := fun r h1 h2 =>
     (g₂.1 r h2).trans (u r h1)
-  have hag : ∀ a, a < A₀ → c₂.nmem a = c.nmem a := fun a ha => by rw [wlt a ha, hm₁]
+  have hag : MemEqBelow A₀ c₂.nmem c.nmem := fun a ha => by rw [wlt a ha, hm₁]
   -- the union's descriptor, robustly
   have hP21 : C2.P = C1.P := hP2.trans hP1.symm
   have hcons : C2.s = C1.s + C1.m := by rw [hs2, hs1, hm1]; ring
-  have hΦ : ∀ m' : ℕ → ℕ, (∀ a, a < A₀ + 6 → m' a = c₂.nmem a) →
+  have hΦ : ∀ m' : ℕ → ℕ, (MemEqBelow (A₀ + 6) m' c₂.nmem) →
       m' A₀ = 0 ∧ m' (A₀ + 1) = HB ∧
       ChainDescAt m' (A₀ + 1) (Qof P) H (jOf C1 C2 hlen).whole := by
     intro m' hm'
-    have ag : ∀ a, a < A₀ → m' a = c.nmem a := fun a ha =>
+    have ag : MemEqBelow A₀ m' c.nmem := fun a ha =>
       (hm' a (by omega)).trans (hag a ha)
     obtain ⟨b1h, b1⟩ := hd1 m' ag
     obtain ⟨b2h, b2⟩ := hd2 m' ag
-    refine ⟨by rw [hm' _ (by omega)]; exact w0, by rw [hm' _ (by omega)]; exact w1, ?_⟩
+    refine ⟨by ram_rw [hm']; exact w0, by ram_rw [hm']; exact w1, ?_⟩
     refine descWhole hlen hP21 hcons b1 b2 ?_ ?_ ?_ ?_ ?_
-    · rw [hm' _ (by omega), w1, b1h]
-    · rw [show A₀ + 1 + 1 = A₀ + 2 by omega, hm' _ (by omega), w2, hs1]
-    · rw [show A₀ + 1 + 2 = A₀ + 3 by omega, hm' _ (by omega), w3, hm1, hm2]
-    · rw [show A₀ + 1 + 3 = A₀ + 4 by omega, hm' _ (by omega), w4, t38]
-    · rw [show A₀ + 1 + 4 = A₀ + 5 by omega, hm' _ (by omega), w5, t39,
+    · ram_rw [hm', w1, b1h]
+    · ram_rw [show A₀ + 1 + 1 = A₀ + 2 by omega, hm', w2, hs1]
+    · ram_rw [show A₀ + 1 + 2 = A₀ + 3 by omega, hm', w3, hm1, hm2]
+    · ram_rw [show A₀ + 1 + 3 = A₀ + 4 by omega, hm', w4, t38]
+    · ram_rw [show A₀ + 1 + 4 = A₀ + 5 by omega, hm', w5, t39,
         show D1 + 1 + 4 = D1 + 5 by omega, show D2 + 1 + 4 = D2 + 5 by omega,
-        ag _ (by omega), ag _ (by omega)]
+        ag, ag]
   have hTD := hΦ c₂.nmem (fun _ _ => rfl)
   -- the arguments
   have b10 : c₂.nreg 219110 = D1 := v _ (by decide) (by decide)
   have b14 : c₂.nreg 219114 = D2 := v _ (by decide) (by decide)
   have b11 : c₂.nreg 219111 = f1 := v _ (by decide) (by decide)
   have b15 : c₂.nreg 219115 = f2 := v _ (by decide) (by decide)
-  have b13 : c₂.nreg 219113 = γ := by rw [v _ (by decide) (by decide), h13]
-  have b03 : c₂.nreg 219103 = D := by rw [v _ (by decide) (by decide), h03]
-  have b04 : c₂.nreg 219104 = g := by rw [v _ (by decide) (by decide), h04]
-  have b41 : c₂.nreg 219141 = 1 := by rw [v _ (by decide) (by decide), hK.r41]
+  have b13 : c₂.nreg 219113 = γ := by ram_rw [v, h13]
+  have b03 : c₂.nreg 219103 = D := by ram_rw [v, h03]
+  have b04 : c₂.nreg 219104 = g := by ram_rw [v, h04]
+  have b41 : c₂.nreg 219141 = 1 := by ram_rw [v, hK.r41]
   obtain ⟨c₃, k₃, e₃, hk₃, r0, r1, r2, r3, r4, r5, r6, r7, r9, m₃⟩ :=
     mgArgs_exec (P := P) c₂ hw₂ b10 b14 d37 b11 b15 b13 b03 b04 b41 (by omega) (by omega)
       (by omega) hγW
   have hw₃ := e₃.wb_right
   have g₃ : FrameB Bargs c₂ c₃ := exec_frameB e₃ wr_mgArgs
-  have A3 : c₃.nreg ALLOC = A₀ + 6 := by rw [g₃.1 _ (by decide)]; exact dA
-  have ag₃ : ∀ a, a < A₀ → c₃.nmem a = c.nmem a := fun a ha => by rw [m₃]; exact hag a ha
+  have A3 : c₃.nreg ALLOC = A₀ + 6 := by ram_rw [g₃.1]; exact dA
+  have ag₃ : MemEqBelow A₀ c₃.nmem c.nmem := fun a ha => by rw [m₃]; exact hag a ha
   have hHA₃ : HostAt c₃.nmem HB H := hHA c₃.nmem ag₃
   obtain ⟨b1h, b1⟩ := hd1 c₃.nmem ag₃
   obtain ⟨b2h, b2⟩ := hd2 c₃.nmem ag₃
@@ -308,26 +307,26 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     refine fr₄.1 q (by rw [hq]; decide) ?_
     simp only [bandOf, bDownDrv] at hq; unfold ALLOC; omega
   have q37 : c₄.nreg 219137 = A₀ := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide)]; exact d37
+    ram_rw [hmb, g₃.1]; exact d37
   have q12 : c₄.nreg 219112 = ma := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide), v _ (by decide) (by decide), h12]
+    ram_rw [hmb, g₃.1, v, h12]
   have q16 : c₄.nreg 219116 = mp := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide), v _ (by decide) (by decide), h16]
+    ram_rw [hmb, g₃.1, v, h16]
   have q13 : c₄.nreg 219113 = γ := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide)]; exact b13
+    ram_rw [hmb, g₃.1]; exact b13
   have q41 : c₄.nreg 219141 = 1 := by
-    rw [hmb _ (by decide), g₃.1 _ (by decide)]; exact b41
+    ram_rw [hmb, g₃.1]; exact b41
   obtain ⟨c₅, k₅, e₅, hk₅, o10, o11, o12, o13⟩ :=
     mgOut_exec (P := P) c₄ hw₄ q37 q12 q16 q13 q41 (by omega) hγW
   have g₅ : FrameB Bout c₄ c₅ := exec_frameB e₅ wr_mgOut
   have A5 : c₅.nreg ALLOC = c₄.nreg ALLOC := g₅.1 _ (by decide)
   have A4 : A₀ + 6 ≤ c₄.nreg ALLOC := by have := fr₄.2.2.2.2.2.1; omega
-  have m5 : ∀ a, a < A₀ + 6 → c₅.nmem a = c₂.nmem a := fun a ha => by
-    rw [g₅.2.2.1, fr₄.2.2.1 a (by omega), m₃]
+  have m5 : MemEqBelow (A₀ + 6) c₅.nmem c₂.nmem := fun a ha => by
+    ram_rw [g₅.2.2.1, fr₄.2.2.1 a, m₃]
   have hΦ5 : Robust (c₅.nreg ALLOC) c₅.nmem (fun m => m A₀ = 0 ∧ m (A₀ + 1) = HB ∧
       ChainDescAt m (A₀ + 1) (Qof P) H (jOf C1 C2 hlen).whole) := fun m' hm' =>
     hΦ m' (fun a ha => (hm' a (by omega)).trans (m5 a ha))
-  have ag₅ : ∀ a, a < A₀ → c₅.nmem a = c.nmem a := fun a ha => (m5 a (by omega)).trans (hag a ha)
+  have ag₅ : MemEqBelow A₀ c₅.nmem c.nmem := fun a ha => (m5 a (by omega)).trans (hag a ha)
   -- the frame
   have hB21 : ∀ r, bandOf r = bDownDrv → r ≠ ALLOC := fun r hr => by
     simp only [bandOf, bDownDrv] at hr; unfold ALLOC; omega
@@ -335,12 +334,12 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     simp only [Btop, Bool.or_eq_true, decide_eq_true_eq] at hr
     unfold mgBands
     rcases hr with (h | h) | h
-    · have : bandOf r = bDownDrv := by simp only [bandOf, bDownDrv]; omega
-      exact ⟨by rw [this]; decide, by unfold ALLOC; omega⟩
-    · have : bandOf r = bSign := by simp only [bandOf, bSign]; omega
-      exact ⟨by rw [this]; decide, by unfold ALLOC; omega⟩
-    · have : bandOf r = bLocate := by simp only [bandOf, bLocate]; omega
-      exact ⟨by rw [this]; decide, by unfold ALLOC; omega⟩) k₁
+    · have : bandOf r = bDownDrv := by reg_omega
+      exact ⟨by rw [this]; decide, by reg_omega⟩
+    · have : bandOf r = bSign := by reg_omega
+      exact ⟨by rw [this]; decide, by reg_omega⟩
+    · have : bandOf r = bLocate := by reg_omega
+      exact ⟨by rw [this]; decide, by reg_omega⟩) k₁
   have F2 : Frame mgBands c₁ c₂ k₂ := by
     refine ⟨fun r hr hra => g₂.1 r ?_, fun r _ => by rw [drr],
       fun a ha => wlt a (lt_of_lt_of_eq ha aA), fun a _ => by rw [drm], dout,
@@ -354,13 +353,13 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
     · exact hra rfl
   have F3 : Frame mgBands c₂ c₃ k₃ := NFLoc.frame_of_frameB g₃ (fun r hr => by
     simp only [Bargs, decide_eq_true_eq] at hr
-    have : bandOf r = bMerge := by simp only [bandOf, bMerge]; omega
-    exact ⟨by rw [this]; decide, by unfold ALLOC; omega⟩) k₃
+    have : bandOf r = bMerge := by reg_omega
+    exact ⟨by rw [this]; decide, by reg_omega⟩) k₃
   have F4 : Frame mgBands c₃ c₄ k₄ := fr₄.mono (Finset.subset_insert _ _) le_rfl
   have F5 : Frame mgBands c₄ c₅ k₅ := NFLoc.frame_of_frameB g₅ (fun r hr => by
     simp only [Bout, decide_eq_true_eq] at hr
-    have : bandOf r = bDownDrv := by simp only [bandOf, bDownDrv]; omega
-    exact ⟨by rw [this]; decide, by unfold ALLOC; omega⟩) k₅
+    have : bandOf r = bDownDrv := by reg_omega
+    exact ⟨by rw [this]; decide, by reg_omega⟩) k₅
   have FF := F1.trans (F2.trans (F3.trans (F4.trans F5)))
   simp only [Finset.union_self] at FF
   refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
@@ -373,7 +372,7 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
       (by rw [jOf_whole_s, jOf_whole_P, hs1]; omega)
   · rw [o11, A5, g₅.2.2.1]; exact hNW8
   · intro q hq hr
-    have hq' : 210000 ≤ q ∧ q < 220000 := by simp only [bandOf, bDownDrv] at hq; omega
+    have hq' : 210000 ≤ q ∧ q < 220000 := by reg_omega
     rw [g₅.1 q (by simp only [Bout, decide_eq_false_iff_not]; omega), hmb q hq,
       g₃.1 q (by simp only [Bargs, decide_eq_false_iff_not]; omega),
       v q (by simp only [Btop, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)

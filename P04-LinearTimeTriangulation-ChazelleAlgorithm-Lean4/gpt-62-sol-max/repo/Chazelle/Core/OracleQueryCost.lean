@@ -25,26 +25,6 @@ open OracleQ OracleBook
 variable {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain} {N : NF}
   {B : BookData} {k : ℕ}
 
-/-- The chord family has one chord per record. -/
-theorem chords_ncard {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
-    (N.F (chainModel C) Q).ncard = N.chords.length := by
-  classical
-  obtain ⟨-, hinj, -⟩ := hN
-  have hFn : N.F (chainModel C) Q = (fun i => (N.chord i).toSet (chainModel C) Q) ''
-      Set.Iio N.chords.length := by
-    ext c; constructor
-    · rintro ⟨r, hr, rfl⟩
-      obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-      refine ⟨i, hi, ?_⟩
-      show (N.chord i).toSet _ _ = _
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
-    · rintro ⟨i, hi, rfl⟩
-      refine ⟨N.chord i, ?_, rfl⟩
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]; exact List.getElem_mem hi
-  rw [hFn, Set.InjOn.ncard_image (s := Set.Iio N.chords.length)
-    (f := fun i => (N.chord i).toSet (chainModel C) Q) (fun a ha b hb h => hinj a b ha hb h),
-    ← Finset.coe_range, Set.ncard_coe_finset, Finset.card_range]
-
 /-- **Lemma 2.3 for the structure**: `K γ ≤ 60 (2 m + 7)`. -/
 theorem QAt.chords_le (h : QAt P m O E V H C N B k) :
     V.K * m (O + 2) ≤ 60 * (2 * V.m + 7) := by
@@ -53,7 +33,7 @@ theorem QAt.chords_le (h : QAt P m O E V H C N B k) :
   have hC := h.canon
   have hF := hC.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hC.2.1 hC.2.2.1
-  rw [chords_ncard hC.1, walk_n] at this
+  rw [hC.1.ncard_chords, walk_n] at this
   have hVm : V.m = C.m := by
     obtain ⟨-, -, -, hd2, -⟩ := h.desc; rw [← h.dm, hd2]
   rw [h.hK, hVm]; linarith

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRPlD
 
 /-!
@@ -72,8 +74,8 @@ theorem chunks_gaps {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a e B : ℕ), 1 ≤ L �
     · rw [min_eq_right h, Nat.sub_self, chunks_zero]
       refine ⟨⟨he, hB, ?_, ?_⟩, rfl⟩ <;> simp only <;> omega
     · rw [min_eq_left (by omega)]
-      obtain ⟨h1, h2⟩ := ih (L - C) (by omega) (s + C) (a + C) (s + C) B (by omega) (le_refl _)
-        (by omega)
+      obtain ⟨h1, h2⟩ := (ram_app% (ih (L - C) ?_ (s + C) (a + C) (s + C) B ?_ (le_refl _)
+        ?_))
       rw [show s + C + (L - C) = s + L by omega] at h1 h2
       exact ⟨⟨he, hB, h1⟩, h2⟩
 
@@ -125,8 +127,8 @@ theorem runLeaves_gaps {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (hℓ :
       by_cases h2 : ℓ - 2 - (n - (a + 1) % n) = 0
       · rw [h2, chunks_zero, List.append_nil, g2]
         exact ⟨g1, by omega, by omega⟩
-      · obtain ⟨k1, k2⟩ := chunks_gaps hC (ℓ - 2 - (n - (a + 1) % n)) (p + 1 + (n - (a + 1) % n)) 0
-          (p + 1 + (n - 1 - (a + 1) % n)) (p + 2 - e) (by omega) (by omega) (by omega)
+      · obtain ⟨k1, k2⟩ := (ram_app% (chunks_gaps hC (ℓ - 2 - (n - (a + 1) % n)) (p + 1 + (n - (a + 1) % n)) 0
+          (p + 1 + (n - 1 - (a + 1) % n)) (p + 2 - e) ?_ ?_ ?_))
         have hl : lastEnd (chunks C (p + 1) ((a + 1) % n) (n - 1 - (a + 1) % n) ++
             chunks C (p + 1 + (n - (a + 1) % n)) 0 (ℓ - 2 - (n - (a + 1) % n))) e =
             p + 1 + (n - (a + 1) % n) + (ℓ - 2 - (n - (a + 1) % n)) := by
@@ -152,9 +154,9 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
     simp only [List.length_nil] at h3
     exact ⟨by omega, by omega⟩
   | .pt x :: H, p, e, k, d, hwf, h1, h2, h3, h4, h5 => by
-    have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
+    have hwf' := fun it h => hwf it (List.mem_cons_of_mem _ h)
     have hl : (Host.pts n (HostItem.pt x :: H)).length = (Host.pts n H).length + 1 := by
-      rw [DownMath.pts_cons, List.length_append]; simp [HostItem.pts]; omega
+      rfl
     rw [hl] at h5 ⊢
     simp only [List.length_cons] at h3
     simp only [degCount] at h4
@@ -163,7 +165,7 @@ theorem hostLeaves_gapsG {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) : ∀ (H : Ho
     exact hostLeaves_gapsG hC hn H (p + 1) e (k + 1) d hwf' (by omega) (by omega) (by omega) h4
       (by omega)
   | .run a ℓ :: H, p, e, k, d, hwf, h1, h2, h3, h4, h5 => by
-    have hwf' : HostWF n H := fun it h => hwf it (List.mem_cons_of_mem _ h)
+    have hwf' := fun it h => hwf it (List.mem_cons_of_mem _ h)
     have hit := hwf (.run a ℓ) (List.mem_cons_self ..)
     simp only at hit
     have hl : (Host.pts n (HostItem.run a ℓ :: H)).length = (Host.pts n H).length + ℓ + 1 := by
@@ -192,8 +194,8 @@ edges. -/
 theorem hostLeaves_gaps {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) {H : Host} (hwf : HostWF n H)
     (hl : H.length ≤ 20) (hd : degCount n H ≤ 1) (hp : 1 ≤ (H.pts n).length) :
     GapsLe 64 (hostLeaves n C 0 H) 0 ((H.pts n).length - 1) := by
-  have := hostLeaves_gapsG hC hn H 0 0 0 0 hwf (le_refl _) (by omega) (by omega) (by omega)
-    (by omega)
+  have := (ram_app% (hostLeaves_gapsG hC hn H 0 0 0 0 hwf (le_refl _) ?_ ?_ ?_
+    ?_))
   simpa using this
 
 /-! ## At most one degenerate run -/
@@ -205,7 +207,7 @@ theorem degCount_first (n : ℕ) : ∀ H : Host, 1 ≤ degCount n H →
   | .pt x :: H, h => by
     simp only [degCount] at h
     obtain ⟨H₁, a, ℓ, H₂, e, hd, hc⟩ := degCount_first n H h
-    exact ⟨.pt x :: H₁, a, ℓ, H₂, by rw [e]; rfl, hd, by simp only [degCount]; omega⟩
+    exact ⟨.pt x :: H₁, a, ℓ, H₂, by rw [e]; rfl, hd, by reg_omega⟩
   | .run a ℓ :: H, h => by
     simp only [degCount] at h ⊢
     by_cases hd : Degen n a ℓ
@@ -238,8 +240,7 @@ theorem degCount_le_one {Q : Polygon} {H : Host} (hS : (H.poly Q).Simple) :
   have l2 := DownMath.pts_append_run_length Q.n (H₁ ++ HostItem.run a 3 :: H₃) H₄ a' 3
   rw [← hG] at l1; rw [← hG'] at l2
   have l3 : (H₁.pts Q.n).length + 4 ≤ ((H₁ ++ HostItem.run a 3 :: H₃).pts Q.n).length := by
-    rw [DownMath.pts_append, DownMath.pts_cons, List.length_append, List.length_append,
-      DownMath.run_pts_length]; omega
+    simp [DownMath.pts_append, DownMath.pts_cons, List.length_append, DownMath.run_pts_length]
   have v1 := DownMath.host_poly_vtx Q G (i := (H₁.pts Q.n).length + 1) (by omega)
   have v2 := DownMath.host_poly_vtx Q G
     (i := ((H₁ ++ HostItem.run a 3 :: H₃).pts Q.n).length + 1) (by omega)

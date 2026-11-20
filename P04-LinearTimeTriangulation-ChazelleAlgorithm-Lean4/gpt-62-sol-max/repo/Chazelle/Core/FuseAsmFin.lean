@@ -50,9 +50,9 @@ structure Answers (L₀ L₁ : List (ℕ × ℕ × ℕ)) (R₀ R₁ : List (ℕ 
 theorem fuseList_set {S₁ S₂ : Set (Set Point)} {L₀ L₁ : List (ℕ × ℕ × ℕ)}
     {R₀ R₁ : List (ℕ × ℕ × ℕ × ℕ)} (hA : Answers J Q L₀ L₁ R₀ R₁) (hC : Cover J Q S₁ S₂ L₀ L₁)
     {D : List (ℕ × ℕ × ℕ)} (hD : ∀ x, x ∈ D ↔ x ∈ collectQ L₀ R₀ ++ collectQ L₁ R₁) :
-    {c | ∃ x ∈ D, c = (recOf x).toSet (chainModel J.whole) Q} =
+    {c | ∃ x ∈ D, c = (recOf x).toSet J.wholeModel Q} =
         J.fusion S₁ S₂ ∪ glueChords J ∧
-      ∀ x ∈ D, (recOf x).Attached (chainModel J.whole) Q ∧ x.1 < Q.n := by
+      ∀ x ∈ D, (recOf x).Attached J.wholeModel Q ∧ x.1 < Q.n := by
   obtain ⟨e₀, a₀⟩ := collectQ_spec J Q 0 L₀ R₀ hA.len₀ hA.sees₀ hA.ok₀
   obtain ⟨e₁, a₁⟩ := collectQ_spec J Q 1 L₁ R₁ hA.len₁ hA.sees₁ hA.ok₁
   refine ⟨?_, fun x hx => ?_⟩
@@ -74,22 +74,22 @@ theorem fuseList_set {S₁ S₂ : Set (Set Point)} {L₀ L₁ : List (ℕ × ℕ
 
 /-- **The chord list of the fusion is a valid input of `BuildNF`.** -/
 theorem fuseList_ok (hP : J.P.Simple) (hQ : DistinctHeights Q) (hgen : SharedGeneric J)
-    {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁)
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) {L₀ L₁ : List (ℕ × ℕ × ℕ)}
+    {S₁ S₂ : Set (Set Point)} (hS₁ : J.leftModel.ChordFamily Q S₁)
+    (hS₂ : J.rightModel.ChordFamily Q S₂) {L₀ L₁ : List (ℕ × ℕ × ℕ)}
     {R₀ R₁ : List (ℕ × ℕ × ℕ × ℕ)} (hA : Answers J Q L₀ L₁ R₀ R₁) (hC : Cover J Q S₁ S₂ L₀ L₁)
     {D : List (ℕ × ℕ × ℕ)} (hD : ∀ x, x ∈ D ↔ x ∈ collectQ L₀ R₀ ++ collectQ L₁ R₁)
     (hnd : D.Nodup) :
-    ChordTriplesOK (chainModel J.whole) Q D ∧
-      {c | ∃ x ∈ D, c = (recOf x).toSet (chainModel J.whole) Q} =
+    ChordTriplesOK J.wholeModel Q D ∧
+      {c | ∃ x ∈ D, c = (recOf x).toSet J.wholeModel Q} =
         J.fusion S₁ S₂ ∪ glueChords J ∧
       D.length ≤ L₀.length + L₁.length := by
   obtain ⟨hset, hatt⟩ := fuseList_set J Q hA hC hD
   have hadm := FuseDeg.fuse_adm J hgen hS₁.2.1 hS₂.2.1
-  have hmemF : ∀ x ∈ D, (recOf x).toSet (chainModel J.whole) Q ∈ (chainModel J.whole).Adm :=
+  have hmemF : ∀ x ∈ D, (recOf x).toSet J.wholeModel Q ∈ J.wholeModel.Adm :=
     fun x hx => hadm (by rw [← hset]; exact ⟨x, hx, rfl⟩)
   refine ⟨⟨⟨?_, ?_, ?_⟩, ?_, fun x hx => (hatt x hx).1, fun x hx => (hatt x hx).2⟩, hset, ?_⟩
-  · have : {c | ∃ x ∈ D, c = (recOf x).toSet (chainModel J.whole) Q} =
-        (fun x => (recOf x).toSet (chainModel J.whole) Q) '' {x | x ∈ D} := by
+  · have : {c | ∃ x ∈ D, c = (recOf x).toSet J.wholeModel Q} =
+        (fun x => (recOf x).toSet J.wholeModel Q) '' {x | x ∈ D} := by
       ext c; simp only [Set.mem_ofPred_eq, Set.mem_image]
       constructor
       · rintro ⟨x, hx, rfl⟩; exact ⟨x, hx, rfl⟩
@@ -106,7 +106,7 @@ theorem fuseList_ok (hP : J.P.Simple) (hQ : DistinctHeights Q) (hgen : SharedGen
     obtain ⟨a', b', d'⟩ := y
     simp only [recOf] at e1 e2 e3
     rw [e1, e2, e3]
-  · have hsub : D ⊆ collectQ L₀ R₀ ++ collectQ L₁ R₁ := fun x hx => (hD x).1 hx
+  · have hsub := fun x hx => (hD x).1 hx
     have := (hnd.subperm hsub).length_le
     rw [List.length_append] at this
     have h0 := collectQ_length_le L₀ R₀

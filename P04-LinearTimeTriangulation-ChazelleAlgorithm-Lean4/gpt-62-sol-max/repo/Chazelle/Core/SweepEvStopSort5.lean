@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepEvStopSort4
 
 /-!
@@ -55,74 +57,66 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W ssIdx c c' k ∧ k = 5 * c.nreg gRC + 6 ∧
       c'.nreg ALLOC = c.nreg ALLOC + c.nreg gRC ∧ c'.nreg srA0 = c.nreg ALLOC ∧
       c'.nreg srIB = c.nreg ALLOC ∧ (∀ i, i < c.nreg gRC → c'.nmem (c.nreg ALLOC + i) = i) ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       (∀ r, r ≠ ALLOC → r ≠ srA0 → r ≠ srIB → r ≠ srI → r ≠ srA → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   set A := c.nreg ALLOC with hA
   set S := c.nreg gRC with hS
   have e₀ := exec_regB (P := P) ssIdxHead hw (by
-    simp only [ssIdxHead, okW, okWI]; exact ⟨trivial, trivial, by omega, trivial⟩)
+    frame_finish [ssIdxHead, okW, okWI])
   set c₁ : Config := { c with nreg := regB c.nmem ssIdxHead c.nreg } with hc₁
   have v1 : ∀ r, r ≠ srA0 → r ≠ srIB → r ≠ srI → c₁.nreg r = c.nreg r := fun r a b d => by
-    simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ d, upd_other _ _ _ b, upd_other _ _ _ a]
-  have vI : c₁.nreg srI = 0 := by simp only [hc₁, ssIdxHead, regB, regI, upd_same]
+    ram_finish [hc₁, ssIdxHead, regB, regI]
+  have vI : c₁.nreg srI = 0 := by rfl
   have vB : c₁.nreg srIB = A := by
-    simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ (by ssoSrt), upd_same, upd_other _ _ _ (show ALLOC ≠ srA0 by ssoSrt)]
+    frame_finish
   have v0 : c₁.nreg srA0 = A := by
-    simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), upd_same]
+    assumption
   have vA : c₁.nreg ALLOC = A := v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)
   have vS : c₁.nreg gRC = S := v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)
-  have vK : c₁.nreg K1 = 1 := (v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)).trans hK1
-  let I : ℕ → Config → Prop := fun i d => WordsBounded W d ∧ d.nreg srI = i ∧
-    (∀ t, t < i → d.nmem (A + t) = t) ∧ (∀ a, a < A → d.nmem a = c.nmem a) ∧
+  have vK := (v1 _ (by ssoSrt) (by ssoSrt) (by ssoSrt)).trans hK1
+  let I := fun i d => WordsBounded W d ∧ d.nreg srI = i ∧
+    (∀ t, t < i → d.nmem (A + t) = t) ∧ (MemEqBelow A d.nmem c.nmem) ∧
     (∀ r, r ≠ srI → r ≠ srA → d.nreg r = c₁.nreg r) ∧ d.rreg = c.rreg ∧ d.rmem = c.rmem ∧
     d.output = c.output
   have I₀ : I 0 c₁ := ⟨e₀.wb_right, vI, fun t ht => absurd ht (Nat.not_lt_zero _),
     fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
   obtain ⟨c₂, e₁, w₂, hI2, ht2, hm2, hr2, rr2, rm2, o2⟩ :=
     while_exact (P := P) (W := W) (a := srI) (b := gRC) (body := block ssIdxBody) I S 3
-      (fun i d h => by rw [h.2.1, h.2.2.2.2.1 _ (by ssoSrt) (by ssoSrt), vS])
+      (fun i d h => by ram_finish [h.2.1, h.2.2.2.2.1, vS])
       (fun i d h => h.1)
       (fun i d ⟨hwd, hi, ht, hm, hr, rr, rm, o⟩ hlt => by
-        have dB : d.nreg srIB = A := by rw [hr _ (by ssoSrt) (by ssoSrt), vB]
-        have dK : d.nreg K1 = 1 := by rw [hr _ (by ssoSrt) (by ssoSrt), vK]
+        have dB : d.nreg srIB = A := by ram_finish
+        have dK : d.nreg K1 = 1 := by ram_finish
         have x₁ := Exec.addN (P := P) hwd srA srIB srI (by rw [dB, hi]; omega)
         have x₂ := Exec.storeN (P := P) x₁.wb_right srA srI
         have x₃ := Exec.addN (P := P) x₂.wb_right srI srI K1 (by
-          simp only
-          rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), hi, dK]; omega)
+          ram_finish [hi, dK])
         refine ⟨_, Exec.block_cons x₁ (Exec.block_cons x₂ (Exec.block_cons x₃
           (Exec.block_nil x₃.wb_right))), x₃.wb_right, ?_, fun t ht' => ?_, fun a ha => ?_,
           fun r h1 h2 => ?_, rr, rm, o⟩
-        · simp only [upd_same]
-          rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), hi, dK]
+        · ram_finish [hi, dK]
         · simp only [upd_same]
           rw [upd_other _ _ _ (show srI ≠ srA by ssoSrt), dB, hi]
           rcases Nat.lt_or_ge t i with h | h
-          · rw [upd_other _ _ _ (by omega)]; exact ht t h
+          · frame_finish
           · rw [show t = i by omega, upd_same]
         · simp only [upd_same]
           rw [upd_other _ _ _ (by rw [dB, hi]; omega)]; exact hm a ha
         · simp only
           rw [upd_other _ _ _ h1, upd_other _ _ _ h2]; exact hr r h1 h2)
       0 c₁ I₀ (Nat.zero_le _)
-  have gA : c₂.nreg ALLOC = A := by rw [hr2 _ (by ssoSrt) (by ssoSrt), vA]
-  have gS : c₂.nreg gRC = S := by rw [hr2 _ (by ssoSrt) (by ssoSrt), vS]
+  have gA : c₂.nreg ALLOC = A := by ram_finish
+  have gS : c₂.nreg gRC = S := by ram_finish
   have x₄ := Exec.addN (P := P) w₂ ALLOC ALLOC gRC (by rw [gA, gS]; omega)
   refine ⟨_, _, .seq e₀ (.seq e₁ x₄), by simp [ssIdxHead]; ring, ?_, ?_, ?_, ?_, ?_,
     fun r h0 h1 h2 h3 h4 => ?_, rr2, rm2, o2⟩
   · simp only [upd_same]; rw [gA, gS]
-  · simp only
-    rw [upd_other _ _ _ (by ssoSrt), hr2 _ (by ssoSrt) (by ssoSrt), v0]
-  · simp only
-    rw [upd_other _ _ _ (by ssoSrt), hr2 _ (by ssoSrt) (by ssoSrt), vB]
+  · ram_simp [hr2, v0] 
+  · ram_simp [hr2, vB] 
   · intro i hi; exact ht2 i hi
   · intro a ha; exact hm2 a ha
-  · simp only
-    rw [upd_other _ _ _ h0, hr2 r h3 h4, v1 r h1 h2 h3]
+  · ram_simp [hr2 r h3 h4, v1 r h1 h2 h3] 
 
 set_option maxRecDepth 20000 in
 theorem ssAllocL_val (m f : ℕ → ℕ) :
@@ -137,16 +131,13 @@ theorem ssAllocL_val (m f : ℕ → ℕ) :
   all_goals simp only [ssAllocL, regB, regI, srSB, sB, srT, aB, ALLOC, sC, srJ, gRC, sw,
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
   simp only [srSB, sB, srT, aB, ALLOC, sC, srJ, sw, Nat.reduceAdd] at a b d e g h i
-  simp only [upd_apply]
-  repeat rw [ite_eq_right (by omega)]
+  simp_all
 
 set_option maxRecDepth 20000 in
 theorem ssAllocL_ok {W : ℕ} (m f : ℕ → ℕ)
     (h : f ALLOC + 10 * f gRC ≤ W) : okW W m ssAllocL f := by
   simp only [ALLOC, gRC, sw, Nat.reduceAdd] at h
-  simp only [ssAllocL, okW, okWI, regI, srSB, sB, srT, aB, ALLOC, sC, srJ, gRC, sw,
-    Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and,
-    and_true]
+  simp only [ram_layout, ssAllocL, okW, okWI, regI, Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and, and_true]
   omega
 
 end

@@ -54,7 +54,7 @@ theorem side_after {a b : ℝ} (hab : a ≠ b) (k : ℝ) :
       · exact ⟨le_rfl, h⟩
       · exact ⟨h3.le, h4⟩
   · rw [h1, h2]
-    have hba : b < a := lt_of_le_of_ne (not_lt.1 h) (Ne.symm hab)
+    have hba := lt_of_le_of_ne (not_lt.1 h) (Ne.symm hab)
     constructor
     · rintro (h3 | h3)
       · rcases h3.lt_or_eq with h3 | h3
@@ -71,8 +71,8 @@ theorem after_start (a b : ℝ) : ∀ᶠ ε in 𝓝[>] (0 : ℝ), sideInArc a b 
   by_cases hab : a = b
   · subst hab
     filter_upwards [self_mem_nhdsWithin] with ε hε
-    have : (0 : ℝ) < ε := hε
-    unfold sideInArc; rw [ite_eq_right (lt_irrefl a)]; left; linarith
+    have := hε
+    unfold sideInArc; simp_all
   · filter_upwards [side_after hab a] with ε h
     exact h.2 (Or.inl rfl)
 

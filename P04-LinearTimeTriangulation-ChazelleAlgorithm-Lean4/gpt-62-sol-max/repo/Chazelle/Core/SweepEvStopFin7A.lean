@@ -27,7 +27,7 @@ theorem slfRec_words {m : ℕ → ℕ} {RB j pe ph dc : ℕ} {cc : Config}
     rawRec m RB j = (cc.nreg pe, cc.nreg ph, cc.nreg oKd, cc.nreg oKk, cc.nreg oB) ∧
       rawDc m RB j = cc.nreg dc ∧
       rawAux m RB j = (cc.nreg slfA, cc.nreg slfN, cc.nreg slfL0, cc.nreg slfL1, cc.nreg oPar) := by
-  have w : ∀ i, i < 11 → m (RB + 11 * j + i) = cc.nreg ((slfWords pe ph dc).getD i 0) := hw
+  have w := hw
   have w0 := w 0 (by norm_num)
   have w1 := w 1 (by norm_num)
   have w2 := w 2 (by norm_num)
@@ -48,12 +48,12 @@ theorem slfRec_words {m : ℕ → ℕ} {RB j pe ph dc : ℕ} {cc : Config}
 
 /-- **A valid raw record.** -/
 theorem slfRawV {kind k b : ℕ} (hD : OrgD P J N kind k b) {d : ℕ} (hd : d ≤ 1) {p h : ℕ}
-    (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) p
-      ((chainModel J.whole).param (Qof P) ⟨p, h⟩))
-    (hpt : sidePt (chainModel J.whole).W p ((chainModel J.whole).param (Qof P) ⟨p, h⟩) =
+    (hA : SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) p
+      (J.wholeModel.param (Qof P) ⟨p, h⟩))
+    (hpt : sidePt J.wholeModel.W p (J.wholeModel.param (Qof P) ⟨p, h⟩) =
       (if d = 1 then Merge.lend (stopSet J (Qof P) N kind k b)
         else Merge.rend (stopSet J (Qof P) N kind k b)))
-    (hL : (Lst J : ℝ) ≤ oW J (p + (chainModel J.whole).param (Qof P) ⟨p, h⟩))
+    (hL : (Lst J : ℝ) ≤ oW J (p + J.wholeModel.param (Qof P) ⟨p, h⟩))
     (hpw : PosW P J p h) {x : ℕ × ℕ × ℕ × ℕ × ℕ}
     (hax : AuxOK P J N (stopSet J (Qof P) N kind k b) x) {m : ℕ → ℕ} {RB j : ℕ}
     (hr : rawRec m RB j = (p, h, kind, k, b)) (hdc : rawDc m RB j = d) (hx : rawAux m RB j = x) :
@@ -69,11 +69,7 @@ theorem slfRec_congr {m m' : ℕ → ℕ} {RB j : ℕ}
       rawAux m' RB j = rawAux m RB j := by
   have h0 := h 0 (by norm_num)
   rw [Nat.add_zero] at h0
-  unfold rawRec rawDc rawAux
-  rw [h0, h 1 (by norm_num), h 2 (by norm_num), h 3 (by norm_num), h 4 (by norm_num),
-    h 5 (by norm_num), h 6 (by norm_num), h 7 (by norm_num), h 8 (by norm_num),
-    h 9 (by norm_num), h 10 (by norm_num)]
-  exact ⟨rfl, rfl, rfl⟩
+  ram_finish [rawRec, rawDc, rawAux, h0, h]
 
 variable {W : ℕ} {c₀ : Config}
 
@@ -91,7 +87,7 @@ theorem slfMaybe_irs {bitr pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slf
       (∀ r, r ≠ slfX → r ≠ gRC → c'.nreg r = c.nreg r)) := by
   refine IRS.ite (fun h => ?_) (fun h => ?_)
   · have h1 : c.nreg bitr = 1 := by omega
-    refine IRS.skip hI ⟨by rw [ite_eq_left h1, Nat.add_zero], fun h' => absurd h1 h', fun _ _ => rfl,
+    refine IRS.skip hI ⟨by simp_all, fun h' => absurd h1 h', fun _ _ => rfl,
       fun _ _ _ => rfl⟩
   · have h1 : c.nreg bitr ≠ 1 := by omega
     refine (slfEmit_irs hpe hph hdc hI hk1 hA hW).mono (by norm_num) ?_

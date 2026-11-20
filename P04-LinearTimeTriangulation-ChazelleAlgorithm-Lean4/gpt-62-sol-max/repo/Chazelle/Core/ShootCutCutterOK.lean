@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.ShootCutCutter2
 public import Chazelle.Core.NFBuildMain
 
@@ -66,23 +70,10 @@ theorem modelDesc_chain {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {M : Model} {C
   · exact absurd (hM.symm.trans hI) (chainModel_ne_interior' C Q)
 
 /-- **A chain descriptor determines the chain.** -/
-theorem chainDesc_unique {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host} {C C' : Chain}
-    (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
-  obtain ⟨h1, h2, h3, h4, -⟩ := h
-  obtain ⟨h1', h2', h3', h4', -⟩ := h'
-  have hH : H = H' := NFLoc.hostAt_unique h1 h1'
-  subst hH
-  obtain ⟨P, s, m, a, b⟩ := C
-  obtain ⟨P', s', m', a', b'⟩ := C'
-  simp only at h2 h2' h3 h3' h4 h4'
-  subst h2 h2'
-  have e1 : s = s' := h3.symm.trans h3'
-  have e2 : m = m' := h4.symm.trans h4'
-  subst e1 e2
-  rfl
+abbrev chainDesc_unique := @Chazelle.Core.NFLoc.chain_eq_of_desc
 
 /-- The constant of the arc-cutter. -/
-def κc : ℕ := 2500000
+@[ram_layout] def κc : ℕ := 2500000
 
 theorem Bcut_false {r : ℕ} (hr : bandOf r ∉ oracleBands) (ha : r ≠ ALLOC) : Bcut r = false := by
   have h1 : (1 : ℕ) ∈ oracleBands := by decide
@@ -166,7 +157,7 @@ theorem cutter_ok (O : OracleIface) :
   obtain ⟨c₃, k₃, e₃, hk₃, o10, om, omo, oA, oAk, or₃, orr, orm, oo⟩ :=
     cutFin_exec (P := P) c₂ e₂.wb_right hI₂ hq
   have ex : Exec P W cutter c c₃ (k₁ + (k₂ + k₃)) := by
-    unfold cutter; exact .seq e₁ (.seq e₂ e₃)
+    ram_path
   have fM := BuildRam.exec_frameM ex wrM_cutter
   have fR := BuildRam.exec_frameM2 ex wrM2_cutter
   have hA₂ : c₂.nreg ALLOC = A₀ := hI₂.alloc
@@ -190,19 +181,19 @@ theorem cutter_ok (O : OracleIface) :
     have hL : rd c₃ bCut 10 = A₀ := o10
     have hq3 : c₃.nmem A₀ = ps.length := om
     have hpc : ∀ a, A₀ < a → c₃.nmem a = c₂.nmem a := fun a ha => omo a (by omega)
-    have hm₃ : ∀ a, a < A₀ → c₃.nmem a = m₀ a := fun a ha => by
-      rw [omo a (by omega)]; exact hm₂ a ha
+    have hm₃ : MemEqBelow A₀ c₃.nmem m₀ := fun a ha => by
+      ram_rw [omo a]; exact hm₂ a ha
     -- the words of the records
     have w0 : ∀ i (hi : i < ps.length), c₃.nmem (A₀ + 1 + 7 * i + 0) = (ps[i]'hi).s.edge :=
-      fun i hi => by rw [hpc _ (by omega), Nat.add_zero]; exact (hrec i hi).1
+      fun i hi => by ram_rw [hpc, Nat.add_zero]; exact (hrec i hi).1
     have w1 : ∀ i (hi : i < ps.length), c₃.nmem (A₀ + 1 + 7 * i + 1) = (ps[i]'hi).s.hgt :=
-      fun i hi => by rw [hpc _ (by omega)]; exact (hrec i hi).2.1
+      fun i hi => by ram_rw [hpc]; exact (hrec i hi).2.1
     have w2 : ∀ i (hi : i < ps.length), c₃.nmem (A₀ + 1 + 7 * i + 2) = (ps[i]'hi).e.edge :=
-      fun i hi => by rw [hpc _ (by omega)]; exact (hrec i hi).2.2.1
+      fun i hi => by ram_rw [hpc]; exact (hrec i hi).2.2.1
     have w3 : ∀ i (hi : i < ps.length), c₃.nmem (A₀ + 1 + 7 * i + 3) = (ps[i]'hi).e.hgt :=
-      fun i hi => by rw [hpc _ (by omega)]; exact (hrec i hi).2.2.2.1
+      fun i hi => by ram_rw [hpc]; exact (hrec i hi).2.2.2.1
     have w4 : ∀ i (hi : i < ps.length), c₃.nmem (A₀ + 1 + 7 * i + 4) = (ps[i]'hi).kind :=
-      fun i hi => by rw [hpc _ (by omega)]; exact (hrec i hi).2.2.2.2.1
+      fun i hi => by ram_rw [hpc]; exact (hrec i hi).2.2.2.2.1
     have w56 : ∀ i (hi : i < ps.length), (ps[i]'hi).kind = 1 →
         c₃.nmem (A₀ + 1 + 7 * i + 5) = c₃.nmem (ps[i]'hi).entry ∧
         c₃.nmem (A₀ + 1 + 7 * i + 6) = c₃.nmem ((ps[i]'hi).entry + 1) := fun i hi hk => by
@@ -226,11 +217,11 @@ theorem cutter_ok (O : OracleIface) :
     · rw [kS 0 hpos]
       have : (ps[0]'hpos) = ps.head hne := (List.head_eq_getElem hne).symm
       rw [this, arc.hs]; rfl
-    · rw [kE _ (by omega)]
+    · ram_rw [kE]
       have : (ps[ps.length - 1]'(by omega)) = ps.getLast hne := (List.getLast_eq_getElem hne).symm
       rw [this, arc.he]; rfl
-    · rw [kE i (by omega), kS (i + 1) hi, arc.ch i hi]
-    · rw [kS i (by omega), kE i (by omega)]
+    · ram_rw [kE i, kS (i + 1) hi, arc.ch i hi]
+    · ram_rw [kS i, kE i]
       exact arc.e6 i hi
     · rw [kS i hi, kE i hi]
       have hk' : (ps[i]'hi).kind = 0 := by rw [← w4 i hi]; exact hk
@@ -250,7 +241,7 @@ theorem cutter_ok (O : OracleIface) :
     refine ⟨fun r hr ha => fM.1 r (Bcut_false hr ha), fun r hr => fR r (BcutR_false hr),
       fun a ha => ?_, fun a _ => by rw [fM.2.2.1], fM.2.2.2, by rw [oA]; omega, ?_⟩
     · show c₃.nmem a = c.nmem a
-      rw [omo a (by omega), hm₂ a ha]
+      ram_rw [omo a, hm₂ a ha]
     · rw [← hA₀]; omega
 
 end

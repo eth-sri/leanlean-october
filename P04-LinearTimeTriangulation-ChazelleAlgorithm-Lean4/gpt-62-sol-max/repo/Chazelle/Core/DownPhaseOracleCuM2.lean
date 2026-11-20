@@ -64,7 +64,7 @@ theorem chain_mono {K : WPos → ℝ} {ps : List Pc} {sa ea : WPos} (hne : ps �
   have hs : ∀ i (hi : i < ps.length), K sa ≤ K (ps[i]'hi).s ∧ K (ps[i]'hi).s < K ea := by
     intro i
     induction i with
-    | zero => intro hi; rw [h0]; exact ⟨le_rfl, hlt⟩
+    | zero => simp_all
     | succ i ih =>
       intro hi
       obtain ⟨a1, a2⟩ := ih (by omega)
@@ -113,35 +113,24 @@ def PcV (P : Polygon) (M : Model) (m : ℕ → ℕ) (E Hγ : ℕ) (pc : Pc) : Pr
 
 /-- **A chain descriptor determines the chain.** -/
 theorem chainDesc_uniq {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H : Host} {C C' : Chain}
-    (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H C') : C = C' := by
-  obtain ⟨-, h2, h3, h4, -⟩ := h
-  obtain ⟨-, h2', h3', h4', -⟩ := h'
-  obtain ⟨P, s, m, a, b⟩ := C
-  obtain ⟨P', s', m', a', b'⟩ := C'
-  simp only at h2 h2' h3 h3' h4 h4'
-  subst h2 h2'
-  have e1 : s = s' := h3.symm.trans h3'
-  have e2 : m = m' := h4.symm.trans h4'
-  subst e1 e2
-  rfl
+    (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H C') : C = C' := by solve_by_elim [Chazelle.Core.NFLoc.chain_eq_of_desc]
 
 /-- **The facts of a piece survive** memory changes at or above their bound. -/
 theorem PcV.keep {P : Polygon} {M : Model} {m m' : ℕ → ℕ} {E E' Hγ : ℕ} {pc : Pc}
-    (h : PcV P M m E Hγ pc) (he : ∀ a, a < E → m' a = m a) (hE : E ≤ E') :
+    (h : PcV P M m E Hγ pc) (he : MemEqBelow E m' m) (hE : E ≤ E') :
     PcV P M m' E' Hγ pc := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := h
   refine ⟨h1, h2, h3, h4, h5, h6, fun hk => ?_⟩
   obtain ⟨hwf, Hs, Cα, N, hCD, hNF, hrest⟩ := h7 hk
   obtain ⟨hlen, hHwf, hEb, hs⟩ := hwf.2 Hs Cα hCD
   have hb5 := hwf.1
-  have hCD' : ChainDescAt m' pc.entry (Qof P) Hs Cα :=
-    ShotList.chainDescAt_copy hCD hEb he (fun j hj => he _ (by omega))
+  have hCD' := ShotList.chainDescAt_copy hCD hEb he (fun j hj => he _ (by omega))
   refine ⟨?_, Hs, Cα, N, hCD', (hNF.transport he).mono hE, hrest⟩
   refine ⟨by omega, fun H' C' hC' => ?_⟩
   have hb : m' pc.entry = m pc.entry := he _ (by omega)
-  have hH : H' = Hs := NFLoc.hostAt_unique hC'.1 hCD'.1
+  have hH := NFLoc.hostAt_unique hC'.1 hCD'.1
   subst hH
-  have hC : C' = Cα := chainDesc_uniq hC' hCD'
+  have hC := chainDesc_uniq hC' hCD'
   subst hC
   exact ⟨hlen, hHwf, by rw [hb]; omega, hs⟩
 
@@ -151,36 +140,41 @@ theorem pcV_tr {P : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch (Qof
     (hs0 : (g₀ : ℝ) ≤ (chainModel C).key (Qof P) pc.s)
     (he1 : (chainModel C).key (Qof P) pc.e ≤ g₀ + ℓ)
     (hse : (chainModel C).key (Qof P) pc.s < (chainModel C).key (Qof P) pc.e) :
-    PcV P (interiorModel (Qof P)) m E Hγ (trPc (Qof P).n u₀ g₀ pc) := by
+    PcV P (inputModel P) m E Hγ (trPc (Qof P).n u₀ g₀ pc) := by
   have hQ : (Qof P).n = P.n := qn'
   obtain ⟨sP, eP, sE, eE, hk, h0, h1⟩ := hv
-  have sP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.s := by rw [hQ]; exact sP
-  have eP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by rw [hQ]; exact eP
-  have hs1 : (chainModel C).key (Qof P) pc.s ≤ g₀ + ℓ := hse.le.trans he1
-  have he0 : (g₀ : ℝ) ≤ (chainModel C).key (Qof P) pc.e := hs0.trans hse.le
+  have sP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.s := by rwa [hQ]
+  have eP' : ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by rwa [hQ]
+  have hs1 := hse.le.trans he1
+  have he0 := hs0.trans hse.le
   obtain ⟨-, sPI, sEI, -⟩ := trP_spec S sP' hs0 hs1
   obtain ⟨-, ePI, eEI, -⟩ := trP_spec S eP' he0 he1
   obtain ⟨hset, hwt⟩ := trP_arc S sP' eP' hs0 he1 hse
-  have hmi : (interiorModel (Qof P)).W.n = (Qof P).n := mi_n
-  refine ⟨by rw [← hQ]; exact sPI, by rw [← hQ]; exact ePI, by rw [hmi]; exact sEI,
-    by rw [hmi]; exact eEI, hk, fun hk0 => ?_, fun hk1 => ?_⟩
-  · show (interiorModel (Qof P)).arcWt _ _ ≤ 1
+  have hmi : P.inputModel.W.n = (Qof P).n := mi_n
+  refine ⟨by rwa [← hQ], by rwa [← hQ], by rwa [hmi],
+    by rwa [hmi], hk, fun hk0 => ?_, fun hk1 => ?_⟩
+  · show P.inputModel.arcWt _ _ ≤ 1
     rw [show (trPc (Qof P).n u₀ g₀ pc).s = trP (Qof P).n u₀ g₀ pc.s from rfl,
       show (trPc (Qof P).n u₀ g₀ pc).e = trP (Qof P).n u₀ g₀ pc.e from rfl, hwt]
     exact h0 hk0
   · obtain ⟨hwf, Hs, Cα, N, hCD, hNF, hcan, hcs, hcw, hpw, hCαP, hvl⟩ := h1 hk1
     obtain ⟨hpw', hvl'⟩ := trP_pieceWalk S hpw hcw hse hs0 he1 hvl
     refine ⟨hwf, Hs, Cα, N, hCD, hNF, hcan, ?_, ?_, hpw', hCαP, hvl'⟩
-    · show (interiorModel (Qof P)).arcSet _ _ = _
+    · show P.inputModel.arcSet _ _ = _
       rw [show (trPc (Qof P).n u₀ g₀ pc).s = trP (Qof P).n u₀ g₀ pc.s from rfl,
         show (trPc (Qof P).n u₀ g₀ pc).e = trP (Qof P).n u₀ g₀ pc.e from rfl, hset, hcs]
-    · show (interiorModel (Qof P)).arcWt _ _ = _
+    · show P.inputModel.arcWt _ _ = _
       rw [show (trPc (Qof P).n u₀ g₀ pc).s = trP (Qof P).n u₀ g₀ pc.s from rfl,
         show (trPc (Qof P).n u₀ g₀ pc).e = trP (Qof P).n u₀ g₀ pc.e from rfl, hwt, hcw]
 
+section
+
+variable {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch Q C u₀ g₀ ℓ) {e₁ off : ℕ}
+    (hu₀ : u₀ = (e₁ + off) % Q.n)
+
+include S hu₀ in
 /-- **The unwrapped interior key** of a translated position. -/
-theorem trP_cong {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch Q C u₀ g₀ ℓ) {e₁ off : ℕ}
-    (hu₀ : u₀ = (e₁ + off) % Q.n) {x : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
+theorem trP_cong {x : WPos} (hx : ProperPos (chainModel C) Q Q.n x)
     (hk0 : (g₀ : ℝ) ≤ (chainModel C).key Q x) (hk1 : (chainModel C).key Q x ≤ g₀ + ℓ) :
     ∃ k : ℤ, (e₁ : ℝ) + off - g₀ + (chainModel C).key Q x =
       (interiorModel Q).key Q (trP Q.n u₀ g₀ x) + k * Q.n := by
@@ -198,9 +192,9 @@ theorem trP_cong {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch Q 
 /-- A default piece. -/
 def pc0 : Pc := ⟨⟨0, 0⟩, ⟨0, 0⟩, 0, 0, 0, 0, 0⟩
 
+include S hu₀ in
 /-- **The translated pieces of one chain arc** form a path of unwrapped interior keys. -/
-theorem slot_kpath {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch Q C u₀ g₀ ℓ)
-    {e₁ off : ℕ} (hu₀ : u₀ = (e₁ + off) % Q.n) {ps : List Pc} (hne : ps ≠ []) {sa ea : WPos}
+theorem slot_kpath {ps : List Pc} (hne : ps ≠ []) {sa ea : WPos}
     (hlt : (chainModel C).key Q sa < (chainModel C).key Q ea)
     (h0 : (chainModel C).key Q (ps[0]'(List.length_pos_iff.2 hne)).s = (chainModel C).key Q sa)
     (hl : (chainModel C).key Q (ps[ps.length - 1]'(by
@@ -240,6 +234,8 @@ theorem slot_kpath {Q : Polygon} {C : Chain} {u₀ g₀ ℓ : ℕ} (S : Stretch 
     simp [List.getD, show ps.length - 1 < ps.length by have := List.length_pos_iff.2 hne; omega]
   simp only [hlen, hg0, hgl, h0, hl] at key
   exact key
+
+end
 
 end
 

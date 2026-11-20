@@ -22,7 +22,7 @@ open Machine Chazelle
 theorem lemma41_of (O : OracleIface) (hM : MergeSpec) (hSC : ShootCutSpec O) :
     Lemma41Spec O := by
   obtain ⟨sh, cu, κs, hsh, hcu⟩ := hSC
-  obtain ⟨mk, κM, hmk⟩ := mergeMeets_of hM
+  obtain ⟨mk, κM, hmk⟩ := hM
   have hMM : MergeMeets (mk sh cu) κM (scF κs) (scG κs) cutGran (gradeCtx O) OkModel :=
     hmk sh cu oracleBands oracleBands (scF κs) (scG κs) cutGran (gradeCtx O) OkModel
       (gradeCtx_capLocal O) (ShootCut.gradeCtx_halves O) (fun _ _ h => h) (scF_mono κs) (scG_mono κs) cutGran_mono

@@ -63,8 +63,8 @@ theorem cand1Spec_of (hB : BruteSpec) (hT : TabStepSpec) (hS : ShrStepSpec) : Ca
       (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) =
       2 * (SweepEv.κGen (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1)) +
         (κB + κT + κS + 30000) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) := by ring
-  have hcost : Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) +
-      (Cand1.kD κT κS (Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB +
+  have hcost : lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) +
+      (Cand1.kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB +
         11076) ≤
       (2 * SweepEv.κGen (c₀.nreg (sw 6)) + κB + κT + κS + 30000) *
         (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) + KB := by

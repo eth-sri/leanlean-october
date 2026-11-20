@@ -62,7 +62,7 @@ theorem regLoopSpec_of {s : Stmt} {κR : ℕ} (hS : RegStepSpec s κR) : RegLoop
     by_cases hK : L.length = 0
     · rw [ite_eq_left hK]; exact hpre.hCm0 hK
     · rw [ite_eq_right hK]
-      have ht' : t < ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs.length := by
+      have ht' : t < ((inputNF P L E).region r).arcs.length := by
         have hn : Ev.nRg r = (Ev.N.region r).arcs.length := by
           unfold BEnv.nRg; rw [ite_eq_right (show ¬ Ev.K = 0 from hK)]
         rw [← hn]; exact ht

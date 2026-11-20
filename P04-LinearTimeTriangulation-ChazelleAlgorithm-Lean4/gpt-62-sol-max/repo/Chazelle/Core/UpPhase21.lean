@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.UpPhase20
 
 /-!
@@ -56,17 +60,17 @@ theorem initA_exec {c : Config} (hw : WordsBounded W c) {S p : ℕ}
       c'.nreg 170000 = S ∧ c'.nreg 170001 = P.n ∧ c'.nreg 170002 = p ∧
       c'.nreg 170006 = p + 1 ∧ c'.nreg 170028 = P.n - 1 ∧
       (∀ r, bandOf r ≠ bUp → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold initA
   exec_block
   all_goals try (config_simp; (try simp only [h00, hS1]); omega)
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp,
     by config_simp, by config_simp, by config_simp, by config_simp, by config_simp; exact h00,
-    by config_simp, by config_simp; simp only [h00, hS1], by config_simp; simp only [h00, hS1],
+    by config_simp, by ram_finish, by ram_finish,
     by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   unfold bandOf bUp at hr
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat ram_finish
 
 set_option maxHeartbeats 16000000 in
 theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg ALLOC = A)
@@ -75,38 +79,29 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
       c'.nreg ALLOC = A + 7 ∧ c'.nreg 170004 = A ∧ HostAt c'.nmem A (Host.whole P.n) ∧
       (∀ a, (a < A ∨ A + 4 ≤ a) → c'.nmem a = c.nmem a) ∧
       (∀ r, bandOf r ≠ bL41 → r ≠ 170004 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
   have hAl : ALLOC = 9999 := rfl
   obtain ⟨c1, k1, e1, hk1, hw1, i24, i29, i86, fr1, hm1, hrr1, hrm1, ho1⟩ : ∃ c1 k1, Exec P W
       (block [.constN 160024 1, .constN 160029 0, .constN 160086 7]) c c1 k1 ∧ k1 = 3 ∧
       WordsBounded W c1 ∧ c1.nreg 160024 = 1 ∧ c1.nreg 160029 = 0 ∧ c1.nreg 160086 = 7 ∧
-      (∀ r, r ≠ 160024 → r ≠ 160029 → r ≠ 160086 → c1.nreg r = c.nreg r) ∧ c1.nmem = c.nmem ∧
-      c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
-    exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, fun r a1 a2 a3 => ?_, rfl,
-      rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      (∀ r, r ≠ 160024 → r ≠ 160029 → r ≠ 160086 → c1.nreg r = c.nreg r) ∧ Machine.NatRegFrame c c1 := by
+    ram_exec
   have hA1 : c1.nreg ALLOC = A := by
-    rw [fr1 _ (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact hA
+    frame_finish
   obtain ⟨c2, k2, e2, hk2, hw2, A2, j27, j15, hH, hm2, fr2, hrr2, hrm2, ho2⟩ :=
     proH_exec (P := P) hw1 hA1 i24 i29 i86 hn hW hWn
   obtain ⟨c3, k3, e3, hk3, hw3, j04, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
       (block [.copyN 170004 160027]) c2 c3 k3 ∧ k3 = 1 ∧ WordsBounded W c3 ∧
-      c3.nreg 170004 = c2.nreg 160027 ∧ (∀ r, r ≠ 170004 → c3.nreg r = c2.nreg r) ∧
-      c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
-    exec_block
-    refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      c3.nreg 170004 = c2.nreg 160027 ∧ (Machine.NRegEqExcept 170004 c2 c3) ∧
+      Machine.NatRegFrame c2 c3 := by
+    ram_exec
   refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3,
-    by rw [fr3 _ (by rw [hAl]; omega)]; exact A2, by rw [j04, j27], by rw [hm3]; exact hH,
+    by rwa [fr3 _ (by rw [hAl]; omega)], by rw [j04, j27], by rwa [hm3],
     fun a ha => by rw [hm3, hm2 a ha, hm1], fun r h1 h2 h3 => ?_, by rw [hrr3, hrr2, hrr1],
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
   have : r < 160000 ∨ 170000 ≤ r := by unfold bandOf bL41 at h1; omega
-  rw [fr3 r h2, fr2 r (by omega) (by omega) (by omega) (by omega) h3,
-    fr1 r (by omega) (by omega) (by omega)]
+  rw [fr3 r h2, (ram_app% (fr2 r ?_ ?_ ?_ ?_ h3)),
+    (ram_app% (fr1 r ?_ ?_ ?_))]
 
 set_option maxHeartbeats 16000000 in
 theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
@@ -123,7 +118,7 @@ theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
       c'.nreg 170036 = 1 ∧
       (∀ a, (a < H ∨ H + 4 ≤ a) → c'.nmem a = c.nmem a) ∧
       (∀ r, ¬ InitRRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
   have hAl : ALLOC = 9999 := rfl
   rw [hAl] at hA ⊢
   unfold initR
@@ -136,7 +131,7 @@ theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
     Machine.upd_apply]) <;> (try split_ifs) <;> first | omega | rfl)
   unfold InitRRG at h1
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat frame_finish
 
 end proofs
 

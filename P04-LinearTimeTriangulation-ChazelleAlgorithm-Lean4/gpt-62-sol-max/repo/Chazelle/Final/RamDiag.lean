@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Final.RamSplit
 public import Chazelle.Core.SpecRam
 public import Mathlib.Data.List.GetD
@@ -59,7 +63,7 @@ theorem idx_append_single (E : List (ℕ × ℕ)) (p : ℕ × ℕ) (v o : ℕ) :
 theorem mem_idx (E : List (ℕ × ℕ)) (v : ℕ) : ∀ (o j : ℕ), j ∈ idx E v o ↔
     o ≤ j ∧ j < o + E.length ∧ (E.getD (j - o) (0, 0)).1 = v := by
   induction E with
-  | nil => intro o j; simp only [idx, List.not_mem_nil, List.length_nil, false_iff]; omega
+  | nil => simp only [idx, List.not_mem_nil, List.length_nil, false_iff] <;> omega
   | cons e E ih =>
     intro o j
     simp only [idx, List.length_cons]
@@ -69,17 +73,15 @@ theorem mem_idx (E : List (ℕ × ℕ)) (v : ℕ) : ∀ (o j : ℕ), j ∈ idx E
       constructor
       · rintro ⟨h1, h2, h3⟩
         refine ⟨h1, by omega, ?_⟩
-        rw [show j - o = (j - (o + 1)) + 1 by omega]
-        simpa using h3
+        simp_all [show j - o = (j - (o + 1)) + 1 by omega] 
       · rintro ⟨h1, h2, h3⟩
         refine ⟨h1, by omega, ?_⟩
-        rw [show j - o = (j - (o + 1)) + 1 by omega] at h3
-        simpa using h3
+        simp_all [show j - o = (j - (o + 1)) + 1 by omega] 
     split_ifs with he
     · rw [List.mem_cons, key]
       constructor
       · rintro (rfl | h)
-        · exact ⟨le_rfl, by omega, by simpa using he⟩
+        · simp_all 
         · exact ⟨by omega, h.2.1, h.2.2⟩
       · rintro ⟨h1, h2, h3⟩
         by_cases hj : j = o
@@ -117,9 +119,8 @@ theorem mem_iff_idx (E : List (ℕ × ℕ)) (lo hi : ℕ) :
   · intro h
     obtain ⟨j, hj, e⟩ := List.getElem_of_mem h
     refine ⟨j, (mem_idx E lo 0 j).2 ⟨Nat.zero_le _, by omega, ?_⟩, ?_⟩
-    · rw [Nat.sub_zero, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some,
-        e]
-    · rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some, e]
+    · simp_all
+    simp_all
   · rintro ⟨j, hj, e⟩
     obtain ⟨-, h2, h3⟩ := (mem_idx E lo 0 j).1 hj
     rw [Nat.sub_zero] at h3
@@ -147,7 +148,7 @@ theorem mem_ins {E : List (ℕ × ℕ)} {d x : ℕ × ℕ} : x ∈ ins E d ↔ x
     · rintro (h | rfl)
       · exact h
       · exact hd
-  · rw [List.mem_append, List.mem_singleton]
+  simp
 
 /-- An insertion adds at most one member. -/
 theorem length_ins_le (E : List (ℕ × ℕ)) (d : ℕ × ℕ) : (ins E d).length ≤ E.length + 1 := by
@@ -171,7 +172,7 @@ theorem mem_foldl_ins (L : List (ℕ × ℕ)) : ∀ (E : List (ℕ × ℕ)) (x :
     constructor
     · rintro ((h | rfl) | ⟨e, he, rfl⟩)
       · exact Or.inl h
-      · exact Or.inr ⟨d, List.mem_cons_self, rfl⟩
+      · tauto
       · exact Or.inr ⟨e, List.mem_cons_of_mem _ he, rfl⟩
     · rintro (h | ⟨e, he, rfl⟩)
       · exact Or.inl (Or.inl h)
@@ -217,7 +218,7 @@ theorem countP_foldl_ins_le {Q : Polygon} (hQ : Q.Simple) {T : TrapTable} {C : L
         (List.subperm_of_subset hnd hsub).countP_le _
     _ ≤ (diagList Q T C).countP (fun d => decide (d.1 = v ∨ d.2 = v)) :=
         List.countP_mono_left fun x _ h => by
-          simp only [decide_eq_true_eq] at h ⊢; exact Or.inl h
+          simp_all
     _ ≤ 10 := countP_diagList_le hQ hT hC v
 
 /-- The trapezoid pairs of a prefix grow by at most one pair per record. -/
@@ -234,9 +235,7 @@ theorem trapPairs_take_succ (Q : Polygon) {T : TrapTable} {j : ℕ} (hj : j < T.
 /-- The chord pairs of a prefix grow by one pair per record. -/
 theorem chordPairs_take_succ {C : List ChordRec} {j : ℕ} (hj : j < C.length) :
     chordPairs (C.take (j + 1)) = chordPairs (C.take j) ++ [(C[j].src, C[j].dst)] := by
-  unfold chordPairs
-  rw [List.take_add_one, List.getElem?_eq_getElem hj, Option.toList_some, List.map_append]
-  rfl
+  ram_finish [chordPairs, List.take_add_one, List.getElem?_eq_getElem hj, Option.toList_some, List.map_append]
 
 /-- The trapezoid pairs of a prefix are trapezoid pairs. -/
 theorem trapPairs_sub (Q : Polygon) (T : TrapTable) (j : ℕ) :
@@ -265,9 +264,7 @@ theorem length_trapPairs_take_le (Q : Polygon) (T : TrapTable) (j : ℕ) :
 /-- A prefix of `j` records has at most `j` chord pairs. -/
 theorem length_chordPairs_take_le (C : List ChordRec) (j : ℕ) :
     (chordPairs (C.take j)).length ≤ j := by
-  unfold chordPairs
-  rw [List.length_map]
-  exact List.length_take_le _ _
+  simp [chordPairs, List.length_map]
 
 /-! ### The memory relation -/
 
@@ -327,20 +324,20 @@ theorem scanBody_inv {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} {c
     ∃ c' k, Exec P W scanBody c c' k ∧ ScanInvD W DB SB E lo hi c₀ c' ∧ k ≤ 12 ∧
       chainLen c₀.nmem SB (c'.nreg 216) < chainLen c₀.nmem SB (c.nreg 216) := by
   obtain ⟨hw, hfn, hfr, hnm, hrm, hout, done, rest, hsplit, hchain, h01, hfound⟩ := hI
-  have e200 : c.nreg 200 = DB := by rw [hfn 200 (by omega), h200]
-  have e202 : c.nreg 202 = SB := by rw [hfn 202 (by omega), h202]
-  have e204 : c.nreg 204 = 0 := by rw [hfn 204 (by omega), h204]
-  have e205 : c.nreg 205 = 1 := by rw [hfn 205 (by omega), h205]
-  have e214 : c.nreg 214 = hi := by rw [hfn 214 (by omega), h214]
+  have e200 : c.nreg 200 = DB := by simp_all
+  have e202 : c.nreg 202 = SB := by simp_all
+  have e204 : c.nreg 204 = 0 := by simp_all
+  have e205 : c.nreg 205 = 1 := by simp_all
+  have e214 : c.nreg 214 = hi := by simp_all
   rw [e204] at ht
   obtain ⟨z, rest', rfl⟩ : ∃ z rest', rest = z :: rest' := by
     cases rest with
-    | nil => simp only [Chain] at hchain; omega
+    | nil => simp_all [Chain] 
     | cons z rest' => exact ⟨z, rest', rfl⟩
   obtain ⟨he, hchain'⟩ := hchain
   have hzmem : z ∈ idx E lo 0 := by
     rw [← List.mem_reverse, hsplit]; simp
-  have hz : z < E.length := idx_lt hzmem
+  have hz := idx_lt hzmem
   have hb := hD.band z hz
   rw [← hnm] at hb
   have hnode : c.nreg 216 - c.nreg 205 = z := by rw [e205, he]; omega
@@ -358,42 +355,35 @@ theorem scanBody_inv {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} {c
       ∃ c₂ k₂, Exec P W (.ifLtN 219 214 .skip (.ifLtN 214 219 .skip (.instr (.constN 215 1))))
         c₁ c₂ k₂ ∧ k₂ ≤ 5 ∧
         c₂.nreg 215 = (if c₁.nreg 219 = c₁.nreg 214 then 1 else c₁.nreg 215) ∧
-        (∀ r, r ≠ 215 → c₂.nreg r = c₁.nreg r) ∧ c₂.rreg = c₁.rreg ∧ c₂.nmem = c₁.nmem ∧
-        c₂.rmem = c₁.rmem ∧ c₂.output = c₁.output := by
+        (Machine.NRegEqExcept 215 c₁ c₂) ∧ c₂.rreg = c₁.rreg ∧ Machine.MemOutputEq c₁ c₂ := by
     intro c₁ hw₁
     by_cases h1 : c₁.nreg 219 < c₁.nreg 214
     · refine spec_ifLtN_true h1 (spec_skip hw₁ ?_)
-      exact ⟨by omega, by rw [ite_eq_right (by omega)], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+      exact ⟨by omega, by ram_rw [ite_eq_right], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
     · refine spec_ifLtN_false h1 ?_
       by_cases h2 : c₁.nreg 214 < c₁.nreg 219
       · refine spec_ifLtN_true h2 (spec_skip hw₁ ?_)
-        exact ⟨by omega, by rw [ite_eq_right (by omega)], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+        exact ⟨by omega, by ram_rw [ite_eq_right], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       · refine spec_ifLtN_false h2 (spec_instr (Exec.constN hw₁ 215 1 (by
-          have := hw₁.1 205; have := hw.1 205; rw [e205] at this; exact this)) fun _ => ?_)
-        refine ⟨by omega, by rw [ite_eq_left (by omega)]; simp, fun r hr => by simp [hr], rfl, rfl,
-          rfl, rfl⟩
+          have := hw₁.1 205; have := hw.1 205; rwa [e205] at this)) fun _ => ?_)
+        refine ⟨by omega, by ram_simp [ite_eq_left], fun r hr => by simp [hr], by and_intros <;> rfl⟩
   refine spec_seq (spec_use (hcmp _ ‹_›) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨h215₂, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   config_simp at h215₂
   rw [ex, e214] at h215₂
-  have e202₂ : c₂.nreg 202 = SB := by rw [hfn₂ 202 (by decide)]; config_simp; exact e202
-  have e217₂ : c₂.nreg 217 = z := by rw [hfn₂ 217 (by decide)]; config_simp; exact hnode
+  have e202₂ : c₂.nreg 202 = SB := by ram_simp [hfn₂] <;> reg_omega
+  have e217₂ : c₂.nreg 217 = z := by ram_simp [hfn₂] <;> reg_omega
   exec_block
   · rw [e202₂, e217₂]; omega
   have hmem₂ : c₂.nmem = c.nmem := by rw [hnm₂]
   refine ⟨⟨‹_›, fun r hr => ?_, ?_, ?_, ?_, ?_, done ++ [z], rest', by rw [hsplit]; simp, ?_, ?_,
     ?_⟩, by omega, ?_⟩
-  · config_simp
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      hfn₂ r (by omega)]
-    config_simp
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), hfn r hr]
-  · config_simp; rw [hfr₂, hfr]
-  · config_simp; rw [hmem₂, hnm]
-  · config_simp; rw [hrm₂, hrm]
-  · config_simp; rw [hout₂, hout]
-  · config_simp; rw [hmem₂, e202₂, e217₂]; exact hchain'
+  · ram_simp [hfn₂ r (by omega), hfn r hr]
+  · simp [hfr₂, hfr]
+  · simp [hmem₂, hnm]
+  · simp [hrm₂, hrm]
+  · simp [hout₂, hout]
+  · config_simp; rwa [hmem₂, e202₂, e217₂]
   · config_simp
     rw [h215₂]
     split_ifs
@@ -414,7 +404,7 @@ theorem scanBody_inv {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} {c
   · config_simp
     rw [hmem₂, e202₂, e217₂]
     have e1 : chainLen c₀.nmem SB (c.nmem (SB + z)) = rest'.length :=
-      chainLen_eq (by rw [← hnm]; exact hchain')
+      chainLen_eq (by rwa [← hnm])
     have e2 : chainLen c₀.nmem SB (c.nreg 216) = rest'.length + 1 := by
       rw [chainLen_eq (l := z :: rest') (by rw [← hnm]; exact ⟨he, hchain'⟩)]; simp
     rw [e1, e2]; omega
@@ -442,29 +432,19 @@ theorem dRel_emit {mem : ℕ → ℕ} {DB HB SB n : ℕ} {E : List (ℕ × ℕ)}
         mem (SB + z) := by
       intro z hz
       have := idx_lt (List.mem_reverse.1 hz)
-      simp only [Machine.upd_apply]
-      split_ifs <;> omega
+      ram_simp []
     have hc := chain_congr hsib (hD.chain v hv)
     rw [idx_append_single]
     by_cases hvl : v = lo
     · subst hvl
       rw [ite_eq_left rfl, Nat.zero_add, List.reverse_append, List.reverse_singleton,
         List.singleton_append]
-      refine ⟨by simp [hL], ?_⟩
-      have e : upd (upd (upd (upd mem (DB + L + L) v) (DB + L + L + 1) hi) (SB + L)
-          (mem (HB + v))) (HB + v) (L + 1) (SB + L) = mem (HB + v) := by
-        simp only [Machine.upd_apply]; split_ifs <;> first | omega
-      rw [e]
-      exact chain_congr (fun z hz => by
-        have := idx_lt (List.mem_reverse.1 hz)
-        simp only [Machine.upd_apply]
-        split_ifs <;> first | omega) (hD.chain v hv)
+      ram_finish
     · rw [ite_eq_right (Ne.symm hvl), List.append_nil]
       have e : upd (upd (upd (upd mem (DB + L + L) lo) (DB + L + L + 1) hi) (SB + L)
           (mem (HB + lo))) (HB + lo) (L + 1) (HB + v) = mem (HB + v) := by
         simp only [Machine.upd_apply]; split_ifs <;> first | omega
-      rw [e]
-      exact hc
+      rwa [e]
 
 /-- **Spec of the append block.** -/
 theorem emitBlock_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} (c : Config)
@@ -476,8 +456,7 @@ theorem emitBlock_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} 
     ∃ c' k, Exec P W emitBlock c c' k ∧ k ≤ 12 ∧ DRel c'.nmem DB HB SB n (E ++ [(lo, hi)]) ∧
       c'.nreg 206 = E.length + 1 ∧
       (∀ r, r ≠ 206 → r ≠ 217 → r ≠ 218 → r ≠ 219 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
-      (∀ t, (t < DB ∨ SB + E.length + 1 ≤ t) → c'.nmem t = c.nmem t) ∧ c'.rmem = c.rmem ∧
-      c'.output = c.output := by
+      (∀ t, (t < DB ∨ SB + E.length + 1 ≤ t) → c'.nmem t = c.nmem t) ∧ Machine.RealMemOutputEq c c' := by
   unfold emitBlock
   exec_block
   all_goals first
@@ -489,9 +468,7 @@ theorem emitBlock_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {lo hi : ℕ} 
         (HB + lo))) (HB + lo) (E.length + 1) =
       upd (upd (upd (upd c.nmem (DB + E.length + E.length) lo) (DB + E.length + E.length + 1) hi)
         (SB + E.length) (c.nmem (HB + lo))) (HB + lo) (E.length + 1) := by
-    congr 2
-    simp only [Machine.upd_apply]
-    split_ifs <;> first | omega
+    frame_finish
   refine ⟨by omega, ?_, ?_, fun r h1 h2 h3 h4 => ?_, rfl, fun t ht => ?_, rfl, rfl⟩
   · config_simp
     simp only [h200, h201, h202, h205, h206, h213, h214]
@@ -530,49 +507,39 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
       (∀ r, r ≠ 213 → r ≠ 214 → c₂.nreg r = c.nreg r) ∧ c₂.rreg = c.rreg ∧ c₂.nmem = c.nmem ∧
       c₂.rmem = c.rmem ∧ c₂.output = c.output := by
     by_cases hab : b < a
-    · refine spec_ifLtN_true (by config_simp; rw [h211, h212]; exact hab) ?_
+    · refine spec_ifLtN_true (by simp_all) ?_
       exec_block
-      refine ⟨by omega, ?_, ?_, fun r h1 h2 => by simp [h1, h2], rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [h212]; omega
-      · config_simp; rw [h211]; omega
-    · refine spec_ifLtN_false (by config_simp; rw [h211, h212]; exact hab) (spec_skip
+      refine ⟨by omega, ?_, ?_, fun r h1 h2 => by simp [h1, h2], by and_intros <;> rfl⟩
+      · ram_finish
+      ram_finish
+    · refine spec_ifLtN_false (by simp_all) (spec_skip
         (by assumption) ?_)
-      refine ⟨by omega, ?_, ?_, fun r h1 h2 => by simp [h1, h2], rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [h211]; omega
-      · config_simp; rw [h212]; omega
+      simp_all
   refine spec_seq (spec_use hsort ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨h213₂, h214₂, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   set lo := min a b with hlo
   set hi := max a b with hhi
   have hlon : lo < n := by rw [hlo]; omega
-  have g : ∀ r, r ≠ 213 → r ≠ 214 → c₂.nreg r = c.nreg r := hfn₂
+  have g := hfn₂
   refine spec_seq ?_
   exec_block
   · omega
-  · config_simp; rw [g 201 (by decide) (by decide), h201, h213₂]; omega
+  · frame_finish
   refine spec_name fun c₃ hc₃ => ?_
-  have hw₃ : WordsBounded W c₃ := by rw [hc₃]; assumption
-  have hmem₃ : c₃.nmem = c.nmem := by rw [hc₃]; config_simp; exact hnm₂
+  have hw₃ : WordsBounded W c₃ := by rwa [hc₃]
+  have hmem₃ : c₃.nmem = c.nmem := by rw [hc₃]; assumption
   have hreg₃ : ∀ r, r ≠ 213 → r ≠ 214 → r ≠ 215 → r ≠ 216 → r ≠ 218 → c₃.nreg r = c.nreg r := by
-    intro r a1 a2 a3 a4 a5
-    rw [hc₃]; config_simp; simp only [Machine.upd_apply, a3, a4, a5, ite_false]; exact g r a1 a2
-  have e200 : c₃.nreg 200 = DB := by rw [hreg₃ 200 (by decide) (by decide) (by decide) (by decide)
-    (by decide), h200]
-  have e202 : c₃.nreg 202 = SB := by rw [hreg₃ 202 (by decide) (by decide) (by decide) (by decide)
-    (by decide), h202]
-  have e204 : c₃.nreg 204 = 0 := by rw [hreg₃ 204 (by decide) (by decide) (by decide) (by decide)
-    (by decide), h204]
-  have e205 : c₃.nreg 205 = 1 := by rw [hreg₃ 205 (by decide) (by decide) (by decide) (by decide)
-    (by decide), h205]
+    ram_post
+  have e200 : c₃.nreg 200 = DB := by frame_finish
+  have e202 : c₃.nreg 202 = SB := by frame_finish
+  have e204 : c₃.nreg 204 = 0 := by frame_finish
+  have e205 : c₃.nreg 205 = 1 := by frame_finish
   have e213 : c₃.nreg 213 = lo := by rw [hc₃]; config_simp; exact h213₂
   have e214 : c₃.nreg 214 = hi := by rw [hc₃]; config_simp; exact h214₂
-  have hlen : (idx E lo 0).length = E.countP (fun e => decide (e.1 = lo)) := length_idx E lo 0
+  have hlen := length_idx E lo 0
   have hch₃ : Chain c₃.nmem SB (c₃.nreg 216) (idx E lo 0).reverse := by
     have := hD.chain lo hlon
-    rw [hmem₃]
-    have e : c₃.nreg 216 = c.nmem (HB + lo) := by
-      rw [hc₃]; config_simp; rw [hnm₂, g 201 (by decide) (by decide), h201, h213₂]
-    rw [e]; exact this
+    ram_post
   have hI₀ : ScanInvD W DB SB E lo hi c₃ c₃ := by
     refine ⟨hw₃, fun _ _ => rfl, rfl, rfl, rfl, rfl, [], (idx E lo 0).reverse, rfl, hch₃, ?_, ?_⟩
     · left; rw [hc₃]; config_simp
@@ -585,7 +552,7 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
     (fun d hd ht => scanBody_inv (hmem₃ ▸ hD) e200 e202 e204 e205 e214 hW1 hW2 hd ht) hI₀
   refine spec_seq ⟨c₄, k₄, ex₄, ?_⟩
   have hrest : rest = [] := by
-    have e : c₄.nreg 204 = 0 := by rw [hfn₄ 204 (by omega), e204]
+    have e : c₄.nreg 204 = 0 := by ram_rw [hfn₄ 204, e204]
     rw [e] at hexit
     cases rest with
     | nil => rfl
@@ -599,15 +566,15 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
     simp only [List.mem_reverse]
   have hmem₄ : c₄.nmem = c.nmem := by rw [hnm₄, hmem₃]
   have hreg₄ : ∀ r, (r < 213 ∨ 219 < r) → c₄.nreg r = c.nreg r := fun r hr => by
-    rw [hfn₄ r (by omega), hreg₃ r (by omega) (by omega) (by omega) (by omega) (by omega)]
+    ram_rw [hfn₄ r, hreg₃ r]
   have hsp : sortPair (a, b) = (lo, hi) := rfl
   by_cases hin : (lo, hi) ∈ E
   · -- already present: skip
-    have hf : c₄.nreg 215 = 1 := hmemb.2 hin
-    refine spec_ifLtN_false (by rw [hf, hreg₄ 205 (by omega), h205]; omega) (spec_skip hw₄ ?_)
+    have hf := hmemb.2 hin
+    refine spec_ifLtN_false (by ram_rw [hf, hreg₄ 205, h205]; omega) (spec_skip hw₄ ?_)
     have hins : ins E (a, b) = E := by unfold ins; rw [hsp, ite_eq_left hin]
     rw [hins]
-    refine ⟨?_, by rw [hmem₄]; exact hD, by rw [hreg₄ 206 (by omega), h206], fun r _ hr => hreg₄ r hr,
+    refine ⟨?_, by rwa [hmem₄], by ram_rw [hreg₄ 206, h206], fun r _ hr => hreg₄ r hr,
       by rw [hfr₄, hc₃]; config_simp; exact hfr₂, fun t _ => by rw [hmem₄],
       by rw [hrm₄, hc₃]; config_simp; exact hrm₂, by rw [hout₄, hc₃]; config_simp; exact hout₂⟩
     rw [hμ] at hk₄
@@ -616,23 +583,23 @@ theorem insStmt_exec {DB HB SB n : ℕ} {E : List (ℕ × ℕ)} {a b : ℕ} (c :
       rcases h01 with h | h
       · exact h
       · exact absurd (hmemb.1 h) hin
-    refine spec_ifLtN_true (by rw [hf, hreg₄ 205 (by omega), h205]; omega) ?_
+    refine spec_ifLtN_true (by frame_finish [hf, hreg₄, h205]) ?_
     refine spec_use (emitBlock_exec (P := P) (n := n) (E := E) (lo := lo) (hi := hi) c₄ hw₄
-      (by rw [hreg₄ 200 (by omega), h200]) (by rw [hreg₄ 201 (by omega), h201])
-      (by rw [hreg₄ 202 (by omega), h202]) (by rw [hreg₄ 205 (by omega), h205])
-      (by rw [hreg₄ 206 (by omega), h206]) (by rw [hfn₄ 213 (by omega), e213])
-      (by rw [hfn₄ 214 (by omega), e214]) hlon (by rw [hmem₄]; exact hD) hl1 hl2 hW) ?_
+      (by ram_rw [hreg₄ 200, h200]) (by ram_rw [hreg₄ 201, h201])
+      (by ram_rw [hreg₄ 202, h202]) (by ram_rw [hreg₄ 205, h205])
+      (by ram_rw [hreg₄ 206, h206]) (by ram_rw [hfn₄ 213, e213])
+      (by ram_rw [hfn₄ 214, e214]) hlon (by rwa [hmem₄]) hl1 hl2 hW) ?_
     rintro c₅ k₅ hk₅ hw₅ ⟨hD₅, h206₅, hfn₅, hfr₅, hnm₅, hrm₅, hout₅⟩
     have hins : ins E (a, b) = E ++ [(lo, hi)] := by unfold ins; rw [hsp, ite_eq_right hin]
     rw [hins]
     refine ⟨?_, hD₅, by rw [h206₅, List.length_append, List.length_singleton], fun r h1 hr => ?_,
       ?_, fun t ht => ?_, ?_, ?_⟩
     · rw [hμ] at hk₄; omega
-    · rw [hfn₅ r h1 (by omega) (by omega) (by omega), hreg₄ r hr]
+    · rw [(ram_app% (hfn₅ r h1 ?_ ?_ ?_)), hreg₄ r hr]
     · rw [hfr₅, hfr₄, hc₃]; config_simp; exact hfr₂
     · rw [hnm₅ t ht, hmem₄]
     · rw [hrm₅, hrm₄, hc₃]; config_simp; exact hrm₂
-    · rw [hout₅, hout₄, hc₃]; config_simp; exact hout₂
+    · ram_simp [hout₅, hout₄, hc₃] <;> reg_omega
 
 end Ins
 
@@ -661,18 +628,15 @@ theorem neqFlag_exec (r a b : ℕ) (hra : r ≠ a) (hrb : r ≠ b) (c : Config) 
   by_cases h1 : c.nreg a < c.nreg b
   · refine spec_ifLtN_true (by config_simp; simpa [Ne.symm hra, Ne.symm hrb] using h1)
       (spec_skip hw₁ ?_)
-    exact ⟨by omega, by config_simp; rw [ite_eq_right (by omega)], fun r' h => by simp [h], rfl, rfl,
-      rfl, rfl⟩
+    simp_all <;> omega
   · refine spec_ifLtN_false (by config_simp; simpa [Ne.symm hra, Ne.symm hrb] using h1) ?_
     by_cases h2 : c.nreg b < c.nreg a
     · refine spec_ifLtN_true (by config_simp; simpa [Ne.symm hra, Ne.symm hrb] using h2)
         (spec_skip hw₁ ?_)
-      exact ⟨by omega, by config_simp; rw [ite_eq_right (by omega)], fun r' h => by simp [h], rfl, rfl,
-        rfl, rfl⟩
+      simp_all <;> omega
     · refine spec_ifLtN_false (by config_simp; simpa [Ne.symm hra, Ne.symm hrb] using h2)
         (spec_instr (Exec.constN hw₁ r 0 (Nat.zero_le _)) fun _ => ?_)
-      exact ⟨by omega, by config_simp; rw [ite_eq_left (by omega)], fun r' h => by simp [h], rfl, rfl,
-        rfl, rfl⟩
+      exact ⟨by omega, by ram_simp [ite_eq_left], fun r' h => by simp [h], by and_intros <;> rfl⟩
 
 /-- Spec of `wrapZero`: cost `≤ 3`, `nreg r` is reset to `0` unless `nreg r < nreg m`. -/
 theorem wrapZero_exec (r m : ℕ) (c : Config) (hc : WordsBounded W c) :
@@ -685,7 +649,7 @@ theorem wrapZero_exec (r m : ℕ) (c : Config) (hc : WordsBounded W c) :
   · refine spec_ifLtN_true h (spec_skip hc ?_)
     exact ⟨by omega, by rw [ite_eq_left h], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   · refine spec_ifLtN_false h (spec_instr (Exec.constN hc r 0 (Nat.zero_le _)) fun _ => ?_)
-    exact ⟨by omega, by config_simp; rw [ite_eq_right h], fun r' h' => by simp [h'], rfl, rfl, rfl, rfl⟩
+    simp_all
 
 end Kernels
 
@@ -737,7 +701,7 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
       T.length - c'.nreg 207 < T.length - c.nreg 207 := by
   obtain ⟨hw, hj, hptr, ⟨hD, h206, h200, h201, h202, h203, h204, h205, h224, h225, h226⟩, hfn, hfr,
     hnm, hrm, hout⟩ := hI
-  have e9991 : c.nreg 9991 = T.length := by rw [hfn 9991 (by omega), h9991]
+  have e9991 : c.nreg 9991 = T.length := by ram_rw [hfn 9991, h9991]
   rw [e9991] at ht
   set j := c.nreg 207 with hjdef
   set TB := c₀.nreg 9990 with hTBdef
@@ -749,8 +713,8 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
   have hbot : r.bot < P.n := by rw [← hQn, hr, ← hDt]; exact Dt.bot_lt hQ
   have hrd := hTab j ht
   rw [hgetD] at hrd
-  have m2 : c.nmem (TB + 4 * j + 2) = r.top := by rw [hnm _ (by omega)]; exact hrd.2.2.1
-  have m3 : c.nmem (TB + 4 * j + 3) = r.bot := by rw [hnm _ (by omega)]; exact hrd.2.2.2
+  have m2 : c.nmem (TB + 4 * j + 2) = r.top := by ram_rw [hnm]; exact hrd.2.2.1
+  have m3 : c.nmem (TB + 4 * j + 3) = r.bot := by ram_rw [hnm]; exact hrd.2.2.2
   set L := trapPairs Q (T.take j) with hL
   set E := L.foldl ins [] with hE
   have hELen : E.length ≤ j := (length_foldl_ins_le L []).trans (by
@@ -790,25 +754,23 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
     intro x a1 a2 a3 a4
     rw [gfn₅ x a4, gfn₄ x a3, gfn₃ x a2, gfn₂ x a1]
   have hmem₅ : c₅.nmem = c.nmem := by rw [gnm₅, gnm₄, gnm₃, gnm₂, hc₁]
-  have hn₁ : c₁.nreg 203 = P.n := by rw [r1 203 (by decide) (by decide) (by decide) (by decide)
-    (by decide), h203]
+  have hn₁ : c₁.nreg 203 = P.n := by ram_rw [r1 203, h203]
   have t1 : c₃.nreg 220 = (r.top + 1) % P.n := by
-    rw [gfn₃ 220 (by decide), g220, e220, hn₁]
+    ram_rw [gfn₃ 220, g220, e220, hn₁]
     split_ifs with h
     · rw [Nat.mod_eq_of_lt h]
     · rw [show r.top + 1 = P.n by omega, Nat.mod_self]
   have b1 : c₄.nreg 221 = (r.bot + 1) % P.n := by
-    rw [gfn₄ 221 (by decide), g221, gfn₂ 221 (by decide), e221, gfn₂ 203 (by decide), hn₁]
+    ram_rw [gfn₄ 221, g221, gfn₂ 221, e221, gfn₂ 203, hn₁]
     split_ifs with h
     · rw [Nat.mod_eq_of_lt h]
     · rw [show r.bot + 1 = P.n by omega, Nat.mod_self]
   have f1 : c₅.nreg 222 = (if r.bot = (r.top + 1) % P.n then 0 else 1) := by
-    rw [gfn₅ 222 (by decide), g222, gfn₃ 210 (by decide), gfn₂ 210 (by decide), e210, t1]
+    ram_rw [gfn₅ 222, g222, gfn₃ 210, gfn₂ 210, e210, t1]
   have f2 : c₅.nreg 227 = (if r.top = (r.bot + 1) % P.n then 0 else 1) := by
-    rw [g227, gfn₄ 209 (by decide), gfn₃ 209 (by decide), gfn₂ 209 (by decide), e209, b1]
+    ram_rw [g227, gfn₄ 209, gfn₃ 209, gfn₂ 209, e209, b1]
   have e204₅ : c₅.nreg 204 = 0 := by
-    rw [R 204 (by decide) (by decide) (by decide) (by decide), r1 204 (by decide) (by decide)
-      (by decide) (by decide) (by decide), h204]
+    ram_rw [R 204, r1 204, h204]
   have hna : TrapRec.nonAdj Q.n r = true ↔ (0 < c₅.nreg 222 ∧ 0 < c₅.nreg 227) := by
     rw [f1, f2, TrapRec.nonAdj, decide_eq_true_iff, hQn]
     constructor
@@ -823,13 +785,11 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
       (.seq (block [.copyN 211 209, .copyN 212 210]) insStmt) .skip) .skip) c₅ c₆ k₆ ∧
       k₆ ≤ 170 ∧ DState DB HB SB P.n (trapPairs Q (T.take (j + 1))) c₆ ∧
       (∀ x, x ≠ 206 → (x < 211 ∨ 219 < x) → c₆.nreg x = c₅.nreg x) ∧ c₆.rreg = c₅.rreg ∧
-      (∀ t, (t < DB ∨ SB + M ≤ t) → c₆.nmem t = c₅.nmem t) ∧ c₆.rmem = c₅.rmem ∧
-      c₆.output = c₅.output := by
+      (∀ t, (t < DB ∨ SB + M ≤ t) → c₆.nmem t = c₅.nmem t) ∧ Machine.RealMemOutputEq c₅ c₆ := by
     have hstate : ∀ x, x = 200 ∨ x = 201 ∨ x = 202 ∨ x = 203 ∨ x = 204 ∨ x = 205 ∨ x = 206 ∨
         x = 224 ∨ x = 225 ∨ x = 226 → c₅.nreg x = c.nreg x := by
       intro x hx
-      rw [R x (by omega) (by omega) (by omega) (by omega), r1 x (by omega) (by omega) (by omega)
-        (by omega) (by omega)]
+      ram_rw [R x, r1 x]
     have key : (trapPairs Q (T.take (j + 1))).foldl ins [] =
         if TrapRec.nonAdj Q.n r then ins E (r.top, r.bot) else E := by
       rw [trapPairs_take_succ Q ht, List.foldl_append, ← hr]
@@ -845,14 +805,14 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
       refine spec_use (insStmt_exec (P := P) (DB := DB) (HB := HB) (SB := SB) (n := P.n) (E := E)
         (a := r.top) (b := r.bot) _ ‹_›
         ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ htop hbot ?_ (by omega) hl2 (by omega)) ?_
-      · config_simp; rw [hstate 200 (by simp), h200]
-      · config_simp; rw [hstate 201 (by simp), h201]
-      · config_simp; rw [hstate 202 (by simp), h202]
-      · config_simp; rw [hstate 204 (by simp), h204]
-      · config_simp; rw [hstate 205 (by simp), h205]
-      · config_simp; rw [hstate 206 (by simp), h206]
-      · config_simp; rw [R 209 (by decide) (by decide) (by decide) (by decide), e209]
-      · config_simp; rw [R 210 (by decide) (by decide) (by decide) (by decide), e210]
+      · config_simp; ram_rw [hstate 200, h200]
+      · config_simp; ram_rw [hstate 201, h201]
+      · config_simp; ram_rw [hstate 202, h202]
+      · config_simp; ram_rw [hstate 204, h204]
+      · config_simp; ram_rw [hstate 205, h205]
+      · config_simp; ram_rw [hstate 206, h206]
+      · config_simp; ram_rw [R 209, e209]
+      · config_simp; ram_rw [R 210, e210]
       · config_simp; rw [hmem₅]; exact hD
       rintro c₆ k₆ hk₆ hw₆ ⟨hD₆, h206₆, hfn₆, hfr₆, hnm₆, hrm₆, hout₆⟩
       have hcnt : E.countP (fun e => decide (e.1 = min r.top r.bot)) ≤ 10 :=
@@ -861,16 +821,16 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
       refine ⟨by omega, ⟨hD₆, h206₆, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun x h1 hx => ?_,
         by rw [hfr₆], fun t ht' => ?_, by rw [hrm₆], by rw [hout₆]⟩
       all_goals first
-        | (rw [hfn₆ _ (by decide) (by omega)]; config_simp; rw [hstate _ (by simp)]; assumption)
+        | (ram_rw [hfn₆]; config_simp; ram_rw [hstate]; assumption)
         | skip
-      · rw [hfn₆ x h1 (by omega)]; config_simp
-        rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-      · rw [hnm₆ t (by omega)]
+      · ram_rw [hfn₆ x h1]; config_simp
+        ram_rw [Machine.upd_other _ _, Machine.upd_other _ _]
+      · ram_rw [hnm₆ t]
     · have hz : ¬ (0 < c₅.nreg 222 ∧ 0 < c₅.nreg 227) := fun h => hnaj (hna.2 h)
       rw [ite_eq_right hnaj]
       have hDs : DState DB HB SB P.n L c₅ := by
-        refine ⟨by rw [hmem₅]; exact hD, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-          (rw [hstate _ (by simp)]; assumption)
+        refine ⟨by rw [hmem₅]; exact hD, ?_⟩; and_intros <;>
+          (ram_rw [hstate]; assumption)
       by_cases p1 : 0 < c₅.nreg 222
       · have p2 : ¬ 0 < c₅.nreg 227 := fun h => hz ⟨p1, h⟩
         refine spec_ifLtN_true (by rw [e204₅]; exact p1)
@@ -881,11 +841,11 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
   refine spec_seq (spec_use hcond ?_)
   rintro c₆ k₆ hk₆ hw₆ ⟨hDs₆, hfn₆, hfr₆, hnm₆, hrm₆, hout₆⟩
   have e208 : c₆.nreg 208 = TB + 4 * j := by
-    rw [hfn₆ 208 (by decide) (by omega), R 208 (by decide) (by decide) (by decide) (by decide),
-      r1 208 (by decide) (by decide) (by decide) (by decide) (by decide), hptr]
+    ram_rw [hfn₆ 208, R 208,
+      r1 208, hptr]
   have e207 : c₆.nreg 207 = j := by
-    rw [hfn₆ 207 (by decide) (by omega), R 207 (by decide) (by decide) (by decide) (by decide),
-      r1 207 (by decide) (by decide) (by decide) (by decide) (by decide)]
+    ram_rw [hfn₆ 207, R 207,
+      r1 207]
   exec_block
   · rw [e208, hDs₆.2.2.2.2.2.2.2.2.2.2]; omega
   · config_simp; rw [e207, hDs₆.2.2.2.2.2.2.2.1]; omega
@@ -893,13 +853,11 @@ theorem trapBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : List
   · config_simp; rw [e207, hDs₆.2.2.2.2.2.2.2.1]; omega
   · config_simp; rw [e207, e208, hDs₆.2.2.2.2.2.2.2.1, hDs₆.2.2.2.2.2.2.2.2.2.2]; ring
   · config_simp
-    rw [e207, hDs₆.2.2.2.2.2.2.2.1]
-    obtain ⟨d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11⟩ := hDs₆
-    exact ⟨d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11⟩
+    simpa only [e207, hDs₆.2.2.2.2.2.2.2.1]
   · config_simp
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      hfn₆ x (by omega) (by omega), R x (by omega) (by omega) (by omega) (by omega),
-      r1 x (by omega) (by omega) (by omega) (by omega) (by omega), hfn x hx]
+    ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+      hfn₆ x, R x,
+      r1 x, hfn x hx]
   · config_simp; rw [hfr₆, gfr₅, gfr₄, gfr₃, gfr₂, hc₁]; exact hfr
   · config_simp; rw [hnm₆ t ht', hmem₅, hnm t ht']
   · config_simp; rw [hrm₆, grm₅, grm₄, grm₃, grm₂, hc₁]; exact hrm
@@ -926,7 +884,7 @@ theorem chordBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
       C.length - c'.nreg 207 < C.length - c.nreg 207 := by
   obtain ⟨hw, hj, hptr, ⟨hD, h206, h200, h201, h202, h203, h204, h205, h224, h225, h226⟩, hfn, hfr,
     hnm, hrm, hout⟩ := hI
-  have e9993 : c.nreg 9993 = C.length := by rw [hfn 9993 (by omega), h9993]
+  have e9993 : c.nreg 9993 = C.length := by simp_all
   rw [e9993] at ht
   set j := c.nreg 207 with hjdef
   set CB := c₀.nreg 9992 with hCBdef
@@ -938,8 +896,8 @@ theorem chordBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   have hdst : r.dst < P.n := by rw [← hQn]; exact hval.2.1
   have hrd := hCab j ht
   rw [hgetD] at hrd
-  have m0 : c.nmem (CB + 3 * j) = r.src := by rw [hnm _ (by omega)]; exact hrd.1
-  have m2 : c.nmem (CB + 3 * j + 2) = r.dst := by rw [hnm _ (by omega)]; exact hrd.2.2
+  have m0 : c.nmem (CB + 3 * j) = r.src := by ram_rw [hnm]; exact hrd.1
+  have m2 : c.nmem (CB + 3 * j + 2) = r.dst := by ram_rw [hnm]; exact hrd.2.2
   set L := trapPairs Q T ++ chordPairs (C.take j) with hL
   set E := L.foldl ins [] with hE
   have hELen : E.length ≤ T.length + j := (length_foldl_ins_le L []).trans (by
@@ -953,7 +911,7 @@ theorem chordBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   exec_block
   · config_simp; rw [hptr, h224]; omega
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by rwa [hc₁]
   have r1 : ∀ x, x ≠ 211 → x ≠ 212 → x ≠ 218 → c₁.nreg x = c.nreg x := by
     intro x a1 a2 a3; rw [hc₁]; config_simp; simp [a1, a2, a3]
   have hcnt : E.countP (fun e => decide (e.1 = min r.src r.dst)) ≤ 10 :=
@@ -964,45 +922,43 @@ theorem chordBody_inv (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   refine spec_seq (spec_use (insStmt_exec (P := P) (DB := DB) (HB := HB) (SB := SB) (n := P.n)
     (E := E) (a := r.src) (b := r.dst) c₁ hw₁ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ hsrc hdst ?_ (by omega) hl2
     (by omega)) ?_)
-  · rw [r1 200 (by decide) (by decide) (by decide), h200]
-  · rw [r1 201 (by decide) (by decide) (by decide), h201]
-  · rw [r1 202 (by decide) (by decide) (by decide), h202]
-  · rw [r1 204 (by decide) (by decide) (by decide), h204]
-  · rw [r1 205 (by decide) (by decide) (by decide), h205]
-  · rw [r1 206 (by decide) (by decide) (by decide), h206]
-  · rw [hc₁]; config_simp; rw [hptr, m0]
-  · rw [hc₁]; config_simp; rw [hptr, h224, m2]
-  · rw [hc₁]; config_simp; exact hD
+  · ram_rw [r1 200, h200]
+  · ram_rw [r1 201, h201]
+  · ram_rw [r1 202, h202]
+  · ram_rw [r1 204, h204]
+  · ram_rw [r1 205, h205]
+  · ram_rw [r1 206, h206]
+  · simp [hc₁, hptr, m0]
+  · simp [hc₁, hptr, h224, m2]
+  · simp only [hc₁] <;> omega
   rintro c₂ k₂ hk₂ hw₂ ⟨hD₂, h206₂, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
   have R : ∀ x, x ≠ 206 → (x < 211 ∨ 219 < x) → c₂.nreg x = c.nreg x := by
     intro x a1 a2
-    rw [hfn₂ x a1 (by omega), r1 x (by omega) (by omega) (by omega)]
-  have e208 : c₂.nreg 208 = CB + 3 * j := by rw [R 208 (by decide) (by omega), hptr]
+    ram_rw [hfn₂ x a1, r1 x]
+  have e208 : c₂.nreg 208 = CB + 3 * j := by ram_rw [R 208, hptr]
   have e207 : c₂.nreg 207 = j := R 207 (by decide) (by omega)
   have key : (trapPairs Q T ++ chordPairs (C.take (j + 1))).foldl ins [] = ins E (r.src, r.dst) := by
     rw [chordPairs_take_succ ht, ← List.append_assoc, List.foldl_append, ← hr]
     rfl
   exec_block
-  · rw [e208, R 225 (by decide) (by omega), h225]; omega
-  · config_simp; rw [e207, R 205 (by decide) (by omega), h205]; omega
+  · ram_rw [e208, R 225, h225]; omega
+  · config_simp; ram_rw [e207, R 205, h205]; omega
   refine ⟨⟨‹_›, ?_, ?_, ?_, fun x hx => ?_, ?_, fun t ht' => ?_, ?_, ?_⟩, by omega, ?_⟩
-  · config_simp; rw [e207, R 205 (by decide) (by omega), h205]; omega
+  · config_simp; ram_rw [e207, R 205, h205]; omega
   · config_simp
-    rw [e207, e208, R 205 (by decide) (by omega), R 225 (by decide) (by omega), h205, h225]; ring
+    ram_rw [e207, e208, R 205, R 225, h205, h225]; ring
   · config_simp
-    rw [e207, R 205 (by decide) (by omega), h205]
+    ram_rw [e207, R 205, h205]
     unfold DState
     rw [key]
-    refine ⟨hD₂, h206₂, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-      (config_simp; rw [R _ (by decide) (by omega)]; assumption)
-  · config_simp
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      hfn₂ x (by omega) (by omega), r1 x (by omega) (by omega) (by omega), hfn x hx]
-  · config_simp; rw [hfr₂, hc₁]; exact hfr
-  · config_simp; rw [hnm₂ t (by omega), hc₁]; exact hnm t ht'
-  · config_simp; rw [hrm₂, hc₁]; exact hrm
-  · config_simp; rw [hout₂, hc₁]; exact hout
-  · config_simp; rw [e207, R 205 (by decide) (by omega), h205]; omega
+    refine ⟨hD₂, h206₂, ?_⟩; and_intros <;>
+      ram_simp [R] <;> omega
+  · ram_simp [hfn₂ x (by omega) (by omega), r1 x (by omega) (by omega) (by omega), hfn x hx] <;> omega
+  · config_simp; rwa [hfr₂, hc₁]
+  · config_simp; ram_rw [hnm₂ t, hc₁]; exact hnm t ht'
+  · config_simp; rwa [hrm₂, hc₁]
+  · config_simp; rwa [hout₂, hc₁]
+  · config_simp; ram_rw [e207, R 205, h205]; omega
 
 end Loops
 
@@ -1048,10 +1004,10 @@ theorem headBody_inv {HB n : ℕ} {c₀ : Config} (h201 : c₀.nreg 201 = HB) (h
     ∃ c' k, Exec P W headBody c c' k ∧ HeadInv W HB n c₀ c' ∧ k ≤ 3 ∧
       n - c'.nreg 207 < n - c.nreg 207 := by
   obtain ⟨hw, hi, hz, hfn, hfr, hnm, hrm, hout⟩ := hI
-  have e201 : c.nreg 201 = HB := by rw [hfn 201 (by decide) (by decide), h201]
-  have e203 : c.nreg 203 = n := by rw [hfn 203 (by decide) (by decide), h203]
-  have e204 : c.nreg 204 = 0 := by rw [hfn 204 (by decide) (by decide), h204]
-  have e205 : c.nreg 205 = 1 := by rw [hfn 205 (by decide) (by decide), h205]
+  have e201 : c.nreg 201 = HB := by simp_all
+  have e203 : c.nreg 203 = n := by simp_all
+  have e204 : c.nreg 204 = 0 := by simp_all
+  have e205 : c.nreg 205 = 1 := by simp_all
   rw [e203] at ht
   unfold headBody
   exec_block
@@ -1059,7 +1015,7 @@ theorem headBody_inv {HB n : ℕ} {c₀ : Config} (h201 : c₀.nreg 201 = HB) (h
   · config_simp; rw [e205]; omega
   refine ⟨⟨‹_›, ?_, fun v hv => ?_, fun r h1 h2 => ?_, hfr, fun t ht' => ?_, hrm, hout⟩,
     by omega, ?_⟩
-  · config_simp; rw [e205]; omega
+  · simp_all 
   · config_simp
     config_simp at hv
     rw [e205] at hv
@@ -1068,10 +1024,8 @@ theorem headBody_inv {HB n : ℕ} {c₀ : Config} (h201 : c₀.nreg 201 = HB) (h
     split_ifs with h
     · rfl
     · exact hz v (by omega)
-  · config_simp; simp only [Machine.upd_apply, h1, h2, ite_false]; exact hfn r h1 h2
-  · config_simp
-    rw [e201, Machine.upd_other _ _ _ (by omega)]
-    exact hnm t ht'
+  · ram_finish [h1, h2, ite_false]
+  · ram_finish [e201]
   · config_simp; rw [e205]; omega
 
 set_option maxHeartbeats 1000000 in
@@ -1094,27 +1048,15 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
         (∀ j < E.length, c'.nmem (DB + 2 * j) = (E.getD j (0, 0)).1 ∧
           c'.nmem (DB + 2 * j + 1) = (E.getD j (0, 0)).2) ∧
         (∀ r, (r < 203 ∨ 227 < r) → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
-        (∀ t, (t < DB ∨ SB + M ≤ t) → c'.nmem t = c.nmem t) ∧ c'.rmem = c.rmem ∧
-        c'.output = c.output := by
+        (∀ t, (t < DB ∨ SB + M ≤ t) → c'.nmem t = c.nmem t) ∧ Machine.RealMemOutputEq c c' := by
   unfold diagStmt
   refine spec_seq ?_
   unfold diagInit
-  exec_block
-  · omega
-  · omega
-  · omega
-  · omega
-  · omega
-  · omega
-  · omega
-  · omega
+  exec_block!
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by rwa [hc₁]
   have r1 : ∀ x, (x < 203 ∨ (207 < x ∧ x < 224) ∨ 226 < x) → c₁.nreg x = c.nreg x := by
-    intro x hx; rw [hc₁]; config_simp
-    simp [show x ≠ 203 by omega, show x ≠ 204 by omega, show x ≠ 205 by omega,
-      show x ≠ 206 by omega, show x ≠ 207 by omega, show x ≠ 224 by omega,
-      show x ≠ 225 by omega, show x ≠ 226 by omega]
+    ram_post
   have c203 : c₁.nreg 203 = P.n := by rw [hc₁]; config_simp
   have c204 : c₁.nreg 204 = 0 := by rw [hc₁]; config_simp
   have c205 : c₁.nreg 205 = 1 := by rw [hc₁]; config_simp
@@ -1123,7 +1065,7 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   have c224 : c₁.nreg 224 = 2 := by rw [hc₁]; config_simp
   have c225 : c₁.nreg 225 = 3 := by rw [hc₁]; config_simp
   have c226 : c₁.nreg 226 = 4 := by rw [hc₁]; config_simp
-  have c201 : c₁.nreg 201 = HB := by rw [r1 201 (by omega), h201]
+  have c201 : c₁.nreg 201 = HB := by ram_rw [r1 201, h201]
   -- clear the heads
   have hH₀ : HeadInv W HB P.n c₁ c₁ :=
     ⟨hw₁, by rw [c207]; omega, fun v hv => by rw [c207] at hv; omega, fun _ _ _ => rfl, rfl,
@@ -1134,80 +1076,75 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   unfold headLoop
   refine spec_seq ⟨c₂, k₂, ex₂, ?_⟩
   have e207₂ : c₂.nreg 207 = P.n := by
-    rw [hfn₂ 203 (by decide) (by decide), c203] at hexit₂
+    ram_rw [hfn₂ 203, c203] at hexit₂
     omega
-  have R2 : ∀ x, x ≠ 207 → x ≠ 218 → c₂.nreg x = c₁.nreg x := hfn₂
+  have R2 := hfn₂
   -- the memory relation for the empty list
   have hD₀ : DRel c₂.nmem DB HB SB P.n [] := by
     refine ⟨fun j hj => absurd hj (by simp), fun v hv => ?_⟩
     show c₂.nmem (HB + v) = 0
-    exact hz₂ v (by rw [e207₂]; exact hv)
+    frame_finish [e207₂]
   have hmem₂ : ∀ t, (t < DB ∨ SB + M ≤ t) → c₂.nmem t = c.nmem t := by
-    intro t ht
-    rw [hnm₂ t (by omega), hc₁]
+    frame_finish [hnm₂, hc₁]
   -- the trapezoid loop
   refine spec_seq ?_
-  exec_block
-  · omega
+  exec_block!
   refine spec_name fun c₃ hc₃ => ?_
-  have hw₃ : WordsBounded W c₃ := by rw [hc₃]; assumption
+  have hw₃ : WordsBounded W c₃ := by rwa [hc₃]
   have R3 : ∀ x, x ≠ 207 → x ≠ 208 → c₃.nreg x = c₂.nreg x := by
     intro x a1 a2; rw [hc₃]; config_simp; simp [a1, a2]
   have g : ∀ x, (x < 203 ∨ 227 < x) → c₃.nreg x = c.nreg x := by
     intro x hx
-    rw [R3 x (by omega) (by omega), R2 x (by omega) (by omega), r1 x (by omega)]
+    ram_rw [R3 x, R2 x, r1 x]
   have g' : ∀ x, x = 203 ∨ x = 204 ∨ x = 205 ∨ x = 206 ∨ x = 224 ∨ x = 225 ∨ x = 226 →
       c₃.nreg x = c₁.nreg x := by
     intro x hx
-    rw [R3 x (by omega) (by omega), R2 x (by omega) (by omega)]
+    ram_rw [R3 x, R2 x]
   have hTI : TrapInvD P Q T W DB HB SB M c₃ c₃ := by
     refine ⟨hw₃, ?_, ?_, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun _ _ => rfl, rfl,
       fun _ _ => rfl, rfl, rfl⟩
     · rw [hc₃]; config_simp; omega
     · rw [hc₃]; config_simp; omega
     · have e : c₃.nreg 207 = 0 := by rw [hc₃]; config_simp
-      rw [e, List.take_zero]
-      show DRel c₃.nmem DB HB SB P.n []
-      rw [hc₃]; exact hD₀
+      ram_post
     · have e : c₃.nreg 207 = 0 := by rw [hc₃]; config_simp
-      rw [e, List.take_zero, g' 206 (by simp), c206]; rfl
-    · rw [g 200 (by omega), h200]
-    · rw [g 201 (by omega), h201]
-    · rw [g 202 (by omega), h202]
-    · rw [g' 203 (by simp), c203]
-    · rw [g' 204 (by simp), c204]
-    · rw [g' 205 (by simp), c205]
-    · rw [g' 224 (by simp), c224]
-    · rw [g' 225 (by simp), c225]
-    · rw [g' 226 (by simp), c226]
+      frame_finish [e, List.take_zero, g', c206]
+    · ram_rw [g 200, h200]
+    · ram_rw [g 201, h201]
+    · ram_rw [g 202, h202]
+    · ram_rw [g' 203, c203]
+    · ram_rw [g' 204, c204]
+    · ram_rw [g' 205, c205]
+    · ram_rw [g' 224, c224]
+    · ram_rw [g' 225, c225]
+    simp [g', c226]
   have hmem₃ : c₃.nmem = c₂.nmem := by rw [hc₃]
   have hTab₃ : Core.TrapTableAt c₃.nmem (c₃.nreg 9990) T := by
-    rw [g 9990 (by omega)]
+    ram_rw [g 9990]
     intro i hi
-    rw [hmem₃, hmem₂ _ (by omega), hmem₂ _ (by omega), hmem₂ _ (by omega), hmem₂ _ (by omega)]
+    ram_rw [hmem₃, hmem₂, hmem₂, hmem₂, hmem₂]
     exact hTab i hi
   obtain ⟨c₄, k₄, ex₄, ⟨hw₄, hj₄, hptr₄, hDs₄, hfn₄, hfr₄, hnm₄, hrm₄, hout₄⟩, hexit₄, hk₄⟩ :=
     Exec.whileLtN_bounded (P := P) (TrapInvD P Q T W DB HB SB M c₃)
       (fun d => T.length - d.nreg 207) 200 (fun _ h => h.1)
-      (fun d hd ht => trapBody_inv hQ hQn hT hC hTab₃ (by rw [g 9991 (by omega), h9991])
-        (by rw [g 9990 (by omega)]; exact hTB) hl1 hl2 hW hM d hd ht) hTI
+      (fun d hd ht => trapBody_inv hQ hQn hT hC hTab₃ (by ram_rw [g 9991, h9991])
+        (by ram_rw assumption [g 9990]) hl1 hl2 hW hM d hd ht) hTI
   unfold trapLoop
   refine spec_seq ⟨c₄, k₄, ex₄, ?_⟩
   have e207₄ : c₄.nreg 207 = T.length := by
-    rw [hfn₄ 9991 (by omega), g 9991 (by omega), h9991] at hexit₄
+    ram_rw [hfn₄ 9991, g 9991, h9991] at hexit₄
     omega
   rw [e207₄, List.take_length] at hDs₄
   -- the chord loop
   refine spec_seq ?_
-  exec_block
-  · omega
+  exec_block!
   refine spec_name fun c₅ hc₅ => ?_
-  have hw₅ : WordsBounded W c₅ := by rw [hc₅]; assumption
+  have hw₅ : WordsBounded W c₅ := by rwa [hc₅]
   have R5 : ∀ x, x ≠ 207 → x ≠ 208 → c₅.nreg x = c₄.nreg x := by
     intro x a1 a2; rw [hc₅]; config_simp; simp [a1, a2]
   have g5 : ∀ x, (x < 203 ∨ 227 < x) → c₅.nreg x = c.nreg x := by
     intro x hx
-    rw [R5 x (by omega) (by omega), hfn₄ x (by omega), g x hx]
+    ram_rw [R5 x, hfn₄ x, g x hx]
   have hCI : ChordInvD P Q T C W DB HB SB M c₅ c₅ := by
     obtain ⟨d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11⟩ := hDs₄
     refine ⟨hw₅, ?_, ?_, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun _ _ => rfl, rfl,
@@ -1216,39 +1153,38 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
     · rw [hc₅]; config_simp; omega
     · have e : c₅.nreg 207 = 0 := by rw [hc₅]; config_simp
       rw [e, List.take_zero]
-      simp only [chordPairs, List.map_nil, List.append_nil]
-      rw [hc₅]; exact d1
+      frame_finish [chordPairs, List.map_nil, List.append_nil, hc₅]
     · have e : c₅.nreg 207 = 0 := by rw [hc₅]; config_simp
       rw [e, List.take_zero]
       simp only [chordPairs, List.map_nil, List.append_nil]
-      rw [R5 206 (by decide) (by decide)]; exact d2
-    · rw [R5 200 (by decide) (by decide)]; exact d3
-    · rw [R5 201 (by decide) (by decide)]; exact d4
-    · rw [R5 202 (by decide) (by decide)]; exact d5
-    · rw [R5 203 (by decide) (by decide)]; exact d6
-    · rw [R5 204 (by decide) (by decide)]; exact d7
-    · rw [R5 205 (by decide) (by decide)]; exact d8
-    · rw [R5 224 (by decide) (by decide)]; exact d9
-    · rw [R5 225 (by decide) (by decide)]; exact d10
-    · rw [R5 226 (by decide) (by decide)]; exact d11
+      ram_rw assumption [R5 206]
+    · ram_rw assumption [R5 200]
+    · ram_rw assumption [R5 201]
+    · ram_rw assumption [R5 202]
+    · ram_rw assumption [R5 203]
+    · ram_rw assumption [R5 204]
+    · ram_rw assumption [R5 205]
+    · ram_rw assumption [R5 224]
+    · ram_rw assumption [R5 225]
+    · ram_rw assumption [R5 226]
   have hmem₅ : ∀ t, (t < DB ∨ SB + M ≤ t) → c₅.nmem t = c.nmem t := by
     intro t ht
     have e : c₅.nmem = c₄.nmem := by rw [hc₅]
     rw [e, hnm₄ t ht, hmem₃, hmem₂ t ht]
   have hCab₅ : Core.ChordTableAt c₅.nmem (c₅.nreg 9992) C := by
-    rw [g5 9992 (by omega)]
+    ram_rw [g5 9992]
     intro i hi
-    rw [hmem₅ _ (by omega), hmem₅ _ (by omega), hmem₅ _ (by omega)]
+    ram_rw [hmem₅, hmem₅, hmem₅]
     exact hCab i hi
   obtain ⟨c₆, k₆, ex₆, ⟨hw₆, hj₆, hptr₆, hDs₆, hfn₆, hfr₆, hnm₆, hrm₆, hout₆⟩, hexit₆, hk₆⟩ :=
     Exec.whileLtN_bounded (P := P) (ChordInvD P Q T C W DB HB SB M c₅)
       (fun d => C.length - d.nreg 207) 172 (fun _ h => h.1)
-      (fun d hd ht => chordBody_inv hQ hQn hT hC hCab₅ (by rw [g5 9993 (by omega), h9993])
-        (by rw [g5 9992 (by omega)]; exact hCB) hl1 hl2 hW hM d hd ht) hCI
+      (fun d hd ht => chordBody_inv hQ hQn hT hC hCab₅ (by ram_rw [g5 9993, h9993])
+        (by ram_rw assumption [g5 9992]) hl1 hl2 hW hM d hd ht) hCI
   unfold chordLoop
   refine ⟨c₆, k₆, ex₆, ?_⟩
   have e207₆ : c₆.nreg 207 = C.length := by
-    rw [hfn₆ 9993 (by omega), g5 9993 (by omega), h9993] at hexit₆
+    ram_rw [hfn₆ 9993, g5 9993, h9993] at hexit₆
     omega
   rw [e207₆, List.take_length] at hDs₆
   obtain ⟨d1, d2, -⟩ := hDs₆
@@ -1259,12 +1195,11 @@ theorem diagStmt_exec (hQ : Q.Simple) (hQn : Q.n = P.n) {T : TrapTable} {C : Lis
   rw [c207] at hk₂
   refine ⟨by simp only [Nat.sub_zero] at hk₂ hk₄ hk₆; nlinarith, _, foldl_ins_perm T C, d2, d1.band,
     fun x hx => ?_, ?_, fun t ht => ?_, ?_, ?_⟩
-  · rw [hfn₆ x (by omega), g5 x (by omega)]
-  · rw [hfr₆, hc₅]; config_simp; rw [hfr₄, hc₃]; config_simp; rw [hfr₂, hc₁]
-  · have e : c₆.nmem t = c₅.nmem t := hnm₆ t ht
-    rw [e, hmem₅ t ht]
-  · rw [hrm₆, hc₅]; config_simp; rw [hrm₄, hc₃]; config_simp; rw [hrm₂, hc₁]
-  · rw [hout₆, hc₅]; config_simp; rw [hout₄, hc₃]; config_simp; rw [hout₂, hc₁]
+  · frame_finish [hfn₆, g5]
+  · ram_simp [hfr₆, hc₅, hfr₄, hc₃, hfr₂, hc₁] 
+  · frame_finish
+  · ram_simp [hrm₆, hc₅, hrm₄, hc₃, hrm₂, hc₁] 
+  · ram_simp [hout₆, hc₅, hout₄, hc₃, hout₂, hc₁] 
 
 end Whole
 

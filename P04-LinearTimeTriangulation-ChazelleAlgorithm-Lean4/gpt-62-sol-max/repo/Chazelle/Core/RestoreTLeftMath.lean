@@ -40,15 +40,15 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
   obtain ⟨a1, a2⟩ := a
   obtain ⟨v1, v2⟩ := v
   simp only [sideCross, sideDot, Prod.fst_sub, Prod.snd_sub, ne_eq] at hb ha ⊢
-  have hB : b2 - v2 ≠ 0 := sub_ne_zero.2 hb
-  have hA : a2 - v2 ≠ 0 := sub_ne_zero.2 ha
+  have hB := sub_ne_zero.2 hb
+  have hA := sub_ne_zero.2 ha
   set B1 := b1 - v1
   set B2 := b2 - v2
   set A1 := a1 - v1
   set A2 := a2 - v2
   have hS : 0 < A1 ^ 2 + A2 ^ 2 := by positivity
   have hA2 : 0 < A2 ^ 2 := by positivity
-  have hBA : B2 * A2 ≠ 0 := mul_ne_zero hB hA
+  have hBA := mul_ne_zero hB hA
   rcases lt_trichotomy (B1 * A2 - B2 * A1) 0 with hd | hd | hd
   · -- reflex
     constructor
@@ -73,12 +73,12 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
     have hdneg : B1 * A1 + B2 * A2 < 0 ↔ B2 * A2 < 0 := by
       constructor
       · intro h
-        have : (B1 * A1 + B2 * A2) * A2 ^ 2 < 0 := mul_neg_of_neg_of_pos h hA2
+        have := mul_neg_of_neg_of_pos h hA2
         rw [hdot] at this
         by_contra hc; push Not at hc
         exact absurd this (not_lt.2 (mul_nonneg hc hS.le))
       · intro h
-        have : B2 * A2 * (A1 ^ 2 + A2 ^ 2) < 0 := mul_neg_of_neg_of_pos h hS
+        have := mul_neg_of_neg_of_pos h hS
         rw [← hdot] at this
         by_contra hc; push Not at hc
         exact absurd this (not_lt.2 (mul_nonneg hc hA2.le))
@@ -94,7 +94,7 @@ theorem sector_horiz {a v b : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hb :
             first | (left; nlinarith) | (right; nlinarith)
       · rintro (⟨h1, -⟩ | ⟨-, h2⟩)
         · linarith
-        · rcases lt_or_gt_of_ne (show B2 * A2 ≠ 0 from hBA) with hn | hp
+        · rcases lt_or_gt_of_ne (hBA) with hn | hp
           · refine Or.inr (Or.inr (Or.inl ⟨by linarith, hdneg.2 hn, ?_⟩))
             rcases lt_or_gt_of_ne hB with hb' | hb' <;> rcases lt_or_gt_of_ne hA with ha' | ha' <;>
               rcases h2 with h2 | h2 <;> first | linarith | nlinarith

@@ -120,8 +120,8 @@ theorem det_combo (a b x y : Point) (s t : ℝ) (hst : s + t = 1) :
 /-- An open half-plane `{0 < σ * det a b x}` is convex. -/
 theorem convex_det_pos (a b : Point) (σ : ℝ) : Convex ℝ {x : Point | 0 < σ * det a b x} := by
   intro x hx y hy s t hs ht hst
-  have hx' : 0 < σ * det a b x := hx
-  have hy' : 0 < σ * det a b y := hy
+  have hx' := hx
+  have hy' := hy
   show 0 < σ * det a b (s • x + t • y)
   rw [det_combo a b x y s t hst]
   rcases eq_or_lt_of_le hs with h | h
@@ -136,39 +136,45 @@ theorem isOpen_det_pos (a b : Point) (σ : ℝ) : IsOpen {x : Point | 0 < σ * d
 /-- Balls of the plane: the sup-norm description. -/
 theorem mem_ball_iff_abs {x q : Point} {r : ℝ} :
     x ∈ ball q r ↔ |x.1 - q.1| < r ∧ |x.2 - q.2| < r := by
-  rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq]
+  simp [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq]
 
 /-! ### Index bookkeeping -/
 
 /-- The index of the edge entering vertex `i`: `(i + n - 1) % n`. -/
 def prevIdx (P : Polygon) (i : ℕ) : ℕ := (i + P.n - 1) % P.n
 
-theorem prevIdx_eq (P : Polygon) {i : ℕ} (hi : i < P.n) :
+section
+
+variable (P : Polygon) {i : ℕ} (hi : i < P.n)
+
+include hi in
+theorem prevIdx_eq :
     prevIdx P i = if i = 0 then P.n - 1 else i - 1 := by
   unfold prevIdx
   split_ifs with h
-  · subst h
-    have : 0 + P.n - 1 = P.n - 1 := by omega
-    rw [this]
-    exact Nat.mod_eq_of_lt (by omega)
+  · simp_all
   · have : i + P.n - 1 = (i - 1) + P.n := by omega
     rw [this, Nat.add_mod_right]
     exact Nat.mod_eq_of_lt (by omega)
 
-theorem succIdx_eq (P : Polygon) {i : ℕ} (hi : i < P.n) :
+include hi in
+theorem succIdx_eq :
     (i + 1) % P.n = if i + 1 = P.n then 0 else i + 1 := by
   split_ifs with h
   · rw [h, Nat.mod_self]
   · exact Nat.mod_eq_of_lt (by omega)
 
-theorem prevIdx_lt (P : Polygon) {i : ℕ} (hi : i < P.n) : prevIdx P i < P.n := by
+include hi in
+theorem prevIdx_lt : prevIdx P i < P.n := by
   rw [prevIdx_eq P hi]; split_ifs <;> omega
 
-theorem succIdx_lt (P : Polygon) {i : ℕ} (hi : i < P.n) : (i + 1) % P.n < P.n :=
+include hi in
+theorem succIdx_lt : (i + 1) % P.n < P.n :=
   Nat.mod_lt _ (by omega)
 
+include hi in
 /-- The edge `prevIdx P i` ends at vertex `i`. -/
-theorem prevIdx_succ (P : Polygon) {i : ℕ} (hi : i < P.n) : (prevIdx P i + 1) % P.n = i := by
+theorem prevIdx_succ : (prevIdx P i + 1) % P.n = i := by
   rw [prevIdx_eq P hi]
   split_ifs with h
   · subst h
@@ -194,27 +200,37 @@ theorem eq_prevIdx_of_succ (P : Polygon) {i j : ℕ} (hi : i < P.n) (hj : j < P.
   rw [prevIdx_eq P hi]
   split_ifs at h ⊢ <;> omega
 
+include hi in
 /-- The successor index of the successor of `prevIdx` is `(i+1) % n`; convenience. -/
-theorem edge_prevIdx (P : Polygon) {i : ℕ} (hi : i < P.n) :
+theorem edge_prevIdx :
     P.edge (prevIdx P i) = Chazelle.segment (P.vtx (prevIdx P i)) (P.vtx i) := by
   unfold Polygon.edge; rw [prevIdx_succ P hi]
+
+end
 
 /-! ### Consequences of simplicity -/
 
 theorem simple_three_le {P : Polygon} (hP : P.Simple) : 3 ≤ P.n := hP.1
 
-theorem simple_vtx_inj {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
+section
+
+variable {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
+
+include hP hi hj in
+theorem simple_vtx_inj
     (h : P.vtx i = P.vtx j) : i = j := hP.2.1 i j hi hj h
 
-theorem simple_vtx_ne {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
+include hP hi hj in
+theorem simple_vtx_ne
     (h : i ≠ j) : P.vtx i ≠ P.vtx j := fun h' => h (simple_vtx_inj hP hi hj h')
 
-theorem simple_edge_inter {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
+include hP hi hj in
+theorem simple_edge_inter
     (h : i ≠ j) : P.edge i ∩ P.edge j = P.commonEndpoints i j := hP.2.2 i j hi hj h
 
+include hP hi hj in
 /-- A point on two distinct edges is an endpoint of the first. -/
-theorem simple_endpoint_of_mem_two {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n)
-    (hj : j < P.n) (h : i ≠ j) {p : Point} (hpi : p ∈ P.edge i) (hpj : p ∈ P.edge j) :
+theorem simple_endpoint_of_mem_two (h : i ≠ j) {p : Point} (hpi : p ∈ P.edge i) (hpj : p ∈ P.edge j) :
     p = P.vtx i ∨ p = P.vtx ((i + 1) % P.n) := by
   have : p ∈ P.edge i ∩ P.edge j := ⟨hpi, hpj⟩
   rw [simple_edge_inter hP hi hj h] at this
@@ -227,12 +243,12 @@ theorem simple_vtx_succ_ne {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n
 
 theorem lerp_ne_left {u v : Point} (huv : u ≠ v) {t : ℝ} (ht : 0 < t) : lerp u v t ≠ u := by
   intro h
-  have h' : lerp u v t = lerp u v 0 := by rw [lerp_zero]; exact h
+  have h' : lerp u v t = lerp u v 0 := by rwa [lerp_zero]
   exact ht.ne' (lerp_injective huv h')
 
 theorem lerp_ne_right {u v : Point} (huv : u ≠ v) {t : ℝ} (ht : t < 1) : lerp u v t ≠ v := by
   intro h
-  have h' : lerp u v t = lerp u v 1 := by rw [lerp_one]; exact h
+  have h' : lerp u v t = lerp u v 1 := by rwa [lerp_one]
   exact ht.ne (lerp_injective huv h')
 
 /-- A point of the open edge `i` lies on no other edge. -/
@@ -258,9 +274,9 @@ theorem simple_openEdge_ne_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i <
     rw [h]
     exact Geometry.left_mem_segment _ _
 
+include hP hi hj in
 /-- A vertex lies exactly on its two incident edges. -/
-theorem simple_vtx_mem_edge_iff {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n)
-    (hj : j < P.n) : P.vtx i ∈ P.edge j ↔ j = i ∨ j = prevIdx P i := by
+theorem simple_vtx_mem_edge_iff : P.vtx i ∈ P.edge j ↔ j = i ∨ j = prevIdx P i := by
   constructor
   · intro h
     by_cases hij : j = i
@@ -274,6 +290,8 @@ theorem simple_vtx_mem_edge_iff {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : 
     · rw [edge_prevIdx P hi]
       exact Geometry.right_mem_segment _ _
 
+end
+
 /-- Every point of the boundary that is not a vertex lies on an open edge. -/
 theorem exists_openEdge_of_mem_boundary (P : Polygon) {q : Point} (hq : q ∈ P.boundary)
     (hv : ∀ j, j < P.n → q ≠ P.vtx j) :
@@ -282,7 +300,7 @@ theorem exists_openEdge_of_mem_boundary (P : Polygon) {q : Point} (hq : q ∈ P.
   refine ⟨i, hi, t, ⟨?_, ?_⟩, rfl⟩
   · rcases ht0.lt_or_eq with h | h
     · exact h
-    · exact absurd (by rw [← h]; exact lerp_zero _ _) (hv i hi)
+    · exact absurd (by simp [← h]) (hv i hi)
   · rcases ht1.lt_or_eq with h | h
     · exact h
     · exact absurd (by rw [h]; exact lerp_one _ _) (hv _ (succIdx_lt P hi))
@@ -292,8 +310,7 @@ theorem exists_ball_disjoint_edges (P : Polygon) (J : Finset ℕ) {q : Point}
     (hq : ∀ j ∈ J, q ∉ P.edge j) : ∃ r > 0, ∀ x ∈ ball q r, ∀ j ∈ J, x ∉ P.edge j := by
   have hc : IsClosed (⋃ j ∈ J, P.edge j) := isClosed_biUnion_finset fun j _ => isClosed_edge P j
   have hq' : q ∈ (⋃ j ∈ J, P.edge j)ᶜ := by
-    simp only [mem_compl_iff, mem_iUnion, not_exists]
-    exact fun j hj h => hq j hj h
+    simp_all
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.1 hc.isOpen_compl q hq'
   refine ⟨r, hr, fun x hx j hj hxj => hsub hx ?_⟩
   simp only [mem_iUnion]
@@ -321,7 +338,7 @@ theorem strip {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀ : ℝ
       (x ∈ P.boundary ↔ det (P.vtx i) (P.vtx ((i + 1) % P.n)) x = 0) := by
   set u := P.vtx i with hu
   set v := P.vtx ((i + 1) % P.n) with hv
-  have huv : u ≠ v := simple_vtx_succ_ne hP hi
+  have huv := simple_vtx_succ_ne hP hi
   have hsq := sqLen_pos huv
   set q := lerp u v t₀ with hq
   -- the closed set to avoid
@@ -346,7 +363,7 @@ theorem strip {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀ : ℝ
       nlinarith [mul_pos (sub_pos.2 ht₀.2) hsq]
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.1 hCc.isOpen_compl q hqC
   refine ⟨r, hr, fun x hx => ?_⟩
-  have hxC : x ∉ C := hsub hx
+  have hxC := hsub hx
   constructor
   · rintro ⟨j, hj, hxj⟩
     by_cases hji : j = i
@@ -392,13 +409,17 @@ theorem SectorSide.reverse {S U : Set Point} {a v b : Point} {σ : ℝ}
   filter_upwards [h.2.2] with s hs
   filter_upwards [hs] with δ hδ
   rw [offset_reverse v b, offset_reverse a v] at hδ
-  simp only [sub_sub_cancel, neg_mul] at hδ ⊢
-  exact ⟨hδ.2, hδ.1⟩
+  simp_all
 
-/-- Left turn, left side: the convex sector. -/
-theorem sectorSide_pos_left {a v b : Point} (h : 0 < det a v b) (hav : a ≠ v) (hvb : v ≠ b)
+section
+
+variable {a v b : Point} (h : 0 < det a v b) (hav : a ≠ v) (hvb : v ≠ b)
     {S : Set Point} {r : ℝ} (hr : 0 < r)
-    (hS : ∀ x ∈ ball v r, x ∈ S → x ∈ Chazelle.segment a v ∨ x ∈ Chazelle.segment v b) :
+    (hS : ∀ x ∈ ball v r, x ∈ S → x ∈ Chazelle.segment a v ∨ x ∈ Chazelle.segment v b)
+
+include h hav hvb hr hS in
+/-- Left turn, left side: the convex sector. -/
+theorem sectorSide_pos_left :
     SectorSide S (ball v r ∩ ({x | 0 < 1 * det a v x} ∩ {x | 0 < 1 * det v b x})) a v b 1 := by
   refine ⟨?_, ?_, ?_⟩
   · rintro x ⟨hxb, hx1, hx2⟩ hxS
@@ -415,23 +436,19 @@ theorem sectorSide_pos_left {a v b : Point} (h : 0 < det a v b) (hav : a ≠ v) 
     have h1 : ∀ᶠ s in 𝓝[>] (0 : ℝ), lerp a v (1 - s) ∈ ball v r ∩ {x | 0 < 1 * det v b x} := by
       filter_upwards [(tendsto_lerp_one_sub a v).eventually (isOpen_ball.mem_nhds (mem_ball_self hr)),
         self_mem_nhdsWithin] with s hs hs0
-      refine ⟨hs, ?_⟩
-      show 0 < 1 * det v b (lerp a v (1 - s))
-      rw [det_lerp, Geometry.det_self_outer, Geometry.det_cyclic]
-      have hs0' : (0 : ℝ) < s := hs0
-      nlinarith [mul_pos hs0' h]
+      simp_all [det_lerp, Geometry.det_self_outer, Geometry.det_cyclic] <;> omega
     have h2 : ∀ᶠ s in 𝓝[>] (0 : ℝ), lerp v b s ∈ ball v r ∩ {x | 0 < 1 * det a v x} := by
       filter_upwards [(tendsto_lerp_zero v b).eventually (isOpen_ball.mem_nhds (mem_ball_self hr)),
         self_mem_nhdsWithin] with s hs hs0
       refine ⟨hs, ?_⟩
       show 0 < 1 * det a v (lerp v b s)
       rw [det_lerp, Geometry.det_self_right]
-      have hs0' : (0 : ℝ) < s := hs0
+      have hs0' := hs0
       nlinarith [mul_pos hs0' h]
     filter_upwards [h1, h2] with s hs1 hs2
     filter_upwards [eventually_offset_mem 1 hW1 hs1, eventually_offset_mem 1 hW2 hs2,
       self_mem_nhdsWithin] with δ hδ1 hδ2 hδ0
-    have hδ0' : (0 : ℝ) < δ := hδ0
+    have hδ0' := hδ0
     refine ⟨⟨hδ1.1, ?_, hδ1.2⟩, ⟨hδ2.1, hδ2.2, ?_⟩⟩
     · show 0 < 1 * det a v (offset a v (1 - s) (1 * δ))
       rw [det_offset]; nlinarith [mul_pos hδ0' (sqLen_pos hav)]
@@ -448,10 +465,9 @@ theorem det_reflex_point (a v b : Point) (ε : ℝ) :
     Geometry.sub_fst, Geometry.sub_snd]
   constructor <;> ring
 
+include h hav hvb hr hS in
 /-- Left turn, right side: the union of the two right half-disks. -/
-theorem sectorSide_pos_right {a v b : Point} (h : 0 < det a v b) (hav : a ≠ v) (hvb : v ≠ b)
-    {S : Set Point} {r : ℝ} (hr : 0 < r)
-    (hS : ∀ x ∈ ball v r, x ∈ S → x ∈ Chazelle.segment a v ∨ x ∈ Chazelle.segment v b) :
+theorem sectorSide_pos_right :
     SectorSide S ((ball v r ∩ {x | 0 < (-1) * det a v x}) ∪
       (ball v r ∩ {x | 0 < (-1) * det v b x})) a v b (-1) := by
   refine ⟨?_, ?_, ?_⟩
@@ -476,28 +492,26 @@ theorem sectorSide_pos_right {a v b : Point} (h : 0 < det a v b) (hav : a ≠ v)
       exact this.mono_left nhdsWithin_le_nhds
     obtain ⟨ε, hεb, hε0⟩ :=
       (ht.eventually (isOpen_ball.mem_nhds (mem_ball_self hr))).and self_mem_nhdsWithin |>.exists
-    have hε0' : (0 : ℝ) < ε := hε0
+    have hε0' := hε0
     obtain ⟨hd1, hd2⟩ := det_reflex_point a v b ε
     refine IsPreconnected.union (v + ε • ((v - a) - (b - v))) ⟨hεb, ?_⟩ ⟨hεb, ?_⟩
       ((convex_ball v r).inter (convex_det_pos a v (-1))).isPreconnected
       ((convex_ball v r).inter (convex_det_pos v b (-1))).isPreconnected
-    · show 0 < (-1) * det a v (v + ε • ((v - a) - (b - v)))
-      rw [hd1]; nlinarith [mul_pos hε0' h]
-    · show 0 < (-1) * det v b (v + ε • ((v - a) - (b - v)))
-      rw [hd2]; nlinarith [mul_pos hε0' h]
-  · have h1 : ∀ᶠ s in 𝓝[>] (0 : ℝ), lerp a v (1 - s) ∈ ball v r :=
-      (tendsto_lerp_one_sub a v).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
-    have h2 : ∀ᶠ s in 𝓝[>] (0 : ℝ), lerp v b s ∈ ball v r :=
-      (tendsto_lerp_zero v b).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
+    · simp_all
+    · simp_all
+  · have h1 := (tendsto_lerp_one_sub a v).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
+    have h2 := (tendsto_lerp_zero v b).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
     filter_upwards [h1, h2] with s hs1 hs2
     filter_upwards [eventually_offset_mem (-1) isOpen_ball hs1,
       eventually_offset_mem (-1) isOpen_ball hs2, self_mem_nhdsWithin] with δ hδ1 hδ2 hδ0
-    have hδ0' : (0 : ℝ) < δ := hδ0
+    have hδ0' := hδ0
     refine ⟨Or.inl ⟨hδ1, ?_⟩, Or.inr ⟨hδ2, ?_⟩⟩
     · show 0 < (-1) * det a v (offset a v (1 - s) ((-1) * δ))
       rw [det_offset]; nlinarith [mul_pos hδ0' (sqLen_pos hav)]
     · show 0 < (-1) * det v b (offset v b s ((-1) * δ))
       rw [det_offset]; nlinarith [mul_pos hδ0' (sqLen_pos hvb)]
+
+end
 
 /-- Straight angle: both sides are half-disks of the common line.  The hypothesis `hdir` says
 that `b` lies beyond `v` on the ray from `a` through `v`. -/
@@ -518,15 +532,13 @@ theorem sectorSide_zero {a v b : Point} (h : det a v b = 0)
     · obtain ⟨t, ht0, ht1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hx1
       rw [det_lerp, Geometry.det_self_right, h] at hx'; simp at hx'
   · exact ((convex_ball v r).inter (convex_det_pos a v σ)).isPreconnected
-  · have h1 : ∀ᶠ s in 𝓝[>] (0 : ℝ), lerp a v (1 - s) ∈ ball v r :=
-      (tendsto_lerp_one_sub a v).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
-    have h2 : ∀ᶠ s in 𝓝[>] (0 : ℝ), lerp v b s ∈ ball v r :=
-      (tendsto_lerp_zero v b).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
-    have hσ2 : 0 < σ * σ := mul_self_pos.2 hσ
+  · have h1 := (tendsto_lerp_one_sub a v).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
+    have h2 := (tendsto_lerp_zero v b).eventually (isOpen_ball.mem_nhds (mem_ball_self hr))
+    have hσ2 := mul_self_pos.2 hσ
     filter_upwards [h1, h2] with s hs1 hs2
     filter_upwards [eventually_offset_mem σ isOpen_ball hs1,
       eventually_offset_mem σ isOpen_ball hs2, self_mem_nhdsWithin] with δ hδ1 hδ2 hδ0
-    have hδ0' : (0 : ℝ) < δ := hδ0
+    have hδ0' := hδ0
     refine ⟨⟨hδ1, ?_⟩, ⟨hδ2, ?_⟩⟩
     · show 0 < σ * det a v (offset a v (1 - s) (σ * δ))
       rw [det_offset]
@@ -537,9 +549,14 @@ theorem sectorSide_zero {a v b : Point} (h : det a v b = 0)
       have := mul_pos hδ0' hdir
       nlinarith [mul_pos hσ2 this]
 
+section
+
+variable {a v b : Point} (hav : a ≠ v) (hvb : v ≠ b)
+    (hmeet : Chazelle.segment a v ∩ Chazelle.segment v b ⊆ {v})
+include hav hvb hmeet
+
 /-- In the collinear case, simplicity forces `b` to lie beyond `v` on the ray from `a`. -/
-theorem dir_pos_of_collinear {a v b : Point} (hav : a ≠ v) (hvb : v ≠ b)
-    (hmeet : Chazelle.segment a v ∩ Chazelle.segment v b ⊆ {v}) (h : det a v b = 0) :
+theorem dir_pos_of_collinear (h : det a v b = 0) :
     0 < (v.1 - a.1) * (b.1 - v.1) + (v.2 - a.2) * (b.2 - v.2) := by
   obtain ⟨s, rfl⟩ := exists_lerp_of_det_eq_zero hav h
   have hsq := sqLen_pos hav
@@ -570,8 +587,7 @@ theorem dir_pos_of_collinear {a v b : Point} (hav : a ≠ v) (hvb : v ≠ b)
 /-- **Abstract sector lemma.**  For two nondegenerate segments `a → v → b` meeting only at `v`,
 and a set `S` whose trace on a ball around `v` lies in the two segments, each side of the corner
 at `v` is joined by a preconnected set avoiding `S`. -/
-theorem sectorSide_exists {a v b : Point} (hav : a ≠ v) (hvb : v ≠ b)
-    (hmeet : Chazelle.segment a v ∩ Chazelle.segment v b ⊆ {v}) {S : Set Point} {r : ℝ}
+theorem sectorSide_exists {S : Set Point} {r : ℝ}
     (hr : 0 < r)
     (hS : ∀ x ∈ ball v r, x ∈ S → x ∈ Chazelle.segment a v ∨ x ∈ Chazelle.segment v b)
     {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) : ∃ U, SectorSide S U a v b σ := by
@@ -593,6 +609,8 @@ theorem sectorSide_exists {a v b : Point} (hav : a ≠ v) (hvb : v ≠ b)
     · exact ⟨_, sectorSide_pos_left hpos hav hvb hr hS⟩
     · exact ⟨_, sectorSide_pos_right hpos hav hvb hr hS⟩
 
+end
+
 /-- **Sector lemma for a simple polygon.**  At vertex `i`, with incoming edge `prevIdx P i` (from
 `a = vtx (prevIdx P i)`) and outgoing edge `i` (to `b = vtx ((i+1) % n)`), each side of the
 corner is joined by a preconnected set avoiding the boundary. -/
@@ -601,18 +619,18 @@ theorem vertex_sector {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ
     ∃ U, SectorSide P.boundary U (P.vtx (prevIdx P i)) (P.vtx i) (P.vtx ((i + 1) % P.n)) σ := by
   have hn := simple_three_le hP
   set j := prevIdx P i with hj
-  have hjn : j < P.n := prevIdx_lt P hi
-  have hji : j ≠ i := prevIdx_ne P hn hi
-  have hjs : j ≠ (i + 1) % P.n := prevIdx_ne_succIdx P hn hi
-  have hsucc : (j + 1) % P.n = i := prevIdx_succ P hi
-  have hav : P.vtx j ≠ P.vtx i := simple_vtx_ne hP hjn hi hji
-  have hvb : P.vtx i ≠ P.vtx ((i + 1) % P.n) := simple_vtx_succ_ne hP hi
-  have hab : P.vtx j ≠ P.vtx ((i + 1) % P.n) := simple_vtx_ne hP hjn (succIdx_lt P hi) hjs
+  have hjn := prevIdx_lt P hi
+  have hji := prevIdx_ne P hn hi
+  have hjs := prevIdx_ne_succIdx P hn hi
+  have hsucc := prevIdx_succ P hi
+  have hav := simple_vtx_ne hP hjn hi hji
+  have hvb := simple_vtx_succ_ne hP hi
+  have hab := simple_vtx_ne hP hjn (succIdx_lt P hi) hjs
   have hmeet : Chazelle.segment (P.vtx j) (P.vtx i) ∩
       Chazelle.segment (P.vtx i) (P.vtx ((i + 1) % P.n)) ⊆ {P.vtx i} := by
     intro p hp
     have : p ∈ P.edge j ∩ P.edge i := by
-      rw [edge_prevIdx P hi]; exact hp
+      rwa [edge_prevIdx P hi]
     rw [simple_edge_inter hP hjn hi hji] at this
     obtain ⟨h1, h2⟩ := this
     rw [hsucc] at h1
@@ -637,8 +655,7 @@ theorem vertex_sector {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ
     · by_cases hkj : k = j
       · subst hkj
         left
-        rw [← edge_prevIdx P hi]
-        exact hxk
+        rwa [← edge_prevIdx P hi]
       · exact absurd hxk (hball x hx k (by simp [Finset.mem_erase, hki, hkj, hk]))
   exact sectorSide_exists hav hvb hmeet hr hS hσ
 

@@ -65,9 +65,6 @@ noncomputable instance instDecidableStraddles (z u v : Point) : Decidable (strad
 noncomputable instance instDecidableCrosses (z u v : Point) : Decidable (crosses z u v) :=
   inferInstanceAs (Decidable (_ ∨ _))
 
-/-- The crossing bit of the edge `u v` at `z`. -/
-noncomputable def crossBit (z u v : Point) : Bool := decide (crosses z u v)
-
 /-- The crossing indicator of the edge `u v` at `z`, in `ZMod 2`. -/
 noncomputable def crossInd (z u v : Point) : ZMod 2 := if crosses z u v then 1 else 0
 
@@ -92,8 +89,8 @@ theorem crosses_comm {z u v : Point} : crosses z u v ↔ crosses z v u :=
 
 theorem crosses_straddles {z u v : Point} (h : crosses z u v) : straddles z u v := by
   rcases h with ⟨h1, h2, -⟩ | ⟨h1, h2, -⟩
-  · exact Or.inl ⟨h1, h2⟩
-  · exact Or.inr ⟨h1, h2⟩
+  · tauto
+  · tauto
 
 /-- For an edge oriented left to right, `crosses` reduces to its first disjunct. -/
 theorem crosses_iff_of_lt {z u v : Point} (huv : u.1 < v.1) :
@@ -126,13 +123,6 @@ theorem not_crosses_of_below {z u v : Point} (hu : u.2 < z.2) (hv : v.2 < z.2) :
   · nlinarith [mul_pos (sub_pos.2 hu) (sub_pos.2 h2), mul_nonneg (sub_pos.2 hv).le (sub_nonneg.2 h1)]
   · nlinarith [mul_pos (sub_pos.2 hv) (sub_pos.2 h2), mul_nonneg (sub_pos.2 hu).le (sub_nonneg.2 h1)]
 
-@[simp] theorem crossBit_eq_true_iff {z u v : Point} : crossBit z u v = true ↔ crosses z u v := by
-  simp [crossBit]
-
-@[simp] theorem crossBit_eq_false_iff {z u v : Point} :
-    crossBit z u v = false ↔ ¬ crosses z u v := by
-  simp [crossBit]
-
 theorem crossInd_comm {z u v : Point} : crossInd z u v = crossInd z v u := by
   simp only [crossInd]
   exact if_congr crosses_comm rfl rfl
@@ -142,12 +132,6 @@ theorem crossInd_of_crosses {z u v : Point} (h : crosses z u v) : crossInd z u v
 
 theorem crossInd_of_not_crosses {z u v : Point} (h : ¬ crosses z u v) : crossInd z u v = 0 :=
   ite_eq_right h
-
-@[simp] theorem crossInd_eq_one_iff {z u v : Point} : crossInd z u v = 1 ↔ crosses z u v := by
-  unfold crossInd; split_ifs with h <;> simp [h]
-
-@[simp] theorem crossInd_eq_zero_iff {z u v : Point} : crossInd z u v = 0 ↔ ¬ crosses z u v := by
-  unfold crossInd; split_ifs with h <;> simp [h]
 
 theorem aboveInd_of_ne {z w : Point} (h : w.1 ≠ z.1) : aboveInd z w = 0 := by
   simp [aboveInd, h]
@@ -186,14 +170,14 @@ theorem parity_eq_false_iff {P : Polygon} {z : Point} :
 theorem aboveInd_add_aboveInd_of_eq {z u v : Point} (huv : u.1 = v.1) (hz : z ∉ segment u v) :
     aboveInd z u + aboveInd z v = 0 := by
   by_cases hu : u.1 = z.1
-  · have hv : v.1 = z.1 := huv ▸ hu
+  · have hv := huv ▸ hu
     by_cases h1 : z.2 < u.2 <;> by_cases h2 : z.2 < v.2
     · rw [aboveInd_of_lt hu h1, aboveInd_of_lt hv h2]; decide
     · exact absurd (mem_segment_of_vertical huv.symm hv.symm (not_lt.1 h2) h1.le)
         (segment_comm u v ▸ hz)
     · exact absurd (mem_segment_of_vertical huv hu.symm (not_lt.1 h1) h2.le) hz
-    · rw [aboveInd_of_le (not_lt.1 h1), aboveInd_of_le (not_lt.1 h2)]; decide
-  · rw [aboveInd_of_ne hu, aboveInd_of_ne (huv ▸ hu)]; decide
+    simp [aboveInd_of_le (not_lt.1 h1), aboveInd_of_le (not_lt.1 h2)]
+  simp [aboveInd_of_ne hu, aboveInd_of_ne (huv ▸ hu)]
 
 /-- The affine function whose sign decides "below the line through `u` and `v`". -/
 theorem continuous_lineFun (u v : Point) :
@@ -205,14 +189,12 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
     ∀ᶠ z' in 𝓝 z, crossInd z' u v =
       crossInd z u v + if z'.1 < z.1 then aboveInd z u + aboveInd z v else 0 := by
   set L : Point → ℝ := fun z' => (z'.2 - u.2) * (v.1 - u.1) - (v.2 - u.2) * (z'.1 - u.1) with hL
-  have hLc : Continuous L := continuous_lineFun u v
-  have hLt : Tendsto L (𝓝 z) (𝓝 (L z)) := hLc.tendsto z
-  have hfst : Tendsto (fun z' : Point => z'.1) (𝓝 z) (𝓝 z.1) := continuous_fst.tendsto z
+  have hLc := continuous_lineFun u v
+  have hLt := hLc.tendsto z
+  have hfst := continuous_fst.tendsto z
   have hcr : ∀ z' : Point, crosses z' u v ↔ u.1 ≤ z'.1 ∧ z'.1 < v.1 ∧ L z' < 0 := by
-    intro z'
-    rw [crosses_iff_of_lt huv]
-    simp only [hL, sub_neg]
-  have hvz : v.1 ≠ u.1 := huv.ne'
+    simp [crosses_iff_of_lt huv, hL, sub_neg]
+  have hvz := huv.ne'
   rcases lt_trichotomy z.1 u.1 with hA | hB | hC
   · -- z strictly to the left of the edge
     filter_upwards [hfst.eventually_lt_const hA] with z' hz'
@@ -224,16 +206,16 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
     have hzu2 : z.2 ≠ u.2 := by
       intro h
       apply hz
-      have : z = u := Prod.ext hB h
+      have := Prod.ext hB h
       rw [this]; exact left_mem_segment u v
     have hLz : L z = (z.2 - u.2) * (v.1 - u.1) := by simp [hL, hB]
-    have hd : 0 < v.1 - u.1 := sub_pos.2 huv
-    have hav : aboveInd z v = 0 := aboveInd_of_ne (by rw [hB]; exact hvz)
+    have hd := sub_pos.2 huv
+    have hav : aboveInd z v = 0 := aboveInd_of_ne (by rwa [hB])
     rcases lt_or_gt_of_ne hzu2 with h1 | h1
     · -- u above z: the bit is 1 at and to the right of z, 0 to the left
       have hLneg : L z < 0 := by rw [hLz]; exact mul_neg_of_neg_of_pos (sub_neg.2 h1) hd
-      have hau : aboveInd z u = 1 := aboveInd_of_lt hB.symm h1
-      have hcz : crosses z u v := (hcr z).2 ⟨hB.ge, hB ▸ huv, hLneg⟩
+      have hau := aboveInd_of_lt hB.symm h1
+      have hcz := (hcr z).2 ⟨hB.ge, hB ▸ huv, hLneg⟩
       filter_upwards [hfst.eventually_lt_const (hB ▸ huv), hLt.eventually_lt_const hLneg]
         with z' hz'1 hz'2
       rw [crossInd_of_crosses hcz, hau, hav]
@@ -245,7 +227,7 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
         decide
     · -- u below z: the bit is 0 near z
       have hLpos : 0 < L z := by rw [hLz]; exact mul_pos (sub_pos.2 h1) hd
-      have hau : aboveInd z u = 0 := aboveInd_of_le h1.le
+      have hau := aboveInd_of_le h1.le
       filter_upwards [hLt.eventually_const_lt hLpos] with z' hz'
       rw [crossInd_of_not_crosses (fun h => absurd ((hcr z').1 h).2.2 (not_lt.2 hz'.le)),
         crossInd_of_not_crosses (fun h => absurd ((hcr z).1 h).2.2 (not_lt.2 hLpos.le)),
@@ -258,8 +240,8 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
         apply hz
         rw [mem_segment_iff_of_lt huv]
         exact ⟨hC.le, hC1.le, by simpa [hL, sub_eq_zero] using h⟩
-      have hau : aboveInd z u = 0 := aboveInd_of_ne hC.ne
-      have hav : aboveInd z v = 0 := aboveInd_of_ne hC1.ne'
+      have hau := aboveInd_of_ne hC.ne
+      have hav := aboveInd_of_ne hC1.ne'
       rw [hau, hav]
       rcases lt_or_gt_of_ne hLz with h1 | h1
       · filter_upwards [hfst.eventually_const_lt hC, hfst.eventually_lt_const hC1,
@@ -275,16 +257,16 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
       have hzv2 : z.2 ≠ v.2 := by
         intro h
         apply hz
-        have : z = v := Prod.ext hD h
+        have := Prod.ext hD h
         rw [this]; exact right_mem_segment u v
       have hLz : L z = (z.2 - v.2) * (v.1 - u.1) := by simp only [hL]; rw [hD]; ring
-      have hd : 0 < v.1 - u.1 := sub_pos.2 huv
+      have hd := sub_pos.2 huv
       have hau : aboveInd z u = 0 := aboveInd_of_ne (by rw [hD]; exact hvz.symm)
       have hcz : ¬ crosses z u v := fun h => absurd ((hcr z).1 h).2.1 (not_lt.2 hD.ge)
       rcases lt_or_gt_of_ne hzv2 with h1 | h1
       · -- v above z: the bit is 1 to the left of z, 0 at and to the right
         have hLneg : L z < 0 := by rw [hLz]; exact mul_neg_of_neg_of_pos (sub_neg.2 h1) hd
-        have hav : aboveInd z v = 1 := aboveInd_of_lt hD.symm h1
+        have hav := aboveInd_of_lt hD.symm h1
         filter_upwards [hfst.eventually_const_lt hC, hLt.eventually_lt_const hLneg]
           with z' hz'1 hz'2
         rw [crossInd_of_not_crosses hcz, hau, hav]
@@ -296,7 +278,7 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
           decide
       · -- v below z: the bit is 0 near z
         have hLpos : 0 < L z := by rw [hLz]; exact mul_pos (sub_pos.2 h1) hd
-        have hav : aboveInd z v = 0 := aboveInd_of_le h1.le
+        have hav := aboveInd_of_le h1.le
         filter_upwards [hLt.eventually_const_lt hLpos] with z' hz'
         rw [crossInd_of_not_crosses (fun h => absurd ((hcr z').1 h).2.2 (not_lt.2 hz'.le)),
           crossInd_of_not_crosses hcz, hau, hav]
@@ -317,12 +299,9 @@ theorem crossInd_eventually {z u v : Point} (hz : z ∉ segment u v) :
       crossInd z u v + if z'.1 < z.1 then aboveInd z u + aboveInd z v else 0 := by
   rcases lt_trichotomy u.1 v.1 with h | h | h
   · exact crossInd_eventually_of_lt h hz
-  · have h0 : aboveInd z u + aboveInd z v = 0 := aboveInd_add_aboveInd_of_eq h hz
-    filter_upwards with z'
-    rw [crossInd_of_not_crosses (not_crosses_of_eq h), crossInd_of_not_crosses (not_crosses_of_eq h),
-      h0]
-    simp
-  · have hz' : z ∉ segment v u := segment_comm u v ▸ hz
+  · have h0 := aboveInd_add_aboveInd_of_eq h hz
+    simp [crossInd_of_not_crosses (not_crosses_of_eq h), h0]
+  · have hz' := segment_comm u v ▸ hz
     filter_upwards [crossInd_eventually_of_lt h hz'] with z' hz'
     rw [crossInd_comm, hz', ← crossInd_comm, add_comm (aboveInd z v)]
 
@@ -338,8 +317,7 @@ theorem sum_range_succ_mod {M : Type} [AddCommMonoid M] (f : ℕ → M) (n : ℕ
     congr 1
     apply Finset.sum_congr rfl
     intro i hi
-    rw [Finset.mem_range] at hi
-    rw [Nat.mod_eq_of_lt (by omega)]
+    simp_all [Finset.mem_range, Nat.mod_eq_of_lt] 
 
 /-- The endpoint contributions telescope around the closed walk. -/
 theorem sum_aboveInd_edges (P : Polygon) (z : Point) :
@@ -350,11 +328,7 @@ theorem sum_aboveInd_edges (P : Polygon) (z : Point) :
 /-- **Local constancy of the crossing sum** off the boundary. -/
 theorem crossSum_eventually_eq (P : Polygon) {z : Point} (hz : z ∉ P.boundary) :
     ∀ᶠ z' in 𝓝 z, crossSum P z' = crossSum P z := by
-  have h : ∀ i ∈ Finset.range P.n, ∀ᶠ z' in 𝓝 z,
-      crossInd z' (P.vtx i) (P.vtx ((i + 1) % P.n)) =
-        crossInd z (P.vtx i) (P.vtx ((i + 1) % P.n)) +
-          if z'.1 < z.1 then aboveInd z (P.vtx i) + aboveInd z (P.vtx ((i + 1) % P.n)) else 0 :=
-    fun i hi => crossInd_eventually fun hmem => hz ⟨i, Finset.mem_range.1 hi, hmem⟩
+  have h := fun i hi => crossInd_eventually fun hmem => hz ⟨i, Finset.mem_range.1 hi, hmem⟩
   rw [← Filter.eventually_all_finset] at h
   filter_upwards [h] with z' hz'
   unfold crossSum
@@ -405,17 +379,8 @@ theorem crossInd_flip_edge {z u v : Point} (huv : u.1 ≠ v.1) (hz : z ∈ segme
   intro u v huv hz hzu hzv
   rw [mem_segment_iff_of_lt huv] at hz
   obtain ⟨h0, h1, hl⟩ := hz
-  have hd : 0 < v.1 - u.1 := sub_pos.2 huv
-  have h0' : u.1 < z.1 := by
-    rcases h0.lt_or_eq with h | h
-    · exact h
-    · exfalso; apply hzu
-      have : z.2 = u.2 := by
-        have : (z.2 - u.2) * (v.1 - u.1) = 0 := by rw [hl, ← h]; ring
-        rcases mul_eq_zero.1 this with h' | h'
-        · linarith
-        · linarith
-      exact Prod.ext h.symm this
+  have hd := sub_pos.2 huv
+  
   have h1' : z.1 < v.1 := by
     rcases h1.lt_or_eq with h | h
     · exact h
@@ -473,20 +438,18 @@ theorem parity_flip (P : Polygon) {i : ℕ} (hi : i < P.n) {z : Point} (hz : z �
           crossInd z (P.vtx j) (P.vtx ((j + 1) % P.n)) := by
     intro j hj
     rw [Finset.mem_erase, Finset.mem_range] at hj
-    have hzj : z ∉ P.edge j := hother j hj.2 hj.1
-    have hopen : (P.edge j)ᶜ ∈ 𝓝 z := (isClosed_edge P j).isOpen_compl.mem_nhds hzj
+    have hzj := hother j hj.2 hj.1
+    have hopen := (isClosed_edge P j).isOpen_compl.mem_nhds hzj
     filter_upwards [hup.eventually hopen, hdn.eventually hopen,
       hup.eventually (crossInd_eventually hzj), hdn.eventually (crossInd_eventually hzj)]
       with ε h1 h2 h3 h4
-    refine ⟨h1, h2, ?_, ?_⟩
-    · rw [h3, ite_eq_right (lt_irrefl _), add_zero]
-    · rw [h4, ite_eq_right (lt_irrefl _), add_zero]
+    simp_all
   rw [← Filter.eventually_all_finset] at hj
   have hall : ∀ᶠ ε in 𝓝[>] (0 : ℝ),
       (z.1, z.2 + ε) ∉ P.boundary ∧ (z.1, z.2 - ε) ∉ P.boundary ∧
         parity P (z.1, z.2 + ε) ≠ parity P (z.1, z.2 - ε) := by
     filter_upwards [hj, self_mem_nhdsWithin] with ε hε hε0
-    have hε0' : 0 < ε := mem_Ioi.1 hε0
+    have hε0' := mem_Ioi.1 hε0
     obtain ⟨hi1, hi2, hi3⟩ := crossInd_flip_edge hne hz hzu hzv hε0'
     refine ⟨?_, ?_, ?_⟩
     · rintro ⟨j, hjn, hjm⟩
@@ -499,7 +462,7 @@ theorem parity_flip (P : Polygon) {i : ℕ} (hi : i < P.n) {z : Point} (hz : z �
       · exact (hε j (Finset.mem_erase.2 ⟨hji, Finset.mem_range.2 hjn⟩)).2.1 hjm
     · intro heq
       rw [parity_eq_iff] at heq
-      have hmem : i ∈ Finset.range P.n := Finset.mem_range.2 hi
+      have hmem := Finset.mem_range.2 hi
       unfold crossSum at heq
       rw [← Finset.add_sum_erase _ _ hmem, ← Finset.add_sum_erase _ _ hmem] at heq
       have hrest : ∑ j ∈ (Finset.range P.n).erase i,
@@ -544,7 +507,7 @@ theorem crossSum_eq_zero_of_far (P : Polygon) {z : Point}
   unfold crossSum
   apply Finset.sum_eq_zero
   intro i hi
-  have hi' : i < P.n := Finset.mem_range.1 hi
+  have hi' := Finset.mem_range.1 hi
   have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
   apply crossInd_of_not_crosses
   rcases hz with h | h | h

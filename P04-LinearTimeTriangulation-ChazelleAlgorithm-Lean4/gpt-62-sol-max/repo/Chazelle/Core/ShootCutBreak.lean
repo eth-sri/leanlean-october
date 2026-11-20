@@ -71,12 +71,12 @@ theorem card_brkSet (n : ℕ) (H : Host) : (brkSet n H).card ≤ 4 * H.length :=
 /-- The unique offset in `[0, n)` with a given residue. -/
 theorem off_of_mod {n a t c : ℕ} (hn : 0 < n) (ht : t < n) (_hc : c < n) (h : (a + t) % n = c) :
     t = (n + c - a % n) % n := by
-  have e := Nat.div_add_mod a n
+  
   have e2 := Nat.div_add_mod (a + t) n
   have ha := Nat.mod_lt a hn
   rw [h] at e2
   -- `a % n + t ≡ c`
-  have h2 : (a % n + t) % n = c := by rw [← h, Nat.add_mod, Nat.mod_mod, ← Nat.add_mod]
+  have h2 : (a % n + t) % n = c := by simp_all
   rcases (show a % n + t < n ∨ n ≤ a % n + t by omega) with h3 | h3
   · rw [Nat.mod_eq_of_lt h3] at h2
     rw [show n + c - a % n = t + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt ht]
@@ -91,15 +91,13 @@ theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : 
   refine Finset.mem_biUnion.2 ⟨r, Finset.mem_range.2 hr, Finset.mem_image.2 ?_⟩
   refine ⟨u - NFLoc.preLen n H r, ?_, by omega⟩
   have hsucc := NFLoc.preLen_succ n H hr
-  have hget : H.getD r (.run 0 0) = H[r] := by simp [List.getD_eq_getElem?_getD, hr]
+  have hget : H.getD r (.run 0 0) = H[r] := by simp_all
   rw [hget] at hc ⊢
   have hit := hwf H[r] (List.getElem_mem hr)
   generalize H[r] = it at hc hsucc hit
   cases it with
   | pt x =>
-    simp only [NFLoc.itemCnt] at hsucc
-    simp only [brkOffs, Finset.mem_singleton]
-    omega
+    simp_all [NFLoc.itemCnt, brkOffs, Finset.mem_singleton] <;> omega
   | run a ℓ =>
     simp only [NFLoc.itemCnt] at hsucc
     simp only at hit
@@ -108,8 +106,7 @@ theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : 
     rcases hc with hc | hc | hc | hc
     · exact Or.inl hc
     · exact Or.inr (Or.inl hc)
-    · right; right; left
-      rw [off_of_mod hn ht hn hc, Nat.add_zero]
+    · simp [off_of_mod hn ht hn hc, Nat.add_zero]
     · right; right; right
       rw [off_of_mod hn ht (by omega) hc]
       congr 1
@@ -132,18 +129,8 @@ theorem uOf_lt (i : ℕ) : uOf C i < C.P.n := Nat.mod_lt _ C.n_pos
 
 /-- The tour coordinate is injective on the tour positions. -/
 theorem tJ_inj {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) (h : tJ C i = tJ C i') :
-    i = i' := by
-  unfold tJ at h
-  have hS := C.sideS_lt C.sideBeta
-  rcases (show C.sideS C.sideBeta + i < 2 * C.m ∨ 2 * C.m ≤ C.sideS C.sideBeta + i by omega)
-    with h1 | h1 <;>
-  rcases (show C.sideS C.sideBeta + i' < 2 * C.m ∨ 2 * C.m ≤ C.sideS C.sideBeta + i' by omega)
-    with h2 | h2
-  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at h; omega
-  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)] at h; omega
-  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt h2] at h; omega
-  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_sub_mod h2,
-      Nat.mod_eq_of_lt (by omega)] at h; omega
+    i = i' :=
+  (Nat.ModEq.add_left_cancel' (C.sideS C.sideBeta) h).eq_of_lt_of_lt hi hi'
 
 /-- At most one tour position has a given tour coordinate. -/
 theorem card_tJ_eq (j : ℕ) : ((Finset.range (2 * C.m)).filter fun i => tJ C i = j).card ≤ 1 := by
@@ -196,8 +183,8 @@ theorem card_fiber_le (u : ℕ) :
   have hlt := tJ_lt C i
   unfold sideE at hki
   split_ifs at hki with h1 h2 h2
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_left h2]; exact hki⟩
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_right h2]; exact hki⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwa [ite_eq_left h2]⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwa [ite_eq_right h2]⟩
   · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_left h2]; omega
   · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_right h2]; omega
 
@@ -213,10 +200,7 @@ theorem card_brk_le {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) :
       ((Finset.range (2 * C.m)).filter fun i => HostBreak n H (uOf C i))) := by
     intro i hi
     simp only [Finset.mem_filter, Finset.mem_union] at hi ⊢
-    rcases hi.2 with h | h | h
-    · exact Or.inl ⟨hi.1, h⟩
-    · exact Or.inr (Or.inl ⟨hi.1, h⟩)
-    · exact Or.inr (Or.inr ⟨hi.1, h⟩)
+    simp_all
   have hA := card_tJ_eq C 0
   have hB := card_tJ_eq C C.m
   have hC : ((Finset.range (2 * C.m)).filter fun i => HostBreak n H (uOf C i)).card ≤

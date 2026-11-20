@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.OutputTrap
 public import Chazelle.Core.SignKernelRam
 public import Chazelle.Core.Setup
@@ -59,22 +63,26 @@ section helpers
 
 variable {P : Polygon} {W : ℕ}
 
+section
+
+variable {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
+    (d s : ℕ)
+include hc hA d s
+
 /-- Spec of `wvS`: cost `≤ 3`, `d := wv b n s`. -/
-theorem wvS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (d s : ℕ) :
+theorem wvS_spec :
     ∃ c' k, Exec P W (wvS d s) c c' k ∧ k ≤ 3 ∧
       c' = { c with nreg := upd c.nreg d (wv b n (c.nreg s)) } := by
   obtain ⟨-, -, h2, h3, h17, -⟩ := hA
   unfold wvS
   cases b
   · refine spec_ifLtN_false (by rw [h2, h3]; decide) (spec_instr (Exec.copyN hc d s) fun _ => ?_)
-    exact ⟨by omega, by simp [wv]⟩
+    simp [wv]
   · refine spec_ifLtN_true (by rw [h2, h3]; decide) (spec_instr (Exec.subN hc d 220017 s) fun _ => ?_)
-    exact ⟨by omega, by simp [wv, h17]⟩
+    simp [wv, h17]
 
 /-- Spec of `nxtS`: cost `≤ 4`, `d := nxt n s`. -/
-theorem nxtS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (d s : ℕ) (hd0 : d ≠ 220000) (_hd1 : d ≠ 220001) (hs : c.nreg s < n) (hn : n ≤ W) :
+theorem nxtS_spec (hd0 : d ≠ 220000) (_hd1 : d ≠ 220001) (hs : c.nreg s < n) (hn : n ≤ W) :
     ∃ c' k, Exec P W (nxtS d s) c c' k ∧ k ≤ 4 ∧
       c' = { c with nreg := upd c.nreg d (nxt n (c.nreg s)) } := by
   obtain ⟨h0, h1, -, -, -, -⟩ := hA
@@ -84,17 +92,14 @@ theorem nxtS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
   · refine spec_ifLtN_true (by
       simp only [Machine.upd_same, Machine.upd_other _ _ _ (Ne.symm hd0), h0, h1]
       exact hlt) (spec_skip hw₁ ?_)
-    refine ⟨by omega, ?_⟩
     simp [nxt, hlt, h1]
   · refine spec_ifLtN_false (by
       simp only [Machine.upd_same, Machine.upd_other _ _ _ (Ne.symm hd0), h0, h1]
       exact hlt) (spec_instr (Exec.constN hw₁ d 0 (Nat.zero_le _)) fun _ => ?_)
-    refine ⟨by omega, ?_⟩
     simp [nxt, hlt]
 
 /-- Spec of `inpS`: cost `≤ 6`, `d := inp b n s`; only `d` and `220116` written. -/
-theorem inpS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (d s : ℕ) (_hd : d ≠ 220116) (hsX : s ≠ 220116) (hs : c.nreg s < n) (hn : n ≤ W) :
+theorem inpS_spec (_hd : d ≠ 220116) (hsX : s ≠ 220116) (hs : c.nreg s < n) (hn : n ≤ W) :
     ∃ c' k, Exec P W (inpS d s) c c' k ∧ k ≤ 6 ∧ c'.nreg d = inp b n (c.nreg s) ∧
       SignK.FrameB (fun r => decide (r = d ∨ r = 220116)) c c' := by
   obtain ⟨h0, h1, h2, h3, h17, h18⟩ := hA
@@ -102,8 +107,7 @@ theorem inpS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
   cases b
   · refine spec_ifLtN_false (by rw [h2, h3]; decide) (spec_instr (Exec.copyN hc d s) fun _ => ?_)
     refine ⟨by omega, by simp [inp], fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
-    simp only [decide_eq_false_iff_not, not_or] at hr
-    simp [hr.1]
+    simp_all
   · refine spec_ifLtN_true (by rw [h2, h3]; decide)
       (spec_seq (spec_instr (Exec.addN hc 220116 s 220001 (by rw [h1]; omega)) fun hw₁ => ?_))
     by_cases hlt : c.nreg s + 1 < n
@@ -111,14 +115,14 @@ theorem inpS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
         (spec_instr (Exec.subN hw₁ d 220018 s) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
       · simp [inp, hlt, h18, hsX]
-      · simp only [decide_eq_false_iff_not, not_or] at hr
-        simp [hr.1, hr.2]
+      simp_all
     · refine spec_ifLtN_false (by simp [h0, h1, hlt])
         (spec_instr (Exec.copyN hw₁ d 220017) fun _ => ?_)
       refine ⟨by omega, ?_, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
       · simp [inp, hlt, h17]
-      · simp only [decide_eq_false_iff_not, not_or] at hr
-        simp [hr.1, hr.2]
+      simp_all
+
+end
 
 end helpers
 
@@ -168,17 +172,14 @@ theorem dnS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) :
   unfold dnS
   rcases lt_trichotomy (c.nreg 220107) (c.nreg 220010) with h | h | h
   · refine spec_ifLtN_true h ?_
-    exec_block
-    · exact hW
-    · exact ⟨by omega, by rw [Setup.iteF h.ne]⟩
+    exec_block!
+    simp [Setup.iteF h.ne]
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) ?_)
-    exec_block
-    · exact hW
-    · exact ⟨by omega, by rw [Setup.iteT h]⟩
+    exec_block!
+    · simp_all
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_true h ?_)
-    exec_block
-    · exact hW
-    · exact ⟨by omega, by rw [Setup.iteF h.ne']⟩
+    exec_block!
+    · simp [Setup.iteF h.ne']
 
 /-- Spec of `lrS`: when `wv p ≠ h`, set the flag `F` and `V := S`. -/
 theorem lrS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) (F V S : ℕ) (hSF : S ≠ F) :
@@ -188,17 +189,13 @@ theorem lrS_spec {c : Config} (hc : WordsBounded W c) (hW : 1 ≤ W) (F V S : �
   unfold lrS
   rcases lt_trichotomy (c.nreg 220116) (c.nreg 220104) with h | h | h
   · refine spec_ifLtN_true h ?_
-    exec_block
-    · exact hW
-    · refine ⟨by omega, ?_⟩
-      rw [Setup.iteF h.ne, Machine.upd_other _ _ _ hSF]
+    exec_block!
+    simp [Setup.iteF h.ne, Machine.upd_other _ _ _ hSF]
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) (spec_skip hc ?_))
-    exact ⟨by omega, by rw [Setup.iteT h]⟩
+    simp_all
   · refine spec_ifLtN_false (by omega) (spec_ifLtN_true h ?_)
-    exec_block
-    · exact hW
-    · refine ⟨by omega, ?_⟩
-      rw [Setup.iteF h.ne', Machine.upd_other _ _ _ hSF]
+    exec_block!
+    · simp [Setup.iteF h.ne', Machine.upd_other _ _ _ hSF]
 
 end chord
 
@@ -219,11 +216,11 @@ theorem loadS_spec {c : Config} (hc : WordsBounded W c) {lb off t cb kk : ℕ}
   unfold loadS
   exec_block
   all_goals try (config_simp; simp only [hLB, hOFF, hTI, hCB, h1, h19, hK]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, fun r hr1 hr2 => ?_, rfl, rfl, rfl, rfl⟩
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK]; congr 1; omega
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK, h1]; congr 1; omega
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK, h1]; congr 1; omega
-  · config_simp; simp only [hLB, hOFF, hTI, hCB, hK, h1, h19]; congr 1; omega
+  refine ⟨rfl, ?_, ?_, ?_, ?_, fun r hr1 hr2 => ?_, by and_intros <;> rfl⟩
+  · config_simp; ram_post
+  · config_simp; ram_post
+  · config_simp; ram_post
+  · config_simp; ram_post
   · simp (disch := omega) only [Machine.upd_other]
 
 end chord2
@@ -267,8 +264,7 @@ theorem chordBody_spec {c : Config} (hc : WordsBounded W c) {b : Bool}
   have hw4 := e4.wb_right
   have hA4 : ArithRegs c4 b n := by
     subst hc4 hc3; split_ifs <;>
-    exact ⟨by simp [hA2'.1], by simp [hA2'.2.1], by simp [hA2'.2.2.1], by simp [hA2'.2.2.2.1],
-      by simp [hA2'.2.2.2.2.1], by simp [hA2'.2.2.2.2.2]⟩
+    assumption
   obtain ⟨c5, k5, e5, hk5, hc5⟩ := wvS_spec (P := P) hw4 hA4 220116 220106
   have hw5 := e5.wb_right
   obtain ⟨c6, k6, e6, hk6, hc6⟩ := lrS_spec (P := P) hw5 hW 220111 220115 220106 (by decide)
@@ -277,12 +273,12 @@ theorem chordBody_spec {c : Config} (hc : WordsBounded W c) {b : Bool}
     subst hc6 hc5; split_ifs <;> simp [hA4.2.1]
   have hti6 : c6.nreg 220100 = t := by
     subst hc6 hc5 hc4 hc3 hc2; split_ifs <;> simp [f1, hTI]
-  have e7 := Exec.addN (P := P) hw6 220100 220100 220001 (by rw [hone6, hti6]; exact ht)
+  have e7 := Exec.addN (P := P) hw6 220100 220100 220001 (by rwa [hone6, hti6])
   have e7' : Exec P W (block [.addN 220100 220100 220001]) c6
       { c6 with nreg := upd c6.nreg 220100 (c6.nreg 220100 + c6.nreg 220001) } 1 :=
     Exec.block_cons e7 (Exec.block_nil e7.wb_right)
   have eall : Exec P W chordBody c _ (k1 + (k2 + (k3 + (k4 + (k5 + (k6 + 1)))))) :=
-    e1.seq (e2.seq (e3.seq (e4.seq (e5.seq (e6.seq e7')))))
+    (by ram_path)
   refine ⟨_, _, eall, by omega, ?_, by simp [hone6, hti6], SignK.exec_frameB eall wr_chordBody⟩
   -- the accumulator
   obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8⟩ := hacc
@@ -290,9 +286,9 @@ theorem chordBody_spec {c : Config} (hc : WordsBounded W c) {b : Bool}
   have g105 : c1.nreg 220105 = rec.lp := by rw [v105, hrl]
   have g106 : c1.nreg 220106 = rec.rp := by rw [v106, hrr]
   have g107 : c1.nreg 220107 = rec.dn := by rw [v107, hrd]
-  have g010 : c1.nreg 220010 = ri := by rw [f1 _ (by omega) (by omega), hRI]
+  have g010 : c1.nreg 220010 = ri := by simp [f1, hRI]
   have gacc : ∀ r, 220108 ≤ r → r ≤ 220115 → c1.nreg r = c.nreg r :=
-    fun r h1 h2 => f1 r (by omega) (by omega)
+    ram_app% (fun r h1 h2 => f1 r ?_ ?_)
   subst hc6 hc5 hc4 hc3 hc2
   simp only [AccIn, accStep]
   rw [g107, g010]
@@ -328,7 +324,7 @@ theorem scanAcc_succ (b : Bool) (n ri : ℕ) (N : NF) (L : List ℕ) {t : ℕ} (
     scanAcc b n ri N L (t + 1) = accStep b n ri (scanAcc b n ri N L t) (N.chord (L.getD t 0)) := by
   unfold scanAcc
   rw [List.take_add_one, List.map_append, List.foldl_append, List.getElem?_eq_getElem ht]
-  simp [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht]
+  simp_all
 
 /-- The invariant of the scan loop (`cs` the configuration on entry). -/
 def ScanInv (W : ℕ) (b : Bool) (n ri : ℕ) (N : NF) (L : List ℕ) (cs c : Config) : Prop :=
@@ -356,29 +352,28 @@ theorem chordLoop_spec {cs : Config} {b : Bool} {n ri lb off cb : ℕ} {N : NF} 
     (fun c h => h.1) (fun c h htest => by
       obtain ⟨hw, hf, hle, hacc⟩ := h
       have g : ∀ r, scanB r = false → c.nreg r = cs.nreg r := hfr c hf
-      have e14 : c.nreg 220014 = L.length := by rw [g _ (by decide), hLEN]
+      have e14 : c.nreg 220014 = L.length := by ram_rw [g, hLEN]
       rw [e14] at htest
       set t := c.nreg 220100 with htdef
       obtain ⟨hk1, hk2, hk3, hk4, hk5, hk6, hk7⟩ := hK t htest
       have hm : c.nmem = cs.nmem := hf.2.2.1
       have hA' : ArithRegs c b n := by
         obtain ⟨a0, a1, a2, a3, a17, a18⟩ := hA
-        exact ⟨by rw [g _ (by decide), a0], by rw [g _ (by decide), a1], by rw [g _ (by decide), a2],
-          by rw [g _ (by decide), a3], by rw [g _ (by decide), a17], by rw [g _ (by decide), a18]⟩
+        exact ⟨by ram_rw [g, a0], by ram_rw [g, a1], by ram_rw [g, a2],
+          by ram_rw [g, a3], by ram_rw [g, a17], by ram_rw [g, a18]⟩
       have hlen : L.length ≤ W := by rw [← e14]; exact hw.1 _
       obtain ⟨c'', k'', e'', hk'', hacc'', ht'', hfr''⟩ := chordBody_spec (P := P) hw hA'
-        (by rw [g _ (by decide), h19]) (by rw [g _ (by decide), hRI]) (by rw [g _ (by decide), hLB])
-        (by rw [g _ (by decide), hOFF]) rfl (by rw [g _ (by decide), hCB]) (by rw [hm]; exact hk1)
-        (by rw [hm]; exact hk4) (by rw [hm]; exact hk5) (by rw [hm]; exact hk6)
-        (by rw [hm]; exact hk7) hk2 hk3 (by omega) hW hacc
+        (by ram_rw [g, h19]) (by ram_rw [g, hRI]) (by ram_rw [g, hLB])
+        (by ram_rw [g, hOFF]) rfl (by ram_rw [g, hCB]) (by rwa [hm])
+        (by rwa [hm]) (by rwa [hm]) (by rwa [hm])
+        (by rwa [hm]) hk2 hk3 (by omega) hW hacc
       refine ⟨c'', k'', e'', ⟨e''.wb_right, hf.trans hfr'', by omega, ?_⟩, hk'', by omega⟩
-      rw [ht'', scanAcc_succ b n ri N L htest]
-      exact hacc'') hI
+      rwa [ht'', scanAcc_succ b n ri N L htest]) hI
   obtain ⟨hw', hf', hle', hacc'⟩ := hI'
-  have e14 : c'.nreg 220014 = L.length := by rw [hf'.1 _ (by decide), hLEN]
+  have e14 : c'.nreg 220014 = L.length := by ram_simp [hf'.1, hLEN]
   rw [e14] at hex
   have ht' : c'.nreg 220100 = L.length := by omega
-  refine ⟨c', k, he, ?_, by rw [← ht']; exact hacc', hf'⟩
+  refine ⟨c', k, he, ?_, by rwa [← ht'], hf'⟩
   rw [h0] at hk
   omega
 
@@ -407,9 +402,14 @@ section fin
 
 variable {P : Polygon} {W : ℕ}
 
+section
+
+variable {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
+    (hn : n ≤ W)
+include hc hA hn
+
 /-- Spec of `pickS`: cost `≤ 8`. -/
-theorem pickS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (hn : n ≤ W) (d f x g y z : ℕ) (hd0 : d ≠ 220000) (hd1 : d ≠ 220001) {bf bg : Bool}
+theorem pickS_spec (d f x g y z : ℕ) (hd0 : d ≠ 220000) (hd1 : d ≠ 220001) {bf bg : Bool}
     (hf : c.nreg f = bf.toNat) (hg : c.nreg g = bg.toNat)
     (hz : bf = false → bg = false → c.nreg z < n) :
     ∃ c' k, Exec P W (pickS d f x g y z) c c' k ∧ k ≤ 8 ∧
@@ -427,11 +427,10 @@ theorem pickS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA
       obtain ⟨c', k, e, hk, rfl⟩ := wvS_spec (P := P) hc hA d y
       exact ⟨_, _, e, by omega, by simp⟩
   · refine spec_ifLtN_true (by rw [h2, hf]; decide) (spec_instr (Exec.copyN hc d x) fun _ => ?_)
-    exact ⟨by omega, by simp⟩
+    simp
 
 /-- Spec of `cornerS`: cost `≤ 9`; only `d` and `220117` written. -/
-theorem cornerS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA : ArithRegs c b n)
-    (hn : n ≤ W) (d f x z : ℕ) (_hd : d ≠ 220117) {bf : Bool} (hf : c.nreg f = bf.toNat)
+theorem cornerS_spec (d f x z : ℕ) (_hd : d ≠ 220117) {bf : Bool} (hf : c.nreg f = bf.toNat)
     (hz : bf = false → c.nreg z < n) :
     ∃ c' k, Exec P W (cornerS d f x z) c c' k ∧ k ≤ 9 ∧
       c'.nreg d = (if bf then c.nreg x else wv b n (nxt n (c.nreg z))) ∧
@@ -440,19 +439,19 @@ theorem cornerS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (
   unfold cornerS
   cases bf
   · refine spec_ifLtN_false (by rw [h2, hf]; decide) ?_
-    obtain ⟨c1, k1, e1, hk1, rfl⟩ := nxtS_spec (P := P) hc hA 220117 z (by decide) (by decide)
-      (hz rfl) hn
+    obtain ⟨c1, k1, e1, hk1, rfl⟩ := ram_app% (nxtS_spec (P := P) hc hA 220117 z ?_ ?_
+      (hz rfl) hn)
     have hA1 : ArithRegs { c with nreg := upd c.nreg 220117 (nxt n (c.nreg z)) } b n := by
-      obtain ⟨a0, a1, a2, a3, a17, a18⟩ := hA
-      exact ⟨by simp [a0], by simp [a1], by simp [a2], by simp [a3], by simp [a17], by simp [a18]⟩
+      assumption
     obtain ⟨c2, k2, e2, hk2, rfl⟩ := wvS_spec (P := P) e1.wb_right hA1 d 220117
     refine ⟨_, _, e1.seq e2, by omega, by simp, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
     simp only [decide_eq_false_iff_not, not_or] at hr
     simp [hr.1, hr.2]
   · refine spec_ifLtN_true (by rw [h2, hf]; decide) (spec_instr (Exec.copyN hc d x) fun _ => ?_)
     refine ⟨by omega, by simp, fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
-    simp only [decide_eq_false_iff_not, not_or] at hr
-    simp [hr.1]
+    simp_all
+
+end
 
 end fin
 
@@ -499,7 +498,7 @@ theorem finS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
     · exact nxt_lt hPL
   -- stage 1
   obtain ⟨c1, k1, e1, hk1, hc1⟩ := pickS_spec (P := P) hc hA hn 220120 220110 220114 220108 220112
-    220115 (by decide) (by decide) a3 a1 (fun _ _ => by rw [a8]; exact hpr)
+    220115 (by decide) (by decide) a3 a1 (fun _ _ => by rwa [a8])
   have v1 : c1.nreg 220120 = PLv := by rw [hc1]; simp [a7, a5, a8, hPLv]
   have hA1 : ArithRegs c1 b n := by
     obtain ⟨b0, b1, b2, b3, b17, b18⟩ := hA
@@ -508,9 +507,9 @@ theorem finS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
   -- stage 2
   obtain ⟨c2, k2, e2, hk2, hc2⟩ := pickS_spec (P := P) (bf := a.hR) (bg := a.hB) e1.wb_right hA1
     hn 220121 220111 220115 220109 220113 220120 (by decide) (by decide) (by rw [hc1]; simp [a4])
-    (by rw [hc1]; simp [a2]) (fun _ _ => by rw [v1]; exact hPL)
+    (by rw [hc1]; simp [a2]) (fun _ _ => by rwa [v1])
   have v2 : c2.nreg 220121 = PRv := by
-    rw [hc2]; simp only [Machine.upd_same]; rw [v1, hc1]; simp [a8, a6, hPRv]
+    ram_post
   have v2' : c2.nreg 220120 = PLv := by rw [hc2]; simp [v1]
   have hA2 : ArithRegs c2 b n := by
     obtain ⟨b0, b1, b2, b3, b17, b18⟩ := hA1
@@ -520,33 +519,27 @@ theorem finS_spec {c : Config} (hc : WordsBounded W c) {b : Bool} {n : ℕ} (hA 
     rw [hc2, hc1]; simp [h1, h2]
   -- stage 3
   obtain ⟨c3, k3, e3, hk3, v3, f3⟩ := cornerS_spec (P := P) e2.wb_right hA2 hn 220122 220108
-    220112 220121 (by decide) (by rw [g2 _ (by decide) (by decide)]; exact a1)
-    (fun _ => by rw [v2]; exact hPR)
+    220112 220121 (by decide) (by ram_rw assumption [g2])
+    (fun _ => by rwa [v2])
   have hA3 := hA2.frame f3 rfl rfl rfl rfl rfl rfl
   -- stage 4
   obtain ⟨c4, k4, e4, hk4, v4, f4⟩ := cornerS_spec (P := P) e3.wb_right hA3 hn 220123 220109
-    220113 220120 (by decide) (by rw [f3.1 _ rfl, g2 _ (by decide) (by decide)]; exact a2)
-    (fun _ => by rw [f3.1 _ rfl, v2']; exact hPL)
+    220113 220120 (by decide) (by ram_rw assumption [f3.1 _ rfl, g2])
+    (fun _ => by rwa [f3.1 _ rfl, v2'])
   have hA4 := hA3.frame f4 rfl rfl rfl rfl rfl rfl
   -- stage 5, 6
   obtain ⟨c5, k5, e5, hk5, v5, f5⟩ := inpS_spec (P := P) e4.wb_right hA4 220124 220120 (by decide)
-    (by decide) (by rw [f4.1 _ rfl, f3.1 _ rfl, v2']; exact hPL) hn
+    (by decide) (by rwa [f4.1 _ rfl, f3.1 _ rfl, v2']) hn
   have hA5 := hA4.frame f5 rfl rfl rfl rfl rfl rfl
   obtain ⟨c6, k6, e6, hk6, v6, f6⟩ := inpS_spec (P := P) e5.wb_right hA5 220125 220121 (by decide)
-    (by decide) (by rw [f5.1 _ rfl, f4.1 _ rfl, f3.1 _ rfl, v2]; exact hPR) hn
+    (by decide) (by rwa [f5.1 _ rfl, f4.1 _ rfl, f3.1 _ rfl, v2]) hn
   have eall : Exec P W finS c c6 (k1 + (k2 + (k3 + (k4 + (k5 + k6))))) :=
-    e1.seq (e2.seq (e3.seq (e4.seq (e5.seq e6))))
+    (by ram_path)
   refine ⟨c6, _, eall, by omega, ?_, ?_, ?_, ?_, SignK.exec_frameB eall wr_finS⟩
-  · rw [f6.1 220124 rfl, v5, f4.1 220120 rfl, f3.1 220120 rfl, v2']
-    simp only [finish, hPLv]
-  · rw [v6, f5.1 220121 rfl, f4.1 220121 rfl, f3.1 220121 rfl, v2]
-    simp only [finish, hPRv, hPLv]
-  · rw [f6.1 220122 rfl, f5.1 220122 rfl, f4.1 220122 rfl, v3, v2,
-      g2 220112 (by decide) (by decide), a5]
-    simp only [finish, hPRv, hPLv]
-  · rw [f6.1 220123 rfl, f5.1 220123 rfl, v4, f3.1 220113 rfl, f3.1 220120 rfl, v2',
-      g2 220113 (by decide) (by decide), a6]
-    simp only [finish, hPLv]
+  · simp [f6.1 220124 rfl, v5, f4.1 220120 rfl, f3.1 220120 rfl, v2', finish, hPLv]
+  · simp [v6, f5.1 220121 rfl, f4.1 220121 rfl, f3.1 220121 rfl, v2, finish, hPRv, hPLv]
+  · simp [f6.1 220122 rfl, f5.1 220122 rfl, f4.1 220122 rfl, v3, v2, g2 220112 (by decide) (by decide), a5, finish, hPRv, hPLv]
+  · simp [f6.1 220123 rfl, f5.1 220123 rfl, v4, f3.1 220113 rfl, f3.1 220120 rfl, v2', g2 220113 (by decide) (by decide), a6, finish, hPLv]
 
 end fin2
 
@@ -588,7 +581,7 @@ theorem nfReads_of_robust {A B : ℕ} {m : ℕ → ℕ} {N : NF} (h : Robust A m
       (hm.2.2.2.2.2.1 k hk).2.2.2.2, ?_⟩⟩
   · by_contra hc; push Not at hc
     have := (hX (N.nRegions + 1)).2.2.1
-    rw [mX_of_ge hc] at this; unfold NF.nRegions at this; omega
+    simp_all [mX_of_ge hc, NF.nRegions] 
   · set v := (N.region r).chords.length
     have := ((hX (A + v + 1)).2.2.2.2.2.2.2.1 r hr).2.1
     by_contra hc; push Not at hc
@@ -653,7 +646,7 @@ theorem regPre_spec {c : Config} (hc : WordsBounded W c) {ra : ℕ} (h19 : c.nre
     · config_simp; simp only [hRA, h19]
     · config_simp; simp only [hRA, h20]
     · config_simp
-    · refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> rfl
+    · and_intros <;> config_simp <;> rfl
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4⟩ := e
   exact ⟨c', k, ex, hk, h1, h2, h3, h4, SignK.exec_frameB ex wr_regPre⟩
 
@@ -680,7 +673,7 @@ theorem storeS_spec {c : Config} (hc : WordsBounded W c) {o ra ri al : ℕ}
   · config_simp; simp only [hRA, h12]
   · config_simp; simp only [hRI, h1]
   · config_simp; simp only [hAL, h11]
-  · simp (disch := omega) only [Machine.upd_other]
+  frame_finish
 
 end region
 
@@ -700,7 +693,7 @@ theorem fold_lt (b : Bool) (n ri : ℕ) (L : List CRec) (hL : ∀ c ∈ L, c.h <
     apply ih (fun c' hc' => hL c' (List.mem_cons_of_mem _ hc'))
     obtain ⟨h1, h2, h3⟩ := hL c List.mem_cons_self
     obtain ⟨a1, a2, a3, a4⟩ := ha
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [accStep] <;> split_ifs <;> assumption
+    and_intros <;> simp only [accStep] <;> split_ifs <;> assumption
 
 /-- The scan of the whole list is `accOf`. -/
 theorem scanAcc_length (b : Bool) (n ri : ℕ) (N : NF) :
@@ -712,7 +705,7 @@ def TrapAt (m : ℕ → ℕ) (A : ℕ) (rec : Final.TrapRec) : Prop :=
   m A = rec.left ∧ m (A + 1) = rec.right ∧ m (A + 2) = rec.top ∧ m (A + 3) = rec.bot
 
 /-- The registers the region loop keeps. -/
-def regFree (r : ℕ) : Prop :=
+@[ram_layout] def regFree (r : ℕ) : Prop :=
   ¬ (r = 220010 ∨ r = 220013 ∨ r = 220014 ∨ r = 220015 ∨ r = 220016 ∨ (220100 ≤ r ∧ r ≤ 220125) ∨
     r = 9999)
 
@@ -729,7 +722,7 @@ def RegInv (W : ℕ) (b : Bool) (n : ℕ) (N : NF) (T0 rb : ℕ) (m0 : ℕ → �
     (∀ r, regFree r → c.rreg r = c0.rreg r) ∧
     c.rmem = c0.rmem ∧ c.output = c0.output ∧ c.nreg 220010 ≤ N.nRegions ∧
     c.nreg 220013 = rb + 5 * c.nreg 220010 ∧ c.nreg 220016 = T0 + 4 * c.nreg 220010 ∧
-    c.nreg 9999 = T0 + 4 * c.nreg 220010 ∧ (∀ a, a < T0 → c.nmem a = m0 a) ∧
+    c.nreg 9999 = T0 + 4 * c.nreg 220010 ∧ (MemEqBelow T0 c.nmem m0) ∧
     ∀ s, s < c.nreg 220010 → TrapAt c.nmem (T0 + 4 * s) (trapOf b n N s)
 
 end region2
@@ -756,15 +749,15 @@ theorem regionBody_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
   have g : ∀ r, regFree r → c.nreg r = c0.nreg r := hfr
   have hAc : ArithRegs c b n := by
     obtain ⟨a0, a1, a2, a3, a17, a18⟩ := hA
-    exact ⟨by rw [g _ (by unfold regFree; omega), a0], by rw [g _ (by unfold regFree; omega), a1],
-      by rw [g _ (by unfold regFree; omega), a2], by rw [g _ (by unfold regFree; omega), a3],
-      by rw [g _ (by unfold regFree; omega), a17], by rw [g _ (by unfold regFree; omega), a18]⟩
-  have c19 : c.nreg 220019 = 2 := by rw [g _ (by unfold regFree; omega), h19]
-  have c20 : c.nreg 220020 = 3 := by rw [g _ (by unfold regFree; omega), h20]
-  have c11 : c.nreg 220011 = 4 := by rw [g _ (by unfold regFree; omega), h4]
-  have c12 : c.nreg 220012 = 5 := by rw [g _ (by unfold regFree; omega), h5]
-  have c6 : c.nreg 220006 = cb := by rw [g _ (by unfold regFree; omega), hcb']
-  have c8 : c.nreg 220008 = lb := by rw [g _ (by unfold regFree; omega), hlb']
+    exact ⟨by ram_rw [g, a0], by ram_rw [g, a1],
+      by ram_rw [g, a2], by ram_rw [g, a3],
+      by frame_finish, by frame_finish⟩
+  have c19 : c.nreg 220019 = 2 := by frame_finish
+  have c20 : c.nreg 220020 = 3 := by frame_finish
+  have c11 : c.nreg 220011 = 4 := by ram_rw [g, h4]
+  have c12 : c.nreg 220012 = 5 := by ram_rw [g, h5]
+  have c6 : c.nreg 220006 = cb := by frame_finish
+  have c8 : c.nreg 220008 = lb := by frame_finish
   have hT0W : T0 ≤ W := by omega
   obtain ⟨hlenm, hlenA⟩ := hRd.regs ri ht
   rw [hrb] at hlenm hlenA
@@ -774,7 +767,7 @@ theorem regionBody_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
   have hw1 := e1.wb_right
   have g1 : ∀ r, preB r = false → c1.nreg r = c.nreg r := f1.1
   have m1 : c1.nmem = c.nmem := f1.2.2.1
-  have hlen1 : c1.nreg 220014 = (N.region ri).chords.length := by rw [v14, hmem _ (by omega), hlenm]
+  have hlen1 : c1.nreg 220014 = (N.region ri).chords.length := by ram_simp [v14, hmem, hlenm]
   -- the chord data
   have hK : ∀ t, t < (N.region ri).chords.length → c1.nmem (lb + c1.nreg 220015 + t) = (N.region ri).chords.getD t 0 ∧
       lb + c1.nreg 220015 + t ≤ W ∧ cb + 5 * (N.region ri).chords.getD t 0 + 4 ≤ W ∧
@@ -790,15 +783,15 @@ theorem regionBody_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
     have hk := hent ri ht t htl
     obtain ⟨q1, q2, q3, q4, q5⟩ := hRd.chords _ hk
     rw [hcb] at q1 q2 q3 q4 q5
-    rw [hoff, m1, hmem _ l2, l1, hmem _ (by omega), hmem _ (by omega), hmem _ (by omega),
-      hmem _ (by omega)]
+    ram_rw [hoff, m1, hmem _ l2, l1, hmem, hmem, hmem,
+      hmem]
     exact ⟨rfl, by omega, by omega, q1, q2, q3, q4⟩
   have hA1 := hAc.frame f1 rfl rfl rfl rfl rfl rfl
   -- stage 2
   obtain ⟨c2, k2, e2, hk2, vacc2, f2⟩ := chordLoop_spec (P := P) (cs := c1) (L := (N.region ri).chords) (N := N)
     (ri := ri) hA1 (by rw [g1 _ rfl, c19]) (by rw [g1 _ rfl]) (by rw [g1 _ rfl, c8]) rfl
     (by rw [g1 _ rfl, c6]) hlen1 hK (by omega)
-    ⟨hw1, SignK.FrameB.refl _ _, by rw [v100]; exact Nat.zero_le _, by rw [v100]; exact vacc⟩ v100
+    ⟨hw1, SignK.FrameB.refl _ _, by simp [v100], by rwa [v100]⟩ v100
   have hw2 := e2.wb_right
   rw [scanAcc_length] at vacc2
   have hA2 := hA1.frame f2 rfl rfl rfl rfl rfl rfl
@@ -828,7 +821,7 @@ theorem regionBody_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
   refine ⟨c4, _, eall, ⟨e4.wb_right, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     by omega, v10, by omega⟩
   · unfold regFree at hr
-    rw [g4 r (by omega) (by omega) (by omega) (by omega) (by omega),
+    ram_rw [g4 r,
       gg r (by unfold preB; simp; omega) (by unfold scanB; simp; omega) (by unfold finB; simp; omega)]
     exact g r (by unfold regFree; exact hr)
   · unfold regFree at hr
@@ -844,17 +837,17 @@ theorem regionBody_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
   · intro a ha
     rw [m4]
     simp only [Machine.upd_apply]
-    rw [Setup.iteF (by omega), Setup.iteF (by omega), Setup.iteF (by omega), Setup.iteF (by omega),
+    ram_rw [Setup.iteF, Setup.iteF, Setup.iteF, Setup.iteF,
       f3.2.2.1, f2.2.2.1, m1, hmem a ha]
   · intro s hs
     rw [v10] at hs
     have mem3 : c3.nmem = c.nmem := by rw [f3.2.2.1, f2.2.2.1, m1]
     rcases Nat.lt_succ_iff_lt_or_eq.1 hs with hs | rfl
     · obtain ⟨t1, t2, t3, t4⟩ := hrecs s hs
-      refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [m4] <;> simp only [Machine.upd_apply] <;>
-        rw [Setup.iteF (by omega), Setup.iteF (by omega), Setup.iteF (by omega), Setup.iteF (by omega), mem3] <;>
+      and_intros <;> rw [m4] <;> simp only [Machine.upd_apply] <;>
+        ram_rw [Setup.iteF, Setup.iteF, Setup.iteF, Setup.iteF, mem3] <;>
         assumption
-    · refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [m4]
+    · and_intros <;> rw [m4]
       · simp [v124, trapOf]
       · simp [v125, trapOf]
       · simp [v122, trapOf]
@@ -879,8 +872,8 @@ theorem regionLoop_spec {c0 c : Config} {b : Bool} {n B T0 rb lb cb : ℕ} {N : 
     ∃ c' k, Exec P W regionLoop c c' k ∧ RegInv W b n N T0 rb m0 c0 c' ∧
       c'.nreg 220010 = N.nRegions ∧ k ≤ 332 * N.nRegions + 2 ∧ c'.nreg 9999 ≤ c.nreg 9999 + k := by
   have hnR : ∀ c', RegInv W b n N T0 rb m0 c0 c' → c'.nreg 220005 = N.nRegions := fun c' h => by
-    rw [h.2.1 _ (by unfold regFree; omega), hC.2.1]
-  obtain ⟨c', k, he, hI', hex, hk, hΨ⟩ := Setup.whileLtN_acc (P := P) (a := 220010) (b := 220005)
+    frame_finish
+  obtain ⟨c', k, he, hI', hex, hk, hΨ⟩ := Exec.whileLtN_bounded_growth (P := P) (a := 220010) (b := 220005)
     (body := regionBody) (RegInv W b n N T0 rb m0 c0) (fun c => N.nRegions - c.nreg 220010) 330
     (fun c => c.nreg 9999) (fun c h => h.1) (fun c h htest => by
       rw [hnR c h] at htest

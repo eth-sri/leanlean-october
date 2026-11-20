@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShootCutShRec
 public import Chazelle.Core.ShootCutShK0
 
@@ -73,7 +75,12 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 
 theorem noHit_empty : NoHit (∅ : Set Point) z σ := fun _ _ hm => hm
 
-theorem lpInit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {D A₀ m : ℕ}
+section
+
+variable (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
+include hw h1
+
+theorem lpInit_exec {D A₀ m : ℕ}
     (h403 : c.nreg 140403 = D) (hm : c.nmem (D + 2) = m) (h101 : c.nreg 140101 = A₀)
     (hD : D + 2 ≤ W) (hmW : 2 * m + 7 ≤ W) (hA : A₀ + 1 ≤ W) :
     ∃ c' k, Exec P W lpInit c c' k ∧ k = 8 ∧ c'.nreg 140334 = 2 * m + 7 ∧
@@ -84,12 +91,10 @@ theorem lpInit_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {D
     unfold lpInit
     simp only [K1]
     exec_block
-    all_goals first | omega | (config_simp; rw [h403, h1']; omega) |
-      (config_simp; rw [h403, h1', show D + 1 + 1 = D + 2 by omega, hm]; omega) |
-      (config_simp; rw [h101, h1']; omega) | skip
+    all_goals frame_finish
   exact ⟨c', k, ex, hk, v34, v10, v210, exec_frameB ex wr_lpInit⟩
 
-theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
+theorem lpLoadA_exec {p : ℕ}
     (h10 : c.nreg 140110 = p) (hp : p + 9 ≤ W) :
     ∃ c' k, Exec P W lpLoadA c c' k ∧ k = 10 ∧ c'.nreg 140110 = p + 5 ∧
       c'.nreg 140250 = c.nmem p ∧ c'.nreg 140251 = c.nmem (p + 1) ∧
@@ -100,11 +105,11 @@ theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   simp only [K1]
   exec_block
   all_goals first | (config_simp; rw [h10, h1']; omega) | skip
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨rfl, ?_⟩; and_intros
   all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
-  all_goals first | (split_ifs <;> first | rfl | omega) | skip
+  all_goals frame_finish
 
-theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
+theorem lpLoadB_exec {p : ℕ}
     (h10 : c.nreg 140110 = p) (hp : p + 4 ≤ W) :
     ∃ c' k, Exec P W lpLoadB c c' k ∧ k = 8 ∧ c'.nreg 140110 = p + 4 ∧
       c'.nreg 140255 = c.nmem p ∧ c'.nreg 140256 = c.nmem (p + 1) ∧
@@ -114,11 +119,9 @@ theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   simp only [K1]
   exec_block
   all_goals first | (config_simp; rw [h10, h1']; omega) | skip
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
-  all_goals first | (split_ifs <;> first | rfl | omega) | skip
+  simp_all
 
-theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
+theorem lpLoad_exec {p : ℕ}
     (h10 : c.nreg 140110 = p) (hp : p + 9 ≤ W) :
     ∃ c' k, Exec P W lpLoad c c' k ∧ k = 18 ∧ c'.nreg 140110 = p + 9 ∧
       c'.nreg 140250 = c.nmem p ∧ c'.nreg 140251 = c.nmem (p + 1) ∧
@@ -128,24 +131,26 @@ theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p
       c'.nreg 140258 = c.nmem (p + 8) ∧ FrameB Blpl c c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, q10, q0, q1, q2, q3, q4⟩ := lpLoadA_exec (P := P) c hw h1 h10 hp
   have f₁ := exec_frameB (B := Blpl) e₁ (by decide)
-  have g1 : c₁.nreg K1 = 1 := by rw [f₁.1 _ (by decide)]; exact h1
+  have g1 : c₁.nreg K1 = 1 := by rwa [f₁.1 _ (by decide)]
   obtain ⟨c₂, k₂, e₂, hk₂, u10, u5, u6, u7, u8⟩ := lpLoadB_exec (P := P) c₁ e₁.wb_right g1 q10
     (by omega)
   have f₂ := exec_frameB (B := fun r => decide (140255 ≤ r ∧ r < 140259) || r == 140110) e₂
     (by decide)
   have ex : Exec P W lpLoad c c₂ (k₁ + k₂) := .seq e₁ e₂
-  have hm : c₁.nmem = c.nmem := f₁.2.2.1
+  have hm := f₁.2.2.1
   refine ⟨c₂, _, ex, by omega, by rw [u10], ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     exec_frameB ex wr_lpLoad⟩
-  · rw [f₂.1 _ (by decide), q0]
-  · rw [f₂.1 _ (by decide), q1]
-  · rw [f₂.1 _ (by decide), q2]
-  · rw [f₂.1 _ (by decide), q3]
-  · rw [f₂.1 _ (by decide), q4]
+  · simp [f₂.1, q0]
+  · simp [f₂.1, q1]
+  · simp [f₂.1, q2]
+  · simp [f₂.1, q3]
+  · simp [f₂.1, q4]
   · rw [u5, hm]
-  · rw [u6, hm, show p + 5 + 1 = p + 6 by omega]
-  · rw [u7, hm, show p + 5 + 2 = p + 7 by omega]
-  · rw [u8, hm, show p + 5 + 3 = p + 8 by omega]
+  · simp_all
+  · simp_all
+  · simp_all
+
+end
 
 /-! ## The invariant -/
 
@@ -167,8 +172,8 @@ theorem psSet_append (C : Chain) (Q : Polygon) (l : List Pc) (pc : Pc) :
 def FrameNK (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ oracleBands → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
     (∀ r, bandOf r ∉ oracleBands → c'.rreg r = c.rreg r) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
-    (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.rmem c.rmem) ∧ c'.output = c.output ∧
     c.nreg ALLOC ≤ c'.nreg ALLOC
 
 theorem FrameNK.refl (c : Config) : FrameNK c c :=
@@ -178,7 +183,7 @@ theorem FrameNK.step {c c₁ c₂ : Config} {k : ℕ} (h₁ : FrameNK c c₁)
     (h₂ : Frame oracleBands c₁ c₂ k) : FrameNK c c₂ := by
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁⟩ := h₁
   obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, -⟩ := h₂
-  exact ⟨fun r hr hra => by rw [r₂ r hr hra, r₁ r hr hra], fun r hr => by rw [rr₂ r hr, rr₁ r hr],
+  exact ⟨fun r hr hra => by ram_finish, fun r hr => by rw [rr₂ r hr, rr₁ r hr],
     fun a ha => by rw [m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha],
     fun a ha => by rw [rm₂ a (lt_of_lt_of_le ha a₁), rm₁ a ha], o₂.trans o₁, a₁.trans a₂⟩
 
@@ -209,7 +214,7 @@ def LpI (P : Polygon) (W : ℕ) (H : Host) (C : Chain) (z : Point) (σ : ℝ) (m
     (A₀ : ℕ) (ps : List Pc) (cs : Config) (K : ℕ) (c : Config) : Prop :=
   WordsBounded W c ∧ ShEnv P W H C z σ c ∧ OrgOK P C z σ c ∧ dirOf (c.nreg 140008) = σ ∧
     c.nreg 140334 = 2 * C.m + 7 ∧ c.nreg 140100 = A₀ + 1 + 9 * ps.length ∧
-    Rec9 c.nmem A₀ ps ∧ (∀ a, a < A₀ → c.nmem a = m₀ a) ∧
+    Rec9 c.nmem A₀ ps ∧ (MemEqBelow A₀ c.nmem m₀) ∧
     A₀ + 1 + 9 * ps.length ≤ c.nreg ALLOC ∧ FrameNK cs c ∧
     c.nreg ALLOC + (A₀ + 1 + 9 * ps.length - c.nreg 140110) * (K + 2) ≤ W ∧
     ∃ j, j ≤ ps.length ∧ c.nreg 140110 = A₀ + 1 + 9 * j ∧

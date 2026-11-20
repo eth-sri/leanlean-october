@@ -70,27 +70,37 @@ theorem uStart_cStart {u L : ℕ} (hu : u < Q.n) (hL : L < Q.n) : uStart Q (cSta
   · simp only [hl, ↓reduceIte]; exact Nat.mod_eq_of_lt hu
   · simp only [hl, ↓reduceIte]
     have e : ((Q.n - 1 - u + (Q.n - L)) % Q.n + L) % Q.n = Q.n - 1 - u := by
-      rw [Nat.mod_add_mod, show Q.n - 1 - u + (Q.n - L) + L = (Q.n - 1 - u) + Q.n by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      ram_rw [Nat.mod_add_mod, show Q.n - 1 - u + (Q.n - L) + L = (Q.n - 1 - u) + Q.n by omega,
+        Nat.add_mod_right, Nat.mod_eq_of_lt]
     rw [e]; omega
 
 /-- **The chain of the stretch** of `L` edges of the interior walk from `u`. -/
 noncomputable def ch (Q : Polygon) (u L : ℕ) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) : Chain :=
   subChain Q (cStart Q u L) L h1 h2
 
-theorem ch_m {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} : (ch Q u L h1 h2).m = L := rfl
+section
 
-theorem ch_P {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} : (ch Q u L h1 h2).P = Q := rfl
+variable {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n}
+
+include u h1 h2 in
+theorem ch_m : (ch Q u L h1 h2).m = L := rfl
+
+include u h1 h2 in
+theorem ch_P : (ch Q u L h1 h2).P = Q := rfl
 
 /-- The tour offset of the chain read along the interior walk. -/
 noncomputable def tau (Q : Polygon) (u L : ℕ) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) : ℕ :=
   WalkEmbed.tpos (ch Q u L h1 h2) (jStart Q L)
 
-theorem tau_lt {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} : tau Q u L h1 h2 < 2 * L :=
+include u h1 h2 in
+theorem tau_lt : tau Q u L h1 h2 < 2 * L :=
   WalkEmbed.tpos_lt _ _
 
-theorem cm_n' {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 1 ≤ Q.n} :
+include u h1 h2 in
+theorem cm_n' :
     (chainModel (ch Q u L h1 h2)).W.n = 2 * L + 7 := WalkEmbed.cm_n _
+
+end
 
 /-- **The interior walk agrees with the chain model walk** from `u`, resp. `6 + τ`, up to the top
 of the chain or the end of the stretch. -/
@@ -101,7 +111,7 @@ theorem agree_pre {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n)
   have hQ1 : 1 ≤ Q.n := by omega
   have e1 := iw_tour (a := cStart Q u L) (m := L) (hm1 := h1) (hm := h2) hQ1 (d := d)
     (by omega)
-  rw [uStart_cStart hu (by omega)] at e1
+  ram_rw [uStart_cStart hu] at e1
   rw [e1]
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   exact (WalkEmbed.walk_tour (ch Q u L h1 h2) (jStart Q L) d (by
@@ -118,7 +128,7 @@ theorem agree_post {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   have e1 := iw_tour (a := cStart Q u L) (m := L) (hm1 := h1) (hm := h2) hQ1
     (d := 2 * L - tau Q u L h1 h2 + d) (by omega)
-  rw [uStart_cStart hu (by omega)] at e1
+  ram_rw [uStart_cStart hu] at e1
   rw [show u + (2 * L - tau Q u L h1 h2) + d = u + (2 * L - tau Q u L h1 h2 + d) by ring, e1]
   have e2 := WalkEmbed.walk_after (ch Q u L h1 h2) (jStart Q L) d (by
     show d ≤ 2 * L; omega)
@@ -156,8 +166,8 @@ theorem param_start (h₁ : ℕ) :
   have ht : tau Q u L h1 h2 < 2 * L := tau_lt
   have h0 : 0 < min L (2 * L - tau Q u L h1 h2) := by omega
   have := param_agree (M := interiorModel Q) (M' := MC Q u L h1 h2) hA Q h0 h₁
-  rw [Nat.add_zero, Nat.add_zero, mi_n, Nat.mod_eq_of_lt hu, cm_n',
-    Nat.mod_eq_of_lt (by omega)] at this
+  ram_rw [Nat.add_zero, Nat.add_zero, mi_n, Nat.mod_eq_of_lt hu, cm_n',
+    Nat.mod_eq_of_lt] at this
   exact this.symm
 
 include hu in
@@ -184,7 +194,7 @@ theorem param_end_two {e h₂ : ℕ} (hs : L < tau Q u L h1 h2)
   · have hA := agree_post hu h1 h2 hs
     have := param_agree (M := interiorModel Q) (M' := MC Q u L h1 h2) hA Q
       (d := e - (2 * L - tau Q u L h1 h2)) (by omega) h₂
-    have ht : tau Q u L h1 h2 < 2 * L := tau_lt
+    
     rw [mi_n, cm_n', Nat.mod_eq_of_lt (show 6 + (e - (2 * L - tau Q u L h1 h2)) < 2 * L + 7 by
       omega), show u + (2 * L - tau Q u L h1 h2) + (e - (2 * L - tau Q u L h1 h2)) = u + e by
       omega] at this
@@ -227,7 +237,7 @@ theorem chain_arcSet_one {e h₁ h₂ : ℕ} (hs : tau Q u L h1 h2 ≤ L)
   rw [hmod] at hl
   rw [hl, show x + (e + t₂ - x) = e + t₂ by ring]
   have hyL : (e : ℝ) + t₂ ≤ ((min L (2 * L - tau Q u L h1 h2) : ℕ) : ℝ) := by
-    rw [min_eq_left (by omega)]
+    ram_rw [min_eq_left]
     rcases he with he | ⟨he, h0⟩
     · have : (e : ℝ) + 1 ≤ L := by exact_mod_cast he
       linarith [hy.2]
@@ -280,7 +290,7 @@ theorem chain_arcSet_two {e h₁ h₂ : ℕ} (hs : L < tau Q u L h1 h2)
       linarith [hx.1]
     rw [len_key (n := (MC Q u L h1 h2).W.n) hg' hx.2 le_rfl (by linarith [hx.2]) hlap,
       show x + (L₁ + 0 - x) = L₁ by ring]
-    exact (oset_congr (agree_pre hu h1 h2) (by rw [min_eq_right (by omega)])).symm
+    exact (oset_congr (agree_pre hu h1 h2) (by ram_rw [min_eq_right])).symm
   · have hA := agree_post hu h1 h2 hs
     rw [key_eq, key_eq, param_zero, param_end_two hu h1 h2 hs hle he, add_zero]
     have h6 : (6 : ℕ) < (MC Q u L h1 h2).W.n := by rw [hn]; omega

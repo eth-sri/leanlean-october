@@ -55,7 +55,7 @@ theorem F_buildNF (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : 
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
     refine ⟨_, ⟨i, hi, rfl⟩, ?_⟩
     have : L.getD i (0, 0, 0) = L[i] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+      simp_all
     unfold BuildNF.chordRec
     rw [this]
     rfl
@@ -97,8 +97,8 @@ theorem triples_props {Q : Polygon} (hN : IsNF (chainModel C) Q N) {x : ℕ × �
   have hmem : N.chords[i].toSet (chainModel C) Q ∈ N.F (chainModel C) Q :=
     ⟨_, List.getElem_mem hi, rfl⟩
   refine ⟨?_, hFam.2.1 hmem, ?_, hmem⟩
-  · have := hh i hi; rw [hci] at this; exact this
-  · have := hatt i hi; rw [hci] at this; exact this
+  · have := hh i hi; simp_all
+  · have := hatt i hi; rwa [hci] at this
 
 /-- The chain chords of the records are pairwise distinct. -/
 theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
@@ -116,35 +116,8 @@ theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
     unfold NF.chord
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
   have := hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-    (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij)
+    (by unfold NF.nChords; simpa using j.2) (by rwa [e1, e2])
   exact Fin.ext this
-
-/-- **The number of chords** of a valid normal form is its number of records. -/
-theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
-    (hdist : ∀ i i', i < N.nChords → i' < N.nChords →
-      (N.chord i).toSet M Q = (N.chord i').toSet M Q → i = i') :
-    (N.F M Q).ncard = N.chords.length := by
-  have hF : N.F M Q = {c | c ∈ N.chords.map fun r => r.toSet M Q} := by
-    ext c
-    simp only [NF.F, mem_ofPred_eq, List.mem_map]
-    constructor
-    · rintro ⟨r, hr, rfl⟩; exact ⟨r, hr, rfl⟩
-    · rintro ⟨r, hr, rfl⟩; exact ⟨r, hr, rfl⟩
-  have hnd : (N.chords.map fun r => r.toSet M Q).Nodup := by
-    rw [List.nodup_iff_injective_getElem]
-    intro i j hij
-    simp only [List.getElem_map] at hij
-    have e1 : N.chord i.1 = N.chords[i.1]'(by simpa using i.2) := by
-      unfold NF.chord
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
-    have e2 : N.chord j.1 = N.chords[j.1]'(by simpa using j.2) := by
-      unfold NF.chord
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
-    exact Fin.ext (hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-      (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij))
-  rw [hF, show {c | c ∈ N.chords.map fun r => r.toSet M Q} =
-      ((N.chords.map fun r => r.toSet M Q).toFinset : Set (Set Point)) by
-    ext c; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
 
 section filt
 
@@ -159,7 +132,7 @@ theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
       Trans.pieces Q (N.F (chainModel C) Q) := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh' := hD C.m 0 (by omega) (by omega) (by omega)
   ext d
   constructor
   · rintro ⟨x', hx', rfl⟩
@@ -188,12 +161,12 @@ theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
 theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
     (hFam : (interiorModel Q).ChordFamily Q (Trans.pieces Q (N.F (chainModel C) Q))) :
     ChordTriplesOK (interiorModel Q) Q (transL li Q.n (c0 C li) (triplesOf N)) := by
-  have hmn := T.hm
-  have hm1 := C.one_le
+  
+  
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := famOf_transL hQ T hD hli hN
     unfold famOf at this
-    rw [this]; exact hFam
+    rwa [this]
   · unfold transL
     rw [List.map_map]
     refine List.Nodup.map_on (fun x hx x' hx' hxx => ?_)
@@ -238,11 +211,11 @@ Lemma 2.3. -/
 theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
     (hN : IsCanonicalNF (chainModel C) (Qof P) N (topGran P.n) 4) {li : Bool}
     (hli : li = true ↔ Mountain.LeftInside (Qof P)) :
-    ChordTriplesOK (interiorModel (Qof P)) (Qof P) (transL li P.n (c0 C li) (triplesOf N)) ∧
-      (interiorModel (Qof P)).DegLe
-        (famOf (interiorModel (Qof P)) (Qof P) (transL li P.n (c0 C li) (triplesOf N))) 4 ∧
-      (interiorModel (Qof P)).Semigranular
-        (famOf (interiorModel (Qof P)) (Qof P) (transL li P.n (c0 C li) (triplesOf N)))
+    ChordTriplesOK (inputModel P) (Qof P) (transL li P.n (c0 C li) (triplesOf N)) ∧
+      P.inputModel.DegLe
+        (famOf (inputModel P) (Qof P) (transL li P.n (c0 C li) (triplesOf N))) 4 ∧
+      P.inputModel.Semigranular
+        (famOf (inputModel P) (Qof P) (transL li P.n (c0 C li) (triplesOf N)))
         (2 ^ (Cost.ceilBeta (topGrade P.n) + 12)) ∧
       (transL li P.n (c0 C li) (triplesOf N)).length ≤ (N.F (chainModel C) (Qof P)).ncard ∧
       (N.F (chainModel C) (Qof P)).ncard * (gradeGran (topGrade P.n) + 1) ≤
@@ -267,7 +240,7 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
     unfold topGran
     rw [hn]
     omega
-  · rw [ncard_F hNF.2.1]
+  · rw [hNF.ncard_chords]
     have := transL_length_le li (Qof P).n (c0 C li) (triplesOf N)
     unfold triplesOf at this; rw [List.length_map] at this
     exact this

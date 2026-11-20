@@ -75,61 +75,10 @@ noncomputable def effect (P : Polygon) : Instr → Config → Option Config
 
 variable {P : Polygon} {c : Config}
 
-@[simp] theorem effect_inputSize (r : ℕ) :
-    (Instr.inputSize r).effect P c = some { c with nreg := upd c.nreg r P.n } := rfl
-@[simp] theorem effect_constN (r k : ℕ) :
-    (Instr.constN r k).effect P c = some { c with nreg := upd c.nreg r k } := rfl
-@[simp] theorem effect_copyN (r a : ℕ) :
-    (Instr.copyN r a).effect P c = some { c with nreg := upd c.nreg r (c.nreg a) } := rfl
-@[simp] theorem effect_addN (r a b : ℕ) :
-    (Instr.addN r a b).effect P c =
-      some { c with nreg := upd c.nreg r (c.nreg a + c.nreg b) } := rfl
-@[simp] theorem effect_subN (r a b : ℕ) :
-    (Instr.subN r a b).effect P c =
-      some { c with nreg := upd c.nreg r (c.nreg a - c.nreg b) } := rfl
-@[simp] theorem effect_loadN (r a : ℕ) :
-    (Instr.loadN r a).effect P c =
-      some { c with nreg := upd c.nreg r (c.nmem (c.nreg a)) } := rfl
-@[simp] theorem effect_storeN (a r : ℕ) :
-    (Instr.storeN a r).effect P c =
-      some { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } := rfl
-@[simp] theorem effect_constR (r : ℕ) (z : ℤ) :
-    (Instr.constR r z).effect P c = some { c with rreg := upd c.rreg r (z : ℝ) } := rfl
-@[simp] theorem effect_copyR (r a : ℕ) :
-    (Instr.copyR r a).effect P c = some { c with rreg := upd c.rreg r (c.rreg a) } := rfl
-@[simp] theorem effect_addR (r a b : ℕ) :
-    (Instr.addR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a + c.rreg b) } := rfl
-@[simp] theorem effect_subR (r a b : ℕ) :
-    (Instr.subR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a - c.rreg b) } := rfl
-@[simp] theorem effect_mulR (r a b : ℕ) :
-    (Instr.mulR r a b).effect P c =
-      some { c with rreg := upd c.rreg r (c.rreg a * c.rreg b) } := rfl
 theorem effect_divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
     (Instr.divR r a b).effect P c =
       some { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } := by
   simp [effect, hb]
-@[simp] theorem effect_loadR (r a : ℕ) :
-    (Instr.loadR r a).effect P c =
-      some { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } := rfl
-@[simp] theorem effect_storeR (a r : ℕ) :
-    (Instr.storeR a r).effect P c =
-      some { c with rmem := upd c.rmem (c.nreg a) (c.rreg r) } := rfl
-@[simp] theorem effect_readX (r a : ℕ) :
-    (Instr.readX r a).effect P c =
-      some { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).1 } := rfl
-@[simp] theorem effect_readY (r a : ℕ) :
-    (Instr.readY r a).effect P c =
-      some { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).2 } := rfl
-@[simp] theorem effect_emit (a b d : ℕ) :
-    (Instr.emit a b d).effect P c =
-      some { c with output := c.output ++ [(c.nreg a, c.nreg b, c.nreg d)] } := rfl
-@[simp] theorem effect_halt : (Instr.halt).effect P c = none := rfl
-@[simp] theorem effect_jump (l : ℕ) : (Instr.jump l).effect P c = none := rfl
-@[simp] theorem effect_brLtN (a b l : ℕ) : (Instr.brLtN a b l).effect P c = none := rfl
-@[simp] theorem effect_brLtR (a b l : ℕ) : (Instr.brLtR a b l).effect P c = none := rfl
-
 /-- The effect is insensitive to the program counter. -/
 theorem effect_setPc (ins : Instr) (p : ℕ) :
     ins.effect P { c with pc := p } = (ins.effect P c).map (fun c' => { c' with pc := p }) := by
@@ -209,8 +158,6 @@ def compile : Stmt → ℕ → Program
       .brLtR a b (base + 2) :: .jump (base + 3 + codeSize body) ::
         compile body (base + 2) ++ [.jump base]
 
-@[simp] theorem codeSize_skip : codeSize .skip = 0 := rfl
-@[simp] theorem codeSize_instr (i : Instr) : codeSize (.instr i) = 1 := rfl
 @[simp] theorem codeSize_seq (s t : Stmt) : codeSize (.seq s t) = codeSize s + codeSize t := rfl
 @[simp] theorem codeSize_ifLtN (a b : ℕ) (t e : Stmt) :
     codeSize (.ifLtN a b t e) = codeSize t + codeSize e + 2 := rfl
@@ -240,17 +187,6 @@ def block : List Instr → Stmt
 @[simp] theorem block_nil : block [] = .skip := rfl
 @[simp] theorem block_cons (i : Instr) (l : List Instr) :
     block (i :: l) = .seq (.instr i) (block l) := rfl
-
-@[simp] theorem codeSize_block (l : List Instr) : codeSize (block l) = l.length := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp [block, ih, Nat.add_comm]
-
-/-- A block compiles to exactly its list of instructions, at any base address. -/
-@[simp] theorem compile_block (l : List Instr) (base : ℕ) : compile (block l) base = l := by
-  induction l generalizing base with
-  | nil => rfl
-  | cons i l ih => simp [block, compile, ih]
 
 end Stmt
 
@@ -413,26 +349,142 @@ theorem block_cons {i : Instr} {l : List Instr} {c c₁ c' : Config} {k : ℕ}
 
 /-! #### Loops with a potential -/
 
-/-- Generic loop rule.  `test` is the loop test, `loop` the loop statement, with the two
-loop rules as hypotheses.  Given an invariant `I` (implying the word bound) and a potential
-`Φ` such that from any `I`-state with the test true one iteration of the body executes with
-cost `k`, re-establishes `I`, and satisfies `Φ c' + k + 2 ≤ Φ c`, the whole loop executes from
-any `I`-state with total cost `≤ Φ c + 2` and ends in an `I`-state with the test false. -/
-theorem loop_potential (test : Config → Prop) (body loop : Stmt)
+section
+
+variable (test : Config → Prop) (body loop : Stmt)
     (hfalse : ∀ c, ¬ test c → WordsBounded W c → Exec P W loop c c 2)
     (htrue : ∀ c c₁ c' k₁ k₂, test c → Exec P W body c c₁ k₁ → Exec P W loop c₁ c' k₂ →
       Exec P W loop c c' (k₁ + 2 + k₂))
-    (I : Config → Prop) (Φ : Config → ℕ) (hI : ∀ c, I c → WordsBounded W c)
-    (hbody : ∀ c, I c → test c → ∃ c' k, Exec P W body c c' k ∧ I c' ∧ Φ c' + k + 2 ≤ Φ c)
+    (I : Config → Prop)
+
+include hfalse htrue I in
+/-- A potential pays for the iterations, including the branch and back-edge costs. The loop
+also transports a cost-indexed frame from its entry configuration to its exit configuration. -/
+theorem loop_with_frame (Φ : Config → ℕ) (F : Config → Config → ℕ → Prop)
+    (hI : ∀ c, I c → WordsBounded W c) (hrefl : ∀ c, F c c 2)
+    (hstep : ∀ {c c₁ c' k₁ k₂}, F c c₁ k₁ → F c₁ c' k₂ → F c c' (k₁ + 2 + k₂))
+    (hbody : ∀ c, I c → test c →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ F c c' k ∧ Φ c' + k + 2 ≤ Φ c)
     {c : Config} (hc : I c) :
-    ∃ c' k, Exec P W loop c c' k ∧ I c' ∧ ¬ test c' ∧ k ≤ Φ c + 2 := by
+    ∃ c' k, Exec P W loop c c' k ∧ I c' ∧ ¬ test c' ∧ F c c' k ∧ k + Φ c' ≤ Φ c + 2 := by
   induction hn : Φ c using Nat.strong_induction_on generalizing c with
   | _ n ih =>
     by_cases ht : test c
-    · obtain ⟨c₁, k₁, hb, hI₁, hΦ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, htrue c c₁ c' k₁ k₂ ht hb hl, hI', ht', by omega⟩
-    · exact ⟨c, 2, hfalse c ht (hI c hc), hc, ht, by omega⟩
+    · obtain ⟨d, j, e, hd, hf, hΦ⟩ := hbody c hc ht
+      obtain ⟨c', k, el, hI', ht', hf', hk⟩ := ih (Φ d) (by omega) hd rfl
+      exact ⟨c', _, htrue c d c' j k ht e el, hI', ht', hstep hf hf', by omega⟩
+    · exact ⟨c, 2, hfalse c ht (hI c hc), hc, ht, hrefl c, by omega⟩
+
+include hfalse htrue I in
+/-- A loop rule with a potential and no additional frame. -/
+theorem loop_potential (Φ : Config → ℕ) (hI : ∀ c, I c → WordsBounded W c)
+    (hbody : ∀ c, I c → test c → ∃ c' k, Exec P W body c c' k ∧ I c' ∧ Φ c' + k + 2 ≤ Φ c)
+    {c : Config} (hc : I c) :
+    ∃ c' k, Exec P W loop c c' k ∧ I c' ∧ ¬ test c' ∧ k ≤ Φ c + 2 := by
+  obtain ⟨c', k, e, hi, ht, -, hk⟩ := loop_with_frame test body loop hfalse htrue
+    I Φ (fun _ _ _ => True) hI (fun _ => trivial) (fun _ _ => trivial) (fun d hd ht => by
+      obtain ⟨e, j, h, hi, hk⟩ := hbody d hd ht
+      exact ⟨e, j, h, hi, trivial, hk⟩) hc
+  exact ⟨c', k, e, hi, ht, by omega⟩
+
+/-- The framed potential rule specialized to the natural-register branch. -/
+theorem whileLtN_with_frame {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ : Config → ℕ)
+    (F : Config → Config → ℕ → Prop) (hI : ∀ c, I c → WordsBounded W c)
+    (hrefl : ∀ c, F c c 2)
+    (hstep : ∀ {c c₁ c' k₁ k₂}, F c c₁ k₁ → F c₁ c' k₂ → F c c' (k₁ + 2 + k₂))
+    (hbody : ∀ c, I c → c.nreg a < c.nreg b →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ F c c' k ∧ Φ c' + k + 2 ≤ Φ c)
+    {c : Config} (hc : I c) :
+    ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
+      F c c' k ∧ k + Φ c' ≤ Φ c + 2 :=
+  loop_with_frame (fun c => c.nreg a < c.nreg b) body (.whileLtN a b body)
+    (fun _ ht hw => .whileLtN_false ht hw) (fun _ _ _ _ _ ht hb hl => .whileLtN_true ht hb hl)
+    I Φ F hI hrefl hstep hbody hc
+
+/-- A potential accounts for both the total cost and the potential remaining at exit. -/
+theorem whileLtN_accounted {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ : Config → ℕ)
+    (hI : ∀ c, I c → WordsBounded W c)
+    (hbody : ∀ c, I c → c.nreg a < c.nreg b →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ Φ c' + k + 2 ≤ Φ c)
+    {c : Config} (hc : I c) :
+    ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
+      k + Φ c' ≤ Φ c + 2 := by
+  obtain ⟨d, k, e, hi, ht, -, hk⟩ := whileLtN_with_frame I Φ (fun _ _ _ => True)
+    hI (fun _ => trivial) (fun _ _ => trivial) (fun d hd ht => by
+      obtain ⟨d', k, e, hi, hk⟩ := hbody d hd ht
+      exact ⟨d', k, e, hi, trivial, hk⟩) hc
+  exact ⟨d, k, e, hi, ht, hk⟩
+
+/-- A bounded iteration and a decreasing measure supply the potential of a framed loop. -/
+theorem whileLtN_bounded_frame {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config → ℕ)
+    (B : ℕ) (F : Config → Config → ℕ → Prop) (hI : ∀ c, I c → WordsBounded W c)
+    (hrefl : ∀ c, F c c 2)
+    (hstep : ∀ {c c₁ c' k₁ k₂}, F c c₁ k₁ → F c₁ c' k₂ → F c c' (k₁ + 2 + k₂))
+    (hbody : ∀ c, I c → c.nreg a < c.nreg b →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ k ≤ B ∧ μ c' < μ c ∧ F c c' k)
+    {c : Config} (hc : I c) :
+    ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
+      k ≤ (B + 2) * μ c + 2 ∧ F c c' k := by
+  obtain ⟨c', k, e, hi, ht, hf, hk⟩ := whileLtN_with_frame I (fun d => (B + 2) * μ d)
+    F hI hrefl hstep (fun d hd ht => by
+      obtain ⟨d', j, e, hi, hj, hμ, hf⟩ := hbody d hd ht
+      have h := Nat.mul_le_mul_left (B + 2) hμ
+      rw [Nat.mul_succ] at h
+      exact ⟨d', j, e, hi, hf, by omega⟩) hc
+  exact ⟨c', k, e, hi, ht, by omega, hf⟩
+
+/-- When each iteration raises `ψ` by at most its cost, the whole loop does too. -/
+theorem whileLtN_growth {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ ψ : Config → ℕ)
+    (hI : ∀ c, I c → WordsBounded W c)
+    (hbody : ∀ c, I c → c.nreg a < c.nreg b →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ Φ c' + k + 2 ≤ Φ c ∧ ψ c' ≤ ψ c + k)
+    {c : Config} (hc : I c) :
+    ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
+      k ≤ Φ c + 2 ∧ ψ c' ≤ ψ c + k := by
+  obtain ⟨c', k, e, hi, ht, hψ, hk⟩ := whileLtN_with_frame I Φ (fun c d k => ψ d ≤ ψ c + k)
+    hI (fun _ => by omega) (by intros; omega) (fun d hd ht => by
+      obtain ⟨d', j, e, hi, hΦ, hψ⟩ := hbody d hd ht
+      exact ⟨d', j, e, hi, hψ, hΦ⟩) hc
+  exact ⟨c', k, e, hi, ht, by omega, hψ⟩
+
+/-- A decreasing measure bounds the cost of a loop with an accumulating quantity. -/
+theorem whileLtN_bounded_growth {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config → ℕ)
+    (B : ℕ) (ψ : Config → ℕ) (hI : ∀ c, I c → WordsBounded W c)
+    (hbody : ∀ c, I c → c.nreg a < c.nreg b →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ k ≤ B ∧ μ c' < μ c ∧ ψ c' ≤ ψ c + k)
+    {c : Config} (hc : I c) :
+    ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
+      k ≤ (B + 2) * μ c + 2 ∧ ψ c' ≤ ψ c + k :=
+  whileLtN_bounded_frame I μ B (fun c d k => ψ d ≤ ψ c + k) hI
+    (fun _ => by omega) (by intros; omega) hbody hc
+
+/-- An allocator (or other growing resource) fits within its budget: the frame charges its
+increase to each iteration's cost, and the unused potential reserves room for later iterations. -/
+theorem whileLtN_budgeted {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ A : Config → ℕ)
+    (B : ℕ) (F : Config → Config → ℕ → Prop) (hI : ∀ c, I c → WordsBounded W c)
+    (hrefl : ∀ c, F c c 2)
+    (hstep : ∀ {c c₁ c' k₁ k₂}, F c c₁ k₁ → F c₁ c' k₂ → F c c' (k₁ + 2 + k₂))
+    (halloc : ∀ {c c' k}, F c c' k → A c' ≤ A c + k)
+    (hpos : ∀ c, I c → c.nreg a < c.nreg b → 0 < μ c)
+    (hbody : ∀ c, I c → c.nreg a < c.nreg b → A c + B ≤ W →
+      ∃ c' k, Exec P W body c c' k ∧ I c' ∧ k ≤ B ∧ μ c' < μ c ∧ F c c' k)
+    {c : Config} (hc : I c) (hroom : A c + (B + 2) * μ c ≤ W) :
+    ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
+      k ≤ (B + 2) * μ c + 2 ∧ F c c' k := by
+  let J := fun d => I d ∧ A d + (B + 2) * μ d ≤ W
+  have bodyJ : ∀ d, J d → d.nreg a < d.nreg b →
+      ∃ d' k, Exec P W body d d' k ∧ J d' ∧ k ≤ B ∧ μ d' < μ d ∧ F d d' k := by
+    rintro d ⟨hd, hr⟩ ht
+    have hB := Nat.mul_le_mul_left (B + 2) (hpos d hd ht)
+    rw [Nat.mul_one] at hB
+    obtain ⟨d', k, e, hd', hk, hμ, hf⟩ := hbody d hd ht (by omega)
+    have h := Nat.mul_le_mul_left (B + 2) hμ
+    rw [Nat.mul_succ] at h
+    have := halloc hf
+    exact ⟨d', k, e, ⟨hd', by omega⟩, hk, hμ, hf⟩
+  obtain ⟨c', k, e, ⟨hi, -⟩, ht, hk, hf⟩ := whileLtN_bounded_frame J μ B F
+    (fun _ h => hI _ h.1) hrefl hstep bodyJ ⟨hc, hroom⟩
+  exact ⟨c', k, e, hi, ht, hk, hf⟩
 
 /-- Loop rule with a potential for `whileLtN a b body`: total cost `≤ Φ c + 2`. -/
 theorem whileLtN_potential {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ : Config → ℕ)
@@ -446,13 +498,10 @@ theorem whileLtN_potential {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ :
     (fun _ ht hw => .whileLtN_false ht hw)
     (fun _ _ _ _ _ ht hb hl => .whileLtN_true ht hb hl) I Φ hI hbody hc
 
+include hfalse htrue I in
 /-- Loop rule with a bounded body cost `B` and a strictly decreasing measure `μ`: total cost
 `≤ (B + 2) * μ c + 2`. -/
-theorem loop_bounded (test : Config → Prop) (body loop : Stmt)
-    (hfalse : ∀ c, ¬ test c → WordsBounded W c → Exec P W loop c c 2)
-    (htrue : ∀ c c₁ c' k₁ k₂, test c → Exec P W body c c₁ k₁ → Exec P W loop c₁ c' k₂ →
-      Exec P W loop c c' (k₁ + 2 + k₂))
-    (I : Config → Prop) (μ : Config → ℕ) (B : ℕ) (hI : ∀ c, I c → WordsBounded W c)
+theorem loop_bounded (μ : Config → ℕ) (B : ℕ) (hI : ∀ c, I c → WordsBounded W c)
     (hbody : ∀ c, I c → test c → ∃ c' k, Exec P W body c c' k ∧ I c' ∧ k ≤ B ∧ μ c' < μ c)
     {c : Config} (hc : I c) :
     ∃ c' k, Exec P W loop c c' k ∧ I c' ∧ ¬ test c' ∧ k ≤ (B + 2) * μ c + 2 :=
@@ -463,6 +512,8 @@ theorem loop_bounded (test : Config → Prop) (body loop : Stmt)
       have : (B + 2) * (μ c' + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
       rw [Nat.mul_add, Nat.mul_one] at this
       omega) hc
+
+end
 
 /-- `whileLtN` with a bounded body cost `B` and a strictly decreasing measure `μ`. -/
 theorem whileLtN_bounded {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config → ℕ) (B : ℕ)
@@ -475,6 +526,26 @@ theorem whileLtN_bounded {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : C
   loop_bounded (fun c => c.nreg a < c.nreg b) body (.whileLtN a b body)
     (fun _ ht hw => .whileLtN_false ht hw)
     (fun _ _ _ _ _ ht hb hl => .whileLtN_true ht hb hl) I μ B hI hbody hc
+
+/-- **A counted loop** `while i < n do body`, where the body advances the counter register `ri`
+by one and keeps the bound register `rn`: an invariant `I j` indexed by the counter value, a
+body cost `≤ B`; total cost `≤ (B + 2) (n - j₀) + 2`. -/
+theorem forN {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (n B : ℕ)
+    (hI : ∀ j c, I j c → WordsBounded W c ∧ c.nreg ri = j ∧ c.nreg rn = n)
+    (hbody : ∀ j c, j < n → I j c → ∃ c' k, Exec P W body c c' k ∧ k ≤ B ∧ I (j + 1) c')
+    {j₀ : ℕ} {c : Config} (hc : I j₀ c) (hj₀ : j₀ ≤ n) :
+    ∃ c' k, Exec P W (.whileLtN ri rn body) c c' k ∧ k ≤ (B + 2) * (n - j₀) + 2 ∧ I n c' := by
+  obtain ⟨d, k, e, ⟨j, hj, hjn⟩, ht, hk⟩ := whileLtN_bounded (a := ri) (b := rn)
+    (fun d => ∃ j, I j d ∧ j ≤ n) (fun d => n - d.nreg ri) B
+    (fun d ⟨j, hj, _⟩ => (hI j d hj).1) (fun d ⟨j, hj, _⟩ ht => by
+      obtain ⟨-, hr, hn⟩ := hI j d hj
+      rw [hr, hn] at ht
+      obtain ⟨d', k, e, hk, hj'⟩ := hbody j d ht hj
+      have hr' := (hI _ _ hj').2.1
+      exact ⟨d', k, e, ⟨j + 1, hj', by omega⟩, hk, by omega⟩) ⟨j₀, hc, hj₀⟩
+  obtain ⟨-, hr, hn⟩ := hI j d hj
+  have he : j = n := by rw [hr, hn] at ht; omega
+  exact ⟨d, k, e, by simpa only [(hI j₀ c hc).2.1] using hk, he ▸ hj⟩
 
 end Exec
 
@@ -501,7 +572,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     RunsTo q P W k { c with pc := base } { c' with pc := base + codeSize s } := by
   induction h generalizing q base with
   | @skip c hw =>
-    exact (RunsTo.zero (wordsBounded_setPc.mpr hw)).cast_end (setPc_congr (by simp))
+    exact (RunsTo.zero (wordsBounded_setPc.mpr hw)).cast_end (setPc_congr rfl)
   | @instr ins c c' hs he hw hw' =>
     have hq0 : q[base]? = some ins := SubAt.singleton_iff.mp hq
     have hst : step q P { c with pc := base } = some { c' with pc := base + 1 } := by
@@ -578,7 +649,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw1 : WordsBounded W { c with pc := base + 1 } := hw
     have hw3 : WordsBounded W { c with pc := base + 3 + codeSize body } := hw
     exact (RunsTo.cons hw' hst (RunsTo.single hw1 hw3 hstj)).cast_end
-      (setPc_congr (by rw [codeSize_whileLtN]; omega))
+      (setPc_congr (by simp_all <;> omega))
   | @whileLtN_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
     simp only [compile] at hq
@@ -607,7 +678,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     have hw1 : WordsBounded W { c with pc := base + 1 } := hw
     have hw3 : WordsBounded W { c with pc := base + 3 + codeSize body } := hw
     exact (RunsTo.cons hw' hst (RunsTo.single hw1 hw3 hstj)).cast_end
-      (setPc_congr (by rw [codeSize_whileLtR]; omega))
+      (setPc_congr (by simp_all <;> omega))
   | @whileLtR_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
     simp only [compile] at hq

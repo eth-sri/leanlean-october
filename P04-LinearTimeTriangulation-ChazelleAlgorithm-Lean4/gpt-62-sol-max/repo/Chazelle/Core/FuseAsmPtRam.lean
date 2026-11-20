@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.FuseAsmGeo2
 public import Chazelle.Core.FuseAsmCollQ
 public import Chazelle.Core.SweepPrimJun
@@ -66,27 +68,26 @@ theorem tposS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have h1 := C.one_le
   have e₁ := Exec.copyN (P := P) hw 50100 50200
   set c₁ : Config := { c with nreg := upd c.nreg 50100 (c.nreg 50200) } with hc₁
-  have w₁ : WordsBounded W c₁ := e₁.wb_right
+  have w₁ := e₁.wb_right
   obtain ⟨c₂, k₂, e₂, hk₂, r01, r02, r08, rr₂, rm₂⟩ := readS_exec (P := P) c₁ w₁
-    (X := c.nreg 50200) (by rw [hc₁]; simp) (by rw [hc₁]; exact hC) hXW (by omega)
+    (X := c.nreg 50200) (by rw [hc₁]; simp) (by rwa [hc₁]) hXW (by omega)
   have w₂ := e₂.wb_right
   have hS := C.sideS_lt C.sideBeta
   have e₃ := Exec.subN (P := P) w₂ 50103 50108 50102
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50103 (c₂.nreg 50108 - c₂.nreg 50102) }
     with hc₃
-  have w₃ : WordsBounded W c₃ := e₃.wb_right
+  have w₃ := e₃.wb_right
   have v10 : c₃.nreg 50110 = k := by
-    rw [hc₃]; simp only [upd_other _ _ _ (show (50110 : ℕ) ≠ 50103 by decide)]
-    rw [rr₂ _ (by omega)]; rw [hc₁]; simp [hk]
+    simp_all <;> omega
   have v02 : c₃.nreg 50102 = C.sideS C.sideBeta := by
-    rw [hc₃]; simp only [upd_other _ _ _ (show (50102 : ℕ) ≠ 50103 by decide)]; exact r02
+    assumption
   have v03 : c₃.nreg 50103 = 2 * C.m - C.sideS C.sideBeta := by
-    rw [hc₃]; simp only [upd_same]; rw [r08, r02]
+    ram_finish
   obtain ⟨c₄, k₄, e₄, hk₄, v11, r₄⟩ := candR_exec (P := P) c₃ w₃ (j := 50110) (s := 50102)
     (d := 50103) (dst := 50111) (by rw [v10, v02, v03]; intro h; omega)
   have w₄ := e₄.wb_right
   have hc : c₄.nreg 50111 = tpos C k := by
-    rw [v11, v10, v02, v03, tpos_eq_cand C (by omega)]; rfl
+    frame_finish [v11, v10, v02, v03, tpos_eq_cand]
   have htp := tpos_lt C k
   obtain ⟨c₅, k₅, e₅, hk₅, q01, q5, qm, qrr, qrm, qo⟩ : ∃ c₅ k₅, Exec P W
       (block [.constN 50112 6, .addN 50201 50111 50112]) c₄ c₅ k₅ ∧ k₅ = 2 ∧
@@ -98,9 +99,9 @@ theorem tposS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     all_goals try (config_simp; rw [hc]; omega)
     refine ⟨rfl, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
     · config_simp; rw [hc]; ring
-    · simp (disch := omega) only [Machine.upd_other]
+    frame_finish
   have ex : Exec P W tposS c c₅ ((1 + 0) + (k₂ + ((1 + 0) + (k₄ + k₅)))) :=
-    .seq (.seq e₁ (.skip w₁)) (.seq e₂ (.seq (.seq e₃ (.skip w₃)) (.seq e₄ e₅)))
+    (by ram_path)
   exact ⟨c₅, _, ex, by omega, q01, exec_frameB ex wr_tposS⟩
 
 /-! ## One point query -/
@@ -130,7 +131,7 @@ theorem ptQ_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
     (hvW : c.nreg 70124 + 1 ≤ W) (hcW : pre.length + 1 ≤ W) :
     ∃ c' k l, Exec P W ptQ c c' k ∧ k ≤ 35011 ∧ 3 * l.length ≤ k ∧ l.length ≤ 1 ∧
       c'.nreg ALLOC = LB + 3 * (pre ++ l).length ∧ c'.nreg 70128 = (pre ++ l).length ∧
-      ChordListAt c'.nmem LB (pre ++ l) ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      ChordListAt c'.nmem LB (pre ++ l) ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       (∀ r, Bprim r = false → r ≠ 70128 → r ≠ 70129 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       (∀ r, Bprim r = false → c'.rreg r = c.rreg r) ∧ c'.rmem = c.rmem ∧
       c'.output = c.output ∧
@@ -139,18 +140,18 @@ theorem ptQ_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
     hin (by omega)
   have w₁ := e₁.wb_right
   have a₁ := frameB_alloc F₁
-  have m₁ : c₁.nmem = c.nmem := F₁.2.2.1
+  have m₁ := F₁.2.2.1
   have g : ∀ r, (r < 10000 ∨ (10600 ≤ r ∧ r < 50000) ∨ (50200 ≤ r ∧ r < 50210) ∨ 51000 ≤ r) →
       c₁.nreg r = c.nreg r := fun r hr => frameB_reg F₁ hr
   obtain ⟨hf1, hyes, hno⟩ := hout
   by_cases hf : c₁.nreg 50210 = 1
   · obtain ⟨-, hpp, harr⟩ := hyes hf
-    have hlt : c₁.nreg 70108 < c₁.nreg 50210 := by rw [g _ (by omega), h08, hf]; omega
+    have hlt : c₁.nreg 70108 < c₁.nreg 50210 := by ram_finish
     set a := LB + 3 * pre.length with ha
-    have hA₁ : c₁.nreg 9999 = a := by rw [show (9999 : ℕ) = ALLOC from rfl, a₁, hA]
-    have r05 : c₁.nreg 70105 = 1 := by rw [g _ (by omega), h05]
+    have hA₁ : c₁.nreg 9999 = a := by frame_finish
+    have r05 : c₁.nreg 70105 = 1 := by ram_rw [g, h05]
     have r24 : c₁.nreg 70124 = c.nreg 70124 := g _ (by omega)
-    have r28 : c₁.nreg 70128 = pre.length := by rw [g _ (by omega), h28]
+    have r28 : c₁.nreg 70128 = pre.length := by ram_rw [g, h28]
     have r03 : c₁.nreg 50203 = c.nreg 50203 := g _ (by omega)
     obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W ptApp c₁ c₂ k₂ ∧ k₂ = 8 ∧
         (c₂.nreg ALLOC = a + 3 ∧ c₂.nreg 70128 = pre.length + 1 ∧
@@ -166,19 +167,19 @@ theorem ptQ_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
       · have a3' : r ≠ 9999 := a3
         simp (disch := omega) only [Machine.upd_other]
     obtain ⟨q9, q28, qa, qb, qc, qm, qr, qrr, qrm, qo⟩ := q
-    have ex : Exec P W ptQ c c₂ (k₁ + (k₂ + 1)) := .seq e₁ (.ifLtN_true hlt e₂)
+    have ex : Exec P W ptQ c c₂ (k₁ + (k₂ + 1)) := (by ram_path)
     refine ⟨c₂, _, [(c₁.nreg 50211, c.nreg 70124 + 1, c.nreg 50203)], ex, by omega,
       by simp only [List.length_singleton]; omega, by simp,
       by rw [q9, List.length_append, List.length_singleton]; omega,
       by rw [q28, List.length_append, List.length_singleton], ?_, fun x hx => ?_,
       fun r hr a2 a3 a4 => ?_, fun r hr => ?_, by rw [qrm, F₁.2.2.2.1], by rw [qo, F₁.2.2.2.2],
       Or.inr ⟨_, _, rfl, harr⟩⟩
-    · refine chordListAt_append (fun i hi => ?_) ?_ ?_ ?_
+    · refine ChordListAt.snoc_same (fun i hi => ?_) ?_ ?_ ?_
       · obtain ⟨b0, b1, b2⟩ := hL i hi
         refine ⟨?_, ?_, ?_⟩
-        · rw [qm _ (Or.inl (by omega)), m₁]; exact b0
-        · rw [qm _ (Or.inl (by omega)), m₁]; exact b1
-        · rw [qm _ (Or.inl (by omega)), m₁]; exact b2
+        · rwa [qm _ (Or.inl (by omega)), m₁]
+        · rwa [qm _ (Or.inl (by omega)), m₁]
+        · rwa [qm _ (Or.inl (by omega)), m₁]
       · exact qa
       · exact qb
       · exact qc
@@ -189,7 +190,7 @@ theorem ptQ_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
     have hlt : ¬ c₁.nreg 70108 < c₁.nreg 50210 := by rw [hf0]; omega
     have ex : Exec P W ptQ c c₁ (k₁ + (0 + 2)) := .seq e₁ (.ifLtN_false hlt (.skip w₁))
     refine ⟨c₁, _, [], ex, by omega, by simp, by simp, by rw [a₁, hA]; simp,
-      by rw [g _ (by omega), h28]; simp, by rw [m₁]; simpa using hL, fun x _ => by rw [m₁],
+      by ram_rw [g, h28]; simp, by rw [m₁]; simpa using hL, fun x _ => by rw [m₁],
       fun r hr _ _ _ => F₁.1 r hr, fun r hr => F₁.2.1 r hr, F₁.2.2.2.1, F₁.2.2.2.2,
       Or.inl ⟨rfl, hno hf⟩⟩
 

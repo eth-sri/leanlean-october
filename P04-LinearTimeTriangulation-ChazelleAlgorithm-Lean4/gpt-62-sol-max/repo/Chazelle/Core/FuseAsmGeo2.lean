@@ -26,13 +26,10 @@ theorem walk_vtx_tpos (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
     (chainModel C).W.vtx (6 + tpos C k) = C.vertex k := by
   have hn := cm_n C
   have hτ := tpos_lt C k
-  have h1 := C.one_le
+  
   have := walk_tour C k 0 (by omega)
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
-  rw [this]
-  unfold tourV
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
-  unfold sideE; rw [ite_eq_left hk]
+  ram_simp [this, tourV, Nat.add_zero, Nat.mod_eq_of_lt, sideE, ite_eq_left hk]
 
 /-- **A chain vertex as a walk position.** -/
 theorem vpos (C : Chain) (Q : Polygon) {k : ℕ} (hk : k ≤ C.m) :
@@ -44,13 +41,20 @@ theorem vpos (C : Chain) (Q : Polygon) {k : ℕ} (hk : k ≤ C.m) :
 theorem vpos_edge (C : Chain) (k : ℕ) : 6 + tpos C k < (chainModel C).W.n := by
   have := tpos_lt C k; rw [cm_n]; omega
 
-theorem lerp_mem_set (C : Chain) {k : ℕ} (hk : k < C.m) {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) :
+section
+
+variable (C : Chain) {k : ℕ} (hk : k < C.m) {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1)
+include hk h0 h1
+
+theorem lerp_mem_set :
     Geometry.lerp (C.vertex k) (C.vertex (k + 1)) t ∈ C.set :=
   ⟨k, hk, by rw [C.chainEdge_eq]; exact Geometry.lerp_mem_segment _ _ h0 h1⟩
 
-theorem lerp_mem_set' (C : Chain) {k : ℕ} (hk : k < C.m) {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) :
+theorem lerp_mem_set' :
     Geometry.lerp (C.vertex (k + 1)) (C.vertex k) t ∈ C.set :=
   ⟨k, hk, by rw [C.chainEdge_eq, Geometry.segment_comm]; exact Geometry.lerp_mem_segment _ _ h0 h1⟩
+
+end
 
 theorem abs_snd_lt_radius (C : Chain) {p : Point} (hp : p ∈ C.set) : |p.2| < C.radius :=
   lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set hp).2 C.coordBound_lt_radius
@@ -60,13 +64,13 @@ variable (J : Merge.Junction)
 theorem sharedV_left : sharedV J = J.left.vertex J.m₁ := rfl
 
 theorem sharedU_left : sharedU J = J.left.vertex (J.m₁ - 1 + 1 - 1) := by
-  rw [show J.m₁ - 1 + 1 - 1 = J.m₁ - 1 by omega]; rfl
+  rfl
 
 theorem sharedV_right : sharedV J = J.right.vertex 0 := by
-  unfold sharedV; rw [← Merge.Junction.whole_vertex_add, Nat.add_zero]
+  rfl
 
 theorem sharedW_right : sharedW J = J.right.vertex 1 := by
-  unfold sharedW; rw [Merge.Junction.whole_vertex_add]
+  rfl
 
 /-- The ratio of the nearer arm to the far arm is in `(0, 1)`. -/
 theorem ratio_mem {a b : ℝ} (hab : 0 < a * b) (hle : |b| ≤ |a|) (hne : a ≠ b) :
@@ -88,15 +92,15 @@ theorem ratio_mem {a b : ℝ} (hab : 0 < a * b) (hle : |b| ≤ |a|) (hne : a ≠
 /-- **The cap query on `C₁`** (the nearer arm is `w`, the far arm `[v, u]` is on `C₁`). -/
 theorem capPos₀ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J) (hu : ¬ NearU J)
     {h : ℕ} (hh : (Q.vtx h).2 = (capNear J).2) :
-    (chainModel J.left).pos Q ⟨6 + tpos J.left J.m₁, h + 1⟩ = capOrigin J ∧
-      0 ≤ (chainModel J.left).param Q ⟨6 + tpos J.left J.m₁, h + 1⟩ ∧
-      (chainModel J.left).param Q ⟨6 + tpos J.left J.m₁, h + 1⟩ < 1 ∧
+    J.leftModel.pos Q ⟨6 + tpos J.left J.m₁, h + 1⟩ = capOrigin J ∧
+      0 ≤ J.leftModel.param Q ⟨6 + tpos J.left J.m₁, h + 1⟩ ∧
+      J.leftModel.param Q ⟨6 + tpos J.left J.m₁, h + 1⟩ < 1 ∧
       capOrigin J ∈ J.left.set := by
   obtain ⟨g1, g2, g3⟩ := hgen
   have hnear : capNear J = sharedW J := by unfold capNear; exact ite_eq_right hu
   have hfar : capFar J = sharedU J := by unfold capFar; exact ite_eq_right hu
   have hm := J.one_le_m₁
-  set M := chainModel J.left
+  set M := J.leftModel
   have ha : M.W.vtx (6 + tpos J.left J.m₁) = sharedV J := walk_vtx_tpos J.left (by show J.m₁ ≤ J.m₁; exact le_rfl)
   have hb : M.W.vtx ((6 + tpos J.left J.m₁ + 1) % M.W.n) = sharedU J := by
     have := tpos_lt J.left J.m₁
@@ -122,15 +126,15 @@ theorem capPos₀ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J)
 /-- **The cap query on `C₂`** (the nearer arm is `u`, the far arm `[v, w]` is on `C₂`). -/
 theorem capPos₁ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J) (hu : NearU J)
     {h : ℕ} (hh : (Q.vtx h).2 = (capNear J).2) :
-    (chainModel J.right).pos Q ⟨6 + tpos J.right 0, h + 1⟩ = capOrigin J ∧
-      0 ≤ (chainModel J.right).param Q ⟨6 + tpos J.right 0, h + 1⟩ ∧
-      (chainModel J.right).param Q ⟨6 + tpos J.right 0, h + 1⟩ < 1 ∧
+    J.rightModel.pos Q ⟨6 + tpos J.right 0, h + 1⟩ = capOrigin J ∧
+      0 ≤ J.rightModel.param Q ⟨6 + tpos J.right 0, h + 1⟩ ∧
+      J.rightModel.param Q ⟨6 + tpos J.right 0, h + 1⟩ < 1 ∧
       capOrigin J ∈ J.right.set := by
   obtain ⟨g1, g2, g3⟩ := hgen
   have hnear : capNear J = sharedU J := by unfold capNear; exact ite_eq_left hu
   have hfar : capFar J = sharedW J := by unfold capFar; exact ite_eq_left hu
   have hm := J.one_le_m₂
-  set M := chainModel J.right
+  set M := J.rightModel
   have ha : M.W.vtx (6 + tpos J.right 0) = sharedV J := by
     rw [sharedV_right]; exact walk_vtx_tpos J.right (Nat.zero_le _)
   have hb : M.W.vtx ((6 + tpos J.right 0 + 1) % M.W.n) = sharedW J := by
@@ -142,8 +146,7 @@ theorem capPos₁ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J)
   have hpos := pos_edge (Q := Q) (h := h) ha hb (Ne.symm g2)
   have hpar : M.param Q ⟨6 + tpos J.right 0, h + 1⟩ =
       ((sharedU J).2 - (sharedV J).2) / ((sharedW J).2 - (sharedV J).2) := by
-    unfold Model.param Model.wa Model.wb; simp only
-    rw [ha, hb, ite_eq_right (Ne.symm g2), hh, hnear]
+    ram_finish [Model.param, Model.wa, Model.wb, ha, hb, ite_eq_right (Ne.symm g2), hh, hnear]
   have hx' : 0 < ((sharedW J).2 - (sharedV J).2) * ((sharedU J).2 - (sharedV J).2) := by
     have := hx; unfold SharedExtremum at this; linarith [mul_comm ((sharedU J).2 - (sharedV J).2)
       ((sharedW J).2 - (sharedV J).2)]
@@ -161,8 +164,8 @@ theorem capDir_eq {ρ : ℕ} (h : ρ ≤ 1 ∧ (ρ = 1 ↔ ¬ (capNear J).1 < (c
     dirOf ρ = capDir J := by
   unfold dirOf capDir
   by_cases hc : (capNear J).1 < (capOrigin J).1
-  · rw [ite_eq_left hc, ite_eq_right (fun h1 => (h.2.1 h1) hc)]
-  · rw [ite_eq_right hc, ite_eq_left (h.2.2 hc)]
+  · simp_all
+  simp_all
 
 end
 

@@ -59,12 +59,8 @@ noncomputable def jStart (Q : Polygon) (m : ℕ) : ℕ := by
 theorem rev_idx {n r d : ℕ} (hr : r < n) (hd : d < n) :
     n - 1 - ((n - 1 - r + d) % n) = (r + n - d) % n := by
   rcases Nat.lt_or_ge d (r + 1) with h | h
-  · rw [Nat.mod_eq_of_lt (by omega : n - 1 - r + d < n),
-      show r + n - d = (r - d) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    omega
-  · rw [show n - 1 - r + d = (d - r - 1) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]
-    omega
+  · ram_simp [Nat.mod_eq_of_lt, show r + n - d = (r - d) + n by omega, Nat.add_mod_right] <;> omega
+  ram_simp [show n - 1 - r + d = (d - r - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt] <;> omega
 
 /-- `(a + (m - d)) mod n = ((a + m) mod n + n - d) mod n` for `d ≤ m`, `d < n`. -/
 theorem sub_idx {n a m d : ℕ} (hn : 0 < n) (hd : d ≤ m) (hdn : d < n) :
@@ -77,7 +73,7 @@ theorem sub_idx {n a m d : ℕ} (hn : 0 < n) (hd : d ≤ m) (hdn : d < n) :
   · obtain ⟨q', rfl⟩ : ∃ q', q = q' + 1 := by
       rcases Nat.eq_zero_or_pos q with h0 | h0
       · subst h0; rw [mul_zero, zero_add] at h1; omega
-      · exact ⟨q - 1, by omega⟩
+      simp_all <;> omega
     have e2 : n * (q' + 1) = n * q' + n := by rw [mul_add, mul_one]
     have e : a + (m - d) = (r + n - d) + n * q' := by omega
     rw [e, Nat.add_mul_mod_self_left]

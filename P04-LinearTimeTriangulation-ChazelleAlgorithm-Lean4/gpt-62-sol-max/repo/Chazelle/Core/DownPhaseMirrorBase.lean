@@ -54,9 +54,7 @@ theorem image_mir_image_mir (A : Set Point) : mir '' (mir '' A) = A := by
   ext x; rw [mem_image_mir, mem_image_mir, mir_mir]
 
 theorem dist_mir (p q : Point) : dist (mir p) (mir q) = dist p q := by
-  rw [Prod.dist_eq, Prod.dist_eq, Real.dist_eq, Real.dist_eq, Real.dist_eq, Real.dist_eq]
-  simp only [mir_fst, mir_snd]
-  rw [show -p.1 - -q.1 = -(p.1 - q.1) by ring, abs_neg]
+  simp [Prod.dist_eq, Real.dist_eq, mir_fst, mir_snd]
 
 theorem continuous_mir : Continuous mir := by
   unfold mir; fun_prop
@@ -70,14 +68,12 @@ def mirHomeo : Point ≃ₜ Point where
   continuous_toFun := continuous_mir
   continuous_invFun := continuous_mir
 
-@[simp] theorem mirHomeo_apply (p : Point) : mirHomeo p = mir p := rfl
-
 theorem image_connectedComponentIn_mir (A : Set Point) (x : Point) :
     mir '' connectedComponentIn A x = connectedComponentIn (mir '' A) (mir x) := by
   by_cases hx : x ∈ A
   · exact mirHomeo.image_connectedComponentIn hx
   · rw [connectedComponentIn_eq_empty hx, image_empty, connectedComponentIn_eq_empty]
-    rw [mem_image_mir, mir_mir]; exact hx
+    rwa [mem_image_mir, mir_mir]
 
 theorem mir_lerp (a b : Point) (t : ℝ) : mir (lerp a b t) = lerp (mir a) (mir b) t := by
   unfold mir; simp only [lerp]; ext <;> simp; ring
@@ -119,8 +115,7 @@ theorem mir_vtx (i : ℕ) : P.mir.vtx i = mir (P.vtx i) := by
   | some v => simp
 
 theorem mir_edge (i : ℕ) : P.mir.edge i = mir '' P.edge i := by
-  unfold Polygon.edge
-  rw [mir_segment, mir_n, mir_vtx, mir_vtx]
+  ram_finish [Polygon.edge, mir_segment, mir_n, mir_vtx]
 
 theorem mir_boundary : P.mir.boundary = mir '' P.boundary := by
   ext x
@@ -131,8 +126,8 @@ theorem mir_boundary : P.mir.boundary = mir '' P.boundary := by
     rw [mir_edge, mem_image_mir] at hx
     exact ⟨i, hi, hx⟩
   · rintro ⟨i, hi, hx⟩
-    refine ⟨i, by rw [mir_n]; exact hi, ?_⟩
-    rw [mir_edge, mem_image_mir]; exact hx
+    refine ⟨i, by rwa [mir_n], ?_⟩
+    rwa [mir_edge, mem_image_mir]
 
 theorem mir_commonEndpoints (i j : ℕ) :
     P.mir.commonEndpoints i j = mir '' P.commonEndpoints i j := by
@@ -143,7 +138,7 @@ theorem mir_commonEndpoints (i j : ℕ) :
 /-- **The mirror image of a simple polygon is simple.** -/
 theorem mir_simple (hP : P.Simple) : P.mir.Simple := by
   obtain ⟨h3, hinj, hedge⟩ := hP
-  refine ⟨by rw [mir_n]; exact h3, fun i j hi hj h => ?_, fun i j hi hj hij => ?_⟩
+  refine ⟨by rwa [mir_n], fun i j hi hj h => ?_, fun i j hi hj hij => ?_⟩
   · rw [mir_n] at hi hj
     rw [mir_vtx, mir_vtx] at h
     exact hinj i j hi hj (mir_injective h)
@@ -198,17 +193,14 @@ theorem leftInside_mir (hP : P.Simple) : Mountain.LeftInside P.mir ↔ ¬ Mounta
   simp only [e]
   constructor
   · intro h hL
-    have ho : Mountain.orient P = 1 := ho1 hL
+    have ho := ho1 hL
     rw [ho] at hev
     obtain ⟨δ, h1, h2⟩ := (h.and hev).exists
     simp only [one_mul] at h2
     exact h2.2 h1
   · intro hL
-    have ho : Mountain.orient P = -1 := ho2 hL
-    rw [ho] at hev
-    filter_upwards [hev] with δ hδ
-    have := hδ.1.1
-    simpa using this
+    have ho := ho2 hL
+    simp_all
 
 end
 

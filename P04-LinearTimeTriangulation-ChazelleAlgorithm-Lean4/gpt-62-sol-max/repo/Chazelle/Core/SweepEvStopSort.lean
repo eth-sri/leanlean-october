@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopTasks
 public import Chazelle.Core.SweepEvInit2
 public import Chazelle.Core.SortRam
@@ -39,33 +43,40 @@ noncomputable def ssLe (P : Polygon) (J : Merge.Junction) (m : ℕ → ℕ) (RB 
   classical
   exact decide (if a < S then (b < S → KLe (ssKey P J m RB a) (ssKey P J m RB b)) else S ≤ b)
 
-theorem ssLe_iff {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {RB S a b : ℕ} :
+section
+
+variable {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ}
+include P J m
+
+theorem ssLe_iff {RB S a b : ℕ} :
     ssLe P J m RB S a b = true ↔
       (if a < S then (b < S → KLe (ssKey P J m RB a) (ssKey P J m RB b)) else S ≤ b) := by
   unfold ssLe; simp
 
-theorem ssLe_in {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {RB S a b : ℕ} (ha : a < S)
+theorem ssLe_in {RB S a b : ℕ} (ha : a < S)
     (hb : b < S) : ssLe P J m RB S a b = true ↔ KLe (ssKey P J m RB a) (ssKey P J m RB b) := by
   rw [ssLe_iff, ite_eq_left ha]; exact ⟨fun h => h hb, fun h _ => h⟩
 
-theorem ssLe_trans {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {RB S : ℕ} (a b d : ℕ)
+theorem ssLe_trans {RB S : ℕ} (a b d : ℕ)
     (h1 : ssLe P J m RB S a b) (h2 : ssLe P J m RB S b d) : ssLe P J m RB S a d := by
   rw [ssLe_iff] at h1 h2 ⊢
   by_cases ha : a < S <;> by_cases hb : b < S <;> by_cases hd : d < S <;>
-    simp only [ha, hb, hd, ite_true, ite_false, true_implies, false_implies] at h1 h2 ⊢ <;>
+    simp_all <;>
     first | trivial | omega | exact h1.trans h2
 
-theorem ssLe_total {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {RB S : ℕ} (a b : ℕ) :
+theorem ssLe_total {RB S : ℕ} (a b : ℕ) :
     (ssLe P J m RB S a b || ssLe P J m RB S b a) = true := by
   rw [Bool.or_eq_true, ssLe_iff, ssLe_iff]
   by_cases ha : a < S <;> by_cases hb : b < S <;>
-    simp only [ha, hb, ite_true, ite_false, true_implies, false_implies, true_or, or_true] <;>
+    simp_all <;>
     first | omega | exact KLe.total _ _
+
+end
 
 /-! ## Registers -/
 
 /-- The entry allocator of the sort task (a scratch register of stage 2). -/
-def srA0 : ℕ := sw 3000
+@[ram_layout] def srA0 : ℕ := sw 3000
 
 /-- The bands the comparator writes. -/
 def ssBc : Finset ℕ := {bSign, bLocate, bOQuery}
@@ -110,13 +121,13 @@ def ssCmp : Stmt :=
 entry allocator `A₀` and the memory below it). -/
 def SsCtx (J : Merge.Junction) (d2 RB S A₀ : ℕ) (m₀ : ℕ → ℕ) (d : Config) : Prop :=
   d.nreg (sw 2) = d2 ∧ d.nreg cGW = gW J ∧ d.nreg gRB = RB ∧ d.nreg gRC = S ∧
-    d.nreg K0 = 0 ∧ d.nreg K1 = 1 ∧ d.nreg srA0 = A₀ ∧ ∀ a, a < A₀ → d.nmem a = m₀ a
+    d.nreg K0 = 0 ∧ d.nreg K1 = 1 ∧ d.nreg srA0 = A₀ ∧ MemEqBelow A₀ d.nmem m₀
 
 theorem ssCtx_stable {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ} {A₁ : ℕ}
     (hA : A₀ ≤ A₁) : JStable (SsCtx J d2 RB S A₀ m₀) A₁ := by
   intro c c' ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ hr _ hm _ _
   have k : ∀ i, c'.nreg (sw i) = c.nreg (sw i) := fun i =>
-    hr _ (by unfold bandOf sw bSort; omega) (by unfold sw ALLOC; omega)
+    hr _ (by reg_omega) (by reg_omega)
   exact ⟨(k 2).trans h1, (k 659).trans h2, (k 4000).trans h3, (k 4001).trans h4,
     (k 610).trans h5, (k 611).trans h6, (k 3000).trans h7,
     fun a ha => (hm a (by omega)).trans (h8 a ha)⟩
@@ -141,7 +152,7 @@ theorem ssLd_val (m f : ℕ → ℕ) (h1 : f K1 = 1) :
   all_goals try (congr 1; ring)
   simp only [ALLOC] at j
   simp only [upd_apply]
-  repeat rw [ite_eq_right (by omega)]
+  repeat ram_rw [ite_eq_right]
 
 set_option maxRecDepth 20000 in
 theorem ssLd_ok {W : ℕ} (m f : ℕ → ℕ) (h1 : f K1 = 1) {S A : ℕ} (ha : f 30000 < S)
@@ -166,7 +177,7 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
     (hC : ChainDescAt m₀ d2 (Qof P) H J.whole) (hWm : 2 * J.whole.m + 7 ≤ W)
     (hroom : A₀ + 11000 ≤ W) (hRB : RB + 11 * S ≤ A₀)
     (hrec : ∀ i, i < S → PosW P J (m₀ (RB + 11 * i)) (m₀ (RB + 11 * i + 1)))
-    (hgn : gW J < (chainModel J.whole).W.n) :
+    (hgn : gW J < J.wholeModel.W.n) :
     CmpOK P W ssCmp ssBc (SsCtx J d2 RB S A₀ m₀) (ssLe P J m₀ RB S) 12000 := by
   intro d hw hJ
   have hJ' := hJ
@@ -184,28 +195,27 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
     intro v hv hiff
     refine ⟨_, 1, ssBit_exec hw v hv hW1, le_rfl, ?_, ?_, fun r h1 h2 h3 _ => ?_,
       fun _ _ => rfl, rfl, rfl, rfl⟩
-    · refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, jm⟩ <;> simp only <;>
-        rw [upd_other _ _ _ (by simp [sw, cGW, gRB, gRC, K0, K1, srA0])] <;> assumption
+    · assumption
     · simp only [upd_same]
       split_ifs with h
       · exact hiff.2 h
       · rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hv with h' | h'
         · exact h'
         · exact absurd (hiff.1 h') h
-    · simp only; rw [upd_other _ _ _ h3]
+    simp_all
   unfold ssCmp
   by_cases ha : d.nreg 30000 < d.nreg gRC
   · by_cases hb : d.nreg 30001 < d.nreg gRC
     · -- the main case
       rw [jS] at ha hb
-      obtain ⟨a, had⟩ : ∃ a, d.nreg 30000 = a := ⟨_, rfl⟩
-      obtain ⟨b, hbd⟩ : ∃ b, d.nreg 30001 = b := ⟨_, rfl⟩
+      obtain ⟨a, had⟩ := exists_eq' (a' := d.nreg 30000)
+      obtain ⟨b, hbd⟩ := exists_eq' (a' := d.nreg 30001)
       rw [had] at ha
       rw [hbd] at hb
-      have hj1 : d.nreg K1 = 1 := j1
-      have e₁ := exec_regB (P := P) ssLd hw (ssLd_ok d.nmem d.nreg hj1 (by rw [had]; exact ha)
-        (by rw [hbd]; exact hb)
-        (A := A₀) (by rw [jRB]; exact hRB) (by omega))
+      have hj1 := j1
+      have e₁ := exec_regB (P := P) ssLd hw (ssLd_ok d.nmem d.nreg hj1 (by rwa [had])
+        (by rwa [hbd])
+        (A := A₀) (by rwa [jRB]) (by omega))
       set d₁ : Config := { d with nreg := regB d.nmem ssLd d.nreg } with hd₁
       obtain ⟨v00, v05, v01, v02, vda, v03, v04, vdb, vsv, vA, vo⟩ :=
         ssLd_val d.nmem d.nreg hj1
@@ -233,15 +243,15 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
           have hb1 := mA b hb 1 (by norm_num)
           simp only [Nat.add_zero] at ea eb
           refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, hWm⟩
-          · show regB d.nmem ssLd d.nreg 50201 < _; rw [v01, ea]; exact pa1
-          · show regB d.nmem ssLd d.nreg 50203 < _; rw [v03, eb]; exact pb1
-          · show regB d.nmem ssLd d.nreg 50205 < _; rw [v05, jg]; exact hgn
+          · show regB d.nmem ssLd d.nreg 50201 < _; rwa [v01, ea]
+          · show regB d.nmem ssLd d.nreg 50203 < _; rwa [v03, eb]
+          · show regB d.nmem ssLd d.nreg 50205 < _; rwa [v05, jg]
           · show ProperPos _ _ _ ⟨regB d.nmem ssLd d.nreg 50201, regB d.nmem ssLd d.nreg 50202⟩
-            rw [v01, v02, ea, ha1]; exact pa2
+            rwa [v01, v02, ea, ha1]
           · show ProperPos _ _ _ ⟨regB d.nmem ssLd d.nreg 50203, regB d.nmem ssLd d.nreg 50204⟩
-            rw [v03, v04, eb, hb1]; exact pb2
+            rwa [v03, v04, eb, hb1]
           · show regB d.nmem ssLd d.nreg 50202 = 0 → 6 ≤ regB d.nmem ssLd d.nreg 50201
-            rw [v01, v02, ea, ha1]; exact pa3
+            rwa [v01, v02, ea, ha1]
           · show regB d.nmem ssLd d.nreg 50204 = 0 → 6 ≤ regB d.nmem ssLd d.nreg 50203
             rw [v03, v04, eb, hb1]; exact pb3
       obtain ⟨d₂, k₂, e₂, hk₂, hpost, -⟩ := offCmp_meets P W d₁ hw₁ hpre (by rw [hd1A]; exact hroom)
@@ -253,31 +263,27 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
       -- the keys
       set ka := ssKey P J m₀ RB a with hka
       set kb := ssKey P J m₀ RB b with hkb
-      have hoa : off ((chainModel J.whole).W.n : ℝ) ((d₁.nreg 50205 : ℕ) : ℝ)
-          ((chainModel J.whole).key (Qof P) ⟨d₁.nreg 50201, d₁.nreg 50202⟩) = ka.1 := by
-        show off _ ((regB d.nmem ssLd d.nreg 50205 : ℕ) : ℝ) ((chainModel J.whole).key (Qof P)
+      have hoa : off (J.wholeModel.W.n : ℝ) ((d₁.nreg 50205 : ℕ) : ℝ)
+          (J.wholeModel.key (Qof P) ⟨d₁.nreg 50201, d₁.nreg 50202⟩) = ka.1 := by
+        show off _ ((regB d.nmem ssLd d.nreg 50205 : ℕ) : ℝ) (J.wholeModel.key (Qof P)
           ⟨regB d.nmem ssLd d.nreg 50201, regB d.nmem ssLd d.nreg 50202⟩) = _
         have q0 := mA a ha 0 (by norm_num)
         simp only [Nat.add_zero] at q0
-        rw [v05, jg, v01, v02, q0, mA a ha 1 (by norm_num)]
+        ram_rw [v05, jg, v01, v02, q0, mA a ha 1]
         rfl
-      have hob : off ((chainModel J.whole).W.n : ℝ) ((d₁.nreg 50205 : ℕ) : ℝ)
-          ((chainModel J.whole).key (Qof P) ⟨d₁.nreg 50203, d₁.nreg 50204⟩) = kb.1 := by
-        show off _ ((regB d.nmem ssLd d.nreg 50205 : ℕ) : ℝ) ((chainModel J.whole).key (Qof P)
+      have hob : off (J.wholeModel.W.n : ℝ) ((d₁.nreg 50205 : ℕ) : ℝ)
+          (J.wholeModel.key (Qof P) ⟨d₁.nreg 50203, d₁.nreg 50204⟩) = kb.1 := by
+        show off _ ((regB d.nmem ssLd d.nreg 50205 : ℕ) : ℝ) (J.wholeModel.key (Qof P)
           ⟨regB d.nmem ssLd d.nreg 50203, regB d.nmem ssLd d.nreg 50204⟩) = _
         have q0 := mA b hb 0 (by norm_num)
         simp only [Nat.add_zero] at q0
-        rw [v05, jg, v03, v04, q0, mA b hb 1 (by norm_num)]
+        ram_rw [v05, jg, v03, v04, q0, mA b hb 1]
         rfl
       rw [hoa, hob] at blt bgt
       have hda : d₂.nreg 120901 = ka.2 := by
-        rw [fB.1 _ (by decide)]
-        show regB d.nmem ssLd d.nreg 120901 = _
-        rw [vda, mA a ha 2 (by norm_num)]; rfl
+        ram_post [fB.1, vda, mA]
       have hdb : d₂.nreg 120902 = kb.2 := by
-        rw [fB.1 _ (by decide)]
-        show regB d.nmem ssLd d.nreg 120902 = _
-        rw [vdb, mA b hb 2 (by norm_num)]; rfl
+        ram_post [fB.1, vdb, mA]
       -- restore the allocator
       have hw₂ := e₂.wb_right
       have e₃ := Exec.copyN (P := P) hw₂ ALLOC 120900
@@ -285,10 +291,9 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
       have k₃ : ∀ r, r ≠ ALLOC → d₃.nreg r = d₂.nreg r := fun r h => by
         simp only [hd₃]; rw [upd_other _ _ _ h]
       have hK0 : d₃.nreg K0 = 0 := by
-        rw [k₃ _ (by decide), fB.1 _ (by decide)]
+        ram_rw [k₃, fB.1]
         show regB d.nmem ssLd d.nreg K0 = 0
-        rw [vo _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide) (by unfold K0 sw; omega)]; exact j0
+        register_block
       -- the decision
       have hiff : ssLe P J m₀ RB S a b = true ↔ KLe ka kb := ssLe_in ha hb
       have hw₃ := e₃.wb_right
@@ -299,8 +304,8 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
         unfold ssDec
         have b10 : d₃.nreg 50210 = d₂.nreg 50210 := k₃ _ (by decide)
         have b11 : d₃.nreg 50211 = d₂.nreg 50211 := k₃ _ (by decide)
-        have da : d₃.nreg 120901 = ka.2 := (k₃ _ (by decide)).trans hda
-        have db : d₃.nreg 120902 = kb.2 := (k₃ _ (by decide)).trans hdb
+        have da := (k₃ _ (by decide)).trans hda
+        have db := (k₃ _ (by decide)).trans hdb
         by_cases t1 : d₃.nreg K0 < d₃.nreg 50210
         · have hlt : ka.1 < kb.1 := blt.2.1 (by rw [b10] at t1; omega)
           exact ⟨1, 2, le_rfl, ⟨fun _ => Or.inl hlt, fun _ => rfl⟩, by norm_num,
@@ -316,30 +321,30 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
             · rw [h] at hgt; exact absurd hgt (lt_irrefl _)
           · have hngt : ¬ kb.1 < ka.1 := fun h => by
               have := bgt.2.2 h; rw [b11] at t2; omega
-            have heq : ka.1 = kb.1 := le_antisymm (not_lt.1 hngt) (not_lt.1 hnlt)
+            have heq := le_antisymm (not_lt.1 hngt) (not_lt.1 hnlt)
             by_cases t3 : d₃.nreg 120902 < d₃.nreg 120901
             · rw [da, db] at t3
               refine ⟨0, 6, by omega, ⟨fun h => absurd h (by norm_num), fun h => ?_⟩, by norm_num,
-                .ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true (by rw [da, db]; exact t3)
+                .ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true (by rwa [da, db])
                   (ssBit_exec hw₃ 0 (by omega) hW1)))⟩
               rcases h with h | ⟨-, h⟩
               · exact absurd h hnlt
               · omega
             · rw [da, db] at t3
               exact ⟨1, 7, le_rfl, ⟨fun _ => Or.inr ⟨heq, by omega⟩, fun _ => rfl⟩, by norm_num,
-                .ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false (by rw [da, db]; exact t3)
+                .ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false (by rwa [da, db])
                   (ssBit_exec hw₃ 1 le_rfl hW1)))⟩
       obtain ⟨v, k₄, hv, hvi, hk₄, e₄⟩ := dec
       -- the frame
       have hA₂ : d₂.nreg 120900 = d.nreg ALLOC := by
-        rw [fB.1 _ (by decide)]; exact vsv
+        ram_rw assumption [fB.1]
       have keep : ∀ r, r ≠ 30002 → (bandOf r ∉ ssBc ∨ r = ALLOC) →
           ({ d₃ with nreg := upd d₃.nreg 30002 v } : Config).nreg r = d.nreg r := by
         intro r h2 h3
         simp only
         rw [upd_other _ _ _ h2]
         by_cases hrA : r = ALLOC
-        · subst hrA; simp only [hd₃, upd_same]; exact hA₂
+        · subst hrA; assumption
         rcases h3 with h3 | h3
         swap
         · exact absurd h3 hrA
@@ -358,16 +363,14 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
               simp only [ssBc, bSign, bLocate, bOQuery, Finset.mem_insert, Finset.mem_singleton,
                 bandOf] at h3
               omega)]
-      refine ⟨_, _, .ifLtN_true (by rw [jS, had]; exact ha) (.ifLtN_true (by rw [jS, hbd]; exact hb)
-        (.seq e₁ (.seq e₂ (.seq e₃ e₄)))), by simp only [ssLd, ssLdA] at *; simp; omega,
+      refine ⟨_, _, (by ram_path), by simp only [ssLd, ssLdA] at *; simp; omega,
         ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, fun r _ _ h2 h3 => keep r h2 h3, fun r hr => ?_,
         ?_, ?_, ?_⟩
       all_goals first
         | (rw [keep _ (by simp [sw, cGW, gRB, gRC, K0, K1, srA0]) (Or.inl (by decide))]; assumption)
         | skip
       · intro a' ha'
-        show d₂.nmem a' = _
-        rw [fB.2.2.1]; exact jm a' ha'
+        ram_post [fB.2.2.1]
       · simp only [upd_same]
         rw [had, hbd]
         split_ifs with h
@@ -385,15 +388,15 @@ theorem ssCmp_ok {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
       · exact fB.2.2.2.1
       · exact fB.2.2.2.2
     · obtain ⟨c', k, ex, hk, rest⟩ := bit 1 le_rfl ⟨fun _ => by
-          rw [ssLe_iff, ite_eq_left (by rw [← jS]; exact ha)]; intro h; rw [jS] at hb; omega,
+          rw [ssLe_iff, ite_eq_left (by rwa [← jS])]; intro h; rw [jS] at hb; omega,
         fun _ => rfl⟩
       exact ⟨c', _, .ifLtN_true ha (.ifLtN_false hb ex), by omega, rest⟩
   · by_cases hb : d.nreg 30001 < d.nreg gRC
     · obtain ⟨c', k, ex, hk, rest⟩ := bit 0 (by omega) ⟨fun h => absurd h (by norm_num), fun h => by
-          rw [ssLe_iff, ite_eq_right (by rw [← jS]; exact ha)] at h; rw [jS] at hb; omega⟩
+          rw [ssLe_iff, ite_eq_right (by rwa [← jS])] at h; rw [jS] at hb; omega⟩
       exact ⟨c', _, .ifLtN_false ha (.ifLtN_true hb ex), by omega, rest⟩
     · obtain ⟨c', k, ex, hk, rest⟩ := bit 1 le_rfl ⟨fun _ => by
-          rw [ssLe_iff, ite_eq_right (by rw [← jS]; exact ha)]; rw [jS] at hb; omega, fun _ => rfl⟩
+          rw [ssLe_iff, ite_eq_right (by rwa [← jS])]; rw [jS] at hb; omega, fun _ => rfl⟩
       exact ⟨c', _, .ifLtN_false ha (.ifLtN_false hb ex), by omega, rest⟩
 
 end

@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvOrg
 
 /-!
@@ -28,14 +32,14 @@ open Chazelle.Chain (sidePt)
 
 /-! ## Fixed registers -/
 
-def c2m : ℕ := sw 640
-def cm : ℕ := sw 641
-def cTop : ℕ := sw 642
-def cS : ℕ := sw 643
-def c2m6 : ℕ := sw 644
-def cT1 : ℕ := sw 645
+@[ram_layout] def c2m : ℕ := sw 640
+@[ram_layout] def cm : ℕ := sw 641
+@[ram_layout] def cTop : ℕ := sw 642
+@[ram_layout] def cS : ℕ := sw 643
+@[ram_layout] def c2m6 : ℕ := sw 644
+@[ram_layout] def cT1 : ℕ := sw 645
 /-- The bit of the height test (an oracle register). -/
-def oHb : ℕ := 50900
+@[ram_layout] def oHb : ℕ := 50900
 
 /-- The constants of the classification. -/
 structure OrgK (P : Polygon) (J : Merge.Junction) (c : Config) : Prop where
@@ -66,13 +70,13 @@ theorem irs_of_out {s : Stmt} {c' : Config} {k K : ℕ} {L : List ℕ} (hI : IIn
     (ex : Exec P W s c c' k) (hk : k ≤ K) (ho : Out c c' L) (hL : ∀ r ∈ L, IScr r) :
     IRS P W c₀ s c K (fun c'' => c'' = c') := by
   obtain ⟨hr, hrr, hm, hrm, hout⟩ := ho
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (fun h => alloc_not_scr (hL _ h))
+  have hA := hr ALLOC (fun h => alloc_not_scr (hL _ h))
   exact IRS.ofExec hI ex hk (fun r hr' _ => hr r (fun h => hr' (hL r h))) hrr
     (fun a _ => by rw [hm]) hrm hout (by rw [hA]) (by rw [hA]; omega) rfl
 
 /-! ## The vertex index -/
 
-def oU : ℕ := sw 2232
+@[ram_layout] def oU : ℕ := sw 2232
 
 /-- `oJ := sideE m ((S + (e - 6)) mod 2m)`, without words above `2m`. -/
 def orgIdx : Stmt :=
@@ -94,58 +98,49 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
   set S := J.right.sideS J.right.sideBeta with hSdef
   set m := J.right.m with hmdef
   -- the block
-  have e6 : c.nreg 240612 = 6 := k6
-  have eS : c.nreg 240643 = S := hS
-  have e2 : c.nreg 240640 = 2 * m := m2
+  
+  have eS := hS
+  
   have eE : c.nreg 242210 = c.nreg oE := rfl
   have hb := IRS.block (P := P) [.subN oT oE K6, .subN oU c2m cS] hI (by
-    simp only [okB, okI, oT, oU, sw]
-    simp only [Nat.reduceAdd]
-    exact ⟨iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num), trivial⟩)
-  refine (IRS.seq (K₂ := 10) hb ?_).mono (by simp) (fun _ h => h)
+    register_block)
+  refine (IRS.seq (K₂ := 10) hb ?_).budget (by simp)
   rintro c₁ hI₁ - - rfl
   set c₁ : Config := { c with nreg := regB c.nmem [.subN oT oE K6, .subN oU c2m cS] c.nreg }
     with hc₁
   have v1 : c₁.nreg oT = i := by
-    show regB c.nmem [.subN oT oE K6, .subN oU c2m cS] c.nreg oT = i
-    simp only [regB, regI]
-    rw [upd_other _ _ _ (by unfold oT oU sw; omega), upd_same, k6]
+    ram_finish [regB, regI, k6]
   have v2 : c₁.nreg oU = 2 * m - S := by
-    show regB c.nmem [.subN oT oE K6, .subN oU c2m cS] c.nreg oU = 2 * m - S
-    simp only [regB, regI]
-    rw [upd_same, upd_other _ _ _ (by unfold c2m oT sw; omega),
-      upd_other _ _ _ (by unfold cS oT sw; omega), m2, hS]
+    ram_finish [regB, regI, m2, hS]
   have o1 : ∀ r, r ≠ oT → r ≠ oU → c₁.nreg r = c.nreg r := fun r h1 h2 => by
     simp only [hc₁, regB, regI, upd]; rw [ite_eq_right h2, ite_eq_right h1]
-  have c1S : c₁.nreg cS = S := (o1 cS (by unfold cS oT sw; omega) (by unfold cS oU sw; omega)).trans hS
+  have c1S := (o1 cS (by unfold cS oT sw; omega) (by unfold cS oU sw; omega)).trans hS
   -- the sum modulo `2m`, at most `2m`
   have hstep : IRS P W c₀ (.ifLtN oT oU (.instr (.addN oT oT cS)) (.instr (.subN oT oT oU))) c₁ 3
       (fun c' => c'.nmem = c₁.nmem ∧ c'.nreg oT ≤ 2 * m ∧
         (c'.nreg oT) % (2 * m) = (S + i) % (2 * m) ∧ ∀ r, r ≠ oT → c'.nreg r = c₁.nreg r) := by
     by_cases hlt : c₁.nreg oT < c₁.nreg oU
     · rw [v1, v2] at hlt
-      refine (IRS.ifT (by rw [v1, v2]; exact hlt) (IRS.reg (P := P) hI₁
-        (iscr_sw (by simp [oT, sw]) (by simp [oT, sw])) (Exec.addN hI₁.hw oT oT cS
+      refine (IRS.ifT (by rwa [v1, v2]) (IRS.reg (P := P) hI₁
+        (iscr_sw (by simp [ram_layout]) (by simp [ram_layout])) (Exec.addN hI₁.hw oT oT cS
           (by rw [v1, c1S]; omega)))).mono (by omega) ?_
       rintro c' rfl
       simp only [upd_same, v1, c1S]
       refine ⟨by simp, by omega, by rw [add_comm], fun r hr => by simp [upd, hr]⟩
     · rw [v1, v2] at hlt
-      refine (IRS.ifF (by rw [v1, v2]; exact hlt) (IRS.reg (P := P) hI₁
-        (iscr_sw (by simp [oT, sw]) (by simp [oT, sw])) (Exec.subN hI₁.hw oT oT oU))).mono (by omega) ?_
+      refine (IRS.ifF (by rwa [v1, v2]) (IRS.reg (P := P) hI₁
+        (iscr_sw (by simp [ram_layout]) (by simp [ram_layout])) (Exec.subN hI₁.hw oT oT oU))).mono (by omega) ?_
       rintro c' rfl
       simp only [upd_same, v1, v2]
       refine ⟨by simp, by omega, ?_, fun r hr => by simp [upd, hr]⟩
       rw [show S + i = (i - (2 * m - S)) + 2 * m by omega, Nat.add_mod_right]
-  refine IRS.seq (K₂ := 7) hstep ?_ |>.mono (by omega) (fun _ h => h)
+  refine IRS.seq (K₂ := 7) hstep ?_ |>.budget
   rintro c₂ hI₂ - - ⟨hm₂, hle₂, hmod₂, k₂⟩
   have c2m2 : c₂.nreg c2m = 2 * m := by
-    rw [k₂ c2m (by unfold c2m oT sw; omega), o1 c2m (by unfold c2m oT sw; omega)
-      (by unfold c2m oU sw; omega), m2]
+    ram_finish [k₂, o1, m2]
   obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := condSub_exec (P := P) hI₂.hw oT oT c2m
   refine IRS.seq (K₂ := 3) (irs_of_out hI₂ e₃ (show k₃ ≤ 3 by omega) o₃
-    (fun r hr => by simp at hr; subst hr; exact iscr_sw (by simp [oT, sw]) (by simp [oT, sw]))) ?_ |>.mono
-    (by omega) (fun _ h => h)
+    (fun r hr => by simp at hr; subst hr; exact iscr_sw (by simp [ram_layout]) (by simp [ram_layout]))) ?_ |>.budget
   rintro c₄ hI₄ - - hc4
   subst hc4
   have v3 : c₄.nreg oT = (S + i) % (2 * m) := by
@@ -153,15 +148,14 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
     split_ifs with h
     · rw [Nat.mod_eq_of_lt h]
     · rw [show c₂.nreg oT = 2 * m by omega, Nat.mod_self]; omega
-  have c3m : c₄.nreg c2m = 2 * m := by rw [o₃.1 c2m (by simp [c2m, oT, sw]), c2m2]
+  have c3m : c₄.nreg c2m = 2 * m := by ram_rw [o₃.1 c2m, c2m2]
   have c3m1 : c₄.nreg cm = m := by
-    rw [o₃.1 cm (by simp [cm, oT, sw]), k₂ cm (by unfold cm oT sw; omega),
-      o1 cm (by unfold cm oT sw; omega) (by unfold cm oU sw; omega), m1]
+    ram_simp [o₃.1, k₂, o1, m1] <;> reg_omega
   have hsIdx : J.right.sideIdx J.right.sideBeta i = Chazelle.Chain.sideE m (c₄.nreg oT) := by
     rw [Chazelle.Chain.sideIdx_eq, v3]
-  have hmodlt : c₄.nreg oT < 2 * m := by rw [v3]; exact Nat.mod_lt _ (by omega)
+  
   by_cases hlt : c₄.nreg cm < c₄.nreg oT
-  · refine (IRS.ifT hlt (IRS.reg (P := P) hI₄ (iscr_sw (by simp [oJ, sw]) (by simp [oJ, sw]))
+  · refine (IRS.ifT hlt (IRS.reg (P := P) hI₄ (iscr_sw (by simp [ram_layout]) (by simp [ram_layout]))
       (Exec.subN hI₄.hw oJ c2m oT))).mono (by omega) ?_
     rintro c' rfl
     refine ⟨by rw [o₃.2.2.1, hm₂], ?_, fun r h1 h2 h3 => ?_⟩
@@ -169,10 +163,10 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
       rw [hsIdx, c3m]
       unfold Chazelle.Chain.sideE
       rw [c3m1] at hlt
-      rw [ite_eq_right (by omega)]
+      ram_rw [ite_eq_right]
     · simp only
       rw [upd_other _ _ _ h3, o₃.1 r (by simp [h1]), k₂ r h1, o1 r h1 h2]
-  · refine (IRS.ifF hlt (IRS.reg (P := P) hI₄ (iscr_sw (by simp [oJ, sw]) (by simp [oJ, sw]))
+  · refine (IRS.ifF hlt (IRS.reg (P := P) hI₄ (iscr_sw (by simp [ram_layout]) (by simp [ram_layout]))
       (Exec.copyN hI₄.hw oJ oT))).mono (by omega) ?_
     rintro c' rfl
     refine ⟨by rw [o₃.2.2.1, hm₂], ?_, fun r h1 h2 h3 => ?_⟩
@@ -180,7 +174,7 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
       rw [hsIdx]
       unfold Chazelle.Chain.sideE
       rw [c3m1] at hlt
-      rw [ite_eq_left (by omega)]
+      ram_rw [ite_eq_left]
     · simp only
       rw [upd_other _ _ _ h3, o₃.1 r (by simp [h1]), k₂ r h1, o1 r h1 h2]
 

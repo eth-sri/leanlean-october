@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.NFDecompGlue
 
 /-!
@@ -36,9 +38,14 @@ section fc
 
 variable {P : Polygon} {W : ℕ} {A R K CB RB LB : ℕ}
 
+section
+
+variable {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
+    (hAW : A + 12 + 20 * R + 3 * K ≤ W)
+
+include hw hR hAW in
 /-- One step of the node-table copy. -/
-theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
-    (hAW : A + 12 + 20 * R + 3 * K ≤ W) {j : ℕ} (h20 : c.nreg 60020 = j) (hj : j < K)
+theorem fcBody_exec {j : ℕ} (h20 : c.nreg 60020 = j) (hj : j < K)
     (hKR : K < R) :
     ∃ c' k, Exec P W fcBody c c' k ∧ k = 15 ∧ DFr (A + 12) (A + 12 + 19 * R + 3 * K) c c' ∧
       c'.nreg 60020 = j + 1 ∧
@@ -50,7 +57,7 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   simp only [Nat.reduceAdd] at b16 b17 b18 b19
   have o := hR.one
   have h16 : 16 * R + j < 19 * R := by omega
-  have hjR : 3 * j + 3 ≤ 3 * K := by omega
+  
   unfold fcBody ldF fb
   simp only [Nat.reduceAdd]
   refine spec_seq ?_
@@ -95,9 +102,9 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
 def ntv (m : ℕ → ℕ) (A R a : ℕ) : ℕ :=
   fv m A R (16 + (a - (A + 12 + 19 * R)) % 3) ((a - (A + 12 + 19 * R)) / 3)
 
+include hw hR hAW in
 /-- **The node-table copy.** -/
-theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
-    (hAW : A + 12 + 20 * R + 3 * K ≤ W) (hKR : K < R) :
+theorem fcS_exec (hKR : K < R) :
     ∃ c' k, Exec P W fcS c c' k ∧ k ≤ 17 * K + 3 ∧ WordsBounded W c' ∧
       DFr (A + 12) (A + 12 + 19 * R + 3 * K) c c' ∧
       ∀ a, c'.nmem a = if A + 12 + 19 * R ≤ a ∧ a < A + 12 + 19 * R + 3 * K then
@@ -107,7 +114,7 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
   set c1 := { c with nreg := upd c.nreg 60020 0 } with hc1
   have hf1 : DFr (A + 12) (A + 12 + 19 * R + 3 * K) c c1 :=
     DFr.nreg _ fun r hr _ => by
-      unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+      unfold Prot at hr; ram_rw [Machine.upd_other _ _]
   obtain ⟨c', k, e, ⟨hw', hf', hj', hv'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P) (W := W)
     (a := 60020) (b := 60014) (body := fcBody)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R + 3 * K) c d ∧ d.nreg 60020 ≤ K ∧
@@ -117,14 +124,14 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
     (fun d ⟨hwd, hfd, hjd, hvd⟩ htest => by
       have hRd := hR.frame hfd
       rw [hRd.rK] at htest
-      obtain ⟨j, hjdef⟩ : ∃ j, d.nreg 60020 = j := ⟨_, rfl⟩
+      obtain ⟨j, hjdef⟩ := exists_eq' (a' := d.nreg 60020)
       rw [hjdef] at htest hjd hvd
       obtain ⟨d', k', e', rfl, hf'', h20', hm'⟩ := fcBody_exec (P := P) hwd hRd hAW hjdef htest hKR
       have hfv : ∀ f, f < 19 → fv d.nmem A R f j = fv c.nmem A R f j := fun f hf => by
         have : f * R ≤ 18 * R := Nat.mul_le_mul_right _ (by omega)
-        unfold fv; rw [hvd, ite_eq_right (by omega)]
+        frame_finish [fv, hvd, ite_eq_right]
       refine ⟨d', 15, e', ⟨e'.wb_right, hfd.trans hf'', by omega, fun a => ?_⟩, by omega⟩
-      rw [hm', h20', hfv 16 (by norm_num), hfv 17 (by norm_num), hfv 18 (by norm_num)]
+      ram_rw [hm', h20', hfv 16, hfv 17, hfv 18]
       simp only [Machine.upd_apply]
       rw [hvd a]
       unfold ntv
@@ -137,15 +144,17 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd])
         | (· simp only [show (a - (A + 12 + 19 * R)) % 3 = 2 by omega,
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd]))
-    ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, fun a => by
-      simp only [hc1]; config_simp; rw [ite_eq_right (by omega)]⟩
+    ⟨hw1, hf1, by simp_all, fun a => by
+      simp_all⟩
   have hR' := hR.frame hf'
   rw [hR'.rK] at htest
   have hjK : c'.nreg 60020 = K := by omega
-  have h0 : c1.nreg 60020 = 0 := by simp only [hc1]; config_simp
+  have h0 : c1.nreg 60020 = 0 := by rfl
   rw [h0] at hk
   refine ⟨c', k, e, by omega, hw', hf', fun a => ?_⟩
   rw [hv' a, hjK]
+
+end
 
 end fc
 

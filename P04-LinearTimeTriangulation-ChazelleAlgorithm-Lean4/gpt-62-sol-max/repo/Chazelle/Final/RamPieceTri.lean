@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Final.PieceTri
 public import Chazelle.Mountain.RamSubTheorem
 
@@ -119,11 +123,11 @@ theorem pFrame_trans {c₀ c₁ c₂ : Config} (h₁ : PFrame c₀ c₁) (h₂ :
     PFrame c₀ c₂ := by
   obtain ⟨n₁, r₁, m₁, q₁, o₁⟩ := h₁
   obtain ⟨n₂, r₂, m₂, q₂, o₂⟩ := h₂
-  have e83 : c₁.nreg 83 = c₀.nreg 83 := n₁ 83 (by omega)
-  have e84 : c₁.nreg 84 = c₀.nreg 84 := n₁ 84 (by omega)
+  have e83 := n₁ 83 (by omega)
+  have e84 := n₁ 84 (by omega)
   refine ⟨fun r hr => by rw [n₂ r hr, n₁ r hr], fun r hr => by rw [r₂ r hr, r₁ r hr],
     fun a ha => ?_, by rw [q₂, q₁], by rw [o₂, o₁]⟩
-  rw [m₂ a (by rw [e83, e84]; exact ha), m₁ a ha]
+  rw [m₂ a (by rwa [e83, e84]), m₁ a ha]
 
 /-! ### The lexicographic test -/
 
@@ -151,17 +155,17 @@ theorem ylexTest_exec {a1 a2 b1 b2 : ℕ} {t e : Stmt} {K : ℕ} {post : Config 
   · by_cases h2 : c.rreg b2 < c.rreg a2
     · obtain ⟨c', k, ex, hk, hp⟩ := he (fun h => by
         rcases h with h | ⟨h, -⟩ <;> dsimp only at h <;> linarith)
-      exact ⟨c', k + 1 + 2, .ifLtR_false h1 (.ifLtR_true h2 ex), by omega, hp⟩
-    · have heq : c.rreg a2 = c.rreg b2 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
+      exact ⟨c', k + 1 + 2, (by ram_path), by omega, hp⟩
+    · have heq := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
       by_cases h3 : c.rreg a1 < c.rreg b1
       · obtain ⟨c', k, ex, hk, hp⟩ := ht (Or.inr ⟨heq, h3⟩)
-        exact ⟨c', k + 1 + 2 + 2, .ifLtR_false h1 (.ifLtR_false h2 (.ifLtR_true h3 ex)),
+        exact ⟨c', k + 1 + 2 + 2, (by ram_path),
           by omega, hp⟩
       · obtain ⟨c', k, ex, hk, hp⟩ := he (fun h => by
           rcases h with h | ⟨-, h⟩ <;> dsimp only at h
           · exact h1 h
           · exact h3 h)
-        exact ⟨c', k + 2 + 2 + 2, .ifLtR_false h1 (.ifLtR_false h2 (.ifLtR_false h3 ex)),
+        exact ⟨c', k + 2 + 2 + 2, (by ram_path),
           by omega, hp⟩
 
 end ylex
@@ -252,9 +256,9 @@ theorem walkBody_inv {c₀ : Config} (hin : PieceInput W l c₀) (c : Config)
   obtain ⟨hw, hF, h88, h87, hlo, hhi, h85, htab⟩ := hI
   have hF' := hF
   obtain ⟨hFn, hFr, hFm, hFrm, hFo⟩ := hF
-  have e80 : c.nreg 80 = c₀.nreg 80 := hFn 80 (by omega)
-  have e81 : c.nreg 81 = c₀.nreg 81 := hFn 81 (by omega)
-  have e83 : c₀.nreg 83 = l.length := hin.len
+  have e80 := hFn 80 (by omega)
+  have e81 := hFn 81 (by omega)
+  have e83 := hin.len
   rw [h87] at ht
   have hm0 : 0 < l.length := by omega
   have him : (c.nreg 86 - c₀.nreg 84) % l.length < l.length := Nat.mod_lt _ hm0
@@ -268,15 +272,15 @@ theorem walkBody_inv {c₀ : Config} (hin : PieceInput W l c₀) (c : Config)
   have hW := hin.work
   rw [← hnode] at hvW hnW hvO hnO
   have hvmem : c.nmem (c.nreg 81 + c.nreg 85) = l.getD ((c.nreg 86 - c₀.nreg 84) % l.length) 0 := by
-    rw [e81, hFm _ (by rw [e83]; exact hvO), hnode]
+    rw [e81, hFm _ (by rwa [e83]), hnode]
     exact hin.vtx _ him
   have hne : c.nreg 80 + c.nreg 85 ≠ c.nreg 86 := by rw [e80]; omega
   have hnmem : c.nmem (c.nreg 80 + c.nreg 85) = c₀.nmem (c₀.nreg 80 + c.nreg 85) := by
-    rw [e80, hFm _ (by rw [e83]; exact hnO)]
+    rw [e80, hFm _ (by rwa [e83])]
   unfold walkBody
   exec_block
-  · rw [e81]; exact hvW
-  · config_simp; rw [e80]; exact hnW
+  · rwa [e81]
+  · config_simp; rwa [e80]
   · config_simp; rw [h88]; omega
   · refine ⟨⟨‹_›, pFrame_trans hF' ⟨fun r hr => ?_, fun r _ => rfl, fun a ha => ?_, rfl, rfl⟩,
       by config_simp; exact h88, by config_simp; exact h87, by config_simp; omega,
@@ -286,7 +290,7 @@ theorem walkBody_inv {c₀ : Config} (hin : PieceInput W l c₀) (c : Config)
       have h3 : r ≠ 89 := by omega
       simp [h1, h2, h3]
     · config_simp
-      rw [Machine.upd_other _ _ _ (by rw [hFn 84 (by omega), hFn 83 (by omega)] at ha; omega)]
+      rw [Machine.upd_other _ _ _ (by ram_rw [hFn 84, hFn 83] at ha; omega)]
     · config_simp
       rw [Machine.upd_other _ _ _ hne, hnmem, h88,
         show c.nreg 86 + 1 - c₀.nreg 84 = c.nreg 86 - c₀.nreg 84 + 1 by omega, nodeSeq_succ,
@@ -297,7 +301,7 @@ theorem walkBody_inv {c₀ : Config} (hin : PieceInput W l c₀) (c : Config)
       config_simp
       by_cases hk' : k = c.nreg 86 - c₀.nreg 84
       · rw [show c₀.nreg 84 + k = c.nreg 86 by omega, Machine.upd_same, hvmem, hk']
-      · rw [Machine.upd_other _ _ _ (by omega)]
+      · ram_rw [Machine.upd_other _ _]
         exact htab k (by omega)
 
 /-- **Spec lemma for the walk phase** `ptInit; walkLoop`: cost `≤ 16 m + 7`; afterwards the
@@ -311,10 +315,7 @@ theorem walkPhase_exec (c : Config) (hc : WordsBounded W c) (hin : PieceInput W 
   have h83 := hin.len
   unfold ptInit
   refine spec_seq ?_
-  exec_block
-  · omega
-  · config_simp; omega
-  · config_simp; omega
+  exec_block!
   refine spec_imp (Exec.whileLtN_bounded (WalkInv W l c)
     (fun d => c.nreg 84 + 2 * l.length - d.nreg 86) 6 (fun _ h => h.1)
     (fun d hd ht => walkBody_inv (P := P) hin d hd ht) ?_) ?_
@@ -327,7 +328,7 @@ theorem walkPhase_exec (c : Config) (hc : WordsBounded W c) (hin : PieceInput W 
       have h4 : r ≠ 88 := by omega
       simp [h1, h2, h3, h4]
     · config_simp; rw [Nat.sub_self]; rfl
-    · intro k hk; config_simp at hk; omega
+    simp
   · rintro c' k ⟨⟨hw, hF, h88, h87, hlo, hhi, h85, htab⟩, hexit, hk⟩
     config_simp at hk
     rw [h87] at hexit
@@ -346,12 +347,11 @@ theorem minUpdate_exec (c : Config) (hc : WordsBounded W c) :
     ∃ c' k, Exec P W minUpdate c c' k ∧ k ≤ 7 ∧
       (ylexLT (c.rreg 80, c.rreg 81) (c.rreg 82, c.rreg 83) → c'.nreg 90 = c.nreg 86) ∧
       (¬ ylexLT (c.rreg 80, c.rreg 81) (c.rreg 82, c.rreg 83) → c'.nreg 90 = c.nreg 90) ∧
-      (∀ r, r ≠ 90 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept 90 c c') ∧ c'.rreg = c.rreg ∧ Machine.MemOutputEq c c' := by
   unfold minUpdate
   refine ylexTest_exec (K := 1) c (fun h => ?_) (fun h => ?_)
   · refine ⟨_, 1, Exec.copyN hc 90 86, le_rfl, fun _ => by config_simp,
-      fun h' => absurd h h', fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
+      fun h' => absurd h h', fun r hr => by simp [hr], by and_intros <;> rfl⟩
   · exact ⟨c, 0, .skip hc, by omega, fun h' => absurd h' h, fun _ => rfl, fun _ _ => rfl, rfl,
       rfl, rfl, rfl⟩
 
@@ -367,7 +367,7 @@ theorem minBody_exec (c : Config) (hc : WordsBounded W c) (hW : c.nreg 86 + c.nr
       c'.nreg 86 = c.nreg 86 + c.nreg 88 ∧
       (∀ r, r ≠ 86 → r ≠ 89 → r ≠ 90 → r ≠ 91 → c'.nreg r = c.nreg r) ∧
       (∀ r, (r < 80 ∨ 83 < r) → c'.rreg r = c.rreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.MemOutputEq c c' := by
   unfold minBody minRead
   refine spec_seq ?_
   exec_block
@@ -381,18 +381,16 @@ theorem minBody_exec (c : Config) (hc : WordsBounded W c) (hW : c.nreg 86 + c.nr
   config_simp at hrm
   config_simp at hout
   simp only [Prod.mk.eta] at hlt hnlt
-  have hn86 : c₁.nreg 86 = c.nreg 86 := by rw [hfr 86 (by omega)]; config_simp
-  have hn88 : c₁.nreg 88 = c.nreg 88 := by rw [hfr 88 (by omega)]; config_simp
-  refine spec_instr (Exec.addN hw₁ 86 86 88 (by rw [hn86, hn88]; exact hW)) fun _ => ?_
+  have hn86 : c₁.nreg 86 = c.nreg 86 := by simp_all
+  have hn88 : c₁.nreg 88 = c.nreg 88 := by simp_all
+  refine spec_instr (Exec.addN hw₁ 86 86 88 (by rwa [hn86, hn88])) fun _ => ?_
   refine ⟨by omega, fun h => ?_, fun h => ?_, ?_, fun r h86 h89 h90 h91 => ?_, fun r hr => ?_,
     hnm, hrm, hout⟩
   · config_simp; exact hlt h
   · config_simp; exact hnlt h
-  · config_simp; rw [hn86, hn88]
-  · config_simp; rw [Machine.upd_other _ _ _ h86, hfr r h90]; simp [h89, h91]
-  · config_simp; rw [hrr]
-    simp [show r ≠ 80 by omega, show r ≠ 81 by omega, show r ≠ 82 by omega,
-      show r ≠ 83 by omega]
+  · simp_all
+  · simp_all
+  · frame_finish
 
 /-- The invariant of the minimum scan, relative to the configuration `c₀` at the start of the
 phase: `q = nreg 86`, `mp = nreg 90 < q`, and position `mp - WB` is `ylexLT`-minimal among the
@@ -409,8 +407,8 @@ theorem tab_read {c₀ c : Config} (htab : ∀ i, i < 2 * l.length →
       c₀.nmem (c₀.nreg 84 + i) = l.getD (i % l.length) 0)
     (hnm : c.nmem = c₀.nmem) {a : ℕ} (hlo : c₀.nreg 84 ≤ a) (hhi : a < c₀.nreg 84 + l.length) :
     P.vtx (c.nmem a) = ptAt P l (a - c₀.nreg 84) := by
-  rw [hnm, show a = c₀.nreg 84 + (a - c₀.nreg 84) by omega, htab _ (by omega),
-    Nat.mod_eq_of_lt (by omega), Nat.add_sub_cancel_left]
+  ram_rw [hnm, show a = c₀.nreg 84 + (a - c₀.nreg 84) by omega, htab,
+    Nat.mod_eq_of_lt, Nat.add_sub_cancel_left]
   rfl
 
 set_option maxHeartbeats 400000 in
@@ -429,19 +427,19 @@ theorem minBody_inv {c₀ : Config} (hW : c₀.nreg 84 + 4 * l.length ≤ W)
   have em : P.vtx (c.nmem (c.nreg 90)) = ptAt P l (c.nreg 90 - c₀.nreg 84) :=
     tab_read htab hnm (by omega) (by omega)
   rw [eq, em] at hlt hnlt
-  have hF' : PFrame c c' := ⟨fun r hr => hfn r (by omega) (by omega) (by omega) (by omega),
+  have hF' : PFrame c c' := ⟨fun r hr => (ram_app% (hfn r ?_ ?_ ?_ ?_)),
     fun r hr => hfr r hr, fun a _ => by rw [hnm'], hrm', hout'⟩
   refine ⟨c', k, ex, ⟨ex.wb_right, pFrame_trans hF hF', by rw [hnm', hnm], ?_, ?_, ?_, ?_, ?_,
     ?_, ?_⟩, hk, ?_⟩
-  · rw [hfn 88 (by omega) (by omega) (by omega) (by omega), h88]
-  · rw [hfn 87 (by omega) (by omega) (by omega) (by omega), h87]
+  · simp [hfn, h88]
+  · simp [hfn, h87]
   · rw [h86']; omega
   · rw [h86', h88]; omega
   · by_cases hl : ylexLT (ptAt P l (c.nreg 86 - c₀.nreg 84)) (ptAt P l (c.nreg 90 - c₀.nreg 84))
     · rw [hlt hl]; omega
     · rw [hnlt hl]; omega
   · by_cases hl : ylexLT (ptAt P l (c.nreg 86 - c₀.nreg 84)) (ptAt P l (c.nreg 90 - c₀.nreg 84))
-    · rw [hlt hl, h86', h88]; omega
+    · simp [hlt hl, h86', h88]
     · rw [hnlt hl, h86', h88]; omega
   · intro j hj
     rw [h86', h88] at hj
@@ -454,8 +452,7 @@ theorem minBody_inv {c₀ : Config} (hW : c₀.nreg 84 + 4 * l.length ≤ W)
     · rw [hnlt hl]
       rcases Nat.lt_or_ge j (c.nreg 86 - c₀.nreg 84) with hj' | hj'
       · exact hmin j hj'
-      · rw [show j = c.nreg 86 - c₀.nreg 84 by omega]
-        exact hl
+      · rwa [show j = c.nreg 86 - c₀.nreg 84 by omega]
   · rw [h86', h88]; omega
 
 /-- **Spec lemma for the minimum phase** `minInit; minLoop`: cost `≤ 16 m + 5`; afterwards
@@ -470,7 +467,7 @@ theorem minPhase_exec (c : Config) (hc : WordsBounded W c) (hm1 : 1 ≤ l.length
   unfold minInit
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [h88]; omega
+  · ram_finish
   · config_simp; omega
   refine spec_imp (Exec.whileLtN_bounded (MinInv P W l c)
     (fun d => c.nreg 84 + l.length - d.nreg 86) 14 (fun _ h => h.1)
@@ -480,8 +477,7 @@ theorem minPhase_exec (c : Config) (hc : WordsBounded W c) (hm1 : 1 ≤ l.length
       by config_simp; omega, by config_simp; exact le_rfl, by config_simp; omega, ?_⟩
     · have h1 : r ≠ 86 := by omega
       have h2 : r ≠ 87 := by omega
-      have h3 : r ≠ 90 := by omega
-      simp [h1, h2, h3]
+      frame_finish
     · intro j hj
       config_simp at hj
       config_simp
@@ -516,20 +512,11 @@ theorem dirSel_exec (c : Config) (hc : WordsBounded W c) (h1 : 1 ≤ W)
   unfold dirSel
   refine ylexTest_exec (K := 3) c (fun h => ?_) (fun h => ?_)
   · unfold fwdSetup
-    exec_block
-    · omega
-    · omega
-    · refine ⟨by omega, fun _ => ⟨by config_simp, by config_simp, by config_simp⟩,
-        fun h' => absurd h h', fun r h86 h92 h93 => by simp [h86, h92, h93], rfl, rfl, rfl,
-        rfl⟩
+    exec_block!
+    simp_all
   · unfold bwdSetup
-    exec_block
-    · exact hW
-    · omega
-    · omega
-    · refine ⟨by omega, fun h' => absurd h' h,
-        fun _ => ⟨by config_simp, by config_simp, by config_simp⟩,
-        fun r h86 h92 h93 => by simp [h86, h92, h93], rfl, rfl, rfl, rfl⟩
+    exec_block!
+    simp_all
 
 set_option maxHeartbeats 400000 in
 /-- **Spec lemma for the direction phase** `dirRead; dirSel`: with `mp = nreg 90`,
@@ -551,11 +538,11 @@ theorem dirPhase_exec (c : Config) (hc : WordsBounded W c) (hm1 : 1 ≤ l.length
     rfl
   have enx : P.vtx (c.nmem (c.nreg 90 + c.nreg 88)) =
       ptAt P l ((c.nreg 90 - c.nreg 84 + 1) % l.length) := by
-    rw [hq _ (by omega) (by omega), h88, show c.nreg 90 + 1 - c.nreg 84 =
+    ram_rw [hq, h88, show c.nreg 90 + 1 - c.nreg 84 =
       c.nreg 90 - c.nreg 84 + 1 by omega]
   have epr : P.vtx (c.nmem (c.nreg 90 + c.nreg 83 - c.nreg 88)) =
       ptAt P l ((c.nreg 90 - c.nreg 84 + l.length - 1) % l.length) := by
-    rw [hq _ (by omega) (by omega), h88, h83, show c.nreg 90 + l.length - 1 - c.nreg 84 =
+    ram_rw [hq, h88, h83, show c.nreg 90 + l.length - 1 - c.nreg 84 =
       c.nreg 90 - c.nreg 84 + l.length - 1 by omega]
   unfold dirRead
   refine spec_seq ?_
@@ -576,13 +563,10 @@ theorem dirPhase_exec (c : Config) (hc : WordsBounded W c) (hm1 : 1 ≤ l.length
   rw [h83] at hb
   refine ⟨by omega, ⟨fun r hr => ?_, fun r hr => ?_, fun a _ => by rw [hnm], hrm, hout⟩, hnm,
     ?_, ?_, fun hd => hf hd, fun hd => hb hd⟩
-  · rw [hfn r (by omega) (by omega) (by omega)]
-    simp [show r ≠ 89 by omega, show r ≠ 91 by omega]
-  · rw [hrr]
-    simp [show r ≠ 80 by omega, show r ≠ 81 by omega, show r ≠ 82 by omega,
-      show r ≠ 83 by omega]
-  · rw [hfn 88 (by omega) (by omega) (by omega)]; config_simp; exact h88
-  · rw [hfn 90 (by omega) (by omega) (by omega)]; config_simp
+  · frame_finish
+  · simp [hrr, show r ≠ 80 by omega, show r ≠ 81 by omega, show r ≠ 82 by omega, show r ≠ 83 by omega]
+  · ram_finish
+  · ram_finish
 
 end direction
 
@@ -622,24 +606,22 @@ theorem copyBody_inv {c₀ : Config} (h83 : c₀.nreg 83 = l.length)
   obtain ⟨hw, hF, h88, h87, hblo, hbhi, hfwd, hbwd, hD, hT⟩ := hI
   have hF' := hF
   obtain ⟨hFn, hFr, hFm, hFrm, hFo⟩ := hF
-  have e83 : c.nreg 83 = c₀.nreg 83 := hFn 83 (by omega)
-  have e84 : c.nreg 84 = c₀.nreg 84 := hFn 84 (by omega)
+  have e83 := hFn 83 (by omega)
+  have e84 := hFn 84 (by omega)
   rw [h87] at ht
   have hval : c.nmem (c.nreg 86) = (reorient P l (c₀.nreg 90 - c₀.nreg 84)).getD
       (c.nreg 94 - (c₀.nreg 84 + 2 * l.length)) 0 := by
     by_cases hd : DirFwd P l (c₀.nreg 90 - c₀.nreg 84)
     · obtain ⟨e86, -, -⟩ := hfwd hd
-      rw [show c.nreg 86 = c₀.nreg 84 + (c₀.nreg 90 - c₀.nreg 84 +
-          (c.nreg 94 - (c₀.nreg 84 + 2 * l.length))) by omega, hD _ (by omega),
-        htab _ (by omega)]
-      unfold reorient
-      rw [ite_eq_left hd, getD_fwdList _ _ (by omega)]
+      ram_rw [show c.nreg 86 = c₀.nreg 84 + (c₀.nreg 90 - c₀.nreg 84 +
+          (c.nreg 94 - (c₀.nreg 84 + 2 * l.length))) by omega, hD,
+        htab]
+      ram_simp [reorient, ite_eq_left hd, getD_fwdList] <;> reg_omega
     · obtain ⟨e86, -, -⟩ := hbwd hd
-      rw [show c.nreg 86 = c₀.nreg 84 + (c₀.nreg 90 - c₀.nreg 84 + l.length -
-          (c.nreg 94 - (c₀.nreg 84 + 2 * l.length))) by omega, hD _ (by omega),
-        htab _ (by omega)]
-      unfold reorient
-      rw [ite_eq_right hd, getD_bwdList _ _ (by omega)]
+      ram_rw [show c.nreg 86 = c₀.nreg 84 + (c₀.nreg 90 - c₀.nreg 84 + l.length -
+          (c.nreg 94 - (c₀.nreg 84 + 2 * l.length))) by omega, hD,
+        htab]
+      ram_simp [reorient, ite_eq_right hd, getD_bwdList] <;> reg_omega
   have hside : c.nreg 86 + c.nreg 92 ≤ W := by
     by_cases hd : DirFwd P l (c₀.nreg 90 - c₀.nreg 84)
     · obtain ⟨e86, e92, -⟩ := hfwd hd
@@ -668,16 +650,14 @@ theorem copyBody_inv {c₀ : Config} (h83 : c₀.nreg 83 = l.length)
       config_simp
       rw [e92, e93, h88]
       omega
-    · config_simp
-      rw [Machine.upd_other _ _ _ (by omega)]
-      exact hD i hi
+    · ram_post
     · config_simp at hj
       rw [h88] at hj
       config_simp
       by_cases hj' : j = c.nreg 94 - (c₀.nreg 84 + 2 * l.length)
       · rw [show c₀.nreg 84 + 2 * l.length + j = c.nreg 94 by omega, Machine.upd_same, hval,
           hj']
-      · rw [Machine.upd_other _ _ _ (by omega)]
+      · ram_rw [Machine.upd_other _ _]
         exact hT j (by omega)
 
 /-- **Spec lemma for the copy phase** `copyInit; copyLoop`: after the direction set-up, the
@@ -697,17 +677,16 @@ theorem copyPhase_exec (c : Config) (hc : WordsBounded W c) (h83 : c.nreg 83 = l
   refine spec_seq ?_
   exec_block
   · rw [h83]; omega
-  · config_simp; rw [h83]; omega
-  · config_simp; rw [h83]; omega
+  · ram_finish
+  · ram_finish
   refine spec_imp (Exec.whileLtN_bounded (CopyInv P W l c)
     (fun d => c.nreg 84 + 3 * l.length - d.nreg 94) 5 (fun _ h => h.1)
     (fun d hd ht => copyBody_inv (P := P) h83 hW htab hlo hi0 d hd ht) ?_) ?_
   · refine ⟨‹_›, ⟨fun r hr => ?_, fun r _ => rfl, fun a _ => rfl, rfl, rfl⟩,
-      by config_simp; exact h88, by config_simp; rw [h83]; omega, by config_simp; rw [h83]; omega,
-      by config_simp; rw [h83]; omega, fun hd => ?_, fun hd => ?_, fun i _ => rfl, ?_⟩
+      by config_simp; exact h88, by ram_finish, by ram_finish,
+      by ram_finish, fun hd => ?_, fun hd => ?_, fun i _ => rfl, ?_⟩
     · have h1 : r ≠ 87 := by omega
-      have h2 : r ≠ 94 := by omega
-      simp [h1, h2]
+      frame_finish
     · obtain ⟨e86, e92, e93⟩ := hfwd hd
       config_simp
       rw [e86, e92, e93, h83]
@@ -752,8 +731,8 @@ theorem fragPhase_exec {l' : List ℕ} (c : Config) (hc : WordsBounded W c)
   refine spec_seq ?_
   exec_block
   · rw [h83]; omega
-  · config_simp; rw [h83]; omega
-  · config_simp; rw [h83]; omega
+  · simp_all <;> omega
+  · simp_all <;> omega
   obtain ⟨c', k, T, ex, hk, hT, hout, hn, hr, hnm, hrm⟩ :=
     mountainSub_exec_weak (P := P) (W := W) hM _ ‹_›
       (fun i hi => by
@@ -762,13 +741,12 @@ theorem fragPhase_exec {l' : List ℕ} (c : Config) (hc : WordsBounded W c)
           omega]
         exact htab i hi)
       (by config_simp; exact h83) (Or.inl (by config_simp; rw [h83]))
-      (by config_simp; rw [h83]; omega) (by config_simp; rw [h83]; omega)
+      (by simp_all <;> omega) (by simp_all <;> omega)
   refine ⟨c', k, ex, by omega, ⟨T, hT, by rw [hout]⟩, fun r hr' => ?_, fun r hr' => ?_,
     fun a ha => ?_, hrm⟩
-  · rw [hn r (by omega)]
-    simp [show r ≠ 60 by omega, show r ≠ 61 by omega, show r ≠ 62 by omega]
+  · frame_finish
   · rw [hr r hr']
-  · rw [hnm a (by config_simp; rw [h83]; omega)]
+  · rw [hnm a (by ram_finish)]
 
 set_option maxHeartbeats 800000 in
 /-- **The piece triangulator.**  Let the piece `l` be given as a cyclic linked list
@@ -800,52 +778,52 @@ theorem pieceTri_exec {l : List ℕ}
   have h83 := hin.len
   -- phase 1
   obtain ⟨c₁, k₁, ex₁, hk₁, hF₁, h88₁, htab₁⟩ := walkPhase_exec (P := P) c hc hin (by omega)
-  have e83₁ : c₁.nreg 83 = l.length := by rw [hF₁.1 83 (by omega), h83]
-  have e84₁ : c₁.nreg 84 = c.nreg 84 := hF₁.1 84 (by omega)
+  have e83₁ : c₁.nreg 83 = l.length := by ram_rw [hF₁.1 83, h83]
+  have e84₁ := hF₁.1 84 (by omega)
   rw [← e84₁] at htab₁
   -- phase 2
   obtain ⟨c₂, k₂, ex₂, hk₂, hF₂, hnm₂, h88₂, hlo₂, hmin₂⟩ := minPhase_exec (P := P) c₁
-    ex₁.wb_right (by omega) e83₁ (by rw [e84₁]; exact hW) h88₁ htab₁
-  have e83₂ : c₂.nreg 83 = l.length := by rw [hF₂.1 83 (by omega), e83₁]
-  have e84₂ : c₂.nreg 84 = c₁.nreg 84 := hF₂.1 84 (by omega)
+    ex₁.wb_right (by omega) e83₁ (by rwa [e84₁]) h88₁ htab₁
+  have e83₂ : c₂.nreg 83 = l.length := by ram_rw [hF₂.1 83, e83₁]
+  have e84₂ := hF₂.1 84 (by omega)
   have htab₂ : ∀ i, i < 2 * l.length →
       c₂.nmem (c₂.nreg 84 + i) = l.getD (i % l.length) 0 := by
-    rw [hnm₂, e84₂]; exact htab₁
+    simp_all
   -- phase 3
   obtain ⟨c₃, k₃, ex₃, hk₃, hF₃, hnm₃, h88₃, h90₃, hf₃, hb₃⟩ := dirPhase_exec (P := P) c₂
-    ex₂.wb_right (by omega) e83₂ (by rw [e84₂, e84₁]; exact hW) h88₂ htab₂
-    (by rw [e84₂]; exact hlo₂) (by rw [e84₂]; exact hmin₂.1)
-  have e83₃ : c₃.nreg 83 = l.length := by rw [hF₃.1 83 (by omega), e83₂]
-  have e84₃ : c₃.nreg 84 = c₁.nreg 84 := by rw [hF₃.1 84 (by omega), e84₂]
+    ex₂.wb_right (by omega) e83₂ (by simp_all) h88₂ htab₂
+    (by rwa [e84₂]) (by rw [e84₂]; exact hmin₂.1)
+  have e83₃ : c₃.nreg 83 = l.length := by ram_rw [hF₃.1 83, e83₂]
+  have e84₃ : c₃.nreg 84 = c₁.nreg 84 := by ram_rw [hF₃.1 84, e84₂]
   have htab₃ : ∀ i, i < 2 * l.length →
       c₃.nmem (c₃.nreg 84 + i) = l.getD (i % l.length) 0 := by
-    rw [hnm₃, e84₃, ← e84₂]; exact htab₂
+    rwa [hnm₃, e84₃, ← e84₂]
   rw [e84₂] at hf₃ hb₃
   -- phase 4
   obtain ⟨c₄, k₄, ex₄, hk₄, hF₄, htab₄⟩ := copyPhase_exec (P := P) c₃ ex₃.wb_right e83₃
-    (by rw [e84₃, e84₁]; exact hW) h88₃ htab₃ (by rw [e84₃, h90₃]; exact hlo₂)
-    (by rw [e84₃, h90₃]; exact hmin₂.1) (by rw [e84₃, h90₃]; exact hf₃)
-    (by rw [e84₃, h90₃]; exact hb₃)
+    (by rwa [e84₃, e84₁]) h88₃ htab₃ (by rwa [e84₃, h90₃])
+    (by rw [e84₃, h90₃]; exact hmin₂.1) (by rwa [e84₃, h90₃])
+    (by rwa [e84₃, h90₃])
   rw [e84₃, h90₃] at htab₄
   have hF := pFrame_trans hF₁ (pFrame_trans hF₂ (pFrame_trans hF₃ hF₄))
-  have e83₄ : c₄.nreg 83 = l.length := by rw [hF.1 83 (by omega), h83]
-  have e84₄ : c₄.nreg 84 = c.nreg 84 := hF.1 84 (by omega)
+  have e83₄ : c₄.nreg 83 = l.length := by ram_rw [hF.1 83, h83]
+  have e84₄ := hF.1 84 (by omega)
   -- phase 5
   have hlen := length_reorient P l (c₂.nreg 90 - c₁.nreg 84)
   have hM := isMountain_reorient hmount hmin₂
   obtain ⟨c₅, k₅, ex₅, hk₅, ⟨T, hT, hout⟩, hn₅, hr₅, hnm₅, hrm₅⟩ :=
     fragPhase_exec (P := P) (W := W) (l' := reorient P l (c₂.nreg 90 - c₁.nreg 84)) c₄
-      ex₄.wb_right (by rw [e83₄, hlen]) (by rw [e84₄, hlen]; exact hW) hM
-      (fun j hj => by rw [e84₄, hlen, ← e84₁]; exact htab₄ j (by rw [hlen] at hj; exact hj))
+      ex₄.wb_right (by rw [e83₄, hlen]) (by rwa [e84₄, hlen]) hM
+      (fun j hj => by rw [e84₄, hlen, ← e84₁]; exact htab₄ j (by rwa [hlen] at hj))
   obtain ⟨T', hT', heq⟩ := goodTri_piece_of_mountain hmin₂ ⟨T, hT, rfl⟩
   rw [hlen] at hk₅
   rw [e84₄, hlen] at hnm₅
-  refine ⟨c₅, _, Exec.seq ex₁ (Exec.seq ex₂ (Exec.seq ex₃ (Exec.seq ex₄ ex₅))), by omega,
+  refine ⟨c₅, _, (by ram_path), by omega,
     ⟨T', hT', by rw [hout, heq, hF.2.2.2.2]⟩, fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
     by rw [hrm₅, hF.2.2.2.1]⟩
-  · rw [hn₅ r (by omega), hF.1 r (by omega)]
-  · rw [hr₅ r (by omega), hF.2.1 r (by omega)]
-  · rw [hnm₅ a (by omega), hF.2.2.1 a (by rw [h83]; exact ha)]
+  · frame_finish
+  · frame_finish
+  · ram_rw [hnm₅ a, hF.2.2.1 a (by rwa [h83])]
 
 end main
 

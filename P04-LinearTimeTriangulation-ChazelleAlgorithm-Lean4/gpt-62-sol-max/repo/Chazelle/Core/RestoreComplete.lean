@@ -37,68 +37,6 @@ open Sweep
 
 variable {M : Model}
 
-/-- **The dichotomy at a cut vertex.** -/
-theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} (hp : p < M.W.n)
-    (hA : SideAttach M.W c p 0) {τ : ℝ} (hτ : τ = 1 ∨ τ = -1)
-    (hsec : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) τ 1))
-    (hav : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) τ s ∉ c) :
-    0 < sideCross (M.W.vtx ((p + 1) % M.W.n) - M.W.vtx p) ((τ, 0) : Point) ∨
-      0 < sideCross ((τ, 0) : Point) (M.W.vtx ((p + M.W.n - 1) % M.W.n) - M.W.vtx p) := by
-  have hne := hM.nd p hp
-  obtain ⟨d, hd, -, hcD, -⟩ := attached_opposite hM hc hA hτ hav
-  have hn0 : 0 < M.W.n := by omega
-  have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
-  set v := M.W.vtx p with hv
-  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
-  set b := M.W.vtx ((p + 1) % M.W.n) with hb
-  have hsecv : ∀ x, sideLeft M.W p 0 x ↔ sideCcw (b - v) (x - v) (a - v) :=
-    fun x => sideLeft_zero _ _ _
-  have hττ : τ * τ = 1 := by rcases hτ with rfl | rfl <;> norm_num
-  have hdp : sideCcw (b - v) ((τ, 0) : Point) (a - v) := by
-    have := (hsecv _).1 hsec
-    rwa [hwv, rayPt_sub, one_smul] at this
-  have hBdm : ¬ (sideCross (b - v) ((-τ, 0) : Point) = 0 ∧
-      0 < sideDot (b - v) ((-τ, 0) : Point)) := by
-    rintro ⟨h1, h2⟩
-    simp only [sideCross, sideDot, Prod.fst_sub, Prod.snd_sub] at h1 h2
-    have hb2 : b.2 = v.2 := by
-      have h1' : (b.2 - v.2) * τ = 0 := by linarith
-      rcases mul_eq_zero.1 h1' with h | h
-      · linarith
-      · rcases hτ with rfl | rfl <;> norm_num at h
-    set k := -(τ * (b.1 - v.1)) with hk
-    have hk0 : 0 < k := by rw [hk]; nlinarith
-    set s := min d k / 2 with hs
-    have hmin : 0 < min d k := lt_min hd hk0
-    have hs0 : 0 < s := by rw [hs]; linarith
-    have hsd : s < d := by rw [hs]; linarith [min_le_left d k]
-    have hsk : s ≤ k := by rw [hs]; linarith [min_le_right d k]
-    have hmem : rayPt v (-τ) s ∈ M.D := by rw [← hwv]; exact hcD s hs0 hsd
-    apply hM.trace p hp (s / k) (div_nonneg hs0.le hk0.le) ((div_le_one hk0).2 hsk)
-    have e : sidePt M.W p (s / k) = rayPt v (-τ) s := by
-      unfold sidePt
-      apply point_ext
-      · simp only [lerp_fst, rayPt_fst]
-        have h3 : s / k * (b.1 - v.1) = -τ * s := by
-          rw [div_mul_eq_mul_div, div_eq_iff hk0.ne', hk]
-          linear_combination (-(s * (b.1 - v.1))) * hττ
-        rw [← h3]
-      · simp only [lerp_snd, rayPt_snd]
-        rw [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]; ring
-    rw [e]; exact hmem
-  rcases hdp with ⟨-, h2, -⟩ | ⟨-, h2⟩ | ⟨-, -, h3⟩ | ⟨h1, h2, h3⟩
-  · exact Or.inl h2
-  · exact h2
-  · exact Or.inl h3
-  · rcases lt_trichotomy (sideCross (b - v) ((τ, 0) : Point)) 0 with h4 | h4 | h4
-    · exact Or.inr (cross_dir_aux h1 h2 h4)
-    · exfalso; apply hBdm
-      rcases h3 with h3 | h3
-      · exact absurd h4 h3
-      · rw [sideCross_neg_dir, sideDot_neg_dir, h4]
-        exact ⟨by ring, by linarith⟩
-    · exact Or.inl h4
-
 /-- The ray along an admissible chord `e ∉ S` from its end meets no chord of `S` in the domain
 (two distinct chords of a chord system meet only off the domain). -/
 theorem ray_not_mem_of_chord (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
@@ -137,22 +75,19 @@ theorem valid_complete (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   -- the ray points are in `R`
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     refine heR ⟨?_, hdom s hs0 hsT.2⟩
     rw [heq]; exact (mem_chordOf hσ hT.le).2 ⟨s, hs0.le, hsT.2.le, rfl⟩
   have same : ∀ X ∈ M.regions S, (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ X) →
       X = R := by
     intro X hX hev
-    obtain ⟨s, h1, h2⟩ := (hev.and hrayR).exists
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · exact h
-    · exact absurd (Set.disjoint_left.1 h h1) (not_not.2 h2)
+    exact Chazelle.Chain.regionsIn_eq_of_eventually_mem hX hR hev hrayR
   have hav : ∀ c ∈ S, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∉ c := by
     intro c hc
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
     exact hnot c hc s hs hsT.2
   by_cases hcut : M.IsCut S ((p : ℝ) + 0)
-  · obtain ⟨c, hc, hA⟩ := attach_of_cut hM hcut
+  · obtain ⟨c, hc, hA⟩ := attach_of_cut hcut
     obtain ⟨U, V, l, r, hU, hV, -, harcU, harcV, -⟩ := hM.attach_face hS hfin hc hA
     rcases cut_dichotomy hM (hS hc) hp hA hσ hsec (hav c hc) with h | h
     · have hin := ray_mem_region_after hGM hFam hU hp harcU hc hA hσ hsec

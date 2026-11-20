@@ -43,7 +43,7 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     (hSifin : Si.Finite) {τ x h : ℝ} (hgood : HalfIn J.whole.dom τ ((x, h) : Point))
     (hcol : h < C'.top.2 ∨ (τ = -1 ∧ h ≤ C'.top.2) ∨ x ≠ C'.top.1) :
     HalfIn (freeIn C'.dom Si) τ ((x, h) : Point) := by
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP' := hC'P ▸ hP
   obtain ⟨r, hr, hsub⟩ := hgood
   obtain ⟨r₂, hr₂, hch⟩ := chords_off_line (walkAx_chainModel hP') hSiA hSifin ((x, h) : Point)
   obtain ⟨r₃, hr₃, hsl⟩ : ∃ r₃ > 0, ∀ y ∈ ball ((x, h) : Point) r₃,
@@ -93,9 +93,9 @@ theorem between_open {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.A
     obtain ⟨h1, h2, h3⟩ := mem_seg_sigma hqy (Or.inl rfl) (by simpa using hqw) hy
     simp only [one_mul] at h2 h3
     refine ⟨h1, lt_of_le_of_ne h2 fun h => ?_, lt_of_le_of_ne h3 fun h => ?_⟩
-    · have : y = q := Geometry.point_ext h.symm (h1.trans hqy.symm)
+    · have := Geometry.point_ext h.symm (h1.trans hqy.symm)
       exact hqD (this ▸ hyD)
-    · have : y = w := Geometry.point_ext h h1
+    · have := Geometry.point_ext h h1
       exact hwD (this ▸ hyD)
   obtain ⟨hz2, hzq, hzw⟩ := hstrict hz hzD
   obtain ⟨-, hz'q, hz'w⟩ := hstrict hz' hz'D
@@ -145,18 +145,23 @@ theorem snd_eq_of_mem {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.
   rw [hce] at hz hz'
   exact (mem_seg_sigma hqy (Or.inl rfl) hqw hz').1.trans (mem_seg_sigma hqy (Or.inl rfl) hqw hz).1.symm
 
+section
+
+variable (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set ⊆ J.whole.set)
+
+include hP hC'P hset in
 /-- **`Phi` is the region of `Sᵢ` just on the side of `R` of any point of `f`** (below the top of
 `Cᵢ`). -/
-theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set ⊆ J.whole.set)
+theorem phi_eq
     {Si : Set (Set Point)} (hSiA : Si ⊆ (chainModel C').Adm) (hSifin : Si.Finite)
-    {F : Set (Set Point)} (hF : F ⊆ (chainModel J.whole).Adm) (hfin : F.Finite) {R : Set Point}
-    (hR : R ∈ (chainModel J.whole).regions F) {f : Set Point} (hf : f ∈ F) {τ : ℝ}
-    (hτ : τ = 1 ∨ τ = -1) (hside : SideIn (chainModel J.whole) R f τ) {z₁ : Point} (hz₁ : z₁ ∈ f)
+    {F : Set (Set Point)} (hF : F ⊆ J.wholeModel.Adm) (hfin : F.Finite) {R : Set Point}
+    (hR : R ∈ J.wholeModel.regions F) {f : Set Point} (hf : f ∈ F) {τ : ℝ}
+    (hτ : τ = 1 ∨ τ = -1) (hside : SideIn J.wholeModel R f τ) {z₁ : Point} (hz₁ : z₁ ∈ f)
     (hz₁D : z₁ ∈ J.whole.dom) (hh : z₁.2 ≤ C'.top.2) {V : Set Point}
     (hV : V ∈ (chainModel C').regions Si)
     (hzV : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₁.2 + τ * δ) : Point) ∈ V) :
-    Phi (chainModel J.whole) (chainModel C') Si R f = V := by
-  set M := chainModel J.whole with hMdef
+    Phi J.wholeModel (chainModel C') Si R f = V := by
+  set M := J.wholeModel with hMdef
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
   have hso : sideOf M R f = τ := by
@@ -172,11 +177,11 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hm : midOf M f ∈ f ∧ midOf M f ∈ M.D := by
     unfold midOf; rw [dite_eq_left hex]; exact Classical.choose_spec hex
   set m := midOf M f with hmdef
-  have hm2 : m.2 = z₁.2 := snd_eq_of_mem hM (hF hf) hz₁ hm.1
+  have hm2 := snd_eq_of_mem hM (hF hf) hz₁ hm.1
   have hgood : ∀ x ∈ Icc (min z₁.1 m.1) (max z₁.1 m.1),
       HalfIn (freeIn C'.dom Si) τ ((x, z₁.2) : Point) := by
     intro x hx
-    have hxD : ((x, z₁.2) : Point) ∈ M.D := between_open hM (hF hf) hz₁ hz₁D hm.1 hm.2 hx.1 hx.2
+    have hxD := between_open hM (hF hf) hz₁ hz₁D hm.1 hm.2 hx.1 hx.2
     refine halfIn_side J hP hC'P hset hSiA hSifin (halfIn_of_mem J.whole.isOpen_dom τ hxD) ?_
     rcases hh.lt_or_eq with hlt | heq
     · exact Or.inl hlt
@@ -190,21 +195,19 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hW₀r : W₀ ∈ M'.regions Si := ⟨w, hw, rfl⟩
   have hz₁W : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₁.2 + τ * δ) : Point) ∈ W₀ := by
     rcases le_total z₁.1 m.1 with h | h
-    · rw [min_eq_left h] at h1; exact h1
-    · rw [max_eq_left h] at h2; exact h2
+    · rwa [min_eq_left h] at h1
+    · rwa [max_eq_left h] at h2
   have hmW : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((m.1, m.2 + τ * δ) : Point) ∈ W₀ := by
     rw [hm2]
     rcases le_total z₁.1 m.1 with h | h
-    · rw [max_eq_right h] at h2; exact h2
-    · rw [min_eq_right h] at h1; exact h1
+    · rwa [max_eq_right h] at h2
+    · rwa [min_eq_right h] at h1
   have hmeet : ∀ {X Y : Set Point}, X ∈ M'.regions Si → Y ∈ M'.regions Si → ∀ {p : Point},
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((p.1, p.2 + τ * δ) : Point) ∈ X) →
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((p.1, p.2 + τ * δ) : Point) ∈ Y) → X = Y := by
     intro X Y hX hY p hX' hY'
-    obtain ⟨δ, h3, h4⟩ := (hX'.and hY').exists
-    exact (Chazelle.Chain.regionsIn_eq_or_disjoint hX hY).resolve_right
-      (fun hd => hd.le_bot ⟨h3, h4⟩)
-  have hWV : W₀ = V := hmeet hW₀r hV hz₁W hzV
+    exact Chazelle.Chain.regionsIn_eq_of_eventually_mem hX hY hX' hY'
+  have hWV := hmeet hW₀r hV hz₁W hzV
   have hPhi : ∃ U ∈ M'.regions Si, ∀ᶠ δ in 𝓝[>] (0 : ℝ),
       (((midOf M f).1, (midOf M f).2 + sideOf M R f * δ) : Point) ∈ U := by
     rw [hso]; exact ⟨W₀, hW₀r, hmW⟩
@@ -212,27 +215,27 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   rw [dite_eq_left hPhi]
   obtain ⟨hU, hUm⟩ := Classical.choose_spec hPhi
   have hUm' : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((m.1, m.2 + τ * δ) : Point) ∈ Classical.choose hPhi :=
-    hUm.mono fun δ h => by rw [show τ * δ = sideOf M R f * δ by rw [hso]]; exact h
+    hUm.mono fun δ h => by rwa [show τ * δ = sideOf M R f * δ by rw [hso]]
   rw [← hWV]
   exact hmeet hU hW₀r hUm' hmW
 
+include hP hC'P hset in
 /-- **The parent of an exit chord of `R` in `Sᵢ` is an exit chord of `Phi f`** for an exit chord
 `f` of `R` faced next to an attachment (the end of the chain of wedges of `R`). -/
-theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
-    (hset : C'.set ⊆ J.whole.set) {Q : Polygon} {Si : Set (Set Point)}
+theorem parent_touch {Q : Polygon} {Si : Set (Set Point)}
     (hSi : (chainModel C').ChordFamily Q Si) {F : Set (Set Point)}
-    (hF : F ⊆ (chainModel J.whole).Adm) (hfin : F.Finite)
+    (hF : F ⊆ J.wholeModel.Adm) (hfin : F.Finite)
     (hends : ∀ c ∈ Si, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom) {R : Set Point}
-    (hR : R ∈ (chainModel J.whole).regions F) {e : Set Point} (he : e ∈ F)
+    (hR : R ∈ J.wholeModel.regions F) {e : Set Point} (he : e ∈ F)
     (hRe : TouchesIn J.whole.dom e R) {c : Set Point} (hc : c ∈ Si) (hec : e ⊆ c) :
     ∃ f ∈ F, TouchesIn J.whole.dom f R ∧
-      (∃ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W f p t ∧
-        Adj (chainModel J.whole) F R p t) ∧
-      c ∈ exits (chainModel C') Si (Phi (chainModel J.whole) (chainModel C') Si R f) := by
-  set M := chainModel J.whole with hMdef
+      (∃ (p : ℕ) (t : ℝ), SideAttach J.wholeModel.W f p t ∧
+        Adj J.wholeModel F R p t) ∧
+      c ∈ exits (chainModel C') Si (Phi J.wholeModel (chainModel C') Si R f) := by
+  set M := J.wholeModel with hMdef
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  
   obtain ⟨y, a, b, hH, hy, hceq, hl, hr⟩ := Merge.augChords_spec (hSi.2.1 hc)
   -- the side of `R`
   obtain ⟨τ, hτ, hsideE⟩ : ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧ SideIn M R e τ := by
@@ -264,7 +267,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       · exact Or.inl h
       · exact Or.inr (Or.inl ⟨h, hy⟩)
     · push Not at hcase
-      have hyt : y = C'.top.2 := le_antisymm hy hcase.1
+      have hyt := le_antisymm hy hcase.1
       have htop : C'.top.1 ≤ a ∨ b ≤ C'.top.1 := by
         by_contra h
         push Not at h
@@ -300,8 +303,8 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       exact ⟨_, ⟨w, hw, rfl⟩, h2, h1⟩
   have hPhi : Phi M M' Si R f = V := by
     refine phi_eq J hP hC'P hset hSi.2.1 hSi.1 hF hfin hR hf hτ hsidef hz₁f hz₁D
-      (by rw [hz₁y, hz₀y]; exact hy) hV ?_
-    rw [hz₁y]; exact hV₁
+      (by rwa [hz₁y, hz₀y]) hV ?_
+    rwa [hz₁y]
   refine ⟨f, hf, hRf, hadjf, hc, z₀, ⟨hec hz₀e, ?_⟩, ?_⟩
   · show z₀ ∈ C'.dom
     have : z₀ = ((z₀.1, y) : Point) := Prod.ext rfl hz₀y
@@ -321,17 +324,17 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
 def adjExits (M : Model) (F : Set (Set Point)) (R : Set Point) : Set (Set Point) :=
   {f | f ∈ exits M F R ∧ ∃ (p : ℕ) (t : ℝ), SideAttach M.W f p t ∧ Adj M F R p t}
 
+include hP hC'P hset in
 /-- **The parents in `Sᵢ` of the exit chords of `R`** are at most `D` times as many as the exit
 chords of `R` faced next to an attachment. -/
-theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
-    (hset : C'.set ⊆ J.whole.set) {Q : Polygon} {Si : Set (Set Point)}
+theorem parents_ncard_le {Q : Polygon} {Si : Set (Set Point)}
     (hSi : (chainModel C').ChordFamily Q Si) {F : Set (Set Point)}
-    (hF : F ⊆ (chainModel J.whole).Adm) (hfin : F.Finite)
+    (hF : F ⊆ J.wholeModel.Adm) (hfin : F.Finite)
     (hends : ∀ c ∈ Si, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom) {R : Set Point}
-    (hR : R ∈ (chainModel J.whole).regions F) {D : ℕ} (hdeg : (chainModel C').DegLe Si D) :
-    {c | c ∈ Si ∧ ∃ e ∈ exits (chainModel J.whole) F R, e ⊆ c}.ncard ≤
-      D * (adjExits (chainModel J.whole) F R).ncard := by
-  set M := chainModel J.whole with hMdef
+    (hR : R ∈ J.wholeModel.regions F) {D : ℕ} (hdeg : (chainModel C').DegLe Si D) :
+    {c | c ∈ Si ∧ ∃ e ∈ exits J.wholeModel F R, e ⊆ c}.ncard ≤
+      D * (adjExits J.wholeModel F R).ncard := by
+  set M := J.wholeModel with hMdef
   set M' := chainModel C' with hM'def
   have hsub : {c | c ∈ Si ∧ ∃ e ∈ exits M F R, e ⊆ c} ⊆
       ⋃ f ∈ adjExits M F R, exits M' Si (Phi M M' Si R f) := by
@@ -353,9 +356,10 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
         ext c
         simp only [exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
         rintro - ⟨z, -, hz⟩
-        rw [closure_empty] at hz
-        exact hz
-      rw [this, Set.ncard_empty]; omega
+        rwa [closure_empty] at hz
+      simp_all
+
+end
 
 end FuseDeg
 

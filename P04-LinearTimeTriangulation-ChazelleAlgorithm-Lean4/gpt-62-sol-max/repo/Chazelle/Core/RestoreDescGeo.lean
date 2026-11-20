@@ -34,14 +34,19 @@ open Chazelle.Jordan (offset)
 
 variable {M : Model}
 
+section
+
+variable (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
+    (hfin : S.Finite) {R : Set Point} (hR : R ∈ M.regions S) {l r : ℝ} (harc : M.IsArc S R l r)
+    {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) (hin : sideInArc l r (p + t))
+
+include hM hS hfin hR harc hp ht0 ht1 hin in
 /-- **The left sector at a position strictly inside an arc of `R` lies in `R`** near its
 point. -/
-theorem sector_sub_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm)
-    (hfin : S.Finite) {R : Set Point} (hR : R ∈ M.regions S) {l r : ℝ} (harc : M.IsArc S R l r)
-    {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) (hin : sideInArc l r (p + t)) :
+theorem sector_sub_region :
     ∃ r₁ > 0, ∀ x ∈ ball (sidePt M.W p t) r₁, sideLeft M.W p t x → x ∈ R := by
-  have hcut : ¬ M.IsCut S (p + t) := harc.2.2.2.2.2.1 _ hin
-  have hB : ∀ c ∈ S, ¬ SideAttach M.W c p t := fun c hc hA => hcut ⟨c, hc, p, t, hA, rfl⟩
+  have hcut := harc.2.2.2.2.2.1 _ hin
+  have hB := fun c hc hA => hcut ⟨c, hc, p, t, hA, rfl⟩
   obtain ⟨r₁, hr₁, hfree⟩ := Sweep.sector_free hM hS hfin hp ht0 ht1
   have hav := sidePrev_ne hM hp ht0
   have hbv := Chazelle.Chain.sideNext_ne_pt (hM.nd p hp) ht1
@@ -65,21 +70,18 @@ theorem sector_sub_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Ad
     · exact mul_pos hx (by linarith)
   have hfR : ∀ᶠ s in 𝓝[>] (0 : ℝ), s < 1 ∧ M.Faces p (t + s * (1 - t)) R := by
     filter_upwards [Ioo_mem_nhdsGT one_pos, hscale.eventually (cyc_open hin)] with s hs hk
-    have hs0 : (0 : ℝ) < s := hs.1
+    have hs0 := hs.1
     refine ⟨hs.2, harc.2.2.2.2.2.2 p _ hp (by nlinarith)
       (by nlinarith [mul_pos (sub_pos.2 hs.2) (sub_pos.2 ht1)]) ?_⟩
-    rw [← add_assoc]; exact hk
+    rwa [← add_assoc]
   obtain ⟨s, hs1, hs2⟩ := (hoff.and hfR).exists
-  have h2 : ∀ᶠ δ in 𝓝[>] (0 : ℝ),
-      offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) ∈ R :=
-    hscale.eventually hs2.2
+  have h2 := hscale.eventually hs2.2
   obtain ⟨δ, hδ1, hδ2⟩ := (hs1.and h2).exists
   have e : offset (sidePt M.W p t) (sideNext M.W p) s (1 * δ) =
       offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) := by
     rw [one_mul]; unfold sidePt sideNext
     exact Chazelle.Chain.offset_lerp_left _ _ _ _ _
-  have hLR : L ⊆ R :=
-    Chazelle.Chain.subset_regionsIn_of_inter hR hpre hLfree ⟨_, hδ1.2, e ▸ hδ2⟩
+  have hLR := Chazelle.Chain.subset_regionsIn_of_inter hR hpre hLfree ⟨_, hδ1.2, e ▸ hδ2⟩
   exact ⟨r₁, hr₁, fun x hx hxl => hLR ⟨hx, hxl⟩⟩
 
 /-- A point level with `w` whose signed offset `σ (x.1 - w.1)` is `s` is the ray point at `s`. -/
@@ -192,17 +194,16 @@ theorem ray_avoids (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) {p :
     rw [Geometry.lerp_symm]
     exact hopen _ ⟨by linarith [hs.2], by linarith [hs.1]⟩
 
+include hM hS hfin hR harc hp ht0 ht1 hin in
 /-- **The chord of a ray from a position strictly inside an arc of `R`** is not in `S` and its
 domain part lies in `R`. -/
-theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (hfin : S.Finite)
-    {R : Set Point} (hR : R ∈ M.regions S) {l r : ℝ} (harc : M.IsArc S R l r) {p : ℕ} {t : ℝ}
-    (hp : p < M.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) (hin : sideInArc l r (p + t)) {σ T : ℝ}
+theorem ray_in_region {σ T : ℝ}
     (hσ : σ = 1 ∨ σ = -1) (hT : 0 < T) (hsec : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1))
     (hdom : ∀ s, 0 < s → s < T → rayPt (sidePt M.W p t) σ s ∈ M.D)
     (hout : rayPt (sidePt M.W p t) σ T ∉ M.D) :
     chordOf (sidePt M.W p t) σ T ∉ S ∧ chordOf (sidePt M.W p t) σ T ∩ M.D ⊆ R := by
   set w := sidePt M.W p t with hw
-  have hcut : ¬ M.IsCut S (p + t) := harc.2.2.2.2.2.1 _ hin
+  have hcut := harc.2.2.2.2.2.1 _ hin
   have hav := ray_avoids hM hS hp ht0 ht1 hcut hσ hsec hdom
   constructor
   · intro hmem
@@ -226,8 +227,8 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
       · rw [mem_ball, Prod.dist_eq, rayPt_fst, rayPt_snd, dist_self, Real.dist_eq,
           add_sub_cancel_left]
         rcases hσ with rfl | rfl
-        · rw [one_mul, abs_of_pos hs₁0, max_eq_left hs₁0.le]; exact hs₁r
-        · rw [neg_one_mul, abs_neg, abs_of_pos hs₁0, max_eq_left hs₁0.le]; exact hs₁r
+        · rwa [one_mul, abs_of_pos hs₁0, max_eq_left hs₁0.le]
+        · rwa [neg_one_mul, abs_neg, abs_of_pos hs₁0, max_eq_left hs₁0.le]
       · exact (Sweep.sideLeft_rayPt_iff M.W p t σ hs₁0 one_pos).2 hsec
     have hIR := Chazelle.Chain.subset_regionsIn_of_inter hR hIc hIf hmeet
     rintro x ⟨hx, hxD⟩
@@ -243,13 +244,15 @@ theorem ray_in_region (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm) (
       · exact absurd (h ▸ hxD) hout
     exact hIR ⟨s, ⟨hs0', hsT'⟩, rfl⟩
 
+end
+
 /-! ## Arrival on the piece's chain (M2') -/
 
 /-- The point of a level segment is the ray point at the proportional offset. -/
 theorem lerp_rayPt (a : Point) (σ L μ : ℝ) : lerp a (rayPt a σ L) μ = rayPt a σ (μ * L) := by
   apply point_ext
   · rw [lerp_fst, rayPt_fst, rayPt_fst]; ring
-  · rw [lerp_snd, rayPt_snd, rayPt_snd]; ring
+  simp
 
 /-- The chord of a ray up to `T` is the segment to the ray point at `T`. -/
 theorem chordOf_eq_segment {z : Point} {σ T : ℝ} (hσ : σ = 1 ∨ σ = -1) (hT : 0 < T) :
@@ -279,7 +282,7 @@ theorem arrive_other {D : Set Point} {Cα : Chain} (hsetD : ∀ x ∈ Cα.set, x
     (hdom : ∀ s, 0 < s → s < T → rayPt a σ s ∈ D) (hfar : rayPt a σ T ∈ Cα.set) :
     rayPt a σ T = o := by
   set L₀ := σ * (o.1 - a.1) with hL₀
-  have ho : o = rayPt a σ L₀ := eq_rayPt hσ hoy
+  have ho := eq_rayPt hσ hoy
   rcases lt_trichotomy T L₀ with h | h | h
   · exfalso
     have hin := hkopen (T / L₀) ⟨div_pos hT hdir, (div_lt_one hdir).2 h⟩
@@ -289,14 +292,14 @@ theorem arrive_other {D : Set Point} {Cα : Chain} (hsetD : ∀ x ∈ Cα.set, x
   · exfalso
     have hoM : o ∈ D := by rw [ho]; exact hdom L₀ hdir h
     -- `o` is not a chain point
-    have hoC : o ∉ Cα.set := fun hh => hsetD o hh hoM
+    have hoC := fun hh => hsetD o hh hoM
     -- `o` is not on the slit
     have hoS : o ∉ Cα.slit := by
       intro hs
       obtain ⟨h1, h2, -⟩ := Cα.mem_slit_iff.1 hs
-      have h3 : o.2 ≤ Cα.top.2 := hoy ▸ Cα.snd_le_top_of_mem_set haC
+      have h3 := hoy ▸ Cα.snd_le_top_of_mem_set haC
       exact hoC (by
-        have : o = Cα.top := point_ext h1 (le_antisymm h3 h2)
+        have := point_ext h1 (le_antisymm h3 h2)
         rw [this]; exact Cα.top_mem_set)
     -- so `o` is off the box, and so is the farther ray point
     have hob : o ∉ Chazelle.Chain.box Cα.radius := fun hb =>
@@ -366,10 +369,8 @@ theorem witness_side {L da βb α' : ℝ} (hda0 : 0 < da) (hdaL : da < L) (hβ0 
     · by_cases hb' : 0 < β' ∧ β' < L
       · have e := hβ' hb'.1 hb'.2
         rw [hGBeq, e] at hBu hBx
-        have cu : sideInArc βb da u ↔ ¬ sideInArc da βb u :=
-          Chazelle.Chain.sideInArc_swap (Ne.symm hne) hub hua
-        have cx : sideInArc βb da x ↔ ¬ sideInArc da βb x :=
-          Chazelle.Chain.sideInArc_swap (Ne.symm hne) hxb hxa
+        have cu := Chazelle.Chain.sideInArc_swap (Ne.symm hne) hub hua
+        have cx := Chazelle.Chain.sideInArc_swap (Ne.symm hne) hxb hxa
         rw [cu] at hBu
         rw [cx] at hBx
         exact not_iff_not.1 (hBu.trans hBx.symm)
@@ -381,8 +382,8 @@ theorem witness_side {L da βb α' : ℝ} (hda0 : 0 < da) (hdaL : da < L) (hβ0 
           fun h => lt_of_le_of_ne (not_lt.1 h) hub⟩
         have nx : x < βb ↔ ¬ βb < x := ⟨fun h h' => lt_asymm h h',
           fun h => lt_of_le_of_ne (not_lt.1 h) hxb⟩
-        have e1 : da < u ↔ da < x := hGu.trans hGx.symm
-        have e2 : βb < u ↔ βb < x := hBu.trans hBx.symm
+        have e1 := hGu.trans hGx.symm
+        have e2 := hBu.trans hBx.symm
         unfold sideInArc
         rw [nu, nx]
         split_ifs <;> rw [e1, e2]
@@ -422,13 +423,13 @@ theorem arc_after (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   obtain ⟨t', ht', hno⟩ := hM.exists_after hFam.2.1 hFam.1 hp le_rfl zero_lt_one
   rw [add_zero] at hno
   have hx0 : (0 : ℝ) < p + t' := by have := ht'.1; positivity
-  have hxcut : ¬ M.IsCut F (p + t') := fun h => hno _ h ⟨by linarith [ht'.1], le_rfl⟩
+  have hxcut := fun h => hno _ h ⟨by linarith [ht'.1], le_rfl⟩
   obtain ⟨U, hU, a, b, harc, hin⟩ := WalkEmbed.exists_arc_around hGM hFam hx0 hxcut
   refine ⟨U, hU, a, b, harc, ?_⟩
   rcases F.eq_empty_or_nonempty with hF | hne
   · -- the arc of the empty family is the whole walk
     rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, rfl, rfl⟩
-    · rw [hF] at hc; exact absurd hc (Set.notMem_empty c)
+    · simp_all
     · refine ⟨?_, ?_⟩
       · by_cases h0 : (p : ℝ) = 0
         · exact Or.inr (Or.inl h0)
@@ -485,7 +486,7 @@ theorem inner_exit (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   obtain ⟨r₁, hr₁, hsub⟩ := sector_sub_region hM hFam.2.1 hFam.1 hR harc hp ht0 ht1 hin
   have hini : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr₁] with s hs hs'
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     refine hsub _ ?_ ((Sweep.sideLeft_rayPt_iff M.W p t σ hs0 one_pos).2 hsec)
     rw [mem_ball, Prod.dist_eq, rayPt_fst, rayPt_snd, dist_self, Real.dist_eq,
       add_sub_cancel_left]
@@ -495,42 +496,41 @@ theorem inner_exit (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   obtain ⟨t₁, ht₁, hout₁⟩ := ray_leaves hGM w hσ
   obtain ⟨T, hT, -, hTD, hRT, hadm, -⟩ := local_exit hGM hFam hR hσ
     (hM.trace p hp t ht0 ht1.le) hini ht₁ hout₁ htop
-  have hdom : ∀ s, 0 < s → s < T → rayPt w σ s ∈ M.D := fun s h1 h2 =>
+  have hdom := fun s h1 h2 =>
     (Chazelle.Chain.regionsIn_subset hR (hRT s h1 h2)).1
   obtain ⟨h1, h2⟩ := ray_in_region hM hFam.2.1 hFam.1 hR harc hp ht0 ht1 hin hσ hT hsec hdom hTD
   exact ⟨T, hT, hdom, hTD, hadm, h1, h2⟩
 
 /-! ## Agreeing stretches: positions -/
 
+section
+
+variable {M M' : Model} {Q : Polygon} {g g' L : ℕ}
+    (hA : WalkEmbed.Agree M.W M'.W g g' L) {d : ℕ} (hd : d < L) (h : ℕ)
+include Q hA hd h
+
 /-- Positions at the same offset of agreeing stretches have the same parameter. -/
-theorem param_agree {M M' : Model} {Q : Polygon} {g g' L : ℕ}
-    (hA : WalkEmbed.Agree M.W M'.W g g' L) {d : ℕ} (hd : d < L) (h : ℕ) :
+theorem param_agree :
     M.param Q ⟨(g + d) % M.W.n, h⟩ = M'.param Q ⟨(g' + d) % M'.W.n, h⟩ := by
-  unfold Model.param Model.wa Model.wb
-  simp only
-  rw [WalkEmbed.mod_succ_mod, WalkEmbed.mod_succ_mod, hA d hd.le, hA (d + 1) hd]
+  ram_finish [Model.param, Model.wa, Model.wb, WalkEmbed.mod_succ_mod, hA d hd.le, hA (d + 1) hd]
 
 /-- Positions at the same offset of agreeing stretches have the same point. -/
-theorem pos_agree {M M' : Model} {Q : Polygon} {g g' L : ℕ}
-    (hA : WalkEmbed.Agree M.W M'.W g g' L) {d : ℕ} (hd : d < L) (h : ℕ) :
+theorem pos_agree :
     M.pos Q ⟨(g + d) % M.W.n, h⟩ = M'.pos Q ⟨(g' + d) % M'.W.n, h⟩ := by
-  unfold Model.pos
-  rw [param_agree hA hd h]
-  unfold Model.wa Model.wb
-  simp only
-  rw [WalkEmbed.mod_succ_mod, WalkEmbed.mod_succ_mod, hA d hd.le, hA (d + 1) hd]
+  ram_finish [Model.pos, param_agree hA hd h, Model.wa, Model.wb, WalkEmbed.mod_succ_mod, hA d hd.le, hA (d + 1) hd]
+
+end
 
 /-- The point of a position is the walk point at its edge and parameter. -/
-theorem pos_eq_sidePt (M : Model) (Q : Polygon) (x : WPos) :
-    M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
+abbrev pos_eq_sidePt := @Chazelle.Core.SweepPrim.pos_eq_sidePt
 
 /-- The distance from `w` of a ray point. -/
 theorem dist_rayPt (w : Point) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) {s : ℝ} (hs : 0 ≤ s) :
     dist (rayPt w σ s) w = s := by
   rw [Prod.dist_eq, rayPt_fst, rayPt_snd, dist_self, Real.dist_eq, add_sub_cancel_left]
   rcases hσ with rfl | rfl
-  · rw [one_mul, abs_of_nonneg hs, max_eq_left hs]
-  · rw [neg_one_mul, abs_neg, abs_of_nonneg hs, max_eq_left hs]
+  · simp_all
+  simp_all
 
 /-- **An attached level segment leaves into the left sector**: the ray towards its other end is
 in the left sector of the attachment. -/
@@ -550,7 +550,7 @@ theorem attach_ray_left {W : Polygon} {c : Set Point} {p : ℕ} {t : ℝ} (hA : 
     rw [lerp_rayPt, div_mul_cancel₀ _ hL₀.ne']
   have hd := dist_rayPt w hσ hs0.le
   have hne : rayPt w σ s ≠ w := fun h => by rw [h, dist_self] at hd; linarith
-  exact (Sweep.sideLeft_rayPt_iff W p t σ hs0 one_pos).1 (hleft _ hmem hne (by rw [hd]; exact hsr))
+  exact (Sweep.sideLeft_rayPt_iff W p t σ hs0 one_pos).1 (hleft _ hmem hne (by rwa [hd]))
 
 end
 

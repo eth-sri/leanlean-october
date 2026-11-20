@@ -26,9 +26,7 @@ theorem cntS3_le {s0 s1 s2 : ℕ → Prop} {lo hi : ℕ}
     rw [Finset.disjoint_left]
     intro i h0 h1
     obtain ⟨hi0, a0⟩ := Finset.mem_filter.mp h0
-    obtain ⟨-, a1⟩ := Finset.mem_filter.mp h1
-    obtain ⟨b1, b2⟩ := Finset.mem_Ico.mp hi0
-    exact (h i b1 b2).1 ⟨a0, a1⟩
+    simp_all
   have d2 : Disjoint ((Finset.Ico lo hi).filter s0 ∪ (Finset.Ico lo hi).filter s1)
       ((Finset.Ico lo hi).filter s2) := by
     rw [Finset.disjoint_left]
@@ -52,9 +50,7 @@ theorem stkList_congr {m m' : ℕ → ℕ} {b : ℕ} (n : ℕ)
   induction n with
   | zero => rfl
   | succ n ih =>
-    simp only [stkList]
-    rw [h _ (by omega) (by omega), h _ (by omega) (by omega),
-      ih (fun x hx hx' => h x hx (by omega))]
+    ram_simp [stkList, h, ih (fun x hx hx' => h x hx (by omega))]
 
 /-- The pushed entry, if any. -/
 def optSeg (s a b : ℕ) : List (ℕ × ℕ) := if s < b - a then [(a, b)] else []
@@ -72,15 +68,15 @@ theorem pushF_stk {bS s a b : ℕ} {q : (ℕ → ℕ) × ℕ} {L : List (ℕ × 
     refine ⟨?_, by rw [htp]; ring, fun x hx => ?_⟩
     · simp only [stkList]
       have e1 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length) = a := by
-        rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_left (by omega)]
+        ram_rw [upd_apply, upd_apply, ite_eq_right, ite_eq_left]
       have e2 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length + 1) = b := by
-        rw [upd_apply, ite_eq_left (by omega)]
+        ram_rw [upd_apply, ite_eq_left]
       rw [e1, e2]
       congr 1
-      rw [stkList_congr _ (fun x _ hx => by rw [upd_apply, upd_apply, ite_eq_right (by omega),
-        ite_eq_right (by omega)])]
+      rw [stkList_congr _ (fun x _ hx => by ram_rw [upd_apply, upd_apply, ite_eq_right,
+        ite_eq_right])]
       exact hL
-    · rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_right (by omega)]
+    ram_simp [ite_eq_right] <;> reg_omega
   · simp only [ite_eq_right hs, List.nil_append]
     refine ⟨hL, htp, ?_⟩; simp
 
@@ -127,8 +123,7 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
   have := hL.hACT; have := hL.hPOS; have := hL.hTMP; have := hL.hDF; have := hL.hμU
   have hit : ∀ i, lo ≤ i → i < hi → m2 (S.bTMP + i) < S.μ := fun i a b => by
     rw [h2tmp i a b]; exact hact i a b
-  have hinj2 : ∀ i i', lo ≤ i → i < hi → lo ≤ i' → i' < hi → m2 (S.bTMP + i) = m2 (S.bTMP + i') →
-      i = i' := fun i i' a b c d e => hinj i i' a b c d (by rw [← h2tmp i a b, ← h2tmp i' c d]; exact e)
+  have hinj2 := fun i i' a b c d e => hinj i i' a b c d (by rw [← h2tmp i a b, ← h2tmp i' c d]; exact e)
   obtain ⟨A1, A2, A3, A4, A5, A6⟩ := passes_spec hL (f := f) hlh hhi hit hinj2 hsum
   have hu : ∀ i t t', lo ≤ i → i < hi → ((t = 0 ∧ s0 i) ∨ (t = 1 ∧ s1 i) ∨ (t = 2 ∧ s2 i)) →
       ((t' = 0 ∧ s0 i) ∨ (t' = 1 ∧ s1 i) ∨ (t' = 2 ∧ s2 i)) → t = t' := by
@@ -153,11 +148,11 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
     intro x
     constructor
     · rintro ⟨i, a, b, c, d⟩
-      rw [hPt i a (by omega)] at c d
-      rw [hPd i a (by omega)] at c
+      ram_rw [hPt i a] at c d
+      ram_rw [hPd i a] at c
       exact ⟨i, a, by omega, (h2df i a (by omega)).mp c, d⟩
     · rintro ⟨i, a, b, c, d⟩
-      refine ⟨i, a, by omega, ?_, by rw [hPt i a b]; exact d⟩
+      refine ⟨i, a, by omega, ?_, by rwa [hPt i a b]⟩
       rw [hPt i a b, hPd i a b]; exact (h2df i a b).mpr c
   have hmS : ∀ x, mS x = if ∃ i, lo ≤ i ∧ i < hi ∧ mk i ∧ x = S.bPOS + m (S.bACT + i)
       then S.μ else mP x := by

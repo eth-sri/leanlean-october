@@ -65,10 +65,8 @@ theorem run_mem_runItems {li : Bool} {n : ℕ} {s e : WPos} {a ℓ : ℕ}
   unfold runItems at h
   split_ifs at h with h0 h1
   · simp at h
-  · simp only [List.mem_singleton, HostItem.run.injEq] at h
-    exact ⟨h0, h.2⟩
-  · simp only [List.mem_singleton, HostItem.run.injEq] at h
-    exact ⟨h0, h.2⟩
+  · simp_all
+  simp_all
 
 theorem run_mem_arcItems {li : Bool} {n : ℕ} {N : NF} {r jp j a ℓ : ℕ}
     (h : HostItem.run a ℓ ∈ arcItems li n N r jp j) :
@@ -104,22 +102,27 @@ theorem run_mem_regHost {li : Bool} {n : ℕ} {N : NF} {r a ℓ : ℕ}
 
 variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → Set Point} {li : Bool}
 
+section
+
+variable (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
+    (hr : r < (interiorNF Q L E).nRegions)
+include B hr
+
 /-- **The run of an arc has at most `γ + 1` walk vertices.** -/
-theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {γ : ℕ}
+theorem runCnt_le {γ : ℕ}
     (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ) {j : ℕ}
-    (hj : j ∈ ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs)
-    (hne : runCnt li Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s
-      ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e ≠ 0) :
-    runCnt li Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s
-      ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e ≤ γ + 1 := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
+      (interiorChords Q L E) γ) {j : ℕ}
+    (hj : j ∈ ((interiorNF Q L E).region r).arcs)
+    (hne : runCnt li Q.n ((interiorNF Q L E).arc j).s
+      ((interiorNF Q L E).arc j).e ≠ 0) :
+    runCnt li Q.n ((interiorNF Q L E).arc j).s
+      ((interiorNF Q L E).arc j).e ≤ γ + 1 := by
+  set N := interiorNF Q L E with hN
   have hac := DrvB.arcCnt_le B hr hwt hj
   obtain ⟨hjA, -⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rwa [← hA]
   obtain ⟨sn, s0, s1⟩ := DrvB.evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := DrvB.evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
@@ -136,14 +139,14 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   by_cases hv : atVtx li Q.n e = true
   · rw [ite_eq_left hv] at hne ⊢
     by_cases hxy : s.edge < e.edge
-    · rw [show e.edge + 0 + Q.n - 1 - s.edge = (e.edge - s.edge - 1) + Q.n by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-      rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)] at hac
+    · ram_rw [show e.edge + 0 + Q.n - 1 - s.edge = (e.edge - s.edge - 1) + Q.n by omega,
+        Nat.add_mod_right, Nat.mod_eq_of_lt]
+      ram_rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
+        Nat.mod_eq_of_lt] at hac
       omega
     by_cases hyx : e.edge < s.edge
-    · rw [Nat.mod_eq_of_lt (by omega)]
-      rw [Nat.mod_eq_of_lt (by omega)] at hac
+    · ram_rw [Nat.mod_eq_of_lt]
+      ram_rw [Nat.mod_eq_of_lt] at hac
       omega
     · -- the degenerate case: both ends on one walk edge, the end at its start vertex
       exfalso
@@ -151,26 +154,26 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       have hk : (interiorModel Q).key Q e = (e.edge : ℝ) := by
         have h1 := hvtx.1 hv
         rw [kb, DownHost.floor_add e0 e1] at h1
-        rw [kb]; exact h1
+        rwa [kb]
       by_cases hlast : j + 1 < (gapStarts (interiorModel Q) Q L E).length
       · have hlt := DrvD.key_s_lt_e (M := interiorModel Q) (Q := Q) B.hK hE hlast
         rw [hsg, heg, hk, ka, hxe] at hlt
         linarith
       · have hne' := DrvB.last_arc_edges B
-        have hjl : j = (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1 := by
+        have hjl : j = (interiorNF Q L E).arcs.length - 1 := by
           rw [hA]; omega
         rw [← hjl, hsg, heg] at hne'
         exact hne' hxe
   · rw [ite_eq_right hv] at hne ⊢
     by_cases hxy : s.edge < e.edge
-    · rw [show e.edge + 1 + Q.n - 1 - s.edge = (e.edge - s.edge) + Q.n by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-      rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)] at hac
+    · ram_rw [show e.edge + 1 + Q.n - 1 - s.edge = (e.edge - s.edge) + Q.n by omega,
+        Nat.add_mod_right, Nat.mod_eq_of_lt]
+      ram_rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
+        Nat.mod_eq_of_lt] at hac
       omega
     by_cases hyx : e.edge < s.edge
-    · rw [Nat.mod_eq_of_lt (by omega)]
-      rw [Nat.mod_eq_of_lt (by omega)] at hac
+    · ram_rw [Nat.mod_eq_of_lt]
+      ram_rw [Nat.mod_eq_of_lt] at hac
       omega
     · exfalso
       rw [show e.edge + 1 + Q.n - 1 - s.edge = 0 + Q.n by omega, Nat.add_mod_right,
@@ -178,56 +181,53 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       exact hne rfl
 
 /-- The host has as many points as the region has host keys. -/
-theorem pts_length (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) :
-    ((regHost li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).pts Q.n).length =
+theorem pts_length :
+    ((regHost li Q.n (interiorNF Q L E) r).pts Q.n).length =
       DownHost.nk (interiorModel Q)
-        ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) := by
+        (interiorChords Q L E) (reg r) := by
   obtain ⟨-, -, -, hlen, -⟩ := DownMath.walk_rep (B.rc hr) B.hli
   rw [DownMath.regHost_pts]
   split_ifs
   · exact hlen
-  · rw [List.length_reverse]; exact hlen
+  · simp_all
 
 /-- **The sizes of a region host** (degree `≤ 4`, weight `≤ γ`). -/
-theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions)
+theorem host_facts
     (hdeg : (interiorModel Q).DegLe
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) 4) {γ : ℕ}
+      (interiorChords Q L E) 4) {γ : ℕ}
     (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ) :
-    (regHost li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).length ≤ 20 ∧
-      (∀ a ℓ, HostItem.run a ℓ ∈ regHost li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r →
+      (interiorChords Q L E) γ) :
+    (regHost li Q.n (interiorNF Q L E) r).length ≤ 20 ∧
+      (∀ a ℓ, HostItem.run a ℓ ∈ regHost li Q.n (interiorNF Q L E) r →
         ℓ ≤ γ) ∧
-      3 ≤ ((regHost li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).pts Q.n).length ∧
-      ((regHost li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).pts Q.n).length ≤
+      3 ≤ ((regHost li Q.n (interiorNF Q L E) r).pts Q.n).length ∧
+      ((regHost li Q.n (interiorNF Q L E) r).pts Q.n).length ≤
         5 * γ + 8 := by
   have hR := B.hregs.1.1 r hr
-  have hd : (interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
-      (reg r) ≤ 4 := hdeg _ hR
+  have hd := hdeg _ hR
   have hnA := DrvB.arcs_length_le B hr
   refine ⟨?_, fun a ℓ h => ?_, ?_, ?_⟩
-  · have := regHost_length li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r
+  · have := regHost_length li Q.n (interiorNF Q L E) r
     omega
   · obtain ⟨j, hj, hne, rfl⟩ := run_mem_regHost h
     have := runCnt_le B hr hwt hj hne
     omega
   · rw [pts_length B hr]
-    have hne : ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q).Nonempty := by
-      refine ⟨((BuildNF.buildNF (interiorModel Q) Q L E).chord 0).toSet (interiorModel Q) Q,
-        (BuildNF.buildNF (interiorModel Q) Q L E).chord 0, ?_, rfl⟩
+    have hne : (interiorChords Q L E).Nonempty := by
+      refine ⟨((interiorNF Q L E).chord 0).toSet (interiorModel Q) Q,
+        (interiorNF Q L E).chord 0, ?_, rfl⟩
       unfold NF.chord
-      have h0 : 0 < (BuildNF.buildNF (interiorModel Q) Q L E).chords.length := by
+      have h0 : 0 < (interiorNF Q L E).chords.length := by
         simp [BuildNF.buildNF]; exact B.hK
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h0, Option.getD_some]
-      exact List.getElem_mem h0
+      simp_all
     exact DownHost.three_le_nk B.hQ B.fam hne hR
   · have h1 := DrvB.regPts_length_le B hr hwt
     rw [DrvB.regPts, DrvB.wlist_length] at h1
-    have h2 : ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F
-        (interiorModel Q) Q) (reg r) + 1) * γ ≤ 5 * γ :=
+    have h2 : ((interiorModel Q).deg (interiorChords Q L E) (reg r) + 1) * γ ≤ 5 * γ :=
       Nat.mul_le_mul_right _ (by omega)
     omega
+
+end
 
 end
 

@@ -44,7 +44,7 @@ theorem forLoopF {P : Polygon} {W : ℕ} {ir nr : ℕ} {body : Stmt} {B : Finset
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, f₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂, f₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, ?_⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_, ?_⟩
     · rw [Nat.mul_succ]; omega
     · have := f₁.trans f₂
       rw [Finset.union_self] at this

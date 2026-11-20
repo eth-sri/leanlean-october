@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseBaseLoop1
 
 /-!
@@ -24,7 +26,7 @@ theorem dropE_take_succ {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E 
     dropE li n L (E.take (t + 1)) = dropE li n L (E.take t) ++
       if keptC li n L (E.getD t 0) then [newCode li n L (E.getD t 0)] else [] := by
   have he : E.getD t 0 = E[t] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
+    simp_all
   unfold dropE
   rw [List.take_add_one, List.getElem?_eq_getElem ht, Option.toList_some, List.filter_append,
     List.map_append, he]
@@ -45,8 +47,13 @@ def mem2 (m₁ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ
     (dropE li n L (E.take t)).getD (a - SE') 0
   else m₁ a
 
-theorem mem2_keep {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
+section
+
+variable {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {SE' t : ℕ} (hm : ∀ a, m a = mem2 m₁ li n L E SE' t a) (ht : t < E.length)
+include hm ht
+
+theorem mem2_keep
     (hk : keptC li n L (E.getD t 0) = true) (a : ℕ) :
     (if a = SE' + (dropE li n L (E.take t)).length then newCode li n L (E.getD t 0) else m a) =
       mem2 m₁ li n L E SE' (t + 1) a := by
@@ -55,22 +62,20 @@ theorem mem2_keep {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   rw [dropE_take_succ ht, ite_eq_left hk, List.length_append, List.length_singleton]
   set l := dropE li n L (E.take t)
   by_cases h1 : a = SE' + l.length
-  · subst h1
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show SE' + l.length - SE' = l.length by omega,
-      List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
-    rfl
+  · simp_all
   · rw [ite_eq_right h1]
     by_cases h2 : SE' ≤ a ∧ a < SE' + l.length
-    · rw [ite_eq_left h2, ite_eq_left (by omega), List.getD_append _ _ _ _ (by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (by omega)]
+    · ram_simp [ite_eq_left h2, ite_eq_left, List.getD_append]
+    ram_simp [ite_eq_right h2, ite_eq_right]
 
-theorem mem2_skip {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
-    {SE' t : ℕ} (hm : ∀ a, m a = mem2 m₁ li n L E SE' t a) (ht : t < E.length)
+theorem mem2_skip
     (hk : keptC li n L (E.getD t 0) = false) (a : ℕ) : m a = mem2 m₁ li n L E SE' (t + 1) a := by
   rw [hm a]
   unfold mem2
   rw [dropE_take_succ ht, hk]
   simp
+
+end
 
 /-- The invariant of the event pass. -/
 structure Inv2 (m₁ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ)
@@ -92,14 +97,19 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
-/-- **One event.** -/
-theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
+section
+
+variable {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {SE X SE' : ℕ} (hE : ∀ t, t < E.length → m₁ (SE + t) = E.getD t 0)
     (hSE : SE + E.length ≤ SE') (hX : ∀ c, c < E.length → m₁ (X + c) = tbl li n L c)
     (hXS : X + E.length ≤ SE') (hEl : E.length = 2 * L.length)
     (hperm : E.Perm (List.range (2 * L.length))) (hW : SE' + E.length + 1 ≤ W)
     {c₁ d : Config} (hw : WordsBounded W d) (hI : Inv2 m₁ li n L E SE X SE' c₁ d)
+include hE hSE hX hXS hEl hperm hW hw hI
+
+set_option maxHeartbeats 4000000 in
+/-- **One event.** -/
+theorem dBody2_exec
     (ht : d.nreg 200130 < d.nreg 200136) :
     ∃ d' k, Exec P W dBody2 d d' k ∧ WordsBounded W d' ∧ Inv2 m₁ li n L E SE X SE' c₁ d' ∧
       d'.nreg 200130 = d.nreg 200130 + 1 ∧ 7 ≤ k ∧ k ≤ 11 := by
@@ -109,13 +119,12 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hll : l.length ≤ t := dropE_take_length_le t
   set c := E.getD t 0 with hc
   have hcE : c ∈ E := by
-    rw [hc, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact List.getElem_mem ht
+    simp_all
   have hc2 : c < E.length := by rw [hEl]; exact mem_lt hperm hcE
   have mSE : d.nmem (SE + t) = c := by
-    rw [hI.mem]; unfold mem2; rw [ite_eq_right (by omega), hE t ht]
+    frame_finish [hI.mem, mem2, ite_eq_right, hE t ht]
   have mX : d.nmem (X + c) = tbl li n L c := by
-    rw [hI.mem]; unfold mem2; rw [ite_eq_right (by omega), hX c hc2]
+    rw [hI.mem]; frame_finish [mem2, ite_eq_right, hX c hc2]
   -- the load block
   obtain ⟨d₁, k₁, e₁, hk₁, v32, v31, v35, v33, r₁, m₁', rr₁, rm₁, o₁⟩ : ∃ d₁ k₁, Exec P W
       (block [.loadN 200132 200131, .addN 200131 200131 200100, .addN 200135 200121 200132,
@@ -130,11 +139,9 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h131, h100, h121, mSE]; omega)
-    refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, h131, h100, h121, mSE, mX]
+    simp_all <;> omega
   have g1 : ∀ r, (r < 200130 ∨ 200135 < r ∨ r = 200130 ∨ r = 200134) →
-      d₁.nreg r = d.nreg r := fun r hr => r₁ r (by omega) (by omega) (by omega) (by omega)
+      d₁.nreg r = d.nreg r := fun r hr => (ram_app% (r₁ r ?_ ?_ ?_ ?_))
   -- the branch
   obtain ⟨d₂, k₂, e₂, hk₂, hk₂', g2, n134, mem2', rr₂, rm₂, o₂⟩ : ∃ d₂ k₂,
       Exec P W (.ifLtN 200101 200133 (block [.subN 200133 200133 200100, .storeN 200134 200133,
@@ -143,9 +150,9 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       d₂.nreg 200134 = SE' + (dropE li n L (E.take (t + 1))).length ∧
       (∀ a, d₂.nmem a = mem2 m₁ li n L E SE' (t + 1) a) ∧
       d₂.rreg = d₁.rreg ∧ d₂.rmem = d₁.rmem ∧ d₂.output = d₁.output := by
-    have h101 : d₁.nreg 200101 = 0 := by rw [g1 _ (by omega), hI.r101]
-    have h134 : d₁.nreg 200134 = SE' + l.length := by rw [g1 _ (by omega), hI.r134]
-    have h100 : d₁.nreg 200100 = 1 := by rw [g1 _ (by omega), hI.r100]
+    have h101 : d₁.nreg 200101 = 0 := by ram_rw [g1, hI.r101]
+    have h134 : d₁.nreg 200134 = SE' + l.length := by ram_rw [g1, hI.r134]
+    have h100 : d₁.nreg 200100 = 1 := by ram_rw [g1, hI.r100]
     have hsucc := dropE_take_succ (li := li) (n := n) (L := L) ht
     rw [← hc, ← hl] at hsucc
     cases hk : keptC li n L c
@@ -182,39 +189,34 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       rw [mm₂, m₁']
       exact mem2_keep hI.mem ht hk a
   -- the increment
-  have h130 : d₂.nreg 200130 = t := by rw [g2 _ (by omega) (by omega), g1 _ (by omega)]
+  have h130 : d₂.nreg 200130 = t := by frame_finish
   have h100 : d₂.nreg 200100 = 1 := by
-    rw [g2 _ (by omega) (by omega), g1 _ (by omega), hI.r100]
+    frame_finish
   have e₃ := Exec.addN (P := P) e₂.wb_right 200130 200130 200100 (by rw [h130, h100]; omega)
   set d₃ : Config := { d₂ with nreg := upd d₂.nreg 200130 (d₂.nreg 200130 + d₂.nreg 200100) }
     with hd₃
   have g3 : ∀ r, r ≠ 200130 → d₃.nreg r = d₂.nreg r := fun r hr => by rw [hd₃]; simp [hr]
   have v3 : d₃.nreg 200130 = t + 1 := by rw [hd₃]; simp [h130, h100]
   have g : ∀ r, (r < 200130 ∨ 200135 < r) → d₃.nreg r = d.nreg r := fun r hr => by
-    rw [g3 r (by omega), g2 r (by omega) (by omega), g1 r (by omega)]
+    ram_rw [g3 r, g2 r, g1 r]
   refine ⟨d₃, _, .seq e₁ (.seq e₂ e₃), e₃.wb_right, ?_, v3, by omega, by omega⟩
-  refine ⟨by rw [v3]; omega, by rw [g _ (by norm_num), hI.r136], ?_, ?_,
-    by rw [g _ (by norm_num), hI.r121], by rw [g _ (by norm_num), hI.r100],
-    by rw [g _ (by norm_num), hI.r101], fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_,
+  refine ⟨by rw [v3]; omega, by ram_rw [g, hI.r136], ?_, ?_,
+    by ram_rw [g, hI.r121], by assumption,
+    by ram_rw [g, hI.r101], fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_,
     fun a => ?_⟩
-  · rw [v3, g3 _ (by norm_num), g2 _ (by norm_num) (by norm_num), v31]; ring
-  · rw [v3, g3 _ (by norm_num), n134]
-  · show d₂.rreg = c₁.rreg; rw [rr₂, rr₁, hI.rr]
-  · show d₂.rmem = c₁.rmem; rw [rm₂, rm₁, hI.rm]
+  · frame_finish
+  · ram_rw [v3, g3, n134]
+  · ram_post [rr₂, rr₁, hI.rr]
+  · ram_post [rm₂, rm₁, hI.rm]
   · show d₂.output = c₁.output; rw [o₂, o₁, hI.out]
   · show d₂.nmem a = _; rw [v3, mem2']
 
 /-- **The event pass.** -/
-theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
-    {SE X SE' : ℕ} (hE : ∀ t, t < E.length → m₁ (SE + t) = E.getD t 0)
-    (hSE : SE + E.length ≤ SE') (hX : ∀ c, c < E.length → m₁ (X + c) = tbl li n L c)
-    (hXS : X + E.length ≤ SE') (hEl : E.length = 2 * L.length)
-    (hperm : E.Perm (List.range (2 * L.length))) (hW : SE' + E.length + 1 ≤ W)
-    {c₁ d : Config} (hw : WordsBounded W d) (hI : Inv2 m₁ li n L E SE X SE' c₁ d)
+theorem dLoop2_exec
     (h0 : d.nreg 200130 = 0) :
     ∃ d' k, Exec P W dLoop2 d d' k ∧ WordsBounded W d' ∧ Inv2 m₁ li n L E SE X SE' c₁ d' ∧
       d'.nreg 200130 = E.length ∧ 7 * E.length ≤ k ∧ k ≤ 13 * E.length + 2 := by
-  obtain ⟨d', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
+  obtain ⟨d', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := Exec.whileLtN_growth (P := P) (W := W)
     (a := 200130) (b := 200136) (body := dBody2)
     (fun d => WordsBounded W d ∧ Inv2 m₁ li n L E SE X SE' c₁ d)
     (fun d => 13 * (E.length - d.nreg 200130)) (fun d => 7 * d.nreg 200130) (fun d hd => hd.1)
@@ -232,6 +234,8 @@ theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   refine ⟨d', k, e, hw', hI', hend, ?_, ?_⟩
   · rw [h0, hend] at hψ; omega
   · rw [h0] at hk; omega
+
+end
 
 end exec
 

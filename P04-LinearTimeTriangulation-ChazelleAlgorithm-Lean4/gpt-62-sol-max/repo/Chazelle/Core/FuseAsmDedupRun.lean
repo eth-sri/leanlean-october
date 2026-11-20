@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.FuseAsmScan
 
 /-!
@@ -40,7 +44,7 @@ def tlist (m : ℕ → ℕ) (T K : ℕ) : List (ℕ × ℕ × ℕ) := (List.rang
 
 theorem tle_of_le3 {m : ℕ → ℕ} {T K a b : ℕ} (ha : a < K) (hb : b < K)
     (h : le3 m T K a b = true) : tle (trip m T a) (trip m T b) := by
-  unfold le3 at h; simp only [ha, hb, ite_true, decide_eq_true_eq] at h; exact h
+  unfold le3 at h; simp_all
 
 /-- The scanned list of a sorted permutation of the indices: same elements, no repetition. -/
 theorem dd_spec {m : ℕ → ℕ} {T K : ℕ} {L' : List ℕ} (hp : L'.Perm (List.range K))
@@ -68,15 +72,15 @@ def ddCost (K : ℕ) : ℕ := SortR.sortCost 40 K + 70 * K + 30
 theorem frameFS_of_regs {c c' : Config} {k : ℕ}
     (hr : ∀ r, (r < 30000 ∨ (40000 ≤ r ∧ r < 70000) ∨ 80000 ≤ r) → r ≠ ALLOC → c'.nreg r = c.nreg r)
     (hrr : ∀ r, bandOf r ∉ ({bFuse, bSort} : Finset ℕ) → c'.rreg r = c.rreg r)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
-    (hrm : ∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) (ho : c'.output = c.output)
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)
+    (hrm : MemEqBelow (c.nreg ALLOC) c'.rmem c.rmem) (ho : c'.output = c.output)
     (ha1 : c.nreg ALLOC ≤ c'.nreg ALLOC) (ha2 : c'.nreg ALLOC ≤ c.nreg ALLOC + k) :
     Frame {bFuse, bSort} c c' k := by
   refine ⟨fun r hb hra => hr r ?_ hra, hrr, hm, hrm, ho, ha1, ha2⟩
   by_contra h
   push Not at h
   apply hb
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bFuse, bSort]
+  simp only [ram_layout, Finset.mem_insert, Finset.mem_singleton]
   omega
 
 set_option maxHeartbeats 8000000 in
@@ -90,8 +94,8 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       ∃ D : List (ℕ × ℕ × ℕ), ChordListAt c'.nmem (c'.nreg 70242) D ∧
         c'.nreg 70219 = D.length ∧ D.length ≤ K ∧
         (∀ x, x ∈ D ↔ x ∈ tlist c.nmem T K) ∧ D.Nodup := by
-  obtain ⟨A₀, hA₀⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
-  have hA' : c.nreg 9999 = A₀ := hA₀
+  obtain ⟨A₀, hA₀⟩ := exists_eq' (a' := c.nreg ALLOC)
+  have hA' := hA₀
   have hsc := SortR.sortCost_room 40 K
   unfold ddCost at hroom
   -- initialisation
@@ -99,8 +103,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (c₁.nreg 70105 = 1 ∧ c₁.nreg 70108 = 0 ∧ c₁.nreg 70216 = T ∧ c₁.nreg 70217 = K ∧
         c₁.nreg 70201 = K ∧ c₁.nreg 70230 = K ∧ c₁.nreg 70200 = 0 ∧ c₁.nreg 70202 = A₀ ∧
         c₁.nreg ALLOC = A₀ ∧
-        (∀ r, (r < 70105 ∨ 70230 < r) → r ≠ ALLOC → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem ∧
-        c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output) := by
+        (∀ r, (r < 70105 ∨ 70230 < r) → r ≠ ALLOC → c₁.nreg r = c.nreg r) ∧ Machine.NatRegFrame c c₁) := by
     unfold ddInit
     exec_block
     all_goals try omega
@@ -108,7 +111,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h40, h41, hA', ALLOC]
     and_intros
     all_goals first | trivial | rfl |
-      (intro r hr ha; simp (disch := omega) only [Machine.upd_other])
+      (intro r hr ha; frame_finish)
   obtain ⟨q05, q08, q16, q17, q01, q30, q00, q02, qA, qr, qm, qrr, qrm, qo⟩ := q
   -- the indices
   have I0 : IXI W K A₀ c₁ c₁ := ⟨e₁.wb_right, by omega, by rw [qA, q00]; rfl, fun _ _ _ => rfl,
@@ -117,16 +120,15 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     (by omega)
   have hseg : SortL.seg c₂.nmem A₀ K = List.range K := seg_range fun j hj => I₂.done j (by omega)
   have a₂ : c₂.nreg ALLOC = A₀ + K := by rw [I₂.alloc, h₂]
-  have g₂ : ∀ r, r ≠ 70200 → r ≠ ALLOC → c₂.nreg r = c₁.nreg r := I₂.regs
+  have g₂ := I₂.regs
   -- the sort
   obtain ⟨c₃, k₃, e₃, hk₃, q3⟩ : ∃ c₃ k₃, Exec P W ddMid c₂ c₃ k₃ ∧ k₃ = 2 ∧
       (c₃.nreg 30003 = A₀ ∧ c₃.nreg 30004 = K ∧
-        (∀ r, r ≠ 30003 → r ≠ 30004 → c₃.nreg r = c₂.nreg r) ∧ c₃.nmem = c₂.nmem ∧
-        c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output) := by
+        (∀ r, r ≠ 30003 → r ≠ 30004 → c₃.nreg r = c₂.nreg r) ∧ Machine.NatRegFrame c₂ c₃) := by
     have hw₂ := I₂.wb
-    have r02 : c₂.nreg 70202 = A₀ := by rw [g₂ _ (by decide) (by decide), q02]
+    have r02 : c₂.nreg 70202 = A₀ := by frame_finish
     have r41 : c₂.nreg 70241 = K := by
-      rw [g₂ _ (by decide) (by decide), qr _ (by norm_num) (by decide), h41]
+      frame_finish
     unfold ddMid
     exec_block
     refine ⟨rfl, ?_⟩
@@ -134,32 +136,32 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     and_intros
     all_goals first | trivial | rfl | (intro r h1 h2; simp (disch := omega) only [Machine.upd_other])
   obtain ⟨s03, s04, sr₃, sm₃, srr₃, srm₃, so₃⟩ := q3
-  have a₃ : c₃.nreg ALLOC = A₀ + K := by rw [sr₃ _ (by decide) (by decide), a₂]
+  have a₃ : c₃.nreg ALLOC = A₀ + K := by ram_finish
   have cmp := cmp3_ok (P := P) (W := W) (m₀ := c₃.nmem) (A₀ := A₀ + K) (T := T) (K := K)
     (g := c₃.nreg)
     (by omega) (by omega) (by omega)
   have hJ : Cmp3J c₃.nmem (A₀ + K) T K c₃.nreg c₃ := ⟨by
-      rw [sr₃ _ (by decide) (by decide), g₂ _ (by decide) (by decide), q16],
-    by rw [sr₃ _ (by decide) (by decide), g₂ _ (by decide) (by decide), q17],
+      frame_finish,
+    by frame_finish,
     fun _ _ => rfl, fun _ _ _ => rfl⟩
   obtain ⟨c₄, k₄, e₄, hk₄, hJ₄, fr₄, b₄, b₄', L', hL', hperm, hsorted⟩ :=
     SortR.sortStmt_exec (P := P) cmp (by decide) (le3_trans c₃.nmem T K)
       (le3_total c₃.nmem T K) e₃.wb_right hJ (by rw [a₃]; exact cmp3J_stable _ _ _ _ _)
-      (List.range K) (by rw [List.length_range, s03, sm₃]; exact hseg)
+      (List.range K) (by rwa [List.length_range, s03, sm₃])
       (by rw [List.length_range, s04]) (by rw [List.length_range, s03, a₃])
       (by rw [List.length_range, a₃]; omega)
   rw [List.length_range] at hk₄ b₄' hL'
   -- the scan
-  obtain ⟨B', hB'⟩ : ∃ x, c₄.nreg 30005 = x := ⟨_, rfl⟩
-  obtain ⟨LB, hLB⟩ : ∃ x, c₄.nreg ALLOC = x := ⟨_, rfl⟩
+  obtain ⟨B', hB'⟩ := exists_eq' (a' := c₄.nreg 30005)
+  obtain ⟨LB, hLB⟩ := exists_eq' (a' := c₄.nreg ALLOC)
   have hw₄ := e₄.wb_right
   obtain ⟨j16, j17, j4, j5⟩ := hJ₄
   obtain ⟨c₅, k₅, e₅, hk₅, q5⟩ : ∃ c₅ k₅, Exec P W ddPost c₄ c₅ k₅ ∧ k₅ = 7 ∧
       (c₅.nreg 70242 = LB ∧ c₅.nreg 70220 = 0 ∧ c₅.nreg 70221 = B' ∧ c₅.nreg 70219 = 0 ∧
         c₅.nreg 70105 = 1 ∧ c₅.nreg 70108 = 0 ∧ c₅.nreg 70230 = K ∧ c₅.nreg 70216 = T ∧
         (∀ r, (r < 70105 ∨ 70242 < r) → c₅.nreg r = c₄.nreg r) ∧
-        c₅.nmem = c₄.nmem ∧ c₅.rreg = c₄.rreg ∧ c₅.rmem = c₄.rmem ∧ c₅.output = c₄.output) := by
-    have hLB' : c₄.nreg 9999 = LB := hLB
+        Machine.NatRegFrame c₄ c₅) := by
+    have hLB' := hLB
     unfold ddPost
     exec_block
     all_goals try omega
@@ -175,10 +177,10 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       simp only [SortL.seg, List.mem_map, List.mem_range]
       exact ⟨j, hj, rfl⟩
     exact List.mem_range.1 (hperm.subset hmem)
-  have a₅ : c₅.nreg ALLOC = LB := by rw [tr₅ _ (by decide), hLB]
-  have hK4 : k₄ ≤ SortR.sortCost 40 K := hk₄
+  have a₅ : c₅.nreg ALLOC = LB := by ram_rw [tr₅, hLB]
+  
   have hLBb : LB ≤ A₀ + K + k₄ := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.2
-  have hBL : B' + K ≤ LB := by rw [← hB', ← hLB]; exact b₄'
+  have hBL : B' + K ≤ LB := by rwa [← hB', ← hLB]
   have D0 : DSI W K T B' LB c₅.nmem c₅ c₅ := by
     refine ⟨e₅.wb_right, by rw [t20]; omega, by rw [t21, t20]; simp, fun h => by rw [t20] at h; omega,
       by rw [a₅, t20]; simp [ddp], by rw [t20]; intro i hi; simp [ddp] at hi,
@@ -187,7 +189,7 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     hitems (by omega) hBL (by omega) K c₅ D0 (by rw [t20]; simp)
   -- assembling
   have ex : Exec P W ddRun c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
+    (by ram_path)
   set D := ddp (stl c₅.nmem T B' K) (0, 0, 0) K with hD
   have hDdd : D = dd (L'.map (trip c.nmem T)) (0, 0, 0) := by
     have e1 : stl c₅.nmem T B' K = L'.map (trip c.nmem T) := by
@@ -195,22 +197,22 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       rw [tm₅, ← hB', hL']
       apply List.map_congr_left
       intro a ha
-      have haK : a < K := List.mem_range.1 (hperm.subset ha)
+      have haK := List.mem_range.1 (hperm.subset ha)
       unfold trip
-      have hm : ∀ x, x < A₀ → c₄.nmem x = c.nmem x := fun x hx => by
+      have hm : MemEqBelow A₀ c₄.nmem c.nmem := fun x hx => by
         rw [fr₄.2.2.1 x (by rw [a₃]; omega), sm₃, I₂.low x hx, qm]
-      rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
+      ram_rw [hm, hm, hm]
     rw [hD, e1]; unfold dd; rw [List.length_map, hperm.length_eq, List.length_range]
   have hsorted' : L'.Pairwise fun a b => le3 c.nmem T K a b = true := by
     refine hsorted.imp_of_mem fun {a b} ha hb h => ?_
-    have haK : a < K := List.mem_range.1 (hperm.subset ha)
-    have hbK : b < K := List.mem_range.1 (hperm.subset hb)
-    have hm : ∀ x, x < A₀ → c₃.nmem x = c.nmem x := fun x hx => by rw [sm₃, I₂.low x hx, qm]
+    have haK := List.mem_range.1 (hperm.subset ha)
+    have hbK := List.mem_range.1 (hperm.subset hb)
+    have hm : MemEqBelow A₀ c₃.nmem c.nmem := fun x hx => by rw [sm₃, I₂.low x hx, qm]
     have ht : ∀ y, y < K → trip c₃.nmem T y = trip c.nmem T y := fun y hy => by
-      unfold trip; rw [hm _ (by omega), hm _ (by omega), hm _ (by omega)]
+      unfold trip; ram_rw [hm, hm, hm]
     unfold le3 at h ⊢
     simp only [haK, hbK, ite_true] at h ⊢
-    rw [← ht a haK, ← ht b hbK]; exact h
+    rwa [← ht a haK, ← ht b hbK]
   obtain ⟨hmemD, hnodD, hlenD⟩ := dd_spec (m := c.nmem) (T := T) hperm hsorted'
   rw [← hDdd] at hmemD hnodD hlenD
   have hc6 := D₆.cnt
@@ -219,25 +221,25 @@ theorem ddRun_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   rw [h₆] at hl6
   have ha6 := D₆.alloc
   rw [h₆] at ha6
-  have r42 : c₆.nreg 70242 = LB := by rw [D₆.regs _ (by norm_num) (by decide), t42]
-  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rw [r42]; exact hl6, hc6, hlenD,
+  have r42 : c₆.nreg 70242 = LB := by frame_finish
+  refine ⟨c₆, _, ex, ?_, ?_, fun r h1 h2 => ?_, ?_, ?_, D, by rwa [r42], hc6, hlenD,
     hmemD, hnodD⟩
   · have := hlenD; unfold ddCost; omega
   · have a4 : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1
     have hA6 : c₆.nreg ALLOC = LB + 3 * D.length := ha6
     refine frameFS_of_regs (fun r hr ha => ?_) (fun r hr => ?_) (fun a ha => ?_) (fun a ha => ?_)
       ?_ (by omega) (by rw [hA6, hA₀]; have := hlenD; omega)
-    · rw [D₆.regs r (by omega) ha, tr₅ r (by omega),
-        fr₄.1 r (by simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bFuse]; omega)
-          ha, sr₃ r (by omega) (by omega), g₂ r (by omega) ha, qr r (by omega) ha]
+    · ram_rw [D₆.regs r (by omega) ha, tr₅ r,
+        fr₄.1 r (by simp only [ram_layout, Finset.mem_insert, Finset.mem_singleton]; omega)
+          ha, sr₃ r, g₂ r (by omega) ha, qr r (by omega) ha]
     · rw [D₆.rr, trr₅, fr₄.2.1 r (by simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto), srr₃, I₂.rr, qrr]
     · rw [hA₀] at ha
-      rw [D₆.low a (by omega), tm₅, fr₄.2.2.1 a (by rw [a₃]; omega), sm₃, I₂.low a ha, qm]
+      ram_rw [D₆.low a, tm₅, fr₄.2.2.1 a (by rw [a₃]; omega), sm₃, I₂.low a ha, qm]
     · rw [hA₀] at ha
       rw [D₆.rm, trm₅, fr₄.2.2.2.1 a (by rw [a₃]; omega), srm₃, I₂.rm, qrm]
     · rw [D₆.out, to₅, fr₄.2.2.2.2.1, so₃, I₂.out, qo]
   · have hA : r ≠ ALLOC := by unfold ALLOC; omega
-    rw [D₆.regs r (by omega) hA, tr₅ r (by omega), j5 r h1 h2, sr₃ r (by omega) (by omega),
+    ram_rw [D₆.regs r (by omega) hA, tr₅ r, j5 r h1 h2, sr₃ r,
       g₂ r (by omega) hA, qr r (by omega) hA]
   · rw [r42, hA₀]; have : A₀ + K ≤ LB := by rw [← hLB, ← a₃]; exact fr₄.2.2.2.2.2.1
     omega

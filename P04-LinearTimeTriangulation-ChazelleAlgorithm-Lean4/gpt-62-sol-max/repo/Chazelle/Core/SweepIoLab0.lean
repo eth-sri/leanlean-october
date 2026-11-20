@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepIoLab0L
 public import Chazelle.Core.SweepIoS0CandBsMain
 
@@ -66,7 +70,7 @@ theorem lab0_cost (κL T Fg D : ℕ) :
   have h2 : (18 * (D + 1) + 1) * (16 * Fg + 500000) ≤ 9500000 * (D + 2) * (Fg + 1) := by
     nlinarith
   have h3 : 9500000 * (D + 2) * (Fg + 1) ≤ 9500000 * (D + 2) * (Fg + T + 1) := by
-    apply Nat.mul_le_mul_left; omega
+    simp_all 
   have h4 : 5500 * (T + 1) ≤ 5500 * (D + 2) * (Fg + T + 1) := by
     rw [mul_assoc]
     apply Nat.mul_le_mul_left
@@ -82,9 +86,7 @@ theorem lab0_cost (κL T Fg D : ℕ) :
   nlinarith
 
 theorem symShotK_mono {Fg K K' : ℕ} (h : K ≤ K') : symShotK Fg K ≤ symShotK Fg K' := by
-  unfold symShotK ShotList.shotCost
-  have := Nat.mul_le_mul_right (16 * Fg + 500000) (Nat.add_le_add_right h 1)
-  omega
+  simp_all [symShotK, ShotList.shotCost] 
 
 section Run
 
@@ -108,13 +110,7 @@ theorem eIn_val (m f : ℕ → ℕ) (hk : f K1 = 1) :
 theorem gIn_val (m f : ℕ → ℕ) :
     regB m gIn f gNF = f (sw 4) ∧ regB m gIn f gC = 18 ∧
     ∀ q, q ≠ gNF → q ≠ gC → regB m gIn f q = f q := by
-  refine ⟨?_, ?_, fun q h0 h1 => regB_other _ _ _ (fun i hi => ?_)⟩
-  · simp only [gIn, regB, regI, upd, gNF, gC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gIn, regB, regI, upd, gNF, gC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gIn, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all
+  register_block [gIn, List.mem_cons, List.not_mem_nil, or_false]
 
 end Run
 
@@ -123,23 +119,22 @@ end Run
 theorem acc_regs {j : ℕ} (hj : j ≤ 12) : 240000 ≤ accA + j ∧ accA + j < 250000 ∧
     ¬ (sw 1000 ≤ accA + j ∧ accA + j ≤ sw 1119) ∧ ¬ (sw 4000 ≤ accA + j ∧ accA + j ≤ sw 4037) ∧
     accA + j ≠ ALLOC := by
-  unfold accA sw ALLOC; omega
+  reg_omega
 
 set_option maxHeartbeats 32000000 in
 set_option maxRecDepth 40000 in
 /-- **The label candidates of a side-0 query** from the binary search in the log. -/
 theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
-  obtain ⟨ls, κL, hls⟩ := lsBody_of hLS
+  obtain ⟨ls, κL, hls⟩ := hLS
   refine ⟨lab0S ls, fun D => (κL + 20000000) * (D + 2), ?_⟩
   intro sh Bs F X Ok hsh hBs hXl P W c₀ c J H N₁ N₂ E L s z hA hI hz hzs hzt hfree hzPn hpp
     harr hs hsl hseval hbR hacc hroom
   beta_reduce at hroom ⊢
   have hcost := lab0_cost κL (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
-  have hroom' : c.nreg ALLOC + lab0Kt κL (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) ≤ W :=
-    le_trans (Nat.add_le_add_left hcost _) hroom
+  have hroom' := le_trans (Nat.add_le_add_left hcost _) hroom
   unfold lab0Kt at hroom'
   have hK := hA.hK
-  have hP : J.right.P.Simple := hA.hP
+  have hP := hA.hP
   have hN := hA.hNF₂
   have nO : ∀ q, 240000 ≤ q → q < 250000 → bandOf q ∉ oracleBands := fun q h1 h2 =>
     not_oracle_sw h1 h2
@@ -167,16 +162,16 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
   have tl3 : c₃.nreg S0C.lsI = t :=
     g4 _ (nO _ (by decide) (by decide)) (by decide) (by decide) (by decide)
   have eA4 : c₄.nreg ALLOC = G + 6 := by
-    show regB _ _ _ _ = _; rw [eo _ (by decide) (by decide) (by decide), g2]
+    assumption
   have egL4 : c₄.nreg gL = G := by
-    show regB _ _ _ _ = _; rw [eo _ (by decide) (by decide) (by decide), g1]
+    assumption
   have em4 : c₄.nmem = c₃.nmem := rfl
   -- 4. the slots
   have hK₄ := hK.fix hI₄
   have f300 : ∀ c', IInv W c₀ c' → c'.nreg (sw 300) = rd c₀ bSweep 300 := fun c' h =>
-    h.hin _ (by unfold IFix sw; omega)
+    h.hin _ (by reg_omega)
   have f301 : ∀ c', IInv W c₀ c' → c'.nreg (sw 301) = rd c₀ bSweep 301 := fun c' h =>
-    h.hin _ (by unfold IFix sw; omega)
+    h.hin _ (by reg_omega)
   have hlog := hA.hlog
   have hitems : ∀ p ∈ slotPairs, ¬ SlotW p.1 ∧ ¬ SlotW p.2 ∧ p.1 ≠ ALLOC ∧ p.2 ≠ ALLOC ∧
       c₄.nreg p.2 ≤ 3 := by
@@ -190,7 +185,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
     · rcases h2 with h | h | h | h <;> rw [h]
       · rw [hK₄.1]; omega
       · rw [hK₄.2.1]; omega
-      · rw [hK₄.2.2.2.2.2.1]; omega
+      · simp [hK₄.2.2.2.2.2.1]
       · rw [hK₄.2.2.2.2.2.2]
   refine IRS.seq (K₁ := slotK * 12) (K₂ := 2 + (gB (c₀.nreg (sw 6)) + symShotK (F (c₀.nreg (sw 5))) (18 * (c₀.nreg (sw 6) + 1))))
     (slots_irs slotPairs hI₄ hK hitems
@@ -208,14 +203,14 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
   set c₆ : Config := { c₅ with nreg := regB c₅.nmem gIn c₅.nreg } with hc₆
   have egL6 : c₆.nreg gL = G := by
     show regB _ _ _ _ = _
-    rw [go _ (by decide) (by decide), s2 _ (by unfold SlotW gL sV sA sX sN sE sw; omega)
+    ram_rw [go, s2 _ (by register_guard)
       (by decide), egL4]
   have eA6 : c₆.nreg ALLOC = G + 18 := by
     show regB _ _ _ _ = _
-    rw [go _ (by decide) (by decide), s1, eA4]
+    ram_rw [go, s1, eA4]
   have em6 : c₆.nmem = c₅.nmem := rfl
   -- the words of the list
-  have hI4m : ∀ a, a < c₀.nreg ALLOC → c₄.nmem a = c₀.nmem a := fun a ha => hI₄.hm a ha
+  have hI4m := fun a ha => hI₄.hm a ha
   have gap1 : ∀ i, i < 3 → c₆.nmem (G + i) = (Sweep.nbrRegs N₂ j₁).getD i 0 := fun i hi => by
     rw [em6, s3 _ (by rw [eA4]; omega), em4]; exact (g5 i hi).1
   have gap2 : ∀ i, i < 3 → c₆.nmem (G + 3 + i) = (Sweep.nbrRegs N₂ j₂).getD i 0 := fun i hi => by
@@ -228,7 +223,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
       f301 _ hI₄, egL4]
   have nbr_lt : ∀ j, j < N₂.arcs.length → ∀ i, i < 3 → (Sweep.nbrRegs N₂ j).getD i 0 < N₂.nRegions :=
     fun j hj i hi => nbrRegs_lt hN hj _ (by
-      rw [List.getD_eq_getElem _ _ (by simp [Sweep.nbrRegs]; omega)]; exact List.getElem_mem _)
+      ram_rw [List.getD_eq_getElem _]; exact List.getElem_mem _)
   have hg0 : c₄.nmem G < N₂.nRegions := by
     have := (g5 0 (by norm_num)).1
     rw [add_zero] at this
@@ -239,7 +234,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
     unfold slotVal
     split_ifs with hc
     · obtain ⟨hv, hwn⟩ := hc
-      rw [hI4m _ (by omega)] at hwn ⊢
+      ram_rw [hI4m] at hwn ⊢
       exact label_valid hA hv hwn hw
     · exact hg0
   have valid : ∀ i, i < 18 → c₆.nmem (G + i) < N₂.nRegions := by
@@ -263,43 +258,42 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
     intro r hr
     obtain ⟨i, hi, rfl⟩ := List.mem_map.1 hr
     exact valid i (List.mem_range.1 hi)
-  obtain ⟨hAr, -⟩ := region_bounds' hP hN hA.hdeg₂
-  have hArs : ∀ r ∈ rs, (N₂.region r).arcs.length ≤ c₀.nreg (sw 6) + 1 := fun r hr =>
+  obtain ⟨hAr, -⟩ := SweepEv.region_bounds hP hN hA.hdeg₂
+  have hArs := fun r hr =>
     hAr r (hrs r hr)
   have hgK : gatherK N₂ rs ≤ gB (c₀.nreg (sw 6)) := by
     have := gatherK_le hArs
-    rw [hrs_len] at this
-    unfold gB; omega
+    reg_omega
   have n6' : c₆.nreg gNF = c₀.nreg (sw 4) := by
-    show regB _ _ _ _ = _; rw [n6]; exact hI₅.hin _ (by unfold IFix sw; omega)
+    show regB _ _ _ _ = _; rw [n6]; exact hI₅.hin _ (by reg_omega)
   refine IRS.seq (K₁ := gB (c₀.nreg (sw 6)))
     (K₂ := symShotK (F (c₀.nreg (sw 5))) (18 * (c₀.nreg (sw 6) + 1)))
     ((gather_irs (C := J.right) (N := N₂) (B := c₀.nreg (sw 4)) (E := E) (rs := rs) hI₆ hK
-      (hA.ctxR hI₆) ⟨by decide, by decide, by unfold GSet sw; omega⟩ hP hN
+      (hA.ctxR hI₆) (by register_guard) hP hN
       (hA.hN₂.transport (fun a ha => hI₆.hm a (by have := hA.hE; omega))) n6'
-      (hA.hE.trans hI₆.hA) hrs (fun j hj => by rw [egL6, hrs_get j (by omega)])
-      (by rw [egL6, eA6, hrs_len]) (by show regB _ _ _ _ = _; rw [c6v, hrs_len])
+      (hA.hE.trans hI₆.hA) hrs (fun j hj => by ram_rw [egL6, hrs_get j])
+      (by rw [egL6, eA6, hrs_len]) (by rfl)
       (by rw [eA6]; have := hA₆'; omega)).mono hgK (fun _ h => h)) ?_
   rintro c₇ hI₇ hA₇ hA₇' ⟨⟨w1, w2, w3, w4, w5, w6, -, -, -⟩, hctx7⟩
   -- 7. the shot
   have hlen : (regArcs N₂ rs).length ≤ 18 * (c₀.nreg (sw 6) + 1) := by
     have := regArcs_length_le hArs
-    rw [hrs_len] at this; exact this
+    rwa [hrs_len] at this
   have keep7 : ∀ r, bandOf r ∉ oracleBands → ¬ (sw 1000 ≤ r ∧ r ≤ sw 1119) →
       ¬ (sw 4000 ≤ r ∧ r ≤ sw 4037) → r ≠ ALLOC → c₇.nreg r = c.nreg r := by
     intro r h1 h2 h3 h4
     unfold sw at h2 h3
-    rw [w6 r h1 (by unfold GSet sw; omega) h4]
+    rw [w6 r h1 (by register_guard) h4]
     show regB _ _ _ _ = _
-    rw [go r (by unfold gNF sw; omega) (by unfold gC sw; omega),
-      s2 r (by unfold SlotW sV sA sX sN sE sw; omega) h4]
+    rw [go r (by reg_omega) (by reg_omega),
+      s2 r (by register_guard) h4]
     show regB _ _ _ _ = _
-    rw [eo r (by unfold eR0 sw; omega) (by unfold eR1 sw; omega) (by unfold eR2 sw; omega),
-      g4 r h1 (by unfold gL sw; omega) (by unfold sw; omega) h4,
-      fr2 r h1 (by unfold sw; omega) h4]
+    rw [eo r (by reg_omega) (by reg_omega) (by reg_omega),
+      g4 r h1 (by reg_omega) (by reg_omega) h4,
+      fr2 r h1 (by reg_omega) h4]
   have qD7 : c₇.nreg qD = c.nreg qD :=
     keep7 _ (nO _ (by decide) (by decide)) (by decide) (by decide) (by decide)
-  have hs7 : SymPtIn c₇ sO s := symPtIn_copy hs
+  have hs7 := symPtIn_copy hs
     (keep7 _ (nO _ (by decide) (by decide)) (by decide) (by decide) (by decide))
     (keep7 _ (nO _ (by decide) (by decide)) (by decide) (by decide) (by decide))
     (keep7 _ (nO _ (by decide) (by decide)) (by decide) (by decide) (by decide))
@@ -310,16 +304,16 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
     obtain ⟨hj1, hj2, hj3, hj4, hj5⟩ := acc_regs hj
     exact keep7 _ (nO _ hj1 hj2) hj3 hj4 hj5
   have hK₇ := hK.fix hI₇
-  have hzD : z ∈ J.right.dom := S0C.z_mem_right_dom hA.hP hz hzs hzt
+  have hzD := S0C.z_mem_right_dom hA.hP hz hzs hzt
   have hbox := J.right.dom_subset_box hzD
   have hMod : ModB J (c.nreg bL) (c.nreg bR) (c₇.nreg K1) = J.right := by
-    rw [hK₇.2.1, hbR]; simp [ModB]
+    simp [hK₇.2.1, hbR, ModB]
   have harcs : ∀ j, j < c₇.nreg gK →
-      ShotList.PieceOK (chainModel J.right) (Qof P) P.n
+      ShotList.PieceOK J.rightModel (Qof P) P.n
         (ShotList.arcAt c₇.nmem (c₇.nreg gBase) j) ∧
-      (chainModel J.right).arcWt
-        ((chainModel J.right).key (Qof P) (ShotList.arcAt c₇.nmem (c₇.nreg gBase) j).1)
-        ((chainModel J.right).key (Qof P) (ShotList.arcAt c₇.nmem (c₇.nreg gBase) j).2) ≤
+      J.rightModel.arcWt
+        (J.rightModel.key (Qof P) (ShotList.arcAt c₇.nmem (c₇.nreg gBase) j).1)
+        (J.rightModel.key (Qof P) (ShotList.arcAt c₇.nmem (c₇.nreg gBase) j).2) ≤
         c₀.nreg (sw 5) := by
     intro j hj
     rw [w2] at hj
@@ -330,8 +324,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
     (dsc := sw 21) (tg := K1) hsh hBs hXl hI₇ hK hA.hG hA.hWh hA.hX hA.hcap hA.hOk₂
     (hA.mdR hI₇) hA.hostReg hctx7 harcs (by rw [w1, w2, w3]) hs7 hsl hseval hzD hbox.1 hbox.2
     hzt hacc7 (by rw [hK₇.2.1]; omega) hMod rfl
-    ⟨by unfold SRegOK; decide, by unfold SRegOK; decide, by unfold SRegOK; decide,
-      by unfold SRegOK; decide, by unfold SRegOK; decide⟩
+    (by register_guard)
     (by rw [w2]; have := symShotK_mono (Fg := F (c₀.nreg (sw 5))) hlen; omega)).mono
     (by rw [w2]; exact symShotK_mono hlen) ?_
   rintro c' ⟨L', hacc', hL', hcomp, k8, hA8, hm8⟩
@@ -347,12 +340,12 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
       · exact Or.inl hτ
   · intro ls' hlsl hlsrec i hidx V hV hcase hray
     have hσ : dirOf (c.nreg qD) = 1 ∨ dirOf (c.nreg qD) = -1 := SweepPrim.dirOf_cases _
-    have eR2v : c₄.nreg eR2 = t := by show regB _ _ _ _ = _; rw [e2v, tl3]
+    have eR2v : c₄.nreg eR2 = t := by ram_finish
     have eR1v : c₄.nreg eR1 = t - 1 := by show regB _ _ _ _ = _; rw [e1v, tl3]
     have eR0v : c₄.nreg eR0 = t - 1 - 1 := by show regB _ _ _ _ = _; rw [e0v, tl3]
     have lab : ∀ e eR, (eR = eR0 ∨ eR = eR1 ∨ eR = eR2) → c₄.nreg eR = e → e < ls'.length →
         V ∈ logLab J (Qof P) N₂ ls' e →
-        ∃ q, q < 18 ∧ regOf (chainModel J.right) (Qof P) N₂ (c₆.nmem (G + q)) = V := by
+        ∃ q, q < 18 ∧ regOf J.rightModel (Qof P) N₂ (c₆.nmem (G + q)) = V := by
       intro e eR heR hev he hVe
       obtain ⟨k, hk3, hkn, hkV⟩ := label_mem hlsrec he hVe
       obtain ⟨idx, hidx', h1, h2⟩ := slotPairs_cover heR hk3
@@ -364,7 +357,7 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
       exact hkV
     have hti := logIdx_cases hA t_le t_lt t_ge hlsl hlsrec hidx
     obtain ⟨q, hq18, hqV⟩ : ∃ q, q < 18 ∧
-        regOf (chainModel J.right) (Qof P) N₂ (c₆.nmem (G + q)) = V := by
+        regOf J.rightModel (Qof P) N₂ (c₆.nmem (G + q)) = V := by
       rcases hcase with h | ⟨hi0, h⟩ | h
       · have hi := hidx.1
         rcases hti with hti | hti
@@ -375,28 +368,28 @@ theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
         · exact lab (i - 1) eR1 (Or.inr (Or.inl rfl)) (by rw [eR1v]; omega) (by omega) h
         · exact lab (i - 1) eR0 (Or.inl rfl) (by rw [eR0v]; omega) (by omega) h
       · obtain ⟨hV', hW⟩ := gap_pos J h
-        have hn2 : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+        have hn2 := cm_n J.right
         rcases hW with hW | hW
         · obtain ⟨r, hr, hrV⟩ := gap_reg hP hN (p := 2 * J.right.m + 6) (by omega) (by omega)
             hj₁.1 hj₁.2.1 hj₁.2.2 hV' (Or.inl hW)
           obtain ⟨ii, hii, hir⟩ := List.mem_iff_getElem.1 hr
-          have hii3 : ii < 3 := by simpa [Sweep.nbrRegs] using hii
+          have hii3 : ii < 3 := by assumption
           refine ⟨ii, by omega, ?_⟩
           rw [gap1 ii hii3, List.getD_eq_getElem _ _ hii, hir, hrV]
         · obtain ⟨r, hr, hrV⟩ := gap_reg hP hN (p := 6) (by omega) (by omega)
             hj₂.1 hj₂.2.1 hj₂.2.2 hV' (Or.inr hW)
           obtain ⟨ii, hii, hir⟩ := List.mem_iff_getElem.1 hr
-          have hii3 : ii < 3 := by simpa [Sweep.nbrRegs] using hii
+          have hii3 : ii < 3 := by assumption
           refine ⟨3 + ii, by omega, ?_⟩
           rw [← add_assoc, gap2 ii hii3, List.getD_eq_getElem _ _ hii, hir, hrV]
     obtain ⟨hfreeR, hexit⟩ := exit_mem_gather hP hN (rs := rs) (m := c₇.nmem)
-      (A := c₆.nreg ALLOC) w4 (valid q hq18) (mem_rs q hq18) hzt hσ (by rw [hqV]; exact hray)
-    exact hcomp hfreeR (by rw [w1, w2]; exact hexit)
+      (A := c₆.nreg ALLOC) w4 (valid q hq18) (mem_rs q hq18) hzt hσ (by rwa [hqV])
+    exact hcomp hfreeR (by rwa [w1, w2])
   · unfold sw at h2 h3 h4
-    rw [k8 r h1 (by unfold RS; omega) (by unfold accA sw; omega) h5]
-    exact keep7 r h1 (by unfold sw; omega) (by unfold sw; omega) h5
+    rw [k8 r h1 (by reg_omega) (by reg_omega) h5]
+    exact keep7 r h1 (by reg_omega) (by reg_omega) h5
   · omega
-  · rw [hm8 a (by omega), w5 a (by omega), em6, s3 a (by omega), em4, g3 a (by omega), m2 a ha]
+  · ram_rw [hm8 a, w5 a, em6, s3 a, em4, g3 a, m2 a ha]
 
 
 end

@@ -24,7 +24,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 
 theorem efr_regs {S Z : ℕ → Prop} {c c' : Config} (hS : ∀ r, S r → Z r)
     (h : ∀ r, bandOf r ∉ oracleBands → ¬ S r → r ≠ ALLOC → c'.nreg r = c.nreg r)
-    (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) :
+    (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) :
     EFr Z c c' :=
   ⟨fun r a b d => h r a (fun x => b (hS r x)) d, ha, hm⟩
 
@@ -38,12 +38,12 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
     (hK : 16970 + κB * (N₁.nChords + 1) * (F (c₀.nreg (sw 5)) + 1) ≤ K)
     (hroom : c.nreg ALLOC + K ≤ W) :
     IRS P W c₀ (m1cK2 br sh) c K (M1Post P J N₂ c) := by
-  have hb : c.nreg oB ≤ 1 := hD.ok.2.1
-  have hok : StOK P J N₂ 2 (c.nreg oKk) (c.nreg oB) := hk ▸ hD.ok
-  have htop0 : J.right.topIdx ≠ 0 := hok.2.2.2 rfl
+  have hb := hD.ok.2.1
+  have hok := hk ▸ hD.ok
+  have htop0 := hok.2.2.2 rfl
   have hK0 := E.hK.fix hI
-  have htopR : J.right.top ∈ J.right.set := J.right.top_mem_set
-  have hpos6 : (chainModel J.right).pos (Qof P) ⟨6, 0⟩ = J.right.top := SweepStop.right_top_pos _
+  have htopR := J.right.top_mem_set
+  have hpos6 : J.rightModel.pos (Qof P) ⟨6, 0⟩ = J.right.top := SweepStop.right_top_pos _
   have hW3 : P.n + 3 ≤ W := by have := E.hWh; unfold hostWords at this; omega
   have hm2 := J.right.one_le
   obtain ⟨KB, hKBd⟩ : ∃ KB, KB = κB * (N₁.nChords + 1) * (F (c₀.nreg (sw 5)) + 1) :=
@@ -53,37 +53,34 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
   rw [hk, stOrig_two]
   refine (IRS.seq (K₁ := 16707) (K₂ := 251 + (KB + 12))
     (SweepIo.callSym_irs (P := P) (dsc := sw 21) (re := K6) (rh := K0) (o := m1s) (C := J.right) hI
-      (E.ctx2' hI) (by unfold K6 K0 sw; omega) (by unfold m1s sw; omega)
+      (E.ctx2' hI) (by reg_omega) (by reg_omega)
       (by rw [hK0.2.2.1, cm_n]; omega)
       (by rw [hK0.2.2.1, hK0.1]; exact ⟨le_refl _, by
-          rw [show (chainModel J.right).param (Qof P) ⟨6, 0⟩ = 0 from rfl]; norm_num,
+          rw [show J.rightModel.param (Qof P) ⟨6, 0⟩ = 0 from rfl]; norm_num,
         Nat.zero_le _⟩)
       (by rw [hK0.2.2.1, hK0.1, hpos6]; exact absy_lt J.right htopR)
-      (Or.inl ⟨by rw [hK0.2.2.1], by rw [hK0.2.2.1]; omega⟩) (by omega)) ?_).mono
-    (show 16707 + (251 + (KB + 12)) ≤ K by omega) (fun _ h => h)
+      (Or.inl ⟨by rw [hK0.2.2.1], by rw [hK0.2.2.1]; omega⟩) (by omega)) ?_).budget (show 16707 + (251 + (KB + 12)) ≤ K by omega)
   rintro c₁ hI₁ hA₁ hA₁' ⟨sp, hsp, hlt, hev, hfr1, hal1, hm1⟩
   rw [hK0.2.2.1, hK0.1, hpos6] at hev
   have fr1 : EFr M1R c c₁ := efr_regs (S := fun r => m1s ≤ r ∧ r ≤ m1s + 3)
     (fun r h => by unfold m1s at h; unfold M1R; unfold sw at h ⊢; omega)
     (fun r a b d => hfr1 r a (by omega) d) hal1 hm1
   obtain ⟨t1, ht1, ht1l, ht1e⟩ := (E.hO.fix hI₁).t1
-  have hsp' : SymPtIn c₁ brOS sp := hsp
+  have hsp' := hsp
   refine IRS.seq (K₁ := 251) (K₂ := KB + 12)
     (callKb_irs (a := cT1) (b := brOS) (op := 1) (o := m1o) (by norm_num) hI₁ E.hG hW3
-      (by unfold cT1 sw; omega) (by unfold brOS sw; omega) (by unfold m1o sw; omega) ht1 hsp'
+      (by reg_omega) (by reg_omega) (by reg_omega) ht1 hsp'
       ht1l hlt (by omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hf2, hiff2, hfr2, hal2, hm2'⟩
   rw [ht1e, hev] at hiff2
   have fr2 : EFr M1R c₁ c₂ := efr_regs (S := fun r => r = m1o)
-    (fun r h => by rw [h]; unfold m1o M1R sw; omega) (fun r a b d => hfr2 r a b d) hal2 hm2'
+    (fun r h => by simp [h, m1o, M1R, sw]) (fun r a b d => hfr2 r a b d) hal2 hm2'
   have hK2 := E.hK.fix hI₂
-  have kB : ∀ r, 240000 ≤ r → r < 250000 → r ≠ m1o → (r < m1s ∨ m1s + 3 < r) → r ≠ ALLOC →
-      c₂.nreg r = c.nreg r := fun r h1 h2 h3 h4 h5 =>
+  have kB := fun r h1 h2 h3 h4 h5 =>
     (hfr2 r (not_oracle_sw h1 h2) h3 h5).trans (hfr1 r (not_oracle_sw h1 h2) h4 h5)
-  have eB : c₂.nreg oB = c.nreg oB := kB _ (by unfold oB sw; omega) (by unfold oB sw; omega)
-    (by unfold oB m1o sw; omega) (by unfold oB m1s sw; omega) (by unfold oB ALLOC sw; omega)
-  refine (IRS.ite (K := KB + 10) (fun h1 => ?_) (fun h1 => ?_)).mono
-    (show KB + 10 + 2 ≤ KB + 12 by omega) (fun _ h => h)
+  have eB : c₂.nreg oB = c.nreg oB := kB _ (by reg_omega) (by reg_omega)
+    (by reg_omega) (by reg_omega) (by reg_omega)
+  refine (IRS.ite (K := KB + 10) (fun h1 => ?_) (fun h1 => ?_)).budget (show KB + 10 + 2 ≤ KB + 12 by omega)
   · -- above the top of `C₁`: no result
     rw [hK2.1] at h1
     have hab : J.left.top.2 < J.right.top.2 := (hiff2.1 (by omega))
@@ -101,32 +98,30 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
       omega
     -- the direction
     have hokB : okB W c₂.nmem [Instr.copyN brOD oB] c₂.nreg :=
-      ⟨iscr_sw (by unfold brOD sw; omega) (by unfold brOD sw; omega), trivial⟩
+      ⟨iscr_sw (by reg_omega) (by reg_omega), trivial⟩
     refine (IRS.seq (K₁ := 1) (K₂ := KB + 7)
-      ((IRS.block [Instr.copyN brOD oB] hI₂ hokB).mono (by simp) (fun _ h => h)) ?_).mono
-      (show 1 + (KB + 7) ≤ KB + 10 by omega) (fun _ h => h)
+      ((IRS.block [Instr.copyN brOD oB] hI₂ hokB).budget (by simp)) ?_).budget (show 1 + (KB + 7) ≤ KB + 10 by omega)
     rintro c₃ hI₃ hA₃ hA₃' hc3
     have v3 : c₃.nreg brOD = c.nreg oB := by
-      rw [hc3]; simp only [regB, regI, upd_same]; exact eB
+      rw [hc3]; assumption
     have vo3 : ∀ q, q ≠ brOD → c₃.nreg q = c₂.nreg q :=
-      fun q hq => by rw [hc3]; simp only [regB, regI]; exact upd_other _ _ _ hq
+      fun q hq => by ram_simp [hc3, regB, regI] <;> reg_omega
     have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
-    have hA3eq : c₃.nreg ALLOC = c₂.nreg ALLOC := vo3 _ (by unfold brOD ALLOC sw; omega)
+    have hA3eq : c₃.nreg ALLOC = c₂.nreg ALLOC := vo3 _ (by reg_omega)
     have fr3 : EFr M1R c₂ c₃ :=
-      efr_regs (S := fun r => r = brOD) (fun r h => by rw [h]; unfold brOD M1R sw; omega)
+      efr_regs (S := fun r => r = brOD) (fun r h => by simp [h, brOD, M1R, sw])
         (fun r _ b _ => vo3 r b) (by rw [hA3eq]) (fun _ _ => by rw [hm3])
     -- the symbolic point is still at `brOS`
     have kS : ∀ i, i < 3 → c₃.nreg (brOS + i) = c₁.nreg (brOS + i) := fun i hi => by
-      rw [vo3 _ (by unfold brOS brOD sw; omega)]
-      exact hfr2 _ (not_oracle_sw (by unfold brOS sw; omega) (by unfold brOS sw; omega))
-        (by unfold brOS m1o sw; omega) (by unfold brOS ALLOC sw; omega)
-    have hsp3 : SymPtIn c₃ brOS sp :=
-      symPtIn_copy hsp' (kS 0 (by norm_num)) (kS 1 (by norm_num)) (kS 2 (by norm_num))
+      ram_rw [vo3]
+      exact hfr2 _ (not_oracle_sw (by reg_omega) (by reg_omega))
+        (by reg_omega) (by reg_omega)
+    have hsp3 := symPtIn_copy hsp' (kS 0 (by norm_num)) (kS 1 (by norm_num)) (kS 2 (by norm_num))
     have hab := Cand1.abs_lt_whole (J := J) htopR
     have hbr := hBr sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ sp hsp3 hlt
       (by rw [hev]; exact top_not_left E.hP htop0) (by rw [hev]; exact hab.1)
-      (by rw [hev]; exact hab.2) (by rw [hev]; exact hle)
-      (by rw [v3]; exact hb)
+      (by rw [hev]; exact hab.2) (by rwa [hev])
+      (by rwa [v3])
       (by rw [hA3eq]; omega)
     rw [← hKBd] at hbr
     refine IRS.seq (K₁ := KB) (K₂ := 7) hbr ?_
@@ -143,11 +138,10 @@ theorem m1cK2_irs {br : Stmt → Stmt} {κB : ℕ} (hBr : StbBody br κB)
       efr_regs (S := fun r => r1F ≤ r ∧ r ≤ r1F + 6)
         (fun r h => by unfold r1F at h; unfold M1R; unfold sw at h ⊢; omega)
         (fun r _ b _ => co r (by omega))
-        (by rw [show ({ c₄ with nreg := regB c₄.nmem m1cCp c₄.nreg } : Config).nreg ALLOC =
-          c₄.nreg ALLOC from co ALLOC (by unfold r1F ALLOC sw; omega)]) (fun _ _ => rfl)
+        (by rfl) (fun _ _ => rfl)
     have c0 : ({ c₄ with nreg := regB c₄.nmem m1cCp c₄.nreg } : Config).nreg r1F =
         c₄.nreg brF := by have := cv 0 (by norm_num); simpa using this
-    refine ⟨⟨by rw [c0]; exact g1, fun h1 => ?_, fun g => by rw [c0]; exact gf g.1⟩,
+    refine ⟨⟨by rwa [c0], fun h1 => ?_, fun g => by rw [c0]; exact gf g.1⟩,
       m1c_efr (m1c_efr (m1c_efr fr1 fr2 (fun r h => h) (fun r h => h)) (m1c_efr fr3 fr4
         (fun r h => h) (fun r h => h)) (fun r h => h) (fun r h => h)) fr5 (fun r h => h)
         (fun r h => h)⟩

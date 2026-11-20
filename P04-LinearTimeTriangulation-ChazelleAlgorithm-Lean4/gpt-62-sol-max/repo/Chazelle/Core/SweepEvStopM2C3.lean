@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.SweepEvStopM2C2
 
 /-!
@@ -27,18 +29,23 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 
 theorem m2c_regs {r : ℕ} (h : r = m2F ∨ r = m2F + 1 ∨ r = m2F + 2 ∨ r = r2F) : M2R r := by
   rcases h with rfl | rfl | rfl | rfl
-  · exact Or.inr (Or.inr (Or.inl ⟨by simp [m2F, sw], by simp [m2F, sw]⟩))
-  · exact Or.inr (Or.inr (Or.inl ⟨by simp [m2F, sw], by simp [m2F, sw]⟩))
-  · exact Or.inr (Or.inr (Or.inl ⟨by simp [m2F, sw], by simp [m2F, sw]⟩))
-  · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨by simp [r2F, sw], by simp [r2F, sw]⟩)))
+  · exact Or.inr (by register_guard)
+  · exact Or.inr (by register_guard)
+  · exact Or.inr (by register_guard)
+  · exact Or.inr (by register_guard)
+
+section
+
+variable (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
+    (hM : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c)
+    (hD : OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
+    (hpos : OrgPos P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) (c.nreg oPE) (c.nreg oPH))
+include E hI hM hD hpos
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 20000 in
 /-- **Shared and top codes.** -/
-theorem m2cS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
-    (hM : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c)
-    (hD : OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
-    (hpos : OrgPos P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) (c.nreg oPE) (c.nreg oPH))
+theorem m2cS_irs
     (hk : c.nreg oKd ≠ 1)
     (hroom : c.nreg ALLOC + m2cK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) ≤ W) :
     IRS P W c₀ (m2cS sh) c (m2cK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)))
@@ -52,16 +59,15 @@ theorem m2cS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   obtain ⟨hpe, hpp, -, hpt, -, -⟩ := hpos
   have hay' : |a.2| < J.right.radius := hay
   have noArr : FreeAt J.right a (dirOf (c.nreg oB)) → ∃ p t,
-      Arrival (chainModel J.right).W a (-dirOf (c.nreg oB)) p t :=
+      Arrival J.rightModel.W a (-dirOf (c.nreg oB)) p t :=
     fun hf => arrival_of_freeC J.right E.hP hσ (Or.inl haR') hf
   unfold m2cS m2cK
   unfold m2cK at hroom
   -- 1. the arrival position
   refine IRS.seq (callArr_irs (dsc := sw 21) (re := oPE) (rh := oPH) (rd := oB) (o := m2F)
     (C := J.right) hI (E.ctx2' hI)
-    ⟨by simp [sw], by simp [sw], by simp [oPE, sw], by simp [oPE, sw], by simp [oPH, sw],
-      by simp [oPH, sw], by simp [oB, sw], by simp [oB, sw]⟩
-    ⟨by simp [m2F, sw], by simp [m2F, sw]⟩ hpe hpp (by rw [hpt]; exact hay') (by omega)) ?_
+    (by reg_omega)
+    (by reg_omega) hpe hpp (by rw [hpt]; exact hay') (by omega)) ?_
   rintro c₁ hI₁ - hA₁' ⟨hArr, k1, hA1, hm1⟩
   have k1' : ∀ r, bandOf r ∉ oracleBands → ¬ M2R r → r ≠ ALLOC → c₁.nreg r = c.nreg r :=
     fun r h1 h2 h3 => k1 r h1 (fun e => h2 (m2c_regs (Or.inl e)))
@@ -70,16 +76,16 @@ theorem m2cS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   have kq : ∀ q, (sw 4000 ≤ q ∧ q < sw 4024) ∨ (sw 0 ≤ q ∧ q < sw 700) → c₁.nreg q = c.nreg q :=
     fun q hq => k1' q (not_oracle_sw (by unfold sw at hq; omega) (by unfold sw at hq; omega))
       (by unfold M2R; unfold sw at hq ⊢; omega) (by unfold ALLOC; unfold sw at hq; omega)
-  have eB : c₁.nreg oB = c.nreg oB := kq _ (Or.inl ⟨by simp [oB, sw], by simp [oB, sw]⟩)
+  have eB : c₁.nreg oB = c.nreg oB := kq _ (Or.inl (by reg_omega))
   have hK1 : c₁.nreg K1 = 1 := (E.hK.fix hI₁).2.1
   have hM₁ : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c₁ :=
     MCtx.transport hM (fun r hr => by
       rcases hr with rfl | rfl | rfl | rfl | rfl
-      · exact kq _ (Or.inl ⟨by simp [gMD2, sw], by simp [gMD2, sw]⟩)
-      · exact kq _ (Or.inl ⟨by simp [gCD2, sw], by simp [gCD2, sw]⟩)
-      · exact kq _ (Or.inr ⟨by simp [sw], by simp [sw]⟩)
-      · exact kq _ (Or.inr ⟨by simp [TBR, sw], by simp [TBR, sw]⟩)
-      · exact kq _ (Or.inr ⟨by simp [TLR, sw], by simp [TLR, sw]⟩)) hm1 hA1
+      · exact kq _ (Or.inl (by reg_omega))
+      · exact kq _ (Or.inl (by reg_omega))
+      · exact kq _ (Or.inr (by reg_omega))
+      · exact kq _ (Or.inr (by reg_omega))
+      · exact kq _ (Or.inr (by reg_omega))) hm1 hA1
   have efr1 : EFr M2R c c₁ := ⟨k1', hA1, hm1⟩
   obtain ⟨hf1, hf2, hf3⟩ := hArr
   rw [hpt] at hf2 hf3
@@ -101,21 +107,21 @@ theorem m2cS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
     · show upd c₁.nreg r2F 0 r = c₁.nreg r
       rw [upd_other _ _ _ (fun e => h2 (m2c_regs (Or.inr (Or.inr (Or.inr e)))))]
     · show c₁.nreg ALLOC = upd c₁.nreg r2F 0 ALLOC
-      rw [upd_other _ _ _ (by simp [r2F, ALLOC, sw])]
+      ram_rw [upd_other _ _]
   · -- the local hit from the arrival
     rw [hK1] at hfl
     have h1 : c₁.nreg m2F = 1 := by omega
     obtain ⟨hpe2, hpp2, harr⟩ := hf2 h1
     set x : WPos := ⟨c₁.nreg pE2, c₁.nreg pH2⟩ with hx
-    have hxa : (chainModel J.right).pos (Qof P) x = a := harr.2.2.2.1
-    have hsl : sideLeft (chainModel J.right).W (c₁.nreg pE2)
-        ((chainModel J.right).param (Qof P) x)
-        (rayPt ((chainModel J.right).pos (Qof P) x) (dirOf (c₁.nreg oB)) 1) := by
+    have hxa : J.rightModel.pos (Qof P) x = a := harr.2.2.2.1
+    have hsl : sideLeft J.rightModel.W (c₁.nreg pE2)
+        (J.rightModel.param (Qof P) x)
+        (rayPt (J.rightModel.pos (Qof P) x) (dirOf (c₁.nreg oB)) 1) := by
       have := harr.2.2.2.2
       rw [neg_neg] at this
       rw [hxa, eB]; exact this
     refine (IRS.ifF (by rw [hK1]; exact hfl) (m2c_lh_irs E hI₁ hM₁ (e := pE2) (h := pH2)
-      ⟨by simp [pE2, lE, sw], by simp [pE2, lH, sw]⟩ (by simp [pH2, lE, sw]) (by rw [eB]; exact hb)
+      (by reg_omega) (by simp [pH2, lE, sw]) (by rw [eB]; exact hb)
       hpe2 hpp2
       (posClass_of hpe2 hpp2.1 hpp2.2.1 (by rw [hxa]; exact hay') (Or.inl (by rw [hxa]; exact ha2)))
       (by rw [hxa]; exact hay') (Or.inl (by rw [hxa]; exact haR'))
@@ -141,10 +147,7 @@ theorem m2cS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 20000 in
 /-- **Wall codes.** -/
-theorem m2cW_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
-    (hM : MCtx P W J.right N₂ (c₀.nreg TBR) gMD2 gCD2 (sw 4) c)
-    (hD : OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
-    (hpos : OrgPos P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) (c.nreg oPE) (c.nreg oPH))
+theorem m2cW_irs
     (hk : c.nreg oKd = 1)
     (hroom : c.nreg ALLOC +
       (3 + (lhRunK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) + 7)) ≤ W) :
@@ -154,21 +157,23 @@ theorem m2cW_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   set a := stOrig J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) with ha
   have hok := hD.ok
   obtain ⟨-, ha2, hay, -, hax⟩ := stOrig_facts E.hP E.hNF₂ hok
-  have hb : c.nreg oB ≤ 1 := hok.2.1
-  have hkk : c.nreg oKk < N₂.nChords := (hok.2.2.1 hk).1
+  have hb := hok.2.1
+  have hkk := (hok.2.2.1 hk).1
   obtain ⟨hpe, hpp, hcl, hpt, -, hend⟩ := hpos
-  have hxe : (⟨c.nreg oPE, c.nreg oPH⟩ : WPos) = endPos N₂ (c.nreg oKk) (1 - c.nreg oB) := hend hk
-  have hay' : |a.2| < J.right.radius := hay
+  have hxe := hend hk
+  have hay' := hay
   have hsl := m2c_wall_left E.hNF₂ hkk hb
   rw [← hxe] at hsl
   unfold m2cW
-  refine (m2c_lh_irs E hI hM (e := oPE) (h := oPH) ⟨by simp [oPE, lE, sw], by simp [oPE, lH, sw]⟩
-    (by simp [oPH, lE, sw]) hb hpe hpp hcl (by rw [hpt]; exact hay')
+  refine (m2c_lh_irs E hI hM (e := oPE) (h := oPH) (by reg_omega)
+    (by decide) hb hpe hpp hcl (by rwa [hpt])
     (Or.inr (by rw [hpt]; exact hax hk)) (Gd := FreeAt J.right a (dirOf (c.nreg oB)))
-    (fun _ => ⟨hsl, by rw [hpt]; exact ha2⟩) hroom).mono le_rfl ?_
+    (fun _ => ⟨hsl, by rwa [hpt]⟩) hroom).mono le_rfl ?_
   rintro c' ⟨hres, hfr⟩
   rw [hpt] at hres
   exact ⟨⟨hres, fun h => absurd hk h⟩, hfr.mono fun r hr => m2c_M2R_lh' hr⟩
+
+end
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 20000 in
@@ -177,11 +182,9 @@ theorem m2Task : M2Task := by
   refine ⟨m2c, fun D => κGen D + 40000, ?_⟩
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hM hD hpos hroom
   have hK := m2cK_le (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
-  have hK1 : c.nreg K1 = 1 := (E.hK.fix hI).2.1
-  have hr : c.nreg ALLOC + (m2cK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) + 4) ≤ W :=
-    le_trans (Nat.add_le_add_left hK _) hroom
-  have hr' : c.nreg ALLOC + m2cK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) ≤ W :=
-    le_trans (Nat.add_le_add_left (Nat.le_add_right _ _) _) hr
+  have hK1 := (E.hK.fix hI).2.1
+  have hr := le_trans (Nat.add_le_add_left hK _) hroom
+  have hr' := le_trans (Nat.add_le_add_left (Nat.le_add_right _ _) _) hr
   unfold m2c
   by_cases h0 : c.nreg oKd < c.nreg K1
   · refine (IRS.ifT h0 (m2cS_irs E hI hM hD hpos (by rw [hK1] at h0; omega) hr')).mono ?_
@@ -199,8 +202,7 @@ theorem m2Task : M2Task := by
           unfold m2cK; generalize lhRunK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) = x
           omega
         exact (IRS.ifF (K := m2cK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) h2
-          ((m2cW_irs E hI hM hD hpos hk1 (le_trans (Nat.add_le_add_left hle _) hr')).mono hle
-            (fun _ h => h)))
+          ((m2cW_irs E hI hM hD hpos hk1 (le_trans (Nat.add_le_add_left hle _) hr')).budget hle))
     refine (IRS.ifF h0 hin).mono ?_ (fun _ h => h)
     exact le_trans (le_of_eq (by ring)) hK
 end

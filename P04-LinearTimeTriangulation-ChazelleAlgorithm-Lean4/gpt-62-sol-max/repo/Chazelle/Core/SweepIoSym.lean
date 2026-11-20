@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepIoClass
 
 /-!
@@ -33,25 +35,29 @@ def SymIn (P : Polygon) (W : ℕ) (C : Chain) (c : Config) : Prop :=
     (c.nreg 50201 = 2 * C.m + 6 ∧
       (chainModel C).param (Qof P) ⟨c.nreg 50201, c.nreg 50202⟩ = 0))
 
-theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
+section
+
+variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
+    (hE : CEnv P W H C c)
+include hE
+
+theorem symVtx_exec {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
     (hen : e < 2 * C.m + 7) (hpar : (chainModel C).param (Qof P) ⟨e, hc⟩ = 0) :
     ∃ c' k, Exec P W absVtx c c' k ∧ k ≤ 27 * H.length + 45 ∧
       c'.nreg 50210 = 1 ∧ ∃ sp : SymPt, SymPtIn c' 50211 sp ∧ sp.Lt P.n ∧
         sp.eval (Qof P) = (chainModel C).pos (Qof P) ⟨e, hc⟩ := by
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50081
-  have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
+  have hE₁ := hE.step e₁ (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
     (by simp [h01, hE.r81]) (by omega) (dst := 50211) (by norm_num)
   have e₃ := Exec.constN (P := P) e₂.wb_right 50210 1 (by have := hE.hW; omega)
   have hv : (chainModel C).pos (Qof P) ⟨e, hc⟩ = (chainModel C).W.vtx (e - 6 + 6) := by
     rw [SweepPrim.pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega]
   refine ⟨_, _, .seq e₁ (.seq e₂ e₃), by omega, by simp, sp,
-    symPtIn_of_eq isp fun j h1 h2 => by simp [show j ≠ 50210 by omega], lsp, ?_⟩
+    symPtIn_of_eq isp fun j h1 h2 => by ram_finish, lsp, ?_⟩
   rw [vsp, hv]
 
-theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
+theorem symInt_exec (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
     (h02 : c.nreg 50202 = hc) (he6 : 6 ≤ e) (hen : e < 2 * C.m + 6)
     (ht : 0 < (chainModel C).param (Qof P) ⟨e, hc⟩) (ht1 : (chainModel C).param (Qof P) ⟨e, hc⟩ < 1)
     (hhn : hc ≤ P.n) :
@@ -81,7 +87,7 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     hlt.le (dst := 50130) (by norm_num)
   have w₂ := e₂.wb_right
   have e₃ := Exec.addN (P := P) w₂ 50120 50120 50032
-    (by rw [f₂.1 _ (by decide), q20, hE₂.r32]; omega)
+    (by frame_finish [f₂.1, q20, hE₂.r32])
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50120 + c₂.nreg 50032) }
     with hc₃
   have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (by decide)
@@ -94,11 +100,11 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (by omega)
     hE₄.r32 i₁' i₂ l₁ l₂
   have q02 : c₅.nreg 50202 = hc := by
-    rw [r₅ _ (by decide) (by decide) (by decide), f₄.1 _ (by decide), hc₃]
+    ram_rw [r₅, f₄.1, hc₃]
     simp only
-    rw [upd_other _ _ _ (by decide), f₂.1 _ (by decide), r₁ _ (by decide) (by decide), h02]
+    ram_rw [upd_other _ _, f₂.1, r₁, h02]
   have q32 : c₅.nreg 50032 = 1 := by
-    rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
+    frame_finish
   obtain ⟨hEi, hx⟩ := tour_abs hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂
     (hc := hc) (by rw [show i + 6 = e by omega]; exact ht)
   have hc1 : 1 ≤ hc := by
@@ -109,14 +115,10 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       (c₆.nreg 50210 = 1 ∧ SymPtIn c₆ 50211 (.onEdge (hostEdgeIdx P.n s₁ s₂) (hc - 1))) := by
     unfold outE
     have hw₅ := e₅.wb_right
-    exec_block
-    all_goals try omega
-    refine ⟨rfl, by config_simp, by config_simp, by config_simp; exact v₅, ?_⟩
-    config_simp; rw [q02, q32]
+    ram_exec [q02, q32]
   obtain ⟨q10, q11⟩ := q
   have ex : Exec P W absInt c c₆ (k₁ + (k₂ + (1 + (k₄ + (k₅ + k₆))) + 1)) :=
-    .seq e₁ (.ifLtN_true (by rw [q20, q43]; exact hlt) (.seq e₂ (.seq e₃ (.seq e₄
-      (.seq e₅ e₆)))))
+    (by ram_path [q20, q43])
   refine ⟨c₆, _, ex, by have := hE.hlen; omega, q10, _, q11, ⟨hEi, by omega⟩, ?_⟩
   have hne := ne_of_param_pos ht
   have hy : ((chainModel C).pos (Qof P) ⟨e, hc⟩).2 = ((Qof P).vtx (hc - 1)).2 := by
@@ -126,6 +128,8 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   apply Prod.ext
   · rw [show e = i + 6 by omega, hx]
   · rw [hy]; rfl
+
+end
 
 /-- **Contract of `absKey` for tour and top positions: the symbolic point of the position.** -/
 theorem symKey_meets : Meets absKey primBands (PrimPre SymIn) (PrimPost SymOut)

@@ -5,13 +5,12 @@ public import Chazelle.Core.FactsInterior
 /-!
 # WP-B: the cut structure of the good models
 
-`cutStructureNC : CutStructureSpecNC` — the combinatorial Lemmas 2.1–2.2 for every good model
+`cutStructure : CutStructureSpec` — the combinatorial Lemmas 2.1–2.2 for every good model
 (chain models of chains of simple polygons, interior models of simple polygons) and every finite
 admissible family: a non-cut position inside a walk edge faces exactly one region, every region is
 faced, and two **non-cut** positions face the same region iff no chord separates their keys.
 
-`CutStructureSpec` (after review finding B1) is this statement; `cutStructure` is in
-`Chazelle.Core.FactsAttach`.  Parts 1 and 2 alone are `cutStructure_parts12`.
+`CutStructureSpec` is this corrected statement (review finding B1).
 -/
 
 namespace Chazelle.Core
@@ -19,7 +18,7 @@ namespace Chazelle.Core
 @[expose] public section
 
 /-- **WP-B: the cut structure** (corrected statement, non-cut positions in part 3). -/
-theorem cutStructureNC : CutStructureSpecNC := by
+theorem cutStructure : CutStructureSpec := by
   intro M Q F hM hF
   have hW := walkAx_of_goodModel hM
   obtain ⟨hfin, hAdm, -⟩ := hF

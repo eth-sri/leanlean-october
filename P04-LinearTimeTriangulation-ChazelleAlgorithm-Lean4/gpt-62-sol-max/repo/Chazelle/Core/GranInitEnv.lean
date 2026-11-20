@@ -21,8 +21,13 @@ namespace Gran
 noncomputable def envOf (M : Model) (P : Polygon) (N : NF) (reg : ℕ → Set Point) (γ D kind m : ℕ) :
     Env := ⟨M, Qof P, N, reg, γ, D, decide (kind = 0), m⟩
 
+section
+
+variable {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
+include P mem MD M
+
 /-- The model kind and chain length read from a descriptor describe the counted edges. -/
-theorem desc_count {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
+theorem desc_count
     (h : ModelDescAt mem MD (Qof P) M) :
     CountDesc M (decide (mem MD = 0)) (mem (MD + 3)) ∧
       (decide (mem MD = 0) = true → M.W.n = 2 * mem (MD + 3) + 7) ∧
@@ -34,7 +39,7 @@ theorem desc_count {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
     simp only [decide_true]
     refine ⟨⟨fun _ => by rw [hn]; omega, fun p hp => ?_⟩, fun _ => hn, ?_⟩
     · simp [chainModel]
-    · unfold szOf cntIn; rw [hn]; simp only [ite_true]; omega
+    simp [szOf, cntIn, hn, ite_true]
   · rw [h1]
     simp only [show (1 : ℕ) ≠ 0 by decide, decide_false]
     refine ⟨⟨fun h => absurd h (by decide), fun p hp => ?_⟩, fun h => absurd h (by decide), ?_⟩
@@ -47,7 +52,7 @@ theorem desc_count {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
       exact (shear_n _ _).symm
 
 /-- **The environment satisfies its hypotheses.** -/
-theorem envOf_good {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model} {N : NF}
+theorem envOf_good {N : NF}
     {reg : ℕ → Set Point} {γ D : ℕ} (hMD : ModelDescAt mem MD (Qof P) M) (hGM : GoodModel M)
     (hNF : IsNF M (Qof P) N) (hRC : RegionCorr M (Qof P) N reg)
     (hCS : ChordSidesOK M (Qof P) N reg) (hRO : RegionsOK M (Qof P) N reg)
@@ -56,10 +61,12 @@ theorem envOf_good {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model} {N :
   obtain ⟨hcd, hn, -⟩ := desc_count hMD
   exact ⟨walkAx_of_goodModel hGM, hGM, hNF, hRC, hCS, hRO, hne, hcd, hn⟩
 
-theorem envOf_sz {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model} {N : NF}
+theorem envOf_sz {N : NF}
     {reg : ℕ → Set Point} {γ D : ℕ} (hMD : ModelDescAt mem MD (Qof P) M) :
     (envOf M P N reg γ D (mem MD) (mem (MD + 3))).sz = szOf P (mem MD) (mem (MD + 3)) :=
   (desc_count hMD).2.2.symm
+
+end
 
 /-- The chain length of a well-formed chain descriptor is below `64 n`. -/
 theorem chain_m_le {P : Polygon} {E : ℕ} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}

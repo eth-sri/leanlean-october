@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterStageC2
 
 /-!
@@ -89,11 +91,11 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
     refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_,
       ?_, ?_, ?_⟩
     · simp only; unfold LVRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat frame_finish
     · unfold LvMem at ha
       config_simp; simp only [r65, r67, r68, h40, h41, h39, h42]
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+      ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
     all_goals (config_simp; simp only [r65, r66, r67, r68, h40, h41, h39, h42, r1, r0, rk])
   -- the light flag
   set hl := if (j + cs) % g.k' < g.k' - 1 then 0 else 1 with hhl
@@ -107,21 +109,19 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
         ⟨fun r _ => rfl, rfl, rfl, rfl, fun a ha => ?_⟩, ?_⟩
       · simp only; rw [h43, Machine.upd_other _ _ _ (by unfold LvMem at ha; omega)]
       · rw [h41', h39'] at hp
-        refine ⟨?_, rfl⟩
-        simp only; rw [h43, h0', hhl, ite_eq_left hp]
+        ram_post
     · have e := Exec.storeN (P := P) hw3 130843 130001
       refine ⟨_, 1 + 2, .ifLtN_false hp e, by omega, e.wb_right,
         ⟨fun r _ => rfl, rfl, rfl, rfl, fun a ha => ?_⟩, ?_⟩
       · simp only; rw [h43, Machine.upd_other _ _ _ (by unfold LvMem at ha; omega)]
       · rw [h41', h39'] at hp
-        refine ⟨?_, rfl⟩
-        simp only; rw [h43, h1', hhl, ite_eq_right hp]
+        ram_post
   -- the step of the residue
   have e5 := Exec.addN (P := P) hw4 130841 130841 130001 (by rw [hr4, h41', h1']; omega)
   set c5 := { c4 with nreg := upd c4.nreg 130841 (c4.nreg 130841 + c4.nreg 130001) } with hc5
   have h5t : c5.nreg 130841 = (j + cs) % g.k' + 1 := by simp [c5, hr4, h41', h1']
   have h5r : ∀ r, r ≠ 130841 → c5.nreg r = c3.nreg r := fun r hr => by
-    simp only [c5, Machine.upd_other _ _ _ hr, hr4]
+    ram_simp [c5, hr4] 
   obtain ⟨c6, k6, e6, hk6, hw6, hm6, h6t, h6b, h6r, h6rr, h6rm, h6o⟩ : ∃ c6 k6, Exec P W
       (.ifLtN 130841 130015 .skip (block [.constN 130841 0, .addN 130842 130842 130001])) c5 c6 k6
       ∧ k6 ≤ 4 ∧ WordsBounded W c6 ∧ c6.nmem = c5.nmem ∧ c6.nreg 130841 = (j + 1 + cs) % g.k' ∧
@@ -129,53 +129,46 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
       (∀ r, r ≠ 130841 → r ≠ 130842 → c6.nreg r = c5.nreg r) ∧ c6.rreg = c5.rreg ∧
       c6.rmem = c5.rmem ∧ c6.output = c5.output := by
     by_cases hp : c5.nreg 130841 < c5.nreg 130015
-    · rw [h5t, h5r _ (by omega), hk'] at hp
-      refine ⟨c5, 0 + 1, .ifLtN_true (by rw [h5t, h5r _ (by omega), hk']; exact hp) (.skip e5.wb_right),
+    · ram_rw [h5t, h5r, hk'] at hp
+      refine ⟨c5, 0 + 1, .ifLtN_true (by frame_finish [h5t, h5r, hk']) (.skip e5.wb_right),
         by omega, e5.wb_right, rfl, ?_, ?_, fun _ _ _ => rfl, rfl, rfl, rfl⟩
       · rw [h5t, hmod, ite_eq_left hp]
-      · rw [h5r _ (by omega), h42', hdiv, ite_eq_left hp]
+      simp [h5r, h42', hdiv, ite_eq_left hp]
     · have hp' := hp
-      rw [h5t, h5r _ (by omega), hk'] at hp'
+      ram_rw [h5t, h5r, hk'] at hp'
       have e7 := Exec.constN (P := P) e5.wb_right 130841 0 (by omega)
       have e8 := Exec.addN (P := P) e7.wb_right 130842 130842 130001 (by
         simp only [Machine.upd_other _ _ _ (show (130842 : ℕ) ≠ 130841 by omega),
           Machine.upd_other _ _ _ (show (130001 : ℕ) ≠ 130841 by omega)]
-        rw [h5r _ (by omega), h5r _ (by omega), h42', h1']; omega)
-      refine ⟨_, (1 + (1 + 0)) + 2, .ifLtN_false hp (.seq e7 (.seq e8 (.skip e8.wb_right))),
+        ram_rw [h5r, h5r, h42', h1']; omega)
+      refine ⟨_, (1 + (1 + 0)) + 2, .ifLtN_false hp (by ram_path),
         by omega, e8.wb_right, rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-      · simp only [Machine.upd_other _ _ _ (show (130841 : ℕ) ≠ 130842 by omega),
-          Machine.upd_same]
-        rw [hmod, ite_eq_right hp']
-      · simp only [Machine.upd_same,
-          Machine.upd_other _ _ _ (show (130842 : ℕ) ≠ 130841 by omega),
-          Machine.upd_other _ _ _ (show (130001 : ℕ) ≠ 130841 by omega)]
-        rw [h5r _ (by omega), h5r _ (by omega), h42', h1', hdiv, ite_eq_right hp']
-      · simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
-  have h6l : c6.nreg 130840 = j := by rw [h6r _ (by omega) (by omega), h5r _ (by omega), h40']
-  have h61 : c6.nreg 130001 = 1 := by rw [h6r _ (by omega) (by omega), h5r _ (by omega), h1']
+      · ram_simp [hmod, ite_eq_right hp'] 
+      · ram_simp [h5r, h42', h1', hdiv, ite_eq_right hp'] 
+      · ram_post
+  have h6l : c6.nreg 130840 = j := by ram_post
+  have h61 : c6.nreg 130001 = 1 := by ram_post
   have e9 := Exec.addN (P := P) hw6 130840 130840 130001 (by rw [h6l, h61]; omega)
   have hmfin : ({ c6 with nreg := upd c6.nreg 130840 (c6.nreg 130840 + c6.nreg 130001) } :
       Config).nmem = upd c3.nmem (g.base 36 + j) hl := by
-    show c6.nmem = _; rw [hm6, show c5.nmem = c4.nmem from rfl, hm4]
-  refine ⟨_, k3 + (k4 + (1 + (k6 + 1))), .seq e3 (.seq e4 (.seq e5 (.seq e6 e9))), by omega,
+    ram_post
+  refine ⟨_, k3 + (k4 + (1 + (k6 + 1))), (by ram_path), by omega,
     e9.wb_right, hf3.trans (hf4.trans ⟨fun r hr => ?_, h6rr, h6rm, h6o, fun a ha => ?_⟩), ?_, ?_, ?_,
     ?_, fun a h1 h2 h3 h4 => ?_⟩
   · unfold LVRG at hr
     simp only [Machine.upd_other _ _ _ (show r ≠ 130840 by omega)]
-    rw [h6r _ (by omega) (by omega), h5r _ (by omega), hr4]
+    ram_rw [h6r, h5r, hr4]
   · show c6.nmem a = c4.nmem a; rw [hm6]
   · simp only [Machine.upd_same, h6l, h61]
-  · simp only [Machine.upd_other _ _ _ (show (130841 : ℕ) ≠ 130840 by omega)]
-    exact h6t
-  · simp only [Machine.upd_other _ _ _ (show (130842 : ℕ) ≠ 130840 by omega)]
-    exact h6b
+  · assumption
+  · assumption
   · rw [hmfin]
     refine ⟨?_, ?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), hm3, Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), hm3, Machine.upd_other _ _ _ (by omega),
+    · ram_rw [Machine.upd_other _ _, hm3, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_same]
+    · ram_rw [Machine.upd_other _ _, hm3, Machine.upd_other _ _,
         Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), hm3, Machine.upd_same]
+    · ram_rw [Machine.upd_other _ _, hm3, Machine.upd_same]
     · rw [Machine.upd_same]
   · rw [hmfin, Machine.upd_other _ _ _ h4, hm3, Machine.upd_other _ _ _ h3,
       Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h1]
@@ -205,9 +198,9 @@ theorem lvS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
     · config_simp; rw [hG.rk', hG.one, hrho, Nat.mod_eq_of_lt hc]
     · config_simp; rw [Nat.div_eq_of_lt hc]
     · simp only; unfold StCRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      frame_finish
   have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; unfold StCRG; omega))
-  obtain ⟨c', k, e, hk', hw', hi', hn', h41', h42', h39', h38', hf', hm'⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk', hw', hi', hn', h41', h42', h39', h38', hf', hm'⟩ := Exec.forN (P := P) (W := W)
     (ri := 130840) (rn := 130011) (body := lvBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130840 = j ∧ c'.nreg 130011 = g.μ ∧
       c'.nreg 130841 = (j + cs) % g.k' ∧ c'.nreg 130842 = (j + cs) / g.k' ∧
@@ -229,10 +222,10 @@ theorem lvS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
         have b38 := g.base_eq 38
         obtain ⟨o1, o2, o3, o4⟩ := hm2 l h
         refine ⟨?_, ?_, ?_, ?_⟩
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o1
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o2
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o3
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o4
+        · ram_rw [hkeep]; exact o1
+        · ram_rw [hkeep]; exact o2
+        · ram_rw [hkeep]; exact o3
+        · ram_rw [hkeep]; exact o4
       · rw [show l = j by omega]; exact hok)
     (j₀ := 0) ⟨hw1, h40, hG1.rμ, h41, h42, h39, h38, hf1, fun l hl => by omega⟩ (Nat.zero_le _)
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hf', h38', hm'⟩

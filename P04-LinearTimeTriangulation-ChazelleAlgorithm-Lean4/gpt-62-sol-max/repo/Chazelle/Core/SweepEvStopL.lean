@@ -37,8 +37,8 @@ theorem KLe.trans {a b c : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b c) : KLe a c :
   unfold KLe at *
   rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
   · exact Or.inl (h1.trans h2)
-  · exact Or.inl (by rw [← h2]; exact h1)
-  · exact Or.inl (by rw [h1]; exact h2)
+  · simp_all
+  · simp_all
   · exact Or.inr ⟨h1.trans h2, h1'.trans h2'⟩
 
 theorem KLe.total (a b : ℝ × ℕ) : KLe a b ∨ KLe b a := by
@@ -58,11 +58,6 @@ theorem KLt.of_le_ne {a b : ℝ × ℕ} (h : KLe a b) (hne : a ≠ b) : KLt a b 
 theorem KLt.ne {a b : ℝ × ℕ} (h : KLt a b) : a ≠ b := by
   rintro rfl
   rcases h with h | ⟨-, h⟩ <;> exact lt_irrefl _ h
-
-theorem KLt.le {a b : ℝ × ℕ} (h : KLt a b) : KLe a b := by
-  rcases h with h | ⟨h1, h2⟩
-  · exact Or.inl h
-  · exact Or.inr ⟨h1, h2.le⟩
 
 theorem KLt.fst_le {a b : ℝ × ℕ} (h : KLt a b) : a.1 ≤ b.1 := by
   rcases h with h | ⟨h1, -⟩
@@ -96,8 +91,8 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
     ((i = 0 ∨ ∀ x', L[i - 1]? = some x' → key x' ≠ key x) → DInv key L (i + 1) (O ++ [x])) ∧
       ((0 < i ∧ ∀ x', L[i - 1]? = some x' → key x' = key x) → DInv key L (i + 1) O) := by
   have hi : i < L.length := by
-    by_contra h'; push Not at h'; rw [List.getElem?_eq_none h'] at hx; cases hx
-  have hxL : x ∈ L := List.mem_of_getElem? hx
+    by_contra h'; push Not at h'; simp_all
+  have hxL := List.mem_of_getElem? hx
   constructor
   · intro hcase
     -- the last kept key is below the key of `x`
@@ -117,9 +112,8 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
           have := List.pairwise_iff_getElem.1 hs (i - 1) i (by omega) hi (by omega)
           rw [List.getElem?_eq_getElem (by omega)] at hx'
           rw [List.getElem?_eq_getElem hi] at hx
-          simp only [Option.some.injEq] at hx hx'
-          rwa [hx, hx'] at this
-        have hlt : KLt (key x') (key x) := KLt.of_le_ne hle hne
+          simp_all
+        have hlt := KLt.of_le_ne hle hne
         -- every kept key is at most the last one
         rcases List.getLast?_eq_some_iff.1 hyl with ⟨O', rfl⟩
         rcases List.mem_append.1 hy with hy | hy
@@ -128,14 +122,14 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
           rw [hkl] at h2
           rcases h2 with h2 | ⟨h2, h2'⟩ <;> rcases hlt with h3 | ⟨h3, h3'⟩
           · exact Or.inl (h2.trans h3)
-          · exact Or.inl (by rw [← h3]; exact h2)
-          · exact Or.inl (by rw [h2]; exact h3)
+          · exact Or.inl (by rwa [← h3])
+          · exact Or.inl (by rwa [h2])
           · exact Or.inr ⟨h2.trans h3, h2'.trans h3'⟩
-        · simp at hy; rw [hy, hkl]; exact hlt
+        · simp_all
     refine ⟨fun y hy => ?_, ?_, fun j hj x'' hx'' => ?_, fun x'' _ hx'' => ?_, fun h' => by omega⟩
     · rcases List.mem_append.1 hy with hy | hy
       · exact h.sub y hy
-      · simp at hy; rw [hy]; exact hxL
+      · simp at hy; rwa [hy]
     · rw [List.pairwise_append]
       exact ⟨h.inc, List.pairwise_singleton _ _, fun a ha b hb => by
         simp at hb; rw [hb]; exact hlast a ha⟩
@@ -172,7 +166,7 @@ noncomputable def rKey (r : ℕ × ℕ × ℕ × ℕ × ℕ) (d : ℕ) : ℝ × 
 
 /-- The parameter of the position of a record. -/
 noncomputable abbrev rPar (r : ℕ × ℕ × ℕ × ℕ × ℕ) : ℝ :=
-  (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩
+  J.wholeModel.param (Qof P) ⟨r.1, r.2.1⟩
 
 /-- The chord of a record. -/
 noncomputable abbrev rSet (r : ℕ × ℕ × ℕ × ℕ × ℕ) : Set Point :=
@@ -183,21 +177,26 @@ position on the `C₁` part, which is its left end (`d = 1`) or its right end (`
 def RawOK (r : ℕ × ℕ × ℕ × ℕ × ℕ) (d : ℕ) : Prop :=
   StOK P J N r.2.2.1 r.2.2.2.1 r.2.2.2.2 ∧
     FreeAt J.whole (stOrig J (Qof P) N r.2.2.1 r.2.2.2.1 r.2.2.2.2) (dirOf r.2.2.2.2) ∧
-    SideAttach (chainModel J.whole).W (rSet P J N r) r.1 (rPar P J r) ∧
+    SideAttach J.wholeModel.W (rSet P J N r) r.1 (rPar P J r) ∧
     (Lst J : ℝ) ≤ oW J (r.1 + rPar P J r) ∧ d ≤ 1 ∧
-    sidePt (chainModel J.whole).W r.1 (rPar P J r) =
+    sidePt J.wholeModel.W r.1 (rPar P J r) =
       (if d = 1 then Merge.lend (rSet P J N r) else Merge.rend (rSet P J N r))
 
 end Raw
 
 theorem offK_eq (P : Polygon) (J : Merge.Junction) (e h : ℕ) :
-    offK P J e h = oW J (e + (chainModel J.whole).param (Qof P) ⟨e, h⟩) := rfl
+    offK P J e h = oW J (e + J.wholeModel.param (Qof P) ⟨e, h⟩) := rfl
 
 variable {P : Polygon} {J : Merge.Junction} {N : NF}
 
-/-- Two valid raw records with the same key have the same position and chord. -/
-theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
+section
+
+variable (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N)
     {r r' : ℕ × ℕ × ℕ × ℕ × ℕ} {d d' : ℕ} (h : RawOK P J N r d) (h' : RawOK P J N r' d')
+include hP hN h h'
+
+/-- Two valid raw records with the same key have the same position and chord. -/
+theorem raw_eq_of_key
     (hk : rKey P J r d = rKey P J r' d') :
     r.1 = r'.1 ∧ rPar P J r = rPar P J r' ∧ rSet P J N r = rSet P J N r' := by
   have hS₂ := hN.1
@@ -212,18 +211,17 @@ theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   refine ⟨he, ht, ?_⟩
   have hm := (stop_mem hP hN hok hf).1
   have hm' := (stop_mem hP hN hok' hf').1
-  have ha : rSet P J N r ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm
-  have ha' : rSet P J N r' ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm'
-  have hpt : sidePt (chainModel J.whole).W r.1 (rPar P J r) =
-      sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
+  have ha := F₂plus_subset J hS₂.2.1 hm
+  have ha' := F₂plus_subset J hS₂.2.1 hm'
+  have hpt : sidePt J.wholeModel.W r.1 (rPar P J r) =
+      sidePt J.wholeModel.W r'.1 (rPar P J r') := by rw [he, ht]
   rw [hend, hend', h2] at hpt
   split_ifs at hpt
   · exact aug_eq_of_lend ha ha' hpt
   · exact aug_eq_of_rend ha ha' hpt
 
 /-- The leaving direction code is determined by the position and the chord. -/
-theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
-    {r r' : ℕ × ℕ × ℕ × ℕ × ℕ} {d d' : ℕ} (h : RawOK P J N r d) (h' : RawOK P J N r' d')
+theorem raw_dc_eq
     (he : r.1 = r'.1) (ht : rPar P J r = rPar P J r') (hs : rSet P J N r = rSet P J N r') :
     rKey P J r d = rKey P J r' d' := by
   have hS₂ := hN.1
@@ -231,8 +229,8 @@ theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
   obtain ⟨-, -, -, -, hd', hend'⟩ := h'
   have hm := (stop_mem hP hN hok hf).1
   have ha := F₂plus_subset J hS₂.2.1 hm
-  have hpt : sidePt (chainModel J.whole).W r.1 (rPar P J r) =
-      sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
+  have hpt : sidePt J.wholeModel.W r.1 (rPar P J r) =
+      sidePt J.wholeModel.W r'.1 (rPar P J r') := by rw [he, ht]
   rw [hend, hend', ← hs] at hpt
   have hne := lend_ne_rend ha
   have hdd : d = d' := by
@@ -246,20 +244,22 @@ theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
   show ((oW J (r.1 + rPar P J r)), d') = (oW J (r'.1 + rPar P J r'), d')
   rw [he, ht]
 
+end
+
 /-- **The stop list from the deduped raw records** (a list `O` of raw items with strictly
 increasing keys covering the keys of all raw items). -/
-theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
+theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N)
     {RS O : List α} {rec : α → ℕ × ℕ × ℕ × ℕ × ℕ} {dc : α → ℕ}
     (hok : ∀ x ∈ RS, RawOK P J N (rec x) (dc x))
-    (hcomp : ∀ e ∈ F₂plus J (N.F (chainModel J.right) (Qof P)),
-      StopChord2 J (N.F (chainModel J.right) (Qof P)) e → ∀ (p : ℕ) (t : ℝ),
-      SideAttach (chainModel J.whole).W e p t → (Lst J : ℝ) ≤ oW J (p + t) →
+    (hcomp : ∀ e ∈ F₂plus J (N.F J.rightModel (Qof P)),
+      StopChord2 J (N.F J.rightModel (Qof P)) e → ∀ (p : ℕ) (t : ℝ),
+      SideAttach J.wholeModel.W e p t → (Lst J : ℝ) ≤ oW J (p + t) →
       ∃ x ∈ RS, (rec x).1 = p ∧ rPar P J (rec x) = t ∧ rSet P J N (rec x) = e)
     (hsub : ∀ y ∈ O, y ∈ RS)
     (hinc : O.Pairwise (fun x y => KLt (rKey P J (rec x) (dc x)) (rKey P J (rec y) (dc y))))
     (hcov : ∀ x ∈ RS, ∃ y ∈ O, rKey P J (rec y) (dc y) = rKey P J (rec x) (dc x)) :
-    StopsOK J (N.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N (O.map rec)) := by
-  have hO : ∀ y ∈ O, RawOK P J N (rec y) (dc y) := fun y hy => hok y (hsub y hy)
+    StopsOK J (N.F J.rightModel (Qof P)) (stopsOf J (Qof P) N (O.map rec)) := by
+  have hO := fun y hy => hok y (hsub y hy)
   have hst : stopsOf J (Qof P) N (O.map rec) =
       O.map (fun y => ((rec y).1, rPar P J (rec y), rSet P J N (rec y))) := by
     unfold stopsOf; rw [List.map_map]; rfl

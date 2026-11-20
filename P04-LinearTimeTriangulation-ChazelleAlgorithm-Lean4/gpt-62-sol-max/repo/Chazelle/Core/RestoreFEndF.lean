@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.RestoreFEndP
 public import Chazelle.Core.RestoreFWit
 public import Chazelle.Core.RestoreFSide
@@ -112,15 +116,15 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have F2 : ∀ q, 81011 ≤ q → q < 83000 → ¬ TailW s q → c₂.nreg q = c₁.nreg q := f₂
   have tw : ∀ j, j ≤ 9 → j ≠ 3 → j ≠ 4 → j ≠ 5 → j ≠ 6 → j ≠ 8 → ¬ TailW s (s + j) :=
     fun j hj a b d e f h => by
-      unfold TailW RunW SdW VertW KeyW at h; omega
-  have t0 : ¬ TailW s s := by unfold TailW RunW SdW VertW KeyW; omega
+      register_guard
+  have t0 : ¬ TailW s s := by register_guard
   have k0 := F2 s (by omega) (by omega) t0
-  have k1 := F2 (s + 1) (by omega) (by omega) (tw 1 (by omega) (by omega) (by omega) (by omega)
-    (by omega) (by omega))
-  have k2 := F2 (s + 2) (by omega) (by omega) (tw 2 (by omega) (by omega) (by omega) (by omega)
-    (by omega) (by omega))
-  have k7 := F2 (s + 7) (by omega) (by omega) (tw 7 (by omega) (by omega) (by omega) (by omega)
-    (by omega) (by omega))
+  have k1 := F2 (s + 1) (by omega) (by omega) ((ram_app% (tw 1 ?_ ?_ ?_ ?_
+    ?_ ?_)))
+  have k2 := F2 (s + 2) (by omega) (by omega) ((ram_app% (tw 2 ?_ ?_ ?_ ?_
+    ?_ ?_)))
+  have k7 := F2 (s + 7) (by omega) (by omega) ((ram_app% (tw 7 ?_ ?_ ?_ ?_
+    ?_ ?_)))
   have flag₁ : c₁.nreg 81007 = c.nreg 81007 := F1 _ (by norm_num) (by norm_num) (by omega)
   obtain ⟨reg₀, hreg₀⟩ := nfregs_of hE
   refine ⟨w₂, fun q h1 h2 hq => ?_, fun h => m₂ (by rw [flag₁]; exact h), ?_⟩
@@ -176,9 +180,9 @@ theorem endFull_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     refine ⟨?_, ?_⟩
     · rw [k1, k2]
       exact posG_of_vlo hE hI₁ hc.1 hc.2.1 (Or.inr (by
-        rw [hI₁.hin _ (by unfold FFix; omega)]; exact hr.1))
+        rw [hI₁.hin _ (by reg_omega)]; exact hr.1))
     · rw [h3, h4]
-      exact posG_of_vlo hE hI₁ hfe hfp (by rw [hI₁.hin _ (by unfold FFix; omega)]; exact b12)
+      exact posG_of_vlo hE hI₁ hfe hfp (by rw [hI₁.hin _ (by reg_omega)]; exact b12)
 
 end
 

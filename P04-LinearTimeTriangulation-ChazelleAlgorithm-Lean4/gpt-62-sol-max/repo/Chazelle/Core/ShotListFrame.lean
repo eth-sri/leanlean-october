@@ -2,7 +2,7 @@ module
 
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SignKernelRam
-public import Chazelle.Core.NFLocateHost
+public import Chazelle.Core.NFLocateSpec
 
 /-!
 # Shooting at a list of arcs with holes, part 3: frames with named registers
@@ -39,8 +39,8 @@ also change. -/
 def FrameR (B : Finset ℕ) (Wr : ℕ → Prop) (c c' : Config) (k : ℕ) : Prop :=
   (∀ r, bandOf r ∉ B → r ≠ ALLOC → ¬ Wr r → c'.nreg r = c.nreg r) ∧
     (∀ r, bandOf r ∉ B → ¬ Wr r → c'.rreg r = c.rreg r) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
-    (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.rmem c.rmem) ∧
     c'.output = c.output ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
 theorem FrameR.refl (B : Finset ℕ) (Wr : ℕ → Prop) (c : Config) : FrameR B Wr c c 0 :=
@@ -52,8 +52,8 @@ theorem FrameR.trans {B : Finset ℕ} {Wr : ℕ → Prop} {c c₁ c₂ : Config}
   obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, b₂⟩ := h₂
   refine ⟨fun r hr ha hw => ?_, fun r hr hw => ?_, fun a ha => ?_, fun a ha => ?_, o₂.trans o₁,
     a₁.trans a₂, by omega⟩
-  · rw [r₂ r hr ha hw, r₁ r hr ha hw]
-  · rw [rr₂ r hr hw, rr₁ r hr hw]
+  · ram_finish
+  · ram_finish
   · rw [m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha]
   · rw [rm₂ a (lt_of_lt_of_le ha a₁), rm₁ a ha]
 
@@ -92,56 +92,11 @@ theorem FrameR.of_frame {B : Finset ℕ} {Wr : ℕ → Prop} {c c' : Config} {k 
 
 /-! ## Descriptors below a bound survive memory changes above it -/
 
-/-- A host layout below `E` survives a change of the memory at or above `E`. -/
-theorem hostAt_agree {m m' : ℕ → ℕ} {h E : ℕ} {H : Host} (hH : HostAt m h H)
-    (hE : h + 3 * H.length + 4 ≤ E) (he : ∀ a, a < E → m' a = m a) : HostAt m' h H := by
-  obtain ⟨h0, h1⟩ := hH
-  refine ⟨by rw [he _ (by omega)]; exact h0, fun i hi => ?_⟩
-  have := h1 i hi
-  revert this
-  cases H.getD i (.run 0 0) with
-  | run a l =>
-    intro h; simp only at h ⊢
-    rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
-  | pt x =>
-    cases x with
-    | vtx j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega)]; exact h
-    | onEdge e j =>
-      intro h; simp only at h ⊢
-      rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+abbrev hostAt_agree := @HostAt.agree
 
-/-- **A copied chain descriptor** (host layout below `E`, the five words copied to `d`). -/
-theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
-    (hC : ChainDescAt m bw Q H C) (hE : m bw + 3 * H.length + 4 ≤ E)
-    (he : ∀ a, a < E → m' a = m a) (hc : ∀ j, j < 5 → m' (d + j) = m (bw + j)) :
-    ChainDescAt m' d Q H C := by
-  obtain ⟨h0, h1, h2, h3, h4, h5⟩ := hC
-  have c0 := hc 0 (by omega)
-  have c1 := hc 1 (by omega)
-  have c2 := hc 2 (by omega)
-  have c3 := hc 3 (by omega)
-  have c4 := hc 4 (by omega)
-  simp only [add_zero] at c0
-  refine ⟨?_, h1, by rw [c1]; exact h2, by rw [c2]; exact h3, by rw [c3]; exact h4,
-    by rw [c4]; exact h5⟩
-  rw [c0]
-  exact hostAt_agree h0 hE he
+abbrev chainDescAt_copy := @ChainDescAt.copy
 
-/-- **A well-formed copy of a chain descriptor.** -/
-theorem chainWF_copy {P : Polygon} {m m' : ℕ → ℕ} {bw d E E' : ℕ} {H : Host} {C : Chain}
-    (hwf : ChainWF P E m bw) (hC : ChainDescAt m bw (Qof P) H C)
-    (he : ∀ a, a < E → m' a = m a) (hc : ∀ j, j < 5 → m' (d + j) = m (bw + j))
-    (hd : d + 5 ≤ E') (hEE : E ≤ E') : ChainWF P E' m' d := by
-  obtain ⟨hl, hHW, hEb, hs⟩ := hwf.2 H C hC
-  refine ⟨hd, fun H' C' hC' => ?_⟩
-  have c0 : m' d = m bw := by simpa using hc 0 (by omega)
-  have hH' : HostAt m' (m bw) H := hostAt_agree hC.1 hEb he
-  have hHH : H' = H := NFLoc.hostAt_unique (by rw [← c0]; exact hC'.1) hH'
-  subst hHH
-  refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
-  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 (by omega)]
-  have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
-  rw [e1, e2]; exact hs
+abbrev chainWF_copy := @ChainWF.copy
 
 
 end

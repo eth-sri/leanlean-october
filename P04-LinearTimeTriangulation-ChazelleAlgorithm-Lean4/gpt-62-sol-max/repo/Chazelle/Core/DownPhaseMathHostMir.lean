@@ -36,14 +36,14 @@ theorem hostPt_mir (hQ : Q.Simple) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < (inte
   have ht0 : 0 ≤ t := by rw [ht]; linarith [Nat.floor_le hx0]
   have ht1 : t < 1 := by rw [ht]; linarith [Nat.lt_floor_add_one x']
   have hpn : p < (interiorModel Q).W.n := by
-    have : (p : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt (Nat.floor_le hx0) hxn
+    have := lt_of_le_of_lt (Nat.floor_le hx0) hxn
     exact_mod_cast this
   have hx : x' = p + t := by rw [ht]; ring
   have hkey := posMir_key hc hpn ht0 ht1
   obtain ⟨b1, b2, b3⟩ := posMir_bounds (c := Q.n - 1) (p' := p) hn ht0 ht1
   have hs := h.walk.sidePt_mir hpn t
   have e1 : hostPt (interiorModel Q.mir).W x' = sidePt (interiorModel Q.mir).W p t := by
-    rw [hx]; exact hostPt_eq _ ht0 ht1
+    rfl
   rw [e1, hs, hx, ← hkey, hostPt_eq _ b2 b3]
 
 section
@@ -73,16 +73,16 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
   · rintro (⟨c', hc', ht', p', t', hA', rfl⟩ | ⟨k, hk, rfl, a', b', harc', hin'⟩)
     · -- an exit key
       left
-      have hp : p' < (interiorModel Q).W.n := h.n_eq ▸ hA'.1
+      have hp := h.n_eq ▸ hA'.1
       have hA'' : SideAttach (interiorModel Q.mir).W (mir '' (mir '' c')) p' t' := by
         rwa [image_mir_image_mir]
       rw [h.walk.sideAttach_mir hp hA'.2.1 hA'.2.2.1] at hA''
       refine ⟨mir '' c', mem_mirF.1 hc', ?_, _, _, hA'', ?_⟩
-      · rw [← hT, image_mir_image_mir]; exact ht'
+      · rwa [← hT, image_mir_image_mir]
       · rw [posMir_key hc hp hA'.2.1 hA'.2.2.1]
     · -- a vertex key
       right
-      have hk' : k < (interiorModel Q).W.n := h.n_eq ▸ hk
+      have hk' := h.n_eq ▸ hk
       have ha0 := harc'.1
       have han := harc'.2.1
       have hb0 := harc'.2.2.1
@@ -96,7 +96,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
   · rintro (⟨c, hc', ht, p, t, hA, hx⟩ | ⟨k, hk, hkx, a, b, harc, hin⟩)
     · -- an exit key
       left
-      have hp : p < (interiorModel Q.mir).W.n := h.n_eq.symm ▸ hA.1
+      have hp := h.n_eq.symm ▸ hA.1
       have hA'' : SideAttach (interiorModel Q).W (mir '' (mir '' c)) p t := by
         rwa [image_mir_image_mir]
       rw [h.walk.symm.sideAttach_mir hp hA.2.1 hA.2.2.1] at hA''
@@ -114,8 +114,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
       obtain ⟨rb0, rbn⟩ := rk_bounds hc hb0 hbn
       refine ⟨k', h.n_eq ▸ hk'n, hx', rk (interiorModel Q).W.n (Q.n - 1) b,
         rk (interiorModel Q).W.n (Q.n - 1) a, ?_, ?_⟩
-      · rw [h.isArc hne R rb0 rbn ra0 ran, rk_rk hc hb0 hbn, rk_rk hc ha0 han]
-        exact harc
+      · rwa [h.isArc hne R rb0 rbn ra0 ran, rk_rk hc hb0 hbn, rk_rk hc ha0 han]
       · rw [← hkk]
         exact (sideInArc_rk hc ha0 han hb0 hbn (Nat.cast_nonneg k) (by exact_mod_cast hk)).1 hin
 
@@ -162,18 +161,18 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   have hσlo : ∀ j, j < a → σ j = a - 1 - j := by
     intro j hj
     simp only [hσ]
-    rw [show a + K - 1 - j = (a - 1 - j) + K by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+    ram_rw [show a + K - 1 - j = (a - 1 - j) + K by omega, Nat.add_mod_right,
+      Nat.mod_eq_of_lt]
   have hσhi : ∀ j, a ≤ j → j < K → σ j = a + K - 1 - j := by
     intro j hj hjK
     simp only [hσ]
-    rw [Nat.mod_eq_of_lt (by omega)]
+    ram_rw [Nat.mod_eq_of_lt]
   have hσlt : ∀ j, j < K → σ j < K := fun j _ => Nat.mod_lt _ (by omega)
   have hσσ : ∀ i, i < K → σ (σ i) = i := by
     intro i hi
     by_cases hia : i < a
-    · rw [hσlo i hia, hσlo _ (by omega)]; omega
-    · rw [hσhi i (by omega) hi, hσhi _ (by omega) (by omega)]; omega
+    · ram_rw [hσlo i hia, hσlo]; omega
+    · ram_rw [hσhi i (by omega) hi, hσhi]; omega
   -- the reflected keys
   have hrklo : ∀ i, i < a → rk n c (hk I S R i) = c - hk I S R i := by
     intro i hi; unfold rk; rw [ite_eq_left (hlow i hi)]
@@ -189,19 +188,19 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   have hcn : (c : ℝ) < n := by exact_mod_cast hc
   have hmono : ∀ j j', j < j' → j' < K → L'.getD j 0 < L'.getD j' 0 := by
     intro j j' hjj hj'
-    rw [hL'get j (by omega), hL'get j' hj']
+    ram_rw [hL'get j, hL'get j' hj']
     by_cases h1 : j' < a
-    · rw [hσlo j (by omega), hσlo j' h1, hrklo _ (by omega), hrklo _ (by omega)]
+    · ram_rw [hσlo j, hσlo j' h1, hrklo, hrklo]
       have := hk_strictMono (U := R) hM hF hfin (show a - 1 - j' < a - 1 - j by omega) (by omega)
       linarith
     · by_cases h2 : j < a
-      · rw [hσlo j h2, hσhi j' (by omega) hj', hrklo _ (by omega),
-          hrkhi _ (by omega) (by omega)]
+      · ram_rw [hσlo j h2, hσhi j' (by omega) hj', hrklo,
+          hrkhi]
         have := (hb (a - 1 - j) (by omega)).1
         have := (hb (a + K - 1 - j') (by omega)).2
         linarith
-      · rw [hσhi j (by omega) (by omega), hσhi j' (by omega) hj', hrkhi _ (by omega) (by omega),
-          hrkhi _ (by omega) (by omega)]
+      · ram_rw [hσhi j, hσhi j' (by omega) hj', hrkhi,
+          hrkhi]
         have := hk_strictMono (U := R) hM hF hfin (show a + K - 1 - j' < a + K - 1 - j by omega)
           (by omega)
         linarith
@@ -272,7 +271,7 @@ theorem chordGap_mir {g : ℕ} (hC : ChordGap (interiorModel Q) S R g) {j : ℕ}
     obtain ⟨b1, b2, b3⟩ := posMir_bounds (c := Q.n - 1) (p' := q) hn hAq.2.1 hAq.2.2.1
     have hpp := posMir_posMir hc hAq.1 hAq.2.2.1
     refine ⟨?_, posMir_key hc hAq.1 hAq.2.1 hAq.2.2.1, ?_⟩
-    · rw [h.walk.sideAttach_mir b1 b2 b3, hpp]; exact hAq
+    · rwa [h.walk.sideAttach_mir b1 b2 b3, hpp]
     · rw [h.walk.sidePt_mir b1, hpp]
   obtain ⟨hB', hk', hs'⟩ := hmir p' t' hA'
   obtain ⟨hB, hk0, hs⟩ := hmir p t hA

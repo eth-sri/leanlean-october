@@ -36,13 +36,8 @@ namespace Geometry
 @[simp] theorem add_snd (a b : Point) : (a + b).2 = a.2 + b.2 := rfl
 @[simp] theorem sub_fst (a b : Point) : (a - b).1 = a.1 - b.1 := rfl
 @[simp] theorem sub_snd (a b : Point) : (a - b).2 = a.2 - b.2 := rfl
-@[simp] theorem neg_fst (a : Point) : (-a).1 = -a.1 := rfl
-@[simp] theorem neg_snd (a : Point) : (-a).2 = -a.2 := rfl
 @[simp] theorem smul_fst (t : ℝ) (a : Point) : (t • a).1 = t * a.1 := rfl
 @[simp] theorem smul_snd (t : ℝ) (a : Point) : (t • a).2 = t * a.2 := rfl
-@[simp] theorem zero_fst : ((0 : Point)).1 = 0 := rfl
-@[simp] theorem zero_snd : ((0 : Point)).2 = 0 := rfl
-
 /-- Two points are equal iff both coordinates agree. -/
 theorem point_ext_iff {a b : Point} : a = b ↔ a.1 = b.1 ∧ a.2 = b.2 := Prod.ext_iff
 
@@ -69,8 +64,6 @@ theorem lerp_eq_smul_add_smul (a b : Point) (t : ℝ) : lerp a b t = (1 - t) •
 @[simp] theorem lerp_zero (a b : Point) : lerp a b 0 = a := by ext <;> simp [lerp]
 
 @[simp] theorem lerp_one (a b : Point) : lerp a b 1 = b := by ext <;> simp [lerp]
-
-@[simp] theorem lerp_self (a : Point) (t : ℝ) : lerp a a t = a := by ext <;> simp [lerp]
 
 /-- Reversing the segment: `lerp b a t = lerp a b (1 - t)`. -/
 theorem lerp_symm (a b : Point) (t : ℝ) : lerp b a t = lerp a b (1 - t) := by
@@ -127,7 +120,7 @@ theorem mem_segment_iff_weights {a b p : Point} :
 
 /-- The segment is symmetric. -/
 theorem segment_comm (a b : Point) : Chazelle.segment a b = Chazelle.segment b a := by
-  rw [segment_eq, segment_eq, segment_symm]
+  simp [segment_eq, segment_symm]
 
 /-- The left endpoint lies on the segment. -/
 theorem left_mem_segment (a b : Point) : a ∈ Chazelle.segment a b := by

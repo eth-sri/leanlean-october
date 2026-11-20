@@ -50,7 +50,7 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
   have hn : 0 < n := by omega
   obtain ⟨x0, x1⟩ := Corr.key_mem hp₀ ht₀.1.le ht₀.2
   obtain ⟨k0, k1⟩ := Corr.key_mem hpK htK0 htK1
-  have hx0o : 0 ≤ o ((p₀ : ℝ) + t₀) := off_nonneg x0 hgn
+  have hx0o := off_nonneg x0 hgn
   set δ := o ((pK : ℝ) + tK) - o ((p₀ : ℝ) + t₀) with hδ
   have hδ0 : 0 < δ := by linarith
   -- a position just before `K` faces `G`
@@ -70,10 +70,10 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
         fun c hc ⟨qa, qb, sa, sb, hQA, hQB, hQAB, hsep⟩ => ?_
       obtain ⟨a0, a1⟩ := Corr.key_mem hQA.1 hQA.2.1 hQA.2.2.1
       obtain ⟨b0, b1⟩ := Corr.key_mem hQB.1 hQB.2.1 hQB.2.2.1
-      have hxa : (p₀ : ℝ) + t₀ ≠ qa + sa := fun h => hnc₀ ⟨c, hc, qa, sa, hQA, h⟩
-      have hxb : (p₀ : ℝ) + t₀ ≠ qb + sb := fun h => hnc₀ ⟨c, hc, qb, sb, hQB, h⟩
-      have hya : (q : ℝ) + u ≠ qa + sa := fun h => hnc ⟨c, hc, qa, sa, hQA, h⟩
-      have hyb : (q : ℝ) + u ≠ qb + sb := fun h => hnc ⟨c, hc, qb, sb, hQB, h⟩
+      have hxa := fun h => hnc₀ ⟨c, hc, qa, sa, hQA, h⟩
+      have hxb := fun h => hnc₀ ⟨c, hc, qb, sb, hQB, h⟩
+      have hya := fun h => hnc ⟨c, hc, qa, sa, hQA, h⟩
+      have hyb := fun h => hnc ⟨c, hc, qb, sb, hQB, h⟩
       have hxy : (p₀ : ℝ) + t₀ ≠ q + u := by
         intro h; have := congrArg o h; rw [hoy] at this; linarith
       have hkab := WalkAx.key_ne_of_pt_ne hQA hQB hQAB
@@ -88,24 +88,23 @@ theorem before_faces_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (h
         · exact hgap _ hcut r0 r1 ⟨h1, by rw [hoy] at h2; linarith⟩
         · rw [hoy] at h1; linarith
       exact hnot hQA (hsep'.2 (hnot hQB))
-    rw [heq]; exact hfU
+    rwa [heq]
   refine ⟨min δ 1, lt_min hδ0 one_pos, fun htp s hs0 hs1 hs2 => ?_, fun ht s hs0 hs1 => ?_⟩
   · refine key pK (tK - s) s hpK ⟨by linarith, by linarith⟩ hs0
       (lt_of_lt_of_le hs1 (min_le_left _ _)) (Or.inl (by ring))
   · subst ht
-    have hs1' : s < 1 := lt_of_lt_of_le hs1 (min_le_right _ _)
+    have hs1' := lt_of_lt_of_le hs1 (min_le_right _ _)
     refine key _ (1 - s) s (Nat.mod_lt _ hn) ⟨by linarith, by linarith⟩ hs0
       (lt_of_lt_of_le hs1 (min_le_left _ _)) ?_
     rcases Nat.eq_zero_or_pos pK with h0 | h0
     · subst h0
       right
-      rw [show (0 + n - 1) % n = n - 1 by rw [Nat.mod_eq_of_lt (by omega)]; omega,
+      rw [show (0 + n - 1) % n = n - 1 by simp,
         Nat.cast_sub (by omega)]
       push_cast; ring
     · left
       rw [show (pK + n - 1) % n = pK - 1 by
-        rw [show pK + n - 1 = (pK - 1) + n by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
+        ram_simp [show pK + n - 1 = (pK - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt], Nat.cast_sub (by omega)]
       push_cast; ring
 
 section Cand
@@ -118,33 +117,38 @@ or a region at a side of the slit of `C₂` (the label triple, F2)
 vertex (the shared chords), and the chords through the top of `C₂` (the top chords). -/
 def Cand (S₂ : Set (Set Point)) (L : Set Point) : Set (Set Point) :=
   {h | h ∈ F₂plus J S₂ ∧ ((∃ c ∈ S₂, h ⊆ c ∧ ∃ V, LabS J S₂ L V ∧
-    Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∨ J.shared ∈ h ∨ J.right.top ∈ h)}
+    Chazelle.Chain.TouchesIn J.rightModel.D c V) ∨ J.shared ∈ h ∨ J.right.top ∈ h)}
 
+section
+
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)}
+    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+
+include hP hS₂ hS₂f in
 /-- The attachment at offset `0` of the stretch is the shared vertex. -/
-theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
-    (h0 : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) = 0) :
-    sidePt (chainModel J.whole).W p t = J.shared := by
+theorem sidePt_off_zero {p : ℕ} {t : ℝ}
+    (hp : p < J.wholeModel.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
+    (h0 : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) = 0) :
+    sidePt J.wholeModel.W p t = J.shared := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   obtain ⟨k0, k1⟩ := Corr.key_mem hp ht0 ht1
   have hk := off_inj hg0 hgn k0 k1 hg0 hgn (by rw [h0, off_self])
   obtain ⟨rfl, rfl⟩ := sideKey_inj ht0 ht1 le_rfl zero_lt_one
-    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rw [add_zero]; exact hk)
+    (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rwa [add_zero])
   rw [Chazelle.Chain.sidePt_zero]
   have := hC.A1 0 (Nat.zero_le _)
   rw [add_zero, add_zero, Nat.mod_eq_of_lt hC.hg, Nat.mod_eq_of_lt hC.hg'] at this
   rw [this]
   exact right_vtx0 J
 
+include hP hS₂ hS₂f in
 /-- The split vertex (offset `rL1` inside the stretch, case G) is the top of `C₂`. -/
-theorem sidePt_split (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) (hlt : rL1 J < rL1 J + rL2 J) :
-    sidePt (chainModel J.whole).W
-      ((6 + tpos J.whole J.m₁ + rL1 J) % (chainModel J.whole).W.n) 0 = J.right.top := by
+theorem sidePt_split (hlt : rL1 J < rL1 J + rL2 J) :
+    sidePt J.wholeModel.W
+      ((6 + tpos J.whole J.m₁ + rL1 J) % J.wholeModel.W.n) 0 = J.right.top := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hδ : 0 < rδ J := by
     by_contra h0
@@ -160,27 +164,27 @@ theorem sidePt_split (hP : J.P.Simple) {S₂ : Set (Set Point)}
 candidate**: if `G` has a label and is on the side `σ` of `h`, and `h` has an attachment at an
 offset below the length of the stretch, then `h ∈ Cand λ` for a valid `λ`. -/
 theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (_hL : L ∈ (chainModel J.right).regions S₂) (hvalid : Valid J S₂ G L)
-    (hlab : ∃ V₀ ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V₀)
+    {S₂ : Set (Set Point)} (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (_hL : L ∈ J.rightModel.regions S₂) (hvalid : Valid J S₂ G L)
+    (hlab : ∃ V₀ ∈ J.rightModel.regions S₂, RLabel J S₂ G V₀)
     {h : Set Point} (hh : h ∈ F₂plus J S₂) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (hS : SideOf (chainModel J.whole) σ h G) {pB : ℕ} {tB : ℝ}
-    (hB : SideAttach (chainModel J.whole).W h pB tB)
-    (hBL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
+    (hS : SideOf J.wholeModel σ h G) {pB : ℕ} {tB : ℝ}
+    (hB : SideAttach J.wholeModel.W h pB tB)
+    (hBL : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
       ((rL1 J + rL2 J : ℕ) : ℝ)) : h ∈ Cand J S₂ L := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
-  have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   obtain ⟨k0, k1⟩ := Corr.key_mem hB.1 hB.2.1 hB.2.2.1
-  have hBpt : sidePt (chainModel J.whole).W pB tB ∈ h := hB.2.2.2.1
+  have hBpt := hB.2.2.2.1
   rcases F₂plus_cases J hS₂.2.1 hh with ⟨c, hc, hhc⟩ | ⟨hv, -⟩ | ⟨ht, -⟩
   · rcases (off_nonneg k0 hgn).lt_or_eq with hpos | hzero
     · -- a proper position of the stretch, or the split vertex
       obtain ⟨hpd, hoff⟩ := hC.decomp hB.1 hB.2.1 hB.2.2.1
-      set dB := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) pB with hdB
+      set dB := dOf J.wholeModel.W.n (6 + tpos J.whole J.m₁) pB with hdB
       rw [hoff] at hpos hBL
       have hdL : dB < rL1 J + rL2 J := by
         have : (dB : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := by linarith [hB.2.1]
@@ -190,8 +194,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
       · obtain ⟨rfl, hdr⟩ := hsplit
         rw [hdr] at hB hBpt hdL
         refine ⟨hh, Or.inr (Or.inr ?_)⟩
-        rw [← sidePt_split J hP hS₂.2.1 hS₂.1 hdL]
-        exact hBpt
+        rwa [← sidePt_split J hP hS₂.2.1 hS₂.1 hdL]
       · have hsec : tB = 0 → dB ≠ 0 ∧ dB ≠ rL1 J := by
           intro ht0
           refine ⟨fun h0 => ?_, fun h1 => hsplit ⟨ht0, h1⟩⟩
@@ -204,26 +207,27 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
         exact ⟨hh, Or.inl ⟨c, hc, hhc, V', labS_trans J h1 h2,
           touches_of_sideOf J hS₂.2.1 hc hVs'⟩⟩
     · refine ⟨hh, Or.inr (Or.inl ?_)⟩
-      rw [← sidePt_off_zero J hP hS₂.2.1 hS₂.1 hB.1 hB.2.1 hB.2.2.1 hzero.symm]
-      exact hBpt
+      rwa [← sidePt_off_zero J hP hS₂.2.1 hS₂.1 hB.1 hB.2.1 hB.2.2.1 hzero.symm]
   · exact ⟨hh, Or.inr (Or.inl hv)⟩
   · exact ⟨hh, Or.inr (Or.inr ht)⟩
 
+include hP hS₂ hS₂f in
 /-- **A labelled region has a label among the regions of `S₂`.** -/
-theorem rlabel_region (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {G V : Set Point}
-    (hR : RLabel J S₂ G V) : ∃ V' ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V' := by
+theorem rlabel_region {G V : Set Point}
+    (hR : RLabel J S₂ G V) : ∃ V' ∈ J.rightModel.regions S₂, RLabel J S₂ G V' := by
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨d, hd, t, ht, hnc, hfG, -⟩ := hR
-  set P₂ := (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n with hP₂
-  have hP₂n : P₂ < (chainModel J.right).W.n := Nat.mod_lt _ hC.n₂_pos
-  have hnc₂ : ¬ (chainModel J.right).IsCut S₂ ((P₂ : ℝ) + t) := by
+  set P₂ := (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % J.rightModel.W.n with hP₂
+  have hP₂n : P₂ < J.rightModel.W.n := Nat.mod_lt _ hC.n₂_pos
+  have hnc₂ : ¬ J.rightModel.IsCut S₂ ((P₂ : ℝ) + t) := by
     rintro ⟨c, hc, q, u, hA, hk⟩
     obtain ⟨rfl, rfl⟩ := sideKey_inj hA.2.1 hA.2.2.1 ht.1.le ht.2 hk.symm
     obtain ⟨e, he, -, -, heA⟩ := hC.transfer hd ht.1.le ht.2 (fun h => absurd h ht.1.ne') hc hA
     exact hnc ⟨e, he, _, _, heA, rfl⟩
   obtain ⟨V', hV', hf⟩ := hC.hM₂.exists_faces_of_not_cut hC.hS hC.hSfin hP₂n ht hnc₂
   exact ⟨V', hV', d, hd, t, ht, hnc, hfG, hf⟩
+
+end
 
 /-- **Detection of the next event** (the loop over the walk).  Let the sweep be at a non-cut
 position `x₀` of the `C₁` part facing `G`, with a valid label `λ`, and let `K` be the next cut key
@@ -232,48 +236,48 @@ attachment inside the stretch) and some chord has an attachment strictly inside 
 positive offset.  Then a candidate chord of `λ` is attached at `K`: the sweep's lazy test finds
 the event. -/
 theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hL : L ∈ (chainModel J.right).regions S₂) (hvalid : Valid J S₂ G L)
-    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < (chainModel J.whole).W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
-    (hnc₀ : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p₀ + t₀))
-    (hfG₀ : (chainModel J.whole).Faces p₀ t₀ G)
+    {S₂ : Set (Set Point)} (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hL : L ∈ J.rightModel.regions S₂) (hvalid : Valid J S₂ G L)
+    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < J.wholeModel.W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
+    (hnc₀ : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p₀ + t₀))
+    (hfG₀ : J.wholeModel.Faces p₀ t₀ G)
     (ho₀ : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀))
-    {pK : ℕ} {tK : ℝ} (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
-    (hoK : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK))
-    (hgap : ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x →
-      x < (chainModel J.whole).W.n →
-      ¬ (off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
-          off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x ∧
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x <
-          off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK)))
-    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach (chainModel J.whole).W e pK tK)
-    {pB : ℕ} {tB : ℝ} (heB : SideAttach (chainModel J.whole).W e pB tB)
-    (heKB : sidePt (chainModel J.whole).W pK tK ≠ sidePt (chainModel J.whole).W pB tB)
-    (hB0 : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB))
-    (hBL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀))
+    {pK : ℕ} {tK : ℝ} (hpK : pK < J.wholeModel.W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
+    (hoK : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK))
+    (hgap : ∀ x, J.wholeModel.IsCut (F₂plus J S₂) x → 0 ≤ x →
+      x < J.wholeModel.W.n →
+      ¬ (off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
+          off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x ∧
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x <
+          off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK)))
+    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach J.wholeModel.W e pK tK)
+    {pB : ℕ} {tB : ℝ} (heB : SideAttach J.wholeModel.W e pB tB)
+    (heKB : sidePt J.wholeModel.W pK tK ≠ sidePt J.wholeModel.W pB tB)
+    (hB0 : 0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB))
+    (hBL : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
       ((rL1 J + rL2 J : ℕ) : ℝ))
-    (hnobr : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
-      ∃ (pb : ℕ) (tb : ℝ), SideAttach (chainModel J.whole).W e' pb tb ∧
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
+    (hnobr : ∀ e' ∈ F₂plus J S₂, SideAttach J.wholeModel.W e' pK tK →
+      ∃ (pb : ℕ) (tb : ℝ), SideAttach J.wholeModel.W e' pb tb ∧
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
           ((rL1 J + rL2 J : ℕ) : ℝ)) :
-    ∃ h ∈ Cand J S₂ L, SideAttach (chainModel J.whole).W h pK tK := by
+    ∃ h ∈ Cand J S₂ L, SideAttach J.wholeModel.W h pK tK := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
-  have hGM : GoodModel (chainModel J.whole) := Or.inl ⟨J.whole, hP, rfl⟩
+  have hFs : F₂plus J S₂ ⊆ J.wholeModel.Adm := hC.hF
+  have hGM : GoodModel J.wholeModel := Or.inl ⟨J.whole, hP, rfl⟩
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
-  set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) with hodef
+  set o := off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) with hodef
   obtain ⟨kK0, kK1⟩ := Corr.key_mem hpK htK0 htK1
   -- a chord of `F₂⁺` attached at a cut key of the `C₁` part after `x₀` is attached at `K`
   have hatK : ∀ {h : Set Point} {pz : ℕ} {tz : ℝ}, h ∈ F₂plus J S₂ →
-      SideAttach (chainModel J.whole).W h pz tz → o (p₀ + t₀) < o (pz + tz) →
-      o (pz + tz) ≤ o (pK + tK) → SideAttach (chainModel J.whole).W h pK tK := by
+      SideAttach J.wholeModel.W h pz tz → o (p₀ + t₀) < o (pz + tz) →
+      o (pz + tz) ≤ o (pK + tK) → SideAttach J.wholeModel.W h pK tK := by
     intro h pz tz hh hZ h1 h2
     obtain ⟨z0, z1⟩ := Corr.key_mem hZ.1 hZ.2.1 hZ.2.2.1
     rcases h2.lt_or_eq with h2 | h2
@@ -281,14 +285,14 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
     · have hk := off_inj hg0 hgn z0 z1 kK0 kK1 h2
       obtain ⟨rfl, rfl⟩ := sideKey_inj hZ.2.1 hZ.2.2.1 htK0 htK1 hk
       exact hZ
-  by_cases hlab : ∃ V₀ ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V₀
+  by_cases hlab : ∃ V₀ ∈ J.rightModel.regions S₂, RLabel J S₂ G V₀
   · -- a labelled region: the chord at `K` on the side of `G`
     have hW := before_faces_of_gap hM hFs hF.1 hg0 hgn hG hp₀ ht₀ hnc₀ hfG₀ hpK htK0 htK1 hoK
       hgap
-    by_cases htie : ∃ e' ∈ F₂plus J S₂, e' ≠ e ∧ SideAttach (chainModel J.whole).W e' pK tK
+    by_cases htie : ∃ e' ∈ F₂plus J S₂, e' ≠ e ∧ SideAttach J.wholeModel.W e' pK tK
     · obtain ⟨e', he', hne, hA'⟩ := htie
-      have hside : ∃ h ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W h pK tK ∧
-          ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ SideOf (chainModel J.whole) σ h G := by
+      have hside : ∃ h ∈ F₂plus J S₂, SideAttach J.wholeModel.W h pK tK ∧
+          ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ SideOf J.wholeModel σ h G := by
         rcases hM.tie_pair hFs he he' (Ne.symm hne) heK hA' with ⟨h1, h2⟩ | ⟨h1, h2⟩
         · obtain ⟨-, hhor, -⟩ := hM.tie_shape hFs he he' heK hA' h1 h2
           have hs := after_side_tie hGM hF he he' hne heK hA' h1 h2 hG
@@ -304,11 +308,11 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
       obtain ⟨pb, tb, hb, hbL⟩ := hnobr h hh hhK
       exact ⟨h, cand_of_side J hP hS₂ hF hG hL hvalid hlab hh hσ hS hb hbL, hhK⟩
     · push Not at htie
-      have huniq : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK → e' = e := by
+      have huniq : ∀ e' ∈ F₂plus J S₂, SideAttach J.wholeModel.W e' pK tK → e' = e := by
         intro e' he' hA'
         by_contra hne
         exact htie e' he' hne hA'
-      have hS : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ SideOf (chainModel J.whole) σ e G := by
+      have hS : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ SideOf J.wholeModel σ e G := by
         rcases hM.attach_dir (hFs he) heK with hd | hd
         · exact ⟨1, Or.inl rfl, before_side hGM hF he heK huniq (Or.inl ⟨rfl, hd⟩) hG hW⟩
         · exact ⟨-1, Or.inr rfl, before_side hGM hF he heK huniq (Or.inr ⟨rfl, hd⟩) hG hW⟩
@@ -320,13 +324,11 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
       exact hlab (rlabel_region J hP hS₂.2.1 hS₂.1 hR)
     rcases (detect_valid J hP hS₂ hF hG hL hvalid hp₀ ht₀ hnc₀ hfG₀ ho₀).2 hU with
       ⟨ρ, -, hZ, hhZ, pz, tz, hZA, htrack, hzpos, hfinal⟩ | hT
-    · have hnot : ¬ (o (pz + tz) = 0 ∨ o (pK + tK) < o (pz + tz)) := fun h =>
+    · have ⟨hz0, hzK⟩ := not_or.mp fun h : (o (pz + tz) = 0 ∨ o (pK + tK) < o (pz + tz)) =>
         hfinal e he pK tK pB tB heK heB heKB hoK h hBL hB0.ne'
-      push Not at hnot
-      obtain ⟨hz0, hzK⟩ := hnot
       rcases hzpos with h | ⟨-, hz⟩
       · exact absurd h hz0
-      have hZK := hatK hhZ hZA hz hzK
+      have hZK := hatK hhZ hZA hz (le_of_not_gt hzK)
       refine ⟨hZ, ⟨hhZ, ?_⟩, hZK⟩
       rcases htrack with ⟨c, hc, hZc, V', -, hrel, hVs⟩ | hk | hk
       · refine Or.inl ⟨c, hc, hZc, V', ?_, touches_of_sideOf J hS₂.2.1 hc hVs⟩
@@ -337,36 +339,11 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
       · exact Or.inr (Or.inr hk)
     · obtain ⟨e₁, e₂, d, pb, pb', tb, tb', ρ, he₁, he₂, hne, hd0, hd, hA₁, hA₂, hB₁, hB₂, hBne₁,
         hBne₂, hout₁, hout₂, hρ, hS₁, hS₂', ht₁, ht₂⟩ := hT
-      set W := (chainModel J.whole).W with hWdef
+      set W := J.wholeModel.W with hWdef
       set A := (6 + tpos J.whole J.m₁ + d) % W.n with hAdef
-      obtain ⟨-, hy₁, -⟩ := hM.attach_seg (hFs he₁) hA₁ hB₁ (Ne.symm hBne₁)
-      obtain ⟨-, hy₂, -⟩ := hM.attach_seg (hFs he₂) hA₂ hB₂ (Ne.symm hBne₂)
-      have hx₁ : (sidePt W pb tb).1 ≠ (sidePt W A 0).1 :=
-        fun h => hBne₁ (Geometry.point_ext h hy₁.symm)
-      have hx₂ : (sidePt W pb' tb').1 ≠ (sidePt W A 0).1 :=
-        fun h => hBne₂ (Geometry.point_ext h hy₂.symm)
-      have hopp := tie_opposite hM hFs he₁ he₂ hne hA₁ hA₂ hB₁.2.2.2.1 hB₂.2.2.2.1 hx₁ hx₂
-      obtain ⟨θ, hθ, hori⟩ := exists_sign hρ (sub_ne_zero.2 (Ne.symm hx₁))
-      have hθρ : θ * ρ * (θ * ρ) = 1 := by
-        rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
-      have hori' : 0 < -θ * ρ * ((sidePt W A 0).1 - (sidePt W pb' tb').1) := by
-        have e1 : -θ * ρ * ((sidePt W A 0).1 - (sidePt W pb' tb').1) =
-            θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1) := by ring
-        rw [e1]
-        have hprod : 0 < (θ * ρ * ((sidePt W A 0).1 - (sidePt W pb tb).1)) *
-            (θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1)) := by
-          have e2 : (θ * ρ * ((sidePt W A 0).1 - (sidePt W pb tb).1)) *
-              (θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1)) =
-              (θ * ρ * (θ * ρ)) * (-(((sidePt W pb tb).1 - (sidePt W A 0).1) *
-                ((sidePt W pb' tb').1 - (sidePt W A 0).1))) := by ring
-          rw [e2, hθρ, one_mul]
-          linarith
-        exact pos_of_mul_pos_right hprod hori.le
-      have hAL : o ((A : ℝ) + 0) < ((rL1 J + rL2 J : ℕ) : ℝ) := by
-        have hoA : o ((A : ℝ) + 0) = d + 0 := hC.off_M hd le_rfl zero_lt_one
-        rw [hoA]
-        have : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
-        linarith
+      obtain ⟨θ, hθ, hori, hori'⟩ := tie_signs hρ
+        (tie_opposite hM hFs he₁ he₂ hne hA₁ hA₂ hB₁ hB₂ hBne₁ hBne₂)
+      have hAL := hC.off_M_lt hd le_rfl zero_lt_one
       -- the forward chord of the tie and its far attachment
       obtain ⟨ff, hff, pf, tf, hfF, htf, hfe, hclear⟩ : ∃ ff ∈ F₂plus J S₂, ∃ (pf : ℕ) (tf : ℝ),
           SideAttach W ff pf tf ∧ J.right.top ∈ ff ∧
@@ -385,13 +362,11 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
             hB₁ hB₂ (Ne.symm hBne₁) (Ne.symm hBne₂) hS₁ hS₂' hori (by linarith) hout₁ hout₂ hp₀
             ht₀ hnc₀ hfG₀ ho₀
           exact ⟨e₂, he₂, pb', tb', hB₂, ht₂, h1, h2⟩
-      have hnot : ¬ (o (pf + tf) = 0 ∨ o (pK + tK) < o (pf + tf)) := fun h =>
+      have ⟨hz0, hzK⟩ := not_or.mp fun h : (o (pf + tf) = 0 ∨ o (pK + tK) < o (pf + tf)) =>
         hclear e he pK tK pB tB heK heB heKB hoK h hBL hB0.ne'
-      push Not at hnot
-      obtain ⟨hz0, hzK⟩ := hnot
       rcases hfe with h | ⟨-, hz⟩
       · exact absurd h hz0
-      exact ⟨ff, ⟨hff, Or.inr (Or.inr htf)⟩, hatK hff hfF hz hzK⟩
+      exact ⟨ff, ⟨hff, Or.inr (Or.inr htf)⟩, hatK hff hfF hz (le_of_not_gt hzK)⟩
 
 /-! ## The loop invariant of the RAM -/
 
@@ -413,10 +388,10 @@ theorem same_region_of_gap {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF
   obtain ⟨y0, y1⟩ := Corr.key_mem hp' ht'.1.le ht'.2
   obtain ⟨a0, a1⟩ := Corr.key_mem hQA.1 hQA.2.1 hQA.2.2.1
   obtain ⟨b0, b1⟩ := Corr.key_mem hQB.1 hQB.2.1 hQB.2.2.1
-  have hxa : (p : ℝ) + t ≠ qa + sa := fun h => hc ⟨c, hcF, qa, sa, hQA, h⟩
-  have hxb : (p : ℝ) + t ≠ qb + sb := fun h => hc ⟨c, hcF, qb, sb, hQB, h⟩
-  have hya : (p' : ℝ) + t' ≠ qa + sa := fun h => hc' ⟨c, hcF, qa, sa, hQA, h⟩
-  have hyb : (p' : ℝ) + t' ≠ qb + sb := fun h => hc' ⟨c, hcF, qb, sb, hQB, h⟩
+  have hxa := fun h => hc ⟨c, hcF, qa, sa, hQA, h⟩
+  have hxb := fun h => hc ⟨c, hcF, qb, sb, hQB, h⟩
+  have hya := fun h => hc' ⟨c, hcF, qa, sa, hQA, h⟩
+  have hyb := fun h => hc' ⟨c, hcF, qb, sb, hQB, h⟩
   have hxy : (p : ℝ) + t ≠ p' + t' := by
     intro h; rw [h] at hlt; exact lt_irrefl _ hlt
   have hkab := WalkAx.key_ne_of_pt_ne hQA hQB hQAB

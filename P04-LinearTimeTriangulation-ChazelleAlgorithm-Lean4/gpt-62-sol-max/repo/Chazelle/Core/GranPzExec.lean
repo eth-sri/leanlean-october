@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranPzRam
 public import Chazelle.Core.NFLocateSpec
 public import Chazelle.Core.ShearInv
@@ -44,7 +46,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
   have r₀ : ∀ r, r ≠ 50002 → c₀.nreg r = c.nreg r := fun r hr => by rw [hc₀]; simp [hr]
   have x₀ : c₀.nreg 50002 = e := by rw [hc₀]; simp [h110]
   have m₀ : c₀.nmem = c.nmem := rfl
-  have d₀ : c₀.nreg 50000 = MD := by rw [r₀ _ (by omega), h50]
+  have d₀ : c₀.nreg 50000 = MD := by ram_rw [r₀, h50]
   rcases hMD with ⟨hk0, H, C, hC, rfl⟩ | ⟨hk1, hbit, rfl⟩
   · -- the chain model
     obtain ⟨hlen, hwf, hHW, hs, hNW⟩ := hCW hk0 H C hC
@@ -57,7 +59,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
     have hT := C.topIdx_le
     have hen : e < 2 * C.m + 7 := by simpa [chainModel, C.sideWalk_n] using he
     have t0 : c₀.nreg 90023 < c₀.nreg 90019 := by
-      rw [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk0]; omega
+      frame_finish
     obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W chHead c₀ c₁ k₁ ∧ k₁ = 16 ∧
         (c₁.nreg 50032 = 1 ∧ c₁.nreg 50060 = c.nmem (MD + 1) ∧ c₁.nreg 50052 = C.s ∧
           c₁.nreg 50053 = C.m ∧ c₁.nreg 50054 = C.topIdx ∧ c₁.nreg 50055 = c.nmem (MD + 5) ∧
@@ -71,8 +73,8 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       config_simp
       rw [d₀]
       refine ⟨rfl, hs', hm', hT', rfl, x₀, ?_, ?_, m₀⟩
-      · rw [r₀ _ (by omega), h111]
-      · rw [r₀ _ (by omega), h19]
+      · ram_rw [r₀, h111]
+      · ram_rw [r₀, h19]
     obtain ⟨q32, q60, q52, q53, q54, q55, q81, q02, q111, q19, qm⟩ := q
     have w₁ := e₁.wb_right
     by_cases hsm : e < 6
@@ -90,32 +92,30 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       refine ⟨rfl, by config_simp; rw [q02, q81], by config_simp; rw [q02, q81, q53],
         fun r h1 h2 => by simp [h1, h2]⟩
     have w₂ := e₂.wb_right
-    have p53 : c₂.nreg 50053 = C.m := by rw [r₂ _ (by omega) (by omega), q53]
+    have p53 : c₂.nreg 50053 = C.m := by ram_rw [r₂, q53]
     have ns : ¬ c₁.nreg 50002 < c₁.nreg 50081 := by rw [q02, q81]; exact hsm
     by_cases hg : e - 6 - C.m < C.m
     · have hi : e - 6 < 2 * C.m := by omega
       have f₂ := exec_frameB e₂ (B := Bl [50056, 50057]) (by decide)
       have hH₂ : HostAt c₂.nmem (c.nmem (MD + 1)) H := by rw [f₂.2.2.1, qm]; exact hHost
-      obtain ⟨c₃, k₃, e₃, hk₃, -, sp₁, sp₂, hsp₁, hsp₂, a₃, b₃, l₁, l₂⟩ := chPts_exec (P := P) hG
+      obtain ⟨c₃, k₃, e₃, hk₃, sp₁, sp₂, hsp₁, hsp₂, a₃, b₃, l₁, l₂⟩ := chPts_exec (P := P) hG
         hW c₂ w₂ hH₂ hwf hHW (by rw [← hNlen]; exact hNW) (by rw [← hNlen]; exact hs)
-        (by rw [← hNlen]; exact hmN) hT hi (by rw [r₂ _ (by omega) (by omega), q32])
-        (by rw [r₂ _ (by omega) (by omega), q60]) (by rw [r₂ _ (by omega) (by omega), q52]) p53
-        (by rw [r₂ _ (by omega) (by omega), q54]) (by rw [r₂ _ (by omega) (by omega), q55]) q56
+        (by rw [← hNlen]; exact hmN) hT hi (by ram_rw [r₂, q32])
+        (by ram_rw [r₂, q60]) (by ram_rw [r₂, q52]) p53
+        (by ram_rw [r₂, q54]) (by ram_rw [r₂, q55]) q56
       have F₃ := exec_frameB e₃ wr_chPts_fine
       have g₃ : ∀ r, Bpts r = false → c₃.nreg r = c₂.nreg r := F₃.1
       have c32 : c₃.nreg 50032 = 1 := by
-        rw [g₃ _ (by decide), r₂ _ (by omega) (by omega), q32]
+        frame_finish
       obtain ⟨c₄, k₄, e₄, hk₄, v₄, r₄, m₄⟩ := hvS_exec (P := P) (dst := 90113) c₃ e₃.wb_right
         c32 a₃
       obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅, m₅⟩ := hvS_exec (P := P) (dst := 90114) c₄ e₄.wb_right
-        (by rw [r₄ _ (by omega), c32])
+        (by ram_rw [r₄, c32])
         (symPtIn_copy b₃ (r₄ _ (by omega)) (r₄ _ (by omega)) (r₄ _ (by omega)))
       have h111₅ : c₅.nreg 90111 = h := by
-        rw [r₅ _ (by omega), r₄ _ (by omega), g₃ _ (by decide), r₂ _ (by omega) (by omega),
-          q111]
+        frame_finish
       have h19₅ : c₅.nreg 90019 = 1 := by
-        rw [r₅ _ (by omega), r₄ _ (by omega), g₃ _ (by decide), r₂ _ (by omega) (by omega),
-          q19]
+        frame_finish
       obtain ⟨c₆, k₆, e₆, hk₆, q⟩ : ∃ c₆ k₆, Exec P W (block [.constN 90112 0,
           .subN 90115 90111 90019]) c₅ c₆ k₆ ∧ k₆ = 2 ∧ (c₆.nreg 90112 = 0 ∧
           c₆.nreg 90115 = h - 1 ∧ c₆.nreg 90111 = h ∧ c₆.nreg 90113 = hv sp₁ ∧
@@ -126,15 +126,13 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
         · refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
           · rw [h111₅, h19₅]
           · exact h111₅
-          · rw [r₅ _ (by omega), v₄]
+          · ram_rw [r₅, v₄]
           · exact v₅
           · exact h19₅
       obtain ⟨q112, q115, q111', q113, q114, q19'⟩ := q
       obtain ⟨c₇, k₇, e₇, hk₇, b₇, i₇, -, -⟩ := tail3_exec (P := P) c₆ e₆.wb_right hW1
         90113 90114 90115 90113 q19' q112
-      refine ⟨c₇, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_false ns (.seq e₂
-        (.ifLtN_true (by rw [q57, p53]; exact hg)
-          (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))))))), ?_, b₇, ?_⟩
+      refine ⟨c₇, _, .seq e₀ (.ifLtN_true t0 (.seq e₁ (.ifLtN_false ns (by ram_path)))), ?_, b₇, ?_⟩
       · have : H.length ≤ 64 := hlen
         omega
       rw [i₇, q111', q113, q114, q115]
@@ -174,7 +172,7 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
       rw [this, hQn] at he
       exact he
     have t0 : ¬ c₀.nreg 90023 < c₀.nreg 90019 := by
-      rw [r₀ _ (by omega), r₀ _ (by omega), h23, h19, hk1]; omega
+      ram_rw [r₀, r₀, h23, h19, hk1]; omega
     obtain ⟨c₁, k₁, e₁, hk₁, i41, -⟩ := intIdx_exec (P := P) hW c₀ w₀ (by rw [x₀]; exact hen)
       (by rw [d₀]; omega)
     have F₁ := exec_frameB e₁ wr_intIdx
@@ -184,8 +182,8 @@ theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n +
         c₂.nreg 90019 = 1) := by
       have hw₁ := e₁.wb_right
       have a : c₁.nreg 90111 = h := by
-        rw [F₁.1 _ (by decide), r₀ _ (by omega), h111]
-      have b : c₁.nreg 90019 = 1 := by rw [F₁.1 _ (by decide), r₀ _ (by omega), h19]
+        frame_finish
+      have b : c₁.nreg 90019 = 1 := by frame_finish
       exec_block
       · omega
       · refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp

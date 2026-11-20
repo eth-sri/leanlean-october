@@ -46,7 +46,7 @@ theorem regHost_length_ge (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
 theorem hpt_lt {n : ℕ} {H : Host} (hwf : HostWF n H) (hn : 0 < n) {k : ℕ}
     (hk : k < (H.pts n).length) : (hpt n H k).Lt n := by
   have hmem : hpt n H k ∈ H.pts n := by
-    unfold hpt; rw [List.getD_eq_getElem _ _ hk]; exact List.getElem_mem hk
+    unfold hpt; simp_all
   unfold Host.pts at hmem
   obtain ⟨it, hit, hin⟩ := List.mem_flatMap.1 hmem
   have hw := hwf it hit
@@ -55,7 +55,7 @@ theorem hpt_lt {n : ℕ} {H : Host} (hwf : HostWF n H) (hn : 0 < n) {k : ℕ}
     obtain ⟨t, -, ht⟩ := hin
     rw [← ht]; exact Nat.mod_lt _ hn
   · simp only [HostItem.pts, List.mem_singleton] at hin
-    rw [hin]; exact hw
+    rwa [hin]
 
 theorem pEdge_lt (li : Bool) {n : ℕ} {s : SymPt} (hs : s.Lt n) : pEdge li n s < n := by
   have hn : 0 < n := by cases s <;> simp only [SymPt.Lt] at hs <;> omega

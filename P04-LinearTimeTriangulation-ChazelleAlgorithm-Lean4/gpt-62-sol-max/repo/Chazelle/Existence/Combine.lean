@@ -102,12 +102,17 @@ theorem vtx_eq_chord_endpoint (hd : IsDiagonal P s L) {i : ℕ} (hi : i < P.n)
   rw [not_or] at hcon
   exact hd.2.2 _ h hcon.1 hcon.2 (vtx_mem_boundary P hi)
 
-/-- A vertex of `P` lying in the filled region of the arc is a vertex of the arc, provided the
-filled regions of the two arcs meet only on the chord. -/
-theorem exists_arc_vertex_of_mem_filled (hd : IsDiagonal P s L)
+section
+
+variable (hd : IsDiagonal P s L)
     (hmeet : ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
       p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)))
-    {i : ℕ} (hi : i < P.n) (h : P.vtx i ∈ (P.arc s L).filled) :
+    {i : ℕ} (hi : i < P.n)
+include hd hmeet hi
+
+/-- A vertex of `P` lying in the filled region of the arc is a vertex of the arc, provided the
+filled regions of the two arcs meet only on the chord. -/
+theorem exists_arc_vertex_of_mem_filled (h : P.vtx i ∈ (P.arc s L).filled) :
     ∃ k, k ≤ L ∧ (P.arc s L).vtx k = P.vtx i := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   have hL : L ≤ P.n := by have := hd.2.1; omega
@@ -122,10 +127,7 @@ theorem exists_arc_vertex_of_mem_filled (hd : IsDiagonal P s L)
 
 /-- A vertex of `P` lying in the filled region of the complementary arc is a vertex of the
 complementary arc, provided the filled regions of the two arcs meet only on the chord. -/
-theorem exists_arc_compl_vertex_of_mem_filled (hd : IsDiagonal P s L)
-    (hmeet : ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
-      p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)))
-    {i : ℕ} (hi : i < P.n) (h : P.vtx i ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled) :
+theorem exists_arc_compl_vertex_of_mem_filled (h : P.vtx i ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled) :
     ∃ k, k ≤ P.n - L ∧ (P.arc ((s + L) % P.n) (P.n - L)).vtx k = P.vtx i := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   have hL : L ≤ P.n := by have := hd.2.1; omega
@@ -137,6 +139,8 @@ theorem exists_arc_compl_vertex_of_mem_filled (hd : IsDiagonal P s L)
     · exact ⟨P.n - L, le_rfl, by rw [vtx_arc_compl_last P s L hL, h3]⟩
     · exact ⟨0, Nat.zero_le _, by rw [vtx_arc_compl_zero, h3]⟩
   · exact ⟨k, hk, by rw [vtx_arc P _ _ hk, hki]⟩
+
+end
 
 /-! ### Combining -/
 
@@ -161,17 +165,13 @@ theorem weakTriangulates_combine {P : Polygon} {s L : ℕ} (hd : IsDiagonal P s 
   have hsub₂ := fun t ht => triSet_subset_filled_of_weak h₂ (t := t) ht
   obtain ⟨hv₁, hc₁, hu₁, hp₁, hx₁⟩ := h₁
   obtain ⟨hv₂, hc₂, hu₂, hp₂, hx₂⟩ := h₂
-  have hle₁ : ∀ t ∈ T₁, t.1 ≤ L ∧ t.2.1 ≤ L ∧ t.2.2 ≤ L :=
-    fun t ht => index_le_of_validTriangle_arc P s L (hv₁ t ht)
-  have hle₂ : ∀ t ∈ T₂, t.1 ≤ P.n - L ∧ t.2.1 ≤ P.n - L ∧ t.2.2 ≤ P.n - L :=
-    fun t ht => index_le_of_validTriangle_arc P _ _ (hv₂ t ht)
-  have hts₁ : ∀ t ∈ T₁, P.triSet (relabel s P.n t) = (P.arc s L).triSet t :=
-    fun t ht => (triSet_arc P s L (hle₁ t ht)).symm
+  have hle₁ := fun t ht => index_le_of_validTriangle_arc P s L (hv₁ t ht)
+  have hle₂ := fun t ht => index_le_of_validTriangle_arc P _ _ (hv₂ t ht)
+  have hts₁ := fun t ht => (triSet_arc P s L (hle₁ t ht)).symm
   have hts₂ : ∀ t ∈ T₂, P.triSet (relabel ((s + L) % P.n) P.n t) =
       (P.arc ((s + L) % P.n) (P.n - L)).triSet t :=
     fun t ht => (triSet_arc P _ _ (hle₂ t ht)).symm
-  have htv₁ : ∀ t ∈ T₁, P.triVertices (relabel s P.n t) = (P.arc s L).triVertices t :=
-    fun t ht => (triVertices_arc P s L (hle₁ t ht)).symm
+  have htv₁ := fun t ht => (triVertices_arc P s L (hle₁ t ht)).symm
   have htv₂ : ∀ t ∈ T₂, P.triVertices (relabel ((s + L) % P.n) P.n t) =
       (P.arc ((s + L) % P.n) (P.n - L)).triVertices t :=
     fun t ht => (triVertices_arc P _ _ (hle₂ t ht)).symm
@@ -185,7 +185,7 @@ theorem weakTriangulates_combine {P : Polygon} {s L : ℕ} (hd : IsDiagonal P s 
   · -- count
     rw [List.length_append, List.length_map, List.length_map]
     rw [n_arc] at hc₁ hc₂
-    have := hd.1
+    
     have := hd.2.1
     omega
   · -- union
@@ -194,11 +194,11 @@ theorem weakTriangulates_combine {P : Polygon} {s L : ℕ} (hd : IsDiagonal P s 
     simp only [Set.mem_ofPred_eq, Set.mem_union, List.mem_append, List.mem_map]
     constructor
     · rintro ⟨t, (⟨t', ht', rfl⟩ | ⟨t', ht', rfl⟩), hp⟩
-      · exact Or.inl ⟨t', ht', by rw [← hts₁ t' ht']; exact hp⟩
-      · exact Or.inr ⟨t', ht', by rw [← hts₂ t' ht']; exact hp⟩
+      · exact Or.inl ⟨t', ht', by rwa [← hts₁ t' ht']⟩
+      · exact Or.inr ⟨t', ht', by rwa [← hts₂ t' ht']⟩
     · rintro (⟨t', ht', hp⟩ | ⟨t', ht', hp⟩)
-      · exact ⟨_, Or.inl ⟨t', ht', rfl⟩, by rw [hts₁ t' ht']; exact hp⟩
-      · exact ⟨_, Or.inr ⟨t', ht', rfl⟩, by rw [hts₂ t' ht']; exact hp⟩
+      · exact ⟨_, Or.inl ⟨t', ht', rfl⟩, by rwa [hts₁ t' ht']⟩
+      · exact ⟨_, Or.inr ⟨t', ht', rfl⟩, by rwa [hts₂ t' ht']⟩
   · -- disjoint interiors
     rw [List.pairwise_append]
     refine ⟨?_, ?_, ?_⟩

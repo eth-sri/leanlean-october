@@ -35,54 +35,57 @@ theorem isEar_of_diagonal_two {s : ℕ} (hd : IsDiagonal P s 2)
     IsEar P ((s + 1) % P.n) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   refine ⟨?_, ?_⟩
-  · rw [prevIdx_succ_mod P hn, isDiagonal_mod_iff]; exact hd
-  · rw [prevIdx_succ_mod P hn, mod_add_one_mod]; exact hin
+  · rwa [prevIdx_succ_mod P hn, isDiagonal_mod_iff]
+  · rwa [prevIdx_succ_mod P hn, mod_add_one_mod]
 
+section
+
+variable {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
+    (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
+
+include hP hd hin in
 /-- The filled region of an arc of an interior diagonal lies in the filled region of `P`. -/
-theorem filled_arc_subset {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem filled_arc_subset :
     (P.arc s L).filled ⊆ P.filled := by
-  rw [filled_eq_union_arcs P s L hP hd hin]; exact Set.subset_union_left
+  simp [filled_eq_union_arcs P s L hP hd hin]
 
+include hP hd hin in
 /-- **Lifting an ear from an arc.**  Let `(s, L)` be an interior diagonal of `P` and `A = P.arc s L`.
 An ear of `A` at an apex `k` with `0 < k < L` is an ear of `P` at `(s + k) % n`. -/
-theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
+theorem isEar_of_arc
     {k : ℕ} (hk0 : 0 < k) (hkL : k < L) (he : IsEar (P.arc s L) k) :
     IsEar P ((s + k) % P.n) := by
-  have hLn : L + 2 ≤ P.n := hd.2.1
+  have hLn := hd.2.1
   have hn : 0 < P.n := by omega
   have hL : L ≤ P.n := by omega
-  have hAn : (P.arc s L).n = L + 1 := n_arc P s L
-  have h4 : 4 ≤ (P.arc s L).n := he.1.2.1
+  have hAn := n_arc P s L
+  have h4 := he.1.2.1
   have hprev : prevIdx (P.arc s L) k = k - 1 := by
-    rw [prevIdx_eq _ (by omega)]; simp [Nat.pos_iff_ne_zero.1 hk0]
+    ram_rw [prevIdx_eq]; simp [Nat.pos_iff_ne_zero.1 hk0]
   have e1 : (P.arc s L).vtx (prevIdx (P.arc s L) k) = P.vtx ((s + (k - 1)) % P.n) := by
-    rw [hprev, vtx_arc P s L (by omega)]
+    ram_simp [hprev, vtx_arc]
   have e2 : (P.arc s L).vtx ((k + 1) % (P.arc s L).n) = P.vtx ((s + (k - 1) + 2) % P.n) := by
-    rw [hAn, Nat.mod_eq_of_lt (by omega), vtx_arc P s L (by omega)]
+    ram_rw [hAn, Nat.mod_eq_of_lt, vtx_arc P s L]
     congr 2; omega
   -- the ear chord of `A`, avoiding the boundary of `A` and lying in `A.filled`
   have hch := he.1.2.2
-  rw [hprev, hAn, Nat.mod_eq_of_lt (by omega : k - 1 < L + 1),
-    Nat.mod_eq_of_lt (by omega : k - 1 + 2 < L + 1), vtx_arc P s L (by omega),
-    vtx_arc P s L (by omega), ← Nat.add_assoc] at hch
+  ram_rw [hprev, hAn, Nat.mod_eq_of_lt (by omega : k - 1 < L + 1),
+    Nat.mod_eq_of_lt (by omega : k - 1 + 2 < L + 1), vtx_arc P s L,
+    vtx_arc P s L, ← Nat.add_assoc] at hch
   have hsub := he.2
   rw [e1, e2] at hsub
   have hkey : IsEar P ((s + (k - 1) + 1) % P.n) := by
     apply isEar_of_diagonal_two
     · refine ⟨le_rfl, by omega, ?_⟩
       intro p hp hp1 hp2 hpB
-      have hpA : p ∉ (P.arc s L).boundary := hch p hp hp1 hp2
+      have hpA := hch p hp hp1 hp2
       rcases boundary_subset_arcs P s L hL hn hpB with h | h
       · exact hpA h
-      · have hpf : p ∈ Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) :=
-          filled_arcs_meet_on_chord P s L hP hd hin p (hsub hp) (Jordan.boundary_subset_filled _ h)
+      · have hpf := filled_arcs_meet_on_chord P s L hP hd hin p (hsub hp) (Jordan.boundary_subset_filled _ h)
         rw [segment_comm] at hpf
         exact hpA (chord_subset_boundary_arc P s L hpf)
     · exact hsub.trans (filled_arc_subset P hP hd hin)
-  rw [show s + (k - 1) + 1 = s + k by omega] at hkey
-  exact hkey
+  rwa [show s + (k - 1) + 1 = s + k by omega] at hkey
 
 /-- **Two apexes strictly inside opposite chains of a diagonal are never adjacent.**  Index
 arithmetic modulo `N = L + 1`: for a diagonal `(s', L')` of a polygon with `N` vertices, and
@@ -114,7 +117,7 @@ theorem apex_not_both_endpoints {N L s' L' k₁ k₂ : ℕ} (hN : N = L + 1)
     · have hEq : L' + k₂ + 1 = N := by omega
       rw [hEq, Nat.add_mod_right] at e
       have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 (by omega)
-        (by rw [Nat.add_zero]; exact e)
+        (by assumption)
       omega
   · -- `a₂ = 0` is the successor of `a₁ = L`
     have e : (s' + (k₁ + 1)) % N = (s' + (L' + k₂)) % N := by
@@ -158,13 +161,15 @@ theorem exists_ear_in_arc_aux (m : ℕ) : ∀ Q : Polygon, Q.n = m → Q.Simple 
     · exact ⟨_, h0, hL, isEar_of_arc Q hQ hd hin h0 hL he₁⟩
     · exact ⟨_, h0, hL, isEar_of_arc Q hQ hd hin h0 hL he₂⟩
 
+include hP hd hin in
 /-- **Ears in every chain.**  For every interior diagonal `(s, L)` of a simple polygon `P`,
 some vertex `(s + k) % n` with `0 < k < L` (strictly inside the chain `s, …, s + L`) is the
 apex of an ear. -/
-theorem exists_ear_in_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem exists_ear_in_arc :
     ∃ k, 0 < k ∧ k < L ∧ IsEar P ((s + k) % P.n) :=
   exists_ear_in_arc_aux P.n P rfl hP s L hd hin
+
+end
 
 end
 

@@ -75,19 +75,17 @@ theorem bS_add_tpos (J : ℕ) : bS C + tpos C J ≡ J [MOD 2 * C.m] := by
 /-- **The walk read from a tour position**: before the box. -/
 theorem walk_tour (J d : ℕ) (hd : tpos C J + d ≤ 2 * C.m) :
     (chainModel C).W.vtx ((6 + tpos C J + d) % (chainModel C).W.n) = tourV C J d := by
-  rw [cm_n, Nat.mod_eq_of_lt (by omega), cm_W, show 6 + tpos C J + d = (tpos C J + d) + 6 by ring,
+  ram_rw [cm_n, Nat.mod_eq_of_lt, cm_W, show 6 + tpos C J + d = (tpos C J + d) + 6 by ring,
     C.sideWalk_vtx_tour _ hd]
   unfold Chain.sideTour tourV
   rw [Chain.sideIdx_eq]
   congr 2
   have h := (bS_add_tpos C J).add_right d
   unfold Nat.ModEq at h
-  rw [← Nat.add_assoc]
-  exact h
+  rwa [← Nat.add_assoc]
 
 theorem box_mod {e : ℕ} (he0 : 1 ≤ e) (he : e ≤ 7) : (2 * C.m + 6 + e) % (2 * C.m + 7) = e - 1 := by
-  rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-  omega
+  ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt] <;> omega
 
 /-- **The walk read from a tour position**: the box block. -/
 theorem walk_box (J e : ℕ) (he : e ≤ 7) :
@@ -96,7 +94,7 @@ theorem walk_box (J e : ℕ) (he : e ≤ 7) :
   have ht := tpos_lt C J
   rw [cm_n, show 6 + tpos C J + (2 * C.m - tpos C J) + e = 2 * C.m + 6 + e by omega, cm_W]
   rcases Nat.eq_zero_or_pos e with rfl | he0
-  · rw [Nat.mod_eq_of_lt (by omega), add_zero, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m]
+  · ram_rw [Nat.mod_eq_of_lt, add_zero, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m]
     rfl
   rw [box_mod C he0 he]
   interval_cases e <;> first | rfl | exact C.sideWalk_vtx_six _
@@ -106,8 +104,8 @@ theorem walk_after (J e : ℕ) (he : e ≤ 2 * C.m) :
     (chainModel C).W.vtx ((6 + tpos C J + (2 * C.m - tpos C J) + 7 + e) % (chainModel C).W.n) =
       tourV C J (2 * C.m - tpos C J + e) := by
   have ht := tpos_lt C J
-  rw [cm_n, show 6 + tpos C J + (2 * C.m - tpos C J) + 7 + e = (e + 6) + (2 * C.m + 7) by omega,
-    Nat.add_mod_right, Nat.mod_eq_of_lt (by omega), cm_W, C.sideWalk_vtx_tour _ he]
+  ram_rw [cm_n, show 6 + tpos C J + (2 * C.m - tpos C J) + 7 + e = (e + 6) + (2 * C.m + 7) by omega,
+    Nat.add_mod_right, Nat.mod_eq_of_lt, cm_W, C.sideWalk_vtx_tour _ he]
   unfold Chain.sideTour tourV
   rw [Chain.sideIdx_eq]
   congr 2
@@ -149,13 +147,13 @@ theorem counted_iff_box {p : ℕ} (hp : p < (chainModel C).W.n) :
   constructor
   · rintro ⟨h1, h2⟩
     obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-    rw [C.sideWalk_vtx_tour _ (by omega), show i + 6 + 1 = (i + 1) + 6 by ring,
-      Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_tour _ (by omega)]
+    ram_rw [C.sideWalk_vtx_tour, show i + 6 + 1 = (i + 1) + 6 by ring,
+      Nat.mod_eq_of_lt, C.sideWalk_vtx_tour]
     exact ⟨C.set_subset_box (C.vertex_mem_set (C.sideIdx_le _ _)),
       C.set_subset_box (C.vertex_mem_set (C.sideIdx_le _ _))⟩
   · rintro ⟨h1, h2⟩
     by_contra hc
-    have hR := C.radius_pos
+    
     rcases (show p ≤ 5 ∨ p = 2 * C.m + 6 by omega) with hp5 | rfl
     · interval_cases p
       · exact slitTop_not_mem_box C h1
@@ -164,7 +162,7 @@ theorem counted_iff_box {p : ℕ} (hp : p < (chainModel C).W.n) :
       · exact corner_not_mem_box C (Or.inl rfl) h1
       · exact corner_not_mem_box C (Or.inl rfl) h1
       · exact slitTop_not_mem_box C h1
-    · rw [box_mod C le_rfl (by omega)] at h2
+    · ram_rw [box_mod C le_rfl] at h2
       exact slitTop_not_mem_box C h2
 
 /-- The box block depends only on the top vertex and the box radius. -/
@@ -184,8 +182,13 @@ section TwoChains
 
 variable {C C' : Chain} {J J' ℓ : ℕ}
 
+section
+
+variable (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+include hT
+
 /-- **Case N** (no box inside the stretch in either walk): the walks agree along the tour. -/
-theorem agree_N (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+theorem agree_N
     (hs : ℓ ≤ 2 * C.m - tpos C J) (hs' : ℓ ≤ 2 * C'.m - tpos C' J') :
     Agree (chainModel C).W (chainModel C').W (6 + tpos C J) (6 + tpos C' J') ℓ := by
   intro d hd
@@ -194,7 +197,7 @@ theorem agree_N (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
   exact hT d hd
 
 /-- The top vertices agree when the boxes sit at the same offset of the stretch. -/
-theorem top_eq_of_box (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+theorem top_eq_of_box
     (hss : 2 * C.m - tpos C J = 2 * C'.m - tpos C' J') (hsl : 2 * C.m - tpos C J ≤ ℓ) :
     C.top = C'.top := by
   have h1 := walk_box C J 0 (by omega)
@@ -208,7 +211,7 @@ theorem top_eq_of_box (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
 
 /-- **Case Sh** (the box at the same offset strictly inside the stretch of both walks): the walks
 agree along the tour and the box. -/
-theorem agree_Sh (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hR : C.radius = C'.radius)
+theorem agree_Sh (hR : C.radius = C'.radius)
     (hℓ : ℓ ≤ 2 * C.m) (hℓ' : ℓ ≤ 2 * C'.m)
     (hss : 2 * C.m - tpos C J = 2 * C'.m - tpos C' J') (hsl : 2 * C.m - tpos C J < ℓ) :
     Agree (chainModel C).W (chainModel C').W (6 + tpos C J) (6 + tpos C' J') (ℓ + 7) := by
@@ -218,7 +221,7 @@ theorem agree_Sh (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hR : C
   set s := 2 * C.m - tpos C J with hs
   intro d hd
   rcases le_or_gt d s with h1 | h1
-  · rw [walk_tour C J d (by omega), walk_tour C' J' d (by omega)]
+  · ram_rw [walk_tour C J d, walk_tour C' J' d]
     exact hT d (by omega)
   rcases le_or_gt d (s + 7) with h2 | h2
   · obtain ⟨e, rfl⟩ : ∃ e, d = s + e := ⟨d - s, by omega⟩
@@ -237,7 +240,7 @@ theorem agree_Sh (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hR : C
 
 /-- **Case G, first piece** (the box strictly inside the stretch of the second walk only): the
 walks agree up to the box of the second walk. -/
-theorem agree_G1 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
+theorem agree_G1
     (hs : ℓ ≤ 2 * C.m - tpos C J) (hs' : 2 * C'.m - tpos C' J' < ℓ) :
     Agree (chainModel C).W (chainModel C').W (6 + tpos C J) (6 + tpos C' J')
       (2 * C'.m - tpos C' J') := by
@@ -248,7 +251,7 @@ theorem agree_G1 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e)
 
 /-- **Case G, second piece**: the walks agree from the box of the second walk (skipped) to the
 end of the stretch. -/
-theorem agree_G2 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hℓ' : ℓ ≤ 2 * C'.m)
+theorem agree_G2 (hℓ' : ℓ ≤ 2 * C'.m)
     (hs : ℓ ≤ 2 * C.m - tpos C J) (hs' : 2 * C'.m - tpos C' J' < ℓ) :
     Agree (chainModel C).W (chainModel C').W
       ((6 + tpos C J + (2 * C'.m - tpos C' J')) % (chainModel C).W.n)
@@ -257,9 +260,11 @@ theorem agree_G2 (hT : ∀ e, e ≤ ℓ → tourV C J e = tourV C' J' e) (hℓ' 
   have ht := tpos_lt C J
   have ht' := tpos_lt C' J'
   intro d hd
-  rw [Nat.mod_add_mod, Nat.mod_add_mod, Nat.add_assoc (6 + tpos C J),
-    walk_tour C J _ (by omega), walk_after C' J' d (by omega)]
+  ram_rw [Nat.mod_add_mod, Nat.mod_add_mod, Nat.add_assoc (6 + tpos C J),
+    walk_tour C J, walk_after C' J' d]
   exact hT _ (by omega)
+
+end
 
 end TwoChains
 
@@ -327,40 +332,33 @@ theorem tourV_left_zero : tourV J.left J.m₁ 0 = J.shared := by
 theorem tourV_left_end : tourV J.left J.m₁ (2 * J.m₁) = J.shared := by
   have := tourV_left_zero J
   unfold tourV at this ⊢
-  rw [← this]
-  congr 2
-  simp only [Merge.Junction.left_m]
-  rw [show J.m₁ + 2 * J.m₁ = J.m₁ + 0 + 2 * J.m₁ by ring, Nat.add_mod_right]
+  simp_all
 
 /-- The shared vertex starts the right tour. -/
 theorem tourV_right_zero : tourV J.right 0 0 = J.shared := by
-  unfold tourV
-  simp only [add_zero, Nat.zero_mod, Chain.sideE_zero]
-  exact J.right_vertex_zero
+  rfl
 
 /-- The shared vertex ends the right tour. -/
 theorem tourV_right_end : tourV J.right 0 (2 * J.m₂) = J.shared := by
-  unfold tourV
-  simp only [zero_add, Merge.Junction.right_m, Nat.mod_self, Chain.sideE_zero]
-  exact J.right_vertex_zero
+  ram_finish [tourV, zero_add, Merge.Junction.right_m, Nat.mod_self, Chain.sideE_zero]
 
 /-! ### Where the boxes are -/
 
 /-- If the top of `C` lies strictly inside `C₁`, it is the top of `C₁`. -/
 theorem left_topIdx_eq (h : J.whole.topIdx < J.m₁) : J.left.topIdx = J.whole.topIdx := by
-  have hT := J.whole.topIdx_le
+  
   apply le_antisymm
-  · refine J.left.topIdx_min (by rw [Merge.Junction.left_m]; omega) fun i hi => ?_
+  · refine J.left.topIdx_min (by simp_all <;> omega) fun i hi => ?_
     rw [Merge.Junction.left_m] at hi
     rw [← Merge.Junction.whole_vertex, ← Merge.Junction.whole_vertex]
-    exact J.whole.vertex_snd_le_top (by rw [Merge.Junction.whole_m]; omega)
+    exact J.whole.vertex_snd_le_top (by simp_all <;> omega)
   · have hL := J.left.topIdx_le
     rw [Merge.Junction.left_m] at hL
-    refine J.whole.topIdx_min (by rw [Merge.Junction.whole_m]; omega) fun i hi => ?_
+    refine J.whole.topIdx_min (by simp_all <;> omega) fun i hi => ?_
     calc (J.whole.vertex i).2 ≤ J.whole.top.2 := J.whole.vertex_snd_le_top hi
       _ = (J.left.vertex J.whole.topIdx).2 := rfl
       _ ≤ (J.left.vertex J.left.topIdx).2 :=
-          J.left.vertex_snd_le_top (by rw [Merge.Junction.left_m]; omega)
+          J.left.vertex_snd_le_top (by simp_all <;> omega)
       _ = (J.whole.vertex J.left.topIdx).2 := rfl
 
 /-- If the top of `C` lies strictly inside `C₂`, it is the top of `C₂`. -/
@@ -368,17 +366,17 @@ theorem right_topIdx_eq (h : J.m₁ < J.whole.topIdx) :
     J.right.topIdx = J.whole.topIdx - J.m₁ := by
   have hT := J.whole.topIdx_le
   rw [Merge.Junction.whole_m] at hT
-  have hv : ∀ j, J.right.vertex j = J.whole.vertex (J.m₁ + j) := fun j =>
+  have hv := fun j =>
     (Merge.Junction.whole_vertex_add J j).symm
   apply le_antisymm
   · refine J.right.topIdx_min (by rw [Merge.Junction.right_m]; omega) fun i hi => ?_
     rw [Merge.Junction.right_m] at hi
     rw [hv, hv, show J.m₁ + (J.whole.topIdx - J.m₁) = J.whole.topIdx by omega]
-    exact J.whole.vertex_snd_le_top (by rw [Merge.Junction.whole_m]; omega)
+    exact J.whole.vertex_snd_le_top (by simp_all)
   · have hR := J.right.topIdx_le
     rw [Merge.Junction.right_m] at hR
     suffices J.whole.topIdx ≤ J.m₁ + J.right.topIdx by omega
-    refine J.whole.topIdx_min (by rw [Merge.Junction.whole_m]; omega) fun i hi => ?_
+    refine J.whole.topIdx_min (by simp_all) fun i hi => ?_
     calc (J.whole.vertex i).2 ≤ J.whole.top.2 := J.whole.vertex_snd_le_top hi
       _ = (J.right.vertex (J.whole.topIdx - J.m₁)).2 := by
           rw [hv, show J.m₁ + (J.whole.topIdx - J.m₁) = J.whole.topIdx by omega]; rfl
@@ -395,7 +393,7 @@ theorem left_sideBeta_eq (h : J.whole.topIdx < J.m₁) : J.left.sideBeta = J.who
 
 theorem right_sideBeta_eq (h : J.m₁ < J.whole.topIdx) : J.right.sideBeta = J.whole.sideBeta := by
   have e := right_topIdx_eq J h
-  have hv : ∀ j, J.right.vertex j = J.whole.vertex (J.m₁ + j) := fun j =>
+  have hv := fun j =>
     (Merge.Junction.whole_vertex_add J j).symm
   have hr : J.right.radius = J.whole.radius := rfl
   have htop : J.right.top = J.whole.top := by
@@ -420,13 +418,13 @@ theorem left_box_eq (h : 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 
   have hTl : J.whole.topIdx < J.m₁ := by
     cases hb : J.whole.sideBeta <;> simp only [hb, Bool.false_eq_true, ↓reduceIte] at h
     · by_contra hc
-      rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
+      ram_rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
           J.m₁ + 2 * J.m₂ + 2 * (J.m₁ + J.m₂) - (2 * (J.m₁ + J.m₂) - J.whole.topIdx) by omega),
-        Nat.mod_eq_of_lt (by omega)] at h
+        Nat.mod_eq_of_lt] at h
       omega
-    · rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
+    · ram_rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
           J.m₁ + 2 * J.m₂ + 2 * (J.m₁ + J.m₂) - J.whole.topIdx by omega),
-        Nat.mod_eq_of_lt (by omega)] at h
+        Nat.mod_eq_of_lt] at h
       omega
   rw [left_sideBeta_eq J hTl, left_topIdx_eq J hTl]
   cases hb : J.whole.sideBeta <;> simp only [Bool.false_eq_true, ↓reduceIte] at h ⊢
@@ -446,7 +444,7 @@ theorem left_box_eq (h : 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 
 theorem right_box_eq (h : 2 * J.whole.m - tpos J.whole J.m₁ < 2 * J.m₂) :
     2 * J.right.m - tpos J.right 0 = 2 * J.whole.m - tpos J.whole J.m₁ := by
   have h1 := J.one_le_m₁
-  have h2 := J.one_le_m₂
+  
   have hT := J.whole.topIdx_le
   simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at hT h ⊢
   unfold tpos bS Chain.sideS at *
@@ -458,9 +456,9 @@ theorem right_box_eq (h : 2 * J.whole.m - tpos J.whole J.m₁ < 2 * J.m₂) :
           (2 * (J.m₁ + J.m₂) - J.whole.topIdx) < 2 * (J.m₁ + J.m₂) by omega)] at h
       omega
     · by_contra hc
-      rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
+      ram_rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
           J.m₁ + 2 * (J.m₁ + J.m₂) - J.whole.topIdx by omega),
-        Nat.mod_eq_of_lt (by omega)] at h
+        Nat.mod_eq_of_lt] at h
       omega
   have hTR := right_topIdx_eq J hTr
   rw [right_sideBeta_eq J hTr, hTR]

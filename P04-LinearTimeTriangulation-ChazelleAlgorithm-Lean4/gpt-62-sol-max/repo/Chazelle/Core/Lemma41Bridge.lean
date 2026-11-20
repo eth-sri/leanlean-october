@@ -107,9 +107,7 @@ theorem cutGran_le_E (lam : ℕ) :
     linarith
   have h2 : (2 : ℝ) ^ ceilBeta CL ≤ (2 : ℝ) ^ (4 : ℝ) * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 3 :=
     two_pow_le_E (by have := ceilBeta_le_real CL; push_cast; linarith)
-  have h16 : (2 : ℝ) ^ (4 : ℝ) = 16 := by norm_num
-  rw [h16] at h2
-  nlinarith
+  linarith
 
 /-- `λ ≤ 150 E`. -/
 theorem lam_le_E (lam : ℕ) : (lam : ℝ) ≤ 150 * (2 : ℝ) ^ ((lam : ℝ) / 75) := by
@@ -124,7 +122,7 @@ theorem rpowCeil_le_E (lam : ℕ) :
     (rpowCeil (cutGran (gradeGran lam) * (gradeGran lam + 1) ^ 2) ((1 : ℝ) / 3) : ℝ) ≤
       4901 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 11 := by
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
+  have hE1 := one_le_E lam
   have hH := cutGran_le_E lam
   have hG := gradeGran_le_E lam
   rw [← hE] at hH hG
@@ -158,8 +156,8 @@ theorem phiL_le (κM κ : ℕ) {L : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^ lam) :
       (κM * κ ^ 2 * 14704 * 3 * 19368 : ℝ) * (lam : ℝ) ^ 2 *
         ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 14 := by
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
-  have hl : (lam : ℝ) ≤ 150 * E := lam_le_E lam
+  have hE1 := one_le_E lam
+  have hl := lam_le_E lam
   have hl7 : (7 : ℝ) ≤ lam := by exact_mod_cast h7
   have hCL : ((Nat.clog 2 (gradeGran lam) + 1 : ℕ) : ℝ) ≤ 3 * lam := by
     exact_mod_cast clog_gradeGran_add_one_le (by omega)
@@ -174,11 +172,11 @@ theorem phiL_le (κM κ : ℕ) {L : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^ lam) :
   push_cast
   push_cast at hCL
   have hκ : (0 : ℝ) ≤ κ := Nat.cast_nonneg _
-  have hκM : (0 : ℝ) ≤ κM := Nat.cast_nonneg _
+  
   set c := (Nat.clog 2 (gradeGran lam) : ℝ) + 1 with hc
   set r := (rpowCeil (cutGran (gradeGran lam) * (gradeGran lam + 1) ^ 2) ((1 : ℝ) / 3) : ℝ)
     with hr
-  have hc0 : 0 ≤ c := by positivity
+  
   have hr0 : 0 ≤ r := by positivity
   have hE11 : 1 ≤ E ^ 11 := one_le_pow₀ hE1
   have hE3 : 1 ≤ E ^ 3 := one_le_pow₀ hE1
@@ -187,15 +185,14 @@ theorem phiL_le (κM κ : ℕ) {L : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^ lam) :
       _ ≤ E ^ 3 := pow_le_pow_right₀ hE1 (by norm_num)
   -- the three factors
   have hFb : (κ : ℝ) * c * r + κ ≤ κ * 14704 * lam * E ^ 11 := by
-    have : c * r ≤ 3 * lam * (4901 * E ^ 11) :=
-      mul_le_mul hCL hR hr0 (by positivity)
+    have := mul_le_mul hCL hR hr0 (by positivity)
     have h1 : (1 : ℝ) ≤ lam * E ^ 11 := by nlinarith
     nlinarith
-  have hGb : (κ : ℝ) * c ≤ κ * (3 * lam) := mul_le_mul_of_nonneg_left hCL hκ
+  have hGb := mul_le_mul_of_nonneg_left hCL hκ
   have hHb : (cutGran (gradeGran lam) : ℝ) + (Nat.clog 2 (L + 1) : ℝ) + 1 ≤ 19368 * E ^ 3 := by
     nlinarith
-  have hF0 : 0 ≤ (κ : ℝ) * c * r + κ := by positivity
-  have hG0 : 0 ≤ (κ : ℝ) * c := by positivity
+  
+  
   calc (κM : ℝ) * ((κ : ℝ) * c * r + κ) * ((κ : ℝ) * c) *
         ((cutGran (gradeGran lam) : ℝ) + (Nat.clog 2 (L + 1) : ℝ) + 1)
       ≤ (κM : ℝ) * (κ * 14704 * lam * E ^ 11) * (κ * (3 * lam)) * (19368 * E ^ 3) := by
@@ -217,7 +214,7 @@ theorem leafW_le (g : ℕ) : leafW g ≤ 540 * 2 ^ (g - ceilBeta g) := by
   have hcb := ceilBeta_le g
   have h1 : 60 * (2 * 2 ^ g + 7) ≤ 540 * 2 ^ g := by
     have := Nat.one_le_two_pow (n := g); omega
-  have h2 : 2 ^ ceilBeta g ≤ gradeGran g := two_pow_ceilBeta_le_gradeGran g
+  have h2 := two_pow_ceilBeta_le_gradeGran g
   have h3 : 2 ^ g = 2 ^ ceilBeta g * 2 ^ (g - ceilBeta g) := by
     rw [← pow_add]; congr 1; omega
   calc 60 * (2 * 2 ^ g + 7) / gradeGran g ≤ 540 * 2 ^ g / 2 ^ ceilBeta g :=
@@ -256,8 +253,8 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
     (((120 * L + 420 * J) / (gradeGran (lam - 1) + 1) : ℕ) : ℝ) ≤
       252240 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 60 := by
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
-  have hl : (lam : ℝ) ≤ 150 * E := lam_le_E lam
+  have hE1 := one_le_E lam
+  have hl := lam_le_E lam
   refine le_trans (Nat.cast_div_le) ?_
   have hG0 : E ^ 15 ≤ 2 * ((gradeGran (lam - 1) : ℝ) + 1) := by
     have a1 : ((2 ^ ceilBeta (lam - 1) : ℕ) : ℝ) ≤ gradeGran (lam - 1) := by
@@ -267,7 +264,7 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
       apply two_rpow_le_two_rpow
       have := le_ceilBeta_real (lam - 1)
       have e : ((lam - 1 : ℕ) : ℝ) = (lam : ℝ) - 1 := by rw [Nat.cast_sub h1]; simp
-      rw [e] at this; push_cast; linarith
+      linarith
     rw [Real.rpow_natCast, Real.rpow_one] at a2
     push_cast at a1
     linarith
@@ -277,7 +274,7 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
   have hLR : (L : ℝ) ≤ E ^ 75 := by
     have : ((L : ℕ) : ℝ) ≤ ((2 ^ lam : ℕ) : ℝ) := by exact_mod_cast hL
     rw [hE, E_pow]; push_cast at this ⊢
-    rw [show (75 : ℝ) * lam / 75 = (lam : ℝ) by ring, Real.rpow_natCast]; exact this
+    rwa [show (75 : ℝ) * lam / 75 = (lam : ℝ) by ring, Real.rpow_natCast]
   have hJR : (J : ℝ) ≤ 300 * E := by
     have : (J : ℝ) ≤ 2 * lam := by exact_mod_cast hJ
     linarith
@@ -285,7 +282,7 @@ theorem mergedKb_le {L J : ℕ} (h1 : 1 ≤ lam) (hL : L ≤ 2 ^ lam) (hJ : J �
   have hEE : E ≤ E ^ 75 := by
     calc E = E ^ 1 := (pow_one E).symm
       _ ≤ E ^ 75 := pow_le_pow_right₀ hE1 (by norm_num)
-  have e75 : E ^ 75 = E ^ 60 * E ^ 15 := by ring
+  
   nlinarith
 
 /-- The constant of one level. -/
@@ -298,9 +295,9 @@ theorem lvBound_le (κM κ : ℕ) {a L J : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^
       (lvK κM κ : ℝ) * (lam : ℝ) ^ 2 * ((2 : ℝ) ^ ((lam : ℝ) / 75)) ^ 74 := by
   unfold lvK
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
-  have hl : (lam : ℝ) ≤ 150 * E := lam_le_E lam
-  have hl1 : (1 : ℝ) ≤ lam := by exact_mod_cast (show 1 ≤ lam by omega)
+  have hE1 := one_le_E lam
+  have hl := lam_le_E lam
+  have hl1 : (1 : ℝ) ≤ lam := by simp_all <;> omega
   have hφ := phiL_le κM κ h7 hL
   have hLS := leafKb_le (a := a) (lam := lam) (by omega) hL
   have hM := mergedKb_le (lam := lam) (L := L) (J := J) (by omega) hL hJ
@@ -316,11 +313,9 @@ theorem lvBound_le (κM κ : ℕ) {a L J : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^
   have hRb : R ≤ 263340 * E ^ 60 := by linarith
   have hR0 : 0 ≤ R := by positivity
   set K1 : ℝ := (κM * κ ^ 2 * 14704 * 3 * 19368 : ℝ) with hK1
-  have hK1 : 0 ≤ K1 := by positivity
-  have hφ0 : (0 : ℝ) ≤ phiL (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran lam) L :=
-    Nat.cast_nonneg _
-  have hprod : (phiL (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran lam) L : ℝ) * R ≤
-      K1 * (lam : ℝ) ^ 2 * E ^ 14 * (263340 * E ^ 60) :=
+  
+  
+  have hprod :=
     mul_le_mul hφ hRb hR0 (by positivity)
   have hE74 : 1 ≤ E ^ 74 := one_le_pow₀ hE1
   have hsq : (lam : ℝ) ≤ (lam : ℝ) ^ 2 := by nlinarith
@@ -329,8 +324,7 @@ theorem lvBound_le (κM κ : ℕ) {a L J : ℕ} (h7 : 7 ≤ lam) (hL : L ≤ 2 ^
   push_cast
   rw [← hR] at *
   have hl2E : (lam : ℝ) ^ 2 ≤ (lam : ℝ) ^ 2 * E ^ 74 := by nlinarith
-  have e : K1 * (lam : ℝ) ^ 2 * E ^ 14 * (263340 * E ^ 60) =
-      K1 * 263340 * ((lam : ℝ) ^ 2 * E ^ 74) := by ring
+  
   nlinarith
 
 /-- **Lemma 4.1's step bound is `O(lemma41Nat λ)`.** -/
@@ -342,11 +336,11 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
   rw [hK2]
   set j := (cover lam (a + L) a).length with hj
   have hj2 : j ≤ 2 * lam := cover_length_le (by omega) (by omega)
-  have hcj : Nat.clog 2 j ≤ Nat.clog 2 lam + 1 := clog_le_of_le_two_mul hj2
+  have hcj := clog_le_of_le_two_mul hj2
   have hlv := lvBound_le κM κ (a := a) (L := L) (J := j) h7 hL hj2
   rw [hK2] at hlv
   set E := (2 : ℝ) ^ ((lam : ℝ) / 75) with hE
-  have hE1 : 1 ≤ E := one_le_E lam
+  have hE1 := one_le_E lam
   obtain ⟨V, hV⟩ : ∃ V : ℝ, V = (lam : ℝ) ^ 2 * ((Nat.clog 2 lam : ℝ) + 1) * E ^ 74 :=
     ⟨_, rfl⟩
   have hN : V ≤ lemma41Nat lam := by
@@ -354,9 +348,9 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
     have e : E ^ 74 = (2 : ℝ) ^ ((74 : ℝ) / 75 * lam) := by
       rw [hE, E_pow]; congr 1; push_cast; ring
     rw [hV, e]; exact Nat.le_ceil _
-  have hl1 : (1 : ℝ) ≤ lam := by exact_mod_cast (show 1 ≤ lam by omega)
+  have hl1 : (1 : ℝ) ≤ lam := by simp_all <;> omega
   have hE74 : 1 ≤ E ^ 74 := one_le_pow₀ hE1
-  have hcl0 : (0 : ℝ) ≤ Nat.clog 2 lam := Nat.cast_nonneg _
+  
   have hsq : (lam : ℝ) ≤ (lam : ℝ) ^ 2 := by nlinarith
   have hV1 : (lam : ℝ) ^ 2 ≤ V := by
     have h1 : (1 : ℝ) ≤ ((Nat.clog 2 lam : ℝ) + 1) * E ^ 74 := by nlinarith
@@ -374,7 +368,7 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
   have hjR : (j : ℝ) ≤ 2 * lam := by exact_mod_cast hj2
   have hlvR : (lvBound (fun _ => κM) (scF κ) (scG κ) cutGran (gradeGran lam) (gradeGran (lam - 1))
       j L (leafKb lam a L) : ℝ) + 2 ≤ (K2 : ℝ) * (lam : ℝ) ^ 2 * E ^ 74 + 2 := by linarith
-  have hK2 : (0 : ℝ) ≤ K2 := Nat.cast_nonneg _
+  
   have hmain : (Nat.clog 2 j : ℝ) * ((lvBound (fun _ => κM) (scF κ) (scG κ) cutGran
       (gradeGran lam) (gradeGran (lam - 1)) j L (leafKb lam a L) : ℝ) + 2) ≤
       (K2 : ℝ) * V + 2 * V := by
@@ -391,7 +385,7 @@ theorem l41Big_le (κM κ : ℕ) {a L : ℕ} (h7 : 7 ≤ lam) (_hL1 : 2 ^ (lam -
     unfold l41Big
     rw [← hj]
     push_cast
-    have : 40 * (lam : ℝ) ^ 2 + 169 * lam + 84 + 11 * j ≤ 315 * (lam : ℝ) ^ 2 := by nlinarith
+    
     nlinarith
   have hfin : ((K2 + 400 : ℕ) : ℝ) * V ≤ ((K2 + 400 : ℕ) : ℝ) * ((lemma41Nat lam : ℝ) + 1) :=
     mul_le_mul_of_nonneg_left (by linarith) (Nat.cast_nonneg _)

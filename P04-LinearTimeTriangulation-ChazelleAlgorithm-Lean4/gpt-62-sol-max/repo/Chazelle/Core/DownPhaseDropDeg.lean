@@ -39,7 +39,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
   set Up : Set Point := Ioo (-R) R ×ˢ Ioo ys yp with hUpdef
   have hUo : IsOpen U := isOpen_Ioo.prod isOpen_Ioo
   have hUpc : IsPreconnected Up := isPreconnected_Ioo.prod isPreconnected_Ioo
-  have hUD' : U ⊆ D := fun z hz => hUD z hz.1.1 hz.1.2 hz.2.1 hz.2.2
+  
   have hUpF : Up ⊆ freeIn D F := by
     intro z hz
     refine ⟨hUD z hz.1.1 hz.1.2 (by linarith [hz.2.1]) hz.2.2, ?_⟩
@@ -52,8 +52,8 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     ⟨by simp [p0]; linarith, by simp [p0]; linarith⟩⟩
   set X := connectedComponentIn (freeIn D F) p0 with hXdef
   have hXr : X ∈ regionsIn D F := ⟨p0, hUpF hp0, rfl⟩
-  have hXo : IsOpen X := hsys.regionsIn_open subset_rfl hXr
-  have hUpX : Up ⊆ X := hUpc.subset_connectedComponentIn hp0 hUpF
+  have hXo := hsys.regionsIn_open subset_rfl hXr
+  have hUpX := hUpc.subset_connectedComponentIn hp0 hUpF
   -- points of the closure of `U` above `ys` are in the closure of `X`
   have hclU : ∀ z, z ∈ closure U → ys < z.2 → z ∈ closure X := by
     intro z hz hzy
@@ -69,14 +69,12 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     intro w hw hwc
     set Y := connectedComponentIn (freeIn D F) w
     have hYr : Y ∈ regionsIn D F := ⟨w, hw, rfl⟩
-    have hYo : IsOpen Y := hsys.regionsIn_open subset_rfl hYr
-    have hwY : w ∈ Y := mem_connectedComponentIn hw
+    have hYo := hsys.regionsIn_open subset_rfl hYr
+    have hwY := mem_connectedComponentIn hw
     obtain ⟨v, hvY, hvX⟩ := mem_closure_iff.1 hwc Y hYo hwY
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hYr hXr with h | h
-    · rw [← h]; exact hwY
-    · exact absurd (h.le_bot ⟨hvY, hvX⟩) (fun h => h)
+    rwa [← Chazelle.Chain.regionsIn_eq_of_mem hYr hXr hvY hvX]
   intro W hWr
-  have hWF' : W ⊆ freeIn D F' := Chazelle.Chain.regionsIn_subset hWr
+  have hWF' := Chazelle.Chain.regionsIn_subset hWr
   have hfin' : {c | c ∈ F ∧ TouchesIn D c X}.Finite := hfin.subset fun c hc => hc.1
   by_cases hWU : (W ∩ U).Nonempty
   · -- `W ⊆ U ∪ X`
@@ -84,12 +82,12 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
       refine (Chazelle.Chain.regionsIn_isPreconnected hWr).subset_of_closure_inter_subset
         (hUo.union hXo) (by obtain ⟨w, h1, h2⟩ := hWU; exact ⟨w, h1, Or.inl h2⟩) ?_
       rintro w ⟨hwc, hwW⟩
-      have hwD : w ∈ D := (hWF' hwW).1
+      have hwD := (hWF' hwW).1
       obtain ⟨hb1, hb2⟩ := hDbox w hwD
       rw [abs_lt] at hb1 hb2
       by_cases hwF : w ∈ ⋃₀ F
       · obtain ⟨c, hc, hwc'⟩ := hwF
-        have hc' : c ∉ F' := fun h => (hWF' hwW).2 ⟨c, h, hwc'⟩
+        have hc' := fun h => (hWF' hwW).2 ⟨c, h, hwc'⟩
         have := hW c hc hc' w hwc'
         exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, by linarith⟩⟩
       · have hwfree : w ∈ freeIn D F := ⟨hwD, hwF⟩
@@ -115,7 +113,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
       intro w hw
       refine ⟨(hWF' hw).1, ?_⟩
       rintro ⟨c, hc, hwc⟩
-      have hc' : c ∉ F' := fun h => (hWF' hw).2 ⟨c, h, hwc⟩
+      have hc' := fun h => (hWF' hw).2 ⟨c, h, hwc⟩
       have hwy := hW c hc hc' w hwc
       obtain ⟨hb1, hb2⟩ := hDbox w (hWF' hw).1
       rw [abs_lt] at hb1 hb2

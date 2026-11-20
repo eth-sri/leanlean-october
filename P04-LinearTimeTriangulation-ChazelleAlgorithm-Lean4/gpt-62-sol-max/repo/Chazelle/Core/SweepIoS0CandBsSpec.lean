@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoS0CandMath2
 
 /-!
@@ -26,10 +28,10 @@ open Machine Machine.Stmt Programs SweepRam SweepPrim WalkEmbed Sweep
 @[expose] public section
 
 /-- The result register of the search. -/
-def lsI : ℕ := sw 4000
+@[ram_layout] def lsI : ℕ := sw 4000
 /-- The target position. -/
-def lsxE : ℕ := sw 4020
-def lsxH : ℕ := sw 4021
+@[ram_layout] def lsxE : ℕ := sw 4020
+@[ram_layout] def lsxH : ℕ := sw 4021
 
 /-- The registers the search may write (outside the oracle bands, besides the allocator). -/
 def LSet (r : ℕ) : Prop := sw 4000 ≤ r ∧ r ≤ sw 4019
@@ -37,19 +39,19 @@ def LSet (r : ℕ) : Prop := sw 4000 ≤ r ∧ r ≤ sw 4019
 /-- **The predicate of the search**: the key of log record `j` (in memory `m` at base `AL`) has
 a smaller offset from `G` than the target `x`. -/
 def lsPr (P : Polygon) (J : Merge.Junction) (m : ℕ → ℕ) (AL G : ℕ) (x : WPos) (j : ℕ) : Prop :=
-  off (chainModel J.whole).W.n G
-      ((chainModel J.whole).key (Qof P) ⟨m (AL + 7 * j), m (AL + 7 * j + 1)⟩) <
-    off (chainModel J.whole).W.n G ((chainModel J.whole).key (Qof P) x)
+  off J.wholeModel.W.n G
+      (J.wholeModel.key (Qof P) ⟨m (AL + 7 * j), m (AL + 7 * j + 1)⟩) <
+    off J.wholeModel.W.n G (J.wholeModel.key (Qof P) x)
 
-/-- **The contract of the binary search in the log.** -/
-def LSearchSpec : Prop :=
-  ∃ (lsearch : Stmt) (κ : ℕ), ∀ (P : Polygon) (W : ℕ) (J : Merge.Junction) (c₀ c : Config),
+/-- The contract of a log search program and its cost constant. -/
+def LSearchOK (lsearch : Stmt) (κ : ℕ) : Prop :=
+  ∀ (P : Polygon) (W : ℕ) (J : Merge.Junction) (c₀ c : Config),
     IInv W c₀ c → Consts c₀ → ChainCtx P W c (sw 2) J.whole →
     (∀ j, j < c.nreg TLR → c.nmem (c.nreg TBR + j) = 2 ^ j) →
     c.nreg TBR + c.nreg TLR ≤ c.nreg ALLOC →
     c.nreg (sw 301) < 2 ^ c.nreg TLR →
     c.nreg (sw 300) + 7 * c.nreg (sw 301) ≤ c.nreg ALLOC →
-    c.nreg (sw 40) < (chainModel J.whole).W.n →
+    c.nreg (sw 40) < J.wholeModel.W.n →
     (∀ j, j < c.nreg (sw 301) → SweepEv.PosW P J (c.nmem (c.nreg (sw 300) + 7 * j))
       (c.nmem (c.nreg (sw 300) + 7 * j + 1))) →
     SweepEv.PosW P J (c.nreg lsxE) (c.nreg lsxH) →
@@ -64,7 +66,10 @@ def LSearchSpec : Prop :=
       (∀ j, c'.nreg lsI ≤ j → j < c.nreg (sw 301) →
         ¬ lsPr P J c.nmem (c.nreg (sw 300)) (c.nreg (sw 40)) ⟨c.nreg lsxE, c.nreg lsxH⟩ j) ∧
       (∀ r, bandOf r ∉ oracleBands → ¬ LSet r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a))
+      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem))
+
+/-- **The binary search in the log.** -/
+def LSearchSpec : Prop := ∃ ls κ, LSearchOK ls κ
 
 end
 

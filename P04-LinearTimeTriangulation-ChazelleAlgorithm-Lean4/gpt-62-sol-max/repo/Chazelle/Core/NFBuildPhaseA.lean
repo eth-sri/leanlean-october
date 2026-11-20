@@ -76,7 +76,7 @@ theorem setupA_exec (c : Config) (hw : WordsBounded W c) {B K A₀ : ℕ} (hB' :
     | (config_simp; simp (config := { failIfUnchanged := false }) only [hK, hA, hB']; omega)
     | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r h1 h2 h3 h4 h5 h6 h7 h8 h9
-    h10 h11 h12 h13 h14 => ?_, rfl, rfl, rfl, rfl⟩
+    h10 h11 h12 h13 h14 => ?_, by and_intros <;> rfl⟩
   all_goals (config_simp <;> (try simp only [hK, hA, hB']) <;>
     (try simp (disch := omega) only [upd_other]) <;> omega)
 
@@ -101,7 +101,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   set K := L.length with hKdef
   have hA : c.nreg 9999 = A₀ := rfl
   have hWn' : P.n + 3 ≤ W := by unfold hostWords at hWn; omega
-  have hsc := SortR.sortCost_room 11010 (2 * K)
+  
   have hroom' : A₀ + 32 * K + 22 + SortR.sortCost 11010 (2 * K) ≤ W := by
     unfold costA at hroom; omega
   -- setup
@@ -113,7 +113,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     { i_le := by rw [r9]; omega, rK := r2, r0 := r3, r1 := r4, a21 := by rw [r10, r9]; omega,
       a22 := by rw [r11, r9]; omega, a23 := by rw [r12, r9]; omega, a24 := by rw [r13, r9],
       fr := fun _ _ => rfl, rr := rfl, rm := rfl, out := rfl,
-      mem := fun a => by rw [m₁, r9]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_right (by omega)] }
+      mem := fun a => by rw [m₁, r9]; unfold recMem; ram_rw [ite_eq_right, ite_eq_right] }
   have hhW : ∀ x ∈ L, x.1 + 1 ≤ W := fun x hx => by
     have := hL.2.2.2 x hx
     have hn : (Qof P).n = P.n := shear_n _ _
@@ -130,32 +130,29 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
     have y1 := Exec.copyN (P := P) w₂ 30003 43031
     have y2 := Exec.copyN (P := P) y1.wb_right 30004 42001
-    refine ⟨_, _, .seq y1 (.seq y2 (.skip y2.wb_right)), rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl,
-      rfl, rfl⟩
+    refine ⟨_, _, .seq y1 (.seq y2 (.skip y2.wb_right)), rfl, ?_, ?_, fun r h1 h2 => ?_, by and_intros <;> rfl⟩
     · simp [hS₂]
     · simp [hN₂]
     · simp [h1, h2]
   have w₃ := x₃.wb_right
-  have hA₃ : c₃.nreg 9999 = A₀ + 10 * K := by rw [g₃ _ (by norm_num) (by norm_num), hA₂]
+  have hA₃ : c₃.nreg 9999 = A₀ + 10 * K := by ram_rw [g₃, hA₂]
   -- memory at the sort
   have mem₃ : ∀ a, c₃.nmem a = recMem c.nmem L A₀ (A₀ + 8 * K) K a := fun a => by
     rw [mm₃, I₂.mem, i₂]
-  have hbelow : ∀ a, a < A₀ → c₃.nmem a = c.nmem a := fun a ha => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  have hbelow : MemEqBelow A₀ c₃.nmem c.nmem := fun a ha => by
+    rw [mem₃]; unfold recMem; ram_rw [ite_eq_right, ite_eq_right]
   have hrecs : RecsAt c₃.nmem A₀ L := recsAt_of fun q hq => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_left (by omega), show A₀ + q - A₀ = q by omega]
+    rw [mem₃]; unfold recMem; ram_rw [ite_eq_left, show A₀ + q - A₀ = q by omega]
   have hlist : seg c₃.nmem (A₀ + 8 * K) (2 * K) = List.range (2 * K) := seg_range fun i hi => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_left (by omega)]; omega
+    rw [mem₃]; unfold recMem; ram_rw [ite_eq_right, ite_eq_left]; omega
   obtain ⟨hM₃, hwf₃⟩ := desc_agree hwf hM (m' := c₃.nmem) fun a ha => hbelow a ha
   have hwf₃' : ModelDescWF P (A₀ + 10 * K) c₃.nmem D := modelDescWF_mono hwf₃ (by omega)
   have hD₃ : c₃.nreg 40000 = D := by
-    rw [g₃ _ (by norm_num) (by norm_num), I₂.fr _ (Or.inl (by norm_num)),
-      fr₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) (by norm_num), hD]
+    ram_rw [g₃, I₂.fr _ (Or.inl (by norm_num)),
+      fr₁, hD]
   have hT₃ : c₃.nreg 42000 = A₀ := by
-    rw [g₃ _ (by norm_num) (by norm_num), I₂.fr _ (Or.inl (by norm_num)), r6]
-  have hN₃ : c₃.nreg 42001 = 2 * K := by rw [g₃ _ (by norm_num) (by norm_num), hN₂]
+    ram_finish [g₃, I₂.fr, r6]
+  have hN₃ : c₃.nreg 42001 = 2 * K := by ram_rw [g₃, hN₂]
   -- the sort
   have hcmp := evCmp_ok (P := P) (W := W) hG hWn (A₀ := A₀ + 10 * K) (by omega) hwf₃' hM₃ hL
     hrecs (by omega) c₃.nreg
@@ -167,7 +164,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     SortR.sortStmt_exec (P := P) (W := W) hcmp (by decide)
       (fun a b d h1 h2 => evLeB_trans M (Qof P) L _ a b d h1 h2)
       (fun a b => evLeB_total M (Qof P) L _ a b) w₃ hJ₃ hJs (List.range (2 * K))
-      (by rw [List.length_range, v30003]; exact hlist) (by rw [List.length_range, v30004])
+      (by rwa [List.length_range, v30003]) (by rw [List.length_range, v30004])
       (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃, v30003]; omega)
       (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃]; omega)
   rw [List.length_range] at hk₄ e₄' hE
@@ -175,37 +172,36 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have X : Exec P W phaseA c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq x₁ (.seq x₂ (.seq x₃ x₄))
   obtain ⟨F1, F2, F3, F4, F5, F6, F7⟩ := F₄
   have hA₄ : A₀ + 10 * K ≤ c₄.nreg 9999 := by
-    rw [show ALLOC = 9999 from rfl, hA₃] at F6; exact F6
+    rwa [show ALLOC = 9999 from rfl, hA₃] at F6
   have hA₄' : c₄.nreg 9999 ≤ A₀ + 10 * K + k₄ := by
-    rw [show ALLOC = 9999 from rfl, hA₃] at F7; exact F7
+    rwa [show ALLOC = 9999 from rfl, hA₃] at F7
   rw [show ALLOC = 9999 from rfl, hA₃] at F3 F4
   refine ⟨c₄, _, X, by unfold costA; omega, x₄.wb_right, ⟨fun r hr hra => ?_, fun r hr => ?_,
     fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩, j1, j2, j3, ?_, ?_, ?_, ?_,
     fun c hc => ?_, ?_, e₄', E, hE, hperm, ?_⟩
   · -- registers outside the bands
     obtain ⟨hr3, hr'⟩ := band_out hr
-    have hra' : r ≠ 9999 := hra
-    rw [F1 r hr3 hra, g₃ _ (by omega) (by omega), I₂.fr _ (by omega)]
+    have hra' := hra
+    ram_rw [F1 r hr3 hra, g₃, I₂.fr]
     exact fr₁ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
         (by omega) (by omega) hra' (by omega) (by omega) (by omega) (by omega) (by omega)
   · rw [F2 r (band_out hr).1, rr₃, I₂.rr, rr₁]
-  · have ha' : a < A₀ := ha
+  · have ha' := ha
     rw [F3 a (lt_of_lt_of_le ha' (Nat.le_add_right _ _))]
     exact hbelow a ha'
-  · have ha' : a < A₀ := ha
+  · have ha' := ha
     rw [F4 a (lt_of_lt_of_le ha' (Nat.le_add_right _ _)), rm₃, I₂.rm, rm₁]
   · rw [F5, out₃, I₂.out, out₁]
   · show A₀ ≤ c₄.nreg 9999; omega
   · show c₄.nreg 9999 ≤ A₀ + _; omega
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num),
-      I₂.fr _ (Or.inl (by norm_num)), r1]
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.rK]
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.r0]
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.r1]
+  · simp [j5, g₃, I₂.fr, r1]
+  · ram_rw [j5, g₃, I₂.rK]
+  · simp [j5, g₃, I₂.r0]
+  · simp [j5, g₃, I₂.r1]
   · obtain ⟨a1, a2, a3, a4⟩ := hrecs c hc
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [j4 _ (by omega)] <;> assumption
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> ram_rw [j4] <;> assumption
   · rw [show ALLOC = 9999 from rfl, hA₃] at e₄; omega
-  · have hnd : E.Nodup := hperm.nodup_iff.2 List.nodup_range
+  · have hnd := hperm.nodup_iff.2 List.nodup_range
     refine (hsort.and hnd).imp_of_mem fun {a b} ha hb hab => ?_
     have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
     have hb' := List.mem_range.1 (hperm.mem_iff.1 hb)

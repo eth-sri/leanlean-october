@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvBBkt
 public import Chazelle.Core.RestoreTRead
@@ -84,13 +86,9 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
       d1.nreg 212020 = c.nmem (MD + 1) ∧ d1.nreg 212011 = 0 := by
     unfold regInitB
     exec_block
-    all_goals (try (config_simp; simp (config := { failIfUnchanged := false }) only
-      [h01, h03, h05, h19]; omega))
-    all_goals (try (refine ⟨by omega, ?_⟩))
-    all_goals (repeat' apply And.intro)
+    all_goals frame_finish
     all_goals (config_simp <;> simp (config := { failIfUnchanged := false }) only
       [h01, h03, h05, h19])
-    all_goals omega
   have f1 : FrameB Binit c d1 := exec_frameB e1 (by decide)
   have hw1 := e1.wb_right
   obtain ⟨d2, k2, e2, hk2, v11, f2⟩ : ∃ d2 k2, Exec P W
@@ -102,30 +100,24 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
         d1 d2 k2 ∧ k2 ≤ 5 ∧ d2.nreg 212011 = (if c.nmem (MD + 1) = 1 then 1 else 0) := by
       by_cases c1 : d1.nreg 212020 < d1.nreg 212000
       · exact ⟨d1, 0 + 1, .ifLtN_true c1 (.skip hw1), by omega,
-          by rw [a11, ite_eq_right (by omega)]⟩
+          by simp_all⟩
       · by_cases c2 : d1.nreg 212000 < d1.nreg 212020
         · exact ⟨d1, 0 + 1 + 2, .ifLtN_false c1 (.ifLtN_true c2 (.skip hw1)), by omega,
-            by rw [a11, ite_eq_right (by omega)]⟩
+            by ram_rw [a11, ite_eq_right]⟩
         · refine spec_ifLtN_false c1 ?_
           refine spec_ifLtN_false c2 ?_
-          exec_block
-          · omega
-          · refine ⟨by omega, ?_⟩
-            config_simp
-            rw [ite_eq_left (by omega)]
+          ram_exec [ite_eq_left]
     exact ⟨d2, k2, e2, hk2, v, exec_frameB e2 (by decide)⟩
-  have g : ∀ r, r ≠ 212011 → d2.nreg r = d1.nreg r := fun r hr =>
+  have g := fun r hr =>
     f2.1 r (by simp only [decide_eq_false_iff_not]; exact hr)
-  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by rw [g _ (by decide), a00],
-    by rw [g _ (by decide), a01], by rw [g _ (by decide), a02], by rw [g _ (by decide), a10], v11,
-    by rw [g _ (by decide), a12], by rw [g _ (by decide), b02], by rw [g _ (by decide), b03],
-    by rw [g _ (by decide), b05], by rw [g _ (by decide), b06], by rw [g _ (by decide), b14],
-    by rw [g _ (by decide), b16], by rw [g _ (by decide), b17], by rw [g _ (by decide), b31],
-    by rw [g _ (by decide), a13], by rw [g _ (by decide), a14], by rw [g _ (by decide), a18],
-    by rw [g _ (by decide), b20], by rw [g _ (by decide), b21], by rw [g _ (by decide), b22],
-    f1.trans ⟨fun r hr => f2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
-      fun r hr => f2.2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
-      f2.2.2⟩⟩
+  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by ram_rw [g, a00],
+    by ram_rw [g, a01], by ram_rw [g, a02], by ram_rw [g, a10], v11,
+    by ram_rw [g, a12], by ram_rw [g, b02], by ram_rw [g, b03],
+    by ram_rw [g, b05], by ram_rw [g, b06], by ram_rw [g, b14],
+    by ram_rw [g, b16], by ram_rw [g, b17], by ram_rw [g, b31],
+    by ram_rw [g, a13], by ram_rw [g, a14], by ram_rw [g, a18],
+    by ram_rw [g, b20], by ram_rw [g, b21], by ram_rw [g, b22],
+    (by ram_frame)⟩
 
 end init
 

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShootCutShOrgM
 
 /-!
@@ -81,18 +85,18 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 theorem OrgOK.keep {c c' : Config} (h : OrgOK P C z σ c)
     (hr : ∀ r, 140234 ≤ r → r < 140241 → c'.nreg r = c.nreg r) : OrgOK P C z σ c' := by
   have e37 := hr 140237 (by norm_num) (by norm_num)
-  refine ⟨by rw [e37]; exact h.qk, fun h0 => h.q0 (by rw [← e37]; exact h0), fun h1 => ?_⟩
-  obtain ⟨a, o, ho, hl, hq⟩ := h.q1 (by rw [← e37]; exact h1)
-  exact ⟨by rw [hr _ (by norm_num) (by norm_num)]; exact a, o,
+  refine ⟨by rw [e37]; exact h.qk, fun h0 => h.q0 (by rwa [← e37]), fun h1 => ?_⟩
+  obtain ⟨a, o, ho, hl, hq⟩ := h.q1 (by rwa [← e37])
+  exact ⟨by simp_all, o,
     qOriginIn_of_eq ho fun j h1 h2 => hr j (by omega) (by omega), hl, hq⟩
 
 theorem orgOK_zero {c : Config} (h : c.nreg 140237 = 0)
     (hN : ∀ S : Set Point, (∀ x ∈ S, InC C x) → NoHit S z σ) : OrgOK P C z σ c :=
-  ⟨by rw [h]; omega, fun _ => hN, fun h' => by rw [h] at h'; exact absurd h' (by norm_num)⟩
+  ⟨by rw [h]; omega, fun _ => hN, fun h' => by simp_all⟩
 
 theorem orgOK_one {c : Config} (h : c.nreg 140237 = 1) (h34 : c.nreg 140234 = 1)
     (hq : ∃ o, QOriginIn c 140238 o ∧ o.Lt P.n ∧ QRel P C σ z o) : OrgOK P C z σ c :=
-  ⟨by rw [h], fun h' => by rw [h] at h'; exact absurd h' (by norm_num), fun _ => ⟨h34, hq⟩⟩
+  ⟨by rw [h], fun h' => by simp_all, fun _ => ⟨h34, hq⟩⟩
 
 theorem dirOf_cases (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
   unfold dirOf; split_ifs <;> simp
@@ -109,29 +113,25 @@ theorem oInit_exec (c : Config) (hw : WordsBounded W c) (hMD : c.nreg 140000 + 1
       (block [.constN K1 1, .addN 140403 140000 K1]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 140401 = 1 ∧
       c₁.nreg 140403 = c.nreg 140000 + 1 ∧
       (∀ r, r ≠ 140401 → r ≠ 140403 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
-    simp only [K1]
-    exec_block
-    all_goals first | omega | (config_simp; omega) | skip
-    refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    ram_exec
   have w₁ := e₁.wb_right
   have b08 : c₁.nreg 140008 = c.nreg 140008 := r₁ _ (by norm_num) (by norm_num)
   obtain ⟨c₂, k₂, e₂, hk₂, v41, r₂, m₂⟩ := ifEq_exec (P := P) (W := W) (a := 140008) (b := K1)
     (T := .instr (.constN 140241 1)) (E := .instr (.constN 140241 0)) c₁ (K := 1)
     (R := fun c' => (c'.nreg 140241 = if c.nreg 140008 = 1 then 1 else 0) ∧
-      (∀ r, r ≠ 140241 → c'.nreg r = c₁.nreg r) ∧ c'.nmem = c₁.nmem)
+      (Machine.NRegEqExcept 140241 c₁ c') ∧ c'.nmem = c₁.nmem)
     (fun h => ⟨_, _, Exec.constN w₁ 140241 1 (by have := w₁; omega), le_rfl,
-      by simp only [Config.nreg_mk, upd_same]; rw [ite_eq_left (by rw [← b08, h]; exact a1)],
+      by simp only [upd_same]; rw [ite_eq_left (by rwa [← b08, h])],
       fun r hr => by simp [upd_other _ _ _ hr], rfl⟩)
     (fun h => by
       have hne : c.nreg 140008 ≠ 1 := fun h' => h (by rw [b08, h']; exact a1.symm)
       exact ⟨_, _, Exec.constN w₁ 140241 0 (Nat.zero_le _), le_rfl,
-        by simp only [Config.nreg_mk, upd_same]; rw [ite_eq_right hne],
+        by ram_post,
         fun r hr => by simp [upd_other _ _ _ hr], rfl⟩)
   refine ⟨c₂, k₁ + k₂, by unfold oInit; exact .seq e₁ e₂, by omega, ?_, ?_, ?_, ?_,
-    fun r h1 h2 h3 => by rw [r₂ r h3, r₁ r h1 h2], by rw [m₂, m₁]⟩
-  · show c₂.nreg 140401 = 1; rw [r₂ _ (by norm_num), a1]
-  · rw [r₂ _ (by norm_num), a3]
+    fun r h1 h2 h3 => by simp_all, by rw [m₂, m₁]⟩
+  · show c₂.nreg 140401 = 1; ram_rw [r₂, a1]
+  · simp_all
   · rw [v41]; split_ifs <;> omega
   · rw [v41]; by_cases hd : c.nreg 140008 = 1 <;> simp [dirOf, hd] <;> norm_num
 
@@ -141,7 +141,7 @@ theorem oSym_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
     ∃ c' k, Exec P W oSym c c' k ∧ k ≤ 20 ∧ c'.nreg 140230 = 1 ∧ SymPtIn c' 140231 s ∧
       c'.nreg 140234 = 1 ∧ c'.nreg 140235 = 0 ∧ c'.nreg 140236 = hIdx s ∧
       c'.nreg 140237 = 1 ∧ SymPtIn c' 140238 s ∧
-      (∀ r, (r < 140230 ∨ 140241 ≤ r) → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
+      (Machine.NRegEqOutside 140230 140241 c c') ∧ c'.nmem = c.nmem := by
   have h1' : c.nreg 140401 = 1 := h1
   obtain ⟨c₁, k₁, e₁, hk₁, a30, a31, a32, a33, a34, a35, a37, a38, a39, a40, r₁, m₁⟩ :
       ∃ c₁ k₁, Exec P W (block [.constN 140230 1, .copyN 140231 140005, .copyN 140232 140006,
@@ -161,46 +161,42 @@ theorem oSym_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nr
       fun r hr => ?_, rfl⟩
     simp only [upd]; split_ifs <;> first | rfl | omega
   have w₁ := e₁.wb_right
-  have b1 : c₁.nreg 140401 = 1 := by rw [r₁ _ (by omega), h1']
+  have b1 : c₁.nreg 140401 = 1 := by ram_rw [r₁, h1']
   have b05 : c₁.nreg 140005 = c.nreg 140005 := r₁ _ (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, v36, r₂, m₂⟩ : ∃ c₂ k₂, Exec P W
       (.ifLtN 140005 K1 (.instr (.copyN 140236 140006)) (.instr (.copyN 140236 140007))) c₁ c₂ k₂ ∧
-      k₂ ≤ 3 ∧ c₂.nreg 140236 = hIdx s ∧ (∀ r, r ≠ 140236 → c₂.nreg r = c₁.nreg r) ∧
+      k₂ ≤ 3 ∧ c₂.nreg 140236 = hIdx s ∧ (Machine.NRegEqExcept 140236 c₁ c₂) ∧
       c₂.nmem = c₁.nmem := by
     cases s with
     | vtx i =>
       obtain ⟨i0, i1⟩ := hs
       refine ⟨_, _, .ifLtN_true (by show c₁.nreg 140005 < c₁.nreg 140401; rw [b05, i0, b1]; omega)
         (Exec.copyN w₁ _ _), by norm_num, ?_, fun r hr => by simp [hr], rfl⟩
-      simp only [Config.nreg_mk, upd_same, hIdx]; rw [r₁ _ (by omega), i1]
+      simp only [Config.nreg_mk, upd_same, hIdx]; ram_rw [r₁, i1]
     | onEdge e h =>
       obtain ⟨i0, i1, i2⟩ := hs
       refine ⟨_, _, .ifLtN_false (by show ¬ c₁.nreg 140005 < c₁.nreg 140401; rw [b05, i0, b1]; omega)
         (Exec.copyN w₁ _ _), by norm_num, ?_, fun r hr => by simp [hr], rfl⟩
-      simp only [Config.nreg_mk, upd_same, hIdx]; rw [r₁ _ (by omega), i2]
+      simp only [Config.nreg_mk, upd_same, hIdx]; ram_rw [r₁, i2]
   have g₂ : ∀ r, r ≠ 140236 → c₂.nreg r = c₁.nreg r := r₂
-  refine ⟨c₂, k₁ + k₂, by unfold oSym; exact .seq e₁ e₂, by omega, by rw [g₂ _ (by omega), a30],
-    NFLoc.symPtIn_copy hs (by rw [g₂ _ (by omega), a31]) (by rw [g₂ _ (by omega), a32])
-      (by rw [g₂ _ (by omega), a33]),
-    by rw [g₂ _ (by omega), a34], by rw [g₂ _ (by omega), a35], v36, by rw [g₂ _ (by omega), a37],
-    NFLoc.symPtIn_copy hs (by rw [g₂ _ (by omega), a38]) (by rw [g₂ _ (by omega), a39])
-      (by rw [g₂ _ (by omega), a40]),
-    fun r hr => by rw [g₂ r (by omega), r₁ r (by omega)], by rw [m₂, m₁]⟩
+  refine ⟨c₂, k₁ + k₂, by unfold oSym; exact .seq e₁ e₂, by omega, by ram_rw [g₂, a30],
+    NFLoc.symPtIn_copy hs (by ram_rw [g₂, a31]) (by ram_rw [g₂, a32])
+      (by ram_rw [g₂, a33]),
+    by ram_rw [g₂, a34], by ram_rw [g₂, a35], v36, by ram_rw [g₂, a37],
+    NFLoc.symPtIn_copy hs (by ram_rw [g₂, a38]) (by ram_rw [g₂, a39])
+      (by ram_rw [g₂, a40]),
+    fun r hr => by ram_rw [g₂ r, r₁ r], by rw [m₂, m₁]⟩
 
 theorem wr_oFix : wr (fun r => r == 140237 || r == 140238 || r == 140239) oFix = true := by
   decide
 
 theorem qk0_exec (c : Config) (hw : WordsBounded W c) :
-    ∃ c' k, Exec P W qk0 c c' k ∧ k ≤ 1 ∧ c'.nreg 140237 = 0 := by
-  exact ⟨_, _, Exec.constN hw 140237 0 (Nat.zero_le _), le_rfl, by simp⟩
+    ∃ c' k, Exec P W qk0 c c' k ∧ k ≤ 1 ∧ c'.nreg 140237 = 0 := ⟨_, _, Exec.constN hw 140237 0 (Nat.zero_le _), le_rfl, by simp⟩
 
 theorem oBox_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) :
     ∃ c' k, Exec P W oBox c c' k ∧ k ≤ 3 ∧ c'.nreg 140237 = 1 ∧ c'.nreg 140238 = 2 ∧
       c'.nreg 140239 = c.nreg 140236 ∧ c'.nreg 140234 = c.nreg 140234 := by
-  unfold oBox
-  exec_block
-  all_goals first | omega | skip
-  exact ⟨by norm_num, by config_simp, by config_simp, by config_simp, by config_simp⟩
+  ram_exec
 
 /-- **The query decision for a walk origin**, from its point record. -/
 theorem oFix_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (h1 : c.nreg K1 = 1)
@@ -314,25 +310,25 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
       ShEnv P W H C (o.eval (chainModel C) (Qof P)) (dirOf (c.nreg 140008)) c' ∧
       OrgOK P C (o.eval (chainModel C) (Qof P)) (dirOf (c.nreg 140008)) c' ∧
       FrameB Borg c c' ∧ c'.nreg 140403 = c.nreg 140000 + 1 := by
-  have hW2 : 2 ≤ W := by unfold hostWords at hW; omega
+  have hW2 : 2 ≤ W := by reg_omega
   have hR := C.radius_pos
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn := chainModel_n C
   set z := o.eval (chainModel C) (Qof P) with hz
   set σ := dirOf (c.nreg 140008) with hσd
   have hσ : σ = 1 ∨ σ = -1 := dirOf_cases _
   obtain ⟨c₁, k₁, e₁, hk₁, b1, b403, b41, b41', r₁, m₁⟩ := oInit_exec (P := P) c hw hMD
   have w₁ := e₁.wb_right
   have k₁' : ∀ r, 140000 ≤ r → r < 140010 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
-    r₁ r (by omega) (by omega) (by omega)
-  have bA : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by decide) (by decide) (by decide)
-  have L : LdEnv P W H C c₁ := ⟨hG, hW, by rw [m₁, b403]; exact hD,
-    by rw [m₁, b403, bA]; exact hwf, by rw [m₁, b403]; exact hreg⟩
+    (ram_app% (r₁ r ?_ ?_ ?_))
+  have bA : c₁.nreg ALLOC = c.nreg ALLOC := (ram_app% (r₁ _ ?_ ?_ ?_))
+  have L : LdEnv P W H C c₁ := ⟨hG, hW, by rwa [m₁, b403],
+    by rwa [m₁, b403, bA], by rwa [m₁, b403]⟩
   have ex₀ : ∀ {c' k}, Exec P W (.ifLtN K1 140005 oWalk oSym) c₁ c' k →
       Exec P W orig c c' (k₁ + k) := fun ex => by unfold orig; exact .seq e₁ ex
   cases o with
   | sym s =>
-    have hs : SymPtIn c 140005 s := hoIn
-    have hs₁ : SymPtIn c₁ 140005 s := symPtIn_of_eq hs fun j h1 h2 => k₁' j (by omega) (by omega)
+    have hs := hoIn
+    have hs₁ := symPtIn_of_eq hs fun j h1 h2 => k₁' j (by omega) (by omega)
     have hin : (chainModel C).InnerPt z := by
       rcases hoK with ⟨p, hp⟩ | ⟨h, -⟩
       · exact absurd hp (by simp)
@@ -346,26 +342,25 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
     obtain ⟨c₂, k₂, e₂, hk₂, a30, a31, a34, a35, a36, a37, a38, r₂, m₂⟩ :=
       oSym_exec (P := P) c₁ w₁ hW2 b1 hs₁
     have ex := ex₀ (.ifLtN_false t e₂)
-    have hl : s.Lt P.n := hoLt
+    have hl := hoLt
     have hzs : z = s.eval (Qof P) := rfl
-    have k2 : ∀ r, 140241 ≤ r → c₂.nreg r = c₁.nreg r := fun r h => r₂ r (Or.inr h)
+    have k2 := fun r h => r₂ r (Or.inr h)
     refine ⟨c₂, _, ex, by omega, ⟨hG, hW, ?_, ?_, ?_, ?_, ⟨hR, Or.inr (Or.inr ⟨a30, hb.2, s, a31, hl,
       by rw [hzs]⟩)⟩, Or.inr (Or.inr ⟨a34, hb.1, a35, by rw [a36]; exact hIdx_lt hl,
       by rw [a36, hzs]; exact hIdx_snd _ s⟩), ?_, hσ⟩,
-      orgOK_one a37 a34 ⟨.sym s, a38, hl, by show s.eval (Qof P) = z; rw [hzs]⟩,
-      exec_frameB ex wr_orig, by rw [k2 _ (by norm_num), b403]⟩
-    · rw [m₂, k2 140403 (by norm_num)]; exact L.hD
-    · rw [m₂, r₂ ALLOC (Or.inl (by decide)), k2 140403 (by norm_num)]; exact L.hwf
-    · rw [m₂, k2 140403 (by norm_num)]; exact L.hreg
-    · show c₂.nreg 140401 = 1; rw [k2 _ (by norm_num)]; exact b1
+      orgOK_one a37 a34 ⟨.sym s, a38, hl, by rfl⟩,
+      exec_frameB ex wr_orig, by ram_finish⟩
+    · ram_rw [m₂, k2 140403]; exact L.hD
+    · ram_rw [m₂, r₂ ALLOC (Or.inl (by decide)), k2 140403]; exact L.hwf
+    · ram_rw [m₂, k2 140403]; exact L.hreg
+    · ram_finish
     · rw [k2 _ le_rfl]; exact ⟨b41, b41'⟩
   | walk x =>
-    obtain ⟨o5, o6, o7⟩ : c.nreg 140005 = 2 ∧ c.nreg (140005 + 1) = x.edge ∧
-        c.nreg (140005 + 2) = x.hgt := hoIn
-    have t : c₁.nreg K1 < c₁.nreg 140005 := by rw [b1, k₁' _ (by norm_num) (by norm_num), o5]; omega
-    have q6 : c₁.nreg 140006 = x.edge := by rw [k₁' _ (by norm_num) (by norm_num)]; exact o6
-    have q7 : c₁.nreg 140007 = x.hgt := by rw [k₁' _ (by norm_num) (by norm_num)]; exact o7
-    have hxe : x.edge < (chainModel C).W.n := hoLt.1
+    obtain ⟨o5, o6, o7⟩ := hoIn
+    have t : c₁.nreg K1 < c₁.nreg 140005 := by ram_finish
+    have q6 : c₁.nreg 140006 = x.edge := by ram_finish
+    have q7 : c₁.nreg 140007 = x.hgt := by ram_finish
+    have hxe := hoLt.1
     have hxP : ProperPos (chainModel C) (Qof P) P.n x := by
       rcases hoK with ⟨p, hp⟩ | ⟨-, h⟩
       · cases hp
@@ -378,44 +373,43 @@ theorem orig_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : ho
     have hzx : z = (chainModel C).pos (Qof P) x := rfl
     obtain ⟨c₂, k₂, e₂, hk₂, rec₂, f₂, fl₂⟩ := ptLoad_exec' (P := P) (W := W)
       (e := 140006) (h := 140007) (B := 140230) c₁ w₁ L (by norm_num) (by norm_num) (by norm_num)
-      (by rw [q6]; exact hxe) (by rw [q6, q7]; exact hxP) (by rw [q6, q7]; exact hxy)
-      (by rw [bA]; exact hroom)
+      (by rwa [q6]) (by rwa [q6, q7]) (by rwa [q6, q7])
+      (by rwa [bA])
     rw [q6, q7, ← hzx] at rec₂
     rw [q6, q7] at fl₂
-    have kb : ∀ r, Bld 140230 r = false → c₂.nreg r = c₁.nreg r := f₂.1
-    have g1 : c₂.nreg K1 = 1 := by rw [kb _ (by decide)]; exact b1
+    have kb := f₂.1
+    have g1 : c₂.nreg K1 = 1 := by ram_finish
     have g41 : c₂.nreg 140241 = c₁.nreg 140241 := kb _ (by decide)
     have hsl : c₂.nreg (140230 + 7) ≠ 1 → |z.1| < C.radius → |z.2| < C.radius →
         C.top.2 < z.2 := fun hf hx hy => by
       rw [hzx] at hx hy ⊢
-      refine walk_above C hxP (by rw [← hn]; exact hxe) hx hy fun h => hf (fl₂ h.1 ?_)
+      refine walk_above C hxP (by rwa [← hn]) hx hy fun h => hf (fl₂ h.1 ?_)
       rcases h.2 with h' | h'
       · exact Or.inl h'
       · exact Or.inr h'
     obtain ⟨c₃, k₃, e₃, hk₃, ok, f₃⟩ := oFix_exec (P := P) (C := C) (z := z) (σ := σ) c₂
-      e₂.wb_right hW2 g1 hσ ⟨by rw [g41]; exact b41, by rw [g41]; exact b41'⟩ rec₂ hsl
-    have ex := ex₀ (.ifLtN_true t (.seq e₂ e₃))
+      e₂.wb_right hW2 g1 hσ ⟨by rwa [g41], by rwa [g41]⟩ rec₂ hsl
+    have ex := ex₀ (by ram_path)
     have k3 : ∀ r, r ≠ 140237 → r ≠ 140238 → r ≠ 140239 → c₃.nreg r = c₂.nreg r :=
       fun r h1 h2 h3 => f₃.1 r (by simp [h1, h2, h3])
     have m₃ : c₃.nmem = c.nmem := by rw [f₃.2.2.1, f₂.2.2.1, m₁]
     have g403 : c₃.nreg 140403 = c.nreg 140000 + 1 := by
-      rw [k3 _ (by norm_num) (by norm_num) (by norm_num), kb _ (by decide), b403]
+      ram_finish [k3, kb, b403]
     have gA : c₃.nreg ALLOC = c.nreg ALLOC := by
-      rw [k3 _ (by decide) (by decide) (by decide), kb _ (by decide), bA]
+      ram_finish [k3, kb, bA]
     obtain ⟨ax, hy, -⟩ := rec₂
-    refine ⟨c₃, _, ex, by omega, ⟨hG, hW, by rw [m₃, g403]; exact hD,
-      by rw [m₃, g403, gA]; exact hwf, by rw [m₃, g403]; exact hreg, ?_, ?_, ?_, ?_, hσ⟩,
+    refine ⟨c₃, _, ex, by omega, ⟨hG, hW, by rwa [m₃, g403],
+      by rwa [m₃, g403, gA], by rwa [m₃, g403], ?_, ?_, ?_, ?_, hσ⟩,
       ok, exec_frameB ex wr_orig, g403⟩
-    · show c₃.nreg 140401 = 1
-      rw [k3 _ (by norm_num) (by norm_num) (by norm_num)]; exact g1
-    · exact AbsRecW.copy (r' := 140230) (AbsRec.weak ax) (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-    · exact HRecS.copy (r' := 140234) hy (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-        (k3 _ (by norm_num) (by norm_num) (by norm_num))
-    · rw [k3 _ (by norm_num) (by norm_num) (by norm_num), g41]; exact ⟨b41, b41'⟩
+    · ram_finish [k3]
+    · exact AbsRecW.copy (r' := 140230) (AbsRec.weak ax) ((ram_app% (k3 _ ?_ ?_ ?_)))
+        ((ram_app% (k3 _ ?_ ?_ ?_)))
+        ((ram_app% (k3 _ ?_ ?_ ?_)))
+        ((ram_app% (k3 _ ?_ ?_ ?_)))
+    · exact HRecS.copy (r' := 140234) hy ((ram_app% (k3 _ ?_ ?_ ?_)))
+        ((ram_app% (k3 _ ?_ ?_ ?_)))
+        ((ram_app% (k3 _ ?_ ?_ ?_)))
+    · ram_rw [k3, g41]; exact ⟨b41, b41'⟩
 
 end
 

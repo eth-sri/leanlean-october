@@ -39,7 +39,7 @@ theorem ncard_lset {α β : Type*} {l : List α} {f : α → β} (hnd : (l.map f
   have : {x | ∃ y ∈ l, x = f y} = ↑(l.map f).toFinset := by
     ext x
     simp only [mem_ofPred_eq, Finset.mem_coe, List.mem_toFinset, List.mem_map]
-    constructor <;> rintro ⟨y, hy, h⟩ <;> exact ⟨y, hy, h.symm⟩
+    constructor <;> rintro ⟨y, hy, h⟩ <;> tauto
   rw [this, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
 
 theorem mem_flat {α : Type*} {Lx : ℕ → List α} {R : ℕ} {y : α} :
@@ -98,7 +98,7 @@ theorem lx_size {Q : Polygon} {C : Chain} (hP : C.P.Simple) {F₁ : Set (Set Poi
     Set.ncard_le_ncard (fun c hc => hc.1) hcan.1.1
   have h3 := DownMath.lemma23_chain hP hcan.1 hcan.2.1 hcan.2.2
   calc l.length * (γ₀ + 1) ≤ F₁.ncard * (γR + 1) :=
-        Nat.mul_le_mul (by rw [h1]; exact h2) (by omega)
+        Nat.mul_le_mul (by rwa [h1]) (by omega)
     _ ≤ _ := h3
 
 /-! ## The abstract level -/
@@ -126,20 +126,25 @@ namespace LvlCtx
 variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {R : ℕ} {reg : ℕ → Set Point} {C : ℕ → Chain}
   {F : ℕ → Set (Set Point)} {Lx : ℕ → List (ℕ × ℕ × ℕ)} {D γ : ℕ}
 
-theorem fam (X : LvlCtx Q L R reg C F Lx D γ) :
+section
+
+variable (X : LvlCtx Q L R reg C F Lx D γ)
+include X
+
+theorem fam :
     (interiorModel Q).ChordFamily Q (Gran.lset (interiorModel Q) Q L) := X.hL.1
 
-theorem mem_kept (X : LvlCtx Q L R reg C F Lx D γ) {r : ℕ} (hr : r < R) {y : ℕ × ℕ × ℕ}
+theorem mem_kept {r : ℕ} (hr : r < R) {y : ℕ × ℕ × ℕ}
     (hy : y ∈ Lx r) : (recOf y).toSet (interiorModel Q) Q ∈ Extract.kept (reg r) (F r) := by
   rw [← X.hkept r hr]; exact ⟨y, hy, rfl⟩
 
 /-- A kept chord is admissible and meets the domain only in its region. -/
-theorem loc (X : LvlCtx Q L R reg C F Lx D γ) {r : ℕ} (hr : r < R) {c : Set Point}
+theorem loc {r : ℕ} (hr : r < R) {c : Set Point}
     (hc : c ∈ Extract.kept (reg r) (F r)) :
     c ∈ (interiorModel Q).Adm ∧ c ∩ (interiorModel Q).D ⊆ reg r :=
   (X.hEx r hr).loc (X.hF r hr).1.2.1 c hc
 
-theorem step (X : LvlCtx Q L R reg C F Lx D γ) :
+theorem step :
     Gran.lset (interiorModel Q) Q (L ++ (List.range R).flatMap Lx) =
       stepFam Q (Gran.lset (interiorModel Q) Q L) (fun U => F (rOf R reg U)) := by
   ext c
@@ -165,7 +170,7 @@ theorem step (X : LvlCtx Q L R reg C F Lx D γ) :
       exact ⟨x, List.mem_append_right _ (mem_flat.2 ⟨r, hr, hx⟩), rfl⟩
 
 /-- **The down step of the level.** -/
-theorem down (X : LvlCtx Q L R reg C F Lx D γ) :
+theorem down :
     (interiorModel Q).ChordFamily Q
         (stepFam Q (Gran.lset (interiorModel Q) Q L) (fun U => F (rOf R reg U))) ∧
       (interiorModel Q).DegLe
@@ -177,8 +182,7 @@ theorem down (X : LvlCtx Q L R reg C F Lx D γ) :
     intro U hU
     obtain ⟨hr, hrU⟩ := rOf_spec (X.hsurj U hU)
     have := X.hEx _ hr
-    rw [hrU] at this
-    exact this
+    simp_all
   have hF : ∀ U ∈ (interiorModel Q).regions (Gran.lset (interiorModel Q) Q L),
       (chainModel (C (rOf R reg U))).ChordFamily Q (F (rOf R reg U)) ∧
         (chainModel (C (rOf R reg U))).DegLe (F (rOf R reg U)) D ∧
@@ -188,12 +192,12 @@ theorem down (X : LvlCtx Q L R reg C F Lx D γ) :
     exact X.hF _ hr
   have h := DownDrv.downStepG (D := D) (γ := γ) X.hQ X.fam X.hdeg (fun U => C (rOf R reg U))
     (fun U => F (rOf R reg U)) hEx hF
-  exact ⟨h.1, h.2.1, h.2.2.1⟩
+  tauto
 
 /-- **The spliced list is valid.** -/
-theorem ok (X : LvlCtx Q L R reg C F Lx D γ) :
+theorem ok :
     ChordTriplesOK (interiorModel Q) Q (L ++ (List.range R).flatMap Lx) := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel X.hQ
+  have hM := walkAx_interiorModel X.hQ
   refine ⟨?_, ?_, ?_, ?_⟩
   · show (interiorModel Q).ChordFamily Q (Gran.lset (interiorModel Q) Q _)
     rw [X.step]; exact X.down.1
@@ -204,9 +208,7 @@ theorem ok (X : LvlCtx Q L R reg C F Lx D γ) :
       have h2 := X.loc hr' (X.mem_kept hr' hy')
       rw [hyy] at h1
       obtain ⟨p, hp⟩ := Restore.inter_nonempty_of_adm hM h2.1
-      rcases Chazelle.Chain.regionsIn_eq_or_disjoint (X.hmem r hr) (X.hmem r' hr') with h | h
-      · exact X.hinj r r' hr hr' h
-      · exact absurd (h2.2 hp) (Set.disjoint_left.1 h (h1.2 hp))
+      exact X.hinj r r' hr hr' (Chazelle.Chain.regionsIn_eq_of_mem (X.hmem r hr) (X.hmem r' hr') (h1.2 hp) (h2.2 hp))
     · intro a ha b hb hab
       obtain ⟨x, hx, rfl⟩ := List.mem_map.1 ha
       obtain ⟨y, hy, rfl⟩ := List.mem_map.1 hb
@@ -228,7 +230,7 @@ theorem ok (X : LvlCtx Q L R reg C F Lx D γ) :
       exact (X.hatt r hr x hxr).2
 
 /-- **The size of the spliced list.** -/
-theorem count (X : LvlCtx Q L R reg C F Lx D γ) {γ₀ : ℕ}
+theorem count {γ₀ : ℕ}
     (hper : ∀ r, r < R → (Lx r).length * (γ₀ + 1) ≤
       280 * (D + 2) * DownHost.nk (interiorModel Q) (Gran.lset (interiorModel Q) Q L) (reg r)) :
     (L ++ (List.range R).flatMap Lx).length * (γ₀ + 1) ≤
@@ -244,16 +246,15 @@ theorem count (X : LvlCtx Q L R reg C F Lx D γ) {γ₀ : ℕ}
       exact X.hmem r (Finset.mem_range.1 hr))
     rwa [show (Gran.lset (interiorModel Q) Q L).ncard = L.length from ncard_lset X.hL.2.1]
       at this
-  have hle : ∑ r ∈ Finset.range R, (Lx r).length * (γ₀ + 1) ≤
-      ∑ r ∈ Finset.range R, 280 * (D + 2) *
-        DownHost.nk (interiorModel Q) (Gran.lset (interiorModel Q) Q L) (reg r) :=
-    Finset.sum_le_sum fun r hr => hper r (Finset.mem_range.1 hr)
+  have hle := Finset.sum_le_sum fun r hr => hper r (Finset.mem_range.1 hr)
   rw [← Finset.sum_mul, ← Finset.mul_sum] at hle
   rw [List.length_append, length_flatMap_range, Nat.add_mul]
   have h2 := Nat.mul_le_mul_left (280 * (D + 2)) hsum
   have h3 : 280 * (D + 2) * (Q.n + 4 * L.length) ≤ 1120 * (D + 2) * (Q.n + 4 * L.length) :=
     Nat.mul_le_mul_right _ (by omega)
   omega
+
+end
 
 end LvlCtx
 

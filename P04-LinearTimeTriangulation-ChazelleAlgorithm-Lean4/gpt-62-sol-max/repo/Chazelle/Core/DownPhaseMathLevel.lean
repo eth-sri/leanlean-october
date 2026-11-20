@@ -49,8 +49,7 @@ theorem chainModel_size (C : Chain) : (chainModel C).size = 2 * C.m := by
     simp only [Set.mem_ofPred_eq, Set.mem_Ico, hn]
     change p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
     omega
-  rw [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
-  omega
+  simp [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
 
 /-- **Lemma 2.3 for a chain model** (explicit constant): `|F| (γ + 1) ≤ 140 (D + 2) (2 m + 1)`. -/
 theorem lemma23_chain {C : Chain} (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
@@ -74,22 +73,21 @@ theorem lemma23_chain {C : Chain} (hP : C.P.Simple) {Q : Polygon} {F : Set (Set 
 
 /-! ## The host sizes -/
 
-theorem interiorModel_n (Q : Polygon) : (interiorModel Q).W.n = Q.n :=
-  interiorWalk_n Q
+abbrev interiorModel_n := @Chazelle.Core.interiorModel_n
 
 /-- **The host sizes** sum to at most `n + 4 |S|`. -/
 theorem sum_nk_le' {Q : Polygon} (hQ : Q.Simple) {S : Set (Set Point)}
     (hFam : (interiorModel Q).ChordFamily Q S) (T : Finset (Set Point))
     (hT : ∀ R ∈ T, R ∈ (interiorModel Q).regions S) :
     ∑ R ∈ T, nk (interiorModel Q) S R ≤ Q.n + 4 * S.ncard := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hsum := DownDrv.sum_nk_le hM hFam.2.1 hFam.1
   have hsys := hM.sys _ hFam.2.1 hFam.1
   have hRfin : ((interiorModel Q).regions S).Finite :=
     hsys.regionsIn_finite hM.preconn hM.nonempty subset_rfl
   rw [finsum_mem_eq_finite_toFinset_sum _ hRfin, interiorModel_n] at hsum
   refine le_trans (Finset.sum_le_sum_of_subset fun R hR => ?_) hsum
-  rw [Set.Finite.mem_toFinset]; exact hT R hR
+  simp_all
 
 /-! ## One level -/
 

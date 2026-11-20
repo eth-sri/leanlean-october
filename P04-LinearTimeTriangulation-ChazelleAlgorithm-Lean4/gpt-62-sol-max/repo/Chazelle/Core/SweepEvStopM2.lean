@@ -76,8 +76,8 @@ theorem wall_abs (C : Chain) (Q : Polygon) {x : WPos} (h : x.edge = 1 ∨ x.edge
   obtain ⟨-, b1, -, b3, -, -, -⟩ := C.sidePt_box C.sideBeta ((chainModel C).param Q x)
   rw [cm_W]
   rcases h with h | h
-  · rw [h, b1]; simp only; rw [abs_neg, abs_of_pos C.radius_pos]
-  · rw [h, b3]; simp only; rw [abs_of_pos C.radius_pos]
+  · simp [h, b1, abs_neg, abs_of_pos C.radius_pos]
+  simp [h, b3, abs_of_pos C.radius_pos]
 
 /-- A point with abscissa `±R` is off the chain. -/
 theorem not_mem_set_of_abs (C : Chain) {z : Point} (h : |z.1| = C.radius) : z ∉ C.set := by
@@ -89,23 +89,23 @@ theorem not_mem_set_of_abs (C : Chain) {z : Point} (h : |z.1| = C.radius) : z �
 /-- **The end of a chord record off `C₂`**: its walk edge is below `6` (a vertical side of the
 box), and conversely; the end is a position of the class of `convS`. -/
 theorem end_off_iff (_hP : J.P.Simple) {P : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) (Qof P) N) {k s : ℕ} (hk : k < N.nChords) :
+    (hN : IsNF J.rightModel (Qof P) N) {k s : ℕ} (hk : k < N.nChords) :
     PosClass J.right (Qof P) (endPos N k s) ∧
-    ((chainModel J.right).pos (Qof P) (endPos N k s) ∉ J.right.set ↔ (endPos N k s).edge < 6) := by
+    (J.rightModel.pos (Qof P) (endPos N k s) ∉ J.right.set ↔ (endPos N k s).edge < 6) := by
   have hS₂ := hN.1
-  have hc : (N.chord k).toSet (chainModel J.right) (Qof P) ∈ N.F (chainModel J.right) (Qof P) :=
+  have hc : (N.chord k).toSet J.rightModel (Qof P) ∈ N.F J.rightModel (Qof P) :=
     chord_mem hk
   have hA := hN.2.2.1 k hk
-  have hatt : SideAttach (chainModel J.right).W ((N.chord k).toSet (chainModel J.right) (Qof P))
-      (endPos N k s).edge ((chainModel J.right).param (Qof P) (endPos N k s)) := by
+  have hatt : SideAttach J.rightModel.W ((N.chord k).toSet J.rightModel (Qof P))
+      (endPos N k s).edge (J.rightModel.param (Qof P) (endPos N k s)) := by
     unfold endPos; split_ifs
     · exact hA.1
     · exact hA.2
   obtain ⟨y, l, r, hH, hy, heq, -, -⟩ := Merge.augChords_spec (hS₂.2.1 hc)
-  have hpt : (chainModel J.right).pos (Qof P) (endPos N k s) ∈
-      (N.chord k).toSet (chainModel J.right) (Qof P) := hatt.2.2.2.1
+  have hpt : J.rightModel.pos (Qof P) (endPos N k s) ∈
+      (N.chord k).toSet J.rightModel (Qof P) := hatt.2.2.2.1
   rw [heq] at hpt
-  have hyy : ((chainModel J.right).pos (Qof P) (endPos N k s)).2 = y := hpt.1
+  have hyy : (J.rightModel.pos (Qof P) (endPos N k s)).2 = y := hpt.1
   have hboxy : |y| < J.right.radius := by
     have hmid := hH.open_mem ((l + r) / 2) (by linarith [hH.lt]) (by linarith [hH.lt])
     exact (J.right.dom_subset_box hmid).2
@@ -117,13 +117,13 @@ theorem end_off_iff (_hP : J.P.Simple) {P : Polygon} {N : NF}
     · omega
     · exfalso; apply hn
       have hm := J.right.sideWalk_tour_pt_mem J.right.sideBeta (i := (endPos N k s).edge - 6)
-        (t := (chainModel J.right).param (Qof P) (endPos N k s)) (by omega)
+        (t := J.rightModel.param (Qof P) (endPos N k s)) (by omega)
         (fun h'' => by omega) hatt.2.1 hatt.2.2.1
       rwa [show (endPos N k s).edge - 6 + 6 = (endPos N k s).edge by omega] at hm
     · exfalso; apply hn
       have hm := J.right.sideWalk_tour_pt_mem J.right.sideBeta (i := 2 * J.right.m) (t := 0)
         le_rfl (fun _ => rfl) le_rfl one_pos
-      show sidePt (chainModel J.right).W _ _ ∈ _
+      show sidePt J.rightModel.W _ _ ∈ _
       rw [cm_W, h6, hz]
       exact hm
   · rcases hcl with (h | h) | ⟨h6', -⟩ | ⟨h6', -⟩
@@ -138,11 +138,11 @@ theorem end_off_iff (_hP : J.P.Simple) {P : Polygon} {N : NF}
 theorem radius_right : J.right.radius = J.whole.radius := rfl
 
 /-- The origin of a wall record is the end `1 - b` of the chord `k`. -/
-theorem stOrig_wall {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {k b : ℕ}
+theorem stOrig_wall {Q : Polygon} {N : NF} (hN : IsNF J.rightModel Q N) {k b : ℕ}
     (hk : k < N.nChords) (hb : b ≤ 1) :
-    stOrig J Q N 1 k b = (chainModel J.right).pos Q (endPos N k (1 - b)) ∧
-      ((b = 1 ∧ stOrig J Q N 1 k b = Merge.lend ((N.chord k).toSet (chainModel J.right) Q)) ∨
-        (b = 0 ∧ stOrig J Q N 1 k b = Merge.rend ((N.chord k).toSet (chainModel J.right) Q))) := by
+    stOrig J Q N 1 k b = J.rightModel.pos Q (endPos N k (1 - b)) ∧
+      ((b = 1 ∧ stOrig J Q N 1 k b = Merge.lend ((N.chord k).toSet J.rightModel Q)) ∨
+        (b = 0 ∧ stOrig J Q N 1 k b = Merge.rend ((N.chord k).toSet J.rightModel Q))) := by
   have hj : 2 * k + (1 - b) < 2 * N.nChords := by omega
   obtain ⟨hEO, -⟩ := endOrigin_eq J hN hj
   have e1 : (2 * k + (1 - b)) / 2 = k := by omega
@@ -154,16 +154,19 @@ theorem stOrig_wall {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) 
   rw [hs]
   unfold endOrigin
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-  · right; refine ⟨rfl, ?_⟩
-    rw [ite_eq_right (by omega), show (2 * k + (1 - 0)) / 2 = k by omega]
-  · left; refine ⟨rfl, ?_⟩
-    rw [ite_eq_left (by omega), show (2 * k + (1 - 1)) / 2 = k by omega]
+  · simp_all
+  · simp
 
+section
+
+variable (hP : J.P.Simple) {P : Polygon} {N : NF}
+    (hN : IsNF J.rightModel (Qof P) N)
+
+include hP hN in
 /-- **The facts of an origin**: off the domain of `C`, not above the top of `C₂`, strictly inside
 the height band of the box, a point of `C` (shared vertex, top) or of a vertical side of the box
 (wall ends). -/
-theorem stOrig_facts (hP : J.P.Simple) {P : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) (Qof P) N) {kind k b : ℕ} (hok : StOK P J N kind k b) :
+theorem stOrig_facts {kind k b : ℕ} (hok : StOK P J N kind k b) :
     stOrig J (Qof P) N kind k b ∉ J.whole.dom ∧
       (stOrig J (Qof P) N kind k b).2 ≤ J.right.top.2 ∧
       |(stOrig J (Qof P) N kind k b).2| < J.whole.radius ∧
@@ -192,16 +195,16 @@ theorem stOrig_facts (hP : J.P.Simple) {P : Polygon} {N : NF}
     -- the end lies on the chord: its height
     have hc := chord_mem (M := chainModel J.right) (Q := Qof P) hkN
     have hA := hN.2.2.1 k hkN
-    have hatt : SideAttach (chainModel J.right).W ((N.chord k).toSet (chainModel J.right) (Qof P))
-        (endPos N k (1 - b)).edge ((chainModel J.right).param (Qof P) (endPos N k (1 - b))) := by
+    have hatt : SideAttach J.rightModel.W ((N.chord k).toSet J.rightModel (Qof P))
+        (endPos N k (1 - b)).edge (J.rightModel.param (Qof P) (endPos N k (1 - b))) := by
       unfold endPos; split_ifs
       · exact hA.1
       · exact hA.2
     obtain ⟨y, l, r, hH, hy, heq, -, -⟩ := Merge.augChords_spec (hN.1.2.1 hc)
-    have hpt : (chainModel J.right).pos (Qof P) (endPos N k (1 - b)) ∈
-        (N.chord k).toSet (chainModel J.right) (Qof P) := hatt.2.2.2.1
+    have hpt : J.rightModel.pos (Qof P) (endPos N k (1 - b)) ∈
+        (N.chord k).toSet J.rightModel (Qof P) := hatt.2.2.2.1
     rw [heq] at hpt
-    have hyy : ((chainModel J.right).pos (Qof P) (endPos N k (1 - b))).2 = y := hpt.1
+    have hyy : (J.rightModel.pos (Qof P) (endPos N k (1 - b))).2 = y := hpt.1
     have hboxy : |y| < J.right.radius := by
       have hmid := hH.open_mem ((l + r) / 2) (by linarith [hH.lt]) (by linarith [hH.lt])
       exact (J.right.dom_subset_box hmid).2
@@ -218,19 +221,19 @@ theorem stOrig_facts (hP : J.P.Simple) {P : Polygon} {N : NF}
     obtain ⟨a1, a2, a3⟩ := hset _ hmem
     exact ⟨a1, a2, a3, fun _ => hmem, fun h => absurd h h1⟩
 
+include hP hN in
 /-- **The chord of an admissible code with a free direction** is a stop chord of `F₂⁺`. -/
-theorem stop_mem (hP : J.P.Simple) {P : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) (Qof P) N) {kind k b : ℕ} (hok : StOK P J N kind k b)
+theorem stop_mem {kind k b : ℕ} (hok : StOK P J N kind k b)
     (hf : FreeAt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) :
-    stopSet J (Qof P) N kind k b ∈ F₂plus J (N.F (chainModel J.right) (Qof P)) ∧
-      StopChord2 J (N.F (chainModel J.right) (Qof P)) (stopSet J (Qof P) N kind k b) := by
+    stopSet J (Qof P) N kind k b ∈ F₂plus J (N.F J.rightModel (Qof P)) ∧
+      StopChord2 J (N.F J.rightModel (Qof P)) (stopSet J (Qof P) N kind k b) := by
   rw [stopSet_eq]
   obtain ⟨hk2, hb, hw, -⟩ := hok
   have hσ := dirOf_cases' b
   by_cases h0 : kind = 0
   · subst h0
     have hv : stOrig J (Qof P) N 0 k b = J.whole.vertex J.m₁ := by
-      unfold stOrig; rw [ite_eq_left rfl]; rfl
+      rfl
     rw [hv] at hf ⊢
     refine ⟨Or.inl (Or.inr ⟨dirOf b, hσ, (Merge.freeAt_vertex _ _ _).1 hf, rfl⟩),
       Or.inl (Or.inl ⟨dirOf b, hσ, hf, rfl⟩)⟩
@@ -242,9 +245,9 @@ theorem stop_mem (hP : J.P.Simple) {P : Polygon} {N : NF}
     have hc := chord_mem (M := chainModel J.right) (Q := Qof P) hkN
     have hoff : stOrig J (Qof P) N 1 k b ∉ J.right.set := by rw [hpos]; exact hiff.2 h6
     have ha : (dirOf b = 1 ∧ stOrig J (Qof P) N 1 k b =
-          Merge.lend ((N.chord k).toSet (chainModel J.right) (Qof P))) ∨
+          Merge.lend ((N.chord k).toSet J.rightModel (Qof P))) ∨
         (dirOf b = -1 ∧ stOrig J (Qof P) N 1 k b =
-          Merge.rend ((N.chord k).toSet (chainModel J.right) (Qof P))) := by
+          Merge.rend ((N.chord k).toSet J.rightModel (Qof P))) := by
       rcases hcase with ⟨rfl, h⟩ | ⟨rfl, h⟩
       · exact Or.inl ⟨dirOf_one, h⟩
       · exact Or.inr ⟨dirOf_zero, h⟩
@@ -252,20 +255,19 @@ theorem stop_mem (hP : J.P.Simple) {P : Polygon} {N : NF}
   · have h2 : kind = 2 := by omega
     subst h2
     have hv : stOrig J (Qof P) N 2 k b = J.whole.vertex (J.m₁ + J.right.topIdx) := by
-      unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num), Merge.Junction.whole_vertex_add]
-      rfl
+      ram_finish [stOrig, ite_eq_right, Merge.Junction.whole_vertex_add]
     have hf' := hf
     rw [hv] at hf'
     refine ⟨Or.inr ⟨dirOf b, hσ, (Merge.freeAt_vertex _ _ _).1 hf', by rw [hv]; rfl⟩,
       Or.inr ⟨dirOf b, hσ, ?_, ?_⟩⟩
-    · unfold stOrig at hf; rwa [ite_eq_right (by norm_num), ite_eq_right (by norm_num)] at hf
-    · unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]
+    · assumption
+    rfl
 
 /-- A code `b ≤ 1` for a direction. -/
 theorem code_of_dir {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     ∃ b, b ≤ 1 ∧ dirOf b = σ := by
   rcases hσ with rfl | rfl
-  · exact ⟨1, le_rfl, dirOf_one⟩
+  · tauto
   · exact ⟨0, zero_le_one, dirOf_zero⟩
 
 /-- A chord of a normal form is a chord record. -/
@@ -275,20 +277,20 @@ theorem chord_of_mem {M : Model} {Q : Polygon} {N : NF} {c : Set Point} (hc : c 
   obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem hr
   refine ⟨k, hk, ?_⟩
   unfold NF.chord
-  rw [NFLoc.getD_of_lt _ hk]
+  simp_all
 
+include hP hN in
 /-- **Every stop chord is the chord of an admissible code** with a free direction. -/
-theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) (Qof P) N) {e : Set Point}
-    (hs : StopChord2 J (N.F (chainModel J.right) (Qof P)) e) :
+theorem stop_complete {e : Set Point}
+    (hs : StopChord2 J (N.F J.rightModel (Qof P)) e) :
     ∃ kind k b, StOK P J N kind k b ∧ FreeAt J.whole (stOrig J (Qof P) N kind k b) (dirOf b) ∧
       e = stopSet J (Qof P) N kind k b := by
   rcases hs with (⟨σ, hσ, hf, rfl⟩ | ⟨c, hc, a, σ, ha, hoff, hf, rfl⟩) | ⟨σ, hσ, hf, rfl⟩
   · obtain ⟨b, hb, rfl⟩ := code_of_dir hσ
     refine ⟨0, 0, b, ⟨by norm_num, hb, fun h => absurd h (by norm_num), fun h => absurd h
       (by norm_num)⟩, ?_, ?_⟩
-    · unfold stOrig; rw [ite_eq_left rfl]; exact hf
-    · rw [stopSet_eq]; unfold stOrig; rw [ite_eq_left rfl]
+    · assumption
+    rfl
   · obtain ⟨k, hk, rfl⟩ := chord_of_mem hc
     have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
     obtain ⟨b, hb, rfl⟩ := code_of_dir hσ
@@ -300,8 +302,8 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
       · rw [dirOf_zero] at h1; norm_num at h1
       · rw [h, h2]
     obtain ⟨-, hiff⟩ := end_off_iff hP hN hk (s := 1 - b)
-    refine ⟨1, k, b, ⟨by norm_num, hb, fun _ => ⟨hk, hiff.1 (by rw [← hpos, hab]; exact hoff)⟩,
-      fun h => absurd h (by norm_num)⟩, by rw [hab]; exact hf, ?_⟩
+    refine ⟨1, k, b, ⟨by norm_num, hb, fun _ => ⟨hk, hiff.1 (by simp_all)⟩,
+      fun h => absurd h (by norm_num)⟩, by rwa [hab], ?_⟩
     rw [stopSet_eq, hab]
   · obtain ⟨b, hb, rfl⟩ := code_of_dir hσ
     by_cases ht : J.right.topIdx = 0
@@ -310,11 +312,13 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
         rw [ht, ← Merge.Junction.whole_vertex_add, Nat.add_zero]; rfl
       refine ⟨0, 0, b, ⟨by norm_num, hb, fun h => absurd h (by norm_num), fun h => absurd h
         (by norm_num)⟩, ?_, ?_⟩
-      · unfold stOrig; rw [ite_eq_left rfl, ← hv]; exact hf
-      · rw [stopSet_eq]; unfold stOrig; rw [ite_eq_left rfl, hv]
+      · unfold stOrig; simp_all
+      · rw [stopSet_eq]; unfold stOrig; simp_all
     · refine ⟨2, 0, b, ⟨le_rfl, hb, fun h => absurd h (by norm_num), fun _ => ht⟩, ?_, ?_⟩
-      · unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]; exact hf
-      · rw [stopSet_eq]; unfold stOrig; rw [ite_eq_right (by norm_num), ite_eq_right (by norm_num)]
+      · assumption
+      rfl
+
+end
 
 /-! ## The first hit of `C` -/
 
@@ -322,13 +326,13 @@ theorem stop_complete (hP : J.P.Simple) {P : Polygon} {N : NF}
 theorem free_left {a : Point} {σ : ℝ} (hf : FreeAt J.whole a σ) (ha : a.2 ≤ J.left.top.2) :
     FreeAt J.left a σ := by
   filter_upwards [hf] with t ht
-  exact J.mem_left_dom_of_whole (by rw [rayPt_snd]; exact ha) ht
+  exact J.mem_left_dom_of_whole (by assumption) ht
 
 /-- **Freeness for `C`** gives freeness for `C₂` (not above its top). -/
 theorem free_right {a : Point} {σ : ℝ} (hf : FreeAt J.whole a σ) (ha : a.2 ≤ J.right.top.2) :
     FreeAt J.right a σ := by
   filter_upwards [hf] with t ht
-  exact J.mem_right_dom_of_whole (by rw [rayPt_snd]; exact ha) ht
+  exact J.mem_right_dom_of_whole (by assumption) ht
 
 /-- **The first hit of `C`** is that of `C₂`, or (not above the top of `C₁`) that of `C₁`. -/
 theorem hit_cases {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :

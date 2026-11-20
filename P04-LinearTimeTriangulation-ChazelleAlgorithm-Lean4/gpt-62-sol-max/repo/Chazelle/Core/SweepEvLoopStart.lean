@@ -30,13 +30,11 @@ theorem stopData_transport' {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c'
       (c.nreg aB ≤ a ∧ a < c.nreg aB + 5 * c.nreg sC)) → c'.nmem a = c.nmem a) :
     StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
-  · rw [hsB, hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)),
-      hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega))]
-    exact hSR i hi
-  · rw [haB, hm _ (Or.inr (by omega)), hm _ (Or.inr (by omega)), hm _ (Or.inr (by omega)),
-      hm _ (Or.inr (by omega)), hm _ (Or.inr (by omega))]
-    exact hAR i hi
+  refine ⟨by rwa [hsC], hlax, ?_, ?_, h5, h6, h7, h8⟩
+  · rw [hsB]
+    exact hSR.congr fun a ha hb => hm a (Or.inl ⟨ha, by omega⟩)
+  · rw [haB]
+    exact hAR.congr fun a ha hb => hm a (Or.inr ⟨ha, by omega⟩)
 
 theorem stopOff_eq {P : Polygon} {J : Merge.Junction} {c : Config}
     {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} (hSR : StopRecsAt c.nmem (c.nreg sB) rs) {i : ℕ}
@@ -54,15 +52,15 @@ theorem lblOf_mem {c : Config} {v : ℕ} (h : v ∈ lblOf c kN kL) :
   exact ⟨t, List.mem_range.1 ht, rfl⟩
 
 theorem mem_curLab {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v : ℕ}
-    (h : v ∈ lblOf c kN kL) : regOf (chainModel J.right) (Qof P) N₂ v ∈ curLab P J N₂ c := by
+    (h : v ∈ lblOf c kN kL) : regOf J.rightModel (Qof P) N₂ v ∈ curLab P J N₂ c := by
   obtain ⟨t, ht, rfl⟩ := lblOf_mem h
   refine ⟨c.nreg (kL + t), ?_, rfl⟩
   have : t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 := by omega
   rcases this with rfl | rfl | rfl | rfl
-  · left; exact ⟨by omega, rfl⟩
-  · right; left; exact ⟨by omega, rfl⟩
-  · right; right; left; exact ⟨by omega, rfl⟩
-  · right; right; right; exact ⟨by omega, rfl⟩
+  · simp_all 
+  · simp_all 
+  · simp_all 
+  simp_all 
 
 set_option maxHeartbeats 32000000 in
 set_option maxRecDepth 20000 in
@@ -76,13 +74,13 @@ theorem loopStartTask : LoopStartTask := by
   have hSD : StopData P J N₂ c rs ax := ⟨hl, hlax, hSR, hAR, hst, hw, haux, hlen⟩
   have hP := E.hP
   have hNF := E.hNF₂
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  set S₂ := N₂.F J.rightModel (Qof P) with hS₂d
   have hS₂ : S₂ ⊆ Merge.augChords J.right := hNF.1.2.1
   have hS₂f : S₂.Finite := hNF.1.1
   -- registers of `c`
   have hlBc : c.nreg lB = c₁.nreg lB := hfr1 _ (not_oracle_sw (by simp [lB, sw])
     (by simp [lB, sw])) (by unfold S2R; simp [lB, sw]) (by simp [lB, ALLOC, sw])
-  have hTB : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by unfold IFix cTB sw; omega)
+  have hTB : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by reg_omega)
   have hTB₀ : c₀.nreg cTB = c₀.nreg ALLOC := E.hTA
   have hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧
       c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC := by rw [← hl]; exact ⟨hsB2, haB2⟩
@@ -100,8 +98,8 @@ theorem loopStartTask : LoopStartTask := by
   have keep : ∀ j, j < 10000 → ¬ StR (sw j) → c'.nreg (sw j) = c.nreg (sw j) := by
     intro j hj h
     have h1 : 240000 ≤ sw j := by unfold sw; exact Nat.le_add_right _ _
-    have h2 : sw j < 250000 := by unfold sw; omega
-    have h3 : sw j ≠ ALLOC := by unfold ALLOC; omega
+    have h2 : sw j < 250000 := by reg_omega
+    have h3 : sw j ≠ ALLOC := by reg_omega
     exact fr (sw j) (not_oracle_sw h1 h2) h h3
   have nS : ∀ j, (j = 2600 ∨ j = 2601 ∨ j = 2602 ∨ j = 2430 ∨ j = 661) → ¬ StR (sw j) := by
     rintro j (rfl | rfl | rfl | rfl | rfl) <;> unfold StR <;>
@@ -130,11 +128,11 @@ theorem loopStartTask : LoopStartTask := by
   have hinv : EvInv J S₂ (Lst J) (curLab P J N₂ c') := by
     refine evInv_start hP hNF hlax hst (fun i hi => ?_) (fun i hi hik hia => ?_) (fun hall => ?_)
     · have := haux i hi
-      rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (by omega)] at this
+      ram_rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _] at this
       exact this
     · rintro _ ⟨l, hl', rfl⟩
       have hx := haux i hi
-      rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (by omega)] at hx
+      ram_rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _] at hx
       have hnl : (ax[i]'(by omega)).2.1 ≤ 2 := hx.2.2.1
       have hl'' : l ∈ axLabs (ax.getD i d5) := by
         rw [List.getD_eq_getElem _ _ (show i < ax.length by omega)]
@@ -145,10 +143,10 @@ theorem loopStartTask : LoopStartTask := by
         · simp [h1]
         · omega
         · omega
-      exact mem_curLab (hΛ i hi hik (by rw [List.getD_eq_getElem _ _ (by omega)]; exact hia) l hl'')
+      exact mem_curLab (hΛ i hi hik (by ram_rw [List.getD_eq_getElem _]; exact hia) l hl'')
     · obtain ⟨h1, h2, h3⟩ := hB (fun i hi hik => by
-        rw [List.getD_eq_getElem _ _ (by omega)]; exact hall i hi hik)
-      refine ⟨regOf (chainModel J.right) (Qof P) N₂ (c'.nreg kL), hRC.1 _ h2, h3, ?_⟩
+        ram_rw [List.getD_eq_getElem _]; exact hall i hi hik)
+      refine ⟨regOf J.rightModel (Qof P) N₂ (c'.nreg kL), hRC.1 _ h2, h3, ?_⟩
       ext V
       simp only [curLab, labSet, h1, Set.mem_image, mem_ofPred_eq, Set.mem_singleton_iff]
       constructor
@@ -164,17 +162,17 @@ theorem loopStartTask : LoopStartTask := by
   -- the log record
   set rec : ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ := (c'.nreg kE, c'.nreg kH, c'.nreg kN, c'.nreg kL,
     c'.nreg (kL + 1), c'.nreg (kL + 2), c'.nreg (kL + 3)) with hrec
-  have hpar0 : (chainModel J.whole).param (Qof P) ⟨pK0 J, 0⟩ = 0 := rfl
-  have hoW : oW J (((pK0 J : ℕ) : ℝ) + (chainModel J.whole).param (Qof P) ⟨pK0 J, 0⟩) = Lst J := by
+  have hpar0 : J.wholeModel.param (Qof P) ⟨pK0 J, 0⟩ = 0 := rfl
+  have hoW : oW J (((pK0 J : ℕ) : ℝ) + J.wholeModel.param (Qof P) ⟨pK0 J, 0⟩) = Lst J := by
     rw [hpar0]; unfold pK0; exact_mod_cast hoK
   refine ⟨⟨⟨rs, ax, hSD'⟩, fun i i' hii hi' => ?_, fun i hi => ?_, by rw [TB', hTB, hTB₀],
     by rw [TB', lB', hTB, hlBc]; exact hlay1, ?_, ?_, ?_, ?_,
     by rw [kE', kH']; exact hpw, by rw [hkey], kN4, hlabR, hinv', gN2, gR', gap,
     by rw [sC', ← hl]; exact sPl, fun i hi => ?_, ⟨[rec], by rw [lC']; rfl,
       ?_, ?_, ?_, rfl⟩, ?_, ?_, dF'⟩, fr, fun x hx hx' => mem x hx hx'⟩
-  · rw [stopOff_eq hSR' (by omega), stopOff_eq hSR' (by omega)]
+  · ram_rw [stopOff_eq hSR', stopOff_eq hSR']
     exact stops_sorted hst hii (by omega)
-  · rw [stopOff_eq hSR' (by omega), stopOff_eq hSR' (by omega)]
+  · ram_rw [stopOff_eq hSR', stopOff_eq hSR']
     exact stops_two hP hNF hst (by omega)
   · rw [lB', sB', hlBc]; unfold logCap; omega
   · rw [lB', aB', hlBc]; unfold logCap; omega
@@ -211,7 +209,7 @@ theorem loopStartTask : LoopStartTask := by
     · exact hlabR 2 h
     · exact hlabR 3 h
   · -- the log so far
-    have hlog : logOf J (Qof P) N₂ [rec] = [((pK0 J : ℕ), (chainModel J.whole).param (Qof P)
+    have hlog : logOf J (Qof P) N₂ [rec] = [((pK0 J : ℕ), J.wholeModel.param (Qof P)
         ⟨pK0 J, 0⟩, curLab P J N₂ c')] := by
       simp only [logOf, List.map_cons, List.map_nil, hrec, kE', kH']
       rfl
@@ -240,7 +238,7 @@ theorem loopStartTask : LoopStartTask := by
   · -- the table
     intro j hj
     have hz : c'.nmem (c'.nreg cTB + 3 * j) = 0 := by
-      rw [TB', hTB, mem _ (by omega) (Or.inl (by rw [hlBc]; omega)), hm1 _ (by omega)]
+      ram_rw [TB', hTB, mem _ (by omega) (Or.inl (by rw [hlBc]; omega)), hm1]
       exact hflag j hj
     rw [hz]
     refine ⟨by norm_num, fun h => absurd h (by norm_num), fun _ _ p t _ _ hlt hle => ?_⟩

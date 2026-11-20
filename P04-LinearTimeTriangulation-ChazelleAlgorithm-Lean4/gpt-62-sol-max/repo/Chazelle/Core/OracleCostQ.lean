@@ -1,5 +1,6 @@
 module
 
+import Chazelle.Core.GranSize
 public import Chazelle.Core.OracleQueryExec
 
 /-!
@@ -32,7 +33,7 @@ theorem arcWt_le_gamma {M : Model} (hGM : GoodModel M) {F : Set (Set Point)}
   have hM := walkAx_of_goodModel hGM
   have hbdd : BddAbove ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F U ab.1 ab.2}) :=
     ((hM.arcs_bound hF.2.1 hF.1 hU).1.image _).bddAbove
-  have hle : M.arcWt a b ≤ M.weight F U := le_csSup hbdd ⟨(a, b), harc, rfl⟩
+  have hle := le_csSup hbdd ⟨(a, b), harc, rfl⟩
   exact hle.trans (hsg U hU)
 
 /-- A finite set of counted edges met by an interval bounds its weight from below. -/
@@ -45,13 +46,18 @@ theorem card_le_arcWt {M : Model} {a b : ℝ} (T : Finset ℕ)
   obtain ⟨h1, h2, h3⟩ := hT q hq
   exact ⟨h1, h2, 1 / 2, by norm_num, by norm_num, h3⟩
 
+section
+
+variable (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4)
+
+include hP hC in
 /-- **`γ ≥ 1`** for a `γ`-canonical normal form of a chain. -/
-theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4) : 1 ≤ γ := by
+theorem gamma_pos : 1 ≤ γ := by
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   have hM := walkAx_of_goodModel hGM
   have hF := hC.1.1
   have hsg := hC.2.2.1.semigranular
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   have hm1 := C.one_le
   by_contra h0
   have hγ : γ = 0 := by omega
@@ -63,7 +69,7 @@ theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4)
     obtain ⟨U, hU, a, b, harc⟩ := (arcCover (chainModel C) Q _ hGM hF).1
     have hab : a = 0 ∧ b = 0 := by
       rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, h1, h2⟩
-      · rw [hne] at hc; exact absurd hc (Set.notMem_empty _)
+      · simp_all
       · exact ⟨h1, h2⟩
     obtain ⟨rfl, rfl⟩ := hab
     have := card_le_arcWt (M := chainModel C) (a := 0) (b := 0) {6} (by
@@ -91,8 +97,9 @@ theorem card_counted_ge (m : ℕ) (S : Finset ℕ) (hS : ∀ q ∈ S, q < 2 * m 
     (Finset.card_union_le _ _).trans (by simp)
   omega
 
+include hP hC in
 /-- **The walk edges scanned for an arc.** -/
-theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4) {p : ℕ}
+theorem scanLen_le {p : ℕ}
     (hp : p < N.arcs.length) :
     scanLenR N (2 * C.m + 7) N.arcs.length p ≤ γ + 10 ∧
       scanLenR N (2 * C.m + 7) N.arcs.length p ≤ 2 * C.m + 9 := by
@@ -174,18 +181,19 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
     rw [Finset.card_union_of_disjoint hdis, Nat.card_Ioo, Finset.card_range] at hc
     constructor <;> omega
 
+include hP hC in
 /-- **A region lists at most five arcs.** -/
-theorem region_arcs_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4) {r : ℕ}
+theorem region_arcs_le {r : ℕ}
     (hr : r < N.regions.length) : (N.region r).arcs.length ≤ 5 := by
   classical
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   have hM := walkAx_of_goodModel hGM
   obtain ⟨hF, -, -, reg, hR, -, hA, hRs, -⟩ := hC.1
-  have hU : reg r ∈ (chainModel C).regions (N.F (chainModel C) Q) := hR.1 r hr
+  have hU := hR.1 r hr
   have hnd := (hRs r hr).2.2.1
   set L := (N.region r).arcs
   set f : ℕ → ℝ × ℝ := fun j => ((chainModel C).key Q (N.arc j).s, (chainModel C).key Q (N.arc j).e)
-  have hmem : ∀ j ∈ L, j < N.arcs.length ∧ (N.arc j).reg = r := fun j hj => (hA.2.2.2 r hr j).1 hj
+  have hmem := fun j hj => (hA.2.2.2 r hr j).1 hj
   have hinj : Set.InjOn f {j | j ∈ L} := by
     intro j hj j' hj' hjj
     obtain ⟨h1, h2⟩ := hmem j hj
@@ -195,18 +203,19 @@ theorem region_arcs_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N 
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    rwa [h2] at this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdeg := hC.2.1 _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
     rw [show ({j | j ∈ L} : Set ℕ) = ↑L.toFinset by ext; simp, Set.ncard_coe_finset,
       List.toFinset_card_of_nodup hnd]
-  have h1 : ({j | j ∈ L} : Set ℕ).ncard = (f '' {j | j ∈ L}).ncard := (Set.InjOn.ncard_image hinj).symm
+  have h1 := (Set.InjOn.ncard_image hinj).symm
   have h2 := Set.ncard_le_ncard hsub hfin
   omega
 
+include hP hC in
 /-- **At most five arcs per region.** -/
-theorem arcs_le_regions (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4) :
+theorem arcs_le_regions :
     N.arcs.length ≤ 5 * N.regions.length := by
   classical
   obtain ⟨reg, hR, hA, -⟩ := NFLoc.isNF_arcs hC.1
@@ -226,38 +235,12 @@ theorem arcs_le_regions (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N
         _ ≤ 5 := region_arcs_le hP hC hr')
   simpa using this
 
+end
+
 /-- **The regions of a normal form are one more than its chords.** -/
 theorem regions_eq (hP : C.P.Simple) (hN : IsNF (chainModel C) Q N) :
-    N.regions.length = N.chords.length + 1 := by
-  classical
-  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
-  obtain ⟨hF, hinj, -, reg, hR, -⟩ := hN
-  obtain ⟨-, hcard, -⟩ := regionTree (chainModel C) Q _ hGM hF
-  -- the regions
-  have hRn : (chainModel C).regions (N.F (chainModel C) Q) = reg '' Set.Iio N.regions.length := by
-    ext U; constructor
-    · intro hU; obtain ⟨r, hr, rfl⟩ := hR.2.2 U hU; exact ⟨r, hr, rfl⟩
-    · rintro ⟨r, hr, rfl⟩; exact hR.1 r hr
-  have hRc : ((chainModel C).regions (N.F (chainModel C) Q)).ncard = N.regions.length := by
-    rw [hRn, Set.InjOn.ncard_image (s := Set.Iio N.regions.length) (f := reg)
-      (fun a ha b hb h => hR.2.1 a b ha hb h), ← Finset.coe_range, Set.ncard_coe_finset, Finset.card_range]
-  -- the chords
-  have hFn : N.F (chainModel C) Q = (fun i => (N.chord i).toSet (chainModel C) Q) ''
-      Set.Iio N.chords.length := by
-    ext c; constructor
-    · rintro ⟨r, hr, rfl⟩
-      obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-      refine ⟨i, hi, ?_⟩
-      show (N.chord i).toSet _ _ = _
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
-    · rintro ⟨i, hi, rfl⟩
-      refine ⟨N.chord i, ?_, rfl⟩
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]; exact List.getElem_mem hi
-  have hFc : (N.F (chainModel C) Q).ncard = N.chords.length := by
-    rw [hFn, Set.InjOn.ncard_image (s := Set.Iio N.chords.length)
-      (f := fun i => (N.chord i).toSet (chainModel C) Q) (fun a ha b hb h => hinj a b ha hb h),
-      ← Finset.coe_range, Set.ncard_coe_finset, Finset.card_range]
-  omega
+    N.regions.length = N.chords.length + 1 :=
+  Gran.nRegions_eq hN (walkAx_of_goodModel (Or.inl ⟨C, hP, rfl⟩))
 
 end
 

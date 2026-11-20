@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvLTGat
 
 /-!
@@ -84,16 +86,16 @@ theorem seg_pt {m m' : ℕ → ℕ} {a b n q : ℕ} (h : seg m' a n = seg m b n)
   exact this
 
 theorem B1_BL : ∀ r, B1 r = true → BL r = true := by
-  intro r h; simp only [B1, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp only [B1, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega
 
 theorem B2_BL : ∀ r, B2 r = true → BL r = true := by
-  intro r h; simp only [B2, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp only [B2, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega
 
 theorem B3_BL : ∀ r, B3 r = true → BL r = true := by
-  intro r h; simp only [B3, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp only [B3, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega
 
 theorem Bcp_BL : ∀ r, DrvR.Bcp r = true → BL r = true := by
-  intro r h; simp only [DrvR.Bcp, BL, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  simp only [DrvR.Bcp, BL, Bool.or_eq_true, decide_eq_true_eq] <;> omega
 
 set_option maxHeartbeats 4000000 in
 /-- **One region of the gather.** -/
@@ -105,21 +107,21 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   have hTB := hG.hTB
   have hBA := hG.hBA
   have hroom := hG.room
-  obtain ⟨ℓ, hℓ⟩ : ∃ ℓ, (G.Lx j).length = ℓ := ⟨_, rfl⟩
-  obtain ⟨F, hF⟩ : ∃ F, (G.flat j).length = F := ⟨_, rfl⟩
+  obtain ⟨ℓ, hℓ⟩ := exists_eq' (a' := (G.Lx j).length)
+  obtain ⟨F, hF⟩ := exists_eq' (a' := (G.flat j).length)
   rw [hℓ] at g1 g3 g6
   have hF1 : (G.flat (j + 1)).length = F + ℓ := by
     show ((List.range (j + 1)).flatMap G.Lx).length = _
     rw [flat_succ, List.length_append, ← hℓ, ← hF]; rfl
   have hFK : F + ℓ ≤ G.K₂ := by
     rw [← hF1]; exact flat_length_mono G.Lx (by omega)
-  have hℓM : ℓ ≤ G.Mx := hℓ ▸ hG.hMx j hj
+  have hℓM := hℓ ▸ hG.hMx j hj
   have r13 := hI.r13
   have r14 := hI.r14
   rw [hF] at r13 r14
   -- the table entry
   have t0 : e.nmem (G.T + 3 * j) = G.m₀ (G.T + 3 * j) := hI.low _ (by omega)
-  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rw [hI.low _ (by omega)]; exact g1
+  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by ram_rw assumption [hI.low]
   have t2 : e.nmem (G.T + 3 * j + 1 + 1) = G.m₀ (G.T + 3 * j + 2) := hI.low _ (by omega)
   -- 1. the entry
   obtain ⟨e₁, k₁, x₁, hk₁, a40, a43, a44, a45, a61, a62, a63, m₁, f₁⟩ :=
@@ -128,42 +130,42 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   rw [t1] at a44 a45 a61
   rw [t2] at a43
   have w₁ := x₁.wb_right
-  have k₁r : ∀ r, B1 r = false → e₁.nreg r = e.nreg r := f₁.1
+  have k₁r := f₁.1
   -- 2. the triples
   obtain ⟨e₂, k₂, x₂, hk₂, w₂, sg₂, mo₂, f₂⟩ := DrvR.cpS_exec (P := G.P) (W := G.W) w₁
     (S := G.m₀ (G.T + 3 * j)) (D := G.A₀ + 3 * F) a61 a62 a63
-    (by rw [k₁r _ (by decide)]; exact hI.r34) (Or.inl (by omega)) (by omega) (by omega)
-  have k₂r : ∀ r, DrvR.Bcp r = false → e₂.nreg r = e₁.nreg r := f₂.1
+    (by ram_rw [k₁r]; exact hI.r34) (Or.inl (by omega)) (by omega) (by omega)
+  have k₂r := f₂.1
   -- 3. the bucket arguments
   obtain ⟨e₃, k₃, x₃, hk₃, a13, b61, b62, b63, m₃, f₃⟩ := ltB2_exec (P := G.P) e₂ w₂
     (a := G.A₀ + 3 * F) (ℓ := ℓ) (b := G.m₀ (G.T + 3 * j + 2))
     (D₂ := G.A₀ + 3 * G.K₂ + 2 * F)
-    (by rw [k₂r _ (by decide), k₁r _ (by decide), r13])
-    (by rw [k₂r _ (by decide), a44]) (by rw [k₂r _ (by decide), a45])
-    (by rw [k₂r _ (by decide), a43])
-    (by rw [k₂r _ (by decide), k₁r _ (by decide), r14]) (by omega)
+    (by ram_finish)
+    (by ram_rw [k₂r, a44]) (by ram_rw [k₂r, a45])
+    (by ram_rw [k₂r, a43])
+    (by ram_finish) (by omega)
   have w₃ := x₃.wb_right
-  have k₃r : ∀ r, B2 r = false → e₃.nreg r = e₂.nreg r := f₃.1
+  have k₃r := f₃.1
   -- 4. the buckets
   obtain ⟨e₄, k₄, x₄, hk₄, w₄, sg₄, mo₄, f₄⟩ := DrvR.cpS_exec (P := G.P) (W := G.W) w₃
     (S := G.m₀ (G.T + 3 * j + 2)) (D := G.A₀ + 3 * G.K₂ + 2 * F) b61 b62 b63
-    (by rw [k₃r _ (by decide), k₂r _ (by decide), k₁r _ (by decide)]; exact hI.r34)
+    (by frame_finish)
     (Or.inl (by omega)) (by omega) (by omega)
-  have k₄r : ∀ r, DrvR.Bcp r = false → e₄.nreg r = e₃.nreg r := f₄.1
+  have k₄r := f₄.1
   -- 5. the pointers
   have r4 : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false →
       e₄.nreg r = e.nreg r := fun r h1 h2 h3 => by
-    rw [k₄r r h2, k₃r r h3, k₂r r h2, k₁r r h1]
+    ram_finish
   obtain ⟨e₅, k₅, x₅, hk₅, c14, c31, c30, m₅, f₅⟩ := ltB3_exec (P := G.P) e₄ w₄
     (D₂ := G.A₀ + 3 * G.K₂ + 2 * F) (ℓ := ℓ) (p := G.T + 3 * j) (j := j)
-    (by rw [r4 _ (by decide) (by decide) (by decide), r14])
-    (by rw [k₄r _ (by decide), k₃r _ (by decide), k₂r _ (by decide), a45])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r31])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r01])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r30])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r00]) (by omega) (by omega)
+    (by ram_post)
+    (by frame_finish)
+    (by frame_finish)
+    (by frame_finish)
+    (by frame_finish)
+    (by frame_finish) (by omega) (by omega)
     (by omega)
-  have k₅r : ∀ r, B3 r = false → e₅.nreg r = e₄.nreg r := f₅.1
+  have k₅r := f₅.1
   -- the memory
   have mem5 : ∀ a, e₅.nmem a = if G.A₀ + 3 * G.K₂ + 2 * F ≤ a ∧
       a < G.A₀ + 3 * G.K₂ + 2 * F + 2 * ℓ then e₄.nmem a
@@ -172,39 +174,37 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
     rw [m₅]
     split_ifs with h1 h2
     · rfl
-    · rw [mo₄ a (by omega), m₃]
-    · rw [mo₄ a (by omega), m₃, mo₂ a (by omega), m₁]
-  have low5 : ∀ a, a < G.A₀ → e₅.nmem a = e.nmem a := fun a ha => by
-    rw [mem5 a, ite_eq_right (by omega), ite_eq_right (by omega)]
+    · ram_rw [mo₄ a, m₃]
+    · ram_rw [mo₄ a, m₃, mo₂ a, m₁]
+  have low5 : MemEqBelow G.A₀ e₅.nmem e.nmem := fun a ha => by
+    ram_rw [mem5 a, ite_eq_right, ite_eq_right]
   -- the frame
-  have fr : FrameM BL e e₅ :=
-    ((((BL_mono B1_BL (BuildRam.FrameB.toM f₁)).trans (BL_mono Bcp_BL f₂)).trans
+  have fr := ((((BL_mono B1_BL (BuildRam.FrameB.toM f₁)).trans (BL_mono Bcp_BL f₂)).trans
       (BL_mono B2_BL (BuildRam.FrameB.toM f₃))).trans
       (BL_mono Bcp_BL f₄)).trans (BL_mono B3_BL (BuildRam.FrameB.toM f₅))
-  have r5 : ∀ r, BL r = false → e₅.nreg r = e.nreg r := fun r hr => fr.1 r hr
+  have r5 := fun r hr => fr.1 r hr
   have r5' : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false → B3 r = false →
       e₅.nreg r = e.nreg r := fun r h1 h2 h3 h4 => by rw [k₅r r h4, r4 r h1 h2 h3]
-  refine ⟨e₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), Exec.seq x₁ (Exec.seq x₂ (Exec.seq x₃
-    (Exec.seq x₄ x₅))), ?_, DrvD.rf_of_frameM inDrv_BL fr low5, by omega⟩
-  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ (by decide), hI.r11], by rw [c31]; omega,
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r00],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r01],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r34],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r10],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r12], ?_, by rw [c14, hF1]; omega,
-    by rw [r5 _ (by decide), hI.alloc],
+  refine ⟨e₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), (by ram_path), ?_, DrvD.rf_of_frameM inDrv_BL fr low5, by omega⟩
+  refine ⟨x₅.wb_right, by rw [c30], by ram_rw [r5, hI.r11], by rw [c31]; omega,
+    by frame_finish,
+    by frame_finish,
+    by frame_finish,
+    by frame_finish,
+    by frame_finish, ?_, by rw [c14, hF1]; omega,
+    by ram_rw [r5, hI.alloc],
     fun r hr hra => by rw [r5 r hr, hI.keep r hr hra], fun a ha => by rw [low5 a ha, hI.low a ha],
     ?_, ?_, by omega⟩
   · -- the triple pointer
     have : e₅.nreg 211113 = e₄.nreg 211113 := k₅r _ (by decide)
-    rw [this, k₄r _ (by decide), a13, hF1]; ring
+    ram_rw [this, k₄r, a13, hF1]; ring
   · -- the triples
     show ChordListAt e₅.nmem G.A₀ ((List.range (j + 1)).flatMap G.Lx)
     rw [flat_succ]
-    refine DrvR.chordListAt_append ?_ ?_
-    · refine DrvR.clAt_congr hI.list fun x hx1 hx2 => ?_
+    refine ChordListAt.append ?_ ?_
+    · refine ChordListAt.congr hI.list fun x hx1 hx2 => ?_
       have hF' : ((List.range j).flatMap G.Lx).length = F := hF
-      rw [mem5 x, ite_eq_right (by omega), ite_eq_right (by omega)]
+      ram_rw [mem5 x, ite_eq_right, ite_eq_right]
     · have e3 : (List.range j).flatMap G.Lx = G.flat j := rfl
       rw [e3, hF]
       refine DrvR.chordListAt_of_seg (m := G.m₀) (B := G.m₀ (G.T + 3 * j)) g4 ?_
@@ -213,21 +213,21 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
       apply List.map_congr_left
       intro i hi
       rw [List.mem_range] at hi
-      rw [mem5, ite_eq_right (by omega), ite_eq_left (by omega), seg_pt sg₂ hi, m₁, hI.low _ (by omega)]
+      ram_rw [mem5, ite_eq_right, ite_eq_left, seg_pt sg₂ hi, m₁, hI.low]
   · -- the buckets
     intro q hq
     rw [hF1] at hq
     have e1 : G.flat (j + 1) = G.flat j ++ G.Lx j := flat_succ G.Lx j
     rw [e1]
     rcases Nat.lt_or_ge q (2 * F) with hq1 | hq1
-    · rw [mem5, ite_eq_right (by omega), ite_eq_right (by omega), hI.bkt q (by omega),
-        DrvLM.endPos_append_left (by omega)]
+    · ram_rw [mem5, ite_eq_right, ite_eq_right, hI.bkt q,
+        DrvLM.endPos_append_left]
     · obtain ⟨q', rfl⟩ : ∃ q', q = 2 * F + q' := ⟨q - 2 * F, by omega⟩
       have ea := DrvLM.endPos_append_right (G.flat j) (G.Lx j) q'
       rw [hF] at ea
-      rw [ea, mem5, ite_eq_left (by omega),
+      ram_rw [ea, mem5, ite_eq_left,
         show G.A₀ + 3 * G.K₂ + (2 * F + q') = G.A₀ + 3 * G.K₂ + 2 * F + q' by ring,
-        seg_pt sg₄ (by omega), m₃, mo₂ _ (by omega), m₁, hI.low _ (by omega)]
+        seg_pt sg₄, m₃, mo₂, m₁, hI.low]
       exact g7 q' (by omega)
 
 set_option maxHeartbeats 1000000 in

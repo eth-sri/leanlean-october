@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvTasks2
 
 /-!
@@ -32,14 +34,14 @@ open Chazelle.Visibility (rayPt)
 /-! ## Registers of the event loop -/
 
 /-- The label list of the current key: count `kN`, labels `kL … kL + 3`. -/
-def kN : ℕ := sw 2402
-def kL : ℕ := sw 2403
+@[ram_layout] def kN : ℕ := sw 2402
+@[ram_layout] def kL : ℕ := sw 2403
 /-- The gap regions: count `gN ≤ 2`, regions `gR`, `gR + 1`. -/
-def gN : ℕ := sw 2440
-def gR : ℕ := sw 2441
+@[ram_layout] def gN : ℕ := sw 2440
+@[ram_layout] def gR : ℕ := sw 2441
 /-- The stop pointer (the first stop beyond the current key) and the done flag. -/
-def sP : ℕ := sw 2450
-def dF : ℕ := sw 2451
+@[ram_layout] def sP : ℕ := sw 2450
+@[ram_layout] def dF : ℕ := sw 2451
 
 /-! ## E: the origins of one iteration -/
 
@@ -127,7 +129,7 @@ def KeyOut (P : Polygon) (J : Merge.Junction) (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ oracleBands → ¬ KR r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
   c.nreg ALLOC ≤ c'.nreg ALLOC ∧
   ((c.nreg bF ≠ 1 ∧ ¬ c.nreg sP < c.nreg sC ∧ c.nreg wX ≠ 0) →
-    c'.nreg dF = 1 ∧ c'.nreg lC = c.nreg lC ∧ (∀ x, x < c.nreg ALLOC → c'.nmem x = c.nmem x)) ∧
+    c'.nreg dF = 1 ∧ c'.nreg lC = c.nreg lC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) ∧
   ((c.nreg bF = 1 ∨ c.nreg sP < c.nreg sC ∨ c.nreg wX = 0) →
     c'.nreg dF = 0 ∧
     ((c.nreg bF = 1 ∧ c'.nreg kE = c.nreg bE ∧ c'.nreg kH = c.nreg bH) ∨
@@ -199,7 +201,7 @@ def PrepOut (N₁ N₂ : NF) (c c' : Config) : Prop :=
   (∀ j, j < 2 * N₂.nChords → c'.nmem (c.nreg cTB + 3 * j) = 0) ∧
   c.nreg cTB + 6 * N₂.nChords ≤ c'.nreg lB ∧ c'.nreg lC = 0 ∧
   c'.nreg lB + 7 * (16 * (N₁.nChords + N₂.nChords + 1)) ≤ c'.nreg ALLOC ∧
-  (∀ x, x < c.nreg ALLOC → c'.nmem x = c.nmem x) ∧
+  (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
   (∀ r, bandOf r ∉ oracleBands → ¬ PR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task P: the preparation**, from a configuration whose allocator is the table base, at cost
@@ -219,35 +221,35 @@ shared vertex on the `C₁` side) is a word-level position, and every chord of `
 is a stop chord (a chord from a valid origin ending at the shared vertex is the shared chord seen
 from the shared vertex). -/
 def StartMathTask : Prop :=
-  ∀ (P : Polygon) (J : Merge.Junction) (N : NF), J.P.Simple → IsNF (chainModel J.right) (Qof P) N →
-    PosW P J ((gW J + Lst J) % (chainModel J.whole).W.n) 0 ∧
-    oW J (((gW J + Lst J) % (chainModel J.whole).W.n : ℕ) + 0) = Lst J ∧
-    ∀ e ∈ F₂plus J (N.F (chainModel J.right) (Qof P)),
-      SideAttach (chainModel J.whole).W e ((gW J + Lst J) % (chainModel J.whole).W.n) 0 →
-      StopChord2 J (N.F (chainModel J.right) (Qof P)) e
+  ∀ (P : Polygon) (J : Merge.Junction) (N : NF), J.P.Simple → IsNF J.rightModel (Qof P) N →
+    PosW P J ((gW J + Lst J) % J.wholeModel.W.n) 0 ∧
+    oW J (((gW J + Lst J) % J.wholeModel.W.n : ℕ) + 0) = Lst J ∧
+    ∀ e ∈ F₂plus J (N.F J.rightModel (Qof P)),
+      SideAttach J.wholeModel.W e ((gW J + Lst J) % J.wholeModel.W.n) 0 →
+      StopChord2 J (N.F J.rightModel (Qof P)) e
 
 /-! ## C: the number of keys (mathematics) -/
 
 /-- The offsets of the cut keys of `F₂⁺` (in the walk of `C`). -/
 def cutOffs (J : Merge.Junction) (S₂ : Set (Set Point)) : Set ℝ :=
-  {o | ∃ x : ℝ, (chainModel J.whole).IsCut (F₂plus J S₂) x ∧ 0 ≤ x ∧
-    x < (chainModel J.whole).W.n ∧ o = oW J x}
+  {o | ∃ x : ℝ, J.wholeModel.IsCut (F₂plus J S₂) x ∧ 0 ≤ x ∧
+    x < J.wholeModel.W.n ∧ o = oW J x}
 
 /-- The offsets of the possible window ends: the gap start and the images of the cut keys of
 `N₁` (`WinOut`). -/
 def winOffs (P : Polygon) (J : Merge.Junction) (N₁ : NF) : Set ℝ :=
   {(Lst J : ℝ) + lL1 J} ∪
     {o | ∃ (d : ℕ) (t : ℝ), MValid J d t ∧ 0 ≤ t ∧ t ≤ 1 ∧
-      (chainModel J.left).IsCut (N₁.F (chainModel J.left) (Qof P))
-        (((b₁ J + d) % (chainModel J.left).W.n : ℕ) + t) ∧ o = (Lst J : ℝ) + ψ J d + t}
+      J.leftModel.IsCut (N₁.F J.leftModel (Qof P))
+        (((b₁ J + d) % J.leftModel.W.n : ℕ) + t) ∧ o = (Lst J : ℝ) + ψ J d + t}
 
 /-- **Task C (mathematics): the number of keys**: the offsets of the cut keys of `F₂⁺` and of the
 window ends form a finite set of at most `4 K₂ + 2 K₁ + 9` offsets. -/
 def CountTask : Prop :=
   ∀ (P : Polygon) (J : Merge.Junction) (N₁ N₂ : NF), J.P.Simple →
-    IsNF (chainModel J.left) (Qof P) N₁ → IsNF (chainModel J.right) (Qof P) N₂ →
-    (cutOffs J (N₂.F (chainModel J.right) (Qof P)) ∪ winOffs P J N₁).Finite ∧
-    (cutOffs J (N₂.F (chainModel J.right) (Qof P)) ∪ winOffs P J N₁).ncard ≤
+    IsNF J.leftModel (Qof P) N₁ → IsNF J.rightModel (Qof P) N₂ →
+    (cutOffs J (N₂.F J.rightModel (Qof P)) ∪ winOffs P J N₁).Finite ∧
+    (cutOffs J (N₂.F J.rightModel (Qof P)) ∪ winOffs P J N₁).ncard ≤
       4 * N₂.nChords + 2 * N₁.nChords + 9
 
 end

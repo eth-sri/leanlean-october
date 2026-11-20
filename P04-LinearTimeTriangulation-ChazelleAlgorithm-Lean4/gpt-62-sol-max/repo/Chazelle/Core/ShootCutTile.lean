@@ -108,7 +108,7 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         · exact Or.inr hc.le
       rcases hy with hy | hy
       · exact ⟨p + t, hy, by linarith, 0, by simp⟩
-      · exact ⟨p + t + M.W.n, by linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)], by linarith, -1,
+      · exact ⟨p + t + M.W.n, by linarith, by linarith, -1,
           by push_cast; ring⟩
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
@@ -118,16 +118,13 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
     have halias : (p : ℝ) + t = M.W.n → lerp (M.wa p) (M.wb p) t = lerp (M.wa 0) (M.wb 0) 0 := by
       intro he
       have ht1 : t = 1 := by
-        by_contra hne
-        have := lt_of_le_of_ne h1 hne
         linarith
       have hp1 : p = M.W.n - 1 := by
-        have : (p : ℝ) = M.W.n - 1 := by linarith
+        
         have : ((p + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
         have := (Nat.cast_inj (R := ℝ)).1 this
         omega
-      rw [ht1, hp1, wb_last M hn']
-      simp [lerp]
+      simp [ht1, hp1, wb_last M hn', lerp]
     have hX3 : X < 2 * M.W.n := by split_ifs at hX2 <;> linarith
     rcases int_range hn hy0 hy1 (by linarith) hX3 hj with rfl | rfl | rfl
     · -- `j = -1`: `y = X - n`
@@ -155,7 +152,7 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         · right; left; exact h.symm
     · -- `j = 1`: `y = X + n`, so `X = 0 = a` and `y = n`: the alias
       push_cast at hj
-      have hX0 : X = 0 := by linarith
+      
       have ha0 : a = 0 := by linarith
       rw [halias (by linarith)]
       refine ⟨0, 0, hn', le_rfl, zero_le_one, Or.inr (Or.inl (by simp [ha0])), rfl⟩

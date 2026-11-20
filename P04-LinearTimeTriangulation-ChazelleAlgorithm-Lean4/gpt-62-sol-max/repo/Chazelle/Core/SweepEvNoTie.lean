@@ -32,7 +32,7 @@ theorem noTie_top (C : Chain) (hP : C.P.Simple) {F : Set (Set Point)}
     (hA' : SideAttach (chainModel C).W c' k 0) : c = c' := by
   by_contra hne
   have hM := walkAx_chainModel (C := C) hP
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := cm_n C
+  have hn := cm_n C
   have hm := C.one_le
   have hRt := C.top_snd_lt_radius
   obtain ⟨ce, cw, hce, hcw, hAe, hAw, hE, hW⟩ : ∃ ce cw, ce ∈ F ∧ cw ∈ F ∧
@@ -45,20 +45,20 @@ theorem noTie_top (C : Chain) (hP : C.P.Simple) {F : Set (Set Point)}
   obtain ⟨-, s₁, s₂, hs₁, hs₂, hsE, hsW⟩ := hM.tie_setup (hF hce) (hF hcw) hAe hAw hE hW
   have v6 : (chainModel C).W.vtx 6 = C.top := by
     rw [cm_W, show (6 : ℕ) = 0 + 6 from rfl, C.sideWalk_vtx_tour _ (by omega), C.sideTour_zero]
-  have v5 : (chainModel C).W.vtx 5 = C.slitTop := by rw [cm_W]; exact C.sideWalk_vtx_five _
+  have v5 : (chainModel C).W.vtx 5 = C.slitTop := by rfl
   have v7 : (chainModel C).W.vtx 7 = C.sideTour C.sideBeta 1 := by
-    rw [cm_W, show (7 : ℕ) = 1 + 6 from rfl, C.sideWalk_vtx_tour _ (by omega)]
+    ram_simp [cm_W, show (7 : ℕ) = 1 + 6 from rfl, C.sideWalk_vtx_tour]
   have v26 : (chainModel C).W.vtx (2 * C.m + 6) = C.top := by
-    rw [cm_W, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m]
-  have v0 : (chainModel C).W.vtx 0 = C.slitTop := by rw [cm_W]; exact C.sideWalk_vtx_zero _
+    simp [cm_W, C.sideWalk_vtx_tour, C.sideTour_two_m]
+  have v0 : (chainModel C).W.vtx 0 = C.slitTop := by rfl
   have v25 : (chainModel C).W.vtx (2 * C.m + 5) = C.sideTour C.sideBeta (2 * C.m - 1) := by
-    rw [cm_W, show 2 * C.m + 5 = (2 * C.m - 1) + 6 by omega, C.sideWalk_vtx_tour _ (by omega)]
+    simp [cm_W, show 2 * C.m + 5 = (2 * C.m - 1) + 6 by omega, C.sideWalk_vtx_tour]
   rcases hk with rfl | rfl
   · have e1 : (chainModel C).wb 6 = (chainModel C).W.vtx 7 := by
       rw [WalkAx.wb_eq, hn, Nat.mod_eq_of_lt (by omega)]
     have e2 : (6 + (chainModel C).W.n - 1) % (chainModel C).W.n = 5 := by
       rw [hn, show 6 + (2 * C.m + 7) - 1 = 5 + (2 * C.m + 7) by omega, Nat.add_mod_right]
-      exact Nat.mod_eq_of_lt (by omega)
+      rfl
     rw [e1, e2, WalkAx.wa_eq, v7, v5, v6, slitTop_sub_top] at hsW
     have := ccw_up_right (by linarith) (sideTour_sub_top_snd _ _ _) hsW
     linarith
@@ -112,19 +112,19 @@ variable {J : Merge.Junction}
 theorem noTieV (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) :
     NoTieV J S₂ := by
   intro e he e' he' hne p t hA hA' hpt hL
-  have hF : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := F₂plus_subset J hS₂
+  have hF : F₂plus J S₂ ⊆ J.wholeModel.Adm := F₂plus_subset J hS₂
   have hm1 : J.m₁ ≤ J.whole.m := by
-    show J.m₁ ≤ J.m₁ + J.m₂; omega
+    simp_all <;> omega
   obtain ⟨rfl, i, hi, rfl, hidx⟩ := pos_eq_vertex J.whole hP J.whole.sideBeta hA.1 hA.2.1 hA.2.2.1 hm1
     (hpt.trans J.whole_vertex_m₁.symm)
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn : J.wholeModel.W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
-  have hp : i + 6 < (chainModel J.whole).W.n := hA.1
-  have hg : gW J < (chainModel J.whole).W.n := by unfold gW; omega
-  have hoff : oW J (((i + 6 : ℕ) : ℝ) + 0) = (dOf (chainModel J.whole).W.n (gW J) (i + 6) : ℝ) :=
+  have hp : i + 6 < J.wholeModel.W.n := hA.1
+  have hg : gW J < J.wholeModel.W.n := by unfold gW; omega
+  have hoff : oW J (((i + 6 : ℕ) : ℝ) + 0) = (dOf J.wholeModel.W.n (gW J) (i + 6) : ℝ) :=
     by rw [oW, off_key' hg hp le_rfl one_pos, add_zero]
   rw [hoff, Lst, rL1_add_rL2] at hL
-  have hL' : rlen J < dOf (chainModel J.whole).W.n (gW J) (i + 6) := by exact_mod_cast hL
+  have hL' : rlen J < dOf J.wholeModel.W.n (gW J) (i + 6) := by exact_mod_cast hL
   have hcase : i = 0 ∨ i = 2 * J.whole.m := by
     have h2 := J.right.one_le
     have h1 := J.one_le_m₁

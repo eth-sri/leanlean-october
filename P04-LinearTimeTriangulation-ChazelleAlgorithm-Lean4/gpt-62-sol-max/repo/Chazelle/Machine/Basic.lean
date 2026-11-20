@@ -115,18 +115,25 @@ theorem WordsBounded.mono {W W' : ℕ} {c : Config} (h : WordsBounded W c) (hW :
 @[simp] theorem wordsBounded_setPc {W : ℕ} {c : Config} {p : ℕ} :
     WordsBounded W { c with pc := p } ↔ WordsBounded W c := Iff.rfl
 
-theorem WordsBounded.nreg {W : ℕ} {c : Config} (h : WordsBounded W c) (r : ℕ) : c.nreg r ≤ W :=
+section
+
+variable {W : ℕ} {c : Config} (h : WordsBounded W c)
+include h
+
+theorem WordsBounded.nreg (r : ℕ) : c.nreg r ≤ W :=
   h.1 r
 
 /-- Updating a natural register with a value `≤ W` preserves the word bound. -/
-theorem WordsBounded.upd_nreg {W : ℕ} {c : Config} (h : WordsBounded W c) {r v : ℕ}
+theorem WordsBounded.upd_nreg {r v : ℕ}
     (hv : v ≤ W) (pc : ℕ) : WordsBounded W { c with pc := pc, nreg := upd c.nreg r v } :=
   ⟨upd_le h.1 hv, h.2⟩
 
 /-- Updating a natural memory cell with a value `≤ W` preserves the word bound. -/
-theorem WordsBounded.upd_nmem {W : ℕ} {c : Config} (h : WordsBounded W c) {a v : ℕ}
+theorem WordsBounded.upd_nmem {a v : ℕ}
     (hv : v ≤ W) (pc : ℕ) : WordsBounded W { c with pc := pc, nmem := upd c.nmem a v } :=
   ⟨h.1, upd_le h.2 hv⟩
+
+end
 
 /-! ### Bounded runs
 

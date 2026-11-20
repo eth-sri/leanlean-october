@@ -27,11 +27,7 @@ namespace OracleQ
 /-! ## Residues of small multiples -/
 
 theorem mod_lt_two {x M : ℕ} (hx : x < 2 * M) :
-    (x < M ∧ x % M = x) ∨ (M ≤ x ∧ x % M = x - M) := by
-  rcases Nat.lt_or_ge x M with h | h
-  · exact Or.inl ⟨h, Nat.mod_eq_of_lt h⟩
-  · refine Or.inr ⟨h, ?_⟩
-    rw [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt (by omega)]
+    (x < M ∧ x % M = x) ∨ (M ≤ x ∧ x % M = x - M) := by solve_by_elim [Chazelle.Chain.side_mod_cases]
 
 theorem mod_le_two {x M : ℕ} (_hM : 0 < M) (hx : x ≤ 2 * M) :
     (x < M ∧ x % M = x) ∨ (M ≤ x ∧ x < 2 * M ∧ x % M = x - M) ∨ (x = 2 * M ∧ x % M = 0) := by
@@ -57,27 +53,31 @@ theorem walk_vtx {w : ℕ} (h6 : 6 ≤ w) (h7 : w ≤ 2 * C.m + 6) :
     (chainModel C).W.vtx w = C.P.vtx (vaIdx C w) := by
   obtain ⟨i, rfl⟩ : ∃ i, w = i + 6 := ⟨w - 6, by omega⟩
   show (C.sideWalk C.sideBeta).vtx (i + 6) = _
-  rw [C.sideWalk_vtx_tour _ (by omega)]
-  unfold Chain.sideTour Chain.vertex Chain.edgeIdx vaIdx
-  rw [Chain.sideIdx_eq, show i + 6 - 6 = i by omega]
+  ram_rw [C.sideWalk_vtx_tour]
   rfl
 
-theorem walk_next {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
+section
+
+variable {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6)
+
+include h6 h7 in
+theorem walk_next :
     (chainModel C).W.vtx ((w + 1) % (chainModel C).W.n) = C.P.vtx (vaIdx C (w + 1)) := by
-  rw [walk_n, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [walk_n, Nat.mod_eq_of_lt]
   exact walk_vtx C (by omega) (by omega)
 
+include h6 h7 in
 /-- Consecutive walk vertices of the tour are distinct vertices of `C.P`. -/
-theorem vaIdx_succ_ne {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
+theorem vaIdx_succ_ne :
     vaIdx C w ≠ vaIdx C (w + 1) := by
   have hm := C.one_le
   have hmn := C.m_lt
-  have hS := C.sideS_lt C.sideBeta
+  
   unfold vaIdx tj
   rw [show w + 1 - 6 = (w - 6) + 1 by omega]
   set S := C.sideS C.sideBeta
   set i := w - 6
-  have hi : i < 2 * C.m := by omega
+  
   -- the two chain indices differ by one
   obtain ⟨k, k', hk, hk', hkk⟩ : ∃ k k', sideE C.m ((S + i) % (2 * C.m)) = k ∧
       sideE C.m ((S + (i + 1)) % (2 * C.m)) = k' ∧ (k' = k + 1 ∨ k = k' + 1) := by
@@ -98,10 +98,10 @@ theorem vaIdx_succ_ne {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
   rcases hkk with rfl | rfl
   · have := Nat.sub_mod_eq_zero_of_mod_eq h.symm
     rw [show C.s + (k + 1) - (C.s + k) = 1 by omega] at this
-    rw [Nat.one_mod_eq_zero_iff] at this; omega
+    simp_all
   · have := Nat.sub_mod_eq_zero_of_mod_eq h
     rw [show C.s + (k' + 1) - (C.s + k') = 1 by omega] at this
-    rw [Nat.one_mod_eq_zero_iff] at this; omega
+    simp_all
 
 /-- The walk edges `6 … 2 m + 6` are not horizontal. -/
 theorem walk_nonhoriz (hD : DistinctHeights C.P) {w : ℕ} (h6 : 6 ≤ w) (h7 : w ≤ 2 * C.m + 6) :
@@ -128,7 +128,7 @@ theorem param_of_ne (hD : DistinctHeights C.P) {w : ℕ} (h6 : 6 ≤ w) (h7 : w 
         (((chainModel C).W.vtx ((w + 1) % (chainModel C).W.n)).2 - ((chainModel C).W.vtx w).2) := by
   unfold Model.param Model.wa Model.wb
   simp only
-  rw [ite_eq_right (walk_nonhoriz C hD h6 h7)]
+  simp_all
 
 /-- **The parameter is zero iff the normalised code is.** -/
 theorem param_eq_zero_iff (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w)
@@ -139,15 +139,11 @@ theorem param_eq_zero_iff (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w)
   · simp [Model.param]
   · have hiff : ((if h + 1 = 0 ∨ h + 1 = vaIdx C w + 1 then 0 else h + 1) = 0) ↔
         h = vaIdx C w := by
-      by_cases e : h = vaIdx C w
-      · rw [ite_eq_left (Or.inr (by rw [e]))]; simp [e]
-      · have : ¬(h + 1 = 0 ∨ h + 1 = vaIdx C w + 1) := by omega
-        rw [ite_eq_right this]; simp [e]
+      simp
     rw [hiff, param_of_ne C hD h6 h7, walk_vtx C h6 h7]
     have hne := walk_nonhoriz C hD h6 h7
     rw [walk_vtx C h6 h7] at hne
-    have hd : ((chainModel C).W.vtx ((w + 1) % (chainModel C).W.n)).2 -
-        (C.P.vtx (vaIdx C w)).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
+    have hd := sub_ne_zero.2 (Ne.symm hne)
     rw [div_eq_zero_iff, sub_eq_zero, or_iff_left hd]
     constructor
     · intro e
@@ -187,20 +183,19 @@ theorem key_eq_iff (hD : DistinctHeights C.P) {w hc w2 hc2 : ℕ} (h6 : 6 ≤ w)
     by_cases h0 : (chainModel C).param C.P ⟨w2, hc⟩ = 0
     · rw [(param_eq_zero_iff C hD h6 h7 hh).1 h0,
         (param_eq_zero_iff C hD h6 h7 hh2).1 (ht.trans h0)]
-    · have h0' : (chainModel C).param C.P ⟨w2, hc2⟩ ≠ 0 := fun e => h0 (ht ▸ e)
-      have n1 : nz C w2 hc ≠ 0 := fun e => h0 ((param_eq_zero_iff C hD h6 h7 hh).2 e)
-      have n2 : nz C w2 hc2 ≠ 0 := fun e => h0' ((param_eq_zero_iff C hD h6 h7 hh2).2 e)
+    · have h0' := fun e => h0 (ht ▸ e)
+      have n1 := fun e => h0 ((param_eq_zero_iff C hD h6 h7 hh).2 e)
+      have n2 := fun e => h0' ((param_eq_zero_iff C hD h6 h7 hh2).2 e)
       rw [nz_of_ne C n1, nz_of_ne C n2]
       have hc0 : hc ≠ 0 := fun e => by
-        apply n1; unfold nz; rw [ite_eq_left (Or.inl e)]
+        apply n1; ram_finish
       have hc20 : hc2 ≠ 0 := fun e => by
-        apply n2; unfold nz; rw [ite_eq_left (Or.inl e)]
+        apply n2; ram_finish
       obtain ⟨h1, rfl⟩ : ∃ h1, hc = h1 + 1 := ⟨hc - 1, by omega⟩
       obtain ⟨h2, rfl⟩ : ∃ h2, hc2 = h2 + 1 := ⟨hc2 - 1, by omega⟩
       rw [param_of_ne C hD h6 h7, param_of_ne C hD h6 h7] at ht
       have hne := walk_nonhoriz C hD h6 h7
-      have hd : ((chainModel C).W.vtx ((w2 + 1) % (chainModel C).W.n)).2 -
-          ((chainModel C).W.vtx w2).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
+      have hd := sub_ne_zero.2 (Ne.symm hne)
       rw [div_left_inj' hd, sub_left_inj] at ht
       by_contra hne'
       exact hD h2 h1 (by omega) (by omega) (fun e => hne' (by rw [e])) ht
@@ -208,7 +203,7 @@ theorem key_eq_iff (hD : DistinctHeights C.P) {w hc w2 hc2 : ℕ} (h6 : 6 ≤ w)
     by_cases h0 : nz C w2 hc = 0
     · rw [(param_eq_zero_iff C hD h6 h7 hh).2 h0,
         (param_eq_zero_iff C hD h6 h7 hh2).2 (hz.trans h0)]
-    · have n2 : nz C w2 hc2 ≠ 0 := fun e => h0 (hz ▸ e)
+    · have n2 := fun e => h0 (hz ▸ e)
       rw [nz_of_ne C h0, nz_of_ne C n2] at hz
       rw [hz]
 
@@ -232,8 +227,9 @@ noncomputable def mirPos (w hc : ℕ) : WPos :=
 
 theorem rT_def : (rT C : ℝ) + 6 = κT C := by unfold κT; ring
 
+include h6 h7 in
 /-- **The tour reversal**: the mirrored walk edge runs along the same chain edge backwards. -/
-theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
+theorem rev_idx :
     vaIdx C (mirW1 C w) = vaIdx C (w + 1) ∧ vaIdx C (mirW1 C w + 1) = vaIdx C w := by
   have hm := C.one_le
   have hS := C.sideS_lt C.sideBeta
@@ -258,8 +254,8 @@ theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
   have hY := mod_lt_two (x := S + i') (M := M) (by split_ifs at hi'M <;> omega)
   have hR4 := mod_le_two (x := 4 * C.m - 2 * S) (M := M) (by omega) (by omega)
   rw [← hRdef] at hR4
-  obtain ⟨X, hXd⟩ : ∃ X, (S + i) % M = X := ⟨_, rfl⟩
-  obtain ⟨Y, hYd⟩ : ∃ Y, (S + i') % M = Y := ⟨_, rfl⟩
+  obtain ⟨X, hXd⟩ := exists_eq' (a' := (S + i) % M)
+  obtain ⟨Y, hYd⟩ := exists_eq' (a' := (S + i') % M)
   have hXY : Y = M - 1 - X := by
     rw [hXd] at hX; rw [hYd] at hY
     split_ifs at hi'M <;> rcases hX with ⟨a, b⟩ | ⟨a, b⟩ <;> rcases hY with ⟨c, d⟩ | ⟨c, d⟩ <;>
@@ -278,14 +274,20 @@ theorem rev_idx {w : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6) :
     · rw [show X + 1 = M by omega, Nat.mod_self, show M - 1 - X = 0 by omega]
   · rcases Nat.eq_zero_or_pos X with h | h
     · rw [h, show M - 1 - 0 + 1 = M by omega, Nat.mod_self]
-    · rw [show M - 1 - X + 1 = M - X by omega, Nat.mod_eq_of_lt (show M - X < M by omega),
-        sym _ hXM.le]
+    ram_simp [show M - 1 - X + 1 = M - X by omega, Nat.mod_eq_of_lt, sym _ hXM.le]
+
+end 
+
+section
+
+variable (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6)
+    (hh : hc ≤ C.P.n)
+    (hp : 0 ≤ (chainModel C).param C.P ⟨w, hc⟩ ∧ (chainModel C).param C.P ⟨w, hc⟩ < 1)
+include hD h6 h7 hh hp
 
 /-- **The mirror of a walk position**: a proper position in the tour range whose key is the
 mirror `mk` of the key. -/
-theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6)
-    (hh : hc ≤ C.P.n)
-    (hp : 0 ≤ (chainModel C).param C.P ⟨w, hc⟩ ∧ (chainModel C).param C.P ⟨w, hc⟩ < 1) :
+theorem mir_key :
     (chainModel C).key C.P (mirPos C w hc) = mk C ((chainModel C).key C.P ⟨w, hc⟩) ∧
       0 ≤ (chainModel C).param C.P (mirPos C w hc) ∧
       (chainModel C).param C.P (mirPos C w hc) < 1 ∧ (mirPos C w hc).hgt ≤ C.P.n ∧
@@ -304,12 +306,12 @@ theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w <
     unfold mk mirW0
     by_cases hw : w ≤ 6 + rT C
     · have hw' : (w : ℝ) ≤ κT C := by rw [← hT]; exact_mod_cast (show w ≤ rT C + 6 by omega)
-      rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      ram_rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub]; push_cast; rw [← hT]; ring
     · have hw' : ¬ (w : ℝ) ≤ κT C := by
         rw [← hT]; push Not; exact_mod_cast (show rT C + 6 < w by omega)
-      rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      ram_rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub]; push_cast; rw [← hT]; ring
   · -- an inner position
-    have hc0 : hc ≠ 0 := fun e => h0 (by unfold nz; rw [ite_eq_left (Or.inl e)])
+    have hc0 : hc ≠ 0 := fun e => h0 (by ram_finish)
     obtain ⟨h, rfl⟩ : ∃ h, hc = h + 1 := ⟨hc - 1, by omega⟩
     have hm1 : 6 ≤ mirW1 C w ∧ mirW1 C w < 2 * C.m + 6 := by unfold mirW1; split_ifs <;> omega
     obtain ⟨r1, r2⟩ := rev_idx C h6 h7
@@ -327,8 +329,8 @@ theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w <
     set t := (chainModel C).param C.P ⟨w, h + 1⟩ with htdef
     have hpt : (chainModel C).param C.P ⟨mirW1 C w, h + 1⟩ = 1 - t := by
       rw [ht', ht]; field_simp; ring
-    have ht0 : t ≠ 0 := fun e => h0 ((param_eq_zero_iff C hD h6 h7.le hh).1 e)
-    have htp : 0 < t := lt_of_le_of_ne hp.1 (Ne.symm ht0)
+    have ht0 := fun e => h0 ((param_eq_zero_iff C hD h6 h7.le hh).1 e)
+    have htp := lt_of_le_of_ne hp.1 (Ne.symm ht0)
     refine ⟨?_, by rw [hpt]; linarith [hp.2], by rw [hpt]; linarith, hh, hm1.1, hm1.2.le,
       fun _ => by rw [hpt]; linarith [hp.2]⟩
     rw [key_eq_param, key_eq_param, hpt, ← htdef]
@@ -338,26 +340,26 @@ theorem mir_key (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w <
         rw [← hT]
         have : (w : ℝ) + 1 ≤ rT C + 6 := by exact_mod_cast (show w + 1 ≤ rT C + 6 by omega)
         linarith [hp.2]
-      rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      ram_rw [ite_eq_left hw, ite_eq_left hw', Nat.cast_sub]; push_cast; rw [← hT]; ring
     · have hw' : ¬ (w : ℝ) + t ≤ κT C := by
         rw [← hT]; push Not
         have : (rT C : ℝ) + 6 ≤ w := by exact_mod_cast (show rT C + 6 ≤ w by omega)
         linarith
-      rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub (by omega)]; push_cast; rw [← hT]; ring
+      ram_rw [ite_eq_right hw, ite_eq_right hw', Nat.cast_sub]; push_cast; rw [← hT]; ring
 
 /-- The normalised code of the mirror is its height code. -/
-theorem nz_mir (hD : DistinctHeights C.P) {w hc : ℕ} (h6 : 6 ≤ w) (h7 : w < 2 * C.m + 6)
-    (hh : hc ≤ C.P.n)
-    (hp : 0 ≤ (chainModel C).param C.P ⟨w, hc⟩ ∧ (chainModel C).param C.P ⟨w, hc⟩ < 1) :
+theorem nz_mir :
     nz C (mirPos C w hc).edge (mirPos C w hc).hgt = (mirPos C w hc).hgt := by
   obtain ⟨-, -, -, ph, e6, e7, hpos⟩ := mir_key C hD h6 h7 hh hp
   by_cases h0 : nz C w hc = 0
   · have : (mirPos C w hc).hgt = 0 := by unfold mirPos; rw [ite_eq_left h0]
     rw [this]; unfold nz; simp
   · have hp0 := hpos h0
-    have hne : nz C (mirPos C w hc).edge (mirPos C w hc).hgt ≠ 0 := fun e =>
+    have hne := fun e =>
       hp0.ne' ((param_eq_zero_iff C hD e6 e7 ph).2 e)
     exact nz_of_ne C hne
+
+end
 
 /-- The natural test of `InI`. -/
 def inTest (C : Chain) (z w : ℕ) : Prop :=
@@ -380,9 +382,9 @@ theorem inI_iff (hD : DistinctHeights C.P) {w hc : ℕ} (hw : w < 2 * C.m + 7) (
       rw [ite_eq_left h0, ht, add_zero]
       constructor
       · rintro (⟨a, b⟩ | ⟨a, b⟩)
-        · left; constructor <;> [exact_mod_cast a; (have : (w : ℝ) < rT C + 6 := b; exact_mod_cast (show w < rT C + 6 by exact_mod_cast this) |>.trans_le (by omega))]
+        · left; constructor <;> [exact_mod_cast a; (have := b; exact_mod_cast (show w < rT C + 6 by exact_mod_cast this) |>.trans_le (by omega))]
         · right; constructor
-          · have : (rT C : ℝ) + 6 < w := a
+          · have := a
             have : rT C + 6 < w := by exact_mod_cast this
             omega
           · exact_mod_cast b
@@ -391,8 +393,8 @@ theorem inI_iff (hD : DistinctHeights C.P) {w hc : ℕ} (hw : w < 2 * C.m + 7) (
           exact_mod_cast (show w < rT C + 6 by omega)
         · right; refine ⟨?_, by exact_mod_cast b⟩
           exact_mod_cast (show rT C + 6 < w by omega)
-    · have ht0 : t ≠ 0 := fun e => h0 ((param_eq_zero_iff C hD hin.1 hin.2.le hh).1 e)
-      have htp : 0 < t := lt_of_le_of_ne hp.1 (Ne.symm ht0)
+    · have ht0 := fun e => h0 ((param_eq_zero_iff C hD hin.1 hin.2.le hh).1 e)
+      have htp := lt_of_le_of_ne hp.1 (Ne.symm ht0)
       rw [ite_eq_right h0]
       simp only [hin, and_self, iff_true]
       have h6 : (6 : ℝ) ≤ w := by exact_mod_cast hin.1
@@ -412,7 +414,7 @@ theorem inI_iff (hD : DistinctHeights C.P) {w hc : ℕ} (hw : w < 2 * C.m + 7) (
     · have : (w : ℝ) + 1 ≤ 6 := by exact_mod_cast (show w + 1 ≤ 6 by omega)
       rintro (⟨a, -⟩ | ⟨a, -⟩)
       · linarith [hp.2]
-      · linarith [hp.2, (Nat.cast_nonneg (rT C) : (0 : ℝ) ≤ _)]
+      linarith
     · have hw' : w = 2 * C.m + 6 := by omega
       have : (2 * C.m + 6 : ℝ) = w := by rw [hw']; push_cast; ring
       have hRl : (rT C : ℝ) + 1 ≤ 2 * C.m := by exact_mod_cast hR

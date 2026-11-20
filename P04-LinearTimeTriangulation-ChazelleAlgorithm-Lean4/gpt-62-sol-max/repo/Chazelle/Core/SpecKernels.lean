@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SpecFacts
 public import Chazelle.Separator.Graph
@@ -42,49 +44,49 @@ open Chazelle.Chain (sideInArc)
 /-! ## Bands -/
 
 /-- Band of the sign kernel (WP-A). -/
-def bSign : ℕ := 1
+@[ram_layout] def bSign : ℕ := 1
 /-- Band of sorting (WP-C). -/
-def bSort : ℕ := 3
+@[ram_layout] def bSort : ℕ := 3
 /-- Band of normal-form construction (WP-C). -/
-def bBuild : ℕ := 4
+@[ram_layout] def bBuild : ℕ := 4
 /-- Band of double identification (WP-C). -/
-def bLocate : ℕ := 5
+@[ram_layout] def bLocate : ℕ := 5
 /-- Band of the tree decomposition (WP-C). -/
-def bDecomp : ℕ := 6
+@[ram_layout] def bDecomp : ℕ := 6
 /-- Band of the fusion (WP-D). -/
-def bFuse : ℕ := 7
+@[ram_layout] def bFuse : ℕ := 7
 /-- Band of conformality restoration (WP-E). -/
-def bRestore : ℕ := 8
+@[ram_layout] def bRestore : ℕ := 8
 /-- Band of granularity enforcement (WP-F). -/
-def bGran : ℕ := 9
+@[ram_layout] def bGran : ℕ := 9
 /-- Band of the merge driver (WP-F). -/
-def bMerge : ℕ := 10
+@[ram_layout] def bMerge : ℕ := 10
 /-- Band of oracle preprocessing (WP-H). -/
-def bOPrep : ℕ := 11
+@[ram_layout] def bOPrep : ℕ := 11
 /-- Band of oracle queries (WP-H). -/
-def bOQuery : ℕ := 12
+@[ram_layout] def bOQuery : ℕ := 12
 /-- Band of the cluster algorithm (WP-I). -/
-def bCluster : ℕ := 13
+@[ram_layout] def bCluster : ℕ := 13
 /-- Band of the ray-shooter for merges (WP-G). -/
-def bShoot : ℕ := 14
+@[ram_layout] def bShoot : ℕ := 14
 /-- Band of the arc-cutter (WP-G). -/
-def bCut : ℕ := 15
+@[ram_layout] def bCut : ℕ := 15
 /-- Band of Lemma 4.1 (WP-J). -/
-def bL41 : ℕ := 16
+@[ram_layout] def bL41 : ℕ := 16
 /-- Band of the up-phase driver (WP-J). -/
-def bUp : ℕ := 17
+@[ram_layout] def bUp : ℕ := 17
 /-- Band of brute-force maps (WP-K). -/
-def bBrute : ℕ := 18
+@[ram_layout] def bBrute : ℕ := 18
 /-- Band of the transition to the interior model (WP-M). -/
-def bTrans : ℕ := 19
+@[ram_layout] def bTrans : ℕ := 19
 /-- Band of the down step (WP-M). -/
-def bDown : ℕ := 20
+@[ram_layout] def bDown : ℕ := 20
 /-- Band of the down-phase driver (WP-M). -/
-def bDownDrv : ℕ := 21
+@[ram_layout] def bDownDrv : ℕ := 21
 /-- Band of the core driver (WP-L). -/
-def bCore : ℕ := 23
+@[ram_layout] def bCore : ℕ := 23
 /-- Band of the sweep of the fusion (WP-D; added in the consolidated revision, design doc §10). -/
-def bSweep : ℕ := 24
+@[ram_layout] def bSweep : ℕ := 24
 
 /-- The leaf toolkit (sign kernel, sorting, normal-form construction, double identification,
 tree decomposition): scratch bands that any call may clobber; no caller keeps state in them.
@@ -92,10 +94,10 @@ tree decomposition): scratch bands that any call may clobber; no caller keeps st
 def kernelBands : Finset ℕ := {bSign, bSort, bBuild, bLocate, bDecomp}
 
 /-- The bands an oracle (ray-shooter, arc-cutter, Lemma 3.6 query) may write. -/
-def oracleBands : Finset ℕ := kernelBands ∪ {bOQuery, bShoot, bCut, bCluster}
+@[ram_layout] def oracleBands : Finset ℕ := kernelBands ∪ {bOQuery, bShoot, bCut, bCluster}
 
 /-- The bands of granularity enforcement. -/
-def granBands : Finset ℕ := kernelBands ∪ {bGran}
+@[ram_layout] def granBands : Finset ℕ := kernelBands ∪ {bGran}
 
 /-- The bands of the sweep itself (without its oracle). -/
 def sweepBands : Finset ℕ := kernelBands ∪ {bSweep}
@@ -104,13 +106,13 @@ def sweepBands : Finset ℕ := kernelBands ∪ {bSweep}
 def fuseBands : Finset ℕ := kernelBands ∪ {bFuse, bSweep}
 
 /-- The bands of conformality restoration itself (without its oracles). -/
-def restoreBands : Finset ℕ := kernelBands ∪ {bRestore}
+@[ram_layout] def restoreBands : Finset ℕ := kernelBands ∪ {bRestore}
 
 /-- The bands of a merge itself (without its oracles). -/
-def mergeBands : Finset ℕ := kernelBands ∪ {bFuse, bRestore, bGran, bMerge, bSweep}
+@[ram_layout] def mergeBands : Finset ℕ := kernelBands ∪ {bFuse, bRestore, bGran, bMerge, bSweep}
 
 /-- Register `i` of band `b` in the configuration `c`. -/
-def rd (c : Config) (b i : ℕ) : ℕ := c.nreg (bandReg b i)
+@[ram_layout] def rd (c : Config) (b i : ℕ) : ℕ := c.nreg (bandReg b i)
 
 /-- The geometric environment of every procedure: a simple input with a good shear, so that
 `Qof P` is the (simple, distinct-heights) geometry polygon. -/
@@ -141,6 +143,52 @@ def ChordListAt (m : ℕ → ℕ) (A : ℕ) (L : List (ℕ × ℕ × ℕ)) : Pro
     m (A + 3 * i) = (L.getD i (0, 0, 0)).1 ∧ m (A + 3 * i + 1) = (L.getD i (0, 0, 0)).2.1 ∧
       m (A + 3 * i + 2) = (L.getD i (0, 0, 0)).2.2
 
+/-- A packed chord list survives memory changes outside the words it occupies. -/
+theorem ChordListAt.congr {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)} (h : ChordListAt m A L)
+    (hm : ∀ a, A ≤ a → a < A + 3 * L.length → m' a = m a) : ChordListAt m' A L := by
+  intro i hi
+  simpa (disch := omega) only [hm] using h i hi
+
+/-- A list below an unchanged memory prefix remains readable. -/
+theorem ChordListAt.below {m m' : ℕ → ℕ} {A E : ℕ} {L : List (ℕ × ℕ × ℕ)}
+    (h : ChordListAt m A L) (hE : A + 3 * L.length ≤ E)
+    (hm : MemEqBelow E m' m) : ChordListAt m' A L :=
+  h.congr fun a _ ha => hm a (ha.trans_le hE)
+
+/-- A chord list below a bound is robust at that bound. -/
+theorem ChordListAt.robust {m : ℕ → ℕ} {A E : ℕ} {L : List (ℕ × ℕ × ℕ)}
+    (h : ChordListAt m A L) (he : A + 3 * L.length ≤ E) :
+    Robust E m (fun m' => ChordListAt m' A L) := fun _ hm => h.below he hm
+
+/-- Concatenate the two packed arrays at their common boundary. -/
+theorem ChordListAt.append {m : ℕ → ℕ} {A : ℕ} {L R : List (ℕ × ℕ × ℕ)}
+    (h : ChordListAt m A L) (g : ChordListAt m (A + 3 * L.length) R) :
+    ChordListAt m A (L ++ R) := by
+  intro i hi
+  simp only [List.length_append] at hi
+  rcases Nat.lt_or_ge i L.length with hl | hl
+  · simpa only [List.getD_eq_getElem?_getD, List.getElem?_append_left hl] using h i hl
+  · simp only [List.getD_eq_getElem?_getD, List.getElem?_append_right hl]
+    have ha : A + 3 * L.length + 3 * (i - L.length) = A + 3 * i := by omega
+    simpa only [List.getD_eq_getElem?_getD, ha] using g (i - L.length) (by omega)
+
+/-- Append one record while leaving the words of the old list unchanged. -/
+theorem ChordListAt.snoc {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)} {x : ℕ × ℕ × ℕ}
+    (h : ChordListAt m A L) (hm : ∀ a, A ≤ a → a < A + 3 * L.length → m' a = m a)
+    (h0 : m' (A + 3 * L.length) = x.1) (h1 : m' (A + 3 * L.length + 1) = x.2.1)
+    (h2 : m' (A + 3 * L.length + 2) = x.2.2) : ChordListAt m' A (L ++ [x]) := by
+  apply (h.congr hm).append
+  intro i hi
+  have : i = 0 := by simpa using hi
+  subst i
+  exact ⟨h0, h1, h2⟩
+
+/-- Append one record at the end of a chord list in the same memory. -/
+theorem ChordListAt.snoc_same {m : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)} (h : ChordListAt m A L)
+    {x : ℕ × ℕ × ℕ} (h0 : m (A + 3 * L.length) = x.1) (h1 : m (A + 3 * L.length + 1) = x.2.1)
+    (h2 : m (A + 3 * L.length + 2) = x.2.2) : ChordListAt m A (L ++ [x]) :=
+  h.snoc (fun _ _ _ => rfl) h0 h1 h2
+
 /-- The chord record of a triple (regions unknown). -/
 def recOf (x : ℕ × ℕ × ℕ) : CRec := ⟨x.1, x.2.1, x.2.2, 0, 0⟩
 
@@ -156,8 +204,8 @@ given ones in the given order (no decomposition).  Cost `κ (K (⌈log₂ K⌉ +
 (Consolidated revision: the descriptor is well formed and the descriptor and the chord list lie
 below the allocator, findings C7/C8; the output's arc records are proper positions, part of
 `IsNF`, finding C6; the side regions of each chord are fixed by `UpSideSpec`, finding C10.) -/
-def BuildNFSpec : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s {bBuild, bSort, bSign}
+def BuildM (s : Stmt) (κ : ℕ) : Prop :=
+  Meets s {bBuild, bSort, bSign}
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
       ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bBuild 0) ∧
       ∃ M L, ModelDescAt c.nmem (rd c bBuild 0) (Qof P) M ∧
@@ -169,12 +217,15 @@ def BuildNFSpec : Prop :=
           IsNF M (Qof P) N ∧ N.chords.map (fun r => (r.h, r.lp, r.rp)) = L ∧ N.dec = [])
     (fun _ c => κ * (rd c bBuild 2 * (Nat.clog 2 (rd c bBuild 2) + 1) + 1))
 
+/-- The BuildNFSpec contract for one program and cost constant. -/
+def BuildNFSpec : Prop :=
+  ∃ (s : Stmt) (κ : ℕ), BuildM s κ
+
 /-- **WP-C: tree decomposition** (§2.3).  Inputs: model descriptor (`0`), normal form (`1`),
 degree cap `D` (`2`).  Output (`3`): a fresh copy with a decomposition of depth
 `decDepth D K`.  Cost `κ (D + 1) (K (⌈log₂ K⌉ + 1) + 1)`.  (Consolidated revision: well-formed
 descriptor and input below the allocator, findings C7/C8.) -/
-def DecompSpec : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s {bDecomp}
+def DecompM (s : Stmt) (κ : ℕ) : Prop := Meets s {bDecomp}
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
       ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bDecomp 0) ∧
       ∃ M N, ModelDescAt c.nmem (rd c bDecomp 0) (Qof P) M ∧
@@ -189,6 +240,9 @@ def DecompSpec : Prop :=
     (fun _ c => κ * (rd c bDecomp 2 + 1) *
       (c.nmem (rd c bDecomp 1) * (Nat.clog 2 (c.nmem (rd c bDecomp 1)) + 1) + 1))
 
+/-- The tree-decomposition contract, with its program and cost constant. -/
+def DecompSpec : Prop := ∃ (s : Stmt) (κ : ℕ), DecompM s κ
+
 /-! ## Oracle interfaces for the merges -/
 
 /-- A **memory context**: a property of the memory below a bound, found through a handle (the
@@ -201,7 +255,7 @@ structure MemCtx where
   /-- The largest arc weight the oracles built on the context support. -/
   cap : Polygon → (ℕ → ℕ) → ℕ → ℕ
   /-- Locality. -/
-  local_ : ∀ P m m' g A, (∀ a, a < A → m a = m' a) → holds P m g A → holds P m' g A
+  local_ : ∀ P m m' g A, (MemEqBelow A m m') → holds P m g A → holds P m' g A
   /-- Monotonicity in the bound. -/
   mono : ∀ P m g A A', A ≤ A' → holds P m g A → holds P m g A'
 
@@ -210,7 +264,7 @@ the memory changes at or above a bound below which the context holds.  Procedure
 before calling an oracle (restore, fusion, sweep, merge) need it to re-establish the oracles'
 precondition `γ ≤ cap`; the contexts of the project (`gradeCtx`) have it (`gradeCtx_capLocal`). -/
 def MemCtx.CapLocal (X : MemCtx) : Prop :=
-  ∀ P m m' g A, (∀ a, a < A → m' a = m a) → X.holds P m g A → X.cap P m' g = X.cap P m g
+  ∀ P m m' g A, (MemEqBelow A m' m) → X.holds P m g A → X.cap P m' g = X.cap P m g
 
 /-- **A halving table** (review finding R-D3): the context stores `⌊x / 2⌋` for `x ≤ n` at the
 address read at `g + 3`.  The RAM has no division, and the search of Lemma 3.2 halves the codes of
@@ -234,6 +288,38 @@ def FirstHit (A : Set Point) (p : Point) (σ t : ℝ) : Prop :=
 /-- The horizontal ray from `p` in direction `σ` misses `A`. -/
 def NoHit (A : Set Point) (p : Point) (σ : ℝ) : Prop :=
   ∀ t, 0 < t → Visibility.rayPt p σ t ∉ A
+
+/-! ## First hits on unions -/
+
+theorem noHit_union {A B : Set Point} {p : Point} {σ : ℝ} (hA : NoHit A p σ) (hB : NoHit B p σ) :
+    NoHit (A ∪ B) p σ := fun t ht h => h.elim (hA t ht) (hB t ht)
+
+theorem firstHit_union_l {A B : Set Point} {z : Point} {σ t : ℝ} (hA : FirstHit A z σ t)
+    (hB : ∀ t', 0 < t' → t' < t → Visibility.rayPt z σ t' ∉ B) : FirstHit (A ∪ B) z σ t :=
+  ⟨hA.1, Or.inl hA.2.1, fun t' h0 h1 hm => hm.elim (hA.2.2 t' h0 h1) (hB t' h0 h1)⟩
+
+theorem firstHit_union_left {A B : Set Point} {p : Point} {σ t : ℝ} (hA : FirstHit A p σ t)
+    (hB : NoHit B p σ) : FirstHit (A ∪ B) p σ t :=
+  firstHit_union_l hA fun s hs _ => hB s hs
+
+theorem firstHit_union_right {A B : Set Point} {p : Point} {σ t : ℝ} (hA : NoHit A p σ)
+    (hB : FirstHit B p σ t) : FirstHit (A ∪ B) p σ t := by
+  simpa only [Set.union_comm] using firstHit_union_left hB hA
+
+section
+
+variable {A B : Set Point} {p : Point} {σ t t' : ℝ} (hA : FirstHit A p σ t)
+    (hB : FirstHit B p σ t')
+include hA hB
+
+theorem firstHit_union_le (h : t ≤ t') : FirstHit (A ∪ B) p σ t :=
+  firstHit_union_l hA fun s h1 h2 => hB.2.2 s h1 (h2.trans_le h)
+
+theorem firstHit_union_le' (h : t' ≤ t) : FirstHit (A ∪ B) p σ t' := by
+  have := firstHit_union_le hB hA h
+  rwa [Set.union_comm] at this
+
+end
 
 /-- The direction coded by a register value (`1` right, otherwise left). -/
 def dirOf (v : ℕ) : ℝ := if v = 1 then 1 else -1
@@ -271,18 +357,10 @@ def Model.InnerPt (M : Model) (z : Point) : Prop :=
   (∃ p q, p < M.W.n ∧ q < M.W.n ∧ (M.W.vtx p).2 < z.2 ∧ z.2 < (M.W.vtx q).2) ∧
     (∃ p q, p < M.W.n ∧ q < M.W.n ∧ (M.W.vtx p).1 ≤ z.1 ∧ z.1 ≤ (M.W.vtx q).1)
 
-/-- **The ray-shooter interface** (p. 501 (i)).  `sh` answers, for a model `M` accepted by `Ok`
-(registers `0`: model descriptor; `1, 2` and `3, 4`: the ends of a subarc; `5 … 7`: the query
-point (an `Origin`); `8`: the direction; `9`: a bound `γ ≤ cap` on the counted edges of the subarc; `13`: the
-context handle), the first point of the subarc hit by the ray (register `10`: hit flag; `11, 12`:
-its walk position), in at most `F γ` steps, provided the context `X` (the up-phase data) is in
-memory below the allocator.  (Consolidated revision: the model descriptor is well formed and
-below the allocator, the subarc ends are proper positions, findings C6–C8; the origin is a walk
-vertex or an inner point, and non-vertex subarc ends are inner points, finding G2.) -/
-def ShooterOK (sh : Stmt) (B : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
-    (Ok : Polygon → Model → Prop) : Prop :=
-  Meets sh B
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
+/-- Input contract for the ray-shooting subroutine. -/
+abbrev ShooterPre (X : MemCtx) (Ok : Polygon → Model → Prop)
+    (P : Polygon) (W : ℕ) (c : Config) : Prop :=
+GoodEnv P ∧ hostWords P.n ≤ W ∧
       X.holds P c.nmem (rd c bShoot 13) (c.nreg ALLOC) ∧
       rd c bShoot 9 ≤ X.cap P c.nmem (rd c bShoot 13) ∧
       ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bShoot 0) ∧
@@ -300,8 +378,10 @@ def ShooterOK (sh : Stmt) (B : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
           ((∃ p, o = .walk ⟨p, 0⟩) ∨ (M.InnerPt (o.eval M (Qof P)) ∧
             ∀ x, o = .walk x → ProperPos M (Qof P) P.n x)) ∧
           o.eval M (Qof P) ∉ M.arcSet (M.key (Qof P) ⟨rd c bShoot 1, rd c bShoot 2⟩)
-            (M.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩))
-    (fun P c c' => ∀ M (o : Origin), ModelDescAt c.nmem (rd c bShoot 0) (Qof P) M →
+            (M.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩)
+
+abbrev ShooterPost (P : Polygon) (c c' : Config) : Prop :=
+∀ M (o : Origin), ModelDescAt c.nmem (rd c bShoot 0) (Qof P) M →
       OriginIn c (bandReg bShoot 5) o →
         let A := M.arcSet (M.key (Qof P) ⟨rd c bShoot 1, rd c bShoot 2⟩)
           (M.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩)
@@ -309,8 +389,19 @@ def ShooterOK (sh : Stmt) (B : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
           ProperPos M (Qof P) P.n ⟨rd c' bShoot 11, rd c' bShoot 12⟩ ∧ rd c' bShoot 11 < M.W.n ∧
           M.pos (Qof P) ⟨rd c' bShoot 11, rd c' bShoot 12⟩ =
             Visibility.rayPt (o.eval M (Qof P)) (dirOf (rd c bShoot 8)) t) ∧
-        (rd c' bShoot 10 ≠ 1 → NoHit A (o.eval M (Qof P)) (dirOf (rd c bShoot 8))))
-    (fun _ c => F (rd c bShoot 9))
+        (rd c' bShoot 10 ≠ 1 → NoHit A (o.eval M (Qof P)) (dirOf (rd c bShoot 8)))
+
+/-- **The ray-shooter interface** (p. 501 (i)).  `sh` answers, for a model `M` accepted by `Ok`
+(registers `0`: model descriptor; `1, 2` and `3, 4`: the ends of a subarc; `5 … 7`: the query
+point (an `Origin`); `8`: the direction; `9`: a bound `γ ≤ cap` on the counted edges of the subarc; `13`: the
+context handle), the first point of the subarc hit by the ray (register `10`: hit flag; `11, 12`:
+its walk position), in at most `F γ` steps, provided the context `X` (the up-phase data) is in
+memory below the allocator.  (Consolidated revision: the model descriptor is well formed and
+below the allocator, the subarc ends are proper positions, findings C6–C8; the origin is a walk
+vertex or an inner point, and non-vertex subarc ends are inner points, finding G2.) -/
+def ShooterOK (sh : Stmt) (B : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
+    (Ok : Polygon → Model → Prop) : Prop :=
+  Meets sh B (ShooterPre X Ok) ShooterPost (fun _ c => F (rd c bShoot 9))
 
 /-- The walks `W` and `W'` **agree** on the stretch of length `L` starting at their vertices `g`
 and `g'` (indices modulo the lengths); the same as `WalkEmbed.Agree`, stated here to keep the
@@ -331,6 +422,21 @@ def PieceWalk (M : Model) (Cα : Chain) (s e : WPos) : Prop :=
           WalkAgree M.W (chainModel Cα).W s.edge g' L₁ ∧
           WalkAgree M.W (chainModel Cα).W ((s.edge + L₁) % M.W.n) 6 (Cα.m - L₁))
 
+/-- Input contract for the arc-cutting subroutine. -/
+abbrev CutterPre (X : MemCtx) (Ok : Polygon → Model → Prop)
+    (P : Polygon) (W : ℕ) (c : Config) : Prop :=
+GoodEnv P ∧ hostWords P.n ≤ W ∧ X.holds P c.nmem (rd c bCut 13) (c.nreg ALLOC) ∧
+      rd c bCut 9 ≤ X.cap P c.nmem (rd c bCut 13) ∧
+      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bCut 0) ∧
+      ∃ M, ModelDescAt c.nmem (rd c bCut 0) (Qof P) M ∧ Ok P M ∧
+        ProperPos M (Qof P) P.n ⟨rd c bCut 1, rd c bCut 2⟩ ∧
+        ProperPos M (Qof P) P.n ⟨rd c bCut 3, rd c bCut 4⟩ ∧
+        rd c bCut 1 < M.W.n ∧ rd c bCut 3 < M.W.n ∧
+        (rd c bCut 2 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bCut 1, rd c bCut 2⟩)) ∧
+        (rd c bCut 4 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩)) ∧
+        M.arcWt (M.key (Qof P) ⟨rd c bCut 1, rd c bCut 2⟩)
+          (M.key (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩) ≤ rd c bCut 9
+
 /-- **The arc-cutter interface** (p. 501 (ii)).  Inputs as for the shooter (registers `0 … 4`,
 bound `γ ≤ cap` in `9`, context handle in `13`).  Output (`10`): a fresh piece list — its length `q ≤ G γ`, then seven words
 per piece: the two ends (walk positions), a kind (`0` a single-edge end piece, `1` a
@@ -346,18 +452,7 @@ normal forms (consolidated revision, findings C7/C8).  A kind-`1` piece's walk a
 chain's model walk (`PieceWalk`, finding E5). -/
 def CutterOK (cu : Stmt) (B : Finset ℕ) (G H : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop) : Prop :=
-  Meets cu B
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ X.holds P c.nmem (rd c bCut 13) (c.nreg ALLOC) ∧
-      rd c bCut 9 ≤ X.cap P c.nmem (rd c bCut 13) ∧
-      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bCut 0) ∧
-      ∃ M, ModelDescAt c.nmem (rd c bCut 0) (Qof P) M ∧ Ok P M ∧
-        ProperPos M (Qof P) P.n ⟨rd c bCut 1, rd c bCut 2⟩ ∧
-        ProperPos M (Qof P) P.n ⟨rd c bCut 3, rd c bCut 4⟩ ∧
-        rd c bCut 1 < M.W.n ∧ rd c bCut 3 < M.W.n ∧
-        (rd c bCut 2 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bCut 1, rd c bCut 2⟩)) ∧
-        (rd c bCut 4 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩)) ∧
-        M.arcWt (M.key (Qof P) ⟨rd c bCut 1, rd c bCut 2⟩)
-          (M.key (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩) ≤ rd c bCut 9)
+  Meets cu B (CutterPre X Ok)
     (fun P c c' => ∀ M, ModelDescAt c.nmem (rd c bCut 0) (Qof P) M →
       let L := rd c' bCut 10
       let q := c'.nmem L
@@ -426,6 +521,38 @@ noncomputable def QOrigin.eval (Q : Polygon) (C : Chain) (σ : ℝ) : QOrigin �
   | .sym p => p.eval Q
   | .box h => (-σ * C.radius, (Q.vtx h).2)
 
+/-- Contract for the per-chain oracle preprocessing. -/
+abbrev OraclePrepMeets (s : Stmt) (bands : Finset ℕ) (κ : ℕ)
+    (At : Polygon → (ℕ → ℕ) → ℕ → Prop) : Prop :=
+  Meets s bands
+    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ ChainWF P (c.nreg ALLOC) c.nmem (rd c bOPrep 0) ∧
+      ∃ H C N, ChainDescAt c.nmem (rd c bOPrep 0) (Qof P) H C ∧
+      C.P = Qof P ∧ NFWithin c.nmem (rd c bOPrep 1) (c.nreg ALLOC) N ∧
+      IsCanonicalNF (chainModel C) (Qof P) N (rd c bOPrep 2) 4)
+    (fun P c c' => c.nreg ALLOC ≤ rd c' bOPrep 3 ∧ rd c' bOPrep 3 + 3 ≤ c'.nreg ALLOC ∧
+      c'.nmem (rd c' bOPrep 3) = rd c bOPrep 0 ∧ c'.nmem (rd c' bOPrep 3 + 1) = rd c bOPrep 1 ∧
+      c'.nmem (rd c' bOPrep 3 + 2) = rd c bOPrep 2 ∧
+      ∀ m', (MemEqBelow (c'.nreg ALLOC) m' c'.nmem) → At P m' (rd c' bOPrep 3))
+    (fun _ c => κ * (c.nmem (rd c bOPrep 1) *
+      (Nat.clog 2 (c.nmem (rd c bOPrep 0 + 2)) + 1) + 1))
+
+/-- Contract for the per-chain oracle query. -/
+abbrev OracleQueryMeets (s : Stmt) (bands : Finset ℕ) (κ : ℕ)
+    (At : Polygon → (ℕ → ℕ) → ℕ → Prop) : Prop :=
+  Meets s bands
+    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ At P c.nmem (rd c bOQuery 0) ∧
+      ∃ o : QOrigin, o.Lt P.n ∧ QOriginIn c (bandReg bOQuery 1) o)
+    (fun P c c' => ∀ H C (o : QOrigin),
+      ChainDescAt c.nmem (c.nmem (rd c bOQuery 0)) (Qof P) H C →
+      QOriginIn c (bandReg bOQuery 1) o →
+        let z := o.eval (Qof P) C (dirOf (rd c bOQuery 4))
+        (rd c' bOQuery 5 = 1 → ∃ t, FirstHit C.set z (dirOf (rd c bOQuery 4)) t ∧
+          rd c' bOQuery 6 < P.n ∧
+          Visibility.rayPt z (dirOf (rd c bOQuery 4)) t ∈ (Qof P).edge (rd c' bOQuery 6)) ∧
+        (rd c' bOQuery 5 ≠ 1 → NoHit C.set z (dirOf (rd c bOQuery 4))))
+    (fun _ c => ⌈(κ : ℝ) * ((c.nmem (rd c bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
+      ((c.nmem (c.nmem (rd c bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊)
+
 /-- **Validity of an oracle implementation.**
 * Preprocessing (band `bOPrep`): from a well-formed chain descriptor (`0`) of a chain of the
   geometry polygon and a `γ`-canonical normal form (`1`) of it, both below the allocator (`γ` in `2`, degree cap `4`), builds a fresh
@@ -439,30 +566,8 @@ noncomputable def QOrigin.eval (Q : Polygon) (C : Chain) (σ : ℝ) : QOrigin �
   at most `κ (γ^{1/3} (m + 1)^{2/3} + 1)` steps. -/
 def OracleIface.Valid (O : OracleIface) : Prop :=
   O.bands ⊆ oracleBands ∪ {bOPrep} ∧
-  Meets O.prep O.bands
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ ChainWF P (c.nreg ALLOC) c.nmem (rd c bOPrep 0) ∧
-      ∃ H C N, ChainDescAt c.nmem (rd c bOPrep 0) (Qof P) H C ∧
-      C.P = Qof P ∧ NFWithin c.nmem (rd c bOPrep 1) (c.nreg ALLOC) N ∧
-      IsCanonicalNF (chainModel C) (Qof P) N (rd c bOPrep 2) 4)
-    (fun P c c' => c.nreg ALLOC ≤ rd c' bOPrep 3 ∧ rd c' bOPrep 3 + 3 ≤ c'.nreg ALLOC ∧
-      c'.nmem (rd c' bOPrep 3) = rd c bOPrep 0 ∧ c'.nmem (rd c' bOPrep 3 + 1) = rd c bOPrep 1 ∧
-      c'.nmem (rd c' bOPrep 3 + 2) = rd c bOPrep 2 ∧
-      ∀ m', (∀ a, a < c'.nreg ALLOC → m' a = c'.nmem a) → O.At P m' (rd c' bOPrep 3))
-    (fun _ c => O.κ * (c.nmem (rd c bOPrep 1) *
-      (Nat.clog 2 (c.nmem (rd c bOPrep 0 + 2)) + 1) + 1)) ∧
-  Meets O.query (kernelBands ∪ {bOQuery})
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ O.At P c.nmem (rd c bOQuery 0) ∧
-      ∃ o : QOrigin, o.Lt P.n ∧ QOriginIn c (bandReg bOQuery 1) o)
-    (fun P c c' => ∀ H C (o : QOrigin),
-      ChainDescAt c.nmem (c.nmem (rd c bOQuery 0)) (Qof P) H C →
-      QOriginIn c (bandReg bOQuery 1) o →
-        let z := o.eval (Qof P) C (dirOf (rd c bOQuery 4))
-        (rd c' bOQuery 5 = 1 → ∃ t, FirstHit C.set z (dirOf (rd c bOQuery 4)) t ∧
-          rd c' bOQuery 6 < P.n ∧
-          Visibility.rayPt z (dirOf (rd c bOQuery 4)) t ∈ (Qof P).edge (rd c' bOQuery 6)) ∧
-        (rd c' bOQuery 5 ≠ 1 → NoHit C.set z (dirOf (rd c bOQuery 4))))
-    (fun _ c => ⌈(O.κ : ℝ) * ((c.nmem (rd c bOQuery 0 + 2) : ℝ) ^ ((1 : ℝ) / 3) *
-      ((c.nmem (c.nmem (rd c bOQuery 0) + 2) : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1)⌉₊)
+  OraclePrepMeets O.prep O.bands O.κ O.At ∧
+  OracleQueryMeets O.query (kernelBands ∪ {bOQuery}) O.κ O.At
 
 /-! ## WP-I: clusters of a planar map in memory -/
 

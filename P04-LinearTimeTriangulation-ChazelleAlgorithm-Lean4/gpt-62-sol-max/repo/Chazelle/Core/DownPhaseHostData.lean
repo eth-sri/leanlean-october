@@ -46,8 +46,8 @@ theorem hk_strictMono {i j : ℕ} (hij : i < j) (hj : j < nk M F U) : hk M F U i
   have hS := hostKeys_finite (U := U) hM hF hfin
   have hL := hostKeyList_eq (U := U) hS
   have hsorted : (hostKeyList M F U).Pairwise (· ≤ ·) := by
-    rw [hL]; exact Finset.pairwise_sort _ _
-  have hnodup : (hostKeyList M F U).Nodup := by rw [hL]; exact Finset.sort_nodup _ _
+    simp_all
+  have hnodup : (hostKeyList M F U).Nodup := by simp_all
   unfold hk
   rw [List.getD_eq_getElem _ _ (lt_trans hij hj), List.getD_eq_getElem _ _ hj]
   refine lt_of_le_of_ne (List.pairwise_iff_getElem.1 hsorted i j (lt_trans hij hj) hj hij) ?_
@@ -69,7 +69,7 @@ theorem hk_mem {i : ℕ} (hi : i < nk M F U) : hk M F U i ∈ hostKeys M F U := 
 theorem exists_hk {x : ℝ} (hx : x ∈ hostKeys M F U) : ∃ i, i < nk M F U ∧ hk M F U i = x := by
   rw [← hk_mem_iff hM hF hfin] at hx
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
-  exact ⟨i, hi, by unfold hk; rw [List.getD_eq_getElem _ _ hi]⟩
+  exact ⟨i, hi, by unfold hk; simp_all⟩
 
 /-- **No host key inside a gap.** -/
 theorem hk_gap (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) {x : ℝ}

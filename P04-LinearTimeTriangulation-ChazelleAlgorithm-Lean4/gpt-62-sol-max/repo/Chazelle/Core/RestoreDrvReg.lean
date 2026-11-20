@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.RestoreDrvCopy
 
 /-!
@@ -50,9 +52,6 @@ def FoundOK (M : Model) (Q : Polygon) (N : NF) (reg : ℕ → Set Point) (r : �
   (recOf t).Attached M Q ∧ t.1 < Q.n ∧ (recOf t).toSet M Q ∈ M.Adm ∧
     SplitsWell M (N.F M Q) (reg r) ((recOf t).toSet M Q)
 
-/-- The memory context has a local capacity. -/
-abbrev CapLocal (X : MemCtx) : Prop := X.CapLocal
-
 /-- The cost of one call of the splitting step. -/
 def costF (κf F G Hc : ℕ → ℕ) (dcap γ : ℕ) : ℕ :=
   κf dcap * F γ * G γ * (Hc γ + Nat.clog 2 γ + 1)
@@ -99,42 +98,48 @@ def Bf : ℕ := costF E.κf E.F E.G E.Hc E.dcap E.γ + 20
 
 end RegEnv
 
+section
+
+variable {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
+    (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
+include m' hwf hMD
+
 /-- **Host regularity of a descriptor** survives a change of the memory at or above the bound of
 a well-formed descriptor (G10/G11). -/
-theorem hregKeep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
-    (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
+theorem hregKeep
     (h : m D = 0 → ∀ H C, ChainDescAt m (D + 1) (Qof P) H C → HostRegular (Qof P).n H)
-    (he : ∀ a, a < E → m' a = m a) :
+    (he : MemEqBelow E m' m) :
     m' D = 0 → ∀ H C, ChainDescAt m' (D + 1) (Qof P) H C → HostRegular (Qof P).n H := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by ram_simp [← he] <;> omega
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
-    have hH : HostAt m' (m (D + 1)) H₀ := Gran.hostAt_agree' hC₀.1 hEb he
+    have hH := Gran.hostAt_agree' hC₀.1 hEb he
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    have : H = H₀ := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
+    have := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
     subst this
     exact h h0' H C₀ hC₀
-  · rw [h0'] at h1; exact absurd h1 (by norm_num)
+  simp_all
 
 /-- A chain descriptor's polygon stays simple when the memory changes above its bound. -/
-theorem simpKeep {P : Polygon} {m m' : ℕ → ℕ} {D E : ℕ} {M : Model}
-    (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
+theorem simpKeep
     (h : m D = 0 → ∀ H C, ChainDescAt m (D + 1) (Qof P) H C → C.P.Simple)
-    (he : ∀ a, a < E → m' a = m a) :
+    (he : MemEqBelow E m' m) :
     m' D = 0 → ∀ H C, ChainDescAt m' (D + 1) (Qof P) H C → C.P.Simple := by
   intro h0 H C hC
   have hD := hwf.1
-  have h0' : m D = 0 := by rw [← he D (by omega)]; exact h0
+  have h0' : m D = 0 := by ram_simp [← he] <;> omega
   rcases hMD with ⟨-, H₀, C₀, hC₀, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, hEb, -⟩ := (hwf.2 h0').2 H₀ C₀ hC₀
-    have hH : HostAt m' (m (D + 1)) H₀ := Gran.hostAt_agree' hC₀.1 hEb he
+    have hH := Gran.hostAt_agree' hC₀.1 hEb he
     have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    have hHH : H = H₀ := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
+    have hHH := NFLoc.hostAt_unique (by rw [← e1]; exact hC.1) hH
     have hPP : C.P = C₀.P := by rw [hC.2.1, hC₀.2.1, hHH]
     rw [hPP]; exact h h0' H₀ C₀ hC₀
-  · rw [h0'] at h1; exact absurd h1 (by norm_num)
+  simp_all
+
+end
 
 /-- The facts about the region-loop data and the configuration `c₀` at the start of the loop. -/
 structure RegGood (E : RegEnv) (c₀ : Config) : Prop where
@@ -188,7 +193,7 @@ structure RegI (E : RegEnv) (c₀ : Config) (newL : List (ℕ × (ℕ × ℕ × 
   cnt : c.nreg 80018 = E.K + newL.length
   dst : c.nreg 80043 = E.LB + 3 * (E.K + newL.length)
   list : ChordListAt c.nmem E.LB (oldL E.N ++ newL.map Prod.snd)
-  low : ∀ a, a < E.LB → c.nmem a = c₀.nmem a
+  low : MemEqBelow E.LB c.nmem c₀.nmem
   regs : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
     q ≠ 80043 → c.nreg q = c₀.nreg q
   alloc : c₀.nreg ALLOC ≤ c.nreg ALLOC
@@ -196,16 +201,18 @@ structure RegI (E : RegEnv) (c₀ : Config) (newL : List (ℕ × (ℕ × ℕ × 
 
 /-! ## Straight-line pieces -/
 
-theorem load42_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw
+
+theorem load42_exec :
     ∃ c' k, Exec P W (block [.loadN 80042 80041]) c c' k ∧ k = 1 ∧
       c'.nreg 80042 = c.nmem (c.nreg 80041) ∧ (∀ r, r ≠ 80042 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  exec_block
-  refine ⟨rfl, ?_, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other]
+  verify_block
 
-theorem argS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
+theorem argS_exec :
     ∃ c' k, Exec P W argS c c' k ∧ k = 7 ∧
       c'.nreg 81000 = c.nreg 80000 ∧ c'.nreg 81001 = c.nreg 80012 ∧
       c'.nreg 81002 = c.nreg 80040 ∧ c'.nreg 81003 = c.nreg 80004 ∧
@@ -213,12 +220,9 @@ theorem argS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       c'.nreg 81006 = c.nreg 80003 ∧
       (∀ r, (r < 81000 ∨ 81007 ≤ r) → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  unfold argS
-  exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  ram_exec
 
-theorem appS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d : ℕ}
+theorem appS_exec {d : ℕ}
     (h43 : c.nreg 80043 = d) (h20 : c.nreg 80020 = 1) (hd : d + 3 ≤ W)
     (hn : c.nreg 80018 + 1 ≤ W) :
     ∃ c' k, Exec P W appS c c' k ∧ k = 7 ∧ c'.nreg 80043 = d + 3 ∧
@@ -231,43 +235,45 @@ theorem appS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
   exec_block
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h43, h20]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl⟩ <;>
-    simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, h43, h20]
+  simp_all
 
-theorem tail_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem tail_exec
     (h1 : c.nreg 80041 + c.nreg 80023 ≤ W) (h2 : c.nreg 80040 + c.nreg 80020 ≤ W) :
     ∃ c' k, Exec P W (block [.addN 80041 80041 80023, .addN 80040 80040 80020]) c c' k ∧
       k = 2 ∧ c'.nreg 80041 = c.nreg 80041 + c.nreg 80023 ∧
       c'.nreg 80040 = c.nreg 80040 + c.nreg 80020 ∧
       (∀ r, r ≠ 80041 → r ≠ 80040 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  exec_block
-  · exact h1
-  · simp (disch := omega) only [Machine.upd_other]; exact h2
-  · refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  exec_block!
+  simp_all
+
+end
 
 /-! ## The call of the splitting step -/
 
+section
+
+variable {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
+    (hE : RegGood E c₀) (hI : RegI E c₀ newL c)
+
+include hE hI in
 /-- The memory of the loop agrees with the initial memory below `A₀`. -/
-theorem RegI.agree {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
-    (hE : RegGood E c₀) (hI : RegI E c₀ newL c) : ∀ a, a < E.A₀ → c.nmem a = E.m₀ a :=
+theorem RegI.agree : ∀ a, a < E.A₀ → c.nmem a = E.m₀ a :=
   fun a ha => (hI.low a (lt_of_lt_of_le ha hE.hA₀)).trans (hE.hlow a ha)
 
-theorem RegI.nfWithin {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
-    (hE : RegGood E c₀) (hI : RegI E c₀ newL c) {A : ℕ} (hA : E.LB ≤ A) :
+include hE hI in
+theorem RegI.nfWithin {A : ℕ} (hA : E.LB ≤ A) :
     NFWithin c.nmem E.H A E.N :=
   (hE.hNW.transport hI.low).mono hA
 
 theorem RegGood.lb_le {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
     E.LB ≤ c₀.nreg ALLOC := by have := hE.alloc; omega
 
+include hE hI in
 /-- The degree word of region `r`. -/
-theorem RegI.deg_word {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))}
-    (hE : RegGood E c₀) (hI : RegI E c₀ newL c) (hr : c.nreg 80040 < E.R) :
+theorem RegI.deg_word (hr : c.nreg 80040 < E.R) :
     c.nmem (c.nreg 80041) = degOf E.N (c.nreg 80040) := by
-  have hNWc : NFWithin c.nmem E.H E.LB E.N := hI.nfWithin hE le_rfl
+  have hNWc := hI.nfWithin hE le_rfl
   have hareas := Gran.nf_areas hNWc
   have h5 : c.nmem (E.H + 5) = c₀.nmem (E.H + 5) := hI.low _ (by omega)
   have hreg := (hNWc.nfAt.2.2.2.2.2.2.2.1 (c.nreg 80040) hr).2.1
@@ -277,18 +283,25 @@ theorem RegI.deg_word {E : RegEnv} {c₀ c : Config} {newL : List (ℕ × (ℕ �
   congr 1
   ring
 
+end
+
+section
+
+variable {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
+    {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config} (hI : RegI E c₀ newL c)
+    (hr : c.nreg 80040 < E.R)
+include hE hI hr
+
 set_option maxHeartbeats 4000000 in
 /-- **One call of the splitting step** on a region with more than `D` exit chords: a sound chord
 is appended to the list. -/
-theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
-    {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config} (hI : RegI E c₀ newL c)
-    (hr : c.nreg 80040 < E.R) (hhigh : E.D < degOf E.N (c.nreg 80040)) :
+theorem call_step (hhigh : E.D < degOf E.N (c.nreg 80040)) :
     ∃ c' k t, Exec E.P E.W (callS E.sF) c c' k ∧ k ≤ costF E.κf E.F E.G E.Hc E.dcap E.γ + 16 ∧
       RF dBands E.A₀ c c' k ∧ WordsBounded E.W c' ∧
       FoundOK E.M (Qof E.P) E.N E.reg (c.nreg 80040) t ∧
       c'.nreg 80018 = c.nreg 80018 + 1 ∧ c'.nreg 80043 = c.nreg 80043 + 3 ∧
       ChordListAt c'.nmem E.LB (oldL E.N ++ newL.map Prod.snd ++ [t]) ∧
-      (∀ a, a < E.LB → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow E.LB c'.nmem c.nmem) ∧
       (∀ q, 80000 ≤ q → q < 81000 → q ≠ 80018 → q ≠ 80043 → c'.nreg q = c.nreg q) := by
   obtain ⟨hF, hG, hWh, hX, hcap, hA₀, hwf, hMD, hreg, hsimp, hGM, hOk, hfull, hNW, hNF, hregs, hdeg, hsg,
     hlow, wb₀, r00, r03, r04, r06, r12, r14, r19, r20, r23, r24, r40, r41, r18, r43, halloc,
@@ -297,24 +310,23 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
     hregs, hdeg, hsg, hlow, wb₀, r00, r03, r04, r06, r12, r14, r19, r20, r23, r24, r40, r41, r18,
     r43, halloc, hlist₀, hroom₀⟩
   set r := c.nreg 80040 with hrdef
-  have reg8 : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
-      q ≠ 80043 → c.nreg q = c₀.nreg q := hI.regs
+  have reg8 := hI.regs
   have c00 : c.nreg 80000 = E.MD := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r00]
+    ram_simp [reg8, r00] 
   have c03 : c.nreg 80003 = E.D := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r03]
+    ram_simp [reg8, r03] 
   have c04 : c.nreg 80004 = E.γ := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r04]
+    ram_simp [reg8, r04] 
   have c06 : c.nreg 80006 = E.ctx := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r06]
+    ram_simp [reg8, r06] 
   have c12 : c.nreg 80012 = E.H := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r12]
+    ram_simp [reg8, r12] 
   have c19 : c.nreg 80019 = E.dcap := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r19]
+    ram_simp [reg8, r19] 
   have c20 : c.nreg 80020 = 1 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r20]
+    ram_simp [reg8, r20] 
   have c24 : c.nreg 80024 = 0 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), r24]
+    ram_simp [reg8, r24] 
   have hagree := hI.agree hE'
   have hA0c : E.A₀ ≤ c.nreg ALLOC := by have := hI.alloc; have := hE'.lb_le; omega
   have hLBc : E.LB ≤ c.nreg ALLOC := by have := hI.alloc; have := hE'.lb_le; omega
@@ -342,10 +354,10 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
         M.DegLe (N.F M (Qof E.P)) (c₁.nreg 81005) ∧
         M.Semigranular (N.F M (Qof E.P)) (c₁.nreg 81003) ∧ c₁.nreg 81002 < N.nRegions := by
     rw [a0, a1, a2, a3, a4, a5, c00, c12, c04, c06, c19]
-    refine ⟨hG, hWh, ?_, hcap _ hag₁, hwf₁.mono (by rw [A₁]; exact hA0c),
+    refine ⟨hG, hWh, ?_, hcap _ hag₁, hwf₁.mono (by rwa [A₁]),
       hregKeep hwf hMD hreg hag₁, simpKeep hwf hMD hsimp hag₁, E.M, E.N, hMD₁, hGM,
-      hOk, hNW₁, hNF, hdeg, hsg, by rw [← hR]; exact hr⟩
-    exact E.X.mono _ _ _ _ _ (by rw [A₁]; exact hA0c)
+      hOk, hNW₁, hNF, hdeg, hsg, by rwa [← hR]⟩
+    exact E.X.mono _ _ _ _ _ (by rwa [A₁])
       (E.X.local_ _ _ _ _ _ (fun a ha => (hag₁ a ha).symm) hX)
   have hcostle : costF E.κf E.F E.G E.Hc E.dcap E.γ + 20 = E.Bf := rfl
   have hroomF : c₁.nreg ALLOC + E.κf (c₁.nreg 81005) * E.F (c₁.nreg 81003) *
@@ -354,7 +366,7 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
     have h1 := hI.room
     have h2 : (E.Bf + 2) * 1 ≤ (E.Bf + 2) * (E.R - r) := Nat.mul_le_mul_left _ (by omega)
     unfold costF at hcostle
-    have := hroom₀
+    
     nlinarith
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨P₂8, P₂fl, P₂⟩, F₂⟩ := hF E.P E.W c₁ w₁ pre hroomF
   beta_reduce at hk₂
@@ -362,60 +374,59 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have w₂ := e₂.wb_right
   -- the flag is `1` and the chord is sound
   have hNAt₁ : NFAt c₁.nmem (c₁.nreg 81001) E.N := by rw [a1, c12]; exact hNW₁.nfAt
-  have hMD₁' : ModelDescAt c₁.nmem (c₁.nreg 81000) (Qof E.P) E.M := by rw [a0, c00]; exact hMD₁
+  have hMD₁' : ModelDescAt c₁.nmem (c₁.nreg 81000) (Qof E.P) E.M := by rwa [a0, c00]
   obtain ⟨hsnd, hcpl⟩ := P₂ E.M E.N E.reg hMD₁' hNAt₁ hNF hregs
   obtain ⟨hRC, -, -, hRO⟩ := hregs
-  have hdegr : E.M.deg (E.N.F E.M (Qof E.P)) (E.reg r) = degOf E.N r :=
-    Gran.deg_region hNF hRC hRO (by rw [← hR]; exact hr)
-  have hflag : c₂.nreg 81007 = 1 := hcpl (by rw [a6, c03]; exact hfull)
-    (by rw [a6, c03, a2, hdegr]; exact hhigh)
+  have hdegr := Gran.deg_region hNF hRC hRO (by rw [← hR]; exact hr)
+  have hflag := hcpl (by rwa [a6, c03])
+    (by rwa [a6, c03, a2, hdegr])
   obtain ⟨s1, s2, s3, s4⟩ := hsnd hflag
   rw [a2] at s4
   set t : ℕ × ℕ × ℕ := (c₂.nreg 81008, c₂.nreg 81009, c₂.nreg 81010) with htdef
   have hgood : FoundOK E.M (Qof E.P) E.N E.reg r t := ⟨s1, s2, s3, s4⟩
   -- append
   have d43 : c₂.nreg 80043 = E.LB + 3 * (E.K + newL.length) := by
-    rw [P₂8 _ (band8 (by omega) (by omega)) (by omega), R₁ _ (by left; decide), hI.dst]
+    ram_simp [P₂8, R₁, hI.dst] 
   have d20 : c₂.nreg 80020 = 1 := by
-    rw [P₂8 _ (band8 (by omega) (by omega)) (by omega), R₁ _ (by left; decide), c20]
+    ram_simp [P₂8, R₁, c20] 
   have d18 : c₂.nreg 80018 = E.K + newL.length := by
-    rw [P₂8 _ (band8 (by omega) (by omega)) (by omega), R₁ _ (by left; decide), hI.cnt]
+    ram_simp [P₂8, R₁, hI.cnt] 
   have hlen : newL.length ≤ r := by
     have := congrArg List.length hI.hfst
     rw [List.length_map] at this
     rw [this]; exact highList_length_le _ _ _
-  have hA₂ : c₁.nreg ALLOC ≤ c₂.nreg ALLOC := F₂.2.2.2.2.2.1
+  have hA₂ := F₂.2.2.2.2.2.1
   have hdA : E.LB + 3 * (E.K + newL.length) + 3 ≤ c₁.nreg ALLOC := by
     rw [A₁]; have := hI.alloc; omega
   have hWW : c₂.nreg ALLOC ≤ E.W := w₂.1 _
   obtain ⟨c₃, k₃, e₃, hk₃, t43, t18, m₃, R₃, rr₃, rm₃, o₃⟩ := appS_exec (P := E.P) c₂ w₂ d43 d20
     (by omega) (by have := w₂.1 80018; omega)
   have f24 : c₂.nreg 80024 = 0 := by
-    rw [P₂8 _ (band8 (by omega) (by omega)) (by omega), R₁ _ (Or.inl (by decide)), c24]
+    ram_simp [P₂8, R₁, c24] 
   have e₂₃ : Exec E.P E.W (.ifLtN 80024 81007 appS .skip) c₂ c₃ (k₃ + 1) :=
-    .ifLtN_true (by rw [f24, hflag]; omega) e₃
+    (by ram_path [f24, hflag])
   -- memory facts
-  have hm₂low : ∀ a, a < c₁.nreg ALLOC → c₂.nmem a = c₁.nmem a := F₂.2.2.1
-  have hmem : ∀ a, a < E.LB + 3 * (E.K + newL.length) → c₃.nmem a = c.nmem a := by
+  have hm₂low := F₂.2.2.1
+  have hmem : MemEqBelow (E.LB + 3 * (E.K + newL.length)) c₃.nmem c.nmem := by
     intro a ha
-    rw [m₃, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), hm₂low a (by omega), m₁]
+    ram_rw [m₃, Machine.upd_other _ _, Machine.upd_other _ _,
+      Machine.upd_other _ _, hm₂low a, m₁]
   refine ⟨c₃, k₁ + (k₂ + (k₃ + 1)), t, .seq e₁ (.seq e₂ e₂₃), ?_, ?_, e₃.wb_right, hgood,
     ?_, ?_, ?_, fun a ha => hmem a (by omega), fun q q1 q2 q3 q4 => ?_⟩
   · unfold costF; omega
   · -- the frame
     have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun q hq => R₁ q (by
       rcases hq with hq | hq <;> [left; right] <;> omega)) rr₁ m₁ rm₁ o₁
-    have RF₂ : RF dBands E.A₀ c₁ c₂ k₂ := RF.of_frame F₂ (by rw [A₁]; exact hA0c)
+    have RF₂ : RF dBands E.A₀ c₁ c₂ k₂ := RF.of_frame F₂ (by rwa [A₁])
     have RF₃ : RF dBands E.A₀ c₂ c₃ (k₃ + 1) := by
       have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := R₃ _ (by decide) (by decide)
-      have b43 : bandOf 80043 ∈ dBands := by rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
-      have b18 : bandOf 80018 ∈ dBands := by rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
+      have b43 : bandOf 80043 ∈ dBands := by ram_rw [band8]; exact mem_dBands_8
+      have b18 : bandOf 80018 ∈ dBands := by assumption
       refine ⟨fun q hq _ => R₃ q (fun h => hq (h ▸ b43)) (fun h => hq (h ▸ b18)),
         fun q _ => by rw [rr₃], fun a ha => ?_, fun a _ => by rw [rm₃], o₃, by omega, by omega⟩
-      · have : a < E.LB := lt_of_lt_of_le ha hA₀
-        rw [m₃, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-          Machine.upd_other _ _ _ (by omega)]
+      · have := lt_of_lt_of_le ha hA₀
+        ram_rw [m₃, Machine.upd_other _ _, Machine.upd_other _ _,
+          Machine.upd_other _ _]
     exact (RF₁.trans (RF₂.trans RF₃))
   · rw [t18, d18, hI.cnt]
   · rw [t43, hI.dst]
@@ -423,11 +434,11 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
     have hl := hI.list
     have hlen' : (oldL E.N ++ newL.map Prod.snd).length = E.K + newL.length := by
       simp [oldL, RegEnv.K, NF.nChords]
-    refine Gran.ChordListAt.snoc hl (fun a a1 a2 => ?_) ?_ ?_ ?_
+    refine hl.snoc (fun a a1 a2 => ?_) ?_ ?_ ?_
     · rw [hlen'] at a2; exact hmem a a2
-    · rw [hlen', m₃, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+    · ram_rw [hlen', m₃, Machine.upd_other _ _, Machine.upd_other _ _,
         Machine.upd_same]
-    · rw [hlen', m₃, Machine.upd_other _ _ _ (by omega), Machine.upd_same]
+    · ram_rw [hlen', m₃, Machine.upd_other _ _, Machine.upd_same]
     · rw [hlen', m₃, Machine.upd_same]
   · rw [R₃ q q4 q3, P₂8 q (band8 q1 (by omega)) q2, R₁ q (by left; exact q2)]
 
@@ -435,21 +446,14 @@ theorem call_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
 
 set_option maxHeartbeats 8000000 in
 /-- **One step of the region loop.** -/
-theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
-    {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config} (hI : RegI E c₀ newL c)
-    (hr : c.nreg 80040 < E.R) :
+theorem regBody_step :
     ∃ c' k newL', Exec E.P E.W (regBody E.sF) c c' k ∧ RegI E c₀ newL' c' ∧
       RF dBands E.A₀ c c' k ∧ k ≤ E.Bf ∧ c'.nreg 80040 = c.nreg 80040 + 1 := by
   have reg8 := hI.regs
   have c03 : c.nreg 80003 = E.D := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r03]
-  have c20 : c.nreg 80020 = 1 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r20]
-  have c23 : c.nreg 80023 = 5 := by
-    rw [reg8 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r23]
+    ram_finish [reg8, hE.r03]
+  
+  
   have hdw := hI.deg_word hE hr
   obtain ⟨r, hrdef⟩ : ∃ r, c.nreg 80040 = r := ⟨_, rfl⟩
   rw [hrdef] at hr hdw
@@ -458,16 +462,16 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   have w₁ := e₁.wb_right
   have hroom₁ : c₁.nreg ALLOC + (E.Bf + 2) * (E.R - c₁.nreg 80040) ≤
       c₀.nreg ALLOC + (E.Bf + 2) * E.R := by
-    rw [R₁ _ (by decide), R₁ _ (by decide)]; exact hI.room
-  have hI₁ : RegI E c₀ newL c₁ := ⟨w₁, by rw [R₁ _ (by decide)]; exact hI.r_le,
-    by rw [R₁ _ (by decide), R₁ _ (by decide)]; exact hI.ptr,
-    by rw [R₁ _ (by decide)]; exact hI.hfst, hI.hgood, by rw [R₁ _ (by decide)]; exact hI.cnt,
-    by rw [R₁ _ (by decide)]; exact hI.dst, by rw [m₁]; exact hI.list,
+    ram_rw [R₁, R₁]; exact hI.room
+  have hI₁ : RegI E c₀ newL c₁ := ⟨w₁, by ram_rw [R₁]; exact hI.r_le,
+    by ram_rw [R₁, R₁]; exact hI.ptr,
+    by ram_rw [R₁]; exact hI.hfst, hI.hgood, by ram_rw [R₁]; exact hI.cnt,
+    by ram_rw [R₁]; exact hI.dst, by rw [m₁]; exact hI.list,
     fun a ha => by rw [m₁]; exact hI.low a ha,
-    fun q q1 q2 q3 q4 q5 q6 q7 => by rw [R₁ q q5]; exact hI.regs q q1 q2 q3 q4 q5 q6 q7,
-    by rw [R₁ _ (by decide)]; exact hI.alloc, hroom₁⟩
+    fun q q1 q2 q3 q4 q5 q6 q7 => by ram_finish,
+    by ram_rw [R₁]; exact hI.alloc, hroom₁⟩
   have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun q hq => R₁ q (by omega)) rr₁ m₁ rm₁ o₁
-  have r1 : c₁.nreg 80040 = r := by rw [R₁ _ (by decide), hrdef]
+  have r1 : c₁.nreg 80040 = r := by ram_finish
   -- the conditional call
   obtain ⟨c₂, k₂, newL', e₂, hk₂, RF₂, w₂, hfst₂, hgood₂, cnt₂, dst₂, list₂, low₂, reg₂⟩ :
       ∃ (c₂ : Config) (k₂ : ℕ) (newL' : List (ℕ × (ℕ × ℕ × ℕ))),
@@ -477,14 +481,14 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
       (∀ p ∈ newL', FoundOK E.M (Qof E.P) E.N E.reg p.1 p.2) ∧
       c₂.nreg 80018 = E.K + newL'.length ∧ c₂.nreg 80043 = E.LB + 3 * (E.K + newL'.length) ∧
       ChordListAt c₂.nmem E.LB (oldL E.N ++ newL'.map Prod.snd) ∧
-      (∀ a, a < E.LB → c₂.nmem a = c₁.nmem a) ∧
+      (MemEqBelow E.LB c₂.nmem c₁.nmem) ∧
       (∀ q, 80000 ≤ q → q < 81000 → q ≠ 80018 → q ≠ 80043 → c₂.nreg q = c₁.nreg q) := by
     by_cases hhigh : E.D < degOf E.N r
     · obtain ⟨c₂, k₂, t, e₂, hk₂, RF₂, w₂, hgood, t18, t43, tlist, tlow, treg⟩ :=
-        call_step hE hI₁ (by rw [r1]; exact hr) (by rw [r1]; exact hhigh)
+        call_step hE hI₁ (by rwa [r1]) (by rwa [r1])
       rw [r1] at hgood
       refine ⟨c₂, k₂ + 1, newL ++ [(r, t)],
-        .ifLtN_true (by rw [R₁ _ (by decide), c03, l42]; exact hhigh) e₂, by omega,
+        (by ram_path), by omega,
         RF₂.mono subset_rfl (by omega), w₂, ?_, ?_, ?_, ?_, ?_, tlow, treg⟩
       · rw [List.map_append, hI.hfst, hrdef, highList_succ, ite_eq_left hhigh]; rfl
       · intro p hp
@@ -493,30 +497,26 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
         · simp only [List.mem_singleton] at hp; subst hp; exact hgood
       · rw [t18, hI₁.cnt, List.length_append, List.length_singleton]; ring
       · rw [t43, hI₁.dst, List.length_append, List.length_singleton]; ring
-      · rw [List.map_append, ← List.append_assoc]; exact tlist
-    · refine ⟨c₁, 2, newL, .ifLtN_false (by rw [R₁ _ (by decide), c03, l42]; exact hhigh)
+      · rwa [List.map_append, ← List.append_assoc]
+    · refine ⟨c₁, 2, newL, .ifLtN_false (by ram_rw assumption [R₁, c03, l42])
         (.skip w₁), by omega, RF.refl _ _, w₁, ?_, hI.hgood, hI₁.cnt, hI₁.dst, hI₁.list,
         fun _ _ => rfl, fun _ _ _ _ _ => rfl⟩
       rw [hI.hfst, hrdef, highList_succ, ite_eq_right hhigh, List.append_nil]
   -- the tail
-  have k40 : c₂.nreg 80040 = r := by rw [reg₂ _ (by omega) (by omega) (by omega) (by omega), r1]
+  have k40 : c₂.nreg 80040 = r := by ram_finish [reg₂, r1]
   have k41 : c₂.nreg 80041 = c₀.nmem (E.H + 5) + 2 + 5 * r := by
-    rw [reg₂ _ (by omega) (by omega) (by omega) (by omega), hI₁.ptr, r1]
+    ram_finish [reg₂, hI₁.ptr, r1]
   have k20 : c₂.nreg 80020 = 1 := by
-    rw [reg₂ _ (by omega) (by omega) (by omega) (by omega),
-      hI₁.regs _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r20]
+    ram_finish [reg₂, hI₁.regs, hE.r20]
   have k23 : c₂.nreg 80023 = 5 := by
-    rw [reg₂ _ (by omega) (by omega) (by omega) (by omega),
-      hI₁.regs _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      hE.r23]
+    ram_finish [reg₂, hI₁.regs, hE.r23]
   -- the pointer stays below the allocator
-  have hNWc : NFWithin c.nmem E.H E.LB E.N := hI.nfWithin hE le_rfl
+  have hNWc := hI.nfWithin hE le_rfl
   have hareas := (Gran.nf_areas hNWc).2.2.1 r hr
   have h5 : c.nmem (E.H + 5) = c₀.nmem (E.H + 5) := hI.low _ (by
     have := (Gran.nf_areas hNWc).1; omega)
   rw [h5] at hareas
-  have hLBW : E.LB ≤ E.W := le_trans (hE.lb_le) (hE.wb.1 ALLOC)
+  have hLBW := le_trans (hE.lb_le) (hE.wb.1 ALLOC)
   have hRW : E.R + 1 ≤ E.W := by
     have := hE.room
     have : E.R ≤ (E.Bf + 2) * E.R := Nat.le_mul_of_pos_left _ (by omega)
@@ -529,15 +529,15 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
   rw [k40, k20] at t40
   have RF₃ : RF dBands E.A₀ c₂ c₃ k₃ := rf_of_regs (fun q hq => R₃ q (by omega) (by omega))
     rr₃ m₃ rm₃ o₃
-  have RFall : RF dBands E.A₀ c c₃ (k₁ + (k₂ + k₃)) := RF₁.trans (RF₂.trans RF₃)
+  have RFall := RF₁.trans (RF₂.trans RF₃)
   have hBf : costF E.κf E.F E.G E.Hc E.dcap E.γ + 20 = E.Bf := rfl
   refine ⟨c₃, k₁ + (k₂ + k₃), newL', .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega,
-    by rw [t41, t40]; ring, by rw [t40]; exact hfst₂, hgood₂,
-    by rw [R₃ _ (by decide) (by decide)]; exact cnt₂,
-    by rw [R₃ _ (by decide) (by decide)]; exact dst₂, by rw [m₃]; exact list₂,
+    by rw [t41, t40]; ring, by rwa [t40], hgood₂,
+    by ram_finish,
+    by ram_finish, by rwa [m₃],
     fun a ha => by rw [m₃, low₂ a ha, m₁]; exact hI.low a ha,
     fun q q1 q2 q3 q4 q5 q6 q7 => ?_, ?_, ?_⟩, RFall, by omega, by rw [t40, hrdef]⟩
-  · rw [R₃ q q4 q3, reg₂ q q1 q2 q6 q7]; exact hI₁.regs q q1 q2 q3 q4 q5 q6 q7
+  · ram_finish [R₃ q q4 q3, reg₂ q q1 q2 q6 q7]
   · exact le_trans hI.alloc RFall.2.2.2.2.2.1
   · have h1 := hI.room
     have h2 := RFall.2.2.2.2.2.2
@@ -546,6 +546,8 @@ theorem regBody_step {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀)
     have h3 : (E.Bf + 2) * (E.R - r) = (E.Bf + 2) * (E.R - (r + 1)) + (E.Bf + 2) := by
       rw [show E.R - r = (E.R - (r + 1)) + 1 by omega, Nat.mul_add, Nat.mul_one]
     omega
+
+end
 
 /-- **The region loop.** -/
 theorem reg_exec {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
@@ -561,14 +563,13 @@ theorem reg_exec {E : RegEnv} {c₀ : Config} (hE : RegGood E c₀) :
     (fun c ⟨_, h⟩ => h.wb)
     (fun c ⟨newL, I⟩ ht => by
       have t : c.nreg 80040 < E.R := by
-        rw [I.regs 80014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-          (by omega), hE.r14] at ht
-        exact ht
+        rwa [(ram_app% (I.regs 80014 ?_ ?_ ?_ ?_ ?_ ?_
+          ?_)), hE.r14] at ht
       obtain ⟨c', k, newL', e, I', RF', hk, h40⟩ := regBody_step hE I t
       exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, by omega⟩) ⟨[], I0⟩
   have hR' : c'.nreg 80040 = E.R := by
-    rw [I'.regs 80014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hE.r14] at hx
+    rw [(ram_app% (I'.regs 80014 ?_ ?_ ?_ ?_ ?_ ?_
+      ?_)), hE.r14] at hx
     have := I'.r_le; omega
   refine ⟨c', k, newL, e, I', hR', RFl, ?_⟩
   rw [hE.r40] at hk

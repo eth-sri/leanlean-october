@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.FuseAsmQuery
 public import Chazelle.Core.MergeAsmProg
 public import Chazelle.Core.FuseAsmSet
@@ -83,7 +85,7 @@ theorem qlBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h01, hA', h05, h06, h08, ALLOC])
   · have a6' : r ≠ 9999 := a6
-    simp (disch := omega) only [Machine.upd_other]
+    frame_finish
 
 /-- The invariant of the query loop. -/
 structure QLI (W K CB LB : ℕ) (c₀ c : Config) : Prop where
@@ -93,7 +95,7 @@ structure QLI (W K CB LB : ℕ) (c₀ c : Config) : Prop where
   alloc : c.nreg ALLOC = LB + 6 * c.nreg 70102
   regs : ∀ r, r ≠ 70101 → r ≠ 70102 → r ≠ 70103 → r ≠ 70104 → r ≠ 70107 → r ≠ ALLOC →
     c.nreg r = c₀.nreg r
-  low : ∀ a, a < LB → c.nmem a = c₀.nmem a
+  low : MemEqBelow LB c.nmem c₀.nmem
   done : ∀ i, i < c.nreg 70102 →
     c.nmem (LB + 6 * i) = c₀.nmem (CB + 5 * i + 1) ∧
     c.nmem (LB + 6 * i + 1) = c₀.nmem (CB + 5 * i) + 1 ∧ c.nmem (LB + 6 * i + 2) = 1 ∧
@@ -112,8 +114,7 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
     ∀ (n : ℕ) (c : Config), QLI W K CB LB c₀ c → c.nreg 70102 + n = K →
       ∃ c' k, Exec P W qlLoop c c' k ∧ k ≤ 22 * n + 2 ∧ 6 * n ≤ k ∧ QLI W K CB LB c₀ c' ∧
         c'.nreg 70102 = K
-  | 0, c, hI, hn => ⟨c, 2, .whileLtN_false (by rw [hI.regs 70100 (by decide) (by decide)
-      (by decide) (by decide) (by decide) (by decide), h00]; omega) hI.wb, by omega, by omega, hI,
+  | 0, c, hI, hn => ⟨c, 2, .whileLtN_false (by ram_simp [hI.regs, h00] <;> reg_omega) hI.wb, by omega, by omega, hI,
       by omega⟩
   | n + 1, c, hI, hn => by
     obtain ⟨i, hi⟩ : ∃ i, c.nreg 70102 = i := ⟨_, rfl⟩
@@ -122,17 +123,14 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
     have hmem : c.nmem (CB + 5 * i) = c₀.nmem (CB + 5 * i) := hI.low _ (by omega)
     obtain ⟨c', k, e, hk, v01, vA, v02, mo, m0, m1, m2, m3, m4, m5, R, rr, rm, ro⟩ :=
       qlBody_exec (P := P) c hI.wb (by rw [hI.cur, hi]) (by rw [hI.alloc, hi])
-        (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide), h05])
-        (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide), h06])
-        (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide), h08])
+        (by ram_post)
+        (by ram_post)
+        (by ram_post)
         (by omega) (by omega) (by omega) (by rw [hmem]; exact hh i hiK) (by omega)
     rw [hi] at v02
     have hI' : QLI W K CB LB c₀ c' := by
       refine ⟨e.wb_right, by omega, by rw [v01, v02]; ring, by rw [vA, v02]; ring,
-        fun r a1 a2 a3 a4 a5 a6 => by rw [R r a1 a2 a3 a4 a5 a6, hI.regs r a1 a2 a3 a4 a5 a6],
+        fun r a1 a2 a3 a4 a5 a6 => by ram_post,
         fun a ha => by rw [mo a (Or.inl (by omega)), hI.low a ha], fun i' hi' => ?_,
         by rw [rr, hI.rr], by rw [rm, hI.rm], by rw [ro, hI.out]⟩
       rw [v02] at hi'
@@ -159,8 +157,7 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := qlLoop_exec h05 h06 h08 h00 hCB hh hW hWK n c'
       hI' (by omega)
     exact ⟨c'', k + 2 + k₂, .whileLtN_true (by
-      rw [hi, hI.regs 70100 (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h00]; exact hiK) e e₂, by omega, by omega, hI'', hK⟩
+      ram_finish [hi, hI.regs, h00]) e e₂, by omega, by omega, hI'', hK⟩
 
 /-- **The written query list.** -/
 theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}
@@ -182,10 +179,7 @@ theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}
     have e1 : 2 * i / 2 = i := by omega
     have e2 : 2 * i % 2 = 0 := by omega
     simp only [e1, e2, ite_true]
-    refine ⟨?_, ?_, ?_⟩
-    · rw [show LB + 3 * (2 * i) = LB + 6 * i by ring, d0, c1]
-    · rw [show LB + 3 * (2 * i) + 1 = LB + 6 * i + 1 by ring, d1, c0]
-    · rw [show LB + 3 * (2 * i) + 2 = LB + 6 * i + 2 by ring, d2]
+    simp [show LB + 3 * (2 * i) = LB + 6 * i by ring, d0, c1, d1, c0, d2]
   · have hi : i < cs.length := by omega
     obtain ⟨c0, c1, c2⟩ := hcs i hi
     obtain ⟨-, -, -, d3, d4, d5⟩ := hdone i hi

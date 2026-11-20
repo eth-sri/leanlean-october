@@ -55,9 +55,6 @@ def transpose (P : Polygon) : Polygon := ⟨P.vertices.map Prod.swap⟩
   simp only [transpose, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map]
   rcases P.vertices[i]? with _ | p <;> rfl
 
-@[simp] theorem transpose_transpose (P : Polygon) : transpose (transpose P) = P := by
-  simp [transpose, List.map_map]
-
 /-- Swapping the coordinates of both endpoints transports a segment. -/
 theorem segment_swap (a b : Point) :
     Chazelle.segment a.swap b.swap = Prod.swap ⁻¹' Chazelle.segment a b := by
@@ -71,12 +68,11 @@ theorem segment_swap (a b : Point) :
 
 theorem transpose_edge (P : Polygon) (i : ℕ) :
     (transpose P).edge i = Prod.swap ⁻¹' P.edge i := by
-  simp only [Polygon.edge, transpose_n, transpose_vtx, segment_swap]
+  simp [Polygon.edge, transpose_n, transpose_vtx, segment_swap]
 
 /-- The boundary of the transpose is the transposed boundary. -/
 theorem transpose_boundary (P : Polygon) : (transpose P).boundary = Prod.swap ⁻¹' P.boundary := by
-  ext p
-  simp only [Polygon.boundary, mem_ofPred_eq, mem_preimage, transpose_n, transpose_edge]
+  simp [Polygon.boundary, mem_preimage, transpose_n, transpose_edge]
 
 theorem transpose_commonEndpoints (P : Polygon) (i j : ℕ) :
     (transpose P).commonEndpoints i j = Prod.swap ⁻¹' P.commonEndpoints i j := by
@@ -86,19 +82,19 @@ theorem transpose_commonEndpoints (P : Polygon) (i j : ℕ) :
   · rintro ⟨h1, h2⟩
     refine ⟨?_, ?_⟩
     · rcases h1 with h | h
-      · left; rw [h, Prod.swap_swap]
-      · right; rw [h, Prod.swap_swap]
+      · simp_all
+      simp_all
     · rcases h2 with h | h
-      · left; rw [h, Prod.swap_swap]
-      · right; rw [h, Prod.swap_swap]
+      · simp_all
+      simp_all
   · rintro ⟨h1, h2⟩
     refine ⟨?_, ?_⟩
     · rcases h1 with h | h
       · left; rw [← h, Prod.swap_swap]
-      · right; rw [← h, Prod.swap_swap]
+      simp [← h, Prod.swap_swap]
     · rcases h2 with h | h
       · left; rw [← h, Prod.swap_swap]
-      · right; rw [← h, Prod.swap_swap]
+      simp [← h, Prod.swap_swap]
 
 /-- The transpose of a simple polygon is simple. -/
 theorem transpose_simple {P : Polygon} (hP : P.Simple) : (transpose P).Simple := by
@@ -115,8 +111,6 @@ theorem transpose_simple {P : Polygon} (hP : P.Simple) : (transpose P).Simple :=
 
 /-- `Prod.swap` as a homeomorphism of the plane. -/
 def swapHomeo : Point ≃ₜ Point := Homeomorph.prodComm ℝ ℝ
-
-@[simp] theorem swapHomeo_apply (p : Point) : swapHomeo p = p.swap := rfl
 
 theorem swap_image_eq_preimage (S : Set Point) : Prod.swap '' S = Prod.swap ⁻¹' S := by
   ext p
@@ -144,11 +138,11 @@ theorem isBoundedSet_swap_iff (S : Set Point) : IsBoundedSet (Prod.swap ⁻¹' S
   · rintro ⟨R, hR⟩
     refine ⟨R, fun p hp => ?_⟩
     have := hR p.swap (by simpa using hp)
-    exact ⟨this.2, this.1⟩
+    tauto
   · rintro ⟨R, hR⟩
     refine ⟨R, fun p hp => ?_⟩
     have := hR p.swap hp
-    exact ⟨this.2, this.1⟩
+    tauto
 
 /-- The filled region of the transpose is the transposed filled region. -/
 theorem transpose_filled (P : Polygon) : (transpose P).filled = Prod.swap ⁻¹' P.filled := by
@@ -196,14 +190,19 @@ noncomputable def hitParam (P : Polygon) (p : Point) (σ : ℝ) : ℝ := sInf (h
 theorem hitSet_bddBelow (P : Polygon) (p : Point) (σ : ℝ) : BddBelow (hitSet P p σ) :=
   ⟨0, fun _ ht => ht.1.le⟩
 
+section
+
+variable {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ}
+include hP p σ
+
 /-- A connected piece of a horizontal ray avoiding the boundary and containing an interior point
 is interior. -/
-theorem rayPt_mem_interior_of_isPreconnected {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ}
+theorem rayPt_mem_interior_of_isPreconnected
     {I : Set ℝ} (hI : IsPreconnected I) (hIb : ∀ t ∈ I, rayPt p σ t ∉ P.boundary)
     {t₀ : ℝ} (ht₀ : t₀ ∈ I) (hint : rayPt p σ t₀ ∈ P.filled \ P.boundary) :
     ∀ t ∈ I, rayPt p σ t ∈ P.filled \ P.boundary := by
   intro t ht
-  have himg : IsPreconnected (rayPt p σ '' I) := hI.image _ (continuous_rayPt p σ).continuousOn
+  have himg := hI.image _ (continuous_rayPt p σ).continuousOn
   have hsub : rayPt p σ '' I ⊆ P.boundaryᶜ := by
     rintro _ ⟨s, hs, rfl⟩; exact hIb s hs
   have hpar := parity_eq_of_isPreconnected P himg hsub (mem_image_of_mem _ ht₀) (mem_image_of_mem _ ht)
@@ -213,7 +212,7 @@ theorem rayPt_mem_interior_of_isPreconnected {P : Polygon} (hP : P.Simple) {p : 
 
 /-- If the open ray never met the boundary it would be an unbounded connected subset of the
 filled region: so the ray meets the boundary. -/
-theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ : σ ≠ 0)
+theorem hitSet_nonempty (hσ : σ ≠ 0)
     {t₀ : ℝ} (ht₀ : 0 < t₀) (hint : rayPt p σ t₀ ∈ P.filled \ P.boundary) :
     (hitSet P p σ).Nonempty := by
   by_contra hempty
@@ -221,8 +220,7 @@ theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (h�
   have hIb : ∀ t ∈ Ioi (0 : ℝ), rayPt p σ t ∉ P.boundary := by
     intro t ht hmem
     have : t ∈ hitSet P p σ := ⟨ht, hmem⟩
-    rw [hempty] at this
-    exact this
+    simp_all
   have hall := rayPt_mem_interior_of_isPreconnected hP isPreconnected_Ioi hIb ht₀ hint
   obtain ⟨R, hR⟩ := filled_bounded P
   -- a far point of the ray, beyond `t₀`, leaves the square of radius `R`
@@ -237,7 +235,7 @@ theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (h�
 /-- **The first hit.**  If an initial open stretch `(0, t₀)` of the ray is interior, then the
 first-hit parameter is at least `t₀`, the first-hit point is on the boundary, and every point of
 the ray strictly before it is interior. -/
-theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ : σ ≠ 0)
+theorem hit_of_initial (hσ : σ ≠ 0)
     {t₀ : ℝ} (ht₀ : 0 < t₀) (hint : ∀ t, 0 < t → t < t₀ → rayPt p σ t ∈ P.filled \ P.boundary) :
     t₀ ≤ hitParam P p σ ∧ rayPt p σ (hitParam P p σ) ∈ P.boundary ∧
       ∀ t, 0 < t → t < hitParam P p σ → rayPt p σ t ∈ P.filled \ P.boundary := by
@@ -269,34 +267,46 @@ theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ
   exact fun t ht1 ht2 =>
     rayPt_mem_interior_of_isPreconnected hP isPreconnected_Ioo hIb hmid' hmid t ⟨ht1, ht2⟩
 
+end
+
+section
+
+variable (P : Polygon) (p : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t)
+    (hmem : rayPt p σ t ∈ P.boundary)
+include ht hmem
+
 /-- Every boundary point of the open ray is at or after the first hit. -/
-theorem hitParam_le_of_mem_boundary (P : Polygon) (p : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t)
-    (hmem : rayPt p σ t ∈ P.boundary) : hitParam P p σ ≤ t :=
+theorem hitParam_le_of_mem_boundary : hitParam P p σ ≤ t :=
   csInf_le (hitSet_bddBelow P p σ) ⟨ht, hmem⟩
 
 /-- **Uniqueness of the first hit.**  A boundary point of the open ray with no boundary point of
 the ray strictly before it is the first hit. -/
-theorem hitParam_eq_of_first (P : Polygon) (p : Point) (σ : ℝ) {t : ℝ} (ht : 0 < t)
-    (hmem : rayPt p σ t ∈ P.boundary) (hfirst : ∀ s, 0 < s → s < t → rayPt p σ s ∉ P.boundary) :
+theorem hitParam_eq_of_first (hfirst : ∀ s, 0 < s → s < t → rayPt p σ s ∉ P.boundary) :
     hitParam P p σ = t := by
   refine le_antisymm (hitParam_le_of_mem_boundary P p σ ht hmem) (le_csInf ⟨t, ht, hmem⟩ ?_)
   intro s hs
   by_contra h
   exact hfirst s hs.1 (not_le.1 h) hs.2
 
+end
+
+section
+
+variable {P : Polygon} (hP : P.Simple) {q : Point}
+    (hq : q ∈ P.filled \ P.boundary)
+
+include hP hq in
 /-- An interior point has an interior initial stretch on every horizontal ray. -/
-theorem exists_initial_interior {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) (σ : ℝ) :
+theorem exists_initial_interior (σ : ℝ) :
     ∃ t₀ > 0, ∀ t, 0 < t → t < t₀ → rayPt q σ t ∈ P.filled \ P.boundary := by
-  have hopen : IsOpen (P.filled \ P.boundary) := isOpen_filled_sdiff_boundary hP
+  have hopen := isOpen_filled_sdiff_boundary hP
   have hcont : ContinuousAt (rayPt q σ) 0 := (continuous_rayPt q σ).continuousAt
   have hmem : P.filled \ P.boundary ∈ 𝓝 (rayPt q σ 0) := by
     rw [rayPt_zero]; exact hopen.mem_nhds hq
   have := hcont.preimage_mem_nhds hmem
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.1 this
   refine ⟨ε, hε, fun t ht1 ht2 => hball ?_⟩
-  rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
-  exact ht2
+  rwa [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
 
 /-! ### The interior-point specialisations -/
 
@@ -312,8 +322,9 @@ theorem rayPt_one (q : Point) (t : ℝ) : rayPt q 1 t = (q.1 + t, q.2) := by
 theorem rayPt_neg_one (q : Point) (t : ℝ) : rayPt q (-1) t = (q.1 - t, q.2) := by
   simp [rayPt, sub_eq_add_neg]
 
+include hP hq in
 /-- The full first-hit package for the right ray from an interior point. -/
-theorem rightHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.filled \ P.boundary) :
+theorem rightHit_spec :
     0 < rightHitParam P q ∧ (q.1 + rightHitParam P q, q.2) ∈ P.boundary ∧
       ∀ t, 0 ≤ t → t < rightHitParam P q → (q.1 + t, q.2) ∈ P.filled \ P.boundary := by
   obtain ⟨t₀, ht₀, hint⟩ := exists_initial_interior hP hq 1
@@ -323,26 +334,27 @@ theorem rightHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fi
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_one] at this
-  · rw [← h, add_zero]; exact hq
+  · rwa [← h, add_zero]
 
+include hP hq in
 /-- The right ray from an interior point meets the boundary at a positive parameter. -/
-theorem rightHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) : 0 < rightHitParam P q :=
+theorem rightHitParam_pos : 0 < rightHitParam P q :=
   (rightHit_spec hP hq).1
 
+include hP hq in
 /-- The first hit point of the right ray lies on the boundary. -/
-theorem rightHit_mem_boundary {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) : (q.1 + rightHitParam P q, q.2) ∈ P.boundary :=
+theorem rightHit_mem_boundary : (q.1 + rightHitParam P q, q.2) ∈ P.boundary :=
   (rightHit_spec hP hq).2.1
 
+include hP hq in
 /-- The half-open ray segment from `q` to its first hit is interior. -/
-theorem open_ray_subset_interior {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) :
+theorem open_ray_subset_interior :
     ∀ t, 0 ≤ t → t < rightHitParam P q → (q.1 + t, q.2) ∈ P.filled \ P.boundary :=
   (rightHit_spec hP hq).2.2
 
+include hP hq in
 /-- The full first-hit package for the left ray from an interior point. -/
-theorem leftHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.filled \ P.boundary) :
+theorem leftHit_spec :
     0 < leftHitParam P q ∧ (q.1 - leftHitParam P q, q.2) ∈ P.boundary ∧
       ∀ t, 0 ≤ t → t < leftHitParam P q → (q.1 - t, q.2) ∈ P.filled \ P.boundary := by
   obtain ⟨t₀, ht₀, hint⟩ := exists_initial_interior hP hq (-1)
@@ -352,20 +364,22 @@ theorem leftHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fil
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_neg_one] at this
-  · rw [← h, sub_zero]; exact hq
+  · rwa [← h, sub_zero]
 
-theorem leftHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) : 0 < leftHitParam P q :=
+include hP hq in
+theorem leftHitParam_pos : 0 < leftHitParam P q :=
   (leftHit_spec hP hq).1
 
-theorem leftHit_mem_boundary {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) : (q.1 - leftHitParam P q, q.2) ∈ P.boundary :=
+include hP hq in
+theorem leftHit_mem_boundary : (q.1 - leftHitParam P q, q.2) ∈ P.boundary :=
   (leftHit_spec hP hq).2.1
 
-theorem open_left_ray_subset_interior {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) :
+include hP hq in
+theorem open_left_ray_subset_interior :
     ∀ t, 0 ≤ t → t < leftHitParam P q → (q.1 - t, q.2) ∈ P.filled \ P.boundary :=
   (leftHit_spec hP hq).2.2
+
+end
 
 /-! ### Comparison with the half-open scan -/
 

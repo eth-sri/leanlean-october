@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.NFBuildPhaseB
 
 /-!
@@ -178,9 +180,6 @@ def zeroStores : Stmt :=
   | .seq _ (.seq _ s) => s
   | _ => .skip
 
-theorem zeroCase_eq : zeroCase = .seq (block [.copyN 44000 9999, .constN 44030 24,
-    .addN 9999 9999 44030]) (.seq lohiS zeroStores) := rfl
-
 section exec
 
 variable {P : Polygon} {W : ℕ}
@@ -213,12 +212,10 @@ end exec
 theorem regWt_zero {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (hL : L.length = 0) {m : ℕ → ℕ} {D : ℕ} (hM : ModelDescAt m D (Qof P) M) :
     BuildNF.regWt M (Qof P) L E 0 = hdOf m D P.n := by
-  have hL' : L = [] := List.length_eq_zero_iff.1 hL
+  have hL' := List.length_eq_zero_iff.1 hL
   subst hL'
-  have hA : BuildNF.arcList M (Qof P) [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
-    unfold BuildNF.arcList; simp
-  have hRA : BuildNF.regArcs M (Qof P) [] E 0 = [0] := by
-    unfold BuildNF.regArcs; rw [hA]; decide
+  have hA : BuildNF.arcList M (Qof P) [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := rfl
+  have hRA : BuildNF.regArcs M (Qof P) [] E 0 = [0] := rfl
   obtain ⟨hc, hhi⟩ := countedIv (P := P) hM
   have hlohi : loOf m D ≤ hiOf m D P.n := by unfold loOf hiOf; split_ifs <;> omega
   unfold BuildNF.regWt
@@ -242,7 +239,7 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
     (hM : ModelDescAt c.nmem D (Qof P) M) (hroom : H + 24 ≤ W) :
     ∃ c' k, Exec P W zeroCase c c' k ∧ k ≤ 110 ∧ 24 ≤ k ∧ WordsBounded W c' ∧
       FrameM BphaseB c c' ∧ c'.nreg 40003 = H ∧ c'.nreg 9999 = H + 24 ∧
-      (∀ a, a < H → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow H c'.nmem c.nmem) ∧
       NFWithin c'.nmem H (c'.nreg 9999) (BuildNF.buildNF M (Qof P) L E) := by
   have hHW : H ≤ W := by omega
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
@@ -251,16 +248,10 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
       .constN 44030 24, .addN 9999 9999 44030]) c c₁ k₁ ∧ k₁ = 3 ∧ c₁.nreg 44000 = H ∧
       c₁.nreg 9999 = H + 24 ∧ (∀ r, r ≠ 44000 → r ≠ 44030 → r ≠ 9999 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem := by
-    exec_block
-    · omega
-    · config_simp; rw [hH]; omega
-    · refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩ <;> config_simp
-      · rw [hH]
-      · rw [hH]
-      · simp (disch := omega) only [upd_other]
+    ram_exec
   have w₁ := x₁.wb_right
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num), hD])
+    (by ram_post)
     (by rw [mm₁]; exact twice_m_le hM hCW) (by omega) (by unfold hostWords at hWn; omega)
     (by unfold hostWords at hWn; omega)
   rw [mm₁] at l1 l2 l3
@@ -268,8 +259,8 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
   obtain ⟨c₃, k₃, x₃, hk₃, hk₃', v40003, g₃, T1, T2⟩ := zeroStores_exec (P := P) c₂ w₂ (H := H)
     (hd := hdOf c.nmem D P.n) (by rw [f₂.1 _ (by decide), v1]) l2 hroom
   have X : Exec P W zeroCase c c₃ (k₁ + (k₂ + k₃)) := by
-    rw [zeroCase_eq]; exact .seq x₁ (.seq x₂ x₃)
-  have h9999 : c₃.nreg 9999 = H + 24 := by rw [g₃ _ (by omega) (by omega), f₂.1 _ (by decide), v2]
+    ram_path
+  have h9999 : c₃.nreg 9999 = H + 24 := by ram_post
   refine ⟨c₃, _, X, by omega, by omega, x₃.wb_right, exec_frameM X wr_zeroCase, v40003, h9999,
     fun a ha => by rw [T2 a (Or.inl ha), f₂.2.2.1, mm₁], ?_⟩
   intro m' hm'

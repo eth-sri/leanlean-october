@@ -63,8 +63,8 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
     (hcu : CutterOK cu oracleBands G H (gradeCtx O) OkModel) (c : Config) (hw : WordsBounded W c)
     (hS : SEnv P W O s c) (hfree : ∀ j, j < 4 → c.nreg (170200 + 5 * j) = 0)
     (q : QFacts (Qof P) s.e₁ s.h₁ s.e₂ s.h₂)
-    (hwt : (interiorModel (Qof P)).arcWt ((interiorModel (Qof P)).key (Qof P) ⟨s.e₁, s.h₁⟩)
-      ((interiorModel (Qof P)).key (Qof P) ⟨s.e₂, s.h₂⟩) ≤ s.γ)
+    (hwt : P.inputModel.arcWt (P.inputModel.key (Qof P) ⟨s.e₁, s.h₁⟩)
+      (P.inputModel.key (Qof P) ⟨s.e₂, s.h₂⟩) ≤ s.γ)
     (hroom : c.nreg ALLOC + (172 * G s.γ + 2408 * (Nat.clog 2 s.γ + 1) + 6300) ≤ W) :
     ∃ (c' : Config) (k : ℕ) (ps : List Pc), Exec P W (queryC cu) c c' k ∧
       k ≤ 172 * G s.γ + 2408 * (Nat.clog 2 s.γ + 1) + 6300 ∧
@@ -72,11 +72,11 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
       c.nreg ALLOC ≤ c'.nreg 150010 ∧ c'.nmem (c'.nreg 150010) = ps.length ∧
       c'.nreg 150010 + 1 + 7 * ps.length ≤ c'.nreg ALLOC ∧
       (∀ j (hj : j < ps.length), rdPc c'.nmem (c'.nreg 150010) j = ps[j]'hj) ∧
-      KPath (interiorModel (Qof P)) (Qof P) (Qof P).n
-        ((s.e₁ : ℝ) + (interiorModel (Qof P)).param (Qof P) ⟨s.e₁, s.h₁⟩) ps
+      KPath (inputModel P) (Qof P) (Qof P).n
+        ((s.e₁ : ℝ) + P.inputModel.param (Qof P) ⟨s.e₁, s.h₁⟩) ps
         ((s.e₁ : ℝ) + eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂) +
-          (interiorModel (Qof P)).param (Qof P) ⟨s.e₂, s.h₂⟩) ∧
-      (∀ pc ∈ ps, PcV P (interiorModel (Qof P)) c'.nmem (c'.nreg ALLOC) (H s.γ) pc) ∧
+          P.inputModel.param (Qof P) ⟨s.e₂, s.h₂⟩) ∧
+      (∀ pc ∈ ps, PcV P (inputModel P) c'.nmem (c'.nreg ALLOC) (H s.γ) pc) ∧
       Frame ioBands c c' k := by
   have hQ : (Qof P).n = P.n := qn'
   have hn := hS.n3
@@ -89,16 +89,17 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
   -- the normalized query
   obtain ⟨c₁, k₁, e₁, hk₁, a30, a31, a32, F₁⟩ := normI_exec c hw hS he1 he2 hh1 hh2 q.hs.1
   obtain ⟨hpS, hxy, hmod, heen, hee, hL1, hwtL, hwtn⟩ := qplan q
-  set x := (interiorModel (Qof P)).param (Qof P) ⟨s.e₁, s.h₁⟩ with hx
+  unfold Polygon.inputModel at hwt
+  set x := P.inputModel.param (Qof P) ⟨s.e₁, s.h₁⟩ with hx
   set ee := eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂) with heed
-  set t₂ := (interiorModel (Qof P)).param (Qof P) ⟨s.e₂, s.h₂⟩ with ht₂
+  set t₂ := P.inputModel.param (Qof P) ⟨s.e₂, s.h₂⟩ with ht₂
   set V0 : ℝ := (s.e₁ : ℝ) + ((0 : ℕ) : ℝ) + x with hV0
   set V1 : ℝ := (s.e₁ : ℝ) + ee + t₂ with hV1
   have w₁ := e₁.wb_right
-  have f₁ : ∀ r, Bnorm r = false → c₁.nreg r = c.nreg r := F₁.1
-  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => f₁ r (by
+  have f₁ := F₁.1
+  have S₁ := hS.keep (fun r h1 h2 => f₁ r (by
     simp only [Bnorm, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
-    (fun a _ => by rw [F₁.2.2.1]) (by rw [f₁ _ (by decide)])
+    (fun a _ => by rw [F₁.2.2.1]) (by ram_rw [f₁])
   have Fr₁ : Frame ioBands c c₁ k₁ := frameIO_of_frameB (B := Bnorm) (fun r hr => io_of_band (by
     simp only [Bnorm, Bk, Bool.or_eq_true, decide_eq_true_eq] at hr; omega)) F₁ k₁
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by decide)
@@ -114,11 +115,11 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
         simp only [Bset, decide_eq_false_iff_not]; omega)
   have keepSet : ∀ {d d' : Config}, FrameB Bset d d' → SEnv P W O s d → SEnv P W O s d' :=
     fun F hS' => hS'.keep (fun r h1 h2 => bandSet F r (by omega)) (fun a _ => by rw [F.2.2.1])
-      (by rw [bandSet F _ (by unfold ALLOC; omega)])
+      (by ram_rw [bandSet F])
   have keepSetT : ∀ {d d' : Config} {V : ℝ} {k : ℕ}, FrameB Bset d d' →
       SlotSt P (H s.γ) (G s.γ) s.e₁ V0 V k d → SlotSt P (H s.γ) (G s.γ) s.e₁ V0 V k d' :=
     fun F hT => hT.keep (fun r h1 h2 => bandSet F r (by omega)) (fun a _ => by rw [F.2.2.1])
-      (by rw [bandSet F _ (by unfold ALLOC; omega)])
+      (by ram_rw [bandSet F])
   -- the branch
   have hbr : ∃ c₂ k₂, Exec P W (branchC cu) c₁ c₂ k₂ ∧
       k₂ ≤ 4 * G s.γ + 2408 * (Nat.clog 2 s.γ + 1) + 5300 ∧
@@ -132,15 +133,15 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
       obtain ⟨c₂, k₂, e₂, hk₂, b33, b34, b35, b36, b37, Fs⟩ := setOne_exec (P := P) c₁ w₁
       have S₂ := keepSet Fs S₁
       have T₂ := keepSetT Fs T₁
-      have hLγ : spanL ee (nh (Qof P) s.e₂ s.h₂) ≤ s.γ := hwL ▸ hwt
+      have hLγ := hwL ▸ hwt
       have hlog := log_le_clog_succ hL1 hLγ
       have hA₂ : c₂.nreg ALLOC = c.nreg ALLOC := by
-        rw [bandSet Fs _ (by unfold ALLOC; omega), hA₁]
+        ram_simp [bandSet, hA₁] <;> reg_omega
       obtain ⟨c₃, k₃, e₃, hk₃, T₃, S₃, F₃, g₃⟩ := sqC_exec hcu c₂ e₂.wb_right S₂
         (b33.trans S₁.r1) (b34.trans S₁.r2) (b35.trans a31) (b36.trans a30) (b37.trans a32)
         hsub hLγ (off := 0) (by rw [Nat.add_zero, Nat.mod_eq_of_lt q.he₁]) (b := 0) (by norm_num)
         T₂ (by rw [hA₂]; exact roomC_one hroom hlog)
-      have hV : (s.e₁ : ℝ) + ((0 : ℕ) : ℝ) + (ee : ℝ) + (interiorModel (Qof P)).param (Qof P)
+      have hV : (s.e₁ : ℝ) + ((0 : ℕ) : ℝ) + (ee : ℝ) + P.inputModel.param (Qof P)
           ⟨(s.e₁ + ee) % (Qof P).n, nh (Qof P) s.e₂ s.h₂⟩ = V1 := by
         rw [hmod, param_nh q.he₂]; push_cast; ring
       rw [hV] at T₃
@@ -151,7 +152,7 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
       have hcond : ¬ c₁.nreg 170032 < c₁.nreg 170010 := by rw [a32, S₁.r10, ← hQ]; omega
       obtain ⟨hsubA, hsubB, hset, hwn⟩ := plan_two q (by rw [← heed]; omega)
       rw [← heed] at hsubB
-      have hnγ : P.n ≤ s.γ := by rw [← hQ]; exact hwn ▸ hwt
+      
       have hee2 : 2 ≤ ee := by rcases hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
       have hmod2 : ((s.e₁ + 2) % (Qof P).n + (ee - 2)) % (Qof P).n = s.e₂ := by
         rw [Nat.mod_add_mod, show s.e₁ + 2 + (ee - 2) = s.e₁ + ee by omega, hmod]
@@ -160,7 +161,7 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
       have S₂ := keepSet Fs S₁
       have T₂ := keepSetT Fs T₁
       have hA₂ : c₂.nreg ALLOC = c.nreg ALLOC := by
-        rw [bandSet Fs _ (by unfold ALLOC; omega), hA₁]
+        ram_simp [bandSet, hA₁] <;> reg_omega
       have hlogA := log_le_clog_succ (L := 2) (γ := s.γ) (by norm_num) (by omega)
       obtain ⟨c₃, k₃, e₃, hk₃, T₃, S₃, F₃, g₃⟩ := sqC_exec hcu c₂ e₂.wb_right S₂ (u := s.e₁)
         (L := 2) (sh₀ := s.h₁) (ee := 2) (eh := 0)
@@ -169,23 +170,23 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
         (by norm_num) T₂ (by rw [hA₂]; exact roomC_one hroom hlogA)
       -- the second sub-query
       have c31 : c₃.nreg 170031 = ee := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a31
+        ram_rw assumption [g₃, bandSet Fs]
       have c30 : c₃.nreg 170030 = nh (Qof P) s.e₂ s.h₂ := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a30
+        ram_rw assumption [g₃, bandSet Fs]
       have c32 : c₃.nreg 170032 = spanL ee (nh (Qof P) s.e₂ s.h₂) := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a32
+        ram_rw assumption [g₃, bandSet Fs]
       obtain ⟨c₄, k₄, e₄, hk₄, d33, d34, d35, d36, d37, Ft⟩ := setTwoB_exec (P := P) c₃
         e₃.wb_right S₃ he1
       have S₄ := keepSet Ft S₃
       have hA₄ : c₄.nreg ALLOC ≤ c.nreg ALLOC + k₃ := by
-        rw [bandSet Ft _ (by unfold ALLOC; omega)]
+        ram_rw [bandSet Ft]
         have := F₃.2.2.2.2.2.2; omega
       have hLB : spanL ee (nh (Qof P) s.e₂ s.h₂) - 2 ≤ s.γ := by
         have := hsubB.h2; rw [hQ] at this; omega
       have hlogB := log_le_clog_succ hsubB.h1 hLB
-      have hV2 : (s.e₁ : ℝ) + ((0 : ℕ) : ℝ) + ((2 : ℕ) : ℝ) + (interiorModel (Qof P)).param
+      have hV2 : (s.e₁ : ℝ) + ((0 : ℕ) : ℝ) + ((2 : ℕ) : ℝ) + P.inputModel.param
           (Qof P) ⟨(s.e₁ + 2) % (Qof P).n, 0⟩ = (s.e₁ : ℝ) + ((2 : ℕ) : ℝ) +
-          (interiorModel (Qof P)).param (Qof P) ⟨(s.e₁ + 2) % (Qof P).n, 0⟩ := by
+          P.inputModel.param (Qof P) ⟨(s.e₁ + 2) % (Qof P).n, 0⟩ := by
         push_cast; ring
       rw [hV2] at T₃
       obtain ⟨c₅, k₅, e₅, hk₅, T₅, S₅, F₅, g₅⟩ := sqC_exec hcu c₄ e₄.wb_right S₄
@@ -193,7 +194,7 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
         (by rw [d33, hQ]) d34 (by rw [d35, c31]) (by rw [d36, c30]) (by rw [d37, c32])
         hsubB hLB (off := 2) rfl (b := 2) (by norm_num) (keepSetT Ft T₃)
         (roomC_two hroom hA₄ hk₃ hlogA hlogB)
-      have hV : (s.e₁ : ℝ) + ((2 : ℕ) : ℝ) + ((ee - 2 : ℕ) : ℝ) + (interiorModel (Qof P)).param
+      have hV : (s.e₁ : ℝ) + ((2 : ℕ) : ℝ) + ((ee - 2 : ℕ) : ℝ) + P.inputModel.param
           (Qof P) ⟨((s.e₁ + 2) % (Qof P).n + (ee - 2)) % (Qof P).n, nh (Qof P) s.e₂ s.h₂⟩ = V1 := by
         rw [hmod2, param_nh q.he₂, Nat.cast_sub hee2]; push_cast; ring
       rw [hV] at T₅
@@ -223,9 +224,9 @@ theorem queryC_exec {cu : Stmt} {G H : ℕ → ℕ}
     have hok := T₂.ok
     rw [h] at hok
     exact absurd hok hlt.ne
-  have hpne : ps ≠ [] := hne hsne
-  have hF₃m : ∀ a, a < c₂.nreg ALLOC → c₃.nmem a = c₂.nmem a := F₃.2.2.1
-  have hA₃ : c₂.nreg ALLOC ≤ c₃.nreg ALLOC := F₃.2.2.2.2.2.1
+  have hpne := hne hsne
+  have hF₃m := F₃.2.2.1
+  have hA₃ := F₃.2.2.2.2.2.1
   refine ⟨c₃, _, ps, .seq e₁ (.seq e₂ e₃), costC_q hk₁ hk₂ hk₃ hlen, hpne, hlen,
     by rw [d10]; have := Fr₁.2.2.2.2.2.1; have := F₂.2.2.2.2.2.1; omega, by rw [d10, dO],
     by rw [d10, dA], fun j hj => ?_, ?_, fun pc hpc => (hv pc hpc).keep hF₃m hA₃,

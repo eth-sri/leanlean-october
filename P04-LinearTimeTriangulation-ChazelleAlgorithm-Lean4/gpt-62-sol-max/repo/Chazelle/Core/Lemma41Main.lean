@@ -52,10 +52,9 @@ theorem bandOf_not_l41 {r : ℕ} (h : bandOf r ∉ l41Bands) :
     (r < 160000 ∨ 170000 ≤ r) ∧ bandOf r ∉ mergeBands ∪ oracleBands := by
   unfold l41Bands at h
   simp only [Finset.mem_union, Finset.mem_singleton, not_or] at h
-  refine ⟨?_, by simp only [Finset.mem_union, not_or]; exact h.1⟩
+  refine ⟨?_, by simp_all⟩
   have := h.2
-  unfold bandOf bL41 at this
-  omega
+  reg_omega
 
 theorem okModel_chain {P : Polygon} (hG : GoodEnv P) (C : Chain) (hC : C.P = Qof P) :
     OkModel P (chainModel C) := by
@@ -63,7 +62,7 @@ theorem okModel_chain {P : Polygon} (hG : GoodEnv P) (C : Chain) (hC : C.P = Qof
   have hn : 1 ≤ P.n := by have := hG.1.1; omega
   refine ⟨Host.whole P.n, C, by simp [HostOk, Host.whole], by rw [hQn]; exact hostRegular_whole hn,
     ?_, ?_, rfl⟩
-  · rw [hC]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
+  · rw [hC]; have := poly_whole (Qof P) (by omega); simp_all
   · rw [hC]; exact (shearInvariance (epsOf P) P).1 hG.1
 
 section proofs
@@ -76,10 +75,7 @@ theorem baseB_exec {c : Config} (hw : WordsBounded W c) :
       c'.nreg 160066 = c.nreg 160015 ∧ (∀ r, r ≠ 160066 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold baseB
-  exec_block
-  refine ⟨rfl, ‹_›, by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  verify_block
 
 set_option maxHeartbeats 4000000 in
 theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 160066 = B)

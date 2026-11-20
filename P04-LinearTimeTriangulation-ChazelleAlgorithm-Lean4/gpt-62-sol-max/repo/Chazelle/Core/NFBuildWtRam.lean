@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.NFBuildWt
 public import Chazelle.Core.NFBuildCmpRam
 public import Chazelle.Core.GranPzExec
@@ -45,8 +47,8 @@ theorem arcWtNat_eq_wtF {lo hi ea eb pz lt : ℕ} {fa fb : ℝ} {counted : ℕ �
     · by_cases hf : fb = 0
       · have : pz = 0 := by
           by_contra h; have := hpz.1 (by omega); exact this.2 hf
-        rw [ite_eq_left hf, this, Nat.add_zero]
-      · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
+        simp_all
+      · have := hpz.2 ⟨hcb, hf⟩
         rw [ite_eq_right hf, this]
     · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
       rw [this, Nat.add_zero]
@@ -58,7 +60,7 @@ theorem arcWtNat_eq_wtF {lo hi ea eb pz lt : ℕ} {fa fb : ℝ} {counted : ℕ �
       · have : pz = 0 := by
           by_contra h; have := hpz.1 (by omega); exact this.2 hf
         rw [ite_eq_left hf, this, Nat.add_zero]
-      · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
+      · have := hpz.2 ⟨hcb, hf⟩
         rw [ite_eq_right hf, this]
     · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
       rw [this, Nat.add_zero]
@@ -77,15 +79,15 @@ theorem countedIv {m : ℕ → ℕ} {D : ℕ} {P : Polygon} {M : Model}
     (∀ p, p < M.W.n → (M.counted p ↔ loOf m D ≤ p ∧ p < hiOf m D P.n)) ∧
       hiOf m D P.n ≤ M.W.n := by
   rcases hM with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, -, rfl⟩
-  · have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
+  · have hm := hC.2.2.2.1
     unfold loOf hiOf
     rw [ite_eq_left h0, ite_eq_left h0, show D + 3 = D + 1 + 2 by omega, hm, chainModel_n]
-    exact ⟨fun p hp => chainModel_counted_iff C p (by rw [chainModel_n]; exact hp), by omega⟩
+    exact ⟨fun p hp => chainModel_counted_iff C p (by rwa [chainModel_n]), by omega⟩
   · have hn : (Qof P).n = P.n := shear_n _ _
     unfold loOf hiOf
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), interiorModel_n, hn]
+    ram_rw [ite_eq_right, ite_eq_right, interiorModel_n, hn]
     refine ⟨fun p hp => ?_, le_rfl⟩
-    rw [interiorModel_counted_iff _ p (by rw [interiorModel_n, hn]; exact hp), hn]
+    rw [interiorModel_counted_iff _ p (by rwa [interiorModel_n, hn]), hn]
 
 /-! ## The counted interval on the machine -/
 
@@ -122,28 +124,21 @@ theorem lohiS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
     exact ⟨d', k, x, hk, h1, h2, h3, h4, exec_frameB x wr_lohiS⟩
   unfold lohiS
   refine spec_seq ?_
-  exec_block
-  · omega
+  exec_block!
   by_cases h0 : d.nmem D = 0
   · have hW' := hW h0
-    refine spec_ifLtN_true (by config_simp; rw [hD, h0]; omega) ?_
+    refine spec_ifLtN_true (by simp_all) ?_
     exec_block
     · omega
     · omega
     · config_simp; rw [hD]; omega
-    · config_simp; rw [hD, show 3 + D = D + 3 by omega]; omega
+    · ram_finish [hD, show 3 + D = D + 3 by omega]
     · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
       · unfold loOf; rw [ite_eq_left h0]
       · unfold hdOf; rw [ite_eq_left h0, hD, show 3 + D = D + 3 by omega]; ring
       · rw [hD]
   · refine spec_ifLtN_false (by config_simp; rw [hD]; omega) ?_
-    exec_block
-    · omega
-    · omega
-    · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · unfold loOf; rw [ite_eq_right h0]
-      · unfold hdOf; rw [ite_eq_right h0]
-      · rw [hD]
+    ram_exec [loOf, ite_eq_right h0, hdOf, hD]
 
 /-! ## The parameter test in band `bBuild` -/
 
@@ -152,11 +147,6 @@ def pzR : Stmt := Stmt.ren σ Gran.pzStmt
 
 /-- The registers `pzR` writes. -/
 def BpzR (r : ℕ) : Bool := Gran.Bpz (σ r)
-
-theorem wr_pzR : wr BpzR pzR = true := by
-  rw [pzR, wr_ren σ_σ]
-  have : (fun r => BpzR (σ r)) = Gran.Bpz := by funext r; simp [BpzR, σ_σ]
-  rw [this]; exact Gran.wr_pzStmt
 
 theorem BpzR_true {r : ℕ} (h : BpzR r = true) :
     (10000 ≤ r ∧ r < 10503) ∨ (40000 < r ∧ r < 40100) ∨ (41110 ≤ r ∧ r < 41120) := by
@@ -173,7 +163,7 @@ theorem pzR_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n 
     (he : e < M.W.n) (hh : h ≤ P.n) (hDW : D + 6 ≤ W) (hCW : LocChainWF P W d.nmem D) :
     ∃ d' k, Exec P W pzR d d' k ∧ k ≤ 6000 ∧ FrameB BpzR d d' ∧ d'.nreg 41112 ≤ 1 ∧
       (d'.nreg 41112 = 1 ↔ M.counted e ∧ M.param (Qof P) ⟨e, h⟩ ≠ 0) := by
-  have hw' : WordsBounded W (cfgRen σ d) := (wordsBounded_ren σ_σ d).2 hw
+  have hw' := (wordsBounded_ren σ_σ d).2 hw
   obtain ⟨c', k, ex, hk, hfr, h1, h2⟩ := Gran.pz_exec (P := P) (W := W) hG hW (cfgRen σ d) hw'
     (MD := D) (e := e) (h := h) h40 hM h23 h19 h110 h111 he hh hDW hCW
   refine ⟨cfgRen σ c', k, exec_of_ren σ_σ ex, hk, ⟨fun r hr => ?_, fun r hr => ?_, hfr.2.2.1,
@@ -229,13 +219,12 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     exact ⟨d', k, x, hk, hv, exec_frameB x wr_wtS⟩
   unfold wtS wtG
   refine spec_seq ?_
-  exec_block
-  · config_simp; exact hs
+  exec_block!
   set t := d.nreg 42113 - d.nreg 44020 + d.nreg 41112 with ht
   set u := d.nreg 42110 - d.nreg 44020 with hu
   by_cases hl : d.nreg 43120 < 1
-  · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hl) ?_
-    rw [ite_eq_right (by omega)]
+  · refine spec_ifLtN_true (by simp_all) ?_
+    ram_rw [ite_eq_right]
     refine spec_seq ?_
     by_cases a1 : u < d.nreg 44021
     · refine spec_ifLtN_true (by config_simp; exact a1)
@@ -250,8 +239,8 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
       refine ⟨by omega, ?_⟩
       config_simp
       rw [min_eq_right (not_lt.1 a1)]
-  · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hl) ?_
-    rw [ite_eq_left (by omega)]
+  · refine spec_ifLtN_false (by simp_all) ?_
+    ram_rw [ite_eq_left]
     refine spec_seq ?_
     by_cases a1 : t < d.nreg 44021
     · refine spec_ifLtN_true (by config_simp; exact a1)

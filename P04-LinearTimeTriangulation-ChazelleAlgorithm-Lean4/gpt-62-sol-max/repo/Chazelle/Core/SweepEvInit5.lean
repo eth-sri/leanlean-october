@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvInit4
 public import Chazelle.Core.SweepEvWinArcs
 
@@ -28,73 +30,53 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 /-- **A well-formed model descriptor** survives a change of the memory at or above its bound. -/
 theorem modelDescAt_keep' {P : Polygon} {m m' : ℕ → ℕ} {D E E' : ℕ} {M : Model}
     (hwf : ModelDescWF P E m D) (hMD : ModelDescAt m D (Qof P) M)
-    (he : ∀ a, a < E → m' a = m a) (hE : E ≤ E') :
-    ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E' m' D := by
-  rcases hMD with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, hbit, rfl⟩
-  · obtain ⟨w', h0', hC'⟩ := ShotList.modelDesc_keep hwf h0 hC he hE
-    exact ⟨Or.inl ⟨h0', H, C, hC', rfl⟩, w'⟩
-  · have hD := hwf.1
-    have e0 : m' D = m D := he _ (by omega)
-    have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    exact ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hbit, rfl⟩,
-      ⟨by omega, fun h => by rw [e0, h1] at h; exact absurd h (by norm_num)⟩⟩
-
-/-- Junction descriptors survive a change of the memory at or above the allocator. -/
-theorem junction_keep {P : Polygon} {m m' : ℕ → ℕ} {E E' b0 b1 b2 : ℕ} {H : Host}
-    {J : Merge.Junction} (hJ : JunctionAt m b0 b1 b2 (Qof P) H J) (hJW : JunctionWF P E m b0 b1 b2)
-    (he : ∀ a, a < E → m' a = m a) (hE : E ≤ E') :
-    JunctionAt m' b0 b1 b2 (Qof P) H J ∧ JunctionWF P E' m' b0 b1 b2 := by
-  obtain ⟨l0, l1⟩ := chainDesc_keep hJW.1 hJ.1 he hE
-  obtain ⟨r0, r1⟩ := chainDesc_keep hJW.2.1 hJ.2.1 he hE
-  obtain ⟨w0, w1⟩ := chainDesc_keep hJW.2.2.1 hJ.2.2 he hE
-  refine ⟨⟨l0, r0, w0⟩, l1, r1, w1, fun H' hH' => ?_⟩
-  have := NFLoc.hostAt_unique w0.1 hH'
-  subst this
-  exact hJW.2.2.2 H hJ.2.2.1
+    (he : MemEqBelow E m' m) (hE : E ≤ E') :
+    ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E' m' D :=
+  hwf.transport hMD he hE
 
 /-- **The stage-0 state** survives a step keeping `sw 0 … 99` and the memory below the
 allocator, and not lowering the allocator. -/
 theorem st0S_keep {P : Polygon} {c c' : Config} {H : Host} {J : Merge.Junction}
     (h : St0S P c H J) (hr : ∀ j, j < 100 → c'.nreg (sw j) = c.nreg (sw j))
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     St0S P c' H J := by
   obtain ⟨h90, h91, h92, h93, hJ, hJW, d20, w20, d21, w21, h23, h24, hR, hL, h33, h34, h35, md30,
     mw30, md31, mw31⟩ := h
-  have r : ∀ j, j < 100 → c'.nreg (sw j) = c.nreg (sw j) := hr
-  obtain ⟨hJ', hJW'⟩ := junction_keep hJ hJW hm hA
+  have r := hr
+  obtain ⟨hJ', hJW'⟩ := hJW.transport hJ hm hA
   obtain ⟨d20', w20'⟩ := chainDesc_keep w20 d20 hm hA
   obtain ⟨d21', w21'⟩ := chainDesc_keep w21 d21 hm hA
   obtain ⟨m30, mw30'⟩ := modelDescAt_keep' mw30 md30 hm hA
   obtain ⟨m31, mw31'⟩ := modelDescAt_keep' mw31 md31 hm hA
-  refine ⟨by rw [r 90 (by norm_num)]; exact h90, by rw [r 91 (by norm_num)]; exact h91,
-    by rw [r 92 (by norm_num)]; exact h92, by rw [r 93 (by norm_num)]; exact h93,
-    by rw [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)]; exact hJ',
-    by rw [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)]; exact hJW',
-    by rw [r 20 (by norm_num)]; exact d20', by rw [r 20 (by norm_num)]; exact w20',
-    by rw [r 21 (by norm_num)]; exact d21', by rw [r 21 (by norm_num)]; exact w21',
-    by rw [r 23 (by norm_num), r 3 (by norm_num)]; exact h23,
-    by rw [r 24 (by norm_num), r 4 (by norm_num)]; exact h24,
-    fun k hk => by rw [r (40 + k) (by omega)]; exact hR k hk,
-    fun k hk => by rw [r (45 + k) (by omega)]; exact hL k hk,
-    by rw [r 33 (by norm_num)]; exact h33, by rw [r 34 (by norm_num)]; exact h34,
-    by rw [r 35 (by norm_num)]; exact h35, by rw [r 30 (by norm_num)]; exact m30,
-    by rw [r 30 (by norm_num)]; exact mw30', by rw [r 31 (by norm_num)]; exact m31,
-    by rw [r 31 (by norm_num)]; exact mw31'⟩
+  refine ⟨by ram_finish, by ram_finish,
+    by ram_finish, by ram_finish,
+    by ram_simp [r] <;> reg_omega,
+    by ram_simp [r] <;> reg_omega,
+    by ram_rw assumption [r 20], by ram_rw assumption [r 20],
+    by ram_rw assumption [r 21], by ram_rw assumption [r 21],
+    by ram_finish,
+    by ram_finish,
+    fun k hk => by ram_finish,
+    fun k hk => by ram_finish,
+    by ram_finish, by ram_finish,
+    by ram_finish, by ram_finish,
+    by ram_rw assumption [r 30], by ram_finish,
+    by ram_rw assumption [r 31]⟩
 
 /-! ## Arithmetic -/
 
 theorem clog_four_mul (x : ℕ) : Nat.clog 2 (4 * x) ≤ Nat.clog 2 x + 2 := by
-  rw [Nat.clog_le_iff_le_pow (by norm_num), pow_add]
+  ram_rw [Nat.clog_le_iff_le_pow, pow_add]
   have := Nat.le_pow_clog (by norm_num : 1 < 2) x
   norm_num; omega
 
 theorem clog_le_self' (x : ℕ) : Nat.clog 2 x ≤ x := by
-  rw [Nat.clog_le_iff_le_pow (by norm_num)]; exact Nat.lt_two_pow_self.le
+  ram_rw [Nat.clog_le_iff_le_pow]; exact Nat.lt_two_pow_self.le
 
 /-! ## The environment -/
 
 /-- The constant of the initialisation. -/
-def κI : ℕ := 40000
+@[ram_layout] def κI : ℕ := 40000
 
 set_option maxRecDepth 20000 in
 /-- **The environment after the initialisation.** -/
@@ -111,12 +93,12 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   obtain ⟨hJ, hP, hOk1, hOk2, hNW1, hNW2, hNF1, hNF2, hdeg1, hdeg2, hsg1, hsg2, hst⟩ := hpa
   have hst' := hst
   obtain ⟨-, -, -, -, -, hJW, d20, w20, d21, w21, -⟩ := hst'
-  have hm : ∀ a, a < c.nreg ALLOC → c₀.nmem a = c.nmem a := R.mem
+  have hm : MemEqBelow (c.nreg ALLOC) c₀.nmem c.nmem := R.mem
   have hA : c.nreg ALLOC ≤ c₀.nreg ALLOC := fr.2.2.2.2.2.1
   have hAk : c₀.nreg ALLOC ≤ c.nreg ALLOC + k := fr.2.2.2.2.2.2
   have kp : ∀ j, j < 600 → c₀.nreg (sw j) = c.nreg (sw j) := fun j hj =>
-    R.keep _ (not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)) (by unfold sw ALLOC; omega)
-      (by unfold sw; omega)
+    R.keep _ (not_oracle_sw (by unfold sw; omega) (by reg_omega)) (by reg_omega)
+      (by reg_omega)
   -- the normal forms
   have nN1 := hNW1.nfAt
   have nN2 := hNW2.nfAt
@@ -143,7 +125,7 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   have ctx20 := chainCtx_of (W := W) hG hWh hP hJ hJW d20 w20
   have ctx21 := chainCtx_of (W := W) hG hWh hP hJ hJW d21 w21
   have ctxW := chainCtx_of (W := W) (d := sw 2) hG hWh hP hJ hJW hJ.2.2 hJW.2.2.1
-  have hWn : 2 * (chainModel J.whole).W.n ≤ W := walk_two_le hJW.2.2.1 hJ.2.2 hWh
+  have hWn : 2 * J.wholeModel.W.n ≤ W := walk_two_le hJW.2.2.1 hJ.2.2 hWh
   have e10 := kp 10 (by norm_num)
   have e5 := kp 5 (by norm_num)
   have e6 := kp 6 (by norm_num)
@@ -170,10 +152,10 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   · rw [R.hTA]; have := Nat.mul_le_mul_left κI (le_refl (N₁.nChords + N₂.nChords + 1))
     unfold κI at hroom; omega
   · refine ⟨H, ?_, st0S_keep hst (fun j hj => kp j (by omega)) hm hA⟩
-    rw [kp 0 (by norm_num), kp 1 (by norm_num), kp 2 (by norm_num)]
-    exact (junction_keep hJ hJW hm hA).1
-  · rw [kp 0 (by norm_num), kp 1 (by norm_num), kp 2 (by norm_num)]
-    exact (junction_keep hJ hJW hm hA).2
+    ram_rw [kp 0, kp 1, kp 2]
+    exact (hJW.transport hJ hm hA).1
+  · ram_rw [kp 0, kp 1, kp 2]
+    exact (hJW.transport hJ hm hA).2
   · rw [e5]; exact hsg2
   · rw [e6]; exact hdeg1
   · rw [e6]; exact hdeg2
@@ -190,9 +172,9 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
 
 theorem InitRes.keep200 {P : Polygon} {J : Merge.Junction} {c c₀ : Config}
     (R : InitRes P J c c₀) : ∀ j, j < 200 → c₀.nreg (sw j) = c.nreg (sw j) := fun j hj => by
-  have h1 : 240000 ≤ sw j := by unfold sw; omega
-  have h2 : sw j < 250000 := by unfold sw; omega
-  exact R.keep (sw j) (not_oracle_sw h1 h2) (by unfold sw ALLOC; omega) (Or.inl (by
+  have h1 : 240000 ≤ sw j := by reg_omega
+  have h2 : sw j < 250000 := by reg_omega
+  exact R.keep (sw j) (not_oracle_sw h1 h2) (by reg_omega) (Or.inl (by
     unfold sw; omega))
 
 set_option maxRecDepth 20000 in

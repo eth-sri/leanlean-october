@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepEvOrgs
 
 /-!
@@ -44,14 +46,14 @@ theorem StepOK.seq {ci : Config} {Inv : Set ℕ → Config → Prop} {s t : Stmt
   rintro c₁ hI₁ - hA1 ⟨inv1, he1, ha1⟩
   refine (h₂ (O ∪ S) c₁ hI₁ he1 ha1 inv1 (by omega)).mono le_rfl ?_
   rintro c' ⟨inv', he', ha'⟩
-  exact ⟨by rw [← Set.union_assoc]; exact inv', he', ha'⟩
+  exact ⟨by rwa [← Set.union_assoc], he', ha'⟩
 
 /-- Chaining the read registers and the auxiliary array. -/
 theorem keep_chain {ci c c' : Config} (he : ∀ q, ER q → c.nreg q = ci.nreg q) (ha : AuxKeep ci c)
     (he' : ∀ q, ER q → c'.nreg q = c.nreg q) (ha' : AuxKeep c c') :
     (∀ q, ER q → c'.nreg q = ci.nreg q) ∧ AuxKeep ci c' := by
   refine ⟨fun q h => (he' q h).trans (he q h), ?_⟩
-  have he2 : ∀ q, ER q → c.nreg q = ci.nreg q := he
+  have he2 := he
   intro x h1 h2
   have ea : c.nreg aB = ci.nreg aB := he2 _ (by unfold ER; simp)
   have es : c.nreg sC = ci.nreg sC := he2 _ (by unfold ER; simp)
@@ -64,11 +66,16 @@ def rStep (ka cnt src : ℕ) (od : Stmt) : Stmt :=
   .ifLtN ka cnt (.seq (block [.copyN uR src]) (regDo od)) .skip
 
 theorem copyR_lr (src : ℕ) : ∀ i ∈ [Instr.copyN uR src], LR (dstI i) := by
-  simp [dstI, LR, uR, oK, oS, sw]
+  simp [ram_layout, dstI, LR]
 
-theorem rStep_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
+section
+
+variable (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
     {Inv : Set ℕ → Config → Prop} (hod : OdOK P W c₀ N₂ od Kod Inv) (hst : InvStab Inv)
-    {ci : Config} {ka cnt src i : ℕ} (hka : ∀ c, IInv W c₀ c → c.nreg ka = i) (hcnt : ER cnt)
+    {ci : Config}
+
+include E hod hst ci in
+theorem rStep_ok {ka cnt src i : ℕ} (hka : ∀ c, IInv W c₀ c → c.nreg ka = i) (hcnt : ER cnt)
     (hsrc : ER src) (hval : i < ci.nreg cnt → ci.nreg src < N₂.nRegions) :
     StepOK P W c₀ ci Inv (rStep ka cnt src od)
       {j | i < ci.nreg cnt ∧ j ∈ regO N₂ (ci.nreg src)} (regK Kod (c₀.nreg (sw 6)) + 3) := by
@@ -78,13 +85,13 @@ theorem rStep_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
     (fun _ h => h)
   · intro hlt
     rw [hk, he _ hcnt] at hlt
-    refine IRS.seq (IRS.block [.copyN uR src] hI ⟨iscr_sw (by unfold uR sw; omega)
-      (by unfold uR sw; omega), trivial⟩) ?_
+    refine IRS.seq (IRS.block [.copyN uR src] hI ⟨iscr_sw (by reg_omega)
+      (by reg_omega), trivial⟩) ?_
     rintro c₁ hI₁ - hA1 hc1
     have r1 : c₁.nreg = regB c.nmem [.copyN uR src] c.nreg := by rw [hc1]
     have m1 : c₁.nmem = c.nmem := by rw [hc1]
     have vR : c₁.nreg uR = ci.nreg src := by
-      rw [r1]; simp [regB, regI, upd_same]; exact he _ hsrc
+      ram_finish
     have inv1 : Inv O c₁ := by rw [hc1]; exact inv_blk hst (copyR_lr src) hinv
     have he1 : ∀ q, ER q → c₁.nreg q = c.nreg q := fun q h => by
       rw [r1]; exact er_blk (copyR_lr src) h
@@ -92,14 +99,14 @@ theorem rStep_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
     rintro c' ⟨inv', he', ha'⟩
     have hS : {j | i < ci.nreg cnt ∧ j ∈ regO N₂ (ci.nreg src)} = regO N₂ (ci.nreg src) := by
       ext j; simp [hlt]
-    refine ⟨by rw [hS]; exact inv', keep_chain he ha (fun q h => (he' q h).trans (he1 q h))
-      (fun x h1 h2 => by rw [ha' x (by rw [he1 _ (by unfold ER; simp)]; exact h1)
-        (by rw [he1 _ (by unfold ER; simp), he1 _ (by unfold ER; simp)]; exact h2), m1])⟩
+    refine ⟨by rwa [hS], keep_chain he ha (fun q h => (he' q h).trans (he1 q h))
+      (fun x h1 h2 => by rw [ha' x (by ram_finish)
+        (by ram_finish [he1]), m1])⟩
   · intro hlt
     rw [hk, he _ hcnt] at hlt
     have hS : {j | i < ci.nreg cnt ∧ j ∈ regO N₂ (ci.nreg src)} = ∅ := by
       ext j; simp [hlt]
-    exact IRS.skip hI ⟨by rw [hS, Set.union_empty]; exact hinv, he, ha⟩
+    exact IRS.skip hI ⟨by simp_all, he, ha⟩
 
 /-! ## A parent step -/
 
@@ -122,31 +129,27 @@ theorem parBody_lr : ∀ i ∈ parBody, LR (dstI i) := by
   simp [parBody, dstI, LR, uA, uK, oK, oS, sw]
 
 theorem uDec_lr : ∀ i ∈ uDec, LR (dstI i) := by
-  simp [uDec, dstI, LR, uK, oK, oS, sw]
+  simp [ram_layout, uDec, dstI, LR]
 
 theorem parBody_val (m f : ℕ → ℕ) (k4 : f K4 = 4) :
     regB m parBody f uK = m (f aB + 5 * f uI + 4) := by
   simp only [K4, sw] at k4
-  simp [parBody, regB, regI, upd, uA, uK, uI, aB, K4, sw, k4]
+  simp [ram_layout, parBody, regB, regI, upd, k4]
   ring_nf
 
 theorem parBody_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ uA) (h2 : q ≠ uK) :
     regB m parBody f q = f q :=
-  regB_other _ _ _ (fun i hi he => by
-    simp only [parBody, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      first | exact h1 he.symm | exact h2 he.symm)
+  (by register_keep [parBody])
 
 theorem parBody_ok (m f : ℕ → ℕ) (k4 : f K4 = 4) (hb : f aB + 5 * f uI + 4 ≤ W) :
     okB W m parBody f := by
   simp only [K4, aB, uI, sw, Nat.reduceAdd] at k4 hb
-  simp [parBody, okB, okI, regI, upd, uA, uK, uI, aB, K4, sw, k4, IScr]
+  simp [parBody, reg_check, regI, upd, uA, uK, uI, aB, K4, sw, k4, IScr]
   omega
 
+include E hod hst ci in
 set_option maxHeartbeats 2000000 in
-theorem parDo_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
-    {Inv : Set ℕ → Config → Prop} (hod : OdOK P W c₀ N₂ od Kod Inv) (hst : InvStab Inv)
-    {ci : Config} (hpar : ∀ i, i < ci.nreg sC → parOf ci i ≤ N₂.nChords)
+theorem parDo_ok (hpar : ∀ i, i < ci.nreg sC → parOf ci i ≤ N₂.nChords)
     (haux : ci.nreg aB + 5 * ci.nreg sC ≤ ci.nreg ALLOC) (hA : ci.nreg ALLOC ≤ W)
     {O : Set ℕ} (hI : IInv W c₀ c) (he : ∀ q, ER q → c.nreg q = ci.nreg q) (ha : AuxKeep ci c)
     (hinv : Inv O c) {i : ℕ} (hi : c.nreg uI = i) (hroom : c.nreg ALLOC + (2 * Kod + 17) ≤ W) :
@@ -161,7 +164,7 @@ theorem parDo_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
   · intro hlt
     rw [hi, esC] at hlt
     have hS : parS ci i = ∅ := by ext j; simp [parS]; omega
-    exact IRS.skip hI ⟨by rw [hS, Set.union_empty]; exact hinv, he, ha⟩
+    exact IRS.skip hI ⟨by simp_all, he, ha⟩
   intro hlt
   rw [hi, esC] at hlt
   have hadr : ci.nreg aB + 5 * i + 4 < ci.nreg aB + 5 * ci.nreg sC := by omega
@@ -176,43 +179,40 @@ theorem parDo_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod 
   have he1 : ∀ q, ER q → c₁.nreg q = c.nreg q := fun q h => by
     rw [r1]; exact er_blk parBody_lr h
   have ha1 : AuxKeep c c₁ := fun x _ _ => by rw [m1]
-  have nA : ALLOC ≠ uA ∧ ALLOC ≠ uK := by unfold ALLOC uA uK sw; omega
+  have nA : ALLOC ≠ uA ∧ ALLOC ≠ uK := by reg_omega
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC := by rw [r1]; exact parBody_other _ _ nA.1 nA.2
   have hK1 := E.hK.fix hI₁
-  have hl : parBody.length = 8 := rfl
+  
   refine IRS.ite ?_ ?_
   swap
   · intro hn
     rw [hK1.1, vK] at hn
     have hS : parS ci i = ∅ := by ext j; simp [parS]; omega
     obtain ⟨he', ha'⟩ := keep_chain he ha he1 ha1
-    exact IRS.skip hI₁ ⟨by rw [hS, Set.union_empty]; exact inv1, he', ha'⟩
+    exact IRS.skip hI₁ ⟨by simp_all, he', ha'⟩
   intro hp
   rw [hK1.1, vK] at hp
-  refine IRS.seq (K₁ := 1) (IRS.block uDec hI₁ ⟨iscr_sw (by unfold uK sw; omega)
-    (by unfold uK sw; omega), trivial⟩) ?_
+  refine IRS.seq (K₁ := 1) (IRS.block uDec hI₁ ⟨iscr_sw (by reg_omega)
+    (by reg_omega), trivial⟩) ?_
   rintro c₂ hI₂ - hA2 hc2
   have r2 : c₂.nreg = regB c₁.nmem uDec c₁.nreg := by rw [hc2]
   have m2 : c₂.nmem = c₁.nmem := by rw [hc2]
   have vK2 : c₂.nreg uK = parOf ci i - 1 := by
-    rw [r2]; simp [uDec, regB, regI, upd_same]; rw [vK, hK1.2.1]
+    simp [r2, uDec, regB, regI, upd_same, vK, hK1.2.1]
   have inv2 : Inv O c₂ := by rw [hc2]; exact inv_blk hst uDec_lr inv1
   have he2 : ∀ q, ER q → c₂.nreg q = c₁.nreg q := fun q h => by
     rw [r2]; exact er_blk uDec_lr h
   have eA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := by
-    rw [r2]; simp only [uDec, regB, regI]; exact upd_other _ _ _ (by unfold ALLOC uK sw; omega)
+    ram_finish [r2, uDec, regB, regI, ALLOC, uK, sw]
   have hkn : parOf ci i - 1 < N₂.nChords := by have := hpar i hlt; omega
   refine (odPair_irs E hod hst hI₂ inv2 vK2 hkn (by omega)).mono le_rfl ?_
   rintro c' ⟨inv', he', ha'⟩
   have hS : parS ci i = pairS (parOf ci i - 1) := by
-    ext j; simp only [parS, pairS, mem_ofPred_eq]
-    constructor
-    · rintro ⟨-, -, h⟩; exact h
-    · intro h; exact ⟨hlt, hp, h⟩
+    intros; simp [parS, pairS, *]
   obtain ⟨k1e, k1a⟩ := keep_chain he ha he1 ha1
   obtain ⟨k2e, k2a⟩ := keep_chain k1e k1a he2 (fun x _ _ => by rw [m2])
   obtain ⟨k3e, k3a⟩ := keep_chain k2e k2a (fun q h => he' q (Or.inl h)) ha'
-  exact ⟨by rw [hS]; exact inv', k3e, k3a⟩
+  exact ⟨by rwa [hS], k3e, k3a⟩
 
 /-- The parent of the stop `sP`. -/
 def pStep0 (od : Stmt) : Stmt := .seq (block [.copyN uI sP]) (parDo od)
@@ -221,15 +221,14 @@ def pStep0 (od : Stmt) : Stmt := .seq (block [.copyN uI sP]) (parDo od)
 def pStep1 (od : Stmt) : Stmt :=
   .ifLtN sP sC (.seq (block [.addN uI sP K1]) (parDo od)) .skip
 
-theorem pStep0_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
-    {Inv : Set ℕ → Config → Prop} (hod : OdOK P W c₀ N₂ od Kod Inv) (hst : InvStab Inv)
-    {ci : Config} (hpar : ∀ i, i < ci.nreg sC → parOf ci i ≤ N₂.nChords)
+include E hod hst ci in
+theorem pStep0_ok (hpar : ∀ i, i < ci.nreg sC → parOf ci i ≤ N₂.nChords)
     (haux : ci.nreg aB + 5 * ci.nreg sC ≤ ci.nreg ALLOC) (hA : ci.nreg ALLOC ≤ W) :
     StepOK P W c₀ ci Inv (pStep0 od) (parS ci (ci.nreg sP)) (1 + (2 * Kod + 17)) := by
   intro O c hI he ha hinv hroom
-  have hlr : ∀ i ∈ [Instr.copyN uI sP], LR (dstI i) := by simp [dstI, LR, uI, oK, oS, sw]
-  refine IRS.seq (IRS.block [.copyN uI sP] hI ⟨iscr_sw (by unfold uI sw; omega)
-    (by unfold uI sw; omega), trivial⟩) ?_
+  have hlr : ∀ i ∈ [Instr.copyN uI sP], LR (dstI i) := by simp [ram_layout, dstI, LR]
+  refine IRS.seq (IRS.block [.copyN uI sP] hI ⟨iscr_sw (by reg_omega)
+    (by reg_omega), trivial⟩) ?_
   rintro c₁ hI₁ - hA1 hc1
   have r1 : c₁.nreg = regB c.nmem [.copyN uI sP] c.nreg := by rw [hc1]
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
@@ -240,9 +239,8 @@ theorem pStep0_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
     (fun x _ _ => by rw [m1])
   exact parDo_ok E hod hst hpar haux hA hI₁ he1 ha1 inv1 vI (by omega)
 
-theorem pStep1_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
-    {Inv : Set ℕ → Config → Prop} (hod : OdOK P W c₀ N₂ od Kod Inv) (hst : InvStab Inv)
-    {ci : Config} (hpar : ∀ i, i < ci.nreg sC → parOf ci i ≤ N₂.nChords)
+include E hod hst ci in
+theorem pStep1_ok (hpar : ∀ i, i < ci.nreg sC → parOf ci i ≤ N₂.nChords)
     (haux : ci.nreg aB + 5 * ci.nreg sC ≤ ci.nreg ALLOC) (hA : ci.nreg ALLOC ≤ W) :
     StepOK P W c₀ ci Inv (pStep1 od) (parS ci (ci.nreg sP + 1)) (1 + (2 * Kod + 17) + 2) := by
   intro O c hI he ha hinv hroom
@@ -253,21 +251,23 @@ theorem pStep1_ok (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   · intro hn
     rw [eP, eC] at hn
     have hS : parS ci (ci.nreg sP + 1) = ∅ := by ext j; simp [parS]; omega
-    exact IRS.skip hI ⟨by rw [hS, Set.union_empty]; exact hinv, he, ha⟩
+    exact IRS.skip hI ⟨by simp_all, he, ha⟩
   intro hlt
   have hK := E.hK.fix hI
-  have hlr : ∀ i ∈ [Instr.addN uI sP K1], LR (dstI i) := by simp [dstI, LR, uI, oK, oS, sw]
-  refine IRS.seq (IRS.block [.addN uI sP K1] hI ⟨⟨iscr_sw (by unfold uI sw; omega)
-    (by unfold uI sw; omega), by rw [hK.2.1]; have := hI.hw.1 sC; omega⟩, trivial⟩) ?_
+  have hlr : ∀ i ∈ [Instr.addN uI sP K1], LR (dstI i) := by simp [ram_layout, dstI, LR]
+  refine IRS.seq (IRS.block [.addN uI sP K1] hI ⟨⟨iscr_sw (by reg_omega)
+    (by reg_omega), by rw [hK.2.1]; have := hI.hw.1 sC; omega⟩, trivial⟩) ?_
   rintro c₁ hI₁ - hA1 hc1
   have r1 : c₁.nreg = regB c.nmem [.addN uI sP K1] c.nreg := by rw [hc1]
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
   have vI : c₁.nreg uI = ci.nreg sP + 1 := by
-    rw [r1]; simp [regB, regI, upd_same]; rw [eP, hK.2.1]
+    ram_finish [r1, regB, regI, eP, hK.2.1]
   have inv1 : Inv O c₁ := by rw [hc1]; exact inv_blk hst hlr hinv
   obtain ⟨he1, ha1⟩ := keep_chain he ha (fun q h => by rw [r1]; exact er_blk hlr h)
     (fun x _ _ => by rw [m1])
   exact parDo_ok E hod hst hpar haux hA hI₁ he1 ha1 inv1 vI (by omega)
+
+end
 
 /-! ## The enumeration -/
 
@@ -291,28 +291,25 @@ theorem iter_eq (N : NF) (c : Config) :
   constructor
   · rintro (⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h, hj⟩ | ⟨h1, h2, hj⟩ |
       ⟨h1, h2, hj⟩)
-    · exact Or.inl (Or.inl ⟨0, by omega, by rw [Nat.add_zero]; exact hj⟩)
+    · exact Or.inl (Or.inl ⟨0, by omega, by assumption⟩)
     · exact Or.inl (Or.inl ⟨1, by omega, hj⟩)
     · exact Or.inl (Or.inl ⟨2, by omega, hj⟩)
     · exact Or.inl (Or.inl ⟨3, by omega, hj⟩)
-    · exact Or.inl (Or.inr ⟨0, by omega, by rw [Nat.add_zero]; exact hj⟩)
+    · exact Or.inl (Or.inr ⟨0, by omega, by assumption⟩)
     · exact Or.inl (Or.inr ⟨1, by omega, hj⟩)
     · exact Or.inr ⟨_, Or.inl rfl, h1, h2, hj⟩
     · exact Or.inr ⟨_, Or.inr rfl, h1, h2, hj⟩
   · rintro ((⟨i, hi, hj⟩ | ⟨i, hi, hj⟩) | ⟨i, hi | hi, h1, h2, hj⟩)
     · rcases (by omega : i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3) with rfl | rfl | rfl | rfl
-      · rw [Nat.add_zero] at hj; exact Or.inl ⟨by omega, hj⟩
-      · exact Or.inr (Or.inl ⟨by omega, hj⟩)
-      · exact Or.inr (Or.inr (Or.inl ⟨by omega, hj⟩))
-      · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨by omega, hj⟩)))
+      · simp_all
+      · simp_all 
+      · simp_all 
+      simp_all 
     · rcases (by omega : i = 0 ∨ i = 1) with rfl | rfl
-      · rw [Nat.add_zero] at hj
-        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨by omega, hj⟩))))
-      · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨by omega, hj⟩)))))
-    · subst hi
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h1, h2, hj⟩))))))
-    · subst hi
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨h1, h2, hj⟩))))))
+      · simp_all
+      simp_all 
+    · simp_all
+    simp_all
 
 theorem er_of {r : ℕ} (h : r = kN ∨ (kL ≤ r ∧ r < kL + 4) ∨ r = gN ∨ r = gR ∨ r = gR + 1) :
     ER r := by
@@ -328,9 +325,9 @@ set_option maxHeartbeats 2000000 in
 theorem orgsTask : OrgsTask := by
   refine ⟨orgs, 200, ?_⟩
   intro sh Bs F X Ok P W c₀ J N₁ N₂ E od Kod Inv hod hst O c hI hinv hkL hgR hpar haux hroom
-  have hod' : OdOK P W c₀ N₂ od Kod Inv := hod
-  have hst' : InvStab Inv := hst
-  have hA : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  have hod' := hod
+  have hst' := hst
+  have hA := hI.hw.1 ALLOC
   have kv : ∀ c', IInv W c₀ c' → c'.nreg K0 = 0 ∧ c'.nreg K1 = 1 ∧ c'.nreg K2 = 2 ∧
       c'.nreg K3 = 3 := fun c' h => by
     obtain ⟨a, b, -, -, -, f, g⟩ := E.hK.fix h; exact ⟨a, b, f, g⟩

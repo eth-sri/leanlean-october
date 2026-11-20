@@ -1,5 +1,8 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Core.RestoreReserve
 public import Chazelle.Core.DownPhaseDrvBSpec
 public import Chazelle.Core.DownPhaseDrvDRound3
 public import Chazelle.Core.DownPhaseBaseMain
@@ -39,13 +42,8 @@ open Machine Machine.Stmt Programs SignK BuildRam
 def tPre : Stmt := block [.copyN 212019 9999, .inputSize 219300, .constN 219301 1,
   .constN 219302 0, .addN 219303 219300 219300]
 
-/-- Reserve five words. -/
-def tResBody : Stmt := block [.addN 9999 9999 219301, .addN 9999 9999 219301,
-  .addN 9999 9999 219301, .addN 9999 9999 219301, .addN 9999 9999 219301,
-  .addN 219302 219302 219301]
-
-/-- The reservation loop (`10 n` words). -/
-def tRes : Stmt := .whileLtN 219302 219303 tResBody
+/-- Reserve five words for each record. -/
+def tRes : Stmt := Restore.reserveLoop 5 219302 219303 219301
 
 /-- The arguments of the splice. -/
 def tArgs : Stmt := block [.copyN 210020 212019, .copyN 210021 216020, .inputSize 219300,
@@ -93,22 +91,22 @@ theorem bargs_false {r : ℕ} (h1 : r < 210020 ∨ 210024 < r) (h2 : r < 219300 
 theorem inDrv_pre : DrvD.InDrv Bpre := by
   intro r hr
   simp only [Bpre, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by reg_omega⟩
 
 theorem inDrv_args : DrvD.InDrv Bargs := by
   intro r hr
   simp only [Bargs, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by reg_omega⟩
 
 theorem inDrv_drop : DrvD.InDrv (fun r => decide (200000 ≤ r ∧ r ≤ 200003)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by reg_omega⟩
 
 theorem inDrv_bld : DrvD.InDrv (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by reg_omega⟩
 
 section exec
 
@@ -120,17 +118,7 @@ theorem tPre_exec (c : Config) (hw : WordsBounded W c) (hW : 2 * P.n + 1 ≤ W) 
     ∃ c' k, Exec P W tPre c c' k ∧ k = 5 ∧ c'.nreg 212019 = c.nreg ALLOC ∧
       c'.nreg 219301 = 1 ∧ c'.nreg 219302 = 0 ∧ c'.nreg 219303 = 2 * P.n ∧
       FrameB Bpre c c' := by
-  obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W tPre c c' k ∧ k = 5 ∧
-      (c'.nreg 212019 = c.nreg ALLOC ∧ c'.nreg 219301 = 1 ∧ c'.nreg 219302 = 0 ∧
-        c'.nreg 219303 = 2 * P.n) := by
-    unfold tPre
-    exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩
-    all_goals config_simp
-    all_goals (try rfl)
-    all_goals omega
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  ram_exec
 
 /-- **The reservation** of `5 R` words. -/
 theorem tRes_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h03 : c.nreg 219303 = R)
@@ -138,43 +126,11 @@ theorem tRes_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h03 : c.nreg 2
     (A₀ : ℕ) :
     ∃ c' k, Exec P W tRes c c' k ∧ k ≤ 8 * R + 2 ∧ c'.nreg ALLOC = c.nreg ALLOC + 5 * R ∧
       FrameB Bres c c' ∧ Restore.RF DrvR.drvBands A₀ c c' k := by
-  let Inv : ℕ → Config → Prop := fun j e => WordsBounded W e ∧ e.nreg 219302 = j ∧
-    e.nreg 219303 = R ∧ e.nreg 219301 = 1 ∧ e.nreg ALLOC = c.nreg ALLOC + 5 * j ∧
-    FrameB Bres c e ∧ j ≤ R
-  have key : ∀ j e, j < R → Inv j e → ∃ e' k, Exec P W tResBody e e' k ∧ Inv (j + 1) e' ∧
-      Restore.RF DrvR.drvBands A₀ e e' k ∧ k = 6 := by
-    intro j e hj ⟨hw, h1, h2, h3, h4, hf, _⟩
-    have h4' : e.nreg 9999 = c.nreg ALLOC + 5 * j := h4
-    obtain ⟨e', k, ex, hk, q⟩ : ∃ e' k, Exec P W tResBody e e' k ∧ k = 6 ∧
-        (e'.nreg 219302 = j + 1 ∧ e'.nreg 9999 = c.nreg ALLOC + 5 * (j + 1)) := by
-      unfold tResBody
-      exec_block
-      all_goals try (config_simp; (try simp only [h1, h3, h4']); omega)
-      refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h1, h3, h4']; omega
-    have hf' : FrameB Bres e e' := exec_frameB ex (by decide)
-    have hnot : ∀ r, bandOf r ∉ DrvR.drvBands → r ≠ ALLOC → Bres r = false := fun r hr hra => by
-      simp only [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-      refine ⟨fun h => hr (by rw [h]; exact DrvD.mem_drvBands (by norm_num) (by norm_num)), hra⟩
-    refine ⟨e', k, ex, ⟨ex.wb_right, q.1, (hf'.1 _ (by decide)).trans h2,
-      (hf'.1 _ (by decide)).trans h3, by show e'.nreg 9999 = _; rw [q.2], hf.trans hf', hj⟩,
-      ⟨fun r hr hra => hf'.1 r (hnot r hr hra), fun r _ =>
-        WalkKey.exec_rframe ex (B := fun _ => false) (by decide) r rfl, fun a _ => by rw [hf'.2.2.1],
-        fun a _ => by rw [hf'.2.2.2.1], hf'.2.2.2.2, by show e.nreg 9999 ≤ e'.nreg 9999; omega,
-        by show e'.nreg 9999 ≤ e.nreg 9999 + k; omega⟩, hk⟩
-  have I0 : Inv 0 c := ⟨hw, h02, h03, h01, by simp, FrameB.refl _ _, Nat.zero_le _⟩
-  obtain ⟨c', k, ex, ⟨j, w', h1, h2, -, h4, hf, hjle⟩, hx, RFl, hk⟩ := Restore.whileLtN_frame
-    (P := P) (W := W) (a := 219302) (b := 219303) (body := tResBody) (B := DrvR.drvBands)
-    (A₀ := A₀) (fun e => ∃ j, Inv j e) (fun e => R - e.nreg 219302) 6 (fun e ⟨_, h⟩ => h.1)
-    (fun e ⟨j, hI⟩ ht => by
-      obtain ⟨hw, h1, h2, -⟩ := id hI
-      rw [h1, h2] at ht
-      obtain ⟨e', k, ex, hI', RF', hk⟩ := key j e ht hI
-      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
-  have hjR : j = R := by rw [h1, h2] at hx; omega
-  subst hjR
-  refine ⟨c', k, ex, ?_, h4, hf, RFl⟩
-  rw [h02] at hk
-  simpa using hk
+  obtain ⟨d, k, e, hk, hA, hj, _, hF⟩ := Restore.reserveLoop_exec (P := P) (m := 5)
+    (B := DrvR.drvBands) (A₀ := A₀) (by decide) (by decide) (by decide) (by decide)
+    (DrvD.mem_drvBands (r := 219302) (by decide) (by decide))
+    hw h03 h02 h01 (by omega)
+  exact ⟨d, k, e, hk, hA, exec_frameB e (by decide), hF⟩
 
 set_option maxHeartbeats 2000000 in
 /-- `tArgs`. -/
@@ -201,13 +157,7 @@ theorem tDrop_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 200001 = c.nreg 210002 ∧ c'.nreg 200002 = c.nreg 210003 ∧
       c'.nreg 200003 = c.nreg 210004 ∧
       FrameB (fun r => decide (200000 ≤ r ∧ r ≤ 200003)) c c' := by
-  obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W tDrop c c' k ∧ k = 4 ∧
-      (c'.nreg 200000 = c.nreg 210001 ∧ c'.nreg 200001 = c.nreg 210002 ∧
-        c'.nreg 200002 = c.nreg 210003 ∧ c'.nreg 200003 = c.nreg 210004) := by
-    unfold tDrop
-    exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  ram_exec
 
 set_option maxHeartbeats 1000000 in
 /-- `tBld`. -/
@@ -216,24 +166,13 @@ theorem tBld_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 40001 = c.nreg 200004 ∧ c'.nreg 40002 = c.nreg 200005 ∧
       c'.nreg 40004 = c.nreg 200006 ∧
       FrameB (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) c c' := by
-  obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W tBld c c' k ∧ k = 4 ∧
-      (c'.nreg 40000 = c.nreg 210001 ∧ c'.nreg 40001 = c.nreg 200004 ∧
-        c'.nreg 40002 = c.nreg 200005 ∧ c'.nreg 40004 = c.nreg 200006) := by
-    unfold tBld
-    exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  ram_exec
 
 /-- `tOut`. -/
 theorem tOut_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W tOut c c' k ∧ k = 1 ∧ c'.nreg 210006 = c.nreg 40003 ∧
       FrameB (fun r => decide (r = 210006)) c c' := by
-  obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W tOut c c' k ∧ k = 1 ∧
-      c'.nreg 210006 = c.nreg 40003 := by
-    unfold tOut
-    exec_block
-    refine ⟨rfl, ?_⟩; config_simp
-  exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
+  ram_exec
 
 end exec
 

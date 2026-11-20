@@ -51,12 +51,12 @@ theorem dirOf_cases (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
 /-- The data of an answer record at the first hit parameter `T`: positions of the walk of `C` of the
 query point and of the hit point (height code `h + 1`), at which the chord is attached. -/
 def RecordData (Q : Polygon) (z : Point) (σ T : ℝ) (h pz pw lp rp : ℕ) : Prop :=
-  (Q.vtx h).2 = z.2 ∧ (chainModel J.whole).pos Q ⟨pz, h + 1⟩ = z ∧
-    (chainModel J.whole).pos Q ⟨pw, h + 1⟩ = rayPt z σ T ∧
-    SideAttach (chainModel J.whole).W (Chazelle.segment z (rayPt z σ T)) pz
-      ((chainModel J.whole).param Q ⟨pz, h + 1⟩) ∧
-    SideAttach (chainModel J.whole).W (Chazelle.segment z (rayPt z σ T)) pw
-      ((chainModel J.whole).param Q ⟨pw, h + 1⟩) ∧
+  (Q.vtx h).2 = z.2 ∧ J.wholeModel.pos Q ⟨pz, h + 1⟩ = z ∧
+    J.wholeModel.pos Q ⟨pw, h + 1⟩ = rayPt z σ T ∧
+    SideAttach J.wholeModel.W (Chazelle.segment z (rayPt z σ T)) pz
+      (J.wholeModel.param Q ⟨pz, h + 1⟩) ∧
+    SideAttach J.wholeModel.W (Chazelle.segment z (rayPt z σ T)) pw
+      (J.wholeModel.param Q ⟨pw, h + 1⟩) ∧
     (σ = 1 → lp = pz ∧ rp = pw) ∧ (σ = -1 → lp = pw ∧ rp = pz)
 
 end Machine

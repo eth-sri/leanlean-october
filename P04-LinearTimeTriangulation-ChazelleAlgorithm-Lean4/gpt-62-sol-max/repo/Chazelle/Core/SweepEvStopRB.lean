@@ -77,7 +77,7 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
     IRS P W c₀ (block (saveL F)) c 7 (fun c' => ResOK P C a σ G F c' ∧
       (∀ q, (q < F ∨ F + 6 < q) → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   have hok : okB W c.nmem (saveL F) c.nreg := by
-    simp only [saveL, okB, okI]
+    simp only [saveL, reg_check]
     exact ⟨iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega),
       iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega),
       iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega), trivial⟩
@@ -85,16 +85,16 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
   rintro c' hc'
   obtain ⟨v0, v1, v2, v3, v4, v5, v6, vo⟩ := save_val c.nmem c.nreg hF
   have e : ∀ q v, regB c.nmem (saveL F) c.nreg q = v → c'.nreg q = v := fun q v h => by
-    rw [hc']; exact h
+    rwa [hc']
   have hm : c'.nmem = c.nmem := by rw [hc']
   refine ⟨?_, fun q hq => e q _ (vo q hq), hm⟩
   obtain ⟨hf1, hf0, hf⟩ := hacc
-  refine ⟨by rw [e _ _ v0]; exact hf1, fun h1 => ?_, fun hg => ?_⟩
+  refine ⟨by rwa [e _ _ v0], fun h1 => ?_, fun hg => ?_⟩
   · rw [e _ _ v0] at h1
     obtain ⟨τ, hτ, hmin, -, hpp, hen, hpos, hrec⟩ := hf h1
     obtain ⟨hτ0, hon⟩ := hL τ hτ
-    refine ⟨τ, hτ0, hon, by rw [e _ _ v1]; exact hen, by rw [e _ _ v1, e _ _ v2]; exact hpp,
-      by rw [e _ _ v1, e _ _ v2]; exact hpos, ?_, fun hg => ?_⟩
+    refine ⟨τ, hτ0, hon, by rwa [e _ _ v1], by rwa [e _ _ v1, e _ _ v2],
+      by rwa [e _ _ v1, e _ _ v2], ?_, fun hg => ?_⟩
     · refine absRec_transport (c := c) hrec (e _ _ v3) ?_ ?_ ?_
       · rw [show F + 3 + 1 = F + 4 by omega]; exact e _ _ v4
       · rw [show F + 3 + 2 = F + 5 by omega]; exact e _ _ v5
@@ -105,8 +105,7 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
     obtain ⟨-, hmem⟩ := hG hg
     by_contra hne
     have h0 : c.nreg accA = 0 := by omega
-    rw [hf0 h0] at hmem
-    exact hmem
+    simp_all
 
 end
 

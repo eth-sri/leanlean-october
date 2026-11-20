@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepIoS0CandBsSpec
 
 /-!
@@ -63,13 +67,10 @@ set_option maxHeartbeats 1000000 in
 theorem lsInit_exec (d : Config) (hw : WordsBounded W d) :
     ∃ d' k, Exec P W lsInit d d' k ∧ k = 2 ∧ d'.nreg 244000 = 0 ∧
       d'.nreg 244001 = d.nreg 240601 ∧ (∀ r, LB r = false → d'.nreg r = d.nreg r) ∧
-      d'.rreg = d.rreg ∧ d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
+      d'.rreg = d.rreg ∧ Machine.MemOutputEq d d' := by
   obtain ⟨d', k, ex, hk, q1, q2⟩ : ∃ d' k, Exec P W lsInit d d' k ∧ k = 2 ∧
       d'.nreg 244000 = 0 ∧ d'.nreg 244001 = d.nreg 240601 := by
-    unfold lsInit
-    exec_block
-    all_goals try (config_simp; omega)
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp
+    ram_exec
   have hf := SignK.exec_frameB ex (B := LB) (by decide)
   exact ⟨d', k, ex, hk, q1, q2, hf.1, funext fun r => WalkKey.exec_rframe ex
     (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
@@ -81,14 +82,11 @@ theorem lsB1_exec (d : Config) (hw : WordsBounded W d) {I KK TB E : ℕ}
     ∃ d' k, Exec P W lsB1 d d' k ∧ k = 4 ∧ d'.nreg 244001 = KK - 1 ∧
       d'.nreg 244003 = d.nmem (TB + (KK - 1)) ∧ d'.nreg 244016 = E - I ∧ d'.nreg 244000 = I ∧
       (∀ r, LB r = false → d'.nreg r = d.nreg r) ∧
-      d'.rreg = d.rreg ∧ d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
+      d'.rreg = d.rreg ∧ Machine.MemOutputEq d d' := by
   obtain ⟨d', k, ex, hk, q1, q2, q3, q4⟩ : ∃ d' k, Exec P W lsB1 d d' k ∧ k = 4 ∧
       d'.nreg 244001 = KK - 1 ∧ d'.nreg 244003 = d.nmem (TB + (KK - 1)) ∧
       d'.nreg 244016 = E - I ∧ d'.nreg 244000 = I := by
-    unfold lsB1
-    exec_block
-    all_goals try (config_simp; (try simp only [h00, h01, hTB, hE, hK1]); omega)
-    refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h00, h01, hTB, hE, hK1]
+    ram_exec
   have hf := SignK.exec_frameB ex (B := LB) (by decide)
   exact ⟨d', k, ex, hk, q1, q2, q3, q4, hf.1, funext fun r => WalkKey.exec_rframe ex
     (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
@@ -101,7 +99,7 @@ theorem lsB2_exec (d : Config) (hw : WordsBounded W d) {I Pv E AL : ℕ}
       d'.nreg 244012 = d.nmem (AL + 7 * (I + Pv - 1)) ∧
       d'.nreg 244013 = d.nmem (AL + 7 * (I + Pv - 1) + 1) ∧ d'.nreg 244000 = I ∧
       d'.nreg 244001 = d.nreg 244001 ∧ (∀ r, LB r = false → d'.nreg r = d.nreg r) ∧
-      d'.rreg = d.rreg ∧ d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
+      d'.rreg = d.rreg ∧ Machine.MemOutputEq d d' := by
   obtain ⟨d', k, ex, hk, q1, q2, q3, q4, q5⟩ : ∃ d' k, Exec P W lsB2 d d' k ∧ k = 10 ∧
       d'.nreg 244004 = I + Pv ∧ d'.nreg 244012 = d.nmem (AL + 7 * (I + Pv - 1)) ∧
       d'.nreg 244013 = d.nmem (AL + 7 * (I + Pv - 1) + 1) ∧ d'.nreg 244000 = I ∧
@@ -119,12 +117,10 @@ theorem lsB2_exec (d : Config) (hw : WordsBounded W d) {I Pv E AL : ℕ}
 theorem lsB3_exec (d : Config) (hw : WordsBounded W d) :
     ∃ d' k, Exec P W lsB3 d d' k ∧ k = 1 ∧ d'.nreg 244000 = d.nreg 244004 ∧
       d'.nreg 244001 = d.nreg 244001 ∧ (∀ r, LB r = false → d'.nreg r = d.nreg r) ∧
-      d'.rreg = d.rreg ∧ d'.nmem = d.nmem ∧ d'.rmem = d.rmem ∧ d'.output = d.output := by
+      d'.rreg = d.rreg ∧ Machine.MemOutputEq d d' := by
   obtain ⟨d', k, ex, hk, q1, q2⟩ : ∃ d' k, Exec P W lsB3 d d' k ∧ k = 1 ∧
       d'.nreg 244000 = d.nreg 244004 ∧ d'.nreg 244001 = d.nreg 244001 := by
-    unfold lsB3
-    exec_block
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp
+    ram_exec
   have hf := SignK.exec_frameB ex (B := LB) (by decide)
   exact ⟨d', k, ex, hk, q1, q2, hf.1, funext fun r => WalkKey.exec_rframe ex
     (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩

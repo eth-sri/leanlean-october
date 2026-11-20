@@ -43,9 +43,7 @@ theorem sum_split_bound {ι : Type*} [DecidableEq ι] (L : Finset ι) (m : ι �
   have hJ : ∑ d ∈ L, (2 * m d - s) = ∑ d ∈ J, (2 * m d - s) := by
     rw [Finset.sum_filter]
     refine Finset.sum_congr rfl (fun d _ => ?_)
-    split_ifs with h
-    · rfl
-    · omega
+    simp_all <;> omega
   have hkey : ∑ d ∈ J, (2 * m d - s) + J.card * s = 2 * ∑ d ∈ J, m d := by
     rw [Finset.mul_sum, ← smul_eq_mul, ← Finset.sum_const, ← Finset.sum_add_distrib]
     refine Finset.sum_congr rfl (fun d hd => ?_)
@@ -59,12 +57,12 @@ theorem sum_split_bound {ι : Type*} [DecidableEq ι] (L : Finset ι) (m : ι �
   · rcases (show J.card = 0 ∨ J.card = 1 by omega) with h0 | h1
     · rw [Finset.card_eq_zero.mp h0, Finset.sum_empty]; omega
     · obtain ⟨d, hd⟩ := Finset.card_eq_one.mp h1
-      have hdL : d ∈ L := (Finset.mem_filter.mp (hd ▸ Finset.mem_singleton_self d)).1
+      have hdL := (Finset.mem_filter.mp (hd ▸ Finset.mem_singleton_self d)).1
       rw [hd, Finset.card_singleton, Finset.sum_singleton, Finset.sum_singleton] at hkey
       rw [hd, Finset.sum_singleton]
       have := hhalf d hdL
       omega
-  · have : 2 * s ≤ J.card * s := Nat.mul_le_mul_right s h
+  · have := Nat.mul_le_mul_right s h
     omega
 
 namespace CombMap

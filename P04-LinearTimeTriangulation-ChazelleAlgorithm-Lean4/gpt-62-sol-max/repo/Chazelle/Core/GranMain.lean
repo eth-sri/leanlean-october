@@ -23,7 +23,7 @@ open Machine Machine.Stmt Programs SignK
 def mainStmt : Stmt := .seq initStmt (.seq loopStmt outStmt)
 
 theorem wrS_loop : wrS Bbody loopStmt = true := by
-  simp only [loopStmt, wrS]; exact wrS_body
+  simp only [loopStmt, write_check]; exact wrS_body
 
 theorem natOnly_loop : natOnly loopStmt = true := by decide
 
@@ -87,21 +87,21 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     { r30 := hMS'.cst.bLive
       r19 := hMS'.cst.one
       r21 := hMS'.cst.two
-      r10 := by rw [hR₉ _ (by decide), r10]
+      r10 := by ram_rw [hR₉, r10]
       hlive := fun u hu => hMS'.enc.live u hu
       hl01 := fun u hu => hI'.live01 u hu
       hrec := fun u hu => by
         have hb := hNA.2.1 u hu
         have hr := (hNW.nfAt.2.2.2.2.2.1 u hu)
         refine ⟨?_, ?_, ?_⟩
-        · rw [hMS'.low _ (by omega)]; exact hr.1
-        · rw [hMS'.low _ (by omega)]; exact hr.2.1
-        · rw [hMS'.low _ (by omega)]; exact hr.2.2.1
+        · ram_rw [hMS'.low]; exact hr.1
+        · ram_rw [hMS'.low]; exact hr.2.1
+        · ram_rw [hMS'.low]; exact hr.2.2.1
       hCB := by omega
       hb0 := by omega
       hW := by omega }
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, r95, hlist, hmem, FS₁₀⟩ := out_exec (P := P) hMS'.wb hOE
-    (by rw [hR₉ _ (by decide), r13]) (by rw [hR₉ _ (by decide), r28])
+    (by ram_rw [hR₉, r13]) (by ram_rw [hR₉, r28])
     (by unfold costMain at hroom; have := dmOf_oEnd N.nChords N.arcs.length N.nRegions D 0; omega)
   have G₁₀ : GF (c.nreg ALLOC) c₉ c₁₀ k₁₀ := GF.of_nat e₁₀ natOnly_out wrS_outStmt
     (fun r hr => by
@@ -109,9 +109,9 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       exact band9_gran (by omega) (by omega))
     (fun a ha => hmem a (by left; omega))
   have q28 : c₁₀.nreg 90028 = c.nreg ALLOC + d.oList := by
-    rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r28]
+    ram_rw [FS₁₀.1, hR₉, r28]
   have qA : c₁₀.nreg ALLOC = c₈.nreg ALLOC := by
-    rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide)]
+    ram_rw [FS₁₀.1, hR₉]
   obtain ⟨hFeq, hok⟩ := outList_ok (st := st') hE
   obtain ⟨hgran, hdg⟩ := hI'.final hE htop
   have hlset : lset M (Qof P) (outList N st'.live K) = st'.F E := hFeq
@@ -126,8 +126,8 @@ theorem main_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     rw [hmeas, hED] at hk₉
     unfold costMain
     omega
-  · rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r00]
-  · rw [FS₁₀.1 _ (by decide), hR₉ _ (by decide), r02]
+  · ram_rw [FS₁₀.1, hR₉, r00]
+  · ram_rw [FS₁₀.1, hR₉, r02]
   · rw [hlset]; exact St.F_sub
   · rw [hlset]; exact hdg
   · rw [hlset]; exact hgran

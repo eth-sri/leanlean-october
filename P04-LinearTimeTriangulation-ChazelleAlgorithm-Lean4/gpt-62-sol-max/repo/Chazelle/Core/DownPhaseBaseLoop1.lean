@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseBaseRam
 
 /-!
@@ -41,12 +43,17 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
-/-- **One chord.** -/
-theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B B' X : ℕ}
+section
+
+variable {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B B' X : ℕ}
     (hL : ChordListAt m₀ B L) (hB : B + 3 * L.length ≤ B') (hX : X = B' + 3 * L.length)
     (hXW : X + 2 * L.length + 2 ≤ W) {c₀ d : Config} (hw : WordsBounded W d)
-    (hI : Inv1 m₀ li n L B B' X c₀ d) (ht : d.nreg 200110 < d.nreg 200002) :
+    (hI : Inv1 m₀ li n L B B' X c₀ d)
+include hL hB hX hXW hw hI
+
+set_option maxHeartbeats 4000000 in
+/-- **One chord.** -/
+theorem dBody1_exec (ht : d.nreg 200110 < d.nreg 200002) :
     ∃ d' k, Exec P W dBody1 d d' k ∧ WordsBounded W d' ∧ Inv1 m₀ li n L B B' X c₀ d' ∧
       d'.nreg 200110 = d.nreg 200110 + 1 ∧ 13 ≤ k ∧ k ≤ 45 := by
   rw [hI.rK] at ht
@@ -56,7 +63,7 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hle := rankF_le (keepX li n) L i
   obtain ⟨l1, l2, l3⟩ := hL i ht
   have hmL : ∀ q, q < 3 → d.nmem (B + 3 * i + q) = m₀ (B + 3 * i + q) := fun q hq => by
-    rw [hI.mem]; unfold mem1; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [hI.mem]; unfold mem1; ram_rw [ite_eq_right, ite_eq_right]
   have hW1 : 1 ≤ W := by omega
   -- load
   obtain ⟨d₁, k₁, e₁, hk₁, v12, v13, v14, v11, v15, r₁, m₁, rr₁, rm₁, o₁⟩ :=
@@ -65,35 +72,32 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have hm0 := hmL 0 (by norm_num)
   rw [Nat.add_zero] at hm0
   rw [hm0, l1] at v12
-  rw [hmL 1 (by norm_num), l2] at v13
-  rw [hmL 2 (by norm_num), l3] at v14
+  ram_rw [hmL 1, l2] at v13
+  ram_rw [hmL 2, l3] at v14
   -- the two tests
   obtain ⟨d₂, k₂, e₂, hk₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := dTest_exec (P := P) d₁ e₁.wb_right hW1
     (li := li) (n := n) (p := 200113) (by norm_num)
-    (by rw [r₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), hI.r101])
-    (by rw [r₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), hI.r103])
-    (by rw [r₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), hI.r104])
+    (by frame_finish)
+    (by frame_finish)
+    (by frame_finish)
   obtain ⟨d₃, k₃, e₃, hk₃, v₃, r₃, m₃, rr₃, rm₃, o₃⟩ := dTest_exec (P := P) d₂ e₂.wb_right hW1
     (li := li) (n := n) (p := 200114) (by norm_num)
-    (by rw [r₂ _ (by norm_num) (by norm_num), r₁ _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r101])
-    (by rw [r₂ _ (by norm_num) (by norm_num), r₁ _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r103])
-    (by rw [r₂ _ (by norm_num) (by norm_num), r₁ _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num), hI.r104])
+    (by frame_finish)
+    (by frame_finish)
+    (by frame_finish)
   -- registers of `d₃`
   have g3 : ∀ r, r ≠ 200111 → r ≠ 200112 → r ≠ 200113 → r ≠ 200114 → r ≠ 200115 →
       r ≠ 200116 → d₃.nreg r = d.nreg r := fun r a1 a2 a3 a4 a5 a6 => by
-    rw [r₃ r a5 a6, r₂ r a5 a6, r₁ r a1 a2 a3 a4 a5]
+    frame_finish
   have e12 : d₃.nreg 200112 = x.1 := by
-    rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v12]
+    frame_finish
   have e13 : d₃.nreg 200113 = x.2.1 := by
-    rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v13]
+    frame_finish
   have e14 : d₃.nreg 200114 = x.2.2 := by
-    rw [r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v14]
+    frame_finish
   have hflag : d₃.nreg 200115 = if keepX li n x = true then 1 else 0 := by
-    rw [v₃, v₂, v15, r₂ _ (by norm_num) (by norm_num), v12, v13,
-      r₂ _ (by norm_num) (by norm_num), v14]
+    ram_rw [v₃, v₂, v15, r₂, v12, v13,
+      r₂, v14]
     rw [← hx]
     have hk := keepX_iff li n x
     by_cases h1 : x.1 = wStart li n x.2.1 <;> by_cases h2 : x.1 = wStart li n x.2.2 <;>
@@ -110,14 +114,11 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       d₄.nreg 200119 = B' + 3 * rankF (keepX li n) L (i + 1) ∧
       d₄.rreg = d₃.rreg ∧ d₄.rmem = d₃.rmem ∧ d₄.output = d₃.output := by
     have h101 : d₃.nreg 200101 = 0 := by
-      rw [g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num), hI.r101]
+      frame_finish
     have h117 : d₃.nreg 200117 = X + 2 * i := by
-      rw [g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num), hI.r117]
+      ram_rw [g3, hI.r117]
     have h100 : d₃.nreg 200100 = 1 := by
-      rw [g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num), hI.r100]
+      frame_finish
     have hr := rankF_succ (keepX li n) (0, 0, 0) (L := L) ht
     cases hk : keepX li n x
     · -- dropped
@@ -132,20 +133,16 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
         fun a => ?_, by rw [w117]; ring, ?_, ?_, rr₄, rm₄, o₄⟩
       · rw [mm₄, hm3]
         exact mem1_drop hI.mem ht hB' hk a
-      · rw [r₄ _ (by norm_num), g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num) (by norm_num), hI.r118, hr]
-      · rw [r₄ _ (by norm_num), g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num) (by norm_num), hI.r119, hr]
+      · ram_rw [r₄, g3, hI.r118, hr]
+      · ram_rw [r₄, g3, hI.r119, hr]
     · -- kept
       rw [hk] at hflag
       simp only [ite_true] at hflag
       have hp : d₃.nreg 200101 < d₃.nreg 200115 := by rw [h101, hflag]; omega
       have h119 : d₃.nreg 200119 = B' + 3 * j := by
-        rw [g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hI.r119]
+        ram_rw [g3, hI.r119]
       have h118 : d₃.nreg 200118 = j := by
-        rw [g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hI.r118]
+        ram_rw [g3, hI.r118]
       obtain ⟨d₄, k₄, e₄, hk₄, w119, w117, w118, r₄, mm₄, rr₄, rm₄, o₄⟩ :=
         dKeep_exec (P := P) d₃ e₃.wb_right h119 h117 h118 h100 (by omega) (by omega) (by omega)
       rw [← hx, hk] at hr
@@ -155,11 +152,11 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       rw [mm₄, e12, e13, e14, hm3]
       exact mem1_keep hI.mem ht hB' hk a
   have h110 : d₄.nreg 200110 = i := by
-    rw [g4 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+    ram_rw [g4,
+      g3]
   have h100 : d₄.nreg 200100 = 1 := by
-    rw [g4 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      g3 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
+    ram_rw [g4,
+      g3,
       hI.r100]
   have e₅ := Exec.addN (P := P) e₄.wb_right 200110 200110 200100 (by rw [h110, h100]; omega)
   set d₅ : Config := { d₄ with nreg := upd d₄.nreg 200110 (d₄.nreg 200110 + d₄.nreg 200100) }
@@ -167,34 +164,31 @@ theorem dBody1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   have g5 : ∀ r, r ≠ 200110 → d₅.nreg r = d₄.nreg r := fun r hr => by rw [hd₅]; simp [hr]
   have v5 : d₅.nreg 200110 = i + 1 := by rw [hd₅]; simp [h110, h100]
   have g : ∀ r, (r < 200110 ∨ 200120 < r) → d₅.nreg r = d.nreg r := fun r hr => by
-    rw [g5 r (by omega), g4 r (by omega) (by omega) (by omega) (by omega),
-      g3 r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)]
+    ram_rw [g5 r, (ram_app% (g4 r ?_ ?_ ?_ ?_)),
+      g3 r]
   have X' : Exec P W dBody1 d d₅ (k₁ + (k₂ + (k₃ + (k₄ + 1)))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
+    (by ram_path)
   refine ⟨d₅, _, X', e₅.wb_right, ?_, v5, by omega, by omega⟩
-  refine ⟨by rw [v5]; omega, by rw [g _ (by norm_num), hI.rK], ?_, ?_, ?_, ?_,
-    by rw [g _ (by norm_num), hI.r100], by rw [g _ (by norm_num), hI.r101],
-    by rw [g _ (by norm_num), hI.r103], by rw [g _ (by norm_num), hI.r104],
+  refine ⟨by rw [v5]; omega, by ram_rw [g, hI.rK], ?_, ?_, ?_, ?_,
+    by assumption, by ram_rw [g, hI.r101],
+    by ram_rw [g, hI.r103], by ram_rw [g, hI.r104],
     fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_, fun a => ?_⟩
-  · rw [v5, g5 _ (by norm_num), g4 _ (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      r₃ _ (by norm_num) (by norm_num), r₂ _ (by norm_num) (by norm_num), v11]
+  · ram_rw [v5, g5, g4,
+      r₃, r₂, v11]
     ring
-  · rw [v5, g5 _ (by norm_num), n117]
-  · rw [v5, g5 _ (by norm_num), n118]
-  · rw [v5, g5 _ (by norm_num), n119]
+  · ram_rw [v5, g5, n117]
+  · ram_rw [v5, g5, n118]
+  · ram_rw [v5, g5, n119]
   · show d₄.rreg = c₀.rreg; rw [rr₄, rr₃, rr₂, rr₁, hI.rr]
   · show d₄.rmem = c₀.rmem; rw [rm₄, rm₃, rm₂, rm₁, hI.rm]
   · show d₄.output = c₀.output; rw [o₄, o₃, o₂, o₁, hI.out]
   · show d₄.nmem a = _; rw [v5, mem4]
 
 /-- **The chord pass.** -/
-theorem dLoop1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B B' X : ℕ}
-    (hL : ChordListAt m₀ B L) (hB : B + 3 * L.length ≤ B') (hX : X = B' + 3 * L.length)
-    (hXW : X + 2 * L.length + 2 ≤ W) {c₀ d : Config} (hw : WordsBounded W d)
-    (hI : Inv1 m₀ li n L B B' X c₀ d) (h0 : d.nreg 200110 = 0) :
+theorem dLoop1_exec (h0 : d.nreg 200110 = 0) :
     ∃ d' k, Exec P W dLoop1 d d' k ∧ WordsBounded W d' ∧ Inv1 m₀ li n L B B' X c₀ d' ∧
       d'.nreg 200110 = L.length ∧ 13 * L.length ≤ k ∧ k ≤ 47 * L.length + 2 := by
-  obtain ⟨d', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
+  obtain ⟨d', k, e, ⟨hw', hI'⟩, htest, hk, hψ⟩ := Exec.whileLtN_growth (P := P) (W := W)
     (a := 200110) (b := 200002) (body := dBody1)
     (fun d => WordsBounded W d ∧ Inv1 m₀ li n L B B' X c₀ d)
     (fun d => 47 * (L.length - d.nreg 200110)) (fun d => 13 * d.nreg 200110) (fun d hd => hd.1)
@@ -211,6 +205,8 @@ theorem dLoop1_exec {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   · rw [h0] at hψ; have : d'.nreg 200110 = L.length := by omega
     rw [this] at hψ; omega
   · rw [h0] at hk; omega
+
+end
 
 end exec
 

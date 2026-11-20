@@ -61,8 +61,7 @@ theorem ifEqN_eq {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → P
     ∃ c' k, Exec P W (ifEqN a b t e) c c' k ∧ Q c' k := by
   unfold ifEqN
   refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) ?_)
-  obtain ⟨c', k, ex, q⟩ := ht
-  exact ⟨c', k, ex, by rwa [show k + 2 + 2 = k + 4 by omega]⟩
+  assumption
 
 /-- Spec of `ifEqN`, unequal case (cost at most `k + 3`). -/
 theorem ifEqN_ne {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → Prop}
@@ -85,7 +84,7 @@ theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.loadN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same]
+  rfl
 
 /-- Spec of `stF`. -/
 theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 60030)
@@ -98,7 +97,7 @@ theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.storeN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same, Machine.upd_other _ _ _ hv]
+  simp_all
 
 end spec
 
@@ -176,7 +175,7 @@ theorem fv_store {m : ℕ → ℕ} {A R f i v g j : ℕ} (hi : i < R) (hj : j < 
     fv (upd m (A + 12 + f * R + i) v) A R g j = if g = f ∧ j = i then v else fv m A R g j := by
   unfold fv
   by_cases e : g = f ∧ j = i
-  · rw [ite_eq_left e, e.1, e.2, Machine.upd_same]
+  · simp_all
   · rw [ite_eq_right e, Machine.upd_other]
     intro h
     exact e (addr_inj hj hi h)

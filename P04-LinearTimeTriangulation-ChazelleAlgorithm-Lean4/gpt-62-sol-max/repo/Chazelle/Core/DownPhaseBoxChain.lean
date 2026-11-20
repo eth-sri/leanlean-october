@@ -72,11 +72,11 @@ theorem set_eq : C.set = C'.set := by
   · rintro ⟨k, hk, hp⟩
     refine ⟨k, h.m_eq ▸ hk, ?_⟩
     rw [Chain.chainEdge_eq] at hp ⊢
-    rwa [← h.vtx_eq k (by omega), ← h.vtx_eq (k + 1) (by omega)]
+    ram_rw assumption [← h.vtx_eq k, ← h.vtx_eq (k + 1) (by omega)]
   · rintro ⟨k, hk, hp⟩
     refine ⟨k, h.m_eq ▸ hk, ?_⟩
     rw [Chain.chainEdge_eq] at hp ⊢
-    rwa [h.vtx_eq k (by omega), h.vtx_eq (k + 1) (by omega)]
+    ram_rw assumption [h.vtx_eq k, h.vtx_eq (k + 1) (by omega)]
 
 /-- Points of the chain are well inside the fixed band. -/
 theorem abs_le_of_mem {p : Point} (hp : p ∈ C.set) :
@@ -152,7 +152,7 @@ theorem phi_mem_set_iff (p : Point) : phi C C' p ∈ C'.set ↔ p ∈ C.set := b
   · intro hp
     rw [← h.set_eq] at hp
     rwa [h.eq_of_phi_mem hp] at hp
-  · intro hp; rw [h.phi_fix hp, ← h.set_eq]; exact hp
+  · intro hp; rwa [h.phi_fix hp, ← h.set_eq]
 
 theorem phi_mem_slit_iff (p : Point) : phi C C' p ∈ C'.slit ↔ p ∈ C.slit := by
   rw [Chain.mem_slit_iff, Chain.mem_slit_iff, ← h.top_eq]
@@ -176,8 +176,7 @@ theorem phi_mem_box_iff (_h : Twin C C')
 
 /-- **The stretch maps the domain of `C` onto the domain of `C'`.** -/
 theorem phi_mem_dom_iff (p : Point) : phi C C' p ∈ C'.dom ↔ p ∈ C.dom := by
-  simp only [Chain.dom, Chain.obstacle, mem_sdiff, mem_union, h.phi_mem_box_iff,
-    h.phi_mem_set_iff, h.phi_mem_slit_iff]
+  simp [Chain.dom, Chain.obstacle, mem_sdiff, mem_union, h.phi_mem_box_iff, h.phi_mem_set_iff, h.phi_mem_slit_iff]
 
 /-! ## The walks -/
 
@@ -198,7 +197,7 @@ theorem sideIdx_eq (i : ℕ) : C.sideIdx C.sideBeta i = C'.sideIdx C'.sideBeta i
   · push Not at hend
     have hbeta : C.sideBeta = C'.sideBeta := by
       unfold Chain.sideBeta
-      rw [← h.top_eq, ← hT, ← h.vtx_eq _ (by omega), ← h.vtx_eq _ (by omega)]
+      ram_rw [← h.top_eq, ← hT, ← h.vtx_eq, ← h.vtx_eq]
       congr 1
       apply propext
       -- the slit direction is `(0, R - top.2)` resp. `(0, R' - top.2)`: same direction
@@ -237,7 +236,7 @@ theorem sideIdx_le (_h : Twin C C') (i : ℕ) : C.sideIdx C.sideBeta i ≤ C.m :
   exact sideE_le (Nat.mod_lt _ (by have := C.one_le; omega)).le
 
 theorem walk_n : (C'.sideWalk C'.sideBeta).n = (C.sideWalk C.sideBeta).n := by
-  rw [Chain.sideWalk_n, Chain.sideWalk_n, h.m_eq]
+  simp [Chain.sideWalk_n, h.m_eq]
 
 /-- **The walk vertices correspond under the stretch.** -/
 theorem phi_walk_vtx (i : ℕ) :
@@ -247,19 +246,15 @@ theorem phi_walk_vtx (i : ℕ) :
   have hRn := h.stretch_neg_radius_eq
   rcases Nat.lt_or_ge i 6 with hi | hi
   · interval_cases i
-    · rw [Chain.sideWalk_vtx_zero, Chain.sideWalk_vtx_zero, h.phi_slitTop]
-    · rw [Chain.sideWalk_vtx_one, Chain.sideWalk_vtx_one]
-      simp only [phi, stretchPt, hR, hRn]
-    · rw [Chain.sideWalk_vtx_two, Chain.sideWalk_vtx_two]
-      simp only [phi, stretchPt, hRn]
-    · rw [Chain.sideWalk_vtx_three, Chain.sideWalk_vtx_three]
-      simp only [phi, stretchPt, hR, hRn]
-    · rw [Chain.sideWalk_vtx_four, Chain.sideWalk_vtx_four]
-      simp only [phi, stretchPt, hR]
-    · rw [Chain.sideWalk_vtx_five, Chain.sideWalk_vtx_five, h.phi_slitTop]
+    · simp [Chain.sideWalk_vtx_zero, h.phi_slitTop]
+    · simp [Chain.sideWalk_vtx_one, phi, stretchPt, hR, hRn]
+    · simp [Chain.sideWalk_vtx_two, phi, stretchPt, hRn]
+    · simp [Chain.sideWalk_vtx_three, phi, stretchPt, hR, hRn]
+    · simp [Chain.sideWalk_vtx_four, phi, stretchPt, hR]
+    simp [Chain.sideWalk_vtx_five, h.phi_slitTop]
   · rcases Nat.lt_or_ge (i - 6) (2 * C.m + 1) with hi' | hi'
     · have e : i = (i - 6) + 6 := by omega
-      rw [e, C.sideWalk_vtx_tour _ (by omega), C'.sideWalk_vtx_tour _ (by omega)]
+      ram_rw [e, C.sideWalk_vtx_tour, C'.sideWalk_vtx_tour]
       unfold Chain.sideTour
       rw [← h.sideIdx_eq, ← h.vtx_eq _ (h.sideIdx_le _),
         h.phi_fix (C.vertex_mem_set (h.sideIdx_le _))]

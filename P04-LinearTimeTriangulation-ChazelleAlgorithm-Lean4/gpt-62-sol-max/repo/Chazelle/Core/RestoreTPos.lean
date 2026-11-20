@@ -14,7 +14,6 @@ inputs of `offCmp` (`PosOK`).
 * `posOK_of_attach`: a position at which an admissible chord is attached.
 * `chord_posOK`: the ends of the chord records of a normal form.
 * `arc_posOK`: the ends of the arc records of a nonempty family.
-* `endpoints_lt`: the left end of an attached record is left of its right end.
 * `exit_block`: an attached record whose left (right) end is the candidate vertex contains ray
   points near it in direction `1` (`-1`): the completeness half of the exit scan.
 -/
@@ -36,11 +35,11 @@ theorem chord_height_lt {C : Chain} (hP : C.P.Simple) {c : Set Point}
     (hc : c ∈ (chainModel C).Adm) {z : Point} (hz : z ∈ c) : |z.2| < C.radius := by
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨y, a, b, hH, rfl⟩ := adm_hchord hGM hc
-  have hy : z.2 = y := hz.1
+  have hy := hz.1
   have hm : (((a + b) / 2, y) : Point) ∈ (chainModel C).D :=
     hH.open_mem _ (by linarith [hH.lt]) (by linarith [hH.lt])
   have := (C.dom_subset_box hm).2
-  rw [hy]; exact this
+  rwa [hy]
 
 /-- **A position at which an admissible chord is attached** is a valid input of `offCmp`. -/
 theorem posOK_of_attach {C : Chain} (hP : C.P.Simple) {Q : Polygon} {n : ℕ} {x : WPos}
@@ -62,8 +61,7 @@ theorem chord_posOK (hP : C.P.Simple) (hNF : IsNF (chainModel C) (Qof P) N) {i :
     PosOK C (Qof P) P.n (N.chord i).lpos ∧ PosOK C (Qof P) P.n (N.chord i).rpos := by
   obtain ⟨hFam, -, hat, reg, -, -, -, -, -, hh, -⟩ := hNF
   have hQ : (Qof P).n = P.n := shear_n _ _
-  have hadm : (N.chord i).toSet (chainModel C) (Qof P) ∈ (chainModel C).Adm :=
-    hFam.2.1 ⟨_, chord_mem_list hi, rfl⟩
+  have hadm := hFam.2.1 ⟨_, chord_mem_list hi, rfl⟩
   have hhn : (N.chord i).h + 1 ≤ P.n := by have := hh i hi; omega
   exact ⟨posOK_of_attach hP hadm (hat i hi).1 hhn, posOK_of_attach hP hadm (hat i hi).2 hhn⟩
 
@@ -86,25 +84,6 @@ theorem arc_posOK (hP : C.P.Simple) (hNF : IsNF (chainModel C) (Qof P) N)
     exact posOK_of_attach hP (hFam.2.1 hc) hA (by rw [← hQ]; exact hx.2.2)
   exact ⟨key _ hs hcs, key _ he hce⟩
 
-/-- **The left end of an attached admissible record is left of its right end.** -/
-theorem endpoints_lt {M : Model} (hM : WalkAx M) {Q : Polygon} {r : CRec}
-    (hadm : r.toSet M Q ∈ M.Adm) (hr : r.Attached M Q) :
-    (M.pos Q r.lpos).1 < (M.pos Q r.rpos).1 := by
-  obtain ⟨hA, hB⟩ := hr
-  have h1 := hA.2.2.2.1
-  obtain ⟨a, b, hab, hcab, hy, -⟩ := hM.ends _ hadm
-  have hpA : sidePt M.W r.lp (M.param Q r.lpos) = M.pos Q r.lpos := rfl
-  rw [hpA] at h1
-  obtain ⟨-, h1a, h1b⟩ := h1
-  by_contra hle
-  push Not at hle
-  have hsub : ∀ z ∈ r.toSet M Q, z.1 = (M.pos Q r.lpos).1 := by
-    rintro z ⟨-, hz1, hz2⟩
-    linarith
-  have ha : a ∈ r.toSet M Q := by rw [hcab]; exact Geometry.left_mem_segment _ _
-  have hb : b ∈ r.toSet M Q := by rw [hcab]; exact Geometry.right_mem_segment _ _
-  exact hab (Geometry.point_ext ((hsub a ha).trans (hsub b hb).symm) hy)
-
 /-- **The exit scan is complete**: an attached admissible record whose left end is the walk vertex
 `(p, 0)` contains ray points arbitrarily close to the vertex in direction `1`; one whose right end
 is the vertex, in direction `-1`. -/
@@ -114,7 +93,7 @@ theorem exit_block {M : Model} (hM : WalkAx M) {Q : Polygon} {cr : CRec}
     (hend : (σ = 1 ∧ cr.lp = p ∧ M.param Q cr.lpos = 0) ∨
       (σ = -1 ∧ cr.rp = p ∧ M.param Q cr.rpos = 0))
     (hav : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∉ cr.toSet M Q) : False := by
-  have hlt := endpoints_lt hM hadm hat
+  have hlt := hM.endpoints_lt hadm hat
   have epl : sidePt M.W cr.lp (M.param Q cr.lpos) = M.pos Q cr.lpos := rfl
   have epr : sidePt M.W cr.rp (M.param Q cr.rpos) = M.pos Q cr.rpos := rfl
   rcases hend with ⟨rfl, hl, h0⟩ | ⟨rfl, hl, h0⟩
@@ -134,7 +113,7 @@ theorem exit_block {M : Model} (hM : WalkAx M) {Q : Polygon} {cr : CRec}
     obtain ⟨s, hs0, -, hx⟩ := hall _ hat.1.2.2.2.1
     rw [epl] at hx
     have e1 : (M.pos Q cr.lpos).1 = (sidePt M.W p 0).1 + s := by
-      rw [hx]; simp only [Visibility.rayPt]; ring
+      simp_all
     have e2 : sidePt M.W p 0 = M.pos Q cr.rpos := by rw [← epr, hl, h0]
     rw [e2] at e1
     linarith

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.SweepIoLHit4
 
 /-!
@@ -20,7 +22,7 @@ namespace SweepIo
 
 open Machine Machine.Stmt Programs SweepRam SweepPrim WalkEmbed
 open Chazelle.Visibility (rayPt)
-open Chazelle.Chain (sidePt sideLeft sideInArc)
+open Chazelle.Chain (sidePt sideLeft sideInArc sidePrev sideNext)
 open OracleQ (sj sk ek succP predP)
 
 @[expose] public section
@@ -43,6 +45,64 @@ def LHGeo (P : Polygon) (C : Chain) (x : WPos) (d : ℕ) : Prop :=
       (rayPt ((chainModel C).pos (Qof P) x) (dirOf d) 1) ∧
     ((chainModel C).pos (Qof P) x).2 ≤ C.top.2
 
+/-- `sideLeft` at a position depends only on the edge ends when the parameter is positive. -/
+theorem sideLeft_congr {W W' : Polygon} {p p' : ℕ} {t : ℝ} (ht : t ≠ 0)
+    (ha : W.vtx p = W'.vtx p') (hb : W.vtx ((p + 1) % W.n) = W'.vtx ((p' + 1) % W'.n))
+    (x : Point) : sideLeft W p t x ↔ sideLeft W' p' t x := by
+  unfold sideLeft sidePrev sideNext sidePt
+  rw [ite_eq_right ht, ite_eq_right ht, ha, hb]
+
+/-- On a vertical wall of the common box, local-hit geometry transports to the other chain
+when the query lies no higher than its top. The position and its edge parameter are unchanged. -/
+theorem lhGeo_boxTwin {C₁ C₂ : Chain} {x : WPos} {d : ℕ}
+    (he : x.edge = 1 ∨ x.edge = 3) (hg : LHGeo P C₁ x d) (hR : C₁.radius = C₂.radius)
+    (hy : |((chainModel C₁).pos (Qof P) x).2| < C₁.radius)
+    (htop : ((chainModel C₁).pos (Qof P) x).2 ≤ C₂.top.2) :
+    LHGeo P C₂ x d ∧ (chainModel C₂).pos (Qof P) x = (chainModel C₁).pos (Qof P) x ∧
+      (chainModel C₂).param (Qof P) x = (chainModel C₁).param (Qof P) x := by
+  obtain ⟨ha, hb, hpar, hpos⟩ := boxTwin_pos hR he (Qof P) x.hgt
+  obtain ⟨h, hxh, hhn, hyz, hsec, -⟩ := hg
+  have hr := C₁.radius_pos
+  have ht : (chainModel C₁).param (Qof P) x ≠ 0 := by
+    intro h0
+    have e : (chainModel C₁).pos (Qof P) x = (chainModel C₁).wa x.edge := by
+      unfold Model.pos; rw [h0]; simp [Geometry.lerp]
+    rw [e] at hy
+    have hW : (chainModel C₁).W = C₁.sideWalk C₁.sideBeta := rfl
+    unfold Model.wa at hy
+    rw [hW] at hy
+    rcases he with h' | h' <;> rw [h'] at hy
+    · rw [C₁.sideWalk_vtx_one] at hy; simp [abs_of_pos hr] at hy
+    · rw [C₁.sideWalk_vtx_three] at hy; simp [abs_of_pos hr] at hy
+  have hx : (chainModel C₂).pos (Qof P) ⟨x.edge, x.hgt⟩ =
+      (chainModel C₁).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
+  have hp : (chainModel C₂).param (Qof P) x = (chainModel C₁).param (Qof P) x :=
+    hpar.symm
+  refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx, hp⟩
+  · rw [hx]; exact hyz
+  · rw [hx, hp]
+    exact (sideLeft_congr ht ha hb _).1 hsec
+  · rw [hx]; exact htop
+
+/-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
+with that code. -/
+theorem lhGeo_arr {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t : ℝ}
+    (harr : Sweep.Arrival (chainModel C).W z (-σ) p t) {h : ℕ} (hh : h < P.n)
+    (hhz : ((Qof P).vtx h).2 = z.2) (htop : z.2 ≤ C.top.2) {d : ℕ} (hd : dirOf d = σ) :
+    LHGeo P C ⟨p, h + 1⟩ d ∧ (chainModel C).pos (Qof P) ⟨p, h + 1⟩ = z ∧
+      (chainModel C).param (Qof P) ⟨p, h + 1⟩ = t := by
+  obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := harr
+  rw [neg_neg] at hsec
+  have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
+    rw [hpt]; exact hsec
+  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rw [hpt]; exact hhz
+  have epar := Sweep.param_of_arrival (Qof P) ht0 ht1 hy hsec'
+  have epos := Sweep.pos_of_arrival (Qof P) ht0 ht1 hy hsec'
+  rw [hpt] at epos
+  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
+  simp only
+  rw [epos, epar, hd]; exact hsec
+
 /-- The cost of the local hit: `T` the length of the table of powers, `Fg` the shooter's cost,
 `Da` and `Dc` bounds on the numbers of arcs and exit chords of a region. -/
 def localK (T Fg Da Dc : ℕ) : ℕ :=
@@ -57,15 +117,8 @@ theorem gatherK_le {N : NF} {rs : List ℕ} {Da : ℕ}
   unfold gatherK
   have := List.sum_le_length_nsmul (rs.map fun r => regK (N.region r).arcs.length + 2)
     (regK Da + 2) (by
-      intro y hy
-      obtain ⟨r, hr, rfl⟩ := List.mem_map.1 hy
-      have := h r hr
-      unfold regK
-      have : (arcK + 2) * (N.region r).arcs.length ≤ (arcK + 2) * Da :=
-        Nat.mul_le_mul_left _ this
-      omega)
-  simp only [List.length_map, smul_eq_mul] at this
-  omega
+      simp_all [regK] )
+  simp_all
 
 theorem regArcs_length_le {N : NF} {rs : List ℕ} {Da : ℕ}
     (h : ∀ r ∈ rs, (N.region r).arcs.length ≤ Da) :
@@ -76,19 +129,13 @@ theorem regArcs_length_le {N : NF} {rs : List ℕ} {Da : ℕ}
     intro y hy
     obtain ⟨r, hr, rfl⟩ := List.mem_map.1 hy
     exact h r hr)
-  simp only [List.length_map, smul_eq_mul] at this
-  exact this
+  simp_all
 
 theorem shotOfferK_mono {Fg K K' : ℕ} (h : K ≤ K') : shotOfferK Fg K ≤ shotOfferK Fg K' := by
-  unfold shotOfferK ShotList.shotCost
-  have : (K + 1) * (16 * Fg + 500000) ≤ (K' + 1) * (16 * Fg + 500000) :=
-    Nat.mul_le_mul_right _ (by omega)
-  omega
+  simp_all [shotOfferK, ShotList.shotCost] 
 
 theorem scanRK_mono {n n' : ℕ} (h : n ≤ n') : scanRK n ≤ scanRK n' := by
-  unfold scanRK
-  have : (scanBodyK + 2) * n ≤ (scanBodyK + 2) * n' := Nat.mul_le_mul_left _ h
-  omega
+  simp_all [scanRK] 
 
 theorem lhScanK_mono {a b d a' b' d' : ℕ} (ha : a ≤ a') (hb : b ≤ b') (hd : d ≤ d') :
     lhScanK a b d ≤ lhScanK a' b' d' := by
@@ -100,7 +147,12 @@ theorem lhScanK_mono {a b d a' b' d' : ℕ} (ha : a ≤ a') (hb : b ≤ b') (hd 
 
 /-! ## The regions around the spine position -/
 
-theorem nbrRegs_lt {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) {j : ℕ}
+section
+
+variable {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N)
+include hNF
+
+theorem nbrRegs_lt {j : ℕ}
     (hj : j < N.arcs.length) : ∀ r ∈ Sweep.nbrRegs N j, r < N.nRegions := by
   have hNF' := hNF
   obtain ⟨-, -, -, reg, -, -, hArcs, -⟩ := hNF'
@@ -113,7 +165,7 @@ theorem nbrRegs_lt {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) {j
   · exact hreg _ hj
   · exact hreg _ (OracleQ.succP_lt hj)
 
-theorem regArcs_lt {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) {rs : List ℕ}
+theorem regArcs_lt {rs : List ℕ}
     (hrs : ∀ r ∈ rs, r < N.nRegions) : ∀ a ∈ regArcs N rs, a < N.arcs.length := by
   intro a ha
   obtain ⟨-, -, -, reg, -, -, hArcs, -⟩ := hNF
@@ -121,7 +173,7 @@ theorem regArcs_lt {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) {r
   exact ((hArcs.2.2.2 r (hrs r hr) a).1 har).1
 
 /-- The gathered arcs list the arcs of the regions, up to the keys. -/
-theorem gathered_keys {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) {rs : List ℕ}
+theorem gathered_keys {rs : List ℕ}
     (hrs : ∀ r ∈ rs, r < N.nRegions) {m : ℕ → ℕ} {AB : ℕ}
     (harcs : ∀ k, k < (regArcs N rs).length → ShotList.arcAt m AB k =
       nArc (chainModel C) (Qof P) N ((regArcs N rs).getD k 0)) :
@@ -133,14 +185,16 @@ theorem gathered_keys {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N)
   intro r hr a ha
   have hNF' := hNF
   obtain ⟨-, -, -, reg, -, -, hArcs, -, -, -, hpp⟩ := hNF'
-  have hal : a < N.arcs.length := ((hArcs.2.2.2 r (hrs r hr) a).1 ha).1
+  have hal := ((hArcs.2.2.2 r (hrs r hr) a).1 ha).1
   have hmem : a ∈ regArcs N rs := List.mem_flatMap.2 ⟨r, hr, ha⟩
   obtain ⟨i, hi, hia⟩ := List.mem_iff_getElem.1 hmem
   refine ⟨i, hi, ?_⟩
-  have hg : (regArcs N rs).getD i 0 = a := by rw [List.getD_eq_getElem _ _ hi, hia]
+  have hg : (regArcs N rs).getD i 0 = a := by simp_all
   rw [harcs i hi, hg]
   unfold nArc
   exact ⟨(Restore.normOf_facts (hpp a hal).1).2.2.2.1, (Restore.normOf_facts (hpp a hal).2).2.2.2.1⟩
+
+end
 
 /-! ## The local hit -/
 
@@ -175,7 +229,7 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
         (LHGeo P C x d → Merge.FreeAt C ((chainModel C).pos (Qof P) x) (dirOf d) ∧
           C.hitParam ((chainModel C).pos (Qof P) x) (dirOf d) ∈ L')) ∧
       (∀ r, bandOf r ∉ oracleBands → ¬ LHW r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   obtain ⟨xe, xh⟩ := x
   simp only at hxE hxH he hloc
   subst hxE hxH hxD
@@ -187,13 +241,13 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   have lin : ∀ r, LIn r → 241100 ≤ r ∧ r ≤ 241107 := by
     intro r hr
     rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [lMD, lCD, lNF, lE, lH, lD, lN, lT, sw] <;> omega
+      register_guard
   have linO : ∀ r, LIn r → bandOf r ∉ oracleBands := fun r hr =>
     not_oracle_sw (by have := lin r hr; omega) (by have := lin r hr; omega)
   -- 1. the spine position and the regions
   refine IRS.seq (K₂ := (3 + (11 + 3 * (regK Da + 2))) +
       (11200 + (shotOfferK (F (c₀.nreg (sw 5))) (3 * Da) + lhScanK Dc Dc Dc)))
-    (lh1_irs hI hK hL he hpp (by unfold localK at hroom; omega)) ?_
+    (lh1_irs hI hK hL he hpp (by register_guard)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨hj1, hl1, hl2, hLL, hA1, hlist1, hm1, fr1, hR0, hR1, hR2⟩
   have k1 : ∀ r, bandOf r ∉ oracleBands → ¬ LHW r → r ≠ ALLOC → c₁.nreg r = c.nreg r :=
     fun r h1 h2 h3 => fr1 r h1 (fun h => h2 (by unfold LSet sw at h; unfold LHW sw; omega)) h3
@@ -205,8 +259,8 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       · exact i1 _ (Or.inl rfl)
       · exact i1 _ (Or.inr (Or.inl rfl))
       · exact i1 _ (Or.inr (Or.inr (Or.inl rfl)))
-      · exact hI₁.hin _ (by unfold TBR IFix sw; omega) |>.trans (hI.hin _ (by unfold TBR IFix sw; omega)).symm
-      · exact hI₁.hin _ (by unfold TLR IFix sw; omega) |>.trans (hI.hin _ (by unfold TLR IFix sw; omega)).symm)
+      · exact hI₁.hin _ (by register_guard) |>.trans (hI.hin _ (by register_guard)).symm
+      · exact hI₁.hin _ (by register_guard) |>.trans (hI.hin _ (by register_guard)).symm)
     hm1 hA₁
   set j := c₁.nreg lJ with hjd
   have hrsl : ∀ r ∈ Sweep.nbrRegs N j, r < N.nRegions := nbrRegs_lt hL.hNF hj1
@@ -223,7 +277,7 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   refine IRS.seq (K₂ := 11200 + (shotOfferK (F (c₀.nreg (sw 5))) (3 * Da) + lhScanK Dc Dc Dc))
     ((lhGather_irs (rs := Sweep.nbrRegs N j) hI₁ hK hL₁ hrs3 hrsl
       (fun i hi => by rw [hLL]; exact hlist1 i hi) (by rw [hLL, hA1])
-      (by unfold localK at hroom; omega)).mono (K' := 3 + (11 + 3 * (regK Da + 2)))
+      (by register_guard)).mono (K' := 3 + (11 + 3 * (regK Da + 2)))
       (by omega) (fun _ h => h)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨g1, g2, g3, g4, hm2, fr2⟩
   have k2 : ∀ r, bandOf r ∉ oracleBands → ¬ LHW r → r ≠ ALLOC → c₂.nreg r = c₁.nreg r :=
@@ -237,8 +291,8 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       · rw [i2 _ (Or.inl rfl), i1 _ (Or.inl rfl)]
       · rw [i2 _ (Or.inr (Or.inl rfl)), i1 _ (Or.inr (Or.inl rfl))]
       · rw [i2 _ (Or.inr (Or.inr (Or.inl rfl))), i1 _ (Or.inr (Or.inr (Or.inl rfl)))]
-      · exact hI₂.hin _ (by unfold TBR IFix sw; omega) |>.trans (hI₁.hin _ (by unfold TBR IFix sw; omega)).symm
-      · exact hI₂.hin _ (by unfold TLR IFix sw; omega) |>.trans (hI₁.hin _ (by unfold TLR IFix sw; omega)).symm)
+      · exact hI₂.hin _ (by register_guard) |>.trans (hI₁.hin _ (by register_guard)).symm
+      · exact hI₂.hin _ (by register_guard) |>.trans (hI₁.hin _ (by register_guard)).symm)
     hm2 hA₂
   have e2 : c₂.nreg lE = c.nreg lE := i2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have h2 : c₂.nreg lH = c.nreg lH := i2 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
@@ -246,7 +300,7 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   refine IRS.seq (K₂ := shotOfferK (F (c₀.nreg (sw 5))) (3 * Da) + lhScanK Dc Dc Dc)
     (lhHoles_irs hI₂ hK hL₂.hctx (by rw [e2]; exact he) (by rw [e2, h2]; exact hpp)
       (by rw [e2, h2]; exact hy) (by rw [e2, h2]; exact hloc)
-      (by unfold localK at hroom; omega)) ?_
+      (by register_guard)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨hho, fr3, hA3, hm3⟩
   rw [e2, h2] at hho
   have k3 : ∀ r, bandOf r ∉ oracleBands → ¬ LHW r → r ≠ ALLOC → c₃.nreg r = c₂.nreg r :=
@@ -265,8 +319,8 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       · rw [i3 _ (Or.inl rfl), i2 _ (Or.inl rfl)]
       · rw [i3 _ (Or.inr (Or.inl rfl)), i2 _ (Or.inr (Or.inl rfl))]
       · rw [i3 _ (Or.inr (Or.inr (Or.inl rfl))), i2 _ (Or.inr (Or.inr (Or.inl rfl)))]
-      · exact hI₃.hin _ (by unfold TBR IFix sw; omega) |>.trans (hI₂.hin _ (by unfold TBR IFix sw; omega)).symm
-      · exact hI₃.hin _ (by unfold TLR IFix sw; omega) |>.trans (hI₂.hin _ (by unfold TLR IFix sw; omega)).symm)
+      · exact hI₃.hin _ (by register_guard) |>.trans (hI₂.hin _ (by register_guard)).symm
+      · exact hI₃.hin _ (by register_guard) |>.trans (hI₂.hin _ (by register_guard)).symm)
     (fun a _ => by rw [hm3]) hA3.ge
   have e3 : c₃.nreg lE = c.nreg lE := i3 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have h3 : c₃.nreg lH = c.nreg lH := i3 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
@@ -275,16 +329,16 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
     i3 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))))
   have t3 : c₃.nreg lT = c.nreg lT :=
     i3 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))))
-  have gB3 : c₃.nreg gBase = c₁.nreg ALLOC := by rw [kG _ (by unfold GCall gBase sw; omega), g1]
-  have gK3 : c₃.nreg gK = (regArcs N (Sweep.nbrRegs N j)).length := by rw [kG _ (by unfold GCall gK sw; omega), g2]
+  have gB3 : c₃.nreg gBase = c₁.nreg ALLOC := by rw [kG _ (by register_guard), g1]
+  have gK3 : c₃.nreg gK = (regArcs N (Sweep.nbrRegs N j)).length := by rw [kG _ (by register_guard), g2]
   -- the accumulator is untouched so far
   have hacc₃ : AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) ⟨c.nreg lE, c.nreg lH⟩)
       (dirOf (c.nreg lD)) L c₃ := hacc.transport (fun i hi => by
     have o : bandOf (accA + i) ∉ oracleBands :=
-      not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega)
-    rw [fr3 _ o (by unfold HSet lO accA sw; omega) (by unfold accA ALLOC sw; omega),
-      fr2 _ o (by unfold GCall accA sw; omega) (by unfold accA ALLOC sw; omega)]
-    exact fr1 _ o (by unfold LSet accA sw; omega) (by unfold accA ALLOC sw; omega))
+      not_oracle_sw (by register_guard) (by register_guard)
+    rw [fr3 _ o (by register_guard) (by register_guard),
+      fr2 _ o (by register_guard) (by register_guard)]
+    exact fr1 _ o (by register_guard) (by register_guard))
   have hW3 : P.n + 3 ≤ W := by have := hL.hWh; unfold hostWords at this; omega
   have hD : DistinctHeights (Qof P) := (goodShear_epsOf hL.hG.2).2.1
   -- 4. the shot and its offer
@@ -305,18 +359,18 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       (by unfold LHW sw at h2; unfold accA sw; omega) (fun h => h2 (by subst h; unfold lO LHW sw; omega))
       (fun h => h2 (by subst h; unfold lO LHW sw; omega)) h3
   have keep4 : ∀ r, 241100 ≤ r → r ≤ 241111 → c₄.nreg r = c₃.nreg r := fun r h1 h2 =>
-    fr4 r (not_oracle_sw (by omega) (by omega)) (by unfold RS; omega) (by unfold accA sw; omega)
-      (by unfold lO sw; omega) (by unfold lO sw; omega) (by unfold ALLOC; omega)
+    fr4 r (not_oracle_sw (by omega) (by omega)) (by register_guard) (by register_guard)
+      (by register_guard) (by register_guard) (by register_guard)
   have i4 : ∀ r, LIn r → c₄.nreg r = c.nreg r := fun r hr => by
     have := lin r hr
-    rw [keep4 r (by omega) (by omega), i3 r hr]
+    ram_rw [keep4 r, i3 r hr]
   have hL₄ : LCtx P W C N E c₄ := hL₃.transport (fun r hr => by
       rcases hr with rfl | rfl | rfl | rfl | rfl
       · rw [i4 _ (Or.inl rfl), i3 _ (Or.inl rfl)]
       · rw [i4 _ (Or.inr (Or.inl rfl)), i3 _ (Or.inr (Or.inl rfl))]
       · rw [i4 _ (Or.inr (Or.inr (Or.inl rfl))), i3 _ (Or.inr (Or.inr (Or.inl rfl)))]
-      · exact hI₄.hin _ (by unfold TBR IFix sw; omega) |>.trans (hI₃.hin _ (by unfold TBR IFix sw; omega)).symm
-      · exact hI₄.hin _ (by unfold TLR IFix sw; omega) |>.trans (hI₃.hin _ (by unfold TLR IFix sw; omega)).symm)
+      · exact hI₄.hin _ (by register_guard) |>.trans (hI₃.hin _ (by register_guard)).symm
+      · exact hI₄.hin _ (by register_guard) |>.trans (hI₃.hin _ (by register_guard)).symm)
     hm4 hA4
   have e4 : c₄.nreg lE = c.nreg lE := i4 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))
   have h4 : c₄.nreg lH = c.nreg lH := i4 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
@@ -327,15 +381,15 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
     i4 _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr rfl)))))))
   -- the region registers
   have kR : ∀ r, 241109 ≤ r → r ≤ 241111 → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
-    rw [keep4 r (by omega) (by omega),
-      fr3 r (not_oracle_sw (by omega) (by omega)) (by unfold HSet lO sw; omega) (by unfold ALLOC; omega),
-      fr2 r (not_oracle_sw (by omega) (by omega)) (by unfold GCall sw; omega) (by unfold ALLOC; omega)]
+    ram_rw [keep4 r,
+      fr3 r (not_oracle_sw (by omega) (by omega)) (by register_guard) (by register_guard),
+      fr2 r (not_oracle_sw (by omega) (by omega)) (by register_guard) (by register_guard)]
   have r0 : c₄.nreg lR0 = (N.arc (sj N (predP N.arcs.length j))).reg := by
-    rw [kR lR0 (by unfold lR0 sw; omega) (by unfold lR0 sw; omega), hR0]
+    ram_rw [kR lR0, hR0]
   have r1 : c₄.nreg lR1 = (N.arc (sj N j)).reg := by
-    rw [kR lR1 (by unfold lR1 sw; omega) (by unfold lR1 sw; omega), hR1]
+    ram_rw [kR lR1, hR1]
   have r2 : c₄.nreg lR2 = (N.arc (sj N (succP N.arcs.length j))).reg := by
-    rw [kR lR2 (by unfold lR2 sw; omega) (by unfold lR2 sw; omega), hR2]
+    ram_rw [kR lR2, hR2]
   have hr0 : (N.arc (sj N (predP N.arcs.length j))).reg < N.nRegions :=
     hrsl _ (by simp [Sweep.nbrRegs])
   have hr1 : (N.arc (sj N j)).reg < N.nRegions := hrsl _ (by simp [Sweep.nbrRegs])
@@ -347,7 +401,7 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
   have hsc := lhScanK_mono (hCh _ hr0) (hCh _ hr1) (hCh _ hr2)
   -- 5. the chords
   refine (lhScan_irs hI₄ hK hS₄ rfl hL₄.hNW hL₄.hE r0 r1 r2 hr0 hr1 hr2 a₁
-    (by unfold localK at hroom; omega)).mono (K' := lhScanK Dc Dc Dc) hsc ?_
+    (by register_guard)).mono (K' := lhScanK Dc Dc Dc) hsc ?_
   rintro c₅ ⟨⟨L₂, a₂, s₂, g₂, d₂⟩, fr5⟩
   have hLL₁ : L ⊆ L₁ := by
     rcases hL₁ with rfl | ⟨τ, rfl, -⟩
@@ -385,7 +439,7 @@ theorem localHit_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx
       k4 r h1 h2 h3, k3 r h1 h2 h3, k2 r h1 h2 h3, k1 r h1 h2 h3]
   · have := fr5.2.1; omega
   · intro a ha
-    rw [fr5.2.2 a (by omega), hm4 a (by omega), hm3, hm2 a (by omega), hm1 a ha]
+    ram_rw [fr5.2.2 a, hm4 a, hm3, hm2 a, hm1 a ha]
 
 end
 

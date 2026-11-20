@@ -145,14 +145,21 @@ def pcBlock (x dir : ℕ) : Stmt :=
 
 /-! ## The dyadic sweeps -/
 
+/-- Read the half-index from the table, and double it for the parity test. -/
+def sweepHalf : Stmt := block [.addN 150075 150035 150083, .loadN 150086 150075, .addN 150075 150086 150086]
+
+/-- The odd branch of a step of the ascending sweep. -/
+def upAOdd (emit : Stmt) : Stmt :=
+  .seq (.instr (.copyN 150077 150083))
+    (.seq (pcBlock 150080 1)
+      (.seq emit (block [.addN 150080 150080 150084, .addN 150085 150085 150084,
+        .addN 150086 150086 150091])))
+
 /-- Upward, ascending sweep body. -/
 def upABody (emit : Stmt) : Stmt :=
-  .seq (block [.addN 150075 150035 150083, .loadN 150086 150075, .addN 150075 150086 150086])
+  .seq sweepHalf
     (.seq (.ifLtN 150075 150083
-        (.seq (.instr (.copyN 150077 150083))
-          (.seq (pcBlock 150080 1)
-            (.seq emit (block [.addN 150080 150080 150084, .addN 150085 150085 150084,
-              .addN 150086 150086 150091]))))
+        (upAOdd emit)
         .skip)
       (block [.addN 150082 150082 150091, .addN 150075 150036 150082, .loadN 150084 150075,
         .copyN 150083 150086, .addN 150087 150080 150084]))
@@ -169,12 +176,17 @@ def upBBody (emit : Stmt) : Stmt :=
             .addN 150086 150086 150091]))))
       .skip) (.instr (.copyN 150083 150086)))
 
+/-- Initialize the interval endpoints for an upward or downward cover. -/
+def sweepInit (up : Bool) : Stmt := block
+  ((if up then [.copyN 150080 150070, .addN 150081 150070 150071]
+    else [.copyN 150081 150070, .subN 150080 150070 150071]) ++
+   [.addN 150088 150081 150091, .constN 150082 0, .copyN 150083 150070, .constN 150084 1,
+    .copyN 150085 150040, .addN 150087 150080 150084])
+
 /-- **The upward dyadic cover** of `[q, q + L)` (`q` in `70`, `L` in `71`) from the walk vertex
 `c`; the new `c` is `c + L`. -/
 def dyUp (emit : Stmt) : Stmt :=
-  .seq (block [.copyN 150080 150070, .addN 150081 150070 150071, .addN 150088 150081 150091,
-      .constN 150082 0, .copyN 150083 150070, .constN 150084 1, .copyN 150085 150040,
-      .addN 150087 150080 150084])
+  .seq (sweepInit true)
     (.seq (.whileLtN 150087 150088 (upABody emit))
       (.seq (.whileLtN 150090 150082 (upBBody emit)) (.instr (.copyN 150040 150085))))
 
@@ -186,7 +198,7 @@ def dnOdd (emit : Stmt) : Stmt :=
 
 /-- Downward, ascending sweep body. -/
 def dnABody (emit : Stmt) : Stmt :=
-  .seq (block [.addN 150075 150035 150083, .loadN 150086 150075, .addN 150075 150086 150086])
+  .seq sweepHalf
     (.seq (.ifLtN 150075 150083 (dnOdd emit) .skip)
       (block [.addN 150082 150082 150091, .addN 150075 150036 150082, .loadN 150084 150075,
         .copyN 150083 150086, .addN 150087 150080 150084, .addN 150088 150081 150091]))
@@ -199,9 +211,7 @@ def dnBBody (emit : Stmt) : Stmt :=
 
 /-- **The downward dyadic cover** of `[q - L, q)` from the top `q`. -/
 def dyDn (emit : Stmt) : Stmt :=
-  .seq (block [.copyN 150081 150070, .subN 150080 150070 150071, .addN 150088 150081 150091,
-      .constN 150082 0, .copyN 150083 150070, .constN 150084 1, .copyN 150085 150040,
-      .addN 150087 150080 150084])
+  .seq (sweepInit false)
     (.seq (.whileLtN 150087 150088 (dnABody emit))
       (.seq (.whileLtN 150090 150082 (dnBBody emit)) (.instr (.copyN 150040 150085))))
 

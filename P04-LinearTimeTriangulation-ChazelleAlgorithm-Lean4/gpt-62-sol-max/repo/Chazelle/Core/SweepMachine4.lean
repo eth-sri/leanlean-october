@@ -56,8 +56,8 @@ def VNotTop : Prop :=
   0 < tpos J.whole J.m₁ ∧ tpos J.whole J.m₁ + 2 * J.m₂ ≠ 2 * J.whole.m
 
 /-- The two stretches fill the walk of `C` (the shared vertex is not the top of `C`). -/
-theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = (chainModel J.whole).W.n := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := J.whole.sideWalk_n J.whole.sideBeta
+theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = J.wholeModel.W.n := by
+  have hn : J.wholeModel.W.n = 2 * J.whole.m + 7 := J.whole.sideWalk_n J.whole.sideBeta
   have h1 := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   obtain ⟨hv1, hv2⟩ := hv
@@ -68,16 +68,16 @@ theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = (chainModel J.whole).
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
   · rw [Nat.mod_eq_of_lt hc]
     split_ifs <;> omega
-  · rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂)) +
-      2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · ram_rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂)) +
+      2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
     split_ifs <;> omega
 
 /-- The left stretch starts where the right stretch ends (the shared vertex is not the top of
 `C`). -/
 theorem base_left (hv : VNotTop J) :
-    (6 + tpos J.whole J.m₁ + rlen J) % (chainModel J.whole).W.n =
+    (6 + tpos J.whole J.m₁ + rlen J) % J.wholeModel.W.n =
       6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := J.whole.sideWalk_n J.whole.sideBeta
+  have hn : J.wholeModel.W.n = 2 * J.whole.m + 7 := J.whole.sideWalk_n J.whole.sideBeta
   have h1 := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   obtain ⟨hv1, hv2⟩ := hv
@@ -85,16 +85,16 @@ theorem base_left (hv : VNotTop J) :
   unfold rlen
   rw [hm] at h1 hv2 ⊢
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
-  · rw [Nat.mod_eq_of_lt hc, ite_eq_right (by omega), Nat.mod_eq_of_lt (by omega)]; ring
+  · ram_rw [Nat.mod_eq_of_lt hc, ite_eq_right, Nat.mod_eq_of_lt]; ring
   · have hc' : 2 * (J.m₁ + J.m₂) < tpos J.whole J.m₁ + 2 * J.m₂ := by omega
-    rw [ite_eq_left (by omega)]
+    ram_rw [ite_eq_left]
     rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ -
       2 * (J.m₁ + J.m₂)) + 2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (show tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂) < 2 * (J.m₁ + J.m₂)
         by omega)]
-    rw [show 6 + tpos J.whole J.m₁ + (2 * J.m₂ + 7) = (6 + (tpos J.whole J.m₁ + 2 * J.m₂ -
+    ram_rw [show 6 + tpos J.whole J.m₁ + (2 * J.m₂ + 7) = (6 + (tpos J.whole J.m₁ + 2 * J.m₂ -
         2 * (J.m₁ + J.m₂))) + (2 * (J.m₁ + J.m₂) + 7) by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt]
 
 /-! ## Soundness: a genuine hit is a fused chord -/
 
@@ -103,7 +103,7 @@ theorem attach_left_of_arrival {C : Chain} {a : Point} {σ : ℝ} (hσ : σ = 1 
     (hτ : 0 < τ) {p : ℕ} {t : ℝ} (hA : Arrival (chainModel C).W (rayPt a σ τ) σ p t) :
     SideAttach (chainModel C).W (Chazelle.segment a (rayPt a σ τ)) p t := by
   obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := hA
-  have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
+  
   refine ⟨hp, ht0, ht1, by rw [hpt]; exact Geometry.right_mem_segment _ _, τ, hτ,
     fun x hx hxw _ => ?_⟩
   rw [hpt] at hxw
@@ -111,12 +111,12 @@ theorem attach_left_of_arrival {C : Chain} {a : Point} {σ : ℝ} (hσ : σ = 1 
   have hu1' : u < 1 := by
     rcases hu1.lt_or_eq with h | h
     · exact h
-    · exfalso; apply hxw; rw [h, Geometry.lerp_one]
+    · simp_all
   have e : lerp a (rayPt a σ τ) u = rayPt (rayPt a σ τ) (-σ) (τ * (1 - u)) := by
     apply point_ext <;> simp [rayPt, lerp]; ring
   rw [e]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) 1) := by
-    rw [hpt]; exact hsec
+    rwa [hpt]
   have := (sideLeft_rayPt_iff _ p t (-σ) one_pos (show 0 < τ * (1 - u) by nlinarith)).1 h1
   rwa [hpt] at this
 
@@ -125,10 +125,10 @@ its base and its split vertex). -/
 theorem attach_whole_of_arrival (hP : J.P.Simple) {a : Point} {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) {τ : ℝ} (hτ : 0 < τ) {d : ℕ} (hd : d < lL1 J + lL2 J) {t : ℝ}
     (hsec : t = 0 → d ≠ 0 ∧ d ≠ lL1 J)
-    (hA : Arrival (chainModel J.left).W (rayPt a σ τ) σ
-      ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t) :
-    SideAttach (chainModel J.whole).W (Chazelle.segment a (rayPt a σ τ))
-      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n) t := by
+    (hA : Arrival J.leftModel.W (rayPt a σ τ) σ
+      ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n) t) :
+    SideAttach J.wholeModel.W (Chazelle.segment a (rayPt a σ τ))
+      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % J.wholeModel.W.n) t := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
   exact (hC.attach_iff hd hsec _).2 (attach_left_of_arrival hσ hτ hA)
 
@@ -142,24 +142,24 @@ position. -/
 theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
     (ha₁ : a.2 ≤ J.left.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hfree : FreeAt J.whole a σ)
     {d : ℕ} (hd : d < lL1 J + lL2 J) {t : ℝ} (hsec : t = 0 → d ≠ 0 ∧ d ≠ lL1 J)
-    (hA : SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ)
-      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n) t)
-    (hend : sidePt (chainModel J.whole).W
-      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n) t =
+    (hA : SideAttach J.wholeModel.W (Merge.shoot J.whole a σ)
+      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % J.wholeModel.W.n) t)
+    (hend : sidePt J.wholeModel.W
+      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % J.wholeModel.W.n) t =
         rayPt a σ (J.whole.hitParam a σ)) :
     Genuine J.left a σ (J.whole.hitParam a σ) ∧
-      Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ
-        ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t := by
+      Arrival J.leftModel.W (rayPt a σ (J.whole.hitParam a σ)) σ
+        ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n) t := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
-  have hM₁ : WalkAx (chainModel J.left) := hC.hM₂
+  have hM₁ : WalkAx J.leftModel := hC.hM₂
   set T := J.whole.hitParam a σ with hT
-  have hz' : a.2 ≤ J.whole.top.2 := ha₁.trans J.left_top_le
+  have hz' := ha₁.trans J.left_top_le
   obtain ⟨hT0, hwD, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
   have hA₁ := (hC.attach_iff hd hsec _).1 hA
-  have hpt : sidePt (chainModel J.left).W
-      ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t =
+  have hpt : sidePt J.leftModel.W
+      ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n) t =
         rayPt a σ T := by
-    rw [← hC.sidePt_eq hd t]; exact hend
+    rwa [← hC.sidePt_eq hd t]
   refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
   · rw [← hpt]
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
@@ -185,13 +185,13 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       rcases hσ with rfl | rfl <;> linarith
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
-      rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
-    have h1 : sideLeft (chainModel J.left).W
-        ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t
-        (rayPt (sidePt (chainModel J.left).W
-          ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t) (-σ) s) := by
-      rw [hpt]; exact hl
+      rwa [dist_rayPt _ hnσ hs0.le]
+    have hl := hnear _ hmem (by rwa [hpt]) (by rwa [hpt])
+    have h1 : sideLeft J.leftModel.W
+        ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n) t
+        (rayPt (sidePt J.leftModel.W
+          ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n) t) (-σ) s) := by
+      rwa [hpt]
     have := (sideLeft_rayPt_iff _ _ t (-σ) hs0 one_pos).1 h1
     rwa [hpt] at this
 

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.UpPhase17
 
 /-!
@@ -55,10 +57,10 @@ theorem two_pow_le_of_le_top {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) 
         omega
       · exact h0
     have e : 2 ^ Nat.clog 2 (n - 1) = 2 * 2 ^ (Nat.clog 2 (n - 1)).pred := by
-      rw [← pow_succ', show (Nat.clog 2 (n - 1)).pred + 1 = Nat.clog 2 (n - 1) by rw [Nat.pred_eq_sub_one]; omega]
+      rw [← pow_succ', show (Nat.clog 2 (n - 1)).pred + 1 = Nat.clog 2 (n - 1) by simp_all]
     omega
   · have : topGrade n = 0 := by
-      unfold topGrade; rw [show n - 1 = 1 by omega]; simp
+      ram_finish [topGrade, show n - 1 = 1 by omega]
     rw [this] at h1; simp at h1; omega
 
 theorem GK.kept {r : ℕ} (h : GK r) : Kept r ∧ r ≠ 170015 ∧ r ≠ 170016 ∧ r ≠ 170017 ∧
@@ -67,9 +69,9 @@ theorem GK.kept {r : ℕ} (h : GK r) : Kept r ∧ r ≠ 170015 ∧ r ≠ 170016 
   rcases h with ⟨h1, h2⟩ | h
   · refine ⟨Or.inl ⟨h1, h2⟩, ?_⟩
     rcases h1 with h1 | h1
-    · unfold OutB bandOf at h1; omega
+    · register_guard
     · omega
-  · refine ⟨Or.inr ⟨by unfold bandOf bUp; omega, by omega⟩, by omega⟩
+  · refine ⟨Or.inr (by register_guard), by omega⟩
 
 theorem GK.ne_alloc {r : ℕ} (h : GK r) : r ≠ ALLOC := h.kept.1.ne_alloc
 
@@ -78,7 +80,7 @@ theorem GK.range {r : ℕ} (h : GK r) : r < 10000 ∨ r = 230000 ∨ 250000 ≤ 
     (170080 ≤ r ∧ r < 180000) := by
   unfold GK at h
   rcases h with ⟨h1 | h1, -⟩ | h
-  · unfold OutB bandOf at h1; omega
+  · register_guard
   · omega
   · omega
 

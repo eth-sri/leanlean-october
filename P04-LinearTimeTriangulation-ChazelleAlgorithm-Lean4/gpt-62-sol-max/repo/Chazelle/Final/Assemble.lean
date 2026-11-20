@@ -39,18 +39,15 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
   rw [seqSplit_eq_splitAll (hD.diagSystem hP)] at hG
   have hG' := hG.perm hperm.symm
   have hnd : M'.Nodup := (pairwise_not_rotate_of_disj hG'.simple hG'.disj).imp fun h e =>
-    h 0 (by rw [List.rotate_zero]; exact e.symm)
-  have hpiece : ∀ m' ∈ M', IsPiece P m' := fun m' hm' => hD.isPiece hP (hperm.mem_iff.1 hm')
+    h 0 (by simp_all)
+  
   set g : List ℕ → List ℕ × List Polygon.Triangle := fun m' => acc.getD (M'.idxOf m') ([], [])
     with hg
-  have hlen : M'.length = acc.length := hrot.length_eq
+  have hlen := hrot.length_eq
   have hMg : acc = M'.map g := by
     apply List.ext_getElem
     · rw [List.length_map, hlen]
-    · intro t h1 h2
-      simp only [List.getElem_map, hg]
-      rw [hnd.idxOf_getElem, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h1,
-        Option.getD_some]
+    simp_all
   have hgmem : ∀ m' ∈ M', g m' ∈ acc := by
     intro m' hm'
     rw [hMg]; exact List.mem_map_of_mem hm'
@@ -73,14 +70,14 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
     have h := hgrot m' hm'
     have hr := Classical.choose_spec h
     set r := Classical.choose h
-    have hw0 : WeakTriangulates (subPoly P (g m').1) (g m').2 := hT _ (hgmem m' hm')
+    have hw0 := hT _ (hgmem m' hm')
     have hw : WeakTriangulates ((subPoly P m').rotate r) (g m').2 := by
-      rw [← subPoly_rotate, ← hr]; exact hw0
+      rwa [← subPoly_rotate, ← hr]
     have hw' := weakTriangulates_rotate _ r hw
     rw [n_subPoly] at hw'
     have e : T' m' = (g m').2.map (relabel r m'.length) := by
       rw [hT']; simp only [dite_eq_left h]; rfl
-    refine ⟨by rw [e]; exact hw', ?_⟩
+    refine ⟨by rwa [e], ?_⟩
     rw [e, List.map_map]
     apply List.map_congr_left
     intro t ht
@@ -98,8 +95,7 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
     intro m' hm'
     exact (hwT m' hm').2.symm
   rw [heq]
-  have hsplit : ∀ m ∈ splitAll (List.range P.n) D, WeakTriangulates (subPoly P m) (T' m) :=
-    fun m hm => (hwT m (hperm.mem_iff.2 hm)).1
+  have hsplit := fun m hm => (hwT m (hperm.mem_iff.2 hm)).1
   exact triangulates_perm (triangulates_of_weak (hD.weakTriangulates hP hsplit))
     (List.Perm.flatMap_right _ hperm.symm)
 

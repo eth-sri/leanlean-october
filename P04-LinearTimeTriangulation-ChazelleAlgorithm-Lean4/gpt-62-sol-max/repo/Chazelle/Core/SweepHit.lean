@@ -110,7 +110,7 @@ theorem whole_hitParam_eq_min (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.w
     {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     J.whole.hitParam z σ =
       min (rayHit J.whole.radius J.left.set z σ) (rayHit J.whole.radius J.right.set z σ) := by
-  rw [hitParam_eq_rayHit _ hz, J.whole_set, rayHit_union _ _ _ _ hσ]
+  ram_simp [hitParam_eq_rayHit, J.whole_set, rayHit_union]
 
 /-- Below the top of `C₁`, its slit-free first hit is the first hit in the model of `C₁`. -/
 theorem left_hitParam_eq (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.left.top.2) (σ : ℝ) :
@@ -148,16 +148,14 @@ theorem freeAt_whole_iff (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.whole.
   have key : ∀ t, rayPt z σ t ∈ J.whole.dom ↔ rayPt z σ t ∈ Chain.box J.whole.radius ∧
       rayPt z σ t ∉ J.left.set ∧ rayPt z σ t ∉ J.right.set := by
     intro t
-    have h := Merge.not_mem_dom_iff J.whole (p := rayPt z σ t) (by rw [rayPt_snd]; exact hz)
+    have h := Merge.not_mem_dom_iff J.whole (p := rayPt z σ t) (by assumption)
     rw [J.whole_set] at h
     constructor
     · intro hd
       by_contra hc
       apply h.2 _ hd
       by_cases hb : rayPt z σ t ∈ Chain.box J.whole.radius
-      · right
-        by_contra hn
-        exact hc ⟨hb, fun h1 => hn (Or.inl h1), fun h2 => hn (Or.inr h2)⟩
+      · simp_all
       · exact Or.inl hb
     · rintro ⟨hb, h1, h2⟩
       by_contra hd
@@ -168,19 +166,25 @@ theorem freeAt_whole_iff (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.whole.
         · exact h2 h'
   exact ⟨fun h => h.mono fun t ht => (key t).1 ht, fun h => h.mono fun t ht => (key t).2 ht⟩
 
+section
+
+variable (C : Chain) {z : Point} (hz : z.2 ≤ C.top.2) {σ : ℝ}
+    (hσ : σ = 1 ∨ σ = -1) (h : FreeAt C z σ)
+include hz hσ h
+
 /-- **The first hit of a chain as a first hit on the complement of its domain**: for a free
 direction below the top, the ray first leaves the domain at `C.hitParam z σ`. -/
-theorem firstHit_compl_dom (C : Chain) {z : Point} (hz : z.2 ≤ C.top.2) {σ : ℝ}
-    (hσ : σ = 1 ∨ σ = -1) (h : FreeAt C z σ) : FirstHit C.domᶜ z σ (C.hitParam z σ) := by
+theorem firstHit_compl_dom : FirstHit C.domᶜ z σ (C.hitParam z σ) := by
   obtain ⟨h1, h2, h3⟩ := Merge.hit_of_freeAt C hz hσ h
   exact ⟨h1, h2, fun t ht1 ht2 hmem => hmem (h3 t ht1 ht2)⟩
 
 /-- **The first hit of a chain on any part of the complement of its domain** containing the
 first-hit point is at the first-hit parameter. -/
-theorem firstHit_of_compl_dom (C : Chain) {z : Point} (hz : z.2 ≤ C.top.2) {σ : ℝ}
-    (hσ : σ = 1 ∨ σ = -1) (h : FreeAt C z σ) {A : Set Point} (hA : A ⊆ C.domᶜ)
+theorem firstHit_of_compl_dom {A : Set Point} (hA : A ⊆ C.domᶜ)
     (hmem : rayPt z σ (C.hitParam z σ) ∈ A) : FirstHit A z σ (C.hitParam z σ) :=
   firstHit_of_subset hA (firstHit_compl_dom C hz hσ h) hmem
+
+end
 
 end Sweep
 

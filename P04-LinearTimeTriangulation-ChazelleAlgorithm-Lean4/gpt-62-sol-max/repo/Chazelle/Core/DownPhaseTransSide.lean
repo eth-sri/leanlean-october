@@ -58,9 +58,9 @@ theorem up_in_one_corner {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2)
       by_contra h2; push Not at h1 h2
       rcases lt_or_ge v.1 b.1 with h3 | h3
       · have h4 := h1 h3
-        have h5 : a.1 = v.1 := le_antisymm h2.1 h4
+        have h5 := le_antisymm h2.1 h4
         rw [h5] at hD; nlinarith
-      · have h5 : b.1 = v.1 := le_antisymm h3 h2.2
+      · have h5 := le_antisymm h3 h2.2
         rw [h5] at hD; nlinarith
 
 /-- **The up direction is not in the corner of the interior walk at the top vertex.** -/
@@ -83,19 +83,16 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
     rw [one_smul, one_smul] at this
     exact this.2 hc
   obtain ⟨rC, hrC, hclean⟩ := FactsInterior.clean hWs hWo hp le_rfl zero_lt_one
-  have hrad : C.top.2 < C.radius := C.top_snd_lt_radius
+  have hrad := C.top_snd_lt_radius
   set ε := rC / (2 * (C.radius - C.top.2)) with hε
   have hε0 : 0 < ε := div_pos hrC (by linarith)
   set y := C.top + ε • (C.slitTop - C.top) with hy
   have hy2 : y.2 = C.top.2 + ε * (C.radius - C.top.2) := by
-    show (C.top + ε • (C.slitTop - C.top)).2 = _
-    simp only [Prod.snd_add, Prod.smul_snd, Prod.snd_sub, smul_eq_mul]
     rfl
   have hy1 : y.1 = C.top.1 := by
     show (C.top + ε • (C.slitTop - C.top)).1 = _
     simp only [Prod.fst_add, Prod.smul_fst, Prod.fst_sub, smul_eq_mul]
-    rw [show C.slitTop.1 = C.top.1 from rfl]
-    ring
+    simp [show C.slitTop.1 = C.top.1 from rfl]
   have hpos : 0 < ε * (C.radius - C.top.2) := mul_pos hε0 (by linarith)
   have hdist : dist y C.top = rC / 2 := by
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, hy1, hy2, sub_self, abs_zero,
@@ -107,7 +104,7 @@ theorem up_not_corner (hQ : Q.Simple) (T : Top Q C) {p : ℕ} (hp : p < (interio
   have hyb : y ∈ ball (sidePt W p 0) rC := by rw [hpt, mem_ball, hdist]; linarith
   have hyD : y ∈ Q.filled \ Q.boundary := by
     by_contra hyD
-    exact hclean y hyb (by rw [hWb, hWf]; exact hyD) (hup ε hε0)
+    exact hclean y hyb (by rwa [hWb, hWf]) (hup ε hε0)
   have := T.filled_below_top hQ hyD.1
   rw [hy2] at this
   linarith
@@ -118,7 +115,7 @@ theorem iw_n : (interiorWalk Q).n = Q.n := by
   · exact FactsInterior.rev_n Q
 
 theorem iw_vtx_left (h : Mountain.LeftInside Q) (j : ℕ) : (interiorWalk Q).vtx j = Q.vtx j := by
-  unfold interiorWalk; simp only [h, ↓reduceIte]
+  unfold interiorWalk; simp_all
 
 theorem iw_vtx_right (h : ¬ Mountain.LeftInside Q) {j : ℕ} (hj : j < Q.n) :
     (interiorWalk Q).vtx j = Q.vtx (Q.n - 1 - j) := by
@@ -138,10 +135,10 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
     (Mountain.LeftInside Q → sA C C.sideBeta = 0 ∨ C.m ≤ sA C C.sideBeta) ∧
       (¬ Mountain.LeftInside Q → sA C C.sideBeta ≤ C.m) := by
   have hTm := C.topIdx_le
-  have hmn : C.m + 1 = Q.n := T.hm
+  have hmn := T.hm
   have hup : (C.slitTop - C.top) = ((0 : ℝ), C.radius - C.top.2) := by
     apply Prod.ext
-    · show C.slitTop.1 - C.top.1 = 0; rw [show C.slitTop.1 = C.top.1 from rfl]; ring
+    · simp [show C.slitTop.1 = C.top.1 from rfl]
     · rfl
   have hrad : 0 < C.radius - C.top.2 := by have := C.top_snd_lt_radius; linarith
   have hvT : ∀ k, k ≤ C.m → C.vertex k = Q.vtx k := fun k hk => T.vertex_eq (by omega)
@@ -156,43 +153,41 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       · -- `β = true` with the top strictly inside: impossible
         by_contra hcon
         push Not at hcon
-        have h0 : 0 < C.topIdx := Nat.pos_of_ne_zero hcon.1
-        have h1 : C.topIdx < C.m := hcon.2
+        have h0 := Nat.pos_of_ne_zero hcon.1
+        
         have hc := hbeta.1 hb
         apply up_not_corner hQ T (p := C.topIdx) (by rw [iw_n]; omega)
           (by rw [iw_vtx_left hL]; exact (hvT _ hTm).symm)
-        rw [iw_n, iw_vtx_left hL, iw_vtx_left hL,
+        ram_rw assumption [iw_n, iw_vtx_left hL, iw_vtx_left hL,
           Nat.mod_eq_of_lt (show C.topIdx + 1 < Q.n by omega),
           show (C.topIdx + Q.n - 1) % Q.n = C.topIdx - 1 by
             rw [show C.topIdx + Q.n - 1 = (C.topIdx - 1) + Q.n by omega, Nat.add_mod_right,
               Nat.mod_eq_of_lt (by omega)],
-          ← hvT _ (by omega), ← hvT _ (by omega)]
-        exact hc
+          ← hvT, ← hvT]
       · left; exact hT
       · right; omega
     · rw [hs]; right; omega
   · intro hL
     rcases C.sideS_mod C.sideBeta with ⟨hs, -⟩ | ⟨hs, hT0, hb⟩
-    · rw [hs]; exact hTm
+    · rwa [hs]
     · rw [hs]
       by_contra hcon
       push Not at hcon
       have h1 : C.topIdx < C.m := by omega
       -- the reversed corner contains the up direction
-      have hnc : ¬ sideCcw (C.vertex (C.topIdx + 1) - C.top) (C.slitTop - C.top)
-          (C.vertex (C.topIdx - 1) - C.top) := fun h => by
+      have hnc := fun h => by
         have := hbeta.2 h; rw [hb] at this; exact Bool.false_ne_true this
       have hlo1 : (C.vertex (C.topIdx - 1)).2 < C.top.2 := by
-        rw [hvT _ (by omega)]; exact T.nbr_lt hD (by omega) (by omega)
+        ram_rw [hvT]; exact T.nbr_lt hD (by omega) (by omega)
       have hlo2 : (C.vertex (C.topIdx + 1)).2 < C.top.2 := by
-        rw [hvT _ (by omega)]; exact T.nbr_lt hD (by omega) (by omega)
+        ram_rw [hvT]; exact T.nbr_lt hD (by omega) (by omega)
       have hor := up_in_one_corner (v := C.top) hrad hlo1 hlo2
       rw [← hup] at hor
       have hrev := hor.resolve_left hnc
       apply up_not_corner hQ T (p := C.m - C.topIdx) (by rw [iw_n]; omega)
-        (by rw [iw_vtx_right hL (by omega), show Q.n - 1 - (C.m - C.topIdx) = C.topIdx by omega];
+        (by ram_rw [iw_vtx_right hL, show Q.n - 1 - (C.m - C.topIdx) = C.topIdx by omega];
             exact (hvT _ hTm).symm)
-      rw [iw_n, iw_vtx_right hL (Nat.mod_lt _ (by omega)),
+      ram_rw [iw_n, iw_vtx_right hL (Nat.mod_lt _ (by omega)),
         iw_vtx_right hL (Nat.mod_lt _ (by omega)),
         Nat.mod_eq_of_lt (show C.m - C.topIdx + 1 < Q.n by omega),
         show (C.m - C.topIdx + Q.n - 1) % Q.n = C.m - C.topIdx - 1 by
@@ -200,14 +195,14 @@ theorem sA_inner (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
             Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)],
         show Q.n - 1 - (C.m - C.topIdx + 1) = C.topIdx - 1 by omega,
         show Q.n - 1 - (C.m - C.topIdx - 1) = C.topIdx + 1 by omega,
-        ← hvT _ (by omega), ← hvT _ (by omega)]
+        ← hvT, ← hvT]
       exact hrev
 
 /-- **The inner side is one run of the chain walk.** -/
 theorem exists_shift (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
     ∃ c₀ : ℕ, 6 ≤ c₀ ∧ c₀ + C.m ≤ 2 * C.m + 6 ∧
       ∀ j, j ≤ C.m → (C.sideWalk C.sideBeta).vtx (j + c₀) = (interiorWalk Q).vtx j := by
-  have hmn : C.m + 1 = Q.n := T.hm
+  have hmn := T.hm
   have hm1 := C.one_le
   have hvT : ∀ k, k ≤ C.m → C.vertex k = Q.vtx k := fun k hk => T.vertex_eq (by omega)
   obtain ⟨hL1, hL2⟩ := sA_inner hQ T hD
@@ -218,17 +213,17 @@ theorem exists_shift (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       induction j with
       | zero => rfl
       | succ j ih =>
-        rw [TourA.tourA_succ (by omega) (by omega), ih (by omega)]; ring
+        ram_rw [TourA.tourA_succ, ih]; ring
     refine ⟨tourA C C.sideBeta 0 + 6, by omega, ?_, fun j hj => ?_⟩
     · have := TourA.tourA_lt (C := C) (β := C.sideBeta) (C.m - 1)
-      rw [hlin _ (by omega)] at this; omega
+      ram_rw [hlin] at this; omega
     · rw [iw_vtx_left hL]
       rcases hj.lt_or_eq with hj | rfl
       · rw [show j + (tourA C C.sideBeta 0 + 6) = tourA C C.sideBeta j + 6 by
           rw [hlin j hj]; ring, TourA.vtx_tourA hj, hvT j hj.le]
       · have e := TourA.vtx_tourA_succ (C := C) (β := C.sideBeta) (k := C.m - 1) (by omega)
-        rw [Nat.sub_add_cancel hm1, C.sideWalk_next_tour _ (TourA.tourA_lt _),
-          hlin _ (by omega)] at e
+        ram_rw [Nat.sub_add_cancel hm1, C.sideWalk_next_tour _ (TourA.tourA_lt _),
+          hlin] at e
         rw [← hvT _ le_rfl, ← e]
         congr 1; omega
   · have hs := hL2 hL
@@ -239,21 +234,21 @@ theorem exists_shift (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q) :
       | succ j ih =>
         have := TourB.tourB_succ (C := C) (β := C.sideBeta) (k := C.m - 1 - (j + 1)) (by omega)
           (by omega)
-        rw [show C.m - 1 - (j + 1) + 1 = C.m - 1 - j by omega, ih (by omega)] at this
+        ram_rw [show C.m - 1 - (j + 1) + 1 = C.m - 1 - j by omega, ih] at this
         rw [this]; ring
     refine ⟨tourB C C.sideBeta (C.m - 1) + 6, by omega, ?_, fun j hj => ?_⟩
     · have := TourB.tourB_lt (C := C) (β := C.sideBeta) (C.m - 1 - (C.m - 1))
-      rw [hlin _ (by omega)] at this; omega
-    · rw [iw_vtx_right hL (by omega)]
+      ram_rw [hlin] at this; omega
+    · ram_rw [iw_vtx_right hL]
       rcases hj.lt_or_eq with hj | rfl
-      · rw [show j + (tourB C C.sideBeta (C.m - 1) + 6) = tourB C C.sideBeta (C.m - 1 - j) + 6 by
-          rw [hlin j hj]; ring, TourB.vtx_tourB (by omega),
-          show C.m - 1 - j + 1 = Q.n - 1 - j by omega, hvT _ (by omega)]
+      · ram_rw [show j + (tourB C C.sideBeta (C.m - 1) + 6) = tourB C C.sideBeta (C.m - 1 - j) + 6 by
+          rw [hlin j hj]; ring, TourB.vtx_tourB,
+          show C.m - 1 - j + 1 = Q.n - 1 - j by omega, hvT]
       · have e := TourB.vtx_tourB_succ (C := C) (β := C.sideBeta) (k := 0) (by omega)
         rw [C.sideWalk_next_tour _ (TourB.tourB_lt _)] at e
         have h0 := hlin (C.m - 1) (by omega)
         rw [show C.m - 1 - (C.m - 1) = 0 by omega] at h0
-        rw [show Q.n - 1 - C.m = 0 by omega, ← hvT 0 (by omega), ← e, h0]
+        ram_rw [show Q.n - 1 - C.m = 0 by omega, ← hvT 0, ← e, h0]
         congr 1; omega
 
 end

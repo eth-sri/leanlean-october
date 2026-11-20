@@ -94,7 +94,7 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   obtain ⟨pb, tb, hAb, hPb⟩ := hEb.1
   refine ⟨pa + ta, pb + tb, ?_⟩
   rintro x ⟨p, t, hA, rfl⟩
-  have hPc : sidePt M.W p t ∈ c := hA.2.2.2.1
+  have hPc := hA.2.2.2.1
   have hend : sidePt M.W p t = a ∨ sidePt M.W p t = b := by
     rw [hcab] at hPc
     obtain ⟨s, hs0, hs1, hs⟩ := hPc
@@ -104,20 +104,20 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
         apply hM.trace p hA.1 t hA.2.1 hA.2.2.1.le
         rw [hs]; exact hopen s ⟨h0, h1⟩
       · right; rw [hs, h1]; simp
-    · left; rw [hs, ← h0]; simp
+    simp [hs, ← h0]
   have key : ∀ (e : Point) (pe : ℕ) (te : ℝ), (e = a ∨ e = b) → WalkEnd M.W c e →
       SideAttach M.W c pe te → sidePt M.W pe te = e → sidePt M.W p t = e → p = pe ∧ t = te := by
     intro e pe te hee hE hAe hPe hP
     by_contra hne
-    have hne' : p = pe → t ≠ te := fun h1 h2 => hne ⟨h1, h2⟩
+    have hne' := fun h1 h2 => hne ⟨h1, h2⟩
     obtain ⟨r, hr, hdisj⟩ := hE.2 p pe t te hA.1 hA.2.1 hA.2.2.1 hAe.1 hAe.2.1 hAe.2.2.1 hne' hP hPe
     obtain ⟨r1, hr1, hs1⟩ := hA.2.2.2.2
     obtain ⟨r2, hr2, hs2⟩ := hAe.2.2.2.2
     obtain ⟨x, hx, hxe, hxd⟩ := near_end hab (lt_min hr (lt_min hr1 hr2)) e hee
-    have hxc : x ∈ c := by rw [hcab]; exact hx
-    have h1 := hs1 x hxc (by rw [hP]; exact hxe)
+    have hxc : x ∈ c := by rwa [hcab]
+    have h1 := hs1 x hxc (by rwa [hP])
       (by rw [hP]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hs2 x hxc (by rw [hPe]; exact hxe)
+    have h2 := hs2 x hxc (by rwa [hPe])
       (by rw [hPe]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _)))
     exact hdisj x (lt_of_lt_of_le hxd (min_le_left _ _)) h1 h2
   rcases hend with h | h
@@ -153,7 +153,7 @@ theorem exitKeys_ncard_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (
   have hsub : exitKeys M F U ⊆ ⋃ c ∈ E, attachKeys M c := by
     rintro x ⟨c, hc, ht, p, t, hA, rfl⟩
     exact mem_iUnion₂.2 ⟨c, ⟨hc, ht⟩, p, t, hA, rfl⟩
-  have hfinU : (⋃ c ∈ E, attachKeys M c).Finite := hEfin.biUnion fun c hc => by
+  have hfinU := hEfin.biUnion fun c hc => by
     obtain ⟨k₁, k₂, h⟩ := attachKeys_sub hM (hF hc.1)
     exact (toFinite _).subset h
   exact (ncard_le_ncard hsub hfinU).trans
@@ -179,17 +179,12 @@ theorem vtxIdx_disjoint {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' �
     (hne : U ≠ U') : Disjoint (vtxIdx M F U) (vtxIdx M F U') := by
   rw [Set.disjoint_left]
   rintro k ⟨hk, a, b, harc, hin⟩ ⟨-, a', b', harc', hin'⟩
-  have ev : ∀ᶠ ε in 𝓝[>] (0 : ℝ), sideInArc a b (k + ε) ∧ sideInArc a' b' (k + ε) ∧
-      ε ∈ Ioo (0 : ℝ) 1 :=
-    (eventually_in_arc hin).and ((eventually_in_arc hin').and
+  have ev := (eventually_in_arc hin).and ((eventually_in_arc hin').and
       (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)))
   obtain ⟨t, ht1, ht2, ht3⟩ := ev.exists
   have hf := harc.2.2.2.2.2.2 k t hk ht3.1 ht3.2 ht1
   have hf' := harc'.2.2.2.2.2.2 k t hk ht3.1 ht3.2 ht2
-  obtain ⟨δ, hδ1, hδ2⟩ := (hf.and hf').exists
-  rcases Chazelle.Chain.regionsIn_eq_or_disjoint hU hU' with h | h
-  · exact hne h
-  · exact h.le_bot ⟨hδ1, hδ2⟩
+  exact hne (Chazelle.Chain.regionsIn_eq_of_eventually_mem hU hU' hf hf')
 
 
 /-- **The host keys of a region**: at most its inner vertices plus twice its degree. -/
@@ -197,8 +192,7 @@ theorem nk_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (U : Set Poin
     nk M F U ≤ (vtxIdx M F U).ncard + 2 * M.deg F U := by
   have hS := hostKeys_finite (U := U) hM hF hfin
   have e : nk M F U = (hostKeys M F U).ncard := by
-    unfold nk
-    rw [hostKeyList_eq hS, Finset.length_sort, Set.ncard_eq_toFinset_card _ hS]
+    ram_finish [nk, hostKeyList_eq hS, Finset.length_sort, Set.ncard_eq_toFinset_card]
   rw [e]
   refine (ncard_union_le _ _).trans ?_
   rw [vtxKeys_ncard]

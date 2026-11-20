@@ -34,34 +34,34 @@ variable (J : Merge.Junction)
 
 /-- **A bracket chord**: every attachment lies on the `C₁` part. -/
 def EvBrk (e : Set Point) : Prop :=
-  ∀ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W e p t → (Lst J : ℝ) ≤ oW J (p + t)
+  ∀ (p : ℕ) (t : ℝ), SideAttach J.wholeModel.W e p t → (Lst J : ℝ) ≤ oW J (p + t)
 
 /-- **The offset `o` is enclosed**: strictly between the two attachments of a chord of `F₂⁺` on
 the `C₁` part, or after the `C₁` attachment of a chord attached at offset `0` (a pocket). -/
 def EvEncl (S₂ : Set (Set Point)) (o : ℝ) : Prop :=
-  ∃ e ∈ F₂plus J S₂, ∃ (pa pb : ℕ) (ta tb : ℝ), SideAttach (chainModel J.whole).W e pa ta ∧
-    SideAttach (chainModel J.whole).W e pb tb ∧
-    sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb ∧
+  ∃ e ∈ F₂plus J S₂, ∃ (pa pb : ℕ) (ta tb : ℝ), SideAttach J.wholeModel.W e pa ta ∧
+    SideAttach J.wholeModel.W e pb tb ∧
+    sidePt J.wholeModel.W pa ta ≠ sidePt J.wholeModel.W pb tb ∧
     (Lst J : ℝ) ≤ oW J (pa + ta) ∧ oW J (pa + ta) < o ∧ (o < oW J (pb + tb) ∨ oW J (pb + tb) = 0)
 
 /-- **A label set is valid for a region**: some valid label (`Valid`) of the region is in the set
 or is a gap label. -/
 def EvVal (S₂ : Set (Set Point)) (Λ : Set (Set Point)) (G : Set Point) : Prop :=
-  ∃ L, (L ∈ Λ ∨ GapLab J S₂ L) ∧ L ∈ (chainModel J.right).regions S₂ ∧ Valid J S₂ G L
+  ∃ L, (L ∈ Λ ∨ GapLab J S₂ L) ∧ L ∈ J.rightModel.regions S₂ ∧ Valid J S₂ G L
 
 /-- **The facts at a non-cut position**: it is enclosed, or the regions faced there have a valid
 label set. -/
 def EvPos (S₂ : Set (Set Point)) (Λ : Set (Set Point)) (p : ℕ) (t : ℝ) : Prop :=
   EvEncl J S₂ (oW J (p + t)) ∨
-    ∀ G ∈ (chainModel J.whole).regions (F₂plus J S₂), (chainModel J.whole).Faces p t G →
+    ∀ G ∈ J.wholeModel.regions (F₂plus J S₂), J.wholeModel.Faces p t G →
       EvVal J S₂ Λ G
 
 /-- **The invariant of the event loop** at a key with offset `oK` and label set `Λ`: every later
 non-cut position reached through keys carrying only bracket chords has `EvPos`. -/
 def EvInv (S₂ : Set (Set Point)) (oK : ℝ) (Λ : Set (Set Point)) : Prop :=
-  ∀ (p : ℕ) (t : ℝ), p < (chainModel J.whole).W.n → t ∈ Ioo (0 : ℝ) 1 →
-    ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t) → oK < oW J (p + t) →
-    (∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+  ∀ (p : ℕ) (t : ℝ), p < J.wholeModel.W.n → t ∈ Ioo (0 : ℝ) 1 →
+    ¬ J.wholeModel.IsCut (F₂plus J S₂) (p + t) → oK < oW J (p + t) →
+    (∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       oK < oW J (q + s) → oW J (q + s) < oW J (p + t) → EvBrk J e) →
     EvPos J S₂ Λ p t
 
@@ -70,7 +70,7 @@ variable {J}
 /-- **Keys carrying only bracket chords keep the invariant.** -/
 theorem evInv_mono {S₂ : Set (Set Point)} {oK oK' : ℝ} {Λ : Set (Set Point)}
     (h : EvInv J S₂ oK Λ) (hle : oK ≤ oK')
-    (hbr : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+    (hbr : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       oK < oW J (q + s) → oW J (q + s) ≤ oK' → EvBrk J e) :
     EvInv J S₂ oK' Λ := by
   intro p t hp ht hnc ho hb
@@ -81,26 +81,31 @@ theorem evInv_mono {S₂ : Set (Set Point)} {oK oK' : ℝ} {Λ : Set (Set Point)
 
 /-- **After a pocket key** every position is enclosed. -/
 theorem evInv_pocket {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F₂plus J S₂)
-    {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach (chainModel J.whole).W e pa ta)
-    (hB : SideAttach (chainModel J.whole).W e pb tb)
-    (hAB : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb)
+    {pa pb : ℕ} {ta tb : ℝ} (hA : SideAttach J.wholeModel.W e pa ta)
+    (hB : SideAttach J.wholeModel.W e pb tb)
+    (hAB : sidePt J.wholeModel.W pa ta ≠ sidePt J.wholeModel.W pb tb)
     (hAo : (Lst J : ℝ) ≤ oW J (pa + ta)) (hBo : oW J (pb + tb) = 0) (Λ : Set (Set Point)) :
     EvInv J S₂ (oW J (pa + ta)) Λ :=
   fun _ _ _ _ _ ho _ => Or.inl ⟨e, he, pa, pb, ta, tb, hA, hB, hAB, hAo, ho, Or.inr hBo⟩
 
 /-- `oW` is the offset from the base `gW`. -/
 theorem oW_eq (x : ℝ) :
-    oW J x = off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x := rfl
+    oW J x = off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x := rfl
 
 theorem Lst_eq : (Lst J : ℝ) = ((rL1 J + rL2 J : ℕ) : ℝ) := rfl
 
+section
+
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)}
+    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP hS₂ hS₂f
+
 /-- **An enclosed position faces an unlabelled region.** -/
-theorem not_rlabel_of_encl (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (ht : t ∈ Ioo (0 : ℝ) 1)
-    (hnc : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t))
+theorem not_rlabel_of_encl {p : ℕ} {t : ℝ}
+    (hp : p < J.wholeModel.W.n) (ht : t ∈ Ioo (0 : ℝ) 1)
+    (hnc : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p + t))
     (hE : EvEncl J S₂ (oW J (p + t))) {G : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) (hf : (chainModel J.whole).Faces p t G)
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂)) (hf : J.wholeModel.Faces p t G)
     (V : Set Point) : ¬ RLabel J S₂ G V := by
   obtain ⟨e, he, pa, pb, ta, tb, hA, hB, hAB, hAo, ho, hBo⟩ := hE
   rcases hBo with hBo | hBo
@@ -109,21 +114,20 @@ theorem not_rlabel_of_encl (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · exact no_label_of_pocket J hP hS₂ hS₂f hG he hA hB hAB hAo hBo hp ht hnc hf ho V
 
 /-- **A cut-free stretch just after a position** facing the region faced just after it. -/
-theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) {G : Set Point}
-    (hW : AfterFaces (chainModel J.whole) p t G) :
-    ∃ s, 0 < s ∧ t + s < 1 ∧ (chainModel J.whole).Faces p (t + s) G ∧
-      ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + (t + s)) ∧
+theorem after_pos_exists {p : ℕ} {t : ℝ}
+    (hp : p < J.wholeModel.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) {G : Set Point}
+    (hW : AfterFaces J.wholeModel p t G) :
+    ∃ s, 0 < s ∧ t + s < 1 ∧ J.wholeModel.Faces p (t + s) G ∧
+      ¬ J.wholeModel.IsCut (F₂plus J S₂) (p + (t + s)) ∧
       oW J (p + (t + s)) = oW J (p + t) + s ∧
-      ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x → x < (chainModel J.whole).W.n →
+      ∀ x, J.wholeModel.IsCut (F₂plus J S₂) x → 0 ≤ x → x < J.wholeModel.W.n →
         ¬ (oW J (p + t) < oW J x ∧ oW J x < oW J (p + (t + s))) := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hM := hC.hM
   obtain ⟨δ, hδ, hfac⟩ := hW
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hC.hF hC.hfin ((p : ℝ) + t))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set s := min (min δ δ₁) (1 - t) / 2 with hs
   have hm : 0 < min (min δ δ₁) (1 - t) := lt_min (lt_min hδ hδ₁') (by linarith)
   have h1 := min_le_left (min δ δ₁) (1 - t)
@@ -146,13 +150,11 @@ theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
       show oW J x - oW J (p + t) < δ₁ by linarith⟩
     rw [Set.mem_ofPred_eq] at this
     apply this
-    rw [hx'] at hx
-    exact hx
+    rwa [hx'] at hx
 
 /-- **The label facts of the event log from the invariant.** -/
-theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {Λ : Set (Set Point)} {p : ℕ}
-    {t : ℝ} (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
+theorem labIn_of_evInv {Λ : Set (Set Point)} {p : ℕ}
+    {t : ℝ} (hp : p < J.wholeModel.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
     (h : EvInv J S₂ (oW J (p + t)) Λ) : LabIn J S₂ p t Λ := by
   intro G hG hW V hV hR
   obtain ⟨s, hs0, hs1, hf, hnc, hoff, hgap⟩ := after_pos_exists hP hS₂ hS₂f hp ht0 ht1 hW
@@ -164,10 +166,10 @@ theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · exact absurd hR (not_rlabel_of_encl hP hS₂ hS₂f hp ⟨by linarith, hs1⟩ hnc hE hG hf V)
   · obtain ⟨L, hL, -, hv⟩ := hval G hG hf
     rcases hv.1 V hV hR with rfl | hg
-    · rcases hL with hL | hL
-      · exact Or.inl hL
-      · exact Or.inr hL
+    · assumption
     · exact Or.inr hg
+
+end
 
 end EvInv
 

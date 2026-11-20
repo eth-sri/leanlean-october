@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterStageB2S
 
 /-!
@@ -56,7 +58,12 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-theorem halfS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
+section
+
+variable {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
+
+include hw hG in
+theorem halfS_exec
     (hW : g.END ≤ W) :
     ∃ c' k, Exec P W halfS c c' k ∧ k ≤ 11 * g.μ + 20 ∧ WordsBounded W c' ∧
       PFr StCRG (fun a => g.base 39 ≤ a ∧ a < g.base 39 + (g.μ + 1)) c c' ∧
@@ -73,9 +80,8 @@ theorem halfS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     all_goals try omega
     refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp,
       by config_simp; rw [hG.rμ, hG.one], ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩⟩
-    simp only; unfold StCRG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  obtain ⟨c', k, e, hk, hw', hi', hn', h21', h22', hf', hm'⟩ := forN (P := P) (W := W)
+    frame_finish [StCRG, Machine.upd_other]
+  obtain ⟨c', k, e, hk, hw', hi', hn', h21', h22', hf', hm'⟩ := Exec.forN (P := P) (W := W)
     (ri := 130820) (rn := 130824) (body := halfBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130820 = j ∧ c'.nreg 130824 = g.μ + 1 ∧
       c'.nreg 130821 = j / 2 ∧ c'.nreg 130822 = j % 2 ∧
@@ -115,7 +121,7 @@ theorem halfS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         by_cases hp : c3.nreg 130822 < c3.nreg 130001
         · have e := Exec.constN (P := P) hw3 130822 1 (by omega)
           rw [h22, h1] at hp
-          refine ⟨_, 1 + 1, .ifLtN_true (by rw [h22, h1]; exact hp) e, by omega, e.wb_right,
+          refine ⟨_, 1 + 1, (by ram_path), by omega, e.wb_right,
             ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, rfl, ?_, ?_, ?_, ?_⟩
           · simp only [Machine.upd_other _ _ _ (show r ≠ 130822 by
               unfold HRG at hr; omega)]
@@ -177,16 +183,13 @@ theorem mod_succ_step {k : ℕ} (hk : 0 < k) (j : ℕ) :
   by_cases h1 : j % k + 1 < k
   · rw [ite_eq_left h1, ite_eq_left h1]
     have e : j + 1 = (j % k + 1) + k * (j / k) := by omega
-    constructor
-    · rw [e, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt h1]
-    · rw [e, Nat.add_mul_div_left _ _ hk, Nat.div_eq_of_lt h1]; omega
+    ram_simp [e, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt h1, Nat.add_mul_div_left, Nat.div_eq_of_lt h1]
   · rw [ite_eq_right h1, ite_eq_right h1]
     have e : j + 1 = k * (j / k + 1) := by rw [Nat.mul_add, Nat.mul_one]; omega
-    constructor
-    · rw [e, Nat.mul_mod_right]
-    · rw [e, Nat.mul_div_cancel_left _ hk]
+    simp_all
 
-theorem powS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
+include hw hG in
+theorem powS_exec
     (hW : g.END ≤ W) :
     ∃ c' k, Exec P W powS c c' k ∧ k ≤ 6 * g.L + 4 ∧ WordsBounded W c' ∧
       PFr StCRG (fun a => g.base 40 ≤ a ∧ a < g.base 40 + g.L) c c' ∧
@@ -198,15 +201,10 @@ theorem powS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       (block [.constN 130825 0, .constN 130826 1]) c c1 k1 ∧ k1 = 2 ∧ WordsBounded W c1 ∧
       c1.nreg 130825 = 0 ∧ c1.nreg 130826 = 1 ∧
       PFr StCRG (fun a => g.base 40 ≤ a ∧ a < g.base 40 + g.L) c c1 := by
-    exec_block
-    all_goals try omega
-    refine ⟨rfl, ‹_›, by config_simp, by config_simp, ⟨fun r hr => ?_, rfl, rfl, rfl,
-      fun a _ => rfl⟩⟩
-    simp only; unfold StCRG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    ram_exec [StCRG, Machine.upd_other]
   have hL1 : c1.nreg 130017 = g.L := (hG.frame (fun r hr => hf1.1 r (by
     unfold GRReg at hr; unfold StCRG; omega))).rL
-  obtain ⟨c', k, e, hk, hw', hi', hn', h26', hf', hm'⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk, hw', hi', hn', h26', hf', hm'⟩ := Exec.forN (P := P) (W := W)
     (ri := 130825) (rn := 130017) (body := powBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130825 = j ∧ c'.nreg 130017 = g.L ∧
       c'.nreg 130826 = 2 ^ j ∧
@@ -230,7 +228,7 @@ theorem powS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           fun a ha => ?_⟩, fun i hi => ?_⟩
         · simp only; simp only [StCRG] at hr ⊢
           repeat (rw [Machine.upd_other _ _ _ (by omega)])
-        · config_simp; rw [r70, hi2, Machine.upd_other _ _ _ (by omega)]
+        · frame_finish [r70, hi2, Machine.upd_other]
         · config_simp; rw [r70, hi2, hp2, Machine.upd_apply]
           split_ifs with h
           · rw [show i = j by omega]
@@ -241,7 +239,8 @@ theorem powS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
 /-- The registers of the residue step. -/
 def RRG (r : ℕ) : Prop := 130828 ≤ r ∧ r ≤ 130830
 
-theorem resS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk : 0 < g.k')
+include hw hG in
+theorem resS_exec (hk : 0 < g.k')
     (hkμ : g.k' ≤ g.μ) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W resS c c' k ∧ k ≤ 9 * g.μ + 4 ∧ WordsBounded W c' ∧
       PFr StCRG (fun a => g.base 33 ≤ a ∧ a < g.base 33 + g.μ) c c' ∧
@@ -252,15 +251,10 @@ theorem resS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
       (block [.constN 130828 0, .constN 130829 0]) c c1 k1 ∧ k1 = 2 ∧ WordsBounded W c1 ∧
       c1.nreg 130828 = 0 ∧ c1.nreg 130829 = 0 ∧
       PFr StCRG (fun a => g.base 33 ≤ a ∧ a < g.base 33 + g.μ) c c1 := by
-    exec_block
-    all_goals try omega
-    refine ⟨rfl, ‹_›, by config_simp, by config_simp, ⟨fun r hr => ?_, rfl, rfl, rfl,
-      fun a _ => rfl⟩⟩
-    simp only; unfold StCRG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    ram_exec [StCRG, Machine.upd_other]
   have hμ1 : c1.nreg 130011 = g.μ := (hG.frame (fun r hr => hf1.1 r (by
     unfold GRReg at hr; unfold StCRG; omega))).rμ
-  obtain ⟨c', k, e, hk', hw', hi', hn', h29', hf', hm'⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk', hw', hi', hn', h29', hf', hm'⟩ := Exec.forN (P := P) (W := W)
     (ri := 130828) (rn := 130011) (body := resBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130828 = j ∧ c'.nreg 130011 = g.μ ∧
       c'.nreg 130829 = j % g.k' ∧
@@ -330,6 +324,8 @@ theorem resS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
         · exact hm2 l (by omega))
     (j₀ := 0) ⟨hw1, h28, hμ1, by rw [h29]; simp, hf1, fun l hl => by omega⟩ (Nat.zero_le _)
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hf', hm'⟩
+
+end
 
 end proofs
 

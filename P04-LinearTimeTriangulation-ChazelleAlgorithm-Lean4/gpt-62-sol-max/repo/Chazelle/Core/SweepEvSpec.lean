@@ -73,9 +73,9 @@ def St0S (P : Polygon) (c : Config) (H : Host) (J : Merge.Junction) : Prop :=
     (∀ k, k < 5 → c.nreg (sw (45 + k)) = cstL J k) ∧
     c.nreg (sw 33) = 2 * J.left.m + 7 ∧ c.nreg (sw 34) = 2 * J.right.m + 7 ∧
     c.nreg (sw 35) = 2 * J.whole.m + 7 ∧
-    ModelDescAt c.nmem (c.nreg (sw 30)) (Qof P) (chainModel J.left) ∧
+    ModelDescAt c.nmem (c.nreg (sw 30)) (Qof P) J.leftModel ∧
     ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg (sw 30)) ∧
-    ModelDescAt c.nmem (c.nreg (sw 31)) (Qof P) (chainModel J.right) ∧
+    ModelDescAt c.nmem (c.nreg (sw 31)) (Qof P) J.rightModel ∧
     ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg (sw 31))
 
 /-- `St0` of side `0` gives `St0S`. -/
@@ -89,7 +89,7 @@ theorem st0S_of_st0 {P : Polygon} {c₀ c : Config} {H : Host} {J : Merge.Juncti
   · rw [h23, hlo 3 (by omega)]
   · rw [h24, hlo 4 (by omega)]
   · rw [h40 k hk]; simp [cstLb]
-  · rw [h45 k hk]; simp [cstQ]
+  ram_finish
 
 /-- **The precondition of stages 2 and 3.** -/
 def Pre (X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c : Config) : Prop :=
@@ -99,21 +99,21 @@ def Pre (X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (
     JunctionWF P (c.nreg ALLOC) c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) ∧
     ∃ H J N₁ N₂, JunctionAt c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) (Qof P) H J ∧
       J.P.Simple ∧
-      Ok P (chainModel J.left) ∧ Ok P (chainModel J.right) ∧
+      Ok P J.leftModel ∧ Ok P J.rightModel ∧
       NFWithin c.nmem (rd c bSweep 3) (c.nreg ALLOC) N₁ ∧
       NFWithin c.nmem (rd c bSweep 4) (c.nreg ALLOC) N₂ ∧
-      IsNF (chainModel J.left) (Qof P) N₁ ∧ IsNF (chainModel J.right) (Qof P) N₂ ∧
-      (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (rd c bSweep 6) ∧
-      (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 6) ∧
-      (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (rd c bSweep 5) ∧
-      (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 5) ∧
+      IsNF J.leftModel (Qof P) N₁ ∧ IsNF J.rightModel (Qof P) N₂ ∧
+      J.leftModel.DegLe (N₁.F J.leftModel (Qof P)) (rd c bSweep 6) ∧
+      J.rightModel.DegLe (N₂.F J.rightModel (Qof P)) (rd c bSweep 6) ∧
+      J.leftModel.Semigranular (N₁.F J.leftModel (Qof P)) (rd c bSweep 5) ∧
+      J.rightModel.Semigranular (N₂.F J.rightModel (Qof P)) (rd c bSweep 5) ∧
       St0S P c H J
 
 /-- **Word-level facts of a stored position** `(e, h)` of the walk of `C`: an edge of the walk, a
 proper position, and a height code `0` only on the tour (so that `offCmp`, `arrivalPos` and
 `absKey` accept it). -/
 def PosW (P : Polygon) (J : Merge.Junction) (e h : ℕ) : Prop :=
-  e < (chainModel J.whole).W.n ∧ ProperPos (chainModel J.whole) (Qof P) P.n ⟨e, h⟩ ∧
+  e < J.wholeModel.W.n ∧ ProperPos J.wholeModel (Qof P) P.n ⟨e, h⟩ ∧
     (h = 0 → 6 ≤ e)
 
 /-- **The outputs of stages 2 and 3** for one junction and normal form `N₂` of `S₂`: the stops,
@@ -122,11 +122,11 @@ word-level facts of the stored positions, codes and labels. -/
 def Out (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c' : Config) : Prop :=
   ∃ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)),
     rs.length = rd c' bSweep 201 ∧ Sweep.StopRecsAt c'.nmem (rd c' bSweep 200) rs ∧
-    Sweep.StopsOK J (N₂.F (chainModel J.right) (Qof P)) (Sweep.stopsOf J (Qof P) N₂ rs) ∧
+    Sweep.StopsOK J (N₂.F J.rightModel (Qof P)) (Sweep.stopsOf J (Qof P) N₂ rs) ∧
     (∀ r ∈ rs, PosW P J r.1 r.2.1 ∧ r.2.2.1 ≤ 2 ∧ r.2.2.2.2 ≤ 1 ∧
       (r.2.2.1 = 1 → r.2.2.2.1 < N₂.nChords)) ∧
     ls.length = rd c' bSweep 301 ∧ Sweep.LogRecsAt c'.nmem (rd c' bSweep 300) ls ∧
-    Sweep.LogOK J (N₂.F (chainModel J.right) (Qof P)) (Sweep.logOf J (Qof P) N₂ ls) ∧
+    Sweep.LogOK J (N₂.F J.rightModel (Qof P)) (Sweep.logOf J (Qof P) N₂ ls) ∧
     (∀ r ∈ ls, PosW P J r.1 r.2.1 ∧ r.2.2.1 ≤ 4 ∧
       (0 < r.2.2.1 → r.2.2.2.1 < N₂.nRegions) ∧ (1 < r.2.2.1 → r.2.2.2.2.1 < N₂.nRegions) ∧
       (2 < r.2.2.1 → r.2.2.2.2.2.1 < N₂.nRegions) ∧ (3 < r.2.2.1 → r.2.2.2.2.2.2 < N₂.nRegions)) ∧
@@ -147,7 +147,7 @@ def Post (P : Polygon) (c c' : Config) : Prop :=
     rd c' bSweep 201 ≤ 16 * (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + 1) ∧
     rd c' bSweep 301 ≤ 16 * (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + 1) ∧
     ∀ H J N₂, JunctionAt c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) (Qof P) H J →
-      NFAt c.nmem (rd c bSweep 4) N₂ → IsNF (chainModel J.right) (Qof P) N₂ →
+      NFAt c.nmem (rd c bSweep 4) N₂ → IsNF J.rightModel (Qof P) N₂ →
       Out P J N₂ c'
 
 /-- **The cost of stages 2 and 3.** -/

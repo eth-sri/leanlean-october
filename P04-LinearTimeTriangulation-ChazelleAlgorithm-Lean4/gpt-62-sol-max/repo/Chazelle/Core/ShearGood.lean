@@ -100,8 +100,7 @@ theorem IsRatFn.evSign {f : ℝ → ℝ} (hf : IsRatFn f) : EvSign f := by
     rcases evSign_poly p with hp | hp | hp
   · left
     filter_upwards [hfe, hq', hp] with ε h1 h2 h3
-    rw [h1]
-    exact div_pos_iff.2 (Or.inl ⟨h3, h2⟩)
+    simp_all
   · right; left
     filter_upwards [hfe, hp] with ε h1 h3
     rw [h1, h3, zero_div]
@@ -121,8 +120,13 @@ theorem IsRatFn.evSign {f : ℝ → ℝ} (hf : IsRatFn f) : EvSign f := by
     rw [h1]
     exact div_pos_iff.2 (Or.inr ⟨h3, h2⟩)
 
+section
+
+variable {f g : ℝ → ℝ} (hf : IsRatFn f)
+
+include g hf in
 /-- Rational functions are closed under pointwise equality. -/
-theorem IsRatFn.congr {f g : ℝ → ℝ} (hf : IsRatFn f) (h : ∀ ε, f ε = g ε) : IsRatFn g := by
+theorem IsRatFn.congr (h : ∀ ε, f ε = g ε) : IsRatFn g := by
   rwa [← funext h]
 
 /-- Constants are rational functions. -/
@@ -133,47 +137,43 @@ theorem isRatFn_const (c : ℝ) : IsRatFn (fun _ => c) :=
 theorem isRatFn_id : IsRatFn (fun ε => ε) :=
   ⟨X, 1, by simp, by simp⟩
 
+include g hf in
 /-- Sums of rational functions are rational functions. -/
-theorem IsRatFn.add {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
+theorem IsRatFn.add (hg : IsRatFn g) :
     IsRatFn (fun ε => f ε + g ε) := by
   obtain ⟨p1, q1, hq1, hf1⟩ := hf
   obtain ⟨p2, q2, hq2, hg2⟩ := hg
   refine ⟨p1 * q2 + q1 * p2, q1 * q2, ?_, ?_⟩
-  · filter_upwards [hq1, hq2] with ε h1 h2
-    rw [eval_mul]
-    exact mul_ne_zero h1 h2
+  · simp_all
   · filter_upwards [hq1, hq2, hf1, hg2] with ε h1 h2 h3 h4
-    rw [h3, h4, div_add_div _ _ h1 h2]
-    simp only [eval_add, eval_mul]
+    ram_simp [h3, h4, div_add_div, eval_add, eval_mul]
 
+include g hf in
 /-- Differences of rational functions are rational functions. -/
-theorem IsRatFn.sub {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
+theorem IsRatFn.sub (hg : IsRatFn g) :
     IsRatFn (fun ε => f ε - g ε) := by
   obtain ⟨p1, q1, hq1, hf1⟩ := hf
   obtain ⟨p2, q2, hq2, hg2⟩ := hg
   refine ⟨p1 * q2 - q1 * p2, q1 * q2, ?_, ?_⟩
-  · filter_upwards [hq1, hq2] with ε h1 h2
-    rw [eval_mul]
-    exact mul_ne_zero h1 h2
+  · simp_all
   · filter_upwards [hq1, hq2, hf1, hg2] with ε h1 h2 h3 h4
-    rw [h3, h4, div_sub_div _ _ h1 h2]
-    simp only [eval_sub, eval_mul]
+    ram_simp [h3, h4, div_sub_div, eval_sub, eval_mul]
 
+include g hf in
 /-- Products of rational functions are rational functions. -/
-theorem IsRatFn.mul {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
+theorem IsRatFn.mul (hg : IsRatFn g) :
     IsRatFn (fun ε => f ε * g ε) := by
   obtain ⟨p1, q1, hq1, hf1⟩ := hf
   obtain ⟨p2, q2, hq2, hg2⟩ := hg
   refine ⟨p1 * p2, q1 * q2, ?_, ?_⟩
-  · filter_upwards [hq1, hq2] with ε h1 h2
-    rw [eval_mul]
-    exact mul_ne_zero h1 h2
+  · simp_all
   · filter_upwards [hf1, hg2] with ε h3 h4
     rw [h3, h4, div_mul_div_comm]
     simp only [eval_mul]
 
+include g hf in
 /-- Quotients of rational functions are rational functions (with Lean's `x / 0 = 0`). -/
-theorem IsRatFn.div {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
+theorem IsRatFn.div (hg : IsRatFn g) :
     IsRatFn (fun ε => f ε / g ε) := by
   obtain ⟨p1, q1, hq1, hf1⟩ := hf
   obtain ⟨p2, q2, hq2, hg2⟩ := hg
@@ -183,9 +183,7 @@ theorem IsRatFn.div {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
     rw [h1, h2]
     simp
   · refine ⟨p1 * q2, q1 * p2, ?_, ?_⟩
-    · filter_upwards [hq1, hp] with ε h1 h2
-      rw [eval_mul]
-      exact mul_ne_zero h1 h2
+    · simp_all
     · filter_upwards [hf1, hg2] with ε h1 h2
       rw [h1, h2, div_div_div_eq]
       simp only [eval_mul]
@@ -204,15 +202,14 @@ theorem isRatFn_eval_fst (P : Polygon) (s : SymPt) :
     IsRatFn (fun ε => (s.eval (shear ε P)).1) := by
   cases s with
   | vtx i =>
-    exact (isRatFn_shear_fst (P.vtx i)).congr (fun ε => by simp only [SymPt.eval, shear_vtx])
+    exact (isRatFn_shear_fst (P.vtx i)).congr (fun ε => by simp [SymPt.eval, shear_vtx])
   | onEdge e h =>
     refine ((isRatFn_shear_fst (P.vtx e)).add
       (((isRatFn_shear_snd (P.vtx h)).sub (isRatFn_shear_snd (P.vtx e))).mul
         (((isRatFn_shear_fst (P.vtx ((e + 1) % P.n))).sub (isRatFn_shear_fst (P.vtx e))).div
           ((isRatFn_shear_snd (P.vtx ((e + 1) % P.n))).sub
             (isRatFn_shear_snd (P.vtx e)))))).congr ?_
-    intro ε
-    simp only [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n]
+    simp [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n]
 
 /-- The ordinate of a symbolic point of the sheared polygon is a rational function of the
 parameter. -/
@@ -220,9 +217,9 @@ theorem isRatFn_eval_snd (P : Polygon) (s : SymPt) :
     IsRatFn (fun ε => (s.eval (shear ε P)).2) := by
   cases s with
   | vtx i =>
-    exact (isRatFn_shear_snd (P.vtx i)).congr (fun ε => by simp only [SymPt.eval, shear_vtx])
+    exact (isRatFn_shear_snd (P.vtx i)).congr (fun ε => by simp [SymPt.eval, shear_vtx])
   | onEdge e h =>
-    exact (isRatFn_shear_snd (P.vtx h)).congr (fun ε => by simp only [SymPt.eval, shear_vtx])
+    exact (isRatFn_shear_snd (P.vtx h)).congr (fun ε => by simp [SymPt.eval, shear_vtx])
 
 /-- The orientation determinant of three symbolic points of the sheared polygon is a rational
 function of the parameter. -/
@@ -243,7 +240,7 @@ theorem isRatFn_det_eval (P : Polygon) (s₁ s₂ s₃ : SymPt) :
 theorem EvSign.evConst_pos {f : ℝ → ℝ} (h : EvSign f) : EvConst (fun ε => 0 < f ε) := by
   rcases h with h | h | h
   · exact ⟨True, h.mono fun ε hε => eq_true hε⟩
-  · exact ⟨False, h.mono fun ε hε => eq_false (show ¬ 0 < f ε by rw [hε]; exact lt_irrefl 0)⟩
+  · exact ⟨False, h.mono fun ε hε => eq_false (show ¬ 0 < f ε by simp_all)⟩
   · exact ⟨False, h.mono fun ε hε => eq_false (not_lt.2 hε.le)⟩
 
 /-- Vanishing of a function with eventually constant sign is eventually constant. -/
@@ -253,11 +250,14 @@ theorem EvSign.evConst_zero {f : ℝ → ℝ} (h : EvSign f) : EvConst (fun ε =
   · exact ⟨True, h.mono fun ε hε => eq_true hε⟩
   · exact ⟨False, h.mono fun ε hε => eq_false hε.ne⟩
 
+include g hf in
 /-- The order of two rational functions is eventually constant. -/
-theorem evConst_lt {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
+theorem evConst_lt (hg : IsRatFn g) :
     EvConst (fun ε => f ε < g ε) := by
   obtain ⟨B, hB⟩ := (hg.sub hf).evSign.evConst_pos
   exact ⟨B, hB.mono fun ε h => (propext (sub_pos (a := g ε) (b := f ε))).symm.trans h⟩
+
+end
 
 /-- **The sign facts of three symbolic points of the sheared polygon are eventually constant
 as `ε → 0⁺`.** -/
@@ -278,8 +278,7 @@ theorem evConst_signFacts (P : Polygon) (s₁ s₂ s₃ : SymPt) :
 /-- Two distinct points get distinct sheared heights for all small `ε > 0`. -/
 theorem shear_heights_ne_eventually {a b : Point} (hab : a ≠ b) :
     ∀ᶠ ε in 𝓝[>] (0 : ℝ), (shearPt ε a).2 ≠ (shearPt ε b).2 := by
-  have hr : IsRatFn (fun ε => (shearPt ε a).2 - (shearPt ε b).2) :=
-    (isRatFn_shear_snd a).sub (isRatFn_shear_snd b)
+  have hr := (isRatFn_shear_snd a).sub (isRatFn_shear_snd b)
   rcases hr.evSign with h | h | h
   · exact h.mono fun ε hε => (sub_pos.1 hε).ne'
   · exfalso
@@ -326,8 +325,7 @@ theorem ylex_shear_eventually (a b : Point) :
     · rintro (h1 | ⟨-, h1⟩)
       · right
         exact ⟨by nlinarith, by nlinarith⟩
-      · right
-        exact ⟨by rw [h], h1⟩
+      simp_all
   · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (shearPt ε b).2 < (shearPt ε a).2 :=
       (continuous_shear_snd b).continuousAt.eventually_lt (continuous_shear_snd a).continuousAt
         (by simpa [shearPt] using h)
@@ -351,7 +349,7 @@ theorem symPt_lt_finite (n : ℕ) : {s : SymPt | s.Lt n}.Finite := by
 /-- **WP-A: every simple polygon has a good shear parameter.** -/
 theorem goodShearExists : GoodShearExistsSpec := by
   intro P hP
-  have hS : {s : SymPt | s.Lt P.n}.Finite := symPt_lt_finite P.n
+  have hS := symPt_lt_finite P.n
   choose B hB using fun s₁ s₂ s₃ : SymPt => evConst_signFacts P s₁ s₂ s₃
   have hStab : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ s₁ ∈ {s : SymPt | s.Lt P.n},
       ∀ s₂ ∈ {s : SymPt | s.Lt P.n}, ∀ s₃ ∈ {s : SymPt | s.Lt P.n},
@@ -373,7 +371,7 @@ theorem goodShearExists : GoodShearExistsSpec := by
     intro j hj
     by_cases hij : i = j
     · exact Eventually.of_forall fun _ h => (h hij).elim
-    · have hne : P.vtx i ≠ P.vtx j := fun h => hij (hP.2.1 i j hi hj h)
+    · have hne := fun h => hij (hP.2.1 i j hi hj h)
       exact (shear_heights_ne_eventually hne).mono fun ε h _ => h
   have hYlex : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ i ∈ Iio P.n, ∀ j ∈ Iio P.n,
       (Mountain.ylexLT (P.vtx i) (P.vtx j) ↔

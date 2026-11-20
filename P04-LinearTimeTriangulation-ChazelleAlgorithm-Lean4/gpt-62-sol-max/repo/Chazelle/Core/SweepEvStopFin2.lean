@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopTasks3
 
 /-!
@@ -36,8 +38,8 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
   | [], c, hI, _, _, _, _ => IRS.skip hI ⟨fun i hi => absurd hi (by simp), fun _ _ => rfl,
       fun _ _ => rfl, by simp⟩
   | v :: vs, c, hI, hk1, hvx, hA, hW => by
-    have hvx' : v ≠ x := hvx v List.mem_cons_self
-    have hvs : ∀ w ∈ vs, w ≠ x := fun w hw => hvx w (List.mem_cons_of_mem _ hw)
+    
+    have hvs := fun w hw => hvx w (List.mem_cons_of_mem _ hw)
     simp only [List.length_cons] at hW ⊢
     refine IRS.mono (K := 1 + (1 + 2 * vs.length)) (IRS.seq (IRS.store hI hA) ?_) (by omega)
       (fun _ h => h)
@@ -46,11 +48,11 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
       ⟨⟨hx, by simp only; rw [hk1]; omega⟩, trivial⟩) ?_
     rintro c₂ hI₂ - - hc2
     have r2x : c₂.nreg x = c.nreg x + 1 := by
-      rw [hc2]; simp only [regB, regI, upd_same]; rw [hk1]
+      ram_finish
     have r2o : ∀ r, r ≠ x → c₂.nreg r = c.nreg r := fun r hr => by
-      rw [hc2]; simp only [regB, regI]; rw [upd_other _ _ _ hr]
+      ram_finish
     have m2 : c₂.nmem = upd c.nmem (c.nreg x) (c.nreg v) := by rw [hc2]
-    refine (slfStSeq_irs hx hK1x vs hI₂ (by rw [r2o _ hK1x]; exact hk1) hvs
+    refine (slfStSeq_irs hx hK1x vs hI₂ (by rwa [r2o _ hK1x]) hvs
       (by rw [r2x]; omega) (by rw [r2x]; omega)).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3, h4⟩
     refine ⟨fun i hi => ?_, fun a ha => ?_, fun r hr => by rw [h3 r hr, r2o r hr], by
@@ -71,12 +73,12 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
 
 /-- The finish registers: the offset bits `slfO … slfO + 7`, the anchor flag, the label count and
 labels, the address register. -/
-def slfO : ℕ := sw 4054
-def slfA : ℕ := sw 4062
-def slfN : ℕ := sw 4063
-def slfL0 : ℕ := sw 4065
-def slfL1 : ℕ := sw 4066
-def slfX : ℕ := sw 4100
+@[ram_layout] def slfO : ℕ := sw 4054
+@[ram_layout] def slfA : ℕ := sw 4062
+@[ram_layout] def slfN : ℕ := sw 4063
+@[ram_layout] def slfL0 : ℕ := sw 4065
+@[ram_layout] def slfL1 : ℕ := sw 4066
+@[ram_layout] def slfX : ℕ := sw 4100
 
 /-- The address of the next raw record. -/
 def slfAddrL : List Instr :=
@@ -93,11 +95,10 @@ def slfEmit (pe ph dc : ℕ) : Stmt :=
 
 theorem slfAddrL_val (m f : ℕ → ℕ) :
     regB m slfAddrL f slfX = f gRB + 11 * f gRC ∧ ∀ q, q ≠ slfX → regB m slfAddrL f q = f q := by
-  have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
-  have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
+  
+  have hC : gRC ≠ slfX := by reg_omega
   refine ⟨?_, fun q hq => regB_other _ _ _ (fun i hi => by
-    simp only [slfAddrL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    fin_cases hi <;>
       simp only [dstI] <;> exact fun h => hq h.symm)⟩
   simp only [slfAddrL, regB, regI, upd_same, upd_other _ _ _ hC]
   ring
@@ -115,32 +116,31 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
       c'.nreg gRC = c.nreg gRC + 1 ∧ (∀ r, r ≠ slfX → r ≠ gRC → c'.nreg r = c.nreg r)) := by
   have hsX : IScr slfX := iscr_sw' (by norm_num) (by norm_num)
   have hsC : IScr gRC := iscr_sw' (by norm_num) (by norm_num)
-  have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
-  have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
-  have hK1X : K1 ≠ slfX := by unfold K1 slfX sw; omega
-  have hK1C : K1 ≠ gRC := by unfold K1 gRC sw; omega
+  
+  have hC : gRC ≠ slfX := by reg_omega
+  have hK1X : K1 ≠ slfX := by reg_omega
+  
   have hok : okB W c.nmem slfAddrL c.nreg := by
-    simp only [slfAddrL, okB, okI, regI, upd_same, upd_other _ _ _ hC]
+    simp only [slfAddrL, reg_check, regI, upd_same, upd_other _ _ _ hC]
     refine ⟨hsX, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
       ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
       ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, trivial⟩
   obtain ⟨va, vo⟩ := slfAddrL_val c.nmem c.nreg
   refine IRS.seq (K₁ := 12) (K₂ := 2 * 11 + 1) (IRS.block slfAddrL hI hok) ?_
   rintro c₁ hI₁ - - hc1
-  have a1 : c₁.nreg slfX = c.nreg gRB + 11 * c.nreg gRC := by rw [hc1]; exact va
+  have a1 : c₁.nreg slfX = c.nreg gRB + 11 * c.nreg gRC := by rwa [hc1]
   have o1 : ∀ q, q ≠ slfX → c₁.nreg q = c.nreg q := fun q hq => by rw [hc1]; exact vo q hq
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
   have hws : ∀ v ∈ slfWords pe ph dc, v ≠ slfX := by
     intro v hv
-    simp only [slfWords, List.mem_cons, List.not_mem_nil, or_false] at hv
-    rcases hv with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
+    fin_cases hv
     all_goals first | assumption | (simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfX, sw]; omega)
   refine IRS.seq (K₁ := 2 * 11) (K₂ := 1) (slfStSeq_irs hsX hK1X (slfWords pe ph dc) hI₁
-    (by rw [o1 _ hK1X]; exact hk1) hws (by rw [a1]; omega)
-    (by rw [a1]; simp only [slfWords, List.length_cons, List.length_nil]; omega)) ?_
+    (by rwa [o1 _ hK1X]) hws (by rw [a1]; omega)
+    (by ram_finish)) ?_
   rintro c₂ hI₂ - - ⟨s1, s2, s3, s4⟩
   have c2C : c₂.nreg gRC = c.nreg gRC := by rw [s3 _ hC, o1 _ hC]
-  have c2K : c₂.nreg K1 = 1 := by rw [s3 _ hK1X, o1 _ hK1X]; exact hk1
+  have c2K : c₂.nreg K1 = 1 := by ram_finish
   refine (IRS.block [.addN gRC gRC K1] hI₂ ⟨⟨hsC, by rw [c2C, c2K]; omega⟩, trivial⟩).mono
     (by simp) ?_
   rintro c₃ hc3
@@ -154,8 +154,8 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
         exact List.getElem_mem _
       exact hws _ hm
   · rw [m3, s2 a (by rw [a1]; omega), m1]
-  · rw [hc3]; simp only [regB, regI, upd_same]; rw [c2C, c2K]
-  · rw [hc3]; simp only [regB, regI]; rw [upd_other _ _ _ hr2, s3 _ hr1, o1 _ hr1]
+  · ram_finish [hc3, regB, regI, c2C, c2K]
+  · ram_finish [hc3, regB, regI, s3, o1]
 
 end
 

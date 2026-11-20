@@ -32,7 +32,7 @@ theorem cntP_succ (p : ℕ → Prop) (t : ℕ) :
   unfold cntP
   rw [Finset.range_add_one, Finset.filter_insert]
   split_ifs with h
-  · rw [Finset.card_insert_of_notMem (by simp)]
+  · simp
   · rfl
 
 open Classical in
@@ -50,8 +50,13 @@ def SideHit (M : Model) (P : Polygon) (N : NF) (k₁ k₂ : ℝ) (i : ℕ) : Pro
   sideInArc k₁ k₂ (M.key (Qof P) (N.chord i).lpos) ∨
     sideInArc k₁ k₂ (M.key (Qof P) (N.chord i).rpos)
 
+section
+
+variable (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
+include hGM hNF
+
 /-- **The attachments of a record** are its ends (by key). -/
-theorem record_attach (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {i : ℕ} (hi : i < N.nChords)
+theorem record_attach {i : ℕ} (hi : i < N.nChords)
     {p : ℕ} {t : ℝ} (h : SideAttach M.W ((N.chord i).toSet M (Qof P)) p t) :
     (p : ℝ) + t = M.key (Qof P) (N.chord i).lpos ∨ (p : ℝ) + t = M.key (Qof P) (N.chord i).rpos := by
   have hM := walkAx_of_goodModel hGM
@@ -60,13 +65,13 @@ theorem record_attach (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {i : ℕ} (hi
   have hne : sidePt M.W (N.chord i).lp (M.param (Qof P) (N.chord i).lpos) ≠
       sidePt M.W (N.chord i).rp (M.param (Qof P) (N.chord i).rpos) := by
     intro h'
-    have := endpoints_lt hM hadm hat
+    have := hM.endpoints_lt hadm hat
     have e : M.pos (Qof P) (N.chord i).lpos = M.pos (Qof P) (N.chord i).rpos := h'
     rw [e] at this; exact lt_irrefl _ this
   exact attach_key_cases hM hadm hat.1 hat.2 hne h
 
 /-- **An exit chord record is attached inside `(k₁, k₂)` iff one of its ends is.** -/
-theorem attach_side_iff (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {i : ℕ} (hi : i < N.nChords)
+theorem attach_side_iff {i : ℕ} (hi : i < N.nChords)
     (k₁ k₂ : ℝ) :
     (∃ (p : ℕ) (t : ℝ), SideAttach M.W ((N.chord i).toSet M (Qof P)) p t ∧ sideInArc k₁ k₂ (p + t)) ↔
       SideHit M P N k₁ k₂ i := by
@@ -82,7 +87,7 @@ theorem attach_side_iff (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {i : ℕ} (
 
 /-- **The side counts are the numbers of places of the region's chord list** satisfying
 `SideHit`. -/
-theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
+theorem sideExits_ncard {reg : ℕ → Set Point}
     (hregs : NFRegs M (Qof P) N reg) {r : ℕ} (hr : r < N.nRegions) (k₁ k₂ : ℝ) :
     (sideExits M (N.F M (Qof P)) (reg r) k₁ k₂).ncard =
       cntP (fun t => SideHit M P N k₁ k₂ (chordAt N r t)) (N.region r).chords.length := by
@@ -97,12 +102,11 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
     constructor
     · rintro ⟨⟨hcF, htouch⟩, p, t, hA, hin⟩
       obtain ⟨i, hi, rfl⟩ := mem_F_iff hcF
-      have hmem : i ∈ L := (hlist i).2 ⟨hi, htouch⟩
+      have hmem := (hlist i).2 ⟨hi, htouch⟩
       obtain ⟨t', ht', hti⟩ := List.getElem_of_mem hmem
       have hat : chordAt N r t' = i := by
         unfold chordAt
-        rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
-        exact hti
+        rwa [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
       refine ⟨t', ⟨ht', ?_⟩, by simp only [hat]⟩
       rw [hat]
       exact (attach_side_iff hGM hNF hi k₁ k₂).1 ⟨p, t, hA, hin⟩
@@ -120,10 +124,10 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
     have g : ∀ t (ht : t < L.length), chordAt N r t = L[t] := fun t ht => by
       unfold chordAt
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    have m₁ : chordAt N r t₁ ∈ L := by rw [g t₁ h₁]; exact List.getElem_mem h₁
-    have m₂ : chordAt N r t₂ ∈ L := by rw [g t₂ h₂]; exact List.getElem_mem h₂
-    have hi₁ : chordAt N r t₁ < N.nChords := ((hlist _).1 m₁).1
-    have hi₂ : chordAt N r t₂ < N.nChords := ((hlist _).1 m₂).1
+    have m₁ : chordAt N r t₁ ∈ L := by simp [g t₁ h₁]
+    have m₂ : chordAt N r t₂ ∈ L := by simp [g t₂ h₂]
+    have hi₁ := ((hlist _).1 m₁).1
+    have hi₂ := ((hlist _).1 m₂).1
     have hij := hNF.2.1 _ _ hi₁ hi₂ heq
     rw [g t₁ h₁, g t₂ h₂] at hij
     exact (List.Nodup.getElem_inj_iff hnd).1 hij
@@ -134,6 +138,8 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
   congr 1
   ext t
   simp
+
+end
 
 end
 

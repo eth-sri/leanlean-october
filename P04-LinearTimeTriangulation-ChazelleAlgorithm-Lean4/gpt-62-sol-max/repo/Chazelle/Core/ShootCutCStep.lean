@@ -47,33 +47,41 @@ variable {O : OracleIface} {P : Polygon} {C : Chain} {H : Host} {Hh h γ : ℕ} 
 
 theorem SEnv.hQn (_S : SEnv O P C H Hh h γ m₀ A₀ W) : (Qof P).n = P.n := shear_n _ _
 
-theorem SEnv.hN (S : SEnv O P C H Hh h γ m₀ A₀ W) : C.P.n = (H.pts P.n).length := by
+section
+
+variable (S : SEnv O P C H Hh h γ m₀ A₀ W)
+
+include S in
+theorem SEnv.hN : C.P.n = (H.pts P.n).length := by
   rw [S.hP, ← S.hQn]; simp [Host.poly, Polygon.n]
 
-theorem SEnv.hNn (S : SEnv O P C H Hh h γ m₀ A₀ W) : (H.pts P.n).length ≤ 64 * P.n := by
+include S in
+theorem SEnv.hNn : (H.pts P.n).length ≤ 64 * P.n := by
   have := Host.pts_length_le S.hwf
   have := S.hlen
   nlinarith
 
-theorem SEnv.hm2' (S : SEnv O P C H Hh h γ m₀ A₀ W) : 2 * C.m + 9 ≤ 128 * P.n + 8 := by
+include S in
+theorem SEnv.hm2' : 2 * C.m + 9 ≤ 128 * P.n + 8 := by
   have := C.m_lt
   have := S.hNn
   rw [S.hN] at *
   omega
 
-theorem SEnv.hm2 (S : SEnv O P C H Hh h γ m₀ A₀ W) : 2 * C.m + 9 ≤ hostWords P.n := by
+include S in
+theorem SEnv.hm2 : 2 * C.m + 9 ≤ hostWords P.n := by
   have := S.hm2'
   unfold hostWords; omega
 
+include S in
 /-- **The tables of the sweeps.** -/
-theorem swEnv_of (S : SEnv O P C H Hh h γ m₀ A₀ W) :
+theorem swEnv_of :
     SwEnv P.n W A₀ (m₀ (h + 2)) (m₀ (h + 3)) (m₀ (h + 1) + 2) (topGrade P.n) m₀ := by
   have hG := S.hR.holds
   obtain ⟨-, hpow, hhalf⟩ := grade_low S.hR
   refine ⟨fun x hx => ⟨hG.2.2.1 x hx, hhalf x hx⟩, fun j hj => ⟨?_, hpow j hj⟩, S.hAW⟩
   have := (hG.2.1.2.2.1 j hj).1
-  rw [show m₀ (h + 1) + 2 + j = m₀ (h + 1) + 2 + j from rfl]
-  exact this
+  assumption
 
 theorem tg_ok (_hn : 2 ≤ P.n) : P.n - 1 ≤ 2 ^ topGrade P.n := Nat.le_pow_clog (by norm_num) _
 
@@ -95,13 +103,14 @@ structure StepPost (Pv : Pc → Prop) (I : List Pc → Config → Prop) (ps : Li
   k93 : d'.nreg 150093 = 3
   k96 : d'.nreg 150096 = 6
   wb : WordsBounded W d'
-  mem : ∀ a, a < A₀ → d'.nmem a = m₀ a
+  mem : MemEqBelow A₀ d'.nmem m₀
 
+include S in
 /-- **A single edge from a breakpoint.** -/
-theorem single_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
+theorem single_post {emit : Stmt}
     {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (VPc P C m₀ h γ) I K)
     {B : ℕ → Prop} {ps : List Pc} (d e : Config) (hw : WordsBounded W e)
-    (hm : ∀ a, a < A₀ → e.nmem a = m₀ a) {c lim : ℕ} (h40 : e.nreg 150040 = c)
+    (hm : MemEqBelow A₀ e.nmem m₀) {c lim : ℕ} (h40 : e.nreg 150040 = c)
     (h90 : e.nreg 150090 = 0) (h91 : e.nreg 150091 = 1) (h92 : e.nreg 150092 = 2)
     (h93 : e.nreg 150093 = 3) (h96 : e.nreg 150096 = 6)
     (hk : ∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → e.nreg r = d.nreg r)
@@ -116,12 +125,12 @@ theorem single_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have kk : ∀ r, 150089 ≤ r → r < 150100 → d'.nreg r = e.nreg r := fun r h1 h2 =>
     kp r (Or.inr ⟨by omega, h2⟩) (by omega)
   refine ⟨d', k, ex, hk', ⟨hI', ⟨rfl, rfl⟩, fun p hp => by
-      simp only [List.mem_singleton] at hp; rw [hp]; exact hpv, by simp, le_rfl, hlim,
+      simp only [List.mem_singleton] at hp; rwa [hp], by simp, le_rfl, hlim,
     Or.inr (Or.inr ⟨rfl, hb⟩), o40, fun r h1 h2 h3 => (kp r (Or.inl ⟨h1, h2⟩) h3).trans
-      (hk r h1 h2 h3), by rw [kk _ (by omega) (by omega)]; exact h90,
-    by rw [kk _ (by omega) (by omega)]; exact h91, by rw [kk _ (by omega) (by omega)]; exact h92,
-    by rw [kk _ (by omega) (by omega)]; exact h93, by rw [kk _ (by omega) (by omega)]; exact h96,
-    ex.wb_right, fun a ha => by rw [mem' a ha]; exact hm a ha⟩⟩
+      (hk r h1 h2 h3), by simp_all <;> omega,
+    by simp_all <;> omega, by simp_all <;> omega,
+    by simp_all <;> omega, by simp_all <;> omega,
+    ex.wb_right, fun a ha => by ram_finish⟩⟩
 
 /-- `(a + t + L) mod n` from `q = (a + t) mod n` without wrap. -/
 theorem mod_add_of {n a t q L : ℕ} (hq : (a + t) % n = q) (hqL : q + L < n) :
@@ -137,12 +146,13 @@ theorem mod_sub_of {n a t q L : ℕ} (hn : 0 < n) (hq : (a + t) % n = q) (hLq : 
   have e2 : a + (t - L) = n * ((a + t) / n) + (q - L) := by omega
   rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt (a + t) hn; omega)]
 
+include S in
 /-- **A climbing stretch** from the walk vertex `c` (tour position `i = c - 6`, host point in the
 run `H[r] = run a ℓ` at offset `t < ℓ`, `q = (a + t) mod n`). -/
-theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
+theorem up_post {emit : Stmt}
     {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (VPc P C m₀ h γ) I K)
     {ps : List Pc} (d e : Config) (hw : WordsBounded W e)
-    (hm : ∀ a, a < A₀ → e.nmem a = m₀ a) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c)
+    (hm : MemEqBelow A₀ e.nmem m₀) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c)
     (h90 : e.nreg 150090 = 0) (h91 : e.nreg 150091 = 1)
     (h34 : e.nreg 150034 = m₀ (h + 2)) (h35 : e.nreg 150035 = m₀ (h + 3))
     (h36 : e.nreg 150036 = m₀ (h + 1) + 2)
@@ -166,8 +176,7 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     intro d hd
     have := run_up C S.hP (i := c - 6) (d := d) (by omega) (by omega) hr hrun hu (by omega)
       (by rw [hq, hQn]; omega)
-    rw [show c - 6 + d + 6 = c + d by omega, hq] at this
-    exact this
+    rwa [show c - 6 + d + 6 = c + d by omega, hq] at this
   have hblk := upBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) (by omega)
     (by omega) S.hcap
   have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; unfold hostWords at this; omega
@@ -196,12 +205,13 @@ theorem up_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     refine brk_run C hr hrun (t := t + L) hu' (by omega) (Or.inr (Or.inr (Or.inr ?_)))
     rw [mod_add_of hq (by rw [hQn]; omega), hQn]; omega
 
+include S in
 /-- **A descending stretch** from the walk vertex `c` (host point in the run `H[r] = run a ℓ` at
 offset `0 < t`, `0 < q = (a + t) mod n`). -/
-theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
+theorem dn_post {emit : Stmt}
     {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (VPc P C m₀ h γ) I K)
     {ps : List Pc} (d e : Config) (hw : WordsBounded W e)
-    (hm : ∀ a, a < A₀ → e.nmem a = m₀ a) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c)
+    (hm : MemEqBelow A₀ e.nmem m₀) {c lim J r a ℓ t q : ℕ} (h40 : e.nreg 150040 = c)
     (h90 : e.nreg 150090 = 0) (h91 : e.nreg 150091 = 1)
     (h34 : e.nreg 150034 = m₀ (h + 2)) (h35 : e.nreg 150035 = m₀ (h + 3))
     (h36 : e.nreg 150036 = m₀ (h + 1) + 2)
@@ -227,8 +237,7 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     intro d hd
     have := run_down C S.hP (i := c - 6) (d := d) (by omega) (by omega) (by omega) hr hrun hu
       ht (by omega) (by rw [hq]; omega) hn
-    rw [show c - 6 + d + 6 = c + d by omega, hq] at this
-    exact this
+    rwa [show c - 6 + d + 6 = c + d by omega, hq] at this
   have hblk := dnBlocks_of (O := O) S.hR S.hAW (W := W) hwalk hc6 (by omega) hqn (by omega)
     (by omega) S.hcap
   have hW' : 5 * P.n + 6 ≤ W := by have := S.hW; unfold hostWords at this; omega
@@ -257,6 +266,8 @@ theorem dn_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       (by omega)
     refine brk_run C hr hrun (t := t - L) hu' (by omega) (Or.inr (Or.inr (Or.inl ?_)))
     rw [mod_sub_of hn hq (by omega) (by omega)]; omega
+
+end
 
 end
 

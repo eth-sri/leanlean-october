@@ -29,11 +29,8 @@ def pcV (n : ℕ) (x y : WPos) (D d : ℕ) : WPos :=
 theorem pcEdge_D {n sE eE : ℕ} (hs : sE < n) (he : eE < n) : pcEdge n sE (pcD n sE eE) = eE := by
   unfold pcEdge pcD
   rcases Nat.lt_or_ge eE sE with h | h
-  · rw [Nat.mod_eq_of_lt (show eE + n - sE < n by omega),
-      show sE + (eE + n - sE) = eE + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt he]
-  · rw [show eE + n - sE = (eE - sE) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (show eE - sE < n by omega), show sE + (eE - sE) = eE by omega,
-      Nat.mod_eq_of_lt he]
+  · simp [show sE + (eE + n - sE) = eE + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt he]
+  simp [show eE + n - sE = (eE - sE) + n by omega, Nat.add_mod_right, show sE + (eE - sE) = eE by omega, Nat.mod_eq_of_lt he]
 
 theorem pcEdge_lt {n sE : ℕ} (hn : 0 < n) (d : ℕ) : pcEdge n sE d < n := Nat.mod_lt _ hn
 
@@ -53,7 +50,7 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
         lerp ((chainModel C).wa (pcEdge (2 * C.m + 7) x.edge d))
           ((chainModel C).wb (pcEdge (2 * C.m + 7) x.edge d))
           (pcB (pcD (2 * C.m + 7) x.edge y.edge) ((chainModel C).param Q y) d) := by
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW := chainModel_n C
   set n := 2 * C.m + 7
   set D := pcD n x.edge y.edge
   constructor
@@ -72,9 +69,7 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
     · simp only [hD, ↓reduceIte]
       rw [lerp_one']
       show lerp ((chainModel C).wa _) ((chainModel C).wb _) 0 = _
-      rw [lerp_zero']
-      unfold Model.wa Model.wb
-      rw [hnW, pcEdge_succ]
+      simp [Model.wa, Model.wb, hnW, pcEdge_succ]
 
 theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
     (hy : ProperPos (chainModel C) Q N y) (hxn : x.edge < 2 * C.m + 7)
@@ -95,11 +90,11 @@ theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
     have hxy : x.edge = y.edge := by
       have := pcEdge_D (n := 2 * C.m + 7) hxn hyn
       rw [← hD, h0] at this
-      unfold pcEdge at this; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn] at this; exact this
+      unfold pcEdge at this; rwa [Nat.add_zero, Nat.mod_eq_of_lt hxn] at this
     exact ⟨hx0, (piece0_nowrap hx hy hxy hxn hwt).le, hy1.le⟩
   · rw [ite_eq_left h0, ite_eq_right hD]; exact ⟨hx0, hx1.le, le_rfl⟩
   · rw [ite_eq_right h0, ite_eq_left hD]; exact ⟨le_rfl, hy0, hy1.le⟩
-  · rw [ite_eq_right h0, ite_eq_right hD]; exact ⟨le_rfl, zero_le_one, le_rfl⟩
+  simp_all
 
 
 /-- The segments `0 … d' - 1` of a kind-0 piece. -/
@@ -126,7 +121,7 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
       (chainModel C).arcSet ((chainModel C).key Q x) ((chainModel C).key Q y) := by
   rw [piece0_union hx hy hxn hyn hwt]
   unfold segSet pcSet
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW := chainModel_n C
   ext p
   simp only [mem_iUnion, List.mem_range, exists_prop]
   constructor
@@ -134,12 +129,12 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
     refine ⟨d, hd, ?_⟩
     obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]; exact hp
+    rwa [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]
   · rintro ⟨d, hd, hp⟩
     refine ⟨d, hd, ?_⟩
     obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
-    rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV] at hp; exact hp
+    rwa [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV] at hp
 
 end ShootCut
 

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OutputRam
 
 /-!
@@ -76,20 +78,19 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
   exec_block
   all_goals try omega
   refine Final.spec_name fun c1 hc1 => ?_
-  have hw1 : WordsBounded W c1 := by rw [hc1]; assumption
-  have r1 : c1.rreg 100 = σ := by rw [hc1]; config_simp; exact hσ
+  have hw1 : WordsBounded W c1 := by rwa [hc1]
+  have r1 : c1.rreg 100 = σ := by ram_finish
   have r0 : c1.rreg 220000 = 0 := by rw [hc1]; config_simp; simp
   have hA1 : ∀ bb : Bool, c1.nreg 220000 = P.n ∧ c1.nreg 220001 = 1 ∧ c1.nreg 220002 = 0 ∧
       c1.nreg 220017 = P.n - 1 ∧ c1.nreg 220018 = P.n - 2 ∧ c1.nreg 220019 = 2 ∧
       c1.nreg 220020 = 3 ∧ c1.nreg 220011 = 4 ∧ c1.nreg 220012 = 5 ∧ c1.nreg 220021 = 7 ∧
       c1.nreg 230003 = B ∧ c1.nreg 9999 = T0 := fun _ => by
-    rw [hc1]; config_simp
-    exact ⟨by omega, hB, hT0⟩
+    rw [hc1]; frame_finish
   obtain ⟨b0, b1, b2, b17, b18, b19, b20, b11, b12, b21, b3, b9999⟩ := hA1 true
   have fr1 : ∀ r, 240000 ≤ r → c1.nreg r = c.nreg r := fun r hr => by
-    rw [hc1]; simp (disch := omega) only [Machine.upd_other]
+    ram_post
   have rr1 : ∀ r, 240000 ≤ r → c1.rreg r = c.rreg r := fun r hr => by
-    rw [hc1]; simp (disch := omega) only [Machine.upd_other]
+    ram_finish
   have m1 : c1.nmem = c.nmem := by rw [hc1]
   have rm1 : c1.rmem = c.rmem := by rw [hc1]
   have o1 : c1.output = c.output := by rw [hc1]
@@ -98,12 +99,12 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
       c2 = { c1 with nreg := upd c1.nreg 220003 (decide (σ < 0)).toNat } := by
     unfold revS
     by_cases hneg : σ < 0
-    · refine spec_ifLtR_true (by rw [r1, r0]; exact hneg)
+    · refine spec_ifLtR_true (by rwa [r1, r0])
         (spec_instr (Exec.constN hw1 220003 1 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
-    · refine spec_ifLtR_false (by rw [r1, r0]; exact hneg)
+      simp [hneg]
+    · refine spec_ifLtR_false (by rwa [r1, r0])
         (spec_instr (Exec.constN hw1 220003 0 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
+      simp [hneg]
   obtain ⟨c2, k2, e2, hk2, rfl⟩ := hrev
   refine spec_seq ⟨_, k2, e2, ?_⟩
   unfold readS
@@ -117,7 +118,7 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
   all_goals try (config_simp; done)
   · rw [← fr1 r hr]; simp (disch := omega) only [Machine.upd_other]
   · rw [← rr1 r hr]
-  all_goals first | exact m1 | exact rm1 | exact o1
+  all_goals assumption
 
 end prep
 
@@ -140,8 +141,8 @@ def OutputSpecH : Prop :=
   ∃ (s : Stmt) (κ : ℕ), Meets s outBands
     (fun P W c => GoodEnv P ∧ P.n + 3 ≤ W ∧ c.output = [] ∧
       ∃ N, Robust (c.nreg ALLOC) c.nmem (fun m => NFAt m (c.nreg (coreReg 3)) N) ∧
-        IsNF (interiorModel (Qof P)) (Qof P) N ∧
-        N.F (interiorModel (Qof P)) (Qof P) = (interiorModel (Qof P)).Full ∧
+        IsNF (inputModel P) (Qof P) N ∧
+        N.F (inputModel P) (Qof P) = P.inputModel.Full ∧
         ∀ k, k < N.nChords → (N.chord k).h < P.n)
     (fun P _ c' => TablesReady (Qof P) c')
     (fun P _ => κ * (P.n + 1))
@@ -155,7 +156,7 @@ theorem decide_orient_neg (Q : Polygon) : decide (Mountain.orient Q < 0) = revOf
 /-- Entry `i` of the table of records of the regions. -/
 theorem getD_trapTable {nR : ℕ} {f : ℕ → Final.TrapRec} {i : ℕ} (hi : i < nR) :
     ((List.range nR).map f).getD i ⟨0, 0, 0, 0⟩ = f i := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hi]; rfl
+  simp_all
 
 /-- A register outside the output bands is at least `240000`. -/
 theorem ge_of_band {r : ℕ} (h : bandOf r ∉ outBands) : 240000 ≤ r := by
@@ -195,7 +196,7 @@ theorem outputSpecH : OutputSpecH := by
   -- stage 2: the preparation
   obtain ⟨c2, k2, e2, hk2, hA2, v5, v6, v7, v8, v9, v11, v12, v19, v20, v10, v13, v16, v9990, v9991,
     v9992, v9993, v9999, fn2, fr2, m2, rm2, o2⟩ := prepS_spec (P := P) e1.wb_right hσ
-      (by rw [fn1 _ (by omega)]) (by rw [fn1 _ (by omega)]) (by omega) (by omega)
+      (by ram_rw [fn1]) (by ram_rw [fn1]) (by omega) (by omega)
   rw [decide_orient_neg] at hA2
   rw [m1] at v5 v6 v7 v8 v13 v9991
   -- stage 3: the regions
@@ -224,7 +225,7 @@ theorem outputSpecH : OutputSpecH := by
     have : 332 * N.nRegions ≤ 332 * (2 * P.n + 1) := Nat.mul_le_mul_left _ hnR
     nlinarith
   · -- the tables
-    refine ⟨_, [], hT, vtxChordTable_nil hQ hdh, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    refine ⟨_, [], hT, vtxChordTable_nil hQ hdh, ?_⟩; and_intros
     · show c3.nreg 9991 = _
       rw [hfr3 _ (by unfold regFree; omega), v9991, hB2.1, List.length_map, List.length_range]
     · show TrapTableAt c3.nmem (c3.nreg 9990) _
@@ -245,9 +246,9 @@ theorem outputSpecH : OutputSpecH := by
   · -- the frame
     refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, ?_, ?_, ?_⟩
     · have hr' : 240000 ≤ r := ge_of_band hr
-      rw [hfr3 _ (by unfold regFree; omega), fn2 _ hr', fn1 _ (by omega)]
+      ram_rw [hfr3 _ (by unfold regFree; omega), fn2 _ hr', fn1]
     · have hr' : 240000 ≤ r := ge_of_band hr
-      rw [hrr3 _ (by unfold regFree; omega), fr2 _ hr', fr1 _ (by omega) (by omega)]
+      ram_rw [hrr3 _ (by unfold regFree; omega), fr2 _ hr', fr1]
     · exact hmem3 a ha
     · rw [hrm3, rm2, rm1]
     · rw [ho3, o2, o1]
@@ -266,8 +267,8 @@ def DownPhaseSpecH (X : MemCtx) : Prop :=
       ∃ C N, TopChain P C ∧ Robust (c.nreg ALLOC) c.nmem (fun m => NFAt m (c.nreg (coreReg 2)) N) ∧
         IsCanonicalNF (chainModel C) (Qof P) N (topGran P.n) 4)
     (fun P _ c' => ∃ N, Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (c'.nreg (coreReg 3)) N) ∧
-      IsNF (interiorModel (Qof P)) (Qof P) N ∧
-      N.F (interiorModel (Qof P)) (Qof P) = (interiorModel (Qof P)).Full ∧
+      IsNF (inputModel P) (Qof P) N ∧
+      N.F (inputModel P) (Qof P) = P.inputModel.Full ∧
       ∀ k, k < N.nChords → (N.chord k).h < P.n)
     (fun P _ => κ * (P.n + 1))
 
@@ -281,10 +282,10 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   refine ⟨.seq sS (.seq sU (.seq sD sO)), κS + κU + κD + κO, κS + κU + κD + κO + 3, ?_⟩
   intro P hP W hW
   have hge : GoodEnv P := ⟨hP, hgood P hP⟩
-  obtain ⟨bS, hbS⟩ : ∃ b, b = κS * (P.n + 1) := ⟨_, rfl⟩
-  obtain ⟨bU, hbU⟩ : ∃ b, b = κU * (P.n + 1) := ⟨_, rfl⟩
-  obtain ⟨bD, hbD⟩ : ∃ b, b = κD * (P.n + 1) := ⟨_, rfl⟩
-  obtain ⟨bO, hbO⟩ : ∃ b, b = κO * (P.n + 1) := ⟨_, rfl⟩
+  obtain ⟨bS, hbS⟩ := exists_eq (a' := κS * (P.n + 1))
+  obtain ⟨bU, hbU⟩ := exists_eq (a' := κU * (P.n + 1))
+  obtain ⟨bD, hbD⟩ := exists_eq (a' := κD * (P.n + 1))
+  obtain ⟨bO, hbO⟩ := exists_eq (a' := κO * (P.n + 1))
   have hsum : (κS + κU + κD + κO + 3) * (P.n + 1) = bS + bU + bD + bO + 3 * (P.n + 1) := by
     subst hbS hbU hbD hbO; ring
   have hC : (κS + κU + κD + κO) * (P.n + 1) = bS + bU + bD + bO := by
@@ -295,16 +296,16 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   have ha0 : initConfig.nreg ALLOC = 0 := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, hq₁, hf₁⟩ := hS P W initConfig hw0 ⟨hge, hn3⟩
     (show initConfig.nreg ALLOC + κS * (P.n + 1) ≤ W by rw [ha0, ← hbS]; omega)
-  replace hk₁ : k₁ ≤ bS := by rw [hbS]; exact hk₁
+  replace hk₁ : k₁ ≤ bS := by rwa [hbS]
   have ha₁ : c₁.nreg ALLOC ≤ k₁ := by have := hf₁.2.2.2.2.2.2; rw [ha0] at this; omega
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨hkeep₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩, hf₂⟩ :=
     hU P W c₁ e₁.wb_right ⟨hge, hn3, hq₁⟩
       (show c₁.nreg ALLOC + κU * (P.n + 1) ≤ W by rw [← hbU]; omega)
-  replace hk₂ : k₂ ≤ bU := by rw [hbU]; exact hk₂
-  have ha₂ : c₂.nreg ALLOC ≤ c₁.nreg ALLOC + k₂ := hf₂.2.2.2.2.2.2
+  replace hk₂ : k₂ ≤ bU := by rwa [hbU]
+  have ha₂ := hf₂.2.2.2.2.2.2
   have hset₂ : Robust (c₂.nreg ALLOC) c₂.nmem
       (fun m => SetupAt m (c₂.nreg (coreReg 0)) P.n (c₂.nreg ALLOC)) := by
-    have h0 : c₂.nreg (coreReg 0) = c₁.nreg (coreReg 0) := hkeep₂ 0 (by simp)
+    have h0 := hkeep₂ 0 (by simp)
     rw [h0]
     intro m hm
     have hq := (hq₁.frame hf₂) m hm
@@ -312,16 +313,16 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hN₃, hnf₃, hfull₃, hh₃⟩, hf₃⟩ :=
     hD P W c₂ e₂.wb_right ⟨hge, hn3, hset₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩
       (show c₂.nreg ALLOC + κD * (P.n + 1) ≤ W by rw [← hbD]; omega)
-  replace hk₃ : k₃ ≤ bD := by rw [hbD]; exact hk₃
-  have ha₃ : c₃.nreg ALLOC ≤ c₂.nreg ALLOC + k₃ := hf₃.2.2.2.2.2.2
+  replace hk₃ : k₃ ≤ bD := by rwa [hbD]
+  have ha₃ := hf₃.2.2.2.2.2.2
   have hout₃ : c₃.output = [] := by
     rw [hf₃.2.2.2.2.1, hf₂.2.2.2.2.1, hf₁.2.2.2.2.1]; rfl
   obtain ⟨c₄, k₄, e₄, hk₄, hq₄, hf₄⟩ :=
     hO P W c₃ e₃.wb_right ⟨hge, hn3, hout₃, N', hN₃, hnf₃, hfull₃, hh₃⟩
       (show c₃.nreg ALLOC + κO * (P.n + 1) ≤ W by rw [← hbO]; omega)
-  replace hk₄ : k₄ ≤ bO := by rw [hbO]; exact hk₄
-  have ha₄ : c₄.nreg ALLOC ≤ c₃.nreg ALLOC + k₄ := hf₄.2.2.2.2.2.2
-  refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_,
+  replace hk₄ : k₄ ≤ bO := by rwa [hbO]
+  have ha₄ := hf₄.2.2.2.2.2.2
+  refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), (by ram_path), ?_, ?_,
     Qof P, shearRel_Qof (hgood P hP), (hsh (epsOf P) P).1 hP, hq₄⟩
   · rw [hC]; omega
   · rw [hC]; omega

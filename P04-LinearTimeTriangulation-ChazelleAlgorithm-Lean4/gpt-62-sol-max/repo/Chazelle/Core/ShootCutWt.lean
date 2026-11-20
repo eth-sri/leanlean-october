@@ -64,9 +64,14 @@ variable (C : Chain)
 /-- The walk edge `p` lies in the uncounted block `U` (`2m + 6` or `0 … 5`). -/
 def InU (p : ℕ) : Prop := p ≤ 5 ∨ p = 2 * C.m + 6
 
+section
+
+variable (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
+    (hy : ProperPos (chainModel C) Q n y)
+
+include hx hy in
 /-- The weight of a chain model in closed form, for positions of the walk proper. -/
-theorem arcWt_chain (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
-    (hy : ProperPos (chainModel C) Q n y) :
+theorem arcWt_chain :
     (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) =
       arcWtNat 6 (2 * C.m + 6) x.edge ((chainModel C).param Q x) y.edge
         ((chainModel C).param Q y) :=
@@ -89,10 +94,10 @@ theorem wt_U_to_six (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos (chainMod
     (chainModel C).arcWt ((chainModel C).key Q x) (6 : ℕ) = 0 := by
   have e6 : ((6 : ℕ) : ℝ) = (chainModel C).key Q ⟨6, 0⟩ := by simp
   rw [e6, arcWt_chain C Q hx (proper_vtx _ Q n 6)]
-  have hc := le_keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩)
-  have hc' := keyCeil_le 6 ((chainModel C).param Q ⟨6, 0⟩)
+  
+  
   have hk : keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩) = 6 := by
-    unfold keyCeil; rw [ite_eq_left (by simp)]
+    unfold keyCeil; simp_all
   unfold arcWtNat
   rw [hk]
   split_ifs with h
@@ -104,8 +109,7 @@ theorem wt_U_to_six (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos (chainMod
       simp only [param_hgt0, add_zero]
       push_cast
       linarith [hx.2.1]
-    · simp only [hU]
-      omega
+    simp_all
 
 /-- **From the walk vertex `2m + 5` to a position of `U`**: weight at most `1`. -/
 theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainModel C) Q n y)
@@ -138,10 +142,10 @@ theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainMo
 /-- The order of the uncounted block: `2m + 6` first, then `0, …, 5`. -/
 def uIdx (p : ℕ) : ℕ := if p = 2 * C.m + 6 then 0 else p + 1
 
+include hx hy in
 /-- **Two positions of `U` in walk order** (on different edges, the second later in `U`):
 weight `0`. -/
-theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
-    (hy : ProperPos (chainModel C) Q n y) (hxU : InU C x.edge) (hyU : InU C y.edge)
+theorem wt_U_U (hxU : InU C x.edge) (hyU : InU C y.edge)
     (hlt : uIdx C x.edge < uIdx C y.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) = 0 := by
   rw [arcWt_chain C Q hx hy]
@@ -157,11 +161,13 @@ theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel 
     have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast (by omega : x.edge + 1 ≤ y.edge)
     rw [ite_eq_left (by linarith)]
     omega
-  · rw [ite_eq_left hyU] at hlt; omega
+  · simp_all
   · have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast (by omega : y.edge + 1 ≤ x.edge)
     rw [ite_eq_right (by linarith [hx.1, hy.2.1])]
     omega
-  · rw [ite_eq_left hyU] at hlt; omega
+  · simp_all
+
+end
 
 end ShootCut
 

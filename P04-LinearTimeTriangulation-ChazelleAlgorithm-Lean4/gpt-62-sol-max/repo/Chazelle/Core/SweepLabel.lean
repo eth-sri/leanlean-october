@@ -93,7 +93,7 @@ theorem end_of_not_mem {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M
   rcases hs0.lt_or_eq with hs0 | hs0
   · rcases hs1.lt_or_eq with hs1 | hs1
     · exact absurd (hopen s ⟨hs0, hs1⟩) hxD
-    · right; rw [hs1, Geometry.lerp_one]
+    simp_all
   · left; rw [← hs0, Geometry.lerp_zero]
 
 /-- An admissible chord inside another one containing both endpoints of the latter is equal to
@@ -115,36 +115,6 @@ theorem eq_of_ends {M M₂ : Model} (hM : WalkAx M) (hM₂ : WalkAx M₂) {e c :
   · exact absurd rfl hqy
 
 /-! ## Two walks agreeing along two pieces -/
-
-/-- **A correspondence** between the walk of a model `M` (read from the vertex `g`) and the walk
-of a model `M₂` (read from `g'`): they agree along a first piece of length `L1` and, after a gap of
-`δ` walk vertices of `M₂` (the box of `C₂`, when `δ > 0`), along a second piece of length `L2`.
-Chords of `S` (in `M₂`) through walk points of `M₂` other than the base point contain chords of
-`F` (in `M`) through the same point; when there is a gap, a chord of `F` is attached at the split
-vertex of `M` and has its other attachments outside the stretch; distinct chords of `F` are not
-nested. -/
-structure Corr (M M₂ : Model) (F S : Set (Set Point)) (g g' L1 L2 δ : ℕ) : Prop where
-  hM : WalkAx M
-  hM₂ : WalkAx M₂
-  hF : F ⊆ M.Adm
-  hfin : F.Finite
-  hS : S ⊆ M₂.Adm
-  hSfin : S.Finite
-  hg : g < M.W.n
-  hg' : g' < M₂.W.n
-  hL : L1 + L2 ≤ M.W.n
-  hL₂ : L1 + δ + L2 ≤ M₂.W.n
-  hδ : δ = 0 → L2 = 0
-  hfull : 0 < δ → L1 + δ + L2 = M₂.W.n
-  A1 : Agree M.W M₂.W g g' L1
-  A2 : Agree M.W M₂.W (g + L1) (g' + L1 + δ) L2
-  noV : ∀ p < M₂.W.n, ∀ t : ℝ, 0 ≤ t → t < 1 → 0 < off M₂.W.n g' (p + t) →
-    off M₂.W.n g' (p + t) < L1 + δ + L2 → sidePt M₂.W p t ≠ M₂.W.vtx g'
-  trans : ∀ c ∈ S, ∀ q ∈ c, q ∉ M₂.D → q ≠ M₂.W.vtx g' → ∃ e ∈ F, q ∈ e ∧ e ⊆ c
-  box : 0 < δ → ∃ e ∈ F, SideAttach M.W e ((g + L1) % M.W.n) 0 ∧ ∀ (p : ℕ) (t : ℝ),
-    SideAttach M.W e p t → sidePt M.W p t ≠ sidePt M.W ((g + L1) % M.W.n) 0 →
-      ¬ (0 < off M.W.n g (p + t) ∧ off M.W.n g (p + t) < L1 + L2)
-  nest : ∀ e ∈ F, ∀ e' ∈ F, e ⊆ e' → e = e'
 
 /-- The offset in the walk of `M₂` of the offset `d` of the walk of `M`. -/
 def dq (L1 δ d : ℕ) : ℕ := if d < L1 then d else d + δ
@@ -174,9 +144,8 @@ theorem psi_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     have hL : (L1 : ℝ) ≤ d := by exact_mod_cast (not_lt.1 h)
     by_cases h1 : (d : ℝ) + δ + t ≤ L1
     · rw [ite_eq_left h1]
-      have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
-      have : (d : ℝ) = L1 := by linarith
-      rw [this]; linarith
+      
+      linarith
     · rw [ite_eq_right h1]
       by_cases h2 : (d : ℝ) + δ + t ≤ L1 + δ
       · rw [ite_eq_left h2]
@@ -185,7 +154,7 @@ theorem psi_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
       · rw [ite_eq_right h2]; ring
 
 theorem psi_mono {L1 δ : ℕ} {o o' : ℝ} (h : o ≤ o') : psi L1 δ o ≤ psi L1 δ o' := by
-  have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
+  
   unfold psi
   split_ifs <;> linarith
 
@@ -194,7 +163,7 @@ def InGap (L1 δ : ℕ) (o : ℝ) : Prop := (L1 : ℝ) ≤ o ∧ o ≤ (L1 : ℝ
 
 theorem psi_strict {L1 δ : ℕ} {o o' : ℝ} (h : o < o') (hg : ¬ InGap L1 δ o ∨ ¬ InGap L1 δ o') :
     psi L1 δ o < psi L1 δ o' := by
-  have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
+  
   unfold psi
   rcases hg with hg | hg <;> (unfold InGap at hg; push Not at hg) <;> split_ifs <;>
     first

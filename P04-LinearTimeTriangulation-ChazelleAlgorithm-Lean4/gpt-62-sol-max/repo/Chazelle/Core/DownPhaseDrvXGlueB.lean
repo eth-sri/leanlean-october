@@ -40,7 +40,7 @@ theorem kl_nodup (i : ℕ) : (kl P v NR i).Nodup := List.nodup_range.filter _
 
 /-- The chord record `t < #chords` is a member of the record list. -/
 theorem chord_mem_chords {t : ℕ} (ht : t < NR.chords.length) : NR.chord t ∈ NR.chords := by
-  unfold NF.chord; rw [List.getD_eq_getElem _ _ ht]; exact List.getElem_mem ht
+  unfold NF.chord; simp_all
 
 end GlueB
 
@@ -51,20 +51,20 @@ theorem postMath : PostMath := by
   set K := NR.chords.length with hKdef
   -- the values agree with the chain, the bit and the host
   have hxT : ∀ t, xT P v NR t = xTriple (Qof P).n
-      (regHost li (Qof P).n (buildNF (interiorModel (Qof P)) (Qof P) L E) r) li C.m C.topIdx
+      (regHost li (Qof P).n (inputNF P L E) r) li C.m C.topIdx
       C.sideBeta (NR.chord t).h (NR.chord t).lp (NR.chord t).rp := by
-    intro t; unfold xT; rw [hm, hT, hβ, hli, hH]
+    intro t; unfold xT; simp_all
   have hkR : ∀ t, t < NR.nChords → (kR P v (NR.chord t) ↔
       ((NR.chord t).toSet (chainModel C) (Qof P) ∩ reg r).Nonempty) := by
     intro t ht; unfold kR; rw [hm, hT, hβ, hli, hH]; exact Y.kept_iff ht
   -- the facts of a kept record
-  have hset : ∀ t ∈ kl P v NR K, (recOf (xT P v NR t)).toSet (interiorModel (Qof P)) (Qof P) =
+  have hset : ∀ t ∈ kl P v NR K, (recOf (xT P v NR t)).toSet (inputModel P) (Qof P) =
       (NR.chord t).toSet (chainModel C) (Qof P) := by
     intro t ht
     obtain ⟨htK, hk⟩ := mem_kl.1 ht
     rw [hxT]
     exact (Y.kept_pos htK ((hkR t htK).1 hk)).1
-  have hatt : ∀ t ∈ kl P v NR K, (recOf (xT P v NR t)).Attached (interiorModel (Qof P)) (Qof P) ∧
+  have hatt : ∀ t ∈ kl P v NR K, (recOf (xT P v NR t)).Attached (inputModel P) (Qof P) ∧
       (xT P v NR t).1 < (Qof P).n := by
     intro t ht
     obtain ⟨htK, hk⟩ := mem_kl.1 ht
@@ -72,11 +72,11 @@ theorem postMath : PostMath := by
     have hp := Y.kept_pos htK ((hkR t htK).1 hk)
     exact ⟨hp.2.1, hp.2.2.1⟩
   have hon : ∀ t ∈ kl P v NR K,
-      (∃ j ∈ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-        OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j
+      (∃ j ∈ ((inputNF P L E).region r).arcs,
+        OnArcKey (Qof P) (inputNF P L E) j
           (recOf (xT P v NR t)).lpos) ∧
-      (∃ j ∈ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-        OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j
+      (∃ j ∈ ((inputNF P L E).region r).arcs,
+        OnArcKey (Qof P) (inputNF P L E) j
           (recOf (xT P v NR t)).rpos) := by
     intro t ht
     obtain ⟨htK, hk⟩ := mem_kl.1 ht
@@ -96,12 +96,12 @@ theorem postMath : PostMath := by
     · rintro ⟨⟨c, hc, rfl⟩, hne⟩
       obtain ⟨t, htK, rfl⟩ := List.getElem_of_mem hc
       have hct : NR.chord t = NR.chords[t] := by
-        unfold NF.chord; rw [List.getD_eq_getElem _ _ htK]
-      have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rw [hct]; exact hne)⟩
+        ram_finish [NF.chord, List.getD_eq_getElem]
+      have ht := mem_kl.2 ⟨htK, (hkR t htK).2 (by rw [hct]; exact hne)⟩
       refine ⟨xT P v NR t, List.mem_map.2 ⟨t, ht, rfl⟩, ?_⟩
       rw [hset t ht, hct]
   · -- no repetition
-    have e : (xL P v NR K).map (fun y => (recOf y).toSet (interiorModel (Qof P)) (Qof P)) =
+    have e : (xL P v NR K).map (fun y => (recOf y).toSet (inputModel P) (Qof P)) =
         (kl P v NR K).map (fun t => (NR.chord t).toSet (chainModel C) (Qof P)) := by
       unfold xL
       rw [List.map_map]
@@ -119,10 +119,10 @@ theorem postMath : PostMath := by
     have hlen : (xL P v NR K).length = (kl P v NR K).length := by
       unfold xL; rw [List.length_map]
     have hq2 : q / 2 < (kl P v NR K).length := by omega
-    have ht : (kl P v NR K)[q / 2] ∈ kl P v NR K := List.getElem_mem hq2
+    have ht := List.getElem_mem hq2
     have hget : (xL P v NR K).getD (q / 2) (0, 0, 0) = xT P v NR ((kl P v NR K)[q / 2]) := by
       unfold xL
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hq2), List.getElem_map]
+      rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map]
     unfold endPos
     rw [hget]
     split_ifs

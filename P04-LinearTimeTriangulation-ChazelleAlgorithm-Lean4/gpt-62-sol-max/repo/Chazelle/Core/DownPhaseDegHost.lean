@@ -51,12 +51,8 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
     GoodH C.radius (segs C) t := by
   have hR := C.radius_pos
   have htop := C.top_snd_lt_radius
-  have htop2 := (abs_lt.1 C.top_mem_box.2).1
-  refine ⟨?_, ?_, ?_, Or.inr (by simp [sideL]), Or.inr (by simp [sideR]), ?_, ?_⟩
-  · refine Set.Finite.union (((Set.finite_Iio C.m).image
-      fun k => ord (C.vertex k) (C.vertex (k + 1))).subset ?_) (Set.toFinite _)
-    rintro s ⟨k, hk, rfl⟩
-    exact ⟨k, hk, rfl⟩
+  refine ⟨segs_finite, ?_, fun _ hs _ hp => segs_inbox hs hp, Or.inr (by simp [sideL]),
+    Or.inr (by simp [sideR]), fun _ hs _ hs' hne _ hp hp' => segs_cross hP hs hs' hne hp hp', ?_⟩
   · intro s hs
     rcases hs with ⟨k, hk, rfl⟩ | hs
     · exact ord_le _ _
@@ -65,71 +61,10 @@ theorem goodH (hP : C.P.Simple) {t : ℕ}
       · exact htop.le
       · simp only [sideL]; linarith
       · simp only [sideR]; linarith
-  · intro s hs p hp
-    rcases seg_cases hs hp with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, h'⟩ | ⟨-, h, h'⟩
-    · have := C.abs_le_coordBound_of_mem_set h
-      exact ⟨this.1.trans C.coordBound_lt_radius.le, this.2.trans C.coordBound_lt_radius.le⟩
-    · rw [C.mem_slit_iff] at h
-      refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨by linarith [h.2.1], h.2.2⟩⟩
-    · exact ⟨by rw [h, abs_neg, abs_of_pos hR], h'⟩
-    · exact ⟨by rw [h, abs_of_pos hR], h'⟩
-  · intro s hs s' hs' hne p hp hp'
-    have hslit : ∀ {p : Point}, p ∈ C.set → p ∈ C.slit → IsVert (segs C) p := by
-      intro p h1 h2
-      rw [C.mem_slit_iff] at h2
-      have hle := C.snd_le_top_of_mem_set h1
-      have : p = C.top := point_ext h2.1 (le_antisymm hle h2.2.1)
-      exact ⟨slitSeg C, Or.inr (by simp), Or.inl this⟩
-    have hsetL : ∀ {p : Point}, p ∈ C.set → p.1 = -C.radius → False := by
-      intro p h1 h2
-      have := abs_fst_lt_of_set h1
-      rw [h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
-    have hsetR : ∀ {p : Point}, p ∈ C.set → p.1 = C.radius → False := by
-      intro p h1 h2
-      have := abs_fst_lt_of_set h1
-      rw [h2, abs_of_pos hR] at this; exact lt_irrefl _ this
-    have hslitL : ∀ {p : Point}, p ∈ C.slit → p.1 = -C.radius → False := by
-      intro p h1 h2
-      rw [C.mem_slit_iff] at h1
-      have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
-    have hslitR : ∀ {p : Point}, p ∈ C.slit → p.1 = C.radius → False := by
-      intro p h1 h2
-      rw [C.mem_slit_iff] at h1
-      have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_of_pos hR] at this; exact lt_irrefl _ this
-    rcases seg_cases hs hp with ⟨h1, k, hk, rfl⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1, -⟩ | ⟨rfl, h1, -⟩ <;>
-      rcases seg_cases hs' hp' with ⟨h2, j, hj, rfl⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2, -⟩ | ⟨rfl, h2, -⟩
-    · -- two chain edges
-      have hkj : k ≠ j := by rintro rfl; exact hne rfl
-      have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
-      have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
-        refine ⟨?_, ?_⟩
-        · have := hp; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
-        · have := hp'; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
-      rw [hP.2.2 _ _ (C.edgeIdx_lt k) (C.edgeIdx_lt j) hidx] at hmem
-      obtain ⟨h | h, -⟩ := hmem
-      · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
-      · rw [h, ← C.vertex_succ_eq]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).2⟩
-    · exact hslit h1 h2
-    · exact (hsetL h1 h2).elim
-    · exact (hsetR h1 h2).elim
-    · exact hslit h2 h1
-    · exact (hne rfl).elim
-    · exact (hslitL h1 h2).elim
-    · exact (hslitR h1 h2).elim
-    · exact (hsetL h2 h1).elim
-    · exact (hslitL h2 h1).elim
-    · exact (hne rfl).elim
-    · rw [h1] at h2; linarith
-    · exact (hsetR h2 h1).elim
-    · exact (hslitR h2 h1).elim
-    · rw [h1] at h2; linarith
-    · exact (hne rfl).elim
   · intro y hy
     have hsub : {v | IsVert (segs C) v ∧ v.2 = y} ⊆ {p | p ∈ C.P.vertices ∧ p.2 = y} := by
       rintro v ⟨hv, hvy⟩
-      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rw [hvy]; exact hy)
+      obtain ⟨j, -, rfl⟩ := vert_eq_vertex hv (by rwa [hvy])
       exact ⟨vtx_mem_vertices (C.edgeIdx_lt j), hvy⟩
     exact (ncard_le_ncard hsub ((List.finite_toSet _).subset fun p hp => hp.1)).trans (ht y)
 
@@ -146,12 +81,12 @@ theorem fullDegLe_host {C : Chain} (hP : C.P.Simple) {t : ℕ}
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 2 * (t + 1)
   rw [← hdom]
   refine HSegObs.deg_leH (ChainObs.goodH hP ht) (G := C.chords ∪ F) ?_
-    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
+    (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rwa [hdom])
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
-    exact ⟨_, _, _, by rw [hdom]; exact hh, C.chordSet_eq_hseg k σ⟩
+    exact ⟨_, _, _, by rwa [hdom], C.chordSet_eq_hseg k σ⟩
   · obtain ⟨y, a, b, hh, -, rfl⟩ := hF.2.1 hc
-    exact ⟨y, a, b, by rw [hdom]; exact hh, rfl⟩
+    exact ⟨y, a, b, by rwa [hdom], rfl⟩
 
 /-! ## Host vertices at one height -/
 
@@ -159,7 +94,7 @@ theorem fullDegLe_host {C : Chain} (hP : C.P.Simple) {t : ℕ}
 theorem vtx_mod_eq (Q : Polygon) (hDH : DistinctHeights Q) {i j : ℕ}
     (h : (Q.vtx (i % Q.n)).2 = (Q.vtx (j % Q.n)).2) : Q.vtx (i % Q.n) = Q.vtx (j % Q.n) := by
   rcases Nat.eq_zero_or_pos Q.n with h0 | h0
-  · have hnil : Q.vertices = [] := List.eq_nil_of_length_eq_zero h0
+  · have hnil := List.eq_nil_of_length_eq_zero h0
     simp [Polygon.vtx, hnil]
   · by_contra hne
     exact hDH _ _ (Nat.mod_lt _ h0) (Nat.mod_lt _ h0) (fun e => hne (by rw [e])) h

@@ -52,11 +52,16 @@ side the ray comes from (`none`). -/
 def ZoOK (C : Chain) (σ : ℝ) (z : Point) (zo : Option Point) : Prop :=
   zo = some z ∨ (zo = none ∧ z.1 = -σ * C.radius)
 
+section
+
+variable {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeights Q)
+    {ci : ℕ} (hci : ci < C.m) (hzy : z.2 = (Q.vtx hz).2) (hσ : σ = 1 ∨ σ = -1)
+    {zo : Option Point} (hzo : ZoOK C σ z zo)
+include hCQ hs hD hci hzy hσ hzo
+
 open Classical in
 /-- **The answer for one chain edge.** -/
-theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeights Q)
-    {ci : ℕ} (hci : ci < C.m) (hzy : z.2 = (Q.vtx hz).2) (hσ : σ = 1 ∨ σ = -1)
-    {zo : Option Point} (hzo : ZoOK C σ z zo) :
+theorem hit_chainEdge :
     Sweep.FirstHitOpt (C.chainEdge ci) z σ
       (if HitC Q s hz σ zo ci then some (vOf Q s hz σ z ci) else none) := by
   classical
@@ -76,13 +81,12 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
   suffices hiff : (Spans Q e hz ∧ 0 < σ * (xe Q e hz - z.1)) ↔ HitC Q s hz σ zo ci by
     unfold edgeHit at hspec
     by_cases h : HitC Q s hz σ zo ci
-    · rw [ite_eq_left h, vOf_of_spans h.1]; rw [ite_eq_left (hiff.2 h)] at hspec; exact hspec
-    · rw [ite_eq_right h]; rw [ite_eq_right (fun h' => h (hiff.1 h'))] at hspec; exact hspec
+    · rw [ite_eq_left h, vOf_of_spans h.1]; rwa [ite_eq_left (hiff.2 h)] at hspec
+    · rw [ite_eq_right h]; rwa [ite_eq_right (fun h' => h (hiff.1 h'))] at hspec
   unfold HitC
   rw [← he_def]
   rcases hzo with rfl | ⟨rfl, hz1⟩
-  · simp only [Ahead]
-    rw [ahead_iff hσ]
+  · simp [Ahead, ahead_iff hσ]
   · simp only [Ahead, and_true]
     constructor
     · exact fun h => h.1
@@ -104,9 +108,7 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
 
 open Classical in
 /-- **One step of the scan.** -/
-theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeights Q)
-    {ci : ℕ} (hci : ci < C.m) (hzy : z.2 = (Q.vtx hz).2) (hσ : σ = 1 ∨ σ = -1)
-    {zo : Option Point} (hzo : ZoOK C σ z zo) {S : Set Point} {best : Option ℕ}
+theorem fold_step {S : Set Point} {best : Option ℕ}
     (hS : Sweep.FirstHitOpt S z σ (bestVal Q s hz σ z best)) :
     Sweep.FirstHitOpt (S ∪ C.chainEdge ci) z σ
       (bestVal Q s hz σ z (upd1 Q s hz σ zo best ci)) := by
@@ -121,15 +123,15 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
       rcases best with _ | cb
       · rfl
       · have hb := hall cb rfl
-        have hcb := spans_of_vOf_pos (show FirstHit S z σ (vOf Q s hz σ z cb) from hS).1
+        have hcb := spans_of_vOf_pos (hS).1
         have hlt : vOf Q s hz σ z ci < vOf Q s hz σ z cb := by
-          rw [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]; exact hb
+          rwa [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]
         show some (vOf Q s hz σ z ci) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
         rw [min_eq_right hlt.le]
     · rw [ite_eq_right (fun h => hall h.2)]
       push Not at hall
       obtain ⟨cb, rfl, hnb⟩ := hall
-      have hcb := spans_of_vOf_pos (show FirstHit S z σ (vOf Q s hz σ z cb) from hS).1
+      have hcb := spans_of_vOf_pos (hS).1
       have hle : vOf Q s hz σ z cb ≤ vOf Q s hz σ z ci := by
         by_contra hc
         push Not at hc
@@ -139,6 +141,8 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
       rw [min_eq_left hle]
   · rw [ite_eq_right hh, ite_eq_right (fun h => hh h.1)]
     rcases best with _ | cb <;> rfl
+
+end
 
 end OracleQ
 

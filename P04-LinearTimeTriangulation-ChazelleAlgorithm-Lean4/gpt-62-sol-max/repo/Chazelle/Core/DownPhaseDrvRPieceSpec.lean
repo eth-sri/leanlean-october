@@ -36,8 +36,8 @@ regular, simple host `H` (at most `64` items): a model descriptor of `chainModel
 `γ`-canonical normal form of degree cap `D` of it, fresh and robust below the new allocator.
 Leaves need `γ ≥ 2 γ'_μ` and the up-phase data with at least `μ` grades; connectors need
 `γ ≥ 2 m`.  Cost `κ (lemma41Nat μ + 1)`. -/
-def PieceSpec (O : OracleIface) : Prop :=
-  ∃ (sp : Stmt) (κ : ℕ), Meets sp drvBands
+def _root_.Chazelle.Core.DrvG.PcMeets (O : OracleIface) (sp : Stmt) (κ : ℕ) : Prop :=
+  Meets sp drvBands
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
       (gradeCtx O).holds P c.nmem (c.nreg 218008) (c.nreg ALLOC) ∧
       4 ≤ c.nreg 218006 ∧ 1 ≤ c.nreg 218002 ∧ c.nreg 218003 ≤ 1 ∧
@@ -66,6 +66,8 @@ def PieceSpec (O : OracleIface) : Prop :=
         ∃ N, NFWithin c'.nmem (c'.nreg 218011) (c'.nreg ALLOC) N ∧
           IsCanonicalNF (chainModel C) (Qof P) N (c.nreg 218007) (c.nreg 218006))
     (fun _ c => κ * (lemma41Nat (c.nreg 218005) + 1))
+
+def PieceSpec (O : OracleIface) : Prop := ∃ sp κ, DrvG.PcMeets O sp κ
 
 end
 

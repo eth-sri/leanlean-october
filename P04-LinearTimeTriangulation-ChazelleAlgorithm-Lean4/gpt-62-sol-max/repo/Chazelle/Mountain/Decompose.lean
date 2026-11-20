@@ -193,29 +193,33 @@ theorem regionOfDiag_spec {P : Polygon} {d : ℕ × ℕ} (hd : d ∈ trapDiagona
   unfold regionOfDiag
   rw [dite_eq_left h]
 
+section
+
+variable {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
+
+include hP d d' in
 /-- **Distinct trapezoid diagonals meet at most in common endpoints.** -/
-theorem trapDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
+theorem trapDiagonals_inter
     (hd : d ∈ trapDiagonals P) (hd' : d' ∈ trapDiagonals P) (hne : d ≠ d') :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
   obtain ⟨D, hD, rfl⟩ := hd
   obtain ⟨D', hD', rfl⟩ := hd'
-  have hreg : D.region ≠ D'.region := fun h => hne (TrapData.diag_eq_of_region_eq hP D D' h)
-  have hdisj : Disjoint D.region D'.region :=
-    (regions_eq_or_disjoint (D.region_mem_regions hP) (D'.region_mem_regions hP)).resolve_left
+  have hreg := fun h => hne (TrapData.diag_eq_of_region_eq hP D D' h)
+  have hdisj := (regions_eq_or_disjoint (D.region_mem_regions hP) (D'.region_mem_regions hP)).resolve_left
       hreg
   rintro p ⟨hp, hp'⟩
   have h1 : p ∉ D.region := by
     intro hpD
     rcases D'.segment_cases hP hD' hp' with e | e | e
-    · exact D.not_mem_region_of_vtx hP (D'.top_lt hP) (by rw [← e]; exact hpD)
-    · exact D.not_mem_region_of_vtx hP (D'.bot_lt hP) (by rw [← e]; exact hpD)
+    · exact D.not_mem_region_of_vtx hP (D'.top_lt hP) (by rwa [← e])
+    · exact D.not_mem_region_of_vtx hP (D'.bot_lt hP) (by rwa [← e])
     · exact Set.disjoint_left.1 hdisj hpD e
   have h1' : p ∉ D'.region := by
     intro hpD
     rcases D.segment_cases hP hD hp with e | e | e
-    · exact D'.not_mem_region_of_vtx hP (D.top_lt hP) (by rw [← e]; exact hpD)
-    · exact D'.not_mem_region_of_vtx hP (D.bot_lt hP) (by rw [← e]; exact hpD)
+    · exact D'.not_mem_region_of_vtx hP (D.top_lt hP) (by rwa [← e])
+    · exact D'.not_mem_region_of_vtx hP (D.bot_lt hP) (by rwa [← e])
     · exact Set.disjoint_right.1 hdisj hpD e
   simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff]
   exact ⟨D.eq_endpoint_of_mem_diagSeg hP hD hp h1, D'.eq_endpoint_of_mem_diagSeg hP hD' hp' h1'⟩
@@ -271,10 +275,10 @@ theorem vtxChords_not_adjacent {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (h
   constructor
   · intro h
     apply hzi.2
-    exact ⟨d.1, hk, by unfold Polygon.edge; rw [← h]; exact hzs⟩
+    exact ⟨d.1, hk, by unfold Polygon.edge; rwa [← h]⟩
   · intro h
     apply hzi.2
-    exact ⟨d.2, hm, by unfold Polygon.edge; rw [← h, segment_comm]; exact hzs⟩
+    exact ⟨d.2, hm, by unfold Polygon.edge; rwa [← h, segment_comm]⟩
 
 /-- **Each vertex-to-vertex chord is an interior diagonal.** -/
 theorem vtxChords_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
@@ -285,11 +289,11 @@ theorem vtxChords_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd 
   have hne := vtxChords_ne hP hd
   obtain ⟨h1, h2⟩ := vtxChords_not_adjacent hP hd
   obtain ⟨L, hL2, hLn, hsL⟩ := exists_diag_index (simple_three_le hP) hk hm hne h1 h2
-  have hs : d.1 % P.n = d.1 := Nat.mod_eq_of_lt hk
+  have hs := Nat.mod_eq_of_lt hk
   refine ⟨d.1, L, ⟨hL2, hLn, ?_⟩, hs, hsL, ?_⟩
   · rw [hs, hsL]
     intro p hp hp1 hp2
-    have hp' : p ∈ chordSet P d.1 σ := by rw [← hseg]; exact hp
+    have hp' : p ∈ chordSet P d.1 σ := by rwa [← hseg]
     rcases mem_chordSet_cases hP hk hdir hp' with e | e | e
     · exact absurd e hp1
     · exact absurd (e.trans hend) hp2
@@ -312,17 +316,16 @@ theorem vtxChords_subset_image {P : Polygon} (hP : P.Simple) :
       ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)) := by
   rintro ⟨k, m⟩ ⟨hk, hm, σ, hσ, -, hend⟩
   refine ⟨(k, σ), ⟨by simpa using hk, ?_⟩, ?_⟩
-  · simp only [mem_insert_iff, mem_singleton_iff]
-    exact hσ
-  · show (k, vtxIndex P (chordEnd P k σ)) = (k, m)
-    rw [hend, vtxIndex_vtx hP hm]
+  · assumption
+  simp [hend, vtxIndex_vtx hP hm]
 
 theorem vtxChords_finite {P : Polygon} (hP : P.Simple) : (vtxChords P).Finite :=
   ((Finset.range P.n).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)).image _
     |>.subset (vtxChords_subset_image hP)
 
+include hP d d' in
 /-- **A vertex-to-vertex chord meets a trapezoid diagonal at most in common endpoints.** -/
-theorem vtxChords_inter_trapDiagonals {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
+theorem vtxChords_inter_trapDiagonals
     (hd : d ∈ trapDiagonals P) (hd' : d' ∈ vtxChords P) :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
@@ -330,8 +333,8 @@ theorem vtxChords_inter_trapDiagonals {P : Polygon} (hP : P.Simple) {d d' : ℕ 
   obtain ⟨σ, hσ, hdir, hend, hseg⟩ := vtxChords_spec hd'
   rintro p ⟨hp, hp'⟩
   have hpc : p ∈ chordUnion P :=
-    ⟨chordSet P d'.1 σ, ⟨d'.1, σ, hd'.1, hσ, hdir, rfl⟩, by rw [← hseg]; exact hp'⟩
-  have h1 : p ∉ D.region := fun h => (D.region_subset_freeRegion hP h).2 hpc
+    ⟨chordSet P d'.1 σ, ⟨d'.1, σ, hd'.1, hσ, hdir, rfl⟩, by simp_all⟩
+  have h1 := fun h => (D.region_subset_freeRegion hP h).2 hpc
   have hend1 := D.eq_endpoint_of_mem_diagSeg hP hD hp h1
   have hpb : p ∈ P.boundary := by
     rcases hend1 with rfl | rfl
@@ -339,16 +342,17 @@ theorem vtxChords_inter_trapDiagonals {P : Polygon} (hP : P.Simple) {d d' : ℕ 
     · exact vtx_mem_boundary P (D.bot_lt hP)
   have hmem : p ∈ ({P.vtx d'.1, chordEnd P d'.1 σ} : Set Point) := by
     rw [← chordSet_inter_boundary hP hd'.1 hdir]
-    exact ⟨by rw [← hseg]; exact hp', hpb⟩
+    simp_all
   simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff] at hmem ⊢
   refine ⟨hend1, ?_⟩
   rcases hmem with e | e
   · exact Or.inl e
   · exact Or.inr (e.trans hend)
 
+include hP d d' in
 /-- **Two vertex-to-vertex chords with distinct segments meet at most in common endpoints.**
 (The pairs `(k, m)` and `(m, k)` name the same chord when both directions are recorded.) -/
-theorem vtxChords_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd : d ∈ vtxChords P)
+theorem vtxChords_inter (hd : d ∈ vtxChords P)
     (hd' : d' ∈ vtxChords P) (hne : diagSeg P d ≠ diagSeg P d') :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
@@ -357,8 +361,7 @@ theorem vtxChords_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd : 
   rw [hseg, hseg'] at hne ⊢
   intro p hp
   have := chord_inter hP hd.1 hd'.1 hσ hσ' hdir hdir' hne hp
-  rw [hend, hend'] at this
-  exact this
+  simp_all
 
 /-! ### All inserted diagonals -/
 
@@ -385,8 +388,9 @@ theorem allDiagonals_lt {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d �
       (trapDiagonals_spec hP hd).2.2.1⟩
   · exact ⟨hd.1, hd.2.1, vtxChords_ne hP hd⟩
 
+include hP d d' in
 /-- **Two inserted diagonals with distinct segments meet at most in common endpoints.** -/
-theorem allDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd : d ∈ allDiagonals P)
+theorem allDiagonals_inter (hd : d ∈ allDiagonals P)
     (hd' : d' ∈ allDiagonals P) (hne : diagSeg P d ≠ diagSeg P d') :
     diagSeg P d ∩ diagSeg P d' ⊆
       ({P.vtx d.1, P.vtx d.2} : Set Point) ∩ {P.vtx d'.1, P.vtx d'.2} := by
@@ -397,6 +401,8 @@ theorem allDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ} (hd
     have := vtxChords_inter_trapDiagonals hP hd' hd ⟨hp.2, hp.1⟩
     exact ⟨this.2, this.1⟩
   · exact vtxChords_inter hP hd hd' hne
+
+end
 
 /-! ### The mountain decomposition theorem: statement and plan
 

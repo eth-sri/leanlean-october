@@ -32,7 +32,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
     (hEND : g.END ≤ W) :
     ∃ c' k, Exec P W phase1 c c' k ∧ k ≤ cost1 g ∧ WordsBounded W c' ∧ GR g c' ∧
       (∀ r, ¬ (130000 ≤ r ∧ r < 131000) → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output ∧ (∀ a, a < g.A0 → c'.nmem a = c.nmem a) ∧
+      c'.rmem = c.rmem ∧ c'.output = c.output ∧ (MemEqBelow g.A0 c'.nmem c.nmem) ∧
       ∃ (T : SpanTree M) (a : F → Fin g.N) (ha : ∀ f, M.face (a f) = f)
         (C : CoTree (starTree T a ha)) (R : BTree) (first : Fin g.μ → Fin g.N)
         (preE slot : ℕ → ℕ) (ρ : ℕ), PostD g M T a ha C R first preE slot ρ W c'.nmem := by
@@ -54,7 +54,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   rw [hg] at hk1 hG1
   -- stage A
   obtain ⟨c2, k2, e2, hk2, hw2, hG2, hf2, T, hA2⟩ := stageA_exec (P := P) hw1 hG1
-    (by rw [hm1]; exact hmap) hpl.1 hμ hμN hO hR hV hL hEND
+    (by rwa [hm1]) hpl.1 hμ hμN hO hR hV hL hEND
   -- stage B1
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, a, ha, hB3⟩ := stageB1_exec (P := P) hw2 hG2 hA2 hμ hO hR
     hV hEND
@@ -65,7 +65,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, C, R, preE, slot, hB4⟩ := stageB2_exec (P := P) hw3 hG3 hA3
     hB3 hpl.1 hN hL hO hR hV hEND
   have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; unfold StBRG; omega))
-  have hLU' : g.L * g.U ≥ 0 := Nat.zero_le _
+  
   have hA4 : AF g M T c4.nmem := hA3.congr ⟨hO, hR, hV⟩ (fun x hx => hf4.2.2.2.2 x (by
     unfold KeepA at hx; omega))
   have hB14 : B1F g M T a ha c4.nmem := hB3.congr (fun x h1 h2 => hf4.2.2.2.2 x (by omega))
@@ -74,7 +74,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
     hw4 hG4 hk' hkμ (lev := fun v => c4.nmem (g.base 3 + v)) (fun v hv => rfl)
     (fun v hv => by have := hA4.lev ⟨v, hv⟩; have := hA4.lev_lt ⟨v, hv⟩; simp_all) hEND
   have hG5 : GR g c5 := hG4.frame (fun r hr => hf5.1 r (by unfold GRReg at hr; unfold StCRG; omega))
-  have k45 : ∀ x, ¬ CMem g x → c5.nmem x = c4.nmem x := fun x hx => hf5.2.2.2.2 x hx
+  have k45 := fun x hx => hf5.2.2.2.2 x hx
   have hA5 : AF g M T c5.nmem := hA4.congr ⟨hO, hR, hV⟩ (fun x hx => k45 x (by
     unfold KeepA at hx; unfold CMem; omega))
   have hB15 : B1F g M T a ha c5.nmem := hB14.congr (fun x h1 h2 => k45 x (by unfold CMem; omega))
@@ -85,12 +85,12 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
   -- stage D
   have hRn := hB25.R_n
   have hpre_lt : ∀ i, i < g.N → c5.nmem (g.base 29 + i) < g.N := fun i hi => by
-    rw [hB25.pre i hi, ← hRn]; exact hB25.R_pre.pre_lt hB25.R_ok (by rw [hRn]; exact hi)
+    rw [hB25.pre i hi, ← hRn]; exact hB25.R_pre.pre_lt hB25.R_ok (by rwa [hRn])
   have hpre_inj : ∀ i j, i < g.N → j < g.N → c5.nmem (g.base 29 + i) = c5.nmem (g.base 29 + j) →
       i = j := fun i j hi hj h => by
     rw [hB25.pre i hi, hB25.pre j hj] at h
-    exact BTree.PreInv.pre_inj hB25.R_ok hB25.R_pre (by rw [hRn]; exact hi) (by rw [hRn]; exact hj) h
-  have hlvx : ∀ l, l < g.μ → LvOK g c5.nmem (g.k' - 1 - ρ) l := hlv5
+    exact BTree.PreInv.pre_inj hB25.R_ok hB25.R_pre (by rwa [hRn]) (by rwa [hRn]) h
+  have hlvx := hlv5
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, hcnt6, hpos6, hact6, hdf6⟩ := stageD_exec (P := P) hw5 hG5
     (lev := fun v => c5.nmem (g.base 3 + v)) (hl := fun l => c5.nmem (g.base 36 + l))
     (blk := fun l => c5.nmem (g.base 35 + l)) hpre_lt hpre_inj
@@ -106,7 +106,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
       rw [h36] at hne
       exact shift_div_lt hk' (by omega) hkμ hl) hEND
   have hG6 : GR g c6 := hG5.frame (fun r hr => hf6.1 r (by unfold GRReg at hr; unfold StDRG; omega))
-  have k56 : ∀ x, ¬ DMem g x → c6.nmem x = c5.nmem x := fun x hx => hf6.2.2.2.2 x hx
+  have k56 := fun x hx => hf6.2.2.2.2 x hx
   have hA6 : AF g M T c6.nmem := hA5.congr ⟨hO, hR, hV⟩ (fun x hx => k56 x (by
     unfold KeepA at hx; unfold DMem; omega))
   have hB16 : B1F g M T a ha c6.nmem := hB15.congr (fun x h1 h2 => k56 x (by unfold DMem; omega))
@@ -127,7 +127,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
       boOf g c6.nmem w := fun w hw => by
     have hl := hA5.lev_lt ⟨w, hw⟩; have e := hA5.lev ⟨w, hw⟩
     simp only at e
-    have hlw : c5.nmem (g.base 3 + w) < g.μ := by rw [e]; exact hl
+    
     simp only [boOf, blkOf]
     rw [k56 (g.base 3 + w) (by unfold DMem; omega), k56 (g.base 36 + c5.nmem (g.base 3 + w))
       (by unfold DMem; omega), k56 (g.base 35 + c5.nmem (g.base 3 + w)) (by unfold DMem; omega)]
@@ -137,7 +137,7 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
     simp only [keyOf']
     rw [k56 (g.base 0 + w) (by unfold DMem; omega), k56 (g.base 29 + c5.nmem (g.base 0 + w))
       (by unfold DMem; omega)]
-  have hm06 : ∀ x, x < g.A0 → c6.nmem x = c.nmem x := fun x hx => by
+  have hm06 : MemEqBelow g.A0 c6.nmem c.nmem := fun x hx => by
     rw [k56 x (by unfold DMem; omega), k45 x (by unfold CMem; omega),
       hf4.2.2.2.2 x (by omega), hf3.2.2.2.2 x (by omega), hf2.2.2.2.2 x (by unfold WrA; omega), hm1]
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + k6)))),
@@ -156,8 +156,8 @@ theorem phase1_exec {c : Config} (hw : WordsBounded W c) {g : GV} (hg : gOf c = 
     rw [cntBelow_congr h1, cntBelow_congr h1]; exact hmin5 r hr
   · rw [hcnt6 b hb]; exact cntLt_congr hbo
   · rw [hpos6 v hv, hbo v hv, plPos_congr hbo hkey hv]
-  · have := hact6 v hv (by rw [hbo v hv]; exact hbv)
-    rw [plPos_congr hbo hkey hv] at this; exact this
+  · have := hact6 v hv (by rwa [hbo v hv])
+    rwa [plPos_congr hbo hkey hv] at this
 
 end proofs
 

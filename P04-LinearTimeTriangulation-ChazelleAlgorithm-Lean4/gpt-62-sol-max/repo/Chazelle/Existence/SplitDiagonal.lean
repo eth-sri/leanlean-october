@@ -49,10 +49,7 @@ theorem vtx_eq_chord_endpoint_of_common {P : Polygon} (hP : P.Simple) {s L : ℕ
     omega
   · have hmn : m = P.n := by omega
     rw [hmn, Nat.add_mod_right] at hidx
-    have := rot_index_inj (n := P.n) (s := s) (i := k) (j := 0) (by omega) hn
-      (by rw [hidx, Nat.add_zero])
-    subst this
-    exact Or.inl (by rw [Nat.add_zero])
+    simp_all
 
 /-- **The boundaries of the two arcs meet only on the chord.** -/
 theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤ P.n) :
@@ -91,7 +88,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       · exact key (i + 1) (L + j) (by omega) (by omega) (by omega) h₁ h₂
       · exact key (i + 1) (L + (j + 1)) (by omega) (by omega) (by omega) h₁ h₂
     · exact hpc
-  · rw [segment_comm]; exact hpc
+  · rwa [segment_comm]
 
 /-! ### The hypotheses of the splitting lemma -/
 
@@ -121,9 +118,14 @@ theorem filled_xor_arcs (hP : P.Simple) (hd : IsDiagonal P s L) (z : Point)
   generalize parity (P.arc ((s + L) % P.n) (P.n - L)) z = b
   cases a <;> cases b <;> simp
 
+section
+
+variable (hP : P.Simple) (hd : IsDiagonal P s L)
+    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
+include hP hd hin
+
 /-- **The filled region of `P` is the union of the filled regions of the two arcs.** -/
-theorem filled_eq_union_arcs (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem filled_eq_union_arcs :
     P.filled = (P.arc s L).filled ∪ (P.arc ((s + L) % P.n) (P.n - L)).filled := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   have hL : L ≤ P.n := by have := hd.2.1; omega
@@ -132,8 +134,7 @@ theorem filled_eq_union_arcs (hP : P.Simple) (hd : IsDiagonal P s L)
     (filled_xor_arcs P s L hP hd)
 
 /-- **The interiors of the filled regions of the two arcs are disjoint.** -/
-theorem interior_arcs_disjoint (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem interior_arcs_disjoint :
     Disjoint (interior (P.arc s L).filled)
       (interior (P.arc ((s + L) % P.n) (P.n - L)).filled) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
@@ -143,8 +144,7 @@ theorem interior_arcs_disjoint (hP : P.Simple) (hd : IsDiagonal P s L)
     (filled_xor_arcs P s L hP hd)
 
 /-- **The filled regions of the two arcs meet only on the chord.** -/
-theorem filled_arcs_meet_on_chord (hP : P.Simple) (hd : IsDiagonal P s L)
-    (hin : segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled) :
+theorem filled_arcs_meet_on_chord :
     ∀ p, p ∈ (P.arc s L).filled → p ∈ (P.arc ((s + L) % P.n) (P.n - L)).filled →
       p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
@@ -154,6 +154,8 @@ theorem filled_arcs_meet_on_chord (hP : P.Simple) (hd : IsDiagonal P s L)
     (split_filled_inter_subset hP (simple_arc P s L hP hd) (simple_arc_compl P s L hP hd)
       (boundary_arcs_subset_filled P s L hn hL hin) (boundary_subset_arcs P s L hL hn)
       (filled_xor_arcs P s L hP hd) ⟨hp₁, hp₂⟩)
+
+end
 
 /-! ### Combining along an interior diagonal -/
 

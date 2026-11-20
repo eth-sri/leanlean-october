@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranMain
 public import Chazelle.Core.NFDecompMain
 
@@ -42,22 +44,14 @@ theorem pre_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
       c'.nreg 90019 = 1 ∧ c'.nreg 90010 = c.nmem (c.nreg 90001) ∧
       (∀ r, r ≠ 90019 → r ≠ 90010 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  exec_block
-  · exact hW
-  · refine ⟨rfl, ?_, ?_, fun r x1 x2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  ram_exec
 
 theorem empty_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W emptyS c c' k ∧ k = 2 ∧
       c'.nreg 90095 = 0 ∧ c'.nreg 90028 = 0 ∧
       (∀ r, r ≠ 90095 → r ≠ 90028 → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  unfold emptyS
-  exec_block
-  · omega
-  · omega
-  · refine ⟨rfl, ?_, ?_, fun r x1 x2 => ?_, rfl, rfl, rfl, rfl⟩ <;>
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+  ram_exec
 
 theorem granular_empty {M : Model} {F : Set (Set Point)} {γ : ℕ} (hF : F = ∅)
     (h : M.Semigranular F γ) : M.Granular F γ := by
@@ -74,8 +68,8 @@ set_option maxHeartbeats 4000000 in
 /-- **WP-F: granularity enforcement**, from the construction of normal forms and the
 decomposition. -/
 theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
-  obtain ⟨sB, κB, hsB⟩ := buildOK_of hB
-  obtain ⟨sD, κD, hsD⟩ := decompOK_of hD
+  obtain ⟨sB, κB, hsB⟩ := hB
+  obtain ⟨sD, κD, hsD⟩ := hD
   refine ⟨granStmt sB sD, κGran κB κD, ?_⟩
   intro P W c hw ⟨hG, hWh, hD1, hwf, M, N, hMD, hGM, hNW, hNF, hdeg, hsemi⟩ hroom
   beta_reduce at hroom ⊢
@@ -142,11 +136,11 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     have F₂ : Frame {bGran} c₁ c₂ k₂ := frame_of (fun r hr => R₂ r
       (fun h => band9_not (by omega) (by omega) hr) (fun h => band9_not (by omega) (by omega) hr))
       rr₂ m₂ rm₂ o₂ gran_ne_alloc
-    have A₂ : c₂.nreg ALLOC = c.nreg ALLOC := by rw [R₂ _ (by decide) (by decide), A₁]
+    have A₂ : c₂.nreg ALLOC = c.nreg ALLOC := by frame_finish
     have hm₂ : c₂.nmem = c.nmem := by rw [m₂, m₁]
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec (L := []) hsB hsD
-      e₂.wb_right hG hWh (by rw [R₂ _ (by decide) (by decide), q0])
-      (by rw [R₂ _ (by decide) (by decide), q2]) s28 s95 (by rw [A₂, hm₂]; exact hwf)
+      e₂.wb_right hG hWh (by ram_rw [R₂, q0])
+      (by ram_rw [R₂, q2]) s28 s95 (by rw [A₂, hm₂]; exact hwf)
       (by rw [hm₂]; exact hMD) hGM (fun i hi => by simp at hi) (by rw [A₂]; simp)
       ⟨by rw [show {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet M (Qof P)} =
           N.F M (Qof P) from hl]; exact hNF.1, List.nodup_nil, fun x hx => by simp at hx,
@@ -154,7 +148,7 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
       (by rw [hl]; exact hdeg)
       (by rw [A₂]; unfold costBD; simp; omega)
     have e₁₂ : Exec P W (.ifLtN 90010 90019 emptyS mainStmt) c₁ c₂ (k₂ + 1) :=
-      .ifLtN_true (by rw [p10, p19]; omega) e₂
+      (by ram_path)
     refine ⟨c₃, _, .seq e₁ (.seq e₁₂ e₃), ?_, ?_, ?_⟩
     · unfold costBD at hk₃; simp at hk₃; omega
     · rw [A₂] at hA'
@@ -176,8 +170,8 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
         (by rw [A₁]; nlinarith)
     have hmono : costBD κB κD D L.length ≤ costBD κB κD D K := costBD_mono hLK
     have A₂ := G₂.2.2.2.2.2.2
-    have hlow : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-      rw [G₂.2.2.1 a (by omega), m₁]
+    have hlow : MemEqBelow (c.nreg ALLOC) c₂.nmem c.nmem := fun a ha => by
+      ram_rw [G₂.2.2.1 a, m₁]
     obtain ⟨hMD₂, hwf₂⟩ := desc_agree' hwf hMD hlow
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec hsB hsD
       e₂.wb_right hG hWh s00 s02 rfl s95 (hwf₂.mono (by rw [← A₁]; exact G₂.2.2.2.2.2.1))

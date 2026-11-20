@@ -33,16 +33,13 @@ theorem symPtIn_copy {c c' : Config} {x s : ℕ} {p : SymPt} (h : SymPtIn c x p)
   | onEdge e hh => exact ⟨h0.trans h.1, h1.trans h.2.1, h2.trans h.2.2⟩
 
 /-- Register frames compose. -/
-theorem fbTrans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameB B c₁ c₂) (h₂ : FrameB B c₂ c₃) :
-    FrameB B c₁ c₃ :=
-  ⟨fun r hr => (h₂.1 r hr).trans (h₁.1 r hr), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
-    h₂.2.2.1.trans h₁.2.2.1, h₂.2.2.2.1.trans h₁.2.2.2.1, h₂.2.2.2.2.trans h₁.2.2.2.2⟩
+abbrev fbTrans := @Chazelle.Core.SignK.FrameB.trans
 
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; simp_all),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; simp_all),
     h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
 /-- Copy a register triple into the kernel registers from `s`. -/
@@ -87,8 +84,7 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
         (∀ r, (r < 10000 ∨ 10010 ≤ r) → c₁.nreg r = c.nreg r) ∧
         c₁.rreg = c.rreg ∧ c₁.nmem = c.nmem ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
       simp only [ldP, List.cons_append, List.nil_append]
-      exec_block
-      · exact hop'
+      exec_block!
       · refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl, rfl, rfl, rfl⟩ <;>
           (try intro r hr) <;> config_simp <;>
           (try simp only [Machine.upd_apply]) <;> (try split_ifs) <;> (try omega) <;>
@@ -98,10 +94,10 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
       fr.2.2.2.1, fr.2.2.2.2⟩⟩
     · have : r < 10000 ∨ 10500 ≤ r := by unfold Bk at hr; simp at hr; omega
       exact fr.1 r (by omega)
-  have i₁' := i₁
+  
   -- the kernel
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, s₂'⟩ := sig_exec (P := P) c₁ e₁.wb_right hG hW
-    (by rw [q₉]; exact hop) l₁ l₂ l₃ q₁ q₂ q₃
+    (by rwa [q₉]) l₁ l₂ l₃ q₁ q₂ q₃
   rw [q₉] at s₂'
   -- the answer
   have e₃ := Exec.copyN (P := P) e₂.wb_right d 10010
@@ -117,9 +113,9 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
   · have hr' : Bk r = false := by
       unfold Brute.Bt at hr; simp only [Bool.or_eq_false_iff] at hr; exact hr.1
     simp only [c₃]; rw [f₂.2.1 r hr', hf₁.2.1 r hr']
-  · simp only [c₃]; rw [f₂.2.2.1, hf₁.2.2.1]
-  · simp only [c₃]; rw [f₂.2.2.2.1, hf₁.2.2.2.1]
-  · simp only [c₃]; rw [f₂.2.2.2.2, hf₁.2.2.2.2]
+  · simp [c₃, f₂.2.2.1, hf₁.2.2.1]
+  · simp [c₃, f₂.2.2.2.1, hf₁.2.2.2.1]
+  · simp [c₃, f₂.2.2.2.2, hf₁.2.2.2.2]
 
 end exec
 

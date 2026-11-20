@@ -33,34 +33,34 @@ variable {J : Merge.Junction}
 theorem stop_of_out (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {e : Set Point}
     (he : e ∈ F₂plus J S₂)
-    (hout : ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+    (hout : ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       ¬ (0 < oW J (q + s) ∧ oW J (q + s) < Lst J)) : StopChord2 J S₂ e := by
   by_contra h
-  have hns : ¬ StopChord J S₂ e := fun h' => h (Or.inl h')
+  have hns := fun h' => h (Or.inl h')
   obtain ⟨pB, tB, hB, h1, h2, -, -⟩ := stretch_end J hP hS₂ hS₂f he hns
   exact hout pB tB hB ⟨h1, h2⟩
 
 /-- **Completeness of the detection from the invariant.** -/
 theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {oK : ℝ} {Λ : Set (Set Point)}
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {oK : ℝ} {Λ : Set (Set Point)}
     (hLK : (Lst J : ℝ) ≤ oK) (hInv : EvInv J S₂ oK Λ) {pK : ℕ} {tK : ℝ}
-    (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
+    (hpK : pK < J.wholeModel.W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
     (hoK : oK < oW J (pK + tK))
-    (hgap : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+    (hgap : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       ¬ (oK < oW J (q + s) ∧ oW J (q + s) < oW J (pK + tK)))
-    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach (chainModel J.whole).W e pK tK) :
-    (∃ s ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W s pK tK ∧ StopChord2 J S₂ s) ∨
-    ∃ h ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W h pK tK ∧
-      ∃ (a : Point) (σ : ℝ) (c V : Set Point), c ∈ S₂ ∧ V ∈ (chainModel J.right).regions S₂ ∧
-        (V ∈ Λ ∨ GapLab J S₂ V) ∧ Chazelle.Chain.TouchesIn (chainModel J.right).D c V ∧
+    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach J.wholeModel.W e pK tK) :
+    (∃ s ∈ F₂plus J S₂, SideAttach J.wholeModel.W s pK tK ∧ StopChord2 J S₂ s) ∨
+    ∃ h ∈ F₂plus J S₂, SideAttach J.wholeModel.W h pK tK ∧
+      ∃ (a : Point) (σ : ℝ) (c V : Set Point), c ∈ S₂ ∧ V ∈ J.rightModel.regions S₂ ∧
+        (V ∈ Λ ∨ GapLab J S₂ V) ∧ Chazelle.Chain.TouchesIn J.rightModel.D c V ∧
         ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧ a ∈ J.right.set ∧
         a ≠ J.shared ∧ a ≠ J.right.top ∧ FreeAt J.whole a σ ∧ h = Merge.shoot J.whole a σ := by
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
   have hC := corr_right0 J hP hS₂a hS₂f
   have hM := hC.hM
-  have hL0 : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _
+  
   -- a non-cut position just before `K*`, after `K`
   obtain ⟨Rb, hRb, -, w, u, hw, hu, hncw, hfw, h1, h2, hgw⟩ := before_region_exists' hP hS₂a hS₂f
     hpK htK0 htK1 (by linarith) (show 0 < oW J (pK + tK) - oK by linarith)
@@ -101,7 +101,7 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       linarith [this.2]
   · -- a valid label: the next event of `next_event_origin`
     obtain ⟨L, hL, hLr, hv⟩ := hval Rb hRb hfw
-    by_cases hstop : ∃ s ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W s pK tK ∧ StopChord J S₂ s
+    by_cases hstop : ∃ s ∈ F₂plus J S₂, SideAttach J.wholeModel.W s pK tK ∧ StopChord J S₂ s
     · obtain ⟨s, hs, hsK, hss⟩ := hstop
       exact Or.inl ⟨s, hs, hsK, Or.inl hss⟩
     push Not at hstop
@@ -113,11 +113,9 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       · subst hatop
         exact Or.inl ⟨_, hh, hhK, Or.inr ⟨σ, hσ, hfree, rfl⟩⟩
       right
-      have hV : V ∈ (chainModel J.right).regions S₂ ∧ (V ∈ Λ ∨ GapLab J S₂ V) := by
+      have hV : V ∈ J.rightModel.regions S₂ ∧ (V ∈ Λ ∨ GapLab J S₂ V) := by
         rcases hLV with rfl | hg
-        · rcases hL with hL | hL
-          · exact ⟨hLr, Or.inl hL⟩
-          · exact ⟨hLr, Or.inr hL⟩
+        · solve_by_elim
         · exact ⟨hg.2.1, Or.inr hg⟩
       exact ⟨_, hh, hhK, a, σ, c, V, hc, hV.1, hV.2, hT, hac, ha, hav, hatop, hfree, rfl⟩
     · subst hat
@@ -128,19 +126,19 @@ inside `c ∈ S₂` is the chord seen from an end of `c`. -/
 theorem partner_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) (hNTV : NoTieV J S₂)
     {e e' c : Set Point} (he : e ∈ F₂plus J S₂) (he' : e' ∈ F₂plus J S₂) (hne : e ≠ e')
-    (hc : c ∈ S₂) (hec : e ⊆ c) {p : ℕ} {t : ℝ} (hA : SideAttach (chainModel J.whole).W e p t)
-    (hA' : SideAttach (chainModel J.whole).W e' p t) (hL : (Lst J : ℝ) < oW J (p + t)) :
+    (hc : c ∈ S₂) (hec : e ⊆ c) {p : ℕ} {t : ℝ} (hA : SideAttach J.wholeModel.W e p t)
+    (hA' : SideAttach J.wholeModel.W e' p t) (hL : (Lst J : ℝ) < oW J (p + t)) :
     (FreeAt J.whole (Merge.lend c) 1 ∧ e' = Merge.shoot J.whole (Merge.lend c) 1) ∨
       (FreeAt J.whole (Merge.rend c) (-1) ∧ e' = Merge.shoot J.whole (Merge.rend c) (-1)) := by
   have hC := corr_right0 J hP hS₂ hS₂f
-  have hD : sidePt (chainModel J.whole).W p t ∈ J.right.dom := by
+  have hD : sidePt J.wholeModel.W p t ∈ J.right.dom := by
     rcases tie_dom hP hS₂ hS₂f he he' hne hA hA' (fun h => by linarith [h.2]) with h | h
     · exact h
     · exact (hNTV e he e' he' hne p t hA hA' h hL).elim
   obtain ⟨c', hc', hec', he'c'⟩ := tie_parent J hP hS₂ he he' (Ne.symm hne) hA hA' hD
   -- two distinct points of `e`
   obtain ⟨pb, tb, hB, hBne⟩ := hC.hM.other_attach (hC.hF he) hA
-  have hcc : c' = c := parent_unique hS₂ hc' hc hBne (hec' hB.2.2.2.1) (hec' hA.2.2.2.1)
+  have hcc := parent_unique hS₂ hc' hc hBne (hec' hB.2.2.2.1) (hec' hA.2.2.2.1)
     (hec hB.2.2.2.1) (hec hA.2.2.2.1)
   subst hcc
   exact piece_of_parent J hP hS₂ he' hc' he'c' hA' hD

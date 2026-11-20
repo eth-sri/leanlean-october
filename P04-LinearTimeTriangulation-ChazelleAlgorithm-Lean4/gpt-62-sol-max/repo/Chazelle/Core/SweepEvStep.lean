@@ -47,13 +47,12 @@ theorem f2_cases {S₂ : Set (Set Point)} (_hS₂ : S₂ ⊆ Merge.augChords J.r
     exact Or.inl ⟨c', hc'S, _, 1, Or.inl ⟨rfl, rfl⟩, hfree, rfl⟩
   · have hc'S : c' ∈ S₂ := by simpa using hc'
     exact Or.inl ⟨c', hc'S, _, -1, Or.inr ⟨rfl, rfl⟩, hfree, rfl⟩
-  · obtain ⟨σ, hσ, hfree, rfl⟩ := hsh
-    exact Or.inr (Or.inl ⟨σ, hσ, (Merge.freeAt_vertex _ _ _).2 hfree, rfl⟩)
+  · tauto
   · obtain ⟨σ, hσ, hfree, rfl⟩ := htop
     have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
       rw [Merge.Junction.whole_vertex_add]; rfl
     refine Or.inr (Or.inr ⟨σ, hσ, ?_, ?_⟩)
-    · rw [← hv]; exact (Merge.freeAt_vertex _ _ _).2 hfree
+    · rwa [← hv]
     · rw [← hv]; rfl
 
 /-- A chord seen from an end of a chord of `S₂` along it lies in it. -/
@@ -91,25 +90,25 @@ theorem nonstop_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
 /-- **Every non-stop chord at the next key is found** from the label set, the gap regions, or
 the chord of `S₂` containing a stop chord at the key. -/
 theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {oK : ℝ} {Λ : Set (Set Point)}
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {oK : ℝ} {Λ : Set (Set Point)}
     (hLK : (Lst J : ℝ) ≤ oK) (hInv : EvInv J S₂ oK Λ) {pK : ℕ} {tK : ℝ}
-    (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
+    (hpK : pK < J.wholeModel.W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
     (hoK : oK < oW J (pK + tK))
-    (hgap : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+    (hgap : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       ¬ (oK < oW J (q + s) ∧ oW J (q + s) < oW J (pK + tK)))
-    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach (chainModel J.whole).W e pK tK)
+    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach J.wholeModel.W e pK tK)
     (hns : ¬ StopChord2 J S₂ e) :
     ∃ c ∈ S₂, ∃ (a : Point) (σ : ℝ), ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
       a ∈ J.right.set ∧ a ≠ J.shared ∧ a ≠ J.right.top ∧ FreeAt J.whole a σ ∧
       e = Merge.shoot J.whole a σ ∧
-      ((∃ V ∈ (chainModel J.right).regions S₂, (V ∈ Λ ∨ GapLab J S₂ V) ∧
-          Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∨
-        (∃ s ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W s pK tK ∧ StopChord2 J S₂ s ∧
+      ((∃ V ∈ J.rightModel.regions S₂, (V ∈ Λ ∨ GapLab J S₂ V) ∧
+          Chazelle.Chain.TouchesIn J.rightModel.D c V) ∨
+        (∃ s ∈ F₂plus J S₂, SideAttach J.wholeModel.W s pK tK ∧ StopChord2 J S₂ s ∧
           s ⊆ c)) := by
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
-  have hNTV : NoTieV J S₂ := noTieV hP hS₂a
+  have hNTV := noTieV hP hS₂a
   have hLt : (Lst J : ℝ) < oW J (pK + tK) := by linarith
   obtain ⟨c, hc, a, σ, ha, haR, hav, hat, hfree, rfl⟩ := nonstop_cases hS₂a he hns
   have hsub := shoot_sub_end hS₂a hc ha
@@ -169,28 +168,28 @@ between): if a chord at `K` is attached at offset `0` (a pocket), any label set;
 `K` is anchored, a label set containing the side labels of every anchored chord at `K`; otherwise
 (bracket chords only) the old label set. -/
 theorem evInv_step (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {oL : ℝ} {Λ : Set (Set Point)}
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {oL : ℝ} {Λ : Set (Set Point)}
     (hInv : EvInv J S₂ oL Λ) {pK : ℕ} {tK : ℝ}
-    (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
+    (hpK : pK < J.wholeModel.W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
     (hLst : (Lst J : ℝ) ≤ oW J (pK + tK)) (hoL : oL ≤ oW J (pK + tK))
-    (hgap : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+    (hgap : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       ¬ (oL < oW J (q + s) ∧ oW J (q + s) < oW J (pK + tK)))
     {Λ' : Set (Set Point)}
-    (hrule : (∃ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK ∧
-        ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ oW J (q + s) = 0) ∨
-      ((∃ Z ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W Z pK tK ∧ ¬ EvBrk J Z) ∧
-        ∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK → ¬ EvBrk J e →
+    (hrule : (∃ e ∈ F₂plus J S₂, SideAttach J.wholeModel.W e pK tK ∧
+        ∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s ∧ oW J (q + s) = 0) ∨
+      ((∃ Z ∈ F₂plus J S₂, SideAttach J.wholeModel.W Z pK tK ∧ ¬ EvBrk J Z) ∧
+        ∀ e ∈ F₂plus J S₂, SideAttach J.wholeModel.W e pK tK → ¬ EvBrk J e →
           EvSideLab J S₂ Λ' e) ∨
-      ((∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK → EvBrk J e) ∧ Λ' = Λ)) :
+      ((∀ e ∈ F₂plus J S₂, SideAttach J.wholeModel.W e pK tK → EvBrk J e) ∧ Λ' = Λ)) :
     EvInv J S₂ (oW J (pK + tK)) Λ' := by
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
   have hC := corr_right0 J hP hS₂a hS₂f
-  by_cases hpock : ∃ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK tK ∧
-      ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ oW J (q + s) = 0
+  by_cases hpock : ∃ e ∈ F₂plus J S₂, SideAttach J.wholeModel.W e pK tK ∧
+      ∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s ∧ oW J (q + s) = 0
   · obtain ⟨e, he, heK, q, s, hQ, hQ0⟩ := hpock
-    have hne : sidePt (chainModel J.whole).W pK tK ≠ sidePt (chainModel J.whole).W q s := by
+    have hne : sidePt J.wholeModel.W pK tK ≠ sidePt J.wholeModel.W q s := by
       intro h
       obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF he) heK hQ h
       have := Lst_pos J

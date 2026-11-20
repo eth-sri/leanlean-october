@@ -55,16 +55,16 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
     · rintro ⟨h1, h2⟩
       -- a point of `(max a p, min b (p + 1))`
       refine ⟨(max a p + min b (p + 1)) / 2 - p, ?_, ?_, ?_, ?_⟩
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have := max_lt (lt_min h h2) (lt_min h1 (by linarith))
         have : (p : ℝ) ≤ max a p := le_max_right _ _
         linarith
       · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
-        have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+        have := max_lt (lt_min h h2) (lt_min h1 (by linarith))
         linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have := max_lt (lt_min h h2) (lt_min h1 (by linarith))
         have : a ≤ max a p := le_max_left _ _
         linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have := max_lt (lt_min h h2) (lt_min h1 (by linarith))
         have : min b (p + 1) ≤ b := min_le_left _ _
         linarith
   · constructor
@@ -85,7 +85,7 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
           have : (p : ℝ) ≤ max a p := le_max_right _ _
           linarith
         · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
-          have : (p : ℝ) ≤ max a p := le_max_right _ _
+          
           linarith
         · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
           have : a ≤ max a p := le_max_left _ _
@@ -96,8 +96,8 @@ theorem lt_key_iff {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1) :
     (p : ℝ) < e + f ↔ p < keyCeil e f := by
   unfold keyCeil
   split_ifs with h
-  · rw [h, add_zero]; exact Nat.cast_lt
-  · have hf0 : 0 < f := lt_of_le_of_ne hf.1 (Ne.symm h)
+  · simp_all
+  · have hf0 := lt_of_le_of_ne hf.1 (Ne.symm h)
     constructor
     · intro h1
       have : (p : ℝ) < e + 1 := by linarith [hf.2]
@@ -119,10 +119,15 @@ theorem key_lt_succ_iff {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1) :
     have : (e : ℝ) ≤ p := by exact_mod_cast h
     linarith [hf.2]
 
+section
+
+variable {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n)
+include hc hhi
+
 /-- **The weight of an arc in closed form.**  If the counted walk edges are exactly `[lo, hi)`
 with `hi ≤ n`, the weight of the open cyclic key interval from `ea + fa` to `eb + fb` (fractional
 parts in `[0, 1)`) is `arcWtNat lo hi ea fa eb fb`. -/
-theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n)
+theorem arcWt_closed
     {ea eb : ℕ} {fa fb : ℝ} (hfa : 0 ≤ fa ∧ fa < 1) (hfb : 0 ≤ fb ∧ fb < 1) :
     M.arcWt (ea + fa) (eb + fb) = arcWtNat lo hi ea fa eb fb := by
   unfold arcWt arcWtNat
@@ -161,12 +166,14 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
 /-- **The weight of an arc between two walk positions** of the walk proper (parameters in
 `[0, 1)`), over counted edges `[lo, hi)`: the closed form of `arcWt_closed` with the edges and
 parameters of the two positions. -/
-theorem arcWt_key {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ lo ≤ p ∧ p < hi)) (hhi : hi ≤ M.W.n)
+theorem arcWt_key
     (Q : Polygon) {x y : WPos} (hx : 0 ≤ M.param Q x ∧ M.param Q x < 1)
     (hy : 0 ≤ M.param Q y ∧ M.param Q y < 1) :
     M.arcWt (M.key Q x) (M.key Q y) =
       arcWtNat lo hi x.edge (M.param Q x) y.edge (M.param Q y) :=
   M.arcWt_closed hc hhi hx hy
+
+end
 
 end Model
 

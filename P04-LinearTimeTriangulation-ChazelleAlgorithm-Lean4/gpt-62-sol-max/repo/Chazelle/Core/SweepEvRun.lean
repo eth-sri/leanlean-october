@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.SweepEvLoop2
 
 /-!
@@ -26,7 +28,7 @@ theorem iter_keep {c cw cs co c' : Config} (h : IterRel P J N₁ N₂ c cw cs co
   obtain ⟨hWO, hAw, ⟨-, -, -, hsO⟩, ⟨hregO, hAO, -⟩, ⟨hfrK, hAK, -⟩⟩ := h
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, hfrW⟩ := hWO
   have hsA : cs.nreg ALLOC = cw.nreg ALLOC :=
-    hsO _ (by unfold ALLOC bF sw; omega) (by unfold ALLOC bN sw; omega)
+    hsO _ (by reg_omega) (by reg_omega)
   refine ⟨fun r hr hk => ?_, by omega⟩
   have hb := band_sw_not ⟨hr.1, hr.2.1⟩
   have hra : r ≠ ALLOC := by have := hr.1; unfold ALLOC; omega
@@ -47,13 +49,13 @@ theorem done_runOut {c₀ c cw cs co c' : Config} (hL : LoopInv P J N₁ N₂ c�
     (hlC : c'.nreg lC ≤ logCap N₁ N₂) : RunOut P J N₁ N₂ c₀ c' := by
   obtain ⟨hk, hA⟩ := iter_keep hIR
   have esB : c'.nreg sB = c.nreg sB :=
-    hk _ (keepR_of (by unfold sB sw; omega)) (by unfold KR kE kH kN kL sP dF lC sB sw; omega)
+    hk _ (keepR_of (by reg_omega)) (by register_guard)
   have esC : c'.nreg sC = c.nreg sC :=
-    hk _ (keepR_of (by unfold sC sw; omega)) (by unfold KR kE kH kN kL sP dF lC sC sw; omega)
+    hk _ (keepR_of (by reg_omega)) (by register_guard)
   have elB : c'.nreg lB = c.nreg lB :=
-    hk _ (keepR_of (by unfold lB sw; omega)) (by unfold KR kE kH kN kL sP dF lC lB sw; omega)
+    hk _ (keepR_of (by reg_omega)) (by register_guard)
   have eTB : c'.nreg cTB = c.nreg cTB :=
-    hk _ (keepR_of (by unfold cTB sw; omega)) (by unfold KR kE kH kN kL sP dF lC cTB sw; omega)
+    hk _ (keepR_of (by reg_omega)) (by register_guard)
   obtain ⟨rs, ax, hlen, -, -, -, -, -, -, hsize⟩ := hL.stops
   have h0 := hL.tab0; have h1 := hL.lay1; have h2 := hL.lay2; have h4 := hL.lay4
   unfold logCap at h2 hlC
@@ -97,8 +99,7 @@ theorem loop_irs {W : ℕ} {c₀ : Config} {body : Stmt} {Kb : ℕ}
       rintro c' ⟨cw, cs, co, hIR⟩
       have hkeep := (iter_keep hIR).1
       have hk' : c'.nreg K1 = 1 := by
-        rw [hkeep _ (keepR_of (by unfold K1 sw; omega)) (by unfold KR kE kH kN kL sP dF lC K1 sw; omega)]
-        exact hk
+        rwa [hkeep _ (keepR_of (by reg_omega)) (by register_guard)]
       by_cases hd : c'.nreg dF = 0
       · obtain ⟨hL', hlt⟩ := hstep c cw cs co c' hLc hIR hd
         exact ⟨⟨hk', Or.inl hL'⟩, by rw [hμ c' hL', hμ c hLc]; omega⟩

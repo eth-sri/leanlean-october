@@ -44,7 +44,7 @@ structure RecTree (N : NF) (D : ℕ) : Prop where
 
 theorem getD_of_lt {α : Type*} {l : List α} {i : ℕ} (h : i < l.length) (d : α) :
     l.getD i d = l[i] := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h]; rfl
+  simp_all
 
 theorem chord_mem {N : NF} {i : ℕ} (hi : i < N.nChords) : N.chord i ∈ N.chords := by
   unfold NF.chord
@@ -58,8 +58,7 @@ theorem regions_reach {M : Model} {Q : Polygon} {F : Set (Set Point)} (hM : Good
   have hW := walkAx_of_goodModel hM
   have hsys := hW.sys F hF.2.1 hF.1
   have h := hsys.dualGraph_reachable hW.preconn hW.nonempty subset_rfl U hU V hV
-  rw [SimpleGraph.reachable_iff_reflTransGen] at h
-  exact h
+  rwa [SimpleGraph.reachable_iff_reflTransGen] at h
 
 section tree
 
@@ -86,13 +85,9 @@ theorem chord_regions (hM : GoodModel M) (hN : IsNF M Q N) {reg : ℕ → Set Po
   have hregU := hcorr.1 _ hup
   have hregV := hcorr.1 _ hdn
   have e1 : reg (N.chord i).up = U := by
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hregU hU with e | e
-    · exact e
-    · exact absurd (Set.disjoint_left.1 e ha) (not_not.2 hUV'.1)
+    exact Chazelle.Chain.regionsIn_eq_of_mem hregU hU ha hUV'.1
   have e2 : reg (N.chord i).dn = V := by
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hregV hV with e | e
-    · exact e
-    · exact absurd (Set.disjoint_left.1 e hb) (not_not.2 hUV'.2)
+    exact Chazelle.Chain.regionsIn_eq_of_mem hregV hV hb hUV'.2
   rw [e1, e2]
   exact ⟨hUV, htouch⟩
 
@@ -101,7 +96,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
     RecTree N D := by
   obtain ⟨hfam, hinj, -, reg, hcorr, hsides, -, hregs, -, -, -⟩ := id hN
   have hcr := fun i (hi : i < N.nChords) => chord_regions hM hN hcorr hsides hi
-  have hregInj : ∀ a b, a < N.nRegions → b < N.nRegions → reg a = reg b → a = b := hcorr.2.1
+  have hregInj := hcorr.2.1
   -- the touching regions of a chord, as indices
   have htouchIdx : ∀ i, i < N.nChords → ∀ r, r < N.nRegions →
       (TouchesIn M.D ((N.chord i).toSet M Q) (reg r) ↔ (N.chord i).up = r ∨ (N.chord i).dn = r) := by
@@ -150,7 +145,7 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
   obtain ⟨-, hcount, -⟩ := regionTree M Q (N.F M Q) hM hfam
   refine ⟨fun i hi => ⟨(hsides i hi).1, (hsides i hi).2.1⟩,
     fun i hi e => (hcr i hi).1 (by rw [e]), hlists, fun r hr => (hregs r hr).2.1,
-    by rw [← hRcard, ← hFcard]; exact hcount, ?_, ?_⟩
+    by rwa [← hRcard, ← hFcard], ?_, ?_⟩
   · -- connectivity
     intro r s hr hs
     have hpath := regions_reach hM hfam (hcorr.1 r hr) (hcorr.1 s hs)
@@ -173,15 +168,14 @@ theorem recTree_of (hM : GoodModel M) (hN : IsNF M Q N) (hD : M.DegLe (N.F M Q) 
         have t2 := (htouchIdx i hi a ha).1 h2
         have hab : b ≠ a := fun e => hne (by rw [e])
         refine ⟨a, ha, rfl, hpb.tail ⟨i, hi, ?_⟩⟩
-        have hne' := (hcr i hi).1
+        
         rcases t1 with e1 | e1 <;> rcases t2 with e2 | e2
         · exact absurd (e1.symm.trans e2) hab
         · exact Or.inl ⟨e1, e2⟩
         · exact Or.inr ⟨e2, e1⟩
         · exact absurd (e1.symm.trans e2) hab
     obtain ⟨b, hb, e, hp⟩ := key _ hpath (hcorr.1 s hs)
-    rw [hregInj _ _ hb hs e] at hp
-    exact hp
+    rwa [hregInj _ _ hb hs e] at hp
   · -- the degree
     intro r hr
     classical

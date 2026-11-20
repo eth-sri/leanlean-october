@@ -65,23 +65,14 @@ def stk (f : ℕ → ℕ) : ℕ → List ℕ
   | 0 => []
   | t + 1 => f t :: stk f t
 
-/-- The empty stack. -/
-@[simp] theorem stk_zero (f : ℕ → ℕ) : stk f 0 = [] := rfl
-
 /-- Unfolding the stack by one entry: the top is `f t`. -/
 @[simp] theorem stk_succ (f : ℕ → ℕ) (t : ℕ) : stk f (t + 1) = f t :: stk f t := rfl
-
-/-- The stack `stk f t` has `t` entries. -/
-@[simp] theorem length_stk (f : ℕ → ℕ) (t : ℕ) : (stk f t).length = t := by
-  induction t with
-  | zero => rfl
-  | succ t ih => simp [ih]
 
 /-- The stack `stk f t` only depends on the entries of `f` below `t`. -/
 theorem stk_congr {f g : ℕ → ℕ} {t : ℕ} (h : ∀ i, i < t → f i = g i) : stk f t = stk g t := by
   induction t with
   | zero => rfl
-  | succ t ih => rw [stk_succ, stk_succ, h t (by omega), ih (fun i hi => h i (by omega))]
+  | succ t ih => simp [stk_succ, h, ih (fun i hi => h i (by omega))]
 
 /-- Writing at address `t` does not change the stack `stk f t`. -/
 theorem stk_upd (f : ℕ → ℕ) (t v : ℕ) : stk (upd f t v) t = stk f t :=

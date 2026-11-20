@@ -48,7 +48,7 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
     (ht : 0 ≤ t) (ht1 : t < 1) {k : ℕ} (hk : k ≤ C.m)
     (h : sidePt (C.sideWalk β) p t = C.vertex k) :
     t = 0 ∧ ∃ i, i ≤ 2 * C.m ∧ p = i + 6 ∧ C.sideIdx β i = k := by
-  have hR := C.radius_pos
+  
   have hvk := C.vertex_mem_set hk
   have hb := C.abs_le_coordBound_of_mem_set hvk
   have hcb := C.coordBound_lt_radius
@@ -114,7 +114,7 @@ theorem vertex0_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i ≤ 
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
   interval_cases q <;> split_ifs with hb0 <;> rw [key _ (by omega)] <;> split_ifs <;> omega
 
 /-- **The positions at vertex `0`** of the walk of a chain model, read from the tour position `0`:
@@ -165,7 +165,7 @@ def F₂plus (S₂ : Set (Set Point)) : Set (Set Point) := J.fusion ∅ S₂ ∪
 theorem topChords₂_subset_chords : topChords₂ J ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, hfree, rfl⟩
   have := J.right.topIdx_le
-  exact ⟨_, σ, by simp only [Merge.Junction.whole_m, Merge.Junction.right_m] at this ⊢; omega,
+  exact ⟨_, σ, by simp_all,
     hσ, hfree, rfl⟩
 
 theorem F₂plus_subset {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) :
@@ -213,6 +213,86 @@ theorem trans_right (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆
 
 end Families
 
+/-- The two pieces of a common tour agree after accounting for the inserted box. The
+three cases depend only on which walk inserts its box inside the common stretch. -/
+theorem corr0_of_tour {C C' : Chain} {j j' : ℕ} (hP : C.P.Simple) (hP' : C'.P.Simple)
+    {F S : Set (Set Point)} (hF : F ⊆ Merge.augChords C) (hFf : F.Finite)
+    (hS : S ⊆ Merge.augChords C') (hSf : S.Finite)
+    (hℓ : 2 * C'.m < 2 * C.m) (hR : C.radius = C'.radius)
+    (hT : ∀ e ≤ 2 * C'.m, tourV C j e = tourV C' j' e)
+    (hbox : 2 * C.m - tpos C j < 2 * C'.m → 2 * C.m - tpos C j = 2 * C'.m - tpos C' j')
+    (havoid : ∀ {p : ℕ} {t : ℝ}, p < (chainModel C').W.n → 0 ≤ t → t < 1 →
+      sidePt (chainModel C').W p t = tourV C' j' 0 →
+      off (chainModel C').W.n ((6 + tpos C' j' : ℕ) : ℝ) (p + t) = 0 ∨
+        (tpos C' j' = 0 ∧ off (chainModel C').W.n ((6 + tpos C' j' : ℕ) : ℝ) (p + t) = 2 * C'.m))
+    (htrans : ∀ c ∈ S, ∀ q ∈ c, q ∉ C'.dom → q ≠ tourV C' j' 0 →
+      ∃ e ∈ F, q ∈ e ∧ e ⊆ c) :
+    let ℓ := 2 * C'.m
+    let s := 2 * C.m - tpos C j
+    let s' := 2 * C'.m - tpos C' j'
+    Corr0 (chainModel C) (chainModel C') F S (6 + tpos C j) (6 + tpos C' j')
+      (if s < ℓ then ℓ + 7 else if ℓ ≤ s' then ℓ else s')
+      (if s < ℓ then 0 else if ℓ ≤ s' then 0 else ℓ - s')
+      (if s < ℓ then 0 else if ℓ ≤ s' then 0 else 7) := by
+  dsimp only
+  set ℓ := 2 * C'.m
+  set s := 2 * C.m - tpos C j
+  set s' := 2 * C'.m - tpos C' j'
+  have ht := tpos_lt C j
+  have ht' := tpos_lt C' j'
+  have hn := cm_n C
+  have hn' := cm_n C'
+  have hg : 6 + tpos C j < (chainModel C).W.n := by omega
+  have hg' : 6 + tpos C' j' < (chainModel C').W.n := by omega
+  have hv := walk_tour C' j' 0 (by omega)
+  simp [Nat.mod_eq_of_lt hg'] at hv
+  have hM := walkAx_chainModel (C := C) hP
+  have hM' := walkAx_chainModel (C := C') hP'
+  have htrans' := htrans
+  rw [← hv] at htrans'
+  have hnest : ∀ e ∈ F, ∀ e' ∈ F, e ⊆ e' → e = e' :=
+    fun _ he _ he' h => augChords_nest (hF he) (hF he') h
+  have noV (L : ℝ) (hL : tpos C' j' = 0 → L ≤ ℓ) :
+      ∀ p < (chainModel C').W.n, ∀ t : ℝ, 0 ≤ t → t < 1 →
+        0 < off (chainModel C').W.n ((6 + tpos C' j' : ℕ) : ℝ) (p + t) →
+        off (chainModel C').W.n ((6 + tpos C' j' : ℕ) : ℝ) (p + t) < L →
+        sidePt (chainModel C').W p t ≠ (chainModel C').W.vtx (6 + tpos C' j') := by
+    intro p hp t ht ht1 h0 hl hpv
+    rcases havoid hp ht ht1 (hpv.trans hv) with e | ⟨hz, e⟩
+    · exact h0.ne' e
+    · rw [e] at hl
+      have hh := hL hz
+      push_cast [ℓ] at hh
+      linarith
+  by_cases hs : s < ℓ
+  · have he := hbox hs
+    have hA := agree_Sh hT hR hℓ.le le_rfl he hs
+    simp only [hs, ite_true]
+    refine ⟨hM, hM', hF, hFf, hS, hSf, hg, hg', by omega, by omega,
+      fun _ => rfl, fun h => by omega, hA, ?_, ?_, htrans', hnest⟩
+    · intro d hd
+      have : d = 0 := by omega
+      subst d
+      simpa using hA (ℓ + 7) le_rfl
+    · simpa using noV (ℓ + 7) (fun h => absurd h (by omega))
+  by_cases hs' : ℓ ≤ s'
+  · have hA := agree_N hT (not_lt.mp hs) hs'
+    simp only [hs, hs', ite_false, ite_true]
+    refine ⟨hM, hM', hF, hFf, hS, hSf, hg, hg', by omega, by omega,
+      fun _ => rfl, fun h => by omega, hA, ?_, ?_, htrans', hnest⟩
+    · intro d hd
+      have : d = 0 := by omega
+      subst d
+      simpa using hA ℓ le_rfl
+    · simpa using noV ℓ (fun _ => le_rfl)
+  · have hA := agree_G1 hT (not_lt.mp hs) (not_le.mp hs')
+    have hB := agree_G2 hT le_rfl (not_lt.mp hs) (not_le.mp hs')
+    simp only [hs, hs', ite_false]
+    refine ⟨hM, hM', hF, hFf, hS, hSf, hg, hg', by omega, by omega,
+      fun h => by omega, fun _ => by omega, hA, ?_, noV _ (fun h => absurd h (by omega)), htrans', hnest⟩
+    intro d hd
+    simpa only [Nat.mod_add_mod] using hB d hd
+
 /-! ## The correspondence for the right side of a junction -/
 
 section CorrRight
@@ -245,8 +325,8 @@ noncomputable def rδ : ℕ :=
   else 7
 
 theorem rL1_add_rL2 : rL1 J + rL2 J = rlen J := by
-  have := tpos_lt J.right 0
-  have hm2 : J.right.m = J.m₂ := rfl
+  
+  
   unfold rL1 rL2 rlen
   split_ifs <;> omega
 
@@ -263,11 +343,11 @@ edge of the right stretch of the walk of `C`, not a cut of `F₂⁺`, faces `G`,
 position of the walk of `C₂` faces `V`. -/
 def RLabel (S₂ : Set (Set Point)) (G V : Set Point) : Prop :=
   ∃ d < rL1 J + rL2 J, ∃ t ∈ Ioo (0 : ℝ) 1,
-    ¬ (chainModel J.whole).IsCut (F₂plus J S₂)
-        ((((6 + tpos J.whole J.m₁) + d) % (chainModel J.whole).W.n : ℕ) + t) ∧
-      (chainModel J.whole).Faces (((6 + tpos J.whole J.m₁) + d) % (chainModel J.whole).W.n) t G ∧
-      (chainModel J.right).Faces
-        (((6 + tpos J.right 0) + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n) t V
+    ¬ J.wholeModel.IsCut (F₂plus J S₂)
+        ((((6 + tpos J.whole J.m₁) + d) % J.wholeModel.W.n : ℕ) + t) ∧
+      J.wholeModel.Faces (((6 + tpos J.whole J.m₁) + d) % J.wholeModel.W.n) t G ∧
+      J.rightModel.Faces
+        (((6 + tpos J.right 0) + dq (rL1 J) (rδ J) d) % J.rightModel.W.n) t V
 
 end LabelRight
 

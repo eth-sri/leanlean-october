@@ -34,7 +34,7 @@ theorem geoQ_append (i : ℕ) (A B : List (ℕ × ℕ × ℕ)) :
   constructor
   · rintro ⟨q, hq | hq, rfl⟩
     · exact Or.inl ⟨q, hq, rfl⟩
-    · exact Or.inr ⟨q, hq, rfl⟩
+    · tauto
   · rintro (⟨q, hq, rfl⟩ | ⟨q, hq, rfl⟩)
     · exact ⟨q, Or.inl hq, rfl⟩
     · exact ⟨q, Or.inr hq, rfl⟩
@@ -53,7 +53,12 @@ theorem endQ_union (S₁ S₂ : Set (Set Point)) : endQ (S₁ ∪ S₂) = endQ S
     · exact Or.inl ⟨c, Or.inr hc, rfl⟩
     · exact Or.inr ⟨c, Or.inr hc, rfl⟩
 
-theorem geo_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l) :
+section
+
+variable {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l)
+include h
+
+theorem geo_ptAns :
     geoQ J Q i l ⊆ {(z, σ)} ∧ (FreeAt J.whole z σ → (z, σ) ∈ geoQ J Q i l) := by
   refine ⟨?_, fun hf => ?_⟩
   · rintro x ⟨q, hq, rfl⟩
@@ -65,9 +70,11 @@ theorem geo_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)
       obtain ⟨-, -, hp, hd⟩ := h.1 q (by simp)
       exact ⟨q, by simp, by rw [hp, hd]⟩
 
-theorem ok_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l) :
+theorem ok_ptAns :
     ∀ q ∈ l, QueryOK J Q i q ∧ HeightOK J Q i q := fun q hq =>
   ⟨(h.1 q hq).1, (h.1 q hq).2.1⟩
+
+end
 
 /-- The chord-end queries have the heights of their codes. -/
 theorem endQL_height (i : ℕ) {N : NF} (hN : IsNF (chainModel (sideChain J i)) Q N) :
@@ -105,10 +112,10 @@ structure PtLists (v₁ v₀ t₁ t₀ k₀ t'₁ t'₀ k₁ : List (ℕ × ℕ 
   t'₀ : PtAns J Q 1 (J.whole.vertex (J.m₁ + J.right.topIdx)) (-1) t'₀
   cap : CapAns J Q k₀ k₁
 
-theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
-    (hN₂ : IsNF (chainModel J.right) Q N₂) {v₁ v₀ t₁ t₀ k₀ t'₁ t'₀ k₁ : List (ℕ × ℕ × ℕ)}
+theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF J.leftModel Q N₁)
+    (hN₂ : IsNF J.rightModel Q N₂) {v₁ v₀ t₁ t₀ k₀ t'₁ t'₀ k₁ : List (ℕ × ℕ × ℕ)}
     (hP : PtLists J Q v₁ v₀ t₁ t₀ k₀ t'₁ t'₀ k₁) :
-    Cover J Q (N₁.F (chainModel J.left) Q) (N₂.F (chainModel J.right) Q)
+    Cover J Q (N₁.F J.leftModel Q) (N₂.F J.rightModel Q)
         (endQL N₁.chords ++ (v₁ ++ v₀ ++ t₁ ++ t₀ ++ k₀))
         (endQL N₂.chords ++ (t'₁ ++ t'₀ ++ k₁)) ∧
       (∀ q ∈ endQL N₁.chords ++ (v₁ ++ v₀ ++ t₁ ++ t₀ ++ k₀),
@@ -118,8 +125,8 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
   have hN₂' : IsNF (chainModel (sideChain J 1)) Q N₂ := hN₂
   obtain ⟨ok₁, ge₁⟩ := endQL_ok J Q 0 hN₁'
   obtain ⟨ok₂, ge₂⟩ := endQL_ok J Q 1 hN₂'
-  have ge₁' : geoQ J Q 0 (endQL N₁.chords) = endQ (N₁.F (chainModel J.left) Q) := ge₁
-  have ge₂' : geoQ J Q 1 (endQL N₂.chords) = endQ (N₂.F (chainModel J.right) Q) := ge₂
+  have ge₁' : geoQ J Q 0 (endQL N₁.chords) = endQ (N₁.F J.leftModel Q) := ge₁
+  have ge₂' : geoQ J Q 1 (endQL N₂.chords) = endQ (N₂.F J.rightModel Q) := ge₂
   have he₁ := endQL_height J Q 0 hN₁'
   have he₂ := endQL_height J Q 1 hN₂'
   obtain ⟨gv₁, fv₁⟩ := geo_ptAns J Q hP.v₁
@@ -174,7 +181,7 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
     · obtain ⟨e0, e1⟩ := hc2 hx
       subst e0 e1
       exact ⟨fun q hq => by simp at hq, fun q hq => by simp at hq⟩
-  set Z := fuseZ J (N₁.F (chainModel J.left) Q) (N₂.F (chainModel J.right) Q) with hZ
+  set Z := fuseZ J (N₁.F J.leftModel Q) (N₂.F J.rightModel Q) with hZ
   have zv₁ : (J.whole.vertex J.m₁, (1 : ℝ)) ∈ Z := Or.inl (Or.inl (Or.inr (Or.inl rfl)))
   have zv₀ : (J.whole.vertex J.m₁, (-1 : ℝ)) ∈ Z := Or.inl (Or.inl (Or.inr (Or.inr rfl)))
   have zt₁ : (J.whole.vertex J.left.topIdx, (1 : ℝ)) ∈ Z :=
@@ -185,9 +192,9 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
     Or.inl (Or.inr (Or.inr (Or.inl rfl)))
   have zs₀ : (J.whole.vertex (J.m₁ + J.right.topIdx), (-1 : ℝ)) ∈ Z :=
     Or.inl (Or.inr (Or.inr (Or.inr rfl)))
-  have ze₁ : endQ (N₁.F (chainModel J.left) Q) ⊆ Z := fun x h =>
+  have ze₁ : endQ (N₁.F J.leftModel Q) ⊆ Z := fun x h =>
     Or.inl (Or.inl (Or.inl (by rw [endQ_union]; exact Or.inl h)))
-  have ze₂ : endQ (N₂.F (chainModel J.right) Q) ⊆ Z := fun x h =>
+  have ze₂ : endQ (N₂.F J.rightModel Q) ⊆ Z := fun x h =>
     Or.inl (Or.inl (Or.inl (by rw [endQ_union]; exact Or.inr h)))
   have zk : capQ J ⊆ Z := fun x h => Or.inr h
   have sing : ∀ {i : ℕ} {l : List (ℕ × ℕ × ℕ)} {y : Point × ℝ}, geoQ J Q i l ⊆ {y} → y ∈ Z →

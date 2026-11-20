@@ -58,7 +58,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
     exact hnot c hc s hs hsT.2
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     refine heR ⟨?_, hdom s hs0 hsT.2⟩
     rw [heq]; exact (mem_chordOf hσ hT.le).2 ⟨s, hs0.le, hsT.2.le, rfl⟩
   by_cases hcut : M.IsCut S ((p : ℝ) + t)
@@ -69,7 +69,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
     obtain ⟨d, hd, -, -, hcd⟩ := attached_opposite hM (hS hc) hA' hσ (hav c hc)
     obtain ⟨r, hr, hloc⟩ := hA'.2.2.2.2
     set s := min d r / 2 with hs
-    have hmin : 0 < min d r := lt_min hd hr
+    have hmin := lt_min hd hr
     have hs0 : 0 < s := by rw [hs]; linarith
     have hsd : s < d := by rw [hs]; linarith [min_le_left d r]
     have hsr : s < r := by rw [hs]; linarith [min_le_right d r]
@@ -80,15 +80,14 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
       have := congrArg Prod.fst h
       simp only [Visibility.rayPt] at this
       rcases hσ with rfl | rfl <;> linarith
-    have h2 := hloc _ hxc hxne (by rw [dist_rayPt _ hσ' hs0.le]; exact hsr)
+    have h2 := hloc _ hxc hxne (by rwa [dist_rayPt _ hσ' hs0.le])
     have h1 := (sideLeft_rayPt_iff _ p t σ one_pos hs0).1 hsec
     exact interior_sides hM hp ht0 ht1 h1 h2
   · obtain ⟨X, hX, l, r, harc, hin⟩ := hM.arc_around hS hfin hne hcut
     have hev := ray_mem_region_of_arc hGM hFam hX hp ht0.le ht1 harc hin hσ hsec
-    obtain ⟨s, h1, h2⟩ := (hev.and hrayR).exists
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · subst h; exact ⟨l, r, harc, hin⟩
-    · exact absurd (Set.disjoint_left.1 h h1) (not_not.2 h2)
+    have heq := Chazelle.Chain.regionsIn_eq_of_eventually_mem hX hR hev hrayR
+    subst heq
+    exact ⟨l, r, harc, hin⟩
 
 end
 

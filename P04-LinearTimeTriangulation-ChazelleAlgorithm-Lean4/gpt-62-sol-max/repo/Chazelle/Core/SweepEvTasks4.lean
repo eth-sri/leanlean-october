@@ -44,7 +44,7 @@ noncomputable def curLab (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Con
 
 /-- The offsets of all possible keys (`CountTask`). -/
 def keyS (P : Polygon) (J : Merge.Junction) (N₁ N₂ : NF) : Set ℝ :=
-  cutOffs J (N₂.F (chainModel J.right) (Qof P)) ∪ winOffs P J N₁
+  cutOffs J (N₂.F J.rightModel (Qof P)) ∪ winOffs P J N₁
 
 /-- The offset of stop `i`. -/
 noncomputable def stopOff (P : Polygon) (J : Merge.Junction) (c : Config) (i : ℕ) : ℝ :=
@@ -55,7 +55,7 @@ def StopData (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config)
     (rs ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)) : Prop :=
   rs.length = c.nreg sC ∧ ax.length = rs.length ∧
     StopRecsAt c.nmem (c.nreg sB) rs ∧ AuxRecsAt c.nmem (c.nreg aB) ax ∧
-    StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs) ∧
+    StopsOK J (N₂.F J.rightModel (Qof P)) (stopsOf J (Qof P) N₂ rs) ∧
     (∀ r ∈ rs, PosW P J r.1 r.2.1 ∧ r.2.2.1 ≤ 2 ∧ r.2.2.2.2 ≤ 1 ∧
       (r.2.2.1 = 1 → r.2.2.2.1 < N₂.nChords)) ∧
     (∀ i, i < rs.length → AuxOK P J N₂
@@ -67,7 +67,7 @@ def StopData (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config)
 def LogPre (J : Merge.Junction) (S₂ : Set (Set Point)) (es : List (ℕ × ℝ × Set (Set Point))) :
     Prop :=
   es ≠ [] ∧
-  (∀ x ∈ es, x.1 < (chainModel J.whole).W.n ∧ 0 ≤ x.2.1 ∧ x.2.1 < 1 ∧
+  (∀ x ∈ es, x.1 < J.wholeModel.W.n ∧ 0 ≤ x.2.1 ∧ x.2.1 < 1 ∧
     (Lst J : ℝ) ≤ oW J (x.1 + x.2.1)) ∧
   (∀ x ∈ es.head?, oW J (x.1 + x.2.1) = Lst J) ∧
   es.Pairwise (fun x y => oW J (x.1 + x.2.1) < oW J (y.1 + y.2.1)) ∧
@@ -90,14 +90,14 @@ def TabInv (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) (o : ℝ)
   ∀ j, j < 2 * N₂.nChords →
     c.nmem (c.nreg cTB + 3 * j) ≤ 1 ∧
     (c.nmem (c.nreg cTB + 3 * j) = 1 →
-      CandOK P J (N₂.F (chainModel J.right) (Qof P)) (endOrigin J (Qof P) N₂ j) (endDir j)
+      CandOK P J (N₂.F J.rightModel (Qof P)) (endOrigin J (Qof P) N₂ j) (endDir j)
         (c.nmem (c.nreg cTB + 3 * j + 1)) (c.nmem (c.nreg cTB + 3 * j + 2))) ∧
     (ValidJ J (Qof P) N₂ j →
       J.whole.hitParam (endOrigin J (Qof P) N₂ j) (endDir j) <
         J.right.hitParam (endOrigin J (Qof P) N₂ j) (endDir j) →
-      ∀ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W
+      ∀ (p : ℕ) (t : ℝ), SideAttach J.wholeModel.W
           (Merge.shoot J.whole (endOrigin J (Qof P) N₂ j) (endDir j)) p t →
-        sidePt (chainModel J.whole).W p t = rayPt (endOrigin J (Qof P) N₂ j) (endDir j)
+        sidePt J.wholeModel.W p t = rayPt (endOrigin J (Qof P) N₂ j) (endDir j)
           (J.whole.hitParam (endOrigin J (Qof P) N₂ j) (endDir j)) →
         (Lst J : ℝ) < oW J (p + t) → oW J (p + t) ≤ o → c.nmem (c.nreg cTB + 3 * j) = 1)
 
@@ -121,19 +121,19 @@ structure LoopInv (P : Polygon) (J : Merge.Junction) (N₁ N₂ : NF) (c₀ c : 
   keyL : (Lst J : ℝ) ≤ keyOff P J c
   labN : c.nreg kN ≤ 4
   labR : ∀ i, i < c.nreg kN → c.nreg (kL + i) < N₂.nRegions
-  inv : EvInv J (N₂.F (chainModel J.right) (Qof P)) (keyOff P J c) (curLab P J N₂ c)
+  inv : EvInv J (N₂.F J.rightModel (Qof P)) (keyOff P J c) (curLab P J N₂ c)
   /-- the gap regions -/
   gapN : c.nreg gN ≤ 2
   gapR : ∀ i, i < c.nreg gN → c.nreg (gR + i) < N₂.nRegions
-  gap : ∀ V, GapLab J (N₂.F (chainModel J.right) (Qof P)) V →
-    ∃ i, i < c.nreg gN ∧ regOf (chainModel J.right) (Qof P) N₂ (c.nreg (gR + i)) = V
+  gap : ∀ V, GapLab J (N₂.F J.rightModel (Qof P)) V →
+    ∃ i, i < c.nreg gN ∧ regOf J.rightModel (Qof P) N₂ (c.nreg (gR + i)) = V
   /-- the stop pointer: the stops at or before the key -/
   ptr : c.nreg sP ≤ c.nreg sC
   ptrL : ∀ i, i < c.nreg sC → (i < c.nreg sP ↔ stopOff P J c i ≤ keyOff P J c)
   /-- the log so far, ending with the current key -/
   log : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls.length = c.nreg lC ∧
     LogRecsAt c.nmem (c.nreg lB) ls ∧ LogWords P J N₂ ls ∧
-    LogPre J (N₂.F (chainModel J.right) (Qof P)) (logOf J (Qof P) N₂ ls) ∧
+    LogPre J (N₂.F J.rightModel (Qof P)) (logOf J (Qof P) N₂ ls) ∧
     ls.getLast? = some (c.nreg kE, c.nreg kH, c.nreg kN, c.nreg kL, c.nreg (kL + 1),
       c.nreg (kL + 2), c.nreg (kL + 3))
   /-- the measure: the log records and the keys left -/
@@ -155,7 +155,7 @@ the reset), `co` (after the origins) to `c'` (after the next key). -/
 def IterRel (P : Polygon) (J : Merge.Junction) (N₁ N₂ : NF) (c cw cs co c' : Config) : Prop :=
   WinOut P J N₁ c cw ∧ c.nreg ALLOC ≤ cw.nreg ALLOC ∧ ResetRel cw cs ∧
     BatchInv P J N₂ cs
-      (ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [])
+      (ShotList.loSet J.leftModel (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [])
       (iterO N₂ cs) co ∧
     KeyOut P J co c'
 

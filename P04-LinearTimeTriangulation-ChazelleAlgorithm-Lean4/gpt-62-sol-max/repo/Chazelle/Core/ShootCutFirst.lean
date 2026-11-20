@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.ShootCutGen
 
 /-!
@@ -35,33 +37,32 @@ theorem uFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       (∀ x, x ≠ dst → x ≠ idx → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold uFlag uIx
   by_cases hp6 : p < 6
-  · refine spec_ifLtN_true (by rw [hs, h96]; exact hp6) ?_
+  · refine spec_ifLtN_true (by rwa [hs, h96]) ?_
     refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
     refine spec_step (Exec.addN w₁ _ _ _ (by
-      simp only [upd, h1, Ne.symm h3, ite_false]; rw [hs, h91]; omega))
+      ram_finish [upd, h1, Ne.symm h3, ite_false, hs, h91]))
       fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-    · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-    · simp only [upd, ite_true, h1, Ne.symm h3, ite_false]
-      rw [hs, h91, ite_eq_left (by omega)]
-    · simp only [upd, hx1, hx2, ite_false]
+    · ram_finish [upd, h2, ite_false, ite_true, ite_eq_left]
+    · ram_finish [upd, ite_true, h1, Ne.symm h3, ite_false, hs, h91, ite_eq_left]
+    simp_all
   · by_cases hpm : p < 2 * m + 6
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_true (by rw [hs, h32]; exact hpm) ?_)
+    · refine spec_ifLtN_false (by rwa [hs, h96])
+        (spec_ifLtN_true (by rwa [hs, h32]) ?_)
       refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
       refine spec_step (Exec.constN w₁ _ _ (by omega))
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
-    · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
-        (spec_ifLtN_false (by rw [hs, h32]; exact hpm)
+      · ram_finish [upd, h2, ite_false, ite_true, ite_eq_right]
+      · ram_finish [upd, ite_true, ite_eq_right]
+      simp_all
+    · refine spec_ifLtN_false (by rwa [hs, h96])
+        (spec_ifLtN_false (by rwa [hs, h32])
           (spec_ifLtN_false (by rw [hs, h32]; omega) ?_))
       refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
       refine spec_step (Exec.constN w₁ _ _ (by omega))
         fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
+      · ram_finish [upd, h2, ite_false, ite_true, ite_eq_left]
       · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
+      simp_all
 
 /-! ## The pieces of kind `0` -/
 
@@ -129,18 +130,23 @@ theorem leaf_exec {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List Pc
       (∀ r, Keep r → d₁.nreg r = d.nreg r))
     (hT : ∀ d₂ : Config, WordsBounded W d₂ → (∀ r, Keep r → d₂.nreg r = d.nreg r) →
       ∃ d₃, Exec P W (.instr T) d₂ d₃ 1 ∧ FrameB Scr d₂ d₃ ∧ post d₃ ∧
-        (∀ r, r ≠ tgt → d₃.nreg r = d₂.nreg r) ∧ d₃.nmem = d₂.nmem) :
+        (Machine.NRegEqExcept tgt d₂ d₃) ∧ d₃.nmem = d₂.nmem) :
     ∃ d' k, Exec P W (.seq B (.seq emit (.instr T))) d d' k ∧ k ≤ K + 6 ∧
       I (ps ++ [pc]) d' ∧ post d' ∧ (∀ r, Keep r → r ≠ tgt → d'.nreg r = d.nreg r) ∧
-      (∀ a, a < A₀ → d'.nmem a = d.nmem a) := by
+      (MemEqBelow A₀ d'.nmem d.nmem) := by
   obtain ⟨d₁, k₁, e₁, hk₁, hR, fr₁, kp₁⟩ := hB
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp₂, mem₂⟩ := hE.run _ pc d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   obtain ⟨d₃, e₃, fr₃, hp₃, r₃, m₃⟩ := hT d₂ e₂.wb_right fun r hr => (kp₂ r hr).trans (kp₁ r hr)
   refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega, hE.stable _ _ _ hI₂ fr₃, hp₃,
-    fun r hr h1 => by rw [r₃ r h1, kp₂ r hr, kp₁ r hr], fun a ha => ?_⟩
+    fun r hr h1 => by ram_finish, fun a ha => ?_⟩
   rw [m₃, mem₂ a ha, fr₁.2.2.1]
 
-theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {s e : WPos}
+section
+
+variable {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W)
+include hw hW
+
+theorem pcSE_exec {s e : WPos}
     (h01 : d.nreg 150001 = s.edge) (h02 : d.nreg 150002 = s.hgt) (h03 : d.nreg 150003 = e.edge)
     (h04 : d.nreg 150004 = e.hgt) :
     ∃ d₁ k₁, Exec P W pcSE d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pSE s e) ∧ FrameB Scr d d₁ ∧
@@ -148,7 +154,7 @@ theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
   obtain ⟨d₁, k₁, e₁, hk₁, v50, v51, v52, v53, v54, r₁⟩ : ∃ d₁ k₁, Exec P W pcSE d d₁ k₁ ∧
       k₁ = 5 ∧ d₁.nreg 150050 = s.edge ∧ d₁.nreg 150051 = s.hgt ∧ d₁.nreg 150052 = e.edge ∧
       d₁.nreg 150053 = e.hgt ∧ d₁.nreg 150054 = 0 ∧
-      (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
+      (Machine.NRegEqOutside 150050 150055 d d₁) := by
     unfold pcSE
     exec_block
     all_goals first | omega | skip
@@ -157,16 +163,16 @@ theorem pcSE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    exec_frameB e₁ (by decide), fun r hr => r₁ r (by reg_omega)⟩
 
-theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {s : WPos} {v : ℕ}
+theorem pcSV_exec {s : WPos} {v : ℕ}
     (h01 : d.nreg 150001 = s.edge) (h02 : d.nreg 150002 = s.hgt) (h75 : d.nreg 150075 = v) :
     ∃ d₁ k₁, Exec P W pcSV d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pSV s v) ∧ FrameB Scr d d₁ ∧
       (∀ r, Keep r → d₁.nreg r = d.nreg r) := by
   obtain ⟨d₁, k₁, e₁, hk₁, v50, v51, v52, v53, v54, r₁⟩ : ∃ d₁ k₁, Exec P W pcSV d d₁ k₁ ∧
       k₁ = 5 ∧ d₁.nreg 150050 = s.edge ∧ d₁.nreg 150051 = s.hgt ∧ d₁.nreg 150052 = v ∧
       d₁.nreg 150053 = 0 ∧ d₁.nreg 150054 = 0 ∧
-      (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
+      (Machine.NRegEqOutside 150050 150055 d d₁) := by
     unfold pcSV
     exec_block
     all_goals first | omega | skip
@@ -175,16 +181,16 @@ theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSV] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    exec_frameB e₁ (by decide), fun r hr => r₁ r (by reg_omega)⟩
 
-theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {e : WPos} {v : ℕ}
+theorem pcVE_exec {e : WPos} {v : ℕ}
     (h75 : d.nreg 150075 = v) (h03 : d.nreg 150003 = e.edge) (h04 : d.nreg 150004 = e.hgt) :
     ∃ d₁ k₁, Exec P W pcVE d d₁ k₁ ∧ k₁ ≤ 5 ∧ PcRegs d₁ (pVE v e) ∧ FrameB Scr d d₁ ∧
       (∀ r, Keep r → d₁.nreg r = d.nreg r) := by
   obtain ⟨d₁, k₁, e₁, hk₁, v50, v51, v52, v53, v54, r₁⟩ : ∃ d₁ k₁, Exec P W pcVE d d₁ k₁ ∧
       k₁ = 5 ∧ d₁.nreg 150050 = v ∧ d₁.nreg 150051 = 0 ∧ d₁.nreg 150052 = e.edge ∧
       d₁.nreg 150053 = e.hgt ∧ d₁.nreg 150054 = 0 ∧
-      (∀ r, (r < 150050 ∨ 150055 ≤ r) → d₁.nreg r = d.nreg r) := by
+      (Machine.NRegEqOutside 150050 150055 d d₁) := by
     unfold pcVE
     exec_block
     all_goals first | omega | skip
@@ -193,7 +199,9 @@ theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
   exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pVE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+    exec_frameB e₁ (by decide), fun r hr => r₁ r (by reg_omega)⟩
+
+end
 
 end
 

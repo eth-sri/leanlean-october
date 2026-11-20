@@ -76,7 +76,7 @@ structure PassInv {P : Polygon} {W : ℕ} {M : Model} {L : List (ℕ × ℕ × �
   rhd : d.nreg 44021 = hd
   r19 : d.nreg 41019 = 1
   r23 : d.nreg 41023 = mB D
-  low : ∀ a, a < H → d.nmem a = mB a
+  low : MemEqBelow H d.nmem mB
   stack : ∀ k, k < (stk E m).length → d.nmem (ST + k) = (stk E m).getD k 0 + 1
   chords : ∀ x, x < L.length → x ∈ (cw E).take m → ∀ f, f < 5 →
     d.nmem (CT + 5 * x + f) = cf (chordRec M (Qof P) L E x) f

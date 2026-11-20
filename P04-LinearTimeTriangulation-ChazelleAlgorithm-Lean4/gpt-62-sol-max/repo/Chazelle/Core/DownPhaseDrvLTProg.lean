@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Core.RestoreDrvProg
+
 public import Chazelle.Core.DownPhaseDrvRSplH
 
 /-!
@@ -36,13 +38,8 @@ open Machine Machine.Stmt Programs
 def ltInit : Stmt := block [.constN 211100 1, .constN 211101 3, .constN 210034 1,
   .copyN 211110 9999, .constN 211111 0]
 
-/-- Reserve five words. -/
-def ltResBody : Stmt := block [.addN 9999 9999 211100, .addN 9999 9999 211100,
-  .addN 9999 9999 211100, .addN 9999 9999 211100, .addN 9999 9999 211100,
-  .addN 211111 211111 211100]
-
-/-- The reservation loop (`5 K₂` words). -/
-def ltRes : Stmt := .whileLtN 211111 211012 ltResBody
+/-- Reserve five words for each record. -/
+def ltRes : Stmt := Restore.reserveLoop 5 211111 211012 211100
 
 /-- The bucket base, the write pointers, the region loop set-up. -/
 def ltMid : Stmt := block [.addN 211147 211012 211012, .addN 211147 211147 211012,

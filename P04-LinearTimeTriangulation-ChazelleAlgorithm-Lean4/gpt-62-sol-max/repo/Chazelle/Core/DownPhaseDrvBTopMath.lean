@@ -40,7 +40,7 @@ theorem liBit_iff {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} (h : ModelDescAt m D
   unfold liBit; rw [decide_eq_true_iff]; exact (desc_int h).2
 
 theorem descWF_int {P : Polygon} {A : ℕ} {m : ℕ → ℕ} {D : ℕ}
-    (h : ModelDescAt m D (Qof P) (interiorModel (Qof P))) (hA : D + 6 ≤ A) :
+    (h : ModelDescAt m D (Qof P) (inputModel P)) (hA : D + 6 ≤ A) :
     ModelDescWF P A m D :=
   ⟨hA, fun h0 => by have := (desc_int h).1; omega⟩
 
@@ -57,27 +57,32 @@ section sizes
 
 variable {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {li : Bool} {γ : ℕ}
 
+section
+
+variable (hG : GoodEnv P) (hok : ChordTriplesOK (inputModel P) (Qof P) L)
+    (hperm : E.Perm (List.range (2 * L.length)))
+    (hsort : E.Pairwise (codeLe (inputModel P) (Qof P) L))
+include hG hok hperm hsort
+
 set_option maxHeartbeats 1000000 in
 /-- **The bounds of the region loop.** -/
-theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L)
-    (hperm : E.Perm (List.range (2 * L.length)))
-    (hsort : E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L))
-    (hdeg : (interiorModel (Qof P)).DegLe
-      ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) 4)
-    (hwt : (interiorModel (Qof P)).Semigranular
-      ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) γ)
+theorem reg_sizes
+    (hdeg : P.inputModel.DegLe
+      (inputChords P L E) 4)
+    (hwt : P.inputModel.Semigranular
+      (inputChords P L E) γ)
     (hli : li = true ↔ Mountain.LeftInside (Qof P)) :
     (∀ r, r < L.length + 1 → (ptsB li (Qof P) L E r).length ≤ 5 * γ + 8) ∧
       (L.length = 0 → P.n ≤ γ + 2) ∧
       (∀ r, r < L.length + 1 →
-        ∀ j ∈ ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-          arcCnt P.n ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).arc j) ≤ γ + 2) := by
+        ∀ j ∈ ((inputNF P L E).region r).arcs,
+          arcCnt P.n ((inputNF P L E).arc j) ≤ γ + 2) := by
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
   have hn : (Qof P).n = P.n := shear_n _ _
   have hn3 : 3 ≤ (Qof P).n := by have := hQ.1; omega
   by_cases hK : L.length = 0
-  · have hL : L = [] := List.length_eq_zero_iff.1 hK
+  · have hL := List.length_eq_zero_iff.1 hK
     subst hL
     have hE : E = [] := by
       have := hperm.length_eq
@@ -88,43 +93,42 @@ theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P))
       rw [ite_eq_left hK, wlist_length, host_run_length (by omega)]
       omega
     · unfold arcCnt
-      have := Nat.mod_lt ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) [] E).arc j).e.edge
-        (show 0 < P.n by omega)
-      have := Nat.mod_lt (((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) [] E).arc j).e.edge +
-        P.n - ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) [] E).arc j).s.edge)
+      
+      have := Nat.mod_lt (((inputNF P [] E).arc j).e.edge +
+        P.n - ((inputNF P [] E).arc j).s.edge)
         (show 0 < P.n by omega)
       omega
   · obtain ⟨-, -, -, reg, hRC, hCS, hAO, hRO, -⟩ := DownMath.isNF_build hQ hok hperm hsort
     have B : BaseCtx (Qof P) L E reg li := ⟨hQ, hDH, hok, hperm, hsort, by omega,
       ⟨hRC, hCS, hAO, hRO⟩, hli⟩
     have hR : ∀ r, r < L.length + 1 →
-        r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions := fun r hr => by
+        r < (inputNF P L E).nRegions := fun r hr => by
       simp only [NF.nRegions, BuildNF.buildNF, List.length_map, List.length_range]; exact hr
     refine ⟨fun r hr => ?_, fun h => absurd h hK, fun r hr j hj => ?_⟩
     · unfold ptsB
       rw [ite_eq_right hK]
-      have h1 := regPts_length_le B (hR r hr) hwt
+      have h1 : (regPts li (Qof P).n (interiorNF (Qof P) L E) r).length ≤
+          (P.inputModel.deg (inputChords P L E) (reg r) + 1) * γ +
+            2 * P.inputModel.deg (inputChords P L E) (reg r) :=
+        regPts_length_le B (hR r hr) hwt
       have h2 := hdeg _ (B.hregs.1.1 r (hR r hr))
-      have h3 : ((interiorModel (Qof P)).deg
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P))
+      have h3 : (P.inputModel.deg
+          (inputChords P L E)
           (reg r) + 1) * γ ≤ 5 * γ := Nat.mul_le_mul_right _ (by omega)
       omega
     · have := arcCnt_le B (hR r hr) hwt hj
-      rw [hn] at this
-      exact this
+      rwa [hn] at this
 
 /-- **The completed chord list**: valid, and containing every vertex chord of `Q`. -/
-theorem newLB_facts (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L)
-    (hperm : E.Perm (List.range (2 * L.length)))
-    (hsort : E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L))
+theorem newLB_facts
     (hli : li = true ↔ Mountain.LeftInside (Qof P)) :
-    ChordTriplesOK (interiorModel (Qof P)) (Qof P) (L ++ newLB li (Qof P) L E) ∧
-      chords (Qof P) ⊆ famL (interiorModel (Qof P)) (Qof P) (L ++ newLB li (Qof P) L E) := by
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
+    ChordTriplesOK (inputModel P) (Qof P) (L ++ newLB li (Qof P) L E) ∧
+      chords (Qof P) ⊆ famL (inputModel P) (Qof P) (L ++ newLB li (Qof P) L E) := by
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
+  have hDH := (goodShear_epsOf hG.2).2.1
   by_cases hK : L.length = 0
   · rw [newLB_zero li (Qof P) E hK]
-    have hL : L = [] := List.length_eq_zero_iff.1 hK
+    have hL := List.length_eq_zero_iff.1 hK
     subst hL
     rw [List.nil_append]
     exact ⟨newL0_ok hQ hDH hli, newL0_full hQ hDH hli⟩
@@ -133,6 +137,8 @@ theorem newLB_facts (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P
     have B : BaseCtx (Qof P) L E reg li := ⟨hQ, hDH, hok, hperm, hsort, by omega,
       ⟨hRC, hCS, hAO, hRO⟩, hli⟩
     exact ⟨newL_ok B, newL_full B⟩
+
+end
 
 end sizes
 
@@ -143,8 +149,7 @@ theorem count_le {K c p b : ℕ} (h : K * 2 ^ b ≤ c * (2 ^ p + 2 ^ b)) : K ≤
   have h1 : 1 ≤ 2 ^ b := Nat.one_le_two_pow
   have h2 : c * (2 ^ p + 2 ^ b) ≤ c * (2 ^ p + 1) * 2 ^ b := by
     have : 2 ^ p + 2 ^ b ≤ (2 ^ p + 1) * 2 ^ b := by
-      have : 2 ^ p ≤ 2 ^ p * 2 ^ b := Nat.le_mul_of_pos_right _ (by omega)
-      rw [Nat.add_mul, Nat.one_mul]; omega
+      simp_all [Nat.add_mul, Nat.one_mul] <;> omega
     calc c * (2 ^ p + 2 ^ b) ≤ c * ((2 ^ p + 1) * 2 ^ b) := Nat.mul_le_mul_left _ this
       _ = c * (2 ^ p + 1) * 2 ^ b := by ring
   exact Nat.le_of_mul_le_mul_right (h.trans h2) (by omega)
@@ -164,7 +169,7 @@ def topK (κR κS κD κB Cc Γ : ℕ) : ℕ :=
 
 theorem topK_ge {κR κS κD κB Cc Γ : ℕ} (h : 1 ≤ κS) : 20 * Γ + 73 ≤ topK κR κS κD κB Cc Γ := by
   unfold topK
-  have h1 : 1 ≤ κS * (9 * Cc + 2) := Nat.mul_le_mul h (by omega : 1 ≤ 9 * Cc + 2)
+  have h1 := Nat.mul_le_mul h (by omega : 1 ≤ 9 * Cc + 2)
   have h2 : 20 * Γ + 33 ≤ κS * (9 * Cc + 2) * (20 * Γ + 33) := Nat.le_mul_of_pos_left _ (by omega)
   omega
 

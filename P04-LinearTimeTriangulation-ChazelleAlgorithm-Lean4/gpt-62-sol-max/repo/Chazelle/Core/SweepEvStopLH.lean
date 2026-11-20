@@ -1,6 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepEvStopH
+public import Chazelle.Core.SweepEvStopM3
 
 /-!
 # The sweep (WP-D), stage 2: a local hit in a chain model (RAM)
@@ -108,90 +111,72 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   set D := c₀.nreg (sw 6) with hDd
   set T := c₀.nreg TLR with hTd
   unfold lhRun lhRunK at *
-  have hDR : ∀ r, DR r → bandOf r ∉ oracleBands ∧ r ≠ ALLOC ∧ ¬ LHR r ∧ 240000 ≤ r ∧ r < 250000 :=
-    fun r h => by
-      unfold DR at h
-      refine ⟨not_oracle_sw (by omega) (by omega), by unfold ALLOC; omega, ?_, by omega, by omega⟩
-      unfold LHR sw; omega
+  
   -- 1. the setup
   have hok : okB W c.nmem (lhSetL md cd nf nr) c.nreg := by
-    simp only [lhSetL, okB, okI]
-    exact ⟨iscr_sw (by unfold lMD sw; omega) (by unfold lMD sw; omega),
-      iscr_sw (by unfold lCD sw; omega) (by unfold lCD sw; omega),
-      iscr_sw (by unfold lNF sw; omega) (by unfold lNF sw; omega),
-      iscr_sw (by unfold lN sw; omega) (by unfold lN sw; omega),
-      ⟨iscr_sw (by unfold lT sw; omega) (by unfold lT sw; omega), Nat.zero_le _⟩,
-      ⟨iscr_sw (by unfold accA sw; omega) (by unfold accA sw; omega), Nat.zero_le _⟩, trivial⟩
+    simp only [lhSetL, reg_check]
+    exact ⟨iscr_sw (by reg_omega) (by reg_omega),
+      iscr_sw (by reg_omega) (by reg_omega),
+      iscr_sw (by reg_omega) (by reg_omega),
+      iscr_sw (by reg_omega) (by reg_omega),
+      ⟨iscr_sw (by reg_omega) (by reg_omega), Nat.zero_le _⟩,
+      ⟨iscr_sw (by reg_omega) (by reg_omega), Nat.zero_le _⟩, trivial⟩
   refine IRS.seq (K₁ := 6) (K₂ := 42030 + localK T Fg (D + 1) D)
-    ((IRS.block _ hI hok).mono (by simp [lhSetL]) (fun _ h => h)) ?_
+    ((IRS.block _ hI hok).budget (by simp [lhSetL])) ?_
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   obtain ⟨v1, v2, v3, v4, v5, v6, vo⟩ := lhSet_val c.nmem c.nreg hd hc hn hr
   have r1 : ∀ r v, regB c.nmem (lhSetL md cd nf nr) c.nreg r = v → c₁.nreg r = v :=
-    fun r v h => by rw [hc₁]; exact h
+    fun r v h => by rwa [hc₁]
   have m1 : c₁.nmem = c.nmem := by rw [hc₁]
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ _ (vo _ (by unfold lMD ALLOC sw; omega)
-    (by unfold lCD ALLOC sw; omega) (by unfold lNF ALLOC sw; omega) (by unfold lN ALLOC sw; omega)
-    (by unfold lT ALLOC sw; omega) (by unfold accA ALLOC sw; omega))
-  have keep1 : ∀ q, q ≠ lMD → q ≠ lCD → q ≠ lNF → q ≠ lN → q ≠ lT → q ≠ accA →
-      c₁.nreg q = c.nreg q := fun q a b d e f g => r1 _ _ (vo q a b d e f g)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := r1 _ _ (ram_app% (vo _ ?_
+    ?_ ?_ ?_
+    ?_ ?_))
+  have keep1 := fun q a b d e f g => r1 _ _ (vo q a b d e f g)
   have kD : ∀ r, DR r → c₁.nreg r = c.nreg r := fun r h => by
     unfold DR at h
-    exact keep1 r (by unfold lMD sw; omega) (by unfold lCD sw; omega) (by unfold lNF sw; omega)
-      (by unfold lN sw; omega) (by unfold lT sw; omega) (by unfold accA sw; omega)
+    exact keep1 r (by reg_omega) (by reg_omega) (by reg_omega)
+      (by reg_omega) (by reg_omega) (by reg_omega)
   have s1E : c₁.nreg lE = x.edge := by
-    rw [keep1 lE (by unfold lE lMD sw; omega) (by unfold lE lCD sw; omega)
-      (by unfold lE lNF sw; omega) (by unfold lE lN sw; omega) (by unfold lE lT sw; omega)
-      (by unfold lE accA sw; omega)]; exact hxE
+    ram_simp [keep1] <;> reg_omega
   have s1H : c₁.nreg lH = x.hgt := by
-    rw [keep1 lH (by unfold lH lMD sw; omega) (by unfold lH lCD sw; omega)
-      (by unfold lH lNF sw; omega) (by unfold lH lN sw; omega) (by unfold lH lT sw; omega)
-      (by unfold lH accA sw; omega)]; exact hxH
-  have s1D : c₁.nreg lD = c.nreg lD := keep1 lD (by unfold lD lMD sw; omega)
-    (by unfold lD lCD sw; omega) (by unfold lD lNF sw; omega) (by unfold lD lN sw; omega)
-    (by unfold lD lT sw; omega) (by unfold lD accA sw; omega)
-  have hctx₁ : ChainCtx P W c₁ cd C := hM.hctx.transport (kD cd hc) (fun a _ => by rw [m1])
+    ram_simp [keep1] <;> reg_omega
+  have s1D : c₁.nreg lD = c.nreg lD := keep1 lD (by reg_omega)
+    (by reg_omega) (by reg_omega) (by reg_omega)
+    (by reg_omega) (by reg_omega)
+  have hctx₁ := hM.hctx.transport (kD cd hc) (fun a _ => by rw [m1])
     (by rw [hA1])
-  have hnr₁ : c₁.nreg nr = 2 * C.m + 7 := by rw [kD nr hr]; exact hnr
+  have hnr₁ : c₁.nreg nr = 2 * C.m + 7 := by rwa [kD nr hr]
   have hPW : P.n + 1 ≤ W := by unfold hostWords at hWh; omega
   -- 2. the height code
   refine IRS.seq (K₁ := 42030) (K₂ := localK T Fg (D + 1) D)
     (hHgt_irs hc hr hI₁ hK hctx₁ hnr₁ s1E s1H he hpp hcl hy (by omega) hPW) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨k, s2E, s2H, hkl, hkh, hkpar, hkpos, hkpp, k2, hA₂'', m2⟩
   set xs : WPos := ⟨x.edge, k + 1⟩ with hxs
-  have keep2 : ∀ r, bandOf r ∉ oracleBands → r ≠ lH → (r < sw 720 ∨ sw 726 < r) → r ≠ ALLOC →
-      c₂.nreg r = c₁.nreg r := k2
-  have k2s : ∀ r, 240000 ≤ r → r < 250000 → r ≠ lH → (r < sw 720 ∨ sw 726 < r) →
-      c₂.nreg r = c₁.nreg r := fun r h1 h2 h3 h4 =>
-    keep2 r (not_oracle_sw h1 h2) h3 h4 (by unfold ALLOC; omega)
+  have keep2 := k2
+  have k2s := fun r h1 h2 h3 h4 =>
+    keep2 r (not_oracle_sw h1 h2) h3 h4 (by reg_omega)
   have s2D : c₂.nreg lD = c.nreg lD := by
-    rw [k2s lD (by unfold lD sw; omega) (by unfold lD sw; omega) (by unfold lD lH sw; omega)
-      (Or.inr (by unfold lD sw; omega)), s1D]
+    ram_simp [k2s, s1D] 
   have s2N : c₂.nreg lN = 2 * C.m + 7 := by
-    rw [k2s lN (by unfold lN sw; omega) (by unfold lN sw; omega) (by unfold lN lH sw; omega)
-      (Or.inr (by unfold lN sw; omega)), r1 _ _ v4, hnr]
+    ram_simp [k2s, r1, hnr] 
   have s2T : c₂.nreg lT = 0 := by
-    rw [k2s lT (by unfold lT sw; omega) (by unfold lT sw; omega) (by unfold lT lH sw; omega)
-      (Or.inr (by unfold lT sw; omega)), r1 _ _ v5]
+    ram_simp [k2s, r1] 
   have s2A : c₂.nreg accA = 0 := by
-    rw [k2s accA (by unfold accA sw; omega) (by unfold accA sw; omega)
-      (by unfold accA lH sw; omega) (Or.inr (by unfold accA sw; omega)), r1 _ _ v6]
+    ram_simp [k2s, r1] 
   have s2MD : c₂.nreg lMD = c.nreg md := by
-    rw [k2s lMD (by unfold lMD sw; omega) (by unfold lMD sw; omega) (by unfold lMD lH sw; omega)
-      (Or.inr (by unfold lMD sw; omega)), r1 _ _ v1]
+    ram_simp [k2s, r1] 
   have s2CD : c₂.nreg lCD = c.nreg cd := by
-    rw [k2s lCD (by unfold lCD sw; omega) (by unfold lCD sw; omega) (by unfold lCD lH sw; omega)
-      (Or.inr (by unfold lCD sw; omega)), r1 _ _ v2]
+    ram_simp [k2s, r1] 
   have s2NF : c₂.nreg lNF = c.nreg nf := by
-    rw [k2s lNF (by unfold lNF sw; omega) (by unfold lNF sw; omega) (by unfold lNF lH sw; omega)
-      (Or.inr (by unfold lNF sw; omega)), r1 _ _ v3]
+    ram_simp [k2s, r1] 
   have hTBR₂ : c₂.nreg TBR = c.nreg TBR := by
-    rw [hI₂.hin _ (by unfold IFix TBR sw; omega), hI.hin _ (by unfold IFix TBR sw; omega)]
+    ram_post
   have hTLR₂ : c₂.nreg TLR = c.nreg TLR := by
-    rw [hI₂.hin _ (by unfold IFix TLR sw; omega), hI.hin _ (by unfold IFix TLR sw; omega)]
-  have hTLRc : c.nreg TLR = T := hI.hin _ (by unfold IFix TLR sw; omega)
-  have mem2 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [m2 a (by rw [hA1]; exact ha), m1]
-  have hA2 : c.nreg ALLOC ≤ c₂.nreg ALLOC := by rw [← hA1]; exact hA₂''
+    ram_rw [hI₂.hin, hI.hin]
+  have hTLRc : c.nreg TLR = T := hI.hin _ (by reg_omega)
+  have mem2 : MemEqBelow (c.nreg ALLOC) c₂.nmem c.nmem := fun a ha => by
+    rw [m2 a (by rwa [hA1]), m1]
+  have hA2 : c.nreg ALLOC ≤ c₂.nreg ALLOC := by rwa [← hA1]
   have hL₂ : LCtx P W C N E c₂ :=
     { hG := hG
       hWh := hWh
@@ -223,7 +208,7 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       hTB := by rw [hTBR₂]; exact hM.hTB
       hTW := by rw [hTBR₂, hTLR₂]; have := hM.hTW; omega }
   obtain ⟨hAr, hCh⟩ := region_bounds (C := C) hPs hNF hdeg
-  have hposxs : (chainModel C).pos (Qof P) xs = (chainModel C).pos (Qof P) x := hkpos
+  have hposxs := hkpos
   have hlocs : (xs.edge = 1 ∨ xs.edge = 3) ∨
       (6 ≤ xs.edge ∧ (chainModel C).pos (Qof P) xs ∈ C.set) := by
     rw [hposxs]
@@ -252,7 +237,7 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine (localHit_irs (C := C) (N := N) (Mod := fun _ => C) (R₀ := C.radius)
       (L := ∅) (Da := c₀.nreg (sw 6) + 1) (Dc := c₀.nreg (sw 6)) (x := xs) (d := c₂.nreg lD)
       hsh hBs hXl hI₂ hK hL₂ hX hcap hOk hsg hAr hCh s2E s2H rfl he hkpp
-      (by rw [hposxs]; exact hy) hlocs hacc (by rw [s2T]; omega) rfl rfl s2N
+      (by rwa [hposxs]) hlocs hacc (by rw [s2T]; omega) rfl rfl s2N
       (by rw [hTLR₂, hTLRc]; show c₂.nreg ALLOC + localK T Fg (D + 1) D ≤ W; omega)).mono
         (by rw [hTLR₂, hTLRc]) ?_
   rintro c' ⟨⟨L', hacc', -, hL', hgeo⟩, k3, hA₃, m3⟩
@@ -261,10 +246,8 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   · rcases hL' τ hτ with h | h
     · exact absurd h (Set.notMem_empty τ)
     · exact h
-  · refine ⟨k, rfl, hkl, by rw [hkpos]; exact hkh, ?_, by rw [hposxs]; exact htop⟩
-    rw [hposxs]
-    show sideLeft (chainModel C).W x.edge ((chainModel C).param (Qof P) xs) _
-    rw [hkpar]; exact hsl
+  · refine ⟨k, rfl, hkl, by rwa [hkpos], ?_, by rwa [hposxs]⟩
+    simp only [hposxs, hkpar] <;> omega
   · refine ⟨fun r h1 h2 h3 => ?_, le_trans hA2 hA₃, fun a ha => ?_⟩
     · have hr2 : ¬ ((sw 700 ≤ r ∧ r < sw 2200) ∨ (sw 3000 ≤ r ∧ r < sw 3200)) := h2
       rw [k3 r h1 (fun h => hr2 (by unfold LHW sw at h; unfold sw; omega)) h3,
@@ -275,7 +258,7 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
           (fun h => hr2 (by subst h; unfold lN sw; omega))
           (fun h => hr2 (by subst h; unfold lT sw; omega))
           (fun h => hr2 (by subst h; unfold accA sw; omega))]
-    · rw [m3 a (by omega), mem2 a ha]
+    · ram_rw [m3 a, mem2 a ha]
 
 end
 

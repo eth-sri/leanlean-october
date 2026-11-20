@@ -101,9 +101,9 @@ theorem exists_lerp_of_det_eq_zero {a b c : Point} (hab : a ≠ b) (h : det a b 
       rcases mul_eq_zero.1 this with h3 | h3
       · rw [h1]; linarith
       · exact absurd h3 h2
-    · simp only [lerp_snd]; field_simp; ring
+    simp_all
   · refine ⟨(c.1 - a.1) / (b.1 - a.1), point_ext ?_ ?_⟩
-    · simp only [lerp_fst]; field_simp; ring
+    · simp_all
     · simp only [lerp_snd]; field_simp; linear_combination h
 
 /-! ### Continuity -/

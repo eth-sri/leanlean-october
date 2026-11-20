@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.FuseAsmDedup
 
 /-!
@@ -58,26 +62,28 @@ def dsLoop : Stmt := .whileLtN 70220 70230 dsBody
 
 /-! ## Pieces -/
 
-theorem neqS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw
+
+theorem neqS_exec (hW : 1 ≤ W)
     (a b : ℕ) (ha : a ≠ 70228) (hb : b ≠ 70228) :
     ∃ c' k, Exec P W (neqS a b) c c' k ∧ k ≤ 6 ∧
       c'.nreg 70228 = (if c.nreg a ≠ c.nreg b then 1 else c.nreg 70228) ∧
-      (∀ r, r ≠ 70228 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept 70228 c c') ∧ Machine.NatRegFrame c c' := by
   have step : ∀ (x y : ℕ) (c : Config), WordsBounded W c → x ≠ 70228 → y ≠ 70228 →
       ∃ c' k, Exec P W (.ifLtN x y (.instr (.constN 70228 1)) .skip) c c' k ∧ k ≤ 3 ∧
         c'.nreg 70228 = (if c.nreg x < c.nreg y then 1 else c.nreg 70228) ∧
-        (∀ r, r ≠ 70228 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
-        c'.rmem = c.rmem ∧ c'.output = c.output := fun x y c hw _ _ => by
+        (Machine.NRegEqExcept 70228 c c') ∧ Machine.NatRegFrame c c' := fun x y c hw _ _ => by
     by_cases h : c.nreg x < c.nreg y
     · have e := Exec.constN (P := P) hw 70228 1 hW
-      exact ⟨_, _, .ifLtN_true h e, by omega, by simp [h], fun r hr => by simp [hr], rfl, rfl,
-        rfl, rfl⟩
+      exact ⟨_, _, .ifLtN_true h e, by omega, by simp [h], fun r hr => by simp [hr], by and_intros <;> rfl⟩
     · exact ⟨c, _, .ifLtN_false h (.skip hw), by omega, by simp [h], fun _ _ => rfl, rfl, rfl,
         rfl, rfl⟩
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, r₁, m₁, rr₁, rm₁, o₁⟩ := step a b c hw ha hb
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := step b a c₁ e₁.wb_right hb ha
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r hr => by rw [r₂ r hr, r₁ r hr],
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r hr => by ram_finish,
     by rw [m₂, m₁], by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
   rw [v₂, v₁, r₁ a ha, r₁ b hb]
   by_cases h1 : c.nreg a < c.nreg b
@@ -87,27 +93,26 @@ theorem neqS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     · simp [show c.nreg a = c.nreg b by omega]
 
 set_option maxHeartbeats 4000000 in
-theorem dsLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T x : ℕ}
+theorem dsLoad_exec {T x : ℕ}
     (hT : c.nreg 70216 = T) (h05 : c.nreg 70105 = 1) (hx : c.nmem (c.nreg 70221) = x)
     (hxW : T + 3 * x + 2 ≤ W) :
     ∃ c' k, Exec P W dsLoad c c' k ∧ k = 10 ∧ c'.nreg 70222 = x ∧
       c'.nreg 70224 = c.nmem (T + 3 * x) ∧ c'.nreg 70225 = c.nmem (T + 3 * x + 1) ∧
       c'.nreg 70226 = c.nmem (T + 3 * x + 2) ∧ c'.nreg 70228 = 0 ∧
       (∀ r, r ≠ 70222 → r ≠ 70224 → r ≠ 70225 → r ≠ 70226 → r ≠ 70228 → r ≠ 70229 →
-        c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
-      c'.output = c.output := by
+        c'.nreg r = c.nreg r) ∧ Machine.NatRegFrame c c' := by
   unfold dsLoad
   exec_block
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hT, hx, h05]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 a6 => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 a6 => ?_, by and_intros <;> rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hT, hx, h05]
   all_goals first | rfl | (congr 1; ring)
 
 set_option maxHeartbeats 4000000 in
-theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
+theorem dsPrev_exec (hW : 1 ≤ W)
     {T p : ℕ} (hT : c.nreg 70216 = T) (h05 : c.nreg 70105 = 1) (hp : c.nreg 70223 = p)
     (hpW : T + 3 * p + 2 ≤ W) (h28 : c.nreg 70228 = 0) :
     ∃ c' k, Exec P W dsPrev c c' k ∧ k ≤ 30 ∧
@@ -124,9 +129,8 @@ theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hT, hp]; omega)
-    refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hT, hp]
+    refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, by and_intros <;> rfl⟩
+    all_goals frame_finish
     all_goals first | rfl | ring
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, r₂, m₂, rr₂, rm₂, o₂⟩ :=
     neqS_exec (P := P) c₁ e₁.wb_right hW 70224 70227 (by decide) (by decide)
@@ -140,55 +144,52 @@ theorem dsPrev_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, hv, h1]; omega)
-    refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, hv, h1]
+    simp_all <;> omega
   have g2 : ∀ r, r ≠ 70227 → r ≠ 70228 → r ≠ 70229 → c₂.nreg r = c.nreg r := fun r a b d => by
-    rw [r₂ r b, r₁ r a d]
+    ram_finish
   obtain ⟨c₃, k₃, e₃, hk₃, u27, u29, r₃, m₃, rr₃, rm₃, o₃⟩ := load c₂ (T + 3 * p) e₂.wb_right
-    (by rw [r₂ _ (by decide), v29]) (by rw [g2 _ (by decide) (by decide) (by decide), h05])
+    (by ram_finish) (by frame_finish)
     (by omega)
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, r₄, m₄, rr₄, rm₄, o₄⟩ :=
     neqS_exec (P := P) c₃ e₃.wb_right hW 70225 70227 (by decide) (by decide)
   have g4 : ∀ r, r ≠ 70227 → r ≠ 70228 → r ≠ 70229 → c₄.nreg r = c.nreg r := fun r a b d => by
-    rw [r₄ r b, r₃ r a d, g2 r a b d]
+    ram_finish
   obtain ⟨c₅, k₅, e₅, hk₅, w27, w29, r₅, m₅, rr₅, rm₅, o₅⟩ := load c₄ (T + 3 * p + 1)
-    e₄.wb_right (by rw [r₄ _ (by decide), u29]) (by rw [g4 _ (by decide) (by decide) (by decide),
-      h05]) (by omega)
+    e₄.wb_right (by ram_finish) (by frame_finish) (by omega)
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, r₆, m₆, rr₆, rm₆, o₆⟩ :=
     neqS_exec (P := P) c₅ e₅.wb_right hW 70226 70227 (by decide) (by decide)
   have ex : Exec P W dsPrev c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
-  refine ⟨c₆, _, ex, by omega, ?_, fun r a b d => by rw [r₆ r b, r₅ r a d, g4 r a b d], ?_, ?_,
+    (by ram_path)
+  refine ⟨c₆, _, ex, by omega, ?_, fun r a b d => by ram_finish, ?_, ?_,
     ?_, ?_⟩
-  · have mm : ∀ x, c₅.nmem x = c.nmem x := fun x => by rw [m₅, m₄, m₃, m₂, m₁]
+  · have mm : ∀ x, c₅.nmem x = c.nmem x := fun x => by ram_finish
     have A2 : c₂.nreg 70228 = if c.nreg 70224 ≠ c.nmem (T + 3 * p) then 1 else 0 := by
-      rw [f₂, r₁ _ (by decide) (by decide), v27, h28.symm.trans (r₁ _ (by decide) (by decide)).symm]
+      frame_finish
     have A4 : c₄.nreg 70228 = if c.nreg 70225 ≠ c.nmem (T + 3 * p + 1) then 1
         else c₂.nreg 70228 := by
-      rw [f₄, r₃ _ (by decide) (by decide), u27, g2 _ (by decide) (by decide) (by decide),
-        r₃ _ (by decide) (by decide), m₂, m₁]
+      ram_rw [f₄, r₃, u27, g2,
+        r₃, m₂, m₁]
     have A6 : c₆.nreg 70228 = if c.nreg 70226 ≠ c.nmem (T + 3 * p + 2) then 1
         else c₄.nreg 70228 := by
-      rw [f₆, r₅ _ (by decide) (by decide), w27, g4 _ (by decide) (by decide) (by decide),
-        r₅ _ (by decide) (by decide), m₄, m₃, m₂, m₁]
+      ram_rw [f₆, r₅, w27, g4,
+        r₅, m₄, m₃, m₂, m₁]
     rw [A6, A4, A2]
     simp only [ne_eq, Prod.mk.injEq, not_and_or]
     split_ifs <;> tauto
-  · rw [m₆, m₅, m₄, m₃, m₂, m₁]
-  · rw [rr₆, rr₅, rr₄, rr₃, rr₂, rr₁]
-  · rw [rm₆, rm₅, rm₄, rm₃, rm₂, rm₁]
-  · rw [o₆, o₅, o₄, o₃, o₂, o₁]
+  · ram_finish
+  · ram_finish
+  · ram_finish
+  · ram_finish
 
 set_option maxHeartbeats 4000000 in
-theorem dsCopy_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {a : ℕ}
+theorem dsCopy_exec {a : ℕ}
     (hA : c.nreg ALLOC = a) (h05 : c.nreg 70105 = 1) (ha : a + 3 ≤ W) {n : ℕ}
     (h19 : c.nreg 70219 = n) (hn : n + 1 ≤ W) :
     ∃ c' k, Exec P W dsCopy c c' k ∧ k = 7 ∧ c'.nreg ALLOC = a + 3 ∧
       (∀ x, (x < a ∨ a + 3 ≤ x) → c'.nmem x = c.nmem x) ∧
       c'.nmem a = c.nreg 70224 ∧ c'.nmem (a + 1) = c.nreg 70225 ∧ c'.nmem (a + 2) = c.nreg 70226 ∧
       c'.nreg 70219 = n + 1 ∧ (∀ r, r ≠ ALLOC → r ≠ 70219 → c'.nreg r = c.nreg r) ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
   unfold dsCopy
   have hA' : c.nreg 9999 = a := hA
   exec_block
@@ -199,6 +200,8 @@ theorem dsCopy_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     Machine.upd_other, hA', h05, h19, ALLOC])
   · have a1' : r ≠ 9999 := a1
     simp (disch := omega) only [Machine.upd_other]
+
+end
 
 /-! ## The loop -/
 
@@ -218,7 +221,7 @@ structure DSI (W K T B LB : ℕ) (m₀ : ℕ → ℕ) (c₀ c : Config) : Prop w
   alloc : c.nreg ALLOC = LB + 3 * (ddp (stl m₀ T B K) (0, 0, 0) (c.nreg 70220)).length
   list : ChordListAt c.nmem LB (ddp (stl m₀ T B K) (0, 0, 0) (c.nreg 70220))
   cnt : c.nreg 70219 = (ddp (stl m₀ T B K) (0, 0, 0) (c.nreg 70220)).length
-  low : ∀ a, a < LB → c.nmem a = m₀ a
+  low : MemEqBelow LB c.nmem m₀
   regs : ∀ r, (r < 70219 ∨ 70229 < r) → r ≠ ALLOC → c.nreg r = c₀.nreg r
   rr : c.rreg = c₀.rreg
   rm : c.rmem = c₀.rmem
@@ -237,19 +240,19 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     (hW : LB + 3 * K + 3 ≤ W) :
     ∃ c' k, Exec P W dsBody c c' k ∧ DSI W K T B LB m₀ c₀ c' ∧ k ≤ 58 ∧ 3 ≤ k ∧
       c'.nreg 70220 = c.nreg 70220 + 1 := by
-  obtain ⟨j, hj⟩ : ∃ j, c.nreg 70220 = j := ⟨_, rfl⟩
+  obtain ⟨j, hj⟩ := exists_eq' (a' := c.nreg 70220)
   rw [hj] at ht
   have hreg := hI.regs
-  have r05 : c.nreg 70105 = 1 := by rw [hreg _ (by norm_num) (by decide), h05]
-  have r08 : c.nreg 70108 = 0 := by rw [hreg _ (by norm_num) (by decide), h08]
-  have r16 : c.nreg 70216 = T := by rw [hreg _ (by norm_num) (by decide), h16]
-  obtain ⟨x, hx⟩ : ∃ x, m₀ (B + j) = x := ⟨_, rfl⟩
-  have hxK : x < K := hx ▸ hitems j ht
+  have r05 : c.nreg 70105 = 1 := by ram_finish
+  have r08 : c.nreg 70108 = 0 := by ram_finish
+  have r16 : c.nreg 70216 = T := by ram_finish
+  obtain ⟨x, hx⟩ := exists_eq' (a' := m₀ (B + j))
+  have hxK := hx ▸ hitems j ht
   have hW1 : 1 ≤ W := by omega
   -- load
   obtain ⟨c₁, k₁, e₁, hk₁, v22, v24, v25, v26, v28, r₁, m₁, rr₁, rm₁, o₁⟩ :=
     dsLoad_exec (P := P) c hI.wb r16 r05 (x := x)
-      (by rw [hI.cur, hj, hI.low _ (by omega), hx]) (by omega)
+      (by ram_rw [hI.cur, hj, hI.low, hx]) (by omega)
   have mT : ∀ k, k < 3 → c.nmem (T + 3 * x + k) = m₀ (T + 3 * x + k) := fun k hk =>
     hI.low _ (by omega)
   have mT0 : c.nmem (T + 3 * x) = m₀ (T + 3 * x) := by simpa using mT 0 (by omega)
@@ -260,24 +263,22 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     rw [stl_getD ht, hx]
     by_cases h0 : j = 0
     · simp [h0]
-    · rw [stl_getD (by omega)]; simp [h0]
+    · ram_rw [stl_getD]; simp [h0]
   obtain ⟨c₂, k₂, e₂, hk₂, v2, r₂, m₂, rr₂, rm₂, o₂⟩ : ∃ c₂ k₂, Exec P W dsFlag c₁ c₂ k₂ ∧
       k₂ ≤ 32 ∧ (c₂.nreg 70228 = if keep (stl m₀ T B K) (0, 0, 0) j then 1 else 0) ∧
-      (∀ r, r ≠ 70227 → r ≠ 70228 → r ≠ 70229 → c₂.nreg r = c₁.nreg r) ∧ c₂.nmem = c₁.nmem ∧
-      c₂.rreg = c₁.rreg ∧ c₂.rmem = c₁.rmem ∧ c₂.output = c₁.output := by
+      (∀ r, r ≠ 70227 → r ≠ 70228 → r ≠ 70229 → c₂.nreg r = c₁.nreg r) ∧ Machine.NatRegFrame c₁ c₂ := by
     have q20 : c₁.nreg 70220 = j := by
-      rw [r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), hj]
+      ram_post
     have q05 : c₁.nreg 70105 = 1 := by
-      rw [r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), r05]
+      ram_post
     unfold dsFlag
     by_cases h0 : j = 0
     · have e := Exec.constN (P := P) e₁.wb_right 70228 1 hW1
       refine ⟨_, _, .ifLtN_true (by rw [q20, q05]; omega) e, by omega, ?_, fun r _ hr _ => by
-        simp [hr], rfl, rfl, rfl, rfl⟩
-      simp only [upd_same]
-      rw [ite_eq_left ((hkeep).2 (Or.inl h0))]
+        simp [hr], by and_intros <;> rfl⟩
+      ram_finish
     · have hp : c₁.nreg 70223 = m₀ (B + (j - 1)) := by
-        rw [r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)]
+        ram_rw [r₁]
         rw [← hj]; exact hI.prev (by omega)
       have hpK : m₀ (B + (j - 1)) < K := hitems _ (by omega)
       obtain ⟨c₂, k₂, e₂, hk₂, f₂, r₂, m₂, rr₂, rm₂, o₂⟩ := dsPrev_exec (P := P) (T := T)
@@ -286,26 +287,25 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
         q05 hp (by omega) v28
       refine ⟨c₂, _, .ifLtN_false (by rw [q20, q05]; omega) e₂, by omega, ?_,
         fun r a b d => r₂ r a b d, m₂, rr₂, rm₂, o₂⟩
-      rw [f₂, v24, v25, v26, m₁, mT0, mT 1 (by omega), mT 2 (by omega),
-        hI.low _ (by omega), hI.low _ (by omega), hI.low _ (by omega)]
+      ram_rw [f₂, v24, v25, v26, m₁, mT0, mT 1, mT 2,
+        hI.low, hI.low, hI.low]
       by_cases hk : keep (stl m₀ T B K) (0, 0, 0) j = true
       · have := (hkeep.1 hk).resolve_left h0
         rw [ite_eq_left hk, ite_eq_left]
-        simpa [trip] using this
+        ram_finish
       · rw [ite_eq_right hk, ite_eq_right]
-        intro hne; exact hk (hkeep.2 (Or.inr (by simpa [trip] using hne)))
+        intro hne; exact hk (hkeep.2 (Or.inr (by ram_finish)))
   -- copy
   have g2 : ∀ r, (r < 70220 ∨ 70229 < r) → c₂.nreg r = c.nreg r := fun r hr => by
-    rw [r₂ r (by omega) (by omega) (by omega), r₁ r (by omega) (by omega) (by omega) (by omega)
-      (by omega) (by omega)]
-  have q28 : c₂.nreg 70108 = 0 := by rw [g2 _ (by norm_num), r08]
+    ram_rw [(ram_app% (r₂ r ?_ ?_ ?_)), r₁ r]
+  have q28 : c₂.nreg 70108 = 0 := by ram_rw [g2, r08]
   have hAc : c₂.nreg ALLOC = LB + 3 * (ddp (stl m₀ T B K) (0, 0, 0) j).length := by
-    rw [g2 _ (by decide)]; rw [hI.alloc, hj]
+    ram_rw [g2]; rw [hI.alloc, hj]
   have hdl := ddp_length_le (stl m₀ T B K) (0, 0, 0) j
   have hlist := hI.list
   rw [hj] at hlist
   have h19 : c₂.nreg 70219 = (ddp (stl m₀ T B K) (0, 0, 0) j).length := by
-    rw [g2 _ (by norm_num)]; rw [hI.cnt, hj]
+    frame_finish [g2, hI.cnt, hj]
   obtain ⟨c₃, k₃, e₃, hk₃, a₃, m₃, l₃, n₃, q₃, rr₃, rm₃, o₃⟩ : ∃ c₃ k₃, Exec P W
       (.ifLtN 70108 70228 dsCopy .skip) c₂ c₃ k₃ ∧ k₃ ≤ 9 ∧
       c₃.nreg ALLOC = LB + 3 * (ddp (stl m₀ T B K) (0, 0, 0) (j + 1)).length ∧
@@ -313,63 +313,59 @@ theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       ChordListAt c₃.nmem LB (ddp (stl m₀ T B K) (0, 0, 0) (j + 1)) ∧
       c₃.nreg 70219 = (ddp (stl m₀ T B K) (0, 0, 0) (j + 1)).length ∧
       (∀ r, r ≠ ALLOC → r ≠ 70219 → c₃.nreg r = c₂.nreg r) ∧
-      c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
+      c₃.rreg = c₂.rreg ∧ Machine.RealMemOutputEq c₂ c₃ := by
     rw [ddp_succ]
     by_cases hk : keep (stl m₀ T B K) (0, 0, 0) j = true
     · rw [ite_eq_left hk] at v2 ⊢
       obtain ⟨c₃, k₃, e₃, hk₃, a₃, mo, n0, n1, n2, n19, R₃, rr₃, rm₃, o₃⟩ := dsCopy_exec (P := P)
-        c₂ e₂.wb_right hAc (by rw [g2 _ (by norm_num), r05]) (by omega) h19 (by omega)
-      refine ⟨c₃, _, .ifLtN_true (by rw [q28, v2]; omega) e₃, by omega, ?_, fun a ha => ?_, ?_,
+        c₂ e₂.wb_right hAc (by ram_rw [g2, r05]) (by omega) h19 (by omega)
+      refine ⟨c₃, _, (by ram_path), by omega, ?_, fun a ha => ?_, ?_,
         by rw [n19, List.length_append]; simp, R₃, rr₃, rm₃, o₃⟩
       · rw [a₃, List.length_append]; simp; ring
       · rw [mo a (Or.inl ha), m₂, m₁]
-      · refine chordListAt_append (fun i hi => ?_) ?_ ?_ ?_
+      · refine ChordListAt.snoc_same (fun i hi => ?_) ?_ ?_ ?_
         · obtain ⟨b0, b1, b2⟩ := hlist i hi
           refine ⟨?_, ?_, ?_⟩
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b0
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b1
-          · rw [mo _ (Or.inl (by omega)), m₂, m₁]; exact b2
-        · rw [n0, r₂ _ (by decide) (by decide) (by decide), v24, stl_getD ht, mT0, hx]; rfl
-        · rw [n1, r₂ _ (by decide) (by decide) (by decide), v25, stl_getD ht, mT 1 (by omega),
+          · rwa [mo _ (Or.inl (by omega)), m₂, m₁]
+          · rwa [mo _ (Or.inl (by omega)), m₂, m₁]
+          · rwa [mo _ (Or.inl (by omega)), m₂, m₁]
+        · ram_rw [n0, r₂, v24, stl_getD ht, mT0, hx]; rfl
+        · ram_rw [n1, r₂, v25, stl_getD ht, mT 1,
             hx]; rfl
-        · rw [n2, r₂ _ (by decide) (by decide) (by decide), v26, stl_getD ht, mT 2 (by omega),
+        · ram_rw [n2, r₂, v26, stl_getD ht, mT 2,
             hx]; rfl
     · rw [ite_eq_right hk] at v2 ⊢
       rw [List.append_nil]
       refine ⟨c₂, _, .ifLtN_false (by rw [q28, v2]; omega) (.skip e₂.wb_right), by omega, hAc,
         fun a _ => by rw [m₂, m₁], ?_, h19, fun _ _ _ => rfl, rfl, rfl, rfl⟩
-      rw [m₂, m₁]; exact hlist
+      ram_simp [*]
   -- advance
   have g3 : ∀ r, (r < 70219 ∨ 70229 < r) → r ≠ ALLOC → c₃.nreg r = c.nreg r := fun r hr ha => by
-    rw [q₃ r ha (by omega), g2 r (by omega)]
+    frame_finish [q₃, g2]
   have q22 : c₃.nreg 70222 = x := by
-    rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide)]; exact v22
+    ram_post
   have q21 : c₃.nreg 70221 = B + j := by
-    rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
-      r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), hI.cur, hj]
+    ram_post [q₃, r₂, r₁, hI.cur, hj]
   have q20 : c₃.nreg 70220 = j := by
-    rw [q₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
-      r₁ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), hj]
-  have q05 : c₃.nreg 70105 = 1 := by rw [g3 _ (by norm_num) (by decide), r05]
+    ram_post
+  have q05 : c₃.nreg 70105 = 1 := by frame_finish [g3, r05]
   have w₃ := e₃.wb_right
   obtain ⟨c₄, k₄, e₄, hk₄, u23, u21, u20, r₄, m₄, rr₄, rm₄, o₄⟩ : ∃ c₄ k₄, Exec P W
       (block [.copyN 70223 70222, .addN 70221 70221 70105, .addN 70220 70220 70105]) c₃ c₄ k₄ ∧
       k₄ = 3 ∧ c₄.nreg 70223 = x ∧ c₄.nreg 70221 = B + (j + 1) ∧ c₄.nreg 70220 = j + 1 ∧
-      (∀ r, r ≠ 70220 → r ≠ 70221 → r ≠ 70223 → c₄.nreg r = c₃.nreg r) ∧ c₄.nmem = c₃.nmem ∧
-      c₄.rreg = c₃.rreg ∧ c₄.rmem = c₃.rmem ∧ c₄.output = c₃.output := by
+      (∀ r, r ≠ 70220 → r ≠ 70221 → r ≠ 70223 → c₄.nreg r = c₃.nreg r) ∧ Machine.NatRegFrame c₃ c₄ := by
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, q21, q20, q05]; omega)
-    refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-      q22, q21, q20, q05]
+    refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 => ?_, by and_intros <;> rfl⟩
+    all_goals ram_post [Machine.upd_same, Machine.upd_other, q22, q21, q20, q05]
     all_goals ring
-  have ex : Exec P W dsBody c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
+  have ex : Exec P W dsBody c c₄ (k₁ + (k₂ + (k₃ + k₄))) := (by ram_path)
   refine ⟨c₄, _, ex, ⟨e₄.wb_right, by omega, by rw [u21, u20], fun _ => by rw [u23, u20, Nat.add_sub_cancel, hx],
-    by rw [u20, ← a₃, r₄ _ (by decide) (by decide) (by decide)], by rw [u20, m₄]; exact l₃,
-    by rw [u20, ← n₃, r₄ _ (by decide) (by decide) (by decide)],
-    fun a ha => by rw [m₄, m₃ a (by omega), hI.low a ha],
-    fun r hr ha => by rw [r₄ r (by omega) (by omega) (by omega), g3 r hr ha, hreg r hr ha],
+    by ram_post, by ram_simp [*],
+    by ram_post,
+    fun a ha => by ram_rw [m₄, m₃ a, hI.low a ha],
+    fun r hr ha => by ram_rw [r₄ r, g3 r hr ha, hreg r hr ha],
     by rw [rr₄, rr₃, rr₂, rr₁, hI.rr], by rw [rm₄, rm₃, rm₂, rm₁, hI.rm],
     by rw [o₄, o₃, o₂, o₁, hI.out]⟩, by omega, by omega, by rw [u20, hj]⟩
 
@@ -384,15 +380,15 @@ theorem dsLoop_exec {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       ∃ c' k, Exec P W dsLoop c c' k ∧ k ≤ 60 * n + 2 ∧ 3 * n ≤ k ∧ DSI W K T B LB m₀ c₀ c' ∧
         c'.nreg 70220 = K
   | 0, c, hI, hn => by
-    have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
+    have h30' : c.nreg 70230 = K := by ram_finish [hI.regs, h30]
     exact ⟨c, 2, .whileLtN_false (by rw [h30']; omega) hI.wb, by omega, by omega, hI, by omega⟩
   | n + 1, c, hI, hn => by
-    have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
+    have h30' : c.nreg 70230 = K := by ram_finish [hI.regs, h30]
     have ht : c.nreg 70220 < K := by omega
     obtain ⟨c', k, e, hI', hk, hk3, hc'⟩ := dsBody_step (P := P) hI ht h05 h08 h16 hitems hTB hBL hW
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := dsLoop_exec h05 h08 h16 h30 hitems hTB hBL hW n c' hI'
       (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h30']; exact ht) e e₂, by omega, by omega, hI'', hK⟩
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rwa [h30']) e e₂, by omega, by omega, hI'', hK⟩
 
 end
 

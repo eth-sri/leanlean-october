@@ -44,7 +44,7 @@ theorem fuse_le {κ S β m F₀ F G H : ℕ} (hS : S ≤ β * (m + 1)) (hF : F�
   have hY2 : L + 1 ≤ F * G * (H + L + 1) := by
     calc L + 1 = 1 * 1 * (L + 1) := by ring
       _ ≤ F * G * (H + L + 1) := by gcongr; omega
-  have hY3 : 1 ≤ F * G * (H + L + 1) := by omega
+  
   set Y := F * G * (H + L + 1)
   have : F₀ + Nat.clog 2 S + 1 ≤ (β + 2) * Y := by nlinarith
   calc κ * S * (F₀ + Nat.clog 2 S + 1) ≤ κ * S * ((β + 2) * Y) := Nat.mul_le_mul_left _ this
@@ -56,7 +56,7 @@ theorem restore_le {κ K S β m γ F₀ G₀ H₀ F G H : ℕ} (hS : S ≤ β * 
     κ * (K + 1) * F₀ * G₀ * (H₀ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) ≤
       8 * (β + 7) * κ * S * (F * G * (H + Nat.clog 2 (m + 1) + 1)) := by
   set L := Nat.clog 2 (m + 1)
-  have h1 : Nat.clog 2 γ ≤ 3 + L := (clog_mono hγ).trans (clog_8 _)
+  have h1 := (clog_mono hγ).trans (clog_8 _)
   have h2 : Nat.clog 2 (K + 1) ≤ 3 + β + L :=
     (clog_mono hK).trans ((clog_8 S).trans (by have := clog_S hS; omega))
   have hp : H₀ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1 ≤ (β + 7) * (H + L + 1) := by nlinarith

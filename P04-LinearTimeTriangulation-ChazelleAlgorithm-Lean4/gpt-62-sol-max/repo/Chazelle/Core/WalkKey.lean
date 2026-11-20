@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SignKernel
 public import Chazelle.Core.NFKey
 public import Chazelle.Core.NFSearch
@@ -83,13 +85,13 @@ theorem sig_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
       (f4.2.1 j (by simp [Bload]; omega)).trans (f3.2.1 j (by simp [Bload]; omega)))
     (repAt_of_eq hr2 fun j h1 h2 => f4.2.1 j (by simp [Bload]; omega)) hr3
   have f5 := exec_frameB e5 (B := Bpoly) (by decide)
-  have n21 : c5.nreg 10021 = 1 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
+  have n21 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
     ((f3.1 _ (by decide)).trans ((f2.1 _ (by decide)).trans p11)))
-  have n22 : c5.nreg 10022 = 2 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
+  have n22 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
     ((f3.1 _ (by decide)).trans ((f2.1 _ (by decide)).trans p12)))
-  have n23 : c5.nreg 10023 = 3 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
+  have n23 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
     ((f3.1 _ (by decide)).trans ((f2.1 _ (by decide)).trans p13)))
-  have z5 : c5.rreg 10020 = 0 := (f5.2.1 _ (by decide)).trans ((f4.2.1 _ (by decide)).trans
+  have z5 := (f5.2.1 _ (by decide)).trans ((f4.2.1 _ (by decide)).trans
     ((f3.2.1 _ (by decide)).trans ((f2.2.1 _ (by decide)).trans p1z)))
   have o5 : c5.nreg 10009 = c.nreg 10009 := (f5.1 _ (by decide)).trans ((f4.1 _ (by decide)).trans
     ((f3.1 _ (by decide)).trans ((f2.1 _ (by decide)).trans (f1.1 _ (by decide)))))
@@ -101,20 +103,19 @@ theorem sig_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (h
   have f7 := exec_frameB e7 (B := Blex) (by decide)
   obtain ⟨c8, k8, e8, hk8, hf1, hf2⟩ := finStmt_spec (P := P) c7 e7.wb_right
     ((f7.1 _ (by decide)).trans ((f6.1 _ (by decide)).trans n23))
-  have o7 : c7.nreg 10009 = c.nreg 10009 :=
-    (f7.1 _ (by decide)).trans ((f6.1 _ (by decide)).trans o5)
+  have o7 := (f7.1 _ (by decide)).trans ((f6.1 _ (by decide)).trans o5)
   rw [o7] at hf1 hf2
   rw [hsel, o5] at hpos hzero
   have ex := e1.seq (e2.seq (e3.seq (e4.seq (e5.seq (e6.seq (e7.seq e8))))))
   have fb := exec_frameB ex (B := Bk) (by decide)
   refine ⟨c8, _, ex, by simp only [List.length_cons, List.length_nil] at hk7; omega, fb, ?_, ?_⟩
   · by_cases h : c.nreg 10009 < 3
-    · rw [hf1 h]; exact hb1
-    · rw [hf2 h]; exact hb2
+    · rwa [hf1 h]
+    · rwa [hf2 h]
   · have hm := signTest_iff_lex P hG.2 s₁ s₂ s₃ hl₁ hl₂ hl₃ (c.nreg 10009)
     by_cases h : c.nreg 10009 < 3
     · rw [hf1 h, hpos, hm.1 h]
-    · rw [hf2 h, hzero, hm.2 (by omega)]
+    ram_simp [hf2 h, hzero, hm.2]
 
 /-! ## The mathematics of the comparison -/
 
@@ -187,18 +188,16 @@ theorem keyDec_iff {M : Model} {Q : Polygon} {n : ℕ} {x s : WPos} (hx : Proper
   by_cases h3 : x.hgt < 1
   · have hx0' : x.hgt = 0 := by omega
     rw [ite_eq_left h3, ite_eq_left hx0']
-    simp only [Bool.false_eq_true, false_iff, not_lt]
-    rw [kx, ks, param_of_code_zero hx0']
-    linarith
+    simp_all [Bool.false_eq_true, false_iff, not_lt, param_of_code_zero hx0'] 
   rw [ite_eq_right h3, ite_eq_right (by omega : ¬ x.hgt = 0)]
   by_cases h4 : dirCode M x.edge < 1
   · rw [ite_eq_left h4]
     simp only [true_iff]
     have hh : (M.wa x.edge).2 = (M.wb x.edge).2 := by
       unfold dirCode at h4
-      split_ifs at h4 with q1 q2 <;> first | omega | linarith [not_lt.1 q1, not_lt.1 q2]
+      split_ifs at h4 with q1 q2 <;> linarith
     have e1 := Model.key_eq_of_horizontal (Q := Q) hh
-    have e2 := Model.key_eq_of_horizontal (Q := Q) (x := s) (by rw [he]; exact hh)
+    have e2 := Model.key_eq_of_horizontal (Q := Q) (x := s) (by rwa [he])
     rw [e1, e2, heR]
   rw [ite_eq_right h4]
   have hnh : (M.wa x.edge).2 ≠ (M.wb x.edge).2 := by
@@ -207,13 +206,10 @@ theorem keyDec_iff {M : Model} {Q : Polygon} {n : ℕ} {x s : WPos} (hx : Proper
     rw [ite_eq_right (by rw [hh]; exact lt_irrefl _), ite_eq_right (by rw [hh]; exact lt_irrefl _)] at h4
     exact h4 Nat.zero_lt_one
   by_cases h5 : s.hgt < 1
-  · rw [ite_eq_left h5]
-    simp only [true_iff]
-    rw [kx, ks, param_of_code_zero (by omega : s.hgt = 0)]
-    linarith
+  · simp_all [true_iff, param_of_code_zero] 
   rw [ite_eq_right h5, ite_eq_right (by omega : ¬ n < s.hgt)]
   have hlt := Model.key_lt_key_iff_of_same_edge (M := M) (Q := Q) he.symm hnh
-  rw [hgtY_of_pos (by omega), hgtY_of_pos (by omega)] at hlt
+  ram_rw [hgtY_of_pos, hgtY_of_pos] at hlt
   have hle : M.key Q s ≤ M.key Q x ↔ ¬ M.key Q x < M.key Q s := not_lt.symm
   rw [hle, hlt]
   by_cases h6 : dirCode M x.edge < 2
@@ -274,56 +270,15 @@ def keyCmp : Stmt :=
   .seq (.instr (.constN 50102 1))
     (.ifLtN 50100 10504 (.seq loadPos cmpPos) (.instr (.constN 50102 0)))
 
-/-- The instruction writes a real register only if it is accepted by `B` (natural registers
-are unrestricted), and is not a store, an `emit` or a control instruction. -/
-def wrROK (B : ℕ → Bool) : Instr → Bool
-  | .inputSize _ | .constN _ _ | .copyN _ _ | .addN _ _ _ | .subN _ _ _ | .loadN _ _ => true
-  | .constR r _ | .copyR r _ | .addR r _ _ | .subR r _ _ | .mulR r _ _ | .divR r _ _ => B r
-  | .loadR r _ | .readX r _ | .readY r _ => B r
-  | _ => false
-
 /-- Every instruction of the statement satisfies `wrROK B`. -/
-def wrR (B : ℕ → Bool) : Stmt → Bool
-  | .skip => true
-  | .instr i => wrROK B i
-  | .seq s t => wrR B s && wrR B t
-  | .ifLtN _ _ t e => wrR B t && wrR B e
-  | .ifLtR _ _ t e => wrR B t && wrR B e
-  | .whileLtN _ _ b => wrR B b
-  | .whileLtR _ _ b => wrR B b
+abbrev wrR (B : ℕ → Bool) := Stmt.check (Footprint.allows ⟨(fun _ => true), B, false, false, false⟩)
 
 /-- **Real-register frame**: a statement whose real writes are accepted by `B` changes no other
 real register. -/
 theorem exec_rframe {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' : Config} {k : ℕ}
-    (h : Exec P W s c c' k) (hs : wrR B s = true) : ∀ r, B r = false → c'.rreg r = c.rreg r := by
-  induction h with
-  | skip _ => exact fun _ _ => rfl
-  | @instr ins c c' _ he _ _ =>
-    simp only [wrR] at hs
-    cases ins <;> simp only [wrROK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
-      (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
-      intro j hj <;>
-      first
-      | rfl
-      | (simp only [upd]; split_ifs with hh
-         · subst hh; simp_all
-         · rfl)
-  | seq _ _ ih₁ ih₂ =>
-    simp only [wrR, Bool.and_eq_true] at hs
-    exact fun r hr => (ih₂ hs.2 r hr).trans (ih₁ hs.1 r hr)
-  | ifLtN_true _ _ ih =>
-    simp only [wrR, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtN_false _ _ ih =>
-    simp only [wrR, Bool.and_eq_true] at hs; exact ih hs.2
-  | ifLtR_true _ _ ih =>
-    simp only [wrR, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtR_false _ _ ih =>
-    simp only [wrR, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact fun _ _ => rfl
-  | whileLtN_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
-  | whileLtR_false _ _ => exact fun _ _ => rfl
-  | whileLtR_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
+    (h : Exec P W s c c' k) (hs : wrR B s = true) : ∀ r, B r = false → c'.rreg r = c.rreg r :=
+  let f := h.keeps (F := ⟨(fun _ => true), B, false, false, false⟩) hs
+  f.rr
 
 theorem wrR_keyCmp : wrR Bk keyCmp = true := by decide
 
@@ -332,9 +287,14 @@ def Bcmp (r : ℕ) : Bool := decide (r = 50101) || decide (r = 50102) || Bk r
 
 theorem wr_keyCmp : wr Bcmp keyCmp = true := by decide
 
+section
+
+variable {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
+    (hw : WordsBounded W c)
+include hG hW hw
+
 /-- The kernel part answers the height test. -/
-theorem kerPart_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
-    (hw : WordsBounded W c) (h1 : c.nreg 50102 = 1) (hx1 : 1 ≤ c.nreg 10501)
+theorem kerPart_exec (h1 : c.nreg 50102 = 1) (hx1 : 1 ≤ c.nreg 10501)
     (hxn : c.nreg 10501 ≤ P.n) (hs1 : 1 ≤ c.nreg 10012) (hsn : c.nreg 10012 ≤ P.n) :
     ∃ c' k, Exec P W kerPart c c' k ∧ k ≤ 245 ∧
       c'.nreg 50102 = (if (if c.nreg 10502 < 2 then
@@ -348,15 +308,8 @@ theorem kerPart_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
         c₁.nreg 10009 = 1 ∧ c₁.nreg 10015 = c.nreg 10501 - 1 ∧
         c₁.nreg 10016 = c.nreg 10012 - 1 ∧ c₁.nreg 10007 = c.nreg 10501 - 1 ∧
         c₁.nreg 50102 = 1 ∧ c₁.nreg 10502 = c.nreg 10502) := by
-    exec_block
-    · omega
-    · omega
-    · omega
-    · omega
-    · omega
-    · refine ⟨rfl, ?_⟩
-      config_simp
-      simp [h1]
+    exec_block!
+    simp [h1]
   obtain ⟨q13, q0, q3, q6, q9, q15, q16, q7, q102, q502⟩ := q
   have w₁ := e₁.wb_right
   -- the two orders
@@ -367,17 +320,17 @@ theorem kerPart_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
       c₂.nreg 10004 = (if c.nreg 10502 < 2 then c.nreg 10012 - 1 else c.nreg 10501 - 1) ∧
       (∀ r, r ≠ 10001 → r ≠ 10004 → c₂.nreg r = c₁.nreg r) := by
     by_cases hd : c.nreg 10502 < 2
-    · refine spec_ifLtN_true (by rw [q502, q13]; exact hd) ?_
+    · refine spec_ifLtN_true (by rwa [q502, q13]) ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
-      · config_simp; rw [ite_eq_left hd, q15]
-      · config_simp; rw [ite_eq_left hd, q16]
+      · simp_all
+      · simp_all
       · simp [h1, h2]
-    · refine spec_ifLtN_false (by rw [q502, q13]; exact hd) ?_
+    · refine spec_ifLtN_false (by rwa [q502, q13]) ?_
       exec_block
       refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩
-      · config_simp; rw [ite_eq_right hd, q16]
-      · config_simp; rw [ite_eq_right hd, q15]
+      · ram_finish
+      · ram_finish
       · simp [h1, h2]
   have w₂ := e₂.wb_right
   set a := (if c.nreg 10502 < 2 then c.nreg 10501 - 1 else c.nreg 10012 - 1) with ha
@@ -386,13 +339,13 @@ theorem kerPart_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
   have hbl : b < P.n := by rw [hb]; split_ifs <;> omega
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, bit₃, sig₃⟩ := sig_exec (P := P) c₂ w₂ hG hW
     (s₁ := .vtx a) (s₂ := .vtx b) (s₃ := .vtx (c.nreg 10501 - 1))
-    (by rw [r₂ _ (by omega) (by omega), q9]; omega) hal hbl (show c.nreg 10501 - 1 < P.n by omega)
-    ⟨by rw [r₂ _ (by omega) (by omega), q0], a₁⟩ ⟨by rw [r₂ _ (by omega) (by omega), q3], a₄⟩
-    ⟨by rw [r₂ _ (by omega) (by omega), q6], by rw [r₂ _ (by omega) (by omega), q7]⟩
+    (by ram_finish) hal hbl (show c.nreg 10501 - 1 < P.n by omega)
+    ⟨by ram_finish, a₁⟩ ⟨by ram_finish, a₄⟩
+    ⟨by ram_finish, by ram_finish⟩
   have w₃ := e₃.wb_right
   have n102 : c₃.nreg 50102 = 1 := by
-    rw [f₃.1 _ (by decide), r₂ _ (by omega) (by omega), q102]
-  have op : c₂.nreg 10009 = 1 := by rw [r₂ _ (by omega) (by omega), q9]
+    ram_finish [f₃.1, r₂, q102]
+  have op : c₂.nreg 10009 = 1 := by ram_finish
   rw [op] at sig₃
   refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ (Exec.subN w₃ 50102 50102 10010))), by omega, ?_⟩
   config_simp
@@ -415,8 +368,7 @@ theorem kerPart_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
       rw [this]; simp [ht]
 
 /-- The decision on a loaded position. -/
-theorem cmpPos_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
-    (hw : WordsBounded W c) (h1 : c.nreg 50102 = 1) (hxn : c.nreg 10501 ≤ P.n) :
+theorem cmpPos_exec (h1 : c.nreg 50102 = 1) (hxn : c.nreg 10501 ≤ P.n) :
     ∃ c' k, Exec P W cmpPos c c' k ∧ k ≤ 260 ∧
       c'.nreg 50102 = (if keyDec (Qof P) P.n ⟨c.nreg 10500, c.nreg 10501⟩ (c.nreg 10502)
         ⟨c.nreg 10011, c.nreg 10012⟩ then 1 else 0) := by
@@ -430,26 +382,26 @@ theorem cmpPos_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
   by_cases t2 : c.nreg 10500 < c.nreg 10011
   · rw [ite_eq_left t2]
     refine spec_ifLtN_true t2 (spec_instr (Exec.constN hw _ _ (by omega)) fun _ => ?_)
-    exact ⟨by omega, by config_simp; simp⟩
+    simp
   rw [ite_eq_right t2]
   refine spec_ifLtN_false t2 ?_
   by_cases t3 : c.nreg 10501 < 1
   · rw [ite_eq_left t3]
-    refine spec_ifLtN_true (by rw [h1]; exact t3)
+    refine spec_ifLtN_true (by rwa [h1])
       (spec_instr (Exec.constN hw _ _ (by omega)) fun _ => ?_)
-    exact ⟨by omega, by config_simp; simp⟩
+    simp
   rw [ite_eq_right t3]
-  refine spec_ifLtN_false (by rw [h1]; exact t3) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   by_cases t4 : c.nreg 10502 < 1
   · rw [ite_eq_left t4]
-    exact spec_ifLtN_true (by rw [h1]; exact t4) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
+    exact spec_ifLtN_true (by rwa [h1]) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
   rw [ite_eq_right t4]
-  refine spec_ifLtN_false (by rw [h1]; exact t4) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   by_cases t5 : c.nreg 10012 < 1
   · rw [ite_eq_left t5]
-    exact spec_ifLtN_true (by rw [h1]; exact t5) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
+    exact spec_ifLtN_true (by rwa [h1]) (spec_skip hw ⟨by omega, by rw [h1]; rfl⟩)
   rw [ite_eq_right t5]
-  refine spec_ifLtN_false (by rw [h1]; exact t5) ?_
+  refine spec_ifLtN_false (by rwa [h1]) ?_
   have hn : P.n ≤ W := by omega
   refine spec_seq ⟨_, _, Exec.inputSize hw 10014 hn, ?_⟩
   have w₁ := WordsBounded.upd_nreg hw hn c.pc (r := 10014)
@@ -457,7 +409,7 @@ theorem cmpPos_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
   · rw [ite_eq_left t6]
     refine spec_ifLtN_true (by config_simp; exact t6)
       (spec_instr (Exec.constN w₁ _ _ (by omega)) fun _ => ?_)
-    exact ⟨by omega, by config_simp; simp⟩
+    simp
   rw [ite_eq_right t6]
   refine spec_ifLtN_false (by config_simp; exact t6) ?_
   obtain ⟨c', k, e, hk, hr⟩ := kerPart_exec (P := P) hG hW _ w₁ (by config_simp; exact h1)
@@ -469,8 +421,7 @@ theorem cmpPos_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
 
 /-- **The comparison procedure** computes the bit of `cmpPrC`: the decision on the start of arc
 `lr 100` (`0` out of range). -/
-theorem keyCmp_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
-    (hw : WordsBounded W c) (hxn : c.nreg 10501 ≤ P.n)
+theorem keyCmp_exec (hxn : c.nreg 10501 ≤ P.n)
     (hAB : c.nreg 10503 + 5 * c.nreg 10504 ≤ W) :
     ∃ c' k, Exec P W keyCmp c c' k ∧ k ≤ 275 ∧
       c'.nreg 50102 = (if (if c.nreg 50100 < c.nreg 10504 then
@@ -489,25 +440,21 @@ theorem keyCmp_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
           c₁.nreg 50102 = 1 ∧ c₁.nreg 10500 = c.nreg 10500 ∧ c₁.nreg 10501 = c.nreg 10501 ∧
           c₁.nreg 10502 = c.nreg 10502) := by
       unfold loadPos
-      exec_block
-      · config_simp; omega
-      · config_simp; omega
-      · config_simp; omega
-      · config_simp; omega
-      · config_simp; omega
-      · config_simp; omega
+      exec_block!
       · refine ⟨rfl, ?_⟩
         config_simp
         refine ⟨?_, ?_⟩ <;> congr 1 <;> omega
     obtain ⟨q11, q12, q102, q500, q501, q502⟩ := q
     obtain ⟨c₂, k₂, e₂, hk₂, hr⟩ := cmpPos_exec (P := P) hG hW c₁ e₁.wb_right q102
-      (by rw [q501]; exact hxn)
+      (by rwa [q501])
     refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, ?_⟩
     rw [hr, q11, q12, q500, q501, q502]
   · rw [ite_eq_right hj]
     refine spec_ifLtN_false (by config_simp; exact hj)
       (spec_instr (Exec.constN w₀ _ _ (by omega)) fun _ => ?_)
-    exact ⟨by omega, by config_simp; rfl⟩
+    simp
+
+end
 
 /-! ## The contract of the search -/
 
@@ -515,7 +462,7 @@ theorem keyCmp_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
 `A` arcs, memory `m₀` below `A₀`; register `10505` carries a value `SB` across the search. -/
 def CmpJ (x : WPos) (d AB A SB A₀ : ℕ) (m₀ : ℕ → ℕ) (c : Config) : Prop :=
   c.nreg 10500 = x.edge ∧ c.nreg 10501 = x.hgt ∧ c.nreg 10502 = d ∧ c.nreg 10503 = AB ∧
-    c.nreg 10504 = A ∧ c.nreg 10505 = SB ∧ ∀ a, a < A₀ → c.nmem a = m₀ a
+    c.nreg 10504 = A ∧ c.nreg 10505 = SB ∧ MemEqBelow A₀ c.nmem m₀
 
 /-- **The predicate of the search**: the machine decision on the start of arc `j`. -/
 noncomputable def cmpPr (P : Polygon) (x : WPos) (d AB A : ℕ) (m₀ : ℕ → ℕ) (j : ℕ) : Bool :=
@@ -527,12 +474,12 @@ theorem cmpJ_stable (x : WPos) (d AB A SB A₀ : ℕ) (m₀ : ℕ → ℕ) :
   intro c c' h hr _ hm _ _
   obtain ⟨h0, h1, h2, h3, h4, h6, h5⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, fun a ha => (hm a ha).trans (h5 a ha)⟩
-  · rw [hr _ (by decide) (by decide), h0]
-  · rw [hr _ (by decide) (by decide), h1]
-  · rw [hr _ (by decide) (by decide), h2]
-  · rw [hr _ (by decide) (by decide), h3]
-  · rw [hr _ (by decide) (by decide), h4]
-  · rw [hr _ (by decide) (by decide), h6]
+  · ram_simp [hr, h0]
+  · ram_simp [hr, h1]
+  · ram_simp [hr, h2]
+  · ram_simp [hr, h3]
+  · ram_simp [hr, h4]
+  ram_simp [hr, h6]
 
 /-- **Target 1: the comparison procedure meets the contract of the binary search**, with the
 invariant `CmpJ` and the predicate `cmpPr`, in at most `275` steps, writing only `lr 101`,
@@ -542,23 +489,21 @@ theorem keyCmp_predOK {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤
     PredOK P W keyCmp {bSign} (CmpJ x d AB A SB A₀ m₀) (cmpPr P x d AB A m₀) 275 := by
   intro c hw hJ
   obtain ⟨h0, h1, h2, h3, h4, h6, h5⟩ := hJ
-  obtain ⟨c', k, e, hk, hr⟩ := keyCmp_exec (P := P) hG hW c hw (by rw [h1]; exact hx)
+  obtain ⟨c', k, e, hk, hr⟩ := keyCmp_exec (P := P) hG hW c hw (by rwa [h1])
     (by rw [h3, h4]; omega)
   have fb := exec_frameB e wr_keyCmp
   have hB : ∀ r, Bcmp r = false → c'.nreg r = c.nreg r := fb.1
   refine ⟨c', k, e, hk, ⟨?_, ?_, ?_, ?_, ?_, ?_, fun a ha => by rw [fb.2.2.1]; exact h5 a ha⟩, ?_,
     ?_, ?_, fb.2.2.1, fb.2.2.2.1, fb.2.2.2.2⟩
-  · rw [hB _ (by decide), h0]
-  · rw [hB _ (by decide), h1]
-  · rw [hB _ (by decide), h2]
-  · rw [hB _ (by decide), h3]
-  · rw [hB _ (by decide), h4]
-  · rw [hB _ (by decide), h6]
+  · ram_rw [hB, h0]
+  · ram_rw [hB, h1]
+  · ram_rw [hB, h2]
+  · ram_rw [hB, h3]
+  · ram_rw [hB, h4]
+  · ram_rw [hB, h6]
   · rw [hr, h0, h1, h2, h3, h4]
-    unfold cmpPr
-    by_cases hj : c.nreg 50100 < A
-    · rw [ite_eq_left hj, ite_eq_left hj, h5 _ (by omega), h5 _ (by omega)]
-    · rw [ite_eq_right hj, ite_eq_right hj]
+    change ∀ a, a < A₀ → c.nmem a = m₀ a at h5
+    frame_finish
   · intro r r0 r1 r2 hb
     apply hB
     unfold Bcmp Bk

@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.DownPhaseDrvTBuild
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -35,7 +39,7 @@ def finT : Stmt := block [.copyN 210001 190021, .copyN 210002 190022, .copyN 210
 def transS : Stmt := .seq orientT (.seq c0S (.seq filtS (.seq setB (.seq buildT finT))))
 
 /-- The cost constant of the transition. -/
-def κT : ℕ := 1600000000
+@[ram_layout] def κT : ℕ := 1600000000
 
 /-- The registers of `setB`. -/
 def BsetB (r : ℕ) : Bool := decide (40000 ≤ r ∧ r ≤ 40002)
@@ -60,7 +64,7 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
       (κBuild * (K * (Nat.clog 2 K + 1) + 1) + 4) + 5 ≤ κT * (n + 1) := by
   set p := topGrade n with hp
   have hnp : n - 1 ≤ 2 ^ p := Nat.le_pow_clog (by norm_num) _
-  have hgp : p ≤ gradeGran p := le_gradeGran p
+  have hgp := le_gradeGran p
   have hK₀n : K₀ ≤ 1680 * n := by
     have : K₀ ≤ K₀ * (gradeGran p + 1) := Nat.le_mul_of_pos_right _ (by omega)
     omega
@@ -68,7 +72,7 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
     have h2 : 2 ^ (p + 12) = 4096 * 2 ^ p := by rw [pow_add]; norm_num; ring
     have h1 : 1 ≤ 2 ^ p := Nat.one_le_two_pow
     omega
-  have hclog : Nat.clog 2 K ≤ p + 12 := Nat.clog_le_of_le_pow hKpow
+  have hclog := Nat.clog_le_of_le_pow hKpow
   have hKK : K * (Nat.clog 2 K + 1) ≤ 13 * (K₀ * (gradeGran p + 1)) := by
     calc K * (Nat.clog 2 K + 1) ≤ K * (13 * (p + 1)) := Nat.mul_le_mul_left _ (by omega)
       _ ≤ K₀ * (13 * (gradeGran p + 1)) := Nat.mul_le_mul hK (by omega)
@@ -88,9 +92,7 @@ theorem setB_exec (c : Config) (hw : WordsBounded W c) :
   obtain ⟨c', k, e, hk, h1, h2, h3, hm⟩ : ∃ c' k, Exec P W setB c c' k ∧ k = 3 ∧
       c'.nreg 40000 = c.nreg 190021 ∧ c'.nreg 40001 = c.nreg 190022 ∧
       c'.nreg 40002 = c.nreg 190036 ∧ c'.nmem = c.nmem := by
-    unfold setB
-    exec_block
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp, rfl⟩
+    ram_exec
   exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_setB, hm⟩
 
 set_option maxHeartbeats 1000000 in
@@ -103,10 +105,7 @@ theorem finT_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 210001 = c.nreg 190021 ∧ c'.nreg 210002 = c.nreg 190022 ∧
       c'.nreg 210003 = c.nreg 190036 ∧ c'.nreg 210004 = c.nreg 190020 ∧
       c'.nreg 210005 = c.nreg 40003 ∧ c'.nmem = c.nmem := by
-    unfold finT
-    exec_block
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-      rfl⟩
+    ram_exec
   exact ⟨c', k, e, hk, h1, h2, h3, h4, h5, exec_frameM e wrM_finT, hm⟩
 
 end exec

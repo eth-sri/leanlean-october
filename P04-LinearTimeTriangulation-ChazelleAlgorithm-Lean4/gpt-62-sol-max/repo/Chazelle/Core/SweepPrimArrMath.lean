@@ -36,9 +36,8 @@ theorem candIdx_mod {m S j : ℕ} (hS : S ≤ 2 * m) (hj : j < 2 * m) :
     (S + candIdx m S j) % (2 * m) = j ∧ candIdx m S j < 2 * m := by
   unfold candIdx
   split_ifs with h
-  · refine ⟨?_, by omega⟩
-    rw [show S + (j + (2 * m - S)) = j + 2 * m by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hj]
-  · exact ⟨by rw [show S + (j - S) = j by omega, Nat.mod_eq_of_lt hj], by omega⟩
+  · simp_all [show S + (j + (2 * m - S)) = j + 2 * m by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hj] <;> omega
+  ram_simp [show S + (j - S) = j by omega, Nat.mod_eq_of_lt hj] <;> omega
 
 /-- The tour index of a candidate is the chain vertex of the tour position. -/
 theorem sideIdx_candIdx (C : Chain) (β : Bool) {j : ℕ} (hj : j ≤ 2 * C.m) :
@@ -49,7 +48,7 @@ theorem sideIdx_candIdx (C : Chain) (β : Bool) {j : ℕ} (hj : j ≤ 2 * C.m) :
   · obtain ⟨h1, h2⟩ := candIdx_mod (m := C.m) hS hj
     exact ⟨h2.le, by rw [C.sideIdx_eq, h1]⟩
   · unfold candIdx
-    rw [ite_eq_right (by omega)]
+    ram_rw [ite_eq_right]
     refine ⟨by omega, ?_⟩
     rw [C.sideIdx_eq, show C.sideS β + (2 * C.m - C.sideS β) = 2 * C.m by omega, Nat.mod_self]
     unfold sideE; split_ifs <;> omega
@@ -65,7 +64,7 @@ theorem cand_vertex (C : Chain) (β : Bool) {k : ℕ} (hk : k ≤ C.m) :
   obtain ⟨a1, a2⟩ := sideIdx_candIdx C β (j := k) (by omega)
   obtain ⟨b1, b2⟩ := sideIdx_candIdx C β (j := 2 * C.m - k) (by omega)
   refine ⟨⟨a1, ?_⟩, ⟨b1, ?_⟩⟩
-  · rw [a2]; unfold sideE; split_ifs; omega
+  · simp_all [sideE] 
   · rw [b2, sideE_rev hk]
 
 /-- **Every tour step of a chain vertex is a candidate.** -/
@@ -81,10 +80,9 @@ theorem cand_complete (C : Chain) (β : Bool) {i k : ℕ} (hi : i ≤ 2 * C.m)
     have hji : i = candIdx C.m (C.sideS β) j := by
       unfold candIdx
       by_cases h : C.sideS β + i < 2 * C.m
-      · rw [Nat.mod_eq_of_lt h] at hjdef
-        rw [ite_eq_right (by omega)]; omega
-      · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at hjdef
-        rw [ite_eq_left (by omega)]; omega
+      · simp_all [Nat.mod_eq_of_lt h] 
+      · ram_rw [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt] at hjdef
+        ram_rw [ite_eq_left]; omega
     have hjk : j = k ∨ j = 2 * C.m - k := by
       rw [← hk]; unfold sideE; split_ifs <;> omega
     rcases hjk with h | h
@@ -100,8 +98,8 @@ theorem twin_pos_param (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
     (h1 : M.wa p' = M.wb p) (h2 : M.wb p' = M.wa p) (hne : (M.wa p).2 ≠ (M.wb p).2) :
     M.pos Q ⟨p', h⟩ = M.pos Q ⟨p, h⟩ ∧ M.param Q ⟨p', h⟩ = 1 - M.param Q ⟨p, h⟩ := by
   obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
-  have hne' : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
-  have hne'' : (M.wa p).2 - (M.wb p).2 ≠ 0 := sub_ne_zero.2 hne
+  have hne' := sub_ne_zero.2 hne.symm
+  have hne'' := sub_ne_zero.2 hne
   have hpar : M.param Q ⟨p', h' + 1⟩ = 1 - M.param Q ⟨p, h' + 1⟩ := by
     unfold Model.param
     simp only
@@ -121,10 +119,7 @@ theorem slit_twin (C : Chain) :
   have hm := C.one_le
   have hn := C.sideWalk_n C.sideBeta
   simp only [Model.wa, Model.wb, chainModel]
-  refine ⟨?_, ?_⟩
-  · rw [C.sideWalk_next_last, C.sideWalk_vtx_five, C.sideWalk_vtx_zero]
-  · rw [hn, Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_six, C.sideWalk_vtx_tour _ le_rfl,
-      C.sideTour_two_m]
+  simp [C.sideWalk_vtx_five, C.sideWalk_vtx_zero, hn, Nat.mod_eq_of_lt, C.sideWalk_vtx_six, C.sideWalk_vtx_tour, C.sideTour_two_m]
 
 theorem slit_twin' (C : Chain) :
     (chainModel C).wa (2 * C.m + 6) = (chainModel C).wb 5 ∧
@@ -149,15 +144,15 @@ theorem tour_twin (C : Chain) {i : ℕ} (hi : i < 2 * C.m) :
   rw [← ht] at h1 h2
   refine ⟨h2, ?_, ?_⟩
   · simp only [Model.wa, Model.wb]
-    rw [show (chainModel C).W = C.sideWalk C.sideBeta from rfl, C.sideWalk_next_tour _ hi,
-      C.sideWalk_vtx_tour _ h2.le, C.sideWalk_vtx_tour _ (by omega)]
+    ram_rw [show (chainModel C).W = C.sideWalk C.sideBeta from rfl, C.sideWalk_next_tour _ hi,
+      C.sideWalk_vtx_tour _ h2.le, C.sideWalk_vtx_tour]
     unfold Chain.sideTour
     congr 1
     rw [C.sideIdx_eq, h1, C.sideIdx_succ, ← hjdef]
     unfold sideE; split_ifs <;> omega
   · simp only [Model.wa, Model.wb]
-    rw [show (chainModel C).W = C.sideWalk C.sideBeta from rfl, C.sideWalk_next_tour _ h2,
-      C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ hi.le]
+    ram_rw [show (chainModel C).W = C.sideWalk C.sideBeta from rfl, C.sideWalk_next_tour _ h2,
+      C.sideWalk_vtx_tour, C.sideWalk_vtx_tour _ hi.le]
     unfold Chain.sideTour
     congr 1
     rw [C.sideIdx_succ, h1, C.sideIdx_eq, ← hjdef]

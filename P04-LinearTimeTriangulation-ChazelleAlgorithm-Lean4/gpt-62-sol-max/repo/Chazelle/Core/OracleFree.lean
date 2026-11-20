@@ -38,8 +38,8 @@ theorem ChordRecOK.surj (h : ChordRecOK P C V m N) {i : ℕ} (hi : i < V.K) :
     rw [Finset.card_image_of_injOn, Finset.card_range]
     intro a ha b hb hab
     exact h.inj a b (Finset.mem_range.1 ha) (Finset.mem_range.1 hb) hab
-  have heq := Finset.eq_of_subset_of_card_le hsub (by rw [hcard, Finset.card_range])
-  have : i ∈ (Finset.range V.K).image (chAt m V) := by rw [heq]; exact Finset.mem_range.2 hi
+  have heq := Finset.eq_of_subset_of_card_le hsub (by simp_all)
+  have : i ∈ (Finset.range V.K).image (chAt m V) := by simp_all
   obtain ⟨q, hq, hqi⟩ := Finset.mem_image.1 this
   exact ⟨q, Finset.mem_range.1 hq, hqi⟩
 
@@ -51,7 +51,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
     ((x, ((Qof P).vtx V.hz).2) : Point) ∉ ⋃₀ N.F (chainModel C) (Qof P) := by
   rintro ⟨c, ⟨r, hr, rfl⟩, hmem⟩
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
-  have hiK : i < V.K := by rw [h.K]; exact hi
+  have hiK : i < V.K := by rwa [h.K]
   have hrec : N.chords[i] = N.chord i := by unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
   rw [hrec] at hmem
   obtain ⟨q, hq, rfl⟩ := h.surj hiK
@@ -59,8 +59,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
   rw [hS] at hmem
   obtain ⟨hy, hxa, hxb⟩ := hmem
   simp only at hy hxa hxb
-  have hhz : chH m V (chAt m V q) = V.hz :=
-    ((heights_ne h.hT hhn hs.hv.hz_lt).1 hy.symm)
+  have hhz := ((heights_ne h.hT hhn hs.hv.hz_lt).1 hy.symm)
   rw [hhz] at hxa hxb EL ER hC
   obtain ⟨ht, hpre, hpost⟩ := hpart
   by_cases hσ : V.σb = 1
@@ -86,8 +85,8 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
           exact hnot ⟨h.lt t htK, Or.inl (by omega)⟩
         · rw [hh, hhz]
       have hf : FoundC V m t := by
-        refine ⟨by rw [ite_eq_left hσ]; exact htK, ?_⟩
-        unfold jCOf; rw [ite_eq_left hσ]; exact hHt
+        refine ⟨by simp_all, ?_⟩
+        unfold jCOf; rwa [ite_eq_left hσ]
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_left hσ, ite_eq_left hσ] at hnear
       obtain ⟨-, -, -, -, ELt, -⟩ := h.facts (h.lt t htK)
@@ -103,7 +102,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         have := chPr_mono h t q hqt hq hc
         rw [hpost (by omega)] at this; exact Bool.false_ne_true this
       rw [← Bool.not_eq_true, chPr_iff] at hnot
-      have ha : ¬ EndLtZ P C V (chL m V (chAt m V q)) V.hz := fun hh =>
+      have ha := fun hh =>
         hnot ⟨h.lt q hq, Or.inr ⟨hhz, fun h' => absurd h' hσ, fun _ => hh⟩⟩
       have ha' := not_lt.1 (fun hh => ha ((endLtZ_iff hσ hs.zo hnp EL.good).2 hh))
       linarith
@@ -117,7 +116,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         · rw [← hh, hhz]
       have hf : FoundC V m t := by
         refine ⟨by rw [ite_eq_right hσ]; omega, ?_⟩
-        unfold jCOf; rw [ite_eq_right hσ]; exact hHt
+        unfold jCOf; rwa [ite_eq_right hσ]
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_right hσ, ite_eq_right hσ] at hnear
       obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) (by omega))
@@ -129,7 +128,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         by_cases hq' : chAt m V q = chAt m V (t - 1)
         · rw [hq']
         · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) (by omega)) hq' (by rw [hhz, hHt])
-            (by rw [hhz, hHt]; exact hx)
+            (by rwa [hhz, hHt])
           rw [hhz, hHt] at this
           linarith [hCt.lt]
       linarith

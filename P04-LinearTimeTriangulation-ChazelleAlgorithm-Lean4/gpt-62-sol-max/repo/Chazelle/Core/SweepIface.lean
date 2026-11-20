@@ -57,35 +57,35 @@ variable (J : Merge.Junction)
 noncomputable def gW : ℕ := 6 + tpos J.whole J.m₁
 
 /-- The offset of a key of the walk of `C`. -/
-noncomputable def oW (x : ℝ) : ℝ := off (chainModel J.whole).W.n (gW J : ℝ) x
+noncomputable def oW (x : ℝ) : ℝ := off J.wholeModel.W.n (gW J : ℝ) x
 
 /-- The length of the right stretch: the `C₁` part is the offsets `[Lst, n)`. -/
 noncomputable def Lst : ℕ := rL1 J + rL2 J
 
 /-- No cut of `F₂⁺` has its offset strictly between `a` and `b`. -/
 def NoCutIn (S₂ : Set (Set Point)) (a b : ℝ) : Prop :=
-  ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x → x < (chainModel J.whole).W.n →
+  ∀ x, J.wholeModel.IsCut (F₂plus J S₂) x → 0 ≤ x → x < J.wholeModel.W.n →
     ¬ (a < oW J x ∧ oW J x < b)
 
 /-- **The label set** `Λ` contains every label of the region faced just after `(p, t)`, up to the
 gap labels. -/
 def LabIn (S₂ : Set (Set Point)) (p : ℕ) (t : ℝ) (Λ : Set (Set Point)) : Prop :=
-  ∀ G ∈ (chainModel J.whole).regions (F₂plus J S₂), AfterFaces (chainModel J.whole) p t G →
-    ∀ V ∈ (chainModel J.right).regions S₂, RLabel J S₂ G V → V ∈ Λ ∨ GapLab J S₂ V
+  ∀ G ∈ J.wholeModel.regions (F₂plus J S₂), AfterFaces J.wholeModel p t G →
+    ∀ V ∈ J.rightModel.regions S₂, RLabel J S₂ G V → V ∈ Λ ∨ GapLab J S₂ V
 
 /-! ## Stage 3 → 4: the event log -/
 
 /-- **The event log** (keys `(p, t)` of the walk of `C`, label sets). -/
 def LogOK (S₂ : Set (Set Point)) (es : List (ℕ × ℝ × Set (Set Point))) : Prop :=
   es ≠ [] ∧
-  (∀ x ∈ es, x.1 < (chainModel J.whole).W.n ∧ 0 ≤ x.2.1 ∧ x.2.1 < 1 ∧
+  (∀ x ∈ es, x.1 < J.wholeModel.W.n ∧ 0 ≤ x.2.1 ∧ x.2.1 < 1 ∧
     (Lst J : ℝ) ≤ oW J (x.1 + x.2.1)) ∧
   (∀ x ∈ es.head?, oW J (x.1 + x.2.1) = Lst J) ∧
   es.Pairwise (fun x y => oW J (x.1 + x.2.1) < oW J (y.1 + y.2.1)) ∧
   (∀ i, i + 1 < es.length →
     NoCutIn J S₂ (oW J ((es.getD i (0, 0, ∅)).1 + (es.getD i (0, 0, ∅)).2.1))
       (oW J ((es.getD (i + 1) (0, 0, ∅)).1 + (es.getD (i + 1) (0, 0, ∅)).2.1))) ∧
-  (∀ x ∈ es.getLast?, NoCutIn J S₂ (oW J (x.1 + x.2.1)) (chainModel J.whole).W.n) ∧
+  (∀ x ∈ es.getLast?, NoCutIn J S₂ (oW J (x.1 + x.2.1)) J.wholeModel.W.n) ∧
   ∀ x ∈ es, LabIn J S₂ x.1 x.2.1 x.2.2
 
 /-! ## Stage 2 → 3: the stops -/
@@ -101,9 +101,9 @@ def StopChord2 (S₂ : Set (Set Point)) (e : Set Point) : Prop :=
 sorted by offset (keys `(p, t)` and chords). -/
 def StopsOK (S₂ : Set (Set Point)) (ss : List (ℕ × ℝ × Set Point)) : Prop :=
   (∀ s ∈ ss, s.2.2 ∈ F₂plus J S₂ ∧ StopChord2 J S₂ s.2.2 ∧
-    SideAttach (chainModel J.whole).W s.2.2 s.1 s.2.1 ∧ (Lst J : ℝ) ≤ oW J (s.1 + s.2.1)) ∧
+    SideAttach J.wholeModel.W s.2.2 s.1 s.2.1 ∧ (Lst J : ℝ) ≤ oW J (s.1 + s.2.1)) ∧
   (∀ e ∈ F₂plus J S₂, StopChord2 J S₂ e → ∀ (p : ℕ) (t : ℝ),
-    SideAttach (chainModel J.whole).W e p t → (Lst J : ℝ) ≤ oW J (p + t) → (p, t, e) ∈ ss) ∧
+    SideAttach J.wholeModel.W e p t → (Lst J : ℝ) ≤ oW J (p + t) → (p, t, e) ∈ ss) ∧
   ss.Pairwise (fun x y => oW J (x.1 + x.2.1) ≤ oW J (y.1 + y.2.1)) ∧ ss.Nodup
 
 /-! ## Stage 3 → side-1 answers: the endpoint table -/
@@ -111,8 +111,8 @@ def StopsOK (S₂ : Set (Set Point)) (ss : List (ℕ × ℝ × Set Point)) : Pro
 /-- The origin of the endpoint query `j` of a chord list in the model `M₂`: the left end of chord
 `j / 2` for even `j`, its right end for odd `j`. -/
 noncomputable def endOrigin (Q : Polygon) (N : NF) (j : ℕ) : Point :=
-  if j % 2 = 0 then Merge.lend ((N.chord (j / 2)).toSet (chainModel J.right) Q)
-  else Merge.rend ((N.chord (j / 2)).toSet (chainModel J.right) Q)
+  if j % 2 = 0 then Merge.lend ((N.chord (j / 2)).toSet J.rightModel Q)
+  else Merge.rend ((N.chord (j / 2)).toSet J.rightModel Q)
 
 /-- The direction of the endpoint query `j` (east for even `j`). -/
 noncomputable def endDir (j : ℕ) : ℝ := if j % 2 = 0 then 1 else -1
@@ -127,9 +127,9 @@ def TabOK (Q : Polygon) (N : NF) (T : ℕ → Option (ℕ × ℝ)) : Prop :=
     FreeAt J.whole (endOrigin J Q N j) (endDir j) ∧
     match T j with
     | some (p, t) =>
-        SideAttach (chainModel J.whole).W
+        SideAttach J.wholeModel.W
             (Merge.shoot J.whole (endOrigin J Q N j) (endDir j)) p t ∧
-          sidePt (chainModel J.whole).W p t =
+          sidePt J.wholeModel.W p t =
             rayPt (endOrigin J Q N j) (endDir j)
               (J.whole.hitParam (endOrigin J Q N j) (endDir j)) ∧
           (Lst J : ℝ) ≤ oW J (p + t)
@@ -162,19 +162,29 @@ noncomputable def stopSet (Q : Polygon) (N : NF) (kind k b : ℕ) : Set Point :=
     Merge.shoot J.whole (endOrigin J Q N (2 * k + (if dirOf b = 1 then 0 else 1))) (dirOf b)
   else Merge.shoot J.whole J.right.top (dirOf b)
 
-/-- `S` stop records of five words at `A`. -/
-def StopRecsAt (m : ℕ → ℕ) (A : ℕ) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) : Prop :=
-  ∀ i, i < rs.length →
-    m (A + 5 * i) = (rs.getD i (0, 0, 0, 0, 0)).1 ∧
-    m (A + 5 * i + 1) = (rs.getD i (0, 0, 0, 0, 0)).2.1 ∧
-    m (A + 5 * i + 2) = (rs.getD i (0, 0, 0, 0, 0)).2.2.1 ∧
-    m (A + 5 * i + 3) = (rs.getD i (0, 0, 0, 0, 0)).2.2.2.1 ∧
-    m (A + 5 * i + 4) = (rs.getD i (0, 0, 0, 0, 0)).2.2.2.2
+/-- Five consecutive natural words of a record. -/
+def Record5At (m : ℕ → ℕ) (a : ℕ) (r : ℕ × ℕ × ℕ × ℕ × ℕ) : Prop :=
+  m a = r.1 ∧ m (a + 1) = r.2.1 ∧ m (a + 2) = r.2.2.1 ∧
+    m (a + 3) = r.2.2.2.1 ∧ m (a + 4) = r.2.2.2.2
+
+/-- Consecutive five-word records starting at `A`. -/
+def Records5At (m : ℕ → ℕ) (A : ℕ) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) : Prop :=
+  ∀ i, i < rs.length → Record5At m (A + 5 * i) (rs.getD i (0, 0, 0, 0, 0))
+
+/-- An array of five-word records survives changes outside its occupied cells. -/
+theorem Records5At.congr {m m' : ℕ → ℕ} {A : ℕ} {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
+    (h : Records5At m A rs) (hm : ∀ a, A ≤ a → a < A + 5 * rs.length → m' a = m a) :
+    Records5At m' A rs := by
+  intro i hi
+  simpa (disch := omega) only [Record5At, hm] using h i hi
+
+/-- The packed array of stop records. -/
+abbrev StopRecsAt := Records5At
 
 /-- The stop list of the records. -/
 noncomputable def stopsOf (Q : Polygon) (N : NF) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) :
     List (ℕ × ℝ × Set Point) :=
-  rs.map fun r => (r.1, (chainModel J.whole).param Q ⟨r.1, r.2.1⟩,
+  rs.map fun r => (r.1, J.wholeModel.param Q ⟨r.1, r.2.1⟩,
     stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2)
 
 /-- `E` log records of seven words at `A`: key `(e, h)`, label count `n ≤ 4`, four labels. -/
@@ -188,21 +198,28 @@ def LogRecsAt (m : ℕ → ℕ) (A : ℕ) (rs : List (ℕ × ℕ × ℕ × ℕ �
     m (A + 7 * i + 5) = (rs.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.2.1 ∧
     m (A + 7 * i + 6) = (rs.getD i (0, 0, 0, 0, 0, 0, 0)).2.2.2.2.2.2
 
+/-- A log below an unchanged memory boundary. -/
+theorem LogRecsAt.below {m m' : ℕ → ℕ} {A E : ℕ} {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
+    (h : LogRecsAt m A ls) (hE : A + 7 * ls.length ≤ E)
+    (hm : MemEqBelow E m' m) : LogRecsAt m' A ls := by
+  intro i hi
+  simpa (disch := omega) only [hm] using h i hi
+
 /-- The label set of a log record: the regions (`regOf`) of its first `n ≤ 4` labels. -/
 noncomputable def labSet (Q : Polygon) (N : NF) (n l₀ l₁ l₂ l₃ : ℕ) : Set (Set Point) :=
-  (regOf (chainModel J.right) Q N) ''
+  (regOf J.rightModel Q N) ''
     {l | (0 < n ∧ l = l₀) ∨ (1 < n ∧ l = l₁) ∨ (2 < n ∧ l = l₂) ∨ (3 < n ∧ l = l₃)}
 
 /-- The event log of the records. -/
 noncomputable def logOf (Q : Polygon) (N : NF) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) :
     List (ℕ × ℝ × Set (Set Point)) :=
-  rs.map fun r => (r.1, (chainModel J.whole).param Q ⟨r.1, r.2.1⟩,
+  rs.map fun r => (r.1, J.wholeModel.param Q ⟨r.1, r.2.1⟩,
     labSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2.1 r.2.2.2.2.2.1 r.2.2.2.2.2.2)
 
 /-- The endpoint table at `A`: three words `(f, e, h)` per query. -/
 noncomputable def tabOf (Q : Polygon) (m : ℕ → ℕ) (A : ℕ) (j : ℕ) : Option (ℕ × ℝ) :=
   if m (A + 3 * j) = 1 then
-    some (m (A + 3 * j + 1), (chainModel J.whole).param Q ⟨m (A + 3 * j + 1), m (A + 3 * j + 2)⟩)
+    some (m (A + 3 * j + 1), J.wholeModel.param Q ⟨m (A + 3 * j + 1), m (A + 3 * j + 2)⟩)
   else none
 
 end Sweep

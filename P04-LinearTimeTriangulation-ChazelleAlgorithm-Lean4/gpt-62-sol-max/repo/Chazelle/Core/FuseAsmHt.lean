@@ -23,26 +23,37 @@ namespace FuseAsm
 
 open Chazelle.Merge (FreeAt shoot)
 
-theorem param_congr (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ}
-    (hh : (Q.vtx h).2 = (Q.vtx h').2) : M.param Q ⟨e, h + 1⟩ = M.param Q ⟨e, h' + 1⟩ := by
+section
+
+variable (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ}
+    (hh : (Q.vtx h).2 = (Q.vtx h').2)
+include M e hh
+
+theorem param_congr : M.param Q ⟨e, h + 1⟩ = M.param Q ⟨e, h' + 1⟩ := by
   unfold Model.param; simp only; rw [hh]
 
-theorem pos_congr (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ}
-    (hh : (Q.vtx h).2 = (Q.vtx h').2) : M.pos Q ⟨e, h + 1⟩ = M.pos Q ⟨e, h' + 1⟩ := by
+theorem pos_congr : M.pos Q ⟨e, h + 1⟩ = M.pos Q ⟨e, h' + 1⟩ := by
   unfold Model.pos; rw [param_congr M Q e hh]
 
-theorem toSet_congr (M : Model) (Q : Polygon) {r r' : CRec} (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2)
-    (hl : r.lp = r'.lp) (hr : r.rp = r'.rp) : r.toSet M Q = r'.toSet M Q := by
+end
+
+section
+
+variable (M : Model) (Q : Polygon) {r r' : CRec} (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2)
+    (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
+include M hh hl hr
+
+theorem toSet_congr : r.toSet M Q = r'.toSet M Q := by
   unfold CRec.toSet CRec.lpos CRec.rpos
   rw [hh, pos_congr M Q r.lp hh, pos_congr M Q r.rp hh, hl, hr]
 
-theorem attached_congr (M : Model) (Q : Polygon) {r r' : CRec}
-    (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2) (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
+theorem attached_congr
     (hA : r.Attached M Q) : r'.Attached M Q := by
   unfold CRec.Attached CRec.lpos CRec.rpos at *
-  rw [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
+  rwa [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
     ← param_congr M Q r.rp hh]
-  exact hA
+
+end
 
 /-- The height of a query agrees with its height code. -/
 def HeightOK (J : Merge.Junction) (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) : Prop :=
@@ -72,16 +83,16 @@ theorem collectQ_length_le (L : List (ℕ × ℕ × ℕ)) (R : List (ℕ × ℕ 
 /-- The chord seen from a query of a reported answer is at the height of the query. -/
 theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ × ℕ}
     {r : ℕ × ℕ × ℕ × ℕ} (hs : SeesInWhole J Q i q r) (hH : HeightOK J Q i q) (h1 : r.1 = 1) :
-    (recOf (qtrip (q, r))).toSet (chainModel J.whole) Q = (recOf r.2).toSet (chainModel J.whole) Q ∧
-      (recOf (qtrip (q, r))).Attached (chainModel J.whole) Q := by
+    (recOf (qtrip (q, r))).toSet J.wholeModel Q = (recOf r.2).toSet J.wholeModel Q ∧
+      (recOf (qtrip (q, r))).Attached J.wholeModel Q := by
   obtain ⟨-, hrec⟩ := hs
   obtain ⟨hset, hatt⟩ := hrec h1
   have hz := Sweep.origin_mem J (a := (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩)
     (σ := dirOf q.2.2)
   rw [← hset] at hz
-  have hy : ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2 = (Q.vtx (recOf r.2).h).2 := hz.1
+  have hy := hz.1
   have hh : (Q.vtx (recOf r.2).h).2 = (Q.vtx (recOf (qtrip (q, r))).h).2 := by
-    rw [← hy]; exact hH
+    rwa [← hy]
   exact ⟨(toSet_congr _ Q hh rfl rfl).symm, attached_congr _ Q hh rfl rfl hatt⟩
 
 /-- **The chords reported by the sweep**, with the height indices of the queries. -/
@@ -89,9 +100,9 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     (R : List (ℕ × ℕ × ℕ × ℕ)) (hlen : R.length = L.length)
     (hs : ∀ j, j < L.length → SeesInWhole J Q i (L.getD j (0, 0, 0)) (R.getD j (0, 0, 0, 0)))
     (hq : ∀ q ∈ L, QueryOK J Q i q ∧ HeightOK J Q i q) :
-    {d | ∃ t ∈ collectQ L R, d = (recOf t).toSet (chainModel J.whole) Q} =
+    {d | ∃ t ∈ collectQ L R, d = (recOf t).toSet J.wholeModel Q} =
         shots J (geoQ J Q i L) ∧
-      ∀ t ∈ collectQ L R, (recOf t).Attached (chainModel J.whole) Q ∧ t.1 < Q.n := by
+      ∀ t ∈ collectQ L R, (recOf t).Attached J.wholeModel Q ∧ t.1 < Q.n := by
   have key : ∀ t ∈ collectQ L R, ∃ j, j < L.length ∧ (R.getD j (0, 0, 0, 0)).1 = 1 ∧
       t = qtrip (L.getD j (0, 0, 0), R.getD j (0, 0, 0, 0)) := by
     intro t ht
@@ -101,8 +112,8 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     have hjL : j < L.length := by rw [List.length_zip] at hj; omega
     have hjR : j < R.length := by omega
     refine ⟨j, hjL, ?_, ?_⟩
-    · rw [getD_lt hjR]; simpa using h1
-    · rw [getD_lt hjL, getD_lt hjR]; simp
+    · simp_all
+    · simp_all
   have memk : ∀ j, j < L.length → (R.getD j (0, 0, 0, 0)).1 = 1 →
       qtrip (L.getD j (0, 0, 0), R.getD j (0, 0, 0, 0)) ∈ collectQ L R := by
     intro j hj h1
@@ -111,7 +122,7 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     refine ⟨(L[j], R[j]), ⟨?_, ?_⟩, ?_⟩
     · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := by simp
       rw [← this]; exact List.getElem_mem _
-    · rw [getD_lt hjR] at h1; exact h1
+    · rwa [getD_lt hjR] at h1
     · rw [getD_lt hj, getD_lt hjR]
   refine ⟨?_, fun t ht => ?_⟩
   · ext d

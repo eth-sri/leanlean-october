@@ -40,17 +40,17 @@ structure Shift (Q : Polygon) (C : Chain) (c₀ : ℕ) : Prop where
 
 variable {c₀ : ℕ}
 
-theorem chain_n : (chainModel C).W.n = 2 * C.m + 7 := Chain.sideWalk_n _ _
+abbrev chain_n := @Chazelle.Core.Brute.walk_n
 
 theorem Shift.next_chain (_H : Shift Q C c₀) {j : ℕ} (hj : j < C.m) (h6 : c₀ + C.m ≤ 2 * C.m + 6) :
     (j + c₀ + 1) % (C.sideWalk C.sideBeta).n = (j + 1) + c₀ := by
-  rw [Chain.sideWalk_n, Nat.mod_eq_of_lt (by omega)]; ring
+  ram_rw [Chain.sideWalk_n, Nat.mod_eq_of_lt]; ring
 
 theorem Shift.prev_chain (_H : Shift Q C c₀) {j : ℕ} (hj0 : 1 ≤ j) (hj : j ≤ C.m) :
     (j + c₀ + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = (j - 1) + c₀ := by
   have := _H.le
-  rw [Chain.sideWalk_n, show j + c₀ + (2 * C.m + 7) - 1 = (j - 1 + c₀) + (2 * C.m + 7) by omega,
-    Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [Chain.sideWalk_n, show j + c₀ + (2 * C.m + 7) - 1 = (j - 1 + c₀) + (2 * C.m + 7) by omega,
+    Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 theorem next_W (T : Top Q C) {j : ℕ} (hj : j < C.m) :
     (j + 1) % (interiorWalk Q).n = j + 1 := by
@@ -59,17 +59,23 @@ theorem next_W (T : Top Q C) {j : ℕ} (hj : j < C.m) :
 theorem prev_W (T : Top Q C) {j : ℕ} (hj0 : 1 ≤ j) (hj : j ≤ C.m) :
     (j + (interiorWalk Q).n - 1) % (interiorWalk Q).n = j - 1 := by
   have := T.hm
-  rw [iw_n, show j + Q.n - 1 = (j - 1) + Q.n by omega, Nat.add_mod_right,
-    Nat.mod_eq_of_lt (by omega)]
+  ram_rw [iw_n, show j + Q.n - 1 = (j - 1) + Q.n by omega, Nat.add_mod_right,
+    Nat.mod_eq_of_lt]
 
+section
+
+variable (H : Shift Q C c₀) (T : Top Q C)
+
+include H T in
 /-- **The points agree.** -/
-theorem Shift.pt_eq (H : Shift Q C c₀) (T : Top Q C) {j : ℕ} (hj : j < C.m) (s : ℝ) :
+theorem Shift.pt_eq {j : ℕ} (hj : j < C.m) (s : ℝ) :
     sidePt (C.sideWalk C.sideBeta) (j + c₀) s = sidePt (interiorWalk Q) j s := by
   unfold sidePt
   rw [H.next_chain hj H.le, next_W T hj, H.vtx j hj.le, H.vtx (j + 1) hj]
 
+include H T in
 /-- **The left sectors agree.** -/
-theorem Shift.sec_eq (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) {j : ℕ} (hj : j < C.m)
+theorem Shift.sec_eq (hQ : Q.Simple) {j : ℕ} (hj : j < C.m)
     {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s < 1) (hsj : s = 0 → 1 ≤ j) (y : Point) :
     sideLeft (C.sideWalk C.sideBeta) (j + c₀) s y ↔ sideLeft (interiorWalk Q) j s y := by
   have hM := walkAx_interiorModel hQ
@@ -105,8 +111,8 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
     intro x hx hne hd
     by_contra hxD
     have hl := hnear x hx hne (lt_of_lt_of_le hd (min_le_left _ _))
-    exact hclean x (lt_of_lt_of_le hd (min_le_right _ _)) (by rw [hWb, hWf]; exact hxD) hl
-  have hrr : 0 < min r r' := lt_min hr hr'
+    exact hclean x (lt_of_lt_of_le hd (min_le_right _ _)) (by rwa [hWb, hWf]) hl
+  have hrr := lt_min hr hr'
   obtain ⟨hPy, hPa, hPb⟩ := hmem
   have hPab : P.1 = a ∨ P.1 = b := by
     by_contra h; push Not at h
@@ -115,9 +121,7 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
       rw [e]; exact hch.open_mem _ (lt_of_le_of_ne hPa (Ne.symm h.1)) (lt_of_le_of_ne hPb h.2))
   have hab := hch.lt
   have hdist : ∀ t : ℝ, dist ((t, y) : Point) P = |t - P.1| := by
-    intro t
-    rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, hPy, sub_self, abs_zero]
-    exact max_eq_left (abs_nonneg _)
+    simp [Prod.dist_eq, Real.dist_eq, hPy]
   set δ := min (min r r') (b - a) / 2 with hδ
   have hδ0 : 0 < δ := by have := lt_min hrr (sub_pos.2 hab); rw [hδ]; linarith
   have hδ1 : δ < min r r' := by have := min_le_left (min r r') (b - a); rw [hδ]; linarith
@@ -126,12 +130,12 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
   rcases hPab with hPa' | hPb'
   · -- `P` is the left end
     have hz := hin (a + δ, y) ⟨rfl, by linarith, by linarith⟩ (hPne _ (by linarith))
-      (by rw [hdist, hPa', show a + δ - a = δ by ring, abs_of_pos hδ0]; exact hδ1)
+      (by rwa [hdist, hPa', show a + δ - a = δ by ring, abs_of_pos hδ0])
     obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by linarith, by linarith⟩
       (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
     have ha'a : a' = a := by
       by_contra hne
-      have hlt : a < a' := lt_of_le_of_ne ha' (Ne.symm hne)
+      have hlt := lt_of_le_of_ne ha' (Ne.symm hne)
       exact hch'.left_not (hin (a', y) ⟨rfl, ha', by linarith⟩ (hPne _ (by linarith))
         (by rw [hdist, hPa', abs_of_pos (by linarith)]; linarith))
     subst ha'a
@@ -141,12 +145,12 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
       hnear x ⟨hx.1, hx.2.1, by linarith [hx.2.2]⟩ hne hd⟩
   · -- `P` is the right end
     have hz := hin (b - δ, y) ⟨rfl, by linarith, by linarith⟩ (hPne _ (by linarith))
-      (by rw [hdist, hPb', show b - δ - b = -δ by ring, abs_neg, abs_of_pos hδ0]; exact hδ1)
+      (by rwa [hdist, hPb', show b - δ - b = -δ by ring, abs_neg, abs_of_pos hδ0])
     obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by linarith, by linarith⟩
       (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
     have hb'b : b' = b := by
       by_contra hne
-      have hlt : b' < b := lt_of_le_of_ne hb' hne
+      have hlt := lt_of_le_of_ne hb' hne
       exact hch'.right_not (hin (b', y) ⟨rfl, by linarith, hb'⟩ (hPne _ (by linarith))
         (by rw [hdist, hPb', abs_of_neg (by linarith)]; linarith))
     subst hb'b
@@ -157,13 +161,14 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
 
 theorem wrapK_self {n x : ℝ} (hx : x < n) : wrapK n x = x := by unfold wrapK; rw [ite_eq_left hx]
 
+include H T in
 /-- **The key correspondence of the transition.** -/
-theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.Simple)
+theorem transCorr (hQ : Q.Simple) (hP : C.P.Simple)
     {F₀ : Set (Set Point)} (hF₀ : F₀ ⊆ (chainModel C).Adm) {U V : Set Point} (hVU : V ⊆ U) :
     ArcT.ArcCorr (chainModel C) (interiorModel Q) F₀ (pieces Q F₀) U V 0 C.m
       (fun x => x + c₀) := by
-  have hM₁ : WalkAx (chainModel C) := walkAx_chainModel hP
-  have hmn : C.m + 1 = Q.n := T.hm
+  have hM₁ := walkAx_chainModel hP
+  have hmn := T.hm
   have hWn : (interiorModel Q).W.n = Q.n := iw_n
   have hle := H.le
   have hsix := H.six
@@ -174,9 +179,9 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     have hfl : ⌊x + c₀⌋₊ = ⌊x⌋₊ + c₀ := by
       rw [show x + c₀ = x + ((c₀ : ℕ) : ℝ) from rfl, Nat.floor_add_natCast hx.1.le]
     refine ⟨?_, sub_nonneg.2 (Nat.floor_le hx.1.le), by linarith [Nat.lt_floor_add_one x], hfl, ?_⟩
-    · have : (⌊x⌋₊ : ℝ) < C.m := lt_of_le_of_lt (Nat.floor_le hx.1.le) hx.2
+    · have := lt_of_le_of_lt (Nat.floor_le hx.1.le) hx.2
       exact_mod_cast this
-    · rw [hfl]; push_cast; ring
+    simp_all
   refine ⟨le_rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [hWn]; exact_mod_cast T.n_pos
   · rw [hWn, zero_add]; exact_mod_cast (show C.m ≤ Q.n by omega)
@@ -188,7 +193,7 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     have h2 : ((C.m + c₀ : ℕ) : ℝ) < ((2 * C.m + 7 : ℕ) : ℝ) := by exact_mod_cast (by omega)
     push_cast at h2 ⊢; linarith
   · intro y h1 h2
-    refine ⟨y - c₀, ⟨by simp only [zero_add] at h1; linarith, by linarith⟩, by ring⟩
+    refine ⟨y - c₀, ⟨by linarith, by linarith⟩, by ring⟩
   · intro x hx hv k hk
     have hkc : c₀ ≤ k := by
       have : (c₀ : ℝ) < k := by rw [← hk]; linarith [hx.1]
@@ -212,8 +217,7 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
       have : j = 0 := by omega
       have hx0 : x = 0 := by rw [hs, this] at h0; simpa using h0
       exact lt_irrefl _ (hx0 ▸ hx.1)
-    have hA₂ : SideAttach (interiorWalk Q) c j s :=
-      ExtG.attach_of_sector (H.pt_eq T hjm s).symm
+    have hA₂ := ExtG.attach_of_sector (H.pt_eq T hjm s).symm
         (fun y hy => (H.sec_eq T hQ hjm ht0 ht1 hsj y).1 hy)
         (by rw [iw_n]; omega) ht0 ht1 hA₁
     have hPd : sidePt (interiorWalk Q) j s ∉ C.dom := by
@@ -249,8 +253,9 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     show 6 ≤ ⌊x⌋₊ + c₀ ∧ ⌊x⌋₊ + c₀ < 2 * C.m + 6
     omega
 
+include H T in
 /-- **A straight piece of an arc** inside `[0, m]` weighs at most the weight of `U`. -/
-theorem piece_wt (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.Simple)
+theorem piece_wt (hQ : Q.Simple) (hP : C.P.Simple)
     {F₀ : Set (Set Point)} (hF₀ : F₀ ⊆ (chainModel C).Adm) (hfin : F₀.Finite)
     {U V : Set Point} (hU : U ∈ (chainModel C).regions F₀) (hVU : V ⊆ U) {a b a' b' : ℝ}
     (harc : (interiorModel Q).IsArc (pieces Q F₀) V a b) (h0 : 0 ≤ a') (hab' : a' < b')
@@ -286,15 +291,16 @@ theorem arcWt_last (T : Top Q C) : (interiorModel Q).arcWt C.m 0 ≤ 1 := by
         have h1 : (C.m : ℝ) < p + 1 := by
           rcases hx with h | h
           · linarith
-          · exfalso; have : (0 : ℝ) ≤ p := Nat.cast_nonneg p; linarith
+          linarith
         have h2 : C.m < p + 1 := by exact_mod_cast h1
         have := T.hm
         show p = C.m
         omega
     _ = 1 := Set.ncard_singleton _
 
+include H T in
 /-- **(T3) The weight of an arc after the transition** is at most `2 · weight U + 1`. -/
-theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.Simple)
+theorem arcWt_le_trans (hQ : Q.Simple) (hP : C.P.Simple)
     {F₀ : Set (Set Point)} (hF₀ : F₀ ⊆ (chainModel C).Adm) (hfin : F₀.Finite)
     {U V : Set Point} (hU : U ∈ (chainModel C).regions F₀) (hVU : V ⊆ U) {a b : ℝ}
     (harc : (interiorModel Q).IsArc (pieces Q F₀) V a b) :
@@ -404,6 +410,8 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
             · exact (hK _).2 (Or.inr (lt_min hx hlt))
             · exact (hK _).2 (Or.inl hgt))
       omega
+
+end
 
 end
 

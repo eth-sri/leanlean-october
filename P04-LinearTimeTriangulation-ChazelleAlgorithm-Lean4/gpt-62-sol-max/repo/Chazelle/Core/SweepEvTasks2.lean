@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvTasks
 
 /-!
@@ -32,8 +34,8 @@ open Chazelle.Visibility (rayPt)
 /-! ## The output registers of the run steps and the finalisation -/
 
 /-- The log registers (outputs of the run steps): base and record count. -/
-def lB : ℕ := sw 2430
-def lC : ℕ := sw 2431
+@[ram_layout] def lB : ℕ := sw 2430
+@[ram_layout] def lC : ℕ := sw 2431
 
 /-- The finalisation block: the outputs to `sw 200, 201, 300, 301, 302`. -/
 def finL : List Instr :=
@@ -77,14 +79,14 @@ def PreAt (_X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (c : Con
     (J : Merge.Junction) (N₁ N₂ : NF) : Prop :=
   JunctionAt c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) (Qof P) H J ∧
     J.P.Simple ∧
-    Ok P (chainModel J.left) ∧ Ok P (chainModel J.right) ∧
+    Ok P J.leftModel ∧ Ok P J.rightModel ∧
     NFWithin c.nmem (rd c bSweep 3) (c.nreg ALLOC) N₁ ∧
     NFWithin c.nmem (rd c bSweep 4) (c.nreg ALLOC) N₂ ∧
-    IsNF (chainModel J.left) (Qof P) N₁ ∧ IsNF (chainModel J.right) (Qof P) N₂ ∧
-    (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (rd c bSweep 6) ∧
-    (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 6) ∧
-    (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (rd c bSweep 5) ∧
-    (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 5) ∧
+    IsNF J.leftModel (Qof P) N₁ ∧ IsNF J.rightModel (Qof P) N₂ ∧
+    J.leftModel.DegLe (N₁.F J.leftModel (Qof P)) (rd c bSweep 6) ∧
+    J.rightModel.DegLe (N₂.F J.rightModel (Qof P)) (rd c bSweep 6) ∧
+    J.leftModel.Semigranular (N₁.F J.leftModel (Qof P)) (rd c bSweep 5) ∧
+    J.rightModel.Semigranular (N₂.F J.rightModel (Qof P)) (rd c bSweep 5) ∧
     St0S P c H J
 
 /-- **Task I: the initialisation**, at cost `κI · (K₁ + K₂ + 1)` (`K₁ = c.nmem (rd c bSweep 3)`,
@@ -114,20 +116,20 @@ of `C₂`, and whose first hit in `C` comes strictly before its first hit in `C�
    (`Lst < oW (p + t)`), and not the shared vertex;
 2. the chord determines the query: two such queries `j, j'` with the same chord are equal. -/
 def OriginTask : Prop :=
-  ∀ (J : Merge.Junction) (Q : Polygon) (N : NF), J.P.Simple → IsNF (chainModel J.right) Q N →
-    (chainModel J.whole).ChordFamily Q (F₂plus J (N.F (chainModel J.right) Q)) →
+  ∀ (J : Merge.Junction) (Q : Polygon) (N : NF), J.P.Simple → IsNF J.rightModel Q N →
+    J.wholeModel.ChordFamily Q (F₂plus J (N.F J.rightModel Q)) →
     (∀ j, j < 2 * N.nChords → endOrigin J Q N j ∈ J.right.set → endOrigin J Q N j ≠ J.shared →
       endOrigin J Q N j ≠ J.right.top →
       J.whole.hitParam (endOrigin J Q N j) (endDir j) <
         J.right.hitParam (endOrigin J Q N j) (endDir j) →
-      ¬ StopChord2 J (N.F (chainModel J.right) Q)
+      ¬ StopChord2 J (N.F J.rightModel Q)
           (Merge.shoot J.whole (endOrigin J Q N j) (endDir j)) ∧
-        ∃ (p : ℕ) (t : ℝ), p < (chainModel J.whole).W.n ∧ 0 ≤ t ∧ t < 1 ∧
-          SideAttach (chainModel J.whole).W
+        ∃ (p : ℕ) (t : ℝ), p < J.wholeModel.W.n ∧ 0 ≤ t ∧ t < 1 ∧
+          SideAttach J.wholeModel.W
             (Merge.shoot J.whole (endOrigin J Q N j) (endDir j)) p t ∧
-          sidePt (chainModel J.whole).W p t = rayPt (endOrigin J Q N j) (endDir j)
+          sidePt J.wholeModel.W p t = rayPt (endOrigin J Q N j) (endDir j)
             (J.whole.hitParam (endOrigin J Q N j) (endDir j)) ∧
-          (Lst J : ℝ) < oW J (p + t) ∧ sidePt (chainModel J.whole).W p t ≠ J.shared) ∧
+          (Lst J : ℝ) < oW J (p + t) ∧ sidePt J.wholeModel.W p t ≠ J.shared) ∧
     (∀ j j', j < 2 * N.nChords → j' < 2 * N.nChords →
       endOrigin J Q N j ∈ J.right.set → endOrigin J Q N j ≠ J.shared →
       endOrigin J Q N j ≠ J.right.top →

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvAcc
 
 /-!
@@ -31,7 +33,7 @@ theorem lblOf_length (c : Config) (bN bL : ℕ) : (lblOf c bN bL).length = min (
 theorem addL_length_le {l : List ℕ} (h : l.length ≤ 4) (v : ℕ) : (addL l v).length ≤ 4 := by
   unfold addL; split_ifs with h1
   · exact h
-  · simp only [List.length_append, List.length_singleton]; push Not at h1; omega
+  · simp_all
 
 theorem mem_addL {l : List ℕ} {v x : ℕ} : x ∈ addL l v → x ∈ l ∨ x = v := by
   unfold addL; split_ifs
@@ -56,14 +58,13 @@ theorem neq_irs {r x : ℕ} {s : Stmt} {K : ℕ} {Q : Config → Prop} (hI : IIn
     IRS P W c₀ (neq r x s) c (K + 4) Q := by
   unfold neq
   by_cases h1 : c.nreg r < c.nreg x
-  · exact (IRS.ifT h1 (hs (by omega))).mono (by omega) (fun _ h => h)
+  · exact (IRS.ifT h1 (hs (by omega))).budget
   · by_cases h2 : c.nreg x < c.nreg r
-    · exact (IRS.ifF h1 (IRS.ifT h2 (hs (by omega)))).mono (by omega) (fun _ h => h)
-    · exact (IRS.ifF h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (by omega))))).mono (by omega)
-        (fun _ h => h)
+    · exact (IRS.ifF h1 (IRS.ifT h2 (hs (by omega)))).budget
+    · exact (IRS.ifF h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (by omega))))).budget
 
 /-- The registers of a label list. -/
-def LblR (bN bL q : ℕ) : Prop := q = bN ∨ (bL ≤ q ∧ q < bL + 4)
+@[ram_layout] def LblR (bN bL q : ℕ) : Prop := q = bN ∨ (bL ≤ q ∧ q < bL + 4)
 
 /-- Two copies: the result of the block `[copyN (bL + i) r, constN bN (i + 1)]`. -/
 theorem lab_set_irs {bN bL r i : ℕ} (hI : IInv W c₀ c) (hsN : IScr bN) (hsL : IScr (bL + i))
@@ -77,7 +78,7 @@ theorem lab_set_irs {bN bL r i : ℕ} (hI : IInv W c₀ c) (hsN : IScr bN) (hsL 
   refine ⟨?_, ?_, fun q h1 h2 => ?_, rfl⟩ <;> simp only [regB, regI]
   · rw [upd_other _ _ _ (Ne.symm hne), upd_same]
   · exact upd_same _ _ _
-  · rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+  simp_all
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 100000 in
@@ -91,9 +92,7 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
       lblOf c' bN bL = addL (lblOf c bN bL) (c.nreg r) ∧
       (∀ q, ¬ LblR bN bL q → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   obtain ⟨-, k1, -, k4, -, k2, k3⟩ := hK
-  have kK : ∀ k, k = K1 ∨ k = K2 ∨ k = K3 ∨ k = K4 → ∀ c' : Config,
-      (∀ q, ¬ LblR bN bL q → c'.nreg q = c.nreg q) → c'.nreg k = c.nreg k :=
-    fun k hk c' h => h k (hKN k hk)
+  
   have lbl : ∀ c' : Config, lblOf c' bN bL =
       (List.range (min (c'.nreg bN) 4)).map fun i => c'.nreg (bL + i) := fun _ => rfl
   have hlen : (lblOf c bN bL).length = c.nreg bN := by rw [lblOf_length]; omega
@@ -136,8 +135,7 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
         rintro c' ⟨v1, v2, v3, v4⟩
         refine ⟨by omega, ?_, setFr 2 (by norm_num) c' v3, v4⟩
         have e0 : c'.nreg bL = c.nreg bL := v3 _ (by omega) (fun h => hNL 0 (by norm_num) (by rw [h]; rfl))
-        have e1 : c'.nreg (bL + 1) = c.nreg (bL + 1) :=
-          v3 _ (by omega) (fun h => hNL 1 (by norm_num) h.symm)
+        have e1 := v3 _ (by omega) (fun h => hNL 1 (by norm_num) h.symm)
         rw [lbl c', v2, hl]
         simp [addL, List.range_succ, e0, e1, v1, hne, hne']
       · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
@@ -159,17 +157,15 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
           refine ⟨by omega, ?_, setFr 3 (by norm_num) c' v3, v4⟩
           have e0 : c'.nreg bL = c.nreg bL :=
             v3 _ (by omega) (fun h => hNL 0 (by norm_num) (by rw [h]; rfl))
-          have e1 : c'.nreg (bL + 1) = c.nreg (bL + 1) :=
-            v3 _ (by omega) (fun h => hNL 1 (by norm_num) h.symm)
-          have e2 : c'.nreg (bL + 2) = c.nreg (bL + 2) :=
-            v3 _ (by omega) (fun h => hNL 2 (by norm_num) h.symm)
+          have e1 := v3 _ (by omega) (fun h => hNL 1 (by norm_num) h.symm)
+          have e2 := v3 _ (by omega) (fun h => hNL 2 (by norm_num) h.symm)
           rw [lbl c', v2, hl]
           simp [addL, List.range_succ, e0, e1, e2, v1, hne, hne', hne'']
         · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
       · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
     · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
   · -- full
-    have hl4 : (lblOf c bN bL).length = 4 := hlen
+    
     have hfull : ∀ v, addL (lblOf c bN bL) v = lblOf c bN bL := fun v => by
       unfold addL; rw [ite_eq_left (Or.inr (by omega))]
     have hun : ∀ (K : ℕ), IRS P W c₀ .skip c K (fun c' => c'.nreg bN ≤ 4 ∧

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterSplitMath
 public import Chazelle.Core.ClusterPhase
 
@@ -82,9 +84,9 @@ theorem eqThen_exec {S : Stmt} {c : Config} (hw : WordsBounded W c) (x y : ℕ)
   by_cases h1 : c.nreg x < c.nreg y
   · exact ⟨c, 0 + 1, .ifLtN_true h1 (.skip hw), by omega, hne (by omega)⟩
   · by_cases h2 : c.nreg y < c.nreg x
-    · exact ⟨c, 0 + 1 + 2, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega, hne (by omega)⟩
+    · exact ⟨c, 0 + 1 + 2, (by ram_path), by omega, hne (by omega)⟩
     · obtain ⟨c', k, e, hk, hr⟩ := hS (by omega)
-      exact ⟨c', k + 2 + 2, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, hr⟩
+      exact ⟨c', k + 2 + 2, (by ram_path), by omega, hr⟩
 
 /-- **The class parameters.** -/
 theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 = 0)
@@ -122,8 +124,8 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
       c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output ∧ c1.nmem = c.nmem := by
     exec_block
     all_goals first | omega | (config_simp; simp only [hSO, hSF, hX]; omega) | skip
-    refine ⟨rfl, ‹_›, by config_simp; simp only [hSO, hSF, hX]; rfl, by config_simp,
-      fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨rfl, ‹_›, by frame_finish, by config_simp,
+      fun r hr => ?_, by and_intros <;> rfl⟩
     simp only [Machine.upd_apply]; unfold CpRG at hr; split_ifs <;> omega
   obtain ⟨z1, x1, f1, so1, sf1, fp1, pr1, sz1⟩ := fr c1 h1r
   -- the down test
@@ -143,8 +145,7 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
           c3.rreg = c1.rreg ∧ c3.rmem = c1.rmem ∧ c3.output = c1.output ∧ c3.nmem = c1.nmem := by
         exec_block
         · rw [fp1, h1g]; omega
-        · refine ⟨rfl, ‹_›, by config_simp; rw [fp1, h1g, hm1], fun r hr => ?_, rfl, rfl, rfl,
-            rfl⟩
+        · refine ⟨rfl, ‹_›, by config_simp; rw [fp1, h1g, hm1], fun r hr => ?_, by and_intros <;> rfl⟩
           simp only [Machine.upd_apply, hr, ite_false]
       have h3x : c3.nreg 130630 = X := (h3r _ (by omega)).trans x1
       have h3g : c3.nreg 130640 = g := (h3r _ (by omega)).trans h1g
@@ -164,22 +165,22 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
             skip
           refine ⟨le_refl _, ‹_›, fun r hr => ?_, by rw [hm3, hm1], fun _ => ⟨by config_simp,
             by config_simp; simp only [h3pr, h3g, hm3, hm1]; try rfl, by
-              config_simp; simp only [h3pr, h3sz, h3g, hm3, hm1]; try rfl⟩,
+              frame_finish [h3pr, h3sz, h3g, hm3, hm1]⟩,
             fun h => absurd ⟨by omega, heq⟩ h, by rw [hrr3, hrr1], by rw [hrm3, hrm1],
             by rw [ho3, ho1]⟩
           simp only [Machine.upd_apply]
           unfold CpRG at hr
-          rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
-            ite_eq_right (by omega), ite_eq_right (by omega), h3r r (by omega)]
+          ram_rw [ite_eq_right, ite_eq_right, ite_eq_right, ite_eq_right,
+            ite_eq_right, ite_eq_right, h3r r]
           exact h1r r (by unfold CpRG; omega))
         (fun hne => by
           rw [h3p, h3x] at hne
           refine ⟨hw3, fun r hr => ?_, by rw [hm3, hm1], fun h => absurd h.2 hne, fun _ => by
-            rw [h3r _ (by omega)]; exact h1m, by rw [hrr3, hrr1], by rw [hrm3, hrm1],
+            ram_rw [h3r]; exact h1m, by rw [hrr3, hrr1], by rw [hrm3, hrm1],
             by rw [ho3, ho1]⟩
           rw [h3r r (by unfold CpRG at hr; omega)]; exact h1r r hr)
       obtain ⟨hw4, h4r, h4m, hd4, hnd4, hrr4, hrm4, ho4⟩ := hR4
-      refine ⟨c4, k3 + k4 + 1, .ifLtN_true (by rw [z1, h1g]; exact hg0) (.seq e3 e4), by omega,
+      refine ⟨c4, k3 + k4 + 1, (by ram_path), by omega,
         hw4, h4r, h4m, hd4, hnd4, hrr4, hrm4, ho4⟩
     · rw [z1, h1g] at hg0
       refine ⟨c1, 0 + 2, .ifLtN_false (by rw [z1, h1g]; exact hg0) (.skip hw1), by omega, hw1,
@@ -196,7 +197,7 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
     by_cases hd : g ≠ 0 ∧ fp g = X
     · -- the down test succeeded
       obtain ⟨m1, ma, mb⟩ := hdown hd
-      refine ⟨c2, 0 + 1, .ifLtN_true (by rw [z2, m1]; omega) (.skip hw2), by omega, hw2, h2r, h2m,
+      refine ⟨c2, 0 + 1, (by ram_path [z2, m1]), by omega, hw2, h2r, h2m,
         fun κ => ?_, hrr2, hrm2, ho2⟩
       unfold inClass ClassTest
       rw [ite_eq_left hd, m1, ma, mb]
@@ -225,8 +226,8 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
             c3.nmem = c2.nmem := by
           exec_block
           all_goals first | omega | (config_simp; simp only [fp2, so2, f2, h2m]; omega) | skip
-          refine ⟨rfl, ‹_›, by config_simp; simp only [fp2, so2, f2, h2m]; rfl, fun r hr => ?_,
-            rfl, rfl, rfl, rfl⟩
+          refine ⟨rfl, ‹_›, by frame_finish [fp2, so2, f2, h2m], fun r hr => ?_,
+            by and_intros <;> rfl⟩
           simp only [Machine.upd_apply, hr, ite_false]
         have h3x : c3.nreg 130630 = X := (h3r _ (by omega)).trans x2
         obtain ⟨c4, k4, e4, hk4, hR4⟩ := eqThen_exec (P := P) (S := setUp) hw3 130641 130630
@@ -248,8 +249,8 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
               by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩
             · simp only [Machine.upd_apply]
               unfold CpRG at hr
-              rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
-                ite_eq_right (by omega), ite_eq_right (by omega), h3r r (by omega)]
+              ram_rw [ite_eq_right, ite_eq_right, ite_eq_right, ite_eq_right,
+                ite_eq_right, ite_eq_right, h3r r]
               exact h2r r (by unfold CpRG; omega)
             · rw [hni]
               config_simp
@@ -265,14 +266,14 @@ theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 
             refine ⟨hw3, fun r hr => ?_, by rw [hm3, h2m], fun κ => ?_, by rw [hrr3, hrr2],
               by rw [hrm3, hrm2], by rw [ho3, ho2]⟩
             · rw [h3r r (by unfold CpRG at hr; omega)]; exact h2r r hr
-            · rw [hni, h3r _ (by omega), m0]
+            · ram_rw [hni, h3r, m0]
               unfold ClassTest
               constructor
               · rintro (⟨h, -⟩ | ⟨h, -⟩) <;> omega
               · rintro ⟨⟨-, h⟩, -⟩; exact absurd h hne)
         obtain ⟨hw4, h4r, h4m, h4t, hrr4, hrm4, ho4⟩ := hR4
         refine ⟨c4, _, .ifLtN_false (show ¬ c2.nreg 130009 < c2.nreg 130637 by rw [z2, m0]; omega)
-          (.ifLtN_true (show c2.nreg 130009 < c2.nreg 130631 by rw [z2, f2]; exact hf0) (.seq e3 e4)), by omega, hw4, h4r, h4m, h4t,
+          (by ram_path), by omega, hw4, h4r, h4m, h4t,
           hrr4, hrm4, ho4⟩
       · rw [z2, f2] at hf0
         refine ⟨c2, 0 + 2 + 2, .ifLtN_false (show ¬ c2.nreg 130009 < c2.nreg 130637 by rw [z2, m0]; omega)

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.BruteRam4
 
 /-!
@@ -29,7 +31,7 @@ def modS : Stmt := .ifLtN 180083 180012 (.instr (.copyN 180082 180083))
 theorem mod_small {x M : ℕ} (_hM : 0 < M) (hx : x < 2 * M) : x % M = if x < M then x else x - M := by
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 theorem modS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {M : ℕ}
     (hM : 0 < M) (h12 : c.nreg 180012 = M) (hx : c.nreg 180083 < 2 * M) :
@@ -37,13 +39,13 @@ theorem modS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {
       FrameB (fun r => decide (r = 180082)) c c' := by
   have fr : ∀ v, FrameB (fun r => decide (r = 180082)) c
       { c with nreg := upd c.nreg 180082 v } := fun v =>
-    ⟨fun r hr => by simp only [decide_eq_false_iff_not] at hr; simp [hr], fun r _ => rfl, rfl,
+    ⟨fun r hr => by simp_all, fun r _ => rfl, rfl,
       rfl, rfl⟩
   rw [mod_small hM hx]
   by_cases h : c.nreg 180083 < M
-  · exact ⟨_, _, .ifLtN_true (by rw [h12]; exact h) (Exec.copyN hw 180082 180083), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwa [h12]) (Exec.copyN hw 180082 180083), by omega,
       by simp [h], fr _⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h12]; exact h) (Exec.subN hw 180082 180083 180012),
+  · exact ⟨_, _, .ifLtN_false (by rwa [h12]) (Exec.subN hw 180082 180083 180012),
       by omega, by simp [h, h12], fr _⟩
 
 /-- The forward tour position of the chain edge `best`. -/
@@ -65,7 +67,7 @@ def FI (C : Chain) (c : Config) : Prop :=
   c.nreg 180012 = 2 * C.m ∧ c.nreg 180015 = tS C ∧ c.nreg 180027 = 6
 
 theorem FI.keep {C : Chain} {c c' : Config} (h : FI C c) (F : FrameB Bsc c c') : FI C c' :=
-  ⟨by rw [F.1 _ (by decide), h.1], by rw [F.1 _ (by decide), h.2.1], by rw [F.1 _ (by decide), h.2.2]⟩
+  ⟨by ram_rw [F.1, h.1], by ram_rw [F.1, h.2.1], by ram_rw [F.1, h.2.2]⟩
 
 theorem fwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBounded W c)
     (hF : FI C c) {b : ℕ} (hb : c.nreg 180052 = b) (hbm : b < C.m) (hW : 4 * C.m ≤ W) :
@@ -77,17 +79,11 @@ theorem fwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
   obtain ⟨c₁, k₁, e₁, hk₁, q83, R₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.addN 180083 180052 180012, .subN 180083 180083 180015]) c c₁ k₁ ∧ k₁ = 2 ∧
       c₁.nreg 180083 = b + 2 * C.m - tS C ∧ FrameB (fun r => decide (r = 180083)) c c₁ := by
-    exec_block
-    · config_simp; rw [hb, h12]; omega
-    · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-        rw [hb, h12, h15]
-      · simp only [decide_eq_false_iff_not] at hr
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+    ram_exec
   obtain ⟨c₂, k₂, e₂, hk₂, q82, R₂⟩ := modS_exec (P := P) c₁ e₁.wb_right (M := 2 * C.m)
-    (by omega) (by rw [fr1 R₁ (by decide), h12]) (by rw [q83]; unfold tS; omega)
+    (by omega) (by ram_rw [fr1 R₁, h12]) (by rw [q83]; unfold tS; omega)
   refine ⟨c₂, _, .seq e₁ e₂, by omega, by rw [q82, q83]; rfl,
-    (sc_of_one (by omega) R₁).trans (sc_of_one (by omega) R₂)⟩
+    (by ram_frame)⟩
 
 theorem bwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBounded W c)
     (hF : FI C c) (h11 : c.nreg 180011 = 1) {b : ℕ} (hb : c.nreg 180052 = b) (hbm : b < C.m)
@@ -102,15 +98,9 @@ theorem bwdS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
         .addN 180083 180083 180012, .subN 180083 180083 180015]) c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg 180083 = 2 * C.m - 1 - b + 2 * C.m - tS C ∧
       FrameB (fun r => decide (r = 180083)) c c₁ := by
-    exec_block
-    · config_simp; rw [hb, h12, h11]; omega
-    · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-        rw [hb, h12, h15, h11]
-      · simp only [decide_eq_false_iff_not] at hr
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+    ram_exec
   obtain ⟨c₂, k₂, e₂, hk₂, q82, R₂⟩ := modS_exec (P := P) c₁ e₁.wb_right (M := 2 * C.m)
-    (by omega) (by rw [fr1 R₁ (by decide), h12]) (by rw [q83]; unfold tS; omega)
+    (by omega) (by ram_rw [fr1 R₁, h12]) (by rw [q83]; unfold tS; omega)
   refine ⟨c₂, _, .seq e₁ e₂, by omega, by rw [q82, q83]; rfl,
     (sc_of_one (by omega) R₁).trans (sc_of_one (by omega) R₂)⟩
 
@@ -123,10 +113,15 @@ theorem farEdge_some {C : Chain} {k : ℕ} {σ : ℝ} {b : ℕ} (h : scan C k σ
       fwdIdx C.m (tS C) b else bwdIdx C.m (tS C) b) + 6 := by
   unfold farEdge; simp only [h]
 
-set_option maxHeartbeats 1000000 in
-theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) (hW4 : 4 * P.n ≤ W)
+section
+
+variable {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) (hW4 : 4 * P.n ≤ W)
     {C : Chain} (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {d k : ℕ} (hd : d ≤ 1)
     (hk : k ≤ C.m) (c : Config) (hw : WordsBounded W c) (hS : SI C (C.s + k) c) (hF : FI C c)
+
+include hG hW hW4 hC hsn hd hk hw hS hF in
+set_option maxHeartbeats 1000000 in
+theorem farS_exec
     (hE : Enc (c.nreg 180051) (c.nreg 180052) (scan C k (sig d) C.m)) :
     ∃ c' k', Exec P W (farS d) c c' k' ∧ k' ≤ 270 ∧ FrameB Bsc c c' ∧
       c'.nreg 180082 = farEdge C k (sig d) := by
@@ -141,40 +136,31 @@ theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) 
         unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
       simp [this]
     · rw [farEdge_none hsc]
-      simp only [Config.nreg_mk, Machine.upd_same]
+      simp only [Machine.upd_same]
       by_cases h0 : d = 0
       · subst h0; rw [sig_zero]; simp
       · rw [ite_eq_right h0, sig_one h0, ite_eq_right (by norm_num)]
   · rw [hsc] at hE
     simp only [Enc] at hE
     obtain ⟨hf, hb⟩ := hE
-    have hbm : b < C.m := (scan_some hsc).1
+    have hbm := (scan_some hsc).1
     obtain ⟨c₁, k₁, e₁, hk₁, q55, q80, R₁⟩ : ∃ c₁ k₁, Exec P W
         (block [.addN 180055 180000 180052, .addN 180080 180055 180011]) c c₁ k₁ ∧ k₁ = 2 ∧
         c₁.nreg 180055 = C.s + b ∧ c₁.nreg 180080 = C.s + b + 1 ∧
         FrameB (fun r => decide (r = 180055 ∨ r = 180080)) c c₁ := by
-      exec_block
-      · config_simp; rw [h0, hb]; omega
-      · config_simp; rw [h0, hb, h11]; omega
-      · refine ⟨rfl, ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-        · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-          rw [h0, hb]
-        · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-          rw [h0, hb, h11]
-        · simp only [decide_eq_false_iff_not, not_or] at hr
-          simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+      ram_exec
     have G₁ := sc_of_two (by omega) (by omega) R₁
     obtain ⟨c₂, k₂, e₂, hk₂, F₂, b81, t81⟩ := testV_exec (P := P) hG (by omega) (op := 2)
-      (by omega) (r₁ := 180055) (r₂ := 180080) (r₃ := 180035) (d := 180081) (Or.inr (by omega))
-      (Or.inr (by omega)) (Or.inr (by omega)) c₁ e₁.wb_right q55 q80
-      (by rw [G₁.1 _ (by decide), h35]) (by omega) (by omega) (by omega)
+      (by omega) (r₁ := 180055) (r₂ := 180080) (r₃ := 180035) (d := 180081) ((by omega))
+      ((by omega)) ((by omega)) c₁ e₁.wb_right q55 q80
+      (by ram_rw [G₁.1, h35]) (by omega) (by omega) (by omega)
     simp only [SignTest] at t81
-    rw [vtxQ hC hsn (by omega) (by omega), show C.s + b + 1 = C.s + (b + 1) by ring,
-      vtxQ hC hsn (by omega) (by omega), vtxQ hC hsn (by omega) (by omega)] at t81
+    ram_rw [vtxQ hC hsn, show C.s + b + 1 = C.s + (b + 1) by ring,
+      vtxQ hC hsn, vtxQ hC hsn] at t81
     have G₂ := G₁.trans (sc_of_bt (by omega) F₂)
     have F₂' := hF.keep G₂
-    have k11 : c₂.nreg 180011 = 1 := by rw [G₂.1 _ (by decide), h11]
-    have k52 : c₂.nreg 180052 = b := by rw [F₂.1 _ (by decide), fr2 R₁ (by decide) (by decide), hb]
+    have k11 : c₂.nreg 180011 = 1 := by ram_rw [G₂.1, h11]
+    have k52 : c₂.nreg 180052 = b := by ram_post
     have hWm : 4 * C.m ≤ W := by omega
     have w₂ := e₂.wb_right
     obtain ⟨c₃, k₃, e₃, hk₃, q82, G₃⟩ : ∃ c₃ k₃, Exec P W (.ifLtN 180081 180011 bwdS fwdS) c₂ c₃ k₃ ∧
@@ -199,9 +185,7 @@ theorem farS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) 
     · have : r ≠ 180082 := by
         unfold Bsc at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; omega
       simp [this]
-    · rw [farEdge_some hsc]
-      simp only [Config.nreg_mk, Machine.upd_same]
-      rw [q82, F₃'.2.2]
+    · ram_finish [farEdge_some hsc, q82, F₃'.2.2]
 
 /-! ## Writing the triple -/
 
@@ -229,32 +213,26 @@ theorem writeS_exec {P : Polygon} {W : ℕ} {d : ℕ} (c : Config) (hw : WordsBo
     (v := 180035) (by decide) h11 (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, p₂, m₂, R₂, rr₂, rm₂, o₂⟩ := putS_exec (P := P) c₁ e₁.wb_right
     (p := 180024) (v := if d = 0 then 180044 else 180082) (by decide)
-    (by rw [R₁ _ (by decide), h11]) (by rw [p₁, h24]; omega)
+    (by simp_all) (by rw [p₁, h24]; omega)
   obtain ⟨c₃, k₃, e₃, hk₃, p₃, m₃, R₃, rr₃, rm₃, o₃⟩ := putS_exec (P := P) c₂ e₂.wb_right
     (p := 180024) (v := if d = 0 then 180082 else 180044) (by decide)
-    (by rw [R₂ _ (by decide), R₁ _ (by decide), h11]) (by rw [p₂, p₁, h24]; omega)
+    (by simp_all) (by rw [p₂, p₁, h24]; omega)
   have e₄ := Exec.addN (P := P) e₃.wb_right 180019 180019 180011 (by
-    rw [R₃ _ (by decide), R₂ _ (by decide), R₁ _ (by decide), R₃ _ (by decide), R₂ _ (by decide),
-      R₁ _ (by decide), h19, h11]; exact hl)
-  refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_, ?_, ?_, fun r h1 h2 => ?_,
-    by simp only; rw [rr₃, rr₂, rr₁], by simp only; rw [rm₃, rm₂, rm₁],
+    ram_finish [R₃, R₂, R₁, h19, h11])
+  refine ⟨_, _, (by ram_path), by omega, ?_, ?_, ?_, fun r h1 h2 => ?_,
+    by ram_finish, by ram_finish,
     by simp only; rw [o₃, o₂, o₁]⟩
-  · simp only [Config.nreg_mk]; rw [upd_other _ _ _ (by decide), p₃, p₂, p₁, h24]
-  · simp only [Config.nreg_mk, upd_same]
-    rw [R₃ _ (by decide), R₂ _ (by decide), R₁ _ (by decide), R₃ _ (by decide), R₂ _ (by decide),
-      R₁ _ (by decide), h19, h11]
-  · simp only [Config.nreg_mk]
-    rw [m₃, m₂, m₁, p₂, p₁, h24, R₂ _ hv2, R₁ _ hv2, R₁ _ hv1]
-  · simp only [Config.nreg_mk]
-    rw [upd_other _ _ _ h2, R₃ _ h1, R₂ _ h1, R₁ _ h1]
+  · ram_finish [p₃, p₂, p₁, h24]
+  · ram_finish [R₃, R₂, R₁, h19, h11]
+  · ram_simp [m₃, m₂, m₁, p₂, p₁, h24, R₂, R₁]
+  · ram_finish [R₃, R₂, R₁]
 
 /-- **Emit the chord of `v_k` in direction `d`.** -/
 def emitS (d : ℕ) : Stmt := .seq (scanS d) (.seq (farS d) (writeS d))
 
+include hG hW hW4 hC hsn hd hk hw hS hF in
 set_option maxHeartbeats 1000000 in
-theorem emitS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W) (hW4 : 4 * P.n ≤ W)
-    {C : Chain} (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {d k : ℕ} (hd : d ≤ 1)
-    (hk : k ≤ C.m) (c : Config) (hw : WordsBounded W c) (hS : SI C (C.s + k) c) (hF : FI C c)
+theorem emitS_exec
     {A len p : ℕ} (h24 : c.nreg 180024 = A) (h19 : c.nreg 180019 = len) (h44 : c.nreg 180044 = p)
     (hA : A + 3 ≤ W) (hl : len + 1 ≤ W) :
     ∃ c' k', Exec P W (emitS d) c c' k' ∧ k' ≤ 1602 * C.m + 282 ∧ 7 ≤ k' ∧ c'.nreg 180024 = A + 3 ∧
@@ -269,19 +247,21 @@ theorem emitS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
     e₁.wb_right (hS.keep F₁) (hF.keep F₁) E₁
   have G := F₁.trans F₂
   obtain ⟨c₃, k₃, e₃, hk₃, p24, p19, m₃, R₃, rr₃, rm₃, o₃⟩ := writeS_exec (P := P) (d := d) c₂
-    e₂.wb_right (A := A) (len := len) (by rw [G.1 _ (by decide), h24])
-    (by rw [G.1 _ (by decide), h19]) (by rw [G.1 _ (by decide), hS.2.2.1]) hA hl
-  have k35 : c₂.nreg 180035 = C.s + k := by rw [G.1 _ (by decide), hS.2.2.2]
-  have k44 : c₂.nreg 180044 = p := by rw [G.1 _ (by decide), h44]
+    e₂.wb_right (A := A) (len := len) (by ram_rw [G.1, h24])
+    (by ram_rw [G.1, h19]) (by ram_rw [G.1, hS.2.2.1]) hA hl
+  have k35 : c₂.nreg 180035 = C.s + k := by ram_rw [G.1, hS.2.2.2]
+  have k44 : c₂.nreg 180044 = p := by ram_rw [G.1, h44]
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, by omega, p24, p19, ?_, fun r hr => ?_,
     fun r hr => by rw [rr₃, G.2.1 r hr], by rw [rm₃, G.2.2.2.1], by rw [o₃, G.2.2.2.2]⟩
   · rw [m₃, G.2.2.1, k35]
     by_cases h0 : d = 0
-    · subst h0; simp only [ite_true]; rw [k44, q82]
-    · simp only [ite_eq_right h0]; rw [k44, q82]
+    · simp_all
+    simp_all
   · unfold Bem at hr
     simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not, not_or] at hr
     rw [R₃ r hr.2.1 hr.2.2, G.1 r hr.1]
+
+end
 
 end
 

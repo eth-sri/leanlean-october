@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.SweepEvKey2Fin
 
 /-!
@@ -34,26 +36,24 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 
 theorem selR_KR {r : ℕ} (h : SelR r) : KR r := by
   simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  register_guard
 
 theorem preR_KR {r : ℕ} (h : PreR r) : KR r := by
   simp only [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  register_guard
 
 theorem skR_KR {r : ℕ} (h : SkR r) : KR r := by
   simp only [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  register_guard
 
 theorem lbl_KR {r : ℕ} (h : LblR kN kL r) : KR r := by
   simp only [LblR, kN, kL, sw] at h
-  simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
+  register_guard
 
 theorem lbl_not {r : ℕ} (h : LblR kN kL r) :
     ¬ SelR r ∧ ¬ PreR r ∧ ¬ SkR r ∧ r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ 240000 ≤ r ∧ r < 250000 := by
   simp only [LblR, kN, kL, sw] at h
-  simp only [SelR, OffR, PreR, SkR, KStR, LblR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, kqV, kqY,
-    kE, kH, dF, kqB, kqA, kqN, kqL, sP, lC, sw]
-  omega
+  register_guard
 
 /-! ## The selection -/
 
@@ -88,8 +88,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     IRS P W c₀ keyProg c 56000 (KeyOut P J c) := by
   have hH : CandHyp P J c := ⟨hb, hw, hst, hsB⟩
   unfold keyProg
-  refine (IRS.seq (K₁ := 22061) (K₂ := 33461) (sel_irs E hI hH (by omega)) ?_).mono (by norm_num)
-    (fun _ h => h)
+  refine (IRS.seq (K₁ := 22061) (K₂ := 33461) (sel_irs E hI hH (by omega)) ?_).budget
   rintro d₁ hI₁ hA₁ hA₁' ⟨frS, hF, hFiff, hFmin⟩
   have hK₁ := E.hK.fix hI₁
   have kS : ∀ r, ¬ SelR r → 240000 ≤ r ∧ r < 250000 → d₁.nreg r = c.nreg r :=
@@ -98,11 +97,8 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
       r = lB ∨ r = lC ∨ r = kN ∨ r = dF) → ¬ SelR r ∧ 240000 ≤ r ∧ r < 250000 := by
     intro r hr
     simp only [bF, bE, bH, bN, sP, sC, sB, aB, lB, lC, kN, dF, sw] at hr
-    simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw]
-    omega
-  have e1 : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
-      r = lB ∨ r = lC ∨ r = kN ∨ r = dF) → d₁.nreg r = c.nreg r :=
-    fun r hr => kS r (nS r hr).1 (nS r hr).2
+    register_guard
+  have e1 := fun r hr => kS r (nS r hr).1 (nS r hr).2
   by_cases hc : d₁.nreg K0 < d₁.nreg kqF
   · -- a candidate exists
     have hF1 : d₁.nreg kqF = 1 := by rw [hK₁.1] at hc; omega
@@ -112,28 +108,27 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     refine IRS.mono (K := 33459 + 2) (IRS.ifT hc ?_) (by norm_num) (fun _ h => h)
     unfold keyMain
     refine IRS.seq (K₁ := 11030) (K₂ := 22429) (pre_irs E hI₁ hpk
-      (by rw [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]; exact hb)
-      (by rw [e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]; exact hm1) (by omega)) ?_
+      (by ram_simp [e1] <;> reg_omega)
+      (by ram_rw assumption [e1 bF, e1 bE, e1 bH]) (by omega)) ?_
     rintro d₀ hI₀ hA₀ hA₀' ⟨frP, eKE, eKH, eDF, eKA, hB1, hBiff, hBlab, hBlab0⟩
     have nP : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
         r = lB ∨ r = lC ∨ r = kN) → ¬ PreR r := by
       intro r hr
       simp only [bF, bE, bH, bN, sP, sC, sB, aB, lB, lC, kN, sw] at hr
-      simp only [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw]
-      omega
+      register_guard
     have e0 : ∀ r, (r = bF ∨ r = bE ∨ r = bH ∨ r = bN ∨ r = sP ∨ r = sC ∨ r = sB ∨ r = aB ∨
         r = lB ∨ r = lC ∨ r = kN) → d₀.nreg r = c.nreg r := fun r hr =>
       (frP.kkeep (nP r hr) (nS r (by rcases hr with h|h|h|h|h|h|h|h|h|h|h <;> simp [h])).2).trans
         (e1 r (by rcases hr with h|h|h|h|h|h|h|h|h|h|h <;> simp [h]))
     have hN0 : d₀.nreg kqN ≤ 4 := by
       by_cases h : d₀.nreg kqB = 1
-      · rw [(hBlab h).1, e1 bN (by simp)]; exact hbN
+      · ram_rw assumption [(hBlab h).1, e1 bN]
       · rw [(hBlab0 h).2]; omega
     have hS : SkCtx P J c d₀ :=
       { hsP := e0 sP (by simp), hsC := e0 sC (by simp), hsB := e0 sB (by simp),
         haB := e0 aB (by simp), hA := frS.2.1.trans frP.2.1,
         hm := fun x hx => (frP.2.2 x (lt_of_lt_of_le hx frS.2.1)).trans (frS.2.2 x hx),
-        hpk := by rw [eKE, eKH]; exact hpk,
+        hpk := by rwa [eKE, eKH],
         hmin := fun h => by rw [eKE, eKH]; exact hm2 trivial h,
         hps := hst, hsort := hsort, htwo := htwo, hsBA := hsB, haBA := haB }
     refine IRS.seq (K₁ := 22400) (K₂ := 29) (skip2_irs E hS hI₀ (skInv_zero hS hsPC hN0 eKA)
@@ -143,41 +138,36 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
         ¬ SkR r ∧ 240000 ≤ r ∧ r < 250000 := by
       intro r hr
       simp only [kE, kH, dF, kqB, lB, lC, kN, sw] at hr
-      simp only [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw]
-      omega
-    have e5 : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = lB ∨ r = lC ∨ r = kN) →
-        d₅.nreg r = d₀.nreg r := fun r hr => frK.kkeep (nK r hr).1 (nK r hr).2
-    have hB5 : d₅.nreg kqB ≤ 1 := by rw [e5 kqB (by simp)]; exact hB1
+      register_guard
+    have e5 := fun r hr => frK.kkeep (nK r hr).1 (nK r hr).2
+    have hB5 : d₅.nreg kqB ≤ 1 := by ram_rw assumption [e5 kqB]
     refine IRS.seq (K₁ := 9) (K₂ := 20) (fin_irs hI₅ E.hK hB5 hA5) ?_
     rintro d₆ hI₆ hA₆ hA₆' ⟨f1, f2, f3, f4⟩
-    have e6 : ∀ r, ¬ LblR kN kL r → d₆.nreg r = d₅.nreg r := f1
+    have e6 := f1
     have eLB6 : d₆.nreg lB = c.nreg lB := by
-      rw [e6 lB (by simp only [LblR, lB, kN, kL, sw]; omega), e5 lB (by simp), e0 lB (by simp)]
+      ram_rw [e6 lB, e5 lB, e0 lB]
     have eLC6 : d₆.nreg lC = c.nreg lC := by
-      rw [e6 lC (by simp only [LblR, lC, kN, kL, sw]; omega), e5 lC (by simp), e0 lC (by simp)]
+      ram_rw [e6 lC, e5 lC, e0 lC]
     have hc'A : c.nreg ALLOC ≤ d₆.nreg ALLOC := by
-      rw [e6 ALLOC (by simp only [LblR, ALLOC, kN, kL, sw]; omega)]
+      ram_rw [e6 ALLOC]
       exact frS.2.1.trans (frP.2.1.trans frK.2.1)
-    refine (writeLog_irs hI₆ E.hK (by rw [eLB6]; exact hlB) (by rw [eLB6, eLC6]; omega)).mono
+    refine (writeLog_irs hI₆ E.hK (by rwa [eLB6]) (by rw [eLB6, eLC6]; omega)).mono
       le_rfl ?_
     rintro c' ⟨w1, w2, w3, w4, w5, w6, w7⟩
     rw [eLB6, eLC6] at w3 w4 w5 w6 w7
     -- registers of `c'`
-    have g6 : ∀ r, r ≠ kqX → r ≠ kqY → r ≠ lC → ¬ LblR kN kL r → c'.nreg r = d₅.nreg r :=
-      fun r h1 h2 h3 h4 => (w2 r h1 h2 h3).trans (e6 r h4)
+    have g6 := fun r h1 h2 h3 h4 => (w2 r h1 h2 h3).trans (e6 r h4)
     have nW : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = sP) →
         r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ ¬ LblR kN kL r := by
       intro r hr
       simp only [kE, kH, dF, kqB, sP, sw] at hr
-      simp only [LblR, kqX, kqY, lC, kN, kL, sw]
-      omega
-    have g : ∀ r, (r = kE ∨ r = kH ∨ r = dF ∨ r = kqB ∨ r = sP) → c'.nreg r = d₅.nreg r :=
-      fun r hr => g6 r (nW r hr).1 (nW r hr).2.1 (nW r hr).2.2.1 (nW r hr).2.2.2
-    have cKE : c'.nreg kE = d₀.nreg kE := (g kE (by simp)).trans (e5 kE (by simp))
-    have cKH : c'.nreg kH = d₀.nreg kH := (g kH (by simp)).trans (e5 kH (by simp))
-    have cDF : c'.nreg dF = 0 := ((g dF (by simp)).trans (e5 dF (by simp))).trans eDF
-    have cSP : c'.nreg sP = c.nreg sP + j := (g sP (by simp)).trans hsP5
-    have cKB : d₅.nreg kqB = d₀.nreg kqB := e5 kqB (by simp)
+      reg_omega
+    have g := fun r hr => g6 r (nW r hr).1 (nW r hr).2.1 (nW r hr).2.2.1 (nW r hr).2.2.2
+    have cKE := (g kE (by simp)).trans (e5 kE (by simp))
+    have cKH := (g kH (by simp)).trans (e5 kH (by simp))
+    have cDF := ((g dF (by simp)).trans (e5 dF (by simp))).trans eDF
+    have cSP := (g sP (by simp)).trans hsP5
+    have cKB := e5 kqB (by simp)
     have ok : offK P J (c'.nreg kE) (c'.nreg kH) = offK P J (d₁.nreg kqE) (d₁.nreg kqH) := by
       rw [cKE, cKH, eKE, eKH]
     have lblC : ∀ (d d' : Config) (X : ℕ → Prop), EFr X d d' → (∀ r, LblR bN bL r → ¬ X r) →
@@ -186,23 +176,23 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     -- the label condition
     have hCb : (d₅.nreg kqB = 1) ↔ (c.nreg bF = 1 ∧
         offK P J (c.nreg bE) (c.nreg bH) = offK P J (c'.nreg kE) (c'.nreg kH)) := by
-      rw [cKB, hBiff, ok, e1 bF (by simp), e1 bE (by simp), e1 bH (by simp)]
+      ram_rw [cKB, hBiff, ok, e1 bF, e1 bE, e1 bH]
     have hCa : (d₅.nreg kqA = 1) ↔ ∃ i, c.nreg sP ≤ i ∧ i < c'.nreg sP ∧
-        c.nmem (c.nreg aB + 5 * i) = 1 := by rw [cSP]; exact hAiff5
+        c.nmem (c.nreg aB + 5 * i) = 1 := by rwa [cSP]
     have lab0 : lblOf d₀ kqN kqL = if c.nreg bF = 1 ∧
         offK P J (c.nreg bE) (c.nreg bH) = offK P J (c'.nreg kE) (c'.nreg kH)
         then lblOf c bN bL else [] := by
       split_ifs with h
       · rw [(hBlab (cKB ▸ hCb.2 h)).2, lblC c d₁ SelR frS (fun r hr => by
           simp only [LblR, bN, bL, sw] at hr
-          simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw]; omega)]
+          register_guard)]
       · exact (hBlab0 (fun h' => h (hCb.1 (cKB ▸ h')))).1
     have nKR : ∀ r, ¬ KR r → r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ ¬ LblR kN kL r ∧ ¬ SkR r ∧
         ¬ PreR r ∧ ¬ SelR r := by
       intro r hr
       refine ⟨fun h => hr ?_, fun h => hr ?_, fun h => hr ?_, fun h => hr (lbl_KR h),
         fun h => hr (skR_KR h), fun h => hr (preR_KR h), fun h => hr (selR_KR h)⟩ <;>
-        subst h <;> simp only [KR, kqX, kqY, lC, kE, kH, kN, kL, sP, dF, sw] <;> norm_num
+        subst h <;> simp only [ram_layout, KR] <;> norm_num
     refine ⟨fun r hb hr hra => ?_, ?_, fun h => by
       rcases hcand with h1 | ⟨-, h1⟩ | ⟨-, h1⟩
       · exact absurd h1 h.1
@@ -210,28 +200,28 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
       · exact absurd h1 h.2.2, fun _ => ?_⟩
     · obtain ⟨n1, n2, n3, n4, n5, n6, n7⟩ := nKR r hr
       rw [g6 r n1 n2 n3 n4, frK.1 r hb n5 hra, frP.1 r hb n6 hra, frS.1 r hb n7 hra]
-    · rw [w2 ALLOC (by kqr) (by kqr) (by kqr)]; exact hc'A
+    · rwa [w2 ALLOC (by kqr) (by kqr) (by kqr)]
     -- the candidate case
     have hlbK : ∀ r, LblR kN kL r → d₅.nreg r = c.nreg r := fun r hr => by
       obtain ⟨n1, n2, n3, -, -, -, n7, n8⟩ := lbl_not hr
       rw [frK.kkeep n3 ⟨n7, n8⟩, frP.kkeep n2 ⟨n7, n8⟩, frS.kkeep n1 ⟨n7, n8⟩]
-    have hlbC : ∀ r, LblR kN kL r → c'.nreg r = d₆.nreg r := fun r hr => by
+    have hlbC := fun r hr => by
       obtain ⟨-, -, -, n4, n5, n6, -⟩ := lbl_not hr
       exact w2 r n4 n5 n6
-    have hmemC : ∀ x, x < c.nreg ALLOC → d₆.nmem x = c.nmem x := fun x hx => by
+    have hmemC : MemEqBelow (c.nreg ALLOC) d₆.nmem c.nmem := fun x hx => by
       rw [f2, frK.2.2 x (lt_of_lt_of_le hx (frS.2.1.trans frP.2.1)),
         frP.2.2 x (lt_of_lt_of_le hx frS.2.1), frS.2.2 x hx]
     have hkN' : c'.nreg kN ≤ 4 := by
       rw [hlbC kN (Or.inl rfl)]
       by_cases hC : d₅.nreg kqB = 1 ∨ d₅.nreg kqA = 1
-      · rw [(f3 hC).2]; exact hN5
-      · rw [f4 hC kN, hlbK kN (Or.inl rfl)]; exact hkN
-    refine ⟨cDF, by rw [cKE, cKH, eKE, eKH]; exact hCK, fun h => by rw [ok]; exact hm1 h,
+      · rwa [(f3 hC).2]
+      · rwa [f4 hC kN, hlbK kN (Or.inl rfl)]
+    refine ⟨cDF, by rwa [cKE, cKH, eKE, eKH], fun h => by rw [ok]; exact hm1 h,
       fun h => by rw [ok]; exact hm2 trivial h, fun h => by rw [ok]; exact hm3 trivial h,
-      by rw [cSP]; omega, by rw [cSP]; exact hjC, fun i h1 h2 => ?_, fun h => ?_, hkN',
+      by rw [cSP]; omega, by rwa [cSP], fun i h1 h2 => ?_, fun h => ?_, hkN',
       fun hC => ?_, fun hC => ?_, by rw [w1, eLC6], ?_, ?_, ?_, ?_, ?_⟩
     · rw [cSP] at h2; rw [hoff i h1 h2, cKE, cKH]
-    · rw [g sP (by simp)] at h ⊢; rw [cKE, cKH]; exact hnext h
+    · ram_rw [g sP] at h ⊢; rw [cKE, cKH]; exact hnext h
     · have hC' : d₅.nreg kqB = 1 ∨ d₅.nreg kqA = 1 := by
         rcases hC with h | h
         · exact Or.inl (hCb.2 h)
@@ -241,15 +231,12 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
         rintro (h | h)
         · exact hC (Or.inl (hCb.1 h))
         · exact hC (Or.inr (hCa.1 h))
-      refine ⟨?_, ?_⟩
-      · rw [kqLblOf_eq hlbC, kqLblOf_eq (fun r _ => f4 hC' r), kqLblOf_eq hlbK]
-      · rw [hlbC kN (Or.inl rfl), f4 hC' kN, hlbK kN (Or.inl rfl)]
-    · rw [w3, w2 kE (by kqr) (by kqr) (by kqr)]
-    · rw [w4, w2 kH (by kqr) (by kqr) (by kqr)]
-    · rw [w5, w2 kN (by kqr) (by kqr) (by kqr)]
+      ram_simp [kqLblOf_eq hlbC, kqLblOf_eq (fun r _ => f4 hC' r), kqLblOf_eq hlbK, hlbC kN (Or.inl rfl), f4 hC' kN, hlbK kN (Or.inl rfl)] 
+    · ram_simp [w3, w2]
+    · ram_simp [w4, w2]
+    · ram_simp [w5, w2]
     · intro i hi
-      rw [w6 i hi, w2 (kL + i) (by unfold kL kqX sw; omega) (by unfold kL kqY sw; omega)
-        (by unfold kL lC sw; omega)]
+      ram_rw [w6 i hi, w2 (kL + i)]
     · intro x hx hx'
       rw [w7 x hx', hmemC x hx]
   · -- no candidate
@@ -261,13 +248,10 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have v2 : ∀ r, r ≠ dF → c'.nreg r = d₁.nreg r := fun r hr => by
       rw [hc']; simp [regB, regI, upd, hr]
     have vm : c'.nmem = d₁.nmem := by rw [hc']
-    refine ⟨fun r hb hr hra => ?_, by rw [v2 ALLOC (by kqr)]; exact frS.2.1,
+    refine ⟨fun r hb hr hra => ?_, by rwa [v2 ALLOC (by kqr)],
       fun _ => ⟨v1, by rw [v2 lC (by kqr)]; exact e1 lC (by simp),
         fun x hx => by rw [vm]; exact frS.2.2 x hx⟩, fun h => absurd (hFiff.2 (by
-        rcases h with h | h | h
-        · exact Or.inl h
-        · exact Or.inr (Or.inl ⟨trivial, h⟩)
-        · exact Or.inr (Or.inr ⟨trivial, h⟩))) hF0⟩
+        ram_finish)) hF0⟩
     rw [v2 r (fun h => hr (by subst h; simp [KR]))]
     exact frS.1 r hb (fun h => hr (selR_KR h)) hra
 

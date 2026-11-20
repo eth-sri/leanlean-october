@@ -30,20 +30,8 @@ open Machine Machine.Stmt Programs SignK
 
 /-- Monotonicity of the write check in the accepted set. -/
 theorem wr_mono {B B' : ℕ → Bool} {s : Stmt} (h : wr B s = true)
-    (hB : ∀ r, B r = true → B' r = true) : wr B' s = true := by
-  induction s with
-  | skip => rfl
-  | instr i =>
-    simp only [wr] at h ⊢
-    cases i <;> simp only [wrOK] at h ⊢ <;> first | exact hB _ h | exact h
-  | seq s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨ihs h.1, iht h.2⟩
-  | ifLtN a b t e iht ihe =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨iht h.1, ihe h.2⟩
-  | ifLtR a b t e iht ihe =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨iht h.1, ihe h.2⟩
-  | whileLtN a b body ih => simp only [wr] at h ⊢; exact ih h
-  | whileLtR a b body ih => simp only [wr] at h ⊢; exact ih h
+    (hB : ∀ r, B r = true → B' r = true) : wr B' s = true :=
+  Footprint.widen hB hB id h
 
 /-- A register frame for fewer registers is one for more. -/
 theorem frameB_mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
@@ -118,16 +106,17 @@ def compile : BF → ℕ → Stmt
 def wset (f : BF) (d : ℕ) (r : ℕ) : Bool := decide (d ≤ r ∧ r ≤ d + f.size)
 
 theorem wr_compile : ∀ (f : BF) (d : ℕ), wr (f.wset d) (f.compile d) = true
-  | var r, d => by simp [compile, wr, wrOK, wset]
-  | const b, d => by simp [compile, wr, wrOK, wset]
+  | var r, d => by simp [compile, write_check, wset]
+  | const b, d => by simp [compile, write_check, wset]
   | not f, d => by
     have h := wr_mono (wr_compile f d) (B' := (not f).wset d) (fun r hr => by
       unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
       exact decide_eq_true (by omega))
     have h1 := one_le_size f
-    simp only [compile, wr]
+    simp only [compile, write_check]
+    unfold wr at h
     rw [h]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
+    simp only [block, write_check, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
     refine ⟨?_, ?_⟩ <;>
       exact decide_eq_true (by omega)
   | and f g, d => by
@@ -139,9 +128,10 @@ theorem wr_compile : ∀ (f : BF) (d : ℕ), wr (f.wset d) (f.compile d) = true
       exact decide_eq_true (by omega))
     have h1 := one_le_size f
     have h2 := one_le_size g
-    simp only [compile, wr]
+    simp only [compile, write_check]
+    unfold wr at hf hg
     rw [hf, hg]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
+    simp only [block, write_check, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
     refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;>
       exact decide_eq_true (by omega)
   | or f g, d => by
@@ -153,9 +143,10 @@ theorem wr_compile : ∀ (f : BF) (d : ℕ), wr (f.wset d) (f.compile d) = true
       exact decide_eq_true (by omega))
     have h1 := one_le_size f
     have h2 := one_le_size g
-    simp only [compile, wr]
+    simp only [compile, write_check]
+    unfold wr at hf hg
     rw [hf, hg]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
+    simp only [block, write_check, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
     refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;> (try refine ⟨?_, ?_⟩) <;>
       exact decide_eq_true (by omega)
 /-- **The compiled formula computes its value.**  If every variable is a register below `d`
@@ -182,10 +173,8 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
     have hw₁ := e₁.wb_right
     have e₂ : ∃ c₂ k₂, Exec P W (block [.constN (d + 1) 1, .subN d (d + 1) d]) c₁ c₂ k₂ ∧
         k₂ = 2 ∧ c₂.nreg d = 1 - c₁.nreg d := by
-      exec_block
-      · omega
-      · refine ⟨rfl, ?_⟩
-        simp [upd]
+      exec_block!
+      · simp
     obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ := e₂
     have ex : Exec P W ((not f).compile d) c c₂ (k₁ + k₂) := .seq e₁ e₂
     refine ⟨c₂, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (not f) d)⟩
@@ -201,17 +190,14 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
       intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
     have hw₂ := e₂.wb_right
-    have d₂ : c₂.nreg d = c₁.nreg d := f₂.1 d (by simp [wset])
+    have d₂ := f₂.1 d (by simp [wset])
     have hb₁ : c₁.nreg d ≤ 1 := by rw [v₁]; exact Bool.toNat_le _
     have hb₂ : c₂.nreg (d + 1) ≤ 1 := by rw [v₂]; exact Bool.toNat_le _
     have e₃ : ∃ c₃ k₃, Exec P W (block [.addN d d (d + 1), .constN (d + 1) 1,
         .subN d d (d + 1)]) c₂ c₃ k₃ ∧ k₃ = 3 ∧
         c₃.nreg d = c₂.nreg d + c₂.nreg (d + 1) - 1 := by
-      exec_block
-      · omega
-      · omega
-      · refine ⟨rfl, ?_⟩
-        simp [upd]
+      exec_block!
+      · simp
     obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ := e₃
     have ex : Exec P W ((and f g).compile d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
     refine ⟨c₃, _, ex, by simp only [size]; omega, ?_, exec_frameB ex (wr_compile (and f g) d)⟩
@@ -230,15 +216,13 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
       intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
     have hw₂ := e₂.wb_right
-    have d₂ : c₂.nreg d = c₁.nreg d := f₂.1 d (by simp [wset])
+    have d₂ := f₂.1 d (by simp [wset])
     have hb₁ : c₁.nreg d ≤ 1 := by rw [v₁]; exact Bool.toNat_le _
     have hb₂ : c₂.nreg (d + 1) ≤ 1 := by rw [v₂]; exact Bool.toNat_le _
     have e₃ : ∃ c₃ k₃, Exec P W (block [.addN d d (d + 1), .constN (d + 1) 1,
         .subN (d + 1) d (d + 1), .subN d d (d + 1)]) c₂ c₃ k₃ ∧ k₃ = 4 ∧
         c₃.nreg d = (c₂.nreg d + c₂.nreg (d + 1)) - (c₂.nreg d + c₂.nreg (d + 1) - 1) := by
-      exec_block
-      · omega
-      · omega
+      exec_block!
       · refine ⟨rfl, ?_⟩
         simp [upd]
     obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ := e₃
@@ -258,8 +242,8 @@ where
     | var r => exact h r hf
     | const b => rfl
     | not f ih => simp only [eval, ih hf]
-    | and f g ihf ihg => simp only [eval, ihf hf.1, ihg hf.2]
-    | or f g ihf ihg => simp only [eval, ihf hf.1, ihg hf.2]
+    | and f g ihf ihg => simp [eval, ihf hf.1, ihg hf.2]
+    | or f g ihf ihg => simp [eval, ihf hf.1, ihg hf.2]
 
 end BF
 

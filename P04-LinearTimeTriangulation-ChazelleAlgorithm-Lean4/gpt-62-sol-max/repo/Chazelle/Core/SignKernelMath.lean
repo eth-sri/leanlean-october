@@ -65,7 +65,7 @@ theorem lex_trichotomy (L : List ℝ) : lexPos L ∨ allZero L ∨ lexNeg L := b
     · rcases ih with h' | h' | h'
       · exact Or.inl (Or.inr ⟨h, h'⟩)
       · exact Or.inr (Or.inl ⟨h, h'⟩)
-      · exact Or.inr (Or.inr (Or.inr ⟨h, h'⟩))
+      · tauto
     · exact Or.inl (Or.inl h)
 
 /-- A coefficient polynomial is continuous. -/
@@ -93,9 +93,8 @@ theorem pe_pos_of_lexPos {L : List ℝ} (h : lexPos L) :
   | nil => exact h.elim
   | cons c L ih =>
     rcases h with h | ⟨h1, h2⟩
-    · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (0 : ℝ) < pe (c :: L) ε :=
-        continuous_const.continuousAt.eventually_lt (continuous_pe (c :: L)).continuousAt
-          (by rw [pe_cons_zero]; exact h)
+    · have hc := continuous_const.continuousAt.eventually_lt (continuous_pe (c :: L)).continuousAt
+          (by rwa [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -108,9 +107,8 @@ theorem pe_neg_of_lexNeg {L : List ℝ} (h : lexNeg L) :
   | nil => exact h.elim
   | cons c L ih =>
     rcases h with h | ⟨h1, h2⟩
-    · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), pe (c :: L) ε < (0 : ℝ) :=
-        (continuous_pe (c :: L)).continuousAt.eventually_lt continuous_const.continuousAt
-          (by rw [pe_cons_zero]; exact h)
+    · have hc := (continuous_pe (c :: L)).continuousAt.eventually_lt continuous_const.continuousAt
+          (by rwa [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -132,25 +130,31 @@ theorem lex_ev (L : List ℝ) :
   filter_upwards [h1, h2] with ε e1 e2
   exact ⟨e1, e2, fun h => pe_of_allZero h ε⟩
 
+section
+
+variable {L : List ℝ} {ε : ℝ}
+    (h : (lexPos L → 0 < pe L ε) ∧ (lexNeg L → pe L ε < 0) ∧ (allZero L → pe L ε = 0))
+include h
+
 /-- At a point where the eventual sign rules hold, positivity is lexicographic positivity. -/
-theorem pos_iff_lexPos {L : List ℝ} {ε : ℝ}
-    (h : (lexPos L → 0 < pe L ε) ∧ (lexNeg L → pe L ε < 0) ∧ (allZero L → pe L ε = 0)) :
+theorem pos_iff_lexPos :
     0 < pe L ε ↔ lexPos L := by
   refine ⟨fun hp => ?_, h.1⟩
   rcases lex_trichotomy L with h' | h' | h'
   · exact h'
-  · rw [h.2.2 h'] at hp; exact (lt_irrefl 0 hp).elim
+  · simp_all
   · exact (lt_asymm hp (h.2.1 h')).elim
 
 /-- At a point where the eventual sign rules hold, vanishing is `allZero`. -/
-theorem zero_iff_allZero {L : List ℝ} {ε : ℝ}
-    (h : (lexPos L → 0 < pe L ε) ∧ (lexNeg L → pe L ε < 0) ∧ (allZero L → pe L ε = 0)) :
+theorem zero_iff_allZero :
     pe L ε = 0 ↔ allZero L := by
   refine ⟨fun hp => ?_, h.2.2⟩
   rcases lex_trichotomy L with h' | h' | h'
   · exact ((h.1 h').ne' hp).elim
   · exact h'
   · exact ((h.2.1 h').ne hp).elim
+
+end
 
 /-! ## Homogeneous representation of symbolic points -/
 
@@ -240,7 +244,7 @@ theorem edgeRep_spec (u w v : Point) :
     dsimp only
     linear_combination (-1 : ℝ) * this
   simp only [h2, ↓reduceIte]
-  have h0 : w.2 - u.2 = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
+  have h0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
   by_cases h3 : w.1 - u.1 < 0
   · simp only [h3, ↓reduceIte]
     filter_upwards [self_mem_nhdsWithin] with ε (hε : 0 < ε)
@@ -254,13 +258,12 @@ theorem edgeRep_spec (u w v : Point) :
   by_cases h4 : 0 < w.1 - u.1
   · simp only [h4, ↓reduceIte]
     filter_upwards [self_mem_nhdsWithin] with ε (hε : 0 < ε)
-    have hlt : 0 < (w.2 - u.2) + ε * (w.1 - u.1) := by rw [h0, zero_add]; exact mul_pos hε h4
+    have hlt : 0 < (w.2 - u.2) + ε * (w.1 - u.1) := by simp_all
     have := edge_x_mul u w v ε hlt.ne'
     refine ⟨hlt, ?_, rfl⟩
-    dsimp only
-    linear_combination (-1 : ℝ) * this
+    simp_all
   simp only [h4, ↓reduceIte]
-  have h5 : w.1 - u.1 = 0 := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
+  have h5 := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
   refine Eventually.of_forall fun ε => ⟨by norm_num, ?_, rfl⟩
   dsimp only
   rw [h5]
@@ -282,10 +285,8 @@ theorem symRep_spec (P : Polygon) (s : SymPt) :
           (((P.vtx ((e + 1) % P.n)).1 - (P.vtx e).1) /
             (((P.vtx ((e + 1) % P.n)).2 + ε * (P.vtx ((e + 1) % P.n)).1) -
               ((P.vtx e).2 + ε * (P.vtx e).1))), (P.vtx h).2 + ε * (P.vtx h).1) := by
-      simp only [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n,
-        shearPt]
-    rw [hev]
-    exact hε
+      simp [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n, shearPt]
+    rwa [hev]
 
 /-! ## The coefficient lists of the tests -/
 
@@ -348,9 +349,14 @@ theorem pe_yPoly {a b : Rep} {p q : Point} {ε : ℝ} (ha : RepOK a p ε) (hb : 
   rw [yPoly, pe_five, ha.2.2, hb.2.2]
   ring
 
+section
+
+variable {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p ε) (hb : RepOK b q ε)
+    (hc : RepOK c r ε)
+
+include ha hb hc in
 /-- Where the representations are correct, `dPoly` is `det · d_a d_b d_c`. -/
-theorem pe_dPoly {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p ε) (hb : RepOK b q ε)
-    (hc : RepOK c r ε) :
+theorem pe_dPoly :
     pe (dPoly a b c) ε =
       det p q r * ((a.d0 + ε * a.d1) * (b.d0 + ε * b.d1) * (c.d0 + ε * c.d1)) := by
   have e : pe (dPoly a b c) ε =
@@ -376,10 +382,10 @@ theorem signTest_congr {a b d a' b' d' : Point} (h : SignFacts a b d = SignFacts
   | 2 => exact Iff.of_eq h3
   | _ + 3 => exact Iff.of_eq h4
 
+include ha hb hc in
 /-- Positivity of `pe (testPoly op …)` at a point where the representations are correct is the
 test `op` for `op < 3`, and vanishing is test `3`. -/
-theorem signTest_iff_pe {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p ε)
-    (hb : RepOK b q ε) (hc : RepOK c r ε) (op : ℕ) :
+theorem signTest_iff_pe (op : ℕ) :
     (op < 3 → (SignTest op p q r ↔ 0 < pe (testPoly op a b c) ε)) ∧
       (op = 3 → (SignTest op p q r ↔ pe (testPoly op a b c) ε = 0)) := by
   have hab := mul_pos ha.1 hb.1
@@ -387,17 +393,16 @@ theorem signTest_iff_pe {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p
   refine ⟨fun hop => ?_, fun hop => ?_⟩
   · match op, hop with
     | 0, _ =>
-      simp only [SignTest, testPoly]
-      rw [pe_xPoly ha hb, mul_pos_iff_of_pos_right hab, sub_pos]
+      simp [SignTest, testPoly, pe_xPoly ha hb, mul_pos_iff_of_pos_right hab, sub_pos]
     | 1, _ =>
-      simp only [SignTest, testPoly]
-      rw [pe_yPoly ha hb, sub_pos]
+      simp [SignTest, testPoly, pe_yPoly ha hb, sub_pos]
     | 2, _ =>
-      simp only [SignTest, testPoly]
-      rw [pe_dPoly ha hb hc, mul_pos_iff_of_pos_right habc]
+      simp [SignTest, testPoly, pe_dPoly ha hb hc, mul_pos_iff_of_pos_right habc]
   · subst hop
     simp only [SignTest, testPoly]
     rw [pe_dPoly ha hb hc, mul_eq_zero, or_iff_left habc.ne']
+
+end
 
 /-- **The sign tests in `Qof P` are lexicographic sign conditions** on coefficient lists
 computed from `P` (tests `0, 1, 2`: positivity). -/

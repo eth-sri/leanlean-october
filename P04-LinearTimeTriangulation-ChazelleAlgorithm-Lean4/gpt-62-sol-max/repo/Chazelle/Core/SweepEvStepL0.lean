@@ -32,10 +32,10 @@ open Machine WalkEmbed Sweep
 
 /-- **`F₂⁺` is a chord family** when the vertices of `C` are at vertex heights of `Q`. -/
 theorem F₂plus_chordFamily' {J : Merge.Junction} {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
     (hvtx : ∀ k, ∃ h, h < Q.n ∧ (J.whole.vertex k).2 = (Q.vtx h).2) :
-    (chainModel J.whole).ChordFamily Q (F₂plus J S₂) := by
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
+    J.wholeModel.ChordFamily Q (F₂plus J S₂) := by
+  have hS₂a := hS₂.2.1
   refine ⟨F₂plus_finite J hS₂.1, F₂plus_subset J hS₂a, fun e he => ?_⟩
   -- a point of `e` at a vertex height of `Q`
   obtain ⟨z, hz, h, hh, hzh⟩ : ∃ z ∈ e, ∃ h, h < Q.n ∧ z.2 = (Q.vtx h).2 := by
@@ -57,7 +57,7 @@ theorem F₂plus_chordFamily' {J : Merge.Junction} {Q : Polygon} {S₂ : Set (Se
       rw [← e, Merge.Junction.whole_vertex_add]; rfl
   obtain ⟨y, l, r, -, -, rfl, -, -⟩ := Merge.augChords_spec (F₂plus_subset J hS₂a he)
   refine ⟨h, hh, l, r, ?_⟩
-  rw [show y = (Q.vtx h).2 from hz.1.symm.trans hzh]
+  rw [(hz.1.symm.trans hzh)]
 
 /-- **The vertices of a described chain are at vertex heights of `Qof P`.** -/
 theorem whole_vertex_height {P : Polygon} (hn3 : 3 ≤ P.n) {E : ℕ} {m : ℕ → ℕ} {B : ℕ} {H : Host}
@@ -72,14 +72,13 @@ theorem whole_vertex_height {P : Polygon} (hn3 : 3 ≤ P.n) {E : ℕ} {m : ℕ �
   by_cases hi : (C.s + k) % L.length < L.length
   · rw [List.getD_eq_getElem _ _ hi]
     exact NFLoc.hostWF_pts hHwf hn _ (List.getElem_mem _)
-  · rw [List.getD_eq_default _ _ (by omega)]
-    exact hn
+  · rwa [List.getD_eq_default _ _ (by omega)]
 
 /-- **`F₂⁺` is a chord family of `Qof P`** in the environment of the event loop. -/
 theorem F₂plus_chordFamily {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} {P : Polygon} {W : ℕ} {c₀ : Config} {J : Merge.Junction}
     {N₁ N₂ : NF} (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
-    (chainModel J.whole).ChordFamily (Qof P) (F₂plus J (N₂.F (chainModel J.right) (Qof P))) := by
+    J.wholeModel.ChordFamily (Qof P) (F₂plus J (N₂.F J.rightModel (Qof P))) := by
   obtain ⟨-, -, hwf, ⟨H, hC, -⟩, -, -⟩ := E.ctxW
   exact F₂plus_chordFamily' E.hNF₂.1 (whole_vertex_height E.hG.1.1 hwf hC)
 

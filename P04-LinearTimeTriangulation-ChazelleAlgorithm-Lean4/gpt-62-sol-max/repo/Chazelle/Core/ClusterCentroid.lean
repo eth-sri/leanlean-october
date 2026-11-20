@@ -36,26 +36,30 @@ def Good (P : Finset V) (x : F) : Prop := P.card < 2 * cnt C δ P x
 
 variable {C δ}
 
+section
+
+variable (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f)
+    (hch : ∀ g, g ≠ C.r0 → C.parent g = f → ¬ Good C δ P g)
+
+include hM hf hch in
 /-- **The centroid**: if `f` is good and none of its children is, every side entered through a
 non-tree dart of `f` holds at most half of the piece. -/
-theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f)
-    (hch : ∀ g, g ≠ C.r0 → C.parent g = f → ¬ Good C δ P g) {d : D} (hd : d ∈ T.coDarts)
+theorem centroid_half {d : D} (hd : d ∈ T.coDarts)
     (hdf : M.face d = f) :
     2 * (P.filter (fun v => M.face (δ v) ∈ T.cross d)).card ≤ P.card := by
   classical
   obtain ⟨g, hg, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp hd
   · -- `g` is a child of `f`
-    have hpar : C.parent g = f := by rw [C.parent_of_ne hg]; exact hdf
+    have hpar : C.parent g = f := by rwa [C.parent_of_ne hg]
     have hng := hch g hg hpar
     unfold Good cnt at hng
     push Not at hng
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (C.fpar g)) =
         P.filter (fun v => C.IsDesc (M.face (δ v)) g) := by
-      ext v; simp only [Finset.mem_filter, C.cross_fpar hM hg]
-    rw [this]
-    convert hng using 3
+      simp [Finset.mem_filter, C.cross_fpar hM hg]
+    simp_all
   · -- the parent side of `f`
-    have hgf : g = f := (C.head g hg).symm.trans hdf
+    have hgf := (C.head g hg).symm.trans hdf
     subst hgf
     unfold Good cnt at hf
     have hsplit := Finset.card_filter_add_card_filter_not (s := P)
@@ -112,9 +116,9 @@ theorem split_classes (hM : M.Planar) (hδ : ∀ v, M.vert (δ v) = v) {P : Fins
     have a3 := (label_adj' T δ hδ e s1 s2 a1 hf1).mp a2
     exact hxinj t t' ht ht' (label_unique' T hM a1 b1 (hf2.trans hf1.symm) a3 b2)
 
+include hM hf hch in
 /-- **Each class of a centroid split holds at most half of the piece.** -/
-theorem cls_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f)
-    (hch : ∀ g, g ≠ C.r0 → C.parent g = f → ¬ Good C δ P g) {x : ℕ → D}
+theorem cls_half {x : ℕ → D}
     (hx : ∀ e, M.face e = f ↔ ∃ t, t < 3 ∧ x t = e) {t : ℕ} (ht : t < 3) :
     2 * (cls T δ P f x t).card ≤ P.card := by
   classical
@@ -126,6 +130,8 @@ theorem cls_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f)
   · have : cls T δ P f x t = ∅ := by
       ext v; simp only [mem_cls, Finset.notMem_empty, iff_false]; tauto
     rw [this]; simp
+
+end
 
 end
 

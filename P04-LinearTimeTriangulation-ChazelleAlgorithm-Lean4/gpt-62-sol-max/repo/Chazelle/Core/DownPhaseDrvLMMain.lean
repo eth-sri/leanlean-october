@@ -32,38 +32,38 @@ theorem pow_lvl (lam : ℕ) : 2 ^ (Cost.ceilBeta lam + 12) = 2 * 2 ^ DrvR.nextLv
 theorem levelMathSpec : DrvR.LevelMathSpec := by
   classical
   intro P L E reg lam hG hLne hL hperm hsort hdeg hwt hregs
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hdh : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
-  have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
+  have hdh := (goodShear_epsOf hG.2).2.1
+  have hK := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have B : DrvB.BaseCtx (Qof P) L E reg (decide (Mountain.LeftInside (Qof P))) :=
     ⟨hQ, hdh, hL, hperm, hsort, hK, hregs, decide_eq_true_iff⟩
-  have hS : (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-      (Qof P) = Gran.lset (interiorModel (Qof P)) (Qof P) L :=
+  have hS : (inputNF P L E).F P.inputModel (Qof P) = Gran.lset P.inputModel (Qof P) L :=
     Gran.F_of_map (BuildNF.isNF_goodModel (Or.inr ⟨Qof P, hQ, rfl⟩) hL hperm hsort).2.1
   have hγ := pow_lvl lam
   refine ⟨fun r hr => ?_, ?_⟩
   · -- 1. the hosts
     obtain ⟨h1, h2, h3, h4⟩ := host_facts B hr hdeg hwt
+    change ((regHost _ (Qof P).n (inputNF P L E) r).pts (Qof P).n).length ≤ _ at h4
     exact ⟨h1, fun a ℓ h => by have := h2 a ℓ h; omega, h3, by omega⟩
   intro γ₀ M C NR γR Lx hγ₀ hreg
   -- the host facts of the regions
-  have hH : ∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
-      (C r).P.Simple ∧ DownDrv.ExtractOK (Qof P) (Gran.lset (interiorModel (Qof P)) (Qof P) L)
+  have hH : ∀ r, r < (inputNF P L E).nRegions →
+      (C r).P.Simple ∧ DownDrv.ExtractOK (Qof P) (Gran.lset (inputModel P) (Qof P) L)
         (reg r) (C r) := by
     intro r hr
     obtain ⟨hP, hs, hm, -⟩ := hreg r hr
     have h := DownMath.hostR1Spec P L E reg r hG hLne hL hperm hsort hdeg hregs hr
     obtain ⟨-, -, hsimp, -, -, -, hex⟩ := h
-    refine ⟨by rw [hP]; exact hsimp, ?_⟩
-    have := hex (C r) hP hs hm
-    rw [hS] at this
-    exact this
+    refine ⟨by rwa [hP], ?_⟩
+    have hx : DownDrv.ExtractOK (Qof P) ((inputNF P L E).F P.inputModel (Qof P)) (reg r) (C r) :=
+      hex (C r) hP hs hm
+    rwa [hS] at hx
   -- the abstract level
-  have X : LvlCtx (Qof P) L (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions reg C
+  have X : LvlCtx (Qof P) L (inputNF P L E).nRegions reg C
       (fun r => (NR r).F (chainModel (C r)) (Qof P)) Lx DrvR.regCap
       (2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12)) := by
-    refine ⟨hQ, hL, by rw [← hS]; exact hdeg, fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
-      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rw [hS]; exact hU), fun r hr => (hH r hr).2,
+    refine ⟨hQ, hL, by rwa [← hS], fun r hr => by rw [← hS]; exact hregs.1.1 r hr,
+      hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rwa [hS]), fun r hr => (hH r hr).2,
       fun r hr => ?_, fun r hr => ?_, fun r hr => ?_, fun r hr => ?_⟩
     · obtain ⟨-, -, -, hcan, -, hhi, -⟩ := hreg r hr
       exact ⟨hcan.1.1, hcan.2.1, fun U hU => (hcan.2.2.1.1 U hU).trans (by omega)⟩
@@ -74,14 +74,14 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     · obtain ⟨-, -, -, -, -, -, -, -, hatt, -⟩ := hreg r hr
       exact hatt
   -- the sizes
-  have hsize : ∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
+  have hsize : ∀ r, r < (inputNF P L E).nRegions →
       (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := by
     intro r hr
     obtain ⟨-, -, -, hcan, hlo, -, hkept, hnd, -⟩ := hreg r hr
     exact lx_size (hH r hr).1 ⟨hcan.1.1, hcan.2.1, hcan.2.2.1⟩ hlo hkept hnd
-  have hm : ∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
+  have hm : ∀ r, r < (inputNF P L E).nRegions →
       (C r).m + 1 = ((regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-        (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).pts (Qof P).n).length := by
+        (inputNF P L E) r).pts (Qof P).n).length := by
     intro r hr
     obtain ⟨hP, -, hm, -⟩ := hreg r hr
     rw [hm, hP]
@@ -92,6 +92,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     have h1 := hsize r hr
     have h2 := hm r hr
     have h4 := (host_facts B hr hdeg hwt).2.2.2
+    change ((regHost _ (Qof P).n (inputNF P L E) r).pts (Qof P).n).length ≤ _ at h4
     calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := h1
       _ ≤ 140 * (DrvR.regCap + 2) * (20 * 2 ^ DrvR.nextLvl lam + 17) :=
         Nat.mul_le_mul_left _ (by omega)
@@ -100,12 +101,12 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
       (fun r hr => (hreg r hr).2.2.2.2.2.2.2.2.2.2)
       (fun r hr => (hreg r hr).2.2.2.2.2.2.2.2.2.1) b
   · -- 4. the family after the splice
-    have hF' : (BuildNF.buildNF (interiorModel (Qof P)) (Qof P)
-        (L ++ (List.range (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap
-          Lx) E').F (interiorModel (Qof P)) (Qof P) =
-        stepFam (Qof P) (Gran.lset (interiorModel (Qof P)) (Qof P) L)
-          (fun U => (NR (rOf (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions reg
-            U)).F (chainModel (C (rOf (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions
+    have hF' : (inputNF P
+        (L ++ (List.range (inputNF P L E).nRegions).flatMap
+          Lx) E').F (inputModel P) (Qof P) =
+        stepFam (Qof P) (Gran.lset (inputModel P) (Qof P) L)
+          (fun U => (NR (rOf (inputNF P L E).nRegions reg
+            U)).F (chainModel (C (rOf (inputNF P L E).nRegions
               reg U))) (Qof P)) := by
       rw [Gran.F_of_map (BuildNF.isNF_goodModel (Or.inr ⟨Qof P, hQ, rfl⟩) X.ok hperm' hsort').2.1,
         X.step]
@@ -113,7 +114,9 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     refine ⟨Set.subset_union_left, X.down.2.1, X.down.2.2, X.count (fun r hr => ?_)⟩
     have h1 := hsize r hr
     have h2 := hm r hr
-    rw [pts_length B hr, hS] at h2
+    rw [pts_length B hr] at h2
+    change (C r).m + 1 = DownHost.nk P.inputModel ((inputNF P L E).F P.inputModel (Qof P)) (reg r) at h2
+    rw [hS] at h2
     rw [← h2]
     calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := h1
       _ ≤ 140 * (DrvR.regCap + 2) * (2 * ((C r).m + 1)) := Nat.mul_le_mul_left _ (by omega)

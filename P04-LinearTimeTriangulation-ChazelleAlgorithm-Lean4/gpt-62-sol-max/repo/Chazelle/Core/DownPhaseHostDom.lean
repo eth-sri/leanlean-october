@@ -38,10 +38,10 @@ theorem hostEdge_not_mem (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
         (hk (interiorModel Q) S R ((i + 1) % nk (interiorModel Q) S R)))) :
     z ∉ R := by
   set M := interiorModel Q
-  have hM : WalkAx M := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
-  have h3 : 3 ≤ nk M S R := three_le_nk hQ hFam hne hR
+  have h3 := three_le_nk hQ hFam hne hR
   have hN2 : 2 ≤ nk M S R := le_trans (by norm_num) h3
   intro hzR
   have hzfree := Chazelle.Chain.regionsIn_subset hR hzR
@@ -114,7 +114,7 @@ theorem region_sub_dom (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
   refine (C.mem_dom_iff).2 ⟨hbox z hz, hset z hz, fun hs => ?_⟩
   obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hs
   have h3' := htop z hz
-  have hzt : z = C.top := Prod.ext h1 (le_antisymm h3' h2)
+  have hzt := Prod.ext h1 (le_antisymm h3' h2)
   exact hset z hz (hzt ▸ C.top_mem_set)
 
 /-- **Every host point is a chain vertex.** -/

@@ -51,10 +51,9 @@ theorem centroid_typed (hR : R.OK) (hRn : R.n = N) (hup : ∀ g : Fin N, R.up g 
       (fun i => pre (firstN (act i))) i = pre (firstN (act i)) := by
     intro i h1 h2
     have hv := hlt (act i) (mem_items.mpr ⟨i, h1, h2, rfl⟩)
-    refine ⟨?_, rfl⟩
-    rw [hfN ⟨act i, hv⟩, hRn]; exact Fin.isLt _
+    simp [hfN ⟨act i, hv⟩, hRn]
   have hmed : lo ≤ lo + (hi - lo) / 2 ∧ lo + (hi - lo) / 2 < hi := by omega
-  have hy : firstN (act (lo + (hi - lo) / 2)) < R.n := (hphi _ hmed.1 hmed.2).1
+  have hy := (hphi _ hmed.1 hmed.2).1
   have hanc : ∀ z, z < R.n → BTree.GdN pre (fun g => (R.sub g).card)
       (fun i => pre (firstN (act i))) lo hi z → R.Anc z (firstN (act (lo + (hi - lo) / 2))) :=
     fun z hz hg => BTree.good_anc_median hR hP hs hphi hz hg
@@ -67,8 +66,7 @@ theorem centroid_typed (hR : R.OK) (hRn : R.n = N) (hup : ∀ g : Fin N, R.up g 
   have hpar' : R.par g = f := by
     have := hup g
     unfold BTree.up at this
-    rw [ite_eq_right hgr, hpar] at this
-    exact this
+    rwa [ite_eq_right hgr, hpar] at this
   exact hch g (by rw [hRn]; exact g.2) hgr hpar' ((hgood g).mp hgg)
 
 end centroid
@@ -147,7 +145,7 @@ theorem marksF_df {a : F → Fin N} {m0 : ℕ → ℕ} {S : SS} {lo hi lbot ltop
     intro m u hu hm y hy
     rw [markStep_other hupl hu (hDF y hy).1, markStep_other hupl hu (hDF y hy).2]
     exact hm y hy
-  have hv0 : m0 (S.bVERT + f) = M.vert f := hvert f
+  have hv0 := hvert f
   have hv1 : m0 (S.bVERT + m0 (S.bOPP + f)) = M.head f := by
     rw [hopp f, hvert]; rfl
   have hv2 : m0 (S.bVERT + m0 (S.bATT + f)) = M.vert (a (M.face f)) := by rw [hatt f, hvert]
@@ -281,20 +279,25 @@ theorem enc_surj {x : ℕ} (hx : x < 3 * N) : ∃ y, enc N y = x := by
     · exact ⟨.inr (.inl ⟨x - N, by omega⟩), by simp only [enc]; omega⟩
     · exact ⟨.inr (.inr ⟨x - 2 * N, by omega⟩), by simp only [enc]; omega⟩
 
+section
+
+variable {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
+    (h : SFacts M T a ha C R first preE slot upT k c S A0 U W m)
+include h
+
 /-- The class-test memory facts. -/
-theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
-    (h : SFacts M T a ha C R first preE slot upT k c S A0 U W m) :
+theorem SFacts.cpMem :
     CpMem m W S.bSO S.bSF S.bFPAR S.bFPRE S.bFSZ S.N := by
   have hL := h.lay
   have := hL.hSO; have := hL.hSF; have := hL.hFPAR; have := hL.hFPRE; have := hL.hFSZ
   have := hL.hNU; have := hL.hW; have := h.hN
-  have hLU0 : 0 ≤ S.L * U := Nat.zero_le _
+  
   refine ⟨by omega, by omega, by omega, by omega, by omega, fun x hx => ?_, fun x hx => ?_,
     fun g hg => ?_, fun g hg => ?_⟩
   · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (by omega)
     rw [h.so, h.hN]; exact enc_lt _
   · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (by omega)
-    rw [h.sf, h.hN]; exact Fin.isLt _
+    simp [h.sf, h.hN]
   · rw [h.hN]; exact h.fpar_lt g (by omega)
   · rw [h.pre g (by omega), h.sz g (by omega)]
     obtain ⟨hp1, hp2⟩ := h.R_ok.pos_spec (show g < R.n by rw [h.R_n]; omega)
@@ -303,15 +306,14 @@ theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
     omega
 
 /-- The marking memory facts. -/
-theorem SFacts.markMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
-    (h : SFacts M T a ha C R first preE slot upT k c S A0 U W m) :
+theorem SFacts.markMem :
     MarkMem m W S.bLEV S.bUPT S.bPOW S.L S.bPV S.bPOS S.bDF S.μ upT := by
   have hL := h.lay
   have := hL.hLEV; have := hL.hUPT; have := hL.hPOW; have := hL.hPV; have := hL.hPOS
   have := hL.hDF; have := hL.hμU; have := hL.hW; have := hL.hLU; have := h.hμ
   have := h.pow_big
   have hLU0 : S.L * S.μ ≤ S.L * U := Nat.mul_le_mul_left _ (by omega)
-  have hSμ : S.μ = μ := h.hμ
+  have hSμ := h.hμ
   refine ⟨fun x hx => by rw [hSμ]; exact h.upT_lt x (by omega), fun x hx => h.pv x (by omega),
     fun j hj x hx => by rw [hSμ]; exact h.upt_tab j hj x (by omega), h.pow, fun x hx => ?_,
     fun x hx => ?_,
@@ -321,6 +323,8 @@ theorem SFacts.markMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
     have := h.lev_lt ⟨x, by omega⟩; omega
   · have := h.lev ⟨x, by omega⟩; simp only at this; rw [this]
     have := h.lev_lt ⟨x, by omega⟩; omega
+
+end
 
 end derived
 

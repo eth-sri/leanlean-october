@@ -23,8 +23,6 @@ def seqLoop : Stmt :=
   .whileLtN 43201 43102 (block [.addN 43230 44004 43201, .storeN 43230 43201,
     .addN 43201 43201 43011])
 
-theorem wr_seqLoop : wrM (fun r => decide (r = 43201 ∨ r = 43230)) seqLoop = true := by decide
-
 /-- The memory with the sequence table of length `j` at `QT`. -/
 def seqMem (m : ℕ → ℕ) (QT j a : ℕ) : ℕ := if QT ≤ a ∧ a < QT + j then a - QT else m a
 
@@ -45,16 +43,16 @@ theorem seqLoop_exec (d : Config) (hw : WordsBounded W d) {A QT : ℕ} (hA : d.n
       FrameM (fun r => decide (r = 43201 ∨ r = 43230)) d e ∧ e.nmem = seqMem d.nmem QT j)
     (fun e => 5 * (A - e.nreg 43201)) (fun e he => he.1)
     (fun e ⟨hwe, j, hje, hjA, hfe, hme⟩ htest => by
-      have r1 : e.nreg 44004 = QT := by rw [hfe.1 _ (by decide), hQT]
-      have r2 : e.nreg 43011 = 1 := by rw [hfe.1 _ (by decide), h1]
-      have r3 : e.nreg 43102 = A := by rw [hfe.1 _ (by decide), hA]
+      have r1 : e.nreg 44004 = QT := by ram_rw [hfe.1, hQT]
+      have r2 : e.nreg 43011 = 1 := by ram_rw [hfe.1, h1]
+      have r3 : e.nreg 43102 = A := by ram_rw [hfe.1, hA]
       rw [hje, r3] at htest
       have X : ∃ e' k, Exec P W (block [.addN 43230 44004 43201, .storeN 43230 43201,
           .addN 43201 43201 43011]) e e' k ∧ k = 3 ∧ e'.nreg 43201 = j + 1 ∧
           e'.nmem = seqMem d.nmem QT (j + 1) := by
         exec_block
         · rw [r1, hje]; omega
-        · config_simp; rw [hje, r2]; omega
+        · ram_finish
         · refine ⟨rfl, ?_, ?_⟩ <;> config_simp
           · rw [hje, r2]
           · rw [r1, hje, hme]
@@ -65,9 +63,9 @@ theorem seqLoop_exec (d : Config) (hw : WordsBounded W d) {A QT : ℕ} (hA : d.n
       exact ⟨e', k, x, ⟨x.wb_right, j + 1, hj', by omega, hfe.trans (exec_frameM x (by decide)),
         hm'⟩, by rw [hj', hje]; omega⟩)
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _, by
-      funext a; simp only [seqMem]; rw [ite_eq_right (by omega)]⟩
+      funext a; simp only [seqMem]; ram_rw [ite_eq_right]⟩
   have hjA' : j = A := by
-    rw [hj', hf.1 _ (by decide), hA] at htest; omega
+    ram_rw [hj', hf.1, hA] at htest; omega
   subst hjA'
   exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, hm'⟩
 

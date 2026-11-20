@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvHLoop
 
 /-!
@@ -56,9 +58,9 @@ theorem nfAt_recs {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' :
     obtain ⟨b1, b2, b3, b4, b5⟩ := hr' q (by omega)
     change N.region q = N'.region q
     have harcs : (N.region q).arcs = (N'.region q).arcs :=
-      list_ext_getD 0 (by omega) fun t ht => by rw [← a4 t ht, ← b4 t (by omega)]
+      list_ext_getD 0 (by omega) fun t ht => by ram_simp [← a4 t ht, ← b4]
     have hchs : (N.region q).chords = (N'.region q).chords :=
-      list_ext_getD 0 (by omega) fun t ht => by rw [← a5 t ht, ← b5 t (by omega)]
+      list_ext_getD 0 (by omega) fun t ht => by ram_simp [← a5 t ht, ← b5]
     rcases hx : N.region q with ⟨x1, x2, x3⟩
     rcases hy : N'.region q with ⟨y1, y2, y3⟩
     rw [hx, hy] at harcs hchs; rw [hx] at a3; rw [hy] at b3
@@ -131,9 +133,9 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   have hn3 : 3 ≤ P.n := hG.1.1
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hqn : (Qof P).n = P.n := shear_n _ _
-  have hF : HFacts P.n (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 215001) :=
+  have hF : HFacts P.n (inputNF P L E) (c.nreg 215001) :=
     hqn ▸ hfacts_of hQ hLne hL hperm hsort hdeg hr
-  generalize hNdef : BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E = N at hF hNW hr
+  generalize hNdef : inputNF P L E = N at hF hNW hr
   generalize hlidef : decide (c.nreg 215002 = 1) = li
   have hliv : c.nreg 215002 = if li then 1 else 0 := by
     subst hlidef
@@ -177,34 +179,34 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
     e₂.wb_right E₂.K B₂.2.1 B₂.2.2.1 E₂.tR (by omega)
   have K₃ := E₂.K.frame f₃ (by decide)
   have I₃ : ItemsAt d₃.nmem (c.nreg 9999) xs := B₂.1.congr fun a h1 h2 => by
-    rw [vm₃, Machine.upd_other _ _ _ (by omega)]
+    ram_rw [vm₃, Machine.upd_other _ _]
   -- the copy
   obtain ⟨d₄, k₄, e₄, hk₄, I₄, w82, m₄, f₄⟩ := cpyLoop_exec (P := P) d₃ e₃.wb_right K₃ I₃
-    (by rw [f₃.1 _ (by decide), B₂.2.2.1]) v80 v82 v81 v83 v84 (by omega)
+    (by ram_rw [f₃.1, B₂.2.2.1]) v80 v82 v81 v83 v84 (by omega)
   -- the padding
-  have p20 : d₄.nreg 215020 = 1 := by rw [f₄.1 _ (by decide), K₃.one]
+  have p20 : d₄.nreg 215020 = 1 := by ram_rw [f₄.1, K₃.one]
   have p99 : d₄.nreg 9999 = c.nreg 9999 := by
-    rw [f₄.1 _ (by decide), f₃.1 _ (by decide), f₂.1 _ (by decide), s99]
+    frame_finish
   have e₅ := padLoopH_exec (P := P) (6 * xs.length + 1) d₄ e₄.wb_right p20 (by omega)
     (by omega)
   have ex : Exec P W hostS c { d₄ with nreg := upd d₄.nreg 9999 (d₄.nreg 215082) }
       (k₁ + (k₂ + (k₃ + (k₄ + (3 * (6 * xs.length + 1) + 2))))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
+    (by ram_path)
   have fA := exec_frameM ex wrM_hostS
   have fR := exec_frameM2 ex wrM2_hostS
   have g₄ : ∀ q, Bcp q = false → d₄.nreg q = d₃.nreg q := f₄.1
   have a99 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 9999 = c.nreg 9999 + 6 * xs.length + 1 := by
     rw [Machine.upd_same, w82]
   have a10 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215010 = c.nreg 9999 + 3 * xs.length := by
-    rw [Machine.upd_other _ _ _ (by decide), g₄ _ (by decide), v10]
+    frame_finish
   have a11 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215011 = xs.length := by
-    rw [Machine.upd_other _ _ _ (by decide), g₄ _ (by decide), f₃.1 _ (by decide), B₂.2.2.1]
+    ram_rw [Machine.upd_other _ _, g₄, f₃.1, B₂.2.2.1]
   have a12 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215012 = ptsLen P.n xs := by
-    rw [Machine.upd_other _ _ _ (by decide), g₄ _ (by decide), f₃.1 _ (by decide), B₂.2.2.2]
-  have hmem : ∀ a, a < c.nreg 9999 → d₄.nmem a = c.nmem a := fun a ha => by
-    rw [m₄ a (by omega), vm₃, Machine.upd_other _ _ _ (by omega), m₂ a ha, sm]
+    ram_rw [Machine.upd_other _ _, g₄, f₃.1, B₂.2.2.2]
+  have hmem : MemEqBelow (c.nreg 9999) d₄.nmem c.nmem := fun a ha => by
+    ram_rw [m₄ a, vm₃, Machine.upd_other _ _, m₂ a ha, sm]
   have hHB : d₄.nmem (c.nreg 9999 + 3 * xs.length) = xs.length := by
-    rw [m₄ _ (by omega), vm₃, Machine.upd_same]
+    ram_rw [m₄, vm₃, Machine.upd_same]
   refine ⟨_, _, ex, show _ ≤ 3000 by omega, ⟨fun q hq hq' => fA.1 q ?_,
     fun L' E' hLne' hL' hperm' hsort' hNA' => ?_⟩,
     ⟨fun q hq hqA => fA.1 q ?_, fun q _ => fR q rfl, hmem, fun a _ => by rw [fA.2.2.1],
@@ -213,7 +215,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
   · simp only [bandOf, bDownDrv] at hq
     simp only [Ball, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
   · have hrec := nfAt_recs hNA' hNW.nfAt
-    have hH : regHost li (Qof P).n (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L' E')
+    have hH : regHost li (Qof P).n (inputNF P L' E')
         (c.nreg 215001) = if li then xs else xs.reverse := by
       rw [regHost_congr hrec.1 hrec.2.1 hrec.2.2, hqn, ← hxs]; rfl
     dsimp only

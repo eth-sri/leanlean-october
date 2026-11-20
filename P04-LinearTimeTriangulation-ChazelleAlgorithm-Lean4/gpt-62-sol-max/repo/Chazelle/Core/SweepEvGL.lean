@@ -68,11 +68,9 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     have hzD' := hzD
     rw [h] at hzD'
     exact hM.trace pz (by have := hPZ.1; exact this) tz hPZ.2.1 hPZ.2.2.1.le (hPe ▸ hzD')
-  have hdist : dist z e < min r r' := hsb
-  have hzL : Chazelle.Chain.sideLeft M.W pz tz z :=
-    hleft z hzZ (by rw [hPe]; exact hze) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
-  have hzK : z ∈ connectedComponentIn (M.D \ c) k :=
-    hs z (by rw [mem_ball, hPe]; exact lt_of_lt_of_le hdist (min_le_left _ _)) hzL
+  have hdist := hsb
+  have hzL := hleft z hzZ (by rw [hPe]; exact hze) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
+  have hzK := hs z (by rw [mem_ball, hPe]; exact lt_of_lt_of_le hdist (min_le_left _ _)) hzL
   -- the component is open, so the points just beside `z` are in it
   have hKo : IsOpen (connectedComponentIn (M.D \ c) k) :=
     (hM.isOpen.sdiff hcl).connectedComponentIn
@@ -110,30 +108,35 @@ section Junction
 
 variable {J : Merge.Junction}
 
+section
+
+variable (hP : J.P.Simple) {S₂ : Set (Set Point)}
+    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)
+include hP hS₂ hS₂f
+
 /-- **`side_comp` in offsets** (from the base `gW`): `c` attached at offsets `oA < oB`, `Z ≠ c`
 attached at an offset outside `[oA, oB]`; a region on a side of `Z` is not faced at a position with
 offset in `(oA, oB)`. -/
-theorem side_comp_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {c Z : Set Point}
+theorem side_comp_off {c Z : Set Point}
     (hc : c ∈ F₂plus J S₂) (hZ : Z ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
-    (hA : SideAttach (chainModel J.whole).W c pa ta) (hB : SideAttach (chainModel J.whole).W c pb tb)
+    (hA : SideAttach J.wholeModel.W c pa ta) (hB : SideAttach J.wholeModel.W c pb tb)
     (hAB : oW J (pa + ta) < oW J (pb + tb)) {pz : ℕ} {tz : ℝ}
-    (hPz : SideAttach (chainModel J.whole).W Z pz tz)
+    (hPz : SideAttach J.wholeModel.W Z pz tz)
     (hPout : oW J (pz + tz) < oW J (pa + ta) ∨ oW J (pb + tb) < oW J (pz + tz)) {ρ : ℝ}
-    {R : Set Point} (hR : R ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hRs : SideOf (chainModel J.whole) ρ Z R) {py : ℕ} {ty : ℝ}
-    (hpy : py < (chainModel J.whole).W.n) (hty : ty ∈ Ioo (0 : ℝ) 1)
+    {R : Set Point} (hR : R ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hRs : SideOf J.wholeModel ρ Z R) {py : ℕ} {ty : ℝ}
+    (hpy : py < J.wholeModel.W.n) (hty : ty ∈ Ioo (0 : ℝ) 1)
     (hy1 : oW J (pa + ta) < oW J (py + ty)) (hy2 : oW J (py + ty) < oW J (pb + tb))
-    (hfy : (chainModel J.whole).Faces py ty R) : False := by
+    (hfy : J.wholeModel.Faces py ty R) : False := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   obtain ⟨a0, a1⟩ := Corr.key_mem hA.1 hA.2.1 hA.2.2.1
   obtain ⟨b0, b1⟩ := Corr.key_mem hB.1 hB.2.1 hB.2.2.1
   obtain ⟨z0, z1⟩ := Corr.key_mem hPz.1 hPz.2.1 hPz.2.2.1
   obtain ⟨y0, y1⟩ := Corr.key_mem hpy hty.1.le hty.2
-  have hAB' : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb := by
+  have hAB' : sidePt J.wholeModel.W pa ta ≠ sidePt J.wholeModel.W pb tb := by
     intro h
     obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF hc) hA hB h
     exact lt_irrefl _ hAB
@@ -142,12 +145,11 @@ theorem side_comp_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
     ((sideInArc_iff_off hg0 hgn a0 a1 b0 b1 y0 y1 hAB).2 ⟨hy1, hy2⟩) hfy
 
 /-- Two attachments of a chord with distinct offsets have distinct points. -/
-theorem pt_ne_of_off_ne (hP : J.P.Simple) {S₂ : Set (Set Point)}
-    (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {c : Set Point}
+theorem pt_ne_of_off_ne {c : Set Point}
     (hc : c ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
-    (hA : SideAttach (chainModel J.whole).W c pa ta) (hB : SideAttach (chainModel J.whole).W c pb tb)
+    (hA : SideAttach J.wholeModel.W c pa ta) (hB : SideAttach J.wholeModel.W c pb tb)
     (hne : oW J (pa + ta) ≠ oW J (pb + tb)) :
-    sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb := by
+    sidePt J.wholeModel.W pa ta ≠ sidePt J.wholeModel.W pb tb := by
   have hC := corr_right0 J hP hS₂ hS₂f
   intro h
   obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF hc) hA hB h
@@ -156,22 +158,21 @@ theorem pt_ne_of_off_ne (hP : J.P.Simple) {S₂ : Set (Set Point)}
 /-- **Regions between two non-enclosed positions** (`GL`): two non-cut positions on the walk, not
 enclosed, with only bracket chords attached at offsets strictly between them, face the same
 region. -/
-theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
-    (hS₂f : S₂.Finite) {p p' : ℕ} {t t' : ℝ} (hp : p < (chainModel J.whole).W.n)
-    (hp' : p' < (chainModel J.whole).W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
-    (hnc : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p + t))
-    (hnc' : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p' + t'))
+theorem evGL {p p' : ℕ} {t t' : ℝ} (hp : p < J.wholeModel.W.n)
+    (hp' : p' < J.wholeModel.W.n) (ht : t ∈ Ioo (0 : ℝ) 1) (ht' : t' ∈ Ioo (0 : ℝ) 1)
+    (hnc : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p + t))
+    (hnc' : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p' + t'))
     (hlt : oW J (p + t) < oW J (p' + t')) (hE : ¬ EvEncl J S₂ (oW J (p + t)))
     (hE' : ¬ EvEncl J S₂ (oW J (p' + t')))
-    (hbr : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s →
+    (hbr : ∀ e ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s →
       oW J (p + t) < oW J (q + s) → oW J (q + s) < oW J (p' + t') → EvBrk J e)
-    {G G' : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hG' : G' ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hf : (chainModel J.whole).Faces p t G) (hf' : (chainModel J.whole).Faces p' t' G') :
+    {G G' : Set Point} (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hG' : G' ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hf : J.wholeModel.Faces p t G) (hf' : J.wholeModel.Faces p' t' G') :
     G = G' := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   refine (hC.hM.eq_iff_not_separates hC.hF hC.hfin hG hG' hp hp' ht ht' hnc hnc' hf hf').2
     fun c hc ⟨pa, pb, ta, tb, hA, hB, hAB, hsep⟩ => ?_
@@ -182,22 +183,22 @@ theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.
   have hk := WalkAx.key_ne_of_pt_ne (M := chainModel J.whole) hA hB hAB
   have hxy : (p : ℝ) + t ≠ p' + t' := by
     intro h; rw [h] at hlt; exact lt_irrefl _ hlt
-  have hxa : (p : ℝ) + t ≠ pa + ta := fun h => hnc ⟨c, hc, pa, ta, hA, h⟩
-  have hxb : (p : ℝ) + t ≠ pb + tb := fun h => hnc ⟨c, hc, pb, tb, hB, h⟩
-  have hya : (p' : ℝ) + t' ≠ pa + ta := fun h => hnc' ⟨c, hc, pa, ta, hA, h⟩
-  have hyb : (p' : ℝ) + t' ≠ pb + tb := fun h => hnc' ⟨c, hc, pb, tb, hB, h⟩
+  have hxa := fun h => hnc ⟨c, hc, pa, ta, hA, h⟩
+  have hxb := fun h => hnc ⟨c, hc, pb, tb, hB, h⟩
+  have hya := fun h => hnc' ⟨c, hc, pa, ta, hA, h⟩
+  have hyb := fun h => hnc' ⟨c, hc, pb, tb, hB, h⟩
   have hs := (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hk hxy hxa hxb hya hyb).1 hsep
-  have hne : ∀ {u w : ℝ}, 0 ≤ u → u < (chainModel J.whole).W.n → 0 ≤ w →
-      w < (chainModel J.whole).W.n → u ≠ w → oW J u ≠ oW J w :=
+  have hne : ∀ {u w : ℝ}, 0 ≤ u → u < J.wholeModel.W.n → 0 ≤ w →
+      w < J.wholeModel.W.n → u ≠ w → oW J u ≠ oW J w :=
     fun hu hun hw hwn huw h => huw (off_inj hg0 hgn hu hun hw hwn h)
   have hoxa := hne x0 x1 a0 a1 hxa
   have hoxb := hne x0 x1 b0 b1 hxb
   have hoya := hne y0 y1 a0 a1 hya
   have hoyb := hne y0 y1 b0 b1 hyb
   -- one attachment strictly inside, the other outside
-  have key : ∀ {qa qb : ℕ} {sa sb : ℝ}, SideAttach (chainModel J.whole).W c qa sa →
-      SideAttach (chainModel J.whole).W c qb sb →
-      sidePt (chainModel J.whole).W qa sa ≠ sidePt (chainModel J.whole).W qb sb →
+  have key : ∀ {qa qb : ℕ} {sa sb : ℝ}, SideAttach J.wholeModel.W c qa sa →
+      SideAttach J.wholeModel.W c qb sb →
+      sidePt J.wholeModel.W qa sa ≠ sidePt J.wholeModel.W qb sb →
       oW J (p + t) < oW J (qa + sa) → oW J (qa + sa) < oW J (p' + t') →
       oW J (qb + sb) ≠ oW J (p + t) → oW J (qb + sb) ≠ oW J (p' + t') →
       ¬ (oW J (p + t) < oW J (qb + sb) ∧ oW J (qb + sb) < oW J (p' + t')) → False := by
@@ -231,6 +232,8 @@ theorem evGL (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.
         · linarith [h.1, h.2]
       exact h1 (hs.2 h2)
     exact key hB hA hAB.symm hb.1 hb.2 hoxa.symm hoya.symm ha
+
+end
 
 end Junction
 

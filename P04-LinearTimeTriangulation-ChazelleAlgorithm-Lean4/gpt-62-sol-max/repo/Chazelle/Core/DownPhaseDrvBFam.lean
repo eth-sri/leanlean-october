@@ -51,7 +51,7 @@ theorem F_build (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : Li
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
     refine ⟨_, ⟨i, hi, rfl⟩, ?_⟩
     have : L.getD i (0, 0, 0) = L[i] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+      simp_all
     unfold BuildNF.chordRec
     rw [this]
     rfl
@@ -108,13 +108,13 @@ variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ 
 
 /-- The facts of one region. -/
 theorem region_facts {r : ℕ} (X : DownMath.RegCtx Q L E reg r) (hli : li = true ↔ Mountain.LeftInside Q) :
-    RegOK Q ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r)
-      (polyOf Q (regPts li Q.n (buildNF (interiorModel Q) Q L E) r)) ∧
-      ∀ s ∈ regPts li Q.n (buildNF (interiorModel Q) Q L E) r, s.Lt Q.n := by
+    RegOK Q (interiorChords Q L E) (reg r)
+      (polyOf Q (regPts li Q.n (interiorNF Q L E) r)) ∧
+      ∀ s ∈ regPts li Q.n (interiorNF Q L E) r, s.Lt Q.n := by
   refine ⟨regOK_host X hli, fun s hs => ?_⟩
   obtain ⟨-, -, -, -, -, -, -, hwf⟩ := DownMath.walk_rep X hli
   have hn : 0 < Q.n := by have := X.hQ.1; omega
-  have hwf' : HostWF Q.n (regHost li Q.n (buildNF (interiorModel Q) Q L E) r) := by
+  have hwf' : HostWF Q.n (regHost li Q.n (interiorNF Q L E) r) := by
     unfold regHost; split_ifs
     · exact hwf
     · intro it hit; exact hwf it (List.mem_reverse.1 hit)
@@ -129,23 +129,23 @@ structure BaseCtx (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (r
   hperm : E.Perm (List.range (2 * L.length))
   hsort : E.Pairwise (codeLe (interiorModel Q) Q L)
   hK : 0 < L.length
-  hregs : Restore.NFRegs (interiorModel Q) Q (buildNF (interiorModel Q) Q L E) reg
+  hregs : Restore.NFRegs (interiorModel Q) Q (interiorNF Q L E) reg
   hli : li = true ↔ Mountain.LeftInside Q
 
 theorem BaseCtx.rc (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (buildNF (interiorModel Q) Q L E).nRegions) : DownMath.RegCtx Q L E reg r :=
+    (hr : r < (interiorNF Q L E).nRegions) : DownMath.RegCtx Q L E reg r :=
   ⟨B.hQ, B.hdh, B.hL, B.hperm, B.hsort, B.hK, B.hregs, hr⟩
 
 theorem BaseCtx.fam (B : BaseCtx Q L E reg li) :
-    (interiorModel Q).ChordFamily Q ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) :=
+    (interiorModel Q).ChordFamily Q (interiorChords Q L E) :=
   (DownMath.isNF_build B.hQ B.hL B.hperm B.hsort).1
 
 set_option maxHeartbeats 2000000 in
 /-- The facts of a new chord. -/
 theorem newL_mem (B : BaseCtx Q L E reg li) {x : ℕ × ℕ × ℕ}
-    (hx : x ∈ newL li Q (buildNF (interiorModel Q) Q L E)) :
-    ∃ r, r < (buildNF (interiorModel Q) Q L E).nRegions ∧
-      x ∈ regList li Q (regPts li Q.n (buildNF (interiorModel Q) Q L E) r) ∧
+    (hx : x ∈ newL li Q (interiorNF Q L E)) :
+    ∃ r, r < (interiorNF Q L E).nRegions ∧
+      x ∈ regList li Q (regPts li Q.n (interiorNF Q L E) r) ∧
       (recOf x).toSet (interiorModel Q) Q ∈ chords Q ∧
       (recOf x).toSet (interiorModel Q) Q ∉ famL (interiorModel Q) Q L ∧
       (recOf x).toSet (interiorModel Q) Q ∩ (interiorModel Q).D ⊆ reg r ∧
@@ -157,17 +157,17 @@ theorem newL_mem (B : BaseCtx Q L E reg li) {x : ℕ × ℕ × ℕ}
   rw [List.mem_range] at hr
   obtain ⟨hR, hl⟩ := region_facts (B.rc hr) B.hli
   have := regList_sound B.hQ B.hdh B.hli B.fam hR hl hxr
-  rw [F_build] at this
+  rw [interiorChords, interiorNF, F_build] at this
   exact ⟨r, hr, hxr, this⟩
 
 /-- **The new chord list is valid** with the old one. -/
 theorem newL_ok (B : BaseCtx Q L E reg li) :
-    ChordTriplesOK (interiorModel Q) Q (L ++ newL li Q (buildNF (interiorModel Q) Q L E)) := by
+    ChordTriplesOK (interiorModel Q) Q (L ++ newL li Q (interiorNF Q L E)) := by
   have hL := B.hL
   refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩
   · -- finite
-    have : {c | ∃ x ∈ L ++ newL li Q (buildNF (interiorModel Q) Q L E), c = (recOf x).toSet (interiorModel Q) Q} =
-        (fun x => (recOf x).toSet (interiorModel Q) Q) '' {x | x ∈ L ++ newL li Q (buildNF (interiorModel Q) Q L E)} := by
+    have : {c | ∃ x ∈ L ++ newL li Q (interiorNF Q L E), c = (recOf x).toSet (interiorModel Q) Q} =
+        (fun x => (recOf x).toSet (interiorModel Q) Q) '' {x | x ∈ L ++ newL li Q (interiorNF Q L E)} := by
       ext c; simp [eq_comm]
     rw [this]
     exact (List.finite_toSet _).image _
@@ -202,9 +202,8 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
         rw [hxx] at hcR'
         obtain ⟨z, hz⟩ := chord_dom_nonempty B.hQ hcQ
         have hreg := B.hregs.1
-        rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hreg.1 r hr) (hreg.1 r' hr') with h | h
-        · exact hreg.2.1 r r' hr hr' h
-        · exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) (by simp)
+        exact hreg.2.1 r r' hr hr' (Chazelle.Chain.regionsIn_eq_of_mem
+          (hreg.1 r hr) (hreg.1 r' hr') (hcR hz) (hcR' hz))
     · intro c hc c' hc' hcc
       subst hcc
       obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hc
@@ -224,19 +223,19 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
 
 /-- **Every vertex chord of `Q` is a chord of the completed list.** -/
 theorem newL_full (B : BaseCtx Q L E reg li) :
-    chords Q ⊆ famL (interiorModel Q) Q (L ++ newL li Q (buildNF (interiorModel Q) Q L E)) := by
+    chords Q ⊆ famL (interiorModel Q) Q (L ++ newL li Q (interiorNF Q L E)) := by
   intro c hc
   rw [famL_append]
   by_cases hcS : c ∈ famL (interiorModel Q) Q L
   · exact Or.inl hcS
   right
   have hFam := B.fam
-  rw [F_build] at hFam
+  rw [interiorChords, interiorNF, F_build] at hFam
   obtain ⟨R, hR, hcR, -⟩ := DownDrv.full_in_region B.hQ hFam hc hcS
   rw [← F_build (E := E)] at hR
   obtain ⟨r, hr, rfl⟩ := B.hregs.1.2.2 R hR
   obtain ⟨hRo, hl⟩ := region_facts (B.rc hr) B.hli
-  rw [F_build] at hRo
+  rw [interiorChords, interiorNF, F_build] at hRo
   obtain ⟨x, hx, hxc⟩ := regList_complete B.hQ B.hdh B.hli hRo hl hc hcS hcR
   exact ⟨x, List.mem_flatMap.2 ⟨r, List.mem_range.2 hr, hx⟩, hxc.symm⟩
 
@@ -260,7 +259,7 @@ theorem run_pts_lt (hQ : Q.Simple) :
   intro it hit
   simp only [List.mem_singleton] at hit
   subst hit
-  exact ⟨by omega, by omega⟩
+  simp_all <;> omega
 
 theorem regOK0 (hQ : Q.Simple) (hli : li = true ↔ Mountain.LeftInside Q) :
     RegOK Q ∅ (interiorModel Q).D (polyOf Q (wlist li (Host.pts Q.n [HostItem.run 0 (Q.n - 1)]))) := by

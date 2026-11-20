@@ -25,19 +25,19 @@ open Chazelle.Chain (SideAttach sidePt)
 variable {J : Merge.Junction}
 
 theorem slb_evVal {S₂ : Set (Set Point)} {Λ : Set (Set Point)} {G L : Set Point} (hL : L ∈ Λ)
-    (hR : L ∈ (chainModel J.right).regions S₂) (hV : Valid J S₂ G L) : EvVal J S₂ Λ G :=
+    (hR : L ∈ J.rightModel.regions S₂) (hV : Valid J S₂ G L) : EvVal J S₂ Λ G :=
   ⟨L, Or.inl hL, hR, hV⟩
 
 /-- **A chord inside a chord of `S₂`, away from the split vertex.** -/
 theorem slb_part1 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {e c : Set Point}
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {e c : Set Point}
     (he : e ∈ F₂plus J S₂) (hc : c ∈ S₂) (hec : e ⊆ c) {d : ℕ} (hd : d < Lst J) {t : ℝ}
     (ht0 : 0 ≤ t) (ht1 : t < 1) (hsec : t = 0 → d ≠ 0 ∧ d ≠ rL1 J)
-    (hA : SideAttach (chainModel J.whole).W e ((gW J + d) % (chainModel J.whole).W.n) t)
-    {Vu Vd : Set Point} (hVu : Vu ∈ (chainModel J.right).regions S₂)
-    (hVd : Vd ∈ (chainModel J.right).regions S₂) (hsu : SideOf (chainModel J.right) 1 c Vu)
-    (hsd : SideOf (chainModel J.right) (-1) c Vd) : EvSideLab J S₂ {Vu, Vd} e := by
+    (hA : SideAttach J.wholeModel.W e ((gW J + d) % J.wholeModel.W.n) t)
+    {Vu Vd : Set Point} (hVu : Vu ∈ J.rightModel.regions S₂)
+    (hVd : Vd ∈ J.rightModel.regions S₂) (hsu : SideOf J.rightModel 1 c Vu)
+    (hsd : SideOf J.rightModel (-1) c Vd) : EvSideLab J S₂ {Vu, Vd} e := by
   intro G hG ρ hρ hS
   rcases hρ with rfl | rfl
   · exact slb_evVal (Set.mem_insert _ _) hVu
@@ -47,15 +47,15 @@ theorem slb_part1 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
 
 /-- **A faced region** has the label faced at the counterpart position. -/
 theorem slb_faced (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) {d : ℕ} (hd : d < Lst J) {t : ℝ}
+    (hS₂ : J.rightModel.ChordFamily Q S₂) {d : ℕ} (hd : d < Lst J) {t : ℝ}
     (ht0 : 0 ≤ t) (ht1 : t < 1) (hd1 : t = 0 → 1 ≤ d) {ρ dir : ℝ} {G : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hfac : FacedSide (chainModel J.whole) ((gW J + d) % (chainModel J.whole).W.n) t ρ dir G)
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hfac : FacedSide J.wholeModel ((gW J + d) % J.wholeModel.W.n) t ρ dir G)
     (hρd : ρ * dir = 1 ∨ ρ * dir = -1) {Va Vb : Set Point}
-    (hVa : Va ∈ (chainModel J.right).regions S₂) (hVb : Vb ∈ (chainModel J.right).regions S₂)
-    (ha : AfterFaces (chainModel J.right) (cpA J d) t Va)
-    (hb0 : 0 < t → BeforeFaces (chainModel J.right) (cpA J d) t Vb)
-    (hb1 : t = 0 → BeforeFaces (chainModel J.right) (cpB J d) 0 Vb) :
+    (hVa : Va ∈ J.rightModel.regions S₂) (hVb : Vb ∈ J.rightModel.regions S₂)
+    (ha : AfterFaces J.rightModel (cpA J d) t Va)
+    (hb0 : 0 < t → BeforeFaces J.rightModel (cpA J d) t Vb)
+    (hb1 : t = 0 → BeforeFaces J.rightModel (cpB J d) 0 Vb) :
     EvVal J S₂ {Va, Vb} G := by
   obtain ⟨R1, R2⟩ := rlabel_of_faced J hP hS₂.2.1 hS₂.1 hd ht0 ht1 hfac
   rcases hρd with h | h

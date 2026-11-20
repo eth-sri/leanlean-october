@@ -51,7 +51,7 @@ theorem IsDiag.swap {l : List ℕ} {d : ℕ × ℕ} (hd : IsDiag P l d) : IsDiag
   · intro p hp hp1 hp2
     rw [pairSeg_swap] at hp
     exact hch p hp hp2 hp1
-  · rw [pairSeg_swap]; exact hf
+  · rwa [pairSeg_swap]
 
 /-- Non-crossing is invariant under swapping the first pair. -/
 theorem NonCross.swap_left {d d' : ℕ × ℕ} (h : NonCross P d d') : NonCross P d.swap d' := by
@@ -82,8 +82,7 @@ theorem isDiag_range_of_mem_allDiagonals (hP : P.Simple) {d : ℕ × ℕ}
   rw [subPoly_range]
   refine ⟨List.mem_range.2 h1, List.mem_range.2 h2, hne, ?_, hsub⟩
   have hch := hdiag.2.2
-  rw [hs, hsL] at hch
-  exact hch
+  rwa [hs, hsL] at hch
 
 /-- A member of `allDiagonals P` up to orientation is an `IsDiag` of the whole polygon. -/
 theorem isDiag_range_of_mem_or_swap (hP : P.Simple) {d : ℕ × ℕ}
@@ -93,15 +92,20 @@ theorem isDiag_range_of_mem_or_swap (hP : P.Simple) {d : ℕ × ℕ}
   · have := (isDiag_range_of_mem_allDiagonals hP h).swap
     rwa [Prod.swap_swap] at this
 
+section
+
+variable (hP : P.Simple) {d d' : ℕ × ℕ}
+    (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P)
+    (hd' : d' ∈ allDiagonals P ∨ d'.swap ∈ allDiagonals P)
+include hP hd hd'
+
 /-- **Two inserted diagonals (up to orientation) with the same segment are the same pair up to
 orientation.** -/
-theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
-    (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P)
-    (hd' : d' ∈ allDiagonals P ∨ d'.swap ∈ allDiagonals P) (h : pairSeg P d = pairSeg P d') :
+theorem eq_or_eq_swap_of_pairSeg_eq (h : pairSeg P d = pairSeg P d') :
     d' = d ∨ d' = d.swap := by
   have hD := isDiag_range_of_mem_or_swap hP hd
   have hD' := isDiag_range_of_mem_or_swap hP hd'
-  have hQ : (subPoly P (List.range P.n)).Simple := by rw [subPoly_range]; exact hP
+  have hQ : (subPoly P (List.range P.n)).Simple := by rwa [subPoly_range]
   -- each endpoint of `d'` is an endpoint of `d`
   have key : ∀ x, x ∈ List.range P.n → P.vtx x ∈ pairSeg P d → x = d.1 ∨ x = d.2 := by
     intro x hxl hxs
@@ -122,29 +126,28 @@ theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
 
 /-- **Two inserted diagonals (up to orientation) that are distinct pairs up to orientation do not
 cross.** -/
-theorem nonCross_of_mem_or_swap (hP : P.Simple) {d d' : ℕ × ℕ}
-    (hd : d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P)
-    (hd' : d' ∈ allDiagonals P ∨ d'.swap ∈ allDiagonals P) (hne : d ≠ d' ∧ d ≠ d'.swap) :
+theorem nonCross_of_mem_or_swap (hne : d ≠ d' ∧ d ≠ d'.swap) :
     NonCross P d d' := by
   have hseg : pairSeg P d ≠ pairSeg P d' := by
     intro h
     rcases eq_or_eq_swap_of_pairSeg_eq hP hd hd' h with e | e
     · exact hne.1 e.symm
-    · exact hne.2 (by rw [e, Prod.swap_swap])
+    simp_all
   have key : ∀ e e', e ∈ allDiagonals P → e' ∈ allDiagonals P →
       pairSeg P e = pairSeg P d → pairSeg P e' = pairSeg P d' → NonCross P e e' := by
     intro e e' he he' h1 h2
     apply allDiagonals_inter hP he he'
-    rw [diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2]
-    exact hseg
+    rwa [diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2]
   rcases hd with h | h <;> rcases hd' with h' | h'
   · exact key _ _ h h' rfl rfl
   · have := (key _ _ h h' rfl (pairSeg_swap P d')).swap_right
-    rwa [Prod.swap_swap] at this
+    assumption
   · have := (key _ _ h h' (pairSeg_swap P d) rfl).swap_left
-    rwa [Prod.swap_swap] at this
+    assumption
   · have := (key _ _ h h' (pairSeg_swap P d) (pairSeg_swap P d')).swap_left.swap_right
-    rwa [Prod.swap_swap, Prod.swap_swap] at this
+    assumption
+
+end
 
 /-! ### Enumerations of the inserted diagonals -/
 
@@ -156,10 +159,15 @@ structure EnumDiags (P : Polygon) (D : List (ℕ × ℕ)) : Prop where
   complete : ∀ d ∈ allDiagonals P, d ∈ D ∨ d.swap ∈ D
   distinct : D.Pairwise (fun d d' => d ≠ d' ∧ d ≠ d'.swap)
 
+section
+
+variable (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D)
+
+include hP hD in
 /-- **An enumeration of the inserted diagonals is a diagonal system for the whole polygon.** -/
-theorem EnumDiags.diagSystem (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) :
+theorem EnumDiags.diagSystem :
     DiagSystem P (List.range P.n) D where
-  simple := by rw [subPoly_range]; exact hP
+  simple := by rwa [subPoly_range]
   diag d hd := isDiag_range_of_mem_or_swap hP (hD.sound d hd)
   noncross := hD.distinct.imp_of_mem fun hd hd' hne =>
     nonCross_of_mem_or_swap hP (hD.sound _ hd) (hD.sound _ hd') hne
@@ -170,8 +178,9 @@ theorem cycEdge_range {n x y : ℕ} (h : CycEdge (List.range n) x y) : y = (x + 
   rw [List.length_range] at hk ⊢
   rw [getD_range hk, getD_range (Nat.mod_lt _ (by omega))]
 
+include hP hD in
 /-- **Every output piece is a piece of the subdivision of `P` by `allDiagonals P`.** -/
-theorem EnumDiags.isPiece (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) {m : List ℕ}
+theorem EnumDiags.isPiece {m : List ℕ}
     (hm : m ∈ splitAll (List.range P.n) D) : IsPiece P m := by
   obtain ⟨hs, hsub, hedges, hbd, hdiag, hfill⟩ := pieceOf_splitAll (hD.diagSystem hP) m hm
   rw [subPoly_range] at hbd hfill
@@ -200,10 +209,11 @@ theorem map_relabelList_range {T : List Polygon.Triangle} (h : WeakTriangulates 
   intro t ht
   exact relabelList_range (index_lt_of_weak h ht)
 
+include hP hD in
 /-- **Combination on the whole polygon.**  If `T m` weakly triangulates `subPoly P m` (in
 positions of `m`) for every piece `m` of `splitAll (List.range P.n) D`, then the concatenation of
 the `T m` relabelled to original indices weakly triangulates `P`. -/
-theorem EnumDiags.weakTriangulates (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D)
+theorem EnumDiags.weakTriangulates
     {T : List ℕ → List Polygon.Triangle}
     (hT : ∀ m ∈ splitAll (List.range P.n) D, WeakTriangulates (subPoly P m) (T m)) :
     WeakTriangulates P
@@ -211,8 +221,9 @@ theorem EnumDiags.weakTriangulates (hP : P.Simple) {D : List (ℕ × ℕ)} (hD :
   have hsys := hD.diagSystem hP
   have hw := weakTriangulates_combineTri hsys hT
   rw [subPoly_range] at hw
-  rw [← map_relabelList_combineTri hsys hT, map_relabelList_range hw]
-  exact hw
+  rwa [← map_relabelList_combineTri hsys hT, map_relabelList_range hw]
+
+end
 
 /-! ### A canonical enumeration -/
 

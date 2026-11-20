@@ -75,7 +75,7 @@ def Lemma23Spec : Prop :=
 def FullDegSpec : Prop :=
   ∀ P : Polygon, P.Simple → (∃ ε, GoodShear P ε) →
     (∀ C : Chain, C.P = Qof P → (chainModel C).FullDegLe (Qof P) 4) ∧
-      (interiorModel (Qof P)).FullDegLe (Qof P) 4
+      P.inputModel.FullDegLe (Qof P) 4
 
 /-! ### Added in review (finding C5): the facts `BuildNFSpec` and `DecompSpec` rest on -/
 

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranInit
 
 /-!
@@ -88,8 +90,13 @@ def outStmt : Stmt := .seq (block [.constN 90070 0, .copyN 90071 90013, .constN 
 
 theorem wrS_outStmt : wrS Binit outStmt = true := by decide
 
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+
+include P hw in
 set_option maxHeartbeats 2000000 in
-theorem writeT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {p q L : ℕ}
+theorem writeT_exec {p q L : ℕ}
     (h71 : c.nreg 90071 = p) (h96 : c.nreg 90096 = q) (h95 : c.nreg 90095 = L)
     (h19 : c.nreg 90019 = 1) (h21 : c.nreg 90021 = 2) (hpq : p + 2 < q) (hq : q + 3 ≤ W)
     (hL : L + 1 ≤ W) :
@@ -102,8 +109,7 @@ theorem writeT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   all_goals try (simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
     h71, h96, h95, h19, h21]; omega)
   refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_⟩ <;>
-    simp (disch := omega) only [Machine.upd_same,
-      Machine.upd_other, h71, h96, h95, h19, h21]
+    ram_post
 
 /-! ## Lists -/
 
@@ -117,27 +123,6 @@ theorem outList_length_le (N : NF) (live : ℕ → ℕ) (i : ℕ) : (outList N l
 theorem outList_succ (N : NF) (live : ℕ → ℕ) (i : ℕ) :
     outList N live (i + 1) = outList N live i ++ (if live i = 1 then [trip N i] else []) := by
   unfold outList; rw [liveList_succ, List.map_append]; split_ifs <;> simp
-
-theorem ChordListAt.congr {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)} (h : ChordListAt m A L)
-    (hm : ∀ a, A ≤ a → a < A + 3 * L.length → m' a = m a) : ChordListAt m' A L := by
-  intro i hi
-  obtain ⟨h0, h1, h2⟩ := h i hi
-  exact ⟨(hm _ (by omega) (by omega)).trans h0, (hm _ (by omega) (by omega)).trans h1,
-    (hm _ (by omega) (by omega)).trans h2⟩
-
-theorem ChordListAt.snoc {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)} {x : ℕ × ℕ × ℕ}
-    (h : ChordListAt m A L) (hm : ∀ a, A ≤ a → a < A + 3 * L.length → m' a = m a)
-    (h0 : m' (A + 3 * L.length) = x.1) (h1 : m' (A + 3 * L.length + 1) = x.2.1)
-    (h2 : m' (A + 3 * L.length + 2) = x.2.2) : ChordListAt m' A (L ++ [x]) := by
-  intro i hi
-  rw [List.length_append, List.length_singleton] at hi
-  rcases Nat.lt_or_ge i L.length with hl | hl
-  · rw [List.getD_eq_getElem?_getD, List.getElem?_append_left hl, ← List.getD_eq_getElem?_getD]
-    exact (ChordListAt.congr h hm) i hl
-  · have : i = L.length := by omega
-    subst this
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_right le_rfl, Nat.sub_self]
-    exact ⟨h0, h1, h2⟩
 
 /-! ## The loop -/
 
@@ -153,27 +138,26 @@ structure OutI (W K CB LB0 : ℕ) (N : NF) (live : ℕ → ℕ) (c₀ c : Config
   list : ChordListAt c.nmem LB0 (outList N live (c.nreg 90070))
   mem : ∀ a, (a < LB0 ∨ LB0 + 3 * K ≤ a) → c.nmem a = c₀.nmem a
 
-theorem outHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw in
+theorem outHead_exec
     (ha : c.nreg 90030 + c.nreg 90070 ≤ W) :
     ∃ c' k, Exec P W (block [.addN 90072 90030 90070, .loadN 90073 90072]) c c' k ∧ k = 2 ∧
       c'.nreg 90073 = c.nmem (c.nreg 90030 + c.nreg 90070) ∧ c'.nmem = c.nmem ∧
       (∀ r, r ≠ 90072 → r ≠ 90073 → c'.nreg r = c.nreg r) := by
-  exec_block
-  · exact ha
-  · refine ⟨rfl, ?_, rfl, fun r a1 a2 => ?_⟩ <;> config_simp
-    simp (disch := omega) only [Machine.upd_other]
+  exec_block!
+  · simp_all
 
-theorem outTail_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw in
+theorem outTail_exec
     (ha : c.nreg 90071 + c.nreg 90076 ≤ W) (hb : c.nreg 90070 + c.nreg 90019 ≤ W) :
     ∃ c' k, Exec P W (block [.addN 90071 90071 90076, .addN 90070 90070 90019]) c c' k ∧
       k = 2 ∧ c'.nreg 90071 = c.nreg 90071 + c.nreg 90076 ∧
       c'.nreg 90070 = c.nreg 90070 + c.nreg 90019 ∧ c'.nmem = c.nmem ∧
       (∀ r, r ≠ 90070 → r ≠ 90071 → c'.nreg r = c.nreg r) := by
-  exec_block
-  · exact ha
-  · config_simp; exact hb
-  · refine ⟨rfl, ?_, ?_, rfl, fun r a1 a2 => ?_⟩ <;> config_simp
-    simp (disch := omega) only [Machine.upd_other]
+  exec_block!
+  · simp_all
+
+end
 
 /-- The fixed data of the output loop. -/
 structure OutEnv (W K CB LB0 b0 : ℕ) (N : NF) (live : ℕ → ℕ) (c₀ : Config) : Prop where
@@ -196,9 +180,9 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
     ∃ c' k, Exec P W outBody c c' k ∧ OutI W K CB LB0 N live c₀ c' ∧ k ≤ 19 ∧
       c'.nreg 90070 = c.nreg 90070 + 1 := by
   obtain ⟨hw, hi, hp, h76, hcnt, hdst, hr, hlist, hm⟩ := hI
-  have c30 : c.nreg 90030 = b0 := by rw [hr _ (by decide), hE.r30]
-  have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), hE.r19]
-  have c21 : c.nreg 90021 = 2 := by rw [hr _ (by decide), hE.r21]
+  have c30 : c.nreg 90030 = b0 := by ram_rw [hr, hE.r30]
+  have c19 : c.nreg 90019 = 1 := by ram_rw [hr, hE.r19]
+  have c21 : c.nreg 90021 = 2 := by ram_rw [hr, hE.r21]
   have hW := hE.hW
   have hCB := hE.hCB
   have hb0 := hE.hb0
@@ -219,15 +203,15 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
       (∀ r, r ≠ 90072 → r ≠ 90073 → r ≠ 90074 → r ≠ 90075 → r ≠ 90095 → r ≠ 90096 →
         c₂.nreg r = c.nreg r) := by
     rw [outList_succ, ← hL_def]
-    have h1 : c₁.nreg 90019 = 1 := by rw [R₁ _ (by decide) (by decide), c19]
+    have h1 : c₁.nreg 90019 = 1 := by frame_finish
     by_cases hl : live i = 1
     · simp only [hl, ite_true]
       have hrec := hE.hrec i ht
       obtain ⟨c₂, k₂, e₂, hk₂, r96', r95', m₂, R₂'⟩ := writeT_exec (P := P) c₁ w₁ (p := CB + 5 * i)
         (q := LB0 + 3 * L.length) (L := L.length)
-        (by rw [R₁ _ (by decide) (by decide), hp]) (by rw [R₁ _ (by decide) (by decide), hdst])
-        (by rw [R₁ _ (by decide) (by decide), hcnt]) h1
-        (by rw [R₁ _ (by decide) (by decide), c21]) (by omega) (by omega) (by omega)
+        (by ram_rw [R₁, hp]) (by frame_finish)
+        (by frame_finish) h1
+        (by frame_finish) (by omega) (by omega) (by omega)
       have e₂' : Exec P W (.ifLtN 90073 90019 .skip writeT) c₁ c₂ (k₂ + 2) :=
         .ifLtN_false (by rw [r73, h1, hl]; omega) e₂
       have v0 : c₁.nmem (CB + 5 * i) = (N.chord i).h := by rw [m₁, hm _ (by left; omega), hrec.1]
@@ -238,41 +222,37 @@ theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ �
       refine ⟨c₂, _, e₂', by omega, e₂.wb_right, by rw [r95']; simp, by rw [r96']; simp; omega,
         ?_, fun a ha => ?_, fun r a1 a2 a3 a4 a5 a6 => ?_⟩
       · refine ChordListAt.snoc hlist (fun a a1 a2 => ?_) ?_ ?_ ?_
-        · rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-            Machine.upd_other _ _ _ (by omega), m₁]
-        · rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+        · ram_rw [m₂, Machine.upd_other _ _, Machine.upd_other _ _,
+            Machine.upd_other _ _, m₁]
+        · ram_rw [m₂, Machine.upd_other _ _, Machine.upd_other _ _,
             Machine.upd_same, v0]; rfl
-        · rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_same, v1]; rfl
+        · ram_rw [m₂, Machine.upd_other _ _, Machine.upd_same, v1]; rfl
         · rw [m₂, Machine.upd_same, v2]; rfl
       · have hL : L.length < K := by omega
-        rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-          Machine.upd_other _ _ _ (by omega), m₁, hm a ha]
+        ram_rw [m₂, Machine.upd_other _ _, Machine.upd_other _ _,
+          Machine.upd_other _ _, m₁, hm a ha]
       · rw [R₂' r a3 a4 a5 a6, R₁ r a1 a2]
     · have h0 : live i = 0 := by have := hE.hl01 i ht; omega
       simp only [hl, ite_false, List.append_nil]
       refine ⟨c₁, _, .ifLtN_true (by rw [r73, h1, h0]; omega) (.skip w₁), by omega, w₁,
-        by rw [R₁ _ (by decide) (by decide), hcnt], by rw [R₁ _ (by decide) (by decide), hdst],
+        by frame_finish, by frame_finish,
         by rw [m₁]; exact hlist, fun a ha => by rw [m₁, hm a ha],
         fun r a1 a2 _ _ _ _ => R₁ r a1 a2⟩
-  have c71 : c₂.nreg 90071 = CB + 5 * i := by rw [R₂ _ (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), hp]
-  have c76 : c₂.nreg 90076 = 5 := by rw [R₂ _ (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h76]
-  have c70 : c₂.nreg 90070 = i := R₂ _ (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide)
-  have d19 : c₂.nreg 90019 = 1 := by rw [R₂ _ (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), c19]
+  have c71 : c₂.nreg 90071 = CB + 5 * i := by frame_finish
+  have c76 : c₂.nreg 90076 = 5 := by frame_finish
+  have c70 : c₂.nreg 90070 = i := (ram_app% (R₂ _ ?_ ?_ ?_
+    ?_ ?_ ?_))
+  have d19 : c₂.nreg 90019 = 1 := by frame_finish
   obtain ⟨c₃, k₃, e₃, hk₃, r71, r70, m₃, R₃⟩ := outTail_exec (P := P) c₂ w₂
     (by rw [c71, c76]; omega) (by rw [c70, d19]; omega)
   rw [c71, c76] at r71
   rw [c70, d19] at r70
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, by omega, by rw [r71, r70]; ring, by
-    rw [R₃ _ (by decide) (by decide), c76], by rw [R₃ _ (by decide) (by decide), r95, r70],
-    by rw [R₃ _ (by decide) (by decide), r96, r70], fun r hr' => ?_, by rw [m₃, r70]; exact lst,
+    frame_finish, by frame_finish,
+    by frame_finish, fun r hr' => ?_, by rw [m₃, r70]; exact lst,
     fun a ha => by rw [m₃, mm a ha]⟩, by omega, r70⟩
   have hb : ¬ (90070 ≤ r ∧ r < 90100) := by simpa [Binit] using hr'
-  rw [R₃ r (by omega) (by omega), R₂ r (by omega) (by omega) (by omega) (by omega) (by omega)
-    (by omega), hr r hr']
+  ram_rw [R₃ r, R₂ r, hr r hr']
 
 /-- **The output loop** writes the triples of the live records to the list area. -/
 theorem out_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → ℕ} {c₀ : Config}
@@ -290,13 +270,10 @@ theorem out_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → �
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (block [.constN 90070 0, .copyN 90071 90013,
       .constN 90095 0, .copyN 90096 90028, .constN 90076 5]) c₀ c₁ k₁ ∧ k₁ = 5 ∧
       OutI W K CB LB0 N live c₀ c₁ ∧ c₁.nreg 90070 = 0 := by
-    exec_block
-    · omega
-    · omega
-    · omega
+    exec_block!
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, ?_, fun a _ => rfl⟩, ?_⟩
       · config_simp; omega
-      · config_simp; rw [h13]; omega
+      · assumption
       · config_simp
       · config_simp; rfl
       · config_simp; rw [h28]; rfl
@@ -309,11 +286,11 @@ theorem out_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → �
     (body := outBody) (OutI W K CB LB0 N live c₀) (fun c => K - c.nreg 90070) 19
     (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < K := by rw [I.regs 90010 (by decide), hE.r10] at ht; exact ht
+      have t : c.nreg 90070 < K := by ram_rw assumption [I.regs 90010, hE.r10] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := outBody_exec (P := P) hE I t
       exact ⟨c', k, e, I', hk, by omega⟩) q
   have hK' : c'.nreg 90070 = K := by
-    rw [I'.regs 90010 (by decide), hE.r10] at hx; have := I'.i_le; omega
+    ram_rw [I'.regs 90010, hE.r10] at hx; have := I'.i_le; omega
   refine ⟨c', _, .seq e₁ e, ?_, by rw [I'.cnt, hK'], by rw [← hK']; exact I'.list, I'.mem⟩
   rw [q0] at hk
   omega

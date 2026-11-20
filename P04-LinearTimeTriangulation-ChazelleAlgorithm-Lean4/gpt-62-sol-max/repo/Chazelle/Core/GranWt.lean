@@ -52,7 +52,7 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
     rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
     rfl
   | true =>
-    have hm := hD.1 rfl
+    
     have e : {p : ℕ | p < M.W.n ∧ M.counted p ∧ l ≤ p ∧ p < r} =
         Ico (max l 6) (min r (2 * m + 6)) := by
       ext p
@@ -60,9 +60,7 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       constructor
       · rintro ⟨hp, hc, h1, h2⟩
         have := (hD.2 p hp).1 hc
-        rcases this with h | h
-        · exact absurd h (by decide)
-        · refine ⟨max_le h1 h.1, lt_min h2 h.2⟩
+        simp_all
       · rintro ⟨h1, h2⟩
         have h1' := le_of_max_le_left h1
         have h1'' := le_of_max_le_right h1
@@ -94,9 +92,9 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         have : (eb : ℝ) + 1 ≤ p := by exact_mod_cast (show eb + 1 ≤ p by omega)
         linarith
       · intro h
-        have : (p : ℝ) ≤ eb := by exact_mod_cast (show p ≤ eb by omega)
+        have : (p : ℝ) ≤ eb := by simp_all <;> omega
         linarith
-    · have ht0 : tb = 0 := le_antisymm (not_lt.1 ht) hb0
+    · have ht0 := le_antisymm (not_lt.1 ht) hb0
       rw [ht0, add_zero, Nat.add_zero]
       exact_mod_cast Iff.rfl
   -- `a < p + 1` for some point of the open edge iff `ea ≤ p`
@@ -162,11 +160,8 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         have : hi ≤ (eb : ℝ) + tb := min_le_left _ _
         constructor <;> linarith
   · -- `b < a`: the wrap-around
-    have hlt : (eb : ℝ) + tb < ea + ta := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
-    have hle : eb ≤ ea := by
-      by_contra h'
-      have : (ea : ℝ) + 1 ≤ eb := by exact_mod_cast (show ea + 1 ≤ eb by omega)
-      linarith
+    have hlt := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
+    
     have hr : min (eb + bump tb) ea ≤ M.W.n := (min_le_right _ _).trans ha.le
     have hdisj : Disjoint {p : ℕ | p < M.W.n ∧ M.counted p ∧ 0 ≤ p ∧ p < min (eb + bump tb) ea}
         {p : ℕ | p < M.W.n ∧ M.counted p ∧ ea ≤ p ∧ p < M.W.n} := by

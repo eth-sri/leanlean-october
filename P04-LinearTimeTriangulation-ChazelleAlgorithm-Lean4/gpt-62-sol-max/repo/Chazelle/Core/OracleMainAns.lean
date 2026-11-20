@@ -63,8 +63,8 @@ theorem entry_facts {z : Point} (_hs : SemOK P C V z) (hnp : NotPast C V z) :
   by_cases hσ : V.σb = 1
   · rw [ite_eq_left hσ, sgnOf_one hσ]
     have hzR := hnp.1 hσ
-    refine ⟨by simp only [one_mul]; linarith [le_max_left z.1 (-C.radius)], ?_, ?_, ?_⟩
-    · rw [rayPt_right]; ext <;> simp
+    refine ⟨by simp, ?_, ?_, ?_⟩
+    · simp [rayPt_right]
     · intro s hs0 hsd hb
       have := (abs_lt.1 hb.1)
       simp only [rayPt_right] at this
@@ -78,8 +78,7 @@ theorem entry_facts {z : Point} (_hs : SemOK P C V z) (hnp : NotPast C V z) :
   · rw [ite_eq_right hσ, sgnOf_ne hσ]
     have hzR := hnp.2 hσ
     refine ⟨by linarith [min_le_left z.1 C.radius], ?_, ?_, ?_⟩
-    · rw [show (-1 : ℝ) * (min z.1 C.radius - z.1) = z.1 - min z.1 C.radius by ring, rayPt_left]
-      ext <;> simp
+    · simp [rayPt_left]
     · intro s hs0 hsd hb
       have := (abs_lt.1 hb.1)
       simp only [rayPt_left] at this
@@ -108,7 +107,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   have hT := X.ch.hT
   have hv := hT.hv
   have hN := X.ch.hN
-  have hR := C.radius_pos
+  
   have hσ := hs.σ
   set σ := sgnOf V.σb with hσdef
   set y := ((Qof P).vtx V.hz).2 with hydef
@@ -119,7 +118,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
     refine Set.union_subset (Set.union_subset (Set.union_subset (Set.union_subset
       (dstarPts_sub X _) (clusPts3_sub X _)) (clusPts3_sub X _)) (clusPts3_sub X _))
       (clusPts3_sub X _)
-  have hSB : S ⊆ Chain.box C.radius := hSC.trans C.set_subset_box
+  have hSB := hSC.trans C.set_subset_box
   have hDB : dstarPts m V C V.nD ⊆ Chain.box C.radius := (dstarPts_sub X _).trans C.set_subset_box
   -- an origin past the box
   by_cases hnp : NotPast C V z
@@ -139,9 +138,9 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       | none => rfl
       | some ci =>
         exfalso
-        have := (show FirstHit S z σ _ from hbest)
+        have := (hbest)
         exact noHit_past hSB hσ hpast _ this.1 this.2.1
-    exact ⟨fun ci h => by rw [hbn] at h; exact absurd h (by simp), fun _ => hnh⟩
+    simp_all
   -- the effective origin
   obtain ⟨hd0, hzd, hout, hζ⟩ := entry_facts hs hnp
   set d := σ * (ζOf C V z - z.1) with hddef
@@ -151,7 +150,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   -- the stopping point
   obtain ⟨Xp, hSel⟩ := sel_facts X.ch hs X.hP hpart hnd hD hbD
   set T := σ * (Xp.1 - ζ) with hTdef
-  have hT0 : 0 < T := hSel.ahead hnp
+  have hT0 := hSel.ahead hnp
   have hσ2 : σ * σ = 1 := by rcases hσ with h | h <;> rw [h] <;> norm_num
   have hXpt : rayPt z' σ T = Xp := by
     simp only [rayPt, hz'def, hTdef]
@@ -166,13 +165,13 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   have hbest' := firstHitOpt_shift hSB hd0 hout hbest
   rw [hz'e] at hD' hbest'
   obtain ⟨reg, hRc, hAc, -⟩ := NFLoc.isNF_arcs hN
-  have hArc : V.A = N.arcs.length := X.mem.A
+  have hArc := X.mem.A
   -- the query
   have hQ := query_main (Q := Qof P) (B := B) X.hP (by rw [hv.CQ]; exact hs.hD) hN hRc hAc X.gOK
     (fun i => m (V.FL + i) = 1) (fun i => m (V.LAB + i)) (fun u v w hw => X.hlab u v w hw)
     (z := z') hyt hσ hT0
     (fun s hs0 hsT => by
-      refine rayPt_mem_box C (by rw [hz'def]; exact hζ) (by rw [hz'def]; exact hyR) hσ hs0 ?_
+      refine rayPt_mem_box C (by rwa [hz'def]) (by rwa [hz'def]) hσ hs0 ?_
       rw [hz'def]; simp only
       have := hSel.le
       have : σ * Xp.1 ≤ C.radius := by
@@ -197,7 +196,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       obtain ⟨k, hk, hki⟩ := X.dl_all i.1 hiμ hi
       have hin : rayPt z' σ s ∈ dstarPts m V C V.nD := by
         refine ⟨k, hk, ?_⟩
-        rw [hki, nodePts_eq hN X.hP X.mem hv.m]; exact hmem
+        rwa [hki, nodePts_eq hN X.hP X.mem hv.m]
       refine avoid_of_firstHitOpt hD' (T := T) ?_ s hs0 hsT hin
       intro v hv'
       cases bD with
@@ -206,9 +205,8 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
         simp only [bestVal, Option.map_some, Option.some.injEq] at hv'
         rw [← hv']
         have hdh := hSel.dhit cD rfl
-        have hpos : 0 < vOf (Qof P) V.s V.hz σ z cD := (show FirstHit _ _ _ _ from hD).1
+        have hpos := (show FirstHit _ _ _ _ from hD).1
         rw [vOf_of_spans (spans_of_vOf_pos hpos), show (Qof P).n = P.n from shear_n _ _]
-        rw [hTdef, hddef]
         linarith)
     (by
       rw [hXpt]
@@ -230,7 +228,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
       intro x hx
       rcases hi with hd | ⟨c, ⟨k, hk, hc⟩, hl⟩
       · obtain ⟨j, hj, hji⟩ := X.dl_all i.1 hiμ hd
-        exact Or.inl (Or.inl (Or.inl (Or.inl ⟨j, hj, by rw [hji]; exact hx⟩)))
+        exact Or.inl (Or.inl (Or.inl (Or.inl ⟨j, hj, by rwa [hji]⟩)))
       · have hcl : x ∈ clusPts m V C (lab m V c) := ⟨i.1, hiμ, hl, hx⟩
         have h3 : x ∈ clusPts3 m V C (pk k) := by
           unfold clusPts3
@@ -248,7 +246,7 @@ theorem main_answer (X : MainCtx P C V N B m) {z : Point} (hs : SemOK P C V z)
   refine ⟨fun ci hci => ?_, fun hbn => ?_⟩
   · subst hci
     have := q1 _ rfl
-    have h' := firstHit_unshift (C.set_subset_box) hd0 hout (by rw [hz'e]; exact this)
+    have h' := firstHit_unshift (C.set_subset_box) hd0 hout (by rwa [hz'e])
     simpa using h'
   · subst hbn
     exact noHit_unshift (C.set_subset_box) hd0 hout (by rw [hz'e]; exact q2 rfl)

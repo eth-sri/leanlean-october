@@ -82,7 +82,7 @@ theorem prev_sub_pt_zero (W : Polygon) (p : ℕ) :
 theorem prev_succ {n p : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   rcases Nat.eq_zero_or_pos p with h0 | h0
   · subst h0
-    have e : (0 + n - 1) % n = n - 1 := by rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
+    have e : (0 + n - 1) % n = n - 1 := by simp
     rw [e, Nat.sub_add_cancel (by omega : 1 ≤ n), Nat.mod_self]
   · have e : (p + n - 1) % n = p - 1 := by
       rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
@@ -117,12 +117,12 @@ theorem scale_pt {u v : Point} (hk : u.2 = v.2 ∨ u.1 = v.1 ∨ (u ∈ C.set �
   rcases hk with hk | hk | ⟨hu, hv⟩
   · obtain ⟨l, hl, e⟩ := sig_slope (C := C) (C' := C') u.1 v.1
     refine ⟨l, hl, Prod.ext ?_ ?_⟩
-    · simpa [phi, stretchPt] using e
+    · assumption
     · simp [phi, stretchPt, hk]
   · obtain ⟨l, hl, e⟩ := sig_slope (C := C) (C' := C') u.2 v.2
     refine ⟨l, hl, Prod.ext ?_ ?_⟩
     · simp [phi, stretchPt, hk]
-    · simpa [phi, stretchPt] using e
+    assumption
   · exact ⟨1, one_pos, by rw [h.phi_fix hu, h.phi_fix hv, one_smul]⟩
 
 /-- **Walk edges scale positively.** -/
@@ -144,7 +144,7 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
           β • (sidePrev (C.sideWalk C.sideBeta) p t - sidePt (C.sideWalk C.sideBeta) p t) := by
   set W := C.sideWalk C.sideBeta
   set W' := C'.sideWalk C'.sideBeta
-  have hn : W'.n = W.n := h.walk_n
+  have hn := h.walk_n
   obtain ⟨l, hl, e⟩ := h.edge_scale hp
   have hα : 0 < (1 - t') * l / (1 - t) := div_pos (mul_pos (by linarith) hl) (by linarith)
   have eN : sideNext W' p - sidePt W' p t' =
@@ -154,19 +154,19 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
     field_simp [show 1 - t ≠ 0 by linarith]
   refine ⟨_, hα, ?_⟩
   by_cases ht0 : t = 0
-  · have ht0' : t' = 0 := h0.1 ht0
+  · have ht0' := h0.1 ht0
     subst ht0 ht0'
     set q := (p + W.n - 1) % W.n
     have hnpos : 0 < W.n := by omega
     have hq : q < W.n := Nat.mod_lt _ hnpos
     obtain ⟨l', hl', e'⟩ := h.edge_scale hq
-    have hqp : (q + 1) % W.n = p := prev_succ hp
+    have hqp := prev_succ hp
     rw [hqp] at e'
     refine ⟨l', hl', eN, ?_⟩
     rw [prev_sub_pt_zero, prev_sub_pt_zero, hn, e', smul_smul, smul_smul, mul_comm]
-  · have ht0' : t' ≠ 0 := fun e0 => ht0 (h0.2 e0)
-    have htp : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htp' : 0 < t' := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
+  · have ht0' := fun e0 => ht0 (h0.2 e0)
+    have htp := lt_of_le_of_ne ht.1 (Ne.symm ht0)
+    have htp' := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
     refine ⟨t' * l / t, div_pos (mul_pos htp' hl) htp, eN, ?_⟩
     rw [prev_sub_pt _ _ ht0, prev_sub_pt _ _ ht0', hn, e, smul_smul, smul_smul]
     congr 1

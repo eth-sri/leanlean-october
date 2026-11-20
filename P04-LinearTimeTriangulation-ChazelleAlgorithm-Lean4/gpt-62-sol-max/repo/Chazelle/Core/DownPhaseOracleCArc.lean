@@ -72,15 +72,15 @@ theorem sub_ee_le : ee ≤ L := by
 include h in
 theorem sub_he' : ee < L ∨ (ee = L ∧ eh = 0) := by
   rcases h.hee with ⟨h0, h1⟩ | ⟨-, h1, -⟩
-  · exact Or.inr ⟨h1, h0⟩
+  · tauto
   · exact Or.inl (by omega)
 
 include h in
 theorem sub_keyCeil : keyCeil ee ((interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩) = L := by
   unfold keyCeil
   rcases h.hee with ⟨h0, h1⟩ | ⟨h0, h1, h2⟩
-  · rw [ite_eq_left (by rw [h0]; rfl)]; exact h1
-  · rw [ite_eq_right h2.ne']; exact h1
+  · simp_all
+  · rwa [ite_eq_right h2.ne']
 
 include h in
 /-- **The chain arc of a subarc, no split.** -/
@@ -91,7 +91,7 @@ theorem chainArcs_one (hs : tau Q u L h.h1 h.h2 ≤ L) {γ : ℕ} (hγ : L ≤ �
         (ee + (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩)) := by
   have hu := h.hu
   have h1 := h.h1
-  have h2 := h.h2
+  
   set τ := tau Q u L h.h1 h.h2 with hτ
   have ht : τ < 2 * L := tau_lt
   have hn : (MC Q u L h.h1 h.h2).W.n = 2 * L + 7 := cm_n'
@@ -101,7 +101,7 @@ theorem chainArcs_one (hs : tau Q u L h.h1 h.h2 ≤ L) {γ : ℕ} (hγ : L ≤ �
   have hA := agree_pre hu h.h1 h.h2
   refine ⟨⟨by rw [hps]; exact h.hs.1, by rw [hps]; exact h.hs.2.1, h.hs.2.2⟩,
     ⟨by rw [hpe]; exact h.he.1, by rw [hpe]; exact h.he.2.1, h.he.2.2⟩,
-    by show 6 + τ < _; rw [hn]; omega, by show 6 + τ + ee < _; rw [hn]; omega, ?_, ?_, ?_,
+    by simp_all <;> omega, by simp_all <;> omega, ?_, ?_, ?_,
     chain_arcSet_one hu h.h1 h.h2 hs ⟨h.hs.1, h.hs.2.1⟩ ⟨h.he.1, h.he.2.1⟩ (sub_he' h) h.hxy⟩
   · right
     have := pos_agree (M := interiorModel Q) (M' := MC Q u L h.h1 h.h2) hA Q (d := 0)
@@ -137,7 +137,7 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
         (ee + (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩)) := by
   have hu := h.hu
   have h1 := h.h1
-  have h2 := h.h2
+  
   set τ := tau Q u L h.h1 h.h2 with hτ
   set L₁ := 2 * L - τ with hL₁
   have ht : τ < 2 * L := tau_lt
@@ -162,7 +162,7 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
   constructor
   · refine ⟨⟨by rw [hps]; exact h.hs.1, by rw [hps]; exact h.hs.2.1, h.hs.2.2⟩,
       ⟨le_rfl, zero_lt_one, Nat.zero_le _⟩,
-      by show 6 + τ < _; rw [hn]; omega, by show 2 * L + 6 < _; rw [hn]; omega, ?_,
+      by simp only [hn] <;> omega, by simp [hn], ?_,
       Or.inl rfl, ?_, hS1⟩
     · right
       have := pos_agree (M := interiorModel Q) (M' := MC Q u L h.h1 h.h2) hA Q (d := 0)
@@ -184,7 +184,7 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
       rw [hw, hk0]; omega
   · refine ⟨⟨le_rfl, zero_lt_one, Nat.zero_le _⟩,
       ⟨by rw [hpe]; exact h.he.1, by rw [hpe]; exact h.he.2.1, h.he.2.2⟩,
-      by show 6 < _; rw [hn]; omega, by show 6 + (ee - L₁) < _; rw [hn]; omega, Or.inl rfl,
+      by show 6 < _; rw [hn]; omega, by simp only [hn] <;> omega, Or.inl rfl,
       ?_, ?_, hS2⟩
     · by_cases h0 : eh = 0
       · left; exact h0
@@ -209,7 +209,7 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
       rw [hn, Nat.mod_eq_of_lt (show 6 + (ee - L₁) < 2 * L + 7 by omega)] at hw
       rw [key_eq, key_eq, hpe, param_zero, show ((6 : ℕ) : ℝ) + 0 = ((6 : ℕ) : ℝ) + 0 from rfl]
       rw [hw]
-      have := keyCeil_le_succ (e := ee - L₁) (f := (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩)
+      
       have hk2 : keyCeil (ee - L₁) ((interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩) ≤ L := by
         unfold keyCeil at hk ⊢
         split_ifs at hk ⊢ <;> omega

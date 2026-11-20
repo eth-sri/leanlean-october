@@ -38,7 +38,7 @@ theorem wposOf_mem {c : ℕ} (hc : c < 2 * L.length) :
   have hi : c / 2 < L.length := by omega
   refine ⟨L[c / 2], getElem_mem _, ?_⟩
   have hcr : crec L (c / 2) = recOf L[c / 2] := by
-    unfold crec; rw [getD_eq_getElem _ _ hi]
+    unfold crec; simp_all
   unfold wposOf
   split_ifs
   · left; rw [hcr]
@@ -50,7 +50,7 @@ theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
     w.edge < (chainModel C).W.n ∧ BandPos C C' Q w ∧
       (0 ≤ (chainModel C).param Q w ∧ (chainModel C).param Q w < 1) := by
   obtain ⟨hl, hr⟩ := hL.2.2.1 x hx
-  have hb : |(Q.vtx x.1).2| < bnd C C' := hband x hx
+  have hb := hband x hx
   rcases hw with rfl | rfl
   · exact ⟨hl.1, Or.inr ⟨x.1, rfl, hb⟩, hl.2.1, hl.2.2.1⟩
   · exact ⟨hr.1, Or.inr ⟨x.1, rfl, hb⟩, hr.2.1, hr.2.2.1⟩
@@ -63,8 +63,13 @@ namespace Twin
 variable (h : Twin C C')
 include h
 
+section
+
+variable (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L)
+include hband hL
+
 /-- The chords of the list in the model of `C'` are the stretched chords. -/
-theorem toSet_rec (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L)
+theorem toSet_rec
     {x : ℕ × ℕ × ℕ} (hx : x ∈ L) :
     (recOf x).toSet (chainModel C') Q = phi C C' '' (recOf x).toSet (chainModel C) Q := by
   obtain ⟨hl, -, hml⟩ := end_facts hband hL hx (Or.inl rfl)
@@ -72,7 +77,7 @@ theorem toSet_rec (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
   exact h.toSet_eq (hband x hx) hl hr hml hmr
 
 /-- **The chord list is valid for the twin chain.** -/
-theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L) :
+theorem chordTriplesOK :
     ChordTriplesOK (chainModel C') Q L := by
   have hL0 := hL
   obtain ⟨⟨-, hadm, -⟩, hnd, hatt, hh⟩ := hL
@@ -87,9 +92,7 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
     have e : (recOf x).toSet (chainModel C') Q = hseg (Q.vtx x.1).2
         (stretch (bnd C C') (kk C C') ((chainModel C).pos Q (recOf x).lpos).1)
         (stretch (bnd C C') (kk C C') ((chainModel C).pos Q (recOf x).rpos).1) := by
-      unfold CRec.toSet
-      rw [h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
-      rfl
+      ram_finish [CRec.toSet, h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
     rw [e]
     exact h.augChords_transfer (hband x hx) hc
   · rintro c ⟨x, hx, rfl⟩
@@ -113,7 +116,7 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
         (h.param_eq_zero_iff hbr).symm (hatt x hx).2⟩
 
 /-- **The two chain models agree on the chord list.** -/
-theorem keyCongr (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q L) :
+theorem keyCongr :
     KeyCongr (chainModel C) (chainModel C') Q L where
   lt c c' hc hc' := by
     obtain ⟨x, hx, hw⟩ := wposOf_mem hc
@@ -135,6 +138,8 @@ theorem keyCongr (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q
   dir c _ := by
     rw [h.wa_eq, h.wb_eq]
     exact sig_lt_iff
+
+end
 
 end Twin
 

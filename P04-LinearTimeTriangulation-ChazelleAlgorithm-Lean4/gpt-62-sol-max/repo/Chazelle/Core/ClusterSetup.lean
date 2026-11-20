@@ -61,7 +61,7 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
     unfold CombMap.euler at hEuler
     rw [hV, hF, hE] at hEuler
     norm_num at hEuler
-  have hμ : 0 < μ := (M.vert ⟨0, hN⟩).pos
+  have hμ := (M.vert ⟨0, hN⟩).pos
   have hμN : μ ≤ 2 * E := by
     have := Fintype.card_le_of_surjective M.vert M.vert_surj
     simpa using this
@@ -71,25 +71,24 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
     obtain ⟨i, hi, hiA⟩ : ∃ i, i ≤ 2 ∧ A ≤ B + i := ⟨2, le_rfl, by omega⟩
     set Z := B + A + 3
     set X := 2 * E + μ + 1
-    let m' : ℕ → ℕ := fun a => if a = B + i then Z else if Z ≤ a then X else m a
+    let m' := fun a => if a = B + i then Z else if Z ≤ a then X else m a
     obtain ⟨F', _, _, M', -, hA'⟩ := PlanarMapAt.exists_arrays (h m' (fun a ha => by
-      simp only [m']
-      rw [ite_eq_right (by omega), ite_eq_right (by omega)]))
+      ram_simp [m', ite_eq_right]))
     have e1 : m' (B + i) = Z := by simp [m']
-    have e2 : m' (Z + 0) = X := by simp only [m']; rw [ite_eq_right (by omega), ite_eq_left (by omega)]
+    have e2 : m' (Z + 0) = X := by ram_simp [m', ite_eq_right, ite_eq_left]
     rcases (show i = 0 ∨ i = 1 ∨ i = 2 by omega) with rfl | rfl | rfl
     · have := hA'.opp hN
       rw [show B + 0 = B by omega] at e1
       rw [e1, e2] at this
-      have := (M'.opp ⟨0, hN⟩).2
+      
       omega
     · have := hA'.rot hN
       rw [e1, e2] at this
-      have := (M'.rot ⟨0, hN⟩).2
+      
       omega
     · have := hA'.vert hN
       rw [e1, e2] at this
-      have := (M'.vert ⟨0, hN⟩).2
+      
       omega
   -- the arrays lie below `A`
   have harr : ∀ i, i ≤ 2 → m (B + i) + 2 * E ≤ A := by
@@ -97,12 +96,11 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
     by_contra hc
     set d := 2 * E - 1
     set X := 2 * E + μ + 1
-    let m' : ℕ → ℕ := fun a => if a = m (B + i) + d then X else m a
+    let m' := fun a => if a = m (B + i) + d then X else m a
     obtain ⟨F', _, _, M', -, hA'⟩ := PlanarMapAt.exists_arrays (h m' (fun a ha => by
-      simp only [m']
-      rw [ite_eq_right (by omega)]))
+      ram_simp [m', ite_eq_right]))
     have eB : ∀ j, j ≤ 2 → m' (B + j) = m (B + j) := fun j hj => by
-      simp only [m']; rw [ite_eq_right (by omega)]
+      ram_simp [m', ite_eq_right]
     have e2 : m' (m (B + i) + d) = X := by simp [m']
     have hd : d < 2 * E := by omega
     rcases (show i = 0 ∨ i = 1 ∨ i = 2 by omega) with rfl | rfl | rfl
@@ -110,15 +108,15 @@ theorem inputFacts {m : ℕ → ℕ} {A B μ E : ℕ}
       have eB0 := eB 0 (by omega)
       simp only [Nat.add_zero] at e2 eB0
       rw [eB0, e2] at this
-      have := (M'.opp ⟨d, hd⟩).2
+      
       omega
     · have := hA'.rot hd
       rw [eB 1 (by omega), e2] at this
-      have := (M'.rot ⟨d, hd⟩).2
+      
       omega
     · have := hA'.vert hd
       rw [eB 2 le_rfl, e2] at this
-      have := (M'.vert ⟨d, hd⟩).2
+      
       omega
   exact ⟨F, i1, i2, M, hM, hA, hμ, by omega, hμN, hbase, by simpa using harr 0 (by omega),
     harr 1 (by omega), harr 2 le_rfl⟩
@@ -190,7 +188,7 @@ theorem GR.frame {g : GV} {c c' : Config} (h : GR g c)
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_,
     ?_⟩
   all_goals first
-    | (rw [hr _ (by unfold GRReg; omega)]; assumption)
+    | (rwa [hr _ (by unfold GRReg; omega)])
     | (rw [hr _ (by unfold GRReg; omega)]; exact h18 j hj)
 
 end

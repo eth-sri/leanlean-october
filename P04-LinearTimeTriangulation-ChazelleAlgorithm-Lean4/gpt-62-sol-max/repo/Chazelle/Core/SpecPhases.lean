@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SpecAssembly
 public import Chazelle.Core.SpecMerge
 
@@ -68,14 +70,14 @@ open Chazelle.Machine (Stmt Exec)
 /-! ## Conventions -/
 
 /-- Register `i` of the core band (the driver's registers, used to pass handles between phases). -/
-def coreReg (i : ℕ) : ℕ := bandReg bCore i
+@[ram_layout] def coreReg (i : ℕ) : ℕ := bandReg bCore i
 
 /-- The bands a phase may write: every procedure band (`1 … 24`, including the sweep band
 `bSweep = 24` of the consolidated revision) and the core band, not the final stage's band `0`. -/
-def phaseBands : Finset ℕ := Finset.Icc 1 24
+@[ram_layout] def phaseBands : Finset ℕ := Finset.Icc 1 24
 
 /-- The bands the output phase may write (it also sets the hand-off registers of band `0`). -/
-def outBands : Finset ℕ := Finset.range 25
+@[ram_layout] def outBands : Finset ℕ := Finset.range 25
 
 /-- The core registers listed in `S` are unchanged. -/
 def KeepsCore (S : Finset ℕ) (c c' : Config) : Prop :=
@@ -208,6 +210,13 @@ noncomputable def rpowCeil (x : ℕ) (a : ℝ) : ℕ := ⌈(x : ℝ) ^ a⌉₊
 `h(γ) = γ'_{⌈log₂ γ⌉} ≤ 1201 · 2^⌈β⌈log₂ γ⌉⌉` (p. 517, with the revised schedule). -/
 noncomputable def cutGran (γ : ℕ) : ℕ := gradeGran (Nat.clog 2 γ)
 
+/-- The rounded power factor in the ray-shooting cost is positive. -/
+theorem one_le_cutPower (γ : ℕ) : 1 ≤ rpowCeil (cutGran γ * (γ + 1)^2) ((1 : ℝ) / 3) := by
+  apply Nat.ceil_pos.mpr
+  apply Real.rpow_pos_of_pos
+  have h : 0 < cutGran γ * (γ + 1)^2 := by unfold cutGran gradeGran; positivity
+  exact_mod_cast h
+
 /-- **WP-G: the ray-shooter and the arc-cutter** (p. 501, built as on p. 517): for the up-phase
 data `gradeCtx O`, a shooter with `F(γ) = κ (⌈log₂ γ⌉ + 1) ⌈h(γ)^{1/3} (γ + 1)^{2/3}⌉ + κ`
 (`O(λ)` subarcs, each a Lemma 3.6 query) and a cutter with `G(γ) = κ (⌈log₂ γ⌉ + 1)` pieces of
@@ -222,7 +231,7 @@ def ShootCutSpec (O : OracleIface) : Prop :=
 /-! ### WP-J: Lemma 4.1 -/
 
 /-- The bands of Lemma 4.1 (merges with their oracles and sweeps, and its own band). -/
-def l41Bands : Finset ℕ := mergeBands ∪ oracleBands ∪ {bL41}
+@[ram_layout] def l41Bands : Finset ℕ := mergeBands ∪ oracleBands ∪ {bL41}
 
 /-- Lemma 4.1's bound `λ² (⌈log₂ λ⌉ + 1) 2^(74λ/75)` (with the `+1` of the logarithm kept). -/
 noncomputable def lemma41Nat (g : ℕ) : ℕ :=
@@ -230,7 +239,7 @@ noncomputable def lemma41Nat (g : ℕ) : ℕ :=
 
 /-- The first grade at which Lemma 4.1 is used (`gradeGran_cap`: from grade `7` on, the oracles
 of the grades `< λ` serve every weight a merge of Lemma 4.1 needs; below it, `BruteSpec`). -/
-def lemma41Start : ℕ := 7
+@[ram_layout] def lemma41Start : ℕ := 7
 
 /-- **WP-J: Lemma 4.1** (p. 517).  Band `bL41`: `0` the handle of the up-phase data (with at
 least `λ` grades processed), `1` the start `a`, `2` the length `b - a`, `3` the grade
@@ -239,8 +248,8 @@ least `λ` grades processed), `1` the start `a`, `2` the length `b - a`, `3` the
 Cost `κ (lemma41Nat λ + 1)`.  (Consolidated revision: the revised schedule, `λ ≥ 7` so that the
 merge targets `γ₀ + 1 ≤ γ'_λ < 2^(λ-1)` are served by the oracles (`gradeGran_cap`), and the
 word bound `hostWords`.) -/
-def Lemma41Spec (O : OracleIface) : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s l41Bands
+def L41M (O : OracleIface) (s : Stmt) (κ : ℕ) : Prop :=
+  Meets s l41Bands
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
       (gradeCtx O).holds P c.nmem (rd c bL41 0) (c.nreg ALLOC) ∧
       rd c bL41 3 ≤ c.nmem (rd c bL41 0) ∧ lemma41Start ≤ rd c bL41 3 ∧
@@ -251,17 +260,21 @@ def Lemma41Spec (O : OracleIface) : Prop :=
       IsCanonicalNF (chainModel C) (Qof P) N (gradeGran (rd c bL41 3)) 4)
     (fun _ c => κ * (lemma41Nat (rd c bL41 3) + 1))
 
+/-- The Lemma41Spec contract for one program and cost constant. -/
+def Lemma41Spec (O : OracleIface) : Prop :=
+  ∃ (s : Stmt) (κ : ℕ), L41M O s κ
+
 /-! ### WP-K: brute force -/
 
 /-- The bands of the brute-force procedure (granularity enforcement and its own band). -/
-def bruteBands : Finset ℕ := granBands ∪ {bBrute}
+@[ram_layout] def bruteBands : Finset ℕ := granBands ∪ {bBrute}
 
 /-- **WP-K: brute-force canonical submaps** (the early grades, p. 516: "this work can be done
 naively").  Band `bBrute`: `0` start `a`, `1` number of edges `m ≥ 1` (`a + m + 1 ≤ n`), `2` a
 granularity `γ ≥ 1` with `m = 1` or `γ ≥ 2` (review finding K1: an interior top vertex of a chain of `≥ 2` edges always leaves an arc of weight `≥ 2`, so `γ = 1` is impossible there); output `3`: a `γ`-canonical normal form (degree cap `4`) of the chain
 `v_a … v_{a+m}` of `Q`.  Cost `κ (m + 1)³`. -/
-def BruteSpec : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s bruteBands
+def BruteM (s : Stmt) (κ : ℕ) : Prop :=
+  Meets s bruteBands
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bBrute 1 ∧
       rd c bBrute 0 + rd c bBrute 1 + 1 ≤ P.n ∧ 1 ≤ rd c bBrute 2 ∧
       (rd c bBrute 1 = 1 ∨ 2 ≤ rd c bBrute 2))
@@ -269,6 +282,10 @@ def BruteSpec : Prop :=
       Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bBrute 3) N) ∧
       IsCanonicalNF (chainModel C) (Qof P) N (rd c bBrute 2) 4)
     (fun _ c => κ * (rd c bBrute 1 + 1) ^ 3)
+
+/-- The BruteSpec contract for one program and cost constant. -/
+def BruteSpec : Prop :=
+  ∃ (s : Stmt) (κ : ℕ), BruteM s κ
 
 /-! ### Arithmetic of the schedule (formerly `SpecMergeV2`) -/
 
@@ -299,7 +316,7 @@ theorem gradeGran_step (g : ℕ) :
   unfold gradeGran fuseLoss
   have h1 : 2 ^ Cost.ceilBeta g ≤ 2 ^ Cost.ceilBeta (g + 1) :=
     Nat.pow_le_pow_right (by norm_num) (ceilBeta_mono (Nat.le_succ g))
-  have h2 : Nat.clog 2 g ≤ Nat.clog 2 (g + 1) := Nat.clog_mono_right 2 (Nat.le_succ g)
+  have h2 := Nat.clog_mono_right 2 (Nat.le_succ g)
   have h3 : g * (Nat.clog 2 g + 2) + (Nat.clog 2 (g + 1) + 1) ≤
       (g + 1) * (Nat.clog 2 (g + 1) + 2) := by
     have := Nat.mul_le_mul_left g h2
@@ -327,7 +344,7 @@ theorem gradeGran_succ_le_two_mul {g : ℕ} (hg : 2 ≤ g) :
   have h2 := clog_succ_le (g := g) (by omega)
   have hc : 1 ≤ Nat.clog 2 g := Nat.clog_pos (by norm_num) (by omega)
   have h3 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ 2 * (g * (Nat.clog 2 g + 2)) := by
-    have := Nat.mul_le_mul_left (g + 1) (Nat.add_le_add_right h2 2)
+    
     nlinarith
   omega
 
@@ -360,7 +377,7 @@ most polynomial in `γ`, so they change by constant factors only. -/
 theorem gradeGran_le_real (g : ℕ) :
     (gradeGran g : ℝ) ≤ 1201 * (2 : ℝ) ^ Cost.ceilBeta g := by
   unfold gradeGran fuseLoss
-  have hc : Nat.clog 2 g ≤ g := Cost.clog_two_le_self g
+  have hc := Cost.clog_two_le_self g
   have hpoly : g * (Nat.clog 2 g + 2) ≤ 3 * g ^ 2 := by
     rcases Nat.eq_zero_or_pos g with h0 | hpos
     · subst h0; simp
@@ -376,7 +393,7 @@ theorem gradeGran_le_real (g : ℕ) :
     linarith
   have hpolyR : ((g * (Nat.clog 2 g + 2) : ℕ) : ℝ) ≤ 3 * (g : ℝ) ^ 2 := by exact_mod_cast hpoly
   push_cast at hsq hpolyR ⊢
-  have h2 : (0 : ℝ) ≤ (2 : ℝ) ^ Cost.ceilBeta g := by positivity
+  
   nlinarith
 
 /-- The oracle grade of a merge at grade `λ`: `⌈log₂ (γ'_λ + 1)⌉ ≤ ⌈βλ⌉ + 11`. -/

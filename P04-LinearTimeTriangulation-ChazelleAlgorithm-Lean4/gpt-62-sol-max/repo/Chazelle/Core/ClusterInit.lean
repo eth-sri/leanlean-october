@@ -78,7 +78,7 @@ theorem segL_nodup (j : ℕ) : (segL s μ bo j).Nodup := by
     · refine List.nodup_cons.mpr ⟨fun hm => ?_, ih⟩
       obtain ⟨b, h1, h2, h3⟩ := mem_segL.mp hm
       have := seg_disj (μ := μ) (bo := bo) h1
-      rw [← h3] at this; simp only [seg] at this; omega
+      rw [← h3] at this; simp_all [seg] <;> omega
     · simpa using ih
 
 /-- The potential of the initial stack. -/
@@ -93,28 +93,32 @@ theorem sum_segL (j : ℕ) :
     · have hn := segL_nodup (s := s) (μ := μ) (bo := bo) (j + 1)
       simp only [segL, optSeg, ite_eq_left hs] at hn
       rw [List.singleton_append, List.toFinset_cons, Finset.sum_insert (by
-        rw [List.mem_toFinset]; exact (List.nodup_cons.mp hn).1)]
+        simp_all)]
       have : len (cntLt bo μ j, cntLt bo μ (j + 1)) = cntBelow bo μ j := len_seg j
       rw [this]; omega
-    · simp only [List.nil_append]; omega
+    simp_all <;> omega
+
+section
+
+variable {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w)
+    (hact : ∀ v, v < μ → bo v < μ → act (plPos μ bo key v) = v) {b : ℕ} (hb : b < μ)
+include hinj hact hb
 
 /-- The items of a block segment. -/
-theorem items_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w)
-    (hact : ∀ v, v < μ → bo v < μ → act (plPos μ bo key v) = v) {b : ℕ} (hb : b < μ) :
+theorem items_seg :
     items act (seg μ bo b) = (Finset.range μ).filter (fun v => bo v = b) := by
   ext v
   rw [mem_items]; simp only [Finset.mem_filter, Finset.mem_range]
   constructor
   · rintro ⟨i, h1, h2, rfl⟩
     obtain ⟨w, hw, hbw, rfl⟩ := exists_plPos (key := key) hinj h1 h2
-    rw [hact w hw (by omega)]; exact ⟨hw, hbw⟩
+    simp_all <;> omega
   · rintro ⟨hv, hbv⟩
     refine ⟨plPos μ bo key v, ?_, ?_, hact v hv (by omega)⟩
-    · have := plPos_ge (μ := μ) (bo := bo) (key := key) v; rw [hbv] at this; exact this
-    · have := plPos_lt (μ := μ) (bo := bo) (key := key) hv; rw [hbv] at this; exact this
+    · have := plPos_ge (μ := μ) (bo := bo) (key := key) v; rwa [hbv] at this
+    · have := plPos_lt (μ := μ) (bo := bo) (key := key) hv; rwa [hbv] at this
 
-theorem inj_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w)
-    (hact : ∀ v, v < μ → bo v < μ → act (plPos μ bo key v) = v) {b : ℕ} (hb : b < μ) :
+theorem inj_seg :
     Set.InjOn act (Finset.Ico (seg μ bo b).1 (seg μ bo b).2) := by
   intro i hi i' hi' h
   simp only [Finset.coe_Ico, Set.mem_Ico] at hi hi'
@@ -122,6 +126,8 @@ theorem inj_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → k
   obtain ⟨w', hw', hbw', rfl⟩ := exists_plPos (key := key) hinj hi'.1 hi'.2
   rw [hact w hw (by omega), hact w' hw' (by omega)] at h
   rw [h]
+
+end
 
 /-- **The initial state of the work stack.** -/
 theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ → ℕ → Prop} {key act : ℕ → ℕ}
@@ -155,11 +161,11 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
     rw [hi, hi', Finset.disjoint_left]
     intro v h1 h2; simp only [Finset.mem_filter] at h1 h2
     exact hpq (by rw [← h1.2, ← h2.2])
-  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rw [len_seg]; exact h2
-  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rw [len_seg]; exact h2
+  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rwa [len_seg]
+  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rwa [len_seg]
   · have hb : bo v < μ := by by_contra h; exact hvH ((hH v hv).mpr h)
     refine ⟨seg μ bo (bo v), lv_iff.mpr ⟨bo v, hb, rfl⟩, ?_⟩
-    rw [items_seg hinj hact hb]; simp [hv]
+    simp [items_seg hinj hact hb, hv]
   · obtain ⟨b, hb, rfl, hi⟩ := hit p hp; rw [hi] at hv; simp only [Finset.mem_filter,
       Finset.mem_range] at hv
     exact ⟨by simp, fun h => ((hH v hv.1).mp h) (by omega)⟩

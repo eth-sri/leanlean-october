@@ -95,10 +95,6 @@ section Finite
 
 variable [Finite D]
 
-/-- Faces are the cycles of the face permutation. -/
-theorem face_eq_iff_sameCycle {d e : D} : M.face d = M.face e ↔ M.fperm.SameCycle d e :=
-  ⟨M.sameCycle_of_face d e, fun h => eq_of_sameCycle M.fperm M.face M.face_fperm h⟩
-
 end Finite
 
 /-! ### Maps from bare permutations -/
@@ -201,15 +197,6 @@ def dual : CombMap F V D where
   sameCycle_of_face d e h := by rw [M.fperm_mul_opp]; exact M.sameCycle_of_vert d e h
   vert_surj := M.face_surj
   face_surj := M.vert_surj
-
-/-- The vertices of the dual are the faces. -/
-@[simp] theorem dual_vert (d : D) : M.dual.vert d = M.face d := rfl
-
-/-- The faces of the dual are the vertices. -/
-@[simp] theorem dual_face (d : D) : M.dual.face d = M.vert d := rfl
-
-/-- The dual has the same edges. -/
-@[simp] theorem dual_opp (d : D) : M.dual.opp d = M.opp d := rfl
 
 /-! ### Edge bounds -/
 

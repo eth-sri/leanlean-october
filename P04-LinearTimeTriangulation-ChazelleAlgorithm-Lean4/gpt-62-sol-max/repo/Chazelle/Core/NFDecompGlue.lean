@@ -43,9 +43,8 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
     rcases h.ends c c1 c2 with ⟨a1, -⟩ | ⟨-, a2⟩
     · left; rw [a1, c3]
     · right; rw [a2, c3]
-  have hcard1 : ((kids R prg pch rem0 v).image pch).card = (kids R prg pch rem0 v).card :=
-    Finset.card_image_of_injOn hinj
-  have hlen : (lst v).toFinset.card = (lst v).length := List.toFinset_card_of_nodup (hnd v hv)
+  have hcard1 := Finset.card_image_of_injOn hinj
+  have hlen := List.toFinset_card_of_nodup (hnd v hv)
   by_cases hv0 : v = 0
   · rw [ite_eq_left hv0, Nat.add_zero, ← hcard1, ← hlen]
     exact Finset.card_le_card himg
@@ -67,11 +66,9 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
       have := h.pos_prg c c1 c2
       rw [c3] at this
       omega
-    have hsub : insert (pch v) ((kids R prg pch rem0 v).image pch) ⊆ (lst v).toFinset :=
-      Finset.insert_subset hpv himg
+    have hsub := Finset.insert_subset hpv himg
     have := Finset.card_le_card hsub
-    rw [Finset.card_insert_of_notMem hnot, hcard1, hlen] at this
-    exact this
+    rwa [Finset.card_insert_of_notMem hnot, hcard1, hlen] at this
 
 /-- `Rooted` only reads its functions below `R`. -/
 theorem Rooted.congr (h : Rooted R K up dn ord pos prg pch) {ord' prg' pch' : ℕ → ℕ}
@@ -89,47 +86,14 @@ theorem Rooted.congr (h : Rooted R K up dn ord pos prg pch) {ord' prg' pch' : �
   ends s hs hs0 := by rw [hc s hs, hp s hs]; exact h.ends s hs hs0
   pch_surj i hi := by
     obtain ⟨s, s1, s2, s3⟩ := h.pch_surj i hi
-    exact ⟨s, s1, s2, by rw [hc s s1]; exact s3⟩
+    exact ⟨s, s1, s2, by rwa [hc s s1]⟩
   ends_lt := h.ends_lt
 
 end kids
 
 section robust
 
-/-- A robust fact at a fixed address reads below the bound. -/
-theorem rb_addr {E : ℕ} {m : ℕ → ℕ} {a v : ℕ} (h : Robust E m fun m' => m' a = v) : a < E := by
-  by_contra hge
-  have := h (Function.update m a (v + 1)) (fun b hb => by
-    rw [Function.update_of_ne (by omega)])
-  simp at this
-
-/-- A word reached through a pointer: the pointer and the word lie below the bound. -/
-theorem rb_addr2 {E : ℕ} {m : ℕ → ℕ} {b o v : ℕ}
-    (h : Robust E m fun m' => m' (m' b + o) = v) : b < E ∧ m b + o < E := by
-  have hb : b < E := by
-    by_contra hge
-    have hX : b ≠ E + b + 1 + o := by omega
-    have := h (Function.update (Function.update m b (E + b + 1)) (E + b + 1 + o) (v + 1))
-      (fun a ha => by
-        rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
-    simp only at this
-    rw [Function.update_of_ne hX, Function.update_self, Function.update_self] at this
-    omega
-  refine ⟨hb, ?_⟩
-  by_contra hge
-  have := h (Function.update m (m b + o) (v + 1)) (fun a ha => by
-    rw [Function.update_of_ne (by omega)])
-  simp only at this
-  rw [Function.update_of_ne (show b ≠ m b + o by omega), Function.update_self] at this
-  omega
-
-/-- A robust fact with an inner offset read at a fixed address below the bound. -/
-theorem rb_fix {E : ℕ} {m : ℕ → ℕ} {c : ℕ} (hc : c < E) {Φ : ℕ → (ℕ → ℕ) → Prop}
-    (h : Robust E m fun m' => Φ (m' c) m') : Robust E m fun m' => Φ (m c) m' :=
-  fun m' hm' => by
-    have := h m' hm'
-    simp only at this ⊢
-    rwa [hm' c hc] at this
+abbrev rb_addr := @Robust.fixedAddress
 
 end robust
 
@@ -140,40 +104,12 @@ theorem inEnv_of {m : ℕ → ℕ} {B A : ℕ} {N : NF} (h : NFWithin m B A N) :
     InEnv m A N.nRegions N.nChords (m (B + 3)) (m (B + 5)) (m (B + 7))
       (fun i => (N.chord i).up) (fun i => (N.chord i).dn) (fun r => (N.region r).chords) := by
   have hN := h.nfAt
+  have hb := h.bounds
   refine ⟨fun i hi => ?_, fun r hr => ?_, fun r hr t ht => ?_⟩
   · obtain ⟨-, -, -, a1, a2⟩ := hN.2.2.2.2.2.1 i hi
-    have r4 : Robust A m fun m' => m' (m' (B + 3) + (5 * i + 4)) = (N.chord i).dn :=
-      fun m' hm' => by
-        have := ((h m' hm').2.2.2.2.2.1 i hi).2.2.2.2
-        simpa only [Nat.add_assoc] using this
-    have := (rb_addr2 r4).2
-    exact ⟨a1, a2, by omega⟩
-  · obtain ⟨-, a2, -, -, -⟩ := hN.2.2.2.2.2.2.2.1 r hr
-    have r4 : Robust A m fun m' => m' (m' (B + 5) + (5 * r + 4)) = (N.region r).wt :=
-      fun m' hm' => by
-        have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
-        simpa only [Nat.add_assoc] using this
-    have := (rb_addr2 r4).2
-    exact ⟨a2, by omega⟩
-  · obtain ⟨-, -, -, -, a5⟩ := hN.2.2.2.2.2.2.2.1 r hr
-    have r4 : Robust A m fun m' => m' (m' (B + 5) + (5 * r + 4)) = (N.region r).wt :=
-      fun m' hm' => by
-        have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
-        simpa only [Nat.add_assoc] using this
-    obtain ⟨hB5, hw⟩ := rb_addr2 r4
-    have hc : m (B + 5) + 5 * r + 3 < A := by omega
-    have r5 : Robust A m fun m' => m' (m' (B + 7) + m' (m (B + 5) + 5 * r + 3) + t) =
-        (N.region r).chords.getD t 0 := fun m' hm' => by
-      have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
-      rwa [hm' (B + 5) hB5] at this
-    have r6 := rb_fix (Φ := fun x m' => m' (m' (B + 7) + x + t) = (N.region r).chords.getD t 0)
-      hc r5
-    have r7 : Robust A m fun m' => m' (m' (B + 7) + (m (m (B + 5) + 5 * r + 3) + t)) =
-        (N.region r).chords.getD t 0 := fun m' hm' => by
-      have := r6 m' hm'
-      simpa only [Nat.add_assoc] using this
-    have := (rb_addr2 r7).2
-    exact ⟨a5 t ht, by omega⟩
+    exact ⟨a1, a2, by have := hb.chord i hi; omega⟩
+  · exact ⟨(hN.2.2.2.2.2.2.2.1 r hr).2.1, by have := hb.region r hr; omega⟩
+  · exact ⟨(hN.2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht, hb.regionChord r t hr ht⟩
 
 /-- Region records are determined by their fields. -/
 theorem rRec_ext' {a b : RRec} (h1 : a.arcs = b.arcs) (h2 : a.chords = b.chords)
@@ -204,10 +140,15 @@ theorem list_ext_getD {l l' : List ℕ} (hl : l'.length = l.length)
   have := h t h2
   rwa [getD_of_lt h1, getD_of_lt h2] at this
 
+section
+
+variable {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N')
+include h h'
+
 /-- The layout determines the chord records. -/
-theorem nfAt_chords_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_chords_eq' :
     N'.chords = N.chords := by
-  have hl : N'.chords.length = N.chords.length := h'.1.symm.trans h.1
+  have hl := h'.1.symm.trans h.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.1 j hj'
@@ -219,9 +160,9 @@ theorem nfAt_chords_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N)
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
 /-- The layout determines the arc records. -/
-theorem nfAt_arcs_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_arcs_eq' :
     N'.arcs = N.arcs := by
-  have hl : N'.arcs.length = N.arcs.length := h'.2.1.symm.trans h.2.1
+  have hl := h'.2.1.symm.trans h.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.1 j hj'
@@ -233,9 +174,9 @@ theorem nfAt_arcs_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
 /-- The layout determines the region records. -/
-theorem nfAt_regions_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_regions_eq' :
     N'.regions = N.regions := by
-  have hl : N'.regions.length = N.regions.length := h'.2.2.1.symm.trans h.2.2.1
+  have hl := h'.2.2.1.symm.trans h.2.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.2.1 j hj'
@@ -245,9 +186,11 @@ theorem nfAt_regions_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N
   rw [← a1, ← a2]
   refine rRec_ext' ?_ ?_ (e'.2.2.1.symm.trans e.2.2.1)
   · exact list_ext_getD (e'.1.symm.trans e.1) fun t ht => by
-      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rw [← e'.1, e.1]; exact ht)]
+      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rwa [← e'.1, e.1])]
   · exact list_ext_getD (e'.2.1.symm.trans e.2.1) fun t ht => by
-      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rw [← e'.2.1, e.2.1]; exact ht)]
+      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rwa [← e'.2.1, e.2.1])]
+
+end
 
 end env
 

@@ -43,7 +43,7 @@ theorem firstStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 13000
       PFr FirstRG (fun a => bF ≤ a ∧ a < bF + nv) c c' ∧
       ∀ u, u < nv → c'.nmem (bF + u) < N ∧ c.nmem (bV + c'.nmem (bF + u)) = u := by
   have e0 := Exec.constN (P := P) hw 130224 0 (by omega)
-  obtain ⟨c', k, e, hk, hw', hi', hn', hf', hI⟩ := forN (P := P) (W := W) (ri := 130224)
+  obtain ⟨c', k, e, hk, hw', hi', hn', hf', hI⟩ := Exec.forN (P := P) (W := W) (ri := 130224)
     (rn := 130223) (body := firstBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130224 = j ∧ c'.nreg 130223 = N ∧
       PFr FirstRG (fun a => bF ≤ a ∧ a < bF + nv) c c' ∧
@@ -51,26 +51,25 @@ theorem firstStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 13000
         c'.nmem (bF + u) < j ∧ c.nmem (bV + c'.nmem (bF + u)) = u)
     N 5 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hI2⟩ => by
-      have r1 : c2.nreg 130221 = bV := (hf2.1 _ (by unfold FirstRG; omega)).trans hbV
-      have r2 : c2.nreg 130222 = bF := (hf2.1 _ (by unfold FirstRG; omega)).trans hbF
-      have r3 : c2.nreg 130001 = 1 := (hf2.1 _ (by unfold FirstRG; omega)).trans hone
+      have r1 := (hf2.1 _ (by unfold FirstRG; omega)).trans hbV
+      have r2 := (hf2.1 _ (by unfold FirstRG; omega)).trans hbF
+      have r3 := (hf2.1 _ (by unfold FirstRG; omega)).trans hone
       have rv : c2.nmem (bV + j) = c.nmem (bV + j) := hf2.2.2.2.2 _ (by omega)
       have hvj := hvlt j hj
       unfold firstBody
       exec_block
       · rw [r1, hi2]; omega
-      · config_simp; rw [r2, r1, hi2, rv]; omega
+      · ram_finish
       · config_simp; rw [hi2, r3]; omega
       · refine ⟨le_refl _, ‹_›, by config_simp; rw [hi2, r3], by config_simp; exact hn2, ?_, ?_⟩
         · refine PFr.of_eq hf2 (fun r hr => ?_) (fun a ha => ?_)
           · simp only [Machine.upd_apply]; unfold FirstRG at hr; split_ifs <;> omega
-          · rw [r2, r1, hi2, rv, Machine.upd_other _ _ _ (by omega)]
+          ram_finish
         · intro u hu hex
           config_simp
           rw [r2, r1, hi2, rv, Machine.upd_apply]
           split_ifs with h
-          · have hu' : c.nmem (bV + j) = u := by omega
-            exact ⟨by omega, hu'⟩
+          · ram_finish
           · obtain ⟨d, hd, hdu⟩ := hex
             have hdj : d < j := by
               rcases Nat.lt_succ_iff_lt_or_eq.mp hd with hd | rfl

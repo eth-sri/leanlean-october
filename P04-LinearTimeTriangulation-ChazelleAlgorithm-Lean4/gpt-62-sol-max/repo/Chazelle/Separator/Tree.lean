@@ -105,7 +105,7 @@ theorem IsAnc.trans {w v u : V} (h1 : T.IsAnc w v) (h2 : T.IsAnc v u) : T.IsAnc 
 /-- Ancestors have smaller levels. -/
 theorem IsAnc.level_le {v u : V} (h : T.IsAnc v u) : T.level v ≤ T.level u := by
   obtain ⟨n, rfl⟩ := h
-  rw [T.level_iterate_parent]; omega
+  simp [T.level_iterate_parent]
 
 /-- An ancestor of the parent is an ancestor. -/
 theorem IsAnc.of_parent {v u : V} (h : T.IsAnc v (T.parent u)) : T.IsAnc v u :=
@@ -117,7 +117,7 @@ theorem eq_of_isAnc_of_not_parent {v u : V} (h : T.IsAnc v u) (hp : ¬ T.IsAnc v
   obtain ⟨n, hn⟩ := h
   rcases n with _ | n
   · exact hn
-  · exact absurd ⟨n, by rw [← Function.iterate_succ_apply]; exact hn⟩ hp
+  · tauto
 
 /-- A non-root vertex is not an ancestor of its parent. -/
 theorem not_isAnc_parent {v : V} (hv : v ≠ T.root) : ¬ T.IsAnc v (T.parent v) := by
@@ -153,8 +153,8 @@ def IsTreeDart (d : D) : Prop := ∃ v, v ≠ T.root ∧ (d = T.par v ∨ d = M.
 theorem par_ne_opp_par {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) :
     T.par v ≠ M.opp (T.par w) := by
   intro h
-  have h1 : T.level (M.head (T.par w)) + 1 = T.level w := T.level_head_par w hw
-  have h2 : T.level (M.head (T.par v)) + 1 = T.level v := T.level_head_par v hv
+  have h1 := T.level_head_par w hw
+  have h2 := T.level_head_par v hv
   have e1 : M.head (T.par w) = v := by
     rw [← T.vert_par v hv, h]; rfl
   have e2 : M.head (T.par v) = w := by
@@ -184,7 +184,7 @@ theorem mem_treeDarts {d : D} : d ∈ T.treeDarts ↔ T.IsTreeDart d := by
     · exact ⟨v, hv, Or.inr rfl⟩
   · rintro ⟨v, hv, rfl | rfl⟩
     · exact Or.inl ⟨v, hv, rfl⟩
-    · exact Or.inr ⟨v, hv, rfl⟩
+    · tauto
 
 /-- The tree darts form an edge set. -/
 theorem opp_mem_treeDarts {d : D} (hd : d ∈ T.treeDarts) : M.opp d ∈ T.treeDarts := by
@@ -264,7 +264,7 @@ theorem exists_bfsTree (hM : M.Connected) (r : V) :
     ∃ T : SpanTree M, T.root = r ∧ (∀ v, T.level v = M.graph.dist r v) := by
   classical
   obtain ⟨d0, -⟩ := M.vert_surj r
-  let par : V → D := fun v =>
+  let par := fun v =>
     if hv : v = r then d0 else Classical.choose (M.exists_dart_toward hM r v hv)
   refine ⟨⟨r, fun v => M.graph.dist r v, par, by simp, ?_, ?_⟩, rfl, fun v => rfl⟩
   · intro v hv

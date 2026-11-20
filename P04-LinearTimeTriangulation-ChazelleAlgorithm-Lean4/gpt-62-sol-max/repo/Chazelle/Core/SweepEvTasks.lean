@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvCand5
 public import Chazelle.Core.SweepEvStep
 public import Chazelle.Core.SweepMachine3
@@ -48,22 +50,16 @@ def GenTask : Prop :=
 
 /-- The output registers of stage 2: the stop records (`sB`, count `sC`) and the auxiliary
 records (`aB`). -/
-def sB : ℕ := sw 2600
-def sC : ℕ := sw 2601
-def aB : ℕ := sw 2602
+@[ram_layout] def sB : ℕ := sw 2600
+@[ram_layout] def sC : ℕ := sw 2601
+@[ram_layout] def aB : ℕ := sw 2602
 
 /-- The registers stage 2 may write (besides the oracle bands and the allocator). -/
 def S2R (r : ℕ) : Prop :=
   (sw 700 ≤ r ∧ r < sw 2200) ∨ (sw 2600 ≤ r ∧ r ≤ sw 2602) ∨ (sw 3000 ≤ r ∧ r < sw 6000)
 
 /-- `E` auxiliary records of five words `(anc, nl, l₀, l₁, par)` at `A`. -/
-def AuxRecsAt (m : ℕ → ℕ) (A : ℕ) (ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)) : Prop :=
-  ∀ i, i < ax.length →
-    m (A + 5 * i) = (ax.getD i (0, 0, 0, 0, 0)).1 ∧
-    m (A + 5 * i + 1) = (ax.getD i (0, 0, 0, 0, 0)).2.1 ∧
-    m (A + 5 * i + 2) = (ax.getD i (0, 0, 0, 0, 0)).2.2.1 ∧
-    m (A + 5 * i + 3) = (ax.getD i (0, 0, 0, 0, 0)).2.2.2.1 ∧
-    m (A + 5 * i + 4) = (ax.getD i (0, 0, 0, 0, 0)).2.2.2.2
+abbrev AuxRecsAt := Records5At
 
 /-- **The auxiliary data of a stop chord `e`**: `anc = 1` iff `e` is not a bracket (it has an
 attachment with offset `< Lst`); then, unless `e` is a pocket (attached at offset `0`), the
@@ -73,13 +69,13 @@ def AuxOK (P : Polygon) (J : Merge.Junction) (N₂ : NF) (e : Set Point)
     (x : ℕ × ℕ × ℕ × ℕ × ℕ) : Prop :=
   x.1 ≤ 1 ∧ (x.1 = 1 ↔ ¬ EvBrk J e) ∧ x.2.1 ≤ 2 ∧
     (0 < x.2.1 → x.2.2.1 < N₂.nRegions) ∧ (1 < x.2.1 → x.2.2.2.1 < N₂.nRegions) ∧
-    (x.1 = 1 → (∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s → oW J (q + s) ≠ 0) →
-      EvSideLab J (N₂.F (chainModel J.right) (Qof P))
+    (x.1 = 1 → (∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s → oW J (q + s) ≠ 0) →
+      EvSideLab J (N₂.F J.rightModel (Qof P))
         (labSet J (Qof P) N₂ x.2.1 x.2.2.1 x.2.2.2.1 0 0) e) ∧
     x.2.2.2.2 ≤ N₂.nChords ∧
-    (∀ c ∈ N₂.F (chainModel J.right) (Qof P), e ⊆ c →
-      0 < x.2.2.2.2 ∧ (N₂.chord (x.2.2.2.2 - 1)).toSet (chainModel J.right) (Qof P) = c) ∧
-    (0 < x.2.2.2.2 → e ⊆ (N₂.chord (x.2.2.2.2 - 1)).toSet (chainModel J.right) (Qof P))
+    (∀ c ∈ N₂.F J.rightModel (Qof P), e ⊆ c →
+      0 < x.2.2.2.2 ∧ (N₂.chord (x.2.2.2.2 - 1)).toSet J.rightModel (Qof P) = c) ∧
+    (0 < x.2.2.2.2 → e ⊆ (N₂.chord (x.2.2.2.2 - 1)).toSet J.rightModel (Qof P))
 
 /-- **The post of stage 2** (from `c` to `c'`, normal forms `N₁`, `N₂`): the stop records `rs`
 (`StopRecsAt` at `sB`, count `sC`) satisfy `StopsOK` (all attachments on the `C₁` part of the stop
@@ -92,7 +88,7 @@ def StopOut (P : Polygon) (J : Merge.Junction) (_N₁ N₂ : NF) (c c' : Config)
   ∃ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)) (ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)),
     rs.length = c'.nreg sC ∧ ax.length = rs.length ∧
     StopRecsAt c'.nmem (c'.nreg sB) rs ∧ AuxRecsAt c'.nmem (c'.nreg aB) ax ∧
-    StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs) ∧
+    StopsOK J (N₂.F J.rightModel (Qof P)) (stopsOf J (Qof P) N₂ rs) ∧
     (∀ r ∈ rs, PosW P J r.1 r.2.1 ∧ r.2.2.1 ≤ 2 ∧ r.2.2.2.2 ≤ 1 ∧
       (r.2.2.1 = 1 → r.2.2.2.1 < N₂.nChords)) ∧
     (∀ i, i < rs.length → AuxOK P J N₂
@@ -101,7 +97,7 @@ def StopOut (P : Polygon) (J : Merge.Junction) (_N₁ N₂ : NF) (c c' : Config)
     rs.length ≤ 4 * N₂.nChords + 8 ∧
     c.nreg ALLOC ≤ c'.nreg sB ∧ c'.nreg sB + 5 * rs.length ≤ c'.nreg ALLOC ∧
     c.nreg ALLOC ≤ c'.nreg aB ∧ c'.nreg aB + 5 * rs.length ≤ c'.nreg ALLOC ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ S2R r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task B: stage 2**, for every shooter, at cost
@@ -120,9 +116,9 @@ def StopTask : Prop :=
 
 /-- The input registers of `face`: a walk edge `fE` of `C₂` (vertex position `(fE, 0)`), the side
 `fA` (`0` before, `1` after); the output `fR`. -/
-def fE : ℕ := sw 2610
-def fA : ℕ := sw 2611
-def fR : ℕ := sw 2612
+@[ram_layout] def fE : ℕ := sw 2610
+@[ram_layout] def fA : ℕ := sw 2611
+@[ram_layout] def fR : ℕ := sw 2612
 
 /-- The registers `face` may write (besides the oracle bands and the allocator). -/
 def FR (r : ℕ) : Prop := (sw 700 ≤ r ∧ r < sw 2200) ∨ r = fR ∨ (sw 3000 ≤ r ∧ r < sw 6000)
@@ -131,11 +127,11 @@ def FR (r : ℕ) : Prop := (sw 700 ≤ r ∧ r < sw 2200) ∨ r = fR ∨ (sw 300
 just after (`fA = 1`) the vertex position `(fE, 0)` of the walk of `C₂`. -/
 def FaceOut (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c c' : Config) : Prop :=
   c'.nreg fR < N₂.nRegions ∧
-    (c.nreg fA = 0 → BeforeFaces (chainModel J.right) (c.nreg fE) 0
-      (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg fR))) ∧
-    (c.nreg fA = 1 → AfterFaces (chainModel J.right) (c.nreg fE) 0
-      (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg fR))) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
+    (c.nreg fA = 0 → BeforeFaces J.rightModel (c.nreg fE) 0
+      (regOf J.rightModel (Qof P) N₂ (c'.nreg fR))) ∧
+    (c.nreg fA = 1 → AfterFaces J.rightModel (c.nreg fE) 0
+      (regOf J.rightModel (Qof P) N₂ (c'.nreg fR))) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ FR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task D2** (mathematics): **the invariant at the start** when every chord of `F₂⁺` attached
@@ -144,22 +140,22 @@ label set `{V}` of the region of `S₂` faced just before the end of the right s
 of `C₂` (`valid_start`). -/
 def StartTask : Prop :=
   ∀ (J : Merge.Junction) (Q : Polygon) (S₂ : Set (Set Point)), J.P.Simple →
-    (chainModel J.right).ChordFamily Q S₂ → (chainModel J.whole).ChordFamily Q (F₂plus J S₂) →
-    (∀ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e
-      ((gW J + Lst J) % (chainModel J.whole).W.n) 0 → EvBrk J e) →
-    ∀ V ∈ (chainModel J.right).regions S₂,
-      BeforeFaces (chainModel J.right)
+    J.rightModel.ChordFamily Q S₂ → J.wholeModel.ChordFamily Q (F₂plus J S₂) →
+    (∀ e ∈ F₂plus J S₂, SideAttach J.wholeModel.W e
+      ((gW J + Lst J) % J.wholeModel.W.n) 0 → EvBrk J e) →
+    ∀ V ∈ J.rightModel.regions S₂,
+      BeforeFaces J.rightModel
         ((6 + tpos J.right 0 + (dq (rL1 J) (rδ J) (rL1 J + rL2 J - 1) + 1)) %
-          (chainModel J.right).W.n) 0 V →
+          J.rightModel.W.n) 0 V →
       EvInv J S₂ (Lst J) {V}
 
 /-! ## C: the window of the event loop -/
 
 /-- The window registers (outputs): the part-end flag `wX`, the window end `(wE, wH)` (a position
 of the walk of `C`), the gathered arcs `(wGB, wGK)` (`SweepEvShot.lean`). -/
-def wE : ℕ := sw 2423
-def wH : ℕ := sw 2424
-def wX : ℕ := sw 2425
+@[ram_layout] def wE : ℕ := sw 2423
+@[ram_layout] def wH : ℕ := sw 2424
+@[ram_layout] def wX : ℕ := sw 2425
 
 /-- The registers the window computation may write (besides the oracle bands and the allocator). -/
 def WR (r : ℕ) : Prop :=
@@ -176,22 +172,22 @@ def WinOut (P : Polygon) (J : Merge.Junction) (N₁ : NF) (c c' : Config) : Prop
     c'.nreg wGK = (regArcs N₁ rs).length ∧ c.nreg ALLOC ≤ c'.nreg wGB ∧
     c'.nreg wGB + 4 * (regArcs N₁ rs).length ≤ c'.nreg ALLOC ∧
     (∀ k, k < (regArcs N₁ rs).length → ShotList.arcAt c'.nmem (c'.nreg wGB) k =
-      nArc (chainModel J.left) (Qof P) N₁ ((regArcs N₁ rs).getD k 0)) ∧
+      nArc J.leftModel (Qof P) N₁ ((regArcs N₁ rs).getD k 0)) ∧
     c'.nreg wX ≤ 1 ∧
     (c'.nreg wX = 0 → PosW P J (c'.nreg wE) (c'.nreg wH) ∧
       offK P J (c.nreg kE) (c.nreg kH) < offK P J (c'.nreg wE) (c'.nreg wH) ∧
       (offK P J (c'.nreg wE) (c'.nreg wH) = (Lst J : ℝ) + lL1 J ∨
         ∃ (d : ℕ) (t : ℝ), MValid J d t ∧ 0 ≤ t ∧ t ≤ 1 ∧
           offK P J (c'.nreg wE) (c'.nreg wH) = (Lst J : ℝ) + ψ J d + t ∧
-          (chainModel J.left).IsCut (N₁.F (chainModel J.left) (Qof P))
-            (((b₁ J + d) % (chainModel J.left).W.n : ℕ) + t))) ∧
+          J.leftModel.IsCut (N₁.F J.leftModel (Qof P))
+            (((b₁ J + d) % J.leftModel.W.n : ℕ) + t))) ∧
     (∀ (d : ℕ) (t : ℝ), MValid J d t → 0 ≤ t → t < 1 →
       offK P J (c.nreg kE) (c.nreg kH) < (Lst J : ℝ) + ψ J d + t →
       (c'.nreg wX = 0 → (Lst J : ℝ) + ψ J d + t ≤ offK P J (c'.nreg wE) (c'.nreg wH)) →
-      sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) t ∈
-        ShotList.loSet (chainModel J.left) (Qof P) c'.nmem (c'.nreg wGB)
+      sidePt J.leftModel.W ((b₁ J + d) % J.leftModel.W.n) t ∈
+        ShotList.loSet J.leftModel (Qof P) c'.nmem (c'.nreg wGB)
           (regArcs N₁ rs).length []) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ WR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task C1: the window**, for a key `(kE, kH)` of the `C₁` part (`Lst ≤ oL < n`), at cost

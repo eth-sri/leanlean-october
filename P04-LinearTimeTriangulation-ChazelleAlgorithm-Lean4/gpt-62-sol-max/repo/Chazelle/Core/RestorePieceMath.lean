@@ -33,8 +33,8 @@ theorem piece_stretches {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ <
   refine ⟨fun hs => ⟨fun d hd => ?_, hp₀, h1, hmn, by omega, by omega⟩, fun hs => ⟨⟨fun d hd => ?_,
     hp₀, by omega, by omega, by omega, by omega⟩, ⟨fun d hd => ?_, Nat.mod_lt _ (by omega),
     by omega, by omega, le_rfl, by omega⟩⟩⟩
-  · rw [hV d hd, WalkEmbed.walk_tour Cα J d (by omega)]
-  · rw [hV d (by omega), WalkEmbed.walk_tour Cα J d (by omega)]
+  · ram_simp [hV d hd, WalkEmbed.walk_tour]
+  · ram_simp [hV, WalkEmbed.walk_tour]
   · have e1 : ((p₀ + (2 * Cα.m - tpos Cα J)) % M.W.n + d) % M.W.n =
         (p₀ + ((2 * Cα.m - tpos Cα J) + d)) % M.W.n := by
       rw [Nat.mod_add_mod, Nat.add_assoc]
@@ -42,7 +42,7 @@ theorem piece_stretches {M : Model} {Cα : Chain} {p₀ J : ℕ} (hp₀ : p₀ <
         (6 + tpos Cα J + (2 * Cα.m - tpos Cα J) + 7 + d) % (chainModel Cα).W.n := by
       rw [hn', show 6 + tpos Cα J + (2 * Cα.m - tpos Cα J) + 7 + d =
         (6 + d) + (2 * Cα.m + 7) by omega, Nat.add_mod_right]
-    rw [e1, hV _ (by omega), e2, WalkEmbed.walk_after Cα J d (by omega)]
+    ram_simp [e1, hV, e2, WalkEmbed.walk_after]
 
 /-- **The direction test**: the height vertex `h` of the piece's first vertex is the chain's first
 vertex iff the walk goes up the chain. -/
@@ -77,7 +77,7 @@ theorem dir_correct {M : Model} {Q : Polygon} (hDH : DistinctHeights Q) {Cα : C
       · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'; omega
     have hhs : h = (Cα.s + Cα.m) % Q.n := by
       by_contra hne'; exact hDH h _ hh hlt hne' (by rw [hy, e])
-    rw [ite_eq_right (by rw [hhs]; exact hne)]
+    rw [ite_eq_right (by rwa [hhs])]
     intro d hd'; rw [hd d hd', ShootCut.tourV_down Cα hd']
 
 end

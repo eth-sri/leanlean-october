@@ -63,7 +63,7 @@ theorem lhSave_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine (save_irs hI₁ hFo hacc hL (fun g => hgeo (hGd g)) (fun g => (hGd g).2)
     (SweepStop.dirOf_cases' _)).mono le_rfl ?_
   rintro c' ⟨hres, hk, hm⟩
-  have hAl : c'.nreg ALLOC = c₁.nreg ALLOC := hk ALLOC (by unfold ALLOC; omega)
+  have hAl := hk ALLOC (by unfold ALLOC; omega)
   refine ⟨hres, fun r h1 h2 h3 => ?_, hAl ▸ hfr.2.1, fun a ha => ?_⟩
   · have h2' : ¬ (LHR r ∨ (Fo ≤ r ∧ r ≤ Fo + 6)) := h2
     rw [hk r (by omega)]

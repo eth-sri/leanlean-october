@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.DownPhaseBaseLoop2
 public import Chazelle.Core.NFBuildMain
 
@@ -38,11 +40,11 @@ def DropAugSpec : Prop :=
       (c.nmem (rd c bDown 0 + 1) = 1 ↔ Mountain.LeftInside (Qof P)) ∧
       ∃ L : List (ℕ × ℕ × ℕ), rd c bDown 2 = L.length ∧
         rd c bDown 1 + 3 * L.length ≤ c.nreg ALLOC ∧ ChordListAt c.nmem (rd c bDown 1) L ∧
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P) L ∧
+        ChordTriplesOK (inputModel P) (Qof P) L ∧
         rd c bDown 3 + 2 * L.length ≤ c.nreg ALLOC ∧
         (seg c.nmem (rd c bDown 3) (2 * L.length)).Perm (List.range (2 * L.length)) ∧
         (seg c.nmem (rd c bDown 3) (2 * L.length)).Pairwise
-          (codeLe (interiorModel (Qof P)) (Qof P) L))
+          (codeLe (inputModel P) (Qof P) L))
     (fun P c c' => ∀ L : List (ℕ × ℕ × ℕ), rd c bDown 2 = L.length →
       ChordListAt c.nmem (rd c bDown 1) L →
         c.nreg ALLOC ≤ rd c' bDown 4 ∧
@@ -60,17 +62,17 @@ def DropAugSpec : Prop :=
           DownBase.dropE (liBit c.nmem (rd c bDown 0)) (Qof P).n L
             (seg c.nmem (rd c bDown 3) (2 * L.length)) ∧
         {x | ∃ y ∈ DownBase.keepL (liBit c.nmem (rd c bDown 0)) (Qof P).n L,
-            x = (recOf y).toSet (interiorModel (Qof P)) (Qof P)} =
-          {x | ∃ y ∈ L, x = (recOf y).toSet (interiorModel (Qof P)) (Qof P)} ∩
-            (interiorModel (Qof P)).Full ∧
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P)
+            x = (recOf y).toSet (inputModel P) (Qof P)} =
+          {x | ∃ y ∈ L, x = (recOf y).toSet (inputModel P) (Qof P)} ∩
+            P.inputModel.Full ∧
+        ChordTriplesOK (inputModel P) (Qof P)
           (DownBase.keepL (liBit c.nmem (rd c bDown 0)) (Qof P).n L) ∧
         (DownBase.dropE (liBit c.nmem (rd c bDown 0)) (Qof P).n L
             (seg c.nmem (rd c bDown 3) (2 * L.length))).Perm
           (List.range (2 * (DownBase.keepL (liBit c.nmem (rd c bDown 0)) (Qof P).n L).length)) ∧
         (DownBase.dropE (liBit c.nmem (rd c bDown 0)) (Qof P).n L
             (seg c.nmem (rd c bDown 3) (2 * L.length))).Pairwise
-          (codeLe (interiorModel (Qof P)) (Qof P)
+          (codeLe (inputModel P) (Qof P)
             (DownBase.keepL (liBit c.nmem (rd c bDown 0)) (Qof P).n L)))
     (fun _ c => κ * (rd c bDown 2 + 1))
 
@@ -94,14 +96,14 @@ theorem dSetup_exec (c : Config) (hw : WordsBounded W c) {D B K A₀ : ℕ}
       c'.nreg 200117 = A₀ + 3 * K ∧ c'.nreg 200118 = 0 ∧ c'.nreg 200119 = A₀ ∧
       (∀ r, (r < 200000 ∨ 210000 ≤ r) → r ≠ 9999 → c'.nreg r = c.nreg r) ∧
       (∀ r, (200000 ≤ r ∧ r < 200004) → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold dSetup
   exec_block
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h0, h1, h2, hA]; omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    fun r hr hra => ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+    fun r hr hra => ?_, fun r hr => ?_, by and_intros <;> rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h0, h1, h2, hA]
   all_goals omega
@@ -112,21 +114,20 @@ theorem dBit_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {b : ℕ}
     (h103 : c.nreg 200103 = 0) :
     ∃ c' k, Exec P W dBit c c' k ∧ k ≤ 4 ∧
       c'.nreg 200103 = (if b = 1 then 1 else 0) ∧
-      (∀ r, r ≠ 200103 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept 200103 c c') ∧ Machine.NatRegFrame c c' := by
   by_cases hb1 : b < 2
-  · have t1 : c.nreg 200106 < c.nreg 200105 := by rw [h106, h105]; exact hb1
+  · have t1 : c.nreg 200106 < c.nreg 200105 := by simp_all
     by_cases hb0 : 0 < b
-    · have t2 : c.nreg 200101 < c.nreg 200106 := by rw [h101, h106]; exact hb0
+    · have t2 : c.nreg 200101 < c.nreg 200106 := by simp_all
       have e := Exec.constN (P := P) hw 200103 1 hW
       exact ⟨_, _, .ifLtN_true t1 (.ifLtN_true t2 e), by omega,
-        by simp [show b = 1 by omega], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
-    · have t2 : ¬ c.nreg 200101 < c.nreg 200106 := by rw [h101, h106]; exact hb0
+        by simp [show b = 1 by omega], fun r hr => by simp [hr], by and_intros <;> rfl⟩
+    · have t2 : ¬ c.nreg 200101 < c.nreg 200106 := by rwa [h101, h106]
       exact ⟨c, _, .ifLtN_true t1 (.ifLtN_false t2 (.skip hw)), by omega,
-        by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-  · have t1 : ¬ c.nreg 200106 < c.nreg 200105 := by rw [h106, h105]; exact hb1
+        by simp_all, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+  · have t1 : ¬ c.nreg 200106 < c.nreg 200105 := by simp_all
     exact ⟨c, _, .ifLtN_false t1 (.skip hw), by omega,
-      by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+      by ram_finish, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
 
 set_option maxHeartbeats 4000000 in
 /-- Between the passes. -/
@@ -134,11 +135,11 @@ theorem dMid_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W dMid c c' k ∧ k = 4 ∧ c'.nreg 200005 = c.nreg 200118 ∧
       c'.nreg 200130 = 0 ∧ c'.nreg 200131 = c.nreg 200003 ∧ c'.nreg 200134 = c.nreg 200122 ∧
       (∀ r, r ≠ 200005 → r ≠ 200130 → r ≠ 200131 → r ≠ 200134 → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold dMid
   exec_block
   all_goals try omega
-  refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨rfl, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, by and_intros <;> rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
 
 end exec

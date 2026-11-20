@@ -152,37 +152,6 @@ omit C in
 def sideNonSpike (B A : Point) : Prop := ¬ (sideCross B A = 0 ∧ 0 < sideDot B A)
 
 omit C in
-/-- A direction on the closed ray of `A` is not strictly inside an arc ending at `A`. -/
-theorem sideCcw_not_ray_right {B A Y : Point} (hA : A ≠ 0) (hY : sideCross Y A = 0)
-    (hYd : 0 ≤ sideDot Y A) : ¬ sideCcw B Y A := by
-  have hAA := sideDot_self_pos hA
-  -- `B × Y` is a nonnegative multiple of `B × A`
-  have e1 : sideDot A A * sideCross B Y = sideDot Y A * sideCross B A := by
-    unfold sideCross sideDot at *; linear_combination (-(A.1 * B.1 + A.2 * B.2)) * hY
-  unfold sideCcw
-  rintro (⟨h1, h2, h3⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2, h3⟩)
-  · rw [hY] at h3; exact lt_irrefl _ h3
-  · nlinarith [mul_nonneg hYd (le_of_lt (neg_pos.2 h1))]
-  · rw [hY] at h2; exact lt_irrefl _ h2
-  · rw [h1, mul_zero] at e1
-    have : sideCross B Y = 0 := by
-      rcases mul_eq_zero.1 e1 with h | h
-      · linarith
-      · exact h
-    rw [this] at h3; exact lt_irrefl _ h3
-  · rw [h1, mul_zero] at e1
-    have hBY : sideCross B Y = 0 := by
-      rcases mul_eq_zero.1 e1 with h | h
-      · linarith
-      · exact h
-    -- `B · Y ≥ 0`
-    have e2 : sideDot A A * sideDot B Y = sideDot Y A * sideDot B A := by
-      unfold sideCross sideDot at *; linear_combination (B.1 * A.2 - B.2 * A.1) * hY
-    rcases h3 with h3 | h3
-    · exact h3 hBY
-    · nlinarith [mul_nonneg hYd h2.le]
-
-omit C in
 theorem side_dotDot (B Y A : Point) :
     sideDot B Y * sideDot B A + sideCross B Y * sideCross B A = sideDot B B * sideDot Y A := by
   unfold sideCross sideDot; ring
@@ -196,10 +165,10 @@ theorem sideCcw_not_ray_left {B A Y : Point} (hB : B ≠ 0) (hY : sideCross B Y 
   rw [hY, zero_mul, add_zero] at e1
   unfold sideCcw
   rintro (⟨h1, h2, h3⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2, h3⟩)
-  · rw [hY] at h2; exact lt_irrefl _ h2
-  · rw [hY] at h2; exact lt_irrefl _ h2
+  · simp_all
+  · simp_all
   · nlinarith [mul_nonneg hYd (le_of_lt (neg_pos.2 h1))]
-  · rw [hY] at h3; exact lt_irrefl _ h3
+  · simp_all
   · rcases h3 with h3 | h3
     · exact h3 hY
     · linarith
@@ -241,9 +210,7 @@ theorem sideCcw_sub_left {B X Y A : Point} (hB : B ≠ 0) (h1 : sideCcw B X A)
     · exact Or.inl hbY
     · exfalso
       have hxA : 0 < sideCross X A := by
-        rcases hX with h | h
-        · rw [hbX] at h; exact absurd h (lt_irrefl _)
-        · exact h
+        simp_all
       rw [hbX, zero_mul, add_zero] at D1
       nlinarith [mul_pos hdX (neg_pos.2 hbA), mul_pos hBB hxA]
   · rcases h2 with ⟨-, hbY, -⟩ | ⟨hbX', -⟩ | ⟨hbX', -, -⟩ | ⟨hbX', -, -⟩
@@ -257,99 +224,83 @@ theorem sideCcw_sub_left {B X Y A : Point} (hB : B ≠ 0) (h1 : sideCcw B X A)
     exact sideCcw_not_ray_left hB hc.1 hc.2 h2
 
 omit C in
-/-- **Sub-arc (right part).**  If `X` is inside the arc from `B` to `A`, the arc from `X` to `A`
-is contained in it. -/
+private def ccwMirror (u : Point) : Point := (u.1, -u.2)
+
+omit C in
+private theorem mirror_ne {u : Point} (h : u ≠ 0) : ccwMirror u ≠ 0 := fun he =>
+  h (by change u = (0, 0); simpa [ccwMirror] using congrArg ccwMirror he)
+
+omit C in
+private theorem sideCcw_reflect {B X A : Point} (hB : B ≠ 0) (reflect : Point → Point)
+    (cross : ∀ u v, sideCross (reflect v) (reflect u) = sideCross u v)
+    (dot : ∀ u v, sideDot (reflect v) (reflect u) = sideDot u v) :
+    sideCcw (reflect A) (reflect X) (reflect B) ↔ sideCcw B X A := by
+  simp only [sideCcw, cross, dot]
+  by_cases hc : sideCross B A = 0
+  · have hb := sideDot_self_pos hB
+    let q := sideDot B A / sideDot B B
+    have eC : sideCross X A = -(q * sideCross B X) := by
+      have e := side_dotCross B X A
+      rw [hc, mul_zero] at e
+      dsimp [q]
+      rw [div_mul_eq_mul_div, ← neg_div]
+      apply (eq_div_iff hb.ne').2
+      linarith
+    have eD : sideDot X A = q * sideDot B X := by
+      have e := side_dotDot B X A
+      rw [hc, mul_zero, add_zero] at e
+      dsimp [q]
+      rw [div_mul_eq_mul_div]
+      apply (eq_div_iff hb.ne').2
+      linarith
+    rcases lt_trichotomy (sideDot B A) 0 with h | h | h
+    · have hq := neg_pos.2 (div_neg_of_neg_of_pos h hb)
+      have e : 0 < sideCross X A ↔ 0 < sideCross B X := by rw [eC, ← neg_mul, mul_pos_iff_of_pos_left hq]
+      simp [hc, h, h.le.not_gt, e]
+    · simp [hc, h]
+    · have hq : 0 < q := div_pos h hb
+      have e : sideCross X A ≠ 0 ↔ sideCross B X ≠ 0 := by
+        simp [eC, hq.ne']
+      have e' : sideDot X A < 0 ↔ sideDot B X < 0 := by
+        calc
+          _ ↔ q * sideDot B X < q * 0 := by simp [eD]
+          _ ↔ _ := mul_lt_mul_iff_of_pos_left hq
+      simp [hc, h, h.le.not_gt, e, e']
+  · simp [hc, and_comm, or_comm, and_left_comm]
+
+omit C in
+private theorem sideCcw_mirror {B X A : Point} (hB : B ≠ 0) :
+    sideCcw (ccwMirror A) (ccwMirror X) (ccwMirror B) ↔ sideCcw B X A :=
+  sideCcw_reflect hB ccwMirror (by intros; simp [ccwMirror, sideCross]; ring)
+    (by intros; simp [ccwMirror, sideDot]; ring)
+
+omit C in
+/-- A direction on the closed ray of `A` is not strictly inside an arc ending at `A`. -/
+theorem sideCcw_not_ray_right {B A Y : Point} (hA : A ≠ 0) (hY : sideCross Y A = 0)
+    (hYd : 0 ≤ sideDot Y A) : ¬ sideCcw B Y A := by
+  by_cases hB : B = 0
+  · simp [hB, sideCcw, sideCross, sideDot]
+  intro h
+  apply sideCcw_not_ray_left (mirror_ne hA) _ _ ((sideCcw_mirror hB).2 h)
+  · rwa [show sideCross (ccwMirror A) (ccwMirror Y) = sideCross Y A by
+      simp [ccwMirror, sideCross]; ring]
+  · rwa [show sideDot (ccwMirror A) (ccwMirror Y) = sideDot Y A by simp [ccwMirror, sideDot]; ring]
+
+omit C in
+/-- **Sub-arc (right part).** Reflect the left sub-arc inclusion. -/
 theorem sideCcw_sub_right {B X Y A : Point} (hB : B ≠ 0) (hX : X ≠ 0) (hA : A ≠ 0)
-    (h1 : sideCcw B X A) (h2 : sideCcw X Y A) : sideCcw B Y A := by
-  have hBB := sideDot_self_pos hB
-  have hXX := sideDot_self_pos hX
-  have hAA := sideDot_self_pos hA
-  have P1 := side_plucker B X Y A
-  rcases h1 with ⟨hbA, hbX, hxA⟩ | ⟨hbA, hX1⟩ | ⟨hbA, hdA, hbX⟩ | ⟨hbA, hdA, hX1⟩
-  · rcases h2 with ⟨-, hxY, hyA⟩ | ⟨hxA', -⟩ | ⟨hxA', -, -⟩ | ⟨hxA', -, -⟩
-    · refine Or.inl ⟨hbA, ?_, hyA⟩
-      have hxY' : sideCross Y X < 0 := by rw [sideCross_swap]; linarith
-      by_contra hc
-      push Not at hc
-      nlinarith [mul_pos hbX hyA, mul_neg_of_pos_of_neg hbA hxY',
-        mul_nonpos_of_nonpos_of_nonneg hc hxA.le]
-    · linarith
-    · linarith
-    · linarith
-  · refine Or.inr (Or.inl ⟨hbA, ?_⟩)
-    rcases h2 with ⟨-, -, hyA⟩ | ⟨hxA, h2⟩ | ⟨hxA, hdXA, hxY⟩ | ⟨hxA, hdXA, -⟩
-    · exact Or.inr hyA
-    · have hbX : 0 < sideCross B X := by
-        rcases hX1 with h | h
-        · exact h
-        · linarith
-      rcases h2 with hxY | hyA
-      · by_cases hyA : 0 < sideCross Y A
-        · exact Or.inr hyA
-        · push Not at hyA
-          left
-          have hyX : sideCross Y X < 0 := by rw [sideCross_swap]; linarith
-          by_contra hc
-          push Not at hc
-          nlinarith [mul_nonpos_of_nonneg_of_nonpos hbX.le hyA, mul_pos (neg_pos.2 hbA)
-            (neg_pos.2 hyX), mul_nonneg (neg_nonneg.2 hc) (neg_pos.2 hxA).le]
-      · exact Or.inr hyA
-    · right
-      have D := side_dotCross X A Y
-      rw [hxA, zero_mul, add_zero] at D
-      have e : sideCross A Y = -sideCross Y A := sideCross_swap _ _
-      rw [e] at D
-      nlinarith [mul_neg_of_neg_of_pos hdXA hxY]
-    · exfalso
-      have hbX : 0 < sideCross B X := by
-        rcases hX1 with h | h
-        · exact h
-        · rw [hxA] at h; exact absurd h (lt_irrefl _)
-      have D := side_dotCross A X B
-      have e1 : sideCross A X = -sideCross X A := sideCross_swap _ _
-      have e2 : sideCross A B = -sideCross B A := sideCross_swap _ _
-      have e3 : sideCross X B = -sideCross B X := sideCross_swap _ _
-      have e4 : sideDot A X = sideDot X A := sideDot_comm _ _
-      rw [e1, e2, e3, e4, hxA] at D
-      nlinarith [mul_pos hdXA (neg_pos.2 hbA)]
-  · have D := side_dotCross B A X
-    rw [hbA, zero_mul, add_zero] at D
-    have e : sideCross A X = -sideCross X A := sideCross_swap _ _
-    rw [e] at D
-    have hxA : 0 < sideCross X A := by nlinarith [mul_neg_of_neg_of_pos hdA hbX]
-    rcases h2 with ⟨-, hxY, hyA⟩ | ⟨hxA', -⟩ | ⟨hxA', -, -⟩ | ⟨hxA', -, -⟩
-    · refine Or.inr (Or.inr (Or.inl ⟨hbA, hdA, ?_⟩))
-      have hxY' : sideCross Y X < 0 := by rw [sideCross_swap]; linarith
-      rw [hbA, zero_mul, add_zero] at P1
-      by_contra hc
-      push Not at hc
-      nlinarith [mul_pos hbX hyA, mul_nonpos_of_nonpos_of_nonneg hc hxA.le]
-    · linarith
-    · linarith
-    · linarith
-  · refine Or.inr (Or.inr (Or.inr ⟨hbA, hdA, ?_⟩))
-    by_contra hc
-    push Not at hc
-    obtain ⟨hbY, hdY⟩ := hc
-    have D := side_dotCross B Y A
-    rw [hbA, mul_zero, hbY, zero_mul, add_zero] at D
-    have hyA : sideCross Y A = 0 := by
-      rcases mul_eq_zero.1 D.symm with h | h
-      · linarith
-      · exact h
-    have DD := side_dotDot B Y A
-    rw [hbY, zero_mul, add_zero] at DD
-    have hdYA : 0 ≤ sideDot Y A := by nlinarith [mul_nonneg hdY hdA.le]
-    exact sideCcw_not_ray_right hA hyA hdYA h2
+    (h1 : sideCcw B X A) (h2 : sideCcw X Y A) : sideCcw B Y A :=
+  (sideCcw_mirror hB).1 (sideCcw_sub_left (mirror_ne hA)
+    ((sideCcw_mirror hB).2 h1) ((sideCcw_mirror hX).2 h2))
 
 omit C in
 /-- **Complementary arcs are disjoint** (unless the arc is a full turn). -/
 theorem sideCcw_asymm {B X A : Point} (hB : B ≠ 0) (hns : sideNonSpike B A)
     (h1 : sideCcw B X A) : ¬ sideCcw A X B := by
   have hBB := sideDot_self_pos hB
-  have eBA : sideCross A B = -sideCross B A := sideCross_swap _ _
-  have eBX : sideCross X B = -sideCross B X := sideCross_swap _ _
-  have eXA : sideCross A X = -sideCross X A := sideCross_swap _ _
+  have eBA := sideCross_swap B A
+  have eBX := sideCross_swap B X
+  have eXA := sideCross_swap X A
   intro h2
   rcases h1 with ⟨hbA, hbX, hxA⟩ | ⟨hbA, hX⟩ | ⟨hbA, hdA, hbX⟩ | ⟨hbA, hdA, hX⟩
   · rcases h2 with ⟨h, -, -⟩ | ⟨-, h | h⟩ | ⟨h, -, -⟩ | ⟨h, -, -⟩
@@ -379,8 +330,8 @@ theorem sideCcw_rotate {B X A : Point} (hB : B ≠ 0) (hX : X ≠ 0) (hns : side
     (h1 : sideCcw B X A) : sideCcw X A B := by
   have hBB := sideDot_self_pos hB
   have hXX := sideDot_self_pos hX
-  have eBA : sideCross A B = -sideCross B A := sideCross_swap _ _
-  have eBX : sideCross X B = -sideCross B X := sideCross_swap _ _
+  have eBA := sideCross_swap B A
+  have eBX := sideCross_swap B X
   rcases h1 with ⟨hbA, hbX, hxA⟩ | ⟨hbA, hX1⟩ | ⟨hbA, hdA, hbX⟩ | ⟨hbA, hdA, hX1⟩
   · exact Or.inr (Or.inl ⟨by linarith, Or.inl hxA⟩)
   · rcases lt_trichotomy (sideCross B X) 0 with hbX | hbX | hbX
@@ -390,9 +341,7 @@ theorem sideCcw_rotate {B X A : Point} (hB : B ≠ 0) (hX : X ≠ 0) (hns : side
         · exact h
       exact Or.inl ⟨by linarith, hxA, by linarith⟩
     · have hxA : 0 < sideCross X A := by
-        rcases hX1 with h | h
-        · rw [hbX] at h; exact absurd h (lt_irrefl _)
-        · exact h
+        simp_all
       have D := side_dotCross B X A
       rw [hbX, zero_mul, add_zero] at D
       have hL := side_lagrange B X
@@ -409,7 +358,7 @@ theorem sideCcw_rotate {B X A : Point} (hB : B ≠ 0) (hX : X ≠ 0) (hns : side
     · exact Or.inr (Or.inl ⟨by linarith, Or.inr (by linarith)⟩)
   · have D := side_dotCross B A X
     rw [hbA, zero_mul, add_zero] at D
-    have eXA : sideCross A X = -sideCross X A := sideCross_swap _ _
+    have eXA := sideCross_swap X A
     rw [eXA] at D
     have hxA : 0 < sideCross X A := by nlinarith [mul_neg_of_neg_of_pos hdA hbX]
     exact Or.inr (Or.inl ⟨by linarith, Or.inl hxA⟩)
@@ -457,8 +406,8 @@ theorem sideLeftOf_iff_neg {a v b x : Point} (h : det a v b < 0) :
     sideLeftOf a v b x ↔ 0 < (-1) * det b v x ∨ 0 < (-1) * det v a x := by
   unfold sideLeftOf sideCcw
   rw [sideCross_corner a v b, sideCross_out v b x, sideCross_in a v x]
-  have e1 : det b v x = -det v b x := Geometry.det_swap12 _ _ _
-  have e2 : det v a x = -det a v x := Geometry.det_swap12 _ _ _
+  have e1 := Geometry.det_swap12 v b x
+  have e2 := Geometry.det_swap12 a v x
   rw [e1, e2]
   constructor
   · rintro (⟨h1, -⟩ | ⟨-, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
@@ -467,9 +416,7 @@ theorem sideLeftOf_iff_neg {a v b x : Point} (h : det a v b < 0) :
     · right; linarith
     · linarith
     · linarith
-  · rintro (h1 | h1)
-    · exact Or.inr (Or.inl ⟨h, Or.inl (by linarith)⟩)
-    · exact Or.inr (Or.inl ⟨h, Or.inr (by linarith)⟩)
+  · simp_all
 
 omit C in
 /-- Left sector of a straight corner: the left half-plane. -/
@@ -521,8 +468,7 @@ theorem sideSector {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v) {S : Set Poin
         unfold sideDot at hd; simp only [Prod.fst_sub, Prod.snd_sub] at hd; linarith
       have hss := sectorSide_zero hzero hdir hav hr hS0 (σ := 1) one_ne_zero
       have heq : ball v r ∩ {x | 0 < 1 * det a v x} = ball v r ∩ {x | sideLeftOf a v b x} := by
-        ext x
-        simp only [mem_inter_iff, mem_ofPred_eq, sideLeftOf_iff_zero hbv hzero hd]
+        simp [mem_ofPred_eq, sideLeftOf_iff_zero hbv hzero hd]
       rw [heq] at hss
       exact ⟨hsub, hss.2.1, hss.2.2⟩
     · -- the full turn: `b` in the direction of `a`
@@ -539,14 +485,7 @@ theorem sideSector {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v) {S : Set Poin
       have hspike : ∀ x, sideLeftOf a v b x ↔ (sideCross B (x - v) ≠ 0 ∨ sideDot B (x - v) < 0) := by
         intro x
         unfold sideLeftOf sideCcw
-        rw [sideCross_corner a v b, hzero]
-        constructor
-        · rintro (⟨h1, -⟩ | ⟨h1, -⟩ | ⟨-, h2, -⟩ | ⟨-, -, h3⟩)
-          · exact absurd h1 (lt_irrefl _)
-          · exact absurd h1 (lt_irrefl _)
-          · linarith
-          · exact h3
-        · intro h; exact Or.inr (Or.inr (Or.inr ⟨rfl, hdpos, h⟩))
+        simp_all [sideCross_corner a v b] 
       -- the three convex pieces
       set J : Point := (-B.2, B.1) with hJ
       have hcrossJ : ∀ x : Point, sideCross B (x - v) = det v b x := fun x => sideCross_out v b x
@@ -817,7 +756,7 @@ theorem sideLeft_edge {W : Polygon} {p : ℕ} {t : ℝ} (hne : W.vtx p ≠ W.vtx
   unfold sideLeft sidePrev sideNext
   rw [ite_eq_right ht.1.ne']
   unfold sidePt
-  have hvq : v ≠ lerp u v t := (lerp_ne_right hne ht.2).symm
+  have hvq := (lerp_ne_right hne ht.2).symm
   have h0 : det u (lerp u v t) v = 0 := by
     rw [Geometry.det_lerp_mid, Geometry.det_self_left, Geometry.det_self_right]; ring
   have hd : sideDot (v - lerp u v t) (u - lerp u v t) < 0 := by
@@ -854,7 +793,7 @@ theorem sideSectorIn_of_faces {W : Polygon} {D : Set Point} {c₀ : Point} {p : 
     refine ⟨hδ, ?_⟩
     show 0 < 1 * det _ _ _
     rw [det_offset]
-    have hδ0' : (0 : ℝ) < δ := hδ0
+    have hδ0' := hδ0
     nlinarith [mul_pos hδ0' (sqLen_pos hne)]
   obtain ⟨δ, h1, h2⟩ := (hoff.and hf).exists
   rw [one_mul] at h1
@@ -863,8 +802,7 @@ theorem sideSectorIn_of_faces {W : Polygon} {D : Set Point} {c₀ : Point} {p : 
     exact hHc.subset_connectedComponentIn h1 hHD
   refine ⟨r, hr, fun x hx hxl => hHK ⟨hx, ?_⟩⟩
   show 0 < 1 * det _ _ _
-  rw [one_mul, ← sideLeft_edge hne ht]
-  exact hxl
+  rwa [one_mul, ← sideLeft_edge hne ht]
 
 omit C in
 /-- Decomposition of an arc of positions: a position strictly between `A = (pa, ta)` and
@@ -891,10 +829,10 @@ theorem sideInArc_cases {N pa pb p : ℕ} {ta tb t : ℝ} (hpa : pa < N) (hpb : 
       linarith
     rw [ite_eq_left hk] at h
     obtain ⟨h1, h2⟩ := h
-    have hp1 : pa ≤ p := key1 hta ht1 h1
-    have hp2 : p ≤ pb := key1 ht htb1 h2
+    have hp1 := key1 hta ht1 h1
+    have hp2 := key1 ht htb1 h2
     have hL : (pb + N - pa) % N = pb - pa := by
-      rw [show pb + N - pa = (pb - pa) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      ram_simp [show pb + N - pa = (pb - pa) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
     refine ⟨p - pa, by rw [hL]; omega, ?_, ?_, ?_⟩
     · rw [show pa + (p - pa) = p by omega, Nat.mod_eq_of_lt hp]
     · intro hj
@@ -912,15 +850,15 @@ theorem sideInArc_cases {N pa pb p : ℕ} {ta tb t : ℝ} (hpa : pa < N) (hpb : 
     rw [ite_eq_right hk] at h
     have hL : (pb + N - pa) % N = pb + N - pa := Nat.mod_eq_of_lt (by omega)
     rcases h with h1 | h2
-    · have hp1 : pa ≤ p := key1 hta ht1 h1
+    · have hp1 := key1 hta ht1 h1
       refine ⟨p - pa, by rw [hL]; omega, ?_, ?_, ?_⟩
       · rw [show pa + (p - pa) = p by omega, Nat.mod_eq_of_lt hp]
       · intro hj
         have : p = pa := by omega
         subst this
         exact key2 h1
-      · intro hj; rw [hL] at hj; omega
-    · have hp2 : p ≤ pb := key1 ht htb1 h2
+      simp only [hL] <;> omega
+    · have hp2 := key1 ht htb1 h2
       refine ⟨p + N - pa, by rw [hL]; omega, ?_, ?_, ?_⟩
       · rw [show pa + (p + N - pa) = p + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hp]
       · intro hj; omega
@@ -962,52 +900,44 @@ theorem side_mod_cases {x N : ℕ} (hx : x < 2 * N) :
   rcases lt_or_ge x N with h | h
   · exact Or.inl ⟨h, Nat.mod_eq_of_lt h⟩
   · refine Or.inr ⟨h, ?_⟩
-    rw [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt (by omega)]
+    ram_rw [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt]
 
 omit C in
 theorem side_idx_succ {N : ℕ} (_hN : 0 < N) (a j : ℕ) :
     ((a + j) % N + 1) % N = (a + (j + 1)) % N := by
-  rw [Nat.add_mod ((a + j) % N) 1 N, Nat.mod_mod, ← Nat.add_mod, add_assoc]
+  simp [Nat.add_assoc]
 
 omit C in
 theorem side_idx_prev {N : ℕ} (hN : 0 < N) (a j : ℕ) :
     ((a + (j + 1)) % N + N - 1) % N = (a + j) % N := by
   rw [← side_idx_succ hN]
-  have hy := Nat.mod_lt (a + j) hN
-  rcases lt_or_eq_of_le (show (a + j) % N + 1 ≤ N by omega) with h | h
-  · rw [Nat.mod_eq_of_lt h, show (a + j) % N + 1 + N - 1 = (a + j) % N + N by omega,
-      Nat.add_mod_right, Nat.mod_mod]
-  · rw [h, Nat.mod_self, show 0 + N - 1 = (a + j) % N by omega, Nat.mod_mod]
-
-omit C in
-theorem side_arcLen_pos {N pa pb : ℕ} (hpa : pa < N) (hpb : pb < N) (hab : pa ≠ pb) :
-    1 ≤ (pb + N - pa) % N := by
-  rcases side_mod_cases (show pb + N - pa < 2 * N by omega) with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> omega
+  let q := (a + j) % N
+  have hq : q < N := Nat.mod_lt _ hN
+  change ((q + 1) % N + N - 1) % N = q
+  rcases (show q + 1 < N ∨ q + 1 = N by omega) with h | h
+  · rw [Nat.mod_eq_of_lt h, show q + 1 + N - 1 = q + N by omega, Nat.add_mod_right,
+      Nat.mod_eq_of_lt hq]
+  · simp [h, show N - 1 = q by omega, Nat.mod_eq_of_lt hq]
 
 omit C in
 theorem side_arcLen_end {N pa pb : ℕ} (hpa : pa < N) (hpb : pb < N) :
     (pa + (pb + N - pa) % N) % N = pb := by
-  rcases side_mod_cases (show pb + N - pa < 2 * N by omega) with ⟨h1, h2⟩ | ⟨h1, h2⟩
-  · rw [h2]
-    rcases side_mod_cases (show pa + (pb + N - pa) < 2 * N by omega) with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
-      omega
-  · rw [h2]
-    rcases side_mod_cases (show pa + (pb + N - pa - N) < 2 * N by omega) with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
-      omega
+  rw [Nat.add_mod_mod, show pa + (pb + N - pa) = pb + N by omega,
+    Nat.add_mod_right, Nat.mod_eq_of_lt hpb]
 
 omit C in
 theorem side_arc_ne_start {N pa j : ℕ} (hpa : pa < N) (hj1 : 1 ≤ j) (hjN : j < N) :
     (pa + j) % N ≠ pa := by
-  rcases side_mod_cases (show pa + j < 2 * N by omega) with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> omega
+  intro h
+  have e : pa + j ≡ pa + 0 [MOD N] := by simpa [Nat.ModEq] using h.trans (Nat.mod_eq_of_lt hpa).symm
+  have := (Nat.ModEq.add_left_cancel' pa e).eq_of_lt_of_lt hjN (by omega)
+  omega
 
 omit C in
 theorem side_arc_eq_end {N pa pb j : ℕ} (hpa : pa < N) (hpb : pb < N) (hjN : j < N)
     (hLN : (pb + N - pa) % N < N) (h : (pa + j) % N = pb) : j = (pb + N - pa) % N := by
-  have e := side_arcLen_end hpa hpb
-  rcases side_mod_cases (show pb + N - pa < 2 * N by omega) with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;>
-    rw [h2] at e hLN ⊢ <;>
-    rcases side_mod_cases (show pa + j < 2 * N by omega) with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
-    omega
+  have e : pa + j ≡ pa + (pb + N - pa) % N [MOD N] := h.trans (side_arcLen_end hpa hpb).symm
+  exact (Nat.ModEq.add_left_cancel' pa e).eq_of_lt_of_lt hjN hLN
 
 omit C in
 /-- **Chaining the left sides of a closed walk along an arc.**  Let `A = (pa, ta)` and
@@ -1027,9 +957,9 @@ theorem sideArc_chain (W : Polygon) {D : Set Point} {pa pb : ℕ} {ta tb : ℝ}
       SideSectorIn W (connectedComponentIn D c₀) p t := by
   have hN0 : 0 < W.n := by omega
   obtain ⟨L, hL⟩ : ∃ L, L = (pb + W.n - pa) % W.n := ⟨_, rfl⟩
-  have hLlt : L < W.n := hL ▸ Nat.mod_lt _ hN0
-  have hL1 : 1 ≤ L := hL ▸ side_arcLen_pos hpa hpb hab
-  have hDL : (pa + L) % W.n = pb := hL ▸ side_arcLen_end hpa hpb
+  have hLlt := hL ▸ Nat.mod_lt _ hN0
+  
+  
   have hD0 : (pa + 0) % W.n = pa := by rw [add_zero]; exact Nat.mod_eq_of_lt hpa
   have hDlt : ∀ j, (pa + j) % W.n < W.n := fun j => Nat.mod_lt _ hN0
   have hDne : ∀ j, 1 ≤ j → j ≤ L → (pa + j) % W.n ≠ pa := fun j h1 h2 =>
@@ -1076,8 +1006,7 @@ theorem sideArc_chain (W : Polygon) {D : Set Point} {pa pb : ℕ} {ta tb : ℝ}
           exact hi _ ⟨by linarith [hs.2], by linarith [hs.1]⟩
       rw [side_idx_succ hN0] at hprev
       -- the corner
-      have hcl0 : SideClean W D ((pa + (i + 1)) % W.n) 0 :=
-        hclean _ (hDlt _) 0 le_rfl one_pos (fun h => absurd h (hDne _ (by omega) hjL))
+      have hcl0 := hclean _ (hDlt _) 0 le_rfl one_pos (fun h => absurd h (hDne _ (by omega) hjL))
           (fun h => by
             have := hDpb _ hjL h
             rcases hcase with hc | hc
@@ -1089,11 +1018,11 @@ theorem sideArc_chain (W : Polygon) {D : Set Point} {pa pb : ℕ} {ta tb : ℝ}
       have hne2 : W.vtx ((pa + (i + 1)) % W.n) ≠ W.vtx (((pa + (i + 1)) % W.n + 1) % W.n) :=
         hnd _ (hDlt _)
       have hsec := sideSector hne1 hne2.symm (S := Dᶜ) hr (fun x hx hxS => by
-        have := hcl0 x (by rw [sidePt_zero]; exact hx) hxS
+        have := hcl0 x (by rwa [sidePt_zero]) hxS
         rwa [sideLeft_zero, side_idx_prev hN0] at this)
       obtain ⟨hUK, hnext⟩ := sideFaces_corner hsec hprev
-      refine ⟨⟨r, hr, fun x hx hxl => hUK ⟨by rw [sidePt_zero] at hx; exact hx, ?_⟩⟩, ?_⟩
-      · rw [sideLeft_zero, side_idx_prev hN0] at hxl; exact hxl
+      refine ⟨⟨r, hr, fun x hx hxl => hUK ⟨by rwa [sidePt_zero] at hx, ?_⟩⟩, ?_⟩
+      · rwa [sideLeft_zero, side_idx_prev hN0] at hxl
       · have hhi : (0 : ℝ) < (if i + 1 < L then (1 : ℝ) else tb) := by
           split_ifs with h
           · exact one_pos
@@ -1211,7 +1140,7 @@ theorem sideCut {W : Polygon} {D₀ : Set Point} {p : ℕ} {t : ℝ} {q' : Point
       · rw [hε, div_le_one (by positivity)]
         have := min_le_right ra 1
         nlinarith [norm_nonneg (q' - q)]
-      · apply point_ext <;> simp [lerp]
+      rfl
     have hεne : q + ε • (q' - q) ≠ q := by
       intro h
       have : ε • (q' - q) = 0 := by
@@ -1228,8 +1157,7 @@ theorem sideCut {W : Polygon} {D₀ : Set Point} {p : ℕ} {t : ℝ} {q' : Point
         _ ≤ ra := min_le_left ra 1
     have := hatt _ hεx hεne hεd
     unfold sideLeft sideLeftOf at this
-    rw [show q + ε • (q' - q) - q = ε • (q' - q) by abel, sideCcw_smul hε0] at this
-    exact this
+    rwa [show q + ε • (q' - q) - q = ε • (q' - q) by abel, sideCcw_smul hε0] at this
   -- the sector of the sub-corner `q' → q → next`
   have hsec : SectorSide Dᶜ (ball q rc ∩ {x | sideLeftOf q' q (sideNext W p) x}) q' q
       (sideNext W p) 1 := by
@@ -1256,12 +1184,11 @@ theorem sideCut {W : Polygon} {D₀ : Set Point} {p : ℕ} {t : ℝ} {q' : Point
   obtain ⟨s, hs⟩ := hoff.exists
   obtain ⟨δ, hδ⟩ := hs.exists
   set c₀ := offset q' q (1 - s) (1 * δ) with hc₀
-  have hUK : ball q rc ∩ {x | sideLeftOf q' q (sideNext W p) x} ⊆ connectedComponentIn D c₀ :=
-    hUc.subset_connectedComponentIn hδ.1 hUD
+  have hUK := hUc.subset_connectedComponentIn hδ.1 hUD
   refine ⟨c₀, ?_, ?_⟩
   · -- the walk just after `A`, reparametrised
     obtain ⟨s₁, hs₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hoff
-    have h1t : 0 < 1 - t := sub_pos.2 ht1
+    have h1t := sub_pos.2 ht1
     refine ⟨s₁ * (1 - t), mul_pos (mem_Ioi.1 hs₁) h1t, fun s' hs' => ?_⟩
     have hs'' : s' / (1 - t) ∈ Ioo 0 s₁ :=
       ⟨div_pos hs'.1 h1t, (div_lt_iff₀ h1t).2 hs'.2⟩
@@ -1312,7 +1239,7 @@ theorem sideFaces_chord {D₀ : Set Point} (hD₀ : IsOpen D₀) {a b : Point} (
     SideFaces (connectedComponentIn (D₀ \ Chazelle.segment a b) c₀) a b t' := by
   set t₁ := min t t' / 2
   set t₂ := (max t t' + 1) / 2
-  have h1 : 0 < t₁ := by have := lt_min ht.1 ht'.1; simp only [t₁]; linarith
+  have h1 : 0 < t₁ := by simp_all [t₁] 
   have h2 : t₂ < 1 := by have := max_lt ht.2 ht'.2; simp only [t₂]; linarith
   have h3 : t₁ < t := by have := min_le_left t t'; have := ht.1; simp only [t₁]; linarith
   have h4 : t₁ < t' := by have := min_le_right t t'; have := ht'.1; simp only [t₁]; linarith
@@ -1373,7 +1300,7 @@ theorem sideArc_split (W : Polygon) {D₀ : Set Point} (hD₀ : IsOpen D₀) {a 
     have e : sidePt W pa ((ta + tb) / 2) = lerp a b (1 / 2) := by
       rw [← hAa, ← hBb]; unfold sidePt
       apply point_ext <;> simp [lerp] <;> ring
-    rw [e]; exact hmid
+    rwa [e]
   -- cleanness for `D`
   have hclean : ∀ p < W.n, ∀ t : ℝ, 0 ≤ t → t < 1 → (p = pa → t ≠ ta) → (p = pb → t ≠ tb) →
       SideClean W D p t := by
@@ -1386,12 +1313,12 @@ theorem sideArc_split (W : Polygon) {D₀ : Set Point} (hD₀ : IsOpen D₀) {a 
         rcases hμ0.lt_or_eq with hμ0 | hμ0
         · rcases hμ1.lt_or_eq with hμ1 | hμ1
           · exact absurd (he ▸ hopen μ ⟨hμ0, hμ1⟩) (htrace p hp t ht ht1.le)
-          · right; rw [he, hμ1, lerp_one]
-        · left; rw [he, ← hμ0, lerp_zero]
+          simp [he, hμ1, lerp_one]
+        simp [he, ← hμ0, lerp_zero]
       rcases hcpt with hq | hq
       · obtain ⟨r1, hr1, hdis⟩ := hdisjA p hp t ht ht1 hnA hq
         refine ⟨min r0 (min r1 ra), lt_min hr0 (lt_min hr1 hra), fun x hx hxD hxl => ?_⟩
-        have hx0 : x ∈ ball (sidePt W p t) r0 := ball_subset_ball (min_le_left _ _) hx
+        have hx0 := ball_subset_ball (min_le_left _ _) hx
         rw [hq] at hx
         by_cases hxD0 : x ∈ D₀
         · have hxc : x ∈ c := by by_contra h; exact hxD ⟨hxD0, h⟩
@@ -1400,13 +1327,13 @@ theorem sideArc_split (W : Polygon) {D₀ : Set Point} (hD₀ : IsOpen D₀) {a 
             rw [hxa, ← hq] at hxl
             exact sideLeft_not_self (hnd p hp) ht1 hxl
           · refine hdis x (ball_subset_ball ((min_le_right _ _).trans (min_le_left _ _)) hx) ?_ hxl
-            refine hattA x hxc (by rw [hAa]; exact hxa) ?_
+            refine hattA x hxc (by rwa [hAa]) ?_
             rw [hAa]
             exact lt_of_lt_of_le (mem_ball.1 hx) ((min_le_right _ _).trans (min_le_right _ _))
         · exact hcl0 x hx0 hxD0 hxl
       · obtain ⟨r1, hr1, hdis⟩ := hdisjB p hp t ht ht1 hnB hq
         refine ⟨min r0 (min r1 rb), lt_min hr0 (lt_min hr1 hrb), fun x hx hxD hxl => ?_⟩
-        have hx0 : x ∈ ball (sidePt W p t) r0 := ball_subset_ball (min_le_left _ _) hx
+        have hx0 := ball_subset_ball (min_le_left _ _) hx
         rw [hq] at hx
         by_cases hxD0 : x ∈ D₀
         · have hxc : x ∈ c := by by_contra h; exact hxD ⟨hxD0, h⟩
@@ -1414,7 +1341,7 @@ theorem sideArc_split (W : Polygon) {D₀ : Set Point} (hD₀ : IsOpen D₀) {a 
           · rw [hxb, ← hq] at hxl
             exact sideLeft_not_self (hnd p hp) ht1 hxl
           · refine hdis x (ball_subset_ball ((min_le_right _ _).trans (min_le_left _ _)) hx) ?_ hxl
-            refine hattB x hxc (by rw [hBb]; exact hxb) ?_
+            refine hattB x hxc (by rwa [hBb]) ?_
             rw [hBb]
             exact lt_of_lt_of_le (mem_ball.1 hx) ((min_le_right _ _).trans (min_le_right _ _))
         · exact hcl0 x hx0 hxD0 hxl
@@ -1422,18 +1349,18 @@ theorem sideArc_split (W : Polygon) {D₀ : Set Point} (hD₀ : IsOpen D₀) {a 
       obtain ⟨r1, hr1, hball⟩ := Metric.isOpen_iff.1
         (Geometry.isClosed_segment a b).isOpen_compl _ hpc
       refine ⟨min r0 r1, lt_min hr0 hr1, fun x hx hxD hxl => ?_⟩
-      have hx0 : x ∈ ball (sidePt W p t) r0 := ball_subset_ball (min_le_left _ _) hx
-      have hx1 : x ∉ c := hball (ball_subset_ball (min_le_right _ _) hx)
-      have hxD0 : x ∉ D₀ := fun h => hxD ⟨h, hx1⟩
+      have hx0 := ball_subset_ball (min_le_left _ _) hx
+      have hx1 := hball (ball_subset_ball (min_le_right _ _) hx)
+      have hxD0 := fun h => hxD ⟨h, hx1⟩
       exact hcl0 x hx0 hxD0 hxl
   -- cutting at `A` and at `B`
   have hsegA : Chazelle.segment (sidePt W pa ta) b = c := by rw [hAa]
   have hsegB : Chazelle.segment (sidePt W pb tb) a = c := by rw [hBb, hc, segment_comm]
   have hA' : SideAttach W (Chazelle.segment (sidePt W pa ta) b) pa ta :=
-    ⟨hpa, hta, hta1, by rw [hsegA]; exact haA, ra, hra, by rw [hsegA]; exact hattA⟩
+    ⟨hpa, hta, hta1, by rwa [hsegA], ra, hra, by rwa [hsegA]⟩
   have hB' : SideAttach W (Chazelle.segment (sidePt W pb tb) a) pb tb :=
-    ⟨hpb, htb, htb1, by rw [hsegB]; exact hbB, rb, hrb, by rw [hsegB]; exact hattB⟩
-  obtain ⟨c₁, hstart₁, hleft₁⟩ := sideCut hA' (by rw [hAa]; exact hab) (hnd pa hpa)
+    ⟨hpb, htb, htb1, by rwa [hsegB], rb, hrb, by rwa [hsegB]⟩
+  obtain ⟨c₁, hstart₁, hleft₁⟩ := sideCut hA' (by rwa [hAa]) (hnd pa hpa)
     (hclean0 pa hpa ta hta hta1)
   obtain ⟨c₂, hstart₂, hleft₂⟩ := sideCut hB' (by rw [hBb]; exact hab.symm) (hnd pb hpb)
     (hclean0 pb hpb tb htb htb1)
@@ -1453,7 +1380,7 @@ theorem sideArc_split (W : Polygon) {D₀ : Set Point} (hD₀ : IsOpen D₀) {a 
   have h1 : SideFaces (connectedComponentIn D c₁) b a (1 / 2) := by
     have := sideFaces_chord (a := b) (b := a) (c₀ := c₁) hD₀ hab.symm hopen'
       (t := 1 - s₁) (t' := 1 / 2) ⟨by linarith [hs₁'.2], by linarith [hs₁'.1]⟩
-      ⟨by norm_num, by norm_num⟩ (by rw [hDba]; exact hs₁)
+      ⟨by norm_num, by norm_num⟩ (by rwa [hDba])
     rwa [hDba] at this
   have h2 : SideFaces (connectedComponentIn D c₂) a b (1 / 2) :=
     sideFaces_chord hD₀ hab hopen ⟨by linarith [hs₂'.2], by linarith [hs₂'.1]⟩
@@ -1507,13 +1434,7 @@ theorem sideWalk_vtx_five (β : Bool) : (C.sideWalk β).vtx 5 = C.slitTop := rfl
 
 theorem sideWalk_vtx_tour (β : Bool) {i : ℕ} (hi : i ≤ 2 * C.m) :
     (C.sideWalk β).vtx (i + 6) = C.sideTour β i := by
-  unfold Polygon.vtx sideWalk boxList
-  rw [List.getD_eq_getElem?_getD]
-  simp only [List.cons_append, List.nil_append]
-  rw [show i + 6 = (i + 1) + 5 by ring]
-  simp only [List.getElem?_cons_succ]
-  rw [List.getElem?_map, List.getElem?_range (by omega)]
-  rfl
+  simp_all [Polygon.vtx, sideWalk, boxList, List.getD_eq_getElem?_getD, List.cons_append, List.nil_append, show i + 6 = (i + 1) + 5 by ring] 
 
 theorem sideWalk_vtx_wrap (β : Bool) :
     (C.sideWalk β).vtx ((2 * C.m + 6 + 1) % (C.sideWalk β).n) = C.slitTop := by
@@ -1543,9 +1464,8 @@ theorem sideE_sideS (β : Bool) : sideE C.m (C.sideS β % (2 * C.m)) = C.topIdx 
   · simp only [Bool.false_eq_true, ↓reduceIte]
     rcases Nat.eq_zero_or_pos C.topIdx with h0 | h0
     · rw [h0, Nat.sub_zero, Nat.mod_self, sideE_zero]
-    · rw [Nat.mod_eq_of_lt (by omega)]; unfold sideE; split_ifs <;> omega
-  · simp only [↓reduceIte]
-    rw [Nat.mod_eq_of_lt (by omega)]; unfold sideE; rw [ite_eq_left hT]
+    · ram_rw [Nat.mod_eq_of_lt]; unfold sideE; split_ifs <;> omega
+  ram_simp [↓reduceIte, Nat.mod_eq_of_lt, sideE, ite_eq_left hT]
 
 theorem sideIdx_zero (β : Bool) : C.sideIdx β 0 = C.topIdx := by
   unfold sideIdx; rw [add_zero, sideE_sideS]
@@ -1591,8 +1511,7 @@ theorem sideVertex_inj (hP : C.P.Simple) {j k : ℕ} (hj : j ≤ C.m) (hk : k �
 /-- Consecutive chain vertices are distinct. -/
 theorem sideVertex_succ_ne (hP : C.P.Simple) (k : ℕ) : C.vertex k ≠ C.vertex (k + 1) := by
   have := simple_vtx_succ_ne hP (C.edgeIdx_lt k)
-  rw [C.edgeIdx_succ] at this
-  exact this
+  rwa [C.edgeIdx_succ] at this
 
 /-- A chain vertex lies exactly on its incident chain edges. -/
 theorem sideVertex_mem_chainEdge_iff (hP : C.P.Simple) {j k : ℕ} (hj : j ≤ C.m) (hk : k < C.m) :
@@ -1602,8 +1521,8 @@ theorem sideVertex_mem_chainEdge_iff (hP : C.P.Simple) {j k : ℕ} (hj : j ≤ C
     rcases (simple_vtx_mem_edge_iff hP (C.edgeIdx_lt j) (C.edgeIdx_lt k)).1 h with h1 | h1
     · exact Or.inl (C.sideEdgeIdx_inj hj hk.le h1.symm)
     · right
-      have h2 : (C.edgeIdx k + 1) % C.P.n = C.edgeIdx j := by
-        rw [h1]; exact prevIdx_succ C.P (C.edgeIdx_lt j)
+      have h2 := prevIdx_succ C.P (C.edgeIdx_lt j)
+      rw [← h1] at h2
       rw [C.edgeIdx_succ] at h2
       exact (C.sideEdgeIdx_inj (by omega) hj h2).symm
   · rintro (rfl | rfl)
@@ -1616,15 +1535,13 @@ theorem sideOpen_not_mem_chainEdge (hP : C.P.Simple) {k j : ℕ} (hk : k < C.m) 
     lerp (C.vertex k) (C.vertex (k + 1)) t ∉ C.chainEdge j := by
   have := simple_openEdge_not_mem_other hP (C.edgeIdx_lt k) ht (C.edgeIdx_lt j)
     (fun h => hjk (C.sideEdgeIdx_inj hj.le hk.le h))
-  rw [C.edgeIdx_succ] at this
-  exact this
+  rwa [C.edgeIdx_succ] at this
 
 /-- A point of an open chain edge is not a chain vertex. -/
 theorem sideOpen_ne_vertex (hP : C.P.Simple) {k j : ℕ} {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) :
     lerp (C.vertex k) (C.vertex (k + 1)) t ≠ C.vertex j := by
   have := simple_openEdge_ne_vtx hP (C.edgeIdx_lt k) ht (C.edgeIdx_lt j)
-  rw [C.edgeIdx_succ] at this
-  exact this
+  rwa [C.edgeIdx_succ] at this
 
 /-- The chain meets the slit only at the top vertex. -/
 theorem sideSet_inter_slit {x : Point} (hx : x ∈ C.set) (hs : x ∈ C.slit) : x = C.top := by
@@ -1643,8 +1560,7 @@ theorem sideLocal (q : Point) (hq : q ∈ box C.radius) :
     with hF
   have hFc : IsClosed F := isClosed_biUnion_finset fun k _ => isClosed_edge C.P _
   have hqF : q ∉ F := by
-    simp only [hF, mem_iUnion, Finset.mem_filter, not_exists]
-    intro k hk hq'; exact hk.2 hq'
+    simp [hF, mem_iUnion, Finset.mem_filter, not_exists]
   obtain ⟨r₂, hr₂, hb₂⟩ := Metric.isOpen_iff.1 hFc.isOpen_compl q hqF
   obtain ⟨r₃, hr₃, hb₃⟩ : ∃ r₃ > 0, q ∉ C.slit → ∀ x ∈ ball q r₃, x ∉ C.slit := by
     by_cases hqs : q ∈ C.slit
@@ -1652,9 +1568,9 @@ theorem sideLocal (q : Point) (hq : q ∈ box C.radius) :
     · obtain ⟨r, hr, hb⟩ := Metric.isOpen_iff.1 (Geometry.isClosed_segment _ _).isOpen_compl q hqs
       exact ⟨r, hr, fun _ x hx => hb hx⟩
   refine ⟨min r₁ (min r₂ r₃), lt_min hr₁ (lt_min hr₂ hr₃), fun x hx hxd => ?_⟩
-  have hx1 : x ∈ ball q r₁ := ball_subset_ball (min_le_left _ _) hx
-  have hx2 : x ∈ ball q r₂ := ball_subset_ball ((min_le_right _ _).trans (min_le_left _ _)) hx
-  have hx3 : x ∈ ball q r₃ := ball_subset_ball ((min_le_right _ _).trans (min_le_right _ _)) hx
+  have hx1 := ball_subset_ball (min_le_left _ _) hx
+  have hx2 := ball_subset_ball ((min_le_right _ _).trans (min_le_left _ _)) hx
+  have hx3 := ball_subset_ball ((min_le_right _ _).trans (min_le_right _ _)) hx
   rw [C.mem_dom_iff] at hxd
   push Not at hxd
   by_cases hxs : x ∈ C.set
@@ -1666,7 +1582,7 @@ theorem sideLocal (q : Point) (hq : q ∈ box C.radius) :
     simp only [hF, mem_iUnion, Finset.mem_filter, Finset.mem_range]
     exact ⟨k, ⟨hk, hqk⟩, hxk⟩
   · right
-    have hxs' : x ∈ C.slit := hxd (hb₁ hx1) hxs
+    have hxs' := hxd (hb₁ hx1) hxs
     by_cases hqs : q ∈ C.slit
     · exact ⟨hqs, hxs'⟩
     · exact absurd hxs' (hb₃ hqs x hx3)
@@ -1684,7 +1600,7 @@ theorem sideLocal_vertex (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) :
   · rw [C.chainEdge_eq] at hxj
     rcases (C.sideVertex_mem_chainEdge_iff hP hk hj).1 hkj with rfl | rfl
     · exact Or.inr (Or.inl ⟨hj, hxj⟩)
-    · left; refine ⟨by omega, ?_⟩; rwa [Nat.add_sub_cancel]
+    simp_all 
   · right; right
     refine ⟨?_, hxs⟩
     have := C.sideSet_inter_slit (C.vertex_mem_set hk) hks
@@ -1711,9 +1627,7 @@ theorem sideLocal_open (hP : C.P.Simple) {k : ℕ} (hk : k < C.m) {t : ℝ} (ht 
 
 omit C in
 theorem sideCcw_zero (B A : Point) : ¬ sideCcw B 0 A := by
-  unfold sideCcw sideCross sideDot
-  simp only [Prod.fst_zero, Prod.snd_zero, mul_zero, zero_mul, sub_self]
-  rintro (⟨-, h, -⟩ | ⟨-, h | h⟩ | ⟨-, -, h⟩ | ⟨-, -, h | h⟩) <;> simp_all
+  simp [sideCcw, sideCross, sideDot, Prod.fst_zero, Prod.snd_zero, mul_zero, zero_mul, sub_self]
 
 omit C in
 /-- The segments of a corner are not in its open left sector. -/
@@ -1764,10 +1678,10 @@ theorem sideS_mod (β : Bool) :
   cases β
   · simp only [Bool.false_eq_true, ↓reduceIte]
     rcases Nat.eq_zero_or_pos C.topIdx with h0 | h0
-    · left; rw [h0, Nat.sub_zero, Nat.mod_self]; exact ⟨rfl, Or.inr (Or.inl rfl)⟩
-    · right; rw [Nat.mod_eq_of_lt (by omega)]; exact ⟨rfl, h0, trivial⟩
+    · simp_all
+    · right; ram_rw [Nat.mod_eq_of_lt]; tauto
   · simp only [↓reduceIte]
-    left; rw [Nat.mod_eq_of_lt (by omega)]; exact ⟨rfl, Or.inl trivial⟩
+    left; ram_rw [Nat.mod_eq_of_lt]; exact ⟨rfl, Or.inl trivial⟩
 
 /-- **Classification of the corners of the tour**: at an inner position of the tour the walk
 passes a chain vertex `k` forwards (`k-1, k, k+1`) or backwards (`k+1, k, k-1`), or turns around
@@ -1818,7 +1732,7 @@ theorem sideTour_top_mid (β : Bool) {i : ℕ} (hi0 : 0 < i) (hi : i < 2 * C.m)
     · omega
     · rw [h2]; omega
   obtain ⟨j, hjdef⟩ : ∃ j, j = (C.sideS β + (i - 1)) % (2 * C.m) := ⟨_, rfl⟩
-  have hj2 : j < 2 * C.m := hjdef ▸ Nat.mod_lt _ hm2
+  have hj2 := hjdef ▸ Nat.mod_lt _ hm2
   have e1 : C.sideIdx β i = sideE C.m (j + 1) := by
     rw [hjdef]; have := C.sideIdx_succ β (i - 1); rwa [Nat.sub_add_cancel hi0] at this
   have e0 : C.sideIdx β (i - 1) = sideE C.m j := by rw [hjdef]; rfl
@@ -1828,12 +1742,12 @@ theorem sideTour_top_mid (β : Bool) {i : ℕ} (hi0 : 0 < i) (hi : i < 2 * C.m)
     rw [C.sideIdx_succ, hji]
   have hne : (j + 1) % (2 * C.m) ≠ S := by
     rw [← hji, hSdef]; intro h
-    have h' : C.sideS β + i ≡ C.sideS β + 0 [MOD 2 * C.m] := by rw [add_zero]; exact h
+    have h' : C.sideS β + i ≡ C.sideS β + 0 [MOD 2 * C.m] := by rwa [add_zero]
     have := Nat.ModEq.add_left_cancel' (C.sideS β) h'
     exact absurd (Nat.ModEq.eq_of_lt_of_lt this hi hm2) (by omega)
   rw [e1] at hiT
   rw [e0, e2, f1, f2]
-  have hT := C.topIdx_le
+  
   have key : j + 1 < 2 * C.m ∧ j + 1 = 2 * C.m - S := by
     unfold sideE at hiT
     rcases lt_or_eq_of_le (show j + 1 ≤ 2 * C.m by omega) with h | h
@@ -1876,7 +1790,7 @@ theorem sideTour_top_inner (β : Bool) {i : ℕ} (hi0 : 0 < i) (hi : i < 2 * C.m
   have hT := C.topIdx_le
   have hne : (C.sideS β + i) % (2 * C.m) ≠ C.sideS β % (2 * C.m) := by
     intro h
-    have h' : C.sideS β + i ≡ C.sideS β + 0 [MOD 2 * C.m] := by rw [add_zero]; exact h
+    have h' : C.sideS β + i ≡ C.sideS β + 0 [MOD 2 * C.m] := by rwa [add_zero]
     have := Nat.ModEq.add_left_cancel' (C.sideS β) h'
     exact absurd (Nat.ModEq.eq_of_lt_of_lt this hi hm2) (by omega)
   rw [sideIdx_eq] at hiT
@@ -1908,9 +1822,9 @@ theorem sideChain_meet (hP : C.P.Simple) {k : ℕ} (hk0 : 0 < k) (hkm : k < C.m)
   have e1 : C.chainEdge (k - 1) = Chazelle.segment (C.vertex (k - 1)) (C.vertex k) := by
     rw [C.chainEdge_eq, Nat.sub_add_cancel hk0]
   have hx1' : x ∈ C.P.edge (C.edgeIdx (k - 1)) := by
-    show x ∈ C.chainEdge (k - 1); rw [e1]; exact hx1
+    show x ∈ C.chainEdge (k - 1); rwa [e1]
   have hx2' : x ∈ C.P.edge (C.edgeIdx k) := by
-    show x ∈ C.chainEdge k; rw [C.chainEdge_eq]; exact hx2
+    show x ∈ C.chainEdge k; rwa [C.chainEdge_eq]
   have hne : C.edgeIdx (k - 1) ≠ C.edgeIdx k := fun h =>
     absurd (C.sideEdgeIdx_inj (by omega) (by omega) h) (by omega)
   have hmem : x ∈ C.P.edge (C.edgeIdx (k - 1)) ∩ C.P.edge (C.edgeIdx k) := ⟨hx1', hx2'⟩
@@ -1920,7 +1834,7 @@ theorem sideChain_meet (hP : C.P.Simple) {k : ℕ} (hk0 : 0 < k) (hkm : k < C.m)
   rw [C.edgeIdx_succ] at h2
   rcases h1 with h1 | h1
   · exfalso
-    have h1' : x = C.vertex (k - 1) := h1
+    have h1' := h1
     rcases h2 with h2 | h2
     · have := C.sideVertex_inj hP (by omega) (by omega) (h1'.symm.trans h2)
       omega
@@ -1934,7 +1848,7 @@ theorem sideChain_nonSpike (hP : C.P.Simple) {k : ℕ} (hk0 : 0 < k) (hkm : k < 
       sideNonSpike (C.vertex (k - 1) - C.vertex k) (C.vertex (k + 1) - C.vertex k) := by
   have hav : C.vertex (k - 1) ≠ C.vertex k := by
     have := C.sideVertex_succ_ne hP (k - 1); rwa [Nat.sub_add_cancel hk0] at this
-  have hvb : C.vertex k ≠ C.vertex (k + 1) := C.sideVertex_succ_ne hP k
+  have hvb := C.sideVertex_succ_ne hP k
   have key : sideCross (C.vertex (k + 1) - C.vertex k) (C.vertex (k - 1) - C.vertex k) = 0 →
       sideDot (C.vertex (k + 1) - C.vertex k) (C.vertex (k - 1) - C.vertex k) < 0 := by
     intro hc
@@ -1983,8 +1897,13 @@ theorem sideTop_nonSpike (hP : C.P.Simple) (β : Bool) (hT0 : 0 < C.topIdx)
   · rw [h1, show C.sideIdx β (2 * C.m - 1) = C.topIdx - 1 by omega]; exact hns.1
   · omega
 
+section
+
+variable (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β)
+
+include hP hβ in
 /-- At the middle passage through the top vertex, the slit is not in the left sector. -/
-theorem sideTop_mid_slit (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) (hT0 : 0 < C.topIdx)
+theorem sideTop_mid_slit (hT0 : 0 < C.topIdx)
     (hTm : C.topIdx < C.m) :
     ¬ sideLeftOf (C.sideTour β 1) C.top (C.sideTour β (2 * C.m - 1)) C.slitTop := by
   have hord : sideCcw (C.sideTour β 1 - C.top) (C.slitTop - C.top)
@@ -1997,9 +1916,10 @@ theorem sideTop_mid_slit (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) (hT
   exact sideCcw_asymm (sub_ne_zero_of_ne' (C.sideTour_one_ne_top hP β))
     (C.sideTop_nonSpike hP β hT0 hTm) hord
 
+include hP hβ in
 /-- At the first corner of the top vertex (down the slit, then to the first neighbour), the
 last neighbour is not in the left sector. -/
-theorem sideTop_first_other (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β)
+theorem sideTop_first_other
     (hT0 : 0 < C.topIdx) (hTm : C.topIdx < C.m) :
     ¬ sideLeftOf C.slitTop C.top (C.sideTour β 1) (C.sideTour β (2 * C.m - 1)) := by
   have hord : sideCcw (C.sideTour β 1 - C.top) (C.slitTop - C.top)
@@ -2015,9 +1935,10 @@ theorem sideTop_first_other (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β)
     (sideCross_self _) (sideDot_self_pos (sub_ne_zero_of_ne' (C.sideTour_last_ne_top hP β))).le
     this
 
+include hP hβ in
 /-- At the last corner of the top vertex (from the last neighbour, then up the slit), the first
 neighbour is not in the left sector. -/
-theorem sideTop_last_other (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β)
+theorem sideTop_last_other
     (hT0 : 0 < C.topIdx) (hTm : C.topIdx < C.m) :
     ¬ sideLeftOf (C.sideTour β (2 * C.m - 1)) C.top C.slitTop (C.sideTour β 1) := by
   have hord : sideCcw (C.sideTour β 1 - C.top) (C.slitTop - C.top)
@@ -2039,16 +1960,16 @@ theorem sideTop_last_other (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β)
 
 theorem sideWalk_prev_tour (β : Bool) {i : ℕ} (hi : 1 ≤ i) (hi2 : i ≤ 2 * C.m) :
     (i + 6 + (C.sideWalk β).n - 1) % (C.sideWalk β).n = (i - 1) + 6 := by
-  rw [sideWalk_n, show i + 6 + (2 * C.m + 7) - 1 = (i - 1 + 6) + (2 * C.m + 7) by omega,
-    Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [sideWalk_n, show i + 6 + (2 * C.m + 7) - 1 = (i - 1 + 6) + (2 * C.m + 7) by omega,
+    Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 theorem sideWalk_next_tour (β : Bool) {i : ℕ} (hi : i < 2 * C.m) :
     (i + 6 + 1) % (C.sideWalk β).n = (i + 1) + 6 := by
-  rw [sideWalk_n, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [sideWalk_n, Nat.mod_eq_of_lt]
 
 theorem sideWalk_prev_six (β : Bool) : (0 + 6 + (C.sideWalk β).n - 1) % (C.sideWalk β).n = 5 := by
-  rw [sideWalk_n, show 0 + 6 + (2 * C.m + 7) - 1 = 5 + (2 * C.m + 7) by omega, Nat.add_mod_right,
-    Nat.mod_eq_of_lt (by omega)]
+  ram_rw [sideWalk_n, show 0 + 6 + (2 * C.m + 7) - 1 = 5 + (2 * C.m + 7) by omega, Nat.add_mod_right,
+    Nat.mod_eq_of_lt]
 
 theorem sideWalk_next_last (β : Bool) : (2 * C.m + 6 + 1) % (C.sideWalk β).n = 0 := by
   rw [sideWalk_n, show 2 * C.m + 6 + 1 = 2 * C.m + 7 by ring, Nat.mod_self]
@@ -2057,17 +1978,18 @@ theorem sideVertex_pred_ne (hP : C.P.Simple) {k : ℕ} (hk : 1 ≤ k) :
     C.vertex (k - 1) ≠ C.vertex k := by
   have := C.sideVertex_succ_ne hP (k - 1); rwa [Nat.sub_add_cancel hk] at this
 
+include hP hβ in
 /-- **Cleanness at an inner corner of the tour.** -/
-theorem sideClean_tour_vertex (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {i : ℕ}
+theorem sideClean_tour_vertex {i : ℕ}
     (hi0 : 0 < i) (hi : i < 2 * C.m) : SideClean (C.sideWalk β) C.dom (i + 6) 0 := by
   have hprev : (C.sideWalk β).vtx ((i + 6 + (C.sideWalk β).n - 1) % (C.sideWalk β).n) =
       C.vertex (C.sideIdx β (i - 1)) := by
-    rw [C.sideWalk_prev_tour β hi0 hi.le, C.sideWalk_vtx_tour β (by omega)]; rfl
+    ram_rw [C.sideWalk_prev_tour β hi0 hi.le, C.sideWalk_vtx_tour β]; rfl
   have hcur : (C.sideWalk β).vtx (i + 6) = C.vertex (C.sideIdx β i) :=
     C.sideWalk_vtx_tour β hi.le
   have hnext : (C.sideWalk β).vtx ((i + 6 + 1) % (C.sideWalk β).n) =
       C.vertex (C.sideIdx β (i + 1)) := by
-    rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β (by omega)]; rfl
+    ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β]; rfl
   obtain ⟨r, hr, hloc⟩ := C.sideLocal_vertex hP (C.sideIdx_le β i)
   refine ⟨r, hr, fun x hx hxd hxl => ?_⟩
   rw [sidePt_zero, hcur] at hx
@@ -2107,16 +2029,17 @@ theorem sideClean_tour_vertex (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β
     · omega
     · exact hmid hkT hxs
 
+include hP hβ in
 /-- **Cleanness at the first corner of the top vertex** (down the slit, then along the chain). -/
-theorem sideClean_top_first (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) :
+theorem sideClean_top_first :
     SideClean (C.sideWalk β) C.dom (0 + 6) 0 := by
   have hm := C.one_le
   have hprev : (C.sideWalk β).vtx ((0 + 6 + (C.sideWalk β).n - 1) % (C.sideWalk β).n) =
       C.slitTop := by rw [C.sideWalk_prev_six β]; rfl
   have hcur : (C.sideWalk β).vtx (0 + 6) = C.top := by
-    rw [C.sideWalk_vtx_tour β (by omega), sideTour_zero]
+    ram_rw [C.sideWalk_vtx_tour β, sideTour_zero]
   have hnext : (C.sideWalk β).vtx ((0 + 6 + 1) % (C.sideWalk β).n) = C.sideTour β 1 := by
-    rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega)]
+    ram_rw [C.sideWalk_next_tour β, C.sideWalk_vtx_tour β]
   obtain ⟨r, hr, hloc⟩ := C.sideLocal_vertex hP C.topIdx_le
   refine ⟨r, hr, fun x hx hxd hxl => ?_⟩
   rw [sidePt_zero, hcur] at hx
@@ -2132,7 +2055,7 @@ theorem sideClean_top_first (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) 
     by_cases h1 : w = C.sideIdx β 1
     · subst h1
       exact sideLeftOf_not_seg_next (C.sideTour_one_ne_top hP β) hy
-    · have h2 : w = C.sideIdx β (2 * C.m - 1) := hw'.resolve_left h1
+    · have h2 := hw'.resolve_left h1
       have hT0 : 0 < C.topIdx := by
         rcases hn3 with h | h <;> omega
       have hTm : C.topIdx < C.m := by
@@ -2143,16 +2066,17 @@ theorem sideClean_top_first (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) 
   · rw [segment_comm] at hxs
     exact hnb _ (Or.inl (by omega)) (by omega) (hn1 h1) x hxs hxl
   · exact hnb _ (Or.inr rfl) (by omega) (hn2 h1) x hxs hxl
-  · have : x ∈ Chazelle.segment C.slitTop C.top := by rw [segment_comm]; exact hxs
+  · have : x ∈ Chazelle.segment C.slitTop C.top := by rwa [segment_comm]
     exact sideLeftOf_not_seg_prev C.sideSlitTop_ne_top this hxl
 
+include hP hβ in
 /-- **Cleanness at the last corner of the top vertex** (along the chain, then up the slit). -/
-theorem sideClean_top_last (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) :
+theorem sideClean_top_last :
     SideClean (C.sideWalk β) C.dom (2 * C.m + 6) 0 := by
   have hm := C.one_le
   have hprev : (C.sideWalk β).vtx ((2 * C.m + 6 + (C.sideWalk β).n - 1) % (C.sideWalk β).n) =
       C.sideTour β (2 * C.m - 1) := by
-    rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β (by omega)]
+    ram_rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β]
   have hcur : (C.sideWalk β).vtx (2 * C.m + 6) = C.top := by
     rw [C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
   have hnext : (C.sideWalk β).vtx ((2 * C.m + 6 + 1) % (C.sideWalk β).n) = C.slitTop := by
@@ -2172,7 +2096,7 @@ theorem sideClean_top_last (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) :
     by_cases h2 : w = C.sideIdx β (2 * C.m - 1)
     · subst h2
       exact sideLeftOf_not_seg_prev (C.sideTour_last_ne_top hP β) hy
-    · have h1 : w = C.sideIdx β 1 := hw'.resolve_right h2
+    · have h1 := hw'.resolve_right h2
       have hT0 : 0 < C.topIdx := by
         rcases hn4 with h | h <;> omega
       have hTm : C.topIdx < C.m := by
@@ -2192,7 +2116,7 @@ theorem sideClean_tour_edge (hP : C.P.Simple) (β : Bool) {i : ℕ} (hi : i < 2 
     C.sideWalk_vtx_tour β hi.le
   have hnext : (C.sideWalk β).vtx ((i + 6 + 1) % (C.sideWalk β).n) =
       C.vertex (C.sideIdx β (i + 1)) := by
-    rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β (by omega)]; rfl
+    ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β]; rfl
   have hle := C.sideIdx_le β (i + 1)
   have hle' := C.sideIdx_le β i
   rcases C.sideTour_step β i with h | h
@@ -2224,16 +2148,37 @@ theorem sideClean_tour_edge (hP : C.P.Simple) (β : Bool) {i : ℕ} (hi : i < 2 
 
 /-! ### Cleanness of the box block of the corrected walk -/
 
-theorem sideClean_box {W : Polygon} {p : ℕ} {t : ℝ} (hset : sidePt W p t ∉ C.set) {r : ℝ}
-    (hr : 0 < r)
-    (h : ∀ x ∈ ball (sidePt W p t) r, sideLeft W p t x → x ∈ box C.radius ∧ x ∉ C.slit) :
+/-- A strict constraint holds near a point if it holds at that point, or follows
+from the sector condition. This separates local cleanness from metric estimates. -/
+private theorem near_open {q : Point} {U : Set Point} (hU : IsOpen U)
+    {L : Point → Prop} (h : q ∈ U ∨ ∀ x, L x → x ∈ U) :
+    ∀ᶠ x in 𝓝 q, L x → x ∈ U :=
+  h.elim (fun hq => (show ∀ᶠ x in 𝓝 q, x ∈ U from hU.mem_nhds hq).mono fun _ hx _ => hx)
+    Filter.Eventually.of_forall
+
+private theorem near_box {q : Point} {L : Point → Prop}
+    (h₁ : -C.radius < q.1 ∨ ∀ x, L x → -C.radius < x.1)
+    (h₂ : q.1 < C.radius ∨ ∀ x, L x → x.1 < C.radius)
+    (h₃ : -C.radius < q.2 ∨ ∀ x, L x → -C.radius < x.2)
+    (h₄ : q.2 < C.radius ∨ ∀ x, L x → x.2 < C.radius)
+    (hs : q ∉ C.slit ∨ ∀ x, L x → x ∉ C.slit) :
+    ∀ᶠ x in 𝓝 q, L x → x ∈ box C.radius ∧ x ∉ C.slit := by
+  filter_upwards [near_open (isOpen_lt continuous_const continuous_fst) h₁,
+    near_open (isOpen_lt continuous_fst continuous_const) h₂,
+    near_open (isOpen_lt continuous_const continuous_snd) h₃,
+    near_open (isOpen_lt continuous_snd continuous_const) h₄,
+    near_open (Geometry.isClosed_segment C.top C.slitTop).isOpen_compl hs]
+    with x a b c d e hx
+  exact ⟨⟨abs_lt.2 ⟨a hx, b hx⟩, abs_lt.2 ⟨c hx, d hx⟩⟩, e hx⟩
+
+private theorem sideClean_box {W : Polygon} {p : ℕ} {t : ℝ} (hset : sidePt W p t ∉ C.set)
+    (h : ∀ᶠ x in 𝓝 (sidePt W p t), sideLeft W p t x → x ∈ box C.radius ∧ x ∉ C.slit) :
     SideClean W C.dom p t := by
-  obtain ⟨r₁, hr₁, hb₁⟩ := Metric.isOpen_iff.1 C.isClosed_set.isOpen_compl _ hset
-  refine ⟨min r r₁, lt_min hr hr₁, fun x hx hxd hxl => ?_⟩
-  have hx1 : x ∈ ball (sidePt W p t) r := ball_subset_ball (min_le_left _ _) hx
-  have hx2 : x ∉ C.set := hb₁ (ball_subset_ball (min_le_right _ _) hx)
-  obtain ⟨hb, hs⟩ := h x hx1 hxl
-  exact hxd (C.mem_dom_iff.2 ⟨hb, hx2, hs⟩)
+  have hn : ∀ᶠ x in 𝓝 (sidePt W p t), sideLeft W p t x → x ∈ C.dom := by
+    filter_upwards [h, C.isClosed_set.isOpen_compl.mem_nhds hset] with x hh hx hl
+    exact C.mem_dom_iff.2 ⟨(hh hl).1, hx, (hh hl).2⟩
+  obtain ⟨r, hr, hb⟩ := Metric.mem_nhds_iff.1 hn
+  exact ⟨r, hr, fun x hx hxd hl => hxd (hb hx hl)⟩
 
 theorem sideNot_mem_set_of_abs {q : Point} (h : C.radius ≤ |q.1| ∨ C.radius ≤ |q.2|) :
     q ∉ C.set := by
@@ -2256,373 +2201,87 @@ theorem sideWalk_mod_small (β : Bool) {p : ℕ} (hp : p < 2 * C.m + 7) :
 
 theorem sideWalk_prev_zero (β : Bool) :
     (C.sideWalk β).vtx ((0 + (C.sideWalk β).n - 1) % (C.sideWalk β).n) = C.top := by
-  rw [sideWalk_n, show 0 + (2 * C.m + 7) - 1 = 2 * C.m + 6 by omega,
-    Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
+  simp [sideWalk_n, C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
 
 theorem sideWalk_prev_small (β : Bool) {p : ℕ} (hp1 : 1 ≤ p) (hp : p ≤ 5) :
     (p + (C.sideWalk β).n - 1) % (C.sideWalk β).n = p - 1 := by
-  rw [sideWalk_n, show p + (2 * C.m + 7) - 1 = (p - 1) + (2 * C.m + 7) by omega,
-    Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [sideWalk_n, show p + (2 * C.m + 7) - 1 = (p - 1) + (2 * C.m + 7) by omega,
+    Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 theorem sideWalk_vtx_six (β : Bool) : (C.sideWalk β).vtx 6 = C.top := by
   have := C.sideWalk_vtx_tour β (i := 0) (by omega); rwa [zero_add, sideTour_zero] at this
 
-/-- **Cleanness of the box block**: the corners of the box and the two corners at the top of the
-slit. -/
+private theorem near_corner {q a v b : Point} (hdet : 0 < det a v b)
+    (h : ∀ᶠ x in 𝓝 q, (0 < det a v x ∧ 0 < det v b x) → x ∈ box C.radius ∧ x ∉ C.slit) :
+    ∀ᶠ x in 𝓝 q, sideLeftOf a v b x → x ∈ box C.radius ∧ x ∉ C.slit := by
+  simpa only [sideLeftOf_iff_pos hdet, one_mul] using h
+
+/-- Cleanness at the corners of the box and on either visit to the top of the slit. -/
 theorem sideClean_box_vertex (β : Bool) {p : ℕ} (hp : p ≤ 5) :
     SideClean (C.sideWalk β) C.dom p 0 := by
   have hR := C.radius_pos
-  have ht := abs_lt.1 C.abs_top_fst_lt_radius
+  obtain ⟨hwest, heast⟩ := abs_lt.1 C.abs_top_fst_lt_radius
   have htop := C.top_snd_lt_radius
-  have hr : 0 < C.radius - |C.top.1| := by have := C.abs_top_fst_lt_radius; linarith
-  have hta := abs_le.1 (le_refl |C.top.1|)
   have hnext : ((p + 1) % (C.sideWalk β).n) = p + 1 := C.sideWalk_mod_small β (by omega)
-  interval_cases p
-  · -- the top of the slit, from the slit to the top side
-    have hset : sidePt (C.sideWalk β) 0 0 ∉ C.set := by
-      rw [sidePt_zero, C.sideWalk_vtx_zero]
-      apply C.sideNot_mem_set_of_abs; right
-      simp only [slitTop]; rw [abs_of_pos hR]
-    refine C.sideClean_box hset hr ?_
-    intro x hx hxl
-    rw [sidePt_zero, C.sideWalk_vtx_zero, mem_ball_iff_abs] at hx
-    rw [sideLeft_zero, C.sideWalk_prev_zero, C.sideWalk_vtx_zero, hnext] at hxl
-    change sideLeftOf C.top C.slitTop (-C.radius, C.radius) x at hxl
-    have hdet : 0 < det C.top C.slitTop (-C.radius, C.radius) := by
-      simp only [det, slitTop]; nlinarith
-    rw [sideLeftOf_iff_pos hdet] at hxl
-    obtain ⟨h1, h2⟩ := hxl
-    simp only [det, slitTop, one_mul] at h1 h2 hx
-    obtain ⟨hx1, hx2⟩ := hx
-    rw [abs_lt] at hx1 hx2
-    have e1 : x.1 < C.top.1 := by nlinarith
-    have e2 : x.2 < C.radius := by nlinarith
-    exact ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, abs_lt.2 ⟨by linarith, e2⟩⟩,
-      C.sideNot_mem_slit_of_fst (ne_of_lt e1)⟩
-  · have hset : sidePt (C.sideWalk β) 1 0 ∉ C.set := by
-      rw [sidePt_zero, C.sideWalk_vtx_one]
-      apply C.sideNot_mem_set_of_abs; right
-      simp only; rw [abs_of_pos hR]
-    refine C.sideClean_box hset hr ?_
-    intro x hx hxl
-    rw [sidePt_zero, C.sideWalk_vtx_one, mem_ball_iff_abs] at hx
-    rw [sideLeft_zero, C.sideWalk_prev_small β le_rfl (by norm_num), C.sideWalk_vtx_one,
-      hnext] at hxl
-    change sideLeftOf C.slitTop (-C.radius, C.radius) (-C.radius, -C.radius) x at hxl
-    have hdet : 0 < det C.slitTop (-C.radius, C.radius) (-C.radius, -C.radius) := by
-      simp only [det, slitTop]; nlinarith
-    rw [sideLeftOf_iff_pos hdet] at hxl
-    obtain ⟨h1, h2⟩ := hxl
-    simp only [det, slitTop, one_mul] at h1 h2 hx
-    obtain ⟨hx1, hx2⟩ := hx
-    rw [abs_lt] at hx1 hx2
-    have e1 : x.2 < C.radius := by nlinarith
-    have e2 : -C.radius < x.1 := by nlinarith
-    exact ⟨⟨abs_lt.2 ⟨e2, by linarith⟩, abs_lt.2 ⟨by linarith, e1⟩⟩,
-      C.sideNot_mem_slit_of_fst (by linarith)⟩
-  · have hset : sidePt (C.sideWalk β) 2 0 ∉ C.set := by
-      rw [sidePt_zero, C.sideWalk_vtx_two]
-      apply C.sideNot_mem_set_of_abs; right
-      simp only; rw [abs_neg, abs_of_pos hR]
-    refine C.sideClean_box hset hr ?_
-    intro x hx hxl
-    rw [sidePt_zero, C.sideWalk_vtx_two, mem_ball_iff_abs] at hx
-    rw [sideLeft_zero, C.sideWalk_prev_small β (by norm_num) (by norm_num), C.sideWalk_vtx_two,
-      hnext] at hxl
-    change sideLeftOf (-C.radius, C.radius) (-C.radius, -C.radius) (C.radius, -C.radius) x at hxl
-    have hdet : 0 < det (-C.radius, C.radius) (-C.radius, -C.radius) (C.radius, -C.radius) := by
-      simp only [det]; nlinarith
-    rw [sideLeftOf_iff_pos hdet] at hxl
-    obtain ⟨h1, h2⟩ := hxl
-    simp only [det, one_mul] at h1 h2 hx
-    obtain ⟨hx1, hx2⟩ := hx
-    rw [abs_lt] at hx1 hx2
-    have e1 : -C.radius < x.1 := by nlinarith
-    have e2 : -C.radius < x.2 := by nlinarith
-    exact ⟨⟨abs_lt.2 ⟨e1, by linarith⟩, abs_lt.2 ⟨e2, by linarith⟩⟩,
-      C.sideNot_mem_slit_of_fst (by linarith)⟩
-  · have hset : sidePt (C.sideWalk β) 3 0 ∉ C.set := by
-      rw [sidePt_zero, C.sideWalk_vtx_three]
-      apply C.sideNot_mem_set_of_abs; right
-      simp only; rw [abs_neg, abs_of_pos hR]
-    refine C.sideClean_box hset hr ?_
-    intro x hx hxl
-    rw [sidePt_zero, C.sideWalk_vtx_three, mem_ball_iff_abs] at hx
-    rw [sideLeft_zero, C.sideWalk_prev_small β (by norm_num) (by norm_num), C.sideWalk_vtx_three,
-      hnext] at hxl
-    change sideLeftOf (-C.radius, -C.radius) (C.radius, -C.radius) (C.radius, C.radius) x at hxl
-    have hdet : 0 < det (-C.radius, -C.radius) (C.radius, -C.radius) (C.radius, C.radius) := by
-      simp only [det]; nlinarith
-    rw [sideLeftOf_iff_pos hdet] at hxl
-    obtain ⟨h1, h2⟩ := hxl
-    simp only [det, one_mul] at h1 h2 hx
-    obtain ⟨hx1, hx2⟩ := hx
-    rw [abs_lt] at hx1 hx2
-    have e1 : x.1 < C.radius := by nlinarith
-    have e2 : -C.radius < x.2 := by nlinarith
-    exact ⟨⟨abs_lt.2 ⟨by linarith, e1⟩, abs_lt.2 ⟨e2, by linarith⟩⟩,
-      C.sideNot_mem_slit_of_fst (by linarith)⟩
-  · have hset : sidePt (C.sideWalk β) 4 0 ∉ C.set := by
-      rw [sidePt_zero, C.sideWalk_vtx_four]
-      apply C.sideNot_mem_set_of_abs; right
-      simp only; rw [abs_of_pos hR]
-    refine C.sideClean_box hset hr ?_
-    intro x hx hxl
-    rw [sidePt_zero, C.sideWalk_vtx_four, mem_ball_iff_abs] at hx
-    rw [sideLeft_zero, C.sideWalk_prev_small β (by norm_num) (by norm_num), C.sideWalk_vtx_four,
-      hnext] at hxl
-    change sideLeftOf (C.radius, -C.radius) (C.radius, C.radius) C.slitTop x at hxl
-    have hdet : 0 < det (C.radius, -C.radius) (C.radius, C.radius) C.slitTop := by
-      simp only [det, slitTop]; nlinarith
-    rw [sideLeftOf_iff_pos hdet] at hxl
-    obtain ⟨h1, h2⟩ := hxl
-    simp only [det, slitTop, one_mul] at h1 h2 hx
-    obtain ⟨hx1, hx2⟩ := hx
-    rw [abs_lt] at hx1 hx2
-    have e1 : x.1 < C.radius := by nlinarith
-    have e2 : x.2 < C.radius := by nlinarith
-    exact ⟨⟨abs_lt.2 ⟨by linarith, e1⟩, abs_lt.2 ⟨by linarith, e2⟩⟩,
-      C.sideNot_mem_slit_of_fst (by linarith)⟩
-  · have hset : sidePt (C.sideWalk β) 5 0 ∉ C.set := by
-      rw [sidePt_zero, C.sideWalk_vtx_five]
-      apply C.sideNot_mem_set_of_abs; right
-      simp only [slitTop]; rw [abs_of_pos hR]
-    refine C.sideClean_box hset hr ?_
-    intro x hx hxl
-    rw [sidePt_zero, C.sideWalk_vtx_five, mem_ball_iff_abs] at hx
-    rw [sideLeft_zero, C.sideWalk_prev_small β (by norm_num) (by norm_num), C.sideWalk_vtx_five,
-      hnext, C.sideWalk_vtx_six] at hxl
-    change sideLeftOf (C.radius, C.radius) C.slitTop C.top x at hxl
-    have hdet : 0 < det (C.radius, C.radius) C.slitTop C.top := by
-      simp only [det, slitTop]; nlinarith
-    rw [sideLeftOf_iff_pos hdet] at hxl
-    obtain ⟨h1, h2⟩ := hxl
-    simp only [det, slitTop, one_mul] at h1 h2 hx
-    obtain ⟨hx1, hx2⟩ := hx
-    rw [abs_lt] at hx1 hx2
-    have e1 : x.2 < C.radius := by nlinarith
-    have e2 : C.top.1 < x.1 := by nlinarith
-    exact ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, abs_lt.2 ⟨by linarith, e1⟩⟩,
-      C.sideNot_mem_slit_of_fst (ne_of_gt e2)⟩
+  have hprev (q) (hq : 1 ≤ q) (hq' : q ≤ 5) := C.sideWalk_prev_small β hq hq'
+  interval_cases p <;> apply C.sideClean_box
+  all_goals try solve
+    | apply C.sideNot_mem_set_of_abs
+      simp [sidePt_zero, sideWalk_vtx_zero, sideWalk_vtx_one, sideWalk_vtx_two, sideWalk_vtx_three, sideWalk_vtx_four, sideWalk_vtx_five, slitTop, abs_of_pos hR]
+  all_goals
+    simp (disch := decide) only [sidePt_zero, hnext, sideLeft_zero, sideWalk_prev_zero,
+      hprev, Nat.reduceSub, Nat.reduceAdd, sideWalk_vtx_zero, sideWalk_vtx_one, sideWalk_vtx_two, sideWalk_vtx_three, sideWalk_vtx_four, sideWalk_vtx_five, sideWalk_vtx_six]
+    apply C.near_corner
+    · simp only [det, slitTop]; nlinarith
+    apply C.near_box
+    all_goals first
+      | (left; simp only [slitTop]; linarith)
+      | (left; apply C.sideNot_mem_slit_of_fst; simp only [slitTop];
+         first | exact ne_of_lt (by linarith) | exact ne_of_gt (by linarith))
+      | (right; rintro x ⟨h₁, h₂⟩; simp only [det, slitTop] at *; nlinarith)
+      | (right; rintro x ⟨h₁, h₂⟩; apply C.sideNot_mem_slit_of_fst; simp only [det, slitTop] at *; nlinarith)
 
-theorem sideClean_box_edge_aux {W : Polygon} {p : ℕ} {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
-    (hne : W.vtx p ≠ W.vtx ((p + 1) % W.n)) (hset : sidePt W p t ∉ C.set) {r : ℝ} (hr : 0 < r)
-    (h : ∀ x ∈ ball (sidePt W p t) r, 0 < det (W.vtx p) (W.vtx ((p + 1) % W.n)) x →
-      x ∈ box C.radius ∧ x ∉ C.slit) :
-    SideClean W C.dom p t :=
-  C.sideClean_box hset hr (fun x hx hxl => h x hx ((sideLeft_edge hne ht x).1 hxl))
+private theorem sideClean_edge_near {W : Polygon} {p : ℕ} {t : ℝ}
+    (ht : t ∈ Ioo (0 : ℝ) 1) (hne : W.vtx p ≠ W.vtx ((p + 1) % W.n))
+    (hset : sidePt W p t ∉ C.set)
+    (h : ∀ᶠ x in 𝓝 (sidePt W p t), 0 < det (W.vtx p) (W.vtx ((p + 1) % W.n)) x →
+      x ∈ box C.radius ∧ x ∉ C.slit) : SideClean W C.dom p t :=
+  C.sideClean_box hset (h.mono fun x h' hx => h' ((sideLeft_edge hne ht x).1 hx))
 
-/-- Cleanness inside the closing edge (up the slit). -/
-theorem sideClean_slit_up (β : Bool) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) :
-    SideClean (C.sideWalk β) C.dom (2 * C.m + 6) t := by
-  have hR := C.radius_pos
-  have hta := abs_lt.1 C.abs_top_fst_lt_radius
-  have htop := C.top_snd_lt_radius
-  have htb := abs_le.1 (C.abs_le_coordBound_of_mem_set C.top_mem_set).2
-  have hcR := C.coordBound_lt_radius
-  obtain ⟨ht0, ht1⟩ := ht
-  have hcur : (C.sideWalk β).vtx (2 * C.m + 6) = C.top := by
-    rw [C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
-  have hnext : (C.sideWalk β).vtx ((2 * C.m + 6 + 1) % (C.sideWalk β).n) = C.slitTop := by
-    rw [C.sideWalk_next_last β]; rfl
-  have hne : (C.sideWalk β).vtx (2 * C.m + 6) ≠
-      (C.sideWalk β).vtx ((2 * C.m + 6 + 1) % (C.sideWalk β).n) := by
-    rw [hcur, hnext]; exact C.sideSlitTop_ne_top.symm
-  have hq : sidePt (C.sideWalk β) (2 * C.m + 6) t =
-      (C.top.1, C.top.2 + t * (C.radius - C.top.2)) := by
-    unfold sidePt; rw [hcur, hnext]
-    apply point_ext <;> simp [lerp, slitTop]
-  have hpos : 0 < t * (C.radius - C.top.2) := mul_pos ht0 (by linarith)
-  have hpos' : 0 < (1 - t) * (C.radius - C.top.2) := mul_pos (by linarith) (by linarith)
-  have hset : sidePt (C.sideWalk β) (2 * C.m + 6) t ∉ C.set := by
-    rw [hq]; apply C.sideNot_mem_set_of_high; show C.top.2 < C.top.2 + t * (C.radius - C.top.2)
-    linarith
-  have hr : 0 < min (min (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2)))
-      (C.top.1 + C.radius) :=
-    lt_min (lt_min hpos hpos') (by linarith)
-  refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-  rw [hq, mem_ball_iff_abs] at hx
-  rw [hcur, hnext] at hxl
-  simp only [det, slitTop] at hxl hx
-  obtain ⟨hx1, hx2⟩ := hx
-  rw [abs_lt] at hx1 hx2
-  have hm1 := min_le_left (min (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2)))
-    (C.top.1 + C.radius)
-  have hm2 := min_le_right (min (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2)))
-    (C.top.1 + C.radius)
-  have hm3 := min_le_left (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2))
-  have hm4 := min_le_right (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2))
-  have e1 : x.1 < C.top.1 := by nlinarith
-  exact ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, abs_lt.2 ⟨by linarith, by linarith⟩⟩,
-    C.sideNot_mem_slit_of_fst (ne_of_lt e1)⟩
-
-/-- **Cleanness inside the edges of the box block** (the sides of the box and the slit). -/
+/-- Cleanness inside the edges of the box block (box sides and both directions of the slit). -/
 theorem sideClean_box_edge (β : Bool) {p : ℕ} (hp : p ≤ 5 ∨ p = 2 * C.m + 6) {t : ℝ}
     (ht : t ∈ Ioo (0 : ℝ) 1) : SideClean (C.sideWalk β) C.dom p t := by
   have hR := C.radius_pos
-  have hta := abs_lt.1 C.abs_top_fst_lt_radius
-  have htop := C.top_snd_lt_radius
-  have htb := abs_le.1 (C.abs_le_coordBound_of_mem_set C.top_mem_set).2
-  have hcR := C.coordBound_lt_radius
+  obtain ⟨hwest, heast⟩ := abs_lt.1 C.abs_top_fst_lt_radius
+  obtain ⟨hsouth, hnorth⟩ := abs_lt.1 C.top_mem_box.2
   obtain ⟨ht0, ht1⟩ := ht
-  rcases hp with hp | hp
-  · have hnext : ((p + 1) % (C.sideWalk β).n) = p + 1 := C.sideWalk_mod_small β (by omega)
-    interval_cases p
-    · -- the top side, west of the slit
-      have hne : (C.sideWalk β).vtx 0 ≠ (C.sideWalk β).vtx ((0 + 1) % (C.sideWalk β).n) := by
-        rw [hnext, C.sideWalk_vtx_zero]
-        intro h; have := congrArg Prod.fst h; simp only [slitTop] at this
-        change C.top.1 = -C.radius at this; linarith
-      have hq : sidePt (C.sideWalk β) 0 t = (C.top.1 + t * (-C.radius - C.top.1), C.radius) := by
-        have e1 : (C.sideWalk β).vtx (0 + 1) = (-C.radius, C.radius) := C.sideWalk_vtx_one β
-        unfold sidePt; rw [hnext, C.sideWalk_vtx_zero, e1]
-        apply point_ext <;> simp [lerp, slitTop]
-      have hset : sidePt (C.sideWalk β) 0 t ∉ C.set := by
-        rw [hq]; apply C.sideNot_mem_set_of_abs; right; simp only; rw [abs_of_pos hR]
-      have hr : 0 < min (t * (C.radius + C.top.1)) ((1 - t) * (C.radius + C.top.1)) :=
-        lt_min (by nlinarith) (by nlinarith)
-      refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-      rw [hq, mem_ball_iff_abs] at hx
-      rw [hnext, C.sideWalk_vtx_zero] at hxl
-      change 0 < det C.slitTop (-C.radius, C.radius) x at hxl
-      simp only [det, slitTop] at hxl hx
-      obtain ⟨hx1, hx2⟩ := hx
-      rw [abs_lt] at hx1 hx2
-      have hm1 := min_le_left (t * (C.radius + C.top.1)) ((1 - t) * (C.radius + C.top.1))
-      have hm2 := min_le_right (t * (C.radius + C.top.1)) ((1 - t) * (C.radius + C.top.1))
-      have e1 : x.2 < C.radius := by nlinarith
-      exact ⟨⟨abs_lt.2 ⟨by nlinarith, by nlinarith⟩, abs_lt.2 ⟨by nlinarith, e1⟩⟩,
-        C.sideNot_mem_slit_of_fst (by nlinarith)⟩
-    · -- the left side
-      have hne : (C.sideWalk β).vtx 1 ≠ (C.sideWalk β).vtx ((1 + 1) % (C.sideWalk β).n) := by
-        rw [hnext, C.sideWalk_vtx_one]
-        intro h; have := congrArg Prod.snd h
-        change C.radius = -C.radius at this; linarith
-      have hq : sidePt (C.sideWalk β) 1 t = (-C.radius, C.radius - 2 * t * C.radius) := by
-        have e2 : (C.sideWalk β).vtx (1 + 1) = (-C.radius, -C.radius) := C.sideWalk_vtx_two β
-        unfold sidePt; rw [hnext, C.sideWalk_vtx_one, e2]
-        apply point_ext <;> simp [lerp]
-        ring
-      have hset : sidePt (C.sideWalk β) 1 t ∉ C.set := by
-        rw [hq]; apply C.sideNot_mem_set_of_abs; left; simp only; rw [abs_neg, abs_of_pos hR]
-      have hr : 0 < min (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.top.1 + C.radius) :=
-        lt_min (lt_min (by nlinarith) (by nlinarith)) (by linarith)
-      refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-      rw [hq, mem_ball_iff_abs] at hx
-      rw [hnext, C.sideWalk_vtx_one] at hxl
-      change 0 < det (-C.radius, C.radius) (C.sideWalk β |>.vtx 2) x at hxl
-      rw [C.sideWalk_vtx_two] at hxl
-      simp only [det] at hxl hx
-      obtain ⟨hx1, hx2⟩ := hx
-      rw [abs_lt] at hx1 hx2
-      have hm1 := min_le_left (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.top.1 + C.radius)
-      have hm2 := min_le_right (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.top.1 + C.radius)
-      have hm3 := min_le_left (2 * t * C.radius) (2 * (1 - t) * C.radius)
-      have hm4 := min_le_right (2 * t * C.radius) (2 * (1 - t) * C.radius)
-      have e1 : -C.radius < x.1 := by nlinarith
-      exact ⟨⟨abs_lt.2 ⟨e1, by nlinarith⟩, abs_lt.2 ⟨by nlinarith, by nlinarith⟩⟩,
-        C.sideNot_mem_slit_of_fst (by nlinarith)⟩
-    · -- the bottom side
-      have hne : (C.sideWalk β).vtx 2 ≠ (C.sideWalk β).vtx ((2 + 1) % (C.sideWalk β).n) := by
-        rw [hnext, C.sideWalk_vtx_two]
-        intro h; have := congrArg Prod.fst h
-        change -C.radius = (C.sideWalk β |>.vtx 3).1 at this
-        rw [C.sideWalk_vtx_three] at this; simp only at this; linarith
-      have hq : sidePt (C.sideWalk β) 2 t = (-C.radius + 2 * t * C.radius, -C.radius) := by
-        unfold sidePt; rw [hnext, C.sideWalk_vtx_two, C.sideWalk_vtx_three]
-        apply point_ext <;> simp [lerp]
-        ring
-      have hset : sidePt (C.sideWalk β) 2 t ∉ C.set := by
-        rw [hq]; apply C.sideNot_mem_set_of_abs; right; simp only; rw [abs_neg, abs_of_pos hR]
-      have hr : 0 < min (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.top.2 + C.radius) :=
-        lt_min (lt_min (by nlinarith) (by nlinarith)) (by linarith)
-      refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-      rw [hq, mem_ball_iff_abs] at hx
-      rw [hnext, C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hxl
-      simp only [det] at hxl hx
-      obtain ⟨hx1, hx2⟩ := hx
-      rw [abs_lt] at hx1 hx2
-      have hm1 := min_le_left (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.top.2 + C.radius)
-      have hm2 := min_le_right (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.top.2 + C.radius)
-      have hm3 := min_le_left (2 * t * C.radius) (2 * (1 - t) * C.radius)
-      have hm4 := min_le_right (2 * t * C.radius) (2 * (1 - t) * C.radius)
-      have e1 : -C.radius < x.2 := by nlinarith
-      exact ⟨⟨abs_lt.2 ⟨by nlinarith, by nlinarith⟩, abs_lt.2 ⟨e1, by nlinarith⟩⟩,
-        C.sideNot_mem_slit_of_low (by nlinarith)⟩
-    · -- the right side
-      have hne : (C.sideWalk β).vtx 3 ≠ (C.sideWalk β).vtx ((3 + 1) % (C.sideWalk β).n) := by
-        rw [hnext, C.sideWalk_vtx_three, C.sideWalk_vtx_four]
-        intro h; have := congrArg Prod.snd h; simp only at this; linarith
-      have hq : sidePt (C.sideWalk β) 3 t = (C.radius, -C.radius + 2 * t * C.radius) := by
-        unfold sidePt; rw [hnext, C.sideWalk_vtx_three, C.sideWalk_vtx_four]
-        apply point_ext <;> simp [lerp]
-        ring
-      have hset : sidePt (C.sideWalk β) 3 t ∉ C.set := by
-        rw [hq]; apply C.sideNot_mem_set_of_abs; left; simp only; rw [abs_of_pos hR]
-      have hr : 0 < min (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.radius - C.top.1) :=
-        lt_min (lt_min (by nlinarith) (by nlinarith)) (by linarith)
-      refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-      rw [hq, mem_ball_iff_abs] at hx
-      rw [hnext, C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hxl
-      simp only [det] at hxl hx
-      obtain ⟨hx1, hx2⟩ := hx
-      rw [abs_lt] at hx1 hx2
-      have hm1 := min_le_left (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.radius - C.top.1)
-      have hm2 := min_le_right (min (2 * t * C.radius) (2 * (1 - t) * C.radius)) (C.radius - C.top.1)
-      have hm3 := min_le_left (2 * t * C.radius) (2 * (1 - t) * C.radius)
-      have hm4 := min_le_right (2 * t * C.radius) (2 * (1 - t) * C.radius)
-      have e1 : x.1 < C.radius := by nlinarith
-      exact ⟨⟨abs_lt.2 ⟨by nlinarith, e1⟩, abs_lt.2 ⟨by nlinarith, by nlinarith⟩⟩,
-        C.sideNot_mem_slit_of_fst (by nlinarith)⟩
-    · -- the top side, east of the slit
-      have hne : (C.sideWalk β).vtx 4 ≠ (C.sideWalk β).vtx ((4 + 1) % (C.sideWalk β).n) := by
-        rw [hnext, C.sideWalk_vtx_four, C.sideWalk_vtx_five]
-        intro h; have := congrArg Prod.fst h; simp only [slitTop] at this; linarith
-      have hq : sidePt (C.sideWalk β) 4 t = (C.radius + t * (C.top.1 - C.radius), C.radius) := by
-        unfold sidePt; rw [hnext, C.sideWalk_vtx_four, C.sideWalk_vtx_five]
-        apply point_ext <;> simp [lerp, slitTop]
-      have hset : sidePt (C.sideWalk β) 4 t ∉ C.set := by
-        rw [hq]; apply C.sideNot_mem_set_of_abs; right; simp only; rw [abs_of_pos hR]
-      have hr : 0 < min (t * (C.radius - C.top.1)) ((1 - t) * (C.radius - C.top.1)) :=
-        lt_min (by nlinarith) (by nlinarith)
-      refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-      rw [hq, mem_ball_iff_abs] at hx
-      rw [hnext, C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hxl
-      simp only [det, slitTop] at hxl hx
-      obtain ⟨hx1, hx2⟩ := hx
-      rw [abs_lt] at hx1 hx2
-      have hm1 := min_le_left (t * (C.radius - C.top.1)) ((1 - t) * (C.radius - C.top.1))
-      have hm2 := min_le_right (t * (C.radius - C.top.1)) ((1 - t) * (C.radius - C.top.1))
-      have e1 : x.2 < C.radius := by nlinarith
-      exact ⟨⟨abs_lt.2 ⟨by nlinarith, by nlinarith⟩, abs_lt.2 ⟨by nlinarith, e1⟩⟩,
-        C.sideNot_mem_slit_of_fst (by nlinarith)⟩
-    · -- down the slit
-      have hne : (C.sideWalk β).vtx 5 ≠ (C.sideWalk β).vtx ((5 + 1) % (C.sideWalk β).n) := by
-        rw [hnext, C.sideWalk_vtx_five, C.sideWalk_vtx_six]; exact C.sideSlitTop_ne_top
-      have hq : sidePt (C.sideWalk β) 5 t = (C.top.1, C.radius + t * (C.top.2 - C.radius)) := by
-        unfold sidePt; rw [hnext, C.sideWalk_vtx_five, C.sideWalk_vtx_six]
-        apply point_ext <;> simp [lerp, slitTop]
-      have hset : sidePt (C.sideWalk β) 5 t ∉ C.set := by
-        rw [hq]; apply C.sideNot_mem_set_of_high; simp only; nlinarith
-      have hr : 0 < min (min (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2)))
-          (C.radius - C.top.1) :=
-        lt_min (lt_min (by nlinarith) (by nlinarith)) (by linarith)
-      refine C.sideClean_box_edge_aux ⟨ht0, ht1⟩ hne hset hr (fun x hx hxl => ?_)
-      rw [hq, mem_ball_iff_abs] at hx
-      rw [hnext, C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hxl
-      simp only [det, slitTop] at hxl hx
-      obtain ⟨hx1, hx2⟩ := hx
-      rw [abs_lt] at hx1 hx2
-      have hm1 := min_le_left (min (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2)))
-        (C.radius - C.top.1)
-      have hm2 := min_le_right (min (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2)))
-        (C.radius - C.top.1)
-      have hm3 := min_le_left (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2))
-      have hm4 := min_le_right (t * (C.radius - C.top.2)) ((1 - t) * (C.radius - C.top.2))
-      have e1 : C.top.1 < x.1 := by nlinarith
-      exact ⟨⟨abs_lt.2 ⟨by nlinarith, by nlinarith⟩, abs_lt.2 ⟨by nlinarith, by nlinarith⟩⟩,
-        C.sideNot_mem_slit_of_fst (ne_of_gt e1)⟩
-  · rw [hp]; exact C.sideClean_slit_up β ⟨ht0, ht1⟩
+  have hnext (p : ℕ) (hp : p ≤ 5) : ((p + 1) % (C.sideWalk β).n) = p + 1 :=
+    C.sideWalk_mod_small β (by omega)
+  have htop : (C.sideWalk β).vtx (2 * C.m + 6) = C.top := by
+    rw [C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
+  rcases hp with hp | rfl
+  case' inl => interval_cases p
+  all_goals apply C.sideClean_edge_near ⟨ht0, ht1⟩
+  all_goals
+    simp (config := {failIfUnchanged := false}) (disch := decide) only [sidePt, hnext, sideWalk_vtx_wrap, htop, Nat.reduceAdd,
+      sideWalk_vtx_zero, sideWalk_vtx_one, sideWalk_vtx_two, sideWalk_vtx_three, sideWalk_vtx_four, sideWalk_vtx_five, sideWalk_vtx_six, slitTop]
+  all_goals first
+    | solve
+      | intro h; linarith [congrArg Prod.fst h]
+      | intro h; linarith [congrArg Prod.snd h]
+    | (apply C.sideNot_mem_set_of_high; simp only [lerp_snd]; nlinarith)
+    | (apply C.sideNot_mem_set_of_abs; simp [lerp_fst, lerp_snd, abs_of_pos hR])
+    | skip
+  all_goals
+    apply C.near_box
+    all_goals try simp only [lerp_fst, lerp_snd]
+    all_goals first
+      | (left; nlinarith)
+      | (left; apply C.sideNot_mem_slit_of_fst; simp only [lerp_fst];
+         first | exact ne_of_lt (by nlinarith) | exact ne_of_gt (by nlinarith))
+      | (left; apply C.sideNot_mem_slit_of_low; simp only [lerp_snd]; nlinarith)
+      | (right; intro x hx; simp only [det] at hx; nlinarith)
+      | (right; intro x hx; apply C.sideNot_mem_slit_of_fst; simp only [det] at hx; nlinarith)
 
 /-! ### The corrected walk: nondegeneracy, trace and cleanness of every position -/
 
@@ -2657,7 +2316,7 @@ theorem sideWalk_nd (hP : C.P.Simple) (β : Bool) :
       intro h; have := congrArg Prod.fst h; simp only [slitTop] at this; linarith
     · rw [C.sideWalk_vtx_five, show (5 + 1 : ℕ) = 6 from rfl, C.sideWalk_vtx_six]
       exact C.sideSlitTop_ne_top
-  · rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β (by omega)]
+  · ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β]
     unfold sideTour
     rcases C.sideTour_step β i with h | h
     · rw [h]; exact C.sideVertex_succ_ne hP _
@@ -2677,8 +2336,8 @@ theorem sideNot_mem_dom_of_abs {x : Point} (h : |x.1| = C.radius ∨ |x.2| = C.r
     x ∉ C.dom := fun hx => by
   have := hx.1
   rcases h with h | h
-  · exact absurd this.1 (by rw [h]; exact lt_irrefl _)
-  · exact absurd this.2 (by rw [h]; exact lt_irrefl _)
+  · exact absurd this.1 (by simp_all)
+  · exact absurd this.2 (by simp_all)
 
 /-- **The corrected walk avoids the domain.** -/
 theorem sideWalk_trace (β : Bool) :
@@ -2705,7 +2364,7 @@ theorem sideWalk_trace (β : Bool) :
       apply C.not_mem_slit_of_mem_dom hd
       rw [slit, segment_comm]; exact lerp_mem_segment _ _ ht0 ht1
   · unfold sidePt
-    rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β (by omega)]
+    ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β]
     intro hd
     apply C.not_mem_set_of_mem_dom hd
     unfold sideTour
@@ -2718,16 +2377,17 @@ theorem sideWalk_trace (β : Bool) :
     apply C.not_mem_slit_of_mem_dom hd
     exact lerp_mem_segment _ _ ht0 ht1
 
+include hP hβ in
 /-- **Every position of the corrected walk is clean for the domain**: near every point of the
 walk, no point outside `dom C` lies in the open left sector of the walk there. -/
-theorem sideWalk_clean (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) :
+theorem sideWalk_clean :
     ∀ p < (C.sideWalk β).n, ∀ t : ℝ, 0 ≤ t → t < 1 → SideClean (C.sideWalk β) C.dom p t := by
   intro p hp t ht0 ht1
   rcases ht0.lt_or_eq with htp | htz
   · rcases C.sideWalk_lt_cases β hp with h5 | ⟨i, hi, rfl⟩ | rfl
     · exact C.sideClean_box_edge β (Or.inl h5) ⟨htp, ht1⟩
     · exact C.sideClean_tour_edge hP β hi ⟨htp, ht1⟩
-    · exact C.sideClean_slit_up β ⟨htp, ht1⟩
+    · exact C.sideClean_box_edge β (Or.inr rfl) ⟨htp, ht1⟩
   · subst htz
     rcases C.sideWalk_lt_cases β hp with h5 | ⟨i, hi, rfl⟩ | rfl
     · exact C.sideClean_box_vertex β h5
@@ -2735,6 +2395,8 @@ theorem sideWalk_clean (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) :
       · subst h0; exact C.sideClean_top_first hP hβ
       · exact C.sideClean_tour_vertex hP hβ h0 hi
     · exact C.sideClean_top_last hP hβ
+
+end
 
 /-! ### Disjointness of the left sectors of distinct positions at a common point -/
 
@@ -2785,10 +2447,9 @@ theorem sideTop_disj (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) (x : Po
       ((0 < C.topIdx ∧ C.topIdx < C.m) →
         ¬ (sideLeftOf (C.sideTour β (2 * C.m - 1)) C.top C.slitTop x ∧
           sideLeftOf (C.sideTour β 1) C.top (C.sideTour β (2 * C.m - 1)) x)) := by
-  have hn0 : C.sideTour β 1 - C.top ≠ 0 := sub_ne_zero_of_ne' (C.sideTour_one_ne_top hP β)
-  have hp0 : C.sideTour β (2 * C.m - 1) - C.top ≠ 0 :=
-    sub_ne_zero_of_ne' (C.sideTour_last_ne_top hP β)
-  have hU0 : C.slitTop - C.top ≠ 0 := sub_ne_zero_of_ne' C.sideSlitTop_ne_top
+  have hn0 := sub_ne_zero_of_ne' (C.sideTour_one_ne_top hP β)
+  have hp0 := sub_ne_zero_of_ne' (C.sideTour_last_ne_top hP β)
+  have hU0 := sub_ne_zero_of_ne' C.sideSlitTop_ne_top
   have hnU := C.sideTop_nonSpike_up _ (C.sideIdx_le β 1)
   unfold sideLeftOf
   refine ⟨?_, ?_, ?_⟩
@@ -2840,28 +2501,22 @@ theorem sidePt_box (β : Bool) (t : ℝ) :
   have h1 : ∀ p, p ≤ 5 → (p + 1) % (C.sideWalk β).n = p + 1 := fun p hp =>
     C.sideWalk_mod_small β (by omega)
   unfold sidePt
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [h1 0 (by norm_num), C.sideWalk_vtx_zero, show (0 + 1 : ℕ) = 1 from rfl, C.sideWalk_vtx_one]
-    apply point_ext <;> simp [lerp, slitTop]
-  · rw [h1 1 (by norm_num), C.sideWalk_vtx_one, show (1 + 1 : ℕ) = 2 from rfl, C.sideWalk_vtx_two]
+  and_intros
+  · simp [h1 0 (by norm_num), C.sideWalk_vtx_zero, show (0 + 1 : ℕ) = 1 from rfl, C.sideWalk_vtx_one, lerp, slitTop]
+  · ram_rw [h1 1, C.sideWalk_vtx_one, show (1 + 1 : ℕ) = 2 from rfl, C.sideWalk_vtx_two]
     apply point_ext <;> simp [lerp]
     ring
-  · rw [h1 2 (by norm_num), C.sideWalk_vtx_two, show (2 + 1 : ℕ) = 3 from rfl,
+  · ram_rw [h1 2, C.sideWalk_vtx_two, show (2 + 1 : ℕ) = 3 from rfl,
       C.sideWalk_vtx_three]
     apply point_ext <;> simp [lerp]
     ring
-  · rw [h1 3 (by norm_num), C.sideWalk_vtx_three, show (3 + 1 : ℕ) = 4 from rfl,
+  · ram_rw [h1 3, C.sideWalk_vtx_three, show (3 + 1 : ℕ) = 4 from rfl,
       C.sideWalk_vtx_four]
     apply point_ext <;> simp [lerp]
     ring
-  · rw [h1 4 (by norm_num), C.sideWalk_vtx_four, show (4 + 1 : ℕ) = 5 from rfl,
-      C.sideWalk_vtx_five]
-    apply point_ext <;> simp [lerp, slitTop]
-  · rw [h1 5 (by norm_num), C.sideWalk_vtx_five, show (5 + 1 : ℕ) = 6 from rfl,
-      C.sideWalk_vtx_six]
-    apply point_ext <;> simp [lerp, slitTop]
-  · rw [C.sideWalk_next_last β, C.sideWalk_vtx_tour β le_rfl, sideTour_two_m, C.sideWalk_vtx_zero]
-    apply point_ext <;> simp [lerp, slitTop]
+  · simp [h1 4 (by norm_num), C.sideWalk_vtx_four, show (4 + 1 : ℕ) = 5 from rfl, C.sideWalk_vtx_five, lerp, slitTop]
+  · simp [h1 5 (by norm_num), C.sideWalk_vtx_five, show (5 + 1 : ℕ) = 6 from rfl, C.sideWalk_vtx_six, lerp, slitTop]
+  simp [C.sideWalk_next_last β, C.sideWalk_vtx_tour β le_rfl, sideTour_two_m, C.sideWalk_vtx_zero, lerp, slitTop]
 
 /-- The points of the box block are off the chain, and those on the open vertical sides of the
 box are on the edges `1` or `3`. -/
@@ -2878,10 +2533,10 @@ theorem sideWalk_box_pt (β : Bool) {p : ℕ} {t : ℝ} (hp : p ≤ 5 ∨ (p = 2
   rcases hp with hp | ⟨rfl, htp⟩
   · interval_cases p
     · rw [e0]
-      refine ⟨C.sideNot_mem_set_of_abs (Or.inr (by simp only; rw [abs_of_pos hR])), ?_⟩
-      intro _ h; simp only [abs_of_pos hR] at h; exact absurd h (lt_irrefl _)
+      refine ⟨C.sideNot_mem_set_of_abs (Or.inr (by simp [abs_of_pos hR])), ?_⟩
+      simp [abs_of_pos hR]
     · rw [e1]
-      refine ⟨C.sideNot_mem_set_of_abs (Or.inl (by simp only; rw [abs_neg, abs_of_pos hR])), ?_⟩
+      refine ⟨C.sideNot_mem_set_of_abs (Or.inl (by simp [abs_neg, abs_of_pos hR])), ?_⟩
       intro _ h
       refine ⟨Or.inl ⟨rfl, rfl⟩, ?_⟩
       rcases ht.lt_or_eq with h' | h'
@@ -2889,10 +2544,10 @@ theorem sideWalk_box_pt (β : Bool) {p : ℕ} {t : ℝ} (hp : p ≤ 5 ∨ (p = 2
       · subst h'; simp only [mul_zero, zero_mul, sub_zero, abs_of_pos hR] at h
         exact absurd h (lt_irrefl _)
     · rw [e2]
-      refine ⟨C.sideNot_mem_set_of_abs (Or.inr (by simp only; rw [abs_neg, abs_of_pos hR])), ?_⟩
-      intro _ h; simp only [abs_neg, abs_of_pos hR] at h; exact absurd h (lt_irrefl _)
+      refine ⟨C.sideNot_mem_set_of_abs (Or.inr (by simp [abs_neg, abs_of_pos hR])), ?_⟩
+      simp [abs_neg, abs_of_pos hR]
     · rw [e3]
-      refine ⟨C.sideNot_mem_set_of_abs (Or.inl (by simp only; rw [abs_of_pos hR])), ?_⟩
+      refine ⟨C.sideNot_mem_set_of_abs (Or.inl (by simp [abs_of_pos hR])), ?_⟩
       intro _ h
       refine ⟨Or.inr ⟨rfl, rfl⟩, ?_⟩
       rcases ht.lt_or_eq with h' | h'
@@ -2900,8 +2555,8 @@ theorem sideWalk_box_pt (β : Bool) {p : ℕ} {t : ℝ} (hp : p ≤ 5 ∨ (p = 2
       · subst h'; simp only [mul_zero, zero_mul, add_zero, abs_neg, abs_of_pos hR] at h
         exact absurd h (lt_irrefl _)
     · rw [e4]
-      refine ⟨C.sideNot_mem_set_of_abs (Or.inr (by simp only; rw [abs_of_pos hR])), ?_⟩
-      intro _ h; simp only [abs_of_pos hR] at h; exact absurd h (lt_irrefl _)
+      refine ⟨C.sideNot_mem_set_of_abs (Or.inr (by simp [abs_of_pos hR])), ?_⟩
+      simp [abs_of_pos hR]
     · rw [e5]
       refine ⟨C.sideNot_mem_set_of_high (by simp only; nlinarith), ?_⟩
       intro h; simp only at h
@@ -2914,27 +2569,27 @@ theorem sideWalk_box_pt (β : Bool) {p : ℕ} {t : ℝ} (hp : p ≤ 5 ∨ (p = 2
 theorem sidePt_tour (β : Bool) {i : ℕ} (hi : i < 2 * C.m) (t : ℝ) :
     sidePt (C.sideWalk β) (i + 6) t = lerp (C.sideTour β i) (C.sideTour β (i + 1)) t := by
   unfold sidePt
-  rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β (by omega)]
+  ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β]
 
 theorem sideLeft_tour_first (β : Bool) (x : Point) :
     sideLeft (C.sideWalk β) (0 + 6) 0 x ↔ sideLeftOf C.slitTop C.top (C.sideTour β 1) x := by
   have hm := C.one_le
-  rw [sideLeft_zero, C.sideWalk_prev_six β, C.sideWalk_next_tour β (by omega),
-    C.sideWalk_vtx_tour β (by omega), C.sideWalk_vtx_tour β (by omega), sideTour_zero]
+  ram_rw [sideLeft_zero, C.sideWalk_prev_six β, C.sideWalk_next_tour β,
+    C.sideWalk_vtx_tour β, C.sideWalk_vtx_tour β, sideTour_zero]
   rfl
 
 theorem sideLeft_tour_inner (β : Bool) {i : ℕ} (hi0 : 0 < i) (hi : i < 2 * C.m) (x : Point) :
     sideLeft (C.sideWalk β) (i + 6) 0 x ↔
       sideLeftOf (C.sideTour β (i - 1)) (C.sideTour β i) (C.sideTour β (i + 1)) x := by
-  rw [sideLeft_zero, C.sideWalk_prev_tour β hi0 hi.le, C.sideWalk_next_tour β hi,
-    C.sideWalk_vtx_tour β (by omega), C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β (by omega)]
+  ram_rw [sideLeft_zero, C.sideWalk_prev_tour β hi0 hi.le, C.sideWalk_next_tour β hi,
+    C.sideWalk_vtx_tour β, C.sideWalk_vtx_tour β hi.le, C.sideWalk_vtx_tour β]
 
 theorem sideLeft_tour_last (β : Bool) (x : Point) :
     sideLeft (C.sideWalk β) (2 * C.m + 6) 0 x ↔
       sideLeftOf (C.sideTour β (2 * C.m - 1)) C.top C.slitTop x := by
   have hm := C.one_le
-  rw [sideLeft_zero, C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_next_last β,
-    C.sideWalk_vtx_tour β (by omega), C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
+  ram_rw [sideLeft_zero, C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_next_last β,
+    C.sideWalk_vtx_tour β, C.sideWalk_vtx_tour β le_rfl, sideTour_two_m]
   rfl
 
 /-- A point inside a tour edge is a point of an open chain edge. -/
@@ -2972,18 +2627,18 @@ theorem sideDisj_tour (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {i i' 
       · subst h0
         rw [C.sideLeft_tour_first]
         rcases lt_or_eq_of_le hj' with h2 | h2
-        · have hT' : C.sideIdx β j' = C.topIdx := hidx ▸ hT
+        · have hT' := hidx ▸ hT
           obtain ⟨hT0, hTm⟩ := C.sideTour_top_inner β hjj h2 hT'
           obtain ⟨hp1, hn1⟩ := C.sideTour_top_mid β hjj h2 hT0 hTm hT'
           rw [C.sideLeft_tour_inner β hjj h2]
           unfold sideTour at *
           rw [hp1, hn1, hT']
           exact d2 ⟨hT0, hTm⟩
-        · subst h2; rw [C.sideLeft_tour_last]; exact d1
+        · subst h2; rwa [C.sideLeft_tour_last]
       · rcases lt_or_eq_of_le hj' with h2 | h2
         · -- two inner visits of the top vertex: impossible
           exfalso
-          have hT' : C.sideIdx β j' = C.topIdx := hidx ▸ hT
+          have hT' := hidx ▸ hT
           obtain ⟨hT0, hTm⟩ := C.sideTour_top_inner β h0 (by omega) hT
           have e1 := (C.sideTour_top_mid β h0 (by omega) hT0 hTm hT).2
           have e2 := (C.sideTour_top_mid β (by omega) h2 hT0 hTm hT').2
@@ -3006,11 +2661,11 @@ theorem sideDisj_tour (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {i i' 
         rcases lt_or_eq_of_le hj' with h | h
         · exact h
         · subst h; exact absurd (hidx.trans (C.sideIdx_two_m β)) hT
-      rw [C.sideLeft_tour_inner β hj0 (by omega), C.sideLeft_tour_inner β (by omega) hj2]
+      ram_rw [C.sideLeft_tour_inner β hj0, C.sideLeft_tour_inner β (by omega) hj2]
       have hv := C.sideTour_two_visits β (by omega) hj2 (by omega) hidx
-      have hk := C.sideIdx_le β j
-      have hk1 := C.sideIdx_le β (j + 1)
-      have hk1' := C.sideIdx_le β (j' + 1)
+      
+      
+      
       rcases C.sideTour_corner β hj0 (by omega) with ⟨a0, am, ap, an⟩ | ⟨a0, am, ap, an⟩ |
           ⟨a0, ap, an⟩ | ⟨a0, ap, an⟩ <;>
         rcases C.sideTour_corner β (i := j') (by omega) hj2 with ⟨b0, bm, bp, bn⟩ |
@@ -3050,11 +2705,11 @@ theorem sideDisj_tour (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {i i' 
       exact C.sideOpen_not_mem_chainEdge hP hk hk' (Ne.symm hkk) hr hmem
     subst hkk
     have hnd := C.sideWalk_nd hP β
-    rw [sideLeft_edge (hnd _ (by rw [sideWalk_n]; omega)) hs,
+    ram_rw [sideLeft_edge (hnd _ (by rw [sideWalk_n]; omega)) hs,
       sideLeft_edge (hnd _ (by rw [sideWalk_n]; omega)) hs',
       C.sideWalk_next_tour β hj, C.sideWalk_next_tour β hj', C.sideWalk_vtx_tour β hj.le,
-      C.sideWalk_vtx_tour β (by omega), C.sideWalk_vtx_tour β hj'.le,
-      C.sideWalk_vtx_tour β (by omega)]
+      C.sideWalk_vtx_tour β, C.sideWalk_vtx_tour β hj'.le,
+      C.sideWalk_vtx_tour β]
     unfold sideTour
     have hsame : ¬ (C.sideIdx β j = C.sideIdx β j') := by
       intro hidx
@@ -3064,8 +2719,8 @@ theorem sideDisj_tour (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {i i' 
         rw [C.sidePt_tour β hj, C.sidePt_tour β hj] at heq'
         exact Geometry.lerp_injective (by
           have := hnd (j + 6) (by rw [sideWalk_n]; omega)
-          rwa [C.sideWalk_next_tour β hj, C.sideWalk_vtx_tour β hj.le,
-            C.sideWalk_vtx_tour β (by omega)] at this) heq'
+          ram_rw assumption [C.sideWalk_next_tour β hj, C.sideWalk_vtx_tour β hj.le,
+            C.sideWalk_vtx_tour β] at this) heq'
       · rcases C.sideTour_two_visits β hj hj' hjj hidx with ⟨a1, a2⟩ | ⟨a1, a2⟩ <;>
           rcases hk1 with ⟨c1, c2⟩ | ⟨c1, c2⟩ <;> rcases hk1' with ⟨d1, d2⟩ | ⟨d1, d2⟩ <;> omega
     rcases hk1 with ⟨c1, c2⟩ | ⟨c1, c2⟩ <;> rcases hk1' with ⟨d1, d2⟩ | ⟨d1, d2⟩
@@ -3084,18 +2739,18 @@ theorem sideDisj_tour (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {i i' 
   · -- a vertex and an open edge point cannot coincide
     exfalso
     subst htz'
-    have hil : i < 2 * C.m := lt_of_le_of_ne hi (fun h => htp.ne' (hit h))
+    have hil := lt_of_le_of_ne hi (fun h => htp.ne' (hit h))
     obtain ⟨k, hk, r, hr, hpk, -⟩ := C.sideTour_open β hil ⟨htp, ht1⟩
     rw [hpk, sidePt_zero, C.sideWalk_vtx_tour β hi'] at heq
     exact C.sideOpen_ne_vertex hP hr heq
   · exfalso
     subst htz
-    have hil : i' < 2 * C.m := lt_of_le_of_ne hi' (fun h => htp'.ne' (hit' h))
+    have hil := lt_of_le_of_ne hi' (fun h => htp'.ne' (hit' h))
     obtain ⟨k, hk, r, hr, hpk, -⟩ := C.sideTour_open β hil ⟨htp', ht1'⟩
     rw [hpk, sidePt_zero, C.sideWalk_vtx_tour β hi] at heq
     exact C.sideOpen_ne_vertex hP hr heq.symm
   · subst htz htz'
-    have hii : i ≠ i' := fun h => hne h rfl
+    have hii := fun h => hne h rfl
     rw [sidePt_zero, sidePt_zero, C.sideWalk_vtx_tour β hi, C.sideWalk_vtx_tour β hi'] at heq
     have hidx := C.sideVertex_inj hP (C.sideIdx_le β i) (C.sideIdx_le β i') heq
     rcases lt_or_gt_of_ne hii with h | h
@@ -3161,10 +2816,7 @@ theorem sideWalk_disj (hP : C.P.Simple) {β : Bool} (hβ : C.SideGood β) {pa p 
   · exfalso
     obtain ⟨hA1, hA2⟩ := C.sideWalk_box_pt β hA hta hta1
     have hmem := C.sideWalk_tour_pt_mem β hi hit ht ht1
-    rw [heq] at hmem
-    rcases hq with hq | ⟨hq1, -⟩
-    · exact hA1 hq
-    · exact hsetv _ hmem hq1
+    simp_all only 
   · exfalso
     obtain ⟨hX1, -⟩ := C.sideWalk_box_pt β hX ht ht1
     have hmem := C.sideWalk_tour_pt_mem β hia hiat hta hta1
@@ -3209,7 +2861,7 @@ theorem sideInArc_swap {a b x : ℝ} (hab : a ≠ b) (hxa : x ≠ a) (hxb : x �
       by_cases h4 : a < x
       · exact Or.inl h4
       · right
-        have h5 : x < a := lt_of_le_of_ne (not_lt.1 h4) hxa
+        have h5 := lt_of_le_of_ne (not_lt.1 h4) hxa
         by_contra h6
         push Not at h6
         exact h3 ⟨lt_of_le_of_ne h6 (Ne.symm hxb), h5⟩
@@ -3224,9 +2876,9 @@ theorem sideCcw_or {A B X : Point} (hA : A ≠ 0) (hB : B ≠ 0) (hns : sideNonS
     (hXB : ¬ (sideCross B X = 0 ∧ 0 ≤ sideDot B X)) : sideCcw A X B ∨ sideCcw B X A := by
   have hAA := sideDot_self_pos hA
   have hBB := sideDot_self_pos hB
-  have eAB : sideCross B A = -sideCross A B := sideCross_swap _ _
-  have eXA : sideCross X A = -sideCross A X := sideCross_swap _ _
-  have eXB : sideCross X B = -sideCross B X := sideCross_swap _ _
+  have eAB := sideCross_swap A B
+  have eXA := sideCross_swap A X
+  have eXB := sideCross_swap B X
   have D1 := side_dotCross A X B
   have D2 := side_dotCross B X A
   rw [eXB] at D1
@@ -3244,7 +2896,7 @@ theorem sideCcw_or {A B X : Point} (hA : A ≠ 0) (hB : B ≠ 0) (hns : sideNonS
       push Not at hc h1
       obtain ⟨hc1, hc2⟩ := hc
       rcases lt_or_eq_of_le (show 0 ≤ sideCross B X by linarith) with hy | hy
-      · have hx : sideCross A X = 0 := le_antisymm hc1 (by linarith [h1 hy])
+      · have hx := le_antisymm hc1 (by linarith [h1 hy])
         rw [hx, zero_mul, add_zero] at D1
         nlinarith [mul_pos_of_neg_of_neg (hXA hx) hab, mul_pos hAA hy]
       · rw [← hy, zero_mul, add_zero] at D2
@@ -3260,7 +2912,7 @@ theorem sideCcw_or {A B X : Point} (hA : A ≠ 0) (hB : B ≠ 0) (hns : sideNonS
     rw [hab, mul_zero] at D1
     rcases lt_trichotomy (sideCross A X) 0 with hx | hx | hx
     · right; right; right; left
-      refine ⟨by linarith, by rw [sideDot_comm]; exact hd, ?_⟩
+      refine ⟨by linarith, by rwa [sideDot_comm], ?_⟩
       nlinarith [mul_pos_of_neg_of_neg hx hd]
     · exfalso
       rw [hx, zero_mul, add_zero] at D1
@@ -3285,7 +2937,7 @@ theorem sideCcw_or {A B X : Point} (hA : A ≠ 0) (hB : B ≠ 0) (hns : sideNonS
       push Not at hc h1
       obtain ⟨hc1, hc2⟩ := hc
       rcases lt_or_eq_of_le (show 0 ≤ sideCross A X by linarith) with hx | hx
-      · have hy : sideCross B X = 0 := le_antisymm hc1 (by linarith [h1 hx])
+      · have hy := le_antisymm hc1 (by linarith [h1 hx])
         rw [hy, zero_mul, add_zero] at D2
         nlinarith [mul_pos_of_neg_of_neg (hXB hy) (neg_neg_of_pos hab), mul_pos hBB hx]
       · rw [← hx, zero_mul, add_zero] at D1
@@ -3322,7 +2974,7 @@ open Classical in
 /-- Characterization of `sideBeta`. -/
 theorem sideBeta_eq_true_iff : C.sideBeta = true ↔ sideCcw (C.vertex (C.topIdx + 1) - C.top)
     (C.slitTop - C.top) (C.vertex (C.topIdx - 1) - C.top) := by
-  unfold sideBeta; exact decide_eq_true_iff
+  simp [sideBeta]
 
 theorem sideVertex_sub_top_ne (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) (hkT : k ≠ C.topIdx) :
     C.vertex k - C.top ≠ 0 :=
@@ -3355,23 +3007,21 @@ theorem sideGood_sideBeta (hP : C.P.Simple) : C.SideGood C.sideBeta := by
   by_cases hTm : C.topIdx = C.m
   · exact Or.inr (Or.inl hTm)
   have hT := C.topIdx_le
-  have h0 : 0 < C.topIdx := Nat.pos_of_ne_zero hT0
-  have hm : C.topIdx < C.m := lt_of_le_of_ne hT hTm
+  have h0 := Nat.pos_of_ne_zero hT0
+  have hm := lt_of_le_of_ne hT hTm
   right; right
   have hA := C.sideVertex_sub_top_ne hP (k := C.topIdx + 1) (by omega) (by omega)
   have hB := C.sideVertex_sub_top_ne hP (k := C.topIdx - 1) (by omega) (by omega)
-  have hns : sideNonSpike (C.vertex (C.topIdx + 1) - C.top) (C.vertex (C.topIdx - 1) - C.top) :=
-    (C.sideChain_nonSpike hP h0 hm).1
+  have hns := (C.sideChain_nonSpike hP h0 hm).1
   have hor := sideCcw_or hA hB hns (C.sideUp_not_ray _ (by omega) hA)
     (C.sideUp_not_ray _ (by omega) hB)
   cases hb : C.sideBeta with
   | true =>
     have h := C.sideBeta_eq_true_iff.1 hb
     obtain ⟨e1, e2⟩ := C.sideIdx_nbrs_true h0 hm
-    unfold sideTour; rw [e1, e2]; exact h
+    unfold sideTour; rwa [e1, e2]
   | false =>
-    have h : ¬ sideCcw (C.vertex (C.topIdx + 1) - C.top) (C.slitTop - C.top)
-        (C.vertex (C.topIdx - 1) - C.top) := fun h' => by
+    have h := fun h' => by
       have := C.sideBeta_eq_true_iff.2 h'
       rw [hb] at this
       exact Bool.false_ne_true this
@@ -3430,8 +3080,7 @@ theorem side_overlap {v w e e' : Point} {s₀ : ℝ} (hvw : v ≠ w) (hs0 : 0 �
         ?_, ?_⟩
       · nlinarith
       · have h1 : min (1 / 2) ((1 - s₀) / μ) ≤ (1 - s₀) / μ := min_le_right _ _
-        have h2 : min (1 / 2) ((1 - s₀) / μ) * μ ≤ 1 - s₀ :=
-          calc _ ≤ (1 - s₀) / μ * μ := mul_le_mul_of_nonneg_right h1 hpos.le
+        have h2 := calc _ ≤ (1 - s₀) / μ * μ := mul_le_mul_of_nonneg_right h1 hpos.le
             _ = 1 - s₀ := div_mul_cancel₀ _ hpos.ne'
         linarith
   have he1 : e.1 = v.1 + s₀ * (w.1 - v.1) := by rw [he, lerp_fst]
@@ -3465,11 +3114,11 @@ edge going down contains the direction east. -/
 theorem sideCcw_east {A U X : Point} (hU1 : U.1 = 0) (hU2 : 0 < U.2) (hX2 : X.2 = 0)
     (hX1 : 0 < X.1) (hA2 : A.2 ≤ 0) (hA : A ≠ 0)
     (hray : ¬ (sideCross A X = 0 ∧ 0 ≤ sideDot A X)) : sideCcw A X U := by
-  have hc1 : sideCross A U = A.1 * U.2 := by unfold sideCross; rw [hU1]; ring
-  have hc2 : sideCross A X = -(A.2 * X.1) := by unfold sideCross; rw [hX2]; ring
-  have hc3 : sideCross X U = X.1 * U.2 := by unfold sideCross; rw [hU1, hX2]; ring
-  have hd1 : sideDot A U = A.2 * U.2 := by unfold sideDot; rw [hU1]; ring
-  have hd2 : sideDot A X = A.1 * X.1 := by unfold sideDot; rw [hX2]; ring
+  have hc1 : sideCross A U = A.1 * U.2 := by simp [sideCross, hU1]
+  have hc2 : sideCross A X = -(A.2 * X.1) := by simp [sideCross, hX2]
+  have hc3 : sideCross X U = X.1 * U.2 := by simp [sideCross, hU1, hX2]
+  have hd1 : sideDot A U = A.2 * U.2 := by simp [sideDot, hU1]
+  have hd2 : sideDot A X = A.1 * X.1 := by simp [sideDot, hX2]
   rw [hc2, hd2] at hray
   unfold sideCcw
   rw [hc1, hc2, hc3, hd1]
@@ -3493,28 +3142,16 @@ going up the slit contains the direction west. -/
 theorem sideCcw_west {B U X : Point} (hU1 : U.1 = 0) (hU2 : 0 < U.2) (hX2 : X.2 = 0)
     (hX1 : X.1 < 0) (hB2 : B.2 ≤ 0) (hB : B ≠ 0)
     (hray : ¬ (sideCross B X = 0 ∧ 0 ≤ sideDot B X)) : sideCcw U X B := by
-  have hc1 : sideCross U B = -(U.2 * B.1) := by unfold sideCross; rw [hU1]; ring
-  have hc2 : sideCross U X = -(U.2 * X.1) := by unfold sideCross; rw [hU1, hX2]; ring
-  have hc3 : sideCross X B = X.1 * B.2 := by unfold sideCross; rw [hX2]; ring
-  have hd1 : sideDot U B = U.2 * B.2 := by unfold sideDot; rw [hU1]; ring
-  have hc4 : sideCross B X = -(B.2 * X.1) := by unfold sideCross; rw [hX2]; ring
-  have hd2 : sideDot B X = B.1 * X.1 := by unfold sideDot; rw [hX2]; ring
-  rw [hc4, hd2] at hray
-  unfold sideCcw
-  rw [hc1, hc2, hc3, hd1]
-  rcases lt_trichotomy B.1 0 with h | h | h
-  · have hB2' : B.2 < 0 := by
-      rcases hB2.lt_or_eq with h' | h'
-      · exact h'
-      · exfalso; apply hray; rw [h']; exact ⟨by ring, by nlinarith⟩
-    left; exact ⟨by nlinarith, by nlinarith, by nlinarith⟩
-  · have hB2' : B.2 < 0 := by
-      rcases hB2.lt_or_eq with h' | h'
-      · exact h'
-      · exact absurd (point_ext h h') hB
-    right; right; left
-    exact ⟨by rw [h]; ring, by nlinarith, by nlinarith⟩
-  · right; left; exact ⟨by nlinarith, Or.inl (by nlinarith)⟩
+  let f : Point → Point := fun v => (-v.1, v.2)
+  have cross (u v : Point) : sideCross (f v) (f u) = sideCross u v := by simp [f, sideCross]; ring
+  have dot (u v : Point) : sideDot (f v) (f u) = sideDot u v := by simp [f, sideDot]; ring
+  have neB : f B ≠ 0 := fun e => hB (by change B = (0, 0); simpa [f] using congrArg f e)
+  have ray : ¬ (sideCross (f B) (f X) = 0 ∧ 0 ≤ sideDot (f B) (f X)) := by
+    rwa [cross, dot, sideCross_swap, neg_eq_zero, sideDot_comm]
+  exact (sideCcw_reflect (B := U) (A := B) (X := X) (by
+    intro e; rw [e] at hU2; exact (lt_irrefl 0) hU2) f cross dot).1
+    (sideCcw_east (by simp [f, hU1]) hU2 hX2 (neg_pos.mpr hX1) hB2 neB ray)
+
 
 omit C in
 /-- A position whose open left sector contains `e'`, at the point `e`, attaches the segment
@@ -3533,7 +3170,7 @@ theorem sideAttach_of_left {W : Polygon} {p : ℕ} {t : ℝ} {e e' : Point} (hp 
     · subst h; exact absurd (lerp_zero _ _) hxe
   have e1 : lerp e e' s - e = s • (e' - e) := by
     apply point_ext <;> simp [lerp]
-  rw [e1, sideCcw_smul hs]; exact hl
+  rwa [e1, sideCcw_smul hs]
 
 /-- Some position of the walk `W` at the point `e` has `e'` in its open left sector. -/
 def SideSees (W : Polygon) (e e' : Point) : Prop :=
@@ -3544,34 +3181,26 @@ theorem sideIdx_visit (β : Bool) {j : ℕ} (hj : j < 2 * C.m) :
     ∃ i, i < 2 * C.m ∧ C.sideIdx β i = sideE C.m j ∧ C.sideIdx β (i + 1) = sideE C.m (j + 1) ∧
       (i = 0 → sideE C.m j = C.topIdx) ∧
       (0 < i → C.sideIdx β (i - 1) = sideE C.m (if j = 0 then 2 * C.m - 1 else j - 1)) := by
-  have hm2 := C.two_m_pos
-  obtain ⟨S', hS'⟩ : ∃ S', S' = C.sideS β % (2 * C.m) := ⟨_, rfl⟩
-  have hS := Nat.mod_lt (C.sideS β) hm2
-  rw [← hS'] at hS
-  have hmod : ∀ i, i < 2 * C.m → (C.sideS β + i) % (2 * C.m) = (S' + i) % (2 * C.m) := by
-    intro i hi
-    rw [Nat.add_mod, ← hS', Nat.mod_eq_of_lt hi]
-  obtain ⟨i, hi, hij⟩ : ∃ i, i < 2 * C.m ∧ (C.sideS β + i) % (2 * C.m) = j := by
-    by_cases h : S' ≤ j
-    · refine ⟨j - S', by omega, ?_⟩
-      rw [hmod _ (by omega), show S' + (j - S') = j by omega, Nat.mod_eq_of_lt hj]
-    · refine ⟨j + 2 * C.m - S', by omega, ?_⟩
-      rw [hmod _ (by omega), show S' + (j + 2 * C.m - S') = j + 2 * C.m by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt hj]
+  let n := 2 * C.m
+  have hn : 0 < n := C.two_m_pos
+  let a := C.sideS β % n
+  let i := (j + n - a) % n
+  have hi : i < n := Nat.mod_lt _ hn
+  have hij : (C.sideS β + i) % n = j := by
+    rw [← Nat.mod_add_mod]; exact side_arcLen_end (Nat.mod_lt _ hn) hj
   refine ⟨i, hi, by rw [sideIdx_eq, hij], by rw [sideIdx_succ, hij], ?_, ?_⟩
-  · intro h0
-    subst h0
-    rw [add_zero] at hij
+  · intro h
+    rw [h, add_zero] at hij
     rw [← hij]; exact C.sideE_sideS β
-  · intro hi0
+  · intro h
     rw [sideIdx_eq]; congr 1
-    have e := side_idx_succ hm2 (C.sideS β) (i - 1)
-    rw [Nat.sub_add_cancel hi0, hij] at e
-    have hr := Nat.mod_lt (C.sideS β + (i - 1)) hm2
-    generalize (C.sideS β + (i - 1)) % (2 * C.m) = r at e hr ⊢
-    rcases lt_or_eq_of_le (show r + 1 ≤ 2 * C.m by omega) with h1 | h1
-    · rw [Nat.mod_eq_of_lt h1] at e; split_ifs <;> omega
-    · rw [h1, Nat.mod_self] at e; split_ifs <;> omega
+    have e := side_idx_prev hn (C.sideS β) (i - 1)
+    rw [Nat.sub_add_cancel h, hij] at e
+    rw [← e]
+    change (j + n - 1) % n = if j = 0 then n - 1 else j - 1
+    split_ifs with hj0
+    · simp [hj0, Nat.mod_eq_of_lt (show n - 1 < n by omega)]
+    · rw [show j + n - 1 = (j - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
 
 /-- At the top vertex: east is seen by the first position of the tour, west by the last. -/
 theorem sideSees_top (hP : C.P.Simple) (β : Bool) {e' : Point} (hee : C.top ≠ e')
@@ -3599,7 +3228,7 @@ theorem sideSees_top (hP : C.P.Simple) (β : Bool) {e' : Point} (hee : C.top ≠
         (by rcases hn2 with h | h <;> omega) hT (C.sideIdx_le β _) (Ne.symm hee) hopen
   · -- east: the first position of the tour
     refine ⟨0 + 6, 0, by rw [sideWalk_n]; omega, le_rfl, one_pos, ?_, ?_⟩
-    · rw [sidePt_zero, C.sideWalk_vtx_tour β (by omega), sideTour_zero]
+    · ram_rw [sidePt_zero, C.sideWalk_vtx_tour β, sideTour_zero]
     · rw [C.sideLeft_tour_first β]
       unfold sideLeftOf
       have hA2 : (C.sideTour β 1 - C.top).2 ≤ 0 := by
@@ -3617,7 +3246,7 @@ theorem sideCcw_spike {A X : Point} (hA : A ≠ 0)
   refine ⟨sideCross_self A, sideDot_self_pos hA, ?_⟩
   by_contra h
   push Not at h
-  exact hray ⟨h.1, h.2⟩
+  tauto
 
 /-- At an inner chain vertex other than the top vertex: one of its two passages sees the
 direction. -/
@@ -3643,10 +3272,9 @@ theorem sideSees_inner (hP : C.P.Simple) (β : Bool) {j : ℕ} (hj0 : 0 < j) (hj
     have k2 : C.sideIdx β (i + 1) = j + 1 := by rw [h2]; unfold sideE; split_ifs <;> omega
     have k3 : C.sideIdx β (i - 1) = j - 1 := by rw [h4 hi0]; unfold sideE; split_ifs <;> omega
     refine ⟨i + 6, 0, by rw [sideWalk_n]; omega, le_rfl, one_pos, ?_, ?_⟩
-    · rw [sidePt_zero, C.sideWalk_vtx_tour β hi.le]; unfold sideTour; rw [k1]
+    · simp [sidePt_zero, C.sideWalk_vtx_tour β hi.le, sideTour, k1]
     · rw [C.sideLeft_tour_inner β hi0 hi]
-      unfold sideTour; rw [k1, k2, k3]
-      exact h
+      unfold sideTour; rwa [k1, k2, k3]
   · -- the backwards passage
     obtain ⟨i, hi, h1, h2, h3, h4⟩ := C.sideIdx_visit β (j := 2 * C.m - j) (by omega)
     have hi0 : 0 < i := by
@@ -3657,10 +3285,9 @@ theorem sideSees_inner (hP : C.P.Simple) (β : Bool) {j : ℕ} (hj0 : 0 < j) (hj
     have k2 : C.sideIdx β (i + 1) = j - 1 := by rw [h2]; unfold sideE; split_ifs <;> omega
     have k3 : C.sideIdx β (i - 1) = j + 1 := by rw [h4 hi0]; unfold sideE; split_ifs <;> omega
     refine ⟨i + 6, 0, by rw [sideWalk_n]; omega, le_rfl, one_pos, ?_, ?_⟩
-    · rw [sidePt_zero, C.sideWalk_vtx_tour β hi.le]; unfold sideTour; rw [k1]
+    · simp [sidePt_zero, C.sideWalk_vtx_tour β hi.le, sideTour, k1]
     · rw [C.sideLeft_tour_inner β hi0 hi]
-      unfold sideTour; rw [k1, k2, k3]
-      exact h
+      unfold sideTour; rwa [k1, k2, k3]
 
 /-- At an endpoint of the chain other than the top vertex: the turnaround sees every direction
 off the chain edge. -/
@@ -3669,7 +3296,7 @@ theorem sideSees_end (hP : C.P.Simple) (β : Bool) {j : ℕ} (hj : j = 0 ∨ j =
     (hopen : ∀ s ∈ Ioo (0 : ℝ) 1, lerp (C.vertex j) e' s ∈ C.dom) :
     SideSees (C.sideWalk β) (C.vertex j) e' := by
   have hm := C.one_le
-  have hm2 := C.two_m_pos
+  
   obtain ⟨j', hj', hjj, hk2, hk3⟩ : ∃ j', j' ≤ C.m ∧ (j' = j + 1 ∨ j' + 1 = j) ∧
       (∀ i, sideE C.m (j + 1) = C.sideIdx β (i + 1) → C.sideIdx β (i + 1) = j') ∧
       (∀ i, sideE C.m (if j = 0 then 2 * C.m - 1 else j - 1) = C.sideIdx β (i - 1) →
@@ -3693,7 +3320,7 @@ theorem sideSees_end (hP : C.P.Simple) (β : Bool) {j : ℕ} (hj : j = 0 ∨ j =
     · exact C.sideVertex_succ_ne hP j')
   have hX := C.sideRay_free hP hjj (by omega) hj' (Ne.symm hee) hopen
   refine ⟨i + 6, 0, by rw [sideWalk_n]; omega, le_rfl, one_pos, ?_, ?_⟩
-  · rw [sidePt_zero, C.sideWalk_vtx_tour β hi.le]; unfold sideTour; rw [k1]
+  · simp [sidePt_zero, C.sideWalk_vtx_tour β hi.le, sideTour, k1]
   · rw [C.sideLeft_tour_inner β hi0 hi]
     unfold sideTour; rw [k1, k2, k3]
     exact sideCcw_spike hA hX
@@ -3738,9 +3365,9 @@ theorem sideSees_open (hP : C.P.Simple) (β : Bool) {k : ℕ} (hk : k < C.m) {s�
     have k1 : C.sideIdx β i = k + 1 := by rw [h1]; unfold sideE; split_ifs <;> omega
     have k2 : C.sideIdx β (i + 1) = k := by rw [h2]; unfold sideE; split_ifs <;> omega
     have hv : (C.sideWalk β).vtx (i + 6) = C.vertex (k + 1) := by
-      rw [C.sideWalk_vtx_tour β hi.le]; unfold sideTour; rw [k1]
+      simp [C.sideWalk_vtx_tour β hi.le, sideTour, k1]
     have hv' : (C.sideWalk β).vtx ((i + 6 + 1) % (C.sideWalk β).n) = C.vertex k := by
-      rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β (by omega)]; unfold sideTour; rw [k2]
+      ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β]; unfold sideTour; rw [k2]
     have ht : 1 - s₀ ∈ Ioo (0 : ℝ) 1 := ⟨by linarith [hs.2], by linarith [hs.1]⟩
     refine ⟨i + 6, 1 - s₀, by rw [sideWalk_n]; omega, ht.1.le, ht.2, ?_, ?_⟩
     · unfold sidePt; rw [hv, hv']
@@ -3750,15 +3377,14 @@ theorem sideSees_open (hP : C.P.Simple) (β : Bool) {k : ℕ} (hk : k < C.m) {s�
   · -- the forwards passage
     obtain ⟨i, hi, h1, h2, -, -⟩ := C.sideIdx_visit β (j := k) (by omega)
     have k1 : C.sideIdx β i = k := by rw [h1]; unfold sideE; split_ifs <;> omega
-    have k2 : C.sideIdx β (i + 1) = k + 1 := by rw [h2]; unfold sideE; split_ifs <;> omega
+    have k2 : C.sideIdx β (i + 1) = k + 1 := by simp_all [sideE] 
     have hv : (C.sideWalk β).vtx (i + 6) = C.vertex k := by
-      rw [C.sideWalk_vtx_tour β hi.le]; unfold sideTour; rw [k1]
+      simp [C.sideWalk_vtx_tour β hi.le, sideTour, k1]
     have hv' : (C.sideWalk β).vtx ((i + 6 + 1) % (C.sideWalk β).n) = C.vertex (k + 1) := by
-      rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β (by omega)]; unfold sideTour; rw [k2]
+      ram_rw [C.sideWalk_next_tour β hi, C.sideWalk_vtx_tour β]; unfold sideTour; rw [k2]
     refine ⟨i + 6, s₀, by rw [sideWalk_n]; omega, hs.1.le, hs.2, ?_, ?_⟩
     · unfold sidePt; rw [hv, hv']
-    · rw [sideLeft_edge (by rw [hv, hv']; exact hne) hs, hv, hv']
-      exact hpos
+    · rwa [sideLeft_edge (by rwa [hv, hv']) hs, hv, hv']
 
 /-- A point of an open vertical side of the box sees the horizontal direction into the box. -/
 theorem sideSees_box (β : Bool) {e e' : Point}
@@ -3772,16 +3398,16 @@ theorem sideSees_box (β : Bool) {e e' : Point}
   have hn := C.sideWalk_n β
   rcases (abs_eq hR.le).1 he1 with h | h
   · -- the right side, going up
-    have hp : (3 + 1) % (C.sideWalk β).n = 4 := by rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+    have hp : (3 + 1) % (C.sideWalk β).n = 4 := rfl
     have ht : (e.2 + C.radius) / (2 * C.radius) ∈ Ioo (0 : ℝ) 1 := by
       constructor
       · apply div_pos <;> linarith
       · rw [div_lt_one (by linarith)]; linarith
-    have he' : e'.1 < C.radius := by rw [h] at hmid1; linarith [hmid1.2]
+    
     refine ⟨3, (e.2 + C.radius) / (2 * C.radius), by rw [hn]; omega, ht.1.le, ht.2, ?_, ?_⟩
     · unfold sidePt; rw [hp, sideWalk_vtx_three, sideWalk_vtx_four]
       apply point_ext
-      · simp only [lerp_fst]; rw [h]; ring
+      · simp [lerp_fst, h]
       · simp only [lerp_snd]
         rw [show C.radius - -C.radius = 2 * C.radius by ring,
           div_mul_cancel₀ _ (by positivity : (2 * C.radius) ≠ 0)]
@@ -3793,16 +3419,16 @@ theorem sideSees_box (β : Bool) {e e' : Point}
       unfold det; simp only
       nlinarith
   · -- the left side, going down
-    have hp : (1 + 1) % (C.sideWalk β).n = 2 := by rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+    have hp : (1 + 1) % (C.sideWalk β).n = 2 := rfl
     have ht : (C.radius - e.2) / (2 * C.radius) ∈ Ioo (0 : ℝ) 1 := by
       constructor
       · apply div_pos <;> linarith
       · rw [div_lt_one (by linarith)]; linarith
-    have he' : -C.radius < e'.1 := by rw [h] at hmid1; linarith [hmid1.1]
+    
     refine ⟨1, (C.radius - e.2) / (2 * C.radius), by rw [hn]; omega, ht.1.le, ht.2, ?_, ?_⟩
     · unfold sidePt; rw [hp, sideWalk_vtx_one, sideWalk_vtx_two]
       apply point_ext
-      · simp only [lerp_fst]; rw [h]; ring
+      · simp [lerp_fst, h]
       · simp only [lerp_snd]
         rw [show -C.radius - C.radius = -(2 * C.radius) by ring, mul_neg,
           div_mul_cancel₀ _ (by positivity : (2 * C.radius) ≠ 0)]

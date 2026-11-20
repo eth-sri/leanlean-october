@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShootCutKey
 
 /-!
@@ -32,19 +34,11 @@ theorem wr_vtxPt : wr Bvp vtxPt = true := by decide
 variable {O : OracleIface} {P : Polygon} {C : Chain} {H : Host} {Hh h γ : ℕ} {m₀ : ℕ → ℕ}
   {A₀ W : ℕ}
 
-/-- A chain descriptor depends only on the memory below its end. -/
-theorem chainDesc_agree' {m m' : ℕ → ℕ} {B E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
-    (h : ChainDescAt m B Q H C) (hB : B + 5 ≤ E) (hH : m B + 3 * H.length + 4 ≤ E)
-    (hm : ∀ a, a < E → m' a = m a) : ChainDescAt m' B Q H C := by
-  obtain ⟨h1, h2, h3, h4, h5, h6⟩ := h
-  refine ⟨?_, h2, by rw [hm _ (by omega)]; exact h3, by rw [hm _ (by omega)]; exact h4,
-    by rw [hm _ (by omega)]; exact h5, by rw [hm _ (by omega)]; exact h6⟩
-  rw [hm _ (by omega)]
-  exact hostAt_agree' h1 hH hm
+abbrev chainDesc_agree' := @ChainDescAt.agree
 
 /-- **The symbolic point of a walk vertex** of the double boundary. -/
 theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : WordsBounded W d)
-    (hm : ∀ a, a < A₀ → d.nmem a = m₀ a) (R : ChainRegs C (H.pts P.n).length Hh d)
+    (hm : MemEqBelow A₀ d.nmem m₀) (R : ChainRegs C (H.pts P.n).length Hh d)
     (h27 : d.nreg 150027 = P.n) (h92 : d.nreg 150092 = 2) {v : ℕ} (h44 : d.nreg 150044 = v)
     (hv6 : 6 ≤ v) (hv : v ≤ 2 * C.m + 6) :
     ∃ d' k sp, Exec P W vtxPt d d' k ∧ k ≤ 22 * H.length + 40 ∧ FrameB Bvp d d' ∧
@@ -59,18 +53,18 @@ theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : Wor
   rw [hN] at hmN hsN
   have hHA := S.hHA
   have hAW := S.hAW
-  have hH' : HostAt d.nmem Hh H := hostAt_agree' S.hH hHA fun a ha => hm a (by omega)
+  have hH' := hostAt_agree' S.hH hHA fun a ha => hm a (by omega)
   obtain ⟨d₁, k₁, ex₁, hk₁, fr₁, o60, o61, o62, o63, o63', o64, found⟩ :=
     locV_exec (P := P) (W := W) (v := v) d hw rfl hH' R h44 hv6 hv hsN hmN (by omega) (by omega)
   obtain ⟨hr, hp1, hp2, h66, h67, h68, h69⟩ := found
   set r := d₁.nreg 150065 with hrdef
   set u := d₁.nreg 150064 with hudef
-  have g₁ : ∀ x, (x < 150060 ∨ 150080 ≤ x) → d₁.nreg x = d.nreg x := fun x hx =>
+  have g₁ := fun x hx =>
     fr₁.1 x (bloc_false hx)
   have hlo : Hh + 3 + 3 * r < A₀ := by omega
-  have e67 : d₁.nreg 150067 = m₀ (Hh + 1 + 3 * r) := by rw [h67, hm _ (by omega)]
-  have e68 : d₁.nreg 150068 = m₀ (Hh + 2 + 3 * r) := by rw [h68, hm _ (by omega)]
-  have e69 : d₁.nreg 150069 = m₀ (Hh + 3 + 3 * r) := by rw [h69, hm _ (by omega)]
+  have e67 : d₁.nreg 150067 = m₀ (Hh + 1 + 3 * r) := by ram_rw [h67, hm]
+  have e68 : d₁.nreg 150068 = m₀ (Hh + 2 + 3 * r) := by ram_rw [h68, hm]
+  have e69 : d₁.nreg 150069 = m₀ (Hh + 3 + 3 * r) := by ram_rw [h69, hm]
   obtain ⟨hit, hc2⟩ := NFLoc.hostAt_item S.hH hr
   have hsucc := NFLoc.preLen_succ P.n H hr
   have hwf := S.hwf _ (List.getElem_mem hr)
@@ -81,15 +75,13 @@ theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : Wor
     rw [show v - 6 + 6 = v by omega] at this
     rw [this]
     refine (NFLoc.chain_vertex_host C S.hP _ ?_).symm
-    rw [hQn, hN, show C.s + sideE C.m (tJ C (v - 6)) = C.s + sideE C.m
+    rwa [hQn, hN, show C.s + sideE C.m (tJ C (v - 6)) = C.s + sideE C.m
       ((C.sideS C.sideBeta + (v - 6)) % (2 * C.m)) from rfl, ← o64]
-    exact hsp
-  have hpts : (H.pts P.n)[u]? = (H[r].pts P.n)[u - NFLoc.preLen P.n H r]? :=
-    NFLoc.pts_getElem? P.n H hr hp1 (by omega)
+  have hpts := NFLoc.pts_getElem? P.n H hr hp1 (by omega)
   have w₁ := ex₁.wb_right
-  have b91 : d₁.nreg 150091 = 1 := by rw [g₁ _ (by omega), R.h91]
-  have b92 : d₁.nreg 150092 = 2 := by rw [g₁ _ (by omega), h92]
-  have b27 : d₁.nreg 150027 = P.n := by rw [g₁ _ (by omega), h27]
+  have b91 : d₁.nreg 150091 = 1 := by simp [g₁, R.h91]
+  have b92 : d₁.nreg 150092 = 2 := by ram_rw [g₁, h92]
+  have b27 : d₁.nreg 150027 = P.n := by ram_rw [g₁, h27]
   have fin : ∀ (d₂ : Config) (k₂ : ℕ) (sp : SymPt), Exec P W (.ifLtN 150067 150091
       (.seq (.instr (.addN 150075 150068 150066))
         (.seq (.ifLtN 150075 150027 (.instr (.copyN 150046 150075))
@@ -122,20 +114,19 @@ theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : Wor
         d₂.nreg 150045 = 0 ∧ d₂.nreg 150046 = (a + t) % P.n := by
       refine spec_seq (spec_instr (Exec.addN w₁ _ _ _ (by rw [e68, h66]; omega)) fun w' => ?_)
       by_cases hlt : a + t < P.n
-      · refine spec_seq (spec_ifLtN_true (by config_simp; rw [e68, h66, b27]; exact hlt)
+      · refine spec_seq (spec_ifLtN_true (by config_simp; rwa [e68, h66, b27])
           (spec_instr (Exec.copyN w' _ _) fun w'' => ?_))
         refine spec_instr (Exec.constN w'' _ _ (by omega)) fun _ => ⟨by omega, by config_simp, ?_⟩
-        config_simp; rw [e68, h66, Nat.mod_eq_of_lt hlt]
-      · refine spec_seq (spec_ifLtN_false (by config_simp; rw [e68, h66, b27]; exact hlt)
+        simp [e68, h66, Nat.mod_eq_of_lt hlt]
+      · refine spec_seq (spec_ifLtN_false (by config_simp; rwa [e68, h66, b27])
           (spec_instr (Exec.subN w' _ _ _) fun w'' => ?_))
         refine spec_instr (Exec.constN w'' _ _ (by omega)) fun _ => ⟨by omega, by config_simp, ?_⟩
-        config_simp
-        rw [e68, h66, b27, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+        ram_simp [e68, h66, b27, Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt] <;> omega
     exact fin d₂ (k₂ + 1) (.vtx ((a + t) % P.n)) (.ifLtN_true hc0 ex₂) (by omega) ⟨o45, o46⟩
       (Nat.mod_lt _ (by have := S.hn; omega)) (by rw [hpts, NFLoc.run_pts_getElem? _ _ _ ht])
   · have hk1 : 1 ≤ m₀ (Hh + 1 + 3 * r) := by rw [← e67]; omega
     rcases hH : H[r] with ⟨a, ℓ⟩ | x
-    · exfalso; rw [hit] at hH; unfold NFLoc.itemOf at hH; rw [ite_eq_right (by omega)] at hH
+    · exfalso; rw [hit] at hH; unfold NFLoc.itemOf at hH; ram_rw [ite_eq_right] at hH
       split_ifs at hH
     rw [hH] at hwf hsucc hpts
     simp only [NFLoc.itemCnt] at hsucc
@@ -145,28 +136,24 @@ theorem vtxPt_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) (d : Config) (hw : Wor
     by_cases hc1 : d₁.nreg 150067 < d₁.nreg 150092
     · have hx : x = .vtx (m₀ (Hh + 2 + 3 * r)) := by
         rw [hit] at hH; unfold NFLoc.itemOf at hH
-        rw [ite_eq_right (by omega), ite_eq_left (by omega)] at hH
+        ram_rw [ite_eq_right, ite_eq_left] at hH
         exact (HostItem.pt.inj hH).symm
       obtain ⟨d₂, k₂, ex₂, hk₂, o45, o46⟩ : ∃ d₂ k₂, Exec P W
           (block [.constN 150045 0, .copyN 150046 150068]) d₁ d₂ k₂ ∧ k₂ = 2 ∧
           d₂.nreg 150045 = 0 ∧ d₂.nreg 150046 = m₀ (Hh + 2 + 3 * r) := by
-        exec_block
-        all_goals first | omega | skip
-        exact ⟨rfl, by config_simp, by config_simp; exact e68⟩
+        ram_exec
       rw [hx] at hsp hwf
       exact fin d₂ _ (.vtx (m₀ (Hh + 2 + 3 * r))) (.ifLtN_false hc0 (.ifLtN_true hc1 ex₂))
         (by omega) ⟨o45, o46⟩ hwf hsp
     · have hx : x = .onEdge (m₀ (Hh + 2 + 3 * r)) (m₀ (Hh + 3 + 3 * r)) := by
         rw [hit] at hH; unfold NFLoc.itemOf at hH
-        rw [ite_eq_right (by omega), ite_eq_right (by omega)] at hH
+        ram_rw [ite_eq_right, ite_eq_right] at hH
         exact (HostItem.pt.inj hH).symm
       obtain ⟨d₂, k₂, ex₂, hk₂, o45, o46, o47⟩ : ∃ d₂ k₂, Exec P W
           (block [.constN 150045 1, .copyN 150046 150068, .copyN 150047 150069]) d₁ d₂ k₂ ∧
           k₂ = 3 ∧ d₂.nreg 150045 = 1 ∧ d₂.nreg 150046 = m₀ (Hh + 2 + 3 * r) ∧
           d₂.nreg 150047 = m₀ (Hh + 3 + 3 * r) := by
-        exec_block
-        all_goals first | omega | skip
-        exact ⟨rfl, by config_simp, by config_simp; exact e68, by config_simp; exact e69⟩
+        ram_exec
       rw [hx] at hsp hwf
       exact fin d₂ _ (.onEdge (m₀ (Hh + 2 + 3 * r)) (m₀ (Hh + 3 + 3 * r)))
         (.ifLtN_false hc0 (.ifLtN_false hc1 ex₂)) (by omega) ⟨o45, o46, o47⟩ hwf hsp
@@ -178,7 +165,7 @@ theorem wr_keyLess : wr Scr keyLess = true := by decide
 /-- **The direction code of a walk edge** into `150059`. -/
 theorem dirP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ} (hD : ChainDescAt m₀ (MD + 1) (Qof P) H C)
     (hMD : MD + 6 ≤ A₀) (hHh : m₀ (MD + 1) = Hh) (d : Config) (hw : WordsBounded W d)
-    (hm : ∀ a, a < A₀ → d.nmem a = m₀ a) (h00 : d.nreg 150000 = MD) {p : ℕ}
+    (hm : MemEqBelow A₀ d.nmem m₀) (h00 : d.nreg 150000 = MD) {p : ℕ}
     (h49 : d.nreg 150049 = p) (hp : p < 2 * C.m + 7) :
     ∃ d' k, Exec P W dirP d d' k ∧ k ≤ 70 * H.length + 610 ∧
       d'.nreg 150059 = NFLoc.dirOf ((chainModel C).wa p).2 ((chainModel C).wb p).2 ∧
@@ -194,22 +181,21 @@ theorem dirP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ} (hD : ChainD
       (∀ r, r ≠ 50000 → r ≠ 50002 → d₁.nreg r = d.nreg r) ∧ d₁.nmem = d.nmem := by
     exec_block
     refine ⟨rfl, by config_simp; exact h00, by config_simp; exact h49, fun r h1 h2 => ?_, rfl⟩
-    simp only [upd]; split_ifs <;> first | rfl | omega
+    simp_all
   have hC : ChainDescAt d₁.nmem (d₁.nreg 50000 + 1) (Qof P) H C := by
     rw [o0, m₁]
     exact chainDesc_agree' hD (by omega) (by rw [hHh]; exact le_trans S.hHA le_rfl)
-      (fun a ha => hm a (by have := S.hHA; rw [hHh] at *; omega))
+      (fun a ha => hm a (by assumption))
   obtain ⟨d₂, k₂, e₂, hk₂, fr₂, o₂⟩ := NFLoc.chainDir_exec (P := P) S.hG (by omega) d₁ e₁.wb_right
     hC (by rw [o0]; have := S.hAW; omega)
-    (by rw [o0, m₁, hm _ (by omega), hHh]; have := S.hHA; have := S.hAW; omega) S.hwf S.hs
-    (by rw [hN]; omega) (by rw [o2]; exact hp)
+    (by ram_rw [o0, m₁, hm, hHh]; have := S.hHA; have := S.hAW; omega) S.hwf S.hs
+    (by rw [hN]; omega) (by rwa [o2])
   have e₃ := Exec.copyN (P := P) e₂.wb_right 150059 10502
   refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by have := S.hlen; omega, ?_,
     fun r h1 h2 h3 h4 => ?_, ?_⟩
-  · config_simp; rw [o₂, o2]; rfl
-  · config_simp
-    rw [upd_other _ _ _ (by omega), fr₂.1 r h2, r₁ r h3 h4]
-  · config_simp; rw [fr₂.2.2.1, m₁]
+  · ram_finish
+  · ram_finish [fr₂.1 r h2, r₁ r h3 h4]
+  · simp [fr₂.2.2.1, m₁]
 
 theorem dirOf_eq_zero {a b : ℝ} : NFLoc.dirOf a b = 0 ↔ a = b := by
   unfold NFLoc.dirOf
@@ -222,7 +208,7 @@ is `1` iff the walk edge is not horizontal and the height of `Q.vtx j` differs f
 the start of the edge. -/
 theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     (hD : ChainDescAt m₀ (MD + 1) (Qof P) H C) (hMD : MD + 6 ≤ A₀) (hHh : m₀ (MD + 1) = Hh)
-    (d : Config) (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+    (d : Config) (hw : WordsBounded W d) (hm : MemEqBelow A₀ d.nmem m₀)
     (R : ChainRegs C (H.pts P.n).length Hh d) (h00 : d.nreg 150000 = MD)
     (h27 : d.nreg 150027 = P.n) (h90 : d.nreg 150090 = 0) (h92 : d.nreg 150092 = 2) {p j : ℕ}
     (h49 : d.nreg 150049 = p) (h76 : d.nreg 150076 = j) (hp6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
@@ -245,67 +231,64 @@ theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     fun d' k ex hk h1 h2 => ⟨d', k, ex, hk, exec_frameB ex wr_posP, h1, h2⟩
   by_cases h59 : d₁.nreg 150059 < d₁.nreg 150091
   · have hz : NFLoc.dirOf ((chainModel C).wa p).2 ((chainModel C).wb p).2 = 0 := by
-      rw [g₁ 150091 (by omega) (by omega) (by omega), R.h91, o59] at h59; omega
+      rw [(ram_app% (g₁ 150091 ?_ ?_ ?_)), R.h91, o59] at h59; omega
     have e₂ := Exec.constN (P := P) w₁ 150089 0 (by omega)
-    refine hfin _ _ (by unfold posP; exact .seq ex₁ (.ifLtN_true h59 e₂)) (by omega) ?_
+    refine hfin _ _ (by ram_path) (by omega) ?_
       (by config_simp <;> omega)
     config_simp
     rw [dirOf_eq_zero] at hz
-    simp only [zero_ne_one, false_iff, not_and, not_not]
+    simp only [false_iff, not_and, not_not]
     intro h; exact absurd hz h
   · have hnz : NFLoc.dirOf ((chainModel C).wa p).2 ((chainModel C).wb p).2 ≠ 0 := by
-      rw [g₁ 150091 (by omega) (by omega) (by omega), R.h91, o59] at h59; omega
+      rw [(ram_app% (g₁ 150091 ?_ ?_ ?_)), R.h91, o59] at h59; omega
     rw [Ne, dirOf_eq_zero] at hnz
     have e₂ := Exec.copyN (P := P) w₁ 150044 150049
     set d₂ := ({ d₁ with nreg := upd d₁.nreg 150044 (d₁.nreg 150049) } : Config) with hd₂
     have g₂ : ∀ r, 150000 ≤ r → r < 150100 → r ≠ 150059 → r ≠ 150044 → d₂.nreg r = d.nreg r :=
-      fun r h1 h2 h3 h4 => by simp only [hd₂, upd]; rw [ite_eq_right h4]; exact g₁ r h1 h2 h3
+      fun r h1 h2 h3 h4 => by ram_post
     have R₂ : ChainRegs C (H.pts P.n).length Hh d₂ := R.of_frame fun r hr => g₂ r (by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
     obtain ⟨d₃, k₃, sp, ex₃, hk₃, fr₃, in₃, lt₃, ev₃⟩ := vtxPt_exec S d₂ e₂.wb_right
-      (fun a ha => by rw [show d₂.nmem = d₁.nmem from rfl, m₁]; exact hm a ha) R₂
-      (by rw [g₂ _ (by omega) (by omega) (by omega) (by omega), h27])
-      (by rw [g₂ _ (by omega) (by omega) (by omega) (by omega), h92])
-      (by simp [hd₂, upd]; rw [g₁ _ (by omega) (by omega) (by omega), h49]) hp6 hp
-    have g₃ : ∀ r, Bvp r = false → d₃.nreg r = d₂.nreg r := fr₃.1
+      (fun a ha => by ram_finish) R₂
+      (by frame_finish)
+      (by frame_finish)
+      (by ram_finish) hp6 hp
+    have g₃ := fr₃.1
     have b76 : d₃.nreg 150076 = j := by
-      rw [g₃ _ (by decide), g₂ _ (by omega) (by omega) (by omega) (by omega), h76]
+      frame_finish
     have b90 : d₃.nreg 150090 = 0 := by
-      rw [g₃ _ (by decide), g₂ _ (by omega) (by omega) (by omega) (by omega), h90]
+      frame_finish
     obtain ⟨d₄, k₄, ex₄, hk₄, a₄, b₄, r₄⟩ : ∃ d₄ k₄, Exec P W
         (block [.copyN 50040 150045, .copyN 50041 150046, .copyN 50042 150047, .constN 50043 0,
           .copyN 50044 150076]) d₃ d₄ k₄ ∧ k₄ = 5 ∧ SymPtIn d₄ 50040 sp ∧
         SymPtIn d₄ 50043 (.vtx j) ∧ d₄.nreg 150090 = 0 := by
       have w₃ := ex₃.wb_right
-      exec_block
-      all_goals first | omega | skip
-      exact ⟨rfl, NFLoc.symPtIn_copy in₃ (by config_simp) (by config_simp) (by config_simp),
-        ⟨by config_simp, by config_simp; exact b76⟩, by config_simp; exact b90⟩
+      ram_exec
     obtain ⟨d₅, k₅, ex₅, hk₅, fr₅, o₅⟩ := NFLoc.dirTail_exec (P := P) S.hG (by omega) d₄
       ex₄.wb_right lt₃ (show (SymPt.vtx j).Lt P.n from hj) a₄ b₄
     have e₆ := Exec.copyN (P := P) ex₅.wb_right 150089 10502
     set d₆ := ({ d₅ with nreg := upd d₅.nreg 150089 (d₅.nreg 10502) } : Config) with hd₆
     have o89 : d₆.nreg 150089 = NFLoc.dirOf ((chainModel C).W.vtx p).2 ((Qof P).vtx j).2 := by
-      simp only [hd₆, upd, ↓reduceIte]; rw [o₅, ev₃]; rfl
+      ram_post
     have c90 : d₆.nreg 150090 = 0 := by
-      simp only [hd₆, upd]; rw [ite_eq_right (by omega), fr₅.1 _ (by decide), r₄]
+      simp only [hd₆, upd]; frame_finish
     have w₆ := e₆.wb_right
     have ex_pre : ∀ (d₇ : Config) (k₇ : ℕ), Exec P W
         (.ifLtN 150090 150089 (.instr (.constN 150089 1)) .skip) d₆ d₇ k₇ →
         Exec P W posP d d₇ (k₁ + (1 + (k₃ + ((k₄ + (k₅ + 1)) + k₇)) + 2)) := by
       intro d₇ k₇ e₇
       unfold posP hcmp
-      exact .seq ex₁ (.ifLtN_false h59 (.seq e₂ (.seq ex₃ (.seq (.seq ex₄ (.seq ex₅ e₆)) e₇))))
+      exact .seq ex₁ (.ifLtN_false h59 (by ram_path))
     by_cases hy : ((chainModel C).W.vtx p).2 = ((Qof P).vtx j).2
-    · have hz : d₆.nreg 150089 = 0 := by rw [o89, dirOf_eq_zero]; exact hy
+    · have hz : d₆.nreg 150089 = 0 := by rwa [o89, dirOf_eq_zero]
       have ht : ¬ d₆.nreg 150090 < d₆.nreg 150089 := by omega
       refine hfin d₆ _ (ex_pre d₆ 2 (.ifLtN_false ht (.skip w₆))) (by have := S.hlen; omega)
         ?_ (by omega)
       rw [hz]; simp only [zero_ne_one, false_iff, not_and, not_not]; intro _; exact hy
-    · have hz : d₆.nreg 150089 ≠ 0 := by rw [o89, Ne, dirOf_eq_zero]; exact hy
+    · have hz : d₆.nreg 150089 ≠ 0 := by rwa [o89, Ne, dirOf_eq_zero]
       have ht : d₆.nreg 150090 < d₆.nreg 150089 := by omega
       have e₇ := Exec.constN (P := P) w₆ 150089 1 (by omega)
       refine hfin _ _ (ex_pre _ 2 (.ifLtN_true ht e₇)) (by have := S.hlen; omega) ?_
@@ -318,7 +301,7 @@ theorem posP_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
 `Q.vtx (h₂ - 1)` are in the order of the edge. -/
 theorem keyLess_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     (hD : ChainDescAt m₀ (MD + 1) (Qof P) H C) (hMD : MD + 6 ≤ A₀) (hHh : m₀ (MD + 1) = Hh)
-    (d : Config) (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+    (d : Config) (hw : WordsBounded W d) (hm : MemEqBelow A₀ d.nmem m₀)
     (h00 : d.nreg 150000 = MD) (h91 : d.nreg 150091 = 1) {p h₁ h₂ : ℕ}
     (h49 : d.nreg 150049 = p) (h02 : d.nreg 150002 = h₁) (h04 : d.nreg 150004 = h₂)
     (hp : p < 2 * C.m + 7) (hh₁ : 1 ≤ h₁) (hh₁' : h₁ ≤ P.n) (hh₂ : 1 ≤ h₂) (hh₂' : h₂ ≤ P.n) :
@@ -343,7 +326,7 @@ theorem keyLess_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
           NFLoc.dirOf ((Qof P).vtx (h₁ - 1)).2 ((Qof P).vtx (h₂ - 1)).2 = D)) ∧
         d'.nreg 150089 ≤ 1 :=
     fun d' k ex hk h1 h2 => ⟨d', k, ex, hk, exec_frameB ex wr_keyLess, h1, h2⟩
-  have b91 : d₁.nreg 150091 = 1 := by rw [g₁ 150091 (by omega) (by omega) (by omega), h91]
+  have b91 : d₁.nreg 150091 = 1 := by ram_rw [g₁ 150091, h91]
   by_cases h59 : d₁.nreg 150059 < d₁.nreg 150091
   · have hz : D = 0 := by rw [b91, o59] at h59; omega
     have e₂ := Exec.constN (P := P) w₁ 150089 0 (by omega)
@@ -363,12 +346,12 @@ theorem keyLess_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
       exec_block
       all_goals first | omega | skip
       refine ⟨rfl, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩, by config_simp; exact o59⟩
-      · config_simp; rw [g₁ 150002 (by omega) (by omega) (by omega), h02, b91]
-      · config_simp; rw [g₁ 150004 (by omega) (by omega) (by omega), h04, b91]
+      · config_simp; ram_rw [g₁ 150002, h02, b91]
+      · config_simp; ram_rw [g₁ 150004, h04, b91]
     obtain ⟨d₃, k₃, ex₃, hk₃, fr₃, o₃⟩ := NFLoc.dirTail_exec (P := P) S.hG (by omega) d₂
       ex₂.wb_right (show (SymPt.vtx (h₁ - 1)).Lt P.n from by show h₁ - 1 < P.n; omega)
       (show (SymPt.vtx (h₂ - 1)).Lt P.n from by show h₂ - 1 < P.n; omega) a₂ b₂
-    have c59 : d₃.nreg 150059 = D := by rw [fr₃.1 _ (by decide), c₂]
+    have c59 : d₃.nreg 150059 = D := by ram_rw [fr₃.1, c₂]
     have w₃ := ex₃.wb_right
     set E := NFLoc.dirOf ((Qof P).vtx (h₁ - 1)).2 ((Qof P).vtx (h₂ - 1)).2 with hE
     have o10 : d₃.nreg 10502 = E := o₃

@@ -32,41 +32,41 @@ variable {J : Merge.Junction}
 
 /-- **The faced sides, and the middle sides through a handler.** -/
 theorem slb_part2_core (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {e : Set Point}
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {e : Set Point}
     (he : e ∈ F₂plus J S₂) {d : ℕ} (hd : d < Lst J) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     (hd1 : t = 0 → 1 ≤ d)
-    (hA : SideAttach (chainModel J.whole).W e ((gW J + d) % (chainModel J.whole).W.n) t)
-    {Va Vb : Set Point} (hVa : Va ∈ (chainModel J.right).regions S₂)
-    (hVb : Vb ∈ (chainModel J.right).regions S₂)
-    (ha : AfterFaces (chainModel J.right) (cpA J d) t Va)
-    (hb0 : 0 < t → BeforeFaces (chainModel J.right) (cpA J d) t Vb)
-    (hb1 : t = 0 → BeforeFaces (chainModel J.right) (cpB J d) 0 Vb)
+    (hA : SideAttach J.wholeModel.W e ((gW J + d) % J.wholeModel.W.n) t)
+    {Va Vb : Set Point} (hVa : Va ∈ J.rightModel.regions S₂)
+    (hVb : Vb ∈ J.rightModel.regions S₂)
+    (ha : AfterFaces J.rightModel (cpA J d) t Va)
+    (hb0 : 0 < t → BeforeFaces J.rightModel (cpA J d) t Vb)
+    (hb1 : t = 0 → BeforeFaces J.rightModel (cpB J d) 0 Vb)
     {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hS : SideOf (chainModel J.whole) ρ e G)
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hS : SideOf J.wholeModel ρ e G)
     (hmid : ∀ e' ∈ F₂plus J S₂, e' ≠ e →
-      SideAttach (chainModel J.whole).W e' ((gW J + d) % (chainModel J.whole).W.n) 0 → t = 0 →
-      SideOf (chainModel J.whole) ρ e' G → EvVal J S₂ {Va, Vb} G) :
+      SideAttach J.wholeModel.W e' ((gW J + d) % J.wholeModel.W.n) 0 → t = 0 →
+      SideOf J.wholeModel ρ e' G → EvVal J S₂ {Va, Vb} G) :
     EvVal J S₂ {Va, Vb} G := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
-  have hGM : GoodModel (chainModel J.whole) := Or.inl ⟨J.whole, hP, rfl⟩
+  have hGM : GoodModel J.wholeModel := Or.inl ⟨J.whole, hP, rfl⟩
   obtain ⟨dir, hdir1, hdir⟩ : ∃ dir : ℝ, (dir = 1 ∨ dir = -1) ∧
-      ((dir = 1 ∧ ∀ z ∈ e, (sidePt (chainModel J.whole).W
-          ((gW J + d) % (chainModel J.whole).W.n) t).1 ≤ z.1) ∨
-        (dir = -1 ∧ ∀ z ∈ e, z.1 ≤ (sidePt (chainModel J.whole).W
-          ((gW J + d) % (chainModel J.whole).W.n) t).1)) := by
+      ((dir = 1 ∧ ∀ z ∈ e, (sidePt J.wholeModel.W
+          ((gW J + d) % J.wholeModel.W.n) t).1 ≤ z.1) ∨
+        (dir = -1 ∧ ∀ z ∈ e, z.1 ≤ (sidePt J.wholeModel.W
+          ((gW J + d) % J.wholeModel.W.n) t).1)) := by
     rcases hC.hM.attach_dir (hC.hF he) hA with h | h
     · exact ⟨1, Or.inl rfl, Or.inl ⟨rfl, h⟩⟩
     · exact ⟨-1, Or.inr rfl, Or.inr ⟨rfl, h⟩⟩
   have hρd : ρ * dir = 1 ∨ ρ * dir = -1 := by
     rcases hρ with rfl | rfl <;> rcases hdir1 with rfl | rfl <;> norm_num
   have hfo := faced_or_middle hGM hF he hA hρ hG hS hdir
-  have faced := fun (hfac : FacedSide (chainModel J.whole)
-      ((gW J + d) % (chainModel J.whole).W.n) t ρ dir G) =>
+  have faced := fun (hfac : FacedSide J.wholeModel
+      ((gW J + d) % J.wholeModel.W.n) t ρ dir G) =>
     slb_faced hP hS₂ hd ht0 ht1 hd1 hG hfac hρd hVa hVb ha hb0 hb1
-  by_cases huniq : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e'
-      ((gW J + d) % (chainModel J.whole).W.n) t → e' = e
+  by_cases huniq : ∀ e' ∈ F₂plus J S₂, SideAttach J.wholeModel.W e'
+      ((gW J + d) % J.wholeModel.W.n) t → e' = e
   · exact faced (hfo.1 huniq)
   push Not at huniq
   obtain ⟨e', he', hA', hne⟩ := huniq
@@ -82,19 +82,19 @@ theorem slb_part2_core (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
 
 /-- **The middle region of a tie at the split vertex.** -/
 theorem slb_split_middle (hSG : SplitGapTask) (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {e e' : Set Point}
+    {S₂ : Set (Set Point)} (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {e e' : Set Point}
     (he : e ∈ F₂plus J S₂) (he' : e' ∈ F₂plus J S₂) (hne : e' ≠ e) (hlt : rL1 J < Lst J)
     (hd0 : rL1 J ≠ 0)
-    (hA : SideAttach (chainModel J.whole).W e ((gW J + rL1 J) % (chainModel J.whole).W.n) 0)
-    (hA' : SideAttach (chainModel J.whole).W e' ((gW J + rL1 J) % (chainModel J.whole).W.n) 0)
-    (hK : ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ (Lst J : ℝ) ≤ oW J (q + s))
+    (hA : SideAttach J.wholeModel.W e ((gW J + rL1 J) % J.wholeModel.W.n) 0)
+    (hA' : SideAttach J.wholeModel.W e' ((gW J + rL1 J) % J.wholeModel.W.n) 0)
+    (hK : ∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s ∧ (Lst J : ℝ) ≤ oW J (q + s))
     {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hS : SideOf (chainModel J.whole) ρ e G) (hS' : SideOf (chainModel J.whole) ρ e' G)
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hS : SideOf J.wholeModel ρ e G) (hS' : SideOf J.wholeModel ρ e' G)
     {Λ : Set (Set Point)} {L : Set Point} (hL : L ∈ Λ)
-    (hLr : L ∈ (chainModel J.right).regions S₂) : EvVal J S₂ Λ G := by
-  by_cases hOff : OffOut J e' ((gW J + rL1 J) % (chainModel J.whole).W.n) 0
+    (hLr : L ∈ J.rightModel.regions S₂) : EvVal J S₂ Λ G := by
+  by_cases hOff : OffOut J e' ((gW J + rL1 J) % J.wholeModel.W.n) 0
   · exact slb_evVal hL hLr (valid_of_tieOut J hP hS₂ hF hG
       (slb_tieOut hP hS₂ hF he he' hne hlt hd0 hA hA' hK hOff hρ hS hS') L)
   · unfold OffOut at hOff
@@ -109,17 +109,17 @@ theorem slb_split_middle (hSG : SplitGapTask) (hP : J.P.Simple) {Q : Polygon}
 /-- **`LabTask` from `SplitGapTask`.** -/
 theorem labTask_of (hSG : SplitGapTask) : LabTask := by
   intro J Q S₂ e hP hS₂ hF he _hstop _hnp hK d t hd ht0 ht1 hd0 hA
-  have hd1 : t = 0 → 1 ≤ d := fun h => Nat.one_le_iff_ne_zero.2 (hd0 h)
+  have hd1 := fun h => Nat.one_le_iff_ne_zero.2 (hd0 h)
   by_cases hsp : t = 0 ∧ d = rL1 J
   · -- the split vertex
     obtain ⟨rfl, rfl⟩ := hsp
-    have hd0' : rL1 J ≠ 0 := hd0 rfl
-    have hlt : rL1 J < Lst J := hd
+    have hd0' := hd0 rfl
+    have hlt := hd
     have hδ := slb_rδ_pos hlt
     refine ⟨fun c hc hec Vu hVu Vd hVd hsu hsd => ?_, fun hnf Va hVa Vb hVb ha hb0 hb1 => ?_⟩
     · intro G hG ρ hρ hS
-      have key : ∀ V, V ∈ ({Vu, Vd} : Set (Set Point)) → V ∈ (chainModel J.right).regions S₂ →
-          SideOf (chainModel J.right) ρ c V → EvVal J S₂ {Vu, Vd} G := by
+      have key : ∀ V, V ∈ ({Vu, Vd} : Set (Set Point)) → V ∈ J.rightModel.regions S₂ →
+          SideOf J.rightModel ρ c V → EvVal J S₂ {Vu, Vd} G := by
         intro V hVΛ hV hVs
         rcases split_step J hP hS₂ hF hδ he (subset_S₂x J S₂ hc) hec hA hρ hG hV hS hVs with
           hRL | ⟨-, Vg, hgVg, hRLg⟩ | ⟨-, f', hf', hf'ne, hf'A, hf'S, -⟩

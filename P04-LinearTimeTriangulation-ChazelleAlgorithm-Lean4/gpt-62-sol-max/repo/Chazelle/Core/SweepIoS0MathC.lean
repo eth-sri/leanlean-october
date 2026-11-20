@@ -46,7 +46,7 @@ theorem F₂plus_origin {S₂ : Set (Set Point)} {e : Set Point} (he : e ∈ F�
   · have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
       rw [Merge.Junction.whole_vertex_add]; rfl
     refine ⟨J.right.top, σ, hσ, ?_, ?_, Or.inr (Or.inl rfl)⟩
-    · rw [← hv]; exact hfr
+    · rwa [← hv]
     · rw [← hv]; rfl
 
 /-- **A ray along a shot chord from its far end.** -/
@@ -167,12 +167,12 @@ theorem arrival_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ} {z :
   refine ⟨hp, ht0, ht1, hpt, ?_⟩
   rw [neg_neg]
   obtain ⟨s, ⟨hse, hsr⟩, hs0⟩ := ((hev.and (Ioo_mem_nhdsGT hr)).and self_mem_nhdsWithin).exists
-  have hs0' : (0 : ℝ) < s := hs0
-  have hdist : dist (rayPt z σ s) z = s := dist_rayPt z hσ hs0'.le
+  have hs0' := hs0
+  have hdist := dist_rayPt z hσ hs0'.le
   have h1 : sideLeft W p t (rayPt z σ s) := by
     refine hcl _ hse ?_ ?_
     · rw [hpt]; intro h; rw [h, dist_self] at hdist; linarith
-    · rw [hpt, hdist]; exact hsr.2
+    simp_all
   rw [← hpt] at h1 ⊢
   exact (sideLeft_rayPt_iff W p t σ hs0' one_pos).1 h1
 
@@ -188,25 +188,21 @@ theorem endOrigin_big (Q : Polygon) (N : NF) {j : ℕ} (hj : N.nChords ≤ j / 2
     (endOrigin J Q N j).1 = J.right.top.1 := by
   have hch : N.chord (j / 2) = ⟨0, 0, 0, 0, 0⟩ := by
     unfold NF.chord; exact List.getD_eq_default _ _ hj
-  have hn : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
-  have hpos : (chainModel J.right).pos Q ⟨0, 0 + 1⟩ = J.right.slitTop := by
-    have hwa : (chainModel J.right).wa 0 = J.right.slitTop := rfl
-    have hwb : (chainModel J.right).wb 0 = ((-J.right.radius, J.right.radius) : Point) := by
-      show (chainModel J.right).W.vtx ((0 + 1) % (chainModel J.right).W.n) = _
-      rw [show (0 + 1) % (chainModel J.right).W.n = 1 by rw [hn]; exact Nat.mod_eq_of_lt (by omega)]
+  have hn : J.rightModel.W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hpos : J.rightModel.pos Q ⟨0, 0 + 1⟩ = J.right.slitTop := by
+    have hwa : J.rightModel.wa 0 = J.right.slitTop := rfl
+    have hwb : J.rightModel.wb 0 = ((-J.right.radius, J.right.radius) : Point) := by
+      show J.rightModel.W.vtx ((0 + 1) % J.rightModel.W.n) = _
+      rw [show (0 + 1) % J.rightModel.W.n = 1 by rw [hn]; exact Nat.mod_eq_of_lt (by omega)]
       rfl
-    have hpar : (chainModel J.right).param Q ⟨0, 0 + 1⟩ = 0 := by
-      show (if ((chainModel J.right).wa 0).2 = ((chainModel J.right).wb 0).2 then 0 else _) = _
+    have hpar : J.rightModel.param Q ⟨0, 0 + 1⟩ = 0 := by
+      show (if (J.rightModel.wa 0).2 = (J.rightModel.wb 0).2 then 0 else _) = _
       rw [ite_eq_left (by rw [hwa, hwb]; rfl)]
     unfold Model.pos
-    simp only [hpar, Geometry.lerp_zero]
-    exact hwa
-  have hset : (N.chord (j / 2)).toSet (chainModel J.right) Q =
+    simp_all
+  have hset : (N.chord (j / 2)).toSet J.rightModel Q =
       hseg (Q.vtx 0).2 J.right.slitTop.1 J.right.slitTop.1 := by
-    rw [hch]
-    unfold CRec.toSet CRec.lpos CRec.rpos
-    simp only
-    rw [hpos]
+    simp [hch, CRec.toSet, CRec.lpos, CRec.rpos, hpos]
   unfold endOrigin
   split_ifs
   · rw [hset, Merge.lend_hseg le_rfl]; rfl

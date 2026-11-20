@@ -35,18 +35,18 @@ theorem param_eq_of_pos (M : Model) {e h' hv : ℕ} {z : Point} (hpos : M.pos Q 
   cases h' with
   | zero =>
     have hwa : M.wa e = z := by
-      rw [← hpos]; unfold Model.pos; rw [show M.param Q ⟨e, 0⟩ = 0 from rfl, Geometry.lerp_zero]
+      simp [← hpos, Model.pos, show M.param Q ⟨e, 0⟩ = 0 from rfl, Geometry.lerp_zero]
     rw [param_of_vertex M Q e hv (by rw [hhv, hwa])]; rfl
   | succ h =>
     by_cases hh : (M.wa e).2 = (M.wb e).2
-    · unfold Model.param; simp only; rw [ite_eq_left hh, ite_eq_left hh]
+    · unfold Model.param; simp_all
     · have hy : (Q.vtx h).2 = (Q.vtx hv).2 := by
         have hpos' := hpos
         unfold Model.pos Model.param at hpos'
         simp only at hpos'
         rw [ite_eq_right hh] at hpos'
         rw [hhv, ← hpos', Geometry.lerp_snd]
-        have : (M.wb e).2 - (M.wa e).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
+        have := sub_ne_zero.2 (Ne.symm hh)
         field_simp
         ring
       exact param_congr M Q e hy.symm

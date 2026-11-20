@@ -108,562 +108,129 @@ theorem slot_mod {D x t : ℕ} (ht : t < D) : (D * x + t) % D = t := by
 
 /-! ## Writing -/
 
+private theorem array_store {m f : ℕ → ℕ} {b i k v : ℕ} (h : m (b + i) = f i) :
+    upd m (b + k) v (b + i) = Function.update f k v i := by
+  simp [upd, Function.update_apply, h]
+
+/-- Writes to one array preserve the remaining fields by disjointness of the layout. -/
+local macro "enc_write" h:term : tactic =>
+  `(tactic| constructor <;> try (solve
+    | (intros; apply array_store; solve_by_elim
+        [($h).live, ($h).s0, ($h).s1, ($h).deg, ($h).wt, ($h).cnt, ($h).nxt, ($h).prv, ($h).stk])
+    | (intros; rw [Machine.upd_other _ _ _ (by dm_simp; omega)]; solve_by_elim
+        [($h).live, ($h).s0, ($h).s1, ($h).nd0, ($h).nd1, ($h).deg, ($h).wt, ($h).exb,
+          ($h).cnt, ($h).nxt, ($h).prv, ($h).eg, ($h).pz, ($h).stk])))
+
+section
+
+variable (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ)
+include h hk v
+
 /-- Store into `live`. -/
-theorem Enc.set_live (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
+theorem Enc.set_live :
     Enc (upd m (d.b0 + k) v) d { st with live := Function.update st.live k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    by_cases hq : i = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
 
 /-- Store into `s0`. -/
-theorem Enc.set_s0 (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
+theorem Enc.set_s0 :
     Enc (upd m (d.b0 + d.oS0 + k) v) d { st with s0 := Function.update st.s0 k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    by_cases hq : i = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
 
 /-- Store into `s1`. -/
-theorem Enc.set_s1 (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
+theorem Enc.set_s1 :
     Enc (upd m (d.b0 + d.oS1 + k) v) d { st with s1 := Function.update st.s1 k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    by_cases hq : i = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
+
+end
 
 /-- Store into `deg`. -/
 theorem Enc.set_deg (h : Enc m d st) {k : ℕ} (hk : k < d.R) (v : ℕ) :
     Enc (upd m (d.b0 + d.oDeg + k) v) d { st with deg := Function.update st.deg k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    by_cases hq : x = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
 
 /-- Store into `wt`. -/
 theorem Enc.set_wt (h : Enc m d st) {k : ℕ} (hk : k < d.R) (v : ℕ) :
     Enc (upd m (d.b0 + d.oWt + k) v) d { st with wt := Function.update st.wt k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    by_cases hq : x = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
+
+section
+
+variable (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ)
+include h hk v
 
 /-- Store into `cnt`. -/
-theorem Enc.set_cnt (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ) :
+theorem Enc.set_cnt :
     Enc (upd m (d.b0 + d.oCnt + k) v) d { st with cnt := Function.update st.cnt k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    by_cases hq : j = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
 
 /-- Store into `nxt`. -/
-theorem Enc.set_nxt (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ) :
+theorem Enc.set_nxt :
     Enc (upd m (d.b0 + d.oNxt + k) v) d { st with nxt := Function.update st.nxt k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    by_cases hq : j = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
 
 /-- Store into `prv`. -/
-theorem Enc.set_prv (h : Enc m d st) {k : ℕ} (hk : k < d.A) (v : ℕ) :
+theorem Enc.set_prv :
     Enc (upd m (d.b0 + d.oPrv + k) v) d { st with prv := Function.update st.prv k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    by_cases hq : j = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
+
+end
 
 /-- Store into `stk`. -/
 theorem Enc.set_stk (h : Enc m d st) {k : ℕ} (hk : k < d.cap) (v : ℕ) :
     Enc (upd m (d.b0 + d.oStk + k) v) d { st with stk := Function.update st.stk k v } := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    have := slot_lt (R := d.R) hx ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.ex x t hx ht
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    by_cases hq : t = k
-    · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-      dsimp only
-      rw [Function.update_of_ne hq]
-      exact h.stk t ht
+  enc_write h
+  intro x t hx ht
+  have := slot_lt hx ht
+  rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
+  exact h.ex x t hx ht
 
 /-- Store into an exit slot. -/
 theorem Enc.set_ex (h : Enc m d st) {x₀ t₀ : ℕ} (hx₀ : x₀ < d.R) (ht₀ : t₀ < d.D) (v : ℕ) :
     Enc (upd m (d.b0 + d.oEx + d.D * x₀ + t₀) v) d
       { st with ex := fun x t => if x = x₀ ∧ t = t₀ then v else st.ex x t } := by
-  have hs₀ := slot_lt (R := d.R) hx₀ ht₀
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.live i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.s1 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd0 i hi
-  · intro i hi
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nd1 i hi
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.deg x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.wt x hx
-  · intro x hx
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.exb x hx
-  · intro x t hx ht
-    by_cases hq : x = x₀ ∧ t = t₀
-    · obtain ⟨rfl, rfl⟩ := hq; simp
-    · rw [Machine.upd_other _ _ _ ?_]
-      · dsimp only; rw [ite_eq_right hq]; exact h.ex x t hx ht
-      · intro he
-        apply hq
-        have e1 : d.D * x + t = d.D * x₀ + t₀ := by omega
-        have e2 := congrArg (· / d.D) e1
-        have e3 := congrArg (· % d.D) e1
-        rw [slot_div ht, slot_div ht₀] at e2
-        rw [slot_mod ht, slot_mod ht₀] at e3
-        exact ⟨e2, e3⟩
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.cnt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.nxt j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.prv j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.eg j hj
-  · intro j hj
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.pz j hj
-  · intro t ht
-    rw [Machine.upd_other _ _ _ (by dm_simp; omega)]
-    exact h.stk t ht
+  have hs₀ := slot_lt hx₀ ht₀
+  enc_write h
+  intro x t hx ht
+  by_cases hq : x = x₀ ∧ t = t₀
+  · obtain ⟨rfl, rfl⟩ := hq; simp
+  · rw [Machine.upd_other _ _ _ ?_]
+    · simpa [hq] using h.ex x t hx ht
+    · intro he
+      have e : d.D * x + t = d.D * x₀ + t₀ := by omega
+      exact hq ⟨by simpa [slot_div ht, slot_div ht₀] using congrArg (· / d.D) e,
+        by simpa [slot_mod ht, slot_mod ht₀] using congrArg (· % d.D) e⟩
 
 end
 

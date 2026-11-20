@@ -47,14 +47,6 @@ def SymSrc.Out : SymSrc → Prop
   | .edge re rh => Bk re = false ∧ Bk rh = false
   | .regs r => Bk r = false ∧ Bk (r + 1) = false ∧ Bk (r + 2) = false
 
-/-- A frame for fewer registers is a frame for more. -/
-theorem FrameB.mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
-    (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' := by
-  refine ⟨fun r hr => h.1 r ?_, fun r hr => h.2.1 r ?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩ <;>
-  · by_contra h'
-    simp only [Bool.not_eq_false] at h'
-    rw [hB r h'] at hr; exact Bool.noConfusion hr
-
 instance (s : SymSrc) : Decidable s.Out := by
   cases s <;> unfold SymSrc.Out <;> infer_instance
 
@@ -65,7 +57,7 @@ def sgnS (op : ℕ) (s₁ s₂ s₃ : SymSrc) : Stmt :=
 
 theorem wr_load (t : ℕ) (ht : 10000 ≤ t ∧ t + 2 < 10500) (s : SymSrc) :
     wr Bk (block (s.load t)) = true := by
-  cases s <;> simp [SymSrc.load, block, wr, wrOK, Bk] <;> omega
+  cases s <;> simp [SymSrc.load, block, write_check, Bk] <;> omega
 
 /-- Two sources agree on configurations that agree on their registers. -/
 theorem holds_congr {c c' : Config} {s : SymSrc} {p : SymPt} (hs : s.Out)
@@ -185,14 +177,14 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
       exact hq
   have j₁ : SymPtIn c₄ 10000 p₁ := keep c₁ 10000 p₁ i₁ c₄ fun r hr => by
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega), r₃ r (by omega) (by omega) (by omega),
-      r₂ r (by omega) (by omega) (by omega)]
+    ram_rw [Machine.upd_other _ _, r₃ r,
+      r₂ r]
   have j₂ : SymPtIn c₄ 10003 p₂ := keep c₂ 10003 p₂ i₂ c₄ fun r hr => by
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega), r₃ r (by omega) (by omega) (by omega)]
+    ram_rw [Machine.upd_other _ _, r₃ r]
   have j₃ : SymPtIn c₄ 10006 p₃ := keep c₃ 10006 p₃ i₃ c₄ fun r hr => by
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega)]
+    ram_rw [Machine.upd_other _ _]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ w₄ hG hW
     (by rw [hc₄]; config_simp; omega) l₁ l₂ l₃ j₁ j₂ j₃
   have op₄ : c₄.nreg 10009 = op := by rw [hc₄]; config_simp

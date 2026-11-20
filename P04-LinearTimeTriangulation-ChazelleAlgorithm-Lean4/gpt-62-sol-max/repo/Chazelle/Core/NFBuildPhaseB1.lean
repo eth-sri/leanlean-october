@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.NFBuildPhaseBAux
 
 /-!
@@ -46,13 +48,13 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   set K := L.length with hKdef
   have hHW : H ≤ W := by unfold sizeB at hroom; omega
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
-  have hD6 := hwf.1
+  
   -- 1. setup
   obtain ⟨c₁, k₁, x₁, hk₁, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15,
     s16, s17, s18, s19, s20⟩ := setupB_exec (P := P) c hw hK hN h1 hH hSEr hroom
   have w₁ := x₁.wb_right
   have f₁ := exec_frameB x₁ wr_setupB
-  have g₁ : ∀ r, BsetupB r = false → c₁.nreg r = c.nreg r := f₁.1
+  have g₁ := f₁.1
   -- 2. the counted interval
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
     (by rw [g₁ _ (by decide), hD]) (by rw [f₁.2.2.1]; exact twice_m_le hM hCW)
@@ -67,35 +69,28 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       r ≠ 44022 → c₂.nreg r = c.nreg r := fun r h a1 a2 a3 a4 a5 => by
     rw [g₂ r a1 a2 a3 a4 a5, g₁ r h]
   have C₂ : BConst D T K B H (loOf c.nmem D) (hdOf c.nmem D P.n) (c.nmem D) c₂ :=
-    { rD := by rw [G₂ 40000 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hD]
-      rT := by rw [G₂ 42000 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hT]
-      rN := by rw [G₂ 42001 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hN]
-      r1a := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s1]
-      rB := by rw [G₂ 43001 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hB]
-      rK := by rw [G₂ 43002 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hK]
-      r0 := by rw [G₂ 43010 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), h0]
-      r1 := by rw [G₂ 43011 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), h1]
-      r3 := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s2]
-      rR := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s3]
-      rH := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s4]
-      rCT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s5]
-      rAT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s6]
-      rRT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s7]
-      rQT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s8]
-      rLT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s9]
-      rST := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s10]
-      rWT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s11]
-      rCA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s12]
-      rFA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s13]
-      rFC := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s14]
-      rA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s15]
+    { rD := by ram_simp [G₂, hD] 
+      rT := by ram_simp [G₂, hT] 
+      rN := by ram_simp [G₂, hN] 
+      r1a := by ram_simp [g₂, s1] 
+      rB := by ram_simp [G₂, hB] 
+      rK := by ram_simp [G₂, hK] 
+      r0 := by ram_simp [G₂, h0] 
+      r1 := by ram_simp [G₂, h1] 
+      r3 := by ram_simp [g₂, s2] 
+      rR := by ram_simp [g₂, s3] 
+      rH := by ram_simp [g₂, s4] 
+      rCT := by ram_simp [g₂, s5] 
+      rAT := by ram_simp [g₂, s6] 
+      rRT := by ram_simp [g₂, s7] 
+      rQT := by ram_simp [g₂, s8] 
+      rLT := by ram_simp [g₂, s9] 
+      rST := by ram_simp [g₂, s10] 
+      rWT := by ram_simp [g₂, s11] 
+      rCA := by ram_simp [g₂, s12] 
+      rFA := by ram_simp [g₂, s13] 
+      rFC := by ram_simp [g₂, s14] 
+      rA := by ram_simp [g₂, s15] 
       rlo := l1
       rhd := l2
       r19 := l4
@@ -113,20 +108,19 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       cnt := fun p hp => by rw [hcI p hp, hdOf_eq]; omega
       cntW := by rw [hdOf_eq]; omega }
   have n100 : c₂.nreg 43100 = 0 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s16]
+    ram_simp [g₂, s16] 
   have n103 : c₂.nreg 43103 = SE + 0 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s19,
-      Nat.add_zero]
+    ram_simp [g₂, s19, Nat.add_zero] 
   have n104 : c₂.nreg 43104 = SE := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s20]
+    ram_simp [g₂, s20] 
   have n101 : c₂.nreg 43101 = (stk E 0).length := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s17]; rfl
+    frame_finish
   have n102 : c₂.nreg 43102 = (gapsB M (Qof P) L E 0).length := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s18]; rfl
+    frame_finish
   have nN : c₂.nreg 42001 = E.length := by rw [C₂.rN, hlen]
   have I₀ : PassInv F c₂ c₂ 0 :=
     { m_le := Nat.zero_le _, r100 := n100, r103 := n103, r104 := n104, r101 := n101,
-      sp_le := by simp [stk, BuildNF.cw, BuildStack.run], r102 := n102,
+      sp_le := by rfl, r102 := n102,
       rD := C₂.rD, rT := C₂.rT, rN := nN, r1a := C₂.r1a, rB := C₂.rB,
       r0 := C₂.r0, r1 := C₂.r1, rCT := C₂.rCT, rAT := C₂.rAT, rST := C₂.rST, rWT := C₂.rWT,
       rlo := C₂.rlo, rhd := C₂.rhd, r19 := C₂.r19, r23 := C₂.r23,

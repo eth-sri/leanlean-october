@@ -94,7 +94,7 @@ theorem iter_D_half {D : ℕ} (hD : 1 ≤ D) (m : ℕ) : 2 * (hstep D)^[D] m ≤
     | succ i ih =>
       rw [Function.iterate_succ_apply']
       set x := (hstep D)^[i] m
-      have hx : hstep D x ≤ x := hstep_le D x
+      have hx := hstep_le D x
       have hDx : D * hstep D x ≤ (D - 1) * x := by
         unfold hstep
         have := Nat.div_mul_le_self ((D - 1) * x) D
@@ -116,7 +116,7 @@ theorem rounds_le {D : ℕ} (hD : 1 ≤ D) (K : ℕ) : rounds D K ≤ D * Nat.cl
   have key : ∀ c m, m + 1 ≤ 2 ^ c → (hstep D)^[D * c] m = 0 := by
     intro c
     induction c with
-    | zero => intro m hm; simp at hm; subst hm; simp
+    | zero => simp
     | succ c ih =>
       intro m hm
       rw [Nat.mul_succ, Function.iterate_add_apply]

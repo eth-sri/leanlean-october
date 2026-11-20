@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRPlC
 
 /-!
@@ -26,7 +28,7 @@ theorem hostLeaves_take_drop (n C : ℕ) (H : Host) (i : ℕ) :
 
 theorem hostLeaves_take_le (n C : ℕ) (H : Host) (i : ℕ) :
     (hostLeaves n C 0 (H.take i)).length ≤ (hostLeaves n C 0 H).length := by
-  rw [hostLeaves_take_drop n C H i, List.length_append]; omega
+  simp [hostLeaves_take_drop n C H i, List.length_append]
 
 theorem pts_take_le (n : ℕ) (H : Host) (i : ℕ) :
     (Host.pts n (H.take i)).length ≤ (Host.pts n H).length := by
@@ -47,7 +49,7 @@ structure PlI (W n C HB T len K : ℕ) (H : Host) (c₀ : Config) (i : ℕ) (c :
   rA : c.nreg ALLOC = T
   il : i ≤ len
   tab : ChordListAt c.nmem T (hostLeaves n C 0 (H.take i))
-  low : ∀ a, a < T → c.nmem a = c₀.nmem a
+  low : MemEqBelow T c.nmem c₀.nmem
   fr : FrameM Bpl c₀ c
 
 section exec
@@ -67,13 +69,13 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
       c'.nreg 219003 = c.nreg ALLOC ∧ c'.nreg 219004 = (hostLeaves P.n C 0 H).length ∧
       c'.nreg ALLOC = c.nreg ALLOC + 3 * (hostLeaves P.n C 0 H).length ∧
       ChordListAt c'.nmem (c.nreg ALLOC) (hostLeaves P.n C 0 H) ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ PlConst P.n C c' ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ PlConst P.n C c' ∧
       (∀ r, Bpl r = false → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
   set T := c.nreg ALLOC with hT
   set K := (hostLeaves P.n C 0 H).length with hK
   set len := H.length with hlen
-  have hTW : T ≤ W := by omega
+  
   -- initialization
   obtain ⟨c₁, k₁, e₁, hk₁, w₁, x01, x02, x17, x18, x19, x20, x26, x05, x06, x08, x07, x16, x04,
       x03, xA, xm⟩ : ∃ c₁ k₁, Exec P W plInit c c₁ k₁ ∧ k₁ = 13 ∧ WordsBounded W c₁ ∧
@@ -108,8 +110,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     rw [I.r05, I.r06] at hlt
     obtain ⟨it, hitd⟩ : ∃ it, it = H.getD i (.run 0 0) := ⟨_, rfl⟩
     have hmem : it ∈ H := by
-      rw [hitd, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hlt, Option.getD_some]
-      exact List.getElem_mem hlt
+      simp_all
     have hwfi := hwf it hmem
     have hHi := hH.2 i hlt
     rw [← hitd] at hHi
@@ -121,9 +122,9 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
       cases it with
       | run a ℓ =>
         obtain ⟨x1, x2, x3⟩ := hHi
-        exact ⟨by rw [l0]; exact x1,
-          by rw [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega]; exact x2,
-          by rw [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]; exact x3⟩
+        exact ⟨by rwa [l0],
+          by rwa [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega],
+          by rwa [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]⟩
       | pt x =>
         cases x with
         | vtx j => show c₂.nmem _ = 1; rw [l0]; exact hHi.1
@@ -142,17 +143,17 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     obtain ⟨c₃, k₃, e₃, hk₃, b05, b08, b07, b16, b04, bL, bm, bf⟩ := plItem_exec (P := P) hC
       (by omega) c₂ I.wb I.kc (it := it) I.r05 I.r08 I.r07 I.r16 I.r04 hit hwfi' (by omega)
       (by omega) (by omega) (by omega) (by omega)
-    have gI : ∀ r, Bitem r = false → c₃.nreg r = c₂.nreg r := bf.1
+    have gI := bf.1
     refine ⟨c₃, k₃, e₃, ⟨i + 1, ?_⟩, ?_⟩
     · refine ⟨e₃.wb_right, I.kc.keep fun r hr => gI r (by
           simp only [Bitem, Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
-        b05, by rw [gI _ (by decide), I.r06], by rw [b08]; ring, ?_, ?_, ?_,
-        by rw [gI _ (by decide), I.r03], by rw [gI _ (by decide), I.rA], by omega, ?_, ?_, ?_⟩
+        b05, by ram_rw [gI, I.r06], by rw [b08]; ring, ?_, ?_, ?_,
+        by ram_rw [gI, I.r03], by ram_rw [gI, I.rA], by omega, ?_, ?_, ?_⟩
       · rw [b07, hpsucc]
       · rw [b16, hsucc, List.length_append]; ring
       · rw [b04, hsucc, List.length_append]
       · rw [hsucc]
-        exact clAt_append (clAt_congr I.tab fun x _ hx => bm x (Or.inl hx)) bL
+        exact ChordListAt.append (ChordListAt.congr I.tab fun x _ hx => bm x (Or.inl hx)) bL
       · intro a ha
         rw [bm a (Or.inl (by omega)), I.low a ha]
       · exact I.fr.trans ⟨fun r hr => gI r (by
@@ -169,7 +170,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     (fun c₂ ⟨i, I⟩ => I.wb) hstep ⟨0, I₁⟩
   have hi : i = len := by rw [I₂.r05, I₂.r06] at hend; have := I₂.il; omega
   subst hi
-  have htk : H.take len = H := by rw [hlen]; exact List.take_length
+  have htk : H.take len = H := by simp [hlen]
   have tab₂ := I₂.tab
   have r16₂ := I₂.r16
   have r04₂ := I₂.r04
@@ -180,14 +181,13 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   refine ⟨_, k₁ + (k₂ + 1), ex, ?_, e₃.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [I₁.r05, I₁.r04, h0] at hk₂
     omega
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact I₂.r03
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact r04₂
-  · show upd c₂.nreg 9999 (c₂.nreg 219016) 9999 = T + 3 * K
-    rw [Machine.upd_same, r16₂]
+  · simp only; frame_finish
+  · assumption
+  · assumption
   · exact tab₂
   · exact I₂.low
   · exact I₂.kc.keep fun r hr => by
-      simp only; rw [Machine.upd_other _ _ _ (by omega)]
+      frame_finish
   · intro r hr
     simp only
     rw [Machine.upd_other _ _ _ (by

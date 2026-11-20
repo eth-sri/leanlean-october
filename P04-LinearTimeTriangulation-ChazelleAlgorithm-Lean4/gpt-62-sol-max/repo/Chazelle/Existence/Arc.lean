@@ -125,13 +125,13 @@ theorem mem_boundary_arc_iff {p : Point} :
   constructor
   · rintro ⟨i, hi, hp⟩
     rcases Nat.lt_or_ge i L with h | h
-    · exact Or.inl ⟨i, h, by rw [← edge_arc P s L h]; exact hp⟩
+    · exact Or.inl ⟨i, h, by rwa [← edge_arc P s L h]⟩
     · have : i = L := by omega
       rw [this] at hp
-      exact Or.inr (by rw [← edge_arc_last P s L]; exact hp)
+      exact Or.inr (by rwa [← edge_arc_last P s L])
   · rintro (⟨i, hi, hp⟩ | hp)
-    · exact ⟨i, by omega, by rw [edge_arc P s L hi]; exact hp⟩
-    · exact ⟨L, by omega, by rw [edge_arc_last]; exact hp⟩
+    · exact ⟨i, by omega, by rwa [edge_arc P s L hi]⟩
+    · exact ⟨L, by omega, by rwa [edge_arc_last]⟩
 
 /-! ### The complementary arc -/
 
@@ -142,7 +142,7 @@ theorem compl_arc_index (i : ℕ) : ((s + L) % P.n + i) % P.n = (s + L + i) % P.
 /-- Index arithmetic for the complementary arc: its last vertex is vertex `s % n` of `P`. -/
 theorem compl_arc_last_index (hL : L ≤ P.n) :
     ((s + L) % P.n + (P.n - L)) % P.n = s % P.n := by
-  rw [Nat.mod_add_mod, show s + L + (P.n - L) = s + P.n by omega, Nat.add_mod_right]
+  simp_all
 
 /-- Every vertex index of `P` is a vertex index of the arc or of the complementary arc. -/
 theorem vertex_index_cases (hL : L ≤ P.n) (hn : 0 < P.n) {i : ℕ} (hi : i < P.n) :
@@ -201,10 +201,7 @@ theorem crossSum_split (hL : L ≤ P.n) (z : Point) :
   rw [crossSum_arc, crossSum_arc, compl_arc_last_index P s L hL, Nat.mod_mod,
     crossInd_comm (u := P.vtx (s % P.n)), add_add_add_comm, zmod_two_add_self, add_zero,
     crossSum_eq_sum_split P s L hL z]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [compl_arc_index P s L i]
+  simp
 
 /-- **Parity splits along a chord**: the parity with respect to `P` is the exclusive or of
 the parities with respect to the two arcs. -/
@@ -259,7 +256,7 @@ theorem simple_arc_of_chord (hP : P.Simple) (h2 : 2 ≤ L) (hLn : L + 1 ≤ P.n)
         have hab : p = P.vtx (s % P.n) ∨ p = P.vtx ((s + L) % P.n) := by
           by_contra hcon
           rw [not_or] at hcon
-          exact hch p (by rw [segment_comm]; exact hp2) hcon.1 hcon.2
+          exact hch p (by rwa [segment_comm]) hcon.1 hcon.2
             ⟨_, Nat.mod_lt _ hn, hp1⟩
         refine ⟨?_, hab.symm⟩
         rcases hab with rfl | rfl
@@ -312,10 +309,9 @@ theorem boundary_subset_arcs (hL : L ≤ P.n) (hn : 0 < P.n) :
   rintro p ⟨j, hj, hp⟩
   obtain ⟨i, hi, hij⟩ := exists_rot_index hn s j hj
   rcases Nat.lt_or_ge i L with hiL | hiL
-  · exact Or.inl ((mem_boundary_arc_iff P s L).2 (Or.inl ⟨i, hiL, by rw [hij]; exact hp⟩))
+  · exact Or.inl ((mem_boundary_arc_iff P s L).2 (Or.inl ⟨i, hiL, by rwa [hij]⟩))
   · refine Or.inr ((mem_boundary_arc_iff P _ _).2 (Or.inl ⟨i - L, by omega, ?_⟩))
-    rw [compl_arc_index, show s + L + (i - L) = s + i by omega, hij]
-    exact hp
+    simp_all
 
 /-- The chord lies in the boundary of the arc. -/
 theorem chord_subset_boundary_arc :
@@ -351,8 +347,7 @@ theorem validTriangle_arc (hn : 0 < P.n) {t : Polygon.Triangle}
   have hle := index_le_of_validTriangle_arc P s L h
   refine ⟨Nat.mod_lt _ hn, Nat.mod_lt _ hn, Nat.mod_lt _ hn, ?_⟩
   have h4 := h.2.2.2
-  rw [vtx_arc P s L hle.1, vtx_arc P s L hle.2.1, vtx_arc P s L hle.2.2] at h4
-  exact h4
+  rwa [vtx_arc P s L hle.1, vtx_arc P s L hle.2.1, vtx_arc P s L hle.2.2] at h4
 
 end
 

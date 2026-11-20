@@ -88,7 +88,7 @@ theorem openList_snoc_close {u : List ℕ} {x : ℕ} {rest : List ℕ} (hx : u.c
     (hlist : openList u = x :: rest) : openList (u ++ [x]) = rest := by
   have hxu : x ∈ u.reverse := by rw [mem_reverse]; exact count_pos_iff.1 (by omega)
   obtain ⟨a, b, hab⟩ := List.append_of_mem hxu
-  have hcnt : u.reverse.count x = 1 := by rw [count_reverse]; exact hx
+  have hcnt : u.reverse.count x = 1 := by rwa [count_reverse]
   rw [hab, count_append, count_cons_self] at hcnt
   have hxa : x ∉ a := fun h => by have := count_pos_iff.2 h; omega
   have hxb : x ∉ b := fun h => by have := count_pos_iff.2 h; omega
@@ -100,7 +100,7 @@ theorem openList_snoc_close {u : List ℕ} {x : ℕ} {rest : List ℕ} (hx : u.c
     · rfl
     · exfalso
       rw [hfa, cons_append, cons.injEq] at hlist
-      have hz : z ∈ a := mem_of_mem_filter (by rw [hfa]; exact mem_cons_self)
+      have hz := mem_of_mem_filter (by rw [hfa]; exact mem_cons_self)
       exact hxa (hlist.1 ▸ hz)
   rw [ha, nil_append, cons.injEq] at hlist
   rw [reverse_append, reverse_singleton, singleton_append, filter_cons,
@@ -120,33 +120,38 @@ theorem openList_snoc_close {u : List ℕ} {x : ℕ} {rest : List ℕ} (hx : u.c
 word, it is that chord. -/
 theorem head_openList {w u v : List ℕ} (htw : Twice w) (hnc : NoCross w) {x : ℕ}
     (hw : w = u ++ [x] ++ v) (hx : u.count x = 1) : ∃ rest, openList u = x :: rest := by
-  have hxo : x ∈ openList u := mem_openList.2 hx
+  have hxo := mem_openList.2 hx
   rcases hlist : openList u with _ | ⟨y, rest⟩
-  · rw [hlist] at hxo; exact absurd hxo not_mem_nil
+  · simp_all
   · refine ⟨rest, ?_⟩
     by_contra hne
     have hyx : y ≠ x := fun h => hne (by rw [h])
     have hxr : x ∈ rest := by
       rw [hlist, mem_cons] at hxo
       exact hxo.resolve_left (Ne.symm hyx)
-    have hy1 : u.count y = 1 := mem_openList.1 (by rw [hlist]; exact mem_cons_self)
+    have hy1 : u.count y = 1 := mem_openList.1 (by simp_all)
     -- `x` then `y` in `u`
     have h1 : [y, x] <+ u.reverse := by
       have : [y, x] <+ openList u := by
-        rw [hlist]; exact (singleton_sublist.2 hxr).cons_cons y
+        simp_all
       exact this.trans filter_sublist
     have h1' : [x, y] <+ u := by simpa using h1.reverse
     -- `y` occurs again after the current `x`
-    have hyw : w.count y = 2 := htw y (by rw [hw]; simp [count_pos_iff.1 (by omega : 0 < u.count y)])
+    have hyw := htw y (by rw [hw]; simp [count_pos_iff.1 (by omega : 0 < u.count y)])
     have hyv : y ∈ v := by
       rw [hw, count_append, count_append,
         count_eq_zero_of_not_mem (by simp [hyx] : y ∉ [x])] at hyw
       exact count_pos_iff.1 (by omega)
-    have h2 : [x, y] <+ [x] ++ v := (singleton_sublist.2 hyv).cons_cons x
+    have h2 := (singleton_sublist.2 hyv).cons_cons x
     exact hnc x y (Ne.symm hyx) (by rw [hw, append_assoc]; exact h1'.append h2)
 
+section
+
+variable {w : List ℕ} (htw : Twice w) (hnc : NoCross w)
+
+include htw hnc in
 /-- **The stack is the list of open chords** on every prefix of a parenthesis word. -/
-theorem run_eq_openList {w : List ℕ} (htw : Twice w) (hnc : NoCross w) :
+theorem run_eq_openList :
     ∀ {u : List ℕ}, u <+: w → run u = openList u := by
   intro u
   induction u using List.reverseRecOn with
@@ -154,9 +159,9 @@ theorem run_eq_openList {w : List ℕ} (htw : Twice w) (hnc : NoCross w) :
   | append_singleton u x ih =>
     intro hu
     obtain ⟨v, hv⟩ := hu
-    have ih' := ih ⟨[x] ++ v, by rw [← hv, append_assoc]⟩
+    have ih' := ih ⟨[x] ++ v, by simp_all⟩
     rw [run_snoc, ih']
-    have hxw : w.count x = 2 := htw x (by rw [← hv]; simp)
+    have hxw := htw x (by rw [← hv]; simp)
     have hcx : u.count x ≤ 1 := by
       rw [← hv, count_append, count_append, count_singleton_self] at hxw; omega
     rcases Nat.lt_or_ge (u.count x) 1 with h0 | h1
@@ -169,12 +174,11 @@ theorem run_eq_openList {w : List ℕ} (htw : Twice w) (hnc : NoCross w) :
       omega
     · have h1' : u.count x = 1 := by omega
       obtain ⟨rest, hrest⟩ := head_openList htw hnc (hv.symm.trans (by rw [append_assoc])) h1'
-      rw [openList_snoc_close h1' hrest, hrest]
-      unfold step
-      simp
+      simp [openList_snoc_close h1' hrest, hrest, step]
 
+include htw hnc in
 /-- **The stack is empty at the end** of a parenthesis word. -/
-theorem run_eq_nil {w : List ℕ} (htw : Twice w) (hnc : NoCross w) : run w = [] := by
+theorem run_eq_nil : run w = [] := by
   rw [run_eq_openList htw hnc (prefix_refl w)]
   unfold openList
   rw [filter_eq_nil_iff]
@@ -182,8 +186,9 @@ theorem run_eq_nil {w : List ℕ} (htw : Twice w) (hnc : NoCross w) : run w = []
   rw [mem_reverse] at hx
   simp [htw x hx]
 
+include htw hnc in
 /-- The label of a gap is the head of the open list. -/
-theorem label_eq {w : List ℕ} (htw : Twice w) (hnc : NoCross w) (m : ℕ) :
+theorem label_eq (m : ℕ) :
     label w m = (openList (w.take m)).head? := by
   unfold label
   rw [run_eq_openList htw hnc (take_prefix m w)]
@@ -203,39 +208,37 @@ theorem openList_eq_of_prefix {u u' : List ℕ} (h : u <+: u')
     rw [count_append] at h
     have := count_pos_iff.2 hx
     omega
-  rw [hv, nil_append]
-  apply filter_congr
-  intro y _
-  simp only [hiff y]
+  simp_all
 
 /-- If `j` is open after `u` and below the latest open chord `i`, then `j` occurs before `i` in
 `u`. -/
 theorem sublist_of_openList {u : List ℕ} {i j : ℕ} {rest : List ℕ} (h : openList u = i :: rest)
     (hj : j ∈ rest) : [j, i] <+ u := by
   have : [i, j] <+ u.reverse := by
-    have : [i, j] <+ openList u := by rw [h]; exact (singleton_sublist.2 hj).cons_cons i
+    have : [i, j] <+ openList u := by simp_all
     exact this.trans filter_sublist
   simpa using this.reverse
 
+include htw hnc in
 /-- One direction of `label_eq_iff`, for a chord open at `m` but not at `m'`. -/
-theorem label_ne_aux {w : List ℕ} (htw : Twice w) (hnc : NoCross w) {m m' : ℕ} {j : ℕ}
+theorem label_ne_aux {m m' : ℕ} {j : ℕ}
     (hj : (w.take m).count j = 1) (hj' : (w.take m').count j ≠ 1) :
     (openList (w.take m)).head? ≠ (openList (w.take m')).head? := by
   intro heq
-  have hjo : j ∈ openList (w.take m) := mem_openList.2 hj
+  have hjo := mem_openList.2 hj
   rcases hl : openList (w.take m) with _ | ⟨i, rest⟩
-  · rw [hl] at hjo; exact not_mem_nil hjo
+  · simp_all
   rw [hl] at heq
   rcases hl' : openList (w.take m') with _ | ⟨i', rest'⟩
-  · rw [hl'] at heq; simp at heq
+  · simp_all
   rw [hl', head?_cons, head?_cons, Option.some.injEq] at heq
   subst heq
-  have hi' : (w.take m').count i = 1 := mem_openList.1 (by rw [hl']; exact mem_cons_self)
+  have hi' := mem_openList.1 (by rw [hl']; exact mem_cons_self)
   have hji : j ≠ i := by rintro rfl; exact hj' hi'
   have hjr : j ∈ rest := by
-    rw [hl, mem_cons] at hjo; exact hjo.resolve_left hji
+    simp_all
   have hsub := sublist_of_openList hl hjr
-  have hi1 : (w.take m).count i = 1 := mem_openList.1 (by rw [hl]; exact mem_cons_self)
+  have hi1 := mem_openList.1 (by rw [hl]; exact mem_cons_self)
   rcases le_total m' m with hle | hle
   · -- `m' ≤ m`: `j` does not occur before `m'`, but `i` does, and `j` precedes `i`
     obtain ⟨z, hz⟩ : ∃ z, w.take m = w.take m' ++ z :=
@@ -251,35 +254,35 @@ theorem label_ne_aux {w : List ℕ} (htw : Twice w) (hnc : NoCross w) {m m' : �
       have := count_pos_iff.2 this
       omega
     · rw [cons_append, cons.injEq] at heq
-      have : j ∈ w.take m' := h1.subset (by rw [← heq.1]; exact mem_cons_self)
+      have : j ∈ w.take m' := h1.subset (by simp_all)
       have := count_pos_iff.2 this
       omega
   · -- `m ≤ m'`: `j` closes between `m` and `m'`, `i` after `m'`: a crossing
     obtain ⟨z, hz⟩ : ∃ z, w.take m' = w.take m ++ z :=
       ⟨(w.drop m).take (m' - m), by rw [← List.take_add, Nat.add_sub_cancel' hle]⟩
-    have hiz : z.count i = 0 := by rw [hz, count_append, hi1] at hi'; omega
+    have hiz : z.count i = 0 := by simp_all
     have hjz : j ∈ z := by
       rw [hz, count_append, hj] at hj'
       exact count_pos_iff.1 (by omega)
-    have hiw : w.count i = 2 := htw i (mem_of_mem_take (count_pos_iff.1 (by omega : 0 < (w.take m).count i)))
+    have hiw := htw i (mem_of_mem_take (count_pos_iff.1 (by omega : 0 < (w.take m).count i)))
     have hw : w = w.take m ++ z ++ w.drop m' := by rw [← hz, take_append_drop]
     have hiy : i ∈ w.drop m' := by
       rw [hw, count_append, count_append, hi1, hiz] at hiw
       exact count_pos_iff.1 (by omega)
-    have h2 : [j] ++ [i] <+ z ++ w.drop m' :=
-      (singleton_sublist.2 hjz).append (singleton_sublist.2 hiy)
+    have h2 := (singleton_sublist.2 hjz).append (singleton_sublist.2 hiy)
     exact hnc j i hji (by rw [hw, append_assoc]; exact hsub.append h2)
 
+include htw hnc in
 /-- **Two gaps get the same label iff no chord separates them** (every chord is open at both or
 at neither). -/
-theorem label_eq_iff {w : List ℕ} (htw : Twice w) (hnc : NoCross w) (m m' : ℕ) :
+theorem label_eq_iff (m m' : ℕ) :
     label w m = label w m' ↔ ∀ i, ((w.take m).count i = 1 ↔ (w.take m').count i = 1) := by
   rw [label_eq htw hnc, label_eq htw hnc]
   constructor
   · intro h i
     by_contra hne
     by_cases hA : (w.take m).count i = 1
-    · have hB : (w.take m').count i ≠ 1 := fun hB => hne ⟨fun _ => hB, fun _ => hA⟩
+    · have hB := fun hB => hne ⟨fun _ => hB, fun _ => hA⟩
       exact label_ne_aux htw hnc hA hB h
     · have hB : (w.take m').count i = 1 := by
         by_contra hB; exact hne ⟨fun h' => absurd h' hA, fun h' => absurd h' hB⟩
@@ -292,6 +295,8 @@ theorem label_eq_iff {w : List ℕ} (htw : Twice w) (hnc : NoCross w) (m m' : �
     · obtain ⟨z, hz⟩ : ∃ z, w.take m = w.take m' ++ z :=
         ⟨(w.drop m').take (m - m'), by rw [← List.take_add, Nat.add_sub_cancel' hle]⟩
       rw [openList_eq_of_prefix ⟨z, hz.symm⟩ (fun i => (h i).symm)]
+
+end
 
 end
 

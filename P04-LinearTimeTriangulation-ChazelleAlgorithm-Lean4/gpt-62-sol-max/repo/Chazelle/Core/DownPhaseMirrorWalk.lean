@@ -45,8 +45,7 @@ theorem sideCcw_mir (B X A : Point) : sideCcw (mir A) (mir X) (mir B) ↔ sideCc
   have hB0 : sideDot B B = 0 → sideDot B A = 0 := by
     intro h; unfold sideDot at h ⊢
     have h1 : B.1 = 0 := by nlinarith [sq_nonneg B.1, sq_nonneg B.2]
-    have h2 : B.2 = 0 := by nlinarith [sq_nonneg B.1, sq_nonneg B.2]
-    rw [h1, h2]; ring
+    simp_all
   have hdAB : sideDot A B = sideDot B A := by unfold sideDot; ring
   unfold sideCcw
   simp only [sideCross_mir, sideDot_mir, hdAB]
@@ -136,8 +135,7 @@ theorem idx_prev {n c p : ℕ} (hn : 0 < n) (hp : p < n) :
     (c + n - (p + n - 1) % n) % n = ((c + n - p) % n + 1) % n := by
   rw [Nat.mod_add_mod]
   by_cases h : 0 < p
-  · rw [show p + n - 1 = (p - 1) + n * 1 by omega, Nat.add_mul_mod_self_left,
-      Nat.mod_eq_of_lt (show p - 1 < n by omega), show c + n - (p - 1) = c + n - p + 1 by omega]
+  · ram_simp [show p + n - 1 = (p - 1) + n * 1 by omega, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt, show c + n - (p - 1) = c + n - p + 1 by omega]
   · obtain rfl : p = 0 := by omega
     rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (show n - 1 < n by omega),
       show c + n - (n - 1) = c + 1 by omega, show c + n - 0 + 1 = (c + 1) + n * 1 by omega,
@@ -151,8 +149,7 @@ theorem idx_prev2 {n c p : ℕ} (hn : 0 < n) (hp : p < n) :
 theorem idx_v {n c p : ℕ} (hc : c < n) (hp : p < n) :
     (c + n - p) % n = if p ≤ c then c - p else c + n - p := by
   split_ifs with h
-  · rw [show c + n - p = (c - p) + n * 1 by omega, Nat.add_mul_mod_self_left,
-      Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [show c + n - p = (c - p) + n * 1 by omega, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt]
   · exact Nat.mod_eq_of_lt (by omega)
 
 theorem idx_q {n c p : ℕ} (hc : c < n) (hp : p < n) :
@@ -186,7 +183,7 @@ theorem posMir_bounds {n c p' : ℕ} (hn : 0 < n) {t' : ℝ} (ht0 : 0 ≤ t') (h
   unfold posMir
   split_ifs with h
   · exact ⟨Nat.mod_lt _ hn, le_refl _, one_pos⟩
-  · have : 0 < t' := lt_of_le_of_ne ht0 (Ne.symm h)
+  · have := lt_of_le_of_ne ht0 (Ne.symm h)
     exact ⟨Nat.mod_lt _ hn, by simp only; linarith, by simp only; linarith⟩
 
 /-- **`posMir` is an involution.** -/
@@ -194,11 +191,9 @@ theorem posMir_posMir {n c p' : ℕ} (hc : c < n) (hp : p' < n) {t' : ℝ} (ht1 
     posMir n c (posMir n c p' t').1 (posMir n c p' t').2 = (p', t') := by
   unfold posMir
   by_cases ht : t' = 0
-  · simp only [ht, ↓reduceIte]
-    rw [idx_invol hc hp]
+  · simp [ht, ↓reduceIte, idx_invol hc hp]
   · have h1 : (1 : ℝ) - t' ≠ 0 := by intro h; apply ht; linarith
-    simp only [ht, ↓reduceIte, h1]
-    rw [idx_q_invol hc hp, sub_sub_cancel]
+    simp [ht, ↓reduceIte, h1, idx_q_invol hc hp, sub_sub_cancel]
 
 /-- **The key of the corresponding position is the reflected key.** -/
 theorem posMir_key {n c p' : ℕ} (hc : c < n) (hp : p' < n) {t' : ℝ} (ht0 : 0 ≤ t')
@@ -229,8 +224,7 @@ theorem sidePt_mir {p' : ℕ} (hp : p' < W.n) (t' : ℝ) :
     sidePt W' p' t' = mir (sidePt W (posMir W.n c p' t').1 (posMir W.n c p' t').2) := by
   unfold posMir
   by_cases ht : t' = 0
-  · simp only [ht, ↓reduceIte]
-    rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, h.vtx p' hp]
+  · simp [ht, ↓reduceIte, Chazelle.Chain.sidePt_zero, h.vtx p' hp]
   · simp only [ht, ↓reduceIte]
     unfold sidePt
     rw [h.n_eq, h.vtx p' hp, h.vtx ((p' + 1) % W.n) (Nat.mod_lt _ h.n_pos),

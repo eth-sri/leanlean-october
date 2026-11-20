@@ -32,8 +32,7 @@ theorem mir_interior (Q : Polygon) :
 
 theorem hitSet_mir (Q : Polygon) (p : Point) (σ : ℝ) :
     Visibility.hitSet Q.mir (mir p) (-σ) = Visibility.hitSet Q p σ := by
-  ext t
-  simp only [Visibility.hitSet, mem_ofPred_eq, ← mir_rayPt, mir_boundary, mem_image_mir, mir_mir]
+  ram_simp [Visibility.hitSet, mem_ofPred_eq, ← mir_rayPt, mir_boundary, mem_image_mir, mir_mir]
 
 theorem chordSet_mir (Q : Polygon) (i : ℕ) (σ : ℝ) :
     Visibility.chordSet Q.mir i (-σ) = mir '' Visibility.chordSet Q i σ := by
@@ -42,8 +41,7 @@ theorem chordSet_mir (Q : Polygon) (i : ℕ) (σ : ℝ) :
 
 theorem dirInterior_mir (Q : Polygon) (i : ℕ) (σ : ℝ) :
     Visibility.DirInterior Q.mir i (-σ) ↔ Visibility.DirInterior Q i σ := by
-  unfold Visibility.DirInterior
-  simp only [mir_vtx, ← mir_rayPt, mir_interior, mem_image_mir, mir_mir]
+  ram_finish [Visibility.DirInterior, mir_vtx, ← mir_rayPt, mir_interior, mem_image_mir, mir_mir]
 
 /-- **The vertex chords of the mirrored polygon.** -/
 theorem chords_mir (Q : Polygon) : Visibility.chords Q.mir = mirF (Visibility.chords Q) := by
@@ -53,10 +51,10 @@ theorem chords_mir (Q : Polygon) : Visibility.chords Q.mir = mirF (Visibility.ch
   · rintro ⟨i, σ, hi, hσ, hD, rfl⟩
     rw [mir_n] at hi
     refine ⟨i, -σ, hi, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
-    · rw [← dirInterior_mir, neg_neg]; exact hD
+    · rwa [← dirInterior_mir, neg_neg]
     · rw [← neg_neg σ, chordSet_mir, image_mir_image_mir, neg_neg]
   · rintro ⟨i, σ, hi, hσ, hD, hc⟩
-    refine ⟨i, -σ, by rw [mir_n]; exact hi, by rcases hσ with rfl | rfl <;> norm_num,
+    refine ⟨i, -σ, by rwa [mir_n], by rcases hσ with rfl | rfl <;> norm_num,
       (dirInterior_mir Q i σ).2 hD, ?_⟩
     rw [chordSet_mir, ← hc, image_mir_image_mir]
 
@@ -69,7 +67,7 @@ theorem adm_mir (D : Set Point) :
   constructor
   · rintro ⟨y, a, b, hch, rfl⟩
     refine ⟨y, -b, -a, ?_, hseg_mir y a b⟩
-    rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
+    rwa [← isHChordIn_mir, neg_neg, neg_neg]
   · rintro ⟨y, a, b, hch, hc⟩
     refine ⟨y, -b, -a, isHChordIn_mir.2 hch, ?_⟩
     rw [← hseg_mir, ← hc, image_mir_image_mir]
@@ -85,7 +83,7 @@ theorem walkMir_interior (hQ : Q.Simple) :
   have h3 := Chazelle.Jordan.simple_three_le hQ
   have hL := leftInside_mir Q hQ
   have hWn := interiorWalk_n Q
-  refine ⟨by rw [interiorWalk_n, interiorWalk_n, mir_n], by rw [hWn]; omega, fun j hj => ?_⟩
+  refine ⟨by simp [interiorWalk_n, mir_n], by rw [hWn]; omega, fun j hj => ?_⟩
   rw [hWn] at hj ⊢
   have hidx : (Q.n - 1 + Q.n - j) % Q.n = Q.n - 1 - j := by
     rw [show Q.n - 1 + Q.n - j = (Q.n - 1 - j) + Q.n * 1 by omega, Nat.add_mul_mod_self_left,
@@ -93,10 +91,10 @@ theorem walkMir_interior (hQ : Q.Simple) :
   rw [hidx]
   unfold interiorWalk
   by_cases hQL : Mountain.LeftInside Q
-  · have hM : ¬ Mountain.LeftInside Q.mir := fun h => hL.1 h hQL
-    rw [ite_eq_right hM, ite_eq_left hQL, FactsInterior.rev_vtx _ j (by rw [mir_n]; exact hj), mir_n,
+  · have hM := fun h => hL.1 h hQL
+    rw [ite_eq_right hM, ite_eq_left hQL, FactsInterior.rev_vtx _ j (by rwa [mir_n]), mir_n,
       mir_vtx]
-  · have hM : Mountain.LeftInside Q.mir := hL.2 hQL
+  · have hM := hL.2 hQL
     rw [ite_eq_left hM, ite_eq_right hQL, FactsInterior.rev_vtx _ _ (by omega), mir_vtx,
       show Q.n - 1 - (Q.n - 1 - j) = j by omega]
 

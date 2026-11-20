@@ -34,25 +34,25 @@ shared vertex (offset `0`) and at a key `A` of the `C₁` part; every non-cut po
 faces an unlabelled region. -/
 theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {G : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂)) {e : Set Point}
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂)) {e : Set Point}
     (he : e ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
-    (hA : SideAttach (chainModel J.whole).W e pa ta) (hB : SideAttach (chainModel J.whole).W e pb tb)
-    (hAB : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb)
+    (hA : SideAttach J.wholeModel.W e pa ta) (hB : SideAttach J.wholeModel.W e pb tb)
+    (hAB : sidePt J.wholeModel.W pa ta ≠ sidePt J.wholeModel.W pb tb)
     (hAo : ((rL1 J + rL2 J : ℕ) : ℝ) ≤
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pa + ta))
-    (hBo : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) = 0)
-    {px : ℕ} {tx : ℝ} (hpx : px < (chainModel J.whole).W.n) (htx : tx ∈ Ioo (0 : ℝ) 1)
-    (hcx : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (px + tx))
-    (hfx : (chainModel J.whole).Faces px tx G)
-    (hx : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pa + ta) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (px + tx)) :
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pa + ta))
+    (hBo : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) = 0)
+    {px : ℕ} {tx : ℝ} (hpx : px < J.wholeModel.W.n) (htx : tx ∈ Ioo (0 : ℝ) 1)
+    (hcx : ¬ J.wholeModel.IsCut (F₂plus J S₂) (px + tx))
+    (hfx : J.wholeModel.Faces px tx G)
+    (hx : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pa + ta) <
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (px + tx)) :
     ∀ V, ¬ RLabel J S₂ G V := by
   rintro V ⟨d, hd, t, ht, hc, hf, -⟩
   have hC := corr_right0 J hP hS₂ hS₂f
   have hn := hC.n_pos
-  set n := (chainModel J.whole).W.n with hndef
+  set n := J.wholeModel.W.n with hndef
   set g := 6 + tpos J.whole J.m₁ with hgdef
-  have hg : g < n := hC.hg
+  have hg := hC.hg
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < n := by exact_mod_cast hg
   have hne := (hC.hM.eq_iff_not_separates hC.hF hC.hfin hG hG hpx (Nat.mod_lt _ hn) htx ht hcx
@@ -75,10 +75,10 @@ theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have := congrArg (off n g) h
     rw [hoy] at this
     linarith
-  have hxa : (px : ℝ) + tx ≠ pa + ta := fun h => hcx ⟨e, he, pa, ta, hA, h⟩
-  have hxb : (px : ℝ) + tx ≠ pb + tb := fun h => hcx ⟨e, he, pb, tb, hB, h⟩
-  have hya : (((g + d) % n : ℕ) : ℝ) + t ≠ pa + ta := fun h => hc ⟨e, he, pa, ta, hA, h⟩
-  have hyb : (((g + d) % n : ℕ) : ℝ) + t ≠ pb + tb := fun h => hc ⟨e, he, pb, tb, hB, h⟩
+  have hxa := fun h => hcx ⟨e, he, pa, ta, hA, h⟩
+  have hxb := fun h => hcx ⟨e, he, pb, tb, hB, h⟩
+  have hya := fun h => hc ⟨e, he, pa, ta, hA, h⟩
+  have hyb := fun h => hc ⟨e, he, pb, tb, hB, h⟩
   refine (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hk13 hxy hxa hxb hya hyb).2 ?_
   rw [hoy, hBo]
   unfold Btw
@@ -98,8 +98,8 @@ theorem dir_opposite {M : Model} (hM : WalkAx M) {e : Set Point} (he : e ∈ M.A
   obtain ⟨a', b', -, hcab', hend⟩ := end_of_not_mem hM he
   have hAe := hA.2.2.2.1
   have hBe := hB.2.2.2.1
-  have hAD : sidePt M.W pa ta ∉ M.D := hM.trace pa hA.1 ta hA.2.1 hA.2.2.1.le
-  have hBD : sidePt M.W pb tb ∉ M.D := hM.trace pb hB.1 tb hB.2.1 hB.2.2.1.le
+  have hAD := hM.trace pa hA.1 ta hA.2.1 hA.2.2.1.le
+  have hBD := hM.trace pb hB.1 tb hB.2.1 hB.2.2.1.le
   have hA' := hend _ hAe hAD
   have hB' := hend _ hBe hBD
   rw [hcab'] at hAe hBe ⊢
@@ -121,13 +121,13 @@ shared vertex at offset `L`) has the label `λ₀` faced in the model of `C₂` 
 the right stretch. -/
 theorem valid_start (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) (hL1 : 1 ≤ rL1 J + rL2 J)
-    {G V : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hV : V ∈ (chainModel J.right).regions S₂)
-    (hW : BeforeFaces (chainModel J.whole)
-      ((6 + tpos J.whole J.m₁ + (rL1 J + rL2 J)) % (chainModel J.whole).W.n) 0 G)
-    (hW₂ : BeforeFaces (chainModel J.right)
+    {G V : Set Point} (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hV : V ∈ J.rightModel.regions S₂)
+    (hW : BeforeFaces J.wholeModel
+      ((6 + tpos J.whole J.m₁ + (rL1 J + rL2 J)) % J.wholeModel.W.n) 0 G)
+    (hW₂ : BeforeFaces J.rightModel
       ((6 + tpos J.right 0 + (dq (rL1 J) (rδ J) (rL1 J + rL2 J - 1) + 1)) %
-        (chainModel J.right).W.n) 0 V) :
+        J.rightModel.W.n) 0 V) :
     Valid J S₂ G V :=
   valid_of_rlabel J hP hS₂ hS₂f hG hV
     (rlabel_before0 J hP hS₂ hS₂f hL1 le_rfl hW hW₂)

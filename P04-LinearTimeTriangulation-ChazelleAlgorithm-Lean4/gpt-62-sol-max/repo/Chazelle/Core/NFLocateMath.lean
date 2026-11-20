@@ -34,7 +34,7 @@ open Chazelle.Chain (sideInArc)
 /-- `getD` in range is indexing. -/
 theorem getD_of_lt {α : Type*} {l : List α} {i : ℕ} (d : α) (h : i < l.length) :
     l.getD i d = l[i] := by
-  simp [List.getD_eq_getElem?_getD, h]
+  simp_all
 
 /-- **Cyclic order**: if `q` is not strictly inside the cyclic interval `(a, b)` and the three
 keys are distinct, then `b` is strictly inside `(a, q)`. -/
@@ -55,14 +55,20 @@ theorem sideInArc_swap {a b q : ℝ} (hab : a ≠ b) (haq : a ≠ q) (hbq : b �
     rw [ite_eq_right (not_lt.2 h.1)]
     exact Or.inr (lt_of_le_of_ne h.2 hbq)
 
+section
+
+variable {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N)
+
+include h in
 /-- The unpacked validity of a normal form: its region correspondence and arc records. -/
-theorem isNF_arcs {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) :
+theorem isNF_arcs :
     ∃ reg : ℕ → Set Point, RegionCorr M Q N reg ∧ ArcsOK M Q N reg ∧ SeqOK M Q N :=
   let ⟨_, _, _, reg, hR, _, hA, _, hS, _⟩ := h
   ⟨reg, hR, hA, hS⟩
 
+include h in
 /-- In a valid normal form, **every arc of every region is listed**. -/
-theorem listed_of_isArc {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {U : Set Point}
+theorem listed_of_isArc {U : Set Point}
     (hU : U ∈ M.regions (N.F M Q)) {a b : ℝ} (hab : M.IsArc (N.F M Q) U a b) :
     ∃ j, j < N.arcs.length ∧ M.key Q (N.arc j).s = a ∧ M.key Q (N.arc j).e = b := by
   obtain ⟨reg, hR, hA, -⟩ := isNF_arcs h
@@ -70,21 +76,24 @@ theorem listed_of_isArc {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {U :
   obtain ⟨j, hj, -, h1, h2⟩ := hA.2.2.1 r hr a b hab
   exact ⟨j, hj, h1, h2⟩
 
+include h in
 /-- In a valid normal form, **every listed arc is an arc** of the submap. -/
-theorem isArc_of_listed {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {j : ℕ}
+theorem isArc_of_listed {j : ℕ}
     (hj : j < N.arcs.length) :
     ∃ U, M.IsArc (N.F M Q) U (M.key Q (N.arc j).s) (M.key Q (N.arc j).e) := by
   obtain ⟨reg, -, hA, -⟩ := isNF_arcs h
   exact ⟨_, (hA.1 j hj).2⟩
 
+include h in
 /-- The arc-sequence table is a permutation of the arc indices. -/
-theorem seq_length {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) :
+theorem seq_length :
     N.seq.length = N.arcs.length := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   rw [hS.1.length_eq, List.length_range]
 
+include h in
 /-- Entries of the arc-sequence table are arc indices. -/
-theorem seq_lt {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i : ℕ}
+theorem seq_lt {i : ℕ}
     (hi : i < N.arcs.length) : N.seq.getD i 0 < N.arcs.length := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
@@ -92,17 +101,19 @@ theorem seq_lt {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i : ℕ}
   have hm : N.seq[i]'(by omega) ∈ List.range N.arcs.length := hS.1.subset (List.getElem_mem _)
   exact List.mem_range.1 hm
 
+include h in
 /-- Every arc index occurs in the arc-sequence table. -/
-theorem seq_surj {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {j : ℕ}
+theorem seq_surj {j : ℕ}
     (hj : j < N.arcs.length) : ∃ i, i < N.arcs.length ∧ N.seq.getD i 0 = j := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
-  have hm : j ∈ N.seq := hS.1.symm.subset (List.mem_range.2 hj)
+  have hm := hS.1.symm.subset (List.mem_range.2 hj)
   obtain ⟨i, hi, e⟩ := List.mem_iff_getElem.1 hm
   exact ⟨i, by omega, by rw [getD_of_lt 0 hi, e]⟩
 
+include h in
 /-- **The table is sorted** by start keys. -/
-theorem seq_sorted {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i i' : ℕ} (hii : i ≤ i')
+theorem seq_sorted {i i' : ℕ} (hii : i ≤ i')
     (hi' : i' < N.arcs.length) :
     M.key Q (N.arc (N.seq.getD i 0)).s ≤ M.key Q (N.arc (N.seq.getD i' 0)).s := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
@@ -127,10 +138,11 @@ theorem le_of_not_keyPred {M : Model} {Q : Polygon} {x s : WPos}
   · exact not_lt.1 h
   · exact (not_le.1 h).le
 
+include h in
 /-- **The gap property of the chosen position** `p* = t - 1` (or the last position if `t = 0`)
 of the partition point `t`: the start `a` of its arc is the query key, or no start key lies in
 the open cyclic interval from `a` to the query key. -/
-theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) {t : ℕ}
+theorem pick_gap (x : WPos) {t : ℕ}
     (hA : 0 < N.arcs.length) (ht : t ≤ N.arcs.length)
     (hpre : ∀ i, i < t → WalkKey.KeyPred M Q x (N.arc (N.seq.getD i 0)).s)
     (hpost : t < N.arcs.length → ¬ WalkKey.KeyPred M Q x (N.arc (N.seq.getD t 0)).s) :
@@ -143,7 +155,7 @@ theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) 
   by_cases h0 : 0 < t
   · rw [ite_eq_left h0]
     set a := M.key Q (N.arc (N.seq.getD (t - 1) 0)).s
-    have haq : a ≤ q := keyPred_le (hpre (t - 1) (by omega))
+    have haq := keyPred_le (hpre (t - 1) (by omega))
     rcases eq_or_lt_of_le haq with he | hlt
     · exact Or.inl he
     right
@@ -161,7 +173,7 @@ theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) 
     have ht0 : t = 0 := by omega
     subst ht0
     set a := M.key Q (N.arc (N.seq.getD (N.arcs.length - 1) 0)).s
-    have hall : ∀ i, i < N.arcs.length → q ≤ M.key Q (N.arc (N.seq.getD i 0)).s := fun i hi =>
+    have hall := fun i hi =>
       (le_of_not_keyPred (hpost hA)).trans (seq_sorted h (Nat.zero_le i) hi)
     have hqa : q ≤ a := hall _ (by omega)
     rcases eq_or_lt_of_le hqa with he | hlt
@@ -174,6 +186,8 @@ theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) 
     have h1 := hall i hi
     have h2 := seq_sorted h (show i ≤ N.arcs.length - 1 by omega) (by omega)
     rcases hin with hin | hin <;> linarith
+
+end
 
 /-- **Correctness of the pick** (the post of `LocateSpec` for the model and normal form of the
 precondition), from the partition point `t` of the search. -/
@@ -191,7 +205,7 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
   intro j
   have hpos : (if 0 < t then t - 1 else N.arcs.length - 1) < N.arcs.length := by
     split_ifs <;> omega
-  have hj : j < N.arcs.length := seq_lt h hpos
+  have hj := seq_lt h hpos
   refine ⟨hj, ?_⟩
   have hgap := pick_gap h x hA ht hpre hpost
   obtain ⟨U, hU⟩ := isArc_of_listed h hj
@@ -219,7 +233,7 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
     have hin := sideInArc_swap hab haq hcon.2.1 hcon.1
     obtain ⟨V, hV, b', hb'⟩ := hcov b hcb
     obtain ⟨j', hj', hs', -⟩ := listed_of_isArc h hV hb'
-    exact hgap' j' hj' (by rw [hs']; exact hin)
+    exact hgap' j' hj' (by rwa [hs'])
   refine ⟨fun hq => ?_, fun hq => ?_⟩
   · rcases claim with c1 | c1 | c1
     · exact Or.inr c1

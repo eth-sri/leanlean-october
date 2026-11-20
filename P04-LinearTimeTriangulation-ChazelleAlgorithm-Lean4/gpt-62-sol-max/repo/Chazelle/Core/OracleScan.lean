@@ -55,7 +55,7 @@ theorem wrap_iff (hN : IsNF M Q N) (hGM : GoodModel M) {p : ℕ} (hp : p < N.arc
     obtain ⟨reg, -, -, harc⟩ := isArc_sj hN hp
     have heq : sk M Q N p = ek M Q N p := by
       rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, h1', h2'⟩
-      · rw [hne] at hc; exact absurd hc (Set.notMem_empty _)
+      · simp_all
       · rw [h1', h2']
     constructor
     · intro h; linarith
@@ -77,9 +77,7 @@ theorem scanLen_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p : ℕ}
     scanLen C Q N p = scanLenR N (chainModel C).W.n N.arcs.length p := by
   unfold scanLen scanLenR
   have hw := wrap_iff hN (Or.inl ⟨C, hP, rfl⟩) hp
-  by_cases h : p + 1 < N.arcs.length
-  · rw [ite_eq_left (hw.2 h), ite_eq_left h]
-  · rw [ite_eq_right (fun h' => h (hw.1 h')), ite_eq_right h]
+  simp_all
 
 end Len
 

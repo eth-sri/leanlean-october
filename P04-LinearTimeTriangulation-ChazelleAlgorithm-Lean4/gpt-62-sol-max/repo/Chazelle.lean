@@ -106,7 +106,6 @@ public import Chazelle.Core.SpecPhases
 public import Chazelle.Core.ShearInv
 public import Chazelle.Core.ShearGood
 public import Chazelle.Core.TopIdx
-public import Chazelle.Core.Reduction
 public import Chazelle.Core.SignKernel
 public import Chazelle.Final.Transfer
 public import Chazelle.Final.RamDiag
@@ -189,7 +188,6 @@ public import Chazelle.Core.DownPhaseOracleTopM
 public import Chazelle.Core.OraclePrepMain
 public import Chazelle.Core.RestoreTHoles
 public import Chazelle.Core.RestoreFindOK
-public import Chazelle.Core.ReductionNow
 public import Chazelle.Core.DownPhaseMathHR1
 public import Chazelle.Core.DownPhaseMathJunc
 public import Chazelle.Core.DownPhaseMathLevel
@@ -205,7 +203,6 @@ public import Chazelle.Core.DownPhaseDrvGMain
 public import Chazelle.Core.DownPhaseDrvLSOf
 public import Chazelle.Core.DownPhaseDrvMain
 public import Chazelle.Core.DownPhaseDrvLTMain
-public import Chazelle.Core.ReductionNow2
 public import Chazelle.Core.ShootCutMain
 public import Chazelle.Core.ShootCutShTop
 public import Chazelle.Core.SweepBracketT
@@ -225,7 +222,6 @@ public import Chazelle.Core.DownPhaseDrvXGlueB
 public import Chazelle.Core.DownPhaseDrvXGlueA
 public import Chazelle.Core.SweepEvStartM
 public import Chazelle.Core.DownPhaseDrvXFinal
-public import Chazelle.Core.ReductionNow3
 public import Chazelle.Core.DownPhaseDrvBBkt
 public import Chazelle.Core.SweepIoLoop
 public import Chazelle.Core.SweepEvPrep
@@ -253,7 +249,6 @@ public import Chazelle.Core.SweepIoCand1
 public import Chazelle.Core.SweepIoMain
 public import Chazelle.Core.SweepIoLab0
 public import Chazelle.Core.SweepEvKey2Main
-public import Chazelle.Core.ReductionNow4
 public import Chazelle.Core.SweepEvWin
 public import Chazelle.Core.SweepEvStepL
 public import Chazelle.Core.SweepIoS0CandFinal

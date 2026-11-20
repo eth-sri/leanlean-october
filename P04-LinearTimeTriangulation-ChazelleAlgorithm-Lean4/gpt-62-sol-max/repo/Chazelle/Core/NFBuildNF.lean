@@ -121,4 +121,23 @@ end
 
 end BuildNF
 
+@[expose] public section
+
+/-- Build the normal form of chords in the interior model of `Q`. -/
+noncomputable abbrev interiorNF (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) : NF :=
+  BuildNF.buildNF (interiorModel Q) Q L E
+
+/-- The chord family represented by that normal form. -/
+noncomputable abbrev interiorChords (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
+    Set (Set Point) := (interiorNF Q L E).F (interiorModel Q) Q
+
+/-- The normal form for chords in the sheared input. -/
+noncomputable abbrev inputNF (P : Polygon) := interiorNF (Qof P)
+
+/-- The chord family for the sheared input's normal form. -/
+noncomputable abbrev inputChords (P : Polygon) := interiorChords (Qof P)
+
+end
+
+
 end Chazelle.Core

@@ -53,9 +53,9 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
     rw [hmod]
     interval_cases p
     · left; rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one]; rfl
-    · right; left; rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two]
+    · simp [C.sideWalk_vtx_one, C.sideWalk_vtx_two]
     · left; rw [C.sideWalk_vtx_two, C.sideWalk_vtx_three]
-    · right; left; rw [C.sideWalk_vtx_three, C.sideWalk_vtx_four]
+    · simp [C.sideWalk_vtx_three, C.sideWalk_vtx_four]
     · left; rw [C.sideWalk_vtx_four, C.sideWalk_vtx_five]; rfl
     · right; left; rw [C.sideWalk_vtx_five, C.sideWalk_vtx_six]; rfl
   · rcases Nat.lt_or_ge p (2 * C.m + 6) with h' | h'
@@ -148,7 +148,7 @@ theorem image_hseg {y a b : ℝ} (hy : |y| < bnd C C') :
   constructor
   · rintro ⟨w, ⟨hw1, hw2, hw3⟩, rfl⟩
     refine ⟨?_, sig_le_iff.2 hw2, sig_le_iff.2 hw3⟩
-    simp only [phi, stretchPt]; rw [hw1, hy']
+    simp [phi, stretchPt, hw1, hy']
   · rintro ⟨hz1, hz2, hz3⟩
     set w : Point := (stretch (bnd C C') (kk C C')⁻¹ z.1, y)
     have hinv : stretch (bnd C C') (kk C C') (stretch (bnd C C') (kk C C')⁻¹ z.1) = z.1 := by
@@ -156,11 +156,11 @@ theorem image_hseg {y a b : ℝ} (hy : |y| < bnd C C') :
         (inv_pos.2 kk_pos) z.1
       rwa [inv_inv] at this
     refine ⟨w, ⟨rfl, ?_, ?_⟩, ?_⟩
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz2
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz3
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rwa [hinv]
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rwa [hinv]
     · apply Prod.ext
-      · simp only [phi, stretchPt, w]; exact hinv
-      · simp only [phi, stretchPt, w]; rw [hy', hz1]
+      · assumption
+      simp [phi, stretchPt, w, hy', hz1]
 
 /-- **The chord of a band record in the model of `C'` is the stretched chord.** -/
 theorem toSet_eq {Q : Polygon} {r : CRec} (hy : |(Q.vtx r.h).2| < bnd C C')
@@ -170,9 +170,7 @@ theorem toSet_eq {Q : Polygon} {r : CRec} (hy : |(Q.vtx r.h).2| < bnd C C')
     r.toSet (chainModel C') Q = phi C C' '' r.toSet (chainModel C) Q := by
   have hbl : BandPos C C' Q r.lpos := Or.inr ⟨r.h, rfl, hy⟩
   have hbr : BandPos C C' Q r.rpos := Or.inr ⟨r.h, rfl, hy⟩
-  unfold CRec.toSet
-  rw [image_hseg hy, h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
-  rfl
+  ram_finish [CRec.toSet, image_hseg hy, h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
 
 /-- **Admissibility transfers**: the stretch of an augmented chord of `C` at a band height is an
 augmented chord of `C'`. -/
@@ -185,8 +183,8 @@ theorem augChords_transfer {y a b : ℝ} (hy : |y| < bnd C C')
   have hne : (hseg y' a' b').Nonempty := ⟨(a', y'), rfl, le_rfl, hh.lt.le⟩
   rw [← he] at hne
   obtain ⟨z, hz⟩ := hne
-  have hz' : z ∈ hseg y' a' b' := he ▸ hz
-  have hyy : y = y' := hz.1.symm.trans hz'.1
+  have hz' := he ▸ hz
+  have hyy := hz.1.symm.trans hz'.1
   subst hyy
   have hab : a = a' ∧ b = b' := by
     have hl : ((a', y) : Point) ∈ hseg y a b := by rw [he]; exact ⟨rfl, le_rfl, hh.lt.le⟩
@@ -210,11 +208,11 @@ theorem augChords_transfer {y a b : ℝ} (hy : |y| < bnd C C')
     have hinv : stretch (bnd C C') (kk C C') w = x := by
       have := stretch_inv (B := bnd C C') (k := (kk C C')⁻¹) bnd_nonneg (inv_pos.2 kk_pos) x
       rwa [inv_inv] at this
-    have hw := hh.open_mem w (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx1)
-      (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx2)
+    have hw := hh.open_mem w (by rwa [← sig_lt_iff (C := C) (C' := C'), hinv])
+      (by rwa [← sig_lt_iff (C := C) (C' := C'), hinv])
     have := (h.phi_mem_dom_iff (w, y)).2 hw
     simpa only [phi, stretchPt, hinv, hy'] using this
-  · rw [← h.top_eq]; exact hy''
+  · rwa [← h.top_eq]
 
 end Twin
 

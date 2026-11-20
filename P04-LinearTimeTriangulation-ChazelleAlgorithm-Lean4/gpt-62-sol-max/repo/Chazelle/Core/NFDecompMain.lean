@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.NFDecompRamOut
 
 /-!
@@ -26,29 +28,28 @@ theorem allocS_exec' {c : Config} (hw : WordsBounded W c) (h1 : c.nreg 60011 = 1
     (hle : c.nreg ALLOC ≤ c.nreg 60086) :
     ∃ c' k, Exec P W allocS c c' k ∧ k ≤ 3 * (c.nreg 60086 - c.nreg ALLOC) + 2 ∧
       c'.nreg ALLOC = c.nreg 60086 ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k ∧
-      (∀ r, r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept ALLOC c c') ∧
+      Machine.NatRegFrame c c' := by
   have hT := WordsBounded.nreg hw 60086
   obtain ⟨c', k, e, ⟨hw', hle', hr, hm, hrr, hrm, ho⟩, htest, hk, hlb⟩ :=
-    SortR.whileLtN_potential_lb (P := P) (W := W) (a := 9999) (b := 60086)
+    Exec.whileLtN_growth (P := P) (W := W) (a := 9999) (b := 60086)
     (body := .instr (.addN 9999 9999 60011))
     (fun d => WordsBounded W d ∧ d.nreg 9999 ≤ c.nreg 60086 ∧
-      (∀ r, r ≠ 9999 → d.nreg r = c.nreg r) ∧ d.nmem = c.nmem ∧ d.rreg = c.rreg ∧
-      d.rmem = c.rmem ∧ d.output = c.output)
+      (Machine.NRegEqExcept 9999 c d) ∧ Machine.NatRegFrame c d)
     (fun d => 3 * (c.nreg 60086 - d.nreg 9999)) (fun d => d.nreg 9999) (fun d h => h.1)
     (fun d ⟨hwd, hled, hrd, hmd, hrrd, hrmd, hod⟩ ht => by
-      have h1d : d.nreg 60011 = 1 := by rw [hrd _ (by decide)]; exact h1
+      have h1d : d.nreg 60011 = 1 := by simp_all
       have h86 : d.nreg 60086 = c.nreg 60086 := hrd _ (by decide)
       rw [h86] at ht
       refine spec_instr (Exec.addN hwd _ _ _ (by rw [h1d]; omega)) fun hw2 => ?_
       refine ⟨⟨hw2, by config_simp; omega, fun r hr => ?_, hmd, hrrd, hrmd, hod⟩, ?_, ?_⟩
-      · config_simp; rw [Machine.upd_other _ _ _ hr]; exact hrd r hr
+      · simp_all
       · config_simp; rw [h1d]; omega
       · config_simp; omega)
     ⟨hw, hle, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   have h86 : c'.nreg 60086 = c.nreg 60086 := hr _ (by decide)
   rw [h86] at htest
-  exact ⟨c', k, e, by unfold ALLOC at hle ⊢; omega, by unfold ALLOC; omega, hlb,
+  exact ⟨c', k, e, by assumption, by reg_omega, hlb,
     fun r hra => hr r hra, hm, hrr, hrm, ho⟩
 
 /-- The stages after the allocation do not write the allocator. -/
@@ -65,7 +66,7 @@ theorem seq_length' {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) :
 theorem nfAt_seq_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N')
     (hl : N'.seq.length = N.seq.length) : N'.seq = N.seq :=
   list_ext_getD hl fun t ht => by
-    rw [← h.2.2.2.2.2.2.2.2.1 t ht, ← h'.2.2.2.2.2.2.2.2.1 t (by omega)]
+    ram_simp [← h.2.2.2.2.2.2.2.2.1 t ht, ← h'.2.2.2.2.2.2.2.2.1]
 
 /-- `clog` grows by at most one from `K` to `K + 1`. -/
 theorem clog_succ_le (K : ℕ) : Nat.clog 2 (K + 1) ≤ Nat.clog 2 K + 1 := by
@@ -156,7 +157,7 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, hv3, hord3, h13, h15⟩ :=
     initS_exec (P := P) e2.wb_right hR2 (by omega) (by omega)
   have hR3 := hR2.frame hf3
-  have hm3 : ∀ a, a < A → c3.nmem a = c.nmem a := fun a ha => by
+  have hm3 : MemEqBelow A c3.nmem c.nmem := fun a ha => by
     rw [hf3.2.2.2.2 a (Or.inl (by omega)), hm2, hm1]
   -- the search
   have hends : ∀ i, i < K → (N₀.chord i).up < R ∧ (N₀.chord i).dn < R ∧
@@ -219,10 +220,10 @@ theorem decomp_run {c : Config} (hw : WordsBounded W c) {B D : ℕ} {N₀ : NF}
       nreg_of_noWr e3 w1]
     exact hAl2
   have h24 : c6.nreg 60024 = c5.nreg 60024 := nreg_of_noWr e6 w6
-  have M1' : ∀ a, a < A → c6.nmem a = c.nmem a := fun a ha => by
+  have M1' : MemEqBelow A c6.nmem c.nmem := fun a ha => by
     rw [hv6 a, ite_eq_right (by omega), hf5.2.2.2.2 a (Or.inl (by omega)),
       hf4.2.2.2.2 a (Or.inl (by omega)), hm3 a ha]
-  have M1 : ∀ a, a < A → c7.nmem a = c.nmem a := fun a ha => by
+  have M1 : MemEqBelow A c7.nmem c.nmem := fun a ha => by
     rw [xo a (Or.inl ha), M1' a ha]
   have M3 : ∀ a, A + 12 ≤ a → a < A + 12 + 19 * R → c7.nmem a = c5.nmem a := fun a h1 h2 => by
     rw [xo a (Or.inr h1), hv6 a, ite_eq_right (by omega)]
@@ -325,7 +326,7 @@ theorem recTree_hD {N : NF} {D : ℕ} (hRT : RecTree N D) : N.nChords = 0 ∨ 1 
   · exact Or.inl h0
   · right
     have hu := (hRT.ends_lt 0 hpos).1
-    have hmem : 0 ∈ (N.region (N.chord 0).up).chords := (hRT.lists _ hu 0).2 ⟨hpos, Or.inl rfl⟩
+    have hmem := (hRT.lists _ hu 0).2 ⟨hpos, Or.inl rfl⟩
     have := hRT.deg _ hu
     have := List.length_pos_of_mem hmem
     omega

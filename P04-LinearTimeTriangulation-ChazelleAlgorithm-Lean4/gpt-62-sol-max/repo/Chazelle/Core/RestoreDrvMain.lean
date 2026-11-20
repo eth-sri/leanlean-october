@@ -5,9 +5,9 @@ public import Chazelle.Core.RestoreDrvPos
 /-!
 # WP-E, part 13: the restoration driver — `RestoreSpec` from the splitting step
 
-`restoreSpecLocal_of_find : BuildNFSpec → FindSpec → RestoreSpecLocal`.
+`restoreSpec_of_find : BuildNFSpec → FindSpec → RestoreSpec`.
 
-`RestoreSpecLocal` is `RestoreSpec` with one more hypothesis on the memory context: its
+`RestoreSpec` requires that the memory context's
 **capacity is local** (`CapLocal X`: `X.cap` does not change when the memory changes at or above
 the bound below which `X` holds).  The driver allocates memory before it calls the oracles, and
 the oracle interfaces ask for `γ ≤ X.cap` *at the time of the call*; without locality of `cap`
@@ -28,38 +28,6 @@ namespace Restore
 open Machine Machine.Stmt Programs
 
 @[expose] public section
-
-/-- **`RestoreSpec` for memory contexts with a local capacity.** -/
-def RestoreSpecLocal : Prop :=
-  ∃ (mk : Stmt → Stmt → Stmt) (κ cR : ℕ → ℕ → ℕ), ∀ (sh cu : Stmt)
-    (Bs Bc : Finset ℕ) (F G H : ℕ → ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop),
-    CapLocal X → X.Halves → (∀ P M, Ok P M → OkModel P M) →
-    Bs ⊆ oracleBands → Bc ⊆ oracleBands → ShooterOK sh Bs F X Ok → CutterOK cu Bc G H X Ok →
-    Meets (mk sh cu) (restoreBands ∪ oracleBands)
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-        X.holds P c.nmem (rd c bRestore 6) (c.nreg ALLOC) ∧
-        rd c bRestore 4 ≤ X.cap P c.nmem (rd c bRestore 6) ∧ 4 ≤ rd c bRestore 3 ∧
-        ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bRestore 0) ∧
-        (c.nmem (rd c bRestore 0) = 0 → ∀ H C,
-          ChainDescAt c.nmem (rd c bRestore 0 + 1) (Qof P) H C → HostRegular (Qof P).n H) ∧
-        (c.nmem (rd c bRestore 0) = 0 → ∀ H C,
-          ChainDescAt c.nmem (rd c bRestore 0 + 1) (Qof P) H C → C.P.Simple) ∧
-        ∃ M N, ModelDescAt c.nmem (rd c bRestore 0) (Qof P) M ∧ GoodModel M ∧ Ok P M ∧
-          M.FullDegLe (Qof P) (rd c bRestore 3) ∧
-          NFWithin c.nmem (rd c bRestore 1) (c.nreg ALLOC) N ∧ IsNF M (Qof P) N ∧
-          M.DegLe (N.F M (Qof P)) (rd c bRestore 2) ∧
-          M.Semigranular (N.F M (Qof P)) (rd c bRestore 4))
-      (fun P c c' => ∀ M N, ModelDescAt c.nmem (rd c bRestore 0) (Qof P) M →
-        NFAt c.nmem (rd c bRestore 1) N →
-        ∃ N', c.nreg ALLOC ≤ rd c' bRestore 5 ∧
-          NFWithin c'.nmem (rd c' bRestore 5) (c'.nreg ALLOC) N' ∧ IsNF M (Qof P) N' ∧
-          N.F M (Qof P) ⊆ N'.F M (Qof P) ∧ M.DegLe (N'.F M (Qof P)) (rd c bRestore 3) ∧
-          M.Semigranular (N'.F M (Qof P)) (rd c bRestore 4) ∧
-          N'.nChords ≤ cR (rd c bRestore 2) (rd c bRestore 3) * (N.nChords + 1))
-      (fun _ c => κ (rd c bRestore 2) (rd c bRestore 3) * (c.nmem (rd c bRestore 1) + 1) *
-        F (rd c bRestore 4) * G (rd c bRestore 4) *
-        (H (rd c bRestore 4) + Nat.clog 2 (rd c bRestore 4) +
-          Nat.clog 2 (c.nmem (rd c bRestore 1) + 1) + 1))
 
 /-! ## The round loop -/
 
@@ -125,8 +93,8 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
     rw [this]; exact clog_two_pow_mul _ _
   have hBr : E.Br = 40 + 21 * E.Kc + (E.Bf + 2) * E.Kc +
       E.κB * (2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1) := rfl
-  have hK1p : 1 ≤ K1 := by omega
-  have hTp : 1 ≤ T := Nat.one_le_two_pow
+  
+  
   -- the four terms
   have t1 : 40 ≤ 40 * K1 * A := by nlinarith
   have t2 : 21 * E.Kc ≤ 21 * T * K1 * A := by rw [hKc]; nlinarith
@@ -156,8 +124,8 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
 set_option maxHeartbeats 8000000 in
 /-- **WP-E: restoring conformality**, from the splitting step (`FindSpec`) and the construction
 of normal forms, for memory contexts with a local capacity. -/
-theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpecLocal := by
-  obtain ⟨sB, κB, hsB⟩ := Gran.buildOK_of hB
+theorem restoreSpec_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpec := by
+  obtain ⟨sB, κB, hsB⟩ := hB
   obtain ⟨mkF, κf, hmkF⟩ := hF
   refine ⟨fun sh cu => restoreStmt (mkF sh cu) sB, κRestore κf κB, fun d0 _ => 2 ^ (d0 + 1), ?_⟩
   intro sh cu Bs Bc F G H X Ok hloc hhalf hOkM hBs hBc hsh hcu P W c hw pre hroom

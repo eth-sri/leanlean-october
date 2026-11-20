@@ -101,20 +101,7 @@ theorem not_sideInArc_right (a b : ℝ) : ¬ sideInArc a b b := by
 
 /-- Keys strictly after a key inside an open cyclic interval stay inside it. -/
 theorem eventually_in_arc {a b k : ℝ} (hk : sideInArc a b k) :
-    ∀ᶠ ε in 𝓝[>] (0 : ℝ), sideInArc a b (k + ε) := by
-  unfold sideInArc at *
-  split_ifs at * with h
-  · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < b - k by linarith)]
-      with ε hε hε'
-    have : (0 : ℝ) < ε := hε
-    exact ⟨by linarith, by linarith [hε'.2]⟩
-  · rcases hk with hk | hk
-    · filter_upwards [self_mem_nhdsWithin] with ε hε
-      have : (0 : ℝ) < ε := hε
-      left; linarith
-    · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < b - k by linarith)]
-        with ε hε hε'
-      right; linarith [hε'.2]
+    ∀ᶠ ε in 𝓝[>] (0 : ℝ), sideInArc a b (k + ε) := by intros; solve_by_elim [Chazelle.Core.cyc_open]
 
 /-- **Separation.**  If the positions strictly between the attachments `A`, `B` of `c ∈ F` have
 their small left sectors in the component `K` of `D \ c` of `k₁`, a host key of `U` strictly
@@ -151,7 +138,7 @@ theorem host_side (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
     obtain ⟨e, he, -, hce, hopen, heD, -⟩ := hM.attach_other_end (hF hc') hA'
     obtain ⟨r, hr, hsec⟩ := hK p hA'.1 t hA'.2.1 hA'.2.2.1 hxin
     obtain ⟨s, hs0, hs1, hsd, hsl⟩ := WalkAx.exists_left_on_chord hA' hce he hr
-    have hyK : lerp (sidePt M.W p t) e s ∈ K := hsec _ (by rw [mem_ball]; exact hsd) hsl
+    have hyK := hsec _ (by rw [mem_ball]; exact hsd) hsl
     -- the open part of `c'` lies in `K`
     have hopenK : ∀ s' ∈ Ioo (0 : ℝ) 1, lerp (sidePt M.W p t) e s' ∈ K := by
       have hpre : IsPreconnected ((lerp (sidePt M.W p t) e) '' Ioo (0 : ℝ) 1) :=

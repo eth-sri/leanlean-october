@@ -86,7 +86,7 @@ theorem originIn_unique {c : Config} {r : ℕ} {o o' : Origin} (h : OriginIn c r
         cases s' with
         | vtx i' => obtain ⟨a, -⟩ := h; obtain ⟨a', -⟩ := h'; omega
         | onEdge e' h'' =>
-          obtain ⟨-, b, d⟩ := h; obtain ⟨-, b', d'⟩ := h'; rw [← b, ← b', ← d, ← d']
+          obtain ⟨-, b, d⟩ := h; obtain ⟨-, b', d'⟩ := h'; simp_all
     | walk x =>
       obtain ⟨a', -⟩ := h'
       cases s with
@@ -103,22 +103,7 @@ theorem originIn_unique {c : Config} {r : ℕ} {o o' : Origin} (h : OriginIn c r
       obtain ⟨-, b, d⟩ := h; obtain ⟨-, b', d'⟩ := h'
       obtain ⟨xe, xh⟩ := x
       obtain ⟨xe', xh'⟩ := x'
-      simp only at b d b' d'
-      rw [← b, ← b', ← d, ← d']
-
-theorem one_le_rpowCeil (γ : ℕ) : 1 ≤ rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) := by
-  have h1 : 1 ≤ cutGran γ := by
-    unfold cutGran gradeGran
-    have := Nat.one_le_two_pow (n := Cost.ceilBeta (Nat.clog 2 γ))
-    omega
-  have h2 : 1 ≤ cutGran γ * (γ + 1) ^ 2 := Nat.mul_le_mul h1 (Nat.one_le_pow _ _ (by omega))
-  unfold rpowCeil
-  apply Nat.one_le_iff_ne_zero.2
-  intro h0
-  rw [Nat.ceil_eq_zero] at h0
-  have : (0 : ℝ) < ((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ) ^ ((1 : ℝ) / 3) := by
-    apply Real.rpow_pos_of_pos; exact_mod_cast h2
-  linarith
+      simp_all
 
 /-- The constant of the ray-shooter. -/
 def κs (O : OracleIface) : ℕ := 18900 * (2 * O.κ + 600503) + 3000000
@@ -128,7 +113,7 @@ theorem loop_budget {κO T R q : ℕ} (hR : 1 ≤ R) (hqT : q ≤ 2100 * T) :
     9 * q * (κO * (R + 1) + 600500 + 2) ≤ 18900 * (2 * κO + 600503) * (T * R) := by
   have hKR : κO * (R + 1) + 600500 + 2 ≤ (2 * κO + 600503) * R := by
     have : κO ≤ κO * R := Nat.le_mul_of_pos_right _ hR
-    have : 600503 ≤ 600503 * R := Nat.le_mul_of_pos_right _ hR
+    
     nlinarith
   have := Nat.mul_le_mul (Nat.mul_le_mul_left 9 hqT) hKR
   have e : 9 * (2100 * T) * ((2 * κO + 600503) * R) = 18900 * (2 * κO + 600503) * (T * R) := by
@@ -145,7 +130,7 @@ theorem shooter_cost {κO T L R q k₁ k₂ k₃ k₄ k₅ k₆ k₇ : ℕ} (hR 
       (18900 * (2 * κO + 600503) + 3000000) * T * R + (18900 * (2 * κO + 600503) + 3000000) := by
   have hKR : κO * (R + 1) + 600500 + 2 ≤ (2 * κO + 600503) * R := by
     have : κO ≤ κO * R := Nat.le_mul_of_pos_right _ hR
-    have : 600503 ≤ 600503 * R := Nat.le_mul_of_pos_right _ hR
+    
     nlinarith
   have hqT : q ≤ 2100 * T := by omega
   have h6' : k₆ ≤ 9 * (2100 * T) * ((2 * κO + 600503) * R) + 20 := by
@@ -158,7 +143,7 @@ theorem shooter_cost {κO T L R q k₁ k₂ k₃ k₄ k₅ k₆ k₇ : ℕ} (hR 
   have e2 : (18900 * (2 * κO + 600503) + 3000000) * T * R =
       18900 * (2 * κO + 600503) * (T * R) + 3000000 * (T * R) := by ring
   rw [e2]
-  have : 3 * (1 + 9 * q) ≤ 3 + 27 * (2100 * T) := by omega
+  
   have hT1 : 1 ≤ T := by omega
   have hk4 : k₄ ≤ 165000 * T + 1912290 := by linarith
   clear h4 e e2
@@ -172,8 +157,8 @@ theorem originIn_of_eq {c c' : Config} {r : ℕ} {o : Origin} (h : OriginIn c r 
   | sym s => exact symPtIn_of_eq h he
   | walk x =>
     obtain ⟨a, b, d⟩ := h
-    exact ⟨by rw [he r le_rfl (by omega), a], by rw [he (r + 1) (by omega) (by omega), b],
-      by rw [he (r + 2) (by omega) (by omega), d]⟩
+    exact ⟨by simp_all, by simp_all,
+      by simp_all⟩
 
 theorem Borg_ob (r : ℕ) (h : Borg r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
@@ -254,7 +239,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
     unfold hostWords at hHW
     omega
   have hlog := Nat.log_le_clog 2 γ
-  have hR1 : 1 ≤ R := one_le_rpowCeil γ
+  have hR1 : 1 ≤ R := one_le_cutPower γ
   set T := Nat.clog 2 γ + 1 with hT
   have hTR : T ≤ T * R := Nat.le_mul_of_pos_right _ hR1
   have hκ : κs O = 18900 * (2 * O.κ + 600503) + 3000000 := rfl
@@ -289,18 +274,18 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   have hMD₁ : c₁.nreg 140000 + 1 ≤ W := by rw [q00]; omega
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, Og₂, f₂, h403⟩ := orig_exec (P := P) (W := W) (H := H) (C := C)
     c₁ e₁.wb_right hG hHW hD₁ hwf₁ hreg₁ hoIn₁ hoLt hoK hroom₁ hMD₁
-  rw [g₁ _ (by norm_num)] at E₂ Og₂
+  ram_rw [g₁] at E₂ Og₂
   have k₂' : ∀ r, Borg r = false → c₂.nreg r = c₁.nreg r := f₂.1
   have mem₂ : c₂.nmem = m₀ := by rw [f₂.2.2.1, m₁]
-  have A₂ : c₂.nreg ALLOC = A₀ := by rw [k₂' _ (by decide), g₁ ALLOC (by decide)]
+  have A₂ : c₂.nreg ALLOC = A₀ := by ram_rw [k₂', g₁ ALLOC]
   -- the set-up of the records
   obtain ⟨c₃, k₃, Nmax, e₃, hk₃, hI₃, hNmax, r₃, m₃, rr₃, rm₃, o₃⟩ := shInit_exec (P := P) c₂
-    e₂.wb_right (m₀ := m₀) (fun a _ => by rw [mem₂]) (by rw [k₂' _ (by decide), v09]) A₂ hγW
+    e₂.wb_right (m₀ := m₀) (fun a _ => by rw [mem₂]) (by ram_rw [k₂', v09]) A₂ hγW
     (by
       have : 18900 * Nat.clog 2 γ + 18910 ≤ 3000000 * T := by omega
       omega)
   have g₃ : ∀ r, 150000 ≤ r → r < 150100 → c₃.nreg r = c₁.nreg r := fun r a b => by
-    rw [r₃ r (by omega)]
+    ram_rw [r₃ r]
     have hb : Borg r = false := by
       simp only [Borg, Bld, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not,
         beq_eq_false_iff_ne]; omega
@@ -309,13 +294,13 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   obtain ⟨c₄, k₄, ps, e₄, hk₄, hI₄, arc, hok, hl, hm₄⟩ := core_exec S
     (shEmit_ok (c₀ := c₂) (PcOK P C m₀ h γ) Nmax) (ps₀ := []) (MD := MD)
     (mode := c₃.nreg 150020) (s := s) (e := e) hD (by omega) rfl c₃ e₃.wb_right
-    (fun a _ => by rw [m₃, mem₂]) (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v00)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v01)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v02)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v03)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v04)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v09)
-    (by rw [g₃ _ (by norm_num) (by norm_num)]; exact v13) rfl hI₃ hsP heP hs1 he1 hin2 hwt
+    (fun a _ => by rw [m₃, mem₂]) (by ram_rw [g₃]; exact v00)
+    (by ram_rw [g₃]; exact v01)
+    (by ram_rw [g₃]; exact v02)
+    (by ram_rw [g₃]; exact v03)
+    (by ram_rw [g₃]; exact v04)
+    (by ram_rw [g₃]; exact v09)
+    (by ram_rw [g₃]; exact v13) rfl hI₃ hsP heP hs1 he1 hin2 hwt
   rw [List.nil_append] at hI₄
   have hq : ps.length ≤ Nmax := by linarith
   -- the finish of the records
@@ -324,7 +309,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   have exph : Exec P W shPh c₂ c₅ (k₃ + (k₄ + k₅)) := by unfold shPh; exact .seq e₃ (.seq e₄ e₅)
   have FM := BuildRam.exec_frameM exph wrM_shPh
   have hA₄ : c₄.nreg ALLOC = A₀ := hI₄.alloc
-  have hmem₅ : ∀ a, a < A₀ → c₅.nmem a = m₀ a := fun a ha => by rw [mem₅]; exact hm₄ a ha
+  have hmem₅ : MemEqBelow A₀ c₅.nmem m₀ := fun a ha => by rw [mem₅]; exact hm₄ a ha
   have Fph : Frame oracleBands c₂ c₅ (k₃ + (k₄ + k₅)) :=
     ⟨fun r hr ha => FM.1 r (Bph_false hr ha),
       fun r hr => BuildRam.exec_frameM2 exph wrM2_shPh r (BphR_false hr), fun a ha => by rw [hmem₅ a (by rw [← A₂]; exact ha), mem₂],
@@ -366,11 +351,11 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
     exact kph r hb
   have Og₅ := Og₂.keep korg
   have h08₅ : dirOf (c₅.nreg 140008) = σ := by
-    rw [kph _ (by decide), k₂' _ (by decide), g₁ _ (by norm_num)]
+    ram_rw [kph, k₂', g₁]
   obtain ⟨c₆, k₆, e₆, hk₆, hB₆, F₆, E₆⟩ := shLoop_exec (H := H) (σ := σ) (K := K) X le_rfl c₅
     e₅.wb_right E₅ Og₅ h08₅
-    (by rw [r₅ _ (by decide), hI₄.ptr, min_eq_left hq])
-    (by rw [r₅ _ (by decide)]; exact hI₄.base)
+    (by ram_rw [r₅, hI₄.ptr, min_eq_left hq])
+    (by ram_rw [r₅]; exact hI₄.base)
     (by rw [mem₅]; have := hI₄.recs; rwa [List.take_of_length_le hq] at this)
     hmem₅ (by rw [a₅]) (by show c₅.nreg ALLOC + 9 * q * (K + 2) ≤ W; rw [a₅]; omega)
   -- the answer
@@ -387,8 +372,8 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
     simp only [upd]; split_ifs <;> first | rfl | omega
   have F₇ : Frame oracleBands c₆ c₇ k₇ := by
     refine ⟨fun r hr ha => r₇ r ?_ ?_ ?_, fun r _ => by rw [m₇], fun a _ => by rw [m₇],
-      fun a _ => by rw [m₇], by rw [m₇], by rw [r₇ _ (by decide) (by decide) (by decide)],
-      by rw [r₇ _ (by decide) (by decide) (by decide)]; omega⟩
+      fun a _ => by rw [m₇], by rw [m₇], by ram_rw [r₇],
+      by ram_rw [r₇]; omega⟩
     all_goals intro hr'; subst hr'; exact hr (by decide)
   have ex : Exec P W (shooter O.query) c c₇ (7 + (k₂ + ((k₃ + (k₄ + k₅)) + (k₆ + k₇)))) := by
     unfold shooter; exact .seq ex₁ (.seq e₂ (.seq exph (.seq e₆ e₇)))

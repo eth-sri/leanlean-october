@@ -60,25 +60,27 @@ theorem arcWt_le_weight {Q : Polygon} (hQ : Q.Simple) {S : Set (Set Point)}
 variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → Set Point} {li : Bool}
 
 theorem region_arcs_nodup (r : ℕ) :
-    ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs.Nodup := by
+    ((interiorNF Q L E).region r).arcs.Nodup := by
   unfold NF.region
   by_cases hr : r < L.length + 1
   · rw [List.getD_eq_getElem?_getD]
     simp only [BuildNF.buildNF, List.getElem?_map, List.getElem?_range hr, Option.map_some,
       Option.getD_some]
     exact List.nodup_range.filter _
-  · rw [List.getD_eq_getElem?_getD]
-    simp only [BuildNF.buildNF, List.getElem?_map]
-    rw [List.getElem?_eq_none (by simp; omega)]
-    simp
+  simp_all [List.getD_eq_getElem?_getD, BuildNF.buildNF] 
 
+section
+
+variable (B : BaseCtx Q L E reg li) {r : ℕ}
+    (hr : r < (interiorNF Q L E).nRegions)
+
+include B hr in
 /-- **A region has at most `deg + 1` arcs.** -/
-theorem arcs_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) :
-    ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs.length ≤
-      (interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
+theorem arcs_length_le :
+    ((interiorNF Q L E).region r).arcs.length ≤
+      (interiorModel Q).deg (interiorChords Q L E)
         (reg r) + 1 := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
+  set N := interiorNF Q L E with hN
   set S := N.F (interiorModel Q) Q with hS
   have hR := B.hregs.1.1 r hr
   obtain ⟨hfin, hcard⟩ := arcsPerRegion (interiorModel Q) Q S (Or.inr ⟨Q, B.hQ, rfl⟩) B.fam _ hR
@@ -88,8 +90,7 @@ theorem arcs_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
     intro j hj
     obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
     have := (B.hregs.2.2.1.1 j hjA).2
-    rw [hjr] at this
-    exact this
+    rwa [hjr] at this
   have hinj : Set.InjOn f {j | j ∈ (N.region r).arcs} := by
     intro j hj j' hj' he
     obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
@@ -123,34 +124,34 @@ theorem ncard_biUnion_le_mul {α β : Type*} {T : Set α} (hT : T.Finite) (f : �
     rw [Nat.mul_succ]
     omega
 
+include B hr in
 /-- **A region has at most `(deg + 1) γ + 2 deg` host points.** -/
-theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {γ : ℕ}
+theorem regPts_length_le {γ : ℕ}
     (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ) :
-    (regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).length ≤
-      ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
+      (interiorChords Q L E) γ) :
+    (regPts li Q.n (interiorNF Q L E) r).length ≤
+      ((interiorModel Q).deg (interiorChords Q L E)
           (reg r) + 1) * γ +
-        2 * (interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
+        2 * (interiorModel Q).deg (interiorChords Q L E)
           (reg r) := by
   have hR := B.hregs.1.1 r hr
   obtain ⟨-, -, -, hlen, -⟩ := DownMath.walk_rep (B.rc hr) B.hli
-  have hlenP : (regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).length =
+  have hlenP : (regPts li Q.n (interiorNF Q L E) r).length =
       DownHost.nk (interiorModel Q)
-        ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) := by
+        (interiorChords Q L E) (reg r) := by
     unfold regPts
     rw [wlist_length, DownMath.regHost_pts]
     split_ifs
     · exact hlen
-    · rw [List.length_reverse]; exact hlen
+    · simp_all
   rw [hlenP]
   have hM := walkAx_interiorModel B.hQ
   have hnk := DownDrv.nk_le hM B.fam.2.1 B.fam.1 (reg r)
   obtain ⟨hfin, hcard⟩ := arcsPerRegion (interiorModel Q) Q _ (Or.inr ⟨Q, B.hQ, rfl⟩) B.fam _ hR
   have hsub : DownDrv.vtxIdx (interiorModel Q)
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) ⊆
+      (interiorChords Q L E) (reg r) ⊆
       ⋃ ab ∈ {ab : ℝ × ℝ | (interiorModel Q).IsArc
-          ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) ab.1 ab.2},
+          (interiorChords Q L E) (reg r) ab.1 ab.2},
         WalkAx.vertsIn (interiorModel Q) ab.1 ab.2 := by
     rintro k ⟨hk, a, b, harc, hin⟩
     exact Set.mem_iUnion₂.2 ⟨(a, b), harc, hk, hin⟩
@@ -161,19 +162,19 @@ theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
         (hwt _ hR)))
       (fun _ _ => (Set.finite_lt_nat _).subset fun p hp => hp.1))
   have hmul := Nat.mul_le_mul_left γ hcard
-  have e1 : ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
+  have e1 : ((interiorModel Q).deg (interiorChords Q L E)
       (reg r) + 1) * γ = γ * ((interiorModel Q).deg
-        ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) + 1) :=
+        (interiorChords Q L E) (reg r) + 1) :=
     mul_comm _ _
   omega
 
+include B hr in
 /-- **An arc of a region has at most its weight plus two walk edges.** -/
-theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {γ : ℕ}
+theorem arcCnt_le {γ : ℕ}
     (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) γ) {j : ℕ}
-    (hj : j ∈ ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs) :
-    arcCnt Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j) ≤ γ + 2 := by
+      (interiorChords Q L E) γ) {j : ℕ}
+    (hj : j ∈ ((interiorNF Q L E).region r).arcs) :
+    arcCnt Q.n ((interiorNF Q L E).arc j) ≤ γ + 2 := by
   have hR := B.hregs.1.1 r hr
   obtain ⟨hjA, hjr⟩ := (B.hregs.2.2.1.2.2.2 r hr j).1 hj
   have harc := (B.hregs.2.2.1.1 j hjA).2
@@ -182,13 +183,13 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     (hwt _ hR))
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) B.hK
-  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rw [← hA]; exact hjA
+  have hjA' : j < (gapStarts (interiorModel Q) Q L E).length := by rwa [← hA]
   obtain ⟨sn, s0, s1⟩ := evPos_ok B (DrvD.gs_lt_len hjA')
   obtain ⟨en, e0, e1⟩ := evPos_ok B (Nat.mod_lt (DrvD.gs (interiorModel Q) Q L E j + 1) hE)
   rw [← DrvD.arc_s B.hK hjA'] at sn s0 s1
   rw [← DrvD.arc_e B.hK hjA'] at en e0 e1
-  generalize hsg : ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s = s at *
-  generalize heg : ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e = e at *
+  generalize hsg : ((interiorNF Q L E).arc j).s = s at *
+  generalize heg : ((interiorNF Q L E).arc j).e = e at *
   have ka : (interiorModel Q).key Q s = s.edge + (interiorModel Q).param Q s := rfl
   have kb : (interiorModel Q).key Q e = e.edge + (interiorModel Q).param Q e := rfl
   have hn : (interiorModel Q).W.n = Q.n := DownMath.walk_n Q
@@ -255,6 +256,8 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     rw [Finset.card_union_of_disjoint hd, Nat.card_Ioo, Nat.card_Ico] at this
     omega
 
+end
+
 /-! ## The empty family -/
 
 /-- The whole walk weighs `n`. -/
@@ -276,7 +279,7 @@ theorem arcWt_zero (Q : Polygon) : (interiorModel Q).arcWt 0 0 = Q.n := by
 /-- **With no chords, the walk is one arc**: `n` is at most the weight bound. -/
 theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = []) {γ : ℕ}
     (hwt : (interiorModel Q).Semigranular
-      ((BuildNF.buildNF (interiorModel Q) Q [] E).F (interiorModel Q) Q) γ) : Q.n ≤ γ := by
+      (interiorChords Q [] E) γ) : Q.n ≤ γ := by
   subst hE
   set I := interiorModel Q with hI
   set N := BuildNF.buildNF I Q [] [] with hN
@@ -284,15 +287,13 @@ theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = [])
   have hNF : IsNF I Q N := DownMath.isNF_build hQ hL (by simp) (by simp)
   obtain ⟨-, -, -, reg, hRC, -, hAO, -⟩ := id hNF
   have hA : N.arcs = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
-    show BuildNF.arcList I Q [] [] = _
-    unfold BuildNF.arcList
-    rw [ite_eq_left (show ([] : List (ℕ × ℕ × ℕ)).length = 0 from rfl)]
+    rfl
   have h0 : 0 < N.arcs.length := by rw [hA]; simp
   obtain ⟨hreg, harc⟩ := hAO.1 0 h0
   have ha : N.arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by unfold NF.arc; rw [hA]; rfl
   rw [ha] at hreg harc
   have hk : I.key Q ⟨0, 0⟩ = 0 := by
-    unfold Model.key Model.param; simp
+    simp
   rw [hk] at harc
   have hR := hRC.1 _ hreg
   have := (arcWt_le_weight hQ hNF.1 hR harc).trans (hwt _ hR)

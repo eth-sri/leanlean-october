@@ -83,12 +83,12 @@ theorem chainWF_of_node {m : ℕ → ℕ} {A hp d f γ : ℕ} {C : Chain} (hn : 
   obtain ⟨hd, -, hdh, hd5, hhp, hfit, -⟩ := hN
   have hQn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hd5, fun H C' hC => ?_⟩
-  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by rw [hdh]; exact hH)
+  have hH' := hostAt_unique hC.1 (by rw [hdh]; exact hH)
   subst hH'
-  refine ⟨by simp [Host.whole], hostWF_whole hn, by rw [hdh]; simp [Host.whole]; omega, ?_⟩
-  have hs : C'.s = C.s := hC.2.2.1.symm.trans hd.2.2.1
+  refine ⟨by simp [Host.whole], hostWF_whole hn, by rw [hdh]; reg_omega, ?_⟩
+  have hs := hC.2.2.1.symm.trans hd.2.2.1
   have hP : C'.P = Qof P := by
-    rw [hC.2.1]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this
+    rw [hC.2.1]; have := L41.poly_whole (Qof P) (by omega); simp_all
   rw [hs, hP, hQn]; have := C.one_le; omega
 
 /-- **`UpTab` gives the raw grade table.** -/

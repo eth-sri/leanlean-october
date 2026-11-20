@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OraclePrepHdr
 
 /-!
@@ -50,7 +52,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     (hCQ : C.P = Qof P) (hsl : C.s < C.P.n)
     (hD : ChainDescAt m₀ D (Qof P) H C) (hwf : ChainWF P A₀ m₀ D)
     (hNFw : NFWithin m₀ NB A₀ N) (hN : IsNF (chainModel C) (Qof P) N)
-    (hagree : ∀ a, a < A₀ → c.nmem a = m₀ a)
+    (hagree : MemEqBelow A₀ c.nmem m₀)
     (PL : PLoaded P D NB C.s C.m C.topIdx (m₀ (D + 4)) N.arcs.length N.chords.length
       (m₀ (NB + 3)) (m₀ (NB + 4)) (m₀ (NB + 5)) (m₀ (NB + 6)) (m₀ (NB + 7)) c)
     (h205 : c.nreg 110205 = 3) (hpk : PosK P.n C.s C.m (C.sideS C.sideBeta) (OracleQ.rT C) c)
@@ -86,7 +88,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hA0 := arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
   have hNFc : NFAt c.nmem NB N := hNFw c.nmem hagree
-  have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
+  have hmn : C.m < P.n := by have := C.m_lt; simp_all
   have hm1 := C.one_le
   have hW8 : 8 * P.n + 32 ≤ W := by unfold hostWords at hHW; omega
   set MD := c.nreg 120040 with hMDdef
@@ -113,11 +115,11 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have PL₁ := PL.congr fun r hr => k12₁ r (by unfold PLReg at hr; omega)
     (by unfold PLReg at hr; omega)
   -- 2. the zipper
-  have mem₁ : ∀ a, a < A₁ → c₁.nmem a = c.nmem a := F₁.2.2.1
+  have mem₁ : MemEqBelow A₁ c₁.nmem c.nmem := F₁.2.2.1
   set V : QV := { qvOf c₁ with μ := N.arcs.length + 3 } with hV
   have hVMD : V.MD = MD := k12₁ _ (by norm_num) (by norm_num)
   have hVTB : V.TB = MD + 6 := by
-    show c₁.nreg 120041 = _; rw [k12₁ _ (by norm_num) (by norm_num), hTB]
+    show c₁.nreg 120041 = _; frame_finish
   have hVL : V.L = L := k12₁ _ (by norm_num) (by norm_num)
   have hVA : V.A = N.arcs.length := PL₁.rA
   have hZ : ZEnv P W A₁ C N V c₁ :=
@@ -125,14 +127,14 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       hW := hW8
       CQ := hCQ
       simple := hsimp
-      s_lt := by rw [hCQ, hQn] at hsl; exact hsl
+      s_lt := by rwa [hCQ, hQn] at hsl
       isNF := hN
       loc := zloc_of (m := c₁.nmem) (MD := MD) (TB := MD + 6) (L := L) hHW hsimp hD hwf hNFw hN
-        (fun a ha => by rw [mem₁ a (by omega), hagree a ha])
-        (by rw [mem₁ _ (by omega)]; exact hMD0)
-        (fun i hi => by rw [mem₁ _ (by omega)]; exact hmdc i hi) hA₀MD le_rfl
-        (fun j hj => by rw [mem₁ _ (by omega), ← hTB]; exact htab j hj) hAlt
-        (by rw [← hTB]; exact hTBA) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
+        (fun a ha => by ram_rw [mem₁ a, hagree a ha])
+        (by ram_rw assumption [mem₁])
+        (fun i hi => by ram_rw [mem₁]; exact hmdc i hi) hA₀MD le_rfl
+        (fun j hj => by ram_rw [mem₁, ← hTB]; exact htab j hj) hAlt
+        (by rwa [← hTB]) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
       pk := hpk.congr fun r hr => K₁ r (by
         simp only [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
       rMD := rfl
@@ -142,7 +144,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       rA := rfl
       rAB := rfl
       rSB := rfl
-      r3 := by rw [K₁ _ (by decide)]; exact h205 }
+      r3 := by ram_finish }
   set A₃ := A₁ + N.regions.length + 2 * chCap N.arcs.length with hA₃
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, a9₂, z93, z94, z95, pairsZ, -⟩ := zipStage_exec (P := P)
     e₁.wb_right hZ a9₁ (by omega) (by rw [hVA]; unfold zCap chCap at *; omega)
@@ -170,49 +172,44 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hzc : zCap N.arcs.length = 2 * N.arcs.length + 5 := rfl
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mem₃, rm₃, o₃, al3a, al3b, v1, v2, v8, Dl, cnt, hDl, pairsD,
       hnd, hmem⟩ := dedupStage_exec (P := P) e₂.wb_right (CH1 := CH1) (CH2 := CH2) (nI := nI)
-    (by rw [K₂ _ (by decide)]; exact b72) (by rw [K₂ _ (by decide)]; exact b73)
-    (by rw [K₂ _ (by decide)]; exact b74) z93 z94 z95
-    (by rw [k12₂ _ (by norm_num) (by norm_num)]; exact PL₁.one)
-    (by rw [k12₂ _ (by norm_num) (by norm_num)]; exact PL₁.zero) a9₂
+    (by ram_rw assumption [K₂]) (by ram_rw assumption [K₂])
+    (by ram_rw assumption [K₂]) z93 z94 z95
+    (by frame_finish)
+    (by frame_finish) a9₂
     (by omega) (by omega) (by omega)
     (by omega) (by omega)
     (by omega)
   have k12₃ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₃.nreg r = c.nreg r := fun r a b => by
-    rw [r₃ r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by rw [hAL]; omega),
+    rw [r₃ r (by simp [ram_layout]; omega) (by rw [hAL]; omega),
       k12₂ r a b, k12₁ r a b]
   -- 4. the numbers of the book
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, w34, w37⟩ : ∃ c₄ k₄, Exec P W setB c₃ c₄ k₄ ∧ k₄ = 3 ∧
       FrameB (fun r => decide (r = 60034 ∨ r = 60037)) c₃ c₄ ∧
       c₄.nreg 60034 = N.arcs.length + 3 ∧ c₄.nreg 60037 = N.arcs.length + 3 + (nI + Dl.length) := by
-    have hwr : wr (fun r => decide (r = 60034 ∨ r = 60037)) setB = true := by decide
-    suffices H : ∃ c₄ k₄, Exec P W setB c₃ c₄ k₄ ∧ k₄ = 3 ∧ c₄.nreg 60034 = N.arcs.length + 3 ∧
-        c₄.nreg 60037 = N.arcs.length + 3 + (nI + Dl.length) by
-      obtain ⟨c₄, k₄, ex, hk, a, b⟩ := H
-      exact ⟨c₄, k₄, ex, hk, exec_frameB ex hwr, a, b⟩
+    refine spec_frame ?_
     have w₃ := e₃.wb_right
-    have g30 : c₃.nreg 120030 = N.arcs.length := by rw [k12₃ _ (by norm_num) (by norm_num), PL.rA]
-    have g48 : c₃.nreg 120048 = 2 := by rw [k12₃ _ (by norm_num) (by norm_num), PL.two]
-    have g11 : c₃.nreg 120011 = 1 := by rw [k12₃ _ (by norm_num) (by norm_num), PL.one]
+    have g30 : c₃.nreg 120030 = N.arcs.length := by ram_simp [k12₃, PL.rA] 
+    have g48 : c₃.nreg 120048 = 2 := by ram_simp [k12₃, PL.two] 
+    have g11 : c₃.nreg 120011 = 1 := by ram_simp [k12₃, PL.one] 
     unfold setB
     exec_block
     · rw [g30, g48]; omega
     · config_simp; rw [g30, g48, g11]; omega
     · config_simp; rw [g30, g48, g11, cnt]; omega
-    · exact ⟨rfl, by config_simp; rw [g30, g48, g11], by config_simp; rw [g30, g48, g11, cnt]⟩
-  have ex : Exec P W phB c c₄ _ := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  have hA₄ : A₃ + 2 * zCap N.arcs.length = A₃ + 4 * N.arcs.length + 10 := by rw [hzc]; ring
+    · ram_simp [g30, g48, g11, cnt] 
+  have ex : Exec P W phB c c₄ _ := (by ram_path)
+  
   have k12₄ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₄.nreg r = c.nreg r := fun r a b => by
     have h4 : (decide (r = 60034 ∨ r = 60037)) = false := by
       simp only [decide_eq_false_iff_not]; omega
     rw [F₄.1 r h4, k12₃ r a b]
-  refine ⟨c₄, _, ex, ?_, ?_, k12₄, ?_, ?_, CH1, CH2, Dl, by omega, by rw [F₄.1 _ (by decide), v1],
-    by rw [F₄.1 _ (by decide), v2], by rw [F₄.1 _ (by decide), v8], w34,
+  refine ⟨c₄, _, ex, ?_, ?_, k12₄, ?_, ?_, CH1, CH2, Dl, by omega, by ram_rw [F₄.1, v1],
+    by ram_rw [F₄.1, v2], by ram_rw [F₄.1, v8], w34,
     by rw [w37, List.length_append], ?_, ?_, ?_, hnd, fun x => ?_, by omega⟩
   · have := hk₃; omega
   · -- the frame
     have hband : ∀ r, (110000 ≤ r ∧ r < 130000) → bandOf r ∈ bBands := by
-      intro r h; simp only [bBands, Finset.mem_insert, Finset.mem_singleton, bOPrep, bOQuery,
-        bandOf]; omega
+      simp only [bBands, Finset.mem_insert, Finset.mem_singleton, bOPrep, bOQuery, bandOf] <;> omega
     have G₁ : GF bBands A₁ c c₁ := PF.gf F₁ (fun r hr => by
         simp only [BFR, BIS, Bool.or_eq_true, decide_eq_true_eq] at hr
         by_cases h9 : r = 9999
@@ -226,8 +223,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
           simp only [BZS, BZB, BPR, BLS, BL, NFLoc.Bdir, NFLoc.Bloc, Bcmp, Bk, BSP, BSA, BKI, BLZ, BTS, BEm, BG,
             Bool.or_eq_true, decide_eq_true_eq] at h'
           apply hr
-          simp only [bBands, Finset.mem_insert, Finset.mem_singleton, bSign, bLocate, bOPrep,
-            bOQuery, bSort, bDecomp, bandOf]
+          simp only [ram_layout, bBands, Finset.mem_insert, Finset.mem_singleton]
           unfold ALLOC at hra
           omega),
         fun r hr => hrr₂ r (by
@@ -252,15 +248,14 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       ⟨fun r hr _ => F₄.1 r (hb6 r hr), fun r hr => F₄.2.1 r (hb6 r hr),
         fun a _ => by rw [F₄.2.2.1], fun a _ => by rw [F₄.2.2.2.1], F₄.2.2.2.2⟩
     exact G₁.trans (G₂.trans (G₃.trans G₄))
-  · rw [hAL] at al3a; rw [hAL, F₄.1 _ (by decide)]; omega
-  · rw [hAL] at al3b; rw [hAL, F₄.1 _ (by decide)]; omega
+  · rw [hAL] at al3a; ram_rw [hAL, F₄.1]; omega
+  · rw [hAL] at al3b; ram_rw [hAL, F₄.1]; omega
   · refine PairsAt.append (fun t ht => ?_) ?_
-    · rw [F₄.2.2.1, mem₃ _ (Or.inl (by omega)), mem₃ _ (Or.inr (Or.inl ⟨by omega,
-        by omega⟩)), F₂.2.2.1 _ (by omega), F₂.2.2.1 _ (by omega)]
+    · ram_rw [F₄.2.2.1, mem₃ _ (Or.inl (by omega)), mem₃ _ (Or.inr (Or.inl (by reg_omega))), F₂.2.2.1, F₂.2.2.1]
       exact pairs₁ t ht
-    · rw [F₄.2.2.1]; exact pairsD
+    · rwa [F₄.2.2.1]
   · rw [List.length_append]; omega
-  · rw [hAL] at al3a; rw [List.length_append, hAL, F₄.1 _ (by decide)]; omega
+  · rw [hAL] at al3a; ram_rw [List.length_append, hAL, F₄.1]; omega
   · rw [hmem x]
     constructor
     · rintro ⟨i, hi, rfl⟩

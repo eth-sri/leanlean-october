@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopFin3
 
 /-!
@@ -23,7 +25,7 @@ open Chazelle.Chain (SideAttach)
 
 @[expose] public section
 
-def slfDc : ℕ := sw 4067
+@[ram_layout] def slfDc : ℕ := sw 4067
 
 /-- **The emission of the raw records.** -/
 def slfEmits : Stmt :=
@@ -37,18 +39,18 @@ def SlfEmitsSpec : Prop :=
     (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction)
     (N₁ N₂ : NF), EvEnv sh Bs F X Ok P W c₀ J N₁ N₂ → IInv W c₀ c →
       OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) →
-      Arrival (chainModel J.whole).W (stOrig J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
+      Arrival J.wholeModel.W (stOrig J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
         (-dirOf (c.nreg oB)) (c.nreg (oF0 + 1))
-        ((chainModel J.whole).param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩) →
+        (J.wholeModel.param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩) →
       PosW P J (c.nreg (oF0 + 1)) (c.nreg (oF0 + 2)) →
-      Arrival (chainModel J.whole).W
+      Arrival J.wholeModel.W
         (farPt J.whole (stOrig J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
           (dirOf (c.nreg oB))) (dirOf (c.nreg oB)) (c.nreg (a1F + 1))
-        ((chainModel J.whole).param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩) →
+        (J.wholeModel.param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩) →
       PosW P J (c.nreg (a1F + 1)) (c.nreg (a1F + 2)) →
       BitIs c slfO (slfOff P J c (oF0 + 1) (oF0 + 2) < Lst J) →
       BitIs c (slfO + 4) (slfOff P J c (a1F + 1) (a1F + 2) < Lst J) →
-      ((∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W
+      ((∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W
           (stopSet J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB)) q s ∧
           (Lst J : ℝ) ≤ oW J (q + s)) →
         AuxOK P J N₂ (stopSet J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))

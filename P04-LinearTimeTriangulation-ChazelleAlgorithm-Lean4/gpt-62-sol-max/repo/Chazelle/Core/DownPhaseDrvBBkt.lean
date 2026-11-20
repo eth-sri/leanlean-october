@@ -50,7 +50,7 @@ theorem countP_range_getD {α : Type*} (l : List α) (d : α) (p : α → Bool) 
   have e : (List.range l.length).map (fun i => l.getD i d) = l := by
     apply List.ext_getElem (by simp)
     intro i h1 h2
-    simp [List.getElem?_eq_getElem h2]
+    simp_all
   conv_rhs => rw [← e]
   rw [List.countP_map]
   rfl
@@ -63,19 +63,14 @@ theorem TL_countP (E : BEnv) (r s : ℕ) :
   | succ s ih =>
     rw [E.TL_succ, List.countP_append, ih, List.countP_map]
     by_cases hrs : r = s
-    · subst hrs
-      have : (List.countP ((fun x : ℕ × (ℕ × ℕ × ℕ) => decide (x.1 = r)) ∘ fun x => (r, x))
-          (E.recs r)) = (E.recs r).length := by
-        rw [List.countP_eq_length]; intro x _; simp
-      rw [this, ite_eq_right (lt_irrefl r), ite_eq_left (Nat.lt_succ_self r)]
-      omega
+    · simp_all <;> omega
     · have : (List.countP ((fun x : ℕ × (ℕ × ℕ × ℕ) => decide (x.1 = r)) ∘ fun x => (s, x))
           (E.recs s)) = 0 := by
-        rw [List.countP_eq_zero]; intro x _; simp [Ne.symm hrs]
+        simp [List.countP_eq_zero, Ne.symm hrs]
       rw [this, add_zero]
       by_cases h : r < s
-      · rw [ite_eq_left h, ite_eq_left (by omega)]
-      · rw [ite_eq_right h, ite_eq_right (by omega)]
+      · ram_simp [ite_eq_left h, ite_eq_left]
+      ram_simp [ite_eq_right h, ite_eq_right]
 
 /-- The tags of `TL s` are below `s`. -/
 theorem TL_mem_lt (E : BEnv) {s : ℕ} {x : ℕ × (ℕ × ℕ × ℕ)} (hx : x ∈ E.TL s) : x.1 < s := by
@@ -112,27 +107,27 @@ theorem bktMath : BktMathSpec := by
     · intro x hx
       rw [newLB_eq_flatMap] at hx
       obtain ⟨r, hr, hxr⟩ := List.mem_flatMap.1 hx
-      have hr' : r < E.K + 1 := List.mem_range.1 hr
+      have hr' := List.mem_range.1 hr
       obtain ⟨S, R, hFam, hR⟩ := hE.regOK hr'
       exact (regList_sound hE.hQ hE.hDH hE.hli hFam hR (hE.pts_lt hr') hxr).1
   · -- the buckets are at most the number of arcs
     intro q hq
     rcases Nat.eq_zero_or_pos E.K with hK | hK
-    · rw [hbk0 hK q hq]; exact Nat.zero_le _
+    · simp_all
     · exact ((hbk hK).key q hq).le
   · -- the buckets are ordered by the event comparator
     intro q q' hq hq' hbb
     rcases Nat.eq_zero_or_pos E.K with hK | hK
-    · rw [hbk0 hK q hq, hbk0 hK q' hq'] at hbb; exact absurd hbb (lt_irrefl 0)
+    · simp_all
     · have hB := hbk hK
       have hok' : ChordTriplesOK E.I E.Q (E.L ++ newLB E.li E.Q E.L E.E) := by
         rw [newLB_pos _ _ _ hK]; exact newL_ok (hE.ctx hK)
-      have hM : WalkAx E.I := walkAx_interiorModel hE.hQ
+      have hM := walkAx_interiorModel hE.hQ
       have hkey : ∀ q, q < 2 * TLk.length →
           E.I.key E.Q (wposOf (E.L ++ newLB E.li E.Q E.L E.E) (2 * E.L.length + q)) =
             E.I.key E.Q (DrvD.endPos (TLk.getD (q / 2) DrvD.dflt).2 (q % 2)) := by
         intro q hq
-        rw [DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd]
+        rw [DrvD.wposOf_new (by rwa [hlen]), hnew, DrvD.getD_map_snd]
       have hlen' : (E.L ++ newLB E.li E.Q E.L E.E).length = E.L.length + TLk.length := by
         rw [List.length_append, hlen]
       refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rw [hlen']; omega)
@@ -148,7 +143,7 @@ theorem bktMath : BktMathSpec := by
         exact List.countP_le_length.trans (by rw [List.length_range])
       have h2 : TLk.length ≤ 2 * MX := by
         have e : TLk = (E.recs 0).map fun x => (0, x) := by
-          rw [hTLk, hK, E.TL_succ]; simp [BEnv.TL]
+          simp [hTLk, hK, E.TL_succ, BEnv.TL]
         rw [e, List.length_map]
         exact (regList_length_le _ _).trans (by have := hMX 0 (by omega); omega)
       omega
@@ -172,7 +167,7 @@ theorem bktMath : BktMathSpec := by
           rw [hb₀] at ha₀
           have e1 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q hq) _).1 ha).2
           have e2 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q₀ hq₀) _).1 ha₀).2
-          rw [← e1]; exact e2
+          rwa [← e1]
         have hr₀K : r₀ < E.K + 1 := hmem _ (by omega)
         calc (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b))
             ≤ (List.range (2 * TLk.length)).countP

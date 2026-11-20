@@ -54,8 +54,7 @@ theorem sideInArc_unw {n a b x A B X : ℝ} (hn : 0 < n) (ha0 : 0 ≤ a) (han : 
   unfold sideInArc
   rcases hj with hj | hj <;> rcases hk with hk | hk <;> rw [hj] at ej <;> rw [hk] at ek <;>
     push_cast at ej ek <;> rw [ej] at h1 h2 <;> rw [ek] at h2 h3
-  · have hab : a < b := by nlinarith
-    rw [ite_eq_left hab]; constructor <;> nlinarith
+  · simp_all
   · have hab : ¬ a < b := by intro h; nlinarith
     rw [ite_eq_right hab]; left; nlinarith
   · exfalso; nlinarith
@@ -127,7 +126,7 @@ theorem kpath_of_upath {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPat
   | u, pc :: ps, u', ⟨h1, u₁, h2, h3, h4⟩ => by
     have ek : ∀ v : ℕ, ((v % n : ℕ) : ℝ) + ((v / n : ℕ) : ℝ) * (n : ℝ) = (v : ℝ) := fun v => by
       have := Nat.mod_add_div v n
-      exact_mod_cast (show v % n + v / n * n = v by rw [Nat.mul_comm]; exact this)
+      exact_mod_cast (show v % n + v / n * n = v by rwa [Nat.mul_comm])
     refine ⟨⟨((u / n : ℕ) : ℤ), ?_⟩, u₁, by exact_mod_cast h2, ⟨((u₁ / n : ℕ) : ℤ), ?_⟩,
       kpath_of_upath h4⟩
     · rw [h1, key_hgt0, Int.cast_natCast]; linarith [ek u]

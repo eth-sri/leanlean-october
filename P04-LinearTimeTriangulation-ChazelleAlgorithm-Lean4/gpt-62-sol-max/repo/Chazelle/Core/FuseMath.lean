@@ -39,8 +39,8 @@ variable (J : Merge.Junction)
 /-- The end keys of the pieces: walk vertices of `C` at the shared vertex, and cut keys at walk
 vertices. -/
 def bdryK (S' : Set (Set Point)) : Set ℝ :=
-  {x | ∃ k : ℕ, k < (chainModel J.whole).W.n ∧ x = k ∧
-    ((chainModel J.whole).W.vtx k = sharedV J ∨ (chainModel J.whole).IsCut S' k)}
+  {x | ∃ k : ℕ, k < J.wholeModel.W.n ∧ x = k ∧
+    (J.wholeModel.W.vtx k = sharedV J ∨ J.wholeModel.IsCut S' k)}
 
 theorem radius_of_P {C' : Chain} (h : C'.P = J.P) : C'.radius = J.whole.radius := by
   unfold Chain.radius; rw [h]; rfl
@@ -52,23 +52,23 @@ theorem agree_bound (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) {Q : Poly
     (hend : ∀ c ∈ Si, (Merge.lend c ≠ J.shared → ∃ e ∈ S', Merge.lend c ∈ e ∧ e ⊆ c) ∧
       (Merge.rend c ≠ J.shared → ∃ e ∈ S', Merge.rend c ∈ e ∧ e ⊆ c))
     (hshared : J.sharedChords ⊆ S')
-    {g₀ g₀' L₀ : ℕ} (hg₀ : g₀ < (chainModel J.whole).W.n) (hg₀' : g₀' < (chainModel C').W.n)
-    (hLn : L₀ ≤ (chainModel J.whole).W.n) (hLn' : L₀ ≤ (chainModel C').W.n)
-    (hA : Agree (chainModel J.whole).W (chainModel C').W g₀ g₀' L₀) (a b : ℝ)
-    (hstr : ∀ x : ℝ, 0 ≤ x → x < (chainModel J.whole).W.n → sideInArc a b x →
-      0 < off (chainModel J.whole).W.n g₀ x ∧ off (chainModel J.whole).W.n g₀ x < L₀)
-    (hfree : ∀ x, sideInArc a b x → ¬ (chainModel J.whole).IsCut S' x) :
-    (chainModel J.whole).arcWt a b ≤ γ := by
-  have hP' : C'.P.Simple := hC'P ▸ hP
+    {g₀ g₀' L₀ : ℕ} (hg₀ : g₀ < J.wholeModel.W.n) (hg₀' : g₀' < (chainModel C').W.n)
+    (hLn : L₀ ≤ J.wholeModel.W.n) (hLn' : L₀ ≤ (chainModel C').W.n)
+    (hA : Agree J.wholeModel.W (chainModel C').W g₀ g₀' L₀) (a b : ℝ)
+    (hstr : ∀ x : ℝ, 0 ≤ x → x < J.wholeModel.W.n → sideInArc a b x →
+      0 < off J.wholeModel.W.n g₀ x ∧ off J.wholeModel.W.n g₀ x < L₀)
+    (hfree : ∀ x, sideInArc a b x → ¬ J.wholeModel.IsCut S' x) :
+    J.wholeModel.arcWt a b ≤ γ := by
+  have hP' := hC'P ▸ hP
   have hR := radius_of_P J hC'P
   refine arcWt_le_of_stretch (Or.inl ⟨C', hP', rfl⟩) hSi hsg hg₀ hg₀' hLn hLn' ?_ ?_ hstr hfree
   · intro d hd hc
-    rw [counted_iff_box _ (Nat.mod_lt _ (by omega))] at hc
-    rw [counted_iff_box _ (Nat.mod_lt _ (by omega))]
+    have hn := cm_n J.whole
+    rw [counted_iff_box _ (Nat.mod_lt _ (by rw [hn]; omega))] at hc
+    rw [counted_iff_box _ (Nat.mod_lt _ (by rw [cm_n]; omega))]
     rw [mod_succ_mod] at hc ⊢
     rw [hA d hd.le, hA (d + 1) hd] at hc
-    rw [hR]
-    exact hc
+    rwa [hR]
   · intro d hd t ht ht1 hdt hc
     exact cut_transfer J hP hP' hSi.2.1 hend hshared hA hd ht ht1 hdt hc
 
@@ -79,7 +79,7 @@ theorem off_shift {n g s p : ℕ} (hg : g < n) (hp : p < n) (hs : s ≤ dOf n g 
   have hn : 0 < n := by omega
   have hD := dOf_lt hn g p
   have e : ((g + s) % n + (dOf n g p - s)) % n = p := by
-    rw [Nat.mod_add_mod, show g + s + (dOf n g p - s) = g + dOf n g p by omega, add_dOf hg hp]
+    simp_all [Nat.mod_add_mod, add_dOf hg hp] 
   have := off_key (g := (g + s) % n) (Nat.mod_lt _ hn) (show dOf n g p - s < n by omega) ht ht1
   rwa [e] at this
 
@@ -98,17 +98,17 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
     (hend : ∀ c ∈ Si, (Merge.lend c ≠ J.shared →
         ∃ e ∈ J.fusion S₁ S₂ ∪ glueChords J, Merge.lend c ∈ e ∧ e ⊆ c) ∧
       (Merge.rend c ≠ J.shared → ∃ e ∈ J.fusion S₁ S₂ ∪ glueChords J, Merge.rend c ∈ e ∧ e ⊆ c))
-    {p : ℕ} (hp : p < (chainModel J.whole).W.n) {t : ℝ} (ht : 0 < t) (ht1 : t < 1)
-    (hin : dOf (chainModel J.whole).W.n (6 + tpos J.whole J₀) p <
+    {p : ℕ} (hp : p < J.wholeModel.W.n) {t : ℝ} (ht : 0 < t) (ht1 : t < 1)
+    (hin : dOf J.wholeModel.W.n (6 + tpos J.whole J₀) p <
       (if 2 * J.whole.m - tpos J.whole J₀ < ℓ then ℓ + 7 else ℓ)) :
-    ∃ g L, PieceOK (chainModel J.whole) (J.fusion S₁ S₂ ∪ glueChords J)
+    ∃ g L, PieceOK J.wholeModel (J.fusion S₁ S₂ ∪ glueChords J)
       (bdryK J (J.fusion S₁ S₂ ∪ glueChords J)) γ g L ∧
-      0 < off (chainModel J.whole).W.n g (p + t) ∧ off (chainModel J.whole).W.n g (p + t) < L := by
+      0 < off J.wholeModel.W.n g (p + t) ∧ off J.wholeModel.W.n g (p + t) < L := by
   set C := J.whole with hC
   set W := (chainModel C).W with hW
   set W' := (chainModel C').W with hW'
   set S' := J.fusion S₁ S₂ ∪ glueChords J with hS'
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP' := hC'P ▸ hP
   have hR := radius_of_P J hC'P
   have hn := cm_n C
   have hn' := cm_n C'
@@ -133,14 +133,14 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
     have := walk_tour C J₀ 0 (by omega)
     rw [add_zero, Nat.mod_eq_of_lt hg] at this
     rw [this, hv0]
-  have hoffp : off W.n g (p + t) = dOf W.n g p + t := off_key' hg hp ht.le ht1
+  have hoffp := off_key' hg hp ht.le ht1
   by_cases hsl : s < ℓ
   · -- case Sh: the boxes at the same offset
     rw [ite_eq_left hsl] at hin
-    have hss : s = s' := (hbox hsl).symm
+    have hss := (hbox hsl).symm
     have hA := agree_Sh hT hR.symm hℓ.le hℓ' hss hsl
     refine ⟨g, ℓ + 7, ⟨hg, by rw [hn]; omega, hstart, ?_, ?_⟩, ?_, ?_⟩
-    · refine hK_v _ (Nat.mod_lt _ (by omega)) ?_
+    · refine hK_v _ (Nat.mod_lt _ (by rw [hn]; omega)) ?_
       have := walk_after C J₀ (ℓ - s) (by omega)
       rw [show 6 + τ + (2 * C.m - τ) + 7 + (ℓ - s) = g + (ℓ + 7) by omega,
         show 2 * C.m - τ + (ℓ - s) = ℓ by omega] at this
@@ -177,8 +177,7 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
   have hpt : W.vtx k₀ = C'.top := by
     rw [hA1 s' le_rfl]
     have := walk_box C' J₀' 0 (by omega)
-    rw [add_zero] at this
-    exact this
+    assumption
   have hprev : sidePrev W k₀ 0 = C'.sideTour C'.sideBeta (2 * C'.m - 1) := by
     unfold sidePrev
     rw [ite_eq_left rfl, hk₀, mod_pred_mod (by omega) g hs'1, hA1 (s' - 1) (by omega),
@@ -186,15 +185,14 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
     exact C'.sideWalk_vtx_tour _ (by omega)
   have hnext : sideNext W k₀ = C'.sideTour C'.sideBeta 1 := by
     unfold sideNext
-    rw [hk₀, hA2 1 (by omega)]
+    ram_rw [hk₀, hA2 1]
     rw [show (g' + s' + 7) % W'.n = 6 by
-        rw [hn', show g' + s' + 7 = 6 + (2 * C'.m + 7) by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)],
+        ram_rw [hn', show g' + s' + 7 = 6 + (2 * C'.m + 7) by omega, Nat.add_mod_right,
+          Nat.mod_eq_of_lt],
       Nat.mod_eq_of_lt (show 6 + 1 < W'.n by rw [hn']; omega)]
     exact C'.sideWalk_vtx_tour _ (by omega)
-  have hcut : (chainModel C).IsCut S' k₀ :=
-    topglue_cut J hP S₁ S₂ hP' hkt hktm hvert hk₀n hprev hpt hnext
-  have hk₀K : (k₀ : ℝ) ∈ bdryK J S' := hK_c _ hk₀n hcut
+  have hcut := topglue_cut J hP S₁ S₂ hP' hkt hktm hvert hk₀n hprev hpt hnext
+  have hk₀K := hK_c _ hk₀n hcut
   by_cases hD : dOf W.n g p < s'
   · refine ⟨g, s', ⟨hg, by rw [hn]; omega, hstart, hk₀K, ?_⟩, ?_, ?_⟩
     · exact agree_bound J hP hC'P hSi hsg hend hshared hg hg' (by rw [hn]; omega) (by rw [hn']; omega) hA1
@@ -204,7 +202,7 @@ theorem side_pieces (hP : J.P.Simple) (S₁ S₂ : Set (Set Point)) {C' : Chain}
       linarith
   · push Not at hD
     refine ⟨k₀, ℓ - s', ⟨hk₀n, by rw [hn]; omega, hk₀K, ?_, ?_⟩, ?_, ?_⟩
-    · rw [hk₀, Nat.mod_add_mod, show g + s' + (ℓ - s') = g + ℓ by omega]; exact hend_key
+    · rwa [hk₀, Nat.mod_add_mod, show g + s' + (ℓ - s') = g + ℓ by omega]
     · exact agree_bound J hP hC'P hSi hsg hend hshared hk₀n (Nat.mod_lt _ (by omega)) (by rw [hn]; omega) (by rw [hn']; omega) hA2
     · rw [hk₀, off_shift hg hp hD ht.le ht1]; positivity
     · rw [hk₀, off_shift hg hp hD ht.le ht1]
@@ -218,10 +216,8 @@ theorem dOf_six {n τ i : ℕ} (hτ : τ + 7 ≤ n) (hi : i + 7 ≤ n) :
     dOf n (6 + τ) (6 + i) = if τ ≤ i then i - τ else i + n - τ := by
   unfold dOf
   split_ifs with h
-  · rw [show 6 + i + n - (6 + τ) = (i - τ) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (show i - τ < n by omega)]
-  · rw [show 6 + i + n - (6 + τ) = i + n - τ by omega,
-      Nat.mod_eq_of_lt (show i + n - τ < n by omega)]
+  · ram_simp [show 6 + i + n - (6 + τ) = (i - τ) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
+  ram_simp [show 6 + i + n - (6 + τ) = i + n - τ by omega, Nat.mod_eq_of_lt]
 
 /-- The arithmetic of the covering: every tour edge lies in the left or the right stretch. -/
 theorem cover_arith {m₁ m₂ τ τ₂ i : ℕ} (h1 : 1 ≤ m₁) (h2 : 1 ≤ m₂) (hτ : τ < 2 * (m₁ + m₂))
@@ -233,7 +229,7 @@ theorem cover_arith {m₁ m₂ τ τ₂ i : ℕ} (h1 : 1 ≤ m₁) (h2 : 1 ≤ m
   have hτ₂' : τ₂ = τ + 2 * m₁ ∨
       (2 * (m₁ + m₂) ≤ τ + 2 * m₁ ∧ τ₂ = τ + 2 * m₁ - 2 * (m₁ + m₂)) := by
     rcases lt_or_ge (τ + 2 * m₁) (2 * (m₁ + m₂)) with h | h
-    · left; rw [hτ₂, Nat.mod_eq_of_lt h]
+    · simp [hτ₂, Nat.mod_eq_of_lt h]
     · right; refine ⟨h, ?_⟩; rw [hτ₂, Nat.mod_eq_sub_mod h,
         Nat.mod_eq_of_lt (show τ + 2 * m₁ - 2 * (m₁ + m₂) < 2 * (m₁ + m₂) by omega)]
   have hτ₂lt : τ₂ < 2 * (m₁ + m₂) := by rw [hτ₂]; exact Nat.mod_lt _ (by omega)
@@ -252,19 +248,19 @@ theorem tpos_rel : tpos J.whole J.m₁ =
 
 /-- **Every key inside a counted walk edge of `C` lies inside a piece.** -/
 theorem cover (hP : J.P.Simple) {Q : Polygon} {S₁ S₂ : Set (Set Point)}
-    (hS₁ : (chainModel J.left).ChordFamily Q S₁) (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    {γ : ℕ} (hsg₁ : (chainModel J.left).Semigranular S₁ γ)
-    (hsg₂ : (chainModel J.right).Semigranular S₂ γ) :
-    ∀ p : ℕ, p < (chainModel J.whole).W.n → (chainModel J.whole).counted p → ∀ t : ℝ, 0 < t →
-      t < 1 → ∃ g L, PieceOK (chainModel J.whole) (J.fusion S₁ S₂ ∪ glueChords J)
+    (hS₁ : J.leftModel.ChordFamily Q S₁) (hS₂ : J.rightModel.ChordFamily Q S₂)
+    {γ : ℕ} (hsg₁ : J.leftModel.Semigranular S₁ γ)
+    (hsg₂ : J.rightModel.Semigranular S₂ γ) :
+    ∀ p : ℕ, p < J.wholeModel.W.n → J.wholeModel.counted p → ∀ t : ℝ, 0 < t →
+      t < 1 → ∃ g L, PieceOK J.wholeModel (J.fusion S₁ S₂ ∪ glueChords J)
         (bdryK J (J.fusion S₁ S₂ ∪ glueChords J)) γ g L ∧
-        0 < off (chainModel J.whole).W.n g (p + t) ∧ off (chainModel J.whole).W.n g (p + t) < L := by
+        0 < off J.wholeModel.W.n g (p + t) ∧ off J.wholeModel.W.n g (p + t) < L := by
   intro p hp hc t ht ht1
   have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
   have hn := cm_n J.whole
   have hwm : J.whole.m = J.m₁ + J.m₂ := rfl
-  obtain ⟨hc1, hc2⟩ : 6 ≤ p ∧ p < 2 * J.whole.m + 6 := hc
+  obtain ⟨hc1, hc2⟩ := hc
   obtain ⟨i, rfl⟩ : ∃ i, p = 6 + i := ⟨p - 6, by omega⟩
   have hend : ∀ c ∈ S₁ ∪ S₂, (Merge.lend c ≠ J.shared →
         ∃ e ∈ J.fusion S₁ S₂ ∪ glueChords J, Merge.lend c ∈ e ∧ e ⊆ c) ∧
@@ -284,43 +280,35 @@ theorem cover (hP : J.P.Simple) {Q : Polygon} {S₁ S₂ : Set (Set Point)}
       (left_box_eq J) (kt := J.left.topIdx) (by simp [topIdxs])
       (by have := J.left.topIdx_le; simp only [Merge.Junction.left_m] at this; rw [hwm]; omega)
       rfl hS₁ hsg₁ (fun c hc => hend c (Or.inl hc)) hp ht ht1 ?_
-    · rw [tourV_left J (by omega), tourV_left_zero]; rfl
+    · ram_rw [tourV_left J, tourV_left_zero]; rfl
     · rw [tourV_left J le_rfl, tourV_left_end]; rfl
-    · rw [hn, hwm]; exact hin
+    · rwa [hn, hwm]
   · refine side_pieces J hP S₁ S₂ (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
       (ℓ := 2 * J.m₂) (fun e he => tourV_right J he) ?_ ?_ (by simp) (by rw [hwm]; omega)
       (right_box_eq J) (kt := J.m₁ + J.right.topIdx) (by simp [topIdxs])
       (by have := J.right.topIdx_le; simp only [Merge.Junction.right_m] at this; rw [hwm]; omega)
       (Merge.Junction.whole_vertex_add J _) hS₂ hsg₂ (fun c hc => hend c (Or.inr hc)) hp ht ht1 ?_
-    · rw [tourV_right J (by omega), tourV_right_zero]; rfl
+    · ram_rw [tourV_right J, tourV_right_zero]; rfl
     · rw [tourV_right J le_rfl, tourV_right_end]; rfl
-    · rw [hn, hwm]; exact hin
+    · rwa [hn, hwm]
 
 /-! ## The weight bound -/
 
 theorem not_sideInArc_end (a k : ℝ) : ¬ sideInArc a k k := by
-  unfold sideInArc; split_ifs <;> intro h
-  · exact lt_irrefl _ h.2
-  · rcases h with h | h
-    · linarith
-    · exact lt_irrefl _ h
+  simp [sideInArc]
 
 theorem not_sideInArc_start (k b : ℝ) : ¬ sideInArc k b k := by
-  unfold sideInArc; split_ifs <;> intro h
-  · exact lt_irrefl _ h.1
-  · rcases h with h | h
-    · exact lt_irrefl _ h
-    · linarith
+  simp [sideInArc]
 
 /-- **Every arc of the revised fusion meets at most `γ + 1` counted edges.** -/
 theorem arc_bound (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
     {S₁ S₂ : Set (Set Point)}
-    (hS₁ : (chainModel J.left).ChordFamily Q S₁) (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    {γ : ℕ} (hsg₁ : (chainModel J.left).Semigranular S₁ γ)
-    (hsg₂ : (chainModel J.right).Semigranular S₂ γ) {a b : ℝ}
-    (hfree : ∀ x, sideInArc a b x → ¬ (chainModel J.whole).IsCut (J.fusion S₁ S₂ ∪ glueChords J) x) :
-    (chainModel J.whole).arcWt a b ≤ γ + 1 := by
-  set M := chainModel J.whole with hM
+    (hS₁ : J.leftModel.ChordFamily Q S₁) (hS₂ : J.rightModel.ChordFamily Q S₂)
+    {γ : ℕ} (hsg₁ : J.leftModel.Semigranular S₁ γ)
+    (hsg₂ : J.rightModel.Semigranular S₂ γ) {a b : ℝ}
+    (hfree : ∀ x, sideInArc a b x → ¬ J.wholeModel.IsCut (J.fusion S₁ S₂ ∪ glueChords J) x) :
+    J.wholeModel.arcWt a b ≤ γ + 1 := by
+  set M := J.wholeModel with hM
   set S' := J.fusion S₁ S₂ ∪ glueChords J with hS'
   have hcov := cover J hP hS₁ hS₂ hsg₁ hsg₂
   -- an interval free of cuts and of inner copies avoids all end keys
@@ -337,26 +325,26 @@ theorem arc_bound (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
   by_cases hin : ∃ k : ℕ, k < M.W.n ∧ M.W.vtx k = sharedV J ∧ sideInArc a b k ∧ InnerCopy J k
   · obtain ⟨k, hk, hv, hkab, hinner⟩ := hin
     obtain ⟨q, hq, hqk⟩ := inner_cap_cut J hP hgen S₁ S₂ hk hv hinner
-    have hqab : ¬ sideInArc a b q := fun h => hfree q h hq
+    have hqab := fun h => hfree q h hq
     have hk6 := (vkey_nbrs J hP hk hv).1
     have hsplit := M.arcWt_le_split_vertex hkab
     have honly : ∀ k' : ℕ, k' < M.W.n → M.W.vtx k' = sharedV J → InnerCopy J k' → k' = k :=
       fun k' hk' hv' hi' => inner_unique J hP hk' hk hv' hv hi' hinner
     rcases hqk with ⟨hq1, hq2⟩ | ⟨hq1, hq2⟩
-    · have hA : M.arcWt a k ≤ γ := hsub a k
+    · have hA := hsub a k
         (fun x hx => hfree x (sideInArc_sub_left hkab hx))
         (fun k' hk' hv' hx hi' => by
           rw [honly k' hk' hv' hi'] at hx; exact not_sideInArc_end _ _ hx)
-      have hB : M.arcWt k b ≤ 1 := (M.arcWt_mono fun x hx =>
+      have hB := (M.arcWt_mono fun x hx =>
           sideInArc_before_cut hkab hqab hq1 hx).trans
         (arcWt_le_one_of_within M hq1 le_rfl hq2.le)
       omega
     · have hA : M.arcWt a k ≤ 1 := (M.arcWt_mono fun x hx =>
           sideInArc_after_cut hkab hqab hq2 hx).trans
         (arcWt_le_one_of_within M (k := k - 1) hq2
-          (by rw [Nat.cast_sub (by omega)]; push_cast; linarith)
-          (by rw [Nat.cast_sub (by omega)]; push_cast; linarith))
-      have hB : M.arcWt k b ≤ γ := hsub k b
+          (by ram_rw [Nat.cast_sub]; push_cast; linarith)
+          (by ram_rw [Nat.cast_sub]; push_cast; linarith))
+      have hB := hsub k b
         (fun x hx => hfree x (sideInArc_sub_right hkab hx))
         (fun k' hk' hv' hx hi' => by
           rw [honly k' hk' hv' hi'] at hx; exact not_sideInArc_start _ _ hx)
@@ -370,10 +358,10 @@ two γ-semigranular submaps plus the glue chords is `(γ + 1)`-semigranular. -/
 theorem fusionWeightSpec : FusionWeightSpec := by
   intro J Q S₁ S₂ γ hP hgen hS₁ hS₂ hsg₁ hsg₂ U hU
   unfold fuseLoss Model.weight
-  rcases ((fun ab : ℝ × ℝ => (chainModel J.whole).arcWt ab.1 ab.2) ''
-      {ab | (chainModel J.whole).IsArc (J.fusion S₁ S₂ ∪ glueChords J) U ab.1 ab.2}).eq_empty_or_nonempty
+  rcases ((fun ab : ℝ × ℝ => J.wholeModel.arcWt ab.1 ab.2) ''
+      {ab | J.wholeModel.IsArc (J.fusion S₁ S₂ ∪ glueChords J) U ab.1 ab.2}).eq_empty_or_nonempty
     with h | h
-  · rw [h, csSup_empty]; exact Nat.zero_le _
+  · simp_all
   · refine csSup_le h ?_
     rintro _ ⟨ab, hab, rfl⟩
     exact arc_bound J hP hgen hS₁ hS₂ hsg₁ hsg₂ hab.2.2.2.2.2.1

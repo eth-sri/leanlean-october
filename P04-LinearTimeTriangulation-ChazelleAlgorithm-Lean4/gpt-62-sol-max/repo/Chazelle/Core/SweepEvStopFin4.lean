@@ -30,32 +30,32 @@ def slfParS (ps : Stmt) : Stmt :=
 /-- The parent facts of `AuxOK`. -/
 def SlfParOK (P : Polygon) (J : Merge.Junction) (N₂ : NF) (e : Set Point) (par : ℕ) : Prop :=
   par ≤ N₂.nChords ∧
-    (∀ c ∈ N₂.F (chainModel J.right) (Qof P), e ⊆ c →
-      0 < par ∧ (N₂.chord (par - 1)).toSet (chainModel J.right) (Qof P) = c) ∧
-    (0 < par → e ⊆ (N₂.chord (par - 1)).toSet (chainModel J.right) (Qof P))
+    (∀ c ∈ N₂.F J.rightModel (Qof P), e ⊆ c →
+      0 < par ∧ (N₂.chord (par - 1)).toSet J.rightModel (Qof P) = c) ∧
+    (0 < par → e ⊆ (N₂.chord (par - 1)).toSet J.rightModel (Qof P))
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {c₀ c : Config} {J : Merge.Junction} {N₁ N₂ : NF}
 
 /-- **The parent facts from the parent scan.** -/
-theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N₂)
     {kind k b : ℕ} (hD : OrgD P J N₂ kind k b) (h1 : kind ≠ 1) {p h par : ℕ}
-    (hA : Arrival (chainModel J.right).W (stOrig J (Qof P) N₂ kind k b) (-dirOf b) p
-      ((chainModel J.right).param (Qof P) ⟨p, h⟩))
+    (hA : Arrival J.rightModel.W (stOrig J (Qof P) N₂ kind k b) (-dirOf b) p
+      (J.rightModel.param (Qof P) ⟨p, h⟩))
     (hle : par ≤ N₂.nChords)
-    (hpos : 0 < par → (chainModel J.right).key (Qof P) (endPos N₂ (par - 1) (1 - b)) =
-      (chainModel J.right).key (Qof P) ⟨p, h⟩)
-    (hzero : par = 0 → ∀ i, i < N₂.nChords → (chainModel J.right).key (Qof P)
-      (endPos N₂ i (1 - b)) ≠ (chainModel J.right).key (Qof P) ⟨p, h⟩) :
+    (hpos : 0 < par → J.rightModel.key (Qof P) (endPos N₂ (par - 1) (1 - b)) =
+      J.rightModel.key (Qof P) ⟨p, h⟩)
+    (hzero : par = 0 → ∀ i, i < N₂.nChords → J.rightModel.key (Qof P)
+      (endPos N₂ i (1 - b)) ≠ J.rightModel.key (Qof P) ⟨p, h⟩) :
     SlfParOK P J N₂ (stopSet J (Qof P) N₂ kind k b) par := by
   have hok := hD.ok
-  have hb : b ≤ 1 := hok.2.1
+  have hb := hok.2.1
   obtain ⟨-, -, -, haR, -⟩ := stOrig_facts hP hN hok
   have hiff := fun i (hi : i < N₂.nChords) =>
     parent_key_iff hP hN (haR h1) hb hD.free hA hi
   rw [stopSet_eq]
   have hsub : 0 < par → Merge.shoot J.whole (stOrig J (Qof P) N₂ kind k b) (dirOf b) ⊆
-      (N₂.chord (par - 1)).toSet (chainModel J.right) (Qof P) := fun hp =>
+      (N₂.chord (par - 1)).toSet J.rightModel (Qof P) := fun hp =>
     (hiff (par - 1) (by omega)).1 (hpos hp)
   refine ⟨hle, fun cc hcc hec => ?_, hsub⟩
   obtain ⟨i, hi, rfl⟩ := chord_of_mem hcc
@@ -67,10 +67,10 @@ theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   exact parent_eq hP hN hD (chord_mem (by omega)) hcc (e ▸ hsub hp) (e ▸ hec)
 
 /-- **The parent facts of a wall code.** -/
-theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N₂)
     {k b : ℕ} (hD : OrgD P J N₂ 1 k b) :
     SlfParOK P J N₂ (stopSet J (Qof P) N₂ 1 k b) (k + 1) := by
-  have hk : k < N₂.nChords := (hD.ok.2.2.1 rfl).1
+  have hk := (hD.ok.2.2.1 rfl).1
   have hw := parent_wall hP hN hD
   unfold SlfParOK
   simp only [Nat.add_sub_cancel]
@@ -80,34 +80,34 @@ theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
 set_option maxHeartbeats 4000000 in
 /-- **The parent step.** -/
 theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) {ps : Stmt}
-    {κp : ℕ} (hps : ∀ c, IInv W c₀ c → c.nreg pE2 < (chainModel J.right).W.n →
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ →
+    {κp : ℕ} (hps : ∀ c, IInv W c₀ c → c.nreg pE2 < J.rightModel.W.n →
+      ProperPos J.rightModel (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ →
       (c.nreg pH2 = 0 → 6 ≤ c.nreg pE2) → c.nreg oB ≤ 1 →
       c.nreg ALLOC + κp * (N₂.nChords + 1) ≤ W →
       IRS P W c₀ ps c (κp * (N₂.nChords + 1)) (ParOut P J N₂ c))
     (hD : OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
-    (hpre : c.nreg oKd ≠ 1 → c.nreg pE2 < (chainModel J.right).W.n ∧
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ ∧
-      Arrival (chainModel J.right).W (stOrig J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
+    (hpre : c.nreg oKd ≠ 1 → c.nreg pE2 < J.rightModel.W.n ∧
+      ProperPos J.rightModel (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ ∧
+      Arrival J.rightModel.W (stOrig J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
         (-dirOf (c.nreg oB)) (c.nreg pE2)
-        ((chainModel J.right).param (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩))
+        (J.rightModel.param (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩))
     (hroom : c.nreg oKd ≠ 1 → c.nreg ALLOC + κp * (N₂.nChords + 1) ≤ W) :
     IRS P W c₀ (slfParS ps) c (if c.nreg oKd = 1 then 5 else κp * (N₂.nChords + 1) + 4)
       (fun c' => SlfParOK P J N₂ (stopSet J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
-        (c'.nreg oPar) ∧ SlfFr ParR c c') := by
+        (c'.nreg oPar) ∧ EFr ParR c c') := by
   have hP := E.hP
   have hN := E.hNF₂
   obtain ⟨k0, k1, -⟩ := E.hK.fix hI
-  have hk2 : c.nreg oKd ≤ 2 := hD.ok.1
-  have hb : c.nreg oB ≤ 1 := hD.ok.2.1
+  have hk2 := hD.ok.1
+  have hb := hD.ok.2.1
   -- the scan
   have scan : c.nreg oKd ≠ 1 → IRS P W c₀ ps c (κp * (N₂.nChords + 1))
       (fun c' => SlfParOK P J N₂ (stopSet J (Qof P) N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
-        (c'.nreg oPar) ∧ SlfFr ParR c c') := by
+        (c'.nreg oPar) ∧ EFr ParR c c') := by
     intro h1
     obtain ⟨he, hpp, hA⟩ := hpre h1
     obtain ⟨-, -, hy, -, -⟩ := stOrig_facts hP hN hD.ok
-    have h6 : c.nreg pH2 = 0 → 6 ≤ c.nreg pE2 := fun h0 =>
+    have h6 := fun h0 =>
       h6_of_abs J.right (Qof P) (x := ⟨c.nreg pE2, c.nreg pH2⟩) (by
         rw [pos_eq_sidePt', hA.2.2.2.1, radius_right]; exact hy) h0
     refine (hps c hI he hpp h6 hb (hroom h1)).mono le_rfl ?_
@@ -126,21 +126,20 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       exact IRS.ifT h2 (scan hk)
     · have hk : c.nreg oKd = 1 := by omega
       rw [ite_eq_left hk]
-      have hD1 : OrgD P J N₂ 1 (c.nreg oKk) (c.nreg oB) := hk ▸ hD
-      have hkK : c.nreg oKk < N₂.nChords := (hD1.ok.2.2.1 rfl).1
+      have hD1 := hk ▸ hD
+      have hkK := (hD1.ok.2.2.1 rfl).1
       have hTW := E.hTW
       have hpar : IScr oPar := iscr_sw' (by norm_num) (by norm_num)
       refine IRS.ifF h2 ((IRS.block [.addN oPar oKk K1] hI
         ⟨⟨hpar, by first | (rw [k1]; omega)⟩, trivial⟩).mono (by simp) ?_)
       rintro c' rfl
       have hv : regB c.nmem [.addN oPar oKk K1] c.nreg oPar = c.nreg oKk + 1 := by
-        simp only [regB, regI, upd_same]; rw [k1]
+        ram_finish
       refine ⟨by simp only; rw [hv, hk]; exact slfParOK_wall hP hN hD1, fun r _ hr _ => ?_,
         ?_, fun _ _ => rfl⟩
       · simp only [regB, regI]
         rw [upd_other _ _ _ (fun h => hr (Or.inl h))]
-      · simp only [regB, regI]
-        rw [upd_other _ _ _ (by unfold ALLOC oPar sw; omega)]
+      · rfl
 
 end
 

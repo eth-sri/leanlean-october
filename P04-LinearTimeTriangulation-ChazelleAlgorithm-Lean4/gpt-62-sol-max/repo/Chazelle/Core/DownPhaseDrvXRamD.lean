@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvXRamC
 
 /-!
@@ -90,19 +92,13 @@ theorem posLtOn_exec (d : Config) (hw : WordsBounded W d) {a b c e dst n : ℕ} 
       d1.nreg 217153 = d.nreg e ∧ (∀ r, r < 217150 → d1.nreg r = d.nreg r) := by
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, ?_, fun r hr => ?_⟩ <;> config_simp
-    · rw [Machine.upd_other _ _ _ (show b ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show c ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show c ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show e ≠ 217152 by omega),
-        Machine.upd_other _ _ _ (show e ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show e ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show r ≠ 217153 by omega),
-        Machine.upd_other _ _ _ (show r ≠ 217152 by omega),
-        Machine.upd_other _ _ _ (show r ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show r ≠ 217150 by omega)]
+    · ram_finish
+    · ram_finish
+    · ram_post
+    ram_post
   obtain ⟨d2, k2, e2, hk2, v2, -⟩ := posLtS_exec (P := P) d1 e1.wb_right
-    (by rw [g1 _ (by omega), h20]) (by rw [g1 _ (by omega), h26]) (by rw [g1 _ (by omega), h27])
-    (by rw [a50]; exact hae) hnW hW
+    (by ram_rw [g1, h20]) (by ram_rw [g1, h26]) (by ram_rw [g1, h27])
+    (by rwa [a50]) hnW hW
   obtain ⟨d3, k3, e3, hk3, n3⟩ := x_copy (P := P) d2 e2.wb_right dst 217154
   refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, ?_⟩
   rw [n3.same, v2, a50, a51, a52, a53]
@@ -155,40 +151,29 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           else 2 * j + 1) := by
     unfold bktFS
     by_cases c1 : d.nreg 217122 < 1
-    · refine spec_ifLtN_true (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_true (by rwa [h27]) ?_
       by_cases c2 : d.nreg 217123 < 1
-      · refine spec_ifLtN_true (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_true (by rwa [h27]) ?_
         by_cases c3 : d.nreg 217125 < 1
-        · refine spec_ifLtN_true (by rw [h27]; exact c3) ?_
-          exec_block
-          · omega
-          · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_left c3]
-        · refine spec_ifLtN_false (by rw [h27]; exact c3) ?_
-          exec_block
-          · omega
-          · config_simp; omega
+        · refine spec_ifLtN_true (by rwa [h27]) ?_
+          ram_exec
+        · refine spec_ifLtN_false (by rwa [h27]) ?_
+          exec_block!
           · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]; omega
-      · refine spec_ifLtN_false (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_false (by rwa [h27]) ?_
         refine spec_seq ?_
-        exec_block
-        · omega
+        exec_block!
         by_cases c4 : j + 1 < A
         · refine spec_ifLtN_true (by config_simp; omega) ?_
-          exec_block
-          · config_simp; omega
-          · config_simp; omega
-          · refine ⟨by omega, ?_⟩; config_simp
-            rw [ite_eq_left c1, ite_eq_right c2, Nat.mod_eq_of_lt c4]; omega
+          exec_block!
+          · refine ⟨by omega, ?_⟩; ram_simp [ite_eq_left c1, ite_eq_right c2, Nat.mod_eq_of_lt c4] <;> reg_omega
         · refine spec_ifLtN_false (by config_simp; omega) ?_
-          exec_block
-          · omega
+          exec_block!
           · refine ⟨by omega, ?_⟩; config_simp
             have h0 : (j + 1) % A = 0 := by rw [show j + 1 = A by omega, Nat.mod_self]
             rw [ite_eq_left c1, ite_eq_right c2, h0]
-    · refine spec_ifLtN_false (by rw [h27]; exact c1) ?_
-      exec_block
-      · omega
-      · config_simp; omega
+    · refine spec_ifLtN_false (by rwa [h27]) ?_
+      exec_block!
       · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1]; omega
   exact ⟨d', k, ex, hk, hv, exec_frameB ex wr_bktF⟩
 

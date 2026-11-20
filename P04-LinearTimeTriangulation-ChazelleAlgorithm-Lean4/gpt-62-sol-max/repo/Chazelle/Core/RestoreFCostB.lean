@@ -38,10 +38,7 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
   have hb : 0 ≤ b ∧ b < n := by constructor <;> linarith [he.1, he.2.1, (Nat.cast_nonneg e.edge : (0:ℝ) ≤ _)]
   have hpe : 0 ≤ (e.edge : ℝ) ∧ (e.edge : ℝ) < n := ⟨Nat.cast_nonneg _, by linarith⟩
   by_cases h1 : s.edge = e.edge ∧ a < b
-  · rw [ite_eq_left h1]
-    unfold arcCnt
-    rw [ite_eq_right (by omega), h1.1, show e.edge + n - e.edge = n by omega, Nat.mod_self]
-    omega
+  · simp_all [arcCnt, h1.1, Nat.mod_self] 
   rw [ite_eq_right h1]
   -- the end vertex is on the closed arc
   have hcl : ClosedArc a b (e.edge : ℝ) := by
@@ -78,7 +75,7 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
       rw [hu1] at htu
       have h2 : s.edge + t = e.edge := by exact_mod_cast htu
       have h3 : e.edge + n - s.edge = t + n := by omega
-      rw [ite_eq_right (by omega), h3, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      ram_rw [ite_eq_right, h3, Nat.add_mod_right, Nat.mod_eq_of_lt]
     · have hba : b < a := by
         rcases lt_or_gt_of_ne hne with h | h
         · exact absurd ⟨heq, h⟩ h1
@@ -94,14 +91,14 @@ theorem arcCnt_le_wt {M : Model} {Q : Polygon} {n0 : ℕ}
       rw [hu1] at htu
       have h2 : s.edge + t = e.edge + n := by exact_mod_cast htu
       have h3 : e.edge + n - s.edge = t := by omega
-      rw [ite_eq_right (by omega), h3, Nat.mod_eq_of_lt (by omega)]
+      ram_rw [ite_eq_right, h3, Nat.mod_eq_of_lt]
   rw [hcnt]; omega
 
 
 /-- At most seven walk edges of a chain model are uncounted. -/
 theorem chain_uncounted_le (C : Chain) :
     {p | p < (chainModel C).W.n ∧ ¬ (chainModel C).counted p}.ncard ≤ 7 := by
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn := chainModel_n C
   have hsub : {p | p < (chainModel C).W.n ∧ ¬ (chainModel C).counted p} ⊆
       (([0, 1, 2, 3, 4, 5, 2 * C.m + 6].toFinset : Finset ℕ) : Set ℕ) := by
     rintro p ⟨hp, hc⟩
@@ -135,18 +132,15 @@ theorem lcnt_le {Cα : Chain} {Q : Polygon} {N : NF} {γ' : ℕ}
   obtain ⟨hnf, -, hgr, -⟩ := hcan
   have hnf' := hnf
   obtain ⟨hFam, -, -, reg, hRC, -, hArcs, hRg, -, -, hpp⟩ := hnf'
-  have hn : (chainModel Cα).W.n = 2 * Cα.m + 7 := chainModel_n Cα
+  have hn := chainModel_n Cα
   set j := lj N r t with hjdef
   have hjm : j ∈ (N.region r).arcs := by
-    rw [hjdef, lj, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
-    exact List.getElem_mem ht
+    simp [hjdef, lj, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
   obtain ⟨hj, hjr⟩ := (hArcs.2.2.2 r hr j).1 hjm
   have harc := (hArcs.1 j hj).2
   rw [hjr] at harc
   have hU := hRC.1 r hr
-  have hwt : (chainModel Cα).arcWt ((chainModel Cα).key Q (N.arc j).s)
-      ((chainModel Cα).key Q (N.arc j).e) ≤ γ' :=
-    (WalkEmbed.arcWt_le_weight _ harc).trans (hgr.1 _ hU)
+  have hwt := (WalkEmbed.arcWt_le_weight _ harc).trans (hgr.1 _ hU)
   obtain ⟨ha0, ha1, hb0, hb1, hc, -, -⟩ := harc
   have hps := (hpp j hj).1
   have hpe := (hpp j hj).2
@@ -168,7 +162,7 @@ theorem lcnt_le {Cα : Chain} {Q : Polygon} {N : NF} {γ' : ℕ}
         obtain ⟨c, hcF, -⟩ := hca
         have h1 := Gran.ncard_F hnf
         rw [h0, Set.ncard_eq_zero (hs := hFam.1)] at h1
-        rw [h1] at hcF; exact hcF
+        rwa [h1] at hcF
       · exact h0
     have hw : wBit Cα Q N.nChords (N.arc j).s.edge (N.arc j).s.hgt (N.arc j).e.edge (N.arc j).e.hgt =
         if (N.arc j).s.edge = (N.arc j).e.edge ∧
@@ -186,13 +180,13 @@ theorem lcnt_le {Cα : Chain} {Q : Polygon} {N : NF} {γ' : ℕ}
       have hk : (chainModel Cα).key Q (N.arc j).s =
           (N.arc j).s.edge + (chainModel Cα).param Q (N.arc j).s := rfl
       have : ((N.arc j).s.edge : ℝ) ≤ 0 := by linarith [hps.1]
-      have : ((N.arc j).s.edge : ℝ) = 0 := le_antisymm this (Nat.cast_nonneg _)
+      have := le_antisymm this (Nat.cast_nonneg _)
       exact_mod_cast this
     have he0 : (N.arc j).e.edge = 0 := by
       have hk : (chainModel Cα).key Q (N.arc j).e =
           (N.arc j).e.edge + (chainModel Cα).param Q (N.arc j).e := rfl
       have : ((N.arc j).e.edge : ℝ) ≤ 0 := by linarith [hpe.1]
-      have : ((N.arc j).e.edge : ℝ) = 0 := le_antisymm this (Nat.cast_nonneg _)
+      have := le_antisymm this (Nat.cast_nonneg _)
       exact_mod_cast this
     have hw : wBit Cα Q N.nChords (N.arc j).s.edge (N.arc j).s.hgt (N.arc j).e.edge
         (N.arc j).e.hgt = 0 := by
@@ -220,7 +214,7 @@ theorem lmuB_le {Cα : Chain} {Q : Polygon} {N : NF} {γ' : ℕ} (hP : Cα.P.Sim
       ≤ ∑ t ∈ Finset.range (N.region r).arcs.length, (γ' + 9) :=
         Finset.sum_le_sum fun t ht => by
           have := lcnt_le hcan hr (Finset.mem_range.1 ht); omega
-    _ = (N.region r).arcs.length * (γ' + 9) := by rw [Finset.sum_const, Finset.card_range, smul_eq_mul]
+    _ = (N.region r).arcs.length * (γ' + 9) := by simp
     _ ≤ 5 * (γ' + 9) := Nat.mul_le_mul_right _ (by omega)
 
 
@@ -270,15 +264,14 @@ theorem k1K_le (hE : FGood E c₀) {Cα : Chain} {N : NF} {γ' : ℕ} (hQ : Cα.
   set T := tK E with hTdef
   set a := Nat.clog 2 E.γ with hadef
   set h := E.H E.γ with hhdef
-  have hT : 20 ≤ T := by rw [hTdef]; unfold tK; omega
+  have hT : 20 ≤ T := by simp [hTdef, tK]
   have hm1 := Cα.one_le
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
-  have hmP : Cα.m < E.P.n := by have := Cα.m_lt; rw [hQ, hQn] at this; exact this
-  have hn3 : 3 ≤ E.P.n := hE.hG.1.1
+  have hmP : Cα.m < E.P.n := by have := Cα.m_lt; simp_all
+  have hn3 := hE.hG.1.1
   -- the chords
-  have hnc : N.nChords ≤ 140 * (4 + 2) * (2 * Cα.m + 8) :=
-    MergeAsm.nChords_le_canonical (c := fun D => 140 * (D + 2)) l23_explicit hP hcan
-  have hreg : N.nRegions = N.nChords + 1 := Gran.nRegions_eq hcan.1 hMα
+  have hnc := MergeAsm.nChords_le_canonical (c := fun D => 140 * (D + 2)) l23_explicit hP hcan
+  have hreg := Gran.nRegions_eq hcan.1 hMα
   -- the halving cost
   have hX : halfK E.P.n (maxCode N) ≤ 120011 := halfK_le hn3 (by unfold maxCode; omega)
   -- the depth
@@ -288,7 +281,7 @@ theorem k1K_le (hE : FGood E c₀) {Cα : Chain} {N : NF} {γ' : ℕ} (hQ : Cα.
     have h2 : Nat.clog 2 (N.nChords + 1) ≤ 14 + a := by
       calc Nat.clog 2 (N.nChords + 1) ≤ Nat.clog 2 (2 ^ 14 * E.γ) := MergeAsm.clog_mono h1
         _ ≤ Nat.clog 2 (2 ^ 14) + Nat.clog 2 E.γ := MergeAsm.clog_mul_le _ _
-        _ = 14 + a := by rw [Nat.clog_pow 2 14 (by norm_num)]
+        _ = 14 + a := by rfl
     omega
   -- the leaf
   have hlm : lmuB Cα (Qof E.P) N ≤ 5 * (h + 9) := by

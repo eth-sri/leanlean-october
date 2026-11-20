@@ -51,7 +51,7 @@ theorem ShEnv.keep {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {�
   have eA := hr ALLOC (by unfold envR; simp)
   refine ⟨h.hG, h.hW, by rw [hm, e403]; exact h.hD, by rw [hm, e403, eA]; exact h.hwf,
     by rw [hm, e403]; exact h.hreg, by rw [hr K1 (by unfold envR; simp)]; exact h.k1,
-    h.ox.copy (hr _ (by unfold envR; simp)) (hr _ (by unfold envR; simp))
+    AbsRecW.copy h.ox (hr _ (by unfold envR; simp)) (hr _ (by unfold envR; simp))
       (hr _ (by unfold envR; simp)) (hr _ (by unfold envR; simp)),
     h.oy.copy (hr _ (by unfold envR; simp)) (hr _ (by unfold envR; simp))
       (hr _ (by unfold envR; simp)), ?_, h.hσ⟩
@@ -105,24 +105,23 @@ theorem ptLoad_exec' (c : Config) (hw : WordsBounded W c) (E : LdEnv P W H C c)
       (6 ≤ c.nreg e → (c.nreg e < 2 * C.m + 6 ∨
         (chainModel C).param (Qof P) ⟨c.nreg e, c.nreg h⟩ = 0) → c'.nreg (B + 7) = 1) := by
   obtain ⟨c₁, e₁, v₁, k₁, rr₁, m₁, rm₁, o₁⟩ := copies_exec (P := P)
-    [(50200, 140403), (50201, e), (50202, h)] c hw (by first | (simp; done) | (simp; omega)) (by simp)
+    [(50200, 140403), (50201, e), (50202, h)] c hw (by simp_all <;> omega) (by simp)
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v₁
   obtain ⟨v00, v01, v02⟩ := v₁
   have k₁' : ∀ r, ¬ (50200 ≤ r ∧ r < 50203) → c₁.nreg r = c.nreg r := fun r hr =>
     k₁ r (by first | (simp; done) | (simp; omega))
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁' _ (by unfold ALLOC; omega)
-  have hW' := E.hW
+  
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := ptKey_meets P W c₁ e₁.wb_right
     ⟨E.hG, E.hW, by rw [hA₁, m₁, v00]; exact E.hwf, H, C, by rw [m₁, v00]; exact E.hD,
-      ⟨by rw [v01]; exact hen, by rw [v01, v02]; exact hp, by rw [v01, v02]; exact hy,
-        by rw [m₁, v00]; exact E.hreg⟩⟩ (by rw [hA₁]; show _ + 15800 ≤ W; omega)
+      ⟨by rwa [v01], by rwa [v01, v02], by rwa [v01, v02],
+        by rw [m₁, v00]; exact E.hreg⟩⟩ (by ram_finish)
   replace hk₂ : k₂ ≤ 15800 := hk₂
   have pr' := post₂ H C (by rw [m₁, v00]; exact E.hD)
-  have pr : PtRec P c₂ ((chainModel C).pos (Qof P) ⟨c₁.nreg 50201, c₁.nreg 50202⟩) C.radius :=
-    pr'.1
+  have pr := pr'.1
   have fl : 6 ≤ c.nreg e → (c.nreg e < 2 * C.m + 6 ∨
       (chainModel C).param (Qof P) ⟨c.nreg e, c.nreg h⟩ = 0) → c₂.nreg 50216 = 1 := by
-    have := pr'.2; rw [v01, v02] at this; exact this
+    have := pr'.2; rwa [v01, v02] at this
   rw [v01, v02] at pr
   obtain ⟨ax, hy', fr⟩ := pr
   have F₂ := exec_frameB e₂ wr_ptKey
@@ -140,30 +139,29 @@ theorem ptLoad_exec' (c : Config) (hw : WordsBounded W c) (E : LdEnv P W H C c)
   have ex : Exec P W (ptLoad e h B) c c₄ (3 + (k₂ + (10 + 1))) := by
     unfold ptLoad
     exact .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  refine ⟨c₄, _, ex, by omega, ⟨?_, ?_, ?_⟩, ?_, fun h1 h2 => by rw [g₄ _ (by omega), w7]; exact fl h1 h2⟩
-  · exact absRec_copy' ax (by rw [g₄ _ (by omega), w0]) (by rw [g₄ _ (by omega), w1])
-      (by rw [g₄ _ (by omega), w2]) (by rw [g₄ _ (by omega), w3])
-  · have n4 : c₄.nreg (B + 4) = c₂.nreg 50214 := by rw [g₄ _ (by omega), w4]
+  refine ⟨c₄, _, ex, by omega, ⟨?_, ?_, ?_⟩, ?_, fun h1 h2 => by ram_rw [g₄, w7]; exact fl h1 h2⟩
+  · exact AbsRec.copy ax (by ram_rw [g₄, w0]) (by ram_rw [g₄, w1])
+      (by ram_rw [g₄, w2]) (by ram_rw [g₄, w3])
+  · have n4 : c₄.nreg (B + 4) = c₂.nreg 50214 := by ram_rw [g₄, w4]
     have n5 : c₄.nreg (B + 4 + 1) = 0 := by rw [hc₄]; simp
     have n6 : c₄.nreg (B + 4 + 2) = c₂.nreg 50215 := by
-      rw [g₄ _ (by omega), show B + 4 + 2 = B + 6 by omega, w6]
+      ram_rw [g₄, show B + 4 + 2 = B + 6 by omega, w6]
     rcases hy' with ⟨k, hv⟩ | ⟨k, hv⟩ | ⟨k, hv, hl, he'⟩
     · exact Or.inl ⟨n4.trans k, hv⟩
     · exact Or.inr (Or.inl ⟨n4.trans k, hv⟩)
-    · exact Or.inr (Or.inr ⟨n4.trans k, hv, n5, by rw [n6]; exact hl, by rw [n6]; exact he'⟩)
+    · exact Or.inr (Or.inr ⟨n4.trans k, hv, n5, by rwa [n6], by rwa [n6]⟩)
   · intro h7
-    have n7 : c₄.nreg (B + 7) = c₂.nreg 50216 := by rw [g₄ _ (by omega), w7]
-    obtain ⟨s, hs, hl, hv⟩ := fr (by rw [← n7]; exact h7)
+    have n7 : c₄.nreg (B + 7) = c₂.nreg 50216 := by ram_rw [g₄, w7]
+    obtain ⟨s, hs, hl, hv⟩ := fr (by rwa [← n7])
     refine ⟨s, NFLoc.symPtIn_copy hs ?_ ?_ ?_, hl, hv⟩
-    · rw [g₄ _ (by omega), w8]
-    · rw [show B + 7 + 1 + 1 = B + 9 by omega, g₄ _ (by omega), w9]
-    · rw [show B + 7 + 1 + 2 = B + 10 by omega, g₄ _ (by omega), w10]
+    · ram_rw [g₄, w8]
+    · ram_rw [show B + 7 + 1 + 1 = B + 9 by omega, g₄, w9]
+    · ram_rw [show B + 7 + 1 + 2 = B + 10 by omega, g₄, w10]
   · refine ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
     · simp only [Bld, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-      rw [g₄ r (by omega), k₃ r (by first | (simp; done) | (simp; omega)), F₂.1 r hr.1.1, k₁' r hr.1.2]
+      ram_rw [g₄ r, k₃ r (by first | (simp; done) | (simp; omega)), F₂.1 r hr.1.1, k₁' r hr.1.2]
     · simp only [Bld, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-      show c₃.rreg r = c.rreg r
-      rw [rr₃, F₂.2.1 r hr.1.1, rr₁]
+      ram_finish [rr₃, F₂.2.1 r hr.1.1, rr₁]
     · show c₃.nmem = c.nmem; rw [m₃, F₂.2.2.1, m₁]
     · show c₃.rmem = c.rmem; rw [rm₃, F₂.2.2.2.1, rm₁]
     · show c₃.output = c.output; rw [o₃, F₂.2.2.2.2, o₁]

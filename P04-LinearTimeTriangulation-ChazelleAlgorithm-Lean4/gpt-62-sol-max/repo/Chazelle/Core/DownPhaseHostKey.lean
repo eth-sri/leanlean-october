@@ -35,15 +35,7 @@ open Chazelle.Geometry (lerp lerp_zero lerp_one lerp_mem_segment)
 
 /-- **Keys determine positions**: `p + t = p' + t'` with `t, t' ∈ [0, 1)` forces `p = p'` and
 `t = t'`. -/
-theorem key_inj {p p' : ℕ} {t t' : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) (ht' : 0 ≤ t') (ht1' : t' < 1)
-    (h : (p : ℝ) + t = p' + t') : p = p' ∧ t = t' := by
-  have h1 : (p : ℝ) < p' + 1 := by linarith
-  have h2 : (p' : ℝ) < p + 1 := by linarith
-  have h1' : p < p' + 1 := by exact_mod_cast h1
-  have h2' : p' < p + 1 := by exact_mod_cast h2
-  have hpp : p = p' := by omega
-  subst hpp
-  exact ⟨rfl, by linarith⟩
+abbrev key_inj := @Chazelle.Chain.sideKey_inj
 
 /-- The closed key interval of host edge `i` (of `N` edges, keys `κ`): `[κ i, κ (i+1)]`, and for
 the last edge the wrapped interval `[κ (N-1), ∞) ∪ (-∞, κ 0]`. -/
@@ -169,8 +161,7 @@ theorem inKeyIv_succ {i : ℕ} (hi : i < V.length) :
   split_ifs with h1
   · rw [Nat.mod_eq_of_lt h1]
     exact ⟨(h.mono i (i + 1) (by omega) h1).le, le_rfl⟩
-  · rw [show i + 1 = V.length by omega, Nat.mod_self]
-    exact Or.inr le_rfl
+  simp [show i + 1 = V.length by omega, Nat.mod_self]
 
 /-- **A point of an edge off `D`** is a walk point whose key lies in the edge's interval. -/
 theorem pt_key {i : ℕ} (hi : i < V.length) {z : Point}
@@ -226,7 +217,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
             ChordEdge D V k ∧ ∃ s : ℝ, 0 < s ∧ s < 1 ∧
               z = lerp (V.getD k (0, 0)) (V.getD ((k + 1) % V.length) (0, 0)) s := by
           intro k hk hzk
-          have hzb : z ∉ W.boundary := h.disj z hzD
+          have hzb := h.disj z hzD
           obtain ⟨s, hs0, hs1, hzs⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hzk
           have hs0' : 0 < s := by
             rcases hs0.lt_or_eq with h' | h'
@@ -251,7 +242,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
         obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique h.wsimple hp hp' ht0 ht1 ht0' ht1'
           (hzp.symm.trans hzp')
         obtain ⟨k, hk, hki', hkj', hx⟩ := inKeyIv_inter h.mono hi hj hij hki hkj
-        have hzk : z = V.getD k (0, 0) := hzp.trans (h.eq_vtx_of_key hk ht0 ht1 hx)
+        have hzk := hzp.trans (h.eq_vtx_of_key hk ht0 ht1 hx)
         simp only [Polygon.commonEndpoints, hn, hv]
         refine ⟨?_, ?_⟩
         · rcases hki' with rfl | rfl

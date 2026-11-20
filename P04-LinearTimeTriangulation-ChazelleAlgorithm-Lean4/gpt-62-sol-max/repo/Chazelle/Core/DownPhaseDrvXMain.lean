@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvXRamK
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvHMain
@@ -43,7 +45,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
   obtain ⟨XEh, SF⟩ := hA P W c L E C NR hG hW h02 hli2 hLne hL hperm hsort hdeg hNw hr hHost hHBA
     hCP hCs hCm hMDwf hMD hCD hNRw hNR hroom
   obtain ⟨sM3, sM4, sM5, sHB, sBR, sBN1, sR0, sPn, sMD, sm, sHB1, sBR3, sBN7, sR1, sRA, s7⟩ := SF
-  set N := BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E with hNdef
+  set N := inputNF P L E with hNdef
   set v := xvOf P c C N NR with hvdef
   have hK : v.K = NR.chords.length := rfl
   have hA0 := XEh.hA0
@@ -69,7 +71,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     (by omega)
   have o2 : ∀ r, r ≠ 217043 → d2.nreg r = d1.nreg r := fun r hr => n2.other hr
   have hw2 := e2.wb_right
-  have g2 : XG P v d2 := g1.congr fun r hr => o2 r (by
+  have g2 := g1.congr fun r hr => o2 r (by
     rintro rfl; revert hr; decide)
   have m2 : d2.nmem = c.nmem := by rw [n2.2.2.1, m1]
   -- the loop
@@ -84,27 +86,21 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
       d4.nreg 217012 = d3.nreg 217037 ∧
       (∀ r, r ≠ 217010 → r ≠ 217011 → r ≠ 217012 → d4.nreg r = d3.nreg r) ∧
       d4.nmem = d3.nmem := by
-    unfold finS
-    exec_block
-    refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl⟩ <;> config_simp
-    simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h3]
+    ram_exec
   have ex : Exec P W xS c d4 (k1 + (k2 + (k3 + k4))) := by
-    simp only [xS, seqs_cons₂, seqs_one]
-    exact .seq e1 (.seq e2 (.seq e3 e4))
+    ram_path
   have fm := exec_frameM ex wrM_x
   have fr := exec_frameM2 ex wrM2_x
   -- the allocator
   have hal : d4.nreg ALLOC = c.nreg ALLOC + 5 * NR.chords.length := by
-    show d4.nreg 9999 = _
-    rw [g4 9999 (by decide) (by decide) (by decide), f3.1 9999 (by decide), o2 9999 (by decide)]
-    exact a99
+    ram_simp [g4, f3.1, o2] <;> reg_omega
   have hlen := xL_length_le P v NR v.K
-  have hKc : c.nmem (c.nreg 217006) = NR.chords.length := sBR
+  have hKc := sBR
   refine ⟨d4, k1 + (k2 + (k3 + k4)), ex, ?_, ⟨fun q hq1 hq2 => ?_, ?_⟩, ?_⟩
   · -- cost
     show _ ≤ xKappa * (c.nmem (c.nreg 217006) + 1)
     rw [hKc]; unfold xKappa
-    have : v.K = NR.chords.length := rfl
+    
     omega
   · -- registers of the band outside the reserved range
     refine fm.1 q ?_
@@ -116,7 +112,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     obtain ⟨rc, ra, rr⟩ := DrvH.nfAt_recs hNw.nfAt hNat'
     have hreg : regHost (decide (c.nreg 217002 = 1)) (Qof P).n N (c.nreg 217001) =
         regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L' E') (c.nreg 217001) :=
+          (inputNF P L' E') (c.nreg 217001) :=
       DrvH.regHost_congr rc ra rr _ _ _
     have hP : C'.P = C.P := by rw [hCP', hCP, hreg]
     have hCC : C' = C := by
@@ -134,8 +130,8 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
       rw [← rcR]
       simp only [hchR]
     have X' : XHyp P (decide (c.nreg 217002 = 1)) L' E' reg' (c.nreg 217001) C' NR' :=
-      ⟨hG, by rw [decide_eq_true_iff]; exact hli2, hLne', hL', hperm', hsort', hregs',
-        by have := hr; simp only [NF.nRegions] at this ⊢; rw [← rr]; exact this, hCP', hCs',
+      ⟨hG, by rwa [decide_eq_true_iff], hLne', hL', hperm', hsort', hregs',
+        by ram_simp [NF.nRegions, ← rr] <;> reg_omega, hCP', hCs',
         hCm', hNR'⟩
     obtain ⟨pS, pN, pA, pO⟩ := hB P (decide (c.nreg 217002 = 1)) L' E' reg' (c.nreg 217001) C'
       NR' v X' rfl rfl rfl rfl hreg
@@ -143,7 +139,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     have e10 : d4.nreg 217010 = c.nreg ALLOC := b10.trans g3.r36
     have e12 : d4.nreg 217012 = c.nreg ALLOC + 3 * NR.chords.length := b12.trans g3.r37
     refine ⟨xL P v NR v.K, by omega, by omega, by omega, by omega, by rw [b11, c38],
-      by rw [m4, e10]; exact cl, pS, pN, pA,
+      by rwa [m4, e10], pS, pN, pA,
       fun q hq => ⟨?_, pO q hq⟩⟩
     rw [m4, e12, ← keyBkt_congr ra]
     exact cb q hq

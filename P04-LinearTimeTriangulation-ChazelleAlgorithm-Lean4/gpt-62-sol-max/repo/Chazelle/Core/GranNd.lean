@@ -31,7 +31,7 @@ theorem pos_pick {M : Model} {Q : Polygon} {N : NF} (hNF : IsNF M Q N) (hne : (N
     0 < t ∧ t - 1 < N.arcs.length ∧ pk M Q N (t - 1) = M.key Q x := by
   obtain ⟨j, hj, hjk⟩ := cut_pk hNF hGM hcut
   have kp : ∀ i, KeyPred M Q x (N.arc (N.seq.getD i 0)).s ↔ pk M Q N i ≤ M.key Q x := by
-    intro i; unfold KeyPred pk; rw [ite_eq_right hx1]
+    simp [KeyPred, pk, ite_eq_right hx1]
   have htj : t = j + 1 := by
     by_contra hne'
     rcases Nat.lt_or_gt_of_ne hne' with h | h
@@ -46,8 +46,7 @@ theorem pos_pick {M : Model} {Q : Polygon} {N : NF} (hNF : IsNF M Q N) (hne : (N
     · have := (kp _).1 (hpre (j + 1) h)
       rw [← hjk] at this
       exact absurd this (not_le.2 (pk_strict hNF hne (Nat.lt_succ_self j) (by omega)))
-  subst htj
-  exact ⟨by omega, by simpa using hj, by simpa using hjk⟩
+  simp_all <;> omega
 
 theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (hD : LocDPre P W c) (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
@@ -69,13 +68,11 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set SB := c.nmem (B + 6) with hSBdef
   set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
   set A₀ := c.nreg ALLOC with hA₀
-  have hA1 : c.nmem (B + 1) = A := hN.2.1
-  have hsl : N.seq.length = A := seq_length hNF
+  have hA1 := hN.2.1
+  have hsl := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
     hN.2.2.2.2.2.2.2.2.1 i (by omega)
-  have hA0 : 0 < A := by
-    obtain ⟨j, hj, -⟩ := cut_pk hNF hGM hcut
-    omega
+  
   have hL : 1 ≤ Nat.clog 2 A + 1 := by omega
   have hcostW : c.nreg ALLOC + (5100 + 20 + searchCost 275 A) ≤ W := by
     have : 5100 + 20 + searchCost 275 A ≤ locCost 5100 A := by
@@ -90,7 +87,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have b2 : c₁.nreg 50002 = c.nreg 50002 := f₁.1 _ (by decide)
   have b3 : c₁.nreg 50003 = c.nreg 50003 := f₁.1 _ (by decide)
   have al₁ : c₁.nreg ALLOC = A₀ := f₁.1 _ (by decide)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have m₁ := f₁.2.2.1
   -- 2. the setup
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W locSetup c₁ c₂ k₂ ∧ k₂ = 14 ∧
       (c₂.nreg 10500 = c.nreg 50002 ∧ c₂.nreg 10501 = c.nreg 50003 ∧
@@ -112,8 +109,8 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨q500, q501, q502, q503, q504, q505, q103, q104⟩ := q
   have w₂ := e₂.wb_right
   have f₂ := exec_frameB e₂ wr_locSetup
-  have al₂ : c₂.nreg ALLOC = A₀ := (f₂.1 _ (by decide)).trans al₁
-  have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
+  have al₂ := (f₂.1 _ (by decide)).trans al₁
+  have m₂ := f₂.2.2.1.trans m₁
   -- 3. the search
   set d := dirCode M x.edge with hd
   have hJ₂ : CmpJ x d AB A SB A₀ c.nmem c₂ :=
@@ -125,7 +122,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     exact cmpPr_eq hN x hx hst (seq_lt hNF hi)
   obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hF₃, ht₃, hpre₃, hpost₃⟩ := searchStmt_exec hcmp
     (by decide) w₂ hJ₂ (by rw [al₂]; exact cmpJ_stable x d AB A SB A₀ c.nmem)
-    (by rw [q103, q104, al₂]; exact hSB)
+    (by rwa [q103, q104, al₂])
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj

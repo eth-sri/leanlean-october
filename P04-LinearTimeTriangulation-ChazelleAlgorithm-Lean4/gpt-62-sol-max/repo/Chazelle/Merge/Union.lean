@@ -171,7 +171,7 @@ theorem not_mem_dom_iff (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) :
       apply h
       refine ⟨hb, hs, fun hsl => hs ?_⟩
       obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hsl
-      have : p = C.top := Prod.ext h1 (le_antisymm hp h2)
+      have := Prod.ext h1 (le_antisymm hp h2)
       rw [this]
       exact C.top_mem_set
     · exact Or.inl hb
@@ -185,7 +185,7 @@ theorem hitSet_eq_rayHitSet (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ :
     C.hitSet v σ = rayHitSet C.radius C.set v σ := by
   ext t
   simp only [Chain.hitSet, rayHitSet, mem_ofPred_eq, mem_compl_iff]
-  rw [not_mem_dom_iff C (by rw [rayPt_snd]; exact hv)]
+  rw [not_mem_dom_iff C (by assumption)]
 
 /-- The first-hit parameter of a chain ignores the slit below the top. -/
 theorem hitParam_eq_rayHit (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ : ℝ) :
@@ -202,14 +202,14 @@ theorem vertex_inj (C : Chain) (hP : C.P.Simple) {a b : ℕ} (ha : a ≤ C.m) (h
     (h : C.vertex a = C.vertex b) : a = b := by
   have hm := C.m_lt
   have h1 := simple_vtx_inj hP (C.edgeIdx_lt a) (C.edgeIdx_lt b) h
-  have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h2 := Nat.ModEq.add_left_cancel' C.s h1
   unfold Nat.ModEq at h2
   rwa [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)] at h2
 
 /-- Distinct chain edges have distinct indices in the polygon. -/
 theorem edgeIdx_inj (C : Chain) {a b : ℕ} (ha : a < C.P.n) (hb : b < C.P.n)
     (h : C.edgeIdx a = C.edgeIdx b) : a = b := by
-  have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h
+  have h2 := Nat.ModEq.add_left_cancel' C.s h
   unfold Nat.ModEq at h2
   rwa [Nat.mod_eq_of_lt ha, Nat.mod_eq_of_lt hb] at h2
 
@@ -218,7 +218,7 @@ theorem mem_chainEdge_inter (C : Chain) (hP : C.P.Simple) {a b : ℕ} (ha : a < 
     (hb : b < C.P.n) (hab : a ≠ b) {p : Point} (hpa : p ∈ C.chainEdge a)
     (hpb : p ∈ C.chainEdge b) :
     (p = C.vertex a ∨ p = C.vertex (a + 1)) ∧ (p = C.vertex b ∨ p = C.vertex (b + 1)) := by
-  have hne : C.edgeIdx a ≠ C.edgeIdx b := fun h => hab (edgeIdx_inj C ha hb h)
+  have hne := fun h => hab (edgeIdx_inj C ha hb h)
   have hmem : p ∈ C.P.edge (C.edgeIdx a) ∩ C.P.edge (C.edgeIdx b) := ⟨hpa, hpb⟩
   rw [simple_edge_inter hP (C.edgeIdx_lt a) (C.edgeIdx_lt b) hne] at hmem
   obtain ⟨h1, h2⟩ := hmem
@@ -238,8 +238,8 @@ theorem segment_rayPt_subset (v : Point) (σ : ℝ) {t t' : ℝ} (ht : 0 ≤ t) 
     · simp only [rayPt_fst]
       field_simp
       ring
-    · simp only [rayPt_snd, sub_self, mul_zero, add_zero]
-  · have ht0 : t = 0 := le_antisymm (h0 ▸ htt') ht
+    simp
+  · have ht0 := le_antisymm (h0 ▸ htt') ht
     rw [ht0, rayPt_zero]
     exact Geometry.left_mem_segment _ _
 
@@ -286,9 +286,6 @@ def whole : Chain := ⟨J.P, J.s, J.m₁ + J.m₂, by have := J.one_le_m₁; ome
 def ofChains (C₁ C₂ : Chain) (hn : C₁.m + C₂.m + 1 ≤ C₁.P.n) : Junction :=
   ⟨C₁.P, C₁.s, C₁.m, C₂.m, C₁.one_le, C₂.one_le, hn⟩
 
-@[simp] theorem left_P : J.left.P = J.P := rfl
-@[simp] theorem right_P : J.right.P = J.P := rfl
-@[simp] theorem whole_P : J.whole.P = J.P := rfl
 @[simp] theorem left_m : J.left.m = J.m₁ := rfl
 @[simp] theorem right_m : J.right.m = J.m₂ := rfl
 @[simp] theorem whole_m : J.whole.m = J.m₁ + J.m₂ := rfl
@@ -306,8 +303,7 @@ theorem whole_vertex_add (j : ℕ) : J.whole.vertex (J.m₁ + j) = J.right.verte
 
 /-- The first vertex of `C₂` is the shared vertex. -/
 theorem right_vertex_zero : J.right.vertex 0 = J.shared := by
-  show J.P.vtx ((J.s + J.m₁ + 0) % J.P.n) = J.P.vtx ((J.s + J.m₁) % J.P.n)
-  rw [Nat.add_zero]
+  rfl
 
 /-- Vertex `m₁` of `C` is the shared vertex. -/
 theorem whole_vertex_m₁ : J.whole.vertex J.m₁ = J.shared := rfl
@@ -328,21 +324,19 @@ theorem whole_set : J.whole.set = J.left.set ∪ J.right.set := by
     · right
       refine ⟨k - J.m₁, by rw [right_m]; omega, ?_⟩
       have hk' : k = J.m₁ + (k - J.m₁) := by omega
-      rw [hk', whole_chainEdge_add] at hp
-      exact hp
+      rwa [hk', whole_chainEdge_add] at hp
   · rintro (⟨k, hk, hp⟩ | ⟨j, hj, hp⟩)
-    · exact ⟨k, by rw [whole_m]; rw [left_m] at hk; omega, hp⟩
-    · refine ⟨J.m₁ + j, by rw [whole_m]; rw [right_m] at hj; omega, ?_⟩
-      rw [whole_chainEdge_add]
-      exact hp
+    · exact ⟨k, by simp_all <;> omega, hp⟩
+    · refine ⟨J.m₁ + j, by simp_all, ?_⟩
+      rwa [whole_chainEdge_add]
 
 /-- `C₁ ⊆ C`. -/
 theorem left_set_subset : J.left.set ⊆ J.whole.set := by
-  rw [whole_set]; exact subset_union_left
+  simp [whole_set]
 
 /-- `C₂ ⊆ C`. -/
 theorem right_set_subset : J.right.set ⊆ J.whole.set := by
-  rw [whole_set]; exact subset_union_right
+  simp [whole_set]
 
 /-- The shared vertex is on `C₁`. -/
 theorem shared_mem_left : J.shared ∈ J.left.set := J.left.vertex_mem_set le_rfl
@@ -359,8 +353,7 @@ theorem left_top_le : J.left.top.2 ≤ J.whole.top.2 :=
 theorem right_top_le : J.right.top.2 ≤ J.whole.top.2 := by
   have h := J.whole.vertex_snd_le_top (j := J.m₁ + J.right.topIdx)
     (by rw [whole_m]; have := J.right.topIdx_le; rw [right_m] at this; omega)
-  rw [whole_vertex_add] at h
-  exact h
+  rwa [whole_vertex_add] at h
 
 /-- **The two chains meet exactly in the shared vertex** (for a simple polygon). -/
 theorem left_inter_right (hP : J.P.Simple) : J.left.set ∩ J.right.set = {J.shared} := by
@@ -369,9 +362,9 @@ theorem left_inter_right (hP : J.P.Simple) : J.left.set ∩ J.right.set = {J.sha
     rw [left_m] at hk
     rw [right_m] at hj
     have hn := J.add_le
-    have hpk' : p ∈ J.whole.chainEdge k := hpk
-    have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rw [whole_chainEdge_add]; exact hpj
-    have hwP : J.whole.P.Simple := hP
+    have hpk' := hpk
+    have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rwa [whole_chainEdge_add]
+    have hwP := hP
     obtain ⟨h1, h2⟩ := mem_chainEdge_inter J.whole hwP (a := k) (b := J.m₁ + j)
       (by show k < J.P.n; omega) (by show J.m₁ + j < J.P.n; omega) (by omega) hpk' hpj'
     have hinj : ∀ a b, a ≤ J.m₁ + J.m₂ → b ≤ J.m₁ + J.m₂ → J.whole.vertex a = J.whole.vertex b →

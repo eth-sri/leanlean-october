@@ -43,10 +43,6 @@ theorem enc_inj {N : ℕ} {x y : Fin N ⊕ Fin N ⊕ Fin N} (h : enc N x = enc N
     first | (congr 1; exact Fin.ext (by omega)) | (congr 2; exact Fin.ext (by omega)) |
       (exfalso; omega)
 
-@[simp] theorem enc_inl {N : ℕ} (d : Fin N) : enc N (.inl d) = d := rfl
-@[simp] theorem enc_inl_inr {N : ℕ} (d : Fin N) : enc N (.inr (.inl d)) = N + d := rfl
-@[simp] theorem enc_inr_inr {N : ℕ} (d : Fin N) : enc N (.inr (.inr d)) = 2 * N + d := rfl
-
 /-- The class test of the RAM for the star dart `X` of the face `f`, at the key `κ`. -/
 def inClass (sopp sface fparN pre sz : ℕ → ℕ) (r0 X f κ : ℕ) : Prop :=
   if sface (sopp X) ≠ r0 ∧ fparN (sface (sopp X)) = X then
@@ -65,8 +61,7 @@ theorem isDesc_iff_anc (hup : ∀ g : Fin N, R.up g = (C.parent g : ℕ)) (h g :
     induction n with
     | zero => intro x; rfl
     | succ n ih =>
-      intro x
-      rw [Function.iterate_succ_apply, Function.iterate_succ_apply, ← ih, hup]
+      simp_all
   constructor
   · rintro ⟨n, hn⟩
     exact ⟨n, by rw [hit, hn]⟩
@@ -83,7 +78,7 @@ theorem inClass_iff (hM : M.Planar) {sopp sface fparN pre sz : ℕ → ℕ} {r0 
     {f : Fin N} {x : Fin N ⊕ Fin N ⊕ Fin N} (hx : (star M).face x = f) (h : Fin N) :
     inClass sopp sface fparN pre sz r0 (enc N x) f (pre h) ↔
       x ∈ (starTree T a ha).coDarts ∧ h ∈ (starTree T a ha).cross x := by
-  have hSM : (star M).Planar := star_planar M hM
+  have hSM := star_planar M hM
   set gF : Fin N := (star M).face ((star M).opp x) with hgF
   have hg : sface (sopp (enc N x)) = (gF : ℕ) := by rw [hsopp, hsface]
   have hne : ∀ g : Fin N, (g : ℕ) ≠ r0 ↔ g ≠ C.r0 := by
@@ -92,14 +87,14 @@ theorem inClass_iff (hM : M.Planar) {sopp sface fparN pre sz : ℕ → ℕ} {r0 
   rw [hg]
   by_cases hd : (gF : ℕ) ≠ r0 ∧ fparN gF = enc N x
   · rw [ite_eq_left hd]
-    have hg0 : gF ≠ C.r0 := (hne gF).mp hd.1
+    have hg0 := (hne gF).mp hd.1
     have hfx : C.fpar gF = x := enc_inj (by rw [← hfpar gF hg0]; exact hd.2)
     rw [← hfx, C.cross_fpar hSM hg0, hint]
     exact ⟨fun h => ⟨C.mem gF hg0, h⟩, fun h => h.2⟩
   · rw [ite_eq_right hd]
     by_cases hu : (f : ℕ) ≠ r0 ∧ sopp (fparN f) = enc N x
     · rw [ite_eq_left hu]
-      have hf0 : f ≠ C.r0 := (hne f).mp hu.1
+      have hf0 := (hne f).mp hu.1
       have hfx : (star M).opp (C.fpar f) = x := by
         apply enc_inj
         rw [← hsopp, ← hfpar f hf0]; exact hu.2
@@ -147,8 +142,7 @@ theorem mem_liftP {P : Finset ℕ} {x : Fin μ ⊕ F} :
   constructor
   · rintro ⟨v, hv, rfl⟩
     exact ⟨v, rfl, (@Finset.mem_filter _ _ (Classical.decPred _) _ _).mp hv |>.2⟩
-  · rintro ⟨v, rfl, hv⟩
-    exact ⟨v, (@Finset.mem_filter _ _ (Classical.decPred _) _ _).mpr ⟨Finset.mem_univ _, hv⟩, rfl⟩
+  simp_all
 
 omit [Fintype F] [DecidableEq F] in
 theorem card_liftP {P : Finset ℕ} (hP : ∀ v ∈ P, v < μ) : (liftP (μ := μ)
@@ -215,8 +209,7 @@ theorem good_iff {first : Fin μ → Fin N} {firstN : ℕ → ℕ}
         pre (firstN (act i)) < pre z + sz z)).card := by
     rw [card_filter_liftP hlt _ (fun v => pre z ≤ pre (firstN v) ∧ pre (firstN v) < pre z + sz z)
       (fun v hv => by
-        simp only [delta, star_face, starFace_inl]
-        rw [hint, hfN])]
+        simp [delta, star_face, starFace_inl, hint, hfN])]
     exact card_items_filter hinj _
   unfold len
   simp only
@@ -272,7 +265,7 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
           (pre (firstN (M.head d)))) → t = t') := by
   set δ := delta (F := F) first a
   set P' := liftP (μ := μ) (F := F) (items act (lo, hi))
-  have hSM : (star M).Planar := star_planar M hM
+  have hSM := star_planar M hM
   have hδ := delta_vert (a := a) hfirst ha
   have hx : ∀ e, (star M).face e = f ↔ ∃ t, t < 3 ∧ starDarts (M := M) f t = e :=
     fun e => star_face_iff f e
@@ -285,7 +278,7 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
         starDarts (M := M) f t ∈ (starTree T a ha).coDarts ∧ (star M).face (δ (.inl v)) ∈ (starTree T a ha).cross
           (starDarts (M := M) f t)) := by
     intro v t ht
-    have hft : (star M).face (starDarts (M := M) f t) = f := (hx _).mpr ⟨t, ht, rfl⟩
+    have hft := (hx _).mpr ⟨t, ht, rfl⟩
     rw [hfN]
     exact inClass_iff hM hsopp hsface hr0 hfpar hint hft (first v)
   have hmemcls : ∀ (v : Fin μ) t, t < 3 →
@@ -305,9 +298,9 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
   refine ⟨fun v hv hm => ?_, fun v hv hm t t' ht ht' h1 h2 => ?_, fun t ht => ?_,
     fun d t t' ht ht' ⟨a1, a2, a3⟩ ⟨b1, b2, b3⟩ => ?_⟩
   · have hvμ := hlt v hv
-    have hm' : ¬ markN T a f (⟨v, hvμ⟩ : Fin μ) := hm
+    have hm' := hm
     obtain ⟨t, ht, hvt⟩ := hcov (.inl ⟨v, hvμ⟩) (mem_liftP.mpr ⟨_, rfl, hv⟩)
-      (by rw [← markN_iff (ha := ha)]; exact hm')
+      (by rwa [← markN_iff (ha := ha)])
     exact ⟨t, ht, ((hmemcls ⟨v, hvμ⟩ t ht).mp hvt).2.2⟩
   · have hvμ := hlt v hv
     exact huniq t t' ht ht' (.inl ⟨v, hvμ⟩) ((hmemcls ⟨v, hvμ⟩ t ht).mpr ⟨hv, hm, h1⟩)
@@ -331,8 +324,7 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
       exact card_filter_liftP hlt _ _ (fun v hv => by
         rw [hmemcls v t ht]; exact ⟨fun h => h.2, fun h => ⟨hv, h⟩⟩)
     rw [← hc]
-    unfold len at hh
-    simpa using hh
+    assumption
   · have hs := hedge (.inl d) t t' ht ht'
       ((hmemcls (M.vert d) t ht).mpr ⟨a1, a2, a3⟩)
       ((hmemcls (M.head d) t' ht').mpr ⟨b1, b2, b3⟩)
@@ -348,7 +340,7 @@ theorem card_mark_le (f : Fin N) (S : Finset ℕ) (hSμ : ∀ v ∈ S, v < μ) (
   classical
   set S' : Finset (Fin μ) := Finset.univ.filter (fun v : Fin μ => (v : ℕ) ∈ S)
   have h := star_sep_card T a ha f c j k S' (fun v hv => by
-    have hv' : (v : ℕ) ∈ S := (Finset.mem_filter.mp hv).2
+    have hv' := (Finset.mem_filter.mp hv).2
     exact hS v hv')
   refine le_trans (le_of_eq ?_) h
   rw [← Finset.card_map Fin.valEmbedding]
@@ -359,7 +351,7 @@ theorem card_mark_le (f : Fin N) (S : Finset ℕ) (hSμ : ∀ v ∈ S, v < μ) (
   constructor
   · rintro ⟨hv, hm⟩
     refine ⟨⟨v, hSμ v hv⟩, ⟨hv, ?_⟩, rfl⟩
-    rw [← markN_iff (ha := ha)]; exact hm
+    rwa [← markN_iff (ha := ha)]
   · rintro ⟨w, ⟨hw, hm⟩, rfl⟩
     exact ⟨hw, (markN_iff (ha := ha) f w).mpr hm⟩
 

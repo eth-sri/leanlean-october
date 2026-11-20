@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoS0CandInitMath2
 public import Chazelle.Core.SweepEvOrg
 public import Chazelle.Core.SweepEvPrep
@@ -36,28 +38,28 @@ open Machine Machine.Stmt Programs SweepRam SweepPrim WalkEmbed Sweep SweepEv
 
 /-! ## Registers -/
 
-def ipB : ℕ := sw 4100
-def ipM6 : ℕ := sw 4101
-def ipM5 : ℕ := sw 4102
-def ipX : ℕ := sw 4103
-def ipA : ℕ := sw 4104
-def ipK : ℕ := sw 4105
-def ipKk : ℕ := sw 4106
-def ipBb : ℕ := sw 4107
-def ipS : ℕ := sw 4108
-def ipE : ℕ := sw 4109
-def ipH : ℕ := sw 4110
-def ipT : ℕ := sw 4111
-def ipJ : ℕ := sw 4112
-def ipF : ℕ := sw 4113
-def ipV : ℕ := sw 4114
-def ipKc : ℕ := sw 4115
-def ipTa : ℕ := sw 4120
-def ipTm : ℕ := sw 4121
-def ipTt : ℕ := sw 4122
-def ipTb : ℕ := sw 4123
-def ipT2 : ℕ := sw 4124
-def ipTM : ℕ := sw 4125
+@[ram_layout] def ipB : ℕ := sw 4100
+@[ram_layout] def ipM6 : ℕ := sw 4101
+@[ram_layout] def ipM5 : ℕ := sw 4102
+@[ram_layout] def ipX : ℕ := sw 4103
+@[ram_layout] def ipA : ℕ := sw 4104
+@[ram_layout] def ipK : ℕ := sw 4105
+@[ram_layout] def ipKk : ℕ := sw 4106
+@[ram_layout] def ipBb : ℕ := sw 4107
+@[ram_layout] def ipS : ℕ := sw 4108
+@[ram_layout] def ipE : ℕ := sw 4109
+@[ram_layout] def ipH : ℕ := sw 4110
+@[ram_layout] def ipT : ℕ := sw 4111
+@[ram_layout] def ipJ : ℕ := sw 4112
+@[ram_layout] def ipF : ℕ := sw 4113
+@[ram_layout] def ipV : ℕ := sw 4114
+@[ram_layout] def ipKc : ℕ := sw 4115
+@[ram_layout] def ipTa : ℕ := sw 4120
+@[ram_layout] def ipTm : ℕ := sw 4121
+@[ram_layout] def ipTt : ℕ := sw 4122
+@[ram_layout] def ipTb : ℕ := sw 4123
+@[ram_layout] def ipT2 : ℕ := sw 4124
+@[ram_layout] def ipTM : ℕ := sw 4125
 
 /-! ## The program -/
 

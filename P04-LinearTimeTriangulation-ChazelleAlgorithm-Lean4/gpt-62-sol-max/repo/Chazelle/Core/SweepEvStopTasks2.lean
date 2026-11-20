@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopRA
 public import Chazelle.Core.SweepEvStopM3
 
@@ -48,7 +50,7 @@ def OrgOut (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) (c c' : 
   c.nreg gRC ≤ c'.nreg gRC ∧ c'.nreg gRC ≤ c.nreg gRC + 2 ∧
     (∀ i, c.nreg gRC ≤ i → i < c'.nreg gRC → RawV P J N c'.nmem (c.nreg gRB) i) ∧
     (OrgD P J N kind k b → ∀ (p : ℕ) (t : ℝ),
-      SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) p t →
+      SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) p t →
       (Lst J : ℝ) ≤ oW J (p + t) → ∃ i, c.nreg gRC ≤ i ∧ i < c'.nreg gRC ∧
         (rawRec c'.nmem (c.nreg gRB) i).1 = p ∧ rPar P J (rawRec c'.nmem (c.nreg gRB) i) = t ∧
         rSet P J N (rawRec c'.nmem (c.nreg gRB) i) = stopSet J (Qof P) N kind k b) ∧
@@ -76,9 +78,9 @@ def OrgTask : Prop :=
 
 /-! ## The parent scan -/
 
-def pE2 : ℕ := sw 4025
-def pH2 : ℕ := sw 4026
-def oPar : ℕ := sw 4064
+@[ram_layout] def pE2 : ℕ := sw 4025
+@[ram_layout] def pH2 : ℕ := sw 4026
+@[ram_layout] def oPar : ℕ := sw 4064
 
 /-- The registers the parent scan may write (besides the oracle bands). -/
 def ParR (r : ℕ) : Prop := r = oPar ∨ (sw 4068 ≤ r ∧ r < sw 4080)
@@ -88,11 +90,11 @@ direction of code `oB` (`lpos` for `1`, `rpos` for `0`) has the key of the posit
 `(pE2, pH2)` of the walk of `C₂`, or `0` if there is none. -/
 def ParOut (P : Polygon) (J : Merge.Junction) (N : NF) (c c' : Config) : Prop :=
   c'.nreg oPar ≤ N.nChords ∧
-    (0 < c'.nreg oPar → (chainModel J.right).key (Qof P) (endPos N (c'.nreg oPar - 1)
-      (1 - c.nreg oB)) = (chainModel J.right).key (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩) ∧
-    (c'.nreg oPar = 0 → ∀ i, i < N.nChords → (chainModel J.right).key (Qof P)
-      (endPos N i (1 - c.nreg oB)) ≠ (chainModel J.right).key (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
+    (0 < c'.nreg oPar → J.rightModel.key (Qof P) (endPos N (c'.nreg oPar - 1)
+      (1 - c.nreg oB)) = J.rightModel.key (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩) ∧
+    (c'.nreg oPar = 0 → ∀ i, i < N.nChords → J.rightModel.key (Qof P)
+      (endPos N i (1 - c.nreg oB)) ≠ J.rightModel.key (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ ParR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task P: the parent scan**, from a proper position `(pE2, pH2)` of the walk of `C₂` (code
@@ -101,8 +103,8 @@ def ParTask : Prop :=
   ∃ (ps : Stmt) (κ : ℕ), ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction)
     (N₁ N₂ : NF), EvEnv sh Bs F X Ok P W c₀ J N₁ N₂ → IInv W c₀ c →
-      c.nreg pE2 < (chainModel J.right).W.n →
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ →
+      c.nreg pE2 < J.rightModel.W.n →
+      ProperPos J.rightModel (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ →
       (c.nreg pH2 = 0 → 6 ≤ c.nreg pE2) → c.nreg oB ≤ 1 →
       c.nreg ALLOC + κ * (N₂.nChords + 1) ≤ W →
       IRS P W c₀ ps c (κ * (N₂.nChords + 1)) (ParOut P J N₂ c)

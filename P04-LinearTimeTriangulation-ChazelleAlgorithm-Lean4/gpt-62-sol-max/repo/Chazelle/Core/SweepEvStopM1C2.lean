@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopM1C
 
 /-!
@@ -29,10 +33,10 @@ open Chazelle.Merge (FreeAt)
 /-! ## Registers and programs -/
 
 /-- The scratch of the candidate of `C₁` (`callArr` output, `callKb` output). -/
-def m1o : ℕ := sw 4027
+@[ram_layout] def m1o : ℕ := sw 4027
 
 /-- The output register of `callSym` (the symbolic point at `brOS = m1s + 1`). -/
-def m1s : ℕ := sw 4079
+@[ram_layout] def m1s : ℕ := sw 4079
 
 def m1cL0 : List Instr := [.copyN lE (m1o + 1), .copyN lH (m1o + 2), .copyN lD oB]
 def m1cL1 : List Instr := [.copyN lE oPE, .copyN lH oPH, .copyN lD oB]
@@ -81,65 +85,39 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem m1c_noRes {C : Chain} {a : Point} {σ : ℝ} {G : Prop} (hI : IInv W c₀ c) (hng : ¬ G) :
     IRS P W c₀ (noRes r1F) c 1 (fun c' => ResOK P C a σ G r1F c' ∧
       (∀ r, r ≠ r1F → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
-  refine (IRS.instr1 (i := .constN r1F 0) hI ⟨iscr_sw (by unfold r1F sw; omega)
-    (by unfold r1F sw; omega), Nat.zero_le _⟩).mono le_rfl ?_
+  refine (IRS.instr1 (i := .constN r1F 0) hI ⟨iscr_sw (by reg_omega)
+    (by reg_omega), Nat.zero_le _⟩).mono le_rfl ?_
   rintro c' rfl
-  have h0 : c.nreg r1F = c.nreg r1F := rfl
+  
   have e0 : regI c.nmem (.constN r1F 0) c.nreg r1F = 0 := upd_same _ _ _
-  refine ⟨⟨by show regI c.nmem (.constN r1F 0) c.nreg r1F ≤ 1; rw [e0]; omega,
+  refine ⟨⟨by simp_all,
     fun h => by
-      have h' : regI c.nmem (.constN r1F 0) c.nreg r1F = 1 := h
-      rw [e0] at h'; omega,
+      simp_all,
     fun g => absurd g hng⟩, fun r hr => upd_other _ _ _ hr, rfl⟩
 
 theorem m1cL0_val (m f : ℕ → ℕ) :
     regB m m1cL0 f lE = f (m1o + 1) ∧ regB m m1cL0 f lH = f (m1o + 2) ∧
       regB m m1cL0 f lD = f oB ∧
       (∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB m m1cL0 f q = f q) := by
-  refine ⟨?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩
-  · simp [m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw]
-  · simp [m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw]
-  · simp [m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw]
-  · simp only [m1cL0, regB, regI]
-    rw [upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1]
+  register_block [m1cL0, lE, lH, lD, m1o, oB, sw]
 
 theorem m1cL1_val (m f : ℕ → ℕ) :
     regB m m1cL1 f lE = f oPE ∧ regB m m1cL1 f lH = f oPH ∧ regB m m1cL1 f lD = f oB ∧
       (∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB m m1cL1 f q = f q) := by
-  refine ⟨?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩
-  · simp [m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw]
-  · simp [m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw]
-  · simp [m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw]
-  · simp only [m1cL1, regB, regI]
-    rw [upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1]
+  register_block [m1cL1, lE, lH, lD, oPE, oPH, oB, sw]
 
 theorem m1cL_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cL0 f ∧ okB W m m1cL1 f := by
-  have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [m1cL0, m1cL1, okB, okI]
-  exact ⟨⟨s 1103 (by norm_num) (by norm_num), s 1104 (by norm_num) (by norm_num),
-    s 1105 (by norm_num) (by norm_num), trivial⟩, ⟨s 1103 (by norm_num) (by norm_num),
-    s 1104 (by norm_num) (by norm_num), s 1105 (by norm_num) (by norm_num), trivial⟩⟩
+  register_block [sw, m1cL0, m1cL1]
 
 theorem m1cCp_val (m f : ℕ → ℕ) :
     (∀ i, i < 7 → regB m m1cCp f (r1F + i) = f (brF + i)) ∧
       (∀ q, (q < r1F ∨ r1F + 6 < q) → regB m m1cCp f q = f q) := by
   refine ⟨fun i hi => ?_, fun q hq => ?_⟩
   · interval_cases i <;> simp [m1cCp, regB, regI, upd, r1F, brF, sw]
-  · refine regB_other _ _ _ (fun i hi => ?_)
-    simp only [m1cCp, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold r1F sw at hq
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [dstI, r1F, sw] <;> omega
+  · register_keep [m1cCp]
 
 theorem m1cCp_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cCp f := by
-  have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [m1cCp, okB, okI]
-  exact ⟨s 4030 (by norm_num) (by norm_num), s 4031 (by norm_num) (by norm_num),
-    s 4032 (by norm_num) (by norm_num), s 4033 (by norm_num) (by norm_num),
-    s 4034 (by norm_num) (by norm_num), s 4035 (by norm_num) (by norm_num),
-    s 4036 (by norm_num) (by norm_num), trivial⟩
+  register_block
 
 theorem stOrig_zero (J : Merge.Junction) (Q : Polygon) (N : NF) (k b : ℕ) :
     stOrig J Q N 0 k b = J.shared := by unfold stOrig; simp

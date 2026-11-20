@@ -75,28 +75,31 @@ theorem kE_mono (hsort : E.Pairwise (codeLe M Q L)) {i i' : ℕ} (hii : i ≤ i'
 noncomputable def gs (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (j : ℕ) : ℕ :=
   (gapStarts M Q L E).getD j 0
 
-theorem mem_gapStarts {m : ℕ} : m ∈ gapStarts M Q L E ↔ m < E.length ∧
-    (m + 1 = E.length ∨ BuildSort.kap (evs M Q L E) m < BuildSort.kap (evs M Q L E) (m + 1)) := by
-  unfold gapStarts
-  simp
+abbrev mem_gapStarts := @Chazelle.Core.BuildNF.Input.mem_gapStarts
 
-theorem gapStarts_pairwise : (gapStarts M Q L E).Pairwise (· < ·) :=
-  List.Pairwise.filter _ List.pairwise_lt_range
+abbrev gapStarts_pairwise := @Chazelle.Core.BuildNF.Input.gapStarts_sorted
 
-theorem gs_eq {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+section
+
+variable {j : ℕ} (hj : j < (gapStarts M Q L E).length)
+include hj
+
+theorem gs_eq :
     gs M Q L E j = (gapStarts M Q L E)[j] := by
-  unfold gs; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]
+  unfold gs; simp_all
 
-theorem gs_mem {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem gs_mem :
     gs M Q L E j ∈ gapStarts M Q L E := by
-  rw [gs_eq hj]; exact List.getElem_mem hj
+  simp [gs_eq hj]
 
-theorem gs_lt_len {j : ℕ} (hj : j < (gapStarts M Q L E).length) : gs M Q L E j < E.length :=
+theorem gs_lt_len : gs M Q L E j < E.length :=
   (mem_gapStarts.1 (gs_mem hj)).1
+
+end
 
 theorem gs_lt_gs {j j' : ℕ} (hjj : j < j') (hj' : j' < (gapStarts M Q L E).length) :
     gs M Q L E j < gs M Q L E j' := by
-  rw [gs_eq (by omega), gs_eq hj']
+  ram_rw [gs_eq, gs_eq hj']
   exact List.pairwise_iff_getElem.1 gapStarts_pairwise j j' (by omega) hj' hjj
 
 /-- **The last gap starts at the last event.** -/
@@ -107,12 +110,12 @@ theorem gs_last (hE : 0 < E.length) :
   obtain ⟨j₀, hj₀, hj₀e⟩ := List.mem_iff_getElem.1 hmem
   have hA : 0 < (gapStarts M Q L E).length := by omega
   refine ⟨hA, ?_⟩
-  have h0 : gs M Q L E j₀ = E.length - 1 := by rw [gs_eq hj₀]; exact hj₀e
+  have h0 : gs M Q L E j₀ = E.length - 1 := by rwa [gs_eq hj₀]
   by_contra hne
   have hlt : j₀ < (gapStarts M Q L E).length - 1 := by
     rcases Nat.lt_or_ge j₀ ((gapStarts M Q L E).length - 1) with h | h
     · exact h
-    · exact absurd (by rw [show (gapStarts M Q L E).length - 1 = j₀ by omega]; exact h0) hne
+    simp_all [show (gapStarts M Q L E).length - 1 = j₀ by omega] 
   have h1 := gs_lt_gs (M := M) (Q := Q) (L := L) (E := E) hlt (by omega)
   have h2 := gs_lt_len (M := M) (Q := Q) (L := L) (E := E)
     (j := (gapStarts M Q L E).length - 1) (by omega)
@@ -129,7 +132,7 @@ theorem gs_succ (hE : 0 < E.length) {j : ℕ} (hj : j + 1 < (gapStarts M Q L E).
   rcases (mem_gapStarts.1 (gs_mem (M := M) (Q := Q) (L := L) (E := E) (by omega : j <
     (gapStarts M Q L E).length))).2 with h | h
   · omega
-  · rwa [kap_evs (by omega), kap_evs (by omega)] at h
+  · ram_rw assumption [kap_evs, kap_evs] at h
 
 /-! ## The arcs of `buildNF` -/
 
@@ -137,48 +140,62 @@ theorem arcs_length (hK : 0 < L.length) :
     (buildNF M Q L E).arcs.length = (gapStarts M Q L E).length := by
   rw [DownDrv.buildNF_arcs hK, List.length_map]
 
-theorem arc_s (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+section
+
+variable (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length)
+include hK hj
+
+theorem arc_s :
     ((buildNF M Q L E).arc j).s = wposOf L (E.getD (gs M Q L E j) 0) := by
   have h := DownDrv.buildNF_arc (M := M) (Q := Q) (L := L) (E := E) hK hj
   unfold NF.arc
   rw [h]
   rfl
 
-theorem arc_e (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem arc_e :
     ((buildNF M Q L E).arc j).e = wposOf L (E.getD ((gs M Q L E j + 1) % E.length) 0) := by
   have h := DownDrv.buildNF_arc (M := M) (Q := Q) (L := L) (E := E) hK hj
   unfold NF.arc
   rw [h]
   rfl
 
-theorem key_s (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem key_s :
     M.key Q ((buildNF M Q L E).arc j).s = kE M Q L E (gs M Q L E j) := by
   rw [arc_s hK hj]; rfl
 
+end
+
+section
+
+variable (hK : 0 < L.length) (hE : 0 < E.length)
+include hK hE
+
 /-- The end of an arc other than the last one is the next event. -/
-theorem key_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
+theorem key_e {j : ℕ}
     (hj : j + 1 < (gapStarts M Q L E).length) :
     M.key Q ((buildNF M Q L E).arc j).e = kE M Q L E (gs M Q L E j + 1) := by
-  rw [arc_e hK (by omega), Nat.mod_eq_of_lt (gs_succ hE hj).1]; rfl
+  ram_rw [arc_e hK, Nat.mod_eq_of_lt (gs_succ hE hj).1]; rfl
 
 /-- **An arc other than the last one does not wrap.** -/
-theorem key_s_lt_e (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
+theorem key_s_lt_e {j : ℕ}
     (hj : j + 1 < (gapStarts M Q L E).length) :
     M.key Q ((buildNF M Q L E).arc j).s < M.key Q ((buildNF M Q L E).arc j).e := by
-  rw [key_s hK (by omega), key_e hK hE hj]; exact (gs_succ hE hj).2
+  ram_rw [key_s hK, key_e hK hE hj]; exact (gs_succ hE hj).2
 
 /-- The last arc ends at the first event. -/
-theorem key_e_last (hK : 0 < L.length) (hE : 0 < E.length) :
+theorem key_e_last :
     M.key Q ((buildNF M Q L E).arc ((gapStarts M Q L E).length - 1)).e = kE M Q L E 0 := by
   obtain ⟨hA, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
-  rw [arc_e hK (by omega), hlast, Nat.sub_add_cancel hE, Nat.mod_self]; rfl
+  ram_rw [arc_e hK, hlast, Nat.sub_add_cancel hE, Nat.mod_self]; rfl
 
 /-- The last arc starts at the last event. -/
-theorem key_s_last (hK : 0 < L.length) (hE : 0 < E.length) :
+theorem key_s_last :
     M.key Q ((buildNF M Q L E).arc ((gapStarts M Q L E).length - 1)).s =
       kE M Q L E (E.length - 1) := by
   obtain ⟨hA, hlast⟩ := gs_last (M := M) (Q := Q) (L := L) hE
-  rw [key_s hK (by omega), hlast]
+  ram_simp [key_s, hlast]
+
+end
 
 /-! ## Buckets -/
 
@@ -208,7 +225,7 @@ theorem bktKey_le (hK : 0 < L.length) (hE : 0 < E.length) (hsort : E.Pairwise (c
     rcases hy with ⟨rfl, -⟩ | ⟨-, hb2, hs, -⟩ | ⟨hbA, hs⟩
     · omega
     · rw [hA] at hb2
-      rw [key_s hK (by omega)] at hs
+      ram_rw [key_s hK] at hs
       exact le_trans (kE_mono hsort (hi hb2) (gs_lt_len (by omega))) hs
     · rw [hA, key_s_last hK hE] at hs
       exact le_trans (kE_mono hsort hi' (by omega)) hs
@@ -255,10 +272,8 @@ theorem three_attach (hM : WalkAx M) {c₁ c₂ c₃ : Set Point} (h₁ : c₁ �
         rw [e] at this
         exact pos_of_mul_pos_right this (sq_nonneg _)
       rw [hc₂, hc₃, Restore.ray_eq ho₂2 ho₃2 h23 ho₂D ho₃D ho₂o ho₃o]
-    · right; left
-      rw [hc₁, hc₃, Restore.ray_eq ho₁2 ho₃2 h13 ho₁D ho₃D ho₁o ho₃o]
-  · left
-    rw [hc₁, hc₂, Restore.ray_eq ho₁2 ho₂2 h12 ho₁D ho₂D ho₁o ho₂o]
+    simp [hc₁, hc₃, Restore.ray_eq ho₁2 ho₃2 h13 ho₁D ho₃D ho₁o ho₃o]
+  · simp [hc₁, hc₂, Restore.ray_eq ho₁2 ho₂2 h12 ho₁D ho₂D ho₁o ho₂o]
 
 /-- **Equal keys of event positions are equal positions** (edge and parameter). -/
 theorem pos_eq_of_key (hok : ChordTriplesOK M Q L) {a a' : ℕ} (ha : a < 2 * L.length)
@@ -301,8 +316,7 @@ theorem codeLe_of_bkt (hM : WalkAx M) {L₂ : List (ℕ × ℕ × ℕ)} (hok : C
   -- the old event
   have hc₀ : E.getD i 0 < 2 * L.length := by
     have hmem : E.getD i 0 ∈ E := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
-      exact List.getElem_mem hi
+      simp_all
     simpa using hperm.mem_iff.1 hmem
   have hc₀' : E.getD i 0 < 2 * (L ++ L₂).length := by rw [hlen]; omega
   have hkc : M.key Q (wposOf (L ++ L₂) (E.getD i 0)) = kE M Q L E i := by

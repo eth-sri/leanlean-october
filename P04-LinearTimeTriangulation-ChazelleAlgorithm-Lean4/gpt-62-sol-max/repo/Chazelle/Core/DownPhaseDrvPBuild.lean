@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.DownPhaseDrvPList
 
 /-!
@@ -47,8 +49,8 @@ theorem frame_copies {s : Stmt} {c c' : Config} {k : ℕ} (e : Exec P W s c c' k
     (hs : wr (fun r => decide (lo ≤ r ∧ r < hi)) s = true)
     (hband : ∀ r, lo ≤ r → r < hi → bandOf r ∈ DrvR.drvBands) (hA : ¬ (lo ≤ ALLOC ∧ ALLOC < hi)) :
     Frame DrvR.drvBands c c' k :=
-  frame_of_wr e hs (fun r hr => by simp only [decide_eq_true_eq] at hr; exact hband r hr.1 hr.2)
-    (by simp only [decide_eq_false_iff_not]; exact hA)
+  frame_of_wr e hs (fun r hr => by simp_all)
+    (by simp_all)
 
 set_option maxHeartbeats 4000000 in
 /-- **The build.** -/
@@ -68,46 +70,44 @@ theorem buildS_exec {sBd : Stmt} {κBd : ℕ} (hBd : BuildM sBd κBd) (c : Confi
   obtain ⟨c₁, k₁, e₁, hk₁, v0, v1, v2, r₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.copyN 40000 218010, .copyN 40001 218016, .copyN 40002 218017]) c c₁ k₁ ∧ k₁ = 3 ∧
       c₁.nreg 40000 = c.nreg 218010 ∧ c₁.nreg 40001 = c.nreg 218016 ∧
-      c₁.nreg 40002 = c.nreg 218017 ∧ (∀ r, (r < 40000 ∨ 40003 ≤ r) → c₁.nreg r = c.nreg r) := by
+      c₁.nreg 40002 = c.nreg 218017 ∧ (Machine.NRegEqOutside 40000 40003 c c₁) := by
     exec_block
     refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r hr => ?_⟩
-    simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp only [upd]; split_ifs <;> first | rfl | omega
   have w₁ := e₁.wb_right
   have G₁ : Frame DrvR.drvBands c c₁ k₁ := frame_copies e₁ (lo := 40000) (hi := 40003)
     (by decide) (fun r h1 h2 => by rw [DrvT.mem_drvBands]; unfold bandOf; omega)
-    (by unfold ALLOC; omega)
-  have hm₁ : c₁.nmem = c.nmem := (exec_frameB e₁ (B := fun r => decide (40000 ≤ r ∧ r < 40003))
+    (by reg_omega)
+  have hm₁ := (exec_frameB e₁ (B := fun r => decide (40000 ≤ r ∧ r < 40003))
     (by decide)).2.2.1
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by unfold ALLOC; omega)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by reg_omega)
   obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hBd P W c₁ w₁
-    ⟨hG, hW, by rw [rdBd0, v0, hm₁, hA₁]; exact hD, M, L, by rw [rdBd0, v0, hm₁]; exact hM, hGM,
-      by rw [rdBd2, v2, hK], by rw [rdBd1, v1, hA₁]; exact hB, by rw [rdBd1, v1, hm₁]; exact hCL,
+    ⟨hG, hW, by rwa [rdBd0, v0, hm₁, hA₁], M, L, by ram_finish, hGM,
+      by rw [rdBd2, v2, hK], by rwa [rdBd1, v1, hA₁], by rwa [rdBd1, v1, hm₁],
       hok⟩
-    (by show c₁.nreg ALLOC + κBd * (rd c₁ bBuild 2 * (Nat.clog 2 (rd c₁ bBuild 2) + 1) + 1) ≤ W
-        rw [rdBd2, v2, hK, hA₁]; omega)
+    (by ram_finish [rdBd2, v2, hK, hA₁])
   replace hk₂ : k₂ ≤ κBd * (L.length * (Nat.clog 2 L.length + 1) + 1) := by
     have : k₂ ≤ κBd * (rd c₁ bBuild 2 * (Nat.clog 2 (rd c₁ bBuild 2) + 1) + 1) := hk₂
     rw [rdBd2, v2, hK] at this; exact this
-  obtain ⟨N, hN1, hN2, hN3, hN4, -⟩ := hpost M L (by rw [rdBd0, v0, hm₁]; exact hM)
-    (by rw [rdBd2, v2, hK]) (by rw [rdBd1, v1, hm₁]; exact hCL)
+  obtain ⟨N, hN1, hN2, hN3, hN4, -⟩ := hpost M L (by ram_finish)
+    (by rw [rdBd2, v2, hK]) (by rwa [rdBd1, v1, hm₁])
   rw [rdBd3] at hN1 hN2
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, v18, r₃⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 218018 40003]) c₂ c₃ k₃ ∧
       k₃ = 1 ∧ c₃.nreg 218018 = c₂.nreg 40003 ∧
       c₃ = { c₂ with nreg := upd c₂.nreg 218018 (c₂.nreg 40003) } := by
-    exec_block
-    exact ⟨rfl, by config_simp, rfl⟩
-  have G₂ : Frame DrvR.drvBands c₁ c₂ k₂ := F₂.mono build_sub le_rfl
-  have G₃ : Frame DrvR.drvBands c₂ c₃ k₃ := frame_of_wr e₃ (B := fun r => r == 218018)
+    verify_block
+  have G₂ := F₂.mono build_sub le_rfl
+  have G₃ := frame_of_wr e₃ (B := fun r => r == 218018)
     (by decide) (fun r hr => by simp only [beq_iff_eq] at hr; subst hr; decide) (by decide)
   have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := by rw [r₃]; simp [upd, ALLOC]
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega,
     (G₁.trans (G₂.trans G₃)).mono (by simp) (by omega), fun r hr h18 => ?_, N, ?_, ?_, hN3, hN4⟩
   · rw [r₃]; simp only [upd, ite_eq_right h18]
-    rw [F₂.1 r (by rw [hr]; exact band21_not_build) (by unfold ALLOC bandOf at *; omega),
+    rw [F₂.1 r (by rw [hr]; exact band21_not_build) (by reg_omega),
       r₁ r (by unfold bandOf at hr; omega)]
-  · rw [v18, ← hA₁]; exact hN1
-  · rw [v18, hA₃, r₃]; exact hN2
+  · rwa [v18, ← hA₁]
+  · rwa [v18, hA₃, r₃]
 
 set_option maxHeartbeats 4000000 in
 /-- **The granularity enforcement** (cap `4`, target `γ` from `218007`). -/
@@ -126,37 +126,35 @@ theorem granS_exec {sG : Stmt} {κG : ℕ → ℕ} (hGm : GranM sG κG) (c : Con
       ∃ N', c.nreg ALLOC ≤ c'.nreg 218011 ∧
         NFWithin c'.nmem (c'.nreg 218011) (c'.nreg ALLOC) N' ∧
         IsCanonicalNF M (Qof P) N' (c.nreg 218007) 4 := by
-  have hW1 : 4 ≤ W := by unfold hostWords at hW; omega
+  have hW1 : 4 ≤ W := by reg_omega
   obtain ⟨c₁, k₁, e₁, hk₁, v0, v1, v2, v3, r₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.copyN 90000 218010, .copyN 90001 218018, .constN 90002 4, .copyN 90003 218007])
       c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg 90000 = c.nreg 218010 ∧ c₁.nreg 90001 = c.nreg 218018 ∧ c₁.nreg 90002 = 4 ∧
-      c₁.nreg 90003 = c.nreg 218007 ∧ (∀ r, (r < 90000 ∨ 90004 ≤ r) → c₁.nreg r = c.nreg r) := by
+      c₁.nreg 90003 = c.nreg 218007 ∧ (Machine.NRegEqOutside 90000 90004 c c₁) := by
     exec_block
     all_goals first | omega | skip
     refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, fun r hr => ?_⟩
-    simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    simp only [upd]; split_ifs <;> first | rfl | omega
   have w₁ := e₁.wb_right
   have G₁ : Frame DrvR.drvBands c c₁ k₁ := frame_copies e₁ (lo := 90000) (hi := 90004)
     (by decide) (fun r h1 h2 => by rw [DrvT.mem_drvBands]; unfold bandOf; omega)
-    (by unfold ALLOC; omega)
-  have hm₁ : c₁.nmem = c.nmem := (exec_frameB e₁ (B := fun r => decide (90000 ≤ r ∧ r < 90004))
+    (by reg_omega)
+  have hm₁ := (exec_frameB e₁ (B := fun r => decide (90000 ≤ r ∧ r < 90004))
     (by decide)).2.2.1
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by unfold ALLOC; omega)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by reg_omega)
   have hK : c₁.nmem (c₁.nreg 90001) = N.chords.length := by
     rw [hm₁, v1]; exact hN.nfAt.1
   obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hGm P W c₁ w₁
-    ⟨hG, hW, by rw [rdG2, v2]; omega, by rw [rdG0, v0, hm₁, hA₁]; exact hD, M, N,
-      by rw [rdG0, v0, hm₁]; exact hM, hGM, by rw [rdG1, v1, hm₁, hA₁]; exact hN, hNF,
-      by rw [rdG2, v2]; exact hdeg, by rw [rdG3, v3]; exact hwt⟩
-    (by show c₁.nreg ALLOC + κG (rd c₁ bGran 2) * (c₁.nmem (rd c₁ bGran 1) *
-          (Nat.clog 2 (c₁.nmem (rd c₁ bGran 1)) + 1) + 1) ≤ W
-        rw [rdG2, rdG1, v2, hK, hA₁]; omega)
+    ⟨hG, hW, by rw [rdG2, v2]; omega, by rwa [rdG0, v0, hm₁, hA₁], M, N,
+      by ram_finish, hGM, by rwa [rdG1, v1, hm₁, hA₁], hNF,
+      by rwa [rdG2, v2], by rwa [rdG3, v3]⟩
+    (by ram_simp [rdG2, rdG1, v2, hK, hA₁] <;> reg_omega)
   replace hk₂ : k₂ ≤ κG 4 * (N.chords.length * (Nat.clog 2 N.chords.length + 1) + 1) := by
     have : k₂ ≤ κG (rd c₁ bGran 2) * (c₁.nmem (rd c₁ bGran 1) *
         (Nat.clog 2 (c₁.nmem (rd c₁ bGran 1)) + 1) + 1) := hk₂
     rw [rdG2, rdG1, v2, hK] at this; exact this
-  obtain ⟨N', hN1, hN2, -, hN3⟩ := hpost M N (by rw [rdG0, v0, hm₁]; exact hM)
+  obtain ⟨N', hN1, hN2, -, hN3⟩ := hpost M N (by ram_finish)
     (by rw [rdG1, v1, hm₁]; exact hN.nfAt)
   rw [rdG4] at hN1 hN2
   rw [rdG3, rdG2, v3, v2] at hN3
@@ -164,19 +162,18 @@ theorem granS_exec {sG : Stmt} {κG : ℕ → ℕ} (hGm : GranM sG κG) (c : Con
   obtain ⟨c₃, k₃, e₃, hk₃, v11, r₃⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 218011 90004]) c₂ c₃ k₃ ∧
       k₃ = 1 ∧ c₃.nreg 218011 = c₂.nreg 90004 ∧
       c₃ = { c₂ with nreg := upd c₂.nreg 218011 (c₂.nreg 90004) } := by
-    exec_block
-    exact ⟨rfl, by config_simp, rfl⟩
-  have G₂ : Frame DrvR.drvBands c₁ c₂ k₂ := F₂.mono gran_sub le_rfl
-  have G₃ : Frame DrvR.drvBands c₂ c₃ k₃ := frame_of_wr e₃ (B := fun r => r == 218011)
+    verify_block
+  have G₂ := F₂.mono gran_sub le_rfl
+  have G₃ := frame_of_wr e₃ (B := fun r => r == 218011)
     (by decide) (fun r hr => by simp only [beq_iff_eq] at hr; subst hr; decide) (by decide)
   have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := by rw [r₃]; simp [upd, ALLOC]
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega,
     (G₁.trans (G₂.trans G₃)).mono (by simp) (by omega), fun r hr h11 => ?_, N', ?_, ?_, hN3⟩
   · rw [r₃]; simp only [upd, ite_eq_right h11]
-    rw [F₂.1 r (by rw [hr]; exact band21_not_gran) (by unfold ALLOC bandOf at *; omega),
+    rw [F₂.1 r (by rw [hr]; exact band21_not_gran) (by reg_omega),
       r₁ r (by unfold bandOf at hr; omega)]
-  · rw [v11, ← hA₁]; exact hN1
-  · rw [v11, hA₃, r₃]; exact hN2
+  · rwa [v11, ← hA₁]
+  · rwa [v11, hA₃, r₃]
 
 end exec
 

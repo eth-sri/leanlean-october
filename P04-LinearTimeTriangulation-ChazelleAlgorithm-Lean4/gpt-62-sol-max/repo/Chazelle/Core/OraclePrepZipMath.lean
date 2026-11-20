@@ -41,7 +41,7 @@ theorem normP_some {a b : ℕ} {c : ℕ × ℕ} (h : normP a b = some c) :
   · right; exact ⟨min_eq_right hab, max_eq_left hab⟩
 
 theorem normP_of_lt {a b : ℕ} (h : a + 2 ≤ b) : normP a b = some (a, b) := by
-  unfold normP; rw [min_eq_left (by omega), max_eq_right (by omega), ite_eq_left h]
+  ram_finish [normP, min_eq_left, max_eq_right, ite_eq_left h]
 
 theorem normP_none_of_le_one {A a b : ℕ} (hA : A ≤ 1) (ha : a < max A 1) (hb : b < max A 1) :
     normP a b = none := by
@@ -162,7 +162,7 @@ theorem pair_of_gen (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   obtain ⟨h1, h2⟩ := normP_some h
   have hZ := zipRel_of_gen hN hP hne ha hb hG
   rcases h2 with ⟨e1, e2⟩ | ⟨e1, e2⟩
-  · rw [e1, e2]; exact ⟨by omega, hb, hZ⟩
+  · simp_all
   · rw [e1, e2]; exact ⟨by omega, ha, hZ.symm⟩
 
 /-- **Every raw pair is a zipper chord**: not a spine edge, in range, and a zipper pair. -/
@@ -248,7 +248,7 @@ theorem zipRaw_sound (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {c : ℕ �
 
 theorem mem_zipSp {o : Option (ℕ × ℕ)} (ho : o ∈ zipSpO C Q N) {c : ℕ × ℕ} (h : o = some c) :
     c ∈ zipSp C Q N := by
-  unfold zipSp; rw [List.mem_filterMap]; exact ⟨o, ho, by rw [h]; rfl⟩
+  unfold zipSp; simp_all
 
 /-- **Every zipper pair that is not a spine edge is raw.** -/
 theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : ℕ} (hpq : p < q)
@@ -263,12 +263,12 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
     by_contra hF
     have := arcs_le_one_of_empty hN hGM (Set.not_nonempty_iff_eq_empty.1 hF)
     omega
-  have hn : normP p q = some (p, q) := normP_of_lt h2
-  have hn' : normP q p = some (p, q) := by rw [normP_comm]; exact hn
-  have hT6 := κT_ge C
-  have hT7 := κT_lt C
+  have hn := normP_of_lt h2
+  have hn' : normP q p = some (p, q) := by rwa [normP_comm]
+  
+  
   have hTdef := rT_def C
-  have hm : (0 : ℝ) < C.m := by exact_mod_cast C.one_le
+  
   have inIdx : ∀ {r : ℕ} {y : ℝ}, r < N.arcs.length →
       sideInArc (sk (chainModel C) Q N r) (ek (chainModel C) Q N r) y →
       InArc C Q N y ∧ inArcIdx C Q N y = r := fun {r y} hr h => by
@@ -279,7 +279,7 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
     subst h2
     by_contra h0
     have : rT C = 0 := by omega
-    apply h1; rw [← hTdef, this]; norm_num
+    simp_all
   unfold zipRaw
   simp only [List.mem_append, OracleR.mem_emitted]
   rcases zip_cases hN hP hne hp hq (by omega) hZ with

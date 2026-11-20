@@ -36,13 +36,13 @@ structure EvEnv (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx) (Ok
   hP : J.P.Simple
   hX : X.holds P c₀.nmem (c₀.nreg (sw 10)) (c₀.nreg ALLOC)
   hcap : c₀.nreg (sw 5) ≤ X.cap P c₀.nmem (c₀.nreg (sw 10))
-  hOk₁ : Ok P (chainModel J.left)
-  hNF₁ : IsNF (chainModel J.left) (Qof P) N₁
-  hsg₁ : (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (c₀.nreg (sw 5))
+  hOk₁ : Ok P J.leftModel
+  hNF₁ : IsNF J.leftModel (Qof P) N₁
+  hsg₁ : J.leftModel.Semigranular (N₁.F J.leftModel (Qof P)) (c₀.nreg (sw 5))
   hNW₁ : NFWithin c₀.nmem (c₀.nreg (sw 3)) (c₀.nreg ALLOC) N₁
-  hNF₂ : IsNF (chainModel J.right) (Qof P) N₂
+  hNF₂ : IsNF J.rightModel (Qof P) N₂
   hNW₂ : NFWithin c₀.nmem (c₀.nreg (sw 4)) (c₀.nreg ALLOC) N₂
-  hmd : ModelDescAt c₀.nmem (c₀.nreg MD₁) (Qof P) (chainModel J.left)
+  hmd : ModelDescAt c₀.nmem (c₀.nreg MD₁) (Qof P) J.leftModel
   hmwf : ModelDescWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg MD₁)
   hm0 : c₀.nmem (c₀.nreg MD₁) = 0
   hcd : c₀.nreg CD₁ = c₀.nreg MD₁ + 1
@@ -55,14 +55,14 @@ structure EvEnv (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx) (Ok
   hgw : c₀.nreg cGW = gW J
   hT : c₀.nreg ALLOC ≤ c₀.nreg cTB
   hTW : c₀.nreg cTB + 6 * N₂.nChords + 2 ≤ W
-  hWn : 2 * (chainModel J.whole).W.n ≤ W
+  hWn : 2 * J.wholeModel.W.n ≤ W
   hst : ∃ H, JunctionAt c₀.nmem (c₀.nreg (sw 0)) (c₀.nreg (sw 1)) (c₀.nreg (sw 2)) (Qof P) H J ∧
     St0S P c₀ H J
   hJWF : JunctionWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 0)) (c₀.nreg (sw 1)) (c₀.nreg (sw 2))
-  hOk₂ : Ok P (chainModel J.right)
-  hsg₂ : (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (c₀.nreg (sw 5))
-  hdeg₁ : (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (c₀.nreg (sw 6))
-  hdeg₂ : (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (c₀.nreg (sw 6))
+  hOk₂ : Ok P J.rightModel
+  hsg₂ : J.rightModel.Semigranular (N₂.F J.rightModel (Qof P)) (c₀.nreg (sw 5))
+  hdeg₁ : J.leftModel.DegLe (N₁.F J.leftModel (Qof P)) (c₀.nreg (sw 6))
+  hdeg₂ : J.rightModel.DegLe (N₂.F J.rightModel (Qof P)) (c₀.nreg (sw 6))
   htab : ∀ j, j < c₀.nreg TLR → c₀.nmem (c₀.nreg TBR + j) = 2 ^ j
   hbig₁ : N₁.arcs.length < 2 ^ c₀.nreg TLR
   hbig₂ : N₂.arcs.length < 2 ^ c₀.nreg TLR
@@ -80,7 +80,7 @@ namespace EvEnv
 variable (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
 include E hI
 
-theorem md : ModelDescAt c.nmem (c.nreg MD₁) (Qof P) (chainModel J.left) ∧
+theorem md : ModelDescAt c.nmem (c.nreg MD₁) (Qof P) J.leftModel ∧
     ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg MD₁) ∧ c.nmem (c.nreg MD₁) = 0 ∧
     c.nreg CD₁ = c.nreg MD₁ + 1 := by
   have eMD : c.nreg MD₁ = c₀.nreg MD₁ := hI.hin _ (by unfold IFix MD₁ sw; omega)

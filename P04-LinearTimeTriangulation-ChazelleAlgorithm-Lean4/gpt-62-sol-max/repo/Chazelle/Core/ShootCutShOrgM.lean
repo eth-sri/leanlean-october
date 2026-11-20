@@ -56,7 +56,7 @@ inside its abscissa range. -/
 theorem innerPt_bounds {z : Point} (h : (chainModel C).InnerPt z) :
     |z.2| < C.radius ∧ |z.1| ≤ C.radius := by
   obtain ⟨⟨p, q, hp, hq, h1, h2⟩, ⟨p', q', hp', hq', h3, h4⟩⟩ := h
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn := chainModel_n C
   rw [hn] at hp hq hp' hq'
   have a := walk_y_bounds C hp
   have b := walk_y_bounds C hq
@@ -72,8 +72,8 @@ theorem walk_above {Q : Polygon} {N e hc : ℕ} (hp : ProperPos (chainModel C) Q
     (hy : |((chainModel C).pos Q ⟨e, hc⟩).2| < C.radius)
     (hno : ¬ (6 ≤ e ∧ (e < 2 * C.m + 6 ∨ (chainModel C).param Q ⟨e, hc⟩ = 0))) :
     C.top.2 < ((chainModel C).pos Q ⟨e, hc⟩).2 := by
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  have hR := C.radius_pos
+  have hn := chainModel_n C
+  
   have htop := C.top_snd_lt_radius
   have t0 := hp.1
   have t1 := hp.2.1
@@ -81,25 +81,21 @@ theorem walk_above {Q : Polygon} {N e hc : ℕ} (hp : ProperPos (chainModel C) Q
       ((chainModel C).W.vtx ((e + 1) % (2 * C.m + 7))) ((chainModel C).param Q ⟨e, hc⟩) := by
     rw [← hn]; rfl
   rw [hpos] at hx hy ⊢
-  obtain ⟨t, htd⟩ : ∃ t, (chainModel C).param Q ⟨e, hc⟩ = t := ⟨_, rfl⟩
+  obtain ⟨t, htd⟩ := exists_eq' (a' := (chainModel C).param Q ⟨e, hc⟩)
   rw [htd] at hx hy t0 t1 hno ⊢
   simp only [lerp_fst, lerp_snd] at hx hy ⊢
   rw [abs_lt] at hx hy
   have V : ∀ q, (chainModel C).W.vtx q = (C.sideWalk C.sideBeta).vtx q := fun _ => rfl
-  have V6 : (chainModel C).W.vtx 6 = C.top := SweepPrim.walk_vtx_six C
+  have V6 := SweepPrim.walk_vtx_six C
   rcases (show e ≤ 5 ∨ 6 ≤ e by omega) with h5 | h6
   · rw [Nat.mod_eq_of_lt (by omega)] at hx hy ⊢
     interval_cases e
-    · simp only [V, C.sideWalk_vtx_zero, C.sideWalk_vtx_one, Chazelle.Chain.slitTop] at hy
-      linarith [hy.2]
-    · simp only [V, C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hx
-      linarith [hx.1]
-    · simp only [V, C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hy
-      linarith [hy.1]
+    · simp_all [C.sideWalk_vtx_zero, C.sideWalk_vtx_one, Chazelle.Chain.slitTop] 
+    · simp_all [C.sideWalk_vtx_one, C.sideWalk_vtx_two] 
+    · simp_all [C.sideWalk_vtx_two, C.sideWalk_vtx_three] 
     · simp only [V, C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hx
       linarith [hx.2]
-    · simp only [V, C.sideWalk_vtx_four, C.sideWalk_vtx_five, Chazelle.Chain.slitTop] at hy
-      linarith [hy.2]
+    · simp_all [C.sideWalk_vtx_four, C.sideWalk_vtx_five, Chazelle.Chain.slitTop] 
     · rw [show (5 : ℕ) + 1 = 6 from rfl, V6, V, C.sideWalk_vtx_five]
       unfold Chazelle.Chain.slitTop
       dsimp only
@@ -107,8 +103,8 @@ theorem walk_above {Q : Polygon} {N e hc : ℕ} (hp : ProperPos (chainModel C) Q
   · have he : e = 2 * C.m + 6 := by
       by_contra hc'
       exact hno ⟨h6, Or.inl (by omega)⟩
-    have ht0 : t ≠ 0 := fun h => hno ⟨h6, Or.inr h⟩
-    have tp : 0 < t := lt_of_le_of_ne t0 (Ne.symm ht0)
+    have ht0 := fun h => hno ⟨h6, Or.inr h⟩
+    have tp := lt_of_le_of_ne t0 (Ne.symm ht0)
     subst he
     rw [show 2 * C.m + 6 + 1 = 2 * C.m + 7 by omega, Nat.mod_self, SweepPrim.walk_vtx_last, V,
       C.sideWalk_vtx_zero]

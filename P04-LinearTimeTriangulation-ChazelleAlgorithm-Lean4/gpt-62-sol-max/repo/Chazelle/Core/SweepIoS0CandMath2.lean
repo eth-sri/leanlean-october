@@ -30,7 +30,7 @@ open Sweep WalkEmbed
 
 /-! ## Cuts are log keys -/
 
-theorem gW_lt (J : Merge.Junction) : (gW J : ℝ) < (chainModel J.whole).W.n := by
+theorem gW_lt (J : Merge.Junction) : (gW J : ℝ) < J.wholeModel.W.n := by
   rw [cm_n]
   have := tpos_lt J.whole J.m₁
   unfold gW
@@ -39,10 +39,10 @@ theorem gW_lt (J : Merge.Junction) : (gW J : ℝ) < (chainModel J.whole).W.n := 
 /-- **An attachment of a chord of `F₂⁺` on the `C₁` part is a key of the event log.** -/
 theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ × ℝ × Set (Set Point))}
     (hL : LogOK J S₂ es) {e : Set Point} (he : e ∈ F₂plus J S₂) {p : ℕ} {t : ℝ}
-    (hA : SideAttach (chainModel J.whole).W e p t) (hst : (Lst J : ℝ) ≤ oW J (p + t)) :
+    (hA : SideAttach J.wholeModel.W e p t) (hst : (Lst J : ℝ) ≤ oW J (p + t)) :
     ∃ i, i < es.length ∧ (es.getD i (0, 0, ∅)).1 = p ∧ (es.getD i (0, 0, ∅)).2.1 = t := by
   obtain ⟨hne, hmem, hhead, hsort, hgap, hlast, -⟩ := hL
-  set n := (chainModel J.whole).W.n with hn
+  set n := J.wholeModel.W.n with hn
   set x : ℝ := p + t with hx
   have hpn := hA.1
   have ht0 := hA.2.1
@@ -51,10 +51,10 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
   have hxn : x < n := by
     have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
     linarith
-  have hcut : (chainModel J.whole).IsCut (F₂plus J S₂) x := ⟨e, he, p, t, hA, rfl⟩
-  have hlen : 0 < es.length := List.length_pos_iff.2 hne
+  have hcut : J.wholeModel.IsCut (F₂plus J S₂) x := ⟨e, he, p, t, hA, rfl⟩
+  have hlen := List.length_pos_iff.2 hne
   -- keys of the log
-  let K : ℕ → ℝ := fun i => (es.getD i (0, 0, ∅)).1 + (es.getD i (0, 0, ∅)).2.1
+  let K := fun i => (es.getD i (0, 0, ∅)).1 + (es.getD i (0, 0, ∅)).2.1
   have hget : ∀ i (hi : i < es.length), es.getD i (0, 0, ∅) = es[i] := fun i hi => by
     rw [List.getD_eq_getElem _ _ hi]
   have hmemi : ∀ i, i < es.length → es.getD i (0, 0, ∅) ∈ es := fun i hi => by
@@ -63,7 +63,7 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     have h := hhead (es.getD 0 (0, 0, ∅)) (by
       rw [hget 0 hlen, List.head?_eq_getElem?, List.getElem?_eq_getElem hlen]; rfl)
     show oW J (K 0) ≤ _
-    rw [show K 0 = _ from rfl, h]; exact hst
+    rwa [show K 0 = _ from rfl, h]
   -- the last key not after `x`
   set i := Nat.findGreatest (fun i => oW J (K i) ≤ oW J x) (es.length - 1) with hi
   have hiP : oW J (K i) ≤ oW J x := Nat.findGreatest_spec (P := fun i => oW J (K i) ≤ oW J x)
@@ -83,17 +83,15 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     rcases hiP.lt_or_eq with hlt | h
     · exfalso
       by_cases hnext : i + 1 < es.length
-      · have hnot : ¬ oW J (K (i + 1)) ≤ oW J x :=
-          Nat.findGreatest_is_greatest (P := fun i => oW J (K i) ≤ oW J x)
+      · have hnot := Nat.findGreatest_is_greatest (P := fun i => oW J (K i) ≤ oW J x)
             (n := es.length - 1) (k := i + 1) (by omega) (by omega)
         exact hgap i hnext x hcut hx0 hxn ⟨hlt, not_le.1 hnot⟩
       · have hlast' : es.getLast? = some (es.getD i (0, 0, ∅)) := by
-          rw [List.getLast?_eq_getElem?, hget i hil]
-          rw [show es.length - 1 = i by omega, List.getElem?_eq_getElem hil]
+          simp [List.getLast?_eq_getElem?, show es.length - 1 = i by omega, List.getElem?_eq_getElem hil]
         have := hlast _ (by rw [hlast']; rfl) x hcut hx0 hxn
         exact this ⟨hlt, off_lt hxn hgW0⟩
     · exact h
-  have hkx : K i = x := off_inj hgW0 (gW_lt J) hKi0 hKin hx0 hxn heq
+  have hkx := off_inj hgW0 (gW_lt J) hKi0 hKin hx0 hxn heq
   obtain ⟨h1, h2⟩ := key_split hKi.2.1 hKi.2.2.1 ht0 ht1 hkx
   exact ⟨i, hil, h1, h2⟩
 
@@ -107,34 +105,31 @@ theorem stopRecs_unique {m : ℕ → ℕ} {A : ℕ} {rs rs' : List (ℕ × ℕ �
   obtain ⟨b1, b2, b3, b4, b5⟩ := h' i hi'
   rw [List.getD_eq_getElem _ _ hi] at a1 a2 a3 a4 a5
   rw [List.getD_eq_getElem _ _ hi'] at b1 b2 b3 b4 b5
-  ext <;> simp only [← a1, ← a2, ← a3, ← a4, ← a5, b1, b2, b3, b4, b5]
+  ext <;> simp_all
 
 /-- The key of a log record in the event log. -/
 theorem logOf_getD (J : Merge.Junction) (Q : Polygon) (N : NF)
     {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < ls.length) :
     ((logOf J Q N ls).getD i (0, 0, ∅)).1 = (ls.getD i (0, 0, 0, 0, 0, 0, 0)).1 ∧
-      ((logOf J Q N ls).getD i (0, 0, ∅)).2.1 = (chainModel J.whole).param Q
+      ((logOf J Q N ls).getD i (0, 0, ∅)).2.1 = J.wholeModel.param Q
         ⟨(ls.getD i (0, 0, 0, 0, 0, 0, 0)).1, (ls.getD i (0, 0, 0, 0, 0, 0, 0)).2.1⟩ := by
-  unfold logOf
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hi,
-    List.getD_eq_getElem _ _ hi]
-  simp
+  ram_finish [logOf, List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hi, List.getD_eq_getElem]
 
 /-! ## The candidates of the stops and the table -/
 
 /-- **A stop record gives a candidate origin** at its position, attached at a log key. -/
 theorem stop_cand (J : Merge.Junction) {Q : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) Q N) {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    (hS : StopsOK J (N.F (chainModel J.right) Q) (stopsOf J Q N rs))
+    (hN : IsNF J.rightModel Q N) {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
+    (hS : StopsOK J (N.F J.rightModel Q) (stopsOf J Q N rs))
     {r : ℕ × ℕ × ℕ × ℕ × ℕ} (hr : r ∈ rs) (hkind : r.2.2.1 ≤ 2)
     (hk : r.2.2.1 = 1 → r.2.2.2.1 < N.nChords) :
     CandAt J (stopOrig J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2) (dirOf r.2.2.2.2)
-        (sidePt (chainModel J.whole).W r.1 ((chainModel J.whole).param Q ⟨r.1, r.2.1⟩)) ∧
-      stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2 ∈ F₂plus J (N.F (chainModel J.right) Q) ∧
-      SideAttach (chainModel J.whole).W (stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2) r.1
-        ((chainModel J.whole).param Q ⟨r.1, r.2.1⟩) ∧
-      (Lst J : ℝ) ≤ oW J (r.1 + (chainModel J.whole).param Q ⟨r.1, r.2.1⟩) := by
-  have hs : (r.1, (chainModel J.whole).param Q ⟨r.1, r.2.1⟩,
+        (sidePt J.wholeModel.W r.1 (J.wholeModel.param Q ⟨r.1, r.2.1⟩)) ∧
+      stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2 ∈ F₂plus J (N.F J.rightModel Q) ∧
+      SideAttach J.wholeModel.W (stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2) r.1
+        (J.wholeModel.param Q ⟨r.1, r.2.1⟩) ∧
+      (Lst J : ℝ) ≤ oW J (r.1 + J.wholeModel.param Q ⟨r.1, r.2.1⟩) := by
+  have hs : (r.1, J.wholeModel.param Q ⟨r.1, r.2.1⟩,
       stopSet J Q N r.2.2.1 r.2.2.2.1 r.2.2.2.2) ∈ stopsOf J Q N rs := by
     unfold stopsOf; exact List.mem_map.2 ⟨r, hr, rfl⟩
   obtain ⟨hF, -, hA, hL⟩ := hS.1 _ hs
@@ -147,9 +142,9 @@ theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option
     (hT : TabOK J Q N T) {j : ℕ} (hj : j < 2 * N.nChords) (hon : endOrigin J Q N j ∈ J.right.set)
     (hsh : endOrigin J Q N j ≠ J.shared) (htop : endOrigin J Q N j ≠ J.right.top) {p : ℕ}
     {t : ℝ} (hTj : T j = some (p, t)) :
-    CandAt J (endOrigin J Q N j) (endDir j) (sidePt (chainModel J.whole).W p t) ∧
-      Merge.shoot J.whole (endOrigin J Q N j) (endDir j) ∈ F₂plus J (N.F (chainModel J.right) Q) ∧
-      SideAttach (chainModel J.whole).W (Merge.shoot J.whole (endOrigin J Q N j) (endDir j)) p t ∧
+    CandAt J (endOrigin J Q N j) (endDir j) (sidePt J.wholeModel.W p t) ∧
+      Merge.shoot J.whole (endOrigin J Q N j) (endDir j) ∈ F₂plus J (N.F J.rightModel Q) ∧
+      SideAttach J.wholeModel.W (Merge.shoot J.whole (endOrigin J Q N j) (endDir j)) p t ∧
       (Lst J : ℝ) ≤ oW J (p + t) := by
   obtain ⟨hfree, hm⟩ := hT j hj hon hsh htop
   rw [hTj] at hm
@@ -175,11 +170,11 @@ theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option
 /-- **The regular origins**: on `C₂`, neither the shared vertex nor the top, by a normalised walk
 position of the model of `C₂`. -/
 theorem valid_iff (J : Merge.Junction) (hP : J.right.P.Simple) (Q : Polygon) {x : WPos}
-    (hx : x.edge < (chainModel J.right).W.n) (h0 : 0 ≤ (chainModel J.right).param Q x)
-    (h1 : (chainModel J.right).param Q x < 1)
-    (hnorm : x.hgt = 0 ↔ (chainModel J.right).param Q x = 0) :
-    ((chainModel J.right).pos Q x ∈ J.right.set ∧ (chainModel J.right).pos Q x ≠ J.shared ∧
-        (chainModel J.right).pos Q x ≠ J.right.top) ↔
+    (hx : x.edge < J.rightModel.W.n) (h0 : 0 ≤ J.rightModel.param Q x)
+    (h1 : J.rightModel.param Q x < 1)
+    (hnorm : x.hgt = 0 ↔ J.rightModel.param Q x = 0) :
+    (J.rightModel.pos Q x ∈ J.right.set ∧ J.rightModel.pos Q x ≠ J.shared ∧
+        J.rightModel.pos Q x ≠ J.right.top) ↔
       (6 ≤ x.edge ∧ x.edge ≤ 2 * J.right.m + 5 ∧
         (x.hgt ≠ 0 ∨ (x.edge ≠ 6 ∧ x.edge ≠ 6 + tpos J.right 0 ∧
           x.edge ≠ 6 + midT J.right))) := by
@@ -193,27 +188,13 @@ theorem valid_iff (J : Merge.Junction) (hP : J.right.P.Simple) (Q : Polygon) {x 
     rcases hm with ⟨h6, h5⟩ | ⟨he, hh⟩
     · refine ⟨h6, h5, ?_⟩
       by_cases hh : x.hgt = 0
-      · right
-        have hp0 := hnorm.1 hh
-        refine ⟨fun h => ht (htop.2 ⟨hp0, Or.inl h⟩), fun h => hs (hsh.2 ⟨hp0, Or.inl h⟩),
-          fun h => ht (htop.2 ⟨hp0, Or.inr (Or.inr h)⟩)⟩
+      · simp_all
       · left; exact hh
     · exact absurd (htop.2 ⟨hnorm.1 hh, Or.inr (Or.inl he)⟩) ht
   · rintro ⟨h6, h5, hc⟩
     refine ⟨Or.inl ⟨h6, h5⟩, fun h => ?_, fun h => ?_⟩
-    · obtain ⟨hp0, he⟩ := hsh.1 h
-      rcases hc with hc | ⟨-, hc, -⟩
-      · exact hc (hnorm.2 hp0)
-      · rcases he with he | ⟨he, -⟩
-        · exact hc he
-        · omega
-    · obtain ⟨hp0, he⟩ := htop.1 h
-      rcases hc with hc | ⟨hc1, -, hc3⟩
-      · exact hc (hnorm.2 hp0)
-      · rcases he with he | he | he
-        · exact hc1 he
-        · omega
-        · exact hc3 he
+    · simp_all 
+    simp_all 
 
 end
 

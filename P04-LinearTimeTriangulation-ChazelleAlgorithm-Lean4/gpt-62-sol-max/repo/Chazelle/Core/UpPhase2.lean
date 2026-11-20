@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.UpPhase1
 public import Chazelle.Core.BruteRam3
 
@@ -34,7 +38,7 @@ theorem topIdx_one {C : Chain} (h1 : C.m = 1) :
   · have := C.topIdx_min (j := 0) (by omega) (fun i hi => by
       rcases Nat.lt_or_ge i 1 with h2 | h2
       · rw [show i = 0 by omega]
-      · rw [show i = 1 by omega]; exact not_lt.mp h)
+      simp_all [show i = 1 by omega] <;> omega)
     omega
 
 /-- The points of the height test. -/
@@ -69,16 +73,16 @@ theorem d0PtsB_exec {c : Config} (hw : WordsBounded W c) {s : ℕ}
       SymPtIn c' 170050 (.vtx s) ∧ SymPtIn c' 170053 (.vtx (s + 1)) ∧
       SymPtIn c' 170056 (.vtx 0) ∧
       (∀ r, ¬ D0RG r → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold d0PtsB
   exec_block
   all_goals try (config_simp; (try simp only [h16, h20]); omega)
   refine ⟨rfl, ‹_›, ⟨by config_simp, by config_simp; exact h16⟩,
-    ⟨by config_simp, by config_simp; simp only [h16, h20]⟩, ⟨by config_simp, by config_simp⟩,
+    ⟨by config_simp, by simp_all⟩, ⟨by config_simp, by config_simp⟩,
     fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   unfold D0RG at hr
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat ram_finish
 
 set_option maxHeartbeats 8000000 in
 theorem d0BitB_exec {c : Config} (hw : WordsBounded W c) (hW : 1 ≤ W) :
@@ -87,14 +91,8 @@ theorem d0BitB_exec {c : Config} (hw : WordsBounded W c) (hW : 1 ≤ W) :
       c'.nreg 180013 = c.nreg 170059 ∧ c'.nreg 180028 = 0 ∧
       (∀ r, r ≠ 180000 → r ≠ 180010 → r ≠ 180011 → r ≠ 180013 → r ≠ 180028 →
         c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  unfold d0BitB
-  exec_block
-  all_goals try (config_simp; omega)
-  refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp,
-    by config_simp, fun r a1 a2 a3 a4 a5 => ?_, rfl, rfl, rfl, rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      Machine.NatRegFrame c c' := by
+  ram_exec
 
 set_option maxHeartbeats 8000000 in
 theorem d0StoreB_exec {c : Config} (hw : WordsBounded W c) {TD hp s t b : ℕ}
@@ -106,24 +104,23 @@ theorem d0StoreB_exec {c : Config} (hw : WordsBounded W c) {TD hp s t b : ℕ}
       c'.nmem TD = hp ∧ c'.nmem (TD + 1) = s ∧ c'.nmem (TD + 2) = 1 ∧ c'.nmem (TD + 3) = t ∧
       c'.nmem (TD + 4) = b ∧ (∀ a, (a < TD ∨ TD + 5 ≤ a) → c'.nmem a = c.nmem a) ∧
       (∀ r, ¬ D0RG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
   have hAl : ALLOC = 9999 := rfl
   rw [hAl] at hA ⊢
   unfold d0StoreB
   exec_block
   all_goals try (config_simp; (try simp only [hA, h20, h23]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h23]
-  · config_simp; simp only [hA]
-  · config_simp; simp only [hA, h04, h20, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h16, h20, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h20, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h59, h20, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h14, h20, Machine.upd_apply]; split_ifs <;> omega
+  · simp_all
+  · assumption
+  · config_simp; ram_post
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
   · config_simp; simp only [hA, h20, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold D0RG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    ram_post
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of a grade-0 chain on the RAM.** -/
@@ -139,7 +136,7 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
       (∀ r, ¬ D0RG r → bandOf r ≠ bBrute → Bk r = false → r ≠ ALLOC →
         c'.nreg r = c.nreg r) ∧
       (∀ r, Bk r = false → bandOf r ≠ bUp → bandOf r ≠ bBrute → c'.rreg r = c.rreg r) ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.RealMemOutputEq c c' := by
   have hAl : ALLOC = 9999 := rfl
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn : 1 ≤ P.n := by omega
@@ -165,21 +162,20 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     intro C hCP hCs hCm
     rw [topIdx_one hCm]
     have e0 : C.vertex 0 = (Qof P).vtx s := by
-      unfold Chain.vertex Chain.edgeIdx; rw [hCP, hQn, hCs, Nat.add_zero,
-        Nat.mod_eq_of_lt (by omega)]
+      ram_finish [Chain.vertex, Chain.edgeIdx, hCP, hQn, hCs, Nat.add_zero, Nat.mod_eq_of_lt]
     have e1 : C.vertex 1 = (Qof P).vtx (s + 1) := by
-      unfold Chain.vertex Chain.edgeIdx; rw [hCP, hQn, hCs, Nat.mod_eq_of_lt (by omega)]
+      ram_finish [Chain.vertex, Chain.edgeIdx, hCP, hQn, hCs, Nat.mod_eq_of_lt]
     rw [e0, e1]
     have hiff : t = 1 ↔ ((Qof P).vtx s).2 < ((Qof P).vtx (s + 1)).2 := by
-      rw [ht, hiff2]; simp only [SignTest, SymPt.eval]
+      assumption
     split_ifs with h
     · exact (hiff.mpr h).symm
     · have : t ≠ 1 := fun h' => h (hiff.mp h')
       omega
   have c3_00 : c3.nreg 180000 = s := by
-    rw [b00, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]; exact h16
+    rwa [b00, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]
   have c3_10 : c3.nreg 180010 = P.n := by
-    rw [b10, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]; exact h01
+    rwa [b10, k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold D0RG; omega)]
   have c3_13 : c3.nreg 180013 = t := by rw [b13]
   obtain ⟨C0, hC0P, hC0s, hC0m⟩ : ∃ C0 : Chain, C0.P = Qof P ∧ C0.s = s ∧ C0.m = 1 :=
     ⟨⟨Qof P, s, 1, le_rfl, by rw [hQn]; omega⟩, rfl, rfl, rfl⟩
@@ -188,44 +184,42 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     (by rw [c3_13, hsn C0 hC0P hC0s hC0m]) b28
   obtain ⟨fr4, frr4, hm4, hrm4, ho4⟩ := fb4
   have hw4 := e4.wb_right
-  have k4r : ∀ r, Bbit r = false → c4.nreg r = c3.nreg r := fr4
+  have k4r := fr4
   have bb : ∀ r, 160000 ≤ r → r < 170061 → Bbit r = false := fun r a b => by
     simp [Bbit, Bk]; omega
   -- the stores
   have c4r : ∀ r, 160000 ≤ r → r < 170050 → c4.nreg r = c.nreg r := fun r a b => by
-    rw [k4r r (bb r a (by omega)), fr3 r (by omega) (by omega) (by omega) (by omega) (by omega),
+    rw [k4r r (bb r a (by omega)), (ram_app% (fr3 r ?_ ?_ ?_ ?_ ?_)),
       k2r r (bk r a) (by omega), fr1 r (by unfold D0RG; omega)]
   have c4A : c4.nreg ALLOC = TD := by
-    rw [k4r _ (by simp [Bbit, Bk, hAl]), fr3 _ (by rw [hAl]; omega) (by rw [hAl]; omega)
+    ram_rw assumption [k4r, fr3 _ (by rw [hAl]; omega) (by rw [hAl]; omega)
       (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega),
       k2r _ (by simp [Bk, hAl]) (by rw [hAl]; omega), fr1 _ (by unfold D0RG; rw [hAl]; omega)]
-    exact hA
   obtain ⟨c5, k5, e5, hk5, hw5, h5A, h560, w0, w1, w2, w3, w4, hm5, fr5, hrr5, hrm5, ho5⟩ :=
     d0StoreB_exec (P := P) hw4 (TD := TD) (hp := hp) (s := s) (t := t)
       (b := c4.nreg 180014)
       c4A
-      (by rw [c4r _ (by omega) (by omega)]; exact h04) (by rw [c4r _ (by omega) (by omega)]; exact h16)
-      (by rw [k4r _ (bb _ (by omega) (by omega)), fr3 _ (by omega) (by omega) (by omega) (by omega)
-        (by omega)])
-      rfl (by rw [c4r _ (by omega) (by omega)]; exact h20)
-      (by rw [c4r _ (by omega) (by omega)]; exact h23) hW
+      (by frame_finish [c4r]) (by frame_finish [c4r])
+      (by ram_post)
+      rfl (by frame_finish [c4r])
+      (by frame_finish [c4r]) hW
   have hm5c : ∀ a, (a < TD ∨ TD + 5 ≤ a) → c5.nmem a = c.nmem a := fun a ha => by
-    rw [hm5 a ha, hm4, hm3, hm2, hm1]
-  refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), .seq e1 (.seq e2 (.seq e3 (.seq e4 e5))),
+    ram_finish
+  refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), (by ram_path),
     by omega, hw5, h5A, h560, w0, fun C hCP hCs hCm hH => ?_, hm5c,
-    fun r h1 h2 h3 h4 => ?_, fun r h1 h2 h3 => ?_, by rw [hrm5, hrm4, hrm3, hrm2, hrm1],
+    fun r h1 h2 h3 h4 => ?_, fun r h1 h2 h3 => ?_, by ram_finish,
     by rw [ho5, ho4, ho3, ho2, ho1]⟩
   · have hC : C = C0 := chain_eq (by rw [hCP, hC0P]) (by rw [hCs, hC0s]) (by rw [hCm, hC0m])
     subst hC
-    refine ⟨by rw [w0]; exact hH, ?_, by rw [w1, hCs], by rw [w2, hCm],
-      by rw [w3, hsn _ hCP hCs hCm], by rw [w4]; exact hiff4⟩
+    refine ⟨by rwa [w0], ?_, by rw [w1, hCs], by rw [w2, hCm],
+      by rw [w3, hsn _ hCP hCs hCm], by rwa [w4]⟩
     rw [hCP]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
   · have hb' : bandOf r ≠ 18 := h2
     unfold bandOf at hb'
     unfold D0RG at h1
-    rw [fr5 r (by unfold D0RG; omega) h4, k4r r (by simp [Bbit, h3]; omega),
-      fr3 r (by omega) (by omega) (by omega) (by omega) (by omega),
-      k2r r h3 (by omega), fr1 r (by unfold D0RG; omega)]
+    ram_rw [fr5 r (by unfold D0RG; omega) h4, k4r r (by simp [Bbit, h3]; omega),
+      fr3 r,
+      k2r r h3, fr1 r]
   · have hb : bandOf r ≠ 17 := h2
     have hb' : bandOf r ≠ 18 := h3
     unfold bandOf at hb hb'

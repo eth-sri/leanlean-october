@@ -54,12 +54,12 @@ theorem symPtIn_unique {c : Config} {r : ℕ} {s s' : SymPt} (h : SymPtIn c r s)
   cases s with
   | vtx i =>
     cases s' with
-    | vtx i' => simp only [SymPtIn] at h h'; rw [← h.2, ← h'.2]
-    | onEdge e' h'' => simp only [SymPtIn] at h h'; omega
+    | vtx i' => simp [← h.2, ← h'.2]
+    | onEdge e' h'' => simp_all [SymPtIn] 
   | onEdge e hh =>
     cases s' with
-    | vtx i' => simp only [SymPtIn] at h h'; omega
-    | onEdge e' h'' => simp only [SymPtIn] at h h'; rw [← h.2.1, ← h'.2.1, ← h.2.2, ← h'.2.2]
+    | vtx i' => simp_all [SymPtIn] 
+    | onEdge e' h'' => simp only [SymPtIn] at h h'; simp_all
 
 /-- A symbolic point in registers survives when its three registers do. -/
 theorem symPtIn_of_eq {c c' : Config} {r : ℕ} {s : SymPt} (h : SymPtIn c r s)

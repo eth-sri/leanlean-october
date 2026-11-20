@@ -78,16 +78,16 @@ noncomputable def RegOK (P : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List �
     (γ₀ r : ℕ) (C : Chain) (NR : NF) (γR : ℕ) (Lx : List (ℕ × ℕ × ℕ)) : Prop :=
   open Classical in
   C.P = (regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-      (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).poly (Qof P) ∧
+      (inputNF P L E) r).poly (Qof P) ∧
     C.s = 0 ∧ C.m + 1 = C.P.n ∧
     IsCanonicalNF (chainModel C) (Qof P) NR γR regCap ∧ γ₀ ≤ γR ∧ γR ≤ γ₀ + 128 ∧
-    {x | ∃ y ∈ Lx, x = (recOf y).toSet (interiorModel (Qof P)) (Qof P)} =
+    {x | ∃ y ∈ Lx, x = (recOf y).toSet (inputModel P) (Qof P)} =
       Extract.kept (reg r) (NR.F (chainModel C) (Qof P)) ∧
-    (Lx.map fun y => (recOf y).toSet (interiorModel (Qof P)) (Qof P)).Nodup ∧
-    (∀ y ∈ Lx, (recOf y).Attached (interiorModel (Qof P)) (Qof P) ∧ y.1 < (Qof P).n) ∧
+    (Lx.map fun y => (recOf y).toSet (inputModel P) (Qof P)).Nodup ∧
+    (∀ y ∈ Lx, (recOf y).Attached (inputModel P) (Qof P) ∧ y.1 < (Qof P).n) ∧
     ∀ q, q < 2 * Lx.length →
-      ∃ j ∈ ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-        OnArcKey (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) j (endPos Lx q)
+      ∃ j ∈ ((inputNF P L E).region r).arcs,
+        OnArcKey (Qof P) (inputNF P L E) j (endPos Lx q)
 
 /-- **The memory facts of a finished region**: its table entry at `T + 3 r` (triples, length,
 buckets), the triples and the buckets at or above `B`, below `A`. -/
@@ -105,13 +105,13 @@ theorem RegMem.transport {m m' : ℕ → ℕ} {A A' T B : ℕ} {Q : Polygon} {N 
     (hm : ∀ a, (a < A ∧ (a < B → T + 3 * r ≤ a ∧ a < T + 3 * r + 3)) → m' a = m a)
     (hA : A ≤ A') : RegMem m' A' T B Q N r Lx := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := h
-  have e0 : m' (T + 3 * r) = m (T + 3 * r) := hm _ ⟨by omega, fun _ => ⟨le_rfl, by omega⟩⟩
+  have e0 := hm _ ⟨by omega, fun _ => ⟨le_rfl, by omega⟩⟩
   have e1 : m' (T + 3 * r + 1) = m (T + 3 * r + 1) := hm _ ⟨by omega, fun _ => ⟨by omega, by omega⟩⟩
   have e2 : m' (T + 3 * r + 2) = m (T + 3 * r + 2) := hm _ ⟨by omega, fun _ => ⟨by omega, by omega⟩⟩
-  refine ⟨by rw [e1, h1], by rw [e0]; exact h2, by rw [e0]; omega, ?_, by rw [e2]; exact h5,
+  refine ⟨by rw [e1, h1], by rwa [e0], by rw [e0]; omega, ?_, by rwa [e2],
     by rw [e2]; omega, fun q hq => ?_⟩
   · rw [e0]
-    exact clAt_congr h4 fun x hx1 hx2 => hm x ⟨by omega, fun hx => by omega⟩
+    exact h4.congr fun x hx1 hx2 => hm x ⟨by omega, fun hx => by omega⟩
   · rw [e2, hm _ ⟨by omega, fun hx => by omega⟩]
     exact h7 q hq
 
@@ -120,16 +120,11 @@ theorem hostAt_robust {m : ℕ → ℕ} {B A : ℕ} {H : Host} (h : HostAt m B H
     (hA : B + 3 * H.length + 1 ≤ A) : Robust A m (fun m => HostAt m B H) := by
   intro m' hm'
   obtain ⟨h0, hi⟩ := h
-  refine ⟨by rw [hm' B (by omega)]; exact h0, fun i hi' => ?_⟩
+  refine ⟨by ram_simp [hm'] <;> omega, fun i hi' => ?_⟩
   have := hi i hi'
   revert this
   rcases H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨⟨j⟩ | ⟨e, hh⟩⟩ <;> simp only <;> intro hh' <;>
-    · first
-      | (obtain ⟨x1, x2, x3⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2,
-           by rw [hm' _ (by omega)]; exact x3⟩)
-      | (obtain ⟨x1, x2⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2⟩)
+    ram_simp [hm'] <;> omega
 
 /-! ## Counted loops with the allocator -/
 
@@ -156,7 +151,7 @@ theorem forLoopA {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb
     have hlt : j < N := by omega
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, hA₁⟩ := hbody j c hlt hc
     obtain ⟨c', k₂, e₂, hI', hk₂, hA₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, by omega⟩
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_, by omega⟩
     rw [Nat.mul_succ]
     omega
 
@@ -178,18 +173,18 @@ structure LvCtx (O : OracleIface) (P : Polygon) (W : ℕ) (c₁ : Config) (L : L
   h16 : 16 ≤ lam
   hlp : lam ≤ topGrade P.n
   hL : L ≠ []
-  ok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L
+  ok : ChordTriplesOK (inputModel P) (Qof P) L
   perm : E.Perm (List.range (2 * L.length))
-  sort : E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L)
-  deg : (interiorModel (Qof P)).DegLe
-    ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) 4
-  wt : (interiorModel (Qof P)).Semigranular
-    ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P))
+  sort : E.Pairwise (codeLe (inputModel P) (Qof P) L)
+  deg : P.inputModel.DegLe
+    (inputChords P L E) 4
+  wt : P.inputModel.Semigranular
+    (inputChords P L E)
     (2 ^ (Cost.ceilBeta lam + 12))
-  regs : Restore.NFRegs (interiorModel (Qof P)) (Qof P)
-    (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) reg
+  regs : Restore.NFRegs (inputModel P) (Qof P)
+    (inputNF P L E) reg
   nf : NFWithin c₁.nmem (c₁.nreg 210005) (c₁.nreg 211009)
-    (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
+    (inputNF P L E)
   r00 : c₁.nreg 210000 = lam
   r02 : c₁.nreg 211002 = nextLvl lam
   r04 : c₁.nreg 211004 = 2 ^ nextLvl lam
@@ -202,7 +197,7 @@ structure LvCtx (O : OracleIface) (P : Polygon) (W : ℕ) (c₁ : Config) (L : L
   big : 3 * 2 ^ (Cost.ceilBeta (nextLvl lam) + 10) + 129 ≤ P.n - 1
   big2 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ P.n - 1
   md : Robust (c₁.nreg 211009) c₁.nmem
-    (fun m => ModelDescAt m (c₁.nreg 210001) (Qof P) (interiorModel (Qof P)))
+    (fun m => ModelDescAt m (c₁.nreg 210001) (Qof P) (inputModel P))
   mdA : c₁.nreg 210001 + 6 ≤ c₁.nreg 211009
   r03 : c₁.nreg 210003 = L.length
   lA : c₁.nreg 210002 + 3 * L.length ≤ c₁.nreg 211009
@@ -215,7 +210,7 @@ below the table, with the allocator at or above the table. -/
 theorem LvCtx.envD {O : OracleIface} {P : Polygon} {W : ℕ} {c₁ : Config} {L : List (ℕ × ℕ × ℕ)}
     {E : List ℕ} {reg : ℕ → Set Point} {lam : ℕ} (h : LvCtx O P W c₁ L E reg lam) {c : Config}
     (h0 : c.nreg (coreReg 0) = c₁.nreg (coreReg 0)) (h1 : c.nreg (coreReg 1) = c₁.nreg (coreReg 1))
-    (hm : ∀ a, a < c₁.nreg 211009 → c.nmem a = c₁.nmem a) (hA : c₁.nreg 211009 ≤ c.nreg ALLOC) :
+    (hm : MemEqBelow (c₁.nreg 211009) c.nmem c₁.nmem) (hA : c₁.nreg 211009 ≤ c.nreg ALLOC) :
     EnvD (gradeCtx O) P W c := by
   refine ⟨h.good, h.w3, h.wh, ?_, ?_, ?_⟩
   · rw [h0]; exact setup_transport h.setup hm hA
@@ -230,8 +225,8 @@ def LvInv (_O : OracleIface) (P : Polygon) (W : ℕ) (c₁ : Config) (L : List (
     (E : List ℕ) (reg : ℕ → Set Point) (Kb j : ℕ) (c : Config) : Prop :=
   WordsBounded W c ∧ c.nreg 211010 = j ∧ c.nreg 211011 = L.length + 1 ∧
     (∀ q, LvFixed q → c.nreg q = c₁.nreg q) ∧
-    (∀ a, a < c₁.nreg 211009 → c.nmem a = c₁.nmem a) ∧
-    (∀ a, a < c₁.nreg 211009 → c.rmem a = c₁.rmem a) ∧
+    (MemEqBelow (c₁.nreg 211009) c.nmem c₁.nmem) ∧
+    (MemEqBelow (c₁.nreg 211009) c.rmem c₁.rmem) ∧
     (∀ q, bandOf q ∉ drvBands → q ≠ ALLOC → c.nreg q = c₁.nreg q) ∧
     (∀ q, bandOf q ∉ drvBands → c.rreg q = c₁.rreg q) ∧ c.output = c₁.output ∧
     c₁.nreg ALLOC ≤ c.nreg ALLOC ∧ c.nreg ALLOC ≤ c₁.nreg ALLOC + j * Kb ∧
@@ -241,7 +236,7 @@ def LvInv (_O : OracleIface) (P : Polygon) (W : ℕ) (c₁ : Config) (L : List (
       (c.nreg 211013 = 0 ∨ ∃ r, r < j ∧ c.nreg 211013 = (Lx r).length) ∧
       ∀ r, r < j → RegOK P L E reg (c₁.nreg 211006) r (C r) (NR r) (γR r) (Lx r) ∧
         RegMem c.nmem (c.nreg ALLOC) (c₁.nreg 211009) (c₁.nreg ALLOC) (Qof P)
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r (Lx r)
+          (inputNF P L E) r (Lx r)
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.DownPhaseDrvRCost
 public import Chazelle.Programs.Tactics
 
@@ -72,7 +74,7 @@ theorem frame_drv {c c' : Config} {k : ℕ}
     (hr : ∀ r, (r < 210000 ∨ 220000 ≤ r) → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bDownDrv} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+  have hA := hr ALLOC (by unfold ALLOC; omega)
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
   simp only [Finset.mem_singleton, bandOf, bDownDrv] at hr'
@@ -83,7 +85,7 @@ theorem frame_core {c c' : Config} {k : ℕ}
     (hr : ∀ r, r ≠ 230003 → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bCore} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+  have hA := hr ALLOC (by unfold ALLOC; omega)
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
   simp only [Finset.mem_singleton, bandOf, bCore] at hr'
@@ -101,9 +103,9 @@ theorem guardS_exec (n₀ : ℕ) (c : Config) (hw : WordsBounded W c) (hn₀ : n
     (hn : P.n ≤ W) :
     ∃ c' k, Exec P W (guardS n₀) c c' k ∧ k ≤ 7 ∧
       c'.nreg 210007 = (if n₀ ≤ P.n then c.nreg 210000 else 0) ∧ c'.nreg 210008 = 15 ∧
-      (∀ r, (r < 210000 ∨ 220000 ≤ r) → c'.nreg r = c.nreg r) ∧
+      (Machine.NRegEqOutside 210000 220000 c c') ∧
       (∀ r, 210001 ≤ r → r ≤ 210006 → c'.nreg r = c.nreg r) ∧ c'.nreg 210000 = c.nreg 210000 ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold guardS
   refine spec_seq ?_
   exec_block
@@ -111,14 +113,13 @@ theorem guardS_exec (n₀ : ℕ) (c : Config) (hw : WordsBounded W c) (hn₀ : n
   by_cases h : P.n < n₀
   · refine spec_ifLtN_true (by config_simp; omega) ?_
     refine spec_skip ‹_› ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
-    · simp only [Machine.upd_same, ite_eq_right (show ¬ n₀ ≤ P.n by omega)]
-    all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, by and_intros <;> rfl⟩
+    · simp_all
+    all_goals ram_finish
   · refine spec_ifLtN_false (by config_simp; omega) ?_
     refine spec_instr (Exec.copyN ‹_› 210007 210000) fun _ => ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
-    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
-        ite_eq_left (show n₀ ≤ P.n by omega)]
+    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, by and_intros <;> rfl⟩
+    · simp_all
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
 
 set_option maxHeartbeats 4000000 in
@@ -126,16 +127,16 @@ set_option maxHeartbeats 4000000 in
 theorem lamP_exec (c : Config) (hw : WordsBounded W c) {S : ℕ} (hS : c.nreg 230000 = S)
     (hSW : S + 1 ≤ W) :
     ∃ c' k, Exec P W lamP c c' k ∧ k = 4 ∧ c'.nreg 210000 = c.nmem (S + 1) ∧
-      (∀ r, (r < 210000 ∨ 220000 ≤ r) → c'.nreg r = c.nreg r) ∧
+      (Machine.NRegEqOutside 210000 220000 c c') ∧
       (∀ r, 210001 ≤ r → r ≤ 210010 → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold lamP
   exec_block
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hS]; omega)
-  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hS]
+  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, by and_intros <;> rfl⟩
+  all_goals ram_finish
 
 set_option maxHeartbeats 4000000 in
 /-- **`λ := ⌈λ/5⌉ + 11`** from the setup table. -/
@@ -144,15 +145,15 @@ theorem lamNext_exec (c : Config) (hw : WordsBounded W c) {S p lam : ℕ}
     (hW1 : S + p + 4 + lam ≤ W) (hW2 : c.nmem (S + p + 4 + lam) + 11 ≤ W) :
     ∃ c' k, Exec P W lamNext c c' k ∧ k = 11 ∧
       c'.nreg 210000 = c.nmem (S + p + 4 + lam) + 11 ∧
-      (∀ r, (r < 210000 ∨ 220000 ≤ r) → c'.nreg r = c.nreg r) ∧
+      (Machine.NRegEqOutside 210000 220000 c c') ∧
       (∀ r, 210001 ≤ r → r ≤ 210010 → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold lamNext
   exec_block
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hS, hp, hl]; omega)
-  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨rfl, ?_, fun r hr => ?_, fun r h1 h2 => ?_, by and_intros <;> rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, hS, hp, hl]
 

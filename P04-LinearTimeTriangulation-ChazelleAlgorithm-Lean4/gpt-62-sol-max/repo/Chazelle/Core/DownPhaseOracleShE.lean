@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseOracleQPlan
 
 /-!
@@ -85,9 +87,7 @@ theorem setOne_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 170036 = c.nreg 170030 ∧ c'.nreg 170037 = c.nreg 170032 by
     obtain ⟨c', k, e, h1, h2, h3, h4, h5, h6⟩ := h
     exact ⟨c', k, e, h1, h2, h3, h4, h5, h6, exec_frameB e wr_setOne⟩
-  unfold setOne
-  exec_block
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  ram_exec
 
 theorem setTwoA_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) :
     ∃ c' k, Exec P W setTwoA c c' k ∧ k = 5 ∧ c'.nreg 170033 = c.nreg 170001 ∧
@@ -98,10 +98,7 @@ theorem setTwoA_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) :
       c'.nreg 170037 = 2 by
     obtain ⟨c', k, e, h1, h2, h3, h4, h5, h6⟩ := h
     exact ⟨c', k, e, h1, h2, h3, h4, h5, h6, exec_frameB e wr_setTwoA⟩
-  unfold setTwoA
-  exec_block
-  all_goals first | omega | skip
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  ram_exec
 
 theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     (he1 : s.e₁ < P.n) :
@@ -123,15 +120,15 @@ theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   · config_simp; rw [hS.r1, hS.r18]; omega
   · omega
   by_cases h : s.e₁ + 2 < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_true (by ram_finish [hS.r1, hS.r18, hS.r10]) ?_
     refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, Nat.mod_eq_of_lt h]
     · rw [hS.r18]
     · rw [hS.r18]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_false (by config_simp; rwa [hS.r1, hS.r18, hS.r10]) ?_
     exec_block
     refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-    · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    · ram_finish [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
     · rw [hS.r18]
     · rw [hS.r18]
 
@@ -140,9 +137,9 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     {z : Point} {σ : ℝ} (hB : BestI P c S z σ) :
     ∃ c' k, Exec P W outI c c' k ∧ k ≤ 20 ∧
       (c'.nreg 140010 = 1 → ∃ t, FirstHit S z σ t ∧
-        ProperPos (interiorModel (Qof P)) (Qof P) P.n ⟨c'.nreg 140011, c'.nreg 140012⟩ ∧
-        c'.nreg 140011 < (interiorModel (Qof P)).W.n ∧
-        (interiorModel (Qof P)).pos (Qof P) ⟨c'.nreg 140011, c'.nreg 140012⟩ = rayPt z σ t) ∧
+        ProperPos (inputModel P) (Qof P) P.n ⟨c'.nreg 140011, c'.nreg 140012⟩ ∧
+        c'.nreg 140011 < P.inputModel.W.n ∧
+        P.inputModel.pos (Qof P) ⟨c'.nreg 140011, c'.nreg 140012⟩ = rayPt z σ t) ∧
       (c'.nreg 140010 ≠ 1 → NoHit S z σ) ∧ FrameB Bout c c' := by
   have hQ : (Qof P).n = P.n := qn'
   have hD : DistinctHeights (Qof P) := (goodShear_epsOf hS.good.2).2.1
@@ -151,9 +148,9 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   unfold hostWords at hW
   suffices h : ∃ c' k, Exec P W outI c c' k ∧ k ≤ 20 ∧
       (c'.nreg 140010 = 1 → ∃ t, FirstHit S z σ t ∧
-        ProperPos (interiorModel (Qof P)) (Qof P) P.n ⟨c'.nreg 140011, c'.nreg 140012⟩ ∧
-        c'.nreg 140011 < (interiorModel (Qof P)).W.n ∧
-        (interiorModel (Qof P)).pos (Qof P) ⟨c'.nreg 140011, c'.nreg 140012⟩ = rayPt z σ t) ∧
+        ProperPos (inputModel P) (Qof P) P.n ⟨c'.nreg 140011, c'.nreg 140012⟩ ∧
+        c'.nreg 140011 < P.inputModel.W.n ∧
+        P.inputModel.pos (Qof P) ⟨c'.nreg 140011, c'.nreg 140012⟩ = rayPt z σ t) ∧
       (c'.nreg 140010 ≠ 1 → NoHit S z σ) by
     obtain ⟨c', k, e, h1, h2, h3⟩ := h
     exact ⟨c', k, e, h1, h2, h3, exec_frameB e wr_outI⟩
@@ -204,8 +201,8 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
       (by config_simp; rw [ke]; omega)
     refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
     have w₂ := e₂.wb_right
-    have b73 : c₂.nreg 170073 = h := by rw [ir _ (by decide) (by decide)]; config_simp; exact kh
-    have b11 : c₂.nreg 170011 = 1 := by rw [ir _ (by decide) (by decide)]; config_simp; exact hS.r11
+    have b73 : c₂.nreg 170073 = h := by frame_finish
+    have b11 : c₂.nreg 170011 = 1 := by frame_finish [hS.r11]
     have hie : c₂.nreg 170096 = iEdge (Qof P) e := by
       rw [i96]; config_simp; rw [ke, ← hS.iev e]
     exec_block

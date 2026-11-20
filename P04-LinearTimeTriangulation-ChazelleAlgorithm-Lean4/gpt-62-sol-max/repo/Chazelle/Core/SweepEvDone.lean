@@ -39,9 +39,7 @@ theorem fin_rd (c : Config) : rd (finCfg c) bSweep 200 = c.nreg sB ∧
     rd (finCfg c) bSweep 201 = c.nreg sC ∧ rd (finCfg c) bSweep 300 = c.nreg lB ∧
     rd (finCfg c) bSweep 301 = c.nreg lC ∧ rd (finCfg c) bSweep 302 = c.nreg cTB ∧
     (finCfg c).nmem = c.nmem := by
-  refine ⟨?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
-    simp [rd, finCfg, finL, SweepIo.regB, SweepIo.regI, bandReg, bSweep, SweepRam.sw, sB, sC, lB,
-      lC, cTB]
+  ram_finish
 
 section done
 
@@ -63,9 +61,9 @@ theorem done_iter_mem (hIt : IterRel P J N₁ N₂ c cw cs co c')
     co.nmem x = c.nmem x := by
   obtain ⟨⟨rs, -, -, -, -, -, -, -, -, -, hWm, hWr⟩, hAw, ⟨hRm, -, -, hRr⟩, ⟨-, -, A, hB⟩, -⟩ :=
     hIt
-  have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by unfold ALLOC bF sw; omega)
-    (by unfold ALLOC bN sw; omega)
-  rw [hB.memT x (by omega) (by rw [hT', ← hT]; exact hxT), hRm, hWm x hx]
+  have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by reg_omega)
+    (by reg_omega)
+  rw [hB.memT x (by omega) (by rwa [hT', ← hT]), hRm, hWm x hx]
 
 end done
 

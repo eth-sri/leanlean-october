@@ -108,35 +108,11 @@ theorem frontC_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
     ∃ c' k, Exec P W frontC c c' k ∧ k ≤ 50 ∧ SEnv P W O (statC c) c' ∧
       (∀ j, j < 4 → c'.nreg (170200 + 5 * j) = 0) ∧ c'.nreg ALLOC = c.nreg ALLOC + 8 ∧
       Frame ioBands c c' k := by
-  have hn3 : 3 ≤ P.n := Chazelle.Jordan.simple_three_le hG.1
+  obtain ⟨c₁, c₂, k₂, e₁, e₂, hk₂, hE, -, bA, -, F₂⟩ := front_init_exec
+    (P := P) 150000 (by decide) c hw hG hHW hX hcap hwf hbit hroom (.vtx 0)
+  have w₂ := e₂.wb_right
   have hW := hHW
   unfold hostWords at hW
-  -- save
-  obtain ⟨c₁, e₁, a10, a13, ar, arr, am, arm, ao⟩ := saveS_exec (P := P) 150000 (by norm_num) c hw
-  have w₁ := e₁.wb_right
-  have aA : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by unfold ALLOC; omega)
-  have F₁ : Frame ioBands c c₁ 11 := frameIO_of_frameB
-    (B := fun r => decide (170000 ≤ r ∧ r < 170014))
-    (fun r hr => io_of_band (Or.inl (by simp at hr; omega)))
-    ⟨fun r hr => ar r (by simpa using hr), fun r _ => by rw [arr], am, arm, ao⟩ 11
-  have hlow := ShootCut.grade_low hX
-  have a0 : c₁.nreg 170000 = c.nreg 150000 := a10 0 (by norm_num)
-  have a13' : c₁.nreg 170013 = c.nreg 150013 := a13
-  -- the constants and the host record
-  obtain ⟨c₂, k₂, e₂, hk₂, hk₂', b10, b11, b12, b18, b19, b16, b17, b14, b14', b15, bA, b70, bm0,
-      bm1, bm2, bm3, bmlo, br, brr, brm, bo⟩ := initI_exec (P := P) c₁ w₁
-    (by rw [a0]; have := hw.1 ALLOC; omega) (by rw [a13']; have := hlow.1; have := hw.1 ALLOC; omega)
-    (by rw [aA]; exact hroom) (by omega) (by omega)
-  have w₂ := e₂.wb_right
-  have F₂ : Frame ioBands c₁ c₂ k₂ := by
-    refine ⟨fun r hr ha => br r ?_, fun r _ => by rw [brr], fun a ha => bmlo a ha,
-      fun a _ => by rw [brm], bo, by rw [bA]; omega, by rw [bA]; omega⟩
-    intro hb
-    unfold BinitR at hb
-    apply hr
-    rcases hb with h | h | h | h | h | h | h | h | h | h | h | h | h | h <;>
-      (try (subst h; decide))
-    exact absurd h ha
   -- the dummy origin and the free slots
   obtain ⟨c₃, k₃, e₃, hk₃, d20, d21, d200, d205, d210, d215, dr, drr, dm, drm, dout⟩ :
       ∃ c₃ k₃, Exec P W clrC c₂ c₃ k₃ ∧ k₃ = 6 ∧ c₃.nreg 170020 = 0 ∧ c₃.nreg 170021 = 0 ∧
@@ -159,36 +135,11 @@ theorem frontC_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
       fun r _ => by rw [drr], dm, drm, dout⟩ k₃
   have q : ∀ r, r < 170020 ∨ (170021 < r ∧ r < 170200) → c₃.nreg r = c₂.nreg r := fun r hr =>
     dr r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have g : ∀ r, r < 170020 ∨ (170021 < r ∧ r < 170200) → ¬ BinitR r → c₃.nreg r = c₁.nreg r :=
-    fun r h1 h2 => by rw [q r h1, br r h2]
-  have gs : ∀ i, i < 10 → c₃.nreg (170000 + i) = c.nreg (150000 + i) := fun i hi => by
-    rw [g _ (by omega) (by unfold BinitR; omega)]; exact a10 i hi
-  have ex : Exec P W frontC c c₃ (11 + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-  have cA : c₃.nreg ALLOC = c.nreg ALLOC + 8 := by
-    rw [q _ (by unfold ALLOC; omega), bA, aA]
-  refine ⟨c₃, _, ex, by omega, ⟨hG, hHW, gs 1 (by norm_num), gs 2 (by norm_num),
-    gs 3 (by norm_num), gs 4 (by norm_num), gs 8 (by norm_num), gs 9 (by norm_num),
-    by rw [g _ (by omega) (by unfold BinitR; omega)]; exact a13',
-    by rw [q _ (by omega)]; exact b10, by rw [q _ (by omega)]; exact b11,
-    by rw [q _ (by omega)]; exact b12, by rw [q _ (by omega)]; exact b18,
-    by rw [q _ (by omega)]; exact b19,
-    by rw [q _ (by omega), b14, a0, am]; exact hbit,
-    by rw [q _ (by omega)]; exact b14',
-    by rw [q _ (by omega), b15, aA]; rfl,
-    by rw [q _ (by omega), b16, a13', am]; rfl,
-    by rw [q _ (by omega), b17, a13', am]; rfl, ⟨d20, d21⟩,
-    fun a ha => by rw [dm, bmlo a (by rw [aA]; exact ha), am]; rfl,
-    by rw [dm]; show c₂.nmem (c.nreg ALLOC) = 1; rw [← aA]; exact bm0,
-    by rw [dm]; show c₂.nmem (c.nreg ALLOC + 1) = 0; rw [← aA]; exact bm1,
-    by rw [dm]; show c₂.nmem (c.nreg ALLOC + 2) = 0; rw [← aA]; exact bm2,
-    by rw [dm]; show c₂.nmem (c.nreg ALLOC + 3) = P.n - 1; rw [← aA]; exact bm3,
-    by rw [cA]; show c.nreg ALLOC + 8 ≤ c.nreg ALLOC + 8; exact le_rfl, hX, hcap⟩,
-    fun j hj => ?_, cA, ((F₁.trans F₂).trans F₃).mono (by simp) (by omega)⟩
-  interval_cases j
-  · exact d200
-  · exact d205
-  · exact d210
-  · exact d215
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega,
+    ⟨hE.keep (fun r h1 h2 => q r (by omega)) (fun a _ => congrFun dm a) F₃.2.2.2.2.2.1, ⟨d20, d21⟩⟩,
+    fun j hj => ?_, (q _ (Or.inl (by decide))).trans bA, ?_⟩
+  · interval_cases j <;> assumption
+  · simpa only [Finset.union_self, Nat.add_assoc] using F₂.trans F₃
 
 end exec
 

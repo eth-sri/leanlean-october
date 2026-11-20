@@ -112,9 +112,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         abs_of_pos (by have := lt_min hs hr0; linarith)]
       have := min_le_right s r0; have := lt_min hs hr0; linarith
     have hX' := hnear _ hdist (Chazelle.Chain.regionsIn_subset hR hmem).1
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · exact h
-    · exact absurd (h.le_bot ⟨hX', hmem⟩) (fun h => h)
+    exact Chazelle.Chain.regionsIn_eq_of_mem hX hR hX' hmem
   subst hXR
   -- the walk point lies on a piece of the arc
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin hne hX harc
@@ -137,8 +135,10 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hxu := (cyc_unwrap hlb hlb hrb hxb hab').1 hin
   rw [unwrapK_self] at hxu
   set xx := unwrapK n a ((p : ℝ) + t) with hxx
-  have hxa : ukey M S X i_l 0 < xx := by rw [hu0]; exact hxu.1
-  have hxd : xx < ukey M S X i_l d := by rw [hA.hud]; exact hxu.2
+  have hxa := hxu.1
+  rw [← hu0] at hxa
+  have hxd := hxu.2
+  rw [← hA.hud] at hxd
   have hd0 := hA.hd0
   -- the piece containing `xx`
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by

@@ -45,14 +45,14 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
   have hf1 : PFr InvRG (fun a => bO ≤ a ∧ a < bO + n) c c1 :=
     PFr.nreg (PFr.refl c) (fun r hr => by
       simp only [Machine.upd_apply]; unfold InvRG at hr; split_ifs <;> omega)
-  obtain ⟨c', k, e, hk, hw', hi', hn', hf', hI'⟩ := forN (P := P) (W := W) (ri := 130803)
+  obtain ⟨c', k, e, hk, hw', hi', hn', hf', hI'⟩ := Exec.forN (P := P) (W := W) (ri := 130803)
     (rn := 130802) (body := invBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130803 = j ∧ c'.nreg 130802 = n ∧
       PFr InvRG (fun a => bO ≤ a ∧ a < bO + n) c c' ∧
       ∀ i, i < j → c'.nmem (bO + c.nmem (bI + i)) = i)
     n 5 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hm2⟩ => by
-      have r0 : ∀ r, ¬ InvRG r → c2.nreg r = c.nreg r := hf2.1
+      have r0 := hf2.1
       have rI := (r0 130800 (by unfold InvRG; omega)).trans hI
       have rO := (r0 130801 (by unfold InvRG; omega)).trans hO
       have r1 := (r0 130001 (by unfold InvRG; omega)).trans hone
@@ -65,8 +65,7 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         fun i hi => ?_⟩
       · refine PFr.of_eq hf2 (fun r hr => ?_) (fun a ha => ?_)
         · simp only [Machine.upd_apply]; unfold InvRG at hr; split_ifs <;> omega
-        · simp only [rI, rO, hi2, mI]
-          rw [Machine.upd_other _ _ _ (by omega)]
+        ram_simp [rI, rO, hi2, mI] <;> reg_omega
       · config_simp
         simp only [rI, rO, hi2, mI, Machine.upd_apply]
         split_ifs with h
@@ -94,8 +93,7 @@ theorem OK.congr {R R' : BTree} (hR : R.OK) (hn : R'.n = R.n) (hq : ∀ i, i < R
     refine ⟨j, hj, ?_⟩
     have hne : R.q i ≠ R.q 0 := fun h => by
       have := hR.q_inj i hi 0 hR.n_pos h; omega
-    rw [hq j (by omega), hq i hi, hp _ (hR.q_lt i hi) hne]
-    exact hqj
+    rwa [hq j (by omega), hq i hi, hp _ (hR.q_lt i hi) hne]
 
 /-- The parent function only reads the queue head and the parents. -/
 theorem up_congr {R R' : BTree} (hq0 : R'.q 0 = R.q 0)
@@ -104,8 +102,8 @@ theorem up_congr {R R' : BTree} (hq0 : R'.q 0 = R.q 0)
   unfold up root
   rw [hq0]
   by_cases h : g = R.q 0
-  · rw [ite_eq_left h, ite_eq_left h]
-  · rw [ite_eq_right h, ite_eq_right h, hp g hg h]
+  · simp_all
+  simp_all
 
 end BTree
 

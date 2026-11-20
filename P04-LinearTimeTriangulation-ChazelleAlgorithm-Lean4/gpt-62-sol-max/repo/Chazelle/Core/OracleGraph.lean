@@ -61,26 +61,25 @@ theorem bookAdj_spineAdj {B : BookData} {u v : ℕ} (huv : u < v) (hv : v < B.N)
     rwa [Nat.mod_eq_of_lt hv] at this
   · right
     have := bookAdj_view (B := B) (v := .spF v) (by show v < B.N; omega)
-    simp only [View.tail, View.head] at this
-    rwa [show v + 1 = B.N by omega, Nat.mod_self] at this
+    simp_all [View.tail, View.head] <;> omega
 
 theorem bookGraph_adj_of_mem {B : BookData} {c : ℕ × ℕ} (hc : c ∈ B.I ∨ c ∈ B.O)
     (h12 : c.1 < c.2) (h2 : c.2 < B.N) :
     (bookGraph B).Adj ⟨c.1, by omega⟩ ⟨c.2, h2⟩ := by
-  refine ⟨fun h => by simp [Fin.ext_iff] at h; omega, Or.inl ?_⟩
+  refine ⟨fun h => by simp_all <;> omega, Or.inl ?_⟩
   rcases hc with hc | hc
   · exact bookAdj_view (B := B) (v := .inP c) hc
   · exact bookAdj_view (B := B) (v := .outP c) hc
 
 theorem bookGraph_adj_of_spine {B : BookData} {u v : ℕ} (huv : u < v) (hv : v < B.N)
     (h : SpineAdj B.N u v) : (bookGraph B).Adj ⟨u, by omega⟩ ⟨v, hv⟩ :=
-  ⟨fun h => by simp [Fin.ext_iff] at h; omega, bookAdj_spineAdj huv hv h⟩
+  ⟨fun h => by simp_all <;> omega, bookAdj_spineAdj huv hv h⟩
 
 /-- A reflexive-transitive closure of a symmetric relation is symmetric. -/
 theorem rtg_symm {α : Type*} {r : α → α → Prop} (hr : ∀ a b, r a b → r b a) {a b : α}
     (h : Relation.ReflTransGen r a b) : Relation.ReflTransGen r b a := by
   induction h with
-  | refl => exact Relation.ReflTransGen.refl
+  | refl => rfl
   | tail _ hbc ih => exact (Relation.ReflTransGen.single (hr _ _ hbc)).trans ih
 
 /-! ## The book data of a normal form -/
@@ -231,11 +230,11 @@ theorem cross_of_graphOK (hP : C.P.Simple) (hN : IsNF (chainModel C) Q N) {reg :
     (hcr : CrossAdj C U V) :
     ∃ a b : Fin B.N, rgNode reg N B a = U ∧ rgNode reg N B b = V ∧ (bookGraph B).Adj a b := by
   obtain ⟨p, q, hp, hq, hpU, hqV, hz⟩ := cross_zip C hP hN hR hA hU hV hUV hcr
-  have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
-  have hqN : q < B.N := lt_of_lt_of_le hq hB.arcs_le
-  refine ⟨⟨p, hpN⟩, ⟨q, hqN⟩, by unfold rgNode; rw [BookData.ite_t hp]; exact hpU,
-    by unfold rgNode; rw [BookData.ite_t hq]; exact hqV, ?_⟩
-  have hpq : p ≠ q := fun h => hUV (by rw [← hpU, ← hqV, h])
+  have hpN := lt_of_lt_of_le hp hB.arcs_le
+  have hqN := lt_of_lt_of_le hq hB.arcs_le
+  refine ⟨⟨p, hpN⟩, ⟨q, hqN⟩, by unfold rgNode; simp_all,
+    by unfold rgNode; simp_all, ?_⟩
+  have hpq : p ≠ q := fun h => hUV (by simp_all)
   rcases lt_or_gt_of_ne hpq with hlt | hlt
   · rcases hB.O_complete p q hlt hq hz with h | h
     · exact bookGraph_adj_of_mem (c := (p, q)) (Or.inr h) hlt hqN

@@ -50,8 +50,7 @@ theorem LbInv.step {κ : ℕ → ℕ} {lo hi x pos j : ℕ} (hs : Sorted κ lo h
       · exact hI.below i hi1 hip
       · exact lt_of_le_of_lt (hs i (pos + 2 ^ j - 1) hi1 (by omega) (by omega)) h2
     · have := hI.above (by rw [hpow]; omega)
-      rw [show pos + 2 ^ j + 2 ^ j - 1 = pos + 2 ^ (j + 1) - 1 by rw [hpow]; omega]
-      exact this
+      rwa [show pos + 2 ^ j + 2 ^ j - 1 = pos + 2 ^ (j + 1) - 1 by rw [hpow]; omega]
   · intro h
     refine ⟨hI.lo_le, hI.le_hi, hI.below, fun hin => ?_⟩
     by_contra hlt

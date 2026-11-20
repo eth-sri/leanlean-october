@@ -30,14 +30,13 @@ variable {P : Polygon} {li : Bool} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   {r : ℕ} {C : Chain} {NR : NF} {i0 g : ℕ}
 
 set_option quotPrecheck false in
-local notation "xS" => (buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-  (Qof P)
+local notation "xS" => inputChords P L E
 set_option quotPrecheck false in
-local notation "xK" => nk (interiorModel (Qof P)) xS (reg r)
+local notation "xK" => nk (inputModel P) xS (reg r)
 set_option quotPrecheck false in
 local notation "xG" => hostPoly (Qof P) xS (reg r)
 set_option quotPrecheck false in
-local notation "xH" => regHost li (Qof P).n (buildNF (interiorModel (Qof P)) (Qof P) L E) r
+local notation "xH" => regHost li (Qof P).n (inputNF P L E) r
 
 namespace XCtx
 
@@ -53,25 +52,26 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     ∃ τ : ℝ, 0 ≤ τ ∧ τ < 1 ∧
       sidePt (interiorWalk (Qof P)) (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge τ =
         sidePt (C.sideWalk C.sideBeta) p t ∧
-      ∃ a b : ℝ, (interiorModel (Qof P)).IsArc xS (reg r) a b ∧
+      ∃ a b : ℝ, P.inputModel.IsArc xS (reg r) a b ∧
         ((xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge + τ = a ∨
           (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge + τ = b ∨
           sideInArc a b ((xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge + τ)) := by
   have hm := Y.hm
+  have h3 : 3 ≤ xK := Y.three
   have h3 := Y.three
   have hm1 := C.one_le
   have hQ := Y.X.hQ
   have hFam := Y.X.hFam
-  have hM : WalkAx (interiorModel (Qof P)) := walkAx_interiorModel hQ
+  have hM : WalkAx (inputModel P) := walkAx_interiorModel hQ
   have hWn : (interiorWalk (Qof P)).n = (Qof P).n := walk_n _
-  have hW : (interiorModel (Qof P)).W = interiorWalk (Qof P) := rfl
+  have hW : P.inputModel.W = interiorWalk (Qof P) := rfl
   obtain ⟨h6, hp, hlast, hside⟩ := Y.end_ok hAB hat hG hpt
   have hkc : tK C.m C.topIdx C.sideBeta p < xK := by
     have := tK_le C.sideBeta hm1 p (T := C.topIdx); omega
   have hι : sig li xK i0 (tK C.m C.topIdx C.sideBeta p) < xK := sig_lt li (by omega) _ _
   have hrep := Y.hrep _ hkc
   have hedge : (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta h p).edge =
-      ⌊hk (interiorModel (Qof P)) xS (reg r) (sig li xK i0 (tK C.m C.topIdx C.sideBeta p))⌋₊ :=
+      ⌊hk (inputModel P) xS (reg r) (sig li xK i0 (tK C.m C.topIdx C.sideBeta p))⌋₊ :=
     pEdge_rep hQ hFam Y.X.hli Y.X.hdh hι hrep
   have hWv : C.P.vtx (tK C.m C.topIdx C.sideBeta p) =
       (xG).vtx (sig li xK i0 (tK C.m C.topIdx C.sideBeta p)) := Y.vtx_sig hkc
@@ -79,11 +79,11 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
   have hGn : (xG).n = xK := Y.gn
   rw [hedge]
   set ι := sig li xK i0 (tK C.m C.topIdx C.sideBeta p) with hιdef
-  have hGv : (xG).vtx ι = hostPt (interiorModel (Qof P)).W (hk (interiorModel (Qof P)) xS (reg r) ι) :=
+  have hGv : (xG).vtx ι = hostPt P.inputModel.W (hk (inputModel P) xS (reg r) ι) :=
     hostPoly_vtx hι
   have hb := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι)
   rw [hW, hWn] at hb
-  set κ := hk (interiorModel (Qof P)) xS (reg r) ι with hκ
+  set κ := hk (inputModel P) xS (reg r) ι with hκ
   have hq0 : ⌊κ⌋₊ < (Qof P).n := by
     have : (⌊κ⌋₊ : ℝ) < (Qof P).n := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
     exact_mod_cast this
@@ -105,14 +105,14 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     have hGat : SideAttach xG (hseg ((Qof P).vtx h).2 A B) ι t :=
       ExtG.attach_of_sector hz.symm (fun x hx => (hsec x).1 hx) (by rw [hGn]; exact hι) ht0 ht1 hat
     -- the gap after `ι` is an arc gap
-    have hAg : ArcGap (interiorModel (Qof P)) xS (reg r) ι := by
+    have hAg : ArcGap (inputModel P) xS (reg r) ι := by
       rcases gap_cases hM hFam.2.1 hFam.1 Y.X.hne Y.X.hR (by omega) hι with hAg | hCg
       · exact hAg
       · exact (Y.not_attach_flat hAB hι ⟨ht0', ht1⟩ (Y.chordGap_flat hι hCg) hGat).elim
     have hι1 : (ι + 1) % xK < xK := Nat.mod_lt _ (by omega)
     have hb' := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι1)
     rw [hW, hWn] at hb'
-    set κ' := hk (interiorModel (Qof P)) xS (reg r) ((ι + 1) % xK) with hκ'
+    set κ' := hk (inputModel P) xS (reg r) ((ι + 1) % xK) with hκ'
     have hne : κ ≠ κ' := hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hι
     have hnoint : ∀ k : ℕ, k < (Qof P).n → ¬ sideInArc κ κ' k := fun k hk' =>
       arcGap_noInt hQ hFam Y.X.hne Y.X.hR hι hAg k (by rw [hW, hWn]; exact hk')
@@ -173,7 +173,7 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
             rw [hsp] at hsub
             have hbp := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hpv)
             rw [hW, hWn] at hbp
-            have hne' : hk (interiorModel (Qof P)) xS (reg r) (prevIdx xK ι) ≠ κ := by
+            have hne' : hk (inputModel P) xS (reg r) (prevIdx xK ι) ≠ κ := by
               have := hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hpv; rwa [hsp] at this
             have hbn : b' < (Qof P).n := by have := harc.2.2.2.1; rwa [hW, hWn] at this
             have e := cyc_end hne' hbp.1 hbp.2 hb.1 hb.2 harc.2.2.1 hbn
@@ -196,35 +196,35 @@ theorem end_xpos {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
 
 /-- An arc of the region gives an arc record of region `r` of `N`. -/
 theorem onArc_of {x : WPos} {a b : ℝ}
-    (harc : (interiorModel (Qof P)).IsArc xS (reg r) a b)
-    (hx : (interiorModel (Qof P)).key (Qof P) x = a ∨ (interiorModel (Qof P)).key (Qof P) x = b ∨
-      sideInArc a b ((interiorModel (Qof P)).key (Qof P) x)) :
-    ∃ j ∈ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-      OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j x := by
+    (harc : P.inputModel.IsArc xS (reg r) a b)
+    (hx : P.inputModel.key (Qof P) x = a ∨ P.inputModel.key (Qof P) x = b ∨
+      sideInArc a b (P.inputModel.key (Qof P) x)) :
+    ∃ j ∈ ((inputNF P L E).region r).arcs,
+      OnArcKey (Qof P) (inputNF P L E) j x := by
   obtain ⟨-, -, hcomp⟩ := regArcs_facts Y.X.hQ Y.X.hL Y.X.hperm Y.X.hsort Y.X.hK Y.X.hregs Y.X.hr
   obtain ⟨t, ht, hs, he⟩ := hcomp a b harc
-  refine ⟨((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs.getD t 0, ?_, ?_⟩
-  · rw [List.getD_eq_getElem _ _ ht]; exact List.getElem_mem ht
-  · unfold OnArcKey; rw [hs, he]; exact hx
+  refine ⟨((inputNF P L E).region r).arcs.getD t 0, ?_, ?_⟩
+  · simp_all
+  · unfold OnArcKey; rwa [hs, he]
 
 /-- **X-R2: the interior triple of a kept chord record.** -/
 theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
     (hk : ((NR.chord i).toSet (chainModel C) (Qof P) ∩ reg r).Nonempty) :
     (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp
-        (NR.chord i).rp)).toSet (interiorModel (Qof P)) (Qof P) =
+        (NR.chord i).rp)).toSet (inputModel P) (Qof P) =
       (NR.chord i).toSet (chainModel C) (Qof P) ∧
     (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp
-        (NR.chord i).rp)).Attached (interiorModel (Qof P)) (Qof P) ∧
+        (NR.chord i).rp)).Attached (inputModel P) (Qof P) ∧
     (NR.chord i).h < (Qof P).n ∧
-    ProperPos (interiorModel (Qof P)) (Qof P) (Qof P).n
+    ProperPos (inputModel P) (Qof P) (Qof P).n
       (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp) ∧
-    ProperPos (interiorModel (Qof P)) (Qof P) (Qof P).n
+    ProperPos (inputModel P) (Qof P) (Qof P).n
       (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp) ∧
-    (∃ j ∈ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-      OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j
+    (∃ j ∈ ((inputNF P L E).region r).arcs,
+      OnArcKey (Qof P) (inputNF P L E) j
         (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp)) ∧
-    (∃ j ∈ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-      OnArcKey (Qof P) (buildNF (interiorModel (Qof P)) (Qof P) L E) j
+    (∃ j ∈ ((inputNF P L E).region r).arcs,
+      OnArcKey (Qof P) (inputNF P L E) j
         (xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp)) := by
   have hQ := Y.X.hQ
   have hn3 : 3 ≤ (Qof P).n := Chazelle.Jordan.simple_three_le hQ
@@ -241,28 +241,28 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
   set xL := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).lp with hxLdef
   set xR := xPos (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h (NR.chord i).rp with hxRdef
   -- parameters and points
-  have hparL : (interiorModel (Qof P)).param (Qof P) xL = τL :=
+  have hparL : P.inputModel.param (Qof P) xL = τL :=
     iparam Y.X.hli Y.X.hdh (by omega) heL (by rw [hpL])
-  have hparR : (interiorModel (Qof P)).param (Qof P) xR = τR :=
+  have hparR : P.inputModel.param (Qof P) xR = τR :=
     iparam Y.X.hli Y.X.hdh (by omega) heR (by rw [hpR])
-  have hposL : (interiorModel (Qof P)).pos (Qof P) xL = ((A, y) : Point) := by
-    show sidePt (interiorWalk (Qof P)) xL.edge ((interiorModel (Qof P)).param (Qof P) xL) = _
+  have hposL : P.inputModel.pos (Qof P) xL = ((A, y) : Point) := by
+    show sidePt (interiorWalk (Qof P)) xL.edge (P.inputModel.param (Qof P) xL) = _
     rw [hparL, hpL]
-  have hposR : (interiorModel (Qof P)).pos (Qof P) xR = ((B, y) : Point) := by
-    show sidePt (interiorWalk (Qof P)) xR.edge ((interiorModel (Qof P)).param (Qof P) xR) = _
+  have hposR : P.inputModel.pos (Qof P) xR = ((B, y) : Point) := by
+    show sidePt (interiorWalk (Qof P)) xR.edge (P.inputModel.param (Qof P) xR) = _
     rw [hparR, hpR]
   have hlpos : (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h
       (NR.chord i).lp (NR.chord i).rp)).lpos = xL := rfl
   have hrpos : (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h
       (NR.chord i).lp (NR.chord i).rp)).rpos = xR := rfl
   have hset : (recOf (xTriple (Qof P).n xH li C.m C.topIdx C.sideBeta (NR.chord i).h
-      (NR.chord i).lp (NR.chord i).rp)).toSet (interiorModel (Qof P)) (Qof P) = hseg y A B := by
+      (NR.chord i).lp (NR.chord i).rp)).toSet (inputModel P) (Qof P) = hseg y A B := by
     unfold CRec.toSet
     rw [hlpos, hrpos, hposL, hposR]
     rfl
   -- the chord is an interior chord of `Q`, attached at its ends
   obtain ⟨hIadm, -⟩ := Y.hext.loc (F₁ := {hseg y A B}) (by simpa using hadm) _ ⟨rfl, hk⟩
-  have hMQ : WalkAx (interiorModel (Qof P)) := walkAx_interiorModel hQ
+  have hMQ : WalkAx (inputModel P) := walkAx_interiorModel hQ
   obtain ⟨a', b', -, hseg', hy', -, hEa, hEb⟩ := hMQ.ends _ hIadm
   have hWs := (FactsInterior.interiorWalk_spec hQ).1
   have hWn : (interiorWalk (Qof P)).n = (Qof P).n := walk_n _
@@ -286,12 +286,12 @@ theorem kept_pos {i : ℕ} (hi : i < NR.nChords)
     rw [hset, hlpos, hrpos, hparL, hparR]
     exact ⟨hattach _ _ _ heL hτL0 hτL1 hpL (DownDrv.left_end_of_segment hAB hy' hseg'),
       hattach _ _ _ heR hτR0 hτR1 hpR (right_end_of_segment hAB hy' hseg')⟩
-  · have hkey : (interiorModel (Qof P)).key (Qof P) xL = xL.edge + τL := by
-      show xL.edge + (interiorModel (Qof P)).param (Qof P) xL = _; rw [hparL]
+  · have hkey : P.inputModel.key (Qof P) xL = xL.edge + τL := by
+      show xL.edge + P.inputModel.param (Qof P) xL = _; rw [hparL]
     refine Y.onArc_of harcL ?_
     rw [hkey]; exact hxL
-  · have hkey : (interiorModel (Qof P)).key (Qof P) xR = xR.edge + τR := by
-      show xR.edge + (interiorModel (Qof P)).param (Qof P) xR = _; rw [hparR]
+  · have hkey : P.inputModel.key (Qof P) xR = xR.edge + τR := by
+      show xR.edge + P.inputModel.param (Qof P) xR = _; rw [hparR]
     refine Y.onArc_of harcR ?_
     rw [hkey]; exact hxR
 

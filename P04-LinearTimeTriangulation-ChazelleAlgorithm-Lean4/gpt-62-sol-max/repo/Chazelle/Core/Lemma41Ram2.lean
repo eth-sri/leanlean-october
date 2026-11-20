@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.Lemma41Ram1
 public import Mathlib.Tactic.IntervalCases
 public import Mathlib.Data.List.GetD
@@ -78,12 +80,9 @@ theorem entB_exec {c : Config} (hw : WordsBounded W c) {T g q : ℕ}
   exec_block
   all_goals try (config_simp; simp only [h22, h12, h13, h24]; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-  · config_simp; simp only [h22, h12, h13]
-    rw [show c.nmem (T + g) + q + q + q = c.nmem (T + g) + 3 * q by ring]
-  · config_simp; simp only [h22, h12, h13, h24]
-    rw [show c.nmem (T + g) + q + q + q + 1 = c.nmem (T + g) + 3 * q + 1 by ring]
-  · simp only [Machine.upd_apply]
-    split_ifs <;> first | omega
+  · config_simp; frame_finish
+  · config_simp; frame_finish
+  frame_finish
 
 set_option maxHeartbeats 16000000 in
 /-- The record stores. -/
@@ -133,8 +132,7 @@ theorem advB_exec {c : Config} (hw : WordsBounded W c) {rp cnt PW g x : ℕ}
   · config_simp; simp only [h19, h24]
   · config_simp; simp only [h14, h24]
   · config_simp; simp only [h21, h12, h10, hp]
-  · simp only [Machine.upd_apply]
-    split_ifs <;> first | omega
+  frame_finish
 
 end proofs
 

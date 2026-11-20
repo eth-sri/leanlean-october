@@ -1,6 +1,12 @@
 module
 
-public import Chazelle.Core.SweepEvStopFace2
+meta import Chazelle.Programs.RegisterGuard
+
+public import Chazelle.Programs.RamSimp
+
+public import Chazelle.Core.SweepEvStopFace
+public import Chazelle.Core.SweepEvFace3
+public import Chazelle.Core.SweepEvStopTasks
 
 /-!
 # The sweep (WP-D), stage 2: the regions faced at a position of the walk of `C₂` (task F, RAM 2)
@@ -22,8 +28,8 @@ open OracleQ (sj sk ek succP predP)
 
 @[expose] public section
 
-def frGE : ℕ := sw 1206
-def frGH : ℕ := sw 1207
+@[ram_layout] def frGE : ℕ := sw 1206
+@[ram_layout] def frGH : ℕ := sw 1207
 
 /-- `dst := src` if `x` (normalised in `frGE, frGH`) is a vertex and equals the end `(ye, yh)`. -/
 def frChk (dst ye yh src : ℕ) : Stmt :=
@@ -46,28 +52,26 @@ theorem frChk_irs {dst ye yh src : ℕ} (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 
       (∀ r, r ≠ dst → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   unfold frChk
   by_cases h0 : c.nreg K0 < c.nreg frGH
-  · refine (IRS.ifT h0 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by omega)
-      (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+  · refine (IRS.ifT h0 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).budget
+    ram_simp [ite_eq_right]
   by_cases h1 : c.nreg ye < c.nreg frGE
-  · refine (IRS.ifF h0 (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))).mono
-      (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+  · refine (IRS.ifF h0 (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))).budget
+    ram_simp [ite_eq_right]
   by_cases h2 : c.nreg frGE < c.nreg ye
   · refine (IRS.ifF h0 (IRS.ifF h1 (IRS.ifT h2 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))))
-      |>.mono (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+      |>.budget
+    ram_simp [ite_eq_right]
   by_cases h3 : c.nreg K0 < c.nreg yh
   · refine (IRS.ifF h0 (IRS.ifF h1 (IRS.ifF h2 (IRS.ifT h3
-      (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))))) |>.mono (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+      (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))))) |>.budget
+    ram_simp [ite_eq_right]
   · refine (IRS.ifF h0 (IRS.ifF h1 (IRS.ifF h2 (IRS.ifF h3 (IRS.block [.copyN dst src] hI
       ⟨iscr_sw hd.1 hd.2, trivial⟩))))).mono (by simp) ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · simp only [regB, regI, upd, ite_true]
-      rw [ite_eq_left ⟨by omega, by omega, by omega⟩]
-    · simp only [regB, regI, upd, ite_eq_right hr]
+      rw [ite_eq_left (by omega)]
+    ram_finish
 
 /-- `nhgt` vanishes exactly at parameter `0`. -/
 theorem nhgt_zero_iff {M : Model} {Q : Polygon} (x : WPos) :
@@ -91,21 +95,21 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (hdst : dst = sw 4114 ∨ dst = sw 4115) (hye : sw 1200 ≤ ye ∧ ye ≤ sw 1203)
     (hyh : sw 1200 ≤ yh ∧ yh ≤ sw 1203) (hyy : ye ≠ yh) (hsrc : src = lR0 ∨ src = lR2)
     {Y : WPos} (vye : c.nreg ye = Y.edge) (vyh : c.nreg yh = Y.hgt)
-    (hYpp : ProperPos (chainModel J.right) (Qof P) P.n Y)
-    (hYe : Y.edge < (chainModel J.right).W.n)
+    (hYpp : ProperPos J.rightModel (Qof P) P.n Y)
+    (hYe : Y.edge < J.rightModel.W.n)
     (hYy : Y.edge < 6 → Y.edge ≠ 0 → Y.edge ≠ 2 → Y.edge ≠ 4 →
-      |((chainModel J.right).pos (Qof P) Y).2| < J.right.radius)
-    (hxe : c.nreg pe < (chainModel J.right).W.n)
-    (hxpp : ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pe, c.nreg ph⟩)
+      |(J.rightModel.pos (Qof P) Y).2| < J.right.radius)
+    (hxe : c.nreg pe < J.rightModel.W.n)
+    (hxpp : ProperPos J.rightModel (Qof P) P.n ⟨c.nreg pe, c.nreg ph⟩)
     (hroom : c.nreg ALLOC + 22100 ≤ W) :
     IRS P W c₀ (frTail pe ph dst ye yh src) c 22100 (fun c' =>
       c'.nreg dst = (if 6 ≤ c.nreg pe ∧
-          nhgt (chainModel J.right) (Qof P) ⟨c.nreg pe, c.nreg ph⟩ = 0 ∧
-          Y.edge = c.nreg pe ∧ nhgt (chainModel J.right) (Qof P) Y = 0
+          nhgt J.rightModel (Qof P) ⟨c.nreg pe, c.nreg ph⟩ = 0 ∧
+          Y.edge = c.nreg pe ∧ nhgt J.rightModel (Qof P) Y = 0
         then c.nreg src else c.nreg lR1) ∧
       (∀ r, bandOf r ∉ oracleBands → r ≠ dst → (r < sw 1200 ∨ sw 1207 < r) → r ≠ ALLOC →
         c'.nreg r = c.nreg r) ∧
-      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have hctx := E.ctx2' hI
   have hfO : fO = sw 1204 := rfl
   have hfrGE : frGE = sw 1206 := rfl
@@ -115,36 +119,34 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   -- 1. normalise the end
   refine IRS.mono (K := 11015 + (1 + (11015 + 2 + 7 + 9 + 2))) (IRS.seq
     (normS_irs (dsc := sw 21) (pe := ye) (ph := yh) (o := fO) (C := J.right) hI (E.hK.fix hI) hctx
-      ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold sw at hye; omega,
-        by unfold sw at hye; omega, by unfold sw at hyh; omega, by unfold sw at hyh; omega⟩
-      ⟨by rw [hfO]; unfold sw; norm_num, by rw [hfO]; unfold sw; norm_num,
+      (by register_guard)
+      ⟨by simp [hfO, sw], by simp [hfO, sw],
         by rw [hfO]; unfold sw at hye ⊢; omega, by rw [hfO]; unfold sw at hyh ⊢; omega,
         by rw [hfO]; unfold sw at hye ⊢; omega, by rw [hfO]; unfold sw at hyh ⊢; omega, hyy⟩
-      (by rw [vye]; exact hYe) (by rw [vye, vyh]; exact hYpp) (by rw [vye, vyh]; exact hYy)
+      (by rwa [vye]) (by rwa [vye, vyh]) (by rwa [vye, vyh])
       (by omega)) ?_) (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - hA₁' ⟨v1e, v1h, k1, hA1, hm1⟩
   rw [vye, vyh] at v1h
   rw [vye] at v1e
   have keep1 : ∀ r, bandOf r ∉ oracleBands → (r < sw 1200 ∨ sw 1207 < r) → r ≠ ALLOC →
       c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
-    k1 r h1 (by unfold sw at hyh h2; omega) (by rw [hfO]; unfold sw at h2 ⊢; omega)
+    k1 r h1 (by register_guard) (by rw [hfO]; unfold sw at h2 ⊢; omega)
       (by rw [hfO]; unfold sw at h2 ⊢; omega) h3
   have nsw : ∀ q, (sw 4000 ≤ q ∧ q < sw 5000) ∨ (sw 600 ≤ q ∧ q < sw 700) ∨
       (sw 1100 ≤ q ∧ q < sw 1200) → bandOf q ∉ oracleBands ∧ (q < sw 1200 ∨ sw 1207 < q) ∧
       q ≠ ALLOC := by
     intro q hq
-    refine ⟨not_oracle_sw (by unfold sw at hq; omega) (by unfold sw at hq; omega),
+    refine ⟨not_oracle_sw (by register_guard) (by register_guard),
       by unfold sw at hq ⊢; omega, by unfold ALLOC; unfold sw at hq; omega⟩
-  have kq : ∀ q, (sw 4000 ≤ q ∧ q < sw 5000) ∨ (sw 600 ≤ q ∧ q < sw 700) ∨
-      (sw 1100 ≤ q ∧ q < sw 1200) → c₁.nreg q = c.nreg q := fun q hq => by
+  have kq := fun q hq => by
     obtain ⟨a, b, d⟩ := nsw q hq; exact keep1 q a b d
-  have hK₁ := E.hK.fix hI₁
+  
   -- 2. the default
   refine IRS.seq (IRS.block [.copyN dst lR1] hI₁ ⟨iscr_sw hd.1 hd.2, trivial⟩) ?_
   rintro c₂ hI₂ hA₂ hA₂' hc2
   have v2 : c₂.nreg dst = c.nreg lR1 := by
     rw [hc2]; simp only [regB, regI, upd, ite_true]
-    exact kq _ (Or.inr (Or.inr (by unfold lR1 sw; omega)))
+    exact kq _ ((by reg_omega))
   have k2 : ∀ r, r ≠ dst → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [hc2]; simp only [regB, regI, upd, ite_eq_right hr]
   have hm2 : c₂.nmem = c₁.nmem := by rw [hc2]
@@ -154,13 +156,11 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     rw [k2 _ hdpe]; exact kq _ (Or.inl (by unfold sw at hpe ⊢; omega))
   have e2ph : c₂.nreg ph = c.nreg ph := by
     rw [k2 _ hdph]; exact kq _ (Or.inl (by unfold sw at hph ⊢; omega))
-  have e2K6 : c₂.nreg K6 = 6 := (E.hK.fix hI₂).2.2.1
-  have hframe2 : ∀ r, bandOf r ∉ oracleBands → r ≠ dst → (r < sw 1200 ∨ sw 1207 < r) →
-      r ≠ ALLOC → c₂.nreg r = c.nreg r := fun r h1 h2 h3 h4 => (k2 r h2).trans (keep1 r h1 h3 h4)
+  have e2K6 := (E.hK.fix hI₂).2.2.1
+  have hframe2 := fun r h1 h2 h3 h4 => (k2 r h2).trans (keep1 r h1 h3 h4)
   by_cases hb : c₂.nreg pe < c₂.nreg K6
   · -- a box position: the default
-    refine (IRS.ifT hb (IRS.skip (K := 0) hI₂ ⟨?_, hframe2, ?_, ?_⟩)).mono (by omega)
-      (fun _ h => h)
+    refine (IRS.ifT hb (IRS.skip (K := 0) hI₂ ⟨?_, hframe2, ?_, ?_⟩)).budget
     · rw [v2, ite_eq_right (by rw [e2pe, e2K6] at hb; omega)]
     · omega
     · intro a ha; rw [hm2, hm1 a ha]
@@ -168,28 +168,25 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   rw [e2pe, e2K6] at hb
   -- 3. copy `x` and normalise it
   refine IRS.seq (IRS.block [.copyN frGE pe, .copyN frGH ph] hI₂
-    ⟨iscr_sw (by rw [hfrGE]; unfold sw; norm_num) (by rw [hfrGE]; unfold sw; norm_num),
-      iscr_sw (by rw [hfrGH]; unfold sw; norm_num) (by rw [hfrGH]; unfold sw; norm_num), trivial⟩) ?_
+    ⟨iscr_sw (by simp [hfrGE, sw]) (by simp [hfrGE, sw]),
+      iscr_sw (by simp [hfrGH, sw]) (by simp [hfrGH, sw]), trivial⟩) ?_
   rintro c₃ hI₃ hA₃ hA₃' hc3
   have hfrGEph : frGE ≠ ph := by rw [hfrGE]; unfold sw at hph ⊢; omega
   have v3E : c₃.nreg frGE = c.nreg pe := by
     rw [hc3]; simp only [regB, regI, upd, ite_true]; exact e2pe
   have v3H : c₃.nreg frGH = c.nreg ph := by
     rw [hc3]; simp only [regB, regI, upd, ite_true]
-    rw [ite_eq_right (show ph ≠ frGE from fun h => hfrGEph h.symm)]; exact e2ph
+    rwa [ite_eq_right (show ph ≠ frGE from fun h => hfrGEph h.symm)]
   have k3 : ∀ r, r ≠ frGE → r ≠ frGH → c₃.nreg r = c₂.nreg r := fun r h1 h2 => by
     rw [hc3]; simp only [regB, regI, upd, ite_eq_right h1, ite_eq_right h2]
   have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
   refine IRS.seq (normS_irs (dsc := sw 21) (pe := frGE) (ph := frGH) (o := fO) (C := J.right) hI₃
     (E.hK.fix hI₃) (E.ctx2' hI₃)
-    ⟨by unfold sw; norm_num, by unfold sw; norm_num, by rw [hfrGE]; unfold sw; norm_num,
-      by rw [hfrGE]; unfold sw; norm_num, by rw [hfrGH]; unfold sw; norm_num,
-      by rw [hfrGH]; unfold sw; norm_num⟩
-    ⟨by rw [hfO]; unfold sw; norm_num, by rw [hfO]; unfold sw; norm_num,
-      by rw [hfO, hfrGE]; unfold sw; omega, by rw [hfO, hfrGH]; unfold sw; omega,
-      by rw [hfO, hfrGE]; unfold sw; omega, by rw [hfO, hfrGH]; unfold sw; omega,
-      by rw [hfrGE, hfrGH]; unfold sw; omega⟩
-    (by rw [v3E]; exact hxe) (by rw [v3E, v3H]; exact hxpp)
+    ⟨by reg_omega, by reg_omega, by simp [hfrGE, sw],
+      by simp [hfrGE, sw], by simp [hfrGH, sw],
+      by simp [hfrGH, sw]⟩
+    (by reg_omega)
+    (by rwa [v3E]) (by rwa [v3E, v3H])
     (fun h => by rw [v3E] at h; omega) (by omega)) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨v4E, v4H, k4, hA4, hm4⟩
   rw [v3E] at v4E
@@ -204,9 +201,9 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         (by unfold sw at h2; omega)) (by unfold ALLOC; unfold sw at h1; omega)]
     exact k2 q (by rcases hdst with rfl | rfl <;> unfold sw at h2 ⊢ <;> omega)
   have r4ye : c₄.nreg ye = Y.edge := by rw [ry ye hye.1 hye.2, v1e]
-  have r4yh : c₄.nreg yh = nhgt (chainModel J.right) (Qof P) Y := by rw [ry yh hyh.1 hyh.2, v1h]
+  have r4yh : c₄.nreg yh = nhgt J.rightModel (Qof P) Y := by rw [ry yh hyh.1 hyh.2, v1h]
   have hsrcR : sw 1109 ≤ src ∧ src ≤ sw 1111 := by
-    rcases hsrc with rfl | rfl <;> refine ⟨?_, ?_⟩ <;> simp [lR0, lR2, sw]
+    rcases hsrc with rfl | rfl <;> refine ⟨?_, ?_⟩ <;> simp [ram_layout]
   have r4src : c₄.nreg src = c.nreg src := by
     rw [nO src (Or.inl (by unfold sw at hsrcR ⊢; omega)) (by rw [hfrGE]; unfold sw at hsrcR ⊢; omega)
       (by rw [hfrGH]; unfold sw at hsrcR ⊢; omega)
@@ -218,26 +215,26 @@ theorem frTail_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     rw [nO dst (Or.inr (by rcases hdst with rfl | rfl <;> unfold sw <;> omega))
       (by rw [hfrGE]; rcases hdst with rfl | rfl <;> unfold sw <;> omega)
       (by rw [hfrGH]; rcases hdst with rfl | rfl <;> unfold sw <;> omega)
-      (not_oracle_sw (by omega) (by omega)) (by unfold ALLOC; omega), v2]
-  have hk0 : c₄.nreg K0 = 0 := (E.hK.fix hI₄).1
+      (not_oracle_sw (by omega) (by omega)) (by reg_omega), v2]
+  have hk0 := (E.hK.fix hI₄).1
   refine (frChk_irs (P := P) (dst := dst) (ye := ye) (yh := yh) (src := src) hI₄ hk0 hd).mono le_rfl ?_
   rintro c₅ ⟨v5, k5, hm5⟩
-  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := k3 _ (by rw [hfrGE]; unfold sw ALLOC; omega)
-    (by rw [hfrGH]; unfold sw ALLOC; omega)
+  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := k3 _ (by reg_omega)
+    (by reg_omega)
   have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := k2 _ (by
     rcases hdst with rfl | rfl <;> unfold sw ALLOC <;> omega)
   have hA5 : c₅.nreg ALLOC = c₄.nreg ALLOC := k5 _ (by
     rcases hdst with rfl | rfl <;> unfold sw ALLOC <;> omega)
   refine ⟨?_, fun r h1 h2 h3 h4 => ?_, by omega, fun a ha => ?_⟩
   · rw [v5, v4H, r4ye, r4yh, v4E, r4src, r4dst]
-    by_cases hc : nhgt (chainModel J.right) (Qof P) ⟨c.nreg pe, c.nreg ph⟩ = 0 ∧
-        Y.edge = c.nreg pe ∧ nhgt (chainModel J.right) (Qof P) Y = 0
+    by_cases hc : nhgt J.rightModel (Qof P) ⟨c.nreg pe, c.nreg ph⟩ = 0 ∧
+        Y.edge = c.nreg pe ∧ nhgt J.rightModel (Qof P) Y = 0
     · rw [ite_eq_left hc, ite_eq_left ⟨by omega, hc⟩]
     · rw [ite_eq_right hc, ite_eq_right (fun h => hc h.2)]
   · rw [k5 r h2, nO r (by unfold sw at h3 ⊢; omega) (by rw [hfrGE]; unfold sw at h3 ⊢; omega)
       (by rw [hfrGH]; unfold sw at h3 ⊢; omega) h1 h4]
     exact hframe2 r h1 h2 h3 h4
-  · rw [hm5, hm4 a (by omega), hm3, hm2, hm1 a ha]
+  · ram_rw [hm5, hm4 a, hm3, hm2, hm1 a ha]
 
 end
 

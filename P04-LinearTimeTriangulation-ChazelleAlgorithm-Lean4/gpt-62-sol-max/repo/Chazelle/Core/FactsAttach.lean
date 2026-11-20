@@ -79,9 +79,14 @@ theorem cyc_before_delta {l k x n δ : ℝ} (hlk : l ≠ k) (_hx0 : 0 ≤ x) (hx
   unfold sideInArc
   split_ifs at * <;> cyc_close
 
+section
+
+variable {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K) (hk' : k' ∈ K)
+    (hne : k ≠ k')
+include hK hk hk' hne
+
 /-- The successor of an element of a finite set of at least two reals. -/
-theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K) (hk' : k' ∈ K)
-    (hne : k ≠ k') : ∃ r ∈ K, r ≠ k ∧ ∀ m ∈ K, ¬ sideInArc k r m := by
+theorem exists_succ_gap : ∃ r ∈ K, r ≠ k ∧ ∀ m ∈ K, ¬ sideInArc k r m := by
   obtain ⟨m₀, hm₀, hmin⟩ := Set.exists_min_image K id hK ⟨k, hk⟩
   simp only [id] at hmin
   by_cases hA : ∃ m ∈ K, k < m
@@ -102,15 +107,14 @@ theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
       exact hne (le_antisymm h2 h1)
     refine ⟨m₀, hm₀, hm₀k, fun m hm hin => ?_⟩
     unfold sideInArc at hin
-    have hlt : m₀ < k := lt_of_le_of_ne (hmin k hk) hm₀k
+    have hlt := lt_of_le_of_ne (hmin k hk) hm₀k
     rw [ite_eq_right_of_eq_false _ _ (eq_false (not_lt.2 hlt.le))] at hin
     rcases hin with h | h
     · linarith [hA m hm]
     · linarith [hmin m hm]
 
 /-- The predecessor of an element of a finite set of at least two reals. -/
-theorem exists_pred_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K) (hk' : k' ∈ K)
-    (hne : k ≠ k') : ∃ l ∈ K, l ≠ k ∧ ∀ m ∈ K, ¬ sideInArc l k m := by
+theorem exists_pred_gap : ∃ l ∈ K, l ≠ k ∧ ∀ m ∈ K, ¬ sideInArc l k m := by
   obtain ⟨M₀, hM₀, hmax⟩ := Set.exists_max_image K id hK ⟨k, hk⟩
   simp only [id] at hmax
   by_cases hB : ∃ m ∈ K, m < k
@@ -131,11 +135,13 @@ theorem exists_pred_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
       exact hne (le_antisymm h1 h2)
     refine ⟨M₀, hM₀, hM₀k, fun m hm hin => ?_⟩
     unfold sideInArc at hin
-    have hlt : k < M₀ := lt_of_le_of_ne (hmax k hk) (Ne.symm hM₀k)
+    have hlt := lt_of_le_of_ne (hmax k hk) (Ne.symm hM₀k)
     rw [ite_eq_right_of_eq_false _ _ (eq_false (not_lt.2 hlt.le))] at hin
     rcases hin with h | h
     · linarith [hmax m hm]
     · linarith [hB m hm]
+
+end
 
 namespace WalkAx
 
@@ -195,10 +201,7 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
     have h := cyc_nosep hx' hA' hB' hyA hyB (key_ne_of_pt_ne hA hB hAB)
     exact (iff_not_self (hiff.trans (not_congr h.symm))).elim
   have hVU : V ⊆ U := hsame ▸ hVVT
-  have hVeq : V = U := by
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hV hU with h | h
-    · exact h
-    · exact absurd (h.le_bot ⟨hv, hVU hv⟩) (fun h => h)
+  have hVeq := Chazelle.Chain.regionsIn_eq_of_mem hV hU hv (hVU hv)
   rw [hVeq] at hxV
   -- the chord attached at `a` separates `x` from `y`
   obtain ⟨c₀, hc₀, pa, ta, hA₀, ha⟩ := hcuta
@@ -206,12 +209,12 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   obtain ⟨K₁, K₂, hne', ⟨k₁, rfl⟩, ⟨k₂, rfl⟩, hK₁, hK₂⟩ :=
     hM.split (hF hc₀) hA₀ hB₀ (Ne.symm hB₀ne)
   have hkB : M.IsCut F (pb₀ + tb₀) := ⟨c₀, hc₀, pb₀, tb₀, hB₀, rfl⟩
-  have hkne : (pb₀ : ℝ) + tb₀ ≠ a := by
-    rw [ha]; exact key_ne_of_pt_ne hB₀ hA₀ hB₀ne
-  have hyA : sideInArc (pa + ta) (pb₀ + tb₀) (py + ty) := by
-    rw [← ha]; exact cyc_sub_start hyin (fun h => hfree _ h hkB) hkne
-  have hxA : sideInArc (pb₀ + tb₀) (pa + ta) (px + tx) := by
-    rw [← ha]; exact cyc_sub hxin (fun h => hlgap _ hkB h) hkne
+  have hkne := key_ne_of_pt_ne hB₀ hA₀ hB₀ne
+  rw [← ha] at hkne
+  have hyA := cyc_sub_start hyin (fun h => hfree _ h hkB) hkne
+  rw [ha] at hyA
+  have hxA := cyc_sub hxin (fun h => hlgap _ hkB h) hkne
+  rw [ha] at hxA
   have hU1 := hM.region_subset_of_sector hc₀ hU hpy hty hyf (hK₁ py hpy ty hty.1.le hty.2 hyA)
   have hU2 := hM.region_subset_of_sector hc₀ hU hpx htx hxV (hK₂ px hpx tx htx.1.le htx.2 hxA)
   exact hne' ((connectedComponentIn_eq (hU1 hu)).trans (connectedComponentIn_eq (hU2 hu)).symm)
@@ -231,7 +234,7 @@ theorem attach_face (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
   have hk : M.IsCut F (p + t) := ⟨c, hc, p, t, hA, rfl⟩
   obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hF hc) hA
   have hkB : M.IsCut F (pb + tb) := ⟨c, hc, pb, tb, hB, rfl⟩
-  have hkne : (p : ℝ) + t ≠ pb + tb := key_ne_of_pt_ne hA hB (Ne.symm hBne)
+  have hkne := key_ne_of_pt_ne hA hB (Ne.symm hBne)
   obtain ⟨r, hr, hrk, hrgap⟩ := exists_succ_gap hK hk hkB hkne
   obtain ⟨l, hl, hlk, hlgap⟩ := exists_pred_gap hK hk hkB hkne
   obtain ⟨U, hU, harcU⟩ := hM.arc_of_gap hF hfin hk hr (Ne.symm hrk)
@@ -243,10 +246,8 @@ theorem attach_face (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
     obtain ⟨K₁, K₂, hne', ⟨k₁, rfl⟩, ⟨k₂, rfl⟩, hK₁, hK₂⟩ := hM.split (hF hc) hA hB (Ne.symm hBne)
     obtain ⟨py, hpy, ty, hty, hyin, -, hyf⟩ := exists_pos_in_arc hne harcU
     obtain ⟨px, hpx, tx, htx, hxin, -, hxf⟩ := exists_pos_in_arc hne harcV
-    have hyA : sideInArc (p + t) (pb + tb) (py + ty) :=
-      cyc_sub_start hyin (fun h => hrgap _ hkB h) (Ne.symm hkne)
-    have hxA : sideInArc (pb + tb) (p + t) (px + tx) :=
-      cyc_sub hxin (fun h => hlgap _ hkB h) (Ne.symm hkne)
+    have hyA := cyc_sub_start hyin (fun h => hrgap _ hkB h) (Ne.symm hkne)
+    have hxA := cyc_sub hxin (fun h => hlgap _ hkB h) (Ne.symm hkne)
     have hU1 := hM.region_subset_of_sector hc hU hpy hty hyf (hK₁ py hpy ty hty.1.le hty.2 hyA)
     rw [hUV] at hU1
     have hU2 := hM.region_subset_of_sector hc hV hpx htx hxf (hK₂ px hpx tx htx.1.le htx.2 hxA)
@@ -279,9 +280,9 @@ theorem attachFaceNC : AttachFaceSpecNC := by
     exact absurd h.1 (Set.nonempty_iff_ne_empty.1 ⟨c, hc⟩))).2.1
   obtain ⟨hl0, hln⟩ := WalkAx.cut_bounds (harcV.2.2.2.2.1.resolve_right (fun h => by
     exact absurd h.1 (Set.nonempty_iff_ne_empty.1 ⟨c, hc⟩))).1
-  have hkr : (p : ℝ) + t ≠ r := (harcU.2.2.2.2.1.resolve_right (fun h => by
+  have hkr := (harcU.2.2.2.2.1.resolve_right (fun h => by
     exact absurd h.1 (Set.nonempty_iff_ne_empty.1 ⟨c, hc⟩))).2.2
-  have hlk : l ≠ (p : ℝ) + t := (harcV.2.2.2.2.1.resolve_right (fun h => by
+  have hlk := (harcV.2.2.2.2.1.resolve_right (fun h => by
     exact absurd h.1 (Set.nonempty_iff_ne_empty.1 ⟨c, hc⟩))).2.2
   set δ₁ : ℝ := if (p : ℝ) + t < r then r - (p + t) else r + M.W.n - (p + t) with hδ₁
   set δ₂ : ℝ := if l < (p : ℝ) + t then (p + t) - l else (p + t) + M.W.n - l with hδ₂
@@ -300,30 +301,15 @@ theorem attachFaceNC : AttachFaceSpecNC := by
       have : (p' : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp'
       linarith
     have hin := cyc_after_delta hkr hx0 hxn hr0 hrn (min_le_left δ₁ δ₂) (by
-      rcases h with h | h
-      · exact Or.inl ⟨by linarith [h.1], by linarith [h.2]⟩
-      · exact Or.inr ⟨by linarith [h.1], by linarith [h.2]⟩)
+      assumption)
     exact harcU.2.2.2.2.2.2 p' t' hp' ht0 ht1 hin
   · have hx0 : (0 : ℝ) ≤ p' + t' := by positivity
     have hxn : (p' : ℝ) + t' < M.W.n := by
       have : (p' : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp'
       linarith
     have hin := cyc_before_delta hlk hx0 hxn hl0 hln (min_le_right δ₁ δ₂) (by
-      rcases h with h | h
-      · exact Or.inl ⟨by linarith [h.1], by linarith [h.2]⟩
-      · exact Or.inr ⟨by linarith [h.1], by linarith [h.2]⟩)
+      assumption)
     exact harcV.2.2.2.2.2.2 p' t' hp' ht0 ht1 hin
-
-end
-
-end Chazelle.Core
-
-namespace Chazelle.Core
-
-@[expose] public section
-
-/-- **WP-B: the cut structure** (`CutStructureSpec`, part 3 for non-cut positions). -/
-theorem cutStructure : CutStructureSpec := cutStructureNC
 
 end
 

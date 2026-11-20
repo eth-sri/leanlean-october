@@ -35,7 +35,7 @@ theorem fullDegLe_mono {M : Model} {Q : Polygon} {D D' : ℕ} (h : M.FullDegLe Q
 /-- The capacity of the up-phase data is at most `2 n`. -/
 theorem gradeCtx_cap_le {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {g A : ℕ} (hn : 1 ≤ P.n)
     (h : (gradeCtx O).holds P m g A) : (gradeCtx O).cap P m g ≤ 2 * P.n := by
-  have h1 : m g ≤ topGrade P.n + 1 := h.holds.1
+  have h1 := h.holds.1
   show 2 ^ (m g - 1) ≤ 2 * P.n
   have h2 : 2 ^ (m g - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) (by omega)
   refine h2.trans ?_
@@ -132,21 +132,21 @@ theorem envRegs_band2 : ∀ q ∈ envRegs, q ≠ 219220 ∧ q ≠ 219221 ∧ q �
 
 /-- The environment survives a step keeping its registers and the memory below `A₁`. -/
 theorem REnv.keep {R : RData} {d d' : Config} (h : REnv R d)
-    (hr : ∀ q ∈ envRegs, d'.nreg q = d.nreg q) (hm : ∀ a, a < R.A₁ → d'.nmem a = d.nmem a)
+    (hr : ∀ q ∈ envRegs, d'.nreg q = d.nreg q) (hm : MemEqBelow R.A₁ d'.nmem d.nmem)
     (hA : d.nreg ALLOC ≤ d'.nreg ALLOC) : REnv R d' := by
-  have e : ∀ q, q ∈ envRegs → d'.nreg q = d.nreg q := hr
-  exact ⟨by rw [e _ (by simp [envRegs]), h.r200], by rw [e _ (by simp [envRegs]), h.r201],
-    by rw [e _ (by simp [envRegs]), h.r202], by rw [e _ (by simp [envRegs]), h.r204],
-    by rw [e _ (by simp [envRegs]), h.r205], by rw [e _ (by simp [envRegs]), h.r230],
-    by rw [e _ (by simp [envRegs]), h.r231], by rw [e _ (by simp [envRegs]), h.r223],
-    by rw [e _ (by simp [envRegs]), h.r003],
-    ⟨by rw [e _ (by simp [envRegs]), h.mg.r40], by rw [e _ (by simp [envRegs]), h.mg.r41],
-      by rw [e _ (by simp [envRegs]), h.mg.r42], by rw [e _ (by simp [envRegs]), h.mg.r43],
-      by rw [e _ (by simp [envRegs]), h.mg.r44], by rw [e _ (by simp [envRegs]), h.mg.r45],
-      by rw [e _ (by simp [envRegs]), h.mg.r46]⟩,
-    by rw [e _ (by simp [envRegs]), h.r100], by rw [e _ (by simp [envRegs]), h.r101],
-    by rw [e _ (by simp [envRegs]), h.r103], by rw [e _ (by simp [envRegs]), h.r104],
-    by rw [e _ (by simp [envRegs]), h.r107], fun a ha => by rw [hm a ha, h.low a ha],
+  have e := hr
+  exact ⟨by ram_rw [e, h.r200], by ram_rw [e, h.r201],
+    by ram_rw [e, h.r202], by ram_rw [e, h.r204],
+    by ram_rw [e, h.r205], by ram_rw [e, h.r230],
+    by ram_rw [e, h.r231], by ram_rw [e, h.r223],
+    by ram_rw [e, h.r003],
+    ⟨by ram_rw [e, h.mg.r40], by ram_rw [e, h.mg.r41],
+      by ram_rw [e, h.mg.r42], by ram_rw [e, h.mg.r43],
+      by ram_rw [e, h.mg.r44], by ram_rw [e, h.mg.r45],
+      by ram_rw [e, h.mg.r46]⟩,
+    by ram_rw [e, h.r100], by ram_rw [e, h.r101],
+    by ram_rw [e, h.r103], by ram_rw [e, h.r104],
+    by ram_rw [e, h.r107], fun a ha => by rw [hm a ha, h.low a ha],
     le_trans h.alloc hA⟩
 
 section facts
@@ -156,31 +156,38 @@ variable {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
 theorem REnv.mem_eq {d : Config} (h : REnv R d) : ∀ a, a < R.A₁ → R.m₁ a = d.nmem a :=
   fun a ha => (h.low a ha).symm
 
-theorem REnv.hostAt (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+section
+
+variable (hF : RFacts O P W R) {d : Config} (h : REnv R d)
+include hF h
+
+theorem REnv.hostAt :
     Robust (d.nreg ALLOC) d.nmem (fun m => HostAt m R.HB R.H) :=
   (hF.hHA.transport h.low).mono h.alloc
 
-theorem REnv.holds (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.holds :
     (gradeCtx O).holds P d.nmem R.g (d.nreg ALLOC) :=
   (gradeCtx O).mono P _ _ _ _ h.alloc ((gradeCtx O).local_ P _ _ _ _ h.mem_eq hF.hX)
 
-theorem REnv.cap (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.cap :
     (gradeCtx O).cap P d.nmem R.g = (gradeCtx O).cap P R.m₁ R.g :=
   gradeCtx_capLocal O P _ _ _ _ h.low hF.hX
 
-theorem REnv.grades (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.grades :
     d.nmem R.g = R.m₁ R.g :=
   h.low _ (gradeRaw_handle_lt (O := O) hF.hX)
 
-theorem REnv.table (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
+theorem REnv.table :
     ChordListAt d.nmem R.T (R.leaves P) := by
   intro i hi
   obtain ⟨a1, a2, a3⟩ := hF.hT i hi
   have := hF.hTA
   refine ⟨?_, ?_, ?_⟩
-  · rw [h.low _ (by omega)]; exact a1
-  · rw [h.low _ (by omega)]; exact a2
-  · rw [h.low _ (by omega)]; exact a3
+  · ram_simp [h.low] <;> omega
+  · ram_simp [h.low] <;> omega
+  ram_simp [h.low] <;> omega
+
+end
 
 end facts
 
@@ -205,8 +212,8 @@ theorem AccOK.keep {P : Polygon} {R : RData} {d d' : Config} {pos γ : ℕ} {B :
       d'.nreg q = d.nreg q) : AccOK P R d' pos γ := by
   have r10 := hr 219110 (by simp)
   have r11 := hr 219111 (by simp)
-  refine ⟨by rw [hr _ (by simp), h.r22], by rw [hr _ (by simp), h.r12],
-    by rw [hr _ (by simp), h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
+  refine ⟨by ram_rw [hr, h.r22], by ram_rw [hr, h.r12],
+    by ram_rw [hr, h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
     by rw [r10]; exact h.lo1, by rw [r11]; exact h.lo2, fun C hP hs hm => ?_⟩
   obtain ⟨h1, N, h2, h3⟩ := h.desc C hP hs hm
   rw [r10, r11]

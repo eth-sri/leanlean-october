@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.SweepEvGenR
 
 /-!
@@ -62,13 +64,12 @@ theorem genK_le (Fg D T : ℕ) : genK Fg D T ≤ κGen D * (Fg + T + 1) := by
   have e2 : (A + B + 50000) * (Fg + T + 1) =
       A * Fg + A * T + A + B * Fg + B * T + B + 50000 * Fg + 50000 * T + 50000 := by ring
   rw [e1, e2]
-  have := Nat.zero_le (A * Fg)
-  have := Nat.zero_le (A * T)
-  have := Nat.zero_le (B * T)
+  
+  
+  
   omega
 
-theorem dirOf_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := by
-  unfold dirOf; split_ifs <;> simp
+abbrev dirOf_pm := @Chazelle.Core.Restore.dirOf_pm
 
 /-! ## The contract -/
 
@@ -105,8 +106,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     rw [hσ, ← dirOf_rev hD, neg_neg]
   -- 1. the inputs of the local hit
   refine (IRS.seq (K₁ := 9) (K₂ := 42030 + (localK T Fg (D + 1) D + (269 + 2)))
-    ((IRS.block gSetL hI₁ (gSet_ok _ _ (Nat.zero_le _))).mono (by simp [gSetL])
-      (fun _ h => h)) ?_).mono (by omega) (fun _ h => h)
+    ((IRS.block gSetL hI₁ (gSet_ok _ _ (Nat.zero_le _))).budget (by simp [gSetL])) ?_).budget
   rintro c₂ hI₂ hA₂ hA₂' hc₂
   obtain ⟨v1, v2, v3, v4, v5, v6, v7, v8, v9, vo⟩ := gSet_val c₁.nmem c₁.nreg
   have g2 : ∀ q, (q < 241100 ∨ 241107 < q) → q ≠ accA → c₂.nreg q = c₁.nreg q := fun q h h' => by
@@ -130,39 +130,39 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have hn₂ : c₂.nreg cN1 = 2 * J.left.m + 7 := by
     rw [(E.hM.fix hI₂).n1, WalkEmbed.cm_n]
   refine IRS.seq (K₁ := 42030) (K₂ := localK T Fg (D + 1) D + (269 + 2))
-    (gHgt_irs hI₂ E.hK hctx₂ hn₂ (x := x) s2E s2H he hpp hcl
+    (hHgt_irs (dsc := CD₁) (nr := cN1) (by register_guard) (by register_guard) hI₂ E.hK hctx₂ hn₂ (x := x) s2E s2H he hpp hcl
       (by rw [hposx, hw2]; exact hay) (by omega) (by omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨k, s3E, s3H, hkl, hkh, hkpar, hkpos, hkpp, k3, hA₃'', m₃⟩
   set xs : WPos := ⟨x.edge, k + 1⟩ with hxs
   have k3' : ∀ r, r ≠ lH → 241000 ≤ r → r < 242200 → (r < sw 720 ∨ sw 726 < r) →
       c₃.nreg r = c₂.nreg r := fun r h1 h2 h3 h4 =>
-    k3 r (not_oracle_sw (by omega) (by omega)) h1 h4 (by unfold ALLOC; omega)
+    k3 r (not_oracle_sw (by omega) (by omega)) h1 h4 (by reg_omega)
   have s3D : c₃.nreg lD = 1 - c₁.nreg oD := by
-    rw [k3' lD (by unfold lD lH sw; omega) (by unfold lD sw; omega) (by unfold lD sw; omega)
-      (Or.inr (by unfold lD sw; omega))]; exact s2D
+    rw [k3' lD (by reg_omega) (by unfold lD sw; omega) (by unfold lD sw; omega)
+      ((by reg_omega))]; exact s2D
   have s3N : c₃.nreg lN = 2 * J.left.m + 7 := by
-    rw [k3' lN (by unfold lN lH sw; omega) (by unfold lN sw; omega) (by unfold lN sw; omega)
-      (Or.inr (by unfold lN sw; omega))]; exact s2N
+    rw [k3' lN (by reg_omega) (by unfold lN sw; omega) (by unfold lN sw; omega)
+      ((by reg_omega))]; exact s2N
   have s3T : c₃.nreg lT = 0 := by
-    rw [k3' lT (by unfold lT lH sw; omega) (by unfold lT sw; omega) (by unfold lT sw; omega)
-      (Or.inr (by unfold lT sw; omega))]; exact s2T
+    rw [k3' lT (by reg_omega) (by unfold lT sw; omega) (by unfold lT sw; omega)
+      ((by reg_omega))]; exact s2T
   have s3A : c₃.nreg accA = 0 := by
-    rw [k3' accA (by unfold accA lH sw; omega) (by unfold accA sw; omega)
-      (by unfold accA sw; omega) (Or.inr (by unfold accA sw; omega))]; exact s2A
+    rw [k3' accA (by reg_omega) (by unfold accA sw; omega)
+      (by unfold accA sw; omega) ((by reg_omega))]; exact s2A
   have s3MD : c₃.nreg lMD = c₃.nreg MD₁ := by
-    rw [k3' lMD (by unfold lMD lH sw; omega) (by unfold lMD sw; omega) (by unfold lMD sw; omega)
-      (Or.inr (by unfold lMD sw; omega)), s2MD, hI₁.hin _ (by unfold IFix MD₁ sw; omega),
-      hI₃.hin _ (by unfold IFix MD₁ sw; omega)]
+    ram_rw [k3' lMD (by reg_omega) (by unfold lMD sw; omega) (by unfold lMD sw; omega)
+      (Or.inr (by unfold lMD sw; omega)), s2MD, hI₁.hin,
+      hI₃.hin]
   have s3CD : c₃.nreg lCD = c₃.nreg CD₁ := by
-    rw [k3' lCD (by unfold lCD lH sw; omega) (by unfold lCD sw; omega) (by unfold lCD sw; omega)
-      (Or.inr (by unfold lCD sw; omega)), s2CD, hI₁.hin _ (by unfold IFix CD₁ sw; omega),
-      hI₃.hin _ (by unfold IFix CD₁ sw; omega)]
+    ram_rw [k3' lCD (by reg_omega) (by unfold lCD sw; omega) (by unfold lCD sw; omega)
+      (Or.inr (by unfold lCD sw; omega)), s2CD, hI₁.hin,
+      hI₃.hin]
   have s3NF : c₃.nreg lNF = c₀.nreg (sw 3) := by
-    rw [k3' lNF (by unfold lNF lH sw; omega) (by unfold lNF sw; omega) (by unfold lNF sw; omega)
-      (Or.inr (by unfold lNF sw; omega)), s2NF, hI₁.hin _ (by unfold IFix sw; omega)]
+    ram_rw [k3' lNF (by reg_omega) (by unfold lNF sw; omega) (by unfold lNF sw; omega)
+      (Or.inr (by unfold lNF sw; omega)), s2NF, hI₁.hin]
   -- 3. the local hit
-  have hTBR₃ : c₃.nreg TBR = c₀.nreg TBR := hI₃.hin _ (by unfold IFix TBR sw; omega)
-  have hTLR₃ : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by unfold IFix TLR sw; omega)
+  have hTBR₃ : c₃.nreg TBR = c₀.nreg TBR := hI₃.hin _ (by reg_omega)
+  have hTLR₃ : c₃.nreg TLR = c₀.nreg TLR := hI₃.hin _ (by reg_omega)
   have hTA := E.hTBR
   obtain ⟨md1, md2, md3, md4⟩ := E.md hI₃
   have hL₃ : LCtx P W J.left N₁ (c₀.nreg TBR) c₃ :=
@@ -181,32 +181,31 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
       hNF := E.hNF₁
       htab := fun j hj => by
         rw [hTLR₃] at hj
-        rw [hTBR₃, hI₃.hm _ (by omega)]
+        ram_rw [hTBR₃, hI₃.hm]
         exact E.htab j hj
       hbig := by rw [hTLR₃]; exact E.hbig₁
       hTB := by rw [hTBR₃]
       hTW := by rw [hTBR₃, hTLR₃]; have := hI₃.hA; omega }
   obtain ⟨hAr, hCh⟩ := region_bounds (C := J.left) E.hP E.hNF₁ E.hdeg₁
-  have hposxs : (chainModel J.left).pos (Qof P) xs = w := hkpos.trans hposx
+  have hposxs : J.leftModel.pos (Qof P) xs = w := hkpos.trans hposx
   have hlocs : (xs.edge = 1 ∨ xs.edge = 3) ∨
-      (6 ≤ xs.edge ∧ (chainModel J.left).pos (Qof P) xs ∈ J.left.set) := by
+      (6 ≤ xs.edge ∧ J.leftModel.pos (Qof P) xs ∈ J.left.set) := by
     rw [hkpos]; exact hloc
   have hacc : AccOK P accA (fun _ => J.left) J.left.radius
-      ((chainModel J.left).pos (Qof P) xs) (dirOf (1 - c₁.nreg oD)) ∅ c₃ :=
+      (J.leftModel.pos (Qof P) xs) (dirOf (1 - c₁.nreg oD)) ∅ c₃ :=
     accOK_init accA _ _ _ _ s3A
   refine IRS.seq (K₁ := localK T Fg (D + 1) D) (K₂ := 269 + 2)
     ((localHit_irs (C := J.left) (N := N₁) (Mod := fun _ => J.left) (R₀ := J.left.radius)
       (L := ∅) (Da := D + 1) (Dc := D) (x := xs) (d := 1 - c₁.nreg oD)
       E.hsh E.hBs E.hXl hI₃ E.hK hL₃ E.hX E.hcap E.hOk₁ E.hsg₁ hAr hCh s3E s3H s3D he hkpp
       (by rw [hposxs, hw2]; exact hay) hlocs hacc (by rw [s3T]; omega) rfl rfl s3N
-      (by rw [hTLR₃]; show c₃.nreg ALLOC + localK T Fg (D + 1) D ≤ W; omega)).mono
-        (by rw [hTLR₃]) (fun _ h => h)) ?_
+      (by rw [hTLR₃]; show c₃.nreg ALLOC + localK T Fg (D + 1) D ≤ W; omega)).budget (by rw [hTLR₃])) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨⟨L', hacc', -, hL', hgeo⟩, k4, hA₄'', m₄⟩
   -- the reverse hit
   have hgeo' : LHGeo P J.left xs (1 - c₁.nreg oD) := by
     refine ⟨k, rfl, hkl, by rw [hkpos]; exact hkh, ?_, by rw [hposxs, hw2]; exact ha₁⟩
     rw [hposxs, hrev]
-    show sideLeft (chainModel J.left).W x.edge ((chainModel J.left).param (Qof P) xs) _
+    show sideLeft J.leftModel.W x.edge (J.leftModel.param (Qof P) xs) _
     rw [hkpar]
     exact harr.2.2.2.2
   obtain ⟨hfree, hmem⟩ := hgeo hgeo'
@@ -233,32 +232,31 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     rw [k4 r h1 (fun h => hGR (by unfold LHW at h; unfold cG; unfold sw at h ⊢; omega)) h3,
       k3 r h1 (fun h => hGR (by subst h; unfold lH sw; omega))
         (by unfold sw at hGR ⊢; omega) h3,
-      g2 r (by unfold sw at hGR; omega) (fun h => hGR (by subst h; unfold accA sw; omega))]
+      g2 r (by register_guard) (fun h => hGR (by subst h; unfold accA sw; omega))]
   have hD4 : c₄.nreg oD = c₁.nreg oD :=
-    keep oD (not_oracle_sw (by unfold oD sw; omega) (by unfold oD sw; omega))
-      (by unfold GR oD cG sw; omega) (by unfold oD ALLOC sw; omega)
+    keep oD (by register_guard)
+      (by register_guard) (by reg_omega)
   have kA : ∀ i, i < 4 → c₄.nreg (oAbsA + i) = c₁.nreg (oAbsA + i) := fun i hi =>
-    keep _ (not_oracle_sw (by unfold oAbsA sw; omega) (by unfold oAbsA sw; omega))
-      (by unfold GR oAbsA cG sw; omega) (by unfold oAbsA ALLOC sw; omega)
+    keep _ (not_oracle_sw (by unfold oAbsA sw; omega) (by reg_omega))
+      (by register_guard) (by reg_omega)
   have habs4 : AbsRec P c₄ oAbsA a.1 J.left.radius :=
     absRec_transport habs (kA 0 (by norm_num)) (kA 1 (by norm_num)) (kA 2 (by norm_num))
       (kA 3 (by norm_num))
   have hk1₄ : c₄.nreg K1 = 1 := (E.hK.fix hI₄).2.1
   -- the frame
   have hfin : ∀ c', (∀ r, bandOf r ∉ oracleBands → r ≠ cG → r ≠ ALLOC → c'.nreg r = c₄.nreg r) →
-      c₄.nreg ALLOC ≤ c'.nreg ALLOC → (∀ b, b < c₄.nreg ALLOC → c'.nmem b = c₄.nmem b) →
+      c₄.nreg ALLOC ≤ c'.nreg ALLOC → (MemEqBelow (c₄.nreg ALLOC) c'.nmem c₄.nmem) →
       EFr GR c₁ c' := fun c' h1 h2 h3 => by
     refine ⟨fun r hr1 hr2 hr3 => ?_, by omega, fun b hb => ?_⟩
     · rw [h1 r hr1 (fun h => hr2 (Or.inr (Or.inl h))) hr3]; exact keep r hr1 hr2 hr3
-    · rw [h3 b (by omega), m₄ b (by omega), m₃ b (by omega), m₂]
+    · ram_rw [h3 b, m₄ b, m₃ b, m₂]
   unfold gCmp
   refine IRS.ite (K := 269) (fun hlt => ?_) (fun hlt => ?_)
   · -- code `0`: `σ = -1`
     have hd0 : c₁.nreg oD = 0 := by rw [hD4, hk1₄] at hlt; omega
     have hsn : σ = -1 := by rw [hσ, hd0]; rfl
     refine (callAbsCmp_irs (o := cG) hI₄ E.hG hW3
-      ⟨by unfold oAbsA sw; omega, by unfold oAbsA sw; omega, by unfold accA sw; omega,
-        by unfold accA sw; omega⟩ ⟨by unfold cG sw; omega, by unfold cG sw; omega⟩ habs4 habsH
+      (by reg_omega) (by reg_omega) habs4 habsH
       (by omega)).mono le_rfl ?_
     rintro c' ⟨hbit, h1, h2, h3⟩
     refine ⟨⟨hbit.1, by rw [hbit.2, gn hsn]⟩, hfin c' h1 h2 h3⟩
@@ -266,8 +264,7 @@ theorem genOK_mkG (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
     have hd1 : c₁.nreg oD = 1 := by rw [hD4, hk1₄] at hlt; omega
     have hsp : σ = 1 := by rw [hσ, hd1]; rfl
     refine (callAbsCmp_irs (o := cG) hI₄ E.hG hW3
-      ⟨by unfold accA sw; omega, by unfold accA sw; omega, by unfold oAbsA sw; omega,
-        by unfold oAbsA sw; omega⟩ ⟨by unfold cG sw; omega, by unfold cG sw; omega⟩ habsH habs4
+      (by reg_omega) (by reg_omega) habsH habs4
       (by omega)).mono le_rfl ?_
     rintro c' ⟨hbit, h1, h2, h3⟩
     refine ⟨⟨hbit.1, by rw [hbit.2, gp hsp]⟩, hfin c' h1 h2 h3⟩

@@ -57,8 +57,8 @@ theorem addLabK_irs (hI : IInv W c₀ c) (hK : Consts c) (hN : c.nreg kqN ≤ 4)
       lblOf c' kqN kqL = addL (lblOf c kqN kqL) (c.nreg kqV) ∧
       (∀ q, ¬ LblR kqN kqL q → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) :=
   addLab_irs hI hK (iscr_sw' (by norm_num) (by norm_num))
-    (fun i hi => iscr_sw (by unfold kqL sw; omega) (by unfold kqL sw; omega))
-    (fun i hi => by unfold kqN kqL sw; omega) (by kqr) (fun i hi => by unfold kqV kqL sw; omega)
+    (fun i hi => iscr_sw (by reg_omega) (by reg_omega))
+    (fun i hi => by reg_omega) (by kqr) (fun i hi => by reg_omega)
     (by rintro k (rfl | rfl | rfl | rfl) <;> unfold LblR <;> kqr) hN hW
 
 theorem anchHead_irs (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1) (hW : c.nreg kqX + 1 ≤ W) :
@@ -67,12 +67,11 @@ theorem anchHead_irs (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1) (hW : c.nreg kqX
       (∀ q, q ≠ kqA → q ≠ kqX → q ≠ kqY → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   simp only [sw, K1, kqX, Nat.reduceAdd] at hK1 hW
   refine (IRS.block _ hI ?_).mono le_rfl ?_
-  · simp [okB, okI, regI, upd, kqX, kqA, kqY, K1, sw, IScr, hK1]
+  · simp [reg_check, regI, upd, kqX, kqA, kqY, K1, sw, IScr, hK1]
     omega
   · rintro c' rfl
-    simp [regB, regI, upd, kqX, kqA, kqY, K1, sw, hK1]
-    intro r ha hb hc
-    simp [ha, hb, hc]
+    simp [ram_layout, regB, regI, upd, hK1]
+    simp_all
 
 set_option maxHeartbeats 8000000 in
 /-- **The labels of an anchored record.** -/
@@ -93,20 +92,20 @@ theorem anchL_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN �
       (Or.inl h))))⟩
   have nL : ∀ q, LblR kqN kqL q → q ≠ kqA ∧ q ≠ kqX ∧ q ≠ kqY ∧ q ≠ kqV := fun q hq => by
     simp only [LblR, kqN, kqL, sw] at hq; refine ⟨?_, ?_, ?_, ?_⟩ <;> kqr
-  have lb1 : lblOf c₁ kqN kqL = lblOf c kqN kqL := kqLblOf_eq fun q hq =>
+  have lb1 := kqLblOf_eq fun q hq =>
     a4 q (nL q hq).1 (nL q hq).2.1 (nL q hq).2.2.1
   have eN1 : c₁.nreg kqN = c.nreg kqN := a4 _ (by kqr) (by kqr) (by kqr)
   set m := c.nmem with hm
   set x := c.nreg kqX with hx
   by_cases h0 : c₁.nreg K0 < c₁.nreg kqY
   · rw [hK₁.1, a3] at h0
-    refine IRS.mono (K := 66 + 2) (IRS.ifT (by rw [hK₁.1, a3]; exact h0) ?_) (by norm_num)
+    refine IRS.mono (K := 66 + 2) (IRS.ifT (by rwa [hK₁.1, a3]) ?_) (by norm_num)
       (fun _ h => h)
     refine IRS.seq (K₁ := 2) (K₂ := 64) (ldNext_irs (Or.inl rfl) hI₁ hK₁.2.1 (by omega)) ?_
     rintro c₂ hI₂ - - ⟨b1, b2, b3, b4⟩
     have hK₂ := hK₀.fix hI₂
     have eN2 : c₂.nreg kqN = c.nreg kqN := (b3 _ (by kqr) (by kqr)).trans eN1
-    have lb2 : lblOf c₂ kqN kqL = lblOf c kqN kqL := (kqLblOf_eq fun q hq =>
+    have lb2 := (kqLblOf_eq fun q hq =>
       b3 q (nL q hq).2.1 (nL q hq).2.2.2).trans lb1
     rw [a5, a2] at b2
     refine IRS.seq (K₁ := 30) (K₂ := 34) (addLabK_irs hI₂ hK₂ (by omega) hW4) ?_
@@ -125,11 +124,11 @@ theorem anchL_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN �
     have mem3 : c₃.nmem = m := by rw [d4, b4, a5]
     by_cases h1 : c₃.nreg K1 < c₃.nreg kqY
     · rw [hK₃.2.1, eY3] at h1
-      refine IRS.mono (K := 32 + 2) (IRS.ifT (by rw [hK₃.2.1, eY3]; exact h1) ?_) le_rfl
+      refine IRS.mono (K := 32 + 2) (IRS.ifT (by rwa [hK₃.2.1, eY3]) ?_) le_rfl
         (fun _ h => h)
       refine IRS.seq (K₁ := 2) (K₂ := 30) (ldNext_irs (Or.inl rfl) hI₃ hK₃.2.1 (by omega)) ?_
       rintro c₄ hI₄ - - ⟨e1, e2, e3, e4⟩
-      have lb4 : lblOf c₄ kqN kqL = lblOf c₃ kqN kqL := kqLblOf_eq fun q hq =>
+      have lb4 := kqLblOf_eq fun q hq =>
         e3 q (nL q hq).2.1 (nL q hq).2.2.2
       have eN4 : c₄.nreg kqN = c₃.nreg kqN := e3 _ (by kqr) (by kqr)
       rw [mem3, eX3] at e2
@@ -137,25 +136,22 @@ theorem anchL_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN �
       rintro c' ⟨f1, f2, f3, f4⟩
       refine ⟨by rw [f3 _ (by unfold LblR; kqr), e3 _ (by kqr) (by kqr), eA3], f1, ?_,
         fun q hq => ?_, by rw [f4, e4, mem3]⟩
-      · rw [f2, lb4, d2, e2, show min (m (x + 1)) 2 = 2 by omega]
-        simp [addLs, List.range_succ]
+      · simp [f2, lb4, d2, e2, show min (m (x + 1)) 2 = 2 by omega, addLs, List.range_succ]
       · rw [f3 q (fun h => hq (Or.inr (Or.inr (Or.inr (Or.inr h))))),
           e3 q (nA q hq).2.1 (fun h => hq (Or.inr (Or.inr (Or.inl h)))), fr3 q hq]
     · rw [hK₃.2.1, eY3] at h1
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [hK₃.2.1, eY3]; exact h1) (IRS.skip hI₃ rfl))
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [hK₃.2.1, eY3]) (IRS.skip hI₃ rfl))
         (by norm_num) ?_
       rintro c' rfl
       refine ⟨eA3, d1, ?_, fr3, mem3⟩
-      rw [d2, show min (m (x + 1)) 2 = 1 by omega]
-      simp [addLs]
+      simp [d2, show min (m (x + 1)) 2 = 1 by omega, addLs]
   · rw [hK₁.1, a3] at h0
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [hK₁.1, a3]; exact h0) (IRS.skip hI₁ rfl))
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [hK₁.1, a3]) (IRS.skip hI₁ rfl))
       (by norm_num) ?_
     rintro c' rfl
-    refine ⟨a1, by rw [eN1]; exact hN, ?_, fun q hq => a4 q (nA q hq).1 (nA q hq).2.1 (nA q hq).2.2,
+    refine ⟨a1, by rwa [eN1], ?_, fun q hq => a4 q (nA q hq).1 (nA q hq).2.1 (nA q hq).2.2,
       a5⟩
-    rw [lb1, show min (m (x + 1)) 2 = 0 by omega]
-    simp [addLs]
+    simp [lb1, show min (m (x + 1)) 2 = 0 by omega, addLs]
 
 set_option maxHeartbeats 8000000 in
 /-- **The labels of the stop `sP`.** -/
@@ -172,7 +168,7 @@ theorem stopLab_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN 
   have hK₁ := hK₀.fix hI₁
   have nL : ∀ q, LblR kqN kqL q → q ≠ kqX ∧ q ≠ kqV := fun q hq => by
     simp only [LblR, kqN, kqL, sw] at hq; refine ⟨?_, ?_⟩ <;> kqr
-  have lb1 : lblOf c₁ kqN kqL = lblOf c kqN kqL := kqLblOf_eq fun q hq =>
+  have lb1 := kqLblOf_eq fun q hq =>
     a3 q (nL q hq).1 (nL q hq).2
   have fr1 : ∀ q, ¬ KStR q → c₁.nreg q = c.nreg q := fun q hq =>
     a3 q (fun h => hq (Or.inr (Or.inl h))) (fun h => hq (Or.inr (Or.inr (Or.inl h))))
@@ -184,14 +180,8 @@ theorem stopLab_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hN : c.nreg kqN 
     rintro c' ⟨b1, b2, b3, b4, b5⟩
     refine ⟨fun q hq => (b4 q hq).trans (fr1 q hq), by rw [b5, a4], b2, ?_, fun _ => b1,
       fun h => absurd h1 h⟩
-    rw [b3, lb1, a1, a4]
-    unfold stopLabs
-    rw [ite_eq_left h1]
-  · rw [a2] at h1
-    refine ⟨fr1, a4, by omega, ?_, fun h => absurd h h1, fun _ => eA1⟩
-    rw [lb1]
-    unfold stopLabs
-    rw [ite_eq_right h1, kqAddLs_nil]
+    simp [b3, lb1, a1, a4, stopLabs, ite_eq_left h1]
+  · simp_all [lb1, stopLabs, kqAddLs_nil] 
 
 end
 

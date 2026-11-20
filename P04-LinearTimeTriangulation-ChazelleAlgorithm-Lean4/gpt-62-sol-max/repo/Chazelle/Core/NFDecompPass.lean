@@ -58,8 +58,8 @@ theorem sum_kids_split {v p r : ℕ} (hr : r < R) (hpr : pos r = p) :
       simp [hpr]
     · have hne : pos c ≠ p := fun e => hcr (h.pos_inj hc.1 hr (e.trans hpr.symm))
       by_cases h1 : p ≤ pos c
-      · rw [ite_eq_left h1, ite_eq_right hcr, ite_eq_left (by omega)]; simp
-      · rw [ite_eq_right h1, ite_eq_right hcr, ite_eq_right (by omega)]
+      · ram_simp [ite_eq_left h1, ite_eq_right hcr, ite_eq_left]
+      ram_simp [ite_eq_right h1, ite_eq_right hcr, ite_eq_right]
   rw [Finset.sum_congr rfl hpt, Finset.sum_add_distrib, Finset.sum_ite_eq']
   congr 1
   by_cases hk : ChX R prg pch rem v r
@@ -80,13 +80,12 @@ theorem p1_fold {j : ℕ} (hj : j ≤ R) {u : ℕ} (hu : u < R) :
       simp only [Finset.mem_filter, Finset.notMem_empty, iff_false, not_and, not_le]
       intro hc
       exact h.pos_lt c ((mem_kids).1 hc).1
-    rw [this, Finset.sum_empty]
-    rfl
+    simp_all
   | succ j ih =>
     rw [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
-    have hjR : j < R := by omega
+    
     have hp : R - 1 - j < R := by omega
-    have hr : ord (R - 1 - j) < R := h.ord_lt _ hp
+    have hr := h.ord_lt _ hp
     have hpr : pos (ord (R - 1 - j)) = R - (j + 1) := by rw [h.pos_ord _ hp]; omega
     have ih' : ∀ v, v < R → ((List.range j).foldl (p1 R ord prg pch rem) ones) v =
         1 + ∑ c ∈ (kids R prg pch rem v).filter (fun c => R - j ≤ pos c), sz R prg pch rem c :=
@@ -115,19 +114,14 @@ theorem p1_fold {j : ℕ} (hj : j ≤ R) {u : ℕ} (hu : u < R) :
       · subst hu'
         rw [Function.update_self, hsr, ih' _ hu, hsplit, ite_eq_left hk, hth]
         ring
-      · rw [Function.update_of_ne hu', ih' u hu, hsplit,
-          ite_eq_right (fun hh : ChX R prg pch rem u r => hu' hh.2.2.1.symm), hth, zero_add]
+      ram_finish [Function.update_of_ne hu', ih' u hu, hsplit, ite_eq_right (fun hh : ChX R prg pch rem u r => hu' hh.2.2.1.symm), hth, zero_add]
     · rw [ite_eq_right hc, ih' u hu, hsplit,
         ite_eq_right (fun hh : ChX R prg pch rem u r => hc ⟨hh.2.1, hh.2.2.2⟩), hth, zero_add]
 
 /-- **The size pass**: after all `R` steps, entry `u` is `sz rem u`. -/
 theorem p1_full {u : ℕ} (hu : u < R) :
     ((List.range R).foldl (p1 R ord prg pch rem) ones) u = sz R prg pch rem u := by
-  rw [p1_fold h le_rfl hu, sz_rec h hu, Nat.sub_self]
-  congr 1
-  apply Finset.sum_congr _ (fun _ _ => rfl)
-  ext c
-  simp
+  simp [p1_fold h le_rfl hu, sz_rec h hu]
 
 end p1
 
@@ -188,8 +182,8 @@ theorem cval_pos {t c : ℕ} (hc : c < R) (htc : AncX R prg pch rem t c) (hne : 
 theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch rem u) {st : T3}
     (hI : P2Inv R pos prg pch rem i st) : P2Inv R pos prg pch rem (i + 1) (p2 ord prg pch rem S st i) := by
   obtain ⟨hA, hB⟩ := hI
-  have hr : ord i < R := h.ord_lt i hi
-  have hpr : pos (ord i) = i := h.pos_ord i hi
+  have hr := h.ord_lt i hi
+  have hpr := h.pos_ord i hi
   unfold p2
   generalize ord i = r at hr hpr ⊢
   -- positions `< i + 1` are positions `< i` or `r`
@@ -204,8 +198,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
     · rcases hlt u hu hpu with h1 | e
       · have hne : u ≠ r := by rintro rfl; omega
         dsimp only
-        rw [Function.update_of_ne hne]
-        exact hA u hu h1
+        ram_finish [Function.update_of_ne hne]
       · subst e
         dsimp only
         rw [Function.update_self]
@@ -240,14 +233,14 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
         · have := (AncX.pos_le h htc hc).2.2 (Ne.symm hct)
           omega
   · rw [ite_eq_right htop]
-    have hrnt : ¬ IsTop pch rem r := htop
+    have hrnt := htop
     simp only [not_or] at htop
     have hr0 := htop.1
-    have hprR : prg r < R := h.prg_lt r hr hr0
+    have hprR := h.prg_lt r hr hr0
     have hppr : pos (prg r) < i := by rw [← hpr]; exact h.pos_prg r hr hr0
     obtain ⟨htR, httop, htanc⟩ := hA (prg r) hprR hppr
     generalize st.top (prg r) = t at htR httop htanc ⊢
-    have htr : AncX R prg pch rem t r := htanc.tail ⟨hr, hr0, rfl, htop.2⟩
+    have htr := htanc.tail ⟨hr, hr0, rfl, htop.2⟩
     have htne : t ≠ r := by
       intro e
       rw [e] at httop
@@ -267,9 +260,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
       · have hne : u ≠ r := by rintro rfl; omega
         rw [Function.update_of_ne hne]
         exact hA u hu h1
-      · subst e
-        rw [Function.update_self]
-        exact ⟨htR, httop, htr⟩
+      ram_finish [Function.update_self]
     -- members of other components are unaffected
     have hother : ∀ t', t' < R → IsTop pch rem t' → t' ≠ t → ¬ AncX R prg pch rem t' r := by
       intro t' ht' htt' hne hanc
@@ -298,7 +289,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
             · refine Or.inl ⟨b1, b2, fun c hc htc hct => ?_⟩
               have := b3 c hc htc hct
               by_contra hh
-              have hcr : c = r := h.pos_inj hc hr (by omega)
+              have hcr := h.pos_inj hc hr (by omega)
               rw [hcr] at htc
               exact hother t' ht' htt' e htc
             · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩
@@ -326,7 +317,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
             · refine Or.inl ⟨b1, b2, fun c hc htc hct => ?_⟩
               have := b3 c hc htc hct
               by_contra hh
-              have hcr : c = r := h.pos_inj hc hr (by omega)
+              have hcr := h.pos_inj hc hr (by omega)
               rw [hcr] at htc
               exact hother t' ht' htt' e htc
             · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩

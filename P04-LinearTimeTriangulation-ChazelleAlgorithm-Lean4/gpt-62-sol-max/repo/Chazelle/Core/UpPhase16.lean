@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.UpPhase15
 
 /-!
@@ -90,22 +92,17 @@ theorem recA_exec {c : Config} (hw : WordsBounded W c) {A h g : ℕ}
   · config_simp; simp only [hA]
   · config_simp; simp only [h07, h20]
   · config_simp; simp only [hA, h25]
-  · config_simp; simp only [h05, h21, hA, h20, h22, Machine.upd_apply]
-    split_ifs <;> first | omega
+  · config_simp; frame_finish
   · config_simp
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
-    split_ifs <;> first | omega
+  · config_simp; frame_finish
+  · config_simp; frame_finish
+  · config_simp; frame_finish
+  · config_simp; frame_finish
   · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
     split_ifs <;> first | omega
   · unfold RecRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat frame_finish
 
 set_option maxHeartbeats 16000000 in
 theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
@@ -124,14 +121,11 @@ theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
   all_goals try (config_simp; (try simp only [hA, h50, h56, h57, h20]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
   · config_simp; simp only [h50, h20]
-  · config_simp; simp only [hA, h20]
-  · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
-    split_ifs <;> first | omega
-  · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
-    split_ifs <;> first | omega
+  · simp_all
+  · simp_all
+  · frame_finish
   · unfold CopyRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    frame_finish
 
 set_option maxHeartbeats 16000000 in
 /-- **The rows of the old grades**: `T'[j] = T[j]` for `j < g`. -/
@@ -146,7 +140,7 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
       (∀ r, ¬ CopyRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  let I : Config → Prop := fun c' => ∃ j, j ≤ g ∧ WordsBounded W c' ∧ c'.nreg 170050 = j ∧
+  let I := fun c' => ∃ j, j ≤ g ∧ WordsBounded W c' ∧ c'.nreg 170050 = j ∧
     c'.nreg ALLOC = Al + j ∧
     (∀ j', j' < j → c'.nmem (T' + j') = c.nmem (T + j')) ∧
     (∀ a, (a < T' ∨ T' + j ≤ a) → c'.nmem a = c.nmem a) ∧
@@ -155,31 +149,31 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
   have hI0 : I c := ⟨0, by omega, hw, h50, by omega, fun _ h => absurd h (by omega),
     fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
   obtain ⟨c', k, e, ⟨j, hj, hw', j50, jA, hcp, hmem, fr, hrr, hrm, ho⟩, htest, hk, hψ⟩ :=
-    whileLtN_potential_lb' (P := P) (W := W) (a := 170050) (b := 170007) (body := copyBody) I
+    Exec.whileLtN_growth (P := P) (W := W) (a := 170050) (b := 170007) (body := copyBody) I
       (fun c' => 8 * (g - c'.nreg 170050)) (fun c' => c'.nreg ALLOC) (fun c' ⟨_, _, h, _⟩ => h)
       (fun c2 ⟨j, hj, hw2, j50, jA, hcp, hmem, fr, hrr, hrm, ho⟩ htest => by
         have k07 : c2.nreg 170007 = g := by
-          rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h07
+          rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]
         rw [j50, k07] at htest
         obtain ⟨c3, k3, e3, hk3, hw3, l50, lA, lw, lm, fr3, hrr3, hrm3, ho3⟩ :=
           copyBody_exec (P := P) (T := T) (T' := T') hw2 j50
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h57)
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h56) jA
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h20)
+            (by rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)])
+            (by rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]) jA
+            (by rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)])
             (by omega) (by omega) (by omega) (by omega)
         refine ⟨c3, k3, e3, ⟨j + 1, by omega, hw3, l50, by rw [lA]; ring, fun j' h' => ?_,
           fun a ha => by rw [lm a (by omega), hmem a (by omega)],
-          fun r h1 h2 => by rw [fr3 r h1 h2, fr r h1 h2], by rw [hrr3, hrr], by rw [hrm3, hrm],
+          fun r h1 h2 => by ram_finish, by rw [hrr3, hrr], by rw [hrm3, hrm],
           by rw [ho3, ho]⟩, by rw [l50, j50]; omega, by rw [lA]; omega⟩
         rcases Nat.lt_or_ge j' j with h1 | h1
-        · rw [lm _ (by omega), hcp j' h1]
+        · ram_finish
         · have : j' = j := by omega
           subst this
           rw [lw, hmem _ (Or.inl (by omega))]) hI0
   have hjg : j = g := by
     rw [j50, fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega), h07] at htest; omega
   subst hjg
-  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rw [hA] at hψ; exact hψ, hcp, hmem, fr,
+  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rwa [hA] at hψ, hcp, hmem, fr,
     hrr, hrm, ho⟩
 
 end proofs

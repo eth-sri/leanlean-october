@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.ShootCutItem
 public import Chazelle.Core.ShootCutStep
 public import Chazelle.Core.ShootCutBreak
@@ -31,11 +33,11 @@ def PcRegs (c : Config) (pc : Pc) : Prop :=
       c.nreg 150058 = pc.pw)
 
 /-- The registers of the core that `emit` keeps. -/
-def Keep (r : ℕ) : Prop := (150000 ≤ r ∧ r < 150044) ∨ (150080 ≤ r ∧ r < 150100)
+@[ram_layout] def Keep (r : ℕ) : Prop := (150000 ≤ r ∧ r < 150044) ∨ (150080 ≤ r ∧ r < 150100)
 
 /-- The scratch registers of the core: `150020 …` of band `bCut`, the sign kernel (band `1`) and
 the host routines (band `5`). -/
-def Scr (r : ℕ) : Bool :=
+@[ram_layout] def Scr (r : ℕ) : Bool :=
   decide (150020 ≤ r ∧ r < 150100) || decide (10000 ≤ r ∧ r < 20000) ||
     decide (50000 ≤ r ∧ r < 60000)
 
@@ -46,7 +48,7 @@ structure EmitOK (P : Polygon) (W : ℕ) (emit : Stmt) (A₀ : ℕ) (Pv : Pc →
   stable : ∀ ps c c', I ps c → FrameB Scr c c' → I ps c'
   run : ∀ ps pc c, WordsBounded W c → I ps c → PcRegs c pc → Pv pc →
     ∃ c' k, Exec P W emit c c' k ∧ k ≤ K ∧ I (ps ++ [pc]) c' ∧
-      (∀ r, Keep r → c'.nreg r = c.nreg r) ∧ (∀ a, a < A₀ → c'.nmem a = c.nmem a)
+      (∀ r, Keep r → c'.nreg r = c.nreg r) ∧ (MemEqBelow A₀ c'.nmem c.nmem)
 
 /-- The list of pieces goes from `s` to the walk position `v`, consecutively. -/
 def Chained : WPos → List Pc → WPos → Prop

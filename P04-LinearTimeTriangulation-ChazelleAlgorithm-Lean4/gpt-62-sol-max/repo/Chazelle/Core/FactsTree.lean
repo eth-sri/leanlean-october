@@ -30,11 +30,11 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   set S := F \ {c} with hSdef
   have hS : S ⊆ F := fun d hd => hd.1
   have hcS : c ∉ S := fun h => h.2 rfl
-  have hins : insert c S = F := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
+  have hins := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
   obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ := hF.regionsIn_insert hS hc hcS
   have htouch := hF.touches_iff_of_split hS hc hcS hR hcR hunion hR₁ hR₂ heq
-  have hRo : IsOpen R := hF.regionsIn_open hS hR
-  have hRS : R ⊆ freeIn D S := Chazelle.Chain.regionsIn_subset hR
+  have hRo := hF.regionsIn_open hS hR
+  have hRS := Chazelle.Chain.regionsIn_subset hR
   obtain ⟨z₀, hz₀c, hz₀D⟩ := (hF.chord_inter_nonempty_isPreconnected hc).1
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hRo z₀ (hcR ⟨hz₀c, hz₀D⟩)
   obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in subset_rfl hc hz₀c hz₀D
@@ -47,8 +47,8 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
   set V := connectedComponentIn (freeIn D F) (z₀.1, z₀.2 - ε) with hV
   have hUr : U ∈ regionsIn D F := ⟨_, hp, rfl⟩
   have hVr : V ∈ regionsIn D F := ⟨_, hm, rfl⟩
-  have hUr' : U ∈ regionsIn D (insert c S) := by rw [hins]; exact hUr
-  have hVr' : V ∈ regionsIn D (insert c S) := by rw [hins]; exact hVr
+  have hUr' : U ∈ regionsIn D (insert c S) := by rwa [hins]
+  have hVr' : V ∈ regionsIn D (insert c S) := by rwa [hins]
   -- the half-disks at `z₀`
   have hhalf : ∀ τ : ℝ, (τ = 1 ∨ τ = -1) → ∀ X ∈ regionsIn D (insert c S),
       ((z₀.1, z₀.2 + τ * ε) : Point) ∈ X → halfDisk z₀ r τ ⊆ X := by
@@ -56,10 +56,8 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
     refine Chazelle.Chain.subset_regionsIn_of_inter hX (Chazelle.Chain.isPreconnected_halfDisk _ _ _)
       (hF.halfDisk_subset_freeIn_insert hc hz₀c (hball.trans hRS)) ⟨_, ?_, hxX⟩
     exact Chazelle.Chain.vert_mem_halfDisk hτ hε0 hεr
-  have hUhalf : halfDisk z₀ r 1 ⊆ U :=
-    hhalf 1 (Or.inl rfl) U hUr' (by rw [one_mul]; exact mem_connectedComponentIn hp)
-  have hVhalf : halfDisk z₀ r (-1) ⊆ V :=
-    hhalf (-1) (Or.inr rfl) V hVr' (by
+  have hUhalf := hhalf 1 (Or.inl rfl) U hUr' (by rw [one_mul]; exact mem_connectedComponentIn hp)
+  have hVhalf := hhalf (-1) (Or.inr rfl) V hVr' (by
       rw [show z₀.2 + -1 * ε = z₀.2 - ε by ring]; exact mem_connectedComponentIn hm)
   -- the side regions along the whole chord
   have hall : ∀ τ : ℝ, (τ = 1 ∨ τ = -1) → ∀ X ∈ regionsIn D (insert c S),
@@ -69,7 +67,7 @@ theorem chordSides_of_system {D : Set Point} {F : Set (Set Point)} (hF : ChordSy
     obtain ⟨r', hr', hball'⟩ := Metric.isOpen_iff.1 hRo z (hcR ⟨hzc, hzD⟩)
     filter_upwards [Ioo_mem_nhdsGT hr'] with δ hδ
     exact hall z ⟨hzc, hzD⟩ r' hr' hball' (Chazelle.Chain.vert_mem_halfDisk hτ hδ.1 hδ.2)
-  have hUne : U ≠ V := hpm
+  have hUne := hpm
   -- `U` and `V` touch `c`
   have hcU : TouchesIn D c U :=
     ⟨z₀, ⟨hz₀c, hz₀D⟩, closure_mono hUhalf (Chazelle.Chain.mem_closure_halfDisk (Or.inl rfl) hr)⟩

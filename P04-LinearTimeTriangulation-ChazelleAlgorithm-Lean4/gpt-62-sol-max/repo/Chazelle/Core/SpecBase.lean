@@ -72,9 +72,7 @@ theorem shear_n (ε : ℝ) (P : Polygon) : (shear ε P).n = P.n := by
 
 theorem getD_map_point (f : Point → Point) (l : List Point) (i : ℕ) (d : Point) :
     (l.map f).getD i (f d) = f (l.getD i d) := by
-  induction l generalizing i with
-  | nil => simp
-  | cons x xs ih => cases i <;> simp
+  simp
 
 /-- Vertex `i` of the sheared polygon is the sheared vertex `i` (for every `i`: the default
 vertex `(0, 0)` is fixed by the shear). -/
@@ -208,6 +206,18 @@ noncomputable def chainModel (C : Chain) : Model where
   Adm := Merge.augChords C
   Full := C.chords
 
+/-- The disk model of the whole chain at a junction. -/
+noncomputable abbrev _root_.Chazelle.Merge.Junction.wholeModel (J : Merge.Junction) : Model :=
+  chainModel J.whole
+
+/-- The disk model of the left child chain. -/
+noncomputable abbrev _root_.Chazelle.Merge.Junction.leftModel (J : Merge.Junction) : Model :=
+  chainModel J.left
+
+/-- The disk model of the right child chain. -/
+noncomputable abbrev _root_.Chazelle.Merge.Junction.rightModel (J : Merge.Junction) : Model :=
+  chainModel J.right
+
 /-- The boundary walk of the interior of `Q`, oriented with the interior on its left. -/
 noncomputable def interiorWalk (Q : Polygon) : Polygon := by
   classical
@@ -222,6 +232,12 @@ noncomputable def interiorModel (Q : Polygon) : Model where
   counted _ := True
   Adm := {c | ∃ y a b : ℝ, IsHChordIn (Q.filled \ Q.boundary) y a b ∧ c = Visibility.hseg y a b}
   Full := Visibility.chords Q
+
+/-- The disk model of the input after the generic shear. -/
+noncomputable abbrev _root_.Chazelle.Polygon.inputModel (P : Polygon) : Model :=
+  interiorModel (Qof P)
+
+export Chazelle.Polygon (inputModel)
 
 namespace Model
 
@@ -309,9 +325,6 @@ noncomputable def arcWt (a b : ℝ) : ℕ :=
 noncomputable def weight (F : Set (Set Point)) (U : Set Point) : ℕ :=
   sSup ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F U ab.1 ab.2})
 
-/-- **Conformal** (p. 495): every region has at most four exit chords. -/
-def Conformal (F : Set (Set Point)) : Prop := ∀ U ∈ M.regions F, M.deg F U ≤ 4
-
 /-- Regions have at most `d` exit chords (the bounded-degree relaxation used between the fusion
 and the restoration of conformality, p. 508). -/
 def DegLe (F : Set (Set Point)) (d : ℕ) : Prop := ∀ U ∈ M.regions F, M.deg F U ≤ d
@@ -331,8 +344,6 @@ def Granular (F : Set (Set Point)) (γ : ℕ) : Prop := M.Semigranular F γ ∧ 
 
 theorem Granular.semigranular {F : Set (Set Point)} {γ : ℕ} (h : M.Granular F γ) :
     M.Semigranular F γ := h.1
-
-theorem Conformal.degLe {F : Set (Set Point)} (h : M.Conformal F) : M.DegLe F 4 := h
 
 /-- The number of counted walk edges (the size of the curve: `2 m` for a chain, `n` for the
 interior of a polygon). -/

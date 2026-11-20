@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvOrg3
 public import Chazelle.Core.SweepIoLHit2
 
@@ -27,37 +29,17 @@ open Chazelle.Chain (sidePt)
 /-! ## Registers -/
 
 /-- The model descriptor of `C₁` (built by the initialisation) and its chain descriptor. -/
-def MD₁ : ℕ := sw 650
-def CD₁ : ℕ := sw 651
+@[ram_layout] def MD₁ : ℕ := sw 650
+@[ram_layout] def CD₁ : ℕ := sw 651
 
 /-- The gathered arcs of the window (base, count). -/
-def wGB : ℕ := sw 2420
-def wGK : ℕ := sw 2421
+@[ram_layout] def wGB : ℕ := sw 2420
+@[ram_layout] def wGK : ℕ := sw 2421
 
-def eF : ℕ := sw 2240
-def eA : ℕ := sw 2243
-def eRD : ℕ := sw 2246
-def eNo : ℕ := sw 2247
-
-/-! ## The frame of the stage-3 components -/
-
-/-- **The frame of a component**: registers outside the oracle bands and the set `X` (and the
-allocator) are unchanged, the allocator grows, the memory below it is kept. -/
-def EFr (X : ℕ → Prop) (c c' : Config) : Prop :=
-  (∀ r, bandOf r ∉ oracleBands → ¬ X r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-    c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
-
-theorem EFr.refl (X : ℕ → Prop) (c : Config) : EFr X c c :=
-  ⟨fun _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
-
-theorem EFr.trans {X : ℕ → Prop} {c₁ c₂ c₃ : Config} (h₁ : EFr X c₁ c₂) (h₂ : EFr X c₂ c₃) :
-    EFr X c₁ c₃ :=
-  ⟨fun r a b d => (h₂.1 r a b d).trans (h₁.1 r a b d), h₁.2.1.trans h₂.2.1,
-    fun a ha => (h₂.2.2 a (lt_of_lt_of_le ha h₁.2.1)).trans (h₁.2.2 a ha)⟩
-
-theorem EFr.mono {X Y : ℕ → Prop} {c c' : Config} (h : EFr X c c') (hXY : ∀ r, X r → Y r) :
-    EFr Y c c' :=
-  ⟨fun r a b d => h.1 r a (fun hx => b (hXY r hx)) d, h.2.1, h.2.2⟩
+@[ram_layout] def eF : ℕ := sw 2240
+@[ram_layout] def eA : ℕ := sw 2243
+@[ram_layout] def eRD : ℕ := sw 2246
+@[ram_layout] def eNo : ℕ := sw 2247
 
 /-! ## The program -/
 
@@ -88,10 +70,9 @@ theorem evPrepL_val (m f : ℕ → ℕ) :
     regB m evPrepL f eRD = f K1 - f oD ∧
     (∀ q, (q < 241300 ∨ 241309 < q) → q ≠ eRD → regB m evPrepL f q = f q) := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun q hq hq' => regB_other _ _ _ (fun i hi => by
-    simp only [evPrepL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
+    fin_cases hi <;>
       simp only [dstI] <;> first | omega)⟩ <;>
-  · simp only [evPrepL, regB, regI, upd, MD₁, wGB, wGK, oSym, oD, eRD, K1, sw]; simp
+  rfl
 
 /-! ## The contract -/
 
@@ -105,18 +86,18 @@ def ShotOut (P : Polygon) (J : Merge.Junction) (m : ℕ → ℕ) (B K : ℕ) (a 
     (c' : Config) : Prop :=
   c'.nreg eF ≤ 1 ∧
     (∀ τ₀, Genuine J.left a σ τ₀ →
-      rayPt a σ τ₀ ∈ ShotList.loSet (chainModel J.left) (Qof P) m B K [] → c'.nreg eF = 1) ∧
+      rayPt a σ τ₀ ∈ ShotList.loSet J.leftModel (Qof P) m B K [] → c'.nreg eF = 1) ∧
     (c'.nreg eF = 1 → ∃ τ, 0 < τ ∧
       (∀ τ₀, Genuine J.left a σ τ₀ →
-        rayPt a σ τ₀ ∈ ShotList.loSet (chainModel J.left) (Qof P) m B K [] → τ = τ₀) ∧
+        rayPt a σ τ₀ ∈ ShotList.loSet J.leftModel (Qof P) m B K [] → τ = τ₀) ∧
       c'.nreg eA ≤ 1 ∧
-      (c'.nreg eA = 1 → c'.nreg (eA + 1) < (chainModel J.left).W.n ∧
-        ProperPos (chainModel J.left) (Qof P) P.n ⟨c'.nreg (eA + 1), c'.nreg (eA + 2)⟩ ∧
-        Arrival (chainModel J.left).W (rayPt a σ τ) σ (c'.nreg (eA + 1))
-          ((chainModel J.left).param (Qof P) ⟨c'.nreg (eA + 1), c'.nreg (eA + 2)⟩) ∧
+      (c'.nreg eA = 1 → c'.nreg (eA + 1) < J.leftModel.W.n ∧
+        ProperPos J.leftModel (Qof P) P.n ⟨c'.nreg (eA + 1), c'.nreg (eA + 2)⟩ ∧
+        Arrival J.leftModel.W (rayPt a σ τ) σ (c'.nreg (eA + 1))
+          (J.leftModel.param (Qof P) ⟨c'.nreg (eA + 1), c'.nreg (eA + 2)⟩) ∧
         (c'.nreg (eA + 2) = 0 ↔
-          (chainModel J.left).param (Qof P) ⟨c'.nreg (eA + 1), c'.nreg (eA + 2)⟩ = 0)) ∧
-      (c'.nreg eA ≠ 1 → ∀ p t, ¬ Arrival (chainModel J.left).W (rayPt a σ τ) σ p t))
+          J.leftModel.param (Qof P) ⟨c'.nreg (eA + 1), c'.nreg (eA + 2)⟩ = 0)) ∧
+      (c'.nreg eA ≠ 1 → ∀ p t, ¬ Arrival J.leftModel.W (rayPt a σ τ) σ p t))
 
 /-- A normalised position: same parameter and point, and a zero code exactly at the vertex. -/
 theorem nhgt_facts {M : Model} {Q : Polygon} {n : ℕ} {u : WPos} (hu : ProperPos M Q n u) :
@@ -128,12 +109,12 @@ theorem nhgt_facts {M : Model} {Q : Polygon} {n : ℕ} {u : WPos} (hu : ProperPo
     unfold nhgt; rw [← hedge]
   rw [he]
   have hpar : M.param Q (Restore.normOf M Q u) = M.param Q u := by
-    unfold Model.key at hkey; rw [hedge] at hkey; linarith
+    unfold Model.key at hkey; simp_all
   refine ⟨hpp, hpar, hpos, ⟨fun h => ?_, fun h => ?_⟩⟩
   · rw [← he, h]; rfl
   · rcases hcase with h0 | h0
     · exact h0
-    · rw [h] at h0; exact absurd h0 (lt_irrefl 0)
+    · simp_all
 
 end
 

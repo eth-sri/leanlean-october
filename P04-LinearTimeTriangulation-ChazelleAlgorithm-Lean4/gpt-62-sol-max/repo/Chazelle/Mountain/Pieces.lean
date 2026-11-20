@@ -89,10 +89,8 @@ theorem exists_minimal_idx {r : α → α → Prop} (hr : StrictTotal r) {f : �
 /-- Cyclic predecessor is different from the index (for `2 ≤ n`). -/
 theorem pred_mod_ne {n k : ℕ} (hn : 2 ≤ n) (hk : k < n) : (k + n - 1) % n ≠ k := by
   rcases Nat.eq_zero_or_pos k with rfl | hk0
-  · rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega)]
-    omega
-  · rw [show k + n - 1 = (k - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    omega
+  · simp_all <;> omega
+  ram_simp [show k + n - 1 = (k - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt] <;> omega
 
 /-- Cyclic successor is different from the index (for `2 ≤ n`). -/
 theorem succ_mod_ne {n k : ℕ} (hn : 2 ≤ n) (hk : k < n) : (k + 1) % n ≠ k := by
@@ -141,8 +139,7 @@ theorem simple_of_simple_rotate {Q : Polygon} {s : ℕ} (h : (Q.rotate s).Simple
 theorem isMountainAt_iff {Q : Polygon} {a : ℕ} (ha : a < Q.n) :
     IsMountainAt Q a ↔ IsMountain (Q.rotate ((a + 1) % Q.n)) := by
   have key : ∀ i, i < Q.n → (Q.rotate ((a + 1) % Q.n)).vtx i = Q.vtx ((a + 1 + i) % Q.n) := by
-    intro i hi
-    rw [vtx_rotate Q _ hi, Nat.mod_add_mod]
+    intros; simp [vtx_rotate, Nat.mod_add_mod, *]
   constructor
   · rintro ⟨hQ, -, hc⟩
     refine ⟨simple_rotate Q _ hQ, fun i hi => ?_⟩
@@ -151,7 +148,7 @@ theorem isMountainAt_iff {Q : Polygon} {a : ℕ} (ha : a < Q.n) :
     exact hc i hi
   · rintro ⟨hR, hc⟩
     refine ⟨simple_of_simple_rotate hR, ha, fun p hp => ?_⟩
-    have := hc p (by rw [n_rotate]; exact hp)
+    have := hc p (by rwa [n_rotate])
     rwa [key p (by omega), key (p + 1) hp] at this
 
 /-- The global `ylexLT`-minimum of a simple polygon is a strict local minimum. -/
@@ -229,7 +226,7 @@ above the given point. -/
 theorem exists_free_of_isOpen {P : Polygon} (hP : P.Simple) {U : Set Point} (hU : IsOpen U)
     {z : Point} (hz : z ∈ U) (hzi : z ∈ P.filled \ P.boundary) :
     ∃ p ∈ U, p ∈ freeRegion P ∧ p.1 = z.1 ∧ z.2 < p.2 := by
-  have hV : IsOpen (U ∩ (P.filled \ P.boundary)) := hU.inter (isOpen_filled_sdiff_boundary hP)
+  have hV := hU.inter (isOpen_filled_sdiff_boundary hP)
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hV z ⟨hz, hzi⟩
   have hfin : (((Finset.range P.n).image (fun k => (P.vtx k).2 - z.2) : Finset ℝ) :
       Set ℝ).Finite := Finset.finite_toSet _
@@ -265,7 +262,7 @@ theorem mem_segment_or_far {p v c : Point} {t : ℝ} (ht1 : t < 1)
     simp only [Geometry.lerp] at this
     field_simp
     linarith
-  have hμ : 0 ≤ s / (1 - t) := div_nonneg hs0 h1t.le
+  have hμ := div_nonneg hs0 h1t.le
   rcases le_or_gt (s / (1 - t)) 1 with hle | hgt
   · left
     refine ⟨s / (1 - t), hμ, hle, ?_⟩
@@ -384,10 +381,15 @@ theorem exists_ball_vtx_trapData {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k
   have hvc : P.vtx k ∈ closure D.region := by rw [hDreg]; exact h p hp hpf
   exact ⟨D, rfl, hT.q_mem hP hpf.1, hvc, D.vtx_mem_closure_region hk hvc⟩
 
+section
+
+variable {P : Polygon} (D : TrapData P) {k : ℕ}
+    (hk : k < P.n) (hv : P.vtx k ∈ closure D.region) {p : Point} (hp : p ∈ D.region)
+include hk hv hp
+
 /-- A vertex in the closure of a region, strictly below one of its points, is on the closed
 bottom side. -/
-theorem TrapData.mem_bot_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
-    (hk : k < P.n) (hv : P.vtx k ∈ closure D.region) {p : Point} (hp : p ∈ D.region)
+theorem TrapData.mem_bot_of_lt
     (hlt : (P.vtx k).2 < p.2) : k ∈ sideVtxSet P D.i D.j D.y₁ := by
   rcases D.vtx_mem_closure_region hk hv with h | h
   · exact h
@@ -398,8 +400,7 @@ theorem TrapData.mem_bot_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
 
 /-- A vertex in the closure of a region, strictly above one of its points, is on the closed top
 side. -/
-theorem TrapData.mem_top_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
-    (hk : k < P.n) (hv : P.vtx k ∈ closure D.region) {p : Point} (hp : p ∈ D.region)
+theorem TrapData.mem_top_of_lt
     (hlt : p.2 < (P.vtx k).2) : k ∈ sideVtxSet P D.i D.j D.y₂ := by
   rcases D.vtx_mem_closure_region hk hv with h | h
   · exfalso
@@ -408,13 +409,15 @@ theorem TrapData.mem_top_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
     linarith
   · exact h
 
+end
+
 /-! ### (d) The segment attached at a vertex of a side -/
 
 /-- A point of the plane at the height of a vertex set strictly between two abscissae. -/
 theorem horiz_mem_segment {a b p : Point} (ha : a.2 = p.2) (hb : b.2 = p.2)
     (h1 : min a.1 b.1 ≤ p.1) (h2 : p.1 ≤ max a.1 b.1) : p ∈ Chazelle.segment a b := by
   rw [segment_horizontal_eq_hseg (ha.trans hb.symm)]
-  exact ⟨ha.symm, h1, h2⟩
+  tauto
 
 /-- **The gap lemma.**  Let `m`, `k` be vertices at the same height `y₀`, `m` to the left of `k`,
 with no vertex strictly between them at that height, and suppose that just above (`ε = 1`) or
@@ -670,8 +673,7 @@ theorem IsPiece.interior_subset {P : Polygon} {l : List ℕ} (hl : IsPiece P l) 
     (subPoly P l).filled \ (subPoly P l).boundary ⊆ P.filled \ P.boundary := by
   intro y hy
   refine ⟨hl.filled_subset hy.1, hl.not_boundary y ?_⟩
-  rw [interior_filled hl.simple]
-  exact hy
+  rwa [interior_filled hl.simple]
 
 /-- A point of the segment attached at a vertex of a piece that is interior to the piece yields
 a contradiction. -/
@@ -679,10 +681,10 @@ theorem IsPiece.not_mem_attached {P : Polygon} {l : List ℕ} (hl : IsPiece P l)
     (hK : K < P.n) (hm : m < P.n) (he : IsPieceEdge P K m) {y : Point}
     (hy : y ∈ Chazelle.segment (P.vtx K) (P.vtx m))
     (hyi : y ∈ (subPoly P l).filled \ (subPoly P l).boundary) : False := by
-  have hyi' : y ∈ interior (subPoly P l).filled := by rw [interior_filled hl.simple]; exact hyi
+  have hyi' : y ∈ interior (subPoly P l).filled := by rwa [interior_filled hl.simple]
   rcases he.segment_cases hK hm with h | ⟨d, hd, h⟩
   · exact hl.not_boundary y hyi' (h hy)
-  · exact hl.not_diag d hd y hyi' (by rw [← h]; exact hy)
+  · exact hl.not_diag d hd y hyi' (by rwa [← h])
 
 /-- **A piece has no reflex local minimum.**  If vertex `k` of a piece `Q = subPoly P l` is a
 strict `ylexLT`-local minimum, then near `Q.vtx k` no point strictly `ylexLT`-below it is
@@ -694,14 +696,13 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
     ∃ r > 0, ∀ y ∈ ball ((subPoly P l).vtx k) r, ylexLT y ((subPoly P l).vtx k) →
       y ∉ (subPoly P l).filled \ (subPoly P l).boundary := by
   set Q := subPoly P l with hQdef
-  have hQ : Q.Simple := hl.simple
+  have hQ := hl.simple
   have hkQ : k < l.length := by have := hk.1; rwa [hQdef, n_subPoly] at this
   set K := l.getD k 0 with hKdef
   have hK : K < P.n := by
     apply hl.lt
-    rw [hKdef, EarClip.getD_eq_getElem_of_lt _ _ hkQ]
-    exact List.getElem_mem hkQ
-  have hxK : Q.vtx k = P.vtx K := vtx_subPoly_getD P l hkQ
+    simp_all
+  have hxK := vtx_subPoly_getD P l hkQ
   obtain ⟨r₁, hr₁, hr₁b⟩ := lower_halfBall_not_boundary hQ hk
   obtain ⟨r₂, hr₂, hr₂D⟩ := exists_ball_vtx_trapData hP hK
   refine ⟨min r₁ r₂, lt_min hr₁ hr₂, fun y₀ hy₀ hy₀lt hy₀i => ?_⟩
@@ -709,7 +710,7 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   set r := min r₁ r₂ with hr
   -- the lower half-ball is interior to `Q`
   have hB : ∀ y ∈ ball x r, ylexLT y x → y ∈ Q.filled \ Q.boundary := by
-    have hconv : Convex ℝ (ball x r ∩ {y | ylexLT y x}) := (convex_ball x r).inter (convex_ylexLT_lower x)
+    have hconv := (convex_ball x r).inter (convex_ylexLT_lower x)
     intro y hy hylt
     exact subset_interior_of_isPreconnected hQ hconv.isPreconnected
       (fun z hz => hr₁b z (ball_subset_ball (min_le_left _ _) hz.1) hz.2) ⟨hy₀, hy₀lt⟩ hy₀i
@@ -717,7 +718,7 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   -- a free point of `P` just below `x`
   have hWo : IsOpen (ball x r ∩ {y : Point | y.2 < x.2}) :=
     isOpen_ball.inter (isOpen_lt continuous_snd continuous_const)
-  have hr0 : 0 < r := lt_min hr₁ hr₂
+  have hr0 := lt_min hr₁ hr₂
   have hz : ((x.1, x.2 - r / 2) : Point) ∈ ball x r ∩ {y : Point | y.2 < x.2} := by
     refine ⟨?_, by simp only [Set.mem_ofPred_eq]; linarith⟩
     rw [mem_ball_iff_abs]
@@ -725,12 +726,10 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
     refine ⟨hr0, ?_⟩
     rw [show x.2 - r / 2 - x.2 = -(r / 2) by ring, abs_neg, abs_of_pos (by linarith)]
     linarith
-  have hzi : ((x.1, x.2 - r / 2) : Point) ∈ P.filled \ P.boundary :=
-    hl.interior_subset (hB _ hz.1 (Or.inl hz.2))
+  have hzi := hl.interior_subset (hB _ hz.1 (Or.inl hz.2))
   obtain ⟨p, ⟨hpb, hpy⟩, hpf, -, -⟩ := exists_free_of_isOpen hP hWo hz hzi
   obtain ⟨D, -, hpD, hvD, -⟩ := hr₂D p (by rw [← hxK]; exact ball_subset_ball (min_le_right _ _) hpb) hpf
-  have hKtop : K ∈ sideVtxSet P D.i D.j D.y₂ :=
-    D.mem_top_of_lt hK hvD hpD (by rw [← hxK]; exact hpy)
+  have hKtop := D.mem_top_of_lt hK hvD hpD (by rw [← hxK]; exact hpy)
   obtain ⟨m, hm, hmlt, hme⟩ := D.attached_top hP hKtop
   rw [← hxK] at hmlt
   -- a point of the attached segment close to `x`

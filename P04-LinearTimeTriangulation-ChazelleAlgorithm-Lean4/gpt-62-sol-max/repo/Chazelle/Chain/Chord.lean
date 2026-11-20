@@ -92,7 +92,7 @@ theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : �
     intro t ht
     by_contra h
     exact ht.2 (hint t ht.1 (not_le.1 h))
-  have h1 : t₀ ≤ C.hitParam v σ := le_csInf hne hge
+  have h1 := le_csInf hne hge
   have hset : C.hitSet v σ = {t : ℝ | t₀ ≤ t ∧ rayPt v σ t ∈ C.domᶜ} := by
     ext t
     constructor
@@ -101,8 +101,7 @@ theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : �
   have hclosed : IsClosed (C.hitSet v σ) := by
     rw [hset]
     exact isClosed_Ici.inter (C.isClosed_dom_compl.preimage (continuous_rayPt v σ))
-  have h2 : rayPt v σ (C.hitParam v σ) ∈ C.domᶜ :=
-    (hclosed.csInf_mem hne (C.hitSet_bddBelow v σ)).2
+  have h2 := (hclosed.csInf_mem hne (C.hitSet_bddBelow v σ)).2
   refine ⟨h1, h2, fun t ht1 ht2 => ?_⟩
   by_contra hmem
   have : t ∈ C.hitSet v σ := ⟨ht1, hmem⟩
@@ -215,9 +214,9 @@ theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
       have := hcase ((T + C.radius + (C.vertex k).1) / 2) (by linarith) (by linarith)
       rw [neg_one_mul, abs_lt] at this
       linarith [this.1]
-  have hnot : ¬ |(C.chordEnd k σ).1| < C.radius := fun hlt => hbox ⟨hlt, by
-    rw [chordEnd_snd]; exact hv2⟩
-  have habs : |(C.chordEnd k σ).1| = C.radius := le_antisymm hle (not_lt.1 hnot)
+  have hnot := fun hlt => hbox ⟨hlt, by
+    assumption⟩
+  have habs := le_antisymm hle (not_lt.1 hnot)
   rcases hσ with rfl | rfl
   · simp only [chordEnd_fst, one_mul] at habs ⊢
     rcases abs_eq (C.radius_pos.le) |>.1 habs with h | h
@@ -247,7 +246,7 @@ theorem chordEnd_cases {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ �
       obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hslit
       have h3 : (C.chordEnd k σ).2 ≤ C.top.2 := by
         rw [chordEnd_snd]; exact C.snd_le_top_of_mem_set (C.vertex_mem_set hk)
-      have : C.chordEnd k σ = C.top := Prod.ext h1 (le_antisymm h3 h2)
+      have := Prod.ext h1 (le_antisymm h3 h2)
       rw [this]; exact C.top_mem_set
   · exact Or.inr (C.chordEnd_fst_eq_of_not_mem_box hk hσ h hbox)
 
@@ -286,85 +285,11 @@ theorem chordSet_eq_openChordSet_union {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
     · rcases ht1.lt_or_eq with h1 | h1
       · exact Or.inl ⟨t, ⟨h0, h1⟩, rfl⟩
       · right; right; rw [h1]; rfl
-    · right; left; rw [← h0, rayPt_zero]
+    simp [← h0, rayPt_zero]
   · rintro (⟨t, ht, rfl⟩ | rfl | rfl)
     · exact ⟨t, ⟨ht.1.le, ht.2.le⟩, rfl⟩
     · exact ⟨0, ⟨le_rfl, (C.chordParam_pos hk hσ h).le⟩, rayPt_zero _ _⟩
     · exact ⟨C.chordParam k σ, ⟨(C.chordParam_pos hk hσ h).le, le_rfl⟩, rfl⟩
-
-/-! ### Abstract horizontal chords of a domain -/
-
-/-- A horizontal chord of the domain `D`: a horizontal segment `[a, b] × {y}` with `a < b`,
-both endpoints off `D`, and the open part inside `D`. -/
-structure IsHChordIn (D : Set Point) (y a b : ℝ) : Prop where
-  lt : a < b
-  left_not : ((a, y) : Point) ∉ D
-  right_not : ((b, y) : Point) ∉ D
-  open_mem : ∀ x, a < x → x < b → ((x, y) : Point) ∈ D
-
-/-- **Two horizontal chords of a domain are equal or meet only in common endpoints.** -/
-theorem hchordIn_inter {D : Set Point} {y a b y' a' b' : ℝ} (h : IsHChordIn D y a b)
-    (h' : IsHChordIn D y' a' b') {p : Point} (hp : p ∈ hseg y a b) (hp' : p ∈ hseg y' a' b') :
-    (y = y' ∧ a = a' ∧ b = b') ∨
-      ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) := by
-  obtain ⟨hpy, hpa, hpb⟩ := hp
-  obtain ⟨hpy', hpa', hpb'⟩ := hp'
-  have hyy : y = y' := hpy.symm.trans hpy'
-  subst hyy
-  by_cases hend : p.1 = a ∨ p.1 = b
-  · have hpD : p ∉ D := by
-      rcases hend with he | he
-      · have : p = (a, y) := Prod.ext he hpy
-        rw [this]; exact h.left_not
-      · have : p = (b, y) := Prod.ext he hpy
-        rw [this]; exact h.right_not
-    right
-    refine ⟨?_, ?_⟩
-    · rcases hend with he | he
-      · exact Or.inl (Prod.ext he hpy)
-      · exact Or.inr (Prod.ext he hpy)
-    · by_contra hne
-      push Not at hne
-      have ha' : a' < p.1 := lt_of_le_of_ne hpa' (fun e => hne.1 (Prod.ext e.symm hpy))
-      have hb' : p.1 < b' := lt_of_le_of_ne hpb' (fun e => hne.2 (Prod.ext e hpy))
-      have := h'.open_mem p.1 ha' hb'
-      rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at this
-      exact hpD this
-  · push Not at hend
-    have ha : a < p.1 := lt_of_le_of_ne hpa (Ne.symm hend.1)
-    have hb : p.1 < b := lt_of_le_of_ne hpb hend.2
-    have hint := h.open_mem p.1 ha hb
-    rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at hint
-    have ha' : a' < p.1 := by
-      rcases hpa'.lt_or_eq with h1 | h1
-      · exact h1
-      · exfalso
-        apply h'.left_not
-        rw [show p = (a', y) from Prod.ext h1.symm hpy] at hint
-        exact hint
-    have hb' : p.1 < b' := by
-      rcases hpb'.lt_or_eq with h1 | h1
-      · exact h1
-      · exfalso
-        apply h'.right_not
-        rw [show p = (b', y) from Prod.ext h1 hpy] at hint
-        exact hint
-    left
-    refine ⟨rfl, ?_, ?_⟩
-    · apply le_antisymm
-      · by_contra hlt
-        push Not at hlt
-        exact h.left_not (h'.open_mem a hlt (ha.trans hb'))
-      · by_contra hlt
-        push Not at hlt
-        exact h'.left_not (h.open_mem a' hlt (ha'.trans hb))
-    · apply le_antisymm
-      · by_contra hlt
-        push Not at hlt
-        exact h'.right_not (h.open_mem b' (ha.trans hb') hlt)
-      · by_contra hlt
-        push Not at hlt
-        exact h.right_not (h'.open_mem b (ha'.trans hb) hlt)
 
 /-- The chord of a vertex, as a horizontal segment between its two abscissae. -/
 theorem chordSet_eq_hseg (k : ℕ) (σ : ℝ) :
@@ -380,10 +305,10 @@ theorem isHChordIn_chord {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨
   obtain ⟨hpos, hend, hint⟩ := C.chord_spec hk hσ h
   have hv : ((C.vertex k).1, (C.vertex k).2) = C.vertex k := rfl
   have he : ((C.chordEnd k σ).1, (C.vertex k).2) = C.chordEnd k σ := rfl
-  have hvD : C.vertex k ∉ C.dom := fun hd => C.not_mem_set_of_mem_dom hd (C.vertex_mem_set hk)
+  have hvD := fun hd => C.not_mem_set_of_mem_dom hd (C.vertex_mem_set hk)
   rcases hσ with rfl | rfl
   · have hlt : (C.vertex k).1 < (C.chordEnd k 1).1 := by
-      simp only [chordEnd_fst, one_mul]; linarith
+      simp_all
     rw [min_eq_left hlt.le, max_eq_right hlt.le]
     refine ⟨hlt, hv ▸ hvD, he ▸ hend, fun x hx1 hx2 => ?_⟩
     have := hint (x - (C.vertex k).1) (by linarith)
@@ -391,7 +316,7 @@ theorem isHChordIn_chord {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (C.chordEnd k (-1)).1 < (C.vertex k).1 := by
-      simp only [chordEnd_fst, neg_one_mul]; linarith
+      simp_all
     rw [min_eq_right hlt.le, max_eq_left hlt.le]
     refine ⟨hlt, he ▸ hend, hv ▸ hvD, fun x hx1 hx2 => ?_⟩
     have := hint ((C.vertex k).1 - x) (by linarith)
@@ -410,8 +335,7 @@ theorem chords_subset_image :
       ((↑(Finset.range (C.m + 1)) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)) := by
   rintro S ⟨k, σ, hk, hσ, -, rfl⟩
   refine ⟨(k, σ), ⟨by simp [hk], ?_⟩, rfl⟩
-  simp only [mem_insert_iff, mem_singleton_iff]
-  exact hσ
+  assumption
 
 theorem chords_finite : C.chords.Finite :=
   ((Finset.range (C.m + 1)).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)).image _

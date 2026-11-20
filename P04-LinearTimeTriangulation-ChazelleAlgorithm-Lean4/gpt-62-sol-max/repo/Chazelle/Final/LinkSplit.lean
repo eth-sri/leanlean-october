@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Final.Wedge
 public import Chazelle.Split.Multi
 public import Chazelle.Final.Degree
@@ -78,22 +80,20 @@ noncomputable def seqSplit (P : Polygon) : List (List ℕ) → List (ℕ × ℕ)
   | pcs, [] => pcs
   | pcs, d :: D => seqSplit P (cut P pcs d) D
 
-@[simp] theorem seqSplit_nil (pcs : List (List ℕ)) : seqSplit P pcs [] = pcs := rfl
-
 theorem seqSplit_cons (pcs : List (List ℕ)) (d : ℕ × ℕ) (D : List (ℕ × ℕ)) :
     seqSplit P pcs (d :: D) = seqSplit P (cut P pcs d) D := rfl
 
 theorem cut_append (A B : List (List ℕ)) (d : ℕ × ℕ) :
     cut P (A ++ B) d = cut P A d ++ cut P B d := by
-  unfold cut; rw [List.flatMap_append]
+  unfold cut; simp_all
 
 theorem cut_cons_of_isDiag {m : List ℕ} {rest : List (List ℕ)} {d : ℕ × ℕ} (h : IsDiag P m d) :
     cut P (m :: rest) d = splitFst m d :: splitSnd m d :: cut P rest d := by
-  unfold cut; rw [List.flatMap_cons, ite_eq_left h]; rfl
+  unfold cut; simp_all
 
 theorem cut_cons_of_not_isDiag {m : List ℕ} {rest : List (List ℕ)} {d : ℕ × ℕ}
     (h : ¬ IsDiag P m d) : cut P (m :: rest) d = m :: cut P rest d := by
-  unfold cut; rw [List.flatMap_cons, ite_eq_right h]; rfl
+  unfold cut; simp_all
 
 /-- Cutting along a diagonal of no piece changes nothing. -/
 theorem cut_eq_self {pcs : List (List ℕ)} {d : ℕ × ℕ} (h : ∀ m ∈ pcs, ¬ IsDiag P m d) :
@@ -118,11 +118,8 @@ theorem mem_cut {pcs : List (List ℕ)} {d : ℕ × ℕ} {m' : List ℕ} (h : m'
   obtain ⟨m, hm, h'⟩ := h
   refine ⟨m, hm, ?_⟩
   by_cases hd : IsDiag P m d
-  · rw [ite_eq_left hd] at h'
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at h'
-    exact Or.inl ⟨hd, h'⟩
-  · rw [ite_eq_right hd, List.mem_singleton] at h'
-    exact Or.inr ⟨hd, h'⟩
+  · simp_all
+  simp_all
 
 theorem seqSplit_append (A B : List (List ℕ)) (D : List (ℕ × ℕ)) :
     seqSplit P (A ++ B) D = seqSplit P A D ++ seqSplit P B D := by
@@ -147,7 +144,7 @@ theorem seqSplit_filter {pcs : List (List ℕ)} {l' : List ℕ} (h : ∀ m ∈ p
   | nil => rfl
   | cons d D ih =>
     by_cases hd : sideTest l' d = true
-    · rw [List.filter_cons_of_pos hd, seqSplit_cons, seqSplit_cons, ih (sub_of_mem_cut h)]
+    · simp [List.filter_cons_of_pos hd, seqSplit_cons, ih (sub_of_mem_cut h)]
     · rw [List.filter_cons_of_neg hd, seqSplit_cons, ih (sub_of_mem_cut h)]
       congr 1
       apply cut_eq_self
@@ -167,9 +164,9 @@ theorem seqSplit_eq_splitAll {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSys
     rw [seqSplit_cons, show cut P [l] d = [splitFst l d] ++ [splitSnd l d] from
       cut_cons_of_isDiag hd, seqSplit_append, splitAll_cons, ← ih₁ h.fst, ← ih₂ h.snd]
     have hsub₁ : ∀ m ∈ [splitFst l d], ∀ x ∈ m, x ∈ splitFst l d := by
-      intro m hm x hx; rw [List.mem_singleton] at hm; rw [← hm]; exact hx
+      simp
     have hsub₂ : ∀ m ∈ [splitSnd l d], ∀ x ∈ m, x ∈ splitSnd l d := by
-      intro m hm x hx; rw [List.mem_singleton] at hm; rw [← hm]; exact hx
+      simp
     congr 1
     · rw [seqSplit_filter hsub₁]; rfl
     · rw [seqSplit_filter hsub₂, seqSplit_filter hsub₂ (diagsSnd l d D)]
@@ -185,8 +182,7 @@ theorem seqSplit_eq_splitAll {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSys
           exact h.splitPair.not_mem_both h.simple (h.tail_isDiag he) (h.tail_nonCross he)
             (sideTest_eq_true.1 h1) (sideTest_eq_true.1 h2)
         rw [h1, h2]; rfl
-      · rw [Bool.not_eq_true] at h2
-        simp [h2]
+      · simp_all
 
 /-! ### The invariant of sequential cutting -/
 
@@ -244,9 +240,9 @@ theorem Good.cut {σ : ℝ} {pcs : List (List ℕ)} {d : ℕ × ℕ} {E : List (
     · refine h.disj.imp_of_mem fun {m₁ m₂} hm₁ hm₂ hdisj => ?_
       intro x hx y hy
       have hx' : x ∈ Final.cut P [m₁] d := by
-        unfold Final.cut; rw [List.flatMap_singleton]; exact hx
+        unfold Final.cut; simp_all
       have hy' : y ∈ Final.cut P [m₂] d := by
-        unfold Final.cut; rw [List.flatMap_singleton]; exact hy
+        unfold Final.cut; simp_all
       obtain ⟨m₁', hm₁', hsub₁⟩ := interior_subset_of_mem_cut
         (fun m hm => by rw [List.mem_singleton] at hm; rw [hm]; exact h.simple _ hm₁) hx'
       obtain ⟨m₂', hm₂', hsub₂⟩ := interior_subset_of_mem_cut
@@ -261,12 +257,12 @@ theorem Good.cut {σ : ℝ} {pcs : List (List ℕ)} {d : ℕ × ℕ} {E : List (
         m' ∈ Final.cut P pcs d := fun m' hm' => by
       unfold Final.cut; exact List.mem_flatMap.2 ⟨m, hm, hm'⟩
     by_cases hd : IsDiag P m d
-    · have hnc : NonCross P d e := (List.pairwise_cons.1 h.noncross).1 e he
+    · have hnc := (List.pairwise_cons.1 h.noncross).1 e he
       rcases Chazelle.Split.isDiag_split_cases (h.simple m hm) hd hde hnc with
         ⟨-, -, h1⟩ | ⟨-, -, -, h2⟩
-      · exact ⟨_, hmem _ (by rw [ite_eq_left hd]; exact List.mem_cons_self), h1⟩
+      · exact ⟨_, hmem _ (by simp_all), h1⟩
       · exact ⟨_, hmem _ (by rw [ite_eq_left hd]; simp), h2⟩
-    · exact ⟨m, hmem _ (by rw [ite_eq_right hd]; exact List.mem_singleton_self _), hde⟩
+    · exact ⟨m, hmem _ (by simp_all), hde⟩
   noncross := (List.pairwise_cons.1 h.noncross).2
 
 /-- The invariant passes through sequential cutting. -/
@@ -301,7 +297,7 @@ theorem not_isDiag_of_disj {m : List ℕ} {rest : List (List ℕ)} {d : ℕ × �
 theorem good_init (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) :
     Good P (orient P) [List.range P.n] D where
   simple m hm := by
-    rw [List.mem_singleton] at hm; rw [hm, subPoly_range]; exact hP
+    rw [List.mem_singleton] at hm; rwa [hm, subPoly_range]
   orient m hm := by rw [List.mem_singleton] at hm; rw [hm, subPoly_range]
   disj := List.pairwise_singleton _ _
   diag e he := ⟨_, List.mem_singleton_self _, (hD.diagSystem hP).diag e he⟩
@@ -312,13 +308,11 @@ theorem good_init (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) :
 section ListFacts
 
 theorem getD_mem_of_lt {c : List ℕ} {t : ℕ} (ht : t < c.length) : c.getD t 0 ∈ c := by
-  rw [Chazelle.EarClip.getD_eq_getElem_of_lt _ _ ht]; exact List.getElem_mem ht
+  simp_all
 
 theorem getD_inj_of_nodup {c : List ℕ} (hnd : c.Nodup) {t t' : ℕ} (ht : t < c.length)
     (ht' : t' < c.length) (h : c.getD t 0 = c.getD t' 0) : t = t' := by
-  rw [Chazelle.EarClip.getD_eq_getElem_of_lt _ _ ht,
-    Chazelle.EarClip.getD_eq_getElem_of_lt _ _ ht'] at h
-  exact (hnd.getElem_inj_iff).1 h
+  simp_all
 
 theorem exists_getD_of_mem {c : List ℕ} {z : ℕ} (h : z ∈ c) : ∃ t < c.length, c.getD t 0 = z := by
   obtain ⟨t, ht, rfl⟩ := List.mem_iff_getElem.1 h
@@ -326,26 +320,25 @@ theorem exists_getD_of_mem {c : List ℕ} {z : ℕ} (h : z ∈ c) : ∃ t < c.le
 
 theorem getD_map_of_lt (f : ℕ → ℕ) {c : List ℕ} {t : ℕ} (ht : t < c.length) :
     (c.map f).getD t 0 = f (c.getD t 0) := by
-  rw [Chazelle.EarClip.getD_eq_getElem_of_lt _ _ (by rw [List.length_map]; exact ht),
-    Chazelle.EarClip.getD_eq_getElem_of_lt _ _ ht, List.getElem_map]
+  simp_all
 
 theorem getD_rotate_of_lt {c : List ℕ} (r : ℕ) {t : ℕ} (ht : t < c.length) :
     (c.rotate r).getD t 0 = c.getD ((t + r) % c.length) 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_rotate ht]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_rotate ht]
 
 theorem getD_take_of_lt {c : List ℕ} {k t : ℕ} (ht : t < k) : (c.take k).getD t 0 = c.getD t 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_take_of_lt ht]
+  simp_all
 
 theorem getD_drop' (c : List ℕ) (k t : ℕ) : (c.drop k).getD t 0 = c.getD (k + t) 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_drop]
+  simp
 
 theorem getD_append_lt {A B : List ℕ} {t : ℕ} (ht : t < A.length) :
     (A ++ B).getD t 0 = A.getD t 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_left ht]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_append_left ht]
 
 theorem getD_append_ge {A B : List ℕ} {t : ℕ} (ht : A.length ≤ t) :
     (A ++ B).getD t 0 = B.getD (t - A.length) 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_right ht]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_append_right ht]
 
 /-- The last member of `l` satisfying `p` (or `r` if there is none): a left fold. -/
 def selectLast (p : ℕ → Bool) (l : List ℕ) (r : ℕ) : ℕ :=
@@ -462,32 +455,36 @@ theorem isCyc_of_chain {S : LState} {c : List ℕ} (hne : c ≠ [])
       rw [show i + 1 = c.length by omega, Nat.mod_self]
     rw [e, hi']; exact ⟨hn, hp⟩
 
+section
+
+variable {S : LState} {c : List ℕ} (h : IsCyc S c)
+include h
+
 /-- The chain relations of a cycle. -/
-theorem IsCyc.chain {S : LState} {c : List ℕ} (h : IsCyc S c) {t : ℕ} (ht : t + 1 < c.length) :
+theorem IsCyc.chain {t : ℕ} (ht : t + 1 < c.length) :
     S.nxt (c.getD t 0) = c.getD (t + 1) 0 ∧ S.prv (c.getD (t + 1) 0) = c.getD t 0 := by
   have := h.2 t (by omega)
   rwa [Nat.mod_eq_of_lt ht] at this
 
 /-- The predecessor in a cycle. -/
-theorem IsCyc.prv_getD {S : LState} {c : List ℕ} (h : IsCyc S c) {i : ℕ} (hi : i < c.length) :
+theorem IsCyc.prv_getD {i : ℕ} (hi : i < c.length) :
     S.prv (c.getD i 0) = c.getD ((i + c.length - 1) % c.length) 0 := by
   have hl : 0 < c.length := by omega
   have := (h.2 ((i + c.length - 1) % c.length) (Nat.mod_lt _ hl)).2
-  have e : ((i + c.length - 1) % c.length + 1) % c.length = i := by
-    rw [Nat.mod_add_mod, show i + c.length - 1 + 1 = i + c.length by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt hi]
-  rwa [e] at this
+  simp_all [Nat.mod_add_mod, show i + c.length - 1 + 1 = i + c.length by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hi] 
 
 /-- Rotating a cycle gives a cycle. -/
-theorem IsCyc.rotate {S : LState} {c : List ℕ} (h : IsCyc S c) (r : ℕ) : IsCyc S (c.rotate r) := by
-  have hl : 0 < c.length := List.length_pos_iff.2 h.1
+theorem IsCyc.rotate (r : ℕ) : IsCyc S (c.rotate r) := by
+  have hl := List.length_pos_iff.2 h.1
   refine ⟨fun h' => h.1 (List.rotate_eq_nil_iff.1 h'), fun i hi => ?_⟩
   rw [List.length_rotate] at hi ⊢
   rw [getD_rotate_of_lt r hi, getD_rotate_of_lt r (Nat.mod_lt _ hl)]
   have e : ((i + 1) % c.length + r) % c.length = ((i + r) % c.length + 1) % c.length := by
-    rw [Nat.mod_add_mod, Nat.mod_add_mod, show i + 1 + r = i + r + 1 by omega]
+    simp [Nat.mod_add_mod, show i + 1 + r = i + r + 1 by omega]
   rw [e]
   exact h.2 _ (Nat.mod_lt _ hl)
+
+end
 
 /-- **The representation invariant**: the node lists `cs` partition the nodes `0 … cnt - 1`
 into cycles of `S`, and `cop v` lists (without repetition) the copies of `v`. -/
@@ -514,8 +511,7 @@ theorem Repr.rotate_head {S : LState} {c : List ℕ} {rest : List (List ℕ)} (h
     rw [List.flatten_cons] at h1 ⊢
     exact ((List.rotate_perm c r).append_right _).nodup_iff.2 h1
   mem z := by
-    rw [← h.mem z, List.flatten_cons, List.flatten_cons, List.mem_append, List.mem_append,
-      List.mem_rotate]
+    simp [← h.mem z, List.flatten_cons, List.mem_append, List.mem_rotate]
   cyc c' hc' := by
     rcases List.mem_cons.1 hc' with rfl | hc'
     · exact (h.cyc c List.mem_cons_self).rotate r
@@ -533,14 +529,10 @@ theorem nodeWedge_iff {S : LState} {c : List ℕ} (hc : IsCyc S c) {i : ℕ} (hi
         ((subPoly P (c.map S.vtx)).vtx i)
         ((subPoly P (c.map S.vtx)).vtx ((i + 1) % (subPoly P (c.map S.vtx)).n)) (P.vtx w) := by
   have hl : 0 < c.length := by omega
-  have hn : (subPoly P (c.map S.vtx)).n = c.length := by rw [n_subPoly, List.length_map]
+  have hn : (subPoly P (c.map S.vtx)).n = c.length := by simp
   have hv : ∀ j < c.length, (subPoly P (c.map S.vtx)).vtx j = P.vtx (S.vtx (c.getD j 0)) := by
-    intro j hj
-    rw [Chazelle.EarClip.vtx_subPoly_getD P _ (by rw [List.length_map]; exact hj),
-      getD_map_of_lt _ hj]
-  unfold nodeWedge Chazelle.Jordan.prevIdx
-  rw [hn, hv _ (Nat.mod_lt _ hl), hv _ hi, hv _ (Nat.mod_lt _ hl), (hc.2 i hi).1,
-    hc.prv_getD hi]
+    intros; simp [Chazelle.EarClip.vtx_subPoly_getD, *]
+  ram_simp [nodeWedge, Chazelle.Jordan.prevIdx, hn, hv _ (Nat.mod_lt _ hl), hv _ hi, (hc.2 i hi).1, hc.prv_getD hi]
 
 /-! ### The surgery -/
 
@@ -549,14 +541,13 @@ section Surgery
 variable {S : LState} {a b x y : ℕ}
 
 theorem surgery_vtx_old {z : ℕ} (hz : z < S.cnt) : (surgery S a b x y).vtx z = S.vtx z := by
-  simp only [surgery, upd]
-  rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  ram_finish [surgery, upd, ite_eq_right]
 
 theorem surgery_vtx_x' : (surgery S a b x y).vtx S.cnt = a := by
-  simp only [surgery, upd]; simp
+  simp [surgery, upd]
 
 theorem surgery_vtx_y' : (surgery S a b x y).vtx (S.cnt + 1) = b := by
-  simp only [surgery, upd]; simp
+  simp [surgery, upd]
 
 /-- **Correctness of the surgery.**  Let `c` be a cycle of a represented structure, with the
 copy `x = c[0]` of `a` and the copy `y = c[L]` of `b ≠ a`, `2 ≤ L ≤ c.length - 2`.  After the
@@ -575,54 +566,54 @@ theorem surgery_spec {c : List ℕ} {rest : List (List ℕ)} (hR : Repr S (c :: 
   have hflat := hR.nodup
   rw [List.flatten_cons, List.nodup_append] at hflat
   obtain ⟨hnd, hrnd, hdisj⟩ := hflat
-  have hltc : ∀ z ∈ c, z < N := fun z hz =>
+  have hltc := fun z hz =>
     (hR.mem z).1 (by rw [List.flatten_cons]; exact List.mem_append_left _ hz)
-  have hltr : ∀ z ∈ rest.flatten, z < N := fun z hz =>
+  have hltr := fun z hz =>
     (hR.mem z).1 (by rw [List.flatten_cons]; exact List.mem_append_right _ hz)
   have hcyc := hR.cyc c List.mem_cons_self
   have hg_lt : ∀ t < len, c.getD t 0 < N := fun t ht => hltc _ (getD_mem_of_lt ht)
   have hg_ne : ∀ t t', t < len → t' < len → t ≠ t' → c.getD t 0 ≠ c.getD t' 0 :=
     fun t t' ht ht' hne h => hne (getD_inj_of_nodup hnd ht ht' h)
   have hpx : S.prv x = c.getD (len - 1) 0 := by
-    rw [hx, hcyc.prv_getD (by omega), show 0 + len - 1 = len - 1 by omega,
-      Nat.mod_eq_of_lt (by omega)]
-  have hny : S.nxt y = c.getD (L + 1) 0 := (hcyc.chain (t := L) (by omega)).1
+    ram_rw [hx, hcyc.prv_getD, show 0 + len - 1 = len - 1 by omega,
+      Nat.mod_eq_of_lt]
+  have hny := (hcyc.chain (t := L) (by omega)).1
   -- evaluation of the new links
   have nxt_old : ∀ z, z ≠ y → z ≠ c.getD (len - 1) 0 → z < N → S'.nxt z = S.nxt z := by
     intro z h1 h2 h3
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by rw [hpx]; exact h2), ite_eq_right (by omega), ite_eq_right h1]
+    ram_rw [ite_eq_right, ite_eq_right (by rwa [hpx]), ite_eq_right, ite_eq_right h1]
   have nxt_y : S'.nxt y = x := by
-    have h1 := hg_ne L (len - 1) (by omega) (by omega) (by omega)
+    have h1 := (ram_app% (hg_ne L (len - 1) ?_ ?_ ?_))
     have h2 := hg_lt L (by omega)
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by rw [hpx]; exact h1), ite_eq_right (by omega)]; simp
+    ram_rw [ite_eq_right, ite_eq_right (by rwa [hpx]), ite_eq_right]; simp
   have nxt_px : S'.nxt (c.getD (len - 1) 0) = N := by
     have h2 := hg_lt (len - 1) (by omega)
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_left hpx.symm]
+    ram_rw [ite_eq_right, ite_eq_left hpx.symm]
   have nxt_N : S'.nxt N = N + 1 := by
     simp only [hS', surgery, upd]; simp [hN]
   have nxt_N1 : S'.nxt (N + 1) = c.getD (L + 1) 0 := by
     have h2 := hg_lt (len - 1) (by omega)
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by rw [hpx]; omega), ite_eq_left rfl, hny]
+    ram_rw [ite_eq_right, ite_eq_right (by rw [hpx]; omega), ite_eq_left rfl, hny]
   have prv_old : ∀ z, z ≠ x → z ≠ c.getD (L + 1) 0 → z < N → S'.prv z = S.prv z := by
     intro z h1 h2 h3
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by rw [hny]; exact h2), ite_eq_right h1]
+    ram_rw [ite_eq_right, ite_eq_right, ite_eq_right (by rwa [hny]), ite_eq_right h1]
   have prv_x : S'.prv x = y := by
-    have h1 := hg_ne 0 (L + 1) (by omega) (by omega) (by omega)
+    have h1 := (ram_app% (hg_ne 0 (L + 1) ?_ ?_ ?_))
     have h2 := hg_lt 0 (by omega)
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by rw [hny]; exact h1)]; simp
+    ram_rw [ite_eq_right, ite_eq_right, ite_eq_right (by rwa [hny])]; simp
   have prv_ny : S'.prv (c.getD (L + 1) 0) = N + 1 := by
     have h2 := hg_lt (L + 1) (by omega)
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_left hny.symm]
+    ram_rw [ite_eq_right, ite_eq_right, ite_eq_left hny.symm]
   have prv_N : S'.prv N = c.getD (len - 1) 0 := by
     simp only [hS', surgery, upd]
-    rw [ite_eq_right (by omega), ite_eq_left rfl, hpx]
+    ram_rw [ite_eq_right, ite_eq_left rfl, hpx]
   have prv_N1 : S'.prv (N + 1) = N := by
     simp only [hS', surgery, upd]; simp [hN]
   -- the first new cycle
@@ -631,21 +622,17 @@ theorem surgery_spec {c : List ℕ} {rest : List (List ℕ)} (hR : Repr S (c :: 
     refine isCyc_of_chain (by rw [← List.length_pos_iff, hlen1]; omega) ?_ ?_ ?_
     · intro t ht
       rw [hlen1] at ht
-      rw [getD_take_of_lt (by omega), getD_take_of_lt (by omega)]
+      ram_rw [getD_take_of_lt, getD_take_of_lt]
       have hc := hcyc.chain (t := t) (by omega)
       refine ⟨?_, ?_⟩
-      · rw [nxt_old _ (hg_ne t L (by omega) (by omega) (by omega))
-          (hg_ne t (len - 1) (by omega) (by omega) (by omega)) (hg_lt t (by omega))]
+      · rw [nxt_old _ ((ram_app% (hg_ne t L ?_ ?_ ?_)))
+          ((ram_app% (hg_ne t (len - 1) ?_ ?_ ?_))) (hg_lt t (by omega))]
         exact hc.1
-      · rw [prv_old _ (hg_ne (t + 1) 0 (by omega) (by omega) (by omega))
-          (hg_ne (t + 1) (L + 1) (by omega) (by omega) (by omega)) (hg_lt (t + 1) (by omega))]
+      · rw [prv_old _ ((ram_app% (hg_ne (t + 1) 0 ?_ ?_ ?_)))
+          ((ram_app% (hg_ne (t + 1) (L + 1) ?_ ?_ ?_))) (hg_lt (t + 1) (by omega))]
         exact hc.2
-    · rw [hlen1, show L + 1 - 1 = L by omega, getD_take_of_lt (by omega),
-        getD_take_of_lt (by omega)]
-      exact nxt_y
-    · rw [hlen1, show L + 1 - 1 = L by omega, getD_take_of_lt (by omega),
-        getD_take_of_lt (by omega)]
-      exact prv_x
+    · ram_simp [hlen1, show L + 1 - 1 = L by omega, getD_take_of_lt] <;> omega
+    ram_simp [hlen1, show L + 1 - 1 = L by omega, getD_take_of_lt] <;> omega
   -- the second new cycle
   set c2 := (N + 1) :: (c.drop (L + 1) ++ [N]) with hc2
   have hlenA : (c.drop (L + 1)).length = len - L - 1 := by rw [List.length_drop]; omega
@@ -654,20 +641,20 @@ theorem surgery_spec {c : List ℕ} {rest : List (List ℕ)} (hR : Repr S (c :: 
   have hg2_0 : c2.getD 0 0 = N + 1 := rfl
   have hg2_mid : ∀ u, u < len - L - 1 → c2.getD (u + 1) 0 = c.getD (L + 1 + u) 0 := by
     intro u hu
-    rw [hc2, List.getD_cons_succ, getD_append_lt (by rw [hlenA]; exact hu), getD_drop']
+    rw [hc2, List.getD_cons_succ, getD_append_lt (by rwa [hlenA]), getD_drop']
   have hg2_last : c2.getD (len - L) 0 = N := by
     rw [hc2, show len - L = (len - L - 1) + 1 by omega, List.getD_cons_succ,
       getD_append_ge (by rw [hlenA]), hlenA, Nat.sub_self]
     rfl
   have hcyc2 : IsCyc S' c2 := by
-    refine isCyc_of_chain (by rw [hc2]; exact List.cons_ne_nil _ _) ?_ ?_ ?_
+    refine isCyc_of_chain (by simp) ?_ ?_ ?_
     · intro t ht
       rw [hlen2] at ht
       rcases Nat.eq_zero_or_pos t with rfl | htpos
-      · rw [hg2_0, show 0 + 1 = 0 + 1 from rfl, hg2_mid 0 (by omega), Nat.add_zero]
+      · ram_rw [hg2_0, show 0 + 1 = 0 + 1 from rfl, hg2_mid 0, Nat.add_zero]
         exact ⟨nxt_N1, prv_ny⟩
       · obtain ⟨u, rfl⟩ : ∃ u, t = u + 1 := ⟨t - 1, by omega⟩
-        rw [hg2_mid u (by omega)]
+        ram_rw [hg2_mid u]
         by_cases hu : u + 1 < len - L - 1
         · rw [hg2_mid (u + 1) hu]
           have hc := hcyc.chain (t := L + 1 + u) (by omega)
@@ -683,16 +670,14 @@ theorem surgery_spec {c : List ℕ} {rest : List (List ℕ)} (hR : Repr S (c :: 
           rw [show u + 1 + 1 = len - L by omega, hg2_last,
             show L + 1 + u = len - 1 by omega]
           exact ⟨nxt_px, prv_N⟩
-    · rw [hlen2, show len - L + 1 - 1 = len - L by omega, hg2_last, hg2_0]
-      exact nxt_N
-    · rw [hlen2, show len - L + 1 - 1 = len - L by omega, hg2_last, hg2_0]
-      exact prv_N1
+    · rwa [hlen2, show len - L + 1 - 1 = len - L by omega, hg2_last, hg2_0]
+    · rwa [hlen2, show len - L + 1 - 1 = len - L by omega, hg2_last, hg2_0]
   -- the other cycles are untouched
   have hcycr : ∀ c'' ∈ rest, IsCyc S' c'' := by
     intro c'' hc''
     have hold := hR.cyc c'' (List.mem_cons_of_mem _ hc'')
     have hin : ∀ z ∈ c'', z ∈ rest.flatten := fun z hz => List.mem_flatten.2 ⟨c'', hc'', hz⟩
-    have hnotc : ∀ z ∈ c'', z ∉ c := fun z hz hzc => hdisj z hzc z (hin z hz) rfl
+    have hnotc := fun z hz hzc => hdisj z hzc z (hin z hz) rfl
     refine ⟨hold.1, fun i hi => ?_⟩
     have hl : 0 < c''.length := by omega
     have hz1 := getD_mem_of_lt hi
@@ -711,12 +696,12 @@ theorem surgery_spec {c : List ℕ} {rest : List (List ℕ)} (hR : Repr S (c :: 
     intro v
     simp only [List.count_append, List.count_cons, List.count_nil, List.cons_append]
     omega
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  constructor
   · rw [hperm.nodup_iff, List.nodup_append]
     refine ⟨?_, by simp, ?_⟩
     · rw [← List.flatten_cons]; exact hR.nodup
     · intro z hz w hw
-      have : z < N := (hR.mem z).1 (by rw [List.flatten_cons]; exact hz)
+      have : z < N := (hR.mem z).1 (by assumption)
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hw
       omega
   · intro z
@@ -765,11 +750,7 @@ theorem surgery_spec {c : List ℕ} {rest : List (List ℕ)} (hR : Repr S (c :: 
     · subst hz
       rw [ite_eq_right (show ¬ N = N + 1 by omega), ite_eq_left rfl]
       split_ifs with h1 h2
-      · subst h1
-        simp only [List.mem_cons, hnc _ _ le_rfl, or_false]
-        constructor
-        · intro h; omega
-        · rintro ⟨-, h⟩; exact absurd h hab
+      · intros; simp [List.mem_cons, *]
       · subst h2; simp
       · simp only [hnc _ _ le_rfl, false_iff, not_and]
         intro _ h; exact h2 h.symm
@@ -823,18 +804,18 @@ theorem splitSnd_eq_cons {m : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ m) (h2 : 
   have e1 : m.rotate (m.idxOf d.2) = (m.rotate i).rotate L := by
     rw [List.rotate_rotate, ← List.rotate_mod m (i + L), hsL]
   unfold splitSnd arcList
-  rw [e1, List.rotate_eq_drop_append_take (by omega), List.take_append,
-    List.take_of_length_le (by rw [List.length_drop]; omega), List.length_drop, hlen,
+  ram_rw [e1, List.rotate_eq_drop_append_take, List.take_append,
+    List.take_of_length_le (by simp_all), List.length_drop, hlen,
     show m.length - L + 1 - (m.length - L) = 1 by omega, List.take_take,
-    show min 1 L = 1 by omega, List.drop_eq_getElem_cons (by omega), List.take_one]
+    show min 1 L = 1 by omega, List.drop_eq_getElem_cons, List.take_one]
   have hM0 : (m.rotate i).head? = some d.1 := by
     rw [List.head?_eq_getElem?, List.getElem?_rotate (by omega), Nat.zero_add,
       Nat.mod_eq_of_lt (List.idxOf_lt_length_of_mem h1), List.getElem?_eq_getElem
       (List.idxOf_lt_length_of_mem h1), List.getElem_idxOf]
   have hML : (m.rotate i)[L]'(by omega) = d.2 := by
     rw [List.getElem_rotate]
-    have : (L + i) % m.length = m.idxOf d.2 := by rw [Nat.add_comm]; exact hsL
-    simp only [this, List.getElem_idxOf]
+    have : (L + i) % m.length = m.idxOf d.2 := by rwa [Nat.add_comm]
+    simp_all
   rw [hM0, hML]
   rfl
 
@@ -852,9 +833,9 @@ theorem findCopy_eq {E : List (ℕ × ℕ)} (hR : Repr S (c :: rest))
   classical
   set m := c.map S.vtx with hm
   have hmem : m ∈ (c :: rest).map (List.map S.vtx) := List.mem_map_of_mem List.mem_cons_self
-  have hs : (subPoly P m).Simple := hG.simple m hmem
-  have hor : orient (subPoly P m) = σ := hG.orient m hmem
-  have hmnd : m.Nodup := nodup_of_simple P hs
+  have hs := hG.simple m hmem
+  have hor := hG.orient m hmem
+  have hmnd := nodup_of_simple P hs
   have hdisj := hG.disj
   rw [List.map_cons, List.pairwise_cons] at hdisj
   have hcyc := hR.cyc c List.mem_cons_self
@@ -864,8 +845,8 @@ theorem findCopy_eq {E : List (ℕ × ℕ)} (hR : Repr S (c :: rest))
   refine selectLast_eq_of_unique ?_ ?_ ?_ 0
   · exact (hR.cop _ _).2 ⟨(hlt _).1 (List.mem_append_left _ (getD_mem_of_lt ht₀)), hv⟩
   · rw [decide_eq_true_iff, nodeWedge_iff hcyc ht₀, ← hor]
-    exact wedge_of_isDiag hs he (by rw [List.length_map]; exact ht₀)
-      (by rw [getD_map_of_lt _ ht₀, hv])
+    exact wedge_of_isDiag hs he (by simp_all)
+      (by simp_all)
   · intro z hz hpz
     rw [decide_eq_true_iff] at hpz
     obtain ⟨hzlt, hzv⟩ := (hR.cop _ _).1 hz
@@ -873,8 +854,8 @@ theorem findCopy_eq {E : List (ℕ × ℕ)} (hR : Repr S (c :: rest))
     · obtain ⟨t, ht, rfl⟩ := exists_getD_of_mem hzc
       have hmt : m.getD t 0 = m.getD t₀ 0 := by
         rw [getD_map_of_lt _ ht, getD_map_of_lt _ ht₀, hzv, hv]
-      rw [getD_inj_of_nodup hmnd (by rw [List.length_map]; exact ht)
-        (by rw [List.length_map]; exact ht₀) hmt]
+      rw [getD_inj_of_nodup hmnd (by rwa [List.length_map])
+        (by rwa [List.length_map]) hmt]
     · exfalso
       obtain ⟨c'', hc'', hzc''⟩ := List.mem_flatten.1 hzr
       obtain ⟨t, ht, rfl⟩ := exists_getD_of_mem hzc''
@@ -884,9 +865,9 @@ theorem findCopy_eq {E : List (ℕ × ℕ)} (hR : Repr S (c :: rest))
       have hs'' := hG.simple _ hmem''
       rw [nodeWedge_iff hcyc'' ht, ← hG.orient _ hmem''] at hpz
       have hvt : (subPoly P (c''.map S.vtx)).vtx t = P.vtx e.1 := by
-        rw [Chazelle.EarClip.vtx_subPoly_getD P _ (by rw [List.length_map]; exact ht),
+        rw [Chazelle.EarClip.vtx_subPoly_getD P _ (by rwa [List.length_map]),
           getD_map_of_lt _ ht, hzv]
-      refine not_wedge_of_disjoint hs'' (by rw [n_subPoly, List.length_map]; exact ht)
+      refine not_wedge_of_disjoint hs'' (by rwa [n_subPoly, List.length_map])
         (U := (subPoly P m).filled \ (subPoly P m).boundary) ?_ ?_ hpz
       · intro ε hε
         rw [hvt]
@@ -903,30 +884,29 @@ theorem step_spec_head {d : ℕ × ℕ} {E : List (ℕ × ℕ)} (hR : Repr S (c 
       cs'.map (List.map (step P σ S d).vtx) = cut P ((c :: rest).map (List.map S.vtx)) d := by
   set m := c.map S.vtx with hm
   have hmem : m ∈ (c :: rest).map (List.map S.vtx) := List.mem_map_of_mem List.mem_cons_self
-  have hs : (subPoly P m).Simple := hG.simple m hmem
-  have hmnd : m.Nodup := nodup_of_simple P hs
+  have hs := hG.simple m hmem
+  
   have hlenm : m.length = c.length := List.length_map _
   have hdisj := hG.disj
   rw [List.map_cons, List.pairwise_cons] at hdisj
-  have hnot : ∀ m' ∈ rest.map (List.map S.vtx), ¬ IsDiag P m' d :=
-    not_isDiag_of_disj hs hd hdisj.1 fun m' hm' =>
+  have hnot := not_isDiag_of_disj hs hd hdisj.1 fun m' hm' =>
       hG.simple m' (by rw [List.map_cons]; exact List.mem_cons_of_mem _ hm')
   obtain ⟨hL1, hLn, hsL⟩ := diagLen_spec hd.1 hd.2.1 hd.2.2.1
   set i := m.idxOf d.1 with hi_def
   set j := m.idxOf d.2 with hj_def
   set L := diagLen m d with hL_def
-  have hi : i < m.length := List.idxOf_lt_length_of_mem hd.1
-  have hj : j < m.length := List.idxOf_lt_length_of_mem hd.2.1
-  have hmi : m.getD i 0 = d.1 := getD_idxOf hd.1
-  have hmj : m.getD j 0 = d.2 := getD_idxOf hd.2.1
-  have hdiag := isDiagonal_of_isDiag hs hd hi hmi hL1 hLn (by rw [hsL]; exact hmj)
-  have hL2 : 2 ≤ L := hdiag.1
+  have hi := List.idxOf_lt_length_of_mem hd.1
+  have hj := List.idxOf_lt_length_of_mem hd.2.1
+  have hmi := getD_idxOf hd.1
+  have hmj := getD_idxOf hd.2.1
+  have hdiag := isDiagonal_of_isDiag hs hd hi hmi hL1 hLn (by rwa [hsL])
+  have hL2 := hdiag.1
   have hL2' : L + 2 ≤ m.length := by have := hdiag.2.1; rwa [n_subPoly] at this
   have hi' : i < c.length := by omega
   have hj' : j < c.length := by omega
   have hvx : S.vtx (c.getD i 0) = d.1 := by rw [← getD_map_of_lt S.vtx hi', ← hm, hmi]
   have hvy : S.vtx (c.getD j 0) = d.2 := by rw [← getD_map_of_lt S.vtx hj', ← hm, hmj]
-  have hfx : findCopy P σ S d.1 d.2 = c.getD i 0 := findCopy_eq hR hG hd hi' hvx
+  have hfx := findCopy_eq hR hG hd hi' hvx
   have hfy : findCopy P σ S d.2 d.1 = c.getD j 0 :=
     findCopy_eq (e := d.swap) hR hG (Chazelle.Split.IsDiag.swap hd) hj' hvy
   have hstep : step P σ S d = surgery S d.1 d.2 (c.getD i 0) (c.getD j 0) := by
@@ -934,11 +914,11 @@ theorem step_spec_head {d : ℕ × ℕ} {E : List (ℕ × ℕ)} (hR : Repr S (c 
   set c' := c.rotate i with hc'
   have hlenc' : c'.length = c.length := List.length_rotate _ _
   have hc'0 : c'.getD 0 0 = c.getD i 0 := by
-    rw [getD_rotate_of_lt i (by omega), Nat.zero_add, Nat.mod_eq_of_lt hi']
+    ram_rw [getD_rotate_of_lt i, Nat.zero_add, Nat.mod_eq_of_lt hi']
   have hc'L : c'.getD L 0 = c.getD j 0 := by
-    rw [getD_rotate_of_lt i (by omega), Nat.add_comm, ← hlenm, hsL]
+    ram_rw [getD_rotate_of_lt i, Nat.add_comm, ← hlenm, hsL]
   have hsur := surgery_spec (hR.rotate_head i) hL2 (by rw [List.length_rotate]; omega) hd.2.2.1
-    (by rw [← hc', hc'0]; exact hvx) (by rw [← hc', hc'L]; exact hvy)
+    (by rwa [← hc', hc'0]) (by rwa [← hc', hc'L])
   rw [← hc', hc'0, hc'L, ← hstep] at hsur
   refine ⟨_, hsur, ?_⟩
   have hvold : ∀ l : List ℕ, (∀ z ∈ l, z < S.cnt) →
@@ -947,7 +927,7 @@ theorem step_spec_head {d : ℕ × ℕ} {E : List (ℕ × ℕ)} (hR : Repr S (c 
     apply List.map_congr_left
     intro z hz
     rw [hstep]; exact surgery_vtx_old (hl z hz)
-  have hltc : ∀ z ∈ c, z < S.cnt := fun z hz =>
+  have hltc := fun z hz =>
     (hR.mem z).1 (by rw [List.flatten_cons]; exact List.mem_append_left _ hz)
   have hltc' : ∀ z ∈ c', z < S.cnt := fun z hz => hltc z (List.mem_rotate.1 hz)
   show _ = cut P (m :: rest.map (List.map S.vtx)) d
@@ -978,9 +958,8 @@ theorem step_spec {cs pcs : List (List ℕ)} {d : ℕ × ℕ} {E : List (ℕ × 
   classical
   obtain ⟨m, hm, hd⟩ := hG.diag d List.mem_cons_self
   obtain ⟨c, hc, rfl⟩ := List.mem_map.1 (hp.mem_iff.2 hm)
-  have hcs : List.Perm cs (c :: cs.erase c) := List.perm_cons_erase hc
-  have hp' : List.Perm ((c :: cs.erase c).map (List.map S.vtx)) pcs :=
-    (hcs.map _).symm.trans hp
+  have hcs := List.perm_cons_erase hc
+  have hp' := (hcs.map _).symm.trans hp
   obtain ⟨cs', h1, h2⟩ := step_spec_head (hR.perm hcs) (hG.perm hp'.symm) hd
   exact ⟨cs', h1, by rw [h2]; exact cut_perm hp' d⟩
 
@@ -1017,7 +996,7 @@ theorem repr_init {n : ℕ} (hn : 0 < n) : Repr (initState n) [List.range n] whe
   cyc c hc := by
     rw [List.mem_singleton] at hc
     subst hc
-    refine ⟨by rw [← List.length_pos_iff, List.length_range]; exact hn, fun i hi => ?_⟩
+    refine ⟨by rwa [← List.length_pos_iff, List.length_range], fun i hi => ?_⟩
     rw [List.length_range] at hi ⊢
     rw [Chazelle.EarClip.getD_range hi, Chazelle.EarClip.getD_range (Nat.mod_lt _ hn)]
     refine ⟨rfl, ?_⟩
@@ -1025,16 +1004,10 @@ theorem repr_init {n : ℕ} (hn : 0 < n) : Repr (initState n) [List.range n] whe
     by_cases h : i + 1 < n
     · rw [Nat.mod_eq_of_lt h, show i + 1 + n - 1 = i + n by omega, Nat.add_mod_right,
         Nat.mod_eq_of_lt hi]
-    · rw [show i + 1 = n by omega, Nat.mod_self, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
-      omega
+    · ram_simp [show i + 1 = n by omega, Nat.mod_self, Nat.zero_add, Nat.mod_eq_of_lt] <;> omega
   cop v z := by
     show z ∈ (if v < n then [v] else []) ↔ z < n ∧ z = v
-    split_ifs with h
-    · rw [List.mem_singleton]; constructor
-      · rintro rfl; exact ⟨h, rfl⟩
-      · rintro ⟨-, rfl⟩; rfl
-    · simp only [List.not_mem_nil, false_iff, not_and]
-      rintro hz rfl; exact h hz
+    simp_all
   copNodup v := by
     show (if v < n then [v] else []).Nodup
     split_ifs
@@ -1056,7 +1029,7 @@ theorem runState_spec (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P 
     exact List.map_id' _
   obtain ⟨cs, hR, hp⟩ := runState_spec_gen (σ := orient P) D (initState P.n) _ _ (repr_init hn)
     (by rw [hmap]) (good_init hP hD)
-  exact ⟨cs, hR, by rw [← seqSplit_eq_splitAll (hD.diagSystem hP)]; exact hp⟩
+  exact ⟨cs, hR, by rwa [← seqSplit_eq_splitAll (hD.diagSystem hP)]⟩
 
 end Run
 
@@ -1072,7 +1045,7 @@ def walk (S : LState) (z : ℕ) : ℕ → List ℕ
 theorem walk_eq_map {S : LState} {c : List ℕ} (hc : IsCyc S c) (k : ℕ) :
     ∀ i < c.length, walk S (c.getD i 0) k =
       (List.range k).map fun t => c.getD ((i + t) % c.length) 0 := by
-  have hl : 0 < c.length := List.length_pos_iff.2 hc.1
+  have hl := List.length_pos_iff.2 hc.1
   induction k with
   | zero => intro i _; rfl
   | succ k ih =>
@@ -1080,7 +1053,7 @@ theorem walk_eq_map {S : LState} {c : List ℕ} (hc : IsCyc S c) (k : ℕ) :
     rw [walk, (hc.2 i hi).1, ih _ (Nat.mod_lt _ hl), List.range_succ_eq_map, List.map_cons,
       List.map_map]
     congr 1
-    · simp only [Nat.add_zero, Nat.mod_eq_of_lt hi]
+    · simp [Nat.mod_eq_of_lt hi]
     apply List.map_congr_left
     intro t _
     simp only [Function.comp]
@@ -1117,7 +1090,7 @@ theorem isPiece_rotate {l : List ℕ} (h : IsPiece P l) (r : ℕ) : IsPiece P (l
     have hl : 0 < l.length := by omega
     rw [getD_rotate_of_lt r hk, getD_rotate_of_lt r (Nat.mod_lt _ hl)]
     have e : ((k + 1) % l.length + r) % l.length = ((k + r) % l.length + 1) % l.length := by
-      rw [Nat.mod_add_mod, Nat.mod_add_mod, show k + 1 + r = k + r + 1 by omega]
+      simp [Nat.mod_add_mod, show k + 1 + r = k + r + 1 by omega]
     rw [e]
     exact h.edges _ (Nat.mod_lt _ hl)
   simple := by rw [subPoly_rotate]; exact simple_rotate _ _ h.simple
@@ -1131,8 +1104,8 @@ theorem isPiece_rotate {l : List ℕ} (h : IsPiece P l) (r : ℕ) : IsPiece P (l
 theorem triangulates_perm {Q : Polygon} {T T' : List Polygon.Triangle} (h : Q.Triangulates T)
     (hp : List.Perm T T') : Q.Triangulates T' := by
   obtain ⟨h1, h2, h3, h4, h5⟩ := h
-  refine ⟨fun t ht => h1 t (hp.mem_iff.2 ht), by rw [← hp.length_eq]; exact h2, ?_,
-    hp.pairwise h4 fun hd => hd.symm, hp.pairwise h5 fun he => by rw [inter_comm, he, inter_comm]⟩
+  refine ⟨fun t ht => h1 t (hp.mem_iff.2 ht), by rwa [← hp.length_eq], ?_,
+    hp.pairwise h4 fun hd => hd.symm, hp.pairwise h5 fun he => by simp [inter_comm, he]⟩
   rw [← h3]
   ext p
   simp only [Set.mem_ofPred_eq]
@@ -1216,14 +1189,13 @@ theorem enumDiags_diagList {T : TrapTable} {C : List ChordRec} (hP : P.Simple)
     rcases Nat.lt_or_gt_of_ne hne with h | h
     · exact Or.inl ((diagList_mem_iff hP hT hC d).2 ⟨h, Or.inl hd⟩)
     · exact Or.inr ((diagList_mem_iff hP hT hC d.swap).2
-        ⟨h, Or.inr (by rw [Prod.swap_swap]; exact hd)⟩)
+        ⟨h, Or.inr (by assumption)⟩)
   distinct := (diagList_nodup P T C).imp_of_mem fun {d d'} hd hd' hne => by
     refine ⟨hne, fun e => ?_⟩
     have h1 := (diagList_lt hP hT hC hd).1
     have h2 := (diagList_lt hP hT hC hd').1
     rw [e] at h1
-    simp only [Prod.fst_swap, Prod.snd_swap] at h1
-    omega
+    simp_all <;> omega
 
 end Cost
 

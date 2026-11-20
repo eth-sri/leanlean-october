@@ -46,9 +46,9 @@ theorem stepRes {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {s s' : ℕ}
   subst hj; exact ⟨ha, hb⟩
 
 /-- **The pointer after two stop steps** skips exactly the stops at the start key. -/
-theorem ptr_char (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+theorem ptr_char (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N₂)
     {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
-    (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs)) {s1 s2 : ℕ}
+    (hst : StopsOK J (N₂.F J.rightModel (Qof P)) (stopsOf J (Qof P) N₂ rs)) {s1 s2 : ℕ}
     (h1a : ∀ hi : 0 < rs.length, soff P J rs[0] = Lst J → s1 = 0 + 1)
     (h1b : (∀ hi : 0 < rs.length, soff P J rs[0] ≠ Lst J) → s1 = 0)
     (h2a : ∀ hi : s1 < rs.length, soff P J rs[s1] = Lst J → s2 = s1 + 1)
@@ -92,13 +92,13 @@ theorem stopData_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' 
     {rs ax : List (ℕ × ℕ × ℕ × ℕ × ℕ)} (h : StopData P J N₂ c rs ax)
     (hsC : c'.nreg sC = c.nreg sC) (hsB : c'.nreg sB = c.nreg sB) (haB : c'.nreg aB = c.nreg aB)
     (hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧ c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : StopData P J N₂ c' rs ax := by
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) : StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
-  · rw [hsB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
-    exact hSR i hi
-  · rw [haB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
-    exact hAR i hi
+  refine ⟨by rwa [hsC], hlax, ?_, ?_, h5, h6, h7, h8⟩
+  · rw [hsB]
+    exact hSR.congr fun a ha hb => hm a (by omega)
+  · rw [haB]
+    exact hAR.congr fun a ha hb => hm a (by omega)
 
 /-! ## Register sets -/
 
@@ -127,11 +127,11 @@ def SRaw (P : Polygon) (J : Merge.Junction) (N₂ : NF) (rs ax : List (ℕ × �
     ∀ v ∈ axLabs (ax.getD i d5), v ∈ lblOf c' kN kL) ∧
   ((∀ i (hi : i < rs.length), soff P J rs[i] = Lst J → (ax.getD i d5).1 ≠ 1) →
     c'.nreg kN = 1 ∧ c'.nreg kL < N₂.nRegions ∧
-    BeforeFaces (chainModel J.right) (vEnd J) 0
-      (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg kL))) ∧
+    BeforeFaces J.rightModel (vEnd J) 0
+      (regOf J.rightModel (Qof P) N₂ (c'.nreg kL))) ∧
   c'.nreg gN ≤ 2 ∧ (∀ i, i < c'.nreg gN → c'.nreg (gR + i) < N₂.nRegions) ∧
-  (∀ V, GapLab J (N₂.F (chainModel J.right) (Qof P)) V →
-    ∃ i, i < c'.nreg gN ∧ regOf (chainModel J.right) (Qof P) N₂ (c'.nreg (gR + i)) = V) ∧
+  (∀ V, GapLab J (N₂.F J.rightModel (Qof P)) V →
+    ∃ i, i < c'.nreg gN ∧ regOf J.rightModel (Qof P) N₂ (c'.nreg (gR + i)) = V) ∧
   c'.nmem (c.nreg lB) = c'.nreg kE ∧ c'.nmem (c.nreg lB + 1) = c'.nreg kH ∧
   c'.nmem (c.nreg lB + 2) = c'.nreg kN ∧
   (∀ i, i < 4 → c'.nmem (c.nreg lB + 3 + i) = c'.nreg (kL + i)) ∧

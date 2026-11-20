@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.RestoreTHoleMath
 
 /-!
@@ -42,7 +44,7 @@ theorem Out.mono {c c' : Config} {L L' : List ℕ} (h : Out c c' L) (hL : ∀ r 
 theorem out_instr {i : Instr} {r v : ℕ}
     (hex : Exec P W (.instr i) c { c with nreg := upd c.nreg r v } 1) :
     ∃ c', Exec P W (.instr i) c c' 1 ∧ c'.nreg r = v ∧ Out c c' [r] :=
-  ⟨_, hex, by simp, fun q hq => by simp only [List.mem_singleton] at hq; simp [upd, hq],
+  ⟨_, hex, by simp, fun q hq => by simp_all,
     rfl, rfl, rfl, rfl⟩
 
 /-- **A run step** from an execution changing only scratch registers. -/
@@ -50,7 +52,7 @@ theorem RS.out {s : Stmt} {K : ℕ} {L : List ℕ} {Q : Config → Prop} (hI : T
     (hL : ∀ r ∈ L, Scr r) {c' : Config} {k : ℕ} (ex : Exec P W s c c' k) (hk : k ≤ K)
     (ho : Out c c' L) (hq : Q c') : RS P W c₀ s c K Q := by
   obtain ⟨hI', hrf⟩ := hI.regs (c' := c') (k := k) ex.wb_right (fun r hr => ho.1 r (fun h => by
-    have := hL r h; unfold Scr at this; omega)) ho.2.1 ho.2.2.1 ho.2.2.2.1 ho.2.2.2.2
+    have := hL r h; reg_omega)) ho.2.1 ho.2.2.1 ho.2.2.2.1 ho.2.2.2.2
   exact ⟨c', k, ex, hk, hI', hrf, hq⟩
 
 /-! ## A conditional subtraction -/
@@ -135,18 +137,18 @@ theorem intH_exec (hw : WordsBounded W c) (hW : P.n + 2 ≤ W) (h22 : c.nreg 830
   obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.inputSize hw 83090 (by omega))
   have k1 := fun r (h : r ≠ 83090) => o₁.1 r (by simp [h])
   obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right 83092 83005 83023
-    (by rw [k1 _ (by omega), k1 _ (by omega), h23]; omega))
+    (by frame_finish))
   have k2 := fun r (h : r ≠ 83092) => o₂.1 r (by simp [h])
   obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := nxtS_exec (P := P) e₂.wb_right 83092 83090
   have k3 := fun r (h : r ≠ 83092) => o₃.1 r (by simp [h])
   have q92 : c₃.nreg 83092 = (c.nreg 83005 + 1) % P.n := by
-    rw [v₃, v₂, k2 _ (by omega), v₁, k1 _ (by omega), k1 _ (by omega), h23]
+    ram_rw [v₃, v₂, k2, v₁, k1, k1, h23]
     exact wrap_succ he
-  have q90 : c₃.nreg 83090 = P.n := by rw [k3 _ (by omega), k2 _ (by omega), v₁]
+  have q90 : c₃.nreg 83090 = P.n := by frame_finish
   have r05 : c₃.nreg 83005 = c.nreg 83005 := by
-    rw [k3 _ (by omega), k2 _ (by omega), k1 _ (by omega)]
-  have r22 : c₃.nreg 83022 = 0 := by rw [k3 _ (by omega), k2 _ (by omega), k1 _ (by omega), h22]
-  have r23 : c₃.nreg 83023 = 1 := by rw [k3 _ (by omega), k2 _ (by omega), k1 _ (by omega), h23]
+    frame_finish
+  have r22 : c₃.nreg 83022 = 0 := by frame_finish
+  have r23 : c₃.nreg 83023 = 1 := by frame_finish
   -- the previous vertex
   obtain ⟨c₄, k₄, hk₄, e₄, v₄, o₄⟩ : ∃ c₄, ∃ k ≤ 3, Exec P W (.ifLtN 83022 83005
       (.instr (.subN 83093 83005 83023)) (.instr (.subN 83093 83090 83023))) c₃ c₄ k ∧
@@ -156,13 +158,12 @@ theorem intH_exec (hw : WordsBounded W c) (hW : P.n + 2 ≤ W) (h22 : c.nreg 830
       refine ⟨c', _, by omega, .ifLtN_true h e, ?_, o⟩
       rw [v, r05, r23]; rw [r22, r05] at h
       unfold prevV
-      rw [show c.nreg 83005 + P.n - 1 = (c.nreg 83005 - 1) + P.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)]
+      ram_rw [show c.nreg 83005 + P.n - 1 = (c.nreg 83005 - 1) + P.n by omega, Nat.add_mod_right,
+        Nat.mod_eq_of_lt]
     · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.subN e₃.wb_right 83093 83090 83023)
       refine ⟨c', _, by omega, .ifLtN_false h e, ?_, o⟩
       rw [v, q90, r23]; rw [r22, r05] at h
-      unfold prevV
-      rw [show c.nreg 83005 = 0 by omega, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
+      ram_finish [prevV, show c.nreg 83005 = 0 by omega, Nat.zero_add, Nat.mod_eq_of_lt]
   have k4 := fun r (h : r ≠ 83093) => o₄.1 r (by simp [h])
   obtain ⟨c₅, e₅, v₅, o₅⟩ := out_instr (P := P) (Exec.constN e₄.wb_right 84009 1 (by omega))
   have k5 := fun r (h : r ≠ 84009) => o₅.1 r (by simp [h])
@@ -171,27 +172,26 @@ theorem intH_exec (hw : WordsBounded W c) (hW : P.n + 2 ≤ W) (h22 : c.nreg 830
       c₆.nreg 84010 = (if c.nreg 83006 = 0 then prevV P.n (c.nreg 83005) else c.nreg 83005) ∧
       Out c₅ c₆ [84010] := by
     have r5 : ∀ r, r ≠ 84009 → r ≠ 83093 → r ≠ 83092 → r ≠ 83090 → c₅.nreg r = c.nreg r :=
-      fun r a b d e => by rw [k5 r a, k4 r b, k3 r d, k2 r d, k1 r e]
+      fun r a b d e => by ram_finish
     by_cases h : c₅.nreg 83022 < c₅.nreg 83006
     · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.copyN e₅.wb_right 84010 83005)
       refine ⟨c', _, by omega, .ifLtN_true h e, ?_, o⟩
-      rw [r5 _ (by omega) (by omega) (by omega) (by omega),
-        r5 _ (by omega) (by omega) (by omega) (by omega), h22] at h
-      rw [v, r5 _ (by omega) (by omega) (by omega) (by omega), ite_eq_right (by omega)]
+      ram_rw [r5,
+        r5, h22] at h
+      frame_finish [v, r5, ite_eq_right]
     · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.copyN e₅.wb_right 84010 83093)
       refine ⟨c', _, by omega, .ifLtN_false h e, ?_, o⟩
-      rw [r5 _ (by omega) (by omega) (by omega) (by omega),
-        r5 _ (by omega) (by omega) (by omega) (by omega), h22] at h
-      rw [v, k5 _ (by omega), v₄, ite_eq_left (by omega)]
+      ram_rw [r5,
+        r5, h22] at h
+      frame_finish [v, k5, v₄, ite_eq_left]
   obtain ⟨c₇, e₇, v₇, o₇⟩ := out_instr (P := P) (Exec.copyN e₆.wb_right 84011 83092)
-  have ex : Exec P W intH c c₇ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇)))))
+  have ex : Exec P W intH c c₇ _ := (by ram_path)
   refine ⟨c₇, _, by omega, ex, ?_, ?_, ?_, ?_⟩
-  · rw [o₇.1 _ (by simp), o₆.1 _ (by simp), v₅]
-  · rw [o₇.1 _ (by simp), v₆]
-  · rw [v₇, o₆.1 _ (by simp), k5 _ (by omega), k4 _ (by omega), q92]
+  · simp [o₇.1, o₆.1, v₅]
+  · simp [o₇.1, v₆]
+  · simp [v₇, o₆.1, k5, k4, q92]
   · exact ((((((o₁.trans o₂).trans o₃).trans o₄).trans o₅).trans o₆).trans o₇).mono
-      (by intro r hr; simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
-          simp only [List.mem_cons, List.not_mem_nil, or_false]; omega)
+      (by simp)
 
 end
 

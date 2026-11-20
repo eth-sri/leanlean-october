@@ -69,14 +69,14 @@ theorem Fb_le {K m : ℕ} (hm : 1 ≤ m) (hK : K ≤ 60 * (2 * m + 7)) :
   unfold Fb
   rcases Nat.eq_zero_or_pos K with rfl | hK0
   · have : Nat.clog 2 64 = 6 := by
-      rw [show (64 : ℕ) = 2 ^ 6 by norm_num, Nat.clog_pow 2 6 (by norm_num)]
+      rfl
     simp [this]
   · have h1 : 64 * (K + 1) ≤ 131072 * m := by omega
     have h2 : Nat.clog 2 (64 * (K + 1)) ≤ 17 + Nat.clog 2 m := by
       have := Nat.clog_mono_right 2 h1
       have h3 := clog_mul_le 131072 m
       have h4 : Nat.clog 2 131072 = 17 := by
-        rw [show (131072 : ℕ) = 2 ^ 17 by norm_num, Nat.clog_pow 2 17 (by norm_num)]
+        rfl
       omega
     calc (K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1) ≤ (2 * K) * (18 + Nat.clog 2 m) :=
           Nat.mul_le_mul (by omega) (by omega)

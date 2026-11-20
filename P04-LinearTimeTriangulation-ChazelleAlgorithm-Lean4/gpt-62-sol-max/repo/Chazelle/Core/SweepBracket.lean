@@ -56,7 +56,7 @@ theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   · intro hθ1
     subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pf tf) (b := sidePt M.W pn tn) hy.symm
-      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (by linarith)
+      (by rwa [hsym]) (by rwa [hsym]) (by linarith)
     exact fun hin => hM.not_left_of_after hF hf hFr hN (Ne.symm hNF) hG hp ht hin hfG hleft
   · intro hθ1
     subst hθ1
@@ -101,19 +101,19 @@ at its near attachment, and `f'` is the other chord of the tie at the far attach
 (both in the right stretch), then `Φ` holds for `f'` at that attachment. -/
 def Propag (S₂ : Set (Set Point)) (Φ : Set Point → ℝ → Prop) : Prop :=
   ∀ (f f' : Set Point) (pn : ℕ) (tn : ℝ) (pf pb : ℕ) (tb : ℝ), f ∈ F₂plus J S₂ →
-    f' ∈ F₂plus J S₂ → f' ≠ f → SideAttach (chainModel J.whole).W f pn tn →
-    SideAttach (chainModel J.whole).W f pf 0 →
-    sidePt (chainModel J.whole).W pn tn ≠ sidePt (chainModel J.whole).W pf 0 →
-    SideAttach (chainModel J.whole).W f' pf 0 → SideAttach (chainModel J.whole).W f' pb tb →
-    sidePt (chainModel J.whole).W pb tb ≠ sidePt (chainModel J.whole).W pf 0 →
-    0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pn + tn) →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pn + tn) <
+    f' ∈ F₂plus J S₂ → f' ≠ f → SideAttach J.wholeModel.W f pn tn →
+    SideAttach J.wholeModel.W f pf 0 →
+    sidePt J.wholeModel.W pn tn ≠ sidePt J.wholeModel.W pf 0 →
+    SideAttach J.wholeModel.W f' pf 0 → SideAttach J.wholeModel.W f' pb tb →
+    sidePt J.wholeModel.W pb tb ≠ sidePt J.wholeModel.W pf 0 →
+    0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pn + tn) →
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pn + tn) <
       ((rL1 J + rL2 J : ℕ) : ℝ) →
-    0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0) →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0) <
+    0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0) →
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0) <
       ((rL1 J + rL2 J : ℕ) : ℝ) →
-    Φ f (off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pn + tn)) →
-    Φ f' (off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0))
+    Φ f (off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pn + tn)) →
+    Φ f' (off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0))
 
 /-! ## The two invariants -/
 
@@ -121,57 +121,62 @@ def Propag (S₂ : Set (Set Point)) (Φ : Set Point → ℝ → Prop) : Prop :=
 and one inside the right stretch have the latter before `o`. -/
 def PhiI (S₂ : Set (Set Point)) (lo : ℝ) (f : Set Point) (o : ℝ) : Prop :=
   ∀ e ∈ F₂plus J S₂, e ≠ f → ∀ (pw : ℕ) (tw : ℝ) (pb : ℕ) (tb : ℝ),
-    SideAttach (chainModel J.whole).W e pw tw → SideAttach (chainModel J.whole).W e pb tb →
-    sidePt (chainModel J.whole).W pw tw ≠ sidePt (chainModel J.whole).W pb tb →
-    lo < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pw + tw) →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
+    SideAttach J.wholeModel.W e pw tw → SideAttach J.wholeModel.W e pb tb →
+    sidePt J.wholeModel.W pw tw ≠ sidePt J.wholeModel.W pb tb →
+    lo < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pw + tw) →
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
       ((rL1 J + rL2 J : ℕ) : ℝ) →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) < o
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) < o
 
 /-- **The backward invariant**: chords of `F₂⁺` (other than `f`) with an attachment in the `C₁`
 part and one inside the right stretch before `o` have the latter before `oA` (weakly). -/
 def PhiK (S₂ : Set (Set Point)) (oA : ℝ) (f : Set Point) (o : ℝ) : Prop :=
   ∀ e ∈ F₂plus J S₂, e ≠ f → ∀ (pw : ℕ) (tw : ℝ) (pb : ℕ) (tb : ℝ),
-    SideAttach (chainModel J.whole).W e pw tw → SideAttach (chainModel J.whole).W e pb tb →
-    sidePt (chainModel J.whole).W pw tw ≠ sidePt (chainModel J.whole).W pb tb →
+    SideAttach J.wholeModel.W e pw tw → SideAttach J.wholeModel.W e pb tb →
+    sidePt J.wholeModel.W pw tw ≠ sidePt J.wholeModel.W pb tb →
     ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pw + tw) →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pw + tw) →
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
       ((rL1 J + rL2 J : ℕ) : ℝ) →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) ≤ o →
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) ≤ oA
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) ≤ o →
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) ≤ oA
 
 /-! ## The ends of a chain -/
 
+section
+
+variable (hP : J.P.Simple) {Q : Polygon}
+    {S₂ : Set (Set Point)} (hS₂ : J.rightModel.ChordFamily Q S₂) {ρ : ℝ}
+    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
+    (hPa : SideAttach J.wholeModel.W h ph th)
+    (hZa : SideAttach J.wholeModel.W h pz tz)
+    (hne : sidePt J.wholeModel.W ph th ≠ sidePt J.wholeModel.W pz tz)
+    (hS : SideOf J.wholeModel ρ h G)
+include hP hS₂ hρ hG hh hPa hZa hne hS
+
 /-- **The backward end** of a chain (orientation `-1`) lies in the `C₁` part before every
 non-cut position facing `G` there. -/
-theorem back_end (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ}
-    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
-    (hPa : SideAttach (chainModel J.whole).W h ph th)
-    (hZa : SideAttach (chainModel J.whole).W h pz tz)
-    (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz)
-    (hS : SideOf (chainModel J.whole) ρ h G)
-    (hori : 0 < -1 * ρ * ((sidePt (chainModel J.whole).W ph th).1 -
-      (sidePt (chainModel J.whole).W pz tz).1))
-    (hPL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
+theorem back_end
+    (hori : 0 < -1 * ρ * ((sidePt J.wholeModel.W ph th).1 -
+      (sidePt J.wholeModel.W pz tz).1))
+    (hPL : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
       ((rL1 J + rL2 J : ℕ) : ℝ))
-    (hZout : ¬ (0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) <
+    (hZout : ¬ (0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) <
         ((rL1 J + rL2 J : ℕ) : ℝ)))
-    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < (chainModel J.whole).W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
-    (hnc₀ : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p₀ + t₀))
-    (hfG₀ : (chainModel J.whole).Faces p₀ t₀ G)
+    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < J.wholeModel.W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
+    (hnc₀ : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p₀ + t₀))
+    (hfG₀ : J.wholeModel.Faces p₀ t₀ G)
     (ho₀ : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀)) :
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀)) :
     ((rL1 J + rL2 J : ℕ) : ℝ) ≤
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) <
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) := by
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) <
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   have hsa := (side_arc hC.hM hC.hF hh hPa hZa hne hρ hG hS hori hp₀ ht₀ hfG₀).2 rfl
   obtain ⟨kP0, kP1⟩ := Corr.key_mem hPa.1 hPa.2.1 hPa.2.2.1
@@ -180,7 +185,7 @@ theorem back_end (hP : J.P.Simple) {Q : Polygon}
   have hZ0 := off_nonneg kZ0 hgn
   have hP0 := off_nonneg kP0 hgn
   have hLZ : ((rL1 J + rL2 J : ℕ) : ℝ) ≤
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
     by_contra hlt
     push Not at hlt
     rcases hZ0.lt_or_eq with hpos | hzero
@@ -193,10 +198,10 @@ theorem back_end (hP : J.P.Simple) {Q : Polygon}
         have hk := off_inj hg0 hgn kP0 kP1 kZ0 kZ1 (by linarith)
         exact hne (by obtain ⟨rfl, rfl⟩ := sideKey_inj hPa.2.1 hPa.2.2.1 hZa.2.1 hZa.2.2.1 hk; rfl)
   refine ⟨hLZ, ?_⟩
-  have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
-  have hle : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ≤
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) := by
+  have hPZ : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
+  have hle : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ≤
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) := by
     by_contra hc
     push Not at hc
     exact hsa ((sideInArc_iff_off hg0 hgn kP0 kP1 kZ0 kZ1 kx0 kx1 hPZ).2 ⟨by linarith, hc⟩)
@@ -206,34 +211,27 @@ theorem back_end (hP : J.P.Simple) {Q : Polygon}
 
 /-- **The forward end** of a chain (orientation `1`) is the shared vertex copy at offset `0`, or
 lies in the `C₁` part after every non-cut position facing `G` there. -/
-theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂) {ρ : ℝ}
-    (hρ : ρ = 1 ∨ ρ = -1) {G : Set Point} (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    {h : Set Point} (hh : h ∈ F₂plus J S₂) {ph pz : ℕ} {th tz : ℝ}
-    (hPa : SideAttach (chainModel J.whole).W h ph th)
-    (hZa : SideAttach (chainModel J.whole).W h pz tz)
-    (hne : sidePt (chainModel J.whole).W ph th ≠ sidePt (chainModel J.whole).W pz tz)
-    (hS : SideOf (chainModel J.whole) ρ h G)
-    (hori : 0 < 1 * ρ * ((sidePt (chainModel J.whole).W ph th).1 -
-      (sidePt (chainModel J.whole).W pz tz).1))
-    (hPL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
+theorem fwd_end
+    (hori : 0 < 1 * ρ * ((sidePt J.wholeModel.W ph th).1 -
+      (sidePt J.wholeModel.W pz tz).1))
+    (hPL : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
       ((rL1 J + rL2 J : ℕ) : ℝ))
-    (hZout : ¬ (0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) <
+    (hZout : ¬ (0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) <
         ((rL1 J + rL2 J : ℕ) : ℝ)))
-    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < (chainModel J.whole).W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
-    (hnc₀ : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p₀ + t₀))
-    (hfG₀ : (chainModel J.whole).Faces p₀ t₀ G)
+    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < J.wholeModel.W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
+    (hnc₀ : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p₀ + t₀))
+    (hfG₀ : J.wholeModel.Faces p₀ t₀ G)
     (_ho₀ : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀)) :
-    off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) = 0 ∨
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀)) :
+    off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) = 0 ∨
       (((rL1 J + rL2 J : ℕ) : ℝ) ≤
-          off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
-          off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz)) := by
+          off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ∧
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
+          off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz)) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   have hsa := (side_arc hC.hM hC.hF hh hPa hZa hne hρ hG hS hori hp₀ ht₀ hfG₀).1 rfl
   obtain ⟨kP0, kP1⟩ := Corr.key_mem hPa.1 hPa.2.1 hPa.2.2.1
@@ -243,15 +241,15 @@ theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
   rcases hZ0.lt_or_eq with hpos | hzero
   · right
     have hLZ : ((rL1 J + rL2 J : ℕ) : ℝ) ≤
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
       by_contra hlt
       push Not at hlt
       exact hZout ⟨hpos, hlt⟩
     refine ⟨hLZ, ?_⟩
-    have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
-    have hle : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) ≤
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
+    have hPZ : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
+    have hle : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) ≤
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
       by_contra hc
       push Not at hc
       exact hsa ((sideInArc_rev_iff_off hg0 hgn kP0 kP1 kZ0 kZ1 kx0 kx1 hPZ).2 (Or.inr hc))
@@ -259,6 +257,8 @@ theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
     · exact hq
     · exact absurd ⟨h, hh, pz, tz, hZa, off_inj hg0 hgn kx0 kx1 kZ0 kZ1 hq⟩ hnc₀
   · exact Or.inl hzero.symm
+
+end
 
 end ChainWalk
 

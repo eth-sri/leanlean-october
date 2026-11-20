@@ -137,32 +137,38 @@ theorem vtx_mem_boundary_subPoly {l : List ℕ} {x : ℕ} (hx : x ∈ l) :
     P.vtx x ∈ (subPoly P l).boundary := by
   obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
   rw [← vtx_subPoly P l hi]
-  exact Chazelle.Existence.vtx_mem_boundary _ (by rw [n_subPoly]; exact hi)
+  exact Chazelle.Existence.vtx_mem_boundary _ (by simp_all)
 
+section
+
+variable {l : List ℕ} (hQ : (subPoly P l).Simple)
+
+include hQ in
 /-- In a simple sub-polygon, `P.vtx` is injective on the entries of `l`. -/
-theorem eq_of_vtx_eq {l : List ℕ} (hQ : (subPoly P l).Simple) {x y : ℕ} (hx : x ∈ l)
+theorem eq_of_vtx_eq {x y : ℕ} (hx : x ∈ l)
     (hy : y ∈ l) (h : P.vtx x = P.vtx y) : x = y := by
   obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
   obtain ⟨j, hj, rfl⟩ := List.mem_iff_getElem.1 hy
   rw [← vtx_subPoly P l hi, ← vtx_subPoly P l hj] at h
-  have := hQ.2.1 i j (by rw [n_subPoly]; exact hi) (by rw [n_subPoly]; exact hj) h
+  have := hQ.2.1 i j (by simp_all) (by simp_all) h
   subst this
   rfl
 
+include hQ in
 /-- A simple sub-polygon has no repeated index. -/
-theorem nodup_of_simple {l : List ℕ} (hQ : (subPoly P l).Simple) : l.Nodup := by
+theorem nodup_of_simple : l.Nodup := by
   rw [List.nodup_iff_injective_get]
   intro i j h
-  have hi : (i : ℕ) < (subPoly P l).n := by rw [n_subPoly]; exact i.2
-  have hj : (j : ℕ) < (subPoly P l).n := by rw [n_subPoly]; exact j.2
+  have hi : (i : ℕ) < (subPoly P l).n := by simp_all
+  have hj : (j : ℕ) < (subPoly P l).n := by simp_all
   apply Fin.ext
   apply hQ.2.1 i j hi hj
   rw [vtx_subPoly P l i.2, vtx_subPoly P l j.2]
-  simp only [List.get_eq_getElem] at h
-  rw [h]
+  simp_all
 
+include hQ in
 /-- A simple sub-polygon has at least three entries. -/
-theorem three_le_of_simple {l : List ℕ} (hQ : (subPoly P l).Simple) : 3 ≤ l.length := by
+theorem three_le_of_simple : 3 ≤ l.length := by
   have := hQ.1
   rwa [n_subPoly] at this
 
@@ -173,12 +179,15 @@ theorem vtx_idxOf {l : List ℕ} {x : ℕ} (hx : x ∈ l) :
 
 /-- `getD` at the position of an entry. -/
 theorem getD_idxOf {l : List ℕ} {x : ℕ} (hx : x ∈ l) : l.getD (l.idxOf x) 0 = x := by
-  rw [getD_eq_getElem_of_lt _ _ (List.idxOf_lt_length_of_mem hx), List.getElem_idxOf]
+  simp_all
 
+include hQ in
 /-- The endpoints of a diagonal are distinct points. -/
-theorem IsDiag.vtx_ne {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × ℕ} (hd : IsDiag P l d) :
+theorem IsDiag.vtx_ne {d : ℕ × ℕ} (hd : IsDiag P l d) :
     P.vtx d.1 ≠ P.vtx d.2 :=
   fun h => hd.2.2.1 (eq_of_vtx_eq P hQ hd.1 hd.2.1 h)
+
+end
 
 /-! ### Arcs of an index list -/
 
@@ -194,8 +203,7 @@ theorem length_arcList {l : List ℕ} {s L : ℕ} (hL : L < l.length) :
 /-- Entry `k ≤ L` of `arcList l s L` is `l[(s + k) % l.length]`. -/
 theorem getD_arcList {l : List ℕ} {s L k : ℕ} (hL : L < l.length) (hk : k ≤ L) :
     (arcList l s L).getD k 0 = l.getD ((s + k) % l.length) 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, arcList,
-    List.getElem?_take_of_lt (by omega), List.getElem?_rotate (by omega), Nat.add_comm k s]
+  ram_simp [List.getD_eq_getElem?_getD, arcList, List.getElem?_take_of_lt, List.getElem?_rotate, Nat.add_comm k s]
 
 /-- Entries of an arc of `l` are entries of `l`. -/
 theorem mem_of_mem_arcList {l : List ℕ} {s L x : ℕ} (h : x ∈ arcList l s L) : x ∈ l :=
@@ -208,11 +216,11 @@ theorem subPoly_arcList (l : List ℕ) (s : ℕ) {L : ℕ} (hL : L < l.length) :
   rw [vertices_subPoly]
   unfold Polygon.arc
   apply List.ext_getElem
-  · rw [List.length_map, List.length_map, List.length_range, length_arcList hL]
+  · simp [List.length_map, List.length_range, length_arcList hL]
   · intro k h1 h2
     have hk : k < L + 1 := by simpa using h2
     simp only [List.getElem_map, List.getElem_range, n_subPoly]
-    rw [← getD_eq_getElem_of_lt _ 0 (by rw [length_arcList hL]; exact hk),
+    rw [← getD_eq_getElem_of_lt _ 0 (by simp_all),
       getD_arcList hL (by omega), vtx_subPoly_getD P l (Nat.mod_lt _ (by omega))]
 
 /-- A cyclic edge of an arc of `l` is a cyclic edge of `l`, or the closing edge from `l[s + L]`
@@ -227,13 +235,11 @@ theorem arcList_edge {l : List ℕ} {s L : ℕ} (hL : L < l.length) {k : ℕ}
   rcases Nat.lt_or_ge k L with hkL | hkL
   · left
     refine ⟨(s + k) % l.length, Nat.mod_lt _ (by omega), (getD_arcList hL hkL.le).symm, ?_⟩
-    rw [Nat.mod_eq_of_lt (by omega : k + 1 < L + 1), getD_arcList hL hkL,
-      Chazelle.Existence.mod_add_one_mod]
+    ram_simp [Nat.mod_eq_of_lt, getD_arcList hL hkL, Chazelle.Existence.mod_add_one_mod]
   · right
     have hk' : k = L := by omega
     subst hk'
-    rw [Nat.mod_self, getD_arcList hL le_rfl, getD_arcList hL (Nat.zero_le _), Nat.add_zero]
-    exact ⟨rfl, rfl⟩
+    ram_simp [Nat.mod_self, getD_arcList hL le_rfl, getD_arcList hL (Nat.zero_le _), Nat.add_zero]
 
 /-! ### The two pieces of a diagonal -/
 
@@ -256,8 +262,7 @@ theorem diagLen_spec {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l) (h2 : d.2 
   have hse : l.idxOf d.1 ≠ l.idxOf d.2 := by
     intro h
     have := getD_idxOf h1
-    rw [h, getD_idxOf h2] at this
-    exact hne this.symm
+    simp_all
   have hsL : (l.idxOf d.1 + diagLen l d) % l.length = l.idxOf d.2 := by
     unfold diagLen
     rw [Nat.add_mod_mod, show l.idxOf d.1 + (l.idxOf d.2 + l.length - l.idxOf d.1) =
@@ -270,22 +275,27 @@ theorem diagLen_spec {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l) (h2 : d.2 
 
 variable {P}
 
+section
+
+variable {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × ℕ}
+    (hd : IsDiag P l d)
+
+include hQ hd in
 /-- The segment of a diagonal is not contained in an edge of the sub-polygon. -/
-theorem IsDiag.not_subset_edge {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × ℕ}
-    (hd : IsDiag P l d) {k : ℕ} (hk : k < l.length) (h : pairSeg P d ⊆ (subPoly P l).edge k) :
+theorem IsDiag.not_subset_edge {k : ℕ} (hk : k < l.length) (h : pairSeg P d ⊆ (subPoly P l).edge k) :
     False := by
   obtain ⟨p, hp, hp1, hp2⟩ := exists_inner_point (hd.vtx_ne P hQ)
   exact hd.2.2.2.1 p hp hp1 hp2
-    (Chazelle.Existence.edge_subset_boundary _ (by rw [n_subPoly]; exact hk) (h hp))
+    (Chazelle.Existence.edge_subset_boundary _ (by simp_all) (h hp))
 
+include hQ hd in
 /-- **An `IsDiag` pair is a diagonal in the sense of `Chazelle.Existence.IsDiagonal`**, at the
 position `s` of its first endpoint with arc length `L` (the positions of the endpoints are given
 by `hs`, `he`). -/
-theorem isDiagonal_of_isDiag {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × ℕ}
-    (hd : IsDiag P l d) {s L : ℕ} (hsn : s < l.length) (hs : l.getD s 0 = d.1) (hL1 : 1 ≤ L)
+theorem isDiagonal_of_isDiag {s L : ℕ} (hsn : s < l.length) (hs : l.getD s 0 = d.1) (hL1 : 1 ≤ L)
     (hLn : L < l.length) (he : l.getD ((s + L) % l.length) 0 = d.2) :
     IsDiagonal (subPoly P l) s L := by
-  have hQn : (subPoly P l).n = l.length := n_subPoly P l
+  have hQn := n_subPoly P l
   have hv1 : (subPoly P l).vtx s = P.vtx d.1 := by rw [vtx_subPoly_getD P l hsn, hs]
   have hv2 : (subPoly P l).vtx ((s + L) % l.length) = P.vtx d.2 := by
     rw [vtx_subPoly_getD P l (Nat.mod_lt _ (by omega)), he]
@@ -294,9 +304,7 @@ theorem isDiagonal_of_isDiag {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ
     have hL : L = 1 := by omega
     subst hL
     apply hd.not_subset_edge hQ hsn
-    unfold Polygon.edge
-    rw [hQn, hv1, hv2]
-    exact le_rfl
+    ram_finish [Polygon.edge, hQn, hv1, hv2]
   · by_contra h
     rw [hQn] at h
     have hL : L = l.length - 1 := by omega
@@ -351,14 +359,15 @@ theorem SplitPair.symm {l : List ℕ} {d : ℕ × ℕ} {l₁ l₂ : List ℕ} (h
   edges₂ := h.edges₁
   len := by rw [Nat.add_comm]; exact h.len
 
+include hQ hd in
 /-- **The two arcs of a diagonal form a `SplitPair`** (general positions: `s` is the position of
 `d.1`, and `(s + L) % n` that of `d.2`). -/
-theorem splitPair_arcs {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × ℕ} (hd : IsDiag P l d)
+theorem splitPair_arcs
     {s L : ℕ} (hsn : s < l.length) (hs : l.getD s 0 = d.1) (hL1 : 1 ≤ L) (hLn : L < l.length)
     (he : l.getD ((s + L) % l.length) 0 = d.2) :
     SplitPair P l d (arcList l s L) (arcList l ((s + L) % l.length) (l.length - L)) := by
-  have hQn : (subPoly P l).n = l.length := n_subPoly P l
-  have hdiag : IsDiagonal (subPoly P l) s L := isDiagonal_of_isDiag hQ hd hsn hs hL1 hLn he
+  have hQn := n_subPoly P l
+  have hdiag := isDiagonal_of_isDiag hQ hd hsn hs hL1 hLn he
   have hv1 : (subPoly P l).vtx (s % (subPoly P l).n) = P.vtx d.1 := by
     rw [hQn, Nat.mod_eq_of_lt hsn, vtx_subPoly_getD P l hsn, hs]
   have hv2 : (subPoly P l).vtx ((s + L) % (subPoly P l).n) = P.vtx d.2 := by
@@ -366,22 +375,21 @@ theorem splitPair_arcs {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × �
   have hchord : Chazelle.segment ((subPoly P l).vtx (s % (subPoly P l).n))
       ((subPoly P l).vtx ((s + L) % (subPoly P l).n)) = pairSeg P d := by
     rw [hv1, hv2]; rfl
-  have hin : Chazelle.segment ((subPoly P l).vtx (s % (subPoly P l).n))
-      ((subPoly P l).vtx ((s + L) % (subPoly P l).n)) ⊆ (subPoly P l).filled := by
-    rw [hchord]; exact hd.2.2.2.2
+  have hin := hd.2.2.2.2
+  rw [← hchord] at hin
   have hn : 0 < (subPoly P l).n := by omega
   have hLQ : L ≤ (subPoly P l).n := by omega
-  have e1 : subPoly P (arcList l s L) = (subPoly P l).arc s L := subPoly_arcList P l s hLn
+  have e1 := subPoly_arcList P l s hLn
   have e2 : subPoly P (arcList l ((s + L) % l.length) (l.length - L)) =
       (subPoly P l).arc ((s + L) % (subPoly P l).n) ((subPoly P l).n - L) := by
     rw [hQn]; exact subPoly_arcList P l _ (by omega)
   have hchord' : Chazelle.segment ((subPoly P l).vtx ((s + L) % (subPoly P l).n))
       ((subPoly P l).vtx (s % (subPoly P l).n)) = pairSeg P d := by
-    rw [Chazelle.Geometry.segment_comm]; exact hchord
+    rwa [Chazelle.Geometry.segment_comm]
   have hchord2 : Chazelle.segment
       ((subPoly P l).vtx (((s + L) % (subPoly P l).n + ((subPoly P l).n - L)) % (subPoly P l).n))
       ((subPoly P l).vtx ((s + L) % (subPoly P l).n % (subPoly P l).n)) = pairSeg P d := by
-    rw [Chazelle.Existence.compl_arc_last_index _ s L hLQ, Nat.mod_mod]; exact hchord
+    rwa [Chazelle.Existence.compl_arc_last_index _ s L hLQ, Nat.mod_mod]
   have hmeet := Chazelle.Existence.filled_arcs_meet_on_chord _ s L hQ hdiag hin
   have hl1 := length_arcList (l := l) (s := s) hLn
   have hl2 := length_arcList (l := l) (s := (s + L) % l.length) (L := l.length - L) (by omega)
@@ -404,26 +412,24 @@ theorem splitPair_arcs {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × �
     have hxv := vtx_idxOf P hx
     rw [e1, ← hxv] at hxf
     obtain ⟨k, hk, hkv⟩ := Chazelle.Existence.exists_arc_vertex_of_mem_filled _ s L hdiag hmeet
-      (by rw [hQn]; exact hi) hxf
+      (by rwa [hQn]) hxf
     rw [← e1, hxv, vtx_subPoly_getD P _ (by rw [hl1]; omega)] at hkv
     have hmem : (arcList l s L).getD k 0 ∈ arcList l s L := by
       rw [getD_eq_getElem_of_lt _ _ (by rw [hl1]; omega)]; exact List.getElem_mem _
-    rw [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
-    exact hmem
+    rwa [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
   · -- vertices of `subPoly P l` filled in the second arc
     intro x hx hxf
     have hi := List.idxOf_lt_length_of_mem hx
     have hxv := vtx_idxOf P hx
     rw [e2, ← hxv] at hxf
     obtain ⟨k, hk, hkv⟩ := Chazelle.Existence.exists_arc_compl_vertex_of_mem_filled _ s L hdiag
-      hmeet (by rw [hQn]; exact hi) hxf
+      hmeet (by rwa [hQn]) hxf
     rw [← e2, hxv, vtx_subPoly_getD P _ (by rw [hl2]; rw [hQn] at hk; omega)] at hkv
     have hmem : (arcList l ((s + L) % l.length) (l.length - L)).getD k 0 ∈
         arcList l ((s + L) % l.length) (l.length - L) := by
       rw [getD_eq_getElem_of_lt _ _ (by rw [hl2]; rw [hQn] at hk; omega)]
       exact List.getElem_mem _
-    rw [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
-    exact hmem
+    rwa [← eq_of_vtx_eq P hQ (mem_of_mem_arcList hmem) hx hkv]
   · -- edges of the first arc
     rintro x y ⟨k, hk, rfl, rfl⟩
     rcases arcList_edge hLn hk with h | ⟨h1, h2⟩
@@ -446,14 +452,17 @@ theorem splitSnd_eq {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l) (h2 : d.2 �
     splitSnd l d = arcList l ((l.idxOf d.1 + diagLen l d) % l.length) (l.length - diagLen l d) := by
   rw [(diagLen_spec h1 h2 hne).2.2]; rfl
 
+include hQ hd in
 /-- **Splitting along a diagonal.**  For a simple `subPoly P l` and a diagonal `d`, the pieces
 `splitFst l d = [d.1, …, d.2]` and `splitSnd l d = [d.2, …, d.1]` form a `SplitPair`. -/
-theorem splitPair_split {l : List ℕ} (hQ : (subPoly P l).Simple) {d : ℕ × ℕ} (hd : IsDiag P l d) :
+theorem splitPair_split :
     SplitPair P l d (splitFst l d) (splitSnd l d) := by
   obtain ⟨hL1, hLn, hsL⟩ := diagLen_spec hd.1 hd.2.1 hd.2.2.1
   rw [splitSnd_eq hd.1 hd.2.1 hd.2.2.1]
   exact splitPair_arcs hQ hd (List.idxOf_lt_length_of_mem hd.1) (getD_idxOf hd.1) hL1 hLn
     (by rw [hsL]; exact getD_idxOf hd.2.1)
+
+end
 
 /-! ### Consequences of the package -/
 
@@ -464,34 +473,44 @@ variable {l : List ℕ} {d : ℕ × ℕ} {l₁ l₂ : List ℕ}
 /-- The filled region of the first piece lies in that of `subPoly P l`. -/
 theorem SplitPair.filled_subset (h : SplitPair P l d l₁ l₂) :
     (subPoly P l₁).filled ⊆ (subPoly P l).filled := by
-  rw [h.cover]; exact Set.subset_union_left
+  simp [h.cover]
+
+section
+
+variable (h : SplitPair P l d l₁ l₂) {p : Point}
+    (hp : p ∈ interior (subPoly P l₁).filled)
+include h hp
 
 /-- The interior of the first piece does not meet the filled region of the second. -/
-theorem SplitPair.interior_not_mem_filled (h : SplitPair P l d l₁ l₂) {p : Point}
-    (hp : p ∈ interior (subPoly P l₁).filled) : p ∉ (subPoly P l₂).filled := by
+theorem SplitPair.interior_not_mem_filled : p ∉ (subPoly P l₂).filled := by
   rw [interior_filled h.simple₁] at hp
   intro hp2
   exact hp.2 (h.chord₁ (h.meet ⟨hp.1, hp2⟩))
 
 /-- The interior of the first piece avoids the diagonal. -/
-theorem SplitPair.interior_not_mem_chord (h : SplitPair P l d l₁ l₂) {p : Point}
-    (hp : p ∈ interior (subPoly P l₁).filled) : p ∉ pairSeg P d := by
+theorem SplitPair.interior_not_mem_chord : p ∉ pairSeg P d := by
   rw [interior_filled h.simple₁] at hp
   exact fun hc => hp.2 (h.chord₁ hc)
 
 /-- The interior of the first piece avoids the boundary of `subPoly P l`. -/
-theorem SplitPair.interior_not_mem_boundary (h : SplitPair P l d l₁ l₂) {p : Point}
-    (hp : p ∈ interior (subPoly P l₁).filled) : p ∉ (subPoly P l).boundary := by
+theorem SplitPair.interior_not_mem_boundary : p ∉ (subPoly P l).boundary := by
   intro hb
   rcases h.bd hb with h1 | h2
   · rw [interior_filled h.simple₁] at hp
     exact hp.2 h1
   · exact h.interior_not_mem_filled hp (Chazelle.Jordan.boundary_subset_filled _ h2)
 
+end
+
+section
+
+variable (h : SplitPair P l d l₁ l₂) (hQ : (subPoly P l).Simple)
+    {d' : ℕ × ℕ} (hd' : IsDiag P l d') (hnc : NonCross P d d')
+
+include h hQ hd' hnc in
 /-- The open segment of another diagonal `d'` not crossing `d` lies in the open interior of one
 of the two pieces (it is connected and lies in the union of the two disjoint open interiors). -/
-theorem SplitPair.innerSeg_cases (h : SplitPair P l d l₁ l₂) (hQ : (subPoly P l).Simple)
-    {d' : ℕ × ℕ} (hd' : IsDiag P l d') (hnc : NonCross P d d') :
+theorem SplitPair.innerSeg_cases :
     innerSeg (P.vtx d'.1) (P.vtx d'.2) ⊆ (subPoly P l₁).filled \ (subPoly P l₁).boundary ∨
       innerSeg (P.vtx d'.1) (P.vtx d'.2) ⊆ (subPoly P l₂).filled \ (subPoly P l₂).boundary := by
   have hne := hd'.vtx_ne P hQ
@@ -503,13 +522,13 @@ theorem SplitPair.innerSeg_cases (h : SplitPair P l d l₁ l₂) (hQ : (subPoly 
   · intro p hp
     have hps := innerSeg_subset _ _ hp
     obtain ⟨hpa, hpb⟩ := ne_of_mem_innerSeg hne hp
-    have hpQ : p ∉ (subPoly P l).boundary := hd'.2.2.2.1 p hps hpa hpb
+    have hpQ := hd'.2.2.2.1 p hps hpa hpb
     have hpc : p ∉ pairSeg P d := by
       intro hpc
       rcases (hnc ⟨hpc, hps⟩).2 with e | e
       · exact hpa e
       · exact hpb e
-    have hpf : p ∈ (subPoly P l).filled := hd'.2.2.2.2 hps
+    have hpf := hd'.2.2.2.2 hps
     rw [h.cover] at hpf
     rcases hpf with hf | hf
     · left
@@ -539,17 +558,16 @@ theorem SplitPair.isDiag_of_innerSeg_subset (h : SplitPair P l d l₁ l₂) {d' 
   intro p hp hpa hpb
   exact (hsub (mem_innerSeg_of_ne hp hpa hpb)).2
 
+include h hQ hd' hnc in
 /-- No diagonal `d'` not crossing `d` has both endpoints in both pieces (its segment would lie on
 the segment of `d`). -/
-theorem SplitPair.not_mem_both (h : SplitPair P l d l₁ l₂) (hQ : (subPoly P l).Simple)
-    {d' : ℕ × ℕ} (hd' : IsDiag P l d') (hnc : NonCross P d d') (h1 : d'.1 ∈ l₁ ∧ d'.2 ∈ l₁)
+theorem SplitPair.not_mem_both (h1 : d'.1 ∈ l₁ ∧ d'.2 ∈ l₁)
     (h2 : d'.1 ∈ l₂ ∧ d'.2 ∈ l₂) : False := by
   have hne := hd'.vtx_ne P hQ
   have hv : ∀ x, x ∈ l₁ → x ∈ l₂ → P.vtx x ∈ pairSeg P d := fun x hx1 hx2 =>
     h.meet ⟨Chazelle.Jordan.boundary_subset_filled _ (vtx_mem_boundary_subPoly P hx1),
       Chazelle.Jordan.boundary_subset_filled _ (vtx_mem_boundary_subPoly P hx2)⟩
-  have hsub : pairSeg P d' ⊆ pairSeg P d :=
-    Chazelle.Geometry.segment_subset_of_convex (Chazelle.Geometry.segment_convex _ _)
+  have hsub := Chazelle.Geometry.segment_subset_of_convex (Chazelle.Geometry.segment_convex _ _)
       (hv _ h1.1 h2.1) (hv _ h1.2 h2.2)
   obtain ⟨p, hp⟩ := innerSeg_nonempty (P.vtx d'.1) (P.vtx d'.2)
   obtain ⟨hpa, hpb⟩ := ne_of_mem_innerSeg hne hp
@@ -558,26 +576,28 @@ theorem SplitPair.not_mem_both (h : SplitPair P l d l₁ l₂) (hQ : (subPoly P 
   · exact hpa e
   · exact hpb e
 
+include h hQ hd' hnc in
 /-- **Distributing the other diagonals, first piece.**  A diagonal `d'` of `subPoly P l` not
 crossing `d` whose endpoints both lie in the first piece is a diagonal of the first piece. -/
-theorem SplitPair.isDiag_fst (h : SplitPair P l d l₁ l₂) (hQ : (subPoly P l).Simple)
-    {d' : ℕ × ℕ} (hd' : IsDiag P l d') (hnc : NonCross P d d') (hmem : d'.1 ∈ l₁ ∧ d'.2 ∈ l₁) :
+theorem SplitPair.isDiag_fst (hmem : d'.1 ∈ l₁ ∧ d'.2 ∈ l₁) :
     IsDiag P l₁ d' := by
   rcases h.innerSeg_cases hQ hd' hnc with hs | hs
   · exact h.isDiag_of_innerSeg_subset hd' hs
   · have := h.symm.isDiag_of_innerSeg_subset hd' hs
     exact (h.not_mem_both hQ hd' hnc hmem ⟨this.1, this.2.1⟩).elim
 
+include h hQ hd' hnc in
 /-- **Distributing the other diagonals, second piece.**  A diagonal `d'` of `subPoly P l` not
 crossing `d` whose endpoints do not both lie in the first piece is a diagonal of the second
 piece. -/
-theorem SplitPair.isDiag_snd (h : SplitPair P l d l₁ l₂) (hQ : (subPoly P l).Simple)
-    {d' : ℕ × ℕ} (hd' : IsDiag P l d') (hnc : NonCross P d d')
+theorem SplitPair.isDiag_snd
     (hmem : ¬ (d'.1 ∈ l₁ ∧ d'.2 ∈ l₁)) : IsDiag P l₂ d' := by
   rcases h.innerSeg_cases hQ hd' hnc with hs | hs
   · have := h.isDiag_of_innerSeg_subset hd' hs
     exact (hmem ⟨this.1, this.2.1⟩).elim
   · exact h.symm.isDiag_of_innerSeg_subset hd' hs
+
+end
 
 /-- The interiors of the filled regions of the two pieces are disjoint. -/
 theorem SplitPair.interior_disjoint (h : SplitPair P l d l₁ l₂) :
@@ -621,7 +641,7 @@ theorem weakTriangulates_split {l : List ℕ} (hQ : (subPoly P l).Simple) {d : �
       (T₁.map (relabel (l.idxOf d.1) l.length) ++ T₂.map (relabel (l.idxOf d.2) l.length)) := by
   obtain ⟨hL1, hLn, hsL⟩ := diagLen_spec hd.1 hd.2.1 hd.2.2.1
   have hsn := List.idxOf_lt_length_of_mem hd.1
-  have hQn : (subPoly P l).n = l.length := n_subPoly P l
+  have hQn := n_subPoly P l
   have hdiag := isDiagonal_of_isDiag hQ hd hsn (getD_idxOf hd.1) hL1 hLn
     (by rw [hsL]; exact getD_idxOf hd.2.1)
   have hin : Chazelle.segment ((subPoly P l).vtx (l.idxOf d.1 % (subPoly P l).n))
@@ -644,14 +664,16 @@ original indices agrees with relabelling it directly to original indices. -/
 theorem relabelList_relabel_arc {l : List ℕ} {s L : ℕ} (hL : L < l.length) {t : Polygon.Triangle}
     (ht : t.1 ≤ L ∧ t.2.1 ≤ L ∧ t.2.2 ≤ L) :
     relabelList l (relabel s l.length t) = relabelList (arcList l s L) t := by
-  obtain ⟨a, b, c⟩ := t
-  simp only [relabelList, Chazelle.Existence.relabel_fst, Chazelle.Existence.relabel_snd_fst,
-    Chazelle.Existence.relabel_snd_snd]
-  rw [getD_arcList hL ht.1, getD_arcList hL ht.2.1, getD_arcList hL ht.2.2]
+  ram_simp [relabelList, Chazelle.Existence.relabel_fst, Chazelle.Existence.relabel_snd_fst, Chazelle.Existence.relabel_snd_snd, getD_arcList hL ht.1, getD_arcList hL ht.2.1, getD_arcList hL ht.2.2]
+
+section
+
+variable {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l) (h2 : d.2 ∈ l)
+    (hne : d.1 ≠ d.2) {t : Polygon.Triangle}
+include h1 h2 hne t
 
 /-- `relabelList_relabel_arc` for the first piece. -/
-theorem relabelList_relabel_fst {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l) (h2 : d.2 ∈ l)
-    (hne : d.1 ≠ d.2) {t : Polygon.Triangle}
+theorem relabelList_relabel_fst
     (ht : t.1 < (splitFst l d).length ∧ t.2.1 < (splitFst l d).length ∧
       t.2.2 < (splitFst l d).length) :
     relabelList l (relabel (l.idxOf d.1) l.length t) = relabelList (splitFst l d) t := by
@@ -661,8 +683,7 @@ theorem relabelList_relabel_fst {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l)
   exact relabelList_relabel_arc hLn ⟨by omega, by omega, by omega⟩
 
 /-- `relabelList_relabel_arc` for the second piece. -/
-theorem relabelList_relabel_snd {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l) (h2 : d.2 ∈ l)
-    (hne : d.1 ≠ d.2) {t : Polygon.Triangle}
+theorem relabelList_relabel_snd
     (ht : t.1 < (splitSnd l d).length ∧ t.2.1 < (splitSnd l d).length ∧
       t.2.2 < (splitSnd l d).length) :
     relabelList l (relabel (l.idxOf d.2) l.length t) = relabelList (splitSnd l d) t := by
@@ -671,6 +692,8 @@ theorem relabelList_relabel_snd {l : List ℕ} {d : ℕ × ℕ} (h1 : d.1 ∈ l)
   have hlen : (splitSnd l d).length = l.length - diagLen l d + 1 := length_arcList hlt
   rw [hlen] at ht
   exact relabelList_relabel_arc hlt ⟨by omega, by omega, by omega⟩
+
+end
 
 end
 

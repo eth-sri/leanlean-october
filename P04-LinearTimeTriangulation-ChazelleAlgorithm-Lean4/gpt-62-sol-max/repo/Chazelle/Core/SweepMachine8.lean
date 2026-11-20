@@ -60,26 +60,26 @@ theorem end_not_mem_dom {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
 theorem stretch_end (hP : J.P.Simple)
     {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
     (hS₂f : S₂.Finite) {e : Set Point} (he : e ∈ F₂plus J S₂) (hns : ¬ StopChord J S₂ e) :
-    ∃ (pB : ℕ) (tB : ℝ), SideAttach (chainModel J.whole).W e pB tB ∧
-      0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
+    ∃ (pB : ℕ) (tB : ℝ), SideAttach J.wholeModel.W e pB tB ∧
+      0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
         ((rL1 J + rL2 J : ℕ) : ℝ) ∧
-      sidePt (chainModel J.whole).W pB tB ∈ J.right.set ∧
-      sidePt (chainModel J.whole).W pB tB ≠ J.shared := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hA : e ∈ Merge.augChords J.whole := F₂plus_subset J hS₂ he
-  have hvD : J.shared ∉ J.whole.dom := fun hd =>
+      sidePt J.wholeModel.W pB tB ∈ J.right.set ∧
+      sidePt J.wholeModel.W pB tB ≠ J.shared := by
+  have hM : WalkAx J.wholeModel := FactsChain.walkAx J.whole hP
+  have hA := F₂plus_subset J hS₂ he
+  have hvD := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
   -- an end of `e` on `C₂` other than the shared vertex gives the attachment
   have key : ∀ x, x ∈ e → x ∈ J.right.set → x ≠ J.shared → ∃ (pB : ℕ) (tB : ℝ),
-      SideAttach (chainModel J.whole).W e pB tB ∧
-      0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
+      SideAttach J.wholeModel.W e pB tB ∧
+      0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
         ((rL1 J + rL2 J : ℕ) : ℝ) ∧
-      sidePt (chainModel J.whole).W pB tB ∈ J.right.set ∧
-      sidePt (chainModel J.whole).W pB tB ≠ J.shared := by
+      sidePt J.wholeModel.W pB tB ∈ J.right.set ∧
+      sidePt J.wholeModel.W pB tB ≠ J.shared := by
     intro x hxe hx hxv
-    have hxD : x ∉ J.whole.dom := fun hd =>
+    have hxD := fun hd =>
       J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset hx)
     obtain ⟨a, b, -, hcab, -, hopen, ⟨⟨pa, ta, hAa, hAa'⟩, -⟩, ⟨⟨pb, tb, hBb, hBb'⟩, -⟩⟩ :=
       hM.ends e hA
@@ -91,13 +91,13 @@ theorem stretch_end (hP : J.P.Simple)
         exact seg_end hxe hxD hopen hxa
     rcases hxab with rfl | rfl
     · refine ⟨pa, ta, hAa, ?_⟩
-      have := off_right_pt J hP hS₂ hS₂f hAa.1 hAa.2.1 hAa.2.2.1 (by rw [hAa']; exact hx)
-        (by rw [hAa']; exact hxv)
-      exact ⟨this.1, this.2, by rw [hAa']; exact hx, by rw [hAa']; exact hxv⟩
+      have := off_right_pt J hP hS₂ hS₂f hAa.1 hAa.2.1 hAa.2.2.1 (by rwa [hAa'])
+        (by rwa [hAa'])
+      exact ⟨this.1, this.2, by rwa [hAa'], by rwa [hAa']⟩
     · refine ⟨pb, tb, hBb, ?_⟩
-      have := off_right_pt J hP hS₂ hS₂f hBb.1 hBb.2.1 hBb.2.2.1 (by rw [hBb']; exact hx)
-        (by rw [hBb']; exact hxv)
-      exact ⟨this.1, this.2, by rw [hBb']; exact hx, by rw [hBb']; exact hxv⟩
+      have := off_right_pt J hP hS₂ hS₂f hBb.1 hBb.2.1 hBb.2.2.1 (by rwa [hBb'])
+        (by rwa [hBb'])
+      exact ⟨this.1, this.2, by rwa [hBb'], by rwa [hBb']⟩
   -- a chord through the shared vertex is a shared chord, a stop chord
   have hshared : J.shared ∉ e := by
     intro hv'
@@ -112,8 +112,7 @@ theorem stretch_end (hP : J.P.Simple)
     by_cases hr : Merge.rend c' ∈ J.right.set
     · exact key _ (origin_mem J) hr (fun h => hshared (h ▸ origin_mem J))
     · exact absurd (Or.inr ⟨c', hc'S, _, -1, Or.inr ⟨rfl, rfl⟩, hr, hfree, rfl⟩) hns
-  · obtain ⟨σ, hσ, hfree, rfl⟩ := hsh
-    exact absurd (Or.inl ⟨σ, hσ, (Merge.freeAt_vertex _ _ _).2 hfree, rfl⟩) hns
+  · tauto
   · obtain ⟨σ, hσ, hfree, rfl⟩ := htop
     have hv' : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
       rw [Merge.Junction.whole_vertex_add]; rfl
@@ -127,50 +126,49 @@ endpoint (on `C₂`, not the shared vertex) of an exit chord of `λ` or of a reg
 the slit of `C₂`, or from the top of `C₂`. -/
 theorem next_event_origin (hP : J.P.Simple)
     {Q : Polygon} {S₂ : Set (Set Point)}
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
-    (hG : G ∈ (chainModel J.whole).regions (F₂plus J S₂))
-    (hL : L ∈ (chainModel J.right).regions S₂) (hvalid : Valid J S₂ G L)
-    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < (chainModel J.whole).W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
-    (hnc₀ : ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (p₀ + t₀))
-    (hfG₀ : (chainModel J.whole).Faces p₀ t₀ G)
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {G L : Set Point}
+    (hG : G ∈ J.wholeModel.regions (F₂plus J S₂))
+    (hL : L ∈ J.rightModel.regions S₂) (hvalid : Valid J S₂ G L)
+    {p₀ : ℕ} {t₀ : ℝ} (hp₀ : p₀ < J.wholeModel.W.n) (ht₀ : t₀ ∈ Ioo (0 : ℝ) 1)
+    (hnc₀ : ¬ J.wholeModel.IsCut (F₂plus J S₂) (p₀ + t₀))
+    (hfG₀ : J.wholeModel.Faces p₀ t₀ G)
     (ho₀ : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀))
-    {pK : ℕ} {tK : ℝ} (hpK : pK < (chainModel J.whole).W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
-    (hoK : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK))
-    (hgap : ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x →
-      x < (chainModel J.whole).W.n →
-      ¬ (off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
-          off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x ∧
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x <
-          off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK)))
-    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach (chainModel J.whole).W e pK tK)
-    (hstop : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀))
+    {pK : ℕ} {tK : ℝ} (hpK : pK < J.wholeModel.W.n) (htK0 : 0 ≤ tK) (htK1 : tK < 1)
+    (hoK : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK))
+    (hgap : ∀ x, J.wholeModel.IsCut (F₂plus J S₂) x → 0 ≤ x →
+      x < J.wholeModel.W.n →
+      ¬ (off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) <
+          off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x ∧
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) x <
+          off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK)))
+    {e : Set Point} (he : e ∈ F₂plus J S₂) (heK : SideAttach J.wholeModel.W e pK tK)
+    (hstop : ∀ e' ∈ F₂plus J S₂, SideAttach J.wholeModel.W e' pK tK →
       ¬ StopChord J S₂ e') :
-    ∃ h ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W h pK tK ∧
+    ∃ h ∈ F₂plus J S₂, SideAttach J.wholeModel.W h pK tK ∧
       ∃ (a : Point) (σ : ℝ), (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole a σ ∧
         h = Merge.shoot J.whole a σ ∧
-        ((∃ c ∈ S₂, (∃ V, LabS J S₂ L V ∧ Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∧
+        ((∃ c ∈ S₂, (∃ V, LabS J S₂ L V ∧ Chazelle.Chain.TouchesIn J.rightModel.D c V) ∧
           ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
           a ∈ J.right.set ∧ a ≠ J.shared) ∨ a = J.right.top) := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hF.2.1
-  have hvD : J.shared ∉ J.whole.dom := fun hd =>
-    J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
+  have hM : WalkAx J.wholeModel := FactsChain.walkAx J.whole hP
+  have hFs : F₂plus J S₂ ⊆ J.wholeModel.Adm := hF.2.1
+  
   -- the stretch attachment of `e`
   obtain ⟨pB, tB, heB, hB0, hBL, hBr, hBv⟩ :=
     stretch_end J hP hS₂.2.1 hS₂.1 he (hstop e he heK)
   have hLK : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK) := by linarith
-  have heKB : sidePt (chainModel J.whole).W pK tK ≠ sidePt (chainModel J.whole).W pB tB := by
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK) := by linarith
+  have heKB : sidePt J.wholeModel.W pK tK ≠ sidePt J.wholeModel.W pB tB := by
     intro h
-    have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by rw [h]; exact hBr)
-      (by rw [h]; exact hBv)
+    have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by rwa [h])
+      (by rwa [h])
     linarith [this.2]
-  have hnobr : ∀ e' ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e' pK tK →
-      ∃ (pb : ℕ) (tb : ℝ), SideAttach (chainModel J.whole).W e' pb tb ∧
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
+  have hnobr : ∀ e' ∈ F₂plus J S₂, SideAttach J.wholeModel.W e' pK tK →
+      ∃ (pb : ℕ) (tb : ℝ), SideAttach J.wholeModel.W e' pb tb ∧
+        off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pb + tb) <
           ((rL1 J + rL2 J : ℕ) : ℝ) := by
     intro e' he' heK'
     obtain ⟨pb, tb, hb, -, hbL, -⟩ :=
@@ -178,7 +176,7 @@ theorem next_event_origin (hP : J.P.Simple)
     exact ⟨pb, tb, hb, hbL⟩
   obtain ⟨h, hh, hhK⟩ := next_event_detected J hP hS₂ hF hG hL hvalid hp₀ ht₀ hnc₀ hfG₀ ho₀
     hpK htK0 htK1 hoK hgap he heK heB heKB hB0 hBL hnobr
-  have hhF : h ∈ F₂plus J S₂ := hh.1
+  have hhF := hh.1
   refine ⟨h, hhF, hhK, ?_⟩
   have hns := hstop h hhF hhK
   rcases cand_cases J hS₂.2.1 hh with ⟨c, hc, htouch, hcase⟩ | ⟨σ, hσ, hfree, rfl⟩ |
@@ -188,12 +186,12 @@ theorem next_event_origin (hP : J.P.Simple)
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, 1, Or.inl ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨1, Or.inl rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨1, Or.inl rfl, by rwa [← hlv], by rw [hlv]⟩)
     · refine ⟨_, -1, Or.inr rfl, hfree, rfl, Or.inl ⟨c, hc, htouch, Or.inr ⟨rfl, rfl⟩, ?_, ?_⟩⟩
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, -1, Or.inr ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨-1, Or.inr rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨-1, Or.inr rfl, by rwa [← hlv], by rw [hlv]⟩)
   · exact absurd (Or.inl ⟨σ, hσ, hfree, rfl⟩) hns
   · exact ⟨_, σ, hσ, hfree, rfl, Or.inr rfl⟩
 

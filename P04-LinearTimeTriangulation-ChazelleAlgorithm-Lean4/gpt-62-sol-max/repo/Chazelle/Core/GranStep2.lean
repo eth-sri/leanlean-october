@@ -79,7 +79,7 @@ theorem rm_L (_hE : E.Good) (_h : Inv E st) (hc : c ∈ st.L E)
   simp only [St.L, St.remove, mem_sdiff, mem_ofPred_eq, mem_singleton_iff]
   by_cases hic : i = c
   · subst hic; simp
-  · rw [Function.update_of_ne hic]; tauto
+  · simp_all
 
 theorem rm_F (μ : ℕ) : (st.remove c μ).F E = st.F E \ {cs E.M E.Q E.N c} := by
   unfold St.F
@@ -130,10 +130,7 @@ theorem exl_of_list (st : St) (x : ℕ) {l : List ℕ} (hd : st.deg x = l.length
   unfold St.exl
   apply List.ext_getElem
   · rw [List.length_ofFn, hd]
-  · intro t h1 h2
-    rw [List.getElem_ofFn]
-    rw [he t h2, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]
-    rfl
+  simp_all
 
 section Rm
 
@@ -184,7 +181,7 @@ theorem touch_P {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) :
   have e := hs.exits_eq_union (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     not_mem_sdiff_self (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by assumption⟩, hi.1, rfl⟩
   constructor
   · intro ht
     have : cs E.M E.Q E.N i ∈ Merge.exitsIn E.M.D (st.F E \ {cs E.M E.Q E.N c}) P := ⟨hiS, ht⟩
@@ -207,7 +204,7 @@ theorem not_both {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c)
   have hd := hs.exits_disjoint (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by assumption⟩, hi.1, rfl⟩
   exact Set.disjoint_left.1 hd ⟨hiS, h1⟩ ⟨hiS, h2⟩
 
 theorem mem_newEx (i : ℕ) :
@@ -222,7 +219,7 @@ theorem mem_newEx (i : ℕ) :
   · rintro ⟨hi, hic, ht⟩
     rcases (touch_P hE h hc hs hi hic).1 ht with h' | h'
     · exact Or.inl ⟨⟨hi, h'⟩, hic⟩
-    · exact Or.inr ⟨⟨hi, h'⟩, hic⟩
+    · tauto
 
 theorem newEx_nodup : (st.newEx c).Nodup := by
   unfold St.newEx
@@ -241,8 +238,8 @@ theorem newEx_length (hE : E.Good) (h : Inv E st) (hc : c ∈ st.L E)
     (st.newEx c).length + 2 = st.deg (st.s0 c) + st.deg (st.s1 c) := by
   obtain ⟨-, -, -, htouch⟩ := h.sides c hc
   obtain ⟨hX, hY⟩ := h.cl_mem hE hc
-  have hcX : c ∈ st.exl (st.s0 c) := (exl_X hE h hc c).2 ⟨hc, (htouch _ hX).2 (Or.inl rfl)⟩
-  have hcY : c ∈ st.exl (st.s1 c) := (exl_Y hE h hc c).2 ⟨hc, (htouch _ hY).2 (Or.inr rfl)⟩
+  have hcX := (exl_X hE h hc c).2 ⟨hc, (htouch _ hX).2 (Or.inl rfl)⟩
+  have hcY := (exl_Y hE h hc c).2 ⟨hc, (htouch _ hY).2 (Or.inr rfl)⟩
   have nX := (h.cls _ ⟨c, hc, Or.inl rfl⟩).2.2.1
   have nY := (h.cls _ ⟨c, hc, Or.inr rfl⟩).2.2.1
   unfold St.newEx
@@ -262,8 +259,13 @@ theorem deg_P :
   simp only [mem_sdiff, mem_singleton_iff]
   tauto
 
-theorem other_ne {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
-    (hZP : Z ≠ P) : Z ∈ E.M.regions (st.F E) ∧ Z ≠ st.cl E (st.s0 c) ∧ Z ≠ st.cl E (st.s1 c) := by
+section
+
+variable {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
+    (hZP : Z ≠ P)
+include hZ hZP
+
+theorem other_ne : Z ∈ E.M.regions (st.F E) ∧ Z ≠ st.cl E (st.s0 c) ∧ Z ≠ st.cl E (st.s1 c) := by
   refine ⟨split_old (St.cs_mem_F hc) hs hZ hZP, fun e => hZP ?_, fun e => hZP ?_⟩
   · have hX := (h.cl_mem hE hc).1
     exact Chazelle.Chain.regionsIn_eq_of_subset hZ hs.mem
@@ -272,20 +274,20 @@ theorem other_ne {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E
     exact Chazelle.Chain.regionsIn_eq_of_subset hZ hs.mem
       (Chazelle.Chain.regionsIn_nonempty hY) (by rw [e]) hs.sub₂
 
-theorem deg_other {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
-    (hZP : Z ≠ P) :
+theorem deg_other :
     E.M.deg (st.F E \ {cs E.M E.Q E.N c}) Z = E.M.deg (st.F E) Z := by
   have e := hs.exits_other (hsys_F hE h hc hs) sdiff_subset hZ hZP
   rw [Merge.insert_sdiff_self (St.cs_mem_F hc)] at e
   show (Merge.exitsIn E.M.D _ Z).ncard = (Merge.exitsIn E.M.D _ Z).ncard
   rw [e]
 
-theorem weight_other' {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
-    (hZP : Z ≠ P) :
+theorem weight_other' :
     E.M.weight (st.F E \ {cs E.M E.Q E.N c}) Z = E.M.weight (st.F E) Z := by
   obtain ⟨hZS, h1, h2⟩ := other_ne hE h hc hs hZ hZP
   exact weight_other hE.hM (St.F_adm (st := st) hE) (St.F_finite (st := st) hE) (St.cs_mem_F hc)
     hs hZS h1 h2
+
+end
 
 end Rm
 

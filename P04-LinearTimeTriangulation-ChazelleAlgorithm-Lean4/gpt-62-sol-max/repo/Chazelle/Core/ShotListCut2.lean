@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShotListCut
 public import Chazelle.Core.ShotListFrame
 
@@ -93,10 +95,12 @@ def offCall (R ℓ : ℕ) : Stmt :=
     (.seq offCmp (block [.copyN (R + 100) 50210]))
 
 /-- The correction of the bit `a < b`. -/
-def offB (R ℓ : ℕ) : Stmt :=
+def offWith (R ℓ : ℕ) (sameEdge : Stmt) : Stmt :=
   let L := rL R ℓ
   .ifLtN L (L + 2) .skip (.ifLtN (L + 2) L .skip
-    (.ifLtN (R + 30) (L + 1) (.ifLtN (R + 30) (L + 3) (offCall R ℓ) .skip) .skip))
+    (.ifLtN (R + 30) (L + 1) (.ifLtN (R + 30) (L + 3) sameEdge .skip) .skip))
+
+def offB (R ℓ : ℕ) : Stmt := offWith R ℓ (offCall R ℓ)
 
 /-- The six tests of `cutK` into `R + 120`, `R + 140`, …, `R + 220`. -/
 def formB (R : ℕ) : Stmt :=
@@ -108,11 +112,13 @@ def formB (R : ℕ) : Stmt :=
             ((eqF (R + 102) (R + 101)).compile (R + 220))))))
 
 /-- **The cutting block of level `ℓ`.** -/
-def cutB (R ℓ : ℕ) : Stmt :=
+def cutWith (R ℓ : ℕ) (s : Stmt) : Stmt :=
   let L := rL R ℓ
-  .seq (kltSeq (R + 30) (cmpList R ℓ)) (.seq (offB R ℓ) (.seq (formB R)
+  .seq (kltSeq (R + 30) (cmpList R ℓ)) (.seq s (.seq (formB R)
     (selB L (R + 10 + 2 * ℓ) (R + 11 + 2 * ℓ) (R + 30) (L + 10) (L + 4) (L + 8) (R + 30 + ℓ)
       (R + 9) (R + 120) (R + 140) (R + 160) (R + 180) (R + 200) (R + 220))))
+
+def cutB (R ℓ : ℕ) : Stmt := cutWith R ℓ (offB R ℓ)
 
 
 /-! ## Execution: the correction of `a < b` -/
@@ -137,14 +143,15 @@ theorem wr_offCmp' (R : ℕ) : wr (Boff R) offCmp = true :=
 
 theorem wr_offCall (R ℓ : ℕ) : wr (Boff R) (offCall R ℓ) = true := by
   have h := wr_offCmp' R
-  simp [offCall, wr, block, wrOK, Boff, h]
+  simp [offCall, write_check, block, Boff, h]
 
-theorem wr_offB (R ℓ : ℕ) : wr (Boff R) (offB R ℓ) = true := by
-  have h := wr_offCall R ℓ
-  simp [offB, wr, h]
+section
 
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+
+include P hw in
 /-- Loading the inputs of `offCmp`. -/
-theorem offLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (cd L z : ℕ)
+theorem offLoad_exec (cd L z : ℕ)
     (hLr : L + 4 ≤ 50200 ∨ 50206 ≤ L)
     (hz : z < 50200 ∨ 50206 ≤ z) :
     ∃ c₁ k₁, Exec P W
@@ -157,6 +164,42 @@ theorem offLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       c₁.nreg ALLOC = c.nreg ALLOC := by
   exec_block
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, ?_⟩ <;> (try unfold ALLOC) <;> rsimp
+
+/-- The same-edge comparison is needed only when both heights are positive on the same edge. -/
+theorem offWith_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} {B : ℕ → Bool} {K : ℕ}
+    (c : Config) (hw : WordsBounded W c) (s : Stmt) (hz : c.nreg (R + 30) = 0)
+    (ha : NormPos M (Qof P) P.n (posR c (rL R ℓ, rL R ℓ + 1)))
+    (hb : NormPos M (Qof P) P.n (posR c (rL R ℓ + 2, rL R ℓ + 3)))
+    (hbit : BitIs c (R + 100) (LexLt (c.nreg (rL R ℓ)) (ibv (c.nreg (rL R ℓ + 1)))
+      (c.nreg (rL R ℓ + 2)) (ibv (c.nreg (rL R ℓ + 3)))))
+    (same : c.nreg (rL R ℓ) = c.nreg (rL R ℓ + 2) →
+      0 < c.nreg (rL R ℓ + 1) → 0 < c.nreg (rL R ℓ + 3) →
+      ∃ d k, Exec P W s c d k ∧ k ≤ K ∧
+        BitIs d (R + 100) (M.key (Qof P) (posR c (rL R ℓ, rL R ℓ + 1)) <
+          M.key (Qof P) (posR c (rL R ℓ + 2, rL R ℓ + 3))) ∧ FrameB B c d) :
+    ∃ d k, Exec P W (offWith R ℓ s) c d k ∧ k ≤ K + 8 ∧
+      BitIs d (R + 100) (M.key (Qof P) (posR c (rL R ℓ, rL R ℓ + 1)) <
+        M.key (Qof P) (posR c (rL R ℓ + 2, rL R ℓ + 3))) ∧ FrameB B c d := by
+  set L := rL R ℓ
+  have nk : ¬ (c.nreg L = c.nreg (L + 2) ∧ 0 < c.nreg (L + 1) ∧ 0 < c.nreg (L + 3)) →
+      BitIs c (R + 100) (M.key (Qof P) (posR c (L, L + 1)) <
+        M.key (Qof P) (posR c (L + 2, L + 3))) :=
+    fun h => ⟨hbit.1, hbit.2.trans (lexLt_iff_key ha hb h)⟩
+  have f := FrameB.refl B c
+  by_cases h₁ : c.nreg L < c.nreg (L + 2)
+  · exact ⟨c, _, .ifLtN_true h₁ (.skip hw), by omega, nk (by omega), f⟩
+  by_cases h₂ : c.nreg (L + 2) < c.nreg L
+  · exact ⟨c, _, .ifLtN_false h₁ (.ifLtN_true h₂ (.skip hw)), by omega, nk (by omega), f⟩
+  by_cases h₃ : c.nreg (R + 30) < c.nreg (L + 1)
+  swap
+  · exact ⟨c, _, .ifLtN_false h₁ (.ifLtN_false h₂ (.ifLtN_false h₃ (.skip hw))),
+      by omega, nk (by omega), f⟩
+  by_cases h₄ : c.nreg (R + 30) < c.nreg (L + 3)
+  swap
+  · exact ⟨c, _, .ifLtN_false h₁ (.ifLtN_false h₂ (.ifLtN_true h₃ (.ifLtN_false h₄ (.skip hw)))),
+      by omega, nk (by omega), f⟩
+  obtain ⟨d, k, e, hk, b, f⟩ := (ram_app% (same ?_ ?_ ?_))
+  exact ⟨d, _, .ifLtN_false h₁ (.ifLtN_false h₂ (by ram_path)), by omega, b, f⟩
 
 /-- **The correction of `a < b`**: afterwards the bit `R + 100` is the key order of `a`, `b`. -/
 theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : ℓ ≤ 2) (c : Config)
@@ -173,57 +216,33 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
       BitIs c' (R + 100) ((chainModel C).key (Qof P) (posR c (rL R ℓ, rL R ℓ + 1)) <
         (chainModel C).key (Qof P) (posR c (rL R ℓ + 2, rL R ℓ + 3))) ∧
       FrameB (Boff R) c c' := by
-  set L := rL R ℓ with hL
-  set M := chainModel C with hM
+  refine offWith_exec (K := 11092) c hw (offCall R ℓ) hz ha hb hbit ?_
+  set L := rL R ℓ
+  intro _ h₃ h₄
+  let M := chainModel C
   have hLd : L = R + 40 + 10 * ℓ := rfl
-  have hne_of : ¬ (c.nreg L = c.nreg (L + 2) ∧ 0 < c.nreg (L + 1) ∧ 0 < c.nreg (L + 3)) →
-      BitIs c (R + 100) (M.key (Qof P) (posR c (L, L + 1)) <
-        M.key (Qof P) (posR c (L + 2, L + 3))) := fun hne => by
-    have := lexLt_iff_key ha hb hne
-    simp only [posR] at this ⊢
-    exact ⟨hbit.1, hbit.2.trans this⟩
-  have wk := wr_offB R ℓ
-  unfold offB
-  simp only
-  by_cases h1 : c.nreg L < c.nreg (L + 2)
-  · have ex : Exec P W (offB R ℓ) c c _ := .ifLtN_true h1 (.skip hw)
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
-  by_cases h2 : c.nreg (L + 2) < c.nreg L
-  · have ex : Exec P W (offB R ℓ) c c _ := .ifLtN_false h1 (.ifLtN_true h2 (.skip hw))
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
-  by_cases h3 : c.nreg (R + 30) < c.nreg (L + 1)
-  swap
-  · have ex : Exec P W (offB R ℓ) c c _ :=
-      .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.skip hw)))
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
-  by_cases h4 : c.nreg (R + 30) < c.nreg (L + 3)
-  swap
-  · have ex : Exec P W (offB R ℓ) c c _ :=
-      .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_false h4 (.skip hw))))
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
   -- two interior positions of one edge: `offCmp`
   have hR' := hR; unfold RegsOK at hR'
   obtain ⟨c₁, k₁, e₁, hk₁, p1, p2, p3, p4, p5, p6, pr, pm, pal⟩ :=
-    offLoad_exec (P := P) c hw (R + 34) L (R + 30) (by omega) (by omega)
+    ram_app% (offLoad_exec (P := P) c hw (R + 34) L (R + 30) ?_ ?_)
   rw [hz] at p6
   have w₁ := e₁.wb_right
   have hn0 : 0 < M.W.n := by
     have : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
-    rw [hM, this]; omega
+    change 0 < (chainModel C).W.n
+    omega
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := offCmp_meets P W c₁ w₁
-    ⟨hG, hHW, by rw [pal, pm, p1]; exact hwf, H, C, by rw [pm, p1]; exact hC,
-      by rw [p2]; exact hae, by rw [p4]; exact hbe, by rw [p6]; exact hn0,
+    ⟨hG, hHW, by rwa [pal, pm, p1], H, C, by rwa [pm, p1],
+      by rwa [p2], by rwa [p4], by rwa [p6],
       by rw [p2, p3]; exact ha.1, by rw [p4, p5]; exact hb.1,
       fun h => by rw [p3] at h; omega, fun h => by rw [p5] at h; omega, hm⟩
-    (by rw [pal]; show _ + 11000 ≤ W; omega)
+    (by rw [pal]; omega)
   replace hk₂ : k₂ ≤ 11000 := hk₂
-  obtain ⟨o1, -⟩ := post₂ H C (by rw [pm, p1]; exact hC)
-  have F₂ := exec_frameB e₂ wr_offCmp
+  obtain ⟨o1, -⟩ := post₂ H C (by rwa [pm, p1])
   have e₃ := Exec.copyN (P := P) e₂.wb_right (R + 100) 50210
-  have ex : Exec P W (offB R ℓ) c _ _ :=
-    .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_true h4
-      (.seq e₁ (.seq e₂ (Exec.block_cons e₃ (Exec.block_nil e₃.wb_right)))))))
-  refine ⟨_, _, ex, by omega, ⟨?_, ?_⟩, exec_frameB ex wk⟩
+  have ex : Exec P W (offCall R ℓ) c _ _ :=
+    .seq e₁ (.seq e₂ (Exec.block_cons e₃ (Exec.block_nil e₃.wb_right)))
+  refine ⟨_, _, ex, by omega, ⟨?_, ?_⟩, exec_frameB ex (wr_offCall R ℓ)⟩
   · simp only [upd_same]; exact o1.1
   · simp only [upd_same]
     rw [o1.2, p2, p3, p4, p5, p6]
@@ -239,27 +258,31 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
 theorem bitIs_toNat {c : Config} {d : ℕ} {b : Bool} {p : Prop} (hv : c.nreg d = b.toNat)
     (hb : b = true ↔ p) : BitIs c d p := by
   refine ⟨by rw [hv]; cases b <;> simp, ?_⟩
-  rw [hv, ← hb]; cases b <;> simp
+  simp_all
 
+include P hw in
 /-- A compiled `sideInArc` test. -/
-theorem siaF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+theorem siaF_exec (hW : 2 ≤ W)
     {uw uk kw d : ℕ} (h1 : uw < d) (h2 : uk < d) (h3 : kw < d) {u w k : ℝ}
     (b1 : BitIs c uw (u < w)) (b2 : BitIs c uk (u < k)) (b3 : BitIs c kw (k < w)) :
     ∃ c' k', Exec P W ((siaF uw uk kw).compile d) c c' k' ∧ k' ≤ 48 ∧
       BitIs c' d (sideInArc u w k) ∧ FrameB ((siaF uw uk kw).wset d) c c' := by
   obtain ⟨c', k', ex, hk, hv, hf⟩ := BF.compile_exec (P := P) hW (siaF uw uk kw) d c hw
     ⟨⟨⟨⟨h1, b1.1⟩, ⟨h2, b2.1⟩⟩, ⟨h3, b3.1⟩⟩, ⟨⟨h1, b1.1⟩, ⟨⟨h2, b2.1⟩, ⟨h3, b3.1⟩⟩⟩⟩
-  exact ⟨c', k', ex, by rw [siaF_size] at hk; omega, bitIs_toNat hv (siaF_eval b1 b2 b3), hf⟩
+  exact ⟨c', k', ex, by reg_omega, bitIs_toNat hv (siaF_eval b1 b2 b3), hf⟩
 
+include P hw in
 /-- The compiled test `x = a`. -/
-theorem eqF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+theorem eqF_exec (hW : 2 ≤ W)
     {xa ax d : ℕ} (h1 : xa < d) (h2 : ax < d) {x a : ℝ} (b1 : BitIs c xa (x < a))
     (b2 : BitIs c ax (a < x)) :
     ∃ c' k', Exec P W ((eqF xa ax).compile d) c c' k' ∧ k' ≤ 20 ∧ BitIs c' d (x = a) ∧
       FrameB ((eqF xa ax).wset d) c c' := by
   obtain ⟨c', k', ex, hk, hv, hf⟩ := BF.compile_exec (P := P) hW (eqF xa ax) d c hw
     ⟨⟨h1, b1.1⟩, ⟨h2, b2.1⟩⟩
-  exact ⟨c', k', ex, by rw [eqF_size] at hk; omega, bitIs_toNat hv (eqF_eval b1 b2), hf⟩
+  exact ⟨c', k', ex, by reg_omega, bitIs_toNat hv (eqF_eval b1 b2), hf⟩
+
+end
 
 /-- The registers written by `formB`. -/
 def Bform (R : ℕ) (r : ℕ) : Bool := decide (R + 120 ≤ r ∧ r < R + 240)
@@ -284,56 +307,55 @@ theorem formB_exec {P : Polygon} {W : ℕ} (R : ℕ) (c : Config) (hw : WordsBou
       FrameB (Bform R) c c' := by
   have fr : ∀ {B : ℕ → Bool} {cc cc' : Config}, FrameB B cc cc' →
       (∀ r, B r = true → R + 120 ≤ r ∧ r < R + 240) → FrameB (Bform R) cc cc' := fun h h1 =>
-    frameB_mono h (fun r hr => by
-      have := h1 r hr; simp only [Bform, decide_eq_true_eq]; omega)
+    (by ram_frame)
   have kp : ∀ {B : ℕ → Bool} {cc cc' : Config} {r : ℕ} {p : Prop}, BitIs cc r p →
       FrameB B cc cc' → B r = false → BitIs cc' r p := fun h hf hr => bitIs_keep h hf hr
-  obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := siaF_exec (P := P) c hw hW (d := R + 120)
-    (by omega) (by omega) (by omega) bxy bxa bay
+  obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := (ram_app% (siaF_exec (P := P) c hw hW (d := R + 120)
+    ?_ ?_ ?_ bxy bxa bay))
   have k1 := fun {r : ℕ} {p : Prop} (h : BitIs c r p) (hr : r < R + 120) =>
     kp h f₁ (wset_lt hr)
-  obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := siaF_exec (P := P) c₁ e₁.wb_right hW (d := R + 140)
-    (by omega) (by omega) (by omega) (k1 bab (by omega)) (k1 bay (by omega)) (k1 byb (by omega))
+  obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := ram_app% (siaF_exec (P := P) c₁ e₁.wb_right hW (d := R + 140)
+    ?_ ?_ ?_ (k1 bab ?_) (k1 bay ?_) (k1 byb ?_))
   have k2 := fun {r : ℕ} {p : Prop} (h : BitIs c₁ r p) (hr : r < R + 140) =>
     kp h f₂ (wset_lt hr)
-  obtain ⟨c₃, k₃, e₃, hk₃, v₃, f₃⟩ := siaF_exec (P := P) c₂ e₂.wb_right hW (d := R + 160)
-    (by omega) (by omega) (by omega) (k2 (k1 byb (by omega)) (by omega))
-    (k2 (k1 byx (by omega)) (by omega)) (k2 (k1 bxb (by omega)) (by omega))
+  obtain ⟨c₃, k₃, e₃, hk₃, v₃, f₃⟩ := ram_app% (siaF_exec (P := P) c₂ e₂.wb_right hW (d := R + 160)
+    ?_ ?_ ?_ (k2 (k1 byb ?_) ?_)
+    (k2 (k1 byx ?_) ?_) (k2 (k1 bxb ?_) ?_))
   have k3 := fun {r : ℕ} {p : Prop} (h : BitIs c₂ r p) (hr : r < R + 160) =>
     kp h f₃ (wset_lt hr)
-  obtain ⟨c₄, k₄, e₄, hk₄, v₄, f₄⟩ := siaF_exec (P := P) c₃ e₃.wb_right hW (d := R + 180)
-    (by omega) (by omega) (by omega) (k3 (k2 (k1 bab (by omega)) (by omega)) (by omega))
-    (k3 (k2 (k1 bax (by omega)) (by omega)) (by omega))
-    (k3 (k2 (k1 bxb (by omega)) (by omega)) (by omega))
+  obtain ⟨c₄, k₄, e₄, hk₄, v₄, f₄⟩ := ram_app% (siaF_exec (P := P) c₃ e₃.wb_right hW (d := R + 180)
+    ?_ ?_ ?_ (k3 (k2 (k1 bab ?_) ?_) ?_)
+    (k3 (k2 (k1 bax ?_) ?_) ?_)
+    (k3 (k2 (k1 bxb ?_) ?_) ?_))
   have k4 := fun {r : ℕ} {p : Prop} (h : BitIs c₃ r p) (hr : r < R + 180) =>
     kp h f₄ (wset_lt hr)
-  obtain ⟨c₅, k₅, e₅, hk₅, v₅, f₅⟩ := siaF_exec (P := P) c₄ e₄.wb_right hW (d := R + 200)
-    (by omega) (by omega) (by omega)
-    (k4 (k3 (k2 (k1 bxb (by omega)) (by omega)) (by omega)) (by omega))
-    (k4 (k3 (k2 (k1 bxy (by omega)) (by omega)) (by omega)) (by omega))
-    (k4 (k3 (k2 (k1 byb (by omega)) (by omega)) (by omega)) (by omega))
+  obtain ⟨c₅, k₅, e₅, hk₅, v₅, f₅⟩ := ram_app% (siaF_exec (P := P) c₄ e₄.wb_right hW (d := R + 200)
+    ?_ ?_ ?_
+    (k4 (k3 (k2 (k1 bxb ?_) ?_) ?_) ?_)
+    (k4 (k3 (k2 (k1 bxy ?_) ?_) ?_) ?_)
+    (k4 (k3 (k2 (k1 byb ?_) ?_) ?_) ?_))
   have k5 := fun {r : ℕ} {p : Prop} (h : BitIs c₄ r p) (hr : r < R + 200) =>
     kp h f₅ (wset_lt hr)
-  obtain ⟨c₆, k₆, e₆, hk₆, v₆, f₆⟩ := eqF_exec (P := P) c₅ e₅.wb_right hW (d := R + 220)
-    (by omega) (by omega)
-    (k5 (k4 (k3 (k2 (k1 bxa (by omega)) (by omega)) (by omega)) (by omega)) (by omega))
-    (k5 (k4 (k3 (k2 (k1 bax (by omega)) (by omega)) (by omega)) (by omega)) (by omega))
+  obtain ⟨c₆, k₆, e₆, hk₆, v₆, f₆⟩ := ram_app% (eqF_exec (P := P) c₅ e₅.wb_right hW (d := R + 220)
+    ?_ ?_
+    (k5 (k4 (k3 (k2 (k1 bxa ?_) ?_) ?_) ?_) ?_)
+    (k5 (k4 (k3 (k2 (k1 bax ?_) ?_) ?_) ?_) ?_))
   have k6 := fun {r : ℕ} {p : Prop} (h : BitIs c₅ r p) (hr : r < R + 220) =>
     kp h f₆ (wset_lt hr)
   have fz : ∀ {f : BF} {d : ℕ} {cc cc' : Config}, FrameB (f.wset d) cc cc' → R + 120 ≤ d →
       d + f.size < R + 240 → FrameB (Bform R) cc cc' := fun h h1 h2 => fr h (fun r hr => by
     simp only [SweepPrim.BF.wset, decide_eq_true_eq] at hr; omega)
-  refine ⟨c₆, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆)))), by omega,
+  refine ⟨c₆, _, (by ram_path), by omega,
     k6 (k5 (k4 (k3 (k2 v₁ (by omega)) (by omega)) (by omega)) (by omega)) (by omega),
     k6 (k5 (k4 (k3 v₂ (by omega)) (by omega)) (by omega)) (by omega),
     k6 (k5 (k4 v₃ (by omega)) (by omega)) (by omega), k6 (k5 v₄ (by omega)) (by omega),
     k6 v₅ (by omega), v₆, ?_⟩
-  exact (fz f₁ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₂ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₃ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₄ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₅ (by omega) (by rw [siaF_size]; omega)).trans
-    (fz f₆ (by omega) (by rw [eqF_size]; omega))))))
+  refine (fz f₁ ?_ (by rw [siaF_size]; omega)).trans
+    ((fz f₂ ?_ (by rw [siaF_size]; omega)).trans
+    ((fz f₃ ?_ (by rw [siaF_size]; omega)).trans
+    ((fz f₄ ?_ (by rw [siaF_size]; omega)).trans
+    ((fz f₅ ?_ (by rw [siaF_size]; omega)).trans
+    (fz f₆ ?_ (by rw [eqF_size]; omega)))))) <;> omega
 
 
 /-! ## The cutting block -/
@@ -347,17 +369,152 @@ noncomputable def levPieces (M : Model) (Q : Polygon) (hp : Prop) [Decidable hp]
     (x y : ℕ) : List (WPos × WPos) :=
   if hp then cut1 (M.key Q) a b ⟨x, 0⟩ ⟨y, 0⟩ else [(a, b)]
 
+theorem bouts_range {R ℓ r : ℕ} (h : Bouts (cmpList R ℓ) r = true) : R + 100 ≤ r ∧ r < R + 108 := by
+  simp only [Bouts, cmpOuts, cmpList, List.map_cons, List.map_nil, List.contains_eq_mem,
+    List.mem_cons, List.not_mem_nil, or_false, decide_eq_true_eq] at h
+  omega
+
 theorem cmpList_ok {R ℓ : ℕ} (hℓ : ℓ ≤ 2) : CmpOK (R + 30) (cmpList R ℓ) := by
   refine ⟨?_, ?_, fun t ht => ?_⟩
-  · simp only [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons,
-      List.not_mem_nil, or_false]
-    omega
+  · simp [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil]
   · simp [cmpOuts, cmpList]
   · simp only [cmpList, rL, List.mem_cons, List.not_mem_nil, or_false] at ht
     rcases ht with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     · simp only [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons,
         List.not_mem_nil, or_false]
       omega
+
+/-- The write set of a cutting block with a supplied correction mask. -/
+def BcutWith (R ℓ : ℕ) (B : ℕ → Bool) (r : ℕ) : Bool :=
+  Bouts (cmpList R ℓ) r || B r || Bform R r || decide (rL R ℓ + 4 ≤ r ∧ r < rL R ℓ + 14)
+
+/-- Verification of the entire cutting block from the contract for its same-edge correction. -/
+theorem cutWith_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hℓ : ℓ ≤ 2) (c : Config)
+    (hw : WordsBounded W c) (hW : 2 ≤ W) (hz : c.nreg (R + 30) = 0)
+    (ha : NormPos M (Qof P) P.n (posR c (rL R ℓ, rL R ℓ + 1)))
+    (hb : NormPos M (Qof P) P.n (posR c (rL R ℓ + 2, rL R ℓ + 3)))
+    (hae : c.nreg (rL R ℓ) < M.W.n) (hbe : c.nreg (rL R ℓ + 2) < M.W.n)
+    {s : Stmt} {B : ℕ → Bool} {K : ℕ}
+    (hkeep : ∀ r, R ≤ r → r < R + 300 → r ≠ R + 100 → B r = false)
+    (hfix : ∀ d, WordsBounded W d → FrameB (Bouts (cmpList R ℓ)) c d →
+      (∀ r, r < R + 100 → d.nreg r = c.nreg r) →
+      NormPos M (Qof P) P.n (posR d (rL R ℓ, rL R ℓ + 1)) →
+      NormPos M (Qof P) P.n (posR d (rL R ℓ + 2, rL R ℓ + 3)) →
+      d.nreg (rL R ℓ) < M.W.n → d.nreg (rL R ℓ + 2) < M.W.n →
+      BitIs d (R + 100) (LexLt (d.nreg (rL R ℓ)) (ibv (d.nreg (rL R ℓ + 1)))
+        (d.nreg (rL R ℓ + 2)) (ibv (d.nreg (rL R ℓ + 3)))) →
+      ∃ c' k, Exec P W s d c' k ∧ k ≤ K ∧
+        BitIs c' (R + 100) (M.key (Qof P) (posR d (rL R ℓ, rL R ℓ + 1)) <
+          M.key (Qof P) (posR d (rL R ℓ + 2, rL R ℓ + 3))) ∧ FrameB B d c') :
+    ∃ c' k, Exec P W (cutWith R ℓ s) c c' k ∧ k ≤ K + 400 ∧
+      PiecesAt c' (rL R ℓ + 10) (rL R ℓ + 4) (rL R ℓ + 8)
+        (levPieces M (Qof P) (c.nreg (R + 30 + ℓ) < c.nreg (R + 9))
+          (posR c (rL R ℓ, rL R ℓ + 1)) (posR c (rL R ℓ + 2, rL R ℓ + 3))
+          (c.nreg (R + 10 + 2 * ℓ)) (c.nreg (R + 11 + 2 * ℓ))) ∧
+      FrameB (BcutWith R ℓ B) c c' := by
+  set L := rL R ℓ with hL
+  have hLd : L = R + 40 + 10 * ℓ := rfl
+  set Q := Qof P
+  set a := posR c (L, L + 1) with ha_def
+  set b := posR c (L + 2, L + 3) with hb_def
+  set x := c.nreg (R + 10 + 2 * ℓ)
+  set y := c.nreg (R + 11 + 2 * ℓ)
+  have hX := normPos_vtx M Q P.n x
+  have hY := normPos_vtx M Q P.n y
+  -- the comparisons
+  obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := kltSeq_exec (P := P) (by omega) (R + 30) (cmpList R ℓ) c hw
+    hz (cmpList_ok hℓ)
+  have keep₁ : ∀ r, r < R + 100 → c₁.nreg r = c.nreg r := fun r hr => by
+    apply f₁.1
+    cases h : Bouts (cmpList R ℓ) r
+    · rfl
+    · have := bouts_range h; omega
+  have mem := b₁
+  simp only [cmpList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
+    forall_eq] at mem
+  obtain ⟨bab, bax, bxa, bay, byb, bxb, bxy, byx⟩ := mem
+  rw [hz] at bax bxa bay byb bxb bxy byx
+  have order {u v : WPos} {r : ℕ} (hu : NormPos M Q P.n u) (hv : NormPos M Q P.n v)
+      (h0 : u.hgt = 0 ∨ v.hgt = 0)
+      (b : BitIs c₁ r (LexLt u.edge (ibv u.hgt) v.edge (ibv v.hgt))) :
+      BitIs c₁ r (M.key Q u < M.key Q v) :=
+    ⟨b.1, b.2.trans (lexLt_iff_key hu hv (by omega))⟩
+  -- The caller handles comparisons of two interior positions of one edge.
+  have p₀ := keep₁ L (by omega)
+  have p (i : ℕ) (hi : i < 4) := keep₁ (L + i) (by omega)
+  have pa : posR c₁ (L, L + 1) = a := by
+    simp only [posR, ha_def, WPos.mk.injEq]; exact ⟨p₀, p 1 (by omega)⟩
+  have pb : posR c₁ (L + 2, L + 3) = b := by
+    simp only [posR, hb_def, WPos.mk.injEq]; exact ⟨p 2 (by omega), p 3 (by omega)⟩
+  obtain ⟨c₂, k₂, e₂, hk₂, kab, f₂⟩ := hfix c₁ e₁.wb_right f₁ keep₁
+    (by rwa [pa]) (by rwa [pb]) (by rwa [p₀]) (by ram_rw assumption [p 2])
+    (by ram_rw assumption [p₀, p 1, p 2, p 3])
+  rw [pa, pb] at kab
+  have ks {r : ℕ} {p : Prop} (h : BitIs c₁ r p) (hr : R + 100 < r ∧ r < R + 300) :=
+    bitIs_keep h f₂ (hkeep r (by omega) hr.2 (by omega))
+  -- the six tests
+  obtain ⟨c₃, k₃, e₃, hk₃, t1, t2, t3, t4, t5, t6, f₃⟩ := formB_exec (P := P) R c₂ e₂.wb_right
+    hW kab (ks (order ha hX (Or.inr rfl) bax) (by omega))
+    (ks (order hX ha (Or.inl rfl) bxa) (by omega)) (ks (order ha hY (Or.inr rfl) bay) (by omega))
+    (ks (order hY hb (Or.inl rfl) byb) (by omega)) (ks (order hX hb (Or.inl rfl) bxb) (by omega))
+    (ks (order hX hY (Or.inl rfl) bxy) (by omega)) (ks (order hY hX (Or.inl rfl) byx) (by omega))
+  have gR' : ∀ r, R ≤ r → r < R + 100 → c₃.nreg r = c.nreg r := fun r lo hi => by
+    rw [f₃.1 r (by simp only [Bform, decide_eq_false_iff_not]; omega),
+      f₂.1 r (hkeep r lo (by omega) (by omega)), keep₁ r hi]
+  have z3 : c₃.nreg (R + 30) = 0 := (gR' _ (by omega) (by omega)).trans hz
+  obtain ⟨c₄, k₄, e₄, hk₄, pc₄, r₄, m₄, rr₄, rm₄, o₄⟩ := selB_exec (P := P) c₃ e₃.wb_right hW
+    (L := L) (hx := R + 10 + 2 * ℓ) (hy := R + 11 + 2 * ℓ) (z := R + 30) (N := L + 10)
+    (S := L + 4) (Cn := L + 8) (hpA := R + 30 + ℓ) (hpB := R + 9) (c1 := R + 120)
+    (c2 := R + 140) (c3 := R + 160) (c4 := R + 180) (c5 := R + 200) (c6 := R + 220)
+    (by intro e o ho; cases e <;> simp only [End.regs] <;> omega) (by omega) (by omega)
+    (by omega) z3 t1.1 t2.1 t3.1 t4.1 t5.1 t6.1
+  refine ⟨c₄, _, (by ram_path), by simp only [cmpList, List.length_cons, List.length_nil] at hk₁; omega,
+    ?_, ?_⟩
+  · -- the pieces
+    have hsel : selPos c₃ L (R + 10 + 2 * ℓ) (R + 11 + 2 * ℓ) (R + 30) =
+        fun tl => tl.map fun e => (End.val a b ⟨x, 0⟩ ⟨y, 0⟩ e.1, End.val a b ⟨x, 0⟩ ⟨y, 0⟩ e.2) := by
+      funext tl
+      unfold selPos
+      congr 1
+      funext e
+      have ev : ∀ u : End, posR c₃ (End.regs L (R + 10 + 2 * ℓ) (R + 11 + 2 * ℓ) (R + 30) u) =
+          End.val a b ⟨x, 0⟩ ⟨y, 0⟩ u := by
+        intro u
+        cases u <;> simp (disch := omega) only [End.regs, End.val, posR, ha_def, hb_def, z3, gR', x, y]
+      rw [ev, ev]
+    rw [hsel] at pc₄
+    have hp3 : (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) ↔ (c.nreg (R + 30 + ℓ) < c.nreg (R + 9)) := by
+      frame_finish [gR']
+    unfold levPieces
+    by_cases hp : c.nreg (R + 30 + ℓ) < c.nreg (R + 9)
+    · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = true := by
+        simp [hp3.2 hp]
+      rw [hd] at pc₄
+      rw [ite_yes _ _ hp]
+      unfold cut1
+      rwa [cutK_eq_selT (M.key Q a) (M.key Q b) (M.key Q ⟨x, 0⟩) (M.key Q ⟨y, 0⟩) a b ⟨x, 0⟩
+        ⟨y, 0⟩ (c1 := decide (c₃.nreg (R + 120) = 1)) (c2 := decide (c₃.nreg (R + 140) = 1))
+        (c3 := decide (c₃.nreg (R + 160) = 1)) (c4 := decide (c₃.nreg (R + 180) = 1))
+        (c5 := decide (c₃.nreg (R + 200) = 1)) (c6 := decide (c₃.nreg (R + 220) = 1))
+        (by rw [decide_eq_true_iff]; exact t1.2) (by rw [decide_eq_true_iff]; exact t2.2)
+        (by rw [decide_eq_true_iff]; exact t3.2) (by rw [decide_eq_true_iff]; exact t4.2)
+        (by rw [decide_eq_true_iff]; exact t5.2) (by rw [decide_eq_true_iff]; exact t6.2)]
+    · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = false := by
+        simp only [decide_eq_false_iff_not]; exact fun h => hp (hp3.1 h)
+      rw [hd] at pc₄
+      rwa [ite_no _ _ hp]
+  · -- the frame
+    have f₄ : FrameB (fun r => decide (L + 4 ≤ r ∧ r < L + 14)) c₃ c₄ :=
+      ⟨fun r hr => r₄ r (by simp only [decide_eq_false_iff_not] at hr; omega)
+        (by simp only [decide_eq_false_iff_not] at hr; omega)
+        (by simp only [decide_eq_false_iff_not] at hr; omega),
+       fun r _ => by rw [rr₄], m₄, rm₄, o₄⟩
+    have c1 : FrameB (BcutWith R ℓ B) c c₁ := frameB_mono f₁ (fun r hr => by simp [BcutWith, hr])
+    have c2 : FrameB (BcutWith R ℓ B) c₁ c₂ := frameB_mono f₂ (fun r hr => by simp [BcutWith, hr])
+    have c3 : FrameB (BcutWith R ℓ B) c₂ c₃ := frameB_mono f₃ (fun r hr => by simp [BcutWith, hr])
+    have c4 : FrameB (BcutWith R ℓ B) c₃ c₄ := frameB_mono f₄ (fun r hr => by
+      simp only [decide_eq_true_eq] at hr; simp [BcutWith, ← hL, hr])
+    exact c1.trans (c2.trans (c3.trans c4))
 
 /-- **The cutting block of level `ℓ`**: the pieces `levPieces` in the registers of the next
 level (`rL R ℓ + 10 …`, `rL R ℓ + 4 …`, their number in `rL R ℓ + 8`). -/
@@ -376,155 +533,22 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
           (posR c (rL R ℓ, rL R ℓ + 1)) (posR c (rL R ℓ + 2, rL R ℓ + 3))
           (c.nreg (R + 10 + 2 * ℓ)) (c.nreg (R + 11 + 2 * ℓ))) ∧
       FrameB (Bcut R ℓ) c c' := by
-  set L := rL R ℓ with hL
-  have hLd : L = R + 40 + 10 * ℓ := rfl
-  set M := chainModel C with hM
-  set Q := Qof P
-  set a := posR c (L, L + 1) with ha_def
-  set b := posR c (L + 2, L + 3) with hb_def
-  set x := c.nreg (R + 10 + 2 * ℓ)
-  set y := c.nreg (R + 11 + 2 * ℓ)
-  have hX : NormPos M Q P.n ⟨x, 0⟩ := normPos_vtx M Q P.n x
-  have hY : NormPos M Q P.n ⟨y, 0⟩ := normPos_vtx M Q P.n y
-  -- the comparisons
-  obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := kltSeq_exec (P := P) (by omega) (R + 30) (cmpList R ℓ) c hw
-    hz (cmpList_ok hℓ)
-  have in₁ : ∀ r, (r < R + 100 ∨ R + 108 ≤ r) → c₁.nreg r = c.nreg r := fun r hr =>
-    f₁.1 r (by
-      simp only [Bouts, cmpOuts, cmpList, List.map_cons, List.map_nil, List.contains_eq_mem,
-        List.mem_cons, List.not_mem_nil, or_false, decide_eq_false_iff_not, not_or]
-      omega)
-  have mem : ∀ t ∈ cmpList R ℓ, BitIs c₁ t.2.2.2.2 (LexLt (c.nreg t.1) (ibv (c.nreg t.2.1))
-      (c.nreg t.2.2.1) (ibv (c.nreg t.2.2.2.1))) := b₁
-  simp only [cmpList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
-    forall_eq] at mem
-  obtain ⟨bab, bax, bxa, bay, byb, bxb, bxy, byx⟩ := mem
-  rw [hz] at bax bxa bay byb bxb bxy byx
-  -- the key order
-  have vtx : ∀ (u v : WPos), NormPos M Q P.n u → NormPos M Q P.n v → (u.hgt = 0 ∨ v.hgt = 0) →
-      (LexLt u.edge (ibv u.hgt) v.edge (ibv v.hgt) ↔ M.key Q u < M.key Q v) :=
-    fun u v hu hv h0 => lexLt_iff_key hu hv (by omega)
-  have kax : BitIs c₁ (R + 101) (M.key Q a < M.key Q ⟨x, 0⟩) :=
-    ⟨bax.1, bax.2.trans (vtx _ _ ha hX (Or.inr rfl))⟩
-  have kxa : BitIs c₁ (R + 102) (M.key Q ⟨x, 0⟩ < M.key Q a) :=
-    ⟨bxa.1, bxa.2.trans (vtx _ _ hX ha (Or.inl rfl))⟩
-  have kay : BitIs c₁ (R + 103) (M.key Q a < M.key Q ⟨y, 0⟩) :=
-    ⟨bay.1, bay.2.trans (vtx _ _ ha hY (Or.inr rfl))⟩
-  have kyb : BitIs c₁ (R + 104) (M.key Q ⟨y, 0⟩ < M.key Q b) :=
-    ⟨byb.1, byb.2.trans (vtx _ _ hY hb (Or.inl rfl))⟩
-  have kxb : BitIs c₁ (R + 105) (M.key Q ⟨x, 0⟩ < M.key Q b) :=
-    ⟨bxb.1, bxb.2.trans (vtx _ _ hX hb (Or.inl rfl))⟩
-  have kxy : BitIs c₁ (R + 106) (M.key Q ⟨x, 0⟩ < M.key Q ⟨y, 0⟩) :=
-    ⟨bxy.1, bxy.2.trans (vtx _ _ hX hY (Or.inl rfl))⟩
-  have kyx : BitIs c₁ (R + 107) (M.key Q ⟨y, 0⟩ < M.key Q ⟨x, 0⟩) :=
-    ⟨byx.1, byx.2.trans (vtx _ _ hY hX (Or.inl rfl))⟩
-  -- the correction of `a < b`
-  have g34 := in₁ (R + 34) (by omega)
-  have g30 := in₁ (R + 30) (by omega)
-  have gL0 : c₁.nreg L = c.nreg L := in₁ _ (by omega)
-  have gL1 : c₁.nreg (L + 1) = c.nreg (L + 1) := in₁ _ (by omega)
-  have gL2 : c₁.nreg (L + 2) = c.nreg (L + 2) := in₁ _ (by omega)
-  have gL3 : c₁.nreg (L + 3) = c.nreg (L + 3) := in₁ _ (by omega)
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := in₁ _ (by unfold ALLOC; unfold RegsOK at hR; omega)
-  have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
-  have pa : posR c₁ (L, L + 1) = a := by
-    simp only [posR, ha_def, WPos.mk.injEq]; exact ⟨gL0, gL1⟩
-  have pb : posR c₁ (L + 2, L + 3) = b := by
-    simp only [posR, hb_def, WPos.mk.injEq]; exact ⟨gL2, gL3⟩
-  obtain ⟨c₂, k₂, e₂, hk₂, kab, f₂⟩ := offB_exec (P := P) hR hℓ c₁ e₁.wb_right hG hHW
-    (H := H) (C := C) (by rw [hA1, hM1, g34]; exact hwf) (by rw [hM1, g34]; exact hC) hm
-    (by rw [hA1]; exact hroom) (by rw [g30, hz]) (by rw [pa]; exact ha) (by rw [pb]; exact hb)
-    (by rw [gL0]; exact hae) (by rw [gL2]; exact hbe)
-    (by rw [gL0, gL1, gL2, gL3]; exact bab)
-  rw [pa, pb] at kab
-  have in₂ : ∀ r, Boff R r = false → c₂.nreg r = c₁.nreg r := f₂.1
-  have o₂ : ∀ r, (R + 100 < r ∧ r < R + 300) → Boff R r = false := fun r hr => by
-    have := bprim_R hR (i := r - R) (by omega)
-    rw [show R + (r - R) = r by omega] at this
+  refine cutWith_exec hℓ c hw hW hz ha hb hae hbe (s := offB R ℓ)
+    (B := Boff R) (K := 11100) ?_ ?_
+  · intro r hlo hhi hne
+    have h := bprim_R hR (i := r - R) (by omega)
+    rw [show R + (r - R) = r by omega] at h
     unfold RegsOK at hR
-    simp only [Boff, this, Bool.or_false, Bool.or_eq_false_iff, beq_eq_false_iff_ne,
+    simp only [Boff, h, Bool.or_false, Bool.or_eq_false_iff, beq_eq_false_iff_ne,
       decide_eq_false_iff_not]
     omega
-  have ks := fun {r : ℕ} {p : Prop} (h : BitIs c₁ r p) (hr : R + 100 < r ∧ r < R + 300) =>
-    bitIs_keep h f₂ (o₂ r hr)
-  -- the six tests
-  obtain ⟨c₃, k₃, e₃, hk₃, t1, t2, t3, t4, t5, t6, f₃⟩ := formB_exec (P := P) R c₂ e₂.wb_right
-    hW kab (ks kax (by omega)) (ks kxa (by omega)) (ks kay (by omega)) (ks kyb (by omega))
-    (ks kxb (by omega)) (ks kxy (by omega)) (ks kyx (by omega))
-  -- registers of `c` read by the selection
-  have gsel : ∀ r, (r < R + 100 ∧ bandOf r = bandOf r) → ¬ (50200 ≤ r ∧ r < 50210) →
-      Bprim r = false → c₃.nreg r = c.nreg r := fun r hr h5 hp => by
-    rw [f₃.1 r (by simp only [Bform, decide_eq_false_iff_not]; omega),
-      f₂.1 r (by simp only [Boff, hp, Bool.or_false, Bool.or_eq_false_iff, beq_eq_false_iff_ne,
-        decide_eq_false_iff_not]; omega), in₁ r (Or.inl hr.1)]
-  have gR : ∀ i, i < 100 → c₃.nreg (R + i) = c.nreg (R + i) := fun i hi => by
-    have hp := bprim_R hR (i := i) (by omega)
-    unfold RegsOK at hR
-    exact gsel _ ⟨by omega, rfl⟩ (by omega) hp
-  have gR' : ∀ r, R ≤ r → r < R + 100 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
-    have := gR (r - R) (by omega)
-    rwa [show R + (r - R) = r by omega] at this
-  have z3 : c₃.nreg (R + 30) = 0 := by rw [gR 30 (by omega), hz]
-  obtain ⟨c₄, k₄, e₄, hk₄, pc₄, r₄, m₄, rr₄, rm₄, o₄⟩ := selB_exec (P := P) c₃ e₃.wb_right hW
-    (L := L) (hx := R + 10 + 2 * ℓ) (hy := R + 11 + 2 * ℓ) (z := R + 30) (N := L + 10)
-    (S := L + 4) (Cn := L + 8) (hpA := R + 30 + ℓ) (hpB := R + 9) (c1 := R + 120)
-    (c2 := R + 140) (c3 := R + 160) (c4 := R + 180) (c5 := R + 200) (c6 := R + 220)
-    (by intro e o ho; cases e <;> simp only [End.regs] <;> omega) (by omega) (by omega)
-    (by omega) z3 t1.1 t2.1 t3.1 t4.1 t5.1 t6.1
-  have ex : Exec P W (cutB R ℓ) c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  refine ⟨c₄, _, ex, by simp only [cmpList, List.length_cons, List.length_nil] at hk₁; omega,
-    ?_, ?_⟩
-  · -- the pieces
-    have hsel : selPos c₃ L (R + 10 + 2 * ℓ) (R + 11 + 2 * ℓ) (R + 30) =
-        fun tl => tl.map fun e => (End.val a b ⟨x, 0⟩ ⟨y, 0⟩ e.1, End.val a b ⟨x, 0⟩ ⟨y, 0⟩ e.2) := by
-      funext tl
-      unfold selPos
-      congr 1
-      funext e
-      have ev : ∀ u : End, posR c₃ (End.regs L (R + 10 + 2 * ℓ) (R + 11 + 2 * ℓ) (R + 30) u) =
-          End.val a b ⟨x, 0⟩ ⟨y, 0⟩ u := by
-        intro u
-        cases u <;> simp only [End.regs, End.val, posR, ha_def, hb_def, WPos.mk.injEq]
-        · exact ⟨gR' _ (by omega) (by omega), gR' _ (by omega) (by omega)⟩
-        · exact ⟨gR' _ (by omega) (by omega), gR' _ (by omega) (by omega)⟩
-        · exact ⟨gR' _ (by omega) (by omega), z3⟩
-        · exact ⟨gR' _ (by omega) (by omega), z3⟩
-      rw [ev, ev]
-    rw [hsel] at pc₄
-    have hp3 : (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) ↔ (c.nreg (R + 30 + ℓ) < c.nreg (R + 9)) := by
-      rw [gR' _ (by omega) (by omega), gR' _ (by omega) (by omega)]
-    unfold levPieces
-    by_cases hp : c.nreg (R + 30 + ℓ) < c.nreg (R + 9)
-    · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = true := by
-        simp [hp3.2 hp]
-      rw [hd] at pc₄
-      rw [ite_yes _ _ hp]
-      unfold cut1
-      rw [cutK_eq_selT (M.key Q a) (M.key Q b) (M.key Q ⟨x, 0⟩) (M.key Q ⟨y, 0⟩) a b ⟨x, 0⟩
-        ⟨y, 0⟩ (c1 := decide (c₃.nreg (R + 120) = 1)) (c2 := decide (c₃.nreg (R + 140) = 1))
-        (c3 := decide (c₃.nreg (R + 160) = 1)) (c4 := decide (c₃.nreg (R + 180) = 1))
-        (c5 := decide (c₃.nreg (R + 200) = 1)) (c6 := decide (c₃.nreg (R + 220) = 1))
-        (by rw [decide_eq_true_iff]; exact t1.2) (by rw [decide_eq_true_iff]; exact t2.2)
-        (by rw [decide_eq_true_iff]; exact t3.2) (by rw [decide_eq_true_iff]; exact t4.2)
-        (by rw [decide_eq_true_iff]; exact t5.2) (by rw [decide_eq_true_iff]; exact t6.2)]
-      exact pc₄
-    · have hd : decide (c₃.nreg (R + 30 + ℓ) < c₃.nreg (R + 9)) = false := by
-        simp only [decide_eq_false_iff_not]; exact fun h => hp (hp3.1 h)
-      rw [hd] at pc₄
-      rw [ite_no _ _ hp]
-      exact pc₄
-  · -- the frame
-    have f₄ : FrameB (fun r => decide (L + 4 ≤ r ∧ r < L + 14)) c₃ c₄ :=
-      ⟨fun r hr => r₄ r (by simp only [decide_eq_false_iff_not] at hr; omega)
-        (by simp only [decide_eq_false_iff_not] at hr; omega)
-        (by simp only [decide_eq_false_iff_not] at hr; omega),
-       fun r _ => by rw [rr₄], m₄, rm₄, o₄⟩
-    have c1 : FrameB (Bcut R ℓ) c c₁ := frameB_mono f₁ (fun r hr => by simp [Bcut, hr])
-    have c2 : FrameB (Bcut R ℓ) c₁ c₂ := frameB_mono f₂ (fun r hr => by simp [Bcut, hr])
-    have c3 : FrameB (Bcut R ℓ) c₂ c₃ := frameB_mono f₃ (fun r hr => by simp [Bcut, hr])
-    have c4 : FrameB (Bcut R ℓ) c₃ c₄ := frameB_mono f₄ (fun r hr => by
-      simp only [decide_eq_true_eq] at hr; simp [Bcut, ← hL, hr])
-    exact c1.trans (c2.trans (c3.trans c4))
+  · intro d hd hf keep ha' hb' he₁ he₂ bit
+    have hm' := hf.2.2.1
+    have hA : d.nreg ALLOC = c.nreg ALLOC := keep _ (by unfold ALLOC; unfold RegsOK at hR; omega)
+    have h34 := keep (R + 34) (by omega)
+    exact offB_exec hR hℓ d hd hG hHW (H := H) (C := C)
+      (by rwa [hA, hm', h34]) (by rwa [hm', h34]) hm (by rwa [hA])
+      ((keep _ (by omega)).trans hz) ha' hb' he₁ he₂ bit
 
 end
 

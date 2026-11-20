@@ -62,7 +62,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     ⟨fun r hr => by simp only [c1, Machine.upd_other _ _ _ (show r ≠ 130860 by
         unfold StDRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
   have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; unfold StDRG; omega))
-  obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := Exec.forN (P := P) (W := W)
     (ri := 130860) (rn := 130014) (body := placeBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130860 = j ∧ c'.nreg 130014 = g.N ∧
       PFr StDRG (PlMem g) c c' ∧
@@ -71,7 +71,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (fun j c3 hj ⟨hw3, hi3, hn3, hf3, hI3⟩ => by
       have hG3 : GR g c3 := hG.frame (fun r hr => hf3.1 r (by
         unfold GRReg at hr; unfold StDRG; omega))
-      have keep : ∀ a, a < g.base 42 → c3.nmem a = c.nmem a := fun a ha =>
+      have keep : MemEqBelow (g.base 42) c3.nmem c.nmem := fun a ha =>
         hf3.2.2.2.2 a (by unfold PlMem; omega)
       set v := vert (inv j) with hv
       have hvμ : v < g.μ := hvlt j hj
@@ -80,12 +80,12 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       obtain ⟨c4, k4, e4, hk4, hw4, hf4, hi4, hm4⟩ := placeBody_exec (P := P) hw3 hG3
         (gg := inv j) (v := v) (f := first v) (l := lev v) (h := hl (lev v)) (b := b)
         (q := c3.nmem (g.base 42 + b)) hi3 hj
-        (by rw [keep _ (by omega)]; exact hinv j hj) (by have := hvW j hj; omega)
-        (by have := hvW j hj; rw [keep _ (by omega)]; exact hvert j hj) hvμ
-        (by rw [keep _ (by omega)]; exact hfst v hvμ)
-        (fun _ => by rw [keep _ (by omega)]; exact hlev v hvμ) (fun _ => hlv)
-        (fun _ => by rw [keep _ (by omega)]; exact hhl _ hlv) (fun _ => hhl1 _ hlv)
-        (fun _ => by rw [keep _ (by omega)]; exact hblk _ hlv) (fun _ h => hblt _ hlv h)
+        (by ram_rw [keep]; exact hinv j hj) (by have := hvW j hj; omega)
+        (by have := hvW j hj; ram_rw [keep]; exact hvert j hj) hvμ
+        (by ram_rw [keep]; exact hfst v hvμ)
+        (fun _ => by ram_rw [keep]; exact hlev v hvμ) (fun _ => hlv)
+        (fun _ => by ram_rw [keep]; exact hhl _ hlv) (fun _ => hhl1 _ hlv)
+        (fun _ => by ram_rw [keep]; exact hblk _ hlv) (fun _ h => hblt _ hlv h)
         (fun _ => rfl) (fun hf hh => by
           have hkv : key v = j := hk2 j hj hf
           have hbv : bo v = b := by simp only [hbo, blkOf, ite_eq_right hh, hb]

@@ -105,8 +105,7 @@ omit [DecidableEq V] in
 /-- Summing over the second vertex of all darts is the same as over the first vertex (the
 darts come in reversed pairs). -/
 theorem sum_dart_snd (f : V → ℕ) :
-    ∑ d : G.Dart, f d.snd = ∑ d : G.Dart, f d.fst := by
-  exact Fintype.sum_equiv
+    ∑ d : G.Dart, f d.snd = ∑ d : G.Dart, f d.fst := Fintype.sum_equiv
     (Function.Involutive.toPerm _ (SimpleGraph.Dart.symm_involutive (G := G))) _ _
     (fun d => rfl)
 
@@ -128,7 +127,7 @@ theorem card_sub_one_le_two_mul_sum_low (hG : G.IsTree) :
   by_cases hN : Fintype.card V ≤ 1
   · omega
   have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.1 (by omega)
-  have hpos : ∀ v, 1 ≤ G.degree v := fun v =>
+  have hpos := fun v =>
     le_trans (hG.connected.preconnected.minDegree_pos_of_nontrivial) (G.minDegree_le_degree v)
   have hsum : ∑ v, G.degree v + 2 = 2 * Fintype.card V := by
     rw [G.sum_degrees_eq_twice_card_edges, ← hG.card_edgeFinset]

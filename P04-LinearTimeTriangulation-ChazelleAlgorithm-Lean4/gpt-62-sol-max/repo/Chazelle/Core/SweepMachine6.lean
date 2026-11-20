@@ -41,7 +41,7 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
       · exact absurd (by rw [hw']; exact hH.open_mem _ h1 h2) hwD
       · exact Or.inr h2
     · exact Or.inl h1.symm
-  have hwy' : w.2 ≤ C.top.2 := by rw [hwy]; exact hy
+  have hwy' : w.2 ≤ C.top.2 := by rwa [hwy]
   rcases hend with hl | hr
   · -- from the left end, to the right
     have hfree : FreeAt C w 1 := by
@@ -123,17 +123,17 @@ variable (J : Merge.Junction)
 endpoint of an exit chord of `λ` or of a region at a side of the slit of `C₂` along it, or from the shared vertex, or from the top of `C₂`. -/
 theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right) {L : Set Point}
     {h : Set Point} (hh : h ∈ Cand J S₂ L) :
-    (∃ c ∈ S₂, (∃ V, LabS J S₂ L V ∧ Chazelle.Chain.TouchesIn (chainModel J.right).D c V) ∧
+    (∃ c ∈ S₂, (∃ V, LabS J S₂ L V ∧ Chazelle.Chain.TouchesIn J.rightModel.D c V) ∧
       ((FreeAt J.whole (Merge.lend c) 1 ∧ h = Merge.shoot J.whole (Merge.lend c) 1) ∨
         (FreeAt J.whole (Merge.rend c) (-1) ∧ h = Merge.shoot J.whole (Merge.rend c) (-1)))) ∨
     (∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole J.shared σ ∧ h = Merge.shoot J.whole J.shared σ) ∨
     (∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole J.right.top σ ∧
       h = Merge.shoot J.whole J.right.top σ) := by
   obtain ⟨hF, hc⟩ := hh
-  have hA : h ∈ Merge.augChords J.whole := F₂plus_subset J hS₂ hF
-  have hvD : J.shared ∉ J.whole.dom := fun hd =>
+  have hA := F₂plus_subset J hS₂ hF
+  have hvD := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
-  have htD : J.right.top ∉ J.whole.dom := fun hd =>
+  have htD := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset J.right.top_mem_set)
   rcases hc with ⟨c, hcS, hhc, htouch⟩ | hv | ht
   · rcases hF with ((⟨c', hc', hfree, rfl⟩ | ⟨c', hc', hfree, rfl⟩) | hsh) | htop
@@ -159,7 +159,7 @@ theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.
       have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = J.right.top := by
         rw [Merge.Junction.whole_vertex_add]; rfl
       refine Or.inr (Or.inr ⟨σ, hσ, ?_, ?_⟩)
-      · rw [← hv]; exact (Merge.freeAt_vertex _ _ _).2 hfree
+      · rwa [← hv]
       · rw [← hv]; rfl
   · obtain ⟨σ, hσ, hfree, heq⟩ := chord_eq_shoot_of_end J.whole hA hv hvD
     exact Or.inr (Or.inl ⟨σ, hσ, hfree, heq⟩)

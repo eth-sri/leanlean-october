@@ -40,10 +40,7 @@ theorem sideInArc_iff_cycDist {n k x y : ℝ} (_hk : 0 ≤ k ∧ k < n) (hx : 0 
     sideInArc k y x ↔ cycDist n k x < cycDist n k y := by
   unfold sideInArc cycDist
   rcases lt_or_gt_of_ne hkx with h1 | h1 <;> rcases lt_or_gt_of_ne hky with h2 | h2
-  · rw [ite_eq_left h2, ite_eq_left h1, ite_eq_left h2]
-    constructor
-    · rintro ⟨-, h⟩; linarith
-    · intro h; exact ⟨h1, by linarith⟩
+  · simp_all
   · rw [ite_eq_right (not_lt.2 h2.le), ite_eq_left h1, ite_eq_right (not_lt.2 h2.le)]
     exact ⟨fun _ => by linarith [hy.1, hx.2], fun _ => Or.inl h1⟩
   · rw [ite_eq_left h2, ite_eq_right (not_lt.2 h1.le), ite_eq_left h2]
@@ -85,7 +82,7 @@ theorem partner_of_sublist {L : List Ev} (hkey : ∀ e ∈ L, e.2.1 ≠ e.2.2)
     rw [hF, sublist_filter_iff]
     refine ⟨[e₁, e₂], h, ?_⟩
     simp [hi]
-  have heq : [e₁, e₂] = F := hsub.eq_of_length (by rw [hlen]; rfl)
+  have heq := hsub.eq_of_length (by rw [hlen]; rfl)
   have hp : (e₁.1, e₁.2.2, e₁.2.1) ∈ F := by
     rw [hF, mem_filter]
     exact ⟨hpair e₁ he₁, by simp⟩
@@ -113,11 +110,11 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     rcases l' with _ | ⟨e₁, _ | ⟨f₁, _ | ⟨e₂, _ | ⟨f₂, _ | ⟨g, l'⟩⟩⟩⟩⟩ <;> simp at hmap
     obtain ⟨h1, h2, h3, h4⟩ := hmap
     have hmem : ∀ e ∈ [e₁, f₁, e₂, f₂], e ∈ L := fun e he => hl'.subset he
-    have hne : ∀ e ∈ L, e.2.1 ≠ e.2.2 := fun e he => (hkey e he).2.2.2.2
+    have hne := fun e he => (hkey e he).2.2.2.2
     -- the partners
-    have he₂ : e₂ = (e₁.1, e₁.2.2, e₁.2.1) := partner_of_sublist hne hpair htwice
+    have he₂ := partner_of_sublist hne hpair htwice
       ((by simp : [e₁, e₂] <+ [e₁, f₁, e₂, f₂]).trans hl') (by rw [← h1, ← h3])
-    have hf₂ : f₂ = (f₁.1, f₁.2.2, f₁.2.1) := partner_of_sublist hne hpair htwice
+    have hf₂ := partner_of_sublist hne hpair htwice
       ((by simp : [f₁, f₂] <+ [e₁, f₁, e₂, f₂]).trans hl') (by rw [← h2, ← h4])
     -- the order
     have hpr : ∀ x y : Ev, [x, y] <+ [e₁, f₁, e₂, f₂] → EvLe n x y := fun x y h =>
@@ -135,7 +132,7 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     rw [hf₂] at hff
     unfold EvLe at hef hfe hff
     simp only at hef hfe hff
-    have hij' : e₁.1 ≠ f₁.1 := by rw [← h1, ← h2]; exact hij
+    have hij' : e₁.1 ≠ f₁.1 := by rwa [← h1, ← h2]
     have hX := hcross e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) hij'
     have hsame' : ¬ (a = c ∧ b = d) := fun ⟨h5, h6⟩ =>
       hij' (hsame e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) (Prod.ext h5 h6))
@@ -143,7 +140,7 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     have hac : a ≤ c := by rcases hef with h | h; exact h.le; exact h.1.le
     have hcb : c ≤ b := by rcases hfe with h | h; exact h.le; exact h.1.le
     have hbd : b ≤ d := by rcases hff with h | h; exact h.le; exact h.1.le
-    have hab' : a < b := lt_of_le_of_ne (hac.trans hcb) hab
+    have hab' := lt_of_le_of_ne (hac.trans hcb) hab
     rcases hac.lt_or_eq with hac | hac
     · rcases hcb.lt_or_eq with hcb | hcb
       · rcases hbd.lt_or_eq with hbd | hbd

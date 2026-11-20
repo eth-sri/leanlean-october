@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepSpecH
 
@@ -41,12 +43,12 @@ open Chazelle.Merge (FreeAt)
 @[expose] public section
 
 /-- The side of the queries (saved `sw 7`; fixed in the answer phase). -/
-def sSide : ℕ := sw 98
+@[ram_layout] def sSide : ℕ := sw 98
 
 /-- The loop registers: the query index, the query address, the result address. -/
-def pJ : ℕ := sw 5000
-def pA : ℕ := sw 5001
-def pR : ℕ := sw 5002
+@[ram_layout] def pJ : ℕ := sw 5000
+@[ram_layout] def pA : ℕ := sw 5001
+@[ram_layout] def pR : ℕ := sw 5002
 
 /-- **The base configuration of the answer phase.** -/
 structure ABase (P : Polygon) (W : ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop)

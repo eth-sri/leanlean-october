@@ -37,7 +37,7 @@ theorem cntS_succ {i : ℕ} (h : lo ≤ i) :
   unfold cntS
   rw [Nat.Ico_succ_right_eq_insert_Ico h, Finset.filter_insert]
   split_ifs with hs
-  · rw [Finset.card_insert_of_notMem (by simp)]
+  · simp
   · simp
 
 theorem cntS_mono {i i' : ℕ} (h : i ≤ i') : cntS sel lo i ≤ cntS sel lo i' := by
@@ -51,11 +51,6 @@ theorem cntS_lt {i i' : ℕ} (hlo : lo ≤ i) (h : i < i') (hs : sel i) :
   rw [ite_eq_left hs] at this
   have := cntS_mono (sel := sel) (lo := lo) (show i + 1 ≤ i' by omega)
   omega
-
-theorem cntS_le (i : ℕ) : cntS sel lo i ≤ i - lo := by
-  classical
-  unfold cntS
-  exact (Finset.card_filter_le _ _).trans (by rw [Nat.card_Ico])
 
 open Classical in
 theorem passMem_succ (j : ℕ) :
@@ -75,15 +70,20 @@ theorem passMem_ptr_eq (j : ℕ) :
   induction j with
   | zero => simp [passMem, cntS_self]
   | succ j ih =>
-    rw [passMem_succ, show lo + (j + 1) = lo + j + 1 by omega, cntS_succ (by omega)]
+    ram_rw [passMem_succ, show lo + (j + 1) = lo + j + 1 by omega, cntS_succ]
     split_ifs with hs
     · simp only; rw [ih]; omega
     · rw [ih]; omega
 
-/-- **Selected items land at their rank.** -/
-theorem passMem_act (j : ℕ)
+section
+
+variable (j : ℕ)
     (hdAP : ∀ i, lo ≤ i → i < lo + j → ∀ p, e ≤ p → p < e + cntS sel lo (lo + j) →
-      bPOS + m0 (bTMP + i) ≠ bACT + p) :
+      bPOS + m0 (bTMP + i) ≠ bACT + p)
+include hdAP
+
+/-- **Selected items land at their rank.** -/
+theorem passMem_act :
     ∀ i, lo ≤ i → i < lo + j → sel i →
       (passMem m0 sel bACT bPOS bTMP lo e j).1 (bACT + (e + cntS sel lo i)) = m0 (bTMP + i) := by
   classical
@@ -93,7 +93,7 @@ theorem passMem_act (j : ℕ)
     intro i h1 h2 hs
     have hp := passMem_ptr_eq (m0 := m0) (sel := sel) (bACT := bACT) (bPOS := bPOS)
       (bTMP := bTMP) (lo := lo) (e := e) j
-    have hc := cntS_le (sel := sel) (lo := lo) (lo + j)
+    
     have hcm := cntS_succ (sel := sel) (lo := lo) (show lo ≤ lo + j by omega)
     rw [show lo + j + 1 = lo + (j + 1) by omega] at hcm
     have hci : lo ≤ i → i < lo + j → sel i → cntS sel lo i < cntS sel lo (lo + j) :=
@@ -105,9 +105,9 @@ theorem passMem_act (j : ℕ)
       simp only
       rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
       · have hlt := cntS_lt (sel := sel) h1 hi hs
-        have hci := cntS_mono (sel := sel) (lo := lo) (show i ≤ lo + j by omega)
-        rw [Machine.upd_other _ _ _ (hdAP _ (by omega) (by omega) _ (by omega) (by omega)).symm,
-          Machine.upd_other _ _ _ (by omega)]
+        
+        ram_rw [Machine.upd_other _ _ _ (hdAP _ (by omega) (by omega) _ (by omega) (by omega)).symm,
+          Machine.upd_other _ _]
         exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega)) i h1 hi hs
       · subst hi
         rw [Machine.upd_other _ _ _ (hdAP _ (by omega) (by omega) _ (by omega) (by omega)).symm,
@@ -121,9 +121,7 @@ theorem passMem_act (j : ℕ)
       exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega)) i h1 hi hs
 
 /-- **The positions of the selected items.** -/
-theorem passMem_pos (j : ℕ)
-    (hdAP : ∀ i, lo ≤ i → i < lo + j → ∀ p, e ≤ p → p < e + cntS sel lo (lo + j) →
-      bPOS + m0 (bTMP + i) ≠ bACT + p)
+theorem passMem_pos
     (hinj : ∀ i i', lo ≤ i → i < lo + j → lo ≤ i' → i' < lo + j →
       m0 (bTMP + i) = m0 (bTMP + i') → i = i') :
     ∀ i, lo ≤ i → i < lo + j → sel i →
@@ -135,7 +133,7 @@ theorem passMem_pos (j : ℕ)
     intro i h1 h2 hs
     have hp := passMem_ptr_eq (m0 := m0) (sel := sel) (bACT := bACT) (bPOS := bPOS)
       (bTMP := bTMP) (lo := lo) (e := e) j
-    have hc := cntS_le (sel := sel) (lo := lo) (lo + j)
+    
     have hcm := cntS_succ (sel := sel) (lo := lo) (show lo ≤ lo + j by omega)
     rw [show lo + j + 1 = lo + (j + 1) by omega] at hcm
     have hci : lo ≤ i → i < lo + j → sel i → cntS sel lo i < cntS sel lo (lo + j) :=
@@ -148,7 +146,7 @@ theorem passMem_pos (j : ℕ)
       rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
       · have hne : m0 (bTMP + i) ≠ m0 (bTMP + (lo + j)) := fun h =>
           absurd (hinj i (lo + j) h1 (by omega) (by omega) (by omega) h) (by omega)
-        rw [Machine.upd_other _ _ _ (by omega),
+        ram_rw [Machine.upd_other _ _,
           Machine.upd_other _ _ _ (hdAP _ h1 (by omega) _ (by omega) (by omega))]
         exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega))
           (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 hi hs
@@ -162,6 +160,8 @@ theorem passMem_pos (j : ℕ)
         · subst hi; exact absurd hs hsj
       exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega))
         (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 hi hs
+
+end
 
 /-- **Nothing else changes.** -/
 theorem passMem_keep (j : ℕ) {x : ℕ}
@@ -182,9 +182,9 @@ theorem passMem_keep (j : ℕ) {x : ℕ}
       simp only
       rw [Machine.upd_other _ _ _ (hP _ (by omega) (by omega) hsj),
         Machine.upd_other _ _ _ (by rw [hp]; omega)]
-      exact ih (by omega) (fun i a b c => hP i a (by omega) c)
+      refine ih ?_ (fun i a b c => hP i a ?_ c) <;> omega
     · rw [ite_eq_right hsj] at hA ⊢
-      exact ih (by omega) (fun i a b c => hP i a (by omega) c)
+      refine ih ?_ (fun i a b c => hP i a ?_ c) <;> omega
 
 /-- **Passes with the same selection on the segment agree.** -/
 theorem passMem_congr_sel {sel sel' : ℕ → Prop} (j : ℕ)
@@ -196,8 +196,8 @@ theorem passMem_congr_sel {sel sel' : ℕ → Prop} (j : ℕ)
   | succ j ih =>
     rw [passMem_succ, passMem_succ, ih (fun i a b => h i a (by omega))]
     by_cases hs : sel (lo + j)
-    · rw [ite_eq_left hs, ite_eq_left ((h _ (by omega) (by omega)).mp hs)]
-    · rw [ite_eq_right hs, ite_eq_right (fun h' => hs ((h _ (by omega) (by omega)).mpr h'))]
+    · simp_all <;> omega
+    · simp_all <;> omega
 
 theorem cntS_congr {sel sel' : ℕ → Prop} {i : ℕ}
     (h : ∀ i', lo ≤ i' → i' < i → (sel i' ↔ sel' i')) : cntS sel lo i = cntS sel' lo i := by
@@ -206,16 +206,14 @@ theorem cntS_congr {sel sel' : ℕ → Prop} {i : ℕ}
   congr 1
   ext x
   simp only [Finset.mem_filter, Finset.mem_Ico]
-  constructor
-  · rintro ⟨⟨a, b⟩, c⟩; exact ⟨⟨a, b⟩, (h x a b).mp c⟩
-  · rintro ⟨⟨a, b⟩, c⟩; exact ⟨⟨a, b⟩, (h x a b).mpr c⟩
+  simp_all
 
 /-- **Every rank below the count is attained.** -/
 theorem cntS_surj {sel : ℕ → Prop} {hi : ℕ} (hlh : lo ≤ hi) :
     ∀ r, r < cntS sel lo hi → ∃ i, lo ≤ i ∧ i < hi ∧ sel i ∧ cntS sel lo i = r := by
   classical
   induction hi, hlh using Nat.le_induction with
-  | base => intro r hr; rw [cntS_self] at hr; omega
+  | base => simp [cntS_self]
   | succ n hn ih =>
     intro r hr
     rw [cntS_succ hn] at hr
@@ -225,7 +223,7 @@ theorem cntS_surj {sel : ℕ → Prop} {hi : ℕ} (hlh : lo ≤ hi) :
     · by_cases hs : sel n
       · rw [ite_eq_left hs] at hr
         exact ⟨n, hn, by omega, hs, by omega⟩
-      · rw [ite_eq_right hs] at hr; omega
+      simp_all
 
 end
 

@@ -28,7 +28,7 @@ theorem stp_le_last {α : Type*} {f : α → ℝ} {l : List α} {y : α}
   intro a ha
   rcases List.mem_append.1 ha with h | h
   · exact (List.pairwise_append.1 hpw).2.2 a h y (List.mem_singleton_self y) |>.le
-  · rw [List.mem_singleton] at h; rw [h]
+  simp_all
 
 namespace SCtx
 
@@ -42,12 +42,12 @@ set_option maxHeartbeats 4000000 in
 /-- **The log at the next key.** -/
 theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls.length = c'.nreg lC ∧
     LogRecsAt c'.nmem (c'.nreg lB) ls ∧ LogWords P J N₂ ls ∧
-    LogPre J (N₂.F (chainModel J.right) (Qof P)) (logOf J (Qof P) N₂ ls) ∧
+    LogPre J (N₂.F J.rightModel (Qof P)) (logOf J (Qof P) N₂ ls) ∧
     ls.getLast? = some (c'.nreg kE, c'.nreg kH, c'.nreg kN, c'.nreg kL, c'.nreg (kL + 1),
       c'.nreg (kL + 2), c'.nreg (kL + 3)) := by
   classical
   have hP := S.E.hP
-  have hS₂ : (chainModel J.right).ChordFamily (Qof P) (N₂.F (chainModel J.right) (Qof P)) :=
+  have hS₂ : J.rightModel.ChordFamily (Qof P) (N₂.F J.rightModel (Qof P)) :=
     S.E.hNF₂.1
   obtain ⟨hlt, hpw, -⟩ := stp_next_key S.E S.L S.hI S.hd
   obtain ⟨-, -, hcap, hlC'⟩ := stp_meas_step S.E S.L S.hI S.hd
@@ -75,15 +75,15 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     rcases Nat.lt_or_ge i ls.length with h | h
     · rw [List.getD_append _ _ _ _ h]
       obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hrec i h
-      have hi' : i < c.nreg lC := hlen ▸ h
+      
       refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-      · rw [hm _ (by omega) (by omega)]; exact a0
-      · rw [hm _ (by omega) (by omega)]; exact a1
-      · rw [hm _ (by omega) (by omega)]; exact a2
-      · rw [hm _ (by omega) (by omega)]; exact a3
-      · rw [hm _ (by omega) (by omega)]; exact a4
-      · rw [hm _ (by omega) (by omega)]; exact a5
-      · rw [hm _ (by omega) (by omega)]; exact a6
+      · ram_simp [hm] <;> omega
+      · ram_simp [hm] <;> omega
+      · ram_simp [hm] <;> omega
+      · ram_simp [hm] <;> omega
+      · ram_simp [hm] <;> omega
+      · ram_simp [hm] <;> omega
+      ram_simp [hm] <;> omega
     · have hil : i = ls.length := by omega
       rw [List.getD_append_right _ _ _ _ h, show i - ls.length = 0 by omega, hil, hlen]
       simp only [List.getD_cons_zero]
@@ -108,16 +108,15 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     obtain ⟨hne, hall, hhead, hpwl, hcons, hlab⟩ := hpre
     set es := logOf J (Qof P) N₂ ls with hes
     set x' : ℕ × ℝ × Set (Set Point) := (c'.nreg kE,
-      (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩, curLab P J N₂ c') with hx'
+      J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩, curLab P J N₂ c') with hx'
     have hmap : logOf J (Qof P) N₂ (ls ++ [r']) = es ++ [x'] := by
       simp [logOf, hes, hx', hr', curLab]
     rw [hmap]
     -- the last entry of the old log is the key
     set xc : ℕ × ℝ × Set (Set Point) := (c.nreg kE,
-      (chainModel J.whole).param (Qof P) ⟨c.nreg kE, c.nreg kH⟩, curLab P J N₂ c) with hxc
+      J.wholeModel.param (Qof P) ⟨c.nreg kE, c.nreg kH⟩, curLab P J N₂ c) with hxc
     have hlastE : es.getLast? = some xc := by
-      rw [hes, logOf, List.getLast?_map, hlast]
-      simp [hxc, curLab]
+      simp [hes, logOf, List.getLast?_map, hlast, hxc, curLab]
     have hxcoff : oW J (xc.1 + xc.2.1) = keyOff P J c := rfl
     have hx'off : oW J (x'.1 + x'.2.1) = keyOff P J c' := rfl
     obtain ⟨ys, hys⟩ := List.getLast?_eq_some_iff.1 hlastE
@@ -146,16 +145,16 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     · intro i hi
       simp only [List.length_append, List.length_singleton] at hi
       rcases Nat.lt_or_ge (i + 1) es.length with h | h
-      · rw [List.getD_append _ _ _ _ (by omega), List.getD_append _ _ _ _ h]
+      · ram_rw [List.getD_append _ _ _, List.getD_append _ _ _ _ h]
         exact hcons i h
       · have hi' : i + 1 = es.length := by omega
         have hlen' : es.length = ys.length + 1 := by rw [hys]; simp
         have e1 : (es ++ [x']).getD i (0, 0, ∅) = xc := by
-          rw [List.getD_append _ _ _ _ (by omega), hys,
-            List.getD_append_right _ _ _ _ (by omega), show i - ys.length = 0 by omega]
+          ram_rw [List.getD_append _ _ _, hys,
+            List.getD_append_right _ _ _, show i - ys.length = 0 by omega]
           simp
         have e2 : (es ++ [x']).getD (i + 1) (0, 0, ∅) = x' := by
-          rw [List.getD_append_right _ _ _ _ (by omega), show i + 1 - es.length = 0 by omega]
+          ram_rw [List.getD_append_right _ _ _, show i + 1 - es.length = 0 by omega]
           simp
         rw [e1, e2, hxcoff, hx'off]
         exact no_cut_iter S.E S.L S.hI

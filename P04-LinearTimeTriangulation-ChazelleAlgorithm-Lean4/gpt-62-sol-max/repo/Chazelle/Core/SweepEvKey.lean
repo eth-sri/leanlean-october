@@ -58,8 +58,7 @@ theorem side_regions_ne (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hS1 : SideOf M 1 c U' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by simpa using h.1
   have hS2 : SideOf M (-1) c V' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by
     simpa [sub_eq_add_neg] using h.2
-  rw [sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD]
-  exact hne
+  rwa [sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD]
 
 /-- **The local structure at a key.** -/
 theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
@@ -73,7 +72,7 @@ theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
       (X ≠ Y → ∀ R ∈ M.regions F, (SideOf M dY Y R ↔ SideOf M (-dX) X R)) ∧
       (X = Y → dX = dY) := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF := hFam.2.1
   by_cases htie : ∃ e' ∈ F, e' ≠ e ∧ SideAttach M.W e' p t
   · obtain ⟨e', he', hne, hA'⟩ := htie
     -- the east chord and the west chord
@@ -138,17 +137,17 @@ variable {J : Merge.Junction}
 theorem faced_both_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {c : Set Point}
     (hc : c ∈ F₂plus J S₂) {pa pb : ℕ} {ta tb : ℝ}
-    (hA : SideAttach (chainModel J.whole).W c pa ta) (hB : SideAttach (chainModel J.whole).W c pb tb)
+    (hA : SideAttach J.wholeModel.W c pa ta) (hB : SideAttach J.wholeModel.W c pb tb)
     (hAB : oW J (pa + ta) < oW J (pb + tb)) {R : Set Point}
-    (hR : R ∈ (chainModel J.whole).regions (F₂plus J S₂)) {p q : ℕ} {t s : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (hq : q < (chainModel J.whole).W.n)
+    (hR : R ∈ J.wholeModel.regions (F₂plus J S₂)) {p q : ℕ} {t s : ℝ}
+    (hp : p < J.wholeModel.W.n) (hq : q < J.wholeModel.W.n)
     (ht : t ∈ Ioo (0 : ℝ) 1) (hs : s ∈ Ioo (0 : ℝ) 1)
     (h1 : oW J (pa + ta) < oW J (p + t)) (h1' : oW J (p + t) < oW J (pb + tb))
     (h2 : oW J (q + s) < oW J (pa + ta) ∨ oW J (pb + tb) < oW J (q + s))
-    (hf1 : (chainModel J.whole).Faces p t R) (hf2 : (chainModel J.whole).Faces q s R) : False := by
+    (hf1 : J.wholeModel.Faces p t R) (hf2 : J.wholeModel.Faces q s R) : False := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
+  have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < J.wholeModel.W.n := by
     exact_mod_cast hC.hg
   obtain ⟨a0, a1⟩ := Corr.key_mem hA.1 hA.2.1 hA.2.2.1
   obtain ⟨b0, b1⟩ := Corr.key_mem hB.1 hB.2.1 hB.2.2.1
@@ -162,18 +161,18 @@ theorem faced_both_off (hP : J.P.Simple) {S₂ : Set (Set Point)}
 arbitrarily close before the key and no cut in between. -/
 theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ} {t : ℝ}
-    (hp : p < (chainModel J.whole).W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) (hpos : 0 < oW J (p + t))
+    (hp : p < J.wholeModel.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1) (hpos : 0 < oW J (p + t))
     {ε : ℝ} (hε : 0 < ε) :
-    ∃ R ∈ (chainModel J.whole).regions (F₂plus J S₂), BeforeFaces (chainModel J.whole) p t R ∧
-      ∃ (q : ℕ) (u : ℝ), q < (chainModel J.whole).W.n ∧ u ∈ Ioo (0 : ℝ) 1 ∧
-        ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) ∧ (chainModel J.whole).Faces q u R ∧
+    ∃ R ∈ J.wholeModel.regions (F₂plus J S₂), BeforeFaces J.wholeModel p t R ∧
+      ∃ (q : ℕ) (u : ℝ), q < J.wholeModel.W.n ∧ u ∈ Ioo (0 : ℝ) 1 ∧
+        ¬ J.wholeModel.IsCut (F₂plus J S₂) (q + u) ∧ J.wholeModel.Faces q u R ∧
         oW J (p + t) - ε < oW J (q + u) ∧ oW J (q + u) < oW J (p + t) ∧
-        ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x →
-          x < (chainModel J.whole).W.n → ¬ (oW J (q + u) < oW J x ∧ oW J x < oW J (p + t)) := by
+        ∀ x, J.wholeModel.IsCut (F₂plus J S₂) x → 0 ≤ x →
+          x < J.wholeModel.W.n → ¬ (oW J (q + u) < oW J x ∧ oW J x < oW J (p + t)) := by
   have hC := corr_right0 J hP hS₂ hS₂f
   have hM := hC.hM
-  set n := (chainModel J.whole).W.n with hndef
-  have hg : 6 + tpos J.whole J.m₁ < n := hC.hg
+  set n := J.wholeModel.W.n with hndef
+  have hg := hC.hg
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < n := by exact_mod_cast hg
   have hn0 : 0 < n := by omega
@@ -192,28 +191,23 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · refine ⟨(p + n - 1) % n, 1 - s, Nat.mod_lt _ hn0, ⟨by linarith, by linarith⟩, ?_,
         off_before_vertex hg hp hs0 hs1 hpos⟩
       rcases Nat.eq_zero_or_pos p with rfl | hp1
-      · rw [hX, ite_eq_right (by simp), show (0 + n - 1) % n = n - 1 by
-          rw [Nat.mod_eq_of_lt (by omega)]; omega, Nat.cast_sub (by omega)]
-        push_cast; ring
+      · simp_all <;> omega
       · rw [hX, ite_eq_left (Or.inr (show 1 ≤ p by omega)), show (p + n - 1) % n = p - 1 by
-          rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)], Nat.cast_sub (by omega)]
+          ram_simp [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt], Nat.cast_sub (by omega)]
         push_cast; ring
   obtain ⟨δ₀, hδ₀, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_before hM hC.hF hC.hfin X)
-  have hδ₀' : (0 : ℝ) < δ₀ := hδ₀
+  have hδ₀' := hδ₀
   set δ := min (min δ₀ ε) (min 1 (if 0 < t then t else 1)) with hδ
   have hT : 0 < (if 0 < t then t else 1) := by split_ifs with h <;> linarith
-  have hδ0 : 0 < δ := lt_min (lt_min hδ₀' hε) (lt_min one_pos hT)
+  have hδ0 := lt_min (lt_min hδ₀' hε) (lt_min one_pos hT)
   have hδ1 : δ ≤ δ₀ := le_trans (min_le_left _ _) (min_le_left _ _)
   have hδ2 : δ ≤ ε := le_trans (min_le_left _ _) (min_le_right _ _)
   have hδ3 : δ ≤ 1 := le_trans (min_le_right _ _) (min_le_left _ _)
   have hδ4 : 0 < t → δ ≤ t := fun h => by
-    have := le_trans (min_le_right (min δ₀ ε) _) (min_le_right 1 (if 0 < t then t else 1))
-    rw [ite_eq_left h] at this
-    rw [hδ, ite_eq_left h]; exact this
+    simp [ite_eq_left h, hδ]
   have hnc : ∀ s, 0 < s → s < δ → ∀ (q : ℕ) (u : ℝ), (q : ℝ) + u = X - s →
-      ¬ (chainModel J.whole).IsCut (F₂plus J S₂) (q + u) := by
+      ¬ J.wholeModel.IsCut (F₂plus J S₂) (q + u) := by
     intro s hs0 hs1 q u hqu
     have := hsub ⟨hs0, lt_of_lt_of_le hs1 hδ1⟩
     rw [Set.mem_ofPred_eq] at this
@@ -223,15 +217,14 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (fun h => by linarith [hδ4 h])
   have hnc0 := hnc (δ / 2) (by linarith) (by linarith) q u hqu
   obtain ⟨R, hR, hfR⟩ := hM.exists_faces_of_not_cut hC.hF hC.hfin hq hu hnc0
-  have hgap : ∀ x, (chainModel J.whole).IsCut (F₂plus J S₂) x → 0 ≤ x →
+  have hgap : ∀ x, J.wholeModel.IsCut (F₂plus J S₂) x → 0 ≤ x →
       x < n → ¬ (oW J (q + u) < oW J x ∧ oW J x < oW J (p + t)) := by
     rintro x hx hx0 hxn ⟨h1, h2⟩
     set s' := oW J (p + t) - oW J x with hs'
     obtain ⟨q', u', hq', hu', hqu', hoff'⟩ := hw s' (by linarith) (by linarith)
       (fun h => by linarith [hδ4 h])
     have hk := Corr.key_mem hq' hu'.1.le hu'.2
-    have hxeq : x = (q' : ℝ) + u' :=
-      off_inj hg0 hgn hx0 hxn hk.1 hk.2 (by rw [← oW_eq, ← oW_eq, hoff', hs']; ring)
+    have hxeq := off_inj hg0 hgn hx0 hxn hk.1 hk.2 (by rw [← oW_eq, ← oW_eq, hoff', hs']; ring)
     exact hnc s' (by linarith) (by linarith) q' u' hqu' (hxeq ▸ hx)
   refine ⟨R, hR, before_faces_of_gap hM hC.hF hC.hfin hg0 hgn hR hq hu hnc0 hfR hp ht0 ht1
     (by rw [← oW_eq, ← oW_eq, hoff]; linarith) hgap, q, u, hq, hu, hnc0, hfR,

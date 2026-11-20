@@ -168,15 +168,15 @@ noncomputable def HostR1Spec : Prop :=
   open Classical in
   ∀ (P : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (reg : ℕ → Set Point) (r : ℕ),
     GoodEnv P → L ≠ [] →
-    ChordTriplesOK (interiorModel (Qof P)) (Qof P) L → E.Perm (List.range (2 * L.length)) →
-    E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) →
-    (interiorModel (Qof P)).DegLe
-      ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) 4 →
-    Restore.NFRegs (interiorModel (Qof P)) (Qof P)
-      (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) reg →
-    r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
+    ChordTriplesOK (inputModel P) (Qof P) L → E.Perm (List.range (2 * L.length)) →
+    E.Pairwise (BuildNF.codeLe (inputModel P) (Qof P) L) →
+    P.inputModel.DegLe
+      (inputChords P L E) 4 →
+    Restore.NFRegs (inputModel P) (Qof P)
+      (inputNF P L E) reg →
+    r < (inputNF P L E).nRegions →
     let Q := Qof P
-    let N := BuildNF.buildNF (interiorModel Q) Q L E
+    let N := interiorNF Q L E
     let S := N.F (interiorModel Q) Q
     let H := regHost (decide (Mountain.LeftInside Q)) Q.n N r
     HostWF Q.n H ∧ HostRegular Q.n H ∧ (H.poly Q).Simple ∧

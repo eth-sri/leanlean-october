@@ -29,26 +29,25 @@ theorem arc_index (hE : FGood E c₀) {reg : ℕ → Set Point}
     ∃ t, t < (E.N.region E.r).arcs.length ∧ E.M.key (Qof E.P) (arcOf E.N E.r t).s = a ∧
       E.M.key (Qof E.P) (arcOf E.N E.r t).e = b := by
   obtain ⟨-, -, hArcs, -⟩ := hregs
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   obtain ⟨j, hj, hjr, hs, he⟩ := hArcs.2.2.1 E.r hr a b h
-  have hjm : j ∈ (E.N.region E.r).arcs := (hArcs.2.2.2 E.r hr j).2 ⟨hj, hjr⟩
+  have hjm := (hArcs.2.2.2 E.r hr j).2 ⟨hj, hjr⟩
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hjm
   refine ⟨t, ht, ?_, ?_⟩ <;>
   · unfold arcOf
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some, htj]
-    first | exact hs | exact he
+    simp_all
 
 /-- **Closed cyclic intervals unwrapped.** -/
 theorem closedArc_unwrap {n a b x : ℝ} (ha : 0 ≤ a ∧ a < n) (hb : 0 ≤ b ∧ b < n)
     (hx : 0 ≤ x ∧ x < n) (hab : a ≠ b) :
     ClosedArc a b x ↔ a ≤ unwrapK n a x ∧ unwrapK n a x ≤ unwrapK n a b := by
   have hub : a < unwrapK n a b := by
-    have := unwrapK_bounds ha hb
+    
     unfold unwrapK at *
     split_ifs at * with h1
     · exact lt_of_le_of_ne h1 hab
     · linarith [ha.2, hb.1]
-  have hc := cyc_unwrap ha ha hb hx (by rw [unwrapK_self]; exact hub)
+  have hc := cyc_unwrap ha ha hb hx (by rwa [unwrapK_self])
   rw [unwrapK_self] at hc
   constructor
   · rintro (h | rfl | rfl)
@@ -94,11 +93,11 @@ theorem not_countOK_same_arc {M : Model} {S : Set (Set Point)} {R : Set Point} {
     have hpt : 0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < M.W.n := by
       obtain ⟨hp, ht0, ht1, -⟩ := hat
       have : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
-      constructor <;> linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)]
+      constructor <;> linarith
     have hk := (cyc_unwrap ha hk₁ hk₂ hpt h2).1 hin
     have hub : a < unwrapK M.W.n a b := by linarith
     have : sideInArc a b ((p : ℝ) + t) :=
-      (cyc_unwrap ha ha hb hpt (by rw [unwrapK_self]; exact hub)).2
+      (cyc_unwrap ha ha hb hpt (by rwa [unwrapK_self])).2
         ⟨by rw [unwrapK_self]; linarith [hk.1], by linarith [hk.2]⟩
     exact hnc _ this ⟨c, hc.1, p, t, hat, rfl⟩
   rintro ⟨c1, c2⟩
@@ -140,9 +139,7 @@ theorem key_attach_ne {W : Polygon} {p p' : ℕ} {t t' : ℝ} (ht : 0 ≤ t ∧ 
     have h1' : p < p' + 1 := by exact_mod_cast h1
     have h2' : p' < p + 1 := by exact_mod_cast h2
     omega
-  subst hp
-  have : t = t' := by linarith
-  exact hne (by rw [this])
+  simp_all
 
 /-- **The setup of completeness.** -/
 theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
@@ -153,7 +150,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨hFam, -, -, -⟩ := hE.hNF
   have hregs' := hregs
   obtain ⟨hRC, -, hArcs, hRg⟩ := hregs'
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   have hU := hRC.1 E.r hr
   set S := E.N.F E.M (Qof E.P)
   -- the region has an exit chord
@@ -167,10 +164,9 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
       rintro ⟨r', hr', rfl⟩ htc
       obtain ⟨i, hi, hir⟩ := List.mem_iff_getElem.1 hr'
       have hci : E.N.chord i = r' := by
-        unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
-          Option.getD_some, hir]
-      have := ((hRg E.r hr).1 i).2 ⟨hi, by rw [hci]; exact htc⟩
-      rw [h0] at this; exact List.not_mem_nil this
+        unfold NF.chord; simp_all
+      have := ((hRg E.r hr).1 i).2 ⟨hi, by rwa [hci]⟩
+      simp_all
     omega
   have hne : S.Nonempty := by
     obtain ⟨i, hi⟩ := List.exists_mem_of_ne_nil _ hch
@@ -192,29 +188,26 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨tj, htj, haj, hbj⟩ := arc_index hE hregs hA₂
   have hcnt := counts_of_splitsWell hM hFam.2.1 hFam.1 hU hadm hXA hOA hne' hgc.2.2.2.2.2.2.2.2
   have hXk : 0 ≤ (X.edge : ℝ) + 0 ∧ (X.edge : ℝ) + 0 < E.M.W.n := by
-    have : (X.edge : ℝ) + 1 ≤ E.M.W.n := by exact_mod_cast hXe
-    constructor <;> linarith [(Nat.cast_nonneg X.edge : (0 : ℝ) ≤ X.edge)]
+    simp_all
   have hOk : 0 ≤ (po : ℝ) + tq ∧ (po : ℝ) + tq < E.M.W.n := by
     obtain ⟨hp, ht0, ht1, -⟩ := hOA
     have : (po : ℝ) + 1 ≤ E.M.W.n := by exact_mod_cast hp
-    constructor <;> linarith [(Nat.cast_nonneg po : (0 : ℝ) ≤ po)]
-  have hkne : (X.edge : ℝ) + 0 ≠ (po : ℝ) + tq :=
-    key_attach_ne ⟨le_rfl, one_pos⟩ ⟨hOA.2.1, hOA.2.2.1⟩ hne'
+    constructor <;> linarith
+  have hkne := key_attach_ne ⟨le_rfl, one_pos⟩ ⟨hOA.2.1, hOA.2.2.1⟩ hne'
   refine ⟨X, σ, T, po, tq, ti, tj, ⟨hch, hgc, hXA, hOA, hne', fun C hC => ?_, hti, htj,
-    by unfold aK bK; rw [hai, hbi]; exact hX₁, by unfold aK bK; rw [haj, hbj]; exact hX₂, ?_,
+    by unfold aK bK; rwa [hai, hbi], by unfold aK bK; rwa [haj, hbj], ?_,
     hcnt⟩⟩
   · have hXX : X = ⟨X.edge, 0⟩ := by cases X; simp only at hX0 ⊢; rw [hX0]
     have h1 := hpr C hC
     rw [← hXX, hpos]
     have h2 := chain_vtx_mem C (Qof E.P) h1.1 h1.2
-    rw [← hC, pos_eq_sidePt, param_vtx, Chazelle.Chain.sidePt_zero] at h2
-    exact h2
+    rwa [← hC, pos_eq_sidePt, param_vtx, Chazelle.Chain.sidePt_zero] at h2
   · intro hab
     unfold aK at hab
     rw [hai, haj] at hab
     subst hab
     -- the two arcs are one record
-    have hr' : E.r < E.N.nRegions := hr
+    have hr' := hr
     have mem : ∀ t, t < (E.N.region E.r).arcs.length →
         (E.N.region E.r).arcs.getD t 0 < E.N.arcs.length ∧
           (E.N.arc ((E.N.region E.r).arcs.getD t 0)).reg = E.r := fun t ht => by
@@ -225,7 +218,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
     obtain ⟨m2, r2⟩ := mem tj htj
     have hjj := hArcs.2.1 _ _ m1 m2 (by rw [r1, r2]) (by
       have e1 := hai; have e2 := haj; unfold arcOf at e1 e2; rw [e1, e2])
-    have hb : b₁ = b₂ := by rw [← hbi, ← hbj]; unfold arcOf; rw [hjj]
+    have hb : b₁ = b₂ := by ram_simp [← hbi, ← hbj, arcOf, hjj]
     subst hb
     exact not_countOK_same_arc hA₁ (by rw [← hai, ← hbi]; exact arc_ne hE hch hti) hXk hOk
       hkne hX₁ hX₂ hcnt

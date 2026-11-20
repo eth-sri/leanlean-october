@@ -43,14 +43,14 @@ noncomputable def xAt (u w : Point) (y : ℝ) : ℝ := u.1 + (y - u.2) * ((w.1 -
 theorem xAt_left (u w : Point) : xAt u w u.2 = u.1 := by simp [xAt]
 
 theorem xAt_right {u w : Point} (h : u.2 ≠ w.2) : xAt u w w.2 = w.1 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne := sub_ne_zero.2 h.symm
   unfold xAt
   field_simp
   ring
 
 theorem xAt_lerp {u w : Point} (h : u.2 ≠ w.2) (t : ℝ) :
     xAt u w (lerp u w t).2 = (lerp u w t).1 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne := sub_ne_zero.2 h.symm
   unfold xAt
   simp only [lerp_fst, lerp_snd]
   field_simp
@@ -72,13 +72,13 @@ abscissa is the one of the line. -/
 theorem mem_segment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
     p ∈ Chazelle.segment u w ↔
       (min u.2 w.2 ≤ p.2 ∧ p.2 ≤ max u.2 w.2) ∧ p.1 = xAt u w p.2 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne := sub_ne_zero.2 h.symm
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     refine ⟨⟨?_, ?_⟩, ?_⟩
     · dsimp only
       rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [min_eq_left hlt.le]; nlinarith
+      · simp_all
       · rw [min_eq_right hgt.le]; nlinarith
     · dsimp only
       rcases lt_or_gt_of_ne h with hlt | hgt
@@ -101,19 +101,19 @@ theorem mem_segment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
       dsimp only
       constructor
       · rw [hx]; unfold xAt; ring
-      · rw [div_mul_cancel₀ _ hne]; ring
+      simp_all
 
 /-- Membership in the open part of a non-horizontal segment. -/
 theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
     (∃ t ∈ Ioo (0 : ℝ) 1, p = lerp u w t) ↔
       (min u.2 w.2 < p.2 ∧ p.2 < max u.2 w.2) ∧ p.1 = xAt u w p.2 := by
-  have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
+  have hne := sub_ne_zero.2 h.symm
   constructor
   · rintro ⟨t, ⟨ht0, ht1⟩, rfl⟩
     refine ⟨⟨?_, ?_⟩, (xAt_lerp h t).symm⟩
     · simp only [lerp_snd]
       rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [min_eq_left hlt.le]; nlinarith
+      · simp_all
       · rw [min_eq_right hgt.le]; nlinarith
     · simp only [lerp_snd]
       rcases lt_or_gt_of_ne h with hlt | hgt
@@ -122,8 +122,7 @@ theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
   · rintro ⟨⟨h1, h2⟩, hx⟩
     refine ⟨(p.2 - u.2) / (w.2 - u.2), ⟨?_, ?_⟩, ?_⟩
     · rcases lt_or_gt_of_ne h with hlt | hgt
-      · rw [min_eq_left hlt.le] at h1
-        exact div_pos (by linarith) (by linarith)
+      · simp_all [min_eq_left hlt.le] 
       · rw [max_eq_left hgt.le] at h2
         exact div_pos_of_neg_of_neg (by linarith) (by linarith)
     · rcases lt_or_gt_of_ne h with hlt | hgt
@@ -135,7 +134,7 @@ theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
       simp only [lerp_fst, lerp_snd]
       constructor
       · rw [hx]; unfold xAt; ring
-      · rw [div_mul_cancel₀ _ hne]; ring
+      simp_all
 
 /-! ### Edges of a polygon as graphs -/
 
@@ -180,17 +179,23 @@ theorem OpenEdgePt.mem_boundary {P : Polygon} {i : ℕ} (hi : i < P.n) {p : Poin
     (h : OpenEdgePt P i p) : p ∈ P.boundary :=
   ⟨i, hi, h.mem_edge⟩
 
+section
+
+variable {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {p : Point}
+    (h : OpenEdgePt P i p) {k : ℕ} (hk : k < P.n)
+include hP hi h hk
+
 /-- A point of the open part of edge `i` lies on no other edge. -/
-theorem OpenEdgePt.not_mem_other {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {p : Point}
-    (h : OpenEdgePt P i p) {k : ℕ} (hk : k < P.n) (hki : k ≠ i) : p ∉ P.edge k := by
+theorem OpenEdgePt.not_mem_other (hki : k ≠ i) : p ∉ P.edge k := by
   obtain ⟨t, ht, rfl⟩ := h
   exact simple_openEdge_not_mem_other hP hi ht hk hki
 
 /-- A point of the open part of an edge is not a vertex. -/
-theorem OpenEdgePt.ne_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {p : Point}
-    (h : OpenEdgePt P i p) {k : ℕ} (hk : k < P.n) : p ≠ P.vtx k := by
+theorem OpenEdgePt.ne_vtx : p ≠ P.vtx k := by
   obtain ⟨t, ht, rfl⟩ := h
   exact simple_openEdge_ne_vtx hP hi ht hk
+
+end
 
 /-- The top endpoint of a non-horizontal edge is a vertex on the line of the edge. -/
 theorem exists_vtx_edgeTop {P : Polygon} {i : ℕ} (hi : i < P.n) (h : NonHoriz P i) :
@@ -231,25 +236,31 @@ noncomputable def rightEnd (P : Polygon) (q : Point) : Point := (q.1 + rightHitP
     (rightEnd P q).1 = q.1 + rightHitParam P q := rfl
 @[simp] theorem rightEnd_snd (P : Polygon) (q : Point) : (rightEnd P q).2 = q.2 := rfl
 
-theorem leftEnd_fst_lt {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.filled \ P.boundary) :
+section
+
+variable {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.filled \ P.boundary)
+
+include hP hq in
+theorem leftEnd_fst_lt :
     (leftEnd P q).1 < q.1 := by
   rw [leftEnd_fst]; linarith [leftHitParam_pos hP hq]
 
-theorem lt_rightEnd_fst {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.filled \ P.boundary) :
+include hP hq in
+theorem lt_rightEnd_fst :
     q.1 < (rightEnd P q).1 := by
   rw [rightEnd_fst]; linarith [rightHitParam_pos hP hq]
 
-theorem leftEnd_mem_boundary {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) : leftEnd P q ∈ P.boundary :=
+include hP hq in
+theorem leftEnd_mem_boundary : leftEnd P q ∈ P.boundary :=
   leftHit_mem_boundary hP hq
 
-theorem rightEnd_mem_boundary {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) : rightEnd P q ∈ P.boundary :=
+include hP hq in
+theorem rightEnd_mem_boundary : rightEnd P q ∈ P.boundary :=
   rightHit_mem_boundary hP hq
 
+include hP hq in
 /-- A point of the horizontal line through `q` strictly between the two first hits is interior. -/
-theorem mem_interior_of_between {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) {p : Point} (hy : p.2 = q.2) (h1 : (leftEnd P q).1 < p.1)
+theorem mem_interior_of_between {p : Point} (hy : p.2 = q.2) (h1 : (leftEnd P q).1 < p.1)
     (h2 : p.1 < (rightEnd P q).1) : p ∈ P.filled \ P.boundary := by
   rw [leftEnd_fst] at h1
   rw [rightEnd_fst] at h2
@@ -259,9 +270,9 @@ theorem mem_interior_of_between {P : Polygon} (hP : P.Simple) {q : Point}
   · have := open_left_ray_subset_interior hP hq (q.1 - p.1) (by linarith) (by linarith)
     rwa [show (q.1 - (q.1 - p.1), q.2) = p from point_ext (by ring) hy.symm] at this
 
+include hP hq in
 /-- The closed horizontal segment meets the boundary only in its two endpoints. -/
-theorem closedHSeg_inter_boundary {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) {p : Point} (hy : p.2 = q.2) (h1 : (leftEnd P q).1 ≤ p.1)
+theorem closedHSeg_inter_boundary {p : Point} (hy : p.2 = q.2) (h1 : (leftEnd P q).1 ≤ p.1)
     (h2 : p.1 ≤ (rightEnd P q).1) (hp : p ∈ P.boundary) : p = leftEnd P q ∨ p = rightEnd P q := by
   rcases h1.lt_or_eq with h1 | h1
   · rcases h2.lt_or_eq with h2 | h2
@@ -282,7 +293,7 @@ theorem rayPt_mem_chordUnion {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P
     filter_upwards [Ioo_mem_nhdsGT hs] with t ht
     exact hint t ht.1 ht.2
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
-  have hle : s ≤ chordParam P i σ := (hit_of_initial hP hσ0 hs hint).1
+  have hle := (hit_of_initial hP hσ0 hs hint).1
   refine ⟨chordSet P i σ, ⟨i, σ, hi, hσ, hdir, rfl⟩, ?_⟩
   rw [chordSet_eq_image hP hi hdir]
   exact ⟨s, ⟨hs.le, hle⟩, rfl⟩
@@ -291,7 +302,7 @@ theorem rayPt_mem_chordUnion {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P
 theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
     (hk : k < P.n) : rightEnd P q ≠ P.vtx k := by
   intro heq
-  have hq' : q ∈ P.filled \ P.boundary := hq.1
+  have hq' := hq.1
   have hR := rightHitParam_pos hP hq'
   apply hq.2
   have e : ∀ t, rayPt (P.vtx k) (-1) t = (q.1 + (rightHitParam P q - t), q.2) := by
@@ -301,14 +312,13 @@ theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ fr
   have hmem := rayPt_mem_chordUnion hP hk (Or.inr rfl) hR (fun t ht1 ht2 => by
     rw [e]
     exact open_ray_subset_interior hP hq' _ (by linarith) (by linarith))
-  rw [e, sub_self, add_zero] at hmem
-  exact hmem
+  simp_all
 
 /-- **The left endpoint of the horizontal segment of a free point is not a vertex.** -/
 theorem leftEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
     (hk : k < P.n) : leftEnd P q ≠ P.vtx k := by
   intro heq
-  have hq' : q ∈ P.filled \ P.boundary := hq.1
+  have hq' := hq.1
   have hL := leftHitParam_pos hP hq'
   apply hq.2
   have e : ∀ t, rayPt (P.vtx k) 1 t = (q.1 - (leftHitParam P q - t), q.2) := by
@@ -318,8 +328,7 @@ theorem leftEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ fre
   have hmem := rayPt_mem_chordUnion hP hk (Or.inl rfl) hL (fun t ht1 ht2 => by
     rw [e]
     exact open_left_ray_subset_interior hP hq' _ (by linarith) (by linarith))
-  rw [e, sub_self, sub_zero] at hmem
-  exact hmem
+  simp_all
 
 /-- **No vertex on the closed horizontal segment of a free point.** -/
 theorem not_vtx_mem_closedHSeg {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P)
@@ -332,10 +341,10 @@ theorem not_vtx_mem_closedHSeg {P : Polygon} (hP : P.Simple) {q : Point} (hq : q
 
 /-! ### The endpoints lie on open non-horizontal edges -/
 
+include hP hq in
 /-- A horizontal edge at the height of an interior point `q` cannot contain, in its open part,
 a first hit of the horizontal ray from `q`: it would contain `q` or an interior point. -/
-theorem nonHoriz_of_openEdgePt_end {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) {j : ℕ} (hj : j < P.n) {p : Point} (hp : OpenEdgePt P j p)
+theorem nonHoriz_of_openEdgePt_end {j : ℕ} (hj : j < P.n) {p : Point} (hp : OpenEdgePt P j p)
     (hpy : p.2 = q.2) (h1 : (leftEnd P q).1 ≤ p.1) (h2 : p.1 ≤ (rightEnd P q).1) :
     NonHoriz P j := by
   intro hh
@@ -406,9 +415,9 @@ theorem leftEnd_fst_eq_edgeX {P : Polygon} {q : Point} {i : ℕ} (hi : NonHoriz 
   have := ((openEdgePt_iff_edgeX hi).1 h).2
   rwa [leftEnd_snd] at this
 
+include hP hq in
 /-- The two edges carrying the endpoints are distinct. -/
-theorem leftEdge_ne_rightEdge {P : Polygon} (hP : P.Simple) {q : Point}
-    (hq : q ∈ P.filled \ P.boundary) {i j : ℕ} (hi : NonHoriz P i) (hj : NonHoriz P j)
+theorem leftEdge_ne_rightEdge {i j : ℕ} (hi : NonHoriz P i) (hj : NonHoriz P j)
     (hL : OpenEdgePt P i (leftEnd P q)) (hR : OpenEdgePt P j (rightEnd P q)) : i ≠ j := by
   rintro rfl
   have h1 := leftEnd_fst_eq_edgeX hi hL
@@ -416,6 +425,8 @@ theorem leftEdge_ne_rightEdge {P : Polygon} (hP : P.Simple) {q : Point}
   have := leftEnd_fst_lt hP hq
   have := lt_rightEnd_fst hP hq
   linarith
+
+end
 
 end
 

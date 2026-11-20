@@ -77,7 +77,7 @@ theorem ratio_mem_sig_iff {a b y : ℝ} (hab : a ≠ b) :
     (0 ≤ ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) ∧
       ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) < 1) ↔ (0 ≤ ratio a b y ∧ ratio a b y < 1) := by
   rw [ratio_mem_iff (by rwa [Ne, sig_inj]), ratio_mem_iff hab]
-  simp only [sig_lt_iff, sig_le_iff]
+  simp [sig_lt_iff, sig_le_iff]
 
 theorem ratio_eq_zero_sig_iff {a b y : ℝ} (hab : a ≠ b) :
     ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) = 0 ↔ ratio a b y = 0 := by
@@ -111,7 +111,7 @@ theorem key_lt_iff_lex (M : Model) (Q : Polygon) {x x' : WPos}
   · intro hlt
     rcases lt_trichotomy x.edge x'.edge with h1 | h1 | h1
     · exact Or.inl h1
-    · right; refine ⟨h1, ?_⟩; rw [h1] at hlt; linarith
+    · simp_all
     · exfalso
       have : (x'.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h1
       linarith [hm'.2, hm.1]
@@ -149,7 +149,7 @@ theorem param'_eq {Q : Polygon} {x : WPos} {k : ℕ} (hk : x.hgt = k + 1)
   · simp [hh]
   · have hh' : ¬ stretch (bnd C C') (kk C C') ((chainModel C).wa x.edge).2 =
         stretch (bnd C C') (kk C C') ((chainModel C).wb x.edge).2 := fun e => hh (sig_inj.1 e)
-    simp only [hh, hh', ↓reduceIte]
+    simp_all
 
 theorem param_mem_iff {Q : Polygon} {x : WPos} (hx : BandPos C C' Q x) :
     (0 ≤ (chainModel C').param Q x ∧ (chainModel C').param Q x < 1) ↔
@@ -170,8 +170,13 @@ theorem param_eq_zero_iff {Q : Polygon} {x : WPos} (hx : BandPos C C' Q x) :
     · exact Iff.rfl
     · exact ratio_eq_zero_sig_iff hh
 
+section
+
+variable {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : BandPos C C' Q x')
+include hx hx'
+
 /-- On one walk edge the parameters of band positions are ordered alike. -/
-theorem param_lt_iff {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : BandPos C C' Q x')
+theorem param_lt_iff
     (he : x.edge = x'.edge) (hm : 0 ≤ (chainModel C).param Q x ∧ (chainModel C).param Q x < 1)
     (hm' : 0 ≤ (chainModel C).param Q x' ∧ (chainModel C).param Q x' < 1) :
     (chainModel C').param Q x < (chainModel C').param Q x' ↔
@@ -201,11 +206,11 @@ theorem param_lt_iff {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : 
   rw [param_eq _ Q x k hk] at hne0
   rw [h.param'_eq hk hy, h.param'_eq hk' hy', param_eq _ Q x k hk, param_eq _ Q x' k' hk', ← he]
   by_cases hh : ((chainModel C).wa x.edge).2 = ((chainModel C).wb x.edge).2
-  · simp only [hh, ↓reduceIte] at hne0; exact absurd rfl hne0
+  · simp [hh, ↓reduceIte]
   · simp only [hh, ↓reduceIte]; exact ratio_lt_sig_iff hh
 
 /-- **Keys are ordered alike in the two models.** -/
-theorem key_lt_iff {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : BandPos C C' Q x')
+theorem key_lt_iff
     (hm : 0 ≤ (chainModel C).param Q x ∧ (chainModel C).param Q x < 1)
     (hm' : 0 ≤ (chainModel C).param Q x' ∧ (chainModel C).param Q x' < 1) :
     (chainModel C').key Q x < (chainModel C').key Q x' ↔
@@ -221,7 +226,7 @@ theorem key_lt_iff {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : Ba
     · exact Or.inr ⟨h1, (h.param_lt_iff hx hx' h1 hm hm').2 h2⟩
 
 /-- **Arc weights between band positions agree.** -/
-theorem arcWt_eq {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : BandPos C C' Q x')
+theorem arcWt_eq
     (hm : 0 ≤ (chainModel C).param Q x ∧ (chainModel C).param Q x < 1)
     (hm' : 0 ≤ (chainModel C).param Q x' ∧ (chainModel C).param Q x' < 1) :
     (chainModel C').arcWt ((chainModel C').key Q x) ((chainModel C').key Q x') =
@@ -240,6 +245,8 @@ theorem arcWt_eq {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : Band
   have hlt := h.key_lt_iff hx hx' hm hm'
   unfold Model.key at hlt
   simp only [hlt, h.param_eq_zero_iff hx']
+
+end
 
 end Twin
 

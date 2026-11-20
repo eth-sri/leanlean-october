@@ -45,7 +45,7 @@ theorem faces_near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   obtain ⟨δ, hδ, hW'⟩ := hW
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hF hfin ((p : ℝ) + t))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set s := min (min δ δ₁) (min ε (1 - t)) / 2 with hs
   have hm : 0 < min (min δ δ₁) (min ε (1 - t)) :=
     lt_min (lt_min hδ hδ₁') (lt_min hε (by linarith))
@@ -68,21 +68,21 @@ theorem off_before_vertex {n g p : ℕ} (hg : g < n) (hp : p < n) {s : ℝ} (hs0
   have hpg : p ≠ g := by
     intro h; subst h; simp [off_self] at hpos
   rcases Nat.eq_zero_or_pos p with rfl | hp1
-  · have e : (0 + n - 1) % n = n - 1 := by rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · have e : (0 + n - 1) % n = n - 1 := by simp
     rw [e]
-    have hn1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hn1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by simp_all
     rw [hn1]
     unfold off
     have hg0 : (0 : ℝ) < g := by
-      have : 0 < g := Nat.pos_of_ne_zero (Ne.symm hpg)
+      have := Nat.pos_of_ne_zero (Ne.symm hpg)
       exact_mod_cast this
     have hgn : (g : ℝ) + 1 ≤ n := by exact_mod_cast hg
     rw [ite_eq_left (by linarith), ite_eq_right (by push_cast; linarith)]
     push_cast; ring
   · have e : (p + n - 1) % n = p - 1 := by
-      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      ram_simp [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
     rw [e]
-    have hp1' : ((p - 1 : ℕ) : ℝ) = (p : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hp1' : ((p - 1 : ℕ) : ℝ) = (p : ℝ) - 1 := by simp_all
     rw [hp1']
     unfold off
     rcases lt_or_gt_of_ne hpg with h | h
@@ -96,8 +96,7 @@ theorem off_before_edge {n g p : ℕ} (hg : g < n) (hp : p < n) {t s : ℝ} (hs0
     (hst : s < t) (ht1 : t < 1) :
     off n g ((p : ℝ) + (t - s)) = off n g ((p : ℝ) + t) - s := by
   have := off_add_small hg hp (t := t - s) (s := s) (by linarith) hs0.le (by linarith)
-  rw [show t - s + s = t by ring] at this
-  linarith
+  simp_all
 
 /-- **A region faced just before a position is faced at nearby earlier non-cut positions**
 (at positive offset). -/
@@ -112,9 +111,9 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
   rcases ht0.lt_or_eq with htp | rfl
   · obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       (eventually_not_cut_before hM hF hfin ((p : ℝ) + t))
-    have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+    have hδ₁' := hδ₁
     set s := min (min δ δ₁) (min ε t) / 2 with hs
-    have hm : 0 < min (min δ δ₁) (min ε t) := lt_min (lt_min hδ hδ₁') (lt_min hε htp)
+    have hm := lt_min (lt_min hδ hδ₁') (lt_min hε htp)
     have h1 := min_le_left (min δ δ₁) (min ε t)
     have h2 := min_le_right (min δ δ₁) (min ε t)
     have h3 := min_le_left δ δ₁
@@ -136,19 +135,18 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
       rcases Nat.eq_zero_or_pos p with rfl | hp1
       · right
         have e : (0 + M.W.n - 1) % M.W.n = M.W.n - 1 := by
-          rw [Nat.mod_eq_of_lt (by omega)]; omega
+          simp
         rw [hq, e, Nat.cast_sub (by omega)]; push_cast; ring
       · left
         have e : (p + M.W.n - 1) % M.W.n = p - 1 := by
-          rw [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)]
+          ram_simp [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
         rw [hq, e, Nat.cast_sub (by omega)]; push_cast; ring
     obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       ((eventually_not_cut_before hM hF hfin (p : ℝ)).and
         (eventually_not_cut_before hM hF hfin (M.W.n : ℝ)))
-    have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+    have hδ₁' := hδ₁
     set s := min (min δ δ₁) (min ε 1) / 2 with hs
-    have hm : 0 < min (min δ δ₁) (min ε 1) := lt_min (lt_min hδ hδ₁') (lt_min hε one_pos)
+    have hm := lt_min (lt_min hδ hδ₁') (lt_min hε one_pos)
     have h1 := min_le_left (min δ δ₁) (min ε 1)
     have h2 := min_le_right (min δ δ₁) (min ε 1)
     have h3 := min_le_left δ δ₁

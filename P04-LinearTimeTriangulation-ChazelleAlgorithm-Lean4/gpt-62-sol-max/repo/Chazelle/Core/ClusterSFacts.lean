@@ -84,19 +84,19 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     (hk : 0 < g.k') {cs : ℕ} (hlv : ∀ l, l < g.μ → LvOK g m cs l) :
     SFacts M T a ha C R (firstOf g m hA.first_lt) preE slot (upTf T) g.k' cs (ssOf g) g.A0 g.U W
       m := by
-  have hU := g.U_ge
+  
   have hP := g.two_pow_L; have hPU := g.P_le_U
   refine ⟨ssOf_lay hμN hO hV hW, rfl, rfl, hpl, fun v => ?_, fun d => (hA.map d).2.2,
     fun d => (hA.map d).1, fun v => rfl, hA.lev, hA.lev_lt, hB1.att, hB1.fp, fun x => ?_,
     fun x => ?_, hB2.fpar, hB2.fpar_lt, hB2.r0, hB2.pre, hB2.sz, hB2.R_ok, hB2.R_n, hB2.R_up,
     hB2.R_root, hB2.R_pre, hB2.up_tab, fun v => ?_, fun x hx => upTf_lt T hx, fun x hx => ?_,
-    hA.upt, hpow, by show g.N + g.μ < 2 ^ g.L; omega, hPU, hL, hhalf, fun v x hvx => ?_,
+    hA.upt, hpow, by assumption, hPU, hL, hhalf, fun v x hvx => ?_,
     fun v => ?_⟩
   · apply Fin.ext
     have h1 := (hA.map (firstOf g m hA.first_lt v)).2.2
     have h2 := hA.first_v v v.2
     simp only [firstOf] at h1 ⊢
-    rw [← h1]; exact h2
+    rwa [← h1]
   · rcases x with d | d | d
     · show m (g.base 11 + d) = (M.opp d : ℕ)
       exact (hB1.so d).1
@@ -114,7 +114,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   · unfold upTf; rw [dite_eq_left v.2]
   · have := hA.pv ⟨x, hx⟩; simp only at this
     show m (g.base 6 + x) = upTf T x
-    unfold upTf; rw [dite_eq_left hx]; exact this
+    unfold upTf; rwa [dite_eq_left hx]
   · have hlvv := hlv _ (hA.lev_lt v)
     obtain ⟨hb, ht, -, -⟩ := hlvv
     simp only [slabN, dite_eq_left v.2, dite_eq_left x.2] at hvx
@@ -124,7 +124,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     obtain ⟨hb, ht, -, -⟩ := hlvv
     show m (g.base 38 + T.level v) + 1 - m (g.base 37 + T.level v) ≤ g.k'
     rw [hb, ht]
-    have := Nat.mod_lt (T.level v + cs) hk
+    
     omega
 
 end

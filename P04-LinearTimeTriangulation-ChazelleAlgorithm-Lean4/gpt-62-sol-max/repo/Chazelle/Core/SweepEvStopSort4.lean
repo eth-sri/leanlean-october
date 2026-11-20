@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepEvStopSort3
 
 /-!
@@ -47,7 +49,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
   have hxS : x < S := hLm x (List.mem_of_getElem? hxL)
   have q1X : d₁.nreg srX = x := by
     show regB _ _ _ srX = _
-    rw [rX, hsb, hqj, hmem _ (by omega), hLmem j hj]
+    ram_rw [rX, hsb, hqj, hmem, hLmem j hj]
   have q1o : ∀ r, r ≠ srA → r ≠ srX → d₁.nreg r = d.nreg r := rO
   have hw₁ := e₁.wb_right
   have r1 : ∀ r, bandOf r ∉ oracleBands → (r < sw 3003 ∨ sw 3016 < r) → d₁.nreg r = d.nreg r :=
@@ -64,7 +66,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
   have adv : ∀ (d₃ : Config) (O' : List ℕ), WordsBounded W d₃ → d₃.nreg srX = x →
       d₃.nreg srJ = j → d₃.nreg K1 = 1 → SsCtx J d2 RB S A₀ m₀ d₃ → d₃.nreg srSB = SBv →
       d₃.nreg sB = B1 → d₃.nreg aB = B1 + 5 * S →
-      (∀ a, a < B1 → d₃.nmem a = d₀.nmem a) → DInv (ssKey P J m₀ RB) L (j + 1) O' →
+      (MemEqBelow B1 d₃.nmem d₀.nmem) → DInv (ssKey P J m₀ RB) L (j + 1) O' →
       d₃.nreg sC = O'.length → O'.length ≤ j + 1 →
       StopRecsAt d₃.nmem B1 (O'.map (rawRec m₀ RB)) →
       AuxRecsAt d₃.nmem (B1 + 5 * S) (O'.map (rawAux m₀ RB)) →
@@ -81,14 +83,14 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), j₃, k₃]; omega)
     have ko : ∀ r, r ≠ srP → r ≠ srJ → regB d₃.nmem ssAdv d₃.nreg r = d₃.nreg r := vo
     refine ⟨_, e, e.wb_right, by show regB _ _ _ srJ = _; rw [vJ, j₃, k₃], ?_, ?_, ?_, ?_, m₃,
-      ⟨O', D₃, by show regB _ _ _ sC = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact C₃, l₃,
+      ⟨O', D₃, by frame_finish, l₃,
         fun _ => ⟨x, by simpa using hxL, by show regB _ _ _ srP = _; rw [vP, x₃]⟩, st₃, ax₃⟩,
       fun r h1 h2 h3 => ?_, rr₃, rm₃, o₃⟩
     · exact ssCtx_keep c₃ (fun r _ _ h _ => ko r (by rintro rfl; simp only [srP, sw] at h; omega)
         (by rintro rfl; simp only [srJ, sw] at h; omega)) (fun _ _ => rfl)
-    · show regB _ _ _ srSB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact sb₃
-    · show regB _ _ _ sB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact b1₃
-    · show regB _ _ _ aB = _; rw [ko _ (by ssoSrt) (by ssoSrt)]; exact b2₃
+    · frame_finish
+    · frame_finish
+    · frame_finish
     · show regB _ _ _ r = _
       rw [ko r (by rintro rfl; simp only [srP, sw] at h2; omega) (by rintro rfl; simp only [srJ, sw] at h2; omega)]
       exact g₃ r h1 h2 h3
@@ -113,7 +115,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
         (by ssoSrt)]; exact q1X)
       (by rw [r₂ srJ (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), qJ₁])
       (by rw [kb K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact j1)
-      (ssCtx_keep hctx kb (fun a ha => by rw [m₂ a (by omega)]))
+      (ssCtx_keep hctx kb (fun a ha => by ram_rw [m₂ a]))
       (by rw [r₂ srSB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), q1o srSB (by ssoSrt) (by ssoSrt)]; exact hsb)
       (by rw [kb sB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb1)
       (by rw [kb aB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb2)
@@ -131,7 +133,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
     have hqP₁ : d₁.nreg srP = x' := (q1o _ (by ssoSrt) (by ssoSrt)).trans hqP
     -- sorted: the previous key is at most this one
     have hsort : KLe (ssKey P J m₀ RB x') (ssKey P J m₀ RB x) := by
-      have := List.pairwise_iff_getElem.1 hLs (j - 1) j (by omega) (by omega) (by omega)
+      have := (ram_app% (List.pairwise_iff_getElem.1 hLs (j - 1) j ?_ ?_ ?_))
       rw [List.getElem?_eq_getElem (by omega)] at hx' hxL
       simp only [Option.some.injEq] at hx' hxL
       rwa [hx', hxL] at this
@@ -147,7 +149,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
       k₂ r (by rintro rfl; omega) (by rintro rfl; omega)) (fun _ _ => rfl)
     obtain ⟨d₃, k₃, e₃, hk₃, hctx₃, hbit, hr₃, hrr₃, hm₃, hrm₃, ho₃⟩ := hcmp d₂ hw₂ hctx₂
     have i0 : d₂.nreg 30000 = x := by show regB _ _ _ 30000 = _; rw [c0, q1X]
-    have i1 : d₂.nreg 30001 = x' := by show regB _ _ _ 30001 = _; rw [c1, hqP₁]
+    have i1 : d₂.nreg 30001 = x' := by frame_finish
     rw [i0, i1] at hbit
     have hiff := ssLe_in (P := P) (J := J) (m := m₀) (RB := RB) hxS hx'S
     -- registers kept by the comparator
@@ -181,12 +183,11 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
         (by rw [k31 sC (kb _ (by ssoSrt) (by ssoSrt)) (by ssoSrt)]; exact hC) (by omega)
         (by rw [hm₃]; exact hst) (by rw [hm₃]; exact hax)
         (fun r ho h _ => (k31 r ho h).trans (hregs r ho h (by
-          rintro rfl; exact absurd h (by unfold sC sw; omega))))
+          rintro rfl; exact absurd h (by reg_omega))))
         (fun r ho => by
           rw [hrr₃ r (ssBc_sub ho)]; exact hrr r ho)
         (by rw [hrm₃]; exact hrm) (by rw [ho₃]; exact hout)
-      refine ⟨d', _, .seq e₁ (.seq (.ifLtN_true hlt (.seq e₂ (.seq e₃
-        (.ifLtN_true t (.skip e₃.wb_right))))) ex'), by simp [ssRd]; omega, by simp [ssRd]; omega, hI'⟩
+      refine ⟨d', _, (by ram_path), by simp [ssRd]; omega, by simp [ssRd]; omega, hI'⟩
     · -- a new key: written
       have b0 : d₃.nreg 30002 = 0 := by rw [hbit, ite_eq_right (fun h => hle (hiff.1 h))]
       have t : ¬ d₃.nreg K0 < d₃.nreg 30002 := by rw [K0₃, b0]; omega
@@ -216,7 +217,7 @@ theorem ssBody_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ :
           (by ssoSrt)]; exact qX₃)
         (by rw [r₄ srJ (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), k₃ srJ (kb _ (by ssoSrt) (by ssoSrt)), k₂ srJ (by ssoSrt) (by ssoSrt), qJ₁])
         (by rw [kb4 K1 (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact j1)
-        (ssCtx_keep hctx kb4 (fun a ha => by rw [m₄ a (by omega), hm₃' a]))
+        (ssCtx_keep hctx kb4 (fun a ha => by ram_rw [m₄ a, hm₃' a]))
         (by rw [r₄ srSB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt), k₃ srSB (kb _ (by ssoSrt) (by ssoSrt)), k₂ srSB (by ssoSrt) (by ssoSrt),
           q1o srSB (by ssoSrt) (by ssoSrt)]; exact hsb)
         (by rw [kb4 sB (by ssoSrt) (by ssoSrt) (by ssoSrt) (by ssoSrt)]; exact hb1)

@@ -40,9 +40,7 @@ theorem loSet_congr {M : Model} {Q : Polygon} {m m' : ℕ → ℕ} {A K : ℕ}
     {hs : List (WPos × WPos)} (h : ∀ x, A ≤ x → x < A + 4 * K → m' x = m x) :
     ShotList.loSet M Q m' A K hs = ShotList.loSet M Q m A K hs := by
   have ha : ∀ j, j < K → ShotList.arcAt m' A j = ShotList.arcAt m A j := fun j hj => by
-    unfold ShotList.arcAt
-    rw [h _ (by omega) (by omega), h _ (by omega) (by omega), h _ (by omega) (by omega),
-      h _ (by omega) (by omega)]
+    ram_simp [ShotList.arcAt, h] 
   ext x
   unfold ShotList.loSet
   simp only [mem_ofPred_eq]
@@ -54,7 +52,7 @@ theorem loSet_congr {M : Model} {Q : Polygon} {m m' : ℕ → ℕ} {A K : ℕ}
 
 theorem candComp_lift {P : Polygon} {J : Merge.Junction} {S₂ : Set (Set Point)} {T j u d : ℕ}
     {a : Point} {σ : ℝ} {lo : Set Point} {c c₃ c' : Config} (hs : SameKB c c₃)
-    (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x)
+    (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : MemEqBelow (c.nreg ALLOC) c₃.nmem c.nmem)
     (h : CandComp P J S₂ T j u d a σ lo c₃ c') : CandComp P J S₂ T j u d a σ lo c c' :=
   fun p t h1 h2 h3 h4 h5 h6 => by
     obtain ⟨hh, e1, e2⟩ := h p t h1 h2 h3 h4 h5 h6
@@ -62,7 +60,7 @@ theorem candComp_lift {P : Polygon} {J : Merge.Junction} {S₂ : Set (Set Point)
 
 theorem candRes_lift {P : Polygon} {J : Merge.Junction} {S₂ : Set (Set Point)} {T j u d : ℕ}
     {a : Point} {σ : ℝ} {c c₃ c' : Config} (hs : SameKB c c₃)
-    (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x)
+    (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : MemEqBelow (c.nreg ALLOC) c₃.nmem c.nmem)
     (h : CandRes P J S₂ T j u d a σ c₃ c') : CandRes P J S₂ T j u d a σ c c' := by
   rcases h with h | ⟨e, hh, h⟩
   · exact Or.inl (rejAt_lift hs hA hm h)
@@ -70,17 +68,17 @@ theorem candRes_lift {P : Polygon} {J : Merge.Junction} {S₂ : Set (Set Point)}
 
 /-- The ends of a chord record are positions of the walk proper. -/
 theorem end_facts {P : Polygon} {J : Merge.Junction} {N₂ : NF}
-    (hNF : IsNF (chainModel J.right) (Qof P) N₂) {k : ℕ} (hk : k < N₂.nChords) (s : ℕ) :
-    (endPos N₂ k s).edge < (chainModel J.right).W.n ∧
-      ProperPos (chainModel J.right) (Qof P) P.n (endPos N₂ k s) ∧
-      (farEnd N₂ k s).edge < (chainModel J.right).W.n ∧
-      ProperPos (chainModel J.right) (Qof P) P.n (farEnd N₂ k s) := by
+    (hNF : IsNF J.rightModel (Qof P) N₂) {k : ℕ} (hk : k < N₂.nChords) (s : ℕ) :
+    (endPos N₂ k s).edge < J.rightModel.W.n ∧
+      ProperPos J.rightModel (Qof P) P.n (endPos N₂ k s) ∧
+      (farEnd N₂ k s).edge < J.rightModel.W.n ∧
+      ProperPos J.rightModel (Qof P) P.n (farEnd N₂ k s) := by
   have hA := hNF.2.2.1 k hk
   have hhn := (regOf_spec hNF).2.2.2.2.2.1 k hk
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hpl : ProperPos (chainModel J.right) (Qof P) P.n (N₂.chord k).lpos :=
+  have hpl : ProperPos J.rightModel (Qof P) P.n (N₂.chord k).lpos :=
     ⟨hA.1.2.1, hA.1.2.2.1, by show (N₂.chord k).h + 1 ≤ P.n; rw [← hQn]; omega⟩
-  have hpr : ProperPos (chainModel J.right) (Qof P) P.n (N₂.chord k).rpos :=
+  have hpr : ProperPos J.rightModel (Qof P) P.n (N₂.chord k).rpos :=
     ⟨hA.2.2.1, hA.2.2.2.1, by show (N₂.chord k).h + 1 ≤ P.n; rw [← hQn]; omega⟩
   unfold endPos farEnd
   split_ifs
@@ -89,16 +87,16 @@ theorem end_facts {P : Polygon} {J : Merge.Junction} {N₂ : NF}
 
 /-- The origin and the direction of the end `s` of chord `k`. -/
 theorem endOrigin_ks {Q : Polygon} {J : Merge.Junction} {N₂ : NF}
-    (hNF : IsNF (chainModel J.right) Q N₂) {k s : ℕ} (hk : k < N₂.nChords) (hs : s ≤ 1) :
-    endOrigin J Q N₂ (2 * k + s) = (chainModel J.right).pos Q (endPos N₂ k s) ∧
+    (hNF : IsNF J.rightModel Q N₂) {k s : ℕ} (hk : k < N₂.nChords) (hs : s ≤ 1) :
+    endOrigin J Q N₂ (2 * k + s) = J.rightModel.pos Q (endPos N₂ k s) ∧
       endDir (2 * k + s) = dirOf (if s = 0 then 1 else 0) ∧
       ((dirOf (if s = 0 then 1 else 0) = 1 ∧
-          endOrigin J Q N₂ (2 * k + s) = Merge.lend ((N₂.chord k).toSet (chainModel J.right) Q)) ∨
+          endOrigin J Q N₂ (2 * k + s) = Merge.lend ((N₂.chord k).toSet J.rightModel Q)) ∨
         (dirOf (if s = 0 then 1 else 0) = -1 ∧
-          endOrigin J Q N₂ (2 * k + s) = Merge.rend ((N₂.chord k).toSet (chainModel J.right) Q))) ∧
-      (chainModel J.right).pos Q (farEnd N₂ k s) =
-        (if (if s = 0 then 1 else 0) = 1 then Merge.rend ((N₂.chord k).toSet (chainModel J.right) Q)
-          else Merge.lend ((N₂.chord k).toSet (chainModel J.right) Q)) := by
+          endOrigin J Q N₂ (2 * k + s) = Merge.rend ((N₂.chord k).toSet J.rightModel Q))) ∧
+      J.rightModel.pos Q (farEnd N₂ k s) =
+        (if (if s = 0 then 1 else 0) = 1 then Merge.rend ((N₂.chord k).toSet J.rightModel Q)
+          else Merge.lend ((N₂.chord k).toSet J.rightModel Q)) := by
   have hj : 2 * k + s < 2 * N₂.nChords := by omega
   have h2 : (2 * k + s) / 2 = k := by omega
   have h3 : (2 * k + s) % 2 = s := by omega
@@ -106,18 +104,18 @@ theorem endOrigin_ks {Q : Polygon} {J : Merge.Junction} {N₂ : NF}
   have hF := farOrigin_eq J hNF hj
   rw [h2, h3] at hO hF
   refine ⟨hO, ?_, ?_, ?_⟩
-  · unfold endDir dirOf; rw [h3]; rcases (by omega : s = 0 ∨ s = 1) with rfl | rfl <;> simp
+  · simp [endDir, dirOf, h3]
   · unfold endOrigin; rw [h3, h2]
     rcases (by omega : s = 0 ∨ s = 1) with rfl | rfl
     · left; simp [dirOf]
     · right; simp [dirOf]
-  · rw [← hF]; rcases (by omega : s = 0 ∨ s = 1) with rfl | rfl <;> simp
+  simp_all
 
 /-- **An origin above the top of `C₁`** has its first hit in `C` on `C₂`. -/
 theorem high_no_hit {J : Merge.Junction} {a : Point} (haR : a ∈ J.right.set) {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) (hhigh : ¬ a.2 ≤ J.left.top.2) :
     ¬ J.whole.hitParam a σ < J.right.hitParam a σ := by
-  have ha₂ : a.2 ≤ J.right.top.2 := J.right.snd_le_top_of_mem_set haR
+  have ha₂ := J.right.snd_le_top_of_mem_set haR
   have hbox : J.right.hitParam a σ ≤ Merge.rayHit J.whole.radius ∅ a σ := by
     unfold Merge.rayHit
     refine le_csInf (Merge.rayHitSet_nonempty _ _ _ hσ) fun t ht => ?_
@@ -139,23 +137,23 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (hgen : GenOK P W c₀ J g KG) {L : List ℕ} (hL : ∀ a ∈ L, a < N₁.arcs.length)
     (hgK : c.nreg wGK = L.length) (hAB : c.nreg wGB + 4 * L.length ≤ c.nreg ALLOC)
     (harcs : ∀ k, k < L.length → ShotList.arcAt c.nmem (c.nreg wGB) k =
-      nArc (chainModel J.left) (Qof P) N₁ (L.getD k 0))
+      nArc J.leftModel (Qof P) N₁ (L.getD k 0))
     {k s : ℕ} (hkd : c.nreg oK = k) (hsd : c.nreg oS = s) (hk : k < N₂.nChords) (hs : s ≤ 1)
     (hkey : PosW P J (c.nreg kE) (c.nreg kH))
     (hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH))
     (hbF : c.nreg bF ≤ 1) (hbN : c.nreg bN ≤ 4)
     (hroom : c.nreg ALLOC + orgDoK (F (c₀.nreg (sw 5))) L.length KG ≤ W) :
     IRS P W c₀ (orgDo sh g) c (orgDoK (F (c₀.nreg (sw 5))) L.length KG) (fun c' =>
-      CandRes P J (N₂.F (chainModel J.right) (Qof P)) (c.nreg cTB) (2 * k + s)
+      CandRes P J (N₂.F J.rightModel (Qof P)) (c.nreg cTB) (2 * k + s)
         (N₂.chord k).up (N₂.chord k).dn
         (endOrigin J (Qof P) N₂ (2 * k + s)) (endDir (2 * k + s)) c c' ∧
       (endOrigin J (Qof P) N₂ (2 * k + s) ∈ J.right.set →
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.shared →
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.right.top →
-        CandComp P J (N₂.F (chainModel J.right) (Qof P)) (c.nreg cTB) (2 * k + s)
+        CandComp P J (N₂.F J.rightModel (Qof P)) (c.nreg cTB) (2 * k + s)
           (N₂.chord k).up (N₂.chord k).dn
           (endOrigin J (Qof P) N₂ (2 * k + s)) (endDir (2 * k + s))
-          (ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length []) c c') ∧
+          (ShotList.loSet J.leftModel (Qof P) c.nmem (c.nreg wGB) L.length []) c c') ∧
       (¬ (endOrigin J (Qof P) N₂ (2 * k + s) ∈ J.right.set ∧
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.shared ∧
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.right.top) → RejAt c c') ∧
@@ -170,19 +168,19 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   -- 1. the head
   refine IRS.mono (K := 11100 + (31410 + (4 + (16707 + evCandK (F (c₀.nreg (sw 5))) L.length KG))))
     (IRS.seq (K₁ := 11100) (K₂ := 31410 + (4 + (16707 + evCandK (F (c₀.nreg (sw 5))) L.length KG)))
-      (orgHead_irs hI E.hK (E.ctx2' hI) hNF (E.nw₂' hI) le_rfl (by rw [hkd]; exact hk)
-        (by rw [hsd]; exact hs) (by unfold orgDoK at hroom; omega)) ?_)
+      (orgHead_irs hI E.hK (E.ctx2' hI) hNF (E.nw₂' hI) le_rfl (by rwa [hkd])
+        (by rwa [hsd]) (by unfold orgDoK at hroom; omega)) ?_)
     (by unfold orgDoK; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨-, vUp, vDn, vD, vE, vC, vFE, vFC, fr₁, -, hm₁⟩
   simp only [hkd, hsd] at vUp vDn vD vE vC vFE vFC
   obtain ⟨hpp', -, hpos', hnorm'⟩ := nhgt_facts hEp
-  have hE1 : c₁.nreg oE < 2 * J.right.m + 7 := by rw [vE]; have := cm_n J.right; omega
-  have hpp1 : ProperPos (chainModel J.right) (Qof P) P.n ⟨c₁.nreg oE, c₁.nreg oC⟩ := by
-    rw [vE, vC]; exact hpp'
+  have hE1 : c₁.nreg oE < 2 * J.right.m + 7 := by rw [vE]; have := cm_n J.right; (simp only [WalkEmbed.cm_n] at * <;> omega)
+  have hpp1 : ProperPos J.rightModel (Qof P) P.n ⟨c₁.nreg oE, c₁.nreg oC⟩ := by
+    rwa [vE, vC]
   have hnorm1 : c₁.nreg oC = 0 ↔
-      (chainModel J.right).param (Qof P) ⟨c₁.nreg oE, c₁.nreg oC⟩ = 0 := by
-    rw [vE, vC]; exact hnorm'
-  have hpos1 : (chainModel J.right).pos (Qof P) ⟨c₁.nreg oE, c₁.nreg oC⟩ =
+      J.rightModel.param (Qof P) ⟨c₁.nreg oE, c₁.nreg oC⟩ = 0 := by
+    rwa [vE, vC]
+  have hpos1 : J.rightModel.pos (Qof P) ⟨c₁.nreg oE, c₁.nreg oC⟩ =
       endOrigin J (Qof P) N₂ (2 * k + s) := by
     rw [vE, vC, hpos', hO]
   -- 2. the class
@@ -195,32 +193,31 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       c₂.nreg r = c.nreg r := fun r h1 h2 h3 =>
     (fr₂ r h1 (by unfold oCl oU sw at *; omega) h3).trans
       (fr₁ r h1 (by unfold sw at *; omega) h3)
-  have keep21 : ∀ r, bandOf r ∉ oracleBands → r < oCl → r ≠ ALLOC → c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => fr₂ r h1 (Or.inl h2) h3
-  have hm12 : ∀ x, x < c.nreg ALLOC → c₂.nmem x = c.nmem x := fun x hx =>
+  have keep21 := fun r h1 h2 h3 => fr₂ r h1 (Or.inl h2) h3
+  have hm12 := fun x hx =>
     (hm₂ x (by omega)).trans (hm₁ x hx)
   have best2 : ∀ r, BestR r → c₂.nreg r = c.nreg r := fun r hr => keep2 r
     (band_sw_not (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
     (by unfold BestR LblR bF bE bH bN bL sw at hr; unfold sw; omega)
     (by unfold BestR LblR bF bE bH bN bL sw at hr; unfold ALLOC; omega)
-  have kE2 : c₂.nreg kE = c.nreg kE := keep2 _ (band_sw_not (by unfold kE sw; omega))
-    (by unfold kE sw; omega) (by unfold kE ALLOC sw; omega)
-  have kH2 : c₂.nreg kH = c.nreg kH := keep2 _ (band_sw_not (by unfold kH sw; omega))
-    (by unfold kH sw; omega) (by unfold kH ALLOC sw; omega)
-  have same2 : SameKB c c₂ := ⟨kE2, kH2, best2⟩
-  have k1 : c₂.nreg K1 = 1 := (E.hK.fix hI₂).2.1
+  have kE2 : c₂.nreg kE = c.nreg kE := keep2 _ (band_sw_not (by reg_omega))
+    (by reg_omega) (by reg_omega)
+  have kH2 : c₂.nreg kH = c.nreg kH := keep2 _ (band_sw_not (by reg_omega))
+    (by reg_omega) (by reg_omega)
+  
+  have k1 := (E.hK.fix hI₂).2.1
   -- the rejection (class `0` or `2`)
   have rejQ : c₂.nreg oCl ≠ 1 →
-      CandRes P J (N₂.F (chainModel J.right) (Qof P)) (c.nreg cTB) (2 * k + s)
+      CandRes P J (N₂.F J.rightModel (Qof P)) (c.nreg cTB) (2 * k + s)
         (N₂.chord k).up (N₂.chord k).dn
         (endOrigin J (Qof P) N₂ (2 * k + s)) (endDir (2 * k + s)) c c₂ ∧
       (endOrigin J (Qof P) N₂ (2 * k + s) ∈ J.right.set →
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.shared →
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.right.top →
-        CandComp P J (N₂.F (chainModel J.right) (Qof P)) (c.nreg cTB) (2 * k + s)
+        CandComp P J (N₂.F J.rightModel (Qof P)) (c.nreg cTB) (2 * k + s)
           (N₂.chord k).up (N₂.chord k).dn
           (endOrigin J (Qof P) N₂ (2 * k + s)) (endDir (2 * k + s))
-          (ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length []) c c₂) ∧
+          (ShotList.loSet J.leftModel (Qof P) c.nmem (c.nreg wGB) L.length []) c c₂) ∧
       (¬ (endOrigin J (Qof P) N₂ (2 * k + s) ∈ J.right.set ∧
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.shared ∧
         endOrigin J (Qof P) N₂ (2 * k + s) ≠ J.right.top) → RejAt c c₂) ∧
@@ -235,8 +232,7 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       lblOf_congr (fun q hq => best2 q (Or.inr (Or.inr (Or.inr hq)))),
       best2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))⟩, ?_, by omega⟩
     · intro haR hav hat p t _ _ _ _ h5 _
-      have hhigh : ¬ (endOrigin J (Qof P) N₂ (2 * k + s)).2 ≤ J.left.top.2 :=
-        fun h => hn1 (cl1iff.2 ⟨haR, hav, hat, h⟩)
+      have hhigh := fun h => hn1 (cl1iff.2 ⟨haR, hav, hat, h⟩)
       exact absurd h5 (high_no_hit haR hσ hhigh)
     · intro r h1 h2 h3
       exact keep2 r h1 (by unfold OrgR at h2; push Not at h2; unfold sw at *; omega) h3
@@ -253,93 +249,90 @@ theorem orgDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   obtain ⟨haR, hav, hat, ha₁⟩ := cl1iff.1 hcl
   obtain ⟨sy, hsym, hsl, hse⟩ := clsym hcl
   -- 3. the abscissa
-  have eE2 : c₂.nreg oE = c₁.nreg oE := keep21 _ (band_sw_not (by unfold oE sw; omega))
-    (by unfold oE oCl sw; omega) (by unfold oE ALLOC sw; omega)
-  have eC2 : c₂.nreg oC = c₁.nreg oC := keep21 _ (band_sw_not (by unfold oC sw; omega))
-    (by unfold oC oCl sw; omega) (by unfold oC ALLOC sw; omega)
-  have hpos2 : (chainModel J.right).pos (Qof P) ⟨c₂.nreg oE, c₂.nreg oC⟩ =
+  have eE2 : c₂.nreg oE = c₁.nreg oE := keep21 _ (band_sw_not (by reg_omega))
+    (by unfold oE oCl sw; omega) (by reg_omega)
+  have eC2 : c₂.nreg oC = c₁.nreg oC := keep21 _ (band_sw_not (by reg_omega))
+    (by unfold oC oCl sw; omega) (by reg_omega)
+  have hpos2 : J.rightModel.pos (Qof P) ⟨c₂.nreg oE, c₂.nreg oC⟩ =
       endOrigin J (Qof P) N₂ (2 * k + s) := by rw [eE2, eC2, hpos1]
-  have hy2 : |((chainModel J.right).pos (Qof P) ⟨c₂.nreg oE, c₂.nreg oC⟩).2| < J.right.radius := by
-    rw [hpos2, hO]; exact hband
+  have hy2 : |(J.rightModel.pos (Qof P) ⟨c₂.nreg oE, c₂.nreg oC⟩).2| < J.right.radius := by
+    rwa [hpos2, hO]
   refine IRS.seq (K₁ := 16707) (K₂ := evCandK (F (c₀.nreg (sw 5))) L.length KG)
     (callAbs_irs hI₂ (E.ctx2' hI₂)
-      (by unfold oE oC sw; omega) (by unfold oAbsA sw; omega)
-      (by rw [eE2, vE]; exact hEe) (by rw [eE2, eC2]; exact hpp1) hy2
+      (by reg_omega) (by reg_omega)
+      (by rwa [eE2, vE]) (by rwa [eE2, eC2]) hy2
       (by unfold orgDoK at hroom; omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨habs3, fr₃, -, hm₃⟩
   rw [hpos2] at habs3
-  have keep32 : ∀ r, bandOf r ∉ oracleBands → (r < oAbsA ∨ oAbsA + 3 < r) → r ≠ ALLOC →
-      c₃.nreg r = c₂.nreg r := fr₃
+  have keep32 := fr₃
   have keep3 : ∀ r, bandOf r ∉ oracleBands → (r < sw 2202 ∨ sw 2232 < r) → r ≠ ALLOC →
       c₃.nreg r = c.nreg r := fun r h1 h2 h3 =>
     (keep32 r h1 (by unfold oAbsA sw at *; omega) h3).trans (keep2 r h1 h2 h3)
-  have keep31 : ∀ r, bandOf r ∉ oracleBands → r < oCl → r ≠ ALLOC → c₃.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => (keep32 r h1 (by unfold oAbsA oCl sw at *; omega) h3).trans
+  have keep31 := fun r h1 h2 h3 => (keep32 r h1 (by unfold oAbsA oCl sw at *; omega) h3).trans
       (keep21 r h1 h2 h3)
-  have hm3 : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x := fun x hx =>
+  have hm3 := fun x hx =>
     (hm₃ x (by omega)).trans (hm12 x hx)
   have best3 : ∀ r, BestR r → c₃.nreg r = c.nreg r := fun r hr => keep3 r
     (band_sw_not (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
     (by unfold BestR LblR bF bE bH bN bL sw at hr; unfold sw; omega)
     (by unfold BestR LblR bF bE bH bN bL sw at hr; unfold ALLOC; omega)
-  have r3 : ∀ r, 240000 ≤ r → r < 250000 → (r < sw 2202 ∨ sw 2232 < r) → c₃.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => keep3 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+  have r3 := fun r h1 h2 h3 => keep3 r (band_sw_not ⟨h1, h2⟩) h3 (by reg_omega)
   have r31 : ∀ r, 240000 ≤ r → r < oCl → c₃.nreg r = c₁.nreg r :=
     fun r h1 h2 => keep31 r (band_sw_not ⟨h1, by unfold oCl sw at h2; omega⟩) h2
-      (by unfold ALLOC; omega)
+      (by reg_omega)
   have same3 : SameKB c c₃ :=
-    ⟨r3 _ (by unfold kE sw; omega) (by unfold kE sw; omega) (by unfold kE sw; omega),
-      r3 _ (by unfold kH sw; omega) (by unfold kH sw; omega) (by unfold kH sw; omega), best3⟩
+    ⟨r3 _ (by unfold kE sw; omega) (by unfold kE sw; omega) (by reg_omega),
+      r3 _ (by unfold kH sw; omega) (by unfold kH sw; omega) (by reg_omega), best3⟩
   have eGK : c₃.nreg wGK = c.nreg wGK :=
-    r3 _ (by unfold wGK sw; omega) (by unfold wGK sw; omega) (by unfold wGK sw; omega)
+    r3 _ (by unfold wGK sw; omega) (by unfold wGK sw; omega) (by reg_omega)
   have eGB : c₃.nreg wGB = c.nreg wGB :=
-    r3 _ (by unfold wGB sw; omega) (by unfold wGB sw; omega) (by unfold wGB sw; omega)
+    r3 _ (by unfold wGB sw; omega) (by unfold wGB sw; omega) (by reg_omega)
   have eK : c₃.nreg oK = k := by
-    rw [r3 _ (by unfold oK sw; omega) (by unfold oK sw; omega) (by unfold oK sw; omega), hkd]
+    ram_simp [r3, hkd]
   have eS : c₃.nreg oS = s := by
-    rw [r3 _ (by unfold oS sw; omega) (by unfold oS sw; omega) (by unfold oS sw; omega), hsd]
+    ram_simp [r3, hsd]
   have eUp : c₃.nreg oUp = (N₂.chord k).up := by
-    rw [r31 _ (by unfold oUp sw; omega) (by unfold oUp oCl sw; omega), vUp]
+    ram_simp [r31, vUp]
   have eDn : c₃.nreg oDn = (N₂.chord k).dn := by
-    rw [r31 _ (by unfold oDn sw; omega) (by unfold oDn oCl sw; omega), vDn]
+    ram_simp [r31, vDn]
   have eD : c₃.nreg oD = if s = 0 then 1 else 0 := by
-    rw [r31 _ (by unfold oD sw; omega) (by unfold oD oCl sw; omega), vD]
+    ram_simp [r31, vD]
   have eFE : c₃.nreg oFE = (farEnd N₂ k s).edge := by
-    rw [r31 _ (by unfold oFE sw; omega) (by unfold oFE oCl sw; omega), vFE]
+    ram_simp [r31, vFE]
   have eFC : c₃.nreg oFC = (farEnd N₂ k s).hgt := by
-    rw [r31 _ (by unfold oFC sw; omega) (by unfold oFC oCl sw; omega), vFC]
+    ram_simp [r31, vFC]
   have eTB : c₃.nreg cTB = c.nreg cTB :=
-    (hI₃.hin _ (by unfold IFix cTB sw; omega)).trans (hI.hin _ (by unfold IFix cTB sw; omega)).symm
+    (hI₃.hin _ (by reg_omega)).trans (hI.hin _ (by reg_omega)).symm
   have hsym3 : SymPtIn c₃ oSym sy := symPtIn_transport hsym
-    (keep32 _ (band_sw_not (by unfold oSym sw; omega)) (by unfold oSym oAbsA sw; omega)
-      (by unfold oSym ALLOC sw; omega))
-    (keep32 _ (band_sw_not (by unfold oSym sw; omega)) (by unfold oSym oAbsA sw; omega)
-      (by unfold oSym ALLOC sw; omega))
-    (keep32 _ (band_sw_not (by unfold oSym sw; omega)) (by unfold oSym oAbsA sw; omega)
-      (by unfold oSym ALLOC sw; omega))
-  have hfar3 : (chainModel J.right).pos (Qof P) ⟨c₃.nreg oFE, c₃.nreg oFC⟩ =
-      if c₃.nreg oD = 1 then Merge.rend ((N₂.chord k).toSet (chainModel J.right) (Qof P))
-      else Merge.lend ((N₂.chord k).toSet (chainModel J.right) (Qof P)) := by
-    rw [eFE, eFC, eD]; exact hFar
-  have hch : (N₂.chord k).toSet (chainModel J.right) (Qof P) ∈ N₂.F (chainModel J.right) (Qof P) := by
+    (keep32 _ (band_sw_not (by reg_omega)) (by reg_omega)
+      (by reg_omega))
+    (keep32 _ (band_sw_not (by reg_omega)) (by reg_omega)
+      (by reg_omega))
+    (keep32 _ (band_sw_not (by reg_omega)) (by reg_omega)
+      (by reg_omega))
+  have hfar3 : J.rightModel.pos (Qof P) ⟨c₃.nreg oFE, c₃.nreg oFC⟩ =
+      if c₃.nreg oD = 1 then Merge.rend ((N₂.chord k).toSet J.rightModel (Qof P))
+      else Merge.lend ((N₂.chord k).toSet J.rightModel (Qof P)) := by
+    rwa [eFE, eFC, eD]
+  have hch : (N₂.chord k).toSet J.rightModel (Qof P) ∈ N₂.F J.rightModel (Qof P) := by
     refine ⟨N₂.chord k, ?_, rfl⟩
     unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
     exact List.getElem_mem _
-  have hlo : ShotList.loSet (chainModel J.left) (Qof P) c₃.nmem (c₃.nreg wGB) L.length [] =
-      ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length [] := by
+  have hlo : ShotList.loSet J.leftModel (Qof P) c₃.nmem (c₃.nreg wGB) L.length [] =
+      ShotList.loSet J.leftModel (Qof P) c.nmem (c.nreg wGB) L.length [] := by
     rw [eGB]; exact loSet_congr (fun x _ hx => hm3 x (by omega))
   -- 4. the candidate
   have hev := evCand_irs E hI₃ hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega)
     (fun i hi => by rw [eGB, ← harcs i hi]; unfold ShotList.arcAt
-                    rw [hm3 _ (by omega), hm3 _ (by omega), hm3 _ (by omega), hm3 _ (by omega)])
-    hch (by rw [eD]; split_ifs <;> omega) (by rw [eD]; exact hLR) hsym3 hsl hse habs3 haR hav ha₁
-    (by rw [eFE]; exact hFe) (by rw [eFE, eFC]; exact hFp) hfar3 (by rw [eK, eS]; omega)
-    (by rw [same3.1, same3.2.1]; exact hkey)
-    (by rw [best3 _ (Or.inl rfl), best3 _ (Or.inr (Or.inl rfl)),
-      best3 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hb)
-    (by rw [best3 _ (Or.inl rfl)]; exact hbF)
-    (by rw [best3 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))]; exact hbN)
+                    ram_rw [hm3, hm3, hm3, hm3])
+    hch (by rw [eD]; split_ifs <;> omega) (by rwa [eD]) hsym3 hsl hse habs3 haR hav ha₁
+    (by rwa [eFE]) (by rwa [eFE, eFC]) hfar3 (by rw [eK, eS]; omega)
+    (by rwa [same3.1, same3.2.1])
+    (by rwa [best3 _ (Or.inl rfl), best3 _ (Or.inr (Or.inl rfl)),
+      best3 _ (Or.inr (Or.inr (Or.inl rfl)))])
+    (by rwa [best3 _ (Or.inl rfl)])
+    (by rwa [best3 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))])
     (by unfold orgDoK at hroom; omega)
   refine hev.mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hfr, hA'⟩

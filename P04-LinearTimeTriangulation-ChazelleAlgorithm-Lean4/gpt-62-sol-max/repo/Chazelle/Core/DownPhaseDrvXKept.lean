@@ -51,7 +51,7 @@ theorem right_end_of_segment {a' b' : Point} {y a b : ℝ} (hab : a < b) (hy : a
   rw [Visibility.segment_horizontal_eq_hseg hy] at h
   obtain ⟨h1, -, h2⟩ := Merge.hseg_inj hab.le h
   rcases le_total a'.1 b'.1 with hl | hl
-  · right; rw [max_eq_right hl] at h2; exact Prod.ext h2 (h1.trans hy)
+  · simp_all
   · left; rw [max_eq_left hl] at h2; exact Prod.ext h2 h1
 
 section
@@ -60,14 +60,13 @@ variable {P : Polygon} {li : Bool} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   {r : ℕ} {C : Chain} {NR : NF} {i0 g : ℕ}
 
 set_option quotPrecheck false in
-local notation "xS" => (buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-  (Qof P)
+local notation "xS" => inputChords P L E
 set_option quotPrecheck false in
-local notation "xK" => nk (interiorModel (Qof P)) xS (reg r)
+local notation "xK" => nk (inputModel P) xS (reg r)
 set_option quotPrecheck false in
 local notation "xG" => hostPoly (Qof P) xS (reg r)
 set_option quotPrecheck false in
-local notation "xH" => regHost li (Qof P).n (buildNF (interiorModel (Qof P)) (Qof P) L E) r
+local notation "xH" => regHost li (Qof P).n (inputNF P L E) r
 
 namespace XCtx
 
@@ -76,9 +75,10 @@ include Y
 
 /-- Host point `k` is the point of the host description. -/
 theorem hpt_eval {k : ℕ} (hk : k < xK) : C.P.vtx k = (hpt (Qof P).n xH k).eval (Qof P) := by
-  rw [Y.vtx_sig hk, hostPoly_vtx (sig_lt li (by have := Y.three; omega) _ _),
-    rep_eval Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR Y.X.hli Y.X.hdh (sig_lt li (by have := Y.three; omega) _ _)
-      (Y.hrep k hk)]
+  have hp : 0 < xK := lt_of_lt_of_le (by decide : 0 < 3) Y.three
+  have hs := sig_lt li hp i0 k
+  rw [Y.vtx_sig hk, hostPoly_vtx hs, rep_eval Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR Y.X.hli Y.X.hdh
+    hs (Y.hrep k hk)]
 
 theorem hidx_lt {k : ℕ} (hkK : k < xK) : hidx (hpt (Qof P).n xH k) < (Qof P).n := by
   have hσ : sig li xK i0 k < xK := sig_lt li (by have := Y.three; omega) i0 k
@@ -86,9 +86,8 @@ theorem hidx_lt {k : ℕ} (hkK : k < xK) : hidx (hpt (Qof P).n xH k) < (Qof P).n
   · exact ivB_lt li (by
       have hb := hostKeys_bounds (hk_mem (walkAx_interiorModel Y.X.hQ) Y.X.hFam.2.1 Y.X.hFam.1
         hσ)
-      have : (⌊hk (interiorModel (Qof P)) xS (reg r) (sig li xK i0 k)⌋₊ : ℝ) <
-          (interiorModel (Qof P)).W.n := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
-      rw [show (interiorModel (Qof P)).W.n = (Qof P).n from walk_n _] at this
+      have := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
+      rw [show P.inputModel.W.n = (Qof P).n from walk_n _] at this
       exact_mod_cast this)
   · exact hh'
   · exact hh'
@@ -121,26 +120,23 @@ theorem chord_data {i : ℕ} (hi : i < NR.nChords) :
   have hAB : A < B := by rw [← e2, ← e3]; exact hIC.lt
   obtain ⟨hl, hr⟩ := hatt i hi
   rw [hc] at hl hr
-  have hpl : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
-      ((chainModel C).param (Qof P) (NR.chord i).lpos) = (chainModel C).pos (Qof P) (NR.chord i).lpos :=
-    rfl
-  have hpr : sidePt (C.sideWalk C.sideBeta) (NR.chord i).rp
-      ((chainModel C).param (Qof P) (NR.chord i).rpos) = (chainModel C).pos (Qof P) (NR.chord i).rpos :=
-    rfl
+  
+  
   refine ⟨A, B, hAB, hc, hh i hi, hadm, hl, hr, ?_, ?_⟩
-  · have hm : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
-        ((chainModel C).param (Qof P) (NR.chord i).lpos) ∈ hseg ((Qof P).vtx (NR.chord i).h).2 A B :=
-      hl.2.2.2.1
+  · have hm := hl.2.2.2.1
     exact Prod.ext rfl hm.1
-  · have hm : sidePt (C.sideWalk C.sideBeta) (NR.chord i).rp
-        ((chainModel C).param (Qof P) (NR.chord i).rpos) ∈ hseg ((Qof P).vtx (NR.chord i).h).2 A B :=
-      hr.2.2.2.1
+  · have hm := hr.2.2.2.1
     exact Prod.ext rfl hm.1
+
+section
+
+variable {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
+    (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t)
+include hh hAB hat
 
 /-- **The start-vertex test**: for an end attached at walk edge `p` of the tour (or up the slit),
 `tZ` holds iff the parameter is `0`. -/
-theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
-    (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t) (h6 : 6 ≤ p)
+theorem tZ_iff (h6 : 6 ≤ p)
     (hp : p ≤ 2 * C.m + 6) :
     tZ (Qof P).n xH C.m C.topIdx C.sideBeta h p ↔ t = 0 := by
   have hm := Y.hm
@@ -148,16 +144,16 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
   have hkc_le := tK_le C.sideBeta C.one_le p (T := C.topIdx)
   have hv0 := walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6 hp
   obtain ⟨-, ht0, ht1, hmem, rA, hrA, hsec⟩ := hat
-  have hz : (sidePt (C.sideWalk C.sideBeta) p t).2 = ((Qof P).vtx h).2 := hmem.1
+  have hz := hmem.1
   have hheight : ((Qof P).vtx (hidx (hpt (Qof P).n xH (tK C.m C.topIdx C.sideBeta p)))).2 =
       (C.P.vtx (tK C.m C.topIdx C.sideBeta p)).2 := by
-    rw [Y.hpt_eval (by omega), eval_snd]
+    ram_simp [Y.hpt_eval, eval_snd]
   constructor
   · intro htz
     unfold tZ at htz
     rw [← htz] at hheight
     by_contra htne
-    have ht0' : 0 < t := lt_of_le_of_ne ht0 (Ne.symm htne)
+    have ht0' := lt_of_le_of_ne ht0 (Ne.symm htne)
     rcases lt_or_eq_of_le hp with hp' | hp'
     · -- inside a tour edge: the edge would be horizontal
       have hse := walk_sector_edge Y.cpSimple Y.X.hCs Y.X.hCm C.sideBeta h6 hp' ⟨ht0', ht1⟩
@@ -178,7 +174,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
         · linarith
       obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hAB hmem hrA
       have hx := (hse x).1 (hsec x hxc hne hxd)
-      have hxy : x.2 = ((Qof P).vtx h).2 := hxc.1
+      have hxy := hxc.1
       unfold det at hx
       rw [hxy, hflat, ← hheight] at hx
       simp only [sub_self, mul_zero] at hx
@@ -205,8 +201,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
     exact Y.X.hdh _ _ hh (Y.hidx_lt (by omega)) hne (by rw [← hz, hheight])
 
 /-- **An end at a regular inner position: the chord meets `R`.** -/
-theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
-    (hat : SideAttach (C.sideWalk C.sideBeta) (hseg ((Qof P).vtx h).2 A B) p t)
+theorem meet_of_regIn
     (hreg : RegIn (Qof P).n xH li C.m C.topIdx C.sideBeta h p) :
     (hseg ((Qof P).vtx h).2 A B ∩ reg r).Nonempty := by
   have hm := Y.hm
@@ -228,13 +223,15 @@ theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {
     exact meet_of_attach Y hcs (ExtG.attach_of_sector hpt.symm (fun x hx => (hsec x).1 hx)
       (by rw [Y.gn]; exact sig_lt li (by omega) _ _) ht0 ht1 hat)
   · subst ht0'
-    have hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0 := fun h0 =>
+    have hu0 := fun h0 =>
       hirr ⟨htz.2 rfl, Or.inl ((tK_eq_zero_iff _ hm1 p).2 h0)⟩
-    have hum : tU C.m C.topIdx C.sideBeta p ≠ C.m := fun h0 =>
+    have hum := fun h0 =>
       hirr ⟨htz.2 rfl, Or.inr ((tK_eq_m_iff _ hm1 p).2 h0)⟩
     obtain ⟨hpt, hsec⟩ := Y.inner_vtx h6 hp hu0 hum hA
     exact meet_of_attach Y hcs (ExtG.attach_of_sector hpt.symm hsec
       (by rw [Y.gn]; exact sig_lt li (by omega) _ _) le_rfl one_pos hat)
+
+end
 
 /-- **A kept chord is an interior chord of the host polygon.** -/
 theorem adm_G {c : Set Point} (hc : c ∈ (chainModel C).Adm) (hk : (c ∩ reg r).Nonempty) :
@@ -242,23 +239,28 @@ theorem adm_G {c : Set Point} (hc : c ∈ (chainModel C).Adm) (hk : (c ∩ reg r
   obtain ⟨hI, hsub⟩ := Y.hext.loc (F₁ := {c}) (by simpa using hc) c ⟨rfl, hk⟩
   obtain ⟨y, a, b, hIC, rfl⟩ := hI
   have hReq := DownDrv.region_eq_intHost Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
-  have hRD : reg r ⊆ (interiorModel (Qof P)).D := fun z hz =>
+  have hRD : reg r ⊆ P.inputModel.D := fun z hz =>
     (Chazelle.Chain.regionsIn_subset Y.X.hR hz).1
   refine ⟨y, a, b, ⟨hIC.lt, fun h => hIC.left_not (hRD (hReq ▸ h)),
     fun h => hIC.right_not (hRD (hReq ▸ h)), fun x hxa hxb => ?_⟩, rfl⟩
   rw [← hReq]
   exact hsub ⟨⟨rfl, hxa.le, hxb.le⟩, hIC.open_mem x hxa hxb⟩
 
-/-- The ends of a kept chord are attached to the host polygon. -/
-theorem kept_ends {h : ℕ} {A B : ℝ} (hAB : A < B)
+section
+
+variable {h : ℕ} {A B : ℝ} (hAB : A < B)
     (hc : hseg ((Qof P).vtx h).2 A B ∈ (chainModel C).Adm)
-    (hk : (hseg ((Qof P).vtx h).2 A B ∩ reg r).Nonempty) :
+    (hk : (hseg ((Qof P).vtx h).2 A B ∩ reg r).Nonempty)
+
+include hAB hc hk in
+/-- The ends of a kept chord are attached to the host polygon. -/
+theorem kept_ends :
     (∃ q s, SideAttach xG (hseg ((Qof P).vtx h).2 A B) q s ∧
         sidePt xG q s = ((A, ((Qof P).vtx h).2) : Point)) ∧
       ∃ q s, SideAttach xG (hseg ((Qof P).vtx h).2 A B) q s ∧
         sidePt xG q s = ((B, ((Qof P).vtx h).2) : Point) := by
   have hadm := Y.adm_G hc hk
-  have hMH : WalkAx (interiorModel xG) := walkAx_interiorModel Y.gSimple
+  have hMH := walkAx_interiorModel Y.gSimple
   have hW : (interiorModel xG).W = xG :=
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   obtain ⟨a', b', -, hseg', hy, -, hEa, hEb⟩ := hMH.ends _ hadm
@@ -297,23 +299,23 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
   have hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li := by
     generalize decide (tU C.m C.topIdx C.sideBeta p < C.m) = d at hside ⊢
     cases li <;> cases d <;> simp_all
-  have hGn : (xG).n = xK := Y.gn
+  have hGn := Y.gn
   rcases ht0.lt_or_eq with ht0' | ht0'
   · have hp' : p < 2 * C.m + 6 := by
       rcases lt_or_eq_of_le hp with h' | h'
       · exact h'
       · exact absurd (hlast h') ht0'.ne'
     obtain ⟨hpt', hsec⟩ := Y.outer_edge h6 hp' ⟨ht0', ht1⟩ hA
-    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rw [hGn]; exact hqG)
+    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rwa [hGn])
       (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 (by linarith) (by linarith)
       (hpt.trans hpt')
     subst hq hs
     exact attach_disj hAB hat hG hpt' hsec
   · subst ht0'
-    have hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0 := fun h0 => hreg ⟨rfl, Or.inl h0⟩
-    have hum : tU C.m C.topIdx C.sideBeta p ≠ C.m := fun h0 => hreg ⟨rfl, Or.inr h0⟩
+    have hu0 := fun h0 => hreg ⟨rfl, Or.inl h0⟩
+    have hum := fun h0 => hreg ⟨rfl, Or.inr h0⟩
     obtain ⟨hpt', hsec⟩ := Y.outer_vtx h6 hp hu0 hum hA
-    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rw [hGn]; exact hqG)
+    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rwa [hGn])
       (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 le_rfl one_pos (hpt.trans hpt')
     subst hq hs
     exact attach_disj hAB hat hG hpt' hsec
@@ -331,15 +333,12 @@ theorem sig_ends : (sig li xK i0 0 = g ∧ sig li xK i0 C.m = (g + 1) % xK) ∨
   have e2 : (i0 + 0) % xK = (g + 1) % xK := by rw [add_zero, hgi]
   unfold sig rho
   cases li
-  · left; simp only [Bool.false_eq_true, ite_false]
-    rw [Nat.sub_zero, e1, hm, show xK - 1 - (xK - 1) = 0 by omega, e2]; exact ⟨rfl, rfl⟩
-  · right; simp only [ite_true]
-    rw [e2, hm, e1]; exact ⟨rfl, rfl⟩
+  · simp_all
+  · simp_all
 
+include hAB hc hk in
 /-- **Not both ends of a kept chord are at the chain ends.** -/
-theorem not_both_irr {h : ℕ} {A B : ℝ} (hAB : A < B)
-    (hc : hseg ((Qof P).vtx h).2 A B ∈ (chainModel C).Adm)
-    (hk : (hseg ((Qof P).vtx h).2 A B ∩ reg r).Nonempty)
+theorem not_both_irr
     {kL kR : ℕ} (hL : kL = 0 ∨ kL = C.m) (hR : kR = 0 ∨ kR = C.m)
     (hzL : C.P.vtx kL = ((A, ((Qof P).vtx h).2) : Point))
     (hzR : C.P.vtx kR = ((B, ((Qof P).vtx h).2) : Point)) : False := by
@@ -373,6 +372,8 @@ theorem not_both_irr {h : ℕ} {A B : ℝ} (hAB : A < B)
     · rw [e1, e2] at hmem; rwa [Chazelle.Geometry.segment_comm]
   have hmid := hIC.open_mem ((A + B) / 2) (by linarith) (by linarith)
   exact hmid.2 (hedge _ (by linarith) (by linarith))
+
+end
 
 /-- **X-R1: the kept test.**  The chord of record `i` of `NR` meets the region iff one of its ends
 is at a regular position on the inner side. -/
@@ -424,8 +425,7 @@ theorem kept_iff {i : ℕ} (hi : i < NR.nChords) :
         refine Y.not_both_irr hAB (hc ▸ hadm) hk hkL hkR ?_ ?_
         · rw [← walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6L hpL, ← hzl, hirrL.1,
             Chazelle.Chain.sidePt_zero]
-        · rw [← walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6R hpR, ← hzr, hirrR.1,
-            Chazelle.Chain.sidePt_zero]
+        simp [← walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6R hpR, ← hzr, hirrR.1, Chazelle.Chain.sidePt_zero]
       · exact Or.inr (hreg h6R hpR hlastR htzR hirrR (hsideR hirrR))
     · exact Or.inl (hreg h6L hpL hlastL htzL hirrL (hsideL hirrL))
 

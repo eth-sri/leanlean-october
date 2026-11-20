@@ -127,10 +127,8 @@ theorem sideCcw_horiz_iff (B A : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
     rw [hBX, hXA, hdBX]
     simp only [true_and, not_true_eq_false, false_and, or_false]
     by_cases hz : sideCross B A = 0
-    · rw [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz]
-      simp only [hz, lt_irrefl, not_false_eq_true, true_and, false_and, not_true_eq_false,
-        false_or]
-    · simp only [hz, false_and, or_false, not_false_eq_true, true_and, and_true]
+    · simp [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz, hz, not_false_eq_true, true_and, false_and, not_true_eq_false, false_or]
+    · simp_all
   · have hBX : 0 < sideCross B ((-1, 0) : Point) ↔ 0 < B.2 := by
       unfold sideCross; constructor <;> intro h <;> simp at h ⊢ <;> linarith
     have hXA : 0 < sideCross ((-1, 0) : Point) A ↔ A.2 < 0 := by
@@ -141,10 +139,8 @@ theorem sideCcw_horiz_iff (B A : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
     have hn : ¬ ((-1 : ℝ) = 1) := by norm_num
     simp only [hn, false_and, false_or, not_false_eq_true, true_and]
     by_cases hz : sideCross B A = 0
-    · rw [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz]
-      simp only [hz, lt_irrefl, not_false_eq_true, true_and, false_and, not_true_eq_false,
-        false_or]
-    · simp only [hz, false_and, or_false, not_false_eq_true, true_and, and_true]
+    · simp [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz, hz, not_false_eq_true, true_and, false_and, not_true_eq_false, false_or]
+    · simp_all
 
 
 /-- **The left sector of a corner for a horizontal direction** in terms of the comparisons of
@@ -157,7 +153,7 @@ theorem sideLeftOf_horiz_iff (a v b : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
   have hx : Visibility.rayPt v s 1 - v = ((s, 0) : Point) := by
     refine Prod.ext ?_ ?_ <;> simp [Visibility.rayPt]
   rw [hx, sideCcw_horiz_iff _ _ hs, Chazelle.Chain.sideCross_corner]
-  simp only [Prod.fst_sub, Prod.snd_sub, sub_pos, sub_neg]
+  simp
 
 /-- The sector formula as a Boolean formula over bit registers `r₀ … r₁₀` (in the order of the
 arguments of `SecProp`). -/
@@ -179,9 +175,7 @@ theorem secBF_eval (v : ℕ → Bool) (sp oP oZ b2p b2n b1p b1n a2p a2n a1p a1n 
     (secBF sp oP oZ b2p b2n b1p b1n a2p a2n a1p a1n).eval v = true ↔
       SecProp (v sp) (v oP) (v oZ) (v b2p) (v b2n) (v b1p) (v b1n) (v a2p) (v a2n) (v a1p)
         (v a1n) := by
-  simp only [secBF, BF.eval, SecProp, Bool.or_eq_true, Bool.and_eq_true, Bool.not_eq_true',
-    Bool.not_eq_true]
-  cases v sp <;> cases v oP <;> cases v oZ <;> simp [or_assoc]
+  simp [secBF, BF.eval, SecProp, Bool.or_eq_true, Bool.and_eq_true, Bool.not_eq_true, or_assoc]
 
 /-- The variables of the sector formula. -/
 theorem secBF_vars {p : ℕ → Prop} {sp oP oZ b2p b2n b1p b1n a2p a2n a1p a1n : ℕ}

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OraclePrepPhA
 
 /-!
@@ -20,10 +22,10 @@ open Machine Machine.Stmt Programs SignK WalkKey
 @[expose] public section
 
 theorem RgMem.congr {m m' : ℕ → ℕ} {AB SB A : ℕ} {σ rg : ℕ → ℕ} (h : RgMem m AB SB A σ rg)
-    {X : ℕ} (hX : ∀ a, a < X → m' a = m a) (hS : SB + A ≤ X) (hA : AB + 5 * A ≤ X) :
+    {X : ℕ} (hX : MemEqBelow X m' m) (hS : SB + A ≤ X) (hA : AB + 5 * A ≤ X) :
     RgMem m' AB SB A σ rg :=
-  ⟨fun p hp => by rw [hX _ (by omega)]; exact h.seq p hp, h.σ_lt,
-    fun j hj => by rw [hX _ (by omega)]; exact h.reg j hj⟩
+  ⟨fun p hp => by ram_rw [hX]; exact h.seq p hp, h.σ_lt,
+    fun j hj => by ram_rw [hX]; exact h.reg j hj⟩
 
 /-! ## The star chords -/
 
@@ -44,11 +46,11 @@ theorem starStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W
       PairsAt c'.nmem (A₁ + R) (A₁ + R + chCap A) (starList (fun q => rg (σ q)) A) := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9, a60, afr⟩ := frS_exec (P := P) hw hM hNB h2 hR hAB hSB hA h1 hAl
     hNBA hSA hABA hρR (by omega)
-  have hM₁ : RgMem c₁.nmem AB SB A σ rg := hM.congr (X := A₁) F₁.2.2.1 hSA hABA
-  have K : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := F₁.1
+  have hM₁ := hM.congr (X := A₁) F₁.2.2.1 hSA hABA
+  have K := F₁.1
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, b9, b72, b73, -, b74, pairs⟩ := iS_exec (P := P) e₁.wb_right hM₁
-    (by rw [K _ (by decide), hAB]) (by rw [K _ (by decide), hSB]) (by rw [K _ (by decide), hA])
-    (by rw [K _ (by decide), h1]) a60 a9 (by omega) (by omega) (by omega) hρR afr (by omega)
+    (by ram_rw [K, hAB]) (by ram_rw [K, hSB]) (by ram_rw [K, hA])
+    (by ram_rw [K, h1]) a60 a9 (by omega) (by omega) (by omega) hρR afr (by omega)
   refine ⟨c₂, _, .seq e₁ e₂, by omega,
     (F₁.mono (fun r hr => by simp [hr]) le_rfl).trans
       (F₂.mono (fun r hr => by simp [hr]) (by omega)), b9, b72, b73, b74, pairs⟩
@@ -69,7 +71,7 @@ theorem zipStage_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {
       PairsAt c'.nmem A₃ (A₃ + zCap V.A) (OracleQ.zipRaw C (Qof P) N) ∧ ZEnv P W lo C N V c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9, a93, a94, a97, a95, pairs₁, Z₁⟩ :=
     zS_exec (P := P) hw h hAl hlo (by omega)
-  have hA : V.A = N.arcs.length := h.loc.holds.1.A
+  have hA := h.loc.holds.1.A
   have hlen : (emitted (OracleQ.zipSk C (Qof P) N) V.A ++ emitted (OracleQ.zipEk C (Qof P) N) V.A).length ≤
       2 * V.A := by
     rw [List.length_append]
@@ -86,16 +88,16 @@ theorem zipStage_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {
   have hraw : OracleQ.zipRaw C (Qof P) N = (emitted (OracleQ.zipSk C (Qof P) N) V.A ++
       emitted (OracleQ.zipEk C (Qof P) N) V.A) ++ OracleQ.zipSp C (Qof P) N := by
     rw [hA]; rfl
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, (F₁.mono (fun r hr => by simp [hr]) le_rfl).trans ?_, by rw [r₂ _ (by decide), a9],
-    by rw [r₂ _ (by decide), a93], by rw [r₂ _ (by decide), a94], ?_, ?_, Z₂⟩
-  · refine ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => mem₂ a (Or.inl (by omega)),
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, (F₁.mono (fun r hr => by simp [hr]) le_rfl).trans ?_, by ram_rw [r₂, a9],
+    by ram_rw [r₂, a93], by ram_rw [r₂, a94], ?_, ?_, Z₂⟩
+  · refine ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => mem₂ a ((by omega)),
       fun a _ => by rw [rm₂], by rw [o₂]⟩
     · simp only [Bool.or_eq_false_iff] at hr; exact r₂ r hr.2
     · simp only [Bool.or_eq_false_iff] at hr; exact rr₂ r hr.2
-  · rw [cnt, hraw]; simp only [List.length_append]
+  · ram_simp [cnt, hraw, List.length_append]
   · rw [hraw]
     refine PairsAt.append (fun t ht => ?_) pairs₂
-    rw [mem₂ _ (Or.inl (by omega)), mem₂ _ (Or.inr (Or.inl ⟨by omega, by omega⟩))]
+    rw [mem₂ _ ((by omega)), mem₂ _ (Or.inr (Or.inl (by omega)))]
     exact pairs₁ t ht
 
 /-! ## The global frame -/
@@ -105,8 +107,8 @@ preprocessing): registers outside the bands (and the allocator), real registers 
 bands, memory below `lo`, output. -/
 def GF (S : Finset ℕ) (lo : ℕ) (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ S → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-    (∀ r, bandOf r ∉ S → c'.rreg r = c.rreg r) ∧ (∀ a, a < lo → c'.nmem a = c.nmem a) ∧
-    (∀ a, a < lo → c'.rmem a = c.rmem a) ∧ c'.output = c.output
+    (∀ r, bandOf r ∉ S → c'.rreg r = c.rreg r) ∧ (MemEqBelow lo c'.nmem c.nmem) ∧
+    (MemEqBelow lo c'.rmem c.rmem) ∧ c'.output = c.output
 
 theorem GF.trans {S : Finset ℕ} {lo : ℕ} {c₁ c₂ c₃ : Config} (h₁ : GF S lo c₁ c₂)
     (h₂ : GF S lo c₂ c₃) : GF S lo c₁ c₃ :=
@@ -148,7 +150,7 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
       (∀ r, bandOf r ∉ dBands → c'.rreg r = c.rreg r) ∧
       (∀ a, (a < CH1 + nI ∨ (CH1 + nI + n ≤ a ∧ a < CH2 + nI) ∨ (CH2 + nI + n ≤ a ∧ a < A₄)) →
         c'.nmem a = c.nmem a) ∧
-      (∀ a, a < A₄ → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
+      (MemEqBelow A₄ c'.rmem c.rmem) ∧ c'.output = c.output ∧
       A₄ + n ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ A₄ + n + SortR.sortCost 20 n ∧
       c'.nreg 60001 = CH1 ∧ c'.nreg 60002 = CH2 ∧ c'.nreg 60008 = nI ∧
       ∃ D : List (ℕ × ℕ), c'.nreg 60003 = nI + D.length ∧ D.length ≤ n ∧
@@ -163,19 +165,19 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
   have R₂ : ∀ r, r ≠ 60008 → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [hc₂]; config_simp; rw [upd_other _ _ _ hr]
   have g11 : c₁.nreg 120011 = 1 := by
-    rw [F₁.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide), h1]
+    frame_finish
   have g12 : c₁.nreg 120012 = 0 := by
-    rw [F₁.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide), h0]
+    frame_finish
   have hW9 : c₁.nreg 9999 ≤ W := e₁.wb_right.1 9999
   have hDE : DEnv (c₁.nreg 60007) Z1 Z2 n (fun t => c₁.nmem (c₁.nreg 60007 + t))
       (fun i => c.nmem (Z1 + i)) (fun i => c.nmem (Z2 + i)) c₂ :=
-    ⟨by rw [R₂ _ (by decide), v4], by rw [R₂ _ (by decide), v5], R₂ _ (by decide),
-      by rw [R₂ _ (by decide), g11], by rw [R₂ _ (by decide), g12],
+    ⟨by ram_rw [R₂, v4], by ram_rw [R₂, v5], R₂ _ (by decide),
+      by ram_rw [R₂, g11], by ram_rw [R₂, g12],
       ⟨fun t _ => rfl, hlt, fun i hi => F₁.2.2.1 _ (by rw [hA₄]; omega),
         fun i hi => F₁.2.2.1 _ (by rw [hA₄]; omega)⟩⟩
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, cnt₃, pairs₃, mem₃, rm₃, o₃⟩ := dEmit_exec (P := P) e₂.wb_right
-    hDE (by rw [R₂ _ (by decide), v1]) (by rw [R₂ _ (by decide), v2])
-    (by rw [R₂ _ (by decide), v3]) (by rw [R₂ _ (by decide), v6]) hC hZ hZ12 (by omega)
+    hDE (by ram_rw [R₂, v1]) (by ram_rw [R₂, v2])
+    (by ram_rw [R₂, v3]) (by ram_rw [R₂, v6]) hC hZ hZ12 (by omega)
     (by omega)
   set D := emitted (dedupF n (fun i => (c.nmem (Z1 + i), c.nmem (Z2 + i)))
     (fun t => c₁.nmem (c₁.nreg 60007 + t))) n with hD
@@ -194,13 +196,13 @@ theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded 
     unfold bandOf at h6
     rw [rr₃ r (by simp only [BDB, decide_eq_false_iff_not]; omega)]
     exact F₁.2.1 r hr
-  · rw [mem₃ a (by omega)]
+  · ram_rw [mem₃ a]
     exact F₁.2.2.1 a (by rw [hA₄]; omega)
-  · rw [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; exact al1a
-  · rw [hAL, K3 _ (by decide) (by decide) (by decide) (by decide) (by decide)]; exact al1b
-  · rw [K3 _ (by decide) (by decide) (by decide) (by decide) (by decide), v1]
-  · rw [K3 _ (by decide) (by decide) (by decide) (by decide) (by decide), v2]
-  · rw [r₃ _ (by decide) (by decide) (by decide) (by decide)]; rw [hc₂]; config_simp; exact v3
+  · ram_rw [hAL, K3]; exact al1a
+  · ram_rw [hAL, K3]; exact al1b
+  · ram_rw [K3, v1]
+  · ram_rw [K3, v2]
+  · ram_rw [r₃]; rw [hc₂]; config_simp; exact v3
   · rw [cnt₃]
 
 end

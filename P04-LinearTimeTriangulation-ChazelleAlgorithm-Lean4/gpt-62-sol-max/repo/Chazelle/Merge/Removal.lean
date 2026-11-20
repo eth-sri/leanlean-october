@@ -48,7 +48,7 @@ namespace Chazelle.Merge
 open Set Filter Topology Metric
 open Chazelle.Chain (ChordSystem freeIn regionsIn TouchesIn DualAdjIn
   mem_regionsIn regionsIn_subset regionsIn_nonempty regionsIn_eq_component regionsIn_disjoint_of_ne
-  regionsIn_eq_or_disjoint freeIn_anti exists_regionsIn_superset
+  freeIn_anti exists_regionsIn_superset
   regionsIn_eq_of_subset)
 
 variable {D : Set Point} {F : Set (Set Point)}

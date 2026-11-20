@@ -40,7 +40,12 @@ variable {α : Type} (f : α → Bool)
 /-- The number of kept entries before position `i`. -/
 def rankF (L : List α) (i : ℕ) : ℕ := ((L.take i).filter f).length
 
-theorem getD_filter_rank {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
+section
+
+variable {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
+
+include d hi in
+theorem getD_filter_rank
     (hf : f (L.getD i d) = true) : (L.filter f).getD (rankF f L i) d = L.getD i d := by
   induction L generalizing i with
   | nil => simp at hi
@@ -65,14 +70,15 @@ theorem rankF_lt_of {L : List α} {i j : ℕ} (d : α) (hij : i < j) (hi : i < L
     (hf : f (L.getD i d) = true) : rankF f L i < rankF f L j := by
   obtain ⟨m, rfl⟩ : ∃ m, j = i + (m + 1) := ⟨j - i - 1, by omega⟩
   rw [rankF_add]
-  have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
+  have hd := List.drop_eq_getElem_cons hi
   have hLi : L.getD i d = L[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+    simp_all
   rw [hLi] at hf
   rw [hd, List.take_succ_cons, List.filter_cons, ite_eq_left hf, List.length_cons]
   omega
 
-theorem rankF_lt_length {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
+include d hi in
+theorem rankF_lt_length
     (hf : f (L.getD i d) = true) : rankF f L i < (L.filter f).length := by
   have := rankF_lt_of f d (show i < i + 1 by omega) hi hf
   have h2 : rankF f L (i + 1) ≤ (L.filter f).length := by
@@ -83,14 +89,17 @@ theorem rankF_lt_length {L : List α} {i : ℕ} (d : α) (hi : i < L.length)
 theorem rankF_length (L : List α) : rankF f L L.length = (L.filter f).length := by
   unfold rankF; rw [List.take_length]
 
-theorem rankF_succ {L : List α} {i : ℕ} (d : α) (hi : i < L.length) :
+include d hi in
+theorem rankF_succ :
     rankF f L (i + 1) = rankF f L i + if f (L.getD i d) then 1 else 0 := by
   rw [rankF_add]
-  have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
+  have hd := List.drop_eq_getElem_cons hi
   have hLi : L.getD i d = L[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+    simp_all
   rw [hLi, hd, List.take_succ_cons, List.take_zero, List.filter_cons]
   split_ifs <;> simp
+
+end
 
 /-- The kept codes below `2 i`: twice the kept chords below `i`. -/
 theorem count_codes {L : List α} (d : α) {i : ℕ} (hi : i ≤ L.length) :
@@ -190,7 +199,7 @@ theorem dropE_pairwise (M : Model) (Q : Polygon) (hperm : E.Perm (List.range (2 
 /-- **The renumbered event list is a permutation of the new codes.** -/
 theorem dropE_perm (hperm : E.Perm (List.range (2 * L.length))) :
     (dropE li n L E).Perm (List.range (2 * (keepL li n L).length)) := by
-  have hnd : E.Nodup := hperm.nodup_iff.2 List.nodup_range
+  have hnd := hperm.nodup_iff.2 List.nodup_range
   have hnd' : (dropE li n L E).Nodup := by
     unfold dropE
     refine (hnd.filter _).map_on fun a ha b hb hab => ?_
@@ -206,9 +215,8 @@ theorem dropE_perm (hperm : E.Perm (List.range (2 * L.length))) :
     unfold dropE
     rw [List.length_map, (hperm.filter _).length_eq]
     have := count_codes (keepX li n) (L := L) (0, 0, 0) (le_refl L.length)
-    rw [rankF_length] at this
-    exact this
-  exact (hnd'.subperm hsub).perm_of_length_le (by rw [hlen, List.length_range])
+    rwa [rankF_length] at this
+  exact (hnd'.subperm hsub).perm_of_length_le (by simp_all)
 
 /-- **The kept triples are valid.** -/
 theorem chordTriplesOK_keepL {M : Model} {Q : Polygon} (h : ChordTriplesOK M Q L) :
@@ -228,8 +236,7 @@ theorem family_keepL {Q : Polygon} (hQ : Q.Simple) (hDH : DistinctHeights Q)
     {c | ∃ x ∈ keepL li Q.n L, c = (recOf x).toSet (interiorModel Q) Q} =
       {c | ∃ x ∈ L, c = (recOf x).toSet (interiorModel Q) Q} ∩ (interiorModel Q).Full := by
   obtain ⟨hF, -, hat, hlt⟩ := h
-  have hiff : ∀ x ∈ L, ((recOf x).toSet (interiorModel Q) Q ∈ (interiorModel Q).Full ↔
-      keepX li Q.n x = true) := fun x hx =>
+  have hiff := fun x hx =>
     mem_full_iff hQ hDH hli (hat x hx) (hF.2.1 ⟨x, hx, rfl⟩) (hlt x hx)
   ext c
   constructor

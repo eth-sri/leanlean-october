@@ -47,11 +47,16 @@ theorem not_dom_of_onCB {C : Chain} {p : Point} (h : OnCB C p) : p ∉ C.dom := 
   · linarith [hb.1]
   · linarith [hb.2]
 
+section
+
+variable {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+    (ha : a ∈ C.dom) (hw : rayPt a σ τ ∉ C.dom) (h0 : 0 < τ) (htop : a.2 ≤ C.top.2)
+    (hfree : Merge.FreeAt C (rayPt a σ τ) (-σ))
+include hσ ha hw h0 htop hfree
+
 /-- **Genuineness by the reverse ray**: for `a` in the domain and `w = rayPt a σ τ` off it, the
 hit is genuine iff the reverse ray from `w` leaves the domain beyond `a`. -/
-theorem genuine_iff_rev {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (ha : a ∈ C.dom) (hw : rayPt a σ τ ∉ C.dom) (h0 : 0 < τ) (htop : a.2 ≤ C.top.2)
-    (hfree : Merge.FreeAt C (rayPt a σ τ) (-σ)) :
+theorem genuine_iff_rev :
     Genuine C a σ τ ↔ τ < C.hitParam (rayPt a σ τ) (-σ) := by
   have hσ' : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨hT, hTD, hin⟩ := Merge.hit_of_freeAt C (p := rayPt a σ τ) (by simpa using htop) hσ' hfree
@@ -61,9 +66,7 @@ theorem genuine_iff_rev {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
     by_contra hle
     push Not at hle
     rcases hle.lt_or_eq with hlt | heq
-    · apply hTD
-      rw [rayPt_rev]
-      exact hin' _ (by linarith) (by linarith)
+    · simp_all [rayPt_rev] <;> omega
     · apply hTD
       rw [heq, rayPt_rev, sub_self]
       simpa using ha
@@ -73,9 +76,7 @@ theorem genuine_iff_rev {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
     rwa [rayPt_rev, show τ - (τ - s) = s by ring] at this
 
 /-- **Genuineness by abscissas**: the hit `h` of the reverse ray lies beyond `a`. -/
-theorem genuine_iff_abs {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1)
-    (ha : a ∈ C.dom) (hw : rayPt a σ τ ∉ C.dom) (h0 : 0 < τ) (htop : a.2 ≤ C.top.2)
-    (hfree : Merge.FreeAt C (rayPt a σ τ) (-σ)) :
+theorem genuine_iff_abs :
     (σ = 1 → (Genuine C a σ τ ↔
       (rayPt (rayPt a σ τ) (-σ) (C.hitParam (rayPt a σ τ) (-σ))).1 < a.1)) ∧
     (σ = -1 → (Genuine C a σ τ ↔
@@ -83,6 +84,8 @@ theorem genuine_iff_abs {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
   rw [genuine_iff_rev hσ ha hw h0 htop hfree]
   refine ⟨fun h1 => ?_, fun h1 => ?_⟩ <;> subst h1 <;> simp only [rayPt_fst] <;>
     constructor <;> intro h <;> linarith
+
+end
 
 /-- **The least candidate of the local hit is the hit**: candidates are positive parameters of
 points of the chain or of the box boundary, and the hit is a candidate. -/
@@ -111,8 +114,8 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
       w ∉ C.dom := by
   have hpos : (chainModel C).pos Q x = w := by
     rw [pos_eq_sidePt']; exact harr.2.2.2.1
-  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rw [hpos]; exact hy)
-    (Or.inl (by rw [hpos]; exact htop))
+  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rwa [hpos])
+    (Or.inl (by rwa [hpos]))
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   have hloc : (x.edge = 1 ∨ x.edge = 3) ∨ (6 ≤ x.edge ∧ (chainModel C).pos Q x ∈ C.set) := by
     rcases hcl with h | ⟨h6, hlt⟩ | ⟨hend, hz⟩
@@ -121,24 +124,22 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
       rw [pos_eq_sidePt', hW]
       have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6)
         (t := (chainModel C).param Q x) (by omega) (fun h => by omega) hpp.1 hpp.2.1
-      rwa [show x.edge - 6 + 6 = x.edge by omega] at this
+      simp_all <;> omega
     · refine Or.inr ⟨by omega, ?_⟩
       rw [pos_eq_sidePt', hW, hend, hz]
       exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := 0) le_rfl (fun _ => rfl)
         le_rfl one_pos
   refine ⟨hpos, hcl, hloc, ?_⟩
   rw [← hpos]
-  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rw [hpos]; exact hy) with h | ⟨h, -⟩
+  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rwa [hpos]) with h | ⟨h, -⟩
   · exact not_dom_of_onCB (Or.inl h)
   · exact not_dom_of_onCB (Or.inr (Or.inl h))
 
 /-- A positive normalised height code names the height of the point. -/
 theorem hgt_of_pos {M : Model} {Q : Polygon} {x : WPos} {h : ℕ} (hx : x.hgt = h + 1)
     (hpar : M.param Q x ≠ 0) : (Q.vtx h).2 = (M.pos Q x).2 := by
-  have hne : (M.wa x.edge).2 ≠ (M.wb x.edge).2 := fun he => hpar (Model.param_horizontal he)
-  rw [Model.pos_snd hne]
-  unfold Model.hgtY
-  rw [hx]
+  have hne := fun he => hpar (Model.param_horizontal he)
+  simp [Model.pos_snd hne, Model.hgtY, hx]
 
 /-- **The vertex fix**: a vertex position gets a positive height code naming its height; the
 parameter (`0`) and the point are kept. -/
@@ -146,13 +147,10 @@ theorem vtx_fix {M : Model} {Q : Polygon} {e h' : ℕ} (hht : (Q.vtx h').2 = (M.
     M.param Q ⟨e, h' + 1⟩ = 0 ∧ M.pos Q ⟨e, h' + 1⟩ = M.pos Q ⟨e, 0⟩ := by
   have hp0 : M.param Q ⟨e, 0⟩ = 0 := rfl
   have hwa : M.pos Q ⟨e, 0⟩ = M.wa e := by
-    unfold Model.pos; rw [hp0, Geometry.lerp_zero]
-  have hpar : M.param Q ⟨e, h' + 1⟩ = 0 :=
-    (param_eq_zero_iff M Q ⟨e, h' + 1⟩).2 (Or.inr (Or.inr (by
+    unfold Model.pos; simp_all
+  have hpar := (param_eq_zero_iff M Q ⟨e, h' + 1⟩).2 (Or.inr (Or.inr (by
       simp only [Nat.add_sub_cancel]; rw [hht, hwa])))
-  refine ⟨hpar, ?_⟩
-  unfold Model.pos
-  rw [hpar, hp0]
+  simp [Model.pos, hpar, hp0]
 
 /-- The two copies `6` and `2m + 6` of the top of a chain have the same point. -/
 theorem pos_top_copies (C : Chain) (Q : Polygon) :

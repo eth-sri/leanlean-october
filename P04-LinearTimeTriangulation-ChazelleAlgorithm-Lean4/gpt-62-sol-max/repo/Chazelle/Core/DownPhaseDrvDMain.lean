@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvDRound3
 public import Chazelle.Core.DownPhaseOracleIO
 public import Chazelle.Core.RestoreFindOK
@@ -66,8 +68,7 @@ theorem stateAt_congr {P : Polygon} {c c' : Config} {L : List (ℕ × ℕ × ℕ
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at h1 h2 h3 h4 h5 h6 h7 h11 ⊢
   unfold DrvR.StateAt
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd]
-  rw [e1, e2, e3, e4, e5, hm, hA]
-  exact ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩
+  ram_post
 
 /-- **All rounds.** -/
 theorem rounds_exec {E : DEnv} (hE : DGood E) {c : Config} (hI : RInv E 0 c) :
@@ -108,7 +109,7 @@ theorem Br_le (E : DEnv) (hA : 1 ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog
   have hBf : E.Bf = E.κf E.d0 * A + 2 * ((scanK + 2) * (E.d0 + 1)) + 60 := by
     show Restore.costF E.κf E.F E.G E.Hc E.d0 E.γ + _ + 60 = _
     unfold Restore.costF; rw [hAd]; ring
-  have hTK : 1 ≤ T * K1 := Nat.one_le_iff_ne_zero.2 (by positivity)
+  
   have h1 : E.Bf + 10 ≤ (E.κf E.d0 + 2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A := by
     have e : (E.κf E.d0 + 2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A =
         E.κf E.d0 * A + (2 * ((scanK + 2) * (E.d0 + 1)) + 70) * A := by ring
@@ -155,10 +156,10 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
   -- the data
   set E : DEnv := ⟨P, W, c.nreg ALLOC, c.nmem, c.nreg, c.nreg 210001, c.nreg 216001,
     c.nreg 216000, c.nreg 230001, sF, sB, κf, κB, F, G, H, X,
-    (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L₀ E₀).F (interiorModel (Qof P)) (Qof P),
+    (inputNF P L₀ E₀).F (inputModel P) (Qof P),
     L₀.length⟩ with hEd
-  have hMD : ModelDescAt c.nmem (c.nreg 210001) (Qof P) (interiorModel (Qof P)) := hDa.holds
-  have hone : c.nmem (c.nreg 210001) = 1 := desc_one hMD
+  have hMD := hDa.holds
+  have hone := desc_one hMD
   have hE : DGood E := by
     refine ⟨hF, hB, hG, hWh, hXh, fun m hm => ?_, ⟨hD6, fun h0 => ?_⟩, hMD, hd4⟩
     · show c.nreg 216001 ≤ X.cap P m (c.nreg 230001)
@@ -188,31 +189,30 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
     have h3 : 1 ≤ (L₀.length + 1) * A := Nat.one_le_iff_ne_zero.2 (by positivity)
     omega
   -- initialisation
-  have hW5 : 5 ≤ W := le_trans (by unfold hostWords; omega) hWh
+  have hW5 : 5 ≤ W := le_trans (by reg_omega) hWh
   obtain ⟨c₁, k₁, e₁, hk₁, i02, i03, i04, i05, i06, i10, f₁⟩ := initS_exec (P := P) c hw hW5
   have g₁ : ∀ q, ¬ (216002 ≤ q ∧ q ≤ 216010) → c₁.nreg q = c.nreg q := fun q hq =>
     f₁.1 q (by simpa using hq)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
-  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by unfold ALLOC; omega)
+  have m₁ := f₁.2.2.1
+  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by reg_omega)
   have hI0 : RInv E 0 c₁ := by
     refine ⟨e₁.wb_right, g₁ _ (by omega), g₁ _ (by omega), g₁ _ (by omega), i02, i03, i04, i05,
       i06, i10, g₁ _ (by omega), fun q hq => g₁ q (by unfold KeepR at hq; omega),
       ⟨L₀, E₀, stateAt_congr hSt (fun i h1 h2 => g₁ _ (by omega)) m₁ A₁, subset_rfl,
-        Model.DegLe.mono _ hdeg (by show c.nreg 216000 ≤ max 4 (c.nreg 216000 - 0); omega), hsg,
+        Model.DegLe.mono _ hdeg (by ram_post), hsg,
         by show L₀.length + 1 ≤ 2 ^ 0 * (L₀.length + 1); simp⟩, fun a _ => by rw [m₁], by rw [A₁],
       Nat.zero_le _, ?_⟩
     rw [A₁]
     show c.nreg ALLOC + (c.nreg 216000 - 0) * (E.Br + 2) + 3 ≤ W
     have : (c.nreg 216000 - 0) * (E.Br + 2) = (E.Br + 2) * E.d0 := by
-      show (c.nreg 216000 - 0) * (E.Br + 2) = (E.Br + 2) * c.nreg 216000
-      rw [Nat.sub_zero, mul_comm]
+      ram_post [mul_comm]
     omega
   -- the rounds
   obtain ⟨c₂, k₂, e₂, I₂, RF₂, hk₂⟩ := rounds_exec hE hI0
   have RF₁ : Restore.RF DrvR.drvBands (c.nreg ALLOC) c c₁ k₁ :=
     rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₁
+      exact ⟨mem_drvBands (by omega) (by omega), by reg_omega⟩) f₁
   refine ⟨c₂, k₁ + k₂, Exec.seq e₁ e₂, by omega, ⟨fun r hr => I₂.keep r hr, fun L E hSt' => ?_⟩,
     (RF₁.trans RF₂).to_frame⟩
   -- the post
@@ -220,12 +220,12 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
   obtain ⟨-, -, hK', -, hLa', -, hEa', -, -, -, -⟩ := hSt''
   obtain ⟨-, -, -, -, hLa, -, hEa, -, -, -, -⟩ := hSt
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at hK' hLa' hEa' hLa hEa
-  have hLL : L₀ = L := BuildNF.chordListAt_unique hLa.holds hLa'.holds (by rw [← hK, hK'])
+  have hLL := BuildNF.chordListAt_unique hLa.holds hLa'.holds (by rw [← hK, hK'])
   subst hLL
-  have hEE : E₀ = E := hEa.holds.symm.trans hEa'.holds
+  have hEE := hEa.holds.symm.trans hEa'.holds
   subst hEE
   obtain ⟨L', E', hSt₂, hsub, hdeg₂, hsg₂, hcnt₂⟩ := I₂.state
-  refine ⟨L', E', hSt₂, hsub, Model.DegLe.mono _ hdeg₂ (by show max 4 (E.d0 - E.d0) ≤ 4; simp),
+  refine ⟨L', E', hSt₂, hsub, Model.DegLe.mono _ hdeg₂ (by simp),
     hsg₂, hcnt₂⟩
 
 /-! ## The restoration rounds of the down phase -/
@@ -258,7 +258,7 @@ theorem roundsSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) :
     cutGran (gradeCtx O) DrvR.OkInt DrvR.ioBandsD DrvR.oracleBands_subset_ioBandsD
     DrvR.bRestore_notin_ioBandsD (gradeCtx_capLocal O) (ShootCut.gradeCtx_halves O)
     (fun _ _ h => Or.inr h) subset_rfl subset_rfl hsh' hcu'
-  obtain ⟨sB, κB, hB⟩ := DrvR.sortedMeets_of buildNFSorted
+  obtain ⟨sB, κB, hB⟩ := buildNFSorted
   exact ⟨κ + 1, roundsSpec_of hF hB (gradeCtx_capLocal O) (shCost_pos κ) (cuCost_pos κ)⟩
 
 end

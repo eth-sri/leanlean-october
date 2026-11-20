@@ -29,8 +29,8 @@ open WalkEmbed Sweep
 @[expose] public section
 
 /-- The right stretch is shorter than the walk of `C`. -/
-theorem Lst_lt_n (J : Merge.Junction) : Lst J < (chainModel J.whole).W.n := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+theorem Lst_lt_n (J : Merge.Junction) : Lst J < J.wholeModel.W.n := by
+  have hn : J.wholeModel.W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have h1 := J.one_le_m₁
   have hL : Lst J = rlen J := rL1_add_rL2 J
@@ -41,9 +41,9 @@ theorem Lst_lt_n (J : Merge.Junction) : Lst J < (chainModel J.whole).W.n := by
 /-- The offset of the start key is `Lst`. -/
 theorem oW_start (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) :
-    oW J ((((gW J + Lst J) % (chainModel J.whole).W.n : ℕ) : ℝ) + 0) = (Lst J : ℝ) := by
+    oW J ((((gW J + Lst J) % J.wholeModel.W.n : ℕ) : ℝ) + 0) = (Lst J : ℝ) := by
   have hC := corr_right0 J hP hS₂ hS₂f
-  have h := off_key (n := (chainModel J.whole).W.n) (g := gW J) (d := Lst J) hC.hg (Lst_lt_n J)
+  have h := off_key (n := J.wholeModel.W.n) (g := gW J) (d := Lst J) hC.hg (Lst_lt_n J)
     (t := 0) le_rfl one_pos
   rw [oW_def]
   simpa only [add_zero] using h
@@ -53,11 +53,11 @@ theorem startTask : StartTask := by
   intro J Q S₂ hP hS₂ _hF hbrk V hV hW₂
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
-  set n := (chainModel J.whole).W.n with hndef
+  set n := J.wholeModel.W.n with hndef
   have hn0 : 0 < n := by have := Lst_lt_n J; omega
   set pK := (gW J + Lst J) % n with hpKdef
   have hpK : pK < n := Nat.mod_lt _ hn0
-  have hoK : oW J ((pK : ℝ) + 0) = (Lst J : ℝ) := oW_start J hP hS₂a hS₂f
+  have hoK := oW_start J hP hS₂a hS₂f
   have hL0 := Lst_pos J
   intro p t hp ht hnc ho hbr
   by_cases hEx : EvEncl J S₂ (oW J (p + t))
@@ -65,14 +65,14 @@ theorem startTask : StartTask := by
   right
   intro G hG hf
   obtain ⟨R, hR, hWR, q, u, hq, hu, hncq, hfq, h1, h2, hgap⟩ :=
-    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rw [hoK]; exact hL0) hL0
+    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rwa [hoK]) hL0
   rw [hoK] at h1 h2 hgap
   -- the position before the start is not enclosed
   have hEq : ¬ EvEncl J S₂ (oW J (q + u)) := by
     rintro ⟨e, -, pa, pb, ta, tb, -, -, -, hLa, hlt, -⟩
     linarith
   -- every chord attached between the two positions is a bracket
-  have hbr' : ∀ e ∈ F₂plus J S₂, ∀ (q' : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q' s →
+  have hbr' : ∀ e ∈ F₂plus J S₂, ∀ (q' : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q' s →
       oW J (q + u) < oW J (q' + s) → oW J (q' + s) < oW J (p + t) → EvBrk J e := by
     intro e he q' s hA ha hb
     rcases lt_trichotomy (oW J (q' + s)) (Lst J) with hlt | heq | hgt

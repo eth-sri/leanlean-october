@@ -52,7 +52,7 @@ theorem nf_chord_of_mem {e : Set Point} (he : e ∈ N.F M Q) :
   obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem hr
   refine ⟨k, hk, ?_⟩
   unfold NF.chord
-  rw [NFLoc.getD_of_lt _ hk]
+  simp_all
 
 /-- Two horizontal segments with a nondegenerate second one are equal only with equal ends. -/
 theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : a < b) :
@@ -73,8 +73,8 @@ theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : 
 theorem rec_pos_ends {c : CRec} (hA : c.Attached M Q) {y a b : ℝ}
     (hc : c.toSet M Q = hseg y a b) (hab : a < b) :
     M.pos Q c.lpos = (a, y) ∧ M.pos Q c.rpos = (b, y) ∧ (Q.vtx c.h).2 = y := by
-  have hl : M.pos Q c.lpos ∈ c.toSet M Q := hA.1.2.2.2.1
-  have hr : M.pos Q c.rpos ∈ c.toSet M Q := hA.2.2.2.2.1
+  have hl := hA.1.2.2.2.1
+  have hr := hA.2.2.2.2.1
   have hset : c.toSet M Q = hseg (Q.vtx c.h).2 (M.pos Q c.lpos).1 (M.pos Q c.rpos).1 := rfl
   obtain ⟨hL, hR, hy⟩ := hseg_eq_ends (hset.symm.trans hc) hab
   have hl2 : (M.pos Q c.lpos).2 = (Q.vtx c.h).2 := by rw [hset] at hl; exact hl.1
@@ -107,23 +107,29 @@ variable {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) (hGM : GoodModel M
   (hne : (N.F M Q).Nonempty)
 include hN hGM hne
 
-/-- The arc starting at a located cut is at spine position `j` or `j + 1`. -/
-theorem spine_start {κ : ℝ} {j : ℕ} (hj : j < N.arcs.length)
+section
+
+variable {κ : ℝ} {j : ℕ} (hj : j < N.arcs.length)
     (hloc : sk M Q N j = κ ∨ ek M Q N j = κ) {p : ℕ} (hp : p < N.arcs.length)
+include hj hloc hp
+
+/-- The arc starting at a located cut is at spine position `j` or `j + 1`. -/
+theorem spine_start
     (hs : sk M Q N p = κ) : p = j ∨ p = succP N.arcs.length j := by
   rcases hloc with h | h
   · exact Or.inl (OracleQ.start_unique hN hGM hne hp hj (hs.trans h.symm))
   · exact Or.inr (OracleQ.end_start_adj hN hGM hne hj hp (h.trans hs.symm))
 
 /-- The arc ending at a located cut is at spine position `j - 1` or `j`. -/
-theorem spine_end {κ : ℝ} {j : ℕ} (hj : j < N.arcs.length)
-    (hloc : sk M Q N j = κ ∨ ek M Q N j = κ) {p : ℕ} (hp : p < N.arcs.length)
+theorem spine_end
     (he : ek M Q N p = κ) : p = predP N.arcs.length j ∨ p = j := by
   rcases hloc with h | h
   · left
     have := OracleQ.end_start_adj hN hGM hne hp hj (he.trans h.symm)
     rw [this, OracleQ.predP_succP hp]
   · exact Or.inr (OracleQ.end_unique hN hGM hne hp hj (he.trans h.symm))
+
+end
 
 end Spine
 
@@ -184,7 +190,7 @@ theorem beforeFaces_of_arc_end' {F : Set (Set Point)} {U : Set Point} {l : ℝ} 
   have := hsub ⟨hs0, hs1⟩
   refine harc.2.2.2.2.2.2 p (t - s) hp (by linarith) (by linarith) ?_
   have e : (p : ℝ) + (t - s) = (p : ℝ) + t - s := by ring
-  rw [e]; exact this
+  rwa [e]
 
 /-- **The regions faced just after and just before a cut** have arcs starting and ending at the
 cut. -/
@@ -198,18 +204,16 @@ theorem faced_arcs (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   obtain ⟨U', V', l, r, hU', hV', -, harcU, harcV, -⟩ := hM.attach_face hF hfin hc hAc
   have hne : F.Nonempty := ⟨c, hc⟩
   refine ⟨fun hW => ⟨r, ?_⟩, fun hW => ⟨l, ?_⟩⟩
-  · have hW' : AfterFaces M p' t' U' := afterFaces_of_arc harcU hp ht0
+  · have hW' := afterFaces_of_arc harcU hp ht0
       (WalkAx.eventually_after_start (WalkAx.arc_cuts hne harcU).2.2)
-    rw [after_unique ht1 hU hU' hW hW']
-    exact harcU
+    rwa [after_unique ht1 hU hU' hW hW']
   · have hlr := (WalkAx.arc_cuts hne harcV).2.2
     have hW' : BeforeFaces M p' t' V' := by
       rcases ht0.lt_or_eq with htp | ht00
       · exact beforeFaces_of_arc_end' hp htp ht1 harcV hlr
       · subst ht00
         exact beforeFaces_of_arc_end hp (hp1 rfl) harcV hlr
-    rw [before_unique ht0 hU hV' hW hW']
-    exact harcV
+    rwa [before_unique ht0 hU hV' hW hW']
 
 end Facing
 
@@ -353,7 +357,8 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     have hab := hH.lt
     have hAk := hN.2.2.1 k hk
     obtain ⟨hla, hrb, hky⟩ := rec_pos_ends hAk (hke.trans hey) hab
-    have hze : z ∈ hseg y a b := by rw [← hey, ← hpt]; exact hAe.2.2.2.1
+    have hze := hAe.2.2.2.1
+    rw [hpt, hey] at hze
     have hzD : z ∉ C.dom := by rw [← hpt]; exact hM.trace p hx t hx0 hx1.le
     obtain ⟨hzy, hza, hzb⟩ := hze
     have hopen : ∀ u : ℝ, a < u → u < b → ((u, y) : Point) ∈ C.dom := fun u h1 h2 => hH.open_mem u h1 h2
@@ -479,8 +484,10 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       obtain ⟨U, V, l, r, hU, hV, -, harcU, harcV, -⟩ := hM.attach_face hF hfin hc hAc
       have hp1' : 1 ≤ p := hp1 ht0
       rw [ht0] at hAc harcU harcV
-      have hpt0 : sidePt M.W p 0 = z := by rw [← ht0]; exact hpt
-      have hsec0 : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) σ 1) := by rw [← ht0]; exact hsec'
+      have hpt0 := hpt
+      rw [ht0] at hpt0
+      have hsec0 := hsec'
+      rw [ht0] at hsec0
       have hnot' : ∀ c ∈ F, SideAttach M.W c p 0 →
           ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∉ c := by
         intro c hc hA; rw [hpt0]; exact hnot c hc hA

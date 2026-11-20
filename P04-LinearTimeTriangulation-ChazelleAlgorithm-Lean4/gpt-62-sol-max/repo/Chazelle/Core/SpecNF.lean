@@ -237,6 +237,22 @@ def IsNF (M : Model) (Q : Polygon) (N : NF) : Prop :=
       (∀ i, i < N.nChords → (N.chord i).h < Q.n) ∧
       ∀ j, j < N.arcs.length → ProperPos M Q Q.n (N.arc j).s ∧ ProperPos M Q Q.n (N.arc j).e
 
+/-- A valid normal form has one chord per record. -/
+theorem IsNF.ncard_chords {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) :
+    (N.F M Q).ncard = N.chords.length := by
+  classical
+  let f := fun i => (N.chord i).toSet M Q
+  have hF : N.F M Q = f '' Set.Iio N.nChords := by
+    ext c; constructor
+    · rintro ⟨r, hr, rfl⟩
+      obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
+      exact ⟨i, hi, by simp [f, NF.chord, List.getElem?_eq_getElem hi]⟩
+    · rintro ⟨i, hi, rfl⟩
+      change i < N.chords.length at hi
+      exact ⟨N.chords[i], List.getElem_mem hi, by simp [f, NF.chord, List.getElem?_eq_getElem hi]⟩
+  have inj : Set.InjOn f (Set.Iio N.nChords) := fun a ha b hb => hN.2.1 a b ha hb
+  rw [hF, inj.ncard_image, ← Finset.coe_range, Set.ncard_coe_finset, Finset.card_range] <;> rfl
+
 /-- **A valid tree decomposition** (§2.3) of depth at most `d`: every chord has a node; the
 children of the node of chord `k` split the leaves below it along the two sides of `k`; every
 region is a leaf; the iterated parents of every code reach the root within `d` steps.  (Finding
@@ -334,8 +350,8 @@ theorem Host.pts_length_le {n : ℕ} {H : Host} (h : HostWF n H) :
       | pt x =>
         simp only [HostItem.pts, List.length_singleton]
         cases x with
-        | vtx i => simp only [SymPt.Lt] at hit; omega
-        | onEdge e' h' => simp only [SymPt.Lt] at hit; omega
+        | vtx i => simp_all [SymPt.Lt] <;> omega
+        | onEdge e' h' => simp_all [SymPt.Lt] <;> omega
     rw [e, List.length_cons, Nat.succ_mul]
     omega
 

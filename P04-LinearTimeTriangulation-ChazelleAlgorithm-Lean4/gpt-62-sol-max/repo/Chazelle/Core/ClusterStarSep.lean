@@ -42,9 +42,6 @@ theorem starTree_parent_inl (v : V) :
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 theorem starTree_parent_inr (g : F) :
     (starTree T a ha).parent (.inr g) = .inl (M.vert (a g)) := by
-  unfold SpanTree.parent
-  have : (Sum.inr g : V ⊕ F) ≠ (starTree T a ha).root := by simp [starTree]
-  rw [ite_eq_right this]
   rfl
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
@@ -53,7 +50,7 @@ theorem starTree_iterate_inl (n : ℕ) (v : V) :
   induction n generalizing v with
   | zero => rfl
   | succ n ih =>
-    rw [Function.iterate_succ_apply, starTree_parent_inl, ih, Function.iterate_succ_apply]
+    simp [Function.iterate_succ_apply, starTree_parent_inl, ih]
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 /-- Ancestry between real vertices is ancestry in `T`. -/
@@ -122,8 +119,7 @@ theorem star_mem_sepSet_inl (f : D) (v : V) :
     · left; simpa [starDarts, starTree_isAnc_inl] using hanc
     · right; left
       simp only [starDarts, star_vert, starVert_inr_inr] at hanc
-      rw [starTree_isAnc_inl, M.vert_fperm] at hanc
-      exact hanc
+      rwa [starTree_isAnc_inl, M.vert_fperm] at hanc
     · right; right
       simp only [starDarts, star_vert, starVert_inl_inr] at hanc
       exact (starTree_isAnc_inr T a ha v _).mp hanc
@@ -131,8 +127,7 @@ theorem star_mem_sepSet_inl (f : D) (v : V) :
     · exact ⟨.inl f, rfl, by simpa [starTree_isAnc_inl] using h⟩
     · refine ⟨.inr (.inr (M.fperm f)), ?_, ?_⟩
       · simp
-      · simp only [star_vert, starVert_inr_inr]
-        rw [starTree_isAnc_inl, M.vert_fperm]; exact h
+      simp only [star_vert, starVert_inr_inr, starTree_isAnc_inl, M.vert_fperm] <;> omega
     · exact ⟨.inr (.inl f), rfl, (starTree_isAnc_inr T a ha v _).mpr h⟩
 
 /-- **The separator in a slab**: at most `3 k` real vertices whose levels (shifted by `c`) lie in

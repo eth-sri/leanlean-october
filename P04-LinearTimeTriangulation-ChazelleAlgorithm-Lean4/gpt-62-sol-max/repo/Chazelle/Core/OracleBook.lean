@@ -110,7 +110,7 @@ theorem csucc_injective (hinj : KeyInj g k) : Function.Injective (csucc g k) := 
   obtain ⟨ha, hsa⟩ := csucc_spec g k a
   obtain ⟨hb, hsb⟩ := csucc_spec g k b
   rw [hab] at ha hsa
-  have hgab : g a = g b := ha.symm.trans hb
+  have hgab := ha.symm.trans hb
   refine hinj a b hgab ?_
   rcases hsa with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hsb with ⟨h3, h4⟩ | ⟨h3, h4⟩
   · rcases lt_trichotomy (k a) (k b) with h | h | h
@@ -118,16 +118,12 @@ theorem csucc_injective (hinj : KeyInj g k) : Function.Injective (csucc g k) := 
     · exact h
     · exact absurd (h4 a hgab h) (by omega)
   · exact absurd (h4 a hgab) (by have := h3 a hgab; omega)
-  · exact absurd (h2 b hgab.symm) (by have := h1 b hgab.symm; omega)
+  · exact absurd (h2 b hgab.symm) (by omega)
   · exact le_antisymm (h3 a hgab) (h1 b hgab.symm)
 
 /-- The rotation as a permutation. -/
 noncomputable def csuccPerm (hinj : KeyInj g k) : Perm D :=
   Equiv.ofBijective (csucc g k) (Finite.injective_iff_bijective.1 (csucc_injective hinj))
-
-omit [DecidableEq D] in
-@[simp] theorem csuccPerm_apply (hinj : KeyInj g k) (d : D) : csuccPerm hinj d = csucc g k d :=
-  rfl
 
 omit [DecidableEq D] in
 /-- The rotation preserves vertices. -/
@@ -159,9 +155,9 @@ theorem csucc_sameCycle (hinj : KeyInj g k) {d e : D} (h : g d = g e) :
         omega
       have ih' := ih (k p) (by omega) p hp.1 le_rfl
       refine ih'.trans ⟨1, ?_⟩
-      simp [hsucc]
+      rwa [zpow_one]
     · push Not at hlow
-      have : m = x := hinj m x (hm.trans hx.symm) (le_antisymm (hmin x hx) (hlow m hm))
+      have := hinj m x (hm.trans hx.symm) (le_antisymm (hmin x hx) (hlow m hm))
       subst this
       exact Perm.SameCycle.refl _ _
   exact (key (k d) d rfl le_rfl).symm.trans (key (k e) e h.symm le_rfl)
@@ -245,7 +241,7 @@ theorem encA2 {x w : ℕ} (hc : (w, x) ∈ L) (hno : ∀ w', (x, w') ∉ L)
     have hle : p.1 ≤ w := by
       by_contra hlt
       exact hNC _ hc _ hp (by simp only; omega)
-    exact ⟨fun h => by rw [h] at h2; simp only at h2; omega, hp, hle, by simp only; omega⟩
+    exact ⟨fun h => by simp_all, hp, hle, by simp only; omega⟩
   · rintro ⟨hne, hp, h1, h2⟩
     simp only at h1 h2
     have hp2 : p.2 ≠ x := fun h => by
@@ -261,7 +257,7 @@ theorem encA3 (_hNC : NonCross L) (hOK : ∀ c ∈ L, ChordOK N c) {x : ℕ} (hx
   ext p
   rw [mem_Enc, mem_Enc]
   rcases Nat.eq_zero_or_pos x with rfl | hpos
-  · have e : (0 + N - 1) % N = N - 1 := by rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
+  · have e : (0 + N - 1) % N = N - 1 := by simp
     rw [e]
     constructor
     · rintro ⟨-, hp, h1, -⟩
@@ -280,7 +276,12 @@ theorem encA3 (_hNC : NonCross L) (hOK : ∀ c ∈ L, ChordOK N c) {x : ℕ} (hx
       have := (hOK p hp).2.1
       exact ⟨by omega, hp, by omega, by omega⟩
 
-theorem encB1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (w, v) ∈ L) (huw : u < w)
+section
+
+variable {u v w : ℕ} (hc : (u, v) ∈ L)
+
+include w hc in
+theorem encB1 (hc' : (w, v) ∈ L) (huw : u < w)
     (hmin : ∀ w', (w', v) ∈ L → u < w' → w ≤ w') : Sup L (u, v) = SSup L (w, v) := by
   have hk := hOK _ hc'
   simp only [ChordOK] at hk
@@ -289,7 +290,7 @@ theorem encB1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (w, v) ∈ L) (huw : u < 
   simp only
   constructor
   · rintro ⟨hp, h1, h2⟩
-    exact ⟨fun h => by rw [h] at h1; simp only at h1; omega, hp, by omega, h2⟩
+    exact ⟨fun h => by simp_all <;> omega, hp, by omega, h2⟩
   · rintro ⟨hne, hp, h1, h2⟩
     refine ⟨hp, ?_, h2⟩
     by_contra hlt
@@ -316,7 +317,8 @@ theorem encB2 {u v : ℕ} (hc : (u, v) ∈ L) (hno : ∀ w', (w', v) ∈ L → w
     · have := hno _ (mem_pair' hp (by omega))
       omega
 
-theorem encC1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (u, w) ∈ L) (hvw : v < w)
+include w hc in
+theorem encC1 (hc' : (u, w) ∈ L) (hvw : v < w)
     (hmin : ∀ w', (u, w') ∈ L → v < w' → w ≤ w') : SSup L (u, v) = Sup L (u, w) := by
   have hk := hOK _ hc
   simp only [ChordOK] at hk
@@ -335,7 +337,8 @@ theorem encC1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (u, w) ∈ L) (hvw : v < 
   · rintro ⟨hp, h1, h2⟩
     exact ⟨fun h => by rw [h] at h2; simp only at h2; omega, hp, h1, by omega⟩
 
-theorem encC2 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (w, u) ∈ L)
+include w hc in
+theorem encC2 (hc' : (w, u) ∈ L)
     (hno : ∀ w', (u, w') ∈ L → w' ≤ v) (hmin : ∀ w', (w', u) ∈ L → w ≤ w') :
     SSup L (u, v) = SSup L (w, u) := by
   have hk := hOK _ hc
@@ -374,7 +377,7 @@ theorem encC3 {u v : ℕ} (hc : (u, v) ∈ L) (hno : ∀ w', (u, w') ∈ L → w
   simp only
   rcases Nat.eq_zero_or_pos u with hu | hpos
   · have e : (u + N - 1) % N = N - 1 := by
-      rw [hu, Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
+      simp [hu]
     rw [e]
     constructor
     · rintro ⟨hne, hp, h1, h2⟩
@@ -401,9 +404,8 @@ theorem encD1 {x w : ℕ} (hx : x < N) (hc : (w, (x + 1) % N) ∈ L)
   simp only [ChordOK] at hk
   have hx1 : x + 1 < N := by
     by_contra h
-    have : (x + 1) % N = 0 := by rw [show x + 1 = N by omega, Nat.mod_self]
-    omega
-  have e : (x + 1) % N = x + 1 := Nat.mod_eq_of_lt hx1
+    simp_all [show x + 1 = N by omega, Nat.mod_self] 
+  have e := Nat.mod_eq_of_lt hx1
   rw [e] at hc hmax ⊢
   ext p
   rw [mem_Enc, mem_Sup]
@@ -427,7 +429,7 @@ theorem encD2 {x w : ℕ} (hx : x < N) (hc : ((x + 1) % N, w) ∈ L)
   rw [mem_Enc, mem_SSup]
   simp only
   by_cases hx1 : x + 1 < N
-  · have e : (x + 1) % N = x + 1 := Nat.mod_eq_of_lt hx1
+  · have e := Nat.mod_eq_of_lt hx1
     rw [e] at hc hno hmax hk ⊢
     constructor
     · rintro ⟨-, hp, h1, h2⟩
@@ -444,8 +446,7 @@ theorem encD2 {x w : ℕ} (hx : x < N) (hc : ((x + 1) % N, w) ∈ L)
   · have e : (x + 1) % N = 0 := by rw [show x + 1 = N by omega, Nat.mod_self]
     rw [e] at hc hno hmax hk ⊢
     constructor
-    · rintro ⟨h, -⟩
-      omega
+    · simp_all 
     · rintro ⟨hne, hp, h1, h2⟩
       have := hmax _ (mem_pair hp (by omega))
       exact absurd (pair_eq (by omega) (by omega)) hne
@@ -461,7 +462,8 @@ theorem encD3 {x : ℕ} (hx : x < N) (hno : ∀ p ∈ L, p.1 ≠ (x + 1) % N ∧
   · rw [show x + 1 = N by omega, Nat.mod_self, zero_add, Nat.mod_eq_of_lt (by omega)]
     omega
 
-theorem encE1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (u, w) ∈ L) (hwv : w < v)
+include w hc in
+theorem encE1 (hc' : (u, w) ∈ L) (hwv : w < v)
     (hmax : ∀ w', (u, w') ∈ L → w' < v → w' ≤ w) : Sup L (u, v) = SSup L (u, w) := by
   have hk := hOK _ hc'
   simp only [ChordOK] at hk
@@ -497,7 +499,8 @@ theorem encE2 {u v : ℕ} (hc : (u, v) ∈ L) (hno : ∀ w', (u, w') ∈ L → v
     · have := hno _ (mem_pair hp (by omega))
       omega
 
-theorem encF1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (w, v) ∈ L) (hwu : w < u)
+include w hc in
+theorem encF1 (hc' : (w, v) ∈ L) (hwu : w < u)
     (hmax : ∀ w', (w', v) ∈ L → w' < u → w' ≤ w) : SSup L (u, v) = Sup L (w, v) := by
   have hk := hOK _ hc
   simp only [ChordOK] at hk
@@ -515,9 +518,10 @@ theorem encF1 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (w, v) ∈ L) (hwu : w < 
     · have hp2 : p.2 ≠ v := fun h => hne (pair_eq (by omega) h)
       exact absurd (hNC _ hc' _ hp) (by simp only; omega)
   · rintro ⟨hp, h1, h2⟩
-    exact ⟨fun h => by rw [h] at h1; simp only at h1; omega, hp, by omega, h2⟩
+    exact ⟨fun h => by simp_all <;> omega, hp, by omega, h2⟩
 
-theorem encF2 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (v, w) ∈ L)
+include w hc in
+theorem encF2 (hc' : (v, w) ∈ L)
     (hno : ∀ w', (w', v) ∈ L → u ≤ w') (hmax : ∀ w', (v, w') ∈ L → w' ≤ w) :
     SSup L (u, v) = SSup L (v, w) := by
   have hk := hOK _ hc
@@ -543,6 +547,8 @@ theorem encF2 {u v w : ℕ} (hc : (u, v) ∈ L) (hc' : (v, w) ∈ L)
       by_contra hlt
       exact hNC _ hc _ hp (by simp only; omega)
     exact ⟨fun h => by rw [h] at h2; simp only at h2; omega, hp, hle, by omega⟩
+
+end
 
 theorem encF3 {u v : ℕ} (hc : (u, v) ∈ L) (hno : ∀ w', (w', v) ∈ L → u ≤ w')
     (hno2 : ∀ w', (v, w') ∉ L) : SSup L (u, v) = Enc N L v := by
@@ -688,7 +694,7 @@ theorem pred_mod_eq {N x : ℕ} (hx : x < N) (hx0 : 1 ≤ x) : (x + N - 1) % N =
   rw [show x + N - 1 = (x - 1) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
 
 theorem pred_mod_zero {N : ℕ} (hN : 1 ≤ N) : (0 + N - 1) % N = N - 1 := by
-  rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
+  simp
 
 /-- The backward spine dart into `x` from `x - 1` has tail... (the spine dart `(x - 1, x)`
 reversed): its tail is `x`. -/
@@ -720,7 +726,7 @@ theorem label_next_spB (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
   obtain ⟨hN, -, -, hIok, hOok, hInc, hOnc⟩ := hV
   obtain ⟨hwok, hwt, hbr⟩ := hw
   have hwit : B.ViewOK (.spB ((x + B.N - 1) % B.N)) := Nat.mod_lt _ (by omega)
-  have hwitt : View.tail B.N (.spB ((x + B.N - 1) % B.N)) = x := tail_spB_pred hx
+  have hwitt := tail_spB_pred hx
   obtain ⟨hpos, hmin⟩ : 0 < View.key B.N w ∧ ∀ w', B.ViewOK w' → View.tail B.N w' = x →
       0 < View.key B.N w' → View.key B.N w ≤ View.key B.N w' := by
     rcases hbr with h | ⟨hall, -⟩
@@ -744,8 +750,7 @@ theorem label_next_spB (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
       · intro h2
         have := hmin (.inM p) hp h2 (by simp only [View.key]; omega)
         simp only [View.key] at this; omega
-    simp only [label]
-    rw [hy, ← encA3 hInc hIok hx hno]
+    simp [label, hy, ← encA3 hInc hIok hx hno]
   | inP c =>
     rcases c with ⟨u, v⟩
     simp only [ViewOK] at hwok
@@ -757,8 +762,7 @@ theorem label_next_spB (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
       simp only [ChordOK] at hk
       have := hmin (.inP (u, w')) hw' rfl (by simp only [View.key]; omega)
       simp only [View.key] at this; omega
-    simp only [label]
-    rw [encA1 hInc hIok hwok hmin2]
+    simp [label, encA1 hInc hIok hwok hmin2]
   | inM c =>
     rcases c with ⟨u, v⟩
     simp only [ViewOK] at hwok
@@ -791,23 +795,28 @@ theorem label_next_spB (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
     simp only [ChordOK] at hk
     simp only [View.key] at hle; omega
 
+/-- If the backward spine dart is above the threshold, the cyclic search cannot wrap. -/
+private theorem next_to_spB {t q : ℕ} {w : View} (ht : t < B.N) (hq : q < B.N - 1)
+    (h : B.IsNext t q w) :
+    (q < View.key B.N w ∧ ∀ w', B.ViewOK w' → View.tail B.N w' = t → q < View.key B.N w' →
+      View.key B.N w ≤ View.key B.N w') ∧ View.key B.N w ≤ B.N - 1 := by
+  let d := View.spB ((t + B.N - 1) % B.N)
+  have hd : B.ViewOK d := Nat.mod_lt _ (by omega)
+  have hd' := tail_spB_pred ht
+  have hdq : q < View.key B.N d := by simpa [d, View.key] using hq
+  rcases h.2.2 with h | ⟨hall, -⟩
+  · exact ⟨h, h.2 d hd hd' hdq⟩
+  · exact (hdq.not_ge (hall d hd hd')).elim
+
 /-- Around the forward dart of an inner chord. -/
 theorem label_next_inP (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.I) {w : View}
     (hw : B.IsNext v (B.N - v + u) w) : B.label w = B.label (.inP (u, v)) := by
   obtain ⟨hN, -, -, hIok, hOok, hInc, hOnc⟩ := hV
-  obtain ⟨hwok, hwt, hbr⟩ := hw
   have hk := hIok _ hc
   simp only [ChordOK] at hk
-  have hvN : v < B.N := hk.2.1
-  have hwit : B.ViewOK (.spB ((v + B.N - 1) % B.N)) := Nat.mod_lt _ (by omega)
-  have hwitt : View.tail B.N (.spB ((v + B.N - 1) % B.N)) = v := tail_spB_pred hvN
-  obtain ⟨hpos, hmin⟩ : B.N - v + u < View.key B.N w ∧ ∀ w', B.ViewOK w' →
-      View.tail B.N w' = v → B.N - v + u < View.key B.N w' →
-        View.key B.N w ≤ View.key B.N w' := by
-    rcases hbr with h | ⟨hall, -⟩
-    · exact h
-    · have := hall _ hwit hwitt; simp only [View.key] at this; omega
-  have hle := hmin _ hwit hwitt (by simp only [View.key]; omega)
+  have hvN := hk.2.1
+  obtain ⟨⟨hpos, hmin⟩, hle⟩ := next_to_spB hvN (by omega) hw
+  obtain ⟨hwok, hwt, _⟩ := hw
   cases w with
   | spF y => simp only [View.key] at hpos; omega
   | spB y =>
@@ -822,8 +831,7 @@ theorem label_next_inP (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.I) {w : Vie
       by_contra hlt
       have := hmin (.inM (w', v)) hw' rfl (by simp only [View.key]; omega)
       simp only [View.key] at this; omega
-    simp only [label]
-    rw [hy, encB2 hInc hIok hc hno]
+    simp [label, hy, encB2 hInc hIok hc hno]
   | inP c =>
     rcases c with ⟨a, b⟩
     simp only [ViewOK] at hwok
@@ -849,30 +857,24 @@ theorem label_next_inP (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.I) {w : Vie
     rcases c with ⟨a, b⟩
     have hk' := hOok _ hwok
     simp only [ChordOK] at hk'
-    simp only [View.key] at hle; omega
+    simp only [View.key] at hle
+    omega
   | outM c =>
     rcases c with ⟨a, b⟩
     have hk' := hOok _ hwok
     simp only [ChordOK] at hk'
-    simp only [View.key] at hle; omega
+    simp only [View.key] at hle
+    omega
 
 /-- Around the backward dart of an inner chord. -/
 theorem label_next_inM (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.I) {w : View}
     (hw : B.IsNext u (v - u) w) : B.label w = B.label (.inM (u, v)) := by
   obtain ⟨hN, -, -, hIok, hOok, hInc, hOnc⟩ := hV
-  obtain ⟨hwok, hwt, hbr⟩ := hw
   have hk := hIok _ hc
   simp only [ChordOK] at hk
   have huN : u < B.N := by omega
-  have hwit : B.ViewOK (.spB ((u + B.N - 1) % B.N)) := Nat.mod_lt _ (by omega)
-  have hwitt : View.tail B.N (.spB ((u + B.N - 1) % B.N)) = u := tail_spB_pred huN
-  obtain ⟨hpos, hmin⟩ : v - u < View.key B.N w ∧ ∀ w', B.ViewOK w' →
-      View.tail B.N w' = u → v - u < View.key B.N w' →
-        View.key B.N w ≤ View.key B.N w' := by
-    rcases hbr with h | ⟨hall, -⟩
-    · exact h
-    · have := hall _ hwit hwitt; simp only [View.key] at this; omega
-  have hle := hmin _ hwit hwitt (by simp only [View.key]; omega)
+  obtain ⟨⟨hpos, hmin⟩, hle⟩ := next_to_spB huN (by omega) hw
+  obtain ⟨hwok, hwt, _⟩ := hw
   cases w with
   | spF y => simp only [View.key] at hpos; omega
   | spB y =>
@@ -892,8 +894,7 @@ theorem label_next_inM (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.I) {w : Vie
       simp only [ChordOK] at hk'
       have := hmin (.inM (w', u)) hw' rfl (by simp only [View.key]; omega)
       simp only [View.key] at this; omega
-    simp only [label]
-    rw [hy, encC3 hInc hIok hc hno hno2]
+    simp [label, hy, encC3 hInc hIok hc hno hno2]
   | inP c =>
     rcases c with ⟨a, b⟩
     simp only [ViewOK] at hwok
@@ -934,12 +935,14 @@ theorem label_next_inM (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.I) {w : Vie
     rcases c with ⟨a, b⟩
     have hk' := hOok _ hwok
     simp only [ChordOK] at hk'
-    simp only [View.key] at hle; omega
+    simp only [View.key] at hle
+    omega
   | outM c =>
     rcases c with ⟨a, b⟩
     have hk' := hOok _ hwok
     simp only [ChordOK] at hk'
-    simp only [View.key] at hle; omega
+    simp only [View.key] at hle
+    omega
 
 /-- In the wrap-around case at a vertex `t`, the next dart is the forward spine dart. -/
 theorem eq_spF_of_wrap (hV : B.Valid) {t : ℕ} (ht : t < B.N) {w : View} (hwok : B.ViewOK w)
@@ -969,8 +972,8 @@ theorem label_next_spF (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
   have hhN : (x + 1) % B.N < B.N := Nat.mod_lt _ (by omega)
   rcases hbr with ⟨hlt, hmin⟩ | ⟨hall, hmin⟩
   · cases w with
-    | spF y => simp only [View.key] at hlt; omega
-    | spB y => simp only [View.key] at hlt; omega
+    | spF y => simp_all [View.key] 
+    | spB y => simp_all [View.key] 
     | inP c =>
       have hk := hIok _ hwok; simp only [ChordOK] at hk; simp only [View.key] at hlt; omega
     | inM c =>
@@ -986,8 +989,7 @@ theorem label_next_spF (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
         simp only [ChordOK] at hk'
         have := hmin (.outM (w', (x + 1) % B.N)) hw' rfl (by simp only [View.key]; omega)
         simp only [View.key] at this; omega
-      simp only [label]
-      rw [encD1 hOnc hOok hx hwok hmax]
+      simp [label, encD1 hOnc hOok hx hwok hmax]
     | outP c =>
       rcases c with ⟨a, b⟩
       simp only [ViewOK] at hwok
@@ -1022,8 +1024,7 @@ theorem label_next_spF (hV : B.Valid) {x : ℕ} (hx : x < B.N) {w : View}
       · intro h2
         have := hall (.outM p) hp h2
         simp only [View.key] at this; omega
-    simp only [label]
-    rw [encD3 hOnc hOok hx hno]
+    simp [label, encD3 hOnc hOok hx hno]
 
 /-- Around the backward dart of an outer chord. -/
 theorem label_next_outM (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.O) {w : View}
@@ -1035,7 +1036,7 @@ theorem label_next_outM (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.O) {w : Vi
   simp only [ChordOK] at hk
   rcases hbr with ⟨hlt, hmin⟩ | ⟨hall, hmin⟩
   · cases w with
-    | spF y => simp only [View.key] at hlt; omega
+    | spF y => simp_all [View.key] 
     | spB y => simp only [View.key] at hlt; omega
     | inP c =>
       have hk' := hIok _ hwok; simp only [ChordOK] at hk'; simp only [View.key] at hlt; omega
@@ -1071,8 +1072,7 @@ theorem label_next_outM (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.O) {w : Vi
       by_contra hlt
       have := hall (.outP (u, w')) hw' rfl
       simp only [View.key] at this; omega
-    simp only [label]
-    rw [encE2 hOnc hOok hc hno]
+    simp [label, encE2 hOnc hOok hc hno]
 
 /-- Around the forward dart of an outer chord. -/
 theorem label_next_outP (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.O) {w : View}
@@ -1084,7 +1084,7 @@ theorem label_next_outP (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.O) {w : Vi
   simp only [ChordOK] at hk
   rcases hbr with ⟨hlt, hmin⟩ | ⟨hall, hmin⟩
   · cases w with
-    | spF y => simp only [View.key] at hlt; omega
+    | spF y => simp_all [View.key] 
     | spB y => simp only [View.key] at hlt; omega
     | inP c =>
       have hk' := hIok _ hwok; simp only [ChordOK] at hk'; simp only [View.key] at hlt; omega
@@ -1143,8 +1143,7 @@ theorem label_next_outP (hV : B.Valid) {u v : ℕ} (hc : (u, v) ∈ B.O) {w : Vi
       simp only [ChordOK] at hk'
       have := hall (.outP (v, w')) hw' rfl
       simp only [View.key] at this; omega
-    simp only [label]
-    rw [encF3 hOnc hOok hc hno hno2]
+    simp [label, encF3 hOnc hOok hc hno hno2]
 
 /-- **The face label is invariant**: the dart following the reverse of `v` at the head of `v`
 has the label of `v`. -/
@@ -1173,12 +1172,10 @@ section Darts
 variable {B}
 
 theorem getD_mem {L : List (ℕ × ℕ)} {i : ℕ} (hi : i < L.length) : L.getD i (0, 0) ∈ L := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi]
-  exact List.getElem_mem hi
+  simp_all
 
 theorem getD_eq {L : List (ℕ × ℕ)} {i : ℕ} (hi : i < L.length) : L.getD i (0, 0) = L[i] := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi]
-  rfl
+  simp_all
 
 /-- Every dart has a kind that exists. -/
 theorem view_ok {d : ℕ} (hd : d < 2 * B.E) : B.ViewOK (B.view d) := by
@@ -1197,10 +1194,7 @@ theorem exists_view {v : View} (hv : B.ViewOK v) : ∃ d, d < 2 * B.E ∧ B.view
   cases v with
   | spF x =>
     refine ⟨2 * x, by simp only [ViewOK] at hv; omega, ?_⟩
-    simp only [ViewOK] at hv
-    unfold view
-    rw [ite_t (by omega), ite_t (by omega)]
-    congr 1; omega
+    simp_all [ViewOK, view] 
   | spB x =>
     refine ⟨2 * x + 1, by simp only [ViewOK] at hv; omega, ?_⟩
     simp only [ViewOK] at hv
@@ -1208,25 +1202,24 @@ theorem exists_view {v : View} (hv : B.ViewOK v) : ∃ d, d < 2 * B.E ∧ B.view
     rw [ite_t (by omega), ite_f (by omega)]
     congr 1; omega
   | inP c =>
-    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (show c ∈ B.I from hv)
+    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (hv)
     refine ⟨2 * (B.N + i), by omega, ?_⟩
     unfold view
-    rw [ite_f (by omega), ite_t (by omega), ite_t (by omega),
-      show 2 * (B.N + i) / 2 - B.N = i by omega, getD_eq hi]
+    simp_all
   | inM c =>
-    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (show c ∈ B.I from hv)
+    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (hv)
     refine ⟨2 * (B.N + i) + 1, by omega, ?_⟩
     unfold view
     rw [ite_f (by omega), ite_t (by omega), ite_f (by omega),
       show (2 * (B.N + i) + 1) / 2 - B.N = i by omega, getD_eq hi]
   | outP c =>
-    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (show c ∈ B.O from hv)
+    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (hv)
     refine ⟨2 * (B.N + B.I.length + i), by omega, ?_⟩
     unfold view
     rw [ite_f (by omega), ite_f (by omega), ite_t (by omega),
       show 2 * (B.N + B.I.length + i) / 2 - B.N - B.I.length = i by omega, getD_eq hi]
   | outM c =>
-    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (show c ∈ B.O from hv)
+    obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 (hv)
     refine ⟨2 * (B.N + B.I.length + i) + 1, by omega, ?_⟩
     unfold view
     rw [ite_f (by omega), ite_f (by omega), ite_f (by omega),
@@ -1262,10 +1255,10 @@ theorem view_oppN (d : ℕ) : B.view (oppN d) = (B.view d).rev := by
   unfold view
   rw [h1]
   by_cases hp : d % 2 = 0
-  · have hq : ¬ oppN d % 2 = 0 := fun h => (h2.1 h) hp
-    simp only [hp, hq, ite_true, ite_false]
+  · have hq := fun h => (h2.1 h) hp
+    simp only [hp, ite_true]
     split_ifs <;> rfl
-  · have hq : oppN d % 2 = 0 := h2.2 hp
+  · have hq := h2.2 hp
     simp only [hp, hq, ite_true, ite_false]
     split_ifs <;> rfl
 
@@ -1284,84 +1277,15 @@ theorem key_inj (hV : B.Valid) {v v' : View} (hv : B.ViewOK v) (hv' : B.ViewOK v
     (ht : View.tail B.N v = View.tail B.N v') (hk : View.key B.N v = View.key B.N v') :
     v = v' := by
   obtain ⟨hN, -, -, hIok, hOok, -⟩ := hV
-  cases v with
-  | spF x =>
-    cases v' with
-    | spF y => simp only [View.tail] at ht; rw [ht]
-    | spB y => simp only [View.key] at hk; omega
-    | inP c => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | inM c => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outP c => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outM c => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-  | spB x =>
-    cases v' with
-    | spF y => simp only [View.key] at hk; omega
-    | spB y =>
-      simp only [ViewOK] at hv hv'
-      simp only [View.tail] at ht
-      have e1 := eq_pred_of_succ hv rfl
-      have e2 := eq_pred_of_succ hv' rfl
-      rw [e1, e2, ht]
-    | inP c => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | inM c => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outP c => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outM c => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-  | inP c =>
-    have h0 := hIok _ hv; simp only [ChordOK] at h0
-    cases v' with
-    | spF y => simp only [View.key] at hk; omega
-    | spB y => simp only [View.key] at hk; omega
-    | inP c' =>
-      have := hIok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht
-      rw [show c = c' from Prod.ext ht (by omega)]
-    | inM c' =>
-      have := hIok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht; omega
-    | outP c' => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outM c' => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-  | inM c =>
-    have h0 := hIok _ hv; simp only [ChordOK] at h0
-    cases v' with
-    | spF y => simp only [View.key] at hk; omega
-    | spB y => simp only [View.key] at hk; omega
-    | inP c' =>
-      have := hIok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht; omega
-    | inM c' =>
-      have := hIok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht
-      rw [show c = c' from Prod.ext (by omega) ht]
-    | outP c' => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outM c' => have := hOok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-  | outP c =>
-    have h0 := hOok _ hv; simp only [ChordOK] at h0
-    cases v' with
-    | spF y => simp only [View.key] at hk; omega
-    | spB y => simp only [View.key] at hk; omega
-    | inP c' => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | inM c' => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outP c' =>
-      have := hOok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht
-      rw [show c = c' from Prod.ext ht (by omega)]
-    | outM c' =>
-      have := hOok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht; omega
-  | outM c =>
-    have h0 := hOok _ hv; simp only [ChordOK] at h0
-    cases v' with
-    | spF y => simp only [View.key] at hk; omega
-    | spB y => simp only [View.key] at hk; omega
-    | inP c' => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | inM c' => have := hIok _ hv'; simp only [ChordOK] at this; simp only [View.key] at hk; omega
-    | outP c' =>
-      have := hOok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht; omega
-    | outM c' =>
-      have := hOok _ hv'; simp only [ChordOK] at this
-      simp only [View.key, View.tail] at hk ht
-      rw [show c = c' from Prod.ext (by omega) ht]
+  cases v <;> cases v' <;>
+    (first | have h := hIok _ hv | have h := hOok _ hv | skip) <;>
+    (first | have h' := hIok _ hv' | have h' := hOok _ hv' | skip) <;>
+    simp only [View.tail, View.key, ViewOK, ChordOK] at *
+  all_goals
+    first
+    | omega
+    | (congr 1; first | omega | apply Prod.ext <;> omega)
+    | rw [eq_pred_of_succ hv rfl, eq_pred_of_succ hv' rfl, ht]
 
 end Darts
 
@@ -1406,20 +1330,20 @@ theorem label_fperm (hV : B.Valid) (d : Fin (2 * B.E)) :
       unfold gN; rw [hev, View.tail_rev]
     have hke : kN e = View.key B.N (B.view d).rev := by unfold kN; rw [hev]
     obtain ⟨hg, hs⟩ := hspec
-    refine ⟨view_ok (csucc (gN (B := B)) (kN (B := B)) e).2, by rw [← hge]; exact hg, ?_⟩
+    refine ⟨view_ok (csucc (gN (B := B)) (kN (B := B)) e).2, by rwa [← hge], ?_⟩
     rw [← hke, ← hge]
     rcases hs with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · refine Or.inl ⟨h1, fun w' hw' ht hk => ?_⟩
       obtain ⟨f, hf, hfv⟩ := exists_view hw'
-      have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rw [hfv]; exact ht)
-        (by unfold kN; simp only; rw [hfv]; exact hk)
+      have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rwa [hfv])
+        (by unfold kN; simp only; rwa [hfv])
       unfold kN at this; simp only at this; rwa [hfv] at this
     · refine Or.inr ⟨fun w' hw' ht => ?_, fun w' hw' ht => ?_⟩
       · obtain ⟨f, hf, hfv⟩ := exists_view hw'
-        have := h1 ⟨f, hf⟩ (by unfold gN; simp only; rw [hfv]; exact ht)
+        have := h1 ⟨f, hf⟩ (by unfold gN; simp only; rwa [hfv])
         unfold kN at this; simp only at this; rwa [hfv] at this
       · obtain ⟨f, hf, hfv⟩ := exists_view hw'
-        have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rw [hfv]; exact ht)
+        have := h2 ⟨f, hf⟩ (by unfold gN; simp only; rwa [hfv])
         unfold kN at this; simp only at this; rwa [hfv] at this
   exact label_next hV (view_ok d.2) hnext
 
@@ -1454,8 +1378,7 @@ noncomputable def map (hV : B.Valid) :
   vert_surj x := ⟨⟨2 * x.1, by unfold E; omega⟩, Fin.ext (by
     show View.tail B.N (B.view (2 * x.1)) = x.1
     unfold view
-    rw [ite_t (by omega), ite_t (by omega)]
-    simp only [View.tail]; omega)⟩
+    simp [ite_t, View.tail])⟩
   face_surj := Quotient.mk_surjective
 
 end Map
@@ -1476,9 +1399,7 @@ noncomputable instance instDecEqFaceT (hV : B.Valid) : DecidableEq (FaceT hV) :=
   Classical.decEq _
 
 theorem view_spF {s : ℕ} (hs : s < B.N) : B.view (2 * s) = .spF s := by
-  unfold view
-  rw [ite_t (by omega), ite_t (by omega)]
-  congr 1; omega
+  simp_all [view] 
 
 theorem view_spB {s : ℕ} (hs : s < B.N) : B.view (2 * s + 1) = .spB s := by
   unfold view
@@ -1492,11 +1413,11 @@ theorem two_mul_add_one_lt {s : ℕ} (hs : s < B.N) : 2 * s + 1 < 2 * B.E := by 
 /-- **The book map is connected** (through the spine). -/
 theorem connected (hV : B.Valid) : (B.map hV).Connected := by
   intro S hrot hopp d hd e
-  have hN : 3 ≤ B.N := hV.1
+  have hN := hV.1
   -- a set closed under the rotation contains whole vertices
   have hvert : ∀ x ∈ S, ∀ y : Fin (2 * B.E), gN y = gN x → y ∈ S := by
     intro x hx y hy
-    have hsc : (rotP hV).SameCycle x y := csucc_sameCycle (keyInj hV) hy.symm
+    have hsc := csucc_sameCycle (keyInj hV) hy.symm
     obtain ⟨n, rfl⟩ := hsc.exists_nat_pow_eq
     clear hsc hy
     induction n with
@@ -1534,16 +1455,15 @@ noncomputable def labelQ (hV : B.Valid) : FaceT hV → Bool × Finset (ℕ × �
 
 theorem Sup_inj {L : List (ℕ × ℕ)} {c c' : ℕ × ℕ} (hc : c ∈ L) (hc' : c' ∈ L)
     (h : Sup L c = Sup L c') : c = c' := by
-  have h1 : c ∈ Sup L c' := h ▸ mem_Sup.2 ⟨hc, le_rfl, le_rfl⟩
-  have h2 : c' ∈ Sup L c := h.symm ▸ mem_Sup.2 ⟨hc', le_rfl, le_rfl⟩
+  have h1 := h ▸ mem_Sup.2 ⟨hc, le_rfl, le_rfl⟩
+  have h2 := h.symm ▸ mem_Sup.2 ⟨hc', le_rfl, le_rfl⟩
   rw [mem_Sup] at h1 h2
   exact Prod.ext (by omega) (by omega)
 
 theorem Sup_nonempty {L : List (ℕ × ℕ)} {c : ℕ × ℕ} (hc : c ∈ L) : Sup L c ≠ ∅ := by
   intro h
-  have : c ∈ Sup L c := mem_Sup.2 ⟨hc, le_rfl, le_rfl⟩
-  rw [h] at this
-  simp at this
+  have := mem_Sup.2 ⟨hc, le_rfl, le_rfl⟩
+  simp_all
 
 /-- **The book map has at least `|I| + |O| + 2` faces.** -/
 theorem card_face_ge (hV : B.Valid) :
@@ -1583,8 +1503,7 @@ theorem card_face_ge (hV : B.Valid) :
       Option (Fin B.O.length))) := by
     intro a _ b _ hab
     rcases a with (_ | i) | (_ | j) <;> rcases b with (_ | i') | (_ | j') <;>
-      simp only [f, Prod.mk.injEq, Bool.true_eq_false, Bool.false_eq_true, false_and,
-        true_and] at hab ⊢
+      simp_all only [f, Prod.mk.injEq, Bool.true_eq_false, Bool.false_eq_true, false_and, true_and]
     · exact absurd hab.symm (Sup_nonempty (List.getElem_mem _))
     · exact absurd hab (Sup_nonempty (List.getElem_mem _))
     · rw [Fin.ext ((hIn.getElem_inj_iff).1 (Sup_inj (List.getElem_mem _)

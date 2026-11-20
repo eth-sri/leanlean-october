@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopRD
 public import Chazelle.Core.SweepEvStopTasks2
 
@@ -46,10 +48,10 @@ open Chazelle.Merge (FreeAt)
 
 /-! ## Registers -/
 
-def m2F : ℕ := sw 4024
-def r1F : ℕ := sw 4030
-def r2F : ℕ := sw 4040
-def a1F : ℕ := sw 4050
+@[ram_layout] def m2F : ℕ := sw 4024
+@[ram_layout] def r1F : ℕ := sw 4030
+@[ram_layout] def r2F : ℕ := sw 4040
+@[ram_layout] def a1F : ℕ := sw 4050
 
 /-! ## The candidate of `C₂` -/
 
@@ -66,10 +68,10 @@ def M2Out (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) (c' : Con
   ResOK P J.right (stOrig J (Qof P) N kind k b) (dirOf b)
       (FreeAt J.right (stOrig J (Qof P) N kind k b) (dirOf b)) r2F c' ∧
     (kind ≠ 1 → FreeAt J.right (stOrig J (Qof P) N kind k b) (dirOf b) →
-      c'.nreg pE2 < (chainModel J.right).W.n ∧
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c'.nreg pE2, c'.nreg pH2⟩ ∧
-      Arrival (chainModel J.right).W (stOrig J (Qof P) N kind k b) (-dirOf b) (c'.nreg pE2)
-        ((chainModel J.right).param (Qof P) ⟨c'.nreg pE2, c'.nreg pH2⟩))
+      c'.nreg pE2 < J.rightModel.W.n ∧
+      ProperPos J.rightModel (Qof P) P.n ⟨c'.nreg pE2, c'.nreg pH2⟩ ∧
+      Arrival J.rightModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) (c'.nreg pE2)
+        (J.rightModel.param (Qof P) ⟨c'.nreg pE2, c'.nreg pH2⟩))
 
 /-- **Task M2: the candidate of `C₂`** for an admissible code with a free direction (`OrgD`), from
 the origin's position `(oPE, oPH)` in the walk of `C₂` (`OrgPos`), with the model context of `C₂`
@@ -126,19 +128,19 @@ the arrival of the origin in direction `-σ`), the attachment `A₁` at the far 
 for the shared and top codes the arrival position `(pE2, pH2)` of the origin in the walk of
 `C₂`. -/
 def FinPre (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) (c : Config) : Prop :=
-  c.nreg (oF0 + 1) < (chainModel J.whole).W.n ∧
-    ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩ ∧
-    Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) (c.nreg (oF0 + 1))
-      ((chainModel J.whole).param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩) ∧
-    c.nreg (a1F + 1) < (chainModel J.whole).W.n ∧
-    ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩ ∧
-    Arrival (chainModel J.whole).W (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b))
+  c.nreg (oF0 + 1) < J.wholeModel.W.n ∧
+    ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩ ∧
+    Arrival J.wholeModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) (c.nreg (oF0 + 1))
+      (J.wholeModel.param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩) ∧
+    c.nreg (a1F + 1) < J.wholeModel.W.n ∧
+    ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩ ∧
+    Arrival J.wholeModel.W (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b))
       (dirOf b) (c.nreg (a1F + 1))
-      ((chainModel J.whole).param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩) ∧
-    (kind ≠ 1 → c.nreg pE2 < (chainModel J.right).W.n ∧
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ ∧
-      Arrival (chainModel J.right).W (stOrig J (Qof P) N kind k b) (-dirOf b) (c.nreg pE2)
-        ((chainModel J.right).param (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩))
+      (J.wholeModel.param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩) ∧
+    (kind ≠ 1 → c.nreg pE2 < J.rightModel.W.n ∧
+      ProperPos J.rightModel (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩ ∧
+      Arrival J.rightModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) (c.nreg pE2)
+        (J.rightModel.param (Qof P) ⟨c.nreg pE2, c.nreg pH2⟩))
 
 /-- **Task Fin: the finish of the per-origin step** for an admissible code with a free direction:
 the offsets of `A₀`, `A₁` (`callOff` against `Lst` and `0`: the records on the `C₁` part, anchor,
@@ -169,10 +171,10 @@ there contains a chord of `F₂⁺` attached at `(gW + d, t)`, `Corr0.transfer`;
 attached at the same position inside a walk edge are nested, hence equal, `Corr0.nest`). -/
 def NoParCut : Prop :=
   ∀ (J : Merge.Junction) (Q : Polygon) (S₂ : Set (Set Point)) (e : Set Point), J.P.Simple →
-    (chainModel J.right).ChordFamily Q S₂ → e ∈ F₂plus J S₂ → (∀ c ∈ S₂, ¬ e ⊆ c) →
+    J.rightModel.ChordFamily Q S₂ → e ∈ F₂plus J S₂ → (∀ c ∈ S₂, ¬ e ⊆ c) →
     ∀ (d : ℕ) (t : ℝ), d < Lst J → 0 < t → t < 1 →
-    SideAttach (chainModel J.whole).W e ((gW J + d) % (chainModel J.whole).W.n) t →
-    ¬ (chainModel J.right).IsCut S₂ ((cpA J d : ℝ) + t)
+    SideAttach J.wholeModel.W e ((gW J + d) % J.wholeModel.W.n) t →
+    ¬ J.rightModel.IsCut S₂ ((cpA J d : ℝ) + t)
 
 end
 

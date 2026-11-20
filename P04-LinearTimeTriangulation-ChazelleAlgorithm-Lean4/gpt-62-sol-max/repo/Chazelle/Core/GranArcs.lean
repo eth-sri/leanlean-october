@@ -41,10 +41,15 @@ theorem faces_mono {p : ℕ} {t : ℝ} {U U' : Set Point} (h : M.Faces p t U) (h
 
 /-! ## Arcs with a common end -/
 
+section
+
+variable {G : Set (Set Point)} (hne : G.Nonempty) {X Y : Set Point}
+    (hX : X ∈ M.regions G) (hY : Y ∈ M.regions G)
+include hne hX hY
+
 /-- **Two arcs starting at the same key coincide** (nonempty family): the same end, the same
 region. -/
-theorem arc_start_unique {G : Set (Set Point)} (hne : G.Nonempty) {X Y : Set Point}
-    (hX : X ∈ M.regions G) (hY : Y ∈ M.regions G) {a b b' : ℝ} (h : M.IsArc G X a b)
+theorem arc_start_unique {a b b' : ℝ} (h : M.IsArc G X a b)
     (h' : M.IsArc G Y a b') : b = b' ∧ X = Y := by
   obtain ⟨-, hb, hab⟩ := WalkAx.arc_cuts hne h
   obtain ⟨-, hb', hab'⟩ := WalkAx.arc_cuts hne h'
@@ -62,8 +67,7 @@ theorem arc_start_unique {G : Set (Set Point)} (hne : G.Nonempty) {X Y : Set Poi
   exact WalkAx.faces_unique hX hY hf (h'.2.2.2.2.2.2 p t hp ht.1 ht.2 hin)
 
 /-- **Two arcs ending at the same key coincide** (nonempty family). -/
-theorem arc_end_unique {G : Set (Set Point)} (hne : G.Nonempty) {X Y : Set Point}
-    (hX : X ∈ M.regions G) (hY : Y ∈ M.regions G) {a a' b : ℝ} (h : M.IsArc G X a b)
+theorem arc_end_unique {a a' b : ℝ} (h : M.IsArc G X a b)
     (h' : M.IsArc G Y a' b) : a = a' ∧ X = Y := by
   obtain ⟨ha, -, hab⟩ := WalkAx.arc_cuts hne h
   obtain ⟨ha', -, hab'⟩ := WalkAx.arc_cuts hne h'
@@ -74,6 +78,8 @@ theorem arc_end_unique {G : Set (Set Point)} (hne : G.Nonempty) {X Y : Set Point
   refine ⟨rfl, ?_⟩
   obtain ⟨p, hp, t, ht, hin, -, hf⟩ := WalkAx.exists_pos_in_arc hne h
   exact WalkAx.faces_unique hX hY hf (h'.2.2.2.2.2.2 p t hp ht.1 ht.2 hin)
+
+end
 
 /-! ## Positions just after a key -/
 
@@ -89,8 +95,8 @@ theorem exists_pos_after_both {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) {
     ∃ t' ∈ Ioo (0 : ℝ) 1, A (p + t') ∧ B (p + t') := by
   obtain ⟨ε, h1, h2, h3⟩ := ((WalkAx.exists_pos_after ht ht1).and (hA.and hB)).exists
   refine ⟨t + ε, h1, ?_, ?_⟩
-  · rw [← add_assoc]; exact h2
-  · rw [← add_assoc]; exact h3
+  · rwa [← add_assoc]
+  · rwa [← add_assoc]
 
 /-! ## Weights -/
 
@@ -101,22 +107,28 @@ def arcWts (M : Model) (G : Set (Set Point)) (U : Set Point) : Set ℕ :=
 theorem weight_eq (G : Set (Set Point)) (U : Set Point) : M.weight G U = sSup (arcWts M G U) :=
   rfl
 
-theorem arcWts_finite (hM : WalkAx M) {G : Set (Set Point)} (hG : G ⊆ M.Adm) (hfin : G.Finite)
-    {U : Set Point} (hU : U ∈ M.regions G) : (arcWts M G U).Finite :=
+section
+
+variable (hM : WalkAx M) {G : Set (Set Point)} (hG : G ⊆ M.Adm) (hfin : G.Finite)
+    {U : Set Point} (hU : U ∈ M.regions G)
+include hM hG hfin hU
+
+theorem arcWts_finite : (arcWts M G U).Finite :=
   (hM.arcs_bound hG hfin hU).1.image _
 
 /-- An arc weighs at most the weight of its region. -/
-theorem le_weight (hM : WalkAx M) {G : Set (Set Point)} (hG : G ⊆ M.Adm) (hfin : G.Finite)
-    {U : Set Point} (hU : U ∈ M.regions G) {a b : ℝ} (h : M.IsArc G U a b) :
+theorem le_weight {a b : ℝ} (h : M.IsArc G U a b) :
     M.arcWt a b ≤ M.weight G U :=
   le_csSup (arcWts_finite hM hG hfin hU).bddAbove ⟨(a, b), h, rfl⟩
+
+end
 
 /-- A bound on all arcs bounds the weight. -/
 theorem weight_le {G : Set (Set Point)} {U : Set Point} {w : ℕ}
     (h : ∀ a b, M.IsArc G U a b → M.arcWt a b ≤ w) : M.weight G U ≤ w := by
   rw [weight_eq]
   rcases (arcWts M G U).eq_empty_or_nonempty with he | hne
-  · rw [he, csSup_empty]; exact Nat.zero_le _
+  · simp_all
   · refine csSup_le hne ?_
     rintro _ ⟨ab, hab, rfl⟩
     exact h ab.1 ab.2 hab

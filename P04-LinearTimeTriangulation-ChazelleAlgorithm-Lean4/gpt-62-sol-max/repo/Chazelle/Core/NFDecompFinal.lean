@@ -61,16 +61,12 @@ theorem fin_lt_iff : σ.fin < R ↔ ∃ t, t < R ∧ IsTop pch σ.rem t ∧ σ.a
     · refine ⟨t, ht, htop, ?_⟩
       by_contra hact
       have := (hI.i5 t ht htop hact).1
-      have hmem : u ∈ sub R prg pch σ.rem t := (mem_sub).2 ⟨hu, htu⟩
-      rw [this, Finset.mem_singleton] at hmem
-      exact htu' hmem.symm
+      have hmem := (mem_sub).2 ⟨hu, htu⟩
+      simp_all
   · rintro ⟨t, ht, htop, hact⟩
     have hsub : (range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1) ⊂ range R := by
       refine Finset.ssubset_iff_subset_ne.2 ⟨Finset.filter_subset _ _, fun e => ?_⟩
-      have : t ∈ (range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1) := by
-        rw [e]; exact Finset.mem_range.2 ht
-      rw [Finset.mem_filter] at this
-      exact this.2.2 hact
+      simp_all
     have := Finset.card_lt_card hsub
     rwa [Finset.card_range] at this
 
@@ -117,8 +113,8 @@ theorem adjAv_of_child {k y s : ℕ} (_hk : k < K) (hs : s < R) (hs0 : s ≠ 0) 
   refine ⟨pch s, h.pch_lt s hs hs0, fun e => hne ?_, ?_⟩
   · rw [← e]; exact (chOf_pch' h hch hs hs0).symm
   · rcases h.ends s hs hs0 with ⟨a1, a2⟩ | ⟨a1, a2⟩
-    · exact Or.inl ⟨by rw [a1, hy], a2⟩
-    · exact Or.inr ⟨a1, by rw [a2, hy]⟩
+    · simp_all
+    simp_all
 
 /-- Below `a`, the tree path to `r` avoids chord `k` if it does not pass through `chOf k`. -/
 theorem rtg_of_anc {k a r : ℕ} (hk : k < K) (har : AncX R prg pch rem0 a r)
@@ -129,7 +125,7 @@ theorem rtg_of_anc {k a r : ℕ} (hk : k < K) (har : AncX R prg pch rem0 a r)
   | tail hay hyr ih =>
     rename_i y s
     obtain ⟨hs, hs0, hps, -⟩ := hyr
-    have has : AncX R prg pch rem0 a s := hay.tail ⟨hs, hs0, hps, by simp [rem0]⟩
+    have has := hay.tail ⟨hs, hs0, hps, by simp [rem0]⟩
     refine (ih fun w h1 h2 h3 => hav w h1 (h2.tail ⟨hs, hs0, hps, by simp [rem0]⟩) h3).tail ?_
     refine adjAv_of_child h hch hk hs hs0 hps (hav s has ReflTransGen.refl ?_)
     intro e
@@ -169,8 +165,7 @@ theorem rtg_adjAv_iff {k x r : ℕ} (hk : k < K) (hx : x < R) :
         · rintro (e | ⟨-, -, -, hh⟩)
           · exact absurd e.symm hsc
           · exact hh
-        · intro hh
-          exact Or.inr ⟨hs, hs0, by simp [rem0], hh⟩
+        intros; simp [rem0, *]
       have hpR := h.prg_lt s hs hs0
       rcases hpair with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
       · exact ⟨hs, hstep.trans hy⟩
@@ -182,11 +177,11 @@ theorem rtg_adjAv_iff {k x r : ℕ} (hk : k < K) (hx : x < R) :
       have hav : ∀ v, AncX R prg pch rem0 (chOf k) v → ReflTransGen (AdjAv K up dn k) (chOf k) v :=
         fun v hv => rtg_of_anc h hch hk hv fun w _ _ hw => hw
       exact (rtg_adjAv_symm h hch (hav x hcx)).trans (hav r hcr)
-    · have hcr : ¬ AncX R prg pch rem0 (chOf k) r := fun hh => hcx (hiff.1 hh)
+    · have hcr := fun hh => hcx (hiff.1 hh)
       have hav : ∀ v, v < R → ¬ AncX R prg pch rem0 (chOf k) v →
           ReflTransGen (AdjAv K up dn k) 0 v := fun v hv hnv =>
         rtg_of_anc h hch hk (anc_root h hv) fun w _ hwv _ e => by
-          rw [e] at hwv; exact hnv hwv
+          simp_all
       exact (rtg_adjAv_symm h hch (hav x hx hcx)).trans (hav r hr hcr)
 
 end sides
@@ -230,7 +225,7 @@ theorem final_cut {e : ℕ} (he : e < K) : σ.rem e = 1 ∧ σ.pend e ≠ 1 := b
   obtain ⟨t, htop, htc⟩ := exists_top h (rem := σ.rem) c1
   have ht := (AncX.pos_le h htc c1).1
   have hsing := (hI.i5 t ht htop (hna t ht htop)).1
-  have hmem : chOf e ∈ sub R prg pch σ.rem t := (mem_sub).2 ⟨c1, htc⟩
+  have hmem := (mem_sub).2 ⟨c1, htc⟩
   rw [hsing, Finset.mem_singleton] at hmem
   rw [← hmem] at htop
   have hr : σ.rem e = 1 := by
@@ -269,7 +264,7 @@ theorem parentCode_eq {x : ℕ} (hx : ValidC R K pch σ x) :
     (withDec N K R σ).parentCode x = pcode σ x := by
   unfold NF.parentCode pcode
   rcases valid_range hK hRR h hch hisdn hI hna hx with ⟨a, b⟩ | ⟨a, b⟩
-  · rw [ite_eq_left a, ite_eq_left a, withDec_dnode hK hRR h hch hisdn hI hna b]
+  · simp [ite_eq_left a, withDec_dnode hK hRR h hch hisdn hI hna b]
   · have a' : x % 2 ≠ 0 := by omega
     rw [ite_eq_right a', ite_eq_right a', withDec_lpar hK hRR h hch hisdn hI hna b]
 
@@ -285,7 +280,7 @@ theorem up_step {x : ℕ} (hx : ValidC R K pch σ x) :
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
+      refine ⟨Or.inl ⟨h2, by rwa [h3], by rwa [h3]⟩, ?_⟩
       simp only [compOf, ite_eq_left a, ite_eq_left h2, h3]
       exact e3
   · obtain ⟨-, h2⟩ := hI.i5 _ b c d
@@ -297,7 +292,7 @@ theorem up_step {x : ℕ} (hx : ValidC R K pch σ x) :
     · rw [hp, e1]
       have h2 : 2 * p % 2 = 0 := by omega
       have h3 : 2 * p / 2 = p := by omega
-      refine ⟨Or.inl ⟨h2, by rw [h3]; exact hp', by rw [h3]; exact hrp⟩, ?_⟩
+      refine ⟨Or.inl ⟨h2, by rwa [h3], by rwa [h3]⟩, ?_⟩
       simp only [compOf, ite_eq_right a', ite_eq_left h2, h3]
       intro v hv
       rw [Finset.mem_singleton] at hv
@@ -312,9 +307,8 @@ theorem chain_mem {r : ℕ} (hr : r < R) (i : ℕ) :
     simp only [Function.iterate_zero, id]
     have a : (2 * r + 1) % 2 = 1 := by omega
     have b : (2 * r + 1) / 2 = r := by omega
-    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rw [b]; exact hr⟩), ?_⟩
-    simp only [compOf, ite_eq_right (show (2 * r + 1) % 2 ≠ 0 by omega), b,
-      Finset.mem_singleton]
+    refine ⟨valid_of_range hK hRR h hch hisdn hI hna (Or.inr ⟨a, by rwa [b]⟩), ?_⟩
+    simp [compOf, b, Finset.mem_singleton]
   | succ i ih =>
     rw [Function.iterate_succ_apply', parentCode_eq hK hRR h hch hisdn hI hna ih.1]
     obtain ⟨u1, u2⟩ := up_step hK hRR h hch hisdn hI hna ih.1

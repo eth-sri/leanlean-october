@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.DownPhaseOracleCArc
 public import Chazelle.Core.BruteRam2
 public import Chazelle.Core.ShotListLeaf
@@ -38,7 +42,7 @@ open Machine Machine.Stmt Programs SignK
 @[expose] public section
 
 /-- **The bands of the interior oracles**: the oracle bands and the adapter's band `bUp`. -/
-def ioBands : Finset ℕ := insert bUp oracleBands
+@[ram_layout] def ioBands : Finset ℕ := insert bUp oracleBands
 
 theorem oracleBands_sub_io : oracleBands ⊆ ioBands := Finset.subset_insert _ _
 
@@ -126,7 +130,7 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
       c'.nreg 170070 = 0 ∧
       c'.nmem (c.nreg ALLOC) = 1 ∧ c'.nmem (c.nreg ALLOC + 1) = 0 ∧
       c'.nmem (c.nreg ALLOC + 2) = 0 ∧ c'.nmem (c.nreg ALLOC + 3) = P.n - 1 ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       (∀ r, ¬ BinitR r → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
@@ -142,7 +146,7 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
       c₁.nreg 170070 = 0 ∧
       c₁.nmem (c.nreg 9999) = 1 ∧ c₁.nmem (c.nreg 9999 + 1) = 0 ∧
       c₁.nmem (c.nreg 9999 + 2) = 0 ∧ c₁.nmem (c.nreg 9999 + 3) = P.n - 1 ∧
-      (∀ a, a < c.nreg 9999 → c₁.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg 9999) c₁.nmem c.nmem) ∧
       True ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧
       c₁.output = c.output := by
     unfold initI
@@ -151,16 +155,16 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
     refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, ?_, ?_, ?_, ?_, fun a ha => ?_, trivial, rfl, rfl, rfl⟩
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · simp
+    · simp
+    · simp
+    frame_finish
   have fM := BuildRam.exec_frameM e₁ wrM_initI
   replace rest : ∀ r, ¬ BinitR r → c₁.nreg r = c.nreg r := fun r hr =>
     fM.1 r (by unfold BinitB; unfold BinitR at hr; simpa using hr)
   have w₁ := e₁.wb_right
-  have hb : c₁.nreg 170011 = 1 := q11
+  
   -- the orientation bit
   obtain ⟨c₂, k₂, e₂, hk₂, b14, bl, r₂⟩ : ∃ c₂ k₂, Exec P W bitI c₁ c₂ k₂ ∧ k₂ ≤ 5 ∧
       (c₂.nreg 170014 = 1 ↔ c₁.nreg 170093 = 1) ∧ c₂.nreg 170014 ≤ 1 ∧
@@ -184,20 +188,20 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
       · simp only [upd_same]
   have k : ∀ r, r ≠ 170014 → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [r₂]; simp [upd, hr]
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rw [k _ (by omega)]; exact q10,
-    by rw [k _ (by omega)]; exact q11, by rw [k _ (by omega)]; exact q12,
-    by rw [k _ (by omega)]; exact q18, by rw [k _ (by omega)]; exact q19,
-    by rw [k _ (by omega)]; exact q16, by rw [k _ (by omega)]; exact q17,
-    by rw [b14, q93], bl, by rw [k _ (by omega)]; exact q15, by rw [k _ (by omega)]; exact qA,
-    by rw [k _ (by omega)]; exact q70, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by ram_rw assumption [k],
+    by ram_rw assumption [k], by ram_rw assumption [k],
+    by ram_rw assumption [k], by ram_rw assumption [k],
+    by ram_rw assumption [k], by ram_rw assumption [k],
+    by rw [b14, q93], bl, by ram_rw assumption [k], by ram_rw assumption [k],
+    by ram_rw assumption [k], ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals first
     | (rw [r₂]; simp only [Config.nmem_mk]; first | exact m0 | exact m1 | exact m2 | exact m3)
     | skip
   · rw [r₂]; exact mlo a ha
   · rw [k r (by unfold BinitR at hr; omega)]; exact rest r hr
   · rw [r₂]; exact rr
-  · rw [r₂]; exact rm
-  · rw [r₂]; exact ro
+  · rwa [r₂]
+  · rwa [r₂]
 
 end
 

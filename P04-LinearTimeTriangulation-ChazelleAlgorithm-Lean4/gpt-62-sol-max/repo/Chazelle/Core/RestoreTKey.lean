@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.RestoreTCall
 
 /-!
@@ -79,7 +81,7 @@ def kcL (a b d e : ℕ) : List (ℕ × ℕ) :=
 def keyCmp (a b d e : ℕ) : Stmt := .seq (block (copies (kcL a b d e))) offCmp
 
 /-- A register of band `bRestore`. -/
-def InR (r : ℕ) : Prop := 80000 ≤ r ∧ r < 90000
+@[ram_layout] def InR (r : ℕ) : Prop := 80000 ≤ r ∧ r < 90000
 
 theorem kcL_hd {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he : InR e) :
     ∀ q ∈ kcL a b d e, ∀ r ∈ kcL a b d e, q.1 ≠ r.2 := by
@@ -114,8 +116,8 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
       simp only at q1 q2 q3 q4 q5
       obtain ⟨hx1, hx2, hx3⟩ := hx
       obtain ⟨hy1, hy2, hy3⟩ := hy
-      refine ⟨by rw [q1]; exact hx1, by rw [q3]; exact hy1, by rw [q5, h0]; omega,
-        by rw [q1, q2]; exact hx2, by rw [q3, q4]; exact hy2, fun h => ?_, fun h => ?_, hWm⟩
+      refine ⟨by rwa [q1], by rwa [q3], by rw [q5, h0]; omega,
+        by rwa [q1, q2], by rwa [q3, q4], fun h => ?_, fun h => ?_, hWm⟩
       · rw [q1]; rw [q2] at h; exact hx3 h
       · rw [q3]; rw [q4] at h; exact hy3 h) hroom
   have q1 := h1 (50201, a) (by simp [kcL])

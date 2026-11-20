@@ -33,22 +33,22 @@ theorem exists_first_exit_dir {D : Set Point} (hD : IsOpen D) {z : Point} (hz : 
       ((z.1 + σ * s, z.2) : Point) ∉ D := by
   rcases hσ with rfl | rfl
   · obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD hz (R := B) (fun x hx => (abs_lt.1 (hB x hx)).2)
-    exact ⟨s, hs, fun s' hs' => by rw [one_mul]; exact h1 s' hs', by rw [one_mul]; exact h2⟩
+    exact ⟨s, hs, fun s' hs' => by rw [one_mul]; exact h1 s' hs', by rwa [one_mul]⟩
   · set f : Point → Point := fun p => (-p.1, p.2)
     have hf : Continuous f := by fun_prop
     set D' := f ⁻¹' D
-    have hD' : IsOpen D' := hD.preimage hf
+    have hD' := hD.preimage hf
     have hz' : ((-z.1, z.2) : Point) ∈ D' := by show f (-z.1, z.2) ∈ D; simpa [f] using hz
     obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD' hz' (R := B) (fun x hx => by
       have := hB _ hx; simp only [f] at this; rw [abs_neg] at this; exact (abs_lt.1 this).2)
     refine ⟨s, hs, fun s' hs' => ?_, ?_⟩
     · have := h1 s' hs'
       simp only [D', f, mem_preimage] at this
-      rw [show z.1 + -1 * s' = -(-z.1 + s') by ring]; exact this
+      rwa [show z.1 + -1 * s' = -(-z.1 + s') by ring]
     · intro h
       apply h2
       simp only [D', f, mem_preimage]
-      rw [show -(-z.1 + s) = z.1 + -1 * s by ring]; exact h
+      rwa [show -(-z.1 + s) = z.1 + -1 * s by ring]
 
 variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point}
 
@@ -154,9 +154,7 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       rw [this, one_mul, abs_of_pos hε0]
       exact max_lt hεr hr0
     have hX' := hnear0 _ hdist (Chazelle.Chain.regionsIn_subset hR hmem).1
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · exact h
-    · exact absurd (h.le_bot ⟨hX', hmem⟩) (fun h => h)
+    exact Chazelle.Chain.regionsIn_eq_of_mem hX hR hX' hmem
   subst hXR
   -- the arc piece
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin hne hX harc
@@ -178,8 +176,10 @@ theorem ray_hit (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hxu := (cyc_unwrap hlb hlb hrb hxb hab').1 hin
   rw [unwrapK_self] at hxu
   set xx := unwrapK n a ((p : ℝ) + t) with hxx
-  have hxa : ukey M S X i_l 0 < xx := by rw [hu0]; exact hxu.1
-  have hxd : xx < ukey M S X i_l d := by rw [hA.hud]; exact hxu.2
+  have hxa := hxu.1
+  rw [← hu0] at hxa
+  have hxd := hxu.2
+  rw [← hA.hud] at hxd
   have hd0 := hA.hd0
   have hdN := hA.hdN
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by

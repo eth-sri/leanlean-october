@@ -40,7 +40,7 @@ variable (J : Merge.Junction)
 
 theorem fuse_adm (hgen : SharedGeneric J) {S₁ S₂ : Set (Set Point)}
     (h₁ : S₁ ⊆ Merge.augChords J.left) (h₂ : S₂ ⊆ Merge.augChords J.right) :
-    J.fusion S₁ S₂ ∪ glueChords J ⊆ (chainModel J.whole).Adm :=
+    J.fusion S₁ S₂ ∪ glueChords J ⊆ J.wholeModel.Adm :=
   union_subset (J.fusion_subset_augChords h₁ h₂) (glue_subset_aug J hgen)
 
 theorem fuse_fin {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂ : S₂.Finite) :
@@ -57,9 +57,14 @@ theorem fuse_endm (hP : J.P.Simple) {S₁ S₂ : Set (Set Point)} (h₁ : S₁ �
   · obtain ⟨e, he, h'⟩ := hl h; exact ⟨e, Or.inl he, h'⟩
   · obtain ⟨e, he, h'⟩ := hr h; exact ⟨e, Or.inl he, h'⟩
 
-theorem sideOK_left (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
-    {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁)
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) :
+section
+
+variable (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
+    {S₁ S₂ : Set (Set Point)} (hS₁ : J.leftModel.ChordFamily Q S₁)
+    (hS₂ : J.rightModel.ChordFamily Q S₂)
+
+include hP hgen hS₁ hS₂ in
+theorem sideOK_left :
     SideOK J J.left Q S₁ (J.fusion S₁ S₂ ∪ glueChords J) where
   simple := hP
   fam := hS₁
@@ -69,9 +74,8 @@ theorem sideOK_left (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
   adm := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   fin := fuse_fin J hS₁.1 hS₂.1
 
-theorem sideOK_right (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
-    {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁)
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) :
+include hP hgen hS₁ hS₂ in
+theorem sideOK_right :
     SideOK J J.right Q S₂ (J.fusion S₁ S₂ ∪ glueChords J) where
   simple := hP
   fam := hS₂
@@ -113,10 +117,10 @@ theorem jend_right (hP : J.P.Simple) {S₁ : Set (Set Point)} (hj : S₁ ⊆ Mer
 /-- The chord passes through the shared vertex or through the top of `C₁` or of `C₂`. -/
 def Thr (f : Set Point) : Prop := J.shared ∈ f ∨ J.left.top ∈ f ∨ J.right.top ∈ f
 
-theorem thr_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainModel J.whole).Adm)
+theorem thr_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ J.wholeModel.Adm)
     (hfin : F.Finite) : {f | f ∈ F ∧ Thr J f}.ncard ≤ 6 := by
-  have hM : WalkAx (chainModel J.whole) := walkAx_chainModel hP
-  have hv : ∀ v ∈ J.whole.set, v ∉ (chainModel J.whole).D := fun v hv h =>
+  have hM : WalkAx J.wholeModel := walkAx_chainModel hP
+  have hv : ∀ v ∈ J.whole.set, v ∉ J.wholeModel.D := fun v hv h =>
     J.whole.not_mem_set_of_mem_dom h hv
   have h1 := ncard_through_le hM hFA (hv _ (J.left_set_subset J.shared_mem_left))
   have h2 := ncard_through_le hM hFA (hv _ (J.left_set_subset J.left.top_mem_set))
@@ -138,12 +142,12 @@ theorem thr_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMod
         omega
 
 /-- **The exit chords attached on the box block**: at most `42`. -/
-theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainModel J.whole).Adm)
-    (hfin : F.Finite) {R : Set Point} (hR : R ∈ (chainModel J.whole).regions F) :
-    {f | f ∈ exits (chainModel J.whole) F R ∧ ∃ (p : ℕ) (t : ℝ),
-      SideAttach (chainModel J.whole).W f p t ∧ ¬ (chainModel J.whole).counted p}.ncard ≤ 42 := by
+theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ J.wholeModel.Adm)
+    (hfin : F.Finite) {R : Set Point} (hR : R ∈ J.wholeModel.regions F) :
+    {f | f ∈ exits J.wholeModel F R ∧ ∃ (p : ℕ) (t : ℝ),
+      SideAttach J.wholeModel.W f p t ∧ ¬ J.wholeModel.counted p}.ncard ≤ 42 := by
   classical
-  set M := chainModel J.whole with hMdef
+  set M := J.wholeModel with hMdef
   have hM : WalkAx M := walkAx_chainModel hP
   have hn := cm_n J.whole
   set P0 : Finset ℕ := Finset.range 6 ∪ {2 * J.whole.m + 6} with hP0
@@ -197,8 +201,7 @@ theorem glue_thr {f : Set Point}
     rcases hk with rfl | rfl
     · right; left; exact hmem
     · right; right
-      rw [Merge.Junction.whole_vertex_add] at hmem
-      exact hmem
+      rwa [Merge.Junction.whole_vertex_add] at hmem
   · exact Or.inr hcap
   · left; left
     exact Geometry.left_mem_segment _ _
@@ -230,13 +233,13 @@ theorem four_pieces (hP : J.P.Simple) :
     ∃ gA gA' LA gB gB' LB gC gC' LC gD gD' LD : ℕ,
       PieceAt J J.left gA gA' LA ∧ PieceAt J J.left gB gB' LB ∧
       PieceAt J J.right gC gC' LC ∧ PieceAt J J.right gD gD' LD ∧
-      ((chainModel J.whole).W.vtx gA = J.shared ∨ (chainModel J.whole).W.vtx gA = J.left.top) ∧
-      ((chainModel J.whole).W.vtx gB = J.shared ∨ (chainModel J.whole).W.vtx gB = J.left.top) ∧
-      ((chainModel J.whole).W.vtx gC = J.shared ∨ (chainModel J.whole).W.vtx gC = J.right.top) ∧
-      ((chainModel J.whole).W.vtx gD = J.shared ∨ (chainModel J.whole).W.vtx gD = J.right.top) ∧
-      ∀ p : ℕ, p < (chainModel J.whole).W.n → (chainModel J.whole).counted p →
-        dOf (chainModel J.whole).W.n gA p < LA ∨ dOf (chainModel J.whole).W.n gB p < LB ∨
-          dOf (chainModel J.whole).W.n gC p < LC ∨ dOf (chainModel J.whole).W.n gD p < LD := by
+      (J.wholeModel.W.vtx gA = J.shared ∨ J.wholeModel.W.vtx gA = J.left.top) ∧
+      (J.wholeModel.W.vtx gB = J.shared ∨ J.wholeModel.W.vtx gB = J.left.top) ∧
+      (J.wholeModel.W.vtx gC = J.shared ∨ J.wholeModel.W.vtx gC = J.right.top) ∧
+      (J.wholeModel.W.vtx gD = J.shared ∨ J.wholeModel.W.vtx gD = J.right.top) ∧
+      ∀ p : ℕ, p < J.wholeModel.W.n → J.wholeModel.counted p →
+        dOf J.wholeModel.W.n gA p < LA ∨ dOf J.wholeModel.W.n gB p < LB ∨
+          dOf J.wholeModel.W.n gC p < LC ∨ dOf J.wholeModel.W.n gD p < LD := by
   have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
   have hn := cm_n J.whole
@@ -253,46 +256,45 @@ theorem four_pieces (hP : J.P.Simple) :
       (right_box_eq J)
   refine ⟨gA, gA', LA, gB, gB', LB, gC, gC', LC, gD, gD', LD, hA, hB, hC, hD, hsA, hsB, hsC, hsD,
     fun p hp hc => ?_⟩
-  obtain ⟨hc1, hc2⟩ : 6 ≤ p ∧ p < 2 * J.whole.m + 6 := hc
+  obtain ⟨hc1, hc2⟩ := hc
   obtain ⟨i, rfl⟩ : ∃ i, p = 6 + i := ⟨p - 6, by omega⟩
   have hτlt := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   rw [hwm] at hτlt
   have hrel := tpos_rel J
   rw [hwm] at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
-  · rcases hcovL _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovL _ hp (by rwa [hn, hwm]) with h | h
     · exact Or.inl h
     · exact Or.inr (Or.inl h)
-  · rcases hcovR _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovR _ hp (by rwa [hn, hwm]) with h | h
     · exact Or.inr (Or.inr (Or.inl h))
     · exact Or.inr (Or.inr (Or.inr h))
 
 /-- An exit chord faced next to an attachment inside a piece is of type (I) or crossing. -/
 theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (Set Point)}
     (hS : SideOK J C' Q Si S') {g g' L : ℕ} (hpc : PieceAt J C' g g' L)
-    (hstart : (chainModel J.whole).W.vtx g = J.shared ∨ (chainModel J.whole).W.vtx g = C'.top)
+    (hstart : J.wholeModel.W.vtx g = J.shared ∨ J.wholeModel.W.vtx g = C'.top)
     (hjend : ∀ c ∈ Sj, ∀ q : Point, (q = Merge.lend c ∨ q = Merge.rend c) → q ∈ C'.set →
       q = J.shared)
     (hjnd : ∀ c ∈ Sj, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom)
-    {R f : Set Point} (hf : f ∈ exits (chainModel J.whole) S' R)
+    {R f : Set Point} (hf : f ∈ exits J.wholeModel S' R)
     (hpar : ∃ c ∈ Si ∪ Sj, f ⊆ c ∧ (Merge.lend c ∈ f ∨ Merge.rend c ∈ f))
-    (hcnt : ∀ (pb : ℕ) (tb : ℝ), SideAttach (chainModel J.whole).W f pb tb →
-      (chainModel J.whole).counted pb)
+    (hcnt : ∀ (pb : ℕ) (tb : ℝ), SideAttach J.wholeModel.W f pb tb →
+      J.wholeModel.counted pb)
     (hsh : J.shared ∉ f) (htop : C'.top ∉ f) {p : ℕ} {t : ℝ}
-    (hA : SideAttach (chainModel J.whole).W f p t) (hadj : Adj (chainModel J.whole) S' R p t)
-    (hdp : dOf (chainModel J.whole).W.n g p < L) :
-    f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX (chainModel J.whole) S' R g L := by
-  have hpd : (g + dOf (chainModel J.whole).W.n g p) % (chainModel J.whole).W.n = p :=
-    add_dOf hpc.1 hA.1
+    (hA : SideAttach J.wholeModel.W f p t) (hadj : Adj J.wholeModel S' R p t)
+    (hdp : dOf J.wholeModel.W.n g p < L) :
+    f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX J.wholeModel S' R g L := by
+  have hpd := add_dOf hpc.1 hA.1
   rw [← hpd] at hA hadj
-  by_cases h0 : 0 < (dOf (chainModel J.whole).W.n g p : ℝ) + t
+  by_cases h0 : 0 < (dOf J.wholeModel.W.n g p : ℝ) + t
   · exact classify J hP hS hpc hjend hjnd hf hpar hcnt hsh hdp hA.2.1 hA.2.2.1 h0 hA hadj
   · exfalso
     have ht : t = 0 := le_antisymm (by
-      have := (Nat.cast_nonneg (dOf (chainModel J.whole).W.n g p) : (0 : ℝ) ≤ _); linarith)
+      linarith)
       hA.2.1
-    have hd : dOf (chainModel J.whole).W.n g p = 0 := by
-      have : (dOf (chainModel J.whole).W.n g p : ℝ) ≤ 0 := by linarith
+    have hd : dOf J.wholeModel.W.n g p = 0 := by
+      have : (dOf J.wholeModel.W.n g p : ℝ) ≤ 0 := by linarith
       exact_mod_cast le_antisymm this (Nat.cast_nonneg _)
     rw [hd, ht, add_zero, Nat.mod_eq_of_lt hpc.1] at hA
     have hmem := hA.2.2.2.1
@@ -306,14 +308,13 @@ theorem cap_ncard : (capChords J).ncard ≤ 1 :=
   (Set.ncard_le_one (capChords_subsingleton J).finite).2
     fun _ ha _ hb => capChords_subsingleton J ha hb
 
+include hP hgen hS₁ hS₂ in
 /-- **At most `16 D + 65` exit chords of `R` are faced next to an attachment.** -/
-theorem adj_ncard (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
-    {S₁ S₂ : Set (Set Point)} (hS₁ : (chainModel J.left).ChordFamily Q S₁)
-    (hS₂ : (chainModel J.right).ChordFamily Q S₂) {D : ℕ}
-    (hD₁ : (chainModel J.left).DegLe S₁ D) (hD₂ : (chainModel J.right).DegLe S₂ D)
-    {R : Set Point} (hR : R ∈ (chainModel J.whole).regions (J.fusion S₁ S₂ ∪ glueChords J)) :
-    (adjExits (chainModel J.whole) (J.fusion S₁ S₂ ∪ glueChords J) R).ncard ≤ 16 * D + 65 := by
-  set M := chainModel J.whole with hMdef
+theorem adj_ncard {D : ℕ}
+    (hD₁ : J.leftModel.DegLe S₁ D) (hD₂ : J.rightModel.DegLe S₂ D)
+    {R : Set Point} (hR : R ∈ J.wholeModel.regions (J.fusion S₁ S₂ ∪ glueChords J)) :
+    (adjExits J.wholeModel (J.fusion S₁ S₂ ∪ glueChords J) R).ncard ≤ 16 * D + 65 := by
+  set M := J.wholeModel with hMdef
   set F := J.fusion S₁ S₂ ∪ glueChords J with hFdef
   have hM : WalkAx M := walkAx_chainModel hP
   have hFA := fuse_adm J hgen hS₁.2.1 hS₂.2.1
@@ -400,6 +401,8 @@ theorem adj_ncard (hP : J.P.Simple) (hgen : SharedGeneric J) {Q : Polygon}
   have := Set.ncard_le_ncard hsub hEfin
   omega
 
+end
+
 
 /-! ## The degree bound -/
 
@@ -409,7 +412,7 @@ fusion of two submaps of degree `≤ D` plus the glue chords has degree
 theorem fusionDegSpec : FusionDegSpec := by
   refine ⟨fun D => 7 + 4 * D * (16 * D + 65), ?_⟩
   intro J Q S₁ S₂ D hP hgen hS₁ hS₂ hD₁ hD₂ R hR
-  set M := chainModel J.whole with hMdef
+  set M := J.wholeModel with hMdef
   set F := J.fusion S₁ S₂ ∪ glueChords J with hFdef
   have hFA := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   have hfin := fuse_fin J hS₁.1 hS₂.1

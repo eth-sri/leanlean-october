@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.OraclePrepZipSp
 
 /-!
@@ -42,12 +44,12 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   cases ho : o with
   | none =>
     have hf := hn ho
-    have ht : c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.zero_lt_one
+    have ht : c.nreg 110290 < c.nreg 120011 := by simp_all
     exact ⟨c, 1, .ifLtN_true ht (.skip hw), by omega, fun _ _ _ => rfl, rfl, rfl, rfl,
       by rw [hc]; rfl, fun t ht => by simp at ht, fun _ _ => rfl⟩
   | some z =>
     obtain ⟨hf, hv1, hv2⟩ := hs z ho
-    have ht : ¬ c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.lt_irrefl 1
+    have ht : ¬ c.nreg 110290 < c.nreg 120011 := by simp_all
     obtain ⟨c', k, e, hk, n', m', rr', rm', o'⟩ : ∃ c' k, Exec P W (block [.addN 110296 110293 110295,
         .storeN 110296 110291, .addN 110296 110294 110295, .storeN 110296 110292,
         .addN 110295 110295 120011]) c c' k ∧ k = 5 ∧
@@ -56,23 +58,20 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         c'.rmem = c.rmem ∧ c'.output = c.output := by
       exec_block
       · rw [hR1, hc]; omega
-      · config_simp; rw [hR2, hc]; omega
-      · config_simp; rw [hc, h1]; omega
-      · refine ⟨rfl, ?_, ?_, rfl, rfl, rfl⟩
-        · config_simp; rw [hR2, hc, h1]
-        · config_simp; rw [hR1, hc, hv1, hR2, hv2]
+      · ram_finish
+      · ram_finish
+      simp_all
     refine ⟨c', _, .ifLtN_false ht e, by omega, fun r a b => ?_, rr', rm', o', ?_, fun t ht' => ?_,
       fun a ha => ?_⟩
-    · rw [n', upd_other _ _ _ a, upd_other _ _ _ b]
+    · simp_all
     · rw [n']; simp [upd]
     · simp only [Option.toList_some, List.length_cons, List.length_nil] at ht'
       have : t = 0 := by omega
       subst this
       rw [m']
-      simp only [Nat.add_zero, Option.toList_some, List.getD_cons_zero]
-      exact ⟨by rw [upd_other _ _ _ (by omega), upd_same], by rw [upd_same]⟩
+      ram_simp [Nat.add_zero, Option.toList_some, List.getD_cons_zero] 
     · simp only [Option.toList_some, List.length_cons, List.length_nil] at ha
-      rw [m', upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
+      ram_finish [m']
 
 /-- **Normalise, guard, append.** -/
 def emitG : Stmt :=
@@ -97,37 +96,35 @@ theorem emitG_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have R₁ : ∀ r, (r < 110290 ∨ 110292 < r) → r ≠ 110215 → c₁.nreg r = c.nreg r := fun r a b =>
     f₁.1 r (by simp; omega)
   -- the guard
-  obtain ⟨g, hg⟩ : ∃ g, c.nreg 110245 = g := ⟨_, rfl⟩
+  obtain ⟨g, hg⟩ := exists_eq' (a' := c.nreg 110245)
   obtain ⟨c₂, k₂, e₂, hk₂, n₂, s₂, R₂⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 120012 110245 .skip
       (.instr (.constN 110290 0))) c₁ c₂ k₂ ∧ k₂ ≤ 3 ∧
       (gOpt g (c.nreg 110299) (c.nreg 110214) = none → c₂.nreg 110290 = 0) ∧
       (∀ z, gOpt g (c.nreg 110299) (c.nreg 110214) = some z →
         c₂.nreg 110290 = 1 ∧ c₂.nreg 110291 = z.1 ∧ c₂.nreg 110292 = z.2) ∧
-      (∀ r, r ≠ 110290 → c₂.nreg r = c₁.nreg r) ∧ c₂.nmem = c₁.nmem ∧ c₂.rreg = c₁.rreg ∧
-      c₂.rmem = c₁.rmem ∧ c₂.output = c₁.output := by
+      (Machine.NRegEqExcept 110290 c₁ c₂) ∧ Machine.NatRegFrame c₁ c₂ := by
     have w₁ := e₁.wb_right
     unfold gOpt
     by_cases hg0 : g = 0
     · have ht : ¬ c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg, hg0]
-        exact Nat.lt_irrefl 0
+        simp_all 
       refine ⟨_, _, .ifLtN_false ht (Exec.constN w₁ 110290 0 (Nat.zero_le _)), by omega,
         (fun _ => by config_simp), (fun z hz => by rw [ite_eq_left hg0] at hz; cases hz),
-        (fun r hr => by config_simp; rw [upd_other _ _ _ hr]), rfl, rfl, rfl, rfl⟩
+        (fun r hr => by ram_finish), by and_intros <;> rfl⟩
     · have ht : c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg]; omega
+        ram_finish
       refine ⟨_, _, .ifLtN_true ht (.skip w₁), by omega, fun hn => ?_, fun z hz => ?_,
         fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       · rw [ite_eq_right hg0] at hn; exact n₁ hn
       · rw [ite_eq_right hg0] at hz; exact s₁ z hz
   rw [hg]
-  have g1 : c₂.nreg 120011 = 1 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), h1]
-  have g93 : c₂.nreg 110293 = R1 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hR1]
-  have g94 : c₂.nreg 110294 = R2 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hR2]
-  have g95 : c₂.nreg 110295 = c₀ := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hc]
+  have g1 : c₂.nreg 120011 = 1 := by ram_finish
+  have g93 : c₂.nreg 110293 = R1 := by ram_finish
+  have g94 : c₂.nreg 110294 = R2 := by ram_finish
+  have g95 : c₂.nreg 110295 = c₀ := by ram_finish
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, rm₃, o₃, cnt₃, pr₃, mm₃⟩ := emit1_exec (P := P) e₂.wb_right g1 g93
     g94 g95 _ n₂ s₂ hR12 hRW
-  have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have hm₁ := f₁.2.2.1
   refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun r a b c' d => ?_, ?_, ?_, ?_, cnt₃, pr₃,
     fun x hx => ?_⟩
   · rw [r₃ r a b, R₂.1 r (by omega), R₁ r d c']

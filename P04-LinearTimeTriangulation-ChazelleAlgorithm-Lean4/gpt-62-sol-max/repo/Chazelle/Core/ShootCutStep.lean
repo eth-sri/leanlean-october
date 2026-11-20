@@ -42,12 +42,10 @@ theorem block_grade {g Λ : ℕ} (hg : 1 ≤ g) (hγ : 2 ^ g ≤ γ) (hcap : γ 
   have h1 : g ≤ Λ - 1 := by
     have := (Nat.pow_le_pow_iff_right (by norm_num : 1 < 2)).1 (hγ.trans hcap)
     exact this
-  have h2 : 2 ≤ 2 ^ g := by
-    calc 2 = 2 ^ 1 := by norm_num
-      _ ≤ 2 ^ g := Nat.pow_le_pow_right (by norm_num) hg
+  
   refine ⟨by
     rcases Nat.eq_zero_or_pos Λ with h0 | h0
-    · subst h0; simp at hcap; omega
+    · simp_all
     · omega, ?_⟩
   unfold cutGran
   apply gradeGran_mono
@@ -74,7 +72,7 @@ theorem blockUp_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
       fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by omega, hgran,
         rfl, rfl, by simp; omega, rfl, by simp; omega, Or.inl rfl, fun d hd => ?_⟩⟩
     · unfold gradeCount
-      have : b * 2 ^ g + 2 ^ g ≤ P.n - 1 := by omega
+      
       have : b * 2 ^ g ≤ P.n - 2 := by omega
       have := (Nat.le_div_iff_mul_le hp).2 this
       omega

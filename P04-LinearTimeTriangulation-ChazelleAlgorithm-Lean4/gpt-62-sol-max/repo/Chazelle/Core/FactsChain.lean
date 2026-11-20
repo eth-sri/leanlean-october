@@ -51,7 +51,7 @@ theorem exists_first_exit {D : Set Point} (hD : IsOpen D) {z : Point} (hz : z �
   refine ⟨sInf T, ?_, fun s' hs' => ?_, hmem.2⟩
   · rcases hmem.1.lt_or_eq with h | h
     · exact h
-    · exfalso; apply hmem.2; rw [← h, add_zero]; exact hz
+    · exfalso; apply hmem.2; rwa [← h, add_zero]
   · by_contra hs
     exact absurd (csInf_le hbdd ⟨hs'.1, hs⟩) (not_le.2 hs'.2)
 
@@ -63,20 +63,19 @@ variable (C : Chain)
 theorem hseg_eq_segment {y a b : ℝ} (hab : a ≤ b) :
     hseg y a b = Chazelle.segment ((a, y) : Point) (b, y) := by
   rw [segment_horizontal_eq_hseg (a := ((a, y) : Point)) (b := ((b, y) : Point)) rfl]
-  dsimp only
-  rw [min_eq_left hab, max_eq_right hab]
+  simp_all
 
 /-- An endpoint of an augmented chord is on the chain or on an open vertical side of the box. -/
 theorem end_cases {y a b : ℝ} (h : IsHChordIn C.dom y a b) (hy : y ≤ C.top.2) {e : Point}
     (he : C.Anchorable e) (he2 : e.2 = y) :
     e ∈ C.set ∨ (|e.1| = C.radius ∧ |e.2| < C.radius) := by
   have hmid := h.open_mem ((a + b) / 2) (by linarith [h.lt]) (by linarith [h.lt])
-  have hyR : |y| < C.radius := (C.dom_subset_box hmid).2
+  have hyR := (C.dom_subset_box hmid).2
   rcases he with h1 | h1 | h1 | h1
   · exact Or.inl h1
   · left
     obtain ⟨e1, e2, -⟩ := C.mem_slit_iff.1 h1
-    have : e = C.top := point_ext e1 (le_antisymm (he2 ▸ hy) e2)
+    have := point_ext e1 (le_antisymm (he2 ▸ hy) e2)
     rw [this]; exact C.top_mem_set
   · exact Or.inr ⟨h1, he2 ▸ hyR⟩
   · exact absurd (he2 ▸ h1) (ne_of_lt hyR)
@@ -101,7 +100,7 @@ theorem vertex_mem_walk {k : ℕ} (hk : k ≤ C.m) :
   obtain ⟨i, hi, hidx, -⟩ := C.sideIdx_visit C.sideBeta (j := k) (by omega)
   refine ⟨i + 6, by rw [sideWalk_n]; omega, ?_⟩
   rw [C.sideWalk_vtx_tour _ hi.le, sideTour, hidx]
-  congr 1; unfold sideE; split_ifs; omega
+  simp_all [sideE] 
 
 /-- The two traversals of a chain edge by the tour of the double boundary. -/
 theorem tour_edges {k : ℕ} (hk : k < C.m) :
@@ -111,7 +110,7 @@ theorem tour_edges {k : ℕ} (hk : k < C.m) :
   · obtain ⟨i, hi, h1, h2, -⟩ := C.sideIdx_visit C.sideBeta (j := k) (by omega)
     refine ⟨i, hi, ?_, ?_⟩
     · rw [h1]; unfold sideE; split_ifs <;> omega
-    · rw [h2]; unfold sideE; split_ifs <;> omega
+    simp_all [sideE] 
   · obtain ⟨i, hi, h1, h2, -⟩ := C.sideIdx_visit C.sideBeta (j := 2 * C.m - 1 - k) (by omega)
     refine ⟨i, hi, ?_, ?_⟩
     · rw [h1]; unfold sideE; split_ifs <;> omega
@@ -136,11 +135,11 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
   have hz1 := abs_lt.1 (hbox z hz).1
   have hz2 := abs_lt.1 (hbox z hz).2
   -- `z.2` is not the height of the top of the box, nor of a chain vertex
-  have hzR : z.2 ≠ C.radius := fun h => hzv 0 (by omega) (by rw [C.sideWalk_vtx_zero]; exact h)
+  have hzR : z.2 ≠ C.radius := fun h => hzv 0 (by omega) (by assumption)
   have hzv' : ∀ k ≤ C.m, z.2 ≠ (C.vertex k).2 := by
     intro k hk h
     obtain ⟨i, hi, hvi⟩ := vertex_mem_walk C hk
-    exact hzv i hi (by rw [hvi]; exact h)
+    exact hzv i hi (by rwa [hvi])
   -- the exit point is at abscissa at most `R`
   have hqR : z.1 + s ≤ C.radius := by
     by_contra hgt
@@ -171,16 +170,16 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
       have hvi : W.vtx (i + 6) = C.vertex k := by
         rw [hW, C.sideWalk_vtx_tour _ hi.le, sideTour, hi1]
       have hvi1 : W.vtx ((i + 6 + 1) % W.n) = C.vertex (k + 1) := by
-        rw [hW, C.sideWalk_next_tour _ hi, C.sideWalk_vtx_tour _ (by omega), sideTour, hi2]
+        ram_simp [hW, C.sideWalk_next_tour, C.sideWalk_vtx_tour, sideTour, hi2]
       have hvi' : W.vtx (i' + 6) = C.vertex (k + 1) := by
         rw [hW, C.sideWalk_vtx_tour _ hi'.le, sideTour, hi1']
       have hvi1' : W.vtx ((i' + 6 + 1) % W.n) = C.vertex k := by
-        rw [hW, C.sideWalk_next_tour _ hi', C.sideWalk_vtx_tour _ (by omega), sideTour, hi2']
+        ram_simp [hW, C.sideWalk_next_tour, C.sideWalk_vtx_tour, sideTour, hi2']
       rcases lt_or_gt_of_ne hne with hup | hdn
-      · refine ⟨i + 6, by omega, s₀, ⟨hs₀0', hs₀1'⟩, ?_, by rw [hvi, hvi1]; exact hup⟩
+      · refine ⟨i + 6, by omega, s₀, ⟨hs₀0', hs₀1'⟩, ?_, by rwa [hvi, hvi1]⟩
         unfold sidePt; rw [hvi, hvi1, he]
       · refine ⟨i' + 6, by omega, 1 - s₀, ⟨by linarith, by linarith⟩, ?_,
-          by rw [hvi', hvi1']; exact hdn⟩
+          by rwa [hvi', hvi1']⟩
         unfold sidePt; rw [hvi', hvi1', he]
         apply point_ext <;> simp only [lerp_fst, lerp_snd] <;> ring
     · -- on the slit, above the top vertex
@@ -192,9 +191,9 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
         rcases e2.lt_or_eq with h | h
         · exact h
         · exact absurd h.symm (hzv' C.topIdx C.topIdx_le)
-      have hzR' : z.2 < C.radius := lt_of_le_of_ne e3 hzR
+      
       have hv0 : W.vtx (2 * C.m + 6) = C.top := by
-        rw [hW, C.sideWalk_vtx_tour _ le_rfl, C.sideTour_two_m]
+        simp [hW, C.sideWalk_vtx_tour, C.sideTour_two_m]
       have hv1 : W.vtx ((2 * C.m + 6 + 1) % W.n) = C.slitTop := by
         rw [hW, C.sideWalk_next_last]; rfl
       have hpos : 0 < C.radius - C.top.2 := by linarith
@@ -212,7 +211,7 @@ theorem reach {z : Point} (hz : z ∈ C.dom)
       refine ⟨abs_lt.2 ⟨by linarith, lt_of_le_of_ne hqR hne⟩, abs_lt.2 hz2⟩
     have hv3 : W.vtx 3 = (C.radius, -C.radius) := C.sideWalk_vtx_three _
     have hv4 : W.vtx ((3 + 1) % W.n) = (C.radius, C.radius) := by
-      rw [hn, Nat.mod_eq_of_lt (by omega)]; exact C.sideWalk_vtx_four _
+      rfl
     refine ⟨3, by omega, (z.2 + C.radius) / (2 * C.radius),
       ⟨div_pos (by linarith) (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩, ?_, ?_⟩
     · rw [(C.sidePt_box _ _).2.2.2.1]
@@ -236,7 +235,7 @@ theorem walkAx (hP : C.P.Simple) : WalkAx (chainModel C) where
     have hopen : ∀ s ∈ Ioo (0 : ℝ) 1, lerp ((a, y) : Point) (b, y) s ∈ C.dom := by
       intro s hs
       have e : lerp ((a, y) : Point) (b, y) s = ((a + s * (b - a), y) : Point) := by
-        apply point_ext <;> simp [lerp]
+        simp [lerp]
       rw [e]
       exact h.open_mem _ (by nlinarith [h.lt, hs.1]) (by nlinarith [h.lt, hs.2])
     have hab : ((a, y) : Point) ≠ (b, y) := fun e => h.lt.ne (congrArg Prod.fst e)

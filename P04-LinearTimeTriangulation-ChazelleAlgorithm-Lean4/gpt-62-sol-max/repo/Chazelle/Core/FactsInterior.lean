@@ -81,10 +81,10 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
       (det (W.vtx p) (W.vtx ((p + 1) % W.n)) x = 0 → x ∈ W.boundary) := by
   set u := W.vtx p with hu
   set v := W.vtx ((p + 1) % W.n) with hv
-  have huv : u ≠ v := simple_vtx_succ_ne hW hp
+  have huv := simple_vtx_succ_ne hW hp
   have hsq := sqLen_pos huv
   obtain ⟨r, hr, hstrip⟩ := strip hW hp ht
-  have hq : sidePt W p t = lerp u v t := rfl
+  
   refine ⟨r, hr, fun x hx => ⟨fun hdet => ?_, fun hdet => ?_, fun hdet => ?_⟩⟩
   · -- the left half-ball
     set H := ball (sidePt W p t) r ∩ {y | 0 < 1 * det u v y} with hH
@@ -92,14 +92,13 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
     have hHb : H ⊆ W.boundaryᶜ := fun y hy hyb => by
       have := (hstrip y hy.1).1 hyb
       have h2 := hy.2
-      simp only [mem_ofPred_eq, one_mul] at h2
-      linarith
+      simp_all [mem_ofPred_eq, one_mul] 
     obtain ⟨δ, hδ1, hδ2, hδ0⟩ := ((eventually_offset_orient hW hp ht).and
       ((eventually_offset_mem 1 isOpen_ball (mem_ball_self hr) (u := u) (v := v) (t := t)).and
         self_mem_nhdsWithin)).exists
     rw [hL, one_mul] at hδ1
     rw [one_mul] at hδ2
-    have hδ : (0 : ℝ) < δ := hδ0
+    have hδ := hδ0
     have hmem : offset u v t δ ∈ H := ⟨hδ2, by
       show 0 < 1 * det u v (offset u v t δ)
       rw [one_mul, det_offset]; exact mul_pos hδ hsq⟩
@@ -111,13 +110,12 @@ theorem edge_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n) 
     have hHb : H ⊆ W.boundaryᶜ := fun y hy hyb => by
       have := (hstrip y hy.1).1 hyb
       have h2 := hy.2
-      simp only [mem_ofPred_eq] at h2
-      rw [this] at h2; linarith
+      simp_all [mem_ofPred_eq] 
     obtain ⟨δ, hδ1, hδ2, hδ0⟩ := ((eventually_offset_orient hW hp ht).and
       ((eventually_offset_mem (-1) isOpen_ball (mem_ball_self hr) (u := u) (v := v)
         (t := t)).and self_mem_nhdsWithin)).exists
     rw [hL, one_mul] at hδ1
-    have hδ : (0 : ℝ) < δ := hδ0
+    have hδ := hδ0
     have e : -δ = (-1) * δ := by ring
     rw [e] at hδ1
     have hmem : offset u v t ((-1) * δ) ∈ H := ⟨hδ2, by
@@ -134,14 +132,14 @@ theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
       Chazelle.segment (W.vtx p) (W.vtx ((p + 1) % W.n)) ⊆ {W.vtx p} := by
   have hn := simple_three_le hW
   set j := prevIdx W p with hj
-  have hjn : j < W.n := prevIdx_lt W hp
-  have hji : j ≠ p := prevIdx_ne W hn hp
-  have hsucc : (j + 1) % W.n = p := prevIdx_succ W hp
-  have hjs : j ≠ (p + 1) % W.n := prevIdx_ne_succIdx W hn hp
-  have hab : W.vtx j ≠ W.vtx ((p + 1) % W.n) := simple_vtx_ne hW hjn (succIdx_lt W hp) hjs
+  have hjn := prevIdx_lt W hp
+  have hji := prevIdx_ne W hn hp
+  have hsucc := prevIdx_succ W hp
+  have hjs := prevIdx_ne_succIdx W hn hp
+  have hab := simple_vtx_ne hW hjn (succIdx_lt W hp) hjs
   intro x hx
   have : x ∈ W.edge j ∩ W.edge p := by
-    rw [edge_prevIdx W hp]; exact hx
+    rwa [edge_prevIdx W hp]
   rw [simple_edge_inter hW hjn hp hji] at this
   obtain ⟨h1, h2⟩ := this
   rw [hsucc] at h1
@@ -154,7 +152,7 @@ theorem corner_meet (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
 /-- The corner at a vertex of a simple polygon is not a spike. -/
 theorem corner_nonSpike (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
     sideNonSpike (W.vtx ((p + 1) % W.n) - W.vtx p) (W.vtx (prevIdx W p) - W.vtx p) := by
-  have hbv : W.vtx p ≠ W.vtx ((p + 1) % W.n) := simple_vtx_succ_ne hW hp
+  have hbv := simple_vtx_succ_ne hW hp
   rintro ⟨hcr, hdot⟩
   rw [sideCross_out] at hcr
   obtain ⟨s, hs_eq⟩ := Geometry.exists_lerp_of_det_eq_zero hbv hcr
@@ -166,7 +164,7 @@ theorem corner_nonSpike (hW : W.Simple) {p : ℕ} (hp : p < W.n) :
     unfold sqLen at hsq
     nlinarith
   set μ := min s 1 / 2 with hμ
-  have hμ0 : 0 < μ := by rw [hμ]; have := lt_min hs one_pos; linarith
+  have hμ0 : 0 < μ := by simp_all
   have hμ1 : μ < 1 := by rw [hμ]; have := min_le_right s 1; linarith
   have hμs : μ ≤ s := by rw [hμ]; have := min_le_left s 1; linarith
   have hy1 : lerp (W.vtx p) (W.vtx ((p + 1) % W.n)) μ ∈
@@ -195,11 +193,11 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
   set a := W.vtx j with ha
   set v := W.vtx p with hv
   set b := W.vtx ((p + 1) % W.n) with hb
-  have hjn : j < W.n := prevIdx_lt W hp
-  have hji : j ≠ p := prevIdx_ne W hn hp
-  have hsucc : (j + 1) % W.n = p := prevIdx_succ W hp
-  have hav : a ≠ v := simple_vtx_ne hW hjn hp hji
-  have hbv : b ≠ v := (simple_vtx_succ_ne hW hp).symm
+  have hjn := prevIdx_lt W hp
+  have hji := prevIdx_ne W hn hp
+  have hsucc := prevIdx_succ W hp
+  have hav := simple_vtx_ne hW hjn hp hji
+  have hbv := (simple_vtx_succ_ne hW hp).symm
   -- near `v` the boundary is the two edges at `v`
   have hother : ∀ k ∈ ((Finset.range W.n).erase p).erase j, v ∉ W.edge k := by
     intro k hk hmem
@@ -216,20 +214,18 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
     · by_cases hkj : k = j
       · subst hkj
         left
-        rw [← edge_prevIdx W hp]; exact hxk
+        rwa [← edge_prevIdx W hp]
       · exfalso
         exact hball x hx k (by simp [Finset.mem_erase, Finset.mem_range, hkp, hkj, hk]) hxk
   -- radius also below the edge lengths (for the coverage)
   set r := min r₀ (min ‖b - v‖ ‖a - v‖) with hr
-  have hbv0 : 0 < ‖b - v‖ := norm_pos_iff.2 (sub_ne_zero.2 hbv)
-  have hav0 : 0 < ‖a - v‖ := norm_pos_iff.2 (sub_ne_zero.2 hav)
-  have hr0 : 0 < r := lt_min hr₀ (lt_min hbv0 hav0)
+  have hbv0 := norm_pos_iff.2 (sub_ne_zero.2 hbv)
+  have hav0 := norm_pos_iff.2 (sub_ne_zero.2 hav)
+  have hr0 := lt_min hr₀ (lt_min hbv0 hav0)
   have hrr₀ : r ≤ r₀ := min_le_left _ _
   have hrb : r ≤ ‖b - v‖ := (min_le_right _ _).trans (min_le_left _ _)
   have hra : r ≤ ‖a - v‖ := (min_le_right _ _).trans (min_le_right _ _)
-  have hSr : ∀ x ∈ ball v r, x ∈ W.boundary →
-      x ∈ Chazelle.segment a v ∨ x ∈ Chazelle.segment v b :=
-    fun x hx => hS x (ball_subset_ball hrr₀ hx)
+  have hSr := fun x hx => hS x (ball_subset_ball hrr₀ hx)
   -- the left sector
   have hSL : ∀ x ∈ ball v r, x ∈ W.boundary → ¬ sideLeftOf a v b x := by
     intro x hx hxb
@@ -244,7 +240,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
   obtain ⟨hLb, hLc, hLoff⟩ := sideSector hav hbv hr0 hSL
   obtain ⟨hRb, hRc, hRoff⟩ := (sideSector hbv hav hr0 hSR).reverse
   -- a point of the left sector is interior, one of the right sector exterior
-  have hp1 : W.vtx ((p + 1) % W.n) = b := rfl
+  
   have hs01 : ∀ᶠ s in 𝓝[>] (0 : ℝ), s ∈ Ioo (0 : ℝ) 1 := by
     filter_upwards [Ioo_mem_nhdsGT (zero_lt_one' ℝ)] with s hs; exact hs
   obtain ⟨s, ⟨hsL, hsR⟩, hs⟩ := ((hLoff.and hRoff).and hs01).exists
@@ -271,7 +267,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
       nlinarith
     have e : lerp v w μ - v = μ • (w - v) := by
       apply point_ext <;> simp [lerp]
-    have hdist : ‖lerp v w μ - v‖ < r := by rw [← dist_eq_norm]; exact hx
+    have hdist : ‖lerp v w μ - v‖ < r := by assumption
     rw [e, norm_smul, Real.norm_eq_abs, abs_of_nonneg hμ0] at hdist
     have hμ1 : μ ≤ 1 := by
       by_contra h
@@ -280,7 +276,7 @@ theorem vertex_local (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp : p < W.n
         have := norm_pos_iff.2 (sub_ne_zero.2 hwv); nlinarith
       linarith
     exact hxb (hseg (lerp_mem_segment _ _ hμ0 hμ1))
-  have hsegb : Chazelle.segment v b ⊆ W.boundary := Existence.edge_subset_boundary W hp
+  have hsegb := Existence.edge_subset_boundary W hp
   have hsega : Chazelle.segment v a ⊆ W.boundary := by
     rw [Geometry.segment_comm, ← edge_prevIdx W hp]
     exact Existence.edge_subset_boundary W hjn
@@ -368,7 +364,7 @@ theorem walkEnd (hW : W.Simple) (hL : orient W = 1) {e e' : Point} (hee : e ≠ 
   refine ⟨?_, fun p p' t t' hp ht ht1 hp' ht' ht1' hne h1 h2 => ?_⟩
   · obtain ⟨p, hp, t, ht, ht1, hpt⟩ := exists_pos_of_mem_boundary he
     obtain ⟨r, hr, hleft⟩ := interior_left hW hL hp ht ht1
-    have hd : 0 < dist e e' := dist_pos.2 hee
+    have hd := dist_pos.2 hee
     refine ⟨p, t, ⟨hp, ht, ht1, by rw [hpt]; exact Geometry.left_mem_segment _ _,
       min r (dist e e'), lt_min hr hd, fun x hx hxe hxd => ?_⟩, hpt⟩
     rw [hpt] at hxe hxd
@@ -414,20 +410,15 @@ theorem chordPoly_vtx_m1 (W : Polygon) (i m : ℕ) (e₁ e₂ : Point) :
 
 theorem chordPoly_edge_lt (W : Polygon) (i : ℕ) {m : ℕ} (e₁ e₂ : Point) {k : ℕ} (hk : k + 1 < m) :
     (chordPoly W i m e₁ e₂).edge k = W.edge ((i + 1 + k) % W.n) := by
-  unfold Polygon.edge
-  rw [chordPoly_n, Nat.mod_eq_of_lt (by omega : k + 1 < m + 2), chordPoly_vtx_lt W i e₁ e₂ (by omega),
-    chordPoly_vtx_lt W i e₁ e₂ hk, Existence.mod_add_one_mod]
+  ram_finish [Polygon.edge, chordPoly_n, Nat.mod_eq_of_lt, chordPoly_vtx_lt, chordPoly_vtx_lt W i e₁ e₂ hk, Existence.mod_add_one_mod]
 
 theorem chordPoly_edge_pen (W : Polygon) (i : ℕ) {m : ℕ} (e₁ e₂ : Point) (hm : 0 < m) :
     (chordPoly W i m e₁ e₂).edge (m - 1) = Chazelle.segment (W.vtx ((i + m) % W.n)) e₂ := by
-  unfold Polygon.edge
-  rw [chordPoly_n, show m - 1 + 1 = m by omega, Nat.mod_eq_of_lt (by omega : m < m + 2),
-    chordPoly_vtx_lt W i e₁ e₂ (by omega), chordPoly_vtx_m, show i + 1 + (m - 1) = i + m by omega]
+  ram_finish [Polygon.edge, chordPoly_n, show m - 1 + 1 = m by omega, Nat.mod_eq_of_lt, chordPoly_vtx_lt, chordPoly_vtx_m, show i + 1 + (m - 1) = i + m by omega]
 
 theorem chordPoly_edge_m (W : Polygon) (i m : ℕ) (e₁ e₂ : Point) :
     (chordPoly W i m e₁ e₂).edge m = Chazelle.segment e₂ e₁ := by
-  unfold Polygon.edge
-  rw [chordPoly_n, Nat.mod_eq_of_lt (by omega : m + 1 < m + 2), chordPoly_vtx_m, chordPoly_vtx_m1]
+  ram_finish [Polygon.edge, chordPoly_n, Nat.mod_eq_of_lt, chordPoly_vtx_m, chordPoly_vtx_m1]
 
 theorem chordPoly_edge_last (W : Polygon) (i : ℕ) {m : ℕ} (e₁ e₂ : Point) (hm : 0 < m) :
     (chordPoly W i m e₁ e₂).edge (m + 1) = Chazelle.segment e₁ (W.vtx ((i + 1) % W.n)) := by
@@ -457,7 +448,7 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
   have hmv : (0 < m ∧ m < W.n) ∧ (i + m) % W.n = j := by
     rcases lt_or_gt_of_ne hij with h | h
     · have e : (j + W.n - i) % W.n = j - i := by
-        rw [show j + W.n - i = (j - i) + W.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        ram_simp [show j + W.n - i = (j - i) + W.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
       rw [hm, e]
       refine ⟨⟨by omega, by omega⟩, ?_⟩
       rw [show i + (j - i) = j by omega, Nat.mod_eq_of_lt hj]
@@ -465,10 +456,10 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
       rw [hm, e]
       refine ⟨⟨by omega, by omega⟩, ?_⟩
       rw [show i + (j + W.n - i) = j + W.n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hj]
-  have hm0 : 0 < m := hmv.1.1
-  have hjm : (i + m) % W.n = j := hmv.2
+  have hm0 := hmv.1.1
+  have hjm := hmv.2
   set Γ := chordPoly W i m e₁ e₂ with hΓ
-  have hΓn : Γ.n = m + 2 := chordPoly_n W i m e₁ e₂
+  have hΓn := chordPoly_n W i m e₁ e₂
   -- all edges but `m` are in the boundary of `W`
   have hedge : ∀ k, k < m + 2 → k ≠ m → Γ.edge k ⊆ W.boundary := by
     intro k hk hkm
@@ -488,13 +479,12 @@ theorem chord_parity_flip (hW : W.Simple) {e₁ e₂ : Point} (h12 : e₁.1 ≠ 
     by_cases hkm : k = m
     · subst hkm
       right
-      rw [hΓ, chordPoly_edge_m, Geometry.segment_comm] at hxk
-      exact hxk
+      rwa [hΓ, chordPoly_edge_m, Geometry.segment_comm] at hxk
     · exact Or.inl (hedge k hk hkm hxk)
   · have hmn : m < Γ.n := by rw [hΓn]; omega
     have hsucc : (m + 1) % Γ.n = m + 1 := by rw [hΓn]; exact Nat.mod_eq_of_lt (by omega)
     have hzΓ : z ∈ Γ.edge m := by
-      rw [hΓ, chordPoly_edge_m, Geometry.segment_comm]; exact hz
+      rwa [hΓ, chordPoly_edge_m, Geometry.segment_comm]
     have hne : (Γ.vtx m).1 ≠ (Γ.vtx ((m + 1) % Γ.n)).1 := by
       rw [hsucc, hΓ, chordPoly_vtx_m, chordPoly_vtx_m1]; exact Ne.symm h12
     have hzu : z ≠ Γ.vtx m := by
@@ -520,13 +510,12 @@ theorem hchord_end_mem_boundary {y a b : ℝ}
       ((x, y) : Point) ∈ W.boundary := by
     intro x hx happ
     by_contra hb
-    have hnf : ((x, y) : Point) ∉ W.filled := fun hf => hx ⟨hf, hb⟩
+    have hnf := fun hf => hx ⟨hf, hb⟩
     obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 (isClosed_filled W).isOpen_compl _ hnf
     obtain ⟨x', hx', hx'D⟩ := happ r hr
     apply hball (show ((x', y) : Point) ∈ ball ((x, y) : Point) r by
       rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [sub_self, abs_zero]
-      exact max_lt hx' hr)
+      simp_all)
     exact hx'D.1
   have hlt := h.lt
   refine ⟨key a h.left_not fun ε hε => ?_, key b h.right_not fun ε hε => ?_⟩
@@ -547,7 +536,7 @@ theorem hchord_open {D : Set Point} {y a b : ℝ} (h : IsHChordIn D y a b) :
     ∀ s ∈ Ioo (0 : ℝ) 1, lerp ((a, y) : Point) (b, y) s ∈ D := by
   intro s hs
   have e : lerp ((a, y) : Point) (b, y) s = ((a + s * (b - a), y) : Point) := by
-    apply point_ext <;> simp [lerp]
+    simp [lerp]
   rw [e]
   exact h.open_mem _ (by nlinarith [h.lt, hs.1]) (by nlinarith [h.lt, hs.2])
 
@@ -590,7 +579,7 @@ theorem reach (hW : W.Simple) (hL : orient W = 1) {z : Point} (hz : z ∈ W.fill
     by_contra hnf
     obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 (isClosed_filled W).isOpen_compl _ hnf
     set ε := min r s / 2 with hε
-    have hε0 : 0 < ε := by rw [hε]; have := lt_min hr hs; linarith
+    have hε0 : 0 < ε := by simp_all  
     have hεr : ε < r := by rw [hε]; have := min_le_left r s; linarith
     have hεs : ε < s := by rw [hε]; have := min_le_right r s; linarith
     apply hball (show ((z.1 + (s - ε), z.2) : Point) ∈ ball q r by
@@ -638,7 +627,7 @@ theorem rev_n (Q : Polygon) : (⟨Q.vertices.reverse⟩ : Polygon).n = Q.n := by
 theorem rev_vtx (Q : Polygon) : ∀ k < Q.n, (⟨Q.vertices.reverse⟩ : Polygon).vtx k =
     Q.vtx (Q.n - 1 - k) := by
   intro k hk
-  have hk' : k < Q.vertices.reverse.length := by rw [List.length_reverse]; exact hk
+  have hk' : k < Q.vertices.reverse.length := by rwa [List.length_reverse]
   have hk2 : Q.n - 1 - k < Q.vertices.length := by
     have : Q.n = Q.vertices.length := rfl
     omega
@@ -659,8 +648,8 @@ theorem interiorWalk_spec {Q : Polygon} (hQ : Q.Simple) :
   · set R : Polygon := ⟨Q.vertices.reverse⟩ with hR
     have hn := rev_n Q
     have hv := rev_vtx Q
-    have hRs : R.Simple := Mountain.rev_simple hn hv hQ
-    have hRf : R.filled = Q.filled := Mountain.rev_filled hn hv
+    have hRs := Mountain.rev_simple hn hv hQ
+    have hRf := Mountain.rev_filled hn hv
     refine ⟨hRs, Mountain.rev_boundary hn hv, hRf, ?_⟩
     have hn3 := simple_three_le hQ
     have hQo : orient Q = -1 := by unfold orient; simp [h]

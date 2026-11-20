@@ -35,31 +35,32 @@ open Machine
 degree `≤ 4`), with the `LeftInside` bit in register `215002`: a fresh `HostAt` block of
 `regHost li n N r` at the handle in register `215010`, its item count in `215011` and its point
 count in `215012`. -/
-def HostRamSpec : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s {bDownDrv}
+def HostMeets (s : Stmt) (κ : ℕ) : Prop :=
+  Meets s {bDownDrv}
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ c.nreg 215002 ≤ 1 ∧
       (c.nreg 215002 = 1 ↔ Mountain.LeftInside (Qof P)) ∧
       ∃ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ), L ≠ [] ∧
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P) L ∧ E.Perm (List.range (2 * L.length)) ∧
-        E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) ∧
-        (interiorModel (Qof P)).DegLe
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-            (Qof P)) 4 ∧
+        ChordTriplesOK (inputModel P) (Qof P) L ∧ E.Perm (List.range (2 * L.length)) ∧
+        E.Pairwise (BuildNF.codeLe (inputModel P) (Qof P) L) ∧
+        P.inputModel.DegLe
+          (inputChords P L E) 4 ∧
         NFWithin c.nmem (c.nreg 215000) (c.nreg ALLOC)
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) ∧
-        c.nreg 215001 < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions)
+          (inputNF P L E) ∧
+        c.nreg 215001 < (inputNF P L E).nRegions)
     (fun P c c' =>
       (∀ q, bandOf q = bDownDrv → (q < 215000 ∨ 216000 ≤ q) → c'.nreg q = c.nreg q) ∧
       ∀ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ), L ≠ [] →
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P) L → E.Perm (List.range (2 * L.length)) →
-        E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) →
-        NFAt c.nmem (c.nreg 215000) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) →
+        ChordTriplesOK (inputModel P) (Qof P) L → E.Perm (List.range (2 * L.length)) →
+        E.Pairwise (BuildNF.codeLe (inputModel P) (Qof P) L) →
+        NFAt c.nmem (c.nreg 215000) (inputNF P L E) →
         let H := regHost (decide (c.nreg 215002 = 1)) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 215001)
+          (inputNF P L E) (c.nreg 215001)
         c.nreg ALLOC ≤ c'.nreg 215010 ∧ c'.nreg 215010 + 3 * H.length + 1 ≤ c'.nreg ALLOC ∧
           HostAt c'.nmem (c'.nreg 215010) H ∧ c'.nreg 215011 = H.length ∧
           c'.nreg 215012 = (H.pts (Qof P).n).length)
     (fun _ _ => κ)
+
+def HostRamSpec : Prop := ∃ s κ, HostMeets s κ
 
 end
 

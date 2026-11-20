@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OracleRamCand
 
 /-!
@@ -111,38 +113,37 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   have hv := hs.hv
   -- 1. no hit yet
   obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120050 0 (by omega)
-  have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega)
-  have m₁ : c₁.nmem = c.nmem :=
-    (exec_frameB e₁ (B := fun r => decide (r = 120050)) (by decide)).2.2.1
+  have hq₁ := hq.congr fun r h1 h2 => r₁ r (by omega)
+  have m₁ := (exec_frameB e₁ (B := fun r => decide (r = 120050)) (by decide)).2.2.1
   have hbo₁ : bestOf c₁ = none := by unfold bestOf; rw [v₁]; simp
   have hb₁ : BestOK P.n V.s V.m c₁ := ⟨by rw [v₁]; omega, fun h => by rw [v₁] at h; omega⟩
   -- 2. the nodes of `D*`
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := dstarS_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
-    (by rw [m₁]; exact hm) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
+    (by rwa [m₁]) hDL (S := ∅) (by rw [hbo₁]; intro t _ h; exact h)
   rw [m₁, Set.empty_union] at hit₂
   rw [m₁] at hk₂
-  have hq₂ : QConst P V c₂ := hq₁.frame f₂ BD_const
-  have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
+  have hq₂ := hq₁.frame f₂ BD_const
+  have m₂ := f₂.2.2.1.trans m₁
   set bD := bestOf c₂ with hbD
   have hbDm : ∀ cb, bD = some cb → cb < V.m := by
     intro cb h
     unfold bestOf at hbD
     by_cases hfl : c₂.nreg 120050 = 1
     · rw [hbD, ite_eq_left hfl] at h; cases h; exact (hb₂.2 hfl).2
-    · rw [hbD, ite_eq_right hfl] at h; exact absurd h (by simp)
+    simp_all
   have x140 : c₂.nreg 120140 = c.nreg 120140 := by
-    rw [f₂.1 _ (by decide), r₁ _ (by decide)]
+    frame_finish
   have x141 : c₂.nreg 120141 = c.nreg 120141 := by
-    rw [f₂.1 _ (by decide), r₁ _ (by decide)]
+    frame_finish
   -- 3. the stopping point
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, s₃⟩ := tchS_exec (P := P) hG hW hv htv c₂ e₂.wb_right hq₂
-    (by rw [x140]; exact hf) hb₂
+    (by rwa [x140]) hb₂
   rw [selOf_cb hb₂, x140, x141, ← hbD] at s₃
   set sel := selOf C V bD (c.nreg 120140 = 1) (c.nreg 120141) (CBof P C V bD (c.nreg 120141))
     with hsel
-  have hq₃ : QConst P V c₃ := hq₂.frame f₃ fun r h1 h2 => by
+  have hq₃ := hq₂.frame f₃ fun r h1 h2 => by
     simp only [BT, BX2, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  have m₃ : c₃.nmem = c.nmem := f₃.2.2.1.trans m₂
+  have m₃ := f₃.2.2.1.trans m₂
   have hsel01 : sel.1 = 0 ∨ sel.1 = 1 := by
     rw [hsel]; unfold selOf
     by_cases h : c.nreg 120140 = 1 ∧ (bD = none ∨ CBof P C V bD (c.nreg 120141))
@@ -159,9 +160,9 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
       · simp only; intro _; exact hbDm cD hbd
   -- 4. the walk positions
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄⟩ := posS_exec (P := P) hW hv c₃ e₃.wb_right hq₃ s₃ hsel01 hselm
-  have hq₄ : QConst P V c₄ := hq₃.frame f₄ fun r h1 h2 => by
+  have hq₄ := hq₃.frame f₄ fun r h1 h2 => by
     simp only [BPo, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
-  have m₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans m₃
+  have m₄ := f₄.2.2.1.trans m₃
   have hvd := hvalid bD hit₂ hbDm
   rw [← hsel] at hvd
   set q := posOf V P.n sel with hqdef
@@ -173,16 +174,12 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     · exact congrArg (fun x => x.2.2.1) v₄
     · exact congrArg (fun x => x.2.2.2) v₄
   -- the best-hit registers before the candidates
-  have hBDbest : ∀ r, BT r = false → BPo r = false → c₄.nreg r = c₂.nreg r := fun r h1 h2 =>
+  have hBDbest := fun r h1 h2 =>
     (f₄.1 r h2).trans (f₃.1 r h1)
   have hb₄ : BestOK P.n V.s V.m c₄ := by
-    unfold BestOK
-    rw [hBDbest 120050 (by decide) (by decide), hBDbest 120051 (by decide) (by decide),
-      hBDbest 120052 (by decide) (by decide)]
-    exact hb₂
+    ram_simp [BestOK, hBDbest] <;> reg_omega
   have hbo₄ : bestOf c₄ = bD := by
-    unfold bestOf; rw [hBDbest 120050 (by decide) (by decide), hBDbest 120052 (by decide) (by decide)]
-    rfl
+    ram_finish [bestOf, hBDbest]
   -- 5 – 8. the candidates
   have candStep : ∀ (k : ℕ), k < 4 → ∀ (d : Config), WordsBounded W d → QConst P V d →
       BestOK P.n V.s V.m d → d.nmem = c.nmem → d.nreg (120160 + k) = posK q k →
@@ -196,10 +193,10 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     intro k hk d hd hqd hbd hmd hpos S hS
     obtain ⟨hwn, hx⟩ := hvd k hk
     obtain ⟨d', k', p, ex, hk', fr, hb', hp, hl1, hl2, hit⟩ := candS_exec hcov (P := P) hG hW hs d hd
-      hqd hbd (by rw [hmd]; exact hm) (by rw [hmd]; exact hO) (by rw [hmd]; exact hL)
+      hqd hbd (by rwa [hmd]) (by rwa [hmd]) (by rwa [hmd])
       (NC := NC) (CS := CS) (fun u hu => by rw [hmd]; exact hNC u hu)
       (fun u hu => by rw [hmd]; exact hCS u hu) (rP := 120160 + k) (by omega)
-      (by rw [hpos]; exact hwn) (by rw [hpos]; exact hx) hS
+      (by rwa [hpos]) (by rwa [hpos]) hS
     rw [hpos] at hl1 hl2
     rw [hmd] at hit
     exact ⟨d', k', p, ex, hk', fr, hb', hp, ⟨hl1, hl2⟩, hit⟩
@@ -211,53 +208,47 @@ theorem mainS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     simp only [BCa, BL, BC, BN, BA, BW, BE, Bdir, Bloc, Bcmp, Bk, Bool.or_eq_false_iff,
       decide_eq_false_iff_not]; omega
   obtain ⟨c₅, k₅, p₀, e₅, hk₅, f₅, hb₅, hp₀, hl₀, hit₅⟩ := candStep 0 (by norm_num) c₄ e₄.wb_right hq₄
-    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rw [hbo₄]; exact hit₂)
+    hb₄ m₄ (xq 0 (by norm_num)) (dstarPts c.nmem V C V.nD) (by rwa [hbo₄])
   have hq₅ := hq₄.frame f₅ hBCac
-  have m₅ : c₅.nmem = c.nmem := f₅.2.2.1.trans m₄
+  have m₅ := f₅.2.2.1.trans m₄
   obtain ⟨c₆, k₆, p₁, e₆, hk₆, f₆, hb₆, hp₁, hl₁, hit₆⟩ := candStep 1 (by norm_num) c₅ e₅.wb_right hq₅
-    hb₅ m₅ (by rw [keepPos c₄ c₅ f₅ 1 (by norm_num)]; exact xq 1 (by norm_num)) _ hit₅
+    hb₅ m₅ (by ram_rw [keepPos c₄ c₅ f₅ 1]; exact xq 1 (by norm_num)) _ hit₅
   have hq₆ := hq₅.frame f₆ hBCac
-  have m₆ : c₆.nmem = c.nmem := f₆.2.2.1.trans m₅
+  have m₆ := f₆.2.2.1.trans m₅
   obtain ⟨c₇, k₇, p₂, e₇, hk₇, f₇, hb₇, hp₂, hl₂, hit₇⟩ := candStep 2 (by norm_num) c₆ e₆.wb_right hq₆
-    hb₆ m₆ (by rw [keepPos c₅ c₆ f₆ 2 (by norm_num), keepPos c₄ c₅ f₅ 2 (by norm_num)]; exact xq 2 (by norm_num)) _ hit₆
+    hb₆ m₆ (by ram_rw [keepPos c₅ c₆ f₆ 2, keepPos c₄ c₅ f₅ 2]; exact xq 2 (by norm_num)) _ hit₆
   have hq₇ := hq₆.frame f₇ hBCac
-  have m₇ : c₇.nmem = c.nmem := f₇.2.2.1.trans m₆
+  have m₇ := f₇.2.2.1.trans m₆
   obtain ⟨c₈, k₈, p₃, e₈, hk₈, f₈, hb₈, hp₃, hl₃, hit₈⟩ := candStep 3 (by norm_num) c₇ e₇.wb_right hq₇
-    hb₇ m₇ (by rw [keepPos c₆ c₇ f₇ 3 (by norm_num), keepPos c₅ c₆ f₆ 3 (by norm_num),
-      keepPos c₄ c₅ f₅ 3 (by norm_num)]; exact xq 3 (by norm_num)) _ hit₇
+    hb₇ m₇ (by ram_rw [keepPos c₆ c₇ f₇ 3, keepPos c₅ c₆ f₆ 3,
+      keepPos c₄ c₅ f₅ 3]; exact xq 3 (by norm_num)) _ hit₇
   -- 9. the output
   have w₈ := e₈.wb_right
   obtain ⟨c₉, k₉, e₉, hk₉, v₉⟩ : ∃ c₉ k₉, Exec P W (block [.copyN 120005 120050, .copyN 120006 120051])
       c₈ c₉ k₉ ∧ k₉ = 2 ∧ (c₉.nreg 120005 = c₉.nreg 120050 ∧ c₉.nreg 120006 = c₉.nreg 120051 ∧
         ∀ r, r ≠ 120005 → r ≠ 120006 → c₉.nreg r = c₈.nreg r) := by
-    exec_block
-    exact ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => by config_simp; upd_solve⟩
+    ram_exec
   obtain ⟨o5, o6, r₉⟩ := v₉
   have hbo₉ : bestOf c₉ = bestOf c₈ := by
-    unfold bestOf; rw [r₉ 120050 (by decide) (by decide), r₉ 120052 (by decide) (by decide)]
+    unfold bestOf; ram_post
   have hb₉ : BestOK P.n V.s V.m c₉ := by
     unfold BestOK
-    rw [r₉ 120050 (by decide) (by decide), r₉ 120051 (by decide) (by decide),
-      r₉ 120052 (by decide) (by decide)]
-    exact hb₈
+    ram_rw assumption [r₉ 120050, r₉ 120051,
+      r₉ 120052]
   -- frames
   have ex : Exec P W mainS c c₉ (1 + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + k₉)))))))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉)))))))
+    (by ram_path)
   have fr : FrameB BMain c c₉ := by
-    have g1 : FrameB BMain c c₁ := FrameB.mono (exec_frameB e₁ (B := fun r => decide (r = 120050))
-      (by decide)) fun r hr => by simp only [decide_eq_true_eq] at hr; simp [BMain, hr]
+    have g1 : FrameB BMain c c₁ := (by ram_frame)
     have g2 : FrameB BMain c₁ c₂ := FrameB.mono f₂ fun r hr => by simp [BMain, hr]
     have g3 : FrameB BMain c₂ c₃ := FrameB.mono f₃ fun r hr => by simp [BMain, hr]
     have g4 : FrameB BMain c₃ c₄ := FrameB.mono f₄ fun r hr => by simp [BMain, hr]
-    have g5 : FrameB BMain c₄ c₅ := FrameB.mono f₅ fun r hr => BCa_main hr
-    have g6 : FrameB BMain c₅ c₆ := FrameB.mono f₆ fun r hr => BCa_main hr
-    have g7 : FrameB BMain c₆ c₇ := FrameB.mono f₇ fun r hr => BCa_main hr
-    have g8 : FrameB BMain c₇ c₈ := FrameB.mono f₈ fun r hr => BCa_main hr
-    have g9 : FrameB BMain c₈ c₉ := FrameB.mono (exec_frameB e₉ (B := fun r => decide (r = 120005) ||
-      decide (r = 120006)) (by decide)) fun r hr => by
-        simp only [Bool.or_eq_true, decide_eq_true_eq] at hr
-        rcases hr with hr | hr <;> simp [BMain, hr]
-    exact g1.trans (g2.trans (g3.trans (g4.trans (g5.trans (g6.trans (g7.trans (g8.trans g9)))))))
+    have g5 := FrameB.mono f₅ fun r hr => BCa_main hr
+    have g6 := FrameB.mono f₆ fun r hr => BCa_main hr
+    have g7 := FrameB.mono f₇ fun r hr => BCa_main hr
+    have g8 := FrameB.mono f₈ fun r hr => BCa_main hr
+    have g9 : FrameB BMain c₈ c₉ := (by ram_frame)
+    exact g1.trans (by ram_frame)
   refine ⟨c₉, _, bD, ex, ?_, fr, hit₂, hbDm, fun k => if k = 0 then p₀ else if k = 1 then p₁ else
     if k = 2 then p₂ else p₃, fun k hk => ?_, ?_, hb₉, o5, o6⟩
   · omega

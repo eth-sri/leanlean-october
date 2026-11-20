@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.FuseAsmSideQ
 public import Chazelle.Core.SweepSpecH
 
@@ -22,48 +24,6 @@ open Machine Machine.Stmt Programs SignK SweepPrim MergeAsm
 
 @[expose] public section
 
-/-- The precondition of the sweep. -/
-def SwPre (X : MemCtx) (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c : Config) : Prop :=
-  GoodEnv P ∧ hostWords P.n ≤ W ∧
-    X.holds P c.nmem (rd c bSweep 10) (c.nreg ALLOC) ∧
-    rd c bSweep 5 ≤ X.cap P c.nmem (rd c bSweep 10) ∧ rd c bSweep 7 ≤ 1 ∧
-    JunctionWF P (c.nreg ALLOC) c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) ∧
-    ∃ H J N₁ N₂ L, JunctionAt c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2)
-        (Qof P) H J ∧
-      J.P.Simple ∧
-      Ok P (chainModel J.left) ∧ Ok P (chainModel J.right) ∧
-      NFWithin c.nmem (rd c bSweep 3) (c.nreg ALLOC) N₁ ∧
-      NFWithin c.nmem (rd c bSweep 4) (c.nreg ALLOC) N₂ ∧
-      IsNF (chainModel J.left) (Qof P) N₁ ∧ IsNF (chainModel J.right) (Qof P) N₂ ∧
-      (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (rd c bSweep 6) ∧
-      (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 6) ∧
-      (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (rd c bSweep 5) ∧
-      (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (rd c bSweep 5) ∧
-      rd c bSweep 9 = L.length ∧ rd c bSweep 8 + 3 * L.length ≤ c.nreg ALLOC ∧
-      ChordListAt c.nmem (rd c bSweep 8) L ∧
-      (∀ q ∈ L, QueryOK J (Qof P) (rd c bSweep 7) q) ∧
-      (rd c bSweep 7 = 1 → ∃ L₁ : List (ℕ × ℕ × ℕ), L = sweepEndQ N₂.chords ++ L₁ ∧
-        L₁.length ≤ 3) ∧
-      ∀ q ∈ L, ((chainModel (sideChain J (rd c bSweep 7))).pos (Qof P) ⟨q.1, q.2.1⟩).2 =
-        ((Qof P).vtx (q.2.1 - 1)).2
-
-/-- The postcondition of the sweep. -/
-def SwPost (P : Polygon) (c c' : Config) : Prop :=
-  ∀ H J (L : List (ℕ × ℕ × ℕ)),
-    JunctionAt c.nmem (rd c bSweep 0) (rd c bSweep 1) (rd c bSweep 2) (Qof P) H J →
-    rd c bSweep 9 = L.length → ChordListAt c.nmem (rd c bSweep 8) L →
-    ∃ R : List (ℕ × ℕ × ℕ × ℕ), c.nreg ALLOC ≤ rd c' bSweep 11 ∧
-      rd c' bSweep 11 + 4 * L.length ≤ c'.nreg ALLOC ∧ R.length = L.length ∧
-      ResultListAt c'.nmem (rd c' bSweep 11) R ∧
-      ∀ j, j < L.length →
-        SeesInWhole J (Qof P) (rd c bSweep 7) (L.getD j (0, 0, 0)) (R.getD j (0, 0, 0, 0))
-
-/-- The cost of the sweep. -/
-def SwCost (κ : ℕ → ℕ) (F : ℕ → ℕ) (_ : Polygon) (c : Config) : ℕ :=
-  κ (rd c bSweep 6) * (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + rd c bSweep 9 + 1) *
-    (F (rd c bSweep 5) +
-      Nat.clog 2 (c.nmem (rd c bSweep 3) + c.nmem (rd c bSweep 4) + rd c bSweep 9 + 1) + 1)
-
 theorem sweep_meets (hS : SweepSpecH) : ∃ (mk : Stmt → Stmt) (κ : ℕ → ℕ),
     ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop),
       X.CapLocal → Bs ⊆ oracleBands → ShooterOK sh Bs F X Ok →
@@ -82,13 +42,13 @@ theorem cap_frameF {X : MemCtx} (hloc : X.CapLocal) {P : Polygon} {g : ℕ} {B :
 /-- The facts of the fusion's precondition beyond `FCtx`. -/
 structure FPre (P : Polygon) (X : MemCtx) (Ok : Polygon → Model → Prop) (J : Merge.Junction)
     (N₁ N₂ : NF) (c : Config) : Prop where
-  okL : Ok P (chainModel J.left)
-  okR : Ok P (chainModel J.right)
-  okW : Ok P (chainModel J.whole)
-  degL : (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (c.nreg 70006)
-  degR : (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (c.nreg 70006)
-  sgL : (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (c.nreg 70005)
-  sgR : (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (c.nreg 70005)
+  okL : Ok P J.leftModel
+  okR : Ok P J.rightModel
+  okW : Ok P J.wholeModel
+  degL : J.leftModel.DegLe (N₁.F J.leftModel (Qof P)) (c.nreg 70006)
+  degR : J.rightModel.DegLe (N₂.F J.rightModel (Qof P)) (c.nreg 70006)
+  sgL : J.leftModel.Semigranular (N₁.F J.leftModel (Qof P)) (c.nreg 70005)
+  sgR : J.rightModel.Semigranular (N₂.F J.rightModel (Qof P)) (c.nreg 70005)
   holds : X.holds P c.nmem (c.nreg 70008) (c.nreg ALLOC)
   cap : c.nreg 70005 ≤ X.cap P c.nmem (c.nreg 70008)
 
@@ -100,9 +60,9 @@ theorem FPre.keep {P : Polygon} {X : MemCtx} {Ok : Polygon → Model → Prop} {
   have e5 := hr 70005 (by norm_num) (by norm_num)
   have e6 := hr 70006 (by norm_num) (by norm_num)
   have e8 := hr 70008 (by norm_num) (by norm_num)
-  refine ⟨o1, o2, o3, by rw [e6]; exact d1, by rw [e6]; exact d2, by rw [e5]; exact s1,
-    by rw [e5]; exact s2, by rw [e8]; exact holds_frameF hh hf, ?_⟩
-  rw [e5, e8, cap_frameF hloc hh hf]; exact hc
+  refine ⟨o1, o2, o3, by rwa [e6], by rwa [e6], by rwa [e5],
+    by rwa [e5], by rw [e8]; exact holds_frameF hh hf, ?_⟩
+  rwa [e5, e8, cap_frameF hloc hh hf]
 
 theorem junctionWF_mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {bl br bw : ℕ}
     (h : JunctionWF P E m bl br bw) (hE : E ≤ E') : JunctionWF P E' m bl br bw :=
@@ -125,11 +85,11 @@ theorem swSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       c'.nreg 240008 = c.nreg S ∧ c'.nreg 240009 = c.nreg Lr ∧ c'.nreg 240010 = c.nreg 70008 ∧
       c'.nreg (Lr + 24 + 2 * i) = c.nreg Lr ∧
       (∀ r, bandOf r ≠ bSweep → r ≠ Lr + 24 + 2 * i → c'.nreg r = c.nreg r) ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   unfold swSet
   exec_block
   all_goals try omega
-  refine ⟨rfl, fun j hj => ?_, ?_, ?_, ?_, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨rfl, fun j hj => ?_, ?_, ?_, ?_, ?_, ?_, fun r h1 h2 => ?_, by and_intros <;> rfl⟩
   · interval_cases j <;> simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, Nat.add_zero]
   all_goals try (simp (disch := omega) only [Machine.upd_same,
@@ -180,7 +140,7 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   obtain ⟨c₁, k₁, e₁, hk₁, q0, q7, q8, q9, q10, q24, qr, qm, qrr, qrm, qo⟩ :=
     swSet_exec (P := P) c hw hi hW1 hS hLr
   have w₁ := e₁.wb_right
-  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr _ (by decide) (by unfold ALLOC; omega)
+  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr _ (by decide) (by reg_omega)
   have F₁ : Frame FB c c₁ k₁ := ⟨fun r hr ha => qr r (fun h => hr (h ▸ band24)) (fun h => hr (by
       rw [h]; unfold bandOf; rw [show (Lr + 24 + 2 * i) / 10000 = 7 by omega]; exact band7)),
     fun r _ => by rw [qrr], fun a _ => by rw [qm], fun a _ => by rw [qrm], qo, by rw [a₁],
@@ -215,12 +175,11 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, t0, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN RB 240011]) c₂ c₃ k₃ ∧ k₃ = 1 ∧ c₃.nreg RB = c₂.nreg 240011 ∧
-      (∀ r, r ≠ RB → c₃.nreg r = c₂.nreg r) ∧ c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg ∧
-      c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
+      (Machine.NRegEqExcept RB c₂ c₃) ∧ Machine.NatRegFrame c₂ c₃ := by
     exec_block
-    refine ⟨rfl, ?_, fun r h => ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨rfl, ?_, fun r h => ?_, by and_intros <;> rfl⟩
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
-  have hRBA : RB ≠ ALLOC := by unfold ALLOC; omega
+  have hRBA : RB ≠ ALLOC := by reg_omega
   have F₃ : Frame FB c₂ c₃ k₃ := ⟨fun r hr ha => tr r (fun h => hr (by
       rw [h]; unfold bandOf; rw [show RB / 10000 = 7 by omega]; exact band7)),
     fun r _ => by rw [trr], fun a _ => by rw [tm], fun a _ => by rw [trm], tou,
@@ -237,7 +196,7 @@ theorem swStage_exec {mk : Stmt} {κs F : ℕ → ℕ} {X : MemCtx} {Ok : Polygo
   · exact hsees
   · have hA : r ≠ ALLOC := by intro h; rw [h] at h1; exact absurd h1 (by decide)
     rw [tr r h2, F₂.1 r (hband r h1) hA, qr r (by rw [h1]; decide) h3]
-  · rw [tr _ (Ne.symm hRB'), F₂.1 _ (hband _ (by unfold bandOf bFuse; omega)) (by unfold ALLOC; omega),
+  · rw [tr _ (Ne.symm hRB'), F₂.1 _ (hband _ (by reg_omega)) (by reg_omega),
       q24, hLl]
 
 end

@@ -176,13 +176,13 @@ variable {Q : Polygon} {N : NF} {reg : ℕ → Set Point}
 theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : TrapData Q)
     (hD : D.region = reg ri) : trapOf (revOf Q) Q.n N ri = Final.trapRecOf D := by
   have hQ := H.simple
-  have hn3 : 3 ≤ Q.n := hQ.1
+  have hn3 := hQ.1
   have hi := D.isTrap.hi
   have hj := D.isTrap.hj
   have hpi := inp_lt (b := revOf Q) hi
   have hpj := inp_lt (b := revOf Q) hj
-  have htn := D.top_lt hQ
-  have hbn := D.bot_lt hQ
+  
+  
   have hy1 := D.bot_snd hQ
   have hy2 := D.top_snd hQ
   set L := (N.region ri).chords.map N.chord with hL
@@ -191,7 +191,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       (wv (revOf Q) Q.n c.rp ≠ c.h → c.rp = inp (revOf Q) Q.n D.j) := by
     intro c hc
     obtain ⟨k, hk, rfl⟩ := List.mem_map.1 hc
-    have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
+    have hkN := (((H.regs ri hr).1 k).1 hk).1
     obtain ⟨f1, f2, f3, f4⟩ := H.facts hr D hD hk
     obtain ⟨hlp, hrp, -⟩ := rec_attach H.nf hkN
     refine ⟨f1, f2, fun h => ?_, fun h => ?_⟩
@@ -211,7 +211,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
   have peak : a.hT = false → wv (revOf Q) Q.n (inp (revOf Q) Q.n D.i) = D.top ∧
       wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.j)) = D.top := by
     intro h
-    have hno : ∀ k ∈ (N.region ri).chords, (N.chord k).dn ≠ ri := fun k hk hdn => by
+    have hno := fun k hk hdn => by
       have := fT.2 ⟨_, hmemk k hk, hdn⟩; rw [h] at this; exact Bool.false_ne_true this
     obtain ⟨e1, e2⟩ := OutGeom.top_empty hQ H.dh D (H.no_top hr D hD hno)
     exact ⟨walk_left_upper hQ D (OutGeom.top_left_upper hQ D e1),
@@ -219,7 +219,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
   have valley : a.hB = false → wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.i)) = D.bot ∧
       wv (revOf Q) Q.n (inp (revOf Q) Q.n D.j) = D.bot := by
     intro h
-    have hno : ∀ k ∈ (N.region ri).chords, (N.chord k).dn = ri := fun k hk => by
+    have hno := fun k hk => by
       by_contra hdn
       have := fB.2 ⟨_, hmemk k hk, hdn⟩; rw [h] at this; exact Bool.false_ne_true this
     obtain ⟨e1, e2⟩ := OutGeom.bot_empty hQ H.dh D (H.no_bot hr D hD hno)
@@ -228,8 +228,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
   have noL : a.hL = false → wv (revOf Q) Q.n (inp (revOf Q) Q.n D.i) = D.top ∧
       wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.i)) = D.bot := by
     intro h
-    have hall : ∀ k ∈ (N.region ri).chords,
-        wv (revOf Q) Q.n (N.chord k).lp = (N.chord k).h := fun k hk => by
+    have hall := fun k hk => by
       by_contra hne
       have := fL.2 ⟨_, hmemk k hk, hne⟩; rw [h] at this; exact Bool.false_ne_true this
     obtain ⟨e1, e2⟩ := H.all_left hr D hD hall
@@ -238,8 +237,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
   have noR : a.hR = false → wv (revOf Q) Q.n (nxt Q.n (inp (revOf Q) Q.n D.j)) = D.top ∧
       wv (revOf Q) Q.n (inp (revOf Q) Q.n D.j) = D.bot := by
     intro h
-    have hall : ∀ k ∈ (N.region ri).chords,
-        wv (revOf Q) Q.n (N.chord k).rp = (N.chord k).h := fun k hk => by
+    have hall := fun k hk => by
       by_contra hne
       have := fR.2 ⟨_, hmemk k hk, hne⟩; rw [h] at this; exact Bool.false_ne_true this
     obtain ⟨e1, e2⟩ := H.all_right hr D hD hall
@@ -252,10 +250,8 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     simp only [Bool.not_eq_true] at hcon
     obtain ⟨p1, p2⟩ := peak hcon.1
     obtain ⟨v1, v2⟩ := valley hcon.2
-    have e1 : inp (revOf Q) Q.n D.i = nxt Q.n (inp (revOf Q) Q.n D.j) :=
-      wv_inj hpi (nxt_lt hpj) (p1.trans p2.symm)
-    have e2 : inp (revOf Q) Q.n D.j = nxt Q.n (inp (revOf Q) Q.n D.i) :=
-      wv_inj hpj (nxt_lt hpi) (v2.trans v1.symm)
+    have e1 := wv_inj hpi (nxt_lt hpj) (p1.trans p2.symm)
+    have e2 := wv_inj hpj (nxt_lt hpi) (v2.trans v1.symm)
     rw [e2] at e1
     unfold nxt at e1
     split_ifs at e1 <;> omega
@@ -263,7 +259,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     by_contra hcon
     push Not at hcon
     simp only [Bool.not_eq_true] at hcon
-    have hempty : ∀ k ∈ (N.region ri).chords, False := fun k hk => by
+    have hempty := fun k hk => by
       have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
       refine H.not_both hkN ?_ ?_
       · by_contra hne
@@ -282,12 +278,11 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       inp (revOf Q) Q.n D.i := by
     cases hLa : a.hL
     · cases hTa : a.hT
-      · have hRa : a.hR = true := hLR.resolve_left (by rw [hLa]; decide)
+      · have hRa := hLR.resolve_left (by rw [hLa]; decide)
         simp only [Bool.false_eq_true, ite_false]
         rw [vR hRa]
         exact (wv_inj (nxt_lt hpj) hpi ((peak hTa).2.trans (peak hTa).1.symm))
-      · simp only [Bool.false_eq_true, ite_false, ite_true]
-        rw [vT hTa, ← (noL hLa).1, wv_wv hpi]
+      simp [Bool.false_eq_true, vT hTa, ← (noL hLa).1, wv_wv hpi]
     · simp only [ite_true]; exact vL hLa
   have hpr : (if a.hR then a.pr else if a.hB then wv (revOf Q) Q.n a.vb
       else nxt Q.n (inp (revOf Q) Q.n D.i)) = inp (revOf Q) Q.n D.j := by
@@ -295,8 +290,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     · cases hBa : a.hB
       · simp only [Bool.false_eq_true, ite_false]
         exact wv_inj (nxt_lt hpi) hpj ((valley hBa).1.trans (valley hBa).2.symm)
-      · simp only [Bool.false_eq_true, ite_false, ite_true]
-        rw [vB hBa, ← (noR hRa).2, wv_wv hpj]
+      simp [Bool.false_eq_true, vB hBa, ← (noR hRa).2, wv_wv hpj]
     · simp only [ite_true]; exact vR hRa
   simp only [trapOf, finish, ← ha]
   rw [hpl, hpr]
@@ -317,7 +311,7 @@ theorem table_ok (H : RegCtx Q N reg) :
     rw [← model_regions H.full]; exact H.corr.1 s hs
   set Dof : ∀ s, s ∈ List.range N.nRegions → TrapData Q := fun s hs =>
     Classical.choose (exists_trapData hQ (hregQ s (List.mem_range.1 hs))) with hDof
-  have hDspec : ∀ s hs, (Dof s hs).region = reg s := fun s hs =>
+  have hDspec := fun s hs =>
     Classical.choose_spec (exists_trapData hQ (hregQ s (List.mem_range.1 hs)))
   refine ⟨(List.range N.nRegions).pmap Dof (fun _ h => h), ?_, ?_, fun R => ⟨fun hR => ?_, ?_⟩⟩
   · rw [List.map_pmap]
@@ -365,7 +359,7 @@ theorem chords_length_le (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) 
     intro x hx
     rw [List.mem_toFinset, List.mem_map] at hx
     obtain ⟨k, hk, rfl⟩ := hx
-    have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
+    have hkN := (((H.regs ri hr).1 k).1 hk).1
     obtain ⟨v, σ, hv, hσ, -, hS, -⟩ := chords_spec hQ (rec_chords H.full hkN)
     have hvh : v = (N.chord k).h := by
       have e : hseg (Q.vtx v).2 (min (Q.vtx v).1 (chordEnd Q v σ).1)
@@ -377,7 +371,7 @@ theorem chords_length_le (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) 
       by_contra hne
       exact H.dh _ _ hv (H.hlt k hkN) hne e1
     obtain ⟨f1, f2, -, -⟩ := H.facts hr D hD hk
-    have hfk : f k = chordSet Q (N.chord k).h σ := by rw [hf]; simp only; rw [hS, hvh]
+    have hfk : f k = chordSet Q (N.chord k).h σ := by simp_all
     rw [hfk, hT]
     by_cases hdn : (N.chord k).dn = ri
     · rw [f1 hdn]; rcases hσ with rfl | rfl <;> simp

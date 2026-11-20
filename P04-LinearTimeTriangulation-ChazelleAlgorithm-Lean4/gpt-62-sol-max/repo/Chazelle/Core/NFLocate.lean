@@ -113,10 +113,15 @@ theorem cRec_ext {a b : CRec} (h1 : a.h = b.h) (h2 : a.lp = b.lp) (h3 : a.rp = b
   obtain ⟨_, _, _, _, _⟩ := b
   simp_all
 
+section
+
+variable {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N')
+include h h'
+
 /-- The layout determines the arc records. -/
-theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_arcs_eq :
     N'.arcs = N.arcs := by
-  have hl : N'.arcs.length = N.arcs.length := h'.2.1.symm.trans h.2.1
+  have hl := h'.2.1.symm.trans h.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.1 j hj'
@@ -128,9 +133,9 @@ theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
 /-- The layout determines the chord records. -/
-theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
+theorem nfAt_chords_eq :
     N'.chords = N.chords := by
-  have hl : N'.chords.length = N.chords.length := h'.1.symm.trans h.1
+  have hl := h'.1.symm.trans h.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.1 j hj'
@@ -140,6 +145,8 @@ theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) 
   rw [← a1, ← a2]
   exact cRec_ext (e'.1.symm.trans e.1) (e'.2.1.symm.trans e.2.1) (e'.2.2.1.symm.trans e.2.2.1)
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
+
+end
 
 /-! ## Correctness of the procedure -/
 

@@ -38,18 +38,18 @@ variable (J : Merge.Junction)
 split vertex (for instance at a point of `C₂` other than the top of `C₂`, or inside a walk edge);
 then its side labels are the regions of `S₂` on the same side of `c`. -/
 theorem sideLabel_sub (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {c f : Set Point} (hc : c ∈ S₂)
+    {S₂ : Set (Set Point)} (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {c f : Set Point} (hc : c ∈ S₂)
     (hf : f ∈ F₂plus J S₂) (hfc : f ⊆ c) {pB : ℕ} {tB : ℝ}
-    (hB : SideAttach (chainModel J.whole).W f pB tB)
-    (h0 : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB))
-    (hL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
+    (hB : SideAttach J.wholeModel.W f pB tB)
+    (h0 : 0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB))
+    (hL : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pB + tB) <
       ((rL1 J + rL2 J : ℕ) : ℝ))
-    (hns : tB = 0 → sidePt (chainModel J.whole).W pB tB ≠ J.right.top)
+    (hns : tB = 0 → sidePt J.wholeModel.W pB tB ≠ J.right.top)
     {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {V : Set Point}
-    (hV : V ∈ (chainModel J.right).regions S₂) (hVs : SideOf (chainModel J.right) ρ c V) :
+    (hV : V ∈ J.rightModel.regions S₂) (hVs : SideOf J.rightModel ρ c V) :
     SideLabel J S₂ f ρ V := by
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
+  have hS₂a := hS₂.2.1
   obtain ⟨d, hd, hd0, hpd⟩ := stretch_decomp J hP hS₂a hS₂.1 hB.1 hB.2.1 hB.2.2.1 h0 hL
   have hns' := hns
   rw [hpd] at hB hns'

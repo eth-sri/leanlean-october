@@ -47,8 +47,8 @@ open Chazelle.Geometry (lerp point_ext point_ext_iff mem_convexHull_triple add_f
 theorem hull_aux {w₂ w₃ d₂ d₃ e₂ e₃ : ℝ} (hw₂ : 0 ≤ w₂) (hw₃ : 0 ≤ w₃) (hd₂ : 0 ≤ d₂)
     (hd₃ : 0 ≤ d₃) (he₂ : d₂ = 0 → 0 ≤ e₂) (he₃ : d₃ = 0 → 0 ≤ e₃) :
     0 < w₂ * d₂ + w₃ * d₃ ∨ (w₂ * d₂ + w₃ * d₃ = 0 ∧ 0 ≤ w₂ * e₂ + w₃ * e₃) := by
-  have h2 : 0 ≤ w₂ * d₂ := mul_nonneg hw₂ hd₂
-  have h3 : 0 ≤ w₃ * d₃ := mul_nonneg hw₃ hd₃
+  have h2 := mul_nonneg hw₂ hd₂
+  have h3 := mul_nonneg hw₃ hd₃
   by_cases h : w₂ * d₂ + w₃ * d₃ = 0
   · right
     refine ⟨h, ?_⟩
@@ -107,59 +107,55 @@ theorem ylexLE_of_mem_convexHull_max {a b c p : Point} (hac : ylexLE a c) (hbc :
 /-- `getD` of a reversed list. -/
 theorem getD_reverse (s : List ℕ) {i : ℕ} (hi : i < s.length) :
     s.reverse.getD i 0 = s.getD (s.length - 1 - i) 0 := by
-  rw [getD_eq_getElem_of_lt _ _ (by rw [List.length_reverse]; exact hi),
-    getD_eq_getElem_of_lt _ _ (by omega), List.getElem_reverse]
+  simp (disch := assumption) [List.getElem_reverse, *]
 
 /-- `getD` on the left part of an append. -/
 theorem getD_append_of_lt (A B : List ℕ) {i : ℕ} (hi : i < A.length) :
     (A ++ B).getD i 0 = A.getD i 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_left hi]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_append_left hi]
 
 /-- `getD` on the right part of an append. -/
 theorem getD_append_of_le (A B : List ℕ) {i : ℕ} (hi : A.length ≤ i) :
     (A ++ B).getD i 0 = B.getD (i - A.length) 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_right hi]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_append_right hi]
 
 /-- The entry of `A ++ x :: B` at position `A.length + i` is the entry of `x :: B` at `i`. -/
 theorem getD_append_cons (A : List ℕ) (x : ℕ) (B : List ℕ) (i : ℕ) :
     (A ++ x :: B).getD (A.length + i) 0 = (x :: B).getD i 0 := by
-  rw [getD_append_of_le _ _ (by omega), Nat.add_sub_cancel_left]
+  ram_simp [getD_append_of_le, Nat.add_sub_cancel_left]
 
 /-- The entry of `A ++ x :: B` at position `A.length` is `x`. -/
 theorem getD_append_length (A : List ℕ) (x : ℕ) (B : List ℕ) :
     (A ++ x :: B).getD A.length 0 = x := by
-  rw [← Nat.add_zero A.length, getD_append_cons, List.getD_cons_zero]
+  simp
 
 /-- An in-range `getD` entry is a member. -/
 theorem getD_mem (l : List ℕ) {i : ℕ} (hi : i < l.length) : l.getD i 0 ∈ l := by
-  rw [getD_eq_getElem_of_lt _ _ hi]; exact List.getElem_mem hi
+  simp_all
 
 /-- In a `Nodup` list, equal in-range entries have equal positions. -/
 theorem getD_inj_of_nodup {l : List ℕ} (hnd : l.Nodup) {i j : ℕ} (hi : i < l.length)
     (hj : j < l.length) (h : l.getD i 0 = l.getD j 0) : i = j := by
-  rw [getD_eq_getElem_of_lt _ _ hi, getD_eq_getElem_of_lt _ _ hj] at h
-  exact hnd.getElem_inj_iff.1 h
+  simp_all
 
 /-- Rotating forward by `r` and then by `l.length - r % l.length` is the identity. -/
 theorem rotate_rotate_cancel {α : Type} (l : List α) (r : ℕ) :
     (l.rotate r).rotate (l.length - r % l.length) = l := by
   rcases Nat.eq_zero_or_pos l.length with h0 | hpos
-  · rw [List.length_eq_zero_iff.1 h0]; simp
+  · simp_all
   · rw [List.rotate_rotate]
     have hmod := Nat.mod_lt r hpos
     have hdiv := Nat.div_add_mod r l.length
     have e : r + (l.length - r % l.length) = l.length * (r / l.length + 1) := by
       rw [Nat.mul_succ]
       omega
-    rw [e, List.rotate_length_mul]
+    simp_all
 
 /-- The clipped list of `A ++ b :: c :: B` at the position of `c` is `A ++ b :: B`, rotated by
 `A.length`. -/
 theorem clipList_append_cons_cons (A : List ℕ) (b c : ℕ) (B : List ℕ) :
     clipList (A ++ b :: c :: B) (A.length + 1) = (A ++ b :: B).rotate A.length := by
-  rw [clipList_eq_rotate_eraseIdx _ (by omega), Nat.add_sub_cancel, List.rotate_append_length_eq,
-    List.rotate_append_length_eq]
-  simp
+  simp [clipList_eq_rotate_eraseIdx, List.rotate_append_length_eq]
 
 /-- The emitted triangle at the position of `c` in `A ++ b :: c :: k :: B` is `(b, c, k)`. -/
 theorem earTri_append (A : List ℕ) (b c k : ℕ) (B : List ℕ) :
@@ -169,8 +165,8 @@ theorem earTri_append (A : List ℕ) (b c k : ℕ) (B : List ℕ) :
   rw [hlen]
   have e1 : (A.length + 1 + (A.length + 3 + B.length) - 1) % (A.length + 3 + B.length) =
       A.length := by
-    rw [show A.length + 1 + (A.length + 3 + B.length) - 1 = A.length + (A.length + 3 + B.length)
-      by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+    ram_rw [show A.length + 1 + (A.length + 3 + B.length) - 1 = A.length + (A.length + 3 + B.length)
+      by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
   have e2 : (A.length + 1 + 1) % (A.length + 3 + B.length) = A.length + 2 :=
     Nat.mod_eq_of_lt (by omega)
   rw [e1, e2, getD_append_length, getD_append_cons, getD_append_cons]
@@ -193,7 +189,7 @@ theorem three_le_length_of_goodTri {l : List ℕ} {T : List Polygon.Triangle}
   by_contra hlt
   have hT0 : T' = [] := by
     rw [List.length_eq_zero_iff.symm]; omega
-  have hl2 : l.length = 2 := by omega
+  
   have hfill := hT'.2.2.1
   rw [hT0] at hfill
   have h0 : (subPoly P l).vtx 0 ∈ (subPoly P l).filled :=
@@ -230,14 +226,12 @@ theorem goodTri_rotate {l : List ℕ} {T : List Polygon.Triangle} (h : GoodTri P
       omega
     rw [e, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hi]
   obtain ⟨t1, t2, t3⟩ := t
-  simp only [Function.comp, relabelList, relabel_fst, relabel_snd_fst, relabel_snd_snd,
-    n_subPoly, List.length_rotate]
-  rw [key _ h1, key _ h2, key _ h3]
+  simp_all only [Function.comp, relabelList, relabel_fst, relabel_snd_fst, relabel_snd_snd, n_subPoly, List.length_rotate]
 
 /-- The one-triangle case. -/
 theorem goodTri_triangle {l : List ℕ} (hQ : (subPoly P l).Simple) (h3 : l.length = 3) :
     GoodTri P l [(l.getD 0 0, l.getD 1 0, l.getD 2 0)] :=
-  ⟨[(0, 1, 2)], weakTriangulates_triangle _ hQ (by rw [n_subPoly]; exact h3), rfl⟩
+  ⟨[(0, 1, 2)], weakTriangulates_triangle _ hQ (by simp_all), rfl⟩
 
 /-- Clipping an ear (position `p` of `l`) extends a relabelled weak triangulation. -/
 theorem goodTri_clipList {l : List ℕ} {p : ℕ} (h3 : 3 ≤ l.length) (hp : p < l.length)
@@ -251,7 +245,7 @@ theorem goodTri_clipList {l : List ℕ} {p : ℕ} (h3 : 3 ≤ l.length) (hp : p 
   apply List.map_congr_left
   intro t ht
   obtain ⟨h1, h2, h3', -⟩ := hT'.1 t ht
-  rw [n_subPoly, length_clipList l p (by omega)] at h1 h2 h3'
+  ram_rw [n_subPoly, length_clipList l p] at h1 h2 h3'
   exact (relabelList_clipRelabel l p h3 ⟨h1, h2, h3'⟩).symm
 
 /-- **Popping an ear.**  If the corner at `c` in `A ++ b :: c :: k :: B` is an ear of the
@@ -277,8 +271,7 @@ theorem weakTriangulates_of_goodTri_range {T : List Polygon.Triangle}
     intro t ht
     obtain ⟨h1, h2, h3, -⟩ := hT'.1 t ht
     exact relabelList_range ⟨h1, h2, h3⟩
-  rw [this]
-  exact hT'
+  rwa [this]
 
 /-! ### The invariant of the remaining polygon -/
 
@@ -292,14 +285,18 @@ def Inv (l : List ℕ) : Prop :=
 theorem simple_subPoly_of_rotate {l : List ℕ} {r : ℕ} (h : (subPoly P (l.rotate r)).Simple) :
     (subPoly P l).Simple := by
   have := simple_rotate _ (l.length - r % l.length) h
-  rw [← subPoly_rotate, rotate_rotate_cancel] at this
-  exact this
+  rwa [← subPoly_rotate, rotate_rotate_cancel] at this
 
+section
+
+variable (A : List ℕ) (b c k : ℕ) (B : List ℕ)
+    (hI : Inv P (A ++ b :: c :: k :: B)) (h4 : 4 ≤ (A ++ b :: c :: k :: B).length)
+
+include hI h4 in
 /-- **A convex corner of a sorted remaining polygon is an ear.**  In `l = A ++ b :: c :: k :: B`
 with `Inv P l` and at least four entries, if `0 < orient P * det (vtx b) (vtx c) (vtx k)` then
 position `A.length + 1` (the vertex `c`) is the apex of an ear of `subPoly P l`. -/
-theorem isEar_of_convex_corner (A : List ℕ) (b c k : ℕ) (B : List ℕ)
-    (hI : Inv P (A ++ b :: c :: k :: B)) (h4 : 4 ≤ (A ++ b :: c :: k :: B).length)
+theorem isEar_of_convex_corner
     (hconv : 0 < orient P * det (P.vtx b) (P.vtx c) (P.vtx k)) :
     IsEar (subPoly P (A ++ b :: c :: k :: B)) (A.length + 1) := by
   obtain ⟨hnd, -, -, hQ, hsort, hor⟩ := hI
@@ -309,19 +306,19 @@ theorem isEar_of_convex_corner (A : List ℕ) (b c k : ℕ) (B : List ℕ)
   have hlen : l.length = A.length + 3 + B.length := by simp [hl]; omega
   have hpl : p < l.length := by omega
   have hprev : prevIdx Q p = A.length := by
-    rw [hQdef, prevIdx_subPoly, hlen,
+    ram_rw [hQdef, prevIdx_subPoly, hlen,
       show p + (A.length + 3 + B.length) - 1 = A.length + (A.length + 3 + B.length) by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      Nat.add_mod_right, Nat.mod_eq_of_lt]
   have hsucc : (p + 1) % Q.n = A.length + 2 := by
     rw [hQdef, n_subPoly, hlen]; exact Nat.mod_eq_of_lt (by omega)
   have ea : Q.vtx (prevIdx Q p) = P.vtx b := by
-    rw [hprev, hQdef, vtx_subPoly_getD P l (by omega), getD_append_length]
+    ram_rw [hprev, hQdef, vtx_subPoly_getD P l, getD_append_length]
   have ev : Q.vtx p = P.vtx c := by
     rw [hQdef, vtx_subPoly_getD P l hpl, hp, getD_append_cons]; rfl
   have eb : Q.vtx ((p + 1) % Q.n) = P.vtx k := by
-    rw [hsucc, hQdef, vtx_subPoly_getD P l (by omega), getD_append_cons]; rfl
+    ram_rw [hsucc, hQdef, vtx_subPoly_getD P l, getD_append_cons]; rfl
   have hdet : det (Q.vtx (prevIdx Q p)) (Q.vtx p) (Q.vtx ((p + 1) % Q.n)) ≠ 0 := by
-    rw [ea, ev, eb]; intro h; rw [h, mul_zero] at hconv; exact lt_irrefl _ hconv
+    rw [ea, ev, eb]; intro h; simp_all
   -- the lexicographic facts
   have hpair := hsort
   rw [hl, List.pairwise_append] at hpair
@@ -332,9 +329,9 @@ theorem isEar_of_convex_corner (A : List ℕ) (b c k : ℕ) (B : List ℕ)
   obtain ⟨hc, hrest⟩ := hrest
   rw [List.pairwise_cons] at hrest
   obtain ⟨hk, -⟩ := hrest
-  have hbc : ylexLE (P.vtx b) (P.vtx c) := ylexLE_of_ylexLT (hb c (by simp))
-  have hbk : ylexLE (P.vtx b) (P.vtx k) := ylexLE_of_ylexLT (hb k (by simp))
-  have hck : ylexLE (P.vtx c) (P.vtx k) := ylexLE_of_ylexLT (hc k (by simp))
+  have hbc := ylexLE_of_ylexLT (hb c (by simp))
+  have hbk := ylexLE_of_ylexLT (hb k (by simp))
+  have hck := ylexLE_of_ylexLT (hc k (by simp))
   have hnone_elem : ∀ x ∈ l, x ≠ b → x ≠ c → x ≠ k →
       P.vtx x ∉ convexHull ℝ ({P.vtx b, P.vtx c, P.vtx k} : Set Point) := by
     intro x hx hxb hxc hxk hmem
@@ -360,8 +357,8 @@ theorem isEar_of_convex_corner (A : List ℕ) (b c k : ℕ) (B : List ℕ)
       exact hj2 (getD_inj_of_nodup hnd hj hpl (by rw [h, hp, getD_append_cons]; rfl))
     · intro h
       exact hj3 (getD_inj_of_nodup hnd hj (by omega) (by rw [h, getD_append_cons]; rfl))
-  rw [isEar_iff_convex_of_empty hQ (by rw [hQdef, n_subPoly]; exact h4)
-    (by rw [hQdef, n_subPoly]; exact hpl) hdet hnone, ea, ev, eb, hor]
+  rw [isEar_iff_convex_of_empty hQ (by rwa [hQdef, n_subPoly])
+    (by rwa [hQdef, n_subPoly]) hdet hnone, ea, ev, eb, hor]
   exact hconv
 
 /-- The list after a pop is a sublist of the list before. -/
@@ -381,9 +378,9 @@ theorem filled_clip_subset {Q : Polygon} (hQ : Q.Simple) {p : ℕ} (hp : p < Q.n
     exact he.2
   exact filled_arc_subset Q hQ hd hin
 
+include hI h4 in
 /-- **Popping an ear preserves the invariant.** -/
-theorem inv_pop (A : List ℕ) (b c k : ℕ) (B : List ℕ) (hI : Inv P (A ++ b :: c :: k :: B))
-    (h4 : 4 ≤ (A ++ b :: c :: k :: B).length)
+theorem inv_pop
     (he : IsEar (subPoly P (A ++ b :: c :: k :: B)) (A.length + 1)) :
     Inv P (A ++ b :: k :: B) := by
   obtain ⟨hnd, hlt, -, hQ, hsort, hor⟩ := hI
@@ -401,22 +398,24 @@ theorem inv_pop (A : List ℕ) (b c k : ℕ) (B : List ℕ) (hI : Inv P (A ++ b 
   have hfill : (subPoly P l').filled ⊆ (subPoly P l).filled := by
     have e1 : (subPoly P l').filled = (subPoly P (clipList l (A.length + 1))).filled := by
       rw [clipList_append_cons_cons, subPoly_rotate, filled_rotate]
-    rw [e1, subPoly_clipList_eq P l _ (by omega) (by omega), filled_rotate]
+    ram_rw [e1, subPoly_clipList_eq P l, filled_rotate]
     exact filled_clip_subset hQ (by rw [n_subPoly]; omega) he
   have key := orient_eq_of_filled_subset hQ' hQ (i := l'.length - 1) (j := l.length - 1)
     (by rw [n_subPoly]; omega) (by rw [n_subPoly]; omega) ?_ ?_ hfill
   · rw [← hor, key]
-  · rw [vtx_subPoly_getD P l' (by omega), vtx_subPoly_getD P l (by omega), hlen', hlen,
+  · ram_rw [vtx_subPoly_getD P l', vtx_subPoly_getD P l, hlen', hlen,
       show A.length + 2 + B.length - 1 = A.length + (B.length + 1) by omega,
       show A.length + 3 + B.length - 1 = A.length + (B.length + 1 + 1) by omega,
       getD_append_cons, getD_append_cons]
-    simp only [List.getD_cons_succ]
+    rfl
   · have e1 : (l'.length - 1 + 1) % (subPoly P l').n = 0 := by
-      rw [n_subPoly, Nat.sub_add_cancel (by omega), Nat.mod_self]
+      ram_simp [n_subPoly, Nat.sub_add_cancel, Nat.mod_self]
     have e2 : (l.length - 1 + 1) % (subPoly P l).n = 0 := by
-      rw [n_subPoly, Nat.sub_add_cancel (by omega), Nat.mod_self]
-    rw [e1, e2, vtx_subPoly_getD P l' (by omega), vtx_subPoly_getD P l (by omega)]
+      ram_simp [n_subPoly, Nat.sub_add_cancel, Nat.mod_self]
+    ram_rw [e1, e2, vtx_subPoly_getD P l', vtx_subPoly_getD P l]
     rcases A with _ | ⟨a, A⟩ <;> rfl
+
+end
 
 /-! ### The reflex stack -/
 
@@ -432,7 +431,7 @@ theorem reflexIdx_pop {σ : ℝ} {c : ℕ} {s : List ℕ} (h : ReflexIdx P σ (c
     ReflexIdx P σ s := by
   intro i hi
   have := h (i + 1) (by simp; omega)
-  simpa only [List.getD_cons_succ] using this
+  assumption
 
 /-- Pushing `k` preserves the reflex property provided the new top corner is not strictly
 convex. -/
@@ -458,13 +457,13 @@ theorem exists_two_ears {Q : Polygon} (hQ : Q.Simple) (h4 : 4 ≤ Q.n) :
       (p + 1) % Q.n ≠ q ∧ (q + 1) % Q.n ≠ p := by
   obtain ⟨s, L, hd, hin⟩ := exists_diagonal hQ h4
   have hn : 0 < Q.n := by omega
-  have hL2 : 2 ≤ L := hd.1
-  have hLn : L + 2 ≤ Q.n := hd.2.1
+  
+  have hLn := hd.2.1
   obtain ⟨k₁, hk₁0, hk₁, he₁⟩ := exists_ear_in_arc Q hQ hd hin
   have hd' := isDiagonal_compl Q s L hd
   have hin' : Chazelle.segment (Q.vtx ((s + L) % Q.n % Q.n))
       (Q.vtx (((s + L) % Q.n + (Q.n - L)) % Q.n)) ⊆ Q.filled := by
-    rw [Nat.mod_mod, compl_arc_last_index Q s L (by omega), segment_comm]; exact hin
+    ram_simp [Nat.mod_mod, compl_arc_last_index, segment_comm] <;> omega
   obtain ⟨k₂, hk₂0, hk₂, he₂⟩ := exists_ear_in_arc Q hQ hd' hin'
   rw [compl_arc_index, Nat.add_assoc] at he₂
   refine ⟨(s + k₁) % Q.n, (s + (L + k₂)) % Q.n, Nat.mod_lt _ hn, Nat.mod_lt _ hn, he₁, he₂,
@@ -484,7 +483,7 @@ theorem exists_two_ears {Q : Polygon} (hQ : Q.Simple) (h4 : 4 ≤ Q.n) :
     · have hEq : L + k₂ + 1 = Q.n := by omega
       rw [hEq, Nat.add_mod_right] at h
       have := rot_index_inj (n := Q.n) (s := s) (i := 0) (j := k₁) hn (by omega)
-        (by rw [Nat.add_zero]; exact h)
+        (by assumption)
       omega
 
 /-- **The last corner of a reflex chain is convex.**  If every corner at positions
@@ -499,7 +498,7 @@ theorem convex_last_of_reflex {Q : Polygon} (hQ : Q.Simple) (h4 : 4 ≤ Q.n)
     by_contra hcon
     simp only [not_or] at hcon
     have hpos := orient_det_pos_of_isEar hQ hp he
-    rw [prevIdx_eq Q hp, ite_eq_right hcon.2.1, Nat.mod_eq_of_lt (by omega)] at hpos
+    ram_rw [prevIdx_eq Q hp, ite_eq_right hcon.2.1, Nat.mod_eq_of_lt] at hpos
     have := hreflex p (by omega) (by omega)
     linarith
   have conv : ∀ p, p < Q.n → IsEar Q p → p = Q.n - 2 →
@@ -507,19 +506,18 @@ theorem convex_last_of_reflex {Q : Polygon} (hQ : Q.Simple) (h4 : 4 ≤ Q.n)
     intro p hp he hpe
     subst hpe
     have := orient_det_pos_of_isEar hQ hp he
-    rw [prevIdx_eq Q hp, ite_eq_right (by omega), Nat.mod_eq_of_lt (by omega),
+    ram_rw assumption [prevIdx_eq Q hp, ite_eq_right, Nat.mod_eq_of_lt,
       show Q.n - 2 - 1 = Q.n - 3 by omega, show Q.n - 2 + 1 = Q.n - 1 by omega] at this
-    exact this
   obtain ⟨p, q, hp, hq, hep, heq, hpq, hpq1, hqp1⟩ := exists_two_ears hQ h4
   rcases key p hp hep with h | h | h
   · exact conv p hp hep h
   · rcases key q hq heq with h' | h' | h'
     · exact conv q hq heq h'
     · omega
-    · exfalso; apply hqp1; rw [h', h, show Q.n - 1 + 1 = Q.n by omega, Nat.mod_self]
+    simp_all [show Q.n - 1 + 1 = Q.n by omega, Nat.mod_self] 
   · rcases key q hq heq with h' | h' | h'
     · exact conv q hq heq h'
-    · exfalso; apply hpq1; rw [h', h, show Q.n - 1 + 1 = Q.n by omega, Nat.mod_self]
+    · simp_all [show Q.n - 1 + 1 = Q.n by omega, Nat.mod_self] 
     · omega
 
 /-! ### The stack algorithm -/
@@ -597,7 +595,7 @@ theorem walk_of_lt (σ : ℝ) {k : ℕ} (hk : k < P.n) (s : List ℕ) :
   rw [walk, dite_eq_left hk]
 
 theorem walk_of_le (σ : ℝ) {k : ℕ} (hk : P.n ≤ k) (s : List ℕ) : walk P σ k s = ([], s, 0) := by
-  rw [walk, dite_eq_right (by omega)]
+  ram_rw [walk, dite_eq_right]
 
 /-- **The mountain triangulation**: the triangles emitted by the walk started with the stack
 `[1, 0]` at vertex `2`, using the sign `σ` for the convexity tests. -/
@@ -642,7 +640,7 @@ theorem popLoop_spec {σ : ℝ} (hσ : σ = orient P) {k : ℕ} (hk : k < P.n) :
         · have he := isEar_of_convex_corner P rest.reverse b c k R hI h4 (hσ ▸ hconv)
           have hI' := inv_pop P rest.reverse b c k R hI h4 he
           have hI'' : Inv P (stackList P (b :: rest) k) := by
-            rw [stackList_cons P hk]; exact hI'
+            rwa [stackList_cons P hk]
           obtain ⟨h1, h2, h3, h4', h5, h6⟩ :=
             ih (List.cons_ne_nil _ _) hI'' (reflexIdx_pop P hR)
           refine ⟨h1, h2, by simp only [List.length_cons] at h3 ⊢; omega, by simp; omega, h5, ?_⟩
@@ -662,7 +660,7 @@ theorem popLoop_spec {σ : ℝ} (hσ : σ = orient P) {k : ℕ} (hk : k < P.n) :
           rw [popLoop_singleton]
           refine ⟨List.cons_ne_nil _ _, ?_, by simp, by simp, ?_, ?_⟩
           · intro i hi; simp at hi
-          · intro h3; rw [length_stackList, hnk] at h3; simp at h3
+          · simp [length_stackList, hnk]
           · intro T hT
             have := three_le_length_of_goodTri P hT
             rw [length_stackList, hnk] at this; simp at this
@@ -691,27 +689,24 @@ theorem popLoop_last {σ : ℝ} (hσ : σ = orient P) :
     have hn : 1 ≤ P.n := by
       have := hI.2.1 b (by simp [stackList])
       omega
-    have hk : P.n - 1 < P.n := by omega
+    
     have hl : stackList P (c :: b :: rest) (P.n - 1) = rest.reverse ++ b :: c :: [P.n - 1] := by
       rw [stackList_last P hn]; simp
     have hl' : stackList P (b :: rest) (P.n - 1) = rest.reverse ++ b :: [P.n - 1] := by
       rw [stackList_last P hn]; simp
     rw [hl] at hI ⊢
-    have hQ : (subPoly P (rest.reverse ++ b :: c :: [P.n - 1])).Simple := hI.2.2.2.1
-    have hor : orient (subPoly P (rest.reverse ++ b :: c :: [P.n - 1])) = orient P :=
-      hI.2.2.2.2.2
+    have hQ := hI.2.2.2.1
+    have hor := hI.2.2.2.2.2
     -- the corner `(b, c, n - 1)` is strictly convex
     have hconv : 0 < orient P * det (P.vtx b) (P.vtx c) (P.vtx (P.n - 1)) := by
       rcases rest with _ | ⟨a, rest'⟩
       · have h3 := orient_det_pos_of_three hQ (by simp)
         rw [hor] at h3
-        rw [vtx_subPoly_getD P _ (by simp), vtx_subPoly_getD P _ (by simp),
-          vtx_subPoly_getD P _ (by simp)] at h3
-        exact h3
+        assumption
       · set l := (a :: rest').reverse ++ b :: c :: [P.n - 1] with hldef
         set Q := subPoly P l with hQdef
         have hlen4 : 4 ≤ l.length := by simp [hldef]
-        have hQn : Q.n = l.length := n_subPoly P l
+        have hQn := n_subPoly P l
         have hreflex : ∀ j, 1 ≤ j → j + 3 ≤ Q.n →
             orient Q * det (Q.vtx (j - 1)) (Q.vtx j) (Q.vtx (j + 1)) ≤ 0 := by
           intro j hj1 hj3
@@ -722,24 +717,22 @@ theorem popLoop_last {σ : ℝ} (hσ : σ = orient P) :
           have hsl : l.length = s.length + 1 := by rw [hl2]; simp
           have hget : ∀ i, i < s.length → l.getD i 0 = s.getD (s.length - 1 - i) 0 := by
             intro i hi
-            rw [hl2, getD_append_of_lt _ _ (by rw [List.length_reverse]; exact hi), getD_reverse s hi]
-          rw [hQdef, vtx_subPoly_getD P l (by omega), vtx_subPoly_getD P l (by omega),
-            vtx_subPoly_getD P l (by omega), hget _ (by omega), hget _ (by omega),
-            hget _ (by omega), ← hQdef, hor, hσ.symm]
+            rw [hl2, getD_append_of_lt _ _ (by rwa [List.length_reverse]), getD_reverse s hi]
+          ram_rw [hQdef, vtx_subPoly_getD P l, vtx_subPoly_getD P l,
+            vtx_subPoly_getD P l, hget, hget,
+            hget, ← hQdef, hor, hσ.symm]
           have := hR (s.length - 2 - j) (by omega)
-          rw [show s.length - 2 - j + 2 = s.length - 1 - (j - 1) by omega,
+          rwa [show s.length - 2 - j + 2 = s.length - 1 - (j - 1) by omega,
             show s.length - 2 - j + 1 = s.length - 1 - j by omega,
             show s.length - 2 - j = s.length - 1 - (j + 1) by omega] at this
-          exact this
-        have key := convex_last_of_reflex hQ (by rw [hQn]; exact hlen4) hreflex
+        have key := convex_last_of_reflex hQ (by rwa [hQn]) hreflex
         have hlen3 : l.length = (a :: rest').reverse.length + 3 := by simp [hldef]
-        rw [hor, hQn, hlen3, hQdef, vtx_subPoly_getD P l (by omega), vtx_subPoly_getD P l (by omega),
-          vtx_subPoly_getD P l (by omega),
+        ram_rw assumption [hor, hQn, hlen3, hQdef, vtx_subPoly_getD P l, vtx_subPoly_getD P l,
+          vtx_subPoly_getD P l,
           show (a :: rest').reverse.length + 3 - 3 = (a :: rest').reverse.length by omega,
           show (a :: rest').reverse.length + 3 - 2 = (a :: rest').reverse.length + 1 by omega,
           show (a :: rest').reverse.length + 3 - 1 = (a :: rest').reverse.length + 2 by omega,
           hldef, getD_append_length, getD_append_cons, getD_append_cons] at key
-        exact key
     rw [popLoop_cons_cons, ite_eq_left (hσ ▸ hconv)]
     rcases rest with _ | ⟨a, rest'⟩
     · rw [popLoop_singleton]
@@ -777,7 +770,7 @@ theorem walk_spec {σ : ℝ} (hσ : σ = orient P) :
         rw [stackList_push P hk]
         apply h5
         rw [length_stackList]
-        have : 0 < (popLoop P σ k s).2.1.length := List.length_pos_of_ne_nil h1
+        have := List.length_pos_of_ne_nil h1
         omega
       obtain ⟨g1, g2⟩ := ih (k + 1) _ (by omega) hk1 (List.cons_ne_nil _ _) hI' h2
       rw [stackList_push P hk] at g1
@@ -785,7 +778,7 @@ theorem walk_spec {σ : ℝ} (hσ : σ = orient P) :
       simp only [List.length_append]
       omega
     · obtain rfl : k = P.n - 1 := by omega
-      rw [walk_of_le P σ (by omega)]
+      ram_rw [walk_of_le P σ]
       have hs2 : 2 ≤ s.length := by
         have := hI.2.2.1
         rw [length_stackList] at this
@@ -816,7 +809,7 @@ theorem ylexLT_of_lt (hM : IsMountain P) {i j : ℕ} (hij : i < j) (hj : j < P.n
 theorem inv_range (hM : IsMountain P) : Inv P (List.range P.n) := by
   have hP := hM.1
   refine ⟨List.nodup_range, fun x hx => List.mem_range.1 hx,
-    by rw [List.length_range]; exact hP.1, by rw [subPoly_range]; exact hP, ?_,
+    by rw [List.length_range]; exact hP.1, by rwa [subPoly_range], ?_,
     by rw [subPoly_range]⟩
   rw [List.pairwise_iff_getElem]
   intro i j hi hj hij
@@ -829,47 +822,53 @@ theorem stackList_init (h2 : 2 ≤ P.n) : stackList P [1, 0] 2 = List.range P.n 
   obtain ⟨m, hm⟩ : ∃ m, P.n = m + 2 := ⟨P.n - 2, by omega⟩
   simp [stackList, hm, List.range_eq_range', List.range'_succ]
 
+section
+
+variable (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P)
+include hM hσ
+
 /-- **Correctness and cost of the walk on a mountain** (with `σ = orient P`). -/
-theorem mountain_goodTri (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P) :
+theorem mountain_goodTri :
     GoodTri P (List.range P.n) (mountainTriangulation P σ) ∧
       mountainTests P σ ≤ (mountainTriangulation P σ).length + (P.n - 2) := by
-  have h3 : 3 ≤ P.n := hM.1.1
+  have h3 := hM.1.1
   have := walk_spec P hσ (P.n - 2) 2 [1, 0] rfl (by omega) (List.cons_ne_nil _ _)
-    (by rw [stackList_init P (by omega)]; exact inv_range P hM)
+    (by ram_rw [stackList_init P]; exact inv_range P hM)
     (fun i hi => by simp at hi)
-  rw [stackList_init P (by omega)] at this
-  exact this
+  ram_rw assumption [stackList_init P] at this
 
 /-- **The stack algorithm weakly triangulates a monotone mountain.** -/
-theorem mountain_weakTriangulates (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P) :
+theorem mountain_weakTriangulates :
     WeakTriangulates P (mountainTriangulation P σ) :=
   weakTriangulates_of_goodTri_range P (mountain_goodTri P hM hσ).1
 
 /-- **The stack algorithm triangulates a monotone mountain**: for a mountain `P` and the
 orientation sign `σ = orient P`, `mountainTriangulation P σ` is a triangulation of `P`. -/
-theorem mountain_triangulates (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P) :
+theorem mountain_triangulates :
     P.Triangulates (mountainTriangulation P σ) :=
   triangulates_of_weak (mountain_weakTriangulates P hM hσ)
 
 /-- The mountain triangulation has `n - 2` triangles. -/
-theorem length_mountainTriangulation (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P) :
+theorem length_mountainTriangulation :
     (mountainTriangulation P σ).length = P.n - 2 := by
   have := (mountain_weakTriangulates P hM hσ).2.1
   omega
 
 /-- **Operation count**: the walk performs at most `2 * n - 4` corner tests. -/
-theorem mountainTests_le_sub (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P) :
+theorem mountainTests_le_sub :
     mountainTests P σ ≤ 2 * P.n - 4 := by
   have h1 := (mountain_goodTri P hM hσ).2
   have h2 := length_mountainTriangulation P hM hσ
-  have h3 : 3 ≤ P.n := hM.1.1
+  have h3 := hM.1.1
   omega
 
 /-- **Operation count**: the walk performs at most `2 * n` corner tests. -/
-theorem mountainTests_le (hM : IsMountain P) {σ : ℝ} (hσ : σ = orient P) :
+theorem mountainTests_le :
     mountainTests P σ ≤ 2 * P.n := by
   have := mountainTests_le_sub P hM hσ
   omega
+
+end
 
 end
 

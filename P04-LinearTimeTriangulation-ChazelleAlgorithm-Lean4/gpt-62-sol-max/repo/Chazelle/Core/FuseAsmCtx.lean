@@ -31,22 +31,19 @@ structure FCtx (P : Polygon) (W : ℕ) (J : Merge.Junction) (H : Host) (N₁ N�
   gen : SharedGeneric J
   nf₁ : NFWithin c.nmem (c.nreg 70003) A N₁
   nf₂ : NFWithin c.nmem (c.nreg 70004) A N₂
-  is₁ : IsNF (chainModel J.left) (Qof P) N₁
-  is₂ : IsNF (chainModel J.right) (Qof P) N₂
+  is₁ : IsNF J.leftModel (Qof P) N₁
+  is₂ : IsNF J.rightModel (Qof P) N₂
   le : A ≤ c.nreg ALLOC
 
 theorem chainDesc_keep {P : Polygon} {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {H : Host} {C : Chain}
-    (hwf : ChainWF P A m B) (hC : ChainDescAt m B (Qof P) H C) (he : ∀ a, a < A → m' a = m a) :
-    ChainDescAt m' B (Qof P) H C ∧ ChainWF P A m' B := by
-  obtain ⟨-, -, hEb, -⟩ := hwf.2 H C hC
-  have h5 := hwf.1
-  exact ⟨chainDescAt_copy hC hEb he (fun j hj => he _ (by omega)),
-    chainWF_copy hwf hC he (fun j hj => he _ (by omega)) h5 le_rfl⟩
+    (hwf : ChainWF P A m B) (hC : ChainDescAt m B (Qof P) H C) (he : MemEqBelow A m' m) :
+    ChainDescAt m' B (Qof P) H C ∧ ChainWF P A m' B :=
+  hwf.transport hC he le_rfl
 
 theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ N₂ : NF} {A : ℕ}
     {c c' : Config} (h : FCtx P W J H N₁ N₂ A c)
     (hr : ∀ r, 70000 ≤ r → r < 70005 → c'.nreg r = c.nreg r)
-    (hm : ∀ a, a < A → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
+    (hm : MemEqBelow A c'.nmem c.nmem) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     FCtx P W J H N₁ N₂ A c' := by
   obtain ⟨hG, hW, ⟨hl, hr', hw⟩, ⟨wl, wr', ww, hreg⟩, hP, hgen, n₁, n₂, i₁, i₂, hle⟩ := h
   have e0 := hr 70000 (by norm_num) (by norm_num)
@@ -55,8 +52,8 @@ theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ 
   rw [← e0] at hl wl
   rw [← e1] at hr' wr'
   rw [← e2] at hw ww hreg
-  rw [← hr 70003 (by norm_num) (by norm_num)] at n₁
-  rw [← hr 70004 (by norm_num) (by norm_num)] at n₂
+  ram_rw [← hr 70003] at n₁
+  ram_rw [← hr 70004] at n₂
   obtain ⟨kl, kwl⟩ := chainDesc_keep wl hl hm
   obtain ⟨kr, kwr⟩ := chainDesc_keep wr' hr' hm
   obtain ⟨kw, kww⟩ := chainDesc_keep ww hw hm

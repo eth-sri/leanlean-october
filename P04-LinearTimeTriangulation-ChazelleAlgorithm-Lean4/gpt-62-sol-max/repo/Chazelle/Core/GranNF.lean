@@ -49,7 +49,7 @@ theorem mem_F_iff {c : Set Point} : c ∈ N.F M Q ↔ ∃ i, i < N.nChords ∧ c
     obtain ⟨i, hi, e⟩ := List.mem_iff_getElem.1 hr
     refine ⟨i, hi, ?_⟩
     unfold cs NF.chord
-    rw [NFLoc.getD_of_lt _ hi, e]
+    simp_all
   · rintro ⟨i, hi, rfl⟩
     refine ⟨N.chords[i], List.getElem_mem hi, ?_⟩
     unfold cs NF.chord
@@ -108,8 +108,13 @@ omit hN in
 /-- The point of a walk position is the side point at its parameter. -/
 theorem pos_eq_sidePt (x : WPos) : M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
 
+section
+
+variable (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords)
+include hM hi
+
 /-- The two attachments of a record's chord have distinct points. -/
-theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
+theorem lpt_ne_rpt :
     sidePt M.W (N.chord i).lp (M.param Q (N.chord i).lpos) ≠
       sidePt M.W (N.chord i).rp (M.param Q (N.chord i).rpos) := by
   intro he
@@ -121,8 +126,10 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
   have hx : (M.pos Q (N.chord i).lpos).1 = (M.pos Q (N.chord i).rpos).1 := by
     rw [pos_eq_sidePt, pos_eq_sidePt]
     exact congrArg Prod.fst he
-  have ha : a ∈ cs M Q N i := by rw [hcab]; exact Geometry.left_mem_segment a b
-  have hb : b ∈ cs M Q N i := by rw [hcab]; exact Geometry.right_mem_segment a b
+  have ha := Geometry.left_mem_segment a b
+  rw [← hcab] at ha
+  have hb := Geometry.right_mem_segment a b
+  rw [← hcab] at hb
   rw [hset] at ha hb
   obtain ⟨ha1, ha2, ha3⟩ := ha
   obtain ⟨hb1, hb2, hb3⟩ := hb
@@ -130,10 +137,10 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
   exact hab (Prod.ext (by linarith) (by rw [ha1, hb1]))
 
 /-- **The attachments of a record's chord** are at the keys of its two positions. -/
-theorem attach_keys (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) {p : ℕ} {t : ℝ}
+theorem attach_keys {p : ℕ} {t : ℝ}
     (hA : SideAttach M.W (cs M Q N i) p t) :
     (p : ℝ) + t = M.key Q (N.chord i).lpos ∨ (p : ℝ) + t = M.key Q (N.chord i).rpos := by
-  have hc : cs M Q N i ∈ M.Adm := F_adm hN (cs_mem hi)
+  have hc := F_adm hN (cs_mem hi)
   have hL := attach_l hN hi
   have hR := attach_r hN hi
   obtain ⟨hceq, -, hopen, -, -⟩ := hM.attach_seg hc hL hR (lpt_ne_rpt hN hM hi)
@@ -143,13 +150,15 @@ theorem attach_keys (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) {p : ℕ} {t 
   · obtain ⟨e1, e2⟩ := WalkAx.attach_unique hM hc hA hL h
     left; rw [key_lpos, e1, e2]
   · obtain ⟨e1, e2⟩ := WalkAx.attach_unique hM hc hA hR h
-    right; rw [key_rpos, e1, e2]
+    simp [key_rpos, e1, e2]
 
 /-- The two keys of a record differ. -/
-theorem lkey_ne_rkey (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
+theorem lkey_ne_rkey :
     M.key Q (N.chord i).lpos ≠ M.key Q (N.chord i).rpos := by
   rw [key_lpos, key_rpos]
   exact WalkAx.key_ne_of_pt_ne (attach_l hN hi) (attach_r hN hi) (lpt_ne_rpt hN hM hi)
+
+end
 
 /-- **The cuts of a subfamily** are the keys of the positions of its records. -/
 theorem isCut_fam_iff (hM : WalkAx M) (L : Set ℕ) (k : ℝ) :
@@ -255,7 +264,7 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
   obtain ⟨U, V, hU, hV, hUV, hside, htouch⟩ := Chazelle.Core.chordSides_of_system hsys (cs_mem hi)
   obtain ⟨hup, hdn, hCSi⟩ := hCS i hi
   -- a point of the open part of the chord
-  have hc : cs M Q N i ∈ M.Adm := F_adm hNF (cs_mem hi)
+  have hc := F_adm hNF (cs_mem hi)
   obtain ⟨a, b, -, hcab, -, hopen, -, -⟩ := hM.ends _ hc
   set z := Geometry.lerp a b (1 / 2) with hz
   have hzD : z ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
@@ -265,13 +274,9 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
   obtain ⟨δ, ⟨h1, h2⟩, hδ0, hδ1⟩ := ((hside z hzc hzD).and (Ioo_mem_nhdsGT hε₀)).exists
   obtain ⟨e1, e2⟩ := hε δ hδ0 hδ1
   have hUup : U = reg (N.chord i).up := by
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hU (hRC.1 _ hup) with h | h
-    · exact h
-    · exact absurd e1 (h.notMem_of_mem_left h1)
+    exact Chazelle.Chain.regionsIn_eq_of_mem hU (hRC.1 _ hup) h1 e1
   have hVdn : V = reg (N.chord i).dn := by
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hV (hRC.1 _ hdn) with h | h
-    · exact h
-    · exact absurd e2 (h.notMem_of_mem_left h2)
+    exact Chazelle.Chain.regionsIn_eq_of_mem hV (hRC.1 _ hdn) h2 e2
   refine ⟨fun h => hUV (by rw [hUup, hVdn, h]), fun r hr => ?_⟩
   rw [htouch _ (hRC.1 r hr), hUup, hVdn]
   constructor

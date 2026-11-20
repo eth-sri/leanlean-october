@@ -10,9 +10,9 @@ For a valid candidate (`ValidB`), the shot of the test runs on the arcs of its r
 (`nArc`), cut by holes near the candidate:
 
 * `arcs_listed`: every arc of the region is listed in the arc array;
-* `hit_math`: a first hit is the first exit of the ray, the open stretch before it is in the
+* `shot_math`: a first hit is the first exit of the ray, the open stretch before it is in the
   region, the chord to it is admissible, and some position of the far end attaches the chord;
-* `noHit_false`: if the ray leaves the domain, the shot hits.
+  If the ray leaves the domain, the shot hits.
 -/
 
 namespace Chazelle.Core
@@ -45,54 +45,36 @@ theorem arcs_listed (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
   obtain ⟨-, -, hArcs, -⟩ := hregs
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := hNF
   obtain ⟨i, hi, hir, hia, hib⟩ := hArcs.2.2.1 r hr a b hab
-  have hmem : i ∈ (N.region r).arcs := (hArcs.2.2.2 r hr i).2 ⟨hi, hir⟩
+  have hmem := (hArcs.2.2.2 r hr i).2 ⟨hi, hir⟩
   obtain ⟨j, hj, hji⟩ := List.getElem_of_mem hmem
   have hat : arcAt N r j = i := by
     rw [arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some, hji]
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hps : ProperPos M (Qof P) P.n (N.arc i).s := by rw [← hQn]; exact (hpp i hi).1
-  have hpe : ProperPos M (Qof P) P.n (N.arc i).e := by rw [← hQn]; exact (hpp i hi).2
+  have hps : ProperPos M (Qof P) P.n (N.arc i).s := by simp_all
+  have hpe : ProperPos M (Qof P) P.n (N.arc i).e := by simp_all
   refine ⟨j, hj, ?_, ?_⟩
   · rw [harr j hj, nArc, hat, (normOf_facts hps).2.2.2.1, hia]
   · rw [harr j hj, nArc, hat, (normOf_facts hpe).2.2.2.1, hib]
 
 /-- The direction of a bit is `± 1`. -/
-theorem dir_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := dirOf_pm v
+abbrev dir_pm := @Chazelle.Core.Restore.dirOf_pm
 
-/-- **The mathematics of a hit.** -/
-theorem hit_math (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
+/-- Correctness of the shot for a valid candidate. -/
+theorem shot_math (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
     (hregs : NFRegs M (Qof P) N reg) {r : ℕ} (hr : r < N.nRegions) {x : WPos} {σb : ℕ}
     (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n) (hv : ValidB M P N r x σb)
     (htop : ∀ C : Chain, M = chainModel C → (M.pos (Qof P) x).2 ≤ C.top.2)
     {m : ℕ → ℕ} {B : ℕ} {hs : List (WPos × WPos)} {A : Set Point}
     (harr : ∀ j, j < (N.region r).arcs.length → ShotList.arcAt m B j = nArc M (Qof P) N r j)
     (hnear : Near M (Qof P) hs (M.pos (Qof P) x))
-    (hlo : loSet M (Qof P) m B (N.region r).arcs.length hs ⊆ A)
-    (hhi : A ⊆ hiSet M (Qof P) m B (N.region r).arcs.length) {t : ℝ}
-    (hfh : FirstHit A (M.pos (Qof P) x) (dirOf σb) t) :
-    rayPt (M.pos (Qof P) x) (dirOf σb) t ∉ M.D ∧
-      (∀ s, 0 < s → s < t → rayPt (M.pos (Qof P) x) (dirOf σb) s ∈ reg r) ∧
-      chordOf (M.pos (Qof P) x) (dirOf σb) t ∈ M.Adm ∧
-      (∃ p t', SideAttach M.W (chordOf (M.pos (Qof P) x) (dirOf σb) t) p t' ∧
-        sidePt M.W p t' = rayPt (M.pos (Qof P) x) (dirOf σb) t) :=
-  firstHit_exit hGM hNF.1 (hregs.1.1 r hr) (dir_pm σb) (pos_off hGM hxe hx.1 hx.2.1.le)
-    (valid_sound hGM hNF hregs hr hx hxe hv) htop (arcs_listed hNF hregs hr harr) hnear hlo hhi hfh
-
-/-- **The shot hits** when the ray from a valid candidate leaves the domain. -/
-theorem noHit_false (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
-    (hregs : NFRegs M (Qof P) N reg) {r : ℕ} (hr : r < N.nRegions) {x : WPos} {σb : ℕ}
-    (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n) (hv : ValidB M P N r x σb)
-    (htop : ∀ C : Chain, M = chainModel C → (M.pos (Qof P) x).2 ≤ C.top.2)
-    {m : ℕ → ℕ} {B : ℕ} {hs : List (WPos × WPos)} {A : Set Point}
-    (harr : ∀ j, j < (N.region r).arcs.length → ShotList.arcAt m B j = nArc M (Qof P) N r j)
-    (hnear : Near M (Qof P) hs (M.pos (Qof P) x))
-    (hlo : loSet M (Qof P) m B (N.region r).arcs.length hs ⊆ A) {T : ℝ} (hT : 0 < T)
-    (hout : rayPt (M.pos (Qof P) x) (dirOf σb) T ∉ M.D)
-    (hno : NoHit A (M.pos (Qof P) x) (dirOf σb)) : False :=
-  not_noHit hGM hNF.1 (hregs.1.1 r hr) (dir_pm σb) (pos_off hGM hxe hx.1 hx.2.1.le)
-    (valid_sound hGM hNF hregs hr hx hxe hv) htop (arcs_listed hNF hregs hr harr) hnear hlo hT
-    hout hno
-
+    (hlo : loSet M (Qof P) m B (N.region r).arcs.length hs ⊆ A) :
+    (∀ {t}, FirstHit A (M.pos (Qof P) x) (dirOf σb) t →
+      A ⊆ hiSet M (Qof P) m B (N.region r).arcs.length →
+      ExitsAt M (reg r) (M.pos (Qof P) x) (dirOf σb) t) ∧
+    (∀ {T}, 0 < T → rayPt (M.pos (Qof P) x) (dirOf σb) T ∉ M.D →
+      ¬ NoHit A (M.pos (Qof P) x) (dirOf σb)) :=
+  shot_correct hGM hNF.1 (hregs.1.1 r hr) (dir_pm σb) (pos_off hGM hxe hx.1 hx.2.1.le)
+    (valid_sound hGM hNF hregs hr hx hxe hv) htop (arcs_listed hNF hregs hr harr) hnear hlo
 
 /-! ## Sizes of the region records -/
 
@@ -101,7 +83,7 @@ theorem length_le_ncard {α β : Type*} {L : List α} (hL : L.Nodup) {f : α →
     (hS : S.Finite) (hinj : ∀ a ∈ L, ∀ b ∈ L, f a = f b → a = b) (hmem : ∀ a ∈ L, f a ∈ S) :
     L.length ≤ S.ncard := by
   classical
-  have hnd : (L.map f).Nodup := List.Nodup.map_on (fun a ha b hb h => hinj a ha b hb h) hL
+  have hnd := List.Nodup.map_on (fun a ha b hb h => hinj a ha b hb h) hL
   have hlen : L.length = (L.map f).toFinset.card := by
     rw [List.toFinset_card_of_nodup hnd, List.length_map]
   rw [hlen, ← Set.ncard_coe_finset]
@@ -137,8 +119,7 @@ theorem arcs_le_deg {Q : Polygon} (hGM : GoodModel M) (hNF : IsNF M Q N) {reg : 
     exact hArcs.2.1 a b haN hbN (har.trans hbr.symm) (Prod.mk.inj h).1
   · obtain ⟨haN, har⟩ := (hArcs.2.2.2 r hr a).1 ha
     have := (hArcs.1 a haN).2
-    rw [har] at this
-    exact this
+    simp_all
 
 
 /-! ## The run of the test -/
@@ -223,12 +204,12 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
     (valid_rs gKey_ok gLeft_ok turn_ok hE hI₂ (by omega))) (fun c₃ hI₃ hA₃ h₃ => ?_)
   obtain ⟨b10, i10, ag₃⟩ := h₃
   have y11 : c₃.nreg 83011 = 0 := by
-    rw [ag₃ _ (by norm_num) (by norm_num) (by simp [validScr]), z11]
+    ram_rw [ag₃, z11]
   have y14 : c₃.nreg 83014 = 0 := by
-    rw [ag₃ _ (by norm_num) (by norm_num) (by simp [validScr]), z14]
+    ram_rw [ag₃, z14]
   by_cases hv : c₃.nreg 83010 = 1
   · have g : c₃.nreg 83022 < c₃.nreg 83010 := by rw [hI₃.h22, hv]; omega
-    have hV : ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008) := i10.1 hv
+    have hV := i10.1 hv
     have hne := family_ne hE.hNF hE.hr hV.1
     obtain ⟨reg, hregs⟩ := hE.regs
     refine RSB.ifT g (RSB.seq (shotA_rsb hE hI₃ hX hcap hXl hOk hne hsg hsh hBs hB8 hBo
@@ -237,8 +218,8 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
     by_cases hh : c₄.nreg 83011 = 1
     · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes hh
       have g' : c₄.nreg 83022 < c₄.nreg 83011 := by rw [hI₄.h22, hh]; omega
-      obtain ⟨-, -, -, p', t', hatt, hw'⟩ := hit_math hE.hGM hE.hNF hregs hE.hr hE.hxp hE.hxe hV
-        hE.x_top harr hnear hlo hhi hfh
+      obtain ⟨-, -, -, p', t', hatt, hw'⟩ := (shot_math hE.hGM hE.hNF hregs hE.hr hE.hxp hE.hxe hV
+        hE.x_top harr hnear hlo).1 hfh hhi
       have harrival := arrival_of_attach (dir_pm _) hfh.1 hatt hw'
       have hy : ∀ C : Chain, M = chainModel C →
           |(M.pos (Qof P) ⟨c₄.nreg 83012, c₄.nreg 83013⟩).2| < C.radius := fun C hM => by
@@ -247,7 +228,7 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
           C.coordBound_lt_radius
       have hex : ∀ C : Chain, M = chainModel C → ∃ p t, Sweep.Arrival M.W
           (M.pos (Qof P) ⟨c₄.nreg 83012, c₄.nreg 83013⟩) (dirOf (c₀.nreg 83008)) p t :=
-        fun _ _ => ⟨p', t', by rw [hpos]; exact harrival⟩
+        fun _ _ => ⟨p', t', by rwa [hpos]⟩
       refine RSB.ifT g' (RSB.of_RS Finset.subset_union_left
         (postHit_rs hE hI₄ hpp hpe hy hex (by omega))) |>.mono le_rfl (fun c₅ h₅ => ?_)
       obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8, q9, q10⟩ := h₅

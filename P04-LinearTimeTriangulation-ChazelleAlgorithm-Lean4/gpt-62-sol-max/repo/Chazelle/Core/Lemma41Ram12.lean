@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.Lemma41Ram11
 
 /-!
@@ -36,14 +38,14 @@ def TreeSt (P : Polygon) (W : ℕ) (X : MemCtx) (cs : Config) (As hp hX Gl a L :
     Consec ns ∧ 1 ≤ ns.length ∧ (nd ns 0).1 = a ∧ (ns.map fun x => x.2.1).sum = L ∧
     (∀ k, k < ns.length → (nd ns k).2.2 ≤ γ₀) ∧ (∀ k, k < ns.length → 1 ≤ (nd ns k).2.2) ∧
     (ns.length = 1 → (nd ns 0).2.2 = Gl) ∧ γ₀ + Nat.clog 2 ns.length ≤ Gl ∧
-    As ≤ c.nreg ALLOC ∧ (∀ a, a < As → c.nmem a = cs.nmem a) ∧
-    (∀ a, a < As → c.rmem a = cs.rmem a) ∧ c.output = cs.output ∧
+    As ≤ c.nreg ALLOC ∧ (MemEqBelow As c.nmem cs.nmem) ∧
+    (MemEqBelow As c.rmem cs.rmem) ∧ c.output = cs.output ∧
     (∀ r, bandOf r ∉ mergeBands ∪ oracleBands → ¬ LvRG r → r ≠ ALLOC → c.nreg r = cs.nreg r) ∧
     (∀ r, bandOf r ∉ mergeBands ∪ oracleBands → ¬ LvRG r → c.rreg r = cs.rreg r) ∧
     X.holds P c.nmem hX (c.nreg ALLOC) ∧ X.cap P c.nmem hX = X.cap P cs.nmem hX
 
 theorem clog_half {j : ℕ} (hj : 2 ≤ j) : Nat.clog 2 j = Nat.clog 2 ((j + 1) / 2) + 1 := by
-  rw [Nat.clog_of_two_le (by norm_num) hj, show j + 2 - 1 = j + 1 by omega]
+  ram_simp [Nat.clog_of_two_le, show j + 2 - 1 = j + 1 by omega]
 
 section proofs
 
@@ -76,7 +78,7 @@ theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     intro ns γ₀ c hf hst hbud
     obtain ⟨hw, h14, h33, ⟨B, h66, hB, hL⟩, hc, hj1, ha, hsum, hγ, hγ1, hone, hclog, hAs, hm,
       hrm, ho, hr, hrr, hX', hcap'⟩ := hst
-    have cr : ∀ r, 160000 ≤ r → r < 170000 → ¬ LvRG r → c.nreg r = cs.nreg r := fun r a b h =>
+    have cr := fun r a b h =>
       hr r (bandOK_l41 a b) h (by rw [hAl]; omega)
     have nl : ∀ r, (r < 160035 ∨ (160056 < r ∧ r < 160062) ∨ (160067 < r ∧ r < 160090)) →
         r ≠ 160014 → r ≠ 160033 → r ≠ 160034 → ¬ LvRG r := by
@@ -94,7 +96,7 @@ theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
       have hj2 : 2 ≤ ns.length := by omega
       set t := lvTgt Gl ns.length γ₀ with ht
       have hcl := clog_half hj2
-      have hcl1 : 1 ≤ Nat.clog 2 ns.length := by omega
+      
       have hfl : fuseLoss = 1 := rfl
       have htg : γ₀ + fuseLoss ≤ t := by
         rw [ht]; unfold lvTgt; split_ifs <;> omega
@@ -107,36 +109,35 @@ theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
           r ≠ 160014 → r ≠ 160033 → r ≠ 160034 → c.nreg r = cs.nreg r :=
         fun r h1 h2 h3 h4 h5 => cr r h2 (by omega) (nl r (by omega) h3 h4 h5)
       have c32 : c.nreg 160032 = Gl := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s32
+        frame_finish [cv]
       have c00 : c.nreg 160000 = hX := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s00
+        frame_finish [cv]
       have c24 : c.nreg 160024 = 1 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s24
+        frame_finish [cv]
       have c80 : c.nreg 160080 = 2 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s80
+        frame_finish [cv]
       have c81 : c.nreg 160081 = 5 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s81
+        frame_finish [cv]
       have c83 : c.nreg 160083 = 3 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s83
+        frame_finish [cv]
       have c84 : c.nreg 160084 = 4 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s84
+        frame_finish [cv]
       obtain ⟨c1, k1, e1, hk1, hw1, hA1, hA1', l14, l33, ⟨B', l66, hB', hL'⟩, lm, lrm, lo, lr, lrr,
           lX, lcap⟩ :=
         level_exec hG hWh hWn hMM hXc hOk hw (A0 := c.nreg ALLOC) (B := B) (hp := hp) (hX := hX)
           (γ₀ := γ₀) (Gl := Gl) (ns := ns) hj2 rfl h66 h14 h33 c32 c00 c24 c80 c81 c83 c84
           hL hc hB hγ hγ1 hX' (by rw [hcap']; omega) htg (by omega) hbud'
-      have hlen' : (pairUp ns t).length = (ns.length + 1) / 2 := pairUp_length ns t
+      have hlen' := pairUp_length ns t
       have hγt : γ₀ ≤ t := by omega
       have hst1 : TreeSt P W X cs As hp hX Gl a L (pairUp ns t) t c1 := by
         refine ⟨hw1, l14, l33, ⟨B', l66, hB', hL'⟩, consec_pairUp t hc, by omega,
-          by rw [nd_pairUp_zero ns t (by omega)]; exact ha, by rw [pairUp_sum]; exact hsum,
+          by ram_simp [nd_pairUp_zero] <;> omega, by rwa [pairUp_sum],
           pairUp_gran hγ hγt, pairUp_gran_pos hγ1 (by omega), fun h => ?_, ?_, by omega,
           fun x hx => by rw [lm x (by omega)]; exact hm x hx,
           fun x hx => by rw [lrm x (by omega)]; exact hrm x hx, by rw [lo, ho],
           fun r h1 h2 h3 => by rw [lr r h1 h2 h3]; exact hr r h1 h2 h3,
           fun r h1 h2 => by rw [lrr r h1 h2]; exact hrr r h1 h2, lX, by rw [lcap, hcap']⟩
-        · rw [nd_pairUp_merge ns t 0 (by omega)]
-          simp only [ht]; unfold lvTgt; rw [ite_eq_left (by omega)]
+        · ram_simp [nd_pairUp_merge, ht, lvTgt, ite_eq_left]
         · rw [hlen']
           rw [ht]; unfold lvTgt; split_ifs with h3
           · have : (ns.length + 1) / 2 = 1 := by omega

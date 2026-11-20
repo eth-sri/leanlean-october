@@ -39,7 +39,7 @@ structure SCtx (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
   hI : IterRel P J N₁ N₂ c cw cs co c'
   hd : c'.nreg dF = 0
   hBA : BatchA P J N₂ cs
-    (ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [])
+    (ShotList.loSet J.leftModel (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [])
     (iterO N₂ cs) co A
   hval : ∀ t ∈ A, ValidJ J (Qof P) N₂ t.1
   hD : StopData P J N₂ c rs ax
@@ -53,26 +53,26 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 include S
 
 /-- The parameter of the next key. -/
-theorem posK : c'.nreg kE < (chainModel J.whole).W.n ∧
-    0 ≤ (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ ∧
-    (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ < 1 :=
+theorem posK : c'.nreg kE < J.wholeModel.W.n ∧
+    0 ≤ J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ ∧
+    J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ < 1 :=
   let h := (stp_next_key S.E S.L S.hI S.hd).2.1
   ⟨h.1, h.2.1.1, h.2.1.2.1⟩
 
 /-- No cut strictly between the key and the next key. -/
-theorem gapK : ∀ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)), ∀ (q : ℕ) (s : ℝ),
-    SideAttach (chainModel J.whole).W e q s →
+theorem gapK : ∀ e ∈ F₂plus J (N₂.F J.rightModel (Qof P)), ∀ (q : ℕ) (s : ℝ),
+    SideAttach J.wholeModel.W e q s →
       ¬ (keyOff P J c < oW J (q + s) ∧ oW J (q + s) < keyOff P J c') := by
   intro e he q s hA
   exact no_cut_iter S.E S.L S.hI (q + s) ⟨e, he, q, s, hA, rfl⟩ (by have := hA.2.1; positivity)
-    (by have := hA.2.2.1; have : ((q : ℕ) : ℝ) + 1 ≤ (chainModel J.whole).W.n := by
+    (by have := hA.2.2.1; have : ((q : ℕ) : ℝ) + 1 ≤ J.wholeModel.W.n := by
           exact_mod_cast hA.1
         linarith)
 
 /-- A position at the offset of the next key is the next key. -/
-theorem posEq {q : ℕ} {s : ℝ} (hq : q < (chainModel J.whole).W.n) (hs0 : 0 ≤ s) (hs1 : s < 1)
+theorem posEq {q : ℕ} {s : ℝ} (hq : q < J.wholeModel.W.n) (hs0 : 0 ≤ s) (hs1 : s < 1)
     (h : oW J (q + s) = keyOff P J c') :
-    q = c'.nreg kE ∧ s = (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ := by
+    q = c'.nreg kE ∧ s = J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ := by
   obtain ⟨h1, h2, h3⟩ := S.posK
   exact pos_eq_of_oW S.E.hP S.E.hNF₂.1.2.1 S.E.hNF₂.1.1 hq h1 hs0 hs1 h2 h3 h
 
@@ -90,14 +90,14 @@ theorem stopOff_rs {i : ℕ} (hi : i < rs.length) :
 theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
     ∃ hi : i < rs.length,
       stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2 ∈
-        F₂plus J (N₂.F (chainModel J.right) (Qof P)) ∧
-      StopChord2 J (N₂.F (chainModel J.right) (Qof P))
+        F₂plus J (N₂.F J.rightModel (Qof P)) ∧
+      StopChord2 J (N₂.F J.rightModel (Qof P))
         (stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2) ∧
-      SideAttach (chainModel J.whole).W
+      SideAttach J.wholeModel.W
         (stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2) (c'.nreg kE)
-        ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) ∧
-      rs[i].1 = c'.nreg kE ∧ (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩ =
-        (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ := by
+        (J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) ∧
+      rs[i].1 = c'.nreg kE ∧ J.wholeModel.param (Qof P) ⟨rs[i].1, rs[i].2.1⟩ =
+        J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ := by
   obtain ⟨-, hle, -, hk3⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hlen := S.hD.1
@@ -108,20 +108,24 @@ theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
   rw [S.stopOff_rs hi] at ho
   obtain ⟨e1, e2⟩ := S.posEq a0.1 a0.2.1 a0.2.2.1 ho
   refine ⟨f0, f1, ?_, e1, e2⟩
-  rw [← e2, ← e1]
-  exact a0
+  rwa [← e2, ← e1]
+
+section
+
+variable {e : Set Point} (he : e ∈ F₂plus J (N₂.F J.rightModel (Qof P)))
+    (hA : SideAttach J.wholeModel.W e (c'.nreg kE)
+      (J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩))
+include he hA
 
 /-- **A stop chord at the next key is a skipped stop.** -/
-theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
-    (hA : SideAttach (chainModel J.whole).W e (c'.nreg kE)
-      ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩))
-    (hs : StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e) :
+theorem stop_idx
+    (hs : StopChord2 J (N₂.F J.rightModel (Qof P)) e) :
     ∃ i, ∃ hi : i < rs.length, c.nreg sP ≤ i ∧ i < c'.nreg sP ∧
       stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2 = e := by
   obtain ⟨hlt, -, -⟩ := stp_next_key S.E S.L S.hI S.hd
   obtain ⟨hlen, -, -, -, hok, -⟩ := S.hD
   have hL : (Lst J : ℝ) ≤ oW J (c'.nreg kE +
-      (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) := by
+      J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) := by
     have := S.L.keyL
     show (Lst J : ℝ) ≤ keyOff P J c'
     linarith
@@ -135,7 +139,7 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
     unfold soff
     rw [h2, h1]
     rfl
-  have hic : i < c.nreg sC := hlen ▸ hi
+  have hic := hlen ▸ hi
   obtain ⟨-, -, hptr, -⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hso := (stp_stops_c' S.E S.L S.hI S.hd).2 i hic
@@ -143,14 +147,12 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
   · by_contra h
     have := (S.L.ptrL i hic).1 (by omega)
     linarith
-  · exact (hptr i (by omega)).2 (by rw [hso.2.2, ho])
+  · simp_all
 
 /-- **A non-stop chord at the next key** is the chord of an accepted triple at its offset, and
 the best candidate is there. -/
-theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)))
-    (hA : SideAttach (chainModel J.whole).W e (c'.nreg kE)
-      ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩))
-    (hs : ¬ StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e) :
+theorem nonstop_acc
+    (hs : ¬ StopChord2 J (N₂.F J.rightModel (Qof P)) e) :
     ∃ t ∈ A, offT P J t = keyOff P J c' ∧
       Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1) = e ∧
       co.nreg bF = 1 ∧ offK P J (co.nreg bE) (co.nreg bH) = keyOff P J c' := by
@@ -168,38 +170,40 @@ theorem nonstop_acc {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J
       rw [ewE, ewH] at this
       exact this)
   have hoT : offT P J (j, c'.nreg kE, h) = keyOff P J c' := by
-    show oW J (_ + (chainModel J.whole).param (Qof P) ⟨_, h⟩) = _
+    show oW J (_ + J.wholeModel.param (Qof P) ⟨_, h⟩) = _
     rw [hh]
     rfl
   obtain ⟨hbF, hle⟩ := S.hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
   have hge := hKb hbF
   exact ⟨_, hmA, hoT, by rw [hjO, hjD], hbF, le_antisymm (hle.trans hoT.le) hge⟩
 
+end
+
 /-- **The chord of an accepted triple at the offset of the next key** is attached there, is not
 a stop chord and is anchored. -/
 theorem triple_at {t : ℕ × ℕ × ℕ} (ht : t ∈ A) (hto : offT P J t = keyOff P J c') :
     Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1) ∈
-        F₂plus J (N₂.F (chainModel J.right) (Qof P)) ∧
-      SideAttach (chainModel J.whole).W
+        F₂plus J (N₂.F J.rightModel (Qof P)) ∧
+      SideAttach J.wholeModel.W
         (Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1)) (c'.nreg kE)
-        ((chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) ∧
-      ¬ StopChord2 J (N₂.F (chainModel J.right) (Qof P))
+        (J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩) ∧
+      ¬ StopChord2 J (N₂.F J.rightModel (Qof P))
         (Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1)) ∧
       ¬ EvBrk J (Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1)) := by
   have hP := S.E.hP
   obtain ⟨-, hj, hfree, hmemF, hAt, -, -, hpw, hlt'⟩ := S.hBA.acc t ht
   obtain ⟨haR, hav, hat⟩ := S.hval t ht
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
-  have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
+  have hS₂a : N₂.F J.rightModel (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
   obtain ⟨e1, e2⟩ := S.posEq hpw.1 hpw.2.1.1 hpw.2.1.2.1 hto
-  refine ⟨hmemF, by rw [← e2, ← e1]; exact hAt,
+  refine ⟨hmemF, by simp_all,
     origin_not_stop hP hS₂a (hS₂a hc) ha haR hav hat hlt', fun hbr => ?_⟩
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have haD : endOrigin J (Qof P) N₂ t.1 ∉ J.whole.dom := fun hd =>
+  have hM : WalkAx J.wholeModel := FactsChain.walkAx J.whole hP
+  have haD := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.right_set_subset haR)
   obtain ⟨q, s, hq, hqpt⟩ := endpoint_attach hM (F₂plus_subset J hS₂a hmemF) (origin_mem J) haD
   have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hq.1 hq.2.1 hq.2.2.1
-    (by rw [hqpt]; exact haR) (by rw [hqpt]; exact hav)
+    (by rwa [hqpt]) (by rwa [hqpt])
   rw [← oW_eq, ← Lst_eq] at this
   have := hbr q s hq
   linarith

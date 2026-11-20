@@ -53,8 +53,7 @@ theorem cyc_end_eq {a b b' : ℝ} (hb : a ≠ b) (hb' : a ≠ b') (h1 : ¬ sideI
   unfold sideInArc at *
   split_ifs at * <;> cyc_close
 
-theorem cyc_start_eq' {a a' b : ℝ} (ha : a ≠ b) (ha' : a' ≠ b) (h1 : ¬ sideInArc a b a')
-    (h2 : ¬ sideInArc a' b a) : a = a' := Chazelle.Core.cyc_start_eq ha ha' h1 h2
+abbrev cyc_start_eq' := @Chazelle.Core.cyc_start_eq
 
 /-- For three distinct keys, `m` is between `a` and `b` or `b` is between `a` and `m`. -/
 theorem cyc_three {a b m : ℝ} (hab : a ≠ b) (ham : a ≠ m) (hbm : b ≠ m) :
@@ -96,12 +95,12 @@ theorem sideInArc_mono_iff {f : ℕ → ℝ} {A : ℕ}
   have e1 := key a b ha hb
   have e2 := key a i ha hi
   have e3 := key i b hi hb
-  have e4 := key i a hi ha
-  have e5 := key b i hb hi
+  
+  
   simp only [Nat.cast_lt]
   by_cases hab : a < b
-  · rw [ite_eq_left (e1.2 hab), ite_eq_left hab, e2, e3]
-  · rw [ite_eq_right (mt e1.1 hab), ite_eq_right hab, e2, e3]
+  · simp_all
+  · simp_all
 
 /-! ## The ring -/
 
@@ -136,12 +135,18 @@ theorem succ_unique {Lv : ℕ → Prop} {A n s s' : ℕ} (h : IsSuccIn Lv A n s)
     (h.2.2.2 s' h'.1 h'.2.1) (h'.2.2.2 s h.1 h.2.1)
   exact_mod_cast this
 
+section
+
+variable {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : RingOK Lv A nxt prv)
+
+include h in
 /-- In a ring, `nxt` and `prv` are the successor and predecessor. -/
-theorem RingOK.succ {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : RingOK Lv A nxt prv) {j : ℕ}
+theorem RingOK.succ {j : ℕ}
     (hj : j < A) (hL : Lv j) : IsSuccIn Lv A j (nxt j) := by
   obtain ⟨⟨a, b, c, d⟩, -⟩ := h j hj hL; exact ⟨a, b, c, d⟩
 
-theorem RingOK.pred {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : RingOK Lv A nxt prv) {j : ℕ}
+include h in
+theorem RingOK.pred {j : ℕ}
     (hj : j < A) (hL : Lv j) : IsPredIn Lv A j (prv j) := by
   obtain ⟨-, ⟨a, b, c, d⟩⟩ := h j hj hL; exact ⟨a, b, c, d⟩
 
@@ -174,9 +179,10 @@ theorem only_of_pred_eq_succ {Lv : ℕ → Prop} {A n p : ℕ} (_hn : n < A) (hn
   · exact hin (by exact_mod_cast h)
   · exact hs.2.2.2 i hi hiL h
 
+include h in
 /-- **Unlinking a live position** keeps the ring on the remaining live positions, provided its
 two neighbours differ. -/
-theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : RingOK Lv A nxt prv)
+theorem ringOK_unlink
     {d : ℕ} (hd : d < A) (hdL : Lv d) (hne : prv d ≠ nxt d) :
     RingOK (fun j => Lv j ∧ j ≠ d) A (Function.update nxt (prv d) (nxt d))
       (Function.update prv (nxt d) (prv d)) := by
@@ -198,17 +204,16 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).1
       have hnd : nxt j ≠ d := by
         intro hnd
-        have h1 : IsPredIn Lv A d j := ⟨hj, hjL, hjd, by rw [← hnd]; exact e⟩
+        have h1 : IsPredIn Lv A d j := ⟨hj, hjL, hjd, by rwa [← hnd]⟩
         exact hjp (pred_unique h1 (h.pred hd hdL))
       exact ⟨a, ⟨b, hnd⟩, c, fun i hi hiL => e i hi hiL.1⟩
   · by_cases hjs : j = s
-    · rw [hjs, Function.update_self]
-      exact ⟨hp.1, ⟨hp.2.1, hp.2.2.1⟩, hne, fun i hi hiL => hgap2 i hi hiL⟩
+    · simp_all
     · rw [Function.update_of_ne hjs]
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).2
       have hpd : prv j ≠ d := by
         intro hpd
-        have h1 : IsSuccIn Lv A d j := ⟨hj, hjL, hjd, by rw [← hpd]; exact e⟩
+        have h1 : IsSuccIn Lv A d j := ⟨hj, hjL, hjd, by rwa [← hpd]⟩
         exact hjs (succ_unique h1 (h.succ hd hdL))
       exact ⟨a, ⟨b, hpd⟩, c, fun i hi hiL => e i hi hiL.1⟩
 
@@ -224,9 +229,7 @@ theorem RingOK.congr {Lv Lv' : ℕ → Prop} {A : ℕ} {nxt prv nxt' prv' : ℕ 
   intro j hj hjL
   have hjL' := (hL j hj).1 hjL
   obtain ⟨⟨a, b, c, e⟩, ⟨a', b', c', e'⟩⟩ := h j hj hjL'
-  rw [hn j hj hjL', hp j hj hjL']
-  exact ⟨⟨a, (hL _ a).2 b, c, fun i hi hiL => e i hi ((hL i hi).1 hiL)⟩,
-    ⟨a', (hL _ a').2 b', c', fun i hi hiL => e' i hi ((hL i hi).1 hiL)⟩⟩
+  simp_all
 
 /-- No position lies strictly between `j` and `j + 1`. -/
 theorem not_cyc_succ (j i : ℕ) : ¬ cyc j (j + 1) i := by
@@ -243,10 +246,7 @@ theorem not_cyc_succ (j i : ℕ) : ¬ cyc j (j + 1) i := by
 theorem not_cyc_wrap {A : ℕ} (hA : 1 ≤ A) {i : ℕ} (hi : i < A) : ¬ cyc (A - 1) 0 i := by
   unfold cyc sideInArc
   by_cases h : ((A - 1 : ℕ) : ℝ) < ((0 : ℕ) : ℝ)
-  · rw [ite_eq_left h]
-    rintro ⟨-, b⟩
-    have : i < 0 := by exact_mod_cast b
-    omega
+  · simp_all
   · rw [ite_eq_right h]
     rintro (a | b)
     · have : A - 1 < i := by exact_mod_cast a
@@ -272,9 +272,10 @@ theorem ringOK_full {A : ℕ} (hA : 2 ≤ A) :
       rwa [show j - 1 + 1 = j by omega] at this
     · rw [ite_eq_right h, show j = 0 by omega]; exact not_cyc_wrap (by omega) hi
 
+include h in
 /-- **The live predecessor after deleting at most two positions** `n` and `m` (the predecessor of
 `n`, skipping `prv n` if it is deleted too), provided a live position remains. -/
-theorem pred_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : RingOK Lv A nxt prv)
+theorem pred_skip
     {Dd : ℕ → Prop} [DecidablePred Dd] {n m : ℕ} (hn : n < A) (hnL : Lv n) (hDn : Dd n)
     (hD : ∀ j, Dd j → j = n ∨ j = m) (hex : ∃ i, i < A ∧ Lv i ∧ ¬ Dd i) :
     IsPredIn (fun j => Lv j ∧ ¬ Dd j) A n (if Dd (prv n) then prv (prv n) else prv n) := by
@@ -282,7 +283,7 @@ theorem pred_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   set p := prv n
   by_cases hDp : Dd p
   · rw [ite_eq_left hDp]
-    have hpm : p = m := (hD p hDp).resolve_left hp.2.2.1
+    have hpm := (hD p hDp).resolve_left hp.2.2.1
     have hpp := h.pred hp.1 hp.2.1
     set pp := prv p
     obtain ⟨i, hi, hiL, hiD⟩ := hex
@@ -313,8 +314,9 @@ theorem pred_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   · rw [ite_eq_right hDp]
     exact ⟨hp.1, ⟨hp.2.1, hDp⟩, hp.2.2.1, fun j hj hjL => hp.2.2.2 j hj hjL.1⟩
 
+include h in
 /-- **The live successor after deleting at most two positions.** -/
-theorem succ_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : RingOK Lv A nxt prv)
+theorem succ_skip
     {Dd : ℕ → Prop} [DecidablePred Dd] {n m : ℕ} (hn : n < A) (hnL : Lv n) (hDn : Dd n)
     (hD : ∀ j, Dd j → j = n ∨ j = m) (hex : ∃ i, i < A ∧ Lv i ∧ ¬ Dd i) :
     IsSuccIn (fun j => Lv j ∧ ¬ Dd j) A n (if Dd (nxt n) then nxt (nxt n) else nxt n) := by
@@ -322,7 +324,7 @@ theorem succ_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   set s := nxt n
   by_cases hDs : Dd s
   · rw [ite_eq_left hDs]
-    have hsm : s = m := (hD s hDs).resolve_left hs.2.2.1
+    have hsm := (hD s hDs).resolve_left hs.2.2.1
     have hss := h.succ hs.1 hs.2.1
     set ss := nxt s
     obtain ⟨i, hi, hiL, hiD⟩ := hex
@@ -353,6 +355,8 @@ theorem succ_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
     · exact hss.2.2.2 j hj hjL.1 h2
   · rw [ite_eq_right hDs]
     exact ⟨hs.1, ⟨hs.2.1, hDs⟩, hs.2.2.1, fun j hj hjL => hs.2.2.2 j hj hjL.1⟩
+
+end
 
 end
 

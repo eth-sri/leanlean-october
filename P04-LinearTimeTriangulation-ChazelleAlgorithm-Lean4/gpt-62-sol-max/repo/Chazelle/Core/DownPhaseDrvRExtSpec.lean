@@ -54,67 +54,68 @@ def endPos (Lx : List (ℕ × ℕ × ℕ)) (q : ℕ) : WPos :=
   else (recOf (Lx.getD (q / 2) (0, 0, 0))).rpos
 
 /-- **The contract of the extraction (D6).** -/
-def ExtractRamSpec : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s {bDownDrv, bSign, bLocate, bBuild, bSort}
+def ExtMeets (s : Stmt) (κ : ℕ) : Prop :=
+  Meets s {bDownDrv, bSign, bLocate, bBuild, bSort}
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ c.nreg 217002 ≤ 1 ∧
       (c.nreg 217002 = 1 ↔ Mountain.LeftInside (Qof P)) ∧
       ∃ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (C : Chain) (NR : NF), L ≠ [] ∧
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P) L ∧ E.Perm (List.range (2 * L.length)) ∧
-        E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) ∧
-        (interiorModel (Qof P)).DegLe
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-            (Qof P)) 4 ∧
+        ChordTriplesOK (inputModel P) (Qof P) L ∧ E.Perm (List.range (2 * L.length)) ∧
+        E.Pairwise (BuildNF.codeLe (inputModel P) (Qof P) L) ∧
+        P.inputModel.DegLe
+          (inputChords P L E) 4 ∧
         NFWithin c.nmem (c.nreg 217000) (c.nreg ALLOC)
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) ∧
-        c.nreg 217001 < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions ∧
+          (inputNF P L E) ∧
+        c.nreg 217001 < (inputNF P L E).nRegions ∧
         Robust (c.nreg ALLOC) c.nmem (fun m => HostAt m (c.nreg 217003)
           (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001))) ∧
+            (inputNF P L E) (c.nreg 217001))) ∧
         c.nreg 217003 + 3 * (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).length + 1 ≤
+            (inputNF P L E) (c.nreg 217001)).length + 1 ≤
           c.nreg ALLOC ∧
         c.nreg 217004 = ((regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).pts
+          (inputNF P L E) (c.nreg 217001)).pts
             (Qof P).n).length ∧
         C.P = (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).poly (Qof P) ∧
+          (inputNF P L E) (c.nreg 217001)).poly (Qof P) ∧
         C.s = 0 ∧ C.m + 1 = C.P.n ∧
         ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg 217005) ∧
         Robust (c.nreg ALLOC) c.nmem (fun m => ModelDescAt m (c.nreg 217005) (Qof P)
           (chainModel C)) ∧
         Robust (c.nreg ALLOC) c.nmem (fun m => ChainDescAt m (c.nreg 217005 + 1) (Qof P)
           (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) C) ∧
+            (inputNF P L E) (c.nreg 217001)) C) ∧
         NFWithin c.nmem (c.nreg 217006) (c.nreg ALLOC) NR ∧ IsNF (chainModel C) (Qof P) NR)
     (fun P c c' =>
       (∀ q, bandOf q = bDownDrv → (q < 217000 ∨ 218000 ≤ q) → c'.nreg q = c.nreg q) ∧
       ∀ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (C : Chain) (NR : NF) (reg : ℕ → Set Point),
-        L ≠ [] → ChordTriplesOK (interiorModel (Qof P)) (Qof P) L →
+        L ≠ [] → ChordTriplesOK (inputModel P) (Qof P) L →
         E.Perm (List.range (2 * L.length)) →
-        E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) →
-        NFAt c.nmem (c.nreg 217000) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) →
-        Restore.NFRegs (interiorModel (Qof P)) (Qof P)
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) reg →
+        E.Pairwise (BuildNF.codeLe (inputModel P) (Qof P) L) →
+        NFAt c.nmem (c.nreg 217000) (inputNF P L E) →
+        Restore.NFRegs (inputModel P) (Qof P)
+          (inputNF P L E) reg →
         C.P = (regHost (decide (c.nreg 217002 = 1)) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)).poly (Qof P) →
+          (inputNF P L E) (c.nreg 217001)).poly (Qof P) →
         C.s = 0 → C.m + 1 = C.P.n → NFAt c.nmem (c.nreg 217006) NR →
         IsNF (chainModel C) (Qof P) NR →
         ∃ Lx : List (ℕ × ℕ × ℕ),
           c.nreg ALLOC ≤ c'.nreg 217010 ∧ c'.nreg 217010 + 3 * Lx.length ≤ c'.nreg ALLOC ∧
           c.nreg ALLOC ≤ c'.nreg 217012 ∧ c'.nreg 217012 + 2 * Lx.length ≤ c'.nreg ALLOC ∧
           c'.nreg 217011 = Lx.length ∧ ChordListAt c'.nmem (c'.nreg 217010) Lx ∧
-          {x | ∃ y ∈ Lx, x = (recOf y).toSet (interiorModel (Qof P)) (Qof P)} =
+          {x | ∃ y ∈ Lx, x = (recOf y).toSet (inputModel P) (Qof P)} =
             Extract.kept (reg (c.nreg 217001)) (NR.F (chainModel C) (Qof P)) ∧
-          (Lx.map fun y => (recOf y).toSet (interiorModel (Qof P)) (Qof P)).Nodup ∧
-          (∀ y ∈ Lx, (recOf y).Attached (interiorModel (Qof P)) (Qof P) ∧ y.1 < (Qof P).n) ∧
+          (Lx.map fun y => (recOf y).toSet (inputModel P) (Qof P)).Nodup ∧
+          (∀ y ∈ Lx, (recOf y).Attached (inputModel P) (Qof P) ∧ y.1 < (Qof P).n) ∧
           ∀ q, q < 2 * Lx.length →
             c'.nmem (c'.nreg 217012 + q) = keyBkt (Qof P)
-              (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (endPos Lx q) ∧
-            ∃ j ∈ ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region
+              (inputNF P L E) (endPos Lx q) ∧
+            ∃ j ∈ ((inputNF P L E).region
                 (c.nreg 217001)).arcs,
-              OnArcKey (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) j
+              OnArcKey (Qof P) (inputNF P L E) j
                 (endPos Lx q))
     (fun _ c => κ * (c.nmem (c.nreg 217006) + 1))
+
+def ExtractRamSpec : Prop := ∃ s κ, ExtMeets s κ
 
 end
 

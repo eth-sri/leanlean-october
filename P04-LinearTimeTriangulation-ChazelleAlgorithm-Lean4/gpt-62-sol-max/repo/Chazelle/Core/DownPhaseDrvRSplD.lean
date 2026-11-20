@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRSplC
 
 /-!
@@ -59,7 +61,7 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       c'.nreg 210071 = c.nreg ALLOC + 2 * (K + K₂) ∧
       c'.nreg ALLOC = c.nreg ALLOC + 2 * (K + K₂) + 2 * (K + K₂) ∧
       seg c'.nmem (c'.nreg 210071) (2 * (K + K₂)) = List.merge E E₂ (DownDrv.codeLeB M (Qof P) L') ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       (∀ r, bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) → Bs56 r = false → Bcp r = false →
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       (∀ r, bandOf r ∉ ({bSign, bBuild} : Finset ℕ) → c'.rreg r = c.rreg r) ∧
@@ -78,30 +80,29 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
       (try simp only [show ALLOC = 9999 from rfl]) <;> config_simp <;>
       (try simp only [h29, h27, h04, show c.nreg 9999 = A₃ from rfl])
-  have g₁ : ∀ r, Bs56 r = false → c₁.nreg r = c.nreg r := (exec_frameM e₁ (by decide : wrM Bs56 spl5 = true)).1
+  have g₁ := (exec_frameM e₁ (by decide : wrM Bs56 spl5 = true)).1
   -- copy `E`
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, hs₂, hm₂, f₂⟩ := cpS_exec (P := P) e₁.wb_right v61 v62 v63
-    (by rw [g₁ _ (by decide), h34]) (Or.inl (by omega)) (by omega) (by omega)
-  have g₂ : ∀ r, Bcp r = false → c₂.nreg r = c₁.nreg r := f₂.1
+    (by ram_rw [g₁, h34]) (Or.inl (by omega)) (by omega) (by omega)
+  have g₂ := f₂.1
   -- the arguments of the second copy
   obtain ⟨c₃, k₃, e₃, hk₃, u61, u62, u63, hm₃⟩ : ∃ c₃ k₃, Exec P W spl6 c₂ c₃ k₃ ∧ k₃ = 3 ∧
       c₃.nreg 210061 = 2 * K₂ ∧ c₃.nreg 210062 = Rb ∧ c₃.nreg 210063 = A₃ + 2 * K ∧
       c₃.nmem = c₂.nmem := by
-    have a28 : c₂.nreg 210028 = 2 * K₂ := by rw [g₂ _ (by decide), g₁ _ (by decide), h28]
-    have a48 : c₂.nreg 210048 = Rb := by rw [g₂ _ (by decide), g₁ _ (by decide), h48]
-    have a30 : c₂.nreg 210030 = A₃ := by rw [g₂ _ (by decide), v30]
-    have a27 : c₂.nreg 210027 = 2 * K := by rw [g₂ _ (by decide), g₁ _ (by decide), h27]
+    have a28 : c₂.nreg 210028 = 2 * K₂ := by frame_finish
+    have a48 : c₂.nreg 210048 = Rb := by frame_finish
+    have a30 : c₂.nreg 210030 = A₃ := by ram_rw [g₂, v30]
+    have a27 : c₂.nreg 210027 = 2 * K := by frame_finish
     unfold spl6
     exec_block
     all_goals try (config_simp; (try simp only [a28, a48, a30, a27]); omega)
     refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> (try simp only [a28, a48, a30, a27])
-  have g₃ : ∀ r, Bs6 r = false → c₃.nreg r = c₂.nreg r :=
-    (exec_frameM e₃ (by decide : wrM Bs6 spl6 = true)).1
+  have g₃ := (exec_frameM e₃ (by decide : wrM Bs6 spl6 = true)).1
   -- copy the new codes
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, f₄⟩ := cpS_exec (P := P) e₃.wb_right u61 u62 u63
-    (by rw [g₃ _ (by decide), g₂ _ (by decide), g₁ _ (by decide), h34]) (Or.inl (by omega))
+    (by frame_finish) (Or.inl (by omega))
     (by omega) (by omega)
-  have g₄ : ∀ r, Bcp r = false → c₄.nreg r = c₃.nreg r := f₄.1
+  have g₄ := f₄.1
   -- registers before the merge
   have k5 : ∀ r, Bcp r = false → Bs6 r = false → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [g₄ r h1, g₃ r h2, g₂ r h1]
@@ -109,7 +110,7 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     rw [k5 r h1 (by
       simp only [Bs56, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h2
       simp only [Bs6, decide_eq_false_iff_not]; omega), g₁ r h2]
-  have hlow4 : ∀ a, a < A₃ → c₄.nmem a = c.nmem a := fun a ha => by
+  have hlow4 : MemEqBelow A₃ c₄.nmem c.nmem := fun a ha => by
     rw [hm₄ a (Or.inl (by omega)), hm₃, hm₂ a (Or.inl (by omega)), hm₁]
   have hseg4 : seg c₄.nmem A₃ (2 * K) = E := by
     rw [seg_congr (m' := c₂.nmem) fun i hi => by rw [hm₄ _ (Or.inl (by omega)), hm₃], hs₂, hm₁, hE]
@@ -119,23 +120,23 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   obtain ⟨hM₄, hwf₄⟩ := desc_agree hwf hM (m' := c₄.nmem) fun a ha => hlow4 a ha
   have hrec4 : RecsAt c₄.nmem T L' := fun q hq => by
     obtain ⟨r1, r2, r3, r4⟩ := hrec q hq
-    exact ⟨by rw [hlow4 _ (by omega)]; exact r1, by rw [hlow4 _ (by omega)]; exact r2,
-      by rw [hlow4 _ (by omega)]; exact r3, by rw [hlow4 _ (by omega)]; exact r4⟩
+    exact ⟨by ram_rw [hlow4]; exact r1, by ram_rw [hlow4]; exact r2,
+      by ram_rw [hlow4]; exact r3, by ram_rw [hlow4]; exact r4⟩
   -- the merge
   obtain ⟨c₅, k₅, e₅, hk₅, w₅, hseg5, hm₅, fr₅, hA₅, rr₅, rm₅, o₅, -, -, -, -⟩ :=
     mergeE_exec (P := P) (W := W) hG hWn c₄ w₄ (S := A₃) (Dst := A₃ + h) (mid := 2 * K) (hi := h)
       (D := D) (T := T) (M := M) (L := L') (E := E) (E₂ := E₂)
-      (by rw [k5 _ (by decide) (by decide), v70]) (by rw [k5 _ (by decide) (by decide), v71])
-      (by rw [k5 _ (by decide) (by decide), v72]) (by rw [k5 _ (by decide) (by decide), v73])
-      (by omega) (by rw [k _ (by decide) (by decide), h40])
-      (by rw [k _ (by decide) (by decide), h42]) (by rw [k _ (by decide) (by decide), h42'])
+      (by ram_rw [k5, v70]) (by ram_rw [k5, v71])
+      (by ram_rw [k5, v72]) (by ram_rw [k5, v73])
+      (by omega) (by ram_rw [k, h40])
+      (by ram_rw [k, h42]) (by ram_rw [k, h42'])
       (hwf₄.mono (by omega)) hM₄ hok hrec4 (by omega) hseg4 hseg4' hcodes (by omega) (by omega)
-  have hA₄ : c₄.nreg ALLOC = A₃ + h + h := by rw [k5 _ (by decide) (by decide), vA]
-  refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))),
+  have hA₄ : c₄.nreg ALLOC = A₃ + h + h := by ram_rw [k5, vA]
+  refine ⟨c₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), (by ram_path),
     by unfold splCCost; omega, w₅, ?_, by rw [hA₅, hA₄], ?_, fun a ha => ?_,
     fun r hr h1 h2 hra => ?_, fun r hr => ?_, ?_, ?_⟩
-  · rw [fr₅ _ (by simp [bandOf, bSort, bSign, bBuild]) (by decide), k5 _ (by decide) (by decide), v71]
-  · rw [fr₅ _ (by simp [bandOf, bSort, bSign, bBuild]) (by decide), k5 _ (by decide) (by decide), v71]
+  · ram_simp [fr₅, k5, v71]
+  · ram_rw [fr₅, k5, v71]
     exact hseg5
   · rw [hm₅ a (Or.inl (by omega)), hlow4 a ha]
   · rw [fr₅ r hr hra, k r h2 h1]

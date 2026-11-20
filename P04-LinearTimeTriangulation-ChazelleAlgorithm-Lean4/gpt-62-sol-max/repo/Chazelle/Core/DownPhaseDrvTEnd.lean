@@ -40,8 +40,7 @@ theorem hseg_near {y a b : ℝ} (hab : a < b) {e : Point} (he : e ∈ hseg y a b
   have hne : ∀ δ : ℝ, δ ≠ 0 → ((e.1 + δ, y) : Point) ≠ e := by
     intro δ hδ h
     have := congrArg Prod.fst h
-    simp only at this
-    exact hδ (by linarith)
+    simp_all
   rcases heb.lt_or_eq with h | h
   · set δ := min (r / 2) ((b - e.1) / 2) with hδ
     have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
@@ -51,7 +50,7 @@ theorem hseg_near {y a b : ℝ} (hab : a < b) {e : Point} (he : e ∈ hseg y a b
       ?_⟩
     rw [hdist, abs_of_pos hδ0]; linarith
   · set δ := min (r / 2) ((e.1 - a) / 2) with hδ
-    have hea : a < e.1 := by linarith
+    
     have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
     have hδ1 : δ ≤ r / 2 := min_le_left _ _
     have hδ2 : δ ≤ (e.1 - a) / 2 := min_le_right _ _
@@ -99,9 +98,7 @@ theorem int_lt_top (hQ : Q.Simple) (T : Trans.Top Q C) {x : Point}
   have hO := Chazelle.Jordan.isOpen_filled_sdiff_boundary hQ
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hO x hx
   have hmem : ((x.1, x.2 + ε / 2) : Point) ∈ Q.filled \ Q.boundary := hball (by
-    rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
-      show x.2 + ε / 2 - x.2 = ε / 2 by ring, abs_of_pos (by linarith)]
-    exact max_lt hε (by linarith))
+    simp_all [mem_ball, Prod.dist_eq, abs_of_pos] )
   have := T.filled_below_top hQ hmem.1
   simp only at this
   linarith
@@ -113,12 +110,9 @@ theorem lerp_snd_ne {A B : Point} (h : A.2 ≠ B.2) {s : ℝ} (hs : s ∈ Ioo (0
       (lerp A B s).2 < max A.2 B.2 := by
   rw [Chazelle.Geometry.lerp_snd]
   obtain ⟨h0, h1⟩ := hs
-  have hd : B.2 - A.2 ≠ 0 := sub_ne_zero.2 (Ne.symm h)
+  have hd := sub_ne_zero.2 (Ne.symm h)
   refine ⟨fun e => hd ?_, fun e => hd ?_, ?_⟩
-  · have : s * (B.2 - A.2) = 0 := by linarith
-    rcases mul_eq_zero.1 this with h' | h'
-    · linarith
-    · exact h'
+  · simp_all
   · have : (s - 1) * (B.2 - A.2) = 0 := by linarith
     rcases mul_eq_zero.1 this with h' | h'
     · linarith
@@ -147,7 +141,7 @@ theorem openLast_mem_dom {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
     lerp (Q.vtx C.m) (Q.vtx 0) s ∈ C.dom := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh := hD C.m 0 (by omega) (by omega) (by omega)
   obtain ⟨hne1, hne2, hlt⟩ := lerp_snd_ne hh hs
   set e := lerp (Q.vtx C.m) (Q.vtx 0) s with he
   have heE : e ∈ Q.edge C.m := by
@@ -170,7 +164,7 @@ theorem openLast_mem_dom {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
     have h2 := (C.mem_slit_iff.1 hsl).2.1
     have hv1 := T.vtx_le_top (show C.m < Q.n by omega)
     have hv2 := T.vtx_le_top (show 0 < Q.n by omega)
-    have : max (Q.vtx C.m).2 (Q.vtx 0).2 ≤ C.top.2 := max_le hv1 hv2
+    have := max_le hv1 hv2
     linarith
 
 /-- **A chord of the chain model whose points near its end are interior is attached on the
@@ -275,8 +269,8 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
       have hlast : sidePt (interiorWalk Q) C.m s = lerp (Q.vtx C.m) (Q.vtx 0) s ∨
           sidePt (interiorWalk Q) C.m s = lerp (Q.vtx 0) (Q.vtx C.m) s := by
         unfold sidePt
-        rw [hIn, show (C.m + 1) % Q.n = 0 by rw [hmn, Nat.mod_self],
-          iw_vtx_idx hli (by omega), iw_vtx_idx hli (by omega)]
+        ram_rw [hIn, show (C.m + 1) % Q.n = 0 by rw [hmn, Nat.mod_self],
+          iw_vtx_idx hli, iw_vtx_idx hli]
         unfold idxI
         by_cases h : li = true
         · left; rw [ite_eq_left h, ite_eq_left h]

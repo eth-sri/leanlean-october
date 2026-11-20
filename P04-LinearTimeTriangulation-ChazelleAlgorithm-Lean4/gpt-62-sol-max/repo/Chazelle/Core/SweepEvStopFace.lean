@@ -30,9 +30,14 @@ section FaceR
 
 variable {M : Model} {Q : Polygon} {N : NF}
 
+section
+
+variable (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ} {t : ℝ}
+    (he : e < M.W.n) (ht0 : 0 ≤ t)
+include hN hj he ht0
+
 /-- **A non-cut position faces the region of the arc at `j` just after it.** -/
-theorem frc_after (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ} {t : ℝ}
-    (he : e < M.W.n) (ht0 : 0 ≤ t) (_ht1 : t < 1)
+theorem frc_after (_ht1 : t < 1)
     (hl1 : N.F M Q = ∅ ∨ sideInArc (sk M Q N j) (ek M Q N j) ((e : ℝ) + t)) :
     AfterFaces M e t (regOf M Q N (N.arc (sj N j)).reg) := by
   obtain ⟨-, harc⟩ := arc_regOf hN hj
@@ -44,8 +49,7 @@ theorem frc_after (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ}
     rw [← add_assoc]; exact (h s hs0 hs1).2
 
 /-- **A non-cut position faces the region of the arc at `j` just before it.** -/
-theorem frc_before (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ} {t : ℝ}
-    (he : e < M.W.n) (ht0 : 0 ≤ t) (ht1 : t < 1)
+theorem frc_before (ht1 : t < 1)
     (hl1 : N.F M Q = ∅ ∨ sideInArc (sk M Q N j) (ek M Q N j) ((e : ℝ) + t)) :
     BeforeFaces M e t (regOf M Q N (N.arc (sj N j)).reg) := by
   obtain ⟨-, harc⟩ := arc_regOf hN hj
@@ -57,11 +61,13 @@ theorem frc_before (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ
       refine ⟨δ, hδ, fun _ s hs0 hs1 hst => ?_, fun h => absurd h htp.ne'⟩
       refine harc.2.2.2.2.2.2 e (t - s) he (by linarith) (by linarith) ?_
       have : (e : ℝ) + (t - s) = (e : ℝ) + t - s := by ring
-      rw [this]; exact (h s hs0 hs1).1
+      simp_all
   · rcases hl1 with hF | hin
     · exact beforeFaces_of_empty harc hF he
     · rw [add_zero] at hin
       exact beforeFaces_of_inArc harc he hin
+
+end
 
 end FaceR
 
@@ -84,7 +90,7 @@ theorem frc_box_noncut (hP : C.P.Simple) (hN : IsNF (chainModel C) (Qof P) N) {e
   have hpar : (chainModel C).param (Qof P) (N.arc i).s = 0 := by
     have hk : (chainModel C).key (Qof P) (N.arc i).s =
         (N.arc i).s.edge + (chainModel C).param (Qof P) (N.arc i).s := rfl
-    rw [his, hedge] at hk; linarith
+    simp_all
   have hv : (chainModel C).pos (Qof P) (N.arc i).s = (chainModel C).W.vtx e := by
     show sidePt (chainModel C).W (N.arc i).s.edge ((chainModel C).param (Qof P) (N.arc i).s) = _
     rw [hpar, hedge, Chazelle.Chain.sidePt_zero]

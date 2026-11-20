@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterStageC3
 
 /-!
@@ -91,8 +93,8 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have b36 := g.base_eq 36; have b42 := g.base_eq 42
   unfold bcS
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hz1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 42 (by omega)) hG.rμ hG.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG.rbase 42 (by omega)) hG.rμ hG.zero (by reg_omega) (by reg_omega)
+    (by reg_omega) (by omega) (by omega)
   have e2 := Exec.constN (P := P) hw1 130850 0 (by omega)
   set c2 := { c1 with nreg := upd c1.nreg 130850 0 } with hc2
   have f2 : PFr StDRG (fun a => g.base 42 ≤ a ∧ a < g.base 42 + g.μ) c c2 :=
@@ -101,7 +103,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         unfold StDRG at hr; omega)], rfl, rfl, rfl, fun a _ => rfl⟩
   have hG2 : GR g c2 := hG.frame (fun r hr => f2.1 r (by unfold GRReg at hr; unfold StDRG; omega))
   set Am : ℕ → Prop := fun a => g.base 42 ≤ a ∧ a < g.base 42 + g.μ with hAm
-  obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk', hw', hi', hn', hf', hm'⟩ := Exec.forN (P := P) (W := W)
     (ri := 130850) (rn := 130011) (body := bcBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130850 = j ∧ c'.nreg 130011 = g.μ ∧
       PFr StDRG Am c c' ∧
@@ -114,11 +116,11 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       have r66 := hG3.rbase 36 (by omega); have r72 := hG3.rbase 42 (by omega)
       have r1 := hG3.one
       have hlj := hlt j hj
-      have ml : c3.nmem (g.base 3 + j) = lev j := by rw [hf3.2.2.2.2 _ (by omega)]; exact hlev j hj
+      have ml : c3.nmem (g.base 3 + j) = lev j := by ram_rw [hf3.2.2.2.2]; exact hlev j hj
       have mh : c3.nmem (g.base 36 + lev j) = hl (lev j) := by
-        rw [hf3.2.2.2.2 _ (by omega)]; exact hhl _ hlj
+        ram_rw [hf3.2.2.2.2]; exact hhl _ hlj
       have mb : c3.nmem (g.base 35 + lev j) = blk (lev j) := by
-        rw [hf3.2.2.2.2 _ (by omega)]; exact hblk _ hlj
+        ram_rw [hf3.2.2.2.2]; exact hblk _ hlj
       have hcle : ∀ b, cntBelow (blkOf g.μ lev hl blk) j b ≤ j := fun b => cntBelow_le _ _ _
       obtain ⟨c4, k4, e4, hk4, hw4, hf4, h52, h53, h50, h4r⟩ : ∃ c4 k4, Exec P W
           (block [.addN 130851 130033 130850, .loadN 130852 130851,
@@ -132,12 +134,12 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, ?_, ?_,
             fun r hr => ?_⟩
           · simp only; unfold BCRG at hr
-            repeat (rw [Machine.upd_other _ _ _ (by omega)])
+            repeat (ram_rw [Machine.upd_other _ _])
           · config_simp; rw [r33, hi3, ml]
           · config_simp; rw [r66, r33, hi3, ml, mh]
           · config_simp; exact hi3
           · simp only; unfold BCRG at hr
-            repeat (rw [Machine.upd_other _ _ _ (by omega)])
+            repeat (ram_rw [Machine.upd_other _ _])
       have r1' : c4.nreg 130001 = 1 := by rw [h4r _ (by unfold BCRG; omega)]; exact r1
       obtain ⟨c5, k5, e5, hk5, hw5, hf5, hm5, h50'⟩ : ∃ c5 k5, Exec P W
           (.ifLtN 130853 130001 (block [.addN 130851 130065 130852, .loadN 130854 130851,
@@ -172,12 +174,12 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
             · config_simp; rw [r72', r65', h52, mb', mc, r1']; omega
             · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_⟩
               · simp only; unfold BCRG at hr
-                repeat (rw [Machine.upd_other _ _ _ (by omega)])
+                repeat (ram_rw [Machine.upd_other _ _])
               · config_simp; rw [r72', r65', h52, mb', Machine.upd_other _ _ _ (by
                   simp only [hAm] at ha; omega)]
               · config_simp; rw [r72', r65', h52, mb', mc, r1']
               · config_simp; exact h50
-          refine ⟨c6, k6 + 1, .ifLtN_true (by rw [h53, r1']; exact hp) e6, by omega, hw6, hf6,
+          refine ⟨c6, k6 + 1, (by ram_path [h53, r1']), by omega, hw6, hf6,
             fun b hb => ?_, h50''⟩
           rw [hm6, Machine.upd_apply, cntBelow_succ, hbo]
           split_ifs with h1 h2 h2
@@ -190,7 +192,7 @@ theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
           have hbo : blkOf g.μ lev hl blk j = g.μ := by unfold blkOf; rw [ite_eq_left hh]
           refine ⟨c4, 0 + 2, .ifLtN_false (by rw [h53, r1']; exact hp) (.skip hw4), by omega,
             hw4, PFr.refl c4, fun b hb => ?_, h50⟩
-          rw [cntBelow_succ, hbo, ite_eq_right (by omega), Nat.add_zero, hf4.2.2.2.2 _ id]
+          ram_rw [cntBelow_succ, hbo, ite_eq_right, Nat.add_zero, hf4.2.2.2.2 _ id]
           exact hm3 b hb
       have e7 := Exec.addN (P := P) hw5 130850 130850 130001 (by
         rw [h50', hf5.1 _ (by unfold BCRG; omega), r1']; omega)
@@ -221,14 +223,9 @@ theorem pfxS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {f
   obtain ⟨c1, k1, e1, hk1, hw1, h56, h57, hf1, hm1⟩ : ∃ c1 k1, Exec P W
       (block [.constN 130856 0, .constN 130857 0]) c c1 k1 ∧ k1 = 2 ∧ WordsBounded W c1 ∧
       c1.nreg 130856 = 0 ∧ c1.nreg 130857 = 0 ∧ PFr StDRG Am c c1 ∧ c1.nmem = c.nmem := by
-    exec_block
-    all_goals try omega
-    refine ⟨rfl, ‹_›, by config_simp, by config_simp, ⟨fun r hr => ?_, rfl, rfl, rfl,
-      fun a _ => rfl⟩, rfl⟩
-    simp only; unfold StDRG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    ram_exec [StDRG, Machine.upd_other]
   have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; unfold StDRG; omega))
-  obtain ⟨c', k, e, hk', hw', hi', hn', h57', hf', hm', -⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk', hw', hi', hn', h57', hf', hm', -⟩ := Exec.forN (P := P) (W := W)
     (ri := 130856) (rn := 130011) (body := pfxBody)
     (fun j c' => WordsBounded W c' ∧ c'.nreg 130856 = j ∧ c'.nreg 130011 = g.μ ∧
       c'.nreg 130857 = cntLt f g.μ j ∧ PFr StDRG Am c c' ∧
@@ -253,13 +250,13 @@ theorem pfxS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {f
           by config_simp; rw [ha2, r72, hi2, mj, hsum], hf2.trans ⟨fun r hr => ?_, rfl, rfl, rfl,
           fun a ha => ?_⟩, fun b hb => ?_, fun b hb1 hb2 => ?_⟩
         · simp only; simp only [StDRG] at hr
-          repeat (rw [Machine.upd_other _ _ _ (by omega)])
+          repeat (ram_rw [Machine.upd_other _ _])
         · config_simp; rw [r72, hi2, Machine.upd_other _ _ _ (by simp only [hAm] at ha; omega)]
         · config_simp; rw [r72, hi2, ha2, Machine.upd_apply]
           split_ifs with h
           · rw [show b = j by omega]
           · exact hlo2 b (by omega)
-        · config_simp; rw [r72, hi2, Machine.upd_other _ _ _ (by omega)]
+        · config_simp; ram_rw [r72, hi2, Machine.upd_other _ _]
           exact hhi2 b (by omega) hb2)
     (j₀ := 0) ⟨hw1, h56, hG1.rμ, by rw [h57]; simp [cntLt], hf1, fun b hb => by omega,
       fun b _ hb => by rw [hm1]; exact hcnt b hb⟩

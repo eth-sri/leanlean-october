@@ -38,20 +38,24 @@ open Chazelle.Jordan (simple_three_le simple_vtx_ne simple_vtx_succ_ne)
 none (the sector is a cone). -/
 theorem sideLeftOf_rayPt_scale {a v b : Point} {σ s : ℝ} (hs : 0 < s) :
     sideLeftOf a v b (rayPt v σ s) ↔ sideLeftOf a v b (rayPt v σ 1) := by
-  unfold sideLeftOf
-  rw [FuseMath.rayPt_sub, FuseMath.rayPt_sub, one_smul, Chazelle.Chain.sideCcw_smul hs]
+  ram_finish [sideLeftOf, FuseMath.rayPt_sub, one_smul, Chazelle.Chain.sideCcw_smul hs]
 
+section
+
+variable {W : Polygon} (hW : W.Simple) (hL : Mountain.orient W = 1)
+    {p : ℕ} (hp : p < W.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+
+include hW hL hp hσ in
 /-- **The corner test.**  For a simple polygon with the interior on its left, the horizontal
 direction `σ = ±1` at vertex `p` is locally interior iff it lies in the open left sector of the
 corner at `p`. -/
-theorem dirInterior_iff_corner {W : Polygon} (hW : W.Simple) (hL : Mountain.orient W = 1)
-    {p : ℕ} (hp : p < W.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem dirInterior_iff_corner :
     DirInterior W p σ ↔
       sideLeftOf (W.vtx (Chazelle.Jordan.prevIdx W p)) (W.vtx p) (W.vtx ((p + 1) % W.n))
         (rayPt (W.vtx p) σ 1) := by
   obtain ⟨r, hr, hloc⟩ := FactsInterior.vertex_local hW hL hp
   have hball : ∀ s, 0 ≤ s → s < r → rayPt (W.vtx p) σ s ∈ ball (W.vtx p) r := fun s hs0 hsr => by
-    rw [mem_ball, FuseMath.dist_rayPt _ hσ hs0]; exact hsr
+    rwa [mem_ball, FuseMath.dist_rayPt _ hσ hs0]
   constructor
   · intro h
     obtain ⟨s, hs, ⟨hs0, hsr⟩⟩ := (h.and (Ioo_mem_nhdsGT hr)).exists
@@ -91,13 +95,11 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
   have eBX : sideCross (b - v) ((σ, 0) : Point) = -σ * (b.2 - v.2) := by
     unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]; ring
   have eXA : sideCross ((σ, 0) : Point) (a - v) = σ * (a.2 - v.2) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]; ring
+    unfold sideCross; simp_all
   have eBA : sideCross (b - v) (a - v) =
       (b.1 - v.1) * (a.2 - v.2) - (b.2 - v.2) * (a.1 - v.1) := by
-    unfold sideCross; simp only [Prod.snd_sub, Prod.fst_sub]
-  have eDBA : sideDot (b - v) (a - v) =
-      (b.1 - v.1) * (a.1 - v.1) + (b.2 - v.2) * (a.2 - v.2) := by
-    unfold sideDot; simp only [Prod.snd_sub, Prod.fst_sub]
+    rfl
+  
   unfold sideLeftOf
   rw [FuseMath.rayPt_sub_one, sideCcw_iff_raw]
   unfold emitG
@@ -120,10 +122,10 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
       · exact lt_irrefl _ h
       · exact hns ⟨cBA, hd⟩
     · rw [ite_eq_right hb]
-      have hb0 : b.2 - v.2 ≠ 0 := sub_ne_zero.2 hb
+      have hb0 := sub_ne_zero.2 hb
       have cBA : sideCross (b - v) (a - v) = -((b.2 - v.2) * (a.1 - v.1)) := by
         rw [eBA, ha']; ring
-      have hne : (b.2 - v.2) * (a.1 - v.1) ≠ 0 := mul_ne_zero hb0 ha1
+      have hne := mul_ne_zero hb0 ha1
       rw [cXA, cBA, eBX]
       by_cases hvb : v.2 < b.2
       · rw [ite_eq_left hvb]
@@ -150,7 +152,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         have hbn : b.2 - v.2 < 0 := by
           rcases lt_or_gt_of_ne hb0 with h | h
           · exact h
-          · exact absurd (by linarith) hvb
+          linarith
         constructor
         · rintro (⟨-, -, h⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
           · exact absurd h (lt_irrefl _)
@@ -170,7 +172,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
             linarith
           · linarith
   · rw [ite_eq_right ha]
-    have ha0 : a.2 - v.2 ≠ 0 := sub_ne_zero.2 ha
+    have ha0 := sub_ne_zero.2 ha
     by_cases hb : b.2 = v.2
     · rw [ite_eq_left hb]
       have hb' : b.2 - v.2 = 0 := by rw [hb, sub_self]
@@ -178,7 +180,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
       have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by rw [eBX, hb', mul_zero]
       have cBA : sideCross (b - v) (a - v) = (b.1 - v.1) * (a.2 - v.2) := by
         rw [eBA, hb']; ring
-      have hne : (b.1 - v.1) * (a.2 - v.2) ≠ 0 := mul_ne_zero hb1 ha0
+      have hne := mul_ne_zero hb1 ha0
       rw [cBX, cBA, eXA]
       by_cases hva : v.2 < a.2
       · rw [ite_eq_left hva]
@@ -204,7 +206,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         have han : a.2 - v.2 < 0 := by
           rcases lt_or_gt_of_ne ha0 with h | h
           · exact h
-          · exact absurd (by linarith) hva
+          linarith
         constructor
         · rintro (⟨-, h, -⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
           · exact absurd h (lt_irrefl _)
@@ -225,21 +227,21 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
     · rw [ite_eq_right hb]
       have h := Brute.sideLeftOf_horiz ha hb hσ
       unfold sideLeftOf at h
-      rw [FuseMath.rayPt_sub_one, sideCcw_iff_raw] at h
-      exact h
+      rwa [FuseMath.rayPt_sub_one, sideCcw_iff_raw] at h
 
+include hW hL hp hσ in
 /-- **The corner test by the decision.**  For a simple polygon with the interior on its left,
 direction `σ = ±1` at vertex `p` is locally interior iff the corner decision holds. -/
-theorem dirInterior_iff_emitG {W : Polygon} (hW : W.Simple) (hL : Mountain.orient W = 1)
-    {p : ℕ} (hp : p < W.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem dirInterior_iff_emitG :
     DirInterior W p σ ↔
       emitG (W.vtx (Chazelle.Jordan.prevIdx W p)) (W.vtx p) (W.vtx ((p + 1) % W.n)) σ := by
   rw [dirInterior_iff_corner hW hL hp hσ]
   have hn := simple_three_le hW
-  have hav : W.vtx (Chazelle.Jordan.prevIdx W p) ≠ W.vtx p :=
-    simple_vtx_ne hW (Chazelle.Jordan.prevIdx_lt W hp) hp (Chazelle.Jordan.prevIdx_ne W hn hp)
-  have hbv : W.vtx ((p + 1) % W.n) ≠ W.vtx p := (simple_vtx_succ_ne hW hp).symm
+  have hav := simple_vtx_ne hW (Chazelle.Jordan.prevIdx_lt W hp) hp (Chazelle.Jordan.prevIdx_ne W hn hp)
+  have hbv := (simple_vtx_succ_ne hW hp).symm
   exact sideLeftOf_iff_emitG hav hbv (FactsInterior.corner_nonSpike hW hp) hσ
+
+end
 
 end
 

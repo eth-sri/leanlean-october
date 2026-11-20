@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoPrim
 public import Chazelle.Core.OracleRamLoc
 public import Chazelle.Core.Facts2
@@ -27,13 +29,13 @@ open Chazelle.Chain (sidePt sideLeft sideInArc)
 /-! ## Constants of the answer stage -/
 
 /-- The constant registers of the answer stage (set by its initialisation). -/
-def K0 : ℕ := sw 610
-def K1 : ℕ := sw 611
-def K6 : ℕ := sw 612
-def K4 : ℕ := sw 613
-def K5 : ℕ := sw 614
-def K2 : ℕ := sw 615
-def K3 : ℕ := sw 616
+@[ram_layout] def K0 : ℕ := sw 610
+@[ram_layout] def K1 : ℕ := sw 611
+@[ram_layout] def K6 : ℕ := sw 612
+@[ram_layout] def K4 : ℕ := sw 613
+@[ram_layout] def K5 : ℕ := sw 614
+@[ram_layout] def K2 : ℕ := sw 615
+@[ram_layout] def K3 : ℕ := sw 616
 
 /-- The constants hold their values. -/
 def Consts (c : Config) : Prop :=
@@ -86,10 +88,10 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
         c'.nreg ph = nhgt (chainModel C) (Qof P) ⟨c.nreg pe, c.nreg ph⟩ ∧
         (∀ r, bandOf r ∉ oracleBands → r ≠ ph → r ≠ o → r ≠ o + 1 → r ≠ ALLOC →
           c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
   have hK0 : K0 = 240610 := rfl
-  have hK6 : K6 = 240612 := rfl
+  
   set u : WPos := ⟨c.nreg pe, c.nreg ph⟩ with hu
   unfold normS
   by_cases hbox : c.nreg pe < c.nreg K6
@@ -101,7 +103,7 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
           c'.nreg ph = nhgt (chainModel C) (Qof P) ⟨c.nreg pe, c.nreg ph⟩ ∧
           (∀ r, bandOf r ∉ oracleBands → r ≠ ph → r ≠ o → r ≠ o + 1 → r ≠ ALLOC →
             c'.nreg r = c.nreg r) ∧
-          c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+          c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
       intro he0
       have hpar : (chainModel C).param (Qof P) u = 0 :=
         Model.param_horizontal (ShootCut.box_horizontal (C := C) he0)
@@ -119,7 +121,7 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
           c'.nreg ph = nhgt (chainModel C) (Qof P) ⟨c.nreg pe, c.nreg ph⟩ ∧
           (∀ r, bandOf r ∉ oracleBands → r ≠ ph → r ≠ o → r ≠ o + 1 → r ≠ ALLOC →
             c'.nreg r = c.nreg r) ∧
-          c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+          c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
       intro he1
       refine IRS.skip hI ⟨rfl, ?_, fun _ _ _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
       have hpos := ShootCut.box_param_pos' C (Qof P) hbox hpp.1
@@ -129,23 +131,20 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
     unfold normBox
     rcases (by omega : c.nreg pe = 0 ∨ c.nreg pe = 1 ∨ c.nreg pe = 2 ∨ c.nreg pe = 3 ∨
       c.nreg pe = 4 ∨ c.nreg pe = 5) with h | h | h | h | h | h
-    · exact (IRS.ifT (by rw [k1, h]; norm_num) (hzero (Or.inl h))).mono (by omega) (fun _ h => h)
+    · exact (IRS.ifT (by rw [k1, h]; norm_num) (hzero (Or.inl h))).budget
     · exact (IRS.ifF (by rw [k1, h]; norm_num) (IRS.ifT (by rw [k2, h]; norm_num)
-        (hkeep (Or.inl h)))).mono (by omega) (fun _ h => h)
+        (hkeep (Or.inl h)))).budget
     · exact (IRS.ifF (by rw [k1, h]; norm_num) (IRS.ifF (by rw [k2, h]; norm_num)
-        (IRS.ifT (by rw [k3, h]; norm_num) (hzero (Or.inr (Or.inl h)))))).mono (by omega)
-        (fun _ h => h)
+        (IRS.ifT (by rw [k3, h]; norm_num) (hzero (Or.inr (Or.inl h)))))).budget
     · exact (IRS.ifF (by rw [k1, h]; norm_num) (IRS.ifF (by rw [k2, h]; norm_num)
         (IRS.ifF (by rw [k3, h]; norm_num) (IRS.ifT (by rw [k4, h]; norm_num)
-          (hkeep (Or.inr (Or.inl h))))))).mono (by omega) (fun _ h => h)
+          (hkeep (Or.inr (Or.inl h))))))).budget
     · exact (IRS.ifF (by rw [k1, h]; norm_num) (IRS.ifF (by rw [k2, h]; norm_num)
         (IRS.ifF (by rw [k3, h]; norm_num) (IRS.ifF (by rw [k4, h]; norm_num)
-          (IRS.ifT (by rw [k5, h]; norm_num) (hzero (Or.inr (Or.inr h)))))))).mono (by omega)
-        (fun _ h => h)
+          (IRS.ifT (by rw [k5, h]; norm_num) (hzero (Or.inr (Or.inr h)))))))).budget
     · exact (IRS.ifF (by rw [k1, h]; norm_num) (IRS.ifF (by rw [k2, h]; norm_num)
         (IRS.ifF (by rw [k3, h]; norm_num) (IRS.ifF (by rw [k4, h]; norm_num)
-          (IRS.ifF (by rw [k5, h]; norm_num) (hkeep (Or.inr (Or.inr h)))))))).mono (by omega)
-        (fun _ h => h)
+          (IRS.ifF (by rw [k5, h]; norm_num) (hkeep (Or.inr (Or.inr h)))))))).budget
   · refine IRS.mono (K := 11013) (IRS.ifF hbox ?_) (by omega) (fun _ h => h)
     rw [k6] at hbox
     have hn6 : 6 ≤ c.nreg pe := by omega
@@ -154,7 +153,7 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
       (g := K0) (o := o) hI hctx ⟨hr.1, hr.2.1, by omega, hr.2.2.2.1, by rw [hK0]; norm_num,
       by rw [hK0]; norm_num, by omega, hr.2.2.2.1, by omega, hr.2.2.2.2.2, by rw [hK0]; norm_num,
       by rw [hK0]; norm_num⟩
-      ⟨ho.1, ho.2.1⟩ he he (by rw [k0]; exact hn0) ?_ hpp (fun _ => hn6)
+      ⟨ho.1, ho.2.1⟩ he he (by rwa [k0]) ?_ hpp (fun _ => hn6)
       (fun h0 => hn6) (by omega)) ?_
     · rw [k0]; exact ⟨le_rfl, by norm_num, Nat.zero_le _⟩
     rintro c₁ hI₁ hA₁ hA₁' ⟨b0, -, hk1, -, hm1⟩
@@ -164,13 +163,13 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
     simp only at hlt
     have h10 : c₁.nreg K0 = 0 := by
       rw [hk1 _ (not_oracle_sw (by rw [hK0]; norm_num) (by rw [hK0]; norm_num)) (by rw [hK0]; omega)
-        (by rw [hK0]; omega) (by rw [hK0]; unfold ALLOC; omega), k0]
+        (by rw [hK0]; omega) (by reg_omega), k0]
     have hpe1 : c₁.nreg pe = c.nreg pe := hk1 _ (not_oracle_sw (by omega) (by omega)) (by omega)
       (by omega) (by unfold ALLOC; omega)
     have hph1 : c₁.nreg ph = c.nreg ph := hk1 _ (not_oracle_sw (by omega) (by omega)) (by omega)
       (by omega) (by unfold ALLOC; omega)
     by_cases hb : c₁.nreg K0 < c₁.nreg o
-    · refine (IRS.ifT hb (IRS.skip (K := 1) hI₁ ?_)).mono (by omega) (fun _ h => h)
+    · refine (IRS.ifT hb (IRS.skip (K := 1) hI₁ ?_)).budget
       rw [h10] at hb
       have hbit : c₁.nreg o = 1 := by have := b0.1; omega
       have hp := (b0.2.1 hbit)
@@ -191,22 +190,22 @@ theorem normS_irs {dsc pe ph o : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Con
         (Exec.constN hI₁.hw ph 0 (Nat.zero_le _))).mono le_rfl ?_
       rintro c' rfl
       simp only
-      refine ⟨by rw [upd_other _ _ _ ho.2.2.2.2.2.2]; exact hpe1, by
-        rw [upd_same]; unfold nhgt Restore.normOf; rw [ite_eq_left hpar], fun r hr1 hr2 hr3 hr4 hr5 => ?_,
-        by rw [upd_other _ _ _ (by unfold ALLOC; omega)]; exact hA₁, hm1⟩
+      refine ⟨by rwa [upd_other _ _ _ ho.2.2.2.2.2.2], by
+        simp [upd_same, nhgt, Restore.normOf, ite_eq_left hpar], fun r hr1 hr2 hr3 hr4 hr5 => ?_,
+        by rwa [upd_other _ _ _ (by unfold ALLOC; omega)], hm1⟩
       rw [upd_other _ _ _ hr2]; exact hk1 r hr1 hr3 hr4 hr5
 /-! ## Double identification with the spine position -/
 
 /-- The table of powers of two of the answer stage (base and length). -/
-def TBR : ℕ := sw 600
-def TLR : ℕ := sw 601
+@[ram_layout] def TBR : ℕ := sw 600
+@[ram_layout] def TLR : ℕ := sw 601
 
 theorem band12_oracle {r : ℕ} (h1 : 120000 ≤ r) (h2 : r < 130000) : bandOf r ∈ oracleBands := by
-  have : bandOf r = bOQuery := by unfold bandOf bOQuery; omega
+  have : bandOf r = bOQuery := by reg_omega
   rw [this]; decide
 
 theorem band1_oracle {r : ℕ} (h1 : 10000 ≤ r) (h2 : r < 20000) : bandOf r ∈ oracleBands := by
-  have : bandOf r = bSign := by unfold bandOf bSign; omega
+  have : bandOf r = bSign := by reg_omega
   rw [this]; decide
 
 theorem bl_oracle {r : ℕ} (h : OracleR.BL r = true) : bandOf r ∈ oracleBands := by
@@ -281,16 +280,14 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
   unfold locJ
   set ins := [(50000, md), (50001, nf), (50002, pe), (50003, ph), (120041, TBR), (120042, TLR)]
     with hins
-  have hnd : (ins.map Prod.fst).Nodup := by simp [hins]
-  have hsrc : ∀ p ∈ ins, ∀ q ∈ ins, p.2 ≠ q.1 := by
-    simp only [hins, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq,
-      hTB, hTL]; omega
+  
+  
   -- the setup block
-  have hTBv : c.nreg TBR = c.nreg 240600 := rfl
-  have hTLv : c.nreg TLR = c.nreg 240601 := rfl
+  
+  
   set l : List Instr := cps ins ++ [.constN 120012 0, .constN 120011 1] with hl
   have hok : okB W c.nmem l c.nreg := by
-    simp only [hl, hins, cps, List.map, List.cons_append, List.nil_append, okB, okI]
+    simp only [hl, hins, cps, List.map, List.cons_append, List.nil_append, reg_check]
     refine ⟨Or.inr (band5_oracle (by norm_num) (by norm_num)),
       Or.inr (band5_oracle (by norm_num) (by norm_num)),
       Or.inr (band5_oracle (by norm_num) (by norm_num)),
@@ -313,16 +310,13 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
     show regB c.nmem l c.nreg r = _
     simp only [hl, hins, cps, List.map, List.cons_append, List.nil_append, regB, regI]
     simp only [upd]
-    have h1 : md ≠ 50000 := by omega
+    
     have h2 : nf ≠ 50000 ∧ nf ≠ 50001 := by omega
     have h3 : pe ≠ 50000 ∧ pe ≠ 50001 ∧ pe ≠ 50002 := by omega
     have h4 : ph ≠ 50000 ∧ ph ≠ 50001 ∧ ph ≠ 50002 ∧ ph ≠ 50003 := by omega
-    have h5 : (240600 : ℕ) ≠ 50000 ∧ (240600 : ℕ) ≠ 50001 ∧ (240600 : ℕ) ≠ 50002 ∧
-      (240600 : ℕ) ≠ 50003 := by omega
-    have h6 : (240601 : ℕ) ≠ 50000 ∧ (240601 : ℕ) ≠ 50001 ∧ (240601 : ℕ) ≠ 50002 ∧
-      (240601 : ℕ) ≠ 50003 ∧ (240601 : ℕ) ≠ 120041 := by omega
-    simp only [TBR, TLR, sw, ite_eq_right h2.1, ite_eq_right h3.1, ite_eq_right h3.2.1,
-      ite_eq_right h4.1, ite_eq_right h4.2.1, ite_eq_right h4.2.2.1]
+    
+    
+    simp only [ram_layout, ite_eq_right h2.1, ite_eq_right h3.1, ite_eq_right h3.2.1, ite_eq_right h4.1, ite_eq_right h4.2.1, ite_eq_right h4.2.2.1]
     split_ifs <;> first | rfl | omega
   have r00 : c₁.nreg 50000 = c.nreg md := by rw [hreg]; simp
   have r01 : c₁.nreg 50001 = c.nreg nf := by rw [hreg]; simp
@@ -344,30 +338,30 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
     simp [this.1, this.2.1, this.2.2.1, this.2.2.2.1, this.2.2.2.2.1, this.2.2.2.2.2.1,
       this.2.2.2.2.2.2.1, this.2.2.2.2.2.2.2]
   have hm₁ : c₁.nmem = c.nmem := rfl
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := rother ALLOC (by decide)
+  have hA1 := rother ALLOC (by decide)
   clear_value c₁
   clear hreg hc₁
   -- the locate call
   have hW3 : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
   obtain ⟨hD6, hLW⟩ := NFLoc.locChainWF_of hmwf (by have := hI.hw.1 ALLOC; omega) hWh
-  have hD : NFLoc.LocDPre P W c₁ := ⟨hG, hW3, by rw [r00]; exact hD6,
-    by rw [r00, hm₁]; exact hLW, chainModel C, by rw [r00, hm₁]; exact hmd, by rw [r02]; exact he⟩
+  have hD : NFLoc.LocDPre P W c₁ := ⟨hG, hW3, by rwa [r00],
+    by rwa [r00, hm₁], chainModel C, by rwa [r00, hm₁], by rwa [r02]⟩
   have hst : ∀ j, j < N.arcs.length → ProperPos (chainModel C) (Qof P) P.n (N.arc j).s := by
     intro j hj
     obtain ⟨_, -, -, -, -, -, -, hpr⟩ := hNF.2.2.2
     have := (hpr j hj).1
     rwa [show (Qof P).n = P.n from shear_n _ _] at this
   obtain ⟨c₂, k₂, e₂, hk₂, fr₂, hj₂, hl1, hl2⟩ := OracleR.myLoc_exec arcCover (P := P) (W := W)
-    (c := c₁) hI₁.hw hD hG hW3 (M := chainModel C) (N := N) (by rw [r00, hm₁]; exact hmd)
-    (Or.inl ⟨C, hP, rfl⟩) (by rw [r01, hm₁]; exact hN) hNF (by rw [r02, r03]; exact hpp) hst
+    (c := c₁) hI₁.hw hD hG hW3 (M := chainModel C) (N := N) (by rwa [r00, hm₁])
+    (Or.inl ⟨C, hP, rfl⟩) (by rwa [r01, hm₁]) hNF (by rwa [r02, r03]) hst
     r41 r42 r12 r11 (fun j hj => by rw [hm₁]; exact htab j hj) hbig
-    (by rw [r01]; exact hB) (by rw [r01, hm₁]; exact hAB) (by rw [r01, hm₁]; exact hSB) hTW
-  have hfo : ∀ r, bandOf r ∉ oracleBands → c₂.nreg r = c₁.nreg r := fun r hr => fr₂.1 r (by
+    (by rwa [r01]) (by rwa [r01, hm₁]) (by rwa [r01, hm₁]) hTW
+  have hfo := fun r hr => fr₂.1 r (by
     cases h : OracleR.BL r
     · rfl
     · exact absurd (bl_oracle h) hr)
   refine IRS.seq (K₁ := 5500 * (c.nreg TLR + 1)) (IRS.ofFrameB hI₁ e₂ hk₂
-    fr₂ (fun r h => bl_oracle h) (Q := fun c' => c' = c₂) rfl) ?_ |>.mono le_rfl (fun _ h => h)
+    fr₂ (fun r h => bl_oracle h) (Q := fun c' => c' = c₂) rfl) ?_ 
   rintro c₃ hI₃ - - rfl
   refine IRS.mono (IRS.reg (r := o) hI₃ (iscr_sw ho.1 ho.2)
     (Exec.copyN hI₃.hw o 120170)) le_rfl ?_

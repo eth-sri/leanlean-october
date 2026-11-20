@@ -34,8 +34,8 @@ theorem exists_rot_index {n : ℕ} (hn : 0 < n) (s j : ℕ) (hj : j < n) :
     ∃ i, i < n ∧ (s + i) % n = j := by
   refine ⟨(j + n - s % n) % n, Nat.mod_lt _ hn, ?_⟩
   rw [Nat.add_mod_mod]
-  have h1 : s % n < n := Nat.mod_lt s hn
-  have h2 : n * (s / n) + s % n = s := Nat.div_add_mod s n
+  have h1 := Nat.mod_lt s hn
+  have h2 := Nat.div_add_mod s n
   have h3 : s + (j + n - s % n) = n * (s / n + 1) + j := by
     rw [Nat.mul_succ]; omega
   rw [h3, Nat.mul_add_mod, Nat.mod_eq_of_lt hj]
@@ -121,7 +121,7 @@ theorem boundary_rotate : (P.rotate s).boundary = P.boundary := by
     exact ⟨(s + i) % P.n, Nat.mod_lt _ (by omega), (edge_rotate P s hi) ▸ hp⟩
   · rintro ⟨j, hj, hp⟩
     obtain ⟨i, hi, hij⟩ := exists_rot_index (by omega) s j hj
-    exact ⟨i, hi, by rw [edge_rotate P s hi, hij]; exact hp⟩
+    exact ⟨i, hi, by rwa [edge_rotate P s hi, hij]⟩
 
 /-- The filled region of the rotated polygon is the filled region of `P`. -/
 theorem filled_rotate : (P.rotate s).filled = P.filled := by
@@ -152,13 +152,12 @@ theorem validTriangle_rotate {t : Polygon.Triangle}
   rw [n_rotate] at h1 h2 h3
   have hn : 0 < P.n := by omega
   refine ⟨Nat.mod_lt _ hn, Nat.mod_lt _ hn, Nat.mod_lt _ hn, ?_⟩
-  rw [vtx_rotate P s h1, vtx_rotate P s h2, vtx_rotate P s h3] at h4
-  exact h4
+  rwa [vtx_rotate P s h1, vtx_rotate P s h2, vtx_rotate P s h3] at h4
 
 /-- Rotation preserves simplicity. -/
 theorem simple_rotate (hP : P.Simple) : (P.rotate s).Simple := by
   obtain ⟨h3, hinj, hedge⟩ := hP
-  refine ⟨by rw [n_rotate]; exact h3, ?_, ?_⟩
+  refine ⟨by rwa [n_rotate], ?_, ?_⟩
   · intro i j hi hj hij
     rw [n_rotate] at hi hj
     rw [vtx_rotate P s hi, vtx_rotate P s hj] at hij

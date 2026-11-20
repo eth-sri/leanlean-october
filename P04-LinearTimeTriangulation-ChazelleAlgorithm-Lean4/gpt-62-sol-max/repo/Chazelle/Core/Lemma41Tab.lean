@@ -22,56 +22,56 @@ variable {A : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop}
 
 /-- A pinned cell lies below the bound. -/
 theorem addr_lt (h : Robust A m Φ) {x v : ℕ}
-    (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' x = v) : x < A := by
+    (hΦ : ∀ m', (MemEqBelow A m' m) → Φ m' → m' x = v) : x < A := by
   by_contra hx
-  let m' : ℕ → ℕ := fun a => if a = x then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  let m' := fun a => if a = x then v + 1 else m a
+  have he : MemEqBelow A m' m := fun a ha => by ram_simp [m', ite_eq_right]
   have := hΦ m' he (h m' he)
   simp [m'] at this
 
 /-- A cell bounded by a constant lies below the bound. -/
 theorem le_lt (h : Robust A m Φ) {x v : ℕ}
-    (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' x ≤ v) : x < A := by
+    (hΦ : ∀ m', (MemEqBelow A m' m) → Φ m' → m' x ≤ v) : x < A := by
   by_contra hx
-  let m' : ℕ → ℕ := fun a => if a = x then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  let m' := fun a => if a = x then v + 1 else m a
+  have he : MemEqBelow A m' m := fun a ha => by ram_simp [m', ite_eq_right]
   have := hΦ m' he (h m' he)
   simp [m'] at this
 
 /-- A pointer to a pinned cell lies below the bound. -/
 theorem ptr_lt (h : Robust A m Φ) {p y v : ℕ}
-    (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' (m' p + y) = v) : p < A := by
+    (hΦ : ∀ m', (MemEqBelow A m' m) → Φ m' → m' (m' p + y) = v) : p < A := by
   by_contra hp
   let V := p + A + 1
-  let m' : ℕ → ℕ := fun a => if a = p then V else if a = V + y then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  let m' := fun a => if a = p then V else if a = V + y then v + 1 else m a
+  have he : MemEqBelow A m' m := fun a ha => by
+    ram_simp [m', V, ite_eq_right]
   have := hΦ m' he (h m' he)
   simp only [m', V] at this
   split_ifs at this <;> omega
 
 /-- One level of indirection before a bounded address. -/
 theorem bound2_lt (h : Robust A m Φ) {p u : ℕ}
-    (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' (m' p + u) < A) : p < A := by
+    (hΦ : ∀ m', (MemEqBelow A m' m) → Φ m' → m' (m' p + u) < A) : p < A := by
   by_contra hp
   let V := p + A + 1
-  let m' : ℕ → ℕ := fun a => if a = p then V else if a = V + u then A else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  let m' := fun a => if a = p then V else if a = V + u then A else m a
+  have he : MemEqBelow A m' m := fun a ha => by
+    ram_simp [m', V, ite_eq_right]
   have := hΦ m' he (h m' he)
   simp only [m', V] at this
   split_ifs at this <;> omega
 
 /-- Two levels of indirection before a bounded address. -/
 theorem bound3_lt (h : Robust A m Φ) {p u w : ℕ}
-    (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' (m' (m' p + u) + w) < A) : p < A := by
+    (hΦ : ∀ m', (MemEqBelow A m' m) → Φ m' → m' (m' (m' p + u) + w) < A) : p < A := by
   by_contra hp
   let V := p + A + 1
   let V2 := V + u + 1
-  let m' : ℕ → ℕ := fun a =>
+  let m' := fun a =>
     if a = p then V else if a = V + u then V2 else if a = V2 + w then A else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V, V2]; rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+  have he : MemEqBelow A m' m := fun a ha => by
+    simp only [m', V, V2]; ram_rw [ite_eq_right, ite_eq_right, ite_eq_right]
   have := hΦ m' he (h m' he)
   simp only [m', V, V2] at this
   split_ifs at this <;> omega
@@ -79,8 +79,8 @@ theorem bound3_lt (h : Robust A m Φ) {p u w : ℕ}
 /-- A robust normal form lies below the bound. -/
 theorem nfWithin_lt {f : ℕ} {N : NF} (hN : NFWithin m f A N) : f < A := by
   by_contra hf
-  let m' : ℕ → ℕ := fun a => if a = f then m f + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  let m' := fun a => if a = f then m f + 1 else m a
+  have he : MemEqBelow A m' m := fun a ha => by ram_simp [m', ite_eq_right]
   have h1 := (hN m' he).1
   have h2 := hN.holds.1
   simp only [m', ite_true] at h1
@@ -101,11 +101,11 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
       m (m (m (h + 2) + g) + 3 * i + 2) + 2 < A) := by
   have hG := hR.holds
   -- the header
-  have h0 : h < A := le_lt hR (x := h) (v := topGrade P.n + 1) fun m' _ hm' => hm'.1
-  have h1 : h + 1 < A := ptr_lt hR (p := h + 1) (y := 0) (v := P.n) fun m' _ hm' => hm'.2.1.1
-  have h3 : h + 3 < A := ptr_lt hR (p := h + 3) (y := 2) (v := 1) fun m' _ hm' => by
+  have h0 := le_lt hR (x := h) (v := topGrade P.n + 1) fun m' _ hm' => hm'.1
+  have h1 := ptr_lt hR (p := h + 1) (y := 0) (v := P.n) fun m' _ hm' => hm'.2.1.1
+  have h3 := ptr_lt hR (p := h + 3) (y := 2) (v := 1) fun m' _ hm' => by
     have := hm'.2.2.1 2 hn; simpa using this
-  have h2 : h + 2 < A := bound3_lt hR (p := h + 2) (u := 0) (w := 3 * 0) fun m' he hm' => by
+  have h2 := bound3_lt hR (p := h + 2) (u := 0) (w := 3 * 0) fun m' he hm' => by
     obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 0 0 (by rw [he h h0]; exact hΛ)
       (by unfold gradeCount; omega)
     have := hwf.1; omega
@@ -118,28 +118,23 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
       addr_lt hR (v := Cost.ceilBeta i) fun m' he hm' => ?_⟩
     · have := (hm'.2.1.2.2.1 i hi).1; rwa [he _ h1] at this
     · have := (hm'.2.1.2.2.1 i hi).2
-      have e2 := hm'.2.1.2.1
-      rw [he _ h1] at this e2
-      have e3 : m' (m (h + 1) + 1) = m (m (h + 1) + 1) := by
-        have hlt : m (h + 1) + 1 < A := addr_lt hR (v := topGrade P.n) fun m'' he'' hm'' => by
-          have := hm''.2.1.2.1; rwa [he'' _ h1] at this
-        exact he _ hlt
-      exact this
+      
+      simp_all
   · refine ⟨hG.2.2.1 y hy, addr_lt hR (v := y / 2) fun m' he hm' => ?_⟩
     have := hm'.2.2.1 y hy; rwa [he _ h3] at this
-  · have hgi : ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → g < m' h := fun m' he => by rw [he h h0]; exact hg
-    have hT : m (h + 2) + g < A := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
+  · have hgi : ∀ m' : ℕ → ℕ, (MemEqBelow A m' m) → g < m' h := fun m' he => by rwa [he h h0]
+    have hT := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 g i (hgi m' he) hi
         have := hwf.1; rw [he _ h2] at this; omega
-    have hO : m (m (h + 2) + g) + 3 * i + 2 < A := ptr_lt hR (y := 2) (v := gradeGran g)
+    have hO := ptr_lt hR (y := 2) (v := gradeGran g)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hm'.2.2.2 g i (hgi m' he) hi
         rw [he _ h2, he _ hT] at e3; exact e3
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hG.2.2.2 g i hg hi
     refine ⟨hT, hO, e3, addr_lt hR (v := gradeGran g) fun m' he hm' => ?_⟩
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e4⟩ := hm'.2.2.2 g i (hgi m' he) hi
-    rw [he _ h2, he _ hT, he _ hO] at e4; exact e4
+    rwa [he _ h2, he _ hT, he _ hO] at e4
 
 end
 

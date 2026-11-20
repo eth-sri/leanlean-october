@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShotListMath
 public import Chazelle.Core.SweepPrimOff
 
@@ -67,10 +69,10 @@ theorem key_lt_iff {M : Model} {Q : Polygon} {n : ℕ} {x y : WPos} (hx : NormPo
       by_cases hxh : 0 < x.hgt
       · by_cases hyh : 0 < y.hgt
         · exact absurd ⟨he, hxh, hyh⟩ hne
-        · rw [py.1 (by omega)] at hlt; linarith
+        · ram_rw [py.1] at hlt; linarith
       · by_cases hyh : 0 < y.hgt
         · simp [hxh, hyh]
-        · rw [px.1 (by omega), py.1 (by omega)] at hlt; exact absurd hlt (lt_irrefl _)
+        simp_all
     · exfalso
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast he
       linarith
@@ -79,9 +81,7 @@ theorem key_lt_iff {M : Model} {Q : Polygon} {n : ℕ} {x y : WPos} (hx : NormPo
       linarith
     · rw [he]
       split_ifs at hi with h1 h2 h2 <;> try omega
-      rw [px.1 (by omega)]
-      have := py.2 h2
-      linarith
+      simp_all
 
 /-- The order of two keys is the order of their offsets from `0`. -/
 theorem key_lt_iff_off {M : Model} {Q : Polygon} {x y : WPos} (hx0 : 0 ≤ M.param Q x)
@@ -114,9 +114,14 @@ def kltB (eu hu ev hv d z : ℕ) : Stmt :=
 def Bone (d : ℕ) (r : ℕ) : Bool := r == d
 
 theorem wr_kltB (eu hu ev hv d z : ℕ) : wr (Bone d) (kltB eu hu ev hv d z) = true := by
-  simp [wr, kltB, wrOK, Bone]
+  simp [write_check, kltB, Bone]
 
-theorem kltB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+
+include P hw in
+theorem kltB_exec (hW : 1 ≤ W)
     (eu hu ev hv d z : ℕ) (hz : c.nreg z = 0) :
     ∃ c' k, Exec P W (kltB eu hu ev hv d z) c c' k ∧ k ≤ 9 ∧
       BitIs c' d (LexLt (c.nreg eu) (ibv (c.nreg hu)) (c.nreg ev) (ibv (c.nreg hv))) ∧
@@ -133,23 +138,22 @@ theorem kltB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ := .ifLtN_true h1 e1
     exact ⟨_, _, ex, by omega, v1 _ (Or.inl h1), exec_frameB ex wk⟩
   by_cases h2 : c.nreg ev < c.nreg eu
-  · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ := .ifLtN_false h1 (.ifLtN_true h2 e0)
+  · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ := (by ram_path)
     exact ⟨_, _, ex, by omega, v0 _ (by omega), exec_frameB ex wk⟩
   by_cases h3 : c.nreg z < c.nreg hu
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
-      .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 e0))
+      (by ram_path)
     refine ⟨_, _, ex, by omega, v0 _ ?_, exec_frameB ex wk⟩
     rw [hz] at h3; simp only [h3, ↓reduceIte]; split_ifs <;> omega
   by_cases h4 : c.nreg z < c.nreg hv
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
-      .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.ifLtN_true h4 e1)))
+      .ifLtN_false h1 (.ifLtN_false h2 (by ram_path))
     refine ⟨_, _, ex, by omega, v1 _ ?_, exec_frameB ex wk⟩
-    rw [hz] at h3 h4; simp only [h4, ↓reduceIte, show ¬ 0 < c.nreg hu from h3]; omega
+    rw [hz] at h3 h4; simp only [h4, ↓reduceIte, h3]; omega
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.ifLtN_false h4 e0)))
     refine ⟨_, _, ex, by omega, v0 _ ?_, exec_frameB ex wk⟩
-    rw [hz] at h3 h4
-    simp only [show ¬ 0 < c.nreg hv from h4, show ¬ 0 < c.nreg hu from h3, ↓reduceIte]; omega
+    simp_all
 
 /-! ## The selection of the pieces -/
 
@@ -193,8 +197,7 @@ theorem cutK_eq_selT {α : Type} (ka kb kx ky : ℝ) (a b x y : α) {c1 c2 c3 c4
       · simp [q3, h3.2 q3, End.val]
       · have : c3 = false := by cases c3 <;> simp_all
         simp [q3, this, End.val]
-    · have : c2 = false := by cases c2 <;> simp_all
-      simp [q2, this]
+    simp_all
   · have e1 : c1 = false := by cases c1 <;> simp_all
     simp only [q1, e1, ↓reduceIte, Bool.false_eq_true]
     by_cases q4 : sideInArc ka kb kx
@@ -209,8 +212,7 @@ theorem cutK_eq_selT {α : Type} (ka kb kx ky : ℝ) (a b x y : α) {c1 c2 c3 c4
       · simp only [q6, ↓reduceIte, h6.2 q6]
         by_cases q2 : sideInArc ka kb ky
         · simp [q2, h2.2 q2, End.val]
-        · have : c2 = false := by cases c2 <;> simp_all
-          simp [q2, this]
+        simp_all
       · have e6 : c6 = false := by cases c6 <;> simp_all
         simp [q6, e6, End.val]
 
@@ -263,8 +265,9 @@ def SelDisj (L hx hy z N S Cn : ℕ) : Prop :=
   ∀ e : End, ∀ o, (o = Cn ∨ (N ≤ o ∧ o < N + 4) ∨ (S ≤ o ∧ o < S + 4)) →
     (End.regs L hx hy z e).1 ≠ o ∧ (End.regs L hx hy z e).2 ≠ o
 
+include P hw in
 /-- **Writing a piece**: the ends read from `u`, `v` (not overwritten before they are read). -/
-theorem putPiece_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d : ℕ}
+theorem putPiece_exec {d : ℕ}
     {u v : ℕ × ℕ} (hu : u.2 ≠ d) (hv1 : v.1 ≠ d ∧ v.1 ≠ d + 1)
     (hv2 : v.2 ≠ d ∧ v.2 ≠ d + 1 ∧ v.2 ≠ d + 2) :
     ∃ c' k, Exec P W (block (putPiece d u v)) c c' k ∧ k = 4 ∧
@@ -277,11 +280,11 @@ theorem putPiece_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   unfold putPiece
   exec_block
   refine ⟨by omega, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  · simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-    refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> simp only [upd] <;> split_ifs <;> first | rfl | omega
+  · simp_all [pieceR, posR, upd] 
   · simp only [upd]; split_ifs <;> first | rfl | omega
 
-theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+include P hw in
+theorem selLeaf_exec (hW : 2 ≤ W)
     {L hx hy z N S Cn : ℕ} (hd : SelDisj L hx hy z N S Cn) (hNS : N + 4 ≤ S ∨ S + 4 ≤ N)
     (hC : Cn < N ∨ N + 4 ≤ Cn) (hC' : Cn < S ∨ S + 4 ≤ Cn) (tl : List (End × End))
     (htl : tl.length ≤ 2) :
@@ -290,13 +293,11 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
         posR c (End.regs L hx hy z e.2))) ∧
       (∀ r, r ≠ Cn → ¬ (N ≤ r ∧ r < N + 4) → ¬ (S ≤ r ∧ r < S + 4) → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have ne : ∀ e : End, ∀ o, (o = Cn ∨ (N ≤ o ∧ o < N + 4) ∨ (S ≤ o ∧ o < S + 4)) →
-      (End.regs L hx hy z e).1 ≠ o ∧ (End.regs L hx hy z e).2 ≠ o := hd
+  have ne := hd
   match tl, htl with
   | [], _ =>
     unfold selLeaf
-    exec_block
-    · omega
+    exec_block!
     · refine ⟨by omega, ⟨by simp, by simp, by simp, by simp⟩, fun r h1 _ _ => by simp [upd, h1],
         rfl, rfl, rfl, rfl⟩
   | [p], _ =>
@@ -318,8 +319,7 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       simp only [pieceR, posR]
       have : Cn ≠ N ∧ Cn ≠ N + 1 ∧ Cn ≠ N + 2 ∧ Cn ≠ N + 3 := by omega
       simp [upd, this.1.symm, this.2.1.symm, this.2.2.1.symm, this.2.2.2.symm]
-    · simp only [upd, h1, ↓reduceIte]
-      exact r₁ r h2
+    ram_finish
   | [p, q], _ =>
     obtain ⟨u, v⟩ := p
     obtain ⟨u', v'⟩ := q
@@ -367,15 +367,15 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       have : Cn ≠ S ∧ Cn ≠ S + 1 ∧ Cn ≠ S + 2 ∧ Cn ≠ S + 3 := by omega
       simp only [upd, ↓reduceIte, this.1.symm, this.2.1.symm, this.2.2.1.symm,
         this.2.2.2.symm, and_self]
-    · simp only [upd, h1, ↓reduceIte]
-      rw [r₂ r h3, r₁ r h2]
+    · ram_finish
 
 /-- The pieces of the selection, as walk positions read in `c`. -/
 def selPos (c : Config) (L hx hy z : ℕ) (tl : List (End × End)) : List (WPos × WPos) :=
   tl.map fun e => (posR c (End.regs L hx hy z e.1), posR c (End.regs L hx hy z e.2))
 
+include P hw in
 /-- **The selection tree** computes the pieces of `selT` at the bits of its registers. -/
-theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
+theorem selB_exec (hW : 2 ≤ W)
     {L hx hy z N S Cn hpA hpB c1 c2 c3 c4 c5 c6 : ℕ} (hd : SelDisj L hx hy z N S Cn)
     (hNS : N + 4 ≤ S ∨ S + 4 ≤ N) (hC : Cn < N ∨ N + 4 ≤ Cn) (hC' : Cn < S ∨ S + 4 ≤ Cn)
     (hz : c.nreg z = 0) (b1 : c.nreg c1 ≤ 1) (b2 : c.nreg c2 ≤ 1) (b3 : c.nreg c3 ≤ 1)
@@ -401,59 +401,59 @@ theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
         by_cases q3 : c.nreg c3 = 1
         · have d3 : decide (c.nreg c3 = 1) = true := by simp [q3]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .X)] (by simp)
-          refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1) (.ifLtN_true ((t b2).2 q2)
-            (.ifLtN_true ((t b3).2 q3) ex))), by omega, ?_⟩
-          rw [d1, d2, d3]; exact h
+          refine ⟨c', _, (by ram_path), by omega, ?_⟩
+          rwa [d1, d2, d3]
         · have d3 : decide (c.nreg c3 = 1) = false := by simp [q3]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1) (.ifLtN_true ((t b2).2 q2)
             (.ifLtN_false (fun h' => q3 ((t b3).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d2, d3]; exact h
+          rwa [d1, d2, d3]
       · have d2 : decide (c.nreg c2 = 1) = false := by simp [q2]
         obtain ⟨c', k, ex, hk, h⟩ := leaf [] (by simp)
         refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1)
           (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)), by omega, ?_⟩
-        rw [d1, d2]; exact h
+        rwa [d1, d2]
     · have d1 : decide (c.nreg c1 = 1) = false := by simp [q1]
-      have n1 : ¬ c.nreg z < c.nreg c1 := fun h' => q1 ((t b1).1 h')
+      have n1 := fun h' => q1 ((t b1).1 h')
       by_cases q4 : c.nreg c4 = 1
       · have d4 : decide (c.nreg c4 = 1) = true := by simp [q4]
         by_cases q5 : c.nreg c5 = 1
         · have d5 : decide (c.nreg c5 = 1) = true := by simp [q5]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X), (.Y, .B)] (by simp)
-          refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_true ((t b4).2 q4)
-            (.ifLtN_true ((t b5).2 q5) ex))), by omega, ?_⟩
-          rw [d1, d4, d5]; exact h
+          refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (by ram_path)), by omega, ?_⟩
+          rwa [d1, d4, d5]
         · have d5 : decide (c.nreg c5 = 1) = false := by simp [q5]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_true ((t b4).2 q4)
             (.ifLtN_false (fun h' => q5 ((t b5).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d4, d5]; exact h
+          rwa [d1, d4, d5]
       · have d4 : decide (c.nreg c4 = 1) = false := by simp [q4]
-        have n4 : ¬ c.nreg z < c.nreg c4 := fun h' => q4 ((t b4).1 h')
+        have n4 := fun h' => q4 ((t b4).1 h')
         by_cases q6 : c.nreg c6 = 1
         · have d6 : decide (c.nreg c6 = 1) = true := by simp [q6]
           by_cases q2 : c.nreg c2 = 1
           · have d2 : decide (c.nreg c2 = 1) = true := by simp [q2]
             obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] (by simp)
             refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
-              (.ifLtN_true ((t b6).2 q6) (.ifLtN_true ((t b2).2 q2) ex)))), by omega, ?_⟩
-            rw [d1, d4, d6, d2]; exact h
+              (by ram_path))), by omega, ?_⟩
+            rwa [d1, d4, d6, d2]
           · have d2 : decide (c.nreg c2 = 1) = false := by simp [q2]
             obtain ⟨c', k, ex, hk, h⟩ := leaf [] (by simp)
             refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
               (.ifLtN_true ((t b6).2 q6) (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)))),
               by omega, ?_⟩
-            rw [d1, d4, d6, d2]; exact h
+            rwa [d1, d4, d6, d2]
         · have d6 : decide (c.nreg c6 = 1) = false := by simp [q6]
           obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] (by simp)
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
             (.ifLtN_false (fun h' => q6 ((t b6).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d4, d6]; exact h
+          rwa [d1, d4, d6]
   · have hpd : decide (c.nreg hpA < c.nreg hpB) = false := by simp [hp]
     rw [hpd]
     obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] (by simp)
     exact ⟨c', _, .ifLtN_false hp ex, by omega, h⟩
+
+end
 
 /-! ## A sequence of comparisons -/
 
@@ -499,7 +499,7 @@ theorem kltSeq_exec {P : Polygon} {W : ℕ} (hW : 1 ≤ W) (z : ℕ) :
       intro h; apply hzo; rw [h]; simp [cmpOuts]
     have z₁ : c₁.nreg z = 0 := by
       have g : Bone d z = false := by simp [Bone, hzd]
-      rw [f₁.1 z g]; exact hz
+      rwa [f₁.1 z g]
     obtain ⟨c₂, k₂, e₂, hk₂, b₂, f₂⟩ := kltSeq_exec hW z t c₁ e₁.wb_right z₁ hok
     have keep1 : ∀ r, r ∉ cmpOuts ((eu, hu, ev, hv, d) :: t) → c₂.nreg r = c.nreg r := by
       intro r hr

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvOffer
 public import Chazelle.Core.SweepEvCand3
 
@@ -28,7 +30,7 @@ open Chazelle.Merge (FreeAt)
 
 @[expose] public section
 
-def cG : ℕ := sw 2250
+@[ram_layout] def cG : ℕ := sw 2250
 
 /-- The registers the genuineness check may write. -/
 def GR (r : ℕ) : Prop := (sw 700 ≤ r ∧ r < sw 2200) ∨ r = cG ∨ (sw 3000 ≤ r ∧ r < sw 4000)
@@ -40,10 +42,10 @@ def GenOK (P : Polygon) (W : ℕ) (c₀ : Config) (J : Merge.Junction) (g : Stmt
   ∀ (c₁ : Config) (a : Point) (σ τ : ℝ), IInv W c₀ c₁ → c₁.nreg ALLOC + KG ≤ W →
     c₁.nreg oD ≤ 1 → σ = dirOf (c₁.nreg oD) → AbsRec P c₁ oAbsA a.1 J.left.radius →
     a ∈ J.right.set → a ≠ J.shared → a.2 ≤ J.left.top.2 → 0 < τ →
-    c₁.nreg (eA + 1) < (chainModel J.left).W.n →
-    ProperPos (chainModel J.left) (Qof P) P.n ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩ →
-    Arrival (chainModel J.left).W (rayPt a σ τ) σ (c₁.nreg (eA + 1))
-      ((chainModel J.left).param (Qof P) ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩) →
+    c₁.nreg (eA + 1) < J.leftModel.W.n →
+    ProperPos J.leftModel (Qof P) P.n ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩ →
+    Arrival J.leftModel.W (rayPt a σ τ) σ (c₁.nreg (eA + 1))
+      (J.leftModel.param (Qof P) ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩) →
     IRS P W c₀ g c₁ KG (fun c' => BitIs c' cG (Genuine J.left a σ τ) ∧ EFr GR c₁ c')
 
 /-- The tail after a genuine hit before the far end. -/
@@ -74,7 +76,7 @@ def OfferRel (P : Polygon) (J : Merge.Junction) (c c' : Config) (e h u d : ℕ) 
 
 /-- A rejected candidate: memory below the allocator and best candidate unchanged. -/
 def RejAt (c c' : Config) : Prop :=
-  (∀ x, x < c.nreg ALLOC → c'.nmem x = c.nmem x) ∧ BestSame c c'
+  (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ BestSame c c'
 
 /-- A candidate accepted at the position `(e, h)`. -/
 def AccAt (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (T j u d : ℕ) (a : Point)

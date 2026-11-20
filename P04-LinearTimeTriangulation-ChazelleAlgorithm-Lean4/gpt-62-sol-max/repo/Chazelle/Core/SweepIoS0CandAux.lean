@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoS0CandBsSpec
 
 /-!
@@ -32,7 +36,7 @@ open Chazelle.Chain (sidePt)
 @[expose] public section
 
 /-- The base of the slot table. -/
-def sB : ℕ := sw 620
+@[ram_layout] def sB : ℕ := sw 620
 
 /-- The slot of a stop record with direction code `b` (`0` for east). -/
 def sOf (b : ℕ) : ℕ := if b = 1 then 0 else 1
@@ -48,17 +52,17 @@ def logPos (m : ℕ → ℕ) (AL i : ℕ) : WPos := ⟨m (AL + 7 * i), m (AL + 7
 
 /-- The point of the walk of `C` at log record `i`. -/
 noncomputable def logPt (P : Polygon) (J : Merge.Junction) (m : ℕ → ℕ) (AL i : ℕ) : Point :=
-  sidePt (chainModel J.whole).W (logPos m AL i).edge
-    ((chainModel J.whole).param (Qof P) (logPos m AL i))
+  sidePt J.wholeModel.W (logPos m AL i).edge
+    (J.wholeModel.param (Qof P) (logPos m AL i))
 
 /-- **A good slot**: flag `≤ 1`; flag `1`: a proper position of the model of `C₂` whose point is a
 candidate origin for the point of log record `i` in the direction of the slot. -/
 def SlotOK (P : Polygon) (J : Merge.Junction) (m : ℕ → ℕ) (B AL i s : ℕ) : Prop :=
   m (slotA B i s) ≤ 1 ∧
     (m (slotA B i s) = 1 →
-      m (slotA B i s + 1) < (chainModel J.right).W.n ∧
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨m (slotA B i s + 1), m (slotA B i s + 2)⟩ ∧
-      S0C.CandAt J ((chainModel J.right).pos (Qof P) ⟨m (slotA B i s + 1), m (slotA B i s + 2)⟩)
+      m (slotA B i s + 1) < J.rightModel.W.n ∧
+      ProperPos J.rightModel (Qof P) P.n ⟨m (slotA B i s + 1), m (slotA B i s + 2)⟩ ∧
+      S0C.CandAt J (J.rightModel.pos (Qof P) ⟨m (slotA B i s + 1), m (slotA B i s + 2)⟩)
         (dS s) (logPt P J m AL i))
 
 /-- A regular endpoint query: its origin is a point of `C₂`, neither the shared vertex nor the
@@ -77,15 +81,15 @@ def AuxCore (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) : Prop :
     SlotOK P J c.nmem (c.nreg sB) (rd c bSweep 300) i s) ∧
   (∀ x, x < rd c bSweep 201 → ∃ i, i < rd c bSweep 301 ∧
     c.nmem (rd c bSweep 300 + 7 * i) = c.nmem (rd c bSweep 200 + 5 * x) ∧
-    (chainModel J.whole).param (Qof P) (logPos c.nmem (rd c bSweep 300) i) =
-      (chainModel J.whole).param (Qof P)
+    J.wholeModel.param (Qof P) (logPos c.nmem (rd c bSweep 300) i) =
+      J.wholeModel.param (Qof P)
         ⟨c.nmem (rd c bSweep 200 + 5 * x), c.nmem (rd c bSweep 200 + 5 * x + 1)⟩ ∧
     c.nmem (slotA (c.nreg sB) i (sOf (c.nmem (rd c bSweep 200 + 5 * x + 4)))) = 1) ∧
   (∀ j, j < 2 * N₂.nChords → ValidO J (Qof P) N₂ j → c.nmem (rd c bSweep 302 + 3 * j) = 1 →
     ∃ i, i < rd c bSweep 301 ∧
     c.nmem (rd c bSweep 300 + 7 * i) = c.nmem (rd c bSweep 302 + 3 * j + 1) ∧
-    (chainModel J.whole).param (Qof P) (logPos c.nmem (rd c bSweep 300) i) =
-      (chainModel J.whole).param (Qof P)
+    J.wholeModel.param (Qof P) (logPos c.nmem (rd c bSweep 300) i) =
+      J.wholeModel.param (Qof P)
         ⟨c.nmem (rd c bSweep 302 + 3 * j + 1), c.nmem (rd c bSweep 302 + 3 * j + 2)⟩ ∧
     c.nmem (slotA (c.nreg sB) i (j % 2)) = 1)
 
@@ -93,7 +97,7 @@ def AuxCore (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) : Prop :
 agreeing on the fixed registers (except `sw 11`) and on the memory below a bound `A₀`. -/
 def Aux (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) : Prop :=
   ∃ A₀, A₀ ≤ c.nreg ALLOC ∧ ∀ c' : Config, (∀ q, IFix q → q ≠ sw 11 → c'.nreg q = c.nreg q) →
-    (∀ a, a < A₀ → c'.nmem a = c.nmem a) → A₀ ≤ c'.nreg ALLOC → AuxCore P J N₂ c'
+    (MemEqBelow A₀ c'.nmem c.nmem) → A₀ ≤ c'.nreg ALLOC → AuxCore P J N₂ c'
 
 /-- `Aux` is robust along `IInv`. -/
 theorem aux_iinv {P : Polygon} {W : ℕ} {J : Merge.Junction} {N₂ : NF} {c₀ c : Config}
@@ -102,17 +106,16 @@ theorem aux_iinv {P : Polygon} {W : ℕ} {J : Merge.Junction} {N₂ : NF} {c₀ 
   refine ⟨A₀, le_trans hA₀ hI.hA, fun c' hr hm hA => h c' (fun q hq hq11 => ?_)
     (fun a ha => ?_) hA⟩
   · rw [hr q hq hq11, hI.hin q hq]
-  · rw [hm a ha, hI.hm a (by omega)]
+  · ram_rw [hm a ha, hI.hm a]
 
 /-- `Aux` survives a write of `sw 11`. -/
 theorem aux_sw11 {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v : ℕ}
     (h : Aux P J N₂ c) : Aux P J N₂ { c with nreg := upd c.nreg (sw 11) v } := by
   obtain ⟨A₀, hA₀, h⟩ := h
-  have hAl : upd c.nreg (sw 11) v ALLOC = c.nreg ALLOC := upd_other _ _ _ (by unfold ALLOC sw; omega)
-  refine ⟨A₀, by simp only; rw [hAl]; exact hA₀,
+  have hAl : upd c.nreg (sw 11) v ALLOC = c.nreg ALLOC := upd_other _ _ _ (by reg_omega)
+  refine ⟨A₀, by assumption,
     fun c' hr hm hA => h c' (fun q hq hq11 => ?_) hm hA⟩
-  rw [hr q hq hq11]
-  exact upd_other _ _ _ hq11
+  ram_finish
 
 theorem rd_sw (c : Config) (k : ℕ) : rd c bSweep k = c.nreg (sw k) := rfl
 
@@ -120,10 +123,10 @@ theorem rd_sw (c : Config) (k : ℕ) : rd c bSweep k = c.nreg (sw k) := rfl
 memory below the allocator. -/
 theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' : Config}
     (h : AuxCore P J N₂ c) (hr : ∀ q, IFix q → q ≠ sw 11 → c'.nreg q = c.nreg q)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     AuxCore P J N₂ c' := by
   have fx : ∀ k, k < 700 → k ≠ 11 → c'.nreg (sw k) = c.nreg (sw k) := fun k hk h11 =>
-    hr _ (by unfold IFix sw; omega) (by unfold sw; omega)
+    hr _ (by reg_omega) (by reg_omega)
   obtain ⟨b1, b2, b3, b4, hsl, hst, htb⟩ := h
   simp only [AuxCore, rd_sw] at *
   have eB : c'.nreg sB = c.nreg sB := fx 620 (by norm_num) (by norm_num)
@@ -157,26 +160,23 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
   have mB0 : ∀ i, i < E → ∀ s, s ≤ 1 → c'.nmem (slotA B i s) = c.nmem (slotA B i s) :=
     fun i hi s hs => by simpa using mB i hi s hs 0 (by norm_num)
   have hlogPos : ∀ i, i < E → logPos c'.nmem AL i = logPos c.nmem AL i := fun i hi => by
-    unfold logPos; rw [mL0 i hi, mL i hi 1 (by norm_num)]
+    frame_finish [logPos, mL0 i hi, mL]
   have hlogPt : ∀ i, i < E → logPt P J c'.nmem AL i = logPt P J c.nmem AL i := fun i hi => by
     unfold logPt; rw [hlogPos i hi]
   refine ⟨by omega, by omega, by omega, by omega, fun i hi s hs => ?_, fun x hx => ?_,
     fun j hj hv hf => ?_⟩
   · obtain ⟨f1, f2⟩ := hsl i hi s hs
-    unfold SlotOK
-    rw [mB0 i hi s hs, mB i hi s hs 1 (by norm_num), mB i hi s hs 2 (by norm_num),
-      hlogPt i hi]
-    exact ⟨f1, f2⟩
+    frame_finish [SlotOK, mB0 i hi s hs, mB, hlogPt i hi]
   · obtain ⟨i, hi, e1, e2, e3⟩ := hst x hx
     refine ⟨i, hi, ?_, ?_, ?_⟩
     · rw [mL0 i hi, mS0 x hx, e1]
-    · rw [hlogPos i hi, mS0 x hx, mS x hx 1 (by norm_num), e2]
-    · rw [mS x hx 4 (by norm_num), mB0 i hi _ (by unfold sOf; split_ifs <;> omega), e3]
+    · ram_rw [hlogPos i hi, mS0 x hx, mS x hx 1, e2]
+    · ram_rw [mS x hx 4, mB0 i hi _ (by unfold sOf; split_ifs <;> omega), e3]
   · obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv (by rw [← mT0 j hj]; exact hf)
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [mL0 i hi, mT j hj 1 (by norm_num), e1]
-    · rw [hlogPos i hi, mT j hj 1 (by norm_num), mT j hj 2 (by norm_num), e2]
-    · rw [mB0 i hi _ (by omega), e3]
+    · ram_rw [mL0 i hi, mT j hj 1, e1]
+    · ram_rw [hlogPos i hi, mT j hj 1, mT j hj 2, e2]
+    · ram_rw [mB0 i hi, e3]
 
 /-- **`AuxCore` gives `Aux`.** -/
 theorem aux_of_core {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config}

@@ -45,11 +45,11 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     (N.region r).arcs.length ≤ 5 := by
   classical
   obtain ⟨hF, -, -, reg, hR, -, hA, hRs, -⟩ := hN
-  have hU : reg r ∈ M.regions (N.F M Q) := hR.1 r hr
+  have hU := hR.1 r hr
   have hnd := (hRs r hr).2.2.1
   set L := (N.region r).arcs
   set f : ℕ → ℝ × ℝ := fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e)
-  have hmem : ∀ j ∈ L, j < N.arcs.length ∧ (N.arc j).reg = r := fun j hj => (hA.2.2.2 r hr j).1 hj
+  have hmem := fun j hj => (hA.2.2.2 r hr j).1 hj
   have hinj : Set.InjOn f {j | j ∈ L} := by
     intro j hj j' hj' hjj
     obtain ⟨h1, h2⟩ := hmem j hj
@@ -59,14 +59,13 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    rwa [h2] at this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdg := hdeg _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
     rw [show ({j | j ∈ L} : Set ℕ) = ↑L.toFinset by ext; simp, Set.ncard_coe_finset,
       List.toFinset_card_of_nodup hnd]
-  have h1 : ({j | j ∈ L} : Set ℕ).ncard = (f '' {j | j ∈ L}).ncard :=
-    (Set.InjOn.ncard_image hinj).symm
+  have h1 := (Set.InjOn.ncard_image hinj).symm
   have h2 := Set.ncard_le_ncard hsub hfin
   omega
 
@@ -76,10 +75,10 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
     (hperm : E.Perm (List.range (2 * L.length)))
     (hsort : E.Pairwise (BuildNF.codeLe (interiorModel Q) Q L))
     (hdeg : (interiorModel Q).DegLe
-      ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) 4) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) :
-    HFacts Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hNdef
+      (interiorChords Q L E) 4) {r : ℕ}
+    (hr : r < (interiorNF Q L E).nRegions) :
+    HFacts Q.n (interiorNF Q L E) r := by
+  set N := interiorNF Q L E with hNdef
   have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have hN : IsNF (interiorModel Q) Q N := DownMath.isNF_build hQ hL hperm hsort
   have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ

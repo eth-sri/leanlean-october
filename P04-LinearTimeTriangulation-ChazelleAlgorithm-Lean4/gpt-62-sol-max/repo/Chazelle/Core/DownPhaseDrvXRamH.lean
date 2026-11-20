@@ -105,14 +105,14 @@ structure XE (P : Polygon) (W : ℕ) (v : XV) (N NR : NF) (ras : ℕ → ℕ) (A
   hW : 256 * (Qof P).n + 16 ≤ W
   hK : NR.chords.length = v.K
   hA0 : A0 + 5 * v.K ≤ W
-  hHost : ∀ mm : ℕ → ℕ, (∀ a, a < A0 → mm a = mem0 a) → HostAt mm v.HB v.H
+  hHost : ∀ mm : ℕ → ℕ, (MemEqBelow A0 mm mem0) → HostAt mm v.HB v.H
   hwf : HostWF (Qof P).n v.H
   hlen : v.H.length ≤ 64
   hHB : v.HB + 3 * v.H.length + 1 ≤ A0
   hm1 : 1 ≤ v.m
   hmp : v.m + 1 = (v.H.pts (Qof P).n).length
   hT : v.T ≤ v.m
-  hNRm : ∀ mm : ℕ → ℕ, (∀ a, a < A0 → mm a = mem0 a) → ∀ i, i < v.K →
+  hNRm : ∀ mm : ℕ → ℕ, (MemEqBelow A0 mm mem0) → ∀ i, i < v.K →
     mm (v.CB + 5 * i) = (NR.chord i).h ∧ mm (v.CB + 5 * i + 1) = (NR.chord i).lp ∧
       mm (v.CB + 5 * i + 2) = (NR.chord i).rp
   hCB : ∀ i, i < v.K → v.CB + 5 * i + 4 < A0
@@ -121,19 +121,19 @@ structure XE (P : Polygon) (W : ℕ) (v : XV) (N NR : NF) (ras : ℕ → ℕ) (A
   hA : N.arcs.length = v.A
   hgood : ∀ j, j < v.A → GoodPos (Qof P) (N.arc j).s ∧ GoodPos (Qof P) (N.arc j).e
   hinc : ∀ j j', j < j' → j' < N.arcs.length →
-    (interiorModel (Qof P)).key (Qof P) (N.arc j).s <
-      (interiorModel (Qof P)).key (Qof P) (N.arc j').s
+    P.inputModel.key (Qof P) (N.arc j).s <
+      P.inputModel.key (Qof P) (N.arc j').s
   hnext : ∀ j, j < N.arcs.length →
-    (interiorModel (Qof P)).key (Qof P) (N.arc j).e =
-      (interiorModel (Qof P)).key (Qof P) (N.arc ((j + 1) % N.arcs.length)).s
+    P.inputModel.key (Qof P) (N.arc j).e =
+      P.inputModel.key (Qof P) (N.arc ((j + 1) % N.arcs.length)).s
   hfree : ∀ j j', j < N.arcs.length → j' < N.arcs.length →
-    ¬ sideInArc ((interiorModel (Qof P)).key (Qof P) (N.arc j).s)
-      ((interiorModel (Qof P)).key (Qof P) (N.arc j).e)
-      ((interiorModel (Qof P)).key (Qof P) (N.arc j').s)
-  hAm : ∀ mm : ℕ → ℕ, (∀ a, a < A0 → mm a = mem0 a) → ∀ j, j < v.A →
+    ¬ sideInArc (P.inputModel.key (Qof P) (N.arc j).s)
+      (P.inputModel.key (Qof P) (N.arc j).e)
+      (P.inputModel.key (Qof P) (N.arc j').s)
+  hAm : ∀ mm : ℕ → ℕ, (MemEqBelow A0 mm mem0) → ∀ j, j < v.A →
     mm (v.AB + 5 * j + 1) = (N.arc j).s.edge ∧ mm (v.AB + 5 * j + 2) = (N.arc j).s.hgt ∧
       mm (v.AB + 5 * j + 3) = (N.arc j).e.edge ∧ mm (v.AB + 5 * j + 4) = (N.arc j).e.hgt
-  hRm : ∀ mm : ℕ → ℕ, (∀ a, a < A0 → mm a = mem0 a) → ∀ t, t < v.nRA → mm (v.RA + t) = ras t
+  hRm : ∀ mm : ℕ → ℕ, (MemEqBelow A0 mm mem0) → ∀ t, t < v.nRA → mm (v.RA + t) = ras t
   hras : ∀ t, t < v.nRA → ras t < v.A
   hAW : ∀ j, j < v.A → v.AB + 5 * j + 4 < A0
   hRW : v.RA + v.nRA ≤ A0

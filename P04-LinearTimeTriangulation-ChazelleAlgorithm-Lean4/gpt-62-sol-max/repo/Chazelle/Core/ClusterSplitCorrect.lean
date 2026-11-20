@@ -29,7 +29,7 @@ theorem iterate_parentN {upN : ℕ → ℕ} (hup : ∀ v : Fin μ, upN v = T.par
     (u : Fin μ) : upN^[n] u = ((T.parent^[n] u : Fin μ) : ℕ) := by
   induction n generalizing u with
   | zero => rfl
-  | succ n ih => rw [Function.iterate_succ_apply, hup, ih, Function.iterate_succ_apply]
+  | succ n ih => simp_all
 
 /-- **The marked ancestors in a level window.** -/
 theorem anc_window {upN : ℕ → ℕ} (hup : ∀ v : Fin μ, upN v = T.parent v) (x u : Fin μ)
@@ -52,8 +52,7 @@ theorem anc_window {upN : ℕ → ℕ} (hup : ∀ v : Fin μ, upN v = T.parent v
           T.iterate_parent_eq_root (by rw [hn] at h1; subst h1; rw [T.level_root]; omega)
         rw [h2, ← h1, hn]
     have hxu : T.level x ≤ T.level u := by
-      have := T.level_iterate_parent (T.level u - T.level x) u
-      rw [hx'] at this; omega
+      simp_all
     refine ⟨by omega, min (T.level u) ltop - T.level x, by omega, ?_⟩
     rw [iterate_parentN T hup, show T.level u - min (T.level u) ltop +
       (min (T.level u) ltop - T.level x) = T.level u - T.level x by omega, hx']
@@ -87,14 +86,11 @@ theorem pass_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} {s
   have hj : lo + (hi - lo) = hi := by omega
   have hdAP : ∀ i, lo ≤ i → i < lo + (hi - lo) → ∀ p, e ≤ p →
       p < e + cntS sel lo (lo + (hi - lo)) → S.bPOS + m (S.bTMP + i) ≠ S.bACT + p := by
-    intro i h1 h2 p h3 h4
-    rw [hj] at h4
-    have := hit i h1 (by omega)
-    omega
+    simp only [hj] <;> omega
   refine ⟨fun i h1 h2 hs => passMem_act (hi - lo) hdAP i h1 (by omega) hs,
     fun i h1 h2 hs => passMem_pos (hi - lo) hdAP
       (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 (by omega) hs,
-    fun a h1 h2 => passMem_keep (hi - lo) (by rw [hj]; exact h1)
+    fun a h1 h2 => passMem_keep (hi - lo) (by rwa [hj])
       (fun i a' b c => h2 i a' (by omega) c), by rw [passMem_ptr_eq, hj]⟩
 
 /-- **The three passes**: each class lands in its range of `ACT`, the positions of its items are

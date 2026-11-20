@@ -52,7 +52,7 @@ theorem hitParam_eq_of_sub {H Q : Polygon} (hH : H.Simple) {p : Point} {σ : ℝ
   rw [mem_Ioi] at hu
   obtain ⟨h1, h2, h3⟩ :=
     Visibility.hit_of_initial hH hσ hu (fun t ht1 ht2 => hsubu ⟨ht1, ht2⟩)
-  have hpos : 0 < hitParam H p σ := lt_of_lt_of_le hu h1
+  have hpos := lt_of_lt_of_le hu h1
   exact ⟨Visibility.hitParam_eq_of_first Q p σ hpos (hbd _ hpos h2 h3)
     (fun s hs1 hs2 => (hsub (h3 s hs1 hs2)).2), hpos, h3⟩
 
@@ -63,12 +63,17 @@ theorem region_sub_free (hR : R ∈ (interiorModel Q).regions S) :
     R ⊆ freeIn (Q.filled \ Q.boundary) S :=
   Chazelle.Chain.regionsIn_subset hR
 
+section
+
+variable (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+
+include hQ hFam in
 /-- **Soundness of the region-local shot.**  Let `H` be a simple polygon whose interior is the
 region `R` of `S` and whose boundary lies on `∂Q` or on chords of `S`.  If the vertex `j` of `H`
 is the vertex `i` of `Q` and direction `σ` enters `int H` there, then direction `σ` enters the
 interior of `Q`, the chord of `Q` at `i` in direction `σ` is the chord of `H` at `j`, it is a
 vertex chord of `Q` not in `S`, and its domain part lies in `R`. -/
-theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+theorem chord_of_host
     (hR : R ∈ (interiorModel Q).regions S) {H : Polygon} (hH : H.Simple)
     (hHR : H.filled \ H.boundary = R) (hHb : H.boundary ⊆ Q.boundary ∪ ⋃₀ S)
     {i j : ℕ} (hi : i < Q.n) (hv : H.vtx j = Q.vtx i) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
@@ -78,7 +83,7 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   set D := Q.filled \ Q.boundary with hD
   have hRfree := region_sub_free hR
   have hRD : R ⊆ D := fun z hz => (hRfree hz).1
-  have hsub : H.filled \ H.boundary ⊆ D := by rw [hHR]; exact hRD
+  have hsub : H.filled \ H.boundary ⊆ D := by rwa [hHR]
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
   set v := Q.vtx i with hvdef
   have hin : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt v σ t ∈ H.filled \ H.boundary := by
@@ -98,8 +103,7 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       refine mem_closure_of_tendsto hlim ?_
       filter_upwards [Ioo_mem_nhdsLT ht] with s hs
       exact hsub (hbefore s hs.1 hs.2)
-    have hzF : z ∈ Q.filled :=
-      (Chazelle.Jordan.isClosed_filled Q).closure_subset_iff.2 (fun w hw => hw.1) hzcl
+    have hzF := (Chazelle.Jordan.isClosed_filled Q).closure_subset_iff.2 (fun w hw => hw.1) hzcl
     have hzD : z ∈ D := ⟨hzF, hzQ⟩
     obtain ⟨c, hc, hzc⟩ : ∃ c ∈ S, z ∈ c := by
       rcases hHb hzH with h | ⟨c, hc, h⟩
@@ -107,9 +111,9 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       · exact ⟨c, hc, h⟩
     obtain ⟨y, a, b, hch, rfl⟩ := hFam.2.1 hc
     obtain ⟨hzy, hza, hzb⟩ := hzc
-    have hza' : a < z.1 := lt_of_le_of_ne hza fun e => hch.left_not (by
+    have hza' := lt_of_le_of_ne hza fun e => hch.left_not (by
       rw [show ((a, y) : Point) = z from Prod.ext e hzy.symm]; exact hzD)
-    have hzb' : z.1 < b := lt_of_le_of_ne hzb fun e => hch.right_not (by
+    have hzb' := lt_of_le_of_ne hzb fun e => hch.right_not (by
       rw [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm]; exact hzD)
     -- a ray point just before `z` lies on the chord
     set δ := min (t / 2) (min (z.1 - a) (b - z.1) / 2) with hδ
@@ -127,7 +131,7 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     rw [hHR] at hw
     apply (hRfree hw).2
     refine ⟨hseg y a b, hc, ?_, ?_, ?_⟩
-    · show v.2 = y; rw [← hzy]; rfl
+    · assumption
     · have e : (rayPt v σ (t - δ)).1 = z.1 - σ * δ := by
         rw [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]; ring
       rw [e]; rcases hσ with rfl | rfl <;> linarith
@@ -135,11 +139,11 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         rw [hz, Visibility.rayPt_fst, Visibility.rayPt_fst]; ring
       rw [e]; rcases hσ with rfl | rfl <;> linarith
   obtain ⟨heq, hpos, hint⟩ := hitParam_eq_of_sub hH hσ0 hin hsub hbd
-  have hdirQ : DirInterior Q i σ := hin.mono fun t ht => hsub ht
+  have hdirQ := hin.mono fun t ht => hsub ht
   have hcs : chordSet Q i σ = chordSet H j σ := by
     unfold chordSet chordEnd chordParam
     rw [hv, ← hvdef, heq]
-  have hTQ : chordParam Q i σ = hitParam H v σ := heq
+  have hTQ := heq
   -- the domain part lies in `R`
   have himg := Visibility.chordSet_eq_image hQ hi hdirQ
   have hinR : ∀ t, 0 < t → t < chordParam Q i σ → rayPt v σ t ∈ R := fun t h1 h2 => by
@@ -167,8 +171,9 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
 
 /-! ## The host polygon of a region -/
 
+include hQ hFam in
 /-- **The boundary of the host polygon lies on `∂Q` or on chords of `S`.** -/
-theorem hostPoly_bd_sub (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+theorem hostPoly_bd_sub
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) :
     (hostPoly Q S R).boundary ⊆ Q.boundary ∪ ⋃₀ S := by
   intro z hz
@@ -197,10 +202,11 @@ theorem exists_walk_vtx {k : ℕ} (hk : k < Q.n) :
   split_ifs
   · exact ⟨k, hk, rfl⟩
   · refine ⟨Q.n - 1 - k, by rw [FactsInterior.rev_n]; omega, ?_⟩
-    rw [FactsInterior.rev_vtx Q _ (by omega), show Q.n - 1 - (Q.n - 1 - k) = k by omega]
+    ram_simp [FactsInterior.rev_vtx, show Q.n - 1 - (Q.n - 1 - k) = k by omega]
 
+include hQ hFam in
 /-- **A vertex of `Q` in the closure of a region is a vertex of its host polygon.** -/
-theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+theorem vtx_mem_hostPoly
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) {k : ℕ} (hkn : k < Q.n)
     (hcl : Q.vtx k ∈ closure R) :
     ∃ j, j < (hostPoly Q S R).n ∧ (hostPoly Q S R).vtx j = Q.vtx k := by
@@ -272,11 +278,12 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
 
 /-! ## Completeness (B-M2) -/
 
+include hQ hFam in
 /-- **B-M2: every missing vertex chord is found region-locally.**  A vertex chord `c` of `Q` not
 in `S` is the chord at a vertex `i` of `Q` in a direction `σ` entering the interior, whose domain
 part lies in a region `R` of `S` (B-M1); the vertex `i` is a vertex `j` of the host polygon of
 `R`, and direction `σ` enters `int (hostPoly Q S R) = R` there. -/
-theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
+theorem missing_found
     (hne : S.Nonempty) {c : Set Point} (hc : c ∈ chords Q) (hcS : c ∉ S) :
     ∃ R ∈ (interiorModel Q).regions S, ∃ i σ, i < Q.n ∧ (σ = 1 ∨ σ = -1) ∧
       c = chordSet Q i σ ∧ DirInterior Q i σ ∧ c ∩ (interiorModel Q).D ⊆ R ∧
@@ -304,8 +311,9 @@ theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨j, hj, hjv⟩ := vtx_mem_hostPoly hQ hFam hne hR hi hcl
   refine ⟨R, hR, i, σ, hi, hσ, rfl, hdir, hcR, j, hj, hjv, ?_⟩
   unfold DirInterior
-  rw [hjv, ← region_eq_intHost hQ hFam hne hR]
-  exact hev
+  rwa [hjv, ← region_eq_intHost hQ hFam hne hR]
+
+end
 
 /-! ## No chord is emitted twice -/
 

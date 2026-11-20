@@ -132,7 +132,7 @@ theorem mem_bruteList {x : ℕ × ℕ × ℕ} :
 theorem chordSet_snd {k : ℕ} {σ : ℝ} {p : Point} (hp : p ∈ C.chordSet k σ) :
     p.2 = (C.vertex k).2 := by
   obtain ⟨t, -, -, rfl⟩ := hp
-  simp [Chain.chordEnd_snd]
+  simp_all
 
 /-- **Distinct emitted entries give distinct chords.** -/
 theorem chord_inj (hP : C.P.Simple) (hDH : DistinctHeights C.P) {i d i' d' : ℕ}
@@ -233,11 +233,10 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
     exact bruteList_sub hP hDH hx
   · intro hc
     obtain ⟨k, σ, hk, hσ, hf, rfl⟩ := hc
-    have hcA : C.chordSet k σ ∈ (chainModel C).Adm :=
-      Merge.chords_subset_augChords C ⟨k, σ, hk, hσ, hf, rfl⟩
+    have hcA := Merge.chords_subset_augChords C ⟨k, σ, hk, hσ, hf, rfl⟩
     obtain ⟨a, b, -, hcab, -, hopen, hWa, hWb⟩ := (walkAx_chainModel hP).ends _ hcA
     -- the vertex is an endpoint
-    have hvD : C.vertex k ∉ C.dom := fun h => C.not_mem_set_of_mem_dom h (C.vertex_mem_set hk)
+    have hvD := fun h => C.not_mem_set_of_mem_dom h (C.vertex_mem_set hk)
     have hvab : C.vertex k = a ∨ C.vertex k = b := by
       have hv : C.vertex k ∈ C.chordSet k σ := Geometry.left_mem_segment _ _
       rw [hcab] at hv
@@ -245,8 +244,8 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
       rcases hs0.lt_or_eq with hs0 | hs0
       · rcases hs1.lt_or_eq with hs1 | hs1
         · exact absurd (hs ▸ hopen s ⟨hs0, hs1⟩) hvD
-        · right; rw [hs, hs1, Geometry.lerp_one]
-      · left; rw [hs, ← hs0, Geometry.lerp_zero]
+        simp_all
+      simp [hs, ← hs0, Geometry.lerp_zero]
     have hWv : WalkEnd (chainModel C).W (C.chordSet k σ) (C.vertex k) := by
       rcases hvab with h | h <;> rw [h] <;> assumption
     obtain ⟨p, t, hA, hpt⟩ := hWv.1
@@ -267,7 +266,7 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
     have hdist : dist (rayPt (C.vertex k) σ ε) (C.vertex k) < r := by
       rw [FuseMath.dist_rayPt _ hσ hε0.le]
       exact lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hl := hloc _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+    have hl := hloc _ hmem (by rwa [hpt]) (by rwa [hpt])
     rw [← hpt, FuseMath.sideLeft_rayPt hε0, hpt] at hl
     have hvi : C.vertex k = vPt C i := by unfold vPt; rw [hik]
     rw [hvi] at hl
@@ -277,7 +276,7 @@ theorem bruteList_set (hP : C.P.Simple) (hDH : DistinctHeights C.P) :
       rcases hσ with rfl | rfl
       · exact ⟨0, by omega, rfl⟩
       · exact ⟨1, le_rfl, rfl⟩
-    have he : Emit C i d := by unfold Emit; rw [hsd]; exact hemit
+    have he : Emit C i d := by unfold Emit; rwa [hsd]
     refine ⟨trip C i d, mem_bruteList.2 ⟨i, d, hi, hd, he, rfl⟩, ?_⟩
     rw [(entry_ok hP hDH hi he).1, hsd, hik]
 

@@ -49,7 +49,7 @@ theorem chordFamily_hPoly (C : Chain) {F : Set (Set Point)} (hfin : F.Finite)
   refine ⟨h, hh, a, b, ?_⟩
   have hv : (hPoly F hfin).vtx h = ((0 : ℝ), (Merge.lend c).2) := by
     unfold Polygon.vtx
-    rw [List.getD_eq_getElem _ _ hh, he]
+    simp_all
   rw [hv, hl, hcd]
 
 /-! ## The query point -/
@@ -81,17 +81,17 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
     (hc : ¬ (rayPt z σ (J.whole.hitParam z σ) ∈ J.right.set ∧
       rayPt z σ (J.whole.hitParam z σ) ∉ J.left.set)) :
     J.left.hitParam z σ = J.whole.hitParam z σ := by
-  have hz' : z.2 ≤ J.whole.top.2 := hz₁.trans J.left_top_le
+  have hz' := hz₁.trans J.left_top_le
   obtain ⟨hT, hwD, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
   set T := J.whole.hitParam z σ with hTdef
   have hy : ∀ t, (rayPt z σ t).2 = z.2 := fun t => rfl
   have hfree₁ : Merge.FreeAt J.left z σ := by
     filter_upwards [hfree] with t ht
-    exact dom_left J ht (by rw [hy]; exact hz₁)
+    exact dom_left J ht (by rwa [hy])
   obtain ⟨hT₁, hw₁D, hdom₁⟩ := Merge.hit_of_freeAt J.left hz₁ hσ hfree₁
   have hwD₁ : rayPt z σ T ∉ J.left.dom := by
     intro hmem
-    rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by rw [hy]; exact hz')).1 hwD
+    rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by rwa [hy])).1 hwD
       with h | h
     · apply h
       rw [← FuseMath.radius_of_P J (C' := J.left) rfl]
@@ -101,7 +101,7 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
       · exact J.left.not_mem_set_of_mem_dom hmem h
       · exact hc ⟨h, fun h' => J.left.not_mem_set_of_mem_dom hmem h'⟩
   rcases lt_trichotomy (J.left.hitParam z σ) T with h | h | h
-  · exact absurd (dom_left J (hdom _ hT₁ h) (by rw [hy]; exact hz₁)) hw₁D
+  · exact absurd (dom_left J (hdom _ hT₁ h) (by rwa [hy])) hw₁D
   · exact h
   · exact absurd (hdom₁ T hT h) hwD₁
 
@@ -110,16 +110,16 @@ top of `C₂`), the first hit of `C` is the first hit of `C₂`. -/
 theorem right_hit_of {z : Point} (hz₂ : z.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (hfree : FreeAt J.whole z σ) (hw : rayPt z σ (J.whole.hitParam z σ) ∈ J.right.set) :
     J.right.hitParam z σ = J.whole.hitParam z σ := by
-  have hz' : z.2 ≤ J.whole.top.2 := hz₂.trans J.right_top_le
+  have hz' := hz₂.trans J.right_top_le
   obtain ⟨hT, -, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
   set T := J.whole.hitParam z σ with hTdef
   have hy : ∀ t, (rayPt z σ t).2 = z.2 := fun t => rfl
   have hfree₂ : Merge.FreeAt J.right z σ := by
     filter_upwards [hfree] with t ht
-    exact dom_right J ht (by rw [hy]; exact hz₂)
+    exact dom_right J ht (by rwa [hy])
   obtain ⟨hT₂, hw₂D, hdom₂⟩ := Merge.hit_of_freeAt J.right hz₂ hσ hfree₂
   rcases lt_trichotomy (J.right.hitParam z σ) T with h | h | h
-  · exact absurd (dom_right J (hdom _ hT₂ h) (by rw [hy]; exact hz₂)) hw₂D
+  · exact absurd (dom_right J (hdom _ hT₂ h) (by rwa [hy])) hw₂D
   · exact h
   · exact absurd hw (J.right.not_mem_set_of_mem_dom (hdom₂ T hT h))
 
@@ -129,10 +129,15 @@ section Gen
 
 variable {M : Model}
 
+section
+
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+    {g : ℕ} (hg : g < M.W.n)
+include hM hF hfin hg
+
 /-- **The region faced just after a key**: a non-cut position inside a walk edge, after the key
 with no cut in between, faces the region faced just after the key. -/
-theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
-    {g : ℕ} (hg : g < M.W.n) {U : Set Point} (hU : U ∈ M.regions F) {pa : ℕ} {ta : ℝ}
+theorem after_of_near {U : Set Point} (hU : U ∈ M.regions F) {pa : ℕ} {ta : ℝ}
     (hpa : pa < M.W.n) (hta : 0 ≤ ta) {q : ℕ} {u : ℝ} (hq : q < M.W.n)
     (hu : u ∈ Ioo (0 : ℝ) 1) (hqc : ¬ M.IsCut F (q + u)) (hqf : M.Faces q u U)
     (hlt : off M.W.n g (pa + ta) < off M.W.n g (q + u))
@@ -143,35 +148,34 @@ theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
   have hgn : (g : ℝ) < M.W.n := by exact_mod_cast hg
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hF hfin ((pa : ℝ) + ta))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set D := off M.W.n g ((q : ℝ) + u) - off M.W.n g ((pa : ℝ) + ta) with hD
   have hD0 : 0 < D := by linarith
   refine ⟨min δ₁ D, lt_min hδ₁' hD0, fun s hs0 hs1 hs2 => ?_⟩
-  have hsD : s < D := lt_of_lt_of_le hs1 (min_le_right _ _)
-  have hsδ : s < δ₁ := lt_of_lt_of_le hs1 (min_le_left _ _)
+  have hsD := lt_of_lt_of_le hs1 (min_le_right _ _)
+  have hsδ := lt_of_lt_of_le hs1 (min_le_left _ _)
   have hnc : ¬ M.IsCut F ((pa : ℝ) + (ta + s)) := by
     have := hsub ⟨hs0, hsδ⟩
     rw [Set.mem_ofPred_eq] at this
     rwa [← add_assoc]
   have hts : ta + s ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, hs2⟩
   obtain ⟨U', hU', hf'⟩ := hM.exists_faces_of_not_cut hF hfin hpa hts hnc
-  have hoff : off M.W.n g ((pa : ℝ) + (ta + s)) = off M.W.n g ((pa : ℝ) + ta) + s :=
-    off_add_small hg hpa hta hs0.le hs2
+  have hoff := off_add_small hg hpa hta hs0.le hs2
   have heq := same_region_of_gap hM hF hfin hg0 hgn hU' hU hpa hq hts hu hnc hqc hf' hqf
     (by rw [hoff]; linarith) (fun x hx hx0 hxn ⟨h1, h2⟩ => hgap x hx hx0 hxn ⟨by linarith, h2⟩)
-  rw [← heq]
-  exact hf'
+  rwa [← heq]
 
 /-- **A region faced just after a position** is faced at a non-cut position of the same edge, at an
 offset just after it. -/
-theorem near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
-    {g : ℕ} (hg : g < M.W.n) {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+theorem near_after {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
     {U : Set Point} (hW : AfterFaces M p t U) {ε : ℝ} (hε : 0 < ε) :
     ∃ s, 0 < s ∧ s < ε ∧ t + s ∈ Ioo (0 : ℝ) 1 ∧ ¬ M.IsCut F ((p : ℝ) + (t + s)) ∧
       M.Faces p (t + s) U ∧
       off M.W.n g ((p : ℝ) + (t + s)) = off M.W.n g ((p : ℝ) + t) + s := by
   obtain ⟨s, hs0, hsε, hs1, hnc, hf⟩ := faces_near_after hM hF hfin ht0 ht1 hW hε
   exact ⟨s, hs0, hsε, ⟨by linarith, hs1⟩, hnc, hf, off_add_small hg hp ht0 hs0.le hs1⟩
+
+end
 
 end Gen
 

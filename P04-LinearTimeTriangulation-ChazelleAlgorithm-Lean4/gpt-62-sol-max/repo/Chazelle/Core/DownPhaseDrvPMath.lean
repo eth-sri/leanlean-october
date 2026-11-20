@@ -27,7 +27,7 @@ open BuildRegions (famOf)
 
 theorem chain_eq {C C' : Chain} (hP : C.P = C'.P) (hs : C.s = C'.s) (hm : C.m = C'.m) :
     C = C' := by
-  cases C; cases C'; simp only at hP hs hm; subst hP hs hm; rfl
+  cases C; cases C'; simp_all
 
 /-- **A leaf is a box twin** of the chain of `Q` over the same vertices. -/
 theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P = Qof P)
@@ -35,9 +35,9 @@ theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P 
     (hsm : CH.s + CH.m < (H.pts P.n).length) (han : a + CH.m < P.n)
     (hpt : ∀ k, k ≤ CH.m → pt H P.n (CH.s + k) = .vtx (a + k)) : BoxT.Twin CQ CH := by
   refine ⟨hm, fun k hk => ?_⟩
-  rw [hchain_vertex_lt hCH (by omega), hpt k (by omega)]
+  ram_rw [hchain_vertex_lt hCH, hpt k]
   show CQ.P.vtx ((CQ.s + k) % CQ.P.n) = _
-  rw [hQ, hsQ, qof_n, Nat.mod_eq_of_lt (by omega)]
+  ram_rw [hQ, hsQ, qof_n, Nat.mod_eq_of_lt]
   rfl
 
 /-- **The transported list of a leaf.** -/
@@ -62,17 +62,14 @@ theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m
     ext c; simp [famOf]
   have hM := walkAx_chainModel hP'
   refine ⟨⟨⟨?_, ?_, ?_⟩, by simp, by simp, by simp⟩, ?_, ?_⟩
-  · have : {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet (chainModel CH) (Qof P)} =
-        (∅ : Set (Set Point)) := by ext c; simp
-    rw [this]; exact finite_empty
+  · simp
   · intro c hc; simp at hc
   · intro c hc; simp at hc
   · rw [he]; intro U _
     unfold Model.deg
     simp
   · rw [he]; intro U hU
-    rw [Gran.weight_empty hM hU, DownMath.chainModel_size]
-    exact h2m
+    rwa [Gran.weight_empty hM hU, DownMath.chainModel_size]
 
 theorem isDecomp_mono {N : NF} {d d' : ℕ} (h : IsDecomp N d) (hd : d ≤ d') : IsDecomp N d' := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩ := h

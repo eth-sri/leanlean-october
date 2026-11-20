@@ -22,7 +22,7 @@ arc through `v` meets both chain edges at `v` (see the WP-K report: `BruteSpec` 
 
 ## Proof
 
-Every region `U` of the full map lies in a trapezoid (`SegObs.Trap.region_subset`) whose two
+Every region `U` of the full map lies in a trapezoid (`SegObs.Trap.region_subsetH`) whose two
 walls `sL`, `sR` are obstacle segments.  A counted walk edge facing `U` at a parameter whose point
 is at no vertex height lies on a wall (`wall_of_faces`): on the left wall it is traversed
 downward, on the right wall upward (the region is on the left of the walk).  Each chain edge is
@@ -111,7 +111,7 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
     linarith
   rcases lt_or_eq_of_le hp3 with hlt | heqL
   · rcases lt_or_eq_of_le hp4 with hlt' | heqR
-    · exact absurd (h.no_obs hS (seg_subset_obs hs hz) hy1 hy2 hlt hlt') id
+    · exact absurd (h.no_obsH hS.toH (seg_subset_obs hs hz) hy1 hy2 hlt hlt') id
     · -- on the right wall
       have hzR : z ∈ seg sR := (mem_seg_iff (hS.up sR h.hR)).2
         ⟨h.botR.trans hy1.le, hy2.le.trans h.topR, heqR⟩
@@ -188,7 +188,7 @@ theorem tour_inj (β : Bool) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m
   rw [Chain.sideIdx_eq, Chain.sideIdx_eq] at h1
   rw [Chain.sideIdx_succ, Chain.sideIdx_succ] at h2
   have hj := sideE_pair_inj (Nat.mod_lt _ hm) (Nat.mod_lt _ hm) h1 h2
-  have h3 : C.sideS β + i ≡ C.sideS β + i' [MOD 2 * C.m] := hj
+  have h3 := hj
   exact Nat.ModEq.eq_of_lt_of_lt (Nat.ModEq.add_left_cancel' _ h3) hi hi'
 
 /-- The walk edge `i + 6` of the chain model starts at the tour vertex `i`. -/
@@ -237,13 +237,18 @@ theorem exists_avoid {O : Set ℝ} (hO : IsOpen O) {t : ℝ} (ht : t ∈ O) {B :
   obtain ⟨t', ht'1, ht'2⟩ := (hinf.sdiff hB).nonempty
   exact ⟨t', hball ht'1, ht'2⟩
 
-/-- **The classification.**  Let `U` be the region of `z` in the full map, with trapezoid data
-`sL, sR`.  A counted walk edge `i + 6` whose open key interval part `(p + t)`, `0 < t < 1`, lies in
-an arc of `U` is the left wall traversed downward or the right wall traversed upward. -/
-theorem arc_edge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
+section
+
+variable (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
     {sL sR : Point × Point} {y₁ y₂ : ℝ} (hT : Trap C.radius (ChainObs.segs C) z sL sR y₁ y₂)
     (hU : connectedComponentIn (freeIn C.dom C.chords) z ⊆ tr sL sR y₁ y₂) {a b : ℝ}
     (hab : (chainModel C).IsArc C.chords (connectedComponentIn (freeIn C.dom C.chords) z) a b)
+
+include hP hDH hT hU hab in
+/-- **The classification.**  Let `U` be the region of `z` in the full map, with trapezoid data
+`sL, sR`.  A counted walk edge `i + 6` whose open key interval part `(p + t)`, `0 < t < 1`, lies in
+an arc of `U` is the left wall traversed downward or the right wall traversed upward. -/
+theorem arc_edge_class
     {i : ℕ} (hi : i < 2 * C.m) {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1)
     (hin : sideInArc a b ((i + 6 : ℕ) + t)) :
     ((C.vertex (C.sideIdx C.sideBeta (i + 1))).2 < (C.vertex (C.sideIdx C.sideBeta i)).2 ∧
@@ -266,7 +271,7 @@ theorem arc_edge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
     exact (isOpen_sideInArc a b).preimage (continuous_const.add continuous_id)
   set B : Set ℝ := (fun w : Point => (w.2 - u.2) / (v.2 - u.2)) '' {w | IsVert (ChainObs.segs C) w}
     with hB
-  have hBfin : B.Finite := (finite_verts hS).image _
+  have hBfin : B.Finite := (finite_verts hS.fin).image _
   obtain ⟨t', ⟨ht'0, ht'1, ht'in⟩, ht'B⟩ := exists_avoid hOopen ⟨ht0, ht1, hin⟩ hBfin
   have hnv : ∀ w, IsVert (ChainObs.segs C) w → w.2 ≠ (lerp u v t').2 := by
     intro w hw e
@@ -300,8 +305,8 @@ theorem region_trap (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
   have hfull : FullAt C.radius (ChainObs.segs C) C.chords := ChainObs.fullAt subset_rfl
   have hdom := ChainObs.dom_eq (C := C)
   rw [← hdom] at hz ⊢
-  obtain ⟨sL, sR, y₁, y₂, hT⟩ := exists_trap hS hfull hz.1 hz.2
-  exact ⟨sL, sR, y₁, y₂, hT, hT.region_subset hS hfull hz⟩
+  obtain ⟨sL, sR, y₁, y₂, hT⟩ := HSegObs.exists_trapH hS.toH hfull hz.1 hz.2
+  exact ⟨sL, sR, y₁, y₂, hT, hT.region_subsetH hS.toH hfull hz⟩
 
 /-- The counted walk edges met by an arc (the set whose size is `arcWt`). -/
 def arcEdgeSet (C : Chain) (a b : ℝ) : Set ℕ :=
@@ -310,11 +315,9 @@ def arcEdgeSet (C : Chain) (a b : ℝ) : Set ℕ :=
 
 theorem arcWt_eq (a b : ℝ) : (chainModel C).arcWt a b = (arcEdgeSet C a b).ncard := rfl
 
+include hP hDH hT hU hab in
 /-- A member of the edge set of an arc of a region of the full map, with its class. -/
-theorem arcEdge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
-    {sL sR : Point × Point} {y₁ y₂ : ℝ} (hT : Trap C.radius (ChainObs.segs C) z sL sR y₁ y₂)
-    (hU : connectedComponentIn (freeIn C.dom C.chords) z ⊆ tr sL sR y₁ y₂) {a b : ℝ}
-    (hab : (chainModel C).IsArc C.chords (connectedComponentIn (freeIn C.dom C.chords) z) a b)
+theorem arcEdge_class
     {p : ℕ} (hp : p ∈ arcEdgeSet C a b) :
     ∃ i, i < 2 * C.m ∧ p = i + 6 ∧
       (((C.vertex (C.sideIdx C.sideBeta (i + 1))).2 < (C.vertex (C.sideIdx C.sideBeta i)).2 ∧
@@ -326,7 +329,9 @@ theorem arcEdge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
   obtain ⟨-, ⟨hc1, hc2⟩, t, ht0, ht1, hin⟩ := hp
   refine ⟨p - 6, by omega, by omega, ?_⟩
   have e : ((p - 6 + 6 : ℕ) : ℝ) = (p : ℝ) := by rw [Nat.sub_add_cancel hc1]
-  exact arc_edge_class hP hDH hT hU hab (by omega) ht0 ht1 (by rw [e]; exact hin)
+  exact arc_edge_class hP hDH hT hU hab (by omega) ht0 ht1 (by rwa [e])
+
+end
 
 /-- Two walk edges of the same class are equal. -/
 theorem class_inj (hP : C.P.Simple) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m)
@@ -345,9 +350,7 @@ theorem class_inj (hP : C.P.Simple) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 
     rcases lt_or_gt_of_ne hne with h | h
     · rw [ord_upward h, ord_upward (hdir.1 h)] at hord
       exact ⟨(Prod.ext_iff.1 hord).1, (Prod.ext_iff.1 hord).2⟩
-    · have h' : (C.vertex (C.sideIdx C.sideBeta (i' + 1))).2 <
-          (C.vertex (C.sideIdx C.sideBeta i')).2 :=
-        lt_of_le_of_ne (not_lt.1 fun h2 => absurd (hdir.2 h2) (not_lt.2 h.le)) (Ne.symm hne')
+    · have h' := lt_of_le_of_ne (not_lt.1 fun h2 => absurd (hdir.2 h2) (not_lt.2 h.le)) (Ne.symm hne')
       rw [ord_down h, ord_down h'] at hord
       exact ⟨(Prod.ext_iff.1 hord).2, (Prod.ext_iff.1 hord).1⟩
   exact tour_inj C.sideBeta hi hi' (C.sideVertex_inj hP (hl _) (hl _) key.1)
@@ -370,8 +373,8 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
     intro p hp
     obtain ⟨i, -, rfl, hcl⟩ := arcEdge_class hP hDH hT hsub hab hp
     rcases hcl with ⟨h1, -⟩ | ⟨h1, -⟩
-    · exact Or.inl ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
-    · exact Or.inr ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
+    · exact Or.inl ⟨hp, fun i' e => by simp_all⟩
+    · exact Or.inr ⟨hp, fun i' e => by simp_all⟩
   have hDn : Dn.ncard ≤ 1 := by
     rw [Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)]
     intro p p' hp hp'

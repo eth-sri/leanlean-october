@@ -36,7 +36,7 @@ theorem prev_mod {n a : ℕ} (hn : 0 < n) : ((a + 1) % n + n - 1) % n = a % n :=
   · rw [Nat.mod_eq_of_lt h, show a % n + 1 + n - 1 = a % n + n by omega, Nat.add_mod_right,
       Nat.mod_mod]
   · have e : a % n + 1 = n := by omega
-    rw [e, Nat.mod_self, zero_add, Nat.mod_eq_of_lt (by omega)]
+    ram_rw [e, Nat.mod_self, zero_add, Nat.mod_eq_of_lt]
     omega
 
 /-- The integer part of a wrapped integer key. -/
@@ -48,7 +48,7 @@ theorem wrapK_nat {n K : ℕ} (_hn : 0 < n) (hK : K < 2 * n) :
     rw [Nat.mod_eq_of_lt this]
   · push Not at h
     have : n ≤ K := by exact_mod_cast h
-    rw [Nat.mod_eq_sub_mod this, Nat.mod_eq_of_lt (by omega)]
+    ram_rw [Nat.mod_eq_sub_mod this, Nat.mod_eq_of_lt]
     push_cast [this]; ring
 
 /-- **The corner at an inner host key**: the chain corner there is positively scaled from the
@@ -66,10 +66,10 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hM := X.walkAx
   have hF := X.hFam.2.1
   have hfin := X.hFam.1
-  have hdN : d < nk (interiorModel Q) S R := hA.hdN
+  have hdN := hA.hdN
   have hb0 := hostKeys_bounds (hk_mem (U := R) hM hF hfin hA.hil)
   have hn : 0 < (interiorModel Q).W.n := by
-    have : (0 : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt hb0.1 hb0.2
+    have := lt_of_le_of_lt hb0.1 hb0.2
     exact_mod_cast this
   obtain ⟨K, hK⟩ := ukey_inner_int X hA hj0 hjd
   obtain ⟨p, hpn, hp1, hp2, hv0, hv1, -⟩ := piece (g := g) (h3 := h3) X hA hjd
@@ -92,16 +92,14 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     rw [hv1, hv0, hK, hpK, sub_self, ExtG.lerp_sub_lerp, sub_zero,
       Chazelle.Geometry.lerp_zero]
   have hvB : v = W.vtx ((p' % W.n + 1) % W.n) := by
-    rw [hv1', hK, ← hp'K]
-    push_cast
-    rw [show (p' : ℝ) + 1 - p' = 1 by ring, Chazelle.Geometry.lerp_one]
+    simp [hv1', hK, ← hp'K, show (p' : ℝ) + 1 - p' = 1 by ring, Chazelle.Geometry.lerp_one]
   have hτ₀ : 0 < 1 - (ukey (interiorModel Q) S R i_l (j - 1) - p') := by
-    have : ukey (interiorModel Q) S R i_l j = (p' : ℝ) + 1 := by rw [hK, ← hp'K]; push_cast; ring
+    have : ukey (interiorModel Q) S R i_l j = (p' : ℝ) + 1 := by simp [hK, ← hp'K]
     linarith
   have hprev : (hostChain Q S R g h3).vertex (kIdx (nk (interiorModel Q) S R) g i_l + (j - 1)) - v =
       (1 - (ukey (interiorModel Q) S R i_l (j - 1) - p')) • (W.vtx (p' % W.n) - v) := by
     have hB : v = lerp (W.vtx (p' % W.n)) (W.vtx ((p' % W.n + 1) % W.n)) 1 := by
-      rw [Chazelle.Geometry.lerp_one]; exact hvB
+      rwa [Chazelle.Geometry.lerp_one]
     rw [hv0', hB, ExtG.lerp_sub_lerp, Chazelle.Geometry.lerp_one]
     apply Prod.ext <;> simp <;> ring
   have hPn : p % W.n < W.n := Nat.mod_lt _ hn
@@ -109,7 +107,7 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     have hpp : p = p' + 1 := by rw [hpK, hp'K]
     rw [hpp, prev_mod hn]
   refine ⟨p % W.n, hPn, ?_, hv, fun y => ?_⟩
-  · have hK2 : K < 2 * W.n := by rw [← hpK]; exact hpn
+  · have hK2 : K < 2 * W.n := by rwa [← hpK]
     rw [hK, wrapK_nat hn hK2, hpK]
   · rw [Chazelle.Chain.sideLeft_zero, hPprev, ← hv]
     exact ExtG.sideLeftOf_scale hτ₀ hτ₁ hprev hnext
@@ -123,7 +121,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hM := X.walkAx
   have hF := X.hFam.2.1
   have hfin := X.hFam.1
-  have hdN : d < nk (interiorModel Q) S R := hA.hdN
+  have hdN := hA.hdN
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec X.hQ
   obtain ⟨P, hPn, hPkey, hvP, hsec⟩ := corner_inner (g := g) (h3 := h3) X hA hj0 hjd
   set C := hostChain Q S R g h3 with hC
@@ -138,9 +136,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     have e1 : C.topIdx + 1 = k + 1 := by rw [← hT]
     have e2 : C.topIdx - 1 = kIdx (nk (interiorModel Q) S R) g i_l + (j - 1) := by
       rw [← hT, hkdef]; omega
-    unfold sideLeftOf
-    rw [← e1, ← e2, ← htop]
-    exact hbeta
+    ram_finish [sideLeftOf, ← e1, ← e2, ← htop]
   have hup : ∀ ε : ℝ, 0 < ε → sideLeft W P 0 (v + ε • (C.slitTop - v)) := by
     intro ε hε
     rw [← hsec]
@@ -148,14 +144,13 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
     rw [add_sub_cancel_left]
     have := BoxT.sideCcw_smul one_pos hε one_pos (C.vertex (k + 1) - v) (C.slitTop - v)
       (C.vertex (kIdx (nk (interiorModel Q) S R) g i_l + (j - 1)) - v)
-    rw [one_smul, one_smul] at this
-    exact this.2 hslit
+    simp_all
   -- the vertex position is inside the arc
   have hkey : (P : ℝ) + 0 = hk (interiorModel Q) S R ((i_l + j) % nk (interiorModel Q) S R) := by
-    rw [add_zero, hPkey, wrapK_ukey hM hF hfin hA.hil (by omega)]
+    ram_rw [add_zero, hPkey, wrapK_ukey hM hF hfin hA.hil]
   have hin := (hA.inner j hj0 hjd).2
   rw [← hkey] at hin
-  have hncut : ¬ (interiorModel Q).IsCut S (P + 0) := harc.2.2.2.2.2.1 _ hin
+  have hncut := harc.2.2.2.2.2.1 _ hin
   have hfU : ∀ᶠ s in 𝓝[>] (0 : ℝ), (interiorModel Q).Faces P (0 + s * (1 - 0)) R := by
     filter_upwards [cyc_open hin, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
     rw [zero_add, sub_zero, mul_one]
@@ -170,14 +165,11 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hε0 : 0 < ε := div_pos (lt_min hr₀ hrC) (by linarith)
   set y := v + ε • (C.slitTop - v) with hy
   have hy2 : y.2 = v.2 + ε * (C.radius - v.2) := by
-    show (v + ε • (C.slitTop - v)).2 = _
-    simp only [Prod.snd_add, Prod.smul_snd, Prod.snd_sub, smul_eq_mul]
     rfl
   have hy1 : y.1 = v.1 := by
     show (v + ε • (C.slitTop - v)).1 = _
     simp only [Prod.fst_add, Prod.smul_fst, Prod.fst_sub, smul_eq_mul]
-    rw [show C.slitTop.1 = C.top.1 from rfl, htop]
-    ring
+    simp [show C.slitTop.1 = C.top.1 from rfl, htop]
   have hpos : 0 < ε * (C.radius - v.2) := mul_pos hε0 (by linarith)
   have hdist : dist y v = min r₀ rC / 2 := by
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, hy1, hy2, sub_self, abs_zero,
@@ -185,24 +177,29 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
       abs_of_pos hpos, max_eq_right hpos.le, hε]
     have : C.radius - v.2 ≠ 0 := by linarith
     field_simp
-  have hmin := lt_min hr₀ hrC
+  
   have hyb₀ : y ∈ ball (sidePt W P 0) r₀ := by
     rw [hvP', mem_ball, hdist]; have := min_le_left r₀ rC; linarith
   have hybC : y ∈ ball (sidePt W P 0) rC := by
     rw [hvP', mem_ball, hdist]; have := min_le_right r₀ rC; linarith
   have hyD : y ∈ (interiorModel Q).D := by
     by_contra hyD
-    exact hclean y hybC (by rw [hWb, hWf]; exact hyD) (hup ε hε0)
+    exact hclean y hybC (by rwa [hWb, hWf]) (hup ε hε0)
   have hyR := hnear y hyb₀ hyD
   have := region_below_top (g := g) (h3 := h3) X.hQ X.hFam X.hne X.hR y hyR
   rw [htop, hy2] at this
   linarith
 
-/-- **No split of side `A` inside an arc.** -/
-theorem no_split (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
+section
+
+variable (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     (hgc : ChordGap (interiorModel Q) S R g) {l r : ℝ} {i_l d : ℕ}
     (harc : (interiorModel Q).IsArc S R l r) (hA : ArcData (interiorModel Q) S R l r i_l d)
-    {j : ℕ} (hj0 : 0 < j) (hjd : j < d) :
+    {j : ℕ}
+include X hg hgc harc hA j
+
+/-- **No split of side `A` inside an arc.** -/
+theorem no_split (hj0 : 0 < j) (hjd : j < d) :
     kIdx (nk (interiorModel Q) S R) g i_l + j ≠
       TourA.sA (hostChain Q S R g h3) (hostChain Q S R g h3).sideBeta := by
   set C := hostChain Q S R g h3
@@ -210,7 +207,7 @@ theorem no_split (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     (fun j hj0 hjd => (hA.inner j hj0 hjd).2) hA.gaps
   have hm : C.m = nk (interiorModel Q) S R - 1 := rfl
   have hwrap' : kIdx (nk (interiorModel Q) S R) g i_l + d ≤ C.m := by
-    rw [hm]; unfold kIdx; exact hwrap
+    assumption
   have hTm := C.topIdx_le
   unfold TourA.sA
   rcases C.sideS_mod C.sideBeta with ⟨hs, hc⟩ | ⟨hs, hT0, -⟩
@@ -222,10 +219,7 @@ theorem no_split (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   · rw [hs]; omega
 
 /-- **Side `A` along an arc is contiguous.** -/
-theorem tourA_arc (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
-    (hgc : ChordGap (interiorModel Q) S R g) {l r : ℝ} {i_l d : ℕ}
-    (harc : (interiorModel Q).IsArc S R l r) (hA : ArcData (interiorModel Q) S R l r i_l d)
-    {j : ℕ} (hj : j < d) :
+theorem tourA_arc (hj : j < d) :
     TourA.tourA (hostChain Q S R g h3) (hostChain Q S R g h3).sideBeta
         (kIdx (nk (interiorModel Q) S R) g i_l + j) =
       TourA.tourA (hostChain Q S R g h3) (hostChain Q S R g h3).sideBeta
@@ -235,18 +229,19 @@ theorem tourA_arc (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     (fun j hj0 hjd => (hA.inner j hj0 hjd).2) hA.gaps
   have hm : C.m = nk (interiorModel Q) S R - 1 := rfl
   have hwrap' : kIdx (nk (interiorModel Q) S R) g i_l + d ≤ C.m := by
-    rw [hm]; unfold kIdx; exact hwrap
+    assumption
   induction j with
   | zero => rfl
   | succ j ih =>
-    rw [show kIdx (nk (interiorModel Q) S R) g i_l + (j + 1) =
+    ram_rw [show kIdx (nk (interiorModel Q) S R) g i_l + (j + 1) =
       kIdx (nk (interiorModel Q) S R) g i_l + j + 1 by ring,
       TourA.tourA_succ (C := C) (β := C.sideBeta) (k := kIdx (nk (interiorModel Q) S R) g i_l + j)
         (by have := C.one_le; omega)
-        (show kIdx (nk (interiorModel Q) S R) g i_l + j + 1 ≠ _ from
-          no_split (h3 := h3) X hg hgc harc hA (j := j + 1) (by omega) hj),
-      ih (by omega)]
+        ((no_split (h3 := h3) X hg hgc harc hA (j := j + 1) (by omega) hj)),
+      ih]
     ring
+
+end
 
 end
 

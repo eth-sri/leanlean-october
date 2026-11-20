@@ -111,10 +111,16 @@ def bktF (A j : ℕ) (eqS eqE gtS : Prop) [Decidable eqS] [Decidable eqE] [Decid
 
 /-! ## Basic arithmetic -/
 
-theorem tU_lt {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) : tU m T β p < 2 * m :=
+section
+
+variable {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ)
+
+include T β hm p in
+theorem tU_lt : tU m T β p < 2 * m :=
   Nat.mod_lt _ (by omega)
 
-theorem tK_le {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) : tK m T β p ≤ m :=
+include T β hm p in
+theorem tK_le : tK m T β p ≤ m :=
   Chazelle.Chain.sideE_le (tU_lt β hm p).le
 
 theorem tK_eq_of_lt {m T : ℕ} {β : Bool} {p : ℕ} (h : tU m T β p < m) : tK m T β p = tU m T β p := by
@@ -124,15 +130,19 @@ theorem tK_eq_of_ge {m T : ℕ} {β : Bool} {p : ℕ} (h : m ≤ tU m T β p) :
     tK m T β p = 2 * m - tU m T β p := by
   unfold tK sideE; split_ifs with h' <;> omega
 
-theorem tK_eq_zero_iff {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) :
+include T β hm p in
+theorem tK_eq_zero_iff :
     tK m T β p = 0 ↔ tU m T β p = 0 := by
   have := tU_lt (T := T) β hm p
   unfold tK sideE; split_ifs <;> omega
 
-theorem tK_eq_m_iff {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) :
+include T β hm p in
+theorem tK_eq_m_iff :
     tK m T β p = m ↔ tU m T β p = m := by
   have := tU_lt (T := T) β hm p
   unfold tK sideE; split_ifs <;> omega
+
+end
 
 /-- The last walk edge (up the slit) has the tour position of the first one. -/
 theorem tU_last (m T : ℕ) (β : Bool) : tU m T β (2 * m + 6) = tU m T β 6 := by
@@ -153,7 +163,7 @@ theorem qE_qE (li : Bool) {n e : ℕ} (he : e < n) : qE li n (qE li n e) = e := 
   · simp only [Bool.false_eq_true, ite_false]
     by_cases h : e + 1 < n
     · rw [ite_eq_left h, ite_eq_left (by omega)]; omega
-    · rw [ite_eq_right h, ite_eq_right (by omega)]; omega
+    ram_simp [ite_eq_right h, ite_eq_right] <;> omega
   · simp
 
 end

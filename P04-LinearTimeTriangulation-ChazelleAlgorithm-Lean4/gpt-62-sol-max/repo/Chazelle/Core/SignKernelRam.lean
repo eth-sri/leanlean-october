@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.Footprint
+
 public import Chazelle.Core.SignKernelMath
 public import Chazelle.Programs.Tactics
 
@@ -33,21 +35,10 @@ open Machine Machine.Stmt Programs
 
 /-- The instruction writes only a register accepted by `B` (natural or real), and is not a
 store, an `emit` or a control instruction. -/
-def wrOK (B : ℕ → Bool) : Instr → Bool
-  | .inputSize r | .constN r _ | .copyN r _ | .addN r _ _ | .subN r _ _ | .loadN r _ => B r
-  | .constR r _ | .copyR r _ | .addR r _ _ | .subR r _ _ | .mulR r _ _ | .divR r _ _ => B r
-  | .loadR r _ | .readX r _ | .readY r _ => B r
-  | _ => false
+abbrev wrOK (B : ℕ → Bool) := Footprint.allows ⟨B, B, false, false, false⟩
 
 /-- Every instruction of the statement satisfies `wrOK B`. -/
-def wr (B : ℕ → Bool) : Stmt → Bool
-  | .skip => true
-  | .instr i => wrOK B i
-  | .seq s t => wr B s && wr B t
-  | .ifLtN _ _ t e => wr B t && wr B e
-  | .ifLtR _ _ t e => wr B t && wr B e
-  | .whileLtN _ _ b => wr B b
-  | .whileLtR _ _ b => wr B b
+abbrev wr (B : ℕ → Bool) := Stmt.check (Footprint.allows ⟨B, B, false, false, false⟩)
 
 /-- Registers outside `B`, both memories and the output agree. -/
 def FrameB (B : ℕ → Bool) (c c' : Config) : Prop :=
@@ -62,40 +53,31 @@ theorem FrameB.trans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameB
   ⟨fun r hr => (h₂.1 r hr).trans (h₁.1 r hr), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
     h₂.2.2.1.trans h₁.2.2.1, h₂.2.2.2.1.trans h₁.2.2.2.1, h₂.2.2.2.2.trans h₁.2.2.2.2⟩
 
+/-- A frame remains valid after widening its write mask. -/
+theorem FrameB.mono_false {B B' : ℕ → Bool} {c d : Config}
+    (h : FrameB B c d) (le : ∀ r, B' r = false → B r = false) : FrameB B' c d :=
+  ⟨fun r hr => h.1 r (le r hr), fun r hr => h.2.1 r (le r hr), h.2.2⟩
+
+theorem FrameB.mono {B B' : ℕ → Bool} {c d : Config}
+    (h : FrameB B c d) (le : ∀ r, B r = true → B' r = true) : FrameB B' c d :=
+  h.mono_false fun r hr => by cases ht : B r <;> simp_all
+
 /-- **Frame of a register-writing statement**: an execution of a statement all of whose
 instructions write registers accepted by `B` changes no other register, no memory cell and
 not the output. -/
 theorem exec_frameB {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' : Config} {k : ℕ}
-    (h : Exec P W s c c' k) (hs : wr B s = true) : FrameB B c c' := by
-  induction h with
-  | skip _ => exact FrameB.refl B _
-  | @instr ins c c' _ he _ _ =>
-    simp only [wr] at hs
-    cases ins <;> simp only [wrOK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
-      (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
-      refine ⟨fun j hj => ?_, fun j hj => ?_, rfl, rfl, rfl⟩ <;>
-      first
-      | rfl
-      | (simp only [upd]; split_ifs with hh
-         · subst hh; simp_all
-         · rfl)
-  | seq _ _ ih₁ ih₂ =>
-    simp only [wr, Bool.and_eq_true] at hs
-    exact (ih₁ hs.1).trans (ih₂ hs.2)
-  | ifLtN_true _ _ ih =>
-    simp only [wr, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtN_false _ _ ih =>
-    simp only [wr, Bool.and_eq_true] at hs; exact ih hs.2
-  | ifLtR_true _ _ ih =>
-    simp only [wr, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtR_false _ _ ih =>
-    simp only [wr, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact FrameB.refl B _
-  | whileLtN_true _ _ _ ih₁ ih₂ => exact (ih₁ hs).trans (ih₂ hs)
-  | whileLtR_false _ _ => exact FrameB.refl B _
-  | whileLtR_true _ _ _ ih₁ ih₂ => exact (ih₁ hs).trans (ih₂ hs)
+    (h : Exec P W s c c' k) (hs : wr B s = true) : FrameB B c c' :=
+  let f := h.keeps (F := ⟨B, B, false, false, false⟩) hs
+  ⟨f.nr, f.rr, f.nm rfl, f.rm rfl, f.out rfl⟩
 
+
+/-- A write check adds a frame without repeating the postcondition of a block. -/
+theorem spec_frame {P : Polygon} {W : ℕ} {s : Stmt} {c : Config} {B : ℕ → Bool}
+    {K : ℕ → Prop} {Q : Config → ℕ → Prop}
+    (h : ∃ d k, Exec P W s c d k ∧ K k ∧ Q d k) (hs : wr B s = true := by decide) :
+    ∃ d k, Exec P W s c d k ∧ K k ∧ FrameB B c d ∧ Q d k := by
+  obtain ⟨d, k, e, hk, hq⟩ := h
+  exact ⟨d, k, e, hk, exec_frameB e hs, hq⟩
 
 /-! ## The lexicographic sign of a list of real registers -/
 
@@ -118,9 +100,7 @@ theorem lexStmt_spec {P : Polygon} {W : ℕ} (Z Pb Zb : ℕ) (hne : Pb ≠ Zb) (
   | nil =>
     intro c hc hZ
     simp only [lexStmt]
-    exec_block
-    · omega
-    · omega
+    exec_block!
     · simp [hne, lexPos, allZero]
   | cons r rs ih =>
     intro c hc hZ
@@ -128,17 +108,13 @@ theorem lexStmt_spec {P : Polygon} {W : ℕ} (Z Pb Zb : ℕ) (hne : Pb ≠ Zb) (
     by_cases h1 : c.rreg Z < c.rreg r
     · refine spec_ifLtR_true h1 ?_
       have hp : 0 < c.rreg r := hZ ▸ h1
-      exec_block
-      · omega
-      · omega
+      exec_block!
       · refine ⟨by simp only [List.length_cons]; omega, ?_⟩
         simp [hne, lexPos, allZero, hp, hp.ne']
     · by_cases h2 : c.rreg r < c.rreg Z
       · refine spec_ifLtR_false h1 (spec_ifLtR_true h2 ?_)
         have hn : c.rreg r < 0 := hZ ▸ h2
-        exec_block
-        · omega
-        · omega
+        exec_block!
         · refine ⟨by simp only [List.length_cons]; omega, ?_⟩
           simp [hne, lexPos, allZero, hn.ne, not_lt.2 hn.le]
       · refine spec_ifLtR_false h1 (spec_ifLtR_false h2 ?_)
@@ -167,16 +143,14 @@ theorem succIdx_spec {P : Polygon} {W : ℕ} (a : ℕ) (c : Config) (hc : WordsB
   exec_block
   · rw [h1]; omega
   · by_cases hlt : c.nreg a + 1 < P.n
-    · refine spec_ifLtN_true (by config_simp; rw [h1, hn]; exact hlt) ?_
+    · refine spec_ifLtN_true (by simp_all) ?_
       refine spec_skip ‹_› ?_
-      refine ⟨by omega, by config_simp; rw [h1, Nat.mod_eq_of_lt hlt], rfl,
+      refine ⟨by omega, by simp [h1, Nat.mod_eq_of_lt hlt], rfl,
         fun r hr => by config_simp; simp [hr]⟩
-    · refine spec_ifLtN_false (by config_simp; rw [h1, hn]; exact hlt) ?_
+    · refine spec_ifLtN_false (by simp_all) ?_
       have he : c.nreg a + 1 = P.n := by omega
-      exec_block
-      · omega
-      · exact ⟨by omega, by config_simp; rw [he, Nat.mod_self], rfl,
-          fun r hr => by config_simp; simp [hr]⟩
+      exec_block!
+      simp_all
 
 /-- A representation held in the six real registers from `ob` on. -/
 def RepAt (c : Config) (ob : ℕ) (r : Rep) : Prop :=
@@ -222,40 +196,39 @@ theorem normR_spec {P : Polygon} {W : ℕ} (ob : ℕ) (hob : ob = 10100 ∨ ob =
     simp only [Nat.reduceAdd] at r0 r1 r2 r3 r4 r5
     simp only [normR, negR, degR, Nat.reduceAdd]
     by_cases h1 : dy < 0
-    · refine spec_ifLtR_true (by rw [hdy, hZ]; exact h1) ?_
+    · refine spec_ifLtR_true (by rwa [hdy, hZ]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       simp only [normRep, h1, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd]
-      config_simp
-      simp only [hZ, r0, r1, r2, r3, r4, r5, and_self]
+      simp_all
     by_cases h2 : 0 < dy
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_true (by rw [hdy, hZ]; exact h2) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_true (by rwa [hdy, hZ]) ?_
       refine spec_skip hc ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, ↓reduceIte, RepAt, Nat.reduceAdd]
       exact ⟨r0, r1, r2, r3, r4, r5⟩
     have h0 : dy = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
     by_cases h3 : dx < 0
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_ifLtR_true (by rw [hdx, hZ]; exact h3) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_true (by rwa [hdx, hZ]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, h3, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd]
       config_simp
       simp only [hZ, r0, r1, r2, r3, r4, r5, and_self]
     by_cases h4 : 0 < dx
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_ifLtR_false (by rw [hdx, hZ]; exact h3) ?_
-      refine spec_ifLtR_true (by rw [hdx, hZ]; exact h4) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdx, hZ]) ?_
+      refine spec_ifLtR_true (by rwa [hdx, hZ]) ?_
       refine spec_skip hc ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd]
       exact ⟨r0, r1, r2, r3, r4, r5⟩
-    · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
-      refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_ifLtR_false (by rw [hdx, hZ]; exact h3) ?_
-      refine spec_ifLtR_false (by rw [hdx, hZ]; exact h4) ?_
+    · refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdy, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdx, hZ]) ?_
+      refine spec_ifLtR_false (by rwa [hdx, hZ]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       simp only [normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd]
@@ -325,12 +298,11 @@ theorem loadPt_spec {P : Polygon} {W : ℕ} (nb ob : ℕ)
         (y0 := (P.vtx h).2) (y1 := (P.vtx h).1)
         (by config_simp; rw [hrr, hZ]) (by config_simp; rw [hidx, e1])
         (by config_simp; rw [hidx, e1]) (by config_simp; rw [e1])
-        (by simp only [RepAt, Nat.reduceAdd]; config_simp; simp only [hidx, e1, e2, and_self]))
+        (by simp [RepAt, Nat.reduceAdd, hidx, e1, e2, and_self]))
         ?_
       intro c' k2 hk2 _ hrep
       refine ⟨by omega, ?_⟩
-      rw [symRep, edgeRep_eq]
-      exact hrep
+      rwa [symRep, edgeRep_eq]
 
 
 /-! ## The prelude, the coefficient lists, the selection and the final bit -/
@@ -340,19 +312,18 @@ theorem loadPt_spec {P : Polygon} {W : ℕ} (nb ob : ℕ)
 def prelude : Stmt :=
   block [.inputSize 10020, .constN 10021 1, .constN 10022 2, .constN 10023 3, .constR 10020 0]
 
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c)
+
+include P hc in
 /-- **Spec of `prelude`**: cost `5`. -/
-theorem prelude_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c) (hW : P.n + 3 ≤ W) :
+theorem prelude_spec (hW : P.n + 3 ≤ W) :
     ∃ c' k, Exec P W prelude c c' k ∧ k ≤ 5 ∧ c'.nreg 10020 = P.n ∧ c'.nreg 10021 = 1 ∧
       c'.nreg 10022 = 2 ∧ c'.nreg 10023 = 3 ∧ c'.rreg 10020 = 0 := by
   unfold prelude
-  exec_block
-  · omega
-  · omega
-  · omega
-  · omega
-  · refine ⟨by omega, ?_⟩
-    config_simp
-    simp
+  exec_block!
+  simp
 
 /-- The coefficient lists of all tests, from the representations at `10100`, `10110`, `10120`:
 `A = x_b d_a - x_a d_b` at `10200`, `C = x_c d_a - x_a d_c` at `10203`, `y_b - y_a` at `10206`,
@@ -384,9 +355,10 @@ def polyStmt : Stmt :=
     .mulR 10301 10205 10214, .subR 10219 10300 10301, .mulR 10300 10202 10212,
     .mulR 10301 10205 10215, .subR 10220 10300 10301]
 
+include P hc in
 /-- **Spec of `polyStmt`**: cost `≤ 71`; the registers hold `xPoly`, `yPoly` and `dPoly` of the
 three representations. -/
-theorem polyStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c) {ra rb rc : Rep}
+theorem polyStmt_spec {ra rb rc : Rep}
     (ha : RepAt c 10100 ra) (hb : RepAt c 10110 rb) (hcc : RepAt c 10120 rc) :
     ∃ c' k, Exec P W polyStmt c c' k ∧ k ≤ 71 ∧
       [c'.rreg 10200, c'.rreg 10201, c'.rreg 10202, 0, 0] = xPoly ra rb ∧
@@ -418,8 +390,9 @@ theorem testPoly_of_two_le {op : ℕ} (h : 2 ≤ op) (a b c : Rep) : testPoly op
   match op, h with
   | n + 2, _ => rfl
 
+include P hc in
 /-- **Spec of `selStmt`**: cost `≤ 9`; the selected registers hold `testPoly op`. -/
-theorem selStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c) {ra rb rc : Rep}
+theorem selStmt_spec {ra rb rc : Rep}
     (h1 : c.nreg 10021 = 1) (h2 : c.nreg 10022 = 2)
     (hx : [c.rreg 10200, c.rreg 10201, c.rreg 10202, 0, 0] = xPoly ra rb)
     (hy : [c.rreg 10206, c.rreg 10207, 0, 0, 0] = yPoly ra rb)
@@ -429,23 +402,17 @@ theorem selStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
       [10400, 10401, 10402, 10403, 10404].map c'.rreg = testPoly (c.nreg 10009) ra rb rc := by
   unfold selStmt
   by_cases hA : c.nreg 10009 < 1
-  · refine spec_ifLtN_true (by rw [h1]; exact hA) ?_
+  · refine spec_ifLtN_true (by rwa [h1]) ?_
     have hop : c.nreg 10009 = 0 := by omega
     exec_block
-    refine ⟨by omega, ?_⟩
-    rw [hop, testPoly, ← hx]
-    config_simp
-    simp
-  · refine spec_ifLtN_false (by rw [h1]; exact hA) ?_
+    simp [hop, testPoly, ← hx]
+  · refine spec_ifLtN_false (by rwa [h1]) ?_
     by_cases hB : c.nreg 10009 < 2
-    · refine spec_ifLtN_true (by rw [h2]; exact hB) ?_
+    · refine spec_ifLtN_true (by rwa [h2]) ?_
       have hop : c.nreg 10009 = 1 := by omega
       exec_block
-      refine ⟨by omega, ?_⟩
-      rw [hop, testPoly, ← hy]
-      config_simp
-      simp
-    · refine spec_ifLtN_false (by rw [h2]; exact hB) ?_
+      simp [hop, testPoly, ← hy]
+    · refine spec_ifLtN_false (by rwa [h2]) ?_
       exec_block
       refine ⟨by omega, ?_⟩
       rw [testPoly_of_two_le (by omega), ← hd]
@@ -456,20 +423,23 @@ theorem selStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
 def finStmt : Stmt :=
   .ifLtN 10009 10023 (.instr (.copyN 10010 10410)) (.instr (.copyN 10010 10411))
 
+include P hc in
 /-- **Spec of `finStmt`**: cost `≤ 3`. -/
-theorem finStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c)
+theorem finStmt_spec
     (h3 : c.nreg 10023 = 3) :
     ∃ c' k, Exec P W finStmt c c' k ∧ k ≤ 3 ∧
       (c.nreg 10009 < 3 → c'.nreg 10010 = c.nreg 10410) ∧
       (¬ c.nreg 10009 < 3 → c'.nreg 10010 = c.nreg 10411) := by
   unfold finStmt
   by_cases h : c.nreg 10009 < 3
-  · refine spec_ifLtN_true (by rw [h3]; exact h) ?_
+  · refine spec_ifLtN_true (by rwa [h3]) ?_
     refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨by omega, fun _ => by config_simp, fun h' =>
       (h' h).elim⟩
-  · refine spec_ifLtN_false (by rw [h3]; exact h) ?_
+  · refine spec_ifLtN_false (by rwa [h3]) ?_
     refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨by omega, fun h' => (h h').elim,
       fun _ => by config_simp⟩
+
+end
 
 end
 

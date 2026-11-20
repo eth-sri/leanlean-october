@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.DownPhaseDrvRInv
 
 /-!
@@ -41,11 +43,11 @@ namespace DrvR
 open Machine
 
 /-- The degree cap of the region maps (`hostFullDegSpec`: `2 (64 + 1)`). -/
-def regCap : ℕ := 130
+@[ram_layout] def regCap : ℕ := 130
 
 /-- **The contract of the region procedure (D5).** -/
-def RegionSpec (O : OracleIface) : Prop :=
-  ∃ (s : Stmt) (κ : ℕ), Meets s drvBands
+def RegMeets (O : OracleIface) (s : Stmt) (κ : ℕ) : Prop :=
+  Meets s drvBands
     (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
       (gradeCtx O).holds P c.nmem (c.nreg 219205) (c.nreg ALLOC) ∧
       7 ≤ c.nreg 219202 ∧ c.nreg 219202 ≤ c.nmem (c.nreg 219205) ∧
@@ -73,6 +75,8 @@ def RegionSpec (O : OracleIface) : Prop :=
         ∃ N, NFWithin c'.nmem (c'.nreg 219211) (c'.nreg ALLOC) N ∧
           IsCanonicalNF (chainModel C) (Qof P) N (c'.nreg 219212) regCap)
     (fun _ c => κ * (lemma41Nat (c.nreg 219202) + 1))
+
+def RegionSpec (O : OracleIface) : Prop := ∃ s κ, RegMeets O s κ
 
 end
 

@@ -63,7 +63,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
     (hG : GoodEnv P) (hCQ : C.P = Qof P)
     (hD : ChainDescAt m₀ D (Qof P) H C) (hwf : ChainWF P A₀ m₀ D)
     (hNFw : NFWithin m₀ NB A₀ N) (hcan : IsCanonicalNF (chainModel C) (Qof P) N γ 4)
-    (hagree : ∀ a, a < A₀ → m a = m₀ a)
+    (hagree : MemEqBelow A₀ m m₀)
     (hhdr : ∀ i, i < 18 → m (O + i) = (hdrVals D NB γ E N.arcs.length POS FL LAB DL nD ORD RK CH
       N.chords.length MD TB L (N.arcs.length + 3)).getD i 0)
     (hE : E = O + 18)
@@ -88,20 +88,20 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
     (hcl : ClFacts m B FL LAB k) (hord : OrdFacts m (N.arcs.length + 3) FL LAB DL nD ORD RK) :
     Robust E m fun m'' => ∃ V H C N B k, QAt P m'' O E V H C N B k := by
   intro m'' hm''
-  have hQn : (Qof P).n = P.n := shear_n _ _
+  
   have hN := hcan.1
   have hsimp : C.P.Simple := by rw [hCQ]; exact (shearInvariance (epsOf P) P).1 hG.1
   have hA0 := arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
-  have hNB11 : NB + 11 < A₀ := NFLoc.robust_addr (fun m' hm' => (hNFw m' hm').2.2.2.2.1)
+  have hNB11 := NFLoc.robust_addr (fun m' hm' => (hNFw m' hm').2.2.2.2.1)
   obtain ⟨hDA, hall⟩ := hwf
   obtain ⟨hHl, hHwf, hHb, hCs⟩ := hall H C hD
   have hOE : O + 18 ≤ E := by omega
   have hA₀O : A₀ ≤ O := by omega
-  have ag0 : ∀ a, a < A₀ → m'' a = m₀ a := fun a ha => by rw [hm'' a (by omega), hagree a ha]
-  have agE : ∀ a, a < O → m'' a = m a := fun a ha => hm'' a (by omega)
-  have hNF'' : NFAt m'' NB N := hNFw m'' ag0
-  have hD'' : ChainDescAt m'' D (Qof P) H C := chainDescAt_agree hD hDA hHb ag0
+  have ag0 : MemEqBelow A₀ m'' m₀ := fun a ha => by ram_simp [hm'', hagree a ha]
+  have agE : MemEqBelow O m'' m := fun a ha => hm'' a (by omega)
+  have hNF'' := hNFw m'' ag0
+  have hD'' := chainDescAt_agree hD hDA hHb ag0
   set A := N.arcs.length with hAdef
   set K := N.chords.length with hKdef
   set V := qvFin P m₀ D NB A K POS FL LAB DL nD ORD RK CH MD TB L with hV
@@ -110,11 +110,10 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
   have hVL : V.L = L := rfl
   have hVCH : V.CH = CH := rfl
   have hh : ∀ i, i < 18 → m'' (O + i) = (hdrVals D NB γ E A POS FL LAB DL nD ORD RK CH K MD TB L
-      (A + 3)).getD i 0 := fun i hi => by rw [hm'' _ (by omega)]; exact hhdr i hi
+      (A + 3)).getD i 0 := fun i hi => by ram_rw [hm'']; exact hhdr i hi
   obtain ⟨-, -, hd1, hd2, hd3, hd4⟩ := hD
   have hcb : ∀ i, i < K → m₀ (NB + 3) + 5 * i + 4 < A₀ := fun i hi => by
-    have h1 : Robust A₀ m₀ fun m' => m' (m' (NB + 3) + (5 * i + 4)) = (N.chord i).dn :=
-      fun m' hm' => by
+    have h1 := fun m' hm' => by
         have := ((hNFw m' hm').2.2.2.2.2.1 i hi).2.2.2.2
         simpa only [Nat.add_assoc] using this
     have := (NFLoc.robust_addr2 h1).2; omega
@@ -144,46 +143,43 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       dβ := by show m'' (D + 4) = m₀ (D + 4); exact ag0 _ (by omega)
       sS := rfl
       tv := rfl
-      desc := by show ChainDescAt m'' D (Qof P) H C; exact hD''
+      desc := by assumption
       CQ := hCQ
       simple := hsimp
       hostLen := hHl
       hostWF := hHwf
       D_le := by show D + 5 ≤ E; omega
-      host_le := by show m'' D + 3 * H.length + 4 ≤ E; rw [ag0 _ (by omega)]; omega
+      host_le := by show m'' D + 3 * H.length + 4 ≤ E; ram_rw [ag0]; omega
       s_lt := hCs
       nCB := by show m'' (NB + 3) = m₀ (NB + 3); exact ag0 _ (by omega)
       nAB := by show m'' (NB + 4) = m₀ (NB + 4); exact ag0 _ (by omega)
       nRB := by show m'' (NB + 5) = m₀ (NB + 5); exact ag0 _ (by omega)
       nSB := by show m'' (NB + 6) = m₀ (NB + 6); exact ag0 _ (by omega)
       nLB := by show m'' (NB + 7) = m₀ (NB + 7); exact ag0 _ (by omega)
-      nf := by show NFAt m'' NB N; exact hNF''
-      canon := by rw [hh 2 (by norm_num)]; exact hcan
+      nf := by assumption
+      canon := by ram_rw assumption [hh 2]
       hA := rfl
       hK := rfl
       regs := fun r hr => by
-        have h1 : Robust A₀ m₀ fun m' => m' (m' (NB + 5) + (5 * r + 4)) = (N.region r).wt :=
-          fun m' hm' => by
+        have h1 := fun m' hm' => by
             have := ((hNFw m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
             simpa only [Nat.add_assoc] using this
         obtain ⟨h5, h54⟩ := NFLoc.robust_addr2 h1
         refine ⟨by show m₀ (NB + 5) + 5 * r + 4 < E; omega, fun t ht => ?_⟩
         show m₀ (NB + 7) + m'' (m₀ (NB + 5) + 5 * r + 1) + t < E
-        rw [ag0 _ (by omega)]
+        ram_rw [ag0]
         have := robust_addrF (E := A₀) (m := m₀)
           (f := fun m' => m' (NB + 7) + m' (m' (NB + 5) + 5 * r + 1) + t)
           (v := (N.region r).arcs.getD t 0)
           (fun m' hm' => by
-            show m' (NB + 7) + m' (m' (NB + 5) + 5 * r + 1) + t =
-              m₀ (NB + 7) + m₀ (m₀ (NB + 5) + 5 * r + 1) + t
-            rw [hm' (NB + 7) (by omega), hm' (NB + 5) (by omega), hm' _ (by omega)])
+            ram_simp [hm'])
           (fun m' hm' => ((hNFw m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht)
-        have h' : m₀ (NB + 7) + m₀ (m₀ (NB + 5) + 5 * r + 1) + t < A₀ := this
+        
         omega
       pos := fun j hj => by
         rw [hVA] at hj
         show m'' (POS + j) < A ∧ N.seq.getD (m'' (POS + j)) 0 = j
-        rw [agE _ (by omega)]; exact hpos j hj
+        ram_rw [agE]; exact hpos j hj
       POS_le := by show POS + A ≤ E; omega
       gOK := hgok
       μ := hBN
@@ -198,15 +194,15 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       nD_le := by
         show nD ≤ 7 * k ^ 2
         rw [hord.nD_eq]
-        have := hcl.card; rw [hBN] at this; exact this
+        have := hcl.card; rwa [hBN] at this
       clus := fun l => by
         have := (hcl.mono (m' := m'') (X := O) agE (by rw [hBN]; omega)
           (by rw [hBN]; omega)).clus l
-        rw [hBN] at this; exact this
+        rwa [hBN] at this
       k_pos := hcl.k_pos
-      μ_le := by have := hcl.μ_le; rw [hBN] at this; exact this
+      μ_le := by have := hcl.μ_le; rwa [hBN] at this
       μ_A := le_rfl
-      k_min := by have := hcl.k_min; rw [hBN] at this; exact this
+      k_min := by have := hcl.k_min; rwa [hBN] at this
       ord_lt := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).ord_lt
       ord_inj := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).ord_inj
       ord_rk := (hord.mono (m' := m'') (X := O) agE hFL hLAB hDL hORD hRK).ord_rk
@@ -215,15 +211,15 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       RK_le := by show RK + (A + 3) ≤ E; omega
       ch_lt := fun q hq => by
         rw [hVK] at hq
-        show m'' (CH + q) < K; rw [agE _ (by omega)]; exact hchlt q hq
+        show m'' (CH + q) < K; ram_rw [agE]; exact hchlt q hq
       ch_inj := fun q q' hq hq' e => by
         rw [hVK] at hq hq'
         rw [hVCH] at e
-        rw [agE _ (by omega), agE _ (by omega)] at e; exact hchinj q q' hq hq' e
+        ram_rw [agE, agE] at e; exact hchinj q q' hq hq' e
       ch_sorted := fun q q' hqq hq' => by
         rw [hVK] at hq'
         show ChLe P C V m'' (m'' (CH + q)) (m'' (CH + q'))
-        rw [agE _ (by omega), agE _ (by omega)]
+        ram_rw [agE, agE]
         have hs := hchsort q q' hqq hq'
         have a1 := hchlt q (by omega)
         have a2 := hchlt q' hq'
@@ -235,7 +231,7 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
           (ag0 _ (by show m₀ (NB + 3) + 5 * x + 1 < A₀; omega)).symm⟩
       tab := fun j hj => by
         rw [hVL] at hj
-        show m'' (TB + j) = 2 ^ j; rw [agE _ (by omega)]; exact htab j hj
+        show m'' (TB + j) = 2 ^ j; ram_rw [agE]; exact htab j hj
       A_lt := hAlt
       K_lt := hKlt
       L_le := by
@@ -247,10 +243,10 @@ theorem qat_of {P : Polygon} {m m₀ : ℕ → ℕ} {A₀ D NB γ O E : ℕ} {H 
       AB_TB := by show m₀ (NB + 4) + 5 * A ≤ TB; omega
       SB_TB := by show m₀ (NB + 6) + A ≤ TB; omega
       CB_TB := fun i hi => by have := hcb i hi; show m₀ (NB + 3) + 5 * i + 5 ≤ TB; omega
-      md0 := by show m'' MD = 0; rw [agE _ (by omega)]; exact hmd0
+      md0 := by show m'' MD = 0; ram_rw assumption [agE]
       md := fun i hi => by
         show m'' (MD + 1 + i) = m'' (D + i)
-        rw [agE _ (by omega), hmdc i hi, ag0 _ (by omega)]
+        ram_rw [agE, hmdc i hi, ag0]
       MD_le := by show MD + 6 ≤ E; omega }
 
 end

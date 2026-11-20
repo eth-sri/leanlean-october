@@ -29,9 +29,14 @@ theorem key_le_of_evLe {n : ℝ} {e f : Ev} (h : EvLe n e f) : e.2.1 ≤ f.2.1 :
   · exact h.le
   · exact h.1.le
 
+section
+
+variable {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {x : ℝ}
+    (hx : ∀ e ∈ S, e.2.1 ≠ x)
+include hs hx
+
 /-- **The events below a key form a prefix** of a sorted event list. -/
-theorem take_cntBelow {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {x : ℝ}
-    (hx : ∀ e ∈ S, e.2.1 ≠ x) : S.take (cntBelow S x) = S.filter (fun e => decide (e.2.1 < x)) := by
+theorem take_cntBelow : S.take (cntBelow S x) = S.filter (fun e => decide (e.2.1 < x)) := by
   induction S with
   | nil => rfl
   | cons e S ih =>
@@ -40,9 +45,8 @@ theorem take_cntBelow {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {x : �
     unfold cntBelow at ih' ⊢
     rw [countP_cons, filter_cons]
     by_cases he : e.2.1 < x
-    · simp only [he, decide_true, ite_true]
-      rw [take_succ_cons, ih']
-    · have hgt : x < e.2.1 := lt_of_le_of_ne (not_lt.1 he) (Ne.symm (hx e mem_cons_self))
+    · simp [he, decide_true, take_succ_cons, ih']
+    · have hgt := lt_of_le_of_ne (not_lt.1 he) (Ne.symm (hx e mem_cons_self))
       have hall : ∀ f ∈ S, ¬ f.2.1 < x := fun f hf h =>
         absurd (h.trans_le' (key_le_of_evLe (hs.1 f hf))) (by linarith)
       have h0 : S.countP (fun e => decide (e.2.1 < x)) = 0 := by
@@ -53,10 +57,11 @@ theorem take_cntBelow {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {x : �
       rfl
 
 /-- The chord word of the events below a key. -/
-theorem take_map_cntBelow {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {x : ℝ}
-    (hx : ∀ e ∈ S, e.2.1 ≠ x) :
+theorem take_map_cntBelow :
     (S.map Prod.fst).take (cntBelow S x) = (S.filter (fun e => decide (e.2.1 < x))).map Prod.fst := by
   rw [← map_take, take_cntBelow hs hx]
+
+end
 
 /-- **Occurrences of a chord with two events** in the chord word of a duplicate-free list. -/
 theorem count_two {l : List Ev} (hnd : l.Nodup) {j : ℕ} {a b : Ev} (hab : a ≠ b) (ha : a.1 = j)
@@ -75,8 +80,8 @@ theorem count_two {l : List Ev} (hnd : l.Nodup) {j : ℕ} {a b : Ev} (hab : a �
         simp only [hbl, mem_cons_self, ite_true, hnd.1, ite_false, hf, beq_self_eq_true]
         all_goals omega
       · have hal : a ∈ f :: l ↔ a ∈ l := by
-          rw [mem_cons]; exact ⟨fun h => h.resolve_left hab, Or.inr⟩
-        simp only [hal, mem_cons_self, ite_true, hnd.1, ite_false, hf, beq_self_eq_true]
+          simp_all
+        simp [hal, hnd.1, hf]
     · have hfa : f ≠ a := fun h => hf (h ▸ ha)
       have hfb : f ≠ b := fun h => hf (h ▸ hb)
       have hal : a ∈ f :: l ↔ a ∈ l := by
@@ -87,26 +92,28 @@ theorem count_two {l : List Ev} (hnd : l.Nodup) {j : ℕ} {a b : Ev} (hab : a �
       simp only [hal, hbl, this]
       simp
 
+section
+
+variable {n : ℝ} {u v : List Ev} {e f : Ev}
+    (hs : (u ++ e :: v).Pairwise (EvLe n))
+include f hs
+
 /-- In a list split at `e`, the events on the left are `EvLe`-below `e`. -/
-theorem evLe_of_mem_left {n : ℝ} {u v : List Ev} {e f : Ev}
-    (hs : (u ++ e :: v).Pairwise (EvLe n)) (hf : f ∈ u) : EvLe n f e := by
+theorem evLe_of_mem_left (hf : f ∈ u) : EvLe n f e := by
   rw [pairwise_append] at hs
   exact hs.2.2 f hf e mem_cons_self
 
 /-- In a list split at `e`, the events on the right are `EvLe`-above `e`. -/
-theorem evLe_of_mem_right {n : ℝ} {u v : List Ev} {e f : Ev}
-    (hs : (u ++ e :: v).Pairwise (EvLe n)) (hf : f ∈ v) : EvLe n e f := by
+theorem evLe_of_mem_right (hf : f ∈ v) : EvLe n e f := by
   rw [pairwise_append, pairwise_cons] at hs
   exact hs.2.1.1 f hf
+
+end
 
 /-- An event of a list split at `e`, other than `e`, is on the left or on the right. -/
 theorem mem_split_of_ne {u v : List Ev} {e f : Ev} (hf : f ∈ u ++ e :: v) (hne : f ≠ e) :
     f ∈ u ∨ f ∈ v := by
-  rw [mem_append, mem_cons] at hf
-  rcases hf with h | h | h
-  · exact Or.inl h
-  · exact absurd h hne
-  · exact Or.inr h
+  simp_all
 
 end
 

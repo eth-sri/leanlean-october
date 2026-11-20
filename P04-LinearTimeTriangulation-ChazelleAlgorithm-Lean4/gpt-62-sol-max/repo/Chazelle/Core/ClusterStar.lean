@@ -85,7 +85,7 @@ def starFace : D ⊕ D ⊕ D → D
 
 /-- The face permutation of the star map, explicitly. -/
 theorem starFperm_inl (d : D) : (starRot M * starOpp M) (.inl d) = .inr (.inr (M.fperm d)) := by
-  simp [Perm.mul_apply, M.fperm_apply]
+  rfl
 
 theorem starFperm_inr_inr (d : D) :
     (starRot M * starOpp M) (.inr (.inr d)) = .inr (.inl (M.fperm⁻¹ d)) := by
@@ -216,7 +216,7 @@ theorem star_connected (hM : M.Connected) : (star M).Connected := by
     · exact ⟨d, hrot _ (hopp _ hx)⟩
     · exact ⟨d, hrot _ hx⟩
   obtain ⟨d0, hd0⟩ := hS0
-  have hall : ∀ d, Sum.inl d ∈ S := fun d => hM S0 h0rot h0opp d0 hd0 d
+  have hall := fun d => hM S0 h0rot h0opp d0 hd0 d
   rcases y with d | d | d
   · exact hall d
   · exact hopp _ (hinv _ (hall d))

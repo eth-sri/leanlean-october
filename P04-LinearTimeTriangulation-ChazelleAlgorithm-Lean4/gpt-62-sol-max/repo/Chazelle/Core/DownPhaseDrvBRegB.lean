@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvBRegA
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvRHostSpec
@@ -9,7 +11,7 @@ public import Chazelle.Core.DownPhaseDrvRHostSpec
 
 `hostS sH`: the host of region `r` into a fresh `HostAt` block (`r212022`, items `r212021`,
 points `r212016`): the host RAM `sH` (`DrvR.HostRamSpec`) for `K > 0`, the whole walk `host0`
-for `K = 0` (`hostS_exec`).  `HostOK`, `ExpOK`: the bodies of `HostRamSpec` and `ExpSpec`.
+for `K = 0` (`hostS_exec`).  `DrvR.HostMeets`, `ExpOK`: the bodies of `HostRamSpec` and `ExpSpec`.
 -/
 
 namespace Chazelle.Core
@@ -21,35 +23,6 @@ open BuildRam (FrameM FrameM.mono FrameM.trans FrameB.toM)
 open DrvR (regHost)
 
 @[expose] public section
-
-/-- The body of `DrvR.HostRamSpec`. -/
-def HostOK (sH : Stmt) (κH : ℕ) : Prop :=
-  Meets sH {bDownDrv}
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ c.nreg 215002 ≤ 1 ∧
-      (c.nreg 215002 = 1 ↔ Mountain.LeftInside (Qof P)) ∧
-      ∃ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ), L ≠ [] ∧
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P) L ∧ E.Perm (List.range (2 * L.length)) ∧
-        E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) ∧
-        (interiorModel (Qof P)).DegLe
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P))
-            (Qof P)) 4 ∧
-        NFWithin c.nmem (c.nreg 215000) (c.nreg ALLOC)
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) ∧
-        c.nreg 215001 < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions)
-    (fun P c c' =>
-      (∀ q, bandOf q = bDownDrv → (q < 215000 ∨ 216000 ≤ q) → c'.nreg q = c.nreg q) ∧
-      ∀ (L : List (ℕ × ℕ × ℕ)) (E : List ℕ), L ≠ [] →
-        ChordTriplesOK (interiorModel (Qof P)) (Qof P) L → E.Perm (List.range (2 * L.length)) →
-        E.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) L) →
-        NFAt c.nmem (c.nreg 215000) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) →
-        let H := regHost (decide (c.nreg 215002 = 1)) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 215001)
-        c.nreg ALLOC ≤ c'.nreg 215010 ∧ c'.nreg 215010 + 3 * H.length + 1 ≤ c'.nreg ALLOC ∧
-          HostAt c'.nmem (c'.nreg 215010) H ∧ c'.nreg 215011 = H.length ∧
-          c'.nreg 215012 = (H.pts (Qof P).n).length)
-    (fun _ _ => κH)
-
-theorem hostOK_of (h : DrvR.HostRamSpec) : ∃ sH κH, HostOK sH κH := h
 
 /-- The body of `ExpSpec`. -/
 def ExpOK (sE : Stmt) (κE : ℕ) : Prop :=
@@ -88,13 +61,13 @@ theorem frame21_of_B {B : ℕ → Bool} {c c' : Config} {k : ℕ}
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 _ (by
     cases h : B ALLOC
     · rfl
-    · have := hB _ h; unfold ALLOC bandOf bDownDrv at this; omega)
+    · have := hB _ h; reg_omega)
   exact frame21 (fun r h => Or.inl (hB r h)) (FrameB.toM hf) (fun a _ => by rw [hf.2.2.1]) hrr
     (by omega) (by omega)
 
 set_option maxHeartbeats 8000000 in
 /-- **The host of the region.** -/
-theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE : BGood E) {r : ℕ}
+theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : DrvR.HostMeets sH κH) {E : BEnv} (hE : BGood E) {r : ℕ}
     (hr : r < E.K + 1) (c : Config) (hw : WordsBounded E.W c) (R : BRegs E c)
     (h14 : c.nreg 212014 = r) (hlow : ∀ a, a < E.B₂ → c.nmem a = E.m₀ a)
     (hA : E.B₂ ≤ c.nreg ALLOC) (hroom : c.nreg ALLOC + κH + 20 ≤ E.W) :
@@ -137,7 +110,7 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       · exact R.li
       · simp [a, b, d]
     have w₁ := e₁.wb_right
-    have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide) (by decide) (by decide)
+    have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := (ram_app% (g₁ _ ?_ ?_ ?_))
     have hNW : NFWithin c₁.nmem E.H (c₁.nreg ALLOC) E.N := by
       rw [A₁]
       exact (hE.hNF.transport (fun a ha => by rw [m₁]; exact hlow a ha)).mono hA
@@ -159,11 +132,9 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
         c₃.nreg 212016 = c₂.nreg 215012 ∧
         (∀ q, q ≠ 212022 → q ≠ 212021 → q ≠ 212016 → c₃.nreg q = c₂.nreg q) ∧
         c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg := by
-      exec_block
-      refine ⟨rfl, ?_, ?_, ?_, fun q a b d => ?_, rfl, rfl⟩ <;> config_simp
-      simp [a, b, d]
+      ram_exec
     have ex : Exec E.P E.W (hostS sH) c c₃ (k₁ + (k₂ + k₃) + 1) :=
-      .ifLtN_true (by rw [R.c1, R.K]; exact hK) (.seq e₁ (.seq e₂ e₃))
+      (by ram_path)
     set H := regHost E.li (Qof E.P).n E.N r with hHd
     have hwf : HostWF E.Q.n H := by
       obtain ⟨-, -, -, -, -, -, -, hwf⟩ := DownMath.walk_rep ((hE.ctx hK).rc hr') hE.hli
@@ -180,13 +151,13 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       (exec_frameB e₃ (by decide)) rr₃
     have F := (F₁.trans (F₂.trans F₃))
     simp only [Finset.union_self] at F
-    have A₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := g₃ _ (by decide) (by decide) (by decide)
+    have A₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := (ram_app% (g₃ _ ?_ ?_ ?_))
     have hk₂' : k₂ ≤ κH := hk₂
     refine ⟨c₃, _, H, ex, by omega, by rw [u22, m₃]; exact hb3, by rw [← hQn]; exact hwf,
       by rw [u21]; exact hb4, by rw [u16, hb5, hQn], ?_, by rw [u22, ← A₁]; exact hb1,
       by rw [u22, A₃]; exact hb2, fun q hq1 hq2 a b d _ _ => ?_, F.mono le_rfl (by omega)⟩
     · rw [BGood.pts_pos hK, hHd]; unfold regPts; rw [hQn]
-    · rw [g₃ q d b a, pk q hq1 hq2, g₁ q (by omega) (by omega) (by omega)]
+    · ram_rw [g₃ q d b a, pk q hq1 hq2, g₁ q]
 
 end exec
 

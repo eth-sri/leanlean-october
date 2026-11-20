@@ -58,11 +58,11 @@ theorem auxRecs_co : AuxRecsAt co.nmem (co.nreg aB) ax := by
   have hm : ∀ x, c.nreg aB ≤ x → x < c.nreg aB + 5 * c.nreg sC → co.nmem x = c.nmem x :=
     fun x h1 h2 => stp_co_mem S.L S.hI x (by omega) (by omega)
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [hm _ (by omega) (by omega)]; exact a0
-  · rw [hm _ (by omega) (by omega)]; exact a1
-  · rw [hm _ (by omega) (by omega)]; exact a2
-  · rw [hm _ (by omega) (by omega)]; exact a3
-  · rw [hm _ (by omega) (by omega)]; exact a4
+  · simp_all <;> omega
+  · ram_simp [hm] <;> omega
+  · ram_simp [hm] <;> omega
+  · ram_simp [hm] <;> omega
+  · ram_simp [hm] <;> omega
 
 /-- The label list of the key is kept until the next-key step. -/
 theorem lblOf_co : lblOf co kN kL = lblOf c kN kL ∧ co.nreg kN = c.nreg kN := by
@@ -83,24 +83,23 @@ theorem skip_aux {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
       AuxOK P J N₂ (stopSet J (Qof P) N₂ rs[i].2.2.1 rs[i].2.2.2.1 rs[i].2.2.2.2) ax[i] := by
   obtain ⟨hi, -⟩ := S.skip_at h1 h2
   have hax := S.hD.2.1
-  have hia : i < ax.length := by rw [hax]; exact hi
+  have hia : i < ax.length := by rwa [hax]
   obtain ⟨a0, -⟩ := S.auxRecs_co i hia
   rw [List.getD_eq_getElem _ _ hia] at a0
   have hok := S.hD.2.2.2.2.2.2.1 i hi
-  rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ hia] at hok
-  exact ⟨hi, hia, a0, hok⟩
+  simp_all
 
 set_option maxHeartbeats 4000000 in
 /-- **The labels at the next key.** -/
 theorem labels :
     (∀ i, i < c'.nreg kN → c'.nreg (kL + i) < N₂.nRegions) ∧
-    EvInv J (N₂.F (chainModel J.right) (Qof P)) (keyOff P J c') (curLab P J N₂ c') := by
+    EvInv J (N₂.F J.rightModel (Qof P)) (keyOff P J c') (curLab P J N₂ c') := by
   classical
   have hP := S.E.hP
-  have hS₂ : (chainModel J.right).ChordFamily (Qof P) (N₂.F (chainModel J.right) (Qof P)) :=
+  have hS₂ : J.rightModel.ChordFamily (Qof P) (N₂.F J.rightModel (Qof P)) :=
     S.E.hNF₂.1
   have hF := F₂plus_chordFamily S.E
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM : WalkAx J.wholeModel := FactsChain.walkAx J.whole hP
   obtain ⟨hlt, hpw, -⟩ := stp_next_key S.E S.L S.hI S.hd
   have hsome := stp_key_some S.hI S.hd
   obtain ⟨esP, -, -, -, -, -⟩ := iter_stops S.L S.hI
@@ -109,7 +108,7 @@ theorem labels :
   obtain ⟨hLco, ekN⟩ := S.lblOf_co
   have hCS := (regOf_spec S.E.hNF₂).2.1
   set pK := c'.nreg kE with hpK
-  set tK := (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ with htK
+  set tK := J.wholeModel.param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩ with htK
   -- the label universe at the key
   obtain ⟨e₁, e₂, h12⟩ := stp_two_chords hM hF.2.1 pK tK
   obtain ⟨hf₁, hc₁⟩ := S.labsOf_card e₁
@@ -119,8 +118,8 @@ theorem labels :
     refine (Finset.card_union_le _ _).trans ?_
     rw [← ncard_eq_toFinset_card _ hf₁, ← ncard_eq_toFinset_card _ hf₂]
     omega
-  have inU : ∀ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)),
-      SideAttach (chainModel J.whole).W e pK tK → ∀ x, x ∈ labsOf P J N₂ c co c' A rs e →
+  have inU : ∀ e ∈ F₂plus J (N₂.F J.rightModel (Qof P)),
+      SideAttach J.wholeModel.W e pK tK → ∀ x, x ∈ labsOf P J N₂ c co c' A rs e →
       x ∈ U := by
     intro e he heK x hx
     rcases h12 e he heK with rfl | rfl
@@ -171,7 +170,7 @@ theorem labels :
   -- the label set of the next key
   have hΛ' := stp_curLab_eq (P := P) (J := J) (N₂ := N₂) hkN4
   have toΛ : ∀ l, l ∈ lblOf c' kN kL →
-      regOf (chainModel J.right) (Qof P) N₂ l ∈ curLab P J N₂ c' := fun l hl => by
+      regOf J.rightModel (Qof P) N₂ l ∈ curLab P J N₂ c' := fun l hl => by
     rw [hΛ']; exact ⟨l, hl, rfl⟩
   -- the bounds of the stop labels
   have hvs_lt : ∀ x ∈ vs, x < N₂.nRegions := by
@@ -195,7 +194,7 @@ theorem labels :
     with hAnd
   refine ⟨fun i hi => ?_, ?_⟩
   · -- the labels are region indices
-    have hmem : c'.nreg (kL + i) ∈ lblOf c' kN kL := stp_mem_lblOf hi hkN4
+    have hmem := stp_mem_lblOf hi hkN4
     by_cases hAn : An
     · rw [hlab1 hAn] at hmem
       rcases stp_addLs_sub vs L0 hmem with h | h
@@ -206,16 +205,16 @@ theorem labels :
       obtain ⟨i', hi', -, hx⟩ := stp_lblOf_mem hmem
       rw [← hx]
       exact S.L.labR i' hi'
-  · have hLst : (Lst J : ℝ) ≤ oW J (pK + tK) := le_trans S.L.keyL hlt.le
+  · have hLst := le_trans S.L.keyL hlt.le
     refine evInv_step hP hS₂ hF S.L.inv hpw.1 hpw.2.1.1 hpw.2.1.2.1 hLst hlt.le S.gapK ?_
-    by_cases hpock : ∃ e ∈ F₂plus J (N₂.F (chainModel J.right) (Qof P)),
-        SideAttach (chainModel J.whole).W e pK tK ∧
-        ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ oW J (q + s) = 0
+    by_cases hpock : ∃ e ∈ F₂plus J (N₂.F J.rightModel (Qof P)),
+        SideAttach J.wholeModel.W e pK tK ∧
+        ∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s ∧ oW J (q + s) = 0
     · exact Or.inl hpock
     push Not at hpock
     by_cases hAn : An
     · right; left
-      have hlist : lblOf c' kN kL = addLs L0 vs := hlab1 hAn
+      have hlist := hlab1 hAn
       refine ⟨?_, fun e he heK hnb => ?_⟩
       · -- an anchored chord at the key
         rcases hAn with ⟨hbF, hbo⟩ | ⟨i, h1, h2, hfl⟩
@@ -227,12 +226,12 @@ theorem labels :
           obtain ⟨hi', hia, hfl', hok⟩ := S.skip_aux h1 h2
           exact ⟨_, hmF, hat, hok.2.1.1 (hfl'.symm.trans hfl)⟩
       · -- every anchored chord at the key has its labels
-        by_cases hst : StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e
+        by_cases hst : StopChord2 J (N₂.F J.rightModel (Qof P)) e
         · obtain ⟨i, hi, h1, h2, hse⟩ := S.stop_idx he heK hst
           obtain ⟨hi', hia, hfl, hok⟩ := S.skip_aux h1 h2
           obtain ⟨-, hiff, hnl, -, -, hlab, -⟩ := hok
           rw [hse] at hiff hlab
-          have hanc : ax[i].1 = 1 := hiff.2 hnb
+          have hanc := hiff.2 hnb
           refine evSideLab_mono ?_ (hlab hanc (fun q s hq => hpock e he heK q s hq))
           rintro _ ⟨l, hl, rfl⟩
           apply toΛ
@@ -243,8 +242,8 @@ theorem labels :
           rcases hl with h | h | h | h
           · exact Or.inl h
           · exact Or.inr h
-          · exact absurd h.1 (by omega)
-          · exact absurd h.1 (by omega)
+          · omega
+          omega
         · obtain ⟨t, ht, hto, hte, hbF, hbo⟩ := S.nonstop_acc he heK hst
           obtain ⟨-, hj, hfree, -⟩ := S.hBA.acc t ht
           obtain ⟨haR, hav, hat⟩ := S.hval t ht
@@ -256,16 +255,16 @@ theorem labels :
           have hL0e : L0 = lblOf co bN bL := by rw [hL0, ite_eq_left hB]
           have hinL : ∀ x, (x = upOf N₂ t.1 ∨ x = dnOf N₂ t.1) → x ∈ L0 := by
             intro x hx
-            have hxU : x ∈ U := inU _ he heK x (Or.inl ⟨t, ht, hto, hte, hx⟩)
+            have hxU := inU _ he heK x (Or.inl ⟨t, ht, hto, hte, hx⟩)
             obtain ⟨c1, c2⟩ := S.hBA.lCov hbF t ht (hto.trans hbo.symm)
             rw [hL0e]
             rcases hx with rfl | rfl
             · rcases c1 with h | h
               · exact h
-              · exact stp_mem_full (S.hBA.lNd hbF) h (by rw [← hL0e]; exact hL0U) hUc hxU
+              · exact stp_mem_full (S.hBA.lNd hbF) h (by rwa [← hL0e]) hUc hxU
             · rcases c2 with h | h
               · exact h
-              · exact stp_mem_full (S.hBA.lNd hbF) h (by rw [← hL0e]; exact hL0U) hUc hxU
+              · exact stp_mem_full (S.hBA.lNd hbF) h (by rwa [← hL0e]) hUc hxU
           refine evSideLab_mono ?_ hlab
           rintro _ ⟨l, hl, rfl⟩
           apply toΛ
@@ -279,11 +278,11 @@ theorem labels :
     · right; right
       refine ⟨fun e he heK => ?_, ?_⟩
       · by_contra hnb
-        by_cases hst : StopChord2 J (N₂.F (chainModel J.right) (Qof P)) e
+        by_cases hst : StopChord2 J (N₂.F J.rightModel (Qof P)) e
         · obtain ⟨i, hi, h1, h2, hse⟩ := S.stop_idx he heK hst
           obtain ⟨hi', hia, hfl, hok⟩ := S.skip_aux h1 h2
           rw [hse] at hok
-          exact hAn (Or.inr ⟨i, by rw [esP]; exact h1, h2, hfl.trans (hok.2.1.2 hnb)⟩)
+          exact hAn (Or.inr ⟨i, by rwa [esP], h2, hfl.trans (hok.2.1.2 hnb)⟩)
         · obtain ⟨t, -, -, -, hbF, hbo⟩ := S.nonstop_acc he heK hst
           exact hAn (Or.inl ⟨hbF, hbo⟩)
       · obtain ⟨h1, h2⟩ := hlab2 hAn

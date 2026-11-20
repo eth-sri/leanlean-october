@@ -61,7 +61,7 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
       cf'.nreg 130701 = 0 ∧ StaticEq A0 U cf.nmem cf'.nmem ∧
       (∀ r, ¬ SplitRG r → r ≠ 130701 → r ≠ 130704 → cf'.nreg r = cf.nreg r) ∧
       cf'.rreg = cf.rreg ∧ cf'.rmem = cf.rmem ∧ cf'.output = cf.output := by
-  let I : Config → Prop := fun c' => WordsBounded W c' ∧ S.Regs c' ∧
+  let I := fun c' => WordsBounded W c' ∧ S.Regs c' ∧
     StaticEq A0 U cf.nmem c'.nmem ∧
     (∀ r, ¬ SplitRG r → r ≠ 130701 → r ≠ 130704 → c'.nreg r = cf.nreg r) ∧
     c'.rreg = cf.rreg ∧ c'.rmem = cf.rmem ∧ c'.output = cf.output ∧
@@ -114,8 +114,7 @@ theorem driver_exec {S : SS} {A0 U : ℕ} {cf : Config} (hw : WordsBounded W cf)
   subst hnil
   refine ⟨cf', K, e, ?_, hw', hR', ⟨fin', D', nsp', hD'⟩, by rw [htp']; rfl, hst', hfr', hrr',
     hrm', ho'⟩
-  rw [hΦ cf _ _ _ _ hD htp hnsp] at hK
-  exact hK
+  rwa [hΦ cf _ _ _ _ hD htp hnsp] at hK
 
 end body
 

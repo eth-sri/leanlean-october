@@ -24,8 +24,7 @@ variable (J : Junction)
 theorem left_vertex (k : ℕ) : J.left.vertex k = J.whole.vertex k := rfl
 
 theorem right_vertex (k : ℕ) : J.right.vertex k = J.whole.vertex (J.m₁ + k) := by
-  simp only [Chain.vertex, Chain.edgeIdx, Junction.right, Junction.whole,
-    Nat.add_assoc]
+  simp [Chain.vertex, Chain.edgeIdx, Junction.right, Junction.whole, Nat.add_assoc]
 
 /-- **The top index of the union.** -/
 theorem whole_topIdx : J.whole.topIdx =
@@ -73,7 +72,7 @@ theorem whole_topIdx : J.whole.topIdx =
       · exfalso
         have := J.left.vertex_snd_le_top (j := J.whole.topIdx) (by omega)
         have e' : (J.whole.top).2 = (J.left.vertex J.whole.topIdx).2 := by
-          show (J.whole.vertex J.whole.topIdx).2 = _; rw [e]
+          rfl
         linarith
       · rw [e1]
         have := J.right.topIdx_min (j := t) ht (fun i hi => by

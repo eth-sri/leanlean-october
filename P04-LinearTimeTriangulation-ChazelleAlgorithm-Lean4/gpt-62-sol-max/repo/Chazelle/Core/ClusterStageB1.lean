@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.ClusterInv
 public import Chazelle.Core.ClusterFaces
 public import Chazelle.Core.ClusterStarArr
@@ -27,7 +31,7 @@ def StBRG (r : ℕ) : Prop := (130100 ≤ r ∧ r ≤ 130130) ∨ (130150 ≤ r 
   (130200 ≤ r ∧ r ≤ 130215) ∨ (130500 ≤ r ∧ r ≤ 130556) ∨ (130800 ≤ r ∧ r ≤ 130811)
 
 /-- The registers of the array loops. -/
-def ArrPRG (r : ℕ) : Prop := 130550 ≤ r ∧ r ≤ 130556
+@[ram_layout] def ArrPRG (r : ℕ) : Prop := 130550 ≤ r ∧ r ≤ 130556
 
 /-- The face permutation. -/
 def fpP : Stmt := .seq (block [.copyN 130520 130022, .copyN 130521 130021, .copyN 130522 130037,
@@ -81,12 +85,17 @@ theorem arrB_exec {c : Config} (hw : WordsBounded W c) {rOut rOff rIn rA o f i a
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold arrB
   exec_block
-  · rw [hO, hf]; exact hwo
+  · rwa [hO, hf]
   · refine ⟨rfl, ‹_›, rfl, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl⟩
     all_goals simp only [Machine.upd_apply]
     all_goals split_ifs <;> omega
 
-theorem affP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
+section
+
+variable {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
+include hw hone
+
+theorem affP_exec
     (hzero : c.nreg 130009 = 0) {rOut rOff rA o f a N : ℕ}
     (hO : c.nreg rOut = o) (hf : c.nreg rOff = f) (ha : c.nreg rA = a) (hN : c.nreg 130014 = N)
     (h2 : ¬ (130550 ≤ rA ∧ rA ≤ 130552)) (hwo : o + f + N ≤ W) (hwa : a + N ≤ W) :
@@ -95,15 +104,15 @@ theorem affP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1
       ∀ i, i < N → c'.nmem (o + f + i) = a + i := by
   unfold affP
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ :=
-    arrB_exec (P := P) hw (rIn := 130009) hO hf hzero ha hN (by omega) (by omega) h2
+    ram_app% (arrB_exec (P := P) hw (rIn := 130009) hO hf hzero ha hN ?_ ?_ h2)
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := affStmt_exec (P := P) hw1
-    (by rw [hr1 _ (by omega)]; exact hone) r0 r2 r3 (by omega) hwa
+    (by simp_all) r0 r2 r3 (by omega) hwa
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, hv⟩
   refine PFr.trans ⟨fun r hr => hr1 r (fun h => hr (by unfold ArrPRG; omega)), hrr1, hrm1, ho1,
     fun a _ => by rw [hm1]⟩ (hf'.mono (fun r h => by unfold ArrRG at h; unfold ArrPRG; omega)
       (fun x h => h))
 
-theorem shP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
+theorem shP_exec
     {rOut rOff rIn rA o f i a N : ℕ}
     (hO : c.nreg rOut = o) (hf : c.nreg rOff = f) (hi : c.nreg rIn = i) (ha : c.nreg rA = a)
     (hN : c.nreg 130014 = N) (h1 : ¬ (130550 ≤ rIn ∧ rIn ≤ 130552))
@@ -116,14 +125,14 @@ theorem shP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ :=
     arrB_exec (P := P) hw hO hf hi ha hN (by omega) h1 h2
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := shStmt_exec (P := P) hw1
-    (by rw [hr1 _ (by omega)]; exact hone) r0 r1 r2 r3 (by omega) hwi hd
+    (by simp_all ) r0 r1 r2 r3 (by omega) hwi hd
     (fun j hj => by rw [hm1]; exact hwa j hj)
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fun j hj => by rw [hv j hj, hm1]⟩
   refine PFr.trans ⟨fun r hr => hr1 r (fun h => hr (by unfold ArrPRG; omega)), hrr1, hrm1, ho1,
     fun a _ => by rw [hm1]⟩ (hf'.mono (fun r h => by unfold ArrRG at h; unfold ArrPRG; omega)
       (fun x h => h))
 
-theorem eqP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
+theorem eqP_exec
     (hzero : c.nreg 130009 = 0) {rOut rOff rIn o f i N : ℕ}
     (hO : c.nreg rOut = o) (hf : c.nreg rOff = f) (hi : c.nreg rIn = i)
     (hN : c.nreg 130014 = N) (h1 : ¬ (130550 ≤ rIn ∧ rIn ≤ 130552)) (hwo : o + f + N ≤ W)
@@ -133,14 +142,16 @@ theorem eqP_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 = 1)
       ∀ j, j < N → c'.nmem (o + f + j) = if c.nmem (i + j) = j then 1 else 0 := by
   unfold eqP
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ :=
-    arrB_exec (P := P) hw hO hf hi hzero hN (by omega) h1 (by omega)
+    ram_app% (arrB_exec (P := P) hw hO hf hi hzero hN ?_ h1 ?_)
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := eqStmt_exec (P := P) hw1
-    (by rw [hr1 _ (by omega)]; exact hone) (by rw [hr1 _ (by omega)]; exact hzero) r0 r1 r2
+    (by simp_all) (by simp_all) r0 r1 r2
     (by omega) hwi hd
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fun j hj => by rw [hv j hj, hm1]⟩
   refine PFr.trans ⟨fun r hr => hr1 r (fun h => hr (by unfold ArrPRG; omega)), hrr1, hrm1, ho1,
     fun a _ => by rw [hm1]⟩ (hf'.mono (fun r h => by unfold ArrRG at h; unfold ArrPRG; omega)
       (fun x h => h))
+
+end
 
 set_option maxHeartbeats 8000000 in
 /-- **The star arrays.** -/
@@ -199,7 +210,7 @@ theorem starP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   -- step 4
   have hGs : GR g c3 := hG0.frame (fun r hr => fr3.1 r (by unfold GRReg at hr; unfold ArrPRG; omega))
   have h811s : c3.nreg 130811 = 2 * g.N := (fr3.1 130811 (by unfold ArrPRG; omega)).trans h811
-  obtain ⟨c4, k4, x4, hk4, hw4, hf4, hv4⟩ := shP_exec (P := P) hw3 hGs.one (hO := (hGs.rbase 14 (by omega))) (hf := hGs.zero) (hi := (hGs.rbase 7 (by omega))) (ha := h811s) hGs.rN (by omega) (by omega) (by omega) (by omega) (by omega) (fun j hj => by rw [fr3.2.2.2.2 (g.base 7 + j) (by omega), hm0]; have := hFP j hj; omega)
+  obtain ⟨c4, k4, x4, hk4, hw4, hf4, hv4⟩ := shP_exec (P := P) hw3 hGs.one (hO := (hGs.rbase 14 (by omega))) (hf := hGs.zero) (hi := (hGs.rbase 7 (by omega))) (ha := h811s) hGs.rN (by omega) (by omega) (by omega) (by omega) (by omega) (fun j hj => by ram_rw [fr3.2.2.2.2 (g.base 7 + j), hm0]; have := hFP j hj; omega)
   have fr4 : PFr ArrPRG (fun a => g.base 11 ≤ a ∧ a < g.base 24) c0 c4 := fr3.trans (hf4.mono (fun r h => h) (fun a h => by omega))
   clear hGs h811s
   -- step 5
@@ -211,7 +222,7 @@ theorem starP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   -- step 6
   have hGs : GR g c5 := hG0.frame (fun r hr => fr5.1 r (by unfold GRReg at hr; unfold ArrPRG; omega))
   have h811s : c5.nreg 130811 = 2 * g.N := (fr5.1 130811 (by unfold ArrPRG; omega)).trans h811
-  obtain ⟨c6, k6, x6, hk6, hw6, hf6, hv6⟩ := shP_exec (P := P) hw5 hGs.one (hO := (hGs.rbase 14 (by omega))) (hf := h811s) (hi := (hGs.rbase 8 (by omega))) (ha := hGs.rN) hGs.rN (by omega) (by omega) (by omega) (by omega) (by omega) (fun j hj => by rw [fr5.2.2.2.2 (g.base 8 + j) (by omega), hm0]; have := hFPI j hj; omega)
+  obtain ⟨c6, k6, x6, hk6, hw6, hf6, hv6⟩ := shP_exec (P := P) hw5 hGs.one (hO := (hGs.rbase 14 (by omega))) (hf := h811s) (hi := (hGs.rbase 8 (by omega))) (ha := hGs.rN) hGs.rN (by omega) (by omega) (by omega) (by omega) (by omega) (fun j hj => by ram_rw [fr5.2.2.2.2 (g.base 8 + j), hm0]; have := hFPI j hj; omega)
   have fr6 : PFr ArrPRG (fun a => g.base 11 ≤ a ∧ a < g.base 24) c0 c6 := fr5.trans (hf6.mono (fun r h => h) (fun a h => by omega))
   clear hGs h811s
   -- step 7
@@ -256,18 +267,18 @@ theorem starP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   obtain ⟨c13, k13, x13, hk13, hw13, hf13, hv13⟩ := eqP_exec (P := P) hw12 hGs.one hGs.zero (hO := (hGs.rbase 21 (by omega))) (hf := h811s) (hi := (hGs.rbase 9 (by omega))) hGs.rN (by omega) (by omega) (by omega) (by omega)
   have fr13 : PFr ArrPRG (fun a => g.base 11 ≤ a ∧ a < g.base 24) c0 c13 := fr12.trans (hf13.mono (fun r h => h) (fun a h => by omega))
   clear hGs h811s
-  have kp1 : ∀ j, j < g.N → c13.nmem (g.base 11 + 0 + j) = c1.nmem (g.base 11 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf11.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf10.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf9.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf8.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf7.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf6.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf5.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf4.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf3.2.2.2.2 (g.base 11 + 0 + j) (by omega), hf2.2.2.2.2 (g.base 11 + 0 + j) (by omega)]
-  have kp2 : ∀ j, j < g.N → c13.nmem (g.base 11 + g.N + j) = c2.nmem (g.base 11 + g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf12.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf11.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf10.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf9.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf8.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf7.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf6.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf5.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf4.2.2.2.2 (g.base 11 + g.N + j) (by omega), hf3.2.2.2.2 (g.base 11 + g.N + j) (by omega)]
-  have kp3 : ∀ j, j < g.N → c13.nmem (g.base 11 + 2 * g.N + j) = c3.nmem (g.base 11 + 2 * g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf12.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf11.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf10.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf9.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf8.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf7.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf6.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf5.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega), hf4.2.2.2.2 (g.base 11 + 2 * g.N + j) (by omega)]
-  have kp4 : ∀ j, j < g.N → c13.nmem (g.base 14 + 0 + j) = c4.nmem (g.base 14 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf11.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf10.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf9.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf8.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf7.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf6.2.2.2.2 (g.base 14 + 0 + j) (by omega), hf5.2.2.2.2 (g.base 14 + 0 + j) (by omega)]
-  have kp5 : ∀ j, j < g.N → c13.nmem (g.base 14 + g.N + j) = c5.nmem (g.base 14 + g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf12.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf11.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf10.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf9.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf8.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf7.2.2.2.2 (g.base 14 + g.N + j) (by omega), hf6.2.2.2.2 (g.base 14 + g.N + j) (by omega)]
-  have kp6 : ∀ j, j < g.N → c13.nmem (g.base 14 + 2 * g.N + j) = c6.nmem (g.base 14 + 2 * g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega), hf12.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega), hf11.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega), hf10.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega), hf9.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega), hf8.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega), hf7.2.2.2.2 (g.base 14 + 2 * g.N + j) (by omega)]
-  have kp7 : ∀ j, j < g.N → c13.nmem (g.base 17 + 0 + j) = c7.nmem (g.base 17 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 17 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 17 + 0 + j) (by omega), hf11.2.2.2.2 (g.base 17 + 0 + j) (by omega), hf10.2.2.2.2 (g.base 17 + 0 + j) (by omega), hf9.2.2.2.2 (g.base 17 + 0 + j) (by omega), hf8.2.2.2.2 (g.base 17 + 0 + j) (by omega)]
-  have kp8 : ∀ j, j < g.N → c13.nmem (g.base 17 + g.N + j) = c8.nmem (g.base 17 + g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 17 + g.N + j) (by omega), hf12.2.2.2.2 (g.base 17 + g.N + j) (by omega), hf11.2.2.2.2 (g.base 17 + g.N + j) (by omega), hf10.2.2.2.2 (g.base 17 + g.N + j) (by omega), hf9.2.2.2.2 (g.base 17 + g.N + j) (by omega)]
-  have kp9 : ∀ j, j < g.N → c13.nmem (g.base 17 + 2 * g.N + j) = c9.nmem (g.base 17 + 2 * g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 17 + 2 * g.N + j) (by omega), hf12.2.2.2.2 (g.base 17 + 2 * g.N + j) (by omega), hf11.2.2.2.2 (g.base 17 + 2 * g.N + j) (by omega), hf10.2.2.2.2 (g.base 17 + 2 * g.N + j) (by omega)]
-  have kp10 : ∀ j, j < g.N → c13.nmem (g.base 20 + 0 + j) = c10.nmem (g.base 20 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 20 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 20 + 0 + j) (by omega), hf11.2.2.2.2 (g.base 20 + 0 + j) (by omega)]
-  have kp11 : ∀ j, j < g.N → c13.nmem (g.base 21 + 0 + j) = c11.nmem (g.base 21 + 0 + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 21 + 0 + j) (by omega), hf12.2.2.2.2 (g.base 21 + 0 + j) (by omega)]
-  have kp12 : ∀ j, j < g.N → c13.nmem (g.base 21 + g.N + j) = c12.nmem (g.base 21 + g.N + j) := fun j hj => by rw [hf13.2.2.2.2 (g.base 21 + g.N + j) (by omega)]
+  have kp1 : ∀ j, j < g.N → c13.nmem (g.base 11 + 0 + j) = c1.nmem (g.base 11 + 0 + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 11 + 0 + j), hf12.2.2.2.2 (g.base 11 + 0 + j), hf11.2.2.2.2 (g.base 11 + 0 + j), hf10.2.2.2.2 (g.base 11 + 0 + j), hf9.2.2.2.2 (g.base 11 + 0 + j), hf8.2.2.2.2 (g.base 11 + 0 + j), hf7.2.2.2.2 (g.base 11 + 0 + j), hf6.2.2.2.2 (g.base 11 + 0 + j), hf5.2.2.2.2 (g.base 11 + 0 + j), hf4.2.2.2.2 (g.base 11 + 0 + j), hf3.2.2.2.2 (g.base 11 + 0 + j), hf2.2.2.2.2 (g.base 11 + 0 + j)]
+  have kp2 : ∀ j, j < g.N → c13.nmem (g.base 11 + g.N + j) = c2.nmem (g.base 11 + g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 11 + g.N + j), hf12.2.2.2.2 (g.base 11 + g.N + j), hf11.2.2.2.2 (g.base 11 + g.N + j), hf10.2.2.2.2 (g.base 11 + g.N + j), hf9.2.2.2.2 (g.base 11 + g.N + j), hf8.2.2.2.2 (g.base 11 + g.N + j), hf7.2.2.2.2 (g.base 11 + g.N + j), hf6.2.2.2.2 (g.base 11 + g.N + j), hf5.2.2.2.2 (g.base 11 + g.N + j), hf4.2.2.2.2 (g.base 11 + g.N + j), hf3.2.2.2.2 (g.base 11 + g.N + j)]
+  have kp3 : ∀ j, j < g.N → c13.nmem (g.base 11 + 2 * g.N + j) = c3.nmem (g.base 11 + 2 * g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 11 + 2 * g.N + j), hf12.2.2.2.2 (g.base 11 + 2 * g.N + j), hf11.2.2.2.2 (g.base 11 + 2 * g.N + j), hf10.2.2.2.2 (g.base 11 + 2 * g.N + j), hf9.2.2.2.2 (g.base 11 + 2 * g.N + j), hf8.2.2.2.2 (g.base 11 + 2 * g.N + j), hf7.2.2.2.2 (g.base 11 + 2 * g.N + j), hf6.2.2.2.2 (g.base 11 + 2 * g.N + j), hf5.2.2.2.2 (g.base 11 + 2 * g.N + j), hf4.2.2.2.2 (g.base 11 + 2 * g.N + j)]
+  have kp4 : ∀ j, j < g.N → c13.nmem (g.base 14 + 0 + j) = c4.nmem (g.base 14 + 0 + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 14 + 0 + j), hf12.2.2.2.2 (g.base 14 + 0 + j), hf11.2.2.2.2 (g.base 14 + 0 + j), hf10.2.2.2.2 (g.base 14 + 0 + j), hf9.2.2.2.2 (g.base 14 + 0 + j), hf8.2.2.2.2 (g.base 14 + 0 + j), hf7.2.2.2.2 (g.base 14 + 0 + j), hf6.2.2.2.2 (g.base 14 + 0 + j), hf5.2.2.2.2 (g.base 14 + 0 + j)]
+  have kp5 : ∀ j, j < g.N → c13.nmem (g.base 14 + g.N + j) = c5.nmem (g.base 14 + g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 14 + g.N + j), hf12.2.2.2.2 (g.base 14 + g.N + j), hf11.2.2.2.2 (g.base 14 + g.N + j), hf10.2.2.2.2 (g.base 14 + g.N + j), hf9.2.2.2.2 (g.base 14 + g.N + j), hf8.2.2.2.2 (g.base 14 + g.N + j), hf7.2.2.2.2 (g.base 14 + g.N + j), hf6.2.2.2.2 (g.base 14 + g.N + j)]
+  have kp6 : ∀ j, j < g.N → c13.nmem (g.base 14 + 2 * g.N + j) = c6.nmem (g.base 14 + 2 * g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 14 + 2 * g.N + j), hf12.2.2.2.2 (g.base 14 + 2 * g.N + j), hf11.2.2.2.2 (g.base 14 + 2 * g.N + j), hf10.2.2.2.2 (g.base 14 + 2 * g.N + j), hf9.2.2.2.2 (g.base 14 + 2 * g.N + j), hf8.2.2.2.2 (g.base 14 + 2 * g.N + j), hf7.2.2.2.2 (g.base 14 + 2 * g.N + j)]
+  have kp7 : ∀ j, j < g.N → c13.nmem (g.base 17 + 0 + j) = c7.nmem (g.base 17 + 0 + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 17 + 0 + j), hf12.2.2.2.2 (g.base 17 + 0 + j), hf11.2.2.2.2 (g.base 17 + 0 + j), hf10.2.2.2.2 (g.base 17 + 0 + j), hf9.2.2.2.2 (g.base 17 + 0 + j), hf8.2.2.2.2 (g.base 17 + 0 + j)]
+  have kp8 : ∀ j, j < g.N → c13.nmem (g.base 17 + g.N + j) = c8.nmem (g.base 17 + g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 17 + g.N + j), hf12.2.2.2.2 (g.base 17 + g.N + j), hf11.2.2.2.2 (g.base 17 + g.N + j), hf10.2.2.2.2 (g.base 17 + g.N + j), hf9.2.2.2.2 (g.base 17 + g.N + j)]
+  have kp9 : ∀ j, j < g.N → c13.nmem (g.base 17 + 2 * g.N + j) = c9.nmem (g.base 17 + 2 * g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 17 + 2 * g.N + j), hf12.2.2.2.2 (g.base 17 + 2 * g.N + j), hf11.2.2.2.2 (g.base 17 + 2 * g.N + j), hf10.2.2.2.2 (g.base 17 + 2 * g.N + j)]
+  have kp10 : ∀ j, j < g.N → c13.nmem (g.base 20 + 0 + j) = c10.nmem (g.base 20 + 0 + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 20 + 0 + j), hf12.2.2.2.2 (g.base 20 + 0 + j), hf11.2.2.2.2 (g.base 20 + 0 + j)]
+  have kp11 : ∀ j, j < g.N → c13.nmem (g.base 21 + 0 + j) = c11.nmem (g.base 21 + 0 + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 21 + 0 + j), hf12.2.2.2.2 (g.base 21 + 0 + j)]
+  have kp12 : ∀ j, j < g.N → c13.nmem (g.base 21 + g.N + j) = c12.nmem (g.base 21 + g.N + j) := fun j hj => by ram_rw [hf13.2.2.2.2 (g.base 21 + g.N + j)]
   have kp13 : ∀ j, j < g.N → c13.nmem (g.base 21 + 2 * g.N + j) = c13.nmem (g.base 21 + 2 * g.N + j) := fun j hj => rfl
 
   refine ⟨c13, 1 + (k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + (k8 + (k9 + (k10 + (k11 + (k12 +
@@ -314,9 +325,14 @@ theorem copyBlockFP {c : Config} (hw : WordsBounded W c) {g : GV} (hG : GR g c) 
   · config_simp; exact hG.rO
   · config_simp; exact hG.rbase 7 (by omega)
   · config_simp; exact hG.rN
-  · simp only; repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  ram_finish
 
-theorem fpP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : Config}
+section
+
+variable {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)}
+include M
+
+theorem fpP_exec {c : Config}
     (hw : WordsBounded W c) (hG : GR g c) (hmap : MapArrays c.nmem g.bO g.bR g.bV g.μ g.N M)
     (hO : g.bO + g.N ≤ g.A0) (hR : g.bR + g.N ≤ g.A0) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W fpP c c' k ∧ k ≤ 9 * g.N + 7 ∧ WordsBounded W c' ∧
@@ -325,7 +341,7 @@ theorem fpP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : C
   have hU := g.U_ge; have hE := g.END_eq; have b7 := g.base_eq 7
   unfold fpP
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, r0, r1, r2, r3, hr1, hrr1, hrm1, ho1⟩ := copyBlockFP (P := P) hw hG
-  have hone1 : c1.nreg 130001 = 1 := by rw [hr1 _ (by omega)]; exact hG.one
+  have hone1 : c1.nreg 130001 = 1 := by ram_rw [hr1]; exact hG.one
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := fpStmt_exec (P := P) hw1 hone1 r0 r1 r2 r3 (by omega)
     (by omega) (by omega) (fun d hd => by
       rw [hm1, hmap.opp hd]; have := (M.opp ⟨d, hd⟩).2; omega)
@@ -336,7 +352,7 @@ theorem fpP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : C
   rw [hv d d.2, hm1, hmap.opp d.2, hmap.rot (M.opp ⟨d, d.2⟩).2]
   rfl
 
-theorem fpiP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : Config}
+theorem fpiP_exec {c : Config}
     (hw : WordsBounded W c) (hG : GR g c) (hfp : ∀ d : Fin g.N, c.nmem (g.base 7 + d) = M.fperm d)
     (hW : g.END ≤ W) :
     ∃ c' k, Exec P W fpiP c c' k ∧ k ≤ 7 * g.N + 6 ∧ WordsBounded W c' ∧
@@ -356,11 +372,11 @@ theorem fpiP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : 
     · config_simp; exact hG.rN
     · config_simp; exact hG.one
     · simp only; unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat ram_finish
   have hfp1 : ∀ i (hi : i < g.N), c1.nmem (g.base 7 + i) = M.fperm ⟨i, hi⟩ := fun i hi => by
     rw [hm1]; exact hfp ⟨i, hi⟩
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := invStmt_exec (P := P) hw1 hone1 r0 r1 r2
-    (fun i hi => by rw [hfp1 i hi]; exact Fin.isLt _)
+    (fun i hi => by simp [hfp1 i hi])
     (fun i j hi hj h => by
       rw [hfp1 i hi, hfp1 j hj] at h
       exact congrArg Fin.val (M.fperm.injective (Fin.ext h)))
@@ -371,7 +387,7 @@ theorem fpiP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : 
   rw [hfp1 _ (Fin.isLt _)] at this
   simpa using this
 
-theorem attP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : Config}
+theorem attP_exec {c : Config}
     (hw : WordsBounded W c) (hG : GR g c) (hfp : ∀ d : Fin g.N, c.nmem (g.base 7 + d) = M.fperm d)
     (hW : g.END ≤ W) :
     ∃ c' k, Exec P W attP c c' k ∧ k ≤ 40 * g.N + 15 ∧ WordsBounded W c' ∧
@@ -392,7 +408,7 @@ theorem attP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : 
     · config_simp; exact hG.one
     · config_simp; exact hG.zero
     · simp only; unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat ram_finish
   have hinj : InjOn (fun y => c.nmem (g.base 7 + y)) g.N := fp_injOn (fun d => hfp d)
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := attStmt_exec (P := P) hw1 hone1 hzero1 r0 r1 r2 hinj
     (fun x hx => by rw [hm1]) (by omega) (by omega) (by omega) (by omega)
@@ -400,7 +416,7 @@ theorem attP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {c : 
     unfold AttRG at h; unfold StBRG; omega) (fun a h => h)), hv⟩
 
 /-- The tree darts from the parent darts in memory. -/
-theorem teSet_iff {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M}
+theorem teSet_iff {T : SpanTree M}
     {m : ℕ → ℕ} (hA : AF g M T m) (d : Fin g.N) :
     TeSet m (g.base 4) g.bO g.μ d ↔ T.IsTreeDart d := by
   have hr : ∀ v : Fin g.μ, v ≠ T.root ↔ 1 ≤ (v : ℕ) := by
@@ -417,18 +433,18 @@ theorem teSet_iff {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : 
     rw [this, M.opp_opp]
   constructor
   · rintro ⟨v, h1, h2, h3⟩
-    have hv : (⟨v, h2⟩ : Fin g.μ) ≠ T.root := (hr ⟨v, h2⟩).mpr h1
+    have hv := (hr ⟨v, h2⟩).mpr h1
     refine ⟨⟨v, h2⟩, hv, ?_⟩
     rcases h3 with h3 | h3
-    · right; apply Fin.ext; rw [hopp _ hv]; exact h3
-    · left; apply Fin.ext; rw [hA.par_eq _ hv]; exact h3
+    · right; apply Fin.ext; rwa [hopp _ hv]
+    · left; apply Fin.ext; rwa [hA.par_eq _ hv]
   · rintro ⟨v, hv, h3⟩
     refine ⟨v, (hr v).mp hv, v.2, ?_⟩
     rcases h3 with h3 | h3
-    · right; rw [h3, hA.par_eq v hv]
+    · simp [h3, hA.par_eq v hv]
     · left; rw [h3, hopp v hv]
 
-theorem teP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M}
+theorem teP_exec {T : SpanTree M}
     {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hA : AF g M T c.nmem) (hμ : 0 < g.μ)
     (hO : g.bO + g.N ≤ g.A0) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W teP c c' k ∧ k ≤ 5 * g.N + 11 * g.μ + 15 ∧ WordsBounded W c' ∧
@@ -455,7 +471,7 @@ theorem teP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : S
     · config_simp; exact hG.one
     · config_simp; exact hG.zero
     · simp only; unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      frame_finish
   have hvr : ∀ v (_ : 1 ≤ v) (h2 : v < g.μ), (⟨v, h2⟩ : Fin g.μ) ≠ T.root := by
     intro v h1 h2 e; have := congrArg Fin.val e; rw [hA.root] at this; simp at this; omega
   obtain ⟨c', k, e, hk, hw', hf', hv⟩ := teStmt_exec (P := P) hw1 hone1 hzero1 r0 r1 r2 r3 r4 hμ
@@ -470,6 +486,8 @@ theorem teP_exec {g : GV} {F : Type} {M : CombMap (Fin g.μ) F (Fin g.N)} {T : S
   rcases hv d d.2 with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · exact Or.inl ⟨h1, (teSet_iff hA d).mp h2⟩
   · exact Or.inr ⟨h1, fun h => h2 ((teSet_iff hA d).mpr h)⟩
+
+end
 
 /-- **Stage B1.** -/
 def stageB1 : Stmt := .seq fpP (.seq fpiP (.seq attP (.seq teP starP)))
@@ -499,20 +517,20 @@ theorem B1F.congr {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b21 := g.base_eq 21; have b24 := g.base_eq 24
   refine ⟨fun d => ?_, fun d => ?_, fun d => ?_, fun d => ?_, fun d => ?_, fun d => ?_,
     fun d => ?_, fun x => ?_⟩
-  · have := d.2; rw [he _ (by omega) (by omega)]; exact h.fp d
-  · have := d.2; rw [he _ (by omega) (by omega)]; exact h.fpi d
-  · have := d.2; rw [he _ (by omega) (by omega)]; exact h.att d
+  · have := d.2; ram_rw [he]; exact h.fp d
+  · have := d.2; ram_rw [he]; exact h.fpi d
+  · have := d.2; ram_rw [he]; exact h.att d
   · have := d.2
-    rw [he _ (by omega) (by omega), he (g.base 11 + g.N + d) (by omega) (by omega),
-      he (g.base 11 + 2 * g.N + d) (by omega) (by omega)]; exact h.so d
+    ram_rw [he, he (g.base 11 + g.N + d),
+      he (g.base 11 + 2 * g.N + d)]; exact h.so d
   · have := d.2
-    rw [he _ (by omega) (by omega), he (g.base 14 + g.N + d) (by omega) (by omega),
-      he (g.base 14 + 2 * g.N + d) (by omega) (by omega)]; exact h.sr d
+    ram_rw [he, he (g.base 14 + g.N + d),
+      he (g.base 14 + 2 * g.N + d)]; exact h.sr d
   · have := d.2
-    rw [he _ (by omega) (by omega), he (g.base 17 + g.N + d) (by omega) (by omega),
-      he (g.base 17 + 2 * g.N + d) (by omega) (by omega)]; exact h.sf d
-  · have := d.2; rw [he _ (by omega) (by omega)]; exact h.sfirst d
-  · have := enc_lt x; rw [he _ (by omega) (by omega)]; exact h.sdb x
+    ram_rw [he, he (g.base 17 + g.N + d),
+      he (g.base 17 + 2 * g.N + d)]; exact h.sf d
+  · have := d.2; ram_rw [he]; exact h.sfirst d
+  · have := enc_lt x; ram_rw [he]; exact h.sdb x
 
 open Classical in
 theorem stageB1_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
@@ -551,7 +569,7 @@ theorem stageB1_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       show c3.nmem (g.base 9 + d) < g.N
       rw [hatt3 d d.2]; exact lt_of_le_of_lt (minOrb_le _) d.2)
     (fun d h => by
-      have e1 : c3.nmem (g.base 9 + d) = minOrb fpf d := hatt3 d d.2
+      have e1 := hatt3 d d.2
       have ho := minOrb_orb (f := fpf) (d : ℕ)
       obtain ⟨i, hi⟩ := ho
       have hm : minOrb fpf d < g.N := lt_of_le_of_lt (minOrb_le _) d.2
@@ -572,30 +590,30 @@ theorem stageB1_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have f4 := f3.trans (hmono hf4 (fun a h => by omega))
   have hfp4 : ∀ d : Fin g.N, c4.nmem (g.base 7 + d) = M.fperm d := fun d => by
     have := d.2
-    rw [hf4.2.2.2.2 _ (by omega), hf3.2.2.2.2 _ (by omega)]; exact hfp2 d
+    ram_rw [hf4.2.2.2.2, hf3.2.2.2.2]; exact hfp2 d
   have hfpi4 : ∀ d : Fin g.N, c4.nmem (g.base 8 + d) = (M.fperm⁻¹ d : Fin g.N) := fun d => by
     have := d.2
-    rw [hf4.2.2.2.2 _ (by omega), hf3.2.2.2.2 _ (by omega)]; exact hfpi2 d
+    ram_rw [hf4.2.2.2.2, hf3.2.2.2.2]; exact hfpi2 d
   have hatt4 : ∀ d : Fin g.N, c4.nmem (g.base 9 + d) = a (M.face d) := fun d => by
     have := d.2
-    rw [hf4.2.2.2.2 _ (by omega)]; exact (hatt d).symm
+    ram_rw [hf4.2.2.2.2]; exact (hatt d).symm
   -- the star arrays
   obtain ⟨c5, k5, x5, hk5, hw5, hf5, hst⟩ := starP_exec (P := P) hw4 (hGR f4)
-    (fun j hj => by rw [hfp4 ⟨j, hj⟩]; exact Fin.isLt _)
-    (fun j hj => by rw [hfpi4 ⟨j, hj⟩]; exact Fin.isLt _) hO hW
+    (fun j hj => by simp [hfp4 ⟨j, hj⟩])
+    (fun j hj => by simp [hfpi4 ⟨j, hj⟩]) hO hW
   have f5 : PFr StBRG (fun a => g.base 7 ≤ a ∧ a < g.base 24) c c5 :=
     f4.trans (hf5.mono (fun r h => by unfold ArrPRG at h; unfold StBRG; omega) (fun a h => by
       omega))
-  have m4 : ∀ a, a < g.A0 → c4.nmem a = c.nmem a := fun a ha' => f4.2.2.2.2 a (by omega)
-  refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), .seq x1 (.seq x2 (.seq x3 (.seq x4 x5))),
+  have m4 : MemEqBelow g.A0 c4.nmem c.nmem := fun a ha' => f4.2.2.2.2 a (by omega)
+  refine ⟨c5, k1 + (k2 + (k3 + (k4 + k5))), (by ram_path),
     by omega, hw5, f5, a, ha, ⟨fun d => ?_, fun d => ?_, fun d => ?_, fun d => ?_, fun d => ?_,
     fun d => ?_, fun d => ?_, fun x => ?_⟩⟩
-  · have := d.2; rw [hf5.2.2.2.2 _ (by omega)]; exact hfp4 d
-  · have := d.2; rw [hf5.2.2.2.2 _ (by omega)]; exact hfpi4 d
-  · have := d.2; rw [hf5.2.2.2.2 _ (by omega)]; exact hatt4 d
+  · have := d.2; ram_rw [hf5.2.2.2.2]; exact hfp4 d
+  · have := d.2; ram_rw [hf5.2.2.2.2]; exact hfpi4 d
+  · have := d.2; ram_rw [hf5.2.2.2.2]; exact hatt4 d
   · obtain ⟨h1, h2, h3, -⟩ := hst d d.2
     refine ⟨?_, h2, h3⟩
-    rw [h1, m4 _ (by omega)]; exact hA.map.opp d.2
+    ram_rw [h1, m4]; exact hA.map.opp d.2
   · obtain ⟨-, -, -, h4, h5, h6, -⟩ := hst d d.2
     exact ⟨by rw [h4, hfp4 d], h5, by rw [h6, hfpi4 d]⟩
   · obtain ⟨-, -, -, -, -, -, h7, h8, h9, -⟩ := hst d d.2

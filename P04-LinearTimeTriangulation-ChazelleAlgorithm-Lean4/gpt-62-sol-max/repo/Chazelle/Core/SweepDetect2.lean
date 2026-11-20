@@ -40,16 +40,6 @@ open Chazelle.Geometry (lerp point_ext)
 
 namespace Sweep
 
-/-- **A genuine hit**: the ray from `a` stays in the domain of `C` before the parameter `τ` and is
-off the domain at `τ`. -/
-def Genuine (C : Chain) (a : Point) (σ τ : ℝ) : Prop :=
-  0 < τ ∧ (∀ s, 0 < s → s < τ → rayPt a σ s ∈ C.dom) ∧ rayPt a σ τ ∉ C.dom
-
-/-- **An arrival position** of the ray in direction `σ` at the point `w`: a walk position of `w`
-whose left sector contains the points just before `w` on the ray. -/
-def Arrival (W : Polygon) (w : Point) (σ : ℝ) (p : ℕ) (t : ℝ) : Prop :=
-  p < W.n ∧ 0 ≤ t ∧ t < 1 ∧ sidePt W p t = w ∧ sideLeft W p t (rayPt w (-σ) 1)
-
 /-- A genuine hit is the first hit of the chain. -/
 theorem genuine_iff (C : Chain) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     {τ : ℝ} : Genuine C a σ τ ↔ Merge.FreeAt C a σ ∧ C.hitParam a σ = τ := by
@@ -76,60 +66,6 @@ variable (C : Chain)
 
 /-! ## Completeness -/
 
-/-- **A genuine hit has an arrival position.** -/
-theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ}
-    (hσ : σ = 1 ∨ σ = -1) {τ : ℝ} (hg : Genuine C a σ τ) :
-    ∃ p t, Arrival (chainModel C).W (rayPt a σ τ) σ p t := by
-  obtain ⟨hT, hdom, hwD⟩ := hg
-  set T := τ
-  set w := rayPt a σ T with hw
-  have hback : ∀ s, rayPt w (-σ) s = rayPt a σ (T - s) := fun s => rayPt_back a σ T s
-  have hzR : |a.2| < C.radius := by
-    have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
-    simpa [rayPt] using this.2
-  have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
-    rcases (Merge.not_mem_dom_iff C (p := w) (by simpa [hw] using ha)).1 hwD with h | h
-    · right
-      refine ⟨le_antisymm ?_ ?_, by simpa [hw] using hzR⟩
-      · by_contra hgt
-        push Not at hgt
-        set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
-        have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-        have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt a σ (T - ε)).1| < C.radius := hbox.1
-        have h2 : |w.1| ≤ |(rayPt a σ (T - ε)).1| + ε := by
-          have e : w.1 = (rayPt a σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
-          rw [e]
-          refine (abs_add_le _ _).trans ?_
-          rcases hσ with rfl | rfl <;> simp [abs_of_pos hε0]
-        have h3 : ε ≤ (|w.1| - C.radius) / 2 := min_le_right _ _
-        linarith
-      · by_contra hlt
-        push Not at hlt
-        exact h ⟨hlt, by simpa [hw] using hzR⟩
-    · exact Or.inl h
-  have hT2 : (0 : ℝ) < T / 2 := by linarith
-  have hee : w ≠ rayPt w (-σ) (T / 2) := by
-    intro h
-    have := congrArg Prod.fst h
-    simp only [rayPt_fst] at this
-    rcases hσ with rfl | rfl <;> linarith
-  have hopen : ∀ s ∈ Ioo (0 : ℝ) 1, lerp w (rayPt w (-σ) (T / 2)) s ∈ C.dom := by
-    intro s hs
-    have e : lerp w (rayPt w (-σ) (T / 2)) s = rayPt a σ (T - s * (T / 2)) := by
-      apply point_ext <;> simp [lerp, rayPt, hw]; ring
-    rw [e]
-    exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
-  obtain ⟨p, t, hp, ht, ht1, hpt, hl⟩ :=
-    C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
-  refine ⟨p, t, hp, ht, ht1, hpt, ?_⟩
-  have hl' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) (T / 2)) := by
-    rw [show sidePt (chainModel C).W p t = w from hpt]; exact hl
-  have := (sideLeft_rayPt_iff _ p t (-σ) hT2 one_pos).1 hl'
-  rw [show sidePt (chainModel C).W p t = w from hpt] at this
-  exact this
-
 /-! ## The arriving ray at a cut key -/
 
 /-- A horizontal ray from `w` either starts along an admissible chord or eventually avoids it. -/
@@ -137,7 +73,7 @@ theorem ray_chord_dichotomy {e : Set Point} (he : e ∈ Merge.augChords C) (w : 
     (hτ : τ = 1 ∨ τ = -1) :
     (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w τ s ∈ e) ∨ (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w τ s ∉ e) := by
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
-  have hlr := hH.lt
+  
   by_cases hy : w.2 = y
   swap
   · right
@@ -184,12 +120,12 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     {t : ℝ} (hA : Arrival (chainModel C).W w σ p t) (ht0 : 0 < t)
     (hno : ∀ e ∈ F, ¬ ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∈ e) :
     ¬ (chainModel C).IsCut F (p + t) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM := FactsChain.walkAx C hP
   obtain ⟨hp, -, ht1, hpt, hsec⟩ := hA
   rintro ⟨c, hcF, p', t', hAc, hkey⟩
   obtain ⟨hp', ht'0, ht'1, hc', r₀, hr₀, hnear⟩ := hAc
   obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj ht0.le ht1 ht'0 ht'1 hkey
-  have hcA : c ∈ Merge.augChords C := hFam.2.1 hcF
+  have hcA := hFam.2.1 hcF
   obtain ⟨y, l, r, hH, -, hceq, -, -⟩ := Merge.augChords_spec hcA
   subst hceq
   rw [hpt] at hc' hnear
@@ -199,16 +135,15 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hne := hM.nd p hp
   set u := (chainModel C).W.vtx p with hu
   set v := (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n) with hv
-  have hwlerp : w = lerp u v t := hpt.symm
-  have hedge : ∀ x, sideLeft (chainModel C).W p t x ↔ 0 < det u v x :=
-    fun x => Chazelle.Chain.sideLeft_edge hne ⟨ht0, ht1⟩ x
+  have hwlerp := hpt.symm
+  have hedge := fun x => Chazelle.Chain.sideLeft_edge hne ⟨ht0, ht1⟩ x
   have hshift : ∀ α, det u v ((w.1 + α, w.2) : Point) = -α * (v.2 - u.2) := by
     intro α; rw [hwlerp]; exact det_lerp_shift u v t α
   -- the arriving ray reversed is in the left half-plane
   have h1 : 0 < σ * (v.2 - u.2) := by
     have := (hedge _).1 hsec
     have e : rayPt w (-σ) 1 = ((w.1 + -σ, w.2) : Point) := by
-      apply point_ext <;> simp [rayPt]
+      simp [rayPt]
     rw [e, hshift] at this; linarith
   have hlr := hH.lt
   set δ := min r₀ (r - l) / 2 with hδ
@@ -221,7 +156,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     intro α hα
     rw [Prod.dist_eq]
     simp only [dist_self, Real.dist_eq, add_sub_cancel_left]
-    rw [hα, max_eq_left hδ0.le]; exact hδr
+    rwa [hα, max_eq_left hδ0.le]
   have hno' := fun e he => hno e he
   -- `w` is an end of the chord
   rcases hwl.lt_or_eq with hl | hl

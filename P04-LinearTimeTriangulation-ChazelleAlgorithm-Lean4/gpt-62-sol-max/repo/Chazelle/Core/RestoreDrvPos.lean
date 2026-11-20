@@ -73,7 +73,7 @@ theorem arcWt01 (Q : Polygon) : M.arcWt (M.key Q ⟨0, 0⟩) (M.key Q ⟨1, 0⟩
         simp only [sideInArc, zero_lt_one, ite_true] at hin
         have : (p : ℝ) < 1 := by linarith [hin.2]
         have : p < 1 := by exact_mod_cast this
-        simp only [Set.mem_singleton_iff]; omega
+        simp_all
     _ = 1 := Set.ncard_singleton 0
 
 theorem properPos0 (Q : Polygon) (n : ℕ) (e : ℕ) : ProperPos M Q n ⟨e, 0⟩ :=
@@ -97,7 +97,7 @@ theorem arcSet01_sub {x : Point} (hn : 2 ≤ M.W.n)
   · have : p = 0 := by omega
     subst this
     refine ⟨t, ht0, ht1, ?_⟩
-    rw [show M.wa 0 = M.W.vtx 0 from rfl, hwb 0 (by omega)]
+    ram_simp [show M.wa 0 = M.W.vtx 0 from rfl, hwb]
   · have : p = 1 := by omega
     subst this
     have ht : t = 0 := by push_cast at hkey; linarith
@@ -126,7 +126,7 @@ theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
     have := C.radius_pos
     linarith
   · have hsimp := (FactsInterior.interiorWalk_spec hQ').1
-    have hn3 : 3 ≤ (interiorWalk Q').n := Jordan.simple_three_le hsimp
+    have hn3 := Jordan.simple_three_le hsimp
     obtain ⟨s, hs0, hs1, he⟩ := arcSet01_sub (by show 2 ≤ (interiorWalk Q').n; omega) hx
     set W := interiorWalk Q' with hWd
     have hv : ∀ q, q < W.n → sidePt W q 0 = W.vtx q := fun q _ => by
@@ -136,13 +136,13 @@ theorem vtx2_not_mem (hG : GoodModel M) (Q : Polygon) :
     rcases hs1.lt_or_eq with hs1 | rfl
     · have := FactsInterior.pos_unique hsimp (p := 2) (p' := 0) (t := 0) (t' := s)
         (by omega) (by omega) le_rfl (by norm_num) hs0 hs1
-        (by rw [hv 2 (by omega), ← hs01]; exact he)
+        (by rwa [hv 2 (by omega), ← hs01])
       omega
     · have := FactsInterior.pos_unique hsimp (p := 2) (p' := 1) (t := 0) (t' := 0)
         (by omega) (by omega) le_rfl (by norm_num) le_rfl (by norm_num)
         (by
           change W.vtx 2 = lerp (W.vtx 0) (W.vtx 1) 1 at he
-          rw [hv 2 (by omega), hv 1 (by omega), he, Geometry.lerp_one])
+          ram_simp [hv, he, Geometry.lerp_one])
       omega
 
 /-- The configuration `c` with the inputs of an oracle query in band `b`: model `MD`, subarc
@@ -165,7 +165,7 @@ theorem setQ_alloc (c : Config) {b MD γ g : ℕ} (hb : 1 ≤ b) :
   unfold setQ
   simp only
   split_ifs with h1 h2 h3 h4 h5 h6 h7 <;>
-    first | rfl | (exfalso; simp only [bandReg, ALLOC] at *; omega)
+    reg_omega
 
 /-- **The oracle costs are positive** in the context of `RestoreSpec`. -/
 theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X : MemCtx}
@@ -185,52 +185,50 @@ theorem oracle_pos {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → ℕ} {X 
       rw [OutWalk.walk_n]; have := Jordan.simple_three_le hQ; omega
   constructor
   · set cS := setQ c bShoot MD γ g with hcS
-    have r0 : rd cS bShoot 0 = MD := by simp [hcS, rd, setQ, bandReg, bShoot]
-    have r1 : rd cS bShoot 1 = 0 := by simp [hcS, rd, setQ, bandReg, bShoot]
-    have r2 : rd cS bShoot 2 = 0 := by simp [hcS, rd, setQ, bandReg, bShoot]
-    have r3 : rd cS bShoot 3 = 1 := by simp [hcS, rd, setQ, bandReg, bShoot]
-    have r4 : rd cS bShoot 4 = 0 := by simp [hcS, rd, setQ, bandReg, bShoot]
-    have r9 : rd cS bShoot 9 = γ := by simp [hcS, rd, setQ, bandReg, bShoot]
-    have r13 : rd cS bShoot 13 = g := by simp [hcS, rd, setQ, bandReg, bShoot]
+    have r0 : rd cS bShoot 0 = MD := rfl
+    have r1 : rd cS bShoot 1 = 0 := rfl
+    have r2 : rd cS bShoot 2 = 0 := by assumption
+    have r3 : rd cS bShoot 3 = 1 := rfl
+    have r4 : rd cS bShoot 4 = 0 := rfl
+    have r9 : rd cS bShoot 9 = γ := rfl
+    have r13 : rd cS bShoot 13 = g := rfl
     have hwS : WordsBounded (W + F γ) cS :=
       Machine.WordsBounded.mono (setQ_wb hw h2 hMDW hγW hgW) (by omega)
     have hA : cS.nreg ALLOC = c.nreg ALLOC := setQ_alloc c (by decide)
     have hO : OriginIn cS (bandReg bShoot 5) (.walk ⟨2, 0⟩) :=
-      ⟨by simp [hcS, setQ, bandReg, bShoot], by simp [hcS, setQ, bandReg, bShoot],
-       by simp [hcS, setQ, bandReg, bShoot]⟩
-    have hWA : c.nreg ALLOC ≤ W := hw.1 ALLOC
+      ⟨by rfl, by rfl,
+       by rfl⟩
+    have hWA := hw.1 ALLOC
     have := shooter_cost_pos hsh (W := W + F γ) hwS ⟨hG, by omega,
-      by rw [r13, hA]; exact hX, by rw [r9, r13]; exact hcap,
-      by rw [r0, hA]; exact hwf, by rw [r0]; exact hreg, M, by rw [r0]; exact hMD, hOk,
+      by rwa [r13, hA], by rwa [r9, r13],
+      by rwa [r0, hA], by rwa [r0], M, by rwa [r0], hOk,
       by rw [r1, r2]; exact properPos0 _ _ _, by rw [r3, r4]; exact properPos0 _ _ _,
       by rw [r1]; omega, by rw [r3]; omega, Or.inl r2, Or.inl r4,
       by rw [r1, r2, r3, r4, r9]; exact (arcWt01 _).trans hγ,
       .walk ⟨2, 0⟩, ⟨hn2, Nat.zero_le _⟩, hO, Or.inl ⟨2, rfl⟩,
       by rw [r1, r2, r3, r4]; exact vtx2_not_mem hGM _⟩
       (by rw [hA, r9]; omega)
-    rw [r9] at this
-    exact this
+    assumption
   · set cC := setQ c bCut MD γ g with hcC
-    have r0 : rd cC bCut 0 = MD := by simp [hcC, rd, setQ, bandReg, bCut]
-    have r1 : rd cC bCut 1 = 0 := by simp [hcC, rd, setQ, bandReg, bCut]
-    have r2 : rd cC bCut 2 = 0 := by simp [hcC, rd, setQ, bandReg, bCut]
-    have r3 : rd cC bCut 3 = 1 := by simp [hcC, rd, setQ, bandReg, bCut]
-    have r4 : rd cC bCut 4 = 0 := by simp [hcC, rd, setQ, bandReg, bCut]
-    have r9 : rd cC bCut 9 = γ := by simp [hcC, rd, setQ, bandReg, bCut]
-    have r13 : rd cC bCut 13 = g := by simp [hcC, rd, setQ, bandReg, bCut]
+    have r0 : rd cC bCut 0 = MD := rfl
+    have r1 : rd cC bCut 1 = 0 := rfl
+    have r2 : rd cC bCut 2 = 0 := by assumption
+    have r3 : rd cC bCut 3 = 1 := rfl
+    have r4 : rd cC bCut 4 = 0 := rfl
+    have r9 : rd cC bCut 9 = γ := rfl
+    have r13 : rd cC bCut 13 = g := rfl
     have hwC : WordsBounded (W + G γ) cC :=
       Machine.WordsBounded.mono (setQ_wb hw h2 hMDW hγW hgW) (by omega)
     have hA : cC.nreg ALLOC = c.nreg ALLOC := setQ_alloc c (by decide)
-    have hWA : c.nreg ALLOC ≤ W := hw.1 ALLOC
+    have hWA := hw.1 ALLOC
     have := cutter_cost_pos hcu (W := W + G γ) hwC ⟨hG, by omega,
-      by rw [r13, hA]; exact hX, by rw [r9, r13]; exact hcap,
-      by rw [r0, hA]; exact hwf, M, by rw [r0]; exact hMD, hOk,
+      by rwa [r13, hA], by rwa [r9, r13],
+      by rwa [r0, hA], M, by rwa [r0], hOk,
       by rw [r1, r2]; exact properPos0 _ _ _, by rw [r3, r4]; exact properPos0 _ _ _,
       by rw [r1]; omega, by rw [r3]; omega, Or.inl r2, Or.inl r4,
       by rw [r1, r2, r3, r4, r9]; exact (arcWt01 _).trans hγ⟩
       (by rw [hA, r9]; omega)
-    rw [r9] at this
-    exact this
+    assumption
 
 end
 

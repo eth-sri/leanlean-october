@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoBruteLoop
 public import Chazelle.Core.SweepIoBruteShot
 
@@ -30,7 +34,7 @@ open Chazelle.Merge (FreeAt)
 def bruteS (sh : Stmt) : Stmt := .seq bLoop (symShot sh (sw 30) bBase bN (sw 20) K0)
 
 /-- The cost constant. -/
-def bruteK : ℕ := 600000
+@[ram_layout] def bruteK : ℕ := 600000
 
 theorem brute_cost (A Fg : ℕ) : bLoopK A + symShotK Fg A ≤ bruteK * (A + 1) * (Fg + 1) := by
   unfold bLoopK symShotK ShotList.shotCost bArcK offerK bruteK
@@ -40,7 +44,7 @@ theorem brute_cost (A Fg : ℕ) : bLoopK A + symShotK Fg A ≤ bruteK * (A + 1) 
 
 theorem sregOK_sw {j : ℕ} (h1 : j < 1300 ∨ 1600 ≤ j) (h2 : j < 2000 ∨ 2012 < j) (h3 : j < 10000) :
     SRegOK (sw j) := by
-  unfold SRegOK sw; omega
+  register_guard
 
 set_option maxHeartbeats 8000000 in
 set_option maxRecDepth 20000 in
@@ -50,40 +54,39 @@ theorem bruteSpec : BruteSpec := by
   intro sh Bs F X Ok hsh hBs hXl P W c₀ c J H N₁ N₂ E L s z hA hI hs hsl hz hzC hz1 hz2 hzt
     hbL hacc hroom
   have hcost := brute_cost N₁.arcs.length (F (c₀.nreg (sw 5)))
-  have hP : J.left.P.Simple := hA.hP
+  have hP := hA.hP
   have hNF := hA.hNF₁
-  have hNW : NFWithin c.nmem (c₀.nreg (sw 3)) E N₁ :=
-    hA.hN₁.transport (fun a ha => hI.hm a (by have := hA.hE; omega))
+  have hNW := hA.hN₁.transport (fun a ha => hI.hm a (by have := hA.hE; omega))
   have hroom' : c.nreg ALLOC + (bLoopK N₁.arcs.length + symShotK (F (c₀.nreg (sw 5))) N₁.arcs.length) ≤ W := by
     have := Nat.add_le_add_left hcost (c.nreg ALLOC)
     exact le_trans this hroom
   refine (IRS.seq (K₂ := symShotK (F (c₀.nreg (sw 5))) N₁.arcs.length) (bLoop_irs hI hA.hK (hA.ctxL hI) hP hNF hNW
-    (hI.hin _ (by unfold IFix sw; omega)) (hA.hE.trans hI.hA) (le_trans (Nat.add_le_add_left (Nat.le_add_right _ _) _) hroom')) ?_).mono
+    (hI.hin _ (by reg_omega)) (hA.hE.trans hI.hA) (le_trans (Nat.add_le_add_left (Nat.le_add_right _ _) _) hroom')) ?_).mono
     hcost (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' hBW
   obtain ⟨w1, w2, -, w4, -, w6, w7, w8, w9⟩ := hBW
   have nb : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => nob_sw hj
-  have keep : ∀ j, j < 10000 → ¬ BSet (sw j) → c₁.nreg (sw j) = c.nreg (sw j) := fun j hj hb =>
-    w9 _ (nb j hj) hb (by unfold ALLOC sw; omega)
+  have keep := fun j hj hb =>
+    w9 _ (nb j hj) hb (by reg_omega)
   have a1 : ∀ j, j ≤ 12 → c₁.nreg (accA + j) = c.nreg (accA + j) := fun j hj => by
-    have e : accA + j = sw (2000 + j) := by unfold accA sw; omega
-    rw [e]; exact keep (2000 + j) (by omega) (by unfold BSet sw; omega)
-  have d1 : c₁.nreg qD = c.nreg qD := keep 3212 (by norm_num) (by unfold BSet sw; omega)
+    have e : accA + j = sw (2000 + j) := by reg_omega
+    rw [e]; exact keep (2000 + j) (by omega) (by register_guard)
+  have d1 : c₁.nreg qD = c.nreg qD := keep 3212 (by norm_num) (by register_guard)
   have hacc1 : AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z
       (dirOf (c₁.nreg qD)) L c₁ := by rw [d1]; exact hacc.transport a1
-  have hs1 : SymPtIn c₁ sO s := symPtIn_copy hs (keep 3231 (by norm_num) (by unfold BSet sw; omega))
-    (keep 3232 (by norm_num) (by unfold BSet sw; omega))
-    (keep 3233 (by norm_num) (by unfold BSet sw; omega))
-  have hK0 : c₁.nreg K0 = 0 := (hA.hK.fix hI₁).1
+  have hs1 := symPtIn_copy hs (keep 3231 (by norm_num) (by register_guard))
+    (keep 3232 (by norm_num) (by register_guard))
+    (keep 3233 (by norm_num) (by register_guard))
+  have hK0 := (hA.hK.fix hI₁).1
   have hMod : ModB J (c.nreg bL) (c.nreg bR) (c₁.nreg K0) = J.left := by
     rw [hK0, hbL]; simp [ModB]
-  have hzD : z ∈ J.left.dom := mem_dom_of J.left hzt hz1 hz2 hzC
-  have hN1 : c₁.nreg bN = N₁.arcs.length := w4
+  have hzD := mem_dom_of J.left hzt hz1 hz2 hzC
+  have hN1 := w4
   have harcs : ∀ j, j < c₁.nreg bN →
-      ShotList.PieceOK (chainModel J.left) (Qof P) P.n (ShotList.arcAt c₁.nmem (c₁.nreg bBase) j) ∧
-      (chainModel J.left).arcWt
-        ((chainModel J.left).key (Qof P) (ShotList.arcAt c₁.nmem (c₁.nreg bBase) j).1)
-        ((chainModel J.left).key (Qof P) (ShotList.arcAt c₁.nmem (c₁.nreg bBase) j).2) ≤
+      ShotList.PieceOK J.leftModel (Qof P) P.n (ShotList.arcAt c₁.nmem (c₁.nreg bBase) j) ∧
+      J.leftModel.arcWt
+        (J.leftModel.key (Qof P) (ShotList.arcAt c₁.nmem (c₁.nreg bBase) j).1)
+        (J.leftModel.key (Qof P) (ShotList.arcAt c₁.nmem (c₁.nreg bBase) j).2) ≤
         c₀.nreg (sw 5) := by
     intro j hj
     rw [hN1] at hj
@@ -113,16 +116,14 @@ theorem bruteSpec : BruteSpec := by
   · refine hcomp hf ?_
     obtain ⟨p, t, hp, ht0, ht1, ⟨j, hj, hin⟩, hpt⟩ :=
       exit_in_arcs J.left hP hNF (Q := Qof P) (dirOf_cases _) hzt hf
-    refine ⟨p, t, hp, ht0, ht1, ⟨j, by rw [hN1]; exact hj, ?_⟩, fun g hg => absurd hg
+    refine ⟨p, t, hp, ht0, ht1, ⟨j, by rwa [hN1], ?_⟩, fun g hg => absurd hg
       (List.not_mem_nil), hpt.symm⟩
     rw [w1, w7 j hj]
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hNF hj
-    unfold nArc
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
-    exact hin
+    ram_finish [nArc, (Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
   · intro r hr h1 h2 h3 hrA
     rw [k2 r hr (fun h => h1 (by unfold RS at h; unfold sw; omega))
-      (by unfold accA sw at *; omega) hrA]
+      (by reg_omega) hrA]
     exact w9 r hr (fun h => by unfold BSet sw at h; unfold sw at h1 h3; omega) hrA
   · have := hA₁; have := hA2; omega
   · rw [hm2 a (by omega)]; exact w8 a ha

@@ -21,7 +21,7 @@ open Machine Machine.Stmt Programs SweepRam SweepPrim WalkEmbed Sweep
 @[expose] public section
 
 /-- **The point of an endpoint query** is the endpoint. -/
-theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chainModel J.right) (Qof P) N₂)
+theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF J.rightModel (Qof P) N₂)
     (L₁ : List (ℕ × ℕ × ℕ)) {j : ℕ} (hj : j < 2 * N₂.nChords) :
     qPt J P 1 (sweepEndQ N₂.chords ++ L₁) j = endOrigin J (Qof P) N₂ j := by
   rw [(endOrigin_eq J hN hj).1]
@@ -43,14 +43,14 @@ theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chain
 open Classical in
 /-- **At most five brute-force queries.** -/
 theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ : NF}
-    (hG : GoodEnv P) (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
+    (hG : GoodEnv P) (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N₂)
     {L : List (ℕ × ℕ × ℕ)} {i : ℕ}
     (hend : i = 1 → ∃ L₁ : List (ℕ × ℕ × ℕ), L = sweepEndQ N₂.chords ++ L₁ ∧ L₁.length ≤ 3) :
     ((Finset.range L.length).filter
       (fun j => i = 1 ∧ BruteQ J N₂ j (qPt J P i L j))).card ≤ 5 := by
   by_cases hi : i = 1
   swap
-  · rw [Finset.filter_false_of_mem (fun j _ h => hi h.1)]; simp
+  · simp_all
   obtain ⟨L₁, rfl, hL₁⟩ := hend hi
   subst hi
   have hlen : (sweepEndQ N₂.chords ++ L₁).length = 2 * N₂.nChords + L₁.length := by
@@ -70,12 +70,9 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
       · exact Or.inl ⟨hjK, hjL⟩
       · push Not at hjK
         refine Or.inr ⟨hjK, ?_⟩
-        rw [← qPt_end hN L₁ hjK]; exact hb
+        rwa [← qPt_end hN L₁ hjK]
   have h2 : ((Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card ≤ 2 := by
-    have := hT P J N₂ hG hP hN
-    refine le_trans (le_of_eq ?_) this
-    show (Multiset.filter _ (Multiset.range K)).card = _
-    rw [Multiset.range, Multiset.filter_coe, Multiset.coe_card]
+    solve_by_elim
   calc _ ≤ (Finset.Ico K (K + L₁.length) ∪
         (Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card :=
       Finset.card_le_card hsub
@@ -88,7 +85,7 @@ open Classical in
 /-- **The sum of the query costs.** -/
 theorem qCost_sum (hT : TopCountSpec) {κ : ℕ → ℕ} {F : ℕ → ℕ} {c₀ : Config} {P : Polygon}
     {J : Merge.Junction} {N₁ N₂ : NF} (hG : GoodEnv P) (hP : J.P.Simple)
-    (hN : IsNF (chainModel J.right) (Qof P) N₂) {L : List (ℕ × ℕ × ℕ)} {i : ℕ}
+    (hN : IsNF J.rightModel (Qof P) N₂) {L : List (ℕ × ℕ × ℕ)} {i : ℕ}
     (hend : i = 1 → ∃ L₁ : List (ℕ × ℕ × ℕ), L = sweepEndQ N₂.chords ++ L₁ ∧ L₁.length ≤ 3) :
     ∑ j ∈ Finset.range L.length, qCost κ F c₀ J P N₁ N₂ L i j ≤
       L.length * (κ (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1)) +

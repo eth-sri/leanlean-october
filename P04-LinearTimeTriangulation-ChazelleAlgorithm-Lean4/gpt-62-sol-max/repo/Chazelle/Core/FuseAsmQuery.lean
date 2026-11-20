@@ -41,7 +41,7 @@ theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
   set C := sideChain J i
   set M := chainModel C
   obtain ⟨y, a, b, hIH, hytop, hc⟩ := hadm
-  have hab : a < b := hIH.lt
+  have hab := hIH.lt
   have hdef : r.toSet M Q = hseg (Q.vtx r.h).2 (M.pos Q r.lpos).1 (M.pos Q r.rpos).1 := rfl
   obtain ⟨⟨hpl, htl0, htl1, hml, rl, hrl, hsl⟩, ⟨hpr, htr0, htr1, hmr, rr, hrr, hsr⟩⟩ := hA
   have el : M.pos Q r.lpos = sidePt M.W r.lp (M.param Q r.lpos) := rfl
@@ -90,15 +90,15 @@ theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
     have h := hsr _ hx hne hd
     rw [er] at h ⊢
     exact (Sweep.sideLeft_rayPt_iff _ _ _ (-1) hs one_pos).1 h
-  refine ⟨⟨hpl, by show 1 ≤ r.h + 1; omega, by show r.h + 1 ≤ Q.n; omega, htl0, htl1, ?_, ?_⟩,
-    ⟨hpr, by show 1 ≤ r.h + 1; omega, by show r.h + 1 ≤ Q.n; omega, htr0, htr1, ?_, ?_⟩,
+  refine ⟨⟨hpl, by show 1 ≤ r.h + 1; omega, by reg_omega, htl0, htl1, ?_, ?_⟩,
+    ⟨hpr, by show 1 ≤ r.h + 1; omega, by reg_omega, htr0, htr1, ?_, ?_⟩,
     by rw [pl, hL], by rw [pr, hR]⟩
   · show (M.pos Q r.lpos).2 ≤ C.top.2
-    rw [pl]; exact hytop
+    rwa [pl]
   · show sideLeft M.W r.lp (M.param Q r.lpos) ((M.pos Q r.lpos).1 + dirOf 1, (M.pos Q r.lpos).2)
     rw [ray_one]; simpa [dirOf] using secL
   · show (M.pos Q r.rpos).2 ≤ C.top.2
-    rw [pr]; exact hytop
+    rwa [pr]
   · show sideLeft M.W r.rp (M.param Q r.rpos) ((M.pos Q r.rpos).1 + dirOf 0, (M.pos Q r.rpos).2)
     rw [ray_one]; simpa [dirOf] using secR
 
@@ -120,16 +120,20 @@ theorem rec_eq_of_toSet {M : Model} (hM : WalkAx M) {Q : Polygon} (hQ : Distinct
   have hmr' := hA'.2.2.2.2.1
   have el : ∀ (s : CRec), M.pos Q s.lpos = sidePt M.W s.lp (M.param Q s.lpos) := fun _ => rfl
   have er : ∀ (s : CRec), M.pos Q s.rpos = sidePt M.W s.rp (M.param Q s.rpos) := fun _ => rfl
-  have pyl : (M.pos Q r.lpos).2 = (Q.vtx r.h).2 := by rw [el]; exact hml.1
-  have pyl' : (M.pos Q r'.lpos).2 = (Q.vtx r'.h).2 := by rw [el]; exact hml'.1
-  have pyr : (M.pos Q r.rpos).2 = (Q.vtx r.h).2 := by rw [er]; exact hmr.1
-  have pyr' : (M.pos Q r'.rpos).2 = (Q.vtx r'.h).2 := by rw [er]; exact hmr'.1
+  have pyl := hml.1
+  rw [← el] at pyl
+  have pyl' := hml'.1
+  rw [← el] at pyl'
+  have pyr := hmr.1
+  rw [← er] at pyr
+  have pyr' := hmr'.1
+  rw [← er] at pyr'
   have hhh : r.h = r'.h := by
     by_contra hne'; exact hQ _ _ hh hh' hne' hy
-  have ptl : sidePt M.W r.lp (M.param Q r.lpos) = sidePt M.W r'.lp (M.param Q r'.lpos) := by
-    rw [← el, ← el]; exact Prod.ext hl (by rw [pyl, pyl', hhh])
-  have ptr : sidePt M.W r.rp (M.param Q r.rpos) = sidePt M.W r'.rp (M.param Q r'.rpos) := by
-    rw [← er, ← er]; exact Prod.ext hr (by rw [pyr, pyr', hhh])
+  have ptl := Prod.ext hl (by rw [pyl, pyl', hhh])
+  rw [el, el] at ptl
+  have ptr := Prod.ext hr (by rw [pyr, pyr', hhh])
+  rw [er, er] at ptr
   have hA'l : SideAttach M.W (r.toSet M Q) r'.lp (M.param Q r'.lpos) := he ▸ hA'.1
   have hA'r : SideAttach M.W (r.toSet M Q) r'.rp (M.param Q r'.rpos) := he ▸ hA'.2
   exact ⟨hhh, (hM.attach_unique hadm hA.1 hA'l ptl).1, (hM.attach_unique hadm hA.2 hA'r ptr).1⟩
@@ -148,7 +152,7 @@ theorem dom_side (J : Merge.Junction) (i : ℕ) {x : Point} (hx : x ∈ J.whole.
 
 theorem lerp_rayPt (z : Point) (σ T s : ℝ) :
     Geometry.lerp z (rayPt z σ T) s = rayPt z σ (s * T) := by
-  apply Geometry.point_ext <;> simp [Geometry.lerp, rayPt]; ring
+  apply Geometry.point_ext <;> simp_all; ring
 
 /-- **A free direction at a point of `Cᵢ` has a departure position** in the walk of `Cᵢ`
 (`arrivalPos` finds it): some position at the point has the direction in its left sector. -/
@@ -184,8 +188,8 @@ theorem arrival_of_free (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : Po
   have hl' : sideLeft (chainModel C).W p t (rayPt z σ T) := hl
   refine ⟨p, t, hp, ht0, ht1, hpt', ?_⟩
   rw [neg_neg]
-  have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ T) := by
-    rw [hpt']; exact hl'
+  have h1 := hl'
+  rw [← hpt'] at h1
   have := (Sweep.sideLeft_rayPt_iff _ p t σ hT one_pos).1 h1
   rwa [hpt'] at this
 
@@ -198,7 +202,7 @@ theorem param_of_vertex (M : Model) (Q : Polygon) (p h : ℕ) (hy : (Q.vtx h).2 
   simp only
   split_ifs
   · rfl
-  · rw [hy, sub_self, zero_div]
+  · simp_all
 
 /-- **A query from a departure position**: a position with the direction `dirOf ρ` in its left
 sector (`Sweep.Arrival` for `-dirOf ρ`, as `arrivalPos` reports it), written with the height code
@@ -210,9 +214,9 @@ theorem queryOK_of_arrival (J : Merge.Junction) (Q : Polygon) (i : ℕ) {p h ρ 
     QueryOK J Q i (p, h + 1, ρ) ∧ (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
   obtain ⟨hp, ht0, ht1, hpt, hl⟩ := hA
   have hpos : (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
-    rw [Gran.pos_eq_sidePt]; simp only; rw [hpar, hpt]
-  refine ⟨⟨hp, by show 1 ≤ h + 1; omega, hh, by simp only; rw [hpar]; exact ht0, by simp only; rw [hpar]; exact ht1,
-    by simp only; rw [hpos]; exact hz2, ?_⟩, hpos⟩
+    simp [Gran.pos_eq_sidePt, hpar, hpt]
+  refine ⟨⟨hp, by show 1 ≤ h + 1; omega, hh, by simp_all, by simp_all,
+    by simp_all, ?_⟩, hpos⟩
   simp only
   rw [hpos, hpar, ray_one]
   simpa using hl

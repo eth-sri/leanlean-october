@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoLHit5
 
 /-!
@@ -64,7 +68,7 @@ structure SideConv (M M' : Model) (C' : Chain) (g g' L1 L2 δ : ℕ) : Prop wher
 
 /-- The side of `C₂`. -/
 theorem sideConvR (J : Merge.Junction) (hP : J.P.Simple) :
-    SideConv (chainModel J.whole) (chainModel J.right) J.right (6 + tpos J.whole J.m₁)
+    SideConv J.wholeModel J.rightModel J.right (6 + tpos J.whole J.m₁)
       (6 + tpos J.right 0) (Sweep.rL1 J) (Sweep.rL2 J) (Sweep.rδ J) := by
   have hC := Sweep.corr_right0 J hP (S₂ := ∅) (Set.empty_subset _) Set.finite_empty
   have hτ := tpos_lt J.right 0
@@ -76,7 +80,7 @@ theorem sideConvR (J : Merge.Junction) (hP : J.P.Simple) :
     simp only [hm2] at hτ ⊢
     split_ifs with h1 h2
     · left; exact ⟨rfl, rfl, rfl⟩
-    · right; left; refine ⟨by omega, rfl, rfl, rfl⟩
+    · simp_all <;> omega
     · right; right; refine ⟨by omega, rfl, by omega, rfl⟩
   · obtain ⟨ha, hb, -, -⟩ := boxTwin_pos (FuseMath.radius_of_P J (C' := J.right) rfl) he
       ⟨[]⟩ 0
@@ -84,7 +88,7 @@ theorem sideConvR (J : Merge.Junction) (hP : J.P.Simple) :
 
 /-- The side of `C₁`. -/
 theorem sideConvL (J : Merge.Junction) (hP : J.P.Simple) :
-    SideConv (chainModel J.whole) (chainModel J.left) J.left (6 + tpos J.whole (J.m₁ + 2 * J.m₂))
+    SideConv J.wholeModel J.leftModel J.left (6 + tpos J.whole (J.m₁ + 2 * J.m₂))
       (6 + tpos J.left J.m₁) (Sweep.lL1 J) (Sweep.lL2 J) (Sweep.lδ J) := by
   have hC := Sweep.corr_left0 J hP (S₁ := ∅) (Set.empty_subset _) Set.finite_empty
   have hτ := tpos_lt J.left J.m₁
@@ -96,7 +100,7 @@ theorem sideConvL (J : Merge.Junction) (hP : J.P.Simple) :
     simp only [hm1] at hτ ⊢
     split_ifs with h1 h2
     · left; exact ⟨rfl, rfl, rfl⟩
-    · right; left; refine ⟨by omega, rfl, rfl, rfl⟩
+    · simp_all <;> omega
     · right; right; refine ⟨by omega, rfl, by omega, rfl⟩
   · obtain ⟨ha, hb, -, -⟩ := boxTwin_pos (FuseMath.radius_of_P J (C' := J.left) rfl) he
       ⟨[]⟩ 0
@@ -137,13 +141,10 @@ theorem slit_start_pos (C : Chain) (Q : Polygon) {h : ℕ}
         rcases div_eq_zero_iff.1 h0 with h3 | h3
         · linarith
         · exact absurd h3 hne
-      unfold Model.param; simp only; rw [hv6]
-      split_ifs
-      · rfl
-      · rw [hk, sub_self, zero_div]
+      simp [Model.param, hv6, hk, sub_self, zero_div]
   refine ⟨hp6, ?_⟩
   unfold Model.pos
-  rw [hp6, h0, Geometry.lerp_zero, Geometry.lerp_zero, hv6, hvt]
+  simp_all
 
 /-- The index arithmetic of a tour edge. -/
 theorem conv_arith {m τ L1 L2 δ x : ℕ} (hτ : τ < 2 * m)
@@ -180,7 +181,7 @@ theorem conv_pos {M M' : Model} {C' : Chain} {g g' L1 L2 δ : ℕ}
       M.pos Q ⟨convVal g g' L1 δ M'.W.n M.W.n e, h⟩ = M'.pos Q ⟨e, h⟩ := by
   obtain ⟨hM', ⟨τ, hg', hτ, hc⟩, hg, hMn, hL, hcorr, hbox⟩ := hS
   subst hM' hg'
-  have hn' : (chainModel C').W.n = 2 * C'.m + 7 := cm_n C'
+  have hn' := cm_n C'
   -- the tour case for an edge `x`
   have tour : ∀ x, 6 ≤ x → x < 2 * C'.m + 6 →
       convM g M.W.n (convD (6 + τ) L1 δ (chainModel C').W.n x) < M.W.n ∧
@@ -217,9 +218,9 @@ theorem conv_pos {M M' : Model} {C' : Chain} {g g' L1 L2 δ : ℕ}
 
 /-! ## The RAM -/
 
-def cX : ℕ := sw 3300
-def cT : ℕ := sw 3301
-def cDd : ℕ := sw 3302
+@[ram_layout] def cX : ℕ := sw 3300
+@[ram_layout] def cT : ℕ := sw 3301
+@[ram_layout] def cDd : ℕ := sw 3302
 
 /-- **The conversion** of the edge in `pe` to the edge `po` of `M`, with the constants of the
 correspondence at `b … b + 4` (`g, g', L1, L2, δ`) and the walk length of the side model in `nr`
@@ -250,8 +251,8 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         (c.nreg nr) (c.nreg (sw 35)) (c.nreg pe) ∧
       (∀ r, ¬ CvSet po r → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k6 : c.nreg K6 = 6 := hKc.2.2.1
+  have k1 := hKc.2.1
+  have k6 := hKc.2.2.1
   have hbl : 240040 ≤ b ∧ b ≤ 240045 := by rcases hbr with rfl | rfl <;> simp [sw]
   have hnl : 240033 ≤ nr ∧ nr ≤ 240034 := by rcases hnr with rfl | rfl <;> simp [sw]
   have eX : cX = 243300 := rfl
@@ -263,66 +264,64 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   have scX : IScr cX := iscr_sw (by rw [eX]; norm_num) (by rw [eX]; norm_num)
   have scT : IScr cT := iscr_sw (by rw [eT]; norm_num) (by rw [eT]; norm_num)
   have scD : IScr cDd := iscr_sw (by rw [eD]; norm_num) (by rw [eD]; norm_num)
-  have hpoX := hpo.2.1
-  have hpoT := hpo.2.2.1
-  have hpoD := hpo.2.2.2
+  
+  
+  
   unfold convS
   by_cases hbox : c.nreg pe < c.nreg K6
   · refine (IRS.ifT hbox (IRS.instr1 (i := .copyN po pe) hI hpo.1)).mono (by norm_num) ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · show upd c.nreg po (c.nreg pe) po = _
-      rw [upd_same]; unfold convVal; rw [ite_eq_left (show c.nreg pe < 6 by rw [k6] at hbox; exact hbox)]
+      rw [upd_same]; unfold convVal; rw [ite_eq_left (show c.nreg pe < 6 by rwa [k6] at hbox)]
     · show upd c.nreg po (c.nreg pe) r = _
       exact upd_other _ _ _ (fun h => hr (Or.inl h))
   refine IRS.mono (K := 21) (IRS.ifF hbox ?_) (by norm_num) (fun _ h => h)
   -- the box test failed: `6 ≤ e`
   set e := c.nreg pe with he
-  have he6 : 6 ≤ e := by omega
+  
   -- step 1
   have ok1 : okB W c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg :=
     ⟨scX, ⟨scT, by
-      simp only [regI, upd]
-      rw [ite_eq_right hpe.1, ite_eq_right (show ¬ K1 = cX by unfold K1 cX sw; norm_num), k1]; omega⟩, trivial⟩
-  refine (IRS.seq (K₂ := 17) (IRS.block _ hI ok1) ?_).mono (by simp) (fun _ h => h)
+      ram_simp [regI, upd, ite_eq_right hpe.1, ite_eq_right, k1] <;> omega⟩, trivial⟩
+  refine (IRS.seq (K₂ := 17) (IRS.block _ hI ok1) ?_).budget (by simp)
   rintro c₁ hI₁ - - hc1
   have v1X : c₁.nreg cX = e := by
-    rw [hc1]; show regB c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg cX = _
-    simp only [regB, regI]; rw [upd_other _ _ _ (by rw [eX, eT]; norm_num), upd_same]
+    frame_finish [hc1]
   have v1T : c₁.nreg cT = e + 1 := by
     rw [hc1]; show regB c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg cT = _
     simp only [regB, regI]; rw [upd_same, upd_other _ _ _ hpe.1, upd_other _ _ _ (by rw [e1, eX]; norm_num), k1]
   have k1r : ∀ r, r ≠ cX → r ≠ cT → c₁.nreg r = c.nreg r := by
     intro r h1 h2; rw [hc1]; show regB c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg r = _
-    simp only [regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    simp [regB, regI, upd_other _ _ _ h2, upd_other _ _ _ h1]
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have fx : ∀ r, 240000 ≤ r → r < 240700 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     k1r r (by rw [eX]; omega) (by rw [eT]; omega)
   -- step 2: `x := 6` at the end of the walk
-  have hnr1 : c₁.nreg nr = c.nreg nr := fx nr (by omega) (by omega)
-  have k6' : c₁.nreg K6 = 6 := by rw [fx K6 (by rw [e6]; norm_num) (by rw [e6]; norm_num), k6]
+  have hnr1 := fx nr (by omega) (by omega)
+  have k6' : c₁.nreg K6 = 6 := by ram_simp [fx, k6] 
   have st2 : IRS P W c₀ (eqT cT nr (.instr (.copyN cX K6))) c₁ 6 (fun c' =>
       c'.nreg cX = (if e + 1 = c.nreg nr then 6 else e) ∧
       (∀ r, r ≠ cX → c'.nreg r = c₁.nreg r) ∧ c'.nmem = c₁.nmem) := by
     unfold eqT
     by_cases h1 : c₁.nreg cT < c₁.nreg nr
-    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₁ ?_)).mono (by norm_num) (fun _ h => h)
+    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₁ ?_)).budget (by norm_num)
       rw [v1T, hnr1] at h1
-      exact ⟨by rw [v1X, ite_eq_right (show ¬ (e + 1 = c.nreg nr) by omega)], fun _ _ => rfl, rfl⟩
+      exact ⟨by ram_simp [v1X, ite_eq_right], fun _ _ => rfl, rfl⟩
     refine IRS.mono (K := 6) (IRS.ifF h1 ?_) (by norm_num) (fun _ h => h)
     by_cases h2 : c₁.nreg nr < c₁.nreg cT
-    · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₁ ?_)).mono (by norm_num) (fun _ h => h)
+    · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₁ ?_)).budget (by norm_num)
       rw [v1T, hnr1] at h2
-      exact ⟨by rw [v1X, ite_eq_right (show ¬ (e + 1 = c.nreg nr) by omega)], fun _ _ => rfl, rfl⟩
+      exact ⟨by omega, fun _ _ => rfl, rfl⟩
     refine (IRS.ifF h2 (IRS.instr1 (i := .copyN cX K6) hI₁ scX)).mono (by norm_num) ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · show upd c₁.nreg cX (c₁.nreg K6) cX = _
       rw [v1T, hnr1] at h1 h2
-      rw [upd_same, k6', ite_eq_left (show e + 1 = c.nreg nr by omega)]
+      ram_simp [k6', ite_eq_left] 
     · show upd c₁.nreg cX (c₁.nreg K6) r = _
       exact upd_other _ _ _ hr
-  refine (IRS.seq (K₂ := 11) st2 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 11) st2 ?_).budget (by norm_num)
   rintro c₂ hI₂ - - ⟨v2X, k2r, hm2⟩
   set x := (if e + 1 = c.nreg nr then 6 else e) with hx
   have fx2 : ∀ r, 240000 ≤ r → r < 240700 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
@@ -350,8 +349,7 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         simp only [regB, regI]
         rw [upd_same, upd_other _ _ _ (by rw [eX, eT]; norm_num), upd_same, n2, g2, v2X]
         rw [v2X, g2] at h1; rw [ite_eq_left h1]
-      · show regB c₂.nmem [.subN cT nr (b + 1), .addN cT cX cT] c₂.nreg r = _
-        simp only [regB, regI]; rw [upd_other _ _ _ hr, upd_other _ _ _ hr]
+      ram_simp [regB, regI] 
     · refine (IRS.ifF h1 (IRS.instr1 (i := .subN cT cX (b + 1)) hI₂ scT)).mono (by norm_num) ?_
       rintro c' rfl
       refine ⟨?_, fun r hr => ?_, rfl⟩
@@ -359,11 +357,11 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         rw [upd_same, v2X, g2]; rw [v2X, g2] at h1; rw [ite_eq_right h1]
       · show upd c₂.nreg cT _ r = _
         exact upd_other _ _ _ hr
-  refine (IRS.seq (K₂ := 7) st3 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 7) st3 ?_).budget (by norm_num)
   rintro c₃ hI₃ - - ⟨v3T, k3r, hm3⟩
   set d₂ := (if x < c.nreg (b + 1) then x + (c.nreg nr - c.nreg (b + 1)) else x - c.nreg (b + 1))
     with hd₂
-  have hd₂n : d₂ < c.nreg nr := by rw [hd₂]; split_ifs <;> omega
+  
   have fx3 : ∀ r, 240000 ≤ r → r < 240700 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k3r r (by rw [eT]; omega), fx2 r h1 h2]
   -- step 4: `d`
@@ -388,7 +386,7 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         rw [upd_same, v3T, δ3]; rw [v3T, l3] at h1; unfold convD; rw [← hd₂, ite_eq_right h1]
       · show upd c₃.nreg cDd _ r = _
         exact upd_other _ _ _ hr
-  refine (IRS.seq (K₂ := 4) st4 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 4) st4 ?_).budget (by norm_num)
   rintro c₄ hI₄ - - ⟨v4D, k4r, hm4⟩
   set d := convD (c.nreg (b + 1)) (c.nreg (b + 2)) (c.nreg (b + 4)) (c.nreg nr) x with hd
   have fx4 : ∀ r, 240000 ≤ r → r < 240700 → c₄.nreg r = c.nreg r := fun r h1 h2 => by
@@ -396,13 +394,12 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   -- step 5: `n - g`
   have b4 : c₄.nreg b = c.nreg b := fx4 _ (by omega) (by omega)
   have n4 : c₄.nreg (sw 35) = c.nreg (sw 35) := fx4 _ (by rw [e35]; norm_num) (by rw [e35]; norm_num)
-  refine (IRS.seq (K₂ := 3) (IRS.instr1 (i := .subN cT (sw 35) b) hI₄ scT) ?_).mono (by norm_num)
-    (fun _ h => h)
+  refine (IRS.seq (K₂ := 3) (IRS.instr1 (i := .subN cT (sw 35) b) hI₄ scT) ?_).budget (by norm_num)
   rintro c₅ hI₅ - - rfl
   have v5T : (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) cT = c.nreg (sw 35) - c.nreg b := by
     rw [upd_same, b4, n4]
   have v5D : (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) cDd = d := by
-    rw [upd_other _ _ _ (by rw [eD, eT]; norm_num), v4D]
+    assumption
   have v5b : (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) b = c.nreg b := by
     rw [upd_other _ _ _ (by rw [eT]; omega), b4]
   -- step 6: the edge

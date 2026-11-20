@@ -55,8 +55,8 @@ theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (ht
         (((C.vertex k).1 + t * ((C.vertex (k + 1)).1 - (C.vertex k).1),
           (C.vertex k).2 + t * ((C.vertex (k + 1)).2 - (C.vertex k).2)) : Point) ∈ C.set :=
       fun t h0 h1 => ⟨k, hk, by rw [C.chainEdge_eq]; exact ⟨t, h0, h1, rfl⟩⟩
-    have ha : (C.vertex k).2 ≠ y := hno _ (C.vertex_mem_set hk.le)
-    have hb : (C.vertex (k + 1)).2 ≠ y := hno _ (C.vertex_mem_set hk)
+    have ha := hno _ (C.vertex_mem_set hk.le)
+    have hb := hno _ (C.vertex_mem_set hk)
     set a := (C.vertex k).2
     set b := (C.vertex (k + 1)).2
     by_contra hne
@@ -82,8 +82,8 @@ theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (ht
     induction k with
     | zero => exact Iff.rfl
     | succ k ih => exact (step k (by omega)).symm.trans (ih (by omega))
-  have h0 : y < (C.vertex 0).2 := (hall _ C.topIdx_le).1 htop
-  have hv : ∀ k, k ≤ C.m → y < (C.vertex k).2 := fun k hk => (hall k hk).2 h0
+  have h0 := (hall _ C.topIdx_le).1 htop
+  have hv := fun k hk => (hall k hk).2 h0
   intro z hz
   obtain ⟨k, hk, t, ht0, ht1, e⟩ := mem_set_lerp C hz
   have h1 := hv k hk.le
@@ -98,8 +98,7 @@ theorem chain_above (C : Chain) {y : ℝ} (hno : ∀ z ∈ C.set, z.2 ≠ y) (ht
 theorem sidePt_small (C : Chain) {p : ℕ} (hp : p < 6) (t : ℝ) :
     sidePt (C.sideWalk C.sideBeta) p t =
       Geometry.lerp ((C.sideWalk C.sideBeta).vtx p) ((C.sideWalk C.sideBeta).vtx (p + 1)) t := by
-  unfold sidePt
-  rw [C.sideWalk_n, Nat.mod_eq_of_lt (by omega)]
+  ram_simp [sidePt, C.sideWalk_n, Nat.mod_eq_of_lt]
 
 /-- **The cuts of an augmented chord.** -/
 theorem cut_cases (C : Chain) {e : Set Point} {y : ℝ} (hey : ∀ z ∈ e, z.2 = y)
@@ -152,7 +151,7 @@ theorem hseg_eq {y u v y' a b : ℝ} (he : hseg y u v = hseg y' a b) (hab : a < 
     y = y' ∧ u = a ∧ v = b := by
   have ha : ((a, y') : Point) ∈ hseg y u v := by rw [he]; exact ⟨rfl, le_rfl, hab.le⟩
   have hb : ((b, y') : Point) ∈ hseg y u v := by rw [he]; exact ⟨rfl, hab.le, le_rfl⟩
-  have hyy : y' = y := ha.1
+  have hyy := ha.1
   subst hyy
   have hu : ((u, y') : Point) ∈ hseg y' a b := by
     rw [← he]; exact ⟨rfl, le_rfl, le_trans ha.2.1 ha.2.2⟩
@@ -168,9 +167,8 @@ theorem rec_facts (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × �
         (recOf x).toSet (chainModel C) Q = hseg (Q.vtx x.1).2 a b := by
   obtain ⟨y', a, b, hh, hyt, e⟩ := hL.1.2.1 ⟨x, hx, rfl⟩
   have hmem := (hL.2.2.1 x hx).1.2.2.2.1
-  have hmem' : sidePt (C.sideWalk C.sideBeta) (recOf x).lp
-      ((chainModel C).param Q (recOf x).lpos) ∈ hseg y' a b := e ▸ hmem
-  have hyy : (Q.vtx x.1).2 = y' := hmem.1.symm.trans hmem'.1
+  have hmem' := e ▸ hmem
+  have hyy := hmem.1.symm.trans hmem'.1
   rw [← hyy] at hh hyt e
   have hR : |(Q.vtx x.1).2| < C.radius := by
     have hm := hh.open_mem ((a + b) / 2) (by linarith [hh.lt]) (by linarith [hh.lt])
@@ -181,13 +179,8 @@ theorem wall_x {p : ℕ} (hp : p = 1 ∨ p = 3) (t : ℝ) :
     (sidePt (C.sideWalk C.sideBeta) p t).1 = -C.radius ∨
       (sidePt (C.sideWalk C.sideBeta) p t).1 = C.radius := by
   rcases hp with rfl | rfl
-  · left
-    rw [sidePt_small C (by norm_num), Geometry.lerp_fst, C.sideWalk_vtx_one, C.sideWalk_vtx_two]
-    ring
-  · right
-    rw [sidePt_small C (by norm_num), Geometry.lerp_fst, C.sideWalk_vtx_three,
-      C.sideWalk_vtx_four]
-    ring
+  · simp [sidePt_small, Geometry.lerp_fst, C.sideWalk_vtx_one, C.sideWalk_vtx_two]
+  simp [sidePt_small, Geometry.lerp_fst, C.sideWalk_vtx_three, C.sideWalk_vtx_four]
 
 /-- **A wall-to-wall record is the full-width chord.** -/
 theorem wall_shape (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × ℕ} (hx : x ∈ L)
@@ -202,8 +195,8 @@ theorem wall_shape (hL : ChordTriplesOK (chainModel C) Q L) {x : ℕ × ℕ × �
   have h1 := wall_x (C := C) hw.1 ((chainModel C).param Q (recOf x).lpos)
   have h2 := wall_x (C := C) hw.2 ((chainModel C).param Q (recOf x).rpos)
   have hlt := hh.lt
-  have hu' : ((chainModel C).pos Q (recOf x).lpos).1 = a := hu
-  have hv' : ((chainModel C).pos Q (recOf x).rpos).1 = b := hv
+  have hu' := hu
+  have hv' := hv
   have hpl : (chainModel C).pos Q (recOf x).lpos =
       sidePt (C.sideWalk C.sideBeta) x.2.1 ((chainModel C).param Q (recOf x).lpos) := rfl
   have hpr : (chainModel C).pos Q (recOf x).rpos =
@@ -399,20 +392,18 @@ theorem chordTriplesOK_of_isNF {M : Model} {N : NF} (hN : IsNF M Q N) :
     simp only [List.get_eq_getElem, getElem_map, Function.comp_apply] at e
     have hi := i.2; have hj := j.2
     simp only [length_map] at hi hj
-    have := hinj i j hi hj (by rw [hget i hi, hget j hj]; exact e)
+    have := hinj i j hi hj (by rwa [hget i hi, hget j hj])
     exact Fin.ext this
   · intro x hx
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
     have := hatt i hi
-    rw [hget i hi] at this
-    exact this
+    rwa [hget i hi] at this
   · intro x hx
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
     have := hh i hi
-    rw [hget i hi] at this
-    exact this
+    rwa [hget i hi] at this
 
 /-- **Box transport of a normal form** (B3′, record form): the chord triples of a valid normal
 form of `C` of degree `≤ d` that is `γ`-semigranular, without the wall-to-wall chords, are a

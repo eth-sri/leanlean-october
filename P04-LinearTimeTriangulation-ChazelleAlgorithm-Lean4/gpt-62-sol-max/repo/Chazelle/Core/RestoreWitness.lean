@@ -58,21 +58,25 @@ theorem gend_transfer {d d' α : ℝ} {s : Prop} (hα0 : 0 ≤ α) (hα : 0 < α
       · left; rw [h]; linarith
       · right; linarith
 
+section
+
+variable (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = db) (hαb0 : 0 ≤ αb)
+    (hαb : 0 < αb → αb < L → αb = da)
+include hαa0 hαa hαb0 hαb
+
 /-- **Transfer of the test conditions** from `x` to an offset `u ≤ x` with no end in
 `(ℓ, x]`. -/
-theorem wok_transfer (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = db) (hαb0 : 0 ≤ αb)
-    (hαb : 0 < αb → αb < L → αb = da) {ℓ u x : ℝ} (hℓ : 0 ≤ ℓ) (hℓu : ℓ < u) (hux : u ≤ x)
+theorem wok_transfer {ℓ u x : ℝ} (hℓ : 0 ≤ ℓ) (hℓu : ℓ < u) (hux : u ≤ x)
     (hda : ¬ (ℓ < da ∧ da ≤ x)) (hdb : ¬ (ℓ < db ∧ db ≤ x))
     (hx : WOK L da db αa αb sa sb x) : WOK L da db αa αb sa sb u := by
   obtain ⟨hx0, hxL, -, -, ga, gb⟩ := hx
-  refine ⟨by linarith, by linarith, fun h => hda ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
-    fun h => hdb ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
+  refine ⟨by linarith, by linarith, fun h => hda ⟨by rwa [← h], by rwa [← h]⟩,
+    fun h => hdb ⟨by rwa [← h], by rwa [← h]⟩,
     gend_transfer hαa0 hαa hℓ hℓu hux hxL hda hdb ga,
     gend_transfer hαb0 hαb hℓ hℓu hux hxL hdb hda gb⟩
 
 /-- **A witness offset exists among `1`, `⌊da⌋ + 1`, `⌊db⌋ + 1`.** -/
-theorem witness_exists (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = db) (hαb0 : 0 ≤ αb)
-    (hαb : 0 < αb → αb < L → αb = da) (hda0 : 0 ≤ da) (hdb0 : 0 ≤ db) {x : ℕ}
+theorem witness_exists (hda0 : 0 ≤ da) (hdb0 : 0 ≤ db) {x : ℕ}
     (hx : WOK L da db αa αb sa sb x) :
     WOK L da db αa αb sa sb 1 ∨ (0 < da ∧ da < L ∧ WOK L da db αa αb sa sb (⌊da⌋₊ + 1 : ℕ)) ∨
       (0 < db ∧ db < L ∧ WOK L da db αa αb sa sb (⌊db⌋₊ + 1 : ℕ)) := by
@@ -83,7 +87,7 @@ theorem witness_exists (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa =
   have fl : ∀ d : ℝ, 0 ≤ d → d < x → (d < ((⌊d⌋₊ + 1 : ℕ) : ℝ) ∧ ((⌊d⌋₊ + 1 : ℕ) : ℝ) ≤ x) :=
     fun d hd hdx => by
       refine ⟨by push_cast; exact Nat.lt_floor_add_one d, ?_⟩
-      have : ⌊d⌋₊ < x := (Nat.floor_lt hd).2 hdx
+      have := (Nat.floor_lt hd).2 hdx
       exact_mod_cast this
   by_cases hA : 0 < da ∧ da < x
   · by_cases hB : 0 < db ∧ db < x ∧ da < db
@@ -106,8 +110,7 @@ theorem witness_exists (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa =
       · exact hB ⟨h.1, lt_of_le_of_ne h.2 (Ne.symm hxb)⟩
 
 /-- **Every passing offset is on the side of the good vertex.** -/
-theorem witness_side_ok (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = db) (hαb0 : 0 ≤ αb)
-    (hαb : 0 < αb → αb < L → αb = da) (hda0 : 0 ≤ da) (hdb0 : 0 ≤ db) (hne : da ≠ db)
+theorem witness_side_ok (hda0 : 0 ≤ da) (hdb0 : 0 ≤ db) (hne : da ≠ db)
     {u x : ℝ} (hu : WOK L da db αa αb sa sb u) (hx : WOK L da db αa αb sa sb x) :
     sideInArc da db u ↔ sideInArc da db x := by
   obtain ⟨hu0, huL, hua, hub, gau, gbu⟩ := hu
@@ -116,6 +119,8 @@ theorem witness_side_ok (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa 
     (fun h1 h2 => ⟨αa, sa, hαa0, hαa, fun v => ⟨fun h => h ⟨h1, h2⟩, fun h _ => h⟩⟩)
     (fun h1 h2 => ⟨αb, sb, hαb0, hαb, fun v => ⟨fun h => h ⟨h1, h2⟩, fun h _ => h⟩⟩)
     hu0 huL hx0 hxL hua hub hxa hxb gau gax gbu gbx
+
+end
 
 end
 

@@ -79,11 +79,16 @@ noncomputable def openChordSet (P : Polygon) (i : ℕ) (σ : ℝ) : Set Point :=
 @[simp] theorem chordEnd_snd (P : Polygon) (i : ℕ) (σ : ℝ) : (chordEnd P i σ).2 = (P.vtx i).2 :=
   rfl
 
+section
+
+variable {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
+    (h : DirInterior P i σ)
+
+include hP hi h in
 /-- **The chord exists.**  When direction `σ` at vertex `i` is locally interior: the chord
 parameter is positive, the far endpoint is on the boundary, and every point of the open chord
 is interior. -/
-theorem chord_spec {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) :
+theorem chord_spec :
     0 < chordParam P i σ ∧ chordEnd P i σ ∈ P.boundary ∧
       ∀ t, 0 < t → t < chordParam P i σ → rayPt (P.vtx i) σ t ∈ P.filled \ P.boundary := by
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 h
@@ -91,32 +96,29 @@ theorem chord_spec {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : 
   obtain ⟨h1, h2, h3⟩ := hit_of_initial hP (h.ne_zero hi) hu (fun t ht1 ht2 => hsub ⟨ht1, ht2⟩)
   exact ⟨lt_of_lt_of_le hu h1, h2, h3⟩
 
-theorem chordParam_pos {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) : 0 < chordParam P i σ :=
+include hP hi h in
+theorem chordParam_pos : 0 < chordParam P i σ :=
   (chord_spec hP hi h).1
 
-theorem chordEnd_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) : chordEnd P i σ ∈ P.boundary :=
+include hP hi h in
+theorem chordEnd_mem_boundary : chordEnd P i σ ∈ P.boundary :=
   (chord_spec hP hi h).2.1
 
+include hP hi h in
 /-- The open chord is interior. -/
-theorem openChordSet_subset_interior {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) : openChordSet P i σ ⊆ P.filled \ P.boundary := by
+theorem openChordSet_subset_interior : openChordSet P i σ ⊆ P.filled \ P.boundary := by
   rintro _ ⟨t, ht, rfl⟩
   exact (chord_spec hP hi h).2.2 t ht.1 ht.2
 
+include hP hi h in
 /-- The far endpoint is not the vertex. -/
-theorem chordEnd_ne_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) : chordEnd P i σ ≠ P.vtx i := by
+theorem chordEnd_ne_vtx : chordEnd P i σ ≠ P.vtx i := by
   intro heq
   have := congrArg Prod.fst heq
   simp only [chordEnd_fst] at this
   have hσ := h.ne_zero hi
   have hpos := chordParam_pos hP hi h
-  have : σ * chordParam P i σ = 0 := by linarith
-  rcases mul_eq_zero.1 this with h' | h'
-  · exact hσ h'
-  · exact hpos.ne' h'
+  simp_all
 
 /-- **Uniqueness of the chord.**  A boundary point of the open ray with no boundary point before
 it is the far endpoint of the chord. -/
@@ -125,9 +127,9 @@ theorem chordParam_eq_of_first (P : Polygon) (i : ℕ) (σ : ℝ) {t : ℝ} (ht 
     (hfirst : ∀ s, 0 < s → s < t → rayPt (P.vtx i) σ s ∉ P.boundary) : chordParam P i σ = t :=
   hitParam_eq_of_first P (P.vtx i) σ ht hmem hfirst
 
+include hP hi h in
 /-- The chord as the image of the closed parameter interval. -/
-theorem chordSet_eq_image {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) :
+theorem chordSet_eq_image :
     chordSet P i σ = rayPt (P.vtx i) σ '' Icc 0 (chordParam P i σ) := by
   have hpos := chordParam_pos hP hi h
   ext p
@@ -146,9 +148,9 @@ theorem chordSet_eq_image {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
       ring
     · ring
 
+include hP hi h in
 /-- The closed chord is the open chord with its two endpoints. -/
-theorem chordSet_eq_openChordSet_union {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
-    {σ : ℝ} (h : DirInterior P i σ) :
+theorem chordSet_eq_openChordSet_union :
     chordSet P i σ = openChordSet P i σ ∪ {P.vtx i, chordEnd P i σ} := by
   rw [chordSet_eq_image hP hi h]
   ext p
@@ -160,15 +162,15 @@ theorem chordSet_eq_openChordSet_union {P : Polygon} (hP : P.Simple) {i : ℕ} (
     · rcases ht1.lt_or_eq with h1 | h1
       · exact Or.inl ⟨t, ⟨h0, h1⟩, rfl⟩
       · right; right; rw [h1]; rfl
-    · right; left; rw [← h0, rayPt_zero]
+    simp [← h0, rayPt_zero]
   · rintro (⟨t, ht, rfl⟩ | rfl | rfl)
     · exact ⟨t, ⟨ht.1.le, ht.2.le⟩, rfl⟩
     · exact ⟨0, ⟨le_rfl, (chordParam_pos hP hi h).le⟩, rayPt_zero _ _⟩
     · exact ⟨chordParam P i σ, ⟨(chordParam_pos hP hi h).le, le_rfl⟩, rfl⟩
 
+include hP hi h in
 /-- Points of the closed chord: the endpoints or interior points. -/
-theorem mem_chordSet_cases {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) {p : Point} (hp : p ∈ chordSet P i σ) :
+theorem mem_chordSet_cases {p : Point} (hp : p ∈ chordSet P i σ) :
     p = P.vtx i ∨ p = chordEnd P i σ ∨ p ∈ P.filled \ P.boundary := by
   rw [chordSet_eq_openChordSet_union hP hi h] at hp
   rcases hp with hp | hp
@@ -177,9 +179,9 @@ theorem mem_chordSet_cases {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n
     · exact Or.inl rfl
     · exact Or.inr (Or.inl rfl)
 
+include hP hi h in
 /-- The chord meets the boundary exactly in its two endpoints. -/
-theorem chordSet_inter_boundary {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {σ : ℝ}
-    (h : DirInterior P i σ) :
+theorem chordSet_inter_boundary :
     chordSet P i σ ∩ P.boundary = {P.vtx i, chordEnd P i σ} := by
   ext p
   simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff]
@@ -193,12 +195,55 @@ theorem chordSet_inter_boundary {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i 
     · exact ⟨Geometry.left_mem_segment _ _, i, hi, Geometry.left_mem_segment _ _⟩
     · exact ⟨Geometry.right_mem_segment _ _, chordEnd_mem_boundary hP hi h⟩
 
+end
+
 /-! ### The right chord and the half-open scan -/
 
 /-! ### Abstract horizontal chords and their intersections -/
 
 /-- The closed horizontal segment at height `y` between abscissae `a` and `b`. -/
 def hseg (y a b : ℝ) : Set Point := {p | p.2 = y ∧ a ≤ p.1 ∧ p.1 ≤ b}
+
+/-! ### Abstract horizontal chords of an open domain -/
+
+/-- A horizontal chord of the domain `D`: a horizontal segment `[a, b] × {y}` with `a < b`,
+both endpoints off `D`, and the open part inside `D`. -/
+structure _root_.Chazelle.Chain.IsHChordIn (D : Set Point) (y a b : ℝ) : Prop where
+  lt : a < b
+  left_not : ((a, y) : Point) ∉ D
+  right_not : ((b, y) : Point) ∉ D
+  open_mem : ∀ x, a < x → x < b → ((x, y) : Point) ∈ D
+
+/-- **Two horizontal chords of a domain are equal or meet only in common endpoints.** -/
+theorem _root_.Chazelle.Chain.hchordIn_inter {D : Set Point} {y a b y' a' b' : ℝ} (h : Chain.IsHChordIn D y a b)
+    (h' : Chain.IsHChordIn D y' a' b') {p : Point} (hp : p ∈ hseg y a b) (hp' : p ∈ hseg y' a' b') :
+    (y = y' ∧ a = a' ∧ b = b') ∨
+      ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) := by
+  rcases p with ⟨x, z⟩
+  obtain ⟨hz, hx1, hx2⟩ := hp
+  obtain ⟨hz', hx1', hx2'⟩ := hp'
+  change z = y at hz
+  change z = y' at hz'
+  subst z y'
+  have interior {l r : ℝ} (hl : l ≤ x) (hr : x ≤ r)
+      (hL : ((l, y) : Point) ∉ D) (hR : ((r, y) : Point) ∉ D) (h : ((x, y) : Point) ∈ D) :
+      l < x ∧ x < r := ⟨hl.lt_of_ne (by rintro rfl; contradiction),
+        hr.lt_of_ne (by rintro rfl; contradiction)⟩
+  by_cases hD : ((x, y) : Point) ∈ D
+  · obtain ⟨hl, hr⟩ := interior hx1 hx2 h.left_not h.right_not hD
+    obtain ⟨hl', hr'⟩ := interior hx1' hx2' h'.left_not h'.right_not hD
+    refine Or.inl ⟨rfl, le_antisymm ?_ ?_, le_antisymm ?_ ?_⟩
+    · by_contra! hn; exact h.left_not (h'.open_mem _ hn (hl.trans hr'))
+    · by_contra! hn; exact h'.left_not (h.open_mem _ hn (hl'.trans hr))
+    · by_contra! hn; exact h'.right_not (h.open_mem _ (hl.trans hr') hn)
+    · by_contra! hn; exact h.right_not (h'.open_mem _ (hl'.trans hr) hn)
+  · right
+    simp only [Prod.mk.injEq, and_true]
+    have hno := fun h1 h2 => hD (h.open_mem x h1 h2)
+    have hno' := fun h1 h2 => hD (h'.open_mem x h1 h2)
+    constructor <;> by_contra! hne
+    · exact hno (hx1.lt_of_ne hne.1.symm) (hx2.lt_of_ne hne.2)
+    · exact hno' (hx1'.lt_of_ne hne.1.symm) (hx2'.lt_of_ne hne.2)
 
 /-- A horizontal chord of `P`: a horizontal segment `[a, b] × {y}` with `a < b`, both
 endpoints on the boundary, and the open part interior. -/
@@ -208,75 +253,17 @@ structure IsHChord (P : Polygon) (y a b : ℝ) : Prop where
   right_mem : ((b, y) : Point) ∈ P.boundary
   open_int : ∀ x, a < x → x < b → ((x, y) : Point) ∈ P.filled \ P.boundary
 
+/-- A polygon chord is a chord of its open interior. -/
+theorem IsHChord.toIn {P : Polygon} {y a b : ℝ} (h : IsHChord P y a b) :
+    Chain.IsHChordIn (P.filled \ P.boundary) y a b :=
+  ⟨h.lt, fun h' => h'.2 h.left_mem, fun h' => h'.2 h.right_mem, h.open_int⟩
+
 /-- **Two horizontal chords are equal or meet only in common endpoints.** -/
 theorem hchord_inter {P : Polygon} {y a b y' a' b' : ℝ} (h : IsHChord P y a b)
     (h' : IsHChord P y' a' b') {p : Point} (hp : p ∈ hseg y a b) (hp' : p ∈ hseg y' a' b') :
     (y = y' ∧ a = a' ∧ b = b') ∨
-      ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) := by
-  obtain ⟨hpy, hpa, hpb⟩ := hp
-  obtain ⟨hpy', hpa', hpb'⟩ := hp'
-  have hyy : y = y' := hpy.symm.trans hpy'
-  subst hyy
-  -- is `p` an endpoint of the first chord?
-  by_cases hend : p.1 = a ∨ p.1 = b
-  · -- then `p` is on the boundary, hence not in the open part of the second chord
-    have hpb : p ∈ P.boundary := by
-      rcases hend with he | he
-      · have : p = (a, y) := Prod.ext he hpy
-        rw [this]; exact h.left_mem
-      · have : p = (b, y) := Prod.ext he hpy
-        rw [this]; exact h.right_mem
-    right
-    refine ⟨?_, ?_⟩
-    · rcases hend with he | he
-      · exact Or.inl (Prod.ext he hpy)
-      · exact Or.inr (Prod.ext he hpy)
-    · by_contra hne
-      push Not at hne
-      have ha' : a' < p.1 := lt_of_le_of_ne hpa' (fun e => hne.1 (Prod.ext e.symm hpy))
-      have hb' : p.1 < b' := lt_of_le_of_ne hpb' (fun e => hne.2 (Prod.ext e hpy))
-      have := h'.open_int p.1 ha' hb'
-      rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at this
-      exact this.2 hpb
-  · -- `p` is in the open part of the first chord, hence interior
-    push Not at hend
-    have ha : a < p.1 := lt_of_le_of_ne hpa (Ne.symm hend.1)
-    have hb : p.1 < b := lt_of_le_of_ne hpb hend.2
-    have hint := h.open_int p.1 ha hb
-    rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at hint
-    -- so `p` is not an endpoint of the second chord either
-    have ha' : a' < p.1 := by
-      rcases hpa'.lt_or_eq with h1 | h1
-      · exact h1
-      · exfalso
-        apply hint.2
-        rw [show p = (a', y) from Prod.ext h1.symm hpy]
-        exact h'.left_mem
-    have hb' : p.1 < b' := by
-      rcases hpb'.lt_or_eq with h1 | h1
-      · exact h1
-      · exfalso
-        apply hint.2
-        rw [show p = (b', y) from Prod.ext h1 hpy]
-        exact h'.right_mem
-    left
-    refine ⟨rfl, ?_, ?_⟩
-    · -- `a'` is not in the open part of the first chord, and `a' < p.1 < b`, so `a' ≤ a`;
-      -- symmetrically `a ≤ a'`
-      apply le_antisymm
-      · by_contra hlt
-        push Not at hlt
-        exact (h'.open_int a hlt (ha.trans hb')).2 h.left_mem
-      · by_contra hlt
-        push Not at hlt
-        exact (h.open_int a' hlt (ha'.trans hb)).2 h'.left_mem
-    · apply le_antisymm
-      · by_contra hlt
-        push Not at hlt
-        exact (h.open_int b' (ha.trans hb') hlt).2 h'.right_mem
-      · by_contra hlt
-        push Not at hlt
-        exact (h'.open_int b (ha'.trans hb) hlt).2 h.right_mem
+      ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) :=
+  Chain.hchordIn_inter h.toIn h'.toIn hp hp'
 
 /-- A horizontal segment `segment a b` (with `a.2 = b.2`) is an `hseg`. -/
 theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
@@ -298,11 +285,8 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
     by_cases heq : a.1 = b.1
     · refine ⟨0, le_rfl, zero_le_one, ?_⟩
       simp only [heq, min_self, max_self] at h1 h2
-      have : p.1 = b.1 := le_antisymm h2 h1
-      rw [Geometry.point_ext_iff]; simp only
-      constructor
-      · rw [this, heq]; ring
-      · rw [hy]; ring
+      have := le_antisymm h2 h1
+      rw [Geometry.point_ext_iff]; simp_all
     · refine ⟨(p.1 - a.1) / (b.1 - a.1), ?_, ?_, ?_⟩
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [min_eq_left h.le] at h1
@@ -319,7 +303,7 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
         constructor
         · field_simp
           ring
-        · rw [hy, ← hab, sub_self, mul_zero, add_zero]
+        simp_all
 
 /-- The chord of a vertex, as a horizontal segment between its two abscissae. -/
 theorem chordSet_eq_hseg (P : Polygon) (i : ℕ) (σ : ℝ) :
@@ -337,14 +321,14 @@ theorem isHChord_chord {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {�
   have he : ((chordEnd P i σ).1, (P.vtx i).2) = chordEnd P i σ := rfl
   have hvb : P.vtx i ∈ P.boundary := ⟨i, hi, Geometry.left_mem_segment _ _⟩
   rcases hσ with rfl | rfl
-  · have hlt : (P.vtx i).1 < (chordEnd P i 1).1 := by simp only [chordEnd_fst, one_mul]; linarith
+  · have hlt : (P.vtx i).1 < (chordEnd P i 1).1 := by simp_all
     rw [min_eq_left hlt.le, max_eq_right hlt.le]
     refine ⟨hlt, hv ▸ hvb, he ▸ hend, fun x hx1 hx2 => ?_⟩
     have := hint (x - (P.vtx i).1) (by linarith) (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (chordEnd P i (-1)).1 < (P.vtx i).1 := by
-      simp only [chordEnd_fst, neg_one_mul]; linarith
+      simp_all
     rw [min_eq_right hlt.le, max_eq_left hlt.le]
     refine ⟨hlt, he ▸ hend, hv ▸ hvb, fun x hx1 hx2 => ?_⟩
     have := hint ((P.vtx i).1 - x) (by linarith)
@@ -363,11 +347,16 @@ theorem hseg_endpoints_eq (P : Polygon) (i : ℕ) (σ : ℝ) :
   · rw [min_eq_right h, max_eq_left h, Set.pair_comm]
     rfl
 
+section
+
+variable {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
+    {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hτ : τ = 1 ∨ τ = -1) (hiσ : DirInterior P i σ)
+    (hjτ : DirInterior P j τ)
+include hP hi hj hσ hτ hiσ hjτ
+
 /-- **Chord intersection.**  Two vertex chords (in locally interior directions) are equal as
 sets, or every common point is an endpoint of both. -/
-theorem chordSet_inter {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
-    {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hτ : τ = 1 ∨ τ = -1) (hiσ : DirInterior P i σ)
-    (hjτ : DirInterior P j τ) {p : Point} (hp : p ∈ chordSet P i σ ∩ chordSet P j τ) :
+theorem chordSet_inter {p : Point} (hp : p ∈ chordSet P i σ ∩ chordSet P j τ) :
     chordSet P i σ = chordSet P j τ ∨
       (p ∈ ({P.vtx i, chordEnd P i σ} : Set Point) ∧
         p ∈ ({P.vtx j, chordEnd P j τ} : Set Point)) := by
@@ -384,15 +373,15 @@ theorem chordSet_inter {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) 
 
 /-- **Chord disjointness.**  Two distinct vertex chords meet only in points that are endpoints
 of both. -/
-theorem chord_inter {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) (hj : j < P.n)
-    {σ τ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hτ : τ = 1 ∨ τ = -1) (hiσ : DirInterior P i σ)
-    (hjτ : DirInterior P j τ) (hne : chordSet P i σ ≠ chordSet P j τ) :
+theorem chord_inter (hne : chordSet P i σ ≠ chordSet P j τ) :
     chordSet P i σ ∩ chordSet P j τ ⊆
       ({P.vtx i, chordEnd P i σ} : Set Point) ∩ {P.vtx j, chordEnd P j τ} := by
   intro p hp
   rcases chordSet_inter hP hi hj hσ hτ hiσ hjτ hp with h | h
   · exact absurd h hne
   · exact h
+
+end
 
 /-! ### The set of all chords -/
 
@@ -405,8 +394,7 @@ theorem chords_subset_image (P : Polygon) :
       ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)) := by
   rintro S ⟨i, σ, hi, hσ, -, rfl⟩
   refine ⟨(i, σ), ⟨by simpa using hi, ?_⟩, rfl⟩
-  simp only [mem_insert_iff, mem_singleton_iff]
-  exact hσ
+  assumption
 
 theorem chords_finite (P : Polygon) : (chords P).Finite :=
   ((Finset.range P.n).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)).image _
@@ -414,8 +402,7 @@ theorem chords_finite (P : Polygon) : (chords P).Finite :=
 
 /-- **At most `2 n` chords.** -/
 theorem chords_ncard_le (P : Polygon) : (chords P).ncard ≤ 2 * P.n := by
-  have hfin : ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)).Finite :=
-    (Finset.range P.n).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)
+  have hfin := (Finset.range P.n).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)
   calc (chords P).ncard
       ≤ ((fun x : ℕ × ℝ => chordSet P x.1 x.2) ''
           ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ))).ncard :=

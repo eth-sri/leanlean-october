@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.WalkKey
 public import Chazelle.Core.BruteOK
 
@@ -56,29 +58,23 @@ theorem load_exec {P : Polygon} {W : ℕ} (hW : 1 ≤ W) (s : ℕ) (hs : 10000 �
   | v r =>
     simp only [Src.Out] at hx
     unfold Src.load
-    exec_block
-    · omega
+    exec_block!
     · refine ⟨by omega, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Src.pt, SymPtIn]
-        refine ⟨?_, ?_⟩ <;> simp (disch := omega) only [Machine.upd_same,
-          Machine.upd_other]
-      · simp (disch := omega) only [Machine.upd_other]
+      · ram_finish
+      frame_finish
   | e r₁ r₂ =>
     simp only [Src.Out] at hx
     unfold Src.load
-    exec_block
-    · omega
+    exec_block!
     · refine ⟨by omega, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Src.pt, SymPtIn]
-        refine ⟨?_, ?_, ?_⟩ <;> simp (disch := omega) only [Machine.upd_same,
-          Machine.upd_other]
-      · simp (disch := omega) only [Machine.upd_other]
+      · ram_simp [Src.pt, SymPtIn] <;> reg_omega
+      frame_finish
 
 theorem src_pt_eq {x : Src} (hx : x.Out) {c c' : Config}
     (h : ∀ r, (r < 10000 ∨ 10500 ≤ r) → c'.nreg r = c.nreg r) : x.pt c' = x.pt c := by
   cases x with
-  | v r => simp only [Src.pt, Src.Out] at hx ⊢; rw [h r hx]
-  | e r₁ r₂ => simp only [Src.pt, Src.Out] at hx ⊢; rw [h r₁ hx.1, h r₂ hx.2]
+  | v r => simp [Src.pt, Src.Out, h r hx]
+  | e r₁ r₂ => simp only [Src.pt, Src.Out] at hx ⊢; simp_all
 
 /-- The write set of a test: the kernel's registers and the destination. -/
 def Bt (d : ℕ) (r : ℕ) : Bool := Bk r || decide (r = d)
@@ -103,36 +99,35 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   set c₄ : Config := { c₃ with nreg := upd c₃.nreg 10009 op }
   have q₄ : ∀ r, r ≠ 10009 → c₄.nreg r = c₃.nreg r := fun r hr => by simp [c₄, hr]
   -- the points survive
-  have hy₁ : y.pt c₁ = y.pt c := src_pt_eq hy fun r hr => r₁ r (by omega)
+  have hy₁ := src_pt_eq hy fun r hr => r₁ r (by omega)
   have hz₁ : z.pt c₂ = z.pt c := by
     rw [src_pt_eq hz fun r hr => r₂ r (by omega)]
     exact src_pt_eq hz fun r hr => r₁ r (by omega)
   have S₁ : SymPtIn c₄ 10000 (x.pt c) := symPtIn_of_eq s₁ fun j h1 h2 => by
-    rw [q₄ j (by omega), r₃ j (by omega), r₂ j (by omega)]
+    ram_finish [q₄, r₃, r₂]
   have S₂ : SymPtIn c₄ 10003 (y.pt c) := by
     rw [← hy₁]
-    exact symPtIn_of_eq s₂ fun j h1 h2 => by rw [q₄ j (by omega), r₃ j (by omega)]
+    exact symPtIn_of_eq s₂ fun j h1 h2 => by ram_rw [q₄ j, r₃ j]
   have S₃ : SymPtIn c₄ 10006 (z.pt c) := by
-    rw [← hz₁]
-    exact symPtIn_of_eq s₃ fun j h1 h2 => by rw [q₄ j (by omega)]
+    rwa [← hz₁]
   have hop₄ : c₄.nreg 10009 = op := by simp [c₄]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ e₄.wb_right hG hW
-    (by rw [hop₄]; exact hop) hlx hly hlz S₁ S₂ S₃
+    (by rwa [hop₄]) hlx hly hlz S₁ S₂ S₃
   rw [hop₄] at sig₅
   have e₆ := Exec.copyN (P := P) e₅.wb_right d 10010
   set c₆ : Config := { c₅ with nreg := upd c₅.nreg d (c₅.nreg 10010) }
   have ex : Exec P W (testS op x y z d) c c₆ (k₁ + (k₂ + (k₃ + (1 + (k₅ + 1))))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
+    (by ram_path)
   have hd : c₆.nreg d = c₅.nreg 10010 := by simp [c₆]
-  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rw [hd]; exact bit₅,
-    by rw [hd]; exact sig₅⟩
+  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rwa [hd],
+    by rwa [hd]⟩
   · have hr' : Bk r = false ∧ r ≠ d := by
       unfold Bt at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; exact hr
     have hnk : r < 10000 ∨ 10500 ≤ r := by
       have := hr'.1; unfold Bk at this; simp only [decide_eq_false_iff_not] at this; omega
     simp only [c₆]
-    rw [upd_other _ _ _ hr'.2, f₅.1 r hr'.1, q₄ r (by omega), r₃ r (by omega), r₂ r (by omega),
-      r₁ r (by omega)]
+    ram_rw [upd_other _ _ _ hr'.2, f₅.1 r hr'.1, q₄ r, r₃ r, r₂ r,
+      r₁ r]
   · have hr' : Bk r = false := by
       unfold Bt at hr; simp only [Bool.or_eq_false_iff] at hr; exact hr.1
     simp only [c₆]

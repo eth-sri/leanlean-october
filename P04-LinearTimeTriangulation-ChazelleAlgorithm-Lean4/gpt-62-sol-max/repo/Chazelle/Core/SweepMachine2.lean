@@ -40,20 +40,20 @@ variable (J : Merge.Junction)
 
 /-- `λ` is a valid label of every region of `F₂⁺` on the side `ρ` of the chord `e`. -/
 def SideLabel (S₂ : Set (Set Point)) (e : Set Point) (ρ : ℝ) (L : Set Point) : Prop :=
-  ∀ G ∈ (chainModel J.whole).regions (F₂plus J S₂), SideOf (chainModel J.whole) ρ e G →
+  ∀ G ∈ J.wholeModel.regions (F₂plus J S₂), SideOf J.wholeModel ρ e G →
     Valid J S₂ G L
 
 /-- **Rule for a fused chord**: `e ⊆ c ∈ S₂` attached at the stretch position `d` (not the base,
 not the split vertex): the side labels of `e` are the regions of `S₂` on the same side of `c`. -/
 theorem sideLabel_fused (hP : J.P.Simple) {Q : Polygon}
-    {S₂ : Set (Set Point)} (hS₂ : (chainModel J.right).ChordFamily Q S₂)
-    (hF : (chainModel J.whole).ChordFamily Q (F₂plus J S₂)) {e c : Set Point}
+    {S₂ : Set (Set Point)} (hS₂ : J.rightModel.ChordFamily Q S₂)
+    (hF : J.wholeModel.ChordFamily Q (F₂plus J S₂)) {e c : Set Point}
     (he : e ∈ F₂plus J S₂) (hc : c ∈ S₂) (hec : e ⊆ c) {d : ℕ} (hd : d < rL1 J + rL2 J)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (hsec : t = 0 → d ≠ 0 ∧ d ≠ rL1 J)
-    (hA : SideAttach (chainModel J.whole).W e
-      ((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n) t)
-    {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {V : Set Point} (hV : V ∈ (chainModel J.right).regions S₂)
-    (hVs : SideOf (chainModel J.right) ρ c V) : SideLabel J S₂ e ρ V :=
+    (hA : SideAttach J.wholeModel.W e
+      ((6 + tpos J.whole J.m₁ + d) % J.wholeModel.W.n) t)
+    {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {V : Set Point} (hV : V ∈ J.rightModel.regions S₂)
+    (hVs : SideOf J.rightModel ρ c V) : SideLabel J S₂ e ρ V :=
   fun _G hG hS => valid_of_vlabel J hP hS₂ hF hG hV
     ⟨e, c, ρ, d, t, he, hc, hec, hρ, hd, ht0, ht1, hsec, hA, hS, hVs⟩
 

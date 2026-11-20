@@ -61,7 +61,7 @@ theorem V_mem_seg (U V : Point) : V ∈ seg U V :=
 theorem seg_snd_of_eq {U V : Point} (h : U.2 = V.2) {x : Point} (hx : x ∈ seg U V) :
     x.2 = U.2 := by
   obtain ⟨u, -, -, rfl⟩ := hx
-  simp only [lerp_snd]; rw [h]; ring
+  simp_all
 
 variable {U V z : Point} {σ : ℝ}
 
@@ -76,7 +76,7 @@ theorem rayPt_of_x (hσ : σ = 1 ∨ σ = -1) {X : Point} (hX : X.2 = z.2) :
   have := sigma_sq hσ
   ext
   · simp only [rayPt_fst]; rw [← mul_assoc, this, one_mul]; ring
-  · simp only [rayPt_snd]; exact hX.symm
+  simp_all
 
 /-- **A set meeting the line of the ray in at most one point `X`.** -/
 theorem cand_single {S : Set Point} (hσ : σ = 1 ∨ σ = -1) {X : Point} (hXS : X ∈ S)
@@ -90,7 +90,7 @@ theorem cand_single {S : Set Point} (hσ : σ = 1 ∨ σ = -1) {X : Point} (hXS 
     rw [← hx]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
   by_cases hpos : 0 < σ * (X.1 - z.1)
   · rw [ite_eq_left hpos]
-    refine ⟨fun _ => ⟨hpos, by rw [rayPt_of_x hσ hX]; exact hXS, fun t' h1 h2 hS => ?_⟩,
+    refine ⟨fun _ => ⟨hpos, by rwa [rayPt_of_x hσ hX], fun t' h1 h2 hS => ?_⟩,
       fun h => absurd rfl h⟩
     have := key t' hS; linarith
   · rw [ite_eq_right hpos]
@@ -104,7 +104,7 @@ theorem seg_unique (h : U.2 ≠ V.2) {x x' : Point} (hx : x ∈ seg U V) (hx' : 
   obtain ⟨u', -, -, rfl⟩ := hx'
   simp only [lerp_snd] at hy
   have : u = u' := by
-    have hne : V.2 - U.2 ≠ 0 := sub_ne_zero.2 (Ne.symm h)
+    have hne := sub_ne_zero.2 (Ne.symm h)
     have := mul_right_cancel₀ hne (show u * (V.2 - U.2) = u' * (V.2 - U.2) by linarith)
     exact this
   rw [this]
@@ -146,9 +146,9 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       refine ⟨u, h0, h1, ?_⟩
       ext
       · simpa using he
-      · simp only [rayPt_snd, lerp_snd]; rw [hz, h]; ring
+      · simp_all
   -- `z` is not between `U` and `V`
-  have hzn : ∀ u : ℝ, 0 ≤ u → u ≤ 1 → z.1 ≠ U.1 + u * (V.1 - U.1) := fun u h0 h1 he =>
+  have hzn := fun u h0 h1 he =>
     hzS ⟨u, h0, h1, Prod.ext (by simpa using he) (by simp only [lerp_snd]; rw [hz, h]; ring)⟩
   have hzU : z.1 ≠ U.1 := fun he => hzn 0 le_rfl zero_le_one (by rw [he]; ring)
   have hzV : z.1 ≠ V.1 := fun he => hzn 1 zero_le_one le_rfl (by rw [he]; ring)
@@ -170,11 +170,11 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       have hu : z.1 = U.1 + u * (V.1 - U.1) := by simp only [u]; field_simp; ring
       rcases hσ with rfl | rfl
       · have h1 : U.1 > z.1 := by linarith
-        have h2 : V.1 < z.1 := by linarith
+        
         exact hzn u (div_nonneg_of_nonpos (by linarith) (by linarith))
           ((div_le_one_of_neg (by linarith)).2 (by linarith)) hu
       · have h1 : U.1 < z.1 := by linarith
-        have h2 : V.1 > z.1 := by linarith
+        
         exact hzn u (div_nonneg (by linarith) (by linarith))
           ((div_le_one (by linarith)).2 (by linarith)) hu
     · intro hV
@@ -191,11 +191,11 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       have hu : z.1 = U.1 + u * (V.1 - U.1) := by simp only [u]; field_simp; ring
       rcases hσ with rfl | rfl
       · have h1 : U.1 < z.1 := by linarith
-        have h2 : V.1 > z.1 := by linarith
+        
         exact hzn u (div_nonneg (by linarith) (by linarith))
           ((div_le_one (by linarith)).2 (by linarith)) hu
       · have h1 : U.1 > z.1 := by linarith
-        have h2 : V.1 < z.1 := by linarith
+        
         exact hzn u (div_nonneg_of_nonpos (by linarith) (by linarith))
           ((div_le_one_of_neg (by linarith)).2 (by linarith)) hu
   by_cases hU : 0 < σ * (U.1 - z.1)
@@ -229,9 +229,7 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
     push Not at hU hV
     have e0 : σ * (z.1 + σ * t) = σ * z.1 + t := by rw [mul_add, ← mul_assoc, hσ2, one_mul]
     have e1 : σ * (z.1 + σ * t) = σ * (U.1 + u * (V.1 - U.1)) := by rw [he]
-    have e2 : t = (1 - u) * (σ * (U.1 - z.1)) + u * (σ * (V.1 - z.1)) := by
-      have : σ * z.1 + t = σ * (U.1 + u * (V.1 - U.1)) := by rw [← e0, e1]
-      linarith [this]
+    
     have p1 : (1 - u) * (σ * (U.1 - z.1)) ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos (by linarith) hU
     have p2 : u * (σ * (V.1 - z.1)) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos h0 hV

@@ -80,7 +80,7 @@ theorem stretch_inv (hB : 0 ≤ B) (hk : 0 < k) (x : ℝ) : stretch B k⁻¹ (st
       rw [stretch_of_le hB h]; nlinarith
     rw [stretch_of_le hB h1, stretch_of_le hB h]; field_simp; ring
   · rcases le_total x B with h' | h'
-    · rw [stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩), stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩)]
+    · simp [stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩)]
     · have h1 : B ≤ stretch B k x := by
         rw [stretch_of_ge hB h']; nlinarith
       rw [stretch_of_ge hB h1, stretch_of_ge hB h']; field_simp; ring
@@ -113,28 +113,35 @@ noncomputable def slope (B R R' : ℝ) : ℝ := (R' - B) / (R - B)
 theorem slope_pos {R R' : ℝ} (hR : B < R) (hR' : B < R') : 0 < slope B R R' :=
   div_pos (by linarith) (by linarith)
 
-theorem stretch_radius (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) :
+section
+
+variable (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R)
+include hB R' hR
+
+theorem stretch_radius :
     stretch B (slope B R R') R = R' := by
   have h : R - B ≠ 0 := by linarith
   rw [stretch_of_ge hB hR.le]; unfold slope; field_simp; ring
 
 /-- The stretch maps the open interval `(-R, R)` onto `(-R', R')`. -/
-theorem abs_stretch_lt_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R') (x : ℝ) :
+theorem abs_stretch_lt_iff (hR' : B < R') (x : ℝ) :
     |stretch B (slope B R R') x| < R' ↔ |x| < R := by
   have hk := slope_pos hR hR'
   have hm := stretch_strictMono hB hk
   have h1 : stretch B (slope B R R') R = R' := stretch_radius hB hR
   have h2 : stretch B (slope B R R') (-R) = -R' := by rw [stretch_neg hB, h1]
-  have e1 : ∀ x, stretch B (slope B R R') x < R' ↔ x < R := fun x => by
+  have e1 := fun x => by
     have := hm.lt_iff_lt (a := x) (b := R); rwa [h1] at this
-  have e2 : ∀ x, -R' < stretch B (slope B R R') x ↔ -R < x := fun x => by
+  have e2 := fun x => by
     have := hm.lt_iff_lt (a := -R) (b := x); rwa [h2] at this
   rw [abs_lt, abs_lt, e1, e2]
 
 /-- **The box image.** -/
-theorem stretchPt_mem_box_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R') (p : Point) :
+theorem stretchPt_mem_box_iff (hR' : B < R') (p : Point) :
     stretchPt B (slope B R R') p ∈ Chazelle.Chain.box R' ↔ p ∈ Chazelle.Chain.box R := by
-  simp only [Chazelle.Chain.mem_box_iff, stretchPt, abs_stretch_lt_iff hB hR hR']
+  simp [Chazelle.Chain.mem_box_iff, stretchPt, abs_stretch_lt_iff hB hR hR']
+
+end
 
 end
 

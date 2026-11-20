@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranInitL3
 
 /-!
@@ -20,45 +22,9 @@ open Machine Machine.Stmt Programs SignK
 
 /-! ## Descriptors survive changes of memory above them (after `BuildRam.desc_agree`) -/
 
-theorem hostAt_agree' {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B H)
-    (hE : B + 3 * H.length + 4 ≤ E) (hm : ∀ a, a < E → m' a = m a) : HostAt m' B H := by
-  refine ⟨by rw [hm _ (by omega)]; exact h.1, fun i hi => ?_⟩
-  have hh := h.2 i hi
-  have e1 := hm (B + 1 + 3 * i) (by omega)
-  have e2 := hm (B + 2 + 3 * i) (by omega)
-  have e3 := hm (B + 3 + 3 * i) (by omega)
-  generalize H.getD i (.run 0 0) = it at hh ⊢
-  cases it with
-  | run a l => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
-  | pt x =>
-    cases x with
-    | vtx j => obtain ⟨h1, h2⟩ := hh; exact ⟨e1.trans h1, e2.trans h2⟩
-    | onEdge e hh' => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
+abbrev hostAt_agree' := @HostAt.agree
 
-/-- A well-formed model descriptor survives every change of memory at or above its bound. -/
-theorem desc_agree' {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : Model}
-    (hwf : ModelDescWF P E m D) (hM : ModelDescAt m D (Qof P) M)
-    (hm : ∀ a, a < E → m' a = m a) : ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E m' D := by
-  have hD := hwf.1
-  have e0 := hm D (by omega)
-  rcases hM with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, hbit, rfl⟩
-  · obtain ⟨hC6, hCW⟩ := hwf.2 h0
-    obtain ⟨hl, hwfH, hHE, hs⟩ := hCW H C hC
-    obtain ⟨hH, hP, h2, h3, h4, h5⟩ := hC
-    have e1 := hm (D + 1) (by omega)
-    have hH' : HostAt m' (m' (D + 1)) H := by
-      rw [e1]; exact hostAt_agree' hH (by omega) hm
-    have hC' : ChainDescAt m' (D + 1) (Qof P) H C :=
-      ⟨hH', hP, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-        by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
-    refine ⟨Or.inl ⟨by rw [e0]; exact h0, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
-    have hHH := NFLoc.hostAt_unique hC''.1 hC'.1
-    subst hHH
-    have hCC := NFLoc.chain_eq_of_desc hC'' hC'
-    subst hCC
-    exact ⟨hl, hwfH, by rw [e1]; exact hHE, hs⟩
-  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (by omega)]; exact hbit, rfl⟩, hD,
-      fun h0 => absurd (e0.symm.trans h0) (by omega)⟩
+abbrev desc_agree' := @ModelDescWF.agree
 
 /-! ## The stages of one position -/
 
@@ -108,12 +74,10 @@ theorem posA_exec (c : Config) (hw : WordsBounded W c) {j Cb : ℕ} (h70 : c.nre
       (∀ q, q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → c'.nreg q = c.nreg q) := by
   unfold posA
   exec_block
-  · rw [h38, h70]; omega
+  · ram_finish
   · omega
-  · config_simp; rw [h70, h19]; omega
-  · refine ⟨rfl, ?_, ?_, fun q a1 a2 a3 => by simp [upd, a1, a2, a3]⟩ <;> config_simp
-    · rw [h38, h70]
-    · rw [h70, h19]
+  · ram_finish
+  simp_all
 
 theorem posB_exec (c : Config) (hw : WordsBounded W c) {j A Nb : ℕ} (h70 : c.nreg 90070 = j)
     (h85 : c.nreg 90085 = j + 1) (h11 : c.nreg 90011 = A) (h39 : c.nreg 90039 = Nb)
@@ -130,17 +94,16 @@ theorem posB_exec (c : Config) (hw : WordsBounded W c) {j A Nb : ℕ} (h70 : c.n
         (∀ q, q ≠ 90072 → q ≠ 90085 → c'.nreg q = c.nreg q) := by
     intro c₁ k₁ hw₁ v85 v70 v39 vm vr hk₁
     exec_block
-    · rw [v39, v70]; omega
-    · refine ⟨by omega, ?_, fun q a1 a2 => by simp [upd, a1, vr q a2]⟩
-      config_simp; rw [v39, v70, v85, vm]
+    · ram_finish
+    · simp_all
   by_cases hlt : j + 1 < A
-  · obtain ⟨c', k, e, hk, hm, hr⟩ := fin c 1 hw (by rw [h85, ite_eq_left hlt]) h70 h39 rfl
+  · obtain ⟨c', k, e, hk, hm, hr⟩ := fin c 1 hw (by ram_finish) h70 h39 rfl
       (fun _ _ => rfl) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h85, h11]; exact hlt) (.skip hw)) e, by omega, hm, hr⟩
+    exact ⟨c', _, (by ram_path), by omega, hm, hr⟩
   · have e₁ := Exec.constN (P := P) hw 90085 0 (by omega)
-    obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right (by simp [upd, ite_eq_right hlt])
+    obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right (by ram_finish)
       (by simp [upd, h70]) (by simp [upd, h39]) rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h85, h11]; exact hlt) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwa [h85, h11]) e₁) e, by omega, hm, hr⟩
 
 theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.nreg 90070 = j)
     (h11 : c.nreg 90011 = A) (h19 : c.nreg 90019 = 1) (h40 : c.nreg 90040 = Pb)
@@ -157,20 +120,19 @@ theorem posC_exec (c : Config) (hw : WordsBounded W c) {j A Pb : ℕ} (h70 : c.n
         (∀ q, q ≠ 90072 → q ≠ 90085 → c'.nreg q = c.nreg q) := by
     intro c₁ k₁ hw₁ v85 v70 v40 vm vr hk₁
     exec_block
-    · rw [v40, v70]; omega
-    · refine ⟨by omega, ?_, fun q a1 a2 => by simp [upd, a1, vr q a2]⟩
-      config_simp; rw [v40, v70, v85, vm]
+    · ram_finish
+    · simp_all 
   by_cases hj : j < 1
   · have e₁ := Exec.subN (P := P) hw 90085 90011 90019
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 2 e₁.wb_right
       (by simp [upd, h11, h19, show ¬ 0 < j by omega]) (by simp [upd, h70]) (by simp [upd, h40])
       rfl (fun q hq => by simp [upd, hq]) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h70, h19]; exact hj) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, (by ram_path), by omega, hm, hr⟩
   · have e₁ := Exec.subN (P := P) hw 90085 90070 90019
     obtain ⟨c', k, e, hk, hm, hr⟩ := fin _ 3 e₁.wb_right
-      (by simp [upd, h70, h19, show 0 < j by omega]) (by simp [upd, h70]) (by simp [upd, h40])
+      (by ram_finish) (by simp [upd, h70]) (by simp [upd, h40])
       rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h70, h19]; exact hj) e₁) e, by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwa [h70, h19]) e₁) e, by omega, hm, hr⟩
 
 theorem posD_exec (c : Config) (hw : WordsBounded W c) {j SB AB : ℕ} (h70 : c.nreg 90070 = j)
     (h17 : c.nreg 90017 = SB) (h15 : c.nreg 90015 = AB) (h19 : c.nreg 90019 = 1)
@@ -184,7 +146,7 @@ theorem posD_exec (c : Config) (hw : WordsBounded W c) {j SB AB : ℕ} (h70 : c.
   exec_block
   all_goals try (config_simp; simp only [h70, h17, h15, h19]; omega)
   refine ⟨rfl, ?_, ?_, rfl, fun q a1 a2 a3 a4 a5 => by
-    config_simp; simp [upd, a1, a2, a3, a4, a5]⟩ <;> config_simp <;>
+    frame_finish⟩ <;> config_simp <;>
     simp only [h70, h17, h15, h19] <;> ring_nf
 
 theorem posE_exec (c : Config) (hw : WordsBounded W c) {j kind e Gb : ℕ}
@@ -203,20 +165,19 @@ theorem posE_exec (c : Config) (hw : WordsBounded W c) {j kind e Gb : ℕ}
         (∀ q, q ≠ 90072 → q ≠ 90088 → c'.nreg q = c.nreg q) := by
     intro c₁ k₁ hw₁ v88 v70 v41 vm vr hk₁
     exec_block
-    · rw [v41, v70]; omega
-    · refine ⟨by omega, ?_, fun q a1 a2 => by simp [upd, a1, vr q a2]⟩
-      config_simp; rw [v41, v70, v88, vm]
+    · ram_finish
+    · simp_all
   by_cases hk : kind < 1
   · have e₁ := Exec.subN (P := P) hw 90088 90110 90089
     obtain ⟨c', k, e', hk', hm, hr⟩ := fin _ 2 e₁.wb_right
       (by simp [upd, h110, h89, bB, show kind = 0 by omega]) (by simp [upd, h70])
       (by simp [upd, h41]) rfl (fun q hq => by simp [upd, hq]) (by omega)
-    exact ⟨c', _, .seq (.ifLtN_true (by rw [h23, h19]; exact hk) e₁) e', by omega, hm, hr⟩
+    exact ⟨c', _, (by ram_path), by omega, hm, hr⟩
   · have e₁ := Exec.copyN (P := P) hw 90088 90110
     obtain ⟨c', k, e', hk', hm, hr⟩ := fin _ 3 e₁.wb_right
       (by simp [upd, h110, bB, show kind ≠ 0 by omega]) (by simp [upd, h70])
       (by simp [upd, h41]) rfl (fun q hq => by simp [upd, hq]) le_rfl
-    exact ⟨c', _, .seq (.ifLtN_false (by rw [h23, h19]; exact hk) e₁) e', by omega, hm, hr⟩
+    exact ⟨c', _, .seq (.ifLtN_false (by rwa [h23, h19]) e₁) e', by omega, hm, hr⟩
 
 theorem posF_exec (c : Config) (hw : WordsBounded W c) {j Zb : ℕ} (h70 : c.nreg 90070 = j)
     (h42 : c.nreg 90042 = Zb) (h19 : c.nreg 90019 = 1) (hb : Zb + j + 1 ≤ W) :
@@ -224,11 +185,9 @@ theorem posF_exec (c : Config) (hw : WordsBounded W c) {j Zb : ℕ} (h70 : c.nre
       c'.nreg 90070 = j + 1 ∧ (∀ q, q ≠ 90072 → q ≠ 90070 → c'.nreg q = c.nreg q) := by
   unfold posF
   exec_block
-  · rw [h42, h70]; omega
-  · config_simp; rw [h70, h19]; omega
-  · refine ⟨rfl, ?_, ?_, fun q a1 a2 => by simp [upd, a1, a2]⟩ <;> config_simp
-    · rw [h42, h70]
-    · rw [h70, h19]
+  · ram_finish
+  · ram_finish
+  simp_all
 
 end stages
 
@@ -283,63 +242,58 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
   have hAd := hE.hA
   generalize hjj : c.nreg 90070 = j at ht hle hcnt hnxt hprv heg hpz
   have hB : Bases c d := hE.bases.frame fun q a1 a2 => hr q (by simp [Bpos, Binit, Bpz, NFLoc.Bdir]; omega)
-  have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), hE.h19]
-  have c11 : c.nreg 90011 = A := by rw [hr _ (by decide), hE.h11]
-  have c15 : c.nreg 90015 = AB := by rw [hr _ (by decide), hE.h15]
-  have c17 : c.nreg 90017 = SB := by rw [hr _ (by decide), hE.h17]
-  have c23 : c.nreg 90023 = c₀.nmem MD := by rw [hr _ (by decide), hE.h23]
-  have c50 : c.nreg 50000 = MD := by rw [hr _ (by decide), hE.h50]
+  have c19 : c.nreg 90019 = 1 := by ram_rw [hr, hE.h19]
+  have c11 : c.nreg 90011 = A := by ram_rw [hr, hE.h11]
+  have c15 : c.nreg 90015 = AB := by ram_rw [hr, hE.h15]
+  have c17 : c.nreg 90017 = SB := by ram_rw [hr, hE.h17]
+  have c23 : c.nreg 90023 = c₀.nmem MD := by ram_rw [hr, hE.h23]
+  have c50 : c.nreg 50000 = MD := by ram_rw [hr, hE.h50]
   obtain ⟨a1, a2, a3, a4⟩ := hE.arcs j ht
   have mSB : c.nmem (SB + j) = c₀.nmem (SB + j) := hm _ (by left; omega)
   -- A: cnt
   obtain ⟨c₁, k₁, e₁, hk₁, m₁, v85, r₁⟩ := posA_exec (P := P) c hw hjj hB.bCnt c19 (by omega)
   -- B: nxt
   obtain ⟨c₂, k₂, e₂, hk₂, m₂, r₂⟩ := posB_exec (P := P) (A := A) c₁ e₁.wb_right
-    (by rw [r₁ _ (by decide) (by decide) (by decide), hjj]) v85
-    (by rw [r₁ _ (by decide) (by decide) (by decide), c11])
-    (by rw [r₁ _ (by decide) (by decide) (by decide), hB.bNxt]) (by omega)
+    (by ram_rw [r₁, hjj]) v85
+    (by ram_rw [r₁, c11])
+    (by ram_rw [r₁, hB.bNxt]) (by omega)
   -- C: prv
   have g₂ : ∀ q, q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → c₂.nreg q = c.nreg q := fun q b1 b2 b3 => by
     rw [r₂ q b1 b3, r₁ q b1 b2 b3]
   obtain ⟨c₃, k₃, e₃, hk₃, m₃, r₃⟩ := posC_exec (P := P) (A := A) c₂ e₂.wb_right
-    (by rw [g₂ _ (by decide) (by decide) (by decide), hjj])
-    (by rw [g₂ _ (by decide) (by decide) (by decide), c11])
-    (by rw [g₂ _ (by decide) (by decide) (by decide), c19])
-    (by rw [g₂ _ (by decide) (by decide) (by decide), hB.bPrv]) (by omega)
+    (by ram_rw [g₂, hjj])
+    (by ram_rw [g₂, c11])
+    (by ram_rw [g₂, c19])
+    (by ram_rw [g₂, hB.bPrv]) (by omega)
   have g₃ : ∀ q, q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → c₃.nreg q = c.nreg q := fun q b1 b2 b3 => by
     rw [r₃ q b1 b3, g₂ q b1 b2 b3]
   -- D: the arc start
   have n₃ : c₃.nmem (SB + j) = c₀.nmem (SB + j) := by
-    rw [m₃, m₂, m₁, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), mSB]
-  have n₃' : ∀ a, a < d.b0 → c₃.nmem a = c₀.nmem a := fun a ha => by
-    rw [m₃, m₂, m₁, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), hm _ (by left; omega)]
+    ram_rw [m₃, m₂, m₁, Machine.upd_other _ _, Machine.upd_other _ _,
+      Machine.upd_other _ _, mSB]
+  have n₃' : MemEqBelow d.b0 c₃.nmem c₀.nmem := fun a ha => by
+    ram_rw [m₃, m₂, m₁, Machine.upd_other _ _, Machine.upd_other _ _,
+      Machine.upd_other _ _, hm _ (by left; omega)]
   obtain ⟨c₄, k₄, e₄, hk₄, v110, v111, m₄, r₄⟩ := posD_exec (P := P) c₃ e₃.wb_right
-    (by rw [g₃ _ (by decide) (by decide) (by decide), hjj])
-    (by rw [g₃ _ (by decide) (by decide) (by decide), c17])
-    (by rw [g₃ _ (by decide) (by decide) (by decide), c15])
-    (by rw [g₃ _ (by decide) (by decide) (by decide), c19]) (by omega) (by rw [n₃]; omega)
-  rw [n₃, n₃' _ (by omega), a3] at v110
-  rw [n₃, n₃' _ (by omega), a4] at v111
+    (by ram_rw [g₃, hjj])
+    (by ram_rw [g₃, c17])
+    (by ram_rw [g₃, c15])
+    (by ram_rw [g₃, c19]) (by omega) (by rw [n₃]; omega)
+  ram_rw [n₃, n₃', a3] at v110
+  ram_rw [n₃, n₃', a4] at v111
   have g₄ : ∀ q, q < 90110 → q ≠ 90072 → q ≠ 90073 → q ≠ 90085 → q ≠ 90074 → q ≠ 90086 →
       q ≠ 90087 → c₄.nreg q = c.nreg q := fun q b0 b1 b2 b3 b4 b5 b6 => by
-    rw [r₄ q b4 b5 b6 (by omega) (by omega), g₃ q b1 b2 b3]
+    ram_rw [r₄ q b4 b5 b6, g₃ q b1 b2 b3]
   -- E: eg
   obtain ⟨c₅, k₅, e₅, hk₅, m₅, r₅⟩ := posE_exec (P := P) (kind := c₀.nmem MD) c₄ e₄.wb_right
-    (by rw [g₄ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), hjj])
-    (by rw [g₄ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), c23])
-    (by rw [g₄ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), c19])
-    (by rw [g₄ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), h89]) v110
-    (by rw [g₄ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), hB.bEg]) (by omega)
+    (by ram_rw [g₄, hjj])
+    (by ram_rw [g₄, c23])
+    (by ram_rw [g₄, c19])
+    (by ram_rw [g₄, h89]) v110
+    (by ram_rw [g₄, hB.bEg]) (by omega)
   -- the pz bit
-  have hmem5 : ∀ a, a < d.b0 → c₅.nmem a = c₀.nmem a := fun a ha => by
-    rw [m₅, Machine.upd_other _ _ _ (by omega), m₄, n₃' a ha]
+  have hmem5 : MemEqBelow d.b0 c₅.nmem c₀.nmem := fun a ha => by
+    ram_rw [m₅, Machine.upd_other _ _, m₄, n₃' a ha]
   obtain ⟨hdesc, hwf⟩ := desc_agree' hE.wf hE.desc (fun a ha => hmem5 a ha)
   obtain ⟨hDW, hCW⟩ := NFLoc.locChainWF_of hwf (by omega) hE.hW
   have hW3 : P.n + 3 ≤ W := by have := hE.hW; unfold hostWords at this; omega
@@ -348,23 +302,17 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
     rw [r₅ q b1 b7, g₄ q b0 b1 b2 b3 b4 b5 b6]
   obtain ⟨c₆, k₆, e₆, hk₆, F₆, p1, p2⟩ := pz_exec (P := P) (M := M) hE.hG hW3 c₅ e₅.wb_right
     (MD := MD) (e := edge j) (h := hgt j)
-    (by rw [g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide), c50]) hdesc
-    (by rw [g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide), c23, hmem5 _ (by have := hE.wf.1; omega)])
-    (by rw [g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide), c19])
-    (by rw [r₅ _ (by decide) (by decide), v110])
-    (by rw [r₅ _ (by decide) (by decide), v111]) (hE.edge_lt j ht) (hE.hgt_le j ht) hDW hCW
+    (by ram_rw [g₅, c50]) hdesc
+    (by ram_rw [g₅, c23, hmem5 _ (by have := hE.wf.1; omega)])
+    (by ram_rw [g₅, c19])
+    (by ram_rw [r₅, v110])
+    (by ram_rw [r₅, v111]) (hE.edge_lt j ht) (hE.hgt_le j ht) hDW hCW
   have g₆ : ∀ q, Bpz q = false → c₆.nreg q = c₅.nreg q := F₆.1
   -- F: pz and the counter
   obtain ⟨c₇, k₇, e₇, hk₇, m₇, v70, r₇⟩ := posF_exec (P := P) c₆ e₆.wb_right (j := j)
-    (by rw [g₆ _ (by decide), g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide), hjj])
-    (by rw [g₆ _ (by decide), g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide), hB.bPz])
-    (by rw [g₆ _ (by decide), g₅ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide), c19]) (by omega)
+    (by ram_rw [g₆, g₅, hjj])
+    (by ram_rw [g₆, g₅, hB.bPz])
+    (by ram_rw [g₆, g₅, c19]) (by omega)
   rw [F₆.2.2.1] at m₇
   have M7 : c₇.nmem = upd (upd (upd (upd (upd c.nmem (d.b0 + d.oCnt + j) 0) (d.b0 + d.oNxt + j)
       (if j + 1 < A then j + 1 else 0)) (d.b0 + d.oPrv + j) (if 0 < j then j - 1 else A - 1))
@@ -374,57 +322,55 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
   refine ⟨c₇, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))),
     ⟨e₇.wb_right, by omega, ?_, fun q hq => ?_, fun u hu => ?_, fun u hu => ?_, fun u hu => ?_,
       fun u hu => ?_, fun u hu => ?_, fun a ha => ?_⟩, by omega, by rw [v70]⟩
-  · rw [r₇ _ (by decide) (by decide), g₆ _ (by decide), g₅ _ (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide) (by decide) (by decide), h89]
+  · ram_rw [r₇, g₆, g₅, h89]
   · simp only [Bpos, Bool.or_eq_false_iff] at hq
     have hq1 := hq.1
     simp only [Binit, decide_eq_false_iff_not] at hq1
-    rw [r₇ q (by omega) (by omega), g₆ q hq.2, r₅ q (by omega) (by omega)]
+    ram_rw [r₇ q, g₆ q hq.2, r₅ q]
     have hq2 := hq.2
     simp only [Bpz, NFLoc.Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hq2
-    rw [r₄ q (by omega) (by omega) (by omega) (by omega) (by omega), g₃ q (by omega) (by omega)
-      (by omega), hr q (by simp only [Bpos, Bool.or_eq_false_iff]; exact hq)]
+    ram_rw [r₄ q, g₃ q, hr q (by simp only [Bpos, Bool.or_eq_false_iff]; exact hq)]
   · rw [v70] at hu
     rw [M7]
     by_cases huj : u = j
     · subst huj
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+      ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_other _ _]
       simp
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+    · ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
       exact hcnt u (by omega)
   · rw [v70] at hu
     rw [M7]
     by_cases huj : u = j
     · subst huj
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+      ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
       simp
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+    · ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
       exact hnxt u (by omega)
   · rw [v70] at hu
     rw [M7]
     by_cases huj : u = j
     · subst huj
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+      ram_rw [Machine.upd_other _ _, Machine.upd_other _ _]
       simp
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+    · ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
       exact hprv u (by omega)
   · rw [v70] at hu
     rw [M7]
     by_cases huj : u = j
     · subst huj
-      rw [Machine.upd_other _ _ _ (by omega)]
+      ram_rw [Machine.upd_other _ _]
       simp
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+    · ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
       exact heg u (by omega)
   · rw [v70] at hu
     rw [M7]
@@ -432,13 +378,13 @@ theorem posBody_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
     · subst huj
       simp only [Machine.upd_same]
       exact ⟨p1, p2⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+    · ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
       exact hpz u (by omega)
-  · rw [M7, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega)]
+  · ram_rw [M7, Machine.upd_other _ _, Machine.upd_other _ _,
+      Machine.upd_other _ _, Machine.upd_other _ _,
+      Machine.upd_other _ _]
     exact hm a ha
 
 theorem posLoop_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {edge hgt : ℕ → ℕ}
@@ -457,25 +403,23 @@ theorem posLoop_exec {P : Polygon} {W A MD SB AB : ℕ} {d : Dm} {M : Model} {ed
   obtain ⟨c₁, k₁, e₁, hk₁, q, q0⟩ : ∃ c₁ k₁, Exec P W (block [.constN 90070 0,
       .constN 90089 6]) c₀ c₁ k₁ ∧ k₁ = 2 ∧
       PosI W A (c₀.nmem MD) d M (Qof P) edge hgt c₀ c₁ ∧ c₁.nreg 90070 = 0 := by
-    exec_block
-    · omega
-    · omega
+    exec_block!
     · refine ⟨rfl, ⟨by assumption, ?_, ?_, fun r hr => ?_, fun u hu => ?_, fun u hu => ?_,
         fun u hu => ?_, fun u hu => ?_, fun u hu => ?_, fun a _ => rfl⟩, ?_⟩
       · config_simp; omega
       · config_simp
       · simp only [Bpos, Binit, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-        config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
+        config_simp; simp only [upd]; split_ifs <;> ram_finish
       all_goals first | (simp [upd] at hu) | config_simp
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90011)
     (body := posBody) (PosI W A (c₀.nmem MD) d M (Qof P) edge hgt c₀)
     (fun c => A - c.nreg 90070) 6050 (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < A := by rw [I.regs 90011 (by decide), hE.h11] at ht; exact ht
+      have t : c.nreg 90070 < A := by ram_rw assumption [I.regs 90011, hE.h11] at ht
       obtain ⟨c', k, e, I', hk, hi⟩ := posBody_exec (P := P) hE I t
       exact ⟨c', k, e, I', hk, by omega⟩) q
   have hK' : c'.nreg 90070 = A := by
-    rw [I'.regs 90011 (by decide), hE.h11] at hx; have := I'.j_le; omega
+    ram_rw [I'.regs 90011, hE.h11] at hx; have := I'.j_le; omega
   refine ⟨c', _, .seq e₁ e, ?_, fun u hu => ⟨I'.cnt u (by omega), I'.nxt u (by omega),
     I'.prv u (by omega), I'.eg u (by omega), (I'.pz u (by omega)).1, (I'.pz u (by omega)).2⟩,
     I'.mem, exec_frameS (.seq e₁ e) wrS_posLoop⟩

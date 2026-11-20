@@ -41,7 +41,7 @@ theorem record_ok (M : Model) (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
       (recOf (h, lp, rp)).Attached M Q := by
   have hwpt : rayPt z σ T = ((z.1 + σ * T, z.2) : Point) :=
     point_ext (by simp [rayPt]) (by simp [rayPt])
-  have hzpt : z = ((z.1, z.2) : Point) := rfl
+  
   rcases hσ with rfl | rfl
   · obtain ⟨rfl, rfl⟩ := hlr.1 rfl
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z 1 T) := by
@@ -49,16 +49,16 @@ theorem record_ok (M : Model) (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
       simp only
       rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment (by linarith)]
     refine ⟨hset, ?_, ?_⟩
-    · rw [hset]; exact hAz
-    · rw [hset]; exact hAw
+    · rwa [hset]
+    · rwa [hset]
   · obtain ⟨rfl, rfl⟩ := hlr.2 rfl
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z (-1) T) := by
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
       simp only
       rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment (by linarith), Geometry.segment_comm]
     refine ⟨hset, ?_, ?_⟩
-    · rw [hset]; exact hAw
-    · rw [hset]; exact hAz
+    · rwa [hset]
+    · rwa [hset]
 
 /-- **`SeesInWhole` from the answer**: the flag is `1` iff the direction is free for `C`, and when it
 is, the record is the one of `record_ok` at the first hit of `C`. -/
@@ -66,9 +66,9 @@ theorem seesInWhole_of_answer (J : Merge.Junction) (Q : Polygon) (i : ℕ) (q : 
     (r : ℕ × ℕ × ℕ × ℕ)
     (hflag : r.1 = 1 ↔ FreeAt J.whole ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩)
       (dirOf q.2.2))
-    (hrec : r.1 = 1 → (recOf r.2).toSet (chainModel J.whole) Q =
+    (hrec : r.1 = 1 → (recOf r.2).toSet J.wholeModel Q =
         Merge.shoot J.whole ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩) (dirOf q.2.2) ∧
-      (recOf r.2).Attached (chainModel J.whole) Q) :
+      (recOf r.2).Attached J.wholeModel Q) :
     SeesInWhole J Q i q r :=
   ⟨hflag, hrec⟩
 

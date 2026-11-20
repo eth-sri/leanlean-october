@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShotListTop
 
 /-!
@@ -159,8 +161,13 @@ theorem consts_exec {P : Polygon} {W : ℕ} : ∀ (l : List (ℕ × ℕ)) (c : C
         at hr
       rw [h2.1 r (by simpa using hr.2)]; simp [upd, hr.1]
 
+section
+
+variable {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBounded W c)
+include P R hw
+
 /-- **The initialisation.** -/
-theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem shInit_exec
     (hW : 4 ≤ W) (hD : c.nreg R + 1 ≤ W) :
     ∃ c' k, Exec P W (shInit R) c c' k ∧ k ≤ 20 ∧
       c'.nreg (R + 30) = 0 ∧ c'.nreg (R + 31) = 1 ∧ c'.nreg (R + 32) = 2 ∧
@@ -194,7 +201,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
   have F₃ : FrameB (Bmid R) c c₃ :=
     ((frameB_mono f₁ (fun r hr => by simp at hr; simp [Bmid]; omega)).trans
       (frameB_mono f₂ (fun r hr => by simp [initConsts] at hr; simp [Bmid]; omega))).trans
-      (frameB_mono (exec_frameB e₃ (show wr (Bone (R + 34)) _ = true by simp [wr, wrOK, Bone]))
+      (frameB_mono (exec_frameB e₃ (show wr (Bone (R + 34)) _ = true by simp [write_check, Bone]))
         (fun r hr => by simp [Bone] at hr; simp [Bmid, hr]))
   have fin : ∀ v, v ≤ 1 → (v = 1 ↔ c.nreg (R + 6) = 1) → ∃ c' k, Exec P W
       (.instr (.constN (R + 35) v)) c₃ c' k ∧ k = 1 ∧ c'.nreg (R + 30) = 0 ∧
@@ -204,11 +211,8 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
       BitIs c' (R + 35) (c.nreg (R + 6) = 1) ∧ FrameB (Bmid R) c₃ c' := fun v hv hb => by
     have e := Exec.constN (P := P) w₃ (R + 35) v (by omega)
     refine ⟨_, 1, e, rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ⟨?_, ?_⟩,
-      exec_frameB e (by simp [wr, wrOK, Bmid])⟩ <;> simp only [upd_same]
-    all_goals first
-      | exact hv | exact hb
-      | (rw [upd_other _ _ _ (by omega), k3 _ (by omega)]; assumption)
-      | (rw [upd_other _ _ _ (by omega)]; exact d34)
+      exec_frameB e (by simp [write_check, Bmid])⟩ <;> simp only [upd_same]
+    all_goals ram_post
   unfold shInit
   have ex₃ : Exec P W (.seq (block (copies [(R + 36, R + 1), (R + 34, R)]))
       (.seq (block (consts (initConsts R))) (.instr (.addN (R + 34) (R + 34) (R + 31))))) c c₃ _ :=
@@ -217,7 +221,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
   have o31 : c₃.nreg (R + 31) = 1 := by rw [k3 _ (by omega), b31]
   by_cases g1 : c₃.nreg (R + 6) < c₃.nreg (R + 31)
   · obtain ⟨c', k, e, hk, rest⟩ := fin 0 (by omega) (by rw [← r6']; omega)
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_true g1 e))), by simp [initConsts]; omega,
+    exact ⟨c', _, (by ram_path), by simp [initConsts]; omega,
       rest.1, rest.2.1, rest.2.2.1, rest.2.2.2.1, rest.2.2.2.2.1, rest.2.2.2.2.2.1,
       rest.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.2.2.1,
       F₃.trans rest.2.2.2.2.2.2.2.2.2.2⟩
@@ -235,7 +239,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
 
 
 /-- **Loading the current arc.** -/
-theorem loadArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem loadArc_exec
     (h31 : c.nreg (R + 31) = 1) (hA : c.nreg (R + 36) + 3 ≤ W) :
     ∃ c' k, Exec P W (loadArc R) c c' k ∧ k = 7 ∧
       pieceR c' (R + 40) = arcAt c.nmem (c.nreg (R + 36)) 0 ∧
@@ -245,36 +249,32 @@ theorem loadArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
   set c₁ : Config := { c with nreg := upd c.nreg (R + 40) (c.nmem a) } with hc₁
   have r₁ : ∀ r, r ≠ R + 40 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [upd, h]
   have e₂ := Exec.addN (P := P) e₁.wb_right (R + 38) (R + 36) (R + 31)
-    (by rw [r₁ _ (by omega), r₁ _ (by omega), h31]; omega)
+    (by ram_simp [r₁, h31] <;> omega)
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg (R + 38) (c₁.nreg (R + 36) + c₁.nreg (R + 31)) }
     with hc₂
   have r₂ : ∀ r, r ≠ R + 38 → c₂.nreg r = c₁.nreg r := fun r h => by rw [hc₂]; simp [upd, h]
   have v₂ : c₂.nreg (R + 38) = a + 1 := by
-    rw [hc₂]; simp only [upd_same]; rw [r₁ _ (by omega), r₁ _ (by omega), h31]
+    rw [hc₂]; simp only [upd_same]; ram_rw [r₁, r₁, h31]
   have e₃ := Exec.loadN (P := P) e₂.wb_right (R + 41) (R + 38)
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg (R + 41) (c₂.nmem (c₂.nreg (R + 38))) } with hc₃
   have r₃ : ∀ r, r ≠ R + 41 → c₃.nreg r = c₂.nreg r := fun r h => by rw [hc₃]; simp [upd, h]
   have e₄ := Exec.addN (P := P) e₃.wb_right (R + 38) (R + 38) (R + 31)
-    (by rw [r₃ _ (by omega), r₃ _ (by omega), v₂, r₂ _ (by omega), r₁ _ (by omega), h31]; omega)
+    (by ram_simp [r₃, v₂, r₂, r₁, h31] <;> omega)
   set c₄ : Config := { c₃ with nreg := upd c₃.nreg (R + 38) (c₃.nreg (R + 38) + c₃.nreg (R + 31)) }
     with hc₄
   have r₄ : ∀ r, r ≠ R + 38 → c₄.nreg r = c₃.nreg r := fun r h => by rw [hc₄]; simp [upd, h]
   have v₄ : c₄.nreg (R + 38) = a + 2 := by
-    rw [hc₄]; simp only [upd_same]
-    rw [r₃ _ (by omega), r₃ _ (by omega), v₂, r₂ _ (by omega), r₁ _ (by omega), h31]
+    simp_all
   have e₅ := Exec.loadN (P := P) e₄.wb_right (R + 42) (R + 38)
   set c₅ : Config := { c₄ with nreg := upd c₄.nreg (R + 42) (c₄.nmem (c₄.nreg (R + 38))) } with hc₅
   have r₅ : ∀ r, r ≠ R + 42 → c₅.nreg r = c₄.nreg r := fun r h => by rw [hc₅]; simp [upd, h]
   have e₆ := Exec.addN (P := P) e₅.wb_right (R + 38) (R + 38) (R + 31)
-    (by rw [r₅ _ (by omega), r₅ _ (by omega), v₄, r₄ _ (by omega), r₃ _ (by omega),
-      r₂ _ (by omega), r₁ _ (by omega), h31]; omega)
+    (by simp_all )
   set c₆ : Config := { c₅ with nreg := upd c₅.nreg (R + 38) (c₅.nreg (R + 38) + c₅.nreg (R + 31)) }
     with hc₆
   have r₆ : ∀ r, r ≠ R + 38 → c₆.nreg r = c₅.nreg r := fun r h => by rw [hc₆]; simp [upd, h]
   have v₆ : c₆.nreg (R + 38) = a + 3 := by
-    rw [hc₆]; simp only [upd_same]
-    rw [r₅ _ (by omega), r₅ _ (by omega), v₄, r₄ _ (by omega), r₃ _ (by omega),
-      r₂ _ (by omega), r₁ _ (by omega), h31]
+    simp_all 
   have e₇ := Exec.loadN (P := P) e₆.wb_right (R + 43) (R + 38)
   set c₇ : Config := { c₆ with nreg := upd c₆.nreg (R + 43) (c₆.nmem (c₆.nreg (R + 38))) } with hc₇
   have r₇ : ∀ r, r ≠ R + 43 → c₇.nreg r = c₆.nreg r := fun r h => by rw [hc₇]; simp [upd, h]
@@ -283,38 +283,38 @@ theorem loadArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
     exact Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
       (Exec.block_cons e₅ (Exec.block_cons e₆ (Exec.block_cons e₇ (Exec.block_nil e₇.wb_right)))))))
   have m : c₇.nmem = c.nmem := rfl
-  refine ⟨c₇, 7, ex, rfl, ?_, exec_frameB ex (by simp [loadArc, wr, block, wrOK])⟩
+  refine ⟨c₇, 7, ex, rfl, ?_, exec_frameB ex (by simp [loadArc, write_check, block])⟩
   simp only [pieceR, posR, arcAt, Nat.mul_zero, Nat.add_zero, Prod.mk.injEq, WPos.mk.injEq]
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
-  · rw [r₇ _ (by omega), r₆ _ (by omega), r₅ _ (by omega), r₄ _ (by omega), r₃ _ (by omega),
-      r₂ _ (by omega), hc₁]; simp
-  · rw [r₇ _ (by omega), r₆ _ (by omega), r₅ _ (by omega), r₄ _ (by omega), hc₃]
+  · simp [r₇, r₆, r₅, r₄, r₃, r₂, hc₁]
+  · ram_rw [r₇, r₆, r₅, r₄, hc₃]
     simp only [upd_same]; rw [v₂]
-  · rw [r₇ _ (by omega), r₆ _ (by omega), hc₅]; simp only [upd_same]; rw [v₄]
+  · ram_rw [r₇, r₆, hc₅]; simp only [upd_same]; rw [v₄]
   · rw [hc₇]; simp only [upd_same]; rw [v₆]
 
 /-- **Advancing to the next arc.** -/
-theorem stepArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem stepArc_exec
     (h31 : c.nreg (R + 31) = 1) (h37 : c.nreg (R + 37) = 4) (hj : c.nreg (R + 28) + 1 ≤ W)
     (hA : c.nreg (R + 36) + 4 ≤ W) :
     ∃ c' k, Exec P W (stepArc R) c c' k ∧ k = 2 ∧ c'.nreg (R + 28) = c.nreg (R + 28) + 1 ∧
       c'.nreg (R + 36) = c.nreg (R + 36) + 4 ∧
       FrameB (fun r => r == R + 28 || r == R + 36) c c' := by
-  have e₁ := Exec.addN (P := P) hw (R + 28) (R + 28) (R + 31) (by rw [h31]; exact hj)
+  have e₁ := Exec.addN (P := P) hw (R + 28) (R + 28) (R + 31) (by rwa [h31])
   set c₁ : Config := { c with nreg := upd c.nreg (R + 28) (c.nreg (R + 28) + c.nreg (R + 31)) }
     with hc₁
   have r₁ : ∀ r, r ≠ R + 28 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [upd, h]
   have e₂ := Exec.addN (P := P) e₁.wb_right (R + 36) (R + 36) (R + 37)
-    (by rw [r₁ _ (by omega), r₁ _ (by omega), h37]; exact hA)
+    (by simp_all)
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg (R + 36) (c₁.nreg (R + 36) + c₁.nreg (R + 37)) }
     with hc₂
   have ex : Exec P W (stepArc R) c c₂ 2 := by
     unfold stepArc
     exact Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_nil e₂.wb_right))
-  refine ⟨c₂, 2, ex, rfl, ?_, ?_, exec_frameB ex (by simp [stepArc, wr, block, wrOK])⟩
-  · rw [hc₂]; simp only [upd, show R + 28 ≠ R + 36 by omega, ↓reduceIte]
-    rw [hc₁]; simp [upd, h31]
-  · rw [hc₂]; simp only [upd_same]; rw [r₁ _ (by omega), r₁ _ (by omega), h37]
+  refine ⟨c₂, 2, ex, rfl, ?_, ?_, exec_frameB ex (by simp [stepArc, write_check, block])⟩
+  · simp_all
+  · simp_all
+
+end
 
 
 /-! ## Facts for the main theorem -/
@@ -353,8 +353,7 @@ theorem originIn_unique {c : Config} {r : ℕ} {o o' : Origin} (h : OriginIn c r
       obtain ⟨e', hh'⟩ := x'
       have e1 := h.2.1.symm.trans h'.2.1
       have e2 := h.2.2.symm.trans h'.2.2
-      simp only at e1 e2
-      simp [e1, e2]
+      simp_all
 
 /-- Registers of the caller's block have its band. -/
 theorem band_block {R : ℕ} (hR : RegsOK R) {r : ℕ} (h1 : R ≤ r) (h2 : r < R + 300) :

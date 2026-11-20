@@ -80,18 +80,18 @@ theorem m2cSet_val (m f : ℕ → ℕ) {e h : ℕ} (_he : e ≠ lE ∧ e ≠ lH)
     regB m (m2cSet e h) f lE = f e ∧ regB m (m2cSet e h) f lH = f h ∧
       regB m (m2cSet e h) f lD = f oB ∧
       (∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB m (m2cSet e h) f q = f q) := by
-  have n1 : lE ≠ lH := by unfold lE lH sw; omega
-  have n2 : lE ≠ lD := by unfold lE lD sw; omega
-  have n3 : lH ≠ lD := by unfold lH lD sw; omega
-  have nb : oB ≠ lE ∧ oB ≠ lH := by unfold oB lE lH sw; omega
+  have n1 : lE ≠ lH := by reg_omega
+  have n2 : lE ≠ lD := by reg_omega
+  have n3 : lH ≠ lD := by reg_omega
+  have nb : oB ≠ lE ∧ oB ≠ lH := by reg_omega
   refine ⟨?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩ <;>
     simp [m2cSet, regB, regI, upd, nb.1,
       nb.2, *]
 
 theorem m2cSet_ok (m f : ℕ → ℕ) (e h : ℕ) : okB W m (m2cSet e h) f :=
-  ⟨iscr_sw (by unfold lE sw; norm_num) (by unfold lE sw; norm_num),
-    iscr_sw (by unfold lH sw; norm_num) (by unfold lH sw; norm_num),
-    iscr_sw (by unfold lD sw; norm_num) (by unfold lD sw; norm_num), trivial⟩
+  ⟨iscr_sw (by reg_omega) (by reg_omega),
+    iscr_sw (by reg_omega) (by reg_omega),
+    iscr_sw (by reg_omega) (by reg_omega), trivial⟩
 
 /-- The cost of a branch. -/
 def m2cK (T Fg D : ℕ) : ℕ := 35007 + (3 + (lhRunK T Fg D + 7) + 2)

@@ -83,7 +83,7 @@ theorem mem_F_iff {M : Model} {Q : Polygon} {c : Set Point} (hc : c ∈ N.F M Q)
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hrr
   refine ⟨i, hi, ?_⟩
   unfold NF.chord
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  simp_all
 
 /-- The ends of the chord records are proper positions. -/
 theorem chord_proper {M : Model} (hNF : IsNF M (Qof P) N) {i : ℕ} (hi : i < N.nChords) :
@@ -97,16 +97,21 @@ theorem chord_toSet_mem' {M : Model} {Q : Polygon} {i : ℕ} (hi : i < N.nChords
     (N.chord i).toSet M Q ∈ N.F M Q :=
   ⟨N.chord i, chord_mem_list hi, rfl⟩
 
-/-- **Soundness of the validity bit.** -/
-theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
+section
+
+variable (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     {reg : ℕ → Set Point} (hregs : NFRegs M (Qof P) N reg) (hr : r < N.nRegions)
     (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n)
+include hGM hNF hregs hr hx hxe
+
+/-- **Soundness of the validity bit.** -/
+theorem valid_sound
     (hv : ValidB M P N r x σb) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (M.pos (Qof P) x) (dirOf σb) s ∈ reg r := by
   set Q := Qof P
   obtain ⟨hcorr, -, harcs, hregsOK⟩ := hregs
   have hFam := hNF.1
-  have hU : reg r ∈ M.regions (N.F M Q) := hcorr.1 r hr
+  have hU := hcorr.1 r hr
   obtain ⟨-, hL, hcase⟩ := hv
   have hpos : M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
   have hτ := dirOf_pm σb
@@ -120,20 +125,19 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   rcases hcase with ⟨j, hj, hin⟩ | ⟨h0, hc, hcl⟩
   · exact valid_inside hGM hFam hU hxe hx.1 hx.2.1 (arcOf j hj) hin hτ hL
   · have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
-    have e0 : M.param (Qof P) x = 0 := h0
+    have e0 := h0
     have hL' : sideLeft M.W x.edge 0 (rayPt (sidePt M.W x.edge 0) (dirOf σb) 1) := by
       have := hL
       unfold LeftB at this
-      rw [show M.pos (Qof P) x = sidePt M.W x.edge 0 by rw [SweepPrim.pos_eq_sidePt, e0], e0]
+      rwa [show M.pos (Qof P) x = sidePt M.W x.edge 0 by rw [SweepPrim.pos_eq_sidePt, e0], e0]
         at this
-      exact this
     rw [e0]
     -- the exit scan
     have hex : ∀ c ∈ N.F M Q, TouchesIn M.D c (reg r) →
         ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W x.edge 0) (dirOf σb) s ∉ c := by
       intro c hc ht
       obtain ⟨i, hi, rfl⟩ := mem_F_iff hc
-      have hmem : i ∈ (N.region r).chords := ((hregsOK r hr).1 i).2 ⟨hi, ht⟩
+      have hmem := ((hregsOK r hr).1 i).2 ⟨hi, ht⟩
       obtain ⟨hcl1, hcl2⟩ := hcl i hmem
       refine exit_avoid hGM hFam hc (hNF.2.2.1 i hi) hxe hτ hL' ?_ ?_
       · intro h1 ⟨hlp, hl0⟩
@@ -153,9 +157,7 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
 
 /-- **Completeness of the validity bit**: the validity checks accept an admissible chord outside
 the family from the candidate, in its left sector, whose open part lies in the region. -/
-theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
-    {reg : ℕ → Set Point} (hregs : NFRegs M (Qof P) N reg) (hr : r < N.nRegions)
-    (hx : ProperPos M (Qof P) P.n x) (hxe : x.edge < M.W.n)
+theorem valid_compl
     (hex : (N.region r).chords ≠ []) (hL : LeftB M P x σb) {T : ℝ} (hT : 0 < T)
     (hdom : ∀ t, 0 < t → t < T →
       rayPt (M.pos (Qof P) x) (dirOf σb) t ∈ M.D)
@@ -167,7 +169,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   have hM := walkAx_of_goodModel hGM
   obtain ⟨hcorr, -, harcs, hregsOK⟩ := hregs
   have hFam := hNF.1
-  have hU : reg r ∈ M.regions (N.F M Q) := hcorr.1 r hr
+  have hU := hcorr.1 r hr
   have hτ := dirOf_pm σb
   have hpos : M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
   -- the family is nonempty
@@ -191,9 +193,9 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     obtain ⟨a, b, hab, hin⟩ := valid_complete_int hGM hFam hne hU hadm hnF hsub hxe ht0 hx.2.1
       hτ hL hT rfl hdom
     obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-    exact Or.inl ⟨j, hj, by rw [ha, hb]; exact hin⟩
+    exact Or.inl ⟨j, hj, by rwa [ha, hb]⟩
   · -- at a walk vertex
-    have h0 : M.param Q x = 0 := ht0.symm
+    have h0 := ht0.symm
     have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
     rw [hpos, h0] at hdom hadm hnF hsub
     have hL' := hL
@@ -210,8 +212,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
           rayPt (sidePt M.W x.edge 0) (dirOf σb) s ∉ (N.chord i).toSet M Q := by
         filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
         exact hnot _ hcF s hs hsT.2
-      have hlpos : ProperPos M Q P.n (N.chord i).lpos ∧ ProperPos M Q P.n (N.chord i).rpos :=
-        chord_proper hNF hi'
+      have hlpos := chord_proper hNF hi'
       refine ⟨fun h1 hk => ?_, fun h1 hk => ?_⟩
       · rw [hkx] at hk
         unfold Model.key at hk
@@ -224,11 +225,13 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
         exact exit_block hM hadmi hat hτ (Or.inr ⟨hm, e1, e2⟩) hav
     rcases hcase with ⟨a, b, hab, hin⟩ | ⟨b, hab, hcr⟩ | ⟨a, hab, hcr⟩
     · obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-      exact Or.inl ⟨j, hj, by rw [ha, hb, hkx]; exact hin⟩
+      exact Or.inl ⟨j, hj, by rwa [ha, hb, hkx]⟩
     · obtain ⟨j, hj, ha, -⟩ := listed _ b hab
       exact Or.inr ⟨h0, Or.inl ⟨⟨j, hj, by rw [ha, hkx]⟩, hcr⟩, hcl⟩
     · obtain ⟨j, hj, -, hb⟩ := listed a _ hab
       exact Or.inr ⟨h0, Or.inr ⟨⟨j, hj, by rw [hb, hkx]⟩, hcr⟩, hcl⟩
+
+end
 
 end
 

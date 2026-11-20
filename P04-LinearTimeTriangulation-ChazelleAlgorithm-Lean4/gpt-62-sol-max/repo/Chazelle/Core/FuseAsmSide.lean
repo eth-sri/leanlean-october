@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.FuseAsmCtx
 
 /-!
@@ -47,25 +51,24 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       c'.nreg 70128 = (endQL N.chords).length ∧
       c'.nreg 70105 = 1 ∧ c'.nreg 70108 = 0 ∧
       ChordListAt c'.nmem (c.nreg ALLOC) (endQL N.chords) ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
-      (∀ r, Bend S r = false → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
-      c'.output = c.output := by
-  obtain ⟨A₀, hA₀⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
-  have hA' : c.nreg 9999 = A₀ := hA₀
-  obtain ⟨Hd, hHd⟩ : ∃ x, c.nreg G = x := ⟨_, rfl⟩
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
+      (∀ r, Bend S r = false → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
+  obtain ⟨A₀, hA₀⟩ := exists_eq' (a' := c.nreg ALLOC)
+  have hA' := hA₀
+  obtain ⟨Hd, hHd⟩ := exists_eq' (a' := c.nreg G)
   rw [hHd] at hN
   have hat := hN.nfAt
   obtain ⟨hK, -, -, -, -, hch, -⟩ := hat
   obtain ⟨hB7, hch', -⟩ := Gran.nf_areas hN
   set K := N.nChords with hKdef
-  have hKc : c.nmem Hd = K := hK
-  obtain ⟨CB, hCB⟩ : ∃ x, c.nmem (Hd + 3) = x := ⟨_, rfl⟩
+  have hKc := hK
+  obtain ⟨CB, hCB⟩ := exists_eq' (a' := c.nmem (Hd + 3))
   rw [hCB] at hch hch'
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (sqInit S G) c c₁ k₁ ∧ k₁ = 9 ∧
       (c₁.nreg 70105 = 1 ∧ c₁.nreg 70106 = 5 ∧ c₁.nreg 70108 = 0 ∧ c₁.nreg S = A₀ ∧
         c₁.nreg 70100 = K ∧ c₁.nreg 70101 = CB ∧ c₁.nreg 70102 = 0 ∧ c₁.nreg ALLOC = A₀ ∧
         (∀ r, (r < 70100 ∨ 70108 < r) → r ≠ S → r ≠ 70131 → r ≠ 70132 → c₁.nreg r = c.nreg r) ∧
-        c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output) := by
+        Machine.NatRegFrame c c₁) := by
     unfold sqInit
     rcases hS with rfl | rfl <;> rcases hGr with rfl | rfl <;>
     · exec_block
@@ -92,13 +95,12 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       have := hhQ i hi; rw [hn] at this; omega)
     (by omega) (by omega) K c₁ I0 (by omega)
   have w₂ := I₂.wb
-  have g₂ : ∀ r, r ≠ 70101 → r ≠ 70102 → r ≠ 70103 → r ≠ 70104 → r ≠ 70107 → r ≠ ALLOC →
-      c₂.nreg r = c₁.nreg r := I₂.regs
+  have g₂ := I₂.regs
   have r00 : c₂.nreg 70100 = K := by
-    rw [g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), q00]
+    frame_finish
   obtain ⟨c₃, k₃, e₃, hk₃, t28, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W sqMid c₂ c₃ k₃ ∧
-      k₃ = 1 ∧ c₃.nreg 70128 = 2 * K ∧ (∀ r, r ≠ 70128 → c₃.nreg r = c₂.nreg r) ∧
-      c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
+      k₃ = 1 ∧ c₃.nreg 70128 = 2 * K ∧ (Machine.NRegEqExcept 70128 c₂ c₃) ∧
+      Machine.NatRegFrame c₂ c₃ := by
     unfold sqMid
     exec_block
     all_goals try (simp only [r00]; omega)
@@ -115,11 +117,9 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide)
       (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide) hS', qS,
       hA₀]
-  · rw [tr _ (by decide), I₂.alloc, h₂, hlen, hA₀]; ring
-  · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), q05]
-  · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), q08]
+  · ram_rw [tr, I₂.alloc, h₂, hlen, hA₀]; ring
+  · ram_simp [tr, g₂, q05]
+  · ram_simp [tr, g₂, q08]
   · rw [tm, hA₀]
     have hdone := I₂.done
     rw [h₂] at hdone
@@ -127,12 +127,12 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     rw [qm]
     obtain ⟨d0, d1, d2, -, -⟩ := hch i hi
     exact ⟨d0, d1, d2⟩
-  · rw [tm, I₂.low a (by omega), qm]
+  · ram_rw [tm, I₂.low a, qm]
   · have hr' := hr
     simp only [Bend, Bool.or_eq_false_iff, decide_eq_false_iff_not,
       beq_eq_false_iff_ne] at hr'
-    rw [tr r (by omega), g₂ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      qr r (by omega) (by omega) (by omega) (by omega)]
+    ram_rw [tr r, g₂ r,
+      qr r]
 
 end
 

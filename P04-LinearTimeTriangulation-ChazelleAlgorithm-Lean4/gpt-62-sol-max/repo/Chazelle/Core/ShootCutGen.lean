@@ -35,7 +35,7 @@ theorem arcWt_ge (C : Chain) {a b A T : ℝ}
   have hn0 : (0 : ℝ) < (n : ℝ) := by rw [hn]; positivity
   set c := v % n with hc
   unfold Model.arcWt
-  have hW : (chainModel C).W.n = n := chainModel_n C
+  have hW := chainModel_n C
   have hsub : ((Finset.Ico c (c + L) : Finset ℕ) : Set ℕ) ⊆
       {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p ∧
         ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc a b (p + t)} := by
@@ -121,7 +121,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
   have be := key_bounds he
   have hkeq : ke = e.edge + M.param Q e := rfl
   have hp0 := he.1
-  have hp1 := he.2.1
+  
   have hT1 : ks < ke → ks + len (n : ℝ) ks ke = ke := fun h => by unfold len; rw [ite_eq_left h]; ring
   have hT2 : ¬ ks < ke → ks + len (n : ℝ) ks ke = ke + n := fun h => by
     unfold len; rw [ite_eq_right h]; ring
@@ -143,7 +143,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     have hT : ¬ ks < ke := by
       rcases hle.lt_or_eq with hlt | heq
       · have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast hlt
-        intro h; linarith [be.2, bs.1]
+        linarith
       · intro h; exact hsame ⟨heq.symm, h⟩
     refine ⟨6, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
     · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (by omega)
@@ -189,7 +189,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
         by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
       rw [this]; ring
   -- the start on `2m + 6`
-  · exact absurd (Or.inl ⟨Or.inr h1, Or.inl h2, by rw [ite_eq_right (by omega), ite_eq_left h2]; omega⟩)
+  · exact absurd (Or.inl ⟨Or.inr h1, Or.inl h2, by ram_rw [ite_eq_right, ite_eq_left h2]; omega⟩)
       hdone
   · -- both on `2m + 6`
     have hT : ¬ ks < ke := by intro h; exact hsame ⟨by omega, h⟩
@@ -210,7 +210,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
   · -- the start on `2m + 6`, the end on the double boundary
     have hT : ¬ ks < ke := by
       have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast (show e₂ + 1 ≤ e₁ by omega)
-      intro h; linarith [be.2, bs.1]
+      linarith
     have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := by omega
     refine ⟨6 + n, e₂ + n, ?_, ?_, ?_, by omega, by omega, ?_, fun h => ?_, fun h => ?_⟩
     · rw [ite_eq_left (Or.inr h1), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
@@ -232,9 +232,9 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
       by_contra hc; exact hdone (Or.inr ⟨by omega, Or.inl h2, hc⟩)
     have hT : ¬ ks < ke := by
       have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast (show e₂ + 1 ≤ e₁ by omega)
-      intro h; linarith [be.2, bs.1]
+      linarith
     refine ⟨e₁ + 1, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_right (by omega)]; exact Nat.mod_eq_of_lt (by omega)
+    · ram_rw [ite_eq_right]; exact Nat.mod_eq_of_lt (by omega)
     · push_cast; linarith [bs.2]
     · rw [ite_eq_left (Or.inl h2)]; exact Nat.mod_eq_of_lt (by omega)
     · rw [hT2 hT]; push_cast; rw [cn]; linarith [be.1, show (0 : ℝ) ≤ e₂ by positivity]
@@ -247,7 +247,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
       have : (e₁ : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show e₁ + 1 ≤ e₂ by omega)
       linarith [bs.2, be.1]
     refine ⟨e₁ + 1, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_right (by omega)]; exact Nat.mod_eq_of_lt (by omega)
+    · ram_rw [ite_eq_right]; exact Nat.mod_eq_of_lt (by omega)
     · push_cast; linarith [bs.2]
     · rw [ite_eq_left (Or.inr h2)]; exact Nat.mod_eq_of_lt (by omega)
     · rw [hT1 hT]
@@ -280,7 +280,7 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     · have hT : ¬ ks < ke := by
         rcases h3.lt_or_eq with hlt | heq
         · have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast hlt
-          intro h; linarith [be.2, bs.1]
+          linarith
         · intro h; exact hsame ⟨heq.symm, h⟩
       refine ⟨e₁ + 1, e₂ + n, ?_, ?_, ?_, by omega, by omega, ?_, fun h => ?_, fun h => ?_⟩
       · rw [ite_eq_right hnU1]; exact Nat.mod_eq_of_lt (by omega)

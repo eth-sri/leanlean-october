@@ -39,10 +39,10 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
     ∃ p, p < W.n ∧ ∃ t'' : ℝ, a - p < t'' ∧ t'' ≤ 1 ∧ 0 ≤ a - p ∧
       hostPt W a = sidePt W p (a - p) ∧ hostPt W b = sidePt W p t'' := by
   set p := ⌊a⌋₊ with hpdef
-  have hp : (p : ℝ) ≤ a := Nat.floor_le ha0
-  have hp1 : a < p + 1 := Nat.lt_floor_add_one a
+  have hp := Nat.floor_le ha0
+  have hp1 := Nat.lt_floor_add_one a
   have hpn : p < W.n := by
-    have : (p : ℝ) < W.n := lt_of_le_of_lt hp han
+    have := lt_of_le_of_lt hp han
     exact_mod_cast this
   have hA : hostPt W a = sidePt W p (a - p) := rfl
   refine ⟨p, hpn, ?_⟩
@@ -68,7 +68,7 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
         Nat.mod_eq_of_lt hk]
   · have hb0' : b = 0 := by
       by_contra h
-      have hbpos : 0 < b := lt_of_le_of_ne hb0 (Ne.symm h)
+      have hbpos := lt_of_le_of_ne hb0 (Ne.symm h)
       apply hnv 0 (by omega)
       unfold sideInArc; rw [ite_eq_right hlt]; right; simpa using hbpos
     have hpn1 : p + 1 = W.n := by

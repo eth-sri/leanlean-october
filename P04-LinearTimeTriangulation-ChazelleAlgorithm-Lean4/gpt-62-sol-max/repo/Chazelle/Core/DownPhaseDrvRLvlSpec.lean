@@ -45,97 +45,97 @@ noncomputable def LevelMathSpec : Prop :=
   open Classical in
   ∀ (P : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (reg : ℕ → Set Point) (lam : ℕ),
     GoodEnv P → L ≠ [] →
-    ChordTriplesOK (interiorModel (Qof P)) (Qof P) L → E.Perm (List.range (2 * L.length)) →
-    E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L) →
-    (interiorModel (Qof P)).DegLe
-      ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) 4 →
-    (interiorModel (Qof P)).Semigranular
-      ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P))
+    ChordTriplesOK (inputModel P) (Qof P) L → E.Perm (List.range (2 * L.length)) →
+    E.Pairwise (codeLe (inputModel P) (Qof P) L) →
+    P.inputModel.DegLe
+      (inputChords P L E) 4 →
+    P.inputModel.Semigranular
+      (inputChords P L E)
       (2 ^ (Cost.ceilBeta lam + 12)) →
-    Restore.NFRegs (interiorModel (Qof P)) (Qof P)
-      (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) reg →
+    Restore.NFRegs (inputModel P) (Qof P)
+      (inputNF P L E) reg →
     -- 1. the hosts
-    (∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
+    (∀ r, r < (inputNF P L E).nRegions →
       (regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).length ≤ 20 ∧
+          (inputNF P L E) r).length ≤ 20 ∧
       (∀ a ℓ, HostItem.run a ℓ ∈ regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r → ℓ ≤ 2 * 2 ^ nextLvl lam) ∧
+          (inputNF P L E) r → ℓ ≤ 2 * 2 ^ nextLvl lam) ∧
       3 ≤ ((regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).pts (Qof P).n).length ∧
+          (inputNF P L E) r).pts (Qof P).n).length ∧
       ((regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).pts (Qof P).n).length ≤
+          (inputNF P L E) r).pts (Qof P).n).length ≤
         10 * 2 ^ nextLvl lam + 8) ∧
     -- the region data
     ∀ (γ₀ M : ℕ) (C : ℕ → Chain) (NR : ℕ → NF) (γR : ℕ → ℕ) (Lx : ℕ → List (ℕ × ℕ × ℕ)),
       γ₀ + 128 ≤ 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) →
-      (∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
+      (∀ r, r < (inputNF P L E).nRegions →
         (C r).P = (regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).poly (Qof P) ∧
+          (inputNF P L E) r).poly (Qof P) ∧
         (C r).s = 0 ∧ (C r).m + 1 = (C r).P.n ∧
         IsCanonicalNF (chainModel (C r)) (Qof P) (NR r) (γR r) regCap ∧
         γ₀ ≤ γR r ∧ γR r ≤ γ₀ + 128 ∧
-        {x | ∃ y ∈ Lx r, x = (recOf y).toSet (interiorModel (Qof P)) (Qof P)} =
+        {x | ∃ y ∈ Lx r, x = (recOf y).toSet (inputModel P) (Qof P)} =
           Extract.kept (reg r) ((NR r).F (chainModel (C r)) (Qof P)) ∧
-        ((Lx r).map fun y => (recOf y).toSet (interiorModel (Qof P)) (Qof P)).Nodup ∧
-        (∀ y ∈ Lx r, (recOf y).Attached (interiorModel (Qof P)) (Qof P) ∧ y.1 < (Qof P).n) ∧
+        ((Lx r).map fun y => (recOf y).toSet (inputModel P) (Qof P)).Nodup ∧
+        (∀ y ∈ Lx r, (recOf y).Attached (inputModel P) (Qof P) ∧ y.1 < (Qof P).n) ∧
         (∀ q, q < 2 * (Lx r).length →
-          ∃ j ∈ ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-            OnArcKey (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) j
+          ∃ j ∈ ((inputNF P L E).region r).arcs,
+            OnArcKey (Qof P) (inputNF P L E) j
               (endPos (Lx r) q)) ∧
         (Lx r).length ≤ M) →
       -- 3. the size of the kept lists
-      (∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
+      (∀ r, r < (inputNF P L E).nRegions →
         (Lx r).length * (γ₀ + 1) ≤ 140 * (regCap + 2) * (20 * 2 ^ nextLvl lam + 17)) ∧
       -- 2. the splice precondition
-      ChordTriplesOK (interiorModel (Qof P)) (Qof P)
-        (L ++ (List.range (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap
+      ChordTriplesOK (inputModel P) (Qof P)
+        (L ++ (List.range (inputNF P L E).nRegions).flatMap
           Lx) ∧
       (∀ q, q < 2 * ((List.range
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx).length →
-        keyBkt (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
+          (inputNF P L E).nRegions).flatMap Lx).length →
+        keyBkt (Qof P) (inputNF P L E)
             (endPos ((List.range
-              (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) q) ≤
-          2 * (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length + 1) ∧
+              (inputNF P L E).nRegions).flatMap Lx) q) ≤
+          2 * (inputNF P L E).arcs.length + 1) ∧
       (∀ q q', q < 2 * ((List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx).length →
+            (inputNF P L E).nRegions).flatMap Lx).length →
           q' < 2 * ((List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx).length →
-          keyBkt (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
+            (inputNF P L E).nRegions).flatMap Lx).length →
+          keyBkt (Qof P) (inputNF P L E)
               (endPos ((List.range
-                (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) q) <
-            keyBkt (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
+                (inputNF P L E).nRegions).flatMap Lx) q) <
+            keyBkt (Qof P) (inputNF P L E)
               (endPos ((List.range
-                (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) q') →
-          codeLe (interiorModel (Qof P)) (Qof P)
+                (inputNF P L E).nRegions).flatMap Lx) q') →
+          codeLe (inputModel P) (Qof P)
             (L ++ (List.range
-              (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx)
+              (inputNF P L E).nRegions).flatMap Lx)
             (2 * L.length + q) (2 * L.length + q')) ∧
-      (∀ b, bcnt (fun q => keyBkt (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
+      (∀ b, bcnt (fun q => keyBkt (Qof P) (inputNF P L E)
             (endPos ((List.range
-              (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) q))
+              (inputNF P L E).nRegions).flatMap Lx) q))
           (2 * ((List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx).length)
+            (inputNF P L E).nRegions).flatMap Lx).length)
           b ≤ 4 * M) ∧
       -- 4. the family after the splice
       ∀ E' : List ℕ,
         E'.Perm (List.range (2 * (L ++ (List.range
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx).length)) →
-        E'.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) (L ++ (List.range
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx)) →
-        (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P) ⊆
-          (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) (L ++ (List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) E').F
-            (interiorModel (Qof P)) (Qof P) ∧
-        (interiorModel (Qof P)).DegLe
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) (L ++ (List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) E').F
-            (interiorModel (Qof P)) (Qof P)) (regCap + 4) ∧
-        (interiorModel (Qof P)).Semigranular
-          ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) (L ++ (List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx) E').F
-            (interiorModel (Qof P)) (Qof P)) (2 ^ (Cost.ceilBeta (nextLvl lam) + 12)) ∧
+          (inputNF P L E).nRegions).flatMap Lx).length)) →
+        E'.Pairwise (codeLe (inputModel P) (Qof P) (L ++ (List.range
+          (inputNF P L E).nRegions).flatMap Lx)) →
+        (inputNF P L E).F (inputModel P) (Qof P) ⊆
+          (inputNF P (L ++ (List.range
+            (inputNF P L E).nRegions).flatMap Lx) E').F
+            (inputModel P) (Qof P) ∧
+        P.inputModel.DegLe
+          ((inputNF P (L ++ (List.range
+            (inputNF P L E).nRegions).flatMap Lx) E').F
+            (inputModel P) (Qof P)) (regCap + 4) ∧
+        P.inputModel.Semigranular
+          ((inputNF P (L ++ (List.range
+            (inputNF P L E).nRegions).flatMap Lx) E').F
+            (inputModel P) (Qof P)) (2 ^ (Cost.ceilBeta (nextLvl lam) + 12)) ∧
         (L ++ (List.range
-            (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions).flatMap Lx).length *
+            (inputNF P L E).nRegions).flatMap Lx).length *
             (γ₀ + 1) ≤
           L.length * (γ₀ + 1) + 1120 * (regCap + 2) * ((Qof P).n + 4 * L.length)
 

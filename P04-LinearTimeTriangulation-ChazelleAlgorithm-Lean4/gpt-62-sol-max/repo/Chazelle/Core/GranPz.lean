@@ -84,17 +84,11 @@ theorem pz_chain (C : Chain) {Q : Polygon} (hdh : DistinctHeights Q) {i h : ℕ}
     simp only [Model.param]
     rw [ya, yb]
     by_cases hab : hv sp₁ = hv sp₂
-    · rw [ite_eq_left (by rw [hab])]; simp [hab]
+    · simp_all
     · rw [ite_eq_right (fun e => hab ((hinj _ _ a1 a2).1 e))]
-      have hden : (Q.vtx (hv sp₂)).2 - (Q.vtx (hv sp₁)).2 ≠ 0 :=
-        sub_ne_zero.2 (fun e => hab ((hinj _ _ a1 a2).1 e.symm))
+      have hden := sub_ne_zero.2 (fun e => hab ((hinj _ _ a1 a2).1 e.symm))
       rw [div_eq_zero_iff, sub_eq_zero, hinj _ _ (by omega) a1]
-      simp only [hab, not_false_eq_true, true_and]
-      constructor
-      · intro hn e; exact hn (Or.inl e)
-      · rintro hn (e | e)
-        · exact hn e
-        · exact hden e
+      simp_all
 
 end
 

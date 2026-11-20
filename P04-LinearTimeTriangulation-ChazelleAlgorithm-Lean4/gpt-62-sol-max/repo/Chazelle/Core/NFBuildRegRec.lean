@@ -27,10 +27,7 @@ open Machine Machine.Stmt Programs SignK
 def offF (cA cC : ℕ → ℕ) (r : ℕ) : ℕ := ((List.range r).map fun r' => cA r' + cC r').sum
 
 theorem offF_succ (cA cC : ℕ → ℕ) (r : ℕ) : offF cA cC (r + 1) = offF cA cC r + cA r + cC r := by
-  unfold offF
-  rw [List.range_succ, List.map_append, List.sum_append]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
-  try omega
+  ram_finish [offF, List.range_succ, List.map_append, List.sum_append, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
 
 theorem offF_mono (cA cC : ℕ → ℕ) {r r' : ℕ} (h : r ≤ r') : offF cA cC r ≤ offF cA cC r' := by
   induction r' with
@@ -59,9 +56,14 @@ theorem rtv_eq (cA cC wR : ℕ → ℕ) (r f : ℕ) (hf : f < 5) :
   unfold rtv
   rw [show (5 * r + f) % 5 = f by omega, show (5 * r + f) / 5 = r by omega]
 
+section
+
+variable (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) {n : ℕ} (hn : n < R)
+    (hlay : RT + 5 * R ≤ FA ∨ FA + 2 * R ≤ RT)
+include m₁ cA cC wR hn hlay
+
 /-- The memory step of the region records. -/
-theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) {n : ℕ} (hn : n < R)
-    (hlay : RT + 5 * R ≤ FA ∨ FA + 2 * R ≤ RT) (a : ℕ) :
+theorem recR_step (a : ℕ) :
     upd (upd (upd (upd (upd (upd (upd (recRMem m₁ RT FA R cA cC wR n) (RT + 5 * n) (cA n))
       (RT + 5 * n + 1) (offF cA cC n)) (RT + 5 * n + 2) (cC n))
       (RT + 5 * n + 3) (offF cA cC n + cA n)) (RT + 5 * n + 4) (wR n))
@@ -83,15 +85,15 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
   · interval_cases f <;> ifs_omega <;>
       first
         | rfl
-        | (rw [show RT + 5 * n + 0 - RT = 5 * n + 0 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (ram_rw [show RT + 5 * n + 0 - RT = 5 * n + 0 by omega, rtv_eq _ _ _ _];
            rfl)
-        | (rw [show RT + 5 * n + 1 - RT = 5 * n + 1 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (ram_rw [show RT + 5 * n + 1 - RT = 5 * n + 1 by omega, rtv_eq _ _ _ _];
            rfl)
-        | (rw [show RT + 5 * n + 2 - RT = 5 * n + 2 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (ram_rw [show RT + 5 * n + 2 - RT = 5 * n + 2 by omega, rtv_eq _ _ _ _];
            rfl)
-        | (rw [show RT + 5 * n + 3 - RT = 5 * n + 3 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (ram_rw [show RT + 5 * n + 3 - RT = 5 * n + 3 by omega, rtv_eq _ _ _ _];
            rfl)
-        | (rw [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (ram_rw [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _];
            rfl)
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
       first | rfl | omega
@@ -99,8 +101,7 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
       first | rfl | omega | (congr 1; omega) | (congr 1 <;> congr 1 <;> omega)
 
 /-- `recR_step` with the addresses and values given by equations. -/
-theorem recR_step' (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) {n : ℕ} (hn : n < R)
-    (hlay : RT + 5 * R ≤ FA ∨ FA + 2 * R ≤ RT) {M : ℕ → ℕ}
+theorem recR_step' {M : ℕ → ℕ}
     (hM : M = recRMem m₁ RT FA R cA cC wR n)
     {a0 a1 a2 a3 a4 a5 a6 v0 v1 v2 v3 v4 v5 v6 : ℕ}
     (e0 : a0 = RT + 5 * n) (e1 : a1 = RT + 5 * n + 1) (e2 : a2 = RT + 5 * n + 2)
@@ -113,6 +114,8 @@ theorem recR_step' (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ)
   subst a0 a1 a2 a3 a4 a5 a6 v0 v1 v2 v3 v4 v5 v6 M
   funext a
   exact recR_step m₁ cA cC wR hn hlay a
+
+end
 
 /-- The region records and the fill pointers. -/
 def regRecLoop : Stmt :=
@@ -134,8 +137,6 @@ def regRecLoop : Stmt :=
 /-- The registers `regRecLoop` writes. -/
 def BregRec (r : ℕ) : Bool := decide (r = 43201) || decide (43210 ≤ r ∧ r < 43218)
 
-theorem wr_regRecLoop : wrM BregRec regRecLoop = true := by decide
-
 section exec
 
 variable {P : Polygon} {W : ℕ}
@@ -153,27 +154,27 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
       FrameM BregRec d d' ∧
       d'.nmem = recRMem (regMem m₀ CA R cA cC wR) RT FA R cA cC wR R := by
   obtain ⟨d', k, e, ⟨hw', n, hn', hnR, hPn, hf, hm'⟩, htest, hk, hψ⟩ :=
-    SortR.whileLtN_potential_lb (P := P) (W := W) (a := 43201) (b := 43200) (body := _)
+    Exec.whileLtN_growth (P := P) (W := W) (a := 43201) (b := 43200) (body := _)
     (fun e => WordsBounded W e ∧ ∃ n, e.nreg 43201 = n ∧ n ≤ R ∧ e.nreg 43210 = offF cA cC n ∧
       FrameM BregRec d e ∧ e.nmem = recRMem (regMem m₀ CA R cA cC wR) RT FA R cA cC wR n)
     (fun e => 28 * (R - e.nreg 43201)) (fun e => 26 * e.nreg 43201) (fun e he => he.1)
     (fun e ⟨hwe, n, hne, hnR, hPe, hfe, hme⟩ htest => by
-      have r1 : e.nreg 44008 = CA := by rw [hfe.1 _ (by decide), hCA]
-      have r2 : e.nreg 43200 = R := by rw [hfe.1 _ (by decide), hR]
-      have r4 : e.nreg 43011 = 1 := by rw [hfe.1 _ (by decide), h1]
-      have r5 : e.nreg 44003 = RT := by rw [hfe.1 _ (by decide), hRT]
-      have r6 : e.nreg 44011 = FA := by rw [hfe.1 _ (by decide), hFA]
+      have r1 : e.nreg 44008 = CA := by ram_rw [hfe.1, hCA]
+      have r2 : e.nreg 43200 = R := by ram_rw [hfe.1, hR]
+      have r4 : e.nreg 43011 = 1 := by ram_rw [hfe.1, h1]
+      have r5 : e.nreg 44003 = RT := by ram_rw [hfe.1, hRT]
+      have r6 : e.nreg 44011 = FA := by ram_rw [hfe.1, hFA]
       rw [hne, r2] at htest
       have ma : e.nmem (CA + n) = cA n := by
         rw [hme]; unfold recRMem
-        rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), regMem_rdA _ _ _ _ _ _ htest]
+        ram_rw [ite_eq_right, ite_eq_right, ite_eq_right, regMem_rdA _ _ _ _ _ _ htest]
       have mc : e.nmem (CA + n + R) = cC n := by
         rw [hme]; unfold recRMem
-        rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
+        ram_rw [ite_eq_right, ite_eq_right, ite_eq_right,
           show CA + n + R = CA + R + n by omega, regMem_rdC _ _ _ _ _ _ htest]
       have mw : e.nmem (CA + n + R + R) = wR n := by
         rw [hme]; unfold recRMem
-        rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
+        ram_rw [ite_eq_right, ite_eq_right, ite_eq_right,
           show CA + n + R + R = CA + 2 * R + n by omega, regMem_rdW _ _ _ _ _ _ htest]
       have ho1 := offF_succ cA cC n
       have ho2 := offF_mono cA cC (show n + 1 ≤ R by omega)
@@ -200,7 +201,7 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
           | skip
         refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp
         · rw [hne, r4]
-        · rw [r1, r2, hne, hPe, ma, mc]; omega
+        · ram_finish
         · rw [r1, r2, r4, r5, r6, hne, hPe, ma, mc, mw]
           exact recR_step' _ cA cC wR htest hlay hme (by omega) (by omega) (by omega) (by omega)
             (by omega) (by omega) (by omega) rfl rfl rfl rfl rfl rfl rfl
@@ -209,10 +210,9 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
         hfe.trans (exec_frameM x (by decide)), hm'⟩, by rw [hn', hne]; omega,
         by rw [hn', hne]; omega⟩)
     ⟨hw, 0, hi, Nat.zero_le _, by rw [hP]; rfl, FrameM.refl _ _, by
-      rw [hm]; funext a; unfold recRMem; rw [ite_eq_right (by omega), ite_eq_right (by omega),
-        ite_eq_right (by omega)]⟩
+      rw [hm]; funext a; ram_finish [recRMem, ite_eq_right]⟩
   have hnR' : n = R := by
-    rw [hn', hf.1 _ (by decide), hR] at htest; omega
+    ram_rw [hn', hf.1, hR] at htest; omega
   subst hnR'
   exact ⟨d', k, e, by rw [hi] at hk; omega, by rw [hi, hn'] at hψ; omega, hw', hf, hm'⟩
 

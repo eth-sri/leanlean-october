@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRLvlSpec
 public import Chazelle.Core.DownPhaseDrvRPad
 public import Chazelle.Core.DownPhaseDrvRProg
@@ -63,14 +67,14 @@ theorem lvParA_exec (c : Config) (hw : WordsBounded W c) {S n lam MD : ℕ}
       c'.nreg 211007 = 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ∧
       c'.nreg 211025 = c.nmem (MD + 1) ∧ c'.nreg 211008 = 0 ∧
       c'.nreg 211014 = 1 ∧ c'.nreg 211015 = 3 ∧ c'.nreg 211016 = 0 ∧ c'.nreg 211017 = 2 ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   obtain ⟨hS0, hS1, hT, hSE⟩ := hS
   set p := topGrade n with hp
-  have hμl : nextLvl lam < lam := nextLvl_lt h16
-  have hcb : ∀ i, Cost.ceilBeta i = (i + 4) / 5 := Setup.ceilBeta_eq
+  have hμl := nextLvl_lt h16
+  have hcb := Setup.ceilBeta_eq
   have hμ : nextLvl lam = (lam + 4) / 5 + 11 := by unfold nextLvl; rw [hcb]
   have hb12 : Cost.ceilBeta (nextLvl lam) + 12 ≤ nextLvl lam := by rw [hcb]; omega
-  have t1 : c.nmem (S + p + 4 + lam) = Cost.ceilBeta lam := (hT lam (by omega)).2
+  have t1 := (hT lam (by omega)).2
   have t2 : c.nmem (S + p + 4 + nextLvl lam) = Cost.ceilBeta (nextLvl lam) :=
     (hT _ (by omega)).2
   have t3 : c.nmem (S + 2 + nextLvl lam) = 2 ^ nextLvl lam := (hT _ (by omega)).1
@@ -87,18 +91,16 @@ theorem lvParA_exec (c : Config) (hw : WordsBounded W c) {S n lam MD : ℕ}
   have hμ' : Cost.ceilBeta lam + 11 = nextLvl lam := rfl
   have w3 := hw.2 (S + 2 + nextLvl lam)
   rw [t3] at w3
-  have wm := hw.2 (MD + 1)
-  have cb1 := Cost.ceilBeta_le lam
-  have cb2 := Cost.ceilBeta_le (nextLvl lam)
-  have hAW' : c.nreg 9999 ≤ W := hAW
+  
+  
+  
+  
   have t4' : c.nmem (S + 2 + Cost.ceilBeta (nextLvl lam) + 10) =
       2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
-    rw [show S + 2 + Cost.ceilBeta (nextLvl lam) + 10 = S + 2 + (Cost.ceilBeta (nextLvl lam) + 10)
-      by omega]; exact t4
+    omega
   have t5' : c.nmem (S + 2 + Cost.ceilBeta (nextLvl lam) + 10 + 2) =
       2 ^ (Cost.ceilBeta (nextLvl lam) + 12) := by
-    rw [show S + 2 + Cost.ceilBeta (nextLvl lam) + 10 + 2 =
-      S + 2 + (Cost.ceilBeta (nextLvl lam) + 12) by omega]; exact t5
+    omega
   unfold lvParA
   exec_block
   all_goals try (config_simp; (try simp only [h0, hl, h1, hS1, t1, hμ', t2, t3, t4', t5']); omega)
@@ -119,16 +121,15 @@ theorem lvParB_exec (c : Config) (hw : WordsBounded W c) (h16 : c.nreg 211016 = 
     (h17 : c.nreg 211017 = 2) (h08 : c.nreg 211008 = 0) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W lvParB c c' k ∧ k ≤ 4 ∧ c'.nreg 211008 ≤ 1 ∧
       (c'.nreg 211008 = 1 ↔ c.nreg 211025 = 1) ∧
-      (∀ r, r ≠ 211008 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept 211008 c c') ∧ Machine.NatRegFrame c c' := by
   unfold lvParB
   by_cases ha : c.nreg 211025 < c.nreg 211017
   · by_cases hb : c.nreg 211016 < c.nreg 211025
     · have e := Exec.constN (P := P) hw 211008 1 hW
       refine ⟨_, _, .ifLtN_true ha (.ifLtN_true hb e), by omega, by simp, ?_, fun r hr => by
-        simp [hr], rfl, rfl, rfl, rfl⟩
+        simp [hr], by and_intros <;> rfl⟩
       simp only [Machine.upd_same, true_iff]; omega
-    · refine ⟨_, _, .ifLtN_true ha (.ifLtN_false hb (.skip hw)), by omega, by omega, ?_,
+    · refine ⟨_, _, (by ram_path), by omega, by omega, ?_,
         fun r _ => rfl, rfl, rfl, rfl, rfl⟩
       rw [h08]; omega
   · refine ⟨_, _, .ifLtN_false ha (.skip hw), by omega, by omega, ?_, fun r _ => rfl, rfl, rfl,
@@ -146,7 +147,7 @@ theorem lvParC_exec (c : Config) (hw : WordsBounded W c) {K : ℕ} (h03 : c.nreg
     ∃ c' k, Exec P W lvParC c c' k ∧ k = 8 ∧ c'.nreg 211009 = c.nreg 9999 ∧
       c'.nreg 211011 = K + 1 ∧ c'.nreg 9999 = c.nreg 9999 + 3 * (K + 1) ∧
       c'.nreg 211010 = 0 ∧ c'.nreg 211012 = 0 ∧ c'.nreg 211013 = 0 ∧
-      c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      Machine.NatRegFrame c c' := by
   have hA : c.nreg 9999 + 3 * (K + 1) ≤ W := hW
   unfold lvParC
   exec_block
@@ -178,35 +179,33 @@ theorem lvPar_exec (c : Config) (hw : WordsBounded W c) {S n lam MD K : ℕ}
   obtain ⟨c₁, k₁, e₁, hk₁, a00, a01, a02, a03, a04, a05, a06, a07, a25, a08, a14, a15, a16, a17,
     m₁, rr₁, rm₁, o₁⟩ :=
     lvParA_exec (P := P) c hw h0 hl h1 hS h16 hlp hMD (by omega) hW
-  have g₁ : FrameB Bpar c c₁ := exec_frameB e₁ wr_lvParA
+  have g₁ := exec_frameB e₁ wr_lvParA
   obtain ⟨c₂, k₂, e₂, hk₂, b08, b08', g₂, m₂, rr₂, rm₂, o₂⟩ :=
     lvParB_exec (P := P) c₁ e₁.wb_right a16 a17 a08 (by omega)
-  have u₂ : ∀ r, r ≠ 211008 → Bpar r = false → c₂.nreg r = c.nreg r := fun r h h' =>
+  have u₂ := fun r h h' =>
     (g₂ r h).trans (g₁.1 r h')
-  have q03 : c₂.nreg 210003 = K := by rw [u₂ _ (by decide) (by decide), h03]
-  have q14 : c₂.nreg 211014 = 1 := by rw [g₂ _ (by decide), a14]
+  have q03 : c₂.nreg 210003 = K := by ram_rw [u₂, h03]
+  have q14 : c₂.nreg 211014 = 1 := by ram_rw [g₂, a14]
   have qA : c₂.nreg 9999 = c.nreg 9999 := u₂ _ (by decide) (by decide)
   have hA9 : c.nreg 9999 + 3 * (K + 1) ≤ W := hAW
   obtain ⟨c₃, k₃, e₃, hk₃, d09, d11, d99, d10, d12, d13, m₃, rr₃, rm₃, o₃⟩ :=
-    lvParC_exec (P := P) c₂ e₂.wb_right q03 q14 (by show c₂.nreg 9999 + 3 * (K + 1) ≤ W; omega)
-  have g₃ : FrameB BparC c₂ c₃ := exec_frameB e₃ wr_lvParC
+    lvParC_exec (P := P) c₂ e₂.wb_right q03 q14 (by frame_finish)
+  have g₃ := exec_frameB e₃ wr_lvParC
   obtain ⟨c₄, e₄, g₄, rr₄, m₄, rm₄, o₄, w₄⟩ :=
-    padS_exec (P := P) (src := 211009) e₃.wb_right (by show c₃.nreg 211009 ≤ c₃.nreg 9999; omega)
+    padS_exec (P := P) (src := 211009) e₃.wb_right (by frame_finish)
       (by omega)
-  have v : ∀ r, Bpar r = false → BparC r = false → r ≠ 211008 → r ≠ 210068 → r ≠ 210069 →
-      c₄.nreg r = c.nreg r := fun r h1 h2 h3 h4 h5 =>
+  have v := fun r h1 h2 h3 h4 h5 =>
     (g₄ r h4 h5).trans ((g₃.1 r h2).trans (u₂ r h3 h1))
   have k4 : 3 * (c₃.nreg 9999 - c₃.nreg 211009) + 4 = 9 * (K + 1) + 4 := by
     rw [d99, d09, qA]; omega
   rw [k4] at e₄
   have ex : Exec P W lvPar c c₄ (k₁ + (k₂ + (k₃ + (9 * (K + 1) + 4)))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  have w₃ : ∀ r, BparC r = false → c₃.nreg r = c₂.nreg r := g₃.1
-  have v32 : ∀ r, BparC r = false → r ≠ 210068 → r ≠ 210069 → c₄.nreg r = c₂.nreg r :=
-    fun r h1 h2 h3 => (g₄ r h2 h3).trans (w₃ r h1)
+    (by ram_path)
+  have w₃ := g₃.1
+  have v32 := fun r h1 h2 h3 => (g₄ r h2 h3).trans (w₃ r h1)
   have hmm : c₄.nmem = c.nmem := by rw [m₄, m₃, m₂, m₁]
   have hA4 : c₄.nreg 9999 = c.nreg 9999 + 3 * (K + 1) := by
-    rw [g₄ _ (by decide) (by decide), d99, qA]
+    ram_rw [g₄, d99, qA]
   have hreg : ∀ q, (q < 211000 ∨ 211030 ≤ q) → q ≠ 210068 → q ≠ 210069 → q ≠ ALLOC →
       c₄.nreg q = c.nreg q := fun q hq h68 h69 hA => v q
     (by simp only [Bpar, decide_eq_false_iff_not]; omega)
@@ -214,24 +213,24 @@ theorem lvPar_exec (c : Config) (hw : WordsBounded W c) {S n lam MD K : ℕ}
     (by omega) h68 h69
   refine ⟨c₄, _, ex, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     hA4, ?_, ?_, ?_, w₄, hreg, hmm, ?_⟩
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a00
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a01
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a02
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a03
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a04
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a06
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a07
-  · rw [v32 _ (by decide) (by decide) (by decide)]; exact b08
-  · rw [v32 _ (by decide) (by decide) (by decide), b08', a25]
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a14
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a15
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a16
-  · rw [v32 _ (by decide) (by decide) (by decide), g₂ _ (by decide)]; exact a17
-  · rw [g₄ _ (by decide) (by decide), d09, qA]; rfl
-  · rw [g₄ _ (by decide) (by decide)]; exact d11
-  · rw [g₄ _ (by decide) (by decide)]; exact d10
-  · rw [g₄ _ (by decide) (by decide)]; exact d12
-  · rw [g₄ _ (by decide) (by decide)]; exact d13
+  · ram_rw [v32, g₂]; exact a00
+  · ram_rw [v32, g₂]; exact a01
+  · ram_rw [v32, g₂]; exact a02
+  · ram_rw [v32, g₂]; exact a03
+  · ram_rw [v32, g₂]; exact a04
+  · ram_rw [v32, g₂]; exact a06
+  · ram_rw [v32, g₂]; exact a07
+  · ram_rw [v32]; exact b08
+  · ram_simp [v32, b08', a25]
+  · ram_rw [v32, g₂]; exact a14
+  · ram_rw [v32, g₂]; exact a15
+  · ram_rw [v32, g₂]; exact a16
+  · ram_rw [v32, g₂]; exact a17
+  · ram_rw [g₄, d09, qA]; rfl
+  · ram_rw assumption [g₄]
+  · ram_rw assumption [g₄]
+  · ram_rw assumption [g₄]
+  · ram_rw assumption [g₄]
   · refine ⟨fun r hr hrA => hreg r ?_ ?_ ?_ hrA, fun r _ => by rw [rr₄, rr₃, rr₂, rr₁],
       fun a _ => by rw [hmm], fun a _ => by rw [rm₄, rm₃, rm₂, rm₁], by rw [o₄, o₃, o₂, o₁],
       by show c.nreg 9999 ≤ c₄.nreg 9999; omega,

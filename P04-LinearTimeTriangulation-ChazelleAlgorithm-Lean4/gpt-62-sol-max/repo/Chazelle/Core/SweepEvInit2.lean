@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvInit
 
 /-!
@@ -23,11 +25,11 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim WalkEmbed SweepRam Sweep
 
 @[expose] public section
 
-def iE : ℕ := sw 705
-def iH : ℕ := sw 706
-def iY : ℕ := sw 707
-def iA : ℕ := sw 710
-def iV : ℕ := sw 711
+@[ram_layout] def iE : ℕ := sw 705
+@[ram_layout] def iH : ℕ := sw 706
+@[ram_layout] def iY : ℕ := sw 707
+@[ram_layout] def iA : ℕ := sw 710
+@[ram_layout] def iV : ℕ := sw 711
 
 set_option hygiene false in
 /-- Register arithmetic on the named registers of the initialisation. -/
@@ -45,13 +47,13 @@ theorem frame_of_irs {W : ℕ} {c c' : Config} {k : ℕ} (hI : IInv W c c') (hf 
 theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_io
+  have hA := hr ALLOC alloc_not_io
   exact ⟨fun r h _ => hr r h, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by rw [hA], by rw [hA]; omega⟩
 
 theorem frame_ioB {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame (B ∪ B) c c' k) :
     Frame B c c' k := by
-  rw [Finset.union_self] at h; exact h
+  simp_all
 
 /-- Registers of the sweep's band are in `ioBands`. -/
 theorem sw_io {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r ∈ ioBands := by
@@ -78,40 +80,39 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
         (r < sw 705 ∨ sw 709 < r) → c'.nreg r = c.nreg r := by
   have hW6 : 6 ≤ W := by have := hctx.2.2.2.2.2; omega
   have e₁ := exec_regB (P := P) [.constN iE 6, .constN iH 0] hw
-    (by simp only [okW, okWI]; exact ⟨hW6, by omega, trivial⟩)
+    (by ram_finish [okW, okWI])
   set c₁ : Config := { c with nreg := regB c.nmem [.constN iE 6, .constN iH 0] c.nreg } with hc₁
   have hw₁ := e₁.wb_right
   have q1 : ∀ r, r ≠ iE → r ≠ iH → c₁.nreg r = c.nreg r := fun r h1 h2 => by
-    simp only [hc₁, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
-  have qE : c₁.nreg iE = 6 := by
-    simp only [hc₁, regB, regI]; rw [upd_other _ _ _ (by swoInit2), upd_same]
-  have qH : c₁.nreg iH = 0 := by simp only [hc₁, regB, regI]; rw [upd_same]
+    ram_finish
+  have qE : c₁.nreg iE = 6 := rfl
+  have qH : c₁.nreg iH = 0 := rfl
   have hI₁ : IInv W c₁ c₁ := ⟨hw₁, fun _ _ => rfl, le_rfl, fun _ _ => rfl, fun _ _ => rfl⟩
   have hctx₁ : ChainCtx P W c₁ (sw 20) J.left :=
     hctx.transport (q1 _ (by swoInit2) (by swoInit2)) (fun _ _ => rfl)
-      (by rw [q1 _ (by swoInit2) (by swoInit2)])
+      (by rfl)
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by swoInit2)
     (by swoInit2)
   have hm1 := J.left.one_le
-  have hpar : (chainModel J.left).param (Qof P) ⟨6, 0⟩ = 0 := rfl
+  have hpar : J.leftModel.param (Qof P) ⟨6, 0⟩ = 0 := rfl
   obtain ⟨c₂, k₂, e₂, hk₂, hI₂, hf₂, ⟨s, hs, hsl, hse⟩, hk2, -, -⟩ :=
     callSym_irs (P := P) (re := iE) (rh := iH) (o := iY) hI₁ hctx₁
       (by swoInit2) (by swoInit2) (by rw [qE])
       (by rw [qE]; omega) (by rw [qE, qH]; exact ⟨by rw [hpar], by rw [hpar]; norm_num,
         Nat.zero_le _⟩)
-      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rw [hA₁]; exact hroom)
+      (by simp_all) (by rwa [hA₁])
   rw [qE, qH] at hse
-  have hpos : (chainModel J.left).pos (Qof P) ⟨6, 0⟩ = J.left.top := by
+  have hpos : J.leftModel.pos (Qof P) ⟨6, 0⟩ = J.left.top := by
     show Chazelle.Chain.sidePt _ _ _ = _
     rw [hpar, Chazelle.Chain.sidePt_zero, walk_vtx_six]
   rw [hpos] at hse
   have hw₂ := e₂.wb_right
   have e₃ := exec_regB (P := P) symCp hw₂ (by
-    simp only [symCp, okW, okWI]; exact ⟨trivial, trivial, trivial, trivial⟩)
+    ram_finish [symCp, okW, okWI])
   set c₃ : Config := { c₂ with nreg := regB c₂.nmem symCp c₂.nreg } with hc₃
   have q3 : ∀ r, (r < sw 645 ∨ sw 647 < r) → c₃.nreg r = c₂.nreg r := fun r hr => by
     simp only [hc₃, symCp, regB, regI, cT1, sw] at hr ⊢
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
+    ram_rw [upd_other _ _, upd_other _ _, upd_other _ _]
   refine ⟨c₃, 2 + (k₂ + 3), .seq e₁ (.seq e₂ e₃), by omega, ?_, ⟨s, ?_, hsl, hse⟩, ?_⟩
   · have f₁ : Frame ioBands c c₁ 2 := frame_regs 2 (fun r hr => q1 r
       (fun h => hr (by rw [h]; exact sw_io (by swoInit2) (by swoInit2)))
@@ -122,9 +123,7 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
       by_contra h
       exact hr (sw_io (by swoInit2) (by swoInit2)))) rfl rfl rfl rfl
     exact frame_ioB (frame_ioB (f₁.trans (f₂.trans f₃)))
-  · refine symPtIn_transport hs ?_ ?_ ?_ <;>
-    simp only [hc₃, symCp, regB, regI, cT1, iY, sw, Nat.reduceAdd] <;>
-    simp only [upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
+  · assumption
   · intro r hr hrA h1 h2
     rw [q3 r h1, hk2 r hr (by swoInit2) hrA]
     exact q1 r (by swoInit2) (by swoInit2)
@@ -147,7 +146,7 @@ def md1S : Stmt :=
 def MdInv (c : Config) (A S j : ℕ) (c' : Config) : Prop :=
   c'.nreg MD₁ = A ∧ c'.nreg CD₁ = A + 1 ∧ c'.nmem A = 0 ∧
     (∀ i, i < j → c'.nmem (A + 1 + i) = c.nmem (S + i)) ∧
-    (∀ a, a < A → c'.nmem a = c.nmem a) ∧
+    (MemEqBelow A c'.nmem c.nmem) ∧
     (∀ r, r ≠ MD₁ → r ≠ CD₁ → r ≠ iA → r ≠ iV → c'.nreg r = c.nreg r) ∧
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output
 
@@ -158,45 +157,36 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
     ∃ c₂, Exec P W (block (mdCpW k)) c₁ c₂ 4 ∧ MdInv c A S (j + 1) c₂ := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := hI
   have n20 : c₁.nreg (sw 20) = S := by
-    rw [h6 _ (by swoInit2) (by swoInit2) (by swoInit2)
-      (by swoInit2), hS]
-  have nk : c₁.nreg k = j := by rw [h6 _ hk1 hk2 hk3 hk4, hk]
+    ram_finish
+  have nk : c₁.nreg k = j := by ram_finish
   have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by rw [n20, nk]; omega)
   have e₂ := Exec.loadN (P := P) e₁.wb_right iV iA
   have e₃ := Exec.addN (P := P) e₂.wb_right iA CD₁ k (by
-    simp only
-    rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ hk4, upd_other _ _ _ hk3, h2, nk]; omega)
+    ram_simp [h2, nk] <;> reg_omega)
   have e₄ := Exec.storeN (P := P) e₃.wb_right iA iV
   refine ⟨_, Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
     (Exec.block_nil e₄.wb_right)))), ?_⟩
   have vA : ∀ v, upd (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) iA
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iA = A + 1 + j := by
-    intro v
-    rw [upd_same, upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), upd_other _ _ _ hk4,
-      upd_other _ _ _ hk3, h2, nk]
+    ram_finish [h2, nk]
   have vV : ∀ v, upd (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) iA
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iV = v := by
-    intro v
-    rw [upd_other _ _ _ (by swoInit2), upd_same]
+    ram_finish
   simp only
   rw [vA, vV, upd_same, n20, nk]
   have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ (by omega)
   refine ⟨?_, ?_, ?_, fun i hi => ?_, fun a ha => ?_, fun r r1 r2 r3 r4 => ?_, h7, h8, h9⟩ <;>
     simp only
-  · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), h1]
-  · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
-      upd_other _ _ _ (by swoInit2), h2]
-  · rw [upd_other _ _ _ (by omega), h3]
+  · assumption
+  · assumption
+  · ram_rw [upd_other _ _, h3]
   · rcases Nat.lt_or_ge i j with h | h
-    · rw [upd_other _ _ _ (by omega), h4 i h]
+    · ram_rw [upd_other _ _, h4 i h]
     · rw [show i = j by omega, upd_same, hsrc]
-  · rw [upd_other _ _ _ (by omega), h5 a ha]
-  · rw [upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4]
+  · ram_rw [upd_other _ _, h5 a ha]
+  · ram_simp [h6 r r1 r2 r3 r4] 
 
 set_option maxRecDepth 20000 in
 theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
@@ -210,8 +200,8 @@ theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · refine ⟨rfl, by config_simp, by config_simp; rw [k1], by config_simp; rw [k0],
       fun i hi => absurd hi (Nat.not_lt_zero _), fun a ha => ?_, fun r h1 h2 _ _ => ?_,
       rfl, rfl, rfl⟩
-    · config_simp; rw [upd_other _ _ _ (by omega)]
-    · config_simp; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    · ram_finish
+    simp_all
 
 set_option maxRecDepth 20000 in
 /-- **The model descriptor of `C₁`** at the allocator `A`: `0` at `A`, the five words of the
@@ -221,14 +211,14 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
     ∃ c' k, Exec P W md1S c c' k ∧ k = 24 ∧ c'.nreg ALLOC = c.nreg ALLOC + 6 ∧
       c'.nreg MD₁ = c.nreg ALLOC ∧ c'.nreg CD₁ = c.nreg ALLOC + 1 ∧ c'.nmem (c.nreg ALLOC) = 0 ∧
       (∀ i, i < 5 → c'.nmem (c.nreg ALLOC + 1 + i) = c.nmem (c.nreg (sw 20) + i)) ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       (∀ r, r ≠ ALLOC → r ≠ MD₁ → r ≠ CD₁ → r ≠ iA → r ≠ iV → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
   set A := c.nreg ALLOC with hA
   set S := c.nreg (sw 20) with hSd
   obtain ⟨c₁, kH, eH, hkH, I₁⟩ := mdHead_exec (P := P) hw k0 k1 hW
-  have hSA : S + 5 ≤ A := hS
+  have hSA := hS
   have nk : ∀ q, (q = K0 ∨ q = K1 ∨ q = K2 ∨ q = K3 ∨ q = K4) →
       q ≠ MD₁ ∧ q ≠ CD₁ ∧ q ≠ iA ∧ q ≠ iV := by
     rintro q (rfl | rfl | rfl | rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> swoInit2
@@ -246,15 +236,14 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   have gA : c₆.nreg ALLOC = A := g6 _ (by swoInit2)
     (by swoInit2) (by swoInit2) (by swoInit2)
   have g6' : c₆.nreg K6 = 6 := by
-    rw [g6 _ (by swoInit2) (by swoInit2) (by swoInit2)
-      (by swoInit2), k6]
+    ram_finish
   have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rw [gA, g6']; omega)
   refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by omega, ?_, ?_, ?_,
     g3, g4, g5, fun r h0 h1 h2 h3 h4 => ?_, g7, g8, g9⟩
   · simp only [upd_same]; rw [gA, g6']
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g1]
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g2]
-  · simp only; rw [upd_other _ _ _ h0, g6 r h1 h2 h3 h4]
+  · assumption
+  · assumption
+  · ram_simp [g6 r h1 h2 h3 h4] 
 
 end
 

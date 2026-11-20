@@ -41,7 +41,7 @@ theorem sq_le_two_pow (p : ℕ) : (p + 3) ^ 2 ≤ 16 * 2 ^ p := by
 /-- `γ'_{g+1}` is small against the word bound. -/
 theorem gradeGran_succ_le {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) :
     gradeGran (g + 1) + g + 3 ≤ 128 * n := by
-  have h2 := two_pow_le_of_le_top hn hg
+  
   have hp := two_pow_le_of_le_top hn (le_refl (topGrade n))
   have hsq := sq_le_two_pow g
   have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (by norm_num) hg
@@ -65,19 +65,19 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
       k ≤ upT κB κL κG O.κ P.n + 2 ∧ WordsBounded W c' ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k ∧
       GradeInv O P c' (topGrade P.n + 1) h' hp R' S D ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
-      (∀ a, a < c.nreg ALLOC → c'.rmem a = c.rmem a) ∧ c'.output = c.output ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.rmem c.rmem) ∧ c'.output = c.output ∧
       (∀ r, GK r → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
   set p := topGrade P.n with hp_def
   set F := gT κB κL κG O.κ P.n with hF
-  obtain ⟨A0, hA0⟩ : ∃ A0, c.nreg ALLOC = A0 := ⟨_, rfl⟩
+  obtain ⟨A0, hA0⟩ := exists_eq' (a' := c.nreg ALLOC)
   rw [hA0] at hW ⊢
-  have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
-  let I : Config → Prop := fun c' => ∃ g h' R', g ≤ p + 1 ∧ WordsBounded W c' ∧
+  
+  let I := fun c' => ∃ g h' R', g ≤ p + 1 ∧ WordsBounded W c' ∧
     GradeInv O P c' g h' hp R' S D ∧ A0 ≤ c'.nreg ALLOC ∧
     c'.nreg ALLOC ≤ A0 + ∑ j ∈ Finset.range g, F j ∧
-    (∀ a, a < A0 → c'.nmem a = c.nmem a) ∧ (∀ a, a < A0 → c'.rmem a = c.rmem a) ∧
+    (MemEqBelow A0 c'.nmem c.nmem) ∧ (MemEqBelow A0 c'.rmem c.rmem) ∧
     c'.output = c.output ∧ (∀ r, GK r → c'.nreg r = c.nreg r) ∧
     (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r)
   have hI0 : I c := ⟨0, h, R, by omega, hw, hI, by omega, by simp [hA0],
@@ -87,10 +87,9 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
     Finset.sum_eq_sum_Ico_succ_bot hg F
   have htot : ∀ g, g ≤ p + 1 → ∑ j ∈ Finset.range g, F j + ∑ j ∈ Finset.Ico g (p + 1), F j =
       upT κB κL κG O.κ P.n := fun g hg => by
-    unfold upT; rw [← hp_def, ← hF, Finset.range_eq_Ico, Finset.sum_Ico_consecutive _ (by omega) hg,
-      Finset.range_eq_Ico]
+    ram_simp [upT, ← hp_def, ← hF, Finset.range_eq_Ico, Finset.sum_Ico_consecutive] <;> reg_omega
   obtain ⟨c', k, e, ⟨g, h', R', hgp, hw', hI', a1, a2, mm, mr, mo, fr, frr⟩, htest, hk, hψ⟩ :=
-    whileLtN_potential_lb' (P := P) (W := W) (a := 170007) (b := 170006)
+    Exec.whileLtN_growth (P := P) (W := W) (a := 170007) (b := 170006)
       (body := gradeB sB sL sG O.prep) I
       (fun c' => ∑ j ∈ Finset.Ico (c'.nreg 170007) (p + 1), F j)
       (fun c' => c'.nreg ALLOC) (fun c' ⟨_, _, _, _, h, _⟩ => h)

@@ -73,7 +73,7 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
     rcases key_eq_nat h0 h1 h with ⟨rfl, rfl⟩ | ⟨hpe, rfl⟩
     · exact ⟨0, le_rfl, zero_le_one, rfl⟩
     · refine ⟨0, le_rfl, zero_le_one, ?_⟩
-      rw [sidePt_zero, sidePt_one', ← hpe, Nat.mod_eq_of_lt (by omega)]
+      ram_rw [sidePt_zero, sidePt_one', ← hpe, Nat.mod_eq_of_lt]
   -- the end vertex of the edge
   have at_f : (p : ℝ) + τ = (((e + 1) % W.n : ℕ) : ℝ) →
       ∃ t₂ : ℝ, 0 ≤ t₂ ∧ t₂ ≤ 1 ∧ sidePt W e t₂ = sidePt W p τ := by
@@ -82,8 +82,7 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
     rw [sidePt_one']
     rcases key_eq_nat h0 h1 h with ⟨hpe, rfl⟩ | ⟨hpe, rfl⟩
     · rw [sidePt_zero, hpe]
-    · -- `p + 1 = (e + 1) % n`: then `p = e` (the edge itself, at its end)
-      rw [sidePt_one', hpe, Nat.mod_mod_of_dvd _ (dvd_refl _)]
+    simp [sidePt_one', hpe, Nat.mod_mod_of_dvd]
   rcases hk with hin | h | h
   · unfold sideInArc at hin
     rcases Nat.lt_or_ge (e + 1) W.n with hlt | hge
@@ -104,8 +103,7 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
           omega
         subst hpe
         exact ⟨τ, h0, h1, rfl⟩
-      · have : (0 : ℝ) ≤ p := Nat.cast_nonneg _
-        linarith
+      linarith
   · exact at_e h
   · exact at_f h
 
@@ -116,7 +114,7 @@ theorem prevV_succ {n q : ℕ} (hn : 2 ≤ n) (hq : q < n) : (prevV n q + 1) % n
       rw [show 0 + n - 1 = n - 1 by omega]; exact Nat.mod_eq_of_lt (by omega)
     rw [this, show n - 1 + 1 = n by omega, Nat.mod_self]
   · have : (q + n - 1) % n = q - 1 := by
-      rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      ram_rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
     rw [this, show q - 1 + 1 = q by omega, Nat.mod_eq_of_lt hq]
 
 /-- **The key interval of a vertex hole** is the union of those of its two walk edges. -/
@@ -124,15 +122,15 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
     (_hkn : k ≤ n) (h : CIn ((prevV n q : ℕ) : ℝ) (((q + 1) % n : ℕ) : ℝ) k) :
     CIn ((prevV n q : ℕ) : ℝ) (((prevV n q + 1) % n : ℕ) : ℝ) k ∨
       CIn (q : ℝ) (((q + 1) % n : ℕ) : ℝ) k := by
-  have hpq : (prevV n q + 1) % n = q := prevV_succ (by omega) hq
+  have hpq := prevV_succ (by omega) hq
   rw [hpq]
   unfold CIn sideInArc at h ⊢
   unfold prevV at h ⊢
   rcases Nat.eq_zero_or_pos q with rfl | h0
   · -- q = 0: the interval [n - 1, 1] wraps
-    rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega),
+    ram_rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt,
       Nat.mod_eq_of_lt (by omega : 0 + 1 < n)] at h ⊢
-    have e1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have e1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by simp_all <;> omega
     rw [e1] at h ⊢
     push_cast at h ⊢
     have hn' : (3 : ℝ) ≤ n := by exact_mod_cast hn
@@ -149,7 +147,7 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
     · right; right; right; exact h
   · rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (by omega : q - 1 < n)] at h ⊢
-    have e1 : ((q - 1 : ℕ) : ℝ) = (q : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have e1 : ((q - 1 : ℕ) : ℝ) = (q : ℝ) - 1 := by simp_all <;> omega
     rw [e1] at h ⊢
     rcases Nat.lt_or_ge (q + 1) n with hlt | hge
     · -- no wrap
@@ -168,7 +166,7 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
       have hq1 : q + 1 = n := by omega
       rw [hq1, Nat.mod_self] at h ⊢
       push_cast at h ⊢
-      have hq' : (q : ℝ) + 1 = n := by exact_mod_cast hq1
+      
       rw [ite_eq_right (by linarith)] at h
       rw [ite_eq_left (by linarith), ite_eq_right (by linarith)]
       rcases h with (h | h) | h | h
@@ -202,7 +200,7 @@ theorem near_vHole (M : Model) (Q : Polygon) (hn : 3 ≤ M.W.n) {q : ℕ} (hq : 
     have : ((p + 1 : ℕ) : ℝ) ≤ M.W.n := by exact_mod_cast hp
     push_cast at this; linarith
   have hpv : prevV M.W.n q < M.W.n := by unfold prevV; exact Nat.mod_lt _ (by omega)
-  have hpq : (prevV M.W.n q + 1) % M.W.n = q := prevV_succ (by omega) hq
+  have hpq := prevV_succ (by omega) hq
   rcases vtx_keys_split hn hq hk0 hkn hk with h | h
   · refine ⟨prevV M.W.n q, hpv, ⟨1, zero_le_one, le_rfl, ?_⟩, edge_keys M.W hpv hp h0 h1 h⟩
     rw [sidePt_one', hpq, hz]

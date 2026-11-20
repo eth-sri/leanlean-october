@@ -40,7 +40,7 @@ theorem Bidx_frame {c c' : Config} (h : FrameB Bidx c c') (k : ℕ) : Frame {bLo
   NFLoc.frame_of_frameB h (fun r hr => by
     simp only [Bidx, Bool.or_eq_true, decide_eq_true_eq] at hr
     refine ⟨?_, by unfold ALLOC; omega⟩
-    simp only [bandOf, bLocate, Finset.mem_singleton]; omega) k
+    simp only [ram_layout, Finset.mem_singleton]; omega) k
 
 /-! ## `(a + b) mod n` -/
 
@@ -54,20 +54,20 @@ theorem Bidx_frame {c c' : Config} (h : FrameB Bidx c c') (k : ℕ) : Frame {bLo
 `M₂` at `dq rL1 rδ d` from its base. -/
 theorem corrR_sidePt (J : Merge.Junction) (hP : J.P.Simple)
     {d : ℕ} (hd : d < Sweep.rL1 J + Sweep.rL2 J) (t : ℝ) :
-    sidePt (chainModel J.whole).W ((6 + WalkEmbed.tpos J.whole J.m₁ + d) %
-        (chainModel J.whole).W.n) t =
-      sidePt (chainModel J.right).W ((6 + WalkEmbed.tpos J.right 0 +
-        Sweep.dq (Sweep.rL1 J) (Sweep.rδ J) d) % (chainModel J.right).W.n) t :=
+    sidePt J.wholeModel.W ((6 + WalkEmbed.tpos J.whole J.m₁ + d) %
+        J.wholeModel.W.n) t =
+      sidePt J.rightModel.W ((6 + WalkEmbed.tpos J.right 0 +
+        Sweep.dq (Sweep.rL1 J) (Sweep.rδ J) d) % J.rightModel.W.n) t :=
   (Sweep.corr_right0 J hP (S₂ := ∅) (Set.empty_subset _) Set.finite_empty).sidePt_eq hd t
 
 /-- **`corrL`**: the walk point at offset `d` of the left stretch of `M` is the walk point of
 `M₁` at `dq lL1 lδ d` from its base. -/
 theorem corrL_sidePt (J : Merge.Junction) (hP : J.P.Simple) 
     {d : ℕ} (hd : d < Sweep.lL1 J + Sweep.lL2 J) (t : ℝ) :
-    sidePt (chainModel J.whole).W ((6 + WalkEmbed.tpos J.whole (J.m₁ + 2 * J.m₂) + d) %
-        (chainModel J.whole).W.n) t =
-      sidePt (chainModel J.left).W ((6 + WalkEmbed.tpos J.left J.m₁ +
-        Sweep.dq (Sweep.lL1 J) (Sweep.lδ J) d) % (chainModel J.left).W.n) t :=
+    sidePt J.wholeModel.W ((6 + WalkEmbed.tpos J.whole (J.m₁ + 2 * J.m₂) + d) %
+        J.wholeModel.W.n) t =
+      sidePt J.leftModel.W ((6 + WalkEmbed.tpos J.left J.m₁ +
+        Sweep.dq (Sweep.lL1 J) (Sweep.lδ J) d) % J.leftModel.W.n) t :=
   (Sweep.corr_left0 J hP (S₁ := ∅) (Set.empty_subset _) Set.finite_empty).sidePt_eq hd t
 
 /-- **`boxTwin`**: on the vertical sides of the box (walk edges `1` and `3`) two chain models with

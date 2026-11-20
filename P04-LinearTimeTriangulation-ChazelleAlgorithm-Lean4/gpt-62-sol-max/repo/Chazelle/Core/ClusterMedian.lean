@@ -39,8 +39,7 @@ theorem cntIn_le_of_sub {κ : ℕ → ℕ} {lo hi a b l r : ℕ}
   unfold cntIn
   rw [← Nat.card_Ico l r]
   refine Finset.card_le_card (fun i hi' => ?_)
-  simp only [Finset.mem_filter, Finset.mem_Ico] at hi' ⊢
-  exact h i hi'.1.1 hi'.1.2 hi'.2.1 hi'.2.2
+  simp_all
 
 /-- **The median**: a key interval holding more than half of the sorted keys holds the key of
 the median position. -/
@@ -52,7 +51,7 @@ theorem median_mem {κ : ℕ → ℕ} {lo hi a b : ℕ} (hs : Sorted κ lo hi)
     have : cntIn κ lo hi a b = 0 := by
       unfold cntIn
       rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-      intro i hi'; simp only [Finset.mem_Ico] at hi'; omega
+      simp_all
     omega
   set m := lo + (hi - lo) / 2
   have hm : m < hi := by omega
@@ -90,7 +89,7 @@ theorem good_anc_median (hR : R.OK) (hP : R.PreInv pre slot R.n) {κ φ : ℕ �
     have : cntIn κ lo hi (pre z) (pre z + (R.sub z).card) = 0 := by
       unfold cntIn
       rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-      intro i hi'; simp only [Finset.mem_Ico] at hi'; omega
+      simp_all
     omega
   obtain ⟨h1, h2⟩ := median_mem hs hg
   obtain ⟨hφ, hκm⟩ := hκ (lo + (hi - lo) / 2) (by omega) (by omega)
@@ -140,18 +139,18 @@ theorem anc_ch_unique (hR : R.OK) {y c c' : ℕ} (hy : y < R.n) (hc : R.Anc c y)
   -- ancestors of `y` are totally ordered
   obtain ⟨m, hm⟩ := hc
   obtain ⟨m', hm'⟩ := hc'
-  have hcn : c < R.n := hm ▸ hR.iterate_up_lt m hy
-  have hcn' : c' < R.n := hm' ▸ hR.iterate_up_lt m' hy
+  have hcn := hm ▸ hR.iterate_up_lt m hy
+  have hcn' := hm' ▸ hR.iterate_up_lt m' hy
   have key : ∀ {a b : ℕ} {i j : ℕ}, R.up^[i] y = a → R.up^[j] y = b → i ≤ j → a < R.n →
       a ≠ R.root → b ≠ R.root → R.par a = R.par b → a = b := by
     intro a b i j hi hj hij ha har hbr hpar
     by_contra hne
     have hab : R.Anc b a := ⟨j - i, by
-      rw [← hi, ← Function.iterate_add_apply, show j - i + i = j by omega]; exact hj⟩
+      rwa [← hi, ← Function.iterate_add_apply, show j - i + i = j by omega]⟩
     have hba : b ≠ a := fun h => hne h.symm
     have h1 := (anc_iff_up hba).mp hab
     rw [show R.up a = R.par a by simp [up, har], hpar] at h1
-    have hbn : b < R.n := hj ▸ hR.iterate_up_lt j hy
+    have hbn := hj ▸ hR.iterate_up_lt j hy
     have := hR.pos_le_of_anc (hR.par_spec hbn hbr).1 h1
     have := (hR.par_spec hbn hbr).2
     omega
@@ -178,11 +177,11 @@ theorem centroid_of_climb (hR : R.OK) {Gd : ℕ → Prop} {y f : ℕ} (hy : y < 
       intro h
       have : R.up x = x := by simp [up, h]
       rw [this] at hg; exact hng hg
-    have hxn : x < R.n := hx ▸ hR.iterate_up_lt n hy
+    
     refine ⟨hg, fun c hc hcr hpc hgc => hng ?_⟩
     have hupx : R.up x = R.par x := by simp [up, hxr]
     have := anc_ch_unique hR hy (hanc c hc hgc) ⟨n, hx⟩ hcr hxr (by rw [hpc, hupx])
-    rw [← this]; exact hgc
+    simp_all
 
 end
 

@@ -13,7 +13,7 @@ Facts used by the driver `cand0` (`SweepIoCand0.lean`):
   (both bits `1`; above the top of `C₂`);
 * `logIdx_exists`: the log entry of a key on the `C₁` part exists;
 * `shared_iff₁`: the shared vertex among the positions of the model of `C₁` (index tests);
-* `lhGeo_query`, `lhGeo_box`, `lhGeo_arr`: the geometric conditions of the local hit at the
+* `lhGeo_query`, `lhGeo_boxTwin`, `lhGeo_arr`: the geometric conditions of the local hit at the
   query position, at its box twin, at an arrival position.
 -/
 
@@ -74,7 +74,7 @@ theorem freeAt_right_of_whole {z : Point} (h₂ : z.2 ≤ J.right.top.2) {σ : �
     (h : FreeAt J.whole z σ) : FreeAt J.right z σ := by
   unfold FreeAt at h ⊢
   filter_upwards [h] with t ht
-  exact dom_right J ht (by rw [Chazelle.Visibility.rayPt_snd]; exact h₂)
+  exact dom_right J ht (by assumption)
 
 /-! ## The log entry -/
 
@@ -92,9 +92,7 @@ theorem logIdx_exists {Q : Polygon} {N : NF} {S₂ : Set (Set Point)}
     · simp at hlen
     · simp only [logOf, List.map_cons, List.head?_cons, Option.mem_def, Option.some.injEq,
         forall_eq'] at hhead
-      unfold logKey
-      simp only [logOf, List.map_cons, List.getD_cons_zero]
-      rw [hhead]; exact hx
+      ram_finish [logKey, logOf, List.map_cons, List.getD_cons_zero, hhead]
   classical
   set p : ℕ → Prop := fun i => oW J (logKey J Q N ls i) ≤ oW J x
   refine ⟨Nat.findGreatest p (ls.length - 1), by
@@ -113,21 +111,13 @@ theorem cstR_one : cstR J 1 = 6 + tpos J.right 0 := rfl
 /-- **The shared vertex in the model of `C₁`**: parameter `0`, and the edge is `cstL 1` or the
 last walk edge when `cstL 1 = 6`. -/
 theorem shared_iff₁ (hP : J.P.Simple) (Q : Polygon) {x : WPos}
-    (hx : x.edge < (chainModel J.left).W.n) (h0 : 0 ≤ (chainModel J.left).param Q x)
-    (h1 : (chainModel J.left).param Q x < 1) :
-    (chainModel J.left).pos Q x = J.shared ↔ (chainModel J.left).param Q x = 0 ∧
+    (hx : x.edge < J.leftModel.W.n) (h0 : 0 ≤ J.leftModel.param Q x)
+    (h1 : J.leftModel.param Q x < 1) :
+    J.leftModel.pos Q x = J.shared ↔ J.leftModel.param Q x = 0 ∧
       (x.edge = cstL J 1 ∨ (x.edge + 1 = 2 * J.m₁ + 7 ∧ cstL J 1 = 6)) := by
   have e : J.shared = J.left.vertex J.left.m := rfl
   rw [e, atEnd_iff J.left hP (Or.inr rfl) Q hx h0 h1, cstL_one]
-  have hm : J.left.m = J.m₁ := rfl
-  rw [hm]
-  constructor
-  · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl (by omega)⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
-  · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl (by omega)⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+  simp
 
 /-! ## The geometric conditions of the local hits -/
 
@@ -135,77 +125,17 @@ theorem sideChain_zero' : sideChain J 0 = J.left := ite_eq_left rfl
 
 /-- **The query position** of side `0` satisfies `LHGeo` in the model of `C₁`. -/
 theorem lhGeo_query {P : Polygon} {q : ℕ × ℕ × ℕ} (hq : QueryOK J (Qof P) 0 q)
-    (hht : ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).2 = ((Qof P).vtx (q.2.1 - 1)).2) :
+    (hht : (J.leftModel.pos (Qof P) ⟨q.1, q.2.1⟩).2 = ((Qof P).vtx (q.2.1 - 1)).2) :
     LHGeo P J.left ⟨q.1, q.2.1⟩ q.2.2 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, hh1, hh2, -, -, htop, hsec⟩ := hq
   simp only [sideChain_zero'] at htop hsec
   refine ⟨q.2.1 - 1, by simp only; omega, by rw [← hQn]; omega, hht.symm, ?_, htop⟩
-  have e : rayPt ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1 =
-      (((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
-        ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).2) := by
+  have e : rayPt (J.leftModel.pos (Qof P) ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1 =
+      ((J.leftModel.pos (Qof P) ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
+        (J.leftModel.pos (Qof P) ⟨q.1, q.2.1⟩).2) := by
     simp [rayPt]
-  rw [e]; exact hsec
-
-/-- `sideLeft` at a position depends only on the edge ends when the parameter is positive. -/
-theorem sideLeft_congr {W W' : Polygon} {p p' : ℕ} {t : ℝ} (ht : t ≠ 0)
-    (ha : W.vtx p = W'.vtx p') (hb : W.vtx ((p + 1) % W.n) = W'.vtx ((p' + 1) % W'.n))
-    (x : Point) : sideLeft W p t x ↔ sideLeft W' p' t x := by
-  unfold sideLeft sidePrev sideNext sidePt
-  rw [ite_eq_right ht, ite_eq_right ht, ha, hb]
-
-/-- **The box twin**: a query position on a vertical side of the box satisfies `LHGeo` in the
-model of `C₂` when it is not above the top of `C₂`. -/
-theorem lhGeo_box {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edge = 3)
-    (hg : LHGeo P J.left x d)
-    (hy : |((chainModel J.left).pos (Qof P) x).2| < J.left.radius)
-    (h₂ : ((chainModel J.left).pos (Qof P) x).2 ≤ J.right.top.2) :
-    LHGeo P J.right x d ∧
-      (chainModel J.right).pos (Qof P) x = (chainModel J.left).pos (Qof P) x := by
-  obtain ⟨ha, hb, hpar, hpos⟩ := boxTwin_pos (C₁ := J.left) (C₂ := J.right) rfl he (Qof P) x.hgt
-  obtain ⟨h, hxh, hhn, hyz, hsec, -⟩ := hg
-  have hR := J.left.radius_pos
-  have ht : (chainModel J.left).param (Qof P) x ≠ 0 := by
-    intro h0
-    have e : (chainModel J.left).pos (Qof P) x = (chainModel J.left).wa x.edge := by
-      unfold Model.pos; rw [h0]; simp [Geometry.lerp]
-    rw [e] at hy
-    have hW : (chainModel J.left).W = J.left.sideWalk J.left.sideBeta := rfl
-    unfold Model.wa at hy
-    rw [hW] at hy
-    rcases he with h' | h' <;> rw [h'] at hy
-    · rw [J.left.sideWalk_vtx_one] at hy; simp [abs_of_pos hR] at hy
-    · rw [J.left.sideWalk_vtx_three] at hy; simp [abs_of_pos hR] at hy
-  have hx : (chainModel J.right).pos (Qof P) ⟨x.edge, x.hgt⟩ =
-      (chainModel J.left).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
-  refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx⟩
-  · rw [hx]; exact hyz
-  · rw [hx, show (chainModel J.right).param (Qof P) x = (chainModel J.left).param (Qof P) x
-      from hpar.symm]
-    exact (sideLeft_congr ht ha hb _).1 hsec
-  · rw [hx]; exact h₂
-
-/-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
-with that code. -/
-theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t : ℝ}
-    (harr : Arrival (chainModel C).W z (-σ) p t) {h : ℕ} (hh : h < P.n)
-    (hhz : ((Qof P).vtx h).2 = z.2) (htop : z.2 ≤ C.top.2) {d : ℕ} (hd : dirOf d = σ) :
-    LHGeo P C ⟨p, h + 1⟩ d ∧ (chainModel C).pos (Qof P) ⟨p, h + 1⟩ = z ∧
-      (chainModel C).param (Qof P) ⟨p, h + 1⟩ = t := by
-  obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := harr
-  rw [neg_neg] at hsec
-  have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
-  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rw [hpt]; exact hhz
-  have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
-  have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
-  rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
-  simp only
-  rw [epos, epar, hd]; exact hsec
-
-
-/-! ## Positions -/
+  rwa [e]
 
 /-- A position of the class off the box is a point of the chain. -/
 theorem posClass_mem {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x) (h6 : 6 ≤ x.edge)
@@ -218,7 +148,7 @@ theorem posClass_mem {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x) 
   · omega
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := (chainModel C).param Q x)
       (by omega) (fun h => by omega) h0 h1
-    rwa [show x.edge - 6 + 6 = x.edge by omega] at this
+    simp_all <;> omega
   · rw [hend, hz]
     exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := 0) le_rfl (fun _ => rfl) le_rfl
       one_pos
@@ -226,26 +156,26 @@ theorem posClass_mem {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x) 
 /-- **The shared vertex in the model of `C₂`**: the position `(cstR 1, h + 1)` (`cstR 1` the tour
 edge starting at vertex `0` of `C₂`) with a height code naming the height of the shared vertex. -/
 theorem shared_pos₂ (hP : J.P.Simple) (Q : Polygon) {h : ℕ} (hh : (Q.vtx h).2 = J.shared.2) :
-    cstR J 1 < (chainModel J.right).W.n ∧
-      (chainModel J.right).param Q ⟨cstR J 1, h + 1⟩ = 0 ∧
-      (chainModel J.right).pos Q ⟨cstR J 1, h + 1⟩ = J.shared := by
+    cstR J 1 < J.rightModel.W.n ∧
+      J.rightModel.param Q ⟨cstR J 1, h + 1⟩ = 0 ∧
+      J.rightModel.pos Q ⟨cstR J 1, h + 1⟩ = J.shared := by
   have hn := cm_n J.right
   have hτ := tpos_lt J.right 0
-  have hlt : cstR J 1 < (chainModel J.right).W.n := by rw [cstR_one, hn]; omega
-  have hwa : (chainModel J.right).wa (cstR J 1) = J.shared := by
+  have hlt : cstR J 1 < J.rightModel.W.n := by rw [cstR_one, hn]; omega
+  have hwa : J.rightModel.wa (cstR J 1) = J.shared := by
     have := (vtx_pos_iff J.right hP (k := 0) (Nat.zero_le _) (p := cstR J 1) hlt le_rfl
       one_pos).2 ⟨rfl, tpos J.right 0, by omega, by rw [cstR_one]; ring,
         (endIdx J.right (Or.inl rfl) (by omega)).2 (Or.inl rfl)⟩
     rw [Chazelle.Chain.sidePt_zero] at this
-    rw [← J.right_vertex_zero]; exact this
-  have hpar : (chainModel J.right).param Q ⟨cstR J 1, h + 1⟩ = 0 := by
+    assumption
+  have hpar : J.rightModel.param Q ⟨cstR J 1, h + 1⟩ = 0 := by
     unfold Model.param
     simp only
     split_ifs
     · rfl
     · rw [hwa, hh]; simp
   refine ⟨hlt, hpar, ?_⟩
-  unfold Model.pos; rw [hpar]; simp only [Geometry.lerp]; simpa using hwa
+  unfold Model.pos; simp_all
 
 
 /-- A position on a vertical side of the box is not a point of the chain. -/

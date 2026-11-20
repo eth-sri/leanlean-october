@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OraclePrepArr
 
 /-!
@@ -112,10 +116,10 @@ theorem rgS_exec {P : Polygon} {W : ℕ} {d : Config} (hwd : WordsBounded W d) {
     unfold rgS
     exec_block
     · rw [hSB, hp]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs]; omega
-    · config_simp; rw [hSB, hp, hs, hAB]; omega
+    · simp_all <;> omega
+    · simp_all <;> omega
+    · simp_all <;> omega
+    · frame_finish
     · refine ⟨rfl, ?_⟩
       config_simp; rw [hSB, hp, hs, hAB, ← hr]; congr 1; ring
   exact ⟨d', k, e, hk, exec_frameB e (by decide), v⟩
@@ -149,23 +153,19 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
   obtain ⟨c₁, k₁, e₁, hk₁, n₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W (block [.addN 110062 120014 120048,
       .loadN 110061 110062, .copyN 110060 9999, .addN 9999 9999 110061]) c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg = upd (upd (upd (upd c.nreg 110062 (NB + 2)) 110061 R) 110060 A₀) 9999 (A₀ + R) ∧
-      c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
-    exec_block
-    · rw [hNB, h2]; omega
-    · config_simp; rw [hNB, h2, hR, hAl]; omega
-    · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
-      config_simp; rw [hNB, h2, hR, hAl]
+      Machine.NatRegFrame c c₁ := by
+    ram_exec
   have hr₁ : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := fun r hr => by
     simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     rw [n₁]; simp only [upd]; split_ifs <;> first | omega
   have v60 : c₁.nreg 110060 = A₀ := by rw [n₁]; config_simp
-  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ (by decide), hAB]
-  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ (by decide), hSB]
-  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ (by decide), hA]
-  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
+  have v44 : c₁.nreg 120044 = AB := by simp_all
+  have v46 : c₁.nreg 120046 = SB := by simp_all
+  have v30 : c₁.nreg 120030 = A := by simp_all
+  have v11 : c₁.nreg 120011 = 1 := by simp_all
   let K : ℕ → Bool := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
     decide (r = 120030) || decide (r = 120011)
-  let J : Config → Prop := JK c₁ K A₀
+  let J := JK c₁ K A₀
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 110069) (rn := 120030) (r1 := 120011) (ra := 110067) (rv := 110066) (body := frBody)
     (B := fun r => decide (110063 ≤ r ∧ r ≤ 110067)) (by decide) (by decide) (by decide)
@@ -176,34 +176,32 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       (fun r a b => hr r a (by simpa using b)) hm)
     (n := A) (κ := 12) (fun i => A₀ + ρ (A - 1 - i)) (fun i => A - 1 - i) (fun i _ => by omega)
     (fun i d hi hJ hwd hri => by
-      have g60 : d.nreg 110060 = A₀ := by rw [hJ.1 _ (by decide), v60]
-      have g44 : d.nreg 120044 = AB := by rw [hJ.1 _ (by decide), v44]
-      have g46 : d.nreg 120046 = SB := by rw [hJ.1 _ (by decide), v46]
-      have g30 : d.nreg 120030 = A := by rw [hJ.1 _ (by decide), v30]
-      have g11 : d.nreg 120011 = 1 := by rw [hJ.1 _ (by decide), v11]
+      have g60 : d.nreg 110060 = A₀ := by ram_rw [hJ.1, v60]
+      have g44 : d.nreg 120044 = AB := by ram_rw [hJ.1, v44]
+      have g46 : d.nreg 120046 = SB := by ram_rw [hJ.1, v46]
+      have g30 : d.nreg 120030 = A := by ram_rw [hJ.1, v30]
+      have g11 : d.nreg 120011 = 1 := by ram_rw [hJ.1, v11]
       have hMd : RgMem d.nmem AB SB A σ rg := ⟨fun p hp => by
-          rw [hJ.2 _ (by omega), m₁]; exact hM.seq p hp, hM.σ_lt,
-        fun j hj => by rw [hJ.2 _ (by omega), m₁]; exact hM.reg j hj⟩
+          frame_finish [hJ.2, m₁], hM.σ_lt,
+        fun j hj => by frame_finish [hJ.2, m₁]⟩
       obtain ⟨d₁, k₁', e₁', hk₁', n₁', -⟩ : ∃ d₁ k₁', Exec P W
           (block [.subN 110063 120030 120011, .subN 110063 110063 110069]) d d₁ k₁' ∧ k₁' = 2 ∧
           d₁.nreg = upd d.nreg 110063 (A - 1 - i) ∧ True := by
-        exec_block
-        refine ⟨rfl, ?_, trivial⟩
-        config_simp; rw [g30, g11, hri]
+        ram_exec
       have f₁' : ∀ r, r ≠ 110063 → d₁.nreg r = d.nreg r := fun r hr => by
-        rw [n₁']; exact upd_other _ _ _ hr
+        ram_finish
       have hm₁' : d₁.nmem = d.nmem :=
         (exec_frameB e₁' (B := fun r => decide (r = 110063)) (by decide)).2.2.1
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₁'.wb_right (p := A - 1 - i)
-        (by rw [hm₁']; exact hMd) (by rw [f₁' _ (by decide), g44])
-        (by rw [f₁' _ (by decide), g46]) (by rw [n₁']; config_simp) (by omega) (by omega)
+        (by rwa [hm₁']) (by ram_rw [f₁', g44])
+        (by ram_rw [f₁', g46]) (by rw [n₁']; config_simp) (by omega) (by omega)
         (by omega)
       have hρl := hρR (A - 1 - i) (by omega)
       obtain ⟨d₃, k₃', e₃', hk₃', v67, v66⟩ : ∃ d₃ k₃', Exec P W
           (block [.addN 110067 110060 110065, .copyN 110066 110063]) d₂ d₃ k₃' ∧ k₃' = 2 ∧
           d₃.nreg 110067 = A₀ + ρ (A - 1 - i) ∧ d₃.nreg 110066 = A - 1 - i := by
-        have a60 : d₂.nreg 110060 = A₀ := by rw [f₂'.1 _ (by decide), f₁' _ (by decide), g60]
-        have a63 : d₂.nreg 110063 = A - 1 - i := by rw [f₂'.1 _ (by decide), n₁']; config_simp
+        have a60 : d₂.nreg 110060 = A₀ := by frame_finish
+        have a63 : d₂.nreg 110063 = A - 1 - i := by frame_finish
         have w₂ := e₂'.wb_right
         exec_block
         · rw [a60, v₂']; omega
@@ -220,8 +218,8 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
   · rw [rr₂ r (by simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
       rr₁]
   · rw [mm₂, scat_below (fun i _ => by omega) ha, m₁]
-  · rw [r₂ _ (by decide) (by decide), n₁]; config_simp
-  · rw [r₂ _ (by decide) (by decide), v60]
+  · ram_finish
+  · simp [r₂, v60]
   · -- the last store at the region of `p` is that of its first position
     obtain ⟨hf1, hf2, hf3⟩ := fpos_spec ρ p
     set q := fpos ρ p
@@ -278,15 +276,15 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
       .addN 9999 110073 110080, .constN 110074 0]) c c₁ k₁ ∧ k₁ = 9 ∧
       c₁.nreg = upd (upd (upd (upd (upd (upd c.nreg 110072 A₀) 110073 (A₀ + chCap A)) 110071 5)
         110080 (chCap A)) 9999 (A₀ + 2 * chCap A)) 110074 0 ∧
-      c₁.nmem = c.nmem ∧ c₁.rreg = c.rreg ∧ c₁.rmem = c.rmem ∧ c₁.output = c.output := by
+      Machine.NatRegFrame c c₁ := by
     unfold chCap at hW ⊢
     exec_block
     · config_simp; rw [hA]; omega
     · config_simp; rw [hA]; omega
     · omega
     · config_simp; rw [hA]; omega
-    · config_simp; rw [hA, hAl]; omega
-    · config_simp; rw [hA, hAl]; omega
+    · simp_all <;> omega
+    · simp_all <;> omega
     · omega
     · refine ⟨rfl, ?_, rfl, rfl, rfl, rfl⟩
       config_simp; rw [hA, hAl]
@@ -299,14 +297,14 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
   have v74 : c₁.nreg 110074 = 0 := by rw [n₁]; config_simp
   have v80 : c₁.nreg 110080 = chCap A := by rw [n₁]; config_simp
   have v9 : c₁.nreg 9999 = A₀ + 2 * chCap A := by rw [n₁]; config_simp
-  have v60 : c₁.nreg 110060 = FR := by rw [hr₁ _ (by decide), hFR]
-  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ (by decide), hAB]
-  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ (by decide), hSB]
-  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ (by decide), hA]
-  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
-  let K : ℕ → Bool := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
+  have v60 : c₁.nreg 110060 = FR := by ram_rw [hr₁, hFR]
+  have v44 : c₁.nreg 120044 = AB := by ram_rw [hr₁, hAB]
+  have v46 : c₁.nreg 120046 = SB := by ram_rw [hr₁, hSB]
+  have v30 : c₁.nreg 120030 = A := by ram_rw [hr₁, hA]
+  have v11 : c₁.nreg 120011 = 1 := by ram_rw [hr₁, h1]
+  let K := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
     decide (r = 120011)
-  let J : Config → Prop := JK c₁ K A₀
+  let J := JK c₁ K A₀
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, cnt₂, pr₂, mm₂, rm₂, o₂, -⟩ := emitS_exec (P := P) (W := W)
     (ri := 110079) (rn := 120030) (r1 := 120011) (rf := 110078) (rv1 := 110076) (rv2 := 110077)
     (rR1 := 110072) (rR2 := 110073) (rc := 110074) (rt := 110075) (body := iBody)
@@ -320,27 +318,27 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
       (fun a ha => hm a (Or.inl (by omega))))
     (n := A) (κ := 20) (starOf ρ)
     (fun i d hi hJ hwd hri => by
-      have g60 : d.nreg 110060 = FR := by rw [hJ.1 _ (by decide), v60]
-      have g44 : d.nreg 120044 = AB := by rw [hJ.1 _ (by decide), v44]
-      have g46 : d.nreg 120046 = SB := by rw [hJ.1 _ (by decide), v46]
+      have g60 : d.nreg 110060 = FR := by ram_rw [hJ.1, v60]
+      have g44 : d.nreg 120044 = AB := by ram_rw [hJ.1, v44]
+      have g46 : d.nreg 120046 = SB := by ram_rw [hJ.1, v46]
       have hMd : RgMem d.nmem AB SB A σ rg := ⟨fun p hp => by
-          rw [hJ.2 _ (by omega), m₁]; exact hM.seq p hp, hM.σ_lt,
-        fun j hj => by rw [hJ.2 _ (by omega), m₁]; exact hM.reg j hj⟩
+          frame_finish [hJ.2, m₁], hM.σ_lt,
+        fun j hj => by frame_finish [hJ.2, m₁]⟩
       have e₀ := Exec.copyN (P := P) hwd 110063 110079
       set d₀ : Config := { d with nreg := upd d.nreg 110063 (d.nreg 110079) } with hd₀
       have f₀ : ∀ r, r ≠ 110063 → d₀.nreg r = d.nreg r := fun r hr => by
-        rw [hd₀]; exact upd_other _ _ _ hr
+        ram_finish
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₀.wb_right (p := i)
-        hMd (by rw [f₀ _ (by decide), g44]) (by rw [f₀ _ (by decide), g46])
-        (by rw [hd₀]; config_simp; exact hri) hi (by omega) (by omega)
+        hMd (by assumption) (by assumption)
+        (by assumption) hi (by omega) (by omega)
       have hρl : ρ i < R := hρR i hi
       have hρl' : rg (σ i) < R := hρR i hi
       have hfp : d₂.nmem (FR + ρ i) = fpos ρ i := by
-        rw [f₂'.2.2.1, show d₀.nmem = d.nmem from rfl, hJ.2 _ (by omega), m₁]; exact hfr i hi
-      have a60 : d₂.nreg 110060 = FR := by rw [f₂'.1 _ (by decide), f₀ _ (by decide), g60]
-      have a63 : d₂.nreg 110063 = i := by rw [f₂'.1 _ (by decide), hd₀]; config_simp; exact hri
+        ram_rw [f₂'.2.2.1, show d₀.nmem = d.nmem from rfl, hJ.2, m₁]; exact hfr i hi
+      have a60 : d₂.nreg 110060 = FR := by frame_finish
+      have a63 : d₂.nreg 110063 = i := by frame_finish
       have a11 : d₂.nreg 120011 = 1 := by
-        rw [f₂'.1 _ (by decide), f₀ _ (by decide), hJ.1 _ (by decide), v11]
+        frame_finish [f₂'.1, f₀, hJ.1, v11]
       have hfi := (fpos_spec ρ i).2.1
       have w₂ := e₂'.wb_right
       obtain ⟨d₃, k₃', e₃', hk₃', v76, v77, v71, v63⟩ : ∃ d₃ k₃', Exec P W
@@ -354,13 +352,13 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
         · refine ⟨rfl, ?_, ?_, ?_, ?_⟩
           · config_simp; rw [a60, v₂', hfp]
           · config_simp; rw [a63]
-          · config_simp; rw [a60, v₂', hfp, a11]
+          · ram_finish
           · config_simp; exact a63
       have w₃ := e₃'.wb_right
       have hcase : ∃ d₄ k₄', Exec P W (.ifLtN 110071 110063 (.instr (.constN 110078 1))
           (.instr (.constN 110078 0))) d₃ d₄ k₄' ∧ k₄' ≤ 3 ∧
           d₄.nreg 110078 = (if fpos ρ i + 2 ≤ i then 1 else 0) ∧
-          (∀ r, r ≠ 110078 → d₄.nreg r = d₃.nreg r) := by
+          (Machine.NRegEqExcept 110078 d₃ d₄) := by
         by_cases h : fpos ρ i + 2 ≤ i
         · have ht : d₃.nreg 110071 < d₃.nreg 110063 := by rw [v71, v63]; omega
           exact ⟨_, _, .ifLtN_true ht (Exec.constN w₃ 110078 1 (by omega)), by omega,
@@ -369,7 +367,7 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
           exact ⟨_, _, .ifLtN_false ht (Exec.constN w₃ 110078 0 (Nat.zero_le _)), by omega,
             by rw [ite_eq_right h]; config_simp, fun r hr => by config_simp; rw [upd_other _ _ _ hr]⟩
       obtain ⟨d₄, k₄', e₄', hk₄', v78, r₄⟩ := hcase
-      have ex : Exec P W iBody d d₄ _ := .seq e₀ (.seq e₂' (.seq e₃' e₄'))
+      have ex : Exec P W iBody d d₄ _ := (by ram_path)
       refine ⟨d₄, _, ex, by omega, exec_frameB ex (by decide), fun hn => ?_, fun x hx => ?_⟩
       · unfold starOf at hn
         split_ifs at hn with h
@@ -377,8 +375,7 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
       · unfold starOf at hx
         split_ifs at hx with h
         cases hx
-        exact ⟨by rw [v78, ite_eq_left h], by rw [r₄ _ (by decide), v76],
-          by rw [r₄ _ (by decide), v77]⟩)
+        frame_finish [v78, ite_eq_left h, r₄, v76, v77])
     e₁.wb_right (JK.refl _ _ _) v30 v11 v72 v73 v74
     (by unfold chCap; omega) (by unfold chCap at hW ⊢; omega)
   rw [Nat.zero_add] at cnt₂
@@ -390,10 +387,10 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
   · rw [rr₂ r (by simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
       rr₁]
   · rw [mm₂ a (Or.inl (by omega)), m₁]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v9]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v72]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v73]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v80]
+  · simp [r₂, v9]
+  · simp [r₂, v72]
+  · simp [r₂, v73]
+  · simp [r₂, v80]
 
 end
 

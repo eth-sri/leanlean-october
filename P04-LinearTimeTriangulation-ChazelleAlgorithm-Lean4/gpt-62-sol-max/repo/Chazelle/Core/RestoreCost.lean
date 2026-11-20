@@ -29,36 +29,14 @@ open Chazelle.Machine (Stmt Exec)
 /-- **An execution of cost `0` changes nothing.** -/
 theorem exec_zero {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     (h : Exec P W s c c' k) (hk : k = 0) : c' = c := by
-  induction h with
-  | skip _ => rfl
-  | instr _ _ _ _ => omega
-  | seq _ _ ih₁ ih₂ =>
-    rw [ih₂ (by omega), ih₁ (by omega)]
-  | ifLtN_true _ _ _ => omega
-  | ifLtN_false _ _ _ => omega
-  | ifLtR_true _ _ _ => omega
-  | ifLtR_false _ _ _ => omega
-  | whileLtN_false _ _ => omega
-  | whileLtN_true _ _ _ _ _ => omega
-  | whileLtR_false _ _ => omega
-  | whileLtR_true _ _ _ _ _ => omega
+  induction h <;> first | rfl | omega | simp_all
 
 /-- **The arc-cutter costs at least one step**: from any configuration meeting its
 precondition (with room), `1 ≤ G γ`. -/
 theorem cutter_cost_pos {cu : Stmt} {B : Finset ℕ} {G H : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} (h : CutterOK cu B G H X Ok) {P : Polygon} {W : ℕ}
     {c : Config} (hw : WordsBounded W c)
-    (hpre : GoodEnv P ∧ hostWords P.n ≤ W ∧ X.holds P c.nmem (rd c bCut 13) (c.nreg ALLOC) ∧
-      rd c bCut 9 ≤ X.cap P c.nmem (rd c bCut 13) ∧
-      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bCut 0) ∧
-      ∃ M, ModelDescAt c.nmem (rd c bCut 0) (Qof P) M ∧ Ok P M ∧
-        ProperPos M (Qof P) P.n ⟨rd c bCut 1, rd c bCut 2⟩ ∧
-        ProperPos M (Qof P) P.n ⟨rd c bCut 3, rd c bCut 4⟩ ∧
-        rd c bCut 1 < M.W.n ∧ rd c bCut 3 < M.W.n ∧
-        (rd c bCut 2 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bCut 1, rd c bCut 2⟩)) ∧
-        (rd c bCut 4 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩)) ∧
-        M.arcWt (M.key (Qof P) ⟨rd c bCut 1, rd c bCut 2⟩)
-          (M.key (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩) ≤ rd c bCut 9)
+    (hpre : CutterPre X Ok P W c)
     (hroom : c.nreg ALLOC + G (rd c bCut 9) ≤ W) : 1 ≤ G (rd c bCut 9) := by
   obtain ⟨c', k, -, -, hpost, -⟩ := h P W c hw hpre hroom
   obtain ⟨M, hM, -⟩ := hpre.2.2.2.2.2
@@ -69,148 +47,55 @@ theorem cutter_cost_pos {cu : Stmt} {B : Finset ℕ} {G H : ℕ → ℕ} {X : Me
 def withFlag (c : Config) (v : ℕ) : Config :=
   { c with nreg := upd c.nreg (bandReg bShoot 10) v }
 
-theorem withFlag_rd (c : Config) (v : ℕ) {i : ℕ} (hi : i ≠ 10) (_hi' : i < 10000) :
+theorem withFlag_rd (c : Config) (v : ℕ) {i : ℕ} (hi : i ≠ 10) :
     rd (withFlag c v) bShoot i = rd c bShoot i := by
-  unfold rd withFlag bandReg
-  simp only
-  rw [Machine.upd_other]
-  omega
+  ram_finish [rd, withFlag, bandReg]
 
-theorem withFlag_flag (c : Config) (v : ℕ) : rd (withFlag c v) bShoot 10 = v := by
-  unfold rd withFlag
-  simp only [Machine.upd_same]
+theorem withFlag_flag (c : Config) (v : ℕ) : rd (withFlag c v) bShoot 10 = v := rfl
 
-theorem withFlag_alloc (c : Config) (v : ℕ) : (withFlag c v).nreg ALLOC = c.nreg ALLOC := by
-  unfold withFlag ALLOC bandReg bShoot
-  simp only
-  rw [Machine.upd_other]
-  omega
+theorem withFlag_alloc (c : Config) (v : ℕ) : (withFlag c v).nreg ALLOC = c.nreg ALLOC := rfl
+
+theorem withFlag_nmem (c : Config) (v : ℕ) : (withFlag c v).nmem = c.nmem := rfl
 
 theorem withFlag_originIn (c : Config) (v : ℕ) (o : Origin) :
-    OriginIn (withFlag c v) (bandReg bShoot 5) o ↔ OriginIn c (bandReg bShoot 5) o := by
-  have e : ∀ j, j ≤ 2 → (withFlag c v).nreg (bandReg bShoot 5 + j) =
-      c.nreg (bandReg bShoot 5 + j) := by
-    intro j hj
-    unfold withFlag bandReg bShoot
-    simp only
-    rw [Machine.upd_other]
-    omega
-  have e0 := e 0 (by omega)
-  have e1 := e 1 (by omega)
-  have e2 := e 2 (by omega)
-  simp only [add_zero] at e0
-  cases o with
-  | sym p =>
-    cases p with
-    | vtx i => simp only [OriginIn, SymPtIn, e0, e1]
-    | onEdge a b => simp only [OriginIn, SymPtIn, e0, e1, e2]
-  | walk x => simp only [OriginIn, e0, e1, e2]
+    OriginIn (withFlag c v) (bandReg bShoot 5) o ↔ OriginIn c (bandReg bShoot 5) o := Iff.rfl
 
 theorem withFlag_wb {W : ℕ} {c : Config} (hw : WordsBounded W c) {v : ℕ} (hv : v ≤ W) :
     WordsBounded W (withFlag c v) := by
-  obtain ⟨h1, h2⟩ := hw
-  refine ⟨fun r => ?_, h2⟩
-  unfold withFlag
-  simp only
-  rw [Machine.upd_apply]
+  refine ⟨fun r => ?_, hw.2⟩
+  simp only [withFlag, Machine.upd_apply]
   split_ifs
   · exact hv
-  · exact h1 r
+  · exact hw.1 r
 
 /-- **The ray-shooter costs at least one step**: from any configuration meeting its
 precondition (with room), `1 ≤ F γ`. -/
 theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} (h : ShooterOK sh B F X Ok) {P : Polygon} {W : ℕ}
     {c : Config} (hw : WordsBounded W c)
-    (hpre : GoodEnv P ∧ hostWords P.n ≤ W ∧
-      X.holds P c.nmem (rd c bShoot 13) (c.nreg ALLOC) ∧
-      rd c bShoot 9 ≤ X.cap P c.nmem (rd c bShoot 13) ∧
-      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bShoot 0) ∧
-      (c.nmem (rd c bShoot 0) = 0 → ∀ H C, ChainDescAt c.nmem (rd c bShoot 0 + 1) (Qof P) H C →
-        HostRegular (Qof P).n H) ∧
-      ∃ M, ModelDescAt c.nmem (rd c bShoot 0) (Qof P) M ∧ Ok P M ∧
-        ProperPos M (Qof P) P.n ⟨rd c bShoot 1, rd c bShoot 2⟩ ∧
-        ProperPos M (Qof P) P.n ⟨rd c bShoot 3, rd c bShoot 4⟩ ∧
-        rd c bShoot 1 < M.W.n ∧ rd c bShoot 3 < M.W.n ∧
-        (rd c bShoot 2 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bShoot 1, rd c bShoot 2⟩)) ∧
-        (rd c bShoot 4 = 0 ∨ M.InnerPt (M.pos (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩)) ∧
-        M.arcWt (M.key (Qof P) ⟨rd c bShoot 1, rd c bShoot 2⟩)
-          (M.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩) ≤ rd c bShoot 9 ∧
-        ∃ o : Origin, o.Lt P.n M ∧ OriginIn c (bandReg bShoot 5) o ∧
-          ((∃ p, o = .walk ⟨p, 0⟩) ∨ (M.InnerPt (o.eval M (Qof P)) ∧
-            ∀ x, o = .walk x → ProperPos M (Qof P) P.n x)) ∧
-          o.eval M (Qof P) ∉ M.arcSet (M.key (Qof P) ⟨rd c bShoot 1, rd c bShoot 2⟩)
-            (M.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩))
+    (hpre : ShooterPre X Ok P W c)
     (hroom : c.nreg ALLOC + F (rd c bShoot 9) ≤ W) : 1 ≤ F (rd c bShoot 9) := by
   by_contra hF
   have hF0 : F (rd c bShoot 9) = 0 := by omega
-  obtain ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
-    hoIn, hoK, hoA⟩ := hpre
-  have hW1 : 1 ≤ W := le_trans (by unfold hostWords; omega) hWh
-  have r : ∀ v i, i ≠ 10 → i < 10000 → rd (withFlag c v) bShoot i = rd c bShoot i :=
-    fun v i h1 h2 => withFlag_rd c v h1 h2
-  -- run the shooter from `c` with flag `v`
-  have run : ∀ v, v ≤ 1 → ∃ c', c' = withFlag c v ∧
-      (∀ M' (o' : Origin), ModelDescAt c.nmem (rd c bShoot 0) (Qof P) M' →
-        OriginIn c (bandReg bShoot 5) o' →
-        (rd c' bShoot 10 = 1 → ∃ t, FirstHit (M'.arcSet (M'.key (Qof P) ⟨rd c bShoot 1,
-            rd c bShoot 2⟩) (M'.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩))
-          (o'.eval M' (Qof P)) (dirOf (rd c bShoot 8)) t) ∧
-        (rd c' bShoot 10 ≠ 1 → NoHit (M'.arcSet (M'.key (Qof P) ⟨rd c bShoot 1,
-            rd c bShoot 2⟩) (M'.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩))
-          (o'.eval M' (Qof P)) (dirOf (rd c bShoot 8)))) := by
-    intro v hv
-    have hwv := withFlag_wb hw (le_trans hv hW1)
-    have pre' : GoodEnv P ∧ hostWords P.n ≤ W ∧
-        X.holds P (withFlag c v).nmem (rd (withFlag c v) bShoot 13)
-          ((withFlag c v).nreg ALLOC) ∧
-        rd (withFlag c v) bShoot 9 ≤ X.cap P (withFlag c v).nmem (rd (withFlag c v) bShoot 13) ∧
-        ModelDescWF P ((withFlag c v).nreg ALLOC) (withFlag c v).nmem
-          (rd (withFlag c v) bShoot 0) ∧
-        ((withFlag c v).nmem (rd (withFlag c v) bShoot 0) = 0 → ∀ H C,
-          ChainDescAt (withFlag c v).nmem (rd (withFlag c v) bShoot 0 + 1) (Qof P) H C →
-          HostRegular (Qof P).n H) ∧
-        ∃ M, ModelDescAt (withFlag c v).nmem (rd (withFlag c v) bShoot 0) (Qof P) M ∧ Ok P M ∧
-          ProperPos M (Qof P) P.n ⟨rd (withFlag c v) bShoot 1, rd (withFlag c v) bShoot 2⟩ ∧
-          ProperPos M (Qof P) P.n ⟨rd (withFlag c v) bShoot 3, rd (withFlag c v) bShoot 4⟩ ∧
-          rd (withFlag c v) bShoot 1 < M.W.n ∧ rd (withFlag c v) bShoot 3 < M.W.n ∧
-          (rd (withFlag c v) bShoot 2 = 0 ∨
-            M.InnerPt (M.pos (Qof P) ⟨rd (withFlag c v) bShoot 1, rd (withFlag c v) bShoot 2⟩)) ∧
-          (rd (withFlag c v) bShoot 4 = 0 ∨
-            M.InnerPt (M.pos (Qof P) ⟨rd (withFlag c v) bShoot 3, rd (withFlag c v) bShoot 4⟩)) ∧
-          M.arcWt (M.key (Qof P) ⟨rd (withFlag c v) bShoot 1, rd (withFlag c v) bShoot 2⟩)
-            (M.key (Qof P) ⟨rd (withFlag c v) bShoot 3, rd (withFlag c v) bShoot 4⟩) ≤
-              rd (withFlag c v) bShoot 9 ∧
-          ∃ o : Origin, o.Lt P.n M ∧ OriginIn (withFlag c v) (bandReg bShoot 5) o ∧
-            ((∃ p, o = .walk ⟨p, 0⟩) ∨ (M.InnerPt (o.eval M (Qof P)) ∧
-              ∀ x, o = .walk x → ProperPos M (Qof P) P.n x)) ∧
-            o.eval M (Qof P) ∉ M.arcSet (M.key (Qof P) ⟨rd (withFlag c v) bShoot 1,
-              rd (withFlag c v) bShoot 2⟩)
-              (M.key (Qof P) ⟨rd (withFlag c v) bShoot 3, rd (withFlag c v) bShoot 4⟩) := by
-      simp only [r v 0 (by decide) (by decide), r v 1 (by decide) (by decide),
-        r v 2 (by decide) (by decide), r v 3 (by decide) (by decide),
-        r v 4 (by decide) (by decide), r v 9 (by decide) (by decide),
-        r v 13 (by decide) (by decide), withFlag_alloc, withFlag_originIn]
-      exact ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
-        hoIn, hoK, hoA⟩
-    obtain ⟨c', k, ex, hk, hpost, -⟩ := h P W (withFlag c v) hwv pre'
-      (by beta_reduce; rw [withFlag_alloc, r v 9 (by decide) (by decide)]; exact hroom)
-    beta_reduce at hk
-    rw [r v 9 (by decide) (by decide), hF0] at hk
-    have hc' := exec_zero ex (by omega)
-    refine ⟨c', hc', fun M' o' hM' ho' => ?_⟩
-    have hM'' : ModelDescAt (withFlag c v).nmem (rd (withFlag c v) bShoot 0) (Qof P) M' := by
-      rw [r v 0 (by decide) (by decide)]; exact hM'
-    have ho'' : OriginIn (withFlag c v) (bandReg bShoot 5) o' := (withFlag_originIn c v o').2 ho'
-    have := hpost M' o' hM'' ho''
-    simp only [r v 1 (by decide) (by decide), r v 2 (by decide) (by decide),
-      r v 3 (by decide) (by decide), r v 4 (by decide) (by decide),
-      r v 8 (by decide) (by decide)] at this
-    exact ⟨fun h1 => (this.1 h1).imp fun t ht => ht.1, this.2⟩
-  obtain ⟨c₁, rfl, h₁⟩ := run 1 le_rfl
-  obtain ⟨c₀, rfl, h₀⟩ := run 0 (by omega)
-  obtain ⟨t, ht0, htA, -⟩ := (h₁ M o hM hoIn).1 (withFlag_flag c 1)
-  exact (h₀ M o hM hoIn).2 (by rw [withFlag_flag]; omega) t ht0 htA
+  have hW1 : 1 ≤ W := le_trans (by unfold hostWords; omega) hpre.2.1
+  -- The flag is not an input. With zero steps both initial flag values would be returned.
+  have run (v : ℕ) (hv : v ≤ 1) : ShooterPost P c (withFlag c v) := by
+    have hwv := withFlag_wb hw (hv.trans hW1)
+    have hvpre : ShooterPre X Ok P W (withFlag c v) := by
+      simpa (disch := decide) only [ShooterPre, withFlag_rd, withFlag_alloc, withFlag_nmem,
+        withFlag_originIn] using hpre
+    have hvroom : (withFlag c v).nreg ALLOC + F (rd (withFlag c v) bShoot 9) ≤ W := by
+      simpa (disch := decide) only [withFlag_alloc, withFlag_rd] using hroom
+    obtain ⟨c', k, ex, hk, hp, -⟩ := h P W (withFlag c v) hwv hvpre hvroom
+    change k ≤ F (rd (withFlag c v) bShoot 9) at hk
+    simp (disch := decide) only [withFlag_rd, hF0] at hk
+    have e := exec_zero ex (by omega)
+    subst c'
+    simpa (disch := decide) only [ShooterPost, withFlag_rd, withFlag_nmem, withFlag_originIn]
+      using hp
+  obtain ⟨-, -, -, -, -, -, M, hM, -, -, -, -, -, -, -, -, o, -, ho, -⟩ := hpre
+  obtain ⟨t, ht, -⟩ := (run 1 le_rfl M o hM ho).1 (withFlag_flag c 1)
+  exact (run 0 (by omega) M o hM ho).2 (by rw [withFlag_flag]; omega) t ht.1 ht.2.1
 
 end
 

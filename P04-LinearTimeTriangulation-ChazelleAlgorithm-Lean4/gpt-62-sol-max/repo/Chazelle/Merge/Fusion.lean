@@ -206,13 +206,13 @@ theorem sharedChords_finite : J.sharedChords.Finite := by
   refine ((finite_singleton (-1 : ℝ)).insert 1).image (fun σ => J.whole.chordSet J.m₁ σ)
     |>.subset ?_
   rintro d ⟨σ, hσ, -, rfl⟩
-  exact ⟨σ, by rcases hσ with rfl | rfl <;> simp, rfl⟩
+  exact ⟨σ, by assumption, rfl⟩
 
 /-- There are at most two shared-vertex chords. -/
 theorem sharedChords_ncard_le : J.sharedChords.ncard ≤ 2 := by
   have hsub : J.sharedChords ⊆ (fun σ => J.whole.chordSet J.m₁ σ) '' ({1, -1} : Set ℝ) := by
     rintro d ⟨σ, hσ, -, rfl⟩
-    exact ⟨σ, by rcases hσ with rfl | rfl <;> simp, rfl⟩
+    exact ⟨σ, by assumption, rfl⟩
   calc J.sharedChords.ncard
       ≤ ((fun σ => J.whole.chordSet J.m₁ σ) '' ({1, -1} : Set ℝ)).ncard :=
         ncard_le_ncard hsub ((toFinite _).image _)
@@ -298,57 +298,48 @@ theorem end_not_mem_left_of_right (hP : J.P.Simple) {p : Point} (hp : p.2 ≤ J.
     rw [J.left_inter_right hP] at this
     exact hne this
 
+/-- A ray into a chord stays in its chain's domain and starts outside the other chain. -/
+private theorem end_freeAt {C D U : Chain} {shared : Point} (isLeft : Bool)
+    {c : Set Point} (hc : c ∈ augChords C)
+    (hne : (if isLeft then lend c else rend c) ≠ shared)
+    (avoid : ∀ {p : Point}, p.2 ≤ C.top.2 → p ∉ C.dom → p ≠ shared → p ∉ D.set)
+    (join : ∀ {p : Point}, p.2 ≤ C.top.2 → p ∈ C.dom → p ∉ D.set → p ∈ U.dom) :
+    FreeAt U (if isLeft then lend c else rend c) (if isLeft then 1 else -1) := by
+  obtain ⟨y, a, b, h, hy, rfl, hl, hr⟩ := augChords_spec hc
+  let x := if isLeft then a else b
+  let σ : ℝ := if isLeft then 1 else -1
+  have e : (if isLeft then lend (hseg y a b) else rend (hseg y a b)) = (x, y) := by
+    cases isLeft <;> simp [x, hl, hr]
+  rw [e] at hne ⊢
+  have hnd : ((x, y) : Point) ∉ C.dom := by cases isLeft; exact h.right_not; exact h.left_not
+  filter_upwards [eventually_not_mem_of_not_mem D.isClosed_set (avoid hy hnd hne) σ,
+    Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht ht'
+  have er : rayPt ((x, y) : Point) σ t = ((x + σ * t, y) : Point) := rfl
+  rw [er] at ht ⊢
+  apply join hy _ ht
+  apply h.open_mem <;> cases isLeft <;> simp [x, σ] <;> linarith [ht'.1, ht'.2]
+
 /-- **Endpoints are preserved (left chords, left endpoint).**  For a chord `c` of `S₁` whose left
 endpoint is not the shared vertex, the rightward direction at `lend c` is free for `C`; so the
 fusion contains a chord `shoot C (lend c) 1 ⊆ c` with endpoint `lend c`. -/
 theorem lend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.left)
-    (hne : lend c ≠ J.shared) : FreeAt J.whole (lend c) 1 := by
-  obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
-  rw [hl] at hne ⊢
-  have hnr := J.end_not_mem_right_of_left hP hy h.left_not hne
-  have hev := eventually_not_mem_of_not_mem J.right.isClosed_set hnr 1
-  filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
-  have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
-  rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_left hy (h.open_mem _ (by linarith [ht2.1]) (by linarith [ht2.2])) ht1
+    (hne : lend c ≠ J.shared) : FreeAt J.whole (lend c) 1 :=
+  end_freeAt true hc hne (J.end_not_mem_right_of_left hP) (J.mem_whole_dom_of_left)
 
 /-- Endpoints are preserved (left chords, right endpoint). -/
 theorem rend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.left)
-    (hne : rend c ≠ J.shared) : FreeAt J.whole (rend c) (-1) := by
-  obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
-  rw [hr] at hne ⊢
-  have hnr := J.end_not_mem_right_of_left hP hy h.right_not hne
-  have hev := eventually_not_mem_of_not_mem J.right.isClosed_set hnr (-1)
-  filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
-  have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
-    simp [rayPt, sub_eq_add_neg]
-  rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_left hy (h.open_mem _ (by linarith [ht2.2]) (by linarith [ht2.1])) ht1
+    (hne : rend c ≠ J.shared) : FreeAt J.whole (rend c) (-1) :=
+  end_freeAt false hc hne (J.end_not_mem_right_of_left hP) (J.mem_whole_dom_of_left)
 
 /-- Endpoints are preserved (right chords, left endpoint). -/
 theorem lend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.right)
-    (hne : lend c ≠ J.shared) : FreeAt J.whole (lend c) 1 := by
-  obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
-  rw [hl] at hne ⊢
-  have hnl := J.end_not_mem_left_of_right hP hy h.left_not hne
-  have hev := eventually_not_mem_of_not_mem J.left.isClosed_set hnl 1
-  filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
-  have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
-  rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_right hy (h.open_mem _ (by linarith [ht2.1]) (by linarith [ht2.2])) ht1
+    (hne : lend c ≠ J.shared) : FreeAt J.whole (lend c) 1 :=
+  end_freeAt true hc hne (J.end_not_mem_left_of_right hP) (J.mem_whole_dom_of_right)
 
 /-- Endpoints are preserved (right chords, right endpoint). -/
 theorem rend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords J.right)
-    (hne : rend c ≠ J.shared) : FreeAt J.whole (rend c) (-1) := by
-  obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
-  rw [hr] at hne ⊢
-  have hnl := J.end_not_mem_left_of_right hP hy h.right_not hne
-  have hev := eventually_not_mem_of_not_mem J.left.isClosed_set hnl (-1)
-  filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
-  have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
-    simp [rayPt, sub_eq_add_neg]
-  rw [e] at ht1 ⊢
-  exact J.mem_whole_dom_of_right hy (h.open_mem _ (by linarith [ht2.2]) (by linarith [ht2.1])) ht1
+    (hne : rend c ≠ J.shared) : FreeAt J.whole (rend c) (-1) :=
+  end_freeAt false hc hne (J.end_not_mem_left_of_right hP) (J.mem_whole_dom_of_right)
 
 /-- **Endpoints are preserved** (summary): every endpoint of a chord of `S₁ ∪ S₂` other than the
 shared vertex is an endpoint of a chord of the fusion contained in that chord. -/

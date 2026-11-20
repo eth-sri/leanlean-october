@@ -42,8 +42,7 @@ theorem chords_map_nodup (hN : IsNF M Q N) : (N.chords.map fun x => x.toSet M Q)
   simp only [List.get_eq_getElem, List.getElem_map] at h
   simp only [List.length_map] at hi hj
   have e : ∀ k (hk : k < N.chords.length), N.chords[k] = N.chord k := fun k hk => by
-    unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk,
-      Option.getD_some]
+    unfold NF.chord; simp_all
   rw [e i hi, e j hj] at h
   exact Fin.ext (hN.2.1 i j hi hj h)
 
@@ -107,8 +106,7 @@ theorem round_list_ok (hM : WalkAx M) (hN : IsNF M Q N) (hregs : NFRegs M Q N re
     · obtain ⟨y, hy, rfl⟩ := List.mem_map.1 hx
       obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hy
       have e : N.chords[i] = N.chord i := by
-        unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
-          Option.getD_some]
+        ram_finish [NF.chord, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
       rw [e]
       obtain ⟨-, -, -, -, -, -, hh, -⟩ := hN.2.2.2
       exact ⟨hN.1.2.1 (chord_toSet_mem hi), hh i hi, hN.2.2.1 i hi⟩

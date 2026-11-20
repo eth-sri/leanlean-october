@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranRamRm
 
 /-!
@@ -49,8 +51,13 @@ structure WbI (W : ℕ) (d : Dm) (S : St) (X top1 : ℕ) (L : List ℕ) (c₀ c 
   regs : ∀ r, r ≠ 90101 → r ≠ 90102 → r ≠ 90105 → c.nreg r = c₀.nreg r
   mem : ∀ a, (a < d.b0 + d.oEx ∨ d.b0 + d.oTmp ≤ a) → c.nmem a = c₀.nmem a
 
-theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
+section
+
+variable {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
     (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+
+include P hw hC henc hD in
+theorem wbStmt_exec
     {X top : ℕ} {L : List ℕ} (hX : X < E.R) (hL : L.length ≤ E.D)
     (hcap : top - 1 + L.length ≤ d.cap)
     (h100 : c.nreg 90100 = L.length) (h103 : c.nreg 90103 = d.b0 + d.oEx + d.D * X)
@@ -77,8 +84,7 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       .subN 90108 90050 90019]) c c₁ k₁ ∧ k₁ = 2 ∧ (c₁.nreg 90101 = 0 ∧
       c₁.nreg 90108 = top - 1 ∧ (∀ r, r ≠ 90101 → r ≠ 90108 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem) := by
-    exec_block
-    · omega
+    exec_block!
     · refine ⟨rfl, ?_, ?_, fun r a1 a2 => by simp [upd, a1, a2], rfl⟩ <;> config_simp
       rw [h50, hC.one]
   obtain ⟨q101, q108, qr, qm⟩ := q
@@ -89,29 +95,29 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun x t _ _ => ?_) (fun _ _ => rfl)
       (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun t _ => ?_) <;>
       simp [St.wb]
-  have k44 : c₁.nreg 90044 = d.b0 + d.oTmp := by rw [qr _ (by decide) (by decide), hC.bTmp]
-  have k43 : c₁.nreg 90043 = d.b0 + d.oStk := by rw [qr _ (by decide) (by decide), hC.bStk]
-  have k19 : c₁.nreg 90019 = 1 := by rw [qr _ (by decide) (by decide), hC.one]
-  have k100 : c₁.nreg 90100 = L.length := by rw [qr _ (by decide) (by decide), h100]
+  have k44 : c₁.nreg 90044 = d.b0 + d.oTmp := by frame_finish
+  have k43 : c₁.nreg 90043 = d.b0 + d.oStk := by frame_finish
+  have k19 : c₁.nreg 90019 = 1 := by frame_finish
+  have k100 : c₁.nreg 90100 = L.length := by ram_finish
   have k103 : c₁.nreg 90103 = d.b0 + d.oEx + d.D * X := by
-    rw [qr _ (by decide) (by decide), h103]
+    ram_rw [qr, h103]
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90101) (b := 90100)
     (body := wbBody) (WbI W d S X (top - 1) L c₁) (fun d' => L.length - d'.nreg 90101) 8
     (fun _ h => h.wb)
     (fun c₂ I ht => by
       obtain ⟨hw₂, ht₂, henc₂, hr₂, hm₂⟩ := I
-      rw [hr₂ 90100 (by decide) (by decide) (by decide), k100] at ht
+      rw [(ram_app% (hr₂ 90100 ?_ ?_ ?_)), k100] at ht
       generalize htdef : c₂.nreg 90101 = t at ht ht₂ henc₂
       have s := slot_lt (R := d.R) (D := d.D) hX (show t < d.D by omega)
       have r44 : c₂.nreg 90044 = d.b0 + d.oTmp := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), k44]
+        frame_finish
       have r43 : c₂.nreg 90043 = d.b0 + d.oStk := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), k43]
-      have r19 : c₂.nreg 90019 = 1 := by rw [hr₂ _ (by decide) (by decide) (by decide), k19]
+        frame_finish
+      have r19 : c₂.nreg 90019 = 1 := by frame_finish
       have r103 : c₂.nreg 90103 = d.b0 + d.oEx + d.D * X := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), k103]
+        frame_finish
       have r108 : c₂.nreg 90108 = top - 1 := by
-        rw [hr₂ _ (by decide) (by decide) (by decide), q108]
+        frame_finish
       have vt : c₂.nmem (d.b0 + d.oTmp + t) = L.getD t 0 := by
         rw [hm₂ _ (by right; omega), qm, htmp t ht]
       unfold wbBody
@@ -137,11 +143,11 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
             by_cases hx' : x = X
             · simp only [hx', true_and]
               by_cases hu : u = t
-              · rw [ite_eq_left (by omega), ite_eq_left hu, hu]
+              · simp [ite_eq_left, ite_eq_left hu, hu]
               · rw [ite_eq_right hu]
                 by_cases hu' : u < t
-                · rw [ite_eq_left (by omega), ite_eq_left hu']
-                · rw [ite_eq_right (by omega), ite_eq_right hu']
+                · ram_simp [ite_eq_left, ite_eq_left hu']
+                ram_simp [ite_eq_right, ite_eq_right hu']
             · simp [hx']
           · simp only [St.wb, Function.update_apply]
             by_cases hu : u = top - 1 + t
@@ -150,7 +156,7 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
             · rw [ite_eq_right hu]
               by_cases hu' : top - 1 ≤ u ∧ u < top - 1 + t
               · rw [ite_eq_left hu', ite_eq_left ⟨hu'.1, by omega⟩]
-              · rw [ite_eq_right hu', ite_eq_right (by omega)]
+              ram_simp [ite_eq_right hu', ite_eq_right]
         · intro r a1 a2 a3
           config_simp
           simp only [upd, a1, a2, a3, ite_false]
@@ -162,15 +168,15 @@ theorem wbStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
           exact hm₂ a ha
         · config_simp; rw [r19]; omega) I0
   obtain ⟨hw', ht', henc', hr', hm'⟩ := I'
-  rw [hr' 90100 (by decide) (by decide) (by decide), k100] at hx
+  rw [(ram_app% (hr' 90100 ?_ ?_ ?_)), k100] at hx
   have hfull : c'.nreg 90101 = L.length := by omega
   rw [hfull] at henc'
   refine ⟨c', _, .seq e₁ e, ?_, henc', ?_, fun r a1 a2 a3 a4 => ?_, fun a ha => ?_⟩
   · rw [q101] at hk
     rw [← hD.D]
-    have : 10 * L.length ≤ 10 * d.D := Nat.mul_le_mul_left _ hL
+    
     omega
-  · rw [hr' _ (by decide) (by decide) (by decide), q108]
+  · simp [hr', q108]
   · rw [hr' r a1 a2 a3, qr r a1 a4]
   · rw [hm' a ha, qm]
 
@@ -188,8 +194,8 @@ def tailStmt : Stmt := block [.addN 90105 90035 90064, .storeN 90105 90100,
   .addN 90105 90036 90064, .storeN 90105 90078, .addN 90105 90030 90062, .constN 90106 0,
   .storeN 90105 90106, .addN 90050 90108 90100, .subN 90051 90051 90019]
 
-theorem tailStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+include P hw hC henc hD in
+theorem tailStmt_exec
     {cc X len μ top1 : ℕ} (hX : X < E.R) (hcc : cc < E.K) (hcap : top1 + len ≤ d.cap)
     (h62 : c.nreg 90062 = cc) (h64 : c.nreg 90064 = X) (h100 : c.nreg 90100 = len)
     (h78 : c.nreg 90078 = μ) (h108 : c.nreg 90108 = top1) :
@@ -218,7 +224,7 @@ theorem tailStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : C
     · intro a ha
       rw [hC.bDeg, h64, hC.bWt, hC.bLive, h62]
       simp only [upd]
-      rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+      ram_rw [ite_eq_right, ite_eq_right, ite_eq_right]
 
 /-! ## The ring -/
 
@@ -232,8 +238,8 @@ def St.optUnl (S : St) (b : Bool) (j : ℕ) : St :=
   if b then { S with nxt := (St.unl (S.nxt, S.prv) j).1, prv := (St.unl (S.nxt, S.prv) j).2 }
   else S
 
-theorem unlinkS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+include P hw hC henc hD in
+theorem unlinkS_exec
     {rn j : ℕ} (h5 : rn ≠ 90105) (h6 : rn ≠ 90106) (_h7 : rn ≠ 90107) (hj : c.nreg rn = j)
     (hjA : j < d.A) (hp : S.prv j < d.A) (hn : S.nxt j < d.A) :
     ∃ c' k, Exec P W (unlinkS rn) c c' k ∧ k = 8 ∧ Enc c'.nmem d (S.optUnl true j) ∧
@@ -241,12 +247,12 @@ theorem unlinkS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Co
       (∀ a, (a < d.b0 + d.oNxt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   have hb := hD.base
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
-  have ep : c.nmem (d.b0 + d.oPrv + j) = S.prv j := henc.prv j hjA
-  have en : c.nmem (d.b0 + d.oNxt + j) = S.nxt j := henc.nxt j hjA
+  have ep := henc.prv j hjA
+  have en := henc.nxt j hjA
   unfold unlinkS
   exec_block
   · rw [hC.bPrv, hj]; omega
-  · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rw [hC.bNxt, hj]; omega
+  · ram_simp [hC.bNxt, hj] <;> omega
   · config_simp; rw [hC.bNxt, hC.bPrv, hj, ep]; omega
   · config_simp; simp (config := { failIfUnchanged := false }) only [Machine.upd_other _ _ _ h5, Machine.upd_other _ _ _ h6]; rw [hC.bPrv, hC.bNxt, hj, en]; omega
   · refine ⟨rfl, ?_, fun r a1 a2 a3 => by simp [upd, a1, a2, a3], ?_⟩ <;> config_simp <;>
@@ -256,14 +262,14 @@ theorem unlinkS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Co
     · intro a ha
       rw [hC.bPrv, hC.bNxt, hj, ep, en]
       simp only [upd]
-      rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+      ram_rw [ite_eq_right, ite_eq_right]
 
 /-- Decrement the count at position `r rn`. -/
 def decS (rn : ℕ) : Stmt := block [.addN 90105 90038 rn, .loadN 90106 90105,
   .subN 90106 90106 90019, .storeN 90105 90106]
 
-theorem decS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+include P hw hC henc hD in
+theorem decS_exec
     {rn j : ℕ} (_h5 : rn ≠ 90105) (_h6 : rn ≠ 90106) (hj : c.nreg rn = j) (hjA : j < d.A) :
     ∃ c' k, Exec P W (decS rn) c c' k ∧ k = 4 ∧
       Enc c'.nmem d { S with cnt := Function.update S.cnt j (S.cnt j - 1) } ∧
@@ -271,7 +277,7 @@ theorem decS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Confi
       (∀ a, (a < d.b0 + d.oCnt ∨ d.b0 + d.oNxt ≤ a) → c'.nmem a = c.nmem a) := by
   have hb := hD.base
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
-  have ec : c.nmem (d.b0 + d.oCnt + j) = S.cnt j := henc.cnt j hjA
+  have ec := henc.cnt j hjA
   unfold decS
   exec_block
   · rw [hC.bCnt, hj]; omega
@@ -281,11 +287,11 @@ theorem decS_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Confi
     · intro a ha
       rw [hC.bCnt, hj]
       simp only [upd]
-      rw [ite_eq_right (by omega)]
+      ram_rw [ite_eq_right]
 
+include P hw hC henc hD in
 /-- Unlink position `r rn` iff the bit `r rb` is set. -/
-theorem optUnl_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+theorem optUnl_exec
     {rb rn j : ℕ} {b : Bool} (h5 : rn ≠ 90105) (h6 : rn ≠ 90106) (h7 : rn ≠ 90107)
     (hj : c.nreg rn = j) (hbit : c.nreg rb = bit b)
     (hjA : j < d.A) (hp : S.prv j < d.A) (hn : S.nxt j < d.A) :
@@ -295,7 +301,7 @@ theorem optUnl_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       (∀ a, (a < d.b0 + d.oNxt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   cases b with
   | false =>
-    exact ⟨c, _, .ifLtN_true (by rw [hbit, hC.one]; decide) (.skip hw), by omega, henc,
+    exact ⟨c, _, (by ram_path), by omega, henc,
       fun _ _ _ _ => rfl, fun _ _ => rfl⟩
   | true =>
     obtain ⟨c', k, e, hk, h1, h2, h3⟩ := unlinkS_exec (P := P) hw hC henc hD h5 h6 h7 hj hjA hp hn
@@ -323,8 +329,8 @@ theorem optUnl_bound {S : St} {A : ℕ} (b : Bool) {j j' : ℕ} (hn : S.nxt j < 
     constructor <;> split_ifs <;> assumption
   · exact ⟨hn', hp'⟩
 
-theorem ringStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Config}
-    (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d S) (hD : DimOK E d W)
+include P hw hC henc hD in
+theorem ringStmt_exec
     {n1 n2 : ℕ} (h68 : c.nreg 90068 = n1) (h69 : c.nreg 90069 = n2)
     (h72 : c.nreg 90072 = bit (decide (S.cnt n1 = 1)))
     (h73 : c.nreg 90073 = bit (decide (S.cnt n2 = 1)))
@@ -334,34 +340,34 @@ theorem ringStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : C
       (∀ r, r ≠ 90105 → r ≠ 90106 → r ≠ 90107 → c'.nreg r = c.nreg r) ∧
       (∀ a, (a < d.b0 + d.oCnt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
-  obtain ⟨c₁, k₁, e₁, hk₁, E₁, r₁, m₁⟩ := optUnl_exec (P := P) (rb := 90072) (rn := 90068)
-    (b := decide (S.cnt n1 = 1)) hw hC henc hD (by decide) (by decide) (by decide) h68 h72 hn1
-    b1.2 b1.1
-  have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => r₁ r (by omega) (by omega) (by omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, E₁, r₁, m₁⟩ := (ram_app% (optUnl_exec (P := P) (rb := 90072) (rn := 90068)
+    (b := decide (S.cnt n1 = 1)) hw hC henc hD ?_ ?_ ?_ h68 h72 hn1
+    b1.2 b1.1))
+  have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => (ram_app% (r₁ r ?_ ?_ ?_))
   have bb := optUnl_bound (S := S) (decide (S.cnt n1 = 1)) (j := n1) b1.1 b1.2 b2.1 b2.2
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂⟩ := optUnl_exec (P := P) (rb := 90073) (rn := 90069)
     (b := decide (S.cnt n2 = 1)) e₁.wb_right hC₁ E₁ hD (by decide) (by decide) (by decide)
-    (by rw [r₁ _ (by decide) (by decide) (by decide), h69])
-    (by rw [r₁ _ (by decide) (by decide) (by decide), h73]) hn2 bb.2 bb.1
-  have hC₂ : Cst c₂ E d := hC₁.frame fun r hr _ => r₂ r (by omega) (by omega) (by omega)
+    (by frame_finish)
+    (by frame_finish) hn2 bb.2 bb.1
+  have hC₂ : Cst c₂ E d := hC₁.frame fun r hr _ => (ram_app% (r₂ r ?_ ?_ ?_))
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, r₃, m₃⟩ := decS_exec (P := P) (rn := 90068) e₂.wb_right hC₂ E₂ hD
     (by decide) (by decide)
-    (by rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide) (by decide) (by decide),
-      h68]) hn1
-  have hC₃ : Cst c₃ E d := hC₂.frame fun r hr _ => r₃ r (by omega) (by omega)
+    (by frame_finish) hn1
+  have hC₃ := hC₂.frame fun r hr _ => r₃ r (by omega) (by omega)
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, r₄, m₄⟩ := decS_exec (P := P) (rn := 90069) e₃.wb_right hC₃ E₃ hD
     (by decide) (by decide)
-    (by rw [r₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
-      r₁ _ (by decide) (by decide) (by decide), h69]) hn2
-  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_, ?_, ?_⟩
+    (by frame_finish) hn2
+  refine ⟨c₄, _, (by ram_path), by omega, ?_, ?_, ?_⟩
   · refine E₄.st_congr (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
       (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ _ _ => rfl) (fun j _ => ?_)
       (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
     simp only [St.rg, optUnl_cnt, Function.update_apply, ite_eq_right (Ne.symm hne)]
   · intro r a1 a2 a3
-    rw [r₄ r a1 a2, r₃ r a1 a2, r₂ r a1 a2 a3, r₁ r a1 a2 a3]
+    frame_finish
   · intro a ha
-    rw [m₄ a (by omega), m₃ a (by omega), m₂ a (by omega), m₁ a (by omega)]
+    ram_rw [m₄ a, m₃ a, m₂ a, m₁ a]
+
+end
 
 end
 

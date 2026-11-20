@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShootCutShQO
 
 /-!
@@ -32,13 +34,12 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 below the allocator, and not lowering the allocator. -/
 theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
     (hr : ∀ r, envR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     ShEnv P W H C z σ c' := by
-  have e403 : c'.nreg 140403 = c.nreg 140403 := hr _ (Or.inl rfl) (by unfold ALLOC; omega)
+  have e403 := hr _ (Or.inl rfl) (by unfold ALLOC; omega)
   obtain ⟨hB5, hwf⟩ := E.hwf
   obtain ⟨hlen, hHwf, hHA, hs⟩ := hwf H C E.hD
-  have hD' : ChainDescAt c'.nmem (c.nreg 140403) (Qof P) H C :=
-    chainDesc_agree' E.hD hB5 hHA hm
+  have hD' := chainDesc_agree' E.hD hB5 hHA hm
   have hB' : c'.nmem (c.nreg 140403) = c.nmem (c.nreg 140403) := hm _ (by omega)
   -- a host read in the new memory is the host
   have hback : ∀ H' C', ChainDescAt c'.nmem (c.nreg 140403) (Qof P) H' C' →
@@ -47,9 +48,9 @@ theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
       have a1 := h'.1.1
       have a2 := E.hD.1.1
       rw [hB'] at a1
-      rw [← a1, hm _ (by omega), a2]
-    exact chainDesc_agree' h' hB5 (by rw [hB', hlen']; exact hHA) (fun a ha => (hm a ha).symm)
-  refine ⟨E.hG, E.hW, by rw [e403]; exact hD', ⟨by rw [e403]; omega, fun H' C' h' => ?_⟩,
+      ram_simp [← a1, hm, a2]
+    exact chainDesc_agree' h' hB5 (by rwa [hB', hlen']) (fun a ha => (hm a ha).symm)
+  refine ⟨E.hG, E.hW, by rwa [e403], ⟨by rw [e403]; omega, fun H' C' h' => ?_⟩,
     fun H' h' => ?_, by rw [hr K1 (by unfold envR; simp) (by decide)]; exact E.k1, ?_, ?_, ?_,
     E.hσ⟩
   · rw [e403] at h'
@@ -59,9 +60,9 @@ theorem ShEnv.of_agree {c c' : Config} (E : ShEnv P W H C z σ c)
     have hlen' : H'.length = H.length := by
       have a1 := h'.1
       have a2 := E.hD.1.1
-      rw [← a1, hm _ (by omega), a2]
-    exact E.hreg H' (hostAt_agree' h' (by rw [hlen']; exact hHA) (fun a ha => (hm a ha).symm))
-  · exact E.ox.copy (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
+      ram_rw [← a1, hm, a2]
+    exact E.hreg H' (hostAt_agree' h' (by rwa [hlen']) (fun a ha => (hm a ha).symm))
+  · exact AbsRecW.copy E.ox (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
       (by decide)) (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
       (by decide))
   · exact E.oy.copy (hr _ (by unfold envR; simp) (by decide)) (hr _ (by unfold envR; simp)
@@ -117,9 +118,9 @@ theorem ifEq_exec {a b : ℕ} {T E : Stmt} (c : Config) {K : ℕ} {R : Config �
     exact ⟨c', _, .ifLtN_true h1 ex, by omega, q⟩
   by_cases h2 : c.nreg b < c.nreg a
   · obtain ⟨c', k, ex, hk, q⟩ := hE (by omega)
-    exact ⟨c', _, .ifLtN_false h1 (.ifLtN_true h2 ex), by omega, q⟩
+    exact ⟨c', _, (by ram_path), by omega, q⟩
   · obtain ⟨c', k, ex, hk, q⟩ := hT (by omega)
-    exact ⟨c', _, .ifLtN_false h1 (.ifLtN_false h2 ex), by omega, q⟩
+    exact ⟨c', _, (by ram_path), by omega, q⟩
 
 theorem wpos_exec {i₁ i₂ : Instr} {c c₁ c₂ : Config} (e₁ : Exec P W (.instr i₁) c c₁ 1)
     (e₂ : Exec P W (.instr i₂) c₁ c₂ 1) : Exec P W (wpos i₁ i₂) c c₂ 2 :=
@@ -202,7 +203,7 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
           rw [q36, q56] at he
           obtain ⟨c', k, ex, hk, a, b⟩ := vP c₁ w₁ q50
           exact ⟨c', k, ex, hk, by rw [ite_eq_right he, a], by rw [ite_eq_right he, b]⟩)
-      exact ⟨c', _, .ifLtN_true (by rw [q57, qK]; omega) ex, by omega, v1, v2⟩
+      exact ⟨c', _, (by ram_path), by omega, v1, v2⟩
   unfold k1OutR
   by_cases t1 : c₁.nreg 120006 < c₁.nreg 140256
   · obtain ⟨c', k, ex, hk, v1, v2⟩ := outside (by rw [q06, q56] at t1; omega)
@@ -240,8 +241,8 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
         by simp [K1]; rw [r50, q52], by simp [K1]; rw [← K1, r06, rK], fun r h1 h2 => by
           simp [h1, h2]⟩
     have w₃ := e₃.wb_right
-    have s36 : c₃.nreg 140236 = h := by rw [g₃ _ (by decide) (by decide), r36]
-    have sK : c₃.nreg K1 = 1 := by rw [g₃ _ (by decide) (by decide), rK]
+    have s36 : c₃.nreg 140236 = h := by frame_finish
+    have sK : c₃.nreg K1 = 1 := by ram_rw [g₃, rK]
     obtain ⟨c', k, ex, hk, v1, v2⟩ := ifEq_exec (P := P) (W := W) (a := 140236) (b := 140354)
       (T := wpos (.addN 140225 140353 K1) (.constN 140226 0))
       (E := wpos (.copyN 140225 140353) (.addN 140226 140236 K1)) c₃ (K := 2)
@@ -278,9 +279,9 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
         (Exec.block_nil ec.wb_right))), rfl, ?_, fun r hr => by simp [hr]⟩
       simp [K1]; rw [← K1, r50, r58, rK, q52]
     have w₃ := e₃.wb_right
-    have s36 : c₃.nreg 140236 = h := by rw [g₃ _ (by decide), r36]
-    have s06 : c₃.nreg 120006 = e' := by rw [g₃ _ (by decide), r06]
-    have sK : c₃.nreg K1 = 1 := by rw [g₃ _ (by decide), rK]
+    have s36 : c₃.nreg 140236 = h := by ram_rw [g₃, r36]
+    have s06 : c₃.nreg 120006 = e' := by ram_rw [g₃, r06]
+    have sK : c₃.nreg K1 = 1 := by ram_rw [g₃, rK]
     obtain ⟨c', k, ex, hk, v1, v2⟩ := ifEq_exec (P := P) (W := W) (a := 140236) (b := 120006)
       (T := wpos (.addN 140225 140353 K1) (.constN 140226 0))
       (E := wpos (.copyN 140225 140353) (.addN 140226 140236 K1)) c₃ (K := 2)
@@ -301,8 +302,7 @@ theorem k1OutR_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1)
           (by simp [K1]; rw [← K1, s36, sK]; omega)
         exact ⟨_, _, wpos_exec ea' eb', le_rfl, by rw [ite_eq_right he]; simp [s53],
           by rw [ite_eq_right he]; simp [K1]; rw [← K1, s36, sK]⟩)
-    exact ⟨c', _, .seq e₀ (.ifLtN_false t1 (.ifLtN_true t2 (.seq e₁ (.ifLtN_true
-      (by rw [r57, rK]; omega) (.seq e₃ ex))))), by omega, v1, v2⟩
+    exact ⟨c', _, .seq e₀ (.ifLtN_false t1 (by ram_path)), by omega, v1, v2⟩
 
 end
 

@@ -64,7 +64,7 @@ theorem inC_seg {C : Chain} {a b x : Point} (ha : a ∈ C.set) (hb : b ∈ C.set
 /-- **The points of a block of tour edges** are points of `C`. -/
 theorem block_inC {C : Chain} {p₀ w : ℕ} (hw : 1 ≤ w) (hp6 : 6 ≤ p₀) (hp : p₀ + w ≤ 2 * C.m + 6)
     {x : Point} (hx : x ∈ (chainModel C).arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ)) : InC C x := by
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hnW := chainModel_n C
   obtain ⟨d, hd, hxd⟩ := (arcSet_nat (M := chainModel C) (p₀ := p₀) hw (by omega) x).1 hx
   have hv : ∀ q, 6 ≤ q → q ≤ 2 * C.m + 6 → (chainModel C).W.vtx q ∈ C.set := fun q h1 h2 => by
     obtain ⟨i, rfl⟩ : ∃ i, q = i + 6 := ⟨q - 6, by omega⟩
@@ -131,7 +131,7 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
     refine ⟨fun t' ht' => ?_, id⟩
     have : σ * ((rayPt z σ t').1 - z.1) = t' := by
       rw [rayPt_fst]; ring_nf; rw [show σ ^ 2 = σ * σ by ring, hσ2]; ring
-    rw [this]; exact ⟨ht', rfl⟩
+    simp_all
   | box h =>
     simp only [QRel] at hrel
     simp only [QOrigin.eval]
@@ -147,7 +147,7 @@ theorem query_transfer {P : Polygon} (hσ : σ = 1 ∨ σ = -1) {Cα : Chain} {o
     refine ⟨hf, ?_⟩
     ext
     · simp only [rayPt_fst]; linear_combination (-σ * Cα.radius - z.1) * hσ2
-    · simp only [rayPt_snd]; rw [hrel]
+    · simp_all
 
 end ShootCut
 

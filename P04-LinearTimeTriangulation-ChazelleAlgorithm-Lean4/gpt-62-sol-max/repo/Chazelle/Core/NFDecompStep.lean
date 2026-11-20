@@ -39,7 +39,12 @@ theorem top_of {u t : ℕ} (hu : u < R) (htop : IsTop pch σ.rem t)
   obtain ⟨-, h1, h2⟩ := hT u hu
   exact top_unique h h1 htop h2 hanc
 
-theorem top_self {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) : top t = t :=
+section
+
+variable {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t)
+
+include ht htop in
+theorem top_self : top t = t :=
   top_of h hch hT hB hI ht htop ReflTransGen.refl
 
 theorem top_iff {u : ℕ} (hu : u < R) : top u = u ↔ IsTop pch σ.rem u := by
@@ -68,8 +73,9 @@ theorem chosen_facts {e : ℕ} (he : e < K) (hc : Chosen σ top best chOf e) :
     · rw [c3] at h1; exact hr h1
   refine ⟨t1, t2, ha, hb, fun e' => hnt (e' ▸ t2), hnt, t3, c1, c2, c3, fun hp => hr (hI.i0 e he hp)⟩
 
+include ht htop in
 /-- The chord cut in an active component that is not a singleton. -/
-theorem cut_chosen {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act t = 1)
+theorem cut_chosen (hact : σ.act t = 1)
     (hbt : best t ≠ t) :
     best t < R ∧ AncX R prg pch σ.rem t (best t) ∧ best t ≠ 0 ∧ pch (best t) < K ∧
       chOf (pch (best t)) = best t ∧ top (best t) = t ∧ Chosen σ top best chOf (pch (best t)) ∧
@@ -77,12 +83,12 @@ theorem cut_chosen {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ
   obtain ⟨-, hB2⟩ := hB t ht htop
   rcases hB2 with ⟨e, -⟩ | ⟨b1, b2, b3, -⟩
   · exact absurd e hbt
-  have hnt : ¬ IsTop pch σ.rem (best t) := AncX.not_top b2 (Ne.symm b3)
+  have hnt := AncX.not_top b2 (Ne.symm b3)
   simp only [IsTop, not_or] at hnt
   have hch' := chOf_pch h hch hT hB hI b1 hnt.1
   have htop' := top_of h hch hT hB hI b1 htop b2
   refine ⟨b1, b2, hnt.1, h.pch_lt _ b1 hnt.1, hch', htop', ⟨hnt.2, ?_, ?_⟩, hnt.2⟩
-  · rw [hch', htop']; exact hact
+  · rwa [hch', htop']
   · rw [hch', htop']
 
 /-- A chosen chord is the parent chord of the best candidate of its component. -/
@@ -159,7 +165,7 @@ theorem no_chosen_in {t w : ℕ} (_ht : t < R) (htop : IsTop pch σ.rem t)
     (hncut : σ.act t = 1 → best t = t) (hw : w < R) (htw : AncX R prg pch σ.rem t w) (hwt : w ≠ t) :
     ¬ Chosen σ top best chOf (pch w) := by
   intro hc
-  have hw0 : w ≠ 0 := fun e => AncX.not_top htw (Ne.symm hwt) (Or.inl e)
+  have hw0 := fun e => AncX.not_top htw (Ne.symm hwt) (Or.inl e)
   obtain ⟨hb, ha⟩ := chosen_unique h hch hT hB hI hw hw0 hc
   rw [top_of h hch hT hB hI hw htop htw] at hb ha
   exact hwt (hb.symm.trans (hncut ha))
@@ -168,12 +174,13 @@ theorem no_chosen_in {t w : ℕ} (_ht : t < R) (htop : IsTop pch σ.rem t)
 theorem chosen_in_cut {t w : ℕ} (_ht : t < R) (htop : IsTop pch σ.rem t) (hw : w < R)
     (htw : AncX R prg pch σ.rem t w) (hwt : w ≠ t) (hc : Chosen σ top best chOf (pch w)) :
     w = best t := by
-  have hw0 : w ≠ 0 := fun e => AncX.not_top htw (Ne.symm hwt) (Or.inl e)
+  have hw0 := fun e => AncX.not_top htw (Ne.symm hwt) (Or.inl e)
   obtain ⟨hb, -⟩ := chosen_unique h hch hT hB hI hw hw0 hc
   rw [top_of h hch hT hB hI hw htop htw] at hb
   exact hb.symm
 
-theorem sub_uncut {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t)
+include ht htop in
+theorem sub_uncut
     (hncut : σ.act t = 1 → best t = t) :
     sub R prg pch (next R K prg pch isdn chOf top best σ).rem t = sub R prg pch σ.rem t := by
   ext v
@@ -197,7 +204,8 @@ theorem sub_member {t c : ℕ} (htc : AncX R prg pch σ.rem t c) :
   · rintro ⟨⟨hv, htv⟩, hcv⟩
     exact ⟨hv, (anc_member h htc hv).2 ⟨htv, hcv⟩⟩
 
-theorem sub_cut_c {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act t = 1)
+include ht htop in
+theorem sub_cut_c (hact : σ.act t = 1)
     (hbt : best t ≠ t) :
     sub R prg pch (next R K prg pch isdn chOf top best σ).rem (best t) = sub R prg pch σ.rem (best t) := by
   obtain ⟨b1, b2, -, -, -, -, -, -⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
@@ -216,8 +224,9 @@ theorem sub_cut_c {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
       exact hbt (AncX.antisymm h hcw b2 ht)
     exact hwc (chosen_in_cut h hch hT hB hI ht htop hw htw hwt hc)
 
+include ht htop in
 open Classical in
-theorem sub_cut_t {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act t = 1)
+theorem sub_cut_t (hact : σ.act t = 1)
     (hbt : best t ≠ t) :
     sub R prg pch (next R K prg pch isdn chOf top best σ).rem t =
       (sub R prg pch σ.rem t).filter (fun v => ¬ AncX R prg pch rem0 (best t) v) := by
@@ -228,7 +237,7 @@ theorem sub_cut_t {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
   · rintro ⟨hv, hav⟩
     obtain ⟨htv, hkeep⟩ := (ancX_next h hch hT hB hI hv).1 hav
     refine ⟨⟨hv, htv⟩, fun hcv => ?_⟩
-    have hcv' : AncX R prg pch σ.rem (best t) v := (anc_member h b2 hv).2 ⟨htv, hcv⟩
+    have hcv' := (anc_member h b2 hv).2 ⟨htv, hcv⟩
     exact hkeep (best t) b2 hcv' hbt hcho
   · rintro ⟨⟨hv, htv⟩, hncv⟩
     refine ⟨hv, (ancX_next h hch hT hB hI hv).2 ⟨htv, fun w htw hwv hwt hc => ?_⟩⟩
@@ -237,8 +246,9 @@ theorem sub_cut_t {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
     rw [this] at hwv
     exact hncv hwv.to0
 
+include ht htop in
 open Classical in
-theorem sz_cut {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act t = 1)
+theorem sz_cut (hact : σ.act t = 1)
     (hbt : best t ≠ t) :
     sz R prg pch (next R K prg pch isdn chOf top best σ).rem (best t) = sz R prg pch σ.rem (best t) ∧
     sz R prg pch (next R K prg pch isdn chOf top best σ).rem t + sz R prg pch σ.rem (best t) =
@@ -249,6 +259,8 @@ theorem sz_cut {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act
   rw [sub_cut_t h hch hT hB hI ht htop hact hbt, sub_member h hch hT hB hI b2]
   rw [Nat.add_comm]
   exact Finset.card_filter_add_card_filter_not (fun v => AncX R prg pch rem0 (best t) v)
+
+end
 
 end step
 

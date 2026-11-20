@@ -43,8 +43,7 @@ theorem flat_length_mono (Lx : ℕ → List (ℕ × ℕ × ℕ)) {j R : ℕ} (h 
 /-- The gathered list grows by one kept list. -/
 theorem flat_succ (Lx : ℕ → List (ℕ × ℕ × ℕ)) (j : ℕ) :
     (List.range (j + 1)).flatMap Lx = (List.range j).flatMap Lx ++ Lx j := by
-  rw [List.range_succ, List.flatMap_append]
-  simp
+  simp [List.range_succ, List.flatMap_append]
 
 /-- **(I3) at the next level.** -/
 theorem i3_step {lam K K₁ K' n p γ₀ : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ p)
@@ -73,13 +72,13 @@ theorem cost_le {R K K₂ M ν Λ κc κS κr X : ℕ} (hR : R = K + 1) (hK₂ :
       κS * (K + K₂ + (4 * K + 3) + 1) * (Nat.clog 2 (4 * M) + 1) + 2 +
         κr * (K + K₂ + 1) * X ≤
       (300 + 48 * κc + 5 * κS * κc + κr * κc) * R * Λ := by
-  have hRν : K₂ ≤ R * ν := hK₂.trans (Nat.mul_le_mul_left _ hM)
+  have hRν := hK₂.trans (Nat.mul_le_mul_left _ hM)
   have hMR : M * R ≤ R * ν := by rw [Nat.mul_comm]; exact Nat.mul_le_mul_left _ hM
   have hz : R * ν ≤ κc * (R * Λ) := by
     calc R * ν ≤ R * (κc * Λ) := Nat.mul_le_mul_left _ h1
       _ = κc * (R * Λ) := by ring
   have hy : R ≤ R * Λ := Nat.le_mul_of_pos_right _ hΛ
-  have hR1 : 1 ≤ R := by omega
+  
   -- the gather
   have hg : (8 * K₂ + (35 * M + 32) * R + 26) + (5 * K₂ + 1) + 2 ≤
       61 * (R * Λ) + 48 * (κc * (R * Λ)) := by

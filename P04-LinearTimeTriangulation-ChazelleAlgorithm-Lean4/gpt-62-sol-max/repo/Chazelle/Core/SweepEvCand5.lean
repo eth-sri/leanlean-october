@@ -25,11 +25,11 @@ start, before the far end of the chord of `C₂`, whose hit lies on the arcs `lo
 its attachment. -/
 def CandComp (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (T j u d : ℕ) (a : Point)
     (σ : ℝ) (lo : Set Point) (c c' : Config) : Prop :=
-  ∀ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ) p t →
-    sidePt (chainModel J.whole).W p t = rayPt a σ (J.whole.hitParam a σ) →
-    (Lst J : ℝ) < oW J (p + t) → sidePt (chainModel J.whole).W p t ≠ J.shared →
+  ∀ (p : ℕ) (t : ℝ), SideAttach J.wholeModel.W (Merge.shoot J.whole a σ) p t →
+    sidePt J.wholeModel.W p t = rayPt a σ (J.whole.hitParam a σ) →
+    (Lst J : ℝ) < oW J (p + t) → sidePt J.wholeModel.W p t ≠ J.shared →
     J.whole.hitParam a σ < J.right.hitParam a σ → rayPt a σ (J.whole.hitParam a σ) ∈ lo →
-    ∃ h, (chainModel J.whole).param (Qof P) ⟨p, h⟩ = t ∧ AccAt P J S₂ T j u d a σ c c' p h
+    ∃ h, J.wholeModel.param (Qof P) ⟨p, h⟩ = t ∧ AccAt P J S₂ T j u d a σ c c' p h
 
 /-- The cost of a candidate. -/
 def evCandK (Fg K KG : ℕ) : ℕ := evShotK Fg K + KG + 56500
@@ -39,26 +39,26 @@ theorem cand_prep {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set Point)
     (hS₂ : S₂ ⊆ Merge.augChords J.right) {ch : Set Point} (hch : ch ∈ S₂) {a : Point} {σ : ℝ}
     (ha : (σ = 1 ∧ a = Merge.lend ch) ∨ (σ = -1 ∧ a = Merge.rend ch)) (haR : a ∈ J.right.set)
     (hav : a ≠ J.shared) (ha₁ : a.2 ≤ J.left.top.2) {p : ℕ} {t : ℝ}
-    (h1 : SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ) p t)
-    (h2 : sidePt (chainModel J.whole).W p t = rayPt a σ (J.whole.hitParam a σ))
-    (h3 : (Lst J : ℝ) < oW J (p + t)) (h4 : sidePt (chainModel J.whole).W p t ≠ J.shared)
+    (h1 : SideAttach J.wholeModel.W (Merge.shoot J.whole a σ) p t)
+    (h2 : sidePt J.wholeModel.W p t = rayPt a σ (J.whole.hitParam a σ))
+    (h3 : (Lst J : ℝ) < oW J (p + t)) (h4 : sidePt J.wholeModel.W p t ≠ J.shared)
     (h5 : J.whole.hitParam a σ < J.right.hitParam a σ) :
     Genuine J.left a σ (J.whole.hitParam a σ) ∧
       J.whole.hitParam a σ < (Merge.rend ch).1 - (Merge.lend ch).1 ∧
       ∃ d, MValid J d t ∧ mEdge J d = p ∧
-        Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ
-          ((b₁ J + d) % (chainModel J.left).W.n) t := by
+        Arrival J.leftModel.W (rayPt a σ (J.whole.hitParam a σ)) σ
+          ((b₁ J + d) % J.leftModel.W.n) t := by
   have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
   obtain ⟨hfr, -, -, hR, -, -⟩ := right_hit_end (hS₂ hch) ha
   have hfree := whole_free_end hP haR hav hfr
   obtain ⟨hg, d, hd⟩ := map_complete hP ha₁ hσ hfree h1 h2 h3 h4
-  exact ⟨hg, by rw [← hR]; exact h5, d, hd⟩
+  exact ⟨hg, by rwa [← hR], d, hd⟩
 
 theorem mod_back {n b d : ℕ} (hb : b < n) (hd : d < n) : ((b + d) % n + n - b) % n = d := by
   rcases Nat.lt_or_ge (b + d) n with h | h
   · rw [Nat.mod_eq_of_lt h, show b + d + n - b = d + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt hd]
-  · have e : (b + d) % n = b + d - n := by rw [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt (by omega)]
+  · have e : (b + d) % n = b + d - n := by ram_simp [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt]
     rw [e, show b + d - n + n - b = d by omega, Nat.mod_eq_of_lt hd]
 
 /-- Same key and best candidate. -/
@@ -77,8 +77,7 @@ theorem offerRel_lift {P : Polygon} {J : Merge.Junction} {c c₃ c' : Config} {e
   have eBF := hB _ (Or.inl rfl)
   have eBE := hB _ (Or.inr (Or.inl rfl))
   have eBH := hB _ (Or.inr (Or.inr (Or.inl rfl)))
-  have eLb : lblOf c₃ bN bL = lblOf c bN bL :=
-    lblOf_congr (fun q hq => hB q (Or.inr (Or.inr (Or.inr hq))))
+  have eLb := lblOf_congr (fun q hq => hB q (Or.inr (Or.inr (Or.inr hq))))
   obtain ⟨o1, o2, o3, o4, o5, o6⟩ := hO
   rw [eKE, eKH] at o3 o4 o5 o6
   rw [eBF, eBE, eBH] at o4 o5 o6
@@ -91,18 +90,18 @@ theorem tabUpd_congr {m m' : ℕ → ℕ} {T j e h x : ℕ}
     (hm : x ≠ T + 3 * j → x ≠ T + 3 * j + 1 → x ≠ T + 3 * j + 2 → m' x = m x) :
     tabUpd m' T j e h x = tabUpd m T j e h x := by
   unfold tabUpd upd
-  split_ifs <;> first | rfl | exact hm (by omega) (by omega) (by omega)
+  split_ifs <;> reg_omega
 
 theorem accAt_lift {P : Polygon} {J : Merge.Junction} {S₂ : Set (Set Point)} {T j u d : ℕ}
     {a : Point} {σ : ℝ} {c c₃ c' : Config} {e h : ℕ} (hs : SameKB c c₃)
-    (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x)
+    (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : MemEqBelow (c.nreg ALLOC) c₃.nmem c.nmem)
     (hacc : AccAt P J S₂ T j u d a σ c₃ c' e h) : AccAt P J S₂ T j u d a σ c c' e h :=
   ⟨hacc.1, fun x hx => by
-    rw [hacc.2.1 x (by omega)]
+    ram_rw [hacc.2.1 x]
     exact tabUpd_congr (fun _ _ _ => hm x hx), offerRel_lift hs hacc.2.2⟩
 
 theorem rejAt_lift {c c₃ c' : Config} (hs : SameKB c c₃) (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC)
-    (hm : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x) (hr : RejAt c₃ c') : RejAt c c' :=
+    (hm : MemEqBelow (c.nreg ALLOC) c₃.nmem c.nmem) (hr : RejAt c₃ c') : RejAt c c' :=
   ⟨fun x hx => (hr.1 x (by omega)).trans (hm x hx), bestSame_lift hs hr.2⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -115,47 +114,47 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (hgen : GenOK P W c₀ J g KG) {L : List ℕ} (hL : ∀ a ∈ L, a < N₁.arcs.length)
     (hgK : c.nreg wGK = L.length) (hAB : c.nreg wGB + 4 * L.length ≤ c.nreg ALLOC)
     (harcs : ∀ k, k < L.length → ShotList.arcAt c.nmem (c.nreg wGB) k =
-      nArc (chainModel J.left) (Qof P) N₁ (L.getD k 0))
-    {ch : Set Point} (hch : ch ∈ N₂.F (chainModel J.right) (Qof P)) {a : Point}
+      nArc J.leftModel (Qof P) N₁ (L.getD k 0))
+    {ch : Set Point} (hch : ch ∈ N₂.F J.rightModel (Qof P)) {a : Point}
     (hD : c.nreg oD ≤ 1)
     (ha : (dirOf (c.nreg oD) = 1 ∧ a = Merge.lend ch) ∨ (dirOf (c.nreg oD) = -1 ∧ a = Merge.rend ch))
     {s : SymPt} (hsym : SymPtIn c oSym s) (hsl : s.Lt P.n) (hse : s.eval (Qof P) = a)
     (habs : AbsRec P c oAbsA a.1 J.left.radius) (haR : a ∈ J.right.set) (hav : a ≠ J.shared)
     (ha₁ : a.2 ≤ J.left.top.2)
-    (hfe : c.nreg oFE < (chainModel J.right).W.n)
-    (hfp : ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg oFE, c.nreg oFC⟩)
-    (hfar : (chainModel J.right).pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩ =
+    (hfe : c.nreg oFE < J.rightModel.W.n)
+    (hfp : ProperPos J.rightModel (Qof P) P.n ⟨c.nreg oFE, c.nreg oFC⟩)
+    (hfar : J.rightModel.pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩ =
       if c.nreg oD = 1 then Merge.rend ch else Merge.lend ch)
     (hj : 2 * c.nreg oK + c.nreg oS < 2 * N₂.nChords)
     (hk : PosW P J (c.nreg kE) (c.nreg kH)) (hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH))
     (hbF : c.nreg bF ≤ 1) (hbN : c.nreg bN ≤ 4)
     (hroom : c.nreg ALLOC + evCandK (F (c₀.nreg (sw 5))) L.length KG ≤ W) :
     IRS P W c₀ (evCand sh g) c (evCandK (F (c₀.nreg (sw 5))) L.length KG) (fun c' =>
-      CandRes P J (N₂.F (chainModel J.right) (Qof P)) (c.nreg cTB) (2 * c.nreg oK + c.nreg oS)
+      CandRes P J (N₂.F J.rightModel (Qof P)) (c.nreg cTB) (2 * c.nreg oK + c.nreg oS)
         (c.nreg oUp) (c.nreg oDn) a (dirOf (c.nreg oD)) c c' ∧
-      CandComp P J (N₂.F (chainModel J.right) (Qof P)) (c.nreg cTB) (2 * c.nreg oK + c.nreg oS)
+      CandComp P J (N₂.F J.rightModel (Qof P)) (c.nreg cTB) (2 * c.nreg oK + c.nreg oS)
         (c.nreg oUp) (c.nreg oDn) a (dirOf (c.nreg oD))
-        (ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length []) c c' ∧
+        (ShotList.loSet J.leftModel (Qof P) c.nmem (c.nreg wGB) L.length []) c c' ∧
       (∀ r, bandOf r ∉ oracleBands → ¬ CandR r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC) := by
   have hP := E.hP
-  have hS₂ : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := E.hNF₂.1.2.1
-  have hS₂f : (N₂.F (chainModel J.right) (Qof P)).Finite := E.hNF₂.1.1
-  set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
+  have hS₂ : N₂.F J.rightModel (Qof P) ⊆ Merge.augChords J.right := E.hNF₂.1.2.1
+  have hS₂f : (N₂.F J.rightModel (Qof P)).Finite := E.hNF₂.1.1
+  set S₂ := N₂.F J.rightModel (Qof P) with hS₂d
   set σ := dirOf (c.nreg oD) with hσd
   have hσ : σ = 1 ∨ σ = -1 := by rw [hσd]; unfold dirOf; split_ifs <;> simp
   obtain ⟨hmd, hmwf, hm0, hcd⟩ := E.md hI
   subst hse
-  set lo := ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length [] with hlo
+  set lo := ShotList.loSet J.leftModel (Qof P) c.nmem (c.nreg wGB) L.length [] with hlo
   -- the rejection
   have rejQ : ∀ c' : Config,
       (∀ r, bandOf r ∉ oracleBands → ¬ CandR r → r ≠ ALLOC → c'.nreg r = c.nreg r) →
-      c.nreg ALLOC ≤ c'.nreg ALLOC → (∀ x, x < c.nreg ALLOC → c'.nmem x = c.nmem x) →
+      c.nreg ALLOC ≤ c'.nreg ALLOC → (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) →
       (∀ r, BestR r → c'.nreg r = c.nreg r) →
-      (∀ (p : ℕ) (t : ℝ), SideAttach (chainModel J.whole).W (Merge.shoot J.whole (s.eval (Qof P)) σ) p t →
-        sidePt (chainModel J.whole).W p t =
+      (∀ (p : ℕ) (t : ℝ), SideAttach J.wholeModel.W (Merge.shoot J.whole (s.eval (Qof P)) σ) p t →
+        sidePt J.wholeModel.W p t =
           rayPt (s.eval (Qof P)) σ (J.whole.hitParam (s.eval (Qof P)) σ) →
-        (Lst J : ℝ) < oW J (p + t) → sidePt (chainModel J.whole).W p t ≠ J.shared →
+        (Lst J : ℝ) < oW J (p + t) → sidePt J.wholeModel.W p t ≠ J.shared →
         J.whole.hitParam (s.eval (Qof P)) σ < J.right.hitParam (s.eval (Qof P)) σ →
         rayPt (s.eval (Qof P)) σ (J.whole.hitParam (s.eval (Qof P)) σ) ∈ lo → False) →
       CandRes P J S₂ (c.nreg cTB) (2 * c.nreg oK + c.nreg oS) (c.nreg oUp) (c.nreg oDn)
@@ -178,9 +177,8 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       hm0 (E.ctx1' hI) hcd hL hgK hAB harcs hsym hsl haR hav ha₁ hD hroom1) ?_)
     (by unfold evCandK; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨⟨f1, f2, f3⟩, fr1⟩
-  have k01 : c₁.nreg K0 = 0 := (E.hK.fix hI₁).1
-  have keep1 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ShW r → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr1.1 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
+  have k01 := (E.hK.fix hI₁).1
+  have keep1 := fun r h1 h2 h3 => fr1.1 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
   have nShW : ∀ r, ShW r → CandR r := fun r hr => by
     unfold ShW RS eF eNo sw at hr; unfold CandR sw; omega
   have best1 : ∀ r, BestR r → c₁.nreg r = c.nreg r := fun r hr => keep1 r
@@ -196,13 +194,13 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   · rw [k01] at hF
     have hF1 : c₁.nreg eF = 1 := by omega
     obtain ⟨τ, hτ, huq, hAle, hA1, hA0⟩ := f3 hF1
-    refine IRS.mono (K := KG + 56498 + 2) (IRS.ifT (by rw [k01]; exact hF) ?_) (by omega)
+    refine IRS.mono (K := KG + 56498 + 2) (IRS.ifT (by rwa [k01]) ?_) (by omega)
       (fun _ h => h)
     by_cases hAr : c₁.nreg K0 < c₁.nreg eA
     · rw [k01] at hAr
       have hA11 : c₁.nreg eA = 1 := by omega
       obtain ⟨hpe, hppA, hArr, hnorm⟩ := hA1 hA11
-      refine IRS.mono (K := KG + 56496 + 2) (IRS.ifT (by rw [k01]; exact hAr) ?_) (by omega)
+      refine IRS.mono (K := KG + 56496 + 2) (IRS.ifT (by rwa [k01]) ?_) (by omega)
         (fun _ h => h)
       -- 2. the genuineness check
       have eD1 : c₁.nreg oD = c.nreg oD := keep1 _ (by unfold oD sw; norm_num) (by unfold oD sw; norm_num)
@@ -218,11 +216,10 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           (by unfold ShW RS oAbsA eF eNo sw; omega))
       have hroomG : c₁.nreg ALLOC + KG ≤ W := by unfold evCandK at hroom; omega
       refine IRS.seq (K₁ := KG) (K₂ := 56496) (hgen c₁ (s.eval (Qof P)) σ τ hI₁ hroomG
-        (by rw [eD1]; exact hD) (by rw [eD1]) habs1 haR hav ha₁ hτ hpe hppA hArr) ?_
+        (by rwa [eD1]) (by rw [eD1]) habs1 haR hav ha₁ hτ hpe hppA hArr) ?_
       rintro c₂ hI₂ hA₂ hA₂' ⟨hbG, frG⟩
-      have k02 : c₂.nreg K0 = 0 := (E.hK.fix hI₂).1
-      have keep2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ShW r → ¬ GR r → c₂.nreg r = c.nreg r :=
-        fun r h1 h2 h3 h4 => (frG.1 r (not_oracle_sw h1 h2) h4 (by unfold ALLOC; omega)).trans
+      have k02 := (E.hK.fix hI₂).1
+      have keep2 := fun r h1 h2 h3 h4 => (frG.1 r (not_oracle_sw h1 h2) h4 (by unfold ALLOC; omega)).trans
           (keep1 r h1 h2 h3)
       have keep2' : ∀ r, (sw 2200 ≤ r ∧ r < sw 2240) ∨ (sw 2283 < r ∧ r < sw 3000) →
           c₂.nreg r = c.nreg r := fun r hr => keep2 r (by unfold sw at hr; omega)
@@ -232,40 +229,36 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         frG.1 r (not_oracle_sw (by unfold eA sw at h1; omega) (by unfold eA sw at h2; omega))
           (by unfold GR cG eA sw at *; omega) (by unfold eA ALLOC sw at *; omega)
       have nGR : ∀ r, GR r → CandR r := fun r hr => by unfold GR cG sw at hr; unfold CandR sw; omega
-      have frR2 : ∀ r, bandOf r ∉ oracleBands → ¬ CandR r → r ≠ ALLOC → c₂.nreg r = c.nreg r :=
-        fun r hr h1 h2 => (frG.1 r hr (fun h => h1 (nGR r h)) h2).trans (frR1 r hr h1 h2)
+      have frR2 := fun r hr h1 h2 => (frG.1 r hr (fun h => h1 (nGR r h)) h2).trans (frR1 r hr h1 h2)
       have best2 : ∀ r, BestR r → c₂.nreg r = c.nreg r := fun r hr => by
         rw [← best1 r hr]
         exact frG.1 r (not_oracle_sw (by unfold BestR LblR bF bE bH bN bL sw at hr; omega)
           (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
           (by unfold BestR LblR bF bE bH bN bL at hr; unfold GR cG sw at *; omega)
           (by unfold BestR LblR bF bE bH bN bL ALLOC sw at *; omega)
-      have hA2c : c.nreg ALLOC ≤ c₂.nreg ALLOC := hA₁.trans frG.2.1
-      have hm2c : ∀ x, x < c.nreg ALLOC → c₂.nmem x = c.nmem x := fun x hx =>
+      have hA2c := hA₁.trans frG.2.1
+      have hm2c := fun x hx =>
         (frG.2.2 x (by omega)).trans (fr1.2.2 x hx)
       by_cases hGb : c₂.nreg K0 < c₂.nreg cG
       · rw [k02] at hGb
-        have hgen1 : Genuine J.left (s.eval (Qof P)) σ τ := hbG.2.1 (by have := hbG.1; omega)
-        refine IRS.mono (K := 56494 + 2) (IRS.ifT (by rw [k02]; exact hGb) ?_) (by omega) (fun _ h => h)
+        have hgen1 := hbG.2.1 (by have := hbG.1; omega)
+        refine IRS.mono (K := 56494 + 2) (IRS.ifT (by rwa [k02]) ?_) (by omega) (fun _ h => h)
         -- 3. the far-end test
         have eE1 := keepA2 (eA + 1) (by omega) (by omega)
         have eE2 := keepA2 (eA + 2) (by omega) (by omega)
-        have eFE : c₂.nreg oFE = c.nreg oFE := keep2' _ (Or.inl ⟨by unfold oFE sw; omega,
-          by unfold oFE sw; omega⟩)
-        have eFC : c₂.nreg oFC = c.nreg oFC := keep2' _ (Or.inl ⟨by unfold oFC sw; omega,
-          by unfold oFC sw; omega⟩)
-        have eD2 : c₂.nreg oD = c.nreg oD := keep2' _ (Or.inl ⟨by unfold oD sw; omega,
-          by unfold oD sw; omega⟩)
-        have hw : (chainModel J.left).pos (Qof P) ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩ =
+        have eFE : c₂.nreg oFE = c.nreg oFE := keep2' _ (Or.inl (by reg_omega))
+        have eFC : c₂.nreg oFC = c.nreg oFC := keep2' _ (Or.inl (by reg_omega))
+        have eD2 : c₂.nreg oD = c.nreg oD := keep2' _ (Or.inl (by reg_omega))
+        have hw : J.leftModel.pos (Qof P) ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩ =
             rayPt (s.eval (Qof P)) σ τ := hArr.2.2.2.1
-        have hy1 : |((chainModel J.left).pos (Qof P) ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩).2| <
+        have hy1 : |(J.leftModel.pos (Qof P) ⟨c₁.nreg (eA + 1), c₁.nreg (eA + 2)⟩).2| <
             J.left.radius := by
           rw [hw, Visibility.rayPt_snd]
           have hR₁ : J.left.radius = J.right.radius := rfl
           rw [hR₁]
           exact lt_of_le_of_lt (J.right.abs_le_coordBound_of_mem_set haR).2
             J.right.coordBound_lt_radius
-        have hy2 : |((chainModel J.right).pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩).2| <
+        have hy2 : |(J.rightModel.pos (Qof P) ⟨c.nreg oFE, c.nreg oFC⟩).2| <
             J.right.radius := by
           rw [hfar]
           obtain ⟨-, -, -, -, hl2, hr2⟩ := right_hit_end (hS₂ hch) ha
@@ -275,8 +268,8 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         have hroomF : c₂.nreg ALLOC + 34000 ≤ W := by
           have := frG.2.1; unfold evCandK at hroom; omega
         refine IRS.seq (K₁ := 34000) (K₂ := 22494) (farChk_irs hI₂ E.hK (E.ctx1' hI₂) (E.ctx2' hI₂)
-          (by rw [eE1]; exact hpe) (by rw [eE1, eE2]; exact hppA) (by rw [eE1, eE2]; exact hy1)
-          (by rw [eFE]; exact hfe) (by rw [eFE, eFC]; exact hfp) (by rw [eFE, eFC]; exact hy2)
+          (by rwa [eE1]) (by rwa [eE1, eE2]) (by rwa [eE1, eE2])
+          (by rwa [eFE]) (by rwa [eFE, eFC]) (by rwa [eFE, eFC])
           (by rw [eD2]; exact hD) hroomF) ?_
         rintro c₃ hI₃ hA₃ hA₃' ⟨hbF', frF⟩
         rw [eE1, eE2, eFE, eFC, eD2, hw, hfar] at hbF'
@@ -295,26 +288,24 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
             rw [ite_eq_right hd1, ite_eq_right hd1, Visibility.rayPt_fst, h1, h2]
             constructor <;> intro h <;> linarith
         have hbFr := hbF'.congr hfarIff
-        have k03 : c₃.nreg K0 = 0 := (E.hK.fix hI₃).1
-        have keep3 : ∀ r, ¬ (cAW ≤ r ∧ r ≤ cFr) → bandOf r ∉ oracleBands → r ≠ ALLOC →
-            c₃.nreg r = c₂.nreg r := fun r h1 h2 h3 => frF.1 r h2 h1 h3
+        have k03 := (E.hK.fix hI₃).1
+        have keep3 := fun r h1 h2 h3 => frF.1 r h2 h1 h3
         have nF : ∀ r, cAW ≤ r ∧ r ≤ cFr → CandR r := fun r hr => by
           unfold cAW cFr sw at hr; unfold CandR sw; omega
-        have frR3 : ∀ r, bandOf r ∉ oracleBands → ¬ CandR r → r ≠ ALLOC → c₃.nreg r = c.nreg r :=
-          fun r hr h1 h2 => (keep3 r (fun h => h1 (nF r h)) hr h2).trans (frR2 r hr h1 h2)
+        have frR3 := fun r hr h1 h2 => (keep3 r (fun h => h1 (nF r h)) hr h2).trans (frR2 r hr h1 h2)
         have best3 : ∀ r, BestR r → c₃.nreg r = c.nreg r := fun r hr => by
           rw [← best2 r hr]
           exact keep3 r (by unfold BestR LblR bF bE bH bN bL at hr; unfold cAW cFr sw at *; omega)
             (not_oracle_sw (by unfold BestR LblR bF bE bH bN bL sw at hr; omega)
               (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
             (by unfold BestR LblR bF bE bH bN bL ALLOC sw at *; omega)
-        have hA3c : c.nreg ALLOC ≤ c₃.nreg ALLOC := hA2c.trans frF.2.1
-        have hm3c : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x := fun x hx =>
+        have hA3c := hA2c.trans frF.2.1
+        have hm3c := fun x hx =>
           (frF.2.2 x (by omega)).trans (hm2c x hx)
         by_cases hFr : c₃.nreg K0 < c₃.nreg cFr
         · rw [k03] at hFr
-          have hlt : τ < (Merge.rend ch).1 - (Merge.lend ch).1 := hbFr.2.1 (by have := hbFr.1; omega)
-          refine IRS.mono (K := 22300 + 2) (IRS.ifT (by rw [k03]; exact hFr) ?_) (by omega)
+          have hlt := hbFr.2.1 (by have := hbFr.1; omega)
+          refine IRS.mono (K := 22300 + 2) (IRS.ifT (by rwa [k03]) ?_) (by omega)
             (fun _ h => h)
           -- 4. the accepting tail
           have kc3 : ∀ r, (sw 2200 ≤ r ∧ r < sw 2240) ∨ (sw 2283 < r ∧ r < sw 3000) →
@@ -330,59 +321,59 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
             exact keepA2 r h1 h2
           have e31 := kA3 (eA + 1) (by omega) (by omega)
           have e32 := kA3 (eA + 2) (by omega) (by omega)
-          have hs3 : SameKB c c₃ := ⟨kc3 _ (Or.inr ⟨by unfold kE sw; omega, by unfold kE sw; omega⟩),
-            kc3 _ (Or.inr ⟨by unfold kH sw; omega, by unfold kH sw; omega⟩), best3⟩
-          have eK3 : c₃.nreg oK = c.nreg oK := kc3 _ (Or.inl ⟨by unfold oK sw; omega, by unfold oK sw; omega⟩)
-          have eS3 : c₃.nreg oS = c.nreg oS := kc3 _ (Or.inl ⟨by unfold oS sw; omega, by unfold oS sw; omega⟩)
-          have eU3 : c₃.nreg oUp = c.nreg oUp := kc3 _ (Or.inl ⟨by unfold oUp sw; omega, by unfold oUp sw; omega⟩)
-          have eN3 : c₃.nreg oDn = c.nreg oDn := kc3 _ (Or.inl ⟨by unfold oDn sw; omega, by unfold oDn sw; omega⟩)
-          have eT3 : c₃.nreg cTB = c.nreg cTB := (E.tb' hI₃).trans (E.tb' hI).symm
+          have hs3 : SameKB c c₃ := ⟨kc3 _ (Or.inr (by reg_omega)),
+            kc3 _ (Or.inr (by reg_omega)), best3⟩
+          have eK3 : c₃.nreg oK = c.nreg oK := kc3 _ (Or.inl (by reg_omega))
+          have eS3 : c₃.nreg oS = c.nreg oS := kc3 _ (Or.inl (by reg_omega))
+          have eU3 : c₃.nreg oUp = c.nreg oUp := kc3 _ (Or.inl (by reg_omega))
+          have eN3 : c₃.nreg oDn = c.nreg oDn := kc3 _ (Or.inl (by reg_omega))
+          have eT3 := (E.tb' hI₃).trans (E.tb' hI).symm
           have hTW3 : c₃.nreg cTB + 3 * (2 * c₃.nreg oK + c₃.nreg oS) + 2 ≤ W := by
             rw [E.tb' hI₃, eK3, eS3]; have := E.hTW; omega
           have hroomA : c₃.nreg ALLOC + 22300 ≤ W := by
             have := frF.2.1; have := frG.2.1; unfold evCandK at hroom; omega
           refine (evAccT_irs (S₂ := S₂) hI₃ E.hK E.hM hP hS₂ hS₂f hch ha haR hav ha₁ hgen1 hlt
-            (by rw [e31]; exact hpe) (by rw [e31, e32]; exact hppA) (by rw [e31, e32]; exact hnorm)
-            (by rw [e31, e32]; exact hArr) E.ctxW E.hgw (by rw [hs3.1, hs3.2.1]; exact hk)
-            (by rw [hs3.2.2 _ (Or.inl rfl), hs3.2.2 _ (Or.inr (Or.inl rfl)),
-              hs3.2.2 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hb)
-            (by rw [hs3.2.2 _ (Or.inl rfl)]; exact hbF)
-            (by rw [hs3.2.2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))]; exact hbN)
+            (by rwa [e31]) (by rwa [e31, e32]) (by rwa [e31, e32])
+            (by rwa [e31, e32]) E.ctxW E.hgw (by rwa [hs3.1, hs3.2.1])
+            (by rwa [hs3.2.2 _ (Or.inl rfl), hs3.2.2 _ (Or.inr (Or.inl rfl)),
+              hs3.2.2 _ (Or.inr (Or.inr (Or.inl rfl)))])
+            (by rwa [hs3.2.2 _ (Or.inl rfl)])
+            (by rwa [hs3.2.2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))])
             (by rw [E.tb' hI₃]; exact E.hT) hTW3 E.hWn hroomA).mono le_rfl ?_
           rintro c' ⟨hacc, hrej, hfr4, hA4⟩
           rw [e31, e32, eT3, eK3, eS3, eU3, eN3] at hacc
           rw [e31, e32] at hrej
           refine ⟨?_, ?_, fun r hr h1 h2 => (hfr4 r hr h1 h2).trans (frR3 r hr h1 h2), hA3c.trans hA4⟩
-          · by_cases hMV : SweepEv.MVal J ((c₁.nreg (eA + 1) + (chainModel J.left).W.n - b₁ J) %
-                (chainModel J.left).W.n) (c₁.nreg (eA + 2))
+          · by_cases hMV : SweepEv.MVal J ((c₁.nreg (eA + 1) + J.leftModel.W.n - b₁ J) %
+                J.leftModel.W.n) (c₁.nreg (eA + 2))
             · exact Or.inr ⟨_, _, accAt_lift hs3 hA3c hm3c (hacc hMV)⟩
             · exact Or.inl (rejAt_lift hs3 hA3c hm3c (hrej hMV))
           · intro p t h1 h2 h3 h4 h5 h6
             obtain ⟨hg, -, d₀, hv₀, hpd, harr₀⟩ := prep p t h1 h2 h3 h4 h5
             have hτT := huq _ hg h6
             subst hτT
-            have ha₁' : (s.eval (Qof P)).2 ≤ J.left.top.2 := ha₁
+            have ha₁' := ha₁
             obtain ⟨hpq, htq⟩ := arrival_unique hP ha₁' hσ hg hArr harr₀
-            have hd₀ : d₀ < (chainModel J.left).W.n := lt_of_lt_of_le hv₀.1 (E₁_le hP)
-            have hdd : (c₁.nreg (eA + 1) + (chainModel J.left).W.n - b₁ J) %
-                (chainModel J.left).W.n = d₀ := by
+            have hd₀ : d₀ < J.leftModel.W.n := lt_of_lt_of_le hv₀.1 (E₁_le hP)
+            have hdd : (c₁.nreg (eA + 1) + J.leftModel.W.n - b₁ J) %
+                J.leftModel.W.n = d₀ := by
               rw [hpq]
               exact mod_back (b₁_lt (J := J)) hd₀
-            have hMV : SweepEv.MVal J ((c₁.nreg (eA + 1) + (chainModel J.left).W.n - b₁ J) %
-                (chainModel J.left).W.n) (c₁.nreg (eA + 2)) := by
+            have hMV : SweepEv.MVal J ((c₁.nreg (eA + 1) + J.leftModel.W.n - b₁ J) %
+                J.leftModel.W.n) (c₁.nreg (eA + 2)) := by
               rw [hdd]
               refine ⟨hv₀.1, hv₀.2.1, fun h => hv₀.2.2.1 ⟨h.1, h.2.1, fun ht0 => h.2.2 ?_⟩⟩
-              exact hnorm.2 (by rw [htq]; exact ht0)
+              exact hnorm.2 (by rwa [htq])
             have hacc' := accAt_lift hs3 hA3c hm3c (hacc hMV)
             rw [hdd, hpd] at hacc'
             refine ⟨_, ?_, hacc'⟩
-            have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+            have hM : WalkAx J.wholeModel := FactsChain.walkAx J.whole hP
             obtain ⟨-, hmem, hS, hpt, -⟩ := hacc'.1
             exact (hM.attach_unique (F₂plus_subset J hS₂ hmem) hS h1 (by rw [hpt, h2])).2
         · rw [k03] at hFr
           have hnlt : ¬ τ < (Merge.rend ch).1 - (Merge.lend ch).1 := fun h => by
             have := hbFr.2.2 h; omega
-          refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k03]; exact hFr) (IRS.skip hI₃ rfl)) (by omega) ?_
+          refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k03]) (IRS.skip hI₃ rfl)) (by omega) ?_
           rintro c' rfl
           refine rejQ c₃ frR3 hA3c hm3c best3 ?_
           intro p t h1 h2 h3 h4 h5 h6
@@ -392,7 +383,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           exact hnlt hlt'
       · rw [k02] at hGb
         have hng : ¬ Genuine J.left (s.eval (Qof P)) σ τ := fun h => by have := hbG.2.2 h; omega
-        refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k02]; exact hGb) (IRS.skip hI₂ rfl)) (by omega) ?_
+        refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k02]) (IRS.skip hI₂ rfl)) (by omega) ?_
         rintro c' rfl
         refine rejQ c₂ frR2 hA2c hm2c best2 ?_
         intro p t h1 h2 h3 h4 h5 h6
@@ -402,7 +393,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         exact hng hg
     · rw [k01] at hAr
       have hA0' : c₁.nreg eA ≠ 1 := by omega
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hAr) (IRS.skip hI₁ rfl)) (by omega) ?_
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) (by omega) ?_
       rintro c' rfl
       refine rejQ c₁ frR1 hA₁ (fun x hx => fr1.2.2 x hx) best1 ?_
       intro p t h1 h2 h3 h4 h5 h6
@@ -412,7 +403,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       exact hA0 hA0' _ _ harr
   · rw [k01] at hF
     have hF0 : c₁.nreg eF ≠ 1 := by omega
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hF) (IRS.skip hI₁ rfl)) (by omega) ?_
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) (by omega) ?_
     rintro c' rfl
     refine rejQ c₁ frR1 hA₁ (fun x hx => fr1.2.2 x hx) best1 ?_
     intro p t h1 h2 h3 h4 h5 h6

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.RestoreFPairs
 public import Chazelle.Core.DownPhaseOracleHit
 
@@ -94,11 +96,11 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   obtain ⟨hg3, hT⟩ := hhalf P c.nmem (c.nreg 81004) (c.nreg ALLOC) hX
   obtain ⟨hTn, hTv⟩ := hT P.n le_rfl
   have hAW := hw.1 ALLOC
-  have h4 : c.nreg 81004 ≠ 0 ∨ c.nreg 81004 = 0 := by omega
+  
   -- the input size
   have e1 := Exec.inputSize (P := P) hw 81020 hnW
   set c₁ : Config := { c with nreg := upd c.nreg 81020 P.n } with hc₁
-  have hw₁ : WordsBounded W c₁ := e1.wb_right
+  have hw₁ := e1.wb_right
   have r₁ : ∀ q, q ≠ 81020 → c₁.nreg q = c.nreg q := fun q h => by simp [hc₁, upd, h]
   have n₁ : c₁.nreg 81020 = P.n := by simp [hc₁, upd]
   -- the constants
@@ -109,7 +111,7 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     (repeat' apply And.intro) <;> omega
   have e2 := execB (P := P) fIniL hw₁ ok2
   set c₂ : Config := { c₁ with nreg := regB c₁.nmem fIniL c₁.nreg } with hc₂
-  have hw₂ : WordsBounded W c₂ := e2.wb_right
+  have hw₂ := e2.wb_right
   have v₂ : ∀ q, c₂.nreg q = regB c.nmem fIniL c₁.nreg q := fun q => rfl
   have f₂ : ∀ q, ¬ IniW q → c₂.nreg q = c.nreg q := fun q hq => by
     rw [v₂, regB_other _ _ _ (fun i hi => ?_), r₁ q (fun h => hq (by unfold IniW; omega))]
@@ -117,16 +119,14 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     unfold IniW at hq
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
       rfl <;> simp only [dstI] <;> omega
-  have z : c₂.nreg 81011 = 0 := by rw [v₂]; simp [fIniL, regB, regI, upd]
+  have z : c₂.nreg 81011 = 0 := by frame_finish
   have kd : c₂.nreg 81029 = c.nmem (c.nreg 81000) := by
-    rw [v₂]; simp [fIniL, regB, regI, upd, r₁ 81000 (by norm_num)]
-  have c20 : c₂.nreg 81020 = P.n := by rw [v₂]; simp [fIniL, regB, regI, upd, n₁]
+    frame_finish
+  have c20 : c₂.nreg 81020 = P.n := by frame_finish
   have c00 : c₂.nreg 81000 = c.nreg 81000 := f₂ _ (by unfold IniW; omega)
-  have c12 : c₂.nreg 81012 = 1 := by rw [v₂]; simp [fIniL, regB, regI, upd]
-  have c14 : c₂.nreg 81014 = 3 := by rw [v₂]; simp [fIniL, regB, regI, upd]
-  have hv : ∀ q, q ∈ [81007, 81011, 81012, 81013, 81014, 81015, 81016, 81024, 81023, 81022] →
-      ∀ c' : Config, (∀ r, r ∉ [81017, 81019, 81021, 81025, 81028] → c'.nreg r = c₂.nreg r) →
-      c'.nreg q = c₂.nreg q := fun q hq c' h => h q (by simp at hq ⊢; omega)
+  have c12 : c₂.nreg 81012 = 1 := by frame_finish
+  have c14 : c₂.nreg 81014 = 3 := by frame_finish
+  
   have vals : c₂.nreg 81007 = 0 ∧ c₂.nreg 81011 = 0 ∧ c₂.nreg 81012 = 1 ∧ c₂.nreg 81013 = 2 ∧
       c₂.nreg 81014 = 3 ∧ c₂.nreg 81015 = 5 ∧ c₂.nreg 81016 = 7 ∧ c₂.nreg 81024 = 10 ∧
       c₂.nreg 81020 = P.n ∧ c₂.nreg 81023 = P.n / 2 ∧ c₂.nreg 81022 = 2 * (P.n / 2) := by
@@ -156,7 +156,7 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
           regB c₂.nmem fIntL c₂.nreg q = v := fun q a b d e v h => by rw [g q a b d e, h]
       have w : ∀ q, q = 81021 ∨ q = 81017 ∨ q = 81019 ∨ q = 81025 →
           regB c₂.nmem fIntL c₂.nreg q = if q = 81021 then 0 else P.n := fun q hq => by
-        rcases hq with rfl | rfl | rfl | rfl <;> simp [fIntL, regB, regI, upd, c20]
+        rcases hq with rfl | rfl | rfl | rfl <;> rfl
       exact ⟨G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v07,
         G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v11,
         G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v12,
@@ -194,24 +194,24 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
       have G : ∀ q, q ≠ 81028 → q ≠ 81021 → q ≠ 81017 → q ≠ 81019 → q ≠ 81025 → ∀ v,
           c₂.nreg q = v → regB c₂.nmem fChL c₂.nreg q = v := fun q a b d e f v h => by
         rw [g q a b d e f, h]
-      have w21 : regB c₂.nmem fChL c₂.nreg 81021 = 6 := by simp [fChL, regB, regI, upd]
+      have w21 : regB c₂.nmem fChL c₂.nreg 81021 = 6 := by rfl
       have w19 : regB c₂.nmem fChL c₂.nreg 81019 = 2 * c.nmem (c.nreg 81000 + 3) + 6 := by
         simp [fChL, regB, regI, upd, c00, c14, show c₂.nmem = c.nmem from rfl]; ring
       have w25 : regB c₂.nmem fChL c₂.nreg 81025 = 2 * c.nmem (c.nreg 81000 + 3) + 6 := by
-        simp [fChL, regB, regI, upd, c00, c14, show c₂.nmem = c.nmem from rfl]; ring
+        assumption
       have w17 : regB c₂.nmem fChL c₂.nreg 81017 = 2 * c.nmem (c.nreg 81000 + 3) + 7 := by
         simp [fChL, regB, regI, upd, c00, c14, c12, show c₂.nmem = c.nmem from rfl]; ring
-      exact ⟨G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v07,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v11,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v12,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v13,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v14,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v15,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v16,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v24,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v20,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v23,
-        G _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) _ v22,
+      exact ⟨(ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v07)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v11)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v12)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v13)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v14)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v15)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v16)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v24)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v20)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v23)),
+        (ram_app% (G _ ?_ ?_ ?_ ?_ ?_ _ v22)),
         fun _ => ⟨w21, w19, w25, w17⟩, fun h => absurd hk0 h⟩
 
 end

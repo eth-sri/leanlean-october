@@ -59,14 +59,14 @@ theorem clog_le_eight_rpow (μ : ℕ) : (Nat.clog 2 μ : ℝ) ≤ 8 * (μ : ℝ)
     -- 2^(2(k-1)/3) ≤ μ^(2/3)
     have h3 : (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := by
       have hpred : ((k.pred : ℕ) : ℝ) = (k : ℝ) - 1 := by
-        rw [Nat.pred_eq_sub_one, Nat.cast_sub hk1, Nat.cast_one]
+        simp_all
       have hltR : (2 : ℝ) ^ (k.pred) ≤ (μ : ℝ) := by exact_mod_cast hlt.le
       calc (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) = ((2 : ℝ) ^ (k.pred)) ^ ((2 : ℝ) / 3) := by
             rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num), hpred]
             congr 1
             ring
         _ ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow (by positivity) hltR (by norm_num)
-    have : (0 : ℝ) ≤ (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) := (two_rpow_pos _).le
+    
     nlinarith
 
 end

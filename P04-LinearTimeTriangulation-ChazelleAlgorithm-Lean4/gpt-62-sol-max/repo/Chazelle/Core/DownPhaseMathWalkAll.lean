@@ -47,7 +47,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
     apply List.flatMap_congr
     intro t ht
     rw [List.mem_range] at ht
-    simp only [hf, Nat.mod_eq_of_lt ht]
+    simp [hf, Nat.mod_eq_of_lt ht]
   have h2 : (List.range k).flatMap (fun t => B t ++ f (t + 1)) =
       (List.range k).flatMap (fun t => B t ++ A ((t + 1) % k)) := rfl
   have hk0 : f k = A 0 := by simp [hf]
@@ -57,9 +57,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
   -- the concatenation starts with `A 0`
   obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
   obtain ⟨W', hW'⟩ : ∃ W', (List.range (k' + 1)).flatMap (fun t => A t ++ B t) = A 0 ++ W' := by
-    rw [List.range_succ_eq_map, List.flatMap_cons]
-    exact ⟨B 0 ++ List.flatMap (fun t => A t ++ B t) (List.map Nat.succ (List.range k')),
-      by simp only [List.append_assoc]⟩
+    simp [List.range_succ_eq_map, List.flatMap_cons, List.append_assoc]
   rw [hW'] at e ⊢
   rw [List.append_assoc] at e
   have := List.append_cancel_left e
@@ -69,15 +67,11 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
 theorem exists_arc {Q : Polygon} {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
     (hFam : (interiorModel Q).ChordFamily Q S) (hne : S.Nonempty)
     (hR : R ∈ (interiorModel Q).regions S) : ∃ a b, (interiorModel Q).IsArc S R a b := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
-  obtain ⟨p, t, hp, ht0, ht1, hnc, hfac⟩ := DownHost.exists_faces_nc hM hFam.2.1 hFam.1 hR
+  have hM := walkAx_interiorModel hQ
+  obtain ⟨p, t, hp, ht0, ht1, hnc, hfac⟩ := hM.exists_faces_nc hFam.2.1 hFam.1 hR
   obtain ⟨X, hX, l, r', harc, hin⟩ := hM.arc_around hFam.2.1 hFam.1 hne hnc
   have hfacX := harc.2.2.2.2.2.2 p t hp ht0 ht1 hin
-  have hXR : X = R := by
-    obtain ⟨δ, h1, h2⟩ := (hfacX.and hfac).exists
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hR with h | h
-    · exact h
-    · exact absurd h2 (Set.disjoint_left.1 h h1)
+  have hXR := Chazelle.Chain.regionsIn_eq_of_eventually_mem hX hR hfacX hfac
   exact ⟨l, r', hXR ▸ harc⟩
 
 /-- The walk-order points of one arc's items. -/
@@ -98,16 +92,16 @@ cyclically, `nk` of them, starting right after a chord gap; and the host is well
 theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → Set Point}
     {r : ℕ} (X : RegCtx Q L E reg r) {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) :
     ∃ i0 g : ℕ,
-      RepFrom li Q ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r)
-        ((walkItems li Q.n (buildNF (interiorModel Q) Q L E) r).flatMap (wpts li Q.n)) i0 ∧
-      ((walkItems li Q.n (buildNF (interiorModel Q) Q L E) r).flatMap (wpts li Q.n)).length =
-        nk (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) ∧
-      g < nk (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) ∧
-      ChordGap (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) g ∧
-      (g + 1) % nk (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r)
-        = i0 % nk (interiorModel Q) ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r)
-      ∧ HostWF Q.n (walkItems li Q.n (buildNF (interiorModel Q) Q L E) r) := by
-  set N := buildNF (interiorModel Q) Q L E with hNdef
+      RepFrom li Q (interiorChords Q L E) (reg r)
+        ((walkItems li Q.n (interiorNF Q L E) r).flatMap (wpts li Q.n)) i0 ∧
+      ((walkItems li Q.n (interiorNF Q L E) r).flatMap (wpts li Q.n)).length =
+        nk (interiorModel Q) (interiorChords Q L E) (reg r) ∧
+      g < nk (interiorModel Q) (interiorChords Q L E) (reg r) ∧
+      ChordGap (interiorModel Q) (interiorChords Q L E) (reg r) g ∧
+      (g + 1) % nk (interiorModel Q) (interiorChords Q L E) (reg r)
+        = i0 % nk (interiorModel Q) (interiorChords Q L E) (reg r)
+      ∧ HostWF Q.n (walkItems li Q.n (interiorNF Q L E) r) := by
+  set N := interiorNF Q L E with hNdef
   set I := interiorModel Q with hI
   set S := N.F I Q with hS
   set R := reg r with hRdef

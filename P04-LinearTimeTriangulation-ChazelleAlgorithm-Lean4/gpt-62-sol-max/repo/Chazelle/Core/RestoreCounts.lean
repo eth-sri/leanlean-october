@@ -47,7 +47,7 @@ theorem cyc_cases {a b x : ℝ} (hab : a ≠ b) :
       rcases lt_or_gt_of_ne hxa with h2 | h2
       · exact Or.inr h2
       · left
-        have : ¬ x < b := fun h3 => h1 ⟨h2, h3⟩
+        have := fun h3 => h1 ⟨h2, h3⟩
         exact lt_of_le_of_ne (not_lt.1 this) (Ne.symm hxb)
   · rw [ite_eq_right (not_lt.2 h.le), ite_eq_left h]
     by_cases h1 : b < x ∧ x < a
@@ -56,7 +56,7 @@ theorem cyc_cases {a b x : ℝ} (hab : a ≠ b) :
       rcases lt_or_gt_of_ne hxb with h2 | h2
       · exact Or.inr h2
       · left
-        have : ¬ x < a := fun h3 => h1 ⟨h2, h3⟩
+        have := fun h3 => h1 ⟨h2, h3⟩
         exact lt_of_le_of_ne (not_lt.1 this) (Ne.symm hxa)
 
 /-- Two attachment positions with distinct points have distinct keys. -/
@@ -141,9 +141,9 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
       2 ≤ (sideExits M S R (pb + tb) (pa + ta)).ncard := by
   obtain ⟨heS, heR, hP⟩ := hsw
   set F := insert e S with hFdef
-  have hF : ChordSystem M.D F := hM.sys F (insert_subset he hS) (hfin.insert e)
-  have hSF : S ⊆ F := subset_insert e S
-  have heF : e ∈ F := mem_insert e S
+  have hF := hM.sys F (insert_subset he hS) (hfin.insert e)
+  have hSF := subset_insert e S
+  have heF := mem_insert e S
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hF hSF heF heS hR heR
   obtain ⟨K₁, K₂, hK, ⟨c₁, hK₁⟩, ⟨c₂, hK₂⟩, hsec₁, hsec₂⟩ := hM.split he hA hB hAB
   have hdisj : Disjoint K₁ K₂ := by
@@ -169,17 +169,17 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
       rw [hK₂] at hxK ⊢
       exact ⟨subset_component_of_touches hM.isOpen hF (hSF hcS) heF hce hx hxK (hsub Q hQ)
         (regionsIn_isPreconnected hQ) hcQ, p, t, hat, hin⟩
-  have hR₁R : R₁ ⊆ R := fun z hz => by
+  have hR₁R := fun z hz => by
     have h : z ∈ R \ e := by rw [← hs.union]; exact Or.inl hz
     exact h.1
-  have hR₂R : R₂ ⊆ R := fun z hz => by
+  have hR₂R := fun z hz => by
     have h : z ∈ R \ e := by rw [← hs.union]; exact Or.inr hz
     exact h.1
   have hc₁ := hP R₁ hs.mem₁ hR₁R
   have hc₂ := hP R₂ hs.mem₂ hR₂R
   have hfinS : ∀ Q : Set Point, (exitsIn M.D S Q).Finite := fun Q =>
     hfin.subset (Merge.exitsIn_subset S Q)
-  have hfinE : ∀ k₁ k₂ : ℝ, (sideExits M S R k₁ k₂).Finite := fun k₁ k₂ =>
+  have hfinE := fun k₁ k₂ =>
     (hfinS R).subset (sideExits_subset S R k₁ k₂)
   -- a half lies in one component
   have hin : ∀ Q ∈ regionsIn M.D F, Q ⊆ R → 2 ≤ (exitsIn M.D S Q).ncard → Q ⊆ K₁ ∨ Q ⊆ K₂ := by
@@ -215,9 +215,9 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
     have hzD : z ∈ M.D := heopen _ ⟨by norm_num, by norm_num⟩
     have hze : z ∈ e := by
       rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
-    have hRo : IsOpen R := hF.regionsIn_open hSF hR
+    have hRo := hF.regionsIn_open hSF hR
     obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z (heR ⟨hze, hzD⟩)
-    have hsys : ({e} : Set (Set Point)) ⊆ F := singleton_subset_iff.2 heF
+    have hsys := singleton_subset_iff.2 heF
     obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in hsys (mem_singleton e) hze hzD
     set ε := min (ε₀ / 2) (ρ / 2) with hε
     have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
@@ -246,11 +246,11 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
       rintro K ⟨c₀, rfl⟩ h1 h2
       exact hne ((connectedComponentIn_eq h1).symm.trans (connectedComponentIn_eq h2))
     rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · have hu' : ((z.1, z.2 + ε) : Point) ∈ K₁ := hU12.elim (fun h => h1 h) (fun h => h2 h)
-      have hd' : ((z.1, z.2 - ε) : Point) ∈ K₁ := hD12.elim (fun h => h1 h) (fun h => h2 h)
+    · have hu' := hU12.elim (fun h => h1 h) (fun h => h2 h)
+      have hd' := hD12.elim (fun h => h1 h) (fun h => h2 h)
       exact same K₁ ⟨c₁, hK₁⟩ hu' hd'
-    · have hu' : ((z.1, z.2 + ε) : Point) ∈ K₂ := hU12.elim (fun h => h1 h) (fun h => h2 h)
-      have hd' : ((z.1, z.2 - ε) : Point) ∈ K₂ := hD12.elim (fun h => h1 h) (fun h => h2 h)
+    · have hu' := hU12.elim (fun h => h1 h) (fun h => h2 h)
+      have hd' := hD12.elim (fun h => h1 h) (fun h => h2 h)
       exact same K₂ ⟨c₂, hK₂⟩ hu' hd'
   have i1 := hin R₁ hs.mem₁ hR₁R hc₁
   have i2 := hin R₂ hs.mem₂ hR₂R hc₂

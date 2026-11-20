@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoKb
 public import Chazelle.Core.SweepEvSpec
 
@@ -61,17 +63,17 @@ open Chazelle.Merge (FreeAt)
 /-! ## Shared definitions -/
 
 /-- The bit `bL`: `1` iff the query point is not above the top of `C₁`. -/
-def bL : ℕ := sw 3225
+@[ram_layout] def bL : ℕ := sw 3225
 
 /-- The bit `bR`: `1` iff the query point is not above the top of `C₂`. -/
-def bR : ℕ := sw 3226
+@[ram_layout] def bR : ℕ := sw 3226
 
 /-- The index of the query in the query list. -/
-def qJ : ℕ := sw 3227
+@[ram_layout] def qJ : ℕ := sw 3227
 
 /-- The symbolic point of the query point (three registers `sw 3231 … 3233`; `callSym` with
 output register `sw 3230` writes it). -/
-def sO : ℕ := sw 3231
+@[ram_layout] def sO : ℕ := sw 3231
 
 /-- **The chain of an accumulator tag** under the bits `l = bL`, `r = bR`: tag `0` is `C₁` when
 `l = 1`, tag `1` is `C₂` when `r = 1`, every other case is `C`.  (A candidate of `C₁` (`C₂`) is
@@ -100,16 +102,16 @@ structure AEnv (P : Polygon) (W : ℕ) (X : MemCtx) (Ok : Polygon → Model → 
   hX : X.holds P c₀.nmem (c₀.nreg (sw 10)) (c₀.nreg ALLOC)
   hcap : c₀.nreg (sw 5) ≤ X.cap P c₀.nmem (c₀.nreg (sw 10))
   hP : J.P.Simple
-  hOk₁ : Ok P (chainModel J.left)
-  hOk₂ : Ok P (chainModel J.right)
+  hOk₁ : Ok P J.leftModel
+  hOk₂ : Ok P J.rightModel
   hN₁ : NFWithin c₀.nmem (c₀.nreg (sw 3)) E N₁
   hN₂ : NFWithin c₀.nmem (c₀.nreg (sw 4)) E N₂
-  hNF₁ : IsNF (chainModel J.left) (Qof P) N₁
-  hNF₂ : IsNF (chainModel J.right) (Qof P) N₂
-  hdeg₁ : (chainModel J.left).DegLe (N₁.F (chainModel J.left) (Qof P)) (c₀.nreg (sw 6))
-  hdeg₂ : (chainModel J.right).DegLe (N₂.F (chainModel J.right) (Qof P)) (c₀.nreg (sw 6))
-  hsg₁ : (chainModel J.left).Semigranular (N₁.F (chainModel J.left) (Qof P)) (c₀.nreg (sw 5))
-  hsg₂ : (chainModel J.right).Semigranular (N₂.F (chainModel J.right) (Qof P)) (c₀.nreg (sw 5))
+  hNF₁ : IsNF J.leftModel (Qof P) N₁
+  hNF₂ : IsNF J.rightModel (Qof P) N₂
+  hdeg₁ : J.leftModel.DegLe (N₁.F J.leftModel (Qof P)) (c₀.nreg (sw 6))
+  hdeg₂ : J.rightModel.DegLe (N₂.F J.rightModel (Qof P)) (c₀.nreg (sw 6))
+  hsg₁ : J.leftModel.Semigranular (N₁.F J.leftModel (Qof P)) (c₀.nreg (sw 5))
+  hsg₂ : J.rightModel.Semigranular (N₂.F J.rightModel (Qof P)) (c₀.nreg (sw 5))
   hst : SweepEv.St0S P c₀ H J
   hE : E ≤ c₀.nreg ALLOC
   hWm : 2 * J.whole.m + 7 ≤ W
@@ -137,7 +139,7 @@ allocator, are kept; the allocator grows; memory below it is kept. -/
 def PartFr (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ oracleBands → ¬ (sw 1000 ≤ r ∧ r < sw 3200) → ¬ (sw 3300 ≤ r ∧ r < sw 3400) →
     ¬ (sw 4000 ≤ r ∧ r < sw 4800) → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-  c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
+  c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)
 
 /-- **The frame of a candidate step** (`Cand0Spec`, `Cand1Spec`): registers outside the oracle
 bands, outside `sw 1000 … sw 3199`, `sw 3230 … sw 3399` and `sw 4000 … sw 4999`, other than the
@@ -145,7 +147,7 @@ allocator, are kept; the allocator grows; memory below it is kept. -/
 def CandFr (c c' : Config) : Prop :=
   (∀ r, bandOf r ∉ oracleBands → ¬ (sw 1000 ≤ r ∧ r < sw 3200) → ¬ (sw 3230 ≤ r ∧ r < sw 3400) →
     ¬ (sw 4000 ≤ r ∧ r < sw 5000) → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-  c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
+  c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)
 
 /-- **The state of a query at the candidate step** (side `i`, query point `z`): the query
 `(qE, qH, qD)` is a valid query of side `i` (in the model of `C₁` for `i = 0`, of `C₂` for
@@ -158,14 +160,14 @@ structure QState (P : Polygon) (J : Merge.Junction) (i : ℕ) (z : Point) (c : C
   hht : ((chainModel (sideChain J i)).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2 =
     ((Qof P).vtx (c.nreg qH - 1)).2
   hz : (chainModel (sideChain J i)).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩ = z
-  hzE : c.nreg zE < (chainModel J.whole).W.n
-  hzpp : ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg zE, c.nreg qH⟩
-  hzM : (chainModel J.whole).pos (Qof P) ⟨c.nreg zE, c.nreg qH⟩ = z
+  hzE : c.nreg zE < J.wholeModel.W.n
+  hzpp : ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg zE, c.nreg qH⟩
+  hzM : J.wholeModel.pos (Qof P) ⟨c.nreg zE, c.nreg qH⟩ = z
   hfree : FreeAt J.whole z (dirOf (c.nreg qD))
-  hzP : c.nreg zP < (chainModel J.whole).W.n
-  hzPp : ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg zP, c.nreg zPh⟩
-  harr : Arrival (chainModel J.whole).W z (-dirOf (c.nreg qD)) (c.nreg zP)
-    ((chainModel J.whole).param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩)
+  hzP : c.nreg zP < J.wholeModel.W.n
+  hzPp : ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg zP, c.nreg zPh⟩
+  harr : Arrival J.wholeModel.W z (-dirOf (c.nreg qD)) (c.nreg zP)
+    (J.wholeModel.param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩)
   hbL : c.nreg bL ≤ 1 ∧ (c.nreg bL = 1 ↔ z.2 ≤ J.left.top.2)
   hbR : c.nreg bR ≤ 1 ∧ (c.nreg bR = 1 ↔ z.2 ≤ J.right.top.2)
 
@@ -211,25 +213,25 @@ vertex, not above the top of `C₂`, with a free direction `σ` for `C`), from i
 def Side0MathSpec : Prop :=
   ∀ (P : Polygon) (J : Merge.Junction) (N₂ : NF) (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ))
     (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)) (T : ℕ → Option (ℕ × ℝ)),
-    GoodEnv P → J.P.Simple → IsNF (chainModel J.right) (Qof P) N₂ →
-    LogOK J (N₂.F (chainModel J.right) (Qof P)) (logOf J (Qof P) N₂ ls) →
-    StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs) →
+    GoodEnv P → J.P.Simple → IsNF J.rightModel (Qof P) N₂ →
+    LogOK J (N₂.F J.rightModel (Qof P)) (logOf J (Qof P) N₂ ls) →
+    StopsOK J (N₂.F J.rightModel (Qof P)) (stopsOf J (Qof P) N₂ rs) →
     TabOK J (Qof P) N₂ T →
     ∀ (z : Point) (σ : ℝ), (σ = 1 ∨ σ = -1) → z ∈ J.left.set → z ≠ J.shared →
       z.2 ≤ J.right.top.2 → FreeAt J.whole z σ →
-      ∀ (pz : ℕ) (tz : ℝ), Arrival (chainModel J.whole).W z (-σ) pz tz →
+      ∀ (pz : ℕ) (tz : ℝ), Arrival J.wholeModel.W z (-σ) pz tz →
       (Lst J : ℝ) ≤ oW J (pz + tz) ∧
       ∀ i, LogIdx J (Qof P) N₂ ls (pz + tz) i →
         -- (C1)
         J.left.hitParam z σ = J.whole.hitParam z σ ∨
         -- (C2)
         (J.right.hitParam z σ = J.whole.hitParam z σ ∧
-          ∃ V ∈ (chainModel J.right).regions (N₂.F (chainModel J.right) (Qof P)),
+          ∃ V ∈ J.rightModel.regions (N₂.F J.rightModel (Qof P)),
             (V ∈ logLab J (Qof P) N₂ ls i ∨ (0 < i ∧ V ∈ logLab J (Qof P) N₂ ls (i - 1)) ∨
-              GapLab J (N₂.F (chainModel J.right) (Qof P)) V) ∧
+              GapLab J (N₂.F J.rightModel (Qof P)) V) ∧
             ∀ᶠ s in nhdsWithin (0 : ℝ) (Set.Ioi 0), rayPt z σ s ∈ V) ∨
         -- (C3)
-        (∃ r ∈ rs, r.1 = pz ∧ (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩ = tz ∧
+        (∃ r ∈ rs, r.1 = pz ∧ J.wholeModel.param (Qof P) ⟨r.1, r.2.1⟩ = tz ∧
           dirOf r.2.2.2.2 = -σ ∧
           stopOrig J (Qof P) N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 = rayPt z σ (J.whole.hitParam z σ)) ∨
         -- (C4)
@@ -244,20 +246,15 @@ def Side0MathSpec : Prop :=
 normal form starting at one point in one direction are equal). -/
 def TopCountSpec : Prop :=
   ∀ (P : Polygon) (J : Merge.Junction) (N₂ : NF), GoodEnv P → J.P.Simple →
-    IsNF (chainModel J.right) (Qof P) N₂ →
+    IsNF J.rightModel (Qof P) N₂ →
     ((List.range (2 * N₂.nChords)).filter
       (fun j => decide (endOrigin J (Qof P) N₂ j = J.right.top))).length ≤ 2
 
 /-! ## Contract 3: the brute-force shot in the model of `C₁` (RAM) -/
 
-/-- **The brute-force shot** at all arcs of `N₁`, in the model of `C₁` (model descriptor `sw 30`,
-normal form `sw 3`), from the point `z` of the symbolic point in `sO` (not a point of `C₁`,
-strictly inside the box, not above the top of `C₁`, so `bL = 1`), in the direction of code `qD`,
-offering the hit (if any) to the accumulator `accA` with tag `0`.  Every new candidate is a point
-of `C₁` or of the box on the ray at a positive parameter; the first hit of `C₁` is offered.  Cost
-`κB (A₁ + 1) (F γ + 1)` (`A₁` the number of arcs of `N₁`). -/
-def BruteSpec : Prop :=
-  ∃ (bruteS : Stmt → Stmt) (κB : ℕ), ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
+/-- The body of `BruteSpec`. -/
+def BruteBody (bruteS : Stmt → Stmt) (κB : ℕ) : Prop :=
+  ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop), ShooterOK sh Bs F X Ok → Bs ⊆ oracleBands → X.CapLocal →
     ∀ (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction) (H : Host) (N₁ N₂ : NF)
       (E : ℕ) (L : Set ℝ) (s : SymPt) (z : Point),
@@ -274,6 +271,15 @@ def BruteSpec : Prop :=
             (FreeAt J.left z (dirOf (c.nreg qD)) →
               J.left.hitParam z (dirOf (c.nreg qD)) ∈ L')) ∧
           PartFr c c')
+
+/-- **The brute-force shot** at all arcs of `N₁`, in the model of `C₁` (model descriptor `sw 30`,
+normal form `sw 3`), from the point `z` of the symbolic point in `sO` (not a point of `C₁`,
+strictly inside the box, not above the top of `C₁`, so `bL = 1`), in the direction of code `qD`,
+offering the hit (if any) to the accumulator `accA` with tag `0`.  Every new candidate is a point
+of `C₁` or of the box on the ray at a positive parameter; the first hit of `C₁` is offered.  Cost
+`κB (A₁ + 1) (F γ + 1)` (`A₁` the number of arcs of `N₁`). -/
+def BruteSpec : Prop :=
+  ∃ (bruteS : Stmt → Stmt) (κB : ℕ), BruteBody bruteS κB
 
 /-! ## Contract 4: the stop and table candidates of a side-0 query (RAM) -/
 
@@ -297,6 +303,43 @@ def InitSpec (init : Stmt) (Aux : Polygon → Merge.Junction → NF → Config �
   (∀ (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c : Config) (v : ℕ), Aux P J N₂ c →
     Aux P J N₂ { c with nreg := upd c.nreg (sw 11) v })
 
+/-- The per-query body of `S0CandSpec`. -/
+def S0Body (candC : Stmt) (Aux : Polygon → Merge.Junction → NF → Config → Prop) (κ : ℕ → ℕ) :
+    Prop :=
+  ∀ (P : Polygon) (W : ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop) (J : Merge.Junction)
+      (H : Host) (N₁ N₂ : NF) (E : ℕ) (c₀ c : Config) (L : Set ℝ) (z : Point),
+      AEnv P W X Ok J H N₁ N₂ E c₀ → Aux P J N₂ c₀ → IInv W c₀ c →
+      z ∈ J.left.set → z ≠ J.shared → z.2 ≤ J.right.top.2 →
+      FreeAt J.whole z (dirOf (c.nreg qD)) →
+      c.nreg zP < J.wholeModel.W.n →
+      ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg zP, c.nreg zPh⟩ →
+      Arrival J.wholeModel.W z (-dirOf (c.nreg qD)) (c.nreg zP)
+        (J.wholeModel.param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) →
+      c.nreg bL = 1 → c.nreg bR = 1 →
+      AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z (dirOf (c.nreg qD)) L c →
+      c.nreg ALLOC + κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) ≤ W →
+      IRS P W c₀ candC c (κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1))
+        (fun c' =>
+          (∃ L', AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z
+              (dirOf (c.nreg qD)) L' c' ∧ L ⊆ L' ∧
+            (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB J.whole (rayPt z (dirOf (c.nreg qD)) τ))) ∧
+            (∀ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)), rs.length = rd c₀ bSweep 201 →
+              StopRecsAt c₀.nmem (rd c₀ bSweep 200) rs →
+              ∀ r ∈ rs, r.1 = c.nreg zP →
+                J.wholeModel.param (Qof P) ⟨r.1, r.2.1⟩ =
+                  J.wholeModel.param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩ →
+                dirOf r.2.2.2.2 = -dirOf (c.nreg qD) →
+                ∀ τ, 0 < τ → stopOrig J (Qof P) N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 =
+                  rayPt z (dirOf (c.nreg qD)) τ → τ ∈ L') ∧
+            (∀ j, j < 2 * N₂.nChords →
+              tabOf J (Qof P) c₀.nmem (rd c₀ bSweep 302) j =
+                some (c.nreg zP, J.wholeModel.param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) →
+              endDir j = -dirOf (c.nreg qD) → endOrigin J (Qof P) N₂ j ∈ J.right.set →
+              endOrigin J (Qof P) N₂ j ≠ J.shared → endOrigin J (Qof P) N₂ j ≠ J.right.top →
+              ∀ τ, 0 < τ → endOrigin J (Qof P) N₂ j = rayPt z (dirOf (c.nreg qD)) τ →
+                τ ∈ L')) ∧
+          PartFr c c')
+
 /-- **The stop and table candidates of a side-0 query.**  An initialisation `initC` (`InitSpec`)
 establishes a fact `Aux`, robust along `IInv` from the base of the answer phase; then, for a query
 point `z` of `C₁` (not the shared vertex, not above the top of `C₂`, so `bR = 1`) with its arrival
@@ -309,65 +352,23 @@ def S0CandSpec : Prop :=
   ∃ (initC candC : Stmt) (Aux : Polygon → Merge.Junction → NF → Config → Prop) (κ : ℕ → ℕ),
     InitSpec initC Aux κ ∧
     (∀ (P : Polygon) (W : ℕ) (J : Merge.Junction) (N₂ : NF) (c₀ c : Config),
-      Aux P J N₂ c₀ → IInv W c₀ c → Aux P J N₂ c) ∧
-    ∀ (P : Polygon) (W : ℕ) (X : MemCtx) (Ok : Polygon → Model → Prop) (J : Merge.Junction)
-      (H : Host) (N₁ N₂ : NF) (E : ℕ) (c₀ c : Config) (L : Set ℝ) (z : Point),
-      AEnv P W X Ok J H N₁ N₂ E c₀ → Aux P J N₂ c₀ → IInv W c₀ c →
-      z ∈ J.left.set → z ≠ J.shared → z.2 ≤ J.right.top.2 →
-      FreeAt J.whole z (dirOf (c.nreg qD)) →
-      c.nreg zP < (chainModel J.whole).W.n →
-      ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg zP, c.nreg zPh⟩ →
-      Arrival (chainModel J.whole).W z (-dirOf (c.nreg qD)) (c.nreg zP)
-        ((chainModel J.whole).param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) →
-      c.nreg bL = 1 → c.nreg bR = 1 →
-      AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z (dirOf (c.nreg qD)) L c →
-      c.nreg ALLOC + κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) ≤ W →
-      IRS P W c₀ candC c (κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1))
-        (fun c' =>
-          (∃ L', AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z
-              (dirOf (c.nreg qD)) L' c' ∧ L ⊆ L' ∧
-            (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB J.whole (rayPt z (dirOf (c.nreg qD)) τ))) ∧
-            -- the stop records at the position
-            (∀ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)), rs.length = rd c₀ bSweep 201 →
-              StopRecsAt c₀.nmem (rd c₀ bSweep 200) rs →
-              ∀ r ∈ rs, r.1 = c.nreg zP →
-                (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩ =
-                  (chainModel J.whole).param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩ →
-                dirOf r.2.2.2.2 = -dirOf (c.nreg qD) →
-                ∀ τ, 0 < τ → stopOrig J (Qof P) N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 =
-                  rayPt z (dirOf (c.nreg qD)) τ → τ ∈ L') ∧
-            -- the table entries at the position
-            (∀ j, j < 2 * N₂.nChords →
-              tabOf J (Qof P) c₀.nmem (rd c₀ bSweep 302) j =
-                some (c.nreg zP, (chainModel J.whole).param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) →
-              endDir j = -dirOf (c.nreg qD) → endOrigin J (Qof P) N₂ j ∈ J.right.set →
-              endOrigin J (Qof P) N₂ j ≠ J.shared → endOrigin J (Qof P) N₂ j ≠ J.right.top →
-              ∀ τ, 0 < τ → endOrigin J (Qof P) N₂ j = rayPt z (dirOf (c.nreg qD)) τ →
-                τ ∈ L')) ∧
-          PartFr c c')
+      Aux P J N₂ c₀ → IInv W c₀ c → Aux P J N₂ c) ∧ S0Body candC Aux κ
 
 /-! ## Contract 5: the label candidates of a side-0 query (RAM) -/
 
-/-- **The label candidates of a side-0 query.**  For a query point `z` of `C₁` (not the shared
-vertex, not above the top of `C₂`, so `bR = 1`) with its arrival position `(zP, zPh)` in the walk
-of `C`, its symbolic point in `sO` and direction code `qD`, the procedure finds the log entry `i`
-of the position (binary search in the log, `LogIdx`) and shoots, in the model of `C₂`, from `z` at
-the arcs of every region of `S₂` with a label of the log entries `i` and `i - 1` and of the gap
-regions (`GapLab`), offering the hits to the accumulator with tag `1`.  Every new candidate is a
-point of `C₂` or of the box on the ray at a positive parameter; for every such region in which
-the ray starts, the first hit of `C₂` is offered.  Cost `κ D (F γ + TLR + 1)`. -/
-def Lab0Spec : Prop :=
-  ∃ (lab0 : Stmt → Stmt) (κ : ℕ → ℕ), ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
+/-- The body of `Lab0Spec` for the program `lab0` and the cost constant `κ`. -/
+def Lab0Body (lab0 : Stmt → Stmt) (κ : ℕ → ℕ) : Prop :=
+  ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop), ShooterOK sh Bs F X Ok → Bs ⊆ oracleBands → X.CapLocal →
     ∀ (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction) (H : Host) (N₁ N₂ : NF)
       (E : ℕ) (L : Set ℝ) (s : SymPt) (z : Point),
       AEnv P W X Ok J H N₁ N₂ E c₀ → IInv W c₀ c →
       z ∈ J.left.set → z ≠ J.shared → z.2 ≤ J.right.top.2 →
       FreeAt J.whole z (dirOf (c.nreg qD)) →
-      c.nreg zP < (chainModel J.whole).W.n →
-      ProperPos (chainModel J.whole) (Qof P) P.n ⟨c.nreg zP, c.nreg zPh⟩ →
-      Arrival (chainModel J.whole).W z (-dirOf (c.nreg qD)) (c.nreg zP)
-        ((chainModel J.whole).param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) →
+      c.nreg zP < J.wholeModel.W.n →
+      ProperPos J.wholeModel (Qof P) P.n ⟨c.nreg zP, c.nreg zPh⟩ →
+      Arrival J.wholeModel.W z (-dirOf (c.nreg qD)) (c.nreg zP)
+        (J.wholeModel.param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) →
       SymPtIn c sO s → s.Lt P.n → s.eval (Qof P) = z →
       c.nreg bR = 1 →
       AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z (dirOf (c.nreg qD)) L c →
@@ -380,13 +381,24 @@ def Lab0Spec : Prop :=
             ∀ (ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)), ls.length = rd c₀ bSweep 301 →
               LogRecsAt c₀.nmem (rd c₀ bSweep 300) ls →
               ∀ i, LogIdx J (Qof P) N₂ ls
-                  (c.nreg zP + (chainModel J.whole).param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) i →
-                ∀ V ∈ (chainModel J.right).regions (N₂.F (chainModel J.right) (Qof P)),
+                  (c.nreg zP + J.wholeModel.param (Qof P) ⟨c.nreg zP, c.nreg zPh⟩) i →
+                ∀ V ∈ J.rightModel.regions (N₂.F J.rightModel (Qof P)),
                   (V ∈ logLab J (Qof P) N₂ ls i ∨ (0 < i ∧ V ∈ logLab J (Qof P) N₂ ls (i - 1)) ∨
-                    GapLab J (N₂.F (chainModel J.right) (Qof P)) V) →
+                    GapLab J (N₂.F J.rightModel (Qof P)) V) →
                   (∀ᶠ s in nhdsWithin (0 : ℝ) (Set.Ioi 0), rayPt z (dirOf (c.nreg qD)) s ∈ V) →
                   J.right.hitParam z (dirOf (c.nreg qD)) ∈ L') ∧
           PartFr c c')
+
+/-- **The label candidates of a side-0 query.**  For a query point `z` of `C₁` (not the shared
+vertex, not above the top of `C₂`, so `bR = 1`) with its arrival position `(zP, zPh)` in the walk
+of `C`, its symbolic point in `sO` and direction code `qD`, the procedure finds the log entry `i`
+of the position (binary search in the log, `LogIdx`) and shoots, in the model of `C₂`, from `z` at
+the arcs of every region of `S₂` with a label of the log entries `i` and `i - 1` and of the gap
+regions (`GapLab`), offering the hits to the accumulator with tag `1`.  Every new candidate is a
+point of `C₂` or of the box on the ray at a positive parameter; for every such region in which
+the ray starts, the first hit of `C₂` is offered.  Cost `κ D (F γ + TLR + 1)`. -/
+def Lab0Spec : Prop :=
+  ∃ (lab0 : Stmt → Stmt) (κ : ℕ → ℕ), Lab0Body lab0 κ
 
 /-! ## Contracts 6, 7: the candidate steps of the two sides (RAM drivers) -/
 

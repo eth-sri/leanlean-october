@@ -41,7 +41,7 @@ theorem hostPoly_vtx {i : ℕ} (hi : i < nk (interiorModel Q) S R) :
 /-- At least three host keys. -/
 theorem three_le_nk (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) : 3 ≤ nk (interiorModel Q) S R := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hS := hostKeys_finite (U := R) hM hFam.2.1 hFam.1
   obtain ⟨x, hx, y, hy, z, hz, hxy, hxz, hyz⟩ := three_le hQ hFam hne hR
   unfold nk
@@ -75,6 +75,11 @@ theorem chain_idx {N s i j : ℕ} (hs : s < N) (hi : i < N) :
     (s + (i + N - s) % N + j) % N = (i + j) % N := by
   rw [Nat.add_mod (s + (i + N - s) % N) j, add_steps_mod hs hi, Nat.add_mod_mod]
 
+/-- Mod arithmetic: `i + 1 ≡ j + 1` forces `i = j` below the modulus. -/
+theorem succ_mod_inj {N i j : ℕ} (hi : i < N) (hj : j < N) (h : (i + 1) % N = (j + 1) % N) :
+    i = j :=
+  (Nat.ModEq.add_right_cancel' 1 h).eq_of_lt_of_lt hi hj
+
 /-- **An arc is a run of chain edges without wrap-around**: for a chord gap `g`, the chain index
 `k_l` of the start `l = hk i_l` of an arc and its number `d` of gaps satisfy `k_l + d ≤ m`. -/
 theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -97,7 +102,7 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hsN : s < N := Nat.mod_lt _ (by omega)
   set kl := (i_l + N - s) % N with hkl
   have hklN : kl < N := Nat.mod_lt _ (by omega)
-  have hM : WalkAx M := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
   -- the key of chain vertex `0` is a cut
@@ -112,29 +117,9 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       subst hjd
       have hg' : (i_l + (j - 1)) % N = g := by
         have e1 : ((i_l + (j - 1)) % N + 1) % N = s := by
-          rw [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod,
+          rwa [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod,
             show i_l + (j - 1) + 1 = i_l + j by omega]
-          exact he
-        have e2 : (g + 1) % N = s := rfl
-        have hgl : (i_l + (j - 1)) % N < N := Nat.mod_lt _ (by omega)
-        -- `x ↦ (x + 1) % N` is injective on `[0, N)`
-        by_contra hne'
-        rcases Nat.lt_or_gt_of_ne hne' with h | h
-        · have := e1.trans e2.symm
-          rcases Nat.lt_or_ge ((i_l + (j - 1)) % N + 1) N with h1 | h1 <;>
-            rcases Nat.lt_or_ge (g + 1) N with h2 | h2
-          · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at this; omega
-          · rw [Nat.mod_eq_of_lt h1, show g + 1 = N by omega, Nat.mod_self] at this; omega
-          · omega
-          · omega
-        · have := e1.trans e2.symm
-          rcases Nat.lt_or_ge ((i_l + (j - 1)) % N + 1) N with h1 | h1 <;>
-            rcases Nat.lt_or_ge (g + 1) N with h2 | h2
-          · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at this; omega
-          · omega
-          · rw [show (i_l + (j - 1)) % N + 1 = N by omega, Nat.mod_self,
-              Nat.mod_eq_of_lt h2] at this; omega
-          · omega
+        exact succ_mod_inj (Nat.mod_lt _ (by omega)) hg e1
       have hN2 : 2 ≤ N := by omega
       have hAG : ArcGap M S R g := by
         refine ⟨l, r, harc, fun y hy0 hyn hy => ?_⟩

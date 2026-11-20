@@ -65,7 +65,7 @@ theorem origin_ray (C : Chain) {o z : Point} {d : ℝ} (_hd : d = 1 ∨ d = -1)
 /-- The origin as a point of the ray from `z` in the opposite direction. -/
 theorem origin_back {o : Point} {d τ : ℝ} {z : Point} (hz : z = rayPt o d τ) :
     o = rayPt z (-d) τ := by
-  rw [hz]; ext <;> simp [rayPt_fst, rayPt_snd]
+  rw [hz]; ext <;> simp_all
 
 /-- **A candidate origin** for the walk point `w` and the direction `d`. -/
 def CandAt (J : Merge.Junction) (o : Point) (d : ℝ) (w : Point) : Prop :=
@@ -94,7 +94,7 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
   have hx : o₁.1 + d * t₁ = o₂.1 + d * t₂ := by
     have a := congrArg Prod.fst e₁; have b := congrArg Prod.fst e₂
     simp only [rayPt_fst] at a b; rw [← a, ← b]
-  have hdd : d * d = 1 := by rcases hd with rfl | rfl <;> norm_num
+  
   -- the nearer origin blocks the chord of the farther one
   have key : ∀ (a b : Point) (ta tb : ℝ), a.2 = b.2 → a.1 + d * ta = b.1 + d * tb →
       0 < ta → ta < tb → tb = J.whole.hitParam b d → a ∉ J.whole.dom → False := by
@@ -102,9 +102,9 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
     have hpt : a = rayPt b d (tb - ta) := by
       ext
       · simp only [rayPt_fst]; linear_combination hxab
-      · simp only [rayPt_snd]; exact hab
+      assumption
     have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) (by linarith)
-      (by rw [← hpt]; exact ha)
+      (by rwa [← hpt])
     linarith
   rcases lt_trichotomy t₁ t₂ with hl | he | hl
   · exact (key o₁ o₂ t₁ t₂ hy hx p₁ hl rfl h₁.1).elim
@@ -143,14 +143,14 @@ theorem chord_mem_F {M : Model} {Q : Polygon} {N : NF} {k : ℕ} (hk : k < N.nCh
 
 /-- **The ends of the chords of `N₂` are off the domains** of `C₂` and of `C`. -/
 theorem endOrigin_not_dom (J : Merge.Junction) {Q : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) Q N) {j : ℕ} (hj : j < 2 * N.nChords) :
+    (hN : IsNF J.rightModel Q N) {j : ℕ} (hj : j < 2 * N.nChords) :
     endOrigin J Q N j ∉ J.right.dom ∧ endOrigin J Q N j ∉ J.whole.dom := by
   have hk : j / 2 < N.nChords := by omega
   have hmem := chord_mem_F (M := chainModel J.right) (Q := Q) hk
-  have haug : (N.chord (j / 2)).toSet (chainModel J.right) Q ∈ Merge.augChords J.right :=
+  have haug : (N.chord (j / 2)).toSet J.rightModel Q ∈ Merge.augChords J.right :=
     hN.1.2.1 hmem
   obtain ⟨y, a, b, hH, -, -, hl, hr⟩ := Merge.augChords_spec haug
-  have hw := end_not_mem_dom J (S₂ := N.F (chainModel J.right) Q) (fun c hc => hN.1.2.1 hc) hmem
+  have hw := end_not_mem_dom J (S₂ := N.F J.rightModel Q) (fun c hc => hN.1.2.1 hc) hmem
   unfold endOrigin
   split_ifs
   · rw [hl]; exact ⟨hH.left_not, hl ▸ hw.1⟩
@@ -163,7 +163,7 @@ theorem right_not_dom (J : Merge.Junction) {a : Point} (ha : a ∈ J.right.set) 
 
 /-- **The origins of the stop records are off both domains.** -/
 theorem stopOrig_not_dom (J : Merge.Junction) {Q : Polygon} {N : NF}
-    (hN : IsNF (chainModel J.right) Q N) {kind k b : ℕ} (_hkind : kind ≤ 2)
+    (hN : IsNF J.rightModel Q N) {kind k b : ℕ} (_hkind : kind ≤ 2)
     (hk : kind = 1 → k < N.nChords) :
     stopOrig J Q N kind k b ∉ J.right.dom ∧ stopOrig J Q N kind k b ∉ J.whole.dom := by
   unfold stopOrig
@@ -185,10 +185,7 @@ theorem stopSet_eq (J : Merge.Junction) (Q : Polygon) (N : NF) (kind k b : ℕ) 
 /-! ## Offsets and keys -/
 
 /-- **Offsets are injective** on the keys of a cycle. -/
-theorem off_inj {n g x y : ℝ} (_hg0 : 0 ≤ g) (_hgn : g < n) (hx0 : 0 ≤ x) (hxn : x < n)
-    (hy0 : 0 ≤ y) (hyn : y < n) (h : off n g x = off n g y) : x = y := by
-  unfold off at h
-  split_ifs at h <;> linarith
+abbrev off_inj := @Chazelle.Core.Restore.off_inj
 
 /-- A key with parameters in `[0, 1)` determines its edge and parameter. -/
 theorem key_split {e e' : ℕ} {t t' : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (ht0' : 0 ≤ t')

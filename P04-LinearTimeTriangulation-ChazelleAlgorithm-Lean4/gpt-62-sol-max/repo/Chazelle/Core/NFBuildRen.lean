@@ -77,29 +77,37 @@ theorem upd_ren {α : Type} (hf : ∀ r, f (f r) = r) (g : ℕ → α) (i : ℕ)
   · have : f r ≠ i := fun h' => h (by rw [← h', hf])
     simp [h, this]
 
-theorem cfgRen_cfgRen (hf : ∀ r, f (f r) = r) (c : Config) : cfgRen f (cfgRen f c) = c := by
+section
+
+variable (hf : ∀ r, f (f r) = r)
+
+include hf in
+theorem cfgRen_cfgRen (c : Config) : cfgRen f (cfgRen f c) = c := by
   cases c; simp [cfgRen, hf]
 
-theorem wordsBounded_ren (hf : ∀ r, f (f r) = r) (c : Config) {W : ℕ} :
+include hf in
+theorem wordsBounded_ren (c : Config) {W : ℕ} :
     WordsBounded W (cfgRen f c) ↔ WordsBounded W c := by
   constructor
   · rintro ⟨h1, h2⟩
     refine ⟨fun r => ?_, h2⟩
     have := h1 (f r); simp only [cfgRen, hf] at this; exact this
-  · rintro ⟨h1, h2⟩; exact ⟨fun r => h1 _, h2⟩
+  · rintro ⟨h1, h2⟩; tauto
 
 theorem isStraight_ren {ins : Instr} (h : ins.IsStraight) : (Instr.ren f ins).IsStraight := by
   cases ins <;> simp_all [Instr.ren]
 
-theorem effect_ren (hf : ∀ r, f (f r) = r) {P : Polygon} {ins : Instr} {c c' : Config}
+include hf in
+theorem effect_ren {P : Polygon} {ins : Instr} {c c' : Config}
     (h : ins.effect P c = some c') :
     (Instr.ren f ins).effect P (cfgRen f c) = some (cfgRen f c') := by
   cases ins <;> simp only [Instr.effect, Instr.ren, Option.some.injEq, reduceCtorEq] at h ⊢ <;>
     (try split at h) <;> (try simp only [Option.some.injEq, reduceCtorEq] at h) <;>
     (try subst h) <;> simp_all [cfgRen, upd_ren hf]
 
+include hf in
 /-- **Renaming registers preserves executions.** -/
-theorem Exec.ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
+theorem Exec.ren {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     (h : Exec P W s c c' k) : Exec P W (Stmt.ren f s) (cfgRen f c) (cfgRen f c') k := by
   induction h with
   | skip hw => exact .skip ((wordsBounded_ren hf _).2 hw)
@@ -118,34 +126,33 @@ theorem Exec.ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt} {c
     exact .whileLtR_false (by simpa [cfgRen, hf] using ht) ((wordsBounded_ren hf _).2 hw)
   | whileLtR_true ht _ _ ih₁ ih₂ => exact .whileLtR_true (by simpa [cfgRen, hf] using ht) ih₁ ih₂
 
+include hf in
 /-- **Running a renamed statement**: an execution of `s` from the renamed view of `d` gives an
 execution of `s.ren f` from `d`. -/
-theorem exec_of_ren (hf : ∀ r, f (f r) = r) {P : Polygon} {W : ℕ} {s : Stmt} {d c' : Config}
+theorem exec_of_ren {P : Polygon} {W : ℕ} {s : Stmt} {d c' : Config}
     {k : ℕ} (h : Exec P W s (cfgRen f d) c' k) :
     Exec P W (Stmt.ren f s) d (cfgRen f c') k := by
   have := Exec.ren hf h
   rwa [cfgRen_cfgRen hf] at this
 
+end
+
 /-! ## Write sets -/
 
 open SignK (wr wrOK)
 
-theorem wrOK_mono {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true) {i : Instr}
-    (h : wrOK B i = true) : wrOK B' i = true := by
-  cases i <;> simp_all [wrOK]
-
 /-- A larger write set. -/
 theorem wr_mono {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true) {s : Stmt}
-    (h : wr B s = true) : wr B' s = true := by
-  induction s <;> simp_all [wr, wrOK_mono hB]
+    (h : wr B s = true) : wr B' s = true :=
+  Footprint.widen hB hB id h
 
 theorem wrOK_ren {f : ℕ → ℕ} (_hf : ∀ r, f (f r) = r) (B : ℕ → Bool) (i : Instr) :
     wrOK B (Instr.ren f i) = wrOK (fun r => B (f r)) i := by
-  cases i <;> simp [wrOK, Instr.ren]
+  cases i <;> simp [write_check, Instr.ren]
 
 theorem wr_ren {f : ℕ → ℕ} (hf : ∀ r, f (f r) = r) (B : ℕ → Bool) (s : Stmt) :
     wr B (Stmt.ren f s) = wr (fun r => B (f r)) s := by
-  induction s <;> simp_all [wr, Stmt.ren, wrOK_ren hf]
+  induction s <;> simp_all only [Stmt.check, Stmt.ren, wrOK_ren hf]
 
 /-! ## The swap of bands used by `BuildNF` -/
 

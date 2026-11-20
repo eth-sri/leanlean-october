@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterEuler
 public import Chazelle.Core.ClusterPhase
 
@@ -121,9 +123,9 @@ end ELay
 
 theorem Regs_of_pfr {L : ELay} {c0 c : Config} (h : L.Regs c0) (hf : PFr ERG L.WR c0 c) :
     L.Regs c := by
-  have k : ∀ r, ¬ ERG r → c.nreg r = c0.nreg r := hf.1
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> (rwa [k _ (by unfold ERG; omega)])
+  have k := hf.1
+  cases h
+  constructor <;> (rwa [k _ (by unfold ERG; omega)])
 
 /-! ## Proofs -/
 
@@ -132,7 +134,7 @@ section proofs
 variable {P : Polygon} {W : ℕ} {L : ELay} {c0 : Config}
 
 theorem ELay.tree_root (m : ℕ → ℕ) : (L.tree m).root = m L.bQ := by
-  simp [BTree.root, ELay.tree]
+  rfl
 
 /-- The view of an array after a store at one of its cells. -/
 theorem fun_upd (m : ℕ → ℕ) (b x v : ℕ) :
@@ -141,11 +143,16 @@ theorem fun_upd (m : ℕ → ℕ) (b x v : ℕ) :
   rw [Machine.upd_apply]
   by_cases h : g = x
   · subst h; simp
-  · rw [ite_eq_right (by omega), Function.update_of_ne h]
+  simp_all
+
+section
+
+variable (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
+    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c)
+include hL hR0 hR hw hf
 
 /-- **One step of the size loop.** -/
-theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c) {i : ℕ}
+theorem sizeBody_exec {i : ℕ}
     (hi : c.nreg 130210 = i + 1) (hi0 : 0 < i) (hin : i < L.n)
     (hS : (L.tree c0.nmem).SizeInv (fun g => c.nmem (L.bSz + g)) (i + 1)) :
     ∃ c' k, Exec P W sizeBody c c' k ∧ k = 13 ∧ WordsBounded W c' ∧ PFr ERG L.WR c0 c' ∧
@@ -188,8 +195,7 @@ theorem sizeBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
     exact hstep
 
 /-- **The size loop**: afterwards `SZ` holds the subtree sizes. -/
-theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c)
+theorem sizeLoop_exec
     (h1 : ∀ g, g < L.n → c.nmem (L.bSz + g) = 1) :
     ∃ c' k, Exec P W sizeLoop c c' k ∧ k ≤ 15 * L.n + 3 ∧ WordsBounded W c' ∧
       PFr ERG L.WR c0 c' ∧
@@ -223,8 +229,7 @@ theorem sizeLoop_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0
   omega
 
 /-- **One entry of the preorder loop.** -/
-theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c) {i : ℕ}
+theorem preBody_exec {i : ℕ}
     (hi : c.nreg 130210 = i) (hin : i < L.n)
     (hsz : ∀ g, g < L.n → c.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card)
     (hP : (L.tree c0.nmem).PreInv (view c.nmem L.bPre L.n) (view c.nmem L.bSlot L.n) i) :
@@ -261,7 +266,7 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   have d1 := hL.dSz; have d2 := hL.dSl; have d3 := hL.dPS
   unfold Disj at d1 d2 d3
   have r5' : ∀ X, upd c.nmem (L.bPre + R.q i) X (L.bSz + R.q i) = (R.sub (R.q i)).card := by
-    intro X; rw [Machine.upd_other _ _ _ (by omega), r5]
+    frame_finish [Machine.upd_other, r5]
   unfold preBody
   exec_block
   all_goals try (config_simp; simp only [hRc.rQ, hRc.rPar, hRc.rVert, hRc.rSz, hRc.rPre,
@@ -284,21 +289,20 @@ theorem preBody_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
     have hv1 : ∀ X Y Z, view (upd (upd (upd c.nmem (L.bPre + R.q i) X) (L.bSlot + R.par (R.q i)) Y)
         (L.bSlot + R.q i) Z) L.bPre L.n = Function.update (view c.nmem L.bPre L.n) (R.q i) X := by
       intro X Y Z
-      rw [view_upd_out _ L.bPre L.n (L.bSlot + R.q i) Z (by omega),
-        view_upd_out _ L.bPre L.n (L.bSlot + R.par (R.q i)) Y (by omega),
+      ram_rw [view_upd_out _ L.bPre L.n (L.bSlot + R.q i) Z,
+        view_upd_out _ L.bPre L.n (L.bSlot + R.par (R.q i)) Y,
         view_upd_in _ _ _ _ _ hqn]
     have hv2 : ∀ X Y Z, view (upd (upd (upd c.nmem (L.bPre + R.q i) X) (L.bSlot + R.par (R.q i)) Y)
         (L.bSlot + R.q i) Z) L.bSlot L.n = Function.update (Function.update
           (view c.nmem L.bSlot L.n) (R.par (R.q i)) Y) (R.q i) Z := by
       intro X Y Z
-      rw [view_upd_in _ _ _ _ _ hqn, view_upd_in _ _ _ _ _ hpn,
-        view_upd_out _ L.bSlot L.n (L.bPre + R.q i) X (by omega)]
+      ram_rw [view_upd_in _ _ _ _ _ hqn, view_upd_in _ _ _ _ _ hpn,
+        view_upd_out _ L.bSlot L.n (L.bPre + R.q i) X]
     rw [hv1, hv2]
     exact hstep
 
 /-- The root of the preorder. -/
-theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.nmem).OK)
-    {c : Config} (hw : WordsBounded W c) (hf : PFr ERG L.WR c0 c)
+theorem preInit_exec
     (hsz : ∀ g, g < L.n → c.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card) :
     ∃ c' k, Exec P W preInit c c' k ∧ k = 9 ∧ WordsBounded W c' ∧ PFr ERG L.WR c0 c' ∧
       c'.nreg 130210 = 1 ∧ (∀ g, g < L.n → c'.nmem (L.bSz + g) = ((L.tree c0.nmem).sub g).card) ∧
@@ -327,8 +331,10 @@ theorem preInit_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c0.
   · config_simp
     simp only [hRc.rQ, hRc.rPre, hRc.rSlot, r1, hRc.one]
     refine BTree.PreInv.init hR ?_ ?_
-    · rw [view_lt hrn, Machine.upd_other _ _ _ (by omega), Machine.upd_same]
+    · ram_rw [view_lt hrn, Machine.upd_other _ _, Machine.upd_same]
     · rw [view_lt hrn, Machine.upd_same]
+
+end
 
 /-- **Preorder intervals on the RAM.**  With a good layout and a well-formed tree read from
 memory, `eulerStmt` runs in at most `45 n + 20` steps, writes only the arrays `SZ`, `PRE`, `SLOT`
@@ -368,7 +374,7 @@ theorem eulerStmt_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c
     hfill
   obtain ⟨c4, k4, e4, hk4, hw4, hr4, hi4, hsz4, hP4⟩ := preInit_exec (P := P) hL hR0 hR hw3 hr3
     hsz3
-  obtain ⟨c5, k5, e5, hk5, hw5, hr5, hi5, -, hsz5, hP5⟩ := forN (P := P) (W := W) (ri := 130210)
+  obtain ⟨c5, k5, e5, hk5, hw5, hr5, hi5, -, hsz5, hP5⟩ := Exec.forN (P := P) (W := W) (ri := 130210)
     (rn := 130206) (body := preBody)
     (fun j c => WordsBounded W c ∧ PFr ERG L.WR c0 c ∧ c.nreg 130210 = j ∧
       c.nreg 130206 = L.n ∧
@@ -380,7 +386,7 @@ theorem eulerStmt_exec (hL : L.Good c0.nmem W) (hR0 : L.Regs c0) (hR : (L.tree c
         hj hsz hP
       exact ⟨c', k, e, by omega, hw', hf', hi', (Regs_of_pfr hR0 hf').rn, hsz', hP'⟩)
     (j₀ := 1) ⟨hw4, hr4, hi4, (Regs_of_pfr hR0 hr4).rn, hsz4, hP4⟩ hR.n_pos
-  refine ⟨c5, 3 + (k2 + (k3 + (k4 + k5))), .seq e1 (.seq e2 (.seq e3 (.seq e4 e5))), ?_, hw5,
+  refine ⟨c5, 3 + (k2 + (k3 + (k4 + k5))), (by ram_path), ?_, hw5,
     hr5, hsz5, hP5⟩
   omega
 

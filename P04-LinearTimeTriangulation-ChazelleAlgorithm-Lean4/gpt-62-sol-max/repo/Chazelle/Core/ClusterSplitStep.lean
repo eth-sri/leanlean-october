@@ -28,13 +28,18 @@ def QC (m : ℕ → ℕ) (S : SS) (T : SpanTree M) (a : F → Fin N) (f : Fin N)
     (fun x => m (S.bFPAR + x)) (fun x => m (S.bFPRE + x)) (fun x => m (S.bFSZ + x)) 0
     (enc N (starDarts (M := M) f t)) f (m (S.bFPRE + m (S.bFIRST + v)))
 
+section
+
+variable {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : List (ℕ × ℕ)}
+    {fin : Finset (ℕ × ℕ)} {D : Finset ℕ} {nsp : ℕ}
+    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m)
+    (hD : DInv M T k c S m ((lo, hi) :: rest) fin D nsp)
+
+include hSF hD in
 set_option maxHeartbeats 1000000 in
 open Classical in
 /-- **The selections of the passes are the classes.** -/
-theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : List (ℕ × ℕ)}
-    {fin : Finset (ℕ × ℕ)} {D : Finset ℕ} {nsp : ℕ}
-    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m)
-    (hD : DInv M T k c S m ((lo, hi) :: rest) fin D nsp) {lbot ltop : ℕ}
+theorem sel_iff {lbot ltop : ℕ}
     (hwin : ∀ x : Fin μ, (x : ℕ) ∈ items (fun i => m (S.bACT + i)) (lo, hi) →
       lbot ≤ T.level x ∧ T.level x ≤ ltop) (f : Fin N) :
     let m2 := copyF (marksF m S lo hi lbot ltop upT f) S lo hi
@@ -49,11 +54,11 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
   have := hL.hPOS; have := hL.hTMP; have := hL.hDF; have := hL.hμU; have := hL.hNU
   have hN := hSF.hN; have hμ := hSF.hμ
   have hlv : Lv ((lo, hi) :: rest) fin (lo, hi) := Or.inl List.mem_cons_self
-  have hhi : hi ≤ μ := hD.rng _ hlv
+  have hhi := hD.rng _ hlv
   have hmk := fun (y : ℕ) (hy : y < μ) => marksF_df (m0 := m) (S := S) (lo := lo) (hi := hi)
     (lbot := lbot) (ltop := ltop) T hSF.upT_eq (fun x hx => by rw [hμ] at hx ⊢; exact hSF.upT_lt x hx)
     hμ (fun x hx => hD.pos_iff hlv hx) hwin hSF.lev hSF.vert hSF.opp hSF.att
-    (fun y hy => ⟨by omega, by omega⟩) f ⟨y, hy⟩
+    (fun y hy => (by omega)) f ⟨y, hy⟩
   have hmo : ∀ x, ¬ (S.bDF ≤ x ∧ x < S.bDF + S.μ) → marksF m S lo hi lbot ltop upT f x = m x := by
     intro x hx
     have hup : ∀ x, x < S.μ → upT x < S.μ := fun x hx => by
@@ -73,7 +78,7 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     intro i h1 h2
     show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_left ⟨by omega, by omega⟩, hmo _ (by omega)]
+    ram_rw [ite_eq_left ⟨by omega, by omega⟩, hmo]
     congr 2; omega
   have hm2d : ∀ x, ¬ (S.bTMP + lo ≤ x ∧ x < S.bTMP + hi) →
       m2 x = marksF m S lo hi lbot ltop upT f x := by
@@ -92,7 +97,7 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     have h1 := hcp.so_lt X (by omega)
     have h2 := hcp.sf_lt _ h1
     have h6 := hcp.fp_lt f (by rw [hN]; exact f.2)
-    have hf : (f : ℕ) < N := f.2
+    have hf := f.2
     have hfU : (f : ℕ) + 1 ≤ U := by omega
     set y := m (S.bSO + X) with hy
     set z := m (S.bSF + y) with hz
@@ -120,14 +125,14 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     intro X hX i h1 h2
     have hvi : m (S.bACT + i) ∈ items (fun i => m (S.bACT + i)) (lo, hi) :=
       mem_items.mpr ⟨i, h1, h2, rfl⟩
-    have hv : m (S.bACT + i) < μ := hD.sinv.lt _ hlv _ hvi
-    have hnD : m (S.bACT + i) ∉ D := (hD.sinv.off _ hlv _ hvi).1
+    have hv := hD.sinv.lt _ hlv _ hvi
+    have hnD := (hD.sinv.off _ hlv _ hvi).1
     unfold SelI
-    rw [htmp i h1 h2, hm2d (S.bDF + _) (by omega), hmk _ hv,
-      hm2 (S.bFIRST + _) (by omega) (by omega)]
+    ram_rw [htmp i h1 h2, hm2d (S.bDF + _), hmk _ hv,
+      hm2 (S.bFIRST + _)]
     have hfi : m (S.bFIRST + m (S.bACT + i)) < N := by
       have := hSF.first ⟨_, hv⟩; simp only at this; rw [this]; exact Fin.isLt _
-    rw [hm2 (S.bFPRE + _) (by omega) (by omega), hcls X hX]
+    ram_rw [hm2 (S.bFPRE + _), hcls X hX]
     constructor
     · rintro ⟨hne, hc⟩
       exact ⟨fun hmN => hne (by rw [ite_eq_left ⟨hvi, hmN⟩]), hc⟩
@@ -137,8 +142,8 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
       intro h
       exact hnD ((hD.df _ hv).mp h)
   have hfp : m2 (S.bFP + f) = M.fperm f := by
-    rw [hm2 _ (by omega) (by omega)]; exact hSF.fp f
-  have hf : (f : ℕ) < N := f.2
+    ram_rw [hm2]; exact hSF.fp f
+  have hf := f.2
   refine ⟨fun i h1 h2 => hsel f (by omega) i h1 h2, fun i h1 h2 => ?_,
     fun i h1 h2 => ?_⟩
   · have := (M.fperm f).2
@@ -153,13 +158,11 @@ theorem SFacts.hint {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
   rw [hSF.pre g g.2, hSF.pre h h.2, hSF.sz g g.2]
   exact desc_interval hSF.R_ok hSF.R_n hSF.R_up hSF.R_pre g h
 
+include hSF hD in
 open Classical in
 /-- **The classes of the split**, in terms of `QC`: they cover the unmarked items, are unique,
 hold at most half of the items each and are not joined by an edge. -/
-theorem cls_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : List (ℕ × ℕ)}
-    {fin : Finset (ℕ × ℕ)} {D : Finset ℕ} {nsp : ℕ}
-    (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m)
-    (hD : DInv M T k c S m ((lo, hi) :: rest) fin D nsp) {f : Fin N}
+theorem cls_facts {f : Fin N}
     (hgood : Good C (delta first a)
       (liftP (μ := μ) (F := F) (items (fun i => m (S.bACT + i)) (lo, hi))) f)
     (hch : ∀ g, g ≠ C.r0 → C.parent g = f → ¬ Good C (delta first a)
@@ -193,6 +196,8 @@ theorem cls_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : 
     rw [card_items_filter hinj] at this
     unfold cntS QC
     convert this using 4
+
+end
 
 end step
 

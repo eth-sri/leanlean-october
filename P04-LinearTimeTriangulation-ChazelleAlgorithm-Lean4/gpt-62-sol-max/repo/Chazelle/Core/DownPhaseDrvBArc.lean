@@ -34,23 +34,28 @@ variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ 
 
 /-! ## The ends of a new chord -/
 
+section
+
+variable (B : BaseCtx Q L E reg li) {r : ℕ}
+    (hr : r < (interiorNF Q L E).nRegions) {x : ℕ × ℕ × ℕ}
+    (hx : x ∈ regList li Q (regPts li Q.n (interiorNF Q L E) r)) {y : WPos}
+    (hy : y = (recOf x).lpos ∨ y = (recOf x).rpos)
+include B hr hx hy
+
 /-- **Both ends of an emitted record lie on closed arcs of its region.** -/
-theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {x : ℕ × ℕ × ℕ}
-    (hx : x ∈ regList li Q (regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r)) {y : WPos}
-    (hy : y = (recOf x).lpos ∨ y = (recOf x).rpos) :
-    ∃ j ∈ ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs,
-      j < (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length ∧
-      Restore.ClosedArc ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s)
-        ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e)
+theorem ends_on_arcs :
+    ∃ j ∈ ((interiorNF Q L E).region r).arcs,
+      j < (interiorNF Q L E).arcs.length ∧
+      Restore.ClosedArc ((interiorModel Q).key Q ((interiorNF Q L E).arc j).s)
+        ((interiorModel Q).key Q ((interiorNF Q L E).arc j).e)
         ((interiorModel Q).key Q y) := by
-  set N := BuildNF.buildNF (interiorModel Q) Q L E with hN
+  set N := interiorNF Q L E with hN
   obtain ⟨hR, hl⟩ := region_facts (B.rc hr) B.hli
   obtain ⟨hcQ, hcS, hcR, hatt, -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR hl hx
   have hFam := B.fam
   have hM := walkAx_interiorModel B.hQ
-  have hnc : N.nChords = L.length := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
-  have hNF : IsNF (interiorModel Q) Q N := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
+  have hnc := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
+  have hNF := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
   have hne : (N.F (interiorModel Q) Q).Nonempty :=
     ⟨_, (DownMath.chordPos_attach hNF (show 0 < N.nChords by rw [hnc]; exact B.hK)
       (Or.inl rfl)).1⟩
@@ -63,20 +68,19 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
     (B.hregs.1.1 r hr) (chords_family B.hQ hcQ) hcS hcR hA
   obtain ⟨j, hj, hjr, hs, he⟩ := B.hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (B.hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he]; exact hcl
+  rwa [hs, he]
 
 /-- **The arc scan of an end of an emitted record finds a match.** -/
-theorem scan_hex (B : BaseCtx Q L E reg li) {r : ℕ}
-    (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) {x : ℕ × ℕ × ℕ}
-    (hx : x ∈ regList li Q (regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r)) {y : WPos}
-    (hy : y = (recOf x).lpos ∨ y = (recOf x).rpos) :
-    ∃ j ∈ ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs,
-      DrvD.matchB (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length j
-        (DrvD.tA (interiorModel Q) Q (BuildNF.buildNF (interiorModel Q) Q L E) y j)
-        (DrvD.tB (interiorModel Q) Q (BuildNF.buildNF (interiorModel Q) Q L E) y j) = true := by
+theorem scan_hex :
+    ∃ j ∈ ((interiorNF Q L E).region r).arcs,
+      DrvD.matchB (interiorNF Q L E).arcs.length j
+        (DrvD.tA (interiorModel Q) Q (interiorNF Q L E) y j)
+        (DrvD.tB (interiorModel Q) Q (interiorNF Q L E) y j) = true := by
   obtain ⟨j, hjm, hj, hcl⟩ := ends_on_arcs B hr hx hy
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   exact ⟨j, hjm, DrvD.match_of_closedArc B.hK hE hj hcl (by simp [DrvD.tA]) (by simp [DrvD.tB])⟩
+
+end
 
 /-! ## The walk edges of an arc -/
 
@@ -88,8 +92,7 @@ theorem evPos_ok (B : BaseCtx Q L E reg li) {m : ℕ} (hm : m < E.length) :
     (wposOf L (E.getD m 0)).edge < Q.n ∧ 0 ≤ (interiorModel Q).param Q (wposOf L (E.getD m 0)) ∧
       (interiorModel Q).param Q (wposOf L (E.getD m 0)) < 1 := by
   have hmem : E.getD m 0 ∈ E := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
-    exact List.getElem_mem hm
+    simp_all
   have hc : E.getD m 0 < 2 * L.length := by simpa using B.hperm.mem_iff.1 hmem
   obtain ⟨hp, h0, h1, -⟩ := BuildNF.attach_wposOf B.hL hc
   rw [show (interiorModel Q).W.n = Q.n from DownMath.walk_n Q] at hp
@@ -109,10 +112,10 @@ theorem edge_of_key {M : Model} {Q : Polygon} {x : WPos} (h0 : 0 ≤ M.param Q x
 /-- **The last arc of `buildNF` starts and ends on distinct walk edges** (otherwise every event,
 in particular both ends of the first chord, would lie on one walk edge). -/
 theorem last_arc_edges (B : BaseCtx Q L E reg li) :
-    ((BuildNF.buildNF (interiorModel Q) Q L E).arc
-        ((BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1)).s.edge ≠
-      ((BuildNF.buildNF (interiorModel Q) Q L E).arc
-        ((BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1)).e.edge := by
+    ((interiorNF Q L E).arc
+        ((interiorNF Q L E).arcs.length - 1)).s.edge ≠
+      ((interiorNF Q L E).arc
+        ((interiorNF Q L E).arcs.length - 1)).e.edge := by
   set I := interiorModel Q with hI
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
   have hA := DrvD.arcs_length (M := I) (Q := Q) (E := E) B.hK
@@ -155,8 +158,8 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
   have w1 := hall m1 hm1
   rw [g0] at w0
   rw [g1] at w1
-  rw [BuildNF.wposOf_even (by norm_num)] at w0
-  rw [BuildNF.wposOf_odd (by norm_num)] at w1
+  ram_rw [BuildNF.wposOf_even] at w0
+  ram_rw [BuildNF.wposOf_odd] at w1
   have hlt := BuildNF.pos_lt' (walkAx_interiorModel B.hQ) B.hL (i := 0) B.hK
   have hpos : I.pos Q (BuildRegions.crec L (0 / 2)).lpos = I.pos Q (BuildRegions.crec L (1 / 2)).rpos := by
     show I.pos Q ⟨_, _⟩ = I.pos Q ⟨_, _⟩
@@ -170,12 +173,13 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
 
 /-- **A position on a closed arc lies on one of the walk edges of the arc.** -/
 theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
-    (hj : j < (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length) {p : ℕ} {t : ℝ} (hp : p < Q.n)
+    (hj : j < (interiorNF Q L E).arcs.length) {p : ℕ} {t : ℝ} (hp : p < Q.n)
     (ht0 : 0 ≤ t) (ht1 : t < 1)
-    (hc : Restore.ClosedArc ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s)
-      ((interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e) (p + t)) :
-    ∃ u, u < arcCnt Q.n ((BuildNF.buildNF (interiorModel Q) Q L E).arc j) ∧
-      (((BuildNF.buildNF (interiorModel Q) Q L E).arc j).s.edge + u) % Q.n = p := by
+    (hc : Restore.ClosedArc ((interiorModel Q).key Q ((interiorNF Q L E).arc j).s)
+      ((interiorModel Q).key Q ((interiorNF Q L E).arc j).e) (p + t)) :
+    ∃ u, u < arcCnt Q.n ((interiorNF Q L E).arc j) ∧
+      (((interiorNF Q L E).arc j).s.edge + u) % Q.n = p := by
+  unfold interiorNF at hj hc ⊢
   set I := interiorModel Q with hI
   set N := BuildNF.buildNF I Q L E with hN
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
@@ -194,7 +198,7 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
   have ke : I.key Q e = e.edge + I.param Q e := rfl
   unfold arcCnt
   rw [← hsd, ← hed]
-  have hpt1 : (p : ℝ) + t < p + 1 := by linarith
+  
   by_cases hlt : j + 1 < (gapStarts I Q L E).length
   · -- an arc that does not wrap
     have hk := DrvD.key_s_lt_e (M := I) (Q := Q) B.hK hE hlt
@@ -213,8 +217,8 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
       have : p < e.edge + 1 := by exact_mod_cast this
       omega
     refine ⟨p - s.edge, ?_, ?_⟩
-    · rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)]
+    · ram_rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
+        Nat.mod_eq_of_lt]
       omega
     · rw [show s.edge + (p - s.edge) = p by omega, Nat.mod_eq_of_lt hp]
   · -- the last arc wraps
@@ -226,7 +230,7 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
     have hge : I.key Q e ≤ I.key Q s := by
       rw [hks, hke]; exact DrvD.kE_mono B.hsort (Nat.zero_le _) (by omega)
     have hne := last_arc_edges B
-    rw [← hN, hA, ← hjl, ← hsd, ← hed] at hne
+    rw [interiorNF, ← hN, hA, ← hjl, ← hsd, ← hed] at hne
     have hse : e.edge < s.edge := by
       have : (e.edge : ℝ) < s.edge + 1 := by linarith
       have : e.edge < s.edge + 1 := by exact_mod_cast this

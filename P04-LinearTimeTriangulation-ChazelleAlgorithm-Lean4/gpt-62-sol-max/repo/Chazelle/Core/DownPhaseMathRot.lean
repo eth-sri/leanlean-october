@@ -38,18 +38,17 @@ include hm hv hr
 
 omit hr in
 theorem set_congr : C.set = C'.set := by
-  ext p
-  simp only [Chain.set, Set.mem_ofPred_eq, Chain.chainEdge_eq, hv, hm]
+  simp [Chain.set, Set.mem_ofPred_eq, Chain.chainEdge_eq, hv, hm]
 
 omit hr in
 theorem topIdx_congr : C.topIdx = C'.topIdx := by
   apply le_antisymm
   · apply C.topIdx_min (by rw [hm]; exact C'.topIdx_le)
     intro i hi
-    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rw [← hm]; exact hi)
+    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rwa [← hm])
   · apply C'.topIdx_min (by rw [← hm]; exact C.topIdx_le)
     intro i hi
-    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rw [hm]; exact hi)
+    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rwa [hm])
 
 omit hr in
 theorem top_congr : C.top = C'.top := by
@@ -68,11 +67,11 @@ theorem dom_congr : C.dom = C'.dom := by
 
 theorem sideBeta_congr : C.sideBeta = C'.sideBeta := by
   rw [Bool.eq_iff_iff, Chain.sideBeta_eq_true_iff, Chain.sideBeta_eq_true_iff]
-  simp only [hv, top_congr hm hv, slitTop_congr hm hv hr, topIdx_congr hm hv]
+  simp [hv, top_congr hm hv, slitTop_congr hm hv hr, topIdx_congr hm hv]
 
 theorem sideWalk_congr (β : Bool) : C.sideWalk β = C'.sideWalk β := by
   unfold Chain.sideWalk Chain.boxList Chain.sideTour Chain.sideIdx Chain.sideS
-  simp only [hv, hm, slitTop_congr hm hv hr, radius_congr hr, topIdx_congr hm hv]
+  simp [hv, hm, slitTop_congr hm hv hr, radius_congr hr, topIdx_congr hm hv]
 
 theorem augChords_congr : Merge.augChords C = Merge.augChords C' := by
   unfold Merge.augChords

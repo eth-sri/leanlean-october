@@ -100,9 +100,7 @@ theorem arcList_pos (hK : L.length ≠ 0) :
 
 theorem arcList_getD (hK : L.length ≠ 0) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
     (arcList M Q L E).getD j ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ = arcRec M Q L E ((gapStarts M Q L E).getD j 0) := by
-  rw [arcList_pos hK, getD_eq_getElem?_getD, getElem?_map, getElem?_eq_getElem hj,
-    Option.map_some, Option.getD_some, getD_eq_getElem?_getD, getElem?_eq_getElem hj,
-    Option.getD_some]
+  simp [arcList_pos hK, getD_eq_getElem?_getD, getElem?_map, getElem?_eq_getElem hj, Option.map_some, Option.getD_some]
 
 theorem regArcs_eq (hK : L.length ≠ 0) (r : ℕ) :
     regArcs M Q L E r = lstF (keyA M Q L E) (gapStarts M Q L E).length r := by
@@ -202,7 +200,7 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     norm_num at c0 c1 c2 c3 c4
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
     · rw [c0, regArcs_eq hK]; rfl
-    · rw [c2, regChords_eq]; rfl
+    · assumption
     · rw [c4, regWt_eq hK]
     · rw [h7, c1]
       rw [regArcs_eq hK] at ht ⊢
@@ -213,10 +211,10 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
   · -- seq
     have hj' : j < (gapStarts M Q L E).length := by
       have : (buildNF M Q L E).seq = range (arcList M Q L E).length := rfl
-      rw [this, length_range, arcList_pos hK, length_map] at hj; exact hj
+      rwa [this, length_range, arcList_pos hK, length_map] at hj
     rw [h6, hQ j hj']
     show j = (range (arcList M Q L E).length).getD j 0
-    rw [getD_eq_getElem?_getD, getElem?_range (by rw [arcList_pos hK, length_map]; exact hj'),
+    rw [getD_eq_getElem?_getD, getElem?_range (by rwa [arcList_pos hK, length_map]),
       Option.getD_some]
   · simp [buildNF] at hk
   · simp [buildNF] at hr

@@ -62,7 +62,7 @@ theorem star_dual_enc {opp fp fpi : ℕ → ℕ} (hopp : ∀ d : Fin N, opp d = 
     · show G.vert (N + d) = ((starFace M (.inr (.inl d)) : Fin N) : ℕ)
       rw [(hSF d d.2).2.1]; rfl
     · show G.vert (2 * N + d) = ((starFace M (.inr (.inr d)) : Fin N) : ℕ)
-      rw [(hSF d d.2).2.2, hfpi]; rfl
+      simp_all
 
 variable {T : SpanTree M} {a : F → Fin N} {ha : ∀ g, M.face (a g) = g}
 
@@ -129,8 +129,8 @@ theorem att_fun {att : ℕ → ℕ} (hlt : ∀ d : Fin N, att d < N)
     (hconst : ∀ d e : Fin N, M.face d = M.face e → att d = att e) :
     ∃ (a : F → Fin N) (_ha : ∀ g, M.face (a g) = g), ∀ d : Fin N, (a (M.face d) : ℕ) = att d := by
   classical
-  let rep : F → Fin N := fun g => Classical.choose (M.face_surj g)
-  have hrep : ∀ g, M.face (rep g) = g := fun g => Classical.choose_spec (M.face_surj g)
+  let rep := fun g => Classical.choose (M.face_surj g)
+  have hrep := fun g => Classical.choose_spec (M.face_surj g)
   refine ⟨fun g => ⟨att (rep g), hlt _⟩, fun g => ?_, fun d => ?_⟩
   · rw [hface (rep g) (hlt _), hrep]
   · show att (rep (M.face d)) = att d

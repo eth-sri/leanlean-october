@@ -32,12 +32,17 @@ noncomputable def dedupF (n : ℕ) (pr : ℕ → ℕ × ℕ) (s : ℕ → ℕ) (
 def SortedSeq (pr : ℕ → ℕ × ℕ) (s : ℕ → ℕ) (n : ℕ) : Prop :=
   ∀ t t', t ≤ t' → t' < n → PLe (pr (s t)) (pr (s t'))
 
-theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : SortedSeq pr s n) {a a' : ℕ}
+section
+
+variable {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ}
+include pr s n
+
+theorem dedup_key (hs : SortedSeq pr s n) {a a' : ℕ}
     {b : ℕ × ℕ} (hlt : a < a') (h1 : dedupF n pr s a = some b) (h2 : dedupF n pr s a' = some b) :
     False := by
   unfold dedupF at h1 h2
   split_ifs at h1 h2 with c1 c2
-  have e : pr (s a) = pr (s a') := (Option.some.inj h1).trans (Option.some.inj h2).symm
+  have e := (Option.some.inj h1).trans (Option.some.inj h2).symm
   obtain ⟨ha', c2⟩ := c2
   rcases c2 with c2 | c2
   · omega
@@ -46,7 +51,7 @@ theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : So
     rw [e] at e1
     exact c2 (PLe.antisymm e2 e1).symm
 
-theorem dedup_nodup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : SortedSeq pr s n) :
+theorem dedup_nodup (hs : SortedSeq pr s n) :
     (emitted (dedupF n pr s) n).Nodup := by
   unfold emitted
   refine List.Nodup.filterMap (fun a a' b hb hb' => ?_) List.nodup_range
@@ -55,7 +60,7 @@ theorem dedup_nodup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : 
   · exact h
   · exact absurd (dedup_key hs h hb' hb) id
 
-theorem mem_dedup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hsurj : ∀ i, i < n → ∃ t, t < n ∧ s t = i)
+theorem mem_dedup (hsurj : ∀ i, i < n → ∃ t, t < n ∧ s t = i)
     (hlt : ∀ t, t < n → s t < n) {x : ℕ × ℕ} :
     x ∈ emitted (dedupF n pr s) n ↔ ∃ i, i < n ∧ pr i = x := by
   rw [mem_emitted]
@@ -81,6 +86,8 @@ theorem mem_dedup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hsurj :
         exact this ⟨by omega, by rw [← e, e0]⟩
     unfold dedupF
     rw [ite_eq_left ⟨h0, hcond⟩, e0]
+
+end
 
 end
 

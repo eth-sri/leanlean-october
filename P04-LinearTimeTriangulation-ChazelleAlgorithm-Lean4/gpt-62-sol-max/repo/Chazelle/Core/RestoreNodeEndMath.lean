@@ -37,7 +37,7 @@ theorem inE_iff (hS : Stretch M Cα g g' L) {p : ℕ} (hp : p < (chainModel Cα)
       rw [show p + (chainModel Cα).W.n - g' = (p - g') + (chainModel Cα).W.n by omega,
         Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
     rw [e]
-    have hc : ((p - g' : ℕ) : ℝ) = (p : ℝ) - g' := by push_cast [Nat.cast_sub hge]; ring
+    
     constructor
     · rintro ⟨-, h2, h3⟩
       refine ⟨?_, ?_⟩
@@ -72,8 +72,7 @@ theorem inE_iff (hS : Stretch M Cα g g' L) {p : ℕ} (hp : p < (chainModel Cα)
 
 /-- The parameter of a vertex position is `0`. -/
 theorem key_vtx (M : Model) (Q : Polygon) (p : ℕ) : M.key Q ⟨p, 0⟩ = p := by
-  show (p : ℝ) + M.param Q ⟨p, 0⟩ = p
-  rw [show M.param Q ⟨p, 0⟩ = 0 from rfl, add_zero]
+  simp
 
 /-- The comparison of `(p, 0)` and `(p, h)` tells whether the parameter is positive. -/
 theorem key_pz (M : Model) (Q : Polygon) (p h : ℕ) :
@@ -91,16 +90,22 @@ theorem endM_pos (hS : Stretch M Cα g g' L) {Q : Polygon} {d : ℕ} (hd : d < L
     M.pos Q ⟨(g + d) % M.W.n, h⟩ = (chainModel Cα).pos Q ⟨g' + d, h⟩ := by
   rw [pos_agree hS.hA hd h, hS.mod' hd.le]
 
+section
+
+variable (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t < 1)
+include hS hd ht0 ht1
+
 /-- **The host offset of an end** is its rotated key. -/
-theorem endM_off (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
-    (ht1 : t < 1) : off M.W.n g (((g + d) % M.W.n : ℕ) + t) = d + t :=
+theorem endM_off : off M.W.n g (((g + d) % M.W.n : ℕ) + t) = d + t :=
   off_key hS.hg (by have := hS.hLn; omega) ht0 ht1
 
-theorem endα_off (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
-    (ht1 : t < 1) : off (chainModel Cα).W.n g' (((g' + d : ℕ) : ℝ) + t) = d + t := by
+theorem endα_off : off (chainModel Cα).W.n g' (((g' + d : ℕ) : ℝ) + t) = d + t := by
   have h := off_key (n := (chainModel Cα).W.n) (g := g') (d := d)
     (by rw [Stretch.nα]; have := hS.hgL; omega) (by rw [Stretch.nα]; have := hS.hgL; omega) ht0 ht1
   rwa [hS.mod' hd.le] at h
+
+end
 
 end
 

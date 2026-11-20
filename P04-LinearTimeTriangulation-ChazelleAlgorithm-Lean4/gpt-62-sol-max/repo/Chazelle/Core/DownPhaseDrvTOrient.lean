@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Final.RamOrient
 public import Chazelle.Core.DownPhaseDrvTList
 public import Chazelle.Core.NFBuildMain
@@ -144,13 +146,11 @@ theorem bitO_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
       c'.nmem = c.nmem := by
     unfold bitO
     refine spec_seq ?_
-    exec_block
-    · omega
+    exec_block!
     by_cases h : (0 : ℝ) < c.rreg 100
-    · refine spec_ifLtR_true (by config_simp; simpa using h) ?_
+    · refine spec_ifLtR_true (by simp_all) ?_
       refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ hW) fun _ => ?_
-      refine ⟨by omega, by config_simp; omega, by config_simp; simp [h], by config_simp,
-        rfl⟩
+      simp_all
     · refine spec_ifLtR_false (by config_simp; simpa using h) ?_
       refine spec_skip ‹WordsBounded _ _› ?_
       refine ⟨by omega, by config_simp; omega, by config_simp; simp [h],
@@ -171,10 +171,10 @@ theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
   obtain ⟨c₄, k₄, e₄, hk₄, r1, F₄, rr₄, m₄⟩ := restN_exec (P := P) c₃ e₃.wb_right
   obtain ⟨c₅, k₅, e₅, hk₅, r2, F₅, nr₅, m₅⟩ := restR_exec (P := P) c₄ e₄.wb_right
   refine ⟨c₅, k₀ + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))),
-    .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))), by omega, ?_, ?_,
+    (by ram_path), by omega, ?_, ?_,
     ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_⟩, by rw [m₅, m₄, m₃, m₂, m₁, m₀]⟩
-  · rw [nr₅, F₄.1 _ (by decide)]; exact b1
-  · rw [nr₅, F₄.1 _ (by decide), b2, ho]
+  · ram_rw [nr₅, F₄.1]; exact b1
+  · ram_rw [nr₅, F₄.1, b2, ho]
     unfold Mountain.orient
     split_ifs with h <;> simp [h]
   · -- natural registers outside band `19`
@@ -184,16 +184,16 @@ theorem orientT_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
     by_cases hres : 230 ≤ r ∧ r ≤ 236
     · rw [r1 r hres.1 hres.2, F₃.1 (190000 + r) (by unfold Bbit; simp; omega),
         f2n (190000 + r) (by omega), nr₁, s1 r hres.1 hres.2]
-    · rw [F₄.1 r (by unfold BrN; simp; omega), F₃.1 r (by unfold Bbit; simp; omega),
-        f2n r (by omega), nr₁, F₀.1 r (by unfold B19; simp; omega)]
+    · ram_rw [F₄.1 r (by unfold BrN; simp; omega), F₃.1 r (by unfold Bbit; simp; omega),
+        f2n r, nr₁, F₀.1 r (by unfold B19; simp; omega)]
   · -- real registers outside band `19`
     unfold B19 at hr
     simp only [decide_eq_false_iff_not, not_and, not_lt] at hr
     by_cases hres : r = 100 ∨ (230 ≤ r ∧ r ≤ 243)
     · rw [r2 r hres, rr₄, F₃.2.1 (190000 + r) (by unfold Bbit; simp; omega),
         f2r (190000 + r) (by omega) (by omega), s2 r hres, rr₀]
-    · rw [F₅.2.1 r (by unfold BrR; simp; omega), rr₄, F₃.2.1 r (by unfold Bbit; simp; omega),
-        f2r r (by omega) (by omega), F₁.2.1 r (by unfold B19; simp; omega), rr₀]
+    · ram_rw [F₅.2.1 r (by unfold BrR; simp; omega), rr₄, F₃.2.1 r (by unfold Bbit; simp; omega),
+        f2r r, F₁.2.1 r (by unfold B19; simp; omega), rr₀]
   · rw [F₅.2.2.1, F₄.2.2.1, F₃.2.2.1, rm₂, F₁.2.2.1, F₀.2.2.1]
   · rw [F₅.2.2.2, F₄.2.2.2, F₃.2.2.2, o₂, F₁.2.2.2, F₀.2.2.2]
 

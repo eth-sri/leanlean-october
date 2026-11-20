@@ -1,6 +1,6 @@
 module
 
-public import Chazelle.Core.Facts2TrapDeg
+public import Chazelle.Core.DownPhaseDegCount
 public import Chazelle.Core.FactsFullDegInt
 
 /-!
@@ -18,7 +18,7 @@ pairwise distinct vertex heights:
 * the vertex chords `C.chords` satisfy `SegObs.FullAt` (`ChainObs.fullAt`): a domain point seen
   horizontally from a chain vertex lies on the chord of that vertex in that direction.
 
-Hence (`SegObs.deg_le_four`) `fullDegLe_chain`: the full augmented map of the chain model has
+Hence (`HSegObs.deg_leH` at one vertex per height) `fullDegLe_chain`: the full augmented map of the chain model has
 degree at most `4`, and with the interior half (`fullDeg_interior`) **`fullDegSpec : FullDegSpec`**.
 
 Model dependence: only `C.dom = box \ (chain ∪ slit)`, the vertex chords `C.chords` (through
@@ -57,7 +57,7 @@ theorem ord_ends (u w : Point) :
     (u = (ord u w).1 ∨ u = (ord u w).2) ∧ (w = (ord u w).1 ∨ w = (ord u w).2) := by
   unfold ord
   split_ifs
-  · exact ⟨Or.inl rfl, Or.inr rfl⟩
+  · tauto
   · exact ⟨Or.inr rfl, Or.inl rfl⟩
 
 theorem ord_cases (u w : Point) {v : Point} (h : v = (ord u w).1 ∨ v = (ord u w).2) :
@@ -89,8 +89,8 @@ variable {C}
 theorem edgeIdx_inj_le {j k : ℕ} (hj : j ≤ C.m) (hk : k ≤ C.m) (h : C.edgeIdx j = C.edgeIdx k) :
     j = k := by
   unfold Chain.edgeIdx at h
-  have h1 : C.s + j ≡ C.s + k [MOD C.P.n] := h
-  have h2 : j ≡ k [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h1 := h
+  have h2 := Nat.ModEq.add_left_cancel' C.s h1
   exact Nat.ModEq.eq_of_lt_of_lt h2 (by have := C.m_lt; omega) (by have := C.m_lt; omega)
 
 /-- Distinct chain vertices have distinct heights. -/
@@ -113,7 +113,7 @@ theorem seg_cases {s : Point × Point} (hs : s ∈ segs C) {p : Point} (hp : p �
   · left
     refine ⟨⟨k, hk, ?_⟩, k, hk, rfl⟩
     rw [seg_ord] at hp
-    rw [C.chainEdge_eq]; exact hp
+    rwa [C.chainEdge_eq]
   · simp only [mem_insert_iff, mem_singleton_iff] at hs
     rcases hs with rfl | rfl | rfl
     · exact Or.inr (Or.inl ⟨rfl, hp⟩)
@@ -138,7 +138,7 @@ theorem dom_eq : dom C.radius (segs C) = C.dom := by
     · have := hbox.1; rw [h, abs_of_pos C.radius_pos] at this; exact absurd this (lt_irrefl _)
   · rcases hp with ⟨k, hk, hpk⟩ | hp
     · refine seg_subset_obs (Or.inl ⟨k, hk, rfl⟩) ?_
-      rw [seg_ord, ← C.chainEdge_eq]; exact hpk
+      rwa [seg_ord, ← C.chainEdge_eq]
     · exact seg_subset_obs (s := slitSeg C) (Or.inr (by simp)) hp
 
 /-- The vertices within the height range of the box are chain vertices. -/
@@ -158,16 +158,67 @@ theorem vert_eq_vertex {v : Point} (hv : IsVert (segs C) v) (hvR : |v.2| < C.rad
     · rcases hvs with rfl | rfl <;> simp [sideL, abs_of_pos hR] at hvR
     · rcases hvs with rfl | rfl <;> simp [sideR, abs_of_pos hR] at hvR
 
+/-- The obstacle set has one edge per chain edge, plus the slit and box sides. -/
+theorem segs_finite : (segs C).Finite := by
+  refine Set.Finite.union (((Set.finite_Iio C.m).image
+    fun k => ord (C.vertex k) (C.vertex (k + 1))).subset ?_) (Set.toFinite _)
+  rintro s ⟨k, hk, rfl⟩
+  exact ⟨k, hk, rfl⟩
+
+/-- All obstacle segments lie in the closed box. -/
+theorem segs_inbox {s : Point × Point} (hs : s ∈ segs C) {p : Point} (hp : p ∈ seg s) :
+    |p.1| ≤ C.radius ∧ |p.2| ≤ C.radius := by
+  have hR := C.radius_pos
+  rcases seg_cases hs hp with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, h'⟩ | ⟨-, h, h'⟩
+  · have := C.abs_le_coordBound_of_mem_set h
+    exact ⟨this.1.trans C.coordBound_lt_radius.le, this.2.trans C.coordBound_lt_radius.le⟩
+  · rw [C.mem_slit_iff] at h
+    refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨((abs_lt.1 C.top_mem_box.2).1.le.trans h.2.1), h.2.2⟩⟩
+  · exact ⟨by rw [h, abs_neg, abs_of_pos hR], h'⟩
+  · exact ⟨by rw [h, abs_of_pos hR], h'⟩
+
+/-- Distinct obstacle segments can meet only at one of their vertices. -/
+theorem segs_cross (hP : C.P.Simple) {s s' : Point × Point} (hs : s ∈ segs C)
+    (hs' : s' ∈ segs C) (hne : s ≠ s') {p : Point} (hp : p ∈ seg s) (hp' : p ∈ seg s') :
+    IsVert (segs C) p := by
+  have hR := C.radius_pos
+  have hslit : ∀ {p : Point}, p ∈ C.set → p ∈ C.slit → IsVert (segs C) p := by
+    intro p h1 h2
+    rw [C.mem_slit_iff] at h2
+    have hle := C.snd_le_top_of_mem_set h1
+    have : p = C.top := point_ext h2.1 (le_antisymm hle h2.2.1)
+    exact ⟨slitSeg C, Or.inr (by simp), Or.inl this⟩
+  have hh (x : ℝ) (hx : |x| < C.radius) (he : x = -C.radius ∨ x = C.radius) : False := by
+    rcases he with rfl | rfl <;> simp [abs_of_pos hR] at hx
+  have hset {p : Point} (hp : p ∈ C.set) := hh p.1 (abs_fst_lt_of_set hp)
+  have hslt {p : Point} (hp : p ∈ C.slit) := by
+    have e := (C.mem_slit_iff.1 hp).1
+    exact hh p.1 (e ▸ abs_top_fst_lt)
+  rcases seg_cases hs hp with ⟨h1, k, hk, rfl⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1, -⟩ | ⟨rfl, h1, -⟩ <;>
+    rcases seg_cases hs' hp' with ⟨h2, j, hj, rfl⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2, -⟩ | ⟨rfl, h2, -⟩
+  · -- two chain edges
+    have hkj : k ≠ j := by rintro rfl; exact hne rfl
+    have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
+    have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
+      refine ⟨?_, ?_⟩
+      · have := hp; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
+      · have := hp'; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
+    rw [hP.2.2 _ _ (C.edgeIdx_lt k) (C.edgeIdx_lt j) hidx] at hmem
+    obtain ⟨h | h, -⟩ := hmem
+    · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
+    · rw [h, ← C.vertex_succ_eq]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).2⟩
+  all_goals first
+    | exact hslit h1 h2 | exact hslit h2 h1 | exact (hne rfl).elim
+    | (exfalso; first | apply hset h1 | apply hset h2 | apply hslt h1 | apply hslt h2
+       first | exact Or.inl (by assumption) | exact Or.inr (by assumption))
+    | linarith
+
 /-- **The segment obstacles of a chain model are good** (simple host, distinct heights). -/
 theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs C) := by
   have hR := C.radius_pos
   have htop := C.top_snd_lt_radius
-  have htop2 := (abs_lt.1 C.top_mem_box.2).1
-  refine ⟨?_, ?_, ?_, Or.inr (by simp [sideL]), Or.inr (by simp [sideR]), ?_, ?_⟩
-  · refine Set.Finite.union (((Set.finite_Iio C.m).image
-      fun k => ord (C.vertex k) (C.vertex (k + 1))).subset ?_) (Set.toFinite _)
-    rintro s ⟨k, hk, rfl⟩
-    exact ⟨k, hk, rfl⟩
+  refine ⟨segs_finite, ?_, fun _ hs _ hp => segs_inbox hs hp, Or.inr (by simp [sideL]),
+    Or.inr (by simp [sideR]), fun _ hs _ hs' hne _ hp hp' => segs_cross hP hs hs' hne hp hp', ?_⟩
   · intro s hs
     rcases hs with ⟨k, hk, rfl⟩ | hs
     · exact ord_up (vertex_snd_ne hDH (by omega) (by omega) (by omega))
@@ -176,67 +227,6 @@ theorem good (hP : C.P.Simple) (hDH : DistinctHeights C.P) : Good C.radius (segs
       · exact htop
       · simp only [sideL]; linarith
       · simp only [sideR]; linarith
-  · intro s hs p hp
-    rcases seg_cases hs hp with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, h'⟩ | ⟨-, h, h'⟩
-    · have := C.abs_le_coordBound_of_mem_set h
-      exact ⟨this.1.trans C.coordBound_lt_radius.le, this.2.trans C.coordBound_lt_radius.le⟩
-    · rw [C.mem_slit_iff] at h
-      refine ⟨by rw [h.1]; exact abs_top_fst_lt.le, abs_le.2 ⟨by linarith [h.2.1], h.2.2⟩⟩
-    · exact ⟨by rw [h, abs_neg, abs_of_pos hR], h'⟩
-    · exact ⟨by rw [h, abs_of_pos hR], h'⟩
-  · intro s hs s' hs' hne p hp hp'
-    have hslit : ∀ {p : Point}, p ∈ C.set → p ∈ C.slit → IsVert (segs C) p := by
-      intro p h1 h2
-      rw [C.mem_slit_iff] at h2
-      have hle := C.snd_le_top_of_mem_set h1
-      have : p = C.top := point_ext h2.1 (le_antisymm hle h2.2.1)
-      exact ⟨slitSeg C, Or.inr (by simp), Or.inl this⟩
-    have hsetL : ∀ {p : Point}, p ∈ C.set → p.1 = -C.radius → False := by
-      intro p h1 h2
-      have := abs_fst_lt_of_set h1
-      rw [h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
-    have hsetR : ∀ {p : Point}, p ∈ C.set → p.1 = C.radius → False := by
-      intro p h1 h2
-      have := abs_fst_lt_of_set h1
-      rw [h2, abs_of_pos hR] at this; exact lt_irrefl _ this
-    have hslitL : ∀ {p : Point}, p ∈ C.slit → p.1 = -C.radius → False := by
-      intro p h1 h2
-      rw [C.mem_slit_iff] at h1
-      have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_neg, abs_of_pos hR] at this; exact lt_irrefl _ this
-    have hslitR : ∀ {p : Point}, p ∈ C.slit → p.1 = C.radius → False := by
-      intro p h1 h2
-      rw [C.mem_slit_iff] at h1
-      have := abs_top_fst_lt (C := C)
-      rw [← h1.1, h2, abs_of_pos hR] at this; exact lt_irrefl _ this
-    rcases seg_cases hs hp with ⟨h1, k, hk, rfl⟩ | ⟨rfl, h1⟩ | ⟨rfl, h1, -⟩ | ⟨rfl, h1, -⟩ <;>
-      rcases seg_cases hs' hp' with ⟨h2, j, hj, rfl⟩ | ⟨rfl, h2⟩ | ⟨rfl, h2, -⟩ | ⟨rfl, h2, -⟩
-    · -- two chain edges
-      have hkj : k ≠ j := by rintro rfl; exact hne rfl
-      have hidx : C.edgeIdx k ≠ C.edgeIdx j := fun h => hkj (C.edgeIdx_inj hk hj h)
-      have hmem : p ∈ C.P.edge (C.edgeIdx k) ∩ C.P.edge (C.edgeIdx j) := by
-        refine ⟨?_, ?_⟩
-        · have := hp; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
-        · have := hp'; rw [seg_ord, ← C.chainEdge_eq] at this; exact this
-      rw [hP.2.2 _ _ (C.edgeIdx_lt k) (C.edgeIdx_lt j) hidx] at hmem
-      obtain ⟨h | h, -⟩ := hmem
-      · rw [h]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).1⟩
-      · rw [h, ← C.vertex_succ_eq]; exact ⟨_, Or.inl ⟨k, hk, rfl⟩, (ord_ends _ _).2⟩
-    · exact hslit h1 h2
-    · exact (hsetL h1 h2).elim
-    · exact (hsetR h1 h2).elim
-    · exact hslit h2 h1
-    · exact (hne rfl).elim
-    · exact (hslitL h1 h2).elim
-    · exact (hslitR h1 h2).elim
-    · exact (hsetL h2 h1).elim
-    · exact (hslitL h2 h1).elim
-    · exact (hne rfl).elim
-    · rw [h1] at h2; linarith
-    · exact (hsetR h2 h1).elim
-    · exact (hslitR h2 h1).elim
-    · rw [h1] at h2; linarith
-    · exact (hne rfl).elim
   · intro v w hv hw hvR hvw
     obtain ⟨j, hj, rfl⟩ := vert_eq_vertex hv hvR
     obtain ⟨k, hk, rfl⟩ := vert_eq_vertex hw (hvw ▸ hvR)
@@ -250,8 +240,8 @@ theorem fullAt {G : Set (Set Point)} (hG : C.chords ⊆ G) : FullAt C.radius (se
   obtain ⟨j, hj, rfl⟩ := vert_eq_vertex hv hvR
   rw [dom_eq] at hz hbet
   set v := C.vertex j with hvdef
-  have hvbox : v ∈ box C.radius := C.set_subset_box (C.vertex_mem_set hj)
-  have hzv1 : z.1 ≠ v.1 := fun e => C.not_mem_set_of_mem_dom hz (by
+  have hvbox := C.set_subset_box (C.vertex_mem_set hj)
+  have hzv1 := fun e => C.not_mem_set_of_mem_dom hz (by
     rw [show z = v from point_ext e hzv]; exact C.vertex_mem_set hj)
   -- the direction and the distance
   obtain ⟨σ, hσ, d, hd, hzd, hint⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ ∃ d : ℝ, 0 < d ∧
@@ -270,7 +260,7 @@ theorem fullAt {G : Set (Set Point)} (hG : C.chords ⊆ G) : FullAt C.radius (se
   have hfree : C.DirFree j σ := by
     have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 d := Ioo_mem_nhdsGT hd
     exact e1.mono fun t ht => hint t ht.1 ht.2
-  have hle : d ≤ C.chordParam j σ := (C.hit_of_initial hvbox hσ hd hint).1
+  have hle := (C.hit_of_initial hvbox hσ hd hint).1
   have hzc : z ∈ C.chordSet j σ := by
     rw [C.chordSet_eq_image hj hσ hfree]
     exact ⟨d, ⟨hd.le, hle⟩, hzd.symm⟩
@@ -286,7 +276,7 @@ theorem fullDegLe_chain {C : Chain} (hP : C.P.Simple) (hDH : DistinctHeights C.P
   have hdom := ChainObs.dom_eq (C := C)
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 4
   rw [← hdom]
-  refine SegObs.deg_le_four (ChainObs.good hP hDH) (G := C.chords ∪ F) ?_
+  refine HSegObs.deg_leH (ChainObs.good hP hDH).toH (G := C.chords ∪ F) ?_
     (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
   rintro c (hc | hc)
   · obtain ⟨k, σ, -, -, -, rfl, hh⟩ := C.chords_spec hc
@@ -298,10 +288,10 @@ theorem fullDegLe_chain {C : Chain} (hP : C.P.Simple) (hDH : DistinctHeights C.P
 polygon and of its interior model have degree at most `4`. -/
 theorem fullDegSpec : FullDegSpec := by
   intro P hP hε
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hP
-  have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hε).2.1
+  have hQ := (shearInvariance (epsOf P) P).1 hP
+  have hDH := (goodShear_epsOf hε).2.1
   refine ⟨fun C hC => ?_, fullDeg_interior P hP hε⟩
-  exact fullDegLe_chain (by rw [hC]; exact hQ) (by rw [hC]; exact hDH) (Qof P)
+  exact fullDegLe_chain (by rwa [hC]) (by rwa [hC]) (Qof P)
 
 end
 

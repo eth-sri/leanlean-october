@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.Lemma41Of
 
 /-!
@@ -29,7 +33,7 @@ def halfS : Stmt := .seq (block [.copyN 170003 9999, .constN 170040 0, .constN 1
   .addN 170042 170001 170020]) (.whileLtN 170040 170042 halfBody)
 
 /-- The registers written by `halfS` (besides the allocator). -/
-def HalfRG (r : ℕ) : Prop := r = 170003 ∨ (170040 ≤ r ∧ r ≤ 170043)
+@[ram_layout] def HalfRG (r : ℕ) : Prop := r = 170003 ∨ (170040 ≤ r ∧ r ≤ 170043)
 
 /-- The registers written by `halfBody` (besides the allocator). -/
 def HalfBRG (r : ℕ) : Prop := r = 170040 ∨ r = 170041 ∨ r = 170043
@@ -55,15 +59,14 @@ theorem halfBody_exec {c : Config} (hw : WordsBounded W c) {D t y Al : ℕ}
   exec_block
   all_goals try (config_simp; (try simp only [h03, h40, h41, hA, h20, h21]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, fun a h1 h2 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [h40, h21]
-  · config_simp; simp only [h41, h20]
-  · config_simp; simp only [hA, h21]
-  · config_simp; simp only [h03, h40, h41, h20, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [h03, h40, h41, h20, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [h03, h40, h20, Machine.upd_apply]; split_ifs <;> first | omega
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
+  · frame_finish
   · unfold HalfBRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    frame_finish
 
 set_option maxHeartbeats 16000000 in
 /-- **The halving table on the RAM.** -/
@@ -74,7 +77,7 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
       c'.nreg 170003 = D ∧ D + n + 1 ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ D + n + 3 ∧
       c'.nreg ALLOC ≤ D + k ∧
       (∀ x, x ≤ n → c'.nmem (D + x) = x / 2) ∧
-      (∀ a, a < D → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow D c'.nmem c.nmem) ∧
       (∀ r, ¬ HalfRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
@@ -87,27 +90,25 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
     all_goals try (config_simp; (try simp only [h01, h20]); omega)
     refine ⟨rfl, ‹_›, by config_simp; rw [← hAl, hA], by config_simp, by config_simp,
       by config_simp; simp only [h01, h20], fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-    unfold HalfRG at hr
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    frame_finish
   have r1 : ∀ r, ¬ HalfRG r → c1.nreg r = c.nreg r := fr1
   let I : Config → Prop := fun c' => WordsBounded W c' ∧ ∃ k, 2 * k ≤ n + 2 ∧
     c'.nreg 170040 = 2 * k ∧ c'.nreg 170041 = k ∧ c'.nreg 170042 = n + 1 ∧
     c'.nreg 170003 = D ∧ c'.nreg ALLOC = D + 2 * k ∧
-    (∀ x, x < 2 * k → c'.nmem (D + x) = x / 2) ∧ (∀ a, a < D → c'.nmem a = c.nmem a) ∧
+    (∀ x, x < 2 * k → c'.nmem (D + x) = x / 2) ∧ (MemEqBelow D c'.nmem c.nmem) ∧
     (∀ r, ¬ HalfRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output
   obtain ⟨c', k, e, ⟨hw', t, ht, h40', h41', h42', h03', hA', hent, hlow, fr', hrr', hrm', ho'⟩,
       htest, hk, hψ⟩ :=
-    whileLtN_potential_lb' (P := P) (W := W) (a := 170040) (b := 170042) (body := halfBody) I
+    Exec.whileLtN_growth (P := P) (W := W) (a := 170040) (b := 170042) (body := halfBody) I
       (fun c' => 9 * (n + 2 - c'.nreg 170040)) (fun c' => c'.nreg ALLOC) (fun c' h => h.1)
       (fun c2 ⟨hw2, t, ht, h40, h41, h42, h03, hA2, hent, hlow, fr2, hrr2, hrm2, ho2⟩ htest => by
         rw [h40, h42] at htest
         have g : ∀ r, ¬ HalfRG r → r ≠ ALLOC → c2.nreg r = c.nreg r := fr2
         obtain ⟨c3, k3, e3, hk3, hw3, q40, q41, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
           halfBody_exec (P := P) hw2 h03 h40 h41 hA2
-            (by rw [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)]; exact h20)
-            (by rw [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)]; exact h21)
+            (by frame_finish)
+            (by frame_finish)
             (by omega) (by omega) (by omega)
         refine ⟨c3, k3, e3, ⟨hw3, t + 1, by omega, by rw [q40]; ring, q41,
           by rw [fr3 170042 (by unfold HalfBRG; omega) (by rw [hAl]; omega)]; exact h42,
@@ -115,7 +116,7 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
           by rw [qA]; ring, fun x hx => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
           by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, ?_, ?_⟩
         · rcases Nat.lt_or_ge x (2 * t) with h1 | h1
-          · rw [qm _ (by omega) (by omega)]; exact hent x h1
+          · frame_finish
           · rcases Nat.lt_or_ge x (2 * t + 1) with h2 | h2
             · have hx2 : x = 2 * t := by omega
               subst hx2; rw [qm0]; omega
@@ -128,13 +129,13 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
         · show c3.nreg ALLOC ≤ c2.nreg ALLOC + k3
           rw [qA]; omega)
       ⟨hw1, 0, by omega, i40, i41, i42, i03,
-        by rw [r1 _ (by unfold HalfRG; rw [hAl]; omega), hA]; ring,
+        by frame_finish,
         fun x hx => by omega, fun a _ => by rw [hm1], fun r h1 _ => r1 r h1, hrr1, hrm1, ho1⟩
   rw [h40', h42'] at htest
   have hk' : k ≤ 9 * (n + 2) + 2 := by
     have := hk; simp only [i40, Nat.sub_zero] at this; exact this
   have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
-  have hA1 : c1.nreg ALLOC = D := by rw [r1 _ (by unfold HalfRG; rw [hAl]; omega)]; exact hA
+  have hA1 : c1.nreg ALLOC = D := by frame_finish
   refine ⟨c', k1 + k, .seq e1 e, ?_, hw', h03', by omega, by omega, by omega,
     fun x hx => hent x (by omega), hlow, fr', hrr', hrm', ho'⟩
   · -- the loop runs `⌈(n+1)/2⌉` times; the potential bound suffices

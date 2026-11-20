@@ -52,15 +52,14 @@ theorem filled_inter_subset_of_interior_disjoint {Q₁ Q₂ : Polygon} (h₁ : Q
       z ∈ A.filled → z ∈ B.filled → z ∈ A.boundary := by
     intro A B hA hB hAB hzA hzB
     by_contra hzb
-    have hopen : IsOpen (A.filled \ A.boundary) := isOpen_filled_sdiff_boundary hA
-    have hnhds : A.filled \ A.boundary ∈ 𝓝 z := hopen.mem_nhds ⟨hzA, hzb⟩
-    have hcl : z ∈ closure (B.filled \ B.boundary) := filled_subset_closure_interior hB hzB
+    have hopen := isOpen_filled_sdiff_boundary hA
+    have hnhds := hopen.mem_nhds ⟨hzA, hzb⟩
+    have hcl := filled_subset_closure_interior hB hzB
     obtain ⟨y, hy⟩ := mem_closure_iff_nhds.1 hcl _ hnhds
-    have : y ∈ (A.filled \ A.boundary) ∩ (B.filled \ B.boundary) := hy
-    rw [hAB] at this
-    exact this
+    have := hy
+    rwa [hAB] at this
   refine ⟨key Q₁ Q₂ h₁ h₂ hI hz₁ hz₂, key Q₂ Q₁ h₂ h₁ ?_ hz₂ hz₁⟩
-  rw [inter_comm]; exact hI
+  rwa [inter_comm]
 
 /-- The exterior of a simple polygon is not contained in the filled region of any polygon. -/
 theorem filled_compl_not_subset_filled (P Q : Polygon) : ¬ P.filledᶜ ⊆ Q.filled := by
@@ -72,32 +71,34 @@ theorem filled_compl_not_subset_filled (P Q : Polygon) : ¬ P.filledᶜ ⊆ Q.fi
     simp only [hw]; linarith [le_max_right (coordBound P) (coordBound Q)]
   exact far_not_mem_filled Q (Or.inl hQ) (h (far_not_mem_filled P (Or.inl hP)))
 
-/-- **The common interior is empty.**  Under the hypotheses of the splitting lemma, the
-interiors of `Q₁` and `Q₂` do not meet. -/
-theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple)
+section
+
+variable {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple)
     (h₂ : Q₂.Simple) (hb : Q₁.boundary ∪ Q₂.boundary ⊆ P.filled)
     (hb' : P.boundary ⊆ Q₁.boundary ∪ Q₂.boundary)
     (hxor : ∀ z, z ∉ P.boundary → z ∉ Q₁.boundary → z ∉ Q₂.boundary →
-      (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled))) :
+      (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled)))
+include hP h₁ h₂ hb hb' hxor
+
+/-- **The common interior is empty.**  Under the hypotheses of the splitting lemma, the
+interiors of `Q₁` and `Q₂` do not meet. -/
+theorem common_interior_empty :
     (Q₁.filled \ Q₁.boundary) ∩ (Q₂.filled \ Q₂.boundary) = ∅ := by
   set I := (Q₁.filled \ Q₁.boundary) ∩ (Q₂.filled \ Q₂.boundary) with hIdef
   -- `I` lies in the exterior of `P`
   have hIP : I ⊆ P.filledᶜ := by
     rintro z ⟨⟨hz₁, hz₁b⟩, ⟨hz₂, hz₂b⟩⟩
-    have hzP : z ∉ P.boundary := fun h => (hb' h).elim hz₁b hz₂b
+    have hzP := fun h => (hb' h).elim hz₁b hz₂b
     intro hzf
     have := (hxor z hzP hz₁b hz₂b).1 hzf
     exact (this.1 hz₁) hz₂
   -- `I` is open
-  have hIopen : IsOpen I :=
-    (isOpen_filled_sdiff_boundary h₁).inter (isOpen_filled_sdiff_boundary h₂)
+  have hIopen := (isOpen_filled_sdiff_boundary h₁).inter (isOpen_filled_sdiff_boundary h₂)
   -- `I` is relatively closed in the exterior of `P`
   have hIcl : closure I ∩ P.filledᶜ ⊆ I := by
     rintro z ⟨hzc, hzP⟩
-    have hz₁ : z ∈ Q₁.filled :=
-      (isClosed_filled Q₁).closure_subset (closure_mono (fun _ h => h.1.1) hzc)
-    have hz₂ : z ∈ Q₂.filled :=
-      (isClosed_filled Q₂).closure_subset (closure_mono (fun _ h => h.2.1) hzc)
+    have hz₁ := (isClosed_filled Q₁).closure_subset (closure_mono (fun _ h => h.1.1) hzc)
+    have hz₂ := (isClosed_filled Q₂).closure_subset (closure_mono (fun _ h => h.2.1) hzc)
     refine ⟨⟨hz₁, fun h => hzP (hb (Or.inl h))⟩, ⟨hz₂, fun h => hzP (hb (Or.inr h))⟩⟩
   -- connectedness of the exterior
   by_contra hne
@@ -112,8 +113,7 @@ theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q�
     by_cases hxc : x ∈ closure I
     · exact Or.inl (hIcl ⟨hxc, hx⟩)
     · exact Or.inr ⟨hx, hxc⟩
-  have hsub : P.filledᶜ ⊆ I :=
-    IsPreconnected.subset_left_of_subset_union hIopen hVopen hdisj hcov ⟨z, hIP hz, hz⟩
+  have hsub := IsPreconnected.subset_left_of_subset_union hIopen hVopen hdisj hcov ⟨z, hIP hz, hz⟩
       (filled_compl_connected hP)
   exact filled_compl_not_subset_filled P Q₁ (fun x hx => (hsub hx).1.1)
 
@@ -123,11 +123,7 @@ and `Q₂`, and such that every point off all three boundaries is filled in `P` 
 is filled in exactly one of `Q₁`, `Q₂`.  Then the filled region of `P` is the union of the
 filled regions of `Q₁` and `Q₂`, the interiors of the latter are disjoint, and the filled
 regions of `Q₁` and `Q₂` meet only in points of both boundaries. -/
-theorem split_filled {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple) (h₂ : Q₂.Simple)
-    (hb : Q₁.boundary ∪ Q₂.boundary ⊆ P.filled)
-    (hb' : P.boundary ⊆ Q₁.boundary ∪ Q₂.boundary)
-    (hxor : ∀ z, z ∉ P.boundary → z ∉ Q₁.boundary → z ∉ Q₂.boundary →
-      (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled))) :
+theorem split_filled :
     P.filled = Q₁.filled ∪ Q₂.filled ∧
       Disjoint (interior Q₁.filled) (interior Q₂.filled) ∧
       Q₁.filled ∩ Q₂.filled ⊆ Q₁.boundary ∩ Q₂.boundary := by
@@ -157,42 +153,31 @@ theorem split_filled {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple
       · exact hb (Or.inr hz₂)
       have h := hxor z hzP hz₁ hz₂
       rcases hz with hzf | hzf
-      · have hz₂f : z ∉ Q₂.filled := fun h' => hz₁ (hmeet ⟨hzf, h'⟩).1
+      · have hz₂f := fun h' => hz₁ (hmeet ⟨hzf, h'⟩).1
         exact h.2 ⟨fun _ => hz₂f, fun _ => hzf⟩
-      · have hz₁f : z ∉ Q₁.filled := fun h' => hz₂ (hmeet ⟨h', hzf⟩).2
+      · have hz₁f := fun h' => hz₂ (hmeet ⟨h', hzf⟩).2
         exact h.2 ⟨fun h' => absurd h' hz₁f, fun h' => absurd hzf h'⟩
-  · rw [interior_filled h₁, interior_filled h₂, Set.disjoint_iff_inter_eq_empty]
-    exact hI
+  · rwa [interior_filled h₁, interior_filled h₂, Set.disjoint_iff_inter_eq_empty]
 
 /-- The filled region of `P` is the union of the filled regions of `Q₁` and `Q₂`
 (first conclusion of `split_filled`). -/
-theorem split_filled_eq_union {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple)
-    (h₂ : Q₂.Simple) (hb : Q₁.boundary ∪ Q₂.boundary ⊆ P.filled)
-    (hb' : P.boundary ⊆ Q₁.boundary ∪ Q₂.boundary)
-    (hxor : ∀ z, z ∉ P.boundary → z ∉ Q₁.boundary → z ∉ Q₂.boundary →
-      (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled))) :
+theorem split_filled_eq_union :
     P.filled = Q₁.filled ∪ Q₂.filled :=
   (split_filled hP h₁ h₂ hb hb' hxor).1
 
 /-- The interiors of the filled regions of `Q₁` and `Q₂` are disjoint
 (second conclusion of `split_filled`). -/
-theorem split_interior_disjoint {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple)
-    (h₂ : Q₂.Simple) (hb : Q₁.boundary ∪ Q₂.boundary ⊆ P.filled)
-    (hb' : P.boundary ⊆ Q₁.boundary ∪ Q₂.boundary)
-    (hxor : ∀ z, z ∉ P.boundary → z ∉ Q₁.boundary → z ∉ Q₂.boundary →
-      (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled))) :
+theorem split_interior_disjoint :
     Disjoint (interior Q₁.filled) (interior Q₂.filled) :=
   (split_filled hP h₁ h₂ hb hb' hxor).2.1
 
 /-- The filled regions of `Q₁` and `Q₂` meet only in points of both boundaries
 (third conclusion of `split_filled`). -/
-theorem split_filled_inter_subset {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple)
-    (h₂ : Q₂.Simple) (hb : Q₁.boundary ∪ Q₂.boundary ⊆ P.filled)
-    (hb' : P.boundary ⊆ Q₁.boundary ∪ Q₂.boundary)
-    (hxor : ∀ z, z ∉ P.boundary → z ∉ Q₁.boundary → z ∉ Q₂.boundary →
-      (z ∈ P.filled ↔ (z ∈ Q₁.filled ↔ z ∉ Q₂.filled))) :
+theorem split_filled_inter_subset :
     Q₁.filled ∩ Q₂.filled ⊆ Q₁.boundary ∩ Q₂.boundary :=
   (split_filled hP h₁ h₂ hb hb' hxor).2.2
+
+end
 
 end
 

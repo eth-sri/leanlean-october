@@ -44,15 +44,20 @@ theorem hc_full (hQ : Q.Simple) {c : Set Point} (hc : c ∈ chords Q) : HC Q c :
   exact ⟨_, _, _, ⟨h.lt, fun hm => hm.2 h.left_mem, fun hm => hm.2 h.right_mem, h.open_int⟩,
     Visibility.chordSet_eq_hseg _ _ _⟩
 
+section
+
+variable {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b) {z : Point}
+    (hz : z ∈ hseg y a b) (hzD : z ∈ Q.filled \ Q.boundary)
+
+include h hz hzD in
 /-- A point of a chord in the domain is strictly inside it. -/
-theorem open_of_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b) {z : Point}
-    (hz : z ∈ hseg y a b) (hzD : z ∈ Q.filled \ Q.boundary) : a < z.1 ∧ z.1 < b := by
+theorem open_of_mem : a < z.1 ∧ z.1 < b := by
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
   · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
   · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point} (hz : z ∈ c)
@@ -64,9 +69,9 @@ theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point
   · exact absurd (h1 ▸ hzD) h.left_not
   · exact absurd (h1 ▸ hzD) h.right_not
 
+include h hz hzD in
 /-- **A chord contains every point of its line joined to it inside the domain.** -/
-theorem mem_of_joined {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b) {z : Point}
-    (hz : z ∈ hseg y a b) (hzD : z ∈ Q.filled \ Q.boundary) {w : Point} (hw : w.2 = y)
+theorem mem_of_joined {w : Point} (hw : w.2 = y)
     (hj : ∀ s : ℝ, min z.1 w.1 ≤ s → s ≤ max z.1 w.1 → ((s, y) : Point) ∈ Q.filled \ Q.boundary) :
     w ∈ hseg y a b := by
   obtain ⟨hza, hzb⟩ := open_of_mem h hz hzD
@@ -79,6 +84,8 @@ theorem mem_of_joined {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a 
     push Not at hwb
     exact h.right_not (hj b (by have := min_le_left z.1 w.1; linarith) (by
       have := le_max_right z.1 w.1; linarith))
+
+end
 
 /-- The points of a chord between two of its domain points are in the domain. -/
 theorem between_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b) {z z' : Point}
@@ -99,8 +106,8 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   set u := Q.vtx e
   set v := Q.vtx ((e + 1) % Q.n)
   have hn := simple_three_le hQ
-  have huv : u.2 ≠ v.2 := hDH e _ he (Nat.mod_lt _ (by omega)) (succIdx_ne Q hn he).symm
-  have hd : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
+  have huv := hDH e _ he (Nat.mod_lt _ (by omega)) (succIdx_ne Q hn he).symm
+  have hd := sub_ne_zero.2 (Ne.symm huv)
   obtain ⟨ε, hε, hball⟩ := Metric.eventually_nhds_iff.1 hnear
   set L := dist u v + 1 with hL
   have hL0 : 0 < L := by positivity
@@ -108,9 +115,9 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   have hδ0 : 0 < δ := by
     rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
   have hδm : δ < min (min t (1 - t)) (ε / L) := by
-    rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
-  have hδt : δ < t := hδm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
-  have hδt' : δ < 1 - t := hδm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
+    linarith
+  have hδt := hδm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
+  have hδt' := hδm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
   have hδε : δ * L < ε := by
     have := hδm.trans_le (min_le_right _ _); rwa [lt_div_iff₀ hL0] at this
   -- the direction along the edge that moves to the side `τ`
@@ -121,7 +128,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
     have hτd : τ * (v.2 - u.2) ≠ 0 := mul_ne_zero (by rcases hτ with rfl | rfl <;> norm_num) hd
     split_ifs with h
     · linarith
-    · have : τ * (v.2 - u.2) < 0 := lt_of_le_of_ne (not_lt.1 h) hτd
+    · have := lt_of_le_of_ne (not_lt.1 h) hτd
       nlinarith
   set s := t + σ * δ with hs
   have hs0 : 0 ≤ s := by rcases hσ1 with h | h <;> rw [hs, h] <;> linarith
@@ -168,24 +175,24 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
     obtain ⟨y, a, b, h, rfl⟩ := hc
     have hy : y = y₀ := by rw [← hzy, hz.1]
     by_cases hall : ∀ s : ℝ, z.1 ≤ s → s ≤ z'.1 → ((s, y₀) : Point) ∈ Q.filled \ Q.boundary
-    · have hz'c : z' ∈ hseg y a b := mem_of_joined h hz hzD (by rw [hz'y, hy]) (fun s h1 h2 => by
+    · have hz'c := mem_of_joined h hz hzD (by rw [hz'y, hy]) (fun s h1 h2 => by
         rw [min_eq_left hle] at h1; rw [max_eq_right hle] at h2
         rw [hy]; exact hall s h1 h2)
       exact eq_of_common ⟨y, a, b, h, rfl⟩ hc' hz'c hz' hz'D
     · exfalso
       push Not at hall
       obtain ⟨s, hs1, hs2, hsD⟩ := hall
-      have hs1' : z.1 < s := lt_of_le_of_ne hs1 fun e => hsD (by
-        rw [← e, ← hzy]; exact hzD)
-      have hs2' : s < z'.1 := lt_of_le_of_ne hs2 fun e => hsD (by
-        rw [e, ← hz'y]; exact hz'D)
+      have hs1' := lt_of_le_of_ne hs1 fun e => hsD (by
+        rwa [← e, ← hzy])
+      have hs2' := lt_of_le_of_ne hs2 fun e => hsD (by
+        rwa [e, ← hz'y])
       have hsl : xl < s := by linarith
       have hsr : s < xr := by linarith
       have hb : ((s, y₀) : Point) ∈ Q.boundary := by
         by_contra hb; exact hsD ⟨hcl s hsl hsr, hb⟩
       obtain ⟨m, hm, hwm⟩ := vertex_of_side hQ hDH hb hτ
         ((hnear s hsl hsr).mono fun p' hp' hpos => hT (hp' hpos))
-      have hmk : m = k₀ := vtx_eq_of_height hDH hm hk₀ (by rw [← hwm, hk₀y])
+      have hmk := vtx_eq_of_height hDH hm hk₀ (by rw [← hwm, hk₀y])
       subst hmk
       have hsx : s = (Q.vtx m).1 := by rw [← hwm]
       rw [hsx] at hs1' hs2'
@@ -208,11 +215,11 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      have := point_ext e.symm (hw₀y.trans hzy.symm); rwa [this])
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
     have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
-    rw [← e]; exact this
+    rwa [← e]
   · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
 
 /-- **Degree `≤ 4`** in the interior visibility map augmented by finitely many horizontal chords,
@@ -234,13 +241,12 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
     rw [hTdef, ← h.region_eq hQ hqR]
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn
       (mem_connectedComponentIn hqf) ((connectedComponentIn_subset _ _).trans hfreeR)
-  have hTD : T ⊆ D := h.trapSet_subset_interior hQ hqR
-  have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)
+  have hTD := h.trapSet_subset_interior hQ hqR
+  have hqT := hUT (mem_connectedComponentIn hqf)
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
-  have hcl : closure U ⊆ closedTrap Q i j y₁ y₂ :=
-    (closure_mono hUT).trans (Visibility.closure_trapSet_subset _ _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hcl := (closure_mono hUT).trans (Visibility.closure_trapSet_subset _ _ _ _ _)
+  have hqy₁ := hqT.1
+  have hqy₂ := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ closedTrap Q i j y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -251,15 +257,14 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
-    have hseg : Chazelle.segment z w ⊆ T :=
-      Geometry.segment_subset_of_convex (Visibility.convex_trapSet _ _ _ _ _) hzT hwT
+    have hseg := Geometry.segment_subset_of_convex (Visibility.convex_trapSet _ _ _ _ _) hzT hwT
     apply hseg
     rw [Visibility.segment_horizontal_eq_hseg hwz.symm]
     exact ⟨hzy.symm, h1, h2⟩
   -- `U` is on one side of a chord crossing `T`
-  have hno : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ p ∈ U, p.2 ≠ z.2 := fun c hc z hz hzT p hp he =>
+  have hno := fun c hc z hz hzT p hp he =>
     (hfreeU hp).2 ⟨c, hc, hslice c hc z hz hzT p (hUT hp) he⟩
   have hUc := (isPreconnected_connectedComponentIn : IsPreconnected U)
   have hbelow : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → q.2 < z.2 → ∀ p ∈ U, p.2 < z.2 := by
@@ -303,7 +308,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
       · exact Or.inr ⟨hc, z, hz, hzD, hzU, Or.inl h1.symm⟩
     · exact Or.inl ⟨hc, z, hz, hzD, hzU, Or.inl h2⟩
   have hBool : (Set.univ : Set Bool).ncard = 2 := by
-    rw [ncard_univ, Nat.card_eq_fintype_card]; rfl
+    simp
   -- at most two chords above
   have hE₁ : E₁.ncard ≤ 2 := by
     by_cases hA : ∃ c₀ ∈ E₁, ∃ z₀ ∈ c₀, z₀ ∈ D ∧ z₀ ∈ closure U ∧ q.2 < z₀.2 ∧ z₀.2 < y₂
@@ -320,11 +325,11 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0' hz0
+        have heq := le_antisymm hz0' hz0
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₁.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by simp
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.top_vertex
       set w₀ := Q.vtx k₀ with hw₀
@@ -373,11 +378,11 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0 hz0'
+        have heq := le_antisymm hz0 hz0'
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₂.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
-        _ ≤ 2 := by rw [ncard_singleton]; norm_num
+        _ ≤ 2 := by simp
     · push Not at hA
       obtain ⟨k₀, hk₀, hk₀y, -⟩ := h.bot_vertex
       set w₀ := Q.vtx k₀ with hw₀
@@ -441,7 +446,7 @@ namespace Chazelle.Core
 shear, the full augmented map of the interior model of the geometry polygon `Qof P` has degree at
 most `4`. -/
 theorem fullDeg_interior (P : Polygon) (hP : P.Simple) (hε : ∃ ε, GoodShear P ε) :
-    (interiorModel (Qof P)).FullDegLe (Qof P) 4 :=
+    P.inputModel.FullDegLe (Qof P) 4 :=
   fullDegLe_interior ((shearInvariance (epsOf P) P).1 hP) (goodShear_epsOf hε).2.1
 
 end

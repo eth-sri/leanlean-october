@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvGEnv
 public import Chazelle.Core.GranSize
 
@@ -49,8 +51,7 @@ theorem chords_le {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF} {γ : ℕ
     N.chords.length * (γ + 1) ≤ 18480 * (2 * C.m + 1) := by
   have h := DownMath.lemma23_chain hP hc.1.1 hc.2.1 hc.2.2.1
   rw [Gran.ncard_F hc.1] at h
-  unfold NF.nChords at h
-  exact h
+  assumption
 
 /-- The cost bound of one piece. -/
 def pcB (κP κM κs L : ℕ) : ℕ := 9 + κP * (L + 1) + 1570 + mcK κM κs * L
@@ -91,7 +92,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
   obtain ⟨d₁, k₁, e₁, hk₁, q1, q2, q3, q4, q5, fr₁⟩ := pcCall_exec (P := P) hsp hF.hG hF.hWn d hw
     (H := R.H) hE.r200 h40 h41 h42 h43 hE.r202 hE.r204 hE.r205 (hE.holds hF) (hE.hostAt hF)
     (by have := hF.hHB; have := hE.alloc; omega) (by have := hF.hHl; omega) hF.hwf hF.hreg
-    hF.hsimp (by rw [← hF.hNP]; exact hsm) hm1 hk
+    hF.hsimp (by rwa [← hF.hNP]) hm1 hk
     (fun h1 => by
       obtain ⟨b1, b2, b3⟩ := hleaf h1
       exact ⟨b1, by rw [hE.grades hF]; exact hF.hμg, b2, hF.hg0, b3⟩)
@@ -105,8 +106,8 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
   have E₁ : REnv R d₁ := hE.keep keep1
     (fun a ha => fr₁.2.2.1 a (by have := hE.alloc; omega)) fr₁.2.2.2.2.2.1
   have hw₁ := e₁.wb_right
-  have r22 : d₁.nreg 219222 = d.nreg 219222 := q1 _ (by simp [bandOf, bDownDrv]) (by omega)
-  have r41 : d₁.nreg 219241 = m := by rw [q1 _ (by simp [bandOf, bDownDrv]) (by omega), h41]
+  have r22 : d₁.nreg 219222 = d.nreg 219222 := q1 _ (by simp [ram_layout]) (by omega)
+  have r41 : d₁.nreg 219241 = m := by ram_finish [q1, h41]
   rcases hacc with ⟨f0, hs0, hγ0⟩ | ⟨hs, A⟩
   · -- the first piece
     subst hs0 hγ0
@@ -119,19 +120,17 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
           d₂.nreg 219111 = d₁.nreg 218011 ∧ d₂.nreg 219112 = m ∧ d₂.nreg 219113 = R.γ₀ ∧
           d₂.nreg 219222 = 1 ∧ d₂.nmem = d₁.nmem := by
         unfold pcFirst
-        exec_block
-        · omega
+        exec_block!
         refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
         · exact r41
         · exact E₁.r204
       exact ⟨d₂, k₂, e₂, hk₂, v10, v11, v12, v13, v22, m₂, exec_frameM e₂ (by decide)⟩
     have fr₂ : Frame drvBands d₁ d₂ k₂ := frame_band (fun q hq => by
-      simp only [Bool.or_eq_true, decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega)
+      simp only [Bool.or_eq_true, decide_eq_true_eq] at hq; simp only [ram_layout]; omega)
       g₂ m₂ k₂
     have hA₂ : d₂.nreg ALLOC = d₁.nreg ALLOC := fr₂.2.2.2.2.2.1.antisymm' (by
       have := fr₂.2.2.2.2.2.2; have := g₂.1 ALLOC (by decide); omega)
-    refine ⟨d₂, k₀ + (k₀' + (k₂ + 1)), .seq e₀ (.seq e₀' (.ifLtN_true (by
-      rw [r22, f0, E₁.r230]; omega) e₂)), by unfold pcB; omega, E₁.keep (fun q hq => g₂.1 q (by
+    refine ⟨d₂, k₀ + (k₀' + (k₂ + 1)), (by ram_path), by unfold pcB; omega, E₁.keep (fun q hq => g₂.1 q (by
       obtain ⟨-, -, b3, b4⟩ := envRegs_band q hq
       simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
       (fun a ha => by rw [m₂]) (by omega), ?_, fun q hq hq' => ?_, ?_⟩
@@ -157,25 +156,23 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
           (block [.copyN 219114 218010, .copyN 219115 218011, .copyN 219116 219241]) d₁ d₂ k₂ ∧
           k₂ = 3 ∧ d₂.nreg 219114 = d₁.nreg 218010 ∧ d₂.nreg 219115 = d₁.nreg 218011 ∧
           d₂.nreg 219116 = m ∧ d₂.nmem = d₁.nmem := by
-        exec_block
-        refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp
-        exact r41
+        ram_exec
       exact ⟨d₂, k₂, e₂, hk₂, v14, v15, v16, m₂, exec_frameM e₂ (by decide)⟩
     have fr₂ : Frame drvBands d₁ d₂ k₂ := frame_band (fun q hq => by
-      simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) g₂ m₂ k₂
+      simp only [decide_eq_true_eq] at hq; simp only [ram_layout]; omega) g₂ m₂ k₂
     have hA₂ : d₂.nreg ALLOC = d₁.nreg ALLOC := g₂.1 ALLOC (by decide)
     have E₂ : REnv R d₂ := E₁.keep (fun q hq => g₂.1 q (by
       obtain ⟨-, -, b3, -⟩ := envRegs_band q hq
       simp only [decide_eq_false_iff_not]; omega)) (fun a ha => by rw [m₂]) (by omega)
     have A₂ : AccOK P R d₂ s γ := (A.keep fr₁ fun q hq => q1 q (by
-      rcases hq with h | h | h | h | h <;> subst h <;> simp [bandOf, bDownDrv])
+      rcases hq with h | h | h | h | h <;> subst h <;> simp [ram_layout])
       (by omega)).keep fr₂ fun q hq => g₂.1 q (by
         simp only [decide_eq_false_iff_not]; omega)
     -- the two chains
     let C1 : Chain := ⟨R.H.poly (Qof P), 0, s, hs, by rw [hNPn]; omega⟩
     let C2 : Chain := ⟨R.H.poly (Qof P), s, m, hm1, by rw [hNPn]; omega⟩
     have hlen : C1.m + C2.m + 1 ≤ C1.P.n := by
-      show s + m + 1 ≤ (R.H.poly (Qof P)).n; rw [hNPn]; exact hsm
+      show s + m + 1 ≤ (R.H.poly (Qof P)).n; rwa [hNPn]
     obtain ⟨hd1R, N1, hN1, hc1⟩ := A₂.desc C1 rfl rfl rfl
     obtain ⟨hd2R, N2, hN2, hc2⟩ := q5 C2 rfl rfl rfl
     -- the junction and the degree
@@ -186,7 +183,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         (ℓ := ℓ) (k := k) ?_ hk1 hkl ?_
       · show R.H.poly (Qof P) = _; rw [eH]
       · show (0 + s) % (R.H.poly (Qof P)).n = _
-        rw [hNPn, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]; omega
+        ram_rw [hNPn, Nat.zero_add, Nat.mod_eq_of_lt]; omega
     have hfd : (chainModel (L41.jOf C1 C2 hlen).whole).FullDegLe (Qof P) 130 := by
       have h1 := fullDegLe_host (C := (L41.jOf C1 C2 hlen).whole) (t := R.H.length) hF.hsimp
         (fun y => host_ncard_le (Qof P) hDH R.H y) (Qof P)
@@ -212,7 +209,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         exact hy.trans h2)
     have hmc' : mgCostV κ (L41.scF κs) (L41.scG κs) cutGran 130 N1.chords.length
         N2.chords.length γ (s + m) ≤ mcK (κ 130) κs * lemma41Nat R.μ := hmc
-    have hγW : R.γ₀ ≤ W := by have := hw.1 219204; rw [hE.r204] at this; exact this
+    
     -- the merge step
     obtain ⟨d₃, k₃, e₃, hk₃, w10, w11, w12, w13, wA, wR, -, ⟨N, wN, wc⟩, wq, fr₃⟩ :=
       mgStep_exec (P := P) (W := W) hM (gradeCtx_capLocal O) hF.hG hF.hWn d₂ e₂.wb_right E₂.mg
@@ -224,7 +221,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         (Robust.imp hd1R fun _ h => ⟨h.2.1, h.2.2⟩)
         (by rw [v14, hA₂, m₂]; exact Robust.imp hd2R fun _ h => ⟨h.2.2, h.2.1⟩)
         A₂.dA (by rw [v14, hA₂]; exact q4.1) rfl rfl rfl rfl hlen hN1
-        (by rw [v15, hA₂, m₂]; exact hN2) hc1 hc2 (le_refl _) hγ hgen hfd (by norm_num)
+        (by rwa [v15, hA₂, m₂]) hc1 hc2 (le_refl _) hγ hgen hfd (by norm_num)
         (E₂.holds hF) (by rw [E₂.cap hF]; have := hF.hcap; unfold fuseLoss; omega)
         (by have := hF.hγW; omega)
         (by
@@ -235,15 +232,15 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
       E₂.keep (fun q hq => wq q (envRegs_band q hq).1 (by
         obtain ⟨-, -, b3, -⟩ := envRegs_band q hq; omega)) (fun a ha => fr₃.2.2.1 a (by
           have := E₂.alloc; omega)) fr₃.2.2.2.2.2.1, ?_, fun q hq hq' => ?_, ?_⟩
-    · rw [ite_eq_right (by omega)]
-      refine ⟨by rw [wq _ (by simp [bandOf, bDownDrv]) (by omega), A₂.r22], w12, w13,
-        by rw [w10]; exact wA, by rw [w10]; have := E₂.alloc; omega,
+    · ram_rw [ite_eq_right]
+      refine ⟨by ram_simp [wq, A₂.r22] <;> reg_omega, w12, w13,
+        by rwa [w10], by rw [w10]; have := E₂.alloc; omega,
         by have := E₂.alloc; omega, fun C hP hs' hm' => ?_⟩
       have hC : C = (L41.jOf C1 C2 hlen).whole := L41.chain_eq hP hs' hm'
       subst hC
       rw [w10]
       exact ⟨wR, N, wN, wc⟩
-    · rw [wq q hq (by omega), g₂.1 q (by simp only [decide_eq_false_iff_not]; omega)]
+    · ram_rw [wq q hq, g₂.1 q (by simp only [decide_eq_false_iff_not]; omega)]
       exact q1 q hq (by omega)
     · have := (fr₁.trans fr₂).trans (fr₃.mono mgBands_subset (le_refl _))
       rw [Finset.union_self, Finset.union_self] at this

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.ClusterPhase2Exec
 
 /-!
@@ -14,7 +16,7 @@ namespace Chazelle.Core.Cluster
 @[expose] public section
 
 /-- The constant of the cost bound. -/
-def clusterK : ℕ := 200000
+@[ram_layout] def clusterK : ℕ := 200000
 
 theorem GV.two_pow_L_le (g : GV) (hμ : 0 < g.μ) : 2 ^ g.L ≤ 2 * (g.N + g.μ + 1) := by
   have h := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (x := g.N + g.μ + 1) (by omega)
@@ -22,7 +24,7 @@ theorem GV.two_pow_L_le (g : GV) (hμ : 0 < g.μ) : 2 ^ g.L ≤ 2 * (g.N + g.μ 
     have hP := g.two_pow_L
     by_contra h0
     have : g.L = 0 := by omega
-    rw [this] at hP; simp at hP; omega
+    simp_all
   have e : 2 ^ g.L = 2 * 2 ^ (g.L - 1) := by
     rw [← pow_succ']; congr 1; omega
   change 2 ^ (Nat.clog 2 (g.N + g.μ + 1)).pred < g.N + g.μ + 1 at h
@@ -56,7 +58,7 @@ theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ �
     2 * μ / s * k' ≤ 2 * μ ∧ 2 * μ / s ≤ 2 * μ ∧
       2 * μ / s * (L + 2) ≤ 2 * μ + 2 * (L + 2) ^ 2 := by
   have hk'1 : 1 ≤ k' := by rw [hk']; exact le_min hk hμ
-  have hk'μ : k' ≤ μ := by rw [hk']; exact min_le_right _ _
+  have hk'μ : k' ≤ μ := by simp_all
   have hs1 : k' ≤ s := by
     rw [hs]; refine le_min ?_ hk'μ; nlinarith
   have hqs : 2 * μ / s * s ≤ 2 * μ := Nat.div_mul_le_self _ _
@@ -80,8 +82,7 @@ theorem q_bounds {μ k k' s L : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : μ �
         rw [e, hkk]
         calc 2 * μ ≤ 2 * k ^ 3 := by omega
           _ = k * k * (2 * k) := by ring
-      have hkL : k ≤ L + 2 := by
-        rw [e, hkk] at h3; nlinarith
+      
       calc 2 * μ / s * (L + 2) ≤ 2 * k * (L + 2) := Nat.mul_le_mul_right _ hq
         _ ≤ 2 * (L + 2) * (L + 2) := by nlinarith
         _ ≤ 2 * μ + 2 * (L + 2) ^ 2 := by nlinarith
@@ -146,8 +147,8 @@ theorem totalCost_le (g : GV) (hμ : 0 < g.μ) (hE : 0 < g.E) (hk : 1 ≤ g.k)
   have e2 : 12 * g.N * g.L = 12 * (g.N * g.L) := by ring
   have e3 : g.L * g.μ = g.μ * g.L := Nat.mul_comm _ _
   rw [e1, e2, e3, hEND]
-  have : g.μ ≤ X := by omega
-  have : 200000 * (Pp + 1) = 200000 * Pp + 200000 := by ring
+  
+  
   omega
 
 end

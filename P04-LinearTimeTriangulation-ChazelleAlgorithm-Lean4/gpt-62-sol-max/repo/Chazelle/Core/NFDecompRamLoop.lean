@@ -38,10 +38,10 @@ theorem rinv_start (h : Rooted R K up dn ord pos prg pch) {σ : RS}
     (hact : σ.act 0 = 1) (hside : σ.side 0 = 2) (hfin : σ.fin = 0)
     (gc : ℕ → Finset ℕ) (cr : ℕ → ℕ) :
     RInv R K D prg pch isdn chOf 0 σ gc cr where
-  i0 e he hp := by rw [hpend e he] at hp; omega
+  i0 e he hp := by simp_all
   i1 e he hr := by rw [hrem e he] at hr; omega
   i2 e he hr := by rw [hrem e he] at hr; omega
-  i3 e he hp := by rw [hpend e he] at hp; omega
+  i3 e he hp := by simp_all
   i4 t ht htop _ := by
     rw [istop_start h hrem ht] at htop
     subst htop
@@ -129,23 +129,23 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
     DFr.nreg _ fun r hr _ => by
       unfold Prot at hr
       simp only [hc2, hc1]
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+      ram_rw [Machine.upd_other _ _, Machine.upd_other _ _,
+        Machine.upd_other _ _]
   have m3 : c3.nmem = c.nmem := rfl
-  have r22 : c3.nreg 60022 = 0 := by simp only [hc3, hc2, hc1]; config_simp
-  have r23 : c3.nreg 60023 = 0 := by simp only [hc3, hc2, hc1]; config_simp
-  have r24 : c3.nreg 60024 = 0 := by simp only [hc3, hc2, hc1]; config_simp
+  have r22 : c3.nreg 60022 = 0 := by rfl
+  have r23 : c3.nreg 60023 = 0 := by assumption
+  
   have hI0 : RInv R K D (tv mB A R 3) (tv mB A R 4) (tv mB A R 5) (tv mB A R 6) 0
       (rsOf c3.nmem A R (c3.nreg 60024) (c3.nreg 60023)) (fun _ => ∅) (fun _ => 0) :=
     rinv_start h (fun e he => by
         show tv c3.nmem A R 11 e = 0
-        rw [tv_lt (by omega), m3]; exact h11 e (by omega))
+        ram_rw [tv_lt, m3]; exact h11 e (by omega))
       (fun e he => by
         show tv c3.nmem A R 12 e = 0
-        rw [tv_lt (by omega), m3]; exact h12 e (by omega))
-      (by show tv c3.nmem A R 13 0 = 1; rw [tv_lt hR0, m3]; exact h13)
-      (by show tv c3.nmem A R 15 0 = 2; rw [tv_lt hR0, m3]; exact h15)
-      (by show c3.nreg 60023 = 0; exact r23) _ _
+        ram_rw [tv_lt, m3]; exact h12 e (by omega))
+      (by show tv c3.nmem A R 13 0 = 1; rwa [tv_lt hR0, m3])
+      (by show tv c3.nmem A R 15 0 = 2; rwa [tv_lt hR0, m3])
+      (by rfl) _ _
   -- the loop
   obtain ⟨c', k, e, ⟨hw', hf', hst', h7', hjr, j, hjd, gc, cr, hI'⟩, htest, hk⟩ :=
     Exec.whileLtN_potential (P := P) (W := W) (a := 60023) (b := 60013) (body := roundBody)
@@ -167,7 +167,7 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       have : rounds D K + 1 - j = (rounds D K + 1 - (j + 1)) + 1 := by omega
       rw [this, Nat.mul_add]
       omega)
-    ⟨e3.wb_right, hf3, by rw [m3]; exact hst, by rw [m3]; exact h7, by omega, 0, r22, _, _, hI0⟩
+    ⟨e3.wb_right, hf3, by rwa [m3], by rwa [m3], by omega, 0, r22, _, _, hI0⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
   subst hjd

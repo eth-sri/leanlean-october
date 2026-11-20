@@ -42,7 +42,7 @@ theorem chordPos_eq (hN : IsNF M Q N) (hdh : DistinctHeights Q) {x x' : WPos}
   rw [ek, ek'] at hk
   obtain ⟨he, hp⟩ := key_inj hA.2.1 hA.2.2.1 hA'.2.1 hA'.2.2.1 hk
   have hyy : (Q.vtx (N.chord i).h).2 = (Q.vtx (N.chord i').h).2 := by
-    rw [← hy, ← hy', he, hp]
+    simp_all
   have hhh : (N.chord i).h = (N.chord i').h := by
     by_contra hne; exact hdh _ _ hh hh' hne hyy
   cases x; cases x'
@@ -79,7 +79,7 @@ theorem atVtx_iff {N : NF} (hN : IsNF (interiorModel Q) Q N) (hdh : DistinctHeig
       (interiorModel Q).key Q x = ⌊(interiorModel Q).key Q x⌋₊ := by
   obtain ⟨i, hi, hxi⟩ := hx
   obtain ⟨-, hA, ek, eh, hh, hy⟩ := chordPos_attach hN hi hxi
-  have hp : x.edge < Q.n := walk_n Q ▸ hA.1
+  have hp := walk_n Q ▸ hA.1
   have hW : (interiorModel Q).W = interiorWalk Q := rfl
   rw [ek, floor_add hA.2.1 hA.2.2.1]
   unfold atVtx
@@ -124,12 +124,11 @@ theorem partner_spec {N : NF} {r : ℕ} {x : WPos}
   simp only [hp, decide_eq_true_eq] at hpi
   refine ⟨i₀, hmi, ?_⟩
   unfold partner
-  rw [show (N.region r).chords.find? (fun i => decide ((N.chord i).lpos = x ∨ (N.chord i).rpos = x))
-    = some i₀ from h₀]
+  rw [h₀]
   simp only
   by_cases hl : (N.chord i₀).lpos = x
-  · left; rw [ite_eq_left hl]; exact ⟨hl.symm, rfl⟩
-  · right; rw [ite_eq_right hl]; exact ⟨(hpi.resolve_left hl).symm, rfl⟩
+  · simp_all
+  · simp_all
 
 /-! ## The arcs of a region record -/
 
@@ -138,9 +137,9 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
     (hperm : E.Perm (List.range (2 * L.length)))
     (hsort : E.Pairwise (BuildNF.codeLe (interiorModel Q) Q L)) (hK : 0 < L.length)
     {reg : ℕ → Set Point}
-    (hregs : Restore.NFRegs (interiorModel Q) Q (buildNF (interiorModel Q) Q L E) reg) {r : ℕ}
-    (hr : r < (buildNF (interiorModel Q) Q L E).nRegions) :
-    let N := buildNF (interiorModel Q) Q L E
+    (hregs : Restore.NFRegs (interiorModel Q) Q (interiorNF Q L E) reg) {r : ℕ}
+    (hr : r < (interiorNF Q L E).nRegions) :
+    let N := interiorNF Q L E
     let as := (N.region r).arcs
     (∀ t, t < as.length → as.getD t 0 < N.arcs.length ∧
       (interiorModel Q).IsArc (N.F (interiorModel Q) Q) (reg r)
@@ -157,7 +156,7 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
   have hN := isNF_build (E := E) hQ hL hperm hsort
   obtain ⟨-, -, -, -, -, -, -, -, ⟨-, hseq⟩, -, -⟩ := hN
   have hnr : r < L.length + 1 := by
-    have : (buildNF (interiorModel Q) Q L E).nRegions = L.length + 1 := by
+    have : (interiorNF Q L E).nRegions = L.length + 1 := by
       simp [NF.nRegions, buildNF]
     omega
   have hsorted : as.Pairwise (· < ·) := region_arcs_sorted hK hnr
@@ -181,14 +180,14 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
     have hle : (interiorModel Q).key Q (N.arc (as.getD t 0)).s ≤
         (interiorModel Q).key Q (N.arc (as.getD t' 0)).s := by
       have := List.pairwise_iff_getElem.1 hseq (as.getD t 0) (as.getD t' 0)
-        (by rw [DownDrv.buildNF_seq, List.length_range]; exact lt_trans hlt hj')
-        (by rw [DownDrv.buildNF_seq, List.length_range]; exact hj') hlt
+        (by rwa [DownDrv.buildNF_seq, List.length_range])
+        (by rwa [DownDrv.buildNF_seq, List.length_range]) hlt
       simpa [DownDrv.buildNF_seq] using this
     refine lt_of_le_of_ne hle fun he => ?_
     have := hA2 _ _ hj hj' (hreg.trans hreg'.symm) he
     omega
   · obtain ⟨j, hj, hreg, hs, he⟩ := hA3 r hr a b hab
-    have hjm : j ∈ as := (hA4 r hr j).2 ⟨hj, hreg⟩
+    have hjm := (hA4 r hr j).2 ⟨hj, hreg⟩
     obtain ⟨t, ht, htj⟩ := List.getElem_of_mem hjm
     exact ⟨t, ht, by rw [hget t ht, htj, hs], by rw [hget t ht, htj, he]⟩
 

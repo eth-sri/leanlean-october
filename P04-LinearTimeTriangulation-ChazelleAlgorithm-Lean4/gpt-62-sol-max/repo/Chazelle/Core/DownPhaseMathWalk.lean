@@ -52,7 +52,7 @@ theorem repFrom_append {li : Bool} {L L' : List SymPt} {i : ℕ} (h : RepFrom li
   · rw [List.getD_append _ _ _ _ hjL]; exact h j hjL
   · rw [List.getD_append_right _ _ _ _ hjL]
     have := h' (j - L.length) (by omega)
-    rwa [show i + L.length + (j - L.length) = i + j by omega] at this
+    simp_all <;> omega
 
 /-- The length of the group of host keys of arc `t`: its `d t + 1` keys from the start to the
 key before the next group, plus the junction. -/
@@ -66,7 +66,7 @@ theorem repFrom_flatMap {li : Bool} (G : ℕ → List SymPt) (d J : ℕ → ℕ)
     obtain ⟨h1, h2⟩ := ih fun t ht => hG t (by omega)
     obtain ⟨h3, h4⟩ := hG k (by omega)
     rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
-    refine ⟨repFrom_append h1 (by rw [h2]; exact h3), ?_⟩
+    refine ⟨repFrom_append h1 (by rwa [h2]), ?_⟩
     rw [List.length_append, h2, h4, grpOff_succ]
 
 theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
@@ -76,7 +76,7 @@ theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
   rw [List.length_rotate] at hj
   have hpos : 0 < L.length := by omega
   have hjm := h ((j + m) % L.length) (Nat.mod_lt _ hpos)
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_rotate]; exact hj), List.getElem_rotate,
+  rw [List.getD_eq_getElem _ _ (by simp_all), List.getElem_rotate,
     ← List.getD_eq_getElem _ (.vtx 0) (Nat.mod_lt _ hpos)]
   have e : (i + (j + m) % L.length) % nk (interiorModel Q) S R =
       (i + m + j) % nk (interiorModel Q) S R := by
@@ -114,11 +114,10 @@ theorem runCnt_arith {n x c y : ℕ} (hx : x < n) (hc : 1 ≤ c) (hcn : c ≤ n)
     (hy : y = (x + c) % n) : (y + n - 1 - x) % n = c - 1 := by
   subst hy
   by_cases h : x + c < n
-  · rw [Nat.mod_eq_of_lt h, show x + c + n - 1 - x = (c - 1) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [Nat.mod_eq_of_lt h, show x + c + n - 1 - x = (c - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
   · have e : (x + c) % n = x + c - n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    rw [e, show x + c - n + n - 1 - x = c - 1 by omega, Nat.mod_eq_of_lt (by omega)]
+      ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
+    ram_simp [e, show x + c - n + n - 1 - x = c - 1 by omega, Nat.mod_eq_of_lt]
 
 /-- The points of a run of `c` walk vertices from `x + 1` on, in walk order. -/
 theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < n) (hc0 : 0 < c) :
@@ -140,28 +139,22 @@ theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < 
     rw [show c - 1 + 1 - 1 - m = c - 1 - m by omega]
     -- `(n - 1 - (x + c) % n + (c - 1 - m)) % n = n - 1 - (x + (m + 1)) % n`
     by_cases h1 : x + c < n
-    · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt (show x + (m + 1) < n by omega),
-        Nat.mod_eq_of_lt (by omega)]
-      omega
+    · ram_simp [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt] <;> omega
     · have e1 : (x + c) % n = x + c - n := by
-        rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+        ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
       rw [e1]
       by_cases h2 : x + (m + 1) < n
-      · rw [Nat.mod_eq_of_lt h2, show n - 1 - (x + c - n) + (c - 1 - m) = (n - 2 - x - m) + n
-          by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      · ram_rw [Nat.mod_eq_of_lt h2, show n - 1 - (x + c - n) + (c - 1 - m) = (n - 2 - x - m) + n
+          by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
         omega
       · have e2 : (x + (m + 1)) % n = x + (m + 1) - n := by
-          rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-        rw [e2, Nat.mod_eq_of_lt (by omega)]
+          ram_rw [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
+        ram_rw [e2, Nat.mod_eq_of_lt]
         omega
   · simp only [items, ite_true, List.flatMap_singleton, wpts, HostItem.pts]
     refine ⟨by simp; omega, fun m hm => ?_⟩
     rw [List.getD_eq_getElem _ _ (by simp; omega)]
-    simp only [List.getElem_map, List.getElem_range]
-    congr 1
-    unfold ivB
-    simp only [ite_true]
-    rw [Nat.mod_add_mod, show x + 1 + m = x + (m + 1) by ring]
+    simp [List.getElem_map, List.getElem_range, ivB, ite_true, Nat.mod_add_mod, show x + 1 + m = x + (m + 1) by ring]
 
 end
 

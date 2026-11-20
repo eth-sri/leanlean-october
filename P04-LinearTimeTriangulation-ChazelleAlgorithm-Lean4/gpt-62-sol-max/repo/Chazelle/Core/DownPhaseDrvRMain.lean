@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvRProg
 public import Chazelle.Core.Output
 
@@ -39,16 +41,11 @@ theorem whileLtN_potential_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stm
     {c : Config} (hc : I c) :
     ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
       Frame B c c' k ∧ k ≤ Φ c + 2 := by
-  induction hn : Φ c using Nat.strong_induction_on generalizing c with
-  | _ n ih =>
-    by_cases ht : c.nreg a < c.nreg b
-    · obtain ⟨c₁, k₁, hb, hI₁, hF₁, hΦ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht',
-        (hF₁.trans hF₂).mono (by simp) (by omega), by omega⟩
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht,
-        ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl,
-          by omega⟩, by omega⟩
+  obtain ⟨d, k, e, hi, ht, hf, hk⟩ := Exec.whileLtN_with_frame I Φ (Frame B) hI
+    (fun d => ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl,
+      by omega⟩)
+    (fun f g => (f.trans g).mono (by simp) (by omega)) hbody hc
+  exact ⟨d, k, e, hi, ht, hf, by omega⟩
 
 /-! ## The loop invariant -/
 
@@ -96,7 +93,7 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
     by_contra hc
     rw [ite_eq_right hc] at hg; omega
   have h16 : 16 ≤ rd c bDownDrv 0 := by
-    rw [ite_eq_left hn₀n] at hg; show 16 ≤ c.nreg 210000; omega
+    rw [ite_eq_left hn₀n] at hg; reg_omega
   have hpot := pot_of_le (f := lvlBudget (κL + 20) cnt (topGrade P.n)) h16
   -- the level
   have hK := InvAt.len_le hInv
@@ -113,9 +110,7 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   have hpre : EnvD X P W c ∧ n₀ ≤ P.n ∧ 16 ≤ rd c bDownDrv 0 ∧ rd c bDownDrv 0 ≤ topGrade P.n ∧
       InvAt cnt P c (rd c bDownDrv 0) := ⟨hE, hn₀n, h16, hlp, hInv⟩
   obtain ⟨c₁, k₁, e₁, hk₁, ⟨h0₁, hInv₁⟩, hF₁⟩ := hL P W c hw hpre (by
-    show c.nreg ALLOC + κL * ((rd c bDownDrv 3 + 1) *
-      (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1)) ≤ W
-    omega)
+    ram_post)
   replace hk₁ : k₁ ≤ κL * ((rd c bDownDrv 3 + 1) *
       (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1)) := hk₁
   have hw₁ := e₁.wb_right
@@ -123,8 +118,8 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   have hS₁ := hE₁.setup
   have hA₁ := hF₁.2.2.2.2.2.2
   -- `λ := ⌈λ/5⌉ + 11`
-  have hl₁ : c₁.nreg 210000 = rd c bDownDrv 0 := h0₁
-  have hp₁ : c₁.nmem (c₁.nreg 230000 + 1) = topGrade P.n := hS₁.2.1
+  have hl₁ := h0₁
+  have hp₁ := hS₁.2.1
   have hnext := setup_next hS₁ hlp
   have hpn := topGrade_le P.n
   have hSA := hS₁.2.2.2
@@ -149,24 +144,21 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
     · exact hx
     · rw [hx]; exact bDownDrv_mem_drvBands
     · rw [hx]; exact bDownDrv_mem_drvBands
-  have hF : Frame drvBands c c₃ (k₁ + k₂ + k₃) := ((hF₁.trans hF₂).trans hF₃).mono hsub le_rfl
+  have hF := ((hF₁.trans hF₂).trans hF₃).mono hsub le_rfl
   have hlam₃ : rd c₃ bDownDrv 0 = nextLvl (rd c bDownDrv 0) := by
     rw [rd_drv, Nat.add_zero, hl₃, hl₂]; rfl
   have hr13 : ∀ i, 1 ≤ i → i ≤ 5 → rd c₃ bDownDrv i = rd c₁ bDownDrv i := by
-    intro i h1 h5
-    rw [rd_drv, rd_drv, hr₃' _ (by omega) (by omega), hr₂' _ (by omega) (by omega)]
-  have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC (by unfold ALLOC; omega)
-  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC (by unfold ALLOC; omega)
-  have hInv₃ : InvAt cnt P c₃ (nextLvl (rd c bDownDrv 0)) :=
-    hInv₁.transport hr13 (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
-  have hE₃ : EnvD X P W c₃ :=
-    hE₁.frame hX (hF₂.trans hF₃) (by decide)
+    ram_post [rd_drv, hr₃', hr₂']
+  have hA2 := hr₂ ALLOC (by reg_omega)
+  have hA3 := hr₃ ALLOC (by reg_omega)
+  have hInv₃ := hInv₁.transport hr13 (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
+  have hE₃ := hE₁.frame hX (hF₂.trans hF₃) (by decide)
   have hpotn := nextLvl_lt h16
   refine ⟨c₃, k₁ + (k₂ + k₃), Exec.seq e₁ (Exec.seq e₂ e₃),
     ⟨hw₃, hE₃, ?_, ?_, ?_, h15₃, ?_⟩, hF.mono subset_rfl (by omega), ?_⟩
   · rw [hlam₃]; omega
-  · rw [hlam₃]; exact hInv₃
-  · rw [hg₃, ite_eq_left hn₀n, ite_eq_left hn₀n, hl₃]
+  · rwa [hlam₃]
+  · simp [hg₃, ite_eq_left hn₀n, hl₃]
   · rw [hlam₃, hA3, hA2]; omega
   · rw [hlam₃]; omega
 
@@ -174,7 +166,7 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
 theorem two_pow_topGrade_le (n : ℕ) : 2 ^ topGrade n ≤ 2 * n + 2 := by
   unfold topGrade
   rcases Nat.lt_or_ge (n - 1) 2 with h | h
-  · rw [Nat.clog_of_right_le_one (show n - 1 ≤ 1 by omega), pow_zero]; omega
+  · simp_all [Nat.clog_of_right_le_one, pow_zero] 
   · have h1 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < n - 1 by omega)
     have h2 : 1 ≤ Nat.clog 2 (n - 1) := Nat.clog_pos (by norm_num) (by omega)
     obtain ⟨q, hq⟩ : ∃ q, Nat.clog 2 (n - 1) = q + 1 := ⟨_, (Nat.succ_pred_eq_of_pos h2).symm⟩
@@ -202,20 +194,20 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
   obtain ⟨hG, hn3, hSet, hXh, hcap, hTop⟩ := hpre
   replace hroom : c.nreg ALLOC + (κT + κB + 2 * potConst C (κL + 20) + n₀ + 300) * (P.n + 1) ≤ W :=
     hroom
-  obtain ⟨κ, hκ⟩ : ∃ κ, κT + κB + 2 * potConst C (κL + 20) + n₀ + 300 = κ := ⟨_, rfl⟩
+  obtain ⟨κ, hκ⟩ := exists_eq' (a' := κT + κB + 2 * potConst C (κL + 20) + n₀ + 300)
   rw [hκ] at hroom
-  obtain ⟨f, hf⟩ : ∃ f, lvlBudget (κL + 20) cnt (topGrade P.n) = f := ⟨_, rfl⟩
+  obtain ⟨f, hf⟩ := exists_eq' (a' := lvlBudget (κL + 20) cnt (topGrade P.n))
   have hn1 : n₀ + 300 ≤ κ * (P.n + 1) := by
     have := Nat.le_mul_of_pos_right κ (show 0 < P.n + 1 by omega)
     omega
   have hWh : hostWords P.n ≤ W := by
     have := hostWords_le (n := P.n) (show 272 ≤ κ by omega); omega
   have hE : EnvD X P W c := ⟨hG, hn3, hWh, hSet, hXh, hcap⟩
-  have hpot : pot f (topGrade P.n) ≤ potConst C (κL + 20) * (2 * P.n + 2) := hf ▸
+  have hpot := hf ▸
     (pot_lvlBudget_le hc (κL + 20) (topGrade P.n) _ le_rfl).trans
       (Nat.mul_le_mul_left _ (two_pow_topGrade_le P.n))
   have hbud : κT * (P.n + 1) + κB * (P.n + 1) + 1 + pot f (topGrade P.n) + 13 ≤ κ * (P.n + 1) := by
-    have : potConst C (κL + 20) * (2 * P.n + 2) = 2 * potConst C (κL + 20) * (P.n + 1) := by ring
+    
     rw [← hκ]; nlinarith
   -- the transition
   obtain ⟨c₁, k₁, e₁, hk₁, hInv₁, hF₁⟩ := hT P W c hw ⟨hE, hTop⟩ (by
@@ -236,16 +228,16 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
   have hw₃ := e₃.wb_right
   have hF₂ : Frame {bDownDrv} c₁ c₂ k₂ := frame_drv hr₂ hm₂ hrr₂ hrm₂ ho₂
   have hF₃ : Frame {bDownDrv} c₂ c₃ k₃ := frame_drv hr₃ hm₃ hrr₃ hrm₃ ho₃
-  have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC (by unfold ALLOC; omega)
-  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC (by unfold ALLOC; omega)
+  have hA2 := hr₂ ALLOC (by reg_omega)
+  have hA3 := hr₃ ALLOC (by reg_omega)
   have hl3 : rd c₃ bDownDrv 0 = topGrade P.n := by rw [rd_drv, Nat.add_zero, hl₃, hl₂]
   have hInv₃ : InvAt cnt P c₃ (topGrade P.n) :=
     hInv₁.transport (fun i h1 h5 => by
-      rw [rd_drv, rd_drv, hr₃' _ (by omega) (by omega), hr₂' _ (by omega) (by omega)])
+      ram_simp [rd_drv, hr₃', hr₂'])
       (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
-  have hE₃ : EnvD X P W c₃ := hE₁.frame hX (hF₂.trans hF₃) (by simp [bCore, bDownDrv])
+  have hE₃ := hE₁.frame hX (hF₂.trans hF₃) (by simp [bCore, bDownDrv])
   have hI₃ : LoopI X cnt n₀ f (κB * (P.n + 1) + 1) P W c₃ := by
-    refine ⟨hw₃, hE₃, by rw [hl3], by rw [hl3]; exact hInv₃, ?_, h15₃, ?_⟩
+    refine ⟨hw₃, hE₃, by rw [hl3], by rwa [hl3], ?_, h15₃, ?_⟩
     · rw [hg₃, hl₃]
     · rw [hl3, hA3, hA2]; omega
   -- the level loop
@@ -269,16 +261,10 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
   -- the final copy
   have e₆ := Exec.copyN (P := P) hw₅ 230003 210006
   refine ⟨_, k₁ + ((k₂ + k₃) + (k₄ + (k₅ + 1))),
-    Exec.seq e₁ (Exec.seq (Exec.seq e₂ e₃) (Exec.seq e₄ (Exec.seq e₅ e₆))), ?_, ?_, ?_⟩
-  · show _ ≤ (κT + κB + 2 * potConst C (κL + 20) + n₀ + 300) * (P.n + 1)
-    rw [hκ]; omega
+    (by ram_path), ?_, ?_, ?_⟩
+  · simp only [hκ] <;> omega
   · refine ⟨N, ?_, hNF, hFull, fun k hk => ?_⟩
-    · show Robust _ _ fun m => NFAt m ((upd c₅.nreg 230003 (c₅.nreg 210006)) 230003) N
-      rw [Machine.upd_same]
-      have hA : (upd c₅.nreg 230003 (c₅.nreg 210006)) ALLOC = c₅.nreg ALLOC := by
-        rw [Machine.upd_other]; unfold ALLOC; omega
-      show Robust ((upd c₅.nreg 230003 (c₅.nreg 210006)) ALLOC) c₅.nmem _
-      rw [hA]; exact hN
+    · assumption
     · have := hNF.2.2.2.choose_spec.2.2.2.2.2.1 k hk
       rwa [show (Qof P).n = P.n from shear_n _ _] at this
   · have hF₆ : Frame {bCore} c₅ { c₅ with nreg := upd c₅.nreg 230003 (c₅.nreg 210006) } 1 :=

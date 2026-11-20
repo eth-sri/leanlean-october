@@ -37,7 +37,7 @@ theorem tour_mod {m S a : ℕ} (hS : S ≤ 2 * m) (ha : a < 2 * m) :
     (S + a) % (2 * m) = if S + a < 2 * m then S + a else S + a - 2 * m := by
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 /-- The tour position determines the tour step. -/
 theorem tour_inj {m S a b : ℕ} (hS : S ≤ 2 * m) (ha : a < 2 * m) (hb : b < 2 * m)
@@ -66,8 +66,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
   have hm := C.one_le
   have hS := C.sideS_lt C.sideBeta
   obtain ⟨k, hk, s, hs, hz, hcov⟩ := C.sideTour_open C.sideBeta hi ⟨ht, ht1⟩
-  have hzmem : sidePt (C.sideWalk C.sideBeta) (i + 6) t ∈ C.set :=
-    C.sideWalk_tour_pt_mem C.sideBeta hi.le (fun h => absurd h (by omega)) ht.le ht1
+  have hzmem := C.sideWalk_tour_pt_mem C.sideBeta hi.le (fun h => absurd h (by omega)) ht.le ht1
   rcases C.sideWalk_pos_cases C.sideBeta hp' ht' with hbox | ⟨i', hi', rfl, hit'⟩
   · exact absurd (heq ▸ hzmem) (C.sideWalk_box_pt C.sideBeta hbox ht' ht1').1
   -- a tour position
@@ -85,7 +84,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
   -- the same chain edge
   have hkk : k' = k := by
     by_contra hne
-    have hlk : C.edgeIdx k' ≠ C.edgeIdx k := fun h =>
+    have hlk := fun h =>
       hne (C.sideEdgeIdx_inj (by omega) (by omega) h)
     have e1 : ∀ q : ℕ, C.vertex (q + 1) = C.P.vtx ((C.edgeIdx q + 1) % C.P.n) := fun q => by
       unfold Chain.vertex; rw [C.edgeIdx_succ]
@@ -96,8 +95,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
     have := Jordan.simple_openEdge_not_mem_other hP (C.edgeIdx_lt k') hs' (C.edgeIdx_lt k)
       (Ne.symm hlk)
     apply this
-    rw [show C.P.vtx (C.edgeIdx k') = C.vertex k' from rfl, ← e1 k', h2]
-    exact hmem
+    rwa [show C.P.vtx (C.edgeIdx k') = C.vertex k' from rfl, ← e1 k', h2]
   subst hkk
   -- the tour positions of the chain edge
   rw [C.sideIdx_eq, C.sideIdx_succ] at hcov hcov'
@@ -131,8 +129,7 @@ theorem chain_vertex_positions (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) {p' 
   rcases cand_complete C C.sideBeta hi hik with h | h | h
   · left; rw [h]
   · right; left; rw [h]
-  · right; right; refine ⟨by rw [h], ?_⟩
-    rw [← hik, h, C.sideIdx_two_m]
+  simp [h, ← hik, C.sideIdx_two_m]
 
 /-! ## Holes -/
 
@@ -153,13 +150,8 @@ theorem eHole_mem {n p : ℕ} (hp : p < n) {t : ℝ} (ht : 0 < t) (ht1 : t < 1) 
     sideInArc (p : ℝ) (((p + 1) % n : ℕ) : ℝ) ((p : ℝ) + t) := by
   unfold sideInArc
   rcases Nat.lt_or_ge (p + 1) n with h | h
-  · rw [Nat.mod_eq_of_lt h]
-    push_cast
-    rw [ite_eq_left (by linarith)]; constructor <;> linarith
-  · rw [show p + 1 = n by omega, Nat.mod_self]
-    push_cast
-    rw [ite_eq_right (by have : (0 : ℝ) ≤ p := Nat.cast_nonneg _; linarith)]
-    left; linarith
+  · simp_all [Nat.mod_eq_of_lt h] 
+  simp_all [show p + 1 = n by omega, Nat.mod_self, ite_eq_right] 
 
 /-- **A vertex hole contains the key of the vertex.** -/
 theorem vHole_mem {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) :
@@ -168,18 +160,16 @@ theorem vHole_mem {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) :
   unfold sideInArc prevV
   rcases Nat.eq_zero_or_pos q with h0 | h0
   · subst h0
-    rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]
+    ram_rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt, Nat.mod_eq_of_lt]
     push_cast
     rw [ite_eq_right (by norm_num; omega)]
     right; norm_num
-  · rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · ram_rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
     rcases Nat.lt_or_ge (q + 1) n with h | h
-    · rw [Nat.mod_eq_of_lt h]
-      rw [ite_eq_left (by exact_mod_cast (show q - 1 < q + 1 by omega))]
-      constructor <;> exact_mod_cast (by omega)
+    · simp_all [Nat.mod_eq_of_lt h] 
     · rw [show q + 1 = n by omega, Nat.mod_self]
       rw [ite_eq_right (by push_cast; norm_num)]
-      left; exact_mod_cast (show q - 1 < q by omega)
+      simp_all 
 
 /-- A key `0` inside an interval with ends below `n` means the key `n` is inside it too. -/
 theorem sideInArc_zero_n {a b : ℝ} {n : ℕ} (ha0 : 0 ≤ a) (ha : a < n) (h : sideInArc a b ((0 : ℕ) + 0)) :
@@ -207,18 +197,18 @@ theorem avoid_of_cover {M : Model} {Q : Polygon} {hs : List (WPos × WPos)} {z :
   · subst ht1
     have hn : 0 < M.W.n := by omega
     have hz' : sidePt M.W ((p + 1) % M.W.n) 0 = z := by
-      rw [Chazelle.Chain.sidePt_zero, ← hz]; simp [Model.wb, Geometry.lerp]
+      simp [Chazelle.Chain.sidePt_zero, ← hz, Model.wb, Geometry.lerp]
     obtain ⟨g, hg, hin⟩ := hc _ 0 (Nat.mod_lt _ hn) le_rfl one_pos hz'
     refine ⟨g, hg, ?_⟩
     rcases Nat.lt_or_ge (p + 1) M.W.n with h | h
-    · rw [Nat.mod_eq_of_lt h] at hin; push_cast at hin ⊢; rw [add_zero] at hin; exact hin
+    · rw [Nat.mod_eq_of_lt h] at hin; push_cast at hin ⊢; rwa [add_zero] at hin
     · rw [show p + 1 = M.W.n by omega, Nat.mod_self] at hin
       obtain ⟨g1, g1e⟩ := hv g hg
       have hk : M.key Q g.1 = g.1.edge := by
         obtain ⟨⟨e, h⟩, _⟩ := g; simp only at g1 ⊢; subst g1; exact key_vtx' M Q e
       have e1 : ((p : ℝ) + 1) = ((M.W.n : ℕ) : ℝ) := by exact_mod_cast (show p + 1 = M.W.n by omega)
       rw [e1]
-      exact sideInArc_zero_n (by rw [hk]; exact Nat.cast_nonneg _)
+      exact sideInArc_zero_n (by simp [hk])
         (by rw [hk]; exact_mod_cast g1e) hin
 
 /-- **The chain vertex holes.** -/

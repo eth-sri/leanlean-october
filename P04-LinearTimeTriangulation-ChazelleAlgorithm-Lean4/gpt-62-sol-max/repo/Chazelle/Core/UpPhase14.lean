@@ -25,38 +25,9 @@ variable {O : OracleIface} {P : Polygon} {W : ℕ}
 set_option maxHeartbeats 32000000 in
 /-- **All chains of grade `g`.** -/
 theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
-    (hB : Meets sB bruteBands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bBrute 1 ∧
-        rd c bBrute 0 + rd c bBrute 1 + 1 ≤ P.n ∧ 1 ≤ rd c bBrute 2 ∧
-        (rd c bBrute 1 = 1 ∨ 2 ≤ rd c bBrute 2))
-      (fun P c c' => ∃ C N, C.P = Qof P ∧ C.s = rd c bBrute 0 ∧ C.m = rd c bBrute 1 ∧
-        Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bBrute 3) N) ∧
-        IsCanonicalNF (chainModel C) (Qof P) N (rd c bBrute 2) 4)
-      (fun _ c => κB * (rd c bBrute 1 + 1) ^ 3))
-    (hL : Meets sL l41Bands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-        (gradeCtx O).holds P c.nmem (rd c bL41 0) (c.nreg ALLOC) ∧
-        rd c bL41 3 ≤ c.nmem (rd c bL41 0) ∧ lemma41Start ≤ rd c bL41 3 ∧
-        rd c bL41 1 + rd c bL41 2 + 1 ≤ P.n ∧
-        2 ^ (rd c bL41 3 - 1) < rd c bL41 2 ∧ rd c bL41 2 ≤ 2 ^ rd c bL41 3)
-      (fun P c c' => ∃ C N, C.P = Qof P ∧ C.s = rd c bL41 1 ∧ C.m = rd c bL41 2 ∧
-        Robust (c'.nreg ALLOC) c'.nmem (fun m => NFAt m (rd c' bL41 4) N) ∧
-        IsCanonicalNF (chainModel C) (Qof P) N (gradeGran (rd c bL41 3)) 4)
-      (fun _ c => κL * (lemma41Nat (rd c bL41 3) + 1)))
-    (hGr : Meets sG granBands
-      (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧ 1 ≤ rd c bGran 2 ∧
-        ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bGran 0) ∧
-        ∃ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M ∧ GoodModel M ∧
-          NFWithin c.nmem (rd c bGran 1) (c.nreg ALLOC) N ∧ IsNF M (Qof P) N ∧
-          M.DegLe (N.F M (Qof P)) (rd c bGran 2) ∧
-          M.Semigranular (N.F M (Qof P)) (rd c bGran 3))
-      (fun P c c' => ∀ M N, ModelDescAt c.nmem (rd c bGran 0) (Qof P) M →
-        NFAt c.nmem (rd c bGran 1) N →
-        ∃ N', c.nreg ALLOC ≤ rd c' bGran 4 ∧ NFWithin c'.nmem (rd c' bGran 4) (c'.nreg ALLOC) N' ∧
-          N'.F M (Qof P) ⊆ N.F M (Qof P) ∧
-          IsCanonicalNF M (Qof P) N' (rd c bGran 3) (rd c bGran 2))
-      (fun _ c => κG (rd c bGran 2) *
-        (c.nmem (rd c bGran 1) * (Nat.clog 2 (c.nmem (rd c bGran 1)) + 1) + 1)))
+    (hB : BruteM sB κB)
+    (hL : L41M O sL κL)
+    (hGr : GranM sG κG)
     (hV : O.Valid) (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hn : 2 ≤ P.n) {c : Config}
     (hw : WordsBounded W c) {hp h g R x A : ℕ}
     (hu : URegs c P.n hp h g (gradeCount P.n g) (gradeGran g) (gradeCount P.n (g - 1)) R)
@@ -71,30 +42,30 @@ theorem chainsL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       URegs c' P.n hp h g (gradeCount P.n g) (gradeGran g) (gradeCount P.n (g - 1)) R ∧
       Robust (c'.nreg ALLOC) c'.nmem
         (fun m => ChainMem O P m h hp g R (c'.nreg 170018) (gradeCount P.n g) (c'.nreg ALLOC)) ∧
-      (∀ a, a < A → c'.nmem a = c.nmem a) ∧ (∀ a, a < A → c'.rmem a = c.rmem a) ∧
+      (MemEqBelow A c'.nmem c.nmem) ∧ (MemEqBelow A c'.rmem c.rmem) ∧
       c'.output = c.output ∧
       (∀ r, Kept r → r ≠ 170015 → r ≠ 170016 → r ≠ 170017 → r ≠ 170018 → r ≠ 170035 →
         r ≠ 170036 → c'.nreg r = c.nreg r) ∧
       (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r) := by
   set cnt := gradeCount P.n g with hcnt
   set K := stepB κB κL κG O.κ g with hK
-  let I : Config → Prop := fun c' => ∃ i, i ≤ cnt ∧ WordsBounded W c' ∧
+  let I := fun c' => ∃ i, i ≤ cnt ∧ WordsBounded W c' ∧
     URegs c' P.n hp h g cnt (gradeGran g) (gradeCount P.n (g - 1)) R ∧
     c'.nreg 170015 = i ∧ c'.nreg 170016 = gradeStart g i ∧ c'.nreg 170035 = 6 * i ∧
     c'.nreg 170036 = 2 * i + 1 ∧ A ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ A + i * (K + 2) ∧
     Robust (c'.nreg ALLOC) c'.nmem
       (fun m => ChainMem O P m h hp g R (c'.nreg 170018) i (c'.nreg ALLOC)) ∧
-    (∀ a, a < A → c'.nmem a = c.nmem a) ∧ (∀ a, a < A → c'.rmem a = c.rmem a) ∧
+    (MemEqBelow A c'.nmem c.nmem) ∧ (MemEqBelow A c'.rmem c.rmem) ∧
     c'.output = c.output ∧
     (∀ r, Kept r → r ≠ 170015 → r ≠ 170016 → r ≠ 170017 → r ≠ 170018 → r ≠ 170035 →
       r ≠ 170036 → c'.nreg r = c.nreg r) ∧
     (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r)
   have hI0 : I c := ⟨0, by omega, hw, hu, h15, by rw [h16]; unfold gradeStart; ring,
-    by rw [h35], by rw [h36], by omega, by omega, by rw [h18, hA]; exact hM,
+    by rw [h35], by rw [h36], by omega, by omega, by rwa [h18, hA],
     fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ _ _ _ _ => rfl, fun _ _ => rfl⟩
   obtain ⟨c', k, e, ⟨i, hic, hw', hu', i15, i16, i35, i36, a1, a2, hM', mm, mr, mo, fr, frr⟩,
       htest, hk, hψ⟩ :=
-    whileLtN_potential_lb' (P := P) (W := W) (a := 170015) (b := 170008)
+    Exec.whileLtN_growth (P := P) (W := W) (a := 170015) (b := 170008)
       (body := chainS sB sL sG O.prep) I (fun c' => (cnt - c'.nreg 170015) * (K + 2))
       (fun c' => c'.nreg ALLOC) (fun c' ⟨_, _, h, _⟩ => h)
       (fun c2 ⟨i, hic, hw2, hu2, i15, i16, i35, i36, a1, a2, hM2, mm, mr, mo, fr, frr⟩ htest => by

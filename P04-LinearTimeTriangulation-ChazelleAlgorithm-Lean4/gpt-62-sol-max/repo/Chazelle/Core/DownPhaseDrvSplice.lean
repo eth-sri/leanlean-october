@@ -44,7 +44,7 @@ theorem buildNF_arc (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).
   rw [buildNF_arcs hK, List.getD_eq_getElem?_getD, List.getElem?_map,
     List.getElem?_eq_getElem hj, Option.map_some, Option.getD_some,
     show (gapStarts M Q L E)[j] = (gapStarts M Q L E).getD j 0 by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]]
+      simp_all]
   rfl
 
 /-- The arc sequence of `buildNF` is the identity order. -/
@@ -54,13 +54,11 @@ theorem buildNF_seq : (buildNF M Q L E).seq = List.range (buildNF M Q L E).arcs.
 
 theorem getD_append_left {c : ℕ} (hc : c < 2 * L.length) :
     (L ++ L₂).getD (c / 2) (0, 0, 0) = L.getD (c / 2) (0, 0, 0) := by
-  rw [List.getD_append _ _ _ _ (by omega)]
+  ram_simp [List.getD_append]
 
 /-- **Old event codes name the same walk positions after appending chords.** -/
 theorem wposOf_append {c : ℕ} (hc : c < 2 * L.length) : wposOf (L ++ L₂) c = wposOf L c := by
-  unfold wposOf
-  simp only [BuildRegions.crec]
-  rw [getD_append_left hc]
+  ram_finish [wposOf, BuildRegions.crec, getD_append_left hc]
 
 theorem tieBit_append {c : ℕ} (hc : c < 2 * L.length) : tieBit M (L ++ L₂) c = tieBit M L c := by
   unfold tieBit
@@ -100,10 +98,8 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
       refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
       have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
       have hb' := List.mem_range.1 (hperm.mem_iff.1 hb)
-      rw [codeLeB_iff, codeLe_append ha' hb']
-      exact hab
-    have hE₂ : E₂.Pairwise (fun a b => codeLeB M Q (L ++ L₂) a b = true) :=
-      hsort₂.imp fun h => (codeLeB_iff _ _).2 h
+      rwa [codeLeB_iff, codeLe_append ha' hb']
+    have hE₂ := hsort₂.imp fun h => (codeLeB_iff _ _).2 h
     have h := List.pairwise_merge (le := codeLeB M Q (L ++ L₂))
       (fun a b c h1 h2 => by
         rw [codeLeB_iff] at h1 h2 ⊢

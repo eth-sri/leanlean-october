@@ -27,71 +27,66 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   set k := c.nreg oKk with hkk
   set b := c.nreg oB with hbb
   set e := stopSet J (Qof P) N₂ kind k b with he
-  have hb : b ≤ 1 := hD.ok.2.1
+  have hb := hD.ok.2.1
   obtain ⟨i1, i2, -⟩ := orig_attach E.hP E.hNF₂ hD
   obtain ⟨A0, pt0⟩ := i1 _ _ arr0
   obtain ⟨A1, pt1⟩ := i2 _ _ arr1
   have hK := E.hK.fix hI
   have hX : ∀ r, r = oF0 + 1 ∨ r = oF0 + 2 ∨ r = oB ∨ r = a1F + 1 ∨ r = a1F + 2 ∨ r = slfDc →
       r ≠ slfX := by
-    intro r hr; rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp only [oF0, oB, a1F, slfDc, slfX, sw] <;> omega
+    simp [oF0, oB, a1F, slfDc, slfX, sw]
   -- 1. the reversed code
   refine (IRS.seq (K₁ := 1) (K₂ := 37 + 37) (IRS.block [.subN slfDc K1 oB] hI
-    ⟨iscr_sw (by unfold slfDc sw; omega) (by unfold slfDc sw; omega), trivial⟩) ?_).mono
-    (by norm_num) (fun _ h => h)
+    ⟨iscr_sw (by unfold slfDc sw; omega) (by unfold slfDc sw; omega), trivial⟩) ?_).budget (by norm_num)
   rintro c₁ hI₁ - - rfl
   set c₁ : Config := { c with nreg := regB c.nmem [.subN slfDc K1 oB] c.nreg } with hc₁
   have v1 : c₁.nreg slfDc = 1 - b := by simp [hc₁, regB, regI, upd, hK.2.1, hbb]
   have k1 : ∀ q, q ≠ slfDc → c₁.nreg q = c.nreg q := fun q hq => by
-    simp [hc₁, regB, regI, upd, hq]
+    ram_finish
   have rr1 : ∀ q, (sw 4000 ≤ q ∧ q ≤ sw 4066) ∨ q = K0 ∨ q = K1 ∨ q = ALLOC →
       c₁.nreg q = c.nreg q := fun q hq => k1 q (by
         rcases hq with h | rfl | rfl | rfl <;> simp only [slfDc, K0, K1, ALLOC, sw] at * <;> omega)
-  have c1RB : c₁.nreg gRB = c.nreg gRB := rr1 _ (Or.inl ⟨by unfold gRB; omega, by unfold gRB sw; omega⟩)
-  have c1RC : c₁.nreg gRC = c.nreg gRC := rr1 _ (Or.inl ⟨by unfold gRC sw; omega, by unfold gRC sw; omega⟩)
-  have c1O : c₁.nreg slfO = c.nreg slfO := rr1 _ (Or.inl ⟨by unfold slfO sw; omega, by unfold slfO sw; omega⟩)
+  have c1RB : c₁.nreg gRB = c.nreg gRB := rr1 _ (Or.inl (by reg_omega))
+  have c1RC : c₁.nreg gRC = c.nreg gRC := rr1 _ (Or.inl (by reg_omega))
+  have c1O : c₁.nreg slfO = c.nreg slfO := rr1 _ (Or.inl (by reg_omega))
   -- 2. the record of `A₀`
   refine IRS.seq (K₁ := 37) (K₂ := 37) (slfMaybe_irs (bitr := slfO) (hX _ (Or.inl rfl))
     (hX _ (Or.inr (Or.inl rfl))) (hX _ (Or.inr (Or.inr (Or.inl rfl)))) hI₁
     (by rw [rr1 _ (Or.inr (Or.inl rfl))]; exact hK.1) (by rw [rr1 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hK.2.1)
-    (by rw [c1RB]; exact hR0) (by rw [c1RB, c1RC]; have := hI.hw.1 ALLOC; omega)
+    (by rwa [c1RB]) (by rw [c1RB, c1RC]; have := hI.hw.1 ALLOC; omega)
     (by rw [c1O]; exact bit0.1)) ?_
   rintro c₂ hI₂ - - ⟨g2, w2, m2, r2⟩
   simp only [c1O, c1RC, c1RB] at g2 w2 m2
-  have c2r : ∀ q, q ≠ slfX → q ≠ gRC → q ≠ slfDc → c₂.nreg q = c.nreg q :=
-    fun q h1 h2 h3 => (r2 q h1 h2).trans (k1 q h3)
+  have c2r := fun q h1 h2 h3 => (r2 q h1 h2).trans (k1 q h3)
   have c2RB : c₂.nreg gRB = c.nreg gRB :=
-    c2r _ (by unfold gRB slfX sw; omega) (by unfold gRB gRC sw; omega) (by unfold gRB slfDc sw; omega)
+    c2r _ (by reg_omega) (by reg_omega) (by reg_omega)
   have c2O4 : c₂.nreg (slfO + 4) = c.nreg (slfO + 4) :=
-    c2r _ (by unfold slfO slfX sw; omega) (by unfold slfO gRC sw; omega) (by unfold slfO slfDc sw; omega)
+    c2r _ (by reg_omega) (by reg_omega) (by reg_omega)
   have c2Dc : c₂.nreg slfDc = 1 - b := by
-    rw [r2 _ (by unfold slfDc slfX sw; omega) (by unfold slfDc gRC sw; omega), v1]
+    ram_finish [r2, v1]
   have hgrc2 : c₂.nreg gRC ≤ c.nreg gRC + 1 := by rw [g2]; split_ifs <;> omega
   -- 3. the record of `A₁`
   refine (slfMaybe_irs (bitr := slfO + 4) (hX _ (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
     (hX _ (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))) (hX _ (Or.inr (Or.inr (Or.inr (Or.inr
       (Or.inr rfl)))))) hI₂
-    (by rw [c2r _ (by unfold K0 slfX sw; omega) (by unfold K0 gRC sw; omega)
-      (by unfold K0 slfDc sw; omega)]; exact hK.1)
-    (by rw [c2r _ (by unfold K1 slfX sw; omega) (by unfold K1 gRC sw; omega)
-      (by unfold K1 slfDc sw; omega)]; exact hK.2.1)
-    (by rw [c2RB]; exact hR0) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
+    (by ram_rw [c2r]; exact hK.1)
+    (by ram_rw [c2r]; exact hK.2.1)
+    (by rwa [c2RB]) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
     (by rw [c2O4]; exact bit1.1)).mono (by norm_num) ?_
   rintro c' ⟨g3, w3, m3, r3⟩
   simp only [c2O4, c2RB] at g3 w3 m3
   -- the facts
-  set t₀ := (chainModel J.whole).param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩ with ht₀
-  set t₁ := (chainModel J.whole).param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩ with ht₁
+  set t₀ := J.wholeModel.param (Qof P) ⟨c.nreg (oF0 + 1), c.nreg (oF0 + 2)⟩ with ht₀
+  set t₁ := J.wholeModel.param (Qof P) ⟨c.nreg (a1F + 1), c.nreg (a1F + 2)⟩ with ht₁
   have hE0 : c.nreg slfO ≠ 1 → (Lst J : ℝ) ≤ oW J (c.nreg (oF0 + 1) + t₀) := fun h => by
     have := bit0.2; unfold slfOff at this; by_contra hc; push Not at hc
     exact h (this.2 hc)
   have hE1 : c.nreg (slfO + 4) ≠ 1 → (Lst J : ℝ) ≤ oW J (c.nreg (a1F + 1) + t₁) := fun h => by
     have := bit1.2; unfold slfOff at this; by_contra hc; push Not at hc
     exact h (this.2 hc)
-  have hN0 : c.nreg slfO = 1 → oW J (c.nreg (oF0 + 1) + t₀) < Lst J := fun h => by
+  have hN0 := fun h => by
     have := bit0.2; unfold slfOff at this; exact this.1 h
-  have hN1 : c.nreg (slfO + 4) = 1 → oW J (c.nreg (a1F + 1) + t₁) < Lst J := fun h => by
+  have hN1 := fun h => by
     have := bit1.2; unfold slfOff at this; exact this.1 h
   -- the record of `A₀` in `c'`
   have rec0 : c.nreg slfO ≠ 1 → RawV P J N₂ c'.nmem (c.nreg gRB) (c.nreg gRC) ∧
@@ -108,12 +103,12 @@ theorem slfEmits_spec : SlfEmitsSpec := by
         q = slfL0 ∨ q = slfL1 ∨ q = oPar) → c₁.nreg q = c.nreg q := by
       intro q hq
       exact k1 q (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-          simp only [oF0, oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfDc, sw] <;> omega)
-    rw [g (oF0 + 1) (by simp), g (oF0 + 2) (by simp), g oKd (by simp), g oKk (by simp),
-      g oB (by simp)] at q1
-    rw [g oB (by simp)] at q2
-    rw [g slfA (by simp), g slfN (by simp), g slfL0 (by simp), g slfL1 (by simp),
-      g oPar (by simp)] at q3
+          simp only [ram_layout] <;> omega)
+    ram_rw [g (oF0 + 1) (by simp), g (oF0 + 2) (by simp), g oKd, g oKk,
+      g oB] at q1
+    ram_rw [g oB] at q2
+    ram_rw [g slfA, g slfN, g slfL0, g slfL1,
+      g oPar] at q3
     refine ⟨slfRawV hD hb A0 pt0 (hE0 h) pw0 (hax ⟨_, _, A0, hE0 h⟩) q1 q2 q3, q1⟩
   -- the record of `A₁` in `c'`
   have rec1 : c.nreg (slfO + 4) ≠ 1 → RawV P J N₂ c'.nmem (c.nreg gRB) (c₂.nreg gRC) ∧
@@ -122,27 +117,27 @@ theorem slfEmits_spec : SlfEmitsSpec := by
     intro h
     obtain ⟨q1, q2, q3⟩ := slfRec_words (cc := c₂) (w3 h)
     have e1 : c₂.nreg (a1F + 1) = c.nreg (a1F + 1) :=
-      c2r _ (by unfold a1F slfX sw; omega) (by unfold a1F gRC sw; omega) (by unfold a1F slfDc sw; omega)
+      c2r _ (by reg_omega) (by reg_omega) (by reg_omega)
     have e2 : c₂.nreg (a1F + 2) = c.nreg (a1F + 2) :=
-      c2r _ (by unfold a1F slfX sw; omega) (by unfold a1F gRC sw; omega) (by unfold a1F slfDc sw; omega)
+      c2r _ (by reg_omega) (by reg_omega) (by reg_omega)
     have g : ∀ q, (q = oKd ∨ q = oKk ∨ q = oB ∨ q = slfA ∨ q = slfN ∨ q = slfL0 ∨ q = slfL1 ∨
         q = oPar) → c₂.nreg q = c.nreg q := by
       intro q hq
       exact c2r q (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-          simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfX, sw] <;> omega)
+          simp only [ram_layout] <;> omega)
         (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-          simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, gRC, sw] <;> omega)
+          simp only [ram_layout] <;> omega)
         (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-          simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfDc, sw] <;> omega)
-    rw [e1, e2, g oKd (by simp), g oKk (by simp), g oB (by simp)] at q1
+          simp only [ram_layout] <;> omega)
+    ram_rw [e1, e2, g oKd, g oKk, g oB] at q1
     rw [c2Dc] at q2
-    rw [g slfA (by simp), g slfN (by simp), g slfL0 (by simp), g slfL1 (by simp),
-      g oPar (by simp)] at q3
+    ram_rw [g slfA, g slfN, g slfL0, g slfL1,
+      g oPar] at q3
     refine ⟨slfRawV hD (d := 1 - b) (by omega) A1 pt1 (hE1 h) pw1 (hax ⟨_, _, A1, hE1 h⟩) q1 q2 q3,
       q1⟩
   -- the post
-  have hO0 : c.nreg slfO ≤ 1 := bit0.1
-  have hO4 : c.nreg (slfO + 4) ≤ 1 := bit1.1
+  
+  
   refine ⟨by rw [g3, g2]; omega, by rw [g3, g2]; split_ifs <;> omega, fun i hi1 hi2 => ?_,
     fun _ p t hA hL => ?_, fun a ha hs => ?_, ?_, fun r hr hS hrA => ?_⟩
   · -- validity
@@ -171,14 +166,13 @@ theorem slfEmits_spec : SlfEmitsSpec := by
     rw [m3 a (by rcases hs with h | h <;> [left; right] <;> rw [g2] <;> split_ifs <;> omega),
       m2 a (by rcases hs with h | h <;> [left; right] <;> omega)]
   · -- the allocator
-    rw [r3 _ (by unfold ALLOC slfX sw; omega) (by unfold ALLOC gRC sw; omega),
-      c2r _ (by unfold ALLOC slfX sw; omega) (by unfold ALLOC gRC sw; omega)
-        (by unfold ALLOC slfDc sw; omega)]
+    ram_rw [r3,
+      c2r]
   · -- the registers
     have hS' : ¬ ((sw 700 ≤ r ∧ r < sw 2200) ∨ r = gRC ∨ (sw 3000 ≤ r ∧ r < sw 4000) ∨
       (sw 4010 ≤ r ∧ r < sw 4200) ∨ (sw 5000 ≤ r ∧ r < sw 6000)) := hS
     have a1 : r ≠ slfX := by intro h; apply hS'; subst h; unfold slfX sw; omega
-    have a2 : r ≠ gRC := fun h => hS' (Or.inr (Or.inl h))
+    have a2 := fun h => hS' (Or.inr (Or.inl h))
     have a3 : r ≠ slfDc := by intro h; apply hS'; subst h; unfold slfDc sw; omega
     rw [r3 r a1 a2, c2r r a1 a2 a3]
 

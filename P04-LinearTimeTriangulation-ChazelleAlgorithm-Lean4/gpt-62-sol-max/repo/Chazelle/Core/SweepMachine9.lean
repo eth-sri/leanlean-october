@@ -45,15 +45,15 @@ variable (J : Merge.Junction)
 /-- **A position of the open right stretch** is `(g + d, t)` with `d < L`, and `d ≠ 0` at a vertex. -/
 theorem stretch_decomp (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) {p : ℕ}
-    (hp : p < (chainModel J.whole).W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
-    (h0 : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t))
-    (hL : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
+    (hp : p < J.wholeModel.W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
+    (h0 : 0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t))
+    (hL : off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
       ((rL1 J + rL2 J : ℕ) : ℝ)) :
     ∃ d, d < rL1 J + rL2 J ∧ (t = 0 → d ≠ 0) ∧
-      p = (6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n := by
+      p = (6 + tpos J.whole J.m₁ + d) % J.wholeModel.W.n := by
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨hpd, hoff⟩ := hC.decomp hp ht0 ht1
-  set d := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) p
+  set d := dOf J.wholeModel.W.n (6 + tpos J.whole J.m₁) p
   rw [hoff] at h0 hL
   refine ⟨d, ?_, fun ht => ?_, hpd.symm⟩
   · have : (d : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := by linarith

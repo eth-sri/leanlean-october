@@ -11,7 +11,7 @@ Geometry of the classes of a side-1 query position `x` in the model of `C₂`:
 * `shared_iffR`, `top_iffR`: the shared vertex and the top of `C₂` among the positions (index
   tests);
 * `shared_posL`: the vertex position of the shared vertex in the model of `C₁`;
-* `lhGeo_boxL`: the box twin in the model of `C₁`; `lhGeo_arr`: an arrival position;
+* use `lhGeo_boxTwin` and `lhGeo_arr` for the box and arrival cases;
 * `endQ_facts`: an endpoint query starts at `endOrigin` in the direction `endDir`;
 * `whole_mem`: the first hit of `C` from those of `C₂` and (below the top of `C₁`) `C₁`.
 -/
@@ -50,30 +50,26 @@ theorem tour_set (C : Chain) (Q : Polygon) {x : WPos} (hc : PosClass C Q x)
     rw [pos_eq_sidePt' C Q x, hc.1, hc.2]
     exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) le_rfl (fun _ => rfl) le_rfl one_pos
 
+section
+
+variable (hP : J.P.Simple) (Q : Polygon) {x : WPos}
+    (hx : x.edge < J.rightModel.W.n) (h0 : 0 ≤ J.rightModel.param Q x)
+    (h1 : J.rightModel.param Q x < 1)
+include hP hx h0 h1
+
 /-- **The shared vertex in the model of `C₂`**: parameter `0`, and the edge is `cstR 1` or the
 last walk edge when `cstR 1 = 6`. -/
-theorem shared_iffR (hP : J.P.Simple) (Q : Polygon) {x : WPos}
-    (hx : x.edge < (chainModel J.right).W.n) (h0 : 0 ≤ (chainModel J.right).param Q x)
-    (h1 : (chainModel J.right).param Q x < 1) :
-    (chainModel J.right).pos Q x = J.shared ↔ (chainModel J.right).param Q x = 0 ∧
+theorem shared_iffR :
+    J.rightModel.pos Q x = J.shared ↔ J.rightModel.param Q x = 0 ∧
       (x.edge = cstR J 1 ∨ (x.edge + 1 = 2 * J.m₂ + 7 ∧ cstR J 1 = 6)) := by
   rw [← J.right_vertex_zero, atEnd_iff J.right hP (Or.inl rfl) Q hx h0 h1]
   have e : cstR J 1 = 6 + tpos J.right 0 := rfl
   have hm : J.right.m = J.m₂ := rfl
-  rw [e, hm]
-  constructor
-  · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl h⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
-  · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl h⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+  simp_all
 
 /-- **The top of `C₂`** among the positions of its model. -/
-theorem top_iffR (hP : J.P.Simple) (Q : Polygon) {x : WPos}
-    (hx : x.edge < (chainModel J.right).W.n) (h0 : 0 ≤ (chainModel J.right).param Q x)
-    (h1 : (chainModel J.right).param Q x < 1) :
-    (chainModel J.right).pos Q x = J.right.top ↔ (chainModel J.right).param Q x = 0 ∧
+theorem top_iffR :
+    J.rightModel.pos Q x = J.right.top ↔ J.rightModel.param Q x = 0 ∧
       (x.edge = 6 ∨ x.edge + 1 = 2 * J.m₂ + 7 ∨ x.edge = 6 + midT J.right) := by
   rw [atTop_iff J.right hP Q hx h0 h1]
   have hm : J.right.m = J.m₂ := rfl
@@ -88,89 +84,32 @@ theorem top_iffR (hP : J.P.Simple) (Q : Polygon) {x : WPos}
     · exact ⟨ht, Or.inr (Or.inl (by omega))⟩
     · exact ⟨ht, Or.inr (Or.inr h)⟩
 
-theorem param_hgt0 (M : Model) (Q : Polygon) (e : ℕ) : M.param Q ⟨e, 0⟩ = 0 := rfl
+end
+
+abbrev param_hgt0 := @Chazelle.Core.IOrc.param_zero
 
 /-- **The vertex position of the shared vertex in the model of `C₁`.** -/
 theorem shared_posL (hP : J.P.Simple) (Q : Polygon) (n : ℕ) :
-    cstL J 1 < (chainModel J.left).W.n ∧ ProperPos (chainModel J.left) Q n ⟨cstL J 1, 0⟩ ∧
-      (chainModel J.left).pos Q ⟨cstL J 1, 0⟩ = J.shared := by
-  have hp0 := param_hgt0 (chainModel J.left) Q (cstL J 1)
+    cstL J 1 < J.leftModel.W.n ∧ ProperPos J.leftModel Q n ⟨cstL J 1, 0⟩ ∧
+      J.leftModel.pos Q ⟨cstL J 1, 0⟩ = J.shared := by
+  have hp0 := param_hgt0 J.leftModel Q (cstL J 1)
   have hn := cm_n J.left
   have ht := tpos_lt J.left J.m₁
   have e : cstL J 1 = 6 + tpos J.left J.m₁ := rfl
-  have hlt : cstL J 1 < (chainModel J.left).W.n := by rw [hn, e]; omega
+  have hlt : cstL J 1 < J.leftModel.W.n := by rw [hn, e]; omega
   refine ⟨hlt, ⟨by rw [hp0], by rw [hp0]; norm_num, Nat.zero_le _⟩, ?_⟩
   rw [show J.shared = J.left.vertex J.left.m from rfl,
     atEnd_iff J.left hP (Or.inr rfl) Q hlt (by rw [hp0]) (by rw [hp0]; norm_num)]
   exact ⟨hp0, Or.inl e⟩
 
-/-- `sideLeft` at a position depends only on the edge ends when the parameter is positive. -/
-theorem sideLeft_congr {W W' : Polygon} {p p' : ℕ} {t : ℝ} (ht : t ≠ 0)
-    (ha : W.vtx p = W'.vtx p') (hb : W.vtx ((p + 1) % W.n) = W'.vtx ((p' + 1) % W'.n))
-    (x : Point) : sideLeft W p t x ↔ sideLeft W' p' t x := by
-  unfold sideLeft sidePrev sideNext sidePt
-  rw [ite_eq_right ht, ite_eq_right ht, ha, hb]
-
-/-- **The box twin**: a query position on a vertical side of the box satisfies `LHGeo` in the
-model of `C₁` when it is not above the top of `C₁`. -/
-theorem lhGeo_boxL {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edge = 3)
-    (hg : LHGeo P J.right x d)
-    (hy : |((chainModel J.right).pos (Qof P) x).2| < J.right.radius)
-    (h₁ : ((chainModel J.right).pos (Qof P) x).2 ≤ J.left.top.2) :
-    LHGeo P J.left x d ∧
-      (chainModel J.left).pos (Qof P) x = (chainModel J.right).pos (Qof P) x ∧
-      (chainModel J.left).param (Qof P) x = (chainModel J.right).param (Qof P) x := by
-  obtain ⟨ha, hb, hpar, hpos⟩ := boxTwin_pos (C₁ := J.right) (C₂ := J.left) rfl he (Qof P) x.hgt
-  obtain ⟨h, hxh, hhn, hyz, hsec, -⟩ := hg
-  have hR := J.right.radius_pos
-  have ht : (chainModel J.right).param (Qof P) x ≠ 0 := by
-    intro h0
-    have e : (chainModel J.right).pos (Qof P) x = (chainModel J.right).wa x.edge := by
-      unfold Model.pos; rw [h0]; simp [Geometry.lerp]
-    rw [e] at hy
-    have hW : (chainModel J.right).W = J.right.sideWalk J.right.sideBeta := rfl
-    unfold Model.wa at hy
-    rw [hW] at hy
-    rcases he with h' | h' <;> rw [h'] at hy
-    · rw [J.right.sideWalk_vtx_one] at hy; simp [abs_of_pos hR] at hy
-    · rw [J.right.sideWalk_vtx_three] at hy; simp [abs_of_pos hR] at hy
-  have hx : (chainModel J.left).pos (Qof P) ⟨x.edge, x.hgt⟩ =
-      (chainModel J.right).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
-  have hp : (chainModel J.left).param (Qof P) x = (chainModel J.right).param (Qof P) x :=
-    hpar.symm
-  refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx, hp⟩
-  · rw [hx]; exact hyz
-  · rw [hx, hp]
-    exact (sideLeft_congr ht ha hb _).1 hsec
-  · rw [hx]; exact h₁
-
-/-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
-with that code. -/
-theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t : ℝ}
-    (harr : Arrival (chainModel C).W z (-σ) p t) {h : ℕ} (hh : h < P.n)
-    (hhz : ((Qof P).vtx h).2 = z.2) (htop : z.2 ≤ C.top.2) {d : ℕ} (hd : dirOf d = σ) :
-    LHGeo P C ⟨p, h + 1⟩ d ∧ (chainModel C).pos (Qof P) ⟨p, h + 1⟩ = z ∧
-      (chainModel C).param (Qof P) ⟨p, h + 1⟩ = t := by
-  obtain ⟨hp, ht0, ht1, hpt, hsec⟩ := harr
-  rw [neg_neg] at hsec
-  have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
-    rw [hpt]; exact hsec
-  have hy : ((Qof P).vtx h).2 = (sidePt (chainModel C).W p t).2 := by rw [hpt]; exact hhz
-  have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
-  have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
-  rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
-  simp only
-  rw [epos, epar, hd]; exact hsec
-
 /-- **An endpoint query** starts at the origin `endOrigin j` in the direction `endDir j`. -/
-theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {j : ℕ}
+theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF J.rightModel Q N) {j : ℕ}
     (hj : j < 2 * N.nChords) {e h d : ℕ}
     (hq : (e, h, d) = (sweepEndQ N.chords).getD j (0, 0, 0)) :
-    (chainModel J.right).pos Q ⟨e, h⟩ = endOrigin J Q N j ∧ dirOf d = endDir j := by
+    J.rightModel.pos Q ⟨e, h⟩ = endOrigin J Q N j ∧ dirOf d = endDir j := by
   obtain ⟨h1, h2⟩ := endOrigin_eq J hN hj
   have hl : N.nChords = N.chords.length := rfl
-  have hj' : j < 2 * N.chords.length := by rw [← hl]; exact hj
+  have hj' : j < 2 * N.chords.length := by rwa [← hl]
   unfold sweepEndQ at hq
   rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hj'] at hq
   simp only [Option.map_some, Option.getD_some] at hq
@@ -187,7 +126,7 @@ theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {
   · rw [ite_eq_right hp] at hq
     simp only [Prod.mk.injEq] at hq
     obtain ⟨rfl, rfl, rfl⟩ := hq
-    rw [ite_eq_right (show ¬ j % 2 = 0 from hp), ite_eq_right (show j % 2 ≠ 0 from hp)]
+    rw [ite_eq_right (hp), ite_eq_right (hp)]
     exact ⟨rfl, by simp [dirOf]⟩
 
 /-- **The first hit of `C`** is a candidate when that of `C₂` is and, below the top of `C₁`,
@@ -199,8 +138,7 @@ theorem whole_mem {z : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hz₂ : z.2
   · rcases whole_hit_cases J hσ hz₁ hz₂ with e | e <;> rw [e]
     · exact h1 hz₁
     · exact h2
-  · rw [whole_hit_above J hσ hz₂ (not_le.1 hz₁) (freeAt_right_of J hz₂ hf)]
-    exact h2
+  · rwa [whole_hit_above J hσ hz₂ (not_le.1 hz₁) (freeAt_right_of J hz₂ hf)]
 
 /-- A point of `C₂` other than the shared vertex is not a point of `C₁`. -/
 theorem not_mem_left (hP : J.P.Simple) {z : Point} (h2 : z ∈ J.right.set) (hs : z ≠ J.shared) :

@@ -55,26 +55,12 @@ theorem cutterOK_weaken {cu : Stmt} {B : Finset ℕ} {G G' H : ℕ → ℕ} {X :
   · obtain ⟨p1, p2, p3, prest⟩ := hpost M' hM'
     exact ⟨p1, p2, p3.trans (hG _), prest⟩
 
-theorem one_le_rpowCeil' (γ : ℕ) : 1 ≤ rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) := by
-  have h1 : 1 ≤ cutGran γ := by
-    unfold cutGran gradeGran
-    have := Nat.one_le_two_pow (n := Cost.ceilBeta (Nat.clog 2 γ))
-    omega
-  have h2 : 1 ≤ cutGran γ * (γ + 1) ^ 2 := Nat.mul_le_mul h1 (Nat.one_le_pow _ _ (by omega))
-  unfold rpowCeil
-  apply Nat.one_le_iff_ne_zero.2
-  intro h0
-  rw [Nat.ceil_eq_zero] at h0
-  have : (0 : ℝ) < ((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ) ^ ((1 : ℝ) / 3) := by
-    apply Real.rpow_pos_of_pos; exact_mod_cast h2
-  linarith
-
 theorem shCost_ge (κ γ : ℕ) :
     FI (fun γ => κ * (Nat.clog 2 γ + 1) * rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) + κ) γ ≤
       DrvR.shCost (172 * κ + 23000) γ := by
   unfold FI DrvR.shCost
   beta_reduce
-  have hR := one_le_rpowCeil' γ
+  have hR := one_le_cutPower γ
   set R := rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3)
   set a := Nat.clog 2 γ + 1
   have ha : 1 ≤ a := by omega

@@ -68,7 +68,7 @@ theorem mem_convexHull_triple {a b c x : Point} :
       (w := ![w₁, w₂, w₃]) (z := ![a, b, c]) ?_ ?_ ?_
     · simpa [Fin.sum_univ_three] using h
     · intro i _
-      fin_cases i <;> simp [hw₁, hw₂, hw₃]
+      fin_cases i <;> assumption
     · simp [Fin.sum_univ_three, hw]
     · intro i _
       fin_cases i <;> simp [vertex_mem_triangle_left, vertex_mem_triangle_mid,
@@ -85,14 +85,20 @@ noncomputable def bary₂ (a b c x : Point) : ℝ := det a x c / det a b c
 /-- Third barycentric coordinate of `x` with respect to the triangle `a b c`. -/
 noncomputable def bary₃ (a b c x : Point) : ℝ := det a b x / det a b c
 
+section
+
+variable {a b c : Point} (h : det a b c ≠ 0)
+
+include h in
 /-- The barycentric coordinates sum to `1`. -/
-theorem bary_sum {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
+theorem bary_sum (x : Point) :
     bary₁ a b c x + bary₂ a b c x + bary₃ a b c x = 1 := by
   unfold bary₁ bary₂ bary₃
   rw [← add_div, ← add_div, det_bary_sum, div_self h]
 
+include h in
 /-- The barycentric reconstruction: `x = bary₁ • a + bary₂ • b + bary₃ • c`. -/
-theorem bary_reconstruct {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
+theorem bary_reconstruct (x : Point) :
     x = bary₁ a b c x • a + bary₂ a b c x • b + bary₃ a b c x • c := by
   have hid := det_smul_eq_bary_combination a b c x
   rw [point_ext_iff] at hid ⊢
@@ -102,25 +108,27 @@ theorem bary_reconstruct {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
   · field_simp; linear_combination hid.1
   · field_simp; linear_combination hid.2
 
+include h in
 /-- Uniqueness of barycentric coordinates: the third coordinate of
 `w₁ • a + w₂ • b + w₃ • c` (weights summing to `1`) is `w₃`. -/
-theorem bary₃_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w₃ : ℝ}
+theorem bary₃_combination {w₁ w₂ w₃ : ℝ}
     (hw : w₁ + w₂ + w₃ = 1) : bary₃ a b c (w₁ • a + w₂ • b + w₃ • c) = w₃ := by
   unfold bary₃
   rw [det_smul_add_smul_add_smul a b a b c w₁ w₂ w₃ hw]
-  simp only [det_self_outer, det_self_right, mul_zero, zero_add]
-  exact mul_div_cancel_right₀ _ h
+  simp_all
 
+include h in
 /-- The first barycentric coordinate of `w₁ • a + w₂ • b + w₃ • c` is `w₁`. -/
-theorem bary₁_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w₃ : ℝ}
+theorem bary₁_combination {w₁ w₂ w₃ : ℝ}
     (hw : w₁ + w₂ + w₃ = 1) : bary₁ a b c (w₁ • a + w₂ • b + w₃ • c) = w₁ := by
   unfold bary₁
   rw [← det_cyclic, det_smul_add_smul_add_smul b c a b c w₁ w₂ w₃ hw]
   simp only [det_self_outer, det_self_right, mul_zero, add_zero, det_cyclic]
   exact mul_div_cancel_right₀ _ h
 
+include h in
 /-- The second barycentric coordinate of `w₁ • a + w₂ • b + w₃ • c` is `w₂`. -/
-theorem bary₂_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w₃ : ℝ}
+theorem bary₂_combination {w₁ w₂ w₃ : ℝ}
     (hw : w₁ + w₂ + w₃ = 1) : bary₂ a b c (w₁ • a + w₂ • b + w₃ • c) = w₂ := by
   unfold bary₂
   rw [← det_cyclic_right, det_smul_add_smul_add_smul c a a b c w₁ w₂ w₃ hw]
@@ -173,15 +181,16 @@ theorem bary₃_lerp (a b c p q : Point) (t : ℝ) :
     bary₃ a b c (lerp p q t) = (1 - t) * bary₃ a b c p + t * bary₃ a b c q := by
   unfold bary₃; rw [det_lerp]; ring
 
+include h in
 /-- Membership in a nondegenerate triangle: all barycentric coordinates are nonnegative. -/
-theorem mem_triangle_iff_bary {a b c : Point} (h : det a b c ≠ 0) {x : Point} :
+theorem mem_triangle_iff_bary {x : Point} :
     x ∈ convexHull ℝ ({a, b, c} : Set Point) ↔
       0 ≤ bary₁ a b c x ∧ 0 ≤ bary₂ a b c x ∧ 0 ≤ bary₃ a b c x := by
   rw [mem_convexHull_triple]
   constructor
   · rintro ⟨w₁, w₂, w₃, hw₁, hw₂, hw₃, hw, rfl⟩
     rw [bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw]
-    exact ⟨hw₁, hw₂, hw₃⟩
+    tauto
   · rintro ⟨h₁, h₂, h₃⟩
     exact ⟨_, _, _, h₁, h₂, h₃, bary_sum h x, bary_reconstruct h x⟩
 
@@ -228,11 +237,12 @@ theorem not_mem_interior_of_affine_zero {T : Set Point} {v x : Point} {f : Point
   obtain ⟨s, hs, hs1⟩ := (h1.and self_mem_nhdsWithin).exists
   have := hT _ hs
   rw [hf, hv, hx] at this
-  have hs1' : (1 : ℝ) < s := hs1
+  
   linarith
 
+include h in
 /-- The interior of a nondegenerate triangle: all barycentric coordinates positive. -/
-theorem interior_triangle {a b c : Point} (h : det a b c ≠ 0) :
+theorem interior_triangle :
     interior (convexHull ℝ ({a, b, c} : Set Point)) =
       {x | 0 < bary₁ a b c x ∧ 0 < bary₂ a b c x ∧ 0 < bary₃ a b c x} := by
   apply Set.Subset.antisymm
@@ -257,8 +267,9 @@ theorem interior_triangle {a b c : Point} (h : det a b c ≠ 0) :
     rintro x ⟨h₁, h₂, h₃⟩
     exact (mem_triangle_iff_bary h).2 ⟨h₁.le, h₂.le, h₃.le⟩
 
+include h in
 /-- Membership in the interior of a nondegenerate triangle. -/
-theorem mem_interior_triangle_iff {a b c : Point} (h : det a b c ≠ 0) {x : Point} :
+theorem mem_interior_triangle_iff {x : Point} :
     x ∈ interior (convexHull ℝ ({a, b, c} : Set Point)) ↔
       0 < bary₁ a b c x ∧ 0 < bary₂ a b c x ∧ 0 < bary₃ a b c x := by
   rw [interior_triangle h]; rfl
@@ -267,8 +278,9 @@ theorem mem_interior_triangle_iff {a b c : Point} (h : det a b c ≠ 0) {x : Poi
 noncomputable def centroid (a b c : Point) : Point :=
   (1 / 3 : ℝ) • a + (1 / 3 : ℝ) • b + (1 / 3 : ℝ) • c
 
+include h in
 /-- The centroid is an interior point of a nondegenerate triangle. -/
-theorem centroid_mem_interior {a b c : Point} (h : det a b c ≠ 0) :
+theorem centroid_mem_interior :
     centroid a b c ∈ interior (convexHull ℝ ({a, b, c} : Set Point)) := by
   rw [mem_interior_triangle_iff h]
   have hw : (1 / 3 : ℝ) + 1 / 3 + 1 / 3 = 1 := by norm_num
@@ -276,13 +288,15 @@ theorem centroid_mem_interior {a b c : Point} (h : det a b c ≠ 0) :
   rw [bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw]
   norm_num
 
+include h in
 /-- A nondegenerate triangle has nonempty interior. -/
-theorem interior_triangle_nonempty {a b c : Point} (h : det a b c ≠ 0) :
+theorem interior_triangle_nonempty :
     (interior (convexHull ℝ ({a, b, c} : Set Point))).Nonempty :=
   ⟨_, centroid_mem_interior h⟩
 
+include h in
 /-- The closure of the interior of a nondegenerate triangle is the triangle. -/
-theorem closure_interior_triangle {a b c : Point} (h : det a b c ≠ 0) :
+theorem closure_interior_triangle :
     closure (interior (convexHull ℝ ({a, b, c} : Set Point))) =
       convexHull ℝ ({a, b, c} : Set Point) := by
   rw [(convex_triangle a b c).closure_interior_eq_closure_of_nonempty_interior
@@ -309,7 +323,7 @@ theorem segment_subset_triangle_right (a b c : Point) :
 /-- On the edge `a b`, the third barycentric coordinate vanishes (no nondegeneracy needed). -/
 theorem bary₃_eq_zero_of_mem_segment {a b c x : Point} (hx : x ∈ Chazelle.segment a b) :
     bary₃ a b c x = 0 := by
-  unfold bary₃; rw [det_eq_zero_of_mem_segment hx, zero_div]
+  simp [bary₃, det_eq_zero_of_mem_segment hx, zero_div]
 
 /-- On the edge `b c`, the first barycentric coordinate vanishes. -/
 theorem bary₁_eq_zero_of_mem_segment {a b c x : Point} (hx : x ∈ Chazelle.segment b c) :
@@ -321,8 +335,9 @@ theorem bary₂_eq_zero_of_mem_segment {a b c x : Point} (hx : x ∈ Chazelle.se
     bary₂ a b c x = 0 := by
   unfold bary₂; rw [det_swap23, det_eq_zero_of_mem_segment hx, neg_zero, zero_div]
 
+include h in
 /-- A point of a nondegenerate triangle with `bary₃ = 0` lies on the edge `a b`. -/
-theorem mem_segment_of_bary₃_eq_zero {a b c : Point} (h : det a b c ≠ 0) {x : Point}
+theorem mem_segment_of_bary₃_eq_zero {x : Point}
     (hx : x ∈ convexHull ℝ ({a, b, c} : Set Point)) (h3 : bary₃ a b c x = 0) :
     x ∈ Chazelle.segment a b := by
   obtain ⟨h₁, h₂, -⟩ := (mem_triangle_iff_bary h).1 hx
@@ -332,8 +347,9 @@ theorem mem_segment_of_bary₃_eq_zero {a b c : Point} (h : det a b c ≠ 0) {x 
   rw [h3, add_zero] at hs
   exact mem_segment_iff_weights.2 ⟨_, _, h₁, h₂, hs, hr.symm⟩
 
+include h in
 /-- A point of a nondegenerate triangle with `bary₁ = 0` lies on the edge `b c`. -/
-theorem mem_segment_of_bary₁_eq_zero {a b c : Point} (h : det a b c ≠ 0) {x : Point}
+theorem mem_segment_of_bary₁_eq_zero {x : Point}
     (hx : x ∈ convexHull ℝ ({a, b, c} : Set Point)) (h1 : bary₁ a b c x = 0) :
     x ∈ Chazelle.segment b c := by
   obtain ⟨-, h₂, h₃⟩ := (mem_triangle_iff_bary h).1 hx
@@ -343,8 +359,9 @@ theorem mem_segment_of_bary₁_eq_zero {a b c : Point} (h : det a b c ≠ 0) {x 
   rw [h1, zero_add] at hs
   exact mem_segment_iff_weights.2 ⟨_, _, h₂, h₃, hs, hr.symm⟩
 
+include h in
 /-- A point of a nondegenerate triangle with `bary₂ = 0` lies on the edge `a c`. -/
-theorem mem_segment_of_bary₂_eq_zero {a b c : Point} (h : det a b c ≠ 0) {x : Point}
+theorem mem_segment_of_bary₂_eq_zero {x : Point}
     (hx : x ∈ convexHull ℝ ({a, b, c} : Set Point)) (h2 : bary₂ a b c x = 0) :
     x ∈ Chazelle.segment a c := by
   obtain ⟨h₁, -, h₃⟩ := (mem_triangle_iff_bary h).1 hx
@@ -354,8 +371,9 @@ theorem mem_segment_of_bary₂_eq_zero {a b c : Point} (h : det a b c ≠ 0) {x 
   rw [h2, add_zero] at hs
   exact mem_segment_iff_weights.2 ⟨_, _, h₁, h₃, hs, hr.symm⟩
 
+include h in
 /-- A point of a nondegenerate triangle that is not interior lies on one of the three edges. -/
-theorem mem_edge_of_not_mem_interior {a b c : Point} (h : det a b c ≠ 0) {x : Point}
+theorem mem_edge_of_not_mem_interior {x : Point}
     (hx : x ∈ convexHull ℝ ({a, b, c} : Set Point))
     (hint : x ∉ interior (convexHull ℝ ({a, b, c} : Set Point))) :
     x ∈ Chazelle.segment a b ∨ x ∈ Chazelle.segment b c ∨ x ∈ Chazelle.segment a c := by
@@ -369,6 +387,8 @@ theorem mem_edge_of_not_mem_interior {a b c : Point} (h : det a b c ≠ 0) {x : 
   · exact Or.inl (mem_segment_of_bary₃_eq_zero h hx e₃)
   exact absurd ⟨lt_of_le_of_ne h₁ (Ne.symm e₁), lt_of_le_of_ne h₂ (Ne.symm e₂),
     lt_of_le_of_ne h₃ (Ne.symm e₃)⟩ hint
+
+end
 
 /-! ### The specification's triangles -/
 

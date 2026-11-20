@@ -35,11 +35,11 @@ theorem not_mem_set_of_chord {y a b x : ℝ} (h : Chazelle.Chain.IsHChordIn C.do
     (hax : a < x) (hxb : x < b) : ((x, y) : Point) ∉ C.set := fun hm =>
   (h.open_mem x hax hxb).2 (Or.inl hm)
 
-theorem sgnOf_one {b : ℕ} (h : b = 1) : sgnOf b = 1 := by unfold sgnOf; rw [ite_eq_left h]
+theorem sgnOf_one {b : ℕ} (h : b = 1) : sgnOf b = 1 := by ram_finish
 theorem sgnOf_ne {b : ℕ} (h : b ≠ 1) : sgnOf b = -1 := by unfold sgnOf; rw [ite_eq_right h]
 
 theorem rayPt_right (z : Point) (t : ℝ) : rayPt z 1 t = ((z.1 + t, z.2) : Point) := by
-  simp only [rayPt]; ext <;> simp
+  simp [rayPt]
 theorem rayPt_left (z : Point) (t : ℝ) : rayPt z (-1) t = ((z.1 - t, z.2) : Point) := by
   simp only [rayPt]; ext <;> simp; ring
 
@@ -53,7 +53,7 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
   have hR := C.radius_pos
   obtain ⟨ht, hpre, hpost⟩ := hpart
   obtain ⟨hK, hH⟩ := hf
-  have hcs : C.set ⊆ Chain.box C.radius := C.set_subset_box
+  have hcs := C.set_subset_box
   by_cases hσ : V.σb = 1
   · -- rightwards: the chord `CH[t]`
     have hσ1 := sgnOf_one hσ
@@ -73,11 +73,11 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rw [← Bool.not_eq_true, chPr_iff] at this
       by_contra hc
       exact this ⟨hi, Or.inr ⟨hH, fun _ => hc, fun h' => absurd hσ h'⟩⟩
-    have hy : z.2 = ((Qof P).vtx V.hz).2 := hs.zy
+    have hy := hs.zy
     rw [hσ1]
     by_cases hp : C.radius ≤ z.1
     · -- past the box
-      have hnh := noHit_past hcs (Or.inl rfl) (by rw [one_mul]; exact hp) (A := C.set) (z := z)
+      have hnh := noHit_past hcs (Or.inl rfl) (by rwa [one_mul]) (A := C.set) (z := z)
       have hc2 : xpClass (chR m V i) ≠ 1 := by
         intro hc1
         rcases hgt with h2 | ⟨-, hz⟩
@@ -108,15 +108,15 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
     have hpos := ER.1
     refine ⟨fun hf1 => ?_, fun hf1 => ?_⟩
     · have hc1 : xpClass (chR m V i) = 1 := by
-        by_contra hc; have := h0 hc; omega
+        simp_all <;> omega
       obtain ⟨-, he⟩ := h1 hc1
       obtain ⟨hmem, hlt, hedge⟩ := ER.2.1 hc1
       rw [hpos] at hmem hedge
       have hpt : rayPt z 1 (b - z.1) = ((b, ((Qof P).vtx V.hz).2) : Point) := by
-        rw [rayPt_right, hy]; ring_nf
-      refine ⟨b - z.1, ⟨by linarith, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
-        linarith)⟩, by rw [he]; exact hlt, by rw [hpt, he]; exact hedge⟩
-    · have hc : xpClass (chR m V i) ≠ 1 := fun hc1 => hf1 (h1 hc1).1
+        simp [rayPt_right, hy]
+      refine ⟨b - z.1, ⟨by linarith, by rwa [hpt], fun s hs0 hsl => hfree s hs0 (by
+        linarith)⟩, by rwa [he], by rwa [hpt, he]⟩
+    · have hc := fun hc1 => hf1 (h1 hc1).1
       have hbR : b = C.radius := by
         have hb2 : xpClass (chR m V i) = 2 := by
           rcases xpClass_cases (chR m V i) with e | e | e
@@ -148,7 +148,7 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rcases this.2 with h' | ⟨-, -, h'⟩
       · exact absurd hH (ne_of_lt h')
       · exact h' hσ
-    have hy : z.2 = ((Qof P).vtx V.hz).2 := hs.zy
+    have hy := hs.zy
     rw [hσ1]
     by_cases hp : z.1 ≤ -C.radius
     · have hnh := noHit_past hcs (Or.inr rfl) (by linarith) (A := C.set) (z := z)
@@ -181,15 +181,15 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
     have hpos := EL.1
     refine ⟨fun hf1 => ?_, fun hf1 => ?_⟩
     · have hc1 : xpClass (chL m V i) = 1 := by
-        by_contra hc; have := h0 hc; omega
+        simp_all <;> omega
       obtain ⟨-, he⟩ := h1 hc1
       obtain ⟨hmem, hlt, hedge⟩ := EL.2.1 hc1
       rw [hpos] at hmem hedge
       have hpt : rayPt z (-1) (z.1 - a) = ((a, ((Qof P).vtx V.hz).2) : Point) := by
-        rw [rayPt_left, hy]; ring_nf
-      refine ⟨z.1 - a, ⟨by linarith, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
-        linarith)⟩, by rw [he]; exact hlt, by rw [hpt, he]; exact hedge⟩
-    · have hc : xpClass (chL m V i) ≠ 1 := fun hc1 => hf1 (h1 hc1).1
+        simp [rayPt_left, hy]
+      refine ⟨z.1 - a, ⟨by linarith, by rwa [hpt], fun s hs0 hsl => hfree s hs0 (by
+        linarith)⟩, by rwa [he], by rwa [hpt, he]⟩
+    · have hc := fun hc1 => hf1 (h1 hc1).1
       have haR : a = -C.radius := by
         have hb0 : xpClass (chL m V i) = 0 := by
           rcases xpClass_cases (chL m V i) with e | e | e

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepPrimAbs
 public import Chazelle.Core.SweepIoPrim
 
@@ -74,22 +76,26 @@ def symAt : Stmt := .seq pHead symCore
 
 theorem wr_symAt : wr Bprim symAt = true := by decide
 
-theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
+section
+
+variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
+    (hE : CEnv P W H C c)
+include hE
+
+theorem symVtx_exec {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
     (hen : e < 2 * C.m + 7) (hpar : (chainModel C).param (Qof P) ⟨e, hc⟩ = 0) :
     ∃ c' k, Exec P W symVtx c c' k ∧ k ≤ 27 * H.length + 41 ∧
       ∃ s : SymPt, SymPtIn c' 50210 s ∧ s.Lt P.n ∧
         s.eval (Qof P) = (chainModel C).pos (Qof P) ⟨e, hc⟩ := by
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50081
-  have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
+  have hE₁ := hE.step e₁ (by decide)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
     (by simp [h01, hE.r81]) (by omega) (dst := 50210) (by norm_num)
   have hv : (chainModel C).pos (Qof P) ⟨e, hc⟩ = (chainModel C).W.vtx (e - 6 + 6) := by
     rw [pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega]
   exact ⟨c₂, _, .seq e₁ e₂, by omega, sp, isp, lsp, by rw [vsp, hv]⟩
 
-theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
+theorem symInt_exec (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
     (h02 : c.nreg 50202 = hc) (he6 : 6 ≤ e) (hen : e < 2 * C.m + 6)
     (ht : 0 < (chainModel C).param (Qof P) ⟨e, hc⟩) (hhn : hc ≤ P.n) :
     ∃ c' k, Exec P W symInt c c' k ∧ k ≤ 60 * H.length + 200 ∧
@@ -104,36 +110,31 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hlt : i < 2 * C.m := by omega
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50081
   set c₁ : Config := { c with nreg := upd c.nreg 50120 (c.nreg 50201 - c.nreg 50081) } with hc₁
-  have hE₁ : CEnv P W H C c₁ := hE.step e₁ (by decide)
+  have hE₁ := hE.step e₁ (by decide)
   have q20 : c₁.nreg 50120 = i := by
-    show upd c.nreg 50120 (c.nreg 50201 - c.nreg 50081) 50120 = i
-    rw [upd_same, h01, hE.r81]
+    ram_post [h01, hE.r81]
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, s₁, i₁, l₁, v₁, x₁⟩ := tvLoad_exec c₁ hE₁ (i := i) q20
     hlt.le (dst := 50130) (by norm_num)
   have w₂ := e₂.wb_right
   have e₃ := Exec.addN (P := P) w₂ 50120 50120 50032
-    (by rw [f₂.1 _ (by decide), q20, hE₂.r32]; omega)
+    (by frame_finish)
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50120 + c₂.nreg 50032) }
     with hc₃
-  have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (by decide)
+  have hE₃ := hE₂.step e₃ (by decide)
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hE₄, s₂, i₂, l₂, v₂, x₂⟩ := tvLoad_exec c₃ hE₃ (i := i + 1)
-    (by rw [hc₃]; simp [f₂.1 _ (by decide : Btv 50130 50120 = false) ▸ q20, hE₂.r32])
+    (by frame_finish [hc₃, hE₂.r32])
     (by omega) (dst := 50136) (by norm_num)
-  have i₁' : SymPtIn c₄ 50130 s₁ := symPtIn_keep (symPtIn_of_eq i₁ fun j h1 h2 => by
+  have i₁' := symPtIn_keep (symPtIn_of_eq i₁ fun j h1 h2 => by
     rw [hc₃]; simp [show j ≠ 50120 by omega]) f₄
     (by intro j h1 h2; interval_cases j <;> decide)
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (by omega)
     hE₄.r32 i₁' i₂ l₁ l₂
   have q02 : c₅.nreg 50202 = hc := by
-    rw [r₅ _ (by decide) (by decide) (by decide), f₄.1 _ (by decide), hc₃]
-    simp only
-    rw [upd_other _ _ _ (by decide), f₂.1 _ (by decide), hc₁]
-    simp only
-    rw [upd_other _ _ _ (by decide), h02]
+    frame_finish [r₅, f₄.1, hc₃, f₂.1, hc₁, h02]
   have q32 : c₅.nreg 50032 = 1 := by
-    rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
+    ram_rw [r₅, hE₄.r32]
   have ht' : 0 < (chainModel C).param (Qof P) ⟨i + 6, hc⟩ := by
-    rw [show i + 6 = e by omega]; exact ht
+    rwa [show i + 6 = e by omega]
   obtain ⟨hEi, hpt⟩ := tour_pt hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂ ht'
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
@@ -143,14 +144,13 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       SymPtIn c₆ 50210 (.onEdge (hostEdgeIdx P.n s₁ s₂) (hc - 1)) := by
     unfold outS
     have hw₅ := e₅.wb_right
-    exec_block
-    all_goals try omega
-    refine ⟨rfl, by config_simp, by config_simp; exact v₅, ?_⟩
-    config_simp; rw [q02, q32]
+    ram_exec [q02, q32]
   have ex : Exec P W symInt c c₆ (1 + (k₂ + (1 + (k₄ + (k₅ + k₆))))) :=
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
+    (by ram_path)
   refine ⟨c₆, _, ex, by have := hE.hlen; omega, _, q, ⟨hEi, by omega⟩, ?_⟩
   rw [show e = i + 6 by omega, hpt]
+
+end
 
 /-- The input condition of `symAt`: a tour position with a normalised height code, a regular
 host. -/
@@ -180,8 +180,7 @@ theorem symAt_meets : Meets symAt primBands (PrimPre SymIn) (PrimPost SymOut)
     obtain ⟨c', k, ex, hk, s, hs⟩ := symVtx_exec c hE i01 h6 (by omega) (hnorm.1 hc0)
     exact ⟨c', _, .ifLtN_true hz ex, by omega, s, hs⟩
   · have hc0 : c₀.nreg 50202 ≠ 0 := by rw [← i02]; rw [hE.r32] at hz; omega
-    have hpos : 0 < (chainModel C).param (Qof P) ⟨c₀.nreg 50201, c₀.nreg 50202⟩ :=
-      lt_of_le_of_ne hp0 (fun h => hc0 (hnorm.2 h.symm))
+    have hpos := lt_of_le_of_ne hp0 (fun h => hc0 (hnorm.2 h.symm))
     obtain ⟨c', k, ex, hk, s, hs⟩ := symInt_exec c hE hregH i01 i02 h6 hen hpos hhn
     exact ⟨c', _, .ifLtN_false hz ex, by omega, s, hs⟩
 
@@ -198,12 +197,7 @@ open Machine Machine.Stmt Programs SweepIo SweepPrim
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
 /-- A symbolic point survives a copy of its three words. -/
-theorem symPtIn_transport {c c' : Config} {r r' : ℕ} {s : SymPt} (h : SymPtIn c r s)
-    (h0 : c'.nreg r' = c.nreg r) (h1 : c'.nreg (r' + 1) = c.nreg (r + 1))
-    (h2 : c'.nreg (r' + 2) = c.nreg (r + 2)) : SymPtIn c' r' s := by
-  cases s with
-  | vtx i => exact ⟨by rw [h0]; exact h.1, by rw [h1]; exact h.2⟩
-  | onEdge e k => exact ⟨by rw [h0]; exact h.1, by rw [h1]; exact h.2.1, by rw [h2]; exact h.2.2⟩
+abbrev symPtIn_transport := @Chazelle.Core.NFLoc.symPtIn_copy
 
 /-- `symAt` on the descriptor `dsc`, the position `(re, rh)`, output at `o … o + 2`. -/
 def callSym (dsc re rh o : ℕ) : Stmt :=
@@ -222,7 +216,7 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
           s.eval (Qof P) = (chainModel C).pos (Qof P) ⟨c.nreg re, c.nreg rh⟩) ∧
         (∀ r, bandOf r ∉ oracleBands → (r < o ∨ o + 2 < r) → r ≠ ALLOC →
           c'.nreg r = c.nreg r) ∧
-        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+        c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   have h := callP_irs (P := P) (c₀ := c₀) (c := c)
     (ins := [(50200, dsc), (50201, re), (50202, rh)])
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212)]) symAt_meets
@@ -232,7 +226,7 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
         exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
           band5_oracle (by norm_num) (by norm_num)⟩)
-    (nodup3 (by omega) (by omega) (by omega))
+    ((ram_app% (nodup3 ?_ ?_ ?_)))
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (fun c₁ hm hA e1 e2 => by
@@ -240,19 +234,19 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨?_, ?_, ?_, ?_, ?_⟩
-      · rw [g1]; exact h6
-      · rw [g1]; exact hen
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hnorm
+      · rwa [g1]
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg)
-    (by simp only [List.length_cons, List.length_nil]; omega)
+    (by omega)
   refine h.mono (by simp) ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2⟩ := e1
   obtain ⟨k0, k1, k2⟩ := f1
   obtain ⟨H, hC, -⟩ := hctx.2.2.2.1
-  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hm, g0]; exact hC
+  have hC₁ : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rwa [hm, g0]
   obtain ⟨s, hs, hsl, hse⟩ := hpost H C hC₁
   rw [g1, g2] at hse
   refine ⟨⟨s, symPtIn_transport hs k0 k1 k2, hsl, hse⟩, fun r hr h0 hra => hk r hr

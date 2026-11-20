@@ -39,7 +39,7 @@ theorem cyc_start {n : ℝ} {a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn
   have hpt : ∀ u, x < u → ∃ z, x < z ∧ z < u ∧ 0 ≤ z ∧ z < n ∧ sideInArc a b z := by
     intro u hu
     rcases lt_or_gt_of_ne hxy with h | h
-    · refine ⟨(x + min u y) / 2, ?_, ?_, ?_, ?_, ?_⟩
+    · refine ⟨(x + min u y) / 2, ?_⟩; and_intros
       · have := lt_min hu h; linarith
       · have := min_le_left u y; linarith
       · have := lt_min hu h; linarith
@@ -49,7 +49,7 @@ theorem cyc_start {n : ℝ} {a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn
         constructor
         · have := lt_min hu h; linarith
         · have := min_le_right u y; have := lt_min hu h; linarith
-    · refine ⟨(x + min u n) / 2, ?_, ?_, ?_, ?_, ?_⟩
+    · refine ⟨(x + min u n) / 2, ?_⟩; and_intros
       · have := lt_min hu hxn; linarith
       · have := min_le_left u n; linarith
       · have := lt_min hu hxn; linarith
@@ -73,7 +73,7 @@ theorem cyc_start {n : ℝ} {a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn
   · simp only [ite_eq_right hab] at hnot hpt
     push Not at hnot
     by_contra hne
-    have hxa : x < a := lt_of_le_of_ne hnot.1 hne
+    have hxa := lt_of_le_of_ne hnot.1 hne
     obtain ⟨z, h1, h2, -, -, h3⟩ := hpt a hxa
     rcases h3 with h3 | h3
     · linarith
@@ -102,8 +102,8 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
     ∃ b, (interiorModel Q).IsArc S R (hk (interiorModel Q) S R j) b := by
   set I := interiorModel Q
   set N := nk I S R
-  have hM : WalkAx I := walkAx_interiorModel hQ
-  have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
+  have hM := walkAx_interiorModel hQ
+  have h3 := three_le_nk hQ hFam hne hR
   obtain ⟨a', b', harc, hsub⟩ := hA
   have hsj : (j + 1) % N < N := Nat.mod_lt _ (by omega)
   have hbx := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hj)
@@ -116,7 +116,7 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
 theorem arcGap_of_start {j : ℕ} (hj : j < nk (interiorModel Q) S R) {b : ℝ}
     (harc : (interiorModel Q).IsArc S R (hk (interiorModel Q) S R j) b) :
     ArcGap (interiorModel Q) S R j := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   obtain ⟨i_l, d, hD⟩ := arc_keys hM hFam.2.1 hFam.1 hne hR harc
   have := hk_inj hM hFam.2.1 hFam.1 hD.hil hj hD.hl
   subst this
@@ -287,8 +287,8 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
             Nat.mod_eq_of_lt (hil (t + 1) ht1)]
       · exfalso
         have h0N := hil 0 hk1
-        rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)] at his
+        ram_rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,
+          Nat.mod_eq_of_lt] at his
         have := hi0 s hs
         omega
     · intro ht1
@@ -304,8 +304,8 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
             · subst h'; unfold grpLen at his; omega
           omega
         · have h0N := hil 0 hk1
-          rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)] at his
+          ram_rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,
+            Nat.mod_eq_of_lt] at his
           have := hi0 s hs
           omega
       · exact h
@@ -314,12 +314,12 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     induction t with
     | zero => simp [grpOff]
     | succ t ih =>
-      rw [grpOff_succ, ← Nat.add_assoc, ← ih (by omega)]
+      ram_rw [grpOff_succ, ← Nat.add_assoc, ← ih]
       exact ((hstep t (by omega)).1 ht).symm
   refine ⟨i, d, J, hD, fun t _ => hJ0 t, fun t _ => hJ1 t, hoff, ?_⟩
   obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
   have h1 := (hstep k' (by omega)).2 rfl
-  rw [hoff k' (by omega)] at h1
+  ram_rw [hoff k'] at h1
   rw [grpOff_succ]
   omega
 

@@ -38,7 +38,7 @@ theorem tour_ends {i : ℕ} (hi : i < 2 * C.m) :
   · show (C.sideWalk C.sideBeta).vtx (i + 6) = _
     rw [C.sideWalk_vtx_tour _ hi.le]; rfl
   · show (C.sideWalk C.sideBeta).vtx ((i + 6 + 1) % (C.sideWalk C.sideBeta).n) = _
-    rw [C.sideWalk_next_tour _ hi, C.sideWalk_vtx_tour _ (by omega)]
+    ram_rw [C.sideWalk_next_tour _ hi, C.sideWalk_vtx_tour]
     unfold Chain.sideTour; rw [C.sideIdx_succ]; rfl
 
 theorem sideE_lo {m j : ℕ} (hj : j ≤ m) : sideE m j = j := by unfold sideE; simp [hj]
@@ -46,7 +46,7 @@ theorem sideE_hi {m j : ℕ} (hj : m ≤ j) : sideE m j = 2 * m - j := by
   unfold sideE
   rcases eq_or_lt_of_le hj with e | e
   · subst e; simp only [le_refl, ↓reduceIte]; omega
-  · simp [show ¬ j ≤ m by omega]
+  simp_all
 
 /-- The chain vertex `k` is the vertex `(s + k) mod n` of `Q`. -/
 theorem vertex_eq (hv : QVOK P C V) (k : ℕ) : C.vertex k = (Qof P).vtx ((V.s + k) % P.n) := by
@@ -72,9 +72,9 @@ theorem edge_pos {w hz : ℕ} {a b : Point} (ha : (chainModel C).W.vtx w = a)
     unfold Model.param Model.wa Model.wb
     simp only
     rw [ha, hb, ite_eq_right hne]
-  refine ⟨⟨by rw [hp]; exact ht0, by rw [hp]; exact ht1, by simp only; omega⟩, ?_, ?_⟩
+  refine ⟨⟨by rwa [hp], by rwa [hp], by simp only; omega⟩, ?_, ?_⟩
   · unfold Model.pos Model.wa Model.wb; rw [hp, ha, hb]
-  · unfold Model.key; rw [hp]
+  simp [Model.key, hp]
 
 /-- A walk position at the start vertex of its walk edge. -/
 theorem vertex_pos {w hz : ℕ} {a : Point} (ha : (chainModel C).W.vtx w = a)
@@ -84,17 +84,16 @@ theorem vertex_pos {w hz : ℕ} {a : Point} (ha : (chainModel C).W.vtx w = a)
       (chainModel C).key (Qof P) ⟨w, hz + 1⟩ = w := by
   have hp : (chainModel C).param (Qof P) ⟨w, hz + 1⟩ = 0 := by
     unfold Model.param Model.wa
-    simp only
-    rw [ha, hy, sub_self, zero_div]; split_ifs <;> rfl
+    simp_all
   refine ⟨⟨by rw [hp], by rw [hp]; norm_num, by simp only; omega⟩, ?_, ?_⟩
-  · unfold Model.pos Model.wa; rw [hp, ha, Geometry.lerp_zero]
-  · unfold Model.key; rw [hp]; simp
+  · unfold Model.pos Model.wa; simp_all
+  simp [Model.key, hp]
 
 theorem heights_ne (hT : TopOK P C V) {i j : ℕ} (hi : i < P.n) (hj : j < P.n) :
     ((Qof P).vtx i).2 = ((Qof P).vtx j).2 ↔ i = j := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   constructor
-  · intro h; by_contra hne; exact hT.hD i j (by rw [hQn]; exact hi) (by rw [hQn]; exact hj) hne h
+  · intro h; by_contra hne; exact hT.hD i j (by rwa [hQn]) (by rwa [hQn]) hne h
   · rintro rfl; rfl
 
 /-- **The walk positions of a point of a chain edge.** -/
@@ -169,7 +168,7 @@ theorem fwd_bwd_pos (hT : TopOK P C V) {c : ℕ} (hc : c < C.m) {X : Point}
     set i := (c + 2 * C.m - S) % (2 * C.m) with hi
     have hi2 : i < 2 * C.m := Nat.mod_lt _ (by omega)
     have htj : tj C i = c := by
-      unfold tj; rw [hi, mod_shift hS, Nat.mod_eq_of_lt (by omega)]
+      unfold tj; ram_rw [hi, mod_shift hS, Nat.mod_eq_of_lt]
     obtain ⟨ea, eb⟩ := tour_ends (C := C) hi2
     simp only [htj, sideE_lo hc.le, sideE_lo (by omega : c + 1 ≤ C.m), hvc, hvc1, hnW,
       Nat.mod_eq_of_lt (by omega : i + 6 + 1 < 2 * C.m + 7)] at ea eb
@@ -184,7 +183,7 @@ theorem fwd_bwd_pos (hT : TopOK P C V) {c : ℕ} (hc : c < C.m) {X : Point}
     · have ht : τ < 1 := lt_of_le_of_ne hτ1 (fun h => h1 (hy1.2 h))
       rw [hw, ite_eq_right h1, Nat.add_zero]
       obtain ⟨p1, p2, p3⟩ := edge_pos (C := C) (P := P) (w := i + 6) (hz := V.hz) ea
-        (by rw [hnW, Nat.mod_eq_of_lt (by omega)]; exact eb) hne (by rw [← hτ]; exact hτ0)
+        (by ram_rw [hnW, Nat.mod_eq_of_lt]; exact eb) hne (by rw [← hτ]; exact hτ0)
         (by rw [← hτ]; exact ht) hzn
       rw [← hτ] at p2 p3
       refine ⟨by omega, p1, by rw [p2, hXl], by rw [p3]; push_cast; ring⟩
@@ -192,7 +191,7 @@ theorem fwd_bwd_pos (hT : TopOK P C V) {c : ℕ} (hc : c < C.m) {X : Point}
     set i := (2 * C.m - 1 - c + 2 * C.m - S) % (2 * C.m) with hi
     have hi2 : i < 2 * C.m := Nat.mod_lt _ (by omega)
     have htj : tj C i = 2 * C.m - 1 - c := by
-      unfold tj; rw [hi, mod_shift hS, Nat.mod_eq_of_lt (by omega)]
+      unfold tj; ram_rw [hi, mod_shift hS, Nat.mod_eq_of_lt]
     obtain ⟨ea, eb⟩ := tour_ends (C := C) hi2
     simp only [htj, sideE_hi (by omega : C.m ≤ 2 * C.m - 1 - c),
       sideE_hi (by omega : C.m ≤ 2 * C.m - 1 - c + 1),
@@ -210,7 +209,7 @@ theorem fwd_bwd_pos (hT : TopOK P C V) {c : ℕ} (hc : c < C.m) {X : Point}
     · have ht : 0 < τ := lt_of_le_of_ne hτ0 (fun h => h0 (hy0.2 h.symm))
       rw [hw, ite_eq_right h0, Nat.add_zero]
       obtain ⟨p1, p2, p3⟩ := edge_pos (C := C) (P := P) (w := i + 6) (hz := V.hz) ea
-        (by rw [hnW, Nat.mod_eq_of_lt (by omega)]; exact eb) (Ne.symm hne)
+        (by ram_rw [hnW, Nat.mod_eq_of_lt]; exact eb) (Ne.symm hne)
         (by rw [← hτ']; linarith) (by rw [← hτ']; linarith) hzn
       rw [← hτ'] at p2 p3
       refine ⟨by omega, p1, ?_, by rw [p3]; push_cast; ring⟩
@@ -244,12 +243,17 @@ theorem top_of_key {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
   · obtain ⟨rfl, rfl⟩ := nat_add_frac_eq (k := 6) ht0 ht1 (by rw [h]; norm_num)
     rw [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_six]
   · obtain ⟨rfl, rfl⟩ := nat_add_frac_eq (k := 2 * C.m + 6) ht0 ht1 (by rw [h]; push_cast; ring)
-    rw [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_tour _ le_rfl, Chain.sideTour_two_m]
+    simp [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_tour, Chain.sideTour_two_m]
 
+section
+
+variable (hT : TopOK P C V) (hP : C.P.Simple) {c : ℕ} (hc : c < C.m) {X : Point}
+    (hX : X ∈ C.chainEdge c) (hy : X.2 = ((Qof P).vtx V.hz).2)
+
+include hT hP hc hX hy in
 /-- **Every walk key of a point of a chain edge** is the key of its forward or backward
 position, or (at the top) one of the two ends `6`, `2 m + 6` of the tour. -/
-theorem keys_of_stop (hT : TopOK P C V) (hP : C.P.Simple) {c : ℕ} (hc : c < C.m) {X : Point}
-    (hX : X ∈ C.chainEdge c) (hy : X.2 = ((Qof P).vtx V.hz).2) {p : ℕ} (hp : p < 2 * C.m + 7)
+theorem keys_of_stop {p : ℕ} (hp : p < 2 * C.m + 7)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1)
     (hpt : Geometry.lerp ((chainModel C).W.vtx p) ((chainModel C).W.vtx ((p + 1) % (chainModel C).W.n))
       t = X) :
@@ -362,9 +366,9 @@ theorem keys_of_box (hT : TopOK P C V) {hz : ℕ} (hh : hz < P.n) {X : Point}
       (X.1 = -C.radius → (p : ℝ) + t = (chainModel C).key (Qof P) ⟨1, hz + 1⟩) := by
   have hR := C.radius_pos
   have hyR := abs_lt.1 (vtx_snd_lt_radius hT.hv.CQ hh)
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
-  have htx := abs_lt.1 C.abs_top_fst_lt_radius
-  have htop := C.top_snd_lt_radius
+  have hnW := walk_n C
+  
+  
   have hsp : ∀ q u, sidePt (C.sideWalk C.sideBeta) q u = Geometry.lerp ((chainModel C).W.vtx q)
       ((chainModel C).W.vtx ((q + 1) % (chainModel C).W.n)) u := fun _ _ => rfl
   -- normalise `t = 1`
@@ -373,24 +377,24 @@ theorem keys_of_box (hT : TopOK P C V) {hz : ℕ} (hh : hz < P.n) {X : Point}
     rcases eq_or_lt_of_le ht1 with h1 | h1
     · subst h1
       have hv : (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n) = X := by
-        rw [← hpt]; simp [Geometry.lerp]
+        simp_all
       rw [hnW] at hv
       rcases Nat.lt_or_ge (p + 1) (2 * C.m + 7) with h2 | h2
       · rw [Nat.mod_eq_of_lt h2] at hv
         refine ⟨p + 1, 0, h2, le_rfl, one_pos, by push_cast; ring, ?_⟩
-        rw [Chazelle.Chain.sidePt_zero]; exact hv
+        simp_all
       · exfalso
         rw [show p + 1 = 2 * C.m + 7 by omega, Nat.mod_self] at hv
         have h0 := (C.sidePt_box C.sideBeta 0).1
         rw [Chazelle.Chain.sidePt_zero] at h0
         have := congrArg Prod.snd (hv.symm.trans h0)
         simp only at this; rw [hy] at this; linarith
-    · exact ⟨p, t, hp, ht0, h1, rfl, by rw [hsp]; exact hpt⟩
+    · exact ⟨p, t, hp, ht0, h1, rfl, by rwa [hsp]⟩
   rw [← hk]
   -- the edge is a side of the box
   have hp3 : p' = 3 ∨ p' = 1 := by
     by_cases hb : p' ≤ 5 ∨ (p' = 2 * C.m + 6 ∧ 0 < t')
-    · have := (C.sideWalk_box_pt C.sideBeta hb ht0' ht1').2 (by rw [hpt']; exact hX)
+    · have := (C.sideWalk_box_pt C.sideBeta hb ht0' ht1').2 (by rwa [hpt'])
         (by rw [hpt', hy]; exact abs_lt.2 hyR)
       rcases this.1 with ⟨h, -⟩ | ⟨h, -⟩ <;> omega
     · exfalso
@@ -398,7 +402,7 @@ theorem keys_of_box (hT : TopOK P C V) {hz : ℕ} (hh : hz < P.n) {X : Point}
       have hmem : X ∈ C.set := by
         rcases (by omega : (6 ≤ p' ∧ p' < 2 * C.m + 6) ∨ p' = 2 * C.m + 6) with ⟨h6, h6'⟩ | h6
         · obtain ⟨i, rfl⟩ : ∃ i, p' = i + 6 := ⟨p' - 6, by omega⟩
-          rw [← hpt', C.sidePt_tour C.sideBeta (by omega)]
+          ram_rw [← hpt', C.sidePt_tour C.sideBeta]
           refine ⟨tci C i, tci_lt C i, ?_⟩
           rw [← tour_seg C i]; exact ⟨t', ht0', ht1'.le, rfl⟩
         · have ht0'' : t' = 0 := by have := hb.2 h6; linarith
@@ -437,9 +441,9 @@ def StopOK (P : Polygon) (C : Chain) (V : QV) (q : ℕ × ℕ × ℕ × ℕ) (X 
     Geometry.lerp ((chainModel C).W.vtx p) ((chainModel C).W.vtx ((p + 1) % (chainModel C).W.n)) t = X →
       ∃ k, k < 4 ∧ (p : ℝ) + t = (chainModel C).key (Qof P) ⟨posK q k, V.hz + 1⟩
 
+include hT hP hc hX hy in
 /-- **The stopping point on a chain edge.** -/
-theorem stop_chain (hT : TopOK P C V) (hP : C.P.Simple) {c : ℕ} (hc : c < C.m) {X : Point}
-    (hX : X ∈ C.chainEdge c) (hy : X.2 = ((Qof P).vtx V.hz).2) :
+theorem stop_chain :
     StopOK P C V (posOf V P.n (0, c)) X := by
   have hv := hT.hv
   obtain ⟨τ, -, -, ⟨wa, pa, -, -⟩, ⟨wb, pb, -, -⟩⟩ := fwd_bwd_pos hT hc hX hy
@@ -452,13 +456,13 @@ theorem stop_chain (hT : TopOK P C V) (hP : C.P.Simple) {c : ℕ} (hc : c < C.m)
       (chainModel C).key (Qof P) ⟨6, hz + 1⟩ = 6 := fun hz e hh => by
     obtain ⟨a, -, b⟩ := vertex_pos (C := C) (P := P) (w := 6) (hz := hz) hW6
       (by rw [e, htop]) hh
-    exact ⟨a, by rw [b]; norm_num⟩
+    simp_all
   have vl : ∀ hz, hz = V.tv → hz < P.n →
       ProperPos (chainModel C) (Qof P) P.n ⟨2 * C.m + 6, hz + 1⟩ ∧
       (chainModel C).key (Qof P) ⟨2 * C.m + 6, hz + 1⟩ = 2 * C.m + 6 := fun hz e hh => by
     obtain ⟨a, -, b⟩ := vertex_pos (C := C) (P := P) (w := 2 * C.m + 6) (hz := hz) hWl
       (by rw [e, htop]) hh
-    exact ⟨a, by rw [b]; push_cast; ring⟩
+    simp_all
   have hzn := hv.hz_lt
   refine ⟨fun k hk => ?_, fun p t hp ht0 ht1 hpt => ?_⟩
   · unfold posOf
@@ -469,22 +473,23 @@ theorem stop_chain (hT : TopOK P C V) (hP : C.P.Simple) {c : ℕ} (hc : c < C.m)
     · show posK (_, _, _, _) 2 < _ ∧ _
       simp only [posK]
       split_ifs with h
-      · exact ⟨by omega, (v6 _ h hzn).1⟩
+      · simp_all 
       · exact ⟨wa, pa⟩
     · show posK (_, _, _, _) 3 < _ ∧ _
       simp only [posK]
       split_ifs with h
-      · rw [hv.m]; exact ⟨by omega, (vl _ h hzn).1⟩
+      · simp_all [hv.m] 
       · exact ⟨wb, pb⟩
   · rcases keys_of_stop hT hP hc hX hy hp ht0 ht1 hpt with h | h | ⟨he, h | h⟩
-    · exact ⟨0, by omega, by unfold posOf; simpa [posK] using h⟩
-    · exact ⟨1, by omega, by unfold posOf; simpa [posK] using h⟩
+    · exact ⟨0, by omega, by assumption⟩
+    · exact ⟨1, by omega, by assumption⟩
     · refine ⟨2, by omega, ?_⟩
       unfold posOf; simp only [ite_true, posK, ite_eq_left he]
-      rw [(v6 _ he hzn).2]; exact h
+      simp_all
     · refine ⟨3, by omega, ?_⟩
-      unfold posOf; simp only [ite_true, posK, ite_eq_left he]
-      rw [hv.m, (vl _ he hzn).2]; exact h
+      ram_simp [posOf, ite_true, posK, ite_eq_left he, hv.m, (vl _ he hzn).2] <;> reg_omega
+
+end
 
 /-- **The stopping point on a side of the box.** -/
 theorem stop_box (hT : TopOK P C V) {w : ℕ} (hw : w = 1 ∨ w = 3) {X : Point}
@@ -495,7 +500,7 @@ theorem stop_box (hT : TopOK P C V) {w : ℕ} (hw : w = 1 ∨ w = 3) {X : Point}
   have hR := C.radius_pos
   have hyR := abs_lt.1 (vtx_snd_lt_radius hv.CQ hzn)
   have hm1 := C.one_le
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   have hq : ∀ k, posK (posOf V P.n (1, w)) k = w := fun k => by
     unfold posOf; simp only [show ¬ (1 : ℕ) = 0 by omega, ite_false]
     rcases k with _ | _ | _ | _ <;> rfl
@@ -505,13 +510,13 @@ theorem stop_box (hT : TopOK P C V) {w : ℕ} (hw : w = 1 ∨ w = 3) {X : Point}
     rcases hw with rfl | rfl
     · refine (edge_pos (C := C) (P := P) (w := 1) (hz := V.hz) (a := (-C.radius, C.radius))
         (b := (-C.radius, -C.radius)) (C.sideWalk_vtx_one _)
-        (by rw [hnW, Nat.mod_eq_of_lt (by omega)]; exact C.sideWalk_vtx_two _)
+        rfl
         (by simp only; linarith) ?_ ?_ hzn).1
       · simp only; apply div_nonneg_of_nonpos <;> linarith
       · simp only; rw [div_lt_one_of_neg (by linarith)]; linarith
     · refine (edge_pos (C := C) (P := P) (w := 3) (hz := V.hz) (a := (C.radius, -C.radius))
         (b := (C.radius, C.radius)) (C.sideWalk_vtx_three _)
-        (by rw [hnW, Nat.mod_eq_of_lt (by omega)]; exact C.sideWalk_vtx_four _)
+        rfl
         (by simp only; linarith) ?_ ?_ hzn).1
       · simp only; apply div_nonneg <;> linarith
       · simp only; rw [div_lt_one (by linarith)]; linarith
@@ -525,7 +530,7 @@ theorem stop_box (hT : TopOK P C V) {w : ℕ} (hw : w = 1 ∨ w = 3) {X : Point}
     rw [hq]
     rcases hw with rfl | rfl
     · exact k1 (by rw [hX]; simp)
-    · exact k3 (by rw [hX]; simp)
+    simp_all
 
 /-- **The near end of a chord on the chain** gives a chain edge through its point. -/
 theorem near_stop (hv : QVOK P C V) {w h : ℕ} (hE : EndFacts P C V w h) (h1 : xpClass w = 1) :
@@ -540,10 +545,10 @@ theorem near_stop (hv : QVOK P C V) {w h : ℕ} (hE : EndFacts P C V w h) (h1 : 
   · refine ⟨tci C (w - 6), tci_lt C _, ?_, ?_⟩
     · unfold chordSel; rw [ite_eq_left (by rw [hv.m]; omega)]
     · obtain ⟨i, rfl⟩ : ∃ i, w = i + 6 := ⟨w - 6, by omega⟩
-      rw [C.sidePt_tour C.sideBeta (by omega), show i + 6 - 6 = i by omega, ← tour_seg C i]
+      ram_rw [C.sidePt_tour C.sideBeta, show i + 6 - 6 = i by omega, ← tour_seg C i]
       exact ⟨_, hp0, hp1.le, rfl⟩
   · refine ⟨tci C (2 * C.m - 1), tci_lt C _, ?_, ?_⟩
-    · unfold chordSel; rw [ite_eq_right (by rw [hv.m]; omega), ite_eq_left (by rw [hv.m]), hv.m]
+    · simp [chordSel, hv.m]
     · rw [h0, Chazelle.Chain.sidePt_zero, ← tour_seg C (2 * C.m - 1),
         C.sideWalk_vtx_tour _ le_rfl, show 2 * C.m - 1 + 1 = 2 * C.m by omega]
       exact ⟨1, zero_le_one, le_rfl, by simp⟩

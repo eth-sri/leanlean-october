@@ -65,20 +65,25 @@ theorem kE_mono' (hsort : E.Pairwise (codeLe M Q L)) {i i' : ℕ} (hii : i ≤ i
 noncomputable def gsX (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (j : ℕ) : ℕ :=
   (gapStarts M Q L E).getD j 0
 
-theorem mem_gapStarts' {m : ℕ} : m ∈ gapStarts M Q L E ↔ m < E.length ∧
-    (m + 1 = E.length ∨ BuildSort.kap (evs M Q L E) m < BuildSort.kap (evs M Q L E) (m + 1)) := by
-  unfold gapStarts; simp
+abbrev mem_gapStarts' := @Chazelle.Core.BuildNF.Input.mem_gapStarts
 
-theorem gsX_eq {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+section
+
+variable {j : ℕ} (hj : j < (gapStarts M Q L E).length)
+include hj
+
+theorem gsX_eq :
     gsX M Q L E j = (gapStarts M Q L E)[j] := by
-  unfold gsX; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some]
+  unfold gsX; simp_all
 
-theorem gsX_mem {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
+theorem gsX_mem :
     gsX M Q L E j ∈ gapStarts M Q L E := by
-  rw [gsX_eq hj]; exact List.getElem_mem hj
+  simp [gsX_eq hj]
 
-theorem gsX_lt_len {j : ℕ} (hj : j < (gapStarts M Q L E).length) : gsX M Q L E j < E.length :=
+theorem gsX_lt_len : gsX M Q L E j < E.length :=
   (mem_gapStarts'.1 (gsX_mem hj)).1
+
+end
 
 theorem gsX_lt {j j' : ℕ} (hjj : j < j') (hj' : j' < (gapStarts M Q L E).length) :
     gsX M Q L E j < gsX M Q L E j' := by
@@ -91,7 +96,7 @@ theorem gsX_lt {j j' : ℕ} (hjj : j < j') (hj' : j' < (gapStarts M Q L E).lengt
 theorem gsX_of_mem {m : ℕ} (hm : m ∈ gapStarts M Q L E) :
     ∃ k, k < (gapStarts M Q L E).length ∧ gsX M Q L E k = m := by
   obtain ⟨k, hk, hke⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨k, hk, by rw [gsX_eq hk]; exact hke⟩
+  exact ⟨k, hk, by rwa [gsX_eq hk]⟩
 
 /-- **The keys are constant between consecutive gap starts.** -/
 theorem kE_const (hsort : E.Pairwise (codeLe M Q L)) {a b : ℕ} (hab : a ≤ b) (hb : b < E.length)
@@ -118,7 +123,7 @@ theorem gsX_last (hE : 0 < E.length) :
   have hlt : j₀ < (gapStarts M Q L E).length - 1 := by
     rcases Nat.lt_or_ge j₀ ((gapStarts M Q L E).length - 1) with h | h
     · exact h
-    · exact absurd (by rw [show (gapStarts M Q L E).length - 1 = j₀ by omega]; exact hj₀e) hne
+    simp_all [show (gapStarts M Q L E).length - 1 = j₀ by omega] 
   have h1 := gsX_lt (M := M) (Q := Q) (L := L) (E := E) hlt (by omega)
   have h2 := gsX_lt_len (M := M) (Q := Q) (L := L) (E := E)
     (j := (gapStarts M Q L E).length - 1) (by omega)
@@ -155,14 +160,14 @@ theorem keyE (hK : 0 < L.length) (_hsort : E.Pairwise (codeLe M Q L))
 theorem key_s_strict {j j' : ℕ} (hjj : j < j') (hj' : j' < (buildNF M Q L E).arcs.length) :
     M.key Q ((buildNF M Q L E).arc j).s < M.key Q ((buildNF M Q L E).arc j').s := by
   rw [arcsLen hK hsort hE] at hj'
-  have hE0 : 0 < E.length := by omega
-  rw [keyS hK hsort hE (by omega), keyS hK hsort hE hj']
+  
+  ram_rw [keyS hK hsort hE, keyS hK hsort hE hj']
   have hlt := gsX_lt (M := M) (Q := Q) (L := L) (E := E) hjj hj'
   have hj'len := gsX_lt_len (M := M) (Q := Q) (L := L) (E := E) hj'
   rcases (mem_gapStarts'.1 (gsX_mem (M := M) (Q := Q) (L := L) (E := E)
     (show j < (gapStarts M Q L E).length by omega))).2 with h | h
   · omega
-  · rw [kap_evs' (by omega), kap_evs' (by omega)] at h
+  · ram_rw [kap_evs', kap_evs'] at h
     exact lt_of_lt_of_le h (kE_mono' hsort (by omega) hj'len)
 
 /-- **Each arc ends where the next one starts.** -/
@@ -177,7 +182,7 @@ theorem key_e_next {j : ℕ} (hj : j < (buildNF M Q L E).arcs.length) :
   · rw [Nat.mod_eq_of_lt hj1]
     have h1 := gsX_lt (M := M) (Q := Q) (L := L) (E := E) (show j < j + 1 by omega) hj1
     have h2 := gsX_lt_len (M := M) (Q := Q) (L := L) (E := E) hj1
-    rw [Nat.mod_eq_of_lt (by omega)]
+    ram_rw [Nat.mod_eq_of_lt]
     refine kE_const hsort (by omega) h2 fun m hm1 hm2 hmem => ?_
     obtain ⟨k, hk, hke⟩ := gsX_of_mem hmem
     rcases Nat.lt_or_ge k (j + 1) with hk' | hk'
@@ -238,12 +243,7 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
   set ks : ℕ → ℝ := fun j => (interiorModel Q).key Q (N.arc j).s with hks
   set ke : ℕ → ℝ := fun j => (interiorModel Q).key Q (N.arc j).e with hke
   set kx := (interiorModel Q).key Q x with hkx
-  have hinj : ∀ j j', j < A → j' < A → ks j = ks j' → j = j' := by
-    intro j j' hj hj' he
-    by_contra hne
-    rcases Nat.lt_or_gt_of_ne hne with h | h
-    · exact absurd he (hinc j j' h hj').ne
-    · exact absurd he.symm (hinc j' j h hj).ne
+  
   -- the count of starts below `ks c`, for a start index `c`
   have hcount : ∀ c, c ≤ A → (∀ j', j' < A → (ks j' < kx ↔ j' < c)) →
       ((List.range N.arcs.length).filter fun j' =>
@@ -262,13 +262,13 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
   unfold keyBkt bktF
   by_cases hS : kx = ks j
   · rw [ite_eq_left hS, hcount j hj.le (fun j' hj' => by rw [hS]; exact hbelow j hj j' hj'),
-      ite_eq_left ⟨j, by rw [hA]; exact hj, hS.symm⟩]
+      ite_eq_left ⟨j, by rwa [hA], hS.symm⟩]
   · rw [ite_eq_right hS]
     by_cases hE : kx = ke j
     · have hj2 : (j + 1) % A < A := Nat.mod_lt _ (by omega)
-      have hE' : kx = ks ((j + 1) % A) := hE.trans (hnext j hj)
+      have hE' := hE.trans (hnext j hj)
       rw [ite_eq_left hE, hcount _ hj2.le (fun j' hj' => by rw [hE']; exact hbelow _ hj2 j' hj'),
-        ite_eq_left ⟨_, by rw [hA]; exact hj2, hE'.symm⟩]
+        ite_eq_left ⟨_, by rwa [hA], hE'.symm⟩]
     · rw [ite_eq_right hE]
       have hin : sideInArc (ks j) (ke j) kx := by
         rcases hon with h | h | h
@@ -278,7 +278,7 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
       have hnoeq : ¬ ∃ j', j' < N.arcs.length ∧ (interiorModel Q).key Q (N.arc j').s = kx := by
         rintro ⟨j', hj', he⟩
         rw [hA] at hj'
-        exact hfree j j' hj hj' (by rw [show (interiorModel Q).key Q (N.arc j').s = kx from he]; exact hin)
+        exact hfree j j' hj hj' (by rw [he]; exact hin)
       rw [ite_eq_right hnoeq]
       by_cases hG : ks j < kx
       · rw [ite_eq_left hG, hcount (j + 1) (by omega) fun j' hj' => ?_]
@@ -296,7 +296,7 @@ theorem keyBkt_eq {N : NF} {A : ℕ} (hA : N.arcs.length = A)
             rcases (Nat.lt_succ_iff.1 h).lt_or_eq with h' | rfl
             · exact lt_trans (hinc j' j h' hj) hG
             · exact hG
-      · have hlt : kx < ks j := lt_of_le_of_ne (not_lt.1 hG) (fun e => hS e)
+      · have hlt := lt_of_le_of_ne (not_lt.1 hG) (fun e => hS e)
         rw [ite_eq_right hG, hcount 0 (Nat.zero_le _) fun j' hj' => ?_]
         constructor
         · intro h
@@ -341,8 +341,7 @@ theorem param_eq {x : WPos} (hx1 : 1 ≤ x.hgt) (hq : x.edge < Q.n) :
     show (if ((interiorModel Q).wa e).2 = ((interiorModel Q).wb e).2 then 0
       else ((Q.vtx h).2 - ((interiorModel Q).wa e).2) /
         (((interiorModel Q).wb e).2 - ((interiorModel Q).wa e).2)) = _
-    simp only at ha hb hd ⊢
-    rw [ha, hb, ite_eq_right hd, Nat.add_sub_cancel]
+    simp_all
 
 /-- On one walk edge, the parameter order is the height order (reversed on a descending edge). -/
 theorem param_lt_iff {x y : WPos} (hx1 : 1 ≤ x.hgt) (hy1 : 1 ≤ y.hgt) (hxy : x.edge = y.edge)
@@ -376,10 +375,15 @@ theorem param_lt_iff {x y : WPos} (hx1 : 1 ≤ x.hgt) (hy1 : 1 ≤ y.hgt) (hxy :
       · exact absurd (h.2 h') (not_lt.2 hdown.le)
       · linarith
 
-/-- **Key order of interior positions** by edges and heights. -/
-theorem key_lt_iff {x y : WPos} (hx : ProperPos (interiorModel Q) Q Q.n x)
+section
+
+variable {x y : WPos} (hx : ProperPos (interiorModel Q) Q Q.n x)
     (hy : ProperPos (interiorModel Q) Q Q.n y) (hx1 : 1 ≤ x.hgt) (hy1 : 1 ≤ y.hgt)
-    (hxe : x.edge < Q.n) :
+    (hxe : x.edge < Q.n)
+include hx hy hx1 hy1 hxe
+
+/-- **Key order of interior positions** by edges and heights. -/
+theorem key_lt_iff :
     (interiorModel Q).key Q x < (interiorModel Q).key Q y ↔ PosLt Q li x y := by
   have hxn : x.hgt - 1 < Q.n := by have := hx.2.2; omega
   have hyn : y.hgt - 1 < Q.n := by have := hy.2.2; omega
@@ -400,11 +404,11 @@ theorem key_lt_iff {x y : WPos} (hx : ProperPos (interiorModel Q) Q Q.n x)
         have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h2
         linarith
       · right
-        have he : x.edge = y.edge := h2.symm
+        have he := h2.symm
         have hne : x.hgt ≠ y.hgt := by
           intro hh
           have : x = y := by cases x; cases y; simp_all
-          rw [this] at h; exact lt_irrefl _ h
+          simp_all
         refine ⟨he, hne, ?_⟩
         rw [he] at h
         exact (param_lt_iff hli hdh hn hx1 hy1 he hxe hxn hyn hne).1 (by linarith)
@@ -415,9 +419,7 @@ theorem key_lt_iff {x y : WPos} (hx : ProperPos (interiorModel Q) Q Q.n x)
       rw [h1]; linarith
 
 /-- **Key equality of interior positions**: equal edges and heights. -/
-theorem key_eq_iff {x y : WPos} (hx : ProperPos (interiorModel Q) Q Q.n x)
-    (hy : ProperPos (interiorModel Q) Q Q.n y) (hx1 : 1 ≤ x.hgt) (hy1 : 1 ≤ y.hgt)
-    (hxe : x.edge < Q.n) (hye : y.edge < Q.n) :
+theorem key_eq_iff (hye : y.edge < Q.n) :
     (interiorModel Q).key Q x = (interiorModel Q).key Q y ↔ PosEq x y := by
   constructor
   · intro h
@@ -449,6 +451,8 @@ theorem key_eq_iff {x y : WPos} (hx : ProperPos (interiorModel Q) Q Q.n x)
   · rintro ⟨he, hh⟩
     have : x = y := by cases x; cases y; simp_all
     rw [this]
+
+end
 
 end keys
 

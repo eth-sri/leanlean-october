@@ -63,7 +63,7 @@ theorem card_mul_le_of_granular_deg (hG : G.IsTree) (Δ : ℕ) (hdeg : ∀ v, G.
     rw [card_eq_sum_ones, sum_mul, one_mul]
     apply sum_le_sum
     intro d hd
-    have hdL : G.degree d.fst ≤ 2 := (mem_filter.1 (mem_filter.1 hd).2).2
+    have hdL := (mem_filter.1 (mem_filter.1 hd).2).2
     exact hgran d.fst d.snd d.adj (Or.inl (by omega))
   have h3 : ∑ d ∈ DL, w d.fst ≤ 2 * ∑ v, w v := by
     rw [hDL, Chazelle.Chain.sum_dart_fst_filter G L w, mul_sum]
@@ -136,7 +136,7 @@ theorem exists_gap {K : Set ℝ} (hK : K.Finite) {k₁ k₂ : ℝ} (hk₁ : k₁
       ∀ k ∈ K, x < k → (x < r ∧ r ≤ k) := by
     by_cases hA : ∃ k ∈ K, x < k
     · obtain ⟨r, ⟨hr, hxr⟩, hrm⟩ := Set.exists_min_image {k | k ∈ K ∧ x < k} id
-        (hK.subset fun k hk => hk.1) (by obtain ⟨k, hk, hxk⟩ := hA; exact ⟨k, hk, hxk⟩)
+        (hK.subset fun k hk => hk.1) (by assumption)
       exact ⟨r, hr, Or.inl hxr, fun k hk hxk => ⟨hxr, hrm k ⟨hk, hxk⟩⟩⟩
     · push Not at hA
       refine ⟨m₀, hm₀, Or.inr ⟨fun k hk => lt_of_le_of_ne (hA k hk) (fun h => hx (h ▸ hk)),
@@ -146,7 +146,7 @@ theorem exists_gap {K : Set ℝ} (hK : K.Finite) {k₁ k₂ : ℝ} (hk₁ : k₁
       ∀ k ∈ K, k < x → (l < x ∧ k ≤ l) := by
     by_cases hB : ∃ k ∈ K, k < x
     · obtain ⟨l, ⟨hl, hlx⟩, hlm⟩ := Set.exists_max_image {k | k ∈ K ∧ k < x} id
-        (hK.subset fun k hk => hk.1) (by obtain ⟨k, hk, hkx⟩ := hB; exact ⟨k, hk, hkx⟩)
+        (hK.subset fun k hk => hk.1) (by assumption)
       exact ⟨l, hl, Or.inl hlx, fun k hk hkx => ⟨hlx, hlm k ⟨hk, hkx⟩⟩⟩
     · push Not at hB
       refine ⟨M₀, hM₀, Or.inr ⟨fun k hk => lt_of_le_of_ne (hB k hk) (fun h => hx (h ▸ hk)),
@@ -208,13 +208,18 @@ theorem cut_bounds {F : Set (Set Point)} {k : ℝ} (h : M.IsCut F k) : 0 ≤ k �
   have hp : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hA.1
   exact ⟨by have := hA.2.1; positivity, by linarith [hA.2.2.1]⟩
 
+section
+
+variable (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+
+include hM hF in
 /-- A nonempty admissible family has two distinct cut keys. -/
-theorem two_cuts (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hne : F.Nonempty) :
+theorem two_cuts (hne : F.Nonempty) :
     ∃ k₁ k₂ : ℝ, M.IsCut F k₁ ∧ M.IsCut F k₂ ∧ k₁ ≠ k₂ := by
   obtain ⟨c, hc⟩ := hne
   obtain ⟨a, b, hab, -, -, -, ⟨⟨pa, ta, hA, hAa⟩, -⟩, ⟨⟨pb, tb, hB, hBb⟩, -⟩⟩ := hM.ends c (hF hc)
   exact ⟨pa + ta, pb + tb, ⟨c, hc, pa, ta, hA, rfl⟩, ⟨c, hc, pb, tb, hB, rfl⟩,
-    key_ne_of_pt_ne hA hB (by rw [hAa, hBb]; exact hab)⟩
+    key_ne_of_pt_ne hA hB (by simp_all)⟩
 
 /-- Positions just after a key `p + t` of `[0, n)` are inside the walk edge `p`. -/
 theorem exists_pos_after {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
@@ -237,9 +242,10 @@ theorem eventually_after_start {l r : ℝ} (_hlr : l ≠ r) :
     have : (0 : ℝ) < ε := hε
     left; linarith
 
+include hM hF in
 /-- **The arc of a gap**: an interval `(l, r)` between two distinct cuts containing no cut is an
 arc of the region faced by all its positions. -/
-theorem arc_of_gap (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem arc_of_gap (hfin : F.Finite)
     {l r : ℝ} (hl : M.IsCut F l) (hr : M.IsCut F r) (hlr : l ≠ r)
     (hfree : ∀ k, sideInArc l r k → ¬ M.IsCut F k) :
     ∃ X ∈ M.regions F, M.IsArc F X l r := by
@@ -247,7 +253,7 @@ theorem arc_of_gap (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   -- a position just after `l`
   obtain ⟨ε, hε1, hε2⟩ := ((exists_pos_after hA₁.2.1 hA₁.2.2.1).and
     (eventually_after_start hlr)).exists
-  have hy : sideInArc l r (p₁ + (t₁ + ε)) := by rw [← add_assoc, ← hl₁]; exact hε2
+  have hy : sideInArc l r (p₁ + (t₁ + ε)) := by rwa [← add_assoc, ← hl₁]
   obtain ⟨X, hX, hfX⟩ := hM.exists_faces_of_not_cut hF hfin hA₁.1 hε1 (hfree _ hy)
   refine ⟨X, hX, (cut_bounds ⟨c₁, hc₁, p₁, t₁, hA₁, hl₁⟩).1,
     (cut_bounds ⟨c₁, hc₁, p₁, t₁, hA₁, hl₁⟩).2, (cut_bounds hr).1, (cut_bounds hr).2,
@@ -261,11 +267,12 @@ theorem arc_of_gap (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
     have hsame := cyc_same hy hin (hfree _ · ⟨c, hc, pa, ta, hA, rfl⟩)
       (hfree _ · ⟨c, hc, pb, tb, hB, rfl⟩) (key_ne_of_pt_ne hA hB hAB)
     exact (iff_not_self (hiff.trans (not_congr hsame.symm))).elim
-  rw [heq]; exact hfU
+  rwa [heq]
 
+include hM hF in
 /-- **The arc around a non-cut key**: a non-cut key of `[0, n)` of a nonempty family lies inside
 an arc of some region. -/
-theorem arc_around (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem arc_around (hfin : F.Finite)
     (hne : F.Nonempty) {x : ℝ} (hx : ¬ M.IsCut F x) :
     ∃ X ∈ M.regions F, ∃ l r : ℝ, M.IsArc F X l r ∧ sideInArc l r x := by
   obtain ⟨k₁, k₂, h₁, h₂, hk⟩ := hM.two_cuts hF hne
@@ -322,16 +329,16 @@ theorem merged_regions {F : Set (Set Point)} (hsys : ChordSystem M.D F) {c : Set
     (hXW : X ⊆ W) : X = U ∨ X = V := by
   have hS : F \ {c} ⊆ F := fun d hd => hd.1
   have hcS : c ∉ F \ {c} := fun h => h.2 rfl
-  have hins : insert c (F \ {c}) = F := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
+  have hins := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
   obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ := hsys.regionsIn_insert hS hc hcS
   have htouch := hsys.touches_iff_of_split hS hc hcS hR hcR hunion hR₁ hR₂ heq
   rw [hins] at htouch heq
   have hU12 := (htouch U hU).1 hcU
   have hV12 := (htouch V hV).1 hcV
-  have hR₁R : R₁ ⊆ R := fun p hp => by
+  have hR₁R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inl hp
     rw [hunion] at this; exact this.1
-  have hR₂R : R₂ ⊆ R := fun p hp => by
+  have hR₂R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inr hp
     rw [hunion] at this; exact this.1
   have hUR : U ⊆ R := by rcases hU12 with rfl | rfl <;> assumption
@@ -341,20 +348,14 @@ theorem merged_regions {F : Set (Set Point)} (hsys : ChordSystem M.D F) {c : Set
   · exfalso
     obtain ⟨x, hx⟩ := Chazelle.Chain.regionsIn_nonempty hXS
     have hXeqW : X = W := by
-      rcases Chazelle.Chain.regionsIn_eq_or_disjoint hXS hW with h | h
-      · exact h
-      · exact absurd (h.le_bot ⟨hx, hXW hx⟩) (fun h => h)
+      exact Chazelle.Chain.regionsIn_eq_of_mem hXS hW hx (hXW hx)
     obtain ⟨u, hu⟩ := Chazelle.Chain.regionsIn_nonempty hU
-    have huX : u ∈ X := hXeqW ▸ hUW hu
-    rcases Chazelle.Chain.regionsIn_eq_or_disjoint hXS hR with h | h
-    · exact hXR h
-    · exact h.le_bot ⟨huX, hUR hu⟩
+    have huX := hXeqW ▸ hUW hu
+    exact hXR (Chazelle.Chain.regionsIn_eq_of_mem hXS hR huX (hUR hu))
   · simp only [mem_insert_iff, mem_singleton_iff] at hX12
     rcases hU12 with rfl | rfl <;> rcases hV12 with rfl | rfl
     · exact absurd rfl hUV
-    · rcases hX12 with rfl | rfl
-      · exact Or.inl rfl
-      · exact Or.inr rfl
+    · assumption
     · rcases hX12 with rfl | rfl
       · exact Or.inr rfl
       · exact Or.inl rfl
@@ -363,9 +364,10 @@ theorem merged_regions {F : Set (Set Point)} (hsys : ChordSystem M.D F) {c : Set
 /-- The walk vertices at which a chord is attached. -/
 def chordVerts (M : Model) (c : Set Point) : Set ℕ := {p | p < M.W.n ∧ SideAttach M.W c p 0}
 
+include hM hF in
 /-- **The walk vertices inside an arc of a merged region** are attachments of the removed chord or
 arc vertices of one of the two merged regions. -/
-theorem merged_vertices (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem merged_vertices
     (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {U V : Set Point} (hU : U ∈ M.regions F)
     (hV : V ∈ M.regions F) (hUV : U ≠ V) (hcU : TouchesIn M.D c U) (hcV : TouchesIn M.D c V)
     {W : Set Point} (hW : W ∈ M.regions (F \ {c})) (hUW : U ⊆ W) {a b : ℝ}
@@ -378,8 +380,8 @@ theorem merged_vertices (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     obtain ⟨d, hd, q, t, hA, hpq⟩ := hcut
     have hq : q = p ∧ t = 0 := by
       have := sideKey_inj hA.2.1 hA.2.2.1 le_rfl one_pos (show (q : ℝ) + t = p + 0 by
-        rw [add_zero]; exact hpq.symm)
-      exact ⟨this.1, this.2⟩
+        simp_all)
+      tauto
     obtain ⟨rfl, rfl⟩ := hq
     by_cases hdc : d = c
     · subst hdc; exact Or.inl (Or.inl ⟨hpn, hA⟩)
@@ -402,9 +404,10 @@ theorem merged_vertices (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     · exact Or.inl (Or.inr hpX)
     · exact Or.inr hpX
 
+include hM hF in
 /-- **The weight of a merged region** is at most the arc vertices of the two merged regions plus
 the attachments of the removed chord, plus one. -/
-theorem weight_merged_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem weight_merged_le
     (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {U V : Set Point} (hU : U ∈ M.regions F)
     (hV : V ∈ M.regions F) (hUV : U ≠ V) (hcU : TouchesIn M.D c U) (hcV : TouchesIn M.D c V)
     {W : Set Point} (hW : W ∈ M.regions (F \ {c})) (hUW : U ⊆ W) :
@@ -434,8 +437,8 @@ theorem chord_from (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} 
       (∀ s ∈ Ioo (0 : ℝ) 1, lerp (sidePt M.W p t) e' s ∈ M.D) ∧ e' ∉ M.D := by
   obtain ⟨a, b, hab, hcab, hy, hopen, ⟨⟨pa, ta, hAa, hAa'⟩, -⟩, ⟨⟨pb, tb, hBb, hBb'⟩, -⟩⟩ :=
     hM.ends c hc
-  have haD : a ∉ M.D := hAa' ▸ hM.trace pa hAa.1 ta hAa.2.1 hAa.2.2.1.le
-  have hbD : b ∉ M.D := hBb' ▸ hM.trace pb hBb.1 tb hBb.2.1 hBb.2.2.1.le
+  have haD := hAa' ▸ hM.trace pa hAa.1 ta hAa.2.1 hAa.2.2.1.le
+  have hbD := hBb' ▸ hM.trace pb hBb.1 tb hBb.2.1 hBb.2.2.1.le
   have hA' := hA
   rw [hcab] at hA'
   rcases hM.attach_endpoint hopen hA' with h | h
@@ -443,9 +446,10 @@ theorem chord_from (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} 
   · rw [h]
     exact ⟨a, hcab.trans (Geometry.segment_comm _ _), hab, hy, open_rev hopen, haD⟩
 
+include hM hF in
 /-- **At most two chords of `F` are attached at a walk vertex** (one to the east, one to the
 west). -/
-theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem ncard_chords_at_le
     (_hfin : F.Finite) (p : ℕ) : {c | c ∈ F ∧ SideAttach M.W c p 0}.ncard ≤ 2 := by
   classical
   let dir : Set Point → Bool := fun c => decide (∃ x ∈ c, (sidePt M.W p 0).1 < x.1)
@@ -475,7 +479,7 @@ theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
         (f.1 - (sidePt M.W p 0).1)) := by
       apply point_ext
       · simp only [lerp_fst]; field_simp; ring
-      · simp only [lerp_snd]; rw [hf, hf']; ring
+      simp [lerp_snd, hf, hf']
     rw [e1]
     apply hop
     rcases hbtw with ⟨h1, h2⟩ | ⟨h1, h2⟩
@@ -488,8 +492,8 @@ theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
     obtain ⟨e₂, hce₂, hne₂, hy₂, hop₂, hD₂⟩ := hM.chord_from (hF hc'.1) hc'.2
     have hsame : (sidePt M.W p 0).1 < e₁.1 ↔ (sidePt M.W p 0).1 < e₂.1 := by
       rw [← hdir c e₁ hce₁, ← hdir c' e₂ hce₂, hdd]
-    have hx₁ : e₁.1 ≠ (sidePt M.W p 0).1 := fun h => hne₁ (point_ext h hy₁)
-    have hx₂ : e₂.1 ≠ (sidePt M.W p 0).1 := fun h => hne₂ (point_ext h hy₂)
+    have hx₁ := fun h => hne₁ (point_ext h hy₁)
+    have hx₂ := fun h => hne₂ (point_ext h hy₂)
     have heq : e₁ = e₂ := by
       apply point_ext _ (hy₁.trans hy₂.symm)
       rcases lt_or_gt_of_ne hx₁ with h₁ | h₁
@@ -501,7 +505,7 @@ theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
         · exact (key hop₁ hD₂ hy₁ hy₂ (Or.inr ⟨h, h₂⟩)).elim
         · exact h
         · exact (key hop₂ hD₁ hy₂ hy₁ (Or.inr ⟨h, h₁⟩)).elim
-      · have h₂ : (sidePt M.W p 0).1 < e₂.1 := hsame.1 h₁
+      · have h₂ := hsame.1 h₁
         rcases lt_trichotomy e₁.1 e₂.1 with h | h | h
         · exact (key hop₂ hD₁ hy₂ hy₁ (Or.inl ⟨h₁, h⟩)).elim
         · exact h
@@ -509,7 +513,7 @@ theorem ncard_chords_at_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
     rw [hce₁, hce₂, heq]
   calc {c | c ∈ F ∧ SideAttach M.W c p 0}.ncard ≤ (Set.univ : Set Bool).ncard :=
         ncard_le_ncard_of_injOn dir (fun _ _ => mem_univ _) hinj
-    _ = 2 := by rw [ncard_univ, Nat.card_eq_fintype_card]; rfl
+    _ = 2 := by simp
 
 /-! ## The node weights and their sums -/
 
@@ -525,7 +529,7 @@ theorem chordVerts_subset_exitVerts {F : Set (Set Point)} {c : Set Point} (hc : 
 theorem sum_arcVerts_le {F : Set (Set Point)} (R : Finset (Set Point))
     (hR : ∀ U ∈ R, U ∈ M.regions F) : ∑ U ∈ R, (arcVerts M F U).ncard ≤ M.W.n := by
   classical
-  let A : Set Point → Finset ℕ := fun U => (Finset.range M.W.n).filter (· ∈ arcVerts M F U)
+  let A := fun U => (Finset.range M.W.n).filter (· ∈ arcVerts M F U)
   have hA : ∀ U, (arcVerts M F U).ncard = (A U).card := by
     intro U
     rw [← Set.ncard_coe_finset]
@@ -546,8 +550,9 @@ theorem sum_arcVerts_le {F : Set (Set Point)} (R : Finset (Set Point))
         exact (mem_filter.1 hpU).1
     _ = M.W.n := card_range _
 
+include hM hF in
 /-- **The exit vertices of the regions add up to at most `4 n`.** -/
-theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem sum_exitVerts_le
     (hfin : F.Finite) (R : Finset (Set Point)) (hR : ∀ U ∈ R, U ∈ M.regions F) :
     ∑ U ∈ R, (exitVerts M F U).ncard ≤ 4 * M.W.n := by
   classical
@@ -564,7 +569,7 @@ theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   have hp4 : ∀ p, (R.filter fun U => p ∈ exitVerts M F U).card ≤ 4 := by
     intro p
     set Cp := {c | c ∈ F ∧ SideAttach M.W c p 0} with hCp
-    have hCp2 : Cp.ncard ≤ 2 := hM.ncard_chords_at_le hF hfin p
+    have hCp2 := hM.ncard_chords_at_le hF hfin p
     have hCpf : Cp.Finite := hfin.subset fun c hc => hc.1
     -- the two regions touched by each chord
     have htwo : ∀ c ∈ F, ∃ R₁ R₂ : Set Point,
@@ -589,7 +594,7 @@ theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
           ncard_le_ncard hsub ((hCpf.prod Set.finite_univ).image _)
       _ ≤ (Cp ×ˢ (Set.univ : Set Bool)).ncard := ncard_image_le (hCpf.prod Set.finite_univ)
       _ = Cp.ncard * (Set.univ : Set Bool).ncard := ncard_prod
-      _ ≤ 2 * 2 := Nat.mul_le_mul hCp2 (by rw [ncard_univ, Nat.card_eq_fintype_card]; rfl)
+      _ ≤ 2 * 2 := Nat.mul_le_mul hCp2 (by simp)
       _ = 4 := rfl
   calc ∑ U ∈ R, (exitVerts M F U).ncard
       = ∑ U ∈ R, ∑ p ∈ Finset.range M.W.n, if p ∈ exitVerts M F U then 1 else 0 := by
@@ -597,21 +602,21 @@ theorem sum_exitVerts_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
     _ = ∑ p ∈ Finset.range M.W.n, ∑ U ∈ R, if p ∈ exitVerts M F U then 1 else 0 :=
         Finset.sum_comm
     _ = ∑ p ∈ Finset.range M.W.n, (R.filter fun U => p ∈ exitVerts M F U).card := by
-        simp only [Finset.sum_boole, Nat.cast_id]
+        simp
     _ ≤ ∑ p ∈ Finset.range M.W.n, 4 := sum_le_sum fun p _ => hp4 p
     _ = 4 * M.W.n := by rw [sum_const, card_range, smul_eq_mul, mul_comm]
 
 /-! ## γ = 0 -/
 
+include hM hF in
 /-- **A nonempty family is not `0`-semigranular** when the walk has a counted edge: the arc
 through a non-cut position of that edge meets it. -/
-theorem not_semigranular_zero (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
+theorem not_semigranular_zero
     (hfin : F.Finite) (hne : F.Nonempty) {p₀ : ℕ} (hp₀ : p₀ < M.W.n) (hc₀ : M.counted p₀) :
     ¬ M.Semigranular F 0 := by
   intro hsg
   have hK := hM.finite_cuts hF hfin
-  have hT : {t : ℝ | M.IsCut F (p₀ + t)}.Finite :=
-    Set.Finite.preimage (f := fun t : ℝ => (p₀ : ℝ) + t)
+  have hT := Set.Finite.preimage (f := fun t : ℝ => (p₀ : ℝ) + t)
       (fun t _ t' _ h => by simpa using h) hK
   obtain ⟨t, ht, htc⟩ := ((Set.Ioo_infinite (zero_lt_one' ℝ)).sdiff hT).nonempty
   obtain ⟨X, hX, l, r, harc, hin⟩ := hM.arc_around hF hfin hne htc
@@ -622,7 +627,7 @@ theorem not_semigranular_zero (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ 
     have : p₀ ∈ ({p : ℕ | p < M.W.n ∧ M.counted p ∧
         ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc l r (p + t)} : Set ℕ) :=
       ⟨hp₀, hc₀, t, ht.1, ht.2, hin⟩
-    rw [h0] at this; exact this
+    rwa [h0] at this
   have hbdd : BddAbove ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F X ab.1 ab.2}) :=
     ((hM.arcs_bound hF hfin hX).1.image _).bddAbove
   have hle : M.arcWt l r ≤ M.weight F X := le_csSup hbdd ⟨(l, r), harc, rfl⟩
@@ -631,8 +636,9 @@ theorem not_semigranular_zero (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ 
 
 /-! ## Lemma 2.3 -/
 
+include hM hF in
 /-- **Lemma 2.3 for a model with the walk axioms**: `|F| γ ≤ 10 (D + 2) n`. -/
-theorem lemma23_walk (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
+theorem lemma23_walk (hfin : F.Finite)
     {γ D : ℕ} (hdeg : M.DegLe F D) (hgran : M.Granular F γ) :
     F.ncard * γ ≤ 2 * (D + 2) * (5 * M.W.n) := by
   classical
@@ -689,6 +695,8 @@ theorem lemma23_walk (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
   rw [hcard, Nat.add_sub_cancel] at hcore
   exact hcore.trans (Nat.mul_le_mul_left _ hsum)
 
+end
+
 end WalkAx
 
 /-! ## The good models -/
@@ -706,8 +714,7 @@ theorem goodModel_walk (M : Model) (h : GoodModel M) :
         simp only [Set.mem_ofPred_eq, Set.mem_Ico, hn]
         change p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
         omega
-      rw [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
-      omega
+      simp [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
     refine ⟨by rw [hn, hsize]; omega, 6, by rw [hn]; omega, ?_⟩
     change 6 ≤ 6 ∧ 6 < 2 * C.m + 6
     omega

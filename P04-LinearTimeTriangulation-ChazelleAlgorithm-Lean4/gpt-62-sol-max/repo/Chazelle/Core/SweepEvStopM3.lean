@@ -34,27 +34,32 @@ structure OrgD (P : Polygon) (J : Merge.Junction) (N : NF) (kind k b : ℕ) : Pr
   ok : StOK P J N kind k b
   free : FreeAt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)
 
-variable (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
+variable (hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N)
 include hP hN
 
+section
+
+variable {kind k b : ℕ} (hD : OrgD P J N kind k b)
+include hD
+
 /-- **The attachments of a stop chord.** -/
-theorem orig_attach {kind k b : ℕ} (hD : OrgD P J N kind k b) :
-    (∀ p t, Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p t →
-      SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) p t ∧
-      sidePt (chainModel J.whole).W p t = (if b = 1 then Merge.lend (stopSet J (Qof P) N kind k b)
+theorem orig_attach :
+    (∀ p t, Arrival J.wholeModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) p t →
+      SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) p t ∧
+      sidePt J.wholeModel.W p t = (if b = 1 then Merge.lend (stopSet J (Qof P) N kind k b)
         else Merge.rend (stopSet J (Qof P) N kind k b))) ∧
-    (∀ p t, Arrival (chainModel J.whole).W
+    (∀ p t, Arrival J.wholeModel.W
         (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p t →
-      SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) p t ∧
-      sidePt (chainModel J.whole).W p t = (if 1 - b = 1 then
+      SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) p t ∧
+      sidePt J.wholeModel.W p t = (if 1 - b = 1 then
         Merge.lend (stopSet J (Qof P) N kind k b) else Merge.rend (stopSet J (Qof P) N kind k b))) ∧
-    (∀ p t, SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) p t →
-      Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p t ∨
-      Arrival (chainModel J.whole).W
+    (∀ p t, SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) p t →
+      Arrival J.wholeModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) p t ∨
+      Arrival J.wholeModel.W
         (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p t) := by
   obtain ⟨hok, hf⟩ := hD
   obtain ⟨haD, ha2, -, -, -⟩ := stOrig_facts hP hN hok
-  have ha : (stOrig J (Qof P) N kind k b).2 ≤ J.whole.top.2 := le_trans ha2 J.right_top_le
+  have ha := le_trans ha2 J.right_top_le
   have hb := hok.2.1
   have hσ := dirOf_cases' b
   rw [stopSet_eq]
@@ -80,29 +85,29 @@ theorem orig_attach {kind k b : ℕ} (hD : OrgD P J N kind k b) :
 
 /-- **The two attachments** of a stop chord: any attachment is the arrival position of the
 origin or that of the far end. -/
-theorem attach_two {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
-    (h₀ : Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀)
-    (h₁ : Arrival (chainModel J.whole).W
+theorem attach_two {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
+    (h₀ : Arrival J.wholeModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀)
+    (h₁ : Arrival J.wholeModel.W
       (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p₁ t₁)
-    {q : ℕ} {s : ℝ} (hA : SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) q s) :
+    {q : ℕ} {s : ℝ} (hA : SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) q s) :
     (q = p₀ ∧ s = t₀) ∨ (q = p₁ ∧ s = t₁) := by
   obtain ⟨i1, i2, i3⟩ := orig_attach hP hN hD
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM : WalkAx J.wholeModel := FactsChain.walkAx J.whole hP
   have hm := (stop_mem hP hN hD.ok hD.free).1
-  have ha : stopSet J (Qof P) N kind k b ∈ (chainModel J.whole).Adm :=
+  have ha : stopSet J (Qof P) N kind k b ∈ J.wholeModel.Adm :=
     F₂plus_subset J hN.1.2.1 hm
   rcases i3 q s hA with h | h
-  · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (by rw [h.2.2.2.1, h₀.2.2.2.1]))
-  · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (by rw [h.2.2.2.1, h₁.2.2.2.1]))
+  · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (by simp_all))
+  · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (by simp_all))
 
 /-- **Anchored, pocket**: from the offsets of the two attachments. -/
-theorem anc_pocket_iff {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
-    (h₀ : Arrival (chainModel J.whole).W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀)
-    (h₁ : Arrival (chainModel J.whole).W
+theorem anc_pocket_iff {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
+    (h₀ : Arrival J.wholeModel.W (stOrig J (Qof P) N kind k b) (-dirOf b) p₀ t₀)
+    (h₁ : Arrival J.wholeModel.W
       (farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b)) (dirOf b) p₁ t₁) :
     (¬ EvBrk J (stopSet J (Qof P) N kind k b) ↔
       oW J (p₀ + t₀) < Lst J ∨ oW J (p₁ + t₁) < Lst J) ∧
-    ((∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W (stopSet J (Qof P) N kind k b) q s →
+    ((∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W (stopSet J (Qof P) N kind k b) q s →
       oW J (q + s) ≠ 0) ↔ oW J (p₀ + t₀) ≠ 0 ∧ oW J (p₁ + t₁) ≠ 0) := by
   obtain ⟨i1, i2, -⟩ := orig_attach hP hN hD
   have hA₀ := (i1 p₀ t₀ h₀).1
@@ -122,13 +127,13 @@ theorem anc_pocket_iff {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : 
     · exact h.2
 
 /-- The origin and the far end of a stop chord are distinct points of it. -/
-theorem orig_far_ne {kind k b : ℕ} (hD : OrgD P J N kind k b) :
+theorem orig_far_ne :
     stOrig J (Qof P) N kind k b ≠ farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b) ∧
       stOrig J (Qof P) N kind k b ∈ stopSet J (Qof P) N kind k b ∧
       farPt J.whole (stOrig J (Qof P) N kind k b) (dirOf b) ∈ stopSet J (Qof P) N kind k b := by
   obtain ⟨hok, hf⟩ := hD
   obtain ⟨-, ha2, -, -, -⟩ := stOrig_facts hP hN hok
-  have ha : (stOrig J (Qof P) N kind k b).2 ≤ J.whole.top.2 := le_trans ha2 J.right_top_le
+  have ha := le_trans ha2 J.right_top_le
   have hσ := dirOf_cases' b
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt J.whole ha hσ hf
   rw [stopSet_eq]
@@ -138,21 +143,22 @@ theorem orig_far_ne {kind k b : ℕ} (hD : OrgD P J N kind k b) :
     simp only [rayPt_fst] at this
     rcases hσ with h' | h' <;> rw [h'] at this hT <;> linarith
   · have := rayPt_mem_shoot J.whole (stOrig J (Qof P) N kind k b) (dirOf b) le_rfl hT.le
-    rwa [show rayPt (stOrig J (Qof P) N kind k b) (dirOf b) 0 = stOrig J (Qof P) N kind k b by
-      apply Geometry.point_ext <;> simp [rayPt]] at this
+    simp_all
 
 /-- **At most one parent**: two chords of `S₂` containing a stop chord are equal. -/
-theorem parent_eq {kind k b : ℕ} (hD : OrgD P J N kind k b) {c c' : Set Point}
-    (hc : c ∈ N.F (chainModel J.right) (Qof P)) (hc' : c' ∈ N.F (chainModel J.right) (Qof P))
+theorem parent_eq {c c' : Set Point}
+    (hc : c ∈ N.F J.rightModel (Qof P)) (hc' : c' ∈ N.F J.rightModel (Qof P))
     (h : stopSet J (Qof P) N kind k b ⊆ c) (h' : stopSet J (Qof P) N kind k b ⊆ c') : c = c' := by
   obtain ⟨hne, h1, h2⟩ := orig_far_ne hP hN hD
   exact parent_unique hN.1.2.1 hc hc' hne (h h1) (h h2) (h' h1) (h' h2)
 
+end
+
 omit hP hN in
 /-- **The parent of a wall piece** is its chord. -/
-theorem parent_wall (_hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k b : ℕ}
+theorem parent_wall (_hP : J.P.Simple) (hN : IsNF J.rightModel (Qof P) N) {k b : ℕ}
     (hD : OrgD P J N 1 k b) :
-    stopSet J (Qof P) N 1 k b ⊆ (N.chord k).toSet (chainModel J.right) (Qof P) := by
+    stopSet J (Qof P) N 1 k b ⊆ (N.chord k).toSet J.rightModel (Qof P) := by
   obtain ⟨-, hb, hw, -⟩ := hD.ok
   obtain ⟨hk, -⟩ := hw rfl
   obtain ⟨-, hcase⟩ := stOrig_wall (Q := Qof P) hN hk hb
@@ -173,15 +179,15 @@ theorem parent_vt_iff (_hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ 
     Merge.shoot J.whole a (dirOf b) ⊆ c ↔
       (b = 1 ∧ Merge.lend c = a) ∨ (b = 0 ∧ Merge.rend c = a) := by
   have hσ := dirOf_cases' b
-  have ha : a.2 ≤ J.whole.top.2 := le_trans (J.right.snd_le_top_of_mem_set haR) J.right_top_le
+  have ha := le_trans (J.right.snd_le_top_of_mem_set haR) J.right_top_le
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt J.whole ha hσ hf
   constructor
   · intro hsub
     obtain ⟨y, l, r, hH, -, rfl, hl, hr⟩ := Merge.augChords_spec (hS₂ hc)
     have ha0 : a ∈ Visibility.hseg y l r := hsub (by
       have := rayPt_mem_shoot J.whole a (dirOf b) le_rfl hT.le
-      rwa [show rayPt a (dirOf b) 0 = a by apply Geometry.point_ext <;> simp [rayPt]] at this)
-    have haD : a ∉ J.right.dom := fun hd => J.right.not_mem_set_of_mem_dom hd haR
+      simp_all)
+    have haD := fun hd => J.right.not_mem_set_of_mem_dom hd haR
     obtain ⟨hay, hal, har⟩ := ha0
     -- `a` is an end of the chord
     have hend : a.1 = l ∨ a.1 = r := by

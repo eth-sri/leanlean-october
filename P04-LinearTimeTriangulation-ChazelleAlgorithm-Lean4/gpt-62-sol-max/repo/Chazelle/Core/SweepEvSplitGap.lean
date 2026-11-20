@@ -41,8 +41,8 @@ theorem sg_sep {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
     (hz : z ∈ e') (hzD : z ∈ M.D) (hze : ∀ w ∈ e, w.1 ≠ z.1) {G U : Set Point}
     (hG : G ∈ M.regions F) (hU : U ∈ M.regions F) (hGe : SideOf M (-1) e G)
     (hUe : SideOf M 1 e U) (hGe' : SideOf M (-1) e' G) (hUe' : SideOf M 1 e' U) : False := by
-  have hF1 : ({e} : Set (Set Point)) ⊆ M.Adm := singleton_subset_iff.2 (hF he)
-  have hfin1 : ({e} : Set (Set Point)).Finite := finite_singleton e
+  have hF1 := singleton_subset_iff.2 (hF he)
+  have hfin1 := finite_singleton e
   obtain ⟨R₁, hR₁, hS1⟩ := side_region_exists' hM hF1 hfin1 (mem_singleton e) (Or.inr rfl)
   obtain ⟨R₂, hR₂, hS2⟩ := side_region_exists' hM hF1 hfin1 (mem_singleton e) (Or.inl rfl)
   have hne := side_regions_ne hM hF1 hfin1 (mem_singleton e) heA hR₂ hR₁ hS2 hS1
@@ -63,7 +63,7 @@ theorem sg_sep {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hM.isOpen z hzD
   obtain ⟨δ, ⟨hGd, hUd⟩, hδr⟩ := (((hGe' z hz hzD).and (hUe' z hz hzD)).and
     (Ioo_mem_nhdsGT hr)).exists
-  have hδ0 : 0 < δ := hδr.1
+  
   set S := (fun s : ℝ => ((z.1, z.2 + s) : Point)) '' Icc (-δ) δ with hSdef
   have hSc : IsPreconnected S :=
     isPreconnected_Icc.image _ (by fun_prop : Continuous fun s : ℝ => ((z.1, z.2 + s) : Point)).continuousOn
@@ -91,32 +91,32 @@ theorem sg_sep {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
 theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) {e' f' : Set Point} (he' : e' ∈ F₂plus J S₂)
     (hf' : f' ∈ F₂plus J S₂) (hne : f' ≠ e') {Pu q : ℕ} {s : ℝ}
-    (hA1 : SideAttach (chainModel J.whole).W e' Pu 0)
-    (hpt1 : sidePt (chainModel J.whole).W Pu 0 = J.right.top)
-    (hA2 : SideAttach (chainModel J.whole).W e' q s)
-    (hne2 : sidePt (chainModel J.whole).W q s ≠ sidePt (chainModel J.whole).W Pu 0)
-    (hf'A : SideAttach (chainModel J.whole).W f' q s) (hu : J.right.top ∈ f') : False := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+    (hA1 : SideAttach J.wholeModel.W e' Pu 0)
+    (hpt1 : sidePt J.wholeModel.W Pu 0 = J.right.top)
+    (hA2 : SideAttach J.wholeModel.W e' q s)
+    (hne2 : sidePt J.wholeModel.W q s ≠ sidePt J.wholeModel.W Pu 0)
+    (hf'A : SideAttach J.wholeModel.W f' q s) (hu : J.right.top ∈ f') : False := by
+  have hM := FactsChain.walkAx J.whole hP
   have huD := hM.trace _ hA1.1 0 le_rfl zero_le_one
   have hYD := hM.trace _ hA2.1 s hA2.2.1 hA2.2.2.1.le
-  have hue : sidePt (chainModel J.whole).W Pu 0 ∈ e' := hA1.2.2.2.1
-  have hYe : sidePt (chainModel J.whole).W q s ∈ e' := hA2.2.2.2.1
-  have hYf : sidePt (chainModel J.whole).W q s ∈ f' := hf'A.2.2.2.1
+  have hue := hA1.2.2.2.1
+  have hYe := hA2.2.2.2.1
+  have hYf := hf'A.2.2.2.1
   rw [hpt1] at hue huD hne2
   set u := J.right.top
-  set Y := sidePt (chainModel J.whole).W q s
+  set Y := sidePt J.wholeModel.W q s
   have he'A := F₂plus_subset J hS₂ he'
   have hf'Ad := F₂plus_subset J hS₂ hf'
   obtain ⟨y, a, b, hH, -, he'd, -, -⟩ := Merge.augChords_spec he'A
   obtain ⟨y', a', b', -, -, hf'd, -, -⟩ := Merge.augChords_spec hf'Ad
-  have hab := hH.lt
-  have hend : ∀ w ∈ e', w ∉ (chainModel J.whole).D → w.1 = a ∨ w.1 = b := by
+  
+  have hend : ∀ w ∈ e', w ∉ J.wholeModel.D → w.1 = a ∨ w.1 = b := by
     intro w hw hwD
     rw [he'd] at hw
     obtain ⟨hwy, hwa, hwb⟩ := hw
     rcases hwa.lt_or_eq with h1 | h1
     · rcases hwb.lt_or_eq with h2 | h2
-      · exact absurd (show w ∈ (chainModel J.whole).D by
+      · exact absurd (show w ∈ J.wholeModel.D by
           rw [show w = (w.1, y) from Prod.ext rfl hwy]; exact hH.open_mem w.1 h1 h2) hwD
       · exact Or.inr h2
     · exact Or.inl h1.symm
@@ -153,17 +153,17 @@ theorem splitGapTask : SplitGapTask := by
   have hM := hC.hM
   have hM₂ := hC.hM₂
   have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
-  have hGM : GoodModel (chainModel J.whole) := Or.inl ⟨J.whole, hP, rfl⟩
-  have hGM₂ : GoodModel (chainModel J.right) := Or.inl ⟨J.right, hP, rfl⟩
+  have hFs : F₂plus J S₂ ⊆ J.wholeModel.Adm := hC.hF
+  have hGM : GoodModel J.wholeModel := Or.inl ⟨J.whole, hP, rfl⟩
+  have hGM₂ : GoodModel J.rightModel := Or.inl ⟨J.right, hP, rfl⟩
   obtain ⟨hL1, -, hL2, -, hlt⟩ := caseG_consts J hδ
   have hτ' := tpos_lt J.right 0
   have hm2 : J.right.m = J.m₂ := rfl
   have hL1pos : 1 ≤ rL1 J := by omega
   have hd : rL1 J < rL1 J + rL2 J := by omega
   obtain ⟨hpt, -⟩ := split_facts J hδ
-  set W := (chainModel J.whole).W with hWdef
-  set W₂ := (chainModel J.right).W with hW₂def
+  set W := J.wholeModel.W with hWdef
+  set W₂ := J.rightModel.W with hW₂def
   set Pu := (6 + tpos J.whole J.m₁ + rL1 J) % W.n with hPudef
   have heA' : SideAttach W e Pu 0 := heA
   have he'A' : SideAttach W e' Pu 0 := he'A
@@ -185,11 +185,11 @@ theorem splitGapTask : SplitGapTask := by
   rcases hρ with rfl | rfl
   · -- above: a gap label
     have hSx := S₂x_family J hS₂ hF
-    have hSs : S₂x J S₂ ⊆ (chainModel J.right).Adm := S₂x_subset J hS₂a
+    have hSs : S₂x J S₂ ⊆ J.rightModel.Adm := S₂x_subset J hS₂a
     have hc : e' ∈ S₂x J S₂ := Or.inr ⟨he', he'R⟩
     obtain ⟨U₂, hU₂, hU₂s⟩ := side_region_exists' hM₂ hSs hSx.1 hc (Or.inl rfl)
     obtain ⟨V, hV, hU₂V⟩ := super_region (subset_S₂x J S₂) hU₂
-    have hVs : SideOf (chainModel J.right) 1 e' V := sideOf_mono hU₂s hU₂V
+    have hVs : SideOf J.rightModel 1 e' V := sideOf_mono hU₂s hU₂V
     obtain ⟨-, -, hp1, hp2, -, -⟩ := copy_facts J hδ
     have hk₂' : (6 + tpos J.right 0 + (rL1 J + rδ J)) % W₂.n =
         (6 + tpos J.right 0 + rL1 J + rδ J) % W₂.n := by rw [← add_assoc]
@@ -248,7 +248,7 @@ theorem splitGapTask : SplitGapTask := by
           rw [← hpt, huy, hYf.1, hv.1])
         rw [← hsh, hf'd]
         exact hv
-      have vlab : ∀ c ∈ S₂, f' ⊆ c → SideOf (chainModel J.right) 1 c V →
+      have vlab : ∀ c ∈ S₂, f' ⊆ c → SideOf J.rightModel 1 c V →
           VLabel J S₂ G V := fun c hcS hfc hcV =>
         ⟨f', c, 1, dY, 0, hf', hcS, hfc, Or.inl rfl, hdY, le_rfl, zero_lt_one, hsecY, hf'A,
           hf'G, hcV⟩
@@ -271,10 +271,10 @@ theorem splitGapTask : SplitGapTask := by
   · -- below: impossible
     exfalso
     -- the tie at the split vertex descends
-    have hwa : (chainModel J.whole).wa Pu = J.right.top := by
+    have hwa : J.wholeModel.wa Pu = J.right.top := by
       rw [← hpt, Chazelle.Chain.sidePt_zero]; rfl
     have hn₂ := cm_n J.right
-    have hwb : ((chainModel J.whole).wb Pu).2 ≤ J.right.top.2 := by
+    have hwb : (J.wholeModel.wb Pu).2 ≤ J.right.top.2 := by
       have e0 := hC.sideNext_eq hd
       have edq : dq (rL1 J) (rδ J) (rL1 J) = rL1 J + rδ J := by
         unfold dq; rw [ite_eq_right (lt_irrefl _)]
@@ -291,10 +291,10 @@ theorem splitGapTask : SplitGapTask := by
     obtain ⟨de', hde'⟩ := dirAt_exists hM (hFs he') he'A'
     obtain ⟨-, hhor, hdn, -⟩ :=
       (faced_or_middle hGM hF he' he'A' (Or.inl rfl) hU hUs hde').2 e he hne.symm heA'
-    have hdesc : ((chainModel J.whole).wb Pu).2 < ((chainModel J.whole).wa Pu).2 := by
+    have hdesc : (J.wholeModel.wb Pu).2 < (J.wholeModel.wa Pu).2 := by
       rw [hwa] at hhor ⊢
       exact lt_of_le_of_ne hwb hhor
-    have hUe : SideOf (chainModel J.whole) 1 e U := (hdn hdesc).1 rfl
+    have hUe : SideOf J.wholeModel 1 e U := (hdn hdesc).1 rfl
     -- a point of `e'` in the domain, on a vertical line off `e`
     obtain ⟨z, hz, hzD⟩ := adm_mem_dom hM (hFs he')
     have huD := hM.trace _ he'A'.1 0 le_rfl zero_le_one
@@ -305,7 +305,7 @@ theorem splitGapTask : SplitGapTask := by
       rw [he'd] at h1 h2
       exact h2.1.trans h1.1.symm
     have hzu : z.1 ≠ (sidePt W Pu 0).1 := fun h =>
-      huD (show sidePt W Pu 0 ∈ (chainModel J.whole).D by
+      huD (show sidePt W Pu 0 ∈ J.wholeModel.D by
         rw [show sidePt W Pu 0 = z from Prod.ext h.symm hzy.symm]; exact hzD)
     have hze : ∀ w ∈ e, w.1 ≠ z.1 := by
       rcases hM.tie_pair hFs he he' hne.symm heA' he'A' with ⟨h1, h2⟩ | ⟨h1, h2⟩

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Mountain.RamStack
 
 /-!
@@ -84,8 +86,8 @@ theorem stk_shift_push (g : ℕ → ℕ) (s t v : ℕ) :
   have e : (fun i => upd g (s + t) v (s + i)) = upd (fun i => g (s + i)) t v := by
     funext i
     by_cases h : i = t
-    · subst h; rw [Machine.upd_same, Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ h]
+    · simp_all
+    simp_all
   rw [e, stk_push]
 
 /-- The layout hypothesis: the index table `base … base + m - 1` and the stack region
@@ -121,11 +123,11 @@ theorem sFrame_trans {c₀ c₁ c₂ : Config} (h₁ : SFrame c₀ c₁) (h₂ :
     SFrame c₀ c₂ := by
   obtain ⟨n₁, r₁, m₁, q₁⟩ := h₁
   obtain ⟨n₂, r₂, m₂, q₂⟩ := h₂
-  have e61 : c₁.nreg 61 = c₀.nreg 61 := n₁ 61 (by omega)
-  have e62 : c₁.nreg 62 = c₀.nreg 62 := n₁ 62 (by omega)
+  have e61 := n₁ 61 (by omega)
+  have e62 := n₁ 62 (by omega)
   refine ⟨fun r hr => by rw [n₂ r hr, n₁ r hr], fun r hr => by rw [r₂ r hr, r₁ r hr],
     fun a ha => ?_, by rw [q₂, q₁]⟩
-  rw [m₂ a (by rw [e61, e62]; exact ha), m₁ a ha]
+  rw [m₂ a (by rwa [e61, e62]), m₁ a ha]
 
 /-- A step that changes nothing but the natural registers `63 … 74`, the real registers
 `61 … 72` and the output keeps the frame. -/
@@ -223,8 +225,8 @@ theorem subTestStmt_exec (c : Config) (hc : WordsBounded W c) (h65 : c.nreg 65 =
   refine spec_seq ?_
   exec_block
   · exact hs
-  · config_simp; rw [h65]; exact hcb
-  · config_simp; rw [h65]; exact hbb
+  · ram_finish
+  · ram_finish
   · config_simp; exact hkb
   refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (by decide)
     (by decide) (by decide)
@@ -233,19 +235,18 @@ theorem subTestStmt_exec (c : Config) (hc : WordsBounded W c) (h65 : c.nreg 65 =
   refine spec_instr (Exec.mulR hw₁ 71 70 67) fun hw₂ => ?_
   config_simp at hdet
   have e70 : c₁.rreg 70 = c.rreg 70 := by
-    rw [hfr 70 (by decide) (by decide) (by decide)]; config_simp
-  refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · config_simp; rw [hn]; config_simp; rw [h65]
-  · config_simp; rw [hn]; config_simp; rw [h65]
-  · config_simp; rw [hn]; config_simp
+    frame_finish
+  refine ⟨by omega, ?_⟩; and_intros
+  · ram_finish
+  · ram_finish
+  · ram_finish
   · config_simp; rw [hdet, e70, h65]
   · intro r h66 h67 h71 h72 h73 h74
-    config_simp; rw [hn]; simp [h66, h67, h71, h72, h73, h74]
+    frame_finish
   · intro r hr h71
     config_simp
-    rw [Machine.upd_other _ _ _ h71, hfr r (by omega) (by omega) (by omega)]
-    simp [show r ≠ 61 by omega, show r ≠ 62 by omega, show r ≠ 63 by omega,
-      show r ≠ 64 by omega, show r ≠ 65 by omega, show r ≠ 66 by omega]
+    rw [Machine.upd_other _ _ _ h71, (ram_app% (hfr r ?_ ?_ ?_))]
+    frame_finish
   · config_simp; rw [hnm]
   · config_simp; rw [hrm]
   · config_simp; rw [hout]
@@ -277,13 +278,18 @@ def SInnerInv (P : Polygon) (W : ℕ) (l : List ℕ) (base sbase : ℕ) (σ : �
 section inner
 variable {P : Polygon} {W : ℕ} {l : List ℕ} {base sbase : ℕ}
 
+section
+
+variable {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Triangle}
+    {sF : List ℕ} {c c' : Config} (hw' : WordsBounded W c')
+    (hC' : SConsts base sbase l.length σ c') (hT' : STab l base c') (hF' : SFrame c₀ c')
+    (h64 : c.nreg 64 = k) (htop : c.nreg 63 ≤ k)
+include oF sF hw' hC' hT' hF' h64 htop
+
 /-- **A pop re-establishes the invariant** and decreases the potential by `32`.  `c` is the
 configuration at the start of the iteration (flag `1`, `2 ≤ top`, a convex corner of
 `subPoly P l`), `c'` the one after the pop, described by the equations `e…`. -/
-theorem sInnerInv_pop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Triangle}
-    {sF : List ℕ} {c c' : Config} (hw' : WordsBounded W c')
-    (hC' : SConsts base sbase l.length σ c') (hT' : STab l base c') (hF' : SFrame c₀ c')
-    (h64 : c.nreg 64 = k) (htop : c.nreg 63 ≤ k) (hge : 2 ≤ c.nreg 63) (hf : c.nreg 69 = 1)
+theorem sInnerInv_pop (hge : 2 ≤ c.nreg 63) (hf : c.nreg 69 = 1)
     (hlt : ∀ x ∈ stackS c, x < l.length)
     (hconv : 0 < σ * det ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 2))))
       ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 1)))) ((subPoly P l).vtx k))
@@ -300,9 +306,7 @@ theorem sInnerInv_pop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Tr
         (c.nreg 63 - 2) := stk_two hge
   have hs' : stackS c' = c.nmem (c.nreg 61 + (c.nreg 63 - 2)) ::
       stk (fun i => c.nmem (c.nreg 61 + i)) (c.nreg 63 - 2) := by
-    unfold stackS
-    rw [e61, e63, enm, stk_pop (f := fun i => c.nmem (c.nreg 61 + i)) (t := c.nreg 63 - 1)
-      (by omega), show c.nreg 63 - 1 - 1 = c.nreg 63 - 2 by omega]
+    ram_finish [stackS, e61, e63, enm, stk_pop, show c.nreg 63 - 1 - 1 = c.nreg 63 - 2 by omega]
   have hpl : popLoop (subPoly P l) σ k (stackS c) =
       ((c.nmem (c.nreg 61 + (c.nreg 63 - 2)), c.nmem (c.nreg 61 + (c.nreg 63 - 1)), k) ::
           (popLoop (subPoly P l) σ k (stackS c')).1,
@@ -315,16 +319,11 @@ theorem sInnerInv_pop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Tr
     exact hlt x (by rw [hs]; exact List.mem_cons_of_mem _ hx)
   · rw [eout, List.append_assoc, List.singleton_append, ← hout, hpl, List.map_cons]
   · rw [← hst, hpl]
-  · unfold subInnerPot
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), hpl, List.length_cons]
-    omega
+  · ram_simp [subInnerPot, ite_eq_right, hpl, List.length_cons] <;> omega
 
 /-- **Stopping re-establishes the invariant** (flag `0`) when the pop loop emits nothing more
 and keeps the stack. -/
-theorem sInnerInv_stop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Triangle}
-    {sF : List ℕ} {c c' : Config} (hw' : WordsBounded W c')
-    (hC' : SConsts base sbase l.length σ c') (hT' : STab l base c') (hF' : SFrame c₀ c')
-    (h64 : c.nreg 64 = k) (htop : c.nreg 63 ≤ k) (hlt : ∀ x ∈ stackS c, x < l.length)
+theorem sInnerInv_stop (hlt : ∀ x ∈ stackS c, x < l.length)
     (hpl : (popLoop (subPoly P l) σ k (stackS c)).1 = [])
     (hpl2 : (popLoop (subPoly P l) σ k (stackS c)).2.1 = stackS c)
     (hout : c.output ++ (popLoop (subPoly P l) σ k (stackS c)).1.map (relabelList l) = oF)
@@ -333,12 +332,14 @@ theorem sInnerInv_stop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.T
     (e64 : c'.nreg 64 = c.nreg 64) (e69 : c'.nreg 69 = 0) (enm : c'.nmem = c.nmem)
     (eout : c'.output = c.output) :
     SInnerInv P W l base sbase σ k c₀ oF sF c' ∧ subInnerPot P l σ k c' = 0 := by
-  have hs' : stackS c' = stackS c := stackS_congr e61 e63 enm
-  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, by rw [hs']; exact hlt,
+  have hs' := stackS_congr e61 e63 enm
+  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, by rwa [hs'],
     Or.inr ⟨e69, ?_, ?_⟩⟩, ?_⟩
-  · rw [eout, ← hout, hpl, List.map_nil, List.append_nil]
+  · simp_all
   · rw [hs', ← hst, hpl2]
-  · unfold subInnerPot; rw [ite_eq_left e69]
+  simp [subInnerPot, ite_eq_left e69]
+
+end
 
 set_option maxHeartbeats 800000 in
 /-- **One iteration of the pop loop** preserves `SInnerInv` and decreases the potential
@@ -402,28 +403,28 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
     rw [h60, h64, hT _ hk] at e74
     rw [ea2, ea1, h60, hT _ hbm, hT _ hcm, h64, hT _ hk] at e71
     have n60 : c₁.nreg 60 = c.nreg 60 :=
-      efr 60 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 60 ?_ ?_ ?_ ?_ ?_ ?_)
     have n61 : c₁.nreg 61 = c.nreg 61 :=
-      efr 61 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 61 ?_ ?_ ?_ ?_ ?_ ?_)
     have n62 : c₁.nreg 62 = c.nreg 62 :=
-      efr 62 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 62 ?_ ?_ ?_ ?_ ?_ ?_)
     have n63 : c₁.nreg 63 = c.nreg 63 :=
-      efr 63 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 63 ?_ ?_ ?_ ?_ ?_ ?_)
     have n64 : c₁.nreg 64 = c.nreg 64 :=
-      efr 64 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 64 ?_ ?_ ?_ ?_ ?_ ?_)
     have n65 : c₁.nreg 65 = c.nreg 65 :=
-      efr 65 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 65 ?_ ?_ ?_ ?_ ?_ ?_)
     have n68 : c₁.nreg 68 = c.nreg 68 :=
-      efr 68 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 68 ?_ ?_ ?_ ?_ ?_ ?_)
     have n69 : c₁.nreg 69 = c.nreg 69 :=
-      efr 69 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      ram_app% (efr 69 ?_ ?_ ?_ ?_ ?_ ?_)
     have n70 : c₁.nreg 70 = c.nreg 70 :=
-      efr 70 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-    have r70 : c₁.rreg 70 = c.rreg 70 := erf 70 (by omega) (by decide)
-    have r72 : c₁.rreg 72 = c.rreg 72 := erf 72 (by omega) (by decide)
-    have hF₁ : SFrame c c₁ := sFrame_of_regs
-      (fun r hr => efr r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega))
-      (fun r hr => erf r (by omega) (by omega)) enm erm
+      ram_app% (efr 70 ?_ ?_ ?_ ?_ ?_ ?_)
+    have r70 : c₁.rreg 70 = c.rreg 70 := ram_app% (erf 70 ?_ ?_)
+    have r72 : c₁.rreg 72 = c.rreg 72 := ram_app% (erf 72 ?_ ?_)
+    have hF₁ : SFrame c c₁ := ram_app% (sFrame_of_regs
+      (fun r hr => efr r ?_ ?_ ?_ ?_ ?_ ?_)
+      (fun r hr => erf r ?_ ?_) enm erm)
     by_cases hconv : 0 < σ * det ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 2))))
         ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 1)))) ((subPoly P l).vtx k)
     · -- a convex corner: pop
@@ -499,10 +500,10 @@ theorem subInnerLoop_exec (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
   obtain ⟨-, hC', hT', hF', h64', htop', hlt', hflag'⟩ := hI'
   have hpot : subInnerPot P l σ k c =
       32 * ((popLoop (subPoly P l) σ k (stackS c)).1.length + 1) := by
-    unfold subInnerPot; rw [ite_eq_right (by omega)]
+    ram_finish [subInnerPot, ite_eq_right]
   rcases hflag' with ⟨hf', -, -⟩ | ⟨-, hout', hst'⟩
-  · exfalso; apply hexit; rw [hf', hC'.2.2.2.2.2.1]; omega
-  · exact ⟨c', k', ex, by rw [← hpot]; exact hk', hC', hT', hF', h64', htop', hlt', hout', hst'⟩
+  · simp_all [hC'.2.2.2.2.2.1] 
+  · exact ⟨c', k', ex, by rwa [← hpot], hC', hT', hF', h64', htop', hlt', hout', hst'⟩
 
 end inner
 

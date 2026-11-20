@@ -36,7 +36,7 @@ theorem trE_eq {n u₀ g₀ e : ℕ} (hu : u₀ < n) (he : e - g₀ < n) :
   unfold trE
   split_ifs with h
   · rw [Nat.mod_eq_of_lt h]
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 /-- The translated piece as the RAM computes it. -/
 def trPcR (n u₀ g₀ : ℕ) (pc : Pc) : Pc :=
@@ -89,32 +89,32 @@ def SlotOK (P : Polygon) (m : ℕ → ℕ) (E Hγ e₁ : ℕ) (Va Vb : ℝ) (sl 
     Va = (e₁ : ℝ) + off - sl.g₀ + (chainModel C).key (Qof P) sa ∧
     Vb = (e₁ : ℝ) + off - sl.g₀ + (chainModel C).key (Qof P) ea
 
-theorem rdPc_congr {m m' : ℕ → ℕ} {L i E : ℕ} (he : ∀ a, a < E → m' a = m a)
+theorem rdPc_congr {m m' : ℕ → ℕ} {L i E : ℕ} (he : MemEqBelow E m' m)
     (hi : L + 1 + 7 * i + 7 ≤ E) : rdPc m' L i = rdPc m L i := by
   unfold rdPc
-  rw [he _ (by omega), he _ (by omega), he _ (by omega), he _ (by omega), he _ (by omega),
-    he _ (by omega), he _ (by omega)]
+  ram_rw [he, he, he, he, he,
+    he, he]
 
 /-- **A valid slot survives** memory changes at or above its bound. -/
 theorem SlotOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} {Va Vb : ℝ} {sl : Slot}
-    (h : SlotOK P m E Hγ e₁ Va Vb sl) (he : ∀ a, a < E → m' a = m a) (hE : E ≤ E') :
+    (h : SlotOK P m E Hγ e₁ Va Vb sl) (he : MemEqBelow E m' m) (hE : E ≤ E') :
     SlotOK P m' E' Hγ e₁ Va Vb sl := by
   obtain ⟨C, ℓ, off, sa, ea, S, hu, hq, hq1, hLE, h0, hl, hc, ht, hv, r1, r2, r3, r4, r5⟩ := h
   have hr : ∀ i, i < sl.q → rdPc m' sl.L i = rdPc m sl.L i := fun i hi =>
     rdPc_congr he (by have : 7 * i + 7 ≤ 7 * sl.q := by omega
                       omega)
-  refine ⟨C, ℓ, off, sa, ea, S, hu, by rw [he _ (by omega)]; exact hq, hq1, by omega,
-    by rw [hr 0 (by omega)]; exact h0, by rw [hr _ (by omega)]; exact hl,
-    fun i hi => by rw [hr i (by omega), hr (i + 1) hi]; exact hc i hi,
-    fun i hi => by rw [hr i (by omega)]; exact ht i hi,
+  refine ⟨C, ℓ, off, sa, ea, S, hu, by ram_simp [he] <;> omega, hq1, by omega,
+    by ram_simp [hr] <;> omega, by ram_simp [hr] <;> omega,
+    fun i hi => by ram_rw [hr i, hr (i + 1) hi]; exact hc i hi,
+    fun i hi => by ram_rw [hr i]; exact ht i hi,
     fun i hi => by rw [hr i hi]; exact (hv i hi).keep he hE, r1, r2, r3, r4, r5⟩
 
 /-- **The translated pieces of a valid slot** form a path of unwrapped interior keys and are
 valid pieces of the interior walk. -/
 theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : ℝ} {sl : Slot}
     (h : SlotOK P m E Hγ e₁ Va Vb sl) :
-    KPath (interiorModel (Qof P)) (Qof P) (Qof P).n Va (slotPcs m (Qof P).n sl) Vb ∧
-      (∀ pc ∈ slotPcs m (Qof P).n sl, PcV P (interiorModel (Qof P)) m E Hγ pc) ∧
+    KPath (inputModel P) (Qof P) (Qof P).n Va (slotPcs m (Qof P).n sl) Vb ∧
+      (∀ pc ∈ slotPcs m (Qof P).n sl, PcV P (inputModel P) m E Hγ pc) ∧
       slotPcs m (Qof P).n sl ≠ [] := by
   obtain ⟨C, ℓ, off, sa, ea, S, hu, hq, hq1, hLE, h0, hl, hc, ht, hv, r1, r2, r3, r4, r5⟩ := h
   have hQ : (Qof P).n = P.n := qn'
@@ -126,10 +126,10 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
     simp [hps]
   -- the order facts in list form
   have h0' : (chainModel C).key (Qof P) (ps[0]'(List.length_pos_iff.2 hne)).s =
-      (chainModel C).key (Qof P) sa := by rw [hget]; exact h0
+      (chainModel C).key (Qof P) sa := by rwa [hget]
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
-    rw [hget, hlen]; exact hl
+    rwa [hget, hlen]
   have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
     rw [hget, hget]; exact hc i (by omega)
@@ -149,7 +149,7 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
     unfold slotPcs
     rw [hps, List.map_map]
     refine List.map_congr_left (fun i hi => ?_)
-    have hi' : i < sl.q := List.mem_range.1 hi
+    have hi' := List.mem_range.1 hi
     obtain ⟨m1, m2, m3⟩ := hmono i (by omega)
     rw [hget] at m1 m2 m3
     have hp := hv i hi'
@@ -177,7 +177,7 @@ def SlotsOK (P : Polygon) (m : ℕ → ℕ) (E Hγ e₁ : ℕ) : ℝ → List Sl
   | V, [], V' => V = V'
   | V, sl :: sls, V' => ∃ V₁, SlotOK P m E Hγ e₁ V V₁ sl ∧ SlotsOK P m E Hγ e₁ V₁ sls V'
 
-theorem SlotsOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} (he : ∀ a, a < E → m' a = m a)
+theorem SlotsOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} (he : MemEqBelow E m' m)
     (hE : E ≤ E') : ∀ {V : ℝ} {sls : List Slot} {V' : ℝ}, SlotsOK P m E Hγ e₁ V sls V' →
       SlotsOK P m' E' Hγ e₁ V sls V'
   | _, [], _, h => h
@@ -192,8 +192,8 @@ theorem SlotsOK.snoc {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} :
 /-- **The translated pieces of a chain of valid slots.** -/
 theorem slotsOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} :
     ∀ {V : ℝ} {sls : List Slot} {V' : ℝ}, SlotsOK P m E Hγ e₁ V sls V' →
-      KPath (interiorModel (Qof P)) (Qof P) (Qof P).n V (sls.flatMap (slotPcs m (Qof P).n)) V' ∧
-        (∀ pc ∈ sls.flatMap (slotPcs m (Qof P).n), PcV P (interiorModel (Qof P)) m E Hγ pc) ∧
+      KPath (inputModel P) (Qof P) (Qof P).n V (sls.flatMap (slotPcs m (Qof P).n)) V' ∧
+        (∀ pc ∈ sls.flatMap (slotPcs m (Qof P).n), PcV P (inputModel P) m E Hγ pc) ∧
         (sls ≠ [] → sls.flatMap (slotPcs m (Qof P).n) ≠ [])
   | _, [], _, h => by simp only [SlotsOK] at h; subst h; exact ⟨rfl, by simp, fun h => absurd rfl h⟩
   | _, sl :: sls, _, ⟨V₁, h1, h2⟩ => by
@@ -205,7 +205,7 @@ theorem slotsOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} :
       rcases hpc with h | h
       · exact v1 pc h
       · exact v2 pc h
-    · rw [List.flatMap_cons]; simp [n1]
+    simp [List.flatMap_cons, n1]
 
 end
 

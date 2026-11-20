@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.OracleHitSem
 
 /-!
@@ -134,26 +136,26 @@ theorem QConst.congr {P : Polygon} {V : QV} {c c' : Config} (h : QConst P V c)
     (hr : ∀ r, 120010 ≤ r → r ≤ 120049 → c'.nreg r = c.nreg r) : QConst P V c' := by
   have g : ∀ r, 120010 ≤ r → r ≤ 120049 → ∀ v, c.nreg r = v → c'.nreg r = v :=
     fun r h1 h2 v hv => (hr r h1 h2).trans hv
-  exact ⟨g _ (by norm_num) (by norm_num) _ h.n, g _ (by norm_num) (by norm_num) _ h.one,
-    g _ (by norm_num) (by norm_num) _ h.zero, g _ (by norm_num) (by norm_num) _ h.D,
-    g _ (by norm_num) (by norm_num) _ h.NB, g _ (by norm_num) (by norm_num) _ h.s,
-    g _ (by norm_num) (by norm_num) _ h.m, g _ (by norm_num) (by norm_num) _ h.tIdx,
-    g _ (by norm_num) (by norm_num) _ h.β, g _ (by norm_num) (by norm_num) _ h.twoM,
-    g _ (by norm_num) (by norm_num) _ h.nW, g _ (by norm_num) (by norm_num) _ h.sS,
-    g _ (by norm_num) (by norm_num) _ h.tv, g _ (by norm_num) (by norm_num) _ h.hz,
-    g _ (by norm_num) (by norm_num) _ h.σb,
-    originOK_congr (fun r h1 h2 => hr r (by omega) (by omega)) h.org,
-    g _ (by norm_num) (by norm_num) _ h.six, g _ (by norm_num) (by norm_num) _ h.tEnd,
-    g _ (by norm_num) (by norm_num) _ h.A, g _ (by norm_num) (by norm_num) _ h.POS,
-    g _ (by norm_num) (by norm_num) _ h.FL, g _ (by norm_num) (by norm_num) _ h.LAB,
-    g _ (by norm_num) (by norm_num) _ h.DL, g _ (by norm_num) (by norm_num) _ h.nD,
-    g _ (by norm_num) (by norm_num) _ h.ORD, g _ (by norm_num) (by norm_num) _ h.RK,
-    g _ (by norm_num) (by norm_num) _ h.CH, g _ (by norm_num) (by norm_num) _ h.K,
-    g _ (by norm_num) (by norm_num) _ h.MD, g _ (by norm_num) (by norm_num) _ h.TB,
-    g _ (by norm_num) (by norm_num) _ h.L, g _ (by norm_num) (by norm_num) _ h.CB,
-    g _ (by norm_num) (by norm_num) _ h.AB, g _ (by norm_num) (by norm_num) _ h.RB,
-    g _ (by norm_num) (by norm_num) _ h.SB, g _ (by norm_num) (by norm_num) _ h.LB,
-    g _ (by norm_num) (by norm_num) _ h.two, g _ (by norm_num) (by norm_num) _ h.μ⟩
+  exact ram_app% (⟨g _ ?_ ?_ _ h.n, g _ ?_ ?_ _ h.one,
+    g _ ?_ ?_ _ h.zero, g _ ?_ ?_ _ h.D,
+    g _ ?_ ?_ _ h.NB, g _ ?_ ?_ _ h.s,
+    g _ ?_ ?_ _ h.m, g _ ?_ ?_ _ h.tIdx,
+    g _ ?_ ?_ _ h.β, g _ ?_ ?_ _ h.twoM,
+    g _ ?_ ?_ _ h.nW, g _ ?_ ?_ _ h.sS,
+    g _ ?_ ?_ _ h.tv, g _ ?_ ?_ _ h.hz,
+    g _ ?_ ?_ _ h.σb,
+    originOK_congr (fun r h1 h2 => hr r ?_ ?_) h.org,
+    g _ ?_ ?_ _ h.six, g _ ?_ ?_ _ h.tEnd,
+    g _ ?_ ?_ _ h.A, g _ ?_ ?_ _ h.POS,
+    g _ ?_ ?_ _ h.FL, g _ ?_ ?_ _ h.LAB,
+    g _ ?_ ?_ _ h.DL, g _ ?_ ?_ _ h.nD,
+    g _ ?_ ?_ _ h.ORD, g _ ?_ ?_ _ h.RK,
+    g _ ?_ ?_ _ h.CH, g _ ?_ ?_ _ h.K,
+    g _ ?_ ?_ _ h.MD, g _ ?_ ?_ _ h.TB,
+    g _ ?_ ?_ _ h.L, g _ ?_ ?_ _ h.CB,
+    g _ ?_ ?_ _ h.AB, g _ ?_ ?_ _ h.RB,
+    g _ ?_ ?_ _ h.SB, g _ ?_ ?_ _ h.LB,
+    g _ ?_ ?_ _ h.two, g _ ?_ ?_ _ h.μ⟩)
 
 /-- A statement whose written registers (natural and real) lie outside `120010 … 120049`. -/
 theorem QConst.frame {P : Polygon} {V : QV} {c c' : Config} {B : ℕ → Bool} (h : QConst P V c)
@@ -210,19 +212,16 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
   have hmn : C.m < P.n := by
     have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
   have hm1 := C.one_le
-  suffices H : ∃ c' k, Exec P W wstep c c' k ∧ k ≤ 1120 ∧ BestOK P.n V.s V.m c' ∧
-      bestOf c' = wupd (Qof P) C V.s V.hz (sgnOf V.σb) V.zo (bestOf c) (c.nreg 120070) by
-    obtain ⟨c', k, ex, hk, hb', hv'⟩ := H
-    exact ⟨c', k, ex, hk, exec_frameB ex wr_wstep, hb', hv'⟩
+  refine spec_frame ?_ wr_wstep
   set w := c.nreg 120070 with hw_def
   by_cases h6 : w < 6
-  · refine ⟨c, _, .ifLtN_true (by rw [hq.six]; exact h6) (.skip hw), by omega, hb, ?_⟩
-    unfold wupd; rw [ite_eq_right (by omega)]
+  · refine ⟨c, _, (by ram_path), by omega, hb, ?_⟩
+    unfold wupd; ram_rw [ite_eq_right]
   by_cases hE : w < 2 * C.m + 6
   swap
   · refine ⟨c, _, .ifLtN_false (by rw [hq.six]; exact h6)
       (.ifLtN_false (by rw [hq.tEnd, hv.m]; exact hE) (.skip hw)), by omega, hb, ?_⟩
-    unfold wupd; rw [ite_eq_right (by omega)]
+    unfold wupd; ram_rw [ite_eq_right]
   -- the tour edge `i = w - 6`
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, r₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.subN 120071 120070 120028, .addN 120071 120071 120021]) c c₁ k₁ ∧ k₁ = 2 ∧
@@ -235,8 +234,8 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
       · config_simp; upd_solve
   have hsS : V.sS ≤ 2 * C.m := by rw [hv.sS]; exact C.sideS_lt C.sideBeta
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, -⟩ := modSub_exec (P := P) (r := 120071) (nr := 120019)
-    (by decide) c₁ e₁.wb_right (by rw [v₁, r₁ _ (by decide), hq.twoM, hv.m]; omega)
-  rw [v₁, r₁ _ (by decide), hq.twoM, hv.m] at v₂
+    (by decide) c₁ e₁.wb_right (by frame_finish [v₁, r₁, hq.twoM, hv.m])
+  ram_rw [v₁, r₁, hq.twoM, hv.m] at v₂
   have htj : c₂.nreg 120071 = tj C (w - 6) := by
     rw [v₂]; unfold tj; rw [← hv.sS, Nat.add_comm]
   have hu := tj_lt C (w - 6)
@@ -246,7 +245,7 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
       (.ifLtN 120071 120016 (.instr (.copyN 120060 120071))
         (block [.subN 120060 120019 120011, .subN 120060 120060 120071])) c₂ c₃ k₃ ∧ k₃ ≤ 4 ∧
       c₃.nreg 120060 = tci C (w - 6) ∧ (∀ r, r ≠ 120060 → c₃.nreg r = c₂.nreg r) := by
-    have hm2 : c₂.nreg 120016 = C.m := by rw [R₂ _ (by decide), hq.m, hv.m]
+    have hm2 : c₂.nreg 120016 = C.m := by ram_rw [R₂, hq.m, hv.m]
     by_cases hlt : tj C (w - 6) < C.m
     · refine ⟨_, _, .ifLtN_true (by rw [htj, hm2]; exact hlt) (Exec.copyN e₂.wb_right _ _),
         by omega, ?_, fun r hr => ?_⟩
@@ -260,27 +259,27 @@ theorem wstep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 4 * P.n + 8 �
         exec_block
         refine ⟨rfl, ?_, fun r hr => ?_⟩
         · config_simp
-          rw [R₂ _ (by decide), R₂ _ (by decide), hq.twoM, hq.one, htj, hv.m]
+          ram_rw [R₂, R₂, hq.twoM, hq.one, htj, hv.m]
         · config_simp; upd_solve
       refine ⟨c₃, _, .ifLtN_false (by rw [htj, hm2]; exact hlt) e₃, by omega, ?_, r₃⟩
       rw [v₃]; unfold tci; rw [ite_eq_right hlt]
   have R₃ : ∀ r, r ≠ 120071 → r ≠ 120060 → c₃.nreg r = c.nreg r := fun r h1 h2 =>
     (r₃ r h2).trans (R₂ r h1)
-  have hq₃ : QConst P V c₃ := hq.congr fun r h1 h2 => R₃ r (by omega) (by omega)
+  have hq₃ : QConst P V c₃ := ram_app% (hq.congr fun r h1 h2 => R₃ r ?_ ?_)
   have hb₃ : BestOK P.n V.s V.m c₃ := by
     unfold BestOK
-    rw [R₃ 120050 (by decide) (by decide), R₃ 120051 (by decide) (by decide),
-      R₃ 120052 (by decide) (by decide)]
+    ram_rw [R₃ 120050, R₃ 120051,
+      R₃ 120052]
     exact hb
   obtain ⟨c₄, k₄, e₄, hk₄, -, hb₄, v₄⟩ := edgeT_exec (P := P) hG (by omega) hD c₃ e₃.wb_right
     (hq₃.econst hv) (by rw [v₃]; have := tci_lt C (w - 6); omega) (mb := V.m)
     (by rw [v₃, hv.m]; exact tci_lt C (w - 6)) hb₃
   have hbo₃ : bestOf c₃ = bestOf c := by
     unfold bestOf
-    rw [R₃ 120050 (by decide) (by decide), R₃ 120052 (by decide) (by decide)]
+    frame_finish
   rw [v₃, hbo₃] at v₄
   refine ⟨c₄, _, .ifLtN_false (by rw [hq.six]; exact h6)
-    (.ifLtN_true (by rw [hq.tEnd, hv.m]; exact hE) (.seq e₁ (.seq e₂ (.seq e₃ e₄)))),
+    (by ram_path [hq.tEnd, hv.m]),
     by omega, hb₄, ?_⟩
   rw [v₄]; unfold wupd; rw [ite_eq_left ⟨by omega, hE⟩]
 
@@ -310,7 +309,7 @@ theorem wupd_step {P : Polygon} {C : Chain} {V : QV} {z : Point} (hs : SemOK P C
   by_cases h : 6 ≤ w ∧ w < 2 * C.m + 6
   · rw [ite_eq_left h, ite_eq_left h]
     exact fold_step hs.hv.CQ hs.hv.s.symm hs.hD (tci_lt C _) hs.zy hs.σ hs.zo hS
-  · rw [ite_eq_right h, ite_eq_right h, Set.union_empty]; exact hS
+  simp only [ite_eq_right h, Set.union_empty] <;> omega
 
 end
 

@@ -43,7 +43,7 @@ theorem interleave_absurd (P : ℝ → Prop) (hconv : ∀ x y z, x < y → y < z
   · have h3 := h13.1 h1
     have h2 := h12.1 h1
     rcases hord with ⟨a, b, -⟩ | ⟨-, a, b⟩ <;> exact h2 (hconv _ _ _ a b h1 h3)
-  · have h3 : ¬ P x₃ := fun h => h1 (h13.2 h)
+  · have h3 := fun h => h1 (h13.2 h)
     have h2 : P x₂ := by by_contra h; exact h1 (h12.2 h)
     have h4 := h24.1 h2
     rcases hord with ⟨-, b, c⟩ | ⟨a, b, -⟩
@@ -63,7 +63,7 @@ theorem sideInArc_interleave {a b x₁ x₂ x₃ x₄ : ℝ}
     rw [ite_eq_left hab] at hx hz ⊢
     exact ⟨by linarith [hx.1], by linarith [hz.2]⟩
   · -- the complement of the arc is the convex set `[b, a]` (away from the ends)
-    let P : ℝ → Prop := fun x => ¬ sideInArc a b x
+    let P := fun x => ¬ sideInArc a b x
     have hP : ∀ x ∈ ({x₁, x₂, x₃, x₄} : Set ℝ), P x ↔ (b ≤ x ∧ x ≤ a) := by
       intro x hx
       simp only [P, sideInArc, ite_eq_right hab, not_or, not_lt]
@@ -151,7 +151,7 @@ theorem sj_inj (hN : IsNF M Q N) {p q : ℕ} (hp : p < N.arcs.length) (hq : q < 
 /-- **Start keys strictly increase along the table** (nonempty family). -/
 theorem starts_lt (hN : IsNF M Q N) (_hGM : GoodModel M) (hne : (N.F M Q).Nonempty) {p q : ℕ}
     (hpq : p < q) (hq : q < N.arcs.length) : sk M Q N p < sk M Q N q := by
-  have hle : sk M Q N p ≤ sk M Q N q := NFLoc.seq_sorted hN hpq.le hq
+  have hle := NFLoc.seq_sorted hN hpq.le hq
   refine lt_of_le_of_ne hle fun heq => ?_
   obtain ⟨reg, hR, hA, harc⟩ := isArc_sj hN (hpq.trans hq)
   have harc' : M.IsArc (N.F M Q) (reg (N.arc (sj N q)).reg) (sk M Q N q) (ek M Q N q) :=
@@ -182,9 +182,14 @@ theorem starts_lt (hN : IsNF M Q N) (_hGM : GoodModel M) (hne : (N.F M Q).Nonemp
   have hj := hA.2.1 _ _ (NFLoc.seq_lt hN (hpq.trans hq)) (NFLoc.seq_lt hN hq) hreg heq
   exact absurd (sj_inj hN (hpq.trans hq) hq hj) hpq.ne
 
-/-- **The interior of an arc lies before the starts of later arcs.** -/
-theorem interior_lt_start (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Nonempty)
+section
+
+variable (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Nonempty)
     {p q : ℕ} (hpq : p < q) (hq : q < N.arcs.length) {κ : ℝ}
+include hN hGM hne hpq hq κ
+
+/-- **The interior of an arc lies before the starts of later arcs.** -/
+theorem interior_lt_start
     (hκ : sideInArc (sk M Q N p) (ek M Q N p) κ) : κ < sk M Q N q := by
   obtain ⟨reg, -, -, harc⟩ := isArc_sj hN (hpq.trans hq)
   obtain ⟨reg', -, -, harc'⟩ := isArc_sj hN hq
@@ -202,8 +207,7 @@ theorem interior_lt_start (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q)
     · exact Or.inl hlt
 
 /-- **The interior of an arc that is not the last lies after its start.** -/
-theorem start_lt_interior (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Nonempty)
-    {p q : ℕ} (hpq : p < q) (hq : q < N.arcs.length) {κ : ℝ}
+theorem start_lt_interior
     (hκ : sideInArc (sk M Q N p) (ek M Q N p) κ) (_hκn : κ < M.W.n) : sk M Q N p < κ := by
   obtain ⟨reg, -, -, harc⟩ := isArc_sj hN (hpq.trans hq)
   obtain ⟨reg', -, -, harc'⟩ := isArc_sj hN hq
@@ -218,18 +222,16 @@ theorem start_lt_interior (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q)
     · exfalso
       apply hfree _ _ hcq
       unfold sideInArc
-      rw [ite_eq_right h]
-      exact Or.inl hlt
+      simp_all
 
 /-- **The last arc**: its interior lies after its start or before every start. -/
-theorem last_interior (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Nonempty)
-    {p q : ℕ} (hpq : p < q) (hq : q < N.arcs.length) {κ : ℝ}
+theorem last_interior
     (hκ : sideInArc (sk M Q N q) (ek M Q N q) κ) : sk M Q N q < κ ∨ κ < sk M Q N p := by
   obtain ⟨reg, -, -, harc⟩ := isArc_sj hN hq
   obtain ⟨reg', -, -, harc'⟩ := isArc_sj hN (hpq.trans hq)
   have hfree := harc.2.2.2.2.2.1
   have hcp := (WalkAx.arc_cuts hne harc').1
-  have hlt := starts_lt hN hGM hne hpq hq
+  
   unfold sideInArc at hκ
   split_ifs at hκ with h
   · exact Or.inl hκ.1
@@ -243,6 +245,8 @@ theorem last_interior (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Non
       rw [ite_eq_right h]
       right
       linarith
+
+end
 
 /-- **Four arcs in the order of the table**: their interior keys are in cyclic order. -/
 theorem order4 (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Nonempty)
@@ -315,7 +319,7 @@ theorem regions_noninterleave (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F 
     (hA.1 _ (NFLoc.seq_lt hN hp)).1
   have hCS := (cutStructure M Q (N.F M Q) hGM hN.1).2.2
   -- the regions of the first two arcs differ
-  have hdiff : reg (rgi N p₁) ≠ reg (rgi N p₂) := fun h =>
+  have hdiff := fun h =>
     hne12 (hR.2.1 _ _ (hlt p₁ hp1) (hlt p₂ hp2) h)
   have hsep := mt (hCS q₁ q₂ t₁ t₂ _ _ (hRg p₁ hp1) (hRg p₂ hp2) hq₁ hq₂ ht₁.1 ht₁.2 ht₂.1 ht₂.2
     c₁ c₂ f₁ f₂).2 hdiff
@@ -378,7 +382,7 @@ theorem zips_nonCross (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).Nonempty)
     {L : List (ℕ × ℕ)} (hL : ∀ c ∈ L, ZipOK C Q N c) : OracleBook.NonCross L := by
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hn := walk_n C
   intro c hc c' hc' ⟨h1, h2, h3⟩
   obtain ⟨hc12, hc2, pa, pb, ta, tb, hpa, hpb, hta, hta1, htb, htb1, hxa, hab, ia, ib⟩ := hL c hc
   obtain ⟨hc'12, hc'2, pc, pd, tc, td, hpc, hpd, htc, htc1, htd, htd1, hxc, hcd, ic, id⟩ :=
@@ -386,8 +390,8 @@ theorem zips_nonCross (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
   have hord := order4 hN hGM hne h1 h2 h3 hc'2 ia ic ib id (key_lt_n hpa hta1)
     (key_lt_n hpc htc1) (key_lt_n hpb htb1)
   rw [hn] at hpa hpb hpc hpd
-  have hxb : Chazelle.Chain.sidePt (chainModel C).W pb tb ∈ C.set := hab ▸ hxa
-  have hxd : Chazelle.Chain.sidePt (chainModel C).W pd td ∈ C.set := hcd ▸ hxc
+  have hxb := hab ▸ hxa
+  have hxd := hcd ▸ hxc
   have ra := key_range C hpa hta hta1 hxa
   have rb := key_range C hpb htb htb1 hxb
   have rc := key_range C hpc htc htc1 hxc
@@ -407,11 +411,11 @@ theorem zips_nonCross (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hk
     rcases hk with rfl | rfl | rfl | rfl <;> constructor <;> linarith
   · rcases m1 with ⟨n, hn'⟩ | h | h
-    · exact Or.inl ⟨n, by rw [hn']⟩
+    · simp [hn']
     · exact Or.inr (Or.inl ⟨h.1, by rw [h.2]; ring⟩)
     · exact Or.inr (Or.inr ⟨by rw [h.1]; ring, h.2⟩)
   · rcases m2 with ⟨n, hn'⟩ | h | h
-    · exact Or.inl ⟨n, by rw [hn']⟩
+    · simp [hn']
     · exact Or.inr (Or.inl ⟨h.1, by rw [h.2]; ring⟩)
     · exact Or.inr (Or.inr ⟨by rw [h.1]; ring, h.2⟩)
 

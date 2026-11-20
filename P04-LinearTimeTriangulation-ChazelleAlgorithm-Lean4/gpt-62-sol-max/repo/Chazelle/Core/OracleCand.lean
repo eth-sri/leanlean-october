@@ -44,7 +44,7 @@ def predP (A p : ℕ) : ℕ := if p = 0 then A - 1 else p - 1
 theorem predP_succP {A p : ℕ} (hp : p < A) : predP A (succP A p) = p := by
   unfold succP predP
   by_cases h : p + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
+  · simp_all
   · rw [ite_eq_right h, ite_eq_left rfl]; omega
 
 theorem succP_lt {A p : ℕ} (hp : p < A) : succP A p < A := by unfold succP; split_ifs <;> omega
@@ -71,8 +71,13 @@ theorem arc_facts {p : ℕ} (hp : p < N.arcs.length) :
   obtain ⟨h1, h2, h3⟩ := WalkAx.arc_cuts hne harc
   exact ⟨h1, h2, h3, harc.2.2.2.2.2.1⟩
 
+section
+
+variable {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
+include hp hq
+
 /-- **Distinct arcs have disjoint interiors.** -/
-theorem interior_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length) {κ : ℝ}
+theorem interior_unique {κ : ℝ}
     (h1 : sideInArc (sk M Q N p) (ek M Q N p) κ) (h2 : sideInArc (sk M Q N q) (ek M Q N q) κ) :
     p = q := by
   by_contra hpq
@@ -87,7 +92,7 @@ theorem interior_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.le
     rcases last_interior hN hGM hne hlt hp h1 with c | c <;> linarith
 
 /-- **Distinct arcs have distinct starts.** -/
-theorem start_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
+theorem start_unique
     (h : sk M Q N p = sk M Q N q) : p = q := by
   by_contra hpq
   rcases lt_or_gt_of_ne hpq with hlt | hlt
@@ -95,7 +100,7 @@ theorem start_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.lengt
   · exact absurd h (starts_lt hN hGM hne hlt hp).ne'
 
 /-- **The arc ending at a cut is followed by the arc starting there.** -/
-theorem end_start_adj {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
+theorem end_start_adj
     (h : ek M Q N p = sk M Q N q) : q = succP N.arcs.length p := by
   set A := N.arcs.length
   obtain ⟨-, -, hne', hfree⟩ := arc_facts hN hne hp
@@ -123,10 +128,10 @@ theorem end_start_adj {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.leng
     · omega
     · have h0 : 0 < A := by omega
       have hcr := (arc_facts hN hne h0).1
-      have h0p := starts_lt hN hGM hne hp0 hp
+      
       have hqp := sk_mono hN (show q ≤ p by omega) hp
       have hwr : ¬ sk M Q N p < ek M Q N p := by intro hc; linarith
-      have hlt : ek M Q N p < sk M Q N p := lt_of_le_of_ne (not_lt.1 hwr) (Ne.symm hne')
+      
       have hle : ek M Q N p ≤ sk M Q N 0 := by
         by_contra hc
         push Not at hc
@@ -135,7 +140,7 @@ theorem end_start_adj {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.leng
       exact start_unique hN hGM hne hq h0 (by linarith)
 
 /-- **Distinct arcs have distinct ends** (every cut starts an arc, `arcCover`). -/
-theorem end_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
+theorem end_unique
     (h : ek M Q N p = ek M Q N q) : p = q := by
   obtain ⟨-, hc, -, -⟩ := arc_facts hN hne hp
   obtain ⟨U, hU, b, hab⟩ := (arcCover M Q (N.F M Q) hGM hN.1).2 _ hc
@@ -147,6 +152,8 @@ theorem end_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
   have e1 := end_start_adj hN hGM hne hp hr hsr.symm
   have e2 := end_start_adj hN hGM hne hq hr (h ▸ hsr.symm)
   exact succP_inj hp hq (e1.symm.trans e2)
+
+end
 
 /-- **Candidate arcs.**  If the key `κ` is in the closed arc at spine position `t`, and `j` is an
 answer of double identification for `κ`, then `t` is `j`, its successor or its predecessor. -/
@@ -166,8 +173,7 @@ theorem candidate {t j : ℕ} (ht : t < N.arcs.length) (hj : j < N.arcs.length) 
     · exact Or.inr (Or.inl (end_start_adj hN hGM hne hj ht (h'.trans h)))
   · rcases hloc2 (h ▸ hcte) with h' | h'
     · have := end_start_adj hN hGM hne ht hj (h.symm.trans h'.symm)
-      right; right
-      rw [this, predP_succP ht]
+      simp [this, predP_succP ht]
     · exact Or.inl (end_unique hN hGM hne ht hj (h.symm.trans h'.symm))
 
 end Cand
@@ -345,16 +351,16 @@ theorem arcs_le_one_of_empty {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N
   have h0 := hA.1 0 (by omega)
   have h1 := hA.1 1 (by omega)
   have hr0 : reg (N.arc 0).reg = U := by
-    have := hR.1 _ h0.1; rw [hF, hU] at this; exact this
+    have := hR.1 _ h0.1; simp_all
   have hr1 : reg (N.arc 1).reg = U := by
-    have := hR.1 _ h1.1; rw [hF, hU] at this; exact this
+    have := hR.1 _ h1.1; simp_all
   have hreg := hR.2.1 _ _ h0.1 h1.1 (hr0.trans hr1.symm)
   have hk : ∀ j, j < N.arcs.length → M.key Q (N.arc j).s = 0 := by
     intro j hj
     rcases (hA.1 j hj).2.2.2.2.2.1 with ⟨hc, -⟩ | ⟨-, h, -⟩
-    · obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact absurd hc (Set.notMem_empty _)
+    · obtain ⟨c, hc, -⟩ := hc; simp_all
     · exact h
-  have := hA.2.1 0 1 (by omega) (by omega) hreg (by rw [hk 0 (by omega), hk 1 (by omega)])
+  have := hA.2.1 0 1 (by omega) (by omega) hreg (by ram_simp [hk])
   omega
 
 end OracleQ

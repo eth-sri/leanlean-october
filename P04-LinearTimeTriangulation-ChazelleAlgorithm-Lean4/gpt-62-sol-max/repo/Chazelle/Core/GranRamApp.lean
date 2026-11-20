@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.GranRamBody
 
 /-!
@@ -20,62 +22,19 @@ open Machine Machine.Stmt Programs SignK
 
 @[expose] public section
 
-/-- A register write accepted by `B`, or a natural store. -/
-def wrSOK (B : ℕ → Bool) : Instr → Bool
-  | .storeN _ _ => true
-  | i => wrOK B i
-
 /-- Every instruction of the statement satisfies `wrSOK B`. -/
-def wrS (B : ℕ → Bool) : Stmt → Bool
-  | .skip => true
-  | .instr i => wrSOK B i
-  | .seq s t => wrS B s && wrS B t
-  | .ifLtN _ _ t e => wrS B t && wrS B e
-  | .ifLtR _ _ t e => wrS B t && wrS B e
-  | .whileLtN _ _ b => wrS B b
-  | .whileLtR _ _ b => wrS B b
+abbrev wrS (B : ℕ → Bool) := Stmt.check (Footprint.allows ⟨B, B, true, false, false⟩)
 
 /-- Registers outside `B`, real memory and the output agree. -/
 def FrameS (B : ℕ → Bool) (c c' : Config) : Prop :=
   (∀ r, B r = false → c'.nreg r = c.nreg r) ∧ (∀ r, B r = false → c'.rreg r = c.rreg r) ∧
     c'.rmem = c.rmem ∧ c'.output = c.output
 
-theorem FrameS.trans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameS B c₁ c₂)
-    (h₂ : FrameS B c₂ c₃) : FrameS B c₁ c₃ :=
-  ⟨fun r hr => (h₂.1 r hr).trans (h₁.1 r hr), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
-    h₂.2.2.1.trans h₁.2.2.1, h₂.2.2.2.trans h₁.2.2.2⟩
-
 /-- **Frame of a statement with stores.** -/
 theorem exec_frameS {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' : Config} {k : ℕ}
-    (h : Exec P W s c c' k) (hs : wrS B s = true) : FrameS B c c' := by
-  induction h with
-  | skip _ => exact ⟨fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
-  | @instr ins c c' _ he _ _ =>
-    simp only [wrS] at hs
-    cases ins <;> simp only [wrSOK, wrOK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
-      (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
-      refine ⟨fun j hj => ?_, fun j hj => ?_, rfl, rfl⟩ <;>
-      first
-      | rfl
-      | (simp only [upd]; split_ifs with hh
-         · subst hh; simp_all
-         · rfl)
-  | seq _ _ ih₁ ih₂ =>
-    simp only [wrS, Bool.and_eq_true] at hs
-    exact (ih₁ hs.1).trans (ih₂ hs.2)
-  | ifLtN_true _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtN_false _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.2
-  | ifLtR_true _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtR_false _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact ⟨fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
-  | whileLtN_true _ _ _ ih₁ ih₂ => exact (ih₁ hs).trans (ih₂ hs)
-  | whileLtR_false _ _ => exact ⟨fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
-  | whileLtR_true _ _ _ ih₁ ih₂ => exact (ih₁ hs).trans (ih₂ hs)
+    (h : Exec P W s c c' k) (hs : wrS B s = true) : FrameS B c c' :=
+  let f := h.keeps (F := ⟨B, B, true, false, false⟩) hs
+  ⟨f.nr, f.rr, f.rm rfl, f.out rfl⟩
 
 /-! ## The filtering append loop -/
 
@@ -113,18 +72,14 @@ theorem take_succ_filter (l : List ℕ) (t cc : ℕ) (ht : t < l.length) :
     (l.take (t + 1)).filter (· != cc) =
       (l.take t).filter (· != cc) ++ if l.getD t 0 != cc then [l.getD t 0] else [] := by
   rw [List.take_add_one, List.filter_append, List.getElem?_eq_getElem ht]
-  simp only [Option.toList_some, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht,
-    Option.getD_some]
-  rw [List.filter_cons]
-  split_ifs <;> simp
+  simp [Option.toList_some, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some, List.filter_cons]
 
 theorem getD_append_left {l₁ l₂ : List ℕ} {i : ℕ} (h : i < l₁.length) :
     (l₁ ++ l₂).getD i 0 = l₁.getD i 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_left h]
+  simp [List.getD_eq_getElem?_getD, List.getElem?_append_left h]
 
 theorem getD_append_len (l₁ : List ℕ) (v : ℕ) (l₂ : List ℕ) :
     (l₁ ++ v :: l₂).getD l₁.length 0 = v := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_append_right (le_refl _)]
   simp
 
 /-- **The filtering append loop.** -/
@@ -151,8 +106,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
     fun _ h => h.wb
   have I0 : AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem c :=
     ⟨hw, by omega, by rw [h101, h100]; simp, fun i hi => by
-      rw [h101, h100] at *; simp only [List.take_zero, List.filter_nil, List.append_nil]
-      exact hP₀ i hi, fun _ _ => rfl, hS, hN, h62, h44, h19⟩
+      frame_finish [h101, h100, List.take_zero, List.filter_nil, List.append_nil], fun _ _ => rfl, hS, hN, h62, h44, h19⟩
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90101) (b := rn)
     (body := appBody rs) (AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem)
     (fun d => l.length - d.nreg 90101) 12 hWB
@@ -182,17 +136,17 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
         intro d₂ hw₂ v2 r2' m2
         unfold appendV
         exec_block
-        · rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h44']
+        · ram_rw [r2', r2', h44']
           omega
-        · config_simp; rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h19']
+        · config_simp; ram_rw [r2', r2', h19']
           omega
         · refine ⟨rfl, ?_, ?_, fun r a1 a2 a3 => by simp [upd, a1, a3, r2' r a1 a2]⟩
-          · config_simp; rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h19']
+          · config_simp; frame_finish
           · config_simp
-            rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h44', v2, m2]
+            frame_finish
       -- the step as a whole
       have hfs := take_succ_filter l t cc ht
-      have hv : d₁.nreg 90062 = cc := by rw [qr _ (by decide) (by decide), h62']
+      have hv : d₁.nreg 90062 = cc := by ram_rw [qr, h62']
       -- the increment and the invariant, from the state after the (possible) append
       have fin : ∀ (d₂ : Config) (k₂ : ℕ), WordsBounded W d₂ → k₂ ≤ 8 →
           Exec P W (.ifLtN 90102 90062 appendV (.ifLtN 90062 90102 appendV .skip)) d₁ d₂ k₂ →
@@ -205,8 +159,8 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
             (.ifLtN 90062 90102 appendV .skip)) (.instr (.addN 90101 90101 90019))) d₁ d₄ k₄ ∧
             k₄ ≤ 10 ∧ AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem d₄ ∧ d₄.nreg 90101 = t + 1 := by
         intro d₂ k₂ hw₂ hk₂ ex₂ r2' l2 t2 f2
-        have e19 : d₂.nreg 90019 = 1 := by rw [r2' 90019 (by decide) (by decide) (by decide), h19']
-        have e101 : d₂.nreg 90101 = t := r2' 90101 (by decide) (by decide) (by decide)
+        have e19 : d₂.nreg 90019 = 1 := by frame_finish
+        have e101 : d₂.nreg 90101 = t := (ram_app% (r2' 90101 ?_ ?_ ?_))
         obtain ⟨d₅, ex, v101, vr, vm⟩ : ∃ d₅, Exec P W (.instr (.addN 90101 90101 90019)) d₂ d₅ 1 ∧
             d₅.nreg 90101 = t + 1 ∧ (∀ r, r ≠ 90101 → d₅.nreg r = d₂.nreg r) ∧
             d₅.nmem = d₂.nmem :=
@@ -215,14 +169,14 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
         refine ⟨_, _, .seq ex₂ ex, by omega, ⟨ex.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
           v101⟩
         · rw [v101]; omega
-        · rw [v101, vr _ (by decide), l2]
-        · rw [v101, vr _ (by decide), vm]; exact t2
+        · ram_rw [v101, vr, l2]
+        · ram_rw [v101, vr, vm]; exact t2
         · rw [vm]; exact f2
         · rw [vr _ r2, r2' _ r4 r3 r1, hrs']
         · rw [vr _ n2, r2' _ n4 n3 n1, hrn']
-        · rw [vr _ (by decide), r2' _ (by decide) (by decide) (by decide), h62']
-        · rw [vr _ (by decide), r2' _ (by decide) (by decide) (by decide), h44']
-        · rw [vr _ (by decide), e19]
+        · frame_finish
+        · frame_finish
+        · ram_rw [vr, e19]
       have key : ∃ d₄ k₄, Exec P W (.seq (.ifLtN 90102 90062 appendV
           (.ifLtN 90062 90102 appendV .skip)) (.instr (.addN 90101 90101 90019))) d₁ d₄ k₄ ∧
           k₄ ≤ 10 ∧ AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem d₄ ∧ d₄.nreg 90101 = t + 1 := by
@@ -234,8 +188,8 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
             rw [hfs, hne]; simp
           refine fin d₁ _ hw₁ (by omega) (.ifLtN_false hn1 (.ifLtN_false hn2 (.skip hw₁)))
             (fun r a1 a2 _ => qr r a1 a2) ?_ ?_ ?_
-          · rw [qr _ (by decide) (by decide), hlen, hfs']
-          · intro i hi; rw [qm, hfs']; rw [qr _ (by decide) (by decide)] at hi; exact htmp i hi
+          · frame_finish [qr, hlen, hfs']
+          · intro i hi; rw [qm, hfs']; ram_rw [qr] at hi; exact htmp i hi
           · intro a ha; rw [qm]; exact hfr a ha
         · -- append
           have hbit : (l.getD t 0 != cc) = true := by simpa using hne
@@ -261,7 +215,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
                   rw [List.length_append, hP, hlen]
                 rw [← this]; exact (getD_append_len _ _ []).symm
               · simp only [upd, show T + i ≠ T + d.nreg 90100 by omega, ite_false]
-                rw [htmp i (by omega), hfs', ← List.append_assoc]
+                ram_rw [htmp i, hfs', ← List.append_assoc]
                 exact (getD_append_left (l₂ := [l.getD t 0])
                   (by rw [List.length_append, hP, ← hlen]; omega)).symm
             · intro a ha
@@ -270,10 +224,10 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
               rw [ite_eq_right (by rw [hlen]; rcases ha with ha | ha <;> omega)]
               exact hfr a ha
           by_cases hlt : l.getD t 0 < cc
-          · exact post 1 (by omega) (.ifLtN_true (by rw [q102, hv]; exact hlt) e₂)
+          · exact post 1 (by omega) (by ram_path)
           · have hgt : cc < l.getD t 0 := by omega
             exact post 3 (by omega) ((Exec.ifLtN_false (by rw [q102, hv]; omega)
-              (.ifLtN_true (by rw [q102, hv]; exact hgt) e₂)).cast (by omega))
+              (by ram_path)).cast (by omega))
       obtain ⟨d₄, k₄, e₄, hk₄, I₄, t₄⟩ := key
       exact ⟨d₄, k₁ + k₄, .seq e₁ e₄, I₄, by omega, by rw [t₄]; omega⟩) I0
   obtain ⟨hw', ht', hlen', htmp', hfr', -, hrn', -, -, -⟩ := I'
@@ -281,7 +235,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
   have hfull : c'.nreg 90101 = l.length := by omega
   rw [hfull, List.take_length] at hlen' htmp'
   refine ⟨c', k, e, ?_, hlen', htmp', hfr', exec_frameS e (by
-    simp [wrS, appBody, appendV, block, wrSOK, wrOK, Bapp])⟩
+    simp [write_check, appBody, appendV, block, Bapp])⟩
   have : (12 + 2) * (l.length - c.nreg 90101) ≤ 14 * l.length := by rw [h101]; omega
   omega
 

@@ -47,14 +47,11 @@ theorem funPoly_vtx (W : ℕ → Point) {N i : ℕ} (hi : i < N) : (funPoly W N)
 
 theorem funPoly_edge (W : ℕ → Point) {N i : ℕ} (hi : i + 1 < N) :
     (funPoly W N).edge i = Chazelle.segment (W i) (W (i + 1)) := by
-  unfold Polygon.edge
-  rw [funPoly_n, Nat.mod_eq_of_lt hi, funPoly_vtx W (by omega), funPoly_vtx W hi]
+  ram_finish [Polygon.edge, funPoly_n, Nat.mod_eq_of_lt hi, funPoly_vtx, funPoly_vtx W hi]
 
 theorem funPoly_edge_last (W : ℕ → Point) {N : ℕ} (hN : 0 < N) :
     (funPoly W N).edge (N - 1) = Chazelle.segment (W (N - 1)) (W 0) := by
-  unfold Polygon.edge
-  rw [funPoly_n, Nat.sub_add_cancel hN, Nat.mod_self, funPoly_vtx W (by omega),
-    funPoly_vtx W hN]
+  ram_finish [Polygon.edge, funPoly_n, Nat.sub_add_cancel hN, Nat.mod_self, funPoly_vtx, funPoly_vtx W hN]
 
 /-! ### Good paths in the obstacle -/
 
@@ -68,15 +65,12 @@ def revPath (f : ℕ → Point) (L : ℕ) (i : ℕ) : Point := f (L - i)
 /-- The concatenation of the path `f 0, …, f L` with the path `g 0, …`. -/
 def concatPath (f g : ℕ → Point) (L : ℕ) (i : ℕ) : Point := if i ≤ L then f i else g (i - L)
 
-theorem concatPath_zero (f g : ℕ → Point) (L : ℕ) : concatPath f g L 0 = f 0 := by
-  simp [concatPath]
-
 theorem concatPath_last (f g : ℕ → Point) {L L' : ℕ} (hjoin : f L = g 0) :
     concatPath f g L (L + L') = g L' := by
   unfold concatPath
   rcases Nat.eq_zero_or_pos L' with rfl | h
-  · rw [ite_eq_left (by omega), Nat.add_zero, hjoin]
-  · rw [ite_eq_right (by omega), Nat.add_sub_cancel_left]
+  · simp_all
+  simp_all
 
 /-- The reverse of a good path is a good path. -/
 theorem goodPath_reverse {f : ℕ → Point} {L : ℕ} (hf : C.GoodPath f L) :
@@ -119,8 +113,8 @@ theorem Anchorable.not_mem_dom {q : Point} (hq : C.Anchorable q) : q ∉ C.dom :
   rcases hq with h | h | h | h
   · exact C.not_mem_set_of_mem_dom hd h
   · exact C.not_mem_slit_of_mem_dom hd h
-  · exact absurd hd.1.1 (by rw [h]; exact lt_irrefl _)
-  · exact absurd hd.1.2 (by rw [h]; exact lt_irrefl _)
+  · exact absurd hd.1.1 (by simp_all)
+  · exact absurd hd.1.2 (by simp_all)
 
 theorem slitTop_mem_slit : C.slitTop ∈ C.slit := Geometry.right_mem_segment _ _
 
@@ -133,8 +127,7 @@ theorem vertical_side_subset {p q : Point} (hpq : p.1 = q.1) (hp : |p.1| = C.rad
   have hx1 := fst_eq_of_mem_segment_vertical hpq hx
   intro hd
   have := hd.1.1
-  rw [hx1, hp] at this
-  exact lt_irrefl _ this
+  simp_all
 
 /-- A horizontal segment on a side `|y| = R` of the box is outside the domain. -/
 theorem horizontal_side_subset {p q : Point} (hpq : p.2 = q.2) (hp : |p.2| = C.radius) :
@@ -143,9 +136,7 @@ theorem horizontal_side_subset {p q : Point} (hpq : p.2 = q.2) (hp : |p.2| = C.r
   obtain ⟨t, -, -, rfl⟩ := hx
   intro hd
   have := hd.1.2
-  simp only at this
-  rw [← hpq, sub_self, mul_zero, add_zero, hp] at this
-  exact lt_irrefl _ this
+  simp_all
 
 /-- A segment inside a chain edge is outside the domain. -/
 theorem segment_subset_of_mem_chainEdge {j : ℕ} (hj : j < C.m) {p q : Point}
@@ -172,10 +163,7 @@ theorem chainAnchor_zero (q : Point) (j : ℕ) : C.chainAnchor q j 0 = q := by
 
 theorem chainAnchor_last (q : Point) (j : ℕ) :
     C.chainAnchor q j (j + 1 + C.topIdx + 1) = C.slitTop := by
-  simp only [chainAnchor]
-  rw [ite_eq_right (show ¬ (j + 1 + C.topIdx + 1 = 0) by omega),
-    ite_eq_right (show ¬ (j + 1 + C.topIdx + 1 ≤ j + 1) by omega),
-    ite_eq_right (show ¬ (j + 1 + C.topIdx + 1 ≤ j + 1 + C.topIdx) by omega)]
+  ram_simp [chainAnchor, ite_eq_right]
 
 /-- The vertices of the chain, seen from the anchor path, step along chain edges. -/
 theorem vertex_segment_subset {i : ℕ} (hi : i < C.m) :
@@ -264,7 +252,7 @@ theorem exists_anchor {q : Point} (hq : C.Anchorable q) :
     refine ⟨fun i => if i = 0 then q else if i = 1 then (C.radius, q.2)
       else if i = 2 then (C.radius, C.radius) else C.slitTop, 3, by simp, by simp, ?_⟩
     intro i hi
-    have hR : |C.radius| = C.radius := abs_of_pos C.radius_pos
+    have hR := abs_of_pos C.radius_pos
     rcases Nat.lt_succ_iff.1 hi |>.lt_or_eq with h | h
     · rcases Nat.lt_succ_iff.1 h |>.lt_or_eq with h' | h'
       · have : i = 0 := by omega
@@ -299,7 +287,7 @@ theorem walkFun_succ (a : Point) (path : ℕ → Point) (i : ℕ) : walkFun a pa
 /-- The first edge of the walk is the segment `[a, path 0]`. -/
 theorem walkPoly_edge_zero (a : Point) (path : ℕ → Point) {M : ℕ} (hM : 0 < M) :
     (walkPoly a path M).edge 0 = Chazelle.segment a (path 0) := by
-  rw [walkPoly, funPoly_edge _ (by omega), walkFun_zero, walkFun_succ]
+  ram_simp [walkPoly, funPoly_edge, walkFun_zero, walkFun_succ]
 
 /-- Every edge of the walk other than the first lies in the obstacle. -/
 theorem walkPoly_edge_subset {a : Point} {path : ℕ → Point} {M : ℕ} (hpath : C.GoodPath path M)
@@ -326,8 +314,7 @@ theorem walkPoly_boundary_subset {a : Point} {path : ℕ → Point} {M : ℕ}
   rw [walkPoly_n] at hk
   rcases Nat.eq_zero_or_pos k with rfl | hk0
   · right
-    rw [walkPoly_edge_zero a path hM] at hp
-    exact hp
+    rwa [walkPoly_edge_zero a path hM] at hp
   · left
     exact C.walkPoly_edge_subset hpath hend hk0 hk hp
 
@@ -345,33 +332,29 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
   obtain ⟨fb, Lb, hb0, hbL, hfb⟩ := C.exists_anchor hb
   set path := concatPath fb (revPath fa La) Lb with hpath_def
   have hjoin : fb Lb = revPath fa La 0 := by simp [revPath, hbL, haL]
-  have hpath : C.GoodPath path (Lb + La) := C.goodPath_concat hfb (C.goodPath_reverse hfa) hjoin
+  have hpath := C.goodPath_concat hfb (C.goodPath_reverse hfa) hjoin
   have hend : path (Lb + La) = a := by
     rw [hpath_def, concatPath_last _ _ hjoin]
     simp [revPath, ha0]
-  have hp0 : path 0 = b := by rw [hpath_def, concatPath_zero, hb0]
+  have hp0 : path 0 = b := by assumption
   have hM : 0 < Lb + La := by
     by_contra h
     push Not at h
     have hLa : La = 0 := by omega
-    have hLb : Lb = 0 := by omega
-    subst hLa hLb
-    apply hab
-    rw [← ha0, ← hb0, haL, hbL]
+    simp_all
   refine ⟨walkPoly a path (Lb + La), ?_, ?_⟩
   · rw [← hp0]
     exact C.walkPoly_boundary_subset hpath hend hM
   · have h0n : 0 < (walkPoly a path (Lb + La)).n := by rw [walkPoly_n]; omega
     have hzΓ : z ∈ (walkPoly a path (Lb + La)).edge 0 := by
-      rw [walkPoly_edge_zero a path hM, hp0]; exact hz
+      rwa [walkPoly_edge_zero a path hM, hp0]
     have hv0 : (walkPoly a path (Lb + La)).vtx 0 = a := by
-      rw [walkPoly, funPoly_vtx _ (by omega), walkFun_zero]
+      simp [walkPoly, funPoly_vtx, walkFun_zero]
     have hv1 : (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) = b := by
-      rw [walkPoly_n, Nat.mod_eq_of_lt (by omega), walkPoly, funPoly_vtx _ (by omega),
-        walkFun_succ, hp0]
+      simp_all [Nat.mod_eq_of_lt, walkPoly, funPoly_vtx, walkFun_succ] 
     have hne : ((walkPoly a path (Lb + La)).vtx 0).1 ≠
         ((walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n)).1 := by
-      rw [hv0, hv1]; exact hab
+      rwa [hv0, hv1]
     have hzu : z ≠ (walkPoly a path (Lb + La)).vtx 0 := by
       rw [hv0]; rintro rfl; exact Anchorable.not_mem_dom C ha hzd
     have hzv : z ≠ (walkPoly a path (Lb + La)).vtx ((0 + 1) % (walkPoly a path (Lb + La)).n) := by
@@ -384,13 +367,6 @@ theorem exists_walk_parity_flip {a b : Point} (ha : C.Anchorable a) (hb : C.Anch
     exact parity_flip (walkPoly a path (Lb + La)) h0n hzΓ hne hzu hzv hother
 
 /-! ### Submaps and chord separation -/
-
-/-- The free set of the submap `S`: the domain minus the chords of `S`. -/
-def freeOf (S : Set (Set Point)) : Set Point := C.dom \ ⋃₀ S
-
-/-- The regions of the submap `S`: the connected components of its free set. -/
-def regionsOf (S : Set (Set Point)) : Set (Set Point) :=
-  {U | ∃ z ∈ C.freeOf S, U = connectedComponentIn (C.freeOf S) z}
 
 end Chain
 

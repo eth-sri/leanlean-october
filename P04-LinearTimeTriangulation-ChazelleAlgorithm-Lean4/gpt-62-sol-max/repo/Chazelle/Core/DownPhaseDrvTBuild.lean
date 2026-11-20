@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvTFiltS
 
 /-!
@@ -63,24 +65,20 @@ theorem buildT_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (block [.constN 190020 0, .constN 43250 0]) c c₀ k₀ ∧ k₀ = 2 ∧ c₀.nreg 190020 = 0 ∧
       c₀.nreg 43250 = 0 ∧ (∀ r, r ≠ 190020 → r ≠ 43250 → c₀.nreg r = c.nreg r) ∧
       c₀.nmem = c.nmem ∧ c₀.rreg = c.rreg ∧ c₀.rmem = c.rmem ∧ c₀.output = c.output := by
-    exec_block
-    · omega
-    · omega
-    refine ⟨rfl, by config_simp, by config_simp, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp (disch := omega) only [Machine.upd_other]
+    ram_exec
   obtain ⟨m₀, rr₀, rm₀, o₀⟩ := m₀
   have w₀ := x₀.wb_right
   have hc0A : c₀.nreg ALLOC = A₀ := g₀ 9999 (by norm_num) (by norm_num)
   by_cases hK : 0 < K
   · -- phase A
     have t₀ : c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num) (by norm_num), h2, q50]; exact hK
+      frame_finish
     obtain ⟨c₁, k₁, x₁, hk₁, w₁, F₁, d1, d2, d3, d4, d5, d6, d7, hrec, e1, e2, E, hE, hperm,
       hsort⟩ := phaseA_exec (P := P) hG hWn c₀ w₀ (M := M) (L := L) (D := D) (B := B)
         (by rw [hc0A, m₀]; exact hwf) (by rw [m₀]; exact hM) hok (by rw [m₀]; exact hCL)
-        (by rw [hc0A]; exact hBL) (by rw [g₀ _ (by norm_num) (by norm_num), h0])
-        (by rw [g₀ _ (by norm_num) (by norm_num), h1])
-        (by rw [g₀ _ (by norm_num) (by norm_num), h2])
+        (by rw [hc0A]; exact hBL) (by frame_finish)
+        (by frame_finish)
+        (by frame_finish)
         (by unfold costA; rw [hc0A]; nlinarith)
     rw [hc0A] at d2 hrec e1
     -- the event pointer
@@ -93,7 +91,7 @@ theorem buildT_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     have gc : ∀ r, r ≠ 190020 → c₁'.nreg r = c₁.nreg r := fun r hr => by rw [hc₁']; simp [hr]
     have v20 : c₁'.nreg 190020 = SE := by simp [hc₁', hSEdef]
     have hElen : E.length = 2 * K := by rw [hperm.length_eq, List.length_range]
-    have hlow₁ : ∀ a, a < A₀ → c₁.nmem a = c.nmem a := fun a ha => by
+    have hlow₁ : MemEqBelow A₀ c₁.nmem c.nmem := fun a ha => by
       rw [F₁.2.2.1 a (by rw [hc0A]; exact ha), m₀]
     have hAH : A₀ ≤ H := by have := F₁.2.2.2.2.2.1; rw [hc0A] at this; exact this
     have hHk : H ≤ A₀ + k₁ := by have := F₁.2.2.2.2.2.2; rw [hc0A] at this; exact this
@@ -101,24 +99,21 @@ theorem buildT_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     have hI : BuildNF.Input M (Qof P) L E :=
       ⟨walkAx_of_goodModel hgood, hok, hperm,
         BuildNF.sorted_of_codeLe (walkAx_of_goodModel hgood) hok hperm hsort⟩
-    have hCL₁ : ChordListAt c₁.nmem B L := fun i hi => by
-      obtain ⟨a1, a2, a3⟩ := hCL i hi
-      exact ⟨by rw [hlow₁ _ (by omega), a1], by rw [hlow₁ _ (by omega), a2],
-        by rw [hlow₁ _ (by omega), a3]⟩
+    have hCL₁ : ChordListAt c₁.nmem B L := hCL.below (by omega) hlow₁
     -- phase B
     obtain ⟨c₂, k₂, x₂, hk₂, hk₂', w₂, F₂, h40003, h9999, hlow, hNF⟩ := phaseB_exec (P := P) hG
       hWn c₁' w₁' (M := M) (L := L) (E := E) (D := D) (T := A₀) (SE := SE)
-      (B := B) (H := H) hI hK (by rw [gc _ (by norm_num), d1]) (by rw [gc _ (by norm_num), d2])
-      (by rw [gc _ (by norm_num), d3]) (by rw [gc _ (by norm_num), d4])
-      (by rw [gc _ (by norm_num), d5]) (by rw [gc _ (by norm_num), d6])
-      (by rw [gc _ (by norm_num), d7]) (by rw [gc _ (by norm_num)])
-      (by rw [gc _ (by norm_num)])
+      (B := B) (H := H) hI hK (by ram_rw [gc, d1]) (by ram_rw [gc, d2])
+      (by ram_rw [gc, d3]) (by ram_rw [gc, d4])
+      (by ram_rw [gc, d5]) (by ram_rw [gc, d6])
+      (by ram_rw [gc, d7]) (by ram_rw [gc])
+      (by ram_rw [gc])
       (modelDescWF_mono hwf₁ hAH) hM₁ hrec (by omega) hCL₁ (by omega)
       (fun j hj => seg_getD hE (by omega)) (by omega)
       (by unfold sizeB; unfold costA at hk₁; nlinarith)
     have X : Exec P W buildT c c₂ (k₀ + (k₁ + (1 + k₂) + 1)) :=
-      .seq x₀ (.ifLtN_true t₀ (.seq x₁ (.seq xc x₂)))
-    have h20 : c₂.nreg 190020 = SE := by rw [F₂.1 _ (by simp [BphaseB]), v20]
+      (by ram_path)
+    have h20 : c₂.nreg 190020 = SE := by ram_rw [F₂.1, v20]
     refine ⟨c₂, _, X, ?_, ⟨E, hperm, hsort, ?_, ?_, ?_, ?_⟩, fun r hr' hra h19 => ?_, ?_⟩
     · unfold costA at hk₁; unfold κBuild
       rw [← hKdef] at hk₁ hk₂
@@ -149,7 +144,7 @@ theorem buildT_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
           simp only [Finset.mem_insert, Finset.mem_singleton] at h ⊢; tauto)
         rw [exec_frameM2 x₂ wrM2_phaseB r (BRb_false hr'), show c₁'.rreg = c₁.rreg from rfl,
           F₁.2.1 r hr', rr₀]
-      · rw [hlow a (by omega), show c₁'.nmem = c₁.nmem from rfl, hlow₁ a ha]
+      · ram_rw [hlow a, show c₁'.nmem = c₁.nmem from rfl, hlow₁ a ha]
       · rw [F₂.2.2.1, show c₁'.rmem = c₁.rmem from rfl,
           F₁.2.2.2.1 a (by rw [hc0A]; exact ha), rm₀]
       · rw [F₂.2.2.2, show c₁'.output = c₁.output from rfl, F₁.2.2.2.2.1, o₀]
@@ -158,13 +153,13 @@ theorem buildT_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   · -- `K = 0`
     have hK0 : K = 0 := by omega
     have t₀ : ¬ c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num) (by norm_num), h2, q50]; omega
+      ram_rw [g₀ 40002, h2, q50]; omega
     obtain ⟨c', k, x, hk, hk', w', F', h40003, h9999, hlow, hNF⟩ := zeroCase_exec (P := P) hWn c₀
       w₀ (M := M) (L := L) (E := []) (D := D) (H := A₀) hK0
-      (by rw [g₀ _ (by norm_num) (by norm_num), h0]) hc0A (by rw [m₀]; exact hwf)
+      (by frame_finish) hc0A (by rw [m₀]; exact hwf)
       (by rw [m₀]; exact hM) (by nlinarith)
     have X : Exec P W buildT c c' (k₀ + (k + 2)) := .seq x₀ (.ifLtN_false t₀ x)
-    have h20 : c'.nreg 190020 = 0 := by rw [F'.1 _ (by simp [BphaseB]), q20]
+    have h20 : c'.nreg 190020 = 0 := by ram_rw [F'.1, q20]
     refine ⟨c', _, X, by rw [hK0]; unfold κBuild; omega, ⟨[], by rw [hK0]; simp,
       List.Pairwise.nil, ?_, ?_, ?_, ?_⟩, fun r hr' hra h19 => ?_, ?_⟩
     · rw [h20, hK0]; omega

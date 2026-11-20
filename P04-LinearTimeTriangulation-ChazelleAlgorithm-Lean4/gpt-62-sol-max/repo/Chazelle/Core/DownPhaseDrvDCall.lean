@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvDGlue
 public import Chazelle.Core.DownPhaseDrvRObl
 public import Chazelle.Core.DownPhaseDrvRInv
@@ -136,7 +138,7 @@ structure RegI (E : REnv) (c₀ : Config) (newL : List (ℕ × (ℕ × ℕ × �
   dst : c.nreg 216021 = E.B₀ + 3 * newL.length
   dstB : c.nreg 216022 = E.BK + 2 * newL.length
   list : ChordListAt c.nmem E.B₀ (newL.map Prod.snd)
-  low : ∀ a, a < E.B₀ → c.nmem a = c₀.nmem a
+  low : MemEqBelow E.B₀ c.nmem c₀.nmem
   regs : ∀ q, FixR q → c.nreg q = c₀.nreg q
   rctx : c.nreg 230001 = E.ctx
   alloc : c₀.nreg ALLOC ≤ c.nreg ALLOC
@@ -160,9 +162,7 @@ theorem argS_exec (c : Config) (hw : WordsBounded W c) :
       c'.nreg 81002 = c.nreg 216030 ∧ c'.nreg 81003 = c.nreg 216001 ∧
       c'.nreg 81004 = c.nreg 230001 ∧ c'.nreg 81005 = c.nreg 216000 ∧
       c'.nreg 81006 = c.nreg 216004) := by
-    unfold argS
-    exec_block
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    ram_exec
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2, exec_frameB ex (by decide)⟩
 
@@ -200,7 +200,7 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
     · config_simp
       simp only [h21, h02, h05, h31, h16, Machine.upd_apply]
       split_ifs <;> first | omega | (rw [show p - 2 + 1 = p - 1 by omega]; exact hLB)
-    refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    refine ⟨rfl, ?_⟩; and_intros
     all_goals config_simp
     all_goals try simp only [h21, h20, h02, h05, h31, h16]
     all_goals try simp only [Machine.upd_apply]
@@ -218,10 +218,7 @@ theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 21
       c'.nreg 216022 = d + 1 ∧ FrameM (fun r => decide (r = 216022)) c c' := by
   obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W stB c c' k ∧ k = 2 ∧
       (c'.nmem = upd c.nmem d (c.nreg 216053) ∧ c'.nreg 216022 = d + 1) := by
-    unfold stB
-    exec_block
-    · config_simp; rw [h22, h02]; exact hd
-    · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h22, h02]
+    ram_exec
   exact ⟨c', k, ex, hk, q.1, q.2, exec_frameM ex wrM_stB⟩
 
 end exec

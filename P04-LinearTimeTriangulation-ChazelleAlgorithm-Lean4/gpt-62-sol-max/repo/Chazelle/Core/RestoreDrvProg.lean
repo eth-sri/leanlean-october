@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Core.RunSpec
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.RestoreFind
 public import Chazelle.Core.RestoreRound
 public import Chazelle.Core.RestoreCost
@@ -62,12 +66,14 @@ def copyS : Stmt := .whileLtN 80030 80013 copyBody
 /-- Set up the reservation. -/
 def midS : Stmt := block [.copyN 80018 80013, .copyN 80043 ALLOC, .constN 80034 0]
 
-/-- Reserve three words (one per step). -/
-def resBody : Stmt := block [.addN ALLOC ALLOC 80020, .addN ALLOC ALLOC 80020,
-  .addN ALLOC ALLOC 80020, .addN 80034 80034 80020]
+/-- Reserve `m` words (one per instruction), then increment the loop counter. -/
+def reserveBlock (m ctr one : ℕ) : Stmt :=
+  block (List.replicate m (.addN ALLOC ALLOC one) ++ [.addN ctr ctr one])
+
+def reserveLoop (m ctr lim one : ℕ) : Stmt := .whileLtN ctr lim (reserveBlock m ctr one)
 
 /-- The reservation loop (`3 R` words). -/
-def resS : Stmt := .whileLtN 80034 80014 resBody
+def resS : Stmt := reserveLoop 3 80034 80014 80020
 
 /-- Set up the region loop. -/
 def preRegS : Stmt := block [.constN 80040 0, .addN 80041 80016 80021]
@@ -119,8 +125,8 @@ nondecreasing and raised by at most the step count. -/
 def RF (bands : Finset ℕ) (A₀ : ℕ) (c c' : Config) (k : ℕ) : Prop :=
   (∀ r, bandOf r ∉ bands → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
     (∀ r, bandOf r ∉ bands → c'.rreg r = c.rreg r) ∧
-    (∀ a, a < A₀ → c'.nmem a = c.nmem a) ∧
-    (∀ a, a < A₀ → c'.rmem a = c.rmem a) ∧
+    (MemEqBelow A₀ c'.nmem c.nmem) ∧
+    (MemEqBelow A₀ c'.rmem c.rmem) ∧
     c'.output = c.output ∧
     c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
@@ -147,10 +153,10 @@ theorem RF.to_frame {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : RF B (c.nreg
     Frame B c c' k := h
 
 /-- The bands of the driver. -/
-def dBands : Finset ℕ := restoreBands ∪ oracleBands
+@[ram_layout] def dBands : Finset ℕ := restoreBands ∪ oracleBands
 
 theorem band8 {r : ℕ} (h1 : 80000 ≤ r) (h2 : r < 90000) : bandOf r = bRestore := by
-  unfold bandOf bRestore; omega
+  reg_omega
 
 theorem mem_dBands_8 : bRestore ∈ dBands := by decide
 
@@ -161,7 +167,7 @@ theorem rf_of_regs {A₀ : ℕ} {c c' : Config} {k : ℕ}
     (hr : ∀ r, (r < 80000 ∨ 90000 ≤ r) → c'.nreg r = c.nreg r) (hrr : c'.rreg = c.rreg)
     (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     RF dBands A₀ c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by left; decide)
+  have hA := hr ALLOC (by left; decide)
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
   by_contra hcon
@@ -187,12 +193,19 @@ theorem rf_of_regs' {A₀ : ℕ} {c c' : Config} {k : ℕ}
     (hr : ∀ r, bandOf r ∉ dBands → c'.nreg r = c.nreg r) (hrr : c'.rreg = c.rreg)
     (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     RF dBands A₀ c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_notin
+  have hA := hr ALLOC alloc_notin
   exact ⟨fun r hr' _ => hr r hr', fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
 
 theorem RF.refl {B : Finset ℕ} {A₀ : ℕ} (c : Config) (k : ℕ) : RF B A₀ c c k :=
   ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by omega⟩
+
+instance {B : Finset ℕ} {A₀ : ℕ} : RunFrame (RF B A₀) where
+  refl c := RF.refl c 0
+  comp := RF.trans
+  pad h hk := h.mono subset_rfl hk
+  base_le h := h.2.2.2.2.2.1
+  base_le_add h := h.2.2.2.2.2.2
 
 /-- **A loop with a bounded body keeps the relative frame.** -/
 theorem whileLtN_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} {B : Finset ℕ} {A₀ : ℕ}
@@ -202,17 +215,12 @@ theorem whileLtN_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} {B : Fi
     {c : Config} (hc : I c) :
     ∃ c' k, Exec P W (.whileLtN a b body) c c' k ∧ I c' ∧ ¬ c'.nreg a < c'.nreg b ∧
       RF B A₀ c c' k ∧ k ≤ (Kb + 2) * μ c + 2 := by
-  induction hn : μ c using Nat.strong_induction_on generalizing c with
-  | _ n ih =>
-    by_cases ht : c.nreg a < c.nreg b
-    · obtain ⟨c₁, k₁, hb, hI₁, hF₁, hk₁, hμ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (μ c₁) (by omega) hI₁ rfl
-      refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht',
-        (hF₁.trans hF₂).mono subset_rfl (by omega), ?_⟩
-      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
-      rw [Nat.mul_add, Nat.mul_one] at this
-      omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, RF.refl c 2, by omega⟩
+  obtain ⟨d, k, e, hi, ht, hk, hf⟩ := Exec.whileLtN_bounded_frame I μ Kb (RF B A₀)
+    hI (fun d => RF.refl d 2) (fun f g => (f.trans g).mono subset_rfl (by omega))
+    (fun d hd ht => by
+      obtain ⟨d', k, e, hi, hf, hk, hμ⟩ := hbody d hd ht
+      exact ⟨d', k, e, hi, hk, hμ, hf⟩) hc
+  exact ⟨d, k, e, hi, ht, hf, hk⟩
 
 end
 

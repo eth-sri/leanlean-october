@@ -44,19 +44,24 @@ theorem mod' (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d ≤ L) :
     (g' + d) % (chainModel Cα).W.n = g' + d :=
   Nat.mod_eq_of_lt (by rw [nα]; have := hS.hgL; omega)
 
+section
+
+variable (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t < 1)
+include hS hd ht0 ht1
+
 /-- The points of `Cα`'s walk inside the stretch lie on `Cα`. -/
-theorem memα (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
-    (ht1 : t < 1) : sidePt (chainModel Cα).W (g' + d) t ∈ Cα.set := by
+theorem memα : sidePt (chainModel Cα).W (g' + d) t ∈ Cα.set := by
   have h := Cα.sideWalk_tour_pt_mem Cα.sideBeta (i := g' + d - 6) (t := t)
     (by have := hS.hgL; omega) (fun h => by exfalso; have := hS.hgL; have := hS.h6; omega) ht0 ht1
-  rw [show g' + d - 6 + 6 = g' + d by have := hS.h6; omega] at h
-  exact h
+  rwa [show g' + d - 6 + 6 = g' + d by have := hS.h6; omega] at h
 
 /-- The points of `M`'s walk inside the stretch lie on `Cα`. -/
-theorem memM (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
-    (ht1 : t < 1) : sidePt M.W ((g + d) % M.W.n) t ∈ Cα.set := by
+theorem memM : sidePt M.W ((g + d) % M.W.n) t ∈ Cα.set := by
   rw [hS.hA.sidePt_eq hd, hS.mod' hd.le]
   exact hS.memα hd ht0 ht1
+
+end
 
 theorem rayPt_inj {a : Point} {σ s s' : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (h : rayPt a σ s = rayPt a σ s') : s = s' := by
@@ -85,7 +90,7 @@ theorem arrive (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) {c :
     rw [ho, rayPt_fst]; rcases hσ with rfl | rfl <;> linarith
   have hfarC : rayPt a σ T ∈ Cα.set := by rw [← hfar]; exact hS.memM hd ht0 ht1
   have harr := arrive_other hsetD hoy haC hkopen hoD hσ hdir hT hdom hfarC
-  have hTL : T = L₀ := rayPt_inj hσ harr
+  have hTL := rayPt_inj hσ harr
   subst hTL
   have hch : chordOf a σ T = c := by rw [chordOf_eq_segment hσ hT, hceq]
   rw [hch] at hFA

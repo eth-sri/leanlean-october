@@ -65,7 +65,7 @@ theorem kpath_wset {M : Model} {Q : Polygon} (hn : 0 < M.W.n) :
     rw [e, hpc]
     by_cases hne' : ps = []
     · subst hne'
-      have : V₁ = V' := hrest
+      have := hrest
       subst this
       simp
     · rw [← kpath_wset hn hrest hne' (by linarith) (fun pc' hpc' => hk pc'

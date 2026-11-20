@@ -1,6 +1,7 @@
 module
 
-public import Chazelle.Core.SweepIoCand1L
+public import Chazelle.Core.SweepIoCand1G
+public import Chazelle.Core.SweepIoCand0L
 
 /-!
 # The sweep RAM (WP-D), answers: the shared-vertex step of a side-1 query (contract)
@@ -9,9 +10,9 @@ public import Chazelle.Core.SweepIoCand1L
 height, direction code `qD` free for `C`), a program `shrB sh` computes the arrival position of
 the shared vertex in the walk of the model of `C₁` (`callArr` on the chain descriptor `sw 20` at
 the vertex position `(sw 46, K0)` — `sw 46 = cstL J 1 = 6 + tpos J.left J.m₁` — with the direction
-code `qD`) and runs the local hit in the model of `C₁` there (`Cand1.lhsL_irs` at `(p, qH)`,
+code `qD`) and runs the local hit in the model of `C₁` there (`lhs_irs` at `(p, qH)`,
 tag `0`).  The arrival exists since the direction is free for `C₁` (`freeAt_left_of`,
-`freeAt_iff_arr`); `Cand1.lhGeo_arr` gives `LHGeo`.  Afterwards the first hit of `C₁` is a
+`freeAt_iff_arr`); `lhGeo_arr` gives `LHGeo`.  Afterwards the first hit of `C₁` is a
 candidate; every new candidate is a point of `C₁` or of the box at a positive parameter.
 -/
 
@@ -25,9 +26,9 @@ open Chazelle.Merge (FreeAt)
 
 @[expose] public section
 
-/-- **The shared-vertex step of a side-1 query.** -/
-def ShrStepSpec : Prop :=
-  ∃ (shrB : Stmt → Stmt) (κS : ℕ), ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
+/-- The body of `ShrStepSpec`. -/
+def ShrBody (shrB : Stmt → Stmt) (κS : ℕ) : Prop :=
+  ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop), ShooterOK sh Bs F X Ok → Bs ⊆ oracleBands → X.CapLocal →
     ∀ (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction) (H : Host) (N₁ N₂ : NF)
       (E : ℕ) (L : Set ℝ),
@@ -36,15 +37,18 @@ def ShrStepSpec : Prop :=
       FreeAt J.whole J.shared (dirOf (c.nreg qD)) → c.nreg bL = 1 →
       AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius J.shared
         (dirOf (c.nreg qD)) L c →
-      c.nreg ALLOC + (κS + Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) ≤ W →
+      c.nreg ALLOC + (κS + lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) ≤ W →
       IRS P W c₀ (shrB sh) c
-        (κS + Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)))
+        (κS + lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)))
         (fun c' =>
           (∃ L', AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius J.shared
               (dirOf (c.nreg qD)) L' c' ∧ L ⊆ L' ∧
             (∀ τ ∈ L', τ ∈ L ∨ (0 < τ ∧ OnCB J.left (rayPt J.shared (dirOf (c.nreg qD)) τ))) ∧
             J.left.hitParam J.shared (dirOf (c.nreg qD)) ∈ L') ∧
           CandFr c c')
+
+/-- **The shared-vertex step of a side-1 query.** -/
+def ShrStepSpec : Prop := ∃ (shrB : Stmt → Stmt) (κS : ℕ), ShrBody shrB κS
 
 end
 

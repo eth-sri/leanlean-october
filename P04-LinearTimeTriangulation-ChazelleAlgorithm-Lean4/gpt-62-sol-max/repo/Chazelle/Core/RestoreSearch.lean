@@ -36,8 +36,7 @@ theorem same_side (hM : WalkAx M) {e s : Set Point} (he : e ∈ M.Adm) (hs : s �
     ¬ sideInArc (pb + tb) (pa + ta) (pw + tw) := by
   intro hwin
   obtain ⟨K₁, K₂, hK, ⟨c₁, rfl⟩, ⟨c₂, rfl⟩, hsec₁, hsec₂⟩ := hM.split he hA hB hAB
-  have hF : ChordSystem M.D {e, s} :=
-    hM.sys _ (insert_subset he (singleton_subset_iff.2 hs)) (toFinite _)
+  have hF := hM.sys _ (insert_subset he (singleton_subset_iff.2 hs)) (toFinite _)
   obtain ⟨hvp, hv0, hv1, -⟩ := id hv
   obtain ⟨hwp, hw0, hw1, -⟩ := id hw
   obtain ⟨x₁, hx₁, hxK₁⟩ := exists_near_attach hM hs hv (hsec₁ pv hvp tv hv0 hv1 hvin)
@@ -57,7 +56,7 @@ theorem attach_unique (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {p p' :
     (hpt : sidePt M.W p t = sidePt M.W p' t') : p = p' ∧ t = t' := by
   obtain ⟨a, b, hab, rfl, -, hopen, hEa, hEb⟩ := hM.ends e he
   by_contra hne
-  have hne' : p = p' → t ≠ t' := fun h1 h2 => hne ⟨h1, h2⟩
+  have hne' := fun h1 h2 => hne ⟨h1, h2⟩
   obtain ⟨hp, ht0, ht1, hmem, r, hr, hsec⟩ := hA
   obtain ⟨hp', ht0', ht1', -, r', hr', hsec'⟩ := hA'
   have key : ∀ u v : Point, u ≠ v → (∀ s ∈ Set.Ioo (0 : ℝ) 1, Geometry.lerp u v s ∈ M.D) →
@@ -68,9 +67,9 @@ theorem attach_unique (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {p p' :
     obtain ⟨s, hs0, hs1, hsne, hsd⟩ := exists_lerp_near huv (lt_min hρ (lt_min hr hr'))
     have hx : Geometry.lerp u v s ∈ Chazelle.segment a b := by
       rw [← hseg]; exact Geometry.lerp_mem_segment _ _ hs0.le hs1.le
-    have h1 := hsec _ hx (by rw [hu]; exact hsne)
+    have h1 := hsec _ hx (by rwa [hu])
       (by rw [hu]; exact lt_of_lt_of_le hsd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hsec' _ hx (by rw [← hpt, hu]; exact hsne)
+    have h2 := hsec' _ hx (by rwa [← hpt, hu])
       (by rw [← hpt, hu]; exact lt_of_lt_of_le hsd ((min_le_right _ _).trans (min_le_right _ _)))
     exact hdisj _ (by rw [Metric.mem_ball]; exact lt_of_lt_of_le hsd (min_le_left _ _)) h1 h2
   rcases hM.attach_endpoint hopen ⟨hp, ht0, ht1, hmem, r, hr, hsec⟩ with h | h

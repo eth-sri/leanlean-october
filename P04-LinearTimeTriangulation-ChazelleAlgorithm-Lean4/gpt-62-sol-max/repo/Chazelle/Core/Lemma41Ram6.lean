@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.Lemma41Node
 public import Chazelle.Core.Lemma41Ram5
 
@@ -42,8 +44,6 @@ def postB : Stmt := block [.copyN 160092 9999, .storeN 160092 160037,
   .copyN 160063 160092, .addN 9999 9999 160083,
   .addN 160065 160065 160084, .addN 160062 160062 160080, .addN 160064 160064 160024]
 
-theorem rd_merge (c : Config) (i : ℕ) : rd c bMerge i = c.nreg (100000 + i) := rfl
-
 section proofs
 
 variable {P : Polygon} {W : ℕ}
@@ -64,15 +64,7 @@ theorem preB_exec {c : Config} (hw : WordsBounded W c) {ptr A : ℕ}
   unfold preB
   exec_block
   all_goals try (config_simp; (try simp only [h65, h24, h81, hA]); omega)
-  refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl, rfl⟩
-  · config_simp; simp only [h65]
-  · config_simp; simp only [h65, h24]
-  · config_simp; simp only [h65, h24]
-  · config_simp; simp only [h65, h24]
-  · config_simp; simp only [hA]
-  · config_simp; simp only [hA, h81]
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  simp_all 
 
 set_option maxHeartbeats 8000000 in
 theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
@@ -84,14 +76,7 @@ theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
       rd c' bMerge 9 = c.nreg 160000 ∧
       (∀ r, (r < 100000 ∨ 100009 < r) → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  unfold setupB
-  simp only [rd_merge, Nat.reduceAdd]
-  exec_block
-  refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp,
-    by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
-    fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  ram_exec
 
 set_option maxHeartbeats 8000000 in
 theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : ℕ}
@@ -116,17 +101,16 @@ theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : �
   all_goals try (config_simp; (try simp only [hA, h65, h62, h64, h24, h80, h83, h84]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_,
     fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h37, h24, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h8, h24, Machine.upd_apply]; split_ifs <;> omega
-  · config_simp; simp only [hA, h63, h24, Machine.upd_apply]; split_ifs <;> omega
+  · ram_finish
+  · simp_all 
+  · simp_all 
   · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · config_simp; simp only [hA, h83]
   · config_simp; simp only [hA]
-  · config_simp; simp only [h65, h84]
-  · config_simp; simp only [h62, h80]
-  · config_simp; simp only [h64, h24]
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · ram_finish
+  · ram_finish
+  · ram_finish
+  · frame_finish
 
 end proofs
 

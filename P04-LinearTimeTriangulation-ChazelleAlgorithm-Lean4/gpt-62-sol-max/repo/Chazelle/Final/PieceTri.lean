@@ -106,16 +106,16 @@ theorem list_eq_of_getD {l₁ l₂ : List ℕ} (hlen : l₁.length = l₂.length
 theorem mod_of_lt_two_mul {a m : ℕ} (h : a < 2 * m) : a % m = if a < m then a else a - m := by
   split_ifs with h'
   · exact Nat.mod_eq_of_lt h'
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 /-- Every residue `x < m` is `(j + r) % m` for some `j < m`, with `j = 0` iff `x = r`. -/
 theorem exists_add_mod_eq {m r x : ℕ} (hr : r < m) (hx : x < m) :
     ∃ j, j < m ∧ (j + r) % m = x ∧ (j = 0 ↔ x = r) := by
   by_cases h : r ≤ x
   · refine ⟨x - r, by omega, ?_, by omega⟩
-    rw [Nat.mod_eq_of_lt (by omega)]; omega
+    ram_rw [Nat.mod_eq_of_lt]; omega
   · refine ⟨x + m - r, by omega, ?_, by omega⟩
-    rw [mod_of_lt_two_mul (by omega), ite_eq_right (by omega)]; omega
+    ram_rw [mod_of_lt_two_mul, ite_eq_right]; omega
 
 /-- The forward list from `i0` is the rotation by `i0`. -/
 theorem fwdList_eq_rotate (l : List ℕ) (i0 : ℕ) : fwdList l i0 = l.rotate i0 := by
@@ -131,7 +131,7 @@ theorem bwdList_eq_reverse_rotate {l : List ℕ} {i0 : ℕ} (hi0 : i0 < l.length
   intro j hj
   rw [length_bwdList] at hj
   rw [getD_bwdList l i0 hj,
-    getD_rotate l.reverse _ j (by rw [List.length_reverse]; exact hj), List.length_reverse,
+    getD_rotate l.reverse _ j (by simp_all), List.length_reverse,
     getD_reverse l (Nat.mod_lt _ (by omega))]
   congr 1
   rw [mod_of_lt_two_mul (a := i0 + l.length - j) (by omega),
@@ -181,31 +181,28 @@ theorem weakTriangulates_subPoly_reverse {l : List ℕ} {T : List Polygon.Triang
       by rw [n_subPoly]; simp only [revTri]; omega,
       by rw [n_subPoly]; simp only [revTri]; omega, ?_⟩
     unfold revTri
-    rw [← vtx_subPoly_reverse P l h1, ← vtx_subPoly_reverse P l h2,
+    rwa [← vtx_subPoly_reverse P l h1, ← vtx_subPoly_reverse P l h2,
       ← vtx_subPoly_reverse P l h3]
-    exact hdet
   · rw [n_subPoly, List.length_reverse] at hcount
-    rw [List.length_map, n_subPoly]
-    exact hcount
+    rwa [List.length_map, n_subPoly]
   · rw [← filled_subPoly_reverse P l, ← hunion]
     ext p
     simp only [Set.mem_ofPred_eq, List.mem_map]
     constructor
     · rintro ⟨_, ⟨t, ht, rfl⟩, hp⟩
-      exact ⟨t, ht, by rw [← triSet_revTri P (hidx t ht)]; exact hp⟩
+      exact ⟨t, ht, by rwa [← triSet_revTri P (hidx t ht)]⟩
     · rintro ⟨t, ht, hp⟩
-      exact ⟨_, ⟨t, ht, rfl⟩, by rw [triSet_revTri P (hidx t ht)]; exact hp⟩
+      exact ⟨_, ⟨t, ht, rfl⟩, by rwa [triSet_revTri P (hidx t ht)]⟩
   · rw [List.pairwise_map]
     refine hdisj.imp_of_mem ?_
     intro a b ha hb h
-    rw [triSet_revTri P (hidx a ha), triSet_revTri P (hidx b hb)]
-    exact h
+    rwa [triSet_revTri P (hidx a ha), triSet_revTri P (hidx b hb)]
   · intro t ht i hi hmem
     rw [List.mem_map] at ht
     obtain ⟨t', ht', rfl⟩ := ht
     rw [n_subPoly] at hi
     have e : (subPoly P l).vtx i = (subPoly P l.reverse).vtx (l.length - 1 - i) := by
-      rw [vtx_subPoly_reverse P l (by omega)]; congr 1; omega
+      ram_rw [vtx_subPoly_reverse P l]; congr 1; omega
     rw [e, triSet_revTri P (hidx t' ht')] at hmem
     rw [e, triVertices_revTri P (hidx t' ht')]
     exact hvert t' ht' _ (by rw [n_subPoly, List.length_reverse]; omega) hmem
@@ -220,9 +217,7 @@ theorem goodTri_of_reverse {l : List ℕ} {T : List Polygon.Triangle}
   intro t ht
   obtain ⟨h1, h2, h3, -⟩ := hT'.1 t ht
   rw [n_subPoly, List.length_reverse] at h1 h2 h3
-  obtain ⟨a, b, d⟩ := t
-  simp only [Function.comp, relabelList, revTri]
-  rw [getD_reverse l h1, getD_reverse l h2, getD_reverse l h3]
+  ram_simp [Function.comp, relabelList, revTri, getD_reverse l h1, getD_reverse l h2, getD_reverse l h3]
 
 /-- **Relabelled weak triangulations transfer back along rotation of the index list.** -/
 theorem goodTri_of_rotate {l : List ℕ} {r : ℕ} {T : List Polygon.Triangle}
@@ -254,11 +249,11 @@ theorem mountain_case_rotate {r i0 : ℕ} (hr : r < l.length)
     (hM : IsMountain (subPoly P (l.rotate r))) (hmin : IsMinPos P l i0) :
     i0 = r ∧ DirFwd P l i0 ∧ fwdList l i0 = l.rotate r := by
   set m := l.length with hm
-  have hn : (subPoly P (l.rotate r)).n = m := by rw [n_subPoly, List.length_rotate]
+  have hn : (subPoly P (l.rotate r)).n = m := by simp_all
   have h3 : 3 ≤ m := by have := hM.1.1; omega
   have hv : ∀ j, j < m → (subPoly P (l.rotate r)).vtx j = ptAt P l ((j + r) % m) := by
     intro j hj
-    rw [vtx_subPoly_getD P _ (by rw [List.length_rotate]; exact hj), getD_rotate l r j hj]
+    rw [vtx_subPoly_getD P _ (by simp_all), getD_rotate l r j hj]
     rfl
   have hi0 : i0 = r := by
     by_contra hne
@@ -267,16 +262,15 @@ theorem mountain_case_rotate {r i0 : ℕ} (hr : r < l.length)
       rcases Nat.eq_zero_or_pos j with h | h
       · exact absurd (hj0.1 h) hne
       · exact h
-    have := ylexLT_of_lt _ hM hjpos (by rw [hn]; exact hj)
-    rw [hv 0 (by omega), hv j hj, hjr, Nat.zero_add, Nat.mod_eq_of_lt hr] at this
+    have := ylexLT_of_lt _ hM hjpos (by rwa [hn])
+    ram_rw [hv 0, hv j hj, hjr, Nat.zero_add, Nat.mod_eq_of_lt hr] at this
     exact hmin.2 r hr this
   subst hi0
   refine ⟨rfl, ?_, fwdList_eq_rotate l _⟩
   have := ylexLT_of_lt _ hM (i := 1) (j := m - 1) (by omega) (by rw [hn]; omega)
-  rw [hv 1 (by omega), hv (m - 1) (by omega)] at this
+  ram_rw [hv 1, hv (m - 1) (by omega)] at this
   unfold DirFwd
-  rw [← hm, Nat.add_comm i0 1, show i0 + m - 1 = m - 1 + i0 by omega]
-  exact this
+  rwa [← hm, Nat.add_comm i0 1, show i0 + m - 1 = m - 1 + i0 by omega]
 
 /-- **Case 2 of the mountain theorem** (the reversed list rotated by `r` is a mountain): the
 minimum position is `m - 1 - r`, the direction test is negative, and the backward list is that
@@ -286,16 +280,16 @@ theorem mountain_case_reverse {r i0 : ℕ} (hr : r < l.length)
     i0 = l.length - 1 - r ∧ ¬ DirFwd P l i0 ∧ bwdList l i0 = l.reverse.rotate r := by
   set m := l.length with hm
   have hn : (subPoly P (l.reverse.rotate r)).n = m := by
-    rw [n_subPoly, List.length_rotate, List.length_reverse]
+    simp_all
   have h3 : 3 ≤ m := by have := hM.1.1; omega
   have hv : ∀ j, j < m →
       (subPoly P (l.reverse.rotate r)).vtx j = ptAt P l (m - 1 - (j + r) % m) := by
     intro j hj
-    rw [vtx_subPoly_getD P _ (by rw [List.length_rotate, List.length_reverse]; exact hj),
-      getD_rotate l.reverse r j (by rw [List.length_reverse]; exact hj), List.length_reverse,
+    rw [vtx_subPoly_getD P _ (by simp_all),
+      getD_rotate l.reverse r j (by simp_all), List.length_reverse,
       getD_reverse l (Nat.mod_lt _ (by omega))]
     rfl
-  have hi0m : i0 < m := hmin.1
+  have hi0m := hmin.1
   have hi0 : i0 = m - 1 - r := by
     by_contra hne
     obtain ⟨j, hj, hjr, hj0⟩ := exists_add_mod_eq (x := m - 1 - i0) hr (by omega)
@@ -303,14 +297,14 @@ theorem mountain_case_reverse {r i0 : ℕ} (hr : r < l.length)
       rcases Nat.eq_zero_or_pos j with h | h
       · exact absurd (hj0.1 h) (by omega)
       · exact h
-    have := ylexLT_of_lt _ hM hjpos (by rw [hn]; exact hj)
-    rw [hv 0 (by omega), hv j hj, hjr, Nat.zero_add, Nat.mod_eq_of_lt hr,
+    have := ylexLT_of_lt _ hM hjpos (by rwa [hn])
+    ram_rw [hv 0, hv j hj, hjr, Nat.zero_add, Nat.mod_eq_of_lt hr,
       show m - 1 - (m - 1 - i0) = i0 by have := hmin.1; omega] at this
     exact hmin.2 _ (by omega) this
   subst hi0
   refine ⟨rfl, ?_, ?_⟩
   · have := ylexLT_of_lt _ hM (i := 1) (j := m - 1) (by omega) (by rw [hn]; omega)
-    rw [hv 1 (by omega), hv (m - 1) (by omega)] at this
+    ram_rw [hv 1, hv (m - 1) (by omega)] at this
     intro hd
     unfold DirFwd at hd
     rw [← hm] at hd
@@ -324,7 +318,7 @@ theorem mountain_case_reverse {r i0 : ℕ} (hr : r < l.length)
       split_ifs <;> omega
     rw [e1, e2] at hd
     exact ylexLT_asymm this hd
-  · rw [bwdList_eq_reverse_rotate (by omega), ← hm]
+  · ram_rw [bwdList_eq_reverse_rotate, ← hm]
     congr 1
     omega
 
@@ -335,11 +329,11 @@ theorem mountain_cases (hmount : ∃ s, IsMountain ((subPoly P l).rotate s) ∨
       (IsMountain (subPoly P (l.rotate r)) ∨ IsMountain (subPoly P (l.reverse.rotate r))) := by
   obtain ⟨s, h | h⟩ := hmount
   · refine ⟨s % l.length, Nat.mod_lt _ h0, Or.inl ?_⟩
-    rw [List.rotate_mod, subPoly_rotate]; exact h
+    rwa [List.rotate_mod, subPoly_rotate]
   · refine ⟨s % l.length, Nat.mod_lt _ h0, Or.inr ?_⟩
     have e : l.reverse.rotate (s % l.length) = l.reverse.rotate s := by
       rw [← List.length_reverse (as := l), List.rotate_mod]
-    rw [e, subPoly_rotate]; exact h
+    rwa [e, subPoly_rotate]
 
 /-- **The reoriented list is a monotone mountain**: from any minimum position `i0` of a piece
 whose vertex list is a rotated (possibly reversed) mountain, `reorient P l i0` lists the piece
@@ -350,12 +344,10 @@ theorem isMountain_reorient (hmount : ∃ s, IsMountain ((subPoly P l).rotate s)
   obtain ⟨r, hr, hM | hM⟩ := mountain_cases hmount (by have := hmin.1; omega)
   · obtain ⟨-, hd, he⟩ := mountain_case_rotate hr hM hmin
     unfold reorient
-    rw [ite_eq_left hd, he]
-    exact hM
+    simp_all
   · obtain ⟨-, hd, he⟩ := mountain_case_reverse hr hM hmin
     unfold reorient
-    rw [ite_eq_right hd, he]
-    exact hM
+    simp_all
 
 /-- **The abstract piece triangulator**: on a piece given as a rotated (possibly reversed)
 mountain, with `i0` a minimum position, any relabelled weak triangulation of the reoriented

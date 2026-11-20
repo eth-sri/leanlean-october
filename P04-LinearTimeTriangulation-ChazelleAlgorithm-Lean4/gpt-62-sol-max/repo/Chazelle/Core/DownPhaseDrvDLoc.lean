@@ -45,7 +45,7 @@ def arcOfB (A b : ℕ) : ℕ := if b = 0 ∨ A ≤ b then A - 1 else b - 1
 theorem arcOfB_bktB {A j : ℕ} (hj : j < A) (t₂ : Bool) : arcOfB A (bktB A j t₂) = j := by
   unfold arcOfB bktB
   by_cases h : j + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
+  · simp_all
   · rw [ite_eq_right h]
     cases t₂ <;> simp <;> omega
 
@@ -59,22 +59,19 @@ theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁
   · rw [ite_eq_left h] at hm ⊢
     simp only [Bool.and_eq_true] at hm
     right; left
-    exact ⟨by omega, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
-      by rw [Nat.add_sub_cancel]; exact h₂.1 hm.2⟩
+    exact ⟨by omega, h, by simp_all,
+      by simp_all⟩
   · rw [ite_eq_right h] at hm ⊢
     have hjA : j = N.arcs.length - 1 := by omega
     by_cases ht : t₂ = true
     · rw [ite_eq_left ht]
       left
-      exact ⟨rfl, by rw [← hjA]; exact h₂.1 ht⟩
+      exact ⟨rfl, by simp_all⟩
     · rw [ite_eq_right ht]
       have ht1 : t₁ = true := by
-        simp only [Bool.or_eq_true] at hm
-        rcases hm with h' | h'
-        · exact absurd h' ht
-        · exact h'
+        simp_all
       right; right
-      exact ⟨rfl, by rw [← hjA]; exact h₁.1 ht1⟩
+      exact ⟨rfl, by simp_all⟩
 
 /-! ## The ends of a new chord lie on arcs of its region -/
 
@@ -89,7 +86,7 @@ theorem exists_closedArc (hM : WalkAx M) {N : NF} {reg : ℕ → Set Point} (hNF
     he hw.1 hw.2.1 hA
   obtain ⟨j, hj, hjr, hs, he'⟩ := hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he']; exact hcl
+  rwa [hs, he']
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
@@ -104,7 +101,7 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
   unfold matchB
   by_cases h : j + 1 < (buildNF M Q L E).arcs.length
   · rw [ite_eq_left h]
-    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rw [← arcs_length hK]; exact h)
+    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rwa [← arcs_length hK])
     simp only [Bool.and_eq_true]
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc

@@ -40,18 +40,16 @@ theorem top_left_of_box (h : 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) 
     simp only [Merge.Junction.whole_m] at h
     cases hb : J.whole.sideBeta <;> simp only [hb, Bool.false_eq_true, ↓reduceIte] at h
     · by_contra hc
-      rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
+      ram_rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
           J.m₁ + 2 * J.m₂ + 2 * (J.m₁ + J.m₂) - (2 * (J.m₁ + J.m₂) - J.whole.topIdx) by omega),
-        Nat.mod_eq_of_lt (by omega)] at h
+        Nat.mod_eq_of_lt] at h
       omega
-    · rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
+    · ram_rw [Nat.mod_eq_sub_mod (show 2 * (J.m₁ + J.m₂) ≤
           J.m₁ + 2 * J.m₂ + 2 * (J.m₁ + J.m₂) - J.whole.topIdx by omega),
-        Nat.mod_eq_of_lt (by omega)] at h
+        Nat.mod_eq_of_lt] at h
       omega
   have e : J.left.top = J.whole.top := by
-    unfold Chain.top
-    rw [left_topIdx_eq J hTl]
-    rfl
+    ram_finish [Chain.top, left_topIdx_eq J hTl]
   rw [e]
   exact J.right_top_le
 
@@ -59,9 +57,9 @@ theorem top_left_of_box (h : 2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) 
 lies inside the left stretch. -/
 theorem left_pos_cases {d : ℕ} (hd : d < lL1 J + lL2 J) :
     (∃ i, i < 2 * J.m₁ ∧
-      (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n = i + 6) ∨
+      (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n = i + 6) ∨
     2 * J.whole.m - tpos J.whole (J.m₁ + 2 * J.m₂) < 2 * J.m₁ := by
-  have hn₁ : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
+  have hn₁ : J.leftModel.W.n = 2 * J.left.m + 7 := cm_n J.left
   have hτ := tpos_lt J.left J.m₁
   have hm1 : J.left.m = J.m₁ := rfl
   rw [hm1] at hτ hn₁
@@ -77,39 +75,39 @@ theorem left_pos_cases {d : ℕ} (hd : d < lL1 J + lL2 J) :
       have hτ0 : tpos J.left J.m₁ = 0 := by omega
       refine ⟨d, by omega, ?_⟩
       rw [hτ0]
-      split_ifs <;> (rw [Nat.mod_eq_of_lt (by omega)]; ring)
+      split_ifs <;> (ram_rw [Nat.mod_eq_of_lt]; ring)
     · simp only [ite_eq_right hN] at hd ⊢
       rw [hm1] at hN hd ⊢
       split_ifs with hdl
-      · exact ⟨tpos J.left J.m₁ + d, by omega, by rw [Nat.mod_eq_of_lt (by omega)]; ring⟩
+      · exact ⟨tpos J.left J.m₁ + d, by omega, by ram_rw [Nat.mod_eq_of_lt]; ring⟩
       · refine ⟨tpos J.left J.m₁ + d - 2 * J.m₁, by omega, ?_⟩
-        rw [show 6 + tpos J.left J.m₁ + (d + 7) = (tpos J.left J.m₁ + d - 2 * J.m₁ + 6) +
-          (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        ram_rw [show 6 + tpos J.left J.m₁ + (d + 7) = (tpos J.left J.m₁ + d - 2 * J.m₁ + 6) +
+          (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 /-- **A point of `C₂` at a position of the left stretch is the shared vertex.** -/
 theorem left_stretch_pt (hP : J.P.Simple) 
     {d : ℕ} (hd : d < lL1 J + lL2 J) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1)
-    (hx : sidePt (chainModel J.whole).W
-      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n) t ∈ J.right.set) :
-    sidePt (chainModel J.whole).W
-      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n) t = J.shared := by
+    (hx : sidePt J.wholeModel.W
+      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % J.wholeModel.W.n) t ∈ J.right.set) :
+    sidePt J.wholeModel.W
+      ((6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % J.wholeModel.W.n) t = J.shared := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
   have hleft : ∀ y, y ∈ J.left.set → y ∈ J.right.set → y = J.shared := by
     intro y h1 h2
     have := (Set.ext_iff.1 (J.left_inter_right hP) y).1 ⟨h1, h2⟩
     exact this
   rw [hC.sidePt_eq hd t] at hx ⊢
-  set q := (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n with hq
-  have hqn : q < (chainModel J.left).W.n := Nat.mod_lt _ hC.n₂_pos
+  set q := (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % J.leftModel.W.n with hq
+  have hqn : q < J.leftModel.W.n := Nat.mod_lt _ hC.n₂_pos
   -- a tour position gives a point of `C₁`
   have htour : ∀ i, i ≤ 2 * J.left.m → (i = 2 * J.left.m → t = 0) → q = i + 6 →
-      sidePt (chainModel J.left).W q t = J.shared := by
+      sidePt J.leftModel.W q t = J.shared := by
     intro i hi hit hqi
     rw [hqi] at hx ⊢
     exact hleft _ (J.left.sideWalk_tour_pt_mem J.left.sideBeta hi hit ht0 ht1) hx
   rcases left_pos_cases J hd with ⟨i, hi, hqi⟩ | hA
   · exact htour i (by rw [show J.left.m = J.m₁ from rfl]; omega) (fun h => by
-      rw [show J.left.m = J.m₁ from rfl] at h; omega) hqi
+      simp_all ) hqi
   · -- the box of `C` in the left stretch: points of the box block of `C₁` are not on `C₂`
     have htop := top_left_of_box J hA
     rw [cm_W] at hx hqn
@@ -132,9 +130,8 @@ theorem left_stretch_pt (hP : J.P.Simple)
       · -- down the slit of `C₁`: the point is the top of `C₁`
         rw [h5] at hx hx2 hb
         simp only at hx2 hb
-        have ht1' : t ≤ 1 := ht1.le
-        have hy : J.left.top.2 + (1 - t) * (J.left.radius - J.left.top.2) ≤ J.right.top.2 := by
-          nlinarith
+        
+        
         have : 0 < (1 - t) * (J.left.radius - J.left.top.2) := mul_pos (by linarith) (by linarith)
         linarith
     · exfalso
@@ -150,15 +147,15 @@ theorem left_stretch_pt (hP : J.P.Simple)
 the walk of `C` whose point is such a point has its offset in `(0, L)`. -/
 theorem off_right_pt_of_vnt (hP : J.P.Simple) 
     (hv : VNotTop J) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
-    (hS₂f : S₂.Finite) {p : ℕ} (hp : p < (chainModel J.whole).W.n) {t : ℝ} (ht0 : 0 ≤ t)
-    (ht1 : t < 1) (hx : sidePt (chainModel J.whole).W p t ∈ J.right.set)
-    (hxv : sidePt (chainModel J.whole).W p t ≠ J.shared) :
-    0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
+    (hS₂f : S₂.Finite) {p : ℕ} (hp : p < J.wholeModel.W.n) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t < 1) (hx : sidePt J.wholeModel.W p t ∈ J.right.set)
+    (hxv : sidePt J.wholeModel.W p t ≠ J.shared) :
+    0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
         ((rL1 J + rL2 J : ℕ) : ℝ) := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
   have hCr := corr_right0 J hP hS₂ hS₂f
-  set n := (chainModel J.whole).W.n with hndef
+  set n := J.wholeModel.W.n with hndef
   set gL := 6 + tpos J.whole (J.m₁ + 2 * J.m₂) with hgL
   set g := 6 + tpos J.whole J.m₁ with hg
   have hsum := rlen_add_llen J hv
@@ -192,7 +189,7 @@ theorem off_right_pt_of_vnt (hP : J.P.Simple)
             one_pos (by
               rw [show ((g % n : ℕ) : ℝ) + 0 = ((((g + 0) % n : ℕ)) : ℝ) + 0 by simp]
               rw [off_key hCr.hg (by omega) le_rfl one_pos]; simp)
-          rwa [show g % n = (g + 0) % n by simp]
+          assumption
       · have : (1 : ℝ) ≤ ((d - llen J : ℕ) : ℝ) := by exact_mod_cast h0
         linarith
     · have hlt : d - llen J < rlen J := by omega
@@ -204,54 +201,53 @@ when the shared vertex is the top of `C`, the box block of `C` lies between the 
 carries no point of `C₂`). -/
 theorem off_right_pt (hP : J.P.Simple) 
     {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
-    (hS₂f : S₂.Finite) {p : ℕ} (hp : p < (chainModel J.whole).W.n) {t : ℝ} (ht0 : 0 ≤ t)
-    (ht1 : t < 1) (hx : sidePt (chainModel J.whole).W p t ∈ J.right.set)
-    (hxv : sidePt (chainModel J.whole).W p t ≠ J.shared) :
-    0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
+    (hS₂f : S₂.Finite) {p : ℕ} (hp : p < J.wholeModel.W.n) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t < 1) (hx : sidePt J.wholeModel.W p t ∈ J.right.set)
+    (hxv : sidePt J.wholeModel.W p t ≠ J.shared) :
+    0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
         ((rL1 J + rL2 J : ℕ) : ℝ) := by
   by_cases hv : VNotTop J
   · exact off_right_pt_of_vnt J hP hv hS₂ hS₂f hp ht0 ht1 hx hxv
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn : J.wholeModel.W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have hτ := tpos_lt J.whole J.m₁
   have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
   unfold VNotTop at hv
   have hrl : rL1 J + rL2 J = 2 * J.m₂ := by
-    rw [rL1_add_rL2]; unfold rlen; rw [ite_eq_right (by omega)]
+    ram_simp [rL1_add_rL2, rlen, ite_eq_right]
   have hT2' : tpos J.whole (J.m₁ + 2 * J.m₂) = 2 * J.m₂ ∨
       tpos J.whole (J.m₁ + 2 * J.m₂) = 0 := by
     rw [tpos_second J]
     rcases (show tpos J.whole J.m₁ = 0 ∨ tpos J.whole J.m₁ + 2 * J.m₂ = 2 * J.whole.m by omega)
       with h | h
-    · left; rw [h, zero_add, Nat.mod_eq_of_lt (by omega)]
-    · right; rw [h, Nat.mod_self]
+    · left; ram_rw [h, zero_add, Nat.mod_eq_of_lt]
+    simp_all
   have hll : lL1 J + lL2 J = 2 * J.m₁ := by
-    rw [lL1_add_lL2]; unfold llen; rw [ite_eq_right (by omega)]
+    ram_simp [lL1_add_lL2, llen, ite_eq_right]
   -- no box position carries a point of the chain
   have hbox : ¬ (p ≤ 5 ∨ (p = 2 * J.whole.m + 6 ∧ 0 < t)) := fun hb =>
     (J.whole.sideWalk_box_pt J.whole.sideBeta hb ht0 ht1).1 (J.right_set_subset hx)
-  have hg : 6 + tpos J.whole J.m₁ < (chainModel J.whole).W.n := by omega
+  have hg : 6 + tpos J.whole J.m₁ < J.wholeModel.W.n := by omega
   -- the copies of the shared vertex at the walk vertices `6 + τ` and `6 + τ + 2 m₂`
-  have hv0 : (chainModel J.whole).W.vtx (6 + tpos J.whole J.m₁) = J.shared := by
+  have hv0 : J.wholeModel.W.vtx (6 + tpos J.whole J.m₁) = J.shared := by
     have := walk_tour J.whole J.m₁ 0 (by omega)
-    rw [add_zero, Nat.mod_eq_of_lt hg, tourV_right J (Nat.zero_le _), tourV_right_zero] at this
-    exact this
-  have htop6 : (chainModel J.whole).W.vtx 6 = (chainModel J.whole).W.vtx (2 * J.whole.m + 6) := by
+    rwa [add_zero, Nat.mod_eq_of_lt hg, tourV_right J (Nat.zero_le _), tourV_right_zero] at this
+  have htop6 : J.wholeModel.W.vtx 6 = J.wholeModel.W.vtx (2 * J.whole.m + 6) := by
     rw [cm_W, J.whole.sideWalk_vtx_six, J.whole.sideWalk_vtx_tour _ le_rfl,
       J.whole.sideTour_two_m]
   -- the left stretch carries no point of `C₂` but the shared vertex
   have hleft : ∀ d, d < 2 * J.m₁ →
-      p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n → False := by
+      p = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % J.wholeModel.W.n → False := by
     intro d hd hpd
     apply hxv
     rw [hpd] at hx ⊢
     exact left_stretch_pt J hP (by omega) ht0 ht1 hx
   -- the right stretch
-  have hright : ∀ d, d < 2 * J.m₂ → p = (6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n →
-      0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
+  have hright : ∀ d, d < 2 * J.m₂ → p = (6 + tpos J.whole J.m₁ + d) % J.wholeModel.W.n →
+      0 < off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) ∧
+      off J.wholeModel.W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p + t) <
         ((rL1 J + rL2 J : ℕ) : ℝ) := by
     intro d hd hpd
     rw [hpd, off_key hg (by omega) ht0 ht1, hrl]
@@ -261,16 +257,15 @@ theorem off_right_pt (hP : J.P.Simple)
     · rcases ht0.lt_or_eq with htp | htp
       · push_cast; linarith
       · exfalso; apply hxv
-        rw [hpd, ← htp, Chazelle.Chain.sidePt_zero, add_zero, Nat.mod_eq_of_lt hg]
-        exact hv0
+        rwa [hpd, ← htp, Chazelle.Chain.sidePt_zero, add_zero, Nat.mod_eq_of_lt hg]
     · have : (1 : ℝ) ≤ d := by exact_mod_cast hdp
       linarith
-  have hp6 : 6 ≤ p := by omega
+  
   rcases (show tpos J.whole J.m₁ = 0 ∨ tpos J.whole J.m₁ + 2 * J.m₂ = 2 * J.whole.m by omega)
     with hA | hB
   · -- the right stretch starts at the walk vertex `6`, the box block follows the left stretch
     have hL : tpos J.whole (J.m₁ + 2 * J.m₂) = 2 * J.m₂ := by
-      rw [tpos_second J, hA, zero_add, Nat.mod_eq_of_lt (by omega)]
+      ram_simp [tpos_second J, hA, zero_add, Nat.mod_eq_of_lt]
     rcases (show p = 2 * J.whole.m + 6 ∨ p < 2 * J.whole.m + 6 by omega) with hpe | hpe
     · exfalso
       have ht : t = 0 := by
@@ -280,9 +275,9 @@ theorem off_right_pt (hP : J.P.Simple)
       apply hxv
       rw [hpe, ht, Chazelle.Chain.sidePt_zero, ← htop6, ← hv0, hA]
     · by_cases hi : p - 6 < 2 * J.m₂
-      · exact hright (p - 6) hi (by rw [hA, Nat.mod_eq_of_lt (by omega)]; omega)
+      · exact hright (p - 6) hi (by ram_rw [hA, Nat.mod_eq_of_lt]; omega)
       · exact (hleft (p - 6 - 2 * J.m₂) (by omega)
-          (by rw [hL, Nat.mod_eq_of_lt (by omega)]; omega)).elim
+          (by ram_rw [hL, Nat.mod_eq_of_lt]; omega)).elim
   · -- the left stretch starts at the walk vertex `6`, the box block follows the right stretch
     have hL : tpos J.whole (J.m₁ + 2 * J.m₂) = 0 := by
       rw [tpos_second J, hB, Nat.mod_self]
@@ -295,14 +290,14 @@ theorem off_right_pt (hP : J.P.Simple)
       apply hxv
       have := walk_tour J.whole J.m₁ (2 * J.m₂) (by omega)
       rw [tourV_right J le_rfl, tourV_right_end,
-        Nat.mod_eq_of_lt (show 6 + tpos J.whole J.m₁ + 2 * J.m₂ < (chainModel J.whole).W.n by
+        Nat.mod_eq_of_lt (show 6 + tpos J.whole J.m₁ + 2 * J.m₂ < J.wholeModel.W.n by
           omega)] at this
       rw [hpe, ht, Chazelle.Chain.sidePt_zero, ← this]
       congr 1; omega
     · by_cases hi : tpos J.whole J.m₁ ≤ p - 6
       · exact hright (p - 6 - tpos J.whole J.m₁) (by omega)
-          (by rw [Nat.mod_eq_of_lt (by omega)]; omega)
-      · exact (hleft (p - 6) (by omega) (by rw [hL, Nat.mod_eq_of_lt (by omega)]; omega)).elim
+          (by ram_rw [Nat.mod_eq_of_lt]; omega)
+      · exact (hleft (p - 6) (by omega) (by ram_rw [hL, Nat.mod_eq_of_lt]; omega)).elim
 
 end Machine
 

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvDRound2
 
 /-!
@@ -20,7 +22,7 @@ open SortL (seg)
 @[expose] public section
 
 theorem clog_two_two : Nat.clog 2 2 = 1 := by
-  simpa using Nat.clog_pow 2 1 (by norm_num)
+  rfl
 
 theorem splBands_sub : ({bDownDrv, bBuild, bSort, bSign} : Finset ℕ) ⊆ DrvR.drvBands := by decide
 
@@ -80,27 +82,27 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
     f₅.1 q (by simpa using hq)
   have m₅ : c₅.nmem = c₄.nmem := f₅.2.2.1
   have A₄ : B₀ + 5 * R ≤ c₄.nreg ALLOC := by rw [← A₃]; exact RF₄.2.2.2.2.2.1
-  have A₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := g₅ _ (by unfold ALLOC; omega)
+  have A₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := g₅ _ (by reg_omega)
   have F5 : ∀ q, (210000 ≤ q ∧ q < 216012) ∨ (216060 ≤ q ∧ q < 220000) →
       ¬ (210020 ≤ q ∧ q ≤ 210024) → c₅.nreg q = c.nreg q := fun q hq hq' =>
     (g₅ q hq').trans (F4 q hq)
   have r1 : c₅.nreg 210001 = E.MD := by
-    rw [F5 _ (Or.inl ⟨by norm_num, by norm_num⟩) (by norm_num), hI.r001]
-  have r2 : c₅.nreg 210002 = c.nreg 210002 := F5 _ (Or.inl ⟨by norm_num, by norm_num⟩) (by norm_num)
+    frame_finish [F5, hI.r001]
+  have r2 : c₅.nreg 210002 = c.nreg 210002 := F5 _ (Or.inl (by decide)) (by norm_num)
   have r3 : c₅.nreg 210003 = L.length := by
-    rw [F5 _ (Or.inl ⟨by norm_num, by norm_num⟩) (by norm_num), hK]
-  have r4 : c₅.nreg 210004 = c.nreg 210004 := F5 _ (Or.inl ⟨by norm_num, by norm_num⟩) (by norm_num)
+    frame_finish [F5, hK]
+  have r4 : c₅.nreg 210004 = c.nreg 210004 := F5 _ (Or.inl (by decide)) (by norm_num)
   have r20 : c₅.nreg 210020 = B₀ := by
-    rw [s20, I₄.regs _ (Or.inl ⟨by norm_num, by norm_num⟩)]; exact hgood.r18
+    rw [s20, I₄.regs _ (Or.inl (by decide))]; exact hgood.r18
   have r21 : c₅.nreg 210021 = newL.length := by rw [s21, I₄.cnt]
   have r22 : c₅.nreg 210022 = B₀ + 3 * R := by
-    rw [s22, I₄.regs _ (Or.inl ⟨by norm_num, by norm_num⟩)]; exact hgood.r19
+    rw [s22, I₄.regs _ (Or.inl (by decide))]; exact hgood.r19
   have r23 : c₅.nreg 210023 = (BuildNF.buildNF E.M E.Q L Ev).arcs.length := by
-    rw [s23, I₄.regs _ (Or.inl ⟨by norm_num, by norm_num⟩)]; exact hgood.r17
+    rw [s23, I₄.regs _ (Or.inl (by decide))]; exact hgood.r17
   have r24 : c₅.nreg 210024 = 2 := by
-    rw [s24, F4 _ (Or.inl ⟨by norm_num, by norm_num⟩), hI.r05]
+    frame_finish [s24, F4, hI.r05]
   -- the memory below `B₀`
-  have low5 : ∀ a, a < B₀ → c₅.nmem a = c.nmem a := fun a ha => by
+  have low5 : MemEqBelow B₀ c₅.nmem c.nmem := fun a ha => by
     rw [m₅, I₄.low a ha, m₃]
   have hA0B : E.A₀ ≤ B₀ := hI.alloc
   have agree5 : ∀ a, a < E.A₀ → c₅.nmem a = E.m₀ a := fun a ha =>
@@ -140,7 +142,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       rw [r2]; omega, by
       show ChordListAt c₅.nmem (c₅.nreg 210002) L
       rw [r2]; exact hLa c₅.nmem low5, by
-      show c₅.nreg 210021 = _; rw [r21, List.length_map], by
+      frame_finish [r21, List.length_map], by
       show c₅.nreg 210020 + 3 * (newL.map Prod.snd).length ≤ c₅.nreg ALLOC
       rw [r20, List.length_map]; omega, by
       show ChordListAt c₅.nmem (c₅.nreg 210020) (newL.map Prod.snd)
@@ -170,43 +172,43 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
     (by show ModelDescAt c₅.nmem (c₅.nreg 210001) E.Q E.M; rw [r1]; exact hMD₅)
     (by show c₅.nreg 210003 = _; exact r3)
     (by show ChordListAt c₅.nmem (c₅.nreg 210002) L; rw [r2]; exact hLa c₅.nmem low5)
-    (by show c₅.nreg 210021 = _; rw [r21, List.length_map])
+    (by frame_finish [r21, List.length_map])
     (by show ChordListAt c₅.nmem (c₅.nreg 210020) (newL.map Prod.snd); rw [r20, m₅]; exact I₄.list)
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at p3 p2l p2b p2 p4l p4b
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at pperm psort p5l pNW
   have hL'len : (L ++ newL.map Prod.snd).length = L.length + (newL.map Prod.snd).length :=
     List.length_append
   have A₆ : c₅.nreg ALLOC ≤ c₆.nreg ALLOC := F₆.2.2.2.2.2.1
-  have mem₆ : ∀ a, a < c₅.nreg ALLOC → c₆.nmem a = c₅.nmem a := F₆.2.2.1
+  have mem₆ : MemEqBelow (c₅.nreg ALLOC) c₆.nmem c₅.nmem := F₆.2.2.1
   have K6 : ∀ q, 216000 ≤ q → q < 216012 → c₆.nreg q = c.nreg q := fun q h1 h2 => by
-    rw [keepS q (Or.inr (Or.inr ⟨by omega, by omega⟩)), F5 q (Or.inl ⟨by omega, h2⟩) (by omega)]
+    rw [keepS q (Or.inr (Or.inr (by omega))), F5 q (Or.inl ⟨by omega, h2⟩) (by omega)]
   -- 5. the counter
-  have t10 : c₆.nreg 216010 = t := by rw [K6 _ (by norm_num) (by norm_num), hI.r10]
-  have t02 : c₆.nreg 216002 = 1 := by rw [K6 _ (by norm_num) (by norm_num), hI.r02]
+  have t10 : c₆.nreg 216010 = t := by frame_finish [K6, hI.r10]
+  have t02 : c₆.nreg 216002 = 1 := by frame_finish [K6, hI.r02]
   have hk6 : k₆ ≤ 8 * DrvR.κSpl E.κB * R := le_trans hk₆ hspl
   have hA6 : c₆.nreg ALLOC ≤ c₅.nreg ALLOC + k₆ := F₆.2.2.2.2.2.2
   have hk5 : k₅ = 5 := hk₅
   have hA3 : c₃.nreg ALLOC = B₀ + 5 * R := A₃
   obtain ⟨c₇, k₇, e₇, hk₇, v10, f₇⟩ := incr_exec (P := E.P) c₆ w₆ t10 t02
-    (by have h1 := w₆.1 216000; rw [K6 _ (by norm_num) (by norm_num), hI.r00] at h1; omega)
+    (by have h1 := w₆.1 216000; ram_rw [K6, hI.r00] at h1; omega)
   have g₇ : ∀ q, q ≠ 216010 → c₇.nreg q = c₆.nreg q := fun q hq => f₇.1 q (by simpa using hq)
   have m₇ : c₇.nmem = c₆.nmem := f₇.2.2.1
-  have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := g₇ _ (by unfold ALLOC; omega)
+  have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := g₇ _ (by reg_omega)
   -- frames
   have RF₄' : Restore.RF DrvR.drvBands E.A₀ c₃ c₄ k₄ := RF.base RF₄ hA0B
   have RF₅ : Restore.RF DrvR.drvBands E.A₀ c₄ c₅ k₅ :=
     rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) f₅
+      exact ⟨mem_drvBands (by omega) (by omega), by reg_omega⟩) f₅
   have RF₆ : Restore.RF DrvR.drvBands E.A₀ c₅ c₆ k₆ :=
     (Restore.RF.of_frame F₆ (by rw [A₅]; omega)).mono splBands_sub le_rfl
   have RF₇ : Restore.RF DrvR.drvBands E.A₀ c₆ c₇ k₇ :=
-    rf_of_frameB (inDrv_eq (q := 216010) (by norm_num) (by norm_num) (by unfold ALLOC; norm_num)) f₇
+    rf_of_frameB (inDrv_eq (q := 216010) (by norm_num) (by norm_num) (by reg_omega)) f₇
   have RFall := RF₃.trans (RF₄'.trans (RF₅.trans (RF₆.trans RF₇)))
   have hktot : k₃ + (k₄ + (k₅ + (k₆ + k₇))) ≤ E.Br := by omega
   -- the memory below `A₀`
   have agree7 : ∀ a, a < E.A₀ → c₇.nmem a = E.m₀ a := fun a ha => by
-    rw [m₇, mem₆ a (by omega), agree5 a ha]
+    ram_rw [m₇, mem₆ a, agree5 a ha]
   -- the new state
   have hperm' : (seg c₆.nmem (c₆.nreg 210004) (2 * (L.length + (newL.map Prod.snd).length))).Perm
       (List.range (2 * (L ++ newL.map Prod.snd).length)) := by rw [hL'len]; exact pperm
@@ -215,29 +217,29 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
   obtain ⟨hsub', hdeg', hsg', hcnt'⟩ := round_family hGM hok hperm hsort hregs hnew hdeg hsg
     (seg c₆.nmem (c₆.nreg 210004) (2 * (L.length + (newL.map Prod.snd).length))) hperm' hsort'
   refine ⟨c₇, k₃ + (k₄ + (k₅ + (k₆ + k₇))),
-    e₃ _ c₇ _ (Exec.seq e₄ (Exec.seq e₅ (Exec.seq e₆ e₇))), ?_, RFall, hktot⟩
+    e₃ _ c₇ _ (by ram_path), ?_, RFall, hktot⟩
   refine ⟨e₇.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, v10, ?_, fun q hq => ?_, ?_, agree7, ?_,
     by omega, ?_⟩
-  · rw [g₇ _ (by norm_num), keepS _ (Or.inl ⟨by norm_num, by norm_num⟩), r1]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r00]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r01]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r02]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r03]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r04]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r05]
-  · rw [g₇ _ (by norm_num), K6 _ (by norm_num) (by norm_num), hI.r06]
+  · ram_rw [g₇, keepS _ (Or.inl (by decide)), r1]
+  · ram_rw [g₇, K6, hI.r00]
+  · ram_rw [g₇, K6, hI.r01]
+  · ram_rw [g₇, K6, hI.r02]
+  · ram_rw [g₇, K6, hI.r03]
+  · ram_rw [g₇, K6, hI.r04]
+  · ram_rw [g₇, K6, hI.r05]
+  · ram_rw [g₇, K6, hI.r06]
   · -- the context register
-    rw [g₇ _ (by norm_num), F₆.1 _ (by decide) (by unfold ALLOC; norm_num), g₅ _ (by norm_num),
-      RF₄.1 _ (by decide) (by unfold ALLOC; norm_num), K3 _ (Or.inr (Or.inr rfl)), hI.rctx]
+    ram_rw [g₇, F₆.1 _ (by decide) (by reg_omega), g₅,
+      RF₄.1 _ (by decide) (by reg_omega), K3 _ (Or.inr (Or.inr rfl)), hI.rctx]
   · -- the kept registers
     unfold KeepR at hq
-    rw [g₇ q (by omega), keepS q (by omega), g₅ q (by omega), F4 q (by omega), hI.keep q hq]
+    ram_rw [g₇ q, keepS q, g₅ q, F4 q, hI.keep q hq]
   · -- the state
     refine ⟨L ++ newL.map Prod.snd,
       seg c₆.nmem (c₆.nreg 210004) (2 * (L.length + (newL.map Prod.snd).length)), ?_,
       hsub.trans hsub', ?_, hsg', ?_⟩
     · have r71 : c₇.nreg 210001 = E.MD := by
-        rw [g₇ _ (by norm_num), keepS _ (Or.inl ⟨by norm_num, by norm_num⟩), r1]
+        ram_rw [g₇, keepS _ (Or.inl (by decide)), r1]
       have r72 : c₇.nreg 210002 = c₆.nreg 210002 := g₇ _ (by norm_num)
       have r73 : c₇.nreg 210003 = c₆.nreg 210003 := g₇ _ (by norm_num)
       have r74 : c₇.nreg 210004 = c₆.nreg 210004 := g₇ _ (by norm_num)
@@ -249,7 +251,7 @@ theorem round_step {E : DEnv} (hE : DGood E) {t : ℕ} {c : Config} (hI : RInv E
       · rw [r71]; exact desc_robust hE.hwf hE.hMD agree7 hA07
       · rw [r73, p3, hL'len]
       · rw [r72, A₇, hL'len]; exact p2b
-      · rw [r72, A₇, m₇]; exact chordListAt_robust p2 (by rw [hL'len]; exact p2b)
+      · rw [r72, A₇, m₇]; exact ChordListAt.robust p2 (by rw [hL'len]; exact p2b)
       · rw [r74, A₇, hL'len]; exact p4b
       · rw [r74, A₇, m₇, hL'len]; exact seg_robust (by omega)
       · rw [r75, A₇, m₇]; exact pNW

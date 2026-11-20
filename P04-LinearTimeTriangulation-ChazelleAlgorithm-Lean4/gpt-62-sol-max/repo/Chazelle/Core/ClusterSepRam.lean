@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterPassMath
 
 /-!
@@ -51,7 +53,7 @@ theorem sepMem_apply (m0 : ℕ → ℕ) (bTMP bPOS bDF μ lo j x : ℕ) :
       then μ else m0 x := by
   classical
   induction j with
-  | zero => simp only [sepMem]; rw [ite_eq_right]; rintro ⟨i, h1, h2, -⟩; omega
+  | zero => simp_all [sepMem, ite_eq_right] 
   | succ j ih =>
     have hstep : (∃ i, lo ≤ i ∧ i < lo + (j + 1) ∧ m0 (bDF + m0 (bTMP + i)) = 1 ∧
         x = bPOS + m0 (bTMP + i)) ↔ (∃ i, lo ≤ i ∧ i < lo + j ∧ m0 (bDF + m0 (bTMP + i)) = 1 ∧
@@ -70,22 +72,8 @@ theorem sepMem_apply (m0 : ℕ → ℕ) (bTMP bPOS bDF μ lo j x : ℕ) :
     · rw [ite_eq_left h1, Machine.upd_apply]
       by_cases hx : x = bPOS + m0 (bTMP + (lo + j))
       · rw [ite_eq_left hx, ite_eq_left (hstep.mpr (Or.inr ⟨h1, hx⟩))]
-      · rw [ite_eq_right hx, ih]
-        by_cases hex : ∃ i, lo ≤ i ∧ i < lo + j ∧ m0 (bDF + m0 (bTMP + i)) = 1 ∧
-            x = bPOS + m0 (bTMP + i)
-        · rw [ite_eq_left hex, ite_eq_left (hstep.mpr (Or.inl hex))]
-        · rw [ite_eq_right hex, ite_eq_right (fun h => by
-            rcases hstep.mp h with h | h
-            · exact hex h
-            · exact hx h.2)]
-    · rw [ite_eq_right h1, ih]
-      by_cases hex : ∃ i, lo ≤ i ∧ i < lo + j ∧ m0 (bDF + m0 (bTMP + i)) = 1 ∧
-          x = bPOS + m0 (bTMP + i)
-      · rw [ite_eq_left hex, ite_eq_left (hstep.mpr (Or.inl hex))]
-      · rw [ite_eq_right hex, ite_eq_right (fun h => by
-          rcases hstep.mp h with h | h
-          · exact hex h
-          · exact h1 h.1)]
+      simp_all
+    simp_all
 
 section proofs
 
@@ -106,7 +94,7 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
   classical
   set m0 := c.nmem
   have e0 := Exec.copyN (P := P) hw 130676 130300
-  obtain ⟨c', k, e, hk, hw', hi', hn', hm', hr', hrr', hrm', ho', -⟩ := forN (P := P) (W := W)
+  obtain ⟨c', k, e, hk, hw', hi', hn', hm', hr', hrr', hrm', ho', -⟩ := Exec.forN (P := P) (W := W)
     (ri := 130676) (rn := 130301) (body := sepBody)
     (fun i c2 => WordsBounded W c2 ∧ c2.nreg 130676 = i ∧ c2.nreg 130301 = hi ∧
       c2.nmem = sepMem m0 bTMP bPOS bDF μ lo (i - lo) ∧
@@ -140,7 +128,7 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         exec_block
         all_goals first | omega | (config_simp; simp only [rT, rD, hi2, mT]; omega) | skip
         refine ⟨rfl, ‹_›, by config_simp; simp only [rT, hi2, mT], by
-          config_simp; simp only [rT, rD, hi2, mT, mD], fun x h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
+          frame_finish [rT, rD, hi2, mT, mD], fun x h1 h2 h3 => ?_, by and_intros <;> rfl⟩
         simp only [Machine.upd_apply]; split_ifs <;> first | omega
       have r3 : ∀ x, x ≠ 130677 → x ≠ 130678 → x ≠ 130679 → c3.nreg x = c2.nreg x := h3r
       have h3i : c3.nreg 130676 = i := (r3 _ (by omega) (by omega) (by omega)).trans hi2
@@ -170,12 +158,12 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         · refine ⟨c3, _, .ifLtN_true h1 (.skip hw3), by omega, hw3, ?_, fun _ _ => rfl, rfl, rfl,
             rfl⟩
           rw [h3f, h31] at h1
-          rw [hnext0 (by omega), hm3, hm2]
+          ram_rw [hnext0, hm3, hm2]
         · by_cases h2 : c3.nreg 130001 < c3.nreg 130679
           · refine ⟨c3, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw3)), by omega, hw3, ?_,
               fun _ _ => rfl, rfl, rfl, rfl⟩
             rw [h3f, h31] at h2
-            rw [hnext0 (by omega), hm3, hm2]
+            ram_rw [hnext0, hm3, hm2]
           · have hf1 : m0 (bDF + v) = 1 := by rw [h3f, h31] at h1 h2; omega
             obtain ⟨c5, k5, e5, hk5, hw5, h5m, h5r, hrr5, hrm5, ho5⟩ : ∃ c5 k5, Exec P W
                 (block [.addN 130677 130652 130678, .storeN 130677 130675]) c3 c5 k5 ∧ k5 = 2 ∧
@@ -196,14 +184,14 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       refine ⟨_, k3 + (k4 + 1), .seq e3 (.seq e4 e6), by omega, e6.wb_right, by simp [h4i, h41],
         ?_, h4m, fun x hx => ?_, hrr4.trans (hrr3.trans hrr2), hrm4.trans (hrm3.trans hrm2),
         ho4.trans (ho3.trans ho2), by omega⟩
-      · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega), h4r _ (by omega),
-          r3 _ (by omega) (by omega) (by omega)]; exact hn2
+      · simp only [Machine.upd_apply]; ram_rw [ite_eq_right, h4r,
+          r3]; exact hn2
       · simp only [Machine.upd_apply]
         unfold SepRG at hx
-        rw [ite_eq_right (by omega), h4r _ (by omega), r3 _ (by omega) (by omega) (by omega)]
+        ram_rw [ite_eq_right, h4r, r3]
         exact hr2 x (by unfold SepRG; omega))
     (j₀ := lo) ⟨e0.wb_right, by simp [hlo], by
-      simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact hhi,
+      frame_finish,
       by simp [m0, sepMem], fun r hr => by
         simp only [Machine.upd_apply]; rw [ite_eq_right (by unfold SepRG at hr; omega)],
       rfl, rfl, rfl, le_rfl⟩ hlh
@@ -238,10 +226,10 @@ theorem pushOne_exec {c : Config} (hw : WordsBounded W c) (t : ℕ) (ht : t < 3)
       (∀ r, r ≠ 130702 → c1.nreg r = c.nreg r) ∧ c1.nreg 130702 = b - a ∧ c1.nmem = c.nmem ∧
       c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     have e0 := Exec.subN (P := P) hw 130702 (130671 + t) (130670 + t)
-    refine ⟨_, e0, e0.wb_right, fun r hr => ?_, by simp [ha, hb], rfl, rfl, rfl, rfl⟩
-    simp only [Machine.upd_apply, hr, ite_false]
+    refine ⟨_, e0, e0.wb_right, fun r hr => ?_, by simp [ha, hb], by and_intros <;> rfl⟩
+    simp_all
   by_cases hbig : c1.nreg 130674 < c1.nreg 130702
-  · rw [r1 _ (by omega), hs, h1d] at hbig
+  · ram_rw [r1, hs, h1d] at hbig
     obtain ⟨c2, k2, e2, hk2, hw2, h2m, h2t, h2r, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.addN 130703 130700 130701, .storeN 130703 (130670 + t),
           .addN 130703 130703 130001, .storeN 130703 (130671 + t), .addN 130701 130701 130001,
@@ -256,22 +244,20 @@ theorem pushOne_exec {c : Config} (hw : WordsBounded W c) (t : ℕ) (ht : t < 3)
       have q5 := (r1 (130671 + t) (by omega)).trans hb
       exec_block
       all_goals first | omega | (config_simp; simp only [q1, q2, q3]; omega) |
-        (config_simp; rw [Machine.upd_other _ _ _ (by omega)]; simp only [q1, q2, q3]; omega) |
+        (config_simp; ram_rw [Machine.upd_other _ _]; simp only [q1, q2, q3]; omega) |
         skip
       refine ⟨rfl, ‹_›, ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
       · config_simp
-        rw [Machine.upd_other _ _ _ (show 130670 + t ≠ 130703 by omega),
-          Machine.upd_other _ _ _ (show 130671 + t ≠ 130703 by omega)]
-        simp only [q1, q2, q3, q4, q5, hm1]
-      · config_simp; simp only [q2, q3]
-      · simp only [Machine.upd_apply, h1, h3, ite_false]; exact r1 r h2
-    refine ⟨c2, 1 + (k2 + 1), .seq e0 (.ifLtN_true (by rw [r1 _ (by omega), hs, h1d]; exact hbig)
-      e2), by omega, hw2, by rw [ite_eq_left hbig]; exact h2m, by rw [ite_eq_left hbig]; exact h2t, h2r,
+        ram_post
+      · ram_finish
+      · ram_finish [h1, h3, ite_false]
+    refine ⟨c2, 1 + (k2 + 1), .seq e0 (.ifLtN_true (by simp_all)
+      e2), by omega, hw2, by simp_all, by simp_all, h2r,
       by rw [hrr2, hrr1], by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
-  · rw [r1 _ (by omega), hs, h1d] at hbig
-    refine ⟨c1, 1 + (0 + 2), .seq e0 (.ifLtN_false (by rw [r1 _ (by omega), hs, h1d]; exact hbig)
+  · ram_rw [r1, hs, h1d] at hbig
+    refine ⟨c1, 1 + (0 + 2), .seq e0 (.ifLtN_false (by simp_all)
       (.skip hw1)), by omega, hw1, by rw [ite_eq_right hbig, hm1],
-      by rw [ite_eq_right hbig, r1 _ (by omega), htp], fun r _ h2 _ => r1 r h2, hrr1, hrm1, ho1⟩
+      by simp_all, fun r _ h2 _ => r1 r h2, hrr1, hrm1, ho1⟩
 
 end push
 

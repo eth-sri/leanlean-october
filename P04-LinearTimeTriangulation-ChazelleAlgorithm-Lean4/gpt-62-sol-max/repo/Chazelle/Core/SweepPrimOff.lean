@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepPrimJun
 
 /-!
@@ -63,7 +65,7 @@ theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.ed
       (dirCode M x.edge = 1 ∧ M.hgtY Q x < M.hgtY Q y) ∨
         (dirCode M x.edge = 2 ∧ M.hgtY Q y < M.hgtY Q x) := by
   by_cases hh : (M.wa x.edge).2 = (M.wb x.edge).2
-  · have hy : (M.wa y.edge).2 = (M.wb y.edge).2 := he ▸ hh
+  · have hy := he ▸ hh
     rw [Model.param_horizontal hh, Model.param_horizontal hy]
     have : dirCode M x.edge = 0 := by unfold dirCode; rw [hh]; simp
     rw [this]; simp
@@ -75,7 +77,7 @@ theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.ed
     unfold dirCode
     constructor
     · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-      · exact Or.inl ⟨by rw [ite_eq_left h1], h2⟩
+      · simp_all
       · exact Or.inr ⟨by rw [ite_eq_right (not_lt.2 h1.le), ite_eq_left h1], h2⟩
     · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
       · left
@@ -84,104 +86,69 @@ theorem param_lt_iff_same_edge (M : Model) (Q : Polygon) {x y : WPos} (he : x.ed
         rw [ite_eq_right hc] at h1
         split_ifs at h1; omega
       · right
-        have hn : ¬ (M.wa x.edge).2 < (M.wb x.edge).2 := fun h => by rw [ite_eq_left h] at h1; omega
+        have hn : ¬ (M.wa x.edge).2 < (M.wb x.edge).2 := fun h => by simp_all
         rw [ite_eq_right hn] at h1
         refine ⟨?_, h2⟩
-        by_contra hc
-        rw [ite_eq_right hc] at h1
-        omega
+        simp_all
 
 
 /-! ## The machine -/
 
-/-- The height of the position `(50201, 50202)` as a symbolic point in `50130`: the tour vertex
+/-- The height of a position as a symbolic point: the tour vertex
 `e - 6` for the code `0`, the vertex `h - 1` of `Q` otherwise. -/
-def yLoadX : Stmt :=
-  .ifLtN 50202 50032 (.seq (.instr (.subN 50120 50201 50081)) (tvLoad 50130))
-    (block [.constN 50130 0, .subN 50131 50202 50032])
+def yLoad (er hr dst : ℕ) : Stmt :=
+  .ifLtN hr 50032 (.seq (.instr (.subN 50120 er 50081)) (tvLoad dst))
+    (block [.constN dst 0, .subN (dst + 1) hr 50032])
 
-theorem yLoadX_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) {e h : ℕ} (he : c.nreg 50201 = e) (hh : c.nreg 50202 = h)
+theorem yLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
+    (hE : CEnv P W H C c) {e h er hr dst : ℕ} (he : c.nreg er = e) (hh : c.nreg hr = h)
+    (hd : 50130 ≤ dst) (hd' : dst + 2 < 50139) (hhr : 50200 ≤ hr)
     (h0 : h = 0 → 6 ≤ e ∧ e < 2 * C.m + 7) (hhn : h ≤ P.n) :
-    ∃ c' k, Exec P W yLoadX c c' k ∧ k ≤ 27 * H.length + 45 ∧ CEnv P W H C c' ∧
+    ∃ c' k, Exec P W (yLoad er hr dst) c c' k ∧ k ≤ 27 * H.length + 45 ∧ CEnv P W H C c' ∧
       (∀ r, (50200 ≤ r ∨ (10500 ≤ r ∧ r < 50000)) → c'.nreg r = c.nreg r) ∧
-      (∀ r, 50130 ≤ r → r < 50139 → (r < 50130 ∨ 50132 < r) → c'.nreg r = c.nreg r) ∧
-      ∃ s : SymPt, SymPtIn c' 50130 s ∧ s.Lt P.n ∧
+      (∀ r, 50130 ≤ r → r < 50139 → (r < dst ∨ dst + 2 < r) → c'.nreg r = c.nreg r) ∧
+      ∃ s : SymPt, SymPtIn c' dst s ∧ s.Lt P.n ∧
         (s.eval (Qof P)).2 = (chainModel C).hgtY (Qof P) ⟨e, h⟩ := by
   have hw := hE.wb
-  unfold yLoadX
+  unfold yLoad
   by_cases hc : h < 1
   · have h00 : h = 0 := by omega
     obtain ⟨h6, hen⟩ := h0 h00
-    have e₁ := Exec.subN (P := P) hw 50120 50201 50081
-    have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
+    have e₁ := Exec.subN (P := P) hw 50120 er 50081
+    have hE₁ : CEnv P W H C _ := hE.step e₁ rfl
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
-      (by simp [he, hE.r81]) (by omega) (dst := 50130) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
+      (by simp [he, hE.r81]) (by omega) (dst := dst) (by omega)
+    refine ⟨c₂, _, (by ram_path), by omega, hE₂,
       fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
     · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
+      ram_finish
     · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
+      ram_finish
     · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
+  · refine spec_ifLtN_false (by rwa [hh, hE.r32]) ?_
     exec_block
     all_goals try omega
-    refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
+    refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by ram_simp,
       ?_⟩, by show h - 1 < P.n; omega, ?_⟩
     · exact hE.keep ‹_› rfl (fun r hr => by
         simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
         simp only [upd]; split_ifs <;> first | rfl | omega)
     · simp only [upd]; split_ifs <;> first | rfl | omega
     · simp only [upd]; split_ifs <;> first | rfl | omega
-    · config_simp; rw [hh, hE.r32]
+    · ram_simp [hh, hE.r32]
     · obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
       rfl
 
-/-- The height of the position `(50203, 50204)` as a symbolic point in `50136`: the tour vertex
-`e - 6` for the code `0`, the vertex `h - 1` of `Q` otherwise. -/
-def yLoadY : Stmt :=
-  .ifLtN 50204 50032 (.seq (.instr (.subN 50120 50203 50081)) (tvLoad 50136))
-    (block [.constN 50136 0, .subN 50137 50204 50032])
+abbrev yLoadX := yLoad 50201 50202 50130
+abbrev yLoadY := yLoad 50203 50204 50136
 
-theorem yLoadY_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
-    (hE : CEnv P W H C c) {e h : ℕ} (he : c.nreg 50203 = e) (hh : c.nreg 50204 = h)
-    (h0 : h = 0 → 6 ≤ e ∧ e < 2 * C.m + 7) (hhn : h ≤ P.n) :
-    ∃ c' k, Exec P W yLoadY c c' k ∧ k ≤ 27 * H.length + 45 ∧ CEnv P W H C c' ∧
-      (∀ r, (50200 ≤ r ∨ (10500 ≤ r ∧ r < 50000)) → c'.nreg r = c.nreg r) ∧
-      (∀ r, 50130 ≤ r → r < 50139 → (r < 50136 ∨ 50138 < r) → c'.nreg r = c.nreg r) ∧
-      ∃ s : SymPt, SymPtIn c' 50136 s ∧ s.Lt P.n ∧
-        (s.eval (Qof P)).2 = (chainModel C).hgtY (Qof P) ⟨e, h⟩ := by
-  have hw := hE.wb
-  unfold yLoadY
-  by_cases hc : h < 1
-  · have h00 : h = 0 := by omega
-    obtain ⟨h6, hen⟩ := h0 h00
-    have e₁ := Exec.subN (P := P) hw 50120 50203 50081
-    have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
-    obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
-      (by simp [he, hE.r81]) (by omega) (dst := 50136) (by norm_num)
-    refine ⟨c₂, _, .ifLtN_true (by rw [hh, hE.r32]; exact hc) (e₁.seq e₂), by omega, hE₂,
-      fun r hr => ?_, fun r h1 h2 h3 => ?_, sp, isp, lsp, ?_⟩
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [f₂.1 r (by first | (simp [Btv, Btvi, Bhost]; omega))]
-      simp only; rw [upd_other _ _ _ (by omega)]
-    · rw [vsp, h00, show e - 6 + 6 = e by omega]; rfl
-  · refine spec_ifLtN_false (by rw [hh, hE.r32]; exact hc) ?_
-    exec_block
-    all_goals try omega
-    refine ⟨by omega, ?_, fun r hr => ?_, fun r h1 h2 h3 => ?_, .vtx (h - 1), ⟨by config_simp,
-      ?_⟩, by show h - 1 < P.n; omega, ?_⟩
-    · exact hE.keep ‹_› rfl (fun r hr => by
-        simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-        simp only [upd]; split_ifs <;> first | rfl | omega)
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · simp only [upd]; split_ifs <;> first | rfl | omega
-    · config_simp; rw [hh, hE.r32]
-    · obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
-      rfl
+abbrev yLoadX_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
+    (hE : CEnv P W H C c) {e h : ℕ} (he : c.nreg 50201 = e) (hh : c.nreg 50202 = h) :=
+  yLoad_exec c hE (dst := 50130) he hh (by decide) (by decide) (by decide)
 
+abbrev yLoadY_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
+    (hE : CEnv P W H C c) {e h : ℕ} (he : c.nreg 50203 = e) (hh : c.nreg 50204 = h) :=
+  yLoad_exec c hE (dst := 50136) he hh (by decide) (by decide) (by decide)
 
 /-- Output two bits. -/
 def offOut (a b : ℕ) : Stmt := block [.constN 50210 a, .constN 50211 b]
@@ -218,8 +185,8 @@ theorem dOf_eq {n g p : ℕ} (hg : g < n) (hp : p < n) :
     (if p < g then p + (n - g) else p - g) = dOf n g p := by
   unfold dOf
   split_ifs with h
-  · rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [show p + n - g = (p - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · ram_rw [Nat.mod_eq_of_lt]; omega
+  ram_simp [show p + n - g = (p - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 /-- The input condition of `offCmp`: two proper positions of the walk and a walk vertex; a
 position with height code `0` is a vertex of the tour or of the up-slit edge (`6 ≤ e`); the walk
@@ -242,11 +209,7 @@ def OffOut (P : Polygon) (C : Chain) (c c' : Config) : Prop :=
 theorem offOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {a b : ℕ}
     (ha : a ≤ 1) (hb : b ≤ 1) (hW : 1 ≤ W) {p q : Prop} (hp : a = 1 ↔ p) (hq : b = 1 ↔ q) :
     ∃ c' k, Exec P W (offOut a b) c c' k ∧ k = 2 ∧ BitIs c' 50210 p ∧ BitIs c' 50211 q := by
-  unfold offOut
-  exec_block
-  all_goals try omega
-  exact ⟨rfl, ⟨by config_simp; omega, by config_simp; exact hp⟩,
-    ⟨by config_simp; omega, by config_simp; exact hq⟩⟩
+  ram_exec
 
 /-- **Contract of `offCmp`** (at most `11000` steps). -/
 theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
@@ -294,26 +257,26 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     (fun r hr => r₁ r (ne_of_mem_of_not_mem hr (by decide)) (ne_of_mem_of_not_mem hr (by decide)))
   obtain ⟨c₂, k₂, e₂, hk₂, v42, r₂⟩ := candR_exec (P := P) (j := 50201) (s := 50205) (d := 50143)
     (dst := 50142) c₁ e₁.wb_right (by
-      rw [r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), q43, i01, i05]
+      ram_rw [r₁, r₁, q43, i01, i05]
       intro h; omega)
   obtain ⟨c₃, k₃, e₃, hk₃, v44, r₃⟩ := candR_exec (P := P) (j := 50203) (s := 50205) (d := 50143)
     (dst := 50144) c₂ e₂.wb_right (by
-      rw [r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
-        r₁ _ (by decide) (by decide), q43, i03, i05]
+      ram_rw [r₂, r₂, r₂, r₁,
+        r₁, q43, i03, i05]
       intro h; omega)
   have d42 : c₃.nreg 50142 = dOf M.W.n g px := by
-    rw [r₃ _ (by decide), v42, r₁ _ (by decide) (by decide), r₁ _ (by decide) (by decide), q43,
+    ram_rw [r₃, v42, r₁, r₁, q43,
       i01, i05, dOf_eq hg hx]
   have d44 : c₃.nreg 50144 = dOf M.W.n g py := by
-    rw [v44, r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
-      r₁ _ (by decide) (by decide), q43, i03, i05, dOf_eq hg hy]
+    ram_rw [v44, r₂, r₂, r₂, r₁,
+      r₁, q43, i03, i05, dOf_eq hg hy]
   have hE₃ : CEnv P W H C c₃ := hE₁.keep e₃.wb_right
-    (by rw [(exec_frameB e₃ (B := fun r => r == 50144) (by simp [candR, wr, wrOK])).2.2.1,
-      (exec_frameB e₂ (B := fun r => r == 50142) (by simp [candR, wr, wrOK])).2.2.1])
+    (by rw [(exec_frameB e₃ (B := fun r => r == 50144) (by simp [candR, write_check])).2.2.1,
+      (exec_frameB e₂ (B := fun r => r == 50142) (by simp [candR, write_check])).2.2.1])
     (fun r hr => by rw [r₃ r (ne_of_mem_of_not_mem hr (by decide)),
       r₂ r (ne_of_mem_of_not_mem hr (by decide))])
   have g3 : ∀ r, 50200 ≤ r → r < 50210 → c₃.nreg r = c₀.nreg r := fun r h1 h2 => by
-    rw [r₃ r (by omega), r₂ r (by omega), r₁ r (by omega) (by omega), hinp r h1 h2]
+    ram_post
   have eH : Exec P W offHead c c₃ (k₁ + (k₂ + k₃)) := e₁.seq (e₂.seq e₃)
   by_cases hd1 : c₃.nreg 50142 < c₃.nreg 50144
   · rw [d42, d44] at hd1
@@ -326,7 +289,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
         · rintro (h | ⟨h, -⟩)
           · omega
           · rw [h] at hd1; omega)
-    exact ⟨c₄, _, .seq eH (.ifLtN_true (by rw [d42, d44]; exact hd1) e₄),
+    exact ⟨c₄, _, (by ram_path [d42, d44]),
       by omega, b0, b1⟩
   have t1 : ¬ c₃.nreg 50142 < c₃.nreg 50144 := hd1
   rw [d42, d44] at hd1
@@ -343,7 +306,7 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
           · rw [h] at hd2; omega)
       (by rw [hgt]; simp [hd2])
     exact ⟨c₄, _, .seq eH (.ifLtN_false t1
-      (.ifLtN_true (by rw [d42, d44]; exact hd2) e₄)), by omega, b0, b1⟩
+      (by ram_path [d42, d44])), by omega, b0, b1⟩
   have t2 : ¬ c₃.nreg 50144 < c₃.nreg 50142 := hd2
   rw [d42, d44] at hd2
   -- the same walk edge
@@ -374,13 +337,11 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
   have hE₄ : CEnv P W H C c₄ := hE₃.frame (exec_frameB e₄ (B := fun r => r == 50002)
     (by decide)) e₄.wb_right (by decide)
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, hE₅, d₅⟩ := dirAt_exec c₄ hE₄ (e := px)
-    (by show upd c₃.nreg 50002 (c₃.nreg 50201) 50002 = px
-        rw [upd_same]; exact g3 50201 (by norm_num) (by norm_num)) (by omega)
+    (by ram_post) (by omega)
   rw [← hM] at d₅
   have g5 : ∀ r, 50200 ≤ r → r < 50210 → c₅.nreg r = c₀.nreg r := fun r h1 h2 => by
     rw [f₅.1 r (by simp only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), hc₄]
-    simp only
-    rw [upd_other _ _ _ (by omega), g3 r h1 h2]
+    ram_post [g3 r h1 h2]
   have hdl := dirCode_le_two M px
   by_cases hd0 : c₅.nreg 10502 < c₅.nreg 50032
   · rw [hE₅.r32, d₅] at hd0
@@ -405,18 +366,18 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     ((f6a _ (by omega)).trans ((g5 50203 (by norm_num) (by norm_num)).trans hpq.symm))
     ((f6a _ (by omega)).trans (g5 50204 (by norm_num) (by norm_num)))
     (fun h => ⟨by rw [hpq]; exact hy6 h, by omega⟩) hyn
-  have ix₇ : SymPtIn c₇ 50130 sx := symPtIn_of_eq ix fun j h1 h2 => f7b j (by omega) (by omega)
-    (by omega)
-  obtain ⟨c₈, k₈, e₈, hk₈, f₈, b₈, t₈⟩ := kbit_exec (op := 1) (dst := 50150) hE.hG hW c₇
-    e₇.wb_right (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) lx ly lx
-    ix₇ iy ix₇
+  have ix₇ : SymPtIn c₇ 50130 sx := symPtIn_of_eq ix fun j h1 h2 => (ram_app% (f7b j ?_ ?_
+    ?_))
+  obtain ⟨c₈, k₈, e₈, hk₈, f₈, b₈, t₈⟩ := (ram_app% (kbit_exec (op := 1) (dst := 50150) hE.hG hW c₇
+    e₇.wb_right ?_ ?_ ?_ ?_ ?_ lx ly lx
+    ix₇ iy ix₇))
   have ix₈ := symPtIn_keep ix₇ f₈ (by intro j h1 h2; interval_cases j <;> decide)
   have iy₈ := symPtIn_keep iy f₈ (by intro j h1 h2; interval_cases j <;> decide)
-  obtain ⟨c₉, k₉, e₉, hk₉, f₉, b₉, t₉⟩ := kbit_exec (op := 1) (dst := 50151) hE.hG hW c₈
-    e₈.wb_right (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) ly lx ly
-    iy₈ ix₈ iy₈
+  obtain ⟨c₉, k₉, e₉, hk₉, f₉, b₉, t₉⟩ := (ram_app% (kbit_exec (op := 1) (dst := 50151) hE.hG hW c₈
+    e₈.wb_right ?_ ?_ ?_ ?_ ?_ ly lx ly
+    iy₈ ix₈ iy₈))
   have p10502 : c₉.nreg 10502 = dirCode M px := by
-    rw [f₉.1 _ (by decide), f₈.1 _ (by decide), f7a _ (by omega), f6a _ (by omega), d₅]
+    ram_post [f₉.1, f₈.1, f7a, f6a, d₅]
   have p32 : c₉.nreg 50032 = 1 := (hE₇.frame f₈ e₈.wb_right (by decide) |>.frame f₉
     e₉.wb_right (by decide)).r32
   have B50 : BitIs c₉ 50150 (M.hgtY (Qof P) ⟨px, qx⟩ < M.hgtY (Qof P) ⟨px, qy⟩) := by
@@ -434,12 +395,12 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, q⟩ : ∃ c₁₀ k₁₀, Exec P W (block [.copyN 50210 50151,
         .copyN 50211 50150]) c₉ c₁₀ k₁₀ ∧ k₁₀ = 2 ∧ c₁₀.nreg 50210 = c₉.nreg 50151 ∧
         c₁₀.nreg 50211 = c₉.nreg 50150 := by
-      exec_block; exact ⟨rfl, by config_simp, by config_simp⟩
+      ram_exec
     obtain ⟨q10, q11⟩ := q
     have eF : Exec P W (.ifLtN 50032 10502 (block [.copyN 50210 50151, .copyN 50211 50150])
         (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_true (show c₉.nreg 50032 < c₉.nreg 10502 by rw [p32, p10502]; omega) e₁₀
     have eAll : Exec P W offCore c c₁₀ _ := .seq eH (.ifLtN_false t1 (.ifLtN_false t2
-      (.seq e₄ (.seq e₅ (.ifLtN_false t3 (e₆.seq (e₇.seq (e₈.seq (e₉.seq eF)))))))))
+      (.seq e₄ (.seq e₅ (.ifLtN_false t3 (by ram_path))))))
     refine ⟨c₁₀, _, eAll, by omega, ?_, ?_⟩
     · refine (B51.of_eq q10).congr ?_; rw [h2]; simp
     · refine (B50.of_eq q11).congr ?_; rw [h2]; simp
@@ -448,12 +409,12 @@ theorem offCmp_meets : Meets offCmp primBands (PrimPre OffIn) (PrimPost OffOut)
     obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, q⟩ : ∃ c₁₀ k₁₀, Exec P W (block [.copyN 50210 50150,
         .copyN 50211 50151]) c₉ c₁₀ k₁₀ ∧ k₁₀ = 2 ∧ c₁₀.nreg 50210 = c₉.nreg 50150 ∧
         c₁₀.nreg 50211 = c₉.nreg 50151 := by
-      exec_block; exact ⟨rfl, by config_simp, by config_simp⟩
+      ram_exec
     obtain ⟨q10, q11⟩ := q
     have eF : Exec P W (.ifLtN 50032 10502 (block [.copyN 50210 50151, .copyN 50211 50150])
         (block [.copyN 50210 50150, .copyN 50211 50151])) c₉ c₁₀ _ := .ifLtN_false (show ¬ c₉.nreg 50032 < c₉.nreg 10502 by rw [p32, p10502]; omega) e₁₀
     have eAll : Exec P W offCore c c₁₀ _ := .seq eH (.ifLtN_false t1 (.ifLtN_false t2
-      (.seq e₄ (.seq e₅ (.ifLtN_false t3 (e₆.seq (e₇.seq (e₈.seq (e₉.seq eF)))))))))
+      (.seq e₄ (.seq e₅ (.ifLtN_false t3 (by ram_path))))))
     refine ⟨c₁₀, _, eAll, by omega, ?_, ?_⟩
     · refine (B50.of_eq q10).congr ?_; rw [h1]; simp
     · refine (B51.of_eq q11).congr ?_; rw [h1]; simp

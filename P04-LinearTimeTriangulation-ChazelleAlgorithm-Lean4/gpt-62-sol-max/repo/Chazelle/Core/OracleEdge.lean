@@ -51,10 +51,15 @@ noncomputable def edgeHit (z : Point) (σ : ℝ) (e h : ℕ) : Option ℝ :=
 theorem sigma_sq {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) : σ * σ = 1 := by
   rcases hσ with rfl | rfl <;> norm_num
 
+section
+
+variable {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
+    {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
+include hne hz hσ
+
 /-- A ray point at the height of the ray lies on a non-horizontal edge iff the height is in range
 and the abscissa is the edge's. -/
-theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
-    {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (t : ℝ) :
+theorem rayPt_mem_edge_iff (t : ℝ) :
     rayPt z σ t ∈ Q.edge e ↔ Spans Q e h ∧ t = σ * (xe Q e h - z.1) := by
   unfold Polygon.edge
   rw [Chazelle.Visibility.mem_segment_iff_xAt hne]
@@ -75,8 +80,7 @@ theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % 
     rw [e2, hs]; ring
 
 /-- **The answer for one edge.** -/
-theorem edgeHit_spec {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2)
-    {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
+theorem edgeHit_spec :
     Sweep.FirstHitOpt (Q.edge e) z σ (edgeHit Q z σ e h) := by
   unfold edgeHit
   split_ifs with hc
@@ -86,6 +90,8 @@ theorem edgeHit_spec {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).
   · intro t ht hm
     obtain ⟨hsp, rfl⟩ := (rayPt_mem_edge_iff Q hne hz hσ _).1 hm
     exact hc ⟨hsp, ht⟩
+
+end
 
 /-- **The height range by sign tests** (distinct heights, indices in range). -/
 theorem spans_iff (hD : DistinctHeights Q) {e h : ℕ} (he : e < Q.n) (hh : h < Q.n) :
@@ -160,7 +166,7 @@ noncomputable def tci (i : ℕ) : ℕ := if tj C i < C.m then tj C i else 2 * C.
 
 theorem tci_lt (i : ℕ) : tci C i < C.m := by
   have := tj_lt C i
-  have := C.one_le
+  
   unfold tci; split_ifs <;> omega
 
 /-- **The segment of tour position `i` is the chain edge `tci i`.** -/
@@ -200,13 +206,12 @@ theorem mem_scanSet_iff (Q : Polygon) (N : NF) (p : ℕ) (x : Point) :
   · rintro ⟨k, hk, i, hi, hidx, hx⟩
     refine ⟨k, hk, ?_⟩
     unfold wseg
-    rw [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
-    exact hx
+    rwa [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
   · rintro ⟨k, hk, hx⟩
     unfold wseg at hx
     split_ifs at hx with hw
     · refine ⟨k, hk, scanIdx (chainModel C).W.n N p k - 6, by omega, by omega, ?_⟩
-      rw [tour_seg]; exact hx
+      rwa [tour_seg]
     · exact absurd hx (Set.notMem_empty x)
 
 end Tour

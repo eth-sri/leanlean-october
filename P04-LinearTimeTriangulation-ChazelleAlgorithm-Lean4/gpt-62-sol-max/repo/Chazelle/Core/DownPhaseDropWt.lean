@@ -134,12 +134,10 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
     · obtain ⟨w, hwin, hwc⟩ := hw
       obtain ⟨f, hfK, hfa, hfgap⟩ := exists_succ_gap hK hcaF hcbF hab
       obtain ⟨g, hgK, hgb, hggap⟩ := exists_pred_gap hK hcbF hcaF (Ne.symm hab)
-      have hfin' : sideInArc a b f := cyc_succ_in hwin (hfgap w hwc) hfa
-      have hgin' : sideInArc a b g := cyc_pred_in hwin (hggap w hwc) hgb
-      have hfI : lo ≤ f ∧ f ≤ hi :=
-        (hcut f hfK).resolve_left (harc.2.2.2.2.2.1 f hfin')
-      have hgI : lo ≤ g ∧ g ≤ hi :=
-        (hcut g hgK).resolve_left (harc.2.2.2.2.2.1 g hgin')
+      have hfin' := cyc_succ_in hwin (hfgap w hwc) hfa
+      have hgin' := cyc_pred_in hwin (hggap w hwc) hgb
+      have hfI := (hcut f hfK).resolve_left (harc.2.2.2.2.2.1 f hfin')
+      have hgI := (hcut g hgK).resolve_left (harc.2.2.2.2.2.1 g hgin')
       obtain ⟨X₁, hX₁, harc₁⟩ := hM.arc_of_gap hF hfin hcaF hfK (Ne.symm hfa)
         (fun k hk hc => hfgap k hc hk)
       obtain ⟨X₂, hX₂, harc₂⟩ := hM.arc_of_gap hF hfin hgK hcbF hgb
@@ -161,7 +159,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
       omega
     · obtain ⟨k₁, k₂, h₁, h₂, hk⟩ := hM.two_cuts hF (Set.nonempty_iff_ne_empty.2 hFe)
       have hnoF' : ∀ k, ¬ M.IsCut F' k := by
-        rintro k ⟨c, hc, -⟩; rw [hF'e] at hc; exact hc
+        rintro k ⟨c, hc, -⟩; rwa [hF'e] at hc
       obtain ⟨f, hfK, hfmin⟩ := Set.exists_min_image {x | M.IsCut F x} id hK ⟨k₁, h₁⟩
       obtain ⟨g, hgK, hgmax⟩ := Set.exists_max_image {x | M.IsCut F x} id hK ⟨k₁, h₁⟩
       simp only [id] at hfmin hgmax

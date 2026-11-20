@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvDCall3
 
 /-!
@@ -25,9 +27,9 @@ open Machine Machine.Stmt Programs SignK BuildRam
 theorem RegI.deg_word {E : REnv} {c₀ : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config}
     (hE : RGood E c₀) (hI : RegI E c₀ newL c) (hr : c.nreg 216030 < E.R) :
     c.nmem (c.nreg 216031) = Restore.degOf E.N (c.nreg 216030) := by
-  have hrN : c.nreg 216030 < E.N.nRegions := by rw [E.nRegions_N]; exact hr
+  have hrN : c.nreg 216030 < E.N.nRegions := by rwa [E.nRegions_N]
   have hareas := (Gran.nf_areas hE.hNW).2.2.1 _ hrN
-  rw [hI.ptr, hI.low _ (by omega)]
+  ram_rw [hI.ptr, hI.low]
   have := ((hE.hNW.nfAt).2.2.2.2.2.2.2.1 _ hrN).2.1
   unfold Restore.degOf
   rw [← this]
@@ -41,26 +43,31 @@ theorem RegI.load {E : REnv} {c₀ : Config} {newL : List (ℕ × (ℕ × ℕ ×
   have g : ∀ q, q ≠ 216032 → (upd c.nreg 216032 v) q = c.nreg q := fun q hq => by simp [hq]
   refine ⟨Machine.WordsBounded.upd_nreg hI.wb hv c.pc, ?_, ?_, ?_, hI.hgood, hI.hbk, ?_, ?_, ?_,
     hI.list, hI.low, fun q hq => ?_, ?_, ?_, ?_⟩ <;> simp only
-  · rw [g _ (by norm_num)]; exact hI.r_le
-  · rw [g _ (by norm_num), g _ (by norm_num)]; exact hI.ptr
-  · rw [g _ (by norm_num)]; exact hI.hfst
-  · rw [g _ (by norm_num)]; exact hI.cnt
-  · rw [g _ (by norm_num)]; exact hI.dst
-  · rw [g _ (by norm_num)]; exact hI.dstB
+  · ram_rw [g]; exact hI.r_le
+  · frame_finish
+  · ram_rw [g]; exact hI.hfst
+  · ram_rw [g]; exact hI.cnt
+  · ram_rw [g]; exact hI.dst
+  · ram_rw [g]; exact hI.dstB
   · rw [g q (by unfold FixR at hq; omega)]; exact hI.regs q hq
-  · rw [g _ (by norm_num)]; exact hI.rctx
-  · rw [g _ (by unfold ALLOC; norm_num)]; exact hI.alloc
-  · rw [g _ (by unfold ALLOC; norm_num), g _ (by norm_num)]; exact hI.room
+  · ram_rw [g]; exact hI.rctx
+  · rw [g _ (by reg_omega)]; exact hI.alloc
+  · ram_rw [g _ (by reg_omega), g]; exact hI.room
+
+section
+
+variable {E : REnv} {c₀ : Config} (hE : RGood E c₀)
+include hE
 
 set_option maxHeartbeats 8000000 in
 /-- **One step of the region loop.** -/
-theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
+theorem regBody_step
     {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config} (hI : RegI E c₀ newL c)
     (hr : c.nreg 216030 < E.R) :
     ∃ c' k newL', Exec E.P E.W (regBody E.sF) c c' k ∧ RegI E c₀ newL' c' ∧
       Restore.RF DrvR.drvBands E.B₀ c c' k ∧ k ≤ E.Bf ∧ c'.nreg 216030 = c.nreg 216030 + 1 := by
   have hdw := hI.deg_word hE hr
-  obtain ⟨r, hrd⟩ : ∃ r, c.nreg 216030 = r := ⟨_, rfl⟩
+  obtain ⟨r, hrd⟩ := exists_eq' (a' := c.nreg 216030)
   rw [hrd] at hr hdw
   -- load the degree
   have e₁ := Exec.loadN (P := E.P) hI.wb 216032 216031
@@ -68,10 +75,9 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
   have hI₁ : RegI E c₀ newL c₁ := hI.load _ (hI.wb.2 _)
   have r1 : c₁.nreg 216030 = r := by rw [hc₁]; simp [hrd]
   have d1 : c₁.nreg 216032 = Restore.degOf E.N r := by rw [hc₁]; simp [hdw]
-  have c04 : c₁.nreg 216004 = 4 :=
-    (hI₁.regs _ (Or.inl ⟨by norm_num, by norm_num⟩)).trans hE.r04
+  have c04 := (hI₁.regs _ (Or.inl (by decide))).trans hE.r04
   have RF₁ : Restore.RF DrvR.drvBands E.B₀ c c₁ 1 :=
-    rf_of_frameB (inDrv_eq (q := 216032) (by norm_num) (by norm_num) (by unfold ALLOC; norm_num))
+    rf_of_frameB (inDrv_eq (q := 216032) (by norm_num) (by norm_num) (by reg_omega))
       (exec_frameB e₁ (by decide))
   -- the conditional call
   obtain ⟨c₂, k₂, newL', e₂, hk₂, RF₂, hI₂', h30, h31⟩ :
@@ -84,44 +90,42 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
         c₂.nreg 216020 = newL'.length ∧ c₂.nreg 216021 = E.B₀ + 3 * newL'.length ∧
         c₂.nreg 216022 = E.BK + 2 * newL'.length ∧
         ChordListAt c₂.nmem E.B₀ (newL'.map Prod.snd) ∧
-        (∀ a, a < E.B₀ → c₂.nmem a = c₁.nmem a) ∧ (∀ q, FixR q → c₂.nreg q = c₁.nreg q) ∧
+        (MemEqBelow E.B₀ c₂.nmem c₁.nmem) ∧ (∀ q, FixR q → c₂.nreg q = c₁.nreg q) ∧
         c₂.nreg 230001 = c₁.nreg 230001 ∧ WordsBounded E.W c₂) ∧
       c₂.nreg 216030 = r ∧ c₂.nreg 216031 = c₁.nreg 216031 := by
     by_cases hhigh : 4 < Restore.degOf E.N r
     · obtain ⟨c₂, k₂, t, e₂, hk₂, RF₂, w₂, hfound, hbk, h20, h21, h22, hlist, hlow, hreg, h30,
-        h31, hctx⟩ := call_step hE hI₁ (by rw [r1]; exact hr) (by rw [r1]; exact hhigh)
+        h31, hctx⟩ := call_step hE hI₁ (by rwa [r1]) (by rwa [r1])
       rw [r1] at hfound hbk hlist h30
       refine ⟨c₂, k₂ + 1, newL ++ [(r, t)],
-        .ifLtN_true (by rw [c04, d1]; exact hhigh) e₂, by omega,
+        .ifLtN_true (by rwa [c04, d1]) e₂, by omega,
         RF₂.mono subset_rfl (by omega), ⟨?_, ?_, hbk, ?_, ?_, ?_, hlist, hlow, hreg, hctx, w₂⟩,
         h30, h31⟩
       · rw [List.map_append, hI.hfst, hrd, Restore.highList_succ, ite_eq_left hhigh]; rfl
       · intro p hp
         rcases List.mem_append.1 hp with hp | hp
         · exact hI.hgood p hp
-        · simp only [List.mem_singleton] at hp; subst hp; exact hfound
-      · rw [h20, List.length_append, List.length_singleton]
-      · rw [h21, List.length_append, List.length_singleton]
-      · rw [h22, List.length_append, List.length_singleton]
-    · refine ⟨c₁, 2, newL, .ifLtN_false (by rw [c04, d1]; exact hhigh) (.skip e₁.wb_right),
+        simp_all
+      · simp_all
+      · simp_all
+      simp_all
+    · refine ⟨c₁, 2, newL, .ifLtN_false (by rwa [c04, d1]) (.skip e₁.wb_right),
         by unfold REnv.Bf; omega, Restore.RF.refl _ _,
         ⟨by rw [hI.hfst, hrd, Restore.highList_succ, ite_eq_right hhigh, List.append_nil], hI.hgood,
           hI₁.hbk, hI₁.cnt, hI₁.dst, hI₁.dstB, hI₁.list, fun _ _ => rfl, fun _ _ => rfl, rfl,
           e₁.wb_right⟩, r1, rfl⟩
   obtain ⟨hfst₂, hgood₂, hbk₂, h20, h21, h22, hlist₂, hlow₂, hreg₂, hctx₂, w₂⟩ := hI₂'
   -- the tail
-  have c06 : c₂.nreg 216006 = 5 :=
-    ((hreg₂ _ (Or.inl ⟨by norm_num, by norm_num⟩)).trans
-      (hI₁.regs _ (Or.inl ⟨by norm_num, by norm_num⟩))).trans hE.r06
-  have c02 : c₂.nreg 216002 = 1 :=
-    ((hreg₂ _ (Or.inl ⟨by norm_num, by norm_num⟩)).trans
-      (hI₁.regs _ (Or.inl ⟨by norm_num, by norm_num⟩))).trans hE.r02
+  have c06 := ((hreg₂ _ (Or.inl (by decide))).trans
+      (hI₁.regs _ (Or.inl (by decide)))).trans hE.r06
+  have c02 := ((hreg₂ _ (Or.inl (by decide))).trans
+      (hI₁.regs _ (Or.inl (by decide)))).trans hE.r02
   have hp1 : c₂.nreg 216031 = c₀.nmem (E.H + 5) + 2 + 5 * r := by rw [h31, hI₁.ptr, r1]
   have hRW : E.R + 1 ≤ E.W := by
     have := hE.room
     have : E.R ≤ (E.Bf + 2) * E.R := Nat.le_mul_of_pos_left _ (by omega)
     omega
-  have hareas := (Gran.nf_areas hE.hNW).2.2.1 r (by rw [E.nRegions_N]; exact hr)
+  have hareas := (Gran.nf_areas hE.hNW).2.2.1 r (by rwa [E.nRegions_N])
   have hB₀W : E.B₀ + 5 ≤ E.W := by
     have h1 := hE.alloc; have h2 := hE.wb.1 ALLOC
     have h3 : E.BK = E.B₀ + 3 * E.R := rfl
@@ -130,13 +134,7 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
       (block [.addN 216031 216031 216006, .addN 216030 216030 216002]) c₂ c₃ k₃ ∧ k₃ = 2 ∧
       c₃.nreg 216031 = c₂.nreg 216031 + 5 ∧ c₃.nreg 216030 = r + 1 ∧
       c₃ = { c₂ with nreg := upd (upd c₂.nreg 216031 (c₂.nreg 216031 + 5)) 216030 (r + 1) } := by
-    exec_block
-    · rw [c06, hp1]; omega
-    · config_simp; rw [h30, c02]; omega
-    · refine ⟨rfl, ?_, ?_, ?_⟩
-      · config_simp; rw [c06]
-      · config_simp; rw [h30, c02]
-      · rw [c06, h30, c02]
+    ram_exec [c06, hp1, h30, c02]
   have g3 : ∀ q, q ≠ 216031 → q ≠ 216030 → c₃.nreg q = c₂.nreg q := fun q h1 h2 => by
     rw [R₃]; simp [h1, h2]
   have m3 : c₃.nmem = c₂.nmem := by rw [R₃]
@@ -144,22 +142,22 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     rf_of_frameB (B := fun r => decide (r = 216031) || decide (r = 216030))
       (fun q hq => by
         simp only [Bool.or_eq_true, decide_eq_true_eq] at hq
-        exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩)
+        exact ⟨mem_drvBands (by omega) (by omega), by reg_omega⟩)
       ⟨fun q hq => by
         simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hq
         exact g3 q hq.1 hq.2, fun q _ => by rw [R₃], by rw [R₃], by rw [R₃], by rw [R₃]⟩
   have RFall := RF₁.trans (RF₂.trans RF₃)
   refine ⟨c₃, 1 + (k₂ + k₃), newL', .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, ?_, ?_, ?_, hgood₂,
-    by rw [m3]; exact hbk₂, by rw [g3 _ (by norm_num) (by norm_num), h20],
-    by rw [g3 _ (by norm_num) (by norm_num), h21], by rw [g3 _ (by norm_num) (by norm_num), h22],
-    by rw [m3]; exact hlist₂, fun a ha => by rw [m3, hlow₂ a ha]; exact hI.low a ha,
-    fun q hq => ?_, by rw [g3 _ (by norm_num) (by norm_num), hctx₂]; exact hI₁.rctx,
+    by rwa [m3], by frame_finish [g3, h20],
+    by frame_finish [g3, h21], by frame_finish [g3, h22],
+    by rwa [m3], fun a ha => by rw [m3, hlow₂ a ha]; exact hI.low a ha,
+    fun q hq => ?_, by frame_finish,
     le_trans hI.alloc RFall.2.2.2.2.2.1, ?_⟩, RFall, by omega, by rw [t30, hrd]⟩
   · rw [t30]; omega
   · rw [t31, t30, hp1]; ring
-  · rw [t30]; exact hfst₂
+  · rwa [t30]
   · unfold FixR at hq
-    rw [g3 q (by omega) (by omega), hreg₂ q hq, hI₁.regs q hq]
+    frame_finish [g3, hreg₂ q hq, hI₁.regs q hq]
   · have h1 := hI.room
     have h2 := RFall.2.2.2.2.2.2
     rw [t30]
@@ -169,7 +167,7 @@ theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     omega
 
 /-- The invariant at the start of the loop. -/
-theorem RGood.regI {E : REnv} {c₀ : Config} (hE : RGood E c₀) : RegI E c₀ [] c₀ :=
+theorem RGood.regI : RegI E c₀ [] c₀ :=
   ⟨hE.wb, by rw [hE.r30]; omega, by rw [hE.r30, hE.r31], by rw [hE.r30]; rfl,
     fun p hp => by simp at hp, ⟨fun q hq => by simp at hq, fun q hq => by simp at hq⟩,
     by rw [hE.r20]; rfl, by rw [hE.r21]; simp, by rw [hE.r22]; simp,
@@ -177,7 +175,7 @@ theorem RGood.regI {E : REnv} {c₀ : Config} (hE : RGood E c₀) : RegI E c₀ 
     by rw [hE.r30]; simp⟩
 
 /-- **The region loop.** -/
-theorem reg_exec {E : REnv} {c₀ : Config} (hE : RGood E c₀) :
+theorem reg_exec :
     ∃ c' k newL, Exec E.P E.W (regS E.sF) c₀ c' k ∧ RegI E c₀ newL c' ∧
       c'.nreg 216030 = E.R ∧ Restore.RF DrvR.drvBands E.B₀ c₀ c' k ∧
       k ≤ (E.Bf + 2) * E.R + 2 := by
@@ -187,16 +185,17 @@ theorem reg_exec {E : REnv} {c₀ : Config} (hE : RGood E c₀) :
     (fun c ⟨_, h⟩ => h.wb)
     (fun c ⟨newL, I⟩ ht => by
       have t : c.nreg 216030 < E.R := by
-        rw [I.regs 216013 (Or.inl ⟨by norm_num, by norm_num⟩), hE.r13] at ht
-        exact ht
+        rwa [I.regs 216013 (Or.inl (by decide)), hE.r13] at ht
       obtain ⟨c', k, newL', e, I', RF', hk, h30⟩ := regBody_step hE I t
       exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, by omega⟩) ⟨[], hE.regI⟩
   have hR' : c'.nreg 216030 = E.R := by
-    rw [I'.regs 216013 (Or.inl ⟨by norm_num, by norm_num⟩), hE.r13] at hx
+    rw [I'.regs 216013 (Or.inl (by decide)), hE.r13] at hx
     have := I'.r_le; omega
   refine ⟨c', k, newL, e, I', hR', RFl, ?_⟩
   rw [hE.r30] at hk
   simpa using hk
+
+end
 
 end
 

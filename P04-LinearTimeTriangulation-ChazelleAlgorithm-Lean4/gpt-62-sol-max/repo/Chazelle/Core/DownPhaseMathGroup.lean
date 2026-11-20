@@ -32,8 +32,8 @@ structure RegCtx (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (re
   hperm : E.Perm (List.range (2 * L.length))
   hsort : E.Pairwise (BuildNF.codeLe (interiorModel Q) Q L)
   hK : 0 < L.length
-  hregs : Restore.NFRegs (interiorModel Q) Q (buildNF (interiorModel Q) Q L E) reg
-  hr : r < (buildNF (interiorModel Q) Q L E).nRegions
+  hregs : Restore.NFRegs (interiorModel Q) Q (interiorNF Q L E) reg
+  hr : r < (interiorNF Q L E).nRegions
 
 /-- The symbolic point inside `DrvR.ptI`. -/
 def ptSym (li : Bool) (n : ℕ) (x : WPos) (isEnd : Bool) : SymPt :=
@@ -50,7 +50,7 @@ theorem arcGap_prev_of_end {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
     (hR : R ∈ (interiorModel Q).regions S) {i : ℕ} (hi : i < nk (interiorModel Q) S R) {a : ℝ}
     (harc : (interiorModel Q).IsArc S R a (hk (interiorModel Q) S R i)) :
     ArcGap (interiorModel Q) S R (prevIdx (nk (interiorModel Q) S R) i) := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hFam hne hR
   obtain ⟨i_l, d, hD⟩ := arc_keys hM hFam.2.1 hFam.1 hne hR harc
   have hidx := hk_inj hM hFam.2.1 hFam.1 (Nat.mod_lt _ (by omega)) hi hD.hr

@@ -34,13 +34,13 @@ variable {C : Chain} {Q : Polygon} {N : NF} {m : ℕ → ℕ} {V : QV}
 
 theorem arcSe_eq (hm : NodeMemOK m V N) {j : ℕ} (hj : j < V.A) :
     arcSe m V j = (N.arc j).s.edge := by
-  have := (hm.nf.2.2.2.2.2.2.1 j (by rw [← hm.A]; exact hj)).2.1
-  unfold arcSe; rw [← hm.AB]; exact this
+  have := (hm.nf.2.2.2.2.2.2.1 j (by rwa [← hm.A])).2.1
+  unfold arcSe; rwa [← hm.AB]
 
 theorem arcEe_eq (hm : NodeMemOK m V N) {j : ℕ} (hj : j < V.A) :
     arcEe m V j = (N.arc j).e.edge := by
-  have := (hm.nf.2.2.2.2.2.2.1 j (by rw [← hm.A]; exact hj)).2.2.2.1
-  unfold arcEe; rw [← hm.AB]; exact this
+  have := (hm.nf.2.2.2.2.2.2.1 j (by rwa [← hm.A])).2.2.2.1
+  unfold arcEe; rwa [← hm.AB]
 
 /-- **The points scanned for an arc record** are the scanned points of its spine position. -/
 theorem arcPts_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) (hm : NodeMemOK m V N)

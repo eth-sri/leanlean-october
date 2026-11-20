@@ -1,5 +1,9 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.NFBuildZero
 public import Chazelle.Core.NFBuildPhaseA
 public import Chazelle.Core.NFBuildSpec
@@ -28,7 +32,7 @@ def buildStmt : Stmt :=
   .seq (.instr (.constN 43250 0)) (.ifLtN 43250 40002 (.seq phaseA phaseB) zeroCase)
 
 /-- The constant of the cost bound. -/
-def κBuild : ℕ := 70000
+@[ram_layout] def κBuild : ℕ := 70000
 
 theorem clog_two_mul_le (K : ℕ) : Nat.clog 2 (2 * K) ≤ Nat.clog 2 K + 1 := by
   apply Nat.clog_le_of_le_pow
@@ -42,87 +46,31 @@ theorem sortCost_le (K : ℕ) :
   have h2 : 2 * K * (Nat.clog 2 (2 * K) + 1) ≤ 2 * K * (Nat.clog 2 K + 2) :=
     Nat.mul_le_mul_left _ (by omega)
   have h3 : K ≤ K * (Nat.clog 2 K + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  have h4 : 2 * K * (Nat.clog 2 K + 2) = 2 * (K * (Nat.clog 2 K + 1)) + 2 * K := by ring
+  
   nlinarith
 
 theorem seg_getD {m : ℕ → ℕ} {a n : ℕ} {E : List ℕ} (h : seg m a n = E) {j : ℕ} (hj : j < n) :
     m (a + j) = E.getD j 0 := by
   rw [← h]
   unfold seg
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hj, Option.map_some,
-    Option.getD_some]
+  simp_all
 
 /-! ## Separate write sets with natural stores -/
 
-/-- The instruction writes a natural register in `BN` (or natural memory) or a real one in
-`BR`. -/
-def wrOKM2 (BN BR : ℕ → Bool) : Instr → Bool
-  | .storeN _ _ => true
-  | .inputSize r | .constN r _ | .copyN r _ | .addN r _ _ | .subN r _ _ | .loadN r _ => BN r
-  | .constR r _ | .copyR r _ | .addR r _ _ | .subR r _ _ | .mulR r _ _ | .divR r _ _ => BR r
-  | .loadR r _ | .readX r _ | .readY r _ => BR r
-  | _ => false
-
 /-- Every instruction satisfies `wrOKM2 BN BR`. -/
-def wrM2 (BN BR : ℕ → Bool) : Stmt → Bool
-  | .skip => true
-  | .instr i => wrOKM2 BN BR i
-  | .seq s t => wrM2 BN BR s && wrM2 BN BR t
-  | .ifLtN _ _ t e => wrM2 BN BR t && wrM2 BN BR e
-  | .ifLtR _ _ t e => wrM2 BN BR t && wrM2 BN BR e
-  | .whileLtN _ _ b => wrM2 BN BR b
-  | .whileLtR _ _ b => wrM2 BN BR b
+abbrev wrM2 (BN BR : ℕ → Bool) := Stmt.check (Footprint.allows ⟨BN, BR, true, false, false⟩)
 
 /-- **The real registers outside `BR` are unchanged.** -/
 theorem exec_frameM2 {P : Polygon} {W : ℕ} {BN BR : ℕ → Bool} {s : Stmt} {c c' : Config} {k : ℕ}
     (h : Exec P W s c c' k) (hs : wrM2 BN BR s = true) :
-    ∀ r, BR r = false → c'.rreg r = c.rreg r := by
-  induction h with
-  | skip _ => exact fun _ _ => rfl
-  | @instr ins c c' _ he _ _ =>
-    simp only [wrM2] at hs
-    cases ins <;> simp only [wrOKM2, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
-      (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
-      intro j hj <;>
-      first
-      | rfl
-      | (simp only [upd]; split_ifs with hh
-         · subst hh; simp_all
-         · rfl)
-  | seq _ _ ih₁ ih₂ =>
-    simp only [wrM2, Bool.and_eq_true] at hs
-    exact fun r hr => (ih₂ hs.2 r hr).trans (ih₁ hs.1 r hr)
-  | ifLtN_true _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtN_false _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.2
-  | ifLtR_true _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.1
-  | ifLtR_false _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.2
-  | whileLtN_false _ _ => exact fun _ _ => rfl
-  | whileLtN_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
-  | whileLtR_false _ _ => exact fun _ _ => rfl
-  | whileLtR_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
+    ∀ r, BR r = false → c'.rreg r = c.rreg r :=
+  let f := h.keeps (F := ⟨BN, BR, true, false, false⟩) hs
+  f.rr
 
 theorem wrM2_of_wrM {B BN BR : ℕ → Bool} (hN : ∀ r, B r = true → BN r = true)
     (hR : ∀ r, B r = true → BR r = true) {s : Stmt} (h : wrM B s = true) :
-    wrM2 BN BR s = true := by
-  induction s with
-  | skip => rfl
-  | instr i =>
-    simp only [wrM] at h; simp only [wrM2]
-    cases i <;> simp only [wrOKM, wrOK] at h <;> simp only [wrOKM2] <;>
-      first | exact hN _ h | exact hR _ h | exact h
-  | seq s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM2, ihs h.1, iht h.2, Bool.and_self]
-  | ifLtN a b s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM2, ihs h.1, iht h.2, Bool.and_self]
-  | ifLtR a b s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM2, ihs h.1, iht h.2, Bool.and_self]
-  | whileLtN a b s ih => simp only [wrM] at h; simp only [wrM2, ih h]
-  | whileLtR a b s ih => simp only [wrM] at h; simp only [wrM2, ih h]
+    wrM2 BN BR s = true :=
+  Footprint.widen hN hR id h
 
 theorem wrM2_phaseB : wrM2 BphaseB BRb phaseB = true := by
   have h1 : wrM2 BphaseB BRb setupB = true := by decide
@@ -130,19 +78,19 @@ theorem wrM2_phaseB : wrM2 BphaseB BRb phaseB = true := by
   have h3 : wrM2 BphaseB BRb passLoop = true := by
     refine wrM2_of_wrM (B := Bpass) (fun r hr => ?_) (fun r hr => ?_) ?_
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · simp_all
       · by_contra hc
         simp only [BphaseB, decide_eq_true_eq, not_or, not_and, not_lt] at hc
         have : Bpass r = false := Bpass_false (by omega)
-        rw [this] at hb; exact absurd hb (by simp)
+        simp_all
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · simp_all
       · by_contra hc
         have hc' : ¬ (r / 10000 = 1 ∨ r / 10000 = 4) := fun h' => hc (by
           unfold BRb bandOf bSign bBuild; simp only [decide_eq_true_eq]; exact h')
         have : Bpass r = false := Bpass_false (by omega)
         rw [this] at hb; exact absurd hb (by simp)
-    · simp only [passLoop, wrM]; exact wr_passBody
+    · simp only [passLoop, write_check]; exact wr_passBody
   have h4 : wrM2 BphaseB BRb regPhase = true := wrM2_of_wrM (B := BregPhase)
     (fun r hr => by
       simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
@@ -150,28 +98,23 @@ theorem wrM2_phaseB : wrM2 BphaseB BRb phaseB = true := by
     (fun r hr => by
       simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
       unfold BRb bandOf bSign bBuild; simp only [decide_eq_true_eq]; omega) wr_regPhase
-  simp only [phaseB, phaseB1, wrM2, h1, h2, h3, h4, Bool.and_self]
+  simp only [phaseB, phaseB1, write_check, h1, h2, h3, h4, Bool.and_self]
 
 theorem wrM2_zeroCase : wrM2 BphaseB BRb zeroCase = true := by decide
 
 theorem BphaseB_false {r : ℕ} (hr : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ))
     (hra : r ≠ ALLOC) : BphaseB r = false := by
   simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr
-  unfold ALLOC at hra
-  simp only [BphaseB, decide_eq_false_iff_not]
-  omega
+  ram_simp [ALLOC, BphaseB, decide_eq_false_iff_not] <;> reg_omega
 
 theorem BRb_false {r : ℕ} (hr : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ)) :
     BRb r = false := by
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr
-  unfold BRb bandOf bSign bBuild
-  simp only [decide_eq_false_iff_not]
-  omega
+  simp_all [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign, BRb, decide_eq_false_iff_not] <;> omega
 
 /-- A register frame of phase B gives the frame of the specification. -/
 theorem frame_of_frameM {c c' : Config} {k : ℕ} (F : FrameM BphaseB c c')
     (hR : ∀ r, BRb r = false → c'.rreg r = c.rreg r)
-    (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)
+    (hm : MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)
     (h1 : c.nreg ALLOC ≤ c'.nreg ALLOC) (h2 : c'.nreg ALLOC ≤ c.nreg ALLOC + k) :
     Frame {bBuild, bSort, bSign} c c' k :=
   ⟨fun r hr hra => F.1 r (BphaseB_false hr hra), fun r hr => hR r (BRb_false hr),
@@ -211,11 +154,11 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
   by_cases hK : 0 < K
   · -- phase A
     have t₀ : c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; exact hK
+      frame_finish [g₀, hlen, hc₀]
     obtain ⟨c₁, k₁, x₁, hk₁, w₁, F₁, d1, d2, d3, d4, d5, d6, d7, hrec, e1, e2, E, hE, hperm,
       hsort⟩ := phaseA_exec (P := P) hG hWn c₀ w₀ (M := M) (L := L) (D := c.nreg 40000)
         (B := c.nreg 40001) hwf hM hok hCL hBL (g₀ _ (by norm_num)) (g₀ _ (by norm_num))
-        (by rw [g₀ _ (by norm_num), hlen])
+        (by ram_rw [g₀, hlen])
         (by unfold costA; show A₀ + _ ≤ W; nlinarith)
     have hc0A : c₀.nreg ALLOC = A₀ := g₀ 9999 (by norm_num)
     rw [hc0A] at d2 hrec e1
@@ -224,7 +167,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     set H := c₁.nreg 9999 with hHdef
     have e2' : SE + 2 * K ≤ H := e2
     have hElen : E.length = 2 * K := by rw [hperm.length_eq, List.length_range]
-    have hlow₁ : ∀ a, a < A₀ → c₁.nmem a = c.nmem a := fun a ha => by
+    have hlow₁ : MemEqBelow A₀ c₁.nmem c.nmem := fun a ha => by
       rw [F₁.2.2.1 a (by rw [hc0A]; exact ha), hm₀]
     have hAH : A₀ ≤ H := by have := F₁.2.2.2.2.2.1; rw [hc0A] at this; exact this
     have hHk : H ≤ A₀ + k₁ := by have := F₁.2.2.2.2.2.2; rw [hc0A] at this; exact this
@@ -232,10 +175,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
     have hI : BuildNF.Input M (Qof P) L E :=
       ⟨walkAx_of_goodModel hgood, hok, hperm,
         BuildNF.sorted_of_codeLe (walkAx_of_goodModel hgood) hok hperm hsort⟩
-    have hCL₁ : ChordListAt c₁.nmem (c.nreg 40001) L := fun i hi => by
-      obtain ⟨a1, a2, a3⟩ := hCL i hi
-      exact ⟨by rw [hlow₁ _ (by omega), a1], by rw [hlow₁ _ (by omega), a2],
-        by rw [hlow₁ _ (by omega), a3]⟩
+    have hCL₁ : ChordListAt c₁.nmem (c.nreg 40001) L := hCL.below (by omega) hlow₁
     obtain ⟨c₂, k₂, x₂, hk₂, hk₂', w₂, F₂, h40003, h9999, hlow, hNF⟩ := phaseB_exec (P := P) hG
       hWn c₁ w₁ (M := M) (L := L) (E := E) (D := c.nreg 40000) (T := A₀) (SE := SE)
       (B := c.nreg 40001) (H := H) hI hK d1 d2 d3 d4 d5 d6 d7 rfl rfl
@@ -243,7 +183,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
       (fun j hj => seg_getD hE (by omega)) (by omega)
       (by unfold sizeB; unfold costA at hk₁; nlinarith)
     have X : Exec P W buildStmt c c₂ (1 + (k₁ + k₂ + 1)) :=
-      .seq x₀ (.ifLtN_true t₀ (.seq x₁ x₂))
+      (by ram_path)
     refine ⟨c₂, _, X, ?_, fun M' L' hM' hlen' hL' => ?_, ?_⟩
     · rw [hlen]; unfold costA at hk₁; unfold κBuild; nlinarith
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
@@ -253,7 +193,7 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
       · rw [F₂.1 r (BphaseB_false hr hra), F₁.1 r hr hra, g₀ r (by
           intro h; subst h; simp [bandOf, bSort, bSign] at hr)]
       · rw [exec_frameM2 x₂ wrM2_phaseB r (BRb_false hr), F₁.2.1 r hr]
-      · rw [hlow a (by omega), hlow₁ a ha]
+      · ram_rw [hlow a, hlow₁ a ha]
       · rw [F₂.2.2.1, F₁.2.2.2.1 a (by rw [hc0A]; exact ha)]
       · rw [F₂.2.2.2, F₁.2.2.2.2.1]
       · show A₀ ≤ c₂.nreg 9999; rw [h9999]; omega
@@ -261,10 +201,10 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
   · -- `K = 0`
     have hK0 : K = 0 := by omega
     have t₀ : ¬ c₀.nreg 43250 < c₀.nreg 40002 := by
-      rw [g₀ 40002 (by norm_num), hlen, hc₀]; simp; omega
+      ram_rw [g₀ 40002, hlen, hc₀]; simp; omega
     obtain ⟨c', k, x, hk, hk', w', F', h40003, h9999, hlow, hNF⟩ := zeroCase_exec (P := P) hWn c₀
       w₀ (M := M) (L := L) (E := []) (D := c.nreg 40000) (H := A₀) hK0
-      (g₀ _ (by norm_num)) (by rw [g₀ 9999 (by norm_num)]; rfl) hwf hM (by nlinarith)
+      (g₀ _ (by norm_num)) (by ram_rw [g₀ 9999]; rfl) hwf hM (by nlinarith)
     have X : Exec P W buildStmt c c' (1 + (k + 2)) := .seq x₀ (.ifLtN_false t₀ x)
     refine ⟨c', _, X, by rw [hlen, hK0]; unfold κBuild; omega, fun M' L' hM' hlen' hL' => ?_, ?_⟩
     · obtain rfl := NFLoc.modelDesc_unique hM hM'
@@ -275,8 +215,8 @@ theorem buildNFRam : BuildNF.BuildNFRamSpec := by
       have R' : ∀ r, BRb r = false → c'.rreg r = c.rreg r := fun r hr =>
         (exec_frameM2 x wrM2_zeroCase r hr).trans (by rw [hc₀])
       refine frame_of_frameM (F₀.trans F') R' (fun a ha => by rw [hlow a ha]) ?_ ?_
-      · show A₀ ≤ c'.nreg 9999; rw [h9999]; omega
-      · show c'.nreg 9999 ≤ A₀ + _; rw [h9999]; omega
+      · frame_finish [h9999]
+      frame_finish [h9999]
 
 end exec
 

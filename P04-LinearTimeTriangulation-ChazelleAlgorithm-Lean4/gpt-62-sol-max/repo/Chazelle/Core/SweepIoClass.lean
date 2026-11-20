@@ -40,9 +40,8 @@ theorem mod_three {a n : ℕ} (_hn : 0 < n) (ha : a < 3 * n) :
     a % n = if a < n then a else if a < 2 * n then a - n else a - 2 * n := by
   split_ifs with h1 h2
   · exact Nat.mod_eq_of_lt h1
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    omega
+  · ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
+  ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt] <;> omega
 
 /-- **The tour positions of an end vertex.** -/
 theorem endIdx (C : Chain) {k : ℕ} (hk : k = 0 ∨ k = C.m) {i : ℕ} (hi : i ≤ 2 * C.m) :
@@ -89,9 +88,7 @@ theorem nhgt_eq_zero_iff (M : Model) (Q : Polygon) (u : WPos) :
     intro h0
     apply h
     obtain ⟨e, hh⟩ := u
-    simp only at h0
-    subst h0
-    rfl
+    simp_all
 
 /-- **A position is at an end vertex** (`k = 0` or `k = m`) iff its parameter is `0` and its edge
 is `6 + tpos C k`, or `2m + 6` when `tpos C k = 0`. -/
@@ -102,7 +99,7 @@ theorem atEnd_iff (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k = 0 ∨ k = C.
       (x.edge = 6 + tpos C k ∨ (x.edge = 2 * C.m + 6 ∧ tpos C k = 0)) := by
   have hkm : k ≤ C.m := by rcases hk with rfl | rfl <;> omega
   rw [pos_eq_sidePt' C Q x, vtx_pos_iff C hP hkm hx h0 h1]
-  have hn := cm_n C
+  
   constructor
   · rintro ⟨ht, i, hi, hp, hidx⟩
     refine ⟨ht, ?_⟩
@@ -121,7 +118,7 @@ theorem atTop_iff (C : Chain) (hP : C.P.Simple) (Q : Polygon) {x : WPos}
     (h1 : (chainModel C).param Q x < 1) :
     (chainModel C).pos Q x = C.top ↔ (chainModel C).param Q x = 0 ∧
       (x.edge = 6 ∨ x.edge = 2 * C.m + 6 ∨ x.edge = 6 + midT C) := by
-  have hn := cm_n C
+  
   have hmid : midT C ≤ 2 * C.m := by
     unfold midT; have := C.topIdx_le; split_ifs <;> omega
   show _ = C.vertex C.topIdx ↔ _

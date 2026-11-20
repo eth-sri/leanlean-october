@@ -31,14 +31,21 @@ section arrays
 
 variable {m : ℕ → ℕ} {bO bR bV μ N : ℕ} {F : Type} {M : CombMap (Fin μ) F (Fin N)}
 
-theorem MapArrays.opp (h : MapArrays m bO bR bV μ N M) {d : ℕ} (hd : d < N) :
+section
+
+variable (h : MapArrays m bO bR bV μ N M) {d : ℕ} (hd : d < N)
+include h hd
+
+theorem MapArrays.opp :
     m (bO + d) = M.opp ⟨d, hd⟩ := (h ⟨d, hd⟩).1
 
-theorem MapArrays.rot (h : MapArrays m bO bR bV μ N M) {d : ℕ} (hd : d < N) :
+theorem MapArrays.rot :
     m (bR + d) = M.rot ⟨d, hd⟩ := (h ⟨d, hd⟩).2.1
 
-theorem MapArrays.vert (h : MapArrays m bO bR bV μ N M) {d : ℕ} (hd : d < N) :
+theorem MapArrays.vert :
     m (bV + d) = M.vert ⟨d, hd⟩ := (h ⟨d, hd⟩).2.2
+
+end
 
 /-- Iterating the stored rotation is iterating the rotation. -/
 theorem MapArrays.iterate_rot (h : MapArrays m bO bR bV μ N M) (n : ℕ) (d : Fin N) :
@@ -57,8 +64,7 @@ end arrays
 theorem PlanarMapAt.exists_arrays {m : ℕ → ℕ} {B μ E : ℕ} (h : PlanarMapAt m B μ E) :
     ∃ (F : Type) (_ : Fintype F) (_ : DecidableEq F) (M : CombMap (Fin μ) F (Fin (2 * E))),
       M.Planar ∧ MapArrays m (m B) (m (B + 1)) (m (B + 2)) μ (2 * E) M := by
-  obtain ⟨F, i1, i2, M, hM, hA⟩ := h
-  exact ⟨F, i1, i2, M, hM, fun d => hA d⟩
+  assumption
 
 /-- **The rotation system of the input map** with a `first` array and flag arrays. -/
 def primalEnv (m : ℕ → ℕ) (bO bR bV bF bDB bVB μ N : ℕ) : Env :=
@@ -76,15 +82,13 @@ theorem primalEnv_ok [Fintype F] (h : MapArrays m bO bR bV μ N M)
   refine ⟨fun d hd => ?_, fun d hd => ?_, fun d hd => ?_, fun d hd e he hde => ?_,
     fun d hd => ?_, fun d hd e he hde => ?_, fun u hu => ?_, fun u hu => ?_⟩
   all_goals simp only [primalEnv] at *
-  · rw [view_lt hd, h.opp hd]; exact (M.opp ⟨d, hd⟩).2
-  · rw [view_lt hd, h.rot hd]; exact (M.rot ⟨d, hd⟩).2
-  · rw [view_lt hd, h.vert hd]; exact (M.vert ⟨d, hd⟩).2
+  · simp [view_lt hd, h.opp hd]
+  · simp [view_lt hd, h.rot hd]
+  · simp [view_lt hd, h.vert hd]
   · rw [view_lt hd, view_lt he, h.rot hd, h.rot he] at hde
     have := M.rot.injective (Fin.ext hde)
     exact congrArg Fin.val this
-  · rw [view_lt hd, h.rot hd, view_lt (M.rot ⟨d, hd⟩).2, h.vert (M.rot ⟨d, hd⟩).2,
-      view_lt hd, h.vert hd]
-    simp [M.vert_rot]
+  · simp [view_lt hd, h.rot hd, view_lt (M.rot ⟨d, hd⟩).2, h.vert (M.rot ⟨d, hd⟩).2, h.vert hd, M.vert_rot]
   · rw [view_lt hd, view_lt he, h.vert hd, h.vert he] at hde
     have hsc := M.sameCycle_of_vert ⟨d, hd⟩ ⟨e, he⟩ (Fin.ext hde)
     obtain ⟨n, hn⟩ := hsc.exists_nat_pow_eq
@@ -100,12 +104,11 @@ theorem primalEnv_sym (h : MapArrays m bO bR bV μ N M)
     (primalEnv m bO bR bV bF bDB bVB μ N).Sym := by
   intro d hd
   change d < N at hd
-  have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
+  have ho : m (bO + d) < N := by simp [h.opp hd]
   show view m bO N (view m bO N d) = d ∧ view m bDB N (view m bO N d) = view m bDB N d
   rw [view_lt hd, view_lt ho, view_lt ho, view_lt hd]
   refine ⟨?_, hdb d hd⟩
-  rw [h.opp hd, h.opp (M.opp ⟨d, hd⟩).2]
-  simp [M.opp_opp]
+  simp [h.opp hd, h.opp (M.opp ⟨d, hd⟩).2, M.opp_opp]
 
 /-- **Walks of the stored graph avoiding the flagged vertices are reachabilities** (for dart
 flags never equal to `1`). -/
@@ -116,8 +119,8 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
   induction w with
   | nil => exact Relation.ReflTransGen.refl
   | @cons a b c hadj w ih =>
-    have ha : m (bVB + a) ≠ 1 := hw a (by simp)
-    have hb : m (bVB + b) ≠ 1 := hw b (by simp)
+    have ha := hw a (by simp)
+    have hb := hw b (by simp)
     have hrest := ih (fun x hx => hw x (by simp [hx]))
     have hstep : (primalEnv m bO bR bV bF bDB bVB μ N).Step a b := by
       obtain ⟨-, hd⟩ := hadj
@@ -125,8 +128,8 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
       · rw [← hN] at hd
         rw [hB2] at h1 h2
         rw [hB] at h2
-        have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
-        refine ⟨d, hd, ?_, ?_, ?_, ?_, ?_⟩
+        have ho : m (bO + d) < N := by simp [h.opp hd]
+        refine ⟨d, hd, ?_⟩; and_intros
         · simp only [primalEnv, view_lt hd]; exact hdb d hd
         · simp only [primalEnv, view_lt hd]; exact h1
         · simp only [Env.head, primalEnv, view_lt hd, view_lt ho]; exact h2
@@ -136,15 +139,14 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
         rw [← hN] at hd
         rw [hB2] at h1 h2
         rw [hB] at h2
-        have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
+        have ho : m (bO + d) < N := by simp [h.opp hd]
         have hoo : m (bO + m (bO + d)) = d := by
           rw [h.opp ho]; simp only [h.opp hd, Fin.eta, M.opp_opp]
-        refine ⟨m (bO + d), ho, ?_, ?_, ?_, ?_, ?_⟩
+        refine ⟨m (bO + d), ho, ?_⟩; and_intros
         · simp only [primalEnv, view_lt ho]; exact hdb _ ho
         · simp only [primalEnv, view_lt ho]; exact h2
         · show view m bV N (view m bO N (m (bO + d))) = _
-          rw [view_lt ho, hoo, view_lt hd]
-          exact h1
+          rwa [view_lt ho, hoo, view_lt hd]
         · simp only [primalEnv, view_lt a.2]; exact ha
         · simp only [primalEnv, view_lt b.2]; exact hb
     exact Relation.ReflTransGen.head hstep hrest

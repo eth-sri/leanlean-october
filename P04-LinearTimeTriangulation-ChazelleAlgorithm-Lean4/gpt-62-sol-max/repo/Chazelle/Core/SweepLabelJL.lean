@@ -54,11 +54,11 @@ theorem vertexEnd_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i �
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
   have key2 : ∀ x, x < 2 * (2 * m) → x % (2 * m) = if x < 2 * m then x else x - 2 * m := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
   rw [key2 _ (by omega)]
   interval_cases hq' : (b + i) / (2 * m) <;> split_ifs <;> rw [key _ (by omega)] <;>
     split_ifs <;> omega
@@ -109,7 +109,7 @@ def F₁plus (S₁ : Set (Set Point)) : Set (Set Point) := J.fusion S₁ ∅ ∪
 theorem topChords₁_subset_chords : topChords₁ J ⊆ J.whole.chords := by
   rintro d ⟨σ, hσ, hfree, rfl⟩
   have := J.left.topIdx_le
-  exact ⟨_, σ, by simp only [Merge.Junction.whole_m, Merge.Junction.left_m] at this ⊢; omega,
+  exact ⟨_, σ, by simp_all <;> omega,
     hσ, hfree, rfl⟩
 
 theorem F₁plus_subset {S₁ : Set (Set Point)} (hS₁ : S₁ ⊆ Merge.augChords J.left) :
@@ -174,8 +174,8 @@ noncomputable def lδ : ℕ :=
   else 7
 
 theorem lL1_add_lL2 : lL1 J + lL2 J = llen J := by
-  have := tpos_lt J.left J.m₁
-  have hm1 : J.left.m = J.m₁ := rfl
+  
+  
   unfold lL1 lL2 llen
   split_ifs <;> omega
 

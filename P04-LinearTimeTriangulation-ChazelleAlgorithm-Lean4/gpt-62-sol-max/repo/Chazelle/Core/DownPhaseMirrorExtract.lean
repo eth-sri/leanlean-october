@@ -82,13 +82,7 @@ theorem kept_mir (R : Set Point) (F : Set (Set Point)) :
   simp only [mem_ofPred_eq, mem_mirF]
   have e : mir '' (c ∩ mir '' R) = mir '' c ∩ R := by
     rw [image_inter mir_injective, image_mir_image_mir]
-  constructor
-  · rintro ⟨h1, h2⟩
-    refine ⟨h1, ?_⟩
-    rw [← e] at h2
-    exact h2.of_image
-  · rintro ⟨h1, h2⟩
-    exact ⟨h1, by rw [← e]; exact h2.image _⟩
+  simp [← e]
 
 /-- The mirrored family after extraction. -/
 theorem mirF_step (S : Set (Set Point)) (R : Set Point) (F : Set (Set Point)) :
@@ -112,25 +106,24 @@ theorem extractOK_of_mir {C : Chain} (hQ : Q.Simple) (hP : C.P.Simple)
     rw [hC.Adm]; exact mirF_subset.2 hF₁
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro F₁ hF₁ c hc
-    have hc' : mir '' c ∈ Extract.kept (mir '' R) (mirF F₁) := by
-      rw [← kept_mir]; exact image_mem_mirF.2 hc
+    have hc' := image_mem_mirF.2 hc
+    rw [kept_mir] at hc'
     obtain ⟨h1, h2⟩ := h.loc (hadm hF₁) _ hc'
     rw [hI.Adm, image_mem_mirF] at h1
     refine ⟨h1, fun x ⟨hxc, hxD⟩ => ?_⟩
     have := h2 ⟨mem_image_of_mem mir hxc, by rw [hI.D]; exact mem_image_of_mem mir hxD⟩
     rwa [mem_image_mir, mir_mir] at this
   · intro F₁ V hV hVR
-    have hV' : mir '' V ∈ (interiorModel Q.mir).regions (mirF S ∪ Extract.kept (mir '' R)
-        (mirF F₁)) := by
-      rw [← mirF_step, hI.regions]; exact image_mem_mirF.2 hV
+    have hV' := image_mem_mirF.2 hV
+    rw [← hI.regions, mirF_step] at hV'
     obtain ⟨U', hU', hVU'⟩ := h.region hV' (image_mono hVR)
     rw [hC.regions] at hU'
     refine ⟨mir '' U', mem_mirF.1 hU', ?_⟩
     rw [← image_mir_image_mir V]
     exact image_mono hVU'
   · intro F₁ hF₁ hfin U hU V hVR hVU
-    have hU' : mir '' U ∈ (chainModel C.mir).regions (mirF F₁) := by
-      rw [hC.regions]; exact image_mem_mirF.2 hU
+    have hU' := image_mem_mirF.2 hU
+    rw [← hC.regions] at hU'
     have := h.weight (hadm hF₁) (mirF_finite.2 hfin) hU' (image_mono hVR) (image_mono hVU)
     rwa [← mirF_step, hI.weight, hC.weight] at this
   · intro F₁ hF₁ hfin U V hVR hVU

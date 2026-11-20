@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.SweepPrimArrMath
 public import Chazelle.Core.SweepLabelJ
 public import Chazelle.Core.SweepLabelJL
@@ -37,9 +39,9 @@ theorem tpos_eq_cand (C : Chain) {J : ℕ} (hJ : J < 2 * C.m) :
   have hS := C.sideS_lt C.sideBeta
   unfold WalkEmbed.tpos WalkEmbed.bS candIdx
   split_ifs with h
-  · rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [show J + 2 * C.m - C.sideS C.sideBeta = (J - C.sideS C.sideBeta) + 2 * C.m by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · ram_rw [Nat.mod_eq_of_lt]; omega
+  · ram_rw [show J + 2 * C.m - C.sideS C.sideBeta = (J - C.sideS C.sideBeta) + 2 * C.m by omega,
+      Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 /-! ## Reading a descriptor -/
 
@@ -53,7 +55,12 @@ def readS : Stmt :=
     (.ifLtN 50107 50109 (.instr (.subN 50102 50108 50106))
       (.ifLtN 50109 50107 (.instr (.subN 50102 50108 50106)) (.instr (.copyN 50102 50106))))
 
-theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {X : ℕ}
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+
+include P hw in
+theorem readS_exec {X : ℕ}
     (hX : c.nreg 50100 = X) {Q : Polygon} {H : Host} {C : Chain}
     (hC : ChainDescAt c.nmem X Q H C) (hXW : X + 5 ≤ W) (hmW : 2 * C.m ≤ W) :
     ∃ c' k, Exec P W readS c c' k ∧ k ≤ 16 ∧ c'.nreg 50101 = C.m ∧
@@ -71,8 +78,8 @@ theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     all_goals try omega
     all_goals try (config_simp; rw [hX]; omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩
-    · config_simp; rw [hX]; exact hm
-    · config_simp; rw [hX]; exact hT
+    · config_simp; rwa [hX]
+    · ram_finish
     · config_simp; rw [hX]
     · config_simp; rw [hX, hm]; ring
     · config_simp
@@ -80,7 +87,7 @@ theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   obtain ⟨q01, q06, q07, q08, q09, r₁, m₁⟩ := q
   have w₁ := e₁.wb_right
   have hsS : C.sideS C.sideBeta = if C.sideBeta = true then C.topIdx else 2 * C.m - C.topIdx := by
-    unfold Chain.sideS; cases C.sideBeta <;> simp
+    rfl
   obtain ⟨c₂, k₂, e₂, hk₂, q02, r₂⟩ : ∃ c₂ k₂, Exec P W
       (.ifLtN 50107 50109 (.instr (.subN 50102 50108 50106))
         (.ifLtN 50109 50107 (.instr (.subN 50102 50108 50106)) (.instr (.copyN 50102 50106))))
@@ -88,27 +95,25 @@ theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       ∀ r, r ≠ 50102 → c₂.nreg r = c₁.nreg r := by
     by_cases h0 : c.nmem (X + 4) < 1
     · have hβ : C.sideBeta = false := by
-        cases hβ : C.sideBeta
-        · rfl
-        · exact absurd (hb.2 hβ) (by omega)
-      refine spec_ifLtN_true (by rw [q07, q09]; exact h0) (spec_instr (Exec.subN w₁ _ _ _)
+        simp_all 
+      refine spec_ifLtN_true (by rwa [q07, q09]) (spec_instr (Exec.subN w₁ _ _ _)
         fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-      simp only [upd_same]; rw [q08, q06, hsS, hβ]; rfl
-    · refine spec_ifLtN_false (by rw [q07, q09]; exact h0) ?_
+      simp_all
+    · refine spec_ifLtN_false (by rwa [q07, q09]) ?_
       by_cases h2 : 1 < c.nmem (X + 4)
       · have hβ : C.sideBeta = false := by
           cases hβ : C.sideBeta
           · rfl
-          · exact absurd (hb.2 hβ) (by omega)
-        refine spec_ifLtN_true (by rw [q07, q09]; exact h2) (spec_instr (Exec.subN w₁ _ _ _)
+          · simp_all 
+        refine spec_ifLtN_true (by rwa [q07, q09]) (spec_instr (Exec.subN w₁ _ _ _)
           fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-        simp only [upd_same]; rw [q08, q06, hsS, hβ]; rfl
-      · have hβ : C.sideBeta = true := hb.1 (by omega)
-        refine spec_ifLtN_false (by rw [q07, q09]; exact h2) (spec_instr (Exec.copyN w₁ _ _)
+        simp_all
+      · have hβ := hb.1 (by omega)
+        refine spec_ifLtN_false (by rwa [q07, q09]) (spec_instr (Exec.copyN w₁ _ _)
           fun _ => ⟨by omega, ?_, fun r hr => by simp [hr]⟩)
-        simp only [upd_same]; rw [q06, hsS, hβ]; rfl
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by rw [r₂ _ (by decide), q01], q02,
-    by rw [r₂ _ (by decide), q08], fun r hr => by rw [r₂ r (by omega), r₁ r hr],
+        simp_all
+  refine ⟨c₂, _, .seq e₁ e₂, by omega, by simp_all, q02,
+    by simp_all, fun r hr => by ram_finish,
     by rw [(exec_frameB e₂ (B := fun r => r == 50102) (by decide)).2.2.1, m₁]⟩
 
 /-! ## Generic arithmetic blocks -/
@@ -116,7 +121,8 @@ theorem readS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
 /-- `dst := candIdx`-style: `if j < s then j + d else j - s`. -/
 def candR (j s d dst : ℕ) : Stmt := .ifLtN j s (.instr (.addN dst j d)) (.instr (.subN dst j s))
 
-theorem candR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {j s d dst : ℕ}
+include P hw in
+theorem candR_exec {j s d dst : ℕ}
     (hjd : c.nreg j < c.nreg s → c.nreg j + c.nreg d ≤ W) :
     ∃ c' k, Exec P W (candR j s d dst) c c' k ∧ k ≤ 3 ∧
       c'.nreg dst = (if c.nreg j < c.nreg s then c.nreg j + c.nreg d else c.nreg j - c.nreg s) ∧
@@ -128,78 +134,43 @@ theorem candR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   · exact spec_ifLtN_false h (spec_instr (Exec.subN hw _ _ _) fun _ =>
       ⟨by omega, by simp [h], fun r hr => by simp [hr]⟩)
 
-/-- The right lengths `rL1, rL2, rδ` from `A = 2m - τ` (`50130`), `B = 2m₂ - τ'` (`50131`), `2m₂` (`50115`). -/
-def selR : Stmt :=
-  .ifLtN 50130 50115 (block [.addN 50212 50115 50160, .constN 50213 0, .constN 50214 0])
-    (.ifLtN 50131 50115 (block [.copyN 50212 50131, .subN 50213 50115 50131, .constN 50214 7])
-      (block [.copyN 50212 50115, .constN 50213 0, .constN 50214 0]))
+/-- Select the three lengths/codes in one direction of the merged tour. -/
+def sel (a b lim d : ℕ) : Stmt :=
+  .ifLtN a lim (block [.addN d lim 50160, .constN (d + 1) 0, .constN (d + 2) 0])
+    (.ifLtN b lim (block [.copyN d b, .subN (d + 1) lim b, .constN (d + 2) 7])
+      (block [.copyN d lim, .constN (d + 1) 0, .constN (d + 2) 0]))
 
-theorem selR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
-    (h7 : c.nreg 50160 = 7) (hW : c.nreg 50115 + 7 ≤ W) :
-    ∃ c' k, Exec P W selR c c' k ∧ k ≤ 7 ∧
-      c'.nreg 50212 = (if c.nreg 50130 < c.nreg 50115 then c.nreg 50115 + 7 else
-        if c.nreg 50131 < c.nreg 50115 then c.nreg 50131 else c.nreg 50115) ∧
-      c'.nreg 50213 = (if c.nreg 50130 < c.nreg 50115 then 0 else
-        if c.nreg 50131 < c.nreg 50115 then c.nreg 50115 - c.nreg 50131 else 0) ∧
-      c'.nreg 50214 = (if c.nreg 50130 < c.nreg 50115 then 0 else
-        if c.nreg 50131 < c.nreg 50115 then 7 else 0) ∧
-      ∀ r, r ≠ 50212 → r ≠ 50213 → r ≠ 50214 → c'.nreg r = c.nreg r := by
-  unfold selR
-  by_cases ha : c.nreg 50130 < c.nreg 50115
+abbrev selR := sel 50130 50131 50115 50212
+abbrev selL := sel 50132 50133 50118 50217
+
+include P hw in
+theorem sel_exec
+    {a b lim d : ℕ} (hb : b ≠ d) (hl : lim ≠ d)
+    (h7 : c.nreg 50160 = 7) (hW : c.nreg lim + 7 ≤ W) :
+    ∃ c' k, Exec P W (sel a b lim d) c c' k ∧ k ≤ 7 ∧
+      c'.nreg d = (if c.nreg a < c.nreg lim then c.nreg lim + 7 else
+        if c.nreg b < c.nreg lim then c.nreg b else c.nreg lim) ∧
+      c'.nreg (d + 1) = (if c.nreg a < c.nreg lim then 0 else
+        if c.nreg b < c.nreg lim then c.nreg lim - c.nreg b else 0) ∧
+      c'.nreg (d + 2) = (if c.nreg a < c.nreg lim then 0 else
+        if c.nreg b < c.nreg lim then 7 else 0) ∧
+      ∀ r, r ≠ d → r ≠ d + 1 → r ≠ d + 2 → c'.nreg r = c.nreg r := by
+  unfold sel
+  by_cases ha : c.nreg a < c.nreg lim
   · refine spec_ifLtN_true ha ?_
-    exec_block
-    all_goals try omega
-    refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => by simp [h1, h2, h3]⟩ <;> config_simp <;>
-      simp [ha, h7]
+    exec_block <;> (first | omega | (simp (disch := omega) [upd, *]; intros; simp [*]))
   · refine spec_ifLtN_false ha ?_
-    by_cases hb : c.nreg 50131 < c.nreg 50115
-    · refine spec_ifLtN_true hb ?_
-      exec_block
-      all_goals try omega
-      refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => by simp [h1, h2, h3]⟩ <;> config_simp <;>
-        simp [ha, hb]
-    · refine spec_ifLtN_false hb ?_
-      exec_block
-      all_goals try omega
-      refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => by simp [h1, h2, h3]⟩ <;> config_simp <;>
-        simp [ha, hb]
+    by_cases h : c.nreg b < c.nreg lim
+    · refine spec_ifLtN_true h ?_
+      exec_block <;> (first | omega | (simp (disch := omega) [upd, *]; intros; simp [*]))
+    · refine spec_ifLtN_false h ?_
+      exec_block <;> (first | omega | (simp (disch := omega) [upd, *]; intros; simp [*]))
 
-/-- The left lengths `lL1, lL2, lδ` from `A' = 2m - τL` (`50132`), `B' = 2m₁ - τ'L` (`50133`), `2m₁` (`50118`). -/
-def selL : Stmt :=
-  .ifLtN 50132 50118 (block [.addN 50217 50118 50160, .constN 50218 0, .constN 50219 0])
-    (.ifLtN 50133 50118 (block [.copyN 50217 50133, .subN 50218 50118 50133, .constN 50219 7])
-      (block [.copyN 50217 50118, .constN 50218 0, .constN 50219 0]))
+abbrev selR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :=
+  sel_exec (P := P) c hw (a := 50130) (b := 50131) (lim := 50115) (d := 50212) (by decide) (by decide)
 
-theorem selL_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
-    (h7 : c.nreg 50160 = 7) (hW : c.nreg 50118 + 7 ≤ W) :
-    ∃ c' k, Exec P W selL c c' k ∧ k ≤ 7 ∧
-      c'.nreg 50217 = (if c.nreg 50132 < c.nreg 50118 then c.nreg 50118 + 7 else
-        if c.nreg 50133 < c.nreg 50118 then c.nreg 50133 else c.nreg 50118) ∧
-      c'.nreg 50218 = (if c.nreg 50132 < c.nreg 50118 then 0 else
-        if c.nreg 50133 < c.nreg 50118 then c.nreg 50118 - c.nreg 50133 else 0) ∧
-      c'.nreg 50219 = (if c.nreg 50132 < c.nreg 50118 then 0 else
-        if c.nreg 50133 < c.nreg 50118 then 7 else 0) ∧
-      ∀ r, r ≠ 50217 → r ≠ 50218 → r ≠ 50219 → c'.nreg r = c.nreg r := by
-  unfold selL
-  by_cases ha : c.nreg 50132 < c.nreg 50118
-  · refine spec_ifLtN_true ha ?_
-    exec_block
-    all_goals try omega
-    refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => by simp [h1, h2, h3]⟩ <;> config_simp <;>
-      simp [ha, h7]
-  · refine spec_ifLtN_false ha ?_
-    by_cases hb : c.nreg 50133 < c.nreg 50118
-    · refine spec_ifLtN_true hb ?_
-      exec_block
-      all_goals try omega
-      refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => by simp [h1, h2, h3]⟩ <;> config_simp <;>
-        simp [ha, hb]
-    · refine spec_ifLtN_false hb ?_
-      exec_block
-      all_goals try omega
-      refine ⟨by omega, ?_, ?_, ?_, fun r h1 h2 h3 => by simp [h1, h2, h3]⟩ <;> config_simp <;>
-        simp [ha, hb]
-
+abbrev selL_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :=
+  sel_exec (P := P) c hw (a := 50132) (b := 50133) (lim := 50118) (d := 50217) (by decide) (by decide)
 
 /-! ## The constants of a junction -/
 
@@ -255,7 +226,8 @@ structure HeadVals (J : Merge.Junction) (c : Config) : Prop where
   v19 : c.nreg 50119 = 6
   v60 : c.nreg 50160 = 7
 
-theorem junHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {H : Host}
+include P hw in
+theorem junHead_exec {H : Host}
     {J : Merge.Junction}
     (hJ : JunctionAt c.nmem (c.nreg 50200) (c.nreg 50201) (c.nreg 50202) (Qof P) H J)
     (hXl : c.nreg 50200 + 5 ≤ W) (hXr : c.nreg 50201 + 5 ≤ W) (hXw : c.nreg 50202 + 5 ≤ W)
@@ -270,29 +242,22 @@ theorem junHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       .copyN 50100 50202]) c c₁ k₁ ∧ k₁ = 3 ∧ (c₁.nreg 50119 = 6 ∧ c₁.nreg 50160 = 7 ∧
       c₁.nreg 50100 = c.nreg 50202 ∧
       (∀ r, r ≠ 50119 → r ≠ 50160 → r ≠ 50100 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem) := by
-    exec_block
-    all_goals try omega
-    exact ⟨rfl, by config_simp, by config_simp, by config_simp,
-      fun r h1 h2 h3 => by simp [h1, h2, h3], rfl⟩
+    ram_exec
   obtain ⟨p19, p60, p00, r₁, m₁⟩ := q
   obtain ⟨c₂, k₂, e₂, hk₂, a01, a02, a08, r₂, m₂⟩ := readS_exec (P := P) c₁ e₁.wb_right p00
-    (by rw [m₁]; exact hCw) hXw (by omega)
+    (by rwa [m₁]) hXw (by omega)
   obtain ⟨c₃, k₃, e₃, hk₃, q⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 50110 50101,
       .copyN 50111 50102, .copyN 50112 50108, .copyN 50100 50201]) c₂ c₃ k₃ ∧ k₃ = 4 ∧
       (c₃.nreg 50110 = J.whole.m ∧ c₃.nreg 50111 = J.whole.sideS J.whole.sideBeta ∧
         c₃.nreg 50112 = 2 * J.whole.m ∧ c₃.nreg 50100 = c.nreg 50201 ∧
         (∀ r, r ≠ 50110 → r ≠ 50111 → r ≠ 50112 → r ≠ 50100 → c₃.nreg r = c₂.nreg r)) := by
     have hw₂ := e₂.wb_right
-    exec_block
-    refine ⟨rfl, by config_simp; exact a01, by config_simp; exact a02, by config_simp; exact a08,
-      ?_, fun r h1 h2 h3 h4 => by simp [h1, h2, h3, h4]⟩
-    config_simp
-    rw [r₂ _ (by omega), r₁ _ (by omega) (by omega) (by omega)]
+    ram_exec
   obtain ⟨p10, p11, p12, p00', r₃⟩ := q
   have m₃ : c₃.nmem = c.nmem := by
     rw [(exec_frameB e₃ (B := fun r => decide (50100 ≤ r ∧ r < 50113)) (by decide)).2.2.1, m₂, m₁]
   obtain ⟨c₄, k₄, e₄, hk₄, b01, b02, b08, r₄, m₄⟩ := readS_exec (P := P) c₃ e₃.wb_right p00'
-    (by rw [m₃]; exact hCr) hXr (by rw [hrm]; omega)
+    (by rwa [m₃]) hXr (by rw [hrm]; omega)
   obtain ⟨c₅, k₅, e₅, hk₅, q⟩ : ∃ c₅ k₅, Exec P W (block [.copyN 50113 50101,
       .copyN 50114 50102, .copyN 50115 50108, .copyN 50100 50200]) c₄ c₅ k₅ ∧ k₅ = 4 ∧
       (c₅.nreg 50113 = J.right.m ∧ c₅.nreg 50114 = J.right.sideS J.right.sideBeta ∧
@@ -302,32 +267,28 @@ theorem junHead_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     exec_block
     refine ⟨rfl, by config_simp; exact b01, by config_simp; exact b02, by config_simp; exact b08,
       ?_, fun r h1 h2 h3 h4 => by simp [h1, h2, h3, h4]⟩
-    config_simp
-    rw [r₄ _ (by omega), r₃ _ (by omega) (by omega) (by omega) (by omega), r₂ _ (by omega),
-      r₁ _ (by omega) (by omega) (by omega)]
+    simp [r₄, r₃, r₂, r₁]
   obtain ⟨p13, p14, p15, p00'', r₅⟩ := q
   have m₅ : c₅.nmem = c.nmem := by
     rw [(exec_frameB e₅ (B := fun r => decide (50100 ≤ r ∧ r < 50116)) (by decide)).2.2.1, m₄, m₃]
   obtain ⟨c₆, k₆, e₆, hk₆, d01, d02, d08, r₆, m₆⟩ := readS_exec (P := P) c₅ e₅.wb_right p00''
-    (by rw [m₅]; exact hCl) hXl (by rw [hlm]; omega)
-  have ex : Exec P W junHead c c₆ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
+    (by rwa [m₅]) hXl (by rw [hlm]; omega)
+  have ex : Exec P W junHead c c₆ _ := (by ram_path)
   have k₅₆ : ∀ r, (r < 50101 ∨ 50109 < r) → r ≠ 50113 → r ≠ 50114 → r ≠ 50115 → r ≠ 50100 →
       c₆.nreg r = c₄.nreg r := fun r h0 h1 h2 h3 h4 => by rw [r₆ r h0, r₅ r h1 h2 h3 h4]
   refine ⟨c₆, _, ex, by omega, ⟨?_, ?_, ?_, ?_, ?_, ?_, d01, d02, d08, ?_, ?_⟩, by rw [m₆, m₅],
     fun r hr => ?_⟩
-  · rw [k₅₆ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₄ _ (by omega), p10]
-  · rw [k₅₆ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₄ _ (by omega), p11]
-  · rw [k₅₆ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₄ _ (by omega), p12]
-  · rw [r₆ _ (by omega), p13]
-  · rw [r₆ _ (by omega), p14]
-  · rw [r₆ _ (by omega), p15]
-  · rw [k₅₆ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₄ _ (by omega),
-      r₃ _ (by omega) (by omega) (by omega) (by omega), r₂ _ (by omega), p19]
-  · rw [k₅₆ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₄ _ (by omega),
-      r₃ _ (by omega) (by omega) (by omega) (by omega), r₂ _ (by omega), p60]
-  · rw [k₅₆ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₄ _ (by omega),
-      r₃ _ (by omega) (by omega) (by omega) (by omega), r₂ _ (by omega),
-      r₁ _ (by omega) (by omega) (by omega)]
+  · simp [k₅₆, r₄, p10]
+  · simp [k₅₆, r₄, p11]
+  · simp [k₅₆, r₄, p12]
+  · ram_rw [r₆, p13]
+  · ram_rw [r₆, p14]
+  · ram_rw [r₆, p15]
+  · simp [k₅₆, r₄, r₃, r₂, p19]
+  · simp [k₅₆, r₄, r₃, r₂, p60]
+  · ram_rw [k₅₆, r₄,
+      r₃, r₂,
+      r₁]
 
 /-- The tour offsets computed by `junMid`. -/
 structure MidVals (J : Merge.Junction) (c : Config) : Prop where
@@ -341,7 +302,8 @@ structure MidVals (J : Merge.Junction) (c : Config) : Prop where
   v19 : c.nreg 50119 = 6
   v60 : c.nreg 50160 = 7
 
-theorem junMid_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw in
+theorem junMid_exec
     {J : Merge.Junction} (hv : HeadVals J c) (hWm : 2 * J.whole.m + 7 ≤ W) :
     ∃ c' k, Exec P W junMid c c' k ∧ k ≤ 20 ∧ MidVals J c' ∧
       ∀ r, (r < 50100 ∨ 50200 ≤ r) → c'.nreg r = c.nreg r := by
@@ -376,56 +338,55 @@ theorem junMid_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     · config_simp; rw [hv.v15, hv.v14]
     · config_simp; rw [hv.v01, hv.v15, hlm, hrm]
     · config_simp; rw [hv.v08, hv.v02, hlm]
-    · intro r h1 h2 h3 h4 h5 h6 h7 h8
-      simp only [upd]; split_ifs <;> first | rfl | omega
+    simp_all 
   obtain ⟨u16, u17, u18, u21, u23, u24, u26, u28, r₁⟩ := q
   have k1 : ∀ r, r = 50110 ∨ r = 50111 ∨ r = 50112 ∨ r = 50113 ∨ r = 50114 ∨ r = 50115 ∨
       r = 50119 ∨ r = 50160 → c₁.nreg r = c.nreg r := fun r hr => by
     rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      exact r₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) (by norm_num) (by norm_num)
+      exact (ram_app% (r₁ _ ?_ ?_ ?_ ?_ ?_
+        ?_ ?_ ?_))
   obtain ⟨c₂, k₂, e₂, hk₂, t20, r₂⟩ := candR_exec (P := P) (j := 50116) (s := 50111) (d := 50121)
     (dst := 50120) c₁ e₁.wb_right (by
-      rw [u16, u21, k1 _ (by omega), hv.v11]; intro h; omega)
+      ram_rw [u16, u21, k1, hv.v11]; intro h; omega)
   obtain ⟨c₃, k₃, e₃, hk₃, t22, r₃⟩ := candR_exec (P := P) (j := 50123) (s := 50114) (d := 50124)
     (dst := 50122) c₂ e₂.wb_right (by
-      rw [r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), u23, u24, k1 _ (by omega), hv.v14]
+      ram_rw [r₂, r₂, r₂, u23, u24, k1, hv.v14]
       intro h; omega)
   obtain ⟨c₄, k₄, e₄, hk₄, t25, r₄⟩ := candR_exec (P := P) (j := 50126) (s := 50111) (d := 50121)
     (dst := 50125) c₃ e₃.wb_right (by
-      rw [r₃ _ (by decide), r₃ _ (by decide), r₃ _ (by decide), r₂ _ (by decide),
-        r₂ _ (by decide), r₂ _ (by decide), u26, u21, k1 _ (by omega), hv.v11]
+      ram_rw [r₃, r₃, r₃, r₂,
+        r₂, r₂, u26, u21, k1, hv.v11]
       intro h; omega)
   obtain ⟨c₅, k₅, e₅, hk₅, t27, r₅⟩ := candR_exec (P := P) (j := 50116) (s := 50117) (d := 50128)
     (dst := 50127) c₄ e₄.wb_right (by
-      rw [r₄ _ (by decide), r₄ _ (by decide), r₄ _ (by decide), r₃ _ (by decide),
-        r₃ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), r₂ _ (by decide),
-        r₂ _ (by decide), u16, u17, u28]
+      ram_rw [r₄, r₄, r₄, r₃,
+        r₃, r₃, r₂, r₂,
+        r₂, u16, u17, u28]
       intro h; omega)
   have k5 : ∀ r, r ≠ 50120 → r ≠ 50122 → r ≠ 50125 → r ≠ 50127 → c₅.nreg r = c₁.nreg r :=
     fun r h1 h2 h3 h4 => by rw [r₅ r h4, r₄ r h3, r₃ r h2, r₂ r h1]
-  have ex : Exec P W junMid c c₅ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
+  have ex : Exec P W junMid c c₅ _ := (by ram_path)
   refine ⟨c₅, _, ex, by omega, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun r hr => ?_⟩
-  · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), t20, u16, k1 _ (by omega), hv.v11,
-      u21, cand_val, tpos_eq_cand _ (by omega)]
-  · rw [r₅ _ (by decide), r₄ _ (by decide), t22, r₂ _ (by decide), r₂ _ (by decide),
-      r₂ _ (by decide), u23, k1 _ (by omega), hv.v14, u24, cand_val, tpos_eq_cand _ (by omega)]
-  · rw [r₅ _ (by decide), t25, r₃ _ (by decide), r₃ _ (by decide), r₃ _ (by decide),
-      r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), u26, k1 _ (by omega), hv.v11, u21,
-      cand_val, tpos_eq_cand _ (by omega)]
-  · rw [t27, r₄ _ (by decide), r₄ _ (by decide), r₄ _ (by decide), r₃ _ (by decide),
-      r₃ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), r₂ _ (by decide), r₂ _ (by decide),
-      u16, u17, u28, cand_val, ← hlm, tpos_eq_cand _ (by omega)]
-  · rw [k5 _ (by decide) (by decide) (by decide) (by decide), k1 _ (by omega), hv.v12]
-  · rw [k5 _ (by decide) (by decide) (by decide) (by decide), k1 _ (by omega), hv.v15]
-  · rw [k5 _ (by decide) (by decide) (by decide) (by decide), u18, hlm]
-  · rw [k5 _ (by decide) (by decide) (by decide) (by decide), k1 _ (by omega), hv.v19]
-  · rw [k5 _ (by decide) (by decide) (by decide) (by decide), k1 _ (by omega), hv.v60]
-  · rw [k5 r (by omega) (by omega) (by omega) (by omega),
-      r₁ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega)]
+  · ram_rw [r₅, r₄, r₃, t20, u16, k1, hv.v11,
+      u21, cand_val, tpos_eq_cand]
+  · ram_rw [r₅, r₄, t22, r₂, r₂,
+      r₂, u23, k1, hv.v14, u24, cand_val, tpos_eq_cand]
+  · ram_rw [r₅, t25, r₃, r₃, r₃,
+      r₂, r₂, r₂, u26, k1, hv.v11, u21,
+      cand_val, tpos_eq_cand]
+  · ram_rw [t27, r₄, r₄, r₄, r₃,
+      r₃, r₃, r₂, r₂, r₂,
+      u16, u17, u28, cand_val, ← hlm, tpos_eq_cand]
+  · frame_finish
+  · frame_finish
+  · frame_finish
+  · frame_finish
+  · frame_finish
+  · ram_rw [(ram_app% (k5 r ?_ ?_ ?_ ?_)),
+      r₁ r]
 
-theorem junOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw in
+theorem junOut_exec
     {J : Merge.Junction} (hv : MidVals J c) (hWm : 2 * J.whole.m + 7 ≤ W) :
     ∃ c' k, Exec P W junOut c c' k ∧ k = 8 ∧
       c'.nreg 50210 = 6 + WalkEmbed.tpos J.whole J.m₁ ∧
@@ -465,6 +426,8 @@ theorem junOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   · config_simp; exact hv.v60
   · intro r hr; simp only [upd]; split_ifs <;> first | rfl | omega
 
+end
+
 /-- **Contract of `junConst`** (at most `120` steps). -/
 theorem junConst_meets : Meets junConst {bLocate}
     (fun P W c => c.nreg 50200 + 5 ≤ W ∧ c.nreg 50201 + 5 ≤ W ∧ c.nreg 50202 + 5 ≤ W ∧
@@ -491,8 +454,8 @@ theorem junConst_meets : Meets junConst {bLocate}
     (by rw [a15, hrm]; omega)
   have k4 : ∀ r, r ≠ 50212 → r ≠ 50213 → r ≠ 50214 → c₄.nreg r = c₃.nreg r := r₄
   obtain ⟨c₅, k₅, e₅, hk₅, s17, s18, s19, r₅⟩ := selL_exec (P := P) c₄ e₄.wb_right
-    (by rw [k4 _ (by decide) (by decide) (by decide), a60])
-    (by rw [k4 _ (by decide) (by decide) (by decide), a18, hlm]; omega)
+    (by simp [k4, a60])
+    (by ram_simp [k4, a18, hlm] <;> omega)
   have k5 : ∀ r, r ≠ 50217 → r ≠ 50218 → r ≠ 50219 → c₅.nreg r = c₄.nreg r := r₅
   have ex : Exec P W junConst c c₅ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   refine ⟨c₅, _, ex, by show _ ≤ 120; omega, ?_, ?_⟩
@@ -509,23 +472,20 @@ theorem junConst_meets : Meets junConst {bLocate}
     have tR' := WalkEmbed.tpos_lt J.right 0
     have tL := WalkEmbed.tpos_lt J.whole (J.m₁ + 2 * J.m₂)
     have tL' := WalkEmbed.tpos_lt J.left J.m₁
-    have w12 : c₅.nreg 50212 = c₄.nreg 50212 := k5 _ (by decide) (by decide) (by decide)
-    have w13 : c₅.nreg 50213 = c₄.nreg 50213 := k5 _ (by decide) (by decide) (by decide)
-    have w14 : c₅.nreg 50214 = c₄.nreg 50214 := k5 _ (by decide) (by decide) (by decide)
-    have x32 : c₄.nreg 50132 = c₃.nreg 50132 := k4 _ (by decide) (by decide) (by decide)
-    have x33 : c₄.nreg 50133 = c₃.nreg 50133 := k4 _ (by decide) (by decide) (by decide)
-    have x18 : c₄.nreg 50118 = c₃.nreg 50118 := k4 _ (by decide) (by decide) (by decide)
+    have w12 : c₅.nreg 50212 = c₄.nreg 50212 := ram_app% (k5 _ ?_ ?_ ?_)
+    have w13 : c₅.nreg 50213 = c₄.nreg 50213 := ram_app% (k5 _ ?_ ?_ ?_)
+    have w14 : c₅.nreg 50214 = c₄.nreg 50214 := ram_app% (k5 _ ?_ ?_ ?_)
+    have x32 : c₄.nreg 50132 = c₃.nreg 50132 := ram_app% (k4 _ ?_ ?_ ?_)
+    have x33 : c₄.nreg 50133 = c₃.nreg 50133 := ram_app% (k4 _ ?_ ?_ ?_)
+    have x18 : c₄.nreg 50118 = c₃.nreg 50118 := ram_app% (k4 _ ?_ ?_ ?_)
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [eW, e1, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
-        o10]
-    · rw [eR, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), o11]
+    · simp [eW, e1, k45, o10]
+    · simp [eR, k45, o11]
     · unfold Sweep.rL1; rw [eW, eR, e1, e2, w12, s12, a30, a31, a15, hrm]; split_ifs <;> omega
     · unfold Sweep.rL2; rw [eW, eR, e1, e2, w13, s13, a30, a31, a15, hrm]; split_ifs <;> omega
     · unfold Sweep.rδ; rw [eW, eR, e1, e2, w14, s14, a30, a31, a15, hrm]; split_ifs <;> omega
-    · rw [eW, e1, e2, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), o15]
-    · rw [eL, e1, k45 _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide),
-        o16]
+    · simp [eW, e1, e2, k45, o15]
+    · simp [eL, e1, k45, o16]
     · unfold Sweep.lL1; rw [eW, eL, e1, e2, s17, x32, x33, x18, a32, a33, a18, hlm]
       split_ifs <;> omega
     · unfold Sweep.lL2; rw [eW, eL, e1, e2, s18, x32, x33, x18, a32, a33, a18, hlm]

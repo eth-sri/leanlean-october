@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShootCutBox
 
 /-!
@@ -57,27 +59,27 @@ theorem decBox_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
     rw [h48]; simp
   · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
       (spec_ifLtN_false (by rw [h01, h93]; omega) (spec_seq (spec_instr (Exec.subN hw _ _ _)
-        fun w₁ => spec_ifLtN_true (by config_simp; rw [h01, h93, h91]; omega) (spec_instr
+        fun w₁ => spec_ifLtN_true (by simp_all) (spec_instr
           (Exec.constN w₁ _ _ hW) fun _ => ⟨by omega, by simp, by simp,
             fun x h1 h2 => by simp [h1, h2], rfl⟩)))))
   · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
       (spec_ifLtN_false (by rw [h01, h93]; omega) (spec_seq (spec_instr (Exec.subN hw _ _ _)
-        fun w₁ => spec_ifLtN_false (by config_simp; rw [h01, h93, h91]; omega)
-          (spec_ifLtN_true (by config_simp; rw [h01, h93, h92]; omega) (spec_skip w₁
+        fun w₁ => spec_ifLtN_false (by simp_all)
+          (spec_ifLtN_true (by simp_all) (spec_skip w₁
             ⟨by omega, ?_, ?_, fun x h1 h2 => by simp [h2], rfl⟩))))))
     · config_simp; rw [h48]; simp
-    · config_simp; rw [h48]; omega
+    simp_all
   · refine spec_ifLtN_false (by rw [h01, h91]; omega) (spec_ifLtN_false (by rw [h01, h92]; omega)
       (spec_ifLtN_false (by rw [h01, h93]; omega) (spec_seq (spec_instr (Exec.subN hw _ _ _)
-        fun w₁ => spec_ifLtN_false (by config_simp; rw [h01, h93, h91]; omega)
-          (spec_ifLtN_false (by config_simp; rw [h01, h93, h92]; omega) (spec_instr
+        fun w₁ => spec_ifLtN_false (by simp_all)
+          (spec_ifLtN_false (by simp_all) (spec_instr
             (Exec.constN w₁ _ _ hW) fun _ => ⟨by omega, by simp, by simp,
               fun x h1 h2 => by simp [h1, h2], rfl⟩))))))
 
 /-- **The start at a vertex**: is the parameter of the end `⟨p, hh⟩` positive? -/
 theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     (hD : ChainDescAt m₀ (MD + 1) (Qof P) H C) (hMD : MD + 6 ≤ A₀) (hHh : m₀ (MD + 1) = Hh)
-    (d : Config) (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+    (d : Config) (hw : WordsBounded W d) (hm : MemEqBelow A₀ d.nmem m₀)
     (R : ChainRegs C (H.pts P.n).length Hh d) (h00 : d.nreg 150000 = MD)
     (h27 : d.nreg 150027 = P.n) (h48 : d.nreg 150048 = 0) (h90 : d.nreg 150090 = 0)
     (h92 : d.nreg 150092 = 2) {p hh : ℕ} (h01 : d.nreg 150001 = p) (h04 : d.nreg 150004 = hh)
@@ -93,7 +95,7 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
   by_cases hp6 : p < 6
   · obtain ⟨d', k, ex, hk, h1, h2, -, -⟩ := decBox_exec (P := P) d hw h01 hp6 h48 R.h91 h92 R.h93
       (by omega)
-    refine ⟨d', _, .ifLtN_true (by rw [h01, R.h96]; exact hp6) ex, by omega, ?_, h2⟩
+    refine ⟨d', _, (by ram_path), by omega, ?_, h2⟩
     rw [h1]
     constructor
     · intro hb; exact box_param_pos C (Qof P) hb hx hin
@@ -106,20 +108,17 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
         (block [.copyN 150049 150001, .subN 150076 150004 150091]) d d₁ k₁ ∧ k₁ = 2 ∧
         d₁.nreg 150049 = p ∧ d₁.nreg 150076 = j ∧
         (∀ x, x ≠ 150049 → x ≠ 150076 → d₁.nreg x = d.nreg x) ∧ d₁.nmem = d.nmem := by
-      exec_block
-      refine ⟨rfl, by config_simp; exact h01, by config_simp; rw [h04, R.h91]; omega,
-        fun x h1 h2 => ?_, rfl⟩
-      simp only [upd]; split_ifs <;> first | rfl | omega
+      ram_exec
     have R₁ : ChainRegs C (H.pts P.n).length Hh d₁ := R.of_frame fun r hr => r₁ r (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
+      simp_all <;> omega) (by
+      simp_all <;> omega)
     obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := posP_exec S hD hMD hHh d₁ e₁.wb_right
-      (fun a ha => by rw [m₁]; exact hm a ha) R₁ (by rw [r₁ _ (by omega) (by omega), h00])
-      (by rw [r₁ _ (by omega) (by omega), h27]) (by rw [r₁ _ (by omega) (by omega), h90])
-      (by rw [r₁ _ (by omega) (by omega), h92]) o49 o76 (by omega) (by omega) (by omega)
+      (fun a ha => by rw [m₁]; exact hm a ha) R₁ (by simp_all)
+      (by simp_all) (by simp_all)
+      (by simp_all) o49 o76 (by omega) (by omega) (by omega)
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
     refine ⟨_, _, .ifLtN_false
-      (show ¬ d.nreg 150001 < d.nreg 150096 by rw [h01, R.h96]; exact hp6)
+      (show ¬ d.nreg 150001 < d.nreg 150096 by rwa [h01, R.h96])
       (.seq e₁ (.seq e₂ e₃)), by omega, ?_, ?_⟩
     · config_simp
       exact i₂.trans (param_pos_iff _ _ hx).symm
@@ -128,7 +127,7 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
 /-- **Both ends on one edge**, the end not at its start vertex: are they in key order? -/
 theorem decSame_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     (hD : ChainDescAt m₀ (MD + 1) (Qof P) H C) (hMD : MD + 6 ≤ A₀) (hHh : m₀ (MD + 1) = Hh)
-    (d : Config) (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+    (d : Config) (hw : WordsBounded W d) (hm : MemEqBelow A₀ d.nmem m₀)
     (R : ChainRegs C (H.pts P.n).length Hh d) (h00 : d.nreg 150000 = MD)
     (h27 : d.nreg 150027 = P.n) (h48 : d.nreg 150048 = 0) (h90 : d.nreg 150090 = 0)
     (h92 : d.nreg 150092 = 2) {p h₁ h₂ : ℕ} (h01 : d.nreg 150001 = p)
@@ -149,16 +148,14 @@ theorem decSame_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     obtain ⟨d', k, ex, hk, h1, h2⟩ := decVtx_exec S hD hMD hHh d hw hm R h00 h27 h48 h90 h92
       h01 h04 hp hh₂ hh₂n he hin
     refine ⟨d', _, .ifLtN_true h0 ex, by omega, ?_, h2⟩
-    rw [h1, key_hgt0]
-    unfold Model.key
-    constructor <;> intro h <;> linarith
+    simp [h1, key_hgt0, Model.key]
   · have hh₁ : 1 ≤ h₁ := by rw [h02, R.h91] at h0; omega
     have e₁ := Exec.copyN (P := P) hw 150049 150001
     set d₁ := ({ d with nreg := upd d.nreg 150049 (d.nreg 150001) } : Config) with hd₁
     have g₁ : ∀ x, x ≠ 150049 → d₁.nreg x = d.nreg x := fun x hx => by simp [hd₁, upd, hx]
     obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := keyLess_exec S hD hMD hHh d₁ e₁.wb_right
-      (fun a ha => hm a ha) (by rw [g₁ _ (by omega), h00]) (by rw [g₁ _ (by omega), R.h91])
-      (by simp [hd₁, upd, h01]) (by rw [g₁ _ (by omega), h02]) (by rw [g₁ _ (by omega), h04])
+      (fun a ha => hm a ha) (by reg_omega) (by ram_rw [g₁, R.h91])
+      (by simp [hd₁, upd, h01]) (by reg_omega) (by reg_omega)
       hp hh₁ hh₁n hh₂ hh₂n
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
     refine ⟨_, _, .ifLtN_false h0 (.seq e₁ (.seq e₂ e₃)), by omega, ?_, ?_⟩
@@ -169,7 +166,7 @@ theorem decSame_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
 /-- **The decision `SAME`.** -/
 theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e : WPos}
     (hD : ChainDescAt m₀ (MD + 1) (Qof P) H C) (hMD : MD + 6 ≤ A₀) (hHh : m₀ (MD + 1) = Hh)
-    (d : Config) (hw : WordsBounded W d) (hm : ∀ a, a < A₀ → d.nmem a = m₀ a)
+    (d : Config) (hw : WordsBounded W d) (hm : MemEqBelow A₀ d.nmem m₀)
     (R : CoreRegs P C H Hh MD h γ mode s e m₀ d)
     (hs : ProperPos (chainModel C) (Qof P) P.n s) (he : ProperPos (chainModel C) (Qof P) P.n e)
     (hs1 : s.edge < 2 * C.m + 7)
@@ -180,24 +177,19 @@ theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e
       d'.nreg 150048 ≤ 1 := by
   have hWn := S.hW
   unfold hostWords at hWn
-  suffices main : ∃ d' k, Exec P W decideS d d' k ∧ k ≤ 100 * H.length + 2110 ∧
-      (d'.nreg 150048 = 1 ↔ (s.edge = e.edge ∧
-        (chainModel C).key (Qof P) s < (chainModel C).key (Qof P) e)) ∧
-      d'.nreg 150048 ≤ 1 by
-    obtain ⟨d', k, ex, hk, h1, h2⟩ := main
-    exact ⟨d', k, ex, hk, exec_frameB ex wr_decideS, h1, h2⟩
+  refine spec_frame ?_ wr_decideS
   have e₀ := Exec.constN (P := P) hw 150048 0 (by omega)
   set d₀ := ({ d with nreg := upd d.nreg 150048 0 } : Config) with hd₀
   have g₀ : ∀ x, x ≠ 150048 → d₀.nreg x = d.nreg x := fun x hx => by simp [hd₀, upd, hx]
   have w₀ := e₀.wb_right
   have z₀ : d₀.nreg 150048 = 0 := by simp [hd₀]
-  have r01 : d₀.nreg 150001 = s.edge := by rw [g₀ _ (by omega), R.h01]
-  have r02 : d₀.nreg 150002 = s.hgt := by rw [g₀ _ (by omega), R.h02]
-  have r03 : d₀.nreg 150003 = e.edge := by rw [g₀ _ (by omega), R.h03]
-  have r04 : d₀.nreg 150004 = e.hgt := by rw [g₀ _ (by omega), R.h04]
-  have r90 : d₀.nreg 150090 = 0 := by rw [g₀ _ (by omega), R.h90]
+  have r01 : d₀.nreg 150001 = s.edge := by ram_rw [g₀, R.h01]
+  have r02 : d₀.nreg 150002 = s.hgt := by ram_rw [g₀, R.h02]
+  have r03 : d₀.nreg 150003 = e.edge := by ram_rw [g₀, R.h03]
+  have r04 : d₀.nreg 150004 = e.hgt := by ram_rw [g₀, R.h04]
+  have r90 : d₀.nreg 150090 = 0 := by ram_rw [g₀, R.h90]
   have hks := key_bounds hs
-  have hke := key_bounds he
+  
   have zero : ∀ (d' : Config) (k : ℕ), Exec P W decideS d d' k → k ≤ 100 * H.length + 2110 →
       d'.nreg 150048 = 0 → ¬ (s.edge = e.edge ∧
         (chainModel C).key (Qof P) s < (chainModel C).key (Qof P) e) →
@@ -205,15 +197,14 @@ theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e
         (d'.nreg 150048 = 1 ↔ (s.edge = e.edge ∧
           (chainModel C).key (Qof P) s < (chainModel C).key (Qof P) e)) ∧
         d'.nreg 150048 ≤ 1 :=
-    fun d' k ex hk hz hng => ⟨d', k, ex, hk, by rw [hz]; simp only [zero_ne_one, false_iff]; exact hng,
+    fun d' k ex hk hz hng => ⟨d', k, ex, hk, by ram_post,
       by omega⟩
   by_cases hlt : d₀.nreg 150001 < d₀.nreg 150003
-  · refine zero d₀ _ (by unfold decideS; exact .seq e₀ (.ifLtN_true hlt (.skip w₀))) (by omega)
+  · refine zero d₀ _ (by ram_path) (by omega)
       z₀ ?_
     rw [r01, r03] at hlt; rintro ⟨h1, -⟩; omega
   by_cases hgt : d₀.nreg 150003 < d₀.nreg 150001
-  · refine zero d₀ _ (by unfold decideS; exact .seq e₀ (.ifLtN_false hlt (.ifLtN_true hgt
-      (.skip w₀)))) (by omega) z₀ ?_
+  · refine zero d₀ _ (by unfold decideS; exact .seq e₀ (.ifLtN_false hlt (by ram_path))) (by omega) z₀ ?_
     rw [r01, r03] at hgt; rintro ⟨h1, -⟩; omega
   have heq : s.edge = e.edge := by rw [r01, r03] at hlt hgt; omega
   by_cases h4 : d₀.nreg 150090 < d₀.nreg 150004
@@ -227,9 +218,9 @@ theorem decideS_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD mode : ℕ} {s e
     obtain ⟨d', k, ex, hk, h1, h2⟩ := decSame_exec S hD hMD hHh d₀ w₀ (fun a ha => hm a ha)
       (R.chain.of_frame fun r hr => g₀ r (by
         simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega))
-      (by rw [g₀ _ (by omega), R.h00]) (by rw [g₀ _ (by omega), R.h27]) z₀ r90
-      (by rw [g₀ _ (by omega), R.h92]) r01 r02 r04 hs1 hh₂ hs.2.2 he.2.2
-      (by rw [← he']; exact he) (by rw [← he']; exact hin')
+      (by ram_rw [g₀, R.h00]) (by ram_rw [g₀, R.h27]) z₀ r90
+      (by ram_rw [g₀, R.h92]) r01 r02 r04 hs1 hh₂ hs.2.2 he.2.2
+      (by rwa [← he']) (by rwa [← he'])
     refine ⟨d', _, by unfold decideS; exact .seq e₀ (.ifLtN_false hlt (.ifLtN_false hgt
       (.ifLtN_true h4 ex))), by omega, ?_, h2⟩
     rw [h1, ← hs', ← he']

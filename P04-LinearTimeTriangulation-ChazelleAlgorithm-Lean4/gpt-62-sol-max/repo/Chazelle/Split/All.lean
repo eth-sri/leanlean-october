@@ -120,10 +120,7 @@ theorem splitAll_induction {motive : List ℕ → List (ℕ × ℕ) → Prop}
   intro N
   induction N with
   | zero =>
-    intro l D hD
-    cases D with
-    | nil => exact nil l
-    | cons d D => simp at hD
+    simp_all
   | succ N ih =>
     intro l D hD
     cases D with
@@ -153,25 +150,32 @@ theorem DiagSystem.splitPair (h : DiagSystem P l (d :: D)) :
     SplitPair P l d (splitFst l d) (splitSnd l d) :=
   splitPair_split h.simple (h.diag d List.mem_cons_self)
 
-theorem DiagSystem.tail_isDiag (h : DiagSystem P l (d :: D)) {d' : ℕ × ℕ} (hd' : d' ∈ D) :
+section
+
+variable (h : DiagSystem P l (d :: D)) {d' : ℕ × ℕ} (hd' : d' ∈ D)
+include h hd'
+
+theorem DiagSystem.tail_isDiag :
     IsDiag P l d' :=
   h.diag d' (List.mem_cons_of_mem _ hd')
 
-theorem DiagSystem.tail_nonCross (h : DiagSystem P l (d :: D)) {d' : ℕ × ℕ} (hd' : d' ∈ D) :
+theorem DiagSystem.tail_nonCross :
     NonCross P d d' :=
   (List.pairwise_cons.1 h.noncross).1 d' hd'
 
 /-- A tail diagonal whose endpoints are not both in the first piece is a diagonal of the second
 piece. -/
-theorem DiagSystem.isDiag_snd (h : DiagSystem P l (d :: D)) {d' : ℕ × ℕ} (hd' : d' ∈ D)
+theorem DiagSystem.isDiag_snd
     (hmem : ¬ (d'.1 ∈ splitFst l d ∧ d'.2 ∈ splitFst l d)) : IsDiag P (splitSnd l d) d' :=
   h.splitPair.isDiag_snd h.simple (h.tail_isDiag hd') (h.tail_nonCross hd') hmem
 
 /-- A tail diagonal whose endpoints are both in the first piece is a diagonal of the first
 piece. -/
-theorem DiagSystem.isDiag_fst (h : DiagSystem P l (d :: D)) {d' : ℕ × ℕ} (hd' : d' ∈ D)
+theorem DiagSystem.isDiag_fst
     (hmem : d'.1 ∈ splitFst l d ∧ d'.2 ∈ splitFst l d) : IsDiag P (splitFst l d) d' :=
   h.splitPair.isDiag_fst h.simple (h.tail_isDiag hd') (h.tail_nonCross hd') hmem
+
+end
 
 /-- The system passes to the first piece. -/
 theorem DiagSystem.fst (h : DiagSystem P l (d :: D)) :
@@ -230,11 +234,11 @@ theorem PieceOf.lift {l l₁ l₂ : List ℕ} {d : ℕ × ℕ} {D D₁ : List (�
     rcases hm.edges k hk with h | h | h
     · rcases hs.edges₁ _ _ h with h' | h' | h'
       · exact Or.inl h'
-      · exact Or.inr (Or.inl (by rw [h']; exact List.mem_cons_self))
+      · simp_all
       · right; right
         rw [Prod.ext_iff] at h'
         have e : (m.getD ((k + 1) % m.length) 0, m.getD k 0) = d := Prod.ext h'.2 h'.1
-        rw [e]; exact List.mem_cons_self
+        simp_all
     · exact Or.inr (Or.inl (List.mem_cons_of_mem _ (hsub _ h)))
     · exact Or.inr (Or.inr (List.mem_cons_of_mem _ (hsub _ h)))
   not_boundary p hp :=
@@ -248,12 +252,17 @@ theorem PieceOf.lift {l l₁ l₂ : List ℕ} {d : ℕ × ℕ} {D D₁ : List (�
       · exact fun h => hs.interior_not_mem_filled hp₁ (hrest d' hd' h₁ h)
   filled_subset := hm.filled_subset.trans hs.filled_subset
 
+section
+
+variable {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSystem P l D)
+include h
+
 /-- **Properties of the output pieces.**  Every piece `m` of `splitAll l D`, for a diagonal
 system `D` of `(P, l)`, is a simple sub-polygon whose entries are entries of `l`, whose cyclic
 edges are cyclic edges of `l` or members of `D` (in either orientation), whose interior avoids the
 boundary of `subPoly P l` and every segment of `D`, and whose filled region lies in that of
 `subPoly P l`. -/
-theorem pieceOf_splitAll {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSystem P l D) :
+theorem pieceOf_splitAll :
     ∀ m ∈ splitAll l D, PieceOf P l D m := by
   revert h
   refine splitAll_induction (motive := fun l D => DiagSystem P l D →
@@ -279,7 +288,7 @@ theorem pieceOf_splitAll {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSystem 
 /-- **Combination.**  If every piece `m` of `splitAll l D` (for a diagonal system `D`) is weakly
 triangulated by `T m` (in positions of `m`), then `combineTri T l D` weakly triangulates
 `subPoly P l` (in positions of `l`). -/
-theorem weakTriangulates_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSystem P l D)
+theorem weakTriangulates_combineTri
     {T : List ℕ → List Polygon.Triangle}
     (hT : ∀ m ∈ splitAll l D, WeakTriangulates (subPoly P m) (T m)) :
     WeakTriangulates (subPoly P l) (combineTri T l D) := by
@@ -287,9 +296,7 @@ theorem weakTriangulates_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : 
   refine splitAll_induction (motive := fun l D => DiagSystem P l D →
     (∀ m ∈ splitAll l D, WeakTriangulates (subPoly P m) (T m)) →
       WeakTriangulates (subPoly P l) (combineTri T l D)) ?_ ?_ l D
-  · intro l _ hT
-    rw [combineTri_nil]
-    exact hT l (by rw [splitAll_nil]; exact List.mem_singleton_self l)
+  · simp
   · intro l d D ih₁ ih₂ h hT
     rw [combineTri_cons]
     exact weakTriangulates_split h.simple (h.diag d List.mem_cons_self)
@@ -299,7 +306,7 @@ theorem weakTriangulates_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : 
 /-- **The combined triangulation in original indices** is the concatenation, over the pieces
 `m` of `splitAll l D`, of the triangles `T m` relabelled to original indices by
 `relabelList m`. -/
-theorem map_relabelList_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : DiagSystem P l D)
+theorem map_relabelList_combineTri
     {T : List ℕ → List Polygon.Triangle}
     (hT : ∀ m ∈ splitAll l D, WeakTriangulates (subPoly P m) (T m)) :
     (combineTri T l D).map (relabelList l) =
@@ -309,16 +316,11 @@ theorem map_relabelList_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : D
     (∀ m ∈ splitAll l D, WeakTriangulates (subPoly P m) (T m)) →
       (combineTri T l D).map (relabelList l) =
         (splitAll l D).flatMap (fun m => (T m).map (relabelList m))) ?_ ?_ l D
-  · intro l _ _
-    rw [combineTri_nil, splitAll_nil, List.flatMap_singleton]
+  · simp
   · intro l d D ih₁ ih₂ h hT
     have hd := h.diag d List.mem_cons_self
-    have hT₁ : ∀ m ∈ splitAll (splitFst l d) (diagsFst l d D),
-        WeakTriangulates (subPoly P m) (T m) :=
-      fun m hm => hT m (by rw [splitAll_cons]; exact List.mem_append_left _ hm)
-    have hT₂ : ∀ m ∈ splitAll (splitSnd l d) (diagsSnd l d D),
-        WeakTriangulates (subPoly P m) (T m) :=
-      fun m hm => hT m (by rw [splitAll_cons]; exact List.mem_append_right _ hm)
+    have hT₁ := fun m hm => hT m (by rw [splitAll_cons]; exact List.mem_append_left _ hm)
+    have hT₂ := fun m hm => hT m (by rw [splitAll_cons]; exact List.mem_append_right _ hm)
     have hw₁ := weakTriangulates_combineTri h.fst hT₁
     have hw₂ := weakTriangulates_combineTri h.snd hT₂
     rw [combineTri_cons, splitAll_cons, List.flatMap_append, List.map_append, List.map_map,
@@ -334,6 +336,8 @@ theorem map_relabelList_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : D
       have hb := index_lt_of_weak hw₂ ht
       rw [n_subPoly] at hb
       exact relabelList_relabel_snd hd.1 hd.2.1 hd.2.2.1 hb
+
+end
 
 /-! ### Sizes -/
 

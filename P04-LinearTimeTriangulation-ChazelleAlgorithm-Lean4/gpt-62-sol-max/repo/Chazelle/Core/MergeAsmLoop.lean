@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.MergeAsmProg
 
 /-!
@@ -21,8 +23,13 @@ open Machine Machine.Stmt Programs SignK
 
 /-! ## The descriptor copy -/
 
+section
+
+variable {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+include P hw
+
 set_option maxHeartbeats 4000000 in
-theorem descS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {A bw : ℕ}
+theorem descS_exec {A bw : ℕ}
     (hA : c.nreg ALLOC = A) (hbw : c.nreg 100002 = bw) (hbA : bw + 5 ≤ A) (hAW : A + 6 ≤ W) :
     ∃ c' k, Exec P W descS c c' k ∧ k = 27 ∧ c'.nreg 100010 = A ∧ c'.nreg ALLOC = A + 6 ∧
       c'.nreg 100020 = 1 ∧ c'.nreg 100021 = 5 ∧
@@ -48,12 +55,12 @@ theorem descS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       simp (disch := omega) only [Machine.upd_same,
         Machine.upd_other, hA', hbw, ALLOC, add_zero]
   · simp (disch := omega) only [Machine.upd_other, hA', hbw, ALLOC]
-  · have h2' : r ≠ 9999 := h2
+  · have h2' := h2
     simp (disch := omega) only [Machine.upd_other]
 
 /-! ## The maximum-degree loop -/
 
-theorem mdInit_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {H : ℕ}
+theorem mdInit_exec {H : ℕ}
     (hH : rd c bFuse 7 = H) (hHW : H + 5 ≤ W) (hbW : c.nmem (H + 5) + 2 ≤ W) :
     ∃ c' k, Exec P W mdInit c c' k ∧ k = 10 ∧ c'.nreg 100034 = c.nmem (H + 2) ∧
       c'.nreg 100031 = c.nmem (H + 5) + 2 ∧ c'.nreg 100030 = 0 ∧ c'.nreg 100032 = 0 ∧
@@ -76,12 +83,12 @@ theorem mdInit_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         Machine.upd_other, hH']
     · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
     · simp (disch := omega) only [Machine.upd_same]
-    · simp (disch := omega) only [Machine.upd_other]
+    frame_finish
   exact ⟨c', k, e, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2,
     exec_frameB e wr_mdInit⟩
 
 /-- One step of the maximum-degree loop. -/
-theorem mdBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
+theorem mdBody_exec
     (h20 : c.nreg 100020 = 1) (h21 : c.nreg 100021 = 5) (hp : c.nreg 100031 + 5 ≤ W)
     (hi : c.nreg 100030 + 1 ≤ W) :
     ∃ c' k, Exec P W mdBody c c' k ∧ k ≤ 5 ∧
@@ -91,9 +98,9 @@ theorem mdBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       (∀ r, r ≠ 100030 → r ≠ 100031 → r ≠ 100032 → r ≠ 100033 → c'.nreg r = c.nreg r) := by
   have e₁ := Exec.loadN (P := P) hw 100033 100031
   set c₁ : Config := { c with nreg := upd c.nreg 100033 (c.nmem (c.nreg 100031)) } with hc₁
-  have hw₁ : WordsBounded W c₁ := e₁.wb_right
+  have hw₁ := e₁.wb_right
   have q₁ : ∀ r, r ≠ 100033 → c₁.nreg r = c.nreg r := fun r hr => by
-    rw [hc₁]; simp [upd_other _ _ _ hr]
+    simp_all
   have v₁ : c₁.nreg 100033 = c.nmem (c.nreg 100031) := by rw [hc₁]; simp
   -- the maximum
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, q₂⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 100032 100033
@@ -104,32 +111,25 @@ theorem mdBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     · have e := Exec.copyN (P := P) hw₁ 100032 100033
       refine ⟨_, _, .ifLtN_true hlt (.seq e (.skip e.wb_right)), by omega, ?_, fun r hr => ?_, rfl⟩
       · simp only [upd_same]; rw [q₁ _ (by decide)] at hlt; rw [v₁] at hlt ⊢; omega
-      · simp [upd_other _ _ _ hr]
-    · refine ⟨_, _, .ifLtN_false hlt (.skip hw₁), le_rfl, ?_, fun r _ => rfl, rfl⟩
-      rw [q₁ _ (by decide)] at hlt ⊢; rw [v₁] at hlt; omega
+      simp_all
+    · refine ⟨_, _, (by ram_path), le_rfl, ?_, fun r _ => rfl, rfl⟩
+      simp_all
   obtain ⟨q₂, m₂⟩ := q₂
   have hw₂ := e₂.wb_right
   have e₃ := Exec.addN (P := P) hw₂ 100031 100031 100021 (by
-    rw [q₂ _ (by decide), q₂ _ (by decide), q₁ _ (by decide), q₁ _ (by decide), h21]; omega)
+    simp_all)
   have e₄ := Exec.addN (P := P) e₃.wb_right 100030 100030 100020 (by
-    simp only [upd_other _ _ _ (show (100030 : ℕ) ≠ 100031 by decide),
-      upd_other _ _ _ (show (100020 : ℕ) ≠ 100031 by decide)]
-    rw [q₂ _ (by decide), q₂ _ (by decide), q₁ _ (by decide), q₁ _ (by decide), h20]; omega)
+    simp_all)
   have ex : Exec P W mdBody c _ ((1 + 0) + (k₂ + (1 + (1 + 0)))) :=
-    .seq (.seq e₁ (.skip hw₁)) (.seq e₂ (.seq e₃ (.seq e₄ (.skip e₄.wb_right))))
+    (by ram_path)
   refine ⟨_, _, ex, by omega, ?_, ?_, ?_, ?_, fun r a b d f => ?_⟩
-  · simp only [upd_other _ _ _ (show (100032 : ℕ) ≠ 100030 by decide),
-      upd_other _ _ _ (show (100032 : ℕ) ≠ 100031 by decide)]
-    exact v₂
-  · simp only [upd_other _ _ _ (show (100031 : ℕ) ≠ 100030 by decide), upd_same]
-    rw [q₂ _ (by decide), q₂ _ (by decide), q₁ _ (by decide), q₁ _ (by decide), h21]
-  · simp only [upd_same, upd_other _ _ _ (show (100030 : ℕ) ≠ 100031 by decide),
-      upd_other _ _ _ (show (100020 : ℕ) ≠ 100031 by decide)]
-    rw [q₂ _ (by decide), q₂ _ (by decide), q₁ _ (by decide), q₁ _ (by decide), h20]
-  · show c₂.nmem = c.nmem
-    rw [m₂]
-  · simp only [upd_other _ _ _ a, upd_other _ _ _ b]
-    rw [q₂ _ d, q₁ _ f]
+  · assumption
+  · ram_finish [q₂, q₁, h21]
+  · ram_finish [q₂, q₁, h20]
+  · assumption
+  · ram_simp [q₂, q₁] <;> reg_omega
+
+end
 
 /-- **The maximum-degree loop.** -/
 theorem mdLoop_exec {P : Polygon} {W : ℕ} {R base Cap : ℕ} {L : ℕ → ℕ}
@@ -150,9 +150,9 @@ theorem mdLoop_exec {P : Polygon} {W : ℕ} {R base Cap : ℕ} {L : ℕ → ℕ}
       (by rw [hp]; nlinarith) (by omega)
     have hLi : c.nmem (c.nreg 100031) = L (c.nreg 100030) := by rw [hp]; exact hL _ hi
     obtain ⟨c', k₂, e₂, hk₂, hall, hcap, m₂, q₂⟩ := mdLoop_exec hWb hRW hCap n c₁ e₁.wb_right
-      (by rw [q₁ _ (by decide) (by decide) (by decide) (by decide), h20])
-      (by rw [q₁ _ (by decide) (by decide) (by decide) (by decide), h21])
-      (by rw [q₁ _ (by decide) (by decide) (by decide) (by decide), h34])
+      (by ram_finish)
+      (by ram_finish)
+      (by ram_finish)
       (fun r hr => by rw [m₁]; exact hL r hr) (by rw [v30]; omega)
       (by rw [v31, v30, hp]; ring)
       (by rw [v32, hLi]; exact max_le hc (hCap _ hi))
@@ -163,8 +163,8 @@ theorem mdLoop_exec {P : Polygon} {W : ℕ} {R base Cap : ℕ} {L : ℕ → ℕ}
         · exact (hle r h).trans (le_max_left _ _)
         · have : r = c.nreg 100030 := by omega
           subst this; exact le_max_right _ _)
-    refine ⟨c', _, .whileLtN_true (by rw [h34]; exact hi) e₁ e₂, by omega, hall, hcap,
-      by rw [m₂, m₁], fun r a b d f => by rw [q₂ r a b d f, q₁ r a b d f]⟩
+    refine ⟨c', _, .whileLtN_true (by rwa [h34]) e₁ e₂, by omega, hall, hcap,
+      by rw [m₂, m₁], fun r a b d f => by ram_finish⟩
 
 end
 

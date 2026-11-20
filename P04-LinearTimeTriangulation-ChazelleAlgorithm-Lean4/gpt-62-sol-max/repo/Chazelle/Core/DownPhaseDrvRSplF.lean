@@ -22,30 +22,6 @@ open BuildNF (codeLe)
 
 @[expose] public section
 
-/-- The `Meets` judgement of `BuildNFSortedSpec` for a program `sB`. -/
-def SortedMeets (sB : Stmt) (κB : ℕ) : Prop :=
-  Meets sB {bBuild, bSort, bSign}
-    (fun P W c => GoodEnv P ∧ hostWords P.n ≤ W ∧
-      ModelDescWF P (c.nreg ALLOC) c.nmem (rd c bBuild 0) ∧
-      ∃ M L E, ModelDescAt c.nmem (rd c bBuild 0) (Qof P) M ∧
-      GoodModel M ∧ rd c bBuild 2 = L.length ∧ rd c bBuild 1 + 3 * L.length ≤ c.nreg ALLOC ∧
-      ChordListAt c.nmem (rd c bBuild 1) L ∧ ChordTriplesOK M (Qof P) L ∧
-      rd c bBuild 4 + 2 * L.length ≤ c.nreg ALLOC ∧
-      seg c.nmem (rd c bBuild 4) (2 * L.length) = E ∧
-      E.Perm (List.range (2 * L.length)) ∧ E.Pairwise (codeLe M (Qof P) L))
-    (fun P c c' => ∀ M L, ModelDescAt c.nmem (rd c bBuild 0) (Qof P) M →
-      rd c bBuild 2 = L.length → ChordListAt c.nmem (rd c bBuild 1) L →
-        c.nreg ALLOC ≤ rd c' bBuild 3 ∧
-        NFWithin c'.nmem (rd c' bBuild 3) (c'.nreg ALLOC)
-          (BuildNF.buildNF M (Qof P) L (seg c.nmem (rd c bBuild 4) (2 * L.length))) ∧
-        IsNF M (Qof P) (BuildNF.buildNF M (Qof P) L (seg c.nmem (rd c bBuild 4) (2 * L.length))) ∧
-        (BuildNF.buildNF M (Qof P) L (seg c.nmem (rd c bBuild 4) (2 * L.length))).chords.map
-          (fun r => (r.h, r.lp, r.rp)) = L ∧
-        (BuildNF.buildNF M (Qof P) L (seg c.nmem (rd c bBuild 4) (2 * L.length))).dec = [])
-    (fun _ c => κB * (rd c bBuild 2 + 1))
-
-theorem sortedMeets_of (h : BuildNFSortedSpec) : ∃ sB κB, SortedMeets sB κB := h
-
 /-- The bucket of new event code `2K + q`. -/
 def bkOf (c : Config) (q : ℕ) : ℕ := c.nmem (rd c bDownDrv 22 + q)
 

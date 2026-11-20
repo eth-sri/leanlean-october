@@ -68,7 +68,7 @@ theorem gradeLen_succ_two (hn : 2 ≤ n) (h : 2 * i + 1 < gradeCount n g) :
   · rw [min_eq_left (show 2 ^ g ≤ n - 1 - 2 * i * 2 ^ g by omega), pow_succ]
     rcases le_total (2 ^ g) (n - 1 - (2 * i + 1) * 2 ^ g) with h2 | h2
     · rw [min_eq_left h2, min_eq_left (by omega)]; ring
-    · rw [min_eq_right h2, min_eq_right (by omega)]; omega
+    ram_simp [min_eq_right h2, min_eq_right] <;> omega
   · rw [min_eq_left (by omega)]; ring
 
 /-- **A single child.** -/
@@ -89,13 +89,12 @@ theorem gradeLen_succ_one (hn : 2 ≤ n) (_hi : i < gradeCount n (g + 1))
 theorem gradeCount_top (hn : 2 ≤ n) : gradeCount n (topGrade n) = 1 := by
   unfold gradeCount topGrade
   have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1)
-  rw [Nat.div_eq_of_lt (by omega)]
+  ram_simp [Nat.div_eq_of_lt]
 
 theorem gradeLen_top (_hn : 2 ≤ n) : gradeLen n (topGrade n) 0 = n - 1 := by
   unfold gradeLen topGrade
   have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1)
-  simp only [Nat.zero_mul, Nat.sub_zero]
-  exact min_eq_right this
+  simp_all
 
 end
 

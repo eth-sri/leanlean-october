@@ -43,7 +43,7 @@ open BuildNF (codeLe)
 noncomputable def ptsB (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (r : ℕ) :
     List SymPt :=
   if L.length = 0 then wlist li (Host.pts Q.n [HostItem.run 0 (Q.n - 1)])
-  else regPts li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r
+  else regPts li Q.n (interiorNF Q L E) r
 
 /-- **The new chords, tagged by their region.** -/
 noncomputable def tagLB (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
@@ -61,29 +61,22 @@ theorem newLB_eq_flatMap (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)
   rw [List.map_flatMap]
   congr 1
   funext r
-  rw [List.map_map]
-  exact List.map_id' _
+  simp
 
 /-- **`newLB` is `newL`** for `K > 0`. -/
 theorem newLB_pos (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
     (hK : 0 < L.length) :
-    newLB li Q L E = newL li Q (BuildNF.buildNF (interiorModel Q) Q L E) := by
+    newLB li Q L E = newL li Q (interiorNF Q L E) := by
   rw [newLB_eq_flatMap]
   unfold newL
-  have hR : (BuildNF.buildNF (interiorModel Q) Q L E).nRegions = L.length + 1 := by
+  have hR : (interiorNF Q L E).nRegions = L.length + 1 := by
     simp [NF.nRegions, BuildNF.buildNF]
-  rw [hR]
-  congr 1
-  funext r
-  unfold ptsB
-  rw [ite_eq_right (by omega)]
+  ram_simp [hR, ptsB, ite_eq_right]
 
 /-- **`newLB` is `newL0`** for `K = 0`. -/
 theorem newLB_zero (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
     (hK : L.length = 0) : newLB li Q L E = newL0 li Q := by
-  rw [newLB_eq_flatMap, hK]
-  unfold ptsB newL0
-  simp [hK]
+  simp [newLB_eq_flatMap, hK, ptsB, newL0]
 
 /-- **The precondition of the region loop**, with bounds `S₀` (points of a region) and `Cm`
 (walk edges of an arc of a region, or `n` when `K = 0`). -/
@@ -92,21 +85,21 @@ structure RegPre (P : Polygon) (W : ℕ) (c : Config) (L : List (ℕ × ℕ × �
   hG : GoodEnv P
   hWh : hostWords P.n ≤ W
   hK : c.nreg 210003 = L.length
-  hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L
+  hok : ChordTriplesOK (inputModel P) (Qof P) L
   hperm : E.Perm (List.range (2 * L.length))
-  hsort : E.Pairwise (codeLe (interiorModel (Qof P)) (Qof P) L)
-  hdeg : (interiorModel (Qof P)).DegLe
-    ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).F (interiorModel (Qof P)) (Qof P)) 4
+  hsort : E.Pairwise (codeLe (inputModel P) (Qof P) L)
+  hdeg : P.inputModel.DegLe
+    (inputChords P L E) 4
   hNF : NFWithin c.nmem (c.nreg 210005) (c.nreg 212019)
-    (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
-  hMD : ModelDescAt c.nmem (c.nreg 210001) (Qof P) (interiorModel (Qof P))
+    (inputNF P L E)
+  hMD : ModelDescAt c.nmem (c.nreg 210001) (Qof P) (inputModel P)
   hMDW : c.nreg 210001 + 6 ≤ c.nreg 212019
   hroom : c.nreg 212019 + 10 * P.n ≤ c.nreg ALLOC
   hS₀ : ∀ r, r < L.length + 1 →
     (ptsB (liBit c.nmem (c.nreg 210001)) (Qof P) L E r).length ≤ S₀
   hCm0 : L.length = 0 → P.n ≤ Cm
-  hCm : ∀ r, r < L.length + 1 → ∀ j ∈ ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).region r).arcs,
-    arcCnt P.n ((BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).arc j) ≤ Cm
+  hCm : ∀ r, r < L.length + 1 → ∀ j ∈ ((inputNF P L E).region r).arcs,
+    arcCnt P.n ((inputNF P L E).arc j) ≤ Cm
 
 /-- **The postcondition of the region loop**: the new chords `newLB` at `B₂ = r212019` (their
 number in `216020`), the buckets `bk q = mem[B₂ + 6 n + q]` of their ends bounded by the number
@@ -121,11 +114,11 @@ structure RegPost (P : Polygon) (c c' : Config) (L : List (ℕ × ℕ × ℕ)) (
   list : ChordListAt c'.nmem (c.nreg 212019) (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E)
   bkle : ∀ q, q < 2 * (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E).length →
     c'.nmem (c.nreg 212019 + 6 * P.n + q) ≤
-      (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length
+      (inputNF P L E).arcs.length
   bkmono : ∀ q q', q < 2 * (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E).length →
     q' < 2 * (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E).length →
     c'.nmem (c.nreg 212019 + 6 * P.n + q) < c'.nmem (c.nreg 212019 + 6 * P.n + q') →
-    codeLe (interiorModel (Qof P)) (Qof P) (L ++ newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E)
+    codeLe (inputModel P) (Qof P) (L ++ newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E)
       (2 * L.length + q) (2 * L.length + q')
   bcnt : ∀ b, DrvR.bcnt (fun q => c'.nmem (c.nreg 212019 + 6 * P.n + q))
     (2 * (newLB (liBit c.nmem (c.nreg 210001)) (Qof P) L E).length) b ≤ 4 * c'.nreg 212018

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Final.Assemble
 public import Chazelle.Final.Transfer
 public import Chazelle.Final.RamPieceTri
@@ -63,30 +65,37 @@ theorem nodup_of_nodup_flatten {cs : List (List ℕ)} (h : cs.flatten.Nodup)
     obtain ⟨y, hy⟩ := List.exists_mem_of_ne_nil a (hne a List.mem_cons_self)
     exact h3 y hy y (List.mem_flatten.2 ⟨a, ha, hy⟩) rfl
 
+section
+
+variable {S : LState} {cs : List (List ℕ)} (hR : Repr S cs)
+include hR
+
 /-- The cycles of a representation are pairwise distinct. -/
-theorem Repr.nodup_cs {S : LState} {cs : List (List ℕ)} (hR : Repr S cs) : cs.Nodup :=
+theorem Repr.nodup_cs : cs.Nodup :=
   nodup_of_nodup_flatten hR.nodup fun c hc => (hR.cyc c hc).1
 
 /-- Distinct cycles of a representation are disjoint. -/
-theorem Repr.disj {S : LState} {cs : List (List ℕ)} (hR : Repr S cs) {c d : List ℕ}
+theorem Repr.disj {c d : List ℕ}
     (hc : c ∈ cs) (hd : d ∈ cs) (hne : c ≠ d) {y : ℕ} (hy : y ∈ c) : y ∉ d :=
   disj_of_nodup_flatten hR.nodup hc hd hne hy
 
 /-- Every node lies on a cycle of the representation. -/
-theorem Repr.exists_cyc {S : LState} {cs : List (List ℕ)} (hR : Repr S cs) {y : ℕ}
+theorem Repr.exists_cyc {y : ℕ}
     (hy : y < S.cnt) : ∃ c ∈ cs, y ∈ c := by
   obtain ⟨c, hc, hyc⟩ := List.mem_flatten.1 ((hR.mem y).2 hy)
   exact ⟨c, hc, hyc⟩
 
 /-- The members of the cycles are nodes. -/
-theorem Repr.lt_cnt {S : LState} {cs : List (List ℕ)} (hR : Repr S cs) {c : List ℕ}
+theorem Repr.lt_cnt {c : List ℕ}
     (hc : c ∈ cs) {y : ℕ} (hy : y ∈ c) : y < S.cnt :=
   (hR.mem y).1 (List.mem_flatten.2 ⟨c, hc, hy⟩)
 
 /-- A cycle of a representation has no repeated node. -/
-theorem Repr.nodup_cyc {S : LState} {cs : List (List ℕ)} (hR : Repr S cs) {c : List ℕ}
+theorem Repr.nodup_cyc {c : List ℕ}
     (hc : c ∈ cs) : c.Nodup :=
   (List.nodup_flatten.1 hR.nodup).1 c hc
+
+end
 
 /-- The node sequence read in memory is the successor iteration. -/
 theorem nodeSeq_eq_iterate {mem : ℕ → ℕ} {NB : ℕ} {S : LState} {c : List ℕ} (hc : IsCyc S c)
@@ -104,7 +113,7 @@ theorem nodeSeq_eq_iterate {mem : ℕ → ℕ} {NB : ℕ} {S : LState} {c : List
 theorem walk_map_getD {S : LState} {c : List ℕ} (hc : IsCyc S c) {i : ℕ} (hi : i < c.length)
     {s : ℕ} (hs : s < c.length) :
     ((walk S (c.getD i 0) c.length).map S.vtx).getD s 0 = S.vtx (c.getD ((i + s) % c.length) 0) := by
-  rw [walk_eq_rotate hc hi, List.map_rotate, getD_rotate_of_lt i (by rw [List.length_map]; exact hs),
+  rw [walk_eq_rotate hc hi, List.map_rotate, getD_rotate_of_lt i (by simp_all),
     List.length_map, getD_map_of_lt S.vtx (Nat.mod_lt _ (by omega)), Nat.add_comm s i]
 
 /-! ### Counting marks -/
@@ -123,30 +132,23 @@ theorem countP_mark {NN : ℕ} {f g : ℕ → ℕ} {c : List ℕ} (hc : c.Nodup)
   have hlen : ((List.range NN).filter fun y => decide (y ∈ c)).length = c.length := by
     have hp : ((List.range NN).filter fun y => decide (y ∈ c)).Perm c := by
       rw [List.perm_ext_iff_of_nodup ((List.nodup_range).filter _) hc]
-      intro y
-      rw [List.mem_filter, List.mem_range, decide_eq_true_iff]
-      exact ⟨fun h => h.2, fun h => ⟨hlt y h, h⟩⟩
+      simp_all
     exact hp.length_eq
   have h1 : ((List.range NN).filter fun y => decide (y ∈ c)).countP
       (fun y => decide (g y = 0)) = 0 := by
-    rw [List.countP_eq_zero]
-    intro y hy
-    rw [List.mem_filter, decide_eq_true_iff] at hy
-    simp [hg1 y hy.2]
+    simp_all
   have h2 : ((List.range NN).filter fun y => decide (y ∈ c)).countP
       (fun y => decide (f y = 0)) = c.length := by
     rw [← hlen, List.countP_eq_length]
     intro y hy
-    rw [List.mem_filter, decide_eq_true_iff] at hy
-    simp [hf y hy.2]
+    simp_all
   have h3 : ((List.range NN).filter fun y => !decide (y ∈ c)).countP
       (fun y => decide (g y = 0)) =
       ((List.range NN).filter fun y => !decide (y ∈ c)).countP (fun y => decide (f y = 0)) := by
     apply List.countP_congr
     intro y hy
     rw [List.mem_filter, List.mem_range] at hy
-    have hyc : y ∉ c := by simpa using hy.2
-    rw [hg2 y hy.1 hyc]
+    simp_all
   rw [h1, h2, h3]
   omega
 
@@ -204,10 +206,10 @@ theorem clearBody_inv {MB NN : ℕ} {c₀ : Config} (h240 : c₀.nreg 240 = NN)
     ∃ c' k, Exec P W clearBody c c' k ∧ ClearInv W MB NN c₀ c' ∧ k ≤ 3 ∧
       NN - c'.nreg 242 < NN - c.nreg 242 := by
   obtain ⟨hw, hi, hz, hfn, hfr, hnm, hrm, hout⟩ := hI
-  have e240 : c.nreg 240 = NN := by rw [hfn 240 (by decide) (by decide), h240]
-  have e241 : c.nreg 241 = MB := by rw [hfn 241 (by decide) (by decide), h241]
-  have e243 : c.nreg 243 = 0 := by rw [hfn 243 (by decide) (by decide), h243]
-  have e244 : c.nreg 244 = 1 := by rw [hfn 244 (by decide) (by decide), h244]
+  have e240 : c.nreg 240 = NN := by simp_all
+  have e241 : c.nreg 241 = MB := by simp_all
+  have e243 : c.nreg 243 = 0 := by simp_all
+  have e244 : c.nreg 244 = 1 := by simp_all
   rw [e240] at ht
   unfold clearBody
   exec_block
@@ -215,7 +217,7 @@ theorem clearBody_inv {MB NN : ℕ} {c₀ : Config} (h240 : c₀.nreg 240 = NN)
   · config_simp; rw [e244]; omega
   refine ⟨⟨‹_›, ?_, fun v hv => ?_, fun r h1 h2 => ?_, hfr, fun t ht' => ?_, hrm, hout⟩,
     by omega, ?_⟩
-  · config_simp; rw [e244]; omega
+  · simp_all 
   · config_simp
     config_simp at hv
     rw [e244] at hv
@@ -224,10 +226,8 @@ theorem clearBody_inv {MB NN : ℕ} {c₀ : Config} (h240 : c₀.nreg 240 = NN)
     split_ifs with h
     · rfl
     · exact hz v (by omega)
-  · config_simp; simp only [Machine.upd_apply, h1, h2, ite_false]; exact hfn r h1 h2
-  · config_simp
-    rw [e241, Machine.upd_other _ _ _ (by omega)]
-    exact hnm t ht'
+  · ram_finish [h1, h2, ite_false]
+  · ram_finish [e241]
   · config_simp; rw [e244]; omega
 
 /-- The invariant of the walk around the cycle `d` from position `i` (`z = d[i]`), relative to
@@ -247,7 +247,7 @@ theorem getD_cyc_inj {d : List ℕ} (hd : d.Nodup) {i s s' : ℕ} (hs : s < d.le
     s = s' := by
   have hl : 0 < d.length := by omega
   have e := getD_inj_of_nodup hd (Nat.mod_lt _ hl) (Nat.mod_lt _ hl) h
-  have hm : i + s ≡ i + s' [MOD d.length] := e
+  have hm := e
   exact Nat.ModEq.eq_of_lt_of_lt (Nat.ModEq.add_left_cancel' i hm) hs hs'
 
 /-- One step of the walk around a cycle preserves `RingInv`. -/
@@ -262,15 +262,15 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
   obtain ⟨hw, hm1, hml, h246, h245, hmark, hfn, hfr, hnm, hrm, hout⟩ := hI
   have hl : 0 < d.length := by omega
   have e241 : c.nreg 241 = MB := by
-    rw [hfn 241 (by decide) (by decide) (by decide) (by decide), h241]
+    ram_finish
   have e244 : c.nreg 244 = 1 := by
-    rw [hfn 244 (by decide) (by decide) (by decide) (by decide), h244]
+    ram_finish
   have e249 : c.nreg 249 = NB := by
-    rw [hfn 249 (by decide) (by decide) (by decide) (by decide), h249]
+    ram_finish
   set m := c.nreg 247 with hmdef
   set x := d.getD ((i + m) % d.length) 0 with hx
   have hxd : x ∈ d := getD_mem_of_lt (Nat.mod_lt _ hl)
-  have hxN : x < NN := hdlt x hxd
+  have hxN := hdlt x hxd
   -- the test: `x` is unmarked, so `m < len`
   have hmlt : m < d.length := by
     by_contra hge
@@ -279,7 +279,7 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
       rw [hmark x hxN, ite_eq_left ⟨0, by omega, by rw [hx, hm, Nat.add_zero, Nat.add_mod_right]⟩]
     rw [e244, h245, h246, this] at ht
     omega
-  have hnx : c.nmem (NB + x) = S.nxt x := by rw [hnm _ (by omega)]; exact hnxt x hxN
+  have hnx : c.nmem (NB + x) = S.nxt x := by ram_rw [hnm]; exact hnxt x hxN
   have hx' : S.nxt x = d.getD ((i + (m + 1)) % d.length) 0 := by
     rw [hx, (hcyc.2 _ (Nat.mod_lt _ hl)).1, Nat.mod_add_mod, Nat.add_assoc]
   unfold ringBody
@@ -288,21 +288,21 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
   · config_simp; rw [e244]; omega
   · config_simp; rw [e249, h246]; omega
   · config_simp
-    rw [e249, e241, h246, Machine.upd_other _ _ _ (by omega), hnx, hx']
+    ram_rw [e249, e241, h246, Machine.upd_other _ _, hnx, hx']
     have := hdlt _ (getD_mem_of_lt (Nat.mod_lt (i + (m + 1)) hl))
     omega
   refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, fun y hy => ?_, fun r h1 h2 h3 h4 => ?_, hfr, fun t ht' => ?_,
     hrm, hout⟩, by omega, ?_⟩
-  · config_simp; rw [e244]; omega
+  · simp [e244]
   · config_simp; rw [e244]; omega
   · config_simp
-    rw [e249, e241, h246, e244, Machine.upd_other _ _ _ (by omega), hnx, hx']
+    ram_rw [e249, e241, h246, e244, Machine.upd_other _ _, hnx, hx']
   · config_simp; rw [e241]
   · config_simp
     rw [e241, h246, e244]
     by_cases hyx : y = x
     · rw [hyx, Machine.upd_same, ite_eq_left ⟨m, by omega, hx⟩]
-    · rw [Machine.upd_other _ _ _ (by omega), hmark y hy]
+    · ram_rw [Machine.upd_other _ _, hmark y hy]
       by_cases hex : ∃ s < m, y = d.getD ((i + s) % d.length) 0
       · obtain ⟨s, hs, hys⟩ := hex
         rw [ite_eq_left ⟨s, hs, hys⟩, ite_eq_left ⟨s, by omega, hys⟩]
@@ -313,9 +313,7 @@ theorem ringBody_inv {MB NN NB : ℕ} {S : LState} {d : List ℕ} {i : ℕ} {c�
         · exact hex ⟨s, by omega, hys⟩
   · config_simp; simp only [Machine.upd_apply, h1, h2, h3, h4, ite_false]
     exact hfn r h1 h2 h3 h4
-  · config_simp
-    rw [e241, h246, Machine.upd_other _ _ _ (by have := hdlt x hxd; omega)]
-    exact hnm t ht'
+  · frame_finish [e241, h246, Machine.upd_other]
   · config_simp; rw [e244]; omega
 
 /-- The positions `(i + s) % len`, `s < len`, enumerate the cycle. -/
@@ -372,8 +370,8 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
     have := (List.subperm_of_subset hnd (fun y hy => List.mem_range.2 (hdlt y hy))).length_le
     rwa [List.length_range] at this
   set z := d.getD i 0 with hz
-  have hzd : z ∈ d := getD_mem_of_lt hi
-  have hzN : z < NN := hdlt z hzd
+  have hzd := getD_mem_of_lt hi
+  have hzN := hdlt z hzd
   have hx1 : S.nxt z = d.getD ((i + 1) % d.length) 0 := by
     rw [hz, (hcyc.2 i hi).1]
   unfold pieceOut
@@ -383,35 +381,31 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
   · omega
   · config_simp; rw [h249, h242]; omega
   · config_simp
-    rw [h249, h242, h241, Machine.upd_other _ _ _ (by omega), (hB z hzN).2, hx1]
+    ram_rw [h249, h242, h241, Machine.upd_other _ _, (hB z hzN).2, hx1]
     have := hdlt _ (getD_mem_of_lt (Nat.mod_lt (i + 1) hl))
     omega
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by rwa [hc₁]
   have hI₁ : RingInv W MB NN d i c c₁ := by
     refine ⟨hw₁, ?_, ?_, ?_, ?_, fun y hy => ?_, fun r h1 h2 h3 h4 => ?_, ?_, fun t ht => ?_, ?_,
       ?_⟩
     · rw [hc₁]; simp
     · rw [hc₁]; config_simp; omega
     · rw [hc₁]; config_simp
-      rw [h249, h242, h241, Machine.upd_other _ _ _ (by omega), (hB z hzN).2, hx1]
+      frame_finish [h249, h242, h241, Machine.upd_other, (hB z hzN).2, hx1]
     · rw [hc₁]; config_simp; rw [h241]
     · rw [hc₁]; config_simp
       rw [h241, h242, h244]
       by_cases hyz : y = z
       · rw [hyz, Machine.upd_same, ite_eq_left ⟨0, by omega, by rw [Nat.add_zero, Nat.mod_eq_of_lt hi]⟩]
       · rw [Machine.upd_other _ _ _ (by omega), ite_eq_right]
-        rintro ⟨s, hs, hys⟩
-        have : s = 0 := by omega
-        subst this
-        rw [Nat.add_zero, Nat.mod_eq_of_lt hi] at hys
-        exact hyz hys
-    · rw [hc₁]; config_simp; simp only [Machine.upd_apply, h1, h2, h3, h4, ite_false]
+        simp_all [Nat.mod_eq_of_lt hi] 
+    · ram_post
     · rw [hc₁]
-    · rw [hc₁]; config_simp; rw [h241, h242, Machine.upd_other _ _ _ (by omega)]
+    · ram_post
     · rw [hc₁]
     · rw [hc₁]
-  have hnxt : ∀ y < NN, c.nmem (NB + y) = S.nxt y := fun y hy => (hB y hy).2
+  have hnxt := fun y hy => (hB y hy).2
   obtain ⟨c₂, k₂, ex₂, ⟨hw₂, hm1, hml, h246, h245, hmark, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩, hexit₂,
     hk₂⟩ := Exec.whileLtN_bounded (P := P) (RingInv W MB NN d i c) (fun d' => d.length - d'.nreg 247)
       7 (fun _ h => h.1) (fun d' hd' ht => ringBody_inv hcyc hnd hi hdlt hlen hd0 hnxt hl2
@@ -419,7 +413,7 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
   unfold ringLoop
   refine spec_seq ⟨c₂, k₂, ex₂, ?_⟩
   have e244₂ : c₂.nreg 244 = 1 := by
-    rw [hfn₂ 244 (by decide) (by decide) (by decide) (by decide), h244]
+    frame_finish
   have hmeq : c₂.nreg 247 = d.length := by
     by_contra hne
     have hlt : c₂.nreg 247 < d.length := by omega
@@ -439,29 +433,28 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
     · rw [ite_eq_left ((exists_pos_iff hi y).2 h), ite_eq_left h]
     · rw [ite_eq_right (fun h' => h ((exists_pos_iff hi y).1 h')), ite_eq_right h]
   have e242 : c₂.nreg 242 = z := by
-    rw [hfn₂ 242 (by decide) (by decide) (by decide) (by decide), h242]
+    frame_finish
   refine spec_seq ?_
   exec_block
   refine spec_name fun c₃ hc₃ => ?_
-  have hw₃ : WordsBounded W c₃ := by rw [hc₃]; assumption
+  have hw₃ : WordsBounded W c₃ := by rwa [hc₃]
   set l := (walk S z d.length).map S.vtx with hldef
   have hll : l.length = d.length := by rw [hldef, List.length_map, walk_eq_rotate hcyc hi,
     List.length_rotate]
   have hmem₃ : c₃.nmem = c₂.nmem := by rw [hc₃]
   have e80 : c₃.nreg 80 = NB := by
-    rw [hc₃]; config_simp; rw [hfn₂ 249 (by decide) (by decide) (by decide) (by decide), h249]
+    rw [hc₃]; config_simp; frame_finish
   have e81 : c₃.nreg 81 = VB := by
-    rw [hc₃]; config_simp; rw [hfn₂ 250 (by decide) (by decide) (by decide) (by decide), h250]
+    rw [hc₃]; config_simp; frame_finish
   have e82 : c₃.nreg 82 = z := by rw [hc₃]; config_simp; exact e242
   have e83 : c₃.nreg 83 = d.length := by rw [hc₃]; config_simp; exact hmeq
   have e84 : c₃.nreg 84 = WB := by
-    rw [hc₃]; config_simp; rw [hfn₂ 251 (by decide) (by decide) (by decide) (by decide), h251]
+    rw [hc₃]; config_simp; frame_finish
   have hband₃ : ∀ y < NN, c₃.nmem (VB + y) = S.vtx y ∧ c₃.nmem (NB + y) = S.nxt y := by
     intro y hy
-    rw [hmem₃, hnm₂ _ (by omega), hnm₂ _ (by omega)]
+    ram_rw [hmem₃, hnm₂, hnm₂]
     exact hB y hy
-  have hseq : ∀ s, nodeSeq c₃.nmem NB z s = d.getD ((i + s) % d.length) 0 :=
-    nodeSeq_eq_iterate hcyc (fun y hy => (hband₃ y (hdlt y hy)).2) hi
+  have hseq := nodeSeq_eq_iterate hcyc (fun y hy => (hband₃ y (hdlt y hy)).2) hi
   have hseqN : ∀ s, nodeSeq c₃.nmem NB z s < NN := fun s => by
     rw [hseq]; exact hdlt _ (getD_mem_of_lt (Nat.mod_lt _ hl))
   have hin : PieceInput W l c₃ := by
@@ -476,9 +469,9 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
     · have := hseqN s; left; omega
     · rw [hll]; omega
   -- the piece: a mountain in `Q`, hence (transfer) in `P`
-  have hpiece : IsPiece Q l := isPiece_walk hQ hD hR hp hd hi
+  have hpiece := isPiece_walk hQ hD hR hp hd hi
   have hQn : Q.n = P.n := by rw [hQe]; exact Core.shear_n ε P
-  have hmount := mountain_transfer (P := P) (ε := ε) (by rw [← hQe]; exact hag)
+  have hmount := mountain_transfer (P := P) (ε := ε) (by rwa [← hQe])
     (fun x hx => hQn ▸ hpiece.lt x hx) (by rw [← hQe]; exact Chazelle.Mountain.piece_isMountain hQ hpiece)
   obtain ⟨c₄, k₄, ex₄, hk₄, ⟨T, hT, hout₄⟩, hfn₄, -, hnm₄, -⟩ :=
     pieceTri_exec (P := P) (W := W) hmount c₃ hw₃ hin
@@ -491,10 +484,10 @@ theorem pieceOut_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB N
   · rw [hnm₄ _ (by rw [e84, hll]; omega), hmem₃, hmark₂ y hy]
   · rw [hQe, subPoly_shear]; exact weakTriangulates_shear ε hT
   · rw [hout₄, hc₃]; config_simp; rw [hout₂]
-  · rw [hfn₄ r (by omega), hc₃]; config_simp
+  · ram_rw [hfn₄ r, hc₃]; config_simp
     simp only [Machine.upd_apply, show r ≠ 80 by omega, show r ≠ 81 by omega,
       show r ≠ 82 by omega, show r ≠ 83 by omega, show r ≠ 84 by omega, ite_false]
-    rw [hfn₂ r (by omega) (by omega) (by omega) (by omega)]
+    ram_rw [hfn₂ r]
   · rw [hnm₄ _ (by rw [e84, hll]; omega), hmem₃, hnm₂ t ht1]
 
 open Classical in
@@ -517,9 +510,14 @@ def OutInv (Q : Polygon) (W : ℕ) (S : LState) (cs : List (List ℕ)) (NN MB NB
 def outPot (NN MB : ℕ) (c : Config) : ℕ :=
   70 * (NN - c.nreg 242) + 130 * (List.range NN).countP (fun y => decide (c.nmem (MB + y) = 0))
 
+section
+
+variable {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB VB WB : ℕ}
+    (hX : OutCtx P Q W S cs NN MB NB VB WB)
+include hX
+
 set_option maxHeartbeats 1000000 in
-theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB VB WB : ℕ}
-    (hX : OutCtx P Q W S cs NN MB NB VB WB) {c₀ : Config} (c : Config)
+theorem outBody_inv {c₀ : Config} (c : Config)
     (hI : OutInv Q W S cs NN MB NB VB WB c₀ c) (ht : c.nreg 242 < c.nreg 240) :
     ∃ c' k, Exec P W outBody c c' k ∧ OutInv Q W S cs NN MB NB VB WB c₀ c' ∧
       outPot NN MB c' + k + 2 ≤ outPot NN MB c := by
@@ -537,10 +535,10 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
   exec_block
   · rw [h241]; omega
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by rwa [hc₁]
   have r1 : ∀ r, r ≠ 245 → r ≠ 248 → c₁.nreg r = c.nreg r := by
-    intro r a b; rw [hc₁]; config_simp; simp only [Machine.upd_apply, a, b, ite_false]
-  have e245 : c₁.nreg 245 = c.nmem (MB + z) := by rw [hc₁]; config_simp; rw [h241]
+    ram_post
+  have e245 : c₁.nreg 245 = c.nmem (MB + z) := by ram_finish
   have hmem₁ : c₁.nmem = c.nmem := by rw [hc₁]
   by_cases hmz : ∃ d ∈ done, z ∈ d
   · -- already marked: skip
@@ -548,17 +546,16 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
     have e244 := r1 244 (by decide) (by decide)
     refine spec_seq (spec_ifLtN_false (by rw [e245, hm1]; omega) (spec_skip hw₁ ?_))
     exec_block
-    · rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244]; omega
+    · frame_finish
     refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, done, hdn, hdcs, fun d hd => ?_,
       fun y hy => ?_, acc, hF, hT, ?_⟩, ?_⟩
     all_goals first
-      | (config_simp; rw [r1 _ (by decide) (by decide)]; assumption)
+      | (config_simp; ram_rw [r1]; assumption)
       | skip
-    · config_simp; rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244]
-      omega
-    · config_simp; rw [hmem₁]; exact hB
+    · config_simp; frame_finish
+    · config_simp; rwa [hmem₁]
     · config_simp
-      rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244, hdiff d hd]
+      ram_rw [r1 242, r1 244, h244, hdiff d hd]
       constructor
       · rintro ⟨y, hy, hyz⟩; exact ⟨y, hy, by omega⟩
       · rintro ⟨y, hy, hyz⟩
@@ -571,16 +568,16 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
           · subst hdd
             exact (hdiff d hd).1 hd'
           · exact absurd hy (hR.disj (hdcs d' hd') hd (Ne.symm hdd) hzd')
-    · config_simp; rw [hmem₁]; exact hmark y hy
-    · config_simp; rw [hc₁]; exact hout
+    · frame_finish
+    · ram_finish
     · unfold outPot
       config_simp
-      rw [r1 242 (by decide) (by decide), r1 244 (by decide) (by decide), h244, hmem₁]
+      ram_rw [r1 242, r1 244, h244, hmem₁]
       omega
   · -- a new cycle
     have hm0 : c.nmem (MB + z) = 0 := by rw [hmark z ht, ite_eq_right hmz]
     obtain ⟨d, hd, hzd⟩ := hR.exists_cyc (y := z) (by omega)
-    have hdnd : d ∉ done := fun h => hmz ⟨d, h, hzd⟩
+    have hdnd := fun h => hmz ⟨d, h, hzd⟩
     obtain ⟨i, hi, hdi⟩ := exists_getD_of_mem hzd
     have hd0 : ∀ y ∈ d, c.nmem (MB + y) = 0 := by
       intro y hy
@@ -591,21 +588,21 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       · exact hR.disj hd (hdcs d' hd') hdd hy hyd'
     have e244 := r1 244 (by decide) (by decide)
     refine spec_seq (spec_ifLtN_true (by rw [e245, hm0]; omega) ?_)
-    refine spec_use (pieceOut_exec hX hd hi c₁ hw₁ (by rw [hmem₁]; exact hB)
-      (by rw [r1 240 (by decide) (by decide), h240])
-      (by rw [r1 241 (by decide) (by decide), h241])
-      (by rw [r1 242 (by decide) (by decide), hdi])
-      (by rw [r1 243 (by decide) (by decide), h243])
-      (by rw [r1 244 (by decide) (by decide), h244])
-      (by rw [r1 249 (by decide) (by decide), h249])
-      (by rw [r1 250 (by decide) (by decide), h250])
-      (by rw [r1 251 (by decide) (by decide), h251])
+    refine spec_use (pieceOut_exec hX hd hi c₁ hw₁ (by rwa [hmem₁])
+      (by frame_finish)
+      (by frame_finish)
+      (by frame_finish [r1, hdi])
+      (by frame_finish)
+      (by frame_finish)
+      (by frame_finish)
+      (by frame_finish)
+      (by frame_finish)
       (fun y hy => by rw [hmem₁]; exact hd0 y hy)) ?_
     rintro c₂ k₂ hk₂ hw₂ ⟨hmark₂, ⟨T, hT₂, hout₂⟩, hfn₂, hnm₂⟩
     have R2 : ∀ r, (r < 60 ∨ (94 < r ∧ r < 245) ∨ 248 < r) → c₂.nreg r = c.nreg r := by
-      intro r hr; rw [hfn₂ r hr, r1 r (by omega) (by omega)]
+      frame_finish
     exec_block
-    · rw [R2 242 (by omega), R2 244 (by omega), h244]; omega
+    · frame_finish
     have hlenN : d.length ≤ NN := by
       have := (List.subperm_of_subset (hR.nodup_cyc hd)
         (fun y hy => List.mem_range.2 (hcnt ▸ hR.lt_cnt hd hy))).length_le
@@ -617,14 +614,14 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       (fun y hy hyd => by rw [hmark₂ y hy, ite_eq_right hyd, hmem₁])
     refine ⟨⟨‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, done ++ [d], ?_, ?_, fun d' hd' => ?_,
       fun y hy => ?_, acc ++ [((walk S (d.getD i 0) d.length).map S.vtx, T)], ?_, ?_, ?_⟩, ?_⟩
-    · config_simp; rw [R2 242 (by omega), R2 244 (by omega), h244]; omega
-    · config_simp; rw [R2 240 (by omega), h240]
-    · config_simp; rw [R2 241 (by omega), h241]
-    · config_simp; rw [R2 243 (by omega), h243]
-    · config_simp; rw [R2 244 (by omega), h244]
-    · config_simp; rw [R2 249 (by omega), h249]
-    · config_simp; rw [R2 250 (by omega), h250]
-    · config_simp; rw [R2 251 (by omega), h251]
+    · config_simp; frame_finish
+    · config_simp; ram_rw [R2 240, h240]
+    · config_simp; ram_rw [R2 241, h241]
+    · config_simp; ram_rw [R2 243, h243]
+    · config_simp; ram_rw [R2 244, h244]
+    · config_simp; ram_rw [R2 249, h249]
+    · config_simp; ram_rw [R2 250, h250]
+    · config_simp; ram_rw [R2 251, h251]
     · config_simp
       intro y hy
       rw [hnm₂ _ (Or.inl (by have := hX.lay1; omega)) (Or.inl (by have := hX.lay1; omega)),
@@ -637,7 +634,7 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       · exact hdcs d' h
       · rw [List.mem_singleton] at h; subst h; exact hd
     · config_simp
-      rw [R2 242 (by omega), R2 244 (by omega), h244, List.mem_append, List.mem_singleton,
+      ram_rw [R2 242, R2 244, h244, List.mem_append, List.mem_singleton,
         hdiff d' hd']
       constructor
       · rintro (⟨y, hy, hyz⟩ | rfl)
@@ -655,28 +652,18 @@ theorem outBody_inv {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB 
       rw [hmark₂ y hy, hmem₁, hmark y hy]
       by_cases hyd : y ∈ d
       · rw [ite_eq_left hyd, ite_eq_left ⟨d, List.mem_append_right _ (List.mem_singleton_self _), hyd⟩]
-      · rw [ite_eq_right hyd]
-        congr 1
-        apply propext
-        constructor
-        · rintro ⟨d', hd', hy'⟩; exact ⟨d', List.mem_append_left _ hd', hy'⟩
-        · rintro ⟨d', hd', hy'⟩
-          rcases List.mem_append.1 hd' with h | h
-          · exact ⟨d', h, hy'⟩
-          · rw [List.mem_singleton] at h; subst h; exact absurd hy' hyd
+      intros; simp [ite_eq_right hyd, List.mem_singleton, *]
     · refine List.rel_append hF (List.Forall₂.cons ⟨i, ?_⟩ List.Forall₂.nil)
       rw [walk_eq_rotate (hR.cyc d hd) hi, List.map_rotate]
     · intro p hp
       rcases List.mem_append.1 hp with h | h
       · exact hT p h
       · rw [List.mem_singleton] at h; subst h; exact hT₂
-    · config_simp
-      rw [hout₂, hc₁]; config_simp
-      rw [hout, List.flatMap_append, List.flatMap_singleton, List.append_assoc]
+    · ram_finish [hout₂, hc₁, hout, List.flatMap_append, List.flatMap_singleton, List.append_assoc]
     · unfold outPot
       config_simp
-      rw [R2 242 (by omega), R2 244 (by omega), h244]
-      have hk : k₂ ≤ 121 * d.length + 44 := hk₂
+      ram_rw [R2 242, R2 244, h244]
+      
       have h3 : 3 ≤ d.length := by
         have := hi; have := (hR.cyc d hd).1
         by_contra h3
@@ -691,8 +678,7 @@ set_option maxHeartbeats 1000000 in
 /-- **Spec of the output pass**: from a configuration holding the final structure (`Bands`) with
 the output-pass registers set, `outStmt` appends a triangulation `X` of `Q` to the output, at cost
 `≤ 205 NN + 10`. -/
-theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB VB WB : ℕ}
-    (hX : OutCtx P Q W S cs NN MB NB VB WB) (c : Config) (hc : WordsBounded W c)
+theorem outStmt_exec (c : Config) (hc : WordsBounded W c)
     (hB : Bands c.nmem S NN NB VB) (h240 : c.nreg 240 = NN) (h241 : c.nreg 241 = MB)
     (h249 : c.nreg 249 = NB) (h250 : c.nreg 250 = VB) (h251 : c.nreg 251 = WB) (hW1 : 1 ≤ W) :
     ∃ c' k, Exec P W outStmt c c' k ∧ k ≤ 205 * NN + 10 ∧
@@ -706,59 +692,52 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
   have hl4 := hX.lay4
   unfold outStmt
   refine spec_seq ?_
-  exec_block
-  · omega
-  · omega
-  · omega
+  exec_block!
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by rwa [hc₁]
   have r1 : ∀ r, r ≠ 242 → r ≠ 243 → r ≠ 244 → c₁.nreg r = c.nreg r := by
-    intro r a b d; rw [hc₁]; config_simp; simp only [Machine.upd_apply, a, b, d, ite_false]
+    ram_post
   have c243 : c₁.nreg 243 = 0 := by rw [hc₁]; config_simp
   have c244 : c₁.nreg 244 = 1 := by rw [hc₁]; config_simp
-  have hCI : ClearInv W MB NN c₁ c₁ := ⟨hw₁, by rw [hc₁]; config_simp; omega,
-    fun y hy => by rw [hc₁] at hy; config_simp at hy; omega, fun _ _ _ => rfl, rfl,
+  have hCI : ClearInv W MB NN c₁ c₁ := ⟨hw₁, by simp_all,
+    fun y hy => by simp_all, fun _ _ _ => rfl, rfl,
     fun _ _ => rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, ex₂, ⟨hw₂, hz₂, hzero, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩, hexit₂, hk₂⟩ :=
     Exec.whileLtN_bounded (P := P) (ClearInv W MB NN c₁) (fun d => NN - d.nreg 242) 3
-      (fun _ h => h.1) (fun d hd ht => clearBody_inv (by rw [r1 240 (by decide) (by decide)
-        (by decide), h240]) (by rw [r1 241 (by decide) (by decide) (by decide), h241]) c243 c244
+      (fun _ h => h.1) (fun d hd ht => clearBody_inv (by frame_finish) (by frame_finish) c243 c244
         (by omega) d hd ht) hCI
   unfold clearLoop
   refine spec_seq ⟨c₂, k₂, ex₂, ?_⟩
   have e242₂ : c₂.nreg 242 = NN := by
-    rw [hfn₂ 240 (by decide) (by decide), r1 240 (by decide) (by decide) (by decide), h240]
+    ram_rw [hfn₂ 240, (ram_app% (r1 240 ?_ ?_ ?_)), h240]
       at hexit₂
     omega
   refine spec_seq ?_
-  exec_block
-  · omega
+  exec_block!
   refine spec_name fun c₃ hc₃ => ?_
-  have hw₃ : WordsBounded W c₃ := by rw [hc₃]; assumption
+  have hw₃ : WordsBounded W c₃ := by rwa [hc₃]
   have r3 : ∀ r, r ≠ 242 → r ≠ 248 → c₃.nreg r = c₁.nreg r := by
-    intro r a b; rw [hc₃]; config_simp; rw [Machine.upd_other _ _ _ a, hfn₂ r a b]
+    ram_post
   have hI₀ : OutInv Q W S cs NN MB NB VB WB c₃ c₃ := by
-    refine ⟨hw₃, by rw [hc₃]; config_simp; omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, [],
+    refine ⟨hw₃, by ram_finish, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, [],
       List.nodup_nil, fun d hd => absurd hd List.not_mem_nil, fun d hd => ?_, fun y hy => ?_, [],
       List.Forall₂.nil, fun p hp => absurd hp List.not_mem_nil, by simp⟩
-    · rw [r3 240 (by decide) (by decide), r1 240 (by decide) (by decide) (by decide), h240]
-    · rw [r3 241 (by decide) (by decide), r1 241 (by decide) (by decide) (by decide), h241]
-    · rw [r3 243 (by decide) (by decide), c243]
-    · rw [r3 244 (by decide) (by decide), c244]
-    · rw [r3 249 (by decide) (by decide), r1 249 (by decide) (by decide) (by decide), h249]
-    · rw [r3 250 (by decide) (by decide), r1 250 (by decide) (by decide) (by decide), h250]
-    · rw [r3 251 (by decide) (by decide), r1 251 (by decide) (by decide) (by decide), h251]
+    · simp [r3, r1, h240]
+    · simp [r3, r1, h241]
+    · simp [r3, c243]
+    · simp [r3, c244]
+    · simp [r3, r1, h249]
+    · simp [r3, r1, h250]
+    · simp [r3, r1, h251]
     · intro y hy
       have e : c₃.nmem = c₂.nmem := by rw [hc₃]
-      rw [e, hnm₂ _ (Or.inl (by omega)), hnm₂ _ (Or.inl (by omega))]
+      rw [e, hnm₂ _ ((by omega)), hnm₂ _ ((by omega))]
       have e1 : c₁.nmem = c.nmem := by rw [hc₁]
       rw [e1]; exact hB y hy
     · have e : c₃.nreg 242 = 0 := by rw [hc₃]; config_simp
-      rw [e]
-      simp only [List.not_mem_nil, false_iff, not_exists, not_and]
-      intro y _ h; omega
+      frame_finish [e, List.not_mem_nil, false_iff, not_exists, not_and]
     · have e : c₃.nmem = c₂.nmem := by rw [hc₃]
-      rw [e, hzero y (by rw [e242₂]; exact hy)]
+      rw [e, hzero y (by rwa [e242₂])]
       simp
   obtain ⟨c₄, k₄, ex₄, ⟨hw₄, hz₄, h240₄, -, -, -, -, -, -, -, done, hdn, hdcs, hdiff, -, acc, hF,
     hT, hout₄⟩, hexit₄, hk₄⟩ := Exec.whileLtN_potential (P := P)
@@ -789,12 +768,13 @@ theorem outStmt_exec {Q : Polygon} {S : LState} {cs : List (List ℕ)} {NN MB NB
     obtain ⟨D, hD, hp⟩ := hX.enum
     have hrot : List.Forall₂ (fun m' p => ∃ r, p.1 = m'.rotate r) (done.map (List.map S.vtx))
         acc := by
-      rw [List.forall₂_map_left_iff]
-      exact hF
+      rwa [List.forall₂_map_left_iff]
     refine ⟨_, triangulates_of_pairs hX.simple hD ((hperm.map _).trans hp) hrot hT, ?_⟩
     rw [hout₄, hc₃]
     config_simp
     rw [hout₂, hc₁]
+
+end
 
 end Ram
 

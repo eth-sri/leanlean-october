@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopFinS0
 public import Chazelle.Core.SweepEvStopRF
 
@@ -31,19 +35,19 @@ theorem strD_eq {n g e : ℕ} (hg : g < n) (he : e < n) :
     (if e < g then e + n - g else e - g) = dOf n g e := by
   unfold dOf
   split_ifs with h
-  · rw [Nat.mod_eq_of_lt (by omega)]
-  · rw [show e + n - g = (e - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [Nat.mod_eq_of_lt]
+  ram_simp [show e + n - g = (e - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt]
 
 theorem strMod_eq {n s : ℕ} (hs : s < 2 * n) : (if s < n then s else s - n) = s % n := by
   split_ifs with h
   · exact (Nat.mod_eq_of_lt h).symm
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · ram_simp [Nat.mod_eq_sub_mod, Nat.mod_eq_of_lt]
 
 /-- **Corresponding positions along the right stretch** have the same parameter. -/
 theorem str_param {J : Merge.Junction} (hP : J.P.Simple) {d : ℕ} (hd : d < Lst J) (Q : Polygon)
     (h : ℕ) :
-    (chainModel J.whole).param Q ⟨(gW J + d) % (chainModel J.whole).W.n, h⟩ =
-      (chainModel J.right).param Q ⟨cpA J d, h⟩ := by
+    J.wholeModel.param Q ⟨(gW J + d) % J.wholeModel.W.n, h⟩ =
+      J.rightModel.param Q ⟨cpA J d, h⟩ := by
   have hS := sideConvR J hP
   have hc := hS.corr d hd
   obtain ⟨h1, h2⟩ := wab_of_sidePt hc
@@ -54,27 +58,27 @@ theorem str_param {J : Merge.Junction} (hP : J.P.Simple) {d : ℕ} (hd : d < Lst
 theorem slfAdd_irs (hI : IInv W c₀ c) {r a b : ℕ} (hr : 240700 ≤ r ∧ r < 250000)
     (hv : c.nreg a + c.nreg b ≤ W) :
     IRS P W c₀ (.instr (.addN r a b)) c 1 (fun c' => c'.nreg r = c.nreg a + c.nreg b ∧
-      (∀ q, q ≠ r → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept r c c') ∧ c'.nmem = c.nmem) := by
   refine (IRS.instr1 (i := .addN r a b) hI ⟨iscr_sw hr.1 hr.2, hv⟩).mono le_rfl ?_
   rintro c' rfl
   refine ⟨by simp [regI, upd], fun q hq => by simp [regI, upd, hq], rfl⟩
 
 theorem slfSub_irs (hI : IInv W c₀ c) {r a b : ℕ} (hr : 240700 ≤ r ∧ r < 250000) :
     IRS P W c₀ (.instr (.subN r a b)) c 1 (fun c' => c'.nreg r = c.nreg a - c.nreg b ∧
-      (∀ q, q ≠ r → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept r c c') ∧ c'.nmem = c.nmem) := by
   refine (IRS.instr1 (i := .subN r a b) hI (iscr_sw hr.1 hr.2)).mono le_rfl ?_
   rintro c' rfl
   refine ⟨by simp [regI, upd], fun q hq => by simp [regI, upd, hq], rfl⟩
 
 /-! ## The arithmetic of the counterpart -/
 
-def sflN : ℕ := sw 4118
+@[ram_layout] def sflN : ℕ := sw 4118
 def slD' : ℕ := sw 4120
 def slQ' : ℕ := sw 4121
-def slA : ℕ := sw 4122
-def slD1 : ℕ := sw 4123
-def slQ1 : ℕ := sw 4124
-def slB : ℕ := sw 4125
+@[ram_layout] def slA : ℕ := sw 4122
+@[ram_layout] def slD1 : ℕ := sw 4123
+@[ram_layout] def slQ1 : ℕ := sw 4124
+@[ram_layout] def slB : ℕ := sw 4125
 
 /-- The offset `d` of the position. -/
 def slDS : Stmt :=
@@ -110,28 +114,27 @@ theorem slQS_irs (hI : IInv W c₀ c) {src dst : ℕ}
     (hdr : 240700 ≤ dst ∧ dst < 250000) (hv : c.nreg src + c.nreg (sw 44) ≤ W) :
     IRS P W c₀ (slQS src dst) c 3 (fun c' =>
       c'.nreg dst = dq (c.nreg (sw 42)) (c.nreg (sw 44)) (c.nreg src) ∧
-      (∀ q, q ≠ dst → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept dst c c') ∧ c'.nmem = c.nmem) := by
   unfold slQS
   refine IRS.ite (fun h => ?_) (fun h => ?_)
   · refine (copy1_irs hI hdr).mono le_rfl ?_
     rintro c' ⟨a1, a2, a3⟩
-    exact ⟨by rw [a1]; unfold dq; rw [ite_eq_left h], a2, a3⟩
+    ram_finish [a1, dq, ite_eq_left h]
   · refine (slfAdd_irs hI hdr hv).mono (by norm_num) ?_
     rintro c' ⟨a1, a2, a3⟩
-    exact ⟨by rw [a1]; unfold dq; rw [ite_eq_right h], a2, a3⟩
+    ram_finish [a1, dq, ite_eq_right h]
 
 theorem slModS_irs (hI : IInv W c₀ c) {r : ℕ} (hdr : 240700 ≤ r ∧ r < 250000)
     (hs : c.nreg r < 2 * c.nreg (sw 34)) :
     IRS P W c₀ (slModS r) c 3 (fun c' => c'.nreg r = c.nreg r % c.nreg (sw 34) ∧
-      (∀ q, q ≠ r → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept r c c') ∧ c'.nmem = c.nmem) := by
   unfold slModS
   refine IRS.ite (fun h => ?_) (fun h => ?_)
   · refine IRS.skip hI ⟨?_, fun _ _ => rfl, rfl⟩
     exact (Nat.mod_eq_of_lt h).symm
   · refine (slfSub_irs hI hdr).mono (by norm_num) ?_
     rintro c' ⟨a1, a2, a3⟩
-    refine ⟨?_, a2, a3⟩
-    rw [a1, ← strMod_eq hs, ite_eq_right h]
+    ram_finish [a1, ← strMod_eq hs, ite_eq_right h]
 
 /-- Register disequalities of the counterpart arithmetic. -/
 local macro "rne" : tactic => `(tactic| (simp only [slfSE, slfSH, slD', slQ', slA, slD1, slQ1,
@@ -159,7 +162,7 @@ theorem slAr_irs (hI : IInv W c₀ c) {n g g' n₂ : ℕ} (hE : c.nreg slfSE < n
   unfold slAr
   -- 1. the offset
   have s1 : IRS P W c₀ slDS c 4 (fun c' => c'.nreg slD' = d ∧
-      (∀ q, q ≠ slD' → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept slD' c c') ∧ c'.nmem = c.nmem) := by
     unfold slDS
     refine IRS.ite (fun h => ?_) (fun h => ?_)
     · refine IRS.seq (K₁ := 1) (K₂ := 1) (slfAdd_irs hI (by rne) (by rw [hn]; omega)) ?_
@@ -167,11 +170,11 @@ theorem slAr_irs (hI : IInv W c₀ c) {n g g' n₂ : ℕ} (hE : c.nreg slfSE < n
       refine (slfSub_irs hI₁ (by rne)).mono le_rfl ?_
       rintro c' ⟨b1, b2, b3⟩
       refine ⟨?_, fun q hq => by rw [b2 q hq, a2 q hq], by rw [b3, a3]⟩
-      rw [b1, a1, a2 _ (by rne), hn, hg, hd, ← strD_eq hgn hE, ite_eq_left (by rw [← hg]; exact h)]
+      rw [b1, a1, a2 _ (by rne), hn, hg, hd, ← strD_eq hgn hE, ite_eq_left (by rwa [← hg])]
     · refine (slfSub_irs hI (by rne)).mono (by norm_num) ?_
       rintro c' ⟨b1, b2, b3⟩
       refine ⟨?_, b2, b3⟩
-      rw [b1, hg, hd, ← strD_eq hgn hE, ite_eq_right (by rw [← hg]; exact h)]
+      rw [b1, hg, hd, ← strD_eq hgn hE, ite_eq_right (by rwa [← hg])]
   refine IRS.seq (K₁ := 4) (K₂ := 22) s1 ?_
   rintro c₁ hI₁ - - ⟨v1, k1, m1⟩
   have e1 : ∀ q, ¬ SlArW q → c₁.nreg q = c.nreg q := fun q hq => k1 q (by rne)
@@ -265,8 +268,7 @@ theorem slAr_irs (hI : IInv W c₀ c) {n g g' n₂ : ℕ} (hE : c.nreg slfSE < n
     rintro c' ⟨z1, z2, z3⟩
     refine ⟨by rw [z2 _ (by rne), w2 _ (by rne), c11E], by rw [z2 _ (by rne), w2 _ (by rne), v11],
       by rw [z2 _ (by rne), w1, c11B, ite_eq_left hH], by rw [z1, ite_eq_left hH],
-      fun q hq => by rw [z2 q (by rne), w2 q (by rne), e11 q hq], by rw [z3, w3, m11, m10, m9, m8,
-        m7, m6, m5, m4, m3, m2, m1]⟩
+      fun q hq => by rw [z2 q (by rne), w2 q (by rne), e11 q hq], by ram_finish⟩
 
 end
 

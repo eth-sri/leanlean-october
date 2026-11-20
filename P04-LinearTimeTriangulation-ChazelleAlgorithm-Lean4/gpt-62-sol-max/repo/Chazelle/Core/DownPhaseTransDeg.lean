@@ -33,7 +33,7 @@ theorem mem_piece (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
   obtain ⟨hzy, hza, hzb⟩ := hzc
   have hdom := T.interior_sub_dom hQ
   have hz : ((z.1, y) : Point) ∈ Q.filled \ Q.boundary := by
-    rw [← hzy]; exact hzD
+    rwa [← hzy]
   obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨hza, hzb⟩
     (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
   refine ⟨hseg y a' b', ⟨⟨y, a', b', hch', rfl⟩, hseg y a b, hc, fun p hp =>
@@ -54,9 +54,14 @@ theorem exists_chain_region (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point
   exact ⟨_, ⟨v, hfree hv, rfl⟩,
     (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hfree⟩
 
+section
+
+variable (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2)
+    {F₀ : Set (Set Point)} (hF₀ : (chainModel C).ChordFamily C.P F₀)
+include hQ T hh hF₀
+
 /-- **(T2) The degree does not grow.** -/
-theorem deg_le (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2)
-    {F₀ : Set (Set Point)} (hF₀ : (chainModel C).ChordFamily C.P F₀) {U V : Set Point}
+theorem deg_le {U V : Set Point}
     (hVU : V ⊆ U) :
     (interiorModel Q).deg (pieces Q F₀) V ≤ (chainModel C).deg F₀ U := by
   classical
@@ -76,12 +81,13 @@ theorem deg_le (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2
     exact one_piece hQ T hh hc h₁.1.1 h₂.1.1 s1 s2
 
 /-- **(T2) The pieces of a conformal chain family are conformal.** -/
-theorem degLe_pieces (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2)
-    {F₀ : Set (Set Point)} (hF₀ : (chainModel C).ChordFamily C.P F₀) {D : ℕ}
+theorem degLe_pieces {D : ℕ}
     (hD : (chainModel C).DegLe F₀ D) : (interiorModel Q).DegLe (pieces Q F₀) D := by
   intro V hV
   obtain ⟨U, hU, hVU⟩ := exists_chain_region hQ T hF₀.2.1 hV
   exact (deg_le hQ T hh hF₀ hVU).trans (hD U hU)
+
+end
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
 public import Chazelle.Core.SweepEvFace2
 
 /-!
@@ -41,66 +43,64 @@ def face : Stmt :=
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem iscr_fR : IScr fR := iscr_sw (by unfold fR sw; norm_num) (by unfold fR sw; norm_num)
+theorem iscr_fR : IScr fR := iscr_sw (by reg_omega) (by reg_omega)
 
 theorem faceChk_irs {xe xh src : ℕ} (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     IRS P W c₀ (faceChk xe xh src) c 7 (fun c' =>
       c'.nreg fR = (if c.nreg xe = c.nreg fE ∧ c.nreg xh = 0 then c.nreg src else c.nreg fR) ∧
-      (∀ r, r ≠ fR → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept fR c c') ∧ c'.nmem = c.nmem) := by
   unfold faceChk
   by_cases h1 : c.nreg xe < c.nreg fE
-  · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by omega)
-      (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+  · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).budget
+    ram_simp [ite_eq_right]
   by_cases h2 : c.nreg fE < c.nreg xe
-  · refine (IRS.ifF h1 (IRS.ifT h2 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))).mono
-      (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+  · refine (IRS.ifF h1 (IRS.ifT h2 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))).budget
+    ram_simp [ite_eq_right]
   by_cases h3 : c.nreg K0 < c.nreg xh
   · refine (IRS.ifF h1 (IRS.ifF h2 (IRS.ifT h3 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩))))
-      |>.mono (by omega) (fun _ h => h)
-    rw [ite_eq_right (by omega)]
+      |>.budget
+    ram_simp [ite_eq_right]
   · refine (IRS.ifF h1 (IRS.ifF h2 (IRS.ifF h3 (IRS.block [.copyN fR src] hI
       ⟨iscr_fR, trivial⟩)))).mono (by simp) ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · simp only [regB, regI, upd, ite_true]
       rw [ite_eq_left ⟨by omega, by omega⟩]
-    · simp only [regB, regI, upd, ite_eq_right hr]
+    ram_finish
 
 theorem faceSel_irs (hI : IInv W c₀ c) (hk0 : c.nreg K0 = 0) :
     IRS P W c₀ faceSel c 10 (fun c' =>
       c'.nreg fR = (if c.nreg fA < c.nreg K1 then
           (if c.nreg fSE = c.nreg fE ∧ c.nreg fSH = 0 then c.nreg lR0 else c.nreg lR1)
         else (if c.nreg fEE = c.nreg fE ∧ c.nreg fEH = 0 then c.nreg lR2 else c.nreg lR1)) ∧
-      (∀ r, r ≠ fR → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
+      (Machine.NRegEqExcept fR c c') ∧ c'.nmem = c.nmem) := by
   unfold faceSel
   refine (IRS.seq (IRS.block [.copyN fR lR1] hI ⟨iscr_fR, trivial⟩) ?_).mono (K := 1 + (7 + 2))
     (by norm_num) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have v1 : c₁.nreg fR = c.nreg lR1 := by
-    rw [hc1]; simp only [regB, regI, upd, ite_true]
+    ram_finish
   have o1 : ∀ r, r ≠ fR → c₁.nreg r = c.nreg r := by
-    intro r hr; rw [hc1]; simp only [regB, regI, upd, ite_eq_right hr]
+    ram_finish
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have n : ∀ q, (q = fA ∨ q = K1 ∨ q = K0 ∨ q = fSE ∨ q = fSH ∨ q = fEE ∨ q = fEH ∨ q = fE ∨
       q = lR0 ∨ q = lR1 ∨ q = lR2) → c₁.nreg q = c.nreg q := by
     intro q hq
     apply o1
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      simp [fR, fA, K1, K0, fSE, fSH, fEE, fEH, fE, lR0, lR1, lR2, sw]
-  have hk0' : c₁.nreg K0 = 0 := by rw [n K0 (by simp)]; exact hk0
+      simp [ram_layout]
+  have hk0' : c₁.nreg K0 = 0 := by ram_finish
   by_cases hA : c₁.nreg fA < c₁.nreg K1
   · refine (IRS.ifT hA (faceChk_irs hI₁ hk0')).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3⟩
-    rw [n fA (by simp), n K1 (by simp)] at hA
+    ram_rw [n fA, n K1] at hA
     refine ⟨?_, fun r hr => (h2 r hr).trans (o1 r hr), h3.trans hm1⟩
-    rw [h1, ite_eq_left hA, v1, n fSE (by simp), n fSH (by simp), n fE (by simp), n lR0 (by simp)]
+    simp [h1, ite_eq_left hA, v1, n]
   · refine (IRS.ifF hA (faceChk_irs hI₁ hk0')).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3⟩
-    rw [n fA (by simp), n K1 (by simp)] at hA
+    ram_rw [n fA, n K1] at hA
     refine ⟨?_, fun r hr => (h2 r hr).trans (o1 r hr), h3.trans hm1⟩
-    rw [h1, ite_eq_right hA, v1, n fEE (by simp), n fEH (by simp), n fE (by simp), n lR2 (by simp)]
+    simp [h1, ite_eq_right hA, v1, n]
 
 /-! ## The task -/
 

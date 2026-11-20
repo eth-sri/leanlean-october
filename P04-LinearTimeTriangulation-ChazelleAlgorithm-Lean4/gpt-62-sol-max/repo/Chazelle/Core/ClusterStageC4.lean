@@ -60,7 +60,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have f4 : PFr StCRG (CMem g) c c4 := f3.trans (fr hf4 (fun a h => by unfold CMem; omega))
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hρ5, hmin5⟩ := argS_exec (P := P) hw4 (gr f4) hk hkμ hc4
     (fun r hr => cntBelow_le _ _ _) hW
-  have f5 : PFr StCRG (CMem g) c c5 := f4.trans (fr hf5 (fun a h => h.elim))
+  have f5 := f4.trans (fr hf5 (fun a h => h.elim))
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, -, hlv6⟩ := lvS_exec (P := P) hw5 (gr f5) hk hkμ rfl hρ5 hW
   have f6 : PFr StCRG (CMem g) c c6 := f5.trans (fr hf6 (fun a h => by
     unfold LvMem at h; unfold CMem; omega))

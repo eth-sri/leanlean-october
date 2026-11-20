@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.DownPhaseDrvTC0
 public import Chazelle.Core.DownPhaseBaseLoop1
 
@@ -78,9 +82,7 @@ theorem getD_transL {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)}
   have hlt := DownBase.rankF_lt_length (keepT li n c₀) (0, 0, 0) hi hk
   have hg := DownBase.getD_filter_rank (keepT li n c₀) (0, 0, 0) hi hk
   unfold transL
-  rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_eq_getElem hlt,
-    Option.map_some, Option.getD_some, ← hg, List.getD_eq_getElem?_getD,
-    List.getElem?_eq_getElem hlt, Option.getD_some]
+  simp_all
 
 /-- The memory step of a kept record. -/
 theorem memT_keep {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i : ℕ}
@@ -107,18 +109,18 @@ theorem memT_keep {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List
   rw [hr]
   by_cases h3 : a = B' + 3 * j + 2
   · subst h3
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
-      htw 2 (by norm_num)]
+    ram_rw [ite_eq_left rfl, ite_eq_left, show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
+      htw 2]
     try simp
   by_cases h4 : a = B' + 3 * j + 1
   · subst h4
-    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
-      htw 1 (by norm_num)]
+    ram_rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left, show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
+      htw 1]
     try simp
   by_cases h5 : a = B' + 3 * j
   · subst h5
-    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
-      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
+    ram_rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left,
+      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0]
     try simp
   rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
   split_ifs <;> first | rfl | omega
@@ -128,9 +130,7 @@ theorem memT_drop {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (
     (hi : i < L₀.length) (hk : keepT li n c₀ (L₀.getD i (0, 0, 0)) = false) (a : ℕ) :
     memT m₀ li n c₀ L₀ B' i a = memT m₀ li n c₀ L₀ B' (i + 1) a := by
   have hr := DownBase.rankF_succ (keepT li n c₀) (0, 0, 0) hi
-  rw [hk] at hr
-  simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
-  unfold memT; rw [hr]
+  ram_simp [hk, Bool.false_eq_true, ite_false, Nat.add_zero, memT, hr]
 
 /-! ## The pieces of one record -/
 
@@ -152,9 +152,7 @@ theorem fLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h31 : c.nreg 
   all_goals try omega
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h31, h17]; omega)
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, fun r a1 a2 a3 a4 a5 => ?_, rfl, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h31, h17]
+  simp_all 
 
 /-- **The test of an end.** -/
 theorem fTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Bool} {n c₀ p : ℕ}
@@ -164,18 +162,15 @@ theorem fTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
     ∃ c' k, Exec P W (fTest p) c c' k ∧ k ≤ 10 ∧
       c'.nreg 190037 = (if innerE li n c₀ (c.nreg 190032) (c.nreg p) = true then 1
         else c.nreg 190037) ∧
-      (∀ r, r ≠ 190037 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept 190037 c c') ∧ Machine.NatRegFrame c c' := by
   have hset : ∃ c' k, Exec P W (.instr (.constN 190037 1)) c c' k ∧ k = 1 ∧
-      c'.nreg 190037 = 1 ∧ (∀ r, r ≠ 190037 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output :=
-    ⟨_, _, Exec.constN hw 190037 1 hW, rfl, by simp, fun r hr => by simp [hr], rfl, rfl, rfl,
-      rfl⟩
+      c'.nreg 190037 = 1 ∧ (Machine.NRegEqExcept 190037 c c') ∧ Machine.NatRegFrame c c' :=
+    ⟨_, _, Exec.constN hw 190037 1 hW, rfl, by simp, fun r hr => by simp [hr], by and_intros <;> rfl⟩
   obtain ⟨cs, ks, es, hks, vs, gs, ms, rrs, rms, os⟩ := hset
   unfold fTest innerE
   by_cases h1 : c.nreg p < c.nreg 190014
   · refine ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-    rw [ite_eq_right (by rw [h14] at h1; simp; omega)]
+    simp_all 
   by_cases h2 : c.nreg p < c.nreg 190015
   · by_cases h3 : c.nreg 190014 < c.nreg p
     · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_true h3 es)), by omega, ?_, gs,
@@ -196,7 +191,7 @@ theorem fTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
           rw [ite_eq_right (by rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h4 h5; simp; omega)]
   · refine ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw)), by omega, ?_, fun _ _ => rfl,
       rfl, rfl, rfl, rfl⟩
-    rw [ite_eq_right (by rw [h15] at h2; simp; omega)]
+    simp_all 
 
 /-- **The map of an end.** -/
 theorem fMap_exec (c : Config) (hw : WordsBounded W c) {n c₀ d p : ℕ}
@@ -204,8 +199,7 @@ theorem fMap_exec (c : Config) (hw : WordsBounded W c) {n c₀ d p : ℕ}
     (h10 : c.nreg 190010 = n - 1) (h14 : c.nreg 190014 = c₀)
     (h15 : c.nreg 190015 = c₀ + (n - 1)) :
     ∃ c' k, Exec P W (fMap d p) c c' k ∧ k ≤ 6 ∧ c'.nreg d = mapE n c₀ (c.nreg p) ∧
-      (∀ r, r ≠ d → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
-      c'.rmem = c.rmem ∧ c'.output = c.output := by
+      (Machine.NRegEqExcept d c c') ∧ Machine.NatRegFrame c c' := by
   have e₁ := Exec.copyN (P := P) hw d 190010
   set c₁ : Config := { c with nreg := upd c.nreg d (c.nreg 190010) } with hc₁
   have w₁ := e₁.wb_right
@@ -213,21 +207,20 @@ theorem fMap_exec (c : Config) (hw : WordsBounded W c) {n c₀ d p : ℕ}
   have v₁ : c₁.nreg d = n - 1 := by rw [hc₁]; simp [h10]
   have q14 : c₁.nreg 190014 = c₀ := by rw [g₁ _ (Ne.symm hd1), h14]
   have q15 : c₁.nreg 190015 = c₀ + (n - 1) := by rw [g₁ _ (Ne.symm hd2), h15]
-  have qp : c₁.nreg p = c.nreg p := g₁ _ (Ne.symm hdp)
+  have qp := g₁ _ (Ne.symm hdp)
   unfold fMap mapE
   by_cases h1 : c₁.nreg p < c₁.nreg 190014
-  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true h1 (.skip w₁)), by omega, ?_, g₁, rfl, rfl, rfl, rfl⟩
-    rw [v₁, ite_eq_right (by rw [q14, qp] at h1; omega)]
+  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true h1 (.skip w₁)), by omega, ?_, g₁, by and_intros <;> rfl⟩
+    simp_all 
   by_cases h2 : c₁.nreg p < c₁.nreg 190015
   · have e₂ := Exec.subN (P := P) w₁ d p 190014
     refine ⟨_, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_true h2 e₂)), by omega, ?_,
-      fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-    · simp only [Machine.upd_same]
-      rw [qp, q14, ite_eq_left (by rw [q14, qp] at h1; rw [q15, qp] at h2; omega)]
-    · simp only; rw [Machine.upd_other _ _ _ hr]; exact g₁ r hr
+      fun r hr => ?_, by and_intros <;> rfl⟩
+    · simp_all 
+    ram_post
   · refine ⟨c₁, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_false h2 (.skip w₁))), by omega, ?_, g₁,
-      rfl, rfl, rfl, rfl⟩
-    rw [v₁, ite_eq_right (by rw [q15, qp] at h2; omega)]
+      by and_intros <;> rfl⟩
+    simp_all 
 
 set_option maxHeartbeats 4000000 in
 /-- **Append a triple.** -/
@@ -237,15 +230,13 @@ theorem fKeep_exec (c : Config) (hw : WordsBounded W c) {w j : ℕ} (h35 : c.nre
       (∀ r, r ≠ 190035 → r ≠ 190036 → c'.nreg r = c.nreg r) ∧
       (∀ a, c'.nmem a = if a = w + 2 then c.nreg 190039 else if a = w + 1 then c.nreg 190038
         else if a = w then c.nreg 190032 else c.nmem a) ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
   unfold fKeep
   exec_block
   all_goals try (simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h35, h36, h17]; omega)
   refine ⟨rfl, ?_, ?_, fun r a1 a2 => ?_, fun a => ?_, rfl, rfl, rfl⟩
-  all_goals simp (disch := omega) only [Machine.upd_same,
-    Machine.upd_other, h35, h36, h17]
-  all_goals (try simp only [Machine.upd_apply])
+  all_goals ram_post
 
 end exec
 

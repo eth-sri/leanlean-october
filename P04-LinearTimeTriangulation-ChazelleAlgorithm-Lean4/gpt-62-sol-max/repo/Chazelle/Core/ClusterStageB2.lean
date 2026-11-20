@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ClusterStageB1
 public import Chazelle.Core.ClusterEulerRam
 
@@ -82,14 +84,14 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
         (∀ x, x < g.N → c'.nmem (g.base 26 + x) < 3 * g.N) ∧ (dtree g c'.nmem).OK ∧
         (dtree g c'.nmem).q 0 = 0 ∧ ∀ x : Fin g.N, (dtree g c'.nmem).up x = C.parent x := by
   have hU := g.U_ge
-  have hE := g.END_eq
+  
   have b1 := g.base_eq 1; have b7 := g.base_eq 7; have b8 := g.base_eq 8
   have b11 := g.base_eq 11; have b14 := g.base_eq 14
   have b17 := g.base_eq 17; have b20 := g.base_eq 20; have b21 := g.base_eq 21
   have b24 := g.base_eq 24; have b25 := g.base_eq 25; have b26 := g.base_eq 26
   have b27 := g.base_eq 27; have b28 := g.base_eq 28
   set Y := dualLay g with hY
-  have hYg : Y.Good W := dualLay_good hW
+  have hYg := dualLay_good hW
   unfold dbfsP
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, hR1, hf1⟩ : ∃ c1 k1, Exec P W (block [.copyN 130100 130041,
       .copyN 130101 130044, .copyN 130102 130047, .copyN 130103 130050, .copyN 130104 130051,
@@ -104,7 +106,7 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     case fr =>
       simp only
       unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat frame_finish
     all_goals try (config_simp <;>
                    first
                    | exact hG.one
@@ -131,28 +133,28 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     · obtain ⟨h1, h2, h3⟩ := hB.so ⟨d, hd⟩
       refine ⟨hview (g.base 11) (3 * g.N) d (by omega), ?_, ?_⟩
       · show view c1.nmem (g.base 11) (3 * g.N) (g.N + d) = _
-        rw [hview _ _ _ (by omega), ← Nat.add_assoc]; exact h2
+        ram_rw assumption [hview _ _, ← Nat.add_assoc]
       · show view c1.nmem (g.base 11) (3 * g.N) (2 * g.N + d) = _
-        rw [hview _ _ _ (by omega), ← Nat.add_assoc]; exact h3
+        ram_rw assumption [hview _ _, ← Nat.add_assoc]
     · obtain ⟨h1, h2, h3⟩ := hB.sr ⟨d, hd⟩
       refine ⟨?_, ?_, ?_⟩
       · show view c1.nmem (g.base 14) (3 * g.N) d = _
-        rw [hview _ _ _ (by omega), h1, ← hB.fp ⟨d, hd⟩]
+        ram_rw [hview _ _, h1, ← hB.fp ⟨d, hd⟩]
       · show view c1.nmem (g.base 14) (3 * g.N) (g.N + d) = _
-        rw [hview _ _ _ (by omega), ← Nat.add_assoc]; exact h2
+        ram_rw assumption [hview _ _, ← Nat.add_assoc]
       · show view c1.nmem (g.base 14) (3 * g.N) (2 * g.N + d) = _
-        rw [hview _ _ _ (by omega), ← Nat.add_assoc, h3, ← hB.fpi ⟨d, hd⟩]
+        ram_rw [hview _ _, ← Nat.add_assoc, h3, ← hB.fpi ⟨d, hd⟩]
     · obtain ⟨h1, h2, h3⟩ := hB.sf ⟨d, hd⟩
       refine ⟨?_, ?_, ?_⟩
       · show view c1.nmem (g.base 17) (3 * g.N) d = _
-        rw [hview _ _ _ (by omega)]; exact h1
+        ram_rw assumption [hview _ _]
       · show view c1.nmem (g.base 17) (3 * g.N) (g.N + d) = _
-        rw [hview _ _ _ (by omega), ← Nat.add_assoc]; exact h2
+        ram_rw assumption [hview _ _, ← Nat.add_assoc]
       · show view c1.nmem (g.base 17) (3 * g.N) (2 * g.N + d) = _
-        rw [hview _ _ _ (by omega), ← Nat.add_assoc, h3, ← hB.fpi ⟨d, hd⟩]
+        ram_rw [hview _ _, ← Nat.add_assoc, h3, ← hB.fpi ⟨d, hd⟩]
     · show view c1.nmem (g.base 20) g.N d = d
       rw [hview _ _ _ hd]; exact hB.sfirst ⟨d, hd⟩
-  have hok : G.OK := hGenc.ok
+  have hok := hGenc.ok
   have hpre : G.Pre 0 0 (labV Y c1.nmem) := by
     refine ⟨hok, hN, ?_, hN, fun w hw' _ => ?_⟩
     · show view c1.nmem (g.base 1) g.N 0 ≠ 1
@@ -185,16 +187,16 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     rw [hfr2.2.2.2.2 x hx, hm1]
   have hq : ∀ i, i < g.N → c3.nmem (g.base 27 + i) = qV Y c2.nmem i := by
     intro i hi
-    rw [hm3, ite_eq_right (by omega)]
+    ram_rw [hm3, ite_eq_right]
     show _ = view c2.nmem (g.base 27) g.N i
     rw [view_lt hi]
-  have hq0 : qV Y c2.nmem 0 = 0 := hI.q0
+  have hq0 := hI.q0
   have hpv : ∀ x, x < g.N → parV Y c2.nmem x = c2.nmem (g.base 26 + x) := fun x hx => by
     show view c2.nmem (g.base 26) g.N x = _; rw [view_lt hx]
   have hr0' : ∀ x : Fin g.N, x ≠ C.r0 ↔ (x : ℕ) ≠ 0 := by
     intro x
     constructor
-    · intro h e; exact h (Fin.ext (by rw [hr0]; exact e))
+    · intro h e; exact h (Fin.ext (by rwa [hr0]))
     · intro h e; exact h (by rw [e, hr0])
   have hpar' : ∀ x, x < g.N → x ≠ 0 → c2.nmem (g.base 26 + x) < 3 * g.N ∧
       ∃ h : x < g.N, enc g.N (C.fpar ⟨x, h⟩) = c2.nmem (g.base 26 + x) := by
@@ -203,13 +205,13 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     rw [hpv x hx] at h1 h2
     exact ⟨h1, hx, h2⟩
   set R0 : BTree := ⟨g.N, qV Y c2.nmem, fun x => G.vert (parV Y c2.nmem x)⟩ with hR0
-  have hRq : ∀ i, i < R0.n → (dtree g c3.nmem).q i = R0.q i := fun i hi => hq i hi
+  have hRq := fun i hi => hq i hi
   have hRp : ∀ x, x < R0.n → x ≠ R0.q 0 → (dtree g c3.nmem).par x = R0.par x := by
     intro x hx hx0
     have hx0' : x ≠ 0 := by rw [show R0.q 0 = 0 from hq0] at hx0; exact hx0
     obtain ⟨hlt, -⟩ := hpar' x hx hx0'
     show c3.nmem (g.base 17 + c3.nmem (g.base 26 + x)) = G.vert (parV Y c2.nmem x)
-    rw [hm3 (g.base 26 + x), ite_eq_right (by omega), hm3, ite_eq_right (by omega), hpv x hx]
+    ram_rw [hm3 (g.base 26 + x), ite_eq_right, hm3, ite_eq_right, hpv x hx]
     show _ = view c1.nmem (g.base 17) (3 * g.N) _
     rw [hview _ _ _ hlt, hkeep2 _ (by unfold Lay.Written; simp only [hY, dualLay]; omega)]
   refine ⟨c3, k1 + (k2 + 1), .seq e1 (.seq e2 e3), ?_, e3.wb_right, ?_, C, hr0, fun x hx => ?_,
@@ -223,19 +225,19 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     omega
   · refine hf1.trans ⟨fun r hr => hfr2.1 r (fun h => hr (by unfold Scr at h; unfold StBRG; omega)),
       hfr2.2.1, hfr2.2.2.1, hfr2.2.2.2.1, fun a ha' => ?_⟩
-    rw [hm3, ite_eq_right (by omega)]
+    ram_rw [hm3, ite_eq_right]
     exact hfr2.2.2.2.2 a (fun h => ha' (by
       unfold Lay.Written at h; simp only [hY, dualLay] at h; omega))
   · have h0 := (hr0' x).mp hx
     obtain ⟨-, hx', he⟩ := hpar' x x.2 h0
-    rw [hm3, ite_eq_right (by omega)]
+    ram_rw [hm3, ite_eq_right]
     exact he.symm
   · by_cases h0 : x = 0
-    · subst h0; rw [hm3, ite_eq_left (by omega)]; omega
-    · rw [hm3, ite_eq_right (by omega)]; exact (hpar' x hx h0).1
+    · subst h0; ram_rw [hm3, ite_eq_left]; omega
+    · ram_rw [hm3, ite_eq_right]; exact (hpar' x hx h0).1
   · show c3.nmem (g.base 27 + 0) = 0
-    rw [hq 0 hN]; exact hq0
-  · have hq0' : (dtree g c3.nmem).q 0 = R0.q 0 := hq 0 hN
+    rwa [hq 0 hN]
+  · have hq0' := hq 0 hN
     rw [BTree.up_congr hq0' hRp x.2]
     exact hRup x
 
@@ -243,8 +245,13 @@ theorem dbfsP_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
 def eulerLay (g : GV) : ELay := ⟨g.base 27, g.base 26, g.base 17, g.base 28, g.base 29,
   g.base 30, g.N⟩
 
+section
+
+variable {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
+include hw hG
+
 set_option maxHeartbeats 4000000 in
-theorem eulerP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
+theorem eulerP_exec
     (hR : (dtree g c.nmem).OK) (hlt : ∀ x, x < g.N → c.nmem (g.base 26 + x) < 3 * g.N)
     (hW : g.END ≤ W) :
     ∃ c' k, Exec P W eulerP c c' k ∧ k ≤ 45 * g.N + 27 ∧ WordsBounded W c' ∧
@@ -270,7 +277,7 @@ theorem eulerP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     case fr =>
       simp only
       unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat ram_simp []
     all_goals try (config_simp;
                    first
                    | exact hG.one
@@ -290,13 +297,13 @@ theorem eulerP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     have := hlt x hx
     constructor <;> omega
   obtain ⟨c', k, e, hk, hw', hf', hsz, hpre⟩ := eulerStmt_exec (P := P) hLG hR1
-    (by rw [hm1]; exact hR) hw1
+    (by rwa [hm1]) hw1
   rw [hm1] at hsz hpre
   refine ⟨c', k1 + k, .seq e1 e, by simp only [hL, eulerLay] at hk; omega, hw', hf1.trans
     (hf'.mono (fun r h => by unfold ERG at h; unfold StBRG; omega) (fun a h => by
       simp only [hL, eulerLay, ELay.WR] at h; omega)), hsz, hpre⟩
 
-theorem pfP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hN : 0 < g.N)
+theorem pfP_exec (hN : 0 < g.N)
     (hlt : ∀ x, x < g.N → c.nmem (g.base 26 + x) < 3 * g.N) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W pfP c c' k ∧ k ≤ 9 * g.N + 8 ∧ WordsBounded W c' ∧
       PFr StBRG (fun a => g.base 31 ≤ a ∧ a < g.base 31 + g.N) c c' ∧ c'.nmem (g.base 31) = 0 ∧
@@ -318,7 +325,7 @@ theorem pfP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hN
     case fr =>
       simp only
       unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat ram_finish
     all_goals try (config_simp;
                    first
                    | exact hG.one
@@ -334,7 +341,7 @@ theorem pfP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hN
     hf1.trans (hf'.mono (fun r h => by unfold ParRG at h; unfold StBRG; omega) (fun a h => h)),
     by simpa using h0, fun x h1 h2 => by rw [hx x h1 h2, hm1]⟩
 
-theorem updP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hN : 0 < g.N)
+theorem updP_exec (hN : 0 < g.N)
     (hL : 0 < g.L) (hpf : ∀ x, x < g.N → c.nmem (g.base 31 + x) < g.N) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W updP c c' k ∧ k ≤ 12 * g.N * g.L + 7 * g.L + 16 ∧ WordsBounded W c' ∧
       PFr StBRG (fun a => g.A0 + 54 * g.U + g.L * g.U ≤ a ∧
@@ -360,7 +367,7 @@ theorem updP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
     case fr =>
       simp only
       unfold StBRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      repeat ram_finish
     all_goals try (config_simp;
                    first
                    | exact hG.one
@@ -373,6 +380,8 @@ theorem updP_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (h
   refine ⟨c', k1 + k, .seq e1 e, by omega, hw',
     hf1.trans (hf'.mono (fun r h => by unfold UpRG at h; unfold StBRG; omega) (fun a h => h)),
     fun j hj x hx => by rw [htab j hj x hx, hm1]⟩
+
+end
 
 
 end proofs

@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RamEval
+
 public import Chazelle.Core.ShootCutLoop
 
 /-!
@@ -57,7 +59,7 @@ def LoopI (P : Polygon) (C : Chain) (H : Host) (Hh MD h γ mode : ℕ) (s e : WP
     (m₀ : ℕ → ℕ) (A₀ W : ℕ) (I : List Pc → Config → Prop) (ps₀ : List Pc) (U₀ F μ₀ : ℕ)
     (dI d : Config) : Prop :=
   WordsBounded W d ∧ CoreRegs P C H Hh MD h γ mode s e m₀ d ∧
-    (∀ a, a < A₀ → d.nmem a = m₀ a) ∧
+    (MemEqBelow A₀ d.nmem m₀) ∧
     (∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → r ≠ 150042 → d.nreg r = dI.nreg r) ∧
     6 ≤ d.nreg 150040 ∧ d.nreg 150040 ≤ 2 * C.m + 6 ∧
     Uof U₀ (2 * C.m + 7) (d.nreg 150040) ≤ F ∧
@@ -78,12 +80,17 @@ theorem flag_of {n U' F : ℕ} (hn : 0 < n) (hU' : U' ≤ F) (hF : F < U' + n) :
   · rw [ite_eq_right (resid_gap hn h hF).1, ite_eq_left h]
   · rw [show U' = F by omega, ite_eq_left rfl, ite_eq_right (lt_irrefl F)]
 
-/-- **One iteration of the main loop.** -/
-theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
+section
+
+variable (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (PcOK P C m₀ h γ) I K)
     {ps₀ : List Pc} {MD mode : ℕ} {s e : WPos} {U₀ F μ₀ : ℕ} (L : LStat C U₀ F γ)
     (dI : Config) (h41 : dI.nreg 150041 = F % (2 * C.m + 7)) (d : Config)
     (hL : LoopI P C H Hh MD h γ mode s e m₀ A₀ W I ps₀ U₀ F μ₀ dI d)
+include S hE L h41 hL
+
+/-- **One iteration of the main loop.** -/
+theorem loopBody_exec
     (ht : d.nreg 150090 < d.nreg 150042) :
     ∃ d' k, Exec P W (.seq (.ifLtN 150040 150032 (cStep emit) (uStep emit)) setFlag) d d' k ∧
       LoopI P C H Hh MD h γ mode s e m₀ A₀ W I ps₀ U₀ F μ₀ dI d' ∧
@@ -95,7 +102,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hn0 : 0 < n := by omega
   set c := d.nreg 150040 with hc
   set U := Uof U₀ n c with hUdef
-  have hU0 : U₀ ≤ U := by rw [hUdef]; unfold Uof; omega
+  have hU0 : U₀ ≤ U := by simp [hUdef, Uof]
   have hUlt : U < U₀ + n := Uof_lt hn0
   have hmod : U % n = c := Uof_mod hn0 (by omega)
   have hUF : U < F := by
@@ -105,7 +112,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hFn : F < U + n := by omega
   obtain ⟨hne, hgap⟩ := resid_gap hn0 hUF hFn
   rw [hmod] at hne hgap
-  have hf41 : d.nreg 150041 = F % n := by rw [hkI _ (by omega) (by omega) (by omega) (by omega), h41]
+  have hf41 : d.nreg 150041 = F % n := by ram_simp [hkI, h41] <;> reg_omega
   have hF6 := L.hF6
   have hF5 := L.hF5
   set f := F % n with hfdef
@@ -113,7 +120,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have hW1 : 1 ≤ W := by have := S.hW; unfold hostWords at this; omega
   by_cases hc2 : d.nreg 150040 < d.nreg 150032
   · -- a step on the double boundary
-    have hc' : c < 2 * C.m + 6 := by rw [R.h32] at hc2; exact hc2
+    have hc' : c < 2 * C.m + 6 := by rwa [R.h32] at hc2
     have hlimF : U + limOf C c f ≤ F := by
       unfold limOf; split_ifs at hgap ⊢ <;> omega
     have hlimγ : limOf C c f ≤ γ := L.hΓ U _ hU0 hlimF (by rw [← hn, hmod]; omega)
@@ -126,13 +133,13 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       have : c + limOf C c f ≤ 2 * C.m + 6 := by unfold limOf; split_ifs <;> omega
       omega
     obtain ⟨d₂, k₂, ex₂, hk₂, o42, r₂, m₂⟩ := setFlag_exec (P := P) d₁ post.wb hW1
-    have a40 : d₂.nreg 150040 = c + Lc := by rw [r₂ _ (by omega), post.r40]
+    have a40 : d₂.nreg 150040 = c + Lc := by ram_rw [r₂, post.r40]
     have hmod' : (U + Lc) % n = c + Lc := by
       have := mod_shift (n := n) (x := c + Lc) hmod (by omega) (by omega)
       rwa [show U + (c + Lc - c) = U + Lc by omega] at this
     have hU₀ : Uof U₀ n (d₂.nreg 150040) = U + Lc := by
-      rw [a40, ← hmod', Uof_eq hn0 (by omega) (by omega)]
-    have hU' : Uof U₀ (2 * C.m + 7) (d₂.nreg 150040) = U + Lc := hU₀
+      ram_simp [a40, ← hmod', Uof_eq] <;> reg_omega
+    have hU' := hU₀
     have hkeep : ∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → r ≠ 150042 →
         d₂.nreg r = d.nreg r := fun r h1 h2 h3 h4 => by
       rw [r₂ r h4, post.keep r h1 h2 h3]
@@ -158,20 +165,20 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       have := chained_upath (n := n) post.ch (fun pc hp => (post.pv pc hp).2) (by omega) U hmod
       rw [show U + (c + Lc - c) = U + Lc by omega] at this
       exact hpath.append ps'' this
-    refine ⟨d₂, k₁ + 1 + k₂, .seq (.ifLtN_true hc2 ex₁) ex₂, ⟨ex₂.wb_right,
-      R.of_frame' hkeep (by rw [r₂ _ (by omega)]; exact post.k90)
-        (by rw [r₂ _ (by omega)]; exact post.k91) (by rw [r₂ _ (by omega)]; exact post.k92)
-        (by rw [r₂ _ (by omega)]; exact post.k93) (by rw [r₂ _ (by omega)]; exact post.k96),
+    refine ⟨d₂, k₁ + 1 + k₂, (by ram_path), ⟨ex₂.wb_right,
+      R.of_frame' hkeep (by ram_rw [r₂]; exact post.k90)
+        (by ram_rw [r₂]; exact post.k91) (by ram_rw [r₂]; exact post.k92)
+        (by ram_rw [r₂]; exact post.k93) (by ram_rw [r₂]; exact post.k96),
       fun a ha => by rw [m₂]; exact post.mem a ha,
       fun r h1 h2 h3 h4 => (hkeep r h1 h2 h3 h4).trans (hkI r h1 h2 h3 h4),
       by rw [a40]; omega, by rw [a40]; omega, by rw [hU']; omega, ?_,
-      ps' ++ ps'', by rw [hU']; exact hpath',
+      ps' ++ ps'', by rwa [hU'],
       hE.stable _ _ _ (by rw [← List.append_assoc]; exact post.hI) (exec_frameB ex₂ (by decide)),
       fun pc hp => by
         rcases List.mem_append.1 hp with hp | hp
         · exact hok pc hp
-        · exact (post.pv pc hp).1, ?_⟩, by omega, by rw [hU']; exact hμ⟩
-    · rw [o42, hU', post.r40, post.keep _ (by omega) (by omega) (by omega), hf41, ← hmod']
+        · exact (post.pv pc hp).1, ?_⟩, by omega, by rwa [hU']⟩
+    · ram_rw [o42, hU', post.r40, post.keep, hf41, ← hmod']
       exact flag_of hn0 (by omega) (by omega)
     · rw [hU', List.length_append]
       have hlen := post.len
@@ -180,7 +187,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           2 * (Nat.log 2 γ + 1) * mu C (Qof P).n H F U := by
         have := Nat.mul_le_mul_left (2 * (Nat.log 2 γ + 1)) (show
           mu C (Qof P).n H F (U + Lc) + 1 ≤ mu C (Qof P).n H F U by omega)
-        rw [Nat.mul_add, mul_one] at this; exact this
+        assumption
       omega
   · -- through the uncounted block
     have hc' : c = 2 * C.m + 6 := by rw [R.h32] at hc2; omega
@@ -188,41 +195,40 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       d hw R.h32 R.chain.h96 hI (uPc_ok P C m₀ h γ)
     obtain ⟨d₂, k₂, ex₂, hk₂, o42, r₂, m₂⟩ := setFlag_exec (P := P) d₁ ex₁.wb_right hW1
     have hmod' : (U + 7) % n = 6 := by
-      rw [add_mod_split hn0 (by omega), hmod, ite_eq_right (by omega)]; omega
+      ram_simp [add_mod_split, hmod, ite_eq_right] <;> omega
     have hF7 : U + 7 ≤ F := by
-      rw [ite_eq_right (by omega)] at hgap; omega
-    have a40 : d₂.nreg 150040 = 6 := by rw [r₂ _ (by omega), o40]
+      ram_rw [ite_eq_right] at hgap; omega
+    have a40 : d₂.nreg 150040 = 6 := by ram_rw [r₂, o40]
     have hU₀ : Uof U₀ n (d₂.nreg 150040) = U + 7 := by
-      rw [a40, ← hmod', Uof_eq hn0 (by omega) (by omega)]
-    have hU' : Uof U₀ (2 * C.m + 7) (d₂.nreg 150040) = U + 7 := hU₀
+      ram_simp [a40, ← hmod', Uof_eq] <;> reg_omega
+    have hU' := hU₀
     have hkeep : ∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → r ≠ 150042 →
         d₂.nreg r = d.nreg r := fun r h1 h2 h3 h4 => by
       rw [r₂ r h4, kp r (Or.inl ⟨h1, h2⟩) h3]
     have kk : ∀ r, 150089 ≤ r → r < 150100 → d₂.nreg r = d.nreg r := fun r h1 h2 => by
-      rw [r₂ r (by omega), kp r (Or.inr ⟨by omega, h2⟩) (by omega)]
+      ram_rw [r₂ r, kp r (Or.inr ⟨by omega, h2⟩) (by omega)]
     have hμ : mu C (Qof P).n H F (U + 7) < mu C (Qof P).n H F U := by
       refine mu_lt (by omega) hF7 (Or.inl ?_)
       unfold BrkU BrkRes; left; rw [hmod, hc']
     have hKc : 2 * K + 90 ≤ (2 * K + 90) * (Nat.log 2 γ + 1) :=
       Nat.le_mul_of_pos_right _ (by omega)
-    have hpath' : UPath n U₀ (ps' ++ [uPc C.m]) (U + 7) :=
-      hpath.append [uPc C.m] ⟨by rw [hmod, hc']; rfl, U + 7, by omega, by rw [hmod']; rfl, rfl⟩
+    have hpath' := hpath.append [uPc C.m] ⟨by rw [hmod, hc']; rfl, U + 7, by omega, by rw [hmod']; rfl, rfl⟩
     refine ⟨d₂, k₁ + 2 + k₂, .seq (.ifLtN_false hc2 ex₁) ex₂, ⟨ex₂.wb_right,
-      R.of_frame' hkeep (by rw [kk _ (by omega) (by omega)]; exact R.h90)
-        (by rw [kk _ (by omega) (by omega)]; exact R.chain.h91)
-        (by rw [kk _ (by omega) (by omega)]; exact R.h92)
-        (by rw [kk _ (by omega) (by omega)]; exact R.chain.h93)
-        (by rw [kk _ (by omega) (by omega)]; exact R.chain.h96),
+      R.of_frame' hkeep (by frame_finish [kk])
+        (by ram_rw [kk]; exact R.chain.h91)
+        (by frame_finish [kk])
+        (by ram_rw [kk]; exact R.chain.h93)
+        (by ram_rw [kk]; exact R.chain.h96),
       fun a ha => by rw [m₂, mem₁ a ha]; exact hm a ha,
       fun r h1 h2 h3 h4 => (hkeep r h1 h2 h3 h4).trans (hkI r h1 h2 h3 h4),
       by rw [a40], by rw [a40]; omega, by rw [hU']; omega, ?_,
-      ps' ++ [uPc C.m], by rw [hU']; exact hpath',
-      hE.stable _ _ _ (by rw [← List.append_assoc]; exact hI₁) (exec_frameB ex₂ (by decide)),
+      ps' ++ [uPc C.m], by rwa [hU'],
+      hE.stable _ _ _ (by rwa [← List.append_assoc]) (exec_frameB ex₂ (by decide)),
       fun pc hp => by
         rcases List.mem_append.1 hp with hp | hp
         · exact hok pc hp
         · simp only [List.mem_singleton] at hp; rw [hp]; exact uPc_ok P C m₀ h γ, ?_⟩,
-      by omega, by rw [hU']; exact hμ⟩
+      by omega, by rwa [hU']⟩
     · rw [o42, hU', o40, kp _ (Or.inl ⟨by omega, by omega⟩) (by omega), hf41, ← hmod']
       exact flag_of hn0 hF7 (by omega)
     · rw [hU', List.length_append]
@@ -230,16 +236,12 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           2 * (Nat.log 2 γ + 1) * mu C (Qof P).n H F U := by
         have := Nat.mul_le_mul_left (2 * (Nat.log 2 γ + 1)) (show
           mu C (Qof P).n H F (U + 7) + 1 ≤ mu C (Qof P).n H F U by omega)
-        rw [Nat.mul_add, mul_one] at this; exact this
+        assumption
       simp only [List.length_singleton]
       omega
 
 /-- **The main loop**, from the first walk vertex (unwrapped `U₀`) to the final one (`F`). -/
-theorem mainLoop_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
-    {I : List Pc → Config → Prop} {K : ℕ} (hE : EmitOK P W emit A₀ (PcOK P C m₀ h γ) I K)
-    {ps₀ : List Pc} {MD mode : ℕ} {s e : WPos} {U₀ F μ₀ : ℕ} (L : LStat C U₀ F γ)
-    (dI : Config) (h41 : dI.nreg 150041 = F % (2 * C.m + 7)) (d : Config)
-    (hL : LoopI P C H Hh MD h γ mode s e m₀ A₀ W I ps₀ U₀ F μ₀ dI d) :
+theorem mainLoop_exec :
     ∃ d' k, Exec P W (mainLoop emit) d d' k ∧
       LoopI P C H Hh MD h γ mode s e m₀ A₀ W I ps₀ U₀ F μ₀ dI d' ∧
       Uof U₀ (2 * C.m + 7) (d'.nreg 150040) = F ∧
@@ -257,6 +259,8 @@ theorem mainLoop_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   by_contra hne
   rw [ite_eq_left (lt_of_le_of_ne hUF hne)] at hx
   omega
+
+end
 
 end
 

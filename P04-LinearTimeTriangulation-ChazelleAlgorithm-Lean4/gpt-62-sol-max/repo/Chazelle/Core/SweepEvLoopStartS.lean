@@ -43,24 +43,22 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       ((∀ hi : c.nreg sP < rs.length, soff P J rs[c.nreg sP] ≠ Lst J) →
         c'.nreg sP = c.nreg sP) ∧
       (∀ r, bandOf r ∉ oracleBands → ¬ WS r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
+      c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem)) := by
   obtain ⟨hl, hlax, hSR, hAR, hst, hw, haux, -⟩ := hSD
   obtain ⟨sN, sP2, sPl, sAt, sLen, sLab, sReg, aF1, aFi⟩ := hS
   have hK₀ := E.hK.fix hI
   have hP := E.hP
   have hNF := E.hNF₂
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  have hAW := hI.hw.1 ALLOC
   have hW4 : 4 ≤ W := by have := E.hWh; unfold hostWords at this; omega
   obtain ⟨⟨hpKn, hpKp, hpK6⟩, hoK, -⟩ := startMathTask P J N₂ hP hNF
   have hoK' : offK P J (pK0 J) 0 = Lst J := by
-    have : offK P J (pK0 J) 0 = oW J (((pK0 J : ℕ) : ℝ) + 0) := by
-      unfold offK oW; rfl
-    rw [this]; unfold pK0; exact_mod_cast hoK
+    assumption
   set i := c.nreg sP with hid
-  have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)
+  have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw (by reg_omega) (by reg_omega)
   unfold stStep
   refine (IRS.ite (K := 11990) (fun hlt => ?_) (fun hge => ?_)).mono
-    (by unfold stStepK; omega) (fun _ h => h)
+    (by reg_omega) (fun _ h => h)
   swap
   · refine IRS.skip hI ⟨⟨sN, sP2, sPl, sAt, sLen, sLab, sReg, aF1, aFi⟩,
       fun hi => absurd hi (by omega), fun _ => rfl, fun _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
@@ -82,43 +80,41 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have e1E : c₁.nreg zE = rs[i].1 := by rw [hc₁]; exact v1E.trans ra
   have e1H : c₁.nreg zH = rs[i].2.1 := by rw [hc₁]; exact v1H.trans rb
   have e1kE : c₁.nreg kE = pK0 J := by
-    rw [k1 _ (by simp [kE, zX, sw]) (by simp [kE, zE, sw]) (by simp [kE, zH, sw])]; exact hkE
+    ram_simp [k1] <;> reg_omega
   have e1kH : c₁.nreg kH = 0 := by
-    rw [k1 _ (by simp [kH, zX, sw]) (by simp [kH, zE, sw]) (by simp [kH, zH, sw])]; exact hkH
+    ram_simp [k1] <;> reg_omega
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
-    k1 _ (by simp [ALLOC, zX, sw]) (by simp [ALLOC, zE, sw]) (by simp [ALLOC, zH, sw])
+    k1 _ (by decide) (by decide) (by decide)
   have hgw := E.gw' hI₁
   have hC := corr_right0 J hP hNF.1.2.1 hNF.1.1
   -- 2. compare the offsets
   refine IRS.seq (K₁ := 11008) (K₂ := 84) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
     (ey := zE) (hy := zH) (g := cGW) (o := zO) (C := J.whole) hI₁ (E.ctxW' hI₁)
-    (by simp [kE, kH, zE, zH, cGW, sw]) (by simp [zO, sw])
-    (by rw [e1kE]; exact hpKn) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
-    (by rw [e1kE, e1kH]; exact hpKp) (by rw [e1E, e1H]; exact hpw.2.1)
-    (by rw [e1kE, e1kH]; exact fun _ => hpK6 rfl) (by rw [e1E, e1H]; exact hpw.2.2)
+    (by decide) (by decide)
+    (by rwa [e1kE]) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
+    (by rwa [e1kE, e1kH]) (by rw [e1E, e1H]; exact hpw.2.1)
+    (by rwa [e1kE, e1kH]) (by rw [e1E, e1H]; exact hpw.2.2)
     (by rw [hA1]; unfold stStepK at hroom; omega)) ?_
   rintro c₂ hI₂ hA₂ - ⟨b2, -, k2, hal2, hm2⟩
   rw [hgw, e1kE, e1kH, e1E, e1H] at b2
   have hb2 : BitIs c₂ zO (Lst J < soff P J rs[i]) := by
-    have e : off (chainModel J.whole).W.n (gW J : ℝ) ((chainModel J.whole).key (Qof P) ⟨pK0 J, 0⟩)
+    have e : off J.wholeModel.W.n (gW J : ℝ) (J.wholeModel.key (Qof P) ⟨pK0 J, 0⟩)
         = Lst J := hoK'
-    rw [e] at b2
-    exact b2
+    rwa [e] at b2
   have k12 : ∀ q, bandOf q ∉ oracleBands → q ≠ zX → q ≠ zE → q ≠ zH → q ≠ zO → q ≠ zO + 1 →
       q ≠ ALLOC → c₂.nreg q = c.nreg q := fun q hq h1 h2 h3 h4 h5 h6 => by
     rw [k2 q hq h4 h5 h6, k1 q h1 h2 h3]
-  have k0₂ : c₂.nreg K0 = 0 := (E.hK.fix hI₂).1
-  have hm12 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [hm2 a (by omega), hm1]
+  have k0₂ := (E.hK.fix hI₂).1
+  have hm12 : MemEqBelow (c.nreg ALLOC) c₂.nmem c.nmem := fun a ha => by
+    ram_rw [hm2 a, hm1]
   -- the registers of the state, kept so far
   have keepS : ∀ q, (LblR kN kL q ∨ q = aF ∨ q = sP) → c₂.nreg q = c.nreg q := by
     intro q hq
     have hq' : 242400 ≤ q ∧ q ≤ 242484 := by
       unfold LblR at hq
-      simp only [kN, kL, aF, sP, sw] at hq
-      omega
+      reg_omega
     refine k12 q (not_oracle_sw (by omega) (by omega)) ?_ ?_ ?_ ?_ ?_ ?_
-    all_goals first | (simp only [ALLOC]; omega) | (intro h; subst h; unfold LblR at hq; simp [kN, kL, aF, sP, zX, zE, zH, zO, sw] at hq)
+    all_goals first | (simp only [ALLOC]; omega) | (intro h; subst h; unfold LblR at hq; simp [ram_layout] at hq)
   have fr12 : ∀ r, bandOf r ∉ oracleBands → ¬ WS r → r ≠ ALLOC → c₂.nreg r = c.nreg r :=
     fun r hr hws hra => k12 r hr (fun h => hws (Or.inl h)) (fun h => hws (Or.inr (Or.inl h)))
       (fun h => hws (Or.inr (Or.inr (Or.inl h)))) (fun h => hws (Or.inr (Or.inr (Or.inr (Or.inl h)))))
@@ -127,7 +123,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine IRS.ite (K := 82) (fun h => ?_) (fun h => ?_)
   · -- the stop lies beyond the key
     rw [k0₂] at h
-    have hgt : Lst J < soff P J rs[i] := hb2.2.1 (by have := hb2.1; omega)
+    have hgt := hb2.2.1 (by have := hb2.1; omega)
     exact IRS.skip hI₂ ⟨stI_congr ⟨sN, sP2, sPl, sAt, sLen, sLab, sReg, aF1, aFi⟩ keepS,
       fun hi' he => absurd he (ne_of_gt hgt), fun _ => keepS sP (Or.inr (Or.inr rfl)), fr12,
       by omega, hm12⟩
@@ -144,19 +140,19 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       simp only [Nat.zero_add] at this
       have e2 : soff P J rs[2] = Lst J := by
         have : rs[i] = rs[2] := by simp [hi2]
-        rw [← this]; exact hat
+        rwa [← this]
       linarith
     have hax := hAR i (by omega)
-    rw [getD_d5 (by omega)] at hax
+    ram_rw [getD_d5] at hax
     obtain ⟨xa, xn, xl, xm, -⟩ := hax
     have haux' := haux i hi
     rw [getD_d5 hi, getD_d5 (show i < ax.length by omega)] at haux'
     obtain ⟨ax1, -, axn, axl, axm, -⟩ := haux'
     -- the auxiliary record
-    have sP2' : c₂.nreg sP = i := keepS sP (Or.inr (Or.inr rfl))
-    have aB2 : c₂.nreg aB = c.nreg aB := k12 _ (nob _ (by norm_num)) (by simp [aB, zX, sw])
-      (by simp [aB, zE, sw]) (by simp [aB, zH, sw]) (by simp [aB, zO, sw]) (by simp [aB, zO, sw])
-      (by simp [aB, ALLOC, sw])
+    have sP2' := keepS sP (Or.inr (Or.inr rfl))
+    have aB2 : c₂.nreg aB = c.nreg aB := k12 _ (nob _ (by norm_num)) (by decide)
+      (by decide) (by decide) (by decide) (by decide)
+      (by decide)
     have hok3 : okB W c₂.nmem stAux c₂.nreg := stAux_ok _ _ (E.hK.fix hI₂).2.1 (by
       rw [aB2, sP2']; have := hlay.2; omega)
     refine IRS.seq (K₁ := 11) (K₂ := 70 + 1) (IRS.block stAux hI₂ hok3) ?_ |>.mono
@@ -181,24 +177,23 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       intro q hq
       have hq' : 242400 ≤ q ∧ q ≤ 242484 := by
         unfold LblR at hq
-        simp only [kN, kL, aF, sP, sw] at hq
-        omega
+        reg_omega
       refine k3 q ?_ ?_ ?_ ?_ ?_ <;>
-        (intro h; subst h; unfold LblR at hq; simp [kN, kL, aF, sP, zX, zA, zN, zL, zM, sw] at hq)
+        (intro h; subst h; unfold LblR at hq; simp [ram_layout] at hq)
     have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC :=
-      k3 _ (by simp [ALLOC, zX, sw]) (by simp [ALLOC, zA, sw]) (by simp [ALLOC, zN, sw])
-        (by simp [ALLOC, zL, sw]) (by simp [ALLOC, zM, sw])
+      k3 _ (by decide) (by decide) (by decide)
+        (by decide) (by decide)
     -- the labels
     have n3 : c₃.nreg kN ≤ 4 := by
-      rw [keep3 kN (Or.inl (Or.inl rfl)), keepS kN (Or.inl (Or.inl rfl))]; exact sN
-    refine IRS.seq (K₁ := 70) (K₂ := 1) (stLabs_irs hI₃ E.hK n3 (by rw [e3A]; exact ax1) hW4) ?_
+      rwa [keep3 kN (Or.inl (Or.inl rfl)), keepS kN (Or.inl (Or.inl rfl))]
+    refine IRS.seq (K₁ := 70) (K₂ := 1) (stLabs_irs hI₃ E.hK n3 (by rwa [e3A]) hW4) ?_
     rintro c₄ hI₄ hA₄ - ⟨n4, l4, a4, f4, m4⟩
     -- advance the pointer
     have sP4 : c₄.nreg sP = i := by
-      rw [f4 _ (by simp [LblR, kN, kL, sP, sw]) (by simp [aF, sP, sw]), keep3 sP (Or.inr (Or.inr rfl)),
+      ram_rw [f4, keep3 sP (Or.inr (Or.inr rfl)),
         sP2']
     have k1₄ := (E.hK.fix hI₄).2.1
-    refine (IRS.instr1 (i := .addN sP sP K1) hI₄ ⟨iscr_sw (by simp [sP, sw]) (by simp [sP, sw]),
+    refine (IRS.instr1 (i := .addN sP sP K1) hI₄ ⟨iscr_sw (by decide) (by decide),
       by rw [sP4, k1₄]; omega⟩).mono le_rfl ?_
     rintro c₅ hc₅
     have f5 : ∀ q, q ≠ sP → c₅.nreg q = c₄.nreg q := fun q hq => by
@@ -217,7 +212,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       rw [keep3 aF (Or.inr (Or.inl rfl)), keepS aF (Or.inr (Or.inl rfl))]
     refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun _ _ => by rw [v5], fun hn => absurd hat (hn hi),
       fun r hr hws hra => ?_, ?_, fun a ha => ?_⟩
-    · rw [f5 _ (by simp [kN, sP, sw])]; exact n4
+    · ram_rw [f5]; exact n4
     · rw [v5]; omega
     · rw [v5]; omega
     · intro j hj hj'
@@ -260,11 +255,11 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         · rw [e3N] at h0; rw [e3L]; exact axl h0
         · rw [e3N] at h1; rw [e3M]; exact axm h1
       · exact sReg v hv
-    · rw [f5 _ (by simp [aF, sP, sw]), a4]
+    · ram_rw [f5, a4]
       split_ifs
       · omega
-      · rw [aF3]; exact aF1
-    · rw [f5 _ (by simp [aF, sP, sw]), a4, v5]
+      · rwa [aF3]
+    · ram_rw [f5, a4, v5]
       by_cases ha : c₃.nreg zA = 1
       · rw [ite_eq_left ha]
         refine ⟨fun _ => ⟨i, by omega, ?_⟩, fun _ => rfl⟩
@@ -284,8 +279,8 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       rw [f5 r hr5, f4 r hrL hraF, k3 r (fun h => hws (by subst h; simp [WS]))
         (fun h => hws (by subst h; simp [WS])) (fun h => hws (by subst h; simp [WS]))
         (fun h => hws (by subst h; simp [WS])) (fun h => hws (by subst h; simp [WS])), fr12 r hr hws hra]
-    · have := f5 ALLOC (by simp [ALLOC, sP, sw])
-      have := f4 ALLOC (by simp [LblR, ALLOC, kN, kL, sw]) (by simp [ALLOC, aF, sw])
+    · have := f5 ALLOC (by decide)
+      have := f4 ALLOC (by simp [ram_layout]) (by decide)
       omega
     · rw [hm5, m4, hm3]; exact hm12 a ha
 

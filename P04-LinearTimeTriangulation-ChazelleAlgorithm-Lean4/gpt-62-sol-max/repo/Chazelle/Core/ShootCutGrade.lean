@@ -41,8 +41,7 @@ theorem grade_low (hR : Robust A m fun m' => GradeRaw O P m' h A) :
   have hh : h < A := by
     by_contra hA
     have := (robust_pad hR (topGrade P.n + 2)).1
-    rw [pad_ge (by omega)] at this
-    omega
+    simp_all [pad_ge] 
   have h1 : h + 1 < A := by
     by_contra hA
     have := (robust_pad hR (A + P.n + 1)).2.1.1
@@ -51,17 +50,14 @@ theorem grade_low (hR : Robust A m fun m' => GradeRaw O P m' h A) :
   have h3 : h + 3 < A := by
     by_contra hA
     have := (robust_pad hR (A + 1)).2.2.1 0 (Nat.zero_le _)
-    rw [pad_ge (show A ≤ h + 3 by omega), pad_ge (show A ≤ A + 1 + 0 by omega)] at this
-    omega
+    simp_all [pad_ge] 
   refine ⟨h3, fun j hj => ?_, fun x hx => ?_⟩
   · by_contra hA
     have := ((robust_pad hR (2 ^ j + 1)).2.1.2.2.1 j hj).1
-    rw [pad_lt h1, pad_ge (show A ≤ m (h + 1) + 2 + j by omega)] at this
-    omega
+    simp_all [pad_lt h1, pad_ge] 
   · by_contra hA
     have := (robust_pad hR (x / 2 + 1)).2.2.1 x hx
-    rw [pad_lt (show h + 3 < A by omega), pad_ge (show A ≤ m (h + 3) + x by omega)] at this
-    omega
+    simp_all [pad_lt, pad_ge] 
 
 /-- **The grade context carries a halving table** (finding R-D3). -/
 theorem gradeCtx_halves (O : OracleIface) : (gradeCtx O).Halves := by
@@ -76,8 +72,7 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
   have hh : h < A := by
     by_contra hA
     have := (robust_pad hR (topGrade P.n + 2)).1
-    rw [pad_ge (by omega)] at this
-    omega
+    simp_all [pad_ge] 
   -- a descriptor whose words are all the padding value `Z > n` is impossible
   have key : ∀ Z, A ≤ Z → P.n < Z → ∀ D, A ≤ D →
       ¬ (∃ (H : Host) (C : Chain), ChainDescAt (pad m A Z) D (Qof P) H C ∧
@@ -91,36 +86,33 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwa [pad_lt hh]) hi
     refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    simp only [pad_ge (show A ≤ h + 2 by omega)]
-    rw [pad_ge (show A ≤ Z + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
-    omega
+    ram_simp [pad_ge (show A ≤ h + 2 by omega), pad_ge] <;> omega
   have hr : m (h + 2) + g < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwa [pad_lt hh]) hi
     refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    rw [pad_lt h2, pad_ge (show A ≤ m (h + 2) + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
-    omega
+    ram_simp [pad_lt h2, pad_ge] <;> omega
   have hE : entryAddr m h g i < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwa [pad_lt hh]) hi
     refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
     unfold entryAddr at hA
     rw [pad_lt h2, pad_lt hr, pad_ge (show A ≤ m (m (h + 2) + g) + 3 * i by omega)]
     omega
   -- the descriptor word is below the bound (`ChainWF`)
   obtain ⟨H₀, C₀, N₀, -, hwf₀, -⟩ := hR.holds.2.2.2 g i hg hi
-  have hD : m (entryAddr m h g i) + 5 ≤ A := by unfold entryAddr; exact hwf₀.1
+  
   have hE2 : entryAddr m h g i + 2 < A := by
     by_contra hA
     set Z := A + m (entryAddr m h g i) + 1
     obtain ⟨H, C, N, -, -, -, -, -, -, -, -, -, -, e1, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwa [pad_lt hh]) hi
     have eE : m (m (h + 2) + g) + 3 * i = entryAddr m h g i := rfl
     rw [pad_lt h2, pad_lt hr, eE, pad_ge (show A ≤ entryAddr m h g i + 2 by omega),
       pad_ge (show A ≤ Z by omega), pad_lt hE] at e1

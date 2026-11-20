@@ -159,7 +159,7 @@ theorem attach_floor_ne (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hp := hA.1
   have hWn : (interiorModel Q).W.n = Q.n := walk_n Q
   rw [hWn] at hp
-  have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
+  have hn3 := Chazelle.Jordan.simple_three_le hQ
   have hp1 : (p + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
   have hd : ((interiorWalk Q).vtx p).2 ≠ ((interiorWalk Q).vtx ((p + 1) % Q.n)).2 := by
     intro h
@@ -238,7 +238,7 @@ theorem end_chord {i : ℕ} (hi : i < nk (interiorModel Q) S R)
         SideAttach (interiorModel Q).W c p t → hk (interiorModel Q) S R i = p + t →
         ∃ (p' : ℕ) (t' : ℝ), SideAttach (interiorModel Q).W c p' t' ∧
           hk (interiorModel Q) S R ((i + 1) % nk (interiorModel Q) S R) = p' + t' := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hFam hne hR
   have hpl := prevIdx_lt (N := nk (interiorModel Q) S R) (i := i) (by omega)
   have key : ∀ c ∈ S, TouchesIn (interiorModel Q).D c R → ∀ (p : ℕ) (t : ℝ),
@@ -287,13 +287,13 @@ theorem vertex_of_two_gaps {j : ℕ} (hj : j < nk (interiorModel Q) S R)
       by_cases h1 : j + 1 < N
       · rw [Nat.mod_eq_of_lt h1] at this
         rcases Nat.eq_zero_or_pos j with h0 | h0
-        · subst h0; rw [show 0 + N - 1 = N - 1 by omega, Nat.mod_eq_of_lt (by omega)] at this
+        · subst h0; ram_rw [show 0 + N - 1 = N - 1 by omega, Nat.mod_eq_of_lt] at this
           omega
-        · rw [show j + N - 1 = (j - 1) + N by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)] at this
+        · ram_rw [show j + N - 1 = (j - 1) + N by omega, Nat.add_mod_right,
+            Nat.mod_eq_of_lt] at this
           omega
-      · rw [show j + 1 = N by omega, Nat.mod_self, show j + N - 1 = (j - 1) + N by omega,
-          Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at this
+      · ram_rw [show j + 1 = N by omega, Nat.mod_self, show j + N - 1 = (j - 1) + N by omega,
+          Nat.add_mod_right, Nat.mod_eq_of_lt] at this
         omega
     simp only [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
     rcases m0 with e0 | e0 <;> rcases m1 with e1' | e1' <;> rcases m2 with e2' | e2'
@@ -315,19 +315,17 @@ theorem junction (hdh : DistinctHeights Q) {i : ℕ} (hi : i < nk (interiorModel
       ArcGap (interiorModel Q) S R ((i + 1) % nk (interiorModel Q) S R) := by
   set I := interiorModel Q
   set N := nk I S R
-  have hM : WalkAx I := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
-  have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
+  have h3 := three_le_nk hQ hFam hne hR
   have hsi : (i + 1) % N < N := Nat.mod_lt _ (by omega)
-  have hCi : ChordGap I S R i :=
-    (gap_cases hM hF hfin hne hR (by omega) hi).resolve_left hnA
+  have hCi := (gap_cases hM hF hfin hne hR (by omega) hi).resolve_left hnA
   have hv := vertex_of_two_gaps hQ hFam hne hR hi hC hCi
   refine ⟨hv, ?_⟩
   by_contra hnA2
-  have hCi2 : ChordGap I S R ((i + 1) % N) :=
-    (gap_cases hM hF hfin hne hR (by omega) hsi).resolve_left hnA2
-  have hv2 := vertex_of_two_gaps hQ hFam hne hR hsi (by rw [prevIdx_succ hi]; exact hCi) hCi2
+  have hCi2 := (gap_cases hM hF hfin hne hR (by omega) hsi).resolve_left hnA2
+  have hv2 := vertex_of_two_gaps hQ hFam hne hR hsi (by rwa [prevIdx_succ hi]) hCi2
   obtain ⟨c, hc, q1, q2, s1, s2, hB1, hB2, f1, f2, -⟩ := hCi
   have hs1 : s1 = 0 := by
     have h1 := floor_add (p := q1) hB1.2.1 hB1.2.2.1
@@ -342,9 +340,9 @@ theorem junction (hdh : DistinctHeights Q) {i : ℕ} (hi : i < nk (interiorModel
   subst hs1 hs2
   have hy := attach_height hFam hc hB1 hB2
   simp only [Chazelle.Chain.sidePt_zero] at hy
-  have hWn : I.W.n = Q.n := walk_n Q
-  have hq1 : q1 < Q.n := hWn ▸ hB1.1
-  have hq2 : q2 < Q.n := hWn ▸ hB2.1
+  have hWn := walk_n Q
+  have hq1 := hWn ▸ hB1.1
+  have hq2 := hWn ▸ hB2.1
   have := walk_distinct hdh hq1 hq2 hy
   subst this
   exact hk_succ_ne hM hF hfin (by omega) hi (by rw [f1, f2])
@@ -363,22 +361,21 @@ theorem arcGap_step {i : ℕ} (hi : i < nk (interiorModel Q) S R)
         ⌊hk (interiorModel Q) S R i⌋₊) := by
   set I := interiorModel Q
   set N := nk I S R
-  have hM : WalkAx I := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
-  have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
+  have h3 := three_le_nk hQ hFam hne hR
   have hsi : (i + 1) % N < N := Nat.mod_lt _ (by omega)
   have hWn : I.W.n = Q.n := walk_n Q
   have hbx := hostKeys_bounds (hk_mem hM hF hfin hi)
   have hby := hostKeys_bounds (hk_mem hM hF hfin hsi)
   rw [hWn] at hbx hby
-  have hnoint : ∀ k : ℕ, k < Q.n → ¬ sideInArc (hk I S R i) (hk I S R ((i + 1) % N)) k :=
-    fun k hk => arcGap_noInt hQ hFam hne hR hi hA k (by rw [hWn]; exact hk)
+  have hnoint := fun k hk => arcGap_noInt hQ hFam hne hR hi hA k (by rw [hWn]; exact hk)
   rcases noInt_cases hbx.1 hbx.2 hby.1 hby.2 (hk_succ_ne hM hF hfin (by omega) hi) hnoint with
     ⟨hlt, hfl⟩ | hyv
   · refine ⟨fun hint => ?_, fun _ => hfl⟩
     exfalso
-    have : (⌊hk I S R i⌋₊ : ℝ) ≤ hk I S R i := Nat.floor_le hbx.1
+    have := Nat.floor_le hbx.1
     rw [hint, hfl] at hlt
     linarith
   · exact ⟨fun _ => hyv, fun hni => absurd (by rw [hyv, Nat.floor_natCast]) hni⟩
@@ -437,7 +434,7 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
       rw [hint hkI]
       rcases Nat.eq_zero_or_pos j with rfl | hj
       · rw [add_zero, Nat.mod_eq_of_lt hil, hD.hl]
-      · rw [ih hj (by omega), Nat.floor_natCast, Existence.mod_add_one_mod]
+      · ram_rw [ih hj, Nat.floor_natCast, Existence.mod_add_one_mod]
   -- the floor of the key before the end
   have hlast : ⌊hk I S R ((i_l + (d - 1)) % N)⌋₊ = (⌊l⌋₊ + (d - 1)) % Q.n := by
     rcases Nat.eq_zero_or_pos (d - 1) with h0 | h0
@@ -497,9 +494,10 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
       rw [hD.hr, hWn] at this; exact this
     have hlp : (p : ℝ) < l := lt_of_le_of_ne (Nat.floor_le hlb.1) (Ne.symm hlni)
     have hlp1 : l < p + 1 := Nat.lt_floor_add_one l
-    have hrp : (p : ℝ) < r := by
-      rw [← hrfl]; exact lt_of_le_of_ne (Nat.floor_le hrb.1) (Ne.symm hrni)
-    have hrp1 : r < p + 1 := by rw [← hrfl]; exact Nat.lt_floor_add_one r
+    have hrp := lt_of_le_of_ne (Nat.floor_le hrb.1) (Ne.symm hrni)
+    rw [hrfl] at hrp
+    have hrp1 := Nat.lt_floor_add_one r
+    rw [hrfl] at hrp1
     -- the arc wraps: `r < l`
     have hrl : r < l := by
       by_contra h
@@ -522,8 +520,8 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
       exact ⟨c, hc, ht, p', t', hA', by rw [hD.hr]; exact he⟩
     have hprev : prevIdx N ((i_l + (Q.n + 1)) % N) = (i_l + Q.n) % N := by
       rw [← hsucc Q.n, prevIdx_succ (hmod Q.n)]
-    have hAprev : ArcGap I S R (prevIdx N ((i_l + (Q.n + 1)) % N)) := by
-      rw [hprev]; exact arcData_gap hQ hFam hne hR harc hD (by omega)
+    have hAprev := arcData_gap hQ hFam hne hR harc hD (by omega)
+    rw [← hprev] at hAprev
     obtain ⟨-, hnext⟩ := end_chord hQ hFam hne hR hiN hx hAprev
     obtain ⟨c, ⟨hc, ht⟩, pr, tr, hAr, her⟩ := hM.exists_exit_at_end hF hfin hne hR harc
     obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc ht pr tr hAr (by rw [hD.hr]; exact her)

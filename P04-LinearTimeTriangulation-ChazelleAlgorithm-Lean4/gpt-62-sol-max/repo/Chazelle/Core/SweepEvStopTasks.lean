@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepEvStopR
 
 /-!
@@ -70,7 +72,7 @@ def SortOut (P : Polygon) (J : Merge.Junction) (c c' : Config) : Prop :=
     AuxRecsAt c'.nmem (c'.nreg aB) (O.map (rawAux c.nmem (c.nreg gRB))) ∧
     c.nreg ALLOC ≤ c'.nreg sB ∧ c'.nreg sB + 5 * O.length ≤ c'.nreg ALLOC ∧
     c.nreg ALLOC ≤ c'.nreg aB ∧ c'.nreg aB + 5 * O.length ≤ c'.nreg ALLOC ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ SoR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task S: sort and dedupe** the `S = gRC` raw records at `gRB` (positions `PosW`, codes
@@ -91,13 +93,13 @@ def SortTask : Prop :=
 /-- The position of the walk of `C₂` corresponding to the offset `d` of the right stretch, just
 after the position (`dq d`). -/
 noncomputable def cpA (J : Merge.Junction) (d : ℕ) : ℕ :=
-  (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % (chainModel J.right).W.n
+  (6 + tpos J.right 0 + dq (rL1 J) (rδ J) d) % J.rightModel.W.n
 
 /-- The position of the walk of `C₂` just before the vertex at offset `d` of the right stretch
 (`dq (d - 1) + 1`: the end of the previous edge; it differs from `cpA d` only at the split
 vertex). -/
 noncomputable def cpB (J : Merge.Junction) (d : ℕ) : ℕ :=
-  (6 + tpos J.right 0 + (dq (rL1 J) (rδ J) (d - 1) + 1)) % (chainModel J.right).W.n
+  (6 + tpos J.right 0 + (dq (rL1 J) (rδ J) (d - 1) + 1)) % J.rightModel.W.n
 
 /-- **Task L (mathematics): the side labels of an anchored stop chord** `e` (not a pocket),
 attached on the `C₁` part, with an attachment at the position `(gW + d, t)` of the open right
@@ -107,29 +109,29 @@ stretch:
   (`cpA d` for `t > 0`, `cpB d` at a vertex) the counterpart position are side labels. -/
 def LabTask : Prop :=
   ∀ (J : Merge.Junction) (Q : Polygon) (S₂ : Set (Set Point)) (e : Set Point), J.P.Simple →
-    (chainModel J.right).ChordFamily Q S₂ → (chainModel J.whole).ChordFamily Q (F₂plus J S₂) →
+    J.rightModel.ChordFamily Q S₂ → J.wholeModel.ChordFamily Q (F₂plus J S₂) →
     e ∈ F₂plus J S₂ → StopChord2 J S₂ e →
-    (∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s → oW J (q + s) ≠ 0) →
-    (∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ (Lst J : ℝ) ≤ oW J (q + s)) →
+    (∀ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s → oW J (q + s) ≠ 0) →
+    (∃ (q : ℕ) (s : ℝ), SideAttach J.wholeModel.W e q s ∧ (Lst J : ℝ) ≤ oW J (q + s)) →
     ∀ (d : ℕ) (t : ℝ), d < Lst J → 0 ≤ t → t < 1 → (t = 0 → d ≠ 0) →
-    SideAttach (chainModel J.whole).W e ((gW J + d) % (chainModel J.whole).W.n) t →
-    (∀ c ∈ S₂, e ⊆ c → ∀ Vu ∈ (chainModel J.right).regions S₂,
-      ∀ Vd ∈ (chainModel J.right).regions S₂, SideOf (chainModel J.right) 1 c Vu →
-      SideOf (chainModel J.right) (-1) c Vd → EvSideLab J S₂ {Vu, Vd} e) ∧
-    ((∀ c ∈ S₂, ¬ e ⊆ c) → ∀ Va ∈ (chainModel J.right).regions S₂,
-      ∀ Vb ∈ (chainModel J.right).regions S₂, AfterFaces (chainModel J.right) (cpA J d) t Va →
-      (0 < t → BeforeFaces (chainModel J.right) (cpA J d) t Vb) →
-      (t = 0 → BeforeFaces (chainModel J.right) (cpB J d) 0 Vb) →
+    SideAttach J.wholeModel.W e ((gW J + d) % J.wholeModel.W.n) t →
+    (∀ c ∈ S₂, e ⊆ c → ∀ Vu ∈ J.rightModel.regions S₂,
+      ∀ Vd ∈ J.rightModel.regions S₂, SideOf J.rightModel 1 c Vu →
+      SideOf J.rightModel (-1) c Vd → EvSideLab J S₂ {Vu, Vd} e) ∧
+    ((∀ c ∈ S₂, ¬ e ⊆ c) → ∀ Va ∈ J.rightModel.regions S₂,
+      ∀ Vb ∈ J.rightModel.regions S₂, AfterFaces J.rightModel (cpA J d) t Va →
+      (0 < t → BeforeFaces J.rightModel (cpA J d) t Vb) →
+      (t = 0 → BeforeFaces J.rightModel (cpB J d) 0 Vb) →
       EvSideLab J S₂ {Va, Vb} e)
 
 /-! ## The faced regions (RAM) -/
 
-def fpE : ℕ := sw 4110
-def fpH : ℕ := sw 4111
-def fqE : ℕ := sw 4112
-def fqH : ℕ := sw 4113
-def frA : ℕ := sw 4114
-def frB : ℕ := sw 4115
+@[ram_layout] def fpE : ℕ := sw 4110
+@[ram_layout] def fpH : ℕ := sw 4111
+@[ram_layout] def fqE : ℕ := sw 4112
+@[ram_layout] def fqH : ℕ := sw 4113
+@[ram_layout] def frA : ℕ := sw 4114
+@[ram_layout] def frB : ℕ := sw 4115
 
 /-- The registers the faced-region procedure may write. -/
 def FRR (r : ℕ) : Prop :=
@@ -140,13 +142,13 @@ def FRR (r : ℕ) : Prop :=
 `(fpE, fpH)` of the walk of `C₂`, `frB` one faced just before `(fqE, fqH)`. -/
 def FaceROut (P : Polygon) (J : Merge.Junction) (N₂ : NF) (c c' : Config) : Prop :=
   c'.nreg frA < N₂.nRegions ∧ c'.nreg frB < N₂.nRegions ∧
-    AfterFaces (chainModel J.right) (c.nreg fpE)
-      ((chainModel J.right).param (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩)
-      (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frA)) ∧
-    BeforeFaces (chainModel J.right) (c.nreg fqE)
-      ((chainModel J.right).param (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩)
-      (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frB)) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
+    AfterFaces J.rightModel (c.nreg fpE)
+      (J.rightModel.param (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩)
+      (regOf J.rightModel (Qof P) N₂ (c'.nreg frA)) ∧
+    BeforeFaces J.rightModel (c.nreg fqE)
+      (J.rightModel.param (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩)
+      (regOf J.rightModel (Qof P) N₂ (c'.nreg frB)) ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ FRR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task F: the faced regions** at two proper positions of the walk of `C₂` (the position is a
@@ -155,24 +157,24 @@ def FaceRTask : Prop :=
   ∃ (fr : Stmt) (κ : ℕ → ℕ), ∀ (sh : Stmt) (Bs : Finset ℕ) (F : ℕ → ℕ) (X : MemCtx)
     (Ok : Polygon → Model → Prop) (P : Polygon) (W : ℕ) (c₀ c : Config) (J : Merge.Junction)
     (N₁ N₂ : NF), EvEnv sh Bs F X Ok P W c₀ J N₁ N₂ → IInv W c₀ c →
-      c.nreg fpE < (chainModel J.right).W.n →
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg fpE, c.nreg fpH⟩ →
-      ((chainModel J.right).param (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩ = 0 ∨
-        ¬ (chainModel J.right).IsCut (N₂.F (chainModel J.right) (Qof P))
-          ((chainModel J.right).key (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩)) →
-      c.nreg fqE < (chainModel J.right).W.n →
-      ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg fqE, c.nreg fqH⟩ →
-      ((chainModel J.right).param (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩ = 0 ∨
-        ¬ (chainModel J.right).IsCut (N₂.F (chainModel J.right) (Qof P))
-          ((chainModel J.right).key (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩)) →
+      c.nreg fpE < J.rightModel.W.n →
+      ProperPos J.rightModel (Qof P) P.n ⟨c.nreg fpE, c.nreg fpH⟩ →
+      (J.rightModel.param (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩ = 0 ∨
+        ¬ J.rightModel.IsCut (N₂.F J.rightModel (Qof P))
+          (J.rightModel.key (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩)) →
+      c.nreg fqE < J.rightModel.W.n →
+      ProperPos J.rightModel (Qof P) P.n ⟨c.nreg fqE, c.nreg fqH⟩ →
+      (J.rightModel.param (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩ = 0 ∨
+        ¬ J.rightModel.IsCut (N₂.F J.rightModel (Qof P))
+          (J.rightModel.key (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩)) →
       c.nreg ALLOC + κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) ≤ W →
       IRS P W c₀ fr c (κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1)) (FaceROut P J N₂ c)
 
 /-! ## The brute-force shot at `N₁` (RAM) -/
 
-def brOS : ℕ := sw 4080
-def brOD : ℕ := sw 4083
-def brF : ℕ := sw 4084
+@[ram_layout] def brOS : ℕ := sw 4080
+@[ram_layout] def brOD : ℕ := sw 4083
+@[ram_layout] def brF : ℕ := sw 4084
 
 /-- The registers the brute-force shot may write. -/
 def BrR (r : ℕ) : Prop :=
@@ -186,13 +188,13 @@ direction is free for `C₁`, the flag is set and the parameter is the first hit
 def BruteOut (P : Polygon) (J : Merge.Junction) (z : Point) (σ : ℝ) (c c' : Config) : Prop :=
   c'.nreg brF ≤ 1 ∧
     (c'.nreg brF = 1 → ∃ τ, 0 < τ ∧ OnCB J.left (rayPt z σ τ) ∧
-      c'.nreg (brF + 1) < (chainModel J.left).W.n ∧
-      ProperPos (chainModel J.left) (Qof P) P.n ⟨c'.nreg (brF + 1), c'.nreg (brF + 2)⟩ ∧
-      (chainModel J.left).pos (Qof P) ⟨c'.nreg (brF + 1), c'.nreg (brF + 2)⟩ = rayPt z σ τ ∧
+      c'.nreg (brF + 1) < J.leftModel.W.n ∧
+      ProperPos J.leftModel (Qof P) P.n ⟨c'.nreg (brF + 1), c'.nreg (brF + 2)⟩ ∧
+      J.leftModel.pos (Qof P) ⟨c'.nreg (brF + 1), c'.nreg (brF + 2)⟩ = rayPt z σ τ ∧
       AbsRec P c' (brF + 3) (rayPt z σ τ).1 J.left.radius ∧
       (FreeAt J.left z σ → τ = J.left.hitParam z σ)) ∧
     (FreeAt J.left z σ → c'.nreg brF = 1) ∧
-    (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
+    (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
     (∀ r, bandOf r ∉ oracleBands → ¬ BrR r → r ≠ ALLOC → c'.nreg r = c.nreg r)
 
 /-- **Task B: the brute-force shot** in the model of `C₁` at all arcs of `N₁` from the

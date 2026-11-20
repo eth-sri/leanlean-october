@@ -1,5 +1,7 @@
 module
 
+meta import Chazelle.Programs.RegisterGuard
+
 public import Chazelle.Core.SweepEvStopBrute
 
 /-!
@@ -25,7 +27,7 @@ set_option maxRecDepth 200000 in
 theorem bruteTask : BruteTask := by
   refine ⟨stbProg, stbK, ?_⟩
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI s hs hsl hzC hz1 hz2 hzt hd hroom
-  have hP : J.left.P.Simple := E.hP
+  have hP := E.hP
   have hNF := E.hNF₁
   have hAr := arcsTask J.left (Qof P) N₁ hP hNF
   have hcost := stb_cost N₁.arcs.length N₁.nChords (F (c₀.nreg (sw 5))) hAr
@@ -34,57 +36,47 @@ theorem bruteTask : BruteTask := by
   unfold stbProg
   refine (IRS.seq (K₁ := 10) (K₂ := bLoopK N₁.arcs.length +
       (symShotK (F (c₀.nreg (sw 5))) N₁.arcs.length + 12))
-    ((IRS.block stbPre hI (stbPre_ok _ _)).mono (by simp [stbPre]) (fun _ h => h)) ?_).mono
-    hcost (fun _ h => h)
+    ((IRS.block stbPre hI (stbPre_ok _ _)).budget (by simp [stbPre])) ?_).budget hcost
   rintro c₁ hI₁ hA₁ hA₁' rfl
   simp only at hA₁ hA₁'
   have eA1 : regB c.nmem stbPre c.nreg ALLOC = c.nreg ALLOC :=
-    po _ (by unfold StbPreW; simp [ALLOC, sw, qD, accA])
+    po _ (by unfold StbPreW; simp [ram_layout])
   -- the chain context of `C₁` at `sw 20`
   obtain ⟨H₀, hJ₀, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, d20, w20, -⟩ := hst
-  have hctx20 : ChainCtx P W { c with nreg := regB c.nmem stbPre c.nreg } (sw 20) J.left :=
-    (chainCtx_of E.hG E.hWh hP hJ₀ E.hJWF d20 w20).transport
-      (hI₁.hin _ (by unfold IFix sw; omega)) (fun a ha => hI₁.hm a ha) hI₁.hA
-  have hNW : NFWithin ({ c with nreg := regB c.nmem stbPre c.nreg } : Config).nmem
-      (c₀.nreg (sw 3)) (c₀.nreg ALLOC) N₁ :=
-    E.hNW₁.transport (fun a ha => hI₁.hm a ha)
-  refine IRS.seq (bLoop_irs hI₁ E.hK hctx20 hP hNF hNW (hI₁.hin _ (by unfold IFix sw; omega))
+  have hctx20 := (chainCtx_of E.hG E.hWh hP hJ₀ E.hJWF d20 w20).transport
+      (hI₁.hin _ (by reg_omega)) (fun a ha => hI₁.hm a ha) hI₁.hA
+  have hNW := E.hNW₁.transport (fun a ha => hI₁.hm a ha)
+  refine IRS.seq (bLoop_irs hI₁ E.hK hctx20 hP hNF hNW (hI₁.hin _ (by reg_omega))
     hI₁.hA (by simp only; rw [eA1]; omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' hBW
   obtain ⟨w1, w2, -, w4, -, w6, w7, w8, w9⟩ := hBW
   simp only at w1 w6 w7 w8 w9 hA₂ hA₂'
   rw [eA1] at w1 w6 w7 w8 hA₂ hA₂'
-  have keep : ∀ j, j < 10000 → ¬ BSet (sw j) →
-      c₂.nreg (sw j) = regB c.nmem stbPre c.nreg (sw j) := fun j hj hb =>
-    w9 _ (nb j hj) hb (by unfold ALLOC sw; omega)
+  have keep := fun j hj hb =>
+    w9 _ (nb j hj) hb (by reg_omega)
   have hs2 : SymPtIn c₂ sO s := by
     refine symPtIn_copy hs ?_ ?_ ?_
-    · rw [show sO = sw 3231 from rfl, keep 3231 (by norm_num) (by unfold BSet sw; omega)]
-      exact p1
-    · rw [show sO + 1 = sw 3232 from rfl, keep 3232 (by norm_num) (by unfold BSet sw; omega)]
-      exact p2
-    · rw [show sO + 2 = sw 3233 from rfl, keep 3233 (by norm_num) (by unfold BSet sw; omega)]
-      exact p3
+    · rwa [show sO = sw 3231 from rfl, keep 3231 (by norm_num) (by register_guard)]
+    · rwa [show sO + 1 = sw 3232 from rfl, keep 3232 (by norm_num) (by register_guard)]
+    · rwa [show sO + 2 = sw 3233 from rfl, keep 3233 (by norm_num) (by register_guard)]
   have d2 : c₂.nreg qD = c.nreg brOD := by
-    rw [show qD = sw 3212 from rfl, keep 3212 (by norm_num) (by unfold BSet sw; omega)]
-    exact p4
+    rwa [show qD = sw 3212 from rfl, keep 3212 (by norm_num) (by register_guard)]
   have a2 : c₂.nreg accA = 0 := by
-    rw [show accA = sw 2000 from rfl, keep 2000 (by norm_num) (by unfold BSet sw; omega)]
-    exact p5
+    rwa [show accA = sw 2000 from rfl, keep 2000 (by norm_num) (by register_guard)]
   have hacc : AccOK P accA (fun _ => J.left) J.left.radius (s.eval (Qof P))
       (dirOf (c₂.nreg qD)) ∅ c₂ := accOK_init _ _ _ _ _ a2
   have hK2 := E.hK.fix hI₂
   obtain ⟨md1, md2, md3, md4⟩ := E.md hI₂
   obtain ⟨-, -, -, ⟨H, hCD, hreg⟩, -, -⟩ := E.ctx1' hI₂
-  have hmd : MdFacts P c₂ (c₂.nreg MD₁) H J.left := ⟨md3, by rw [← md4]; exact hCD, md2, md1⟩
-  have hzD : s.eval (Qof P) ∈ J.left.dom := mem_dom_of J.left hzt hz1 hz2 hzC
-  have hN1 : c₂.nreg SweepIo.bN = N₁.arcs.length := w4
+  have hmd : MdFacts P c₂ (c₂.nreg MD₁) H J.left := ⟨md3, by rwa [← md4], md2, md1⟩
+  have hzD := mem_dom_of J.left hzt hz1 hz2 hzC
+  have hN1 := w4
   have harcs : ∀ j, j < c₂.nreg SweepIo.bN →
-      ShotList.PieceOK (chainModel J.left) (Qof P) P.n (ShotList.arcAt c₂.nmem (c₂.nreg SweepIo.bBase) j) ∧
-      (chainModel J.left).arcWt
-        ((chainModel J.left).key (Qof P) (ShotList.arcAt c₂.nmem (c₂.nreg SweepIo.bBase) j).1)
-        ((chainModel J.left).key (Qof P) (ShotList.arcAt c₂.nmem (c₂.nreg SweepIo.bBase) j).2) ≤
+      ShotList.PieceOK J.leftModel (Qof P) P.n (ShotList.arcAt c₂.nmem (c₂.nreg SweepIo.bBase) j) ∧
+      J.leftModel.arcWt
+        (J.leftModel.key (Qof P) (ShotList.arcAt c₂.nmem (c₂.nreg SweepIo.bBase) j).1)
+        (J.leftModel.key (Qof P) (ShotList.arcAt c₂.nmem (c₂.nreg SweepIo.bBase) j).2) ≤
         c₀.nreg (sw 5) := by
     intro j hj
     rw [hN1] at hj
@@ -114,7 +106,7 @@ theorem bruteTask : BruteTask := by
   set z := s.eval (Qof P) with hzd
   -- the exit point lies on the arcs
   have hexit : FreeAt J.left z σ → rayPt z σ (J.left.hitParam z σ) ∈
-      ShotList.loSet (chainModel J.left) (Qof P) c₂.nmem (c₂.nreg SweepIo.bBase) N₁.arcs.length [] := by
+      ShotList.loSet J.leftModel (Qof P) c₂.nmem (c₂.nreg SweepIo.bBase) N₁.arcs.length [] := by
     intro hf
     obtain ⟨p, t, hp, ht0, ht1, ⟨j, hj, hin⟩, hpt⟩ :=
       exit_in_arcs J.left hP hNF (Q := Qof P) (SweepPrim.dirOf_cases _) hzt hf
@@ -122,28 +114,21 @@ theorem bruteTask : BruteTask := by
       (List.not_mem_nil), hpt.symm⟩
     rw [w1, w7 j hj]
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hNF hj
-    unfold nArc
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
-    exact hin
-  have hmem : FreeAt J.left z σ → J.left.hitParam z σ ∈ L' := fun hf => hcomp hf (hexit hf)
+    ram_finish [nArc, (Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
+  have hmem := fun hf => hcomp hf (hexit hf)
   obtain ⟨f1, f0, fs⟩ := hacc'
   have hA3' : regB c₃.nmem stbPost c₃.nreg ALLOC = c₃.nreg ALLOC :=
-    qo _ (by unfold StbPostW ALLOC brF sw; omega)
-  refine ⟨by rw [q0]; exact f1, fun h1 => ?_, fun hf => ?_, fun a ha => ?_, ?_, ?_⟩
+    qo _ (by register_guard)
+  refine ⟨by rwa [q0], fun h1 => ?_, fun hf => ?_, fun a ha => ?_, ?_, ?_⟩
   · rw [q0] at h1
     obtain ⟨τ, hτ, hmin, -, hpp, he, hpos, hrec⟩ := fs h1
     rcases hL' with rfl | ⟨τ₀, rfl, hτ0, hon⟩
     · exact absurd hτ (Set.notMem_empty _)
     · have eτ : τ = τ₀ := by simpa using hτ
       subst eτ
-      refine ⟨τ, hτ0, hon, by rw [q1]; exact he, by rw [q1, q2]; exact hpp,
-        by rw [q1, q2]; exact hpos, ?_, fun hf => ?_⟩
-      · refine absRec_transport hrec ?_ ?_ ?_ ?_
-        · have := q3 0 (by norm_num); simpa using this
-        · have := q3 1 (by norm_num); rw [show brF + 3 + 1 = brF + 3 + 1 from rfl] at this
-          rw [show accA + 4 + 1 = accA + 4 + 1 from rfl]; omega
-        · have := q3 2 (by norm_num); omega
-        · have := q3 3 (by norm_num); omega
+      refine ⟨τ, hτ0, hon, by rwa [q1], by rwa [q1, q2],
+        by rwa [q1, q2], ?_, fun hf => ?_⟩
+      · solve_by_elim
       · have := hmem hf
         simp only [Set.mem_insert_iff, Set.mem_empty_iff_false, or_false] at this
         exact this.symm
@@ -151,7 +136,7 @@ theorem bruteTask : BruteTask := by
     have hne : L' ≠ ∅ := fun h => by rw [h] at hmem; exact Set.notMem_empty _ (hmem hf)
     by_contra hc
     exact hne (f0 (by omega))
-  · rw [hm3 a (by omega), w8 a (by rw [← eA1] at hA₁; omega)]
+  · ram_simp [hm3, w8] <;> reg_omega
   · rw [hA3']; omega
   · intro r hr hb hra
     unfold BrR at hb
@@ -159,17 +144,17 @@ theorem bruteTask : BruteTask := by
     · have hr4 : 244001 ≤ r ∧ r ≤ 244005 := by
         unfold StbPostW brF at hp; unfold sw at hp hb; omega
       obtain ⟨i, hi, rfl⟩ : ∃ i, i < 5 ∧ r = sw 4001 + i :=
-        ⟨r - 244001, by omega, by unfold sw; omega⟩
-      have esv : stbSv + i = sw (3990 + i) := by unfold stbSv sw; omega
+        ⟨r - 244001, by omega, by reg_omega⟩
+      have esv : stbSv + i = sw (3990 + i) := by reg_omega
       rw [qv i hi, k3 _ (by rw [esv]; exact nb (3990 + i) (by omega))
-        (by unfold RS stbSv sw; omega) (by unfold accA stbSv sw; omega)
-        (by unfold ALLOC stbSv sw; omega)]
-      rw [esv, keep (3990 + i) (by omega) (by unfold BSet sw; omega), ← esv]
+        (by reg_omega) (by reg_omega)
+        (by reg_omega)]
+      rw [esv, keep (3990 + i) (by omega) (by register_guard), ← esv]
       exact pv i hi
     · have hb' := hb
       unfold sw at hb'
-      have e1 : ¬ (RS ≤ r ∧ r < RS + 300) := by unfold RS; omega
-      have e2 : r < accA ∨ accA + 12 < r := by unfold accA sw; omega
+      have e1 : ¬ (RS ≤ r ∧ r < RS + 300) := by reg_omega
+      have e2 : r < accA ∨ accA + 12 < r := by reg_omega
       have e3 : ¬ BSet r := by unfold BSet; unfold StbPostW brF at hp; unfold sw at hb hp ⊢; omega
       rw [qo r hp, k3 r hr e1 e2 hra, w9 r hr e3 hra]
       exact po r (by unfold StbPreW qD accA; unfold sw at hb ⊢; omega)

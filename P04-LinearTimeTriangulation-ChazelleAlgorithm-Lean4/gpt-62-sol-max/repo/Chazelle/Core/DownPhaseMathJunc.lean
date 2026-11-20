@@ -36,8 +36,7 @@ theorem host_poly_n (Q : Polygon) (H : Host) : (H.poly Q).n = (H.pts Q.n).length
 theorem host_poly_vtx (Q : Polygon) (H : Host) {i : ℕ} (hi : i < (H.pts Q.n).length) :
     (H.poly Q).vtx i = ((H.pts Q.n).getD i (.vtx 0)).eval Q := by
   unfold Host.poly Polygon.vtx
-  rw [List.getD_eq_getElem _ _ (by simpa using hi), List.getElem_map,
-    List.getD_eq_getElem _ _ hi]
+  simp_all
 
 theorem pts_append (n : ℕ) (H₁ H₂ : Host) : (H₁ ++ H₂).pts n = H₁.pts n ++ H₂.pts n := by
   simp [Host.pts]
@@ -51,8 +50,7 @@ theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = �
 
 theorem run_pts_getD (n a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD k (.vtx 0) = .vtx ((a + k) % n) := by
-  simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega), List.getElem_map, List.getElem_range]
+  simp_all [HostItem.pts, List.getD_eq_getElem, List.getElem_map, List.getElem_range] <;> omega
 
 /-- **The points of a run item inside a host.** -/
 theorem pts_append_run (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
@@ -88,7 +86,7 @@ theorem sharedGeneric_of_vtx {Q : Polygon} (hdh : DistinctHeights Q) {H : Host} 
     (hv : (H.pts Q.n).getD ((J.s + J.m₁) % (H.pts Q.n).length) (.vtx 0) = .vtx b)
     (hw : (H.pts Q.n).getD ((J.s + (J.m₁ + 1)) % (H.pts Q.n).length) (.vtx 0) = .vtx c) :
     SharedGeneric J := by
-  have hP' : J.whole.P = H.poly Q := hP
+  have hP' := hP
   have eU : sharedU J = Q.vtx a := by
     unfold sharedU; rw [chain_vertex_host hP', show J.whole.s = J.s from rfl, hu]; rfl
   have eV : sharedV J = Q.vtx b := by
@@ -119,12 +117,11 @@ theorem mod_pred {x N j : ℕ} (hN : 0 < N) (h : (x + 1) % N = j) (hj : 1 ≤ j)
     · rw [Nat.mod_eq_of_lt h2] at h; omega
     · rw [show x % N + 1 = N by omega, Nat.mod_self] at h; omega
   · have : N = 1 := by omega
-    subst this
-    simp at h; omega
+    simp_all
 
 /-- `x mod N = j` with `j + 1 < N` gives `(x + 1) mod N = j + 1`. -/
 theorem mod_succ {x N j : ℕ} (h : x % N = j) (hj : j + 1 < N) : (x + 1) % N = j + 1 := by
-  rw [Nat.add_mod, h, Nat.mod_eq_of_lt (show 1 < N by omega), Nat.mod_eq_of_lt hj]
+  ram_simp [Nat.add_mod, h, Nat.mod_eq_of_lt, Nat.mod_eq_of_lt hj]
 
 /-- **M-M1, run form (padding rule M2).**  If the host is `H₁ ++ run a ℓ :: H₂` and the shared
 vertex of `J` is the host point `k` of the run with `1 ≤ k < ℓ` (so both host neighbours are

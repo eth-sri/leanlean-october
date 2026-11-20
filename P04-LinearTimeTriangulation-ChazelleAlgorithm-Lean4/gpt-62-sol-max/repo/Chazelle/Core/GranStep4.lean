@@ -35,7 +35,7 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     show (_ ∧ Function.update st.live c 0 i = 1 ∧ st.nd0 i = j) ↔ _
     by_cases hic : i = c
     · subst hic; simp
-    · rw [Function.update_of_ne hic]; tauto
+    · simp_all
   have k1 : ((Finset.range E.K).filter fun i => (st.remove c μ).live i = 1 ∧
       (st.remove c μ).nd1 i = j) =
       ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd1 i = j).erase c := by
@@ -44,7 +44,7 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     show (_ ∧ Function.update st.live c 0 i = 1 ∧ st.nd1 i = j) ↔ _
     by_cases hic : i = c
     · subst hic; simp
-    · rw [Function.update_of_ne hic]; tauto
+    · simp_all
   unfold St.cntOf
   rw [k0, k1]
   show Function.update (Function.update st.cnt (st.nd0 c) (st.cnt (st.nd0 c) - 1)) (st.nd1 c)
@@ -76,7 +76,7 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
 /-- The live positions after the removal. -/
 theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     (st.remove c μ).Lv j ↔ st.Lv j ∧ st.dd c j = false := by
-  have hne := h.nd_ne hE hc
+  
   unfold St.Lv
   show 0 < Function.update (Function.update st.cnt (st.nd0 c) (st.cnt (st.nd0 c) - 1))
       (st.nd1 c) (st.cnt (st.nd1 c) - 1) j ↔ _
@@ -90,10 +90,9 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     · intro hp
       refine ⟨hL, ?_⟩
       by_contra hdd
-      simp only [Bool.not_eq_false] at hdd
-      rw [hd.1 hdd] at hp; omega
+      simp_all
     · rintro ⟨-, hdd⟩
-      have : st.cnt (st.nd1 c) ≠ 1 := fun e => by rw [hd.2 e] at hdd; exact Bool.noConfusion hdd
+      have : st.cnt (st.nd1 c) ≠ 1 := fun e => by simp_all
       omega
   · rw [Function.update_of_ne h1]
     by_cases h0 : j = st.nd0 c
@@ -106,10 +105,9 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
       · intro hp
         refine ⟨hL, ?_⟩
         by_contra hdd
-        simp only [Bool.not_eq_false] at hdd
-        rw [hd.1 hdd] at hp; omega
+        simp_all
       · rintro ⟨-, hdd⟩
-        have : st.cnt (st.nd0 c) ≠ 1 := fun e => by rw [hd.2 e] at hdd; exact Bool.noConfusion hdd
+        have : st.cnt (st.nd0 c) ≠ 1 := fun e => by simp_all
         omega
     · rw [Function.update_of_ne h0]
       constructor
@@ -147,15 +145,15 @@ theorem ring_rm (μ : ℕ) :
   have hn2 := h.key_nd_cut hE hc (Or.inr rfl)
   -- positions that die are not `a`, `b`
   have hdead : ∀ n, st.dd c n = true → a ≠ n ∧ b ≠ n := fun n hn =>
-    ⟨fun e => by rw [e, hn] at had; exact Bool.noConfusion had,
-      fun e => by rw [e, hn] at hbd; exact Bool.noConfusion hbd⟩
+    ⟨fun e => by simp_all,
+      fun e => by simp_all⟩
   -- the first unlink
   set Lv1 : ℕ → Prop := fun j => st.Lv j ∧ (st.cnt (st.nd0 c) = 1 → j ≠ st.nd0 c)
   set r1 := if st.cnt (st.nd0 c) = 1 then St.unl (st.nxt, st.prv) (st.nd0 c)
     else (st.nxt, st.prv)
   have hR1 : RingOK Lv1 E.A r1.1 r1.2 := by
     by_cases d1 : st.cnt (st.nd0 c) = 1
-    · have hd1 : st.dd c (st.nd0 c) = true := (h.dd_iff hE hc (Or.inl rfl)).2 d1
+    · have hd1 := (h.dd_iff hE hc (Or.inl rfl)).2 d1
       have e1 : r1 = St.unl (st.nxt, st.prv) (st.nd0 c) := ite_eq_left d1
       rw [e1]
       refine (ringOK_unl (r := (st.nxt, st.prv)) h.ring hn1.1 hn1.2.1
@@ -175,16 +173,14 @@ theorem ring_rm (μ : ℕ) :
       (st.ring2 c).1 (st.ring2 c).2 := by
     rw [hring2]
     by_cases d2 : st.cnt (st.nd1 c) = 1
-    · have hd2 : st.dd c (st.nd1 c) = true := (h.dd_iff hE hc (Or.inr rfl)).2 d2
+    · have hd2 := (h.dd_iff hE hc (Or.inr rfl)).2 d2
       rw [ite_eq_left d2]
       have hn2L : Lv1 (st.nd1 c) := ⟨hn2.2.1, fun _ e => hne e.symm⟩
       refine (ringOK_unl hR1 hn2.1 hn2L
         ⟨a, b, ha, hb, hLv1a, hLv1b, (hdead _ hd2).1, (hdead _ hd2).2, hab⟩).congr
         (fun j _ => ?_) (fun _ _ _ => rfl) (fun _ _ _ => rfl)
       exact ⟨fun h' => ⟨h'.1, h'.2 d2⟩, fun h' => ⟨h'.1, fun _ => h'.2⟩⟩
-    · rw [ite_eq_right d2]
-      exact hR1.congr (fun j _ => ⟨fun h' => h'.1, fun h' => ⟨h', fun e => absurd e d2⟩⟩)
-        (fun _ _ _ => rfl) (fun _ _ _ => rfl)
+    simp_all
   refine hfin.congr (fun j hj => ?_) (fun _ _ _ => rfl) (fun _ _ _ => rfl)
   rw [hl hj]
   simp only [Lv1]
@@ -212,11 +208,11 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
   set c := st.cur with hcdef
   obtain ⟨P, hs⟩ := h.split hE hc
   obtain ⟨hlow, hw⟩ := (h.removable_iff hE hc hs).1 hrem
-  have hmu : st.mu E c ≤ E.γ := by rw [h.mu_eq hE hc hs]; exact hw
+  have hmu : st.mu E c ≤ E.γ := by rwa [h.mu_eq hE hc hs]
   set μ := st.mu E c
   set st' := st.remove c μ
-  have hL' : st'.L E = st.L E \ {c} := rm_L hE h hc μ
-  have hF' : st'.F E = st.F E \ {cs E.M E.Q E.N c} := rm_F hE h hc μ
+  have hL' := rm_L hE h hc μ
+  have hF' := rm_F hE h hc μ
   have hfinL : (st.L E).Finite := (Set.finite_lt_nat E.K).subset fun i hi => hi.1
   have hnl : 1 ≤ st.nlive := by
     rw [h.nlive]; exact (Set.ncard_pos hfinL).2 ⟨c, hc⟩
@@ -235,14 +231,14 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
     rw [hF']
     intro Z hZ
     by_cases hZP : Z = P
-    · subst hZP; rw [deg_P hE h hc hs]; exact hlen
+    · subst hZP; rwa [deg_P hE h hc hs]
     · rw [deg_other hE h hc hs hZ hZP]
       exact h.degLe Z (other_ne hE h hc hs hZ hZP).1
   · -- weights
     rw [hF']
     intro Z hZ
     by_cases hZP : Z = P
-    · subst hZP; rw [← h.mu_eq hE hc hs]; exact hmu
+    · simp_all
     · rw [weight_other' hE h hc hs hZ hZP]
       exact h.semi Z (other_ne hE h hc hs hZ hZP).1
   · -- sides
@@ -288,9 +284,8 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
       refine hno (st.top - 1 + k) (by show _ < st.top - 1 + (st.newEx c).length; omega) ?_
       show (if st.top - 1 ≤ st.top - 1 + k ∧ st.top - 1 + k < st.top - 1 + (st.newEx c).length
         then (st.newEx c).getD (st.top - 1 + k - (st.top - 1)) 0 else st.stk _) = i
-      rw [ite_eq_left ⟨by omega, by omega⟩, show st.top - 1 + k - (st.top - 1) = k by omega,
+      rwa [ite_eq_left ⟨by omega, by omega⟩, show st.top - 1 + k - (st.top - 1) = k by omega,
         List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk]
-      exact hki
     -- `i` was not on the old worklist
     have hold : ∀ t, t < st.top → st.stk t ≠ i := by
       intro t ht
@@ -301,7 +296,7 @@ theorem Inv.remove (hE : E.Good) (h : Inv E st) (htop : 0 < st.top)
         intro e
         apply this
         show (if st.top - 1 ≤ t ∧ t < st.top - 1 + (st.newEx c).length then _ else st.stk t) = i
-        rw [ite_eq_right (by omega)]; exact e
+        rwa [ite_eq_right (by omega)]
     have hnr := h.work i hiL hold
     rw [hF']
     intro hr

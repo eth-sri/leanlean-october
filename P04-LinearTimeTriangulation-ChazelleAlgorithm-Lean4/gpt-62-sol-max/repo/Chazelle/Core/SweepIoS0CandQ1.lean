@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoS0CandQMath
 
 /-!
@@ -33,25 +35,25 @@ variable {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop} 
 /-- **The completeness clauses** from the completeness of the slot read. -/
 theorem compl_of (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂ c₀) {z : Point}
     {zp zh d : ℕ} {L' : Set ℝ}
-    (harr : Arrival (chainModel J.whole).W z (-dirOf d) zp
-      ((chainModel J.whole).param (Qof P) ⟨zp, zh⟩))
+    (harr : Arrival J.wholeModel.W z (-dirOf d) zp
+      (J.wholeModel.param (Qof P) ⟨zp, zh⟩))
     (H : ∀ i, i < rd c₀ bSweep 301 → c₀.nmem (rd c₀ bSweep 300 + 7 * i) = zp →
-      (chainModel J.whole).param (Qof P) (logPos c₀.nmem (rd c₀ bSweep 300) i) =
-        (chainModel J.whole).param (Qof P) ⟨zp, zh⟩ →
+      J.wholeModel.param (Qof P) (logPos c₀.nmem (rd c₀ bSweep 300) i) =
+        J.wholeModel.param (Qof P) ⟨zp, zh⟩ →
       c₀.nmem (slotA (c₀.nreg sB) i (qS d)) = 1 →
       ∀ (o : Point) (τ : ℝ), CandAt J o (dS (qS d)) z → 0 < τ → o = rayPt z (dirOf d) τ →
         τ ∈ L') :
     (∀ (rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)), rs.length = rd c₀ bSweep 201 →
       StopRecsAt c₀.nmem (rd c₀ bSweep 200) rs →
       ∀ r ∈ rs, r.1 = zp →
-        (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩ =
-          (chainModel J.whole).param (Qof P) ⟨zp, zh⟩ →
+        J.wholeModel.param (Qof P) ⟨r.1, r.2.1⟩ =
+          J.wholeModel.param (Qof P) ⟨zp, zh⟩ →
         dirOf r.2.2.2.2 = -dirOf d →
         ∀ τ, 0 < τ → stopOrig J (Qof P) N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 =
           rayPt z (dirOf d) τ → τ ∈ L') ∧
     (∀ j, j < 2 * N₂.nChords →
       tabOf J (Qof P) c₀.nmem (rd c₀ bSweep 302) j =
-        some (zp, (chainModel J.whole).param (Qof P) ⟨zp, zh⟩) →
+        some (zp, J.wholeModel.param (Qof P) ⟨zp, zh⟩) →
       endDir j = -dirOf d → endOrigin J (Qof P) N₂ j ∈ J.right.set →
       endOrigin J (Qof P) N₂ j ≠ J.shared → endOrigin J (Qof P) N₂ j ≠ J.right.top →
       ∀ τ, 0 < τ → endOrigin J (Qof P) N₂ j = rayPt z (dirOf d) τ → τ ∈ L') := by
@@ -74,15 +76,15 @@ theorem compl_of (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
 
 /-! ## Registers and program -/
 
-def kA : ℕ := sw 4100
-def kE : ℕ := sw 4101
-def kH : ℕ := sw 4102
-def kO : ℕ := sw 4104
-def kS : ℕ := sw 4106
-def kF : ℕ := sw 4107
-def kPe : ℕ := sw 4108
-def kPh : ℕ := sw 4109
-def kPo : ℕ := sw 4110
+@[ram_layout] def kA : ℕ := sw 4100
+@[ram_layout] def kE : ℕ := sw 4101
+@[ram_layout] def kH : ℕ := sw 4102
+@[ram_layout] def kO : ℕ := sw 4104
+@[ram_layout] def kS : ℕ := sw 4106
+@[ram_layout] def kF : ℕ := sw 4107
+@[ram_layout] def kPe : ℕ := sw 4108
+@[ram_layout] def kPh : ℕ := sw 4109
+@[ram_layout] def kPo : ℕ := sw 4110
 
 /-- Copy the query position to the target registers of the search. -/
 def cIn : List Instr := [.copyN lsxE zP, .copyN lsxH zPh]

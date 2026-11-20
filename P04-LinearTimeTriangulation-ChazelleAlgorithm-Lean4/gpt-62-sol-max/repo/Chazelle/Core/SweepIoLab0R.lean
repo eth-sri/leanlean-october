@@ -1,5 +1,11 @@
 module
 
+public import Chazelle.Machine.FrameFields
+
+meta import Chazelle.Programs.RamEval
+
+public import Chazelle.Programs.RamSimp
+
 public import Chazelle.Core.SweepIoLab0M
 
 /-!
@@ -25,14 +31,14 @@ open Machine Machine.Stmt Programs SweepRam SweepPrim
 
 /-! ## Registers -/
 
-def eR0 : ℕ := sw 4030
-def eR1 : ℕ := sw 4031
-def eR2 : ℕ := sw 4032
-def sV : ℕ := sw 4033
-def sA : ℕ := sw 4034
-def sX : ℕ := sw 4035
-def sN : ℕ := sw 4036
-def sE : ℕ := sw 4037
+@[ram_layout] def eR0 : ℕ := sw 4030
+@[ram_layout] def eR1 : ℕ := sw 4031
+@[ram_layout] def eR2 : ℕ := sw 4032
+@[ram_layout] def sV : ℕ := sw 4033
+@[ram_layout] def sA : ℕ := sw 4034
+@[ram_layout] def sX : ℕ := sw 4035
+@[ram_layout] def sN : ℕ := sw 4036
+@[ram_layout] def sE : ℕ := sw 4037
 
 /-! ## A slot -/
 
@@ -58,28 +64,27 @@ def slotVal (m : ℕ → ℕ) (AL E g e k : ℕ) : ℕ :=
   if e < E ∧ k < m (AL + 7 * e + 2) then m (AL + 7 * e + 3 + k) else g
 
 /-- The cost of a slot. -/
-def slotK : ℕ := 19
+@[ram_layout] def slotK : ℕ := 19
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
 theorem put1_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 1 ≤ W) :
     IRS P W c₀ put1 c 2 (fun c' => c'.nreg ALLOC = c.nreg ALLOC + 1 ∧
-      (∀ r, r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
+      (Machine.NRegEqExcept ALLOC c c') ∧
       c'.nmem = upd c.nmem (c.nreg ALLOC) (c.nreg sV)) := by
   have k1 : c.nreg 240611 = 1 := hK.2.1
   have hw := hI.hw
   have hroom' : c.nreg 9999 + 1 ≤ W := hroom
   have ex : ∃ c' k, Exec P W (block [.storeN 9999 244033, .addN 9999 9999 240611]) c c' k ∧
       k = 2 ∧ c'.nreg 9999 = c.nreg 9999 + 1 ∧
-      (∀ r, r ≠ 9999 → c'.nreg r = c.nreg r) ∧
+      (Machine.NRegEqExcept 9999 c c') ∧
       c'.nmem = upd c.nmem (c.nreg 9999) (c.nreg 244033) ∧
-      c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
+      c'.rreg = c.rreg ∧ Machine.RealMemOutputEq c c' := by
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, fun r hr => ?_, ?_, rfl, rfl, rfl⟩
     · config_simp; omega
-    · config_simp
-      simp only [upd, ite_eq_right hr]
+    · simp_all
     · config_simp
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6⟩ := ex
   refine IRS.ofExec hI ex (by omega) (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
@@ -104,43 +109,21 @@ theorem addrL_val (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3
   exact ⟨by ring, congrArg m (by ring)⟩
 
 theorem addrL_other (m f : ℕ → ℕ) (e : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (addrL e) f q = f q :=
-  regB_other m (addrL e) f (fun i hi => by
-    simp only [addrL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold SlotW at hq
-    rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
-      intro h <;> subst h <;> simp at hq)
+  (by register_keep [addrL, SlotW])
 
 theorem addrL_ok (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3)
     (hb : f (sw 300) + 7 * f e + 3 ≤ W) : okB W m (addrL e) f := by
-  have hk2' : f 240615 = 2 := hk2
-  have hk3' : f 240616 = 3 := hk3
-  have hb' : f 240300 + 7 * f e + 3 ≤ W := hb
-  have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [addrL, okB, okI, regI, upd, sA, sX, sN, sE, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨s 4037 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4035 (by norm_num) (by norm_num), by omega⟩,
-    s 4036 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+  register_block normalized [addrL]
 
 theorem labL_val (m f : ℕ → ℕ) (k : ℕ) :
     regB m (labL k) f sV = m (f sA + f k) := by
-  simp only [labL, regB, regI, upd, sA, sV, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+  rfl
 
 theorem labL_other (m f : ℕ → ℕ) (k : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (labL k) f q = f q :=
-  regB_other m (labL k) f (fun i hi => by
-    simp only [labL, List.mem_cons, List.not_mem_nil, or_false] at hi
-    unfold SlotW at hq
-    rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp at hq)
+  (by register_keep [labL, SlotW])
 
 theorem labL_ok (m f : ℕ → ℕ) (k : ℕ) (hb : f sA + f k ≤ W) : okB W m (labL k) f := by
-  have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [labL, okB, okI, sA, sV, sw] at hb ⊢
-  exact ⟨⟨s 4034 (by norm_num) (by norm_num), hb⟩, s 4033 (by norm_num) (by norm_num), trivial⟩
+  register_block
 
 set_option maxHeartbeats 1000000 in
 /-- **One slot**: its value is stored at the allocator. -/
@@ -156,7 +139,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
     intro q hq h
     unfold SlotW at h
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      rcases h with h | h | h | h | h <;> simp [ALLOC, gL, K1, K2, K3, sV, sA, sX, sN, sE, sw] at h
+      rcases h with h | h | h | h | h <;> simp [ram_layout] at h
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
     iscr_sw (by omega) (by omega)
   set v := slotVal c.nmem (c.nreg (sw 300)) (c.nreg (sw 301)) (c.nmem (c.nreg gL)) (c.nreg e)
@@ -168,7 +151,7 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   rintro c₁ hI₁ hA₁ hA₁' rfl
   set c₁ : Config := { c with nreg := regB c.nmem [.loadN sV gL] c.nreg } with hc₁
   have v1 : c₁.nreg sV = c.nmem (c.nreg gL) := by
-    simp only [hc₁, regB, regI, upd, sV, sw]; simp
+    rfl
   have o1 : ∀ q, ¬ SlotW q → c₁.nreg q = c.nreg q := fun q hq =>
     regB_other _ _ _ (fun i hi => by
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -207,15 +190,14 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
           rw [labL_val, eA, o3 k hk, hv]
           unfold slotVal
           rw [ite_eq_left ⟨hlt, hlt'⟩]
-        · show regB c₃.nmem (labL k) c₃.nreg q = c.nreg q
-          rw [labL_other _ _ k hq, o3 q hq]
+        ram_simp [labL_other, o3 q hq] <;> reg_omega
       · rw [o3 k hk, eN] at hlt'
         refine IRS.skip hI₃ ⟨?_, o3, m3⟩
         show regB c₁.nmem (addrL e) c₁.nreg sV = v
         rw [regB_other _ _ _ (fun i hi => by
           simp only [addrL, List.mem_cons, List.not_mem_nil, or_false] at hi
           rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-            simp [dstI, sV, sA, sX, sN, sE, sw]), v1, hv]
+            simp [ram_layout, dstI]), v1, hv]
         unfold slotVal
         rw [ite_eq_right (fun h => hlt' h.2)]
     · rw [o1 e he, o1 _ (nW _ (by simp))] at hlt
@@ -244,11 +226,11 @@ def slotPairs : List (ℕ × ℕ) :=
     (eR2, K0), (eR2, K1), (eR2, K2), (eR2, K3)]
 
 theorem slotVal_congr {m m' : ℕ → ℕ} {AL E g e k : ℕ} (hk : k ≤ 3)
-    (h : ∀ a, a < AL + 7 * E → m' a = m a) :
+    (h : MemEqBelow (AL + 7 * E) m' m) :
     slotVal m' AL E g e k = slotVal m AL E g e k := by
   unfold slotVal
   by_cases he : e < E
-  · rw [h _ (by omega), h _ (by omega)]
+  · ram_simp [h]
   · simp [he]
 
 set_option maxHeartbeats 1000000 in
@@ -260,7 +242,7 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
     IRS P W c₀ (slotsOf l) c (slotK * l.length) (fun c' =>
       c'.nreg ALLOC = c.nreg ALLOC + l.length ∧
       (∀ r, ¬ SlotW r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
-      (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) ∧
+      (MemEqBelow (c.nreg ALLOC) c'.nmem c.nmem) ∧
       ∀ i, i < l.length → c'.nmem (c.nreg ALLOC + i) =
         slotVal c.nmem (c.nreg (sw 300)) (c.nreg (sw 301)) (c.nmem (c.nreg gL))
           (c.nreg (l.getD i (0, 0)).1) (c.nreg (l.getD i (0, 0)).2))
@@ -275,26 +257,23 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
       (fun _ h => h)
     rintro c₁ hI₁ hA₁ hA₁' ⟨e1, o1, m1⟩
     have nW : ∀ q, (q = ALLOC ∨ q = gL ∨ q = sw 300 ∨ q = sw 301) → ¬ SlotW q := by
-      intro q hq h
-      unfold SlotW at h
-      rcases hq with rfl | rfl | rfl | rfl <;>
-        rcases h with h | h | h | h | h <;> simp [ALLOC, gL, sV, sA, sX, sN, sE, sw] at h
+      simp [SlotW, ALLOC, gL, sV, sA, sX, sN, sE, sw]
     have r300 : c₁.nreg (sw 300) = c.nreg (sw 300) :=
-      o1 _ (nW _ (by simp)) (by unfold ALLOC sw; omega)
+      o1 _ (nW _ (by simp)) (by reg_omega)
     have r301 : c₁.nreg (sw 301) = c.nreg (sw 301) :=
-      o1 _ (nW _ (by simp)) (by unfold ALLOC sw; omega)
-    have rgL : c₁.nreg gL = c.nreg gL := o1 _ (nW _ (by simp)) (by unfold ALLOC gL sw; omega)
-    have hmlow : ∀ a, a < c.nreg ALLOC → c₁.nmem a = c.nmem a := fun a ha => by
-      rw [m1]; simp only [upd]; rw [ite_eq_right (by omega)]
+      o1 _ (nW _ (by simp)) (by reg_omega)
+    have rgL : c₁.nreg gL = c.nreg gL := o1 _ (nW _ (by simp)) (by reg_omega)
+    have hmlow : MemEqBelow (c.nreg ALLOC) c₁.nmem c.nmem := fun a ha => by
+      ram_finish
     have hl' : ∀ q ∈ l, ¬ SlotW q.1 ∧ ¬ SlotW q.2 ∧ q.1 ≠ ALLOC ∧ q.2 ≠ ALLOC ∧
         c₁.nreg q.2 ≤ 3 := fun q hq => by
       obtain ⟨a, b, d, f, g⟩ := hl q (List.mem_cons_of_mem _ hq)
-      exact ⟨a, b, d, f, by rw [o1 _ b f]; exact g⟩
+      exact ⟨a, b, d, f, by rwa [o1 _ b f]⟩
     refine (slots_irs l hI₁ hK hl' (by rw [r300, r301, e1]; omega) (by rw [rgL, e1]; omega)
       (by rw [e1]; nlinarith)).mono le_rfl ?_
     rintro c' ⟨f1, f2, f3, f4⟩
-    refine ⟨by rw [f1, e1]; ring, fun r hr hrA => by rw [f2 r hr hrA, o1 r hr hrA],
-      fun a ha => by rw [f3 a (by omega), hmlow a ha], fun i hi => ?_⟩
+    refine ⟨by rw [f1, e1]; ring, fun r hr hrA => by ram_finish,
+      fun a ha => by ram_finish, fun i hi => ?_⟩
     rcases i with _ | i
     · rw [f3 _ (by omega), m1]
       simp only [upd, add_zero, ite_true, List.getD_cons_zero]
