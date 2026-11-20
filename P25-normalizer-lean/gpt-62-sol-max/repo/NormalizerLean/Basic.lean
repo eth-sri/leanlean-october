@@ -4,9 +4,7 @@ public import NormalizerLean.Defs
 
 @[expose] public section
 
-/-!
-# Basic API for Γ₀(N) ≤ SL₂(ℝ), its normalizer, B(N), S_k and h(N)
--/
+/-! Casting integral matrices and computing in SL₂. -/
 
 open Matrix MatrixGroups
 
@@ -14,82 +12,29 @@ namespace NormalizerLean
 
 noncomputable section
 
-/-! ### Membership in Γ₀(N) -/
+abbrev Mat₂R := Matrix (Fin 2) (Fin 2) ℝ
+abbrev Mat₂Z := Matrix (Fin 2) (Fin 2) ℤ
 
-/-- The real matrix of an integer matrix. -/
-abbrev castM (M : Matrix (Fin 2) (Fin 2) ℤ) : Matrix (Fin 2) (Fin 2) ℝ := M.map (Int.cast)
+abbrev castM : Mat₂Z →+* Mat₂R := (Int.castRingHom ℝ).mapMatrix
 
-theorem mem_Gamma0R_iff {N : ℕ} {g : SL(2, ℝ)} :
-    g ∈ Gamma0R N ↔ ∃ M : Matrix (Fin 2) (Fin 2) ℤ,
-      (N : ℤ) ∣ M 1 0 ∧ (g : Matrix (Fin 2) (Fin 2) ℝ) = castM M := by
-  constructor
-  · rintro ⟨A, hA, rfl⟩
-    refine ⟨A, ?_, ?_⟩
-    · exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 (CongruenceSubgroup.Gamma0_mem.1 hA)
-    · ext i j
-      simp [Matrix.SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply]
-  · rintro ⟨M, hM, hg⟩
-    have hdet : M.det = 1 := by
-      have h1 := g.2
-      rw [hg, det_fin_two] at h1
-      rw [det_fin_two]
-      simp only [castM, map_apply] at h1
-      exact_mod_cast h1
-    let A : SL(2, ℤ) := ⟨M, hdet⟩
-    refine ⟨A, CongruenceSubgroup.Gamma0_mem.2 ((ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 hM), ?_⟩
-    refine Matrix.SpecialLinearGroup.ext _ _ (fun i j => ?_)
-    rw [Matrix.SpecialLinearGroup.map_apply_coe, hg]
-    rfl
+theorem cast_entries (a b c d : ℤ) :
+    castM !![a,b;c,d] = !![(a : ℝ), b; c, d] := (castM !![a,b;c,d]).eta_fin_two
 
-/-- Membership in Γ₀(N) from explicit integer entries. -/
-theorem mem_Gamma0R_of_entries {N : ℕ} {g : SL(2, ℝ)} (a b c d : ℤ)
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = !![(a : ℝ), b; c, d]) (hc : (N : ℤ) ∣ c) :
-    g ∈ Gamma0R N := by
-  refine mem_Gamma0R_iff.2 ⟨!![a, b; c, d], by simpa using hc, ?_⟩
-  rw [hg]
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp
+theorem coe_ofZ (γ : SL(2, ℤ)) :
+    (ofZ γ : Mat₂R) = !![(γ 0 0 : ℝ), γ 0 1; γ 1 0, γ 1 1] := (ofZ γ : Mat₂R).eta_fin_two
 
-/-- Elements of Γ₀(N) have integer entries, lower-left divisible by N, determinant 1. -/
-theorem exists_entries_of_mem_Gamma0R {N : ℕ} {g : SL(2, ℝ)} (hg : g ∈ Gamma0R N) :
-    ∃ a b c d : ℤ, a * d - b * c = 1 ∧ (N : ℤ) ∣ c ∧
-      (g : Matrix (Fin 2) (Fin 2) ℝ) = !![(a : ℝ), b; c, d] := by
-  obtain ⟨M, hM, hgM⟩ := mem_Gamma0R_iff.1 hg
-  refine ⟨M 0 0, M 0 1, M 1 0, M 1 1, ?_, hM, ?_⟩
-  · have h1 := g.2
-    rw [hgM, det_fin_two] at h1
-    simp only [castM, map_apply] at h1
-    exact_mod_cast h1
-  · rw [hgM]
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp
+theorem gamma0_dvd {N : ℕ} {γ : SL(2, ℤ)} :
+    γ ∈ CongruenceSubgroup.Gamma0 N ↔ (N : ℤ) ∣ γ 1 0 :=
+  CongruenceSubgroup.Gamma0_mem.trans (ZMod.intCast_zmod_eq_zero_iff_dvd _ _)
 
-/-! ### The normalizer -/
+theorem coe_inv_of_coe_eq_smul {g : SL(2, ℝ)} {s a b c d : ℝ} (h : (g : Mat₂R) = s • !![a,b;c,d]) :
+    (↑g⁻¹ : Mat₂R) = s • !![d,-b;-c,a] := by
+  change (g : Mat₂R).adjugate = _
+  rw [h, adjugate_smul, adjugate_fin_two_of]
+  simp
 
-/-! ### B(N) -/
-
-/-! ### Translations S_k -/
-
-theorem coe_S (k : ℕ) : ((S k : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) = !![1, (k : ℝ)⁻¹; 0, 1] :=
-  rfl
-
-/-! ### h(N) -/
-
-theorem hPart_pos (N : ℕ) : 0 < hPart N := by
-  unfold hPart
-  positivity
-
-/-! ### Units modulo divisors of 24 square to 1 -/
-
-theorem modEq_of_mul_modEq_one {k : ℕ} (hk : k ∣ 24) {a d : ℤ} (h : a * d ≡ 1 [ZMOD k]) :
-    a ≡ d [ZMOD k] := by
-  have hk24 : k ≤ 24 := Nat.le_of_dvd (by norm_num) hk
-  rw [← ZMod.intCast_eq_intCast_iff] at h ⊢
-  push_cast at h
-  generalize (a : ZMod k) = x at h ⊢
-  generalize (d : ZMod k) = y at h ⊢
-  revert x y
-  interval_cases k <;> norm_num at hk <;> decide
+theorem coe_projSL (A : Mat₂R) (hA : 0 < A.det) : (projSL A : Mat₂R) = (Real.sqrt A.det)⁻¹ • A := by
+  simp [projSL, hA]
 
 end
 

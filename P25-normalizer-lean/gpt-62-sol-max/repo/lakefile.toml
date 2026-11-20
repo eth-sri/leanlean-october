@@ -1,6 +1,6 @@
 name = "NormalizerLean"
 version = "0.1.0"
-defaultTargets = ["NormalizerLean"]
+defaultTargets = ["Solution"]
 
 [leanOptions]
 pp.unicode.fun = true
