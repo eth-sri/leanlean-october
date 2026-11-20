@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlocks
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped BigOperators Classical
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation
+open FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstBlockOuterWeight (selector : Finset ι → ℂ)
     (r : RayCharacter × RayCharacter) (D : Finset ι) (h : Eis) : ℂ :=

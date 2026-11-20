@@ -8,17 +8,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds
+open HeckeReciprocalGrowth
 
 lemma poleRemoved_eq_regularizedL (χ : Character) {s : ℂ} (hs : 0<s.re) :
     HeckeOrigin.poleRemoved χ s=HeckeReciprocal.regularizedL χ s := by
   by_cases h1 : s=1
   · subst s;exact HeckeOrigin.poleRemoved_one χ
-  · have h0 : s≠0 := by intro h;simp [h] at hs
+  · have h0 : s≠0 := by intro h;simp_all
     rw [HeckeOrigin.poleRemoved_eq χ h0 h1,HeckeReciprocal.regularizedL_eq χ h0 h1]
 
 lemma regular_eq_of_mask (χ ψ : Character)
@@ -30,7 +30,7 @@ lemma regular_eq_of_mask (χ ψ : Character)
       poleRemoved_eq_regularizedL χ hs,poleRemoved_eq_regularizedL ψ hs]
     rw [regularizedL_eq_of_mask χ ψ hmask hs]
     ring
-  · have hψ : ψ.residue≠1 := fun h=>hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  · have hψ  := fun h=>hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
     rw [regular_eq_nonprincipal χ hχ,regular_eq_nonprincipal ψ hψ]
     exact LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hs
 
@@ -54,7 +54,7 @@ lemma regular_nonzero_of_detector (χ : Character) {s : ℂ} (hs : 0<s.re)
 lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
     (hs : 0<s.re) (hz : regular χ s≠0) :
     ‖HeckeReciprocal.reciprocal χ s‖≤‖(regular χ s)⁻¹‖ := by
-  have h0 : s≠0 := by intro h;simp [h] at hs
+  have h0 : s≠0 := by intro h;simp_all
   by_cases hχ : χ.residue=1
   · by_cases h1 : s=1
     · subst s
@@ -77,7 +77,7 @@ lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
     apply mul_le_of_le_one_left (norm_nonneg _)
     rw [norm_div]
     exact (div_le_one (norm_pos_iff.mpr hp)).mpr (principal_regular_factor_bound hs.le)
-  · simp only [HeckeReciprocal.reciprocal,regular,ite_eq_right hχ,le_refl]
+  · simp [HeckeReciprocal.reciprocal,regular,ite_eq_right hχ,le_refl]
 
 theorem original_regular_disk_control (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
@@ -108,10 +108,9 @@ theorem original_regular_disk_control (e ε : ℝ)
     linarith
   have hzpos : 0 < z.re := by linarith
   have hdel := hdelete χ.modulus ψ z hzre
-  have hL : regular χ z = regular ψ z*factors χ.modulus ψ z :=
+  have hL  :=
     regular_eq_of_mask χ ψ hmask hzpos
-  have hR : HeckeReciprocal.reciprocal χ z =
-      HeckeReciprocal.reciprocal ψ z*(factors χ.modulus ψ z)⁻¹ :=
+  have hR  :=
     HeckeDeletionReciprocal.reciprocal_eq_of_mask χ ψ hmask hzpos
   have hrec := reciprocal_norm_le_regular_inverse_on_positive ψ hzpos (hzeroψ z hz2)
   have hdel1 : ‖factors χ.modulus ψ z‖ ≤ Cd*((radical χ.modulus).absNorm : ℝ)^ε := by
@@ -122,7 +121,7 @@ theorem original_regular_disk_control (e ε : ℝ)
     unfold complexity
     have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
     gcongr
-  have hc0 : 0 ≤ complexity ψ t := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ t)
+  have hc0  := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ t)
   have hr0 : 0 ≤ ((radical χ.modulus).absNorm : ℝ) := by positivity
   rw [hL,hR,norm_mul,norm_mul]
   calc
@@ -154,9 +153,9 @@ theorem buffered_regular_control (e ε : ℝ)
   intro ι _ χ T a i hT ha ha1 hmax j t ht z hz
   apply hbound (χ j) a t (by linarith) ha1 _ z hz
   intro w hw
-  have hre : 0<w.re := by have h:=LogarithmicControl.disk_re_gt hw;linarith
-  exact regular_nonzero_of_detector (χ j) hre
+  refine regular_nonzero_of_detector (χ j) ?_
     (detectorEntire_nonzero_on_buffered_disk χ T a e i hT ha he hmax j t ht (ball_subset_closedBall hw))
+  have h:=LogarithmicControl.disk_re_gt hw;linarith
 
 theorem buffered_rectangle_reciprocal_bound (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
@@ -176,7 +175,7 @@ theorem buffered_rectangle_reciprocal_bound (e ε : ℝ)
   have hb := hbound χ T a i hT ha ha1 hmax j z.im (hzi.trans hHT) z hz
   have hc : presentationComplexity (χ j) z.im≤presentationComplexity (χ j) H := by
     unfold presentationComplexity complexity
-    have hH : 0≤H := (abs_nonneg _).trans hzi
+    have hH  := (abs_nonneg _).trans hzi
     rw [abs_of_nonneg hH]
     gcongr
   have hnonneg : 0≤presentationComplexity (χ j) z.im := by

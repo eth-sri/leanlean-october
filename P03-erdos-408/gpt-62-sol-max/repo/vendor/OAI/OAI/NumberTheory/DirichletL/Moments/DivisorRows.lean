@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRectangle
 
 @[expose] public section
@@ -41,8 +42,7 @@ theorem allocatedRectangle_eq_rows (η : Character) (m A z : O) (t : ℝ)
           rowTwistedSum η m A z W₂ t (Y₂/Ideal.absNorm (selectedPlain D a 1)))*
           ∏ i,rowSlot η m A z (S i) (fun I => if selectedSlot D a i∣I then β i I else 0) t) := by
   have hN (j : Fin 2) : (0:ℝ) < Ideal.absNorm (selectedPlain D a j) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j))
   unfold allocatedRectangle
   rw [allocated_rectangle_reindex]
   rw [actual_slot_rectangle_sum η m A z S

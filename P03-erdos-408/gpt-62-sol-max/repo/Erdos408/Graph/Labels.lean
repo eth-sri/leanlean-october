@@ -53,7 +53,7 @@ lemma sum_mass_trim_eq {J : ℕ} (C : Fin G.count → Finset (Fin J))
     (hV : ∀ g, G.V g ≠ 0) {w : Fin G.count → Fin J → ℕ} (hw : w ∈ auxLabels G.primes C) :
     ∑ u : G.Aux J, (if trim C u = w then ∏ g, ∏ i, G.mu g (u g i) else 0) =
       ∏ g, ∏ i ∈ C g, (harmonicMass (G.primes g) * w g i)⁻¹ := by
-  have hw' : ∀ g i, w g i ∈ if i ∈ C g then G.primes g else {1} := fun g i =>
+  have hw'  := fun g i =>
     Fintype.mem_piFinset.mp (Fintype.mem_piFinset.mp hw g) i
   -- the indicator of `trim C u = w` is a product over the slots
   have hsplit : ∀ u : G.Aux J, (if trim C u = w then ∏ g, ∏ i, G.mu g (u g i) else 0) =

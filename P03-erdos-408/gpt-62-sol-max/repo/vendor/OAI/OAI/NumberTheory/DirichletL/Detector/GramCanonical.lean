@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramSourceBlock
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcreteTraceCRT IdealMobiusDivisorSum UniqueFactorizationMonoid

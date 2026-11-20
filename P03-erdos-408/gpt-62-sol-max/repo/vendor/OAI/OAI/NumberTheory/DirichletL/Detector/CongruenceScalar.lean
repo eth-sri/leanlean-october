@@ -35,7 +35,7 @@ def positiveScalar (p : O) (hp : p ≠ 0)
 @[simp] theorem positiveScalar_kzero (p : O) (hp : p ≠ 0)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n j : ℕ) :
     positiveScalar p hp χ n 0 j = primePowerGauss p hp (χ^(n+1)) n (p^j) := by
-  simp only [positiveScalar, ite_true]
+  rfl
 
 theorem positiveScalar_kone_jzero (p : O) (hp : Prime p)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) :
@@ -49,10 +49,9 @@ theorem positiveScalar_kone_jzero (p : O) (hp : Prime p)
   intro hd
   have hd2 : p ∣ p^(n+1)*representative p d :=
     (dvd_pow_self p (by omega : n+1 ≠ 0)).mul_right _
-  have hunit : p ∣ (1:O) := by
-    have := dvd_add hd hd2
-    simpa only [sub_add_cancel] using this
-  exact hp.not_isUnit (isUnit_iff_dvd_one.mpr hunit)
+  refine hp.not_isUnit (isUnit_iff_dvd_one.mpr ?_)
+  have := dvd_add hd hd2
+  simpa only [sub_add_cancel] using this
 
 theorem positiveScalar_kone_convolution (p : O) (hp : p ≠ 0)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n j : ℕ) :
@@ -63,7 +62,6 @@ theorem positiveScalar_kone_convolution (p : O) (hp : p ≠ 0)
   apply tsum_congr
   intro d
   have he : p^(j+1)-p^(n+1)*representative p d = p*(p^j-p^n*representative p d) := by
-    simp only [pow_succ]
     ring
   have hd : p ∣ p^(j+1)-p^(n+1)*representative p d := ⟨_,he⟩
   rw [dite_eq_left hd, exactQuotient_eq _ _ _ hd hp he, representative_spec]

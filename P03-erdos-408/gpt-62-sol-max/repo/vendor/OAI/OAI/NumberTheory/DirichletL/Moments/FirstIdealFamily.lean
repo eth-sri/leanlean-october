@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstIdealFamily
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
@@ -25,12 +25,10 @@ theorem rowWeight_one_primary (η : Character) (m : O) (t : ℝ)
   have hs := primary_span_supported I hI
   have he : idealCoeff η I=elementCoeff η (CompletedGauss.primaryGenerator I) := by
     have hh := idealCoeff_span η hn
-    rw [hs] at hh
-    exact hh
+    simp_all
   have hm : idealRowHom (m^6) I=coprimalityMask m (CompletedGauss.primaryGenerator I) := by
     have hh := idealRowHom_sixth_eq_mask m _ (hs.symm ▸ hI)
-    rw [hs] at hh
-    exact hh
+    simp_all
   change (idealCoeff η I*idealRowHom (m^6*(1*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t)=_
   rw [mul_one,mul_one,he,hm]
 

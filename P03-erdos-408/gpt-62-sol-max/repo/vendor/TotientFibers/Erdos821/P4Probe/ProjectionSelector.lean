@@ -26,7 +26,7 @@ lemma productFull_anova_eq (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a
   induction I using Finset.induction_on with
   | empty => exact productFull_empty w hsum _
   | @insert i I hi hI =>
-      have hiS : i ∈ S := hIS (Finset.mem_insert_self _ _)
+      have hiS  := hIS (Finset.mem_insert_self _ _)
       have hIS' : I ⊆ S := fun j hj => hIS (Finset.mem_insert_of_mem hj)
       rw [productFull_insert w hsum I i hi, hI hIS',
         productAnova_mean_zero w hsum Finset.univ S i hiS]
@@ -50,9 +50,9 @@ lemma productAverage_anova_eq (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w 
   induction A using Finset.induction_on with
   | empty => exact productAverage_empty w hsum _
   | @insert i A hi hA =>
-      have hiS : i ∉ S := fun h => Finset.disjoint_left.mp hAS
+      have hiS  := fun h => Finset.disjoint_left.mp hAS
         (Finset.mem_insert_self _ _) h
-      have hAS' : Disjoint A S := hAS.mono_left (Finset.subset_insert _ _)
+      have hAS'  := hAS.mono_left (Finset.subset_insert _ _)
       have havg : productAverage w (insert i A) (productAnova w Finset.univ S f) =
           productAverage w {i} (productAverage w A (productAnova w Finset.univ S f)) := by
         funext x

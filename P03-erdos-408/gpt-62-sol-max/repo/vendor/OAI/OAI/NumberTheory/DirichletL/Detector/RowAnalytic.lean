@@ -36,10 +36,10 @@ def rowMajorant (σ : ℝ) (p : Ideal O × Ideal O) : ℝ :=
   2 * (‖fullIdealWeight (σ : ℂ) p.1‖ * ‖fullIdealWeight (3 * (σ : ℂ)) p.2‖)
 
 theorem rowMajorant_summable (σ : ℝ) (hσ : 1 < σ) : Summable (rowMajorant σ) := by
-  have h3 : 1 < (3 * (σ : ℂ)).re := by norm_num; linarith
-  exact ((fullIdealWeight_summable_norm (σ : ℂ) hσ).mul_of_nonneg
-    (fullIdealWeight_summable_norm (3 * (σ : ℂ)) h3)
+  refine ((fullIdealWeight_summable_norm (σ : ℂ) hσ).mul_of_nonneg
+    (fullIdealWeight_summable_norm (3 * (σ : ℂ)) ?_)
     (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)).mul_left 2
+  norm_num; linarith
 
 theorem spectralSummand_vertical_bound (S : Finset (Ideal O)) (D : Ideal O)
     (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ y : ℝ) (p : Ideal O × Ideal O) :

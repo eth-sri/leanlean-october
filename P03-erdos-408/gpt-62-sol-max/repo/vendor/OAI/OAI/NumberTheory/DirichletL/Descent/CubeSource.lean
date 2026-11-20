@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceTuples
 
 @[expose] public section
@@ -8,16 +9,15 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 
 lemma sourceIdeal_isRadical
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (S : Finset ι) :
+    (hcop : OAI.PrincipalFamily.Coprime p) (S : Finset ι) :
     (sourceIdeal p S).IsRadical := by
   change (Ideal.span {∏ i ∈ S,p i}).IsRadical
   rw [FiniteGaussPhase.span_finset_prod]
@@ -42,7 +42,7 @@ lemma cubeRadical_span_dvd_product (B : Finset ι) (v : ι → ℕ)
   exact dvd_pow_self _ (Nat.ne_of_gt (hv i hi))
 
 theorem cubeSupport_dvd_radical
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (B : Finset ι) (v₁ v₂ : ι → ℕ) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     sourceIdeal p B ∣
       (Ideal.span {primeProduct p B v₁}*Ideal.span {primeProduct p B v₂}).radical := by
@@ -63,7 +63,7 @@ lemma aLabel_dvd_cubeSupport (B : Finset ι) (ε : ι → Bool) :
   cases hh : ε i <;> simp [bit]
 
 theorem firstMask_dvd_cube_radical
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (B C D : Finset ι) (hCB : Disjoint C B) (hD : D ⊆ C∪B)
     (v₁ v₂ : ι → ℕ) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     sourceIdeal p D ∣ sourceIdeal p C *
@@ -96,7 +96,7 @@ def cubeSecondSource {Jo Jn : ℕ} (B C D G E V : Finset ι)
 
 theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     {Jo Jn : ℕ} (B C D G E V : Finset ι) (hCB : Disjoint C B)
     (hD : D ⊆ C∪B) (hE : E ⊆ G)
     (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
@@ -139,7 +139,7 @@ theorem oldSlot_dvd_reconstructed_support
 
 theorem cubeSecondSource_valid_original_slots (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     {Jo Jn : ℕ} (B C D G E V : Finset ι) (hCB : Disjoint C B)
     (hD : D ⊆ C∪B) (hE : E ⊆ G)
     (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)

@@ -1,6 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityRays
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
+public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
+public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
 @[expose] public section
@@ -8,20 +13,19 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight
+open SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers
+open InverseInitialArithmetic InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type} [DecidableEq ι] [DecidableEq σ]
 def globalPriorityRetainedAggregate
-    (p:ι→Eis)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (hp:∀i,p i≠0)(hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (p:ι→Eis)[OAI.PrincipalFamily.Maximal p]
+    (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hp:∀i,p i≠0)(hcop:OAI.PrincipalFamily.Coprime p)
     {Jo:ℕ}(extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)
     (original:Finset (InverseFirstPriorityParents.Source ι Jo))(w:InverseFirstPriorityParents.Source ι Jo→ℂ)
     (negative:Bool)(Ψ:Eis→*ℂ)(m:Eis)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)

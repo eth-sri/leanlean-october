@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityDefect
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyDeletedChildCapacity
 open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedChildCapacity

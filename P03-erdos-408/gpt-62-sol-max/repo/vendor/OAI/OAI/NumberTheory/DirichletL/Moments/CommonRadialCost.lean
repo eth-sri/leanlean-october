@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonRadialCost
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAllocationCost
@@ -31,21 +32,21 @@ omit [DecidableEq ι] in
   obtain ⟨D0,hD0,hcard⟩:=actualAllocations_uniform_small_power (Fintype.card (ι⊕Fin 2)) ε hε
   refine ⟨(D0+1)^4,by positivity,?_⟩
   intro s C D hC hD Z hZ hNC hND
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz:=zero_lt_one.trans hZ
   have bound (I:Ideal O) (hI:I≠0) (hn:(Ideal.absNorm I:ℝ)≤Z^B):
       ((actualAllocations s.pools I).card:ℝ)+1≤(D0+1)*Z^(B*ε):=by
-    have hi:(1:ℝ)≤Ideal.absNorm I:=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    have hi:(1:ℝ)≤Ideal.absNorm I:=by exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
     have hh:=hcard (le_refl (Fintype.card (ι⊕Fin 2))) s.pools I hI
     have hp:(Ideal.absNorm I:ℝ)^ε≤Z^(B*ε):=by
       apply (Real.rpow_le_rpow (by positivity) hn hε.le).trans_eq
       rw [←Real.rpow_mul hz.le]
-    have hone:1≤Z^(B*ε):=Real.one_le_rpow hZ.le (mul_nonneg hB hε.le)
+    have hone:=Real.one_le_rpow hZ.le (mul_nonneg hB hε.le)
     nlinarith [mul_le_mul_of_nonneg_left hp hD0.le]
   have hc:=bound C hC hNC
   have hd:=bound D hD hND
-  have hSc:Real.sqrt ((actualAllocations s.pools C).card:ℝ)≤(D0+1)*Z^(B*ε):=
+  have hSc:=
     (sqrt_nat_le_add_one _).trans hc
-  have hSd:Real.sqrt ((actualAllocations s.pools D).card:ℝ)≤(D0+1)*Z^(B*ε):=
+  have hSd:=
     (sqrt_nat_le_add_one _).trans hd
   have hcc:((actualAllocations s.pools C).card:ℝ)≤(D0+1)*Z^(B*ε):=by linarith
   have hdd:((actualAllocations s.pools D).card:ℝ)≤(D0+1)*Z^(B*ε):=by linarith

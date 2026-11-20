@@ -81,19 +81,17 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
     rw [h1]
     exact mul_le_mul_of_nonneg_left hd.γ_ge hL0.le
   set m := min d.Hm d.Hn with hmdef
-  have hm : Real.exp (L ^ (99 / 100 : ℝ)) ≤ m :=
+  have hm  :=
     le_min (hxγ.trans hd.Hm_ge) (hxγ.trans hd.Hn_ge)
   have hm2 : 2 ≤ m := by
     have h1 : 1 ≤ L ^ (99 / 100 : ℝ) := Real.one_le_rpow hL (by norm_num)
     have h2 := Real.add_one_le_exp (L ^ (99 / 100 : ℝ))
     linarith
-  have hY1 : (1 : ℝ) ≤ 2 ^ k * 2 ^ j :=
-    one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by norm_num)) (one_le_pow₀ (by norm_num))
   have hmU : m ≤ 2 ^ k * 2 ^ j * d.Hm :=
-    (min_le_left _ _).trans (le_mul_of_one_le_left (by linarith [min_le_left d.Hm d.Hn]) hY1)
+    (min_le_left _ _).trans (le_mul_of_one_le_left (by linarith [min_le_left d.Hm d.Hn]) (one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by norm_num)) (one_le_pow₀ (by norm_num))))
   have hmV : m ≤ d.Hn := min_le_right _ _
-  have hU2 : 2 ≤ (2 : ℝ) ^ k * 2 ^ j * d.Hm := hm2.trans hmU
-  have hV2 : 2 ≤ d.Hn := hm2.trans hmV
+  have hU2  := hm2.trans hmU
+  have hV2  := hm2.trans hmV
   -- step: the grid, `m^{1/40} ≤ n ≤ 2 m^{1/40}`
   set n := gridSteps d with hndef
   have hm40 : 1 ≤ m ^ (1 / 40 : ℝ) := Real.one_le_rpow (by linarith) (by norm_num)
@@ -160,7 +158,7 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
   have ha := card_confActive_le ω
   refine hbud n (confActive ω).card m _ _ _ _ pmax _ hn hn₂ hn₁ hm hmU hmV
     (dampMass_nonneg fun p hp l => (hlam p hp l).2) (hσ.trans ?_) (Nat.cast_nonneg _)
-    (hnP.trans_eq (by rw [hpmaxdef])) hpmax₁ le_rfl ?_ (Nat.cast_nonneg _)
+    (hnP.trans_eq (by rfl)) hpmax₁ le_rfl ?_ (Nat.cast_nonneg _)
     (hbad d hd j k n hn ω hω hc)
   · exact mul_le_mul_of_nonneg_left (by exact_mod_cast hN) (Nat.cast_nonneg _)
   · calc ((confActive ω).card : ℝ) ≤ ((2 * momentPower x + 1) * (K * (padCount x + 1)) : ℕ) := by

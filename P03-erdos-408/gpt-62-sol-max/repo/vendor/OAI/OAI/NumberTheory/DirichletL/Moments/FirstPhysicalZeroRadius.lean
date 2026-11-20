@@ -7,18 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalOriginalMask
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalZeroRadius
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstSourceReduction CenteredMomentCommonSupport
-open CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-open CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstPhysicalSource
+open CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction CenteredMomentCommonSupport
+open CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentOriginalChildEnergy
+open CenteredMomentGaussEnergy
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 omit [DecidableEq ι] in
 lemma coefficient_zero (s : Input ι) (R seed : Ideal O)

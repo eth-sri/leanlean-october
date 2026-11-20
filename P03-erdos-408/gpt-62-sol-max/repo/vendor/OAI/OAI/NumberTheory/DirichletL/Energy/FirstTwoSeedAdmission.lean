@@ -11,10 +11,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstTwoSeedAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
@@ -24,12 +23,10 @@ open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
 open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
-open CenteredMomentEnergyFirstLiveAdmission
+open CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool
+open CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily
+open CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion
+open CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentEnergyFirstLiveAdmission
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -103,15 +100,11 @@ theorem eventually_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   have hz₂ := lower_profile_zero s.W₂ a ha hW₂
   have hcdata := actual_common_gates s R seed0 hseed hz₁ hz₂ C D hlabel
   have hCN := hcdata.2.2.2.2.2.1.trans hH
-  have hJN : ((columnIdeal C D side).absNorm : ℝ) ≤ Z^(A+1) := by
-    cases side
-    · exact hCN
-    · exact hcdata.2.2.2.2.2.2.trans hH
   have hd := elementPool_data _
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).1)
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).2) p hp
-  have hp0 : p ≠ 0 := hd.1.ne_zero
-  have hQ : Ideal.span {p} ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr hp0
+  have hp0  := hd.1.ne_zero
+  have hQ  := Ideal.span_singleton_eq_bot.not.mpr hp0
   have hpupper := (pool_prime_log_range M H Sbad hbad Z σ hz p hp).2
   have hPN : ((Ideal.span {p}).absNorm : ℝ) ≤ Z^(σ/3) := by
     have hh := Real.rpow_le_rpow_of_exponent_le hz.le hpupper
@@ -120,11 +113,9 @@ theorem eventually_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   have hv : (υ.modulus.absNorm : ℝ) ≤ Z^(3*A+3+σ/3) := by
     have hh := ht.2.2 τ υ hτ χ p hp0 (errorMovingExponent (k-1)) (σ/3) hυ hPN
     simpa only [show A+2*(A+1)+σ/3+1 = 3*A+3+σ/3 by ring] using hh
-  have hE : Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E} ≠ 0 :=
-    Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _)
   have hne := first_block_active_rows_nonempty s.η (fixedBadMask*idealGenerator R) 1 s.t
     _ _ C D hC hD E rows W K n hblock
-  have hrec := (active_row_reciprocals C D _ hE K (volume s) Z Csec Tsec ξ
+  have hrec := (active_row_reciprocals C D _ (Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _)) K (volume s) Z Csec Tsec ξ
     (Real.logb Z ((oppositeIdeal C D side).absNorm : ℝ))
     (Real.logb Z ((columnIdeal C D side).absNorm : ℝ)) σ reserve
     hK (volume_pos s) hz hCsec hσ hreserve hsec rows n hn hne p k).2

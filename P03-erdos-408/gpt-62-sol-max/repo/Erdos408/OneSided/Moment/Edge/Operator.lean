@@ -50,8 +50,7 @@ theorem norm_sum_star_mul_le (S : Finset α) (a b : α → ℂ) :
       Real.sqrt (∑ x ∈ S, ‖a x‖ ^ 2) * Real.sqrt (∑ x ∈ S, ‖b x‖ ^ 2) := by
   refine (norm_sum_le _ _).trans ?_
   calc ∑ x ∈ S, ‖star (a x) * b x‖ = ∑ x ∈ S, ‖a x‖ * ‖b x‖ := by
-        refine sum_congr rfl fun x _ => ?_
-        rw [norm_mul, norm_star]
+        simp
     _ ≤ _ := Real.sum_mul_le_sqrt_mul_sqrt _ _ _
 
 /-- A square bound gives a bound of the square roots. -/
@@ -96,13 +95,12 @@ theorem kerLe_of_bilinear {S : Finset α} {S' : Finset β} {k : α → β → �
   have h1 := h f g
   rw [hgg] at h1
   -- `A ≤ c √A √F` gives `√A ≤ c √F`
-  have hsA : Real.sqrt A * Real.sqrt A = A := Real.mul_self_sqrt hA0
+  have hsA  := Real.mul_self_sqrt hA0
   have h2 : Real.sqrt A ≤ c * Real.sqrt F := by
     rcases (Real.sqrt_nonneg A).eq_or_lt with h0 | hpos
     · rw [← h0]
       exact mul_nonneg hc (Real.sqrt_nonneg _)
     · have : Real.sqrt A * Real.sqrt A ≤ c * Real.sqrt F * Real.sqrt A := by
-        rw [hsA]
         linarith
       exact le_of_mul_le_mul_right this hpos
   calc A = Real.sqrt A ^ 2 := (Real.sq_sqrt hA0).symm
@@ -144,7 +142,7 @@ theorem KerLe.sum {S : Finset α} {S' : Finset β} (s : Finset ι) {k : ι → �
     KerLe S S' (fun x y => ∑ i ∈ s, k i x y) (∑ i ∈ s, c i) := by
   classical
   induction s using Finset.induction_on with
-  | empty => simpa using kerLe_zero S S'
+  | empty => exact kerLe_zero S S'
   | insert i s hi ih =>
     simp only [sum_insert hi]
     exact (hk i (mem_insert_self i s)).add (ih (fun j hj => hk j (mem_insert_of_mem hj))
@@ -385,13 +383,12 @@ theorem kerLe_of_wkerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
         (Real.sqrt (μ x) : ℂ) * ∑ y ∈ S', k x y * f y := by
       rw [mul_sum]
       refine sum_congr rfl fun y _ => ?_
-      rw [hf]
       ring
     rw [e, norm_mul, mul_pow, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _),
       Real.sq_sqrt (hμ x hx)]
   have e2 : ∀ y ∈ S', ν y * ‖f y‖ ^ 2 = ‖g y‖ ^ 2 := by
     intro y hy
-    have hs : (0 : ℝ) < Real.sqrt (ν y) := Real.sqrt_pos.2 (hν y hy)
+    have hs  := Real.sqrt_pos.2 (hν y hy)
     rw [hf]
     dsimp only
     rw [norm_div, Complex.norm_real, Real.norm_of_nonneg hs.le, div_pow,

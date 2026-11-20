@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralCancellation
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedUnramified
 
@@ -44,7 +45,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
     exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
   have hRh : ‖R‖≤1/2 := hR.trans (rpow_le_half Q _ hQ (by rw [hx,hz];linarith))
-  have hVh : ‖V‖≤1/2 := hV.le.trans (rpow_le_half Q _ hQ (by rw [hz];norm_num))
+  have hVh  := hV.le.trans (rpow_le_half Q _ hQ (by rw [hz];norm_num))
   have hDh : ‖D‖≤1/2 := hD.trans (rpow_le_half Q _ hQ (by rw [hx];linarith))
   have hqi : ‖(Q:ℂ)⁻¹‖≤1 := by
     rw [norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hQ0,←one_div]
@@ -67,7 +68,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     have hkv : ‖K‖*‖V‖≤Q^(1-x.re-w.re-6*z.re) := by
       calc
         _ ≤ Q^(1-x.re-w.re)*Q^(-6*z.re) := mul_le_mul hK hV.le (norm_nonneg _) (Real.rpow_nonneg hQ0.le _)
-        _ = _ := by rw [←Real.rpow_add hQ0];congr 1;ring
+        _ = _ := by rpow_ring hQ0
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
     exact weighted _ _ _ hkv (by rw [hx,hw,hz];linarith)
@@ -75,7 +76,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     have hbr : ‖B‖*‖R‖≤Q^(4-5*x.re-6*z.re) := by
       calc
         _ ≤ Q^x.re*Q^(4-6*x.re-6*z.re) := mul_le_mul hB hR (norm_nonneg _) (Real.rpow_nonneg hQ0.le _)
-        _ = _ := by rw [←Real.rpow_add hQ0];congr 1;ring
+        _ = _ := by rpow_ring hQ0
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
     exact weighted _ _ _ hbr (by rw [hx,hz];linarith)
@@ -85,7 +86,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
         _ ≤ Q^x.re*Q^(1-x.re-w.re)*Q^(-6*z.re) := by
           gcongr
           exact hV.le
-        _ = _ := by rw [←Real.rpow_add hQ0,←Real.rpow_add hQ0];congr 1;ring
+        _ = _ := by rpow_ring hQ0
     exact weighted _ _ _ hbkv (by rw [hw,hz];linarith)
   refine ⟨?_,?_,?_,?_⟩
   · change L^2*‖V‖≤_

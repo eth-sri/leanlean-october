@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
@@ -31,7 +31,7 @@ lemma source_count_frequency_eventually (n : ℕ) (dmax τ h : ℝ)
     (2*Real.pi+3*(n:ℝ)) (h-τ) (by linarith)
   filter_upwards [hC,eventually_ge_atTop (1:ℝ)] with Z hC hZ
   intro d hd i hi
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp  := zero_lt_one.trans_le hZ
   have hexp : d*(τ/(2*dmax))≤τ := by
     have h1 := mul_le_mul_of_nonneg_right hd (show 0≤τ/(2*dmax) by positivity)
     have h2 : dmax*(τ/(2*dmax))=τ/2 := by field_simp
@@ -51,7 +51,7 @@ lemma source_fiberConstant_bound (C K Z heightCost momentCost : ℝ)
     fiberConstant (C*Z^momentCost) (Z^heightCost) K ≤
       (384*max 1 K)*C*Z^(heightCost+momentCost) := by
   have hp := Real.one_le_rpow hZ hh
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp  := zero_lt_one.trans_le hZ
   unfold fiberConstant
   calc
     _ ≤ (192*(2*Z^heightCost)*(C*Z^momentCost))*max 1 K := by gcongr;linarith
@@ -75,7 +75,7 @@ lemma source_dyadic_cost_eventually (dmin dmax loss : ℝ)
 lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
     (N : ℕ) (dmin dmax logCost heightCost momentCost binWidth K₀ : ℝ)
     (hdmin : 0<dmin) (hdmax : 0<dmax) (hl : 0<logCost)
-    (hh : 0≤heightCost) (_hb : 0<binWidth) :
+    (hh : 0≤heightCost) :
     ∃K : ℝ,0<K ∧ ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → d≤dmax →
       ∀(C a ε tstar T allowance : ℝ) (i : ℕ),0≤C → a≤1 →
       ∀{M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Slot : Type*}
@@ -87,8 +87,6 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
   obtain ⟨L,hL,hbound⟩ := source_dyadic_cost_eventually dmin dmax logCost hdmin hdmax hl
   let A : ℝ := (alphabetBound binWidth : ℕ)^N
   let K : ℝ := (Fintype.card Label:ℝ)*L*(384*max 1 K₀)*A
-  have hA : 0≤A := by dsimp [A];positivity
-  have hK : 0≤K := by dsimp [K];positivity
   refine ⟨K+1,by positivity,?_⟩
   filter_upwards [hbound,eventually_ge_atTop (1:ℝ)] with Z hbound hZ
   intro d hd hd' C a ε tstar T allowance i hC ha M H Slot B hslots hbin
@@ -110,7 +108,6 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
       exact hbound d hd hd'
     _ = K*C*Z^(logCost+heightCost+momentCost) := by
       simp only [Real.rpow_add (zero_lt_one.trans_le hZ)]
-      dsimp [K]
       ring
     _ ≤ _ := by gcongr;linarith
 

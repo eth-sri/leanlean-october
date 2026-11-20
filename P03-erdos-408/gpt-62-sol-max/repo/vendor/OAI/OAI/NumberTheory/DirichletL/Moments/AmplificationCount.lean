@@ -74,10 +74,9 @@ theorem amplified_row_fiber_count (F : Finset (O × O)) (y : O) (hy : y ≠ 0)
       rw [← CompletedGauss.primaryGenerator_span x.2 (hprime x hx).ne_zero (hprimary x hx),
         ← CompletedGauss.primaryGenerator_span z.2 (hprime z hz).ne_zero (hprimary z hz)]
       exact congrArg CompletedGauss.primaryGenerator heq
-    have hh : x.1 = z.1 := by
-      apply mul_left_cancel₀ (pow_ne_zero 6 (hprime x hx).ne_zero)
-      rw [hrow x hx,hp,hrow z hz]
-    exact Prod.ext hh hp
+    refine Prod.ext ?_ hp
+    apply mul_left_cancel₀ (pow_ne_zero 6 (hprime x hx).ne_zero)
+    rw [hrow x hx,hp,hrow z hz]
   · intro x hx
     rw [Ideal.dvd_iff_le,Ideal.span_singleton_le_span_singleton,← hrow x hx]
     exact (dvd_pow_self x.2 (by decide : 6 ≠ 0)).trans (dvd_mul_right _ _)

@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.S2.FullNormTask
 public import Erdos821.S2.NormTailAssembly
 public import Erdos821.P3Rows.GhostRows
@@ -47,7 +48,7 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   obtain ⟨xtail, hxtail⟩ := hAbsorb Ccap Cpath (E + 1) hCcap hCpath hEplus
 
   have hL_atTop : Filter.Tendsto (fun x : ℝ => L x) Filter.atTop Filter.atTop := by
-    simpa [L] using Real.tendsto_log_atTop
+    exact Real.tendsto_log_atTop
   obtain ⟨xscale, hxscale⟩ :=
     Filter.eventually_atTop.1 (hL_atTop.eventually_ge_atTop (2 : ℝ))
 
@@ -58,17 +59,17 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   let x₀ : ℝ := max xg xlower
   refine ⟨x₀, ?_⟩
   intro x hx P hP A hA hk0 hk hId theta
-  have hxlower : xlower ≤ x := (le_max_right xg xlower).trans hx
-  have hx1 : x1 ≤ x := (le_max_right xb x1).trans hxlower
-  have hx2 : x2 ≤ x := (le_max_right xa x2).trans hx1
-  have hx3 : x3 ≤ x := (le_max_right xtr x3).trans hx2
-  have hxg : xg ≤ x := (le_max_left xg xlower).trans hx
-  have hxbx : xb ≤ x := (le_max_left xb x1).trans hxlower
-  have hxax : xa ≤ x := (le_max_left xa x2).trans hx1
-  have hxtrx : xtr ≤ x := (le_max_left xtr x3).trans hx2
-  have hxtailx : xtail ≤ x := (le_max_left xtail xscale).trans hx3
-  have hxscalex : xscale ≤ x := (le_max_right xtail xscale).trans hx3
-  have hLtwo : 2 ≤ L x := hxscale x hxscalex
+  have hxlower  := (le_max_right xg xlower).trans hx
+  have hx1  := (le_max_right xb x1).trans hxlower
+  have hx2  := (le_max_right xa x2).trans hx1
+  have hx3  := (le_max_right xtr x3).trans hx2
+  have hxg  := (le_max_left xg xlower).trans hx
+  have hxbx  := (le_max_left xb x1).trans hxlower
+  have hxax  := (le_max_left xa x2).trans hx1
+  have hxtrx  := (le_max_left xtr x3).trans hx2
+  have hxtailx  := (le_max_left xtail xscale).trans hx3
+  have hxscalex  := (le_max_right xtail xscale).trans hx3
+  have hLtwo  := hxscale x hxscalex
   have hLone : 1 ≤ L x := by linarith
   have hLpos : 0 < L x := by linarith
   have hNpos : 1 ≤ N x := by
@@ -89,22 +90,15 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   let U : ℝ := (L x) ^ (-(E + 1) * (N x : ℝ))
   let V : ℝ := (L x) ^ (Cpath * (N x + 1 : ℕ))
   have hCG0 : 0 ≤ CG := by
-    dsimp [CG]
-    exact pow_nonneg (Real.exp_pos _).le _
+    positivity
   have hCE0 : 0 ≤ CE := by
-    dsimp [CE]
-    exact Real.rpow_nonneg hLpos.le _
+    positivity
   have hCedge0 : 0 ≤ Cedge := le_max_right _ _
   have hCGbound : CG ≤ (L x) ^ Cv := by
-    simpa [CG] using hCGle
+    assumption
   have hCEbound : CE ≤ (L x) ^ Cedge := by
     dsimp [CE, Cedge]
     exact Real.rpow_le_rpow_of_exponent_le hLone (le_max_left Ca 0)
-  have hVpos : ∀ g, 0 < P.V g ∧ P.V g ≤ F.vMax := hV
-  have hBasepos : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      0 < baselinePrime F (N x) p.val := hBase
-  have hMuBound : ∀ g : P.BigGroup,
-      (∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p) ≤ 2 := hMu
 
   have hGhostRows :
       ∀ (i : Fin (N x + 1)) (s : P.MemoryState (J + F.ell)),
@@ -128,21 +122,15 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
           Erdos821.S2Core.absoluteMemoryEdgeKernel A (N x) r.rho theta i .all s t *
             P.memoryWeight r.v t) ≤ CE * P.memoryWeight r.v s := by
     intro i s
-    have hW : WeightedBounds (P.memoryMass F J (N x)) (P.memoryWeight r.v)
-        (fun s t => (Erdos821.S2Core.absoluteMemoryEdgeKernel A (N x) r.rho theta i
-          .all s t : ℂ)) ((L x) ^ Ca) := hxa x hxax P hP A hA theta i
+    have hW  := hxa x hxax P hP A hA theta i
     have hrow := hW.1 s
-    have hnorm (t : P.MemoryState (J + F.ell)) :
-        ‖(Erdos821.S2Core.absoluteMemoryEdgeKernel A (N x) r.rho theta i
-          .all s t : ℂ)‖ =
-          Erdos821.S2Core.absoluteMemoryEdgeKernel A (N x) r.rho theta i .all s t :=
+    have hnorm (t : P.MemoryState (J + F.ell))  :=
       Erdos821.P3Edge.norm_cast_absolute A (N x) r.rho theta i s t
     refine ⟨?_, ?_⟩
     · simpa only [hnorm] using hrow.1
     · simpa only [hnorm, CE] using hrow.2
 
-  have hboundary :
-      Erdos821.S2Core.initialMemoryBoundaryMass A (N x) ≤ 2 := hxb x hxbx P hP m A
+  have hboundary  := hxb x hxbx P hP m A
   let cap : ℕ := N x * ((J + F.ell) * Fintype.card P.BigGroup)
   have hcard : (Fintype.card P.BigGroup : ℝ) = (P.bigGroups.card : ℝ) := by
     congr 1
@@ -158,7 +146,6 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
       _ ≤ (N x : ℝ) * ((J + F.ell : ℕ) : ℝ) * (F.C₀ * T x) :=
         mul_le_mul_of_nonneg_left hbig (by positivity)
       _ = Ccap * (N x : ℝ) * T x := by
-        dsimp [Ccap]
         ring
 
   have hgain :
@@ -177,8 +164,7 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
       pow_le_pow_left₀ hCG0 hCGbound _
     have hCEpow : CE ^ (N x) ≤ ((L x) ^ Cedge) ^ (N x) :=
       pow_le_pow_left₀ hCE0 hCEbound _
-    have hproduct : CG ^ (N x + 1) * CE ^ (N x) ≤
-        ((L x) ^ Cv) ^ (N x + 1) * ((L x) ^ Cedge) ^ (N x) :=
+    have hproduct  :=
       mul_le_mul hCGpow hCEpow (pow_nonneg hCE0 _)
         (pow_nonneg (Real.rpow_nonneg hLpos.le _) _)
     have hpower : ((L x) ^ Cv) ^ (N x + 1) * ((L x) ^ Cedge) ^ (N x) =
@@ -194,7 +180,6 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
       change Cv * (N x + 1 : ℕ) + Cedge * (N x : ℝ) + 1 ≤
         (Cv + Cedge + 1) * (N x + 1 : ℕ)
       push_cast
-      have hn : 0 ≤ (N x : ℝ) := Nat.cast_nonneg _
       nlinarith [hCedge0]
     have htwo :
         2 * (L x) ^ (Cv * (N x + 1 : ℕ) + Cedge * (N x : ℝ)) ≤ V := by
@@ -203,16 +188,15 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
             (L x) ^ (Cv * (N x + 1 : ℕ) + Cedge * (N x : ℝ) + 1) := by
           let alpha : ℝ := Cv * (N x + 1 : ℕ) + Cedge * (N x : ℝ)
           have hnonneg : 0 ≤ (L x) ^ alpha := Real.rpow_nonneg hLpos.le _
-          have hmul : 2 * (L x) ^ alpha ≤ (L x) * (L x) ^ alpha :=
+          have hmul  :=
             mul_le_mul_of_nonneg_right hLtwo hnonneg
-          have hpowadd : (L x) ^ alpha * (L x) = (L x) ^ (alpha + 1) := by
-            simpa only [Real.rpow_one] using (Real.rpow_add hLpos alpha 1).symm
+          have hpowadd : (L x) ^ alpha * (L x) = (L x) ^ (alpha + 1) := by rpow_ring hLpos
           calc
-            _ = 2 * (L x) ^ alpha := by dsimp [alpha]
+            _ = 2 * (L x) ^ alpha := by rfl
             _ ≤ (L x) * (L x) ^ alpha := hmul
             _ = (L x) ^ alpha * (L x) := by ring
             _ = (L x) ^ (alpha + 1) := hpowadd
-            _ = _ := by dsimp [alpha]
+            _ = _ := by rfl
         _ ≤ V := by
           dsimp [V]
           exact Real.rpow_le_rpow_of_exponent_le hLone halpha
@@ -242,19 +226,18 @@ theorem FullMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
     rw [Real.rpow_neg hLpos.le]
     simpa [one_div] using
       (one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 2) hLpow)
-  have habsorb : 2 * U ≤ (L x) ^ (-E * (N x : ℝ)) := by
-    have hexp : -(E + 1) * (N x : ℝ) =
-        -E * (N x : ℝ) + (-(N x : ℝ)) := by ring
-    change 2 * (L x) ^ (-(E + 1) * (N x : ℝ)) ≤ _
-    rw [hexp, Real.rpow_add hLpos]
-    calc
-      2 * ((L x) ^ (-E * (N x : ℝ)) * (L x) ^ (-(N x : ℝ))) =
-          (L x) ^ (-E * (N x : ℝ)) *
-            (2 * (L x) ^ (-(N x : ℝ))) := by ring
-      _ ≤ (L x) ^ (-E * (N x : ℝ)) * 1 :=
-        mul_le_mul_of_nonneg_left (by nlinarith [hinv])
-          (Real.rpow_nonneg hLpos.le _)
-      _ = (L x) ^ (-E * (N x : ℝ)) := by ring
-  exact hfull.trans habsorb
+  refine hfull.trans ?_
+  have hexp : -(E + 1) * (N x : ℝ) =
+      -E * (N x : ℝ) + (-(N x : ℝ)) := by ring
+  change 2 * (L x) ^ (-(E + 1) * (N x : ℝ)) ≤ _
+  rw [hexp, Real.rpow_add hLpos]
+  calc
+    2 * ((L x) ^ (-E * (N x : ℝ)) * (L x) ^ (-(N x : ℝ))) =
+        (L x) ^ (-E * (N x : ℝ)) *
+          (2 * (L x) ^ (-(N x : ℝ))) := by ring
+    _ ≤ (L x) ^ (-E * (N x : ℝ)) * 1 :=
+      mul_le_mul_of_nonneg_left (by nlinarith [hinv])
+        (Real.rpow_nonneg hLpos.le _)
+    _ = (L x) ^ (-E * (N x : ℝ)) := by ring
 
 end Erdos821.S2Full

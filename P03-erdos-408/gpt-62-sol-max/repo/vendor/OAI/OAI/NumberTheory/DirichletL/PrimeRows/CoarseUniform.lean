@@ -18,9 +18,7 @@ lemma selectedFirstBound_polynomial {Q : ℝ} (hQ : 1≤Q) : selectedFirstBound 
   have hQ0 : 0≤Q := by linarith
   have hsmall : Q^(1/100:ℝ)≤Q := by
     simpa using Real.rpow_le_rpow_of_exponent_le hQ (by norm_num : (1/100:ℝ)≤1)
-  have hsmall0 : 0≤Q^(1/100:ℝ) := Real.rpow_nonneg hQ0 _
   have hQQ : Q≤Q^2 := by nlinarith
-  have hQ2 : 0≤Q^2 := sq_nonneg Q
   have hQ3 : Q^2≤Q^3 := by nlinarith [mul_nonneg (sub_nonneg.mpr hQ) (sq_nonneg Q)]
   unfold selectedFirstBound
   rw [Real.rpow_two]
@@ -33,21 +31,20 @@ theorem nonprincipal_first_uniform_growth :
       ‖HeckeOrigin.continued χ s‖≤C*(χ.modulus.absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨Cd,hCd,hd⟩ := HeckeDeletionBounds.factors_any_re_subpower_bound 1 (by norm_num)
   let U := HeckeLogarithmicInput.uniformConstant
-  have hU : 0≤U := HeckeLogarithmicInput.uniformConstant_nonneg
+  have hU  := HeckeLogarithmicInput.uniformConstant_nonneg
   refine ⟨1+U*Cd,by positivity,?_⟩
   intro χ hχ s hs
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue≠1 := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
-  have hN : (1:ℝ)≤χ.modulus.absNorm := HeckeLogarithmicInput.modulus_norm_ge_one χ
-  have hψN : (1:ℝ)≤ψ.modulus.absNorm := HeckeLogarithmicInput.modulus_norm_ge_one ψ
+  have hψ  := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
+  have hN  := HeckeLogarithmicInput.modulus_norm_ge_one χ
+  have hψN  := HeckeLogarithmicInput.modulus_norm_ge_one ψ
   have hQ' : (ψ.modulus.absNorm:ℝ)≤χ.modulus.absNorm := by exact_mod_cast hQ
   have hpow : (ψ.modulus.absNorm:ℝ)^(3/5:ℝ)≤χ.modulus.absNorm := by
     apply le_trans _ hQ'
     simpa using Real.rpow_le_rpow_of_exponent_le hψN (by norm_num : (3/5:ℝ)≤1)
   have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤s.re)
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
-  have hl : ‖LFunction ψ s‖≤U*(χ.modulus.absNorm:ℝ)*(3+|s.im|)^2 := by
-    exact hg.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hU) (sq_nonneg _))
+  have hl := hg.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hU) (sq_nonneg _))
   have hdel : ‖HeckeFiniteDeletion.factors χ.modulus ψ s‖≤Cd*(χ.modulus.absNorm:ℝ)^2 := by
     apply (hd χ.modulus ψ s).trans
     apply mul_le_mul_of_nonneg_left _ hCd.le
@@ -71,7 +68,6 @@ theorem calibrated_numerator_first_uniform_growth
         C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hmain⟩ := nonprincipal_first_uniform_growth
   let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
-  have hA : 0≤A := by dsimp [A];positivity
   refine ⟨C*(1+A^3),by positivity,?_⟩
   intro u hu s hs
   by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0

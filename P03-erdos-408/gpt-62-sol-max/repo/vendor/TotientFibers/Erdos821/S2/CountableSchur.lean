@@ -24,7 +24,7 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
   intro s t f g
   let U : ℝ := ∑ a ∈ s, mass a * ‖f a‖ ^ 2
   let V : ℝ := ∑ b ∈ t, mass b * ‖g b‖ ^ 2
-  let S : Finset (α × α) := s.product t
+  let S  := s.product t
   let rho (u : α × α) : ℝ := mass u.1 * ‖K u.1 u.2‖ * ‖f u.1‖ * ‖g u.2‖
   let F (u : α × α) : ℝ := mass u.1 * ‖K u.1 u.2‖ * w u.2 / w u.1 * ‖f u.1‖ ^ 2
   let G (u : α × α) : ℝ := mass u.1 * ‖K u.1 u.2‖ * w u.1 / w u.2 * ‖g u.2‖ ^ 2
@@ -39,26 +39,22 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
   have hsq (u : α × α) : rho u ^ 2 = F u * G u := by
     dsimp only [rho, F, G]
     field_simp [ne_of_gt (hw u.1), ne_of_gt (hw u.2)]
-  have hrowT (a : α) : (∑ b ∈ t, ‖K a b‖ * w b) ≤ R * w a := hrow a t
-  have hcolS (b : α) : (∑ a ∈ s, mass a * ‖K a b‖ * w a) ≤ C * mass b * w b := hcol b s
+  have hrowT (a : α)  := hrow a t
+  have hcolS (b : α)  := hcol b s
   have hFs : (∑ u ∈ S, F u) ≤ R * U := by
     calc
       (∑ u ∈ S, F u) = ∑ a ∈ s, ∑ b ∈ t, F (a, b) := Finset.sum_product s t F
       _ ≤ ∑ a ∈ s, R * (mass a * ‖f a‖ ^ 2) := by
         apply Finset.sum_le_sum
         intro a _
-        have ha : 0 ≤ mass a * ‖f a‖ ^ 2 / w a :=
-          div_nonneg (mul_nonneg (hm a) (sq_nonneg _)) (hw a).le
         calc
           _ = (mass a * ‖f a‖ ^ 2 / w a) * (∑ b ∈ t, ‖K a b‖ * w b) := by
             rw [Finset.mul_sum]
             apply Finset.sum_congr rfl
             intro b _
-            dsimp only [F]
-            simp only [div_eq_mul_inv]
             ring
           _ ≤ (mass a * ‖f a‖ ^ 2 / w a) * (R * w a) :=
-            mul_le_mul_of_nonneg_left (hrowT a) ha
+            mul_le_mul_of_nonneg_left (hrowT a) (div_nonneg (mul_nonneg (hm a) (sq_nonneg _)) (hw a).le)
           _ = R * (mass a * ‖f a‖ ^ 2) := by
             field_simp [ne_of_gt (hw a)]
       _ = R * U := (Finset.mul_sum s (fun a => mass a * ‖f a‖ ^ 2) R).symm
@@ -69,28 +65,24 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
       _ ≤ ∑ b ∈ t, C * (mass b * ‖g b‖ ^ 2) := by
         apply Finset.sum_le_sum
         intro b _
-        have hb : 0 ≤ ‖g b‖ ^ 2 / w b := div_nonneg (sq_nonneg _) (hw b).le
         calc
           _ = (‖g b‖ ^ 2 / w b) * (∑ a ∈ s, mass a * ‖K a b‖ * w a) := by
             rw [Finset.mul_sum]
             apply Finset.sum_congr rfl
             intro a _
-            dsimp only [G]
-            simp only [div_eq_mul_inv]
             ring
           _ ≤ (‖g b‖ ^ 2 / w b) * (C * mass b * w b) :=
-            mul_le_mul_of_nonneg_left (hcolS b) hb
+            mul_le_mul_of_nonneg_left (hcolS b) (div_nonneg (sq_nonneg _) (hw b).le)
           _ = C * (mass b * ‖g b‖ ^ 2) := by
             field_simp [ne_of_gt (hw b)]
       _ = C * V := (Finset.mul_sum t (fun b => mass b * ‖g b‖ ^ 2) C).symm
-  have hcs : (∑ u ∈ S, rho u) ^ 2 ≤ (∑ u ∈ S, F u) * (∑ u ∈ S, G u) :=
+  have hcs  :=
     Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul S
       (fun u _ => hF u) (fun u _ => hG u) (fun u _ => (hsq u).le)
   have hnormEntry (a b : α) :
       ‖(mass a : ℂ) * star (f a) * K a b * g b‖ = rho (a, b) := by
     simp only [norm_mul, norm_star, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (hm a)]
-    dsimp only [rho]
     ring
   have hnorm :
       ‖∑ a ∈ s, ∑ b ∈ t, (mass a : ℂ) * star (f a) * K a b * g b‖ ≤
@@ -110,15 +102,13 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
     dsimp only [B]
     simp only [mul_pow, Real.sq_sqrt (mul_nonneg hR hC), Real.sq_sqrt hU, Real.sq_sqrt hV]
     ring
-  have hfinal :
-      ‖∑ a ∈ s, ∑ b ∈ t, (mass a : ℂ) * star (f a) * K a b * g b‖ ^ 2 ≤ B ^ 2 := by
-    calc
-      _ ≤ (∑ u ∈ S, rho u) ^ 2 := (sq_le_sq₀ (norm_nonneg _) hpos).mpr hnorm
-      _ ≤ (∑ u ∈ S, F u) * (∑ u ∈ S, G u) := hcs
-      _ ≤ (R * U) * (C * V) := mul_le_mul hFs hGs
-        (Finset.sum_nonneg (fun u _ => hG u)) (mul_nonneg hR hU)
-      _ = B ^ 2 := hBsq.symm
-  exact (sq_le_sq₀ (norm_nonneg _) hB).mp hfinal
+  refine (sq_le_sq₀ (norm_nonneg _) hB).mp ?_
+  calc
+    _ ≤ (∑ u ∈ S, rho u) ^ 2 := (sq_le_sq₀ (norm_nonneg _) hpos).mpr hnorm
+    _ ≤ (∑ u ∈ S, F u) * (∑ u ∈ S, G u) := hcs
+    _ ≤ (R * U) * (C * V) := mul_le_mul hFs hGs
+      (Finset.sum_nonneg (fun u _ => hG u)) (mul_nonneg hR hU)
+    _ = B ^ 2 := hBsq.symm
 
 /-- A countable Schur certificate also controls arbitrary local restrictions
 and phases that are dominated by the original absolute matrix entries. -/

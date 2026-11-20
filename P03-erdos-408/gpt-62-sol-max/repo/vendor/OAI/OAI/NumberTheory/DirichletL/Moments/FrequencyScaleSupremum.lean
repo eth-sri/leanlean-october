@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ScaleSupremum
 
 @[expose] public section
@@ -8,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical BigOperators ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.CenteredMomentFrequencyScaleSupremum
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorDyadicBridge FourierBridge
@@ -83,7 +84,7 @@ theorem frequencyScaleSum_eq_polynomial (χ : Character) (inv : Bool) (W : ℝ�
   · subst J
     simp only [coefficient_zero,zero_mul,mul_zero]
   have hpos : 0<(J.absNorm : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr h0)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (h0)
   rw [ratio_frequency_phase _ l freq hpos,Real.exp_neg,div_eq_mul_inv]
   ring
 

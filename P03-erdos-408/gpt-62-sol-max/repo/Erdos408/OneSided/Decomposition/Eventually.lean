@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Lift
 
@@ -81,7 +82,7 @@ theorem eventually_rpow_mul_exp_le {CX : ℝ} (hCX : 1 ≤ CX) (K : ℕ) :
     linarith
   have hC0 : 0 < CX := by linarith
   have hxC0 : 0 < x / CX := div_pos (by linarith) hC0
-  have hX0 : 0 < X := hxC0.trans_le hX
+  have hX0  := hxC0.trans_le hX
   have h5 := Real.one_le_rpow hL1 (by norm_num : (0 : ℝ) ≤ 1 / 5)
   -- `L ≥ 16K L^{1/5}`, from `L = L^{1/5} L^{4/5}`
   have hLsplit : Real.log x = Real.log x ^ (1 / 5 : ℝ) * Real.log x ^ (4 / 5 : ℝ) := by
@@ -138,7 +139,6 @@ theorem eventually_exp_lt_two_pow (K : ℕ) :
     rw [← Real.rpow_add (by linarith)]
     norm_num
   have h21' := Real.one_le_rpow hL (by norm_num : (0 : ℝ) ≤ 21 / 100)
-  have h15 : 0 ≤ L ^ (1 / 5 : ℝ) := by positivity
   have hle : 2 * K * padCount x * L ^ (1 / 5 : ℝ) ≤ L / 2 := by
     calc 2 * K * padCount x * L ^ (1 / 5 : ℝ) ≤ 2 * K * L ^ (1 / 100 : ℝ) * L ^ (1 / 5 : ℝ) := by
           gcongr
@@ -156,8 +156,6 @@ theorem eventually_exp_lt_two_pow (K : ℕ) :
   calc Real.exp (2 * K * padCount x * L ^ (1 / 5 : ℝ))
       < Real.exp ((⌊L⌋₊ + 1 : ℕ) * Real.log 2) := by
         refine Real.exp_lt_exp.2 ?_
-        have : L * Real.log 2 < (⌊L⌋₊ + 1 : ℕ) * Real.log 2 :=
-          mul_lt_mul_of_pos_right hfl (by linarith)
         nlinarith
     _ = 2 ^ (⌊L⌋₊ + 1) := by
         rw [Real.exp_nat_mul, Real.exp_log (by norm_num)]
@@ -178,10 +176,7 @@ theorem eventually_mul_rpow_mul_exp_le {a : ℝ} (ha : 0 < a) (c E D' : ℝ) :
   have hL0 : 0 < L := by linarith
   have key : c * L ^ E ≤ L ^ (-D') * Real.exp (L ^ a) := by
     calc c * L ^ E ≤ L * L ^ E := mul_le_mul_of_nonneg_right hLc (by positivity)
-      _ = L ^ (-D') * L ^ (E + D' + 1) := by
-          rw [← Real.rpow_add hL0, show -D' + (E + D' + 1) = E + 1 by ring,
-            Real.rpow_add hL0, Real.rpow_one]
-          ring
+      _ = L ^ (-D') * L ^ (E + D' + 1) := by rpow_ring hL0
       _ ≤ L ^ (-D') * Real.exp (L ^ a) := by
           gcongr
   rw [Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ (Real.exp_pos _)]

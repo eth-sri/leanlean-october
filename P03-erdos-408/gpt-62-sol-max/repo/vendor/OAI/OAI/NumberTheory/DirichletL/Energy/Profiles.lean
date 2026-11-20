@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ScaleSupremum
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyProfiles
 open CenteredMomentFiniteProfileExceptional CenteredMomentAllocatedNaturalSource
 open CenteredMomentScaleSupremum

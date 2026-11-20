@@ -9,7 +9,7 @@ Minkowski inequality in `u` is needed. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff FourierTransform ComplexConjugate
+open scoped ComplexConjugate
 open MeasureTheory
 
 namespace Erdos821.P5Energy
@@ -65,15 +65,15 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
   obtain ⟨B, hB, hamp⟩ := ampE_le_omega N
   refine ⟨Cm * Real.pi, by positivity, ?_⟩
   intro h hh P S hP hS
-  have hS0 : 0 ≤ S := (norm_nonneg _).trans (hS 0)
+  have hS0  := (norm_nonneg _).trans (hS 0)
   set w := logCompactWeight with hw_def
   set E : ℝ → ℝ → ℂ := EE h P with hE_def
   set I : ℝ → ℂ := fun u => ∫ t, E u t with hI_def
   set F : ℝ → ℝ := FF h N P with hF_def
   have homega := integrable_omega hh.ne' hN
   -- continuity facts
-  have hKc : Continuous localKernelFourier := localKernelFourier_contDiff.continuous
-  have hwc : Continuous w := logCompactWeight_contDiff.continuous
+  have hKc  := localKernelFourier_contDiff.continuous
+  have hwc  := logCompactWeight_contDiff.continuous
   have hEc : Continuous (fun q : ℝ × ℝ => E q.1 q.2) := by
     simp only [E, EE, ampE, amp, phase]
     fun_prop
@@ -83,7 +83,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
   -- pointwise bound on E on the support of the weight
   have hEb : ∀ u t, w u ≠ 0 → ‖E u t‖ ≤ B * omega h N t * S := by
     intro u t hu
-    have hu2 : u ≤ 2 := (logCompactWeight_support_subset (Function.mem_support.mpr hu)).2
+    have hu2  := (logCompactWeight_support_subset (Function.mem_support.mpr hu)).2
     simp only [E, EE, norm_mul]
     exact mul_le_mul (hamp h t u hu2) (hS t) (norm_nonneg _)
       (mul_nonneg hB.le (omega_nonneg _ _ _))
@@ -111,11 +111,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     refine hmaj.mono' ?_ (Filter.Eventually.of_forall fun q => ?_)
     · apply Continuous.aestronglyMeasurable
       simp only [f3]
-      have h1 : Continuous (fun q : ℝ × (ℝ × ℝ) => E q.1 q.2.1) :=
-        hEc.comp (f := fun q : ℝ × (ℝ × ℝ) => (q.1, q.2.1)) (by fun_prop)
-      have h2 : Continuous (fun q : ℝ × (ℝ × ℝ) => E q.1 q.2.2) :=
-        hEc.comp (f := fun q : ℝ × (ℝ × ℝ) => (q.1, q.2.2)) (by fun_prop)
-      exact (hwc.comp continuous_fst).mul (h1.mul (Complex.continuous_conj.comp h2))
+      fun_prop
     · simp only [Function.uncurry, f3, norm_mul, Complex.norm_conj]
       by_cases hw0 : w q.1 = 0
       · rw [hw0, norm_zero, zero_mul, zero_mul]
@@ -143,8 +139,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     simp_rw [hkey, hsq]
     calc (∫ u, w u * ∫ p : ℝ × ℝ, E u p.1 * conj (E u p.2)) = ∫ u, ∫ p, f3 u p := by
           congr 1; funext u; rw [← integral_const_mul]
-      _ = ∫ p, ∫ u, f3 u p := by
-          exact integral_integral_swap hint3
+      _ = ∫ p, ∫ u, f3 u p := integral_integral_swap hint3
       _ = _ := by congr 1; funext p; exact hinner p
   -- Step 5: Schur majorant
   have hFint : Integrable F := by
@@ -153,7 +148,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     simp only [F, FF]
     have ho := omega_nonneg h N t
     have ho1 := omega_le_one h N t
-    have hPt : ‖P t‖ ^ 2 ≤ S ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hS t) 2
+    have hPt  := pow_le_pow_left₀ (norm_nonneg _) (hS t) 2
     rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     calc omega h N t ^ 2 * ‖P t‖ ^ 2 ≤ omega h N t * S ^ 2 := by
           apply mul_le_mul _ hPt (by positivity) ho
@@ -178,7 +173,6 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
   have hG2eq : G2 = G1 ∘ Prod.swap := by
     funext p
     simp only [G1, G2, Function.comp, Prod.fst_swap, Prod.snd_swap, kern]
-    congr 2
     ring
   have hG2int : Integrable G2 (volume.prod volume) := by
     rw [hG2eq]; exact hG1int.swap
@@ -196,8 +190,6 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
     rw [norm_mul, norm_mul, Complex.norm_conj]
     have hMp := hM h p.1 p.2
     have hk := kern_nonneg (p.1 - p.2)
-    have ha := mul_nonneg (norm_nonneg (P p.1)) (omega_nonneg h N p.1)
-    have hb := mul_nonneg (norm_nonneg (P p.2)) (omega_nonneg h N p.2)
     have hamgm : (‖P p.1‖ * omega h N p.1) * (‖P p.2‖ * omega h N p.2) ≤
         ((‖P p.1‖ * omega h N p.1) ^ 2 + (‖P p.2‖ * omega h N p.2) ^ 2) / 2 := by
       nlinarith [sq_nonneg (‖P p.1‖ * omega h N p.1 - ‖P p.2‖ * omega h N p.2)]
@@ -230,7 +222,7 @@ theorem weighted_energy_bound (N : ℕ) (hN : 2 ≤ N) : ∃ C : ℝ, 0 < C ∧
         ((continuous_omega h N).mul (hP.norm.pow 2)).aestronglyMeasurable
         (Filter.Eventually.of_forall fun t => ?_)
       have ho := omega_nonneg h N t
-      have hPt : ‖P t‖ ^ 2 ≤ S ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hS t) 2
+      have hPt  := pow_le_pow_left₀ (norm_nonneg _) (hS t) 2
       rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
       nlinarith
     · intro t

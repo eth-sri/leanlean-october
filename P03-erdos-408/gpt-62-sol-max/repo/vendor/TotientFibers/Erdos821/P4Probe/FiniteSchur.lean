@@ -67,10 +67,6 @@ lemma finite_schur {β : Type*} [Fintype β] (mass : β → ℝ) (K : β → β 
         simp only [norm_mul, norm_star, Complex.norm_real, Real.norm_eq_abs,
           abs_of_nonneg (hm a), w]
         ring
-  have hNF : 0 ≤ ∑ a, mass a * ‖f a‖ ^ 2 :=
-    Finset.sum_nonneg (fun a _ => mul_nonneg (hm a) (sq_nonneg _))
-  have hNG : 0 ≤ ∑ b, mass b * ‖g b‖ ^ 2 :=
-    Finset.sum_nonneg (fun b _ => mul_nonneg (hm b) (sq_nonneg _))
   calc
     _ ≤ Real.sqrt (∑ z : β × β, w z * ‖f z.1‖ ^ 2) *
         Real.sqrt (∑ z : β × β, w z * ‖g z.2‖ ^ 2) := hnorm.trans hcs

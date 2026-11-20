@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialCost
@@ -14,16 +15,14 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
 open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentCommonAllocationSum
+open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CanonicalQuadraticSieve
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
     (c f:Ideal O→ℂ) (W:𝓢(ℝ,ℂ)) (K:ℝ):
@@ -71,8 +70,8 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
   obtain ⟨C₂,hC₂,hcount⟩:=card_squared_subpower (ι:=ι) B (δ/2) hB (by linarith)
   refine ⟨C₁*C₂,by positivity,?_⟩
   intro s hlo hhi r C hC R seed L hseed hL E Z hE hZ hNC hNL hc
-  have hnC:0<(Ideal.absNorm C:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)
-  have hnL:0<(Ideal.absNorm L:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hL.ne_zero)
+  have hnC:0<(Ideal.absNorm C:ℝ):=by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hC.1)
+  have hnL:0<(Ideal.absNorm L:ℝ):=by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hL.ne_zero)
   have hz:0<Z:=zero_lt_one.trans hZ
   have hprof:=s.toData.profile_nonneg
   have heach (b:actualAllocations s.pools C) (hlive:frozenCoefficient b.val C R s.ν s.W s.P≠0):

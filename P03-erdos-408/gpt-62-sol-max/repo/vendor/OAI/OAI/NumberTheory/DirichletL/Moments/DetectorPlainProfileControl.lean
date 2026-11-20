@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorEnergyInitialState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentDetectorPlainProfileControl
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary

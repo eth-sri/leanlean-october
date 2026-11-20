@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.AnnularLifting
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PoissonConstants
 
@@ -10,79 +11,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic IdealCoprimeSieveOperator
 
 end CanonicalQuadraticSieve
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+open scoped MatrixGroups Matrix Pointwise
 
 namespace CubicEisenstein
 
@@ -158,7 +96,7 @@ lemma fundamentalSet_measure_le_cover (H : Subgroup (SL(2,ActualEisensteinCubic.
   exact ⟨M • w,hM,inv_smul_smul M w⟩
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise ENNReal
+open scoped Matrix ENNReal
 
 def spatialHeightSplit : EuclideanSpatial ≃ᵐ ℝ × (Fin 2 → ℝ) :=
   (MeasurableEquiv.toLp 2 (Fin 3 → ℝ)).symm.trans
@@ -246,7 +184,7 @@ theorem hyperbolicFundamentalSet_volume_lt_top (H : Subgroup (SL(2,O)))
     hyperbolicVolume (hyperbolicFundamentalSet H)<⊤ := by
   obtain ⟨S,hS⟩ := finiteIndex_ford_cover H
   let a : ℝ := Real.sqrt (2/3)/2
-  have ha : 0<a := by dsimp [a]; positivity
+  have ha : 0<a := by positivity
   let B : Set HyperbolicSpace := ⋃r∈S,integralComplexMatrix r⁻¹ • hyperbolicCuspBox a
   have hcover : ∀w,∃M:H,M • w∈B := by
     intro w
@@ -321,7 +259,7 @@ theorem improved_threshold_shape (α N M : ℝ) (hα : 1≤α) (hN : 1≤N)
   linarith [improved_threshold_main α N M hα hN hM,
     improved_threshold_ge_column α N M hα hN hM]
 
-theorem improved_threshold_reciprocal (α N M : ℝ) (_hα : 0<α) (hN : 0<N) (hM0 : 0<M)
+theorem improved_threshold_reciprocal (α N M : ℝ) (hN : 0<N) (hM0 : 0<M)
     (hM : N^(2-1/α)≤M) : N^2/M≤N^(1/α) := by
   apply (div_le_iff₀ hM0).mpr
   have he : N^2=N^(2-1/α)*N^(1/α) := by
@@ -336,7 +274,7 @@ theorem improved_threshold_low (α C η N M : ℝ) (hα : 0<α) (hC : 0<C)
   have hk : selectedPoissonK C M N η≤C*(M*N)^η*N^(1/α) := by
     unfold selectedPoissonK selectedPoissonT
     rw [mul_div_assoc]
-    exact mul_le_mul_of_nonneg_left (improved_threshold_reciprocal α N M hα hN hM0 hM) (by positivity)
+    exact mul_le_mul_of_nonneg_left (improved_threshold_reciprocal α N M hN hM0 hM) (by positivity)
   have hk0 : 0≤selectedPoissonK C M N η := by
     unfold selectedPoissonK selectedPoissonT
     positivity
@@ -363,7 +301,7 @@ theorem sieveNorm_large_rows (M N : ℝ) (hM : 1≤M) (hN : 1≤N) (hlarge : N^2
   have hC := QuadraticInitialBound.initialSieveConstant_pos
   nlinarith
 
-theorem hasSieveExponent_of_threshold_band (β : ℝ) (_hβ1 : 1≤β) (hβ2 : β≤2)
+theorem hasSieveExponent_of_threshold_band (β : ℝ) (hβ2 : β≤2)
     (hband : ∀ρ : ℝ, 0<ρ → ∃C : ℝ, 0<C ∧ ∀M N : ℝ,
       1≤M → 1≤N → N^β≤M → M≤N^2 → sieveNorm M N≤C*(M*N)^ρ*M) :
     HasSieveExponent β := by
@@ -371,13 +309,12 @@ theorem hasSieveExponent_of_threshold_band (β : ℝ) (_hβ1 : 1≤β) (hβ2 : �
   have hρ : 0<ε/3 := by positivity
   obtain ⟨C,hC,hbound⟩ := hband (ε/3) hρ
   let I := QuadraticInitialBound.initialSieveConstant
-  have hI : 0<I := QuadraticInitialBound.initialSieveConstant_pos
+  have hI  := QuadraticInitialBound.initialSieveConstant_pos
   refine ⟨C+5*I,by positivity,?_⟩
   intro M N hM hN
-  have hM0 : 0<M := by linarith
   have hN0 : 0<N := by linarith
   have hMN : 1≤M*N := by nlinarith
-  have hpow : 1≤(M*N)^ε := Real.one_le_rpow hMN hε.le
+  have hpow  := Real.one_le_rpow hMN hε.le
   have hNb : 0≤N^β := Real.rpow_nonneg hN0.le _
   by_cases hlarge : N^2≤M
   · calc
@@ -390,10 +327,9 @@ theorem hasSieveExponent_of_threshold_band (β : ℝ) (_hβ1 : 1≤β) (hβ2 : �
     have hR : 1≤R := hM.trans (le_max_left _ _)
     have hRM : M≤R := le_max_left _ _
     have hRN : N^β≤R := le_max_right _ _
-    have hRsq : R≤N^2 := max_le (le_of_not_ge hlarge) hNβsq
+    have hRsq  := max_le (le_of_not_ge hlarge) hNβsq
     have hb := hbound R N hR hN hRN hRsq
     have hmono := sieveNorm_mono hRM (le_refl N)
-    have hN2 : 1≤N^2 := one_le_pow₀ hN
     have hM3 : M≤M^3 := by
       simpa only [pow_one] using pow_le_pow_right₀ hM (show (1:ℕ)≤3 by decide)
     have hRN2 : R≤M*N^2 := by
@@ -423,18 +359,13 @@ theorem hasSieveExponent_of_shell_threshold (β : ℝ) (hβ1 : 1≤β) (hβ2 : �
       1≤M → 1≤X → X^β≤M → ∀a : idealRange X → ℂ, CoefficientOnShell X X a →
       ballQuadraticEnergy M X a≤C*(M*X)^ρ*M*∑J,‖a J‖^2) :
     HasSieveExponent β := by
-  apply hasSieveExponent_of_threshold_band β hβ1 hβ2
+  apply hasSieveExponent_of_threshold_band β hβ2
   intro ε hε
   have hρ : 0<ε/2 := by positivity
   obtain ⟨C,hC,hbound⟩ := hshell (ε/2) hρ
   let lengthScale := 2+1/((ε/2)*Real.log 2)
-  have hL : 0<lengthScale := by
-    have hlog : 0<Real.log 2 := Real.log_pos (by norm_num)
-    dsimp only [lengthScale]
-    positivity
   refine ⟨4*C*8^(ε/2)*lengthScale,by positivity,?_⟩
   intro M N hM hN hMN hMsq
-  have hM0 : 0<M := by linarith
   have hN0 : 0<N := by linarith
   have hprod : 0<M*N := by positivity
   apply FiniteSieveOperator.squared_norm_le_of_energy (matrix M N) _ (by positivity)
@@ -455,12 +386,11 @@ theorem hasSieveExponent_of_shell_threshold (β : ℝ) (hβ1 : 1≤β) (hβ2 : �
         _ ≤ (2*N)^β := Real.rpow_le_rpow (by positivity) hx.2 hβ0
         _ = 2^β*N^β := Real.mul_rpow (by norm_num) hN0.le
         _ ≤ 4*N^β := by
-          have ht : (2:ℝ)^β≤4 := by
-            have ht := Real.rpow_le_rpow_of_exponent_le
-              (by norm_num : (1:ℝ)≤2) hβ2
-            norm_num at ht
-            exact ht
-          exact mul_le_mul_of_nonneg_right ht (Real.rpow_nonneg hN0.le _)
+          refine mul_le_mul_of_nonneg_right ?_ (Real.rpow_nonneg hN0.le _)
+          have ht := Real.rpow_le_rpow_of_exponent_le
+            (by norm_num : (1:ℝ)≤2) hβ2
+          norm_num at ht
+          exact ht
         _ ≤ 4*M := by linarith
     have hshell' : CoefficientOnShell X X (a' j) :=
       coefficientAtScale_shell N X _ (dyadicColumnCoefficient_shell N _ _ j a)
@@ -520,7 +450,7 @@ theorem fixedBadNorm_one_le : 1≤fixedBadNorm := by
     rw [←he]
     exact (commonMaskIdeal_squarefree 1).ne_zero
   unfold fixedBadNorm
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hn (Ideal.absNorm_eq_zero_iff.mp h))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hn)
 
 theorem fixedCutoffBase_bounds : 4≤fixedCutoffBase ∧ fixedBadNorm≤fixedCutoffBase :=
   ⟨le_max_left _ _,le_max_right _ _⟩
@@ -540,9 +470,9 @@ theorem HasSieveExponent.annular_selected_bound {α : ℝ} (hexp : HasSieveExpon
   obtain ⟨CF,hCF,hscalar⟩ := poissonComparisonMajorant_selected_power hexp hα hα2
     η hη hη1 l A hl hA sD sS sT CD CS CT CP hCD.le hCS.le hCT.le hCP.le
     fixedBadNorm C1 fixedBadNorm_one_le hC1 QuadraticInitialBound.annularSieveCutoff
-  have hdiv : 0<divisorConstant η hη := divisorConstant_pos η hη
+  have hdiv  := divisorConstant_pos η hη
   let SD := supportConstant η hη*divisorConstant η hη
-  have hSD : 0<SD := mul_pos (supportConstant_pos η hη) (divisorConstant_pos η hη)
+  have hSD  := mul_pos (supportConstant_pos η hη) (divisorConstant_pos η hη)
   let F := 16*(3*CF*divisorConstant η hη + 4*CH*2^η*SD)
   refine ⟨F,by dsimp [F]; positivity,?_⟩
   intro c M N hc hc1 hM hN hthreshold hK a ha
@@ -551,8 +481,8 @@ theorem HasSieveExponent.annular_selected_bound {α : ℝ} (hexp : HasSieveExpon
   have hN1 : 1≤N := by linarith
   have hP : 1≤M*N := by nlinarith
   have hP0 : 0<M*N := by positivity
-  have hc4 : 4≤c := fixedCutoffBase_bounds.1.trans hc
-  have hcB : fixedBadNorm≤c := fixedCutoffBase_bounds.2.trans hc
+  have hc4  := fixedCutoffBase_bounds.1.trans hc
+  have hcB  := fixedCutoffBase_bounds.2.trans hc
   have hT : 4≤selectedPoissonT c M N η := by
     have hp := Real.one_le_rpow hP hη.le
     unfold selectedPoissonT
@@ -573,14 +503,14 @@ theorem HasSieveExponent.annular_selected_bound {α : ℝ} (hexp : HasSieveExpon
     have hadm := gcdPool_admissible (fun J : idealRange N => J.val)
       (fun J => (mem_idealRange.mp J.property).1) D hD
     have hd1 : 1≤(Ideal.absNorm D:ℝ) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hadm.1 (Ideal.absNorm_eq_zero_iff.mp hz))
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hadm.1)
     have hgn : (Ideal.absNorm (commonMaskIdeal D):ℝ)=fixedBadNorm*(Ideal.absNorm D:ℝ) := by
       rw [commonMaskIdeal_norm D hadm, Nat.cast_mul]
       rfl
     have hb := hscalar c M N (Ideal.absNorm D:ℝ) (commonMaskIdeal D) hc4 hcB hc1 hM hN1 hd1
       (by linarith [hH.2]) (commonMaskIdeal_squarefree D).ne_zero hgn hK
     apply hb.trans
-    have hs : poissonShape M N α≤3*M := improved_threshold_shape α N M hα1 hN1 hthreshold
+    have hs  := improved_threshold_shape α N M hα1 hN1 hthreshold
     calc
       _ ≤ CF*(M*N)^(259*η)*(3*M) := mul_le_mul_of_nonneg_left hs (by positivity)
       _ = _ := by ring
@@ -622,7 +552,7 @@ theorem HasSieveExponent.annular_selected_bound {α : ℝ} (hexp : HasSieveExpon
       exact mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left (add_le_add hfirst hsecond) (by norm_num))
         (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
-    _ = _ := by dsimp [F]; ring
+    _ = _ := by ring
 
 end CanonicalQuadraticSieve
 

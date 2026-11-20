@@ -10,10 +10,9 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalNonunit
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentCanonicalFirst
-open CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentProductCRT
-open CenteredMomentSupport
+open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalFrequency CenteredMomentCanonicalFirst CenteredMomentSecondLedger
+open CenteredMomentPartition CenteredMomentProductCRT CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def equalActiveSet (C D : Ideal O) : Finset (CommonIndex C D) :=

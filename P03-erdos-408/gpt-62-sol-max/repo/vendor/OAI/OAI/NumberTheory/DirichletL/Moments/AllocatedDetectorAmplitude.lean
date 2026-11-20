@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.AllocatedDetectorCapped
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedCenteredCapped
+public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
+public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalCappedAmplitude
 public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
 
 @[expose] public section
@@ -8,13 +11,13 @@ public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorAmplitude
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
-open CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary
-open ConcretePrimeRowBridge CenteredMomentDivisorRows
+open CenteredMomentDetectorDictionary ConcretePrimeRowBridge
+open CenteredMomentDivisorRows
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -51,7 +54,7 @@ lemma slot_product_bound (s:Data ι) (D:Ideal O)
 omit [DecidableEq ι] in
 lemma coefficient_support (s:Data ι) (i:ι) (I:Ideal O) (hI:s.coefficient i I≠0):
     (Ideal.absNorm I:ℝ)≤max 0 (s.hi i)*s.P i:=by
-  have hw:s.W i ((Ideal.absNorm I:ℝ)/s.P i)≠0:=right_ne_zero_of_mul hI
+  have hw:=right_ne_zero_of_mul hI
   exact (div_le_iff₀ (s.P_pos i)).mp ((s.support i hw).2.trans (le_max_right _ _))
 
 end SevenEighths.CenteredMomentAllocatedDetectorAmplitude

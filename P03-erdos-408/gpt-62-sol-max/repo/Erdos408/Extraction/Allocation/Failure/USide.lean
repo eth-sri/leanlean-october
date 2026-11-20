@@ -36,13 +36,9 @@ lemma sum_lowSubsets_eq_add (g : Finset ℕ) (f : Finset ℕ → ℝ) :
     by_cases h : K ⊆ g
     · simp only [h, true_and]
       omega
-    · simp [h]
+    simp_all
   have hd1 : Disjoint (g.powersetCard 0) (g.powersetCard 1) := by
-    rw [disjoint_left]
-    intro K h1 h2
-    have := (mem_powersetCard.1 h1).2
-    have := (mem_powersetCard.1 h2).2
-    omega
+    simp
   have hd2 : Disjoint (g.powersetCard 0 ∪ g.powersetCard 1) (g.powersetCard 2) := by
     rw [disjoint_left]
     intro K h1 h2
@@ -72,7 +68,7 @@ lemma sum_lowSubsets_lowCoeff_mul_prod (g : Finset ℕ) (α : ℝ) (π : ℕ →
   have h2 : ∀ K ∈ g.powersetCard 2, lowCoeff α K.card * ∏ p ∈ K, π p = α * ∏ p ∈ K, π p := by
     intro K hK
     rw [(mem_powersetCard.1 hK).2]
-    simp [lowCoeff]
+    rfl
   rw [sum_congr rfl h2, ← mul_sum]
   simp [lowCoeff, ← mul_sum]
   ring
@@ -86,7 +82,7 @@ lemma sum_lowSubsets_abs_lowCoeff_mul_prod (g : Finset ℕ) (α : ℝ) (π : ℕ
       |α| * ∏ p ∈ K, π p := by
     intro K hK
     rw [(mem_powersetCard.1 hK).2]
-    simp [lowCoeff]
+    rfl
   rw [sum_congr rfl h2, ← mul_sum]
   simp [lowCoeff, ← mul_sum, abs_neg]
   ring
@@ -100,7 +96,7 @@ lemma abs_lowCoeff_le {α : ℝ} (hα : |α| ≤ 1) (k : ℕ) : |lowCoeff α k| 
 theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : Finset (Finset ℕ))
     (hFS : ∀ g ∈ F, g ⊆ S) (hdisj : (F : Set (Finset ℕ)).PairwiseDisjoint id)
     (α : Finset ℕ → ℝ) (hα : ∀ g ∈ F, |α g| ≤ 1) {c : ℕ} (hc : 1 ≤ c) {A B : ℕ} (hA : 1 ≤ A)
-    {w : ℕ → ℝ} (hw0 : ∀ e, 0 ≤ w e) {δ E : ℝ} (hE : 0 ≤ E)
+    {w : ℕ → ℝ} {δ E : ℝ} (hE : 0 ≤ E)
     (hstar : ∀ U ⊆ S, (∀ p ∈ U, ¬ p ∣ c) →
       |∑ e ∈ Ioc A B, (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ U, e * c ≡ 1 [MOD p] then w e else 0) -
           (∑ e ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ e then w e else 0)) / ∏ p ∈ U, ((p : ℝ) - 1)| ≤
@@ -117,7 +113,6 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         E * ∏ g ∈ F, ((lowSubsets g).card : ℝ) := by
   classical
   set S0 := ∑ e ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ e then w e else 0) with hS0
-  have hS00 : 0 ≤ S0 := sum_nonneg fun e _ => by split_ifs <;> simp [hw0 e]
   clear_value S0
   set SU : Finset ℕ → ℝ := fun U =>
     ∑ e ∈ Ioc A B, (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ U, e * c ≡ 1 [MOD p] then w e else 0)
@@ -142,7 +137,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         rw [ite_eq_right]
         rintro ⟨-, h⟩
         have h1 := h p hp
-        have h2 : e * c ≡ 0 [MOD p] := Nat.modEq_zero_iff_dvd.2 (dvd_mul_of_dvd_right hpc e)
+        have h2  := Nat.modEq_zero_iff_dvd.2 (dvd_mul_of_dvd_right hpc e)
         have h3 := h1.symm.trans h2
         have hp1 := (hS p (hUS κ hκ hp)).one_lt
         rw [Nat.ModEq, Nat.zero_mod, Nat.mod_eq_of_lt hp1] at h3
@@ -216,8 +211,6 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
     calc ∑ K ∈ lowSubsets g.1, |lowCoeff (α g.1) K.card| ≤ ∑ _K ∈ lowSubsets g.1, (1 : ℝ) :=
           sum_le_sum fun K _ => abs_lowCoeff_le (hα g.1 g.2) _
       _ = _ := by rw [sum_const, nsmul_eq_mul, mul_one]
-  have hπ0 : ∀ κ ∈ ι, 0 ≤ ∏ p ∈ (Finset.univ : Finset F).biUnion κ, π p := fun κ hκ =>
-    prod_nonneg fun p hp => modelWeight_nonneg (hS p (hUS κ hκ hp))
   -- assembling
   calc ∑ κ ∈ ι, ∑ e ∈ Ioc A B, (∏ g, lowCoeff (α g.1) (κ g).card) *
         (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ (Finset.univ : Finset F).biUnion κ,

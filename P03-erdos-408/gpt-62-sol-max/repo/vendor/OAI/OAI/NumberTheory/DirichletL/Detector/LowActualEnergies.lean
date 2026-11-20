@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCauchy
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff SchwartzMap
+open scoped Classical
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy

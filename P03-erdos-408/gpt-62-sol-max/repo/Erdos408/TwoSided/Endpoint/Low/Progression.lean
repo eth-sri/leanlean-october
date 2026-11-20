@@ -56,52 +56,12 @@ theorem addTwist_mod (h : ℤ) {k : ℕ} (hk : 0 < k) (w : ℕ) :
     ring
   rw [h1, one_mul]
 
-/-- `f(u) = ∑_{1 ≤ m ≤ u} (f(m) - f(m-1))` when `f(0) = 0`. -/
-theorem eq_sum_Icc_sub {f : ℕ → ℂ} (hf0 : f 0 = 0) (u : ℕ) :
-    f u = ∑ m ∈ Icc 1 u, (f m - f (m - 1)) := by
-  induction u with
-  | zero => simp [hf0]
-  | succ u ih => rw [sum_Icc_succ_top (by omega), ← ih, Nat.add_sub_cancel]; ring
-
-/-- A sum over `[1, N]` restricted by a condition, through the increments of `f`. -/
-theorem sum_filter_eq_sum_sub {f : ℕ → ℂ} (hf0 : f 0 = 0) (N : ℕ) (p : ℕ → Prop)
-    [DecidablePred p] :
-    ∑ u ∈ (Icc 1 N).filter p, f u =
-      ∑ m ∈ Icc 1 N, (f m - f (m - 1)) * #((Icc m N).filter p) := by
-  rw [sum_congr rfl fun u _ => eq_sum_Icc_sub hf0 u]
-  rw [sum_comm' (t' := Icc 1 N) (s' := fun m => (Icc m N).filter p)]
-  · refine sum_congr rfl fun m _ => ?_
-    rw [sum_const, nsmul_eq_mul, mul_comm]
-  · intro u m
-    simp only [mem_filter, mem_Icc]
-    constructor
-    · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4, h5⟩
-      exact ⟨⟨⟨h5, h2⟩, h3⟩, h4, h5.trans h2⟩
-    · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4, h5⟩
-      exact ⟨⟨⟨h4.trans h1, h2⟩, h3⟩, h4, h1⟩
-
 /-- A complex sum over a residue class modulo `q` in `[1, N]` is `1/q` of the full sum, up to
 the total variation. -/
 theorem norm_sum_modEq_sub_le {q : ℕ} (hq : 0 < q) (v N : ℕ) {f : ℕ → ℂ} (hf0 : f 0 = 0) :
     ‖∑ u ∈ (Icc 1 N).filter (· ≡ v [MOD q]), f u - (1 / q : ℂ) * ∑ u ∈ Icc 1 N, f u‖ ≤
       ∑ m ∈ Icc 1 N, ‖f m - f (m - 1)‖ := by
-  have hfull : ∑ u ∈ Icc 1 N, f u =
-      ∑ m ∈ Icc 1 N, (f m - f (m - 1)) * ((N + 1 - m : ℕ) : ℂ) := by
-    have := sum_filter_eq_sum_sub hf0 N (fun _ => True)
-    rw [filter_true_of_mem fun _ _ => trivial] at this
-    rw [this]
-    refine sum_congr rfl fun m _ => ?_
-    rw [filter_true_of_mem fun _ _ => trivial, Nat.card_Icc]
-  rw [sum_filter_eq_sum_sub hf0, hfull, mul_sum, ← sum_sub_distrib]
-  refine (norm_sum_le _ _).trans (sum_le_sum fun m hm => ?_)
-  obtain ⟨hm1, hmN⟩ := mem_Icc.1 hm
-  have h := Sieve.abs_card_modEq_sub_le hq v hm1 (by omega : m ≤ N + 1)
-  rw [show (f m - f (m - 1)) * (#((Icc m N).filter (· ≡ v [MOD q])) : ℂ) -
-      1 / q * ((f m - f (m - 1)) * ((N + 1 - m : ℕ) : ℂ)) =
-      (f m - f (m - 1)) * (((#((Icc m N).filter (· ≡ v [MOD q])) : ℝ) -
-        ((N + 1 - m : ℕ) : ℝ) / q : ℝ) : ℂ) by push_cast; ring, norm_mul, Complex.norm_real,
-    Real.norm_eq_abs]
-  exact mul_le_of_le_one_right (norm_nonneg _) h
+  simpa [Complex.real_smul, Complex.ofReal_div] using Sieve.norm_sum_modEq_sub_le hq v N hf0
 
 /-- By the Chinese remainder theorem, `m ∣ w ∧ w ≡ a (mod k)` is a residue class modulo
 `m k`, for coprime `m, k`. -/
@@ -161,8 +121,7 @@ theorem norm_sum_dvd_twist_sub_le {m k : ℕ} (hm : 0 < m) (hk : 0 < k) (hmk : N
         obtain ⟨v, hv⟩ := hclass a ha
         rw [← mul_sub, norm_mul, norm_addTwist, one_mul, hv]
         have := norm_sum_modEq_sub_le (Nat.mul_pos hm hk) v N hf0
-        push_cast at this ⊢
-        exact this
+        assumption
     _ = k * ∑ w ∈ Icc 1 N, ‖f w - f (w - 1)‖ := by
         rw [sum_const, card_range, nsmul_eq_mul]
 
@@ -170,7 +129,7 @@ theorem norm_sum_dvd_twist_sub_le {m k : ℕ} (hm : 0 < m) (hk : 0 < k) (hmk : N
 theorem norm_cpow_sub_cpow_le {u v : ℝ} (hu : 0 < u) (huv : u ≤ v) (τ : ℝ) :
     ‖(v : ℂ) ^ ((τ : ℂ) * Complex.I) - (u : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤
       |τ| * (v - u) / u := by
-  have hv : 0 < v := hu.trans_le huv
+  have hv  := hu.trans_le huv
   have hcpow : ∀ y : ℝ, 0 < y →
       (y : ℂ) ^ ((τ : ℂ) * Complex.I) = Complex.exp (Complex.I * ((τ * Real.log y : ℝ) : ℂ)) := by
     intro y hy
@@ -216,7 +175,6 @@ theorem sum_norm_sub_le {ψ₁ : ℝ → ℂ} (hd : Differentiable ℝ ψ₁) {M
     intro w hw
     have hw1 := (mem_Icc.1 hw).1
     have hcast : ((w - 1 : ℕ) : ℝ) = w - 1 := by rw [Nat.cast_sub hw1, Nat.cast_one]
-    have hw0 : (0 : ℝ) < w := by exact_mod_cast hw1
     have hsplit : ψ₁ (w / Y) * (w : ℂ) ^ ((τ : ℂ) * Complex.I) -
         ψ₁ ((w - 1 : ℕ) / Y) * ((w - 1 : ℕ) : ℂ) ^ ((τ : ℂ) * Complex.I) =
         (ψ₁ (w / Y) - ψ₁ ((w - 1 : ℕ) / Y)) * (w : ℂ) ^ ((τ : ℂ) * Complex.I) +
@@ -246,7 +204,7 @@ theorem sum_norm_sub_le {ψ₁ : ℝ → ℂ} (hd : Differentiable ℝ ψ₁) {M
         positivity
       · have h1 := hs _ h0
         rw [le_div_iff₀ hY, one_mul] at h1
-        have hu : (0 : ℝ) < ((w - 1 : ℕ) : ℝ) := hY.trans_le h1
+        have hu  := hY.trans_le h1
         have hle : ((w - 1 : ℕ) : ℝ) ≤ w := by rw [hcast]; linarith
         rw [norm_mul]
         have hc := norm_cpow_sub_cpow_le hu hle τ

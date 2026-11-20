@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceMass
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceProfileMass
-open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
+open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle CenteredMomentAddedZeroUniform
+open CenteredMomentSourceMass
 local notation "O" => ActualEisensteinCubic.O
 
  theorem primary_mod_one (χ : MulChar (O ⧸ Ideal.span {(1:O)}) ℂ) (I : Ideal O) :

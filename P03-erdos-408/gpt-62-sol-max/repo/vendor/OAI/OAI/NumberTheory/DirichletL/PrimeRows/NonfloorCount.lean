@@ -46,7 +46,7 @@ theorem balanced_adaptive_count_from_raw_moments
   intro a ε T allowance Δ ν C height q i hU ha hd hε hε' hΔ hΔ' hν hC hh hf Label Slot _ B hne hq hmom
   have hδ : 0<2*a-1 := by linarith
   have hqb := HeckeDetectorFixedAmplitudeCount.batch_mean_bounds B hne (by linarith) q hq
-  have hx : 0≤q/(2*a-1) := div_nonneg hqb.1 hδ.le
+  have hx  := div_nonneg hqb.1 hδ.le
   have hx' : q/(2*a-1)≤1/2 := (div_le_iff₀ hδ).mpr (by linarith [hqb.2])
   have ht := cutoff_bounds (2*a-1) q hδ.le
   have hc' := hcount a ε (cutoff (2*a-1) q) T allowance Δ ν C height q i

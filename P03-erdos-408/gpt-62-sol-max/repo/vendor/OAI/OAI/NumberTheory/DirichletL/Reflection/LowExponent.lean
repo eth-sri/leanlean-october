@@ -5,6 +5,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.SurvivingGate
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedCaps
 public import OAI.NumberTheory.DirichletL.Detector.LowReflectedLength
 
+public import OAI.NumberTheory.DirichletL.Reflection.LowBudget
+
 @[expose] public section
 
 namespace OAI
@@ -23,34 +25,25 @@ theorem original_surviving_low_exponent
     ∀ (J I F Q Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
     ∀ (A : Finset (FreeReflection.pool J Q Q₀)) (e : A→Fin 3) (column : Ideal Eis→Ideal Eis→ℂ)
-      (Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot : ℝ) (i : ℕ×ℕ×ℕ),
-      Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d) →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I Q):ℝ) →
-      Real.log (CH*Ck*CO)/Real.log Z≤η →
-      normWidth Z (rowPowerfulPart I)≤O₀+η → normWidth Z Q≤η →
-      0≤d → d≤1/6 → ell0≤1/6-d+η → 0≤O₀ → za≤ell0+η → |shift|≤η →
-      Nstar=1+ell0+shift → H=Real.logb Z (kK*QK) → za=Real.logb Z (kP*QP) → Nstar=Real.logb Z X →
-      0≤δ → δ≤η → 0≤ε → (kK*QK)≤Z^Lrow → (kP*QP)≤Z^Lslot →
-      Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
+      {ε δ Lscale : ℝ}
+      (rb : LowReflectionBudget I Q Z₀ η ε δ Lscale (kK * ·) (kP * ·)) (i : ℕ×ℕ×ℕ),
+      0 ≤ ε →
       let G := (poolPrimeFamily J Q Q₀).restrict A
       let j := fun b : A => completedLocalExponent J F b.val.val
-      (familyRawScale G s X QK QP)⁻¹≤Z^Lscale →
-      i∈retainedDyads (familyRawScale G s X QK QP) (16*Z^δ) →
+      (familyRawScale G s rb.X rb.QK rb.QP)⁻¹≤rb.Z^Lscale →
+      i∈retainedDyads (familyRawScale G s rb.X rb.QK rb.QP) (16*rb.Z^δ) →
       e∈survivingFrozenBranches G j column (reflectedNDyad i.2.2) (reflectedBDyad i.2.1) →
-      let v := Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1))
-      let ell := Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2))
-      InverseTerminalWidths.reflectedExponent 0 H (normWidth Z (frozenExtracted G j e 0))
-        (normWidth Z (frozenExtracted G j e 2)) za v ell (ramifiedWidth Z i.1)
-        (terminalDualWidth Z H za Nstar G.ideal j e)+ε*(H+v+ell+za)+η/2+O₀/2≤
-      (5/6-2*d)+200*η+π := by
+      let v := Real.logb rb.Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1))
+      let ell := Real.logb rb.Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2))
+      InverseTerminalWidths.reflectedExponent 0 rb.H (normWidth rb.Z (frozenExtracted G j e 0))
+        (normWidth rb.Z (frozenExtracted G j e 2)) rb.za v ell (ramifiedWidth rb.Z i.1)
+        (terminalDualWidth rb.Z rb.H rb.za rb.Nstar G.ideal j e)+ε*(rb.H+v+ell+rb.za)+η/2+rb.O₀/2≤
+      (5/6-2*rb.d)+200*η+rb.π := by
   obtain ⟨Z₀,hZ₀,hgates⟩ := actual_surviving_retained_gates s hc₀ kK kP η hkK hkP hη
   refine ⟨Z₀,hZ₀,?_⟩
-  intro J I F Q Q₀ hJ hI hQ hpower hmask A e column
-    Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot i
-    hZ hCk hCO hCH hX hK hP hIn hPow hRow hlog hPowUpper hQwidth hd hd1 hell0 hO hza hshift
-    hNs heH heza heN hδ hδη hε hrowcap hslotcap hconst hbudget
+  intro J I F Q Q₀ hJ hI hQ hpower hmask A e column ε δ Lscale rb i hε
+  rcases rb with ⟨Z, O₀, H, za, Nstar, d, ell0, shift, π, Ck, CO, CH, X, QK, QP, Lrow, Lslot,
+    hZ, hCk, hCO, hCH, hX, hK, hP, hIn, hPow, hRow, hlog, hPowUpper, hQwidth, hd, hd1, hell0, hO, hza, hshift, hNs, heH, heza, heN, hδ, hδη, hrowcap, hslotcap, hconst, hbudget⟩
   dsimp only
   intro hscale hret hsurv
   let G := (poolPrimeFamily J Q Q₀).restrict A
@@ -71,7 +64,7 @@ theorem original_surviving_low_exponent
     (Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1)))
     (Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2)))
     (ramifiedWidth Z i.1) shift (5*η)
-    hd hd1 (by positivity) (by linarith) (by linarith) (by linarith)
+    hd (by positivity) (by linarith) (by linarith) (by linarith)
     hN0 hNA hS0 hB0 (by linarith) (by linarith) (by linarith) (by linarith) (by linarith) (hshift.trans (by linarith)) ?_
   · have hb := retained_extracted_log_budget (familyRawScale G s X QK QP) Z δ Lscale Lrow Lslot η
       (kK*QK) (kP*QP) (familyRawScale_pos G s hc₀ X QK QP hX hK hP) hz

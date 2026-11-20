@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Moment.Phased.EdgeAtoms
 public import Erdos408.OneSided.Moment.Phased.GhostAtoms
@@ -46,167 +47,6 @@ section Facts
 
 variable {q x : ℝ} {d : Data K}
 
-/-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
-
-/-- For primes `p ≥ 2N + 1`, the baseline is `b'_p ≥ 1/2`. -/
-private theorem half_le_baseline (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
-    (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
-  have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
-          sum_le_sum fun j _ => (dampDefect_mem_Icc hq hq₁ N j).2
-      _ = (N : ℝ) + 1 := by simp
-  have h₁ : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 / 2 := by
-    rw [inv_mul_le_iff₀ hp1]
-    linarith
-  unfold baseline
-  linarith
-
-/-- Eventually every band prime is at least `2N + 1` for `N = 2R`. -/
-private theorem eventually_two_mul_add_one_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < alo) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d →
-      ∀ p ∈ bandPrimes x d, 2 * (2 * momentPower x) + 1 ≤ p := by
-  have hL := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 2)).comp Real.tendsto_log_atTop
-  filter_upwards [eventually_rpow_lt_of_mem_band (by linarith : 0 < alo) 1,
-    hL.eventually_ge_atTop 8, Real.tendsto_log_atTop.eventually_gt_atTop 0]
-    with x hbig hs8 hL0 d hd p hp
-  obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-  have hLp := hbig (d.a i) (hd.window i).1 p hpi
-  rw [Real.rpow_one] at hLp
-  set s := Real.log x ^ (1 / 2 : ℝ) with hs
-  have hs8' : 8 ≤ s := hs8
-  have hss : s * s = Real.log x := by
-    rw [hs, ← Real.rpow_add hL0]
-    norm_num
-  have hR : (momentPower x : ℝ) < s / 2 + 1 := by
-    unfold momentPower
-    exact Nat.ceil_lt_add_one (by linarith)
-  have h8 : 8 * s ≤ s * s := mul_le_mul_of_nonneg_right hs8' (by linarith)
-  have : ((2 * (2 * momentPower x) + 1 : ℕ) : ℝ) < p := by
-    push_cast
-    linarith
-  exact_mod_cast this.le
-
-/-- The harmonic mass is nonnegative. -/
-private theorem harmonicMass_nonneg (S : Finset ℕ) : 0 ≤ harmonicMass S :=
-  sum_nonneg fun p _ => by positivity
-
-/-- A particle's prime is a band prime. -/
-private theorem fst_mem_bandPrimes (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
-  obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
-
-/-- The harmonic mass `V(p)` of the bands containing `p` is nonnegative. -/
-private theorem primeMass_nonneg (p : ℕ) : 0 ≤ primeMass x d p :=
-  sum_nonneg fun i _ => by
-    split_ifs
-    · exact harmonicMass_nonneg _
-    · exact le_rfl
-
-/-- With band masses at least `1/2`, a prime of a band has `V(p) ≥ 1/2`. -/
-private theorem half_le_primeMass (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) {i : Fin K}
-    {p : ℕ} (hpi : p ∈ band x (d.a i)) : 1 / 2 ≤ primeMass x d p :=
-  calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := hV i
-    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := (ite_eq_left hpi).symm
-    _ ≤ primeMass x d p :=
-        single_le_sum (f := fun i => if p ∈ band x (d.a i) then harmonicMass (band x (d.a i))
-          else 0) (fun j _ => by split_ifs; exact harmonicMass_nonneg _; exact le_rfl)
-          (mem_univ i)
-
-/-- With band masses at most `1`, `V(p) ≤ K`. -/
-private theorem primeMass_le (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) (p : ℕ) :
-    primeMass x d p ≤ K :=
-  calc primeMass x d p ≤ ∑ _i : Fin K, (1 : ℝ) :=
-        sum_le_sum fun i _ => by
-          split_ifs
-          · exact hV i
-          · norm_num
-    _ = K := by simp
-
-/-- With baselines at least `1/2` at the band primes, the birth weights are nonnegative. -/
-private theorem primeWeight_nonneg {N : ℕ} (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p)
-    (p : ℕ) : 0 ≤ primeWeight q x d N p := by
-  unfold primeWeight
-  by_cases hp : p ∈ bandPrimes x d
-  · have := hb p hp
-    exact one_div_nonneg.2 (mul_nonneg (mul_nonneg (primeMass_nonneg p) (by positivity))
-      (by linarith))
-  · have h0 : primeMass x d p = 0 :=
-      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 ⟨i, mem_univ i, hpi⟩)
-    rw [h0]
-    simp
-
-/-- At a band prime, `ν(p) ≤ 4/p` and `V(p) ν(p) ≤ 2/p`. -/
-private theorem primeWeight_le {N : ℕ} (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) {p : ℕ} (hp : p ∈ bandPrimes x d) :
-    primeWeight q x d N p ≤ 4 * (1 / p) ∧
-      primeMass x d p * primeWeight q x d N p ≤ 2 * (1 / p) := by
-  obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-  have hV₁ := half_le_primeMass hV hpi
-  have hb₁ := hb p hp
-  have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hpi).pos
-  unfold primeWeight
-  constructor
-  · calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
-        ≤ 1 / (1 / 2 * p * (1 / 2)) :=
-          one_div_le_one_div_of_le (by positivity)
-            (mul_le_mul (mul_le_mul hV₁ (by linarith) hp0.le (by linarith)) hb₁ (by norm_num)
-              (mul_nonneg (by linarith) (by linarith)))
-      _ = 4 * (1 / p) := by field_simp; norm_num
-  · have hV0 : primeMass x d p ≠ 0 := by linarith
-    have hb0 : baseline q N p ≠ 0 := by linarith
-    calc primeMass x d p * (1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p))
-        = 1 / (((p : ℝ) + 1) * baseline q N p) := by field_simp
-      _ ≤ 1 / (p * (1 / 2)) :=
-          one_div_le_one_div_of_le (by positivity)
-            (mul_le_mul (by linarith) hb₁ (by norm_num) (by linarith))
-      _ = 2 * (1 / p) := by field_simp
-
-/-- The hitting particles have one line per band prime, so a sum over them of a nonnegative
-function of the prime is at most the sum over the band primes. -/
-private theorem sum_hits_le_sum_bandPrimes (z : ℤ × ℤ) {f : ℕ → ℝ} (hf : ∀ p, 0 ≤ f p) :
-    ∑ xp with HitsAt x d z xp, f xp.1.1 ≤ ∑ p ∈ bandPrimes x d, f p := by
-  rw [← sum_image (f := f) (g := fun xp : Particle x d => xp.1.1)]
-  · exact sum_le_sum_of_subset_of_nonneg
-      (image_subset_iff.2 fun xp _ => fst_mem_bandPrimes xp) fun p _ _ => hf p
-  · intro xp hxp yp hyp h
-    exact hitsAt_eq_of_prime (mem_filter.1 (mem_coe.1 hxp)).2 (mem_filter.1 (mem_coe.1 hyp)).2 h
-
-/-- With band masses at most `1`, `∑_{p band prime} 1/p ≤ K`. -/
-private theorem sum_one_div_bandPrimes_le (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) :
-    ∑ p ∈ bandPrimes x d, (1 : ℝ) / p ≤ K :=
-  calc ∑ p ∈ bandPrimes x d, (1 : ℝ) / p
-      ≤ ∑ p ∈ bandPrimes x d, ∑ i, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 := by
-        refine sum_le_sum fun p hp => ?_
-        obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-        calc (1 : ℝ) / p = if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 :=
-              (ite_eq_left hpi).symm
-          _ ≤ ∑ i, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 :=
-              single_le_sum (f := fun i => if p ∈ band x (d.a i) then (1 : ℝ) / p else 0)
-                (fun j _ => by split_ifs <;> positivity) (mem_univ i)
-    _ = ∑ i, ∑ p ∈ bandPrimes x d, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 := sum_comm
-    _ = ∑ i, harmonicMass (band x (d.a i)) := by
-        refine sum_congr rfl fun i _ => ?_
-        rw [sum_ite_mem, inter_eq_right.2
-          (show band x (d.a i) ⊆ bandPrimes x d from fun p hp => mem_biUnion.2 ⟨i, mem_univ i, hp⟩)]
-        rfl
-    _ ≤ ∑ _i : Fin K, (1 : ℝ) := sum_le_sum fun i _ => hV i
-    _ = K := by simp
-
-/-- `ρ⁴ = √q`. -/
-private theorem pendingWeight_pow_four (hq : 0 < q) : pendingWeight q ^ 4 = Real.sqrt q := by
-  unfold pendingWeight
-  rw [← Real.rpow_natCast, ← Real.rpow_mul hq.le, Real.sqrt_eq_rpow]
-  norm_num
-
 /-- The births of a history are band primes. -/
 private theorem births_mem_bandPrimes {Y d₀ u v r : ℝ} {B N : ℕ} (s : ChainState x d Y d₀ u v r B)
     {hh : History x d Y d₀ u v r N} (hhh : hh ∈ histories x d Y d₀ u v r B N)
@@ -220,13 +60,13 @@ private theorem births_mem_bandPrimes {Y d₀ u v r : ℝ} {B N : ℕ} (s : Chai
     split_ifs at hp
     simp only [Option.some.injEq] at hp
     subst hp
-    exact mem_biUnion.2 ⟨i, mem_univ _, mem_band_of_mem_edgeChoices (hhh.2 j) i⟩
+    exact mem_biUnion.2 ⟨i, mem_univ _, mem_band_lab (hhh.2 j) i⟩
   · simp only [births] at hp
     have hmem := List.mem_of_getElem? hp
     rw [batchPrimes, Multiset.mem_sort, Multiset.mem_sum] at hmem
     obtain ⟨xp, -, hxp⟩ := hmem
     rw [Multiset.eq_of_mem_replicate hxp]
-    exact fst_mem_bandPrimes xp
+    exact particle_mem_bandPrimes xp
 
 end Facts
 
@@ -313,8 +153,8 @@ theorem sum_chainInit_pres_le (hν : ∀ p, 0 ≤ primeWeight q x d N p)
         _ = 4 * (c₀ * ν p₀) := mul_assoc _ _ _
   have hgl : ∑ l : ↥(lists x d (padCount x)), g l.1 ≤
       4 ^ (K * (padCount x + 1)) * ∏ a, atomCost c₀ ν (π a) := by
-    rw [sum_coe_sort (lists x d (padCount x)) g]
-    calc ∑ l ∈ lists x d (padCount x), g l
+    rw [sum_coe_sort (lists x d _) g]
+    calc ∑ l ∈ lists x d _, g l
         ≤ ∑ l ∈ Fintype.piFinset (fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
             band x (d.a i)), g l :=
           sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun l _ _ => hg0 l
@@ -339,9 +179,7 @@ theorem sum_chainInit_pres_le (hν : ∀ p, 0 ≤ primeWeight q x d N p)
         have hf0 : 0 ≤ ∑ z, f z := sum_nonneg fun z _ => by simp only [hf]; split_ifs <;> norm_num
         have hk0 : 0 ≤ ∑ S, k S := sum_nonneg fun S _ => by simp only [hk]; split_ifs <;> norm_num
         have hg' : 0 ≤ ∑ l : ↥(lists x d (padCount x)), g l.1 := sum_nonneg fun l _ => hg0 _
-        have hX : 0 ≤ 4 ^ (K * (padCount x + 1)) * ∏ a, atomCost c₀ ν (π a) :=
-          mul_nonneg (by positivity) (prod_nonneg fun a _ => atomCost_nonneg (by linarith) hν _)
-        exact mul_le_mul hfz (mul_le_mul hgl hkS hk0 hX) (mul_nonneg hg' hk0) zero_le_one
+        exact mul_le_mul hfz (mul_le_mul hgl hkS hk0 (mul_nonneg (by positivity) (prod_nonneg fun a _ => atomCost_nonneg (by linarith) hν _))) (mul_nonneg hg' hk0) zero_le_one
     _ = 4 ^ (K * (padCount x + 1)) * ∏ a, atomCost c₀ ν (π a) := by ring
 
 /-- **A fixed prescription** (PD `mem:rank-absolute`): if the prescribed ghost rows are at most
@@ -476,7 +314,7 @@ open scoped Classical in
 `[C realized] ≤ ∑_{p ∈ P} ∏_{a ∈ C} [β_a = p]`. -/
 theorem realized_le_sum (β : α → Option ℕ) {P : Finset ℕ} (hβ : ∀ a p, β a = some p → p ∈ P)
     {C : Finset α} (hC : C.Nonempty) :
-    (if BlockRealized β C then (1 : ℝ) else 0) ≤ ∑ p ∈ P, ∏ a ∈ C, presInd (some p) (β a) := by
+    (if BlockRealized β C then (1) else 0) ≤ ∑ p ∈ P, ∏ a ∈ C, presInd (some p) (β a) := by
   have h0 : ∀ p, 0 ≤ ∏ a ∈ C, presInd (some p) (β a) := fun p =>
     prod_nonneg fun a _ => presInd_nonneg _ _
   split_ifs with h
@@ -539,9 +377,7 @@ theorem sum_pow_atom_le {ν : ℕ → ℝ} {P : Finset ℕ} {c Δ S : ℝ} (hc :
         have h₁ : c ^ (m + 2) ≤ (c ^ 2) ^ (m + 1) := by
           rw [← pow_mul]
           exact pow_le_pow_right₀ hc (by omega)
-        have h₂ : S ≤ (S + 1) ^ (m + 1) :=
-          (le_add_of_nonneg_right zero_le_one).trans (le_self_pow₀ (by linarith) (by omega))
-        exact mul_le_mul (mul_le_mul_of_nonneg_right h₁ (pow_nonneg hΔ0 _)) h₂ hS0
+        exact mul_le_mul (mul_le_mul_of_nonneg_right h₁ (pow_nonneg hΔ0 _)) ((le_add_of_nonneg_right zero_le_one).trans (le_self_pow₀ (by linarith) (by omega))) hS0
           (mul_nonneg (pow_nonneg (pow_nonneg hc0 _) _) (pow_nonneg hΔ0 _))
     _ = (c ^ 2 * (S + 1) * Δ) ^ (m + 1) := by rw [mul_pow, mul_pow]; ring
 
@@ -574,7 +410,7 @@ theorem sum_history_realized_le (hν : ∀ p, 0 ≤ primeWeight q x d N p)
           v₀ ^ memSize (chainEdgeOut x d Y d₀ u v r B t e).2.2.1 ≤
         RE * (∏ i, atomCost c₀ (primeWeight q x d N) (πe i)) * v₀ ^ memSize t.2.2.1)
     {𝒞 : Finset (Finset (BirthAddr (K := K) x B N))}
-    (h𝒞 : 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N)) :
+    (h𝒞 : 𝒞 ∈ blockSystems _) :
     ∑ s, chainMeasure q x d Y d₀ u v r B N s * ‖chainInit x d Y d₀ u v r B s‖ *
         ∑ hh ∈ histories x d Y d₀ u v r B N, ‖chainWeight q A₀ s hh‖ *
           ‖chainInit x d Y d₀ u v r B (chainEnd s hh)‖ *
@@ -592,11 +428,11 @@ theorem sum_history_realized_le (hν : ∀ p, 0 ≤ primeWeight q x d N p)
       (memWeight_nonneg (fun xp => hν _) _)
   -- the realized blocks against the summed block primes
   have hreal : ∀ s, ∀ hh ∈ histories x d Y d₀ u v r B N,
-      ∏ C ∈ 𝒞, (if BlockRealized (births s hh) C then (1 : ℝ) else 0) ≤
+      ∏ C ∈ 𝒞, (if BlockRealized (births s hh) C then (1) else 0) ≤
         ∑ p ∈ Ps, ∏ a, presInd (blockPres 𝒞 p a) (births s hh a) := by
     intro s hh hhh
-    rw [← prod_coe_sort 𝒞 fun C => if BlockRealized (births s hh) C then (1 : ℝ) else 0]
-    calc ∏ C : ↥𝒞, (if BlockRealized (births s hh) C.1 then (1 : ℝ) else 0)
+    rw [← prod_coe_sort 𝒞 fun C => if BlockRealized (births s hh) C then (1) else 0]
+    calc ∏ C : ↥𝒞, (if BlockRealized (births s hh) C.1 then (1) else 0)
         ≤ ∏ C : ↥𝒞, ∑ p ∈ bandPrimes x d, ∏ a ∈ C.1, presInd (some p) (births s hh a) :=
           prod_le_prod₀ (fun C _ => by split_ifs <;> norm_num) fun C _ =>
             realized_le_sum _ (fun a p hp => births_mem_bandPrimes s hhh a hp)
@@ -659,9 +495,7 @@ Here `v₀ = (K + 1)/(ρ (1 - ρ²))` is the Schur weight of the ghost bound, th
 `v₀ K ν/ρ`, and the edge rows are at most `(2 v₀)^K (2B + 4)^K 16 (1 + 52 L^{3A₀})`. -/
 theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) :
-    ∃ C₁ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∃ C₁ : ℝ, ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N),
         ∑ s, chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s *
@@ -713,11 +547,11 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
   have hLA : A₁ ≤ L := le_of_max_le_right (le_of_max_le_right hL)
   have hL0 : 0 < L := by linarith
   -- the band facts
-  have hV₀ : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) := fun i => (hV _ (hd.window i).1).1
-  have hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1 := fun i => (hV _ (hd.window i).1).2
+  have hV₀ : d.BandsLower x := fun i => (hV _ (hd.window i).1).1
+  have hV₁ := fun i => (hV _ (hd.window i).1).2
   have hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p := fun p hp =>
-    half_le_baseline hq hq₁ (hN ▸ hbig d hd p hp)
-  have hν : ∀ p, 0 ≤ primeWeight q x d N p := primeWeight_nonneg hb
+    half_le_baseline hq.le (hN ▸ hbig d hd p hp)
+  have hν := primeWeight_nonneg_of_baseline hb
   have hνi : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 4 := fun i =>
     calc ∑ p ∈ band x (d.a i), primeWeight q x d N p
         ≤ ∑ p ∈ band x (d.a i), 4 * (1 / (p : ℝ)) :=
@@ -738,7 +572,7 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
   have hΔ : ∀ p ∈ bandPrimes x d, primeWeight q x d N p ≤ Δ := by
     intro p hp
     obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-    have hp1 : Real.exp (L ^ alo) ≤ p :=
+    have hp1 :=
       (Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL1 (hd.window i).1)).trans
         (exp_le_of_mem_band hpi)
     calc primeWeight q x d N p ≤ 4 * (1 / p) := (primeWeight_le hV₀ hb hp).1
@@ -805,7 +639,7 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
             |-dampDefect q N jj * primeMass x d xp.1.1 / ρ| * primeWeight q x d N xp.1.1
           ≤ ∑ xp with HitsAt x d t.1.1 xp, 2 / ρ * (1 / (xp.1.1 : ℝ)) := by
             refine sum_le_sum fun xp _ => ?_
-            have h := (primeWeight_le hV₀ hb (fst_mem_bandPrimes xp)).2
+            have h := (primeWeight_le hV₀ hb (particle_mem_bandPrimes xp)).2
             rw [hcre]
             calc dampDefect q N jj / ρ * primeMass x d xp.1.1 * primeWeight q x d N xp.1.1
                 = dampDefect q N jj / ρ * (primeMass x d xp.1.1 * primeWeight q x d N xp.1.1) :=
@@ -867,7 +701,6 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
     calc (4 : ℝ) ^ (K * (padCount x + 1)) = ((4 : ℝ) ^ K) ^ (padCount x + 1) := pow_mul _ _ _
       _ ≤ L ^ (padCount x + 1) := pow_le_pow_left₀ (by positivity) hL4 _
       _ ≤ L ^ (N + 1) := pow_le_pow_right₀ hL1 (by omega)
-  have hGN : RG ^ (N + 1) ≤ L ^ (N + 1) := pow_le_pow_left₀ (Real.exp_pos _).le hLG _
   have hL3 : (1 : ℝ) ≤ L ^ 3 := one_le_pow₀ hL1
   have hA0 : 1 ≤ L ^ (3 * |A₀|) := Real.one_le_rpow hL1 (by positivity)
   have hA1 : L ^ (3 * A₀) ≤ L ^ (3 * |A₀|) :=
@@ -879,18 +712,14 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
       _ ≤ (2 * v₀) ^ K * (6 * L ^ 3) ^ K * (16 * (53 * L ^ (3 * |A₀|))) := by
           have h₁ : (2 * (B : ℝ) + 4) ^ K ≤ (6 * L ^ 3) ^ K :=
             pow_le_pow_left₀ (by positivity) (by linarith) _
-          have h₂ : 16 * (1 + 52 * L ^ (3 * A₀)) ≤ 16 * (53 * L ^ (3 * |A₀|)) := by linarith
-          exact mul_le_mul (mul_le_mul_of_nonneg_left h₁ (by positivity)) h₂ (by positivity)
+          refine mul_le_mul (mul_le_mul_of_nonneg_left h₁ (by positivity)) ?_ (by positivity)
             (by positivity)
+          linarith
       _ = A₁ * ((L ^ 3) ^ K * L ^ (3 * |A₀|)) := by
           rw [hA₁, mul_pow 6]
           ring
       _ ≤ L * ((L ^ 3) ^ K * L ^ (3 * |A₀|)) := mul_le_mul_of_nonneg_right hLA (by positivity)
-      _ = L ^ e := by
-          rw [he, Real.rpow_add hL0, Real.rpow_add hL0, ← pow_mul,
-            show 3 * (K : ℝ) = ((3 * K : ℕ) : ℝ) by push_cast; ring, Real.rpow_natCast,
-            Real.rpow_one]
-          ring
+      _ = L ^ e := by rpow_ring hL0
   have hEN : RE ^ N ≤ L ^ (e * N) := by
     rw [Real.rpow_mul_natCast hL0.le]
     exact pow_le_pow_left₀ hRE0 hREe _
@@ -901,7 +730,7 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
       ring_nf
     calc (4 : ℝ) ^ (K * (padCount x + 1)) * RG ^ (N + 1) * RE ^ N
         ≤ L ^ (N + 1) * L ^ (N + 1) * L ^ (e * N) :=
-          mul_le_mul (mul_le_mul h4 hGN (pow_nonneg (Real.exp_pos _).le _) (by positivity))
+          mul_le_mul (mul_le_mul h4 (pow_le_pow_left₀ (Real.exp_pos _).le hLG _) (pow_nonneg (Real.exp_pos _).le _) (by positivity))
             hEN (pow_nonneg hRE0 _) (by positivity)
       _ = L ^ (((N : ℝ) + 1) + ((N : ℝ) + 1) + e * N) := by
           rw [hN1, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
@@ -912,12 +741,10 @@ theorem exists_realized_history_le_aux {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q
           have h₂ : (e + 2) * ((N : ℝ) + 1) ≤ C₁ * (N + 1) :=
             mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity)
           linarith
-  have hpow : (c₀ ^ 2 * (4 * K + 1) * Δ) ^ blockRank 𝒞 ≤
-      (C₁ * Real.exp (-L ^ alo)) ^ blockRank 𝒞 := by
-    refine pow_le_pow_left₀ (by positivity) ?_ _
-    rw [hΔdef, show c₀ ^ 2 * (4 * K + 1) * (4 * Real.exp (-L ^ alo)) =
-      (4 * c₀ ^ 2 * (4 * K + 1)) * Real.exp (-L ^ alo) by ring]
-    exact mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.exp_pos _).le
-  exact mul_le_mul hTot hpow (by positivity) (by positivity)
+  refine mul_le_mul hTot ?_ (by positivity) (by positivity)
+  refine pow_le_pow_left₀ (by positivity) ?_ _
+  rw [hΔdef, show c₀ ^ 2 * (4 * K + 1) * (4 * Real.exp (-L ^ alo)) =
+    (4 * c₀ ^ 2 * (4 * K + 1)) * Real.exp (-L ^ alo) by ring]
+  exact mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.exp_pos _).le
 
 end Erdos408.OneSided

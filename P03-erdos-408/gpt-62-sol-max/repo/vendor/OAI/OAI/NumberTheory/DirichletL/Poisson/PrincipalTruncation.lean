@@ -9,71 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 
 section
@@ -170,17 +112,17 @@ theorem middle_divisor_frequency_tail (A : ℕ) :
   intro ι _ P _ S W X Y Z lengthScale hX hY hYZ hL
   let B := C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   let Q := (min 1 (X / Z)) ^ 2 * (1 + X * lengthScale / Z) ^ A
-  have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hZ : 0 < Z := hY.trans_le hYZ
+  have hB : 0 ≤ B := by positivity
+  have hZ  := hY.trans_le hYZ
   have hQ : 0 < Q := by dsimp [Q]; positivity
   rw [Finset.mul_sum]
   have hf (E : Finset ι) (hE : E ∈ middleDivisors P S Y Z) :
       ‖(X : ℂ) * ((subsetMobius P E / (subsetNorm P E : ℂ)) *
         dualFar W (X / subsetNorm P E) lengthScale)‖ ≤ (X / Y) * (B / Q) := by
     have hn := subsetNorm_pos P E
-    have hEY : Y < subsetNorm P E := (Finset.mem_filter.mp hE).2
-    have hEZ : subsetNorm P E ≤ Z := (Finset.mem_filter.mp (Finset.mem_filter.mp hE).1).2
-    have hk : X / Z ≤ X / subsetNorm P E := div_le_div_of_nonneg_left hX.le hn hEZ
+    have hEY  := (Finset.mem_filter.mp hE).2
+    have hEZ  := (Finset.mem_filter.mp (Finset.mem_filter.mp hE).1).2
+    have hk  := div_le_div_of_nonneg_left hX.le hn hEZ
     have hden : Q ≤ (min 1 (X / subsetNorm P E)) ^ 2 *
         (1 + (X / subsetNorm P E) * lengthScale) ^ A := by
       dsimp [Q]
@@ -193,7 +135,7 @@ theorem middle_divisor_frequency_tail (A : ℕ) :
       · exact pow_le_pow_left₀ (by positivity) (by linarith) A
       · positivity
       · positivity
-    have hh : ‖dualFar W (X / subsetNorm P E) lengthScale‖ ≤ B / Q :=
+    have hh  :=
       (hb W _ lengthScale (div_pos hX hn) hL).trans (div_le_div_of_nonneg_left hB hQ hden)
     calc
       _ = (X / subsetNorm P E) * ‖subsetMobius P E‖ * ‖dualFar W (X / subsetNorm P E) lengthScale‖ := by
@@ -220,7 +162,7 @@ theorem middle_divisor_frequency_tail (A : ℕ) :
       have hc := Finset.card_le_card hsub
       rw [Finset.card_powerset] at hc
       exact_mod_cast hc
-    _ = _ := by dsimp [B, Q]; ring
+    _ = _ := by ring
 
 end
 
@@ -275,17 +217,16 @@ theorem truncationError_bound (A : ℕ) :
   intro ι _ P _ hinj S W X Y Z lengthScale hX hY hYX hXZ hL
   let Q := ((s₀ ∪ s₁) ∪ s₂).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   let C := C₀ + C₁ + C₂
-  have hQ : 0 ≤ Q := apply_nonneg _ _
-  have hc₀ : C₀ ≤ C := by dsimp [C]; linarith
-  have hc₁ : C₁ ≤ C := by dsimp [C]; linarith
-  have hc₂ : C₂ ≤ C := by dsimp [C]; linarith
+  have hc₀ : C₀ ≤ C := by linarith
+  have hc₁ : C₁ ≤ C := by linarith
+  have hc₂ : C₂ ≤ C := by linarith
   have hq₀ : s₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤ Q :=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left.trans Finset.subset_union_left)) W
   have hq₁ : s₁.sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤ Q :=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_right.trans Finset.subset_union_left)) W
   have hq₂ : s₂.sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤ Q :=
     Seminorm.le_def.mp (Finset.sup_mono Finset.subset_union_right) W
-  have hz : 0 < Z := hX.trans_le hXZ
+  have hz  := hX.trans_le hXZ
   let lo : ℂ := (X : ℂ) * ∑ E ∈ smallDivisors P S Y,
     (subsetMobius P E / (subsetNorm P E : ℂ)) * radialDual W (X / subsetNorm P E)
   let mid : ℂ := (X : ℂ) * ∑ E ∈ middleDivisors P S Y Z,
@@ -316,7 +257,6 @@ end TruncatedPrincipalPoisson
 namespace JointLogSeparation
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
 
 section
 open FourierBridge FirstPassCubeLabels
@@ -341,10 +281,8 @@ lemma source_le_profileSourceBound (g : 𝓢(ℝ, ℂ)) (J i : ℕ) (hi : i ≤ 
       (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower k) g)
   · intro j hj
     positivity
-  · exact Finset.mem_range.mpr (by omega)
+  simp_all
 
-def outerWindow (V : Fin 7 → ℝ → ℂ) (z ud ue uv kap : ℝ) : ℂ :=
-  V 0 z * V 1 ud * V 2 ue * V 3 uv * V 4 kap
 
 def fixedColumnTest (V : ℝ → ℂ) (t : ℝ) (x : ℝ) : ℂ := V x * logPhase t x
 
@@ -358,7 +296,6 @@ lemma weighted_schwartz_integrable (b : 𝓢(ℝ, ℂ)) (J : ℕ) :
 
 end JointLogSeparation
 
-open scoped BigOperators
 namespace FiniteOverlapDecomposition
 variable {ι : Type*} [DecidableEq ι]
 
@@ -397,7 +334,7 @@ lemma split_mem {F : Finset ι} {ST : Finset ι × Finset ι}
     exact ⟨hTF hi.1, by tauto⟩
   · apply Finset.disjoint_left.mpr
     intro i hi hj
-    exact (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp hj).1
+    simp_all
 
 lemma join_mem {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
     join GUV ∈ F.powerset ×ˢ F.powerset := by
@@ -416,7 +353,6 @@ lemma split_join {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
       Finset.mem_product, Finset.mem_powerset] using h
   rcases hh with ⟨_, ⟨hU, hV⟩, hd⟩
   have hUG : Disjoint U G := Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hU hi)).2 hg)
-  have hVG : Disjoint V G := Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hV hi)).2 hg)
   have h₀ : (G ∪ U) ∩ (G ∪ V) = G := by
     ext i
     have hi : i ∈ U → i ∈ V → False := fun hi hj => Finset.disjoint_left.mp hd hi hj
@@ -431,7 +367,7 @@ lemma split_join {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
   have h₂ : (G ∪ V) \ (G ∪ U) = V := by
     ext i
     have hi : i ∈ V → i ∈ U → False := fun hi hj => Finset.disjoint_left.mp hd.symm hi hj
-    have hj : i ∈ V → i ∈ G → False := fun hi hj => Finset.disjoint_left.mp hVG hi hj
+    have hj : i ∈ V → i ∈ G → False := fun hi hj => Finset.disjoint_left.mp (Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hV hi)).2 hg)) hi hj
     simp only [Finset.mem_union, Finset.mem_sdiff]
     tauto
   simp only [split, join, h₀, h₁, h₂]
@@ -449,7 +385,7 @@ theorem sum_pair_eq_overlap {β : Type*} [AddCommMonoid β]
       exact split_mem hST
     · intro ST hST SU hSU heq
       have hh := congrArg join heq
-      simpa only [join_split] using hh
+      simpa [join_split] using hh
     · intro GUV hGUV
       exact ⟨join GUV, join_mem hGUV, split_join hGUV⟩
     · intro ST hST

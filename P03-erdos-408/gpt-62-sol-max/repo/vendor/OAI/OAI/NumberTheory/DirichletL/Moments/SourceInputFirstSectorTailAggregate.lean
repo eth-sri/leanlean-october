@@ -17,7 +17,7 @@ open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentHec
 local notation "O"=>ActualEisensteinCubic.O
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)
-    (hw : ∀ i,‖w i‖≤1) (B : ℝ) (_hB : 0≤B)
+    (hw : ∀ i,‖w i‖≤1) (B : ℝ)
     (hF : ∀ i j,c i≠0 → c j≠0 → ‖F i j‖≤B) :
     ‖∑ i,∑ j,((c i*w i)*star (c j*w j))*F i j‖≤(∑ i,‖c i‖)^2*B := by
   have ht (i j : α) : ‖((c i*w i)*star (c j*w j))*F i j‖≤‖c i‖*‖c j‖*B := by
@@ -65,7 +65,7 @@ theorem local_discarded_energy_bound (Adec : ℕ) (ε : ℝ) (hε : 0<ε) :
     (fun I => CenteredMomentHeckeExpansion.rowWeight η m A 1 t I)
     (fun I J => CenteredMomentFirstSectorLocalization.discardedPair I J (Finset.mem_filter.mp I.property).2
       (Finset.mem_filter.mp J.property).2 W K X Z ξ)
-    (fun I => rowWeight_norm_le_one η m A 1 t I (Finset.mem_filter.mp I.property).2.1) B hB hpair
+    (fun I => rowWeight_norm_le_one η m A 1 t I (Finset.mem_filter.mp I.property).2.1) B hpair
   have hm : (∑ I : supportedColumns S,‖c I‖)≤∑ I∈S,‖c I‖ := by
     rw [Finset.sum_coe_sort (supportedColumns S) (fun I => ‖c I‖)]
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (fun _ _ _ => norm_nonneg _)

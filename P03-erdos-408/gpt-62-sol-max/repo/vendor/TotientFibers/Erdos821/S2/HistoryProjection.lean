@@ -8,7 +8,6 @@ public import Erdos821.S2.ResiduePaths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -24,7 +23,7 @@ theorem smallPhysical_act_iff {M : ℕ} (y : P.SmallResidues) (π : P.Permutatio
     constructor
     · intro i j he
       have he' : (P.act π a) g.val ((π g.val).symm i) = (P.act π a) g.val ((π g.val).symm j) := by
-        simpa only [PrimeGroups.act, Equiv.apply_symm_apply] using he
+        simpa [PrimeGroups.act, Equiv.apply_symm_apply] using he
       exact (π g.val).symm.injective ((hs g).1 he')
     · intro i
       have he : (P.act π a) g.val ((π g.val).symm i) = a g.val i := by
@@ -65,7 +64,7 @@ theorem smallPhysical_before (hn : 0 < n) (hH : H.Valid) (i : Fin (n + 1)) :
   refine Fin.cases ?_ (fun j => ?_) i
   · let e : Fin n := ⟨0, hn⟩
     have hs := (hH.2.2.2 e).1.1
-    have hp : P.smallPhysical (H.after 0).1 (H.after 0).2.1 :=
+    have hp  :=
       (smallPhysical_act_iff (H.after 0).1 (H.edge e).1 (H.after 0).2.1).mp hs
     rw [(hH.2.2.1 0).1, (hH.2.2.1 0).2.1]
     exact hp
@@ -78,7 +77,7 @@ theorem toResiduePath_valid (hTask : EdgeLiveConservationTask) (hn : 0 < n)
   · intro i g
     by_cases hg : P.big g = true
     · exact (H.big_active_injective hTask hH hd i ⟨g, hg⟩).1
-    · have hs : P.big g = false := by cases he : P.big g <;> simp_all
+    · have hs : P.big g = false := by simp_all
       exact (H.smallPhysical_before hn hH i ⟨g, hs⟩).1
   · intro i
     dsimp only [toResiduePath, ResiduePath.source, ResiduePath.target]

@@ -18,67 +18,96 @@ lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 
     _ = (Real.sqrt Q)⁻¹ := by rw [Real.rpow_neg hQ0.le, ← Real.sqrt_eq_rpow]
     _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ hs]; nlinarith [Real.sqrt_nonneg Q]
 
-theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
+/-- Bound the correction by comparing the exponents of its terms. The upper
+bound `Q^b` for the variable `W` allows for growth in the first region. -/
+private theorem unramifiedClosed_bound (Q : ℝ) (A eta v x w z : ℂ)
     (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
-    (hx : (7/8:ℝ) ≤ x.re) (hw : (19/20:ℝ) ≤ w.re) (hz : (33/200:ℝ) ≤ z.re) :
-    ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(363/200:ℝ)) := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
+    {b e t : ℝ} (hb : 0 ≤ b) (hw : -w.re ≤ b)
+    (hVh : -6*z.re ≤ -(1/2)) (hRh : 4-6*x.re-6*z.re ≤ -(1/2)) (hDh : -x.re ≤ -(1/2))
+    (hRE : 4-6*x.re-6*z.re+b ≤ e) (hKE : 1-x.re-w.re-6*z.re ≤ e)
+    (hET : e+b ≤ t) (hDV : -x.re-6*z.re ≤ t) (hVW : -6*z.re-w.re ≤ t)
+    (hDW : -x.re-w.re ≤ t) :
+    ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q^t := by
+  have hQ₀ : 0 < Q := by linarith
+  have hQ₁ : 1 ≤ Q := by linarith
   let V := coordV Q z
   let R := coordR Q A x z
   let W := coordW Q v w
   let D := coordD Q eta v x
   let K := coordK Q eta x w
-  have hV : ‖V‖ ≤ Q ^ (-(99/100:ℝ)) := by
-    rw [show V = coordV Q z from rfl, coordV_norm Q hQ0]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
-  have hR : ‖R‖ ≤ Q ^ (-(56/25:ℝ)) :=
-    (coordR_norm_le Q hQ0 A x z hA).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hW : ‖W‖ ≤ Q ^ (-(19/20:ℝ)) :=
-    (coordW_norm_le Q hQ0 v w hv).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hD : ‖D‖ ≤ Q ^ (-(7/8:ℝ)) :=
-    (coordD_norm_le Q hQ0 eta v x heta hv).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hK : ‖K‖ ≤ Q ^ (-(33/40:ℝ)) :=
-    (coordK_norm_le Q hQ1 eta x w heta).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hVh : ‖V‖ ≤ 1/2 := hV.trans (rpow_le_half Q _ hQ (by norm_num))
-  have hRh : ‖R‖ ≤ 1/2 := hR.trans (rpow_le_half Q _ hQ (by norm_num))
-  have hDh : ‖D‖ ≤ 1/2 := hD.trans (rpow_le_half Q _ hQ (by norm_num))
-  have hWh : ‖W‖ ≤ 1 := by
-    exact hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(19/20:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
-  have hqi : ‖(Q:ℂ)⁻¹‖ ≤ 1 := by
-    rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0, ← one_div]
-    exact (div_le_one hQ0).mpr hQ1
-  let T := Q ^ (-(363/200:ℝ))
-  have hT : 0 ≤ T := Real.rpow_nonneg hQ0.le _
-  have hRT : ‖R‖ ≤ T := hR.trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num))
-  have hprod (a b a' b' : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b)
-      (haa : a ≤ Q^a') (hbb : b ≤ Q^b') (he : a'+b' ≤ -(363/200:ℝ)) : a*b ≤ T := by
+  let L := Q^b
+  let E := Q^e
+  let T := Q^t
+  have hV : ‖V‖ ≤ Q^(-6*z.re) := (coordV_norm Q hQ₀ z).le
+  have hR := coordR_norm_le Q hQ₀ A x z hA
+  have hD := coordD_norm_le Q hQ₀ eta v x heta hv
+  have hW := coordW_norm_le Q hQ₀ v w hv
+  have hK := coordK_norm_le Q hQ₁ eta x w heta
+  have hV₁ := hV.trans (rpow_le_half Q _ hQ hVh)
+  have hR₁ := hR.trans (rpow_le_half Q _ hQ hRh)
+  have hD₁ := hD.trans (rpow_le_half Q _ hQ hDh)
+  have hQinv : ‖(Q:ℂ)⁻¹‖ ≤ 1 := by
+    rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ₀, ← one_div]
+    exact (div_le_one hQ₀).mpr hQ₁
+  have prod_bound {a c u v r : ℝ} (ha : a ≤ Q^u) (hc : c ≤ Q^v)
+      (hc₀ : 0 ≤ c) (hr : u+v ≤ r) : a*c ≤ Q^r := by
+    refine (mul_le_mul ha hc hc₀ (by positivity)).trans ?_
+    rw [← Real.rpow_add hQ₀]
+    exact Real.rpow_le_rpow_of_exponent_le hQ₁ hr
+  have hRL : ‖R‖*L ≤ E := prod_bound hR le_rfl (by positivity) hRE
+  have hKV : ‖K‖*‖V‖ ≤ E := prod_bound hK hV (norm_nonneg _) (by linarith)
+  have hL : 1 ≤ L := Real.one_le_rpow hQ₁ hb
+  have hWL : ‖W‖ ≤ L := hW.trans (Real.rpow_le_rpow_of_exponent_le hQ₁ hw)
+  have hRW : ‖R‖*(1+‖W‖) ≤ 2*E := by
     calc
-      a*b ≤ Q^a' * Q^b' := mul_le_mul haa hbb hb (Real.rpow_nonneg hQ0.le _)
-      _ = Q^(a'+b') := (Real.rpow_add hQ0 _ _).symm
-      _ ≤ T := Real.rpow_le_rpow_of_exponent_le hQ1 he
-  have hKV : ‖K‖*‖V‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hK hV (by norm_num)
-  have hDV : ‖D‖*‖V‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hD hV (by norm_num)
-  have hDW : ‖D‖*‖W‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hD hW (by norm_num)
-  have hVW : ‖V‖*‖W‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hV hW (by norm_num)
-  have hDVW : ‖D‖*‖V‖*‖W‖ ≤ T :=
-    (mul_le_of_le_one_right (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hWh).trans hDV
+      _ ≤ ‖R‖*(2*L) := by gcongr; linarith
+      _ ≤ _ := by linarith only [hRL, show ‖R‖*(2*L) = 2*(‖R‖*L) by ring]
   let P := markedFactor R V (Q:ℂ)⁻¹ K (-D+W*R) 1
-  have hE : ‖P+D‖ ≤ 28*T := by
-    have h := ProbeLocal.unramified_marked_error_bound R V (Q:ℂ)⁻¹ K W D hRh hVh hqi hDh
-    have hrw : ‖R‖*(1+‖W‖) ≤ 2*T := by
-      calc
-        _ ≤ ‖R‖*2 := mul_le_mul_of_nonneg_left (by linarith) (norm_nonneg _)
-        _ ≤ _ := by nlinarith
+  have hPE : ‖P+D‖ ≤ 28*E := by
+    have h := ProbeLocal.unramified_marked_error_bound R V (Q:ℂ)⁻¹ K W D hR₁ hV₁ hQinv hD₁
     dsimp only [P]
-    nlinarith
-  have h := ProbeLocal.continuedCorrection_defect_bound V W D P hVh hDh
-  change ‖ProbeLocal.continuedCorrection V W D P-1‖ ≤ 240*T
+    linarith only [h, hRW, hKV]
   have hWE : (1+‖W‖)*‖P+D‖ ≤ 56*T := by
     calc
-      _ ≤ 2*(28*T) := mul_le_mul (by linarith) hE (norm_nonneg _) (by norm_num)
-      _ = _ := by ring
-  nlinarith
+      _ ≤ (2*L)*(28*E) := mul_le_mul (by linarith) hPE (norm_nonneg _) (by positivity)
+      _ ≤ _ := by nlinarith only [(prod_bound le_rfl le_rfl (by positivity) hET)]
+  have h₁ : ‖D‖*‖V‖ ≤ T := prod_bound hD hV (norm_nonneg _) (by linarith)
+  have h₂ : ‖V‖*‖W‖ ≤ T := prod_bound hV hW (norm_nonneg _) (by linarith)
+  have h₃ : ‖D‖*‖W‖ ≤ T := prod_bound hD hW (norm_nonneg _) (by linarith)
+  have h₄ : ‖D‖*‖V‖*‖W‖ ≤ T := by
+    rw [mul_right_comm]
+    exact (mul_le_of_le_one_right (by positivity) (by linarith only [hV₁])).trans h₃
+  change ‖ProbeLocal.continuedCorrection V W D P - 1‖ ≤ 240*T
+  nlinarith only [ProbeLocal.continuedCorrection_defect_bound V W D P hV₁ hD₁, h₁, h₂, h₃, h₄, hWE, show 0 ≤ T by positivity]
+
+theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
+    (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
+    (hx : (7/8:ℝ) ≤ x.re) (hw : (19/20:ℝ) ≤ w.re) (hz : (33/200:ℝ) ≤ z.re) :
+    ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(363/200:ℝ)) := by
+  apply unramifiedClosed_bound Q A eta v x w z hQ hA heta hv (b := 0) (e := -(363/200)) <;> linarith
+
+theorem unramifiedClosed_open_region_bound (Q : ℝ) (A eta v x w z : ℂ)
+    (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
+    (hx : (7/8:ℝ) ≤ x.re) (hw : (9/10:ℝ) ≤ w.re) (hz : (4/25:ℝ) ≤ z.re) :
+    ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(17/10:ℝ)) := by
+  apply unramifiedClosed_bound Q A eta v x w z hQ hA heta hv (b := 0) (e := -(17/10)) <;> linarith
+
+theorem unramifiedClosed_first_neighborhood_bound (Q : ℝ) (A eta v x w z : ℂ) (eps : ℝ)
+    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
+    (heps : 0<eps) (hx : (101/200:ℝ)≤x.re) (hz : (27/80:ℝ)≤z.re)
+    (hw : -(3/200:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
+    ‖unramifiedClosed Q A eta v x w z-1‖≤240*Q^(-1-min eps (1/50:ℝ)) := by
+  have h₁ := min_le_left eps (1/50:ℝ)
+  have h₂ := min_le_right eps (1/50:ℝ)
+  apply unramifiedClosed_bound Q A eta v x w z hQ hA heta hv (b := 3/200) (e := -(26/25)) <;> linarith
+
+theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps : ℝ)
+    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
+    (heps : 0<eps) (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
+    (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
+    ‖unramifiedClosed Q A eta v x w z-1‖≤240*Q^(-1-min eps (1/50:ℝ)) := by
+  exact unramifiedClosed_first_neighborhood_bound Q A eta v x w z eps hQ hA heta hv heps
+    (by linarith) (by linarith) (by linarith) hxw
 
 end SevenEighths.ProbeEuler
 end

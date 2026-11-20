@@ -10,84 +10,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CompletedGauss
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 open CubicEisenstein
 
 lemma positive_cpow_comp_continuous (r : ℝ) (hr : 0<r)
     (f : ℝ→ℂ) (hf : Continuous f) : Continuous (fun t=>(r:ℂ)^(f t)) := by
   let : NeZero (r:ℂ) := ⟨Complex.ofReal_ne_zero.mpr hr.ne'⟩
-  exact (_root_.continuous_const_cpow (r:ℂ)).comp hf
+  fun_prop
 
 theorem besselSmoothingIntegrand_reflected_integrable {α : Type*} [Countable α]
     (F : ℝ→ℂ) (r : α→ℝ) (hr : ∀i,0<r i) (a : α→ℂ)
@@ -129,7 +67,7 @@ theorem besselSmoothingIntegrand_reflected_integrable {α : Type*} [Countable α
     have hn (t : ℝ) : (((4*Real.pi*d:ℝ):ℂ)^(3-2*((-1:ℂ)+t*Complex.I)))≠0 :=
       Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.ofReal_ne_zero.mpr (by positivity)))
     convert (((continuous_const (y:=A)).mul h1).mul ((h2.mul h3).div h4 hn)).mul h5 using 1 ;
-      (ext t; simp only [P,besselReflectionFactor,Pi.mul_apply,Pi.div_apply,Complex.ofReal_ofNat])
+      rfl
   have hPn (t : ℝ) : ‖P t‖=‖P 0‖ := by
     simp only [P,norm_mul,besselReflectionFactor_norm q d hq hd,
       Complex.norm_cpow_eq_rpow_re_of_pos hQ,Complex.norm_cpow_eq_rpow_re_of_pos hX]
@@ -159,9 +97,7 @@ end CompletedGauss
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -436,7 +372,7 @@ theorem traceTwistedConjugateSource_wirtingerBar_zero (c : Eis) (hc : c≠0)
         (norm_pos_iff.mpr (cuspFrequency_ne_zero h hh))) hv
     rw [schlafliBesselK_cubic_real _ hx]
     have he0 : ShortDraftTrace.breveE (0:ℂ)=1 := by
-      simp [ShortDraftTrace.breveE]
+      simp
     simp only [mul_zero,he0,mul_one,star_mul,
       Complex.star_def,Complex.conj_ofReal,sourceBesselCoefficients]
     ring
@@ -478,8 +414,8 @@ lemma fixedThetaTwist_norm_le_one (Ψ : Eis→*ℂ) (hΨ : ∀x,‖Ψ x‖≤1) 
 theorem fixedThetaTwist_periodic (Ψ : Eis→*ℂ) (Q : Ideal Eis)
     (hΨ : CanonicalCoefficientClass.FactorsModulo Q Ψ) (x y : Eis)
     (hxy : x-y∈Ideal.span {(9:Eis)}*Q) : fixedThetaTwist Ψ x=fixedThetaTwist Ψ y := by
-  have h9 : (9:Eis)∣x-y := Ideal.mem_span_singleton.mp (Ideal.mul_le_left hxy)
-  have hd : lambda^2∣x-y := lambda_sq_dvd_three.trans ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9)
+  have h9  := Ideal.mem_span_singleton.mp (Ideal.mul_le_left hxy)
+  have hd  := lambda_sq_dvd_three.trans ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9)
   have hp : lambda^2∣x-1 ↔ lambda^2∣y-1 := by
     constructor
     · intro hx
@@ -524,7 +460,7 @@ theorem fixedThetaTwist_infinity_coefficient (Ψ : Eis→*ℂ) (I J : Ideal Eis)
         Ψ (primaryGenerator I)*(Ψ (primaryGenerator J))^3 := by
   have hn := (primaryGenerator_spec I hI).2
   have hb := (primaryGenerator_spec J hJ).2
-  have hnb : lambda^2∣primaryGenerator I*(primaryGenerator J)^3-1 :=
+  have hnb  :=
     CubicJacobiGlobal.primary_mul _ _ hn (primary_pow_congruence _ hb 3)
   rw [normalized_infinityCoefficient_squarefree_cube I J hI hJ hsq,
     fixedThetaTwist_primary Ψ _ hnb,paperLambda_symbol_squarefree_cube _ _ hb,map_mul,map_pow]
@@ -549,8 +485,8 @@ lemma sourceFourier_primary_squarefree_cube_preimage (x:Eis)
     ∃p:({I:Ideal Eis // Squarefree I ∧ primaryGenerator I≠0} ×
       {J:Ideal Eis // primaryGenerator J≠0}),
       primaryGenerator p.1.val*(primaryGenerator p.2.val)^3=x := by
-  have hx0:x≠0:=primary_ne_zero x hx
-  have hgen:primaryGenerator (Ideal.span {x})=x:=primaryGenerator_span x hx0 hx
+  have hx0:=primary_ne_zero x hx
+  have hgen:=primaryGenerator_span x hx0 hx
   have hg:primaryGenerator (Ideal.span {x})≠0:=by rwa [hgen]
   have ht:sourceResidualFourierCoefficient (primaryGenerator (Ideal.span {x}))≠0:=by
     rwa [hgen]

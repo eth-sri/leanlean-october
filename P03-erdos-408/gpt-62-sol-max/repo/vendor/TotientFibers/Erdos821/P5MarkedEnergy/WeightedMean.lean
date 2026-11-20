@@ -36,7 +36,6 @@ theorem wt_le_of_le_abs (h t d : ℝ) (hd : 0 ≤ d) (hdt : d ≤ |h * t|) :
     wt h t ≤ ((1 + d) ^ 2)⁻¹ := by
   unfold wt
   apply inv_anti₀ (by positivity)
-  have : 1 + d ≤ 1 + |h * t| := by linarith
   nlinarith
 
 theorem integrable_inv_one_add_sq_mul {h : ℝ} (hh : h ≠ 0) :
@@ -61,11 +60,10 @@ theorem norm_dp_le_sum (s : Finset ℕ) (g : ℕ → ℂ) (t : ℝ) :
     ‖dp s g t‖ ≤ ∑ n ∈ s, ‖g n‖ := by
   unfold dp
   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun n _ => ?_)
-  rw [norm_mul, P5Core.norm_mellin, mul_one]
+  simp
 
 theorem sum_norm_sq_le_card (s : Finset ℕ) (g : ℕ → ℂ) :
     (∑ n ∈ s, ‖g n‖) ^ 2 ≤ (s.card : ℝ) * sqNorm s g := by
-  unfold sqNorm
   exact sq_sum_le_card_mul_sum_sq
 
 theorem sum_inv_succ_sq_le_two (n : ℕ) :
@@ -77,7 +75,6 @@ theorem sum_inv_succ_sq_le_two (n : ℕ) :
     | zero => norm_num
     | succ k ih =>
       rw [Finset.sum_range_succ]
-      have hk : (0 : ℝ) ≤ k := Nat.cast_nonneg k
       have h1 : (((k + 1 : ℕ) : ℝ) + 1) = (k : ℝ) + 2 := by push_cast; ring
       rw [h1]
       have hstep : (((k : ℝ) + 2) ^ 2)⁻¹ ≤ ((k : ℝ) + 1)⁻¹ - ((k : ℝ) + 2)⁻¹ := by
@@ -94,7 +91,7 @@ theorem sum_inv_succ_sq_le_two (n : ℕ) :
 
 theorem nat_mul_log_nonneg' (N : ℕ) : 0 ≤ (N : ℝ) * Real.log (2 * N) := by
   by_cases hN : N = 0
-  · simp [hN]
+  · simp_all
   · have hN' : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
     exact mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg (by linarith))
 
@@ -103,7 +100,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
     Integrable (fun t => wt h t * ‖dp (Finset.Icc 1 N) g (t + c)‖ ^ 2) ∧
     ∫ t, wt h t * ‖dp (Finset.Icc 1 N) g (t + c)‖ ^ 2 ≤
       K * (1 / h + N * Real.log (2 * N)) * sqNorm (Finset.Icc 1 N) g := by
-  obtain ⟨KMS, hKMS, hMS⟩ := Erdos821.Classical.blueprint_meanSquares
+  obtain ⟨KMS, hKMS, hMS⟩ := Erdos821.Classical.meanSquares
   refine ⟨4 * KMS + 2, by positivity, ?_⟩
   intro N g h c hh
   set s := Finset.Icc 1 N with hs
@@ -114,18 +111,17 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   have hNlog := nat_mul_log_nonneg' N
   have hDc : Continuous D := (P5Core.continuous_dp s g).comp (continuous_id.add continuous_const)
   have hDle : ∀ t, ‖D t‖ ≤ M := fun t => norm_dp_le_sum s g _
-  have hM0 : 0 ≤ M := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
   have hM2 : M ^ 2 ≤ N * q := by
     have := sum_norm_sq_le_card s g
     simpa [s, Nat.card_Icc] using this
   set f : ℝ → ℝ := fun t => wt h t * ‖D t‖ ^ 2 with hfdef
   have hfc : Continuous f := (continuous_wt h).mul (hDc.norm.pow 2)
   have hfnn : ∀ t, 0 ≤ f t := fun t => mul_nonneg (wt_nonneg h t) (by positivity)
-  have hv : Integrable (fun t : ℝ => (1 + (h * t) ^ 2)⁻¹) := integrable_inv_one_add_sq_mul hh.ne'
+  have hv  := integrable_inv_one_add_sq_mul hh.ne'
   have hfle : ∀ t, f t ≤ M ^ 2 * (1 + (h * t) ^ 2)⁻¹ := by
     intro t
     have h1 := wt_le_inv_one_add_sq h t
-    have h2 : ‖D t‖ ^ 2 ≤ M ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hDle t) 2
+    have h2  := pow_le_pow_left₀ (norm_nonneg _) (hDle t) 2
     have h3 : 0 ≤ (1 + (h * t) ^ 2)⁻¹ := by positivity
     calc f t = wt h t * ‖D t‖ ^ 2 := rfl
       _ ≤ (1 + (h * t) ^ 2)⁻¹ * M ^ 2 :=
@@ -174,7 +170,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
       rw [e]
       apply div_nonneg _ hh.le
       linarith
-    have hfrac : (N : ℝ) / n ≤ 1 := (div_le_one hnpos).mpr hNn
+    have hfrac  := (div_le_one hnpos).mpr hNn
     calc ∫ t in (Set.Icc (-T) T)ᶜ, f t ≤ M ^ 2 * (Real.pi / h - 2 * Real.arctan (h * T) / h) := h1
       _ ≤ (N * q) * (2 / (n * h)) := mul_le_mul hM2 h3 hpos3 (by positivity)
       _ = 2 * q / h * (N / n) := by field_simp
@@ -186,8 +182,8 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   set B := KMS * (1 / h + N * Real.log (2 * N)) * q with hBdef
   have hB0 : 0 ≤ B := by positivity
   let a : ℕ → ℝ := fun k => ((k : ℝ) - n) / h
-  let d : ℕ → ℕ := fun k => if n ≤ k then k - n else n - 1 - k
-  let sk : ℕ → ℝ := fun k => ((1 + (d k : ℝ)) ^ 2)⁻¹
+  let d  := fun k => if n ≤ k then k - n else n - 1 - k
+  let sk  := fun k => ((1 + (d k : ℝ)) ^ 2)⁻¹
   have hpiece : ∀ k : ℕ, ∫ t in (a k)..(a (k + 1)), f t ≤ sk k * B := by
     intro k
     have hak : a k ≤ a (k + 1) := by
@@ -208,7 +204,6 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
           have := ht.2; simp only [a] at this
           rw [le_div_iff₀ hh] at this; push_cast at this; linarith
         rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]
-        have hk'' : ((k : ℝ) + 1) ≤ n := by exact_mod_cast hk'
         rw [Nat.cast_one]
         calc (n : ℝ) - 1 - k ≤ -(h * t) := by linarith
           _ ≤ |h * t| := neg_le_abs _
@@ -246,7 +241,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
     rw [e1, e2]
     linarith [sum_inv_succ_sq_le_two n]
   have hmid : ∫ t in Set.Icc (-T) T, f t ≤ 4 * B := by
-    have ha0 : a 0 = -T := by simp only [a, hT]; push_cast; ring
+    have ha0 : a 0 = -T := by ring
     have ha2 : a (n + n) = T := by simp only [a, hT]; push_cast; ring
     rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by linarith),
       ← ha0, ← ha2, ← intervalIntegral.sum_integral_adjacent_intervals
@@ -263,6 +258,6 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   calc (∫ t in Set.Icc (-T) T, f t) + ∫ t in (Set.Icc (-T) T)ᶜ, f t
       ≤ 4 * B + 2 * q / h := add_le_add hmid htail
     _ ≤ 4 * B + 2 * (1 / h + N * Real.log (2 * N)) * q := by linarith
-    _ = (4 * KMS + 2) * (1 / h + N * Real.log (2 * N)) * q := by rw [hBdef]; ring
+    _ = (4 * KMS + 2) * (1 / h + N * Real.log (2 * N)) * q := by ring
 
 end Erdos821.P5Marked

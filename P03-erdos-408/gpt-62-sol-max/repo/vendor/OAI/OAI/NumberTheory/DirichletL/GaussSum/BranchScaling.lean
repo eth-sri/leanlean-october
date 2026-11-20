@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.MeanSquare.ReflectedDyadicSeries
 
 @[expose] public section
@@ -9,73 +10,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CompletedGauss
 open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
 
@@ -90,7 +31,6 @@ def completedBranchScale {ι : Type*} [Fintype ι]
 
 end CompletedGauss
 
-open scoped BigOperators Classical
 namespace LocalReflectionBrackets
 variable {F : Type*} [Field F] [Fintype F]
 
@@ -155,13 +95,11 @@ end CompletedGauss
 namespace InitialMeanSquare
 
 open MeasureTheory
-open scoped BigOperators Classical
 
 section
 open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open ConcretePrimeRowBridge (idealGenerator)
 
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 def sourceLabelUnit (f : O) : Oˣ :=
   Classical.choose (exists_label_unit f (Ideal.span {f}) rfl)
@@ -169,13 +107,6 @@ def sourceLabelUnit (f : O) : Oˣ :=
 lemma sourceLabelUnit_spec (f : O) : f=(sourceLabelUnit f : O)*idealGenerator (Ideal.span {f}) :=
   Classical.choose_spec (exists_label_unit f (Ideal.span {f}) rfl)
 
-section
-variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
 
 end
 
@@ -184,28 +115,17 @@ open FirstPassCubeLabels
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap
 namespace FirstPassCubeLabels
 
-section
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end
 
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,lambda∉Ideal.span {p i})
+  (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p lambda)
 
 lemma blockRow_at_zero (S:Finset ι) (e:ι→ℕ) :
     blockRow p hg S e 0=if S=∅ then 1 else 0 := by

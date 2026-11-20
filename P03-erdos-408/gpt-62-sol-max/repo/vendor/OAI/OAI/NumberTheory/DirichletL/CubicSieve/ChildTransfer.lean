@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Fourier.FrequencyTwists
 
 @[expose] public section
@@ -11,94 +12,24 @@ noncomputable section
 namespace SecondPassArithmetic
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 
-open scoped BigOperators Classical
 
-section
-open ActualEisensteinCubic
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
 
 section
 open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius supportConjugateSum)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 theorem secondInputCoefficient_union (Ψ : O →* ℂ) (m c d : O)
     (H : Finset ι → ℂ) (G U : Finset ι) (hd : Disjoint G U) :
@@ -196,8 +127,8 @@ section
 open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 include hg
 
 theorem commonProduct_mask
@@ -225,7 +156,6 @@ theorem sum_remove_common_pool
     (F G : Finset ι) (A : Finset ι → ℂ) :
     (∑ U ∈ (F \ G).powerset, A U) =
       ∑ U ∈ F.powerset, rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) * A U := by
-  have hsub : (F \ G).powerset ⊆ F.powerset := Finset.powerset_mono.mpr Finset.sdiff_subset
   calc
     _ = ∑ U ∈ (F \ G).powerset,
         rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) * A U := by
@@ -235,7 +165,7 @@ theorem sum_remove_common_pool
         (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hU) hi)).2 hG)
       rw [commonProduct_mask p hg hinj U G, ite_eq_left hd, one_mul]
     _ = _ := by
-      apply Finset.sum_subset hsub
+      apply Finset.sum_subset (Finset.powerset_mono.mpr Finset.sdiff_subset)
       intro U hUF hUG
       have hd : ¬ Disjoint U G := by
         intro hd
@@ -274,8 +204,8 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 include hg
 
 theorem sum_pair_remove_common_pool
@@ -354,16 +284,14 @@ end
 open ActualEisensteinCubic
 
 theorem secondMaskQuotient_span {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
     (E G : Finset ι) (hEG : E ⊆ G) :
     Ideal.span {secondMaskQuotient p E G hEG} =
       ∏ i ∈ G \ E, Ideal.span {p i} := by
-  have hE : (∏ i ∈ E, Ideal.span {p i}) ≠ 0 :=
-    Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (Ideal.span {p i}))
   have he : Ideal.span {primeSubsetGenerator (fun i => Ideal.span {p i}) E} =
       ∏ i ∈ E, Ideal.span {p i} := by
     rw [primeSubsetGenerator, ConcretePrimeRowBridge.span_idealGenerator]
-  apply mul_left_cancel₀ hE
+  apply mul_left_cancel₀ (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (Ideal.span {p i})))
   calc
     _ = Ideal.span {(primeSubsetGenerator (fun i => Ideal.span {p i}) E *
         secondMaskQuotient p E G hEG)} := by rw [← he, Ideal.span_singleton_mul_span_singleton]
@@ -376,15 +304,14 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportMobius)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def maskedSecondSource (G U V : Finset ι) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) : ℂ :=
   ∑' z : O, rowCoprimeMask (fun i => Ideal.span {p i}) G z *
@@ -504,8 +431,6 @@ theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open FirstPassCubeLabels (cubeCoreCoefficient cubeOddSupport coreRayCoefficient coreRayTwist
   coreRayCharacter dilatedCoreRow dilatedRayColumn afterDilationLabel b0Label jLabel)
 open FirstCauchyArithmetic (supportMobius supportRay supportConjugateSum)
@@ -518,9 +443,9 @@ def sideRayMonoid (negative : Bool) (χ : RayCharacter) : O →* ℂ :=
   if negative then conjugateRayMonoid χ else rayMonoid χ
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def multiplicativeCoreColumn (Ψ : O →* ℂ) (m : O) (H : Finset ι → ℂ) (S : Finset ι) : ℂ :=
   Ψ (∏ i ∈ S, p i) * rowCoprimeMask (fun i => Ideal.span {p i}) S m * H S

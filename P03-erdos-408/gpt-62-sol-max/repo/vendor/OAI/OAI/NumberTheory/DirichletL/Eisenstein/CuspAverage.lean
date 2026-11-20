@@ -1,6 +1,9 @@
 module
 
+import OAI.RpowArithmetic
 public import OAI.NumberTheory.DirichletL.Eisenstein.RationalTranslations
+
+public import OAI.NumberTheory.DirichletL.Eisenstein.UpperStripIdentity
 
 @[expose] public section
 
@@ -10,90 +13,25 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 lemma ramified_denominator_ne_zero (s : ℂ) (hs : 1<s.re) :
     (3:ℂ)^(3*s-3)-1≠0 := by
   intro he
-  have hpow : (3:ℂ)^(3*s-3)=1 := sub_eq_zero.mp he
+  have hpow  := sub_eq_zero.mp he
   have hnorm : 1<‖(3:ℂ)^(3*s-3)‖ := by
     rw [show (3:ℂ)=((3:ℝ):ℂ) by norm_num,
       Complex.norm_cpow_eq_rpow_re_of_pos (by norm_num)]
     apply Real.one_lt_rpow (by norm_num)
     norm_num
     linarith
-  rw [hpow,norm_one] at hnorm
-  exact lt_irrefl _ hnorm
+  simp_all
 
 lemma cuspWhittakerHeightFactor_zero (s : ℂ) (hs : 1<s.re) :
     cuspWhittakerHeightFactor s 0=((Real.pi:ℂ)/(s-1))*cuspScatterHeightFactor s := by
@@ -114,7 +52,6 @@ lemma opposite_zero_initial_cross (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
   simp only [mul_zero] at ht
   rw [ht,cuspWhittakerHeightFactor_zero s (by linarith),baseOutgoingConstant,hb,
     cuspConstantAverage,scatteringCoefficient,arithmeticDirichletSeries_zero_unramified s (by linarith)]
-  have hs1 : s-1≠0 := by intro he;have hsx : s=1:=sub_eq_zero.mp he;subst s;norm_num at hs
   have halg (D V A P H U : ℂ) (hD:D≠0) (hV:V≠0) :
       2*(U*(P*H))=D*(V*(A+P*((2*D⁻¹)*U/V)*H)-V*A) := by
     field_simp
@@ -126,9 +63,6 @@ lemma opposite_zero_cross_identity :
       (fun s=>((3:ℂ)^(3*s-3)-1)*baseOutgoingConstant s)
       {s : ℂ | 1<s.re ∧ 0<s.im} := by
   let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
   have hleft : AnalyticOnNhd ℂ
       (fun s=>2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s) domain := by
     intro s hs
@@ -143,15 +77,9 @@ lemma opposite_zero_cross_identity :
         ((((differentiableAt_const (3:ℂ)).mul differentiableAt_id).sub_const 3).const_cpow
           (Or.inl (by norm_num))).sub_const 1
     exact hp.mul (baseOutgoingConstant_analyticAt s hs.1 hs.2)
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s:ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hevent : (fun s=>2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s)
-      =ᶠ[𝓝 (5+Complex.I:ℂ)] (fun s=>((3:ℂ)^(3*s-3)-1)*baseOutgoingConstant s) := by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
-    exact opposite_zero_initial_cross s hs.1 hs.2
-  exact hleft.eqOn_of_preconnected_of_eventuallyEq hright hconvex.isPreconnected hstart hevent
+  refine eqOn_of_upperStrip hleft hright (by norm_num) ?_
+  intro s hre him
+  exact opposite_zero_initial_cross s hre him
 
 theorem translatedCuspFourier_opposite_zero_residue :
     translatedCuspFourier 0 oppositeSource cubicEisensteinResidue=cuspConstantAverageResidue := by
@@ -174,13 +102,11 @@ theorem translatedCuspFourier_opposite_zero_residue :
       · norm_num
       · simpa using ht)
     linear_combination (((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*he
-  have heq : 2*translatedCuspFourier 0 oppositeSource cubicEisensteinResidue=2*cuspConstantAverageResidue :=
-    tendsto_nhds_unique_of_eventuallyEq hl hr hevent
-  exact mul_left_cancel₀ (by norm_num : (2:ℂ)≠0) heq
+  exact mul_left_cancel₀ (by norm_num : (2:ℂ)≠0) (tendsto_nhds_unique_of_eventuallyEq hl hr hevent)
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
 open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
@@ -274,28 +200,20 @@ theorem translatedCuspFourier_residue_eq_of_initial (M N:levelTwo)
       ∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (sourceComplexMatrix N • w)∂hyperbolicVolume) :
     translatedCuspFourier 0 M cubicEisensteinResidue=
       translatedCuspFourier 0 N cubicEisensteinResidue := by
-  let f : ℂ→ℂ := translatedCuspFamily 0 M 2 3 (by norm_num) (by norm_num)
-  let g : ℂ→ℂ := translatedCuspFamily 0 N 2 3 (by norm_num) (by norm_num)
+  let f  := translatedCuspFamily 0 M 2 3 (by norm_num) (by norm_num)
+  let g  := translatedCuspFamily 0 N 2 3 (by norm_num) (by norm_num)
   let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
   have hf : AnalyticOnNhd ℂ f domain := fun s hs=>
     translatedCuspFamily_analyticAt_nonreal 0 M 2 3 (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne'
   have hg : AnalyticOnNhd ℂ g domain := fun s hs=>
     translatedCuspFamily_analyticAt_nonreal 0 N 2 3 (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne'
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s:ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hev : f=ᶠ[𝓝 (5+Complex.I:ℂ)]g := by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
+  have heq := eqOn_of_upperStrip hf hg (by norm_num) (by
+    intro s hre him
     dsimp only [f,g]
-    rw [translatedCuspFamily_initial 0 M 2 3 (by norm_num) (by norm_num) (by norm_num) s hs.1 hs.2,
-      translatedCuspFamily_initial 0 N 2 3 (by norm_num) (by norm_num) (by norm_num) s hs.1 hs.2]
+    rw [translatedCuspFamily_initial 0 M 2 3 (by norm_num) (by norm_num) (by norm_num) s hre him,
+      translatedCuspFamily_initial 0 N 2 3 (by norm_num) (by norm_num) (by norm_num) s hre him]
     simp only [cuspFourierPhase_zero,mul_one]
-    exact he s hs.1 hs.2
-  have heq := hf.eqOn_of_preconnected_of_eventuallyEq hg hconvex.isPreconnected hstart hev
+    exact he s hre him)
   have hl := (translatedCuspFamily_residue_limit 0 M 2 3 (by norm_num) (by norm_num)).comp
     upperVertical_tendsto_cubic_punctured
   have hr := (translatedCuspFamily_residue_limit 0 N 2 3 (by norm_num) (by norm_num)).comp
@@ -377,7 +295,6 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 section
 
@@ -385,7 +302,7 @@ lemma complex_gaussian_power_integrable (s : ℂ) (r : ℝ)
     (hs : 0<s.re) (hr : 0<r) :
     IntegrableOn (fun x : ℝ => (x:ℂ)^(s-1)*Complex.exp (-(r:ℂ)*(x:ℂ)^2))
       (Set.Ioi 0) volume := by
-  have hs2 : 0<(s/(2:ℂ)).re := by simpa using half_pos hs
+  have hs2 : 0<(s/(2:ℂ)).re := by simp_all
   have hbase : MellinConvergent (fun t : ℝ => Complex.exp (-(t:ℂ))) (s/2) := by
     simpa only [MellinConvergent,smul_eq_mul,Complex.ofReal_exp,Complex.ofReal_neg,mul_comm]
       using Complex.GammaIntegral_convergent hs2
@@ -401,7 +318,7 @@ lemma complex_gaussian_power_integral (s : ℂ) (r : ℝ)
     (hs : 0<s.re) (hr : 0<r) :
     (∫x : ℝ in Set.Ioi 0,(x:ℂ)^(s-1)*Complex.exp (-(r:ℂ)*(x:ℂ)^2)) =
       (1/2:ℂ)*((1/(r:ℂ))^(s/2)*Complex.Gamma (s/2)) := by
-  have hs2 : 0<(s/(2:ℂ)).re := by simpa using half_pos hs
+  have hs2 : 0<(s/(2:ℂ)).re := by simp_all
   have he := mellin_comp_rpow (fun t : ℝ => Complex.exp (-((r*t:ℝ):ℂ))) s 2
   simp only [mellin,smul_eq_mul,Real.rpow_two,Complex.ofReal_mul,
     Complex.ofReal_pow,Complex.real_smul] at he
@@ -411,8 +328,6 @@ lemma complex_gaussian_power_integral (s : ℂ) (r : ℝ)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 open Finset AddChar MulChar EisensteinEmbedding
 
 def cubicMellinMixture (s : ℂ) (t x : ℝ) : ℂ :=
@@ -489,10 +404,7 @@ lemma cubicMellinMixture_integral_norm (s : ℂ) (hs : 1/3<s.re)
           Real.rpow_neg_eq_inv_rpow,one_div,inv_inv,
           Real.mul_rpow (by norm_num : 0≤(4:ℝ)) ht.le]
       rw [hpow]
-      have hp : t^(-(2:ℝ)/3)*t^((s.re-1/3)/2)=t^((s.re+1/3)/2-1) := by
-        rw [←Real.rpow_add ht]
-        congr 1
-        ring
+      have hp : t^(-(2:ℝ)/3)*t^((s.re-1/3)/2)=t^((s.re+1/3)/2-1) := by rpow_ring ht
       calc
         _ = ((1/2:ℝ)*(4:ℝ)^((s.re-1/3)/2)*Real.Gamma ((s.re-1/3)/2))*
             ((t^(-(2:ℝ)/3)*t^((s.re-1/3)/2))*Real.exp (-t)) := by ring
@@ -524,7 +436,7 @@ lemma cubicMellinMixture_integral_t (s : ℂ) (x : ℝ) :
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
   dsimp only
-  have ht0 : (t:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
+  have ht0  := Complex.ofReal_ne_zero.mpr (ne_of_gt ht)
   have he : Complex.exp (-(t:ℂ))*Complex.exp (-((1/(4*t):ℝ):ℂ)*(x:ℂ)^2)=
       Complex.exp (-(t:ℂ)-(x:ℂ)^2/(4*t)) := by
     rw [←Complex.exp_add]
@@ -538,9 +450,6 @@ lemma cubicMellinMixture_integral_t (s : ℂ) (x : ℝ) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
 
 lemma schlafliBesselK_cubic_mellin_mixture (s : ℂ) (x : ℝ) (hx : 0<x) :
     (x:ℂ)^(s-1)*schlafliBesselK (1/3) x =
@@ -588,8 +497,6 @@ theorem schlafliBesselK_cubic_mellin (s : ℂ) (hs : 1/3<s.re) :
   have hmix : Integrable (Function.uncurry (cubicMellinMixture s))
       ((volume.restrict (Set.Ioi 0)).prod (volume.restrict (Set.Ioi 0))) := by
     convert cubicMellinMixture_integrable s hs using 1
-    funext p
-    rcases p with ⟨t,x⟩
     rfl
   have hswap := (integral_integral_swap hmix).symm
   have h4 : (4:ℂ)^((s-1/3)/2)=(2:ℂ)^(2*((s-1/3)/2)) := by

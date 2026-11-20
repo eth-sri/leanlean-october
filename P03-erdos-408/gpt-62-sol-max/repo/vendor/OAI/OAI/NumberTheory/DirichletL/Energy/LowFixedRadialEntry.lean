@@ -9,21 +9,18 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry
-open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData
+open CenteredMomentEnergyZeroComparison CenteredMomentEnergyFixedRadialReduction
+open CenteredMomentEnergyOriginalSource CenteredMomentFirstSourceReduction
+open CenteredMomentSourceInputTailUniform CenteredMomentSourceRow CenteredMomentSecondHeightFamily
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentEnergyState
+open CenteredMomentEnergyPhysicalEntry CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 omit [DecidableEq ι] in
 lemma zero_control (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(W₁ W₂:𝓢(ℝ,ℂ)):

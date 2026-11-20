@@ -92,7 +92,6 @@ lemma eventually_mul_logLogLog_le (C : ℝ) :
     rw [logLogLog]
     linarith
   have hs0 : 0 ≤ logLogLog x := by
-    rw [logLogLog]
     exact log_nonneg hT1
   have h1 : 1 ≤ logLog x ^ (1 / 2 : ℝ) := one_le_rpow hT1 (by norm_num)
   have h2 : C * (logLogLog x + 1) ≤ |C| * (logLogLog x + 1) :=
@@ -114,7 +113,6 @@ lemma eventually_sieveDepth {Ch : ℝ} (hCh : 0 < Ch) (h₀ : ℕ) : ∀ᶠ x : 
       exp (-(sieveDepth Ch x : ℝ)) ≤ logLog x ^ (-(2 * Ch)) := by
   filter_upwards [tendsto_logLogLog.eventually_ge_atTop ((h₀ + 1) / Ch),
     tendsto_logLog.eventually_gt_atTop 0] with x hs hT
-  have hs0 : 0 ≤ logLogLog x := le_trans (by positivity) hs
   have hceil : Ch * logLogLog x ≤ ⌈Ch * logLogLog x⌉₊ := Nat.le_ceil _
   have hh : (2 : ℝ) * (Ch * logLogLog x) ≤ sieveDepth Ch x := by
     rw [sieveDepth]
@@ -150,11 +148,9 @@ lemma eventually_presieveExponent {c Ch : ℝ} (hc : 0 < c) (hCh : 0 < Ch) : ∀
   set T := logLog x
   set h := sieveDepth Ch x
   have hT0 : 0 < T := by linarith
-  have hh0 : (0 : ℝ) ≤ h := Nat.cast_nonneg h
   -- `h ≤ 2 C_h s + 2 ≤ 2 C_h T + 2`
   have hh : (h : ℝ) ≤ 2 * Ch * T + 2 := by
     have hs0 : 0 ≤ logLogLog x := by
-      rw [logLogLog]
       exact log_nonneg hT1
     have h1 := Nat.ceil_lt_add_one (show 0 ≤ Ch * logLogLog x by positivity)
     have h2 : (h : ℝ) = 2 * ⌈Ch * logLogLog x⌉₊ := by simp [h, sieveDepth]
@@ -217,7 +213,7 @@ lemma prod_one_sub_inv_primes_le : ∃ C : ℝ, 0 < C ∧ ∀ y : ℝ, 2 ≤ y �
     ∏ p ∈ primesIoc 1 y, (1 - (1 : ℝ) / p) ≤ C / Real.log y := by
   obtain ⟨E, hE, h⟩ := abs_sum_inv_primes_sub_le
   refine ⟨exp E, exp_pos E, fun y hy => ?_⟩
-  have hly : 0 < Real.log y := log_pos (by linarith)
+  have hly  := log_pos (by linarith)
   have hle : ∏ p ∈ primesIoc 1 y, (1 - (1 : ℝ) / p) ≤
       ∏ p ∈ primesIoc 1 y, exp (-((1 : ℝ) / p)) := by
     apply prod_le_prod₀
@@ -260,14 +256,14 @@ lemma sum_inv_primes_block_le : ∃ C₀ : ℝ, ∀ (P : Finset ℕ), (∀ p ∈
       · simp
     refine (sum_le_sum_of_subset_of_nonneg hsub' fun p _ _ => by positivity).trans ?_
     rw [sum_pair (by norm_num)]
-    have : 0 ≤ E / Real.log 2 := div_nonneg hE hl2.le
-    have : (0.6931471803 : ℝ) < Real.log 2 := log_two_gt_d9
+    have  := div_nonneg hE hl2.le
+    have  := log_two_gt_d9
     norm_num
     linarith
-  · have hw0 : 0 < Real.log w := log_pos hw
+  · have hw0  := log_pos hw
     have := h w (w ^ 2) hw2 (by nlinarith)
     rw [Real.log_pow, Nat.cast_ofNat, mul_div_assoc, div_self hw0.ne', mul_one] at this
-    have hEw : E / Real.log w ≤ E / Real.log 2 :=
+    have hEw  :=
       div_le_div_of_nonneg_left hE hl2 (log_le_log (by norm_num) hw2)
     have := (abs_le.1 this).2
     linarith
@@ -348,17 +344,16 @@ lemma mem_piFinset_of_mem_slotTuples {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin
   rw [Fintype.mem_piFinset]
   intro i
   have hp := ((mem_slotTuples.1 hQ).1 i).2.1
-  have hpos : ∀ j, 0 < Q j := fun j => ((mem_slotTuples.1 hQ).1 j).2.1.pos
-  have hdvd : Q i ≤ ∏ j, Q j :=
+  have hpos  := fun j => ((mem_slotTuples.1 hQ).1 j).2.1.pos
+  have hdvd  :=
     Nat.le_of_dvd (prod_pos fun j _ => hpos j) (dvd_prod_of_mem _ (mem_univ i))
   have hprod := prod_le_of_mem_slotTuples (by linarith) hQ
-  have hle : (Q i : ℝ) ≤ x := by
-    calc (Q i : ℝ) ≤ ((∏ j, Q j : ℕ) : ℝ) := by exact_mod_cast hdvd
-      _ = ∏ j, (Q j : ℝ) := by push_cast; rfl
-      _ ≤ x ^ ∑ j, v j := hprod
-      _ ≤ x ^ (1 : ℝ) := rpow_le_rpow_of_exponent_le hx.le hv
-      _ = x := rpow_one x
-  exact mem_primesIoc_one.2 ⟨hp, hle⟩
+  refine mem_primesIoc_one.2 ⟨hp, ?_⟩
+  calc (Q i : ℝ) ≤ ((∏ j, Q j : ℕ) : ℝ) := by exact_mod_cast hdvd
+    _ = ∏ j, (Q j : ℝ) := by push_cast; rfl
+    _ ≤ x ^ ∑ j, v j := hprod
+    _ ≤ x ^ (1 : ℝ) := rpow_le_rpow_of_exponent_le hx.le hv
+    _ = x := rpow_one x
 
 /-- `∑_Q 1 / Q ≤ (∑_{p ≤ x} 1 / p)^{k}` when `∑ v ≤ 1`. -/
 lemma sum_inv_slotTuples_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin k → ℝ}
@@ -419,7 +414,7 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} {u v :
     _ ≤ #(Fintype.piFinset fun _ : Fin (k + 1) => P) := by
         rw [sum_const, nsmul_one]
         exact_mod_cast card_le_card hsub
-    _ = (#P : ℝ) ^ (k + 1) := by rw [Fintype.card_piFinset]; simp
+    _ = (#P : ℝ) ^ (k + 1) := by simp
     _ ≤ (2 / ε) ^ (k + 1) := pow_le_pow_left₀ (Nat.cast_nonneg _)
         (card_primeFactors_gt_le hx hε hn hnx) _
 

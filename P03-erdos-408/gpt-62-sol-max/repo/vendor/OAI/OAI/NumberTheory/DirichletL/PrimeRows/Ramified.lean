@@ -9,18 +9,18 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve
+open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def ramifiedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z : ℂ) : ℂ :=
   let p := primaryGenerator P.val
   let hp := supported_primeGenerator_prime P hs
-  letI : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  let hsp : Supported (Ideal.span {p}) := (span_primaryGenerator_of_supported P.val hs).symm ▸ hs
+  letI  := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let hsp  := (span_primaryGenerator_of_supported P.val hs).symm ▸ hs
   let hg := (supported_prime_data p hp hsp).1
   ramifiedClosed p hp hg (targetMonoid η p) (actualACube η p)
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ (unitPart u p hp)))
@@ -31,11 +31,8 @@ theorem localCorrection_eq_ramified (η : Character) (u : FreeRow) (P : PrimeIde
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     localCorrection η u P x w z=ramifiedCorrection η u P hs x w z := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  obtain ⟨hp, hspan, hsp, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2
   have hdiv : p∣u.val := Ideal.span_singleton_le_span_singleton.mp
     (by rw [hspan]; exact Ideal.dvd_iff_le.mp hPu)

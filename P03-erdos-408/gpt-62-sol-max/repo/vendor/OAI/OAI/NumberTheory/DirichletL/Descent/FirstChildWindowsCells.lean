@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsActual
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindows
 public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 
 @[expose] public section
@@ -8,12 +9,16 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstChildWindows
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
+
+def actualOuterRatios {ι : Type*} (p : ι→O) (A₁ A₂ C R : ℝ) (d h : O)
+    (j : FirstCommonIndex ι) (s : Fin 9→ℝ) (i : Fin 7) : ℝ :=
+  firstCommonNorms p A₁ A₂ C R d h j (outerIndex i)/s (outerIndex i)
 
 abbrev SourceIndex := Fin 6→ℕ
 
@@ -59,8 +64,8 @@ lemma sourceCell_ratios {κ : Type*} [DecidableEq κ] (q : κ→Fin 6→ℝ) (S 
     (div_le_iff₀ (dyadScale_pos _)).mpr hh.2.le⟩
 
 theorem actual_original_cell_ratios {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (S : Finset κ) (selector C₁ C₂ : κ→Finset ι→ℂ)
     (A₁ A₂ C R : κ→ℝ) (d h : κ→O)
     (hq : ∀x∈S,∀i,1≤sourceNorms A₁ A₂ C R d h x i)

@@ -40,10 +40,10 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
   let c := (min 1 a)^K
   let B := (max 1 b)^K
   have hq : 0<q := calibration_elementNorm_pos _
-  have hc : 0<c := by dsimp [c];positivity
-  have hB : 0<B := by dsimp [B];positivity
+  have hc : 0<c := by positivity
+  have hB : 0<B := by positivity
   let Ck := 2*bCut*(q/c^2)
-  have hCk : 0<Ck := by dsimp [Ck];positivity
+  have hCk : 0<Ck := by positivity
   obtain ⟨degree,C,ZC,hbound⟩ := low_selected_nominal_energy η S hS hbad ell hell hsum Ck b ε hCk hε hε1
   let C0 := ((Fintype.card RayRing:ℝ)+1)*Real.sqrt (C*B^2/q)/(2*Real.pi)
   have hC0 : 0<C0 := by dsimp [C0];positivity
@@ -55,17 +55,17 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
   let L := elementNorm (∏i : J,(p i).val)
   let Q := lowPhysicalScale (calibrationForSet S hS) (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L)
   intro hX0 hY0
-  have hz : 0<Z := lt_trans zero_lt_one hZ.1
-  have hL : 0<L := lowUnselectedProduct_norm_pos _
+  have hz  := lt_trans zero_lt_one hZ.1
+  have hL  := lowUnselectedProduct_norm_pos _
     (fun i n hn=>canonicalSlotSupport_nonzero _ (hT i) n hn) J p
   have hnormE (i : Fin K) (n : O) (hn : n∈canonicalSlotSupport (T i)) :
       a*Z^(ell i)≤elementNorm n ∧ elementNorm n≤b*Z^(ell i) := by
     obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hn
     rw [primaryTuple_norm P (hT i P hP)]
     exact hnorm i P hP
-  have hLlo : c*Z^(lowUnselectedLength ell J)≤L :=
+  have hLlo  :=
     lowUnselectedProduct_norm_lower ell a Z ha hz _ (fun i n hn=>(hnormE i n hn).1) J p
-  have hLhi : L≤B*Z^(lowUnselectedLength ell J) :=
+  have hLhi  :=
     lowUnselectedProduct_norm_upper_nominal ell b Z hz _ (fun i n hn=>(hnormE i n hn).2) J p
   have hQ : 0<Q := lowPhysicalScale_pos _ _ _ hX0 hY0
   let R := lowNumeratorRows aCut bCut haCut hbCut Q hQ
@@ -80,15 +80,14 @@ theorem low_physical_inverse_normalized (η : HeckeFamily.Character) (S : Finset
       (lowPhysicalScale_nominal_bound (calibrationForSet S hS) Z L c (lowUnselectedLength ell J) hz hc hLlo)
       (show 0≤2*bCut by positivity)
     simpa only [Ck,mul_assoc] using hh
-  have he (σ : RayRing) : (∑z∈R,‖row σ z‖^2)≤
-      C*(1+‖t‖)^degree*Z^(5/6-2*lowUnselectedLength ell J+507*ε) :=
+  have he (σ : RayRing)  :=
     hZ.2 T hT hout hdis (fun i P hP=>(hnorm i P hP).2) J R hrows X hX hXlo hXhi W hW (fun i=>Z^(ell i)) t σ
   have hn (σ : RayRing) : Real.sqrt (∑z∈R,‖row σ z‖^2)/Real.sqrt Q≤
       Real.sqrt (C*B^2/q)*(1+‖t‖)^degree*Z^(507*ε/2) := by
     dsimp only [Q]
     rw [lowPhysicalScale_source _ Z L hz]
     exact low_inverse_sqrt_normalized q C B Z L (lowUnselectedLength ell J) (507*ε) (1+‖t‖)
-      (∑z∈R,‖row σ z‖^2) degree hq ZC.le hB.le hz hL (le_add_of_nonneg_right (norm_nonneg t))
+      (∑z∈R,‖row σ z‖^2) degree hq ZC.le hz hL (le_add_of_nonneg_right (norm_nonneg t))
       (Finset.sum_nonneg (fun _ _=>sq_nonneg _)) (he σ) hLhi
   change (Real.sqrt Q)⁻¹/(2*Real.pi)*(∑σ : RayRing,Real.sqrt (∑z∈R,‖row σ z‖^2))≤_
   calc

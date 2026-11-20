@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedChosenDual
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open CanonicalRowCompletion
 noncomputable section
 
@@ -39,11 +39,7 @@ lemma markedActiveSet_injective (e : α⊕β≃γ) :
   dsimp only at hh
   rw [← complete_marked_set,← complete_marked_set,
     optionalPrimeActive_completeActiveSet,optionalPrimeActive_completeActiveSet] at hh
-  apply Prod.ext
-  · have h := congrArg Finset.toLeft hh
-    simpa using h
-  · have h := congrArg Finset.toRight hh
-    simpa using h
+  aesop
 
 theorem exists_marked_source_selection (e : α⊕β≃γ)
     (D : Finset (γ⊕σ)→Type*) (fallback : ∀ A, D A)

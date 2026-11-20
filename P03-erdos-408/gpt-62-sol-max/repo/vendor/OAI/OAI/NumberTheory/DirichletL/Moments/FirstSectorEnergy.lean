@@ -8,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSectors
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstSectorEnergy
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentRowNorm
-open CenteredMomentFirstSectors CenteredMomentCommonSectors CenteredMomentCompleteCommon
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFourier IdealMobiusDivisorSum
+open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentSourceRow
+open CenteredMomentHeckeExpansion CenteredMomentRowNorm CenteredMomentFirstSectors
+open CenteredMomentCommonSectors CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
+open CenteredMomentFirstReduced CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
+open CenteredMomentActive CenteredMomentFourier IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem fixed_common_parts (C D : Ideal O) (hC : C≠0) (hD : D≠0)

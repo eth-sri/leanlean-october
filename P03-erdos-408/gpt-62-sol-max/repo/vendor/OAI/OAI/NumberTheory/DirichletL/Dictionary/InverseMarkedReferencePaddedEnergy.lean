@@ -8,12 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile
-open InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure Filter
+open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment
+open InverseInitialProfile InverseInitialOverlapFourier InverseInitialConjugateEnergy
+open InverseInitialQuotientGeometry InverseInitialEnergyCallerWindow InverseInitialPoissonBridge
+open InverseInitialPhysicalMeasure Filter
 local notation "O"=>HeckeFamily.O
 
 theorem padded_source_energy
@@ -57,18 +58,15 @@ theorem padded_source_energy
   refine ⟨C,max U₀ Uscale,hC,lt_max_of_lt_left hU₀,?_⟩
   intro U hU ι inst dec hK L ell coeff hell hp hs hdis hratio hc hout primeW hprimeW hlive
     χ hχ hperiod hzero r rr hr hrlo hrhi hfirst hsecond rows hrows θ
-  have hU0:U₀≤U:=(le_max_left _ _).trans hU
-  have hUone:1<U:=hU₀.trans_le hU0
+  have hU0:=(le_max_left _ _).trans hU
+  have hUone:=hU₀.trans_le hU0
   have hs0:0≤∑i,ell i:=Finset.sum_nonneg (fun i _=>hell i)
   have hG (J:Finset ι):0≤∑i∈J,ell i:=Finset.sum_nonneg (fun i _=>hell i)
   have hGmax (J:Finset ι):(∑i∈J,ell i)≤∑i,ell i:=
     Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (fun i _ _=>hell i)
-  have hcap (J:Finset ι):
-      0≤1+ρ ∧ 1+ρ≤2 ∧ -2≤rr+(∑i,ell i)-2*(∑i∈J,ell i) ∧
-      rr+2*(∑i,ell i)≤1+ρ-2*gap ∧
-      2*rr+8*(∑i,ell i)≤3*(1+ρ)-2*gap ∧ rr+(∑i,ell i)+7*eta≤2 :=
+  have hcap (J:Finset ι) :=
     InverseInitialMarkedReserve.shifted_capacity ρ gap eta r rr _ _ hρ hρmax hgapρ
-      heta hetamax hr hs0 (hG J) (hGmax J) hrlo hrhi hfirst hsecond
+      heta hetamax hr hs0 (hGmax J) hrlo hrhi hfirst hsecond
   have hbase:=hcap ∅
   have hrows':∀u∈rows,‖eisEmbedding u‖^2≤U^(1+ρ) := by
     intro u hu

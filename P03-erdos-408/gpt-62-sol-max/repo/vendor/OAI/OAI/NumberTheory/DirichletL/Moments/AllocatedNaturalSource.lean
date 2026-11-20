@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import Mathlib.RingTheory.Radical.Basic
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
@@ -75,7 +76,7 @@ def rawScale (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))
 lemma rawScale_pos (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
     (X : ℝ) (hX : 0<X) (j : Fin 2) : 0<rawScale D a X j := by
   apply div_pos hX
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (selectedDivisor_ne_zero D Finset.univ a _))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a _)
 
 theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
@@ -94,11 +95,7 @@ theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O)
   have h:=retained_normalized η z hz R hR V₁ V₂
     (fun i : liveIndices D a=>pool i) (fun i : liveIndices D a=>β i) (fun i : liveIndices D a=>P i)
     (fun i=>hP i) t _ _ (rawScale_pos D a X₁ hX₁ 0) (rawScale_pos D a X₂ hX₂ 1)
-  have hp': (∏i : liveIndices D a,naturalSlot (excluded (naturalRow η z hz).character R)
-      (pool i) (heightCoefficient (β i) t) (P i))=
-      ∏i∈liveIndices D a,naturalSlot (excluded (naturalRow η z hz).character R)
-      (pool i) (heightCoefficient (β i) t) (P i) := Finset.prod_coe_sort (liveIndices D a) (fun i : α=>naturalSlot (excluded (naturalRow η z hz).character R) (pool i) (heightCoefficient (β i) t) (P i))
-  rw [hp'] at h
+  rw [(Finset.prod_coe_sort (liveIndices D a) (fun i : α=>naturalSlot (excluded (naturalRow η z hz).character R) (pool i) (heightCoefficient (β i) t) (P i)))] at h
   exact h
 
 omit [Fintype α] [DecidableEq α] in
@@ -172,23 +169,6 @@ lemma Slots.controls {b M : α→ℝ} (s : Slots α b M) :
     (∀i I,s.coefficient i I≠0 → (I.absNorm:ℝ)≤b i*s.P i) :=
   slot_controls s.ν s.W s.P b M s.P_pos s.ν_bound s.W_bound s.support
 
-structure Row (α : Type*) (b M : α→ℝ) where
-  η : Character
-  z : O
-  z_ne : z≠0
-  plain₁ : Plain
-  plain₂ : Plain
-  slots : Slots α b M
-  t : ℝ
-  X₁ : ℝ
-  X₂ : ℝ
-  Y₁ : ℝ
-  Y₂ : ℝ
-  X₁_pos : 0<X₁
-  X₂_pos : 0<X₂
-  Y₁_pos : 0<Y₁
-  Y₂_pos : 0<Y₂
-  same_product : X₁*X₂=Y₁*Y₂
 
 def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal O)
     (B : CenteredMomentCommonAllocationSum.actualAllocations s.pools C) :

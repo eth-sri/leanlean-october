@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.FixedThetaTwists
 
 @[expose] public section
@@ -9,104 +10,25 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped Classical BigOperators ContDiff
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss.FreeReflection
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
 
-end
 
-section
-open ActualEisensteinCubic CubicEisenstein LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
-open ActualEisensteinCubic CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
-open scoped BigOperators Classical MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
 
@@ -122,7 +44,7 @@ lemma fixedConjugateCuspArray_nonzero (j:Fin 3) (u:Eisˣ) (m:ℕ) (I J:Ideal Eis
   have helig:fixedCuspArrayEligible I J:=by
     by_contra he
     apply h
-    simp only [fixedConjugateCuspArray,fixedCuspArray,ite_eq_right he,star_zero]
+    simp [fixedConjugateCuspArray,fixedCuspArray,ite_eq_right he,star_zero]
   refine ⟨helig,?_⟩
   intro hz
   apply h
@@ -140,9 +62,9 @@ lemma fixedCusp_ramified_index_pos (j:Fin 3) (hj:j≠0) (u:Eisˣ)
   have hd:=hp.trans (sourceCuspCoefficients_ramified_divisibility j hj _ h)
   simp only [fixedCuspArrayIndex,hm,pow_zero,mul_one] at hd
   have hu:IsCoprime lambda (u:Eis):=⟨0,(↑u⁻¹:Eis),by simp⟩
-  have hni:IsCoprime lambda (primaryGenerator I):=coprime_of_dvd_sub_one lambda _
+  have hni:=coprime_of_dvd_sub_one lambda _
     ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans (primaryGenerator_spec I helig.2.1).2)
-  have hnj:IsCoprime lambda (primaryGenerator J):=coprime_of_dvd_sub_one lambda _
+  have hnj:=coprime_of_dvd_sub_one lambda _
     ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans (primaryGenerator_spec J helig.2.2).2)
   exact residue_lambda_prime.not_isUnit (((hu.mul_right hni).mul_right hnj.pow_right).isUnit_of_dvd hd)
 
@@ -163,14 +85,13 @@ lemma paperLambdaQuotient_succ (u:Eisˣ) (m:ℕ) (n b:Eis) :
     calc
       _=((paperLambdaUnit:Eis)*(paperLambdaUnit⁻¹:Eisˣ))*(u.val*lambda^m*lambda*n*b^3):=by ring
       _=_:=by rw [hi,one_mul];ring
-  have hd:ramifiedTraceLambda∣(u.val*lambda^(m+1))*n*b^3:=⟨_,hp.symm⟩
   have hn:ramifiedTraceLambda≠0:=by
     intro hz
     have he:=ramifiedEmbedding_traceLambda
     rw [hz,map_zero] at he
     exact eisLam_ne_zero he.symm
   apply mul_left_cancel₀ hn
-  rw [paperLambdaQuotient_mul _ hd,hp]
+  rw [paperLambdaQuotient_mul _ (⟨_,hp.symm⟩),hp]
 
 theorem sourceCuspPhaseNumerator_columns (j:Fin 3) (w u:Eisˣ)
     (m:ℕ) (I J:Ideal Eis) (helig:fixedCuspArrayEligible I J)
@@ -259,7 +180,6 @@ theorem model_array_brackets {ι:Type*} [Fintype ι]
     _=_ := by
       simp only [fixedCuspArrayWithPhase]
       rw [←Finset.mul_sum]
-      dsimp only [φ]
       ring
 
 end FixedCuspShape
@@ -272,30 +192,30 @@ noncomputable local instance coefficientFintype (P:Ideal Eis) [P.IsMaximal] : Fi
   Fintype.ofFinite _
 
 def activePhase (D:ControlledStratumArithmetic p N a0 c0 mode)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) : ℂ :=
+    [OAI.PrincipalFamily.Maximal p]
+    (hp:∀i,p i≠0) (hg:OAI.PrincipalFamily.Avoids p lambda) (j:ι→ℕ) : ℂ :=
   ∏i,(((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
     phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) (j i) (D.epsilon i)
 
 lemma bracketProduct_eq (D:ControlledStratumArithmetic p N a0 c0 mode)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (x:Eis) :
+    [OAI.PrincipalFamily.Maximal p]
+    (hp:∀i,p i≠0) (hg:OAI.PrincipalFamily.Avoids p lambda) (j:ι→ℕ) (x:Eis) :
     D.bracketProduct hp hg j x=D.activePhase hp hg j*
       ∏i,bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i) (Ideal.Quotient.mk _ x) := by
   exact Finset.prod_mul_distrib
 
 def modelRowPhase (D:ControlledStratumArithmetic p N a0 c0 mode)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (s:FixedCuspShape (fixedCusp a0 c0 mode))
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (u:Eisˣ) (m:ℕ) : ℂ :=
+    (hp:∀i,p i≠0) (hg:OAI.PrincipalFamily.Avoids p lambda) (j:ι→ℕ) (u:Eisˣ) (m:ℕ) : ℂ :=
   star D.fixedFactor*D.activePhase hp hg j*
     ramifiedBranchPhase (fun i=>Ideal.span {p i}) hg j
       (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m)
 
 theorem model_coefficient (D:ControlledStratumArithmetic p N a0 c0 mode)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (s:FixedCuspShape (fixedCusp a0 c0 mode))
-    (hp:∀i,p i≠0) (hc0:c0≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ)
+    (hp:∀i,p i≠0) (hc0:c0≠0) (hg:OAI.PrincipalFamily.Avoids p lambda) (j:ι→ℕ)
     (u:Eisˣ) (m:ℕ) (I J:Ideal Eis) :
     s.amplitude u m I J*
       (star D.fixedFactor*A4BadPhase c0 hc0 (D.matrix (fun _=>1) 1 1) D.U (s.modelDualNumerator u m I J))*

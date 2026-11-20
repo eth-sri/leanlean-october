@@ -67,7 +67,7 @@ theorem sum_auxLabels_union (P : ι → Finset ℕ) {J : ℕ} {A B : ι → Fins
         rw [ite_eq_right hA, Finset.mem_singleton] at h
         simp [hA, h]
     · by_cases hB : i ∈ B g
-      · have hA : i ∉ A g := Finset.disjoint_right.1 (hAB g) hB
+      · have hA  := Finset.disjoint_right.1 (hAB g) hB
         simp [hA, hB]
       · have h := h₂ g i
         rw [ite_eq_right hB, Finset.mem_singleton] at h
@@ -136,7 +136,6 @@ private theorem sum_eq_add_filter_of_support (s : Finset ℤ) (f : ℤ → ℂ) 
     · rintro ⟨⟨-, h₁⟩, h₂⟩
       exact ⟨lt_of_not_ge h₂, h₁⟩
     · rintro ⟨h₁, h₂⟩
-      have : 0 ≤ U := by linarith
       exact ⟨⟨by linarith, h₂⟩, not_le.2 h₁⟩
 
 /-- **Lower scale.** For a free label of `C` and slots `S ⊆ C` with a slot in a big group,
@@ -155,9 +154,7 @@ theorem le_slotProduct {c₀ C₀ vlo vhi x : ℝ} {P : ι → Finset ℕ} {big 
   have hmem : l g i ∈ P g := by simpa [hiC] using hl' g i
   have hp := hadm.2.2.2.2.2.2.2.1 g hg hmem
   simp only [primesIcc, Finset.mem_filter, Finset.mem_Icc] at hp
-  have hdvd : l g i ∣ slotProduct S l :=
-    (Finset.dvd_prod_of_mem _ hi).trans (Finset.dvd_prod_of_mem _ (Finset.mem_univ g))
-  have hle : l g i ≤ slotProduct S l := Nat.le_of_dvd (slotProduct_pos hadm hl S) hdvd
+  have hle : l g i ≤ slotProduct S l := Nat.le_of_dvd (slotProduct_pos hadm hl S) ((Finset.dvd_prod_of_mem _ hi).trans (Finset.dvd_prod_of_mem _ (Finset.mem_univ g)))
   calc Real.exp (Real.log x ^ (0.39 : ℝ)) ≤ ⌈Real.exp (Real.log x ^ (0.39 : ℝ))⌉₊ :=
         Nat.le_ceil _
     _ ≤ l g i := by exact_mod_cast hp.1.1
@@ -168,8 +165,7 @@ each big group and none in the small groups, `D_S ≤ exp(L^{0.465})`:
 `D_S ≤ exp(m₀ C₀ T L^{0.46})`. -/
 theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (J : ℕ) (C S : ι → Finset (Fin J)), (∀ g ∉ big, S g = ∅) →
         (∀ g, (S g).card ≤ m₀) → (∀ g, S g ⊆ C g) → ∀ l ∈ auxLabels P C,
           (slotProduct S l : ℝ) ≤ Real.exp (Real.log x ^ (0.465 : ℝ)) := by
@@ -208,7 +204,7 @@ theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
       rw [h₁]
       simpa [smul_eq_mul] using Finset.sum_le_card_nsmul big (fun g => (S g).card) m₀
         fun g _ => hCm g
-    have h₃ : (big.card : ℝ) ≤ |C₀| * Real.log L :=
+    have h₃  :=
       hadm.2.2.2.2.1.trans (mul_le_mul_of_nonneg_right (le_abs_self _)
         (Real.log_nonneg hL.le))
     have h₄ : ((∑ g, (S g).card : ℕ) : ℝ) ≤ big.card * m₀ := by exact_mod_cast h₂
@@ -217,7 +213,6 @@ theorem eventually_slotProduct_le (c₀ C₀ vlo vhi : ℝ) (m₀ : ℕ) :
     Real.norm_of_nonneg (Real.rpow_nonneg hL0.le _)] at hx
   refine hprod.trans ?_
   rw [Finset.prod_pow_eq_pow_sum, ← Real.exp_nat_mul, Real.exp_le_exp]
-  have hm : 0 ≤ (m₀ : ℝ) * |C₀| := by positivity
   have hlog : (m₀ * |C₀|) * Real.log L ≤ L ^ (0.005 : ℝ) := by
     have h := mul_le_mul_of_nonneg_left hx (show (0 : ℝ) ≤ m₀ * |C₀| + 1 by positivity)
     rw [← mul_assoc, mul_one_div_cancel (by positivity), one_mul] at h
@@ -263,7 +258,7 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
       0 < U → (∀ l ∈ S, 0 ≤ μ l) → ∑ l ∈ S, μ l = 1 → (∀ n, ‖b n‖ ≤ 1) →
       (∀ n, b n ≠ 0 → U ≤ n ∧ (n : ℝ) ≤ 4 * U) →
       (∀ n : ℕ, 1 ≤ n → ∑ l ∈ S.filter (fun l => key l = n), μ l ≤ W / n) →
-      let α : ℤ → ℂ := fun z => ∑ l ∈ S.filter (fun l => ((key l : ℕ) : ℤ) = z),
+      let α  := fun z => ∑ l ∈ S.filter (fun l => ((key l : ℕ) : ℤ) = z),
         (μ l : ℂ) * b (key l)
       (∀ z ∈ S.image (fun l => ((key l : ℕ) : ℤ)), α z ≠ 0 → U ≤ (z : ℝ) ∧ (z : ℝ) ≤ 4 * U) ∧
       ∀ U₀ : ℝ, (U₀ = U ∨ U₀ = 2 * U) → ∀ s ⊆ S.image (fun l => ((key l : ℕ) : ℤ)),
@@ -277,7 +272,7 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
     refine ⟨fun z hz hαz => ?_, fun U₀ hU₀ s hs₀ hsU => ?_⟩
     · obtain ⟨l, hl, hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hαz
       have hbl : b (key l) ≠ 0 := fun h => hne (by rw [h, mul_zero])
-      have hz : ((key l : ℕ) : ℤ) = z := (Finset.mem_filter.1 hl).2
+      have hz  := (Finset.mem_filter.1 hl).2
       rw [← hz]
       exact_mod_cast hs _ hbl
     have hU₀ : 0 < U₀ := by rcases hU₀ with h | h <;> rw [h] <;> positivity
@@ -287,13 +282,10 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
       obtain ⟨l, -, rfl⟩ := Finset.mem_image.1 (hs₀ hz)
       have hn : U₀ ≤ (key l : ℝ) := by exact_mod_cast hsU _ hz
       have hn1 : 1 ≤ key l := by
-        have : (0 : ℝ) < key l := lt_of_lt_of_le hU₀ hn
+        have  := lt_of_lt_of_le hU₀ hn
         exact_mod_cast this
       refine (hα _).trans ?_
-      have hf : S.filter (fun l' => ((key l' : ℕ) : ℤ) = ((key l : ℕ) : ℤ)) =
-          S.filter (fun l' => key l' = key l) :=
-        Finset.filter_congr fun l' _ => Nat.cast_inj
-      rw [hf]
+      rw [(Finset.filter_congr fun l' _ => Nat.cast_inj)]
       exact (hρ _ hn1).trans (div_le_div_of_nonneg_left hW hU₀ hn)
     have hsum : ∑ z ∈ s, ‖α z‖ ≤ 1 := by
       calc ∑ z ∈ s, ‖α z‖ ≤ ∑ z ∈ S.image (fun l => ((key l : ℕ) : ℤ)), ‖α z‖ :=
@@ -352,10 +344,7 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
       hsupp₁ z hz fun h => hne (Finset.sum_eq_zero fun y _ => by rw [h, zero_mul, zero_mul])
   rw [hcol, houter]
   simp_rw [hinner, Finset.sum_add_distrib]
-  have hb : ∀ (U₀ V₀ : ℝ) (B : Finset ℤ) (C : Finset ℤ), (U₀ = U ∨ U₀ = 2 * U) →
-      (V₀ = V ∨ V₀ = 2 * V) → B ⊆ s₁ → C ⊆ s₂ → (∀ n ∈ B, U₀ ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * U₀) →
-      (∀ n ∈ C, V₀ ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * V₀) →
-      ‖∑ z ∈ B, ∑ y ∈ C, α z * β y * bilinearPhase θ z y‖ ≤ K :=
+  have hb  :=
     fun U₀ V₀ B C hU₀ hV₀ hB hC hBs hCs => hbox U₀ V₀ B C α β hU₀ hV₀ hBs hCs
       (hbox₁ U₀ hU₀ B hB fun n hn => (hBs n hn).1) (hbox₂ V₀ hV₀ C hC fun n hn => (hCs n hn).1)
   have hB₁ : ∀ n ∈ B₁, U ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * U := fun n hn => (Finset.mem_filter.1 hn).2

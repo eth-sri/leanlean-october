@@ -26,7 +26,7 @@ lemma prime_power_small_squarefree (p : O) (hp : Prime p)
     Ideal.prime_of_isPrime (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero) inferInstance
   have hcases : e=0 ∨ e=1 := by omega
   rcases hcases with rfl|rfl
-  · simpa only [pow_zero] using (squarefree_one : Squarefree (1:Ideal O))
+  · simp
   · simpa only [pow_one] using hP.squarefree
 
 theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
@@ -38,11 +38,8 @@ theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (
       (by rw [← Ideal.span_singleton_pow,primaryGenerator_prime_power p hp.ne_zero hprimary e];
           exact pow_ne_zero _ hp.ne_zero)
       (p^(e+3*l)) (p^k) (pow_ne_zero _ hp.ne_zero) (p^(6*m)) := by
-  have hguard : Squarefree ((Ideal.span {p})^e) ∧ Supported ((Ideal.span {p})^e) ∧
-      Supported ((Ideal.span {p})^l) ∧ Supported ((Ideal.span {p})^k) ∧ Supported ((Ideal.span {p})^m) :=
-    ⟨prime_power_small_squarefree p hp e he,supported_pow hs e,supported_pow hs l,supported_pow hs k,supported_pow hs m⟩
   unfold bareIdealHighCoefficient
-  rw [dite_eq_left hguard]
+  rw [dite_eq_left (⟨prime_power_small_squarefree p hp e he,supported_pow hs e,supported_pow hs l,supported_pow hs k,supported_pow hs m⟩)]
   simp only [primaryGenerator_prime_power p hp.ne_zero hprimary,one_mul]
   have hA : p^e*(p^l)^3=p^(e+3*l) := by rw [←pow_mul,Nat.mul_comm l 3,←pow_add]
   have hH : (p^m)^6=p^(6*m) := by rw [←pow_mul,Nat.mul_comm m 6]

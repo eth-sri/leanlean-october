@@ -7,7 +7,7 @@ public import Erdos821.S34.AtomBound
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.Blueprint.Analytic

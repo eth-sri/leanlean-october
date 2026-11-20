@@ -20,14 +20,14 @@ lemma compensated_gram_scale_bound (q X Y L δ : ℝ)
       (1+((Y/L)^2/(q*(X/L)*(Y/L)))^(1/6:ℝ)+
         ((Y/L)^2/(q*(X/L)*(Y/L)))^2/(Y/L))*(Y/L)^δ ≤
       3*(q*X/L)*(Y/(q*X))^(1/6:ℝ)*Y^δ := by
-  have hl : 0<L := lt_of_lt_of_le zero_lt_one hL
-  have hp : 1≤Y/(q*X) := (le_div_iff₀ (mul_pos hq hX)).mpr (by simpa using hP)
+  have hl  := lt_of_lt_of_le zero_lt_one hL
+  have hp : 1≤Y/(q*X) := (le_div_iff₀ (mul_pos hq hX)).mpr (by simp_all)
   have hr : 1≤(Y/(q*X))^(1/6:ℝ) := Real.one_le_rpow hp (by norm_num)
   have ht : (Y/(q*X))^2/(Y/L)≤1 := by
     have he : (Y/(q*X))^2/(Y/L)=L*Y/(q^2*X^2) := by field_simp
     rw [he]
     exact (div_le_one (by positivity)).mpr htail
-  have hys : (Y/L)^δ≤Y^δ := Real.rpow_le_rpow (by positivity)
+  have hys  := Real.rpow_le_rpow (by positivity)
     ((div_le_self hY.le hL)) hδ
   rw [compensated_gram_ratio q X Y L hq hX hY hl]
   have he : q*(X/L)*(Y/L)/(Y/L)=q*X/L := by field_simp

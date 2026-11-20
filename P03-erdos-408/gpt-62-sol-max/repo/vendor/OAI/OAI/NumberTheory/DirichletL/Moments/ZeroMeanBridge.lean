@@ -12,8 +12,7 @@ open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentZeroMeanBridge
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentCommonSupport
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentCommonSupport
 open CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation
 open CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst
 open CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
@@ -31,15 +30,15 @@ theorem quotientMean_pullback (a m : O) (ha : a ≠ 0) (hm : m ≠ 0)
     (h : a ∣ m) (F : Residue a → ℂ) :
     quotientMean m (fun x => F (frequencyReduction a m h x)) = quotientMean a F := by
   obtain ⟨b, rfl⟩ := h
-  have hb : b ≠ 0 := right_ne_zero_of_mul hm
+  have hb  := right_ne_zero_of_mul hm
   have hh := conductorFourier_lift a b ha hb F 0
   simp only [mul_zero, conductorFourier, map_zero, zero_mul, AddChar.map_zero_eq_one,
     mul_one] at hh
   have he : frequencyReduction a (a*b) (dvd_mul_right a b) = conductorReduction a b := rfl
   unfold quotientMean
   rw [he, hh, normValue_mul, Complex.ofReal_mul]
-  have ha' : (normValue a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (normValue_ne_zero a ha)
-  have hb' : (normValue b : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (normValue_ne_zero b hb)
+  have ha'  := Complex.ofReal_ne_zero.mpr (normValue_ne_zero a ha)
+  have hb'  := Complex.ofReal_ne_zero.mpr (normValue_ne_zero b hb)
   change ((normValue a : ℂ) * (normValue b : ℂ))⁻¹ *
     ((normValue b : ℂ) * _) = _
   field_simp
@@ -76,7 +75,7 @@ theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
   obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, dilationMask_mk, ite_eq_left (dvd_mul_right e z), map_mul]
 
-theorem quotientMean_dilation (e d : O) (he : e ≠ 0) (_hd : d ≠ 0)
+theorem quotientMean_dilation (e d : O) (he : e ≠ 0)
     (F : Residue d → ℂ) (hF : ∀ x y, F (x*y) = F x * F y) :
     quotientMean (d*e) (dilationMask e d F) =
       (normValue e : ℂ)⁻¹ * F (Ideal.Quotient.mk _ e) * quotientMean d F := by
@@ -149,7 +148,7 @@ theorem quotientMean_mask_expansion {ι : Type*} [DecidableEq ι]
       rw [hFG, row_mask_expansion P hinj S z]
       simp only [dilationMask_mk]
       exact (Finset.sum_coe_sort S.powerset _).symm)
-  simp_rw [quotientMean_dilation _ _ (primeSubsetGenerator_ne_zero P _) hd G hG] at h
+  simp_rw [quotientMean_dilation _ _ (primeSubsetGenerator_ne_zero P _) G hG] at h
   simp only [← mul_assoc] at h
   exact h.trans (Finset.sum_coe_sort S.powerset (fun E : Finset ι =>
     (UniqueFactorizationMonoid.moebius (∏ i∈E,P i) : ℂ) *
@@ -194,9 +193,9 @@ theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supp
   congr 2
 
 theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
-    let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
+    let hi  :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
-    let hj : Supported (Ideal.span {CompletedGauss.primaryGenerator J}) :=
+    let hj  :=
       (CenteredMomentSourceRow.primary_span_supported J hJ).symm ▸ hJ
     quotientMean (CompletedGauss.primaryGenerator I * CompletedGauss.primaryGenerator J)
       (CenteredMomentRowNorm.pairResidue _ _ hi hj) =
@@ -249,9 +248,9 @@ theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Suppo
 
 theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
-    let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
+    let hi  :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
-    let hj : Supported (Ideal.span {CompletedGauss.primaryGenerator J}) :=
+    let hj  :=
       (CenteredMomentSourceRow.primary_span_supported J hJ).symm ▸ hJ
     canonicalZeroPair I J hI hJ W K =
       (((K / ‖eisEmbedding (CompletedGauss.primaryGenerator I * CompletedGauss.primaryGenerator J)‖^2 : ℝ) : ℂ) *
@@ -270,8 +269,8 @@ theorem quotientMean_congr (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (h : ∀ z : O, F (Ideal.Quotient.mk _ z) = G (Ideal.Quotient.mk _ z)) :
     quotientMean a F = quotientMean b G := by
   have hh := quotientMean_finite_sum a ha F (fun _ : Unit => b) (fun _ => hb)
-    (fun _ => G) (fun _ => (1 : ℂ)) (by intro z; simpa using h z)
-  simpa using hh
+    (fun _ => G) (fun _ => (1 : ℂ)) (by simp_all)
+  simp_all
 
 theorem scaled_pairFourier_eq_mean (a b : O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b})) (K : ℝ) :

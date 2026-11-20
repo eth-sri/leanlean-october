@@ -8,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSectorRetained
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalWindow
 open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorColumns
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSmooth CenteredMomentLogDyadic
+open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorFrequency
+open CenteredMomentSecondSectorColumns CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel
+open CenteredMomentSectorLocalization CenteredMomentSmooth CenteredMomentLogDyadic
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physical_kernel_window (C D I J : Ideal O)

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateDepth
+public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateTriples
 
 @[expose] public section
@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateTriples
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
 
 def actualDepth (Mmax cutoff : ℝ) : ℕ := ⌈2*Mmax/(3*cutoff)⌉₊+1

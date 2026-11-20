@@ -18,7 +18,7 @@ open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentSec
 local notation "O" => ActualEisensteinCubic.O
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)
-    (hw : ∀ i,‖w i‖≤1) (B : ℝ) (_hB : 0≤B)
+    (hw : ∀ i,‖w i‖≤1) (B : ℝ)
     (hF : ∀ i j,c i≠0 → c j≠0 → ‖F i j‖≤B) :
     ‖∑ i,∑ j,((c i*w i)*star (c j*w j))*F i j‖≤(∑ i,‖c i‖)^2*B := by
   have ht (i j : α) : ‖((c i*w i)*star (c j*w j))*F i j‖≤‖c i‖*‖c j‖*B := by
@@ -63,7 +63,7 @@ theorem second_discarded_energy_bound (Adec : ℕ) :
     exact rowWeight_norm_le_one η fixedBadMask 1 1 t I (Finset.mem_filter.mp I.property).2.1
   have hp := pair_mass (fun I : supportedColumns S => c I) (fun I => heightCoeff η t I)
     (fun I J => secondDiscardedPair I J (Finset.mem_filter.mp I.property).2
-      (Finset.mem_filter.mp J.property).2 W K Tsec Z ξ) hweight B hB
+      (Finset.mem_filter.mp J.property).2 W K Tsec Z ξ) hweight B
     (fun I J hi hj => ht W I J (Finset.mem_filter.mp I.property).2
       (Finset.mem_filter.mp J.property).2 K X H Tsec Z Csec ξ hK hX hZ hCs
       (hN I (Finset.mem_filter.mp I.property).1 hi) (hN J (Finset.mem_filter.mp J.property).1 hj) hsec hthreshold)

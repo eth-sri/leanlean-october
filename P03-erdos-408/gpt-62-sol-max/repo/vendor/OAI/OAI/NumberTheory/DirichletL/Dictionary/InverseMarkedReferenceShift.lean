@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification Filter IdealMobiusDivisorSum
 open DetectorDictionaryInverseRawInitialGates

@@ -10,13 +10,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff ComplexConjugate
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentPrimeSlot CenteredMomentSlotNormalization
+open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification CenteredMomentHeckeHeight
+open CenteredMomentHeckeTwist CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
+open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot CenteredMomentSlotNormalization
 local notation "O" => HeckeFamily.O
 
 lemma plain_zero_height (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
@@ -64,8 +63,7 @@ theorem oriented_twist_support (reverse : Bool) (W : ℝ→ℂ) (σ t : ℝ) :
   apply (twistProfile_support _ _ _).trans
   cases reverse <;> simp only [HeckeDetectorCoefficientTransfer.orientedProfile,ite_true]
   · exact Set.Subset.rfl
-  · intro x hx hzero
-    exact hx (by simp only [hzero,map_zero])
+  simp
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

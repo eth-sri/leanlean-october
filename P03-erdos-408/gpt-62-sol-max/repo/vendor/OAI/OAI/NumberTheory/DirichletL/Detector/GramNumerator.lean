@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LowGramFixedCoefficient
 public import OAI.NumberTheory.DirichletL.Detector.GramMean
 
@@ -38,7 +39,7 @@ lemma numerator_good_norm_le (u : Oˣ) (a b : ℕ) (r k : O)
     (hk : k=u.val*λ₀^a*(2:O)^b*r) (hk0 : k≠0) :
     Ideal.absNorm (Ideal.span {r})≤Ideal.absNorm (Ideal.span {k}) := by
   apply Nat.le_of_dvd
-  · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hk0))
+  · exact Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hk0)
   · apply map_dvd Ideal.absNorm
     rw [Ideal.span_singleton_dvd_span_singleton_iff_dvd]
     exact ⟨u.val*λ₀^a*(2:O)^b,by rw [hk];ring⟩

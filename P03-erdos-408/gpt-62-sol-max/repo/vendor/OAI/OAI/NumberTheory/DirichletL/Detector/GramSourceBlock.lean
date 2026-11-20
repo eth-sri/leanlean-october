@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcretePrimeRowBridge UniqueFactorizationMonoid ConcreteTraceCRT

@@ -9,72 +9,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
@@ -122,8 +65,7 @@ lemma exists_matrix_of_primitive_row (c d : O) (hcop : IsCoprime c d)
       simpa only [sub_zero] using hd.mul_left r
     · change (3 : O) ∣ c-(if (1 : Fin 2)=0 then 1 else 0)
       simpa only [show (1 : Fin 2) ≠ 0 by decide, ite_false, sub_zero] using hc
-    · change (3 : O) ∣ d-1
-      exact hd
+    assumption
   exact ⟨⟨M,hM⟩, rfl⟩
 
 def PrimitiveRow := {v : Fin 2 → O //
@@ -151,7 +93,7 @@ lemma cosetPrimitiveRow_bijective : Function.Bijective cosetPrimitiveRow := by
 
 def primitiveRowEquiv : CuspCosets ≃ PrimitiveRow := Equiv.ofBijective _ cosetPrimitiveRow_bijective
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 lemma inverse_character_eq_row_symbol (M : levelThree) :
     (complexCharacter M)⁻¹ = eisEmbedding (symbol (row M 0) (row M 1)) := by
@@ -162,9 +104,9 @@ lemma inverse_character_eq_row_symbol (M : levelThree) :
   have hdet : a*d-b*c=1 := by
     simpa only [a,b,c,d,Matrix.det_fin_two] using (M : SL(2,O)).property
   have had : a*d-1=b*c := by linear_combination hdet
-  have ha : lambda^2 ∣ a-1 := levelThree_primary M
+  have ha  := levelThree_primary M
   have hd3 : (3 : O) ∣ d-1 := by simpa [d] using levelThree_entry M 1 1
-  have hd : lambda^2 ∣ d-1 := lambda_sq_dvd_three.trans hd3
+  have hd  := lambda_sq_dvd_three.trans hd3
   obtain ⟨b0,hb⟩ := levelThree_upper M
   obtain ⟨c0,hc⟩ := levelThree_lower M
   change b=3*b0 at hb
@@ -191,7 +133,6 @@ lemma primitiveRowEquiv_symm_row (v : PrimitiveRow) :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 
 section
@@ -422,23 +363,20 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
       ∀ (W : 𝓢(ℝ, ℂ)) (K : ℝ), 1 ≤ K →
         (∑' h : {h : O // h ≠ 0}, ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖) ≤
           (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) / (1 + K) ^ A := by
-  let s : Finset (ℕ × ℕ) := Finset.Iic (A + 2, 0)
+  let s  := Finset.Iic (A + 2, 0)
   let C : ℝ := 2 ^ (A + 2) * (eisensteinCauchyMass + 1)
   have hC : 0 < C := by
     have hm := eisensteinCauchyMass_nonneg
-    dsimp [C]
     positivity
   refine ⟨s, C, hC, ?_⟩
   intro W K hK
-  have hK0 : 0 < K := lt_of_lt_of_le zero_lt_one hK
+  have hK0  := lt_of_lt_of_le zero_lt_one hK
   let B : ℝ := 2 ^ (A + 2) * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
-  have hB : 0 ≤ B := by dsimp [B]; positivity
   have hb (q : ℝ) (hq : 0 ≤ q) : (1 + q) ^ (A + 2) * ‖W q‖ ≤ B := by
     have hh := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
       (m := (A + 2, 0)) (k := A + 2) (n := 0) le_rfl le_rfl W q
     simp only [norm_iteratedFDeriv_zero, Real.norm_of_nonneg hq] at hh
-    change (1 + q) ^ (A + 2) * ‖W q‖ ≤ B at hh
-    exact hh
+    assumption
   have hp (h : {h : O // h ≠ 0}) : ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
       (B / (1 + K) ^ A) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ := by
     have hq : K ≤ K * ‖eisEmbedding h.val‖ ^ 2 := by
@@ -449,7 +387,7 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
     simpa only [min_eq_left hK, one_pow, one_mul] using hh
   have hmajor := (eisenstein_cauchy_summable.subtype (fun h => h ≠ 0)).mul_left
     (B / (1 + K) ^ A)
-  have hs : Summable (fun h : {h : O // h ≠ 0} => ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖) :=
+  have hs  :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp hmajor
   calc
     _ ≤ ∑' h : {h : O // h ≠ 0},
@@ -466,7 +404,6 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 local notation "O" => ActualEisensteinCubic.O
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
@@ -475,8 +412,7 @@ private theorem zero_removed_tsum (f : O → ℂ) :
     (∑' h : O, if h = 0 then 0 else f h) = ∑' h : {h : O // h ≠ 0}, f h.val := by
   rw [← tsum_subtype_eq_of_support_subset (s := {h : O | h ≠ 0}) (by
     intro h hh hz
-    subst h
-    exact hh (by simp))]
+    simp_all)]
   apply tsum_congr
   intro h
   simp only [ite_eq_right h.property]
@@ -489,7 +425,7 @@ theorem radialSource_inverse_decay (A : ℕ) :
   obtain ⟨s, C, hC, hb⟩ := radial_source_nonzero_lattice_decay A
   refine ⟨s, C, hC, ?_⟩
   intro W K hK
-  have hK0 : 0 < K := lt_of_lt_of_le zero_lt_one hK
+  have hK0  := lt_of_lt_of_le zero_lt_one hK
   have hs : Summable (fun h : O => W (K * ‖eisEmbedding h‖ ^ 2)) := by
     simpa only [scaledRadialTest_apply, div_inv_eq_mul, mul_comm] using
       (actual_eisenstein_summable_norm (scaledRadialTest W K⁻¹ (inv_pos.mpr hK0))).of_norm
@@ -506,7 +442,7 @@ theorem radialDual_decay (A : ℕ) :
   obtain ⟨s, C, hC, hb⟩ := paperRadialFourier_lattice_tail A
   refine ⟨s, C, hC, ?_⟩
   intro W K hK
-  have hK0 : 0 < K := lt_of_lt_of_le zero_lt_one hK
+  have hK0  := lt_of_lt_of_le zero_lt_one hK
   have hs := paperRadialFourier_lattice_summable_norm W K hK0
   let f : {h : O // h ≠ 0} → {h : O // K ≤ K * ‖eisEmbedding h‖ ^ 2} :=
     fun h => ⟨h.val, by nlinarith [one_le_eisenstein_norm_sq h.val h.property]⟩
@@ -528,7 +464,7 @@ theorem subsetMobius_norm_le_one {ι : Type*} (P : ι → Ideal O) (E : Finset �
 private theorem scale_tail_bound (A : ℕ) (B x Y X : ℝ)
     (hB : 0 ≤ B) (hx : 0 < x) (hxY : x ≤ Y) (hX : 0 < X) :
     (X / x) * (B / (1 + X / x) ^ (A + 1)) ≤ B * (Y / X) ^ A := by
-  have hu : 0 < X / x := div_pos hX hx
+  have hu  := div_pos hX hx
   calc
     _ ≤ (X / x) * (B / (X / x) ^ (A + 1)) := by
       apply mul_le_mul_of_nonneg_left _ hu.le
@@ -564,13 +500,13 @@ theorem small_divisor_dual_tail (A : ℕ) :
   refine ⟨s, C, hC, ?_⟩
   intro ι _ P _ S W X Y hX hY hYX
   let B := C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  have hB : 0 ≤ B := by positivity
   rw [Finset.mul_sum]
   have hf (E : Finset ι) (hE : E ∈ smallDivisors P S Y) :
       ‖(X : ℂ) * ((subsetMobius P E / (subsetNorm P E : ℂ)) *
         radialDual W (X / subsetNorm P E))‖ ≤ B * (Y / X) ^ A := by
     have hn := subsetNorm_pos P E
-    have hEY : subsetNorm P E ≤ Y := (Finset.mem_filter.mp hE).2
+    have hEY  := (Finset.mem_filter.mp hE).2
     have hscale : 1 ≤ X / subsetNorm P E := (le_div_iff₀ hn).mpr (by simpa using hEY.trans hYX)
     calc
       _ = (X / subsetNorm P E) * ‖subsetMobius P E‖ * ‖radialDual W (X / subsetNorm P E)‖ := by
@@ -597,12 +533,11 @@ theorem large_divisor_source_tail (A : ℕ) :
   refine ⟨s, C, hC, ?_⟩
   intro ι _ P _ S W X Z hX hXZ
   let B := C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
-  have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hZ : 0 < Z := hX.trans_le hXZ
+  have hB : 0 ≤ B := by positivity
+  have hZ  := hX.trans_le hXZ
   have hf (E : Finset ι) (hE : E ∈ largeDivisors P S Z) :
       ‖subsetMobius P E * radialSource W (X / subsetNorm P E)‖ ≤ B / (1 + Z / X) ^ A := by
-    have hn := subsetNorm_pos P E
-    have hEZ : Z < subsetNorm P E := (Finset.mem_filter.mp hE).2
+    have hEZ  := (Finset.mem_filter.mp hE).2
     have hscale : 1 ≤ subsetNorm P E / X := (le_div_iff₀ hX).mpr (by simpa using hXZ.trans hEZ.le)
     have hh := hb W (subsetNorm P E / X) hscale
     rw [inv_div] at hh

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
+public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
 
 @[expose] public section
@@ -15,7 +15,7 @@ open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
 open CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm
 open CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy
-open CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
+open CenteredMomentSecondScaled CenteredMomentCauchy RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)

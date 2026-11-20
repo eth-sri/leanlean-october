@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialOverlapFresh
 variable {σ : Type*} [DecidableEq σ]
 
@@ -24,8 +24,6 @@ theorem overlap_column_interval (I : Finset σ) (lo hi y : σ→ℝ)
   have hprod : 0<∏i∈I,y i := Finset.prod_pos hyp
   have hloP : (∏i∈I,lo i)≤∏i∈I,y i :=
     Finset.prod_le_prod₀ (fun i hi=>(hlo i hi).le) (fun i hi=>(hy i hi).1)
-  have hhiP : (∏i∈I,y i)≤∏i∈I,hi i :=
-    Finset.prod_le_prod₀ (fun i hi=>(hyp i hi).le) (fun i hi=>(hy i hi).2)
   have hyj : 0<yj := hjlo.trans_le hj.1
   have hjhip : 0<jhi := hyj.trans_le hj.2
   have hsourceLo := (le_div_iff₀ hprod).mp hsource.1
@@ -42,7 +40,7 @@ theorem overlap_column_interval (I : Finset σ) (lo hi y : σ→ℝ)
       yc*jlo=jlo*yc := mul_comm _ _
       _≤yj*yc := mul_le_mul_of_nonneg_right hj.1 hc.le
       _≤b*(∏i∈I,y i) := hsourceHi
-      _≤b*(∏i∈I,hi i) := mul_le_mul_of_nonneg_left hhiP (ha.le.trans hab)
+      _≤b*(∏i∈I,hi i) := mul_le_mul_of_nonneg_left (Finset.prod_le_prod₀ (fun i hi=>(hyp i hi).le) (fun i hi=>(hy i hi).2)) (ha.le.trans hab)
 
 end SevenEighths.InverseInitialOverlapFresh
 

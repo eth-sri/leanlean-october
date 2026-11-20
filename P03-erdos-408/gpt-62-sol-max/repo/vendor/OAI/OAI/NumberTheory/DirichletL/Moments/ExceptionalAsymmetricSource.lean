@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalMaskedSource
 
 @[expose] public section
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalMaskedSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentExceptionalAsymmetricSource
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentExceptionalAmplitudePair
 open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
 open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
 open CenteredMomentDivisorRectangle
@@ -25,8 +26,7 @@ lemma reduction_ge_one {α:Type u} [Fintype α] [DecidableEq α]
     (s:Data α)(hP:∀i,1≤s.P i)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2))):1≤formalReductionFactor D a s.P:=by
   have hn (j:Fin 2):(1:ℝ)≤Ideal.absNorm (selectedPlain D a j):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j))
   exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le (hn 0) (hn 1))
     (Finset.one_le_prod₀ (fun i _=>hP i))
 

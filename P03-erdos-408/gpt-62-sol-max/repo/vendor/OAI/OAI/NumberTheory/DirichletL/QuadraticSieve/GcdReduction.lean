@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.Fourier.TupleWeights
 
 @[expose] public section
@@ -9,72 +10,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
 
@@ -144,9 +84,7 @@ theorem sectorCoefficient_energy {n r : Type*} [Fintype n] [Fintype r] [Decidabl
 private theorem norm_sum_square_card {r : Type*} [Fintype r] (f : r → ℂ) :
     ‖∑ c, f c‖ ^ 2 ≤ (Fintype.card r : ℝ) * ∑ c, ‖f c‖ ^ 2 := by
   have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun _ : r => (1 : ℝ)) (fun c => ‖f c‖)
-  have hh : ‖∑ c, f c‖ ^ 2 ≤ (∑ c, ‖f c‖) ^ 2 :=
-    pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-  exact hh.trans (by simpa using h)
+  exact (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2).trans (by simpa using h)
 
 theorem sector_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fintype r] [DecidableEq r]
     (A : Matrix m n ℂ) (σ : n → r) (a : n → ℂ) :
@@ -208,10 +146,8 @@ end FiniteSieveOperator
 
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
-open IdealCoprimeSieveOperator DivisorBlockCauchy
-
 open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
+
 
 def weightedGcdBlock {m n : Type*} [Fintype m] [Fintype n]
     (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O) (w : m → ℂ) (a : n → ℂ) : ℂ :=
@@ -223,11 +159,11 @@ theorem highKernel_weightedGcdBlock_bound {m n : Type*} [Fintype m] [Fintype n]
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (w : m → ℂ) (W : ℝ) (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W) (a : n → ℂ) :
     ‖weightedGcdBlock D rows cols w a‖ ≤ W * highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K *
       (supportConstant ε hε * N ^ ε) * ∑ j, ‖if D ∣ cols j then a j else 0‖ ^ 2 := by
-  let v : m → ℂ := fun i => w i *
+  let v  := fun i => w i *
     (star (quadraticRow D (primaryGenerator (rows i))) * quadraticRow D (primaryGenerator (rows i)))
   have hv (i : m) : ‖v i‖ ≤ W := by
     dsimp only [v]
@@ -248,7 +184,7 @@ theorem highKernel_weightedGcdBlock_bound {m n : Type*} [Fintype m] [Fintype n]
     simp only [v, ← Finset.mul_sum, mul_assoc]
   rw [he]
   have hb := ideal_coprime_gram_operator_bound ε hε (fun j => totalQuotient D (cols j))
-    (fun j => totalQuotient_ne_zero D _ (hcols j).1) N (by linarith)
+    (fun j => totalQuotient_ne_zero D _ (hcols j).1) N
     (fun j => totalQuotient_norm_le D _ (hcols j).1 N hN (hcols j).2)
     (quotientMatrix D rows cols) (fun j => if D ∣ cols j then a j else 0) v W hW hv
   apply hb.trans
@@ -266,7 +202,7 @@ theorem highKernel_large_weighted_gcd_blocks {m n : Type*} [Fintype m] [Fintype 
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (w : m → ℂ) (W : ℝ) (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W) (a : n → ℂ) :
     (∑ D ∈ S, ‖weightedGcdBlock D rows cols w a‖) ≤
       W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) *
@@ -277,7 +213,7 @@ theorem highKernel_large_weighted_gcd_blocks {m n : Type*} [Fintype m] [Fintype 
   have hb (D : Ideal O) (hD : D ∈ S) : ‖weightedGcdBlock D rows cols w a‖ ≤
       W * highKernelNorm M (N / G) K * (supportConstant ε hε * N ^ ε) *
         ∑ j, ‖if D ∣ cols j then a j else 0‖ ^ 2 := by
-    have hn : 0 < (Ideal.absNorm D : ℝ) := hG.trans_le (hS D hD)
+    have hn  := hG.trans_le (hS D hD)
     have hD0 : D ≠ 0 := by intro hz; simp [hz] at hn
     have hmono := highKernelNorm_mono (M := M) (K := K) (M' := M) (K' := K) le_rfl
       (div_le_div_of_nonneg_left (by linarith : 0 ≤ N) hG (hS D hD)) le_rfl
@@ -323,7 +259,8 @@ end FiniteSieveRestriction
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
+open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
+open FiniteSieveRestriction
 
 theorem weighted_energy_eq_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
     (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ) (a : n → ℂ) :
@@ -350,7 +287,7 @@ theorem highKernel_weighted_energy_gcd_reduction {m n : Type*} [Fintype m] [Fint
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (v : m → ℝ) (W : ℝ) (hW : 0 ≤ W) (hv : ∀ i, 0 ≤ v i ∧ v i ≤ W) (a : n → ℂ) :
     (∑ i, v i * ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2) ≤
       (∑ D ∈ (gcdPool cols).filter (fun D => (Ideal.absNorm D : ℝ) ≤ G),
@@ -376,14 +313,14 @@ theorem highKernel_weighted_energy_ray_gcd_reduction {m n : Type*} [Fintype m] [
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N K : ℝ) (hN : 1 ≤ N) (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (v : m → ℝ) (W : ℝ) (hW : 0 ≤ W) (hv : ∀ i, 0 ≤ v i ∧ v i ≤ W) (a : n → ℂ) :
     (∑ i, v i * ‖∑ j, quadraticRow (cols j) (primaryGenerator (rows i)) * a j‖ ^ 2) ≤
       16 * ((∑ c : EisensteinEPrimaryPhase.Coord,
         ∑ D ∈ (gcdPool cols).filter (fun D => (Ideal.absNorm D : ℝ) ≤ G), ‖weightedRayGcdBlock D c rows cols v a‖) +
         W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) *
           (N ^ ε) ^ 2 * ∑ j, ‖a j‖ ^ 2) := by
-  let σ : n → EisensteinEPrimaryPhase.Coord := fun j => columnRay (cols j)
+  let σ  := fun j => columnRay (cols j)
   let C := W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) * (N ^ ε) ^ 2
   have hs := sector_weighted_energy_bound
     (fun i j => quadraticRow (cols j) (primaryGenerator (rows i))) σ a v (fun i => (hv i).1)

@@ -9,77 +9,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace VerticalContourShift
 open Filter MeasureTheory
-open scoped Classical Topology
 
 lemma gaussian_regulator_norm (ε σ t : ℝ) :
     ‖Complex.exp ((ε:ℂ)*((σ:ℂ)+t*Complex.I)^2)‖=Real.exp (ε*(σ^2-t^2)) := by
@@ -105,7 +43,7 @@ lemma gaussianRegulatorSequence_pos (n : ℕ) : 0<gaussianRegulatorSequence n :=
 lemma gaussianRegulatorSequence_le_one (n : ℕ) : gaussianRegulatorSequence n≤1 := by
   unfold gaussianRegulatorSequence
   apply (div_le_one (by positivity)).mpr
-  linarith [Nat.cast_nonneg (α:=ℝ) n]
+  linarith
 
 lemma gaussianRegulatorSequence_tendsto : Tendsto gaussianRegulatorSequence atTop (𝓝 0) :=
   tendsto_one_div_add_atTop_nhds_zero_nat
@@ -190,7 +128,7 @@ lemma linear_height_young (A ε t:ℝ) (hε:0<ε) :
   apply le_of_mul_le_mul_left (a := 2*ε) ?_
     (mul_pos (by norm_num : (0:ℝ)<2) hε)
   calc
-    2*ε*(A*|t|)≤ε^2*t^2+A^2:=by nlinarith [hs]
+    2*ε*(A*|t|)≤ε^2*t^2+A^2:=by linarith
     _=2*ε*(ε*t^2/2+A^2/(2*ε)):=by field_simp
 
 theorem gaussian_regulator_strip_bound (a b A B ε:ℝ) (hB:0≤B) (hε:0<ε)
@@ -202,8 +140,7 @@ theorem gaussian_regulator_strip_bound (a b A B ε:ℝ) (hB:0≤B) (hε:0<ε)
         f ((σ:ℂ)+(t:ℂ)*Complex.I)‖≤
       (B*Real.exp (ε*(max |a| |b|)^2+A^2/(2*ε))*(1+4/ε))/(1+t^2) := by
   let R:ℝ:=max |a| |b|
-  have hR:0≤R:=le_trans (abs_nonneg a) (le_max_left _ _)
-  have hsabs:|σ|≤R:=abs_le_max_abs_abs hσ.1 hσ.2
+  have hsabs:=abs_le_max_abs_abs hσ.1 hσ.2
   have hs:σ^2≤R^2:=by
     calc
       _=|σ|^2:=(sq_abs σ).symm
@@ -230,9 +167,9 @@ theorem gaussian_regulator_strip_bound (a b A B ε:ℝ) (hB:0≤B) (hε:0<ε)
       ring
     _≤(B*Real.exp (ε*R^2+A^2/(2*ε)))*((1+4/ε)/(1+t^2)):=
       mul_le_mul_of_nonneg_left hg' (mul_nonneg hB (Real.exp_pos _).le)
-    _=_:=by dsimp only [R];ring
+    _=_:=by ring
 
-theorem gaussian_regulator_strip_decay (a b A B ε:ℝ) (_hab:a≤b) (_hA:0≤A)
+theorem gaussian_regulator_strip_decay (a b A B ε:ℝ)
     (hB:0≤B) (hε:0<ε) (f:ℂ→ℂ)
     (hf:∀σ:ℝ,σ∈Set.Icc a b→∀t:ℝ,
       ‖f ((σ:ℂ)+(t:ℂ)*Complex.I)‖≤B*Real.exp (A*|t|)) :
@@ -247,7 +184,6 @@ end GaussianMoment
 
 namespace VerticalContourShift
 open Filter MeasureTheory
-open scoped Classical Topology
 
 theorem integral_eq_of_exponential_strip_growth
     (f : ℂ→ℂ) (a b A B : ℝ) (hab : a≤b) (hA : 0≤A) (hB : 0≤B)
@@ -256,7 +192,7 @@ theorem integral_eq_of_exponential_strip_growth
     (hb : Integrable (fun t : ℝ=>f ((b:ℂ)+t*Complex.I)))
     (hbound : ∀σ∈Set.Icc a b,∀t : ℝ,‖f ((σ:ℂ)+t*Complex.I)‖≤B*Real.exp (A*|t|)) :
     (∫t : ℝ,f ((a:ℂ)+t*Complex.I))=∫t : ℝ,f ((b:ℂ)+t*Complex.I) := by
-  let F : ℕ→ℂ→ℂ := fun n z=>Complex.exp ((gaussianRegulatorSequence n:ℂ)*z^2)*f z
+  let F  := fun n z=>Complex.exp ((gaussianRegulatorSequence n:ℂ)*z^2)*f z
   have hreg (n : ℕ) : Continuous (fun z : ℂ=>Complex.exp ((gaussianRegulatorSequence n:ℂ)*z^2)) := by
     fun_prop
   have hint (n : ℕ) (σ : ℝ) (hσ : Integrable (fun t : ℝ=>f ((σ:ℂ)+t*Complex.I))) :
@@ -268,7 +204,7 @@ theorem integral_eq_of_exponential_strip_growth
   have heq (n : ℕ) :
       (∫t : ℝ,F n ((a:ℂ)+t*Complex.I))=∫t : ℝ,F n ((b:ℂ)+t*Complex.I) := by
     obtain ⟨K,hK,hdec⟩ := GaussianMoment.gaussian_regulator_strip_decay a b A B
-      (gaussianRegulatorSequence n) hab hA hB (gaussianRegulatorSequence_pos n) f hbound
+      (gaussianRegulatorSequence n) hB (gaussianRegulatorSequence_pos n) f hbound
     apply integral_eq_of_strip_decay (F n) a b K hab
     · intro z hza hzb
       have hg : Differentiable ℂ (fun w : ℂ=>Complex.exp ((gaussianRegulatorSequence n:ℂ)*w^2)) := by
@@ -289,9 +225,7 @@ theorem integral_eq_of_exponential_strip_growth
 end VerticalContourShift
 
 namespace CubicGammaExponential
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 lemma norm_Gamma_le_real (z : ℂ) (hz : 0<z.re) :
     ‖Complex.Gamma z‖≤Real.Gamma z.re := by
@@ -320,20 +254,17 @@ lemma norm_sin_le_exp_abs_im (z : ℂ) :
 lemma Gamma_ne_zero_of_im_ne_zero (z : ℂ) (hz : z.im≠0) : Complex.Gamma z≠0 := by
   apply Complex.Gamma_ne_zero
   intro n he
-  apply hz
-  have h:=congrArg Complex.im he
-  simpa using h
+  simp_all
 
 lemma inverse_Gamma_reflection (z : ℂ) (hz : z.im≠0) :
     (Complex.Gamma z)⁻¹=Complex.Gamma (1-z)*Complex.sin (Real.pi*z)/Real.pi := by
   have hg:=Gamma_ne_zero_of_im_ne_zero z hz
-  have hh:=Gamma_ne_zero_of_im_ne_zero (1-z) (by simpa using hz)
-  have hp : (Real.pi:ℂ)≠0:=Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hh:=Gamma_ne_zero_of_im_ne_zero (1-z) (by simp_all)
+  have hp :=Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hs : Complex.sin (Real.pi*z)≠0 := by
     intro hs
     have he:=Complex.Gamma_mul_Gamma_one_sub z
-    rw [hs,div_zero] at he
-    exact (mul_ne_zero hg hh) he
+    simp_all
   apply mul_left_cancel₀ hg
   rw [mul_inv_cancel₀ hg]
   symm
@@ -351,7 +282,7 @@ lemma inverse_Gamma_norm_of_left (z : ℂ) (hz : z.re<1) (hi : z.im≠0) :
   have hsin:=norm_sin_le_exp_abs_im (Real.pi*z)
   simp only [Complex.sub_re,Complex.one_re] at hgamma
   have him : |((Real.pi:ℂ)*z).im|=Real.pi*|z.im| := by
-    simp [abs_mul]
+    simp
   rw [him] at hsin
   calc
     _ ≤ (Real.Gamma (1-z.re)*Real.exp (Real.pi*|z.im|))/Real.pi :=
@@ -412,7 +343,7 @@ theorem inverse_Gamma_strip_exp_bound (a b : ℝ) :
       _ ≤ Cc+Cg/Real.pi := le_add_of_nonneg_right (by positivity)
       _ ≤ (Cc+Cg/Real.pi)*Real.exp (Real.pi*|t|) :=
         le_mul_of_one_le_right (by positivity) hexp
-  · have ht1 : 1 < |t| :=lt_of_not_ge ht
+  · have ht1  :=lt_of_not_ge ht
     have ht0 : t≠0 := by intro ht0;subst t;norm_num at ht1
     let z : ℂ := (σ:ℂ)+t*Complex.I
     let w : ℂ := z-n
@@ -452,8 +383,8 @@ theorem inverse_cubic_Gamma_pair_strip_bound (a b : ℝ) :
   obtain ⟨C2,hC2,h2⟩:=inverse_Gamma_strip_exp_bound_complex (a+2/3) (b+2/3)
   refine ⟨C1*C2,mul_pos hC1 hC2,?_⟩
   intro s hs
-  have hb1:=h1 (s+1/3) (by norm_num;constructor <;> linarith [hs.1,hs.2])
-  have hb2:=h2 (s+2/3) (by norm_num;constructor <;> linarith [hs.1,hs.2])
+  have hb1:=h1 (s+1/3) (by norm_num;assumption)
+  have hb2:=h2 (s+2/3) (by norm_num;assumption)
   norm_num at hb1 hb2
   rw [mul_inv_rev,norm_mul,norm_inv,norm_inv]
   calc
@@ -465,8 +396,6 @@ theorem inverse_cubic_Gamma_pair_strip_bound (a b : ℝ) :
 
 end CubicGammaExponential
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CubicEisenstein
 
@@ -532,14 +461,12 @@ theorem cubic_bessel_series_mellin {α : Type*} [Countable α]
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CubicEisenstein
 
 lemma positive_sqrt_cpow_twice (r : ℝ) (hr : 0<r) (s : ℂ) :
     (Real.sqrt r:ℂ)^(2*s+1)=(r:ℂ)^(s+1/2) := by
-  have ha : Complex.arg (Real.sqrt r:ℂ)=0 :=
+  have ha  :=
     Complex.arg_ofReal_of_nonneg (Real.sqrt_nonneg r)
   have h := Complex.cpow_nat_mul' (x:=(Real.sqrt r:ℂ)) (n:=2)
     (by simpa only [ha,mul_zero] using (neg_lt_zero.mpr Real.pi_pos))
@@ -590,8 +517,8 @@ theorem radialBesselProfile_mellin {α : Type*} [Countable α]
     mellin (radialBesselProfile r a q) (2*s)=
       (((2:ℂ)^(2*s-1)*Complex.Gamma (s+1/3)*Complex.Gamma (s+2/3))/
         ((4*Real.pi*q:ℝ):ℂ)^(2*s+1))*(∑'i,a i*(r i:ℂ)^(1/2-s)) := by
-  let f : α→ℂ := fun i=>((q*Real.sqrt (r i):ℝ):ℂ)
-  have hf (i : α) : f i≠0 :=
+  let f  := fun i=>((q*Real.sqrt (r i):ℝ):ℂ)
+  have hf (i : α)  :=
     Complex.ofReal_ne_zero.mpr (mul_pos hq (Real.sqrt_pos.mpr (hr i))).ne'
   have has : Summable (fun i=>‖a i*(r i:ℂ)‖*‖f i‖^(-(2*s.re+1))) := by
     simp only [f,radial_bessel_coefficient_norm _ q s.re (hr _) hq]
@@ -614,7 +541,7 @@ theorem radialBesselProfile_mellin {α : Type*} [Countable α]
           _=(v:ℂ)^((2*s-1)+1) :=
             (Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hv.ne')).symm
           _=_ := by rw [sub_add_cancel]
-      have hn : ‖f i‖=q*Real.sqrt (r i) :=
+      have hn  :=
         Complex.norm_of_nonneg (mul_pos hq (Real.sqrt_pos.mpr (hr i))).le
       rw [hn]
       have hk : 4*Real.pi*q*Real.sqrt (r i)*v=4*Real.pi*(q*Real.sqrt (r i))*v := by ring
@@ -625,7 +552,7 @@ theorem radialBesselProfile_mellin {α : Type*} [Countable α]
       rw [hid,←tsum_mul_left]
       apply tsum_congr
       intro i
-      have hn : ‖f i‖=q*Real.sqrt (r i) :=
+      have hn  :=
         Complex.norm_of_nonneg (mul_pos hq (Real.sqrt_pos.mpr (hr i))).le
       rw [hn,show 4*Real.pi*(q*Real.sqrt (r i))=(4*Real.pi*q)*Real.sqrt (r i) by ring]
       exact radial_bessel_coefficient_identity (r i) (4*Real.pi*q) (hr i)

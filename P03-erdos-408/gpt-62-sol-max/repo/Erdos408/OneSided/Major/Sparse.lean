@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Analysis.Divisor
 public import Erdos408.OneSided.Setup
 public import Mathlib.NumberTheory.DirichletCharacter.Bounds
@@ -63,13 +64,13 @@ private theorem eventually_mul_rpow_mul_one_add_log_le {a b : ℝ} (hab : a < b)
   set ε := (b - a) / 2 with hε
   have hε0 : 0 < ε := by rw [hε]; linarith
   have hLε := (tendsto_rpow_atTop hε0).comp Real.tendsto_log_atTop
-  filter_upwards [hLε.eventually_ge_atTop (|c| * (1 + ε⁻¹)),
+  filter_upwards [hLε.eventually_ge_atTop _,
     Real.tendsto_log_atTop.eventually_ge_atTop 1] with x hx hL
   have hx' : |c| * (1 + ε⁻¹) ≤ Real.log x ^ ε := hx
   have hL0 : 0 < Real.log x := by linarith
-  have h1 : 1 ≤ Real.log x ^ ε := Real.one_le_rpow hL hε0.le
-  have hlog : Real.log (Real.log x) ≤ Real.log x ^ ε / ε := Real.log_le_rpow_div hL0.le hε0
-  have hlog0 : 0 ≤ Real.log (Real.log x) := Real.log_nonneg hL
+  have h1 := Real.one_le_rpow hL hε0.le
+  have hlog := Real.log_le_rpow_div hL0.le hε0
+  have hlog0 := Real.log_nonneg hL
   have hLa : 0 ≤ Real.log x ^ a := by positivity
   -- `1 + log L ≤ (1 + 1/ε) L^ε`
   have h2 : 1 + Real.log (Real.log x) ≤ (1 + ε⁻¹) * Real.log x ^ ε := by
@@ -81,9 +82,7 @@ private theorem eventually_mul_rpow_mul_one_add_log_le {a b : ℝ} (hab : a < b)
         exact le_abs_self c
     _ = |c| * (1 + ε⁻¹) * Real.log x ^ a * Real.log x ^ ε := by ring
     _ ≤ Real.log x ^ ε * Real.log x ^ a * Real.log x ^ ε := by gcongr
-    _ = Real.log x ^ b := by
-        rw [← Real.rpow_add hL0, ← Real.rpow_add hL0, hε]
-        ring_nf
+    _ = Real.log x ^ b := by rpow_ring hL0
 
 /-! ### Unimodular phases -/
 
@@ -131,7 +130,7 @@ private theorem card_filter_prod_eq_le {S : Finset ℕ} (hS : ∀ p ∈ S, p.Pri
         intro i
         -- `q i` is a prime dividing `∏ q₀ = n`
         have hp := hS _ (hq.1 i)
-        have hdvd : q i ∣ ∏ k, q₀ k := hq₀.2 ▸ hq.2 ▸ dvd_prod_of_mem q (mem_univ i)
+        have hdvd  := hq₀.2 ▸ hq.2 ▸ dvd_prod_of_mem q (mem_univ i)
         obtain ⟨k, -, hk⟩ := (hp.prime.dvd_finsetProd_iff q₀).1 hdvd
         rw [(Nat.prime_dvd_prime_iff_eq hp (hS _ (hq₀.1 k))).1 hk]
         exact mem_image_of_mem q₀ (mem_univ k)
@@ -146,9 +145,13 @@ noncomputable def primePowCoeff (P : ℝ) (PS : Finset ℕ) {k : ℕ} (χ : Diri
   (P : ℂ)⁻¹ ^ j * ∑ q ∈ Fintype.piFinset (fun _ : Fin j => PS) with ∏ i, q i = n,
     ∏ i, χ (q i) * (q i : ℂ) ^ ((ξ : ℂ) * Complex.I)
 
+section
+
+variable {P : ℝ} {PS : Finset ℕ} {k : ℕ}
+
 /-- `P_s(t)^j = ∑_{n ≤ N} c_n n^{it}`, when every product of `j` primes of `PS` is in
 `[1, N]`. The shift `p^{iξ}` goes into the coefficients. -/
-theorem primePoly_pow_eq {P : ℝ} {PS : Finset ℕ} {k : ℕ} (χ : DirichletCharacter ℂ k)
+theorem primePoly_pow_eq (χ : DirichletCharacter ℂ k)
     (ξ t : ℝ) {j N : ℕ} (hPS : ∀ p ∈ PS, p ≠ 0)
     (hN : ∀ q ∈ Fintype.piFinset (fun _ : Fin j => PS), ∏ i, q i ∈ Icc 1 N) :
     primePoly P PS χ ξ t ^ j =
@@ -175,7 +178,7 @@ theorem primePoly_pow_eq {P : ℝ} {PS : Finset ℕ} {k : ℕ} (χ : DirichletCh
 
 /-- `∑ |c_n|² ≤ j^j |PS|^j P^{-2j}`: each `|c_n|` is at most `P^{-j}` times the number of
 tuples with product `n`, which is at most `j^j`. -/
-theorem sum_norm_primePowCoeff_sq_le {P : ℝ} {PS : Finset ℕ} {k : ℕ}
+theorem sum_norm_primePowCoeff_sq_le
     (χ : DirichletCharacter ℂ k) (ξ : ℝ) {j N : ℕ} (hP : 0 < P) (hPS : ∀ p ∈ PS, p.Prime)
     (hN : ∀ q ∈ Fintype.piFinset (fun _ : Fin j => PS), ∏ i, q i ∈ Icc 1 N) :
     ∑ n ∈ Icc 1 N, ‖primePowCoeff P PS χ ξ j n‖ ^ 2 ≤
@@ -206,10 +209,12 @@ theorem sum_norm_primePowCoeff_sq_le {P : ℝ} {PS : Finset ℕ} {k : ℕ}
         have hF : (#(F n) : ℝ) ≤ (j : ℝ) ^ j := by exact_mod_cast card_filter_prod_eq_le hPS j n
         calc ‖primePowCoeff P PS χ ξ j n‖ ^ 2 ≤ (#(F n) / P ^ j) ^ 2 :=
               pow_le_pow_left₀ (norm_nonneg _) (hc n) 2
-          _ = #(F n) * #(F n) / P ^ (2 * j) := by rw [div_pow, ← pow_mul, mul_comm j]; ring
+          _ = #(F n) * #(F n) / P ^ (2 * j) := by ring
           _ ≤ (j : ℝ) ^ j * #(F n) / P ^ (2 * j) := by gcongr
     _ = (j : ℝ) ^ j * (#PS : ℝ) ^ j / P ^ (2 * j) := by
         rw [← sum_div, ← mul_sum, hcard]
+
+end
 
 /-! ### Counting the sparse family -/
 
@@ -227,8 +232,8 @@ theorem card_mul_pow_le_of_separated {P Z η : ℝ} {PS : Finset ℕ} {k : ℕ}
   have h2P : 1 ≤ 2 * P := by linarith
   have hN1 : 1 ≤ N := (Nat.one_le_floor_iff _).2 (one_le_pow₀ h2P)
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN1
-  have hNZ : (N : ℝ) ≤ 2 * Z := (Nat.floor_le (by positivity)).trans hj
-  have hlogN : Real.log N ≤ Real.log (2 * Z) := Real.log_le_log hNpos hNZ
+  have hNZ  := (Nat.floor_le (by positivity)).trans hj
+  have hlogN  := Real.log_le_log hNpos hNZ
   have hlogN0 : 0 ≤ Real.log N := Real.log_nonneg (by exact_mod_cast hN1)
   have hZ : 0 ≤ Z := by linarith
   -- every product of `j` primes of `PS` is in `[1, N]`
@@ -239,12 +244,12 @@ theorem card_mul_pow_le_of_separated {P Z η : ℝ} {PS : Finset ℕ} {k : ℕ}
     refine ⟨Nat.one_le_iff_ne_zero.2 (prod_ne_zero_iff.2 fun i _ => (hPS _ (hq i)).1.ne_zero),
       Nat.le_floor ?_⟩
     rw [Nat.cast_prod]
-    calc ∏ i, ((q i : ℕ) : ℝ) ≤ ∏ _i : Fin j, 2 * P :=
+    calc ∏ i, ((q i) : ℝ) ≤ ∏ _i : Fin j, 2 * P :=
           prod_le_prod₀ (fun i _ => by positivity) fun i _ => (hPS _ (hq i)).2.le
       _ = (2 * P) ^ j := by rw [prod_const, card_univ, Fintype.card_fin]
   -- `|PS| ≤ 3P`, so `∑ |c_n|² ≤ j^j 3^j P^{-j}`
   have hcardPS : (#PS : ℝ) ≤ 3 * P := by
-    have hsub : PS ⊆ range ⌈2 * P⌉₊ := fun p hp => mem_range.2 (Nat.lt_ceil.2 (hPS p hp).2)
+    have hsub  := fun p hp => mem_range.2 (Nat.lt_ceil.2 (hPS p hp).2)
     have h₁ := Nat.ceil_lt_add_one (show 0 ≤ 2 * P by linarith)
     have h₂ : (#PS : ℝ) ≤ ⌈2 * P⌉₊ := by
       exact_mod_cast (card_le_card hsub).trans (card_range _).le
@@ -271,7 +276,7 @@ theorem card_mul_pow_le_of_separated {P Z η : ℝ} {PS : Finset ℕ} {k : ℕ}
         ∑ n ∈ Icc 1 N, ‖primePowCoeff P PS χ ξ j n‖ ^ 2 :=
         sum_norm_dirichlet_sq_le N _ (neg_le_self hZ) T (fun t ht => abs_le.1 (hT t ht)) hsep
     _ ≤ _ := by
-        have hlog2Z : 0 ≤ Real.log (2 * Z) := hlogN0.trans hlogN
+        have hlog2Z  := hlogN0.trans hlogN
         have h₁ : Z - -Z + 1 + 8 * N * (1 + Real.log N) ≤
             2 * Z + 1 + 16 * Z * (1 + Real.log (2 * Z)) := by nlinarith
         have h₂ : (1 + Real.log N) ^ 2 ≤ (1 + Real.log (2 * Z)) ^ 2 :=
@@ -310,7 +315,7 @@ theorem card_sparseSet_mul_pow_le {x Z As P : ℝ} {PS : Finset ℕ} {k : ℕ}
     · simp only [S, sparseSet, mem_filter] at hm
       obtain ⟨t, ht⟩ := hm.2
       exact ⟨t, fun _ => ht⟩
-    · exact ⟨0, fun h => absurd h hm⟩
+    simp_all
   choose t ht using hex
   -- each parity class is `1`-separated
   have hclass : ∀ C ⊆ S, (∀ m ∈ C, ∀ m' ∈ C, m % 2 = m' % 2) →
@@ -318,7 +323,7 @@ theorem card_sparseSet_mul_pow_le {x Z As P : ℝ} {PS : Finset ℕ} {k : ℕ}
         2 * (2 * Z + 1 + 16 * Z * (1 + Real.log (2 * Z))) *
           (1 + Real.log (2 * Z)) ^ 2 * ((j : ℝ) ^ j * 3 ^ j / P ^ j) := by
     intro C hC hpar
-    have hsep : ∀ m ∈ C, ∀ m' ∈ C, m ≠ m' → 1 ≤ |t m - t m'| := fun m hm m' hm' hne =>
+    have hsep  := fun m hm m' hm' hne =>
       one_le_abs_sub_of_emod_two_eq hne (hpar m hm m' hm') ⟨(ht m (hC hm)).1,
         (ht m (hC hm)).2.1⟩ ⟨(ht m' (hC hm')).1, (ht m' (hC hm')).2.1⟩
     have hinj : Set.InjOn t C := by
@@ -359,11 +364,11 @@ theorem one_le_two_mul_and_log_le_of_admissible {C CX alo ahi g B x : ℝ} {d : 
   set L := Real.log x
   set M := max CX 1
   have hL0 : 0 < L := by linarith
-  have hlogL : 0 ≤ Real.log L := Real.log_nonneg hL
+  have hlogL  := Real.log_nonneg hL
   -- `x / M ≤ X ≤ M x`
-  have hHm : 0 < d.Hm := (Real.rpow_pos_of_pos hx _).trans_le hd.Hm_ge
-  have hHn : 0 < d.Hn := (Real.rpow_pos_of_pos hx _).trans_le hd.Hn_ge
-  have hX : 0 < d.X := mul_pos hHm hHn
+  have hHm  := (Real.rpow_pos_of_pos hx _).trans_le hd.Hm_ge
+  have hHn  := (Real.rpow_pos_of_pos hx _).trans_le hd.Hn_ge
+  have hX  := mul_pos hHm hHn
   have hCX : 0 < CX := by
     by_contra h
     have := hd.X_le
@@ -382,7 +387,6 @@ theorem one_le_two_mul_and_log_le_of_admissible {C CX alo ahi g B x : ℝ} {d : 
     rw [h]
     calc Real.exp (Real.log (4 * M) + |B| * Real.log L) ≤ Real.exp L := Real.exp_le_exp.2 hBL
       _ = x := Real.exp_log hx
-  have hLB : 0 < L ^ |B| := by positivity
   constructor
   · have hLB' : (L ^ |B|)⁻¹ ≤ L ^ B := by
       rw [← Real.rpow_neg hL0.le]
@@ -394,7 +398,7 @@ theorem one_le_two_mul_and_log_le_of_admissible {C CX alo ahi g B x : ℝ} {d : 
     calc (1 : ℝ) ≤ 4 * (x / M) * (L ^ |B|)⁻¹ := h₁
       _ ≤ 4 * d.X * L ^ B := by gcongr
       _ = 2 * (2 * d.X * L ^ B) := by ring
-  · have h₁ : L ^ B ≤ L ^ |B| := Real.rpow_le_rpow_of_exponent_le hL (le_abs_self B)
+  · have h₁  := Real.rpow_le_rpow_of_exponent_le hL (le_abs_self B)
     have h₂ : 2 * (2 * d.X * L ^ B) ≤ x * x :=
       calc 2 * (2 * d.X * L ^ B) = 4 * d.X * L ^ B := by ring
         _ ≤ 4 * (M * x) * L ^ |B| := by gcongr
@@ -411,8 +415,8 @@ private theorem exists_pow_le_two_mul {L P Z alo : ℝ} (hL : 1 ≤ L) (hP : 1 �
     ∃ j : ℕ, (2 * P) ^ j ≤ 2 * Z ∧ Z / P ^ j ≤ 2 ^ j * P ∧ (j : ℝ) ≤ 2 * L ^ (1 - alo) := by
   have hL0 : 0 < L := by linarith
   have hLalo : 0 < L ^ alo := by positivity
-  have hlogP0 : 0 < Real.log (2 * P) := hLalo.trans_le hlog2P
-  have hratio : 0 ≤ Real.log (2 * Z) / Real.log (2 * P) :=
+  have hlogP0  := hLalo.trans_le hlog2P
+  have hratio  :=
     div_nonneg (Real.log_nonneg h2Z) hlogP0.le
   have hpow : ∀ r : ℕ, (2 * P) ^ r = Real.exp (r * Real.log (2 * P)) := fun r => by
     rw [Real.exp_nat_mul, Real.exp_log (by linarith)]
@@ -436,7 +440,7 @@ private theorem exists_pow_le_two_mul {L P Z alo : ℝ} (hL : 1 ≤ L) (hP : 1 �
   · calc (⌊Real.log (2 * Z) / Real.log (2 * P)⌋₊ : ℝ)
         ≤ Real.log (2 * Z) / Real.log (2 * P) := Nat.floor_le hratio
       _ ≤ 2 * L / L ^ alo := div_le_div₀ (by positivity) hlog2Z hLalo hlog2P
-      _ = 2 * L ^ (1 - alo) := by rw [Real.rpow_sub hL0, Real.rpow_one, mul_div_assoc]
+      _ = 2 * L ^ (1 - alo) := by rpow_ring hL0
 
 /-- The count of `card_sparseSet_mul_pow_le`, simplified with `1 ≤ 2Z`, `Z P^{-j} ≤ 2^j P`,
 `j ≤ 2L` and `y = 1 + log 2Z ≤ 3L`: `|𝓘| ≤ 2160 L³ P (12 L^{1 + 2|A_s|})^j`. -/
@@ -470,13 +474,12 @@ private theorem le_of_mul_rpow_neg_pow_le {L P Z y As c : ℝ} {j : ℕ} (hL : 1
         gcongr
     _ = 80 * y ^ 3 * (Z / P ^ j) * (3 * j * (L ^ As) ^ 2) ^ j := by ring
     _ ≤ 80 * (3 * L) ^ 3 * (2 ^ j * P) * (3 * j * (L ^ As) ^ 2) ^ j := by
-        have hy3 : y ^ 3 ≤ (3 * L) ^ 3 := pow_le_pow_left₀ (by linarith) hy 3
-        exact mul_le_mul_of_nonneg_right (mul_le_mul (mul_le_mul_of_nonneg_left hy3
+        exact mul_le_mul_of_nonneg_right (mul_le_mul (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by linarith) hy 3)
           (by norm_num)) hj (div_nonneg (by linarith) (by positivity)) (by positivity))
           (by positivity)
     _ = 2160 * L ^ 3 * P * (2 ^ j * (3 * j * (L ^ As) ^ 2) ^ j) := by ring
     _ = 2160 * L ^ 3 * P * (2 * (3 * j * (L ^ As) ^ 2)) ^ j := by
-        rw [mul_pow (2 : ℝ) (3 * (j : ℝ) * (L ^ As) ^ 2) j]
+        rw [mul_pow (2) (3 * (j : ℝ) * (L ^ As) ^ 2) j]
     _ ≤ 2160 * L ^ 3 * P * (12 * L ^ (1 + 2 * |As|)) ^ j := by gcongr
 
 /-- `2160 L³ P (12 L^{1 + 2|A_s|})^j ≤ exp(3 L^{0.91})`, given `P ≤ exp(2 L^{a₊})`,
@@ -489,7 +492,7 @@ private theorem poly_mul_pow_le_exp {L P alo ahi As : ℝ} {j : ℕ} (hL : 1 ≤
     2160 * L ^ 3 * P * (12 * L ^ (1 + 2 * |As|)) ^ j ≤
       Real.exp (3 * L ^ (91 / 100 : ℝ)) := by
   have hL0 : 0 < L := by linarith
-  have hlogL : 0 ≤ Real.log L := Real.log_nonneg hL
+  have hlogL  := Real.log_nonneg hL
   have hf₁ : 2160 * L ^ 3 ≤ Real.exp (L ^ (91 / 100 : ℝ)) := by
     rw [← Real.exp_log (show 0 < 2160 * L ^ 3 by positivity), Real.log_mul (by norm_num)
       (by positivity), Real.log_pow]
@@ -509,7 +512,7 @@ private theorem poly_mul_pow_le_exp {L P alo ahi As : ℝ} {j : ℕ} (hL : 1 ≤
       nlinarith [abs_nonneg As]
     rw [← Real.exp_log (show 0 < 12 * L ^ (1 + 2 * |As|) by linarith), ← Real.exp_nat_mul]
     refine Real.exp_le_exp.2 ?_
-    have hlogb0 : 0 ≤ Real.log (12 * L ^ (1 + 2 * |As|)) := Real.log_nonneg hb
+    have hlogb0  := Real.log_nonneg hb
     calc (j : ℝ) * Real.log (12 * L ^ (1 + 2 * |As|))
         ≤ 2 * L ^ (1 - alo) * ((12 + 2 * |As|) * (1 + Real.log L)) := by gcongr
       _ = 2 * (12 + 2 * |As|) * L ^ (1 - alo) * (1 + Real.log L) := by ring
@@ -543,7 +546,7 @@ theorem card_sparseSet_le {C CX alo ahi g B As : ℝ} (halo : 1 / 10 < alo)
   rw [Real.rpow_one] at hE4
   obtain ⟨h2Z, hlog2Z⟩ := one_le_two_mul_and_log_le_of_admissible hd hx hL hE4
   -- `1 ≤ P` and `L^{a₋} ≤ log 2P`
-  have hP1' : 1 ≤ P := le_trans (Real.one_le_exp (by positivity)) hP1
+  have hP1'  := le_trans (Real.one_le_exp (by positivity)) hP1
   have hlog2P : Real.log (Real.exp (Real.log x ^ alo)) ≤ Real.log (2 * P) :=
     Real.log_le_log (Real.exp_pos _) (by linarith)
   rw [Real.log_exp] at hlog2P
@@ -558,118 +561,11 @@ theorem card_sparseSet_le {C CX alo ahi g B As : ℝ} (halo : 1 / 10 < alo)
   have hy1 : 1 ≤ 1 + Real.log (2 * (2 * d.X * Real.log x ^ B)) := by
     have := Real.log_nonneg h2Z
     linarith
-  have hy : 1 + Real.log (2 * (2 * d.X * Real.log x ^ B)) ≤ 3 * Real.log x := by linarith
-  exact (le_of_mul_rpow_neg_pow_le hL hP1' h2Z hy1 hy hjL hj2 hcard).trans
+  refine (le_of_mul_rpow_neg_pow_le hL hP1' h2Z hy1 ?_ hjL hj2 hcard).trans
     (poly_mul_pow_le_exp hL (by linarith) hP2 hj3 hE1 hE2 hE3)
+  linarith
 
 /-! ### The energy on the sparse family -/
-
-/-- The duality (`TT*`) bound: if each row of the Gram matrix
-`G_{ii'} = ∑_n e_i(n) \overline{e_{i'}(n)}` has absolute sum at most `R`, then
-`∑_i |∑_n c_n e_i(n)|² ≤ R ∑_n |c_n|²`. -/
-private theorem sum_norm_sq_le_of_gram_rowSum {ι : Type*} (I : Finset ι) (S : Finset ℕ)
-    (e : ι → ℕ → ℂ) (c : ℕ → ℂ) {R : ℝ} (hR0 : 0 ≤ R)
-    (hR : ∀ i ∈ I, ∑ i' ∈ I, ‖∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)‖ ≤ R) :
-    ∑ i ∈ I, ‖∑ n ∈ S, c n * e i n‖ ^ 2 ≤ R * ∑ n ∈ S, ‖c n‖ ^ 2 := by
-  set b : ι → ℂ := fun i => ∑ n ∈ S, c n * e i n
-  set G : ι → ι → ℂ := fun i i' => ∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)
-  set v : ℕ → ℂ := fun n => ∑ i ∈ I, starRingEnd ℂ (b i) * e i n
-  set Q := ∑ i ∈ I, ‖b i‖ ^ 2
-  have hQ0 : 0 ≤ Q := sum_nonneg fun i _ => by positivity
-  have hc0 : 0 ≤ ∑ n ∈ S, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
-  -- `Q = ∑_n c_n v_n`
-  have hQv : (Q : ℂ) = ∑ n ∈ S, c n * v n := by
-    simp only [Q, v, Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', mul_sum]
-    rw [sum_comm]
-    refine sum_congr rfl fun i _ => ?_
-    simp only [b, mul_sum]
-    exact sum_congr rfl fun n _ => by ring
-  -- `∑_n |v_n|² = ∑_{i, i'} \bar b_i b_{i'} G_{ii'}`
-  have hvG : ((∑ n ∈ S, ‖v n‖ ^ 2 : ℝ) : ℂ) =
-      ∑ i ∈ I, ∑ i' ∈ I, starRingEnd ℂ (b i) * b i' * G i i' := by
-    simp only [Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', v, G, map_sum,
-      map_mul, Complex.conj_conj, sum_mul, mul_sum]
-    rw [sum_comm]
-    refine sum_congr rfl fun i _ => ?_
-    rw [sum_comm]
-    exact sum_congr rfl fun i' _ => sum_congr rfl fun n _ => by ring
-  -- the Gram matrix is Hermitian
-  have hGsymm : ∀ i i', ‖G i' i‖ = ‖G i i'‖ := by
-    intro i i'
-    have h : G i' i = starRingEnd ℂ (G i i') := by
-      simp only [G, map_sum, map_mul, Complex.conj_conj]
-      exact sum_congr rfl fun n _ => mul_comm _ _
-    rw [h, Complex.norm_conj]
-  -- `∑_n |v_n|² ≤ R Q`, by `2|ab| ≤ |a|² + |b|²`
-  have hv : ∑ n ∈ S, ‖v n‖ ^ 2 ≤ R * Q := by
-    have h₁ : ∑ n ∈ S, ‖v n‖ ^ 2 ≤
-        ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 := by
-      have h := congrArg norm hvG
-      rw [Complex.norm_real, Real.norm_of_nonneg (sum_nonneg fun n _ => by positivity)] at h
-      rw [h]
-      refine (norm_sum_le _ _).trans (sum_le_sum fun i _ => (norm_sum_le _ _).trans
-        (sum_le_sum fun i' _ => ?_))
-      rw [norm_mul, norm_mul, Complex.norm_conj, hGsymm]
-      nlinarith [mul_nonneg (sq_nonneg (‖b i‖ - ‖b i'‖)) (norm_nonneg (G i' i))]
-    have h₂ : ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 =
-        ∑ i ∈ I, ‖b i‖ ^ 2 * ∑ i' ∈ I, ‖G i i'‖ := by
-      simp only [add_div, sum_add_distrib]
-      rw [sum_comm (f := fun i i' => ‖b i'‖ ^ 2 * ‖G i' i‖ / 2), ← sum_add_distrib]
-      refine sum_congr rfl fun i _ => ?_
-      rw [← sum_add_distrib, mul_sum]
-      exact sum_congr rfl fun i' _ => by ring
-    rw [h₂] at h₁
-    refine h₁.trans ?_
-    rw [mul_comm R, sum_mul]
-    exact sum_le_sum fun i hi => mul_le_mul_of_nonneg_left (hR i hi) (by positivity)
-  -- `Q² ≤ (∑ |c_n|²)(∑ |v_n|²)`, by Cauchy–Schwarz
-  have hQ : Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * (R * Q) := by
-    have h : Q ≤ ∑ n ∈ S, ‖c n‖ * ‖v n‖ := by
-      have := congrArg norm hQv
-      rw [Complex.norm_real, Real.norm_of_nonneg hQ0] at this
-      rw [this]
-      exact (norm_sum_le _ _).trans_eq (sum_congr rfl fun n _ => norm_mul _ _)
-    calc Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ * ‖v n‖) ^ 2 := pow_le_pow_left₀ hQ0 h 2
-      _ ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * ∑ n ∈ S, ‖v n‖ ^ 2 := sum_mul_sq_le_sq_mul_sq _ _ _
-      _ ≤ _ := mul_le_mul_of_nonneg_left hv hc0
-  rcases hQ0.eq_or_lt with h | h
-  · rw [← h]
-    positivity
-  · nlinarith
-
-/-- `∑_{m' ∈ S} 1/|m - m'| ≤ 2 (1 + log N)` for `S` and `m` in an integer interval of
-length `N`, the term `m' = m` being `0`. -/
-private theorem sum_inv_abs_intCast_sub_le {S : Finset ℤ} {lo hi m : ℤ} (hS : S ⊆ Icc lo hi)
-    (hm : m ∈ Icc lo hi) :
-    ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ ≤ 2 * (1 + Real.log (hi - lo + 1).toNat) := by
-  -- shift `[lo, hi]` to `[1, N]`
-  set f : ℤ → ℕ := fun l => (l - lo + 1).toNat
-  have hf : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℤ) = l - lo + 1 := fun l hl =>
-    Int.toNat_of_nonneg (by rw [mem_Icc] at hl; omega)
-  have hfmem : ∀ l ∈ Icc lo hi, f l ∈ Icc 1 (hi - lo + 1).toNat := by
-    intro l hl
-    have h := hf l hl
-    rw [mem_Icc] at hl ⊢
-    omega
-  have hcast : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℝ) = ((l - lo + 1 : ℤ) : ℝ) := fun l hl => by
-    rw [← hf l hl, Int.cast_natCast]
-  have hinj : Set.InjOn f S := fun l hl l' hl' h => by
-    have h₁ := hf l (hS hl)
-    have h₂ := hf l' (hS hl')
-    rw [h] at h₁
-    omega
-  calc ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ = ∑ m' ∈ S, |((f m : ℕ) : ℝ) - f m'|⁻¹ := by
-        refine sum_congr rfl fun m' hm' => ?_
-        rw [hcast m hm, hcast m' (hS hm')]
-        push_cast
-        ring_nf
-    _ = ∑ n ∈ S.image f, |((f m : ℕ) : ℝ) - n|⁻¹ :=
-        (sum_image (f := fun n : ℕ => |((f m : ℕ) : ℝ) - n|⁻¹) hinj).symm
-    _ ≤ ∑ n ∈ Icc 1 (hi - lo + 1).toNat, |((f m : ℕ) : ℝ) - n|⁻¹ := by
-        refine sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => by positivity
-        obtain ⟨l, hl, rfl⟩ := mem_image.1 hn
-        exact hfmem l (hS hl)
-    _ ≤ _ := sum_inv_abs_sub_le (hfmem m hm)
 
 /-- `|[H_n, 2H_n] ∩ ℤ| ≤ H_n + 1`. -/
 theorem card_nRange_le (d : Data K) (hHn : 0 ≤ d.Hn) : (#d.nRange : ℝ) ≤ d.Hn + 1 := by
@@ -695,9 +591,7 @@ theorem norm_nRange_gram_le {B cG x : ℝ} {d : Data K} (hKB : KernelBound B cG 
   have hn : ∀ n ∈ d.nRange, 0 < n := fun n hn =>
     lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (mem_Icc.1 hn).1
   -- the entry is the kernel at `Δ = τ - τ'`
-  have hG : ∑ n ∈ d.nRange, (n : ℂ) ^ ((τ : ℂ) * Complex.I) *
-      starRingEnd ℂ ((n : ℂ) ^ ((τ' : ℂ) * Complex.I)) =
-        ∑ n ∈ d.nRange, (n : ℂ) ^ (((τ - τ' : ℝ) : ℂ) * Complex.I) :=
+  have hG  :=
     sum_congr rfl fun n hn' => natCast_cpow_mul_I_mul_conj_cpow (hn n hn').ne' τ τ'
   rw [hG]
   have hsecond : 0 ≤ |cG| * d.Hn *
@@ -726,7 +620,7 @@ theorem norm_nRange_gram_le {B cG x : ℝ} {d : Data K} (hKB : KernelBound B cG 
       have hX : d.X = d.Hm * d.Hn := rfl
       rw [hX] at hτZ hτZ'
       linarith
-    have hK := hKB (τ - τ') h hΔ
+    have hK := hKB _ h hΔ
     have hinv : |τ - τ'|⁻¹ ≤ 2 * |((m - m' : ℤ) : ℝ)|⁻¹ := by
       rw [← div_eq_mul_inv, le_div_iff₀ (by linarith)]
       calc |τ - τ'|⁻¹ * |((m - m' : ℤ) : ℝ)| ≤ |τ - τ'|⁻¹ * (2 * |τ - τ'|) := by
@@ -805,7 +699,7 @@ theorem sum_norm_unmarkedPoly_sq_le {C CX alo ahi g B cG x Z : ℝ} {d : Data K}
     have h₁ : ‖d.β n‖ ≤ Real.log x ^ C := by
       by_cases h : d.β n = 0
       · rw [h, norm_zero]
-        exact Real.rpow_nonneg hL _
+        positivity
       · exact (hd.β_supp n h).2.2.2
     have h₂ : ‖d.β n * ψ n‖ ≤ Real.log x ^ C := by
       rw [norm_mul]
@@ -840,7 +734,7 @@ theorem sum_norm_unmarkedPoly_sq_le {C CX alo ahi g B cG x Z : ℝ} {d : Data K}
 private theorem log_toNat_ceil_le {Z : ℝ} (h2Z : 1 ≤ 2 * Z) :
     Real.log (⌈Z⌉ - (-⌈Z⌉ - 1) + 1).toNat ≤ 4 + Real.log (2 * Z) := by
   have hZ0 : 0 ≤ ⌈Z⌉ := Int.ceil_nonneg (by linarith)
-  have hcast : (((⌈Z⌉ - (-⌈Z⌉ - 1) + 1).toNat : ℕ) : ℝ) = 2 * ⌈Z⌉ + 2 := by
+  have hcast : (((⌈Z⌉ - (-⌈Z⌉ - 1) + 1).toNat) : ℝ) = 2 * ⌈Z⌉ + 2 := by
     rw [← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
     push_cast
     ring
@@ -879,7 +773,7 @@ theorem sum_norm_sq_le_of_sparse {C CX alo ahi g B As cG : ℝ} (halo : 1 / 10 <
   have hx : 0 < x := by linarith
   have hL0 : 0 < Real.log x := by linarith
   obtain ⟨h2Z, hlog2Z⟩ := one_le_two_mul_and_log_le_of_admissible hd hx hL hE4
-  have hHn : 1 ≤ d.Hn :=
+  have hHn  :=
     (Real.one_le_rpow hx1 ((Real.rpow_nonneg hL0.le _).trans hd.γ_ge)).trans hd.Hn_ge
   -- `|𝓘| exp(-L^{0.95}) ≤ 1`
   have hSe : (#(sparseSet x (2 * d.X * Real.log x ^ B) As P PS χ ξ) : ℝ) *
@@ -913,8 +807,6 @@ theorem sum_norm_sq_le_of_sparse {C CX alo ahi g B As cG : ℝ} (halo : 1 / 10 <
     exact hm.1
   have hE := sum_norm_unmarkedPoly_sq_le hd hKB hL0.le (by linarith) rfl ψ hsub hSe τ hτS
   have hN := log_toNat_ceil_le h2Z
-  have hN0 := Real.log_natCast_nonneg
-    (⌈2 * d.X * Real.log x ^ B⌉ - (-⌈2 * d.X * Real.log x ^ B⌉ - 1) + 1).toNat
   set A := Real.log (⌈2 * d.X * Real.log x ^ B⌉ - (-⌈2 * d.X * Real.log x ^ B⌉ - 1) + 1).toNat
   set W := Real.log x ^ (2 * C) with hW
   have hW0 : 0 ≤ W := Real.rpow_nonneg hL0.le _

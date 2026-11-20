@@ -72,7 +72,7 @@ theorem finitePhysicalRows_eq_integral :
     (fun i=>(P i).val) (fun i=>hT i _ (P i).property) η u W Yp W0 W1 X Y Z σ υ r
   have hsource (u : FreeRow) (hu : u∈R) (P : ∀i,T i) := rowIntegral_source_lines e σ υ r he he' hσ hσβ hσ3 hυ hυ3 hr
     S hS hmax hfirst (fun i=>(P i).val) (hdis P) (fun i=>hT i _ (P i).property) η u (hR u hu)
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
+    ⟨W0, W1, a0, b0, a1, b1, ha0, ha1, hW0, hW1⟩ X Y Z hX hY hZ
   have hfi (u : FreeRow) (hu : u∈R) (P : ∀i,T i) : Integrable (f u P) heightMeasure := by
     have heq : f u P=(fun t=>(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
         continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
@@ -83,7 +83,7 @@ theorem finitePhysicalRows_eq_integral :
     exact (hsource u hu P).1.const_mul _
   have hiu (u : FreeRow) (hu : u∈R) : Integrable (fun t=>∑P:(∀i,T i),f u P t) heightMeasure :=
     integrable_finsetSum _ (fun P hP=>hfi u hu P)
-  have hi : Integrable (fun t=>∑u∈R,∑P:(∀i,T i),f u P t) heightMeasure :=
+  have hi  :=
     integrable_finsetSum _ hiu
   refine ⟨hi,?_⟩
   change finitePhysicalRows S hmax η R T W Yp W0 W1 X Y Z=_*(∫t,∑u∈R,∑P:(∀i,T i),f u P t ∂heightMeasure)
@@ -115,7 +115,7 @@ theorem norm_finitePhysicalRows_le_absolute :
   have hfi (u : FreeRow) (hu : u∈R) (P : ∀i,T i) : Integrable (f u P) heightMeasure := by
     have hi := continuedPhysicalRowKernel_integrable e σ υ r he he' hσ hσβ hυ hr S hS hmax hfirst
       (fun i=>(P i).val) (hdis P) (fun i=>hT i _ (P i).property) η u (hR u hu)
-      W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
+      ⟨W0, W1, a0, b0, a1, b1, ha0, ha1, hW0, hW1⟩ X Y Z hX hY hZ
     have heq : f u P=(fun t=>(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
         continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
           η u W0 W1 X Y Z σ υ r t) := by
@@ -130,7 +130,7 @@ theorem norm_finitePhysicalRows_le_absolute :
   have hg (t : HeightSpace) : (∑u∈R,∑P:(∀i,T i),‖f u P t‖)=g t := by
     simp only [f,g,weightedRowOnLines,physicalDyadNorm,norm_mul,Finset.mul_sum,mul_assoc]
   have hgi : Integrable g heightMeasure := by
-    have hh : Integrable (fun t=>∑u∈R,∑P:(∀i,T i),‖f u P t‖) heightMeasure :=
+    have hh  :=
       integrable_finsetSum R (fun u hu=>integrable_finsetSum Finset.univ (fun P hP=>(hfi u hu P).norm))
     exact hh.congr (Filter.Eventually.of_forall hg)
   obtain ⟨hi,heq⟩ := finitePhysicalRows_eq_integral e σ υ r he he' hσ hσβ hσ3 hυ hυ3 hr S hS hmax

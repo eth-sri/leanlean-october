@@ -1,7 +1,9 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
-public import OAI.NumberTheory.DirichletL.Descent.SecondInheritedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 
 @[expose] public section
 
@@ -13,11 +15,10 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGau
 open InverseSecondFibers JointLogSeparation
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def secondInheritedProfile {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) : SecondProfileData ι :=

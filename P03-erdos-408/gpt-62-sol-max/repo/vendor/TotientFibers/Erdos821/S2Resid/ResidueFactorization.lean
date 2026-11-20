@@ -68,15 +68,7 @@ theorem edge_product_formula (n : ℕ) (f : Fin (n + 2) → ℝ) :
           f 1 * f (Fin.last (n + 2)) *
             ∏ i : Fin n, f (i.succ.castSucc).succ ^ 2 := by
       have h := ih (fun i : Fin (n + 2) => f i.succ)
-      calc
-        (∏ e : Fin (n + 1), f e.succ.castSucc * f e.succ.succ) =
-            ∏ e : Fin (n + 1), f e.castSucc.succ * f e.succ.succ := by
-          apply Finset.prod_congr rfl
-          intro e he
-          congr 1
-        _ = f 1 * f (Fin.last (n + 2)) *
-              ∏ i : Fin n, f (i.succ.castSucc).succ ^ 2 := by
-          simpa only [Fin.succ_zero_eq_one, Fin.succ_last] using h
+      assumption
     calc
       (∏ e : Fin (n + 2), f e.castSucc * f e.succ) =
           (f 0 * f 1) *
@@ -92,17 +84,13 @@ theorem edge_product_formula (n : ℕ) (f : Fin (n + 2) → ℝ) :
         rw [Fin.prod_univ_succ]
         have hOne : (Fin.succ (0 : Fin (n + 1))).castSucc =
             Fin.succ (0 : Fin (n + 2)) := by
-          apply Fin.ext
           rfl
         have hidx (i : Fin n) : i.succ.castSucc.succ = i.succ.succ.castSucc := by
-          apply Fin.ext
           rfl
         have hprod :
             (∏ i : Fin n, f i.succ.castSucc.succ ^ 2) =
               ∏ i : Fin n, f i.succ.succ.castSucc ^ 2 := by
-          apply Finset.prod_congr rfl
-          intro i hi
-          rw [hidx i]
+          rfl
         rw [hOne, hprod]
         simp only [Fin.succ_zero_eq_one]
         ring_nf
@@ -139,7 +127,7 @@ theorem pointResidueFactor_fin {n : ℕ} (q : Fin (n + 1) → ℝ)
   intro i hi
   have hcast : ((z.val : ℤ) + h i : ZMod p) =
       (z.val : ZMod p) + (h i : ZMod p) := by
-    simp [Int.cast_natCast]
+    simp
   have hhit : ZMod.finEquiv p z + (h i : ZMod p) = 0 ↔
       (p : ℤ) ∣ (z.val : ℤ) + h i := by
     rw [zmod_finEquiv_val, ← hcast]
@@ -162,33 +150,30 @@ noncomputable def groupOfPrime (p : P.GroupPrime) : P.Group := by
 theorem groupOfPrime_spec (p : P.GroupPrime) :
     p.val ∈ P.primes (groupOfPrime P p) := by
   classical
-  exact Classical.choose_spec (show ∃ g : P.Group, p.val ∈ P.primes g from by
+  exact Classical.choose_spec ((by
     rcases Finset.mem_biUnion.mp p.property with ⟨g, _, hg⟩
-    exact ⟨g, hg⟩)
+    exact ⟨g, hg⟩))
 
 theorem groupOfPrime_eq (p : P.GroupPrime) (g : P.Group) (hp : p.val ∈ P.primes g) :
     groupOfPrime P p = g := by
   classical
   by_contra hne
-  have hd := P.disjoint (groupOfPrime P p) g hne
+  have hd := P.disjoint _ g hne
   exact (Finset.disjoint_left.mp hd) (groupOfPrime_spec P p) hp
 
 noncomputable def groupPrimeEquiv : P.GroupPrime ≃ Σ g : P.Group, P.Prime g where
   toFun p := ⟨groupOfPrime P p, ⟨p.val, groupOfPrime_spec P p⟩⟩
   invFun gp := globalPrime P gp.1 gp.2
   left_inv p := by
-    apply Subtype.ext
     rfl
   right_inv gp := by
     rcases gp with ⟨g, p⟩
     let q : P.GroupPrime := globalPrime P g p
-    have hg : groupOfPrime P q = g := groupOfPrime_eq P q g p.property
+    have hg  := groupOfPrime_eq P q g p.property
     apply Sigma.mk.inj_iff.mpr
     refine ⟨hg, ?_⟩
     apply (Subtype.heq_iff_coe_eq (by
-      intro x
-      have hiff := congrArg (fun k : P.Group => x ∈ P.primes k) hg
-      exact ⟨hiff.mp, hiff.mpr⟩)).2
+      grind)).2
     rfl
 
 abbrev GroupResidues := (g : P.Group) → (p : P.Prime g) → ZMod p.val
@@ -211,10 +196,9 @@ theorem active_mem_iff {F : FixedData} {J m n : ℕ}
     have hgroup : g' = g.val := by
       by_contra hne
       have hd := P.disjoint g' g.val hne
-      have h₁ : p.val ∈ P.primes g' := by
-        rw [← hj]
-        exact (Q.labels i g' j).property
-      exact (Finset.disjoint_left.mp hd) h₁ p.property
+      refine (Finset.disjoint_left.mp hd) ?_ p.property
+      rw [← hj]
+      simp
     subst g'
     apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_univ _, ?_⟩
@@ -229,7 +213,7 @@ theorem active_mem_iff {F : FixedData} {J m n : ℕ}
     refine ⟨g.val, Finset.mem_univ _, ?_⟩
     apply Finset.mem_image.mpr
     refine ⟨j, Finset.mem_univ _, ?_⟩
-    exact congrArg Subtype.val hj
+    congr
 
 theorem pointResidueFactor_eq_onePrimePointFactor {F : FixedData} {J m n : ℕ}
     {A : Model F P J m} (Q : Erdos821.S2Core.ResiduePath A n)
@@ -242,7 +226,7 @@ theorem pointResidueFactor_eq_onePrimePointFactor {F : FixedData} {J m n : ℕ}
   intro i hi
   have hactive := active_mem_iff P Q g p i
   by_cases ha : p.val ∈ Q.active i
-  · have hv : i ∈ Q.activeVisits g p := hactive.mp ha
+  · have hv := hactive.mp ha
     by_cases hh : r + (Q.offset i : ZMod p.val) = 0 <;>
       simp [ha, hv, hh]
   · have hv : i ∉ Q.activeVisits g p := fun hi => ha (hactive.mpr hi)
@@ -264,13 +248,7 @@ noncomputable def residuesEquivGroup : P.Residues ≃ GroupResidues P :=
   (residuesEquivSigma P).trans
     (Equiv.piCurry (fun (g : P.Group) (p : P.Prime g) => ZMod p.val))
 
-theorem residuesEquivSigma_apply (y : P.Residues) (p : P.GroupPrime) :
-    residuesEquivSigma P y (groupPrimeEquiv P p) = primeCoordinateEquiv P p (y p) := by
-  simp [residuesEquivSigma]
 
-theorem residuesEquivGroup_apply (y : P.Residues) (g : P.Group) (p : P.Prime g) :
-    residuesEquivGroup P y g p = residuesEquivSigma P y ⟨g, p⟩ := by
-  rfl
 
 theorem groupResiduePathFactor_eq_residuePathFactor {n : ℕ}
     (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
@@ -286,9 +264,7 @@ theorem groupResiduePathFactor_eq_residuePathFactor {n : ℕ}
           (residuesEquivGroup P y gp.1 gp.2)) =
         ∏ gp : Σ g : P.Group, P.Prime g,
           pointResidueFactor q h active gp.2.val (residuesEquivSigma P y gp) := by
-      apply Finset.prod_congr rfl
-      intro gp hgp
-      rw [residuesEquivGroup_apply]
+      rfl
     _ = ∏ p : P.GroupPrime,
           pointResidueFactor q h active p.val
             (residuesEquivSigma P y (groupPrimeEquiv P p)) := by
@@ -298,9 +274,7 @@ theorem groupResiduePathFactor_eq_residuePathFactor {n : ℕ}
     _ = ∏ p : P.GroupPrime,
           pointResidueFactor q h active p.val
             (primeCoordinateEquiv P p (y p)) := by
-      apply Finset.prod_congr rfl
-      intro p hp
-      rw [residuesEquivSigma_apply]
+      rfl
     _ = P.residuePathFactor n q h active y := by
       unfold PrimeGroups.residuePathFactor
       apply Finset.prod_congr rfl
@@ -318,24 +292,16 @@ noncomputable def groupResiduesSplit : GroupResidues P ≃
     by_cases hb : P.big g = false
     · exact z.1 ⟨g, hb⟩ p
     · have ht : P.big g = true := by
-        cases h : P.big g <;> simp_all
+        simp_all
       exact z.2 ⟨g, ht⟩ p
   left_inv r := by
-    funext g
-    funext p
-    by_cases hb : P.big g = false
-    · simp [hb]
-    · have ht : P.big g = true := by
-        cases h : P.big g <;> simp_all
-      simp [hb]
+    simp
   right_inv z := by
     rcases z with ⟨s, b⟩
     apply Prod.ext
     · funext g
-      funext p
       simp [g.property]
     · funext g
-      funext p
       simp [g.property]
 
 noncomputable def groupSplitEquiv : P.Group ≃ P.SmallGroup ⊕ P.BigGroup where
@@ -343,19 +309,13 @@ noncomputable def groupSplitEquiv : P.Group ≃ P.SmallGroup ⊕ P.BigGroup wher
     by_cases hg : P.big g = false
     · exact Sum.inl ⟨g, hg⟩
     · have ht : P.big g = true := by
-        cases h : P.big g <;> simp_all
+        simp_all
       exact Sum.inr ⟨g, ht⟩
   invFun := Sum.elim Subtype.val Subtype.val
   left_inv g := by
-    by_cases hg : P.big g = false
-    · simp [hg]
-    · have ht : P.big g = true := by
-        cases h : P.big g <;> simp_all
-      simp [hg]
+    grind
   right_inv s := by
-    cases s with
-    | inl g => simp [g.property]
-    | inr g => simp [g.property]
+    grind
 
 def smallResiduePathFactor {n : ℕ} (q : Fin (n + 1) → ℝ)
     (h : Fin (n + 1) → ℤ) (active : Fin (n + 1) → Finset ℕ)
@@ -396,10 +356,9 @@ theorem active_mem_iff_smallActiveLabelSet {F : FixedData} {J m n : ℕ}
     have hgroup : g' = g.val := by
       by_contra hne
       have hd := P.disjoint g' g.val hne
-      have h₁ : p.val ∈ P.primes g' := by
-        rw [← hj]
-        exact (Q.labels i g' j).property
-      exact (Finset.disjoint_left.mp hd) h₁ p.property
+      refine (Finset.disjoint_left.mp hd) ?_ p.property
+      rw [← hj]
+      simp
     subst g'
     apply Finset.mem_image.mpr
     refine ⟨j, Finset.mem_univ _, ?_⟩
@@ -471,9 +430,9 @@ theorem smallOmega_eq_active_plus_unmarked {F : FixedData} {J m n : ℕ}
         ∑ g : P.SmallGroup,
           (smallHitSet P Q y i g \ smallActiveLabelSet P Q i g).card := by
   classical
-  let T : (g : P.SmallGroup) → Finset (P.Prime g.val) := fun g =>
+  let T  := fun g =>
     smallActiveLabelSet P Q i g
-  let U : (g : P.SmallGroup) → Finset (P.Prime g.val) := fun g =>
+  let U  := fun g =>
     smallHitSet P Q y i g
   have hTU (g : P.SmallGroup) : T g ⊆ U g := by
     intro p hp
@@ -487,8 +446,7 @@ theorem smallOmega_eq_active_plus_unmarked {F : FixedData} {J m n : ℕ}
   calc
     Erdos821.S2Core.smallOmega (Erdos821.S2Core.translateSmallResidues (Q.offset i) y) =
         ∑ g : P.SmallGroup, (U g).card := by
-      simp [Erdos821.S2Core.smallOmega, U, smallHitSet,
-        Erdos821.S2Core.translateSmallResidues]
+      rfl
     _ = (∑ g : P.SmallGroup, (T g).card) +
           ∑ g : P.SmallGroup, (U g \ T g).card := by
       rw [← Finset.sum_add_distrib]
@@ -531,7 +489,7 @@ theorem smallVisitPathFactor_eq_pow {F : FixedData} {J m n : ℕ}
           (∑ g : P.SmallGroup,
             (smallHitSet P Q y i g \ smallActiveLabelSet P Q i g).card) := by
       simpa using
-        (Finset.prod_pow_eq_pow_sum (Finset.univ : Finset P.SmallGroup)
+        (Finset.prod_pow_eq_pow_sum (Finset.univ)
           (fun g => (smallHitSet P Q y i g \ smallActiveLabelSet P Q i g).card)
           (visitQ F.q n i))
 
@@ -543,7 +501,7 @@ theorem smallResiduePathFactor_eq_visitProduct {F : FixedData} {J m n : ℕ}
   classical
   unfold smallResiduePathFactor smallVisitPathFactor smallGroupVisitFactor
     pointResidueFactor
-  let f : (g : P.SmallGroup) → (p : P.Prime g.val) → Fin (n + 1) → ℝ :=
+  let f  :=
     fun g p i =>
       if p.val ∈ Q.active i then
         if Erdos821.S2Core.translateSmallResidues (Q.offset i) y g p = 0 then 1 else 0
@@ -595,14 +553,11 @@ theorem sqrt_nat_pow_eq_rpow_half (q : ℝ) (hq : 0 ≤ q) (k : ℕ) :
 theorem prod_fin_endpoints (m : ℕ) {α : Type*} [CommMonoid α]
     (f : Fin (m + 2) → α) :
     (∏ i : Fin (m + 2), f i) =
-      f 0 * f (Fin.last (m + 1)) * ∏ i : Fin m, f i.succ.castSucc := by
+      f 0 * f (Fin.last _) * ∏ i : Fin m, f i.succ.castSucc := by
   have hprod :
       (∏ i : Fin m, f i.castSucc.succ) = ∏ i : Fin m, f i.succ.castSucc := by
-    apply Finset.prod_congr rfl
-    intro i hi
-    congr 1
+    rfl
   have hlast : (Fin.last m).succ = Fin.last (m + 1) := by
-    apply Fin.ext
     rfl
   calc
     (∏ i : Fin (m + 2), f i) =
@@ -610,7 +565,7 @@ theorem prod_fin_endpoints (m : ℕ) {α : Type*} [CommMonoid α]
       rw [Fin.prod_univ_succ]
     _ = f 0 * ((∏ i : Fin m, f i.castSucc.succ) * f (Fin.last m).succ) := by
       rw [Fin.prod_univ_castSucc]
-    _ = f 0 * f (Fin.last (m + 1)) * ∏ i : Fin m, f i.succ.castSucc := by
+    _ = f 0 * f (Fin.last _) * ∏ i : Fin m, f i.succ.castSucc := by
       rw [hprod, hlast]
       ac_rfl
 
@@ -622,14 +577,14 @@ theorem visit_power_prod_eq_edge_half (q : ℝ) (hq : 0 ≤ q) (n : ℕ) (hn : 0
   cases n with
   | zero => omega
   | succ m =>
-    let f : Fin (m + 2) → ℝ := fun i => q ^ ((c i : ℝ) / 2)
+    let f  := fun i => q ^ ((c i : ℝ) / 2)
     have hvisit :
         (∏ i : Fin (m + 2), (visitQ q (m + 1) i) ^ c i) =
           f 0 * f (Fin.last (m + 1)) *
             ∏ i : Fin m, f i.succ.castSucc ^ 2 := by
       rw [prod_fin_endpoints m (fun i => (visitQ q (m + 1) i) ^ c i)]
       have hzero : visitQ q (m + 1) (0 : Fin (m + 2)) = Real.sqrt q := by
-        simp [visitQ]
+        rfl
       have hlast : visitQ q (m + 1) (Fin.last (m + 1)) = Real.sqrt q := by
         simp [visitQ]
       have hinterior (i : Fin m) :
@@ -682,14 +637,14 @@ theorem smallResiduePathFactor_eq_zero_of_not_compatible {F : FixedData}
     exact hbad ((smallCompatible_iff_labels_hit P Q hq y).2 hh)
   push Not at hnot
   obtain ⟨i, g, j, hres⟩ := hnot
-  let p : P.Prime g.val := Q.labels i g.val j
+  let p  := Q.labels i g.val j
   have hactive : p.val ∈ Q.active i := by
     apply Finset.mem_biUnion.mpr
     refine ⟨g.val, Finset.mem_univ _, ?_⟩
     apply Finset.mem_image.mpr
     exact ⟨j, Finset.mem_univ _, rfl⟩
   have hhit : y g p + (Q.offset i : ZMod p.val) ≠ 0 := by
-    simpa [Erdos821.S2Core.translateSmallResidues, p] using hres
+    assumption
   have hlocal : pointResidueFactor (visitQ F.q n) Q.offset Q.active p.val (y g p) = 0 := by
     unfold pointResidueFactor
     apply Finset.prod_eq_zero (Finset.mem_univ i)
@@ -750,8 +705,6 @@ theorem bigGroupPathFactor_eq_coords {n : ℕ} (q : Fin (n + 1) → ℝ)
   classical
   unfold bigGroupResiduePathFactor bigCoordinatePathFactor
   rw [← Fintype.prod_sigma']
-  apply Finset.prod_congr rfl
-  intro gp hgp
   rfl
 
 theorem bigLocalAverage_eq_onePrimeExpectation {F : FixedData} {J m n : ℕ}
@@ -760,10 +713,9 @@ theorem bigLocalAverage_eq_onePrimeExpectation {F : FixedData} {J m n : ℕ}
     (Fintype.card (ZMod p.val) : ℝ)⁻¹ *
         ∑ r : ZMod p.val,
           pointResidueFactor (visitQ F.q n) Q.offset Q.active p.val r =
-      Erdos821.S2Core.onePrimeExpectation p.val (n + 1) (eta F n)
+      Erdos821.S2Core.onePrimeExpectation p.val _ (eta F n)
         (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
   classical
-  let := P.primeNeZero g.val p
   rw [ZMod.card]
   unfold Erdos821.S2Core.onePrimeExpectation
   congr 1
@@ -778,7 +730,7 @@ theorem bigResidueExpectation_eq_product {F : FixedData} {J m n : ℕ}
         ∑ b : BigGroupResidues P,
           bigGroupResiduePathFactor P (visitQ F.q n) Q.offset Q.active b =
       ∏ g : P.BigGroup, ∏ p : P.Prime g.val,
-        Erdos821.S2Core.onePrimeExpectation p.val (n + 1) (eta F n)
+        Erdos821.S2Core.onePrimeExpectation p.val _ (eta F n)
           (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
   classical
   let e := bigResidueCoordsEquiv P
@@ -792,7 +744,7 @@ theorem bigResidueExpectation_eq_product {F : FixedData} {J m n : ℕ}
         rw [Fintype.card_congr e]
         congr 1
         exact Fintype.sum_equiv e
-          (fun b => bigGroupResiduePathFactor P (visitQ F.q n) Q.offset Q.active b)
+          _
           (fun c => bigCoordinatePathFactor P (visitQ F.q n) Q.offset Q.active c)
           (fun b => bigGroupPathFactor_eq_coords P (visitQ F.q n) Q.offset Q.active b)
     _ = ∏ gp : Σ g : P.BigGroup, P.Prime g.val,
@@ -814,7 +766,7 @@ theorem bigResidueExpectation_eq_product {F : FixedData} {J m n : ℕ}
               ∑ r : ZMod p.val,
                 pointResidueFactor (visitQ F.q n) Q.offset Q.active p.val r)
     _ = ∏ g : P.BigGroup, ∏ p : P.Prime g.val,
-          Erdos821.S2Core.onePrimeExpectation p.val (n + 1) (eta F n)
+          Erdos821.S2Core.onePrimeExpectation p.val _ (eta F n)
             (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
         apply Finset.prod_congr rfl
         intro g hg
@@ -828,9 +780,9 @@ theorem groupResiduePathFactor_split {n : ℕ} (q : Fin (n + 1) → ℝ)
     groupResiduePathFactor P q h active ((groupResiduesSplit P).symm (s, b)) =
       smallResiduePathFactor P q h active s * bigGroupResiduePathFactor P q h active b := by
   classical
-  let fs : P.SmallGroup → ℝ := fun g =>
+  let fs  := fun g =>
     ∏ p : P.Prime g.val, pointResidueFactor q h active p.val (s g p)
-  let fb : P.BigGroup → ℝ := fun g =>
+  let fb  := fun g =>
     ∏ p : P.Prime g.val, pointResidueFactor q h active p.val (b g p)
   calc
     groupResiduePathFactor P q h active ((groupResiduesSplit P).symm (s, b)) =
@@ -842,7 +794,7 @@ theorem groupResiduePathFactor_split {n : ℕ} (q : Fin (n + 1) → ℝ)
       | false => simp [groupSplitEquiv, groupResiduesSplit, hg', fs]
       | true => simp [groupSplitEquiv, groupResiduesSplit, hg', fb]
     _ = ∏ x : P.SmallGroup ⊕ P.BigGroup, Sum.elim fs fb x :=
-      (groupSplitEquiv P).prod_comp (Sum.elim fs fb)
+      (groupSplitEquiv P).prod_comp _
     _ = smallResiduePathFactor P q h active s * bigGroupResiduePathFactor P q h active b := by
       simp [smallResiduePathFactor, bigGroupResiduePathFactor, fs, fb,
         Fintype.prod_sum_type]
@@ -857,7 +809,7 @@ theorem residueExpectation_eq_smallBigAverages {F : FixedData} {J m n : ℕ}
         ∑ b : BigGroupResidues P,
           bigGroupResiduePathFactor P (visitQ F.q n) Q.offset Q.active b) := by
   classical
-  let e : P.Residues ≃ P.SmallResidues × BigGroupResidues P :=
+  let e  :=
     (residuesEquivGroup P).trans (groupResiduesSplit P)
   have hfactor (y : P.Residues) :
       P.residuePathFactor n (visitQ F.q n) Q.offset Q.active y =
@@ -867,10 +819,9 @@ theorem residueExpectation_eq_smallBigAverages {F : FixedData} {J m n : ℕ}
       (visitQ F.q n) Q.offset Q.active y]
     have heq : residuesEquivGroup P y = (groupResiduesSplit P).symm (e y) := by
       dsimp [e]
-      exact (Equiv.symm_apply_apply (groupResiduesSplit P)
-        (residuesEquivGroup P y)).symm
+      simp
     rw [heq]
-    exact groupResiduePathFactor_split P (visitQ F.q n) Q.offset Q.active (e y).1 (e y).2
+    exact groupResiduePathFactor_split P _ Q.offset Q.active (e y).1 (e y).2
   calc
     P.residueExpectation n (visitQ F.q n) Q.offset Q.active =
         (Fintype.card (P.SmallResidues × BigGroupResidues P) : ℝ)⁻¹ *
@@ -881,9 +832,8 @@ theorem residueExpectation_eq_smallBigAverages {F : FixedData} {J m n : ℕ}
       rw [Fintype.card_congr e]
       congr 1
       exact Fintype.sum_equiv e
-        (fun y => P.residuePathFactor n (visitQ F.q n) Q.offset Q.active y)
-        (fun z => smallResiduePathFactor P (visitQ F.q n) Q.offset Q.active z.1 *
-          bigGroupResiduePathFactor P (visitQ F.q n) Q.offset Q.active z.2)
+        _
+        _
         hfactor
     _ =
         ((Fintype.card P.SmallResidues : ℝ)⁻¹ *
@@ -895,8 +845,8 @@ theorem residueExpectation_eq_smallBigAverages {F : FixedData} {J m n : ℕ}
       let : Nonempty (P.SmallResidues) := ⟨fun _ _ => 0⟩
       let : Nonempty (BigGroupResidues P) := ⟨fun _ _ => 0⟩
       exact uniform_product_average
-        (fun s => smallResiduePathFactor P (visitQ F.q n) Q.offset Q.active s)
-        (fun b => bigGroupResiduePathFactor P (visitQ F.q n) Q.offset Q.active b)
+        _
+        _
 
 theorem residueFactorizationTask_proof :
     Erdos821.S2Core.ResidueFactorizationTask := by

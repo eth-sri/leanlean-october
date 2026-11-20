@@ -30,7 +30,7 @@ theorem inverse_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label
       W wa wb (Real.log D) (Real.log D) hwb hs (le_refl _)
   have hσ (u : Row) (hu : u∈rows) : (w u).zero.re∈Icc (0 : ℝ) 1 :=
     ⟨ha.trans (w u).zero_lower,(w u).real_part_upper⟩
-  have hf (u : Row) (hu : u∈rows) : (w u).frequency∈Icc (-height) height :=
+  have hf (u : Row) (hu : u∈rows)  :=
     abs_le.mp ((w u).frequency_bound.trans hfreq)
   have hb := HeckeDetectorRowwiseMarked.marked_rowwise rows (fun u => χ u label) true W D hD S hcover
     P 0 1 (-height) height E (by norm_num) (by linarith) (fun u => (w u).zero.re)
@@ -58,7 +58,7 @@ theorem plain_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label�
       W wa wb (Real.log D) (Real.log D) hwb hs (le_refl _)
   have hσ (u : Row) (hu : u∈rows) : (w u).zero.re∈Icc (0 : ℝ) 1 :=
     ⟨ha.trans (w u).zero_lower,(w u).real_part_upper⟩
-  have hf (u : Row) (hu : u∈rows) : (w u).frequency∈Icc (-height) height :=
+  have hf (u : Row) (hu : u∈rows)  :=
     abs_le.mp ((w u).frequency_bound.trans hfreq)
   have hb := HeckeDetectorRowwisePlain.plain_squared_rowwise rows (fun u => χ u label) W D hD S hcover
     P 0 1 (-height) height E (by norm_num) (by linarith) hE (fun u => (w u).zero.re)

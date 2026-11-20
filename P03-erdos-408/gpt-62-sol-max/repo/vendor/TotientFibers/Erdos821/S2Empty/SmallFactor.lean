@@ -26,15 +26,15 @@ def piProductEquiv {G : Type*} {A B : G → Type*} :
     ((∀ g : G, A g) × (∀ g : G, B g)) ≃ (∀ g : G, A g × B g) where
   toFun z g := (z.1 g, z.2 g)
   invFun z := (fun g => (z g).1, fun g => (z g).2)
-  left_inv z := by cases z; rfl
-  right_inv z := by funext g; exact Prod.eta (z g)
+  left_inv z := by rfl
+  right_inv z := by rfl
 
 theorem prod_indicator_forall {G : Type*} [Fintype G] [DecidableEq G]
     (p : G → Prop) [DecidablePred p] :
     (if ∀ g, p g then (1 : ℝ) else 0) = ∏ g, if p g then (1 : ℝ) else 0 := by
   classical
   by_cases h : ∀ g, p g
-  · simp [h]
+  · simp_all
   · obtain ⟨g, hg⟩ := not_forall.mp h
     have hz : (∏ g, if p g then (1 : ℝ) else 0) = 0 := by
       apply Finset.prod_eq_zero (Finset.mem_univ g)
@@ -49,15 +49,13 @@ theorem small_choice_sum_eq_prod (P : PrimeGroups) (M : ℕ) :
         if smallLocalGood g y a then (1 : ℝ) else 0 := by
   classical
   let A : P.SmallGroup → Type := fun g => Fin M → P.Prime g.val
-  let Y : P.SmallGroup → Type := fun g => SmallLocalResidues P g
+  let Y  := fun g => SmallLocalResidues P g
   let e := piProductEquiv (G := P.SmallGroup) (A := Y) (B := A)
   let fPi : ((g : P.SmallGroup) → Y g) × ((g : P.SmallGroup) → A g) → ℝ :=
     fun z => if ∀ g : P.SmallGroup, smallLocalGood g (z.1 g) (z.2 g) then (1 : ℝ) else 0
   let f : P.SmallResidues → SmallLabels P M → ℝ := fun y a =>
     if ∀ g : P.SmallGroup, smallLocalGood g (y g) (a g) then (1 : ℝ) else 0
-  have hpair :
-      (∑ z : P.SmallResidues × SmallLabels P M, f z.1 z.2) =
-        ∑ y : P.SmallResidues, ∑ a : SmallLabels P M, f y a :=
+  have hpair  :=
     Fintype.sum_prod_type' f
   calc
     _ = ∑ z : P.SmallResidues × SmallLabels P M, f z.1 z.2 := hpair.symm

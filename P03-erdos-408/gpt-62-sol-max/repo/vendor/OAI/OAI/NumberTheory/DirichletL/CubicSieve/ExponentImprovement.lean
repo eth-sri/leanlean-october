@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.HeathBrownIteration
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 def enlargementExponent (ξ : ℝ) : ℝ := (6*ξ-5)/(3*ξ-1)
@@ -49,7 +49,7 @@ theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
   let T := max M (N^α)
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
-  have hαβ : α ≤ β := (enlargement_bounds ξ hξ).2
+  have hαβ  := (enlargement_bounds ξ hξ).2
   have hNb : 0 ≤ N^β := Real.rpow_nonneg hN0.le _
   have hcross : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (by positivity) _
   have ht : T ≤ M+N^β := by
@@ -84,22 +84,19 @@ theorem HasCubicExponent.improve {ξ : ℝ} (h : HasCubicExponent ξ)
   intro ε hε
   let θ := min (ε/14) (1/4 : ℝ)
   have hθ : 0 < θ := lt_min (by positivity) (by norm_num)
-  have hθsmall : θ < 1/2 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
   have hθε : 7*θ ≤ ε := by
     have hh : θ ≤ ε/14 := min_le_left _ _
     linarith
-  obtain ⟨C,hC,hb⟩ := h.full_improved hξ.le hξ2 θ hθ hθsmall
+  obtain ⟨C,hC,hb⟩ := h.full_improved hξ.le hξ2 θ hθ (lt_of_le_of_lt (min_le_right _ _) (by norm_num))
   refine ⟨3*C, by positivity, ?_⟩
   intro M N hM hN
   let T := max M (N^(enlargementExponent ξ))
   have hT : 1 ≤ T := hM.trans (le_max_left _ _)
-  have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hp : N^(7*θ) ≤ (M*N)^ε :=
     (Real.rpow_le_rpow_of_exponent_le hN hθε).trans
       (Real.rpow_le_rpow hN0.le (by nlinarith) hε.le)
   have ht := enlarged_improved_shape M N ξ hM hN hξ.le
-  have hshape : 0 ≤ M+N^(SevenEighths.HeathBrownIteration.step ξ)+(M*N)^(2/3 : ℝ) := by positivity
   calc
     _ ≤ sieveNorm T N := sieveNorm_mono (le_max_left _ _) le_rfl
     _ ≤ elementSieveNorm T N := sieveNorm_le_elementSieveNorm T N

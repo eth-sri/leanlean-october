@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.SpectralWeights
 public import OAI.NumberTheory.DirichletL.Detector.ZeroIndex
 
@@ -63,8 +64,7 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
   let W : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)
   let V : ℂ := coordV (Ideal.absNorm (Ideal.span {p})) z
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   have hr : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1 := by
     have he := evenRatio_eq_coordR _ hQ a x z
     simp only [Complex.ofReal_natCast] at he
@@ -100,8 +100,6 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
   simp only [Fin.sum_univ_two, Fin.val_zero, Fin.val_one]
   rw [h0, h1, he.tsum_add (hasSum_ite_eq 0 _).summable, tsum_ite_eq]
   rw [zeroIndexSeries_eq p hp _ W V hW' hV]
-  change _ = 1/(1-V)+W/(1-W)+((∑' l, principalInner p hp hg eta a X W V 0 l)+
-    ∑' l, principalInner p hp hg eta a X W V 1 l)
   ring
 
 include hc in

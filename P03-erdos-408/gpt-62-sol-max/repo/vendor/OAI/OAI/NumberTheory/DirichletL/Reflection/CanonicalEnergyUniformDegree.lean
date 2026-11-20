@@ -1,7 +1,20 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.MemberEnergySpec
+
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalBranchSum
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CountBudget
+public import OAI.NumberTheory.DirichletL.Reflection.FullEnergyBasic
+public import OAI.NumberTheory.DirichletL.Reflection.ActualSizeCaps
+public import OAI.NumberTheory.DirichletL.Reflection.GlobalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.TupleMembers
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalParameters
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalCellBounds
 public import OAI.NumberTheory.DirichletL.Reflection.MemberGeometryUniformDegree
+
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 
 @[expose] public section
 
@@ -52,27 +65,11 @@ theorem canonical_member_geometry_uniform_uniform_degree
       (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
       (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i)
       (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal Eis))),
-      let S := tuplePrimeFamily tuples hne hmax hgood
-      let Pset := tuples.image slotTupleProduct
       ∀ (hrows : ∀ K∈rows,Admissible K),
-      (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
-      (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
-      (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
-      (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
-      (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
-    ∃ D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
-      ControlledStratumArithmetic (G.reflected K.val (hrows K.val K.property) (S P.val)).generator Nlevel a c₀ mode,
-    ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
-      1≤QK → 2≤QP →
-      (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
-      (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
-      (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
-      (∑ K : rows,‖memberTupleRow tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ (Z^(N-3*hhat)) r aw‖^2)≤
-        C*(1+‖θ‖)^degree*Z^(N+V-3*cstar/16-O₀/2) := by
+      MemberTupleEnergy (N:=Nlevel) G rows hrows tuples hne hmax hgood hinj s hc₀ j W
+        (Z^(N-3*hhat)) QK QP (fun θ => C*(1+‖θ‖)^degree*Z^(N+V-3*cstar/16-O₀/2)) := by
   let Lcap := 4*L+2
-  have hLc : 0≤Lcap := by dsimp [Lcap];positivity
+  have hLc : 0≤Lcap := by positivity
   obtain ⟨ε,ρ,κ,δ,π,hε,hρ,hκ,hδ,hδL,hηsmall,hδη,hπ,hbudget,hsmall⟩ :=
     canonical_reflection_parameters Lcap cstar η hLc hcstar hη hη1 hηc
   obtain ⟨degree,hu⟩ := original_member_geometry_uniform_uniform_degree
@@ -83,7 +80,7 @@ theorem canonical_member_geometry_uniform_uniform_degree
   obtain ⟨Z₂,hZ₂,hscale⟩ := geometry_source_scale_cap a c₀ mode s
   obtain ⟨Z₃,hZ₃,hwidth⟩ := width_error_threshold B hB 1 1 2 1 η
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) hη
-  obtain ⟨Z₄,hZ₄,hlog⟩ := constant_log_error 16 η (by norm_num) hη
+  obtain ⟨Z₄,hZ₄,hlog⟩ := constant_log_error 16 η hη
   let Z₀ := max Z₁ (max Z₂ (max Z₃ (max Z₄ (max 2 (Ideal.absNorm B:ℝ)))))
   have hz1 : Z₁≤Z₀ := le_max_left _ _
   have hz2 : Z₂≤Z₀ := (le_max_left _ _).trans (le_max_right _ _)
@@ -97,11 +94,11 @@ theorem canonical_member_geometry_uniform_uniform_degree
   intro σ _ _ J I F R Q₀ hJ hI hF hR hpower hmask A
     Z N V M z₀ margin O₀ hhat d QK QP hZ hN hM hMc hVc hzc hhc
     hIn hFn hRn hO hOM hOn hKr hK1 hKc hP2 hPc hinv hmargin hVd hhd hd
-  have hZ1 : 1<Z := lt_of_lt_of_le hZ₁ (hz1.trans hZ)
-  have hZp : 0<Z := lt_trans zero_lt_one hZ1
-  have hZ2 : 2≤Z := (le_max_left _ _).trans (hz5.trans hZ)
-  have hBn : (Ideal.absNorm B:ℝ)≤Z := (le_max_right _ _).trans (hz5.trans hZ)
-  have hKp : 0<QK := lt_of_lt_of_le zero_lt_one hK1
+  have hZ1  := lt_of_lt_of_le hZ₁ (hz1.trans hZ)
+  have hZp  := lt_trans zero_lt_one hZ1
+  have hZ2  := (le_max_left _ _).trans (hz5.trans hZ)
+  have hBn  := (le_max_right _ _).trans (hz5.trans hZ)
+  have hKp  := lt_of_lt_of_le zero_lt_one hK1
   have hPp : 0<QP := by linarith
   have hPc' : QP≤2*Z^z₀ := by linarith
   obtain ⟨hFc,hKcap,hPcap,hXi⟩ := canonical_actual_arithmetic_caps L hL
@@ -116,18 +113,18 @@ theorem canonical_member_geometry_uniform_uniform_degree
   have hzac : Real.logb Z (QP/2)≤z₀ := by
     have he := Real.logb_le_logb_of_le hZ1 (by linarith : 0<QP/2) hPc
     rwa [Real.logb_rpow hZp (ne_of_gt hZ1)] at he
-  have hzt : 0≤z₀ := hza.trans hzac
+  have hzt  := hza.trans hzac
   have ht := canonical_reflected_target_positive (N+V) M (normWidth Z R) z₀ margin cstar O₀
     hinv hM (normWidth_nonneg Z hZ1 R hR) hzt hcstar hmargin hOM
   have hc := henergy i (σ:=σ) J I F B R Q₀ hJ hI hF hB hR hpower hmask A
-    Z (N+V) N V M z₀ margin cstar O₀ (Real.logb Z QK) (Real.logb Z (QP/2))
-    (N-3*hhat) hhat d π 1 1 2 1 (Z^(N-3*hhat)) QK QP Lcap Lcap
-    (hz1.trans hZ) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hXp hKp hPp
-    (by simpa using hIn) (by simpa using hOn) (dyadic_canonical_lower Z QK hZ1 hKp _ hKr)
-    (by simpa using hFn) hw.1 hw.2 hinv rfl rfl hVd hhd rfl rfl
-    (by rw [Real.logb_rpow hZp (ne_of_gt hZ1)]) hM hO hza hzac hcstar hmargin hd
-    hηsmall hδη hπ hKcap (by linarith : QP/2≤Z^Lcap)
-    (hlog Z (hz4.trans hZ)) hbudget hXi hKcap hPcap (by linarith : -1≤N+V-3*cstar/16-O₀/2)
+    ⟨⟨Z, N+V, N, V, M, z₀, margin, cstar, O₀, Real.logb Z QK, Real.logb Z (QP/2),
+      N-3*hhat, hhat, d, π, 1, 1, 2, 1, Z^(N-3*hhat), QK, QP, Lcap, Lcap,
+      hz1.trans hZ, by norm_num, by norm_num, by norm_num, by norm_num, hXp, hKp, hPp,
+      by simpa using hIn, by simpa using hOn, dyadic_canonical_lower Z QK hZ1 hKp _ hKr,
+      by simpa using hFn, hw.1, hw.2, hinv, rfl, rfl, hVd, hhd, rfl, rfl,
+      by rw [Real.logb_rpow hZp (ne_of_gt hZ1)], hM, hO, hza, hzac, hcstar, hmargin, hd,
+      hηsmall, hδη, hπ, hKcap, by linarith, hlog Z (hz4.trans hZ), hbudget⟩,
+      hXi, hKcap, hPcap, by linarith⟩
     hFc hsc hFc hsmall
   exact hc
 end

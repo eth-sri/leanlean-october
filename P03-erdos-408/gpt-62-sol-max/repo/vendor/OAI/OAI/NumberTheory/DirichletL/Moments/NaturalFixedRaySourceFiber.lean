@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourcePhysical
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceCharacters
+public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySource
 
 @[expose] public section
@@ -8,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
-open CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentNaturalRowSource
+open CenteredMomentSecondHeightFamily CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy
+open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber
 open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 open ProbeHighRowFamily ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
@@ -40,7 +40,6 @@ lemma natural_unit_mask_positive {ι : Type*} [Fintype ι] [DecidableEq ι]
   simp only [positiveSlotRow,rowTwistedSum,rowSlot,one_mul,natural_unit_mask_coefficient F]
 
 variable {M : Ideal O} [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable {H : Subgroup (O⧸M)ˣ} (hH : RayOrthogonality.globalUnits M≤H)
 variable {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 

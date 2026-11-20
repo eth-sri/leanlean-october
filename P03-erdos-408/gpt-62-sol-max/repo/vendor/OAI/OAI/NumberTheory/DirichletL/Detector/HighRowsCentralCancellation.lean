@@ -16,8 +16,6 @@ theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
     (hET : A^2*‖P+D‖≤28*T) (hBET : A*‖B‖*‖P+D‖≤28*T)
     (hBD : B*D=vInv) (hWq : vInv*W=q) :
     ‖compensatedReplacement V W D P B q+continuedCorrection V W D P*vInv‖≤720*T := by
-  have hA0 : 0≤A := by linarith
-  have hT : 0≤T := (mul_nonneg (sq_nonneg A) (norm_nonneg V)).trans hVT
   have h1V : ‖1-V‖≤2 := by
     have hh := norm_sub_le (1:ℂ) V
     rw [norm_one] at hh

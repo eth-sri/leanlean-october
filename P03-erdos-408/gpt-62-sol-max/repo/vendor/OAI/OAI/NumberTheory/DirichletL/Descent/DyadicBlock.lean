@@ -44,7 +44,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
   let H := B / (C * T ^ 2)
   have hC0 : 0 < C := by linarith
   have hT0 : 0 < T := by linarith
-  have hnr : 0 < (Ideal.absNorm r : ℝ) := QuadraticMainBoundary.norm_pos hr
+  have hnr  := QuadraticMainBoundary.norm_pos hr
   have hnorm (d : HybridColumnData) (hd : d ∈ D) :
       (Ideal.absNorm d.residualN : ℝ) ≤ N / C ∧
       (Ideal.absNorm d.residualB : ℝ) ≤ H ∧
@@ -68,10 +68,10 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
       p.2 ≠ 0 ∧ (Ideal.absNorm p.2 : ℝ) ≤ H := by
     obtain ⟨u, hu, hup⟩ := Finset.mem_image.mp hp
     obtain ⟨d, hd, he, hdc⟩ := quotientGridSupport_origin r hr D u.1 u.2 hu
-    have he' : (d.residualN, d.residualB) = p := he.trans hup
+    have he'  := he.trans hup
     have hm := congrArg Prod.fst he'
     have hh := congrArg Prod.snd he'
-    have hdB : d.residualB ≠ 0 :=
+    have hdB  :=
       ne_zero_of_dvd_ne_zero d.g_squarefree.ne_zero (dvd_mul_left _ _)
     exact ⟨by simpa only [← hm, ← hh] using d.residual_product_squarefree,
       by simpa only [← hm, ← hh] using (hnorm d hd).2.2,
@@ -87,11 +87,11 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
   have hp₀ : u₀.1 ∈ Q.image Prod.fst := Finset.mem_image.mpr ⟨u₀, hu₀, rfl⟩
   have hc₀ : u₀.2 ∈ gridCommonSupport Q u₀.1.1 :=
     Finset.mem_image.mpr ⟨u₀, Finset.mem_filter.mpr ⟨hu₀, rfl⟩, rfl⟩
-  have hX : 1 ≤ X :=
+  have hX  :=
     (QuadraticMainBoundary.norm_one_le (hpair u₀.1 hp₀).1.ne_zero).trans (hpair u₀.1 hp₀).2.1
-  have hH : 1 ≤ H :=
+  have hH  :=
     (QuadraticMainBoundary.norm_one_le (hpair u₀.1 hp₀).2.2.1).trans (hpair u₀.1 hp₀).2.2.2
-  have hA : 1 ≤ A :=
+  have hA  :=
     (QuadraticMainBoundary.norm_one_le (hcset u₀.1 hp₀ u₀.2 hc₀).1).trans
       (hcset u₀.1 hp₀ u₀.2 hc₀).2.1
   have hbGrid : ∀ u ∈ hybridGridSupport D, ‖beta u.2 u.1.1 u.1.2‖ ≤ 1 := by
@@ -118,8 +118,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
   have hXupper : X ≤ N * B := by
     apply div_le_self (by positivity : 0 ≤ N * B)
     have hC2 : 1 ≤ C ^ 2 := one_le_pow₀ hC
-    have hT2 : 1 ≤ T ^ 2 := one_le_pow₀ hT
-    exact one_le_mul_of_one_le_of_one_le hC2 hT2
+    exact one_le_mul_of_one_le_of_one_le hC2 (one_le_pow₀ hT)
   apply he'.trans
   calc
     _ ≤ C₁ * (K * (N * B) * N) ^ ε * (K + N * B) * A * H /

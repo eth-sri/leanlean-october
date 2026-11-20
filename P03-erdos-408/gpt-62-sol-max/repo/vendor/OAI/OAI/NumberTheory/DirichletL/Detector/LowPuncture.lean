@@ -40,7 +40,7 @@ lemma supported_of_coprime_bad (B n : O) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
   constructor
   · exact PrimaryIdealUnitReindex.lambda_prime_actual.irreducible.coprime_iff_not_dvd.mp
       (hc.of_isCoprime_of_dvd_left hBL)
-  · have h2 : IsCoprime (-2:O) n := (hc.of_isCoprime_of_dvd_left hB2).neg_left
+  · have h2  := (hc.of_isCoprime_of_dvd_left hB2).neg_left
     have hn := negative_two_prime.irreducible.coprime_iff_not_dvd.mp h2
     simpa only [neg_dvd] using hn
 
@@ -53,7 +53,7 @@ lemma lowPeriodicBase_zero_of_not_coprime (η : HeckeFamily.Character) (C : Cali
         numeratorBadTwist D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported n)*
         movingNumeratorRow D.numeratorGood D.numeratorSupported n)))*sexticReciprocityPhase s n=0
   rw [hm]
-  simp only [mul_zero,zero_mul,star_zero]
+  simp
 
 lemma lowPeriodicRow_eq_primary (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
     (D : GoodMaskRowData B 1 C.generator) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
@@ -79,10 +79,9 @@ lemma calibration_coprime_iff_excluded_span (S : Finset Id) (hS : ∀P∈S,P.IsM
   rw [calibrationForSet_coprime_iff]
   constructor
   · intro h P hP hd
-    exact h P hP (Ideal.dvd_iff_le.mp hd (Ideal.subset_span (by simp)))
+    simp_all
   · intro h P hP ha
-    apply h P hP
-    exact Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr ha))
+    simp_all
 
 end SevenEighths.ProbePhysical
 end

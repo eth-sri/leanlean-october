@@ -6,7 +6,6 @@ public import Erdos821.Leaves.Damped
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -26,7 +25,6 @@ lemma small_count_damp (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1) (ell : ℕ) :
   refine ⟨C₀ / (Real.sqrt q) ^ ell, div_pos hC₀pos (pow_pos hsq0 _), fun Y hY => ?_⟩
   have hsq : q ^ ((((Y - ell : ℕ)) : ℝ) / 2) = (Real.sqrt q) ^ (Y - ell) :=
     Erdos821.GraphLemmas.sqrt_pow_eq q hq0 (Y - ell)
-  have hnum : (Y : ℝ) ^ ell * (Real.sqrt q) ^ Y ≤ C₀ := hC₀ ell (le_refl _) Y
   have hpow : (Real.sqrt q) ^ (Y - ell) * (Real.sqrt q) ^ ell
       = (Real.sqrt q) ^ Y := by
     have hY2 : Y - ell + ell = Y := Nat.sub_add_cancel hY
@@ -41,7 +39,7 @@ lemma small_count_damp (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1) (ell : ℕ) :
               ring
         _ = _ := by rw [hpow]
     rw [heq]
-    exact hnum
+    exact (hC₀ ell (le_refl _) Y)
   calc (Y : ℝ) ^ ell * q ^ ((((Y - ell : ℕ)) : ℝ) / 2)
       = (Y : ℝ) ^ ell * (Real.sqrt q) ^ (Y - ell) := by rw [hsq]
     _ ≤ C₀ / (Real.sqrt q) ^ ell := hfin

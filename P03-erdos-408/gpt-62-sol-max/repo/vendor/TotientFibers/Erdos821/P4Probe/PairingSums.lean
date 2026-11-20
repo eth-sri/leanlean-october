@@ -36,7 +36,6 @@ lemma idealFullPair_sum_source {P : PrimeGroups} {M : ℕ} {ι : Type*}
       intro a _
       apply Finset.sum_congr rfl
       intro b _
-      dsimp [term]
       ring
 
 lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
@@ -62,7 +61,6 @@ lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
       intro a _
       apply Finset.sum_congr rfl
       intro b _
-      dsimp [term]
       ring
 
 lemma idealFullPair_sub_source {P : PrimeGroups} {M : ℕ}

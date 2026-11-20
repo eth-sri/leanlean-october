@@ -16,7 +16,7 @@ lemma tuple_norm_cpow {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0)
     (J : Finset (Fin K)) (s : ℂ) :
     (elementNorm (∏i∈J,p i):ℂ)^s=∏i∈J,(elementNorm (p i):ℂ)^s := by
   induction J using Finset.induction_on with
-  | empty => simp only [Finset.prod_empty,elementNorm_one,Complex.ofReal_one,Complex.one_cpow]
+  | empty => simp
   | @insert i J hi ih =>
     rw [Finset.prod_insert hi,elementNorm_mul,Complex.ofReal_mul,
       Complex.mul_cpow_ofReal_nonneg (elementNorm_pos _ (hp i)).le (tuple_norm_pos p hp J).le,

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Cross
 
 @[expose] public section
@@ -15,26 +16,26 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance threeBlockFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
-def residualWithFrozen [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis) (R F : Finset ι) : ℂ :=
+def residualWithFrozen [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (c : Eis) (R F : Finset ι) : ℂ :=
   ∏ i ∈ R, (∏ k ∈ R.erase i, MixedCrossSeparation.crossSymbol p hg i k^4)*
     (residualPrimeScalar (p i) c (hp i) (hg i)*∏ k ∈ F, MixedCrossSeparation.crossSymbol p hg i k^4)
 
-def markedWithFrozen [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis) (P F : Finset ι) : ℂ :=
+def markedWithFrozen [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (c : Eis) (P F : Finset ι) : ℂ :=
   ∏ i ∈ P, (∏ k ∈ P.erase i, MixedCrossSeparation.crossSymbol p hg i k^2)*
     (markedPrimeScalar (p i) c (hp i) (hg i)*∏ k ∈ F, MixedCrossSeparation.crossSymbol p hg i k^2)
 
-def frozenPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+def frozenPhase [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ) (F : Finset ι) : ℂ :=
   ∏ i ∈ F, (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
     phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) (j i) (D.epsilon i)
 
-theorem activePhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem activePhase_three_blocks [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0) :
@@ -53,7 +54,7 @@ theorem activePhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
     · simp only [v,hRj i hr,l,hr,ite_true]
       rw [controlled_residual_phase]
       ring
-    · have hp' : i ∈ P := (Finset.mem_union.mp hi).resolve_left hr
+    · have hp'  := (Finset.mem_union.mp hi).resolve_left hr
       simp only [v,hPj i hp',l,hr,ite_false]
       rw [controlled_marked_phase]
       ring

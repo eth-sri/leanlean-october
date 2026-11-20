@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.MaskDescent
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFixedRowMask
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion CanonicalQuadraticSieve
+open ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem row_mask_mul (η : Character) (m r A z n : O)

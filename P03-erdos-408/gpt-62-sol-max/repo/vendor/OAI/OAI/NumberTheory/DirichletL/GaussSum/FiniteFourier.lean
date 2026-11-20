@@ -10,12 +10,7 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 
 namespace ShortDraftFiniteGaussFourier
 open scoped Classical
@@ -57,14 +52,11 @@ theorem product_gauss_transform
 end ShortDraftFiniteGaussFourier
 
 namespace PoissonChildCRT
-open scoped Classical
 
-variable (n : ℕ) (χ : MulChar (ZMod n) ℂ)
 
 end PoissonChildCRT
 
 namespace PoissonFirstLocal
-open scoped Classical
 
 end PoissonFirstLocal
 
@@ -86,8 +78,7 @@ theorem cubic_roots_surjective (ρ : R →+* F) (ζ : R)
   refine ⟨z ^ j, ?_⟩
   apply rootsOfUnity.coe_injective
   change ρ (ζ ^ j) = ((η : Fˣ) : F)
-  rw [map_pow]
-  exact hj
+  simpa using hj
 
 noncomputable def cubic_roots_equiv (ρ : R →+* F) (ζ : R)
     (hζ : IsPrimitiveRoot ζ 3) (hζF : IsPrimitiveRoot (ρ ζ) 3) :
@@ -114,7 +105,7 @@ theorem euler_jacobi_sum_zero (m : ℕ)
   apply Finset.sum_eq_zero
   intro j hj
   have he : m + (m - j) < Fintype.card F - 1 := by
-    have hle : m - j ≤ m := Nat.sub_le m j
+    have hle  := Nat.sub_le m j
     omega
   calc
     (∑ x : F, x ^ m * ((-x) ^ (m - j) * ↑(m.choose j))) =
@@ -123,7 +114,6 @@ theorem euler_jacobi_sum_zero (m : ℕ)
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro x _
-      rw [neg_pow, pow_add]
       ring
     _ = 0 := by rw [FiniteField.sum_pow_lt_card_sub_one F _ he]; ring
 
@@ -157,11 +147,7 @@ theorem cubicResidueChar_reduce_unit (ρ : R →+* F) (ζ : R)
     (u : F) ^ m
   have he := e.apply_symm_apply (euler_to_roots m hq u)
   have he' := congrArg (fun v : rootsOfUnity 3 F => ((v : Fˣ) : F)) he
-  change ρ (((e.symm (euler_to_roots m hq u) : rootsOfUnity 3 R) : Rˣ) : R) =
-    (((euler_to_roots m hq u : rootsOfUnity 3 F) : Fˣ) : F) at he'
-  change ρ (((e.symm (euler_to_roots m hq u) : rootsOfUnity 3 R) : Rˣ) : R) =
-    (u : F) ^ m at he'
-  exact he'
+  assumption
 
 theorem cubicResidueChar_pow_three (ρ : R →+* F) (ζ : R)
     (hζ : IsPrimitiveRoot ζ 3) (hζF : IsPrimitiveRoot (ρ ζ) 3)
@@ -210,8 +196,7 @@ def traceLambda : O := 1 + 2 * omega
 theorem omega_reduced_primitive (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) :
     IsPrimitiveRoot (Ideal.Quotient.mk P omega) 3 := by
-  let : Field (O ⧸ P) := Ideal.Quotient.field P
-  let ρ : O →+* O ⧸ P := Ideal.Quotient.mk P
+  let ρ  := Ideal.Quotient.mk P
   have hpow : (ρ omega) ^ 3 = 1 := by
     rw [← map_pow, omega_primitive.pow_eq_one, map_one]
   have hne : ρ omega ≠ 1 := by
@@ -238,8 +223,8 @@ theorem card_sub_one_div_three (P : Ideal O) [P.IsMaximal]
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let hζ := omega_reduced_primitive P hgood
-  let u : (O ⧸ P)ˣ := (hζ.isUnit (by decide)).unit
-  have hu : IsPrimitiveRoot u 3 := hζ.isUnit_unit (by decide)
+  let u  := (hζ.isUnit (by decide)).unit
+  have hu  := hζ.isUnit_unit (by decide)
   have h := orderOf_dvd_natCard u
   rw [← hu.eq_orderOf] at h
   simpa only [Nat.card_eq_fintype_card, Fintype.card_units] using h
@@ -319,8 +304,7 @@ theorem cubicChar_ne_one (P : Ideal O) [P.IsMaximal]
     apply Units.ext
     have hr := cubicChar_reduce P hgood (u : O ⧸ P)
     rw [hχ, MulChar.one_apply_coe, map_one] at hr
-    simpa only [Units.val_pow_eq_pow_val, Units.val_one,
-      Nat.card_eq_fintype_card] using hr.symm
+    simp_all
   have hdvd := (FiniteField.forall_pow_eq_one_iff (O ⧸ P) m).mp hall
   rw [hq] at hdvd
   have hle := Nat.le_of_dvd hm hdvd
@@ -375,7 +359,7 @@ theorem cubicJacobi_product (P : Ideal O) [P.IsMaximal]
   classical
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
-  let ι : O →+* K := algebraMap O K
+  let ι  := algebraMap O K
   let ψ := (cubicChar P hgood).ringHomComp ι
   have hchar : ringChar K ≠ ringChar (O ⧸ P) := by
     rw [ringChar.eq_zero]
@@ -393,7 +377,7 @@ theorem cubicJacobi_product (P : Ideal O) [P.IsMaximal]
   have hψ2 : ψ * ψ ≠ 1 := by
     rw [show ψ * ψ =
       (cubicChar P hgood * cubicChar P hgood).ringHomComp ι by
-        exact (MulChar.ringHomComp_mul _ _ _).symm]
+        rfl]
     exact (MulChar.ringHomComp_ne_one_iff RingOfIntegers.coe_injective).mpr hχ2
   have hprod := jacobiSum_mul_jacobiSum_inv hchar hψ hψ hψ2
   apply RingOfIntegers.coe_injective
@@ -424,8 +408,7 @@ theorem conjO_cubic_root (x : O) (hx : x ^ 3 = 1) :
     conjO x = x ^ 2 := by
   obtain ⟨j, _, hj⟩ := omega_primitive.eq_pow_of_pow_eq_one hx
   rw [← hj, map_pow, conjO_omega]
-  simp only [← pow_mul]
-  rw [Nat.mul_comm]
+  ring
 
 theorem cubicChar_conj_eq_inv (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (x : O ⧸ P) :
@@ -509,12 +492,12 @@ theorem sexticChar_powers (P : Ideal O) [P.IsMaximal]
 
 theorem lambda_not_dvd_two : ¬ lambda ∣ (2 : O) := by
   let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
-  have hprime : Prime lambda :=
+  have hprime  :=
     (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
-  let I : Ideal O := Ideal.span {lambda}
+  let I  := Ideal.span {lambda}
   have hI : I.IsMaximal := by
     have hp : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hprime
-    have hne : I ≠ ⊥ := Ideal.span_singleton_eq_bot.not.mpr hprime.ne_zero
+    have hne  := Ideal.span_singleton_eq_bot.not.mpr hprime.ne_zero
     exact hp.isMaximal hne
   let : I.IsMaximal := hI
   let : Field (O ⧸ I) := Ideal.Quotient.field I
@@ -527,10 +510,10 @@ theorem lambda_not_dvd_two : ¬ lambda ∣ (2 : O) := by
         (by decide)]
     norm_num
   intro hdiv
-  have hmem : (2 : O) ∈ I := (Ideal.mem_span_singleton).mpr hdiv
+  have hmem  := (Ideal.mem_span_singleton).mpr hdiv
   have hzero : (2 : O ⧸ I) = 0 := (Ideal.Quotient.eq_zero_iff_mem).mpr hmem
   have hchar : ringChar (O ⧸ I) = 2 := by
-    have hdvd : ringChar (O ⧸ I) ∣ 2 := (ringChar.spec (O ⧸ I) 2).mp hzero
+    have hdvd  := (ringChar.spec (O ⧸ I) 2).mp hzero
     exact (Nat.prime_dvd_prime_iff_eq
       (CharP.char_is_prime (O ⧸ I) (ringChar (O ⧸ I))) Nat.prime_two).mp hdvd
   have heven := FiniteField.even_card_of_char_two hchar
@@ -547,7 +530,7 @@ theorem conjK_ne_refl : conjK ≠ AlgEquiv.refl := by
       rfl
     exact conjO_omega.symm.trans hc
   have hw1 : omega = 1 := by
-    have hunit : IsUnit omega := omega_primitive.isUnit (by decide)
+    have hunit  := omega_primitive.isUnit (by decide)
     apply (mul_left_cancel₀ hunit.ne_zero)
     calc
       omega * omega = omega ^ 2 := by ring
@@ -557,7 +540,7 @@ theorem conjK_ne_refl : conjK ≠ AlgEquiv.refl := by
 
 theorem galois_card_two : Fintype.card (K ≃ₐ[ℚ] K) = 2 := by
   classical
-  let : IsGalois ℚ K := IsCyclotomicExtension.isGalois {3} ℚ K
+  let  := IsCyclotomicExtension.isGalois {3} ℚ K
   rw [← Nat.card_eq_fintype_card, IsGalois.card_aut_eq_finrank ℚ K,
     IsCyclotomicExtension.finrank (n := 3) K
       (Polynomial.cyclotomic.irreducible_rat (by decide))]
@@ -573,10 +556,10 @@ theorem galois_univ_pair [DecidableEq (K ≃ₐ[ℚ] K)] :
 theorem norm_eq_mul_conjK (p : O) :
     ((Algebra.norm ℚ (p : K) : ℚ) : K) = (p : K) * conjK (p : K) := by
   classical
-  let : IsGalois ℚ K := IsCyclotomicExtension.isGalois {3} ℚ K
+  let  := IsCyclotomicExtension.isGalois {3} ℚ K
   have h := Algebra.norm_eq_prod_automorphisms ℚ (p : K)
   rw [galois_univ_pair, Finset.prod_pair conjK_ne_refl.symm] at h
-  simpa using h
+  simp_all
 
 theorem norm_int_eq_mul_conjO (p : O) :
     ((Algebra.norm ℤ p : ℤ) : O) = p * conjO p := by
@@ -596,7 +579,7 @@ theorem generator_mul_conj_eq_sign_card (P : Ideal O) [P.IsMaximal]
         (Ideal.absNorm_span_singleton p).symm
       _ = Ideal.absNorm P := by rw [← hP]
       _ = Nat.card (O ⧸ P) := by
-        rw [Ideal.absNorm_apply, Submodule.cardQuot_apply]
+        rfl
   have hsq : (Algebra.norm ℤ p) * (Algebra.norm ℤ p) =
       (Nat.card (O ⧸ P) : ℤ) * (Nat.card (O ⧸ P) : ℤ) := by
     apply (Int.natAbs_eq_iff_mul_self_eq).mp
@@ -606,10 +589,10 @@ theorem generator_mul_conj_eq_sign_card (P : Ideal O) [P.IsMaximal]
     nlinarith [hsq]
   rcases mul_eq_zero.mp hzero with hpos | hneg
   · left
-    have heq : Algebra.norm ℤ p = (Nat.card (O ⧸ P) : ℤ) := sub_eq_zero.mp hpos
+    have heq  := sub_eq_zero.mp hpos
     simp [← norm_int_eq_mul_conjO p, heq]
   · right
-    have heq : Algebra.norm ℤ p = -(Nat.card (O ⧸ P) : ℤ) := add_eq_zero_iff_eq_neg.mp hneg
+    have heq  := add_eq_zero_iff_eq_neg.mp hneg
     simp [← norm_int_eq_mul_conjO p, heq]
 
 theorem cubicJacobi_unit_multiple_of_principal (P : Ideal O) [P.IsMaximal]
@@ -651,7 +634,7 @@ theorem cubicJacobi_unit_multiple_of_principal (P : Ideal O) [P.IsMaximal]
       rw [mul_neg, h]
       ring
   refine ⟨hvunit.unit, ?_⟩
-  simpa only [hvunit.unit_spec] using hv
+  assumption
 
 theorem cubicJacobi_eq_neg_primary_generator_of_principal (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
@@ -698,7 +681,7 @@ theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
     rw [Ideal.absNorm_span_singleton, hnormJ]
     simp
   have habsP : Ideal.absNorm P = Nat.card (O ⧸ P) := by
-    rw [Ideal.absNorm_apply, Submodule.cardQuot_apply]
+    rfl
   have hle : Ideal.span {J} ≤ P :=
     (Ideal.span_singleton_le_iff_mem P).mpr (cubicJacobi_mem_prime P hgood)
   obtain ⟨Q, hQ⟩ := (Ideal.dvd_iff_le).mpr hle
@@ -709,9 +692,9 @@ theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
         Nat.card (O ⧸ P) = Ideal.absNorm (Ideal.span {J}) := habsJ.symm
         _ = Ideal.absNorm (P * Q) := by rw [hQ]
         _ = Ideal.absNorm P * Ideal.absNorm Q := map_mul Ideal.absNorm P Q
-        _ = Nat.card (O ⧸ P) * Ideal.absNorm Q := by rw [habsP]
+        _ = Nat.card (O ⧸ P) * Ideal.absNorm Q := by rfl
     exact (mul_left_cancel₀ hq (heq.symm.trans (by ring)))
-  have hQtop : Q = ⊤ := Ideal.absNorm_eq_one_iff.mp hQnorm
+  have hQtop  := Ideal.absNorm_eq_one_iff.mp hQnorm
   change P = Ideal.span {J}
   rw [hQ, hQtop, ← Ideal.one_eq_top, mul_one]
 
@@ -762,7 +745,7 @@ theorem cubicGauss_cube {E : Type*} [Field E] (ι : O →+* E)
     change (χ.ringHomComp ι)⁻¹ = (χ.ringHomComp ι) ^ 2
     rw [MulChar.ringHomComp_inv, MulChar.ringHomComp_pow, hχinv]
   have hξmul : ξ * ξ = ξ⁻¹ := by rw [hξinv, pow_two]
-  have hχneg : χ (-1) = 1 :=
+  have hχneg  :=
     MulChar.val_neg_one_eq_one_of_odd_order (by decide : Odd 3) hχ3
   have hξneg : ξ (-1) = 1 := by
     change ι (χ (-1)) = 1
@@ -812,7 +795,7 @@ theorem sexticChar_order (P : Ideal O) [P.IsMaximal]
   have h2 := (sexticChar_powers P hgood).1
   have h3 := (sexticChar_powers P hgood).2.1
   have h6 := (sexticChar_powers P hgood).2.2
-  have hdiv : orderOf (sexticChar P hgood) ∣ 6 :=
+  have hdiv  :=
     orderOf_dvd_of_pow_eq_one h6
   have hne2 : orderOf (sexticChar P hgood) ≠ 2 := by
     intro he
@@ -828,12 +811,12 @@ theorem sexticChar_order (P : Ideal O) [P.IsMaximal]
     intro he
     have hχ1 := orderOf_eq_one_iff.mp he
     rw [hχ1] at h2
-    exact cubicChar_ne_one P hgood (by simpa using h2.symm)
+    exact cubicChar_ne_one P hgood (by simp_all)
   have hne0 : orderOf (sexticChar P hgood) ≠ 0 := by
     intro he
     norm_num [he] at hdiv
-  have hpos : 0 < orderOf (sexticChar P hgood) := Nat.pos_of_ne_zero hne0
-  have hle : orderOf (sexticChar P hgood) ≤ 6 := Nat.le_of_dvd (by norm_num) hdiv
+  have hpos  := Nat.pos_of_ne_zero hne0
+  have hle  := Nat.le_of_dvd (by norm_num) hdiv
   have hne4 : orderOf (sexticChar P hgood) ≠ 4 := by
     intro he
     norm_num [he] at hdiv
@@ -862,7 +845,7 @@ theorem sexticChar_reduce_unit (P : Ideal O) [P.IsMaximal]
     exact (Nat.mul_div_cancel_left' hsix).symm
   have hthird : (N - 1) / 3 = 2 * m := by omega
   have hhalf : N / 2 = 3 * m := by omega
-  let ρ : O →+* O ⧸ P := Ideal.Quotient.mk P
+  let ρ  := Ideal.Quotient.mk P
   have hquad : ρ (quadraticCharO P (u : O ⧸ P)) =
       (u : O ⧸ P) ^ (N / 2) := by
     change (quadraticChar (O ⧸ P) (u : O ⧸ P) : O ⧸ P) = _
@@ -891,12 +874,11 @@ theorem sexticChar_reduce_unit (P : Ideal O) [P.IsMaximal]
 
 theorem quotient_char_ne_two_of_two_not_mem (P : Ideal O) [P.IsMaximal]
     (h2 : (2 : O) ∉ P) : ringChar (O ⧸ P) ≠ 2 := by
-  let : Field (O ⧸ P) := Ideal.Quotient.field P
   intro heq
   have hz : ((ringChar (O ⧸ P) : ℕ) : O ⧸ P) = 0 := ringChar.Nat.cast_ringChar
   rw [heq] at hz
   apply h2
-  exact (Ideal.Quotient.eq_zero_iff_mem).mp (by simpa only [map_ofNat, Nat.cast_ofNat] using hz)
+  exact (Ideal.Quotient.eq_zero_iff_mem).mp (by assumption)
 
 end ActualEisensteinCubic
 

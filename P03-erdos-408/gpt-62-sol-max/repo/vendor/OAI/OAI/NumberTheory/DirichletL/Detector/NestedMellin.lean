@@ -1,7 +1,9 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalRadial
 public import OAI.NumberTheory.DirichletL.Detector.OuterMellin
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -36,13 +38,11 @@ lemma verticalIntegral_mul_const (σ : ℝ) (F : ℂ→ℂ) (c : ℂ) :
 
 theorem markedPhysicalProbe_eq_nested_mellin (η : HeckeFamily.Character)
     (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty)
-    (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (D : Ideal O) (mw : MellinWindows)
     (X Y Z ξ υ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (hξ : 1<ξ) :
-    markedPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z=
-      nestedMellinPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z ξ υ := by
-  rw [markedPhysicalProbe_eq_radial_mellin η S hS hSne D W0 W1 a0 b0 ha0 hW0 X Y Z ξ hX hZ hξ]
+    markedPhysicalProbe η (calibrationForSet S hS) D mw.left mw.right X Y Z=
+      nestedMellinPhysicalProbe η (calibrationForSet S hS) D mw.left mw.right X Y Z ξ υ := by
+  rw [markedPhysicalProbe_eq_radial_mellin η S hS hSne D mw.left mw.right mw.leftLo mw.leftHi mw.left_pos mw.left_support X Y Z ξ hX hZ hξ]
   unfold radialMellinPhysicalProbe nestedMellinPhysicalProbe
   rw [←tsum_mul_left]
   apply tsum_congr
@@ -50,8 +50,8 @@ theorem markedPhysicalProbe_eq_nested_mellin (η : HeckeFamily.Character)
   split_ifs with hs
   · dsimp only
     rw [verticalIntegral_mul_const,verticalIntegral_mul_const,
-      ←outer_source_scaled_inverse W1 a1 b1 ha1 hW1 υ (Ideal.absNorm s.val:ℝ) Y
-        (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)) hY]
+      ←outer_source_scaled_inverse mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support υ (Ideal.absNorm s.val:ℝ) Y
+        (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (s.property.1)) hY]
     ring
   · simp only [mul_zero]
 

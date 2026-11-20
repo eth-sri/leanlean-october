@@ -69,8 +69,8 @@ private theorem prod_one_sub_lower {ι : Type*} [DecidableEq ι]
   | @insert x s hx ih =>
     have hx₀ := h₀ x (Finset.mem_insert_self x s)
     have hx₁ := h₁ x (Finset.mem_insert_self x s)
-    have hs₀ : ∀ i ∈ s, 0 ≤ a i := fun i hi => h₀ i (Finset.mem_insert_of_mem hi)
-    have hs₁ : ∀ i ∈ s, a i ≤ 1 := fun i hi => h₁ i (Finset.mem_insert_of_mem hi)
+    have hs₀ := fun i hi => h₀ i (Finset.mem_insert_of_mem hi)
+    have hs₁ := fun i hi => h₁ i (Finset.mem_insert_of_mem hi)
     have hs := Finset.sum_nonneg hs₀
     have hi := ih hs₀ hs₁
     simp only [Finset.sum_insert hx, Finset.prod_insert hx]
@@ -84,12 +84,12 @@ private theorem prod_one_sub_lower {ι : Type*} [DecidableEq ι]
 excluded fraction is at most one half. -/
 theorem descFactorial_half (M k : ℕ) (hk : 2 ≤ k) (hM : k * (k - 1) ≤ M) :
     (M : ℝ) ^ k / 2 ≤ (Nat.descFactorial M k : ℝ) := by
-  have hkM : k ≤ M := calc
+  have hkM  := calc
     k = k * 1 := by simp
     _ ≤ k * (k - 1) := Nat.mul_le_mul_left k (by omega)
     _ ≤ M := hM
   have hMpos : 0 < (M : ℝ) := by exact_mod_cast (show 0 < M by omega)
-  have hMne : (M : ℝ) ≠ 0 := ne_of_gt hMpos
+  have hMne  := ne_of_gt hMpos
   have hsum : (∑ i ∈ Finset.range k, (i : ℝ)) * 2 =
       (k : ℝ) * (k - 1 : ℕ) := by
     have h := congrArg (fun n : ℕ => (n : ℝ)) (Finset.sum_range_id_mul_two k)
@@ -149,7 +149,7 @@ theorem beta_power_bound (m ell : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell)
   have harith : wm * (t / wm) + we * ((1 - t) / we) = 1 := by
     field_simp [ne_of_gt hwmpos, ne_of_gt hwepos]
     ring
-  have ham : (t / wm) ^ wm * ((1 - t) / we) ^ we ≤ 1 :=
+  have ham :=
     (Real.geom_mean_le_arith_mean2_weighted hwmpos.le hwepos.le hp₁ hp₂ hw).trans_eq harith
   have hexpm : wm * ((m + ell : ℕ) : ℝ) = m := by
     simp only [Nat.cast_add]
@@ -180,7 +180,7 @@ theorem hoeffding_fraction_bound (M m ell j : ℕ) (hm : 1 ≤ m) (he : 1 ≤ el
     ((Nat.descFactorial j m : ℝ) * Nat.descFactorial (M - j) ell) /
       Nat.descFactorial M (m + ell) ≤ 2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell := by
   have hk : 2 ≤ m + ell := by omega
-  have hkM : m + ell ≤ M := calc
+  have hkM  := calc
     m + ell = (m + ell) * 1 := by simp
     _ ≤ (m + ell) * (m + ell - 1) := Nat.mul_le_mul_left _ (by omega)
     _ ≤ M := hM
@@ -188,7 +188,7 @@ theorem hoeffding_fraction_bound (M m ell j : ℕ) (hm : 1 ≤ m) (he : 1 ≤ el
   have hdpos : 0 < (Nat.descFactorial M (m + ell) : ℝ) := by
     exact_mod_cast Nat.descFactorial_pos.mpr hkM
   let c : ℝ := (ell : ℝ) ^ ell / (m : ℝ) ^ ell
-  have hc : 0 ≤ c := by dsimp [c]; positivity
+  have hc : 0 ≤ c := by positivity
   have hb := beta_power_bound m ell hm he ((j : ℝ) / M)
     (by positivity) ((div_le_one hMpos).mpr (by exact_mod_cast hj))
   have hscale : ((j : ℝ) / M) ^ m * (1 - (j : ℝ) / M) ^ ell =
@@ -198,7 +198,7 @@ theorem hoeffding_fraction_bound (M m ell j : ℕ) (hm : 1 ≤ m) (he : 1 ≤ el
       field_simp
     rw [hsub, div_pow, div_pow, div_mul_div_comm]
   rw [hscale] at hb
-  have hnpow : (j : ℝ) ^ m * (M - j : ℕ) ^ ell ≤ c * (M : ℝ) ^ (m + ell) :=
+  have hnpow  :=
     (div_le_iff₀ (pow_pos hMpos (m + ell))).mp hb
   have hjpow : (Nat.descFactorial j m : ℝ) ≤ (j : ℝ) ^ m := by
     exact_mod_cast Nat.descFactorial_le_pow j m

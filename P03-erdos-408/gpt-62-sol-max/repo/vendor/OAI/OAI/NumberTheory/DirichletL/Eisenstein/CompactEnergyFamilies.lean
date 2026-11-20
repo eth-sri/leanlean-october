@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.VariationalLaplacian
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopenedFibers
 
@@ -10,76 +11,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -97,8 +35,7 @@ lemma compact_of_norm_le_compact {E F G : Type*}
   let e : E→L[ℂ]S := g.codRestrict S hmem
   have he : DenseRange e := by
     rw [DenseRange,Subtype.dense_iff,←Set.range_comp]
-    change closure (Set.range g)⊆closure (Set.range g)
-    exact Set.Subset.rfl
+    rfl
   have hec : IsCompactOperator e := hg.codRestrict hmem hS
   let q : S→L[ℂ]F := f.toLinearMap.extendOfNorm e.toLinearMap
   have hfq : f=q.comp e := by
@@ -120,7 +57,6 @@ lemma compact_finite_pi {E G ι : Type*} [Fintype ι]
   exact fun i hi => subset_closure ⟨x,hx,rfl⟩
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap
 
 def kernelChartCore (χ : PositiveChartCutoff) : Set EuclideanSpatial :=
   {p | (1/2 : ℝ)<χ.func p}
@@ -233,7 +169,6 @@ lemma kernelChartCore_mass_bound (χ : KernelGoodCutoff) : ∃C : ℝ,0≤C ∧
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 def kernelMassRestriction (K : Set KernelQuotient) (hK : MeasurableSet K)
     (f : KernelQuotientL2) : KernelQuotientL2 :=
@@ -272,8 +207,8 @@ lemma kernelMassRestriction_norm_le (K : Set KernelQuotient) (hK : MeasurableSet
   filter_upwards [kernelMassRestriction_coe K hK f] with q hq
   rw [hq]
   by_cases hm : q∈K
-  · simp only [Set.indicator_of_mem hm,le_refl]
-  · simp only [Set.indicator_of_notMem hm,norm_zero,norm_nonneg]
+  · simp_all
+  simp_all
 
 def kernelMassRestrictionCLM (K : Set KernelQuotient) (hK : MeasurableSet K) :
     KernelQuotientL2→L[ℂ]KernelQuotientL2 :=
@@ -297,8 +232,8 @@ lemma kernelMassRestriction_norm_sq (K : Set KernelQuotient) (hK : MeasurableSet
       filter_upwards [kernelMassRestriction_coe K hK f] with q hq
       rw [hq,real_inner_self_eq_norm_sq]
       by_cases hqK : q∈K
-      · simp only [Set.indicator_of_mem hqK]
-      · simp only [Set.indicator_of_notMem hqK,norm_zero,zero_pow (by decide : 2≠0)]
+      · simp_all
+      simp_all
 
 lemma kernelMassRestriction_smooth_norm_sq (K : Set KernelQuotient) (hK : MeasurableSet K)
     (f : kernelSmoothTests) :
@@ -319,7 +254,7 @@ lemma integral_le_finite_cover {X ι : Type*} [MeasurableSpace X] [Fintype ι]
     (hU : ∀i,MeasurableSet (U i)) (hcover : K⊆⋃i,U i)
     (g : X→ℝ) (hg : Integrable g ν) (hn : ∀x,0≤g x) :
     (∫x in K,g x∂ν)≤∑i,∫x in U i,g x∂ν := by
-  have hi : ∀i,Integrable ((U i).indicator g) ν := fun i => hg.indicator (hU i)
+  have hi  := fun i => hg.indicator (hU i)
   calc
     _ = ∫x,K.indicator g x∂ν := (integral_indicator hK).symm
     _ ≤ ∫x,∑i,(U i).indicator g x∂ν := by
@@ -357,12 +292,6 @@ lemma finite_sum_weighted_norm_sq_le {G ι : Type*} [Fintype ι]
   exact mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ (norm_nonneg _) (norm_le_pi_norm x i) 2) (hC i)
 
-lemma kernelEnergyChartFamily_core_apply (t : Finset KernelGoodCutoff)
-    (f : kernelSmoothTests) (χ : t) :
-    kernelEnergyChartFamily t (kernelEnergyGraphCore f) χ=
-      kernelL2Localize χ.1.1 (kernelSmoothTestsToL2 f) := by
-  change kernelL2Localize χ.1.1 (kernelEnergyMass (kernelEnergyGraphCore f))=_
-  rw [kernelEnergyMass_core]
 
 lemma kernelCompact_mass_bound (K : Set KernelQuotient) (hK : IsCompact K) :
     ∃t : Finset KernelGoodCutoff,∃C : ℝ,0≤C ∧ ∀f : kernelSmoothTests,
@@ -383,7 +312,7 @@ lemma kernelCompact_mass_bound (K : Set KernelQuotient) (hK : IsCompact K) :
     _ ≤ ∑χ : t,C χ*‖kernelL2Localize χ.1.1 (kernelSmoothTestsToL2 f)‖^2 :=
       Finset.sum_le_sum (fun χ hχ => hbound χ f)
     _ = ∑χ : t,C χ*‖kernelEnergyChartFamily t (kernelEnergyGraphCore f) χ‖^2 := by
-      simp only [kernelEnergyChartFamily_core_apply]
+      rfl
     _ ≤ _ := finite_sum_weighted_norm_sq_le C hC _
 
 theorem kernelEnergyMassRestriction_isCompact (K : Set KernelQuotient) (hK : IsCompact K) :
@@ -413,7 +342,6 @@ theorem kernelEnergyMassRestriction_isCompact (K : Set KernelQuotient) (hK : IsC
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
@@ -439,7 +367,7 @@ theorem primeValueHom_prime (w : Ideal ActualEisensteinCubic.O → ℂ) (P : Ide
   change (if P=0 then 0 else _) = w P
   rw [ite_eq_right hP.ne_zero,
     UniqueFactorizationMonoid.normalizedFactors_irreducible hP.irreducible]
-  simp only [normalize_eq,Multiset.map_singleton,Multiset.prod_singleton]
+  simp
 
 theorem primeValueHom_norm_le_one (w : Ideal ActualEisensteinCubic.O → ℂ) (hw : ∀ P,‖w P‖≤1)
     (I : Ideal ActualEisensteinCubic.O) : ‖primeValueHom w I‖≤1 := by
@@ -500,7 +428,7 @@ theorem rowTwist_norm (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀n,‖Ψ 
   exact (mul_le_of_le_one_left (norm_nonneg _) (hΨ n)).trans (idealRowHom_norm _ _)
 
 theorem idealRowHom_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hg : ∀i,lambda∉Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p] (hg : OAI.PrincipalFamily.Avoids p lambda)
     (S : Finset ι) (x : ActualEisensteinCubic.O) :
     idealRowHom x (Ideal.span {∏i∈S,p i}) =
       finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S x := by
@@ -511,7 +439,7 @@ theorem idealRowHom_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
   exact idealRowHom_prime x _ (hg i)
 
 theorem rowTwist_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hg : ∀i,lambda∉Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p] (hg : OAI.PrincipalFamily.Avoids p lambda)
     (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) :
     rowTwist Ψ m f z (∏i∈S,p i) =
       Ψ (∏i∈S,p i)*rowCoprimeMask (fun i=>Ideal.span {p i}) S m*
@@ -530,9 +458,9 @@ open SecondPassArithmetic hiding O
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 theorem squarefreeGaussCoefficient_finset (hpr : ∀i,lambda^2∣p i-1) (S : Finset ι) :
     squarefreeGaussCoefficient (Ideal.span {∏i∈S,p i}) =

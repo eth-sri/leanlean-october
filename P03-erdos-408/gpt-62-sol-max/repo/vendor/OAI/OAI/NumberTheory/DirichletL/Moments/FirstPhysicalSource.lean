@@ -2,7 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstChildBound
 public import OAI.NumberTheory.DirichletL.Moments.FirstSectorTransform
-public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfile
+public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 
 @[expose] public section
 
@@ -12,15 +12,14 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open CanonicalRowCompletion CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentFirstSectors
+open CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst
+open CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation
+open CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced
+open CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns
+open CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale
+open CenteredMomentPrimitive IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
@@ -117,9 +116,9 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
             (Real.log (‖eisEmbedding (element C C hC.1 S a)‖^2/A₀))
             (Real.log (‖eisEmbedding (element C D hD.1 S b)‖^2/B₀)):=by
   dsimp only
-  have he:primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E≠0:=
+  have he:=
     supported_element_ne_zero _ (subsetGenerator_supported C D hC E)
-  have hk:0<K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2:=
+  have hk:=
     div_pos hK (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero he)))
   unfold block scalar
   simp only [Finset.mul_sum]

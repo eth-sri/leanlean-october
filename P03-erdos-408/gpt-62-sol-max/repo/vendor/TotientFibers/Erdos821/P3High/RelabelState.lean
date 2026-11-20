@@ -15,14 +15,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core
 
 variable {P : PrimeGroups}
@@ -58,7 +51,7 @@ theorem relabelLabels_of_ne {M : ℕ} (a : P.Labels M) (g : P.BigGroup) (h : Fin
   · subst hg
     have hi : i ≠ h := fun hi => hx (by rw [hi])
     exact relabelLabels_ne_slot a g' h p i hi
-  · have hg' : g'.val ≠ g.val := fun he => hg (Subtype.ext he)
+  · have hg'  := fun he => hg (Subtype.ext he)
     rw [relabelLabels_ne_group a g h p g'.val hg']
 
 theorem relabelLabels_relabel {M : ℕ} (a : P.Labels M) (g : P.BigGroup) (h : Fin M)
@@ -117,7 +110,7 @@ theorem permuteActive_relabel {M : ℕ} (τ : P.Permutations M) (g : P.BigGroup)
     by_cases hi : i = h
     · subst hi
       simp only [relabelLabels_self]
-    · have hti : τ g.val i ≠ τ g.val h := fun he => hi ((τ g.val).injective he)
+    · have hti  := fun he => hi ((τ g.val).injective he)
       rw [relabelLabels_ne_slot _ g _ p _ hti, relabelLabels_ne_slot _ g h p i hi]
       rfl
   · rw [relabelLabels_ne_group _ g _ p g' hg, relabelLabels_ne_group _ g h p g' hg]
@@ -139,7 +132,7 @@ theorem tilted_prod_relabel (F : FixedData) (n : ℕ) {M : ℕ}
     (∏ x : P.BigGroup × Fin M,
         if cond x then (1 : ℝ) else tiltedMu F P n x.1.val (a x.1.val x.2)) *
       tiltedMu F P n g.val p := by
-  let f : P.BigGroup × Fin M → ℝ := fun x =>
+  let f  := fun x =>
     if cond x then (1 : ℝ) else tiltedMu F P n x.1.val (a x.1.val x.2)
   have hpt : (fun x : P.BigGroup × Fin M =>
       if cond x then (1 : ℝ) else tiltedMu F P n x.1.val (relabelLabels a g h p x.1.val x.2)) =

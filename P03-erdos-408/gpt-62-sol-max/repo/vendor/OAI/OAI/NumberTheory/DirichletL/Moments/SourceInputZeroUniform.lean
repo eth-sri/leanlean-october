@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputZeroUniform
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform
-open CenteredMomentFirstLocalization EisensteinSchwartzPoisson
+open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMass
+open CenteredMomentSourceInputTailUniform CenteredMomentFirstLocalization EisensteinSchwartzPoisson
 open CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
@@ -22,7 +21,7 @@ local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
-    (hhi:∀i,0≤hi i)(hwlo:0<wlo)(_hwhi:0≤whi)(hε:0<ε):
+    (hhi:∀i,0≤hi i)(hwlo:0<wlo)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
@@ -65,7 +64,6 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
     refine ⟨hp.1,hp.2.trans ?_⟩
     simp only [map_one,Nat.cast_one,one_mul,div_one]
     change (∏i,hi i)*whi*whi*(s.X₁*s.X₂)*(∏i,s.P i)≤_
-    have hh:0≤V:=hV.le
     dsimp [L,V,volume] at *
     nlinarith
   rw [hc]
@@ -99,7 +97,7 @@ theorem first_input_zero_uniform (hi:ι→ℝ)(wlo whi ε:ℝ)
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K*
         (volume s.toData)^ε:=by
-  obtain ⟨C₀,hC₀,hb⟩:=first_input_zero_bound hi wlo whi ε hhi hwlo hwhi hε
+  obtain ⟨C₀,hC₀,hb⟩:=first_input_zero_bound hi wlo whi ε hhi hwlo hε
   obtain ⟨SΦ,D,hD,hd⟩:=paperRadialFourier_euler_source_weighted_bound 0 0
   refine ⟨SΦ,C₀*D,mul_pos hC₀ hD,?_⟩
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK
@@ -130,15 +128,14 @@ theorem first_input_zero_capped (hi:ι→ℝ)(wlo whi B ε:ℝ)
   obtain ⟨SΦ,C,hC,hb⟩:=first_input_zero_uniform hi wlo whi δ hhi hwlo hwhi hδ
   refine ⟨SΦ,C,hC,?_⟩
   intro Z hZ s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi hV m A R seed Φ K hK
-  have hp:(volume s.toData)^δ≤Z^ε:=by
-    calc
-      _≤(Z^B)^δ:=Real.rpow_le_rpow (volume_pos s).le hV hδ.le
-      _=Z^(B*δ):=(Real.rpow_mul (zero_le_one.trans hZ) B δ).symm
-      _≤_:=Real.rpow_le_rpow_of_exponent_le hZ (by
-        have hh:δ*(B+1)=ε:=by dsimp [δ];field_simp
-        nlinarith)
-  exact (hb s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK).trans
-    (mul_le_mul_of_nonneg_left hp (by positivity))
+  refine (hb s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK).trans
+    (mul_le_mul_of_nonneg_left ?_ (by positivity))
+  calc
+    _≤(Z^B)^δ:=Real.rpow_le_rpow (volume_pos s).le hV hδ.le
+    _=Z^(B*δ):=(Real.rpow_mul (zero_le_one.trans hZ) B δ).symm
+    _≤_:=Real.rpow_le_rpow_of_exponent_le hZ (by
+      have hh:δ*(B+1)=ε:=by dsimp [δ];field_simp
+      nlinarith)
 
 end SevenEighths.CenteredMomentSourceInputZeroUniform
 

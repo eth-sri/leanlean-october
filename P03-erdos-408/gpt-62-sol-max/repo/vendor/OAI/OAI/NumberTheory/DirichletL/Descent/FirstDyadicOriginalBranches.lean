@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicTail
 public import OAI.NumberTheory.DirichletL.Descent.OriginalZeroPhysical
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalZeroPhysical
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
@@ -21,9 +22,9 @@ theorem original_dyadic_zero_tail
     (hs:∀y,om y≠0→y≤b)(hMm:0≤Mmax)(hFm:0≤Fmax)(heta:0≤eta)(htau:0<tau)(heps:0<eps):
     ∃Czero Ctail:ℝ,0≤Czero ∧ 0≤Ctail ∧
     ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
@@ -55,7 +56,7 @@ theorem original_dyadic_zero_tail
   refine ⟨Cz',Ct',by dsimp [Cz'];positivity,by dsimp [Ct'];positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc pool Q labels β Ψ m slots lists weights Z M r ell V Γ theta
     hZ hbin hM hMmax hell hV hr hF hΓ hb hΨ hQ hn hlabels hβ hslots hw W mark
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz:=zero_lt_one.trans hZ
   have hG:0≤G:=apply_nonneg _ _
   have hW:∀U,‖W (primeProductNorm p U)‖≤G:=by
     intro U
@@ -66,7 +67,7 @@ theorem original_dyadic_zero_tail
     have hnon:om (primeProductNorm p U/Z^r)≠0:=by
       intro hh
       exact hU (by simp [W,normTwistedSource,hh])
-    have hle:primeProductNorm p U≤b*Z^r:=(div_le_iff₀ (Real.rpow_pos_of_pos hz _)).mp (hs _ hnon)
+    have hle:=(div_le_iff₀ (Real.rpow_pos_of_pos hz _)).mp (hs _ hnon)
     apply hle.trans
     calc
       b*Z^r≤Z^eta*Z^r:=mul_le_mul_of_nonneg_right hb (Real.rpow_nonneg hz.le _)

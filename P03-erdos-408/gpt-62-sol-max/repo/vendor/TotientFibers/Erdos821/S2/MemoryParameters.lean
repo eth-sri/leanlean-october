@@ -30,12 +30,12 @@ theorem memory_parameters_exist_proof : Erdos821.Blueprint.Graph.memory_paramete
   let delta : ℝ := 1 - a / b
   have hd0 : 0 < delta := sub_pos.mpr ((div_lt_one hb0).mpr hba)
   let M : ℝ := max 1 F.vMax
-  have hM0 : 0 < M := lt_of_lt_of_le zero_lt_one (le_max_left 1 F.vMax)
+  have hM0  := lt_of_lt_of_le zero_lt_one (le_max_left 1 F.vMax)
   let v : ℝ := 2 + 2 * M / (rho * delta)
   have ht0 : 0 < 2 * M / (rho * delta) :=
     div_pos (mul_pos two_pos hM0) (mul_pos hrho0 hd0)
   have hv1 : 1 < v := by dsimp only [v]; linarith
-  have hv0 : 0 < v := lt_trans zero_lt_one hv1
+  have hv0  := lt_trans zero_lt_one hv1
   have hcross : delta * (rho * v) = 2 * M + 2 * (rho * delta) := by
     dsimp only [v]
     field_simp [ne_of_gt hrho0, ne_of_gt hd0]; ring
@@ -44,7 +44,7 @@ theorem memory_parameters_exist_proof : Erdos821.Blueprint.Graph.memory_paramete
     rw [hcross]
     nlinarith [mul_pos hrho0 hd0]
   have hqa : F.q ≤ a := by
-    have ha2 : a ^ (2 : ℕ) = F.q := Real.sq_sqrt F.q_pos.le
+    have ha2  := Real.sq_sqrt F.q_pos.le
     have hp := mul_nonneg ha0.le (sub_nonneg.mpr ha1.le)
     nlinarith
   refine ⟨{
@@ -64,7 +64,7 @@ theorem memory_parameters_exist_proof : Erdos821.Blueprint.Graph.memory_paramete
   have hq'a : q' ≤ a := by
     rcases hq' with rfl | rfl
     · exact hqa
-    · exact le_rfl
+    rfl
   have hnum : 2 * M * (1 - q') ≤ 2 * M := by
     simpa only [mul_one] using
       mul_le_mul_of_nonneg_left (sub_le_self 1 hq0) (mul_nonneg (by norm_num) hM0.le)
@@ -74,6 +74,6 @@ theorem memory_parameters_exist_proof : Erdos821.Blueprint.Graph.memory_paramete
       add_le_add (div_le_div_of_nonneg_right hq'a hb0.le)
         (div_le_div_of_nonneg_right hnum (mul_pos hrho0 hv0).le)
     _ < a / b + delta := by linarith
-    _ = 1 := by dsimp only [delta]; ring
+    _ = 1 := by ring
 
 end Erdos821.Blueprint.Graph

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeTail
 
 @[expose] public section
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWholeTail
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 theorem second_whole_column_denominator {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal] (G E S T : Finset ι)
+    (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalFamily.Maximal p] (G E S T : Finset ι)
     (hEG : E ⊆ G) (hGS : Disjoint G S) (hGT : Disjoint G T)
     (L : ℝ) (hL : 0 ≤ L)
     (hS : primeProductNorm p (G ∪ S) ≤ L)

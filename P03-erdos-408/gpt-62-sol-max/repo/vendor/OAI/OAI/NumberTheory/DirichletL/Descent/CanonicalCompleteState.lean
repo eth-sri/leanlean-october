@@ -59,12 +59,12 @@ theorem actual_complete_state_from_live_bins
     hmN hmargin hreserve labels hlabels D hD slots hcard lists H hdis hH1 hH hprod Ψ hΨ hperiod theta a ha E hE
   dsimp only
   intro hbins
-  have hz:0<Z:=zero_lt_one.trans (lt_of_lt_of_le hZ₀ hZ)
-  have hZ1:1≤Z:=(hZ₀.trans_le hZ).le
+  have hz:=zero_lt_one.trans (lt_of_lt_of_le hZ₀ hZ)
+  have hZ1:=(hZ₀.trans_le hZ).le
   let S:=reflectionExcludedPrimes q
   let test:=normTwistedSource W theta
   let mark:=indexedIdealMark (fun i:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)=>i.val) slots lists a
-  have htest:HasCompactSupport test:=HasCompactSupport.of_support_subset_isCompact isCompact_Icc
+  have htest:=HasCompactSupport.of_support_subset_isCompact isCompact_Icc
     ((normTwistedSource_support W theta).trans hWs)
   have hupper:∀x,test x≠0 → x≤hi:=fun x hx=>(hWs (normTwistedSource_support W theta hx)).2
   have hT:∀z∈nonzeroChildFrequencyBall 1 (Z^M),z≠0 ∧ (Ideal.absNorm (Ideal.span {z}):ℝ)≤Z^M := by

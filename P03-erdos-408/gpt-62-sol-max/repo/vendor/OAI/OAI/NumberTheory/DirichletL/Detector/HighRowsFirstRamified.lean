@@ -24,7 +24,7 @@ lemma first_region_R_half (Q : ℝ) (hQ : 4≤Q) (a x z : ℂ) (ha : ‖a‖≤1
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re) :
     ‖evenRatio Q a ((Q:ℂ)^(-x)) (coordV Q z)‖≤1/2 := by
   rw [evenRatio_eq_coordR Q (by linarith)]
-  apply (coordR_norm_le Q (by linarith) (a^2) x z (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha)).trans
+  apply (coordR_norm_le Q (by linarith) (a^2) x z (by simp_all)).trans
   exact rpow_le_half Q _ hQ (by linarith)
 
 include hc in
@@ -44,7 +44,7 @@ lemma rowBaseFinite_first_region (eta a rho x w z : ℂ)
         rho j e l k.val m‖≤2 := by
     have ht : e+3*l≠0 := by rcases hf with h|h|h|h <;> omega
     rw [←sourceRowTerm_pos p hp hg eta a rho x w z j e l k.val m ht]
-    exact sourceRowTerm_first_base p hp hg hc eta a rho x w z heta ha hρ hx hw hz hxw
+    exact sourceRowTerm_first_base p hp hg hc eta a rho x w z heta ha hρ hx hz hxw
       j e l k.val m hj (by omega) hf
   unfold rowBaseFinite
   apply (norm_sum_le _ _).trans

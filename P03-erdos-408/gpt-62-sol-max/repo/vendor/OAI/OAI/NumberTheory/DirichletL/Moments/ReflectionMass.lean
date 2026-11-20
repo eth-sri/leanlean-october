@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid
-open IdealMobiusDivisorSum
+open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => HeckeFamily.O
 
 def weight (I : Ideal O) : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹
@@ -21,20 +20,20 @@ lemma weight_mul (I J : Ideal O) : weight (I*J) = weight I * weight J := by
 lemma weight_one : weight (1 : Ideal O) = 1 := by simp [weight]
 lemma weight_pow (I : Ideal O) (n : ℕ) : weight (I^n) = weight I ^ n := by
   induction n with
-  | zero => simpa only [pow_zero] using weight_one
+  | zero => exact weight_one
   | succ n ih => rw [pow_succ,weight_mul,ih,pow_succ]
 lemma weight_prod (S : Finset (Ideal O)) (f : Ideal O → Ideal O) :
     weight (∏ P ∈ S,f P) = ∏ P ∈ S,weight (f P) := by
   induction S using Finset.induction_on with
-  | empty => simpa only [Finset.prod_empty] using weight_one
+  | empty => exact weight_one
   | @insert P S h ih => simp only [Finset.prod_insert h,weight_mul,ih]
 lemma prime_weight_lt_one (P : Ideal O) (hP : Prime P) : weight P < 1 := by
   have h : (1:ℝ) < P.absNorm := by
-    have hh : 2 ≤ P.absNorm := SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩
-    exact_mod_cast (by omega : 1 < P.absNorm)
+    have hh  := SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩
+    norm_cast
   have hs : 1 < Real.sqrt (P.absNorm : ℝ) := by
     rw [Real.lt_sqrt (by norm_num)]
-    simpa using h
+    simp_all
   exact inv_lt_one_of_one_lt₀ hs
 
 def exponents (S : Finset (Ideal O)) (I : SmoothIdeal S) (P : S) : ℕ :=
@@ -68,7 +67,7 @@ lemma hasSum_geometric_pi {α : Type*} [Fintype α] (r : α → ℝ)
   · intro α β _ e ih r hr hr1
     let : Fintype α := Fintype.ofEquiv β e.symm
     have h := ih (r ∘ e) (fun a => hr (e a)) (fun a => hr1 (e a))
-    let E : (β → ℕ) ≃ (α → ℕ) := Equiv.arrowCongr e.symm (Equiv.refl ℕ)
+    let E  := Equiv.arrowCongr e.symm (Equiv.refl ℕ)
     have he := E.hasSum_iff.mpr h
     convert he using 1
     · funext n
@@ -157,11 +156,8 @@ theorem euler_mass_subpower (ε : ℝ) (hε : 0 < ε) :
           exact ConcretePrimeRowBridge.mem_idealsUpTo.mpr ⟨by exact_mod_cast hn,h⟩
         exact_mod_cast Nat.lt_of_not_ge hh
       have h4 : (4:ℝ) ≤ P.absNorm := (le_max_left _ _).trans (hK.trans hpk.le)
-      have hb : B ≤ (P.absNorm:ℝ) := (le_max_right _ _).trans (hK.trans hpk.le)
       simp only [ite_eq_right hp,one_mul]
-      exact (localMass_le_three P (hS P hP) h4).trans (hB _ hb)
-  have hc : (S.filter (· ∈ smallIdeals)).card ≤ smallIdeals.card :=
-    Finset.card_le_card (fun P hP => (Finset.mem_filter.mp hP).2)
+      exact (localMass_le_three P (hS P hP) h4).trans (hB _ ((le_max_right _ _).trans (hK.trans hpk.le)))
   calc
     (∏ P ∈ S,localMass P) ≤ ∏ P ∈ S,((if P ∈ smallIdeals then 7 else 1)*(P.absNorm:ℝ)^ε) :=
       Finset.prod_le_prod₀ (fun P hP => localMass_nonneg P (hS P hP)) hpoint
@@ -169,7 +165,7 @@ theorem euler_mass_subpower (ε : ℝ) (hε : 0 < ε) :
       rw [Finset.prod_mul_distrib,← Finset.prod_filter]
       simp only [Finset.prod_const,Real.finsetProd_rpow S _ (fun _ _ => Nat.cast_nonneg _) ε,
         map_prod,Nat.cast_prod]
-    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hc) (Real.rpow_nonneg (by positivity) _)
+    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) (Finset.card_le_card (fun P hP => (Finset.mem_filter.mp hP).2))) (Real.rpow_nonneg (by positivity) _)
 
 def coefficient (η ηi : Character) (S : Finset (Ideal O))
     (D : Finset (Ideal O)) (H : SmoothIdeal S) : ℂ :=
@@ -211,9 +207,7 @@ lemma coefficient_mass_le_euler (η ηi : Character) (S : Finset (Ideal O))
     exact mul_le_mul_of_nonneg_left (smooth_mass_le_euler S hS) (weight_nonneg _)
   apply (Finset.sum_le_sum hD).trans_eq
   rw [← Finset.sum_mul,deletion_mass,← Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro P _
-  exact (div_eq_mul_inv _ _).symm
+  rfl
 
 lemma coefficient_mass_summable (η ηi : Character) (S : Finset (Ideal O))
     (hS : ∀ P ∈ S,Prime P) :

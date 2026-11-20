@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceFiberEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedUniform
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
@@ -10,16 +12,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology SchwartzMap ContDiff
+open scoped Classical BigOperators
 namespace SevenEighths.ProbeDetectorInverseMarkedField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open ProbeHighRowFamily ProbeFinalAssembly Filter
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber
+open HeckeDetectorBatch HeckeDetectorCoefficientTransfer ProbeHighRowFamily ProbeFinalAssembly Filter
 open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
 local notation "O"=>HeckeFamily.O
 
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
@@ -52,13 +52,7 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   intro η
   let data:=sourceMomentData M H hH S.S S.exclusions.prime η
   choose C U₀ hC hU₀ hb using fun label=>hreference (data label)
-  let Csum:ℝ:=1+∑label,C label
-  have hCsum:0<Csum:=by
-    have hh:=Finset.sum_nonneg (fun label (_:label∈Finset.univ)=>(hC label).le)
-    dsimp [Csum];linarith
-  have hClabel (label):C label≤Csum:=by
-    have hh:=Finset.single_le_sum (fun label (_:label∈Finset.univ)=>(hC label).le) (Finset.mem_univ label)
-    dsimp [Csum];linarith
+  obtain ⟨Csum, hCsum, hClabel⟩ := exists_real_majorant 0 C
   have hscale:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d → U₀ label≤Z^d := by
     apply Filter.eventually_all.mpr
     intro label

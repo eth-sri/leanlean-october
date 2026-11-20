@@ -9,31 +9,73 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
-open SevenEighths.CenteredMomentSecondNonexceptionalScalar
+open scoped Classical SchwartzMap
+open Filter SevenEighths.CenteredMomentSecondNonexceptionalScalar
 
 namespace SevenEighths.CenteredMomentSecondFrozenLiveSource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondFrozenRatioCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentOriginalCommonHarmonic
+open CenteredMomentSecondFrozenRatioCost CenteredMomentSecondNonexceptionalChosenBlock
+open CenteredMomentSecondNonexceptionalAggregate CenteredMomentSecondExceptionalFamily
+open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate
+open CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit
+open CenteredMomentActiveSource CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
+open CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSourceRow
+open CenteredMomentSectorLocalization CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
+open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
 open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
+open CenteredMomentSecondActivePhysicalDictionary CenteredMomentSourceLiveColumn
+open CenteredMomentSecondRetainedRatioScalar
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
+
+/-- A frozen child-column bound in each retained physical block. `pick`
+chooses which common factor supplies the allocations; `envelope` is the column normalization. -/
+abbrev FrozenColumnBound (s : Input ι) (S : Finset (Ideal O)) (β : Ideal O → ℂ)
+    (τ : (q : ActiveLabel S β) → Finset (CommonIndex q.val.1 q.val.2) → RayCharacter → Character)
+    (χ₀ : RayCharacter) (Q R0 : Ideal O) (m : O) (W : 𝓢(ℝ,ℂ))
+    (Kphys Tsec Z ξ : ℝ) (pick : Ideal O × Ideal O → Ideal O)
+    (envelope : ∀ C D : Ideal O, Finset (CommonIndex C D) → (Fin 4 → ℤ) → ℝ)
+    (E : ℝ) (J : ℕ) : Prop :=
+  ∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
+      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
+      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
+        (commonLabels_supported (activeSource S β) _ _ q.property).1
+        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
+        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
+        (fun i=>(n i:ℤ))≠0→
+      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
+        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
+      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
+      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools (pick q.val),
+      frozenCoefficient b.val (pick q.val) R0 s.ν s.W s.P≠0 →
+      ∀a∈(commonData (withHeight s (τ q U χ) v) (pick q.val) R0 b).toSource.active D0,
+      childEnergy (commonData (withHeight s (τ q U χ) v) (pick q.val) R0 b)
+        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
+          E*envelope q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
+          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J)
+
+/-- The inducing ray-character family on the active common labels. -/
+abbrev WithFrozenCharacters (s : Input ι) (R0 seed : Ideal O)
+    (Goal : (S : Finset (Ideal O)) → (β : Ideal O → ℂ) →
+      ((q : ActiveLabel S β) → Finset (CommonIndex q.val.1 q.val.2) → RayCharacter → Character) → Prop) : Prop :=
+  let S:=finiteColumns (Fintype.piFinset s.pools)
+      let β:=coefficient s R0 seed
+    ∃τ:(q:ActiveLabel S β)→Finset (CommonIndex q.val.1 q.val.2)→RayCharacter→Character,
+    (∀q U,Family s.η q.val.1 q.val.2
+      (commonLabels_supported (activeSource S β) _ _ q.property).1
+      (commonLabels_supported (activeSource S β) _ _ q.property).2 U (τ q U)) ∧ Goal S β τ
+
+/-- Coefficient constants and a scale threshold for each small fixed modulus. -/
+abbrev WithFrozenGaussianConstants
+    (Goal : ℕ → Finset (ℕ × ℕ) → Finset (ℕ × ℕ) → ℝ → ℝ → ℝ → ℝ → Ideal O → ℝ → ℝ → Prop) : Prop :=
+  ∃J:ℕ,∃Sprofile SΦ:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧
+      ∃Cmain Cexc Cdiag Ctail:ℝ,0<Cmain ∧ 0≤Cexc ∧ 0<Cdiag ∧ 0<Ctail ∧
+      ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
+      ∃Kc:ℝ,0<Kc ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧ Goal J Sprofile SΦ Cmain Cexc Cdiag Ctail Q Kc Z
 
 theorem original_nonexceptional_energy (lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)
     (B L Cr δ ε:ℝ)(hB:0≤B)(hL:0≤L)(hCr:0<Cr)(hδ:0<δ)(hε:0<ε) :
@@ -41,50 +83,13 @@ theorem original_nonexceptional_energy (lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))(J₁ J�
     ∀s:Input ι,(∀i,s.lo i=lo i)→(∀i,s.hi i=hi i)→
       s.W₁ 0=0→s.W₂ 0=0→0≤sourceRadius s→sourceRadius s≤Z^B→
     ∀R0 seed:Ideal O,Squarefree seed→seed≠0→
-    let S:=finiteColumns (Fintype.piFinset s.pools)
-    let β:=coefficient s R0 seed
-    ∃τ:(q:ActiveLabel S β)→Finset (CommonIndex q.val.1 q.val.2)→RayCharacter→Character,
-    (∀q U,Family s.η q.val.1 q.val.2
-      (commonLabels_supported (activeSource S β) _ _ q.property).1
-      (commonLabels_supported (activeSource S β) _ _ q.property).2 U (τ q U)) ∧
+    WithFrozenCharacters s R0 seed fun S β τ =>
     ∀(χ₀:RayCharacter)(Q:Ideal O)(m:O),Q≤Ideal.span {(72:O)}→
       m≠0→goodLambda∣m→(2:O)∣m→
     ∀Kphys Tsec ξ:ℝ,0<Kphys→frequencyRadius Tsec Z ξ≤Cr*Z^L→
     ∀E₁ E₂:ℝ,0≤E₁→0≤E₂→
-    (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
-      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
-      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).1
-        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
-        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
-        (fun i=>(n i:ℤ))≠0→
-      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
-      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.1,
-      frozenCoefficient b.val q.val.1 R0 s.ν s.W s.P≠0 →
-      ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.1 R0 b).toSource.active D0,
-      childEnergy (commonData (withHeight s (τ q U χ) v) q.val.1 R0 b)
-        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
-          E₁*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
-          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₁))→
-    (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
-      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
-      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).1
-        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
-        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
-        (fun i=>(n i:ℤ))≠0→
-      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
-      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.2,
-      frozenCoefficient b.val q.val.2 R0 s.ν s.W s.P≠0 →
-      ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.2 R0 b).toSource.active D0,
-      childEnergy (commonData (withHeight s (τ q U χ) v) q.val.2 R0 b)
-        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
-          E₂*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
-          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₂))→
+    FrozenColumnBound s S β τ χ₀ Q R0 m W Kphys Tsec Z ξ Prod.fst (childEnvelope s.η) E₁ J₁→
+    FrozenColumnBound s S β τ χ₀ Q R0 m W Kphys Tsec Z ξ Prod.snd (childEnvelope s.η) E₂ J₂→
     ‖partEnergy false s.η χ₀ Q m s.t S β W Kphys Tsec Z ξ (sourceRadius s)‖/volume s.toData≤
       C*Z^(2*δ+ε)*profileCost s*(s.η.modulus.absNorm:ℝ)*sourceRadius s*
         Real.sqrt (E₁*E₂)*heightEnvelope s.t^(J₁+J₂)*profileMoment J₁*profileMoment J₂/
@@ -94,7 +99,9 @@ theorem original_nonexceptional_energy (lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))(J₁ J�
   refine ⟨Ck*Cm,mul_pos hCk hCm,?_⟩
   filter_upwards [hblock,hmass] with Z hZ hmassZ
   refine ⟨hZ.1,?_⟩
-  intro s hlo hhi hz1 hz2 hH0 hH R0 seed hseed hseed0 S β
+  intro s hlo hhi hz1 hz2 hH0 hH R0 seed hseed hseed0
+  let S := finiteColumns (Fintype.piFinset s.pools)
+  let β := coefficient s R0 seed
   have hg (q:ActiveLabel S β):=actual_common_gates s R0 seed hseed hz1 hz2 q.val.1 q.val.2 q.property
   have hs (q:ActiveLabel S β):=commonLabels_supported (activeSource S β) _ _ q.property
   choose τ hf using fun (q:ActiveLabel S β) (U:Finset (CommonIndex q.val.1 q.val.2))=>

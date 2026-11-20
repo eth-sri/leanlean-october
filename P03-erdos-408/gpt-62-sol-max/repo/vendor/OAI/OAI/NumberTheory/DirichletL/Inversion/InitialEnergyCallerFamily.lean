@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerCanonical
 
 @[expose] public section
@@ -14,11 +15,11 @@ open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFamily
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
-theorem common_killed (G E V : Finset ι) (_hE : E⊆G) (j d t : Eis)
+theorem common_killed (G E V : Finset ι) (j d t : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
     ∀ i∈G,(j*t)*(d*∏ k∈V,p k)∈Ideal.span {p i} := by
   intro i hi
@@ -53,7 +54,7 @@ theorem marked_child_original_lists (F G E V : Finset ι) (hE : E⊆G)
   intro J hJ
   rw [finiteCanonicalMarkedRow_restore_lists p hp hcop hg F G Ψ (j*t)
     (d*∏ i∈V,p i) (d*h) (slots\J) lists a W (X/primeProductNorm p V)
-    (common_killed p G E V hE j d t hd ht)]
+    (common_killed p G E V j d t hd ht)]
 
 omit [DecidableEq σ] in
 theorem normalized_child_uniform

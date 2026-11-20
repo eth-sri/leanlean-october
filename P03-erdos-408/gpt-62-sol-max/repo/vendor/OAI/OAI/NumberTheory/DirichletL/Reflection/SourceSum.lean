@@ -41,7 +41,6 @@ theorem masked_actual_coefficient (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
     apply Finset.sum_congr rfl
     intro e he
     rw [actualRowPhaseExtension,dite_eq_left hK,frozenBranchColumn_eq_normalized]
-    simp only [ite_eq_left hKP,div_eq_mul_inv]
     ring
   · simp only [dite_eq_right hKP,ite_eq_right hKP,mul_zero,zero_mul,Finset.sum_const_zero]
 

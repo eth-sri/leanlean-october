@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.Active
 public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
 
@@ -81,7 +82,7 @@ theorem actual_common_support_allowance (p : ι → O)
   simpa only [activeSupport,Finset.sum_filter,activeIndicator,ite_mul,one_mul,zero_mul]
     using weighted_allowance c d hc hd
       (fun i => Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ))
-      (fun i => Real.logb_nonneg hZ (by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))))
+      (fun i => Real.logb_nonneg hZ (by exact_mod_cast (Ideal.one_le_absNorm_of_ne_bot ((hp i).1))))
 
 end SevenEighths.CenteredMomentCommonAllowance
 

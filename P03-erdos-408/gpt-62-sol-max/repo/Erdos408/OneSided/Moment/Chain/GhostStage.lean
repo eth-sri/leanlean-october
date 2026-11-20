@@ -258,8 +258,7 @@ theorem desLine_le (z : ℤ × ℤ) (S : Particle x d → ℕ) (Bn : Multiset �
   · next ℓ h =>
     obtain ⟨xp, hxp, -⟩ := exists_of_statusOf_eq_pending h
     have := (mem_particles.1 (show (xp.1.1, xp.1.2) ∈ particles x d from xp.2)).2
-    rw [hxp] at this
-    exact this
+    simp_all
   · exact lineOf_le (prime_of_mem_bandPrimes hp).pos z
 
 /-- A particle with nonzero memory is designated. -/
@@ -403,8 +402,7 @@ theorem hitPart_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Multi
   · simp only [hitPart, hh, ite_true, ghostMem]
   · have h₁ := hok.1
     simp only [hitPart, hh, ite_false] at h₁ ⊢
-    rw [ite_eq_right fun h => hh h.1] at h₂
-    omega
+    simp_all
 
 open scoped Classical in
 /-- The summand of the ghost step is the product of the per-particle summands. -/
@@ -513,7 +511,7 @@ open scoped Classical in
 /-- **The per-particle ghost sum**: at the designated particle of its prime, the sum over
 the ghost choices is the pre-ghost lifespan value; at any other particle it is `1`. -/
 theorem sum_ghostTerm (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (hB : (bandPrimes x d).card ≤ B) {N t : ℕ}
     (ht : t ≤ N) (π : Fin (N + 1) → FreeState x d Y d₀ u v r) {z : ℤ × ℤ}
     {S : Particle x d → ℕ} {Bn : Multiset ℕ} (hS : Consistent act S Bn)
@@ -525,7 +523,6 @@ theorem sum_ghostTerm (hq : 0 < q)
       else 1 := by
   have hp : xp.1.1 ∈ bandPrimes x d :=
     (mem_particles.1 (show (xp.1.1, xp.1.2) ∈ particles x d from xp.2)).1
-  have hp₀ : 0 < xp.1.1 := (prime_of_mem_bandPrimes hp).pos
   have hB₁ : 1 ≤ B := (card_pos.2 ⟨xp.1.1, hp⟩).trans_le hB
   have hhle : hitPart (HitsAt x d z) S xp ≤ 1 := by
     unfold hitPart
@@ -554,7 +551,7 @@ theorem sum_ghostTerm (hq : 0 < q)
     obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
     rw [primeMass_eq hdisj hpi]
     exact (hV i).ne'
-  have hLp : ∀ j ≤ N, pathLines xp.1.1 π j ≤ xp.1.1 := fun j _ => pathLines_le π hp₀ j
+  have hLp : ∀ j ≤ N, pathLines xp.1.1 π j ≤ xp.1.1 := fun j _ => pathLines_le π ((prime_of_mem_bandPrimes hp).pos) j
   have hA := activeSet_subset xp.1.1 π
   by_cases hdes : xp.1.2 = desLine z act S Bn xp.1.1
   · rw [ite_eq_left hdes]
@@ -587,8 +584,7 @@ theorem sum_ghostTerm (hq : 0 < q)
     | pending ℓ =>
       obtain ⟨xp', hxp', hS'⟩ := exists_of_statusOf_eq_pending hst
       have hℓ : desLine z act S Bn xp.1.1 = ℓ := by rw [desLine, hst]
-      have hxx : xp' = xp := Subtype.ext (hxp'.trans (Prod.ext rfl (hdes.trans hℓ).symm))
-      rw [hxx] at hS' hxp'
+      rw [(Subtype.ext (hxp'.trans (Prod.ext rfl (hdes.trans hℓ).symm)))] at hS' hxp'
       have hS₁ : S xp = 1 := le_antisymm (hS.le_one xp) (Nat.one_le_iff_ne_zero.2 hS')
       have hBp : xp.1.1 ∈ Bn := hS.pend_mem xp hS'
       have hna : t ∉ activeSet xp.1.1 π := fun h => by
@@ -620,9 +616,8 @@ theorem sum_ghostTerm (hq : 0 < q)
         rw [(statusOf_eq_active_iff xp.1.1).2 ((hact xp.1.1).1 h)] at hst
         cases hst
       have hℓ : desLine z act S Bn xp.1.1 = lineOf xp.1.1 z := by rw [desLine, hst]
-      have hhit : HitsAt x d z xp := (hdes.trans hℓ).symm
       have hh₀ : hitPart (HitsAt x d z) S xp = 0 := by simp [hitPart, hS₀]
-      have hm₁ : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) = 1 := ite_eq_left ⟨hhit, hBp⟩
+      have hm₁ : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) = 1 := ite_eq_left ⟨((hdes.trans hℓ).symm), hBp⟩
       simp only [ghostTerm_eq q hh₀ hm₁, ite_eq_left hdes, hst, localStatus,
         ghostWeight_idle q hh₀, ghostWeight_create q hq hVp hh₀]
       norm_num
@@ -636,11 +631,10 @@ theorem sum_ghostTerm (hq : 0 < q)
     have hm₀ : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) = 0 := by
       refine ite_eq_right fun h => hdes ?_
       -- an unborn prime's hitting particle is designated
-      have hna : ¬∃ i k, act i k = xp.1.1 := fun ⟨i, k, hk⟩ => h.2 (hk ▸ hS.act_mem i k)
       have hnp : ∀ y : Particle x d, y.1.1 = xp.1.1 → S y = 0 := fun y hy => by
         by_contra h0
         exact h.2 (hy ▸ hS.pend_mem y h0)
-      rw [desLine, statusOf_of_none hna hnp, ite_eq_right h.2]
+      rw [desLine, statusOf_of_none (fun ⟨i, k, hk⟩ => h.2 (hk ▸ hS.act_mem i k)) hnp, ite_eq_right h.2]
       exact h.1.symm
     simp only [ghostTerm_eq q hh₀ hm₀, ite_eq_right hdes, ghostWeight_idle q hh₀]
     norm_num
@@ -650,7 +644,7 @@ open scoped Classical in
 births, the visit weight times the post-ghost lifespan product is the pre-ghost lifespan
 product. -/
 theorem ghost_stage (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (hB : (bandPrimes x d).card ≤ B) {N t : ℕ}
     (ht : t ≤ N) (π : Fin (N + 1) → FreeState x d Y d₀ u v r) (s : ChainState x d Y d₀ u v r B)
     {Bn : Multiset ℕ} (hS : Consistent s.2.1.1 s.2.2.1 Bn)
@@ -664,7 +658,7 @@ theorem ghost_stage (hq : 0 < q)
     prod_congr rfl fun xp _ => sum_ghostTerm q hq hdisj hV hB ht π hS hline hact xp]
   convert prod_particles_ite _ (fun p hp => desLine_le (act := s.2.1.1) s.1.1 s.2.2.1 Bn hp)
     (fun p => primeLife q N π p t (statusOf s.2.1.1 s.2.2.1 Bn p)) using 1
-  rw [lifeProd]
+  rfl
 
 end GhostStage
 

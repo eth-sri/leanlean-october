@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveCount
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveNorms
@@ -9,16 +10,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveNorms
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+variable (hcop : OAI.PrincipalFamily.Coprime p)
+variable (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def liveNormCap (L B Y : ℝ) : ℝ := max Y (max L (max (L*B^2) (B^2)))
 
@@ -57,10 +58,9 @@ theorem original_twisted_live_joint_card (pool : Finset ι) (Q : Finset (ι→�
         (dyadIndex (liveNormCap (b*X) B Y)+1)^8 := by
   apply original_live_joint_card p hp hcop hg pool Q labels Y β cutoff Ψ m mark _ Φ K (b*X) B hB hQ hlabels
   intro y hy
-  have hwy : W (y/X)≠0 := by
-    intro hz
-    exact hy (by simp [CompletedHeight.normTwistedSource,hz])
-  exact (div_le_iff₀ hX).mp (hW _ hwy)
+  refine (div_le_iff₀ hX).mp (hW _ ?_)
+  intro hz
+  exact hy (by simp [CompletedHeight.normTwistedSource,hz])
 
 end SevenEighths.InverseMomentFirstOriginalProfile
 end

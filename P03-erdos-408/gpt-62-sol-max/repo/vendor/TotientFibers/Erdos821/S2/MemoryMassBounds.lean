@@ -20,8 +20,8 @@ variable {P : PrimeGroups}
 theorem tiltedMu_big_pos (F : FixedData) (n : ℕ) (hV : ∀ g, 0 < P.V g)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
     (g : P.BigGroup) (p : P.Prime g.val) : 0 < tiltedMu F P n g.val p := by
-  have hp : 0 < (p.val : ℝ) := by exact_mod_cast (P.prime g.val p.val p.property).pos
-  exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (hb g p))
+  refine inv_pos.mpr (mul_pos (mul_pos (hV g.val) ?_) (hb g p))
+  exact_mod_cast (P.prime g.val p.val p.property).pos
 
 theorem groupMemoryMass_nonneg (F : FixedData) (n : ℕ) (g : P.BigGroup)
     (hmu : ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P n g.val p) (z : P.Memory g.val) :
@@ -32,9 +32,7 @@ theorem groupMemoryMass_nonneg (F : FixedData) (n : ℕ) (g : P.BigGroup)
     intro x hx
     obtain ⟨u, _, rfl⟩ := Multiset.mem_map.mp hx
     exact hmu u.1
-  · apply Finset.prod_nonneg
-    intro u _
-    positivity
+  positivity
 
 theorem memoryMass_nonneg (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
@@ -52,7 +50,7 @@ theorem memoryMass_nonneg (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g)
     · apply Finset.prod_nonneg
       intro g _
       exact groupMemoryMass_nonneg F n g (fun p => (tiltedMu_big_pos F n hV hb g p).le) _
-  · exact le_refl 0
+  rfl
 
 /-- Once the independent row and factorial-adjoint tasks are proved, all local
 modulus-one multipliers retain the same ghost L² bound. -/
@@ -104,11 +102,10 @@ theorem scaled_ghost_domination_of_tasks (hAdj : GhostAdjointTask) (hRows : Ghos
         apply mul_le_mul_of_nonneg_left _ (hm t)
         apply (hr t).2.2.1.sum_le_tsum S
         intro s _
-        have hfac : 0 ≤ ghostReversalFactor d t s := by
-          apply Finset.prod_nonneg
-          intro g _
-          exact (zpow_pos (mul_pos hdpos (hV g.val).1) _).le
-        exact mul_nonneg (mul_nonneg hfac ((norm_nonneg _).trans (hbound t s))) (hw s).le
+        refine mul_nonneg (mul_nonneg ?_ ((norm_nonneg _).trans (hbound t s))) (hw s).le
+        apply Finset.prod_nonneg
+        intro g _
+        exact (zpow_pos (mul_pos hdpos (hV g.val).1) _).le
       _ ≤ _ := by
         have he := mul_le_mul_of_nonneg_left (hr t).2.2.2 (hm t)
         simpa only [C, mul_assoc, mul_left_comm, mul_comm] using he

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LowRay
 public import OAI.NumberTheory.DirichletL.Detector.GaussianPartition
 
@@ -10,7 +11,6 @@ namespace OAI
 noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
 def lowOuterCutoff (a b x : ℝ) : ℂ :=
   (Real.smoothTransition (2*x/a-1):ℂ)*(Real.smoothTransition (2-x/b):ℂ)
@@ -25,9 +25,9 @@ lemma lowOuterCutoff_small (a b : ℝ) (ha : 0<a) (x : ℝ) (hx : x≤a/2) :
 lemma lowOuterCutoff_large (a b : ℝ) (hb : 0<b) (x : ℝ) (hx : 2*b≤x) :
     lowOuterCutoff a b x=0 := by
   have h : 2-x/b≤0 := by
-    have hh : 2≤x/b := (le_div_iff₀ hb).mpr hx
+    have hh  := (le_div_iff₀ hb).mpr hx
     linarith
-  simp only [lowOuterCutoff,Real.smoothTransition.zero_of_nonpos h,Complex.ofReal_zero,mul_zero]
+  simp [lowOuterCutoff,Real.smoothTransition.zero_of_nonpos h,Complex.ofReal_zero,mul_zero]
 
 lemma lowOuterCutoff_one (a b : ℝ) (ha : 0<a) (hb : 0<b) (x : ℝ) (hlo : a≤x) (hhi : x≤b) :
     lowOuterCutoff a b x=1 := by
@@ -35,7 +35,7 @@ lemma lowOuterCutoff_one (a b : ℝ) (ha : 0<a) (hb : 0<b) (x : ℝ) (hlo : a≤
     have hh : 2≤2*x/a := (le_div_iff₀ ha).mpr (by linarith)
     linarith
   have hr : 1≤2-x/b := by
-    have hh : x/b≤1 := (div_le_iff₀ hb).mpr (by simpa using hhi)
+    have hh : x/b≤1 := (div_le_iff₀ hb).mpr (by simp_all)
     linarith
   simp only [lowOuterCutoff,Real.smoothTransition.one_of_one_le hl,
     Real.smoothTransition.one_of_one_le hr,Complex.ofReal_one,mul_one]
@@ -88,12 +88,12 @@ theorem physicalRowWeight_insert_cutoff (C : CalibrationData) (W0 W1 : ℝ→ℂ
         physicalRowWeight C W0 W1 X Y r := by
   by_cases hz : physicalRowWeight C W0 W1 X Y r=0
   · simp only [hz,mul_zero]
-  have h0 : W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))≠0 :=
+  have h0  :=
     fun h=>hz (physicalRowWeight_inner_zero C W0 W1 X Y r h)
-  have h1 : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)≠0 :=
+  have h1  :=
     fun h=>hz (physicalRowWeight_outer_zero C W0 W1 X Y r h)
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (r.1.property.1)
   rw [physical_window_cutoff_one W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     (elementNorm C.generator) (Ideal.absNorm r.1.val) X Y (elementNorm r.2) hq hY h0 h1,one_mul]
 

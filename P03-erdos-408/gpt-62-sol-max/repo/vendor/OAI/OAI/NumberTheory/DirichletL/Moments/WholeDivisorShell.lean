@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.MobiusRegroup
 public import OAI.NumberTheory.DirichletL.Moments.DyadicCount
 
@@ -23,7 +24,7 @@ lemma moebius_norm_le_one (D : Ideal O) : ‖(moebius D:ℂ)‖≤1 := by
 
 lemma squarefree_of_moebius_ne_zero (D : Ideal O) (hD : (moebius D:ℂ)≠0) : Squarefree D := by
   by_contra hn
-  exact hD (by rw [moebius_of_not_squarefree hn,Int.cast_zero])
+  simp_all
 
 def live (Ds : Finset (Ideal O)) : Finset (Ideal O) := Ds.filter (fun D=>(moebius D:ℂ)≠0)
 
@@ -34,7 +35,7 @@ lemma live_squarefree (Ds : Finset (Ideal O)) (D : Ideal O) (hD : D∈live Ds) :
   squarefree_of_moebius_ne_zero D ((mem_live Ds D).mp hD).2
 
 lemma live_norm_one (Ds : Finset (Ideal O)) (D : Ideal O) (hD : D∈live Ds) : 1≤(D.absNorm:ℝ) := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (live_squarefree Ds D hD).ne_zero)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot ((live_squarefree Ds D hD).ne_zero)
 
 theorem sum_norm_moebius_live (Ds : Finset (Ideal O)) (f : Ideal O→ℝ) :
     (∑D∈Ds,‖(moebius D:ℂ)‖*f D)=∑D∈live Ds,‖(moebius D:ℂ)‖*f D := by
@@ -53,7 +54,7 @@ def selectedShells (Ds : Finset (Ideal O)) : Finset ℤ := (live Ds).image normK
 lemma normKey_eq_iff (D : Ideal O) (hD : D≠0) (n : ℤ) :
     normKey D=n ↔ dyadicScale n≤(D.absNorm:ℝ) ∧ (D.absNorm:ℝ)<2*dyadicScale n := by
   have hn : 0<(D.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD)
   have hl := Real.logb_le_logb (by norm_num : (1:ℝ)<2) (dyadicScale_pos n) hn
   have hu := Real.logb_lt_logb_iff (by norm_num : (1:ℝ)<2) hn (dyadicScale_pos (n+1))
   simp only [logb_dyadicScale,Int.cast_add,Int.cast_one] at hl hu
@@ -86,11 +87,10 @@ lemma selected_scale_bounds (Ds : Finset (Ideal O)) (Y : ℝ)
   have hnorm:=live_norm_one Ds D hD
   have hkey : 0≤normKey D := Int.floor_nonneg.mpr
     (Real.logb_nonneg (by norm_num : (1:ℝ)<2) hnorm)
-  have hscale : 1≤dyadicScale (normKey D) := by
-    simpa only [dyadicScale,zpow_zero] using
-      zpow_le_zpow_right₀ (by norm_num : (1:ℝ)≤2) hkey
-  exact ⟨hscale,((normKey_eq_iff D hd.ne_zero _).mp rfl).1.trans
+  refine ⟨?_,((normKey_eq_iff D hd.ne_zero _).mp rfl).1.trans
     (hY D ((mem_live Ds D).mp hD).1 ((mem_live Ds D).mp hD).2)⟩
+  simpa only [dyadicScale,zpow_zero] using
+    zpow_le_zpow_right₀ (by norm_num : (1:ℝ)≤2) hkey
 
 lemma selected_subset_indices (Ds : Finset (Ideal O)) (Y : ℝ) (hY : 1≤Y)
     (hbound : ∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Y) :
@@ -104,11 +104,11 @@ theorem selected_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z)
     (Ds : Finset (Ideal O))
     (hbound : ∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Z^B) :
     ((selectedShells Ds).card:ℝ)≤(3+B/Real.log 2)*(1+Real.log Z) := by
-  have hY : 1≤Z^B := Real.one_le_rpow hZ hB
+  have hY  := Real.one_le_rpow hZ hB
   have hc : ((selectedShells Ds).card:ℝ)≤(indices 1 (Z^B)).card := by
     exact_mod_cast Finset.card_le_card (selected_subset_indices Ds (Z^B) hY hbound)
   have hi:=indices_card_log_bound 1 B Z 1 (Z^B) le_rfl hB hZ (by norm_num) hY
-    (by simp only [div_one,one_mul,le_refl])
+    (by simp)
   exact hc.trans (by simpa only [Real.logb_one,add_zero] using hi)
 
 theorem selected_card_subpower (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
@@ -117,12 +117,11 @@ theorem selected_card_subpower (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
       ((selectedShells Ds).card:ℝ)≤C*Z^δ := by
   let C:=2*(3+B/Real.log 2)
   have hC : 0<C := by
-    have hh:=div_nonneg hB (Real.log_pos (by norm_num : (1:ℝ)<2)).le
-    dsimp [C];linarith
+    positivity
   have ht:=(isLittleO_log_rpow_rpow_atTop (1:ℝ) hδ).bound (by norm_num : (0:ℝ)<1)
   refine ⟨C,hC,?_⟩
   filter_upwards [ht,eventually_ge_atTop (Real.exp 1)] with Z ht hZ
-  have hz : 1<Z := (Real.one_lt_exp_iff.mpr (by norm_num : (0:ℝ)<1)).trans_le hZ
+  have hz  := (Real.one_lt_exp_iff.mpr (by norm_num : (0:ℝ)<1)).trans_le hZ
   have hl : 1≤Real.log Z := by
     simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos 1) hZ
   have hp : Real.log Z≤Z^δ := by

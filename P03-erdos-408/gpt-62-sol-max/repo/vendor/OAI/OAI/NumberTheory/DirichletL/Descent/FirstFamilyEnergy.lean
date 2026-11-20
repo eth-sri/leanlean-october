@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 
 @[expose] public section
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped BigOperators Classical
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation
+open FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstFamilySeparatedRow (source : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
@@ -27,6 +28,14 @@ def firstFamilyEnergy (source : Finset κ) (F : Finset ι)
     (selector C : κ → Finset ι → ℂ) (w : κ → ℂ)
     (negative : Bool) (ω : ℝ → ℂ) (X t : ℝ) (h : κ → Eis) : ℝ :=
   ∑ x∈source,‖w x‖*firstBlockEnergy p hg F (selector x) (C x) negative ω X t (h x)
+
+lemma firstFamilyEnergy_mono {source target : Finset κ} (hsub : source ⊆ target) (F : Finset ι)
+    (selector C : κ → Finset ι → ℂ) (w : κ → ℂ)
+    (negative : Bool) (ω : ℝ → ℂ) (X t : ℝ) (h : κ → Eis) :
+    firstFamilyEnergy p hg source F selector C w negative ω X t h ≤
+      firstFamilyEnergy p hg target F selector C w negative ω X t h :=
+  Finset.sum_le_sum_of_subset_of_nonneg hsub (fun x _ _ =>
+    mul_nonneg (norm_nonneg _) (firstBlockEnergy_nonneg p hg _ _ _ _ _ _ _ _))
 
 theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)

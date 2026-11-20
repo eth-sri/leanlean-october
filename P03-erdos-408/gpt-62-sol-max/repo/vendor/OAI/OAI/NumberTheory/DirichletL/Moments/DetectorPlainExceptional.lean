@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFreeExcep
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainExceptional
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentDetectorDictionary
+open CenteredMomentDetectorPlainSource CenteredMomentDetectorPlainFiberSource
+open CenteredMomentDetectorEnergyInitialState CenteredMomentRetainedEnergy CenteredMomentSourceRow
+open CenteredMomentSourceMass CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
 open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch
 open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
@@ -43,7 +42,7 @@ theorem retained_positive_energy_le_source
       retainedSourceEnergy keep F η selected j k σ t Φ:=by
   let Q:=finiteColumns (fiberPool F selected)
   let c:=fun I:supportedColumns Q=>fiberCoefficient F η selected j k σ t I*heightCoeff η 0 I
-  let rows:Finset O:=F.rows.image Subtype.val
+  let rows:=F.rows.image Subtype.val
   have ht:0<(U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val):=
     mul_pos (mul_pos (Real.rpow_pos_of_pos hU _) (Real.rpow_pos_of_pos hU _))
       (Finset.prod_pos (fun _ _=>Real.rpow_pos_of_pos hU _))
@@ -137,7 +136,7 @@ theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Chara
   have hdataF:F.rowData=momentData η₀:=by
     change B.data label=momentData η₀
     rw [hdata,sourceMomentData_base]
-  have hMm:S.modulus≤Ideal.span {rowMaskElement}:=source_product_le_rowMask S.S S.exclusions.bad
+  have hMm:=source_product_le_rowMask S.S S.exclusions.bad
   have hη:∀s∈selected,∀I∈primePool S.modulus ⊤ (F.upper s) ((Z^d)^(F.widths s)),
       F.profile s ((I.absNorm:ℝ)/((Z^d)^(F.widths s)))≠0→IsCoprime I η₀.modulus:=by
     intro s hs I hI hn

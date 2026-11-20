@@ -21,7 +21,7 @@ lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x
   dsimp only
   have hQ : (1:ℝ)<Ideal.absNorm P.val := by
     have hh := SmoothMobiusCorrection.prime_norm_two_le P
-    exact_mod_cast (by omega : 1<Ideal.absNorm P.val)
+    norm_cast
   have hQ0 : (0:ℝ)<Ideal.absNorm P.val := by linarith
   constructor
   · apply one_sub_ne_zero_of_norm_lt_one

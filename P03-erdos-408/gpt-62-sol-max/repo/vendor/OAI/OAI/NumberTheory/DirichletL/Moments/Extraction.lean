@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.Rectangle
 public import OAI.NumberTheory.DirichletL.Moments.Support
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Support
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentExtraction
 open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist
@@ -25,7 +26,7 @@ theorem idealRectangle_extract (W₁ W₂ : ℝ → ℂ)
 theorem idealWeight_norm_le_one (c : O) (hc : c ≠ 0)
     (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (R : Ideal O) (t : ℝ)
     (I : Ideal O) (hI : I ≠ 0) : ‖idealWeight c χ R t I‖ ≤ 1 := by
-  have hnorm : (0 : ℝ) < Ideal.absNorm I := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  have hnorm : (0 : ℝ) < Ideal.absNorm I := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hpow := norm_real_imaginary_power (Ideal.absNorm I : ℝ) t hnorm
   norm_cast at hpow
   simp only [idealWeight, norm_mul, hpow, mul_one]

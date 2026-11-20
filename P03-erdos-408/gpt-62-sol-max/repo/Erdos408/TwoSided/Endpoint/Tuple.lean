@@ -48,21 +48,8 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
     ∃ A' Bmin : ℝ, ∀ E κ' B' : ℝ, Bmin ≤ B' → E + Bmin ≤ B' → ∃ CT : ℝ,
       ∀ᶠ x : ℝ in atTop,
         PrimeTwistBound x A' E Cm κ' → IntegerKernelBound x Cm κ' →
-        ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-          GroupAdmissible c₀ C₀ vlo vhi x P big → ∀ gs ∉ big,
-          ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
-            InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
-            (∀ Q, |Bc Q| ≤ 1) →
-          ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
-            (∀ g, (C g).card ≤ m₀) → (∀ g ∉ big, C g = ∅) → (∀ p, ‖b p‖ ≤ 1) →
-            (∀ p p', (∀ g ∈ big, p g = p' g) → b p = b p') →
-          ∀ ψ₁ : ℝ → ℂ, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ₁ →
-            (∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) →
-            (∀ (j : ℕ) (y : ℝ), ‖iteratedDeriv j ψ₁ y‖ ≤ M₁ j) →
-          ∀ (Y σ : ℝ) (k : ℕ) (h : ℤ),
-            x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y →
-            Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ)) →
-            |σ| ≤ Real.log x ^ Cm → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm →
+        ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big => ∀ gs ∉ big,
+          ForEndpointTests big K₀ d m₀ CN alo ahi c x Cm M₁ fun r a u v Bc J C b ψ₁ Y σ k h =>
             (∫ t in (Real.log x ^ B')..(x * Real.log x ^ (Cm + 2)),
                 ‖twistedPoly Y (tupleCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ) h k t‖ ^ 2 ≤
               CT * Real.log x ^ (-A₀)) ∧
@@ -86,8 +73,6 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
   have hL1 : 1 ≤ L := le_trans (by linarith [pow_pos (by norm_num : (0 : ℝ) < 4) d]) hL
   have hL0 : 0 < L := by linarith
   have hx0 : 0 < x := by linarith
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
-  have hT₀0 : 0 ≤ x * L ^ (Cm + 2) := by positivity
   -- the tuple coefficient `c(u) = 𝒲(u) 𝒜_B(u) W_{S'}^b(u)`
   set cf : ℕ → ℂ := fun n => ((markedWeight Finset.univ q (fun i => band x (a i)) n *
       weightedSlotCount x u v Bc n : ℝ) : ℂ) *
@@ -123,7 +108,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
         have h₁ : (Q i : ℝ) ≤ x ^ v i.castSucc := by
           have hle := Finset.mem_Iic.1 hQ₁
           exact (Nat.cast_le.2 hle).trans (Nat.floor_le (by positivity))
-        have h₂ : x ^ v i.castSucc ≤ x ^ u i.castSucc := Real.rpow_le_rpow_of_exponent_le hx1 hi
+        have h₂  := Real.rpow_le_rpow_of_exponent_le hx1 hi
         linarith
       have h0 : ∀ t, twistedPoly Y (tupleCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ) h k t = 0 := by
         intro t
@@ -150,14 +135,14 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
       linarith
     have hA : Real.exp (c * L / Real.log L ^ 20) ≤ x ^ u (Fin.last d) := by
       rw [Real.rpow_def_of_pos hx0, Real.exp_le_exp, ← hLdef]
-      calc c * L / Real.log L ^ 20 = L * ε := by rw [hε]; ring
+      calc c * L / Real.log L ^ 20 = L * ε := by ring
         _ ≤ L * u (Fin.last d) := mul_le_mul_of_nonneg_left hu hL0.le
     have hB : x ^ v (Fin.last d) ≤ x * Real.exp (-(c * L / Real.log L ^ 20)) := by
       rw [Real.rpow_def_of_pos hx0, ← hLdef]
       calc Real.exp (L * v (Fin.last d)) ≤ Real.exp (L * (1 - ε)) :=
             Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hv hL0.le)
         _ = x * Real.exp (-(c * L / Real.log L ^ 20)) := by
-            have hexpL : Real.exp L = x := Real.exp_log hx0
+            have hexpL  := Real.exp_log hx0
             rw [mul_sub, mul_one, sub_eq_add_neg, Real.exp_add, hexpL, hε]
             ring_nf
     -- the small primes
@@ -207,7 +192,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
   · refine hboth _ _ fun t ht => ?_
     have h₁ : 0 < L ^ B' := by positivity
     rw [abs_of_pos (lt_of_lt_of_le h₁ ht.1)]
-    exact ⟨ht.1, ht.2⟩
+    assumption
   · refine hboth _ _ fun t ht => ?_
     have h₁ : 0 < L ^ B' := by positivity
     rw [abs_of_neg (lt_of_le_of_lt ht.2 (neg_lt_zero.2 h₁))]

@@ -6,7 +6,7 @@ public import Erdos821.S34.CellCount
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.S34Core
@@ -97,7 +97,7 @@ theorem eventually_product_dyad_scale (P : Geometry) (m : ℕ) (A : ℝ) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ∀ z : Tuple G k, L x ^ A ≤ dyadScale (dyadIndex (product G k z)) := by
   have hc : 0 < P.c := by have h := P.ordered; linarith [h.1, h.2.1, h.2.2.1]
-  have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
+  have hL  := Real.tendsto_log_atTop
   filter_upwards [eventually_power_le_label_scale A P.c (1 / 2) hc (by norm_num),
     hL.eventually_ge_atTop 0] with x hx hLx
   intro G hG k hk z

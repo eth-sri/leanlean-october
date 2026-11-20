@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginalGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroUnbalancedOriginalPower
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
+open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroUnbalancedOriginalPower
 open CenteredMomentEnergyZeroUnbalancedOriginalGates
 local notation "O"=>HeckeFamily.O
 
@@ -51,7 +50,7 @@ theorem original_unbalanced_from_zero_low
         C*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*
           (1+|t|)^J*Z^(s.width+e+ε):=by
     have hlong:=original_long_positive Z s.width X₁ X₂ hZ.1
-      (hrho.trans_le hslo) hX₁ hX₂ hshort hlarge
+      (hrho.trans_le hslo) hX₂ hshort hlarge
     exact hZ.2 e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂
       (raw_short_bound Z s.width X₁ hZ.1 hX₁ hshort) hlong.2.2
   rcases min_le_iff.mp hshort with hshort|hshort

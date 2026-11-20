@@ -1,25 +1,25 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondSectorEnergy
-public import OAI.NumberTheory.DirichletL.Moments.SecondSourceMask
+public import OAI.NumberTheory.DirichletL.Moments.SecondSectorColumns
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationLiveMask
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondLiveEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRestrictedSource
-open CenteredMomentRestrictedEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass
-open CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationLiveMask CenteredMomentFirstSectors RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
+open CenteredMomentChildAssembly CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
+open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
+open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentAmplificationLiveMask
+open CenteredMomentFirstSectors RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem live_divisor_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (B : Tuple ι) (hB : ∀ i,B i≠0) (C R L : Ideal O)

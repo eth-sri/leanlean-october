@@ -96,7 +96,7 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
   have hcb := supported_tuple_bilinear G a b A B U V H θ η ζ u r
     hU hV hH hr hu hθ hη hA hB hρa hρb
   rw [← hC_eq] at hcb
-  have hAn : tupleNorm G a A ≤ 2 * tupleNorm G a g := hFrameA g
+  have hAn  := hFrameA g
   have hBn : tupleNorm G b B ≤ 2 * tupleNorm G b f := by
     simpa only [B, tupleNorm_star] using hFrameB (fun Y => star (f Y))
   have hk : 0 ≤ 4 * integerBilinearConstant * H * Real.sqrt (bilinearDecay U V r) := by

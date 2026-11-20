@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 public import OAI.NumberTheory.DirichletL.CubicSieve.Recurrence
 
@@ -8,9 +9,9 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Recurrence
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
+open scoped BigOperators Classical
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
+open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -38,18 +39,18 @@ theorem cubic_common_factor_frequency_bound :
   apply (finite_energy_le_compact_descendants cols hc a R M hM hR).trans
   apply Finset.sum_le_sum
   intro D hD
-  have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
+  have hc0 (j : n)  := primaryGenerator_ne_zero_ideal _ (hc j).2
   have hDcol := gcdPool_subset_columnDivisorPool cols hc0 hD
   have hDN := columnDivisorPool_norm_bounds cols hc0 N (fun j => (hcols j).2) D hDcol
   have hD0 := gcdPool_ne_zero cols hc0 D hD
-  have hDN0 : 0 < (Ideal.absNorm D : ℝ) := by linarith [hDN.1]
-  have hNshort : 1 ≤ N / (Ideal.absNorm D : ℝ) := (one_le_div hDN0).mpr hDN.2
+  have hDN0 : 0 < (Ideal.absNorm D : ℝ) := by linarith
+  have hNshort  := (one_le_div hDN0).mpr hDN.2
   apply Finset.sum_le_sum
   intro E hE
   have hEdiv := (mem_idealDivisors hD0).mp hE
-  have hE0 : E ≠ 0 := ne_zero_of_dvd_ne_zero hD0 hEdiv
+  have hE0  := ne_zero_of_dvd_ne_zero hD0 hEdiv
   have hEN : 0 < (Ideal.absNorm E : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hE0)
   rw [compact_descendant_restrict]
   have hh := hrec ε hε (M / (Ideal.absNorm E : ℝ)) (N / (Ideal.absNorm D : ℝ))
     (div_pos hM hEN) hNshort (quotientColumn D cols) (quotientColumn_injective D cols hinj)

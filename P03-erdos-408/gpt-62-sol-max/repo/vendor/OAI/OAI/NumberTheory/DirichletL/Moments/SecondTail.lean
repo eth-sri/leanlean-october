@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondWholeKernel
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 
@@ -21,7 +22,7 @@ theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
     (hi : (Ideal.absNorm I:ℝ)≤Real.exp H*X) (hj : (Ideal.absNorm J:ℝ)≤Real.exp H*X)
     (hsec : X^2/K≤Tsec) :
     kernelReference Tsec H≤K/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)) := by
-  have hT : 0<Tsec := (div_pos (sq_pos_of_pos hX) hK).trans_le hsec
+  have hT  := (div_pos (sq_pos_of_pos hX) hK).trans_le hsec
   have hNi := CenteredMomentFirstScale.norm_pos I hI
   have hNj := CenteredMomentFirstScale.norm_pos J hJ
   have hprod : (Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)≤Real.exp (2*H)*X^2 := by
@@ -59,7 +60,7 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
   obtain ⟨s,C,hC,ht⟩ := actual_discarded_second_tail Adec
   refine ⟨s,C,hC,?_⟩
   intro W I J hI hJ K X H Tsec Z Csec ξ hK hX hZ hCs hi hj hsec hthreshold
-  have hT : 0<Tsec := (div_pos (sq_pos_of_pos hX) hK).trans_le hsec
+  have hT  := (div_pos (sq_pos_of_pos hX) hK).trans_le hsec
   have hb := ht W Tsec Z Csec H ξ (K/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)))
     hT hZ hCs hthreshold (actual_second_kernel_reference I J hI.1 hJ.1 K X H Tsec hK hX hi hj hsec)
     (primaryGenerator I) (primaryGenerator J)
@@ -71,9 +72,9 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
   have hu : normValue (primaryGenerator I)=(Ideal.absNorm I:ℝ) := by rw [normValue,primary_span_supported I hI]
   have hv : normValue (primaryGenerator J)=(Ideal.absNorm J:ℝ) := by rw [normValue,primary_span_supported J hJ]
   rw [hu,hv] at hb
-  have hNi : (1:ℝ)≤Ideal.absNorm I := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
-  have hNj : (1:ℝ)≤Ideal.absNorm J := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ.1)
-  have hroot : 1≤Real.sqrt (Ideal.absNorm I:ℝ)*Real.sqrt (Ideal.absNorm J:ℝ) :=
+  have hNi : (1:ℝ)≤Ideal.absNorm I := by exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI.1)
+  have hNj : (1:ℝ)≤Ideal.absNorm J := by exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hJ.1)
+  have hroot  :=
     one_le_mul_of_one_le_of_one_le (Real.one_le_sqrt.mpr hNi) (Real.one_le_sqrt.mpr hNj)
   have hnorm : ‖(K:ℂ)/((Real.sqrt (Ideal.absNorm I:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm J:ℝ):ℂ))‖≤K := by
     rw [norm_div,norm_mul]

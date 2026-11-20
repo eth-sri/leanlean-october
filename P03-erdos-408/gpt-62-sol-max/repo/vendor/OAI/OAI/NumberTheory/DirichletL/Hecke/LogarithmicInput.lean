@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.PrincipalStrip
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrincipalStrip
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set
 namespace SevenEighths.HeckeLogarithmicInput
 open HeckeFamily
@@ -36,7 +37,7 @@ theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
 theorem regular_ne_zero (η : Character) {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) : regular η s ≠ 0 := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs0
+  have h0 : s ≠ 0 := by intro h; simp_all
   have hplus : s+1 ≠ 0 := by
     intro h
     have he := congrArg Complex.re h
@@ -88,8 +89,7 @@ theorem uniformConstant_nonneg : 0 ≤ uniformConstant := by
   positivity
 
 theorem modulus_norm_ge_one (η : Character) : 1 ≤ (η.modulus.absNorm : ℝ) := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (η.modulus_ne_bot)
 
 theorem regular_strip_bound (η : Character)
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (z : ℂ)
@@ -120,9 +120,9 @@ theorem regular_right_growth (η : Character)
       unfold uniformConstant; nlinarith
     have hQ : 1 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ) :=
       Real.one_le_rpow (modulus_norm_ge_one η) (by norm_num)
-    have hT : 1 ≤ (3+|z.im|)^2 := by nlinarith [abs_nonneg z.im]
-    exact hC.trans ((le_mul_of_one_le_right uniformConstant_nonneg hQ).trans
-      (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by linarith : 0 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ))) hT))
+    refine hC.trans ((le_mul_of_one_le_right uniformConstant_nonneg hQ).trans
+      (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by linarith : 0 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ))) ?_))
+    nlinarith [abs_nonneg z.im]
 
 theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
     (ha : HeckeZeroSupremum.beta ≤ a) (he : 0 < e) {z : ℂ}
@@ -140,7 +140,7 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) :
     ‖HeckeReciprocal.reciprocal η s‖ ≤ ‖(regular η s)⁻¹‖ := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs0
+  have h0 : s ≠ 0 := by intro h; simp_all
   by_cases hη : η.residue = 1
   · by_cases h1 : s = 1
     · subst s
@@ -162,7 +162,7 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
     apply mul_le_of_le_one_left (norm_nonneg _)
     rw [norm_div]
     exact (div_le_one (norm_pos_iff.mpr hp)).mpr (principal_regular_factor_bound hs0.le)
-  · simp only [HeckeReciprocal.reciprocal, regular, ite_eq_right hη, le_refl]
+  · simp [HeckeReciprocal.reciprocal, regular, ite_eq_right hη, le_refl]
 
 theorem regular_disk_growth (η : Character)
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (a e t : ℝ)

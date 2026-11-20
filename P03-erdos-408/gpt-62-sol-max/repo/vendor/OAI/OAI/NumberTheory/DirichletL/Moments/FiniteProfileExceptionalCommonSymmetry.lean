@@ -1,6 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonSource
+public import Mathlib.Tactic.WLOG
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonMass
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonGates
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
 
 @[expose] public section
 
@@ -16,7 +20,7 @@ open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
 open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
 open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentExceptionalAmplitudePair
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
@@ -49,36 +53,67 @@ theorem actual_common_better_side (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
           ((C.absNorm:ℝ)*D.absNorm)^θ*
           (profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
             ((C.absNorm:ℝ)*D.absNorm)) :=by
-  obtain ⟨J,Sprofile,hSprofile,hJ⟩:=actual_common_exceptional wlo whi hwlo hwhi lo hi ε δ θ B Lbound hε hδ hθ hB hL
+  obtain ⟨J,Sprofile,hSprofile,hJ⟩:=actual_masked_asymmetric wlo whi hwlo hwhi lo hi ε δ B Lbound hε hδ hB hL
+  obtain ⟨Km,hKm,hmass⟩:=common_profile_mass (ι:=ι) θ hθ
   refine ⟨J,Sprofile,hSprofile,?_⟩
   intro Q hQ
-  obtain ⟨K,hK,hbound⟩:=hJ Q hQ
-  refine ⟨K,hK,?_⟩
+  obtain ⟨Ka,hKa,hbound⟩:=hJ Q hQ
+  refine ⟨Ka*Km,mul_pos hKa hKm,?_⟩
   filter_upwards [hbound] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro s v p q hslo hshi hvlo hvhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂ C D hC hD R seed hR hsC hsD
     rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂ rows hn hsEx hvEx hsCond hvCond Ds hDs
-  have hl:=hZ.2 s v p q hvlo hvhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂ C D hC hD R seed hR hsC hsD
-    rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂ rows hn hsEx hvEx hsCond hvCond Ds hDs
-  have hr:=hZ.2 v s q p hslo hshi hvP hsP hvW₁ hvW₂ hsW₁ hsW₂ D C hD hC R seed hR hsD hsC
-    rRight rLeft hvX₁ hvX₂ hvY₁ hvY₂ hsX₁ hsX₂ hsY₁ hsY₂ rows hn hvEx hsEx hvCond hsCond Ds hDs
-  by_cases hc:max (rRight-Real.logb Z (D.absNorm:ℝ)) 0≤max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0
-  · rw [max_eq_left hc]
-    exact hl
-  · rw [max_eq_right (le_of_not_ge hc)]
-    have hswap:(∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
-        ‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)=
-      ∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
-        ‖normalizedColumn v D hD R seed L z‖*‖normalizedColumn s C hC R seed L z‖:=by
+  wlog hbetter : max (rRight-Real.logb Z (D.absNorm:ℝ)) 0 ≤ max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0
+    generalizing s v p q C D rLeft rRight with hswap
+  · have hr := hswap v s q p hvlo hvhi hslo hshi hvP hsP hvW₁ hvW₂ hsW₁ hsW₂ D C hD hC hsD hsC
+      rRight rLeft hvX₁ hvX₂ hvY₁ hvY₂ hsX₁ hsX₂ hsY₁ hsY₂ hvEx hsEx hvCond hsCond (le_of_not_ge hbetter)
+    rw [max_comm, mul_comm (C.absNorm:ℝ) (D.absNorm:ℝ)]
+    convert hr using 1
+    · congr! 3 <;> ring
+    · unfold profileMass
+      ring
+  rw [max_eq_left hbetter]
+  let H:=Ka*(rows.card:ℝ)*Z^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
+  have hz:=zero_lt_one.trans hZ.1
+  have hH:0≤H:=by dsimp [H];positivity
+  have hb (c:actualAllocations s.pools C)(d:actualAllocations v.pools D):
+      (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
+        ‖maskedAmplitude (commonData s C R c) L z‖*
+          ‖maskedAmplitude (commonData v D R d) L z‖)≤
+        H*profileMass Sprofile (commonData s C R c) (commonData v D R d) p q J:=by
+    apply hZ.2 _ _ (commonData s C R c) (commonData v D R d) p q
+      (fun i=>hvlo i.val) (fun i=>hvhi i.val)
+      (rLeft-Real.logb Z (C.absNorm:ℝ)) (rRight-Real.logb Z (D.absNorm:ℝ)) rows
+    · intro z hz
+      exact common_admissible s p C R Q hC.1 hR c Z B rLeft hZ.1 z (hn z hz) hsP
+        (hsEx z hz) (hsCond z hz) hsW₁ hsW₂ hsX₁ hsX₂ hsY₁ hsY₂
+    · intro z hz
+      exact common_admissible v q D R Q hD.1 hR d Z B rRight hZ.1 z (hn z hz) hvP
+        (hvEx z hz) (hvCond z hz) hvW₁ hvW₂ hvX₁ hvX₂ hvY₁ hvY₂
+    · exact hDs
+  apply (whole_paired_columns s v C D hC hD R seed hsC hsD Ds rows).trans
+  calc
+    _≤∑c:actualAllocations s.pools C,∑d:actualAllocations v.pools D,
+      (‖commonScalar s C R c‖*‖commonScalar v D R d‖)*
+        (H*profileMass Sprofile (commonData s C R c) (commonData v D R d) p q J):=by
+      apply Finset.sum_le_sum
+      intro c hc
+      exact Finset.sum_le_sum (fun d hd=>mul_le_mul_of_nonneg_left (hb c d)
+        (mul_nonneg (norm_nonneg _) (norm_nonneg _)))
+    _=H*(∑c:actualAllocations s.pools C,∑d:actualAllocations v.pools D,
+      (‖commonScalar s C R c‖*‖commonScalar v D R d‖)*
+        profileMass Sprofile (commonData s C R c) (commonData v D R d) p q J):=by
+      simp only [Finset.mul_sum]
       apply Finset.sum_congr rfl
-      intro L hL
-      congr 1
-      exact Finset.sum_congr rfl (fun z hz=>mul_comm _ _)
-    rw [hswap]
-    apply hr.trans_eq
-    rw [mul_comm (D.absNorm:ℝ) (C.absNorm:ℝ)]
-    unfold profileMass
-    ring
+      intro c hc
+      apply Finset.sum_congr rfl
+      intro d hd
+      ring
+    _≤H*(Km*((C.absNorm:ℝ)*D.absNorm)^θ*
+      (profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
+        ((C.absNorm:ℝ)*D.absNorm))):=
+      mul_le_mul_of_nonneg_left (hmass Sprofile s v C D R hC.1 hD.1 p q J) hH
+    _=_:=by ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 

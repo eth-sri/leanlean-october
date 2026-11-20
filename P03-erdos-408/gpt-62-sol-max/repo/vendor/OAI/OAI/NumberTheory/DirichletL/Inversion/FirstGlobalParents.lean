@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceEnergy
 public import OAI.NumberTheory.DirichletL.Descent.GlobalParentEnergy
 
@@ -8,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalParentEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseFirstGlobalParents
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open FirstCauchyArithmetic RayFourExpansion InverseMoment
-open InverseFirstPriorityParents InverseMomentWholePriorityParents
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseWholePriorityValidSource InversePrioritySecondSource
 open InverseInitialArithmetic (sourceIdeal)
 local notation "O" => ActualEisensteinCubic.O
@@ -31,7 +31,7 @@ def toOriginal (x : Source ι 0) : FirstOriginalOuter ι :=
 
 omit [DecidableEq ι] in
 @[simp] theorem toOriginal_ofOriginal (k : FirstOriginalOuter ι) :
-    toOriginal (ofOriginal k)=k := by cases k with | mk b k => cases k; rfl
+    toOriginal (ofOriginal k)=k := by rfl
 
 omit [DecidableEq ι] in
 @[simp] theorem toOriginal_fill (x : Source ι 0) (D : Finset ι) :
@@ -51,12 +51,8 @@ omit [DecidableEq ι] in
 @[simp] theorem originalSelector_ofOriginal (selector : FirstOriginalOuter ι→Finset ι→ℂ)
     (k : FirstOriginalOuter ι) (D : Finset ι) :
     originalSelector selector (ofOriginal k) D=selector k D := by
-  simp only [originalSelector,toOriginal_ofOriginal]
+  rfl
 
-omit [DecidableEq ι] in
-@[simp] theorem originalSelector_ofOriginal_fun (selector : FirstOriginalOuter ι→Finset ι→ℂ)
-    (k : FirstOriginalOuter ι) : originalSelector selector (ofOriginal k)=selector k :=
-  funext (originalSelector_ofOriginal selector k)
 
 def originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) : Finset (Source ι 0) :=
@@ -71,9 +67,9 @@ theorem mem_originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     originalOuterSource,Finset.mem_image,Finset.mem_filter]
   constructor
   · rintro ⟨y,⟨k,hk,rfl⟩,D,⟨hD,hs⟩,he⟩
-    exact ⟨k,hk,D,hD,by simpa using hs,he⟩
+    exact ⟨k,hk,D,hD,by simp_all,he⟩
   · rintro ⟨k,hk,D,hD,hs,he⟩
-    exact ⟨ofOriginal k,⟨k,hk,rfl⟩,D,⟨hD,by simpa using hs⟩,he⟩
+    exact ⟨ofOriginal k,⟨k,hk,rfl⟩,D,⟨hD,by simp_all⟩,he⟩
 
 theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (k : FirstOriginalOuter ι) (hk : k∈firstOriginalOuter pool Q) (D : Finset ι) :
@@ -86,9 +82,9 @@ theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→�
       (Finset.union_subset_union_right (Finset.filter_subset _ _))
   · exact fun i=>Fin.elim0 i
 
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end SevenEighths.InverseFirstGlobalParents
 

@@ -10,13 +10,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyOriginalProfileControl
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional
 open CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyState
+open CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -61,7 +61,6 @@ local notation "O"=>HeckeFamily.O
 section Input
 variable {ι : Type*} [Fintype ι]
 variable (Q : Ideal O) [NeZero Q]
-local instance : Finite (O ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne Q)
 variable (H : Subgroup (O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
 variable (η₀ : Character) (θ : ι → RayQuotient.Characters Q H)
 variable (W : ℝ → ℂ) (hW : Continuous W)
@@ -73,8 +72,6 @@ variable (state : NaturalState Z Bmask bΦ) (p : Profiles a b) (ha : 0 < a)
 variable (t X₁ X₂ Y₁ Y₂ : ℝ) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
 variable (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) (hsame : Y₁ * Y₂ = X₁ * X₂)
 
-local notation "inp" => CenteredMomentEnergyNaturalInputMatches.input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
-  w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
 
 end Input
 end SevenEighths.CenteredMomentEnergyOriginalProfileControl

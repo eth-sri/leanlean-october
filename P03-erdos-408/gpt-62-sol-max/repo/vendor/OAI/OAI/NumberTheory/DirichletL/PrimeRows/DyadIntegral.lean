@@ -3,6 +3,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.DyadBound
 public import OAI.NumberTheory.DirichletL.PrimeRows.Measurable
 public import OAI.NumberTheory.DirichletL.PrimeRows.ProfileIntegral
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -54,8 +55,7 @@ theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hυ : (1/2:ℝ)≤υ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
+    (mw : MellinWindows) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (U : ℝ),1≤U → ∀R : Finset FreeRow,
       (∀u∈R,u.val≠1 ∧ U≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ) ∧
         ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤2*U) →
@@ -64,18 +64,18 @@ theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
       ∀(Y : Fin K→ℝ), (∀i,1≤Y i) → ∀(W : Fin K→ℝ→ℂ),
       (∀i,Function.support (W i)⊆Icc a b) → (∀i y,‖W i y‖≤B) →
       ∀X Y0 Z : ℝ,0<X → 0<Y0 → 0<Z →
-      Integrable (fun p : HeightSpace=>‖sourceMellinWeight W0 W1 X Y0 Z
+      Integrable (fun p : HeightSpace=>‖sourceMellinWeight mw.left mw.right X Y0 Z
         ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*
           physicalDyadNorm S hS hmax η R T hT W Y
             ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure ∧
-      (∫p : HeightSpace,‖sourceMellinWeight W0 W1 X Y0 Z
+      (∫p : HeightSpace,‖sourceMellinWeight mw.left mw.right X Y0 Z
         ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*
           physicalDyadNorm S hS hmax η R T hT W Y
             ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I) ∂heightMeasure)
       ≤C*(η.modulus.absNorm:ℝ)^δ*U^(8/5+δ-r)*(∏i,(Y i)^r)*
         (X^(1/2-r)*Z^(σ+r-1)*Y0^(υ-1)) := by
   obtain ⟨C,hC,hD⟩ := calibrated_physical_row_dyad K e δ a b r B he he' hδ hδ' ha hb hr hB S hS hmax hfirst
-  obtain ⟨D,hDp,hP⟩ := source_profile_integral_bound W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨D,hDp,hP⟩ := source_profile_integral_bound mw
     σ σ r r υ υ (by linarith)
   refine ⟨D*C,mul_pos hDp hC,?_⟩
   intro η U hU R hR T hT hdis Y hY W hWS hWB X Y0 Z hX hY0 hZ

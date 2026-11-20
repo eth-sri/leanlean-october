@@ -80,12 +80,9 @@ theorem fullModulusCorrelation_eq_zero_of_common_not_dvd (u v d j : A)
   intro y _
   refine Quotient.inductionOn₂' x y ?_
   intro a b
-  have hn : ¬ scaledResidue u v (u * v) rfl (Ideal.Quotient.mk (Ideal.span {u}) a) -
-      scaledResidue v u (u * v) (mul_comm u v) (Ideal.Quotient.mk (Ideal.span {v}) b) =
-      Ideal.Quotient.mk (Ideal.span {u * v}) j := by
-    intro h
-    exact hdj (common_divisor_frequency hdu hdv ((scaledResidue_congruence u v a b j).mp h))
-  exact ite_eq_right hn
+  refine ite_eq_right ?_
+  intro h
+  exact hdj (common_divisor_frequency hdu hdv ((scaledResidue_congruence u v a b j).mp h))
 
 variable [IsDomain A]
 

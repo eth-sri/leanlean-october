@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceNormalization
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
@@ -13,11 +14,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSourceSupport
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceLowerSupport CenteredMomentExceptionalAmplitudePair
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel
+open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceLowerSupport
+open CenteredMomentExceptionalAmplitudePair
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -58,12 +58,12 @@ theorem original_column_lower {ι:Type*}[Fintype ι][DecidableEq ι]
     (fun i=>(s.lo_pos i).le) ha₁ ha₂ s.X₁_pos s.X₂_pos s.Y₁_pos s.Y₂_pos
     one_ne_zero one_ne_zero rfl s.same_product (fun i x hx=>(s.support i hx).1)
     hs₁ hs₂ (Fintype.piFinset s.pools) I (by
-      simpa only [CenteredMomentOriginalCommonHarmonic.coefficient] using hn)
+      assumption)
   simpa only [map_one,Nat.cast_one,mul_one,div_one,volume,mul_assoc] using hh
 
 lemma log_window_upper (N H M:ℝ)(hN:0<N)(hH:0<H)
     (hlog:|Real.log (N/H)|≤M):N≤Real.exp M*H := by
-  have hl:Real.log (N/H)≤M:=(le_abs_self _).trans hlog
+  have hl:=(le_abs_self _).trans hlog
   have he:=Real.exp_le_exp.mpr hl
   rw [Real.exp_log (div_pos hN hH)] at he
   exact (div_le_iff₀ hH).mp he
@@ -78,9 +78,9 @@ theorem block_reference_lower (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c
       a*T≤(D.absNorm:ℝ)*Real.exp M*B₀ := by
   obtain ⟨i,j,hi,hj,hwi,hwj⟩:=nonzero_columns η m A t S c C D hC hD E rows W V K K₀ H₀ A₀ B₀ hn
   have hiN:(0:ℝ)<(i:Ideal O).absNorm:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (column_supported C C hC.1 S i).1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((column_supported C C hC.1 S i).1)
   have hjN:(0:ℝ)<(j:Ideal O).absNorm:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (column_supported C D hD.1 S j).1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((column_supported C D hD.1 S j).1)
   have hni:‖eisEmbedding (element C C hC.1 S i)‖^2=((i:Ideal O).absNorm:ℝ):=by
     rw [eisEmbedding_norm_sq_eq_absNorm_span,element_span]
   have hnj:‖eisEmbedding (element C D hD.1 S j)‖^2=((j:Ideal O).absNorm:ℝ):=by
@@ -97,7 +97,7 @@ theorem block_reference_lower (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c
   · exact hsj.trans (by nlinarith [log_window_upper _ _ M hjN hB hlj])
 
 lemma reference_sqrt_lower (NC ND A₀ B₀ a T M:ℝ)
-    (hNC:0≤NC)(hND:0≤ND)(hA:0≤A₀)(_hB:0≤B₀)(ha:0≤a)(hT:0≤T)
+    (hNC:0≤NC)(hND:0≤ND)(hA:0≤A₀)(ha:0≤a)(hT:0≤T)
     (hl:a*T≤NC*Real.exp M*A₀)(hr:a*T≤ND*Real.exp M*B₀):
     a*T≤Real.exp M*Real.sqrt (NC*ND)*(Real.sqrt A₀*Real.sqrt B₀) := by
   have hh:=mul_le_mul hl hr (mul_nonneg ha hT) (by positivity : 0≤NC*Real.exp M*A₀)

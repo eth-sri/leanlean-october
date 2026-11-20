@@ -29,8 +29,7 @@ lemma lowRowMellinIntegrand_common_support (C : CalibrationData) (W0 W1 Ω : ℝ
   · unfold lowRowMellinIntegrand
     rw [lowAdditiveCoefficient_outer_zero C W1 Y r.1 r.2 v h,mul_zero]
   · have ho : Ω (elementNorm r.2/lowPhysicalScale C X Y)=0 := by
-      by_contra ho
-      exact hr ⟨h,ho⟩
+      simp_all
     simp [lowRowMellinIntegrand,ho]
 
 lemma lowRowMellinIntegrand_mul_summable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
@@ -85,7 +84,7 @@ theorem physicalRowWeight_tsum_low_mellin (C : CalibrationData) (W0 W1 : ℝ→�
   let Ω := lowOuterCutoff (a0*a1) (max 1 (b0*b1))
   have hΩ : HasCompactSupport Ω := lowOuterCutoff_compact _ _ (mul_pos ha0 ha1) (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
   have hΩ0 : Ω 0=0 := lowOuterCutoff_small _ _ (mul_pos ha0 ha1) 0 (by positivity)
-  have hW1c : HasCompactSupport W1 := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
+  have hW1c  := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
   simp_rw [physicalRowWeight_low_mellin C W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs X Y hX hY]
   simp_rw [mul_assoc,←integral_mul_const]
   repeat rw [tsum_mul_left]

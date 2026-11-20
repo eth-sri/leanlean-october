@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCrudeMass
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 local notation "O" => ActualEisensteinCubic.O

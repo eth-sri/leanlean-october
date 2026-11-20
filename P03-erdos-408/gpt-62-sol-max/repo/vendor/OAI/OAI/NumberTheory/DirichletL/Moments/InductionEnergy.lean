@@ -10,10 +10,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentInductionEnergy
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentPositiveSummability
-open CenteredMomentCounting CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
-open CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentPositiveSummability CenteredMomentCounting
+open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots
+open CenteredMomentRetainedEnergy QuadraticInitialBound ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

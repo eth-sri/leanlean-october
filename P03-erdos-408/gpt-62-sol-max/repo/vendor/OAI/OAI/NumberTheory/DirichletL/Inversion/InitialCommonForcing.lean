@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonPool
+public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindow
 
 @[expose] public section
 
@@ -13,7 +13,7 @@ open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeR
 open FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialCommonForcing
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
+open InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialEnergyCallerWindow InverseInitialEnergyCallerSelector
 local notation "Eis"=>ActualEisensteinCubic.O
 

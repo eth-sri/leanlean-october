@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleSums
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleFactor
 
@@ -10,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-open CanonicalQuadraticSieve
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
@@ -39,8 +39,7 @@ theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   have hN : 0<N := by
     dsimp [N]
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
   let F : (∀i,T i)→ℂ := fun P=>∏i,
     W i (((P i).val.val.absNorm:ℝ)/Y i)*((P i).val.val.absNorm:ℂ)^(z-1)*
       continuedCompensatedLocal η u (P i).val (hT i (P i).val (P i).property).1 x w z

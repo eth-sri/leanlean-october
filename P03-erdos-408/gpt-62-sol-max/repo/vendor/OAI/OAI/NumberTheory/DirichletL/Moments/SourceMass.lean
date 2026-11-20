@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AddedZeroUniform
 public import OAI.NumberTheory.DirichletL.Moments.Counting
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Counting
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceMass
 open CenteredMomentAddedZero CenteredMomentRectangle CenteredMomentExtraction
@@ -33,13 +34,11 @@ lemma idealBall_card (H : ℝ) (hH : 0 ≤ H) :
   · obtain ⟨I,hI⟩ := hs
     have hI := (mem_idealBall H I).mp hI
     have hn : (1:ℝ) ≤ Ideal.absNorm I := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI.1)
     exact DescentFiberCost.finite_ideal_count_real _ H (hn.trans hI.2)
       (fun J hJ => ((mem_idealBall H J).mp hJ).1)
       (fun J hJ => ((mem_idealBall H J).mp hJ).2)
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
-    simp only [Finset.card_empty,Nat.cast_zero]
-    positivity
+  simp_all
 
 def tupleBox {r : ℕ} (H : Fin r → ℝ) : Finset (Fin r → Ideal O) :=
   Fintype.piFinset (fun i => idealBall (H i))
@@ -66,7 +65,7 @@ lemma profileProduct_mem_box {r : ℕ} (W : Fin r → ℝ → ℂ) (b q : Fin r 
     v ∈ tupleBox (fun i => b i*q i) := by
   apply (mem_tupleBox _ _).mpr
   intro i
-  have hw : W i ((Ideal.absNorm (v i):ℝ)/q i) ≠ 0 :=
+  have hw  :=
     (Finset.prod_ne_zero_iff.mp hv) i (Finset.mem_univ i)
   refine ⟨?_,(div_le_iff₀ (hq i)).mp (hs i _ hw)⟩
   intro hz
@@ -89,12 +88,11 @@ theorem profileProduct_mass {r : ℕ} (W : Fin r → ℝ → ℂ) (b q B : Fin r
   have hsum : (∑ v ∈ S, ‖profileProduct W q v‖) = ∑ v ∈ F, ‖profileProduct W q v‖ := by
     symm
     apply Finset.sum_filter_of_ne
-    intro v _ hv
-    exact norm_ne_zero_iff.mp hv
+    simpa using norm_ne_zero_iff.mp hv
   have hsub : F ⊆ tupleBox (fun i => b i*q i) := by
     intro v hv
     exact profileProduct_mem_box W b q hq hzero hs v (Finset.mem_filter.mp hv).2
-  have hcard : (F.card:ℝ) ≤ 128^r * ∏ i, b i*q i :=
+  have hcard  :=
     (Nat.cast_le.mpr (Finset.card_le_card hsub)).trans
       (tupleBox_card _ (fun i => mul_nonneg (hb i) (hq i).le))
   rw [hsum]
@@ -151,8 +149,8 @@ lemma sourceBounds_nonneg {N : ℕ} (b : Fin N → ℝ) (b₁ b₂ : ℝ)
 lemma sourceScales_pos {N : ℕ} (P : Fin N → ℝ) (X₁ X₂ : ℝ) (B₁ B₂ : Ideal O)
     (hP : ∀ j, 0<P j) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hB₁ : B₁≠0) (hB₂ : B₂≠0) :
     ∀ i, 0<sourceScales P X₁ X₂ B₁ B₂ i := by
-  have hn₁ : (0:ℝ)<Ideal.absNorm B₁ := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hB₁)
-  have hn₂ : (0:ℝ)<Ideal.absNorm B₂ := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hB₂)
+  have hn₁ : (0:ℝ)<Ideal.absNorm B₁ := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hB₁)
+  have hn₂ : (0:ℝ)<Ideal.absNorm B₂ := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hB₂)
   simp only [Fin.forall_fin_add,sourceScales,Fin.append_left,Fin.append_right,Fin.forall_fin_two]
   exact ⟨hP,div_pos hX₁ hn₁,div_pos hX₂ hn₂⟩
 
@@ -202,9 +200,8 @@ theorem originalCoefficient_mem_sourcePool (N : ℕ) (c : O)
   apply Finset.mem_union.mpr
   by_cases hx : profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P X₁ X₂ B₁ B₂) v = 0
   · apply Or.inr
-    have hy : profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P Y₁ Y₂ B₁ B₂) v ≠ 0 := by
-      intro hy; exact hd (by rw [hx,hy,sub_self])
-    exact profileProduct_mem_box _ _ _ (sourceScales_pos _ _ _ _ _ hP hY₁ hY₂ hB₁ hB₂) hzero hs v hy
+    refine profileProduct_mem_box _ _ _ (sourceScales_pos _ _ _ _ _ hP hY₁ hY₂ hB₁ hB₂) hzero hs v ?_
+    intro hy; exact hd (by rw [hx,hy,sub_self])
   · exact Or.inl (profileProduct_mem_box _ _ _ (sourceScales_pos _ _ _ _ _ hP hX₁ hX₂ hB₁ hB₂) hzero hs v hx)
 
 def sourceRadius {N : ℕ} (b P : Fin N → ℝ) (b₁ b₂ T : ℝ) (B₁ B₂ : Ideal O) : ℝ :=

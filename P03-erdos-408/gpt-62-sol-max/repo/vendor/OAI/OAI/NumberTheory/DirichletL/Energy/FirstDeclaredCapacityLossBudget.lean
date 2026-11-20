@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstStageLossBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstGaussianProfileWeights
+open CenteredMomentFirstAmplifiedFourCoefficients
 
 lemma lossVector_cap (sigma delta reserveAmp paid es M A saving:ℝ)
     (he:0≤es)(hM:0≤M)(hA:0≤A)(j:Fin 4):
@@ -38,10 +38,8 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
   let r:=reserve M Bcap ε
   let es:=r/(4*(Bcommon+A+1))
   have hb:=bounds M Bcap κ ε hM hB hκ hε
-  have hr:0<r:=hb.2.2.2.1
-  have hs:0<amplification ε:=hb.1
+  have hr:=hb.2.2.2.1
   have hrsmall:r≤amplification ε/100:=min_le_left _ _
-  have hr1:r≤1:=by linarith [hb.2.1]
   have hden:0<4*(Bcommon+A+1):=by positivity
   have hes:0<es:=by dsimp [es];positivity
   have hesle:es≤r/4:=by

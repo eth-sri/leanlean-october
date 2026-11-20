@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.MellinPoisson
 
 @[expose] public section
@@ -44,13 +45,11 @@ theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : Calibra
       rw [(primaryGenerator_spec s.val ha).1]
     have hb : 0<elementNorm C.generator := by
       unfold elementNorm
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
     have hs : 0<(Ideal.absNorm s.val:ℝ) := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
-    have hK : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := mul_pos (mul_pos hb hs) hX
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (s.property.1)
     simpa only [hn] using inner_mellin_poisson η C D (primaryGenerator s.val) has
-      W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z hK hZ
+      W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z (mul_pos (mul_pos hb hs) hX) hZ
   · rfl
 
 end SevenEighths.ProbePhysical

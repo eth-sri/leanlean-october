@@ -1,13 +1,14 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.WholePriorityMass
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.WholePriorityBranches
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
@@ -15,7 +16,7 @@ open InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSo
 local notation "O"=>ActualEisensteinCubic.O
 
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→O) [OAI.PrincipalFamily.Maximal p]
 
 omit [DecidableEq σ] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem parent_residual_lists_subset {Jo:ℕ} (extra:CubeCoordinates ι→Finset ι)
@@ -38,10 +39,10 @@ theorem parent_residual_lists_pairwise {Jo:ℕ} (extra:CubeCoordinates ι→Fins
 theorem priority_zero_parent_uniform (ε:ℝ) (hε:0<ε):
     ∃(s:Finset (ℕ×ℕ))(C:ℝ),0<C ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (_hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→O) (_hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (_hcop:OAI.PrincipalFamily.Coprime p)
       (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι) (negative:Bool)
       (Ψ:O→*ℂ) (m:O) (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) → (∀u,‖Ψ u‖≤1) →
@@ -79,10 +80,10 @@ theorem priority_zero_parent_uniform (ε:ℝ) (hε:0<ε):
 theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:0<tau):
     ∃(s:Finset (ℕ×ℕ))(C:ℝ),0<C ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (_hcop:OAI.PrincipalFamily.Coprime p)
       (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι) (negative:Bool)
       (Ψ:O→*ℂ) (m:O) (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ),
@@ -102,13 +103,12 @@ theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:
   intro ι σ _ _ p hp _ hg hinj hcop hc extra pool negative Ψ m slots assigned lists a hslots ha hΨ
     om lo hi hlo hs X M Y Z t R hX hhi hZ hY hscale hy hyi hx Jo y hR
   have hpair:=parent_residual_lists_pairwise p extra negative slots assigned lists y hslots
-  have hcoeff:∀i∈slots\assigned,∀k∈residualLists p negative (fun i=>lists i\extra y.cube) y i,‖a i k‖≤1:=by
-    intro i hi k hk
-    exact ha i (Finset.mem_sdiff.mp hi).1 k (parent_residual_lists_subset p extra negative lists y i hk)
-  exact hbound p hp hcop hg hinj hc pool Ψ hΨ (secondParentPuncture p m y)
+  refine hbound p hp hcop hg hinj hc pool Ψ hΨ (secondParentPuncture p m y)
     (secondParentLabel p y) (secondParentDivisor p y) (primeSubsetGenerator_ne_zero _ _)
-    (slots\assigned) _ a hpair hcoeff om rowMajorant lo hi hlo hs negative t X M Y Z R
+    (slots\assigned) _ a hpair ?_ om rowMajorant lo hi hlo hs negative t X M Y Z R
     hX hhi hZ hY hscale hy hyi hx hR
+  intro i hi k hk
+  exact ha i (Finset.mem_sdiff.mp hi).1 k (parent_residual_lists_subset p extra negative lists y i hk)
 
 end SevenEighths.InverseMoment
 

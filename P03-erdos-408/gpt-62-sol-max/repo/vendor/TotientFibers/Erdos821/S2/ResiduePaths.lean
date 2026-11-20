@@ -32,8 +32,8 @@ instance (A : Model F P J m) (n : ℕ) : Fintype (ResiduePath A n) := by
       (Fin n → Fin A.patternCount) × (Fin n → P.Aux J))
     { toFun := fun v => ⟨v.1, v.2.1, v.2.2.1, v.2.2.2.1, v.2.2.2.2⟩
       invFun := fun Q => ⟨Q.labels, Q.sourcePerm, Q.targetPerm, Q.pattern, Q.free⟩
-      left_inv := fun v => by rcases v with ⟨a, b, c, d, e⟩; rfl
-      right_inv := fun Q => by cases Q; rfl }
+      left_inv := fun v => by rfl
+      right_inv := fun Q => by rfl }
 
 namespace ResiduePath
 

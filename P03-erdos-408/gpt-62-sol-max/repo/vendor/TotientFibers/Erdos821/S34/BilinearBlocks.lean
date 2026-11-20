@@ -44,7 +44,7 @@ theorem shortBlock_count (s : Finset ℤ) (start : ℤ) (r : ℕ) (hr : 1 ≤ r)
     (A : ℝ) (hA : 0 ≤ A)
     (hs : ∀ t ∈ s, start ≤ t ∧ (t : ℝ) - start ≤ A) :
     ((s.image (shortBlock start r)).card : ℝ) ≤ 2 * A / r + 1 := by
-  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (show 0 < r by omega)
+  have hrpos : 0 < (r : ℝ) := by norm_cast
   have hlow : r ≤ 2 * shortBlockStep r := by unfold shortBlockStep; omega
   have hlow' : (r : ℝ) ≤ 2 * (shortBlockStep r : ℝ) := by exact_mod_cast hlow
   have hindex (t : ℤ) (ht : t ∈ s) : (shortBlock start r t : ℝ) ≤ 2 * A / r := by
@@ -84,10 +84,9 @@ theorem sum_filter_partition {ι κ E : Type*} [DecidableEq κ] [AddCommMonoid E
 theorem norm_sum_mul_sq {ι : Type*} (s : Finset ι) (a b : ι → ℂ) :
     ‖∑ i ∈ s, a i * b i‖ ^ 2 ≤
       (∑ i ∈ s, ‖a i‖ ^ 2) * (∑ i ∈ s, ‖b i‖ ^ 2) := by
-  have h : ‖∑ i ∈ s, a i * b i‖ ≤ ∑ i ∈ s, ‖a i‖ * ‖b i‖ := by
-    simpa only [norm_mul] using norm_sum_le s (fun i => a i * b i)
-  exact (pow_le_pow_left₀ (norm_nonneg _) h 2).trans
+  refine (pow_le_pow_left₀ (norm_nonneg _) ?_ 2).trans
     (Finset.sum_mul_sq_le_sq_mul_sq s (fun i => ‖a i‖) (fun i => ‖b i‖))
+  simpa only [norm_mul] using norm_sum_le s (fun i => a i * b i)
 
 /-- The squared frequency estimate underlying §3's integer bilinear bound. -/
 theorem rational_block_large_sieve (α β : ℝ) (u : ℤ) (r : ℕ)
@@ -145,6 +144,6 @@ theorem rational_block_large_sieve (α β : ℝ) (u : ℤ) (r : ℕ)
     _ = ((t.image (shortBlock start r)).card : ℝ) * (K * E) := by simp
     _ ≤ (2 * A / r + 1) * (K * E) :=
       mul_le_mul_of_nonneg_right (shortBlock_count t start r hr A hA ht) (mul_nonneg hK hE)
-    _ = _ := by dsimp [K, E]; ring
+    _ = _ := by ring
 
 end Erdos821.S34.Proofs

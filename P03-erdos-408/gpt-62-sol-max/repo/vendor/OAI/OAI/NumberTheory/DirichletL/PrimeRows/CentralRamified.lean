@@ -26,15 +26,9 @@ theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : P
       800*(P.val.absNorm:ℝ)^(-(1/2:ℝ))+
         (if 2≤multiplicity (primaryGenerator P.val) u.val then 12*(P.val.absNorm:ℝ)^(-w.re) else 0) := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
-  have ha : ‖actualACube η p‖≤1 := by
-    have h := actualAPhase_norm_le_one η p
-    rw [←actualACube_sq,norm_pow] at h
-    nlinarith [norm_nonneg (actualACube η p)]
+  obtain ⟨hp, hspan, _, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  have ha := actualACube_norm_le η p
   have hρ := actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)
   have hnorm : Ideal.absNorm (Ideal.span {p})=P.val.absNorm := congrArg Ideal.absNorm hspan
   constructor

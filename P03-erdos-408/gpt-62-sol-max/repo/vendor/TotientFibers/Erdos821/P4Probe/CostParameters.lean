@@ -1,11 +1,11 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.P4Probe.Parameters
 
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -16,7 +16,7 @@ noncomputable section
 lemma kernel_cost_power (L q ξ : ℝ) (hL : 1 ≤ L) (hq : 0 < q) (hξ : 0 < ξ) :
     max 1 ((((⌊L ^ q⌋₊ : ℕ) : ℝ) ^ 2 / (L ^ (-ξ))) ^ 2) ≤
       L ^ (4 * q + 2 * ξ) := by
-  have hp : 0 < L := lt_of_lt_of_le zero_lt_one hL
+  have hp  := lt_of_lt_of_le zero_lt_one hL
   have hf : ((⌊L ^ q⌋₊ : ℕ) : ℝ) ≤ L ^ q := Nat.floor_le (Real.rpow_nonneg hp.le _)
   have hb : (((⌊L ^ q⌋₊ : ℕ) : ℝ) ^ 2 / (L ^ (-ξ))) ^ 2 ≤
       ((L ^ q) ^ (2 : ℕ) / L ^ (-ξ)) ^ (2 : ℕ) :=
@@ -43,7 +43,7 @@ lemma family_cost_power (F : FixedData) (P : PrimeGroups) (J m : ℕ)
         L x ^ ((m : ℝ) * F.C₀ * Real.log 2 + 4 * q + 2 * ξ + 1) := by
   have hp : 0 < L x := by linarith
   have hL1 : 1 ≤ L x := by linarith
-  have hC₀ : 0 < F.C₀ := F.C₀_pos
+  have hC₀  := F.C₀_pos
   have hcost := probeFamily_patternMass_le F P J m hj block ⌊L x ^ q⌋₊
     (L x ^ (-h)) (L x ^ (-ξ)) (Real.rpow_pos_of_pos hp _)
   have hnum := probe_power_le 2 F.C₀ m (Fintype.card P.BigGroup) (L x)
@@ -64,16 +64,10 @@ lemma family_cost_power (F : FixedData) (P : PrimeGroups) (J m : ℕ)
         Real.one_le_rpow hL1 (mul_nonneg (by positivity)
           (Real.log_nonneg (by norm_num)))
       linarith
-    _ = 2 * L x ^ ((m : ℝ) * F.C₀ * Real.log 2 + 4 * q + 2 * ξ) := by
-      rw [mul_assoc, ← Real.rpow_add hp]
-      congr 2
-      ring
+    _ = 2 * L x ^ ((m : ℝ) * F.C₀ * Real.log 2 + 4 * q + 2 * ξ) := by rpow_ring hp
     _ ≤ L x * L x ^ ((m : ℝ) * F.C₀ * Real.log 2 + 4 * q + 2 * ξ) :=
       mul_le_mul_of_nonneg_right hL (Real.rpow_nonneg hp.le _)
-    _ = _ := by
-      rw [Real.rpow_add hp ((m : ℝ) * F.C₀ * Real.log 2 + 4 * q + 2 * ξ) 1,
-        Real.rpow_one]
-      ring
+    _ = _ := by rpow_ring hp
 
 end
 end Erdos821.P4Probe

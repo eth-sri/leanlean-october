@@ -84,7 +84,7 @@ theorem isCutoff_mul_id {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ →
   have hM : ∀ r, 0 ≤ M r := fun r => by
     have h := (abs_nonneg _).trans (hder r 0)
     exact nonneg_of_mul_nonneg_left h (rpow_pos_of_pos (by linarith) _)
-  have hT' : 1 ≤ Real.log (Real.log x) := hT
+  have hT'  := hT
   have hexp : ∀ (r : ℕ) (a : ℝ), a ≤ max CΦ 0 * r →
       Real.log (Real.log x) ^ a ≤ Real.log (Real.log x) ^ (max CΦ 0 * r) :=
     fun r a h => rpow_le_rpow_of_exponent_le hT' h

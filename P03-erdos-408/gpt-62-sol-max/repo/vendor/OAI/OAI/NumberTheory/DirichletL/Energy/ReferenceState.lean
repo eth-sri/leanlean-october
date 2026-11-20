@@ -9,12 +9,12 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionRetainedLength
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyReferenceState
-open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyState
-open CenteredMomentRadialEligibleEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy
+open CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource
+open CenteredMomentAllocatedNaturalRadial
 local notation "O"=>HeckeFamily.O
 
 def effectiveRadial (r:Radial):Radial:=

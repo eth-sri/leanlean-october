@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseRawCompact
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular
-open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting
-open ActualEisensteinCubic ConcreteTraceCRT
+open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting ActualEisensteinCubic
+open ConcreteTraceCRT
 
 local notation "O" => HeckeFamily.O
 
@@ -59,7 +59,7 @@ theorem inverse_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : 
 
 lemma childLogTest_norm (W : ℝ→ℂ) (s x : ℝ) :
     ‖childLogTest W s x‖=‖W x‖ := by
-  simp only [childLogTest,norm_mul,logPhase_norm,mul_one]
+  simp [childLogTest,norm_mul,logPhase_norm,mul_one]
 
 theorem inverse_reference_bound (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Set.Icc a b) :
@@ -72,10 +72,9 @@ theorem inverse_reference_bound (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
   · intro x
     simpa only [childLogTest_norm] using hbound x
   · intro x hx
-    have hw : W x≠0 := by
-      intro hz
-      exact hx (by simp only [childLogTest,hz,zero_mul])
-    exact (hs hw).2
+    refine (hs ?_).2
+    intro hz
+    exact hx (by simp only [childLogTest,hz,zero_mul])
 
 theorem nonzero_element_rows_card (rows : Finset NonzeroElement) (H : ℝ) (hH : 1≤H)
     (hrows : ∀v∈rows,((Ideal.span {v.val}).absNorm:ℝ)≤H) :
@@ -109,10 +108,10 @@ theorem reference_energy_linear (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     _=(128*A^2)*H*D := by ring
 
 lemma scale_le_rows (c H D : ℝ) (hc : 0≤c) (hH : 1≤H)
-    (_hD : 0<D) (hDH : D^(1+c)≤H) : D≤H := by
+ (hDH : D^(1+c)≤H) : D≤H := by
   by_cases hD1:D≤1
   · exact hD1.trans hH
-  · have hd : 1≤D := le_of_not_ge hD1
+  · have hd  := le_of_not_ge hD1
     calc
       D=D^(1:ℝ) := (Real.rpow_one D).symm
       _≤D^(1+c) := Real.rpow_le_rpow_of_exponent_le hd (by linarith)
@@ -124,7 +123,7 @@ lemma raw_majorant_ge_linear (C C0 H D κ s : ℝ) (J : ℕ)
   have ht : 1≤(1+‖s‖)^(2*J) := one_le_pow₀ (by linarith [norm_nonneg s])
   have hb : 1≤H*max 1 D := hH.trans
     (le_mul_of_one_le_right (by positivity) (le_max_left _ _))
-  have hp : 1≤(H*max 1 D)^κ := Real.one_le_rpow hb hκ
+  have hp  := Real.one_le_rpow hb hκ
   calc
     C0*H≤(C+C0)*H := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
     _≤((C+C0)*(1+‖s‖)^(2*J))*H := mul_le_mul_of_nonneg_right
@@ -153,7 +152,7 @@ theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha
       _=(K*H0)*H := by ring
       _≤_ := raw_majorant_ge_linear C (K*H0) H D κ s J hC (by positivity) hH hκ
   by_cases hHH0:H≤H0
-  · exact hsmall ((scale_le_rows c H D hc hH hD hDH).trans hHH0)
+  · exact hsmall ((scale_le_rows c H D hc hH hDH).trans hHH0)
   by_cases hD1:D≤1
   · exact hsmall (hD1.trans hH0)
   · apply (hlarge s H D (le_of_not_ge hHH0) (le_of_not_ge hD1) hDH rows hrows).trans

@@ -27,8 +27,7 @@ private theorem sum_Icc_eq_fin {α : Type} [AddCommMonoid α] (N : ℕ) (f : ℕ
     omega
   · intro b hb
     refine ⟨b.val + 1, Finset.mem_Icc.mpr ⟨by omega, by have := b.isLt; omega⟩, ?_⟩
-    apply Fin.ext
-    simp [i]
+    rfl
   · intro n hn
     have hn' := Finset.mem_Icc.mp hn
     simp [i, Nat.sub_add_cancel hn'.1]
@@ -38,7 +37,7 @@ private noncomputable def sieveK : ℝ := 3 + (Real.log 2)⁻¹
 private theorem harmonic_log_bound (R : ℕ) :
     (harmonic (R ^ 2) : ℝ) ≤ sieveK * Real.log (2 * (R : ℝ)) := by
   by_cases hR : R = 0
-  · simp [hR, sieveK]
+  · simp_all
   have hRpos : (0 : ℝ) < R := by exact_mod_cast Nat.pos_of_ne_zero hR
   have hRone : (1 : ℝ) ≤ R := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hR
   have hlog2 : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
@@ -50,7 +49,6 @@ private theorem harmonic_log_bound (R : ℕ) :
     exact Real.log_le_log hRpos (by nlinarith)
   have hharm := harmonic_le_one_add_log (R ^ 2)
   have hpow : Real.log ((R ^ 2 : ℕ) : ℝ) = 2 * Real.log (R : ℝ) := by
-    rw [Nat.cast_pow, Real.log_pow]
     norm_num
   rw [hpow] at hharm
   have hone : (1 : ℝ) ≤ (Real.log 2)⁻¹ * Real.log (2 * (R : ℝ)) := by
@@ -75,7 +73,6 @@ theorem multiplicative_large_sieve_proof :
   classical
   refine ⟨sieveK, ?_, ?_⟩
   · have hlog2 : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
-    have hinv : (0 : ℝ) < (Real.log 2)⁻¹ := inv_pos.mpr hlog2
     dsimp [sieveK]
     positivity
   · intro N R a
@@ -128,7 +125,7 @@ theorem multiplicative_large_sieve_proof :
         sieveK * ((N : ℝ) + 1 + (R : ℝ) ^ 2 * Real.log (2 * (R : ℝ))) := by
       have hk1 : (1 : ℝ) ≤ sieveK := by
         have hlog2 : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
-        have hinv : (0 : ℝ) < (Real.log 2)⁻¹ := inv_pos.mpr hlog2
+        have hinv  := inv_pos.mpr hlog2
         dsimp [sieveK]
         nlinarith
       have hbase : (N : ℝ) + 1 ≤ sieveK * ((N : ℝ) + 1) := by

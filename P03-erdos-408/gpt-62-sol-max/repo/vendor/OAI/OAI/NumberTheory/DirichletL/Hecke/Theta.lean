@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open Filter Asymptotics Set MeasureTheory
-open scoped Topology BigOperators
+open scoped BigOperators
 namespace SevenEighths.HeckeTheta
 open EisensteinTheta
 
@@ -40,7 +40,6 @@ def finitePair {ι : Type*} [Fintype ι] (P : ι → WeakFEPair ℂ)
     apply Finset.sum_congr rfl
     intro i _
     rw [(P i).h_feq x hx, hk i]
-    simp only [smul_eq_mul]
     ring
   hf_top r := by
     have h := Asymptotics.IsBigO.fun_sum (s := Finset.univ)
@@ -158,12 +157,12 @@ def completed {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) : ℂ → ℂ :=
 
 theorem completed_differentiableAt {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs₀ : s ≠ 0) (hs₁ : s ≠ 1) : DifferentiableAt ℂ (completed w) s :=
-  (pair w).differentiableAt_Λ (Or.inl hs₀) (Or.inl (by simpa using hs₁))
+  (pair w).differentiableAt_Λ (Or.inl hs₀) (Or.inl (by simp_all))
 
 theorem pair_hasMellin {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs : 1 < s.re) :
     HasMellin (fun t => (pair w).f t - (pair w).f₀) s (completed w s) :=
-  (pair w).hasMellin (by simpa using hs)
+  (pair w).hasMellin (by simp_all)
 
 def latticeL {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : ℂ) : ℂ :=
   (Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹ * completed w s
@@ -176,13 +175,12 @@ theorem completed_differentiableAt_of_mean_zero {N : ℕ} [NeZero N]
 theorem latticeL_differentiableAt {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs₀ : s ≠ 0) (hs₁ : s ≠ 1 ∨ ∑ a, w a = 0) :
     DifferentiableAt ℂ (latticeL w) s := by
-  have hΛ : DifferentiableAt ℂ (completed w) s := by
-    rcases hs₁ with hs₁ | hw
-    · exact completed_differentiableAt w hs₀ hs₁
-    · exact completed_differentiableAt_of_mean_zero w hw hs₀
-  exact (((differentiable_id.const_cpow (Or.inl
+  refine (((differentiable_id.const_cpow (Or.inl
     (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).differentiableAt).mul
-      (Complex.differentiable_one_div_Gamma s)).mul hΛ
+      (Complex.differentiable_one_div_Gamma s)).mul ?_
+  rcases hs₁ with hs₁ | hw
+  · exact completed_differentiableAt w hs₀ hs₁
+  · exact completed_differentiableAt_of_mean_zero w hw hs₀
 
 def regularizedCompleted {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : ℂ) : ℂ :=
   (s - 1) * ((pair w).Λ₀ s - s⁻¹ * (pair w).f₀) + (pair w).g₀
@@ -200,7 +198,7 @@ theorem regularizedCompleted_eq {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ
   unfold regularizedCompleted completed WeakFEPair.Λ
   simp only [pair_k, Complex.ofReal_one, show (pair w).ε = 1 from rfl,
     smul_eq_mul, one_div]
-  have hsub : (1 : ℂ) - s ≠ 0 := sub_ne_zero.mpr hs₁.symm
+  have hsub  := sub_ne_zero.mpr hs₁.symm
   field_simp
   ring
 

@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentTwistedReflection
 open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
 open CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
 lemma polynomial_twisted_source (χ : Character) (W : ℝ→ℂ) (X t : ℝ) (hX : 0<X) :
     HeckeDyadic.polynomial χ false W X 0 (2*Real.pi*t)=

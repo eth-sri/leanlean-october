@@ -18,7 +18,6 @@ theorem weighted_l1_le_l2 {α : Type*} [Fintype α] (w : α → ℝ)
     (fun x _ => hw x) (fun x _ => mul_nonneg (hw x) (sq_nonneg _))
     (fun x _ => le_of_eq (by ring))
   rw [hprob, one_mul] at hc
-  have hn : 0 ≤ ∑ x, w x * ‖f x‖ := Finset.sum_nonneg fun x _ => mul_nonneg (hw x) (norm_nonneg _)
   have he : 0 ≤ ∑ x, w x * ‖f x‖ ^ 2 := Finset.sum_nonneg fun x _ => mul_nonneg (hw x) (sq_nonneg _)
   have hs := Real.sq_sqrt he
   nlinarith [Real.sqrt_nonneg (∑ x, w x * ‖f x‖ ^ 2)]

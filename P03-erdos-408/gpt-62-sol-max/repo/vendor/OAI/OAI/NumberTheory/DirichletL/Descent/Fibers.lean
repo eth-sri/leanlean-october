@@ -55,16 +55,14 @@ theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
           simpa only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] using
             Finset.sum_mul_sq_le_sq_mul_sq (active k) (fun _ => (1 : ℝ))
               (fun i => ‖w k i * F k i‖)
-    have hsum : (∑ i ∈ active k, ‖w k i * F k i‖ ^ 2) ≤
-        ∑ i ∈ active k, ‖F k i‖ ^ 2 := by
-      apply Finset.sum_le_sum
-      intro i hi
-      apply pow_le_pow_left₀ (norm_nonneg _)
-      rw [norm_mul]
-      exact mul_le_of_le_one_left (norm_nonneg _) (hw k hk i hi)
-    exact hb.trans (mul_le_mul (hcard k hk) hsum
+    refine hb.trans (mul_le_mul (hcard k hk) ?_
       (Finset.sum_nonneg fun _ _ => sq_nonneg _)
       (le_trans (Nat.cast_nonneg _) (hcard k hk)))
+    apply Finset.sum_le_sum
+    intro i hi
+    apply pow_le_pow_left₀ (norm_nonneg _)
+    rw [norm_mul]
+    exact mul_le_of_le_one_left (norm_nonneg _) (hw k hk i hi)
   calc
     _ ≤ ∑ k ∈ rows, C * ∑ i ∈ active k, ‖F k i‖ ^ 2 :=
       Finset.sum_le_sum hlocal

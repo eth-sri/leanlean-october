@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstExceptionalPrefactor
+public import OAI.NumberTheory.DirichletL.Moments.FirstScale
+public import Mathlib.Analysis.SpecialFunctions.Log.Base
 public import OAI.NumberTheory.DirichletL.Moments.FirstNonexceptionalPrefactor
 
 @[expose] public section
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstNonexceptionalPrefactor
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstExceptionalPrefactor
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
@@ -32,8 +33,8 @@ lemma nominal_equal_support (C D E:Ideal O)(hC:C≠0)(hD:D≠0)
     commonPart_of_equal_support D C hD hCD.symm]
 
 open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentSupportedCorrelation
+open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair HeckeFamily
+open CenteredMomentSupportedCorrelation
 
 end SevenEighths.CenteredMomentFirstExceptionalPrefactor
 

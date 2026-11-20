@@ -15,8 +15,6 @@ open Blueprint.Graph P4Probe
 
 noncomputable section
 
-local instance (priority := high) rowSiteDecEq'' (s M : ℕ) : DecidableEq (RowSite s M) :=
-  Classical.decEq _
 
 variable {P : PrimeGroups}
 
@@ -37,7 +35,7 @@ lemma sideFull_tail_norm (hSFC : SymmetricFullComponentTask) (hV : ∀ g, 0 < P.
   rw [tail_sideFull hV, idealVectorNorm_flat, idealVectorNorm_flat, flatTest_of,
     ← Real.sqrt_mul (pow_nonneg hβ _)]
   apply Real.sqrt_le_sqrt
-  let f : ProbeSample (rowAlpha P) (J + ell) → ℂ := fun x => F ((toRows P (J + ell)).symm x)
+  let f  := fun x => F ((toRows P (J + ell)).symm x)
   have hft : flatTest F = fun y => f (flattenRows.symm y) := rfl
   have hfun : productProbeProjection (flatW P (J + ell)) (tailSites J ell)
       (sideSites m block side) (flatTest F) =
@@ -51,15 +49,13 @@ lemma sideFull_tail_norm (hSFC : SymmetricFullComponentTask) (hV : ∀ g, 0 < P.
   rw [hfun, hft, flatSqNorm_eq (rowW P)
       (fullProbeComponent (rowW P) (tailSites J ell) (sideSites m block side) f),
     flatSqNorm_eq (rowW P) f, ← blockSet_card]
-  have hsym : ∀ (π : Fin (rowCount P) → Equiv.Perm (Fin (J + ell))) x,
-      f (fun g i => x g (π g i)) = f x := fun π x => rows_symmetric F hF π x
+  have hsym  := fun π x => rows_symmetric F hF π x
   exact hSFC (rowCount P) J ell m (rowAlpha P) (rowW P) (blockSet block side) f
     (rowW_nonneg hV) (rowW_sum hV) hm hell hmJ hcond hsym
 
 lemma probeChoice_card_le (m : ℕ) (block : P.BigGroup → Bool) :
     (Fintype.card (ProbeChoice P m block) : ℝ) ≤ (3 : ℝ) ^ (m * Fintype.card P.BigGroup) := by
-  have h1 : Fintype.card (ProbeChoice P m block) ≤
-      Fintype.card (P.BigGroup → Finset (Fin m)) :=
+  have h1  :=
     Fintype.card_le_of_injective (fun c : ProbeChoice P m block => c.val) Subtype.val_injective
   rw [Fintype.card_fun, Fintype.card_finset, Fintype.card_fin, ← pow_mul] at h1
   have h2 : 2 ^ (m * Fintype.card P.BigGroup) ≤ 3 ^ (m * Fintype.card P.BigGroup) :=
@@ -74,8 +70,6 @@ open Blueprint.Graph Erdos821.P4Cancel
 
 noncomputable section
 
-local instance (priority := high) rowSiteDecEqFinal (s M : ℕ) : DecidableEq (RowSite s M) :=
-  Classical.decEq _
 
 theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
   intro hSFC Fd P J m hj block Q h ξ θ ζ ε hV hm hcond hε hLC
@@ -106,11 +100,11 @@ theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
   set ng := idealVectorNorm P (J + Fd.ell) g with hng
   have hnF0 : 0 ≤ nF := Real.sqrt_nonneg _
   have hnG0 : 0 ≤ nG := Real.sqrt_nonneg _
-  have hFf : nF ≤ nf := symTest_norm_le hV f
-  have hGg : nG ≤ ng := symTest_norm_le hV g
-  have hsF : ∀ (π : P.BigPermutations (J + Fd.ell)) a, Fs (P.actBig π a) = Fs a :=
+  have hFf  := symTest_norm_le hV f
+  have hGg  := symTest_norm_le hV g
+  have hsF  :=
     fun π a => symTest_invariant f π a
-  have hsG : ∀ (π : P.BigPermutations (J + Fd.ell)) a, Gs (P.actBig π a) = Gs a :=
+  have hsG  :=
     fun π a => symTest_invariant g π a
   -- per-pattern comparison, summed over all probe choices
   have hcmp : ‖idealFullPair Kp Fs Gs - idealFullPair R Fs Gs +

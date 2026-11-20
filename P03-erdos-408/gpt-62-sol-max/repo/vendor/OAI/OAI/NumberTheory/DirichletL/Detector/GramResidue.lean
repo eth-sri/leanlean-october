@@ -26,7 +26,7 @@ theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal
     ∃(M : Id)(hM : M≠0),
       Ideal.absNorm M≤Ideal.absNorm (jointFixedModulus S hS)*
         Ideal.absNorm (Ideal.span {C})*Ideal.absNorm (Ideal.span {k}) ∧
-      letI : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient hM
+      letI :=Ring.HasFiniteQuotients.finiteQuotient hM
       letI : Fintype (O⧸M):=Fintype.ofFinite _
       ∀d : O,∃A : (O⧸M)→(O⧸M)→ℂ,
         (∀n₁ n₂,A (Ideal.Quotient.mk M n₁) (Ideal.Quotient.mk M n₂)=
@@ -46,7 +46,7 @@ theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal
   refine ⟨M,hM0,?_,?_⟩
   · rw [hMperiod]
     exact jointPeriod_norm_bound S hS C k hC hk0 u a b r hk P c hc hfac
-  · let : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient hM0
+  · let  := Ring.HasFiniteQuotients.finiteQuotient hM0
     let : Fintype (O⧸M) := Fintype.ofFinite _
     let : Finite (O⧸jointFixedModulus S hS*(∏i,P i)*J) :=
       Ring.HasFiniteQuotients.finiteQuotient (left_ne_zero_of_mul hM0)

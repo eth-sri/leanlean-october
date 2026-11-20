@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff SchwartzMap
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
@@ -54,11 +54,11 @@ theorem compensatedPhysicalProbe_low (η : HeckeFamily.Character) (S : Finset Id
     linarith
   refine ⟨C0,hC0,?_⟩
   filter_upwards [Filter.eventually_all.mpr he] with Z hZ
-  have hz1 : 1<Z := (hZ ∅).1
-  have hz : 0<Z := lt_trans zero_lt_one hz1
+  have hz1  := (hZ ∅).1
+  have hz  := lt_trans zero_lt_one hz1
   refine ⟨hz1,?_⟩
   intro T hT hout hdis hnorm
-  have hslots : ∀i n,n∈canonicalSlotSupport (T i)→n≠0 := fun i=>canonicalSlotSupport_nonzero _ (hT i)
+  have hslots  := fun i=>canonicalSlotSupport_nonzero _ (hT i)
   rw [hidentity η (calibrationForSet S hS) W0 W1
     (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW0)
     (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1)
@@ -99,7 +99,7 @@ theorem original_ray_compensatedPhysicalProbe_low (η : HeckeFamily.Character)
   refine ⟨C,hC,?_⟩
   filter_upwards [he,ProbeRaySlots.power_pools_eventually_disjoint R S (fun _=>a) (fun _=>b) ell
     (fun _=>ha) (fun _=>hab) hinj] with Z hZ hd
-  have hz : 0<Z := lt_trans zero_lt_one hZ.1
+  have hz  := lt_trans zero_lt_one hZ.1
   apply hZ.2 _ (fun i=>ProbeRaySlots.pool_supported R S hS a b (Z^(ell i)))
     (fun i P hP=>((ProbeRaySlots.mem_pool R S a b (Z^(ell i)) P).mp hP).2.2.2)
     (fun i j hij=>hd i j hij)

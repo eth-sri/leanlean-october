@@ -57,7 +57,7 @@ theorem abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → 
 /-- `ω(n) ≤ 4L` for `0 < n ≤ x²`. -/
 theorem card_primeFactors_le_four_mul_log {x : ℝ} (hx : 1 < x) {n : ℕ} (hn : 0 < n)
     (hnx : (n : ℝ) ≤ x ^ 2) : (n.primeFactors.card : ℝ) ≤ 4 * Real.log x := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hε : 0 < 1 / (2 * Real.log x) := by positivity
   have h := Sieve.card_primeFactors_gt_le hx hε hn hnx
   have hfilt : n.primeFactors.filter (fun p : ℕ => x ^ (1 / (2 * Real.log x)) < (p : ℝ)) =
@@ -169,9 +169,9 @@ theorem eventually_slot_ratio_le {c : ℝ} (hc : 0 < c) :
   simp only [Function.comp_apply] at h₁
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hT : 0 < Real.log L := Real.log_pos hL
+  have hT  := Real.log_pos hL
   have h20 : Real.log L ^ (20 : ℝ) = Real.log L ^ 20 := by
-    rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+    norm_num
   rw [Real.norm_of_nonneg (Real.rpow_nonneg hT.le _), Real.norm_of_nonneg
     (Real.rpow_nonneg hL0.le _), h20, Real.rpow_one] at h₁
   rw [div_div_eq_mul_div, div_le_iff₀ hc]

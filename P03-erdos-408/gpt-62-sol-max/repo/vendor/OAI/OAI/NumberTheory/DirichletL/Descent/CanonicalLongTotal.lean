@@ -49,20 +49,15 @@ theorem actual_complete_energy_from_live_bins (K:ℕ)(b L eps:ℝ)
   have hc:=hbnd (Z^N) Z (Real.rpow_nonneg hz.le _) hZ (Real.rpow_le_rpow_of_exponent_le hZ hN)
   have hh:Z^(eps/2)*Z^(eps/2)=Z^eps := by rw [←Real.rpow_add hz];congr 1;ring
   have hp:Z^(-V+eps/2)=Z^(-V)*Z^(eps/2):=Real.rpow_add hz _ _
-  have ha':2*Cw*Z^(-V+eps/2)*(cubeLogRange b (Z^N)).card*∑j∈cubeLogRange b (Z^N),
-      rowFamilyEnergy labels (fun I z=>markedReopenedCubeBin S D
-        (progressingCubes S D H₀ (activeCubeLogBin S D b (Z^N) j))
-        Ψ m (idealGenerator I) z W (Z^N) H₀ slots lists a) R≤
-      (2*Cw*Cb)*Z^eps*Elong := by
-    have h1:=mul_le_mul_of_nonneg_left ha (show 0≤2*Cw*Z^(eps/2) by positivity)
-    have h2:=mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hc hE)
-      (show 0≤2*Cw*Z^(eps/2) by positivity)
-    have ht:=h1.trans h2
-    rw [hp]
-    convert ht using 1
-    · ring
-    · rw [←hh];ring
-  exact hs.trans (add_le_add (mul_le_mul_of_nonneg_left hshort (by norm_num:0≤(2:ℝ))) ha')
+  refine hs.trans (add_le_add (mul_le_mul_of_nonneg_left hshort (by norm_num:0≤(2:ℝ))) ?_)
+  have h1:=mul_le_mul_of_nonneg_left ha (show 0≤2*Cw*Z^(eps/2) by positivity)
+  have h2:=mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hc hE)
+    (show 0≤2*Cw*Z^(eps/2) by positivity)
+  have ht:=h1.trans h2
+  rw [hp]
+  convert ht using 1
+  · ring
+  · rw [←hh];ring
 
 end SevenEighths.InverseMoment
 

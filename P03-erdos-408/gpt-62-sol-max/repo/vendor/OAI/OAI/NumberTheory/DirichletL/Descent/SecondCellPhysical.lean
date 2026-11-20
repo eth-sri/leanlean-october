@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.PriorityProfile
 public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 
@@ -8,12 +9,12 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight
+open SecondPassIntegration
 local notation "O" => ActualEisensteinCubic.O
 
 def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=
@@ -34,18 +35,18 @@ theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
     1≤Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d) ∧
     Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d)≤b := by
   let N:=secondCellColumnExponent Z X d
-  have hz:0<Z:=lt_trans zero_lt_one hZ
-  have hn:Z^N=X/(scales d 0*scales d 2):=second_cell_column_scale Z X d hZ hX
+  have hz:=lt_trans zero_lt_one hZ
+  have hn:=second_cell_column_scale Z X d hZ hX
   constructor
   · exact Real.one_le_rpow hZ.le (sub_nonneg.mpr (le_max_right _ _))
   · by_cases hN:0≤N
     · rw [max_eq_right hN,sub_self,Real.rpow_zero];exact hb
-    · have hN':N≤0:=le_of_not_ge hN
+    · have hN':=le_of_not_ge hN
       rw [max_eq_left hN',zero_sub,Real.rpow_neg hz.le,hn,inv_div]
       exact (div_le_iff₀ hX).mpr hsource
 
 theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn)) (d:BlockIndex)
     (hcell:∀x∈source,index p x=d) (hk:∀x∈source,x.second.frequency≠0) :
     ∀x∈source,∀i,InverseSecondChildWindows.actualOuterRatios p x

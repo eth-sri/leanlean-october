@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainUnmarkedState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMomentParameters
 open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open CenteredMomentDetectorDictionary
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
 open CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
 local notation "O" => HeckeFamily.O
@@ -40,7 +39,7 @@ theorem fixed_parameters (D:Parameters.HighData Δ):
   · linarith [D.t_pos]
   constructor <;> linarith
 
-lemma source_base_gt_one (_D:Parameters.HighData Δ)(Z d:ℝ)
+lemma source_base_gt_one(Z d:ℝ)
     (hZ:1<Z)(hd:(1/200:ℝ)≤d):1<Z^d :=
   Real.one_lt_rpow hZ (by linarith)
 
@@ -64,8 +63,8 @@ theorem actual_fiber_lengths (D:Parameters.HighData Δ)
 lemma width_bands (D:Parameters.HighData Δ)(m:ℝ)(hm:m≤23/40):
     1≤1+delta D ∧ 1+delta D≤2 ∧
     1≤max 1 (2*m)+delta D ∧ max 1 (2*m)+delta D≤2 := by
-  have hδ:0<delta D:=(fixed_parameters D).1
-  have hd:delta D≤1/4:=(fixed_parameters D).2.1
+  have hδ:=(fixed_parameters D).1
+  have hd:=(fixed_parameters D).2.1
   have hmax:max 1 (2*m)≤23/20:=max_le (by norm_num) (by linarith)
   have hlo:=le_max_left (1:ℝ) (2*m)
   constructor

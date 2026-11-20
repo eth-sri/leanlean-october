@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullBranches
 
 @[expose] public section
@@ -15,7 +16,7 @@ open InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriori
 open InverseWholePriorityRetainedSource InverseMomentGlobalPriorityTail
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
-variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)[OAI.PrincipalFamily.Maximal p](hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 def globalPriorityOriginalEnergy (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
@@ -38,7 +39,7 @@ def globalPriorityTailAggregate (hp:∀i,p i≠0)(hinj:Function.Injective (fun i
         m slots J lists a V X Y R y‖
 
 theorem global_priority_three_branches
-    (hp:∀i,p i≠0)(hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (hp:∀i,p i≠0)(hcop:OAI.PrincipalFamily.Coprime p)
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)(hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)

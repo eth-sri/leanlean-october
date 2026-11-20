@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GramWindowMobius
 public import OAI.NumberTheory.DirichletL.Detector.GramPhysicalScale
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPhysicalScale
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
@@ -20,7 +21,7 @@ variable {ι : Type*} [Fintype ι]
 
 def commonResidualScale (C : SupportedIdeal) (Y : ℝ) : ℝ := Y/Ideal.absNorm C.val
 lemma commonResidualScale_pos (C : SupportedIdeal) (Y : ℝ) (hY : 0<Y) : 0<commonResidualScale C Y :=
-  div_pos hY (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr C.property.1))
+  div_pos hY (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (C.property.1))
 lemma common_column_ratio (C I : SupportedIdeal) (Y : ℝ) :
     (Ideal.absNorm (supportedIdealProduct C I).val:ℝ)/Y=(Ideal.absNorm I.val:ℝ)/commonResidualScale C Y := by
   rw [supported_dilation_norm,Nat.cast_mul,commonResidualScale,div_div_eq_mul_div]
@@ -65,7 +66,7 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
           shellProfile W v U (frequencyScale C k Y Q) (‖eisEmbedding n‖^2/(N/Ideal.absNorm D))
             (‖eisEmbedding m‖^2/(N/Ideal.absNorm D)) := by
   dsimp only
-  have hpc : λ₀^2∣primaryGenerator C.val-1 :=
+  have hpc  :=
     (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).2
   rw [←original_window_mobius_lattice S hS hbad σ (primaryGenerator C.val) k hpc
     u a b r hr P hg c W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)
@@ -75,10 +76,10 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
   apply Finset.sum_congr rfl
   intro J hJ
   split_ifs with hIJ
-  · have hni : Supported (Ideal.span {primaryGenerator I.val}) := (supported_span_primaryGenerator_iff _).mpr I.property
-    have hnj : Supported (Ideal.span {primaryGenerator J.val}) := (supported_span_primaryGenerator_iff _).mpr J.property
-    have hpi : λ₀^2∣primaryGenerator I.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2
-    have hpj : λ₀^2∣primaryGenerator J.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).2
+  · have hni  := (supported_span_primaryGenerator_iff _).mpr I.property
+    have hnj  := (supported_span_primaryGenerator_iff _).mpr J.property
+    have hpi  := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2
+    have hpj  := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).2
     have hij : IsCoprime (primaryGenerator I.val) (primaryGenerator J.val) := by
       apply (Ideal.isCoprime_span_singleton_iff _ _).mp
       simpa only [(primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).1,

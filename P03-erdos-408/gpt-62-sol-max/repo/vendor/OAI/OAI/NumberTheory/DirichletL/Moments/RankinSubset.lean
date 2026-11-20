@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.RankinCount
 
 @[expose] public section
@@ -21,7 +22,7 @@ theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
   obtain ⟨D,hD,hsub⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C*D,mul_pos hC hD,?_⟩
   intro Q hQ S hS hs X hX hN
-  have hf : ∀ I ∈ S,primeSupport I ∈ (primeSupport Q).powerset :=
+  have hf  :=
     fun I hI => Finset.mem_powerset.mpr (hs I hI)
   have he := Finset.card_eq_sum_card_fiberwise hf
   have hfiber (R : Finset (Ideal O)) (hR : R ∈ (primeSupport Q).powerset) :
@@ -75,7 +76,7 @@ theorem supported_power_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     intro v hv
     exact Finset.mem_product.mpr ⟨Finset.mem_image_of_mem _ hv,Finset.mem_image_of_mem _ hv⟩
   have hn : (0:ℝ) < Ideal.absNorm Q := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hQ)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hQ)
   calc
     _ ≤ ((S.image Prod.fst).card:ℝ)*((S.image Prod.snd).card:ℝ) := by
       exact_mod_cast (Finset.card_le_card hin).trans_eq (Finset.card_product _ _)

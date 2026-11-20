@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GlobalCorrection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
@@ -40,11 +40,8 @@ theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
       Complex.ofReal_natCast,div_eq_mul_inv,mul_inv_rev,inv_inv]
     rw [show -(6*z)=(-6:ℂ)*z by ring]
     ring
-  have he' : HasProd (fun P : {P : PrimeIdeal // P.val∉S}=>idealHighLocalFactor η P.val.val x w z)
-      (LFunction (fixedSourcePrincipal S hS) (6*z) * LFunction (fixedSourcePrincipal S hS) w /
-        LFunction (η.excludePrimes S hS) x * globalClosedCorrection η S x w z) := by
-    simpa only [hlocal,div_eq_mul_inv,globalClosedCorrection] using he
-  exact (excludedIdealHighSeries_hasProd_outside S hS η x w z hx hw hz).unique he'
+  refine (excludedIdealHighSeries_hasProd_outside S hS η x w z hx hw hz).unique ?_
+  simpa only [hlocal,div_eq_mul_inv,globalClosedCorrection] using he
 
 end SevenEighths.ProbePhysical
 end

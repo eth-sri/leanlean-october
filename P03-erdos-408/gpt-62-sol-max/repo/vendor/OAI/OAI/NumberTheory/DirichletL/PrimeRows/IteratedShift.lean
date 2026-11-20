@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalShift
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalSplit
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -28,34 +29,33 @@ theorem rowIntegral_w_shift {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (l : ℝ) (hl : (1/2:ℝ)≤l) (hl3 : l≤3) :
-    Integrable (shiftedRowInner S hS hmax P hPS η u W0 W1 X Y Z l) (volume.prod volume) ∧
+    Integrable (shiftedRowInner S hS hmax P hPS η u mw.left mw.right X Y Z l) (volume.prod volume) ∧
     rowIntegral η S (calibrationForSet S hmax)
-      (fun i=>CompletedGauss.primaryGenerator (P i).val) W0 W1 X Y Z u=
+      (fun i=>CompletedGauss.primaryGenerator (P i).val) mw.left mw.right X Y Z u=
       ((1/(2*Real.pi):ℝ):ℂ)^3*
-        ∫q : ℝ×ℝ,shiftedRowInner S hS hmax P hPS η u W0 W1 X Y Z l q ∂(volume.prod volume) := by
+        ∫q : ℝ×ℝ,shiftedRowInner S hS hmax P hPS η u mw.left mw.right X Y Z l q ∂(volume.prod volume) := by
   let p : Fin K→O := fun i=>CompletedGauss.primaryGenerator (P i).val
   have hp : ∀i,p i≠0 := fun i=>(supported_primeGenerator_prime (P i)
     (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero
   let e : FreeRow→NonzeroFrequency := fun u=>⟨u.val,u.property.1⟩
   have he : Function.Injective e := fun a b h=>Subtype.ext (congrArg (fun v : NonzeroFrequency=>v.val) h)
   have hF := compensatedRows_counting_product_integrable e he η S (calibrationForSet S hmax) p hp
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
-  have hi : Integrable (compensatedRowOnLines η S (calibrationForSet S hmax) p W0 W1 X Y Z (e u))
+    mw X Y Z hX hY hZ
+  have hi : Integrable (compensatedRowOnLines η S (calibrationForSet S hmax) p mw.left mw.right X Y Z (e u))
       heightMeasure := (Measure.ae_count_iff.mp hF.prod_right_ae) u
   have heq (q : ℝ×ℝ) :
-      (∫t : ℝ,compensatedRowOnLines η S (calibrationForSet S hmax) p W0 W1 X Y Z (e u) (q,t))=
-        shiftedRowInner S hS hmax P hPS η u W0 W1 X Y Z l q := by
-    have hs := nonprincipal_w_integral_eq eps heps S hS hfirst hmax P hPS η u hu W0 W1
-      a1 b1 ha1 hW1 X Y Z hY ((3:ℂ)+q.1*I) ((2:ℂ)+q.2*I) l 3 hl3 hl
+      (∫t : ℝ,compensatedRowOnLines η S (calibrationForSet S hmax) p mw.left mw.right X Y Z (e u) (q,t))=
+        shiftedRowInner S hS hmax P hPS η u mw.left mw.right X Y Z l q := by
+    have hs := nonprincipal_w_integral_eq eps heps S hS hfirst hmax P hPS η u hu mw.left mw.right
+      mw.rightLo mw.rightHi mw.right_pos mw.right_support X Y Z hY ((3:ℂ)+q.1*I) ((2:ℂ)+q.2*I) l 3 hl3 hl
       (by norm_num) (by norm_num) (by norm_num;linarith)
     unfold shiftedRowInner
     rw [hs]
     apply integral_congr_ae
     exact Filter.Eventually.of_forall (fun t=>(continuedPhysicalRowKernel_initial S hS hmax P hP hPS
-      η u W0 W1 X Y Z (q,t)).symm)
+      η u mw.left mw.right X Y Z (q,t)).symm)
   refine ⟨?_,?_⟩
   · exact hi.integral_prod_left.congr (Filter.Eventually.of_forall heq)
   · unfold rowIntegral

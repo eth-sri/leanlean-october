@@ -8,15 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -42,7 +34,7 @@ theorem coordinate_norm_eq_mul_conjO (p : O) :
     ((q (coords p) : ℤ) : O) = p * conjO p := by
   let a := (coords p).1
   let b := (coords p).2
-  have hp : p = eval a b := (eval_coords p).symm
+  have hp  := (eval_coords p).symm
   symm
   calc
     p * conjO p = eval a b * eval (a - b) (-b) := by
@@ -72,58 +64,8 @@ end
 
 section
 
-theorem prime_sixth_row_approx_ideal_norm
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset O) (support : O → Finset ι)
-    (weight : O → ℂ) (p : O) (hp : p ≠ 0)
-    (hprime : (Ideal.span {p} : Ideal O).IsMaximal)
-    (D : ℕ)
-    (hsupport : ∀ n ∈ columns, ∀ i ∈ support n, n ∈ P i)
-    (hcolnorm : ∀ n ∈ columns,
-      Ideal.absNorm (Ideal.span {n}) ≤ D)
-    (hweight : ∀ n ∈ columns, ‖weight n‖ ≤ 1) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (p ^ 6))‖ ≤
-      (64 * (D / Ideal.absNorm (Ideal.span {p}) + 1) : ℕ) := by
-  have hcol : ∀ n ∈ columns, ShortDraftLatticeCount.qNat n ≤ D := by
-    intro n hn
-    rw [qNat_eq_absNorm_span]
-    exact hcolnorm n hn
-  simpa only [qNat_eq_absNorm_span] using
-    (prime_sixth_row_approx_maximal P hgood columns support weight p hp
-      hprime D hsupport hcol hweight)
 
-theorem sixth_power_eq_implies_same_prime_ideal
-    (p q : O)
-    (hp : (Ideal.span {p} : Ideal O).IsMaximal)
-    (hq : (Ideal.span {q} : Ideal O).IsMaximal)
-    (h : p ^ 6 = q ^ 6) :
-    (Ideal.span {p} : Ideal O) = Ideal.span {q} := by
-  have hq6 : q ^ 6 ∈ Ideal.span {q} :=
-    Ideal.mem_span_singleton.mpr (dvd_pow_self q (by decide))
-  have hp6 : p ^ 6 ∈ Ideal.span {q} := by rw [h]; exact hq6
-  have hpmem : p ∈ Ideal.span {q} :=
-    hq.isPrime.mem_of_pow_mem 6 hp6
-  have hle : (Ideal.span {p} : Ideal O) ≤ Ideal.span {q} :=
-    (Ideal.span_singleton_le_iff_mem _).mpr hpmem
-  exact hp.eq_of_le hq.ne_top hle
 
-theorem sixth_power_rows_injective
-    {ι : Type*} (S : Finset ι) (P : ι → Ideal O) (p : ι → O)
-    (hprime : ∀ i ∈ S, (P i).IsMaximal)
-    (hgen : ∀ i ∈ S, P i = Ideal.span {p i})
-    (hinj : Set.InjOn P (S : Set ι)) :
-    Set.InjOn (fun i => p i ^ 6) (S : Set ι) := by
-  intro i hi j hj heq
-  have hsame : Ideal.span {p i} = (Ideal.span {p j} : Ideal O) :=
-    sixth_power_eq_implies_same_prime_ideal (p i) (p j)
-      (hgen i hi ▸ hprime i hi)
-      (hgen j hj ▸ hprime j hj) heq
-  apply hinj hi hj
-  rw [hgen i hi, hgen j hj]
-  exact hsame
 
 open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
 
@@ -136,7 +78,7 @@ theorem rational_modulus_card (m : ℕ) (_hm : m ≠ 0) :
   calc
     Nat.card (O ⧸ Ideal.span {(m : O)}) =
         Ideal.absNorm (Ideal.span {(m : O)}) := by
-      rw [Ideal.absNorm_apply, Submodule.cardQuot_apply]
+      rfl
     _ = (Algebra.norm ℤ (m : O)).natAbs :=
       Ideal.absNorm_span_singleton (m : O)
     _ = m ^ 2 := by rw [hnorm]; simp
@@ -148,9 +90,9 @@ private theorem mk_eval_congr_mod (m : ℕ) (a b c d : ℤ)
       Ideal.Quotient.mk (Ideal.span {(m : O)})
         (ActualEisensteinCoordinates.eval c d) := by
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr
-  have hda : (m : ℤ) ∣ a - c :=
+  have hda  :=
     (ZMod.intCast_eq_intCast_iff_dvd_sub c a m).mp ha.symm
-  have hdb : (m : ℤ) ∣ b - d :=
+  have hdb  :=
     (ZMod.intCast_eq_intCast_iff_dvd_sub d b m).mp hb.symm
   obtain ⟨r, hr⟩ := hda
   obtain ⟨s, hs⟩ := hdb
@@ -206,11 +148,6 @@ theorem eisEmbedding_eval (a b : ℤ) :
     (a + b * EisensteinEmbedding.pb.gen : O) = _
   exact EisensteinEmbedding.embedding_apply_ab omega3 omega3_sq a b
 
-theorem rationalCoordEquiv_apply (m : ℕ) (hm : m ≠ 0)
-    (a b : ZMod m) :
-    rationalCoordEquiv m hm (a,b) =
-      Ideal.Quotient.mk (Ideal.span {(m : O)})
-        (ActualEisensteinCoordinates.eval (ZMod.cast a) (ZMod.cast b)) := rfl
 
 end
 
@@ -224,7 +161,7 @@ theorem cubic_roots_reduce_injective (P : Ideal O) [P.IsMaximal]
   obtain ⟨j, hj, rfl⟩ := omega_primitive.eq_pow_of_pow_eq_one hy
   have hij : i = j := by
     apply (omega_reduced_primitive P hgood).pow_inj hi hj
-    simpa only [map_pow] using hxy
+    assumption
   rw [hij]
 
 theorem cubicChar_omega (P : Ideal O) [P.IsMaximal]
@@ -261,7 +198,7 @@ theorem breveE_int_trace_div (q u v : ℤ) (_hq : q ≠ 0) :
     ShortDraftTrace.omega_conj u v
   have hL : ((u : ℂ) + (v : ℂ) * omega3) / eisLam +
       star (((u : ℂ) + (v : ℂ) * omega3) / eisLam) = (v : ℂ) := by
-    simpa only [eisLam, Complex.star_def] using htrace
+    assumption
   change Complex.exp (2 * Real.pi * Complex.I *
     (((((u : ℂ) + (v : ℂ) * omega3) / eisLam) / q) +
       star (((((u : ℂ) + (v : ℂ) * omega3) / eisLam) / q)))) = _
@@ -300,18 +237,16 @@ theorem breveE_quadratic_coordinate (a b x y : ℤ)
     exact_mod_cast hq
   have hc : c ≠ 0 := by
     intro hc
-    apply hqC
-    rw [← hnorm, hc, zero_mul]
+    simp_all
   have hcb : cb ≠ 0 := by
     intro hcb
-    apply hqC
-    rw [← hnorm, hcb, mul_zero]
+    simp_all
   have hdiv : z ^ 2 / (c * eisLam) =
       ((z ^ 2 * cb) / eisLam) / q := by
     rw [← hnorm]
     field_simp [hc, hcb, eisLam_ne_zero]
   change ShortDraftTrace.breveE (z ^ 2 / (c * eisLam)) = _
-  rw [hdiv, hnum, breveE_int_trace_div q U V (by simpa [q] using hq)]
+  rw [hdiv, hnum, breveE_int_trace_div q U V (by assumption)]
 
 end
 

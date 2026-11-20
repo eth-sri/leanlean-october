@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Character
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
 local notation "O" => HeckeFamily.O
@@ -23,7 +23,7 @@ theorem rowCharacter_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   apply LFunction_hasProd_outside (rowCharacter S hS u) S (idealRowHom u.val) _ s hs
   intro P
   rw [rowCharacter_coeff S hS hbad,highExclusion_prime]
-  split_ifs <;> simp only [zero_mul,one_mul]
+  simp
 
 theorem targetRow_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow)

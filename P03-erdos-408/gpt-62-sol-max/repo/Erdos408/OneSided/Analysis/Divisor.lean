@@ -92,11 +92,11 @@ theorem card_divisors_sq_le (n : ℕ) : n.divisors.card ^ 2 ≤ (Nat.finMulAntid
     have h₁ := congrFun h 1
     have h₂ := congrFun h 2
     simp only [Matrix.cons_val] at h₀ h₁ h₂
-    have hd : d = d' :=
+    have hd  :=
       calc d = d.gcd e * (d / d.gcd e) := (Nat.mul_div_cancel' (Nat.gcd_dvd_left d e)).symm
         _ = d'.gcd e' * (d' / d'.gcd e') := by rw [h₁, h₀]
         _ = d' := Nat.mul_div_cancel' (Nat.gcd_dvd_left d' e')
-    have he : e = e' :=
+    have he  :=
       calc e = d.gcd e * (e / d.gcd e) := (Nat.mul_div_cancel' (Nat.gcd_dvd_right d e)).symm
         _ = d'.gcd e' * (e' / d'.gcd e') := by rw [h₂, h₀]
         _ = e' := Nat.mul_div_cancel' (Nat.gcd_dvd_right d' e')
@@ -110,8 +110,7 @@ theorem removeNth_mem_of_mem_finMulAntidiag {n Q : ℕ} (hnQ : n ≤ Q) {f : Fin
       f i * ∏ j, Fin.removeNth i f j = n := by
   rw [Nat.mem_finMulAntidiag] at hf
   have hprod : f i * ∏ j, Fin.removeNth i f j = n := by
-    rw [← hf.1, Fin.prod_univ_succAbove _ i]
-    rfl
+    simp_all
   refine ⟨Fintype.mem_piFinset.2 fun j => ?_, hprod⟩
   -- each factor divides `n ≠ 0`
   have hdvd : f (i.succAbove j) ∣ n := hf.1 ▸ dvd_prod_of_mem f (mem_univ _)
@@ -189,9 +188,7 @@ theorem sum_card_divisors_sq_le (Y : ℕ) :
   -- swap the sums and count the multiples of `t₀ t₁ t₂`
   have h₂ : ∑ n ∈ Icc 1 Y, #{t ∈ B | ∏ i, t i ∣ n} = ∑ t ∈ B, Y / ∏ i, t i := by
     have hIcc : Icc 1 Y = Ioc 0 Y := by
-      ext n
-      simp only [mem_Icc, mem_Ioc]
-      omega
+      rfl
     simp only [card_filter]
     rw [sum_comm]
     refine sum_congr rfl fun t _ => ?_
@@ -311,7 +308,7 @@ theorem natCast_cpow_mul_I_mul_conj {m n : ℕ} (hm : m ≠ 0) (hn : n ≠ 0) (t
 /-- `|∫_a^b exp(i θ t) dt| ≤ 2 / |θ|` for `θ ≠ 0`. -/
 theorem norm_integral_exp_mul_I_le {θ : ℝ} (hθ : θ ≠ 0) (a b : ℝ) :
     ‖∫ t in a..b, Complex.exp ((θ : ℂ) * Complex.I * t)‖ ≤ 2 / |θ| := by
-  have hc : (θ : ℂ) * Complex.I ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.2 hθ) Complex.I_ne_zero
+  have hc  := mul_ne_zero (Complex.ofReal_ne_zero.2 hθ) Complex.I_ne_zero
   rw [integral_exp_mul_complex hc, norm_div, norm_mul, Complex.norm_I, mul_one,
     Complex.norm_real, Real.norm_eq_abs]
   gcongr
@@ -415,7 +412,7 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
     rw [mem_Icc] at hm hn
     have hmn' : (m : ℝ) ≠ n := by exact_mod_cast hmn
     have hN : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
-    have hd : 0 < |(m : ℝ) - n| / N := div_pos (abs_pos.2 (sub_ne_zero.2 hmn')) hN
+    have hd  := div_pos (abs_pos.2 (sub_ne_zero.2 hmn')) hN
     have hlog := abs_sub_div_le_abs_log_sub hm.1 hn.1 hm.2 hn.2
     -- `|J m n| ≤ 2 / |log m - log n| ≤ 2 N / |m - n|`
     have hJ : ‖J m n‖ ≤ 2 * N * |(m : ℝ) - n|⁻¹ :=
@@ -426,7 +423,7 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
     rw [ite_eq_right hmn, zero_add]
     calc (c m * (starRingEnd ℂ) (c n) * J m n).re ≤ ‖c m * (starRingEnd ℂ) (c n) * J m n‖ :=
           Complex.re_le_norm _
-      _ = ‖c m‖ * ‖c n‖ * ‖J m n‖ := by rw [norm_mul, norm_mul, Complex.norm_conj]
+      _ = ‖c m‖ * ‖c n‖ * ‖J m n‖ := by simp
       _ ≤ ‖c m‖ * ‖c n‖ * (2 * N * |(m : ℝ) - n|⁻¹) := by gcongr
       _ = N * (2 * ‖c m‖ * ‖c n‖) * |(m : ℝ) - n|⁻¹ := by ring
       _ ≤ N * (‖c m‖ ^ 2 + ‖c n‖ ^ 2) * |(m : ℝ) - n|⁻¹ := by
@@ -444,7 +441,6 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
     refine sum_congr rfl fun m _ => ?_
     rw [mul_sum, mul_sum, mul_sum]
     exact sum_congr rfl fun n _ => by ring
-  have hA : 0 ≤ ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
   rw [hexp]
   calc ∑ m ∈ Icc 1 N, ∑ n ∈ Icc 1 N, (c m * (starRingEnd ℂ) (c n) * J m n).re
       ≤ ∑ m ∈ Icc 1 N, ∑ n ∈ Icc 1 N, ((if m = n then (b - a) * ‖c m‖ ^ 2 else 0) +
@@ -464,7 +460,6 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
         rw [← sum_mul]
         linarith
 
-
 /-- Gallagher's Sobolev inequality on a unit interval:
 `|f(t)|² ≤ ∫_{t - 1/2}^{t + 1/2} (2 |f|² + |f'|²)`. By the fundamental theorem of calculus,
 `|f(t)|² ≤ |f(x)|² + ∫ |(|f|²)'|` for every `x` in the interval, and
@@ -472,8 +467,8 @@ theorem integral_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
 theorem sq_norm_le_integral {f f' : ℝ → ℂ} (hf : ∀ s, HasDerivAt f (f' s) s)
     (hf' : Continuous f') (t : ℝ) :
     ‖f t‖ ^ 2 ≤ ∫ s in (t - 1 / 2)..(t + 1 / 2), (2 * ‖f s‖ ^ 2 + ‖f' s‖ ^ 2) := by
-  have hfc : Continuous f := continuous_iff_continuousAt.2 fun s => (hf s).continuousAt
-  have hg : ∀ s, HasDerivAt (fun s => ‖f s‖ ^ 2) (2 * inner ℝ (f s) (f' s)) s :=
+  have hfc  := continuous_iff_continuousAt.2 fun s => (hf s).continuousAt
+  have hg  :=
     fun s => (hf s).norm_sq
   have hgc : Continuous fun s => 2 * inner ℝ (f s) (f' s) := by fun_prop
   have hhc : Continuous fun s => ‖f s‖ ^ 2 + ‖f' s‖ ^ 2 := by fun_prop
@@ -576,7 +571,6 @@ theorem sum_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : 
         funext fun t => by rw [hterm n hn t]
       rw [e, hterm n hn s]
       convert h' using 1
-      simp only [c']
       ring
     convert HasDerivAt.sum h using 1
     ext t
@@ -585,18 +579,17 @@ theorem sum_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : 
     refine continuous_finsetSum _ fun n hn => ?_
     simp_rw [hterm n hn]
     fun_prop
-  have hPc : Continuous P := continuous_iff_continuousAt.2 fun s => (hP s).continuousAt
-  have hlogN : 0 ≤ Real.log N := Real.log_natCast_nonneg N
+  have hPc  := continuous_iff_continuousAt.2 fun s => (hP s).continuousAt
+  have hlogN  := Real.log_natCast_nonneg N
   have hA : 0 ≤ ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
   have hL : 0 ≤ b - a + 1 + 8 * N * (1 + Real.log N) := by
-    have := sub_nonneg.2 hab
     positivity
   -- `∑ |c'_n|² ≤ log² N ∑ |c_n|²`
   have hA' : ∑ n ∈ Icc 1 N, ‖c' n‖ ^ 2 ≤ Real.log N ^ 2 * ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 := by
     rw [mul_sum]
     refine sum_le_sum fun n hn => ?_
     rw [mem_Icc] at hn
-    have h₀ : 0 ≤ Real.log n := Real.log_natCast_nonneg n
+    have h₀  := Real.log_natCast_nonneg n
     have h₁ : Real.log n ≤ Real.log N :=
       Real.log_le_log (by exact_mod_cast hn.1) (by exact_mod_cast hn.2)
     simp only [c', norm_mul, Complex.norm_I, mul_one, Complex.norm_real, Real.norm_eq_abs,
@@ -623,8 +616,113 @@ theorem sum_norm_dirichlet_sq_le (N : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : 
         exact add_le_add (mul_le_mul_of_nonneg_left hint₁ (by norm_num))
           (hint₂.trans (mul_le_mul_of_nonneg_left hA' hL))
     _ ≤ _ := by
-        have h : 0 ≤ (b - a + 1 + 8 * N * (1 + Real.log N)) * ∑ n ∈ Icc 1 N, ‖c n‖ ^ 2 *
-            Real.log N := by positivity
         nlinarith [mul_nonneg hL hA]
+
+/-- The duality (`TT*`) bound: if each row of the Gram matrix
+`G_{ii'} = ∑_n e_i(n) \overline{e_{i'}(n)}` has absolute sum at most `R`, then
+`∑_i |∑_n c_n e_i(n)|² ≤ R ∑_n |c_n|²`. -/
+theorem sum_norm_sq_le_of_gram_rowSum {ι : Type*} (I : Finset ι) (S : Finset ℕ)
+    (e : ι → ℕ → ℂ) (c : ℕ → ℂ) {R : ℝ} (hR0 : 0 ≤ R)
+    (hR : ∀ i ∈ I, ∑ i' ∈ I, ‖∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)‖ ≤ R) :
+    ∑ i ∈ I, ‖∑ n ∈ S, c n * e i n‖ ^ 2 ≤ R * ∑ n ∈ S, ‖c n‖ ^ 2 := by
+  set b : ι → ℂ := fun i => ∑ n ∈ S, c n * e i n
+  set G : ι → ι → ℂ := fun i i' => ∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)
+  set v : ℕ → ℂ := fun n => ∑ i ∈ I, starRingEnd ℂ (b i) * e i n
+  set Q := ∑ i ∈ I, ‖b i‖ ^ 2
+  have hQ0 : 0 ≤ Q := sum_nonneg fun i _ => by positivity
+  have hc0 : 0 ≤ ∑ n ∈ S, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
+  -- `Q = ∑_n c_n v_n`
+  have hQv : (Q : ℂ) = ∑ n ∈ S, c n * v n := by
+    simp only [Q, v, Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', mul_sum]
+    rw [sum_comm]
+    refine sum_congr rfl fun i _ => ?_
+    simp only [b, mul_sum]
+    exact sum_congr rfl fun n _ => by ring
+  -- `∑_n |v_n|² = ∑_{i, i'} \bar b_i b_{i'} G_{ii'}`
+  have hvG : ((∑ n ∈ S, ‖v n‖ ^ 2 : ℝ) : ℂ) =
+      ∑ i ∈ I, ∑ i' ∈ I, starRingEnd ℂ (b i) * b i' * G i i' := by
+    simp only [Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', v, G, map_sum,
+      map_mul, Complex.conj_conj, sum_mul, mul_sum]
+    rw [sum_comm]
+    refine sum_congr rfl fun i _ => ?_
+    rw [sum_comm]
+    exact sum_congr rfl fun i' _ => sum_congr rfl fun n _ => by ring
+  -- the Gram matrix is Hermitian
+  have hGsymm : ∀ i i', ‖G i' i‖ = ‖G i i'‖ := by
+    intro i i'
+    have h : G i' i = starRingEnd ℂ (G i i') := by
+      simp only [G, map_sum, map_mul, Complex.conj_conj]
+      exact sum_congr rfl fun n _ => mul_comm _ _
+    rw [h, Complex.norm_conj]
+  -- `∑_n |v_n|² ≤ R Q`, by `2|ab| ≤ |a|² + |b|²`
+  have hv : ∑ n ∈ S, ‖v n‖ ^ 2 ≤ R * Q := by
+    have h₁ : ∑ n ∈ S, ‖v n‖ ^ 2 ≤
+        ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 := by
+      have h := congrArg norm hvG
+      rw [Complex.norm_real, Real.norm_of_nonneg (sum_nonneg fun n _ => by positivity)] at h
+      rw [h]
+      refine (norm_sum_le _ _).trans (sum_le_sum fun i _ => (norm_sum_le _ _).trans
+        (sum_le_sum fun i' _ => ?_))
+      rw [norm_mul, norm_mul, Complex.norm_conj, hGsymm]
+      nlinarith [mul_nonneg (sq_nonneg (‖b i‖ - ‖b i'‖)) (norm_nonneg (G i' i))]
+    have h₂ : ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 =
+        ∑ i ∈ I, ‖b i‖ ^ 2 * ∑ i' ∈ I, ‖G i i'‖ := by
+      simp only [add_div, sum_add_distrib]
+      rw [sum_comm (f := fun i i' => ‖b i'‖ ^ 2 * ‖G i' i‖ / 2), ← sum_add_distrib]
+      refine sum_congr rfl fun i _ => ?_
+      rw [← sum_add_distrib, mul_sum]
+      exact sum_congr rfl fun i' _ => by ring
+    rw [h₂] at h₁
+    refine h₁.trans ?_
+    rw [mul_comm R, sum_mul]
+    exact sum_le_sum fun i hi => mul_le_mul_of_nonneg_left (hR i hi) (by positivity)
+  -- `Q² ≤ (∑ |c_n|²)(∑ |v_n|²)`, by Cauchy–Schwarz
+  have hQ : Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * (R * Q) := by
+    have h : Q ≤ ∑ n ∈ S, ‖c n‖ * ‖v n‖ := by
+      have := congrArg norm hQv
+      rw [Complex.norm_real, Real.norm_of_nonneg hQ0] at this
+      rw [this]
+      exact (norm_sum_le _ _).trans_eq (sum_congr rfl fun n _ => norm_mul _ _)
+    calc Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ * ‖v n‖) ^ 2 := pow_le_pow_left₀ hQ0 h 2
+      _ ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * ∑ n ∈ S, ‖v n‖ ^ 2 := sum_mul_sq_le_sq_mul_sq _ _ _
+      _ ≤ _ := mul_le_mul_of_nonneg_left hv hc0
+  rcases hQ0.eq_or_lt with h | h
+  · rw [← h]
+    positivity
+  · nlinarith
+
+/-- `∑_{m' ∈ S} 1/|m - m'| ≤ 2 (1 + log N)` for `S` and `m` in an integer interval of
+length `N`, the term `m' = m` being `0`. -/
+theorem sum_inv_abs_intCast_sub_le {S : Finset ℤ} {lo hi m : ℤ} (hS : S ⊆ Icc lo hi)
+    (hm : m ∈ Icc lo hi) :
+    ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ ≤ 2 * (1 + Real.log (hi - lo + 1).toNat) := by
+  -- shift `[lo, hi]` to `[1, N]`
+  set f : ℤ → ℕ := fun l => (l - lo + 1).toNat
+  have hf : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℤ) = l - lo + 1 := fun l hl =>
+    Int.toNat_of_nonneg (by rw [mem_Icc] at hl; omega)
+  have hfmem : ∀ l ∈ Icc lo hi, f l ∈ Icc 1 (hi - lo + 1).toNat := by
+    intro l hl
+    have h := hf l hl
+    rw [mem_Icc] at hl ⊢
+    omega
+  have hcast : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℝ) = ((l - lo + 1 : ℤ) : ℝ) := fun l hl => by
+    rw [← hf l hl, Int.cast_natCast]
+  have hinj : Set.InjOn f S := fun l hl l' hl' h => by
+    have h₁ := hf l (hS hl)
+    have h₂ := hf l' (hS hl')
+    rw [h] at h₁
+    omega
+  calc ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ = ∑ m' ∈ S, |((f m : ℕ) : ℝ) - f m'|⁻¹ := by
+        refine sum_congr rfl fun m' hm' => ?_
+        rw [hcast m hm, hcast m' (hS hm')]
+        push_cast
+        ring_nf
+    _ = ∑ n ∈ S.image f, |((f m : ℕ) : ℝ) - n|⁻¹ :=
+        (sum_image (f := fun n : ℕ => |((f m : ℕ) : ℝ) - n|⁻¹) hinj).symm
+    _ ≤ ∑ n ∈ Icc 1 (hi - lo + 1).toNat, |((f m : ℕ) : ℝ) - n|⁻¹ := by
+        refine sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => by positivity
+        obtain ⟨l, hl, rfl⟩ := mem_image.1 hn
+        exact hfmem l (hS hl)
+    _ ≤ _ := sum_inv_abs_sub_le (hfmem m hm)
 
 end Erdos408.OneSided

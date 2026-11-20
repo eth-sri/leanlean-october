@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedGeometry
+public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 
 @[expose] public section
@@ -11,16 +11,15 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum
-open UniqueFactorizationMonoid HeckeFamily
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass
+open ConcretePrimeRowBridge IdealMobiusDivisorSum UniqueFactorizationMonoid HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
 def deletedPeriod (q:ℕ):ℕ := 2592*q^2
 
 theorem deletedPeriod_ne_zero (q:ℕ)(hq:q≠0):deletedPeriod q≠0 := by
   unfold deletedPeriod
-  exact mul_ne_zero (by norm_num) (pow_ne_zero _ hq)
+  simp_all
 
 theorem fixed_bad_divides_reflection (q:ℕ)(P:Ideal O)(hP:P∈fixedBadPrimes):
     P∣Ideal.span {reflectionConductor q} := by
@@ -28,7 +27,7 @@ theorem fixed_bad_divides_reflection (q:ℕ)(P:Ideal O)(hP:P∈fixedBadPrimes):
   rcases Finset.mem_insert.mp hP with rfl|hP
   · apply Ideal.dvd_iff_le.mpr
     apply Ideal.span_singleton_le_span_singleton.mpr
-    have h3:goodLambda∣(3:O):=CubicEisenstein.halfPrimary_lambda_dvd_three
+    have h3:=CubicEisenstein.halfPrimary_lambda_dvd_three
     apply h3.trans
     refine ⟨(864*q:ℕ),?_⟩
     unfold reflectionConductor

@@ -1,13 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.ActualExtractedEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.ExtractedEnergy
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

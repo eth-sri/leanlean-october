@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
@@ -26,10 +26,10 @@ theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤
   intro W hcompact hs hW U S hS σ C k d N T v hN hT
   let F:=shellLatticeColumns W hcompact N hN
   let G:=F
-  have hF0 : ∀z∈F,z≠0 := shellLatticeColumns_nonzero W hcompact N hN a b ha hs
-  have hG0 : ∀z∈G,z≠0 := hF0
-  have hFN : ∀z∈F,‖eisEmbedding z‖^2≤b*N := shellLatticeColumns_norm W hcompact N hN a b hs
-  have hGN : ∀z∈G,‖eisEmbedding z‖^2≤b*N := hFN
+  have hF0  := shellLatticeColumns_nonzero W hcompact N hN a b ha hs
+  have hG0  := hF0
+  have hFN  := shellLatticeColumns_norm W hcompact N hN a b hs
+  have hGN  := hFN
   unfold canonicalLatticeBlock
   rw [shell_lattice_tsum W hcompact N hN U v T (fun n m=>canonicalJoint S hS σ C k (d*n) (d*m))]
   have hcoef (n m : O) : ‖canonicalJoint S hS σ C k (d*n) (d*m)‖≤(Ideal.absNorm C.val:ℝ) :=

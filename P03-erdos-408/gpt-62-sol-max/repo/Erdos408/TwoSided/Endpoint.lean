@@ -39,19 +39,8 @@ theorem exists_endpoint_meanSquare
     (m₀ : ℕ) (Cm A₀ : ℝ) (M₁ : ℕ → ℝ) :
     ∃ A' : ℝ, ∀ E κ' : ℝ, ∃ CE : ℝ, ∀ᶠ x : ℝ in atTop,
       PrimeTwistBound x A' E Cm κ' → IntegerKernelBound x Cm κ' →
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
-        ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
-          InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
-        ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
-          (∀ g, (C g).card ≤ m₀) → (∀ g ∉ big, C g = ∅) → (∀ p, ‖b p‖ ≤ 1) →
-          (∀ p p', (∀ g ∈ big, p g = p' g) → b p = b p') →
-        ∀ ψ₁ : ℝ → ℂ, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ₁ →
-          (∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) → (∀ (j : ℕ) (y : ℝ), ‖iteratedDeriv j ψ₁ y‖ ≤ M₁ j) →
-        ∀ (Y σ : ℝ) (k : ℕ) (h : ℤ),
-          x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y →
-          Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ)) →
-          |σ| ≤ Real.log x ^ Cm → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
+        ForEndpointTests big K₀ d m₀ CN alo ahi c x Cm M₁ fun r a u v Bc J C b ψ₁ Y σ k h =>
           ∫ t in -(x * Real.log x ^ (Cm + 2))..(x * Real.log x ^ (Cm + 2)),
               ‖(Y : ℂ)⁻¹ * ∑ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊,
                   endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ w *
@@ -86,7 +75,7 @@ theorem exists_endpoint_meanSquare
   simp only [Function.comp_apply] at hT
   set L := Real.log x with hLdef
   have hL0 : 0 < L := by linarith
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
+  have hY0  := lt_of_lt_of_le (by positivity) hY₁
   -- a small group
   obtain ⟨gs, hgs⟩ : ∃ gs, gs ∉ big := by
     have hcard : 0 < (Finset.univ \ big).card := by
@@ -114,7 +103,6 @@ theorem exists_endpoint_meanSquare
   have hLB : 0 ≤ L ^ B' := by positivity
   have hdec : U = fun w => Ut w - Uc w + Ue w := by
     funext w
-    simp only [Ue]
     ring
   obtain ⟨ht₁, ht₂⟩ := htupx hAP1 hAP2 P big hadm gs hgs r a u v Bc hin hsl hBc J C b hC hCb hb
     hbb ψ₁ hψ hψs hψd Y σ k h hY₁ hY₂ hσ hk₁ hk₂
@@ -126,7 +114,6 @@ theorem exists_endpoint_meanSquare
     σ k h hY₁ hY₂ hσ hk₁ hk₂
   rw [one_mul] at he₁
   -- the remainder is at most `2 L^{-A₀}`
-  have hemar : Real.exp (-(c * L / Real.log L ^ 20)) ≤ L ^ (-(A₀ + CR)) := he₂
   have hR : ∫ t in -T₀..T₀, ‖twistedPoly Y Ue h k t‖ ^ 2 ≤ 2 * L ^ (-A₀) := by
     refine he.trans ?_
     rw [mul_add]

@@ -17,10 +17,8 @@ def poleRemoved (χ : Character) (s : ℂ) : ℂ :=
     HeckeMellinIdentity.regularized (pair (coefficients χ)) s / 6
 
 theorem poleRemoved_entire (χ : Character) : Differentiable ℂ (poleRemoved χ) := by
-  have hGamma : Differentiable ℂ (fun s : ℂ => (Complex.Gamma (s+1))⁻¹) :=
-    Complex.differentiable_one_div_Gamma.comp (differentiable_id.add_const 1)
   exact (((differentiable_id.const_cpow (Or.inl
-    (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).mul hGamma).mul
+    (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).mul (Complex.differentiable_one_div_Gamma.comp (differentiable_id.add_const 1))).mul
       (HeckeMellinIdentity.regularized_entire _)).div_const 6
 
 theorem poleRemoved_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :

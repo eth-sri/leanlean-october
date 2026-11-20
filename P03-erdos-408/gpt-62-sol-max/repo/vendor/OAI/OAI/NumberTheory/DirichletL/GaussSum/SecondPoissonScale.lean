@@ -9,57 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace ActualEisensteinCubic
 
 section
 
-open scoped ComplexConjugate
 
 theorem canonicalSextic_conj_as_row_label
     (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P) (e : O) :
@@ -67,14 +27,14 @@ theorem canonicalSextic_conj_as_row_label
       canonicalSextic P hgood (Ideal.Quotient.mk P e) *
         (canonicalSextic P hgood (Ideal.Quotient.mk P e)) ^ 4 := by
   let χ := canonicalSextic P hgood
-  let x : O ⧸ P := Ideal.Quotient.mk P e
+  let x  := Ideal.Quotient.mk P e
   have hconj : star (χ x) = (χ x)⁻¹ := by
     by_cases hx : IsUnit x
-    · let u : (O ⧸ P)ˣ := hx.unit
-      have hu : (u : O ⧸ P) = x := hx.unit_spec
+    · let u  := hx.unit
+      have hu  := hx.unit_spec
       rw [← hu]
       exact (canonicalSextic_inverse_eq_conj_on_units P hgood u).symm
-    · have hzero : χ x = 0 := MulChar.map_nonunit χ hx
+    · have hzero  := MulChar.map_nonunit χ hx
       simp [hzero]
   rw [hconj]
   by_cases hx : IsUnit x
@@ -86,21 +46,22 @@ theorem canonicalSextic_conj_as_row_label
     calc
       χ x * (χ x * (χ x) ^ 4) = (χ x) ^ 6 := by ring
       _ = 1 := h6
-  · have hzero : χ x = 0 := MulChar.map_nonunit χ hx
+  · have hzero  := MulChar.map_nonunit χ hx
     change (χ x)⁻¹ = χ x * (χ x) ^ 4
     simp [hzero]
 
-theorem finiteSquarefreeRow_mul
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (a b : O) :
+section
+
+variable {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+  (hgood : ∀ i, lambda ∉ P i)
+
+theorem finiteSquarefreeRow_mul (S : Finset ι) (a b : O) :
     finiteSquarefreeRow P hgood S (a * b) =
       finiteSquarefreeRow P hgood S a * finiteSquarefreeRow P hgood S b := by
   classical
   simp only [finiteSquarefreeRow, map_mul, Finset.prod_mul_distrib]
 
-theorem finiteSquarefreeRow_conj_as_row_label
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (e : O) :
+theorem finiteSquarefreeRow_conj_as_row_label (S : Finset ι) (e : O) :
     star (finiteSquarefreeRow P hgood S e) =
       finiteSquarefreeRow P hgood S e *
         (finiteSquarefreeRow P hgood S e) ^ 4 := by
@@ -111,9 +72,7 @@ theorem finiteSquarefreeRow_conj_as_row_label
   intro i hi
   exact canonicalSextic_conj_as_row_label (P i) (hgood i) e
 
-theorem finiteSquarefreeRow_second_child
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι)
+theorem finiteSquarefreeRow_second_child (S : Finset ι)
     (d e k J C v : O) :
     star (finiteSquarefreeRow P hgood S e) *
       finiteSquarefreeRow P hgood S d *
@@ -128,13 +87,18 @@ theorem finiteSquarefreeRow_second_child
 
 end
 
+end
+
 noncomputable def rowCoprimeMask
     {ι : Type*} (P : ι → Ideal O) (S : Finset ι) (u : O) : ℂ := by
   classical
   exact if ∃ i ∈ S, u ∈ P i then 0 else 1
 
-theorem finiteSquarefreeRow_self_pair
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+section
+
+variable {ι : Type*}
+
+theorem finiteSquarefreeRow_self_pair (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hgood : ∀ i, (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger - 1 ∉ P i)
     (S : Finset ι) (u : O) :
     star (finiteSquarefreeRow P hgood S u) * finiteSquarefreeRow P hgood S u =
@@ -156,8 +120,7 @@ theorem finiteSquarefreeRow_self_pair
     let : Field (O ⧸ P i) := Ideal.Quotient.field (P i)
     exact isUnit_iff_ne_zero.mpr fun hui => h ⟨i, hi, Ideal.Quotient.eq_zero_iff_mem.mp hui⟩
 
-theorem finiteSquarefreeRow_pair_kernel
-    {ι : Type*} [DecidableEq ι]
+theorem finiteSquarefreeRow_pair_kernel [DecidableEq ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hgood : ∀ i, (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger - 1 ∉ P i)
     (S T : Finset ι) (u : O) :
@@ -178,7 +141,7 @@ theorem finiteSquarefreeRow_pair_kernel
         finiteSquarefreeRow P hgood (T \ S) u := by ring
     _ = _ := by rw [finiteSquarefreeRow_self_pair]
 
-private theorem mask_powerset {ι : Type*} [DecidableEq ι]
+private theorem mask_powerset [DecidableEq ι]
     (S : Finset ι) (p : ι → Prop) [DecidablePred p] :
     (if ∃ i ∈ S, p i then (0 : ℂ) else 1) =
       ∑ E ∈ S.powerset, (-1 : ℂ) ^ E.card *
@@ -190,7 +153,7 @@ private theorem mask_powerset {ι : Type*} [DecidableEq ι]
       obtain ⟨i, hi, hp⟩ := h
       symm
       apply Finset.prod_eq_zero hi
-      simp [hp]
+      simp_all
     · rw [ite_eq_right h]
       symm
       apply Finset.prod_eq_one
@@ -212,8 +175,13 @@ private theorem mask_powerset {ι : Type*} [DecidableEq ι]
     apply Finset.prod_eq_zero hi
     simp [hp]
 
-theorem rowCoprimeMask_subsets
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S : Finset ι) (u : O) :
+end
+
+section
+
+variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
+
+theorem rowCoprimeMask_subsets (S : Finset ι) (u : O) :
     rowCoprimeMask P S u =
       ∑ E ∈ S.powerset, (-1 : ℂ) ^ E.card *
         if ∀ i ∈ E, u ∈ P i then 1 else 0 := by
@@ -221,7 +189,6 @@ theorem rowCoprimeMask_subsets
   exact mask_powerset S (fun i => u ∈ P i)
 
 theorem prime_product_moebius
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
     [∀ i, (P i).IsMaximal] (hprime : ∀ i, Prime (P i))
     (hinj : Function.Injective P) (S : Finset ι) :
     (UniqueFactorizationMonoid.moebius (∏ i ∈ S, P i) : ℂ) =
@@ -240,7 +207,6 @@ theorem prime_product_moebius
     ring
 
 theorem mem_prime_product_iff
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
     [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
     (S : Finset ι) (u : O) :
     u ∈ (∏ i ∈ S, P i) ↔ ∀ i ∈ S, u ∈ P i := by
@@ -249,33 +215,28 @@ theorem mem_prime_product_iff
   · intro i hi j hj hij
     exact Ideal.isCoprime_of_isMaximal (hinj.ne hij)
 
+end
+
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
 
-section
 
-open ActualEisensteinCubic ShortDraftHeckeBridge
-open scoped BigOperators Classical
-
-end
-
-open ActualEisensteinCubic
 
 end ConcretePrimeRowBridge
 
 namespace EisensteinSchwartzPoisson
 open MeasureTheory Filter LineDeriv
-open scoped FourierTransform SchwartzMap Real RealInnerProductSpace
+open scoped Real RealInnerProductSpace
 abbrev LogPlane := WithLp 2 (ℝ × ℝ)
 
 theorem fourier_prod_eq_iterated (f : LogPlane → ℂ) (hf : Integrable f) (ξ η : ℝ) :
     𝓕 f (WithLp.toLp 2 (ξ, η)) =
       𝓕 (fun x : ℝ => 𝓕 (fun y : ℝ => f (WithLp.toLp 2 (x, y))) η) ξ := by
   let w : LogPlane := WithLp.toLp 2 (ξ, η)
-  let G : LogPlane → ℂ := fun z => Real.fourierChar (-⟪z, w⟫) • f z
-  have hG : Integrable G := (Real.fourierIntegral_convergent_iff w).mpr hf
-  have hGp : Integrable (fun z : ℝ × ℝ => G (WithLp.toLp 2 z)) :=
+  let G  := fun z => Real.fourierChar (-⟪z, w⟫) • f z
+  have hG  := (Real.fourierIntegral_convergent_iff w).mpr hf
+  have hGp  :=
     (WithLp.volume_preserving_toLp ℝ ℝ).integrable_comp_of_integrable hG
   calc
     𝓕 f (WithLp.toLp 2 (ξ, η)) = ∫ z : LogPlane, G z := rfl
@@ -380,7 +341,7 @@ theorem partialFourier_continuous (f : SchwartzMap ℂ ℂ) (η : ℝ) :
         norm_le_verticalMajorant f x y
   · exact verticalMajorant_integrable f
   · exact Eventually.of_forall fun y => by
-      have hf : Continuous (fun x : ℝ => f (complexPoint x y)) :=
+      have hf  :=
         f.continuous.comp (horizontal_isometry y).continuous
       exact continuous_const.smul hf
 
@@ -407,7 +368,7 @@ theorem fourier_partialFourier (f : SchwartzMap ℂ ℂ) (ξ η : ℝ) :
   have hcoe : (fp : LogPlane → ℂ) = (f : ℂ → ℂ) ∘ planeComplexIso := rfl
   rw [hcoe, Real.fourier_comp_linearIsometry] at hprod
   change 𝓕 (fun x : ℝ => 𝓕 (fun y : ℝ => f (complexPoint x y)) η) ξ = _
-  simpa only [Function.comp_apply, planeComplexIso_apply] using hprod.symm
+  simp_all
 
 def partialFourierSchwartz (f : SchwartzMap ℂ ℂ) (η : ℝ) : SchwartzMap ℝ ℂ :=
   𝓕⁻ (horizontalSlice (𝓕 f) η)
@@ -418,10 +379,10 @@ theorem partialFourierSchwartz_apply (f : SchwartzMap ℂ ℂ) (η x : ℝ) :
       (horizontalSlice (𝓕 f) η : ℝ → ℂ) := by
     funext ξ
     rw [fourier_partialFourier, horizontalSlice_apply]
-    exact (congrFun (SchwartzMap.fourier_coe f) (complexPoint ξ η)).symm
+    rfl
   have hi : Integrable (𝓕 (partialFourier f η)) := by
     rw [heq]
-    exact (horizontalSlice (𝓕 f) η).integrable
+    fun_prop
   change (𝓕⁻ (horizontalSlice (𝓕 f) η)) x = _
   rw [congrFun (SchwartzMap.fourierInv_coe (horizontalSlice (𝓕 f) η)) x, ← heq]
   exact (partialFourier_integrable f η).fourierInv_fourier_eq hi
@@ -440,7 +401,11 @@ theorem horizontal_hasFDerivAt (η x : ℝ) :
   rw [heq]
   exact Complex.ofRealCLM.hasFDerivAt.add_const _
 
-theorem horizontalSlice_lineDerivOp (F : SchwartzMap ℂ ℂ) (η : ℝ) :
+section
+
+variable (F : SchwartzMap ℂ ℂ) (η : ℝ)
+
+theorem horizontalSlice_lineDerivOp :
     ∂_{(1 : ℝ)} (horizontalSlice F η) = horizontalSlice (∂_{(1 : ℂ)} F) η := by
   apply SchwartzMap.ext
   intro x
@@ -450,12 +415,14 @@ theorem horizontalSlice_lineDerivOp (F : SchwartzMap ℂ ℂ) (η : ℝ) :
   change fderiv ℝ (fun y : ℝ => F (complexPoint y η)) x (1 : ℝ) = _
   change fderiv ℝ ((F : ℂ → ℂ) ∘ (fun y => complexPoint y η)) x (1 : ℝ) = _
   rw [hcomp.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply, Complex.ofReal_one]
+  rfl
 
-theorem horizontalSlice_lineDerivOp_twice (F : SchwartzMap ℂ ℂ) (η : ℝ) :
+theorem horizontalSlice_lineDerivOp_twice :
     ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} (horizontalSlice F η)) =
       horizontalSlice (∂_{(1 : ℂ)} (∂_{(1 : ℂ)} F)) η := by
   rw [horizontalSlice_lineDerivOp, horizontalSlice_lineDerivOp]
+
+end
 
 theorem summable_int_cauchy_weight :
     Summable (fun n : ℤ => (1 + (n : ℝ) ^ 2)⁻¹) := by
@@ -466,9 +433,9 @@ theorem summable_int_cauchy_weight :
   apply Summable.of_nonneg_of_le (fun _ => by positivity) _
     (hp.subtype (fun n : ℤ => n ∉ ({0} : Finset ℤ)))
   intro n
-  have hn : n.val ≠ 0 := by simpa only [Finset.mem_singleton] using n.property
+  have hn : n.val ≠ 0 := by simpa using n.property
   have hnr : (n.val : ℝ) ≠ 0 := by exact_mod_cast hn
-  have hsq : 0 < (n.val : ℝ) ^ 2 := sq_pos_of_ne_zero hnr
+  have hsq  := sq_pos_of_ne_zero hnr
   change (1 + (n.val : ℝ) ^ 2)⁻¹ ≤ 1 / (n.val : ℝ) ^ 2
   simpa only [one_div] using
     one_div_le_one_div_of_le hsq (show (n.val : ℝ) ^ 2 ≤ 1 + (n.val : ℝ) ^ 2 by linarith)
@@ -490,7 +457,11 @@ def planeDecayConstant (F : SchwartzMap ℂ ℂ) : ℝ :=
   SchwartzMap.seminorm ℝ 0 0 F + SchwartzMap.seminorm ℝ 2 0 F +
     SchwartzMap.seminorm ℝ 4 0 F
 
-theorem plane_schwartz_product_decay (F : SchwartzMap ℂ ℂ) (ξ η : ℝ) :
+section
+
+variable (F : SchwartzMap ℂ ℂ)
+
+theorem plane_schwartz_product_decay (ξ η : ℝ) :
     ((1 + ξ ^ 2) * (1 + η ^ 2)) * ‖F (complexPoint ξ η)‖ ≤
       planeDecayConstant F := by
   let z := complexPoint ξ η
@@ -514,14 +485,14 @@ theorem plane_schwartz_product_decay (F : SchwartzMap ℂ ℂ) (ξ η : ℝ) :
   unfold planeDecayConstant
   nlinarith
 
-theorem norm_horizontalSlice_le (F : SchwartzMap ℂ ℂ) (η ξ : ℝ) :
+theorem norm_horizontalSlice_le (η ξ : ℝ) :
     ‖horizontalSlice F η ξ‖ ≤
       (planeDecayConstant F / (1 + η ^ 2)) * (1 + ξ ^ 2)⁻¹ := by
   rw [horizontalSlice_apply, ← div_eq_mul_inv, div_div]
   apply (le_div_iff₀ (by positivity : 0 < (1 + η ^ 2) * (1 + ξ ^ 2))).mpr
   nlinarith [plane_schwartz_product_decay F ξ η]
 
-theorem norm_inverse_horizontalSlice_le (F : SchwartzMap ℂ ℂ) (η x : ℝ) :
+theorem norm_inverse_horizontalSlice_le (η x : ℝ) :
     ‖(𝓕⁻ (horizontalSlice F η)) x‖ ≤
       (planeDecayConstant F / (1 + η ^ 2)) * Real.pi := by
   rw [congrFun (SchwartzMap.fourierInv_coe (horizontalSlice F η)) x,
@@ -535,18 +506,24 @@ theorem norm_inverse_horizontalSlice_le (F : SchwartzMap ℂ ℂ) (η x : ℝ) :
       norm_horizontalSlice_le F η ξ)
   simpa only [integral_const_mul, integral_univ_inv_one_add_sq] using h
 
-theorem norm_inverse_lineDeriv (g : SchwartzMap ℝ ℂ) (x : ℝ) :
+end
+
+section
+
+variable (g : SchwartzMap ℝ ℂ) (x : ℝ)
+
+theorem norm_inverse_lineDeriv :
     ‖(𝓕⁻ (∂_{(1 : ℝ)} g)) x‖ =
       (2 * Real.pi) * |x| * ‖(𝓕⁻ g) x‖ := by
   have ht : (fun u : ℝ => inner ℝ u (1 : ℝ)).HasTemperateGrowth := by fun_prop
   have hc : ‖(-(2 * Real.pi * Complex.I) : ℂ)‖ = 2 * Real.pi := by
-    simp [ Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    simp
   rw [SchwartzMap.fourierInv_lineDerivOp_eq]
   simp only [_root_.smul_apply, SchwartzMap.smulLeftCLM_apply_apply ht,
     norm_smul, hc]
   simp [RCLike.inner_apply, Real.norm_eq_abs, mul_assoc]
 
-theorem sq_mul_norm_inverse_le_second (g : SchwartzMap ℝ ℂ) (x : ℝ) :
+theorem sq_mul_norm_inverse_le_second :
     x ^ 2 * ‖(𝓕⁻ g) x‖ ≤ ‖(𝓕⁻ (∂_{(1 : ℝ)} (∂_{(1 : ℝ)} g))) x‖ := by
   rw [norm_inverse_lineDeriv, norm_inverse_lineDeriv]
   have hp : 1 ≤ (2 * Real.pi) ^ 2 := by nlinarith [Real.pi_gt_three]
@@ -555,6 +532,8 @@ theorem sq_mul_norm_inverse_le_second (g : SchwartzMap ℝ ℂ) (x : ℝ) :
       mul_le_mul_of_nonneg_right (le_mul_of_one_le_left (sq_nonneg x) hp) (norm_nonneg _)
     _ = ((2 * Real.pi) ^ 2 * |x| ^ 2) * ‖(𝓕⁻ g) x‖ := by rw [sq_abs]
     _ = _ := by ring
+
+end
 
 theorem inverse_horizontalSlice_product_decay (F : SchwartzMap ℂ ℂ) (η x : ℝ) :
     ((1 + x ^ 2) * (1 + η ^ 2)) * ‖(𝓕⁻ (horizontalSlice F η)) x‖ ≤
@@ -580,20 +559,24 @@ def partialFourierDecayConstant (f : SchwartzMap ℂ ℂ) : ℝ :=
   Real.pi * (planeDecayConstant (𝓕 f) +
     planeDecayConstant (∂_{(1 : ℂ)} (∂_{(1 : ℂ)} (𝓕 f))))
 
-theorem partialFourier_product_decay (f : SchwartzMap ℂ ℂ) (η x : ℝ) :
+section
+
+variable (f : SchwartzMap ℂ ℂ)
+
+theorem partialFourier_product_decay (η x : ℝ) :
     ((1 + x ^ 2) * (1 + η ^ 2)) * ‖partialFourier f η x‖ ≤
       partialFourierDecayConstant f := by
   rw [← partialFourierSchwartz_apply]
   exact inverse_horizontalSlice_product_decay (𝓕 f) η x
 
-theorem norm_partialFourier_le (f : SchwartzMap ℂ ℂ) (η x : ℝ) :
+theorem norm_partialFourier_le (η x : ℝ) :
     ‖partialFourier f η x‖ ≤
       partialFourierDecayConstant f * ((1 + x ^ 2)⁻¹ * (1 + η ^ 2)⁻¹) := by
   rw [← mul_inv, ← div_eq_mul_inv]
   apply (le_div_iff₀ (by positivity : 0 < (1 + x ^ 2) * (1 + η ^ 2))).mpr
   nlinarith [partialFourier_product_decay f η x]
 
-theorem partialFourier_gaussian_summable_norm (f : SchwartzMap ℂ ℂ) :
+theorem partialFourier_gaussian_summable_norm :
     Summable (fun p : ℤ × ℤ =>
       ‖partialFourier f (p.2 : ℝ) (p.1 : ℝ)‖) := by
   apply summable_norm_of_cauchy_product
@@ -602,9 +585,11 @@ theorem partialFourier_gaussian_summable_norm (f : SchwartzMap ℂ ℂ) :
   intro p
   exact norm_partialFourier_le f (p.2 : ℝ) (p.1 : ℝ)
 
-theorem partialFourier_gaussian_summable (f : SchwartzMap ℂ ℂ) :
+theorem partialFourier_gaussian_summable :
     Summable (fun p : ℤ × ℤ => partialFourier f (p.2 : ℝ) (p.1 : ℝ)) :=
   (partialFourier_gaussian_summable_norm f).of_norm
+
+end
 
 theorem plane_lattice_summable_norm (f : 𝓢(ℂ, ℂ)) :
     Summable (fun p : ℤ × ℤ => ‖f (complexPoint (p.1 : ℝ) (p.2 : ℝ))‖) := by
@@ -640,8 +625,6 @@ def verticalSlice (f : 𝓢(ℂ, ℂ)) (x : ℝ) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLMOfAntilipschitz ℂ (vertical_temperate x)
     (vertical_isometry x).antilipschitzWith f
 
-@[simp] theorem verticalSlice_apply (f : 𝓢(ℂ, ℂ)) (x y : ℝ) :
-    verticalSlice f x y = f (complexPoint x y) := rfl
 
 theorem schwartz_poisson_zero (g : 𝓢(ℝ, ℂ)) :
     (∑' n : ℤ, g (n : ℝ)) = ∑' n : ℤ, 𝓕 (g : ℝ → ℂ) (n : ℝ) := by

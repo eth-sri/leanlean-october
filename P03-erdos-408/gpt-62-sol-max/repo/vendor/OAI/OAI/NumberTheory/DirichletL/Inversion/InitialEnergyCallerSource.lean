@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerModes
 
 @[expose] public section
@@ -9,9 +10,8 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
+open MeasureTheory JointLogSeparation ActualEisensteinCubic CompletedGauss FirstPassCubeLabels
+open SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
 open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
 open SevenEighths.InverseInitialEnergyCallerModes
 namespace SevenEighths.InverseInitialEnergyCallerSource
@@ -79,9 +79,9 @@ theorem pointSource_valid (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
 
 variable {σ : Type*} [DecidableEq σ]
   (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
-  [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)

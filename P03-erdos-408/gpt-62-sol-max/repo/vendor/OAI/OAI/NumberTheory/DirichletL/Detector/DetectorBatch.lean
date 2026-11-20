@@ -27,7 +27,6 @@ theorem retainedProjection_mem (R : Finset FreeRow) (u0 : FreeRow) (h0 : u0∈R)
   · exact h0
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def retainedSourceBatch {Slot : Type*}
@@ -71,10 +70,10 @@ lemma physical_slot_widths {N : ℕ} (ell : Fin N→ℝ) (d dmin mesh : ℝ)
     (hell : ∀j,0<ell j) (hsmall : ∀j,ell j≤dmin*mesh)
     (hsum : ∑j,ell j=1/6) :
     (∀j,0<ell j/d) ∧ (∀j,ell j/d≤mesh) ∧ 7/37≤∑j,ell j/d := by
-  have hd0 : 0<d := hdmin.trans_le hd
+  have hd0  := hdmin.trans_le hd
   have hm : 0≤mesh := by
     by_contra hn
-    have hm : mesh<0 := lt_of_not_ge hn
+    have hm  := lt_of_not_ge hn
     have hn : (∑j,ell j)≤0 := Finset.sum_nonpos fun j _=>
       (hsmall j).trans (mul_nonpos_of_nonneg_of_nonpos hdmin.le hm.le)
     rw [hsum] at hn
@@ -89,7 +88,6 @@ lemma physical_slot_widths {N : ℕ} (ell : Fin N→ℝ) (d dmin mesh : ℝ)
 lemma physical_slot_scale {N : ℕ} (ell : Fin N→ℝ) (Z d : ℝ) (hZ : 0<Z) (hd : d≠0) (j : Fin N) :
     (Z^d)^(ell j/d)=Z^(ell j) := by
   rw [←Real.rpow_mul hZ.le]
-  congr 1
   field_simp
 end SevenEighths.ProbeHighRowFamily
 

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedSource
 
 @[expose] public section
@@ -12,7 +13,7 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→O) [OAI.PrincipalFamily.Maximal p]
   (hinj : Function.Injective (fun i=>Ideal.span {p i}))
 
 omit [DecidableEq σ] in

@@ -11,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ConjugateWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondWindowSource
@@ -21,7 +21,6 @@ open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMom
 open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource
 open CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion
 open CenteredMomentLogDyadic CenteredMomentConjugateWindow
-local notation "O" => ActualEisensteinCubic.O
 
 theorem star_logAnnulus (x : ℝ) : star (logAnnulus x)=logAnnulus x := by
   simp only [logAnnulus,Complex.star_def,Complex.conj_ofReal]

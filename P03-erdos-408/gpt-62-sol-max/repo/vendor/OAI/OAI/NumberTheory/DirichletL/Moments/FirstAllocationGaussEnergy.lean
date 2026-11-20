@@ -12,14 +12,12 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAllocationGaussEnergy
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentSourceRow
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
-open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
+open CenteredMomentFirstPhysicalSource CenteredMomentSourceRow CenteredMomentCommonAllocationSum
+open CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
+open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy
+open CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 def commonEnergy (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
     (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
@@ -106,7 +104,7 @@ lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
     (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) :
     rawVolume (allocatedData D C L B) * rawReduction B.val D.lengths = rawVolume D := by
   have hB := (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1
-  have hv := remainingRaw_source B.val hB D.B₁ D.B₂ hB₁ hB₂ (D.X₁*D.X₂) D.lengths
+  have hv := remainingRaw_source B.val D.B₁ D.B₂ (D.X₁*D.X₂) D.lengths
   change _ = rawVolume (allocatedData D C L B) at hv
   rw [← hv]
   exact raw_scale_identity B.val hB _ D.lengths
@@ -123,7 +121,7 @@ def frozenControl (B : Tuple ι) (M : ι → ℝ) : ℝ :=
   ∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),M i
 
 lemma frozen_norm_bound (D : OriginalData ι) (C : Ideal O)
-    (B : actualAllocations D.S C) (M : ι → ℝ) (_hM : ∀ i,0≤M i)
+    (B : actualAllocations D.S C) (M : ι → ℝ)
     (hν : ∀ i I,‖D.nu i I‖≤1) (hW : ∀ i x,‖D.slot i x‖≤M i) :
     ‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖≤frozenControl B.val M := by
   unfold frozenCoefficient frozenControl
@@ -150,14 +148,12 @@ theorem frozen_normalized_bound (N : ℕ) (a b : ℝ) (ha : 0<a)
   by_cases hz : frozenCoefficient B.val C D.R D.nu D.slot D.lengths=0
   · rw [hz,norm_zero,zero_pow (by decide : 2≠0),zero_div]
     positivity
-  · have hm := frozen_norm_bound D C B M hM hν hWnorm
+  · have hm := frozen_norm_bound D C B M hν hWnorm
     have hh := (actual_reduction_norm B.val hB C D.R
       (Finset.mem_filter.mp B.property).2 D.nu D.slot D.lengths hP a b ha hW hz).2
-    have he : (max 1 b)^Fintype.card ι≤(max 1 b)^N :=
-      pow_le_pow_right₀ (le_max_left _ _) hcard
     have hi : (1:ℝ)/rawReduction B.val D.lengths ≤ (max 1 b)^N/(Ideal.absNorm C:ℝ) := by
       apply (div_le_div_iff₀ hR hN).mpr
-      simpa only [one_mul] using hh.trans (mul_le_mul_of_nonneg_right he hR.le)
+      simpa only [one_mul] using hh.trans (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (le_max_left _ _) hcard) hR.le)
     calc
       _ ≤ (frozenControl B.val M)^2/rawReduction B.val D.lengths :=
         div_le_div_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) hm _) hR.le

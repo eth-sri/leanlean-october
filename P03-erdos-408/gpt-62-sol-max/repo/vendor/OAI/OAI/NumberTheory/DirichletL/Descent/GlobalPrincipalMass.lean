@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.FirstPriorityParents
 public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
 
@@ -8,10 +9,10 @@ public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic
+open FirstPassCubeLabels SecondPassArithmetic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
@@ -25,12 +26,12 @@ def divisorTarget {ι : Type*} [DecidableEq ι] (p : ι→O) (q : Core ι) : Ide
   sourceIdeal p q.1.support*sourceIdeal p q.2.1*sourceIdeal p q.2.2
 
 lemma divisorTarget_ne_zero {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) : divisorTarget p q≠0 :=
+    [OAI.PrincipalFamily.Maximal p] (q : Core ι) : divisorTarget p q≠0 :=
   mul_ne_zero (mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _))
     (sourceIdeal_ne_zero p hp _)
 
 lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
-    [∀i,(Ideal.span {p i}).IsMaximal] {Jo : ℕ} (x : Source ι Jo) (hx : SourceValid p x) :
+    [OAI.PrincipalFamily.Maximal p] {Jo : ℕ} (x : Source ι Jo) (hx : SourceValid p x) :
     sourceIdeal p x.firstDivisor∣divisorTarget p (core x) := by
   have hd := sourceIdeal_dvd p _ _ hx.first_divisor
   rw [sourceIdeal_union p _ _ hx.common_disjoint] at hd
@@ -41,7 +42,7 @@ lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
   exact dvd_mul_right _ _
 
 theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i=>Ideal.span {p i})) {Jo : ℕ}
     (S : Finset (Source ι Jo)) (q : Core ι)
     (hS : ∀x∈S,SourceValid p x) (hq : ∀x∈S,core x=q) :
@@ -72,7 +73,7 @@ theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p 
 
 theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(q : Core ι),
     (∀x∈S,SourceValid p x) → (∀x∈S,core x=q) →
@@ -96,8 +97,8 @@ theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   field_simp
 
 lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) (B V T : ℝ)
-    (hB : 0≤B) (hV : 0≤V) (_hT : 0≤T)
+    [OAI.PrincipalFamily.Maximal p] (q : Core ι) (B V T : ℝ)
+    (hB : 0≤B) (hV : 0≤V)
     (hb₁ : ‖eisEmbedding (primeProduct p q.1.support q.1.leftExponent)‖^2≤B)
     (hb₂ : ‖eisEmbedding (primeProduct p q.1.support q.1.rightExponent)‖^2≤B)
     (hC : primeProductNorm p q.2.1≤V) (ht : primeProductNorm p q.2.2≤T) :

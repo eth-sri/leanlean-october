@@ -28,40 +28,6 @@ open Finset Filter Real
 
 noncomputable section
 
-/-- The conclusion of `TwoSidedCorrelation` for large `x`, after its
-premises. -/
-def TwoSidedBody (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ)
-    (M : ℕ → ℝ) (A Cstar x : ℝ) : Prop :=
-  ∀ (Sg Bg : Finset (Finset ℕ)) (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
-    (Bc : (Fin d → ℕ) → ℝ) (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
-    Disjoint Sg Bg → (Sg ∪ Bg : Set (Finset ℕ)).PairwiseDisjoint id →
-    c₀ * Real.log (Real.log x) ≤ Sg.card → (Sg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-    c₀ * Real.log (Real.log x) ≤ Bg.card → (Bg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-    (∀ P ∈ Sg ∪ Bg, vlo ≤ harmonicMass P ∧ harmonicMass P ≤ vhi) →
-    (∀ P ∈ Sg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
-      (Real.exp (Real.log x ^ (0.36 : ℝ)))) →
-    (∀ P ∈ Bg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.39 : ℝ)))
-      (Real.exp (Real.log x ^ (0.46 : ℝ)))) →
-    (∀ P ∈ Bg, ∃ y z : ℝ, P = primesIcc y z) →
-    (r : ℝ) ≤ K₀ + CN * Real.log (Real.log (Real.log x)) →
-    (∀ i, alo ≤ a i ∧ a i ≤ ahi) →
-    (∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))) →
-    (∀ i, c / Real.log (Real.log x) ^ 20 ≤ u i) →
-    ∑ i, v i ≤ 1 - c / Real.log (Real.log x) ^ 20 →
-    (∀ Q, |Bc Q| ≤ 1) →
-    (∀ n, G n = G (stripPrimes ((Sg ∪ Bg).biUnion id) n)) →
-    (∀ n, 0 ≤ G n ∧ G n ≤ Real.log x ^ B₀) →
-    ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Ψ → (∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) →
-    (∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * Real.log (Real.log x) ^ (CΨ * k)) →
-    |∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊,
-        Ψ (w / x) / w *
-          (markedWeight Finset.univ q (fun i => band x (a i)) w *
-            ((∑ Q ∈ slotTuples x u v with ∏ i, Q i ∣ w, Bc (Fin.init Q)) -
-              ∑ Q ∈ slotTuples x u v, Bc (Fin.init Q) / ∏ i, (Q i : ℝ))) *
-          G (w + 1) * markedWeight (Sg ∪ Bg) q₀ id w *
-          markedWeight (Sg ∪ Bg) q₀ id (w + 1)| ≤
-      Cstar * Real.log x ^ (-A)
-
 /-- `PrimeTwistBound` is monotone in its constant when `L ≥ 0`. -/
 lemma PrimeTwistBound.mono {x A E Cm κ κ' : ℝ} (h : PrimeTwistBound x A E Cm κ) (hκ : κ ≤ κ')
     (hx : 0 ≤ Real.log x) : PrimeTwistBound x A E Cm κ' :=
@@ -141,7 +107,7 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
   have hsub : Act ∩ smallGroups x ∪ Act ∩ bigGroups x ⊆ candidateGroups x := by
     rw [hunion]
     exact hAct
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hL1 : 1 ≤ Real.log x := by
     have := Real.log_le_sub_one_of_pos hL
     rw [logLog] at hT
@@ -152,14 +118,14 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
     (disjoint_of_subset_left inter_subset_right (disjoint_of_subset_right inter_subset_right hdisj))
     (by
       exact (pairwiseDisjoint_candidateGroups hL1).subset
-        (by rw [← coe_union]; exact coe_subset.2 hsub))
+        (by rw [← coe_union]; assumption))
     (by simpa [logLog] using hS₁)
     (by
       have := (card_le_card (inter_subset_right (s₁ := Act) (s₂ := smallGroups x)))
       have : ((Act ∩ smallGroups x).card : ℝ) ≤ (smallGroups x).card := by exact_mod_cast this
       simp only [one_mul]
       exact this.trans hcs)
-    (by simpa [logLog] using hS₂)
+    (by assumption)
     (by
       have := (card_le_card (inter_subset_right (s₁ := Act) (s₂ := bigGroups x)))
       have : ((Act ∩ bigGroups x).card : ℝ) ≤ (bigGroups x).card := by exact_mod_cast this

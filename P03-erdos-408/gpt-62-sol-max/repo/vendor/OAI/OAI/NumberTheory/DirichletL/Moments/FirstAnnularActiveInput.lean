@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentFirstAnnularInput
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadialData CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationChildInput
+open CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData
+open CenteredMomentSecondHeightFamily
 
 variable {ι:Type*}[Fintype ι]
 

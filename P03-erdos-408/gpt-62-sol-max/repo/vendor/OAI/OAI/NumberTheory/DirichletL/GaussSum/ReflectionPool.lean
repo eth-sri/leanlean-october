@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.RowCompletion.PeriodicRows
 
 @[expose] public section
@@ -9,85 +10,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-local instance poolMaximalCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : P.val.IsMaximal :=
-  completedReflectionPool_maximal I Q P
-noncomputable local instance poolFieldCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Field (Eis⧸P.val) :=
-  Ideal.Quotient.field P.val
-noncomputable local instance poolFintypeCount (I Q:Ideal Eis) (P:completedReflectionPool I Q) : Fintype (Eis⧸P.val) :=
-  Fintype.ofFinite _
 
 end CompletedGauss
 
@@ -104,8 +33,8 @@ lemma actualSextic_sixth_one (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P) :
   obtain ⟨n,hn⟩:=Ideal.Quotient.mk_surjective (t:Eis⧸P)
   have hnot:n∉P:=by
     intro hm
-    have ht:(t:Eis⧸P)=0:=by rw [←hn];exact Ideal.Quotient.eq_zero_iff_mem.mpr hm
-    exact t.ne_zero ht
+    refine t.ne_zero ?_
+    rw [←hn];exact Ideal.Quotient.eq_zero_iff_mem.mpr hm
   have h:=canonicalSextic_sixth_power_mask P hg n
   change actualSextic P hg (Ideal.Quotient.mk P (n^6))=_ at h
   rw [map_pow,map_pow,ite_eq_right hnot] at h
@@ -218,8 +147,8 @@ noncomputable local instance A4unitsField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
 
 theorem exists_A4_local_units {ι:Type*} [Fintype ι]
-    (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal] (hp:∀i,p i≠0)
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (p:ι→Eis) [OAI.PrincipalFamily.Maximal p] (hp:∀i,p i≠0)
+    (hcop:OAI.PrincipalFamily.Coprime p)
     (c0 U w:Eis) (hbez:U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1) :
     ∃σ ε:∀i,(Eis⧸Ideal.span {p i})ˣ,
       (∀i,(σ i:Eis⧸Ideal.span {p i})=
@@ -269,41 +198,12 @@ theorem exists_A4_local_units {ι:Type*} [Fintype ι]
 
 end ShortDraftCusp
 
-section
-open scoped BigOperators Classical MatrixGroups Matrix
-
-namespace ShortDraftCusp
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance principalStratumField (P:Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance principalStratumFintype (P:Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
-
-end ShortDraftCusp
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CubicKubota EisensteinCuspModThree ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
 
-end CubicEisenstein
-end
-
-namespace CubicEisenstein
-open scoped BigOperators Classical ContDiff MatrixGroups Matrix
-
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
-open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
-local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance smoothingField (P:Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance smoothingFintype (P:Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
 end CubicEisenstein
 
-open scoped Classical BigOperators MatrixGroups
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT PrimaryIdealUnitReindex
@@ -311,9 +211,9 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 lemma exists_primary_unit_multiple (x:Eis) (hx:¬lambda∣x) :
     ∃u:Eisˣ,lambda^2∣u.val*x-1 := by
-  have hg:primaryGenerator (Ideal.span {x})≠0:=primaryGenerator_span_ne_zero_iff x |>.mpr hx
+  have hg:=primaryGenerator_span_ne_zero_iff x |>.mpr hx
   have hspec:=primaryGenerator_spec (Ideal.span {x}) hg
-  have ha:Associated x (primaryGenerator (Ideal.span {x})):=
+  have ha:=
     Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
   obtain ⟨u,hu⟩:=ha
   refine ⟨u,?_⟩
@@ -329,7 +229,7 @@ lemma normalize_coprime_pair (a c:Eis) (hcop:IsCoprime a c) :
     refine ⟨r*(↑u⁻¹:Eis),s*(↑u⁻¹:Eis),?_⟩
     calc
       _=((↑u⁻¹:Eis)*u.val)*(r*a+s*c):=by ring
-      _=1:=by rw [Units.inv_mul,hrs,mul_one]
+      _=1:=by simp_all
   have hd (u:Eisˣ):lambda∣u.val*c↔lambda∣c := by
     constructor
     · intro h
@@ -338,7 +238,7 @@ lemma normalize_coprime_pair (a c:Eis) (hcop:IsCoprime a c) :
     · intro h
       exact dvd_mul_of_dvd_right h u.val
   by_cases hc:lambda∣c
-  · have ha:¬lambda∣a:=fun h=>lambda_prime_actual.not_isUnit (hcop.isUnit_of_dvd' h hc)
+  · have ha:=fun h=>lambda_prime_actual.not_isUnit (hcop.isUnit_of_dvd' h hc)
     obtain ⟨u,hu⟩:=exists_primary_unit_multiple a ha
     exact ⟨u,hunit u,fun _=>hu,fun hn=>False.elim (hn ((hd u).mpr hc))⟩
   · obtain ⟨u,hu⟩:=exists_primary_unit_multiple c hc
@@ -353,8 +253,8 @@ theorem exists_normalized_rational_cusp (a c:Eis) (hc:c≠0) :
   obtain ⟨c',hc'⟩:=IsBezout.gcd_dvd_right a c
   change a=d*a' at ha
   change c=d*c' at hc'
-  have hd:d≠0:=by intro hz; exact hc (by rw [hc',hz,zero_mul])
-  have hcp:c'≠0:=by intro hz; exact hc (by rw [hc',hz,mul_zero])
+  have hd:d≠0:=by simp_all
+  have hcp:c'≠0:=by simp_all
   obtain ⟨r,s,hrs⟩:=IsBezout.gcd_eq_sum a c
   have hred:IsCoprime a' c':=by
     refine ⟨r,s,?_⟩

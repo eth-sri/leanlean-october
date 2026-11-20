@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.KernelActualSource
+public import OAI.NumberTheory.DirichletL.Reflection.KernelActual
 public import OAI.NumberTheory.DirichletL.Reflection.WeightedSourceSum
 
 @[expose] public section

@@ -36,7 +36,7 @@ lemma frozenBranchColumn_zero_of_not_dvd (F : PrimeFamily φ)
     frozenBranchColumn F jF e A n b = 0 := by
   by_contra hh
   obtain ⟨hd1,hd2,_⟩ := frozenBranchColumn_divisibility F hF jF e A n b hn hb hh
-  exact hz.elim (fun h => h hd1) (fun h => h hd2)
+  simp_all
 
 theorem frozenBranchColumn_dual_reindex (F : PrimeFamily φ)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)

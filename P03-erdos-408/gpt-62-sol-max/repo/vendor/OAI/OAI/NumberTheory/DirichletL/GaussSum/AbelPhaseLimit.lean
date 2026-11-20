@@ -9,20 +9,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
@@ -36,21 +27,23 @@ private theorem sum_zmod_two_square (f : ZMod 2 × ZMod 2 → ℂ) :
   simp [hu]
   ring
 
+/-- The sum of the fixed dual phase over the four residue classes modulo two. -/
+noncomputable def fixedDualResidueSum (c : O) : ℂ :=
+  letI := finite_quotient_span (by norm_num : (2 : O) ≠ 0)
+  letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
+  ∑ r : O ⧸ Ideal.span {(2 : O)}, fixedDualPhase c (GaussianShiftedPartition.representative 2 r)
+
 theorem fixedDualPhase_quotient_two_four_residues (c : O) :
-    letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
-      finite_quotient_span (by norm_num : (2 : O) ≠ 0)
-    letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-    (∑ r : O ⧸ Ideal.span {(2 : O)},
-      fixedDualPhase c (GaussianShiftedPartition.representative 2 r)) =
+    fixedDualResidueSum c =
       fixedDualPhase c (ActualEisensteinCoordinates.eval 0 0) +
       fixedDualPhase c (ActualEisensteinCoordinates.eval 0 1) +
       fixedDualPhase c (ActualEisensteinCoordinates.eval 1 0) +
       fixedDualPhase c (ActualEisensteinCoordinates.eval 1 1) := by
   let h2 : (2 : O) ≠ 0 := by norm_num
-  let : Finite (O ⧸ Ideal.span {(2 : O)}) := finite_quotient_span h2
+  let  := finite_quotient_span h2
   let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
   let e := rationalCoordEquiv 2 (by norm_num)
-  let P : O ⧸ Ideal.span {(2 : O)} → ℂ :=
+  let P  :=
     fun r => fixedDualPhase c (GaussianShiftedPartition.representative 2 r)
   have hpoint (p : ZMod 2 × ZMod 2) :
       P (e p) = fixedDualPhase c
@@ -58,7 +51,7 @@ theorem fixedDualPhase_quotient_two_four_residues (c : O) :
     dsimp only [P]
     apply fixedDualPhase_eq_of_mod_two
     rw [GaussianShiftedPartition.representative_spec]
-    exact rationalCoordEquiv_apply 2 (by norm_num) p.1 p.2
+    rfl
   have hsum : (∑ r : O ⧸ Ideal.span {(2 : O)}, P r) =
       ∑ p : ZMod 2 × ZMod 2,
         fixedDualPhase c
@@ -70,12 +63,9 @@ theorem fixedDualPhase_quotient_two_four_residues (c : O) :
         apply Finset.sum_congr rfl
         intro p hp
         exact hpoint p
-  rw [show (∑ r : O ⧸ Ideal.span {(2 : O)},
-      fixedDualPhase c (GaussianShiftedPartition.representative 2 r)) =
-      ∑ r : O ⧸ Ideal.span {(2 : O)}, P r from rfl]
+  change (∑ r, P r) = _
   rw [hsum, sum_zmod_two_square]
-  have hcast1 : (ZMod.cast (1 : ZMod 2) : ℤ) = 1 := by decide
-  simp only [ZMod.cast_zero, hcast1]
+  rfl
 
 theorem fixedDualPhase_coordinates (a b x y : ℤ) :
     fixedDualPhase (ActualEisensteinCoordinates.eval a b)
@@ -87,16 +77,7 @@ theorem fixedDualPhase_coordinates (a b x y : ℤ) :
   rw [map_neg, map_mul, map_pow, eisEmbedding_eval, eisEmbedding_eval]
 
 theorem fixedDualPhase_four_terms (a b : ℤ) :
-    letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
-      finite_quotient_span (by norm_num : (2 : O) ≠ 0)
-    letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-    (∑ r : O ⧸ Ideal.span {(2 : O)},
-      fixedDualPhase (ActualEisensteinCoordinates.eval a b)
-        (GaussianShiftedPartition.representative 2 r)) / 2 =
-      breveGaussianFourTerms a b := by
-  let : Finite (O ⧸ Ideal.span {(2 : O)}) :=
-    finite_quotient_span (by norm_num : (2 : O) ≠ 0)
-  let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
+    fixedDualResidueSum (ActualEisensteinCoordinates.eval a b) / 2 = breveGaussianFourTerms a b := by
   rw [fixedDualPhase_quotient_two_four_residues]
   rw [fixedDualPhase_coordinates a b 0 0,
     fixedDualPhase_coordinates a b 0 1,
@@ -159,7 +140,7 @@ theorem dual_phase_term_error {η a b : ℝ} (_hη : 0 < η) (hq : 0 < q a b)
       dualAmp η a b z *
         ((Real.pi / 2) * phaseBoundConstant a b * dualQ z) *
         (phaseA a b * η ^ 2) := by
-  have hA : 0 ≤ phaseA a b := phaseA_nonneg hq.le
+  have hA  := phaseA_nonneg hq.le
   have hamp : 0 ≤ dualAmp η a b z := (Real.exp_pos _).le
   have hphase := GaussianPhasePointwise.exp_imag_denominator_error
     (phaseAngle a b z) (phaseA a b) η hA
@@ -205,45 +186,52 @@ private theorem dualMoment_summable {t : ℝ} (ht : 0 < t) :
       (dualQ z) (Real.pi * t) (dualQ_nonneg z) (mul_pos Real.pi_pos ht)
     convert h using 1 <;> dsimp [dualRealGauss] <;> ring_nf
 
-private theorem dualAmp_eq_realGauss (η a b : ℝ) (z : ℤ × ℤ) :
-    dualAmp η a b z = dualRealGauss (η * q a b / (4 * r η a b)) z := rfl
+section
 
-private theorem dualAmp_norm_var (η a b : ℝ) (z : ℤ × ℤ) :
+variable (η a b : ℝ) (z : ℤ × ℤ)
+
+
+private theorem dualAmp_norm_var :
     ‖dualVarTerm η a b z‖ = dualAmp η a b z := by
   dsimp [dualVarTerm]
   rw [norm_mul, Complex.norm_exp_I_mul_ofReal, mul_one, Complex.norm_real]
   exact abs_of_nonneg (Real.exp_pos _).le
 
-private theorem dualAmp_norm_fixed (η a b : ℝ) (z : ℤ × ℤ) :
+private theorem dualAmp_norm_fixed :
     ‖dualFixedTerm η a b z‖ = dualAmp η a b z := by
   dsimp [dualFixedTerm]
   rw [norm_mul, Complex.norm_exp_I_mul_ofReal, mul_one, Complex.norm_real]
   exact abs_of_nonneg (Real.exp_pos _).le
 
-private theorem dualAmp_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+end
+
+section
+
+variable {η a b : ℝ}
+
+private theorem dualAmp_summable (hη : 0 < η) (hq : 0 < q a b) :
     Summable (dualAmp η a b) := by
-  have hr : 0 < r η a b := r_pos hη hq
+  have hr  := r_pos hη hq
   have ht : 0 < η * q a b / (4 * r η a b) := by positivity
   convert dualRealGauss_summable ht using 1
-  funext z
-  exact dualAmp_eq_realGauss η a b z
+  rfl
 
-private theorem dualVar_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+private theorem dualVar_summable (hη : 0 < η) (hq : 0 < q a b) :
     Summable (dualVarTerm η a b) :=
   (dualAmp_summable hη hq).of_norm_bounded
     (fun z => le_of_eq (dualAmp_norm_var η a b z))
 
-private theorem dualFixed_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+private theorem dualFixed_summable (hη : 0 < η) (hq : 0 < q a b) :
     Summable (dualFixedTerm η a b) :=
   (dualAmp_summable hη hq).of_norm_bounded
     (fun z => le_of_eq (dualAmp_norm_fixed η a b z))
 
-private theorem dualAmp_le_small {η a b : ℝ}
+private theorem dualAmp_le_small
     (hη : 0 < η) (hq : 0 < q a b) (hrle : r η a b ≤ 2)
     (z : ℤ × ℤ) :
     dualAmp η a b z ≤ dualRealGauss (η * q a b / 8) z := by
-  have hr : 0 < r η a b := r_pos hη hq
-  have hp : 0 < η * q a b := mul_pos hη hq
+  have hr  := r_pos hη hq
+  have hp  := mul_pos hη hq
   have ht : η * q a b / 8 ≤ η * q a b / (4 * r η a b) := by
     apply (div_le_div_iff₀ (by norm_num : (0 : ℝ) < 8)
       (by positivity : 0 < 4 * r η a b)).2
@@ -254,14 +242,11 @@ private theorem dualAmp_le_small {η a b : ℝ}
     (mul_nonneg Real.pi_pos.le (dualQ_nonneg z))
   nlinarith [hm]
 
+end
+
 noncomputable def phaseErrorConstant (a b : ℝ) : ℝ :=
   (Real.pi / 2) * phaseBoundConstant a b * phaseA a b
 
-private theorem phaseErrorConstant_nonneg {a b : ℝ} (hq : 0 < q a b) :
-    0 ≤ phaseErrorConstant a b := by
-  unfold phaseErrorConstant
-  exact mul_nonneg (mul_nonneg (half_pos Real.pi_pos).le
-    (phaseBoundConstant_pos a b).le) (phaseA_nonneg hq.le)
 
 theorem normalized_dual_phase_sum_error {η a b : ℝ}
     (hη : 0 < η) (hq : 0 < q a b) (hrle : r η a b ≤ 2) :
@@ -271,8 +256,7 @@ theorem normalized_dual_phase_sum_error {η a b : ℝ}
         (∑' z : ℤ × ℤ,
           dualQ z * dualRealGauss (η * q a b / 8) z) := by
   let t : ℝ := η * q a b / 8
-  have ht : 0 < t := by dsimp [t]; positivity
-  have hK : 0 ≤ phaseErrorConstant a b := phaseErrorConstant_nonneg hq
+  have ht : 0 < t := by positivity
   have hpoint (z : ℤ × ℤ) :
       ‖dualVarTerm η a b z - dualFixedTerm η a b z‖ ≤
         (phaseErrorConstant a b * η ^ 2) *
@@ -302,8 +286,7 @@ theorem normalized_dual_phase_sum_error {η a b : ℝ}
       (phaseErrorConstant a b * η ^ 2) *
         (dualQ z * dualRealGauss t z)) :=
     (dualMoment_summable ht).mul_left _
-  have hnorm : Summable (fun z : ℤ × ℤ =>
-      ‖dualVarTerm η a b z - dualFixedTerm η a b z‖) :=
+  have hnorm  :=
     hmajor.of_nonneg_of_le (fun z => norm_nonneg _) hpoint
   have hsum := norm_tsum_le_tsum_norm hnorm
   have htsum := Summable.tsum_le_tsum hpoint hnorm hmajor
@@ -324,17 +307,15 @@ theorem normalized_dual_phase_sum_error {η a b : ℝ}
     _ = phaseErrorConstant a b * η ^ 3 *
           (∑' z : ℤ × ℤ, dualQ z * dualRealGauss (η * q a b / 8) z) := by
       rw [tsum_mul_left]
-      dsimp [t]
       ring
 
-open scoped Topology
 open Filter
 
 private theorem dual_moment_reindex (t : ℝ) :
     (∑' z : ℤ × ℤ, dualQ z * dualRealGauss t z) =
       ∑' z : ℤ × ℤ,
         RankTwoPoisson.eisQ z * GaussianMoment.realGauss t z := by
-  let e : ℤ × ℤ ≃ ℤ × ℤ :=
+  let e  :=
     Equiv.prodCongr (Equiv.refl ℤ) (Equiv.neg ℤ)
   calc
     (∑' z : ℤ × ℤ, dualQ z * dualRealGauss t z) =
@@ -363,7 +344,7 @@ theorem normalized_dual_phase_sum_error_tendsto_zero {a b : ℝ}
           (∑' z : ℤ × ℤ, dualFixedTerm η a b z)‖)
       (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
   let K : ℝ := q a b / 8
-  have hK : 0 < K := by dsimp [K]; positivity
+  have hK : 0 < K := by positivity
   have hmoment :
       Tendsto
         (fun η : ℝ => η ^ 3 *
@@ -392,9 +373,7 @@ theorem normalized_dual_phase_sum_error_tendsto_zero {a b : ℝ}
       fun_prop
     simpa [r] using hc.tendsto.mono_left nhdsWithin_le_nhds
   have hrle : ∀ᶠ η : ℝ in 𝓝[>] (0 : ℝ), r η a b ≤ 2 := by
-    have hevent : ∀ᶠ x : ℝ in 𝓝 (1 : ℝ), x ≤ 2 :=
-      eventually_le_nhds (by norm_num)
-    exact hr_lim.eventually hevent
+    exact hr_lim.eventually (eventually_le_nhds (by norm_num))
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (tendsto_const_nhds (x := (0 : ℝ))) hright
   · filter_upwards [self_mem_nhdsWithin] with η hη
@@ -433,7 +412,6 @@ theorem dualGaussian_eq_dualVarTerm {η a b : ℝ}
         Complex.I * ((phaseAngle a b z / r η a b : ℝ) : ℂ) := by
     dsimp [phaseAngle]
     push_cast
-    field_simp [hrC]
     ring
   rw [harg, Complex.exp_add, ← Complex.ofReal_exp]
   rfl
@@ -463,8 +441,6 @@ theorem two_coordinate_norm_four :
 
 end ActualEisensteinCubic
 
-open Filter
-open scoped Topology
 
 theorem abel_transfer (P V W : ℝ → ℂ) (p w : ℂ)
     (hP : Tendsto P (𝓝[>] (0 : ℝ)) (𝓝 p))
@@ -505,50 +481,36 @@ private theorem breveE_norm_one_all (z : ℂ) :
 
 theorem fixedDualPhase_norm_one (c y : O) :
     ‖fixedDualPhase c y‖ = 1 := by
-  unfold fixedDualPhase
   exact breveE_norm_one_all _
 
 end
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+
+/-- The two-modulus Gaussian mass after the change to the dual scale. -/
+noncomputable def dualAbelMass (a b : ℤ) : ℂ :=
+  ((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * ((2 / (Real.sqrt 3 * 4) : ℝ) : ℂ)
 
 theorem variableDualPhase_abel_limit (a b : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
-    letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
-      finite_quotient_span (by norm_num : (2 : O) ≠ 0)
-    letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-    let c : O := ActualEisensteinCoordinates.eval a b
-    let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
-    let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-    let L2 : ℂ := ((2 / (Real.sqrt 3 *
-      (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
-    let K : ℂ := (((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)
     Tendsto (fun η : ℝ => (η : ℂ) *
-      (∑' y : O, fixedDualPhase c y *
+      (∑' y : O, fixedDualPhase (ActualEisensteinCoordinates.eval a b) y *
         Complex.exp (-(Real.pi : ℂ) *
           (OscSpecial.dualScale η (a : ℝ) (b : ℝ) : ℂ) *
           (‖eisEmbedding y‖ ^ 2 : ℂ))))
       (𝓝[>] (0 : ℝ))
-      (𝓝 (K * ∑ r : O ⧸ Ideal.span {(2 : O)},
-        fixedDualPhase c (GaussianShiftedPartition.representative 2 r))) := by
+      (𝓝 (dualAbelMass a b * fixedDualResidueSum (ActualEisensteinCoordinates.eval a b))) := by
   let h2 : (2 : O) ≠ 0 := by norm_num
-  let : Finite (O ⧸ Ideal.span {(2 : O)}) := finite_quotient_span h2
+  let  := finite_quotient_span h2
   let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
   let c : O := ActualEisensteinCoordinates.eval a b
-  let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
-  let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-  let L2 : ℂ := ((2 / (Real.sqrt 3 *
-    (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
-  let K : ℂ := (((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)
+  let L₂ : ℂ := ((2 / (Real.sqrt 3 * 4) : ℝ) : ℂ)
+  let K := dualAbelMass a b
   let W (η : ℝ) (y : O) := Complex.exp
     (-(Real.pi : ℂ) *
       (OscSpecial.dualScale η (a : ℝ) (b : ℝ) : ℂ) *
       (‖eisEmbedding y‖ ^ 2 : ℂ))
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
-  have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
-    change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using hqZ)
+  have hq := osc_q_pos a b hc
   have hfiber (r : O ⧸ Ideal.span {(2 : O)}) :
       Tendsto (fun η : ℝ => (η : ℂ) *
         (∑' w : O, W η
@@ -558,12 +520,12 @@ theorem variableDualPhase_abel_limit (a b : ℤ)
       Complex.exp (-(Real.pi : ℂ) * (t : ℂ) *
         (‖eisEmbedding (GaussianShiftedPartition.representative 2 r + 2*w)‖ ^ 2 : ℂ))
     have hbase : Tendsto (fun t : ℝ => (t : ℂ) * F t)
-        (𝓝[>] (0 : ℝ)) (𝓝 L2) := by
-      simpa only [F, L2, a2, b2] using
-        actual_O_fiber_gaussian_mass (2 : O)
-          (GaussianShiftedPartition.representative 2 r) h2
-    have h := OscSpecial.abel_mass_dual_scale (a : ℝ) (b : ℝ) hq F L2 hbase
-    simpa only [W, F, K] using h
+        (𝓝[>] (0 : ℝ)) (𝓝 L₂) := by
+      have h := actual_O_fiber_gaussian_mass (2 : O) (GaussianShiftedPartition.representative 2 r) h2
+      dsimp only at h
+      rw [two_coordinate_norm_four] at h
+      exact h
+    exact OscSpecial.abel_mass_dual_scale (a : ℝ) (b : ℝ) hq F L₂ hbase
   have hsum : Tendsto (fun η : ℝ =>
       ∑ r : O ⧸ Ideal.span {(2 : O)},
         fixedDualPhase c (GaussianShiftedPartition.representative 2 r) *
@@ -592,7 +554,7 @@ theorem variableDualPhase_abel_limit (a b : ℤ)
       apply hbase.of_norm_bounded
       intro y
       simp only [norm_mul]
-      have hp : ‖fixedDualPhase c y‖ = 1 := fixedDualPhase_norm_one c y
+      have hp  := fixedDualPhase_norm_one c y
       rw [hp, one_mul]
     have hpart := fixedDualPhase_weighted_partition c (W η) hkernel
     rw [hpart, Finset.mul_sum]

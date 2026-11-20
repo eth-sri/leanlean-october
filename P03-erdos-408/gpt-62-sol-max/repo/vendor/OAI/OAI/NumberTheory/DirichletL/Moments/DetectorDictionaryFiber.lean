@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open HeckeDetectorCoefficientTransfer HeckeDetectorRawFiber HeckeDetectorRowwisePolynomial
-open HeckeDetectorDyadicProfiles CenteredMomentRetainedEnergy
-open CenteredMomentPrimeSlot ProbeHighRowFamily
+open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification HeckeDetectorCoefficientTransfer
+open HeckeDetectorRawFiber HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open CenteredMomentRetainedEnergy CenteredMomentPrimeSlot ProbeHighRowFamily
 local notation "O" => HeckeFamily.O
 variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
@@ -52,8 +51,7 @@ theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance
   have hprod := Finset.prod_coe_sort selected (fun s=>HeckePrimeRow.canonicalPrimeAmplitude M H u.val
     (F.profile s) (F.upper s) (U^(F.widths s)) (F.external s))
   rw [hprod] at he
-  simpa only [detectorPositiveRow,Fiber.physicalProduct,HeckeDetectorPhysicalSelection.physical,
-    Finset.prod_coe_sort] using he
+  assumption
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

@@ -1,5 +1,7 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.MaskedPrincipalBounds
 public import OAI.NumberTheory.DirichletL.CubicSieve.GlobalEncoding
 
@@ -10,97 +12,25 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open SecondPassFiber (newLabel newRow)
-open ConcretePrimeRowBridge (idealGenerator)
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm b0Label jLabel cubeRadical)
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
-open SecondPassFiber (newLabel newRow)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem rowCoprimeMask_congr_span (S : Finset ι) {a b : O}
@@ -122,7 +52,7 @@ theorem secondChildColumn_zero_of_mask_label_mem (Ψ : O →* ℂ) (m f y : O)
   rcases (inferInstance : (Ideal.span {p i}).IsPrime).mem_or_mem hmf with hm|hf
   · have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S m=0 := by
       simp only [rowCoprimeMask,ite_eq_left (show ∃ i∈S,m ∈ Ideal.span {p i} from ⟨i,hi,hm⟩)]
-    simp only [secondChildColumn,hz,mul_zero,zero_mul]
+    simp [secondChildColumn,hz,mul_zero,zero_mul]
   · have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S f=0 := by
       simp only [rowCoprimeMask,ite_eq_left (show ∃ i∈S,f ∈ Ideal.span {p i} from ⟨i,hi,hf⟩)]
     have hr := FirstPassCubeLabels.row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S f hz
@@ -146,7 +76,6 @@ theorem fixedChildRow_restore_killed_pool (F B : Finset ι) (Ψ : O →* ℂ)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
@@ -185,8 +114,6 @@ theorem signedProductDivisorSum_le_rectangles (S T : Finset (Ideal O))
   let pairCols : n × p → Ideal O := fun x => left x.1*right x.2
   let K := columnDivisorPool pairCols
   have hpair : ∀ x, pairCols x ≠ 0 := fun x => mul_ne_zero (hleft x.1) (hright x.2)
-  have hK : ∀ j k d, d ∣ left j*right k → d ∈ K :=
-    fun j k d hd => mem_columnDivisorPool_of_dvd pairCols hpair (j,k) d hd
   let A : m → n → p → K → ℂ := fun i j k d => if P d.val i then
     if d.val ∣ left j*right k then originalTerm rows left right a b 1 1 i j k * H d.val i j k else 0 else 0
   have he : signedProductDivisorSum rows left right a b P H =
@@ -198,7 +125,7 @@ theorem signedProductDivisorSum_le_rectangles (S T : Finset (Ideal O))
     intro j _
     apply Finset.sum_congr rfl
     intro k _
-    rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) (hK j k),
+    rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) ((fun j k d hd => mem_columnDivisorPool_of_dvd pairCols hpair (j,k) d hd) j k),
       Finset.sum_filter, Finset.mul_sum]
     rw [Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
       (if P d i then if d ∣ left j*right k then originalTerm rows left right a b 1 1 i j k * H d i j k else 0 else 0))]
@@ -244,9 +171,9 @@ theorem HasSieveExponent.small_principal_window {α : ℝ} (hexp : HasSieveExpon
     (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E:ℝ) ∧ (Ideal.absNorm E:ℝ) ≤ 2*D₂)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ N/2 ≤ (Ideal.absNorm (left j):ℝ) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ N/2 ≤ (Ideal.absNorm (right k):ℝ) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+    (hright : OAI.IdealFamilyBand Admissible right (N / 2) N)
     (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
     (hP : ∀ D ∈ S, ∀ E ∈ T, ∀ i, P (D*E) i → (Ideal.absNorm (D*E):ℝ) ≤
       U*(N*Real.sqrt (F/(M*(Ideal.absNorm (rows i):ℝ))))) :
@@ -295,9 +222,9 @@ theorem HasSieveExponent.small_principal_divisor_sum {α : ℝ} (hexp : HasSieve
     (B N M F U : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hF : 0 < F) (hU : 0 ≤ U)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ N/2 ≤ (Ideal.absNorm (left j):ℝ) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ N/2 ≤ (Ideal.absNorm (right k):ℝ) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+    (hright : OAI.IdealFamilyBand Admissible right (N / 2) N)
     (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
     (hP : ∀ d i, P d i → (Ideal.absNorm d:ℝ) ≤ U*(N*Real.sqrt (F/(M*(Ideal.absNorm (rows i):ℝ))))) :
     ‖signedProductDivisorSum rows left right a b P
@@ -308,8 +235,8 @@ theorem HasSieveExponent.small_principal_divisor_sum {α : ℝ} (hexp : HasSieve
   classical
   let S := columnDivisorPool left
   let T := columnDivisorPool right
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  have hl0  := fun j => (hleft j).1.1
+  have hr0  := fun k => (hright k).1.1
   have hS := columnDivisorPool_norm_bounds left hl0 N (fun j => (hleft j).2.2)
   have hT := columnDivisorPool_norm_bounds right hr0 N (fun k => (hright k).2.2)
   apply (signedProductDivisorSum_le_rectangles S T rows left right a b P _ hl0 hr0
@@ -332,10 +259,10 @@ open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSch
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 lemma source_large_cut_lower (M B b N T d : ℝ)
-    (hM : 0 < M) (_hB : 0 < B) (hb : 0 < b) (hbB : b ≤ B) (hN : 0 ≤ N) (hT : 0 < T)
+    (hM : 0 < M) (hb : 0 < b) (hbB : b ≤ B) (hN : 0 ≤ N) (hT : 0 < T)
     (hd : T*Real.sqrt (M/b) ≤ d) :
     Real.sqrt (M/B)*N ≤ ((4*N/T)/4)*d := by
-  have hs : Real.sqrt (M/B) ≤ Real.sqrt (M/b) :=
+  have hs  :=
     Real.sqrt_le_sqrt (div_le_div_of_nonneg_left hM.le hb hbB)
   have hsd : Real.sqrt (M/B) ≤ d/T := (le_div_iff₀ hT).mpr (by nlinarith)
   calc
@@ -346,7 +273,7 @@ lemma dual_large_cut_lower (M F B b N T d : ℝ)
     (hM : 0 < M) (hF : 0 < F) (hB : 0 < B) (hb : 0 < b) (hbB : b ≤ B)
     (hN : 0 < N) (hT : 0 < T) (hd : T*(N*Real.sqrt (F/(M*b))) ≤ d) :
     Real.sqrt ((M/F)/B)*N ≤ ((4*M/(F*T))/4)*d := by
-  have hs : Real.sqrt (F/(M*B)) ≤ Real.sqrt (F/(M*b)) :=
+  have hs  :=
     Real.sqrt_le_sqrt (div_le_div_of_nonneg_left hF.le (by positivity) (mul_le_mul_of_nonneg_left hbB hM.le))
   have hnd : N*Real.sqrt (F/(M*B)) ≤ d/T := by
     apply (le_div_iff₀ hT).mpr
@@ -367,9 +294,9 @@ theorem HasSieveExponent.source_large_principal_sum {α : ℝ} (hexp : HasSieveE
     (B N M T : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hT : 0 < T)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (a : n → ℂ) (b : p → ℂ) (Z : m → ℝ)
     (hZ : ∀ i, T*Real.sqrt (M/(Ideal.absNorm (rows i):ℝ)) ≤ Z i) :
     ‖principalDivisorCorrection rows left right a b M (fun d i => Z i < (Ideal.absNorm d:ℝ))‖ ≤
@@ -379,7 +306,7 @@ theorem HasSieveExponent.source_large_principal_sum {α : ℝ} (hexp : HasSieveE
   apply hexp.principal_divisor_correction deltaLoss hδ ε hε B N M (4*N/T) hB hN hM (by positivity)
     rows left right hr hl hri hrows hleft hright a b
   intro d i hd
-  exact source_large_cut_lower M B (Ideal.absNorm (rows i)) N T (Ideal.absNorm d) hM (by linarith)
+  exact source_large_cut_lower M B (Ideal.absNorm (rows i)) N T (Ideal.absNorm d) hM
     (by linarith [(hrows i).2.1]) (hrows i).2.2 (by linarith) hT ((hZ i).trans hd.le)
 
 theorem HasSieveExponent.dual_large_principal_sum {α : ℝ} (hexp : HasSieveExponent α)
@@ -387,9 +314,9 @@ theorem HasSieveExponent.dual_large_principal_sum {α : ℝ} (hexp : HasSieveExp
     (B N M F T : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hF : 0 < F) (hT : 0 < T)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (a : n → ℂ) (b : p → ℂ) (Z : m → ℝ)
     (hZ : ∀ i, T*(N*Real.sqrt (F/(M*(Ideal.absNorm (rows i):ℝ)))) ≤ Z i) :
     ‖principalDivisorCorrection rows left right a b (M/F) (fun d i => Z i < (Ideal.absNorm d:ℝ))‖ ≤

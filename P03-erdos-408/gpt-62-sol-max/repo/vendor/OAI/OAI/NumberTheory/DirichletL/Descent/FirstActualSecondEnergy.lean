@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
@@ -29,10 +30,10 @@ def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p 
 
 theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (hcop : OAI.PrincipalFamily.Coprime p)
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
       (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
@@ -56,17 +57,7 @@ theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
     (fun x hx=>hn x.1 ((mem_firstRetainedSource p labels b Y x).mp hx).1) ha
     (fun x hx=>((mem_firstRetainedSource p labels b Y x).mp hx).2)
     negative H selector ω X t hX
-  have hcoef : firstCanonicalCoefficient p hp hcop hg b C negative
-      (if negative then Ψ₁ else Ψ₂) (if negative then m₁ else m₂) d H =
-      fun x=>firstOldLabelCoefficient p hp hcop hg b.support
-        (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative
-        (multiplicativeCoreColumn p (if negative then Ψ₁ else Ψ₂) (if negative then m₁ else m₂)
-          (fun U=>H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪U)))
-        (∏i∈C,p i) d x.1 := by
-    funext x
-    exact firstCanonicalCoefficient_old p hp hcop hg b C negative _ _ d H x
-  rw [hcoef]
-  exact he
+  assumption
 
 end
 end SevenEighths.InverseMoment

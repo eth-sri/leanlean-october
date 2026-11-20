@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 @[expose] public section
@@ -15,9 +16,9 @@ open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
   (hinj : Function.Injective (fun i=>Ideal.span {p i}))
   (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
 include hinj hc in
@@ -45,7 +46,7 @@ theorem first_variable_zero_common_bound
     symm
     apply Finset.sum_subset (Finset.filter_subset _ _)
     intro C hC hnot
-    have hbnd : ¬primeProductNorm p C≤L:=fun h=>hnot (Finset.mem_filter.mpr ⟨hC,h⟩)
+    have hbnd :=fun h=>hnot (Finset.mem_filter.mpr ⟨hC,h⟩)
     apply Finset.sum_eq_zero
     intro I hI
     have hz : H₁ (b.rightDivisor∪C)=0 := by
@@ -65,11 +66,10 @@ theorem first_variable_zero_common_bound
       have hz:=canonicalCubeDualZero_norm_le p hp hcop hg hinj hc pool b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂
         (ConcretePrimeRowBridge.idealGenerator I) H₁ H₂ W K
       rw [ite_eq_left hb] at hz
-      have hz' : ‖z C I‖≤G₁*G₂ * |K| * ‖paperRadialFourier W 0‖ := by
-        apply hz.trans
-        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-          (mul_le_mul (hH₁ _) (hH₂ _) (norm_nonneg _) hG₁) (abs_nonneg _)) (norm_nonneg _)
-      exact mul_le_mul (ha C (Finset.mem_filter.mp hC).1 I hI) hz' (norm_nonneg _) hΓ
+      refine mul_le_mul (ha C (Finset.mem_filter.mp hC).1 I hI) ?_ (norm_nonneg _) hΓ
+      apply hz.trans
+      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
+        (mul_le_mul (hH₁ _) (hH₂ _) (norm_nonneg _) hG₁) (abs_nonneg _)) (norm_nonneg _)
     calc
       _ ≤ ∑C∈boundedPrimeSupports p (pool\b.support) (L),∑I∈labels,‖a C I*z C I‖:=
         (norm_sum_le _ _).trans (Finset.sum_le_sum (fun C hC=>norm_sum_le _ _))
@@ -87,9 +87,9 @@ theorem first_variable_zero_common_bound
 end
 theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     ∃C:ℝ,0<C ∧ ∀{ι:Type*} [DecidableEq ι]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i}) (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda) (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
       (a:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ)
@@ -113,7 +113,7 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
   let Q:=Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)
   let good:=fun b:CubeCoordinates ι=>cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅
   have hQ:0≤Q:=by dsimp [Q];positivity
-  have hlabel:(labels.card:ℝ)≤128*F:=DescentFiberCost.finite_ideal_count_real labels F hF hI0 hIF
+  have hlabel:=DescentFiberCost.finite_ideal_count_real labels F hF hI0 hIF
   have hbcount:((bs.filter good).card:ℝ)≤C*B^(1+ε):=by
     have h:=hcount p hp hinj (bs.filter good) B 1 hB (by norm_num)
       (fun b hb=>hadm b (Finset.mem_filter.mp hb).1)
@@ -140,7 +140,7 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
       apply mul_le_mul hbcount _ (by positivity) (by positivity)
       exact mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hlabel (by positivity)) hQ
-    _ = _ := by dsimp [Q];ring
+    _ = _ := by ring
 
 end SevenEighths.InverseMoment
 

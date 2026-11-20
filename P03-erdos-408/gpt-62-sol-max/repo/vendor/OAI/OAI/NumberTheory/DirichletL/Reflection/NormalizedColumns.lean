@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.FrozenNorms
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.FrozenNorms
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -27,7 +28,6 @@ lemma sourceFrozenPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
       (F.reflected K hK S).generator_good (reflectedExponent jF)
       (frozenIndices φ (PrimeIndex K) σ) u m = actualFrozenPhase F jF D.fixedFactor s u m := by
   classical
-  let : DecidableEq (φ ⊕ (PrimeIndex K ⊕ σ)) := Classical.decEq _
   unfold sourceFrozenPhase frozenIndices
   rw [← frozenCore_transport (F.reflected K hK S).generator_ne_zero
       (F.reflected K hK S).generator_good c (reflectedExponent jF) Sum.inl Sum.inl_injective Finset.univ,
@@ -45,7 +45,7 @@ lemma frozenExtracted_ne_zero (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ →
 lemma frozenBranchScale_pos (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3) :
     0 < frozenBranchScale F jF e := by
   have hn (v : Fin 3) : (0:ℝ) < Ideal.absNorm (frozenExtracted F jF e v) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (frozenExtracted_ne_zero F jF e v)
   exact div_pos (mul_pos (Real.sqrt_pos.mpr (hn 1)) (Real.sqrt_pos.mpr (hn 2)))
     (Real.sqrt_pos.mpr (hn 0))
 

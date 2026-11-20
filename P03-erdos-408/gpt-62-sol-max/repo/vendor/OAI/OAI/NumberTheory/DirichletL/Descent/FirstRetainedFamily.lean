@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalFamily
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalFamily
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
@@ -34,8 +35,7 @@ theorem sum_firstRetainedSource {A : Type*} [AddCommMonoid A]
   unfold firstRetainedSource
   rw [Finset.sum_biUnion]
   · apply Finset.sum_congr rfl
-    intro f hf
-    exact Finset.sum_image (fun h hh k hk he=>congrArg Prod.snd he)
+    simp
   · intro f hf g hg hfg
     apply Finset.disjoint_left.mpr
     intro x hx hy
@@ -43,9 +43,9 @@ theorem sum_firstRetainedSource {A : Type*} [AddCommMonoid A]
     obtain ⟨k,hk,he⟩ := Finset.mem_image.mp hy
     exact hfg (congrArg Prod.fst he).symm
 
-variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end
 end SevenEighths.InverseMoment

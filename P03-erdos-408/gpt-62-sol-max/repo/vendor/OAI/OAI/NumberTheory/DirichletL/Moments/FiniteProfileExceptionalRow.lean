@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalCappedAmplitude
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeTwist
+open CenteredMomentExceptionalCappedAmplitude
 local notation "O" => HeckeFamily.O
 theorem row_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :

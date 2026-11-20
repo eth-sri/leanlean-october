@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeTwist
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentHeckeHeight
 open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist
 open CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight

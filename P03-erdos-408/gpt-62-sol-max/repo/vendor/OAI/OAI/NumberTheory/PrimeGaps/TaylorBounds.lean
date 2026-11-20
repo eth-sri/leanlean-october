@@ -11,49 +11,42 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
+open scoped Topology
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
-open scoped ComplexConjugate
 
-open Filter Topology
 
-open Complex Filter Topology
+open Complex
 
-open Complex Filter Topology Set MeasureTheory Asymptotics
 
 open Finset
 
-open Complex Filter Topology Finset
 
-lemma power_series_tail_bound {a : ℕ → ℝ} {M r z : ℝ} (_hM : 0 ≤ M)
+lemma power_series_tail_bound {a : ℕ → ℝ} {M r z : ℝ}
     (hr : 0 < r) (hz : 0 ≤ z) (hzr : z < r)
     (hb : ∀ n, |a n| ≤ M/r^n) (N : ℕ) :
     |∑' n : ℕ, a (n+N)*z^(n+N)| ≤ M*(z/r)^N/(1-z/r) := by
-  have hρ : 0 ≤ z/r := div_nonneg hz hr.le
-  have hρ1 : z/r < 1 := (div_lt_one hr).mpr hzr
+  have hρ  := div_nonneg hz hr.le
+  have hρ1  := (div_lt_one hr).mpr hzr
   have hg := (summable_geometric_of_lt_one hρ hρ1).mul_left (M*(z/r)^N)
   have hbound (n : ℕ) : ‖a (n+N)*z^(n+N)‖ ≤ (M*(z/r)^N)*(z/r)^n := by
     rw [Real.norm_eq_abs,abs_mul,abs_of_nonneg (pow_nonneg hz _)]
     calc
       _ ≤ (M/r^(n+N))*z^(n+N) := mul_le_mul_of_nonneg_right (hb _) (pow_nonneg hz _)
-      _ = M*(z/r)^(n+N) := by rw [div_pow]; ring
-      _ = _ := by rw [pow_add]; ring
+      _ = M*(z/r)^(n+N) := by ring
+      _ = _ := by ring
   have hn := hg.of_nonneg_of_le (fun n => norm_nonneg _) hbound
   calc
     _ = ‖∑' n : ℕ, a (n+N)*z^(n+N)‖ := (Real.norm_eq_abs _).symm
@@ -78,19 +71,19 @@ lemma residue_lower_bound_of_taylor {a : ℕ → ℝ} {R M r z : ℝ} {N : ℕ}
   have hzero : (∑ n ∈ range N, if n=0 then 1 else (0:ℝ)) = 1 := by
     simp [show 0 < N by omega]
   rw [sum_sub_distrib,hzero,←mul_sum] at hsum
-  have htail' := power_series_tail_bound hM hr (zero_lt_one.trans hz).le hzr hb N
+  have htail' := power_series_tail_bound hr (zero_lt_one.trans hz).le hzr hb N
   have ht : -(1/2:ℝ) ≤ ∑' n : ℕ, a (n+N)*z^(n+N) := by
     have := (abs_le.mp (htail'.trans htail)).1
     linarith
   have hs : Summable (fun n : ℕ => a n*z^n) := by
     have hρ : 0 ≤ z/r := by positivity
-    have hρ1 : z/r < 1 := (div_lt_one hr).mpr hzr
+    have hρ1  := (div_lt_one hr).mpr hzr
     apply ((summable_geometric_of_lt_one hρ hρ1).mul_left M).of_norm_bounded
     intro n
     rw [Real.norm_eq_abs,abs_mul,abs_of_nonneg (pow_nonneg (zero_lt_one.trans hz).le _)]
     calc
       _ ≤ (M/r^n)*z^n := mul_le_mul_of_nonneg_right (hb _) (pow_nonneg (zero_lt_one.trans hz).le _)
-      _ = M*(z/r)^n := by rw [div_mul_eq_mul_div,div_pow]; ring
+      _ = M*(z/r)^n := by ring
   have hdecomp := hs.sum_add_tsum_nat_add N
   have hm : 1/2 ≤ R/(z-1)+R*(∑ n ∈ range N, z^n) := by linarith
   have hgeom := geom_sum_mul z N
@@ -112,8 +105,7 @@ lemma signedTaylorCoeff_hasSum {H : ℂ → ℂ} {r z : ℝ}
     HasSum (fun n => signedTaylorCoeff H n*z^n) (H ((2-z:ℝ):ℂ)).re := by
   have hmem : ((2-z:ℝ):ℂ) ∈ Metric.ball (2:ℂ) r := by
     rw [Metric.mem_ball,dist_eq_norm]
-    have he : ((2-z:ℝ):ℂ)-(2:ℂ) = -(z:ℂ) := by push_cast; ring
-    simpa [he,Complex.norm_real,Real.norm_eq_abs] using hz
+    simp_all
   have hs := (Complex.hasSum_taylorSeries_on_ball hf hmem).map Complex.reCLM Complex.continuous_re
   change HasSum (fun n => ((n.factorial:ℂ)⁻¹ *
     ((((2-z:ℝ):ℂ)-2)^n * iteratedDeriv n H 2)).re) (H ((2-z:ℝ):ℂ)).re at hs
@@ -121,7 +113,7 @@ lemma signedTaylorCoeff_hasSum {H : ℂ → ℂ} {r z : ℝ}
   funext n
   dsimp [signedTaylorCoeff]
   have he : ((2-z:ℝ):ℂ)-(2:ℂ) = -(z:ℂ) := by push_cast; ring
-  rw [he, show (-(z:ℂ))^n = (-1:ℂ)^n * (z:ℂ)^n by rw [←mul_pow]; congr 1; ring]
+  rw [he, show (-(z:ℂ))^n = (-1:ℂ)^n * (z:ℂ)^n by ring]
   have hmul : (n.factorial:ℂ)⁻¹*((-1:ℂ)^n*(z:ℂ)^n*iteratedDeriv n H 2) =
       ((-1:ℂ)^n*(n.factorial:ℂ)⁻¹*iteratedDeriv n H 2)*(z:ℂ)^n := by ring
   rw [hmul]
@@ -182,7 +174,7 @@ open scoped ComplexOrder in
 lemma LSeries_two_re_ge_one {a : ℕ → ℂ} (ha : ∀ n, 0 ≤ a n)
     (ha1 : 1 ≤ a 1) (hc : LSeries.abscissaOfAbsConv a < (2:ℝ)) :
     1 ≤ (LSeries a 2).re := by
-  have hs : LSeriesSummable a 2 := LSeriesSummable_of_abscissaOfAbsConv_lt_re (by simpa using hc)
+  have hs : LSeriesSummable a 2 := LSeriesSummable_of_abscissaOfAbsConv_lt_re (by simp_all)
   have hl := hs.le_tsum 1 (fun n _ => LSeries.term_nonneg (ha n) 2)
   have hterm : LSeries.term a 2 1 = a 1 := by simp
   rw [hterm] at hl
@@ -194,7 +186,7 @@ lemma signedTaylorCoeff_regular_nonneg {H : ℂ → ℂ} {a : ℕ → ℂ} {R : 
     (hc : LSeries.abscissaOfAbsConv a < (2:ℝ))
     (he : H =ᶠ[𝓝 (2:ℂ)] fun s => LSeries a s-(R:ℂ)/(s-1)) :
     1-R ≤ (H 2).re ∧ ∀ n, -R ≤ signedTaylorCoeff H n := by
-  have hL : AnalyticAt ℂ (LSeries a) 2 := LSeries_analyticOnNhd a 2 (by simpa using hc)
+  have hL  := LSeries_analyticOnNhd a 2 (by simp_all)
   have hP : AnalyticAt ℂ (fun s : ℂ => (R:ℂ)/(s-1)) 2 :=
     analyticAt_const.div (analyticAt_id.sub analyticAt_const) (by norm_num)
   constructor
@@ -220,12 +212,12 @@ lemma residue_polynomial_lower {a : ℕ → ℝ} {R A Q z ε : ℝ}
   have hQ1 : 1 ≤ Q := by linarith
   have hlogQ : 0 < Real.log Q := Real.log_pos (by linarith)
   have hz0 : 0 < z := by linarith
-  have hlogz : 0 < Real.log z := Real.log_pos hz
+  have hlogz  := Real.log_pos hz
   let N : ℕ := ⌈60*Real.log Q⌉₊
   have hNlo : 60*Real.log Q ≤ (N:ℝ) := Nat.le_ceil _
   have hNhi : (N:ℝ) < 60*Real.log Q+1 := Nat.ceil_lt_add_one (by positivity)
   have hN : 1 ≤ N := by
-    have : 0 < (N:ℝ) := lt_of_lt_of_le (by positivity) hNlo
+    have  := lt_of_lt_of_le (by positivity) hNlo
     exact_mod_cast (show 1 ≤ N from Nat.one_le_iff_ne_zero.mpr (by exact_mod_cast this.ne'))
   have hρ : 0 ≤ z/(3/2) := by positivity
   have hρ1 : z/(3/2) ≤ 5/6 := by linarith
@@ -255,7 +247,7 @@ lemma residue_polynomial_lower {a : ℕ → ℝ} {R A Q z ε : ℝ}
       calc
         _ ≤ (A*Q^4)*Q^(-10:ℝ) := mul_le_mul_of_nonneg_left hdecay (by positivity)
         _ ≤ A*Q⁻¹ := by rw [mul_assoc]; exact mul_le_mul_of_nonneg_left hpow hA
-        _ = _ := by rw [div_eq_mul_inv]
+        _ = _ := by rfl
     have hAQ : A/Q ≤ 1/12 := (div_le_iff₀ hQ0).mpr (by linarith)
     apply (div_le_iff₀ hden).mpr
     nlinarith
@@ -277,13 +269,12 @@ lemma residue_polynomial_lower {a : ℕ → ℝ} {R A Q z ε : ℝ}
     by_contra! h
     have := mul_neg_of_neg_of_pos h (pow_pos hz0 N)
     linarith
-  have hres' : (z-1)/2 ≤ R*(z*Q^ε) := hres.trans (mul_le_mul_of_nonneg_left hzpow hR)
+  have hres'  := hres.trans (mul_le_mul_of_nonneg_left hzpow hR)
   rw [Real.rpow_neg hQ0.le,←div_eq_mul_inv]
   apply (div_le_iff₀ (Real.rpow_pos_of_pos hQ0 ε)).mpr
   apply (div_le_iff₀ (by positivity : (0:ℝ) < 2*z)).mpr
   nlinarith
 
-open Complex Filter Topology Finset Set MeasureTheory
 
 noncomputable def zetaRegular : ℂ → ℂ :=
   regularSeries (positiveCoefficients (fun _ => 1)) 1
@@ -310,7 +301,7 @@ lemma poleRemovedZeta_eq {s : ℂ} (hs : 0 < s.re) :
       fun s : ℂ => (s-1)*zetaRegular s+1 := by
     filter_upwards [(continuous_re.tendsto (2:ℂ)).eventually
       (lt_mem_nhds (by norm_num : (1:ℝ) < (2:ℂ).re))] with z hz
-    have hz1 : z ≠ 1 := by intro h; simp [h] at hz
+    have hz1 : z ≠ 1 := by intro h; simp_all
     rw [DirichletCharacter.LFunctionTrivChar₁,Function.update_of_ne hz1,
       DirichletCharacter.LFunctionTrivChar,DirichletCharacter.LFunction_modOne_eq,
       zetaRegular_eq_of_one_lt_re hz]
@@ -324,7 +315,7 @@ lemma zetaRegular_eq {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
   have h := poleRemovedZeta_eq hs
   rw [DirichletCharacter.LFunctionTrivChar₁,Function.update_of_ne hs1,
     DirichletCharacter.LFunctionTrivChar,DirichletCharacter.LFunction_modOne_eq] at h
-  have hn : s-1 ≠ 0 := sub_ne_zero.mpr hs1
+  have hn  := sub_ne_zero.mpr hs1
   apply (mul_left_cancel₀ hn)
   rw [mul_sub,mul_div_cancel₀ _ hn]
   linear_combination -h
@@ -332,7 +323,7 @@ lemma zetaRegular_eq {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
 lemma regularSeries_norm_simple {f : ℕ → ℂ} {c : ℂ} {D : ℝ} (hD : 0 ≤ D)
     (hb : ∀ t, 1 < t → ‖seriesDiscrepancy f c t‖ ≤ D) {s : ℂ} (hs : 0 < s.re) :
     ‖regularSeries f c s‖ ≤ ‖c‖+‖s‖*D/s.re := by
-  have h := discrepancyTail_norm_le zero_lt_one hD (measurable_seriesDiscrepancy f c) hb hs
+  have h := discrepancyTail_norm_le zero_lt_one hb hs
   simp only [Real.one_rpow,mul_one] at h
   calc
     _ ≤ ‖c‖+‖s*discrepancyTail (seriesDiscrepancy f c) 1 s‖ := norm_add_le _ _
@@ -390,7 +381,7 @@ lemma regularizedZetaProduct_eq {P : ℂ → ℂ} {s : ℂ} (hs : 0 < s.re) (hs1
   ring
 
 lemma regularizedZetaProduct_bound {P : ℂ → ℂ} {B : ℝ}
-    (hP : DifferentiableOn ℂ P {s : ℂ | 0 < s.re}) (_hB : 0 ≤ B)
+    (hP : DifferentiableOn ℂ P {s : ℂ | 0 < s.re})
     (hb : ∀ s ∈ Metric.closedBall (2:ℂ) (7/4:ℝ), ‖P s‖ ≤ B) :
     DiffContOnCl ℂ (regularizedZetaProduct P) (Metric.ball 2 (3/2:ℝ)) ∧
       ∀ s ∈ Metric.closedBall (2:ℂ) (3/2:ℝ), ‖regularizedZetaProduct P s‖ ≤ 21*B := by
@@ -436,7 +427,7 @@ lemma regularizedZetaProduct_bound {P : ℂ → ℂ} {B : ℝ}
       _ ≤ 17*B+4*B := by rw [norm_mul]; gcongr; exact zetaRegular_norm_le_seventeen hs'; exact hb s hs'; exact hdslope s hs
       _ = _ := by ring
 
-open Complex Finset ArithmeticFunction
+open ArithmeticFunction
 
 open scoped ComplexOrder
 
@@ -466,9 +457,6 @@ lemma primePower_one {p : ℕ} (hp : p.Prime) (k : ℕ) :
   cases k with
   | zero => simp
   | succ k =>
-    have hn : p^(k+1) ≠ 1 := by
-      have h : 1 < p^(k+1) := one_lt_pow₀ hp.one_lt (by omega)
-      omega
     simp [hp.ne_one]
 
 lemma primePower_character {q p : ℕ} (χ : DirichletCharacter ℂ q) (hp : p.Prime) (k : ℕ) :

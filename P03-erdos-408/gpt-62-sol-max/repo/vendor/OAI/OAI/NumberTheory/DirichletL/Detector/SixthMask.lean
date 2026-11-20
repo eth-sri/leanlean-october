@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.SixthDecomposition
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSupport
 
@@ -43,14 +44,14 @@ lemma calibration_sixth_frequency_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.I
     star ((calibrationForSet S hS).residueMonoid (u*idealGenerator L^6))=
       star ((calibrationForSet S hS).residueMonoid u)*(if ∀P∈S,¬P∣L then 1 else 0) := by
   rw [map_mul,map_pow,calibration_sixth_ideal_mask]
-  split_ifs <;> simp only [mul_one,mul_zero,star_zero]
+  split_ifs <;> simp
 
 lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal) (z : ℂ) :
     frequencyWeight z (sixthFrequencyEquiv p)=
       frequencyWeight z ⟨p.1.val,p.1.property.1⟩*fullIdealWeight (6*z) p.2.val := by
   have hu : 0<elementNorm p.1.val := elementNorm_pos _ p.1.property.1
   have hl : 0<(Ideal.absNorm p.2.val:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr p.2.property)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (p.2.property)
   have hn : elementNorm (sixthFrequencyEquiv p).val=
       elementNorm p.1.val*(Ideal.absNorm p.2.val:ℝ)^6 := by
     unfold elementNorm

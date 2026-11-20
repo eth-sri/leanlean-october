@@ -31,8 +31,8 @@ theorem whole_slot_removal {α : Type*} (s : Finset α) (length : α → ℝ)
       (Finset.sum_sdiff hTs).symm
     have hTnonneg : 0 ≤ ∑ i ∈ T, length i := Finset.sum_nonneg (fun i hi => hL i (hTs hi))
     refine ⟨s\T,Finset.sdiff_subset,le_min (by linarith) (by linarith),Or.inr ?_⟩
-    have hremove : F/(6*κ) ≤ ∑ i ∈ s\T, length i := by linarith
-    exact (div_le_iff₀ (by positivity : 0 < 6*κ)).mp hremove |>.trans_eq (mul_comm _ _)
+    refine (div_le_iff₀ (by positivity : 0 < 6*κ)).mp ?_ |>.trans_eq (mul_comm _ _)
+    linarith
 
 end SevenEighths.CenteredMomentSlotRemoval
 

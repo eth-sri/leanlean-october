@@ -40,7 +40,7 @@ theorem continuous_unmarkedPoly {d : Data K} (hHn : 0 < d.Hn) {k : ℕ}
     (ψ : DirichletCharacter ℂ k) : Continuous (unmarkedPoly d ψ) := by
   unfold unmarkedPoly
   refine continuous_const.mul (continuous_finsetSum _ fun n hn => ?_)
-  have h : 0 < n := lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (mem_Icc.1 hn).1
+  have h  := lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (mem_Icc.1 hn).1
   exact continuous_const.mul (continuous_natCast_cpow_mul_I h.ne')
 
 /-- `(ξ, t) ↦ P_s(t)` with shift `ξ` is continuous. -/
@@ -60,13 +60,13 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
   have hP0 : 0 < P := by linarith
   -- `|PS| ≤ P + 1`
   have hcard : (#PS : ℝ) ≤ P + 1 := by
-    have hsub : PS ⊆ Ico ⌈P⌉₊ ⌈2 * P⌉₊ := fun p hp => by
+    have hsub  := fun p hp => by
       obtain ⟨-, h₁, h₂⟩ := hPS p hp
       exact mem_Ico.2 ⟨Nat.ceil_le.2 h₁, Nat.lt_ceil.2 h₂⟩
     have h := card_le_card hsub
     rw [Nat.card_Ico] at h
     have h₁ : (⌈2 * P⌉₊ : ℝ) < 2 * P + 1 := Nat.ceil_lt_add_one (by linarith)
-    have h₂ : P ≤ (⌈P⌉₊ : ℝ) := Nat.le_ceil P
+    have h₂  := Nat.le_ceil P
     have h₃ : ((⌈2 * P⌉₊ - ⌈P⌉₊ : ℕ) : ℝ) = ⌈2 * P⌉₊ - ⌈P⌉₊ :=
       Nat.cast_sub (Nat.ceil_mono (by linarith))
     have h₄ : (#PS : ℝ) ≤ ((⌈2 * P⌉₊ - ⌈P⌉₊ : ℕ) : ℝ) := by exact_mod_cast h
@@ -86,7 +86,7 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
         gcongr
     _ ≤ 2 := by
         rw [mul_add, inv_mul_cancel₀ hP0.ne']
-        have : P⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hP
+        have  := inv_le_one_of_one_le₀ hP
         linarith
 
 /-- `∫_{-T}^T 1_{[m, m + 1]} c ≤ c` for `c ≥ 0`. -/
@@ -94,11 +94,10 @@ theorem integral_indicator_Icc_le {T c : ℝ} (hT : 0 ≤ T) (hc : 0 ≤ c) (m :
     ∫ τ in (-T)..T, Set.indicator (Set.Icc m (m + 1)) (fun _ => c) τ ≤ c := by
   rw [intervalIntegral.integral_of_le (by linarith), integral_indicator_const _ measurableSet_Icc,
     measureReal_restrict_apply measurableSet_Icc, smul_eq_mul]
-  have h : volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ 1 := by
-    calc volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ volume.real (Set.Icc m (m + 1)) :=
-          measureReal_mono Set.inter_subset_left measure_Icc_lt_top.ne
-      _ = 1 := by rw [Real.volume_real_Icc_of_le (by linarith)]; ring
-  exact mul_le_of_le_one_left hc h
+  refine mul_le_of_le_one_left hc ?_
+  calc volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ volume.real (Set.Icc m (m + 1)) :=
+        measureReal_mono Set.inter_subset_left measure_Icc_lt_top.ne
+    _ = 1 := by rw [Real.volume_real_Icc_of_le (by linarith)]; ring
 
 /-! ### The isolated energy -/
 
@@ -126,12 +125,10 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
   set Z := 2 * d.X * L ^ B
   set S := sparseSet x Z As P PS χ ξ
   have hL0 : 0 ≤ L := Real.log_nonneg hx
-  have hHn : 0 < d.Hn := (Real.rpow_pos_of_pos (by linarith) _).trans_le hd.Hn_ge
-  have hN : Continuous N := continuous_unmarkedPoly hHn ψ
+  have hN : Continuous N := continuous_unmarkedPoly ((Real.rpow_pos_of_pos (by linarith) _).trans_le hd.Hn_ge) ψ
   have hP : 1 ≤ P := (Real.one_le_exp (Real.rpow_nonneg hL0 _)).trans hP1
-  have hPS0 : ∀ p ∈ PS, p ≠ 0 := fun p hp => (hPS p hp).1.ne_zero
   have hPc : Continuous fun τ => primePoly P PS χ ξ τ := by
-    have h := (continuous_primePoly (P := P) hPS0 χ).comp (Continuous.prodMk_right ξ)
+    have h := (continuous_primePoly (P := P) (fun p hp => (hPS p hp).1.ne_zero) χ).comp (Continuous.prodMk_right ξ)
     exact h
   -- a maximizer `τ_m` of `|N_β|` on each unit interval `[m, m + 1]`
   have hmax : ∀ m : ℤ, ∃ t : ℝ, (m : ℝ) ≤ t ∧ t ≤ m + 1 ∧
@@ -165,9 +162,9 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
         _ ≤ G τ := le_add_of_nonneg_right hind
     -- where `P_s` is large, `⌊τ⌋` is in the sparse family
     · set m₀ := ⌊τ⌋
-      have hm₀ : (m₀ : ℝ) ≤ τ := Int.floor_le τ
-      have hm₀' : τ ≤ m₀ + 1 := (Int.lt_floor_add_one τ).le
-      have hTZ' : |τ| ≤ Z := hτT.trans hTZ
+      have hm₀ := Int.floor_le τ
+      have hm₀' := (Int.lt_floor_add_one τ).le
+      have hTZ' := hτT.trans hTZ
       have hmS : m₀ ∈ S := by
         simp only [S, sparseSet, mem_filter, mem_Icc]
         refine ⟨⟨?_, ?_⟩, τ, hm₀, hm₀', hTZ', hlarge⟩
@@ -177,9 +174,9 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
           linarith
         · have h₁ : τ ≤ (⌈Z⌉ : ℝ) := by linarith [Int.le_ceil Z, (abs_le.1 hTZ').2]
           exact Int.floor_le_iff.2 (by linarith)
-      have hε : ‖M τ‖ ≤ ε := hMε τ hτT
+      have hε := hMε τ hτT
       have hε0 : 0 ≤ ε := (norm_nonneg _).trans hε
-      have hNτ : ‖N τ‖ ≤ ‖N (τm m₀)‖ := hτmax m₀ τ hm₀ hm₀'
+      have hNτ := hτmax m₀ τ hm₀ hm₀'
       have hPs := norm_primePoly_le_two hP hPS χ ξ τ
       calc (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2
           ≤ (2 * (ε * ‖N (τm m₀)‖)) ^ 2 := by

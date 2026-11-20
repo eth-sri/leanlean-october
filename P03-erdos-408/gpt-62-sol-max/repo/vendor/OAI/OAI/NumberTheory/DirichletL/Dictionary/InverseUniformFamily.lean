@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
@@ -57,7 +57,6 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
     (inverseLogSchwartz_apply reverse n V W a b ha hV hW hs) T
   refine ⟨J,A*B,mul_pos hA hB,?_⟩
   intro R hR σ hσ t
-  have hp : (σ,R)∈Icc (0:ℝ) 1 ×ˢ Icc (0:ℝ) Rmax := ⟨hσ,hR⟩
   have hheight : ‖t/(2*Real.pi)‖≤‖t‖ := by
     rw [norm_div,Real.norm_of_nonneg (by positivity : 0≤2*Real.pi)]
     exact div_le_self (norm_nonneg _) (by linarith [Real.pi_gt_three])
@@ -66,7 +65,7 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
   apply hh.trans
   have hb : T.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (frequencyTwist (inverseLogSchwartz reverse n V W a b ha hV hW hs (σ,R)) (t/(2*Real.pi)))≤B*(1+‖t‖)^J :=
-    (hbound (σ,R) hp (t/(2*Real.pi))).trans
+    (hbound (σ,R) (⟨hσ,hR⟩) (t/(2*Real.pi))).trans
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) J) hB.le)
   exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
 

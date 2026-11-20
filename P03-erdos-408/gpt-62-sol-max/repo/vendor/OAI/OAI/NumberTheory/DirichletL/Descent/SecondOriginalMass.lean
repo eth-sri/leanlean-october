@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondActualMass
 
 @[expose] public section
@@ -16,7 +17,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
-      (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
       {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : Eisˣ)
       (Z ell R j t g theta eta : ℝ), 0 < Z →
       (∀ x ∈ source, x.quotient ≠ 0) →

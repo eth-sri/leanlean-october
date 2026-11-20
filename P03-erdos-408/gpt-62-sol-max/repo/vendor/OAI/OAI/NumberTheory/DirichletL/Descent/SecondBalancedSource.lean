@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondDensityAssembly
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.SecondFreshAssembly
+public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 
 @[expose] public section
@@ -8,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -19,9 +21,9 @@ theorem balanced_density_integrable (g : Fin 6 → 𝓢(ℝ,ℂ)) (g₁ g₂ b�
   exact (full_density_integrable _ _ _ _).const_mul _
 
 variable {κ ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end
 end SevenEighths.InverseMoment

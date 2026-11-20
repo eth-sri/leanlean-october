@@ -31,7 +31,7 @@ theorem eventually_exp_card_exceptional_le (K : ℝ) :
       (TypeII.eventually_mul_log_rpow_le (2 * |K|) 1 _ (by norm_num : (0 : ℝ) < 0.22)),
     Real.tendsto_log_atTop.eventually_ge_atTop (Real.exp 1)] with x h₁ hL
   set L := Real.log x
-  have hL1 : 1 ≤ L := le_trans (Real.one_le_exp (by norm_num)) hL
+  have hL1  := le_trans (Real.one_le_exp (by norm_num)) hL
   have hL0 : 0 < L := by linarith
   have hT1 : 1 ≤ Real.log L := by
     rw [← Real.log_exp 1]
@@ -69,7 +69,7 @@ theorem floor_mem_Icc_of_abs_le {t T : ℝ} (h : |t| ≤ T) : ⌊t⌋ ∈ Icc (-
   have h₂ := (abs_le.1 h).2
   constructor
   · have h₃ : (-(⌈T⌉ : ℝ)) ≤ t := by linarith [Int.le_ceil T]
-    have h₄ : t < ⌊t⌋ + 1 := Int.lt_floor_add_one t
+    have h₄  := Int.lt_floor_add_one t
     have : ((-⌈T⌉ - 1 : ℤ) : ℝ) < ⌊t⌋ + 1 := by push_cast; linarith
     have : (-⌈T⌉ - 1 : ℤ) < ⌊t⌋ + 1 := by exact_mod_cast this
     omega
@@ -101,8 +101,8 @@ theorem integral_sdiff_le_of_cover {f : ℝ → ℝ} (hf : Continuous f) (hf0 : 
       (Function.onFun Disjoint fun j : ℤ => Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1)) := by
     intro j _ j' _ hjj'
     refine Set.disjoint_left.2 fun t ht ht' => hjj' ?_
-    have h₁ : ⌊t⌋ = j := Int.floor_eq_iff.2 ⟨ht.2.1, ht.2.2⟩
-    have h₂ : ⌊t⌋ = j' := Int.floor_eq_iff.2 ⟨ht'.2.1, ht'.2.2⟩
+    have h₁  := Int.floor_eq_iff.2 ⟨ht.2.1, ht.2.2⟩
+    have h₂  := Int.floor_eq_iff.2 ⟨ht'.2.1, ht'.2.2⟩
     rw [← h₁, ← h₂]
   have hunion : ⋃ j ∈ 𝒥, Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1) ⊆ Set.Ioc τ₁ τ₂ :=
     Set.iUnion₂_subset fun j _ => Set.inter_subset_left
@@ -148,11 +148,10 @@ theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR :
     (hR : ‖(R : ℂ)⁻¹ * ∑ u ∈ uR, c u * (u : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤ s) :
     ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c t‖ ^ 2 ≤
       (2 / vlo) ^ 2 * 4 * (4 * κ' * Real.log x ^ (-A')) ^ 2 * s := by
-  have hP1 : 1 ≤ P := one_le_of_exp_div_two_le hL hd.hP₁
-  have hP0 : 0 < P := by linarith
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hd.hY₁
-  have hN0 : 0 < N := lt_of_lt_of_le (Real.exp_pos _) hd.hN₁
-  have hR0 : 0 < R := lt_of_lt_of_le (Real.exp_pos _) hd.hR₁
+  have hP1  := one_le_of_exp_div_two_le hL hd.hP₁
+  have hY0  := lt_of_lt_of_le (by positivity) hd.hY₁
+  have hN0  := lt_of_lt_of_le (Real.exp_pos _) hd.hN₁
+  have hR0  := lt_of_lt_of_le (Real.exp_pos _) hd.hR₁
   set B := 4 * κ' * Real.log x ^ (-A')
   set Pl := ∑ p ∈ (Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime, χ p * (p : ℂ) ^ ((t : ℂ) * Complex.I)
   set Rr := ∑ u ∈ uR, c u * (u : ℂ) ^ ((t : ℂ) * Complex.I)
@@ -163,8 +162,7 @@ theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR :
     have : ‖Pl‖ = N * (N⁻¹ * ‖Pl‖) := by field_simp
     rw [this]
     exact mul_le_mul_of_nonneg_left h hN0.le
-  have hB0 : 0 ≤ B := (mul_nonneg_iff_of_pos_left hN0).1 ((norm_nonneg _).trans hPl)
-  have hs0 : 0 ≤ s := le_trans (sq_nonneg _) hR
+  have hs0  := le_trans (sq_nonneg _) hR
   -- E8's bound for `R`
   have hR' : ‖Rr‖ ^ 2 ≤ R ^ 2 * s := by
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hR0.le, mul_pow] at hR
@@ -182,9 +180,8 @@ theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR :
     rw [boxPoly, norm_mul, norm_mul, norm_mul, Complex.norm_real,
       Real.norm_of_nonneg (by positivity)]
     ring
-  have h₁ : ‖∑ p ∈ sP, (((P * V)⁻¹ : ℝ) : ℂ) * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
-      (2 / vlo) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hPs 2
-  have h₂ : ‖Pl‖ ^ 2 ≤ (N * B) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) hPl 2
+  have h₁  := pow_le_pow_left₀ (norm_nonneg _) hPs 2
+  have h₂  := pow_le_pow_left₀ (norm_nonneg _) hPl 2
   have h₃ : ‖Pl‖ ^ 2 * ‖Rr‖ ^ 2 ≤ (N * B) ^ 2 * (R ^ 2 * s) :=
     mul_le_mul h₂ hR' (by positivity) (by positivity)
   have h₄ : (P / Y) ^ 2 * ((N * B) ^ 2 * (R ^ 2 * s)) = (P / Y * N * R) ^ 2 * (B ^ 2 * s) := by
@@ -277,11 +274,11 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
   intro Y P N R V lo hi sP uR k χ c hd A' E κ' hAP1 hAP2 τ₁ τ₂ h₁₂ hrange
   classical
   obtain ⟨hT₀1, -, hT₀x, hYx, -⟩ := boxScales_of hCm hd hs
-  have hL : 160 ≤ Real.log x := hs.1
+  have hL  := hs.1
   have hL0 : 0 < Real.log x := by linarith
   have hx0 : 0 < x := by linarith [hs.2.1]
-  have hP0 : 0 < P := lt_of_lt_of_le (by positivity) hd.hP₁
-  have hV0 : 0 < V := lt_of_lt_of_le hvlo hd.hV
+  have hP0  := lt_of_lt_of_le (by positivity) hd.hP₁
+  have hV0  := lt_of_lt_of_le hvlo hd.hV
   have hrange' : ∀ τ ∈ Set.Icc τ₁ τ₂, Real.log x ^ E ≤ |τ| ∧ |τ| ≤ x ^ 3 := fun τ hτ =>
     ⟨(hrange τ hτ).1, by linarith [(hrange τ hτ).2]⟩
   have hlen : τ₂ - τ₁ ≤ 4 * (x * Real.log x ^ (Cm + 2)) := by
@@ -311,7 +308,7 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
     exact mul_le_mul_of_nonneg_left (boxMeanValue_le' hCm hd hs χ h₁₂ hlen) (by positivity)
   · -- the exceptional set `𝒥` of S16, with `coeff = min(1, v₋)/V`
     set m := min 1 vlo with hm
-    have hm0 : 0 < m := lt_min one_pos hvlo
+    have hm0  := lt_min one_pos hvlo
     have hmV : m ≤ V := (min_le_right _ _).trans hd.hV
     have hmL : 1 ≤ m * Real.log x := by
       rw [div_le_iff₀ hm0] at hLm
@@ -339,12 +336,12 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
         Real.log x ^ (-(As + 1)) <
           ‖(P : ℂ)⁻¹ * ∑ p ∈ sP, ((m / V : ℝ) : ℂ) * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖
       with h𝒥
-    have h𝒥card : (#𝒥 : ℝ) * Real.exp (-Real.log x ^ (0.95 : ℝ)) ≤ 1 :=
+    have h𝒥card  :=
       le_trans (mul_le_mul_of_nonneg_right hcardJ (Real.exp_pos _).le) hJ
     have h𝒥T : ∀ j ∈ 𝒥, |(j : ℝ)| ≤ 2 * (x * Real.log x ^ (Cm + 2)) := by
       intro j hj
       have h := (mem_Icc.1 (mem_filter.1 hj).1)
-      have hc₁ : (⌈Tmax⌉ : ℝ) < Tmax + 1 := Int.ceil_lt_add_one Tmax
+      have hc₁  := Int.ceil_lt_add_one Tmax
       have h₁ : ((-⌈Tmax⌉ - 1 : ℤ) : ℝ) ≤ j := by exact_mod_cast h.1
       have h₂ : (j : ℝ) ≤ ⌈Tmax⌉ := by exact_mod_cast h.2
       push_cast at h₁

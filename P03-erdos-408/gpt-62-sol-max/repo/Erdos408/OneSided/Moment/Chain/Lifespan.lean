@@ -116,14 +116,14 @@ theorem lifeQuiet_of_lt (hA : A ⊆ range (N + 1)) (ht : N < t) : lifeQuiet A t 
 theorem sum_lifeTail_of_mem (hL : ∀ j ≤ N, L j ≤ p) (ht : t ∈ A) (htN : t ≤ N) :
     ∑ ℓ ∈ range (p + 1), lifeTail N L η' A t ℓ = lifeTail N L η' A t (L t) := by
   simp only [lifeTail_eq_mul htN, lifeStep, ht, ite_true, ite_mul, one_mul, zero_mul]
-  rw [sum_ite_eq', ite_eq_left (mem_range.2 (Nat.lt_succ_of_le (hL t htN)))]
+  simp_all
 
 /-! ### The ghost -/
 
 /-- The ghost keeps an active prime. -/
 theorem lifeValue_active (ht : t ∈ A) (htN : t ≤ N) :
     lifeValue p N L η' A c t .active = postValue p N L η' A c t .active := by
-  simp only [lifeValue, postValue, lifeTail_eq_mul htN, lifeStep, ht, ite_true, one_mul]
+  simp [lifeValue, postValue, lifeTail_eq_mul htN, lifeStep, ht, ite_true, one_mul]
 
 /-- The ghost keeps a dead prime. -/
 theorem lifeValue_dead (ht : t ∉ A) :
@@ -143,7 +143,7 @@ theorem lifeValue_pending_hit (ht : t ∉ A) (htN : t ≤ N) :
 /-- A pending prime missing its line is unchanged by the ghost. -/
 theorem lifeValue_pending_miss {ℓ : ℕ} (ht : t ∉ A) (htN : t ≤ N) (hℓ : ℓ ≠ L t) :
     lifeValue p N L η' A c t (.pending ℓ) = postValue p N L η' A c t (.pending ℓ) := by
-  simp only [lifeValue, postValue, lifeTail_eq_mul htN, lifeStep, ht, hℓ, ite_false, mul_zero,
+  simp [lifeValue, postValue, lifeTail_eq_mul htN, lifeStep, ht, hℓ, ite_false, mul_zero,
     sub_zero, one_mul, lifeQuiet_succ ht]
 
 /-- An unborn prime stays unborn or is created at its current line with `-η'_t c`
@@ -164,7 +164,7 @@ theorem lifeValue_unborn (hL : ∀ j ≤ N, L j ≤ p) (hA : A ⊆ range (N + 1)
   simp only [lifeValue, postValue, hsum, lifeQuiet_succ ht]
   by_cases h₁ : t + 1 ∈ A
   · -- the prime enters at `t + 1`: the lifeQuiet value vanishes
-    have hN : t + 1 ≤ N := Nat.lt_succ_iff.1 (mem_range.1 (hA h₁))
+    have hN  := Nat.lt_succ_iff.1 (mem_range.1 (hA h₁))
     rw [ite_eq_left h₁, lifeQuiet_of_mem h₁, sum_lifeTail_of_mem hL h₁ hN]
     ring
   · rw [ite_eq_right h₁]
@@ -197,7 +197,7 @@ theorem postValue_enter_pending (h₁ : t + 1 ∈ A) (hN : t + 1 ≤ N) (ℓ : �
   simp only [postValue, lifeValue, lifeQuiet_of_mem h₁, sub_zero]
   rw [lifeTail_eq_mul hN, lifeTail_eq_mul hN]
   simp only [lifeStep, h₁, ite_true]
-  split_ifs with h <;> simp [h]
+  simp_all
 
 /-- A dead prime cannot enter activity. -/
 theorem postValue_enter_dead (h₁ : t + 1 ∈ A) : postValue p N L η' A c t .dead = 0 :=
@@ -222,7 +222,7 @@ theorem postValue_last (hA : A ⊆ range (N + 1))
       | .pending _ => 0
       | _ => 1 := by
   have hN : N + 1 ∉ A := fun h => by simpa using hA h
-  have hq : lifeQuiet A (N + 1) = 1 := lifeQuiet_of_lt hA (Nat.lt_succ_self N)
+  have hq  := lifeQuiet_of_lt hA (Nat.lt_succ_self N)
   cases st with
   | active => exact lifeTail_of_lt (Nat.lt_succ_self N) _
   | pending ℓ => simp only [postValue, lifeTail_of_lt (Nat.lt_succ_self N), hq, sub_self]

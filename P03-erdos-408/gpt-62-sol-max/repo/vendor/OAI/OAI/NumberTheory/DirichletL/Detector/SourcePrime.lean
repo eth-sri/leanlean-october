@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Detector.SourceCoefficient
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalLocalEuler
 
@@ -21,7 +22,7 @@ theorem gaussTwo_prime_localGamma (p : O) (hp : Prime p)
     gaussTwo (Ideal.span {p}) hI=localGamma p hp.ne_zero hg 2 := by
   let pp : Unit→O := fun _=>p
   have hpp : ∀i,pp i≠0 := fun _=>hp.ne_zero
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {pp i})) := by
+  have hcop : OAI.PrincipalFamily.Coprime pp := by
     intro i j hij
     exact (hij (Subsingleton.elim i j)).elim
   have hi : primaryGenerator (Ideal.span {∏i,pp i})≠0 := by simpa [pp] using hI
@@ -35,7 +36,7 @@ theorem G_prime_localG (p : O) (hp : p≠0)
     G p=MixedGaussConversion.localG p hp hg := by
   let pp : Unit→O := fun _=>p
   have hpp : ∀i,pp i≠0 := fun _=>hp
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {pp i})) := by
+  have hcop : OAI.PrincipalFamily.Coprime pp := by
     intro i j hij
     exact (hij (Subsingleton.elim i j)).elim
   have he := canonicalProductG_eq_fixedGValue pp hpp hcop (fun _=>hg)

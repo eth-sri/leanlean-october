@@ -48,7 +48,7 @@ theorem comparison_error_scalar_pairing (G : PrimeGroups) (a b : Fin G.size → 
   intro Y _
   ring
 
-theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : PrimitiveInductionTask)
+theorem dyadic_major_comparison (hfourier : P4Rat.RationalFourierTask) (hind : P4Rat.PrimitiveInductionTask)
     (G : PrimeGroups) (a b : Fin G.size → ℕ) (Q r : ℕ) (u : ℤ)
     (h ξ U V S θ β ζ δ : ℝ) (hr : 1 ≤ r) (hrQ : r ≤ Q)
     (hh : 0 < h) (hh2 : h ≤ Real.log 2) (hξ : 0 < ξ)
@@ -80,7 +80,6 @@ theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : Primiti
   let comp := fun X Y => if valid X Y then comparisonScalar G a b Q h ξ θ ζ X Y else 0
   let ε := (Q : ℝ) ^ 2 * δ / ξ
   let E := (Q : ℝ) ^ 4 * (2 * h * (|ζ| + 64 * Real.pi * S)) + 3 * ε * Real.sqrt (Q : ℝ)
-  have hε : 0 ≤ ε := div_nonneg (mul_nonneg (sq_nonneg _) hδ) hξ.le
   have hE : 0 ≤ E := by dsimp [E]; positivity
   have cop (k : Fin G.size → ℕ) (hp : ∀ g, 0 < k g → ∀ p ∈ G.primes g, Q < p)
       (s : ℕ) (hs : 1 ≤ s) (hsQ : s ≤ Q) (z : Tuple G k) : Nat.Coprime (product G k z) s := by
@@ -119,11 +118,11 @@ theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : Primiti
     by_cases hv : valid X Y
     · simp only [raw, comp, ite_eq_left hv]
       have ht := major_retained_comparison hfourier hind G a b Q r u h ξ U V S θ β ζ ε hr hrQ
-        hh hh2 hξ (by linarith) (by linarith) hS hθ hβ hε hε1 X Y hv.1 hv.2
+        hh hh2 hξ (by linarith) (by linarith) hS hθ hβ (div_nonneg (mul_nonneg (sq_nonneg _) hδ) hξ.le) hε1 X Y hv.1 hv.2
         (cop a hPrimeA r hr hrQ) (cop b hPrimeB r hr hrQ) (repA X hX) (repB Y hY)
       apply ht.trans
-      have htot : (r.totient : ℝ) ≤ (Q : ℝ) := by exact_mod_cast (Nat.totient_le r).trans hrQ
-      exact add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt htot) (by positivity))
+      refine add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ?_) (by positivity))
+      exact_mod_cast (Nat.totient_le r).trans hrQ
     · simp only [raw, comp, ite_eq_right hv, sub_self, norm_zero]
       exact hE
   have hprobA : (∑ X, tupleWeight G a X) = 1 := tuple_law_sum (coreGroups G) a hMass
@@ -157,7 +156,7 @@ theorem dyadic_major_comparison (hfourier : RationalFourierTask) (hind : Primiti
   have hn := ht.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (add_le_add (Real.sqrt_le_sqrt hmass') (le_refl E)) (tuple_norm_nonneg G a g))
     (tuple_norm_nonneg G b f))
-  convert hn using 1; dsimp [E, ε]; ring
+  convert hn using 1; ring
 
 end
 end Erdos821.S34Core

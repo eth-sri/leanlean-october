@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondTripleBounds
 public import OAI.NumberTheory.DirichletL.Descent.Basic
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.Basic
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (hp : ∀ i,p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 theorem actual_second_inherited_puncture_ne_zero

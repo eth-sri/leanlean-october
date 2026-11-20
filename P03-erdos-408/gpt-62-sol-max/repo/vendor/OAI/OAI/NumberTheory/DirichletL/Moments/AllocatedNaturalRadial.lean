@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskRadialEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SecondOriginalChildren
@@ -9,11 +11,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondOriginalChildren
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentAllocatedNaturalRadial
-open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory CenteredMomentAllocatedNaturalSource
+open CenteredMomentCommonMaskRadialEnergy CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
 open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
@@ -66,18 +67,13 @@ theorem uniform_shared (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : ℝ) (hε : 0<
   have he (T : Finset α) (F : Finset T) : ∃C : ℝ,0<C ∧ Shared F (fun i=>b i) (fun i=>M i) C ε :=
     actual_radial_shared_energy F (fun i=>b i) (fun i=>M i) (fun i _=>hM i) ε hε
   choose C hC hb using he
-  let B : ℝ:=1+∑T : Finset α,∑F : Finset T,C T F
-  have hp (T : Finset α) : 0≤∑F : Finset T,C T F:=Finset.sum_nonneg (fun F _=>(hC T F).le)
-  refine ⟨B,by have hh : 0≤∑T : Finset α,∑F : Finset T,C T F:=Finset.sum_nonneg (fun T _=>hp T);dsimp [B];linarith,?_⟩
+  obtain ⟨B, hB, hmajor⟩ := exists_real_majorant 0 (fun p : Σ T : Finset α, Finset T => C p.1 p.2)
+  refine ⟨B,hB,?_⟩
   intro T F R hR χ W₁ W₂ X₁ X₂ a₁ b₁ a₂ b₂ pool β P keep Φ K E
     hX₁ hX₂ hb₁ hb₂ hs₁ hs₂ hprime hP hβ hs hK hΦ hE hchild
-  have hCB : C T F≤B := by
-    have h₁:=Finset.single_le_sum (fun G _=>(hC T G).le) (Finset.mem_univ F)
-    have h₂:=Finset.single_le_sum (fun T _=>hp T) (Finset.mem_univ T)
-    dsimp [B];linarith
   exact (hb T F R hR χ W₁ W₂ X₁ X₂ a₁ b₁ a₂ b₂ pool β P keep Φ K E
     hX₁ hX₂ hb₁ hb₂ hs₁ hs₂ hprime hP hβ hs hK hΦ hE hchild).trans
-    (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCB
+    (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (hmajor ⟨T,F⟩)
       (Real.rpow_nonneg (Nat.cast_nonneg _) _)) hE)
 
 def commonChild (s : Input α) (τ : Character) (v : ℝ) (C R : Ideal O)

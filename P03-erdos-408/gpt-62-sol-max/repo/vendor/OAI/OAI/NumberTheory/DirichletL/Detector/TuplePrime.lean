@@ -17,7 +17,7 @@ local notation "Id" => Ideal O
 lemma span_tupleProduct {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
     Ideal.span {∏i∈J,p i}=∏i∈J,Ideal.span {p i} := by
   induction J using Finset.induction_on with
-  | empty => simp only [Finset.prod_empty,Ideal.span_singleton_one,Ideal.one_eq_top]
+  | empty => simp
   | @insert i J hi ih =>
     rw [Finset.prod_insert hi,←Ideal.span_singleton_mul_span_singleton,ih,Finset.prod_insert hi]
 

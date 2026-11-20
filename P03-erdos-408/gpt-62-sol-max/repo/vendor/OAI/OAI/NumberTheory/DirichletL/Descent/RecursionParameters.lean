@@ -1,7 +1,15 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.ActualDepthBudget
-public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassLowerRank
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalChildSupport
+public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStep
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
+public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicLiveRadius
 
 @[expose] public section
 
@@ -24,7 +32,7 @@ theorem actual_step_parameters (F eta r ell epsChild:ℝ)
     (epsChild+58*eta)+(2*F+15*eta+eta)*firstPassEpsilon F eta+firstPassEpsilon F eta≤epsChild+60*eta :=by
   have hd:0<10*F+32:=by positivity
   have hm:0<20*(3*F+16)+30:=by positivity
-  have he:0<firstPassEpsilon F eta:=div_pos heta hd
+  have he:=div_pos heta hd
   have heq:firstPassEpsilon F eta*(10*F+32)=eta:=by unfold firstPassEpsilon;field_simp
   have heq':sourceMassEpsilon F eta*(20*(3*F+16)+30)=2*eta:=by unfold sourceMassEpsilon;field_simp
   refine ⟨he,div_pos (by positivity) hm,by linarith,by linarith,by ring_nf;linarith,?_,?_⟩
@@ -42,10 +50,9 @@ theorem actual_recursion_parameters (Mcap Fcap c eps:ℝ)(_hM:0≤Mcap)(_hF:0≤
       (depth:ℝ)*7*eta≤c/2 ∧ (depth:ℝ)*15*eta≤1 ∧
       (depth:ℝ)*100*eta≤eps/4 :=by
   let cutoff:=c/1000
-  have hd:0<cutoff:=by dsimp[cutoff];positivity
+  have hd:0<cutoff:=by positivity
   let depth:=actualDepth Mcap (cutoff/2)
   let D:ℝ:=(depth:ℝ)+1
-  have hD:0<D:=by dsimp[D];positivity
   let eta:=min 1 (min (cutoff/32) (min (c/200000) (min (c/(28*D)) (min (1/(30*D)) (eps/(800*D))))))
   have he:0<eta:=by dsimp[eta];positivity
   have he1:eta≤1:=min_le_left _ _
@@ -58,7 +65,6 @@ theorem actual_recursion_parameters (Mcap Fcap c eps:ℝ)(_hM:0≤Mcap)(_hF:0≤
   have h4:eta*(28*D)≤c:=(le_div_iff₀ (by positivity)).mp he4
   have h5:eta*(30*D)≤1:=(le_div_iff₀ (by positivity)).mp he5
   have h6:eta*(800*D)≤eps:=(le_div_iff₀ (by positivity)).mp he6
-  have hn:(depth:ℝ)*eta≤D*eta:=mul_le_mul_of_nonneg_right (by dsimp[D];linarith) he.le
   change (depth:ℝ)*7*eta≤c/2 ∧ (depth:ℝ)*15*eta≤1 ∧ (depth:ℝ)*100*eta≤eps/4
   constructor <;> first | nlinarith | constructor <;> nlinarith
 

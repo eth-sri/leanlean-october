@@ -36,8 +36,7 @@ lemma eventually_mul_logLogLog_le (D : ℝ) {ε : ℝ} (hε : 0 < ε) :
   simp only [norm_eq_abs, id] at hx
   rw [abs_of_pos (show 0 < logLog x by linarith)] at hx
   have hs : |logLogLog x| ≤ ε / (|D| + 1) * logLog x := by
-    rw [logLogLog]
-    exact hx
+    assumption
   calc D * logLogLog x ≤ |D| * |logLogLog x| := by
         rw [← abs_mul]
         exact le_abs_self _
@@ -106,9 +105,7 @@ lemma eventually_mul_logLogLog_cube_le (D : ℝ) :
   calc D * (logLogLog x + 1) ^ 3 ≤ |D| * (5 * q) ^ 3 := by
         have h1 : (logLogLog x + 1) ^ 3 ≤ (5 * q) ^ 3 :=
           pow_le_pow_left₀ (by linarith) (by linarith) 3
-        have h2 : D * (logLogLog x + 1) ^ 3 ≤ |D| * (logLogLog x + 1) ^ 3 :=
-          mul_le_mul_of_nonneg_right (le_abs_self D) (by positivity)
-        exact h2.trans (mul_le_mul_of_nonneg_left h1 (abs_nonneg D))
+        exact (mul_le_mul_of_nonneg_right (le_abs_self D) (by positivity)).trans (mul_le_mul_of_nonneg_left h1 (abs_nonneg D))
     _ = 125 * |D| * q ^ 3 := by ring
     _ ≤ q * q ^ 3 := by gcongr; linarith
     _ = T := by rw [← hq4]; ring

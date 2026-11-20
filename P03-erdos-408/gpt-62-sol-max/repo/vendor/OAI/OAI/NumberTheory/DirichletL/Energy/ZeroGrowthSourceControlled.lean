@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthSourceControlled
@@ -18,7 +18,6 @@ open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
 open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
 open CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 open CenteredMomentEnergyZeroGrowthSource (PhysicalGrowthAt)
 
@@ -50,8 +49,7 @@ theorem actual_growth_from_physical
   filter_upwards [hbound] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro e emass efinal Q K Cmass Cprevious he hK hCm hCp hef hmf hdf htf hold hlow hmass
-  have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hCout:0≤Cfixed*(K+Cmass+Cprevious+1):=by positivity
+  have hz:=zero_lt_one.trans hZ.1
   intro s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
   have hbase:1≤1+|t|:=by linarith [abs_nonneg t]
   have hdg:=diagonalControl_nonneg s.radial.profile
@@ -60,10 +58,10 @@ theorem actual_growth_from_physical
   by_cases hsmall:s.width≤ rho
   · have hh:=zeroGrowth_of_zeroAt Q a b bΦ Bmask L rho efinal Z degree S
       Cprevious hCp hold s hQ hsmall p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
-    have hp:=profile_control_mono p hS
+    have hp:=p.control_mono hS
     have hp0:=p.control_nonneg S
     have hj:degree≤Jout:=Nat.le_add_right _ _
-    have hpow:=pow_le_pow_right₀ (show 1≤1+‖t‖ by linarith [norm_nonneg t]) hj
+    have hpow:=pow_le_pow_right₀ (show 1≤1+‖t‖ by assumption) hj
     have hcoeff:Cprevious≤Cfixed*(K+Cmass+Cprevious+1):=by
       dsimp [Cfixed]
       nlinarith [mul_nonneg hCh.le hK,mul_nonneg hCh.le hCm,mul_nonneg hCh.le hCp]
@@ -72,7 +70,7 @@ theorem actual_growth_from_physical
   have hlowL:=low_restrict Q a b bΦ Bmask _ L Mcap e Z degree S K hZ.1.le (le_max_left _ _) hlow
   by_cases hl:length Z X₁+length Z X₂≤5*s.width/6
   · have hh:=hlowL s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hl
-    have hp:=profile_control_mono p hS
+    have hp:=p.control_mono hS
     have hp0:=p.control_nonneg S
     have hj:degree≤Jout:=Nat.le_add_right _ _
     have hpow:=pow_le_pow_right₀ hbase hj
@@ -93,7 +91,7 @@ theorem actual_growth_from_physical
   have hp:=hmass s hQ (le_of_not_ge hsmall) hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ (le_of_not_ge hl)
   have hh:=hZ.2 e emass efinal Q K Cmass he hK hCm hef hmf hdf htf hlowR
     s hQ (le_of_not_ge hsmall) hs p t X₁ X₂ hX₁ hX₂ hvolume (le_of_not_ge hl) hp
-  have hcontrol:=profile_control_mono p hUh
+  have hcontrol:=p.control_mono hUh
   have hp0:=p.control_nonneg Uh
   have hj:Jh≤Jout:=Nat.le_add_left _ _
   have hpow:=pow_le_pow_right₀ hbase hj

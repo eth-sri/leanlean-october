@@ -1,13 +1,15 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.CanonicalAnnularPower
+public import OAI.NumberTheory.DirichletL.Energy.FirstRawScaleAdmission
+public import OAI.NumberTheory.DirichletL.Energy.CanonicalAmplifiedColumn
+public import OAI.NumberTheory.DirichletL.Energy.AmplifiedChildWidth
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalAnnularLower
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst
@@ -19,7 +21,6 @@ open CenteredMomentCommonAllocationSum CenteredMomentFirstChildProfileControl
 open CenteredMomentSecondChildPowerBudget
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma parent_lower_ge {ι:Type*}[Fintype ι](s:Input ι)(Z r:ℝ)(hZ:1<Z)
     (hX₁:Z^r≤s.X₁)(hX₂:Z^r≤s.X₂)(hY₁:Z^r≤s.Y₁)(hY₂:Z^r≤s.Y₂):

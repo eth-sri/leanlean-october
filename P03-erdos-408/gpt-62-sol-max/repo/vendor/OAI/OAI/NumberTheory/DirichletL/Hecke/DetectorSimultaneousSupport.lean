@@ -9,11 +9,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.HeckeDetectorSimultaneousSupport
-open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorDyadicGeometry HeckeDetectorSaturation HeckeDetectorNormalized
+open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorDyadicGeometry
+open HeckeDetectorSaturation HeckeDetectorNormalized
 
 theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
@@ -38,7 +38,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
                   ((Z^d)^r) ρ.re (2*Real.pi*ν-ρ.im)‖^2 ∧
               (Z^d)^((2*a-1)*m-2*ε)≤
                 ‖polynomial (χ j) false positiveAnnular ((Z^d)^m) ρ.re (2*Real.pi*ν-ρ.im)‖^2 := by
-  have hdmaxp : 0<dmax := hdmin.trans_le hdmax
+  have hdmaxp  := hdmin.trans_le hdmax
   have hτF : 0<τ/(2*dmax) := by positivity
   obtain ⟨C,UN,hC,hN⟩ := exists_normalized_product 1 (1/2) (τ/(2*dmax))
     (by norm_num) (by norm_num) (by norm_num) hτF
@@ -57,14 +57,13 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   intro Z hZlarge d hd hd' ι _ χ hχ a i hi ha ha' hmax j hQ ρ hzero hρ him tstar ht ht'
   obtain ⟨hscale,hzeroH,hbudgetH,hFourier,hcost,hT,hZ⟩ := hZ₀ Z hZlarge
   let U := Z^d
-  have hd0 : 0≤d := (hdmin.trans_le hd).le
+  have hd0  := (hdmin.trans_le hd).le
   have hlarge := hscale d hd
-  have hU8 : 8≤U := (le_max_left _ _).trans hlarge
-  have hUN : UN≤U := (le_max_left _ _).trans ((le_max_right _ _).trans hlarge)
-  have hUS : US≤U := (le_max_right _ _).trans ((le_max_right _ _).trans hlarge)
+  have hU8  := (le_max_left _ _).trans hlarge
+  have hUN  := (le_max_left _ _).trans ((le_max_right _ _).trans hlarge)
+  have hUS  := (le_max_right _ _).trans ((le_max_right _ _).trans hlarge)
   have hU2 : 2≤U := by linarith
   have hU1 : 1<U := by linarith
-  have hUp : 0<U := by linarith
   have hρlo : 51/100≤ρ.re := ha.trans hρ
   have hρhi : ρ.re≤1 := le_of_lt (lt_of_not_ge (fun hh =>
     LFunction_ne_zero_of_one_le_re (χ j) hh (Or.inr (hχ j)) hzero))

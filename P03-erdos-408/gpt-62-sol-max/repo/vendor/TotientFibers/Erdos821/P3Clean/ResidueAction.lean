@@ -45,7 +45,6 @@ theorem translateParticle_add (a b : ℤ) {g : P.Group} (z : P.Particle g) :
   abel
 
 theorem translateParticle_zero {g : P.Group} (z : P.Particle g) : translateParticle 0 z = z := by
-  rcases z with ⟨p, r⟩
   simp [translateParticle]
 
 theorem translateMemory_add (a b : ℤ) {g : P.Group} (z : P.Memory g) :
@@ -57,7 +56,7 @@ theorem translateMemory_add (a b : ℤ) {g : P.Group} (z : P.Memory g) :
 
 theorem translateMemory_zero {g : P.Group} (z : P.Memory g) : translateMemory 0 z = z := by
   unfold translateMemory
-  simpa only [translateParticle_zero] using Multiset.map_id' z
+  simpa [translateParticle_zero] using Multiset.map_id' z
 
 theorem translateSmallResidues_add (a b : ℤ) (y : P.SmallResidues) :
     translateSmallResidues a (translateSmallResidues b y) = translateSmallResidues (a + b) y := by
@@ -91,18 +90,18 @@ theorem translatePending_zero (s : PendingState P) : translatePending 0 s = s :=
     exact translateMemory_zero (s.2 g)
 
 def pendingTranslationEquiv (B : ℕ) (delta : ℤ) : Equiv.Perm (CutPendingState P B) where
-  toFun s := ⟨translatePending delta s.val, by simpa only [translatePending_size] using s.property⟩
-  invFun s := ⟨translatePending (-delta) s.val, by simpa only [translatePending_size] using s.property⟩
+  toFun s := ⟨translatePending delta s.val, by simpa [translatePending_size] using s.property⟩
+  invFun s := ⟨translatePending (-delta) s.val, by simpa [translatePending_size] using s.property⟩
   left_inv := by
     intro s
     apply Subtype.ext
     exact (translatePending_add (-delta) delta s.val).trans
-      (by simpa only [neg_add_cancel] using translatePending_zero s.val)
+      (by simpa using translatePending_zero s.val)
   right_inv := by
     intro s
     apply Subtype.ext
     exact (translatePending_add delta (-delta) s.val).trans
-      (by simpa only [add_neg_cancel] using translatePending_zero s.val)
+      (by simpa using translatePending_zero s.val)
 
 theorem pendingTranslationEquiv_add (B : ℕ) (a b : ℤ) :
     pendingTranslationEquiv (P := P) B (a + b) =

@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.LowPrimeFamily
+public import OAI.NumberTheory.DirichletL.Detector.LowSlotMarks
+public import OAI.NumberTheory.DirichletL.Detector.LowSlotWeights
+public import OAI.NumberTheory.DirichletL.Reflection.Canonical
 public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 
 @[expose] public section
@@ -28,19 +30,19 @@ theorem lowBaseModulus_coprime (η : HeckeFamily.Character) (C : CalibrationData
     (hLam : λ₀∣C.generator) (h2 : (2:O)∣C.generator)
     (n : O) (hcn : IsCoprime C.generator n) (hη : HeckeFamily.elementCoeff η n≠0) :
     IsCoprime (Ideal.span {n}) (lowBaseModulus η C C.generator D*Ideal.span {(72:O)}) := by
-  have heta : IsCoprime (Ideal.span {n}) η.modulus :=
+  have heta  :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hη)
-  have hcal : IsCoprime (Ideal.span {n}) (Ideal.span {C.generator}) :=
+  have hcal  :=
     (Ideal.isCoprime_span_singleton_iff _ _).mpr hcn.symm
-  have hgood : IsCoprime (Ideal.span {n}) (Ideal.span {D.numeratorGood}) :=
+  have hgood  :=
     (Ideal.isCoprime_span_singleton_iff _ _).mpr
       (hcn.of_isCoprime_of_dvd_left (lowCalibrationGood_dvd C D)).symm
-  have htwo : IsCoprime n (2:O) := (hcn.of_isCoprime_of_dvd_left h2).symm
+  have htwo  := (hcn.of_isCoprime_of_dvd_left h2).symm
   have hs := supported_of_coprime_bad C.generator n hLam h2 hcn
   have hnine := (ShortDraftCRT.nine_coprime_of_not_lambda_dvd n ((supported_span_iff n).mp hs).1).symm
   have hseventy : IsCoprime n (72:O) := by
     convert (htwo.pow_right : IsCoprime n ((2:O)^3)).mul_right hnine using 1 ;norm_num
-  have h72 : IsCoprime (Ideal.span {n}) (Ideal.span {(72:O)}) :=
+  have h72  :=
     (Ideal.isCoprime_span_singleton_iff _ _).mpr hseventy
   have h4 : IsCoprime (Ideal.span {n}) (Ideal.span {(4:O)}) := by
     apply (Ideal.isCoprime_span_singleton_iff _ _).mpr

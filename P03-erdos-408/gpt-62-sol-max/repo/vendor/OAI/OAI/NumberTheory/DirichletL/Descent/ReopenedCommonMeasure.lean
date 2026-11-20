@@ -8,10 +8,10 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
+open scoped Classical SchwartzMap ContDiff
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation
+open JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
@@ -30,8 +30,8 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
     let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
     markedReopenedCubeBin S D Q Ψ m f z W X H₀ slots lists weights =
@@ -42,11 +42,11 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
           (fun v T=>primeMark slots lists weights (T∪v.support)*frequencyTwist V ξ (columnLog (poolPrimary F) ell T)) z := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
   let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
-  have hXp : 0<X := hX ▸ mul_pos (pow_pos hB _) hell
+  have hXp  := hX ▸ mul_pos (pow_pos hB _) hell
   have hupper : ∀ t,W t≠0→t≤b := fun t ht=>(hs ht).2
   dsimp only
   rw [←varying_canonical_bin_separation (poolPrimary F) (poolPrimary_ne_zero F hF)
@@ -63,7 +63,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     (cubeIdeal F v) (cubeIdeal_ne_zero F v)
   have hc' : β v*(n v:ℂ)⁻¹=largeCubeCoefficient H₀ (cubeIdeal F v)*
       cubeWeight (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v) := by
-    simpa only [β,n,Complex.ofReal_natCast] using hc
+    assumption
   rw [hc']
   ring
 

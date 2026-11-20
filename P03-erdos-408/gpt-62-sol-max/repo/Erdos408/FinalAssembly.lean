@@ -94,9 +94,9 @@ theorem variance_F (hR : RectangleInput) :
   set T := Real.log L
   set N := ⌊x⌋₊
   have hL : 0 ≤ L := Real.log_nonneg (by linarith)
-  have hT5 : 0 ≤ T ^ 5 := pow_nonneg hT 5
+  have hT5  := pow_nonneg hT 5
   -- `0 ≤ α ≤ 2`, since `log 3 > 0` and `log 2 > 1 / 2`
-  have hα₀ : 0 ≤ α := le_trans (by positivity) hα₃
+  have hα₀  := le_trans (by positivity) hα₃
   have hα : α ≤ 2 := by
     refine hα₂.trans ?_
     rw [div_le_iff₀ (Real.log_pos one_lt_two)]
@@ -115,8 +115,8 @@ theorem variance_F (hR : RectangleInput) :
   set S₂ := ∑ n ∈ Finset.Icc 1 N, (F n : ℝ) ^ 2
   set δ₁ := harmonicF x - α * L
   set δ₂ := harmonicFSq x + harmonicFPair x - α ^ 2 * L ^ 2
-  have he₁ : |S₁ - x * harmonicF x| ≤ K₁ * x := hK₁ x hx
-  have he₂ : |S₂ - x * (harmonicFSq x + harmonicFPair x)| ≤ K₂ * x * L := hK₂ x hx
+  have he₁  := hK₁ x hx
+  have he₂  := hK₂ x hx
   replace he₁ := abs_le.mp he₁
   replace he₂ := abs_le.mp he₂
   have hδ₁ := abs_le.mp hB
@@ -137,7 +137,6 @@ theorem variance_F (hR : RectangleInput) :
       _ = |K| * (x * L ^ 2 / T ^ 5) := by ring
   have h₂ : -(2 * α * L * x * δ₁) ≤ 4 * |K| * (x * L ^ 2 / T ^ 5) := by
     have : -δ₁ ≤ |K| * (L / T ^ 5) := by
-      have := hδ₁.1
       have : K * L / T ^ 5 ≤ |K| * (L / T ^ 5) := by
         rw [mul_div_assoc]
         exact mul_le_mul_of_nonneg_right (le_abs_self K) (div_nonneg hL hT5)
@@ -164,7 +163,7 @@ theorem variance_F (hR : RectangleInput) :
       _ = 4 * |K₁| * (x * L) := by ring
   have h₅ : 0 ≤ (α * L) ^ 2 * (x - N) := mul_nonneg (sq_nonneg _) (by linarith)
   have ha : 0 ≤ x * L ^ 2 / T ^ 5 := div_nonneg (mul_nonneg hx₀ (sq_nonneg _)) hT5
-  have hb : 0 ≤ x * L := mul_nonneg hx₀ hL
+  have hb  := mul_nonneg hx₀ hL
   nlinarith [mul_nonneg (abs_nonneg K) hb, mul_nonneg (abs_nonneg K₂) ha,
     mul_nonneg (abs_nonneg K₁) ha]
 
@@ -200,7 +199,7 @@ theorem sum_log_div_sq_le {x : ℝ} (hx : 0 ≤ x) :
         refine Finset.sum_le_sum fun n hn => ?_
         rw [Finset.mem_Icc] at hn
         have hn₁ : (1 : ℝ) ≤ n := by exact_mod_cast hn.1
-        have hnx : (n : ℝ) ≤ x := (Nat.le_floor_iff hx).mp hn.2
+        have hnx  := (Nat.le_floor_iff hx).mp hn.2
         have hpos : 0 < x / n := div_pos (by linarith) (by linarith)
         have h := sq_le_exp_half (Real.log_nonneg ((one_le_div (by linarith)).mpr hnx))
         rw [Real.exp_half, Real.exp_log hpos, Real.sqrt_div' _ (by linarith)] at h
@@ -232,8 +231,8 @@ theorem variance_f (hR : RectangleInput) :
   set T := Real.log L
   set N := ⌊x⌋₊
   have hx₀ : 0 ≤ x := by linarith
-  have hT5 : 0 < T ^ 5 := pow_pos hT 5
-  have hα₀ : 0 ≤ α := le_trans (by positivity) hα₃
+  have hT5  := pow_pos hT 5
+  have hα₀  := le_trans (by positivity) hα₃
   have hα : α ≤ 2 := by
     refine hα₂.trans ?_
     rw [div_le_iff₀ (Real.log_pos one_lt_two)]
@@ -253,7 +252,7 @@ theorem variance_f (hR : RectangleInput) :
     nlinarith [sq_nonneg ((f n : ℝ) - F n - ((F n : ℝ) - α * (L - Real.log (x / n)))),
       sq_nonneg ((F n : ℝ) - α * L - α * Real.log (x / n)),
       mul_le_mul_of_nonneg_right hα2 (sq_nonneg (Real.log (x / n)))]
-  have hN : (N : ℝ) ≤ x := Nat.floor_le hx₀
+  have hN  := Nat.floor_le hx₀
   have hsum := Finset.sum_le_sum hpt
   rw [Finset.sum_add_distrib, Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum,
     Finset.sum_const, Nat.card_Icc, add_tsub_cancel_right, nsmul_eq_mul] at hsum
@@ -261,7 +260,7 @@ theorem variance_f (hR : RectangleInput) :
   have hb : x * L ≤ x * L ^ 2 / T ^ 5 := by
     rw [le_div_iff₀ hT5]
     nlinarith [mul_le_mul_of_nonneg_left hTLx (mul_nonneg hx₀ (by linarith : (0 : ℝ) ≤ L))]
-  have hxL : x ≤ x * L := le_mul_of_one_le_right hx₀ hL
+  have hxL  := le_mul_of_one_le_right hx₀ hL
   have hK : K * (x * L ^ 2 / T ^ 5 + x * L) ≤ |K| * (2 * (x * L ^ 2 / T ^ 5)) :=
     (mul_le_mul_of_nonneg_right (le_abs_self K) (by positivity)).trans
       (mul_le_mul_of_nonneg_left (by linarith) (abs_nonneg K))
@@ -296,7 +295,7 @@ theorem normal_order_rate_proved (hR : RectangleInput) :
   set L := Real.log x
   set T := Real.log L
   have hx₀ : 0 ≤ x := by linarith
-  have hT5 : 0 < T ^ 5 := pow_pos hT 5
+  have hT5  := pow_pos hT 5
   have hsq := Real.sqrt_nonneg x
   have hKC : K ≤ 4 * |K| + 1 := (le_abs_self K).trans (by linarith [abs_nonneg K])
   refine ⟨hKx.trans (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right
@@ -322,19 +321,19 @@ theorem normal_order_rate_proved (hR : RectangleInput) :
     · intro n hn
       simp only [Finset.mem_filter, Finset.mem_Icc] at hn
       obtain ⟨⟨⟨-, hnx⟩, hP⟩, hsn⟩ := hn
-      have hn₀ : (0 : ℝ) < n := hsq.trans_lt hsn
-      have hnx' : (n : ℝ) ≤ x := (Nat.le_floor_iff hx₀).mp hnx
+      have hn₀  := hsq.trans_lt hsn
+      have hnx'  := (Nat.le_floor_iff hx₀).mp hnx
       -- `L / 2 < log n ≤ L`
       have hlo : L / 2 < Real.log n := by
         rw [← Real.log_sqrt hx₀]
         exact Real.log_lt_log (Real.sqrt_pos.mpr (by linarith)) hsn
-      have hhi : Real.log n ≤ L := Real.log_le_log hn₀ hnx'
+      have hhi  := Real.log_le_log hn₀ hnx'
       have hll₀ : 0 < Real.log (Real.log n) := Real.log_pos (by linarith)
       have hll : Real.log (Real.log n) ≤ T := Real.log_le_log (by linarith) hhi
       have h₁ : L / (2 * T) ≤ Real.log n / Real.log (Real.log n) := by
         rw [← div_div]
         exact div_le_div₀ (by linarith) hlo.le hll₀ hll
-      have h₂ : L / (2 * T) ≤ |(f n : ℝ) - α * Real.log n| := h₁.trans hP.le
+      have h₂  := h₁.trans hP.le
       have h₃ := pow_le_pow_left₀ (by positivity) h₂ 2
       rw [sq_abs] at h₃
       exact h₃.trans_eq' (by field_simp; ring)
@@ -347,7 +346,7 @@ theorem normal_order_rate_proved (hR : RectangleInput) :
             (mul_le_mul_of_nonneg_right (le_abs_self K) ?_) (by norm_num)) hc.le
           exact div_nonneg hx₀ (pow_pos hT 3).le
         _ = 4 * |K| * (x / T ^ 3) * (L ^ 2 / (4 * T ^ 2)) := by ring
-  have h3 : 0 ≤ x / T ^ 3 := div_nonneg hx₀ (pow_pos hT 3).le
+  have h3  := div_nonneg hx₀ (pow_pos hT 3).le
   nlinarith [mul_nonneg (abs_nonneg K) hsq]
 
 /-- The elements of `{n | p n}` below `b` are those of `range b` satisfying `p`. -/
@@ -406,7 +405,7 @@ theorem parts_ii_proved (hR : RectangleInput) :
       have hsub : s.filter (fun n : ℕ => √(b : ℝ) < n) ⊆ Finset.Icc 1 b := by
         intro n hn
         simp only [s, Finset.mem_filter, Finset.mem_range] at hn
-        have : (0 : ℝ) < n := hsq.trans_lt hn.2
+        have  := hsq.trans_lt hn.2
         exact Finset.mem_Icc.mpr ⟨by exact_mod_cast this, hn.1.1.le⟩
       refine (card_le_sum_div hsub (fun n _ => sq_nonneg ((f n : ℝ) - α * Real.log n)) hc
         ?_).trans ?_

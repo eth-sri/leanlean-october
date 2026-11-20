@@ -9,7 +9,6 @@ namespace OAI
 
 noncomputable section
 open MeasureTheory Set Filter Asymptotics Complex
-open scoped Topology
 namespace SevenEighths.HeckeSignalShift
 open HeckeFamily HeckeSignal Continuation
 
@@ -24,7 +23,7 @@ theorem quotient_holomorphic (χ : Character) (H : ℂ → ℂ)
 
 theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
     (hb : ∀ s : ℂ, 7/8<s.re → ‖H s-1‖ ≤ 1/2)
-    {a C : ℝ} (n : ℕ) (ha : (7/8 : ℝ)<a) (_hC : 0 ≤ C)
+    {a C : ℝ} (n : ℕ) (ha : (7/8 : ℝ)<a)
     (hR : ∀ s : ℂ, a ≤ s.re → s.re ≤ 2 →
       ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^n))
     {s : ℂ} (hs : a ≤ s.re ∧ s.re ≤ 2) :
@@ -64,7 +63,7 @@ theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
   have he : Real.exp ((b-5/6)^2) ≤ Real.exp ((2-5/6 : ℝ)^2) := by
     apply Real.exp_le_exp.mpr
     nlinarith [hb'.1,hb'.2]
-  have hq := quotient_polynomial_bound χ H hb n ha hC hR
+  have hq := quotient_polynomial_bound χ H hb n ha hR
     (s := (b : ℂ)+y*I) (by simpa using hb')
   simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_im,
     Complex.ofReal_re, mul_one, Complex.I_re, mul_zero, add_zero, zero_add] at hq

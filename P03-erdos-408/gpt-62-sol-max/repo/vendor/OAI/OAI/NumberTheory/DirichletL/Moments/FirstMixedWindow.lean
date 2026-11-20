@@ -50,12 +50,9 @@ theorem original_four_budget_reference {ι:Type*}[Fintype ι][DecidableEq ι]
   have hh:=original_fixed_reference_pair s R seed a₁ a₂ ha₁ ha₂ hs₁ hs₂
     m A t S C D hC hD hCD E ξ₁ ξ₂ F rows W U K K₀ H₀ A₀ B₀ M Z
     (EL i) (ER j) hK hA hB hZ (hEL i) (hER j) hwin hn
-  have hqL:0<(F.left.modulus.absNorm:ℝ):=norm_pos _ F.left.modulus_ne_bot
-  have hqR:0<(F.right.modulus.absNorm:ℝ):=norm_pos _ F.right.modulus_ne_bot
+  have hqL:=norm_pos _ F.left.modulus_ne_bot
   have hCpos:=norm_pos C hC.1
-  have hDpos:=norm_pos D hD.1
   have hV:=volume_pos s.toData
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hei:=hEL i
   have herj:=hER j
   have hh':=mul_le_mul_of_nonneg_right hh

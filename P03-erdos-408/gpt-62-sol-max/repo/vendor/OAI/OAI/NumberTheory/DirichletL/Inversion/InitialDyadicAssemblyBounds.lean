@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicAssembly
 
 @[expose] public section
@@ -8,14 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes
+open InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile
+open InverseInitialClippedColumns CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 theorem windows_card_subpower (C R ε:ℝ)(hC:1≤C)(hR:0≤R)(hε:0<ε) :
     ∃A:ℝ,0<A ∧ ∀ᶠZ:ℝ in Filter.atTop,
@@ -24,9 +24,9 @@ theorem windows_card_subpower (C R ε:ℝ)(hC:1≤C)(hR:0≤R)(hε:0<ε) :
   four_indices_subpower C R ε hC hR hε
 
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
-  (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def windowBlock (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)

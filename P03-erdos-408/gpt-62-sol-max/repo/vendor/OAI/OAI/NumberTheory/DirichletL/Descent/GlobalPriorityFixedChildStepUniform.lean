@@ -1,24 +1,36 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFixedChildStep
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStepUniform
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStep
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellColumnBounds
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityAggregate
+public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
+public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
+public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesGeometry
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
+public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 public import OAI.NumberTheory.DirichletL.Descent.ClippedChild
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStepUniform
+
+
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight
+open SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers
+open InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
+open InverseMomentGlobalPriorityTail InverseWholePriorityRetainedSource RayFourExpansion
+open FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_fixed_child_step_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -31,9 +43,9 @@ theorem global_priority_fixed_child_step_uniform_types
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
       ∀ J:ℕ, ∃ C Cbin Czero Ctail : ℝ,0 ≤ C ∧ 0≤Cbin ∧ 0≤Czero ∧ 0≤Ctail ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
@@ -89,20 +101,12 @@ theorem global_priority_fixed_child_step_uniform_types
       (∀x∈source,primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤b*X) ∧
       (∀d∈keys p source,εmass*(secondCount ell Ractive j tcount (secondCellExponent Z d 0)
         (secondCellExponent Z d 1)+11*eta/2)≤pi) ∧
-      (∀ z:SecondRayIndex,∀ d∈keys p source,∀ s:ℝ,∀ J₁∈(slots\assigned).powerset,∀ γ∈actualSecondTriples p 1 1 (cell p source d),
-        normalizedColumnEnergy p hp hcop hg pool (secondRayMinus Ψ₀ z)
-          (actualSecondInheritedRadicalPuncture m γ) ((slots\assigned)\J₁) lists a
-          ((labels assigned d).filter Squarefree) (nonzeroChildFrequencyBall 1 (R assigned d)) (secondLabelWeight K)
-          (childLogTest ω₁ s)
-          (Z^(max 0 (secondCellColumnExponent Z X d))) Z (max 0 (secondCellColumnExponent Z X d)+(Vlabel d)) ≤
-          A*Z^(max 0 (secondCellColumnExponent Z X d)+(Vlabel d)+εchild)*(1+‖s‖)^(2*J)) ∧
-      (∀ z:SecondRayIndex,∀ d∈keys p source,∀ s:ℝ,∀ J₂∈(slots\assigned).powerset,∀ γ∈actualSecondTriples p 1 1 (cell p source d),
-        normalizedColumnEnergy p hp hcop hg pool (secondRayPlus Ψ₀ z)
-          (actualSecondInheritedRadicalPuncture m γ) ((slots\assigned)\J₂) lists a
-          ((labels assigned d).filter Squarefree) (nonzeroChildFrequencyBall 1 (R assigned d)) (secondLabelWeight K)
-          (childLogTest ω₂ s)
-          (Z^(max 0 (secondCellColumnExponent Z X d))) Z (max 0 (secondCellColumnExponent Z X d)+(Vlabel d)) ≤
-          A*Z^(max 0 (secondCellColumnExponent Z X d)+(Vlabel d)+εchild)*(1+‖s‖)^(2*J))) →
+      (∀ z : SecondRayIndex, WithSecondCellEnergy p hp hcop hg pool source (secondRayMinus Ψ₀ z) m
+        (slots\assigned) lists a (labels assigned) (R assigned) Vlabel Z X εchild A K
+        (fun d (s : ℝ) => childLogTest ω₁ s) (fun s => (1+‖s‖)^(2*J))) ∧
+      (∀ z : SecondRayIndex, WithSecondCellEnergy p hp hcop hg pool source (secondRayPlus Ψ₀ z) m
+        (slots\assigned) lists a (labels assigned) (R assigned) Vlabel Z X εchild A K
+        (fun d (s : ℝ) => childLogTest ω₂ s) (fun s => (1+‖s‖)^(2*J)))) →
       Jo≤Jmax→0≤ell+eta→0≤Bfirst→0≤j→
       εmass*(r-Acol-Bfirst-tcount)+7*eta/2+dsmall*(3*ell+Bfirst+tcount+5*eta)+
         2*εmass*(2*ell+Bfirst+tcount+4*eta)≤pi+eta/2→

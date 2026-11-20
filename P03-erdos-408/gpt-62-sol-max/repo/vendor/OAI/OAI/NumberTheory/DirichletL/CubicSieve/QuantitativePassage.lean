@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import OAI.NumberTheory.DirichletL.MeanSquare.InputEnergy
 
 @[expose] public section
@@ -9,103 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
 
-end
-section
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel columnLog)
-open ConcreteTraceCRT (eisEmbedding)
-
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
@@ -148,13 +63,13 @@ open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum
 theorem sum_completedRowFibers (S : Finset (Ideal O)) (Q : Ideal O) (f : Ideal O→ℝ) :
     (∑A∈S.image rowPowerfulPart,∑T∈S.image (fun I => rowMaskPart I Q),
       ∑I∈completedRowFiber S Q A T,f I)=∑I∈S,f I := by
-  let mapPair : Ideal O→Ideal O×Ideal O := fun I => (rowPowerfulPart I,rowMaskPart I Q)
+  let mapPair  := fun I => (rowPowerfulPart I,rowMaskPart I Q)
   have hm : ∀I∈S,mapPair I∈(S.image rowPowerfulPart)×ˢ(S.image (fun J => rowMaskPart J Q)) := by
     intro I hI
     exact Finset.mem_product.mpr ⟨Finset.mem_image_of_mem _ hI,Finset.mem_image_of_mem _ hI⟩
   have hh := Finset.sum_fiberwise_of_maps_to hm f
   rw [Finset.sum_product] at hh
-  simpa only [mapPair,Prod.mk.injEq,completedRowFiber] using hh
+  assumption
 
 theorem rowMaskPart_image_card (S : Finset (Ideal O)) (Q : Ideal O) (hQ : Q≠0) :
     (S.image (fun I => rowMaskPart I Q)).card≤(idealDivisors Q).card := by
@@ -165,7 +80,6 @@ theorem rowMaskPart_image_card (S : Finset (Ideal O)) (Q : Ideal O) (hQ : Q≠0)
 
 end CompletedGauss
 
-open scoped BigOperators
 namespace CompletedDyadic
 
 def kernelTerm (t s A : ℝ) (n : ℕ) : ℝ := ((2:ℝ)^n)^s/(1+t*(2:ℝ)^n)^A
@@ -188,7 +102,6 @@ theorem kernelTerm_le_head (t s A : ℝ) (ht : 0<t) (hA : 0≤A) (n : ℕ) :
 theorem kernelTerm_le_tail (t s A : ℝ) (ht : 0<t) (hA : 0≤A) (n : ℕ) :
     kernelTerm t s A n≤t^(-A)*((2:ℝ)^(s-A))^n := by
   have hn : 0<(2:ℝ)^n := by positivity
-  have htA : 0<t^A := Real.rpow_pos_of_pos ht _
   calc
     _ ≤ ((2:ℝ)^n)^s/(t*(2:ℝ)^n)^A := by
       unfold kernelTerm
@@ -212,7 +125,7 @@ theorem kernel_sum_cutoff (t s A : ℝ) (ht : 0<t) (hs : 0<s) (hsA : s<A) (N : �
       ((2:ℝ)^s)^N/((2:ℝ)^s-1)+t^(-A)*((2:ℝ)^(s-A))^N/(1-(2:ℝ)^(s-A)) := by
   have hA : 0≤A := by linarith
   have hp : 1<(2:ℝ)^s := Real.one_lt_rpow (by norm_num) hs
-  have hq : (2:ℝ)^(s-A)<1 := ratio_lt_one s A hsA
+  have hq  := ratio_lt_one s A hsA
   have hq0 : 0≤(2:ℝ)^(s-A) := by positivity
   have hsum := kernel_summable t s A ht hA hsA
   have hhead : (∑n∈Finset.range N,kernelTerm t s A n)≤((2:ℝ)^s)^N/((2:ℝ)^s-1) := by
@@ -227,7 +140,7 @@ theorem kernel_sum_cutoff (t s A : ℝ) (ht : 0<t) (hs : 0<s) (hsA : s<A) (N : �
         simpa only [pow_add,mul_assoc,mul_left_comm,mul_comm] using kernelTerm_le_tail t s A ht hA (n+N))
       ((summable_nat_add_iff N).mpr hsum) hgeo
     rw [tsum_mul_left,tsum_geometric_of_lt_one hq0 hq] at hb
-    simpa only [div_eq_mul_inv] using hb
+    assumption
   rw [←hsum.sum_add_tsum_nat_add N]
   exact add_le_add hhead htail
 
@@ -237,10 +150,10 @@ theorem kernel_sum_bound (s A : ℝ) (hs : 0<s) (hsA : s<A) :
   let r : ℝ := (2:ℝ)^s
   let q : ℝ := (2:ℝ)^(s-A)
   have hr : 1<r := Real.one_lt_rpow (by norm_num) hs
-  have hq : q<1 := ratio_lt_one s A hsA
-  have hq0 : 0≤q := by dsimp [q]; positivity
+  have hq  := ratio_lt_one s A hsA
+  have hq0 : 0≤q := by positivity
   let C := r/(r-1)+1/(1-q)
-  have hC : 0<C := by dsimp [C]; positivity
+  have hC : 0<C := by positivity
   refine ⟨C,hC,?_⟩
   intro t ht
   have hA : 0≤A := by linarith
@@ -252,16 +165,16 @@ theorem kernel_sum_bound (s A : ℝ) (hs : 0<s) (hsA : s<A) :
     change (∑'n : ℕ,kernelTerm t s A n)≤∑'n : ℕ,t^(-A)*q^n at hb
     rw [tsum_mul_left,tsum_geometric_of_lt_one hq0 hq] at hb
     calc
-      _ ≤ t^(-A)/(1-q) := by simpa only [div_eq_mul_inv] using hb
+      _ ≤ t^(-A)/(1-q) := by assumption
       _ ≤ t^(-s)/(1-q) := div_le_div_of_nonneg_right
         (Real.rpow_le_rpow_of_exponent_le ht1 (by linarith)) (by linarith)
       _ ≤ C*t^(-s) := by
         have hp : 0≤r/(r-1)*t^(-s) := by positivity
         calc
           _ ≤ r/(r-1)*t^(-s)+t^(-s)/(1-q) := le_add_of_nonneg_left hp
-          _ = C*t^(-s) := by dsimp [C]; ring
-  · have ht_le : t≤1 := le_of_not_ge ht1
-    have hit : 1≤1/t := (one_le_div ht).mpr ht_le
+          _ = C*t^(-s) := by ring
+  · have ht_le  := le_of_not_ge ht1
+    have hit  := (one_le_div ht).mpr ht_le
     obtain ⟨N,hN,hN'⟩ := exists_nat_pow_near hit (by norm_num : (1:ℝ)<2)
     have hheadpow : r^(N+1)≤r*t^(-s) := by
       change ((2:ℝ)^s)^(N+1)≤(2:ℝ)^s*t^(-s)
@@ -281,7 +194,7 @@ theorem kernel_sum_bound (s A : ℝ) (hs : 0<s) (hsA : s<A) :
         _ ≤ t^(-A)*(1/t)^(s-A) := mul_le_mul_of_nonneg_left
           (Real.rpow_le_rpow_of_nonpos (by positivity) hN'.le (by linarith)) (by positivity)
         _ = t^(-A)*t^(-(s-A)) := by rw [one_div,Real.inv_rpow ht.le,←Real.rpow_neg ht.le]
-        _ = t^(-s) := by rw [←Real.rpow_add ht]; congr 1; ring
+        _ = t^(-s) := by rpow_ring ht
     have hb := kernel_sum_cutoff t s A ht hs hsA (N+1)
     change (∑'n : ℕ,kernelTerm t s A n)≤r^(N+1)/(r-1)+t^(-A)*q^(N+1)/(1-q) at hb
     calc
@@ -289,7 +202,7 @@ theorem kernel_sum_bound (s A : ℝ) (hs : 0<s) (hsA : s<A) :
       _ ≤ (r*t^(-s))/(r-1)+t^(-s)/(1-q) := add_le_add
         (div_le_div_of_nonneg_right hheadpow (by linarith))
         (div_le_div_of_nonneg_right htailpow (by linarith))
-      _ = C*t^(-s) := by dsimp [C]; ring
+      _ = C*t^(-s) := by ring
 
 end CompletedDyadic
 

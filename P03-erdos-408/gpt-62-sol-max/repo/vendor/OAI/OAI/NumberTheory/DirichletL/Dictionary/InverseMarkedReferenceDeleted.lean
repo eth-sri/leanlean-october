@@ -14,8 +14,7 @@ open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
 open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPhysicalSlots
-open InverseInitialMarkedDictionary
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
+open InverseInitialMarkedDictionary DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
 open CanonicalQuadraticSieve CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]

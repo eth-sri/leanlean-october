@@ -30,7 +30,7 @@ lemma tsum_element_divisible (C : O) (hC : C≠0) (f : O→ℂ) :
   have hinj : Function.Injective (fun k : O=>C*k) := fun _ _ h=>mul_left_cancel₀ hC h
   have hs : Function.support (fun j : O=>if C∣j then f j else 0)⊆Set.range (fun k : O=>C*k) := by
     intro j hj
-    have hd : C∣j := by by_contra h;simp [h] at hj
+    have hd : C∣j := by by_contra h;simp_all
     obtain ⟨k,rfl⟩ := hd
     exact ⟨k,rfl⟩
   have ht := hinj.tsum_eq hs

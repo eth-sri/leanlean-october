@@ -1,20 +1,19 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityShift
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityLedger
+public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstSecondCapacityLedger
-open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentEligibleEnergy CenteredMomentLiveCapacity
+open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw CenteredMomentDivisorAllocation
+open CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentLiveCapacity
 open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 lemma width_defect_cost (x B δ:ℝ)(hB:0≤B)(hδ:0≤δ)(hx:x≤δ):

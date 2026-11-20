@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators ContDiff
+open scoped Classical
 namespace SevenEighths.InverseInitialDyadicAssembly
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
-open Filter
+open CenteredMomentSectorLocalization CenteredMomentDyadicCount Filter
 
 theorem cutoff_norm_le (i:Fin 4)(x:ℝ) : ‖cutoff i x‖≤1 := by
   simpa only [cutoff,Complex.norm_real,Real.norm_eq_abs,
@@ -29,7 +28,7 @@ theorem window_exponent_nonneg (Z b:ℝ)(hZ:1<Z)(hb:0<b)
   have hs:1≤dyadicScale k := ((mem_indices_iff_scale 1 b (by norm_num) hb k).mp hk).1
   exact Real.logb_nonneg hZ hs
 
-theorem window_exponent_eventual_upper (C η:ℝ)(_hC:0<C)(hη:0<η) :
+theorem window_exponent_eventual_upper (C η:ℝ)(hη:0<η) :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(b R:ℝ),0<b→b≤C*Z^R→
       ∀k:ℤ,k∈indices 1 b→exponent Z k∈Set.Icc 0 (R+η) := by
   have ht:∀ᶠZ:ℝ in atTop,4*C≤Z^η :=

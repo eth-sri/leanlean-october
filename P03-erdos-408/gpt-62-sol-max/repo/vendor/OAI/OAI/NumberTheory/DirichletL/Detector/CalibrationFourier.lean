@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.Calibration
 
 @[expose] public section
@@ -21,9 +22,7 @@ theorem calibrationGauss_one (C : CalibrationData) :
     calibrationGauss C 1 = (Real.sqrt (elementNorm C.generator) : ℂ) * C.tau := by
   have hn : 0 < elementNorm C.generator := by
     unfold elementNorm
-    exact_mod_cast Nat.pos_of_ne_zero
-      (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
   have hc : (Real.sqrt (elementNorm C.generator) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr hn).ne'
   simp only [calibrationGauss, map_one, one_mul, CalibrationData.tau]
@@ -37,7 +36,7 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
         calibrationGauss (calibrationFromPrimes P hcop) 1 := by
   let b := finitePrimeModulus P
   have hb : b ≠ 0 := finitePrimeModulus_ne_zero P
-  let : Finite (O ⧸ Ideal.span {b}) := ConcreteTraceCRT.finite_quotient_span hb
+  let  := ConcreteTraceCRT.finite_quotient_span hb
   let : Fintype (O ⧸ Ideal.span {b}) := Fintype.ofFinite _
   let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
   let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _

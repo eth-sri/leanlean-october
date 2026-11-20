@@ -41,7 +41,7 @@ def edgeTerm (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
 theorem ghostTerm_nonneg (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M : ℕ}
     {s t : P.MemoryState M} (c : GhostChoice s t) : 0 ≤ ghostTerm F n rho i c := by
   unfold ghostTerm
-  split_ifs <;> positivity
+  positivity
 
 theorem edgeTerm_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
@@ -49,22 +49,22 @@ theorem edgeTerm_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin
   unfold edgeTerm
   split_ifs
   · exact mul_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell)) (norm_nonneg _)
-  · exact le_rfl
+  rfl
 
 theorem ghostKernel_nonneg (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
     (s t : P.MemoryState (J + F.ell)) :
     0 ≤ absoluteScaledMemoryGhostKernel F J n rho 2 i s t := by
   unfold absoluteScaledMemoryGhostKernel
   split_ifs
-  · exact Finset.sum_nonneg fun c _ => by split_ifs <;> positivity
-  · exact le_rfl
+  · exact Finset.sum_nonneg fun c _ => by positivity
+  rfl
 
 theorem edgeKernel_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) :
     0 ≤ absoluteMemoryEdgeKernel A n rho theta i .all s t := by
   unfold absoluteMemoryEdgeKernel
   apply mul_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell))
-  exact Finset.sum_nonneg fun c _ => by split_ifs <;> positivity
+  exact Finset.sum_nonneg fun c _ => by positivity
 
 theorem sum_ghostTerm_eq (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
     (s t : P.MemoryState (J + F.ell)) (h : s.1 = t.1 ∧ s.2.1 = t.2.1) :
@@ -82,7 +82,7 @@ theorem sum_edgeTerm_eq (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin
   apply Finset.sum_congr rfl
   intro c _
   unfold edgeTerm
-  split_ifs <;> simp
+  simp
 
 /-- The absolute history weight with every original ghost birth multiplied by 2. -/
 def doubledWeight {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n) (rho theta : ℝ) : ℝ :=
@@ -266,10 +266,9 @@ theorem finite_doubled_sum_le (A : Model F P J m) (n : ℕ) (rho theta v CG CE :
       CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n := by
   let G : Fin (n + 1) → P.MemoryState (J + F.ell) → P.MemoryState (J + F.ell) → ℝ :=
     fun i => absoluteScaledMemoryGhostKernel F J n rho 2 i
-  let E : Fin n → P.MemoryState (J + F.ell) → P.MemoryState (J + F.ell) → ℝ :=
+  let E  :=
     fun i => absoluteMemoryEdgeKernel A n rho theta i .all
   let w := P.memoryWeight (M := J + F.ell) v
-  have hw0 : ∀ t, 0 ≤ w t := fun t => pow_nonneg (by linarith) _
   let Z := S.image statePath
   let St := Z.image (fun z => (z 0).1)
   have hK : 0 ≤ CG ^ (n + 1) * CE ^ n := by positivity
@@ -311,7 +310,7 @@ theorem finite_doubled_sum_le (A : Model F P J m) (n : ℕ) (rho theta v CG CE :
         apply Finset.sum_le_sum
         intro s _
         apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-        exact path_bound w hw0 CG CE hCG hCE n G E
+        exact path_bound w (fun t => pow_nonneg (by linarith) _) CG CE hCG hCE n G E
           (fun i => ghostKernel_nonneg F J n rho i) (fun i => edgeKernel_nonneg A n rho theta i)
           hG hE _ s (fun z hz => (Finset.mem_filter.1 hz).2)
     _ = (CG ^ (n + 1) * CE ^ n) * ∑ s ∈ St, |P.memoryMass F J n s| := by
@@ -328,7 +327,7 @@ end Erdos821.P3Tail
 open Erdos821.Blueprint.Graph Erdos821.S2Core Erdos821.P3Tail in
 theorem Erdos821.S2Core.MemoryTailTask_proof : Erdos821.S2Core.MemoryTailTask := by
   intro F P J m n A rho v theta CG CE hv hCG hCE hG hE B
-  have h0 : Set.Finite {H : MemoryHistory A n | H.Valid ∧ H.DistinctBirths} :=
+  have h0  :=
     @Set.toFinite (MemoryHistory A n) {H | H.Valid ∧ H.DistinctBirths}
       (MemoryHistory.valid_distinct_finite A n)
   have hfin : Set.Finite

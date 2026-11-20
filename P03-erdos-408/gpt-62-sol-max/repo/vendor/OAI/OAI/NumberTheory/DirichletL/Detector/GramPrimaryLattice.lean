@@ -64,7 +64,7 @@ theorem primary_ideal_pair_tsum (f : O→O→ℂ)
     (hr : ∀n m,¬(Supported (Ideal.span {m}) ∧ λ₀^2∣m-1)→f n m=0) :
     (∑'I : SupportedIdeal,∑'J : SupportedIdeal,f (primaryGenerator I.val) (primaryGenerator J.val))=
       ∑'n : O,∑'m : O,f n m := by
-  have hinner (n : O) : (∑'J : SupportedIdeal,f n (primaryGenerator J.val))=∑'m : O,f n m :=
+  have hinner (n : O)  :=
     primary_ideal_tsum (fun m=>f n m) (fun m h=>hr n m h)
   simp_rw [hinner]
   apply primary_ideal_tsum (fun n=>∑'m : O,f n m)

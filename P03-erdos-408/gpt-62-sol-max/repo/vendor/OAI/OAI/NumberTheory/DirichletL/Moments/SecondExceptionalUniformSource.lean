@@ -1,68 +1,71 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFixedQSource
+
+
+
+
+
+
+
+
+
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalSourceCaps
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFixedQChosenBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalAggregate
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalSourceFamily
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalUniform
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
-public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
-public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaved
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
-public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalKernel
 public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
+public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
+public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
+public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalFixedQUniform
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalUniformSource
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
 open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
+open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
+open CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentHeckeColumnWindow
+open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSourceMass
+open CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair CenteredMomentLogDyadic
+open RayFourExpansion CenteredMomentSmooth CenteredMomentCommonHeightEnvelope
+open CenteredMomentCommonExceptionalCost
+open CenteredMomentSecondHeightFamily CenteredMomentSecondExceptionalPairBound
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicRowSupport
+open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentForcing
+open CenteredMomentChildRows CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
+open CenteredMomentSectorLocalization CenteredMomentSecondDyadicRowSupport
 
 open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCommonSaving
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
+open CenteredMomentSecondExceptionalCommonSaving ConcretePrimeRowBridge CenteredMomentMobiusRegroup
+open CenteredMomentSupportedCorrelation CenteredMomentSupport CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondDivisorSupport
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalSourceFamily
-open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceLowerSupport
-open CenteredMomentFiniteProfileExceptionalPhysical
+open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock CenteredMomentOriginalCommonHarmonic
+open CenteredMomentSourceLowerSupport CenteredMomentFiniteProfileExceptionalPhysical
 
-open CenteredMomentSecondExceptionalFixedQChosenBlock CenteredMomentSecondExceptionalAggregate
+open CenteredMomentSecondExceptionalAggregate
 open CenteredMomentSecondBlockRadicalHarmonicMass CenteredMomentSecondActivePhysicalDictionary
-open CenteredMomentSecondRetainedAggregate
-open CenteredMomentActiveSource
+open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource
 
 theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))
     (ε δ θ B:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B):
@@ -85,20 +88,142 @@ theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo h
           Z^(2*ε+2*δ+2*(5*B+1)*θ-2*max r 0/3)*
           (volume s.toData)^(1/3:ℝ)*Kphys^(5/6:ℝ)*((∏i,s.lo i)*wlo*wlo)^(-2/3:ℝ)/
           (seed.absNorm:ℝ) :=by
-  obtain ⟨J,Sprofile,hSp,Ck,hCk,hsource⟩:=
-    CenteredMomentSecondExceptionalFixedQSource.original_exceptional_energy
-      wlo whi hwlo hwhi lo hi W ε δ θ (5*B+1) B 1 hε hδ hθ (by positivity) hB zero_lt_one
-  refine ⟨J,Sprofile,hSp,Ck,hCk,?_⟩
+  let L := B
+  let B := 5*L+1
+  have hL : 0 ≤ L := hB
+  have hB : 0 ≤ B := by dsimp [B]; positivity
+  obtain ⟨J,Sprofile,hSp,Ck,hCk,hblock⟩ :=
+    CenteredMomentFiniteProfileExceptionalFixedQ.actual_uniform_exceptional_block
+      wlo whi hwlo hwhi lo hi W ε δ θ B B hε hδ hθ hB hB
+  obtain ⟨Cm,hCm,hmass⟩:=source_part_radical_bound B L 1 δ hB hL zero_lt_one hδ
+  refine ⟨J,Sprofile,hSp,Ck*Cm,mul_nonneg hCk hCm.le,?_⟩
   intro Q hQ hQt hQ72
-  obtain ⟨K,hK,hsource⟩:=hsource Q hQ hQt hQ72
+  obtain ⟨K,hK,hblock⟩:=hblock Q hQ hQt hQ72
   refine ⟨K,hK,?_⟩
-  filter_upwards [hsource,CenteredMomentSecondExceptionalSourceCaps.eventually_source_caps] with Z hZ hcaps
+  filter_upwards [hblock,hmass,CenteredMomentSecondExceptionalSourceCaps.eventually_source_caps] with Z hZ hmassZ hcaps
   refine ⟨hZ.1,?_⟩
-  intro s p hlo hhi hP hW1 hW2 R0 seed hR0 hseed hseed0 hH0 hH hη hR0N S β χ₀ m hm hml hm2
+  intro s p hlo hhi hP hW1 hW2 R0 seed hR0 hseed hseed0 hH0 hH hη' hR0N S β χ₀ m hm hml hm2
     Tsec ξ Kphys hKphys R hR hRN r hX1 hX2 hY1 hY2
-  obtain ⟨hHlarge,hcond⟩:=hcaps.2 s.η R0 (sourceRadius s) R B hB hH0 hR.le hη hR0N hH hRN
-  exact hZ.2 s p hlo hhi hP hW1 hW2 R0 seed hR0 hseed hseed0 hHlarge χ₀ m hm hml hm2
-    Tsec ξ Kphys hKphys hR (by simpa using hRN) hcond r hX1 hX2 hY1 hY2
+  obtain ⟨hcap,hcond⟩ := hcaps.2 s.η R0 (sourceRadius s) R L hL hH0 hR.le hη' hR0N hH hRN
+  have hp0 (i:Fin 2):p.profile i 0=0:=by
+    by_contra hh
+    have hh':=(p.support i hh).1
+    linarith
+  have hz1:s.W₁ 0=0:=by rw [hW1];exact hp0 0
+  have hz2:s.W₂ 0=0:=by rw [hW2];exact hp0 1
+  let V:=volume s.toData
+  let a:ℝ:=(∏i,s.lo i)*wlo*wlo
+  let F:=Ck*profileFactor Sprofile s p J Q K*
+    Z^(2*ε+δ+2*B*θ-2*max r 0/3)*V^(1/3:ℝ)*Kphys^(5/6:ℝ)*a^(-2/3:ℝ)
+  have ha:0<a:=mul_pos (mul_pos (Finset.prod_pos (fun i _=>s.lo_pos i)) hwlo) hwlo
+  have hF:0≤F:=by
+    have hp:=profileFactor_nonneg Sprofile s p J Q K hK.le
+    have hv:=volume_pos s.toData
+    have hzp:=zero_lt_one.trans hZ.1
+    dsimp only [F,V]
+    positivity
+  have hsum:=hmassZ seed hseed hseed0 S β
+    (fun I _ hI=>original_column_mask s R0 seed I hI)
+    (fun I _ hI=>(original_column_norm s R0 seed I hz1 hz2 hI).2.trans hcap)
+    true s.η χ₀ Q m s.t W Kphys Tsec ξ (sourceRadius s) V F
+    hKphys (by simpa using hRN) hcap (volume_pos s.toData) hF
+  have hlocal:∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
+      ∀n:CenteredMomentSecondBlockAggregate.SourceBlocks q.val.1 q.val.2 U Kphys R (sourceRadius s),
+      ‖physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
+        (commonLabels_supported (activeSource S β) _ _ q.property).1
+        (commonLabels_supported (activeSource S β) _ _ q.property).2 U R
+        (partRows true s.η χ₀ Q m q.val.1 q.val.2 U R) W Kphys (fun i=>(n i:ℤ))‖/V≤
+          F*radicalWeight q.val.1 q.val.2:=by
+    intro q hq U n
+    have hg:=actual_common_gates s R0 seed hseed hz1 hz2 q.val.1 q.val.2 q.property
+    have hs:=commonLabels_supported (activeSource S β) _ _ q.property
+    have hcnd:(expandedFactor s.η:ℝ)*R0.absNorm*q.val.1.absNorm*q.val.2.absNorm*(4*R)≤Z^B:=by
+      apply le_trans _ hcond
+      have hH:=(Nat.cast_nonneg q.val.1.absNorm).trans hg.2.2.2.2.2.1
+      calc
+        _=(expandedFactor s.η:ℝ)*R0.absNorm*((q.val.1.absNorm:ℝ)*q.val.2.absNorm)*(4*R):=by ring
+        _≤(expandedFactor s.η:ℝ)*R0.absNorm*(sourceRadius s*sourceRadius s)*(4*R):=by
+          gcongr
+          · exact hg.2.2.2.2.2.1
+          · exact hg.2.2.2.2.2.2
+        _=_:=by ring
+    let C := q.val.1
+    let D := q.val.2
+    have hC := hs.1
+    have hD := hs.2
+    have hsC := hg.2.2.2.1
+    have hsD := hg.2.2.2.2.1
+    have hNC := hg.2.2.2.2.2.1.trans hcap
+    have hND := hg.2.2.2.2.2.2.trans hcap
+    have hCD := hg.2.2.1
+    have hη := ((mem_liveLabels _ _ _ q).mp hq).1
+    let n' : Fin 4 → ℤ := fun i => n i
+    let rows:=partRows true s.η χ₀ Q m C D U R
+    have hn:∀z∈rows,z≠0:=exceptional_part_nonzero s.η χ₀ Q m C D U R
+    have hex:=exceptional_part_inducing s.η χ₀ Q m C D U R
+    have hβ:∀I:Ideal O,β I≠0→(I.absNorm:ℝ)≤sourceRadius s:=
+      fun I hI=>(original_column_norm s R0 seed I hz1 hz2 hI).2
+    have hD1:1≤(D.absNorm:ℝ):=by
+      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)
+    have hHD:sourceRadius s/(D.absNorm:ℝ)≤Z^B:=by
+      by_cases hh:0≤sourceRadius s
+      · exact (div_le_self hh hD1).trans hcap
+      · exact (div_nonpos_of_nonpos_of_nonneg (le_of_not_ge hh) (Nat.cast_nonneg _)).trans
+          (Real.rpow_nonneg (zero_lt_one.trans hZ.1).le _)
+    have hlower (I:Ideal O)(hI:β I≠0):
+        ((∏i,s.lo i)*wlo*wlo)*volume s.toData≤(I.absNorm:ℝ):=by
+      have hh:=profile_column_lower R0 s.ν s.W s.P s.lo s.W₁ s.W₂ wlo wlo
+        s.X₁ s.X₂ s.Y₁ s.Y₂ (s.X₁*s.X₂) 1 1 seed s.P_pos (fun i=>(s.lo_pos i).le)
+        hwlo.le hwlo.le s.X₁_pos s.X₂_pos s.Y₁_pos s.Y₂_pos one_ne_zero one_ne_zero rfl s.same_product
+        (fun i x hx=>(s.support i hx).1)
+        (fun x hx=>(p.support 0 (by rwa [hW1] at hx)).1)
+        (fun x hx=>(p.support 1 (by rwa [hW2] at hx)).1)
+        (Fintype.piFinset s.pools) I hI
+      simpa only [CenteredMomentExceptionalAmplitudePair.volume,map_one,Nat.cast_one,mul_one,div_one,mul_assoc] using hh
+    rw [←physicalBlock_active]
+    by_cases hzero:physicalBlock s.η s.t S β C D hC hD U R rows W Kphys n'=0
+    · rw [hzero,norm_zero,zero_div]
+      exact mul_nonneg hF (by unfold radicalWeight; positivity)
+    obtain ⟨τ,hτ⟩:=exists_exceptional_family s.η C D hC hD hCD U
+    have he:=actual_family_both_rows s.η χ₀ Q hQ72 m hm hml hm2 C D hC hD U τ hτ R
+    have hc (χ ξ:RayCharacter)(z:O)(hz:z∈rows):
+        (expandedConductor (τ χ) R0 C z:ℝ)≤Z^B ∧
+        (expandedConductor (reflected (τ ξ)) R0 D z:ℝ)≤Z^B:=by
+      have hg:=expanded_conductor_bounds hτ hCD s.t S β R rows W Kphys hKphys n' hzero χ ξ R0 z
+      have hzlive:z∈liveRows C D U R rows:=by
+        rw [show liveRows C D U R rows=rows from exceptional_part_live s.η χ₀ Q m C D U R]
+        exact hz
+      have hzN:=live_norm_le_four_radius C D U R rows z hzlive
+      have hb:(expandedFactor s.η:ℝ)*R0.absNorm*C.absNorm*D.absNorm*(Ideal.span {z}).absNorm≤Z^B:=by
+        apply le_trans _ hcnd
+        exact mul_le_mul_of_nonneg_left hzN (by positivity)
+      constructor
+      · exact (show (expandedConductor (τ χ) R0 C z:ℝ)≤
+          (expandedFactor s.η:ℝ)*R0.absNorm*C.absNorm*D.absNorm*(Ideal.span {z}).absNorm by
+          exact_mod_cast hg.1).trans hb
+      · exact (show (expandedConductor (reflected (τ ξ)) R0 D z:ℝ)≤
+          (expandedFactor s.η:ℝ)*R0.absNorm*C.absNorm*D.absNorm*(Ideal.span {z}).absNorm by
+          exact_mod_cast hg.2).trans hb
+    have hh := hZ.2 s p hlo hhi hP hW1 hW2 C D hC hD R0 seed hR0 hsC hsD hNC hND hCD U
+      r hX1 hX2 hY1 hY2 τ hτ.height_eq rows hn he.1 he.2
+      (fun χ z hz=>by simpa only [expandedConductor,Nat.cast_mul] using (hc χ χ z hz).1)
+      (fun χ z hz=>by simpa only [expandedConductor,Nat.cast_mul] using (hc χ χ z hz).2)
+      χ₀ hη m hm hml hm2 hex (sourceRadius s) hβ hHD
+      ((∏i,s.lo i)*wlo*wlo) ha hlower R Kphys hKphys n'
+    exact hh.trans_eq (by dsimp only [F,V,a,radicalWeight]; ring)
+  have hh:=hsum hlocal
+  apply hh.trans_eq
+  have hp:Z^(2*ε+δ+2*B*θ-2*max r 0/3)*Z^δ=
+      Z^(2*ε+2*δ+2*B*θ-2*max r 0/3):=by
+    rw [←Real.rpow_add (zero_lt_one.trans hZ.1)]
+    congr 1
+    ring
+  dsimp only [F,V,a]
+  calc
+    _=(Ck*Cm)*profileFactor Sprofile s p J Q K*
+      (Z^(2*ε+δ+2*B*θ-2*max r 0/3)*Z^δ)*
+      (volume s.toData)^(1/3:ℝ)*Kphys^(5/6:ℝ)*((∏i,s.lo i)*wlo*wlo)^(-2/3:ℝ)/(seed.absNorm:ℝ):=by ring
+    _=_:=by rw [hp]
 
 end SevenEighths.CenteredMomentSecondExceptionalUniformSource
 

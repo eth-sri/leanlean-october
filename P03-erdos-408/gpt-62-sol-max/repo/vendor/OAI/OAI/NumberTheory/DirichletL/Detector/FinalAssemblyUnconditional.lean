@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainSlotProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyUnconditional
-open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands
-open CenteredMomentEnergyCertifiedExistence CenteredMomentDetectorPlainMomentParameters
-open CenteredMomentDetectorPlainSlotProfile
+open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands CenteredMomentEnergyCertifiedExistence
+open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainSlotProfile
 
 theorem detector_certified_bands:DetectorCertifiedBands:=by
   intro hβ D _hfine F bΦ hbΦ

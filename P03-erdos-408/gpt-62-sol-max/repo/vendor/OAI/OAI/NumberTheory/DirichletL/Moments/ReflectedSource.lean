@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalSource
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
 public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalReflection
 public import OAI.NumberTheory.DirichletL.Hecke.UnitRows
@@ -11,17 +13,15 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentReflectedSource
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler
-open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource
+open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm CenteredMomentCommonRadialData
+open CenteredMomentCommonHeightEnvelope CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource
 open CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass
 open CenteredMomentSecondHeightFamily CenteredMomentSourceRow
 local notation "O" => HeckeFamily.O
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def reflected (η:Character):Character:=η.product (HeckeUnitRows.character (-1:Oˣ))
 

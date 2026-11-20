@@ -1,6 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Parameters
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import Mathlib.Algebra.Order.Archimedean.Basic
+public import Mathlib.Analysis.Complex.Norm
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Algebra.BigOperators.Fin
 public import Mathlib.Algebra.BigOperators.Field
 
@@ -16,10 +21,10 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
     ∃N : ℕ,0<N ∧ ∃ell : Fin N→ℝ,Function.Injective ell ∧
       (∀j,0<ell j ∧ ell j<L) ∧ (∑j,ell j)=1/6 := by
   obtain ⟨N,hN⟩ := exists_nat_gt (max 1 (1/(3*L)))
-  have hN1 : (1:ℝ)<N := (le_max_left _ _).trans_lt hN
+  have hN1  := (le_max_left _ _).trans_lt hN
   have hNp : 0<(N:ℝ) := by linarith
   have hNnat : 0<N := by exact_mod_cast hNp
-  have hNL : 1/(3*L)<(N:ℝ) := (le_max_right _ _).trans_lt hN
+  have hNL  := (le_max_right _ _).trans_lt hN
   have hsmall : 1/(3*(N:ℝ))<L := by
     have hh := (div_lt_iff₀ (show 0<3*L by positivity)).mp hNL
     apply (div_lt_iff₀ (show 0<3*(N:ℝ) by positivity)).mpr
@@ -28,7 +33,7 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
   let A : ℝ := ∑j,w j
   have hw (j : Fin N) : 1≤w j ∧ w j<2 := by
     have hj : (j.val:ℝ)<N := by exact_mod_cast j.isLt
-    have hdiv : (j.val:ℝ)/(N:ℝ)<1 := (div_lt_one hNp).mpr hj
+    have hdiv  := (div_lt_one hNp).mpr hj
     dsimp only [w]
     constructor
     · linarith [div_nonneg (Nat.cast_nonneg j.val) hNp.le]
@@ -37,14 +42,14 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
     calc
       _ = ∑_j : Fin N,(1:ℝ) := by simp
       _ ≤ _ := Finset.sum_le_sum fun j _=>(hw j).1
-  have hAp : 0<A := hNp.trans_le hA
-  let ell : Fin N→ℝ := fun j=>w j/(6*A)
+  have hAp  := hNp.trans_le hA
+  let ell  := fun j=>w j/(6*A)
   refine ⟨N,hNnat,ell,?_,?_,?_⟩
   · intro j k he
     have hden : 6*A≠0 := by positivity
-    have hwjk : w j=w k := (div_left_inj' hden).mp he
+    have hwjk  := (div_left_inj' hden).mp he
     have hjk : (j.val:ℝ)/(N:ℝ)=(k.val:ℝ)/(N:ℝ) := by dsimp [w] at hwjk;linarith
-    have he' : (j.val:ℝ)=(k.val:ℝ) := (div_left_inj' hNp.ne').mp hjk
+    have he'  := (div_left_inj' hNp.ne').mp hjk
     apply Fin.ext
     exact_mod_cast he'
   · intro j
@@ -70,7 +75,7 @@ theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
     (mul_pos hdmin (lt_min hm hR))
   have hne : (Finset.univ : Finset (Fin N)).Nonempty := ⟨⟨0,hN⟩,Finset.mem_univ _⟩
   obtain ⟨j,hj,hjmin⟩ := Finset.exists_min_image Finset.univ ell hne
-  have hmax : 0<dmax := hdmin.trans_le hd
+  have hmax  := hdmin.trans_le hd
   let rmin := ell j/(2*dmax)
   have hr : 0<rmin := div_pos (he j).1 (by positivity)
   have hlo (k : Fin N) : dmax*rmin≤ell k := by
@@ -84,7 +89,7 @@ theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
     · exact (he k).2.le.trans (mul_le_mul_of_nonneg_left (min_le_right _ _) hdmin.le)
   refine ⟨N,hN,ell,rmin,hr,hi,hS,fun k=>⟨(he k).1,hlo k,(hup k).1,(hup k).2⟩,?_⟩
   intro d hd' hd'' k
-  have hd0 : 0<d := hdmin.trans_le hd'
+  have hd0  := hdmin.trans_le hd'
   refine ⟨(le_div_iff₀ hd0).mpr ?_,(div_le_iff₀ hd0).mpr ?_,(div_le_iff₀ hd0).mpr ?_⟩
   · exact (by nlinarith : rmin*d≤dmax*rmin).trans (hlo k)
   · exact (hup k).1.trans (by nlinarith)

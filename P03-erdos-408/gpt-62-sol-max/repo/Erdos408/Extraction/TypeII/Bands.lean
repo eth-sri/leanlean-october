@@ -51,7 +51,7 @@ theorem zpow_mul_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (ω : ℕ) :
       nlinarith
     push_cast
     nlinarith
-  have h2 : ((n + 1 : ℕ) : ℝ) * (1 - q) ≤ 1 / q ^ n := h1.trans hb
+  have h2  := h1.trans hb
   rw [le_div_iff₀ hqn] at h2
   rw [le_div_iff₀ (by linarith)]
   nlinarith
@@ -137,7 +137,7 @@ theorem harmonicMass_band_ge : ∃ L₀ : ℝ, ∀ x a : ℝ, L₀ ≤ Real.log 
 theorem band_disjoint {x a a' : ℝ} (hL : 1 < Real.log x) (h : a + 1 / logLog x ≤ a') :
     Disjoint (band x a) (band x a') := by
   have hL0 : 0 < Real.log x := by linarith
-  have hT : 0 < logLog x := Real.log_pos hL
+  have hT  := Real.log_pos hL
   have hgrow : 2 * Real.log x ^ a < Real.log x ^ a' := by
     have hLT : Real.log x ^ (1 / logLog x) = Real.exp 1 := by
       rw [Real.rpow_def_of_pos hL0]
@@ -154,9 +154,9 @@ theorem band_disjoint {x a a' : ℝ} (hL : 1 < Real.log x) (h : a + 1 / logLog x
   refine disjoint_left.2 fun p hp hp' => ?_
   unfold band at hp hp'
   rw [mem_filter, mem_Icc] at hp hp'
-  have h1 : (p : ℝ) ≤ Real.exp (2 * Real.log x ^ a) :=
+  have h1  :=
     (Nat.le_floor_iff (by positivity)).1 hp.1.2
-  have h2 : Real.exp (Real.log x ^ a') ≤ p := Nat.ceil_le.1 hp'.1.1
+  have h2  := Nat.ceil_le.1 hp'.1.1
   have := Real.exp_lt_exp.2 hgrow
   linarith
 
@@ -173,7 +173,6 @@ theorem primeCount_prime_mul {S : Finset ℕ} (hS : ∀ q ∈ S, q.Prime) {p : �
   · exact h'
 
 theorem band_prime {x a : ℝ} {p : ℕ} (hp : p ∈ band x a) : p.Prime := by
-  unfold band at hp
   exact (mem_filter.1 hp).2
 
 /-- A band weight is invariant under the primes of a disjoint band. -/
@@ -217,9 +216,7 @@ theorem slotCount_le {c x : ℝ} (hx : 1 < x) (hc : 0 < c) (hT : 0 < logLog x) {
     (u v : Fin (k + 1) → ℝ) {B : (Fin k → ℕ) → ℝ} (hB : ∀ Q, 0 ≤ B Q ∧ B Q ≤ 1)
     (hu : ∀ i, c / logLog x ^ 20 ≤ u i) {h : ℕ} (h1 : 1 ≤ h) (hh : (h : ℝ) ≤ x ^ 2) :
     slotCount x u v B h ≤ (2 * logLog x ^ 20 / c) ^ (k + 1) := by
-  have hL : 0 < Real.log x := Real.log_pos hx
   set e := c / logLog x ^ 20 with he
-  have he0 : 0 < e := by positivity
   set D := h.primeFactors.filter fun q : ℕ => x ^ e < q with hD
   -- the slot tuples dividing `h` have all coordinates in `D`
   have hsub : (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ h) ⊆
@@ -248,7 +245,7 @@ theorem slotCount_le {c x : ℝ} (hx : 1 < x) (hc : 0 < c) (hT : 0 < logLog x) {
       rw [← prod_const]
       exact Finset.prod_le_prod₀ (fun _ _ => by positivity) fun q hq =>
         (mem_filter.1 hq).2.le
-    have hle : (x ^ e) ^ D.card ≤ x ^ 2 := (hlow.trans hprod_le).trans hh
+    have hle  := (hlow.trans hprod_le).trans hh
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by linarith), ← Real.rpow_natCast x 2] at hle
     have := (Real.rpow_le_rpow_left_iff hx).1 hle
     rw [he] at this
@@ -310,12 +307,12 @@ theorem slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} (u v : Fin (k + 1) → ℝ)
       intro i
       obtain ⟨q, hq⟩ := hne i
       obtain ⟨hqI, -, hqu⟩ := mem_filter.1 hq
-      have hqv : (q : ℝ) ≤ x ^ v i :=
+      have hqv  :=
         (Nat.le_floor_iff (by positivity)).1 (mem_Iic.1 hqI)
       have := lt_of_lt_of_le hqu hqv
       have := (Real.rpow_lt_rpow_left_iff hx).1 this
       linarith [hu i]
-    have hv1 : ∀ i, v i ≤ 1 := fun i =>
+    have hv1  := fun i =>
       (single_le_sum (fun j _ => hvpos j) (mem_univ i)).trans hv
     rw [show (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) =
         ∏ _i : Fin (k + 1), ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p by
@@ -323,7 +320,7 @@ theorem slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} (u v : Fin (k + 1) → ℝ)
     refine Finset.prod_le_prod₀ (fun _ _ => sum_nonneg fun _ _ => by positivity) fun i _ => ?_
     refine sum_le_sum_of_subset_of_nonneg (fun q hq => ?_) fun _ _ _ => by positivity
     obtain ⟨hqI, hqp, -⟩ := mem_filter.1 hq
-    have hqv : (q : ℝ) ≤ x ^ v i := (Nat.le_floor_iff (by positivity)).1 (mem_Iic.1 hqI)
+    have hqv  := (Nat.le_floor_iff (by positivity)).1 (mem_Iic.1 hqI)
     have hxv : x ^ v i ≤ x := by
       calc x ^ v i ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx.le (hv1 i)
         _ = x := Real.rpow_one x

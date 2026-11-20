@@ -37,7 +37,7 @@ lemma fixedSourcePrincipal_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : Pr
   rw [HeckeRayFamily.idealCoeff_character,RayOrthogonality.idealCharacter_one]
   change (if P.val=0 then (0:ℂ) else if IsCoprime P.val (∏Q∈S,Q) then 1 else 0)=_
   simp only [P.property.ne_zero,ite_false,prime_coprime_fixedProduct S hS P]
-  split_ifs <;> simp_all
+  simp
 
 lemma excludedTarget_prime (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
     idealCoeff (η.excludePrimes S hS) P.val=if P.val∈S then 0 else idealCoeff η P.val := by
@@ -46,7 +46,7 @@ lemma excludedTarget_prime (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime
     rw [←IsCoprime.prod_right_iff]
     exact prime_coprime_fixedProduct S hS P
   simp only [he]
-  split_ifs <;> simp_all
+  simp
 
 theorem LFunction_hasProd_outside (χ : Character) (S : Finset Id) (a : Id→ℂ)
     (ha : ∀P : PrimeIdeal,idealCoeff χ P.val=if P.val∈S then 0 else a P.val)
@@ -59,14 +59,14 @@ theorem LFunction_hasProd_outside (χ : Character) (S : Finset Id) (a : Id→ℂ
       if P.val∈S then 1 else (1-a P.val*CubicEisenstein.fullIdealWeight s P.val)⁻¹ := by
     change (1-idealCoeff χ P.val*CubicEisenstein.fullIdealWeight s P.val)⁻¹=_
     rw [ha]
-    split_ifs <;> simp only [zero_mul,sub_zero,inv_one]
+    split_ifs <;> simp
   simp only [he] at h
   apply (hasProd_subtype_iff_mulIndicator (s:={P : PrimeIdeal|P.val∉S})
     (f:=fun P : PrimeIdeal=>(1-a P.val*CubicEisenstein.fullIdealWeight s P.val)⁻¹)).mpr
   convert h using 1
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
-  split_ifs <;> simp_all
+  simp
 
 theorem fixedSourcePrincipal_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     (s : ℂ) (hs : 1<s.re) :

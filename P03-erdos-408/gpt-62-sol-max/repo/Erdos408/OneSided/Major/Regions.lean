@@ -69,7 +69,7 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
     (hfF : ∀ τ, f τ ≤ F₀) {X T M : ℝ} (hX : 0 < X) (hXT : X ≤ T)
     (hM : ∀ a b, a ≤ b → ∫ τ in a..b, f τ ≤ M * (1 + (b - a) / X)) :
     ∫ τ in Set.Ioi T, ((1 + |τ| / X) ^ 2)⁻¹ * f τ ≤ 4 * M * X / T := by
-  have hT : 0 < T := hX.trans_le hXT
+  have hT  := hX.trans_le hXT
   have hM0 : 0 ≤ M := by
     have h := hM T T le_rfl
     rw [intervalIntegral.integral_same, sub_self, zero_div, add_zero, mul_one] at h
@@ -109,7 +109,7 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
   set P : ℝ := 2 ^ j * T with hP
   have hP0 : 0 < P := by positivity
   have hXP : X ≤ P := hXT.trans (le_mul_of_one_le_left hT.le (one_le_pow₀ one_le_two))
-  have hlen : 2 ^ (j + 1) * T - P = P := by rw [hP, pow_succ]; ring
+  have hlen : 2 ^ (j + 1) * T - P = P := by ring
   have hpt : ∀ τ ∈ s j, g τ ≤ (X / P) ^ 2 * f τ := by
     intro τ hτ
     have h1 : P / X ≤ 1 + |τ| / X := by
@@ -133,7 +133,7 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
         rwa [hlen] at h
     _ ≤ (X / P) ^ 2 * (M * (2 * P / X)) := by
         gcongr
-        have h1 : 1 ≤ P / X := (one_le_div hX).2 hXP
+        have h1  := (one_le_div hX).2 hXP
         have h2 : 2 * P / X = P / X + P / X := by ring
         linarith
     _ = 4 * M * X / T / 2 / 2 ^ j := by
@@ -168,7 +168,7 @@ theorem integral_compl_Icc_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : �
   have hl : ∫ τ in Set.Iio (-T), ((1 + |τ| / X) ^ 2)⁻¹ * f τ =
       ∫ τ in Set.Ioi T, ((1 + |τ| / X) ^ 2)⁻¹ * f (-τ) := by
     rw [← integral_Iic_eq_integral_Iio, ← integral_comp_neg_Ioi]
-    simp only [abs_neg]
+    simp
   have hM' : ∀ a b, a ≤ b → ∫ τ in a..b, f (-τ) ≤ M * (1 + (b - a) / X) := by
     intro a b hab
     rw [intervalIntegral.integral_comp_neg]
@@ -254,27 +254,26 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
             (mul_le_mul_of_nonneg_left (hMs _ _ (by linarith)) (by positivity))
       _ = (ε * E + ε⁻¹ * (M * (1 + 2 * T / X))) / 2 := by ring
   -- on `|τ| > T`: `2 g g' ≤ g² + g'²` and the tail twice
-  have htail : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ) ≤ 8 * M * X / T := by
-    have hpt : ∀ τ ∈ (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ) ≤
-        k τ * g τ ^ 2 / 2 + k τ * gs τ ^ 2 / 2 := by
-      intro τ _
-      have h := mul_le_mul_of_nonneg_left (two_mul_le_add_sq (g τ) (gs τ)) (hk0 τ)
-      linarith
-    have h₁ : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * g τ ^ 2 ≤ 8 * M * X / T :=
-      integral_compl_Icc_mul_le (hg.pow 2) (fun τ => sq_nonneg _) hsqB hX hXT hM
-    have h₂ : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * gs τ ^ 2 ≤ 8 * M * X / T :=
-      integral_compl_Icc_mul_le (hgsc.pow 2) (fun τ => sq_nonneg _) (fun τ => hsqB _) hX hXT hMs
-    calc ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ)
-        ≤ ∫ τ in (Set.Icc (-T) T)ᶜ, (k τ * g τ ^ 2 / 2 + k τ * gs τ ^ 2 / 2) :=
-          setIntegral_mono_on hhi.integrableOn
-            ((hi₁.div_const 2).add (hi₂.div_const 2)).integrableOn measurableSet_Icc.compl hpt
-      _ = (∫ τ in (Set.Icc (-T) T)ᶜ, k τ * g τ ^ 2) / 2 +
-          (∫ τ in (Set.Icc (-T) T)ᶜ, k τ * gs τ ^ 2) / 2 := by
-          rw [integral_add (hi₁.div_const 2).integrableOn (hi₂.div_const 2).integrableOn,
-            integral_div, integral_div]
-      _ ≤ 8 * M * X / T / 2 + 8 * M * X / T / 2 := by gcongr
-      _ = 8 * M * X / T := by ring
-  exact add_le_add hmain htail
+  refine add_le_add hmain ?_
+  have hpt : ∀ τ ∈ (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ) ≤
+      k τ * g τ ^ 2 / 2 + k τ * gs τ ^ 2 / 2 := by
+    intro τ _
+    have h := mul_le_mul_of_nonneg_left (two_mul_le_add_sq (g τ) (gs τ)) (hk0 τ)
+    linarith
+  have h₁ : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * g τ ^ 2 ≤ 8 * M * X / T :=
+    integral_compl_Icc_mul_le (hg.pow 2) (fun τ => sq_nonneg _) hsqB hX hXT hM
+  have h₂ : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * gs τ ^ 2 ≤ 8 * M * X / T :=
+    integral_compl_Icc_mul_le (hgsc.pow 2) (fun τ => sq_nonneg _) (fun τ => hsqB _) hX hXT hMs
+  calc ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ)
+      ≤ ∫ τ in (Set.Icc (-T) T)ᶜ, (k τ * g τ ^ 2 / 2 + k τ * gs τ ^ 2 / 2) :=
+        setIntegral_mono_on hhi.integrableOn
+          ((hi₁.div_const 2).add (hi₂.div_const 2)).integrableOn measurableSet_Icc.compl hpt
+    _ = (∫ τ in (Set.Icc (-T) T)ᶜ, k τ * g τ ^ 2) / 2 +
+        (∫ τ in (Set.Icc (-T) T)ᶜ, k τ * gs τ ^ 2) / 2 := by
+        rw [integral_add (hi₁.div_const 2).integrableOn (hi₂.div_const 2).integrableOn,
+          integral_div, integral_div]
+    _ ≤ 8 * M * X / T / 2 + 8 * M * X / T / 2 := by gcongr
+    _ = 8 * M * X / T := by ring
 
 /-- The arc-term integral: for `g ≥ 0` with energy `E` on `[-T, T]` and mean values
 `M (1 + |I|/X)`,
@@ -288,8 +287,8 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
         ((1 + |q.1| / X) ^ 2)⁻¹ * ((1 + |q.1 + q.2|) ^ 2)⁻¹ * (g q.1 * g (-q.2))) ∧
       ∫ q : ℝ × ℝ, ((1 + |q.1| / X) ^ 2)⁻¹ * ((1 + |q.1 + q.2|) ^ 2)⁻¹ * (g q.1 * g (-q.2)) ≤
         π * ((ε * E + ε⁻¹ * (M * (1 + 2 * T / X))) / 2 + 8 * M * X / T) := by
-  have hT : 0 ≤ T := hX.le.trans hXT
-  have hB₀ : 0 ≤ B₀ := (hg0 0).trans (hgB 0)
+  have hT  := hX.le.trans hXT
+  have hB₀  := (hg0 0).trans (hgB 0)
   have hM0 : 0 ≤ M := by
     have h := hM T T le_rfl
     rw [intervalIntegral.integral_same, sub_self, zero_div, add_zero, mul_one] at h
@@ -307,13 +306,10 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
   -- the integrand is dominated by `B₀² k₁(τ) k₂(τ + σ)`, integrable after the shear
   set F : ℝ × ℝ → ℝ := fun q => k₁ q.1 * k₂ (q.1 + q.2) * (g q.1 * g (-q.2)) with hF
   have hFc : Continuous F := by
-    refine (hk₁c.comp continuous_fst).mul (hk₂c.comp (continuous_fst.add continuous_snd)) |>.mul
-      ((hg.comp continuous_fst).mul (hg.comp (continuous_snd.neg)))
+    fun_prop
   have hDi : Integrable (fun q : ℝ × ℝ => k₁ q.1 * k₂ (q.1 + q.2)) (volume.prod volume) := by
-    have hPc : Continuous fun q : ℝ × ℝ => k₁ q.1 * k₂ q.2 :=
-      (hk₁c.comp continuous_fst).mul (hk₂c.comp continuous_snd)
     exact ((measurePreserving_prod_add volume volume).integrable_comp
-      hPc.aestronglyMeasurable).2 (hk₁i.mul_prod hk₂i)
+      ((hk₁c.comp continuous_fst).mul (hk₂c.comp continuous_snd)).aestronglyMeasurable).2 (hk₁i.mul_prod hk₂i)
   have hFi : Integrable F (volume.prod volume) := by
     refine (hDi.mul_const (B₀ ^ 2)).mono' hFc.aestronglyMeasurable
       (Filter.Eventually.of_forall fun q => ?_)

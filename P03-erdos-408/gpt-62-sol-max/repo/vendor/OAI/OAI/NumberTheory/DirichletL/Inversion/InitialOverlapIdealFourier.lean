@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped BigOperators Classical
 open MeasureTheory FourierBridge ActualEisensteinCubic
 namespace SevenEighths.InverseInitialOverlapIdealFourier
 open InverseMoment InverseInitialOverlapFourier

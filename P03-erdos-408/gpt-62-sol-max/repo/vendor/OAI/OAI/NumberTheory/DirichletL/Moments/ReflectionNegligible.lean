@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionTails
 namespace OAI
 
 noncomputable section
-open scoped ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily EisensteinSchwartzPoisson
 

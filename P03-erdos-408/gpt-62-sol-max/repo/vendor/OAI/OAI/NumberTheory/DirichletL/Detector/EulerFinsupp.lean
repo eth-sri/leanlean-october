@@ -31,7 +31,7 @@ lemma finitePi_fin {β : Type*} (n : ℕ) (f : Fin n→β→ℂ)
     constructor
     · rw [←e.summable_iff]
       simp only [Function.comp_def,he]
-      have hm : Summable (fun v : β×(Fin n→β)=>‖f 0 v.1‖ * ‖∏ i : Fin n,f i.succ (v.2 i)‖) :=
+      have hm  :=
         (hf 0).mul_of_nonneg ht.1 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
       simpa only [norm_mul] using hm
     · rw [←e.tsum_eq (fun v=>∏ i,f i (v i))]
@@ -93,7 +93,7 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
       intro S v
       split_ifs
       · exact le_rfl
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      simp
   have he (S : Finset α) : (∑' v : α→₀β,if v.support⊆S then v.prod f else 0)=
       ∏a∈S,∑' b,f a b := by
     rw [←finiteEuler f h0 hf S]

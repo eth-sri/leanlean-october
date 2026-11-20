@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedBins
 
 @[expose] public section
@@ -23,7 +24,7 @@ theorem markedShortCompletedSum_eq (Ψ : O →* ℂ) (W : ℝ → ℂ) (X H₀ :
   · intro H hH
     by_cases hz : H=0
     · simp [hz]
-    · have hn : ¬(Ideal.absNorm H:ℝ)<H₀ := fun hn => hH ((mem_shortCubeRange H₀ H).mpr ⟨hz,hn⟩)
+    · have hn  := fun hn => hH ((mem_shortCubeRange H₀ H).mpr ⟨hz,hn⟩)
       exact ite_eq_right hn
 
 theorem marked_short_completed_energy {κ : Type*} [Fintype κ]
@@ -35,9 +36,9 @@ theorem marked_short_completed_energy {κ : Type*} [Fintype κ]
       A*(256*(columnDyadicLength H₀+1:ℝ))^2 := by
   let S := shortCubeRange H₀
   let lengthScale : ℝ := ∑H∈S,1/(Ideal.absNorm H:ℝ)
-  have hS (H : Ideal O) (hH : H∈S) : H≠0 := ((mem_shortCubeRange H₀ H).mp hH).1
+  have hS (H : Ideal O) (hH : H∈S)  := ((mem_shortCubeRange H₀ H).mp hH).1
   have hn (H : Ideal O) (hH : H∈S) : 0<(Ideal.absNorm H:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (fun hz => hS H hH (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hS H hH)
   have hL : 0≤lengthScale := Finset.sum_nonneg (fun H hH => by positivity)
   have hb (k : κ) : ‖markedShortCompletedSum (Ψ k) W X H₀ (mark k)‖^2≤
       lengthScale*∑H∈S,(1/(Ideal.absNorm H:ℝ))*‖markedCompletedT (Ψ k) W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark k (H^3*I))‖^2 := by
@@ -65,8 +66,8 @@ theorem marked_short_completed_energy {κ : Type*} [Fintype κ]
       _ ≤ lengthScale*∑H∈S,(1/(Ideal.absNorm H:ℝ))*A := by
         gcongr with H hH
         exact hcompleted H hH
-      _ = A*lengthScale^2 := by rw [←Finset.sum_mul]; change lengthScale*(lengthScale*A)=A*lengthScale^2; ring
-  have hbound : lengthScale≤256*(columnDyadicLength H₀+1:ℝ) :=
+      _ = A*lengthScale^2 := by rw [←Finset.sum_mul]; ring
+  have hbound  :=
     finite_inverse_norm_sum S H₀ hS (fun H hH => ((mem_shortCubeRange H₀ H).mp hH).2.le)
   exact hsum.trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hL hbound 2) hA)
 

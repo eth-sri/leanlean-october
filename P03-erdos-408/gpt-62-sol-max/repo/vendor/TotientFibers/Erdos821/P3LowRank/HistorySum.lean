@@ -51,7 +51,7 @@ def truncEquiv (A : Model F P J m) (n B : ℕ) :
   left_inv _ := rfl
   right_inv _ := rfl
 
-theorem tsum_trunc (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → ℂ)
+theorem tsum_trunc {R : Type*} [AddCommMonoid R] [TopologicalSpace R] (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → R)
     (hf : ∀ H, ¬ H.Truncated B → f H = 0) :
     ∑' H, f H = ∑ d : BoundedHistoryData A n B, f (mkH d) := by
   have hs : Function.support f ⊆ {H : MemoryHistory A n | H.Truncated B} := by
@@ -62,13 +62,43 @@ theorem tsum_trunc (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → �
   rfl
 
 /-- Product of the local multipliers along a history. -/
-def localFactor (A : Model F P J m) (n : ℕ)
-    (Φ0 : P.MemoryState (J + F.ell) → ℂ)
-    (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℂ)
-    (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ)
-    (H : MemoryHistory A n) : ℂ :=
+def localFactor {R : Type*} [CommMonoid R] (A : Model F P J m) (n : ℕ)
+    (Φ0 : P.MemoryState (J + F.ell) → R)
+    (φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → R)
+    (φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → R)
+    (H : MemoryHistory A n) : R :=
   Φ0 (H.before 0) * (∏ i, φG i (H.before i) (H.after i) (H.ghost i)) *
     ∏ i, φE i (H.after i.castSucc) (H.before i.succ) (H.edge i)
+
+theorem sum_guard {ι R : Type*} [Fintype ι] [AddCommMonoid R] (p : Prop)
+    [Decidable p] (q : ι → Prop) [DecidablePred q] (w : ι → R) :
+    (∑ i, if p ∧ q i then w i else 0) = if p then ∑ i, if q i then w i else 0 else 0 := by
+  by_cases h : p <;> simp [h]
+
+/-- Independent valid choices along a fixed state path factor into local sums.
+This identity applies both to complex weights and to their real absolute weights. -/
+theorem choice_sum_factorized {R : Type*} [CommSemiring R] (A : Model F P J m) (n : ℕ)
+    (bf af : Fin (n + 1) → P.MemoryState (J + F.ell)) (x k : R)
+    (g : ∀ i, GhostChoice (bf i) (af i) → R)
+    (e : ∀ i : Fin n, EdgeChoice A (af i.castSucc) → R) :
+    ∑ c₁ : ∀ i, GhostChoice (bf i) (af i), ∑ c₂ : ∀ i : Fin n, EdgeChoice A (af i.castSucc),
+      (if (⟨bf, af, c₁, c₂⟩ : MemoryHistory A n).Valid then
+        x * (∏ i, g i (c₁ i)) * ∏ i, k * e i (c₂ i) else 0) =
+    (if ∀ j, (bf 0).2.2 j = 0 then x else 0) *
+      (∏ i, ∑ c : GhostChoice (bf i) (af i),
+        if ((bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1) ∧ ghostChoiceValid c then g i c else 0) *
+      (∏ i, ∑ c : EdgeChoice A (af i.castSucc),
+        if edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) c then k * e i c else 0) *
+      (if ∀ j, (af (Fin.last n)).2.2 j = 0 then 1 else 0) := by
+  simp only [Fintype.prod_sum, Finset.sum_mul, Finset.mul_sum]
+  conv_rhs => rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun c₁ _ => Finset.sum_congr rfl fun c₂ _ => ?_
+  simp only [MemoryHistory.Valid, Fintype.prod_ite_zero, and_assoc]
+  by_cases h₀ : ∀ j, (bf 0).2.2 j = 0 <;> by_cases h₁ : ∀ j, (af (Fin.last n)).2.2 j = 0 <;>
+    by_cases hg : ∀ i, (bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1 ∧ ghostChoiceValid (c₁ i) <;>
+    by_cases he : ∀ i, edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) (c₂ i) <;>
+    simp only [h₀, h₁, hg, he, implies_true, true_and, and_true, false_and, and_false,
+      ite_true, ite_false, zero_mul, mul_zero, mul_one]
 
 /-- Exact choice expansion for one fixed state path. -/
 theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
@@ -85,98 +115,24 @@ theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
         (∏ i, memoryGhostKernel F J n rho i (φG i) (bf i) (af i)) *
         (∏ i : Fin n, memoryEdgeKernel A n rho theta i .all (φE i) (af i.castSucc) (bf i.succ)) *
         (if ∀ g, (af (Fin.last n)).2.2 g = 0 then (1 : ℂ) else 0) := by
-  set X0 : ℂ := if ∀ g, (bf 0).2.2 g = 0 then (P.memoryMass F J n (bf 0) : ℂ) * Φ0 (bf 0) else 0
-    with hX0
-  set Y0 : ℂ := if ∀ g, (af (Fin.last n)).2.2 g = 0 then (1 : ℂ) else 0 with hY0
-  let gT : (i : Fin (n + 1)) → GhostChoice (bf i) (af i) → ℂ := fun i c =>
-    if (bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1 ∧ ghostChoiceValid c then
-      (ghostChoiceWeight F n rho i c : ℂ) * φG i (bf i) (af i) c else 0
-  let eT : (i : Fin n) → EdgeChoice A (af i.castSucc) → ℂ := fun i c =>
-    if edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) c then
-      (edgeSymmetryFactor P (J + F.ell) : ℂ) *
-        edgeChoiceCoefficient A n rho theta i (af i.castSucc) (bf i.succ) c *
-          φE i (af i.castSucc) (bf i.succ) c else 0
-  have hpt : ∀ (c1 : (i : Fin (n + 1)) → GhostChoice (bf i) (af i))
-      (c2 : (i : Fin n) → EdgeChoice A (af i.castSucc)),
-      (if (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid then
-          (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Weight rho theta *
-            localFactor A n Φ0 φG φE ⟨bf, af, c1, c2⟩ else 0) =
-        X0 * (∏ i, gT i (c1 i)) * (∏ i, eT i (c2 i)) * Y0 := by
-    intro c1 c2
-    by_cases h0 : ∀ g, (bf 0).2.2 g = 0
-    · by_cases hn : ∀ g, (af (Fin.last n)).2.2 g = 0
-      · by_cases hg : ∀ i, (bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1 ∧
-            ghostChoiceValid (c1 i)
-        · by_cases he : ∀ i, edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) (c2 i)
-          · have hV : (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := ⟨h0, hn, hg, he⟩
-            rw [ite_eq_left hV, hX0, hY0, ite_eq_left h0, ite_eq_left hn]
-            have hgT : ∀ i, gT i (c1 i) =
-                (ghostChoiceWeight F n rho i (c1 i) : ℂ) * φG i (bf i) (af i) (c1 i) :=
-              fun i => ite_eq_left (hg i)
-            have heT : ∀ i, eT i (c2 i) = (edgeSymmetryFactor P (J + F.ell) : ℂ) *
-                edgeChoiceCoefficient A n rho theta i (af i.castSucc) (bf i.succ) (c2 i) *
-                  φE i (af i.castSucc) (bf i.succ) (c2 i) :=
-              fun i => ite_eq_left (he i)
-            simp only [hgT, heT, MemoryHistory.Weight, localFactor, Finset.prod_mul_distrib]
-            ring
-          · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => he hV.2.2.2
-            obtain ⟨i, hi⟩ := not_forall.mp he
-            rw [ite_eq_right hV, Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)]
-            ring
-        · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => hg hV.2.2.1
-          obtain ⟨i, hi⟩ := not_forall.mp hg
-          rw [ite_eq_right hV, Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)]
-          ring
-      · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => hn hV.2.1
-        rw [ite_eq_right hV, hY0, ite_eq_right hn]
-        ring
-    · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => h0 hV.1
-      rw [ite_eq_right hV, hX0, ite_eq_right h0]
+  convert choice_sum_factorized A n bf af ((P.memoryMass F J n (bf 0) : ℂ) * Φ0 (bf 0)) (edgeSymmetryFactor P (J + F.ell) : ℂ)
+    (fun i c => (ghostChoiceWeight F n rho i c : ℂ) * φG i (bf i) (af i) c)
+    (fun i c => edgeChoiceCoefficient A n rho theta i (af i.castSucc) (bf i.succ) c * φE i (af i.castSucc) (bf i.succ) c) using 1
+  · refine Finset.sum_congr rfl fun c₁ _ => Finset.sum_congr rfl fun c₂ _ => ?_
+    split_ifs
+    · simp only [MemoryHistory.Weight, localFactor, Finset.prod_mul_distrib]
       ring
-  have hG : ∀ i, ∑ c, gT i c = memoryGhostKernel F J n rho i (φG i) (bf i) (af i) := by
-    intro i
-    unfold memoryGhostKernel
-    by_cases hag : (bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1
-    · rw [ite_eq_left hag]
-      apply Finset.sum_congr rfl
-      intro c _
-      by_cases hc : ghostChoiceValid c
-      · rw [ite_eq_left hc]
-        exact ite_eq_left ⟨hag.1, hag.2, hc⟩
-      · rw [ite_eq_right hc]
-        exact ite_eq_right (fun h => hc h.2.2)
-    · rw [ite_eq_right hag]
-      apply Finset.sum_eq_zero
-      intro c _
-      exact ite_eq_right (fun h => hag ⟨h.1, h.2.1⟩)
-  have hE : ∀ i, ∑ c, eT i c =
-      memoryEdgeKernel A n rho theta i .all (φE i) (af i.castSucc) (bf i.succ) := by
-    intro i
-    unfold memoryEdgeKernel
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro c _
-    by_cases hc : edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) c
-    · rw [ite_eq_left hc]
-      simp only [eT, ite_eq_left hc]
-      ring
-    · rw [ite_eq_right hc]
-      simp only [eT, ite_eq_right hc, mul_zero]
-  have hsplit : ∀ c1 : (i : Fin (n + 1)) → GhostChoice (bf i) (af i),
-      ∑ c2 : (i : Fin n) → EdgeChoice A (af i.castSucc),
-        X0 * (∏ i, gT i (c1 i)) * (∏ i, eT i (c2 i)) * Y0 =
-      (X0 * (∏ i, gT i (c1 i)) * Y0) * ∑ c2 : (i : Fin n) → EdgeChoice A (af i.castSucc),
-        ∏ i, eT i (c2 i) := by
-    intro c1
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro c2 _
-    ring
-  simp only [hpt, hsplit]
-  rw [← Finset.sum_mul, ← Finset.sum_mul, ← Finset.mul_sum, ← Fintype.prod_sum gT,
-    ← Fintype.prod_sum eT]
-  simp only [hG, hE]
-  ring
+    · rfl
+  · have hg (i : Fin (n + 1)) :
+        (∑ c : GhostChoice (bf i) (af i),
+          if ((bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1) ∧ ghostChoiceValid c then
+            (ghostChoiceWeight F n rho i c : ℂ) * φG i (bf i) (af i) c else 0) =
+        memoryGhostKernel F J n rho i (φG i) (bf i) (af i) := by
+      unfold memoryGhostKernel
+      exact sum_guard ((bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1)
+        (fun c : GhostChoice (bf i) (af i) => ghostChoiceValid c)
+        (fun c => (ghostChoiceWeight F n rho i c : ℂ) * φG i (bf i) (af i) c)
+    simp only [hg, memoryEdgeKernel, Finset.mul_sum, mul_ite, mul_zero]
 
 /-- Bilinear bounds on the full state type restrict to the finite kept subtype. -/
 theorem finNormBound_of_normBound {α : Type*} (keep : α → Prop) [Fintype {x // keep x}]

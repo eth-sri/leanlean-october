@@ -78,7 +78,7 @@ def C1c : Submodule ℝ (E → ℝ) where
   carrier := {f | ContDiff ℝ 1 f ∧ HasCompactSupport f}
   zero_mem' := by
     refine ⟨contDiff_const, ?_⟩
-    simpa using (HasCompactSupport.zero : HasCompactSupport (fun _ : E => (0 : ℝ)))
+    exact (HasCompactSupport.zero : HasCompactSupport (fun _ : E => (0 : ℝ)))
   add_mem' := by
     intro f g hf hg
     refine ⟨hf.1.add hg.1, hf.2.add hg.2⟩
@@ -113,9 +113,9 @@ lemma memLp_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) : MemLp f 2 μ 
 
 lemma memLp_grad_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) :
     MemLp (grad (E := E) f) 2 μ := by
-  have hcont : Continuous (grad (E := E) f) := continuous_grad (E := E) (f := f) hf.1
-  have hcs : HasCompactSupport (grad (E := E) f) := hasCompactSupport_grad (E := E) (f := f) hf.2
-  exact hcont.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hcs
+  have hcont := continuous_grad (E := E) (f := f) hf.1
+  have hcs := hasCompactSupport_grad (E := E) (f := f) hf.2
+  solve_by_elim [hcont.memLp_of_hasCompactSupport]
 
 /-- The `L²` class of a `C¹` compactly supported function. -/
 noncomputable def toL2 (f : ↥(C1c (E := E))) : L2ℝ (μ := μ) :=
@@ -129,37 +129,12 @@ omit [CompleteSpace E] in
 private lemma toL2_add (f g : ↥(C1c (E := E))) :
     toL2 (μ := μ) (E := E) (f + g) =
       toL2 (μ := μ) (E := E) f + toL2 (μ := μ) (E := E) g := by
-  apply Lp.ext
-  have hf : (toL2 (μ := μ) (E := E) f : E → ℝ) =ᵐ[μ] f.1 :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
-  have hg : (toL2 (μ := μ) (E := E) g : E → ℝ) =ᵐ[μ] g.1 :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) g.2).coeFn_toLp
-  have hfg : (toL2 (μ := μ) (E := E) (f + g) : E → ℝ) =ᵐ[μ] (f.1 + g.1) :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) (f + g).2).coeFn_toLp
-  -- Both sides agree a.e. with `f + g`.
-  refine hfg.trans ?_
-  filter_upwards [Lp.coeFn_add (toL2 (μ := μ) (E := E) f) (toL2 (μ := μ) (E := E) g), hf, hg]
-    with x hxadd hxf hxg
-  -- Rewrite both sides in terms of pointwise evaluation.
-  calc
-    f.1 x + g.1 x =
-        (toL2 (μ := μ) (E := E) f : E → ℝ) x +
-          (toL2 (μ := μ) (E := E) g : E → ℝ) x := by
-      simp [hxf, hxg]
-    _ = ((toL2 (μ := μ) (E := E) f + toL2 (μ := μ) (E := E) g : L2ℝ (μ := μ)) : E → ℝ) x := by
-      simpa [Pi.add_apply] using hxadd.symm
+  rfl
 
 omit [CompleteSpace E] in
 private lemma toL2_smul (c : ℝ) (f : ↥(C1c (E := E))) :
     toL2 (μ := μ) (E := E) (c • f) = c • toL2 (μ := μ) (E := E) f := by
-  apply Lp.ext
-  have hf : (toL2 (μ := μ) (E := E) f : E → ℝ) =ᵐ[μ] f.1 :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
-  have hcf : (toL2 (μ := μ) (E := E) (c • f) : E → ℝ) =ᵐ[μ] (c • f.1) :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) (c • f).2).coeFn_toLp
-  refine hcf.trans ?_
-  filter_upwards [Lp.coeFn_smul c (toL2 (μ := μ) (E := E) f), hf] with x hxsmul hxf
-  simp [Pi.smul_apply, hxsmul, hxf]
+  rfl
 
 /-- Linear map sending `C¹_c` functions to their `L²` classes. -/
 noncomputable def toL2Linear : ↥(C1c (E := E)) →ₗ[ℝ] L2ℝ (μ := μ) where
@@ -189,16 +164,7 @@ private lemma toL2Grad_add (f g : ↥(C1c (E := E))) :
   have hgrad :
       grad (E := E) (f.1 + g.1) x = grad (E := E) f.1 x + grad (E := E) g.1 x := by
     simp [grad, fderiv_add hdf hdg, map_add]
-  calc
-    grad (E := E) (f.1 + g.1) x = grad (E := E) f.1 x + grad (E := E) g.1 x := hgrad
-    _ =
-        (toL2Grad (μ := μ) (E := E) f : E → E) x +
-          (toL2Grad (μ := μ) (E := E) g : E → E) x := by
-        simp [hxf, hxg]
-    _ = ((toL2Grad (μ := μ) (E := E) f +
-            toL2Grad (μ := μ) (E := E) g : L2E (μ := μ)) :
-            E → E) x := by
-        simpa [Pi.add_apply] using hxadd.symm
+  simp_all
 
 private lemma toL2Grad_smul (c : ℝ) (f : ↥(C1c (E := E))) :
     toL2Grad (μ := μ) (E := E) (c • f) = c • toL2Grad (μ := μ) (E := E) f := by
@@ -236,15 +202,7 @@ noncomputable def graph : ↥(C1c (E := E)) →ₗ[ℝ] H1Target (μ := μ) :=
 noncomputable def h1 : Submodule ℝ (H1Target (μ := μ)) :=
   (LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure
 
-/-- The Euclidean `H¹` submodule is closed by construction. -/
-theorem isClosed_h1 : IsClosed (h1 (μ := μ) (E := E) : Set (H1Target (μ := μ))) := by
-  delta h1
-  exact Submodule.isClosed_topologicalClosure (LinearMap.range (graph (μ := μ) (E := E)))
 
-/-- `H¹` is complete (a Hilbert space once the ambient `L²` spaces are). -/
-instance instCompleteSpaceh1 : CompleteSpace (↥(h1 (μ := μ) (E := E))) := by
-  classical
-  exact (isClosed_h1 (μ := μ) (E := E)).isComplete.completeSpace_coe
 
 /-- The continuous embedding `H¹ → L²`. -/
 noncomputable def h1ToL2 : (↥(h1 (μ := μ) (E := E))) →L[ℝ] L2ℝ (μ := μ) :=

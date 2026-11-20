@@ -1,9 +1,10 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSource
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfilePhysical
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
-public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileWindows
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
 
 @[expose] public section
 
@@ -18,8 +19,8 @@ open InverseAmbientProfileTower JointLogSeparation FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
-def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l : ℕ)
     (gate : FirstOriginalOuter ι→Prop) (negative : Bool) (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
@@ -29,9 +30,9 @@ def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i})
       (mark (if negative then x.1.rightExponent else x.1.leftExponent))
       (commonSelector p (fun _=>1) l) omega T t Y
 
-def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
     (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
     (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
@@ -52,10 +53,10 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
       HasCompactSupport (omega₁ : ℝ→ℂ) ∧ HasCompactSupport (omega₂ : ℝ→ℂ) ∧
       tsupport (omega₁ : ℝ→ℂ)⊆Set.Icc lo hi ∧ tsupport (omega₂ : ℝ→ℂ)⊆Set.Icc lo hi ∧
     ∀(ε : ℝ),0<ε→∀(Aker J : ℕ),∃ Cprofile Kpush : ℝ,0≤Cprofile ∧ 0<Kpush ∧
-    ∀{ι : Type*}[DecidableEq ι](p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    ∀{ι : Type*}[DecidableEq ι](p : ι→O)(hp : ∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (hcop : OAI.PrincipalFamily.Coprime p)
       (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (_hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
@@ -88,8 +89,9 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
           (1+‖theta‖)^InverseClippingProfiles.momentOrder J)/
           (1+K*(rawScales k l T₁ T₂) 6/((rawScales k l T₁ T₂) 3*(rawScales k l T₁ T₂) 4*
             ((rawScales k l T₁ T₂) 5)^2*T₁*T₂))^Aker)) := by
-  obtain ⟨w₁,w₂,U,M₀,lo,hi,hlo,hlh,hw₁,hw₂,hs₁,hs₂,hM,hUc,hUs,hwin⟩ :=
-    original_cell_windows g₁ g₂ m₁ m₂ 1 (fun _=>0) hm₁ hm₂ hg₁ hg₂ (fun _=>le_rfl)
+  obtain ⟨w₁,w₂,U,M₀,lo,hi,hlo,hlh,hw₁,hw₂,hs₁,hs₂,hM,_,hUs,hfresh₁,hfresh₂,hcut⟩ :=
+    fixed_windows g₁ g₂ m₁ m₂ 1 (fun _=>1) (fun _=>2) (fun _=>0)
+      hm₁ hm₂ hg₁ hg₂ (by intros; norm_num) (by intros; norm_num) (fun _=>le_rfl)
   refine ⟨w₁,w₂,lo,hi,hlo,hlh,hw₁,hw₂,hs₁,hs₂,?_⟩
   intro ε hε Aker J
   obtain ⟨Cprofile,Kpush,hC,hKp,he⟩ := actual_first_original_subset_physical_budget
@@ -99,28 +101,37 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
   intro ι _ p hp _ hg hinj hcop hc hpr pool Q labels β cutoff Ψ m mark Γ Ysource Y hΨ hΓ hY hsf hn hβ
     k l gate hcutoff T₁ T₂ K theta L hT₁ hT₂ hK hL Benergy Z M r ell V delta aa₁ aa₂ bb rr tq hh eta hB hZ hscale hLe hleft hright
   let source := refinedSource p pool Q labels β cutoff Ysource k gate
-  have hgates := hwin p hp hg pool Q labels Ysource (coefficient p hp hcop hg Ψ m mark true)
-    (coefficient p hp hcop hg Ψ m mark false) k l T₁ T₂ (fun _=>0) 1 1 (-theta) theta
-    hT₁ hT₂ (by intro i;simp) le_rfl le_rfl le_rfl le_rfl
-  have hb := he p hp hg hinj hcop hc hpr pool (refinedOuter p pool Q k gate) (fun x=>x.1) (fun x=>x.2.1)
+  let s := rawScales k l T₁ T₂
+  have hs := rawScales_pos k l T₁ T₂ hT₁ hT₂
+  have hblock (x) (hx : x∈source) j hn := actual_original_cell_ratios p hp hg _ (fun _ _=>1)
+    (coefficient p hp hcop hg Ψ m mark true) (coefficient p hp hcop hg Ψ m mark false)
+    (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)
+    (fun x=>divisorElement p x.1) (fun x=>x.2.2)
+    (original_source_norms_ge_one p hp pool Q labels Ysource) k l T₁ T₂ x (Finset.mem_filter.mp hx).1 j hn
+  refine he p hp hg hinj hcop hc hpr pool (refinedOuter p pool Q k gate) (fun x=>x.1) (fun x=>x.2.1)
     Ψ Ψ m m (divisorElement p) (fun x=>mark x.1.rightExponent) (fun x=>mark x.1.leftExponent)
     (fun _=>commonSelector p (fun _=>1) l) (fun _=>labels) (firstOriginalWeight p β cutoff) (Γ^2) Y
     hΨ hΨ (sq_nonneg _) hY (fun _ _=>hsf) (fun _ _=>hn)
     (fun x hx=>original_weight_bound p pool Q labels β cutoff Γ Y hΓ hβ x (original_outer_cell_subset p pool Q k (Finset.mem_filter.mp hx).1))
     w₁ w₂ (fun _=>0) 1 1 (-theta) theta (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)
-    K L hK (rawScales k l T₁ T₂) (rawScales_pos k l T₁ T₂ hT₁ hT₂)
+    K L hK s hs
     source (refined_source_radius p hp pool Q labels β cutoff Ysource Y k gate hn hcutoff)
     (fun x hx=>original_source_positive p hp pool Q labels Ysource x (Finset.mem_filter.mp (Finset.mem_filter.mp hx).1).1)
-    (by intro i;simp) le_rfl le_rfl le_rfl le_rfl hL
-    (fun x hx=>hgates.1 x (Finset.mem_filter.mp hx).1)
-    (fun x hx=>hgates.2.1 x (Finset.mem_filter.mp hx).1)
-    (fun x hx=>hgates.2.2 x (Finset.mem_filter.mp hx).1)
-    Benergy hB Z M r ell V delta aa₁ aa₂ bb rr tq hh eta hZ hscale hLe
-    (by simpa [refinedChildEnergy,rawScales] using hleft)
-    (by simpa [refinedChildEnergy,rawScales] using hright)
-  unfold refinedCellRows
-  unfold SevenEighths.InverseMomentFirstOriginalProfile.coefficient SevenEighths.InverseMomentFirstOriginalProfile.weight
-  simpa [source,rawScales] using hb
+    (by simp) le_rfl le_rfl le_rfl le_rfl hL
+    ?_ ?_ ?_ Benergy hB Z M r ell V delta aa₁ aa₂ bb rr tq hh eta hZ hscale hLe hleft hright
+  · intro x hx j hj hn hg₁n
+    apply hfresh₁ 1 (-theta) (leftNorm p x/s 0) (commonNorm p x/s 2) (primeProductNorm p j.2.1/s 5) _
+      le_rfl le_rfl (hblock x hx j hn 0) (hblock x hx j hn 2) (hblock x hx j hn 5)
+      (div_pos (primeProductNorm_pos p hp _) (hs 7))
+    convert hg₁n using 2 <;> ring
+  · intro x hx j hj hn hg₂n
+    apply hfresh₂ 1 theta (rightNorm p x/s 1) (commonNorm p x/s 2) (primeProductNorm p j.2.1/s 5) _
+      le_rfl le_rfl (hblock x hx j hn 1) (hblock x hx j hn 2) (hblock x hx j hn 5)
+      (div_pos (primeProductNorm_pos p hp _) (hs 8))
+    convert hg₂n using 2 <;> ring
+  · intro x hx j hj hn hw₁ hw₂ i
+    exact hcut (fun i=>firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
+      (divisorElement p x.1) x.2.2 j i/s i) (fun _=>0) (by simp) (hblock x hx j hn) hw₁ hw₂ i
 
 end SevenEighths.InverseMomentFirstOriginalProfile
 end

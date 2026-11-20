@@ -147,13 +147,11 @@ private theorem momentPow_apply_equiv_of_apply [DecidableEq α] [DecidableEq β]
     {A : Matrix α α ℂ} {A' : Matrix β β ℂ} (hA : ∀ i j, A' (σ i) (σ j) = A i j) (R : ℕ) (i j : α) :
     ((A' * A'ᴴ) ^ R) (σ i) (σ j) = ((A * Aᴴ) ^ R) i j := by
   -- `𝒜𝒜^*` agrees
-  have hAA : ∀ i j, (A' * A'ᴴ) (σ i) (σ j) = (A * Aᴴ) i j :=
-    mul_apply_equiv_of_apply σ hA fun i j => by simp [Matrix.conjTranspose_apply, hA]
   induction R generalizing i j with
   | zero => simp [Matrix.one_apply, σ.injective.eq_iff]
   | succ R ih =>
     rw [pow_succ, pow_succ]
-    exact mul_apply_equiv_of_apply σ ih hAA i j
+    exact mul_apply_equiv_of_apply σ ih (mul_apply_equiv_of_apply σ hA fun i j => by simp [Matrix.conjTranspose_apply, hA]) i j
 
 end Reindex
 

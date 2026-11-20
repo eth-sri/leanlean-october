@@ -52,8 +52,8 @@ theorem card_filter_mul_eq_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 
   · rw [mem_coe, mem_filter] at hmn
     exact Nat.mem_divisors.2 ⟨⟨mn.2, hmn.2.symm⟩, hl⟩
   · rw [mem_coe, mem_filter, mem_product] at hmn hmn'
-    have h₁ : 0 < mn.1 := hI₁ _ hmn.1.1
-    have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by rw [hmn.2, h, hmn'.2]
+    have h₁  := hI₁ _ hmn.1.1
+    have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by simp_all
     exact Prod.ext h (Nat.eq_of_mul_eq_mul_left h₁ h₂)
 
 /-- `|c_l| ≤ U V τ(l)` for `l ≠ 0`. -/
@@ -88,8 +88,6 @@ theorem integral_norm_sum_mul_sum_sq_le {I₁ I₂ : Finset ℕ} {N₁ N₂ : �
         (U ^ 2 * V ^ 2 * ((N₁ * N₂ : ℕ) * (1 + Real.log (N₁ * N₂ : ℕ)) ^ 3)) := by
   simp_rw [sum_mul_sum_eq hI₁ hI₂ u v]
   refine (integral_norm_dirichlet_sq_le _ _ a b).trans ?_
-  have hlog := Real.log_natCast_nonneg (N₁ * N₂)
-  have hab' := sub_nonneg.2 hab
   gcongr
   -- `∑ |c_l|² ≤ U² V² ∑ τ(l)²`
   calc ∑ l ∈ Icc 1 (N₁ * N₂), ‖mulCoeff I₁ I₂ u v l‖ ^ 2

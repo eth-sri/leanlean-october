@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSlotPolynomial
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
@@ -37,14 +37,11 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   obtain ⟨K,hK,hgram⟩ := hgram S hS hbad (lowGaussMajorant a₀ b₀ ha₀ hb₀)
   refine ⟨K,hK,?_⟩
   intro W0 X Y hX hY B v hP
-  have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
+  have hy  := lt_of_lt_of_le zero_lt_one hY
   let Q := lowPhysicalScale (calibrationForSet S hS) X Y
   have hQ : 0<Q := lowPhysicalScale_pos _ X Y hX hy
   let A := K*(1+|v|)^J*(Q/Y)*(1+(Y^2/Q)^(1/6:ℝ)+(Y^2/Q)^2/Y)*Y^δ
-  have hbound (σ : RayRing) :
-      (gaussEnergy (lowGaussColumns W1 hW1c Y hy) (fun I=>primaryGenerator I.val)
-        (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
-        (lowGaussColumn (calibrationForSet S hS) W1 Y σ v) (lowGaussMajorant a₀ b₀ ha₀ hb₀) Q).re≤A :=
+  have hbound (σ : RayRing)  :=
     (Complex.re_le_norm _).trans (hgram σ v Y Q hY hQ hP)
   apply (lowSeparatedIntegrand_actual_energies a₀ b₀ ha₀ hb₀ (calibrationForSet S hS)
     W0 W1 hW1c X Y hX hy B v).trans

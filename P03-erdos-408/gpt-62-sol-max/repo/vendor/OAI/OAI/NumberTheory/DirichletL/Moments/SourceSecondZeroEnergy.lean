@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondDiagonal
 public import OAI.NumberTheory.DirichletL.Moments.SourceZeroEnergy
 public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
@@ -9,13 +10,13 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceSecondZeroEnergy
 open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
+open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceRow
+open CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceSecondZero (S : Finset (Ideal O)) (β : Ideal O→ℂ) (η : Character) (t : ℝ) : ℂ :=
@@ -25,7 +26,7 @@ def sourceSecondZero (S : Finset (Ideal O)) (β : Ideal O→ℂ) (η : Character
 lemma heightCoeff_norm_le_one (η : Character) (t : ℝ) (I : Ideal O) (hI : I≠0) :
     ‖heightCoeff η t I‖≤1 := by
   have hn : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hp : ‖(Ideal.absNorm I:ℂ)^(Complex.I*t)‖=1 := by
     rw [show (Ideal.absNorm I:ℂ)=((Ideal.absNorm I:ℝ):ℂ) by simp,
       Complex.norm_cpow_eq_rpow_re_of_pos hn]
@@ -93,8 +94,7 @@ theorem sourceSecondZero_eq_zero_of_subunit (S : Finset (Ideal O)) (β : Ideal O
   have hc (I : supportedColumns S) : β I=0 := by
     by_contra hn
     have hi : (1:ℝ)≤Ideal.absNorm (I:Ideal O) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.mem_filter.mp I.property).2.1)
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot ((Finset.mem_filter.mp I.property).2.1)
     linarith [hN I I.property hn]
   simp only [sourceSecondZero,secondZeroEnergy,hc,zero_mul,star_zero,mul_zero,Finset.sum_const_zero]
 
@@ -108,13 +108,13 @@ theorem tuple_second_zero_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       ‖sourceSecondZero (finiteColumns S) (finiteColumnCoefficient S β) η t‖≤
         C*B^2*Y^(1+ε)/(Ideal.absNorm s:ℝ) := by
   let δ := ε/(2*(N+2:ℕ))
-  have hδ : 0<δ := by dsimp [δ]; positivity
+  have hδ : 0<δ := by positivity
   have hδn : δ*(N+2:ℕ)=ε/2 := by dsimp [δ]; push_cast; field_simp
   obtain ⟨D,hD,hd⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨128*((1+D)^(N+2))^2,by positivity,?_⟩
   intro ι _ hi S β η t B Y hB hY hβ s hs hdiv hN
   let c := finiteColumnCoefficient S β
-  have hY0 : 0<Y := zero_lt_one.trans_le hY
+  have hY0  := zero_lt_one.trans_le hY
   have hbound (I : Ideal O) (hI : I∈supportedColumns (finiteColumns S)) (hn : c I≠0) :
       (Ideal.absNorm I:ℝ)≤Y := by
     obtain ⟨v,hv,hv0,he⟩ := finiteColumnCoefficient_witness S β I hn
@@ -220,15 +220,15 @@ theorem profile_second_zero_energy (N : ℕ) (ε : ℝ) (hε : 0<ε) :
   have hβ (v : Tuple ι) : ‖β v‖≤2*D₁*D₂*(∏ j,D j) :=
     profileCoefficient_norm_le R ν hν Wslot P D W₁ W₂ D₁ D₂ hD hD₁ hD₂
       hslot h₁ h₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v
-  have hT : 0<T := hX ▸ mul_pos hX₁ hX₂
-  have hn₁ : (0:ℝ)<Ideal.absNorm B₁ := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hB₁)
-  have hn₂ : (0:ℝ)<Ideal.absNorm B₂ := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hB₂)
+  have hT  := hX ▸ mul_pos hX₁ hX₂
+  have hn₁ : (0:ℝ)<Ideal.absNorm B₁ := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hB₁)
+  have hn₂ : (0:ℝ)<Ideal.absNorm B₂ := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hB₂)
   have hraw : 0<Traw := mul_pos (div_pos hT (mul_pos hn₁ hn₂)) (Finset.prod_pos (fun j _=>hP j))
   have hL : 0≤L := mul_nonneg (mul_nonneg (Finset.prod_nonneg (fun j _=>hb j)) hb₁) hb₂
   have hN (v : Tuple ι) (hv : β v≠0) : (Ideal.absNorm (finiteTupleProduct v):ℝ)≤L*Traw := by
     have hh := profileCoefficient_product_bound R ν Wslot P b W₁ W₂ b₁ b₂ X₁ X₂ Y₁ Y₂ T B₁ B₂ s
       hP hX₁ hX₂ hY₁ hY₂ hB₁ hB₂ hX hY hz hz₁ hz₂ hs hs₁ hs₂ v hv
-    exact hh.2.trans_eq (by dsimp only [L,Traw];ring)
+    exact hh.2.trans_eq (by ring)
   refine ⟨?_,?_⟩
   · intro hsmall
     apply sourceSecondZero_eq_zero_of_subunit _ _ η t (L*Traw) hsmall

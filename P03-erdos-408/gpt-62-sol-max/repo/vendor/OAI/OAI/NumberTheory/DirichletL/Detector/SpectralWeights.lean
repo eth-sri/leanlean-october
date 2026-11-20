@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalEulerIdentity
 
 @[expose] public section
@@ -12,7 +13,6 @@ namespace SevenEighths.ProbeEuler
 lemma signed_diagonal_phase (omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
     omega^(((e+3*l)*k:ℕ):ℤ) * omega^(-((e*l+l.choose 2:ℕ):ℤ)) =
       omega^((e+3*l)*k+e*l+l.choose 2) := by
-  have hn : omega≠0 := by intro h; simp [h] at ho
   have hi : omega⁻¹=omega := by
     apply inv_eq_of_mul_eq_one_left
     simpa only [pow_two] using ho
@@ -23,7 +23,7 @@ lemma signed_diagonal_phase (omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
 lemma source_signed_phase (C omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
     C^l * omega^((((e+3*l)*k:ℕ):ℤ)-(e*l+l.choose 2:ℕ)) =
       localCubePhase C omega e l k := by
-  have hn : omega≠0 := by intro h; simp [h] at ho
+  have hn : omega≠0 := by intro h; simp_all
   rw [sub_eq_add_neg, zpow_add₀ hn, signed_diagonal_phase omega ho]
   rfl
 
@@ -32,15 +32,13 @@ lemma spectral_power_split (Q : ℝ) (hQ : 0<Q) (x w z : ℂ) (e l k m : ℕ) :
       ((Q:ℂ)^(-x)/(Q:ℂ)^(1/2:ℂ))^e *
       (((Q:ℂ)^(-x))^3/(Q:ℂ))^l * ((Q:ℂ)^(-w))^k * ((Q:ℂ)^(-6*z))^m := by
   have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
-  have h1 : (Q:ℂ)^(-x)/(Q:ℂ)^(1/2:ℂ) = (Q:ℂ)^(-x-(1/2:ℂ)) :=
-    (Complex.cpow_sub _ _ hn).symm
   have h3 : ((Q:ℂ)^(-x))^3/(Q:ℂ) = (Q:ℂ)^(-1-3*x) := by
     rw [← Complex.cpow_nat_mul (Q:ℂ) 3 (-x)]
     calc
-      _ = (Q:ℂ)^(3*(-x)) / (Q:ℂ)^(1:ℂ) := by rw [Complex.cpow_one]; norm_num
+      _ = (Q:ℂ)^(3*(-x)) / (Q:ℂ)^(1:ℂ) := by norm_num
       _ = (Q:ℂ)^(3*(-x)-1) := (Complex.cpow_sub _ _ hn).symm
       _ = _ := by congr 1; ring
-  rw [h1, h3, ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
+  rw [((Complex.cpow_sub _ _ hn).symm), h3, ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
     ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
     ← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn]
   congr 1
@@ -82,11 +80,9 @@ lemma firstGauss_eq_gamma_sqrt (p : O) (hp : Prime p)
     primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 =
       localGamma p hp.ne_zero hg 1 *
         (Real.sqrt (Ideal.absNorm (Ideal.span {p})):ℂ) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   have hs : (Real.sqrt (Ideal.absNorm (Ideal.span {p})):ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr hQ).ne'
   unfold localGamma
@@ -108,8 +104,7 @@ theorem sourceWeightedScalar_actual (p : O) (hp : Prime p)
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w))
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-6*z)) scalar e l k m := by
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   simpa only [Complex.ofReal_natCast] using
     sourceWeightedScalar_eq _ hQ eta a (localGamma p hp.ne_zero hg 1) _
       (star (localGamma p hp.ne_zero hg 3)) (actualSextic (Ideal.span {p}) hg (-1))

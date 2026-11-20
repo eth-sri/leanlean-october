@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
+public import OAI.NumberTheory.DirichletL.Moments.SecondMaskedWindow
+public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalColumns
+public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
 
 @[expose] public section
 
@@ -15,7 +18,7 @@ open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMom
 open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
 open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
 open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondRadicalBlock CenteredMomentHeckeColumnWindow
+open CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 
 def outerScalar (C D : Ideal O) (K : ℝ) (n : Fin 4→ℤ) : ℝ :=
@@ -70,7 +73,7 @@ theorem physicalBlock_eq (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β :
     physicalBlock η t S β C D hC hD U R rows W K n=
       (outerScalar C D K n:ℂ)*(normalizer C D U:ℂ)*
         normalizedBlock η t S β C D hC hD U R rows W K n := by
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
+  have hA  :=
     mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC) (nonunitFrequencyGenerator_ne_zero C D hC U)
   unfold physicalBlock normalizedBlock
   simp only [Finset.mul_sum]
@@ -79,7 +82,7 @@ theorem physicalBlock_eq (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β :
   simp_rw [physical_kernel_dyadic C D _ _ hC hD
     (sectorPool_supported C hC.1 S _) (sectorPool_supported D hD.1 S _)
     _ z hA (hrows z hz) W K R hK n]
-  have hn : (normalizer C D U:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (normalizer_pos C D hC U).ne'
+  have hn  := Complex.ofReal_ne_zero.mpr (normalizer_pos C D hC U).ne'
   simp only [outerScalar,Complex.ofReal_div,Complex.ofReal_mul,retainedScalar,canonicalPartitionScalar]
   simp only [normalizer] at hn ⊢
   by_cases hp : canonicalPartition C D U (nonunitFrequencyGenerator C D U*z)

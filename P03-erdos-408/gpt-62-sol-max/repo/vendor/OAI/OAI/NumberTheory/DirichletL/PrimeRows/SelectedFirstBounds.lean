@@ -32,7 +32,7 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
       apply mul_le_mul _ hi (norm_nonneg _) (by positivity)
       simpa only [norm_mul] using norm_sub_le ((B-q)*(1-V)*(1-W)*M) (q*(1-V*W))
     _ ≤ ((E+A)*2*(1+A)*388+A*(1+A))*2 := by
-      have hbq : ‖B-q‖≤E+A := (norm_sub_le B q).trans (add_le_add hB hq)
+      have hbq  := (norm_sub_le B q).trans (add_le_add hB hq)
       gcongr
     _ = _ := by ring
 
@@ -72,14 +72,13 @@ theorem continuedCompensatedLocal_first_bound (η : Character) (u : FreeRow) (P 
     rw [show (P.val.absNorm:ℂ)=((P.val.absNorm:ℝ):ℂ) from by simp,
       Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
     exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
-  have hB : ‖star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x‖≤(P.val.absNorm:ℝ)^R := by
-    rw [norm_mul,norm_star]
-    apply (mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η _)).trans
-    rw [show (P.val.absNorm:ℂ)=((P.val.absNorm:ℝ):ℂ) from by simp,
-      Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 hxR
-  exact compensatedReplacement_crude _ _ _ _ _ _ _ _ (by positivity) (by positivity)
-    (hV.trans (by norm_num)) hW hD hM hB hq
+  refine compensatedReplacement_crude _ _ _ _ _ _ _ _ (by positivity) (by positivity)
+    (hV.trans (by norm_num)) hW hD hM ?_ hq
+  rw [norm_mul,norm_star]
+  apply (mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η _)).trans
+  rw [show (P.val.absNorm:ℂ)=((P.val.absNorm:ℝ):ℂ) from by simp,
+    Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
+  exact Real.rpow_le_rpow_of_exponent_le hQ1 hxR
 
 end SevenEighths.ProbeHighRowFamily
 

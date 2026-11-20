@@ -1,5 +1,7 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
 
 @[expose] public section
@@ -9,72 +11,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 
@@ -118,7 +63,7 @@ theorem primeIdealProduct_exponents_eq
 end
 
 theorem primeProduct_span_exponents_eq {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (B C : Finset ι) (v w : ι → ℕ)
     (hv : ∀ i, i ∉ B → v i = 0) (hw : ∀ i, i ∉ C → w i = 0)
@@ -130,7 +75,6 @@ theorem primeProduct_span_exponents_eq {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
@@ -153,8 +97,8 @@ theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
       by_cases hS : (divisorDyadicBin S N j).Nonempty
       · by_cases hT : (divisorDyadicBin T N k).Nonempty
         · exact hb j k hS hT
-        · simpa only [Finset.not_nonempty_iff_eq_empty.mp hT, Finset.sum_empty, Finset.sum_const_zero] using hC
-      · simpa only [Finset.not_nonempty_iff_eq_empty.mp hS, Finset.sum_empty] using hC
+        simp_all
+      simp_all
     _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, pow_two]; ring
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
@@ -197,9 +141,9 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
     (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2*D₂)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
     (hP : ∀ D ∈ S, ∀ E ∈ T, ∀ i, P (D*E) i →
       Real.sqrt (M/B)*N ≤ (V/4)*(Ideal.absNorm (D*E):ℝ)) :
@@ -242,9 +186,9 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
     (hT : ∀ E ∈ T, 1 ≤ (Ideal.absNorm E:ℝ) ∧ (Ideal.absNorm E:ℝ) ≤ N)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
     (hP : ∀ D ∈ S, ∀ E ∈ T, ∀ i, P (D*E) i →
       Real.sqrt (M/B)*N ≤ (V/4)*(Ideal.absNorm (D*E):ℝ)) :
@@ -391,9 +335,9 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
     (B N M V : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hV : 0 ≤ V)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B/2 ≤ (Ideal.absNorm (rows i):ℝ) ∧ (Ideal.absNorm (rows i):ℝ) ≤ B)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j):ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k):ℝ) ≤ N)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (a : n → ℂ) (b : p → ℂ) (P : Ideal O → m → Prop)
     (hP : ∀ d i, P d i → Real.sqrt (M/B)*N ≤ (V/4)*(Ideal.absNorm d:ℝ)) :
     ‖principalDivisorCorrection rows left right a b M P‖ ≤
@@ -404,8 +348,8 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
   let T := columnDivisorPool right
   let pairCols : n × p → Ideal O := fun x => left x.1*right x.2
   let K := columnDivisorPool pairCols
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  have hl0  := fun j => (hleft j).1.1
+  have hr0  := fun k => (hright k).1.1
   have hp0 : ∀ x, pairCols x ≠ 0 := fun x => mul_ne_zero (hl0 x.1) (hr0 x.2)
   have hk : ∀ j k d, d ∣ left j*right k → d ∈ K :=
     fun j k d hd => mem_columnDivisorPool_of_dvd pairCols hp0 (j,k) d hd
@@ -423,7 +367,6 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
@@ -488,15 +431,9 @@ theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
 
 end CubeCoordinates
 
-@[ext] structure GlobalSecondData (ι : Type*) where
-  cube : CubeCoordinates ι
-  firstCommon : Finset ι
-  common : Finset ι
-  firstDivisor : Finset ι
-  source : SecondExpansionData ι
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
 
 end
 
@@ -504,7 +441,7 @@ open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct aLabel)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 include hinj
 

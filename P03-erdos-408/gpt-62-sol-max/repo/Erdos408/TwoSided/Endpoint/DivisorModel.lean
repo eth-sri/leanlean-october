@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.TwoSided.Endpoint.DivisorModel.Lists
 
@@ -124,8 +125,8 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
   · -- (a) support
     intro d hd
     obtain ⟨j, hj, U, hU, hUh, rfl⟩ := exists_of_truncModel_ne_zero hd
-    have hsub : R j ∪ U ⊆ Q := union_subset (hRQ j hj) (hU.trans sdiff_subset)
-    have hpr : ∀ p ∈ R j ∪ U, p.Prime := fun p hp => hprime p (hsub hp)
+    have hsub  := union_subset (hRQ j hj) (hU.trans sdiff_subset)
+    have hpr  := fun p hp => hprime p (hsub hp)
     obtain ⟨h₁, h₂⟩ := mem_product.1 hj
     refine ⟨?_, ?_, ?_⟩
     · refine Finset.squarefree_prod_of_pairwise_isCoprime ?_ fun p hp => (hpr p hp).squarefree
@@ -177,8 +178,6 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
   · -- (c) mean square
     intro R₀ hR₀
     set Cx : ℝ := 2 ^ r * B ^ ((m₀ + 1) * Fintype.card ι) with hCx
-    have hB1 : 1 ≤ B := le_max_left _ _
-    have hCx0 : 0 ≤ Cx := by positivity
     -- the pointwise error
     have hpt : ∀ n ∈ Ioc ⌊R₀⌋₊ ⌊2 * R₀⌋₊,
         ‖(markedWeight univ q (fun i => band x (a i)) n : ℂ) * markedListWeight P q₀ S b n -
@@ -202,9 +201,6 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
       set v := #(divs QP n)
       have hS0 : 0 ≤ ∑ j ∈ groupLists P S,
           (if groupRep S j ⊆ divs QP n then ‖groupCoeff P S b j‖ else 0) :=
-        sum_nonneg fun _ _ => by positivity
-      have hSB0 : 0 ≤ ∑ β ∈ Fintype.piFinset G,
-          (if univ.image β ⊆ divs QB n then ‖bandCoeff G‖ else 0) :=
         sum_nonneg fun _ _ => by positivity
       -- `S 4^{|D|} ≤ C_x 2^{(m₀+3)|D|}`
       have hkey₁ : ∀ t : ℝ, t ^ r * t ^ u * (B ^ Fintype.card ι * t ^ v) ^ (m₀ + 1) *
@@ -279,14 +275,14 @@ theorem meanSquare_numeric {L κ₁ κ₂ B C₀ vhi : ℝ} {r m₀ c h₀ N : �
       1 * L ^ (-(N : ℝ)) := by
   set T := Real.log L with hT
   have hB0 : 0 < B := by linarith
-  have hlogB : 0 ≤ Real.log B := Real.log_nonneg hB1
+  have hlogB  := Real.log_nonneg hB1
   have hpow : ∀ (y : ℝ) (n : ℕ), 0 < y → y ^ n = Real.exp (n * Real.log y) := fun y n hy => by
     rw [Real.exp_nat_mul, Real.exp_log hy]
   have hCx : 2 ^ r * B ^ ((m₀ + 1) * c) ≤ Real.exp (κ₂ * T) := by
     rw [hpow 2 r two_pos, hpow B _ hB0, ← Real.exp_add]
     refine Real.exp_le_exp.2 ?_
     have hl2 : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
-    have h₁ : (r : ℝ) * Real.log 2 ≤ T * Real.log 2 := mul_le_mul_of_nonneg_right hrT hl2
+    have h₁  := mul_le_mul_of_nonneg_right hrT hl2
     have h₂ : ((m₀ : ℝ) + 1) * c * Real.log B ≤ (2 * (m₀ + 1) * |C₀| * T) * Real.log B := by
       refine mul_le_mul_of_nonneg_right ?_ hlogB
       calc ((m₀ : ℝ) + 1) * c ≤ (m₀ + 1) * (2 * |C₀| * T) :=
@@ -311,7 +307,6 @@ theorem meanSquare_numeric {L κ₁ κ₂ B C₀ vhi : ℝ} {r m₀ c h₀ N : �
   have hl2 : Real.log 2 < 1 := by
     rw [Real.log_lt_iff_lt_exp two_pos]
     linarith [Real.exp_one_gt_d9]
-  have hCx0 : 0 ≤ 2 ^ r * B ^ ((m₀ + 1) * c) := by positivity
   have hsq : Real.exp (κ₂ * T) ^ 2 = Real.exp (2 * κ₂ * T) := by
     rw [← Real.exp_nat_mul]
     ring_nf
@@ -353,8 +348,7 @@ theorem exists_divisorModel (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ
     (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
     (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (m₀ : ℕ) :
     ∃ C₈ : ℝ, ∀ N : ℕ, ∃ CNN : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ), InertAdmissible K₀ CN alo ahi x a →
         ∀ (M : ℕ) (S : ι → Finset (Fin M)) (b : (ι → Fin M → ℕ) → ℂ),
           (∀ g, (S g).card ≤ m₀ + 1) → (∀ p, ‖b p‖ ≤ 1) →
@@ -457,9 +451,7 @@ theorem exists_divisorModel (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ
     calc ((r + (m₀ + 1) * Fintype.card ι + h₀ : ℕ) : ℝ) * L ^ (0.46 : ℝ)
         ≤ 2 * L ^ (0.01 : ℝ) * L ^ (0.46 : ℝ) :=
           mul_le_mul_of_nonneg_right hcnt (Real.rpow_nonneg hL0.le _)
-      _ = 2 * L ^ (0.47 : ℝ) := by
-          rw [mul_assoc, ← Real.rpow_add hL0]
-          norm_num
+      _ = 2 * L ^ (0.47 : ℝ) := by rpow_ring hL0
   · -- step 4: the mass
     rw [Sieve.log_rpow_eq hL0]
     refine Real.exp_le_exp.2 (hrι.trans ?_)

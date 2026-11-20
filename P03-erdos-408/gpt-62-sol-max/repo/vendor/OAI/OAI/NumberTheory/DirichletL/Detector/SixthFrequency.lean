@@ -63,10 +63,9 @@ theorem bareCongruenceCoefficient_sixth_frequency (A s : O)
       bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H := by
   have he := barePhysicalFourier_sixth_frequency A s hA hs v H hcop
   simp only [barePhysicalFourier_eq] at he
-  have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
-  exact mul_left_cancel₀ hn he
+  refine mul_left_cancel₀ ?_ he
+  exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
+    (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
 
 theorem bareSourceCoefficient_sixth_frequency (η : HeckeFamily.Character)
     (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O)
@@ -77,7 +76,7 @@ theorem bareSourceCoefficient_sixth_frequency (η : HeckeFamily.Character)
   unfold bareSourceCoefficient correctedFiniteCoefficient reciprocityCoefficient
   rw [bareCongruenceCoefficient_sixth_frequency A s hA hs v H hcop]
 
-theorem bareSourceCoefficient_product_frequency (η : HeckeFamily.Character) (I J : Ideal O)
+theorem bareSourceCoefficient_product_frequency (η : HeckeFamily.Character) (u : O) (I J : Ideal O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hIJcop : IsCoprime I J)
     (n m s r : O)
@@ -94,17 +93,17 @@ theorem bareSourceCoefficient_product_frequency (η : HeckeFamily.Character) (I 
     let B := primaryGenerator J*m^3
     let hA := supportedElement_ne_zero A (supported_completed _ _ hc hn)
     let hB := supportedElement_ne_zero B (supported_completed _ _ hd hm)
-    bareSourceCoefficient η (I*J) hIJ.2 (A*B) (s*r) (mul_ne_zero hA hB) ((a*b)^6) =
-      bareSourceCoefficient η I hI.2 A s hA (a^6) * bareSourceCoefficient η J hJ.2 B r hB (b^6) := by
+    bareSourceCoefficient η (I*J) hIJ.2 (A*B) (s*r) (mul_ne_zero hA hB) (u*(a*b)^6) =
+      bareSourceCoefficient η I hI.2 A s hA (u*a^6) * bareSourceCoefficient η J hJ.2 B r hB (u*b^6) := by
   have he := bareSourceCoefficient_product η I J hI hJ hIJ hIJcop n m s r
-    hc hd hn hm hs hr hpc hpd hpn hpm hps hpr hcop ((a*b)^6)
+    hc hd hn hm hs hr hpc hpd hpn hpm hps hpr hcop (u*(a*b)^6)
   dsimp only at he ⊢
   have hi := bareSourceCoefficient_sixth_frequency η I hI.2 (primaryGenerator I*n^3) s
-    (supported_completed _ _ hc hn) hs b (a^6) hba
+    (supported_completed _ _ hc hn) hs b (u*a^6) hba
   have hj := bareSourceCoefficient_sixth_frequency η J hJ.2 (primaryGenerator J*m^3) r
-    (supported_completed _ _ hd hm) hr a (b^6) hab
-  rw [show b^6*a^6=(a*b)^6 by ring] at hi
-  rw [show a^6*b^6=(a*b)^6 by ring] at hj
+    (supported_completed _ _ hd hm) hr a (u*b^6) hab
+  rw [show b^6*(u*a^6)=u*(a*b)^6 by ring] at hi
+  rw [show a^6*(u*b^6)=u*(a*b)^6 by ring] at hj
   rw [hi,hj] at he
   exact he
 

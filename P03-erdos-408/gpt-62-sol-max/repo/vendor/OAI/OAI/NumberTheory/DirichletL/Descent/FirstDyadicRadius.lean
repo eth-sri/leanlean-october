@@ -1,15 +1,16 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveNorms
-public import OAI.NumberTheory.DirichletL.Descent.FirstFullRapidTail
+public import OAI.NumberTheory.DirichletL.Descent.FirstRapidPhysicalTail
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps
@@ -42,7 +43,7 @@ def firstDyadicPhysicalCutoff (p:ι→O)(b:CubeCoordinates ι)(C:Finset ι)(I:Id
     (firstDyadicRadius p b C D Z M r ell V eta tau)
 
 theorem first_dyadic_radius_global_cap
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
     (b:CubeCoordinates ι)(C D:Finset ι)
     (hD:D⊆C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit)
     (Z M r ell V eta tau Fmax:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hM:0≤M)

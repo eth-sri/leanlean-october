@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.UniformEligibleEnergy
+public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
 public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
 
 @[expose] public section

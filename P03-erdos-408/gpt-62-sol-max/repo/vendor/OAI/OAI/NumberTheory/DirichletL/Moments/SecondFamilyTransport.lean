@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondFamilyTransport
 open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss

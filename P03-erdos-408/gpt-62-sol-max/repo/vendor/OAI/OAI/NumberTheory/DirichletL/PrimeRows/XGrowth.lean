@@ -3,6 +3,8 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.ZGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.ReciprocalGrowth
 
+public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalProductBounds
+
 @[expose] public section
 
 namespace OAI
@@ -30,34 +32,19 @@ theorem physicalRow_first_x_growth (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
     ‖HeckeOrigin.continued (rowCharacter S hS.prime u) w‖
   let B : ℝ := Cr*(η.modulus.absNorm:ℝ)*N
   have hL : 0≤L := by dsimp [L];positivity
-  have hB : 0≤B := by dsimp [B,N];positivity
-  have hA (P : T) : 0≤A P := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) r (Nat.cast_nonneg _)
+  have hA (P : T)  := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) r (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
-  have hN : 0≤N := Nat.cast_nonneg _
   refine ⟨L*B*(Ch*N)*(∏P:T,A P),by positivity,?_⟩
   intro x hxl hxr
   have hrec : ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖≤B*(3+|x.im|)^2 := by
     simpa only [Real.rpow_one] using hr η u x (hlβ.trans hxl)
   have hh' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
     simpa only [Real.rpow_one] using hh eps S hS hfirst T η u x w z (hl.trans hxl) hw hz (by linarith)
-  have hg : ‖∏P∈T.attach,continuedCompensatedLocal η u P.val
-      (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
-      (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
-      ((P.val.val.absNorm:ℂ)^(-w))‖≤∏P:T,A P := by
-    rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
-    intro P hP
-    exact continuedCompensatedLocal_first_bound η u P.val _
-      (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) r x w z (hl.trans hxl) hxr
-      hw hz (by linarith [hfirst.positive])
-  unfold physicalCompensatedRow continuedCompensatedRow
-  simp only [norm_mul]
-  calc
-    _ ≤ L*(B*(3+|x.im|)^2)*((Ch*N)*(∏P:T,A P)) :=
-      mul_le_mul (mul_le_mul_of_nonneg_left hrec hL)
-        (mul_le_mul hh' hg (norm_nonneg _) (by dsimp [N];positivity))
-        (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (by positivity)
-    _ = _ := by ring
+  have hg : ‖rowLocalProduct S hS T hT η u x w z‖ ≤ ∏ P : T, A P :=
+    rowLocalProduct_first_bound S hS T hT η u x w z r (hl.trans hxl) hxr hw hz (by linarith [hfirst.positive]) A (fun _ => le_rfl)
+  simpa only [one_mul] using
+    (physicalRow_norm_le S hS T hT η u x w z 1 le_rfl hrec (le_of_eq (by rw [one_mul])) hh' hg).trans_eq
+      (show _ = L*B*(Ch*N)*(∏P:T,A P)*(3+|x.im|)^2 by dsimp [L]; ring)
 
 end SevenEighths.ProbeHighRowFamily
 

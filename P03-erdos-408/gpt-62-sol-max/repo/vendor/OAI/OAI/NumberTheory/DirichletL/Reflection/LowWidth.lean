@@ -42,8 +42,7 @@ lemma nonresidual_prime_product_width {ι : Type*} [Fintype ι]
   simp only [map_pow,map_mul,Nat.cast_pow,Nat.cast_mul] at hn
   have hh := Real.logb_le_logb_of_le hZ (sq_pos_of_pos hp) hn
   rw [Real.logb_pow,Real.logb_mul hpn.ne' (pow_ne_zero 2 hqn.ne'),Real.logb_pow] at hh
-  norm_num at hh
-  simpa only [normWidth,map_prod,Nat.cast_prod] using hh
+  assumption
 
 lemma original_optional_powerful_width (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)

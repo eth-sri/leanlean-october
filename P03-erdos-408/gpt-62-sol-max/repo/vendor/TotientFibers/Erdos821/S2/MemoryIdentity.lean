@@ -90,10 +90,7 @@ theorem memory_fiber_sum (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightT
       rho theta hrho
   simp_rw [hSep]
   rw [sum_pair_factor, hY]
-  have hC : (∑ S : {S : LifespanAssignment P n // Q.lifespanValid S}, (Q.spanProduct S.val : ℂ)) =
-      ((∑ S : {S : LifespanAssignment P n // Q.lifespanValid S}, Q.spanProduct S.val : ℝ) : ℂ) :=
-    (Complex.ofReal_sum _ _).symm
-  rw [hC]
+  rw [((Complex.ofReal_sum _ _).symm)]
   calc
     _ = Q.coefficientPrefactor theta * (Q.smallResidueExpression : ℂ) *
         ((bigBaseline F P n : ℂ) *

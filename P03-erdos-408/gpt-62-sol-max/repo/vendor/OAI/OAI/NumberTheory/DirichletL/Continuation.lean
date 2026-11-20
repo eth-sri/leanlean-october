@@ -36,7 +36,7 @@ theorem common_signal_bound (J f : ℝ → ℂ) (a b : ℝ)
     f =O[atTop] (fun x : ℝ => x ^ max a b) := by
   have h₁ := hJ.trans (rpow_isBigO_atTop_of_le (le_max_left a b))
   have h₂ := herror.trans (rpow_isBigO_atTop_of_le (le_max_right a b))
-  simpa only [sub_sub_cancel] using h₁.sub h₂
+  simpa using h₁.sub h₂
 
 theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
     (hJ : J =O[atTop] (fun x : ℝ => x ^ (7 / 8 + c + ω)))
@@ -54,7 +54,7 @@ theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
     MellinConvergent f (-(s + (c : ℂ))) := by
   apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
     (b := (-(s + (c : ℂ))).re - 1) hlocal
-  · simpa only [neg_neg] using htop
+  · simp_all
   · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
     linarith
   · exact hzero _
@@ -70,7 +70,7 @@ theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
   have hd : DifferentiableAt ℂ (mellin f) (-(s + (c : ℂ))) := by
     apply mellin_differentiableAt_of_isBigO_rpow (a := -(a+c))
       (b := (-(s + (c : ℂ))).re - 1) hlocal
-    · simpa only [neg_neg] using htop
+    · simp_all
     · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
       change a < s.re at hs
       linarith
@@ -87,11 +87,10 @@ theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
   let z : ℂ := (max a b + 1 : ℝ)
   have hz : a < z.re := by dsimp [z]; linarith [le_max_left a b]
   have hz' : max a b < z.re := by dsimp [z]; simp
-  have hev : (fun s => L s * M s) =ᶠ[𝓝 z] W := by
-    filter_upwards [(Complex.isOpen_re_gt (max a b)).mem_nhds hz'] with s hs
-    exact heq s hs
-  exact (hL.mul hM).eqOn_of_preconnected_of_eventuallyEq hW
-    (convex_halfSpace_re_gt a).isPreconnected hz hev
+  refine (hL.mul hM).eqOn_of_preconnected_of_eventuallyEq hW
+    (convex_halfSpace_re_gt a).isPreconnected hz ?_
+  filter_upwards [(Complex.isOpen_re_gt (max a b)).mem_nhds hz'] with s hs
+  exact heq s hs
 
 theorem nonzero_of_regularized_signal (a b c : ℝ)
     (L Lregular R W : ℂ → ℂ) (f : ℝ → ℂ)
@@ -152,14 +151,12 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
   have hH' : AnalyticOnNhd ℂ H
       {s : ℂ | β - Supremum.continuationMargin β ω σ < s.re} :=
     hH.mono (fun s hs => lt_trans hboundary hs)
-  have htop : f =O[atTop] (fun x : ℝ =>
-      x ^ ((β - Supremum.continuationMargin β ω σ) + c)) := by
-    have hexp : (β - Supremum.continuationMargin β ω σ) + c =
-        β + c - Supremum.continuationMargin β ω σ := by ring
-    simpa only [hexp] using common_signal_bound_with_margin J f β ω σ c hJ herror
-  exact nonzero_of_regularized_signal _ 1 c L Lregular R (gaussianMultiplier H) f
-    hL hR (gaussianMultiplier_analytic hH') hlocal htop hzero heq hρ hregular
+  refine nonzero_of_regularized_signal _ 1 c L Lregular R (gaussianMultiplier H) f
+    hL hR (gaussianMultiplier_analytic hH') hlocal ?_ hzero heq hρ hregular
     hRρ (gaussianMultiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))
+  have hexp : (β - Supremum.continuationMargin β ω σ) + c =
+      β + c - Supremum.continuationMargin β ω σ := by ring
+  simpa only [hexp] using common_signal_bound_with_margin J f β ω σ c hJ herror
 
 end SevenEighths.Continuation
 

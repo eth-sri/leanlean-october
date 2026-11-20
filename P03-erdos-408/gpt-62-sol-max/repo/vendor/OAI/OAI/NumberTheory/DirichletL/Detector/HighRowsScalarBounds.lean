@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsRegion
 
 @[expose] public section
@@ -29,15 +30,13 @@ lemma primeGauss_actual_norm (p : O) (hp : p≠0) [(Ideal.span {p}:Ideal O).IsMa
     (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2) :
     ‖primeGauss p hp (actualSextic (Ideal.span {p}) hg) 1‖=
       Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have hn := localGamma_norm_one p hp hg hc 1 (by decide) (by decide)
   rw [localGamma,ProbePhase.normalizedTraceGauss_eq_normalizedGauss] at hn
   simp only [pow_one,ProbeGauss.normalizedGauss,norm_div,Complex.norm_real,
     Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)] at hn
   have hQ : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp)
   have hcard : (Fintype.card (O ⧸ Ideal.span {p}):ℝ)=Ideal.absNorm (Ideal.span {p}) := by
     rw [←Nat.card_eq_fintype_card];rfl
   rw [hcard] at hn
@@ -73,7 +72,7 @@ lemma positiveScalar_norm_le (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).Is
     ‖positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k j‖≤
       2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)*
         (Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ))^k := by
-  have hP : Prime (Ideal.span {p}:Ideal O) := Ideal.prime_span_singleton_iff.mpr hp
+  have hP  := Ideal.prime_span_singleton_iff.mpr hp
   have hQ : (1:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     have hh := SmoothMobiusCorrection.prime_norm_two_le ⟨_,hP⟩
     change 2≤Ideal.absNorm (Ideal.span {p}) at hh

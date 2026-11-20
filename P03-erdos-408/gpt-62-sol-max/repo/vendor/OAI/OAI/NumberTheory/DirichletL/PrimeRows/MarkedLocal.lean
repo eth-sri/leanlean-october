@@ -33,12 +33,11 @@ lemma markedRowPrimeTerm_tsum (η : HeckeFamily.Character) (u : O) (P : PrimeIde
       idealRowMarkedLocalFactor η u P x w z := by
   have hs := (markedRowPrimeTerm_summable_norm η u P x w z hx hw hz).of_norm
   rw [hs.tsum_prod,hs.prod.tsum_prod]
-  have he (e l : ℕ) : (∑'b : ℕ×ℕ,completedValuationMark P ((e,l),b)*rowHighPrimeTerm η u x w z P ((e,l),b))=
-      ∑'k,∑'m,completedValuationMark P ((e,l),(k,m))*rowHighPrimeTerm η u x w z P ((e,l),(k,m)) :=
+  have he (e l : ℕ)  :=
     (hs.prod_factor (e,l)).tsum_prod
   simp_rw [he]
   rw [tsum_eq_sum (s:=Finset.range 2) (fun e he=>by
-    have hh : 2≤e := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
+    have hh  := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
     simp only [rowHighPrimeTerm_zero_of_two_le η u x w z P e _ _ _ hh,mul_zero,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl

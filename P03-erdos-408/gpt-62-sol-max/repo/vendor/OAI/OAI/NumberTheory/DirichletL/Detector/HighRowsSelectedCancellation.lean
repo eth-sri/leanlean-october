@@ -9,7 +9,7 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeLocal
 theorem compensated_phase_error_bound (V W D P B q vInv : ℂ) (T : ℝ)
-    (_hT : 0 ≤ T) (hV : ‖V‖ ≤ 1 / 2) (hW : ‖W‖ ≤ 1)
+ (hV : ‖V‖ ≤ 1 / 2) (hW : ‖W‖ ≤ 1)
     (hD : ‖D‖ ≤ 1 / 2) (hq : ‖q‖ ≤ 1)
     (hVT : ‖V‖ ≤ T) (hDT : ‖D‖ ≤ T)
     (hE : ‖P + D‖ ≤ 28 * T) (hBE : ‖B‖ * ‖P + D‖ ≤ 28 * T)

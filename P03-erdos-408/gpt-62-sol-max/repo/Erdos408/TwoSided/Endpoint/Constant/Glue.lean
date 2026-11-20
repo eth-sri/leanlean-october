@@ -54,8 +54,7 @@ theorem integral_norm_add_sq_le {f g : ℝ → ℂ} (hf : Continuous f) (hg : Co
     {a b : ℝ} (hab : a ≤ b) :
     ∫ t in a..b, ‖f t + g t‖ ^ 2 ≤
       2 * (∫ t in a..b, ‖f t‖ ^ 2) + 2 * ∫ t in a..b, ‖g t‖ ^ 2 := by
-  have h := integral_norm_sum_sq_le (Finset.univ : Finset (Fin 2)) (fun _ => 1)
-    (fun _ _ => norm_one.le) ![f, g] (fun i _ => by fin_cases i <;> simpa) hab
+  have h := integral_norm_sum_sq_unweighted_le Finset.univ ![f, g] (fun i _ => by fin_cases i <;> simpa) hab
   simpa [Fin.sum_univ_two, mul_add] using h
 
 /-- The twist `e(hm/k)` depends only on `m mod k`. -/
@@ -97,10 +96,10 @@ theorem sum_Ioc_eq_sum_range {M : Type*} [AddCommMonoid M] (E : ℕ → ℕ) (hE
 theorem norm_sub_le_of_iteratedDeriv_one {ψ : ℝ → ℂ}
     (hψ : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ) {M : ℝ}
     (hM : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M) (y z : ℝ) : ‖ψ y - ψ z‖ ≤ M * |y - z| := by
-  have hd : Differentiable ℝ ψ := hψ.differentiable (by simp)
+  have hd  := hψ.differentiable (by simp)
   have h := convex_univ.norm_image_sub_le_of_norm_deriv_le (fun w _ => hd w)
-    (fun w _ => by rw [← iteratedDeriv_one]; exact hM w) (Set.mem_univ z) (Set.mem_univ y)
-  simpa [Real.norm_eq_abs] using h
+    (fun w _ => by simpa using hM w) (Set.mem_univ z) (Set.mem_univ y)
+  assumption
 
 /-- `∫_a^b t^{-2} ≤ 2/c` when `|t| ≥ c > 0` on `[a, b]`. -/
 theorem integral_inv_sq_le {a b c : ℝ} (hab : a ≤ b) (hc : 0 < c)

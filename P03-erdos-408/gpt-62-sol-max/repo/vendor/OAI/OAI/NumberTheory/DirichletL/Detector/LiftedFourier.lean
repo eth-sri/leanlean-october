@@ -18,7 +18,7 @@ theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
       (Ideal.absNorm (Ideal.span {p}):ℂ)^k * primePowerGauss p hp.ne_zero χ n h := by
   by_cases hd : p^n ∣ h
   · obtain ⟨a, rfl⟩ := hd
-    have he : p^k*(p^n*a) = p^(n+k)*a := by rw [pow_add]; ring
+    have he : p^k*(p^n*a) = p^(n+k)*a := by ring
     rw [he, primePowerGauss_lift, primePowerGauss_lift, pow_add]
     ring
   · have hbig : ¬p^(n+k) ∣ p^k*h := by
@@ -40,7 +40,7 @@ theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
   · rw [dite_eq_right hd]
     have hnd : ¬p^(n+k) ∣ h := by
       intro he
-      exact hd ((show p^k ∣ p^(n+k) from ⟨p^n, by rw [pow_add]; ring⟩).trans he)
+      exact hd ((show p^k ∣ p^(n+k) from ⟨p^n, by ring⟩).trans he)
     rw [primePowerGauss_zero_off_support _ _ _ _ _ hnd, mul_zero]
 
 theorem positiveScalar_full_lift (p : O) (hp : Prime p)

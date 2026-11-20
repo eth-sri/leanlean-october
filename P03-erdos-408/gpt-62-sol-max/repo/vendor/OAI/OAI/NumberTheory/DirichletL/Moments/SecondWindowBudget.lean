@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondWindowBudget

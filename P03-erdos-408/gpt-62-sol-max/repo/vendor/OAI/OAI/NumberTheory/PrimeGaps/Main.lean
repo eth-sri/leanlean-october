@@ -10,25 +10,15 @@ namespace LargePrimeGaps
 
 open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Filter Topology
 
-open Complex Filter Topology MeasureTheory
 
-open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
 lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
     ∃ M : ℝ, 0<M ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ.IsPrimitive →
@@ -45,13 +35,13 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
   let h := x/L^K
   have hx0 : 0<x := by linarith
   have hx1 : 1<x := by linarith
-  have hL0 : 0<L := lt_of_lt_of_le zero_lt_one hL
+  have hL0  := lt_of_lt_of_le zero_lt_one hL
   have hK : 0<K := by dsimp [K]; linarith
   have ha : 0<a := by dsimp [a]; linarith
   have hpK : 0<L^K := Real.rpow_pos_of_pos hL0 _
-  have hh0 : 0<h := div_pos hx0 hpK
-  have hK1 : 1≤L^K := Real.one_le_rpow hL hK.le
-  have hhx : h≤x := (div_le_self hx0.le hK1)
+  have hh0  := div_pos hx0 hpK
+  have hK1  := Real.one_le_rpow hL hK.le
+  have hhx  := (div_le_self hx0.le hK1)
   have hKh : L^K≤x := by
     apply (Real.rpow_le_rpow_of_exponent_le hL (show K≤2*A+2 by dsimp [K]; linarith)).trans
     exact hpower
@@ -59,19 +49,18 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
   have hyx : x≤x+h := by linarith
   have hy : 1<x+h := by linarith
   have hy2 : x+h≤2*x := by linarith
-  have hLy : L≤Real.log (x+h) := Real.log_le_log hx0 hyx
-  have hLy1 : 1≤Real.log (x+h) := hL.trans hLy
+  have hLy  := Real.log_le_log hx0 hyx
+  have hLy1  := hL.trans hLy
   have hLy2 : Real.log (x+h)≤2*L := by
     calc
       _ ≤ Real.log (x^2) := Real.log_le_log (by linarith) (by nlinarith)
       _ = _ := by rw [Real.log_pow]; rfl
-  have hQ0 : 0≤Q := by dsimp [Q]; positivity
   have hQ : Q≤3*L^B := by
     have hq2 : 1≤(q:ℝ)+2 := by have := Nat.cast_nonneg (α:=ℝ) q; linarith
     have hqpow : Q≤(q:ℝ)+2 := by
       simpa only [Real.rpow_one] using
         Real.rpow_le_rpow_of_exponent_le hq2 (show (1/2:ℝ)≤1 by norm_num)
-    have hLB : 1≤L^B := Real.one_le_rpow hL hB.le
+    have hLB  := Real.one_le_rpow hL hB.le
     linarith
   let E (y : ℝ) := ‖weightedPrefix (primeCoefficients χ) y-characterMain χ*(y:ℂ)^2/2‖
   have hEx : E x≤D*Q*x^2*L^(-a)+x := hb q χ hp x hx1 hL
@@ -86,8 +75,7 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
   have hcoeff (n : ℕ) (hn : n∈Finset.Ioc ⌊x⌋₊ ⌊x+h⌋₊) :
       ‖primeCoefficients χ n‖≤2*L := by
     have hn0 : 0<(n:ℝ) := by exact_mod_cast (show 0<n by have := (Finset.mem_Ioc.mp hn).1; omega)
-    have hnx : (n:ℝ)≤x+h := (Nat.le_floor_iff (by linarith : 0≤x+h)).mp (Finset.mem_Ioc.mp hn).2
-    exact (primeCoefficients_norm_le χ n).trans ((Real.log_le_log hn0 hnx).trans hLy2)
+    exact (primeCoefficients_norm_le χ n).trans ((Real.log_le_log hn0 ((Nat.le_floor_iff (by linarith : 0≤x+h)).mp (Finset.mem_Ioc.mp hn).2)).trans hLy2)
   have heq : primeCharacterError x χ=
       (∑ n∈Finset.Ioc 0 ⌊x⌋₊, primeCoefficients χ n)-characterMain χ*(x:ℂ) := by
     classical
@@ -114,14 +102,13 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
         have hr : L^B*L^(-a)*L^K=L^(-A) := by
           rw [←Real.rpow_add hL0,←Real.rpow_add hL0]
           congr 1
-          dsimp [a,K]
           ring
         field_simp
         linear_combination 15*D*x*hr
       _ ≤ _ := by
         have ht : L^K≤x*L^(-A) := by
           calc
-            _ = L^(2*A+2)*L^(-A) := by rw [←Real.rpow_add hL0]; congr 1; dsimp [K]; ring
+            _ = L^(2*A+2)*L^(-A) := by rw [←Real.rpow_add hL0]; congr 1; ring
             _ ≤ _ := mul_le_mul_of_nonneg_right hpower (by positivity)
         nlinarith [ht]
   have hsmall : h≤x*L^(-A) := by
@@ -153,7 +140,7 @@ theorem siegelWalfisz : SiegelWalfisz := by
     rw [←Real.log_exp (1:ℝ)]
     exact Real.log_le_log (Real.exp_pos _) hex
   obtain ⟨x₀,hx₀⟩ := eventually_atTop.mp hevent
-  refine ⟨M,hM,max x₀ 2,by have := le_max_right x₀ (2:ℝ); linarith,?_⟩
+  refine ⟨M,hM,max x₀ 2,by simp,?_⟩
   intro x hx d hd hdlog χ hχ
   let : NeZero d := ⟨ne_of_gt hd⟩
   obtain ⟨hx2,hlog,hpower⟩ := hx₀ x ((le_max_left _ _).trans hx)

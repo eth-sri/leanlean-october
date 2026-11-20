@@ -10,7 +10,7 @@ namespace OAI
 noncomputable section
 
 open MeasureTheory Set Filter Asymptotics Complex
-open scoped Topology FourierTransform
+open scoped FourierTransform
 namespace SevenEighths.HeckeSignal
 open HeckeFamily Continuation
 
@@ -86,7 +86,7 @@ theorem amplitude_continuous_line (χ : Character) (H : ℂ → ℂ)
   have hd : DifferentiableAt ℂ (amplitude χ H) ((a : ℂ) + y * I) := by
     unfold amplitude
     exact (((differentiable_id.sub_const (5/6 : ℂ)).pow 2).cexp.differentiableAt).mul
-      (quotient_differentiableAt χ H hH (by simpa using ha))
+      (quotient_differentiableAt χ H hH (by simp_all))
   have hm : Continuous (fun v : ℝ => (a : ℂ) + v * I) := by fun_prop
   exact hd.continuousAt.comp (f := fun v : ℝ => (a : ℂ) + v * I) hm.continuousAt
 
@@ -101,7 +101,7 @@ theorem amplitude_norm_bound (χ : Character) (H : ℂ → ℂ)
   change ‖amplitude χ H ((a : ℂ) + y * I)‖ = _ at hn
   rw [hn]
   exact mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_left (quotient_bound χ H hH (by simpa using ha))
+    (mul_le_mul_of_nonneg_left (quotient_bound χ H hH (by simp_all))
       (Real.exp_pos _).le) (Real.exp_pos _).le
 
 theorem amplitude_integrable_line (χ : Character) (H : ℂ → ℂ)
@@ -144,7 +144,6 @@ def endpointConstant (B : ℝ) : ℝ :=
 theorem endpointConstant_nonneg (B : ℝ) : 0 ≤ endpointConstant B := by
   unfold endpointConstant
   have hq := quotientBound_nonneg
-  have hg : 0 ≤ ∫ y : ℝ, Real.exp (-(y^2)) := integral_nonneg (fun _ => (Real.exp_pos _).le)
   positivity
 
 theorem signal_bound_at_zero (χ : Character) (H : ℂ → ℂ)
@@ -217,9 +216,9 @@ theorem signal_continuousOn (χ : Character) (H : ℂ → ℂ)
   have hfour : Continuous (𝓕 F) :=
     VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar (innerSL ℝ).continuous₂ hF
   have hinv : Continuous (𝓕⁻ F) := by
-    have heq : 𝓕⁻ F = fun w : ℝ => 𝓕 F (-w) := funext (Real.fourierInv_eq_fourier_neg F)
+    have heq  := funext (Real.fourierInv_eq_fourier_neg F)
     rw [heq]
-    exact hfour.comp continuous_neg
+    fun_prop
   have hpow (z : ℂ) : ContinuousOn (fun x : ℝ => (x : ℂ)^z) (Ioi 0) :=
     Complex.continuous_ofReal.continuousOn.cpow_const (fun _ hx => Complex.ofReal_mem_slitPlane.mpr hx)
   have hlog : ContinuousOn (fun x : ℝ => -Real.log x) (Ioi 0) := by
@@ -246,7 +245,7 @@ theorem signalMellin_eq_amplitude_on_line (χ : Character) (H : ℂ → ℂ)
       amplitude χ H ((2 : ℂ) - 2 * Real.pi * y * I) := by
   apply signalMellin_eq_on_line _ _ c 2
     (signalMellin_convergent _ a c (signal_locallyIntegrable χ H hH hb c) htop
-      (signal_rapidDecayAtZero χ H hH hb c) (by simpa using ha))
+      (signal_rapidDecayAtZero χ H hH hb c) (by simp_all))
     (amplitude_integrable_reflected χ H hH hb) (amplitude_continuous_reflected χ H hH)
   intro x hx
   exact normalizedSignal_eq χ H c hx

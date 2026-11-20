@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.CompensationActual
 public import OAI.NumberTheory.DirichletL.PrincipalMellinGrowth
 public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
@@ -9,11 +10,11 @@ public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductBounds
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily
+open PrincipalMellinResidues ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def localMultiplier (η : Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
@@ -54,12 +55,9 @@ theorem correction_inverse_bound (η : Character) (S : Finset Id) (hS : Correcti
   exact (div_le_iff₀ (by linarith : 0 < ‖idealClosedCorrection η P x w z‖)).mpr (by linarith)
 
 lemma marked_differentiableAt_w (η : Character) (P : PrimeIdeal) (x w z : ℂ)
-    (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
+    (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) :
     DifferentiableAt ℂ (fun w => idealMarkedClosed η P x w z) w := by
   have hQ0 : 0 < (Ideal.absNorm P.val : ℝ) := by linarith
-  have hd := open_region_denominators (Ideal.absNorm P.val)
-    (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) 1 x z hQ
-    (actualAPhase_norm_le_one η _) (idealCoeff_norm_le_one η _) (by simp) hx hz
   have hw := coordW_differentiable (Ideal.absNorm P.val) hQ0 1
   have hk := coordK_w_differentiable (Ideal.absNorm P.val) hQ0 (idealCoeff η P.val) x
   unfold idealMarkedClosed markedFactor
@@ -95,7 +93,7 @@ theorem local_analytic_w (η : Character) (S : Finset Id) (hS : CorrectionTail S
     (actualAPhase_norm_le_one η _) (idealCoeff_norm_le_one η _) (by simp) hx hz
   apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
   intro w hw
-  have hmc := marked_differentiableAt_w η P x w z hQ hx hz
+  have hmc := marked_differentiableAt_w η P x w z hQ
   have hcc : DifferentiableAt ℂ (fun w => idealClosedCorrection η P x w z) w :=
     (hc w hw).differentiableAt
   have hh := correction_ne_zero η S hS P hP x w z hx hw.le hz
@@ -179,7 +177,7 @@ lemma replacement_bound (V W D P B q : ℂ) (R : ℝ) (hR : 0 ≤ R)
     have := norm_sub_le (1 : ℂ) W
     simp only [norm_one] at this
     linarith
-  have hBq : ‖B-q‖ ≤ R+1 := (norm_sub_le B q).trans (add_le_add hB hq)
+  have hBq  := (norm_sub_le B q).trans (add_le_add hB hq)
   have hVW : ‖1-V*W‖ ≤ 2 := by
     have hn := norm_sub_le (1 : ℂ) (V*W)
     rw [norm_one,norm_mul] at hn
@@ -357,7 +355,7 @@ theorem source_multiplier_differentiable_w {ι : Type*} (η : Character) (S : Fi
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) {w : ℂ | 9/10 < w.re} := by
   have hM := CubicReflectionKernel.compact_source_mellin_differentiable W1 a1 b1 ha1 hW1 (W1.smooth ⊤)
   have hH := (combined_slot_analytic_w η S hS.tail J T b hT s z hs hz).differentiableOn
-  have hYn : (Y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hYn  := Complex.ofReal_ne_zero.mpr hY.ne'
   have he : (fun w => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) =
     (fun w => ((X:ℂ)^(1/2-z)*(Z:ℂ)^(s+z-1)*Complex.exp ((s+z-1)^2)*
@@ -379,8 +377,8 @@ theorem source_multiplier_differentiable_z {ι : Type*} (η : Character) (S : Fi
       {z : ℂ | 4/25 < z.re} :=
     (ProbeRadialMellin.radial_mellin_differentiable W0).mono (by intro z hz; change 0 < z.re; change (4/25:ℝ)<z.re at hz; linarith)
   have hH := (combined_slot_analytic_z η S hS.tail J T b hT s w hs hw).differentiableOn
-  have hXn : (X : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hZn : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hXn  := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hZn  := Complex.ofReal_ne_zero.mpr hZ.ne'
   have he : (fun z => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) =
     (fun z => ((Y:ℂ)^(w-1)*mellin W1 w / LFunction (η.excludePrimes S hS.prime) s) *
@@ -395,8 +393,7 @@ theorem local_eq_regionSlot (η : Character) (P : PrimeIdeal) (s w z : ℂ) :
     localMultiplier η P s w z = (Ideal.absNorm P.val : ℂ)^(z-1) *
       PrincipalSlotEstimate.regionSlot (Ideal.absNorm P.val)
         (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) s w z := by
-  simp only [localMultiplier,PrincipalSlotEstimate.regionSlot,PrincipalSlotEstimate.regionReplacement,
-    PrincipalSlotEstimate.regionMarked,idealMarkedClosed,idealClosedCorrection,Complex.ofReal_natCast]
+  rfl
 
 def windowMultiplier {ι : Type*} (η : Character) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (W : ι → ℝ → ℂ) (scale : ι → ℝ) (s w z : ℂ) : ℂ :=
@@ -417,7 +414,7 @@ theorem window_at_residue {ι : Type*} (η : Character) (J : Finset ι) (T : ι 
   intro P hp
   rw [local_eq_regionSlot,PrincipalSlotEstimate.region_slot_at_residue]
   have hQ : 0 < (Ideal.absNorm P.val : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (P.property.ne_zero)
   rw [Complex.ofReal_mul,Complex.ofReal_cpow hQ.le]
   norm_num only [Complex.ofReal_neg,Complex.ofReal_div,Complex.ofReal_ofNat]
   norm_num
@@ -453,9 +450,6 @@ theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) 
   exact mul_le_mul (global_norm_bound η S hS s w z hs (by linarith) (by linarith))
     (slot_norm_bound_sharp η J T b Pmin hPmin hb hQ hη s w z hs hw hz) (norm_nonneg _) (by norm_num)
 
-@[simp] theorem slotMultiplier_empty {ι : Type*} (η : Character) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (s w z : ℂ) : slotMultiplier η ∅ T b s w z = 1 := by
-  simp [slotMultiplier]
 
 lemma boundary_mul_const (F : ℂ → ℂ) (a b : ℝ) (h : BoundaryControl F a b) (c : ℂ) :
     BoundaryControl (fun z => F z*c) a b := by

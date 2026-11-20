@@ -31,7 +31,7 @@ lemma secondCutoff_nonneg (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (
   apply uniformSecondRadius_nonneg _ _ _ _ _ _ _ _ _ hZ.le
   · unfold firstCellRadius
     positivity
-  · exact Real.rpow_nonneg hZ.le _
+  positivity
 
 include hp in
 theorem secondCutoff_dominates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -63,7 +63,7 @@ theorem parent_tail_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
       primeProductNorm p y.firstCommon≤Z^Lcap ∧ primeProductNorm p y.quotientSupport≤Z^Lcap := by
   intro y hy
   have hb := label_parent_bounds p hp pool Q k l j Z ell eta hZ heta hbin hQ y hy
-  have hpw {a : ℝ} (ha : a≤Lcap) : Z^a≤Z^Lcap := Real.rpow_le_rpow_of_exponent_le hZ.le ha
+  have hpw {a : ℝ} (ha : a≤Lcap)  := Real.rpow_le_rpow_of_exponent_le hZ.le ha
   refine ⟨hb.1.trans (hpw hell),hb.2.1.trans (hpw hell),?_,
     hb.2.2.2.1.trans (hpw hcommon),hb.2.2.2.2.1.trans (hpw hquot)⟩
   have he := hb.2.2.1.trans (hpw hactive)

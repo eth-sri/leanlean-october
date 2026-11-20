@@ -12,11 +12,10 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedSector
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentFirstSectorLocalization CenteredMomentFirstCommonFourierTransport
-open CenteredMomentHeckeExpansion CenteredMomentCommonSectors
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns
-open CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow
+open CenteredMomentFirstSectorLocalization CenteredMomentFirstCommonFourierTransport
+open CenteredMomentHeckeExpansion CenteredMomentCommonSectors CenteredMomentFirstSectors
+open CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow
 open CenteredMomentSupport CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
@@ -88,8 +87,8 @@ theorem retainedKernel_fixed (C D I J:Ideal O)(hC:Supported C)(hD:Supported D)
         fixedRetainedTerm C D hC (primaryGenerator I) (primaryGenerator J)
           (by rw [primary_span_supported I hI];exact hI)
           (by rw [primary_span_supported J hJ];exact hJ) E W K X Z ξ:=by
-  have hCI':Supported (C*I):=(supported_mul_iff C I).mpr ⟨hC,hI⟩
-  have hDJ':Supported (D*J):=(supported_mul_iff D J).mpr ⟨hD,hJ⟩
+  have hCI':=(supported_mul_iff C I).mpr ⟨hC,hI⟩
+  have hDJ':=(supported_mul_iff D J).mpr ⟨hD,hJ⟩
   rw [retainedKernel_eq _ _ hCI' hDJ']
   obtain ⟨hc,hd⟩:=reconstructed_commonParts C D I J hC.1 hD.1 hI.1 hJ.1 hCD hCI hCJ hIJ
   obtain ⟨hi,hj⟩:=reconstructed_residualParts C D I J hC.1 hD.1 hI.1 hJ.1 hCD hCI hCJ hIJ

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.Matrices
+public import OAI.NumberTheory.DirichletL.Reflection.Sector
 
 @[expose] public section
 
@@ -24,9 +24,9 @@ theorem controlled_fixedFactor_eq
     (ha : N ∣ D.matrix (fun _ => 1) 0 0 - D₀.matrix (fun _ => 1) 0 0)
     (hb : N ∣ D.matrix (fun _ => 1) 0 1 - D₀.matrix (fun _ => 1) 0 1) :
     D.fixedFactor = D₀.fixedFactor := by
-  have h9N : (9:Eis) ∣ N := (dvd_mul_right 9 c).trans hN
-  have hcN : c ∣ N := (dvd_mul_left c 9).trans hN
-  have h3N : (3:Eis) ∣ N := (show (3:Eis) ∣ 9 from ⟨3,by norm_num⟩).trans h9N
+  have h9N  := (dvd_mul_right 9 c).trans hN
+  have hcN  := (dvd_mul_left c 9).trans hN
+  have h3N  := (show (3:Eis) ∣ 9 from ⟨3,by norm_num⟩).trans h9N
   cases mode
   · exact congrArg eisEmbedding (A3_unramified_fixed_factor_congr N c _ _ hcN ha)
   · apply congrArg eisEmbedding

@@ -7,18 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
-open CenteredMomentSecondRadicalBudget
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplifiedPaidAdmission
+open CenteredMomentFirstAmplifiedCapacitySource CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstPhysicalSource
+open CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale CenteredMomentSecondRadicalBudget
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
 def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ):ℝ :=
   (N:ℝ)*|Real.log (min 1 lower)|+(N:ℝ)*|Real.log (max 1 upper)|+
@@ -53,19 +51,19 @@ theorem source_reserve_bound (N:ℕ)(lower upper cost0 a0:ℝ)
   have hmax:=Real.logb_le_logb_of_le hZ (lt_of_lt_of_le zero_lt_one (le_max_left 1 input.upper))
     (max_le_max_left 1 hu)
   have hmax0:0≤Real.logb Z (max 1 upper):=Real.logb_nonneg hZ (le_max_left _ _)
-  have hupp:(Fintype.card α:ℝ)*Real.logb Z (max 1 input.upper)≤(N:ℝ)*Real.logb Z (max 1 upper):=
+  have hupp:=
     (mul_le_mul_of_nonneg_left hmax (Nat.cast_nonneg _)).trans
       (mul_le_mul_of_nonneg_right hnc hmax0)
   have hcost:=Real.logb_le_logb_of_le hZ hcost0 hc
   have hf:0<(fixedFactor:ℝ):=by exact_mod_cast fixedFactor_pos
-  have ha':0<a:=ha0.trans_le ha
+  have ha':=ha0.trans_le ha
   have hfrac:4/((fixedFactor:ℝ)*a^2)≤4/((fixedFactor:ℝ)*a0^2):=by
     apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
     exact mul_le_mul_of_nonneg_left (sq_le_sq₀ ha0.le ha'.le |>.mpr ha) hf.le
   have harg:=Real.logb_le_logb_of_le hZ (by positivity:0<4/((fixedFactor:ℝ)*a^2)) hfrac
   have hCN:(1:ℝ)≤C.absNorm:=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hC)
   have hDN:(1:ℝ)≤D.absNorm:=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD)
-  have hcommon:0≤min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ)):=
+  have hcommon:=
     le_min (Real.logb_nonneg hZ hCN) (Real.logb_nonneg hZ hDN)
   have habs:
       (N:ℝ)*(-Real.logb Z (min 1 lower))+(N:ℝ)*Real.logb Z (max 1 upper)-
@@ -102,7 +100,7 @@ theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
   have hZ0:1<Z0:=Real.one_lt_exp_iff.mpr (by positivity)
   refine ⟨Z0,hZ0,?_⟩
   intro Z hZZ ι α _ _ s input hn hnc hl hu C D hC hD delta reserve cost a hd hr hc ha
-  have hZ:1<Z:=hZ0.trans_le hZZ
+  have hZ:=hZ0.trans_le hZZ
   have hlog:=Real.log_le_log (Real.exp_pos _) hZZ
   rw [Real.log_exp] at hlog
   have hsmall:L/Real.log Z≤theta:=by
@@ -137,7 +135,7 @@ theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:
   refine ⟨hbound Z hZZ s (child s C R B τ t) hn hchild hl hu C D hC hD
     delta reserve cost a hd hr hc ha,?_⟩
   intro Q k Bp υ v
-  have herr:Fintype.card (liveIndices Bp.val)≤N:=(live_card_le Bp.val).trans hchild
+  have herr:=(live_card_le Bp.val).trans hchild
   exact hbound Z hZZ s (errorInput s C R B τ t Q k Bp υ v) hn herr hl hu C D hC hD
     delta reserve cost a hd hr hc ha
 

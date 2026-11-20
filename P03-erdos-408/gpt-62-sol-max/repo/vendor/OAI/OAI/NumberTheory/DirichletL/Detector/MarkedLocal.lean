@@ -33,12 +33,11 @@ lemma markedPrimeTerm_tsum (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z 
       idealMarkedLocalFactor η P x w z := by
   have hs := (markedPrimeTerm_summable_norm η P x w z hx hw hz).of_norm
   rw [hs.tsum_prod,hs.prod.tsum_prod]
-  have he (e l : ℕ) : (∑'b : ℕ×ℕ,completedValuationMark P ((e,l),b)*highPrimeTerm η x w z P ((e,l),b))=
-      ∑'k,∑'m,completedValuationMark P ((e,l),(k,m))*highPrimeTerm η x w z P ((e,l),(k,m)) :=
+  have he (e l : ℕ)  :=
     (hs.prod_factor (e,l)).tsum_prod
   simp_rw [he]
   rw [tsum_eq_sum (s:=Finset.range 2) (fun e he=>by
-    have hh : 2≤e := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
+    have hh  := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
     simp only [highPrimeTerm_zero_of_two_le η x w z P e _ _ _ hh,mul_zero,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl

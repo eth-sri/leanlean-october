@@ -61,9 +61,7 @@ theorem divisor_lift_constant (p v t k : A) (hpt : p ∣ t)
   intro y
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, ← map_add, hχ, hχ, map_add, map_mul]
-  have ht : Ideal.Quotient.mk (Ideal.span {p}) t = 0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hpt)
-  rw [ht, zero_mul, zero_add]
+  rw [(Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hpt)), zero_mul, zero_add]
 
 omit [IsDomain A] in
 theorem lifted_character_sum_zero (p v : A) (hpv : p ∣ v)
@@ -73,12 +71,11 @@ theorem lifted_character_sum_zero (p v : A) (hpv : p ∣ v)
     (∑ y : Residue v, χv y) = 0 := by
   let π : Residue v →+* Residue p :=
     Ideal.Quotient.factor (Ideal.span_singleton_le_span_singleton.mpr hpv)
-  have hπ : Function.Surjective π := Ideal.Quotient.factor_surjective _
   have he (y : Residue v) : χv y = χ (π y) := by
     obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
     exact hlift y
   simp_rw [he]
-  rw [sum_reduction π hπ χ, MulChar.sum_eq_zero_of_ne_one hχ, mul_zero]
+  rw [sum_reduction π (Ideal.Quotient.factor_surjective _) χ, MulChar.sum_eq_zero_of_ne_one hχ, mul_zero]
 
 theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
     (hpv : p ∣ v) (hpt : p ∣ t)
@@ -136,17 +133,16 @@ theorem unequal_prime_power_zero_of_not_six (p : O) [(Ideal.span {p}).IsMaximal]
   let : Fintype (Residue (p ^ j)) := Fintype.ofFinite _
   let := finite_quotient_span (mul_ne_zero (pow_ne_zero j hp0) (pow_ne_zero d hp0))
   let : Fintype (Residue (p ^ j * p ^ d)) := Fintype.ofFinite _
-  have hχ : actualSextic (Ideal.span {p}) hg ^ j ≠ 1 := by
-    intro h
-    apply hj6
-    rw [← actualSextic_order_six (Ideal.span {p}) hg hchar]
-    exact orderOf_dvd_of_pow_eq_one h
-  exact fullCorrelation_divisor_eq_zero p (p ^ j) (p ^ d) k (pow_ne_zero j hp0)
+  refine fullCorrelation_divisor_eq_zero p (p ^ j) (p ^ d) k (pow_ne_zero j hp0)
     (dvd_pow_self p (by omega)) (dvd_pow_self p (by omega))
     (supportedModulusCharacter _ _ ) (supportedModulusCharacter _ _)
     (actualSextic (Ideal.span {p}) hg ^ (j + d)) (actualSextic (Ideal.span {p}) hg ^ j)
-    hχ (supported_product_power_character_mk p hp hg hj)
+    ?_ (supported_product_power_character_mk p hp hg hj)
     (supported_power_character_mk p hp hg hj)
+  intro h
+  apply hj6
+  rw [← actualSextic_order_six (Ideal.span {p}) hg hchar]
+  exact orderOf_dvd_of_pow_eq_one h
 
 theorem unequal_prime_power_factor (p : O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})

@@ -47,7 +47,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
+open scoped ENNReal MeasureTheory Convolution Pointwise
 open MeasureTheory Set
 
 noncomputable section
@@ -59,12 +59,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceEL2CompactnessFrechetKolmogorov : MeasurableSpace E := borel E
 local instance instBorelSpaceEL2CompactnessFrechetKolmogorov : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceEL2CompactnessFrechetKolmogorov :
-    OpensMeasurableSpace E := by infer_instance
-local instance instMeasurableAddEL2CompactnessFrechetKolmogorov : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessFrechetKolmogorov : MeasurableNeg E := by
-  infer_instance
 
 variable {K : Set E} {ψ : E → ℝ}
 
@@ -121,20 +115,18 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
   refine ⟨t, htfin, ?_⟩
   intro x hx
   rcases hx with ⟨u, huA, rfl⟩
-  have huR : u ∈ Metric.closedBall (0 : _) R := hA huA
+  have huR  := hA huA
   have hSu_mem : smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u ∈ B := ⟨u, huR, rfl⟩
-  have hSu_cover :
-      smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u ∈
-        ⋃ y, ⋃ (_ : y ∈ t), Metric.ball y (ε / 2) :=
+  have hSu_cover  :=
     hBcover hSu_mem
   rcases Set.mem_iUnion.1 hSu_cover with ⟨y, hy⟩
   rcases Set.mem_iUnion.1 hy with ⟨hyT, hyBall⟩
   have hyDist : dist (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u) y < ε / 2 := by
-    simpa [Metric.ball, Set.mem_ofPred_eq] using hyBall
+    assumption
   have hdist_smooth_ext :
       dist (extendByZeroL2 (E := E) (K := K) hKm u)
           (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u) ≤ ε / 2 := by
-    have hη : 0 ≤ ε / 2 := le_of_lt hε2
+    have hη  := le_of_lt hε2
     have hnorm :
         ‖smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u
             - extendByZeroL2 (E := E) (K := K) hKm u‖ ≤ ε / 2 :=
@@ -150,18 +142,13 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
     have htri :=
       dist_triangle (extendByZeroL2 (E := E) (K := K) hKm u)
         (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u) y
-    have hlt :
-        dist (extendByZeroL2 (E := E) (K := K) hKm u)
-              (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u)
-            + dist (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u) y
-          < ε / 2 + ε / 2 :=
+    have hlt  :=
       add_lt_add_of_le_of_lt hdist_smooth_ext hyDist
-    have htmp :
-        dist (extendByZeroL2 (E := E) (K := K) hKm u) y < ε / 2 + ε / 2 :=
+    have htmp  :=
       lt_of_le_of_lt htri hlt
     simpa [add_halves ε] using htmp
   have hxBall : extendByZeroL2 (E := E) (K := K) hKm u ∈ Metric.ball y ε := by
-    simpa [Metric.ball, Set.mem_ofPred_eq] using hxDist
+    assumption
   exact Set.mem_iUnion.2 ⟨y, Set.mem_iUnion.2 ⟨hyT, hxBall⟩⟩
 
 theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationIntegral_small

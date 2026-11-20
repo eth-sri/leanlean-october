@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reciprocity.CubicJacobi
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionBrackets
 
@@ -10,71 +11,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CubicRamified
 open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
@@ -84,7 +27,7 @@ def cubicExp (n : ℤ) : O := omega ^ (n % 3).toNat
 lemma cubicExp_eq_of_dvd_sub {a b : ℤ} (h : 3 ∣ a - b) : cubicExp a = cubicExp b := by
   obtain ⟨k, hk⟩ := h
   have heq : a % 3 = b % 3 := by omega
-  simp only [cubicExp, heq]
+  simp [cubicExp, heq]
 
 lemma cubicExp_add (a b : ℤ) : cubicExp (a + b) = cubicExp a * cubicExp b := by
   simp only [cubicExp, ← pow_add]
@@ -153,7 +96,7 @@ theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
   | empty => simp only [Multiset.prod_zero, symbol_one, linearRay_one]
   | @cons p s ih =>
     have hp := hs p (Multiset.mem_cons_self _ _)
-    have hss : ∀ r ∈ s, Prime r ∧ lambda ^ 2 ∣ r-1 :=
+    have hss  :=
       fun r hr => hs r (Multiset.mem_cons_of_mem hr)
     rw [Multiset.prod_cons, symbol_mul_denominator,
       hprime p hp.1 hp.2, ih hss,
@@ -163,7 +106,7 @@ theorem symbol_lambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
     symbol lambda y = linearRay 1 0 y := by
   apply symbol_eq_linearRay_of_prime lambda 1 0 _ y hy
   intro p hp hprimary
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
+  let  :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
     primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
@@ -177,7 +120,7 @@ theorem symbol_omega_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
     symbol omega y = linearRay 2 (-1) y := by
   apply symbol_eq_linearRay_of_prime omega 2 (-1) _ y hy
   intro p hp hprimary
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
+  let  :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
     primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
@@ -203,7 +146,7 @@ theorem symbol_traceLambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
     symbol traceLambda y = linearRay 0 (-1) y := by
   apply symbol_eq_linearRay_of_prime traceLambda 0 (-1) _ y hy
   intro p hp hprimary
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
+  let  :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
     primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
@@ -277,7 +220,7 @@ theorem symbol_pow_numerator (x a : O) (ha : lambda ^ 2 ∣ a-1) (n : ℕ) :
 
 theorem symbol_neg_one (a : O) (ha : lambda ^ 2 ∣ a-1) : symbol (-1) a = 1 := by
   have h := symbol_eq_linearRay_of_prime (-1) 0 0 (fun p hp hprimary => by
-    let : (Ideal.span {p} : Ideal O).IsMaximal :=
+    let  :=
       PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
     have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
       primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
@@ -296,8 +239,7 @@ theorem symbol_isUnit_ne_zero (x a : O) (hx : IsUnit x) (ha : lambda ^ 2 ∣ a-1
     rw [← symbol_mul_numerator _ _ a ha, ← Units.val_mul, mul_inv_cancel,
       Units.val_one, symbol_one_numerator a ha]
   intro hz
-  rw [hz, zero_mul] at h
-  exact zero_ne_one h
+  simp_all
 
 theorem symbol_unit_congr_mod_nine (x a b : O) (hx : IsUnit x)
     (ha : lambda ^ 2 ∣ a-1) (hb : lambda ^ 2 ∣ b-1) (hab : (9 : O) ∣ a-b) :
@@ -339,23 +281,22 @@ private theorem associated_congr_denominator {x y a b : O} (hxy : Associated x y
       rw [symbol_unit_congr_mod_nine (u : O) b a u.isUnit hb ha (by simpa only [neg_sub] using dvd_neg.mpr hab)]
 
 private theorem ramified_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
   exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
 
 private theorem symbol_prime_denominator_congr (p a b : O) (hp : Prime p)
     (ha : lambda ^ 2 ∣ a-1) (hb : lambda ^ 2 ∣ b-1)
     (h9 : (9 : O) ∣ a-b) (hpab : p ∣ a-b) : symbol p a = symbol p b := by
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
+  let  :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   by_cases hg : lambda ∉ (Ideal.span {p} : Ideal O)
   · obtain ⟨q,hq,hprimary,-⟩ := cubicJacobi_exists_primary_generator (Ideal.span {p}) hg
-    have hpq : Associated p q := Ideal.span_singleton_eq_span_singleton.mp hq
+    have hpq  := Ideal.span_singleton_eq_span_singleton.mp hq
     apply associated_congr_denominator hpq ha hb h9
-    have hq0 : q ≠ 0 := (hpq.prime_iff.mp hp).ne_zero
+    have hq0  := (hpq.prime_iff.mp hp).ne_zero
     rw [symbol_reciprocity q a hq0 (primary_ne_zero a ha) hprimary ha,
       symbol_reciprocity q b hq0 (primary_ne_zero b hb) hprimary hb]
     exact symbol_congr (hpq.dvd'.trans hpab)
-  · have hdiv : p ∣ lambda := Ideal.mem_span_singleton.mp (not_not.mp hg)
+  · have hdiv  := Ideal.mem_span_singleton.mp (not_not.mp hg)
     apply associated_congr_denominator (hp.associated_of_dvd ramified_prime hdiv) ha hb h9
     exact symbol_lambda_congr_mod_nine a b ha hb h9
 
@@ -363,11 +304,11 @@ theorem symbol_denominator_congr (x a b : O)
     (ha : lambda ^ 2 ∣ a-1) (hb : lambda ^ 2 ∣ b-1)
     (h9 : (9 : O) ∣ a-b) (hx : x ∣ a-b) : symbol x a = symbol x b := by
   induction x using UniqueFactorizationMonoid.induction_on_prime with
-  | h₁ => have heq : a = b := sub_eq_zero.mp (zero_dvd_iff.mp hx); rw [heq]
+  | h₁ => have heq  := sub_eq_zero.mp (zero_dvd_iff.mp hx); rw [heq]
   | h₂ u hu => exact symbol_unit_congr_mod_nine u a b hu ha hb h9
   | h₃ x p hx0 hp ih =>
-    have hpab : p ∣ a-b := (dvd_mul_right p x).trans hx
-    have hxab : x ∣ a-b := (dvd_mul_left x p).trans hx
+    have hpab  := (dvd_mul_right p x).trans hx
+    have hxab  := (dvd_mul_left x p).trans hx
     rw [symbol_mul_numerator _ _ a ha, symbol_mul_numerator _ _ b hb,
       symbol_prime_denominator_congr p a b hp ha hb h9, ih hxab]
     exact hpab
@@ -392,7 +333,7 @@ theorem q_eq_one_iff_unitCoordinates (z : ℤ × ℤ) : q z = 1 ↔ z ∈ unitCo
     interval_cases a <;> interval_cases b <;> norm_num [q, unitCoordinates] at *
   · intro h
     simp only [unitCoordinates, Finset.mem_insert, Finset.mem_singleton] at h
-    rcases h with h | h | h | h | h | h <;> rw [h] <;> norm_num [q]
+    rcases h with h | h | h | h | h | h <;> rw [h] <;> rfl
 
 theorem unit_coordinate_mem (u : Oˣ) : coords u.val ∈ unitCoordinates := by
   apply (q_eq_one_iff_unitCoordinates _).mp
@@ -427,15 +368,14 @@ def unitCoordinateEquiv : Oˣ ≃ {z : ℤ × ℤ // z ∈ unitCoordinates} :=
 
 theorem card_units_eq_six : Nat.card Oˣ = 6 := by
   rw [Nat.card_congr unitCoordinateEquiv, Nat.card_eq_fintype_card, Fintype.card_coe]
-  norm_num [unitCoordinates]
+  rfl
 
 end PrimaryIdealUnitReindex
 
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticUnitInvariance
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson
-open PrimaryIdealUnitReindex CompletedGauss
+open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson PrimaryIdealUnitReindex
+open CompletedGauss
 
 theorem rowCoprimeMask_unit_mul {α : Type*} (R : α → Ideal O)
     (S : Finset α) (u : Oˣ) (z : O) :
@@ -455,9 +395,9 @@ open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaus
 theorem canonical_masked_radial_poisson_product
     {α ι : Type*} [DecidableEq α] [Fintype ι]
     (R : α → Ideal O) [∀ i, (R i).IsMaximal] (hinj : Function.Injective R) (S : Finset α)
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (j : ι → ℕ) (hj0 : ∀ i, j i ≠ 0) (hj6 : ∀ i, j i < 6)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
@@ -496,9 +436,8 @@ theorem canonical_masked_radial_poisson_product
 end GaussGeneratorTransport
 
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open QuadraticGaussRay MixedCrossSeparation QuadraticInitialBound
-open GaussGeneratorTransport EisensteinSchwartzPoisson
+open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates QuadraticGaussRay
+open MixedCrossSeparation QuadraticInitialBound GaussGeneratorTransport EisensteinSchwartzPoisson
 
 theorem odd_of_quadraticRayValue_norm_eq_one (r : EisensteinEPrimaryPhase.Coord)
     (hr : ‖quadraticRayValue r‖ = 1) : EisensteinEPrimaryPhase.odd r := by
@@ -509,9 +448,9 @@ theorem odd_of_quadraticRayValue_norm_eq_one (r : EisensteinEPrimaryPhase.Coord)
 
 theorem quadraticBlock_union_eq_one_of_same_ray
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (A B : Finset ι) (hd : Disjoint A B)
     (hray : residue (∏ i ∈ A, p i) = residue (∏ i ∈ B, p i)) :
@@ -525,9 +464,9 @@ theorem quadraticBlock_union_eq_one_of_same_ray
 theorem same_ray_quadratic_pair_poisson
     {α ι : Type*} [DecidableEq α] [DecidableEq ι]
     (R : α → Ideal O) [∀ i, (R i).IsMaximal] (hinj : Function.Injective R) (S : Finset α)
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (A B : Finset ι) (hd : Disjoint A B)
     (hray : residue (∏ i ∈ A, p i) = residue (∏ i ∈ B, p i))
@@ -565,9 +504,7 @@ theorem same_ray_quadratic_pair_poisson
 
 end QuadraticUnitInvariance
 
-open scoped BigOperators Classical SchwartzMap
 namespace EisensteinSchwartzPoisson
-open ActualEisensteinCubic ConcreteTraceCRT
 
 end EisensteinSchwartzPoisson
 

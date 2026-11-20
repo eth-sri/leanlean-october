@@ -146,7 +146,7 @@ private theorem norm_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
 /-- `\overline{w^{-iτ}} = w^{iτ}` for `w > 0`. -/
 private theorem star_ofReal_cpow_neg_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
     star ((w : ℂ) ^ (((-τ : ℝ) : ℂ) * Complex.I)) = (w : ℂ) ^ ((τ : ℂ) * Complex.I) := by
-  have hw' : (w : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hw.ne'
+  have hw'  := Complex.ofReal_ne_zero.2 hw.ne'
   rw [Complex.cpow_def_of_ne_zero hw', Complex.cpow_def_of_ne_zero hw', Complex.star_def,
     ← Complex.exp_conj, ← Complex.ofReal_log hw.le]
   congr 1
@@ -179,7 +179,7 @@ private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : 
             ((((sideProd u : ℤ) - sideProd v) - sideLabel u + sideLabel v : ℤ) : ℝ) : ℝ) :
               ℂ))) := by
   have hk : (k : ℂ) ≠ 0 := Nat.cast_ne_zero.2 (NeZero.ne k)
-  have hY' : (Y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hY
+  have hY'  := Complex.ofReal_ne_zero.2 hY
   have hy : d.X * ((sideProd u : ℝ) / (d.X * Y) - (sideProd v : ℝ) / (d.X * Y)) =
       (((sideProd u : ℤ) - sideProd v : ℤ) : ℝ) / Y := by
     push_cast
@@ -257,7 +257,7 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
   -- pull out the coefficients, then separate `ψ_λ`
   have hFc : ∀ q, F u v q = φ u * star (φ v) *
       (Kf q * (w u : ℂ) ^ ((q.1 : ℂ) * Complex.I) * (w v : ℂ) ^ ((q.2 : ℂ) * Complex.I)) :=
-    fun q => by simp only [hF]; ring
+    fun q => by ring
   simp only [hFc]
   rw [integral_const_mul]
   by_cases hc : sideCoeff x d Y u = 0 ∨ sideCoeff x d Y v = 0

@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.Extraction.TypeII.Asymp
 
 /-!
@@ -23,7 +24,7 @@ open Filter
 theorem eventually_mul_rpow_mul_exp_le_exp {a b : ℝ} (ha : 0 ≤ a) (hab : a < b) (C D : ℝ) :
     ∀ᶠ x : ℝ in atTop,
       D * Real.log x ^ C * Real.exp (Real.log x ^ a) ≤ Real.exp (Real.log x ^ b) := by
-  have hb : 0 < b := lt_of_le_of_lt ha hab
+  have hb  := lt_of_le_of_lt ha hab
   filter_upwards [Real.tendsto_log_atTop.eventually
       (TypeII.eventually_mul_log_rpow_le (4 * C) 1 _ hb),
     ((tendsto_rpow_atTop (sub_pos.2 hab)).comp Real.tendsto_log_atTop).eventually_ge_atTop 2,
@@ -60,7 +61,7 @@ theorem eventually_mul_exp_rpow_le_margin {a : ℝ} (ha : 0 ≤ a) (ha₁ : a < 
   filter_upwards [Real.tendsto_log_atTop.eventually (TypeII.eventually_mul_log_rpow_le
       ((|Real.log D| + 1) / c) 20 _ (sub_pos.2 ha₁)),
     Real.tendsto_log_atTop.eventually_ge_atTop (Real.exp 1)] with x h₁ hL
-  have hL1 : 1 ≤ Real.log x := le_trans (Real.one_le_exp (by norm_num)) hL
+  have hL1  := le_trans (Real.one_le_exp (by norm_num)) hL
   have hL0 : 0 < Real.log x := by linarith
   set L := Real.log x
   have hT1 : 1 ≤ Real.log L := by
@@ -70,16 +71,15 @@ theorem eventually_mul_exp_rpow_le_margin {a : ℝ} (ha : 0 ≤ a) (ha₁ : a < 
   rcases le_or_gt D 0 with hD | hD
   · have : D * Real.exp (L ^ a) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hD (by positivity)
     linarith [Real.exp_pos (c * L / Real.log L ^ 20)]
-  have hLa : 1 ≤ L ^ a := Real.one_le_rpow hL1 ha
+  have hLa  := Real.one_le_rpow hL1 ha
   -- `T²⁰ (|log D| + 1) L^a ≤ c L`
   have h₂ : (|Real.log D| + 1) * Real.log L ^ 20 ≤ c * L ^ (1 - a) := by
     have h₁' : (|Real.log D| + 1) / c * Real.log L ^ (20 : ℕ) ≤ L ^ (1 - a) := by
-      rw [← Real.rpow_natCast]
       exact_mod_cast h₁
     calc (|Real.log D| + 1) * Real.log L ^ 20
         = c * ((|Real.log D| + 1) / c * Real.log L ^ (20 : ℕ)) := by field_simp
       _ ≤ c * L ^ (1 - a) := mul_le_mul_of_nonneg_left h₁' hc.le
-  have hLL : L ^ (1 - a) * L ^ a = L := by rw [← Real.rpow_add hL0]; ring_nf; exact Real.rpow_one L
+  have hLL : L ^ (1 - a) * L ^ a = L := by rpow_ring hL0
   have h₃ : Real.log D + L ^ a ≤ c * L / Real.log L ^ 20 := by
     rw [le_div_iff₀ hT20]
     have hlD : Real.log D ≤ |Real.log D| := le_abs_self _
@@ -110,7 +110,6 @@ theorem eventually_mul_exp_div_le_margin {c : ℝ} (hc : 0 < c) (D : ℝ) :
   set L := Real.log x
   set T := Real.log L
   have hT1 : 1 ≤ T := le_trans (by linarith [Real.sqrt_nonneg (2 / c)]) hT
-  have hT0 : 0 < T := by linarith
   rcases le_or_gt D 0 with hD | hD
   · have : D * Real.exp (L / T ^ 22) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hD (by positivity)
     linarith [Real.exp_pos (c * L / T ^ 20)]
@@ -122,7 +121,6 @@ theorem eventually_mul_exp_div_le_margin {c : ℝ} (hc : 0 < c) (D : ℝ) :
     rw [div_le_iff₀ hc] at h
     linarith
   have h22 : (|Real.log D| : ℝ) * T ^ (22 : ℕ) ≤ L := by
-    rw [← Real.rpow_natCast]
     exact_mod_cast h₁
   have h₃ : Real.log D + L / T ^ 22 ≤ c * L / T ^ 20 := by
     have hlD : Real.log D ≤ |Real.log D| := le_abs_self _

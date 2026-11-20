@@ -43,12 +43,11 @@ theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Su
   let a := residualGenerator I J
   let b := residualGenerator J I
   let r := activeConductor I J
-  have ha : a≠0 := supported_element_ne_zero _ (residualGenerator_supported I J hI)
-  have hb : b≠0 := supported_element_ne_zero _ (residualGenerator_supported J I hJ)
+  have ha  := supported_element_ne_zero _ (residualGenerator_supported I J hI)
+  have hb  := supported_element_ne_zero _ (residualGenerator_supported J I hJ)
   have hr : r≠0 := finitePrimeModulus_ne_zero _
-  have he : primeSubsetGenerator (fun P : CommonIndex I J => P.val) E≠0 := primeSubsetGenerator_ne_zero _ _
   have hk : 0<(K/normValue (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E))/normValue (a*(b*r)) :=
-    div_pos (div_pos hK (norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr he)))
+    div_pos (div_pos hK (norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _))))
       (norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero ha (mul_ne_zero hb hr))))
   have hh := lattice_fourier_split W _ hk
     (tripleFourier a b r ha hb hr (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI))

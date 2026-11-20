@@ -21,7 +21,7 @@ lemma low_inverse_power_cancel (Z d α : ℝ) (hZ : 0<Z) :
   ring
 
 lemma low_inverse_sqrt_normalized (q C B Z L d α H E : ℝ) (n : ℕ)
-    (hq : 0<q) (hC : 0≤C) (_hB : 0≤B) (hZ : 0<Z) (hL : 0<L) (hH : 1≤H)
+    (hq : 0<q) (hC : 0≤C) (hZ : 0<Z) (hL : 0<L) (hH : 1≤H)
     (hE : 0≤E) (hEL : E≤C*H^n*Z^(5/6-2*d+α)) (hLB : L≤B*Z^d) :
     Real.sqrt E/Real.sqrt (q*Z^(5/6:ℝ)/L^2)≤
       Real.sqrt (C*B^2/q)*H^n*Z^(α/2) := by

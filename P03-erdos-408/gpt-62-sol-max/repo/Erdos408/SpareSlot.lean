@@ -69,8 +69,12 @@ lemma log_bounds_of_mem {x u v : ℝ} (hx : 1 < x) {q : ℕ} (hq : q ∈ primesI
   · rw [← Real.log_rpow hx0]
     exact Real.log_le_log hq0 hle
 
+section
+
+variable {x b m : ℝ}
+
 /-- Distinct grid cells are disjoint. -/
-lemma gridCell_disjoint {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) {i j : ℕ} (hij : i ≠ j) :
+lemma gridCell_disjoint (hx : 1 < x) (hm : 0 ≤ m) {i j : ℕ} (hij : i ≠ j) :
     Disjoint (gridCell x b m i) (gridCell x b m j) := by
   have key : ∀ i j : ℕ, i < j → Disjoint (gridCell x b m i) (gridCell x b m j) := by
     intro i j hij
@@ -87,7 +91,7 @@ lemma gridCell_disjoint {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) {i j : ℕ} (h
   · exact (key j i h).symm
 
 /-- The first `J` grid cells lie in `(x^b, x^{b + J m}]`. -/
-lemma biUnion_gridCell_subset {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ) :
+lemma biUnion_gridCell_subset (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ) :
     (range J).biUnion (gridCell x b m) ⊆ primesIoc (x ^ b) (x ^ (b + J * m)) := by
   intro q hq
   obtain ⟨j, hj, hq⟩ := mem_biUnion.1 hq
@@ -99,12 +103,14 @@ lemma biUnion_gridCell_subset {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ
 
 /-- A nonnegative sum over the first `J` grid cells is at most the sum over
 `(x^b, x^{b + J m}]`. -/
-lemma sum_gridCell_le {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ) {f : ℕ → ℝ}
+lemma sum_gridCell_le (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ) {f : ℕ → ℝ}
     (hf : ∀ q, 0 ≤ f q) :
     ∑ j ∈ range J, ∑ q ∈ gridCell x b m j, f q ≤
       ∑ q ∈ primesIoc (x ^ b) (x ^ (b + J * m)), f q := by
   rw [← sum_biUnion fun i _ j _ hij => gridCell_disjoint hx hm hij]
   exact sum_le_sum_of_subset_of_nonneg (biUnion_gridCell_subset hx hm J) fun q _ _ => hf q
+
+end
 
 /-- Elements of `primesIoc` are prime. -/
 lemma prime_of_mem_primesIoc {y z : ℝ} {q : ℕ} (hq : q ∈ primesIoc y z) : q.Prime :=
@@ -128,7 +134,7 @@ lemma mertens_second_rpow : ∃ E : ℝ, 0 ≤ E ∧ ∀ x u v : ℝ, 1 < x → 
   obtain ⟨E, hE, h⟩ := mertens_second
   refine ⟨E, hE, fun x u v hx hu huv h2 => ?_⟩
   have hx0 : 0 < x := by linarith
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have := h (x ^ u) (x ^ v) h2 (Real.rpow_le_rpow_of_exponent_le hx.le huv)
   rwa [Real.log_rpow hx0, Real.log_rpow hx0, mul_div_mul_right _ _ hL.ne'] at this
 
@@ -141,7 +147,7 @@ lemma abs_mul_sum_inv_sub_le {E : ℝ}
       E / Real.log x + m * ∑ r ∈ primesIoc (x ^ v) (x ^ (v + m)), (1 : ℝ) / r := by
   set S := primesIoc (x ^ v) (x ^ (v + m))
   set H := ∑ r ∈ S, (1 : ℝ) / r
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hG := hE x v (v + m) hx hv (by linarith)
   rw [add_sub_cancel_left] at hG
   have hpos : ∀ r ∈ S, (0 : ℝ) < r := fun r hr => by
@@ -157,7 +163,7 @@ lemma abs_mul_sum_inv_sub_le {E : ℝ}
     refine sum_le_sum fun r hr => ?_
     rw [mul_one_div]
     exact div_le_div_of_nonneg_right (log_bounds_of_mem hx hr).2 (hpos r hr).le
-  have hH : 0 ≤ H := sum_nonneg fun r hr => (one_div_pos.2 (hpos r hr)).le
+  have hH  := sum_nonneg fun r hr => (one_div_pos.2 (hpos r hr)).le
   set G := ∑ r ∈ S, Real.log r / r
   rw [abs_le] at hG
   have h1 : (v * H - m) * Real.log x ≤ E / Real.log x * Real.log x := by
@@ -211,7 +217,7 @@ def Admissible (x s : ℝ) (X : Finset ℕ) : Prop :=
 lemma log_two_mul_div {x : ℝ} (hx : 1 < x) {V : ℕ} (hV : 0 < V) :
     Real.log (2 * x / V) =
       (1 - Real.log V / Real.log x + Real.log 2 / Real.log x) * Real.log x := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hV' : (0 : ℝ) < V := by exact_mod_cast hV
   rw [Real.log_div (by positivity) hV'.ne', Real.log_mul two_ne_zero (by positivity)]
   field_simp
@@ -250,14 +256,13 @@ lemma abs_one_sub_spareModel_le : ∃ E₁ E₂ : ℝ, 0 ≤ E₁ ∧ 0 ≤ E₂
   set V := ∏ q ∈ X, q
   set t := Real.log V / L
   set D := 1 - t + Real.log 2 / L
-  have hL : 0 < L := Real.log_pos hx
-  have hx0 : 0 < x := by linarith
+  have hL  := Real.log_pos hx
   have ha : 0 < a := by linarith
-  have hV : 0 < V := prod_pos fun q hq => (hX q hq).1.pos
+  have hV  := prod_pos fun q hq => (hX q hq).1.pos
   have hDa : a ≤ D := by
     have := div_nonneg (Real.log_nonneg one_le_two) hL.le
     linarith
-  have hD : 0 < D := ha.trans_le hDa
+  have hD  := ha.trans_le hDa
   -- floor facts for `J`
   have hy : 0 ≤ (1 - 2 * δ - s) / m := div_nonneg (by linarith) hm.le
   have hJle : (J : ℝ) * m ≤ 1 - 2 * δ - s := (le_div_iff₀ hm).1 (Nat.floor_le hy)
@@ -282,7 +287,6 @@ lemma abs_one_sub_spareModel_le : ∃ E₁ E₂ : ℝ, 0 ≤ E₁ ∧ 0 ≤ E₂
     rw [abs_le]
     constructor <;> nlinarith
   -- `|J m - G| ≤ E₁ / (m L) + m (log (1 / δ) + E₂ / (δ L))`
-  have hH0 : ∀ j, 0 ≤ H j := fun j => sum_nonneg fun r _ => by positivity
   have hsumH : ∑ j ∈ range J, H j ≤ Real.log (1 / δ) + E₂ / (δ * L) := by
     have hJδ : δ ≤ δ + J * m := by have := J.cast_nonneg (α := ℝ); nlinarith
     have hM := (abs_le.1 (h₂ x δ (δ + J * m) hx hδ hJδ h2)).2
@@ -326,7 +330,7 @@ lemma abs_one_sub_spareModel_le : ∃ E₁ E₂ : ℝ, 0 ≤ E₁ ∧ 0 ≤ E₂
     refine ⟨sum_nonneg fun j hj => mul_nonneg (hvj j hj).1 (hH' j).1, ?_⟩
     calc G' ≤ ∑ j ∈ range J, 1 * (2 / x ^ a) :=
           sum_le_sum fun j hj => mul_le_mul (hvj j hj).2 (hH' j).2 (hH' j).1 zero_le_one
-      _ = J * (2 / x ^ a) := by rw [sum_const, card_range, nsmul_eq_mul, one_mul]
+      _ = J * (2 / x ^ a) := by simp
       _ ≤ 1 / m * (2 / x ^ a) := by gcongr
       _ = 2 / (m * x ^ a) := by field_simp
   rw [hA, show 1 - (G - G') / D = (D - G + G') / D by field_simp; ring,
@@ -346,18 +350,16 @@ lemma spareWeight_mem_Icc {c x s : ℝ} {X : Finset ℕ} (hx : 1 < x) (hm : 0 < 
     (hadm : Admissible x s X) {j : ℕ} (hj : j < spareCount c x s) :
     0 ≤ spareWeight c x (∏ q ∈ X, q) j ∧ spareWeight c x (∏ q ∈ X, q) j ≤ 1 := by
   obtain ⟨hs0, hs1, -, hX, -, hthi⟩ := hadm
-  have hL : 0 < Real.log x := Real.log_pos hx
-  have hV : 0 < ∏ q ∈ X, q := prod_pos fun q hq => (hX q hq).1.pos
+  have hL  := Real.log_pos hx
+  have hV  := prod_pos fun q hq => (hX q hq).1.pos
   have h2 := div_nonneg (Real.log_nonneg one_le_two) hL.le
   have hy : 0 ≤ (1 - 2 * spareOffset c x - s) / mesh x := div_nonneg (by linarith) hm.le
   have hJle := (le_div_iff₀ hm).1 (Nat.floor_le hy)
   have hj' : (j : ℝ) + 1 ≤ ⌊(1 - 2 * spareOffset c x - s) / mesh x⌋₊ := by
     exact_mod_cast hj
   rw [spareWeight_eq hx hV]
-  have hD : spareOffset c x + j * mesh x ≤
-      1 - Real.log (∏ q ∈ X, q : ℕ) / Real.log x + Real.log 2 / Real.log x := by
-    nlinarith
-  exact ⟨div_nonneg (by positivity) (by linarith), div_le_one_of_le₀ hD (by linarith)⟩
+  refine ⟨div_nonneg (by positivity) (by linarith), div_le_one_of_le₀ ?_ (by linarith)⟩
+  nlinarith
 
 /-- For primes `r ∉ X`, `(∏ X) r ∣ n` iff `∏ X ∣ n` and `r ∣ n`. -/
 lemma prod_mul_dvd_iff {X : Finset ℕ} (hX : ∀ q ∈ X, q.Prime) {r : ℕ} (hr : r.Prime)
@@ -375,12 +377,11 @@ lemma spareKernel_mem_Icc {c x s : ℝ} (hx : 1 < x) (hδ : 0 ≤ spareOffset c 
     0 ≤ spareKernel c x s X n ∧ spareKernel c x s X n ≤ 1 := by
   set V := ∏ q ∈ X, q
   set J := spareCount c x s
-  have hx0 : 0 < x := by linarith
-  have hL : 0 < Real.log x := Real.log_pos hx
-  have hV : 0 < V := prod_pos fun q hq => (hX q hq).pos
+  have hL  := Real.log_pos hx
+  have hV  := prod_pos fun q hq => (hX q hq).pos
   have hV' : (0 : ℝ) < V := by exact_mod_cast hV
   have hVn : (V : ℝ) ≤ n := by exact_mod_cast Nat.le_of_dvd hn0 hXn
-  have hℓ : 0 < Real.log (2 * x / V) :=
+  have hℓ  :=
     Real.log_pos ((one_lt_div hV').2 (hVn.trans_lt hn))
   set F : ℕ → Finset ℕ := fun j => (spareCell c x j).filter fun r => r ∉ X ∧ r ∣ n
   refine ⟨sum_nonneg fun j _ => sum_nonneg fun r _ =>
@@ -407,7 +408,7 @@ lemma spareKernel_mem_Icc {c x s : ℝ} (hx : 1 < x) (hδ : 0 ≤ spareOffset c 
     · rcases mem_union.1 hr with hr | hr
       exacts [(hR r hr).2, (dvd_prod_of_mem _ hr).trans hXn]
   rw [prod_union hRX] at hdvd
-  have hRpos : 0 < ∏ r ∈ R, r := prod_pos fun r hr => (hR r hr).1.pos
+  have hRpos  := prod_pos fun r hr => (hR r hr).1.pos
   have hlog : Real.log (∏ r ∈ R, r : ℕ) ≤ Real.log (2 * x / V) := by
     refine Real.log_le_log (by exact_mod_cast hRpos) ?_
     rw [le_div_iff₀ hV']
@@ -483,9 +484,13 @@ lemma sum_sigma_filter {ι α : Type*} (s : Finset ι) (t : ι → Finset α)
     ∑ z ∈ s.sigma t with p z, f z = ∑ i ∈ s, ∑ b ∈ t i with p ⟨i, b⟩, f ⟨i, b⟩ := by
   simp only [sum_filter, sum_sigma]
 
+section
+
+variable {α : Type*} {c x s : ℝ} (box : Finset α) (X : α → Finset ℕ)
+
 /-- The kernel identity on one box: `∑_{Q ∣ n} B(Q) Z_Q(n)` is the sum over the spare
 cells of the box-times-cell tuples dividing `n`, weighted by `B(Q) w_j(Q)`. -/
-lemma sum_mul_spareKernel {α : Type*} {c x s : ℝ} (box : Finset α) (X : α → Finset ℕ)
+lemma sum_mul_spareKernel
     (hX : ∀ Q ∈ box, ∀ q ∈ X Q, q.Prime) (b : α → ℝ) (n : ℕ) :
     ∑ Q ∈ box with (∏ q ∈ X Q, q) ∣ n, b Q * spareKernel c x s (X Q) n =
       ∑ j ∈ range (spareCount c x s), ∑ Q ∈ box,
@@ -507,7 +512,7 @@ lemma sum_mul_spareKernel {α : Type*} {c x s : ℝ} (box : Finset α) (X : α �
 
 /-- The model identity on one box: `∑_Q B(Q) A(Q) / Q` is the harmonic sum over the
 spare cells of `B(Q) w_j(Q) / (Q r)`. -/
-lemma sum_mul_spareModel {α : Type*} {c x s : ℝ} (box : Finset α) (X : α → Finset ℕ)
+lemma sum_mul_spareModel
     (b : α → ℝ) :
     ∑ Q ∈ box, b Q * spareModel c x s (X Q) / (∏ q ∈ X Q, q : ℕ) =
       ∑ j ∈ range (spareCount c x s), ∑ Q ∈ box, ∑ r ∈ spareCell c x j with r ∉ X Q,
@@ -519,6 +524,8 @@ lemma sum_mul_spareModel {α : Type*} {c x s : ℝ} (box : Finset α) (X : α �
   rw [mul_sum, mul_sum, sum_div]
   refine sum_congr rfl fun r _ => ?_
   ring
+
+end
 
 /-- The spare-slot removal over a family of boxes: if the rectangle statistic holds on
 every box times every admissible spare cell with coefficients on the box, and holds
@@ -544,8 +551,7 @@ lemma abs_sum_sigma_sub_le {ι α : Type*} [DecidableEq α] {c x ε₁ ε₂ M J
     |∑ p ∈ P, ∑ z ∈ boxes.sigma box with (∏ q ∈ X z.2, q) ∣ p - 1, B z.2 -
         P.card * ∑ z ∈ boxes.sigma box, B z.2 / (∏ q ∈ X z.2, q : ℕ)| ≤
       P.card * (2 * (boxes.card * Jmax * ε₁) + boxes.card * ε₁ + 2 * (M * ε₂)) := by
-  have hN : (0 : ℝ) ≤ P.card := P.card.cast_nonneg
-  have hX : ∀ β ∈ boxes, ∀ Q ∈ box β, ∀ q ∈ X Q, q.Prime := fun β hβ Q hQ q hq =>
+  have hX  := fun β hβ Q hQ q hq =>
     ((hadm β hβ Q hQ).2.2.2.1 q hq).1
   have hV : ∀ z ∈ boxes.sigma box, (0 : ℝ) < (∏ q ∈ X z.2, q : ℕ) := fun z hz => by
     obtain ⟨hβ, hQ⟩ := mem_sigma.1 hz
@@ -624,22 +630,20 @@ lemma abs_sum_sigma_sub_le {ι α : Type*} [DecidableEq α] {c x ε₁ ε₂ M J
     calc _ ≤ ∑ β ∈ boxes, (P.card * ε₁ : ℝ) := sum_le_sum fun β hβ => h₀ β hβ
       _ = _ := by rw [sum_const, nsmul_eq_mul]; ring
   -- the defect
-  have h₂ : ∑ z ∈ boxes.sigma box,
-      |1 - spareModel c x (s z.1) (X z.2)| / (∏ q ∈ X z.2, q : ℕ) ≤ M * ε₂ := by
-    calc _ ≤ ∑ z ∈ boxes.sigma box, ε₂ * (1 / (∏ q ∈ X z.2, q : ℕ)) :=
-          sum_le_sum fun z hz => by
-            obtain ⟨hβ, hQ⟩ := mem_sigma.1 hz
-            rw [mul_one_div]
-            exact div_le_div_of_nonneg_right (hA _ hβ _ hQ) (hV z hz).le
-      _ = ε₂ * ∑ β ∈ boxes, ∑ Q ∈ box β, (1 : ℝ) / (∏ q ∈ X Q, q : ℕ) := by
-          rw [← mul_sum, sum_sigma]
-      _ ≤ M * ε₂ := by rw [mul_comm]; exact mul_le_mul_of_nonneg_right hmass hε₂
-  exact abs_sum_sub_le_of_kernel P (boxes.sigma box) (fun p z => (∏ q ∈ X z.2, q) ∣ p - 1)
+  refine abs_sum_sub_le_of_kernel P (boxes.sigma box) (fun p z => (∏ q ∈ X z.2, q) ∣ p - 1)
     (fun z => B z.2) (fun z => spareModel c x (s z.1) (X z.2))
     (fun z => ((∏ q ∈ X z.2, q : ℕ) : ℝ)) (fun p z => spareKernel c x (s z.1) (X z.2) (p - 1))
     (fun z => hB z.2) hV (fun p hp z hz hdv => spareKernel_mem_Icc hx hδ.le hm.le
       (hX _ (mem_sigma.1 hz).1 _ (mem_sigma.1 hz).2) (hP p hp).1 (hP p hp).2 hdv)
-    (hw _ fun z => hB z.2) h₁' h₀' h₂
+    (hw _ fun z => hB z.2) h₁' h₀' ?_
+  calc _ ≤ ∑ z ∈ boxes.sigma box, ε₂ * (1 / (∏ q ∈ X z.2, q : ℕ)) :=
+        sum_le_sum fun z hz => by
+          obtain ⟨hβ, hQ⟩ := mem_sigma.1 hz
+          rw [mul_one_div]
+          exact div_le_div_of_nonneg_right (hA _ hβ _ hQ) (hV z hz).le
+    _ = ε₂ * ∑ β ∈ boxes, ∑ Q ∈ box β, (1 : ℝ) / (∏ q ∈ X Q, q : ℕ) := by
+        rw [← mul_sum, sum_sigma]
+    _ ≤ M * ε₂ := by rw [mul_comm]; exact mul_le_mul_of_nonneg_right hmass hε₂
 
 /-! ### The rectangle statistic in product form -/
 
@@ -761,15 +765,19 @@ lemma abs_sub_mul_le_of_div {S M ε N : ℝ} (hN : 0 < N) (h : |S / N - M| ≤ �
   rw [show S - N * M = N * (S / N - M) by field_simp, abs_mul, abs_of_pos hN]
   exact mul_le_mul_of_nonneg_left h hN.le
 
+section
+
+variable {c C x : ℝ}
+
 /-- The rectangle statistic with one unweighted slot. -/
-lemma stat_zero {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
+lemma stat_zero (hR : RectangleAt c C x) (hx : 0 ≤ x)
     (hP : 0 < (dyadicPrimes x).card) {u v : ℝ} (hu : c / Real.log (Real.log x) ^ 20 ≤ u)
     (hv : v ≤ 1 - c / Real.log (Real.log x) ^ 20) :
     |∑ p ∈ dyadicPrimes x, ∑ q ∈ primesIoc (x ^ u) (x ^ v) with q ∣ p - 1, (1 : ℝ) -
         (dyadicPrimes x).card * ∑ q ∈ primesIoc (x ^ u) (x ^ v), (1 : ℝ) / q| ≤
       (dyadicPrimes x).card * (C / Real.log (Real.log x) ^ 300) := by
-  have h := hR 0 (by norm_num) ![u] ![v] (fun i => by fin_cases i; exact hu)
-    (by simpa using hv) (fun _ => 1) fun _ => by simp
+  have h := hR 0 (by norm_num) ![u] ![v] (fun i => by simpa using hu)
+    (by simp_all) (fun _ => 1) fun _ => by simp
   have e₁ : ∀ n, ∑ Q ∈ slotTuples x ![u] ![v] with ∏ i, Q i ∣ n, (1 : ℝ) =
       ∑ q ∈ primesIoc (x ^ u) (x ^ v) with q ∣ n, (1 : ℝ) := fun n => by
     rw [sum_filter, sum_slotTuples_one hx, sum_filter]
@@ -782,7 +790,7 @@ lemma stat_zero {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
   exact abs_sub_mul_le_of_div (by exact_mod_cast hP) h
 
 /-- The rectangle statistic with two slots and a coefficient on the first. -/
-lemma stat_one {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
+lemma stat_one (hR : RectangleAt c C x) (hx : 0 ≤ x)
     (hP : 0 < (dyadicPrimes x).card) {u₀ v₀ u₁ v₁ : ℝ}
     (hu₀ : c / Real.log (Real.log x) ^ 20 ≤ u₀) (hu₁ : c / Real.log (Real.log x) ^ 20 ≤ u₁)
     (hv : v₀ + v₁ ≤ 1 - c / Real.log (Real.log x) ^ 20) (b : ℕ → ℝ) (hb : ∀ q, |b q| ≤ 1) :
@@ -792,7 +800,7 @@ lemma stat_one {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
           ∑ r ∈ primesIoc (x ^ u₁) (x ^ v₁) with r ≠ q, b q / (q * r)| ≤
       (dyadicPrimes x).card * (C / Real.log (Real.log x) ^ 300) := by
   have h := hR 1 (by norm_num) ![u₀, u₁] ![v₀, v₁] (fun i => by fin_cases i <;> assumption)
-    (by simpa using hv) (fun Q => b (Q 0)) fun _ => hb _
+    (by simp_all) (fun Q => b (Q 0)) fun _ => hb _
   have e₁ : ∀ n, ∑ Q ∈ slotTuples x ![u₀, u₁] ![v₀, v₁] with ∏ i, Q i ∣ n, b (Fin.init Q 0) =
       ∑ q ∈ primesIoc (x ^ u₀) (x ^ v₀),
         ∑ r ∈ primesIoc (x ^ u₁) (x ^ v₁) with r ≠ q ∧ q * r ∣ n, b q := fun n => by
@@ -811,7 +819,7 @@ lemma stat_one {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
   exact abs_sub_mul_le_of_div (by exact_mod_cast hP) h
 
 /-- The rectangle statistic with three slots and a joint coefficient on the first two. -/
-lemma stat_two {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
+lemma stat_two (hR : RectangleAt c C x) (hx : 0 ≤ x)
     (hP : 0 < (dyadicPrimes x).card) {u₀ v₀ u₁ v₁ u₂ v₂ : ℝ}
     (hu₀ : c / Real.log (Real.log x) ^ 20 ≤ u₀) (hu₁ : c / Real.log (Real.log x) ^ 20 ≤ u₁)
     (hu₂ : c / Real.log (Real.log x) ^ 20 ≤ u₂)
@@ -851,12 +859,14 @@ lemma stat_two {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
   simp only [e₁, e₂] at h
   exact abs_sub_mul_le_of_div (by exact_mod_cast hP) h
 
+end
+
 /-! ### Asymptotics of the scales -/
 
 /-- Eventually `K ≤ T` and `K T³⁶ ≤ L`. -/
 lemma eventually_le_loglog (K : ℝ) : ∀ᶠ x : ℝ in atTop, 1 < x ∧
     K ≤ Real.log (Real.log x) ∧ K * Real.log (Real.log x) ^ 36 ≤ Real.log x := by
-  have hT : Tendsto (fun x => Real.log (Real.log x)) atTop atTop :=
+  have hT  :=
     Real.tendsto_log_atTop.comp Real.tendsto_log_atTop
   have hev := ((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 36).comp hT).eventually
     (gt_mem_nhds (show (0 : ℝ) < 1 / (|K| + 1) by positivity))
@@ -916,7 +926,7 @@ lemma pow_le_36 {n : ℕ} (hn : n ≤ 36) : T ^ n ≤ T ^ 36 := pow_le_pow_right
 /-- `K' T³⁶ ≤ L` for each `K' ≤ K`. -/
 lemma mul_le_L {K' : ℝ} (hK' : K' ≤ scaleConst c E₁ E₂) :
     K' * T ^ 36 ≤ L :=
-  le_trans (mul_le_mul_of_nonneg_right hK' (by have := h.pos_T; positivity)) h.le_L
+  le_trans (mul_le_mul_of_nonneg_right hK' (by positivity)) h.le_L
 
 /-- `0 < L`. -/
 lemma pos_L : 0 < L := by
@@ -983,7 +993,7 @@ lemma defect_le {X : ℝ} (hX : L ≤ X) :
   have hT0 := h.pos_T
   have hL0 := h.pos_L
   have hm0 := h.pos_mesh
-  have hX0 : 0 < X := hL0.trans_le hX
+  have hX0  := hL0.trans_le hX
   have hT4 := h.le_pow (n := 4) (by norm_num)
   set u := 1 / (6 * T ^ 16)
   have h16 : 0 < 6 * T ^ 16 := by positivity
@@ -1030,8 +1040,6 @@ lemma defect_le {X : ℝ} (hX : L ≤ X) :
       rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
       nlinarith [h.pow_le_36 (n := 20) (by norm_num), h.E₂_nonneg]
     have hT2 := h.le_pow (n := 2) (by norm_num)
-    have h42 : T ^ 2 ≤ T ^ 4 := pow_le_pow_right₀ h.one_le (by norm_num)
-    have hsq : T * T = T ^ 2 := by ring
     calc m * (Real.log (1 / (c / T ^ 20)) + E₂ / (c / T ^ 20 * L))
         ≤ m * (20 * T + |Real.log c| + 1) := by gcongr
       _ ≤ 1 / T ^ 20 * (20 * T + |Real.log c| + 1) :=
@@ -1111,7 +1119,7 @@ lemma spareCount_le {c x s : ℝ} (hm : 0 < mesh x) (hδ : 0 ≤ spareOffset c x
 lemma add_le_of_lt_spareCount {c x s : ℝ} (hm : 0 < mesh x) {j : ℕ}
     (hj : j < spareCount c x s) :
     s + (spareOffset c x + (j + 1) * mesh x) ≤ 1 - spareOffset c x := by
-  have h : ((j + 1 : ℕ) : ℝ) ≤ (1 - 2 * spareOffset c x - s) / mesh x :=
+  have h  :=
     (Nat.le_floor_iff' (Nat.succ_ne_zero j)).1 hj
   rw [le_div_iff₀ hm] at h
   push_cast at h
@@ -1152,7 +1160,6 @@ lemma total_error_le {T C nb M : ℝ} (hT : 1 ≤ T) (hnb : nb ≤ 4 * T ^ 40)
     (hM : M ≤ 49 * T ^ 2) :
     2 * (nb * (2 * T ^ 20) * (|C| / T ^ 300)) + nb * (|C| / T ^ 300) +
         2 * (M * (1 / T ^ 10)) ≤ (20 * |C| + 98) / T ^ 7 := by
-  have hT0 : 0 < T := by linarith
   have hC := abs_nonneg C
   have h₁ : nb * (2 * T ^ 20) * (|C| / T ^ 300) ≤ 8 * |C| / T ^ 7 := by
     calc nb * (2 * T ^ 20) * (|C| / T ^ 300) ≤ 4 * T ^ 40 * (2 * T ^ 20) * (|C| / T ^ 300) := by
@@ -1183,7 +1190,7 @@ lemma admissible_cell {x : ℝ} (hx : 1 < x) (hm : 0 < mesh x) (ha : 0 ≤ margi
     (hj : j < cellCount₁ x) {q : ℕ} (hq : q ∈ cell x j) :
     Admissible x (margin x + (j + 1) * mesh x) {q} := by
   have hx0 : 0 < x := by linarith
-  have hj' : ((j + 1 : ℕ) : ℝ) ≤ (1 - 2 * margin x) / mesh x :=
+  have hj'  :=
     (Nat.le_floor_iff' (Nat.succ_ne_zero j)).1 hj
   rw [le_div_iff₀ hm] at hj'
   push_cast at hj'
@@ -1213,7 +1220,7 @@ noncomputable def pairTop (x : ℝ) (j : ℕ × ℕ) : ℝ :=
 lemma pairTop_le {x : ℝ} (hm : 0 < mesh x) {j : ℕ × ℕ} (hj : j ∈ cellPairs₂ x) :
     pairTop x j ≤ 1 - margin x := by
   have h := (mem_filter.1 hj).2
-  have h' : ((j.1 + j.2 + 2 : ℕ) : ℝ) ≤ (1 - 3 * margin x) / mesh x :=
+  have h'  :=
     (Nat.le_floor_iff' (by omega)).1 h
   rw [le_div_iff₀ hm] at h'
   push_cast at h'
@@ -1293,7 +1300,7 @@ theorem spare_slot_one (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   set J₁ := cellCount₁ x
   set s : ℕ → ℝ := fun j => margin x + (j + 1) * mesh x
   have hx0 : 0 < x := by linarith
-  have hP : 0 < (dyadicPrimes x).card := dyadicPrimes_card_pos hx.le
+  have hP := dyadicPrimes_card_pos hx.le
   have hm := hS.pos_mesh
   have hT0 := hS.pos_T
   have hδ : 0 < spareOffset c x := div_pos hc (pow_pos hT0 20)
@@ -1302,7 +1309,7 @@ theorem spare_slot_one (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   have hcδ : c / T ^ 20 ≤ margin x := by change spareOffset c x ≤ _; linarith
   have hLa : T ≤ Real.log x * margin x := hS.T_le_L_mul_margin
   have ha4 : margin x ≤ 1 / 4 := hS.margin_le
-  have hxa : Real.log x ≤ x ^ margin x := log_le_rpow hx hLa
+  have hxa := log_le_rpow hx hLa
   have h2a : 2 ≤ x ^ margin x := two_le_rpow hx (by linarith [hS.one_le])
   have h2δ : 2 ≤ x ^ spareOffset c x := two_le_rpow hx hS.le_L_mul_offset
   have hEa : E / (margin x * Real.log x) ≤ 1 := by
@@ -1397,7 +1404,7 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   set T := Real.log (Real.log x)
   set J₂ := cellCount₂ x
   have hx0 : 0 < x := by linarith
-  have hP : 0 < (dyadicPrimes x).card := dyadicPrimes_card_pos hx.le
+  have hP := dyadicPrimes_card_pos hx.le
   have hm := hS.pos_mesh
   have hT0 := hS.pos_T
   have hδ : 0 < spareOffset c x := div_pos hc (pow_pos hT0 20)
@@ -1406,7 +1413,7 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   have hcδ : c / T ^ 20 ≤ margin x := by change spareOffset c x ≤ _; linarith
   have hLa : T ≤ Real.log x * margin x := hS.T_le_L_mul_margin
   have ha4 : margin x ≤ 1 / 4 := hS.margin_le
-  have hxa : Real.log x ≤ x ^ margin x := log_le_rpow hx hLa
+  have hxa := log_le_rpow hx hLa
   have h2a : 2 ≤ x ^ margin x := two_le_rpow hx (by linarith [hS.one_le])
   have h2δ : 2 ≤ x ^ spareOffset c x := two_le_rpow hx hS.le_L_mul_offset
   have hEa : E / (margin x * Real.log x) ≤ 1 := by
@@ -1538,7 +1545,7 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   have hcard : ((cellPairs₂ x).card : ℝ) ≤ 4 * T ^ 40 := by
     have h1 : (J₂ : ℝ) ≤ 1 / mesh x := by
       rw [le_div_iff₀ hm]; linarith
-    have h2 : (J₂ : ℝ) ≤ 2 * T ^ 20 := h1.trans hS.inv_mesh_le
+    have h2 := h1.trans hS.inv_mesh_le
     have h3 : ((cellPairs₂ x).card : ℝ) ≤ J₂ * J₂ := by
       have : (cellPairs₂ x).card ≤ (range J₂ ×ˢ range J₂).card := card_filter_le _ _
       rw [card_product, card_range] at this

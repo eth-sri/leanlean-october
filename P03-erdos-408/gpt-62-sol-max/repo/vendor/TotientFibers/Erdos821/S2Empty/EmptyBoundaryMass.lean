@@ -39,7 +39,7 @@ theorem group_zeroAverage_eq (P : PrimeGroups) (g : P.Group) (M : ℕ)
         if ∀ i, y (a i) = 0 then (1 : ℝ) else 0) =
       ∏ i : Fin M, ((a i).val : ℝ)⁻¹ := by
   classical
-  let S : P.Prime g → Prop := fun p => ∃ i, a i = p
+  let S  := fun p => ∃ i, a i = p
   have hcond (y : (p : P.Prime g) → ZMod p.val) :
       (∀ p, S p → y p = 0) ↔ ∀ i, y (a i) = 0 := by
     constructor

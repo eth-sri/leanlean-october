@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
@@ -16,7 +17,7 @@ open InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 lemma supported_original_property
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))

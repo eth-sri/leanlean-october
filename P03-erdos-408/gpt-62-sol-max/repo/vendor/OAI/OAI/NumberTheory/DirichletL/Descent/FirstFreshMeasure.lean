@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 open MeasureTheory JointLogSeparation
 noncomputable section
 

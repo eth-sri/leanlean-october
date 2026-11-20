@@ -28,7 +28,7 @@ theorem nat_separated_near_integer_card (d : ℕ → ℝ) (N : ℕ)
       rcases Finset.mem_image.mp hj with ⟨jj, hjj, rfl⟩
       simpa only [Int.ofNat_eq_natCast, Int.toNat_natCast, Int.cast_natCast] using
         hsep ii (Finset.mem_range.mp hii) jj (Finset.mem_range.mp hjj)
-          (Int.ofNat_le.mp (by simpa only [Int.ofNat_eq_natCast] using hij)))
+          (Int.ofNat_le.mp (by assumption)))
     (by
       intro i hi
       rcases Finset.mem_image.mp hi with ⟨ii, hii, rfl⟩
@@ -64,7 +64,7 @@ theorem first_derivative_Ico_bound (f : ℕ → ℝ) (a b : ℕ) (β : ℝ) (q :
   let g : ℕ → ℝ := fun i => f (a + i)
   have hinc (i : ℕ) : g (i + 1) - g i = f (a + i + 1) - f (a + i) := by
     simp only [g, Nat.add_assoc]
-  have hbound := first_derivative_sum_bound_strip g n β q hβ
+  have hbound := first_derivative_sum_bound_strip g n false β q hβ
     (by
       intro i hi
       rw [hinc]

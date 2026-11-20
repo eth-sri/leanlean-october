@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.RowNorm
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalProfile
 
@@ -10,11 +11,10 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentZeroMode
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcreteTraceCRT CubicEisenstein
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CubicEisenstein
 open CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentFourier
-open UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
+open CenteredMomentSupportedCorrelation CenteredMomentFourier UniqueFactorizationMonoid
+open CenteredExceptionalCount CenteredExceptionalProfile
 local notation "O" => ActualEisensteinCubic.O
 
 @[simp] theorem pairResidue_mul (a b : O) (ha : Supported (Ideal.span {a}))
@@ -30,7 +30,7 @@ local notation "O" => ActualEisensteinCubic.O
 @[simp] theorem pairFourier_zero (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) :
     pairFourier a b ha hb 0 = ∑' x : Residue (a * b), pairResidue a b ha hb x := by
-  simp [pairFourier, quotientTrace]
+  simp [pairFourier]
 
 theorem pairResidue_unit_eq_one_of_mean_ne_zero (a b : O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
@@ -57,7 +57,7 @@ theorem rows_agree_of_mean_ne_zero (a b : O)
   have he := pairResidue_unit_eq_one_of_mean_ne_zero a b ha hb hm hunit.unit
   rw [hunit.unit_spec, pairResidue_mk] at he
   let := finite_quotient_span (supported_element_ne_zero b hb)
-  have hu : IsUnit (Ideal.Quotient.mk (Ideal.span {b}) n) :=
+  have hu  :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mpr hn.of_mul_right_right
   have hj : idealRowHom n (Ideal.span {b}) * star (idealRowHom n (Ideal.span {b})) = 1 := by
     change supportedModulusCharacter b hb (Ideal.Quotient.mk _ n) *
@@ -157,9 +157,8 @@ theorem scaled_zero_mean_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (K : ℝ) (hK : 0 ≤ K) :
     ‖((K / ‖eisEmbedding (a * b)‖ ^ 2 : ℝ) : ℂ) * pairFourier a b ha hb 0‖ ≤ K := by
   have hn : (0 : ℝ) < Ideal.absNorm (Ideal.span {a * b}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero
-        (supported_element_ne_zero a ha) (supported_element_ne_zero b hb))))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero
+        (supported_element_ne_zero a ha) (supported_element_ne_zero b hb)))
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
     eisEmbedding_norm_sq_eq_absNorm_span, abs_of_nonneg (div_nonneg hK hn.le)]
   calc
@@ -185,7 +184,7 @@ theorem nonzero_mean_pair_count (ε : ℝ) (hε : 0 < ε) :
   have hf : Set.InjOn f (T : Set (α × β)) := by
     intro p hp q hq he
     exact hinj (Finset.mem_filter.mp hp).1 (Finset.mem_filter.mp hq).1 he
-  have ht : (T.image f).card = T.card := Finset.card_image_of_injOn hf
+  have ht  := Finset.card_image_of_injOn hf
   have hbound := hc (T.image f) Y hY (by
     intro I hI
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hI
@@ -245,8 +244,7 @@ def idealColumn (S : Finset (Ideal O)) (I : S) : O :=
 theorem idealColumn_supported (S : Finset (Ideal O))
     (hS : ∀ I ∈ S, Supported I) (I : S) :
     Supported (Ideal.span {idealColumn S I}) := by
-  rw [idealColumn_span]
-  exact hS I.val I.property
+  simp_all
 
 def idealZeroEnergy (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Supported I)
     (c : Ideal O → ℂ) (K : ℝ) : ℂ :=

@@ -43,7 +43,7 @@ theorem three_class_sum_bound (E : Finset ℤ) (t : ℤ → ℝ) (v : ℝ → �
 /-- The finite high-moment bound underlying the exceptional-times lemma.
 The power m is arbitrary, and the P1 mean-square constant is uniform in m. -/
 theorem occupied_moment_bound
-    (hm : Blueprint.MeanSquares := Erdos821.Classical.blueprint_meanSquares) :
+    (hm : Blueprint.MeanSquares := Erdos821.Classical.meanSquares) :
     ∃ K : ℝ, 0 < K ∧ ∀ (s : Finset ℕ) (b : ℕ → ℂ) (m : ℕ) (δ Tmax : ℝ),
       (∀ p ∈ s, p.Prime) → 0 ≤ δ → 0 ≤ Tmax →
       ((occupied s b δ Tmax).ncard : ℝ) * δ ^ (2 * m) ≤
@@ -97,14 +97,14 @@ theorem occupied_moment_bound
 
 theorem nat_log_two_nonneg (N : ℕ) : 0 ≤ Real.log (2 * N) := by
   by_cases hN : N = 0
-  · simp [hN]
+  · simp_all
   · have hN' : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
     exact Real.log_nonneg (by linarith)
 
 /-- The quantitative bound before selecting the growing power.
 It uses only the prime dyad, bounded coefficients, and polynomial length ≤Y. -/
 theorem occupied_count_bound
-    (hm : Blueprint.MeanSquares := Erdos821.Classical.blueprint_meanSquares) :
+    (hm : Blueprint.MeanSquares := Erdos821.Classical.meanSquares) :
     ∃ C : ℝ, 0 < C ∧ ∀ (s : Finset ℕ) (b : ℕ → ℂ) (m : ℕ)
       (P δ Tmax Y : ℝ),
       1 ≤ P → 0 < δ → 0 ≤ Tmax → Tmax ≤ Y → 1 ≤ Y →
@@ -121,8 +121,7 @@ theorem occupied_count_bound
   let N := (s.sup id) ^ m
   let B := 1 + Real.log (2 * Y)
   have hlogY : 0 ≤ Real.log (2 * Y) := Real.log_nonneg (by linarith)
-  have hB : 0 ≤ B := by dsimp [B]; linarith
-  have hlogN : 0 ≤ Real.log (2 * N) := nat_log_two_nonneg N
+  have hlogN  := nat_log_two_nonneg N
   have hlogNY : Real.log (2 * N) ≤ Real.log (2 * Y) := by
     by_cases hN : N = 0
     · simpa [hN] using hlogY
@@ -132,8 +131,6 @@ theorem occupied_count_bound
     have hprod := mul_le_mul hNY hlogNY hlogN (by linarith : 0 ≤ Y)
     dsimp [B]
     nlinarith
-  have hsq : Real.log (2 * N) ^ 2 ≤ B ^ 2 :=
-    pow_le_pow_left₀ hlogN (by dsimp [B]; linarith) 2
   have hpoly : (∑ p ∈ s, ‖b p‖ ^ 2 / (p : ℝ) ^ 2) ^ m ≤ (3 / P) ^ m :=
     pow_le_pow_left₀ (Finset.sum_nonneg (fun p _ => by positivity))
       (harmonic_coefficient_square s b P hP (fun p hp => (hs p hp).2) hb) m
@@ -148,7 +145,7 @@ theorem occupied_count_bound
         · apply mul_le_mul_of_nonneg_right _ (by positivity)
           apply mul_le_mul
           · exact mul_le_mul_of_nonneg_left hbase (by positivity)
-          · exact hsq
+          · exact (pow_le_pow_left₀ hlogN (by dsimp [B]; linarith) 2)
           · positivity
           · positivity
         · exact hpoly

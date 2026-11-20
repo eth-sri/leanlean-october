@@ -10,7 +10,7 @@ public import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 
 namespace OAI
 
-open scoped BigOperators Classical
+open scoped Classical
 open NumberField
 namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section

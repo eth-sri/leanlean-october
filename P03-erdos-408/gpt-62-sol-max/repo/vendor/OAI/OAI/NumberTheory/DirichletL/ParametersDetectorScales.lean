@@ -28,21 +28,20 @@ theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
   let e := min (ε/(10000*(1+R))) (min (ellMin/4) (allowance/2))
   have he : 0<e := lt_min (div_pos hε (by positivity)) (lt_min (by positivity) (by positivity))
   have heb : e≤ε/(10000*(1+R)) := min_le_left _ _
-  have hep : e*(10000*(1+R))≤ε := (le_div_iff₀ (by positivity)).mp heb
-  have heR : 0≤e*R := mul_nonneg he.le hR
+  have hep  := (le_div_iff₀ (by positivity)).mp heb
+  have heR  := mul_nonneg he.le hR
   have hel : e≤ellMin/4 := (min_le_right _ _).trans (min_le_left _ _)
-  have hea : e≤allowance/2 := (min_le_right _ _).trans (min_le_right _ _)
   let κ := ε/1000
   let cost := ε/1000
-  have hk : 0<κ := by dsimp [κ]; positivity
-  have hc : 0<cost := by dsimp [cost]; positivity
+  have hk : 0<κ := by positivity
+  have hc : 0<cost := by assumption
   let τ := min (dmin*cost/16) (min (dmin/4) (loss/(4*(1+J+6))))
   have ht : 0<τ := lt_min (by positivity) (lt_min (by positivity) (by positivity))
   have htc : τ≤dmin*cost/16 := min_le_left _ _
   have htd : τ≤dmin/4 := (min_le_right _ _).trans (min_le_left _ _)
   have htl : τ≤loss/(4*(1+J+6)) := (min_le_right _ _).trans (min_le_right _ _)
-  have htJ : τ*(4*(1+J+6))≤loss := (le_div_iff₀ (by positivity)).mp htl
-  have hprod : 0≤τ*J := mul_nonneg ht.le hJ
+  have htJ  := (le_div_iff₀ (by positivity)).mp htl
+  have hprod  := mul_nonneg ht.le hJ
   refine ⟨ε,e,κ,cost,τ,hε,by linarith,by nlinarith [mul_pos hr hm],by linarith,
     he,by nlinarith,hel,by linarith,hk,?_,hc,?_,?_,ht,by linarith,?_,?_,?_⟩
   · dsimp [κ];linarith

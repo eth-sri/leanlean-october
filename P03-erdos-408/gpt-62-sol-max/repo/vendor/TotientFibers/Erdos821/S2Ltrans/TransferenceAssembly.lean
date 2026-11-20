@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.S2.TransferenceAssemblyTask
 public import Erdos821.S2.MemoryParameters
 public import Erdos821.S2.RootMemoryBound
@@ -12,10 +13,7 @@ public import Erdos821.P3Edge.Absolute
 noncomputable section
 
 open Filter
-open Erdos821.Blueprint.Graph hiding absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices ghostBirthCount ghostChoiceValid
-  ghostChoiceWeight ghostReversalFactor memoryEntry memoryGhostKernel residueExpression
-  zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph
 
 namespace Erdos821.S2Ltrans
 
@@ -76,14 +74,11 @@ theorem LocalTransferenceAssemblyTask_proof :
 
   have hMemAt := hMem x hxMem P hP A hPattern hk hkBound hIdeal
   rcases hGhost x hxGhost P hP with ⟨hV, hBaseline, hTilted, hGhostScale⟩
-  have hNotDiv : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      ¬ (p.val : ℤ) ∣ A.k :=
+  have hNotDiv :=
     hNondiv x hxNondiv P hP A.k hk hkBound
-  have hVne : ∀ g, P.V g ≠ 0 := fun g => (hV g).1.ne'
-  have hBaselineNe : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      baselinePrime F n p.val ≠ 0 := fun g p => (hBaseline g p).ne'
-  have hBaselineNonneg : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      0 ≤ baselinePrime F n p.val := fun g p => (hBaseline g p).le
+  have hVne := fun g => (hV g).1.ne'
+  have hBaselineNe := fun g p => (hBaseline g p).ne'
+  have hBaselineNonneg := fun g p => (hBaseline g p).le
   have hIdentity : ∀ theta : ℝ,
       Erdos821.S2Core.residueExpression A n theta =
         (bigBaseline F P n : ℂ) * Erdos821.S2Core.distinctMemoryExpression A n r.rho theta := by
@@ -101,9 +96,8 @@ theorem LocalTransferenceAssemblyTask_proof :
   let CG : ℝ := (Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card
   let CE : ℝ := (L x) ^ Ca
   have hCGnn : 0 ≤ CG := by dsimp [CG]; positivity
-  have hCEnn : 0 ≤ CE := by dsimp [CE]; positivity
-  have hCEpos : 0 < CE := by dsimp [CE]; exact Real.rpow_pos_of_pos hLpos _
-  have hCGscale : CG ≤ (L x) ^ Cv := by dsimp [CG]; exact hCGscale
+  have hCEnn : 0 ≤ CE := by positivity
+  have hCGscale : CG ≤ (L x) ^ Cv := by assumption
   have hCEscale : CE ≤ (L x) ^ max Ca 0 := by
     dsimp [CE]
     exact Real.rpow_le_rpow_of_exponent_le hLone (le_max_left Ca 0)
@@ -128,7 +122,7 @@ theorem LocalTransferenceAssemblyTask_proof :
     intro i s
     have hrow := ((hEdgeWB i).1 s)
     simpa only [Erdos821.P3Edge.norm_cast_absolute] using hrow
-  have hBoundaryMass : Erdos821.S2Core.initialMemoryBoundaryMass A n ≤ 2 :=
+  have hBoundaryMass  :=
     hBoundary x hxBoundary P hP m A
   have hAbsRoot : Erdos821.S2Core.closedAbsoluteResidueExpression A n ≤
       CG ^ (n + 1) * CE ^ n * Erdos821.S2Core.initialMemoryBoundaryMass A n :=
@@ -178,14 +172,11 @@ theorem LocalTransferenceAssemblyTask_proof :
         rw [← Real.rpow_add hLpos, ← Real.rpow_add hLpos]
       _ ≤ (L x) ^ (Cpath * ((n + 1 : ℕ) : ℝ)) := by
         apply Real.rpow_le_rpow_of_exponent_le hLone
-        have hnle : (n : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by
-          exact_mod_cast Nat.le_succ n
         dsimp [Cpath]
         push_cast
         nlinarith [mul_nonneg hCaPos (Nat.cast_nonneg n)]
 
-  have hAbsBound : Erdos821.S2Core.closedAbsoluteResidueExpression A n ≤
-      (L x) ^ (Cpath * ((n + 1 : ℕ) : ℝ)) := hAbsRoot.trans hCostBound
+  have hAbsBound  := hAbsRoot.trans hCostBound
   let epsilon : ℝ := Real.exp (-Acrt * (n : ℝ) * T x)
   have hEpsilonNonneg : 0 ≤ epsilon := by dsimp [epsilon]; positivity
   have hEpsilonEq : epsilon = (L x) ^ (-Acrt * (n : ℝ)) := by
@@ -212,10 +203,9 @@ theorem LocalTransferenceAssemblyTask_proof :
                   linarith
           _ = (-Acrt + 2 * Cpath) * (n : ℝ) := by ring
           _ ≤ -(E + 1) * (n : ℝ) := by
-            have hcoef : -Acrt + 2 * Cpath ≤ -(E + 1) := by
-              dsimp [Acrt]
-              linarith
-            exact mul_le_mul_of_nonneg_right hcoef (Nat.cast_nonneg n)
+            refine mul_le_mul_of_nonneg_right ?_ (Nat.cast_nonneg n)
+            dsimp [Acrt]
+            linarith
 
   have hreplacement : ∀ Q : Erdos821.S2Core.ResiduePath A (2 * R x), Q.Valid →
       |((dyad X).card : ℝ)⁻¹ * ∑ z ∈ dyad X,
@@ -223,15 +213,12 @@ theorem LocalTransferenceAssemblyTask_proof :
         P.residueExpectation (2 * R x) (visitQ F.q (2 * R x)) Q.offset Q.active| ≤
       epsilon * P.residueExpectation (2 * R x) (visitQ F.q (2 * R x)) Q.offset Q.active := by
     intro Q hQ
-    have hActive : ∀ i, Q.active i ⊆ P.allPrimes ∧
-        (Q.active i).card ≤ (J + F.ell) * P.count :=
-      fun i => ⟨Q.active_subset i, Q.active_card_le i⟩
-    exact hCRT x hxCRT P hP Q.offset Q.active hActive X hXlo hXhi
+    exact hCRT x hxCRT P hP Q.offset Q.active (fun i => ⟨Q.active_subset i, Q.active_card_le i⟩) X hXlo hXhi
   have hMoment := Erdos821.S2Core.averagedMoment_le_of_bounds inputs.physicalPaths
     A (R x) hRpos X epsilon
     ((L x) ^ (-(E + 1) * (n : ℝ)))
     ((L x) ^ (Cpath * ((n + 1 : ℕ) : ℝ))) hEpsilonNonneg hreplacement
-    (by simpa [n, N] using hClosed) (by simpa [n, N] using hAbsBound)
+    (by simpa [n, N] using hClosed) (by assumption)
   have hTwoScale : 2 * (L x) ^ (-(E + 1) * (n : ℝ)) ≤
       (L x) ^ (-E * (n : ℝ)) := by
     calc
@@ -247,10 +234,7 @@ theorem LocalTransferenceAssemblyTask_proof :
                   Real.rpow_le_rpow_of_exponent_le hLone hnReal
             exact this)
           (Real.rpow_nonneg hLpos.le _)
-      _ = (L x) ^ (-(E + 1) * (n : ℝ) + (n : ℝ)) := by
-        rw [← Real.rpow_add hLpos]
-        congr 1
-        ring
+      _ = (L x) ^ (-(E + 1) * (n : ℝ) + (n : ℝ)) := by rpow_ring hLpos
       _ = (L x) ^ (-E * (n : ℝ)) := by
         congr 1
         ring

@@ -49,10 +49,8 @@ theorem hybridSquarePool_bounds (S : Finset (Ideal Eis × Ideal Eis)) (B : ℝ)
     (t : Ideal Eis) (ht : t ∈ hybridSquarePool S) :
     1 ≤ (Ideal.absNorm t : ℝ) ∧ (Ideal.absNorm t : ℝ) ≤ B := by
   obtain ⟨d, hd, rfl⟩ := Finset.mem_image.mp ht
-  have hb0 : (d.common * d.residualB) * d.square ^ 2 ≠ 0 :=
-    mul_ne_zero d.g_squarefree.ne_zero (pow_ne_zero _ d.square_ne_zero)
   refine ⟨QuadraticMainBoundary.norm_one_le d.square_ne_zero, ?_⟩
-  apply (QuadraticMainBoundary.norm_le_of_dvd hb0 ?_).trans
+  apply (QuadraticMainBoundary.norm_le_of_dvd (mul_ne_zero d.g_squarefree.ne_zero (pow_ne_zero _ d.square_ne_zero)) ?_).trans
     (hS d.reconstruct ((mem_hybridColumnSupport S d).mp hd))
   exact dvd_mul_of_dvd_right (dvd_pow_self d.square (by norm_num : 2 ≠ 0)) _
 
@@ -87,11 +85,9 @@ theorem hybridCommonBlock_bounds
   obtain ⟨hdS, hdt, hdi⟩ := Finset.mem_filter.mp hd
   have hs := hS d.reconstruct ((mem_hybridColumnSupport S d).mp hdS)
   have hc1 := QuadraticMainBoundary.norm_one_le d.common_ne_zero
-  have hcn : (Ideal.absNorm d.common : ℝ) ≤ N :=
-    (QuadraticMainBoundary.norm_le_of_dvd d.n_squarefree.ne_zero (dvd_mul_right _ _)).trans hs.1
-  have hcb := divisorDyadicLabel_bounds N d.common hc1 hcn
+  have hcb := divisorDyadicLabel_bounds N d.common hc1 ((QuadraticMainBoundary.norm_le_of_dvd d.n_squarefree.ne_zero (dvd_mul_right _ _)).trans hs.1)
   rw [hdi] at hcb
-  have hcLow : divisorDyadicScale i.val ≤ (Ideal.absNorm d.common : ℝ) :=
+  have hcLow  :=
     max_le hc1 hcb.1.le
   have hcHigh : (Ideal.absNorm d.common : ℝ) ≤ 2 * divisorDyadicScale i.val := by
     have hh : (2 : ℝ) ^ i.val / 2 ≤ divisorDyadicScale i.val := le_max_right _ _

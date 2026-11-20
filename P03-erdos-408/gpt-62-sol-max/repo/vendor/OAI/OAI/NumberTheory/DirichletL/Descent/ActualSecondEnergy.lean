@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
 public import OAI.NumberTheory.DirichletL.Descent.SecondCauchy
 
@@ -15,7 +16,7 @@ open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 
 def actualSecondChild {Jo Jn : ℕ} (u v : Eisˣ) (x : MarkedSecondSource ι Jo Jn) : SecondChild :=
   secondChild (originalSecondTuple p u v (markedSecondOriginal p x))
@@ -30,15 +31,12 @@ theorem actualSecondChild_nonzero (hp : ∀ i, p i ≠ 0)
     (actualSecondChild p u v x).1.q0 ≠ 0 ∧
     (actualSecondChild p u v x).1.quotient ≠ 0 ∧
     (actualSecondChild p u v x).1.residual ≠ 0 := by
-  have hj : Ideal.span {(jLabel p x.cube.support
-      (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal Eis) :=
-    Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _)
   have hb : Ideal.span {(b0Label p x.cube.support
       (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal Eis) :=
     Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _)
   change _ ≠ 0 ∧ _ ≠ 0 ∧ x.quotient ≠ 0 ∧ _ ≠ 0
   refine ⟨?_,hb,ht,sourceIdeal_ne_zero p hp _⟩
-  exact mul_ne_zero (mul_ne_zero (mul_ne_zero hj (sourceIdeal_ne_zero p hp _))
+  exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _)) (sourceIdeal_ne_zero p hp _))
     (sourceIdeal_ne_zero p hp _)) (sourceIdeal_ne_zero p hp _)
 
 structure ActualSecondSourceConditions {Jo Jn : ℕ}
@@ -54,7 +52,7 @@ structure ActualSecondSourceConditions {Jo Jn : ℕ}
 
 theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (c : SecondChild)
@@ -83,7 +81,7 @@ theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
 
 theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source)
@@ -114,7 +112,7 @@ theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
 
 theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source)

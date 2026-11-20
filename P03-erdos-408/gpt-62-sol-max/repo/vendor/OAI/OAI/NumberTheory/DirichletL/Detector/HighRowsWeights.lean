@@ -50,7 +50,6 @@ theorem rowWeightedScalar_parameters (Q eta a G1 C omega X W V rho scalar : ℂ)
     rowWeightedScalar Q eta a G1 C omega X W V rho scalar e l k m=
       weightedScalar Q (eta/rho) (a/rho^3) G1 C omega X (rho*W) V scalar e l k m := by
   unfold rowWeightedScalar weightedScalar
-  simp only [pow_add,pow_mul,mul_pow,div_eq_mul_inv,mul_inv_rev,inv_pow]
   ring
 
 theorem evenRatio_unit (Q a X V rho : ℂ) (hρ : rho^6=1) :

@@ -8,8 +8,9 @@ public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
+open InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

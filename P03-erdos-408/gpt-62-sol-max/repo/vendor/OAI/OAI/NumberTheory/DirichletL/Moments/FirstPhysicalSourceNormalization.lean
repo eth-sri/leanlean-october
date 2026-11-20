@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourcePool
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSupportedCorrelation
+open CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
@@ -30,8 +29,8 @@ theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
   unfold scalar
   rw [norm_mul,norm_div,norm_mul,
     norm_canonicalNormalizedGauss (activePrime C D) (activeCoprime C D) (activeGood C D hC)
-      (fun P=>common_odd C D hC P.val) (activeExponent C D)
-      (netExponent_ne_zero _ _ _) (fun P=>netExponent_lt_six _ _)]
+      (activeExponent C D) (fun P => canonicalSextic_pow_ne_one _ _ (common_odd C D hC P.val)
+        (netExponent_ne_zero _ _ _ P) (netExponent_lt_six _ _))]
   simp only [mul_one,norm_mul,Complex.norm_real,Real.norm_eq_abs,
     abs_of_pos hk,abs_of_nonneg (norm_nonneg _),abs_of_nonneg (Real.sqrt_nonneg _)]
   ring

@@ -37,7 +37,7 @@ lemma primaryCoefficient_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (σ : RayRing) (x y : O) (hxy : x-y∈jointFixedModulus S hS) :
     primaryCoefficient S hS σ x=primaryCoefficient S hS σ y := by
   have hg := gramCoefficientExtension_periodic S hS σ x y (Ideal.mul_le_left (Ideal.mul_le_left hxy))
-  have hp : λ₀^2∣x-y := Ideal.mem_span_singleton.mp (Ideal.mul_le_right (Ideal.mul_le_left hxy))
+  have hp  := Ideal.mem_span_singleton.mp (Ideal.mul_le_right (Ideal.mul_le_left hxy))
   have hi : (λ₀^2∣x-1)↔(λ₀^2∣y-1) := by
     constructor
     · intro h
@@ -72,7 +72,7 @@ lemma jointFixed_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayR
     (by rw [←mul_sub];exact (jointFixedModulus S hS).mul_mem_left C h₂)
   have hb₁ := numeratorBadTwist_periodic u a b r hr n₁ m₁ (Ideal.mul_le_right h₁)
   have hb₂ := numeratorBadTwist_periodic (-u) a b r hr n₂ m₂ (Ideal.mul_le_right h₂)
-  have hfour (x y : O) (h : x-y∈jointFixedModulus S hS) : (4:O)∣x-y :=
+  have hfour (x y : O) (h : x-y∈jointFixedModulus S hS)  :=
     (show (4:O)∣72 from ⟨18,by norm_num⟩).trans (Ideal.mem_span_singleton.mp (Ideal.mul_le_right h))
   have hp : sexticReciprocityPhase n₁ n₂=sexticReciprocityPhase m₁ m₂ := by
     unfold sexticReciprocityPhase

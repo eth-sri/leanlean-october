@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.Support
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
@@ -146,7 +147,7 @@ theorem absNorm_reconstruct (I J : Ideal O) (hI : I ≠ 0) :
 
 theorem absNorm_commonPart_le (I J : Ideal O) (hI : I ≠ 0) :
     Ideal.absNorm (commonPart I J) ≤ Ideal.absNorm I :=
-  Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
+  Nat.le_of_dvd (Ideal.absNorm_pos_of_ne_bot (hI))
     (map_dvd Ideal.absNorm (commonPart_dvd I J hI))
 
 end SevenEighths.CenteredMomentCompleteCommon

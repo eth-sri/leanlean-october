@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLiveBlock
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicRowSupport
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondLiveBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
 open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
 local notation "O"=>HeckeFamily.O
 

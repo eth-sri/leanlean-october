@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Independent
 
 @[expose] public section
@@ -7,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Reflection.Independent
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι → Eis}
-noncomputable local instance transportFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 omit [Fintype ι] [Fintype κ] in
-theorem residualWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis)
+theorem residualWithFrozen_transport [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (c : Eis)
     (f : κ → ι) (hf : Function.Injective f) (R F : Finset κ) :
     residualWithFrozen (fun i => hp (f i)) (fun i => hg (f i)) c R F =
       residualWithFrozen hp hg c (R.image f) (F.image f) := by
@@ -29,8 +29,8 @@ theorem residualWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
   rfl
 
 omit [Fintype ι] [Fintype κ] in
-theorem markedWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis)
+theorem markedWithFrozen_transport [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (c : Eis)
     (f : κ → ι) (hf : Function.Injective f) (S F : Finset κ) :
     markedWithFrozen (fun i => hp (f i)) (fun i => hg (f i)) c S F =
       markedWithFrozen hp hg c (S.image f) (F.image f) := by
@@ -42,8 +42,8 @@ theorem markedWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
   rfl
 
 omit [Fintype ι] [Fintype κ] in
-theorem ramifiedBlock_transport [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+theorem ramifiedBlock_transport [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ)
     (f : κ → ι) (hf : Function.Injective f) (S : Finset κ) (u : Eisˣ) (m : ℕ) :
     ramifiedBlock (fun i => hg (f i)) (fun i => j (f i)) S u m =
       ramifiedBlock hg j (S.image f) u m := by
@@ -51,8 +51,8 @@ theorem ramifiedBlock_transport [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [Finset.prod_image hf.injOn]
 
 omit [Fintype ι] [Fintype κ] in
-theorem frozenArgument_transport [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+theorem frozenArgument_transport [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ)
     (f : κ → ι) (hf : Function.Injective f) (F : Finset κ) :
     frozenArgument (fun i => hg (f i)) (fun i => j (f i)) F =
       frozenArgument hg j (F.image f) := by
@@ -60,9 +60,9 @@ theorem frozenArgument_transport [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [Finset.prod_image hf.injOn]
 
 omit [Fintype ι] [Fintype κ] in
-theorem sourceRowPhase_transport [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem sourceRowPhase_transport [OAI.PrincipalFamily.Maximal p]
     {a c : Eis} {mode : Bool} (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ)
     (f : κ → ι) (hf : Function.Injective f) (R F : Finset κ) (u : Eisˣ) (m : ℕ) :
     sourceRowPhase s (fun i => hp (f i)) (fun i => hg (f i)) (fun i => j (f i)) R F u m =
       sourceRowPhase s hp hg j (R.image f) (F.image f) u m := by
@@ -72,9 +72,9 @@ theorem sourceRowPhase_transport [∀ i, (Ideal.span {p i}).IsMaximal]
     frozenArgument_transport hg j f hf F,Finset.prod_image hf.injOn]
 
 omit [Fintype ι] [Fintype κ] in
-theorem sourceSlotPhase_transport [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem sourceSlotPhase_transport [OAI.PrincipalFamily.Maximal p]
     {a c : Eis} {mode : Bool} (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ)
     (f : κ → ι) (hf : Function.Injective f) (S F : Finset κ) (u : Eisˣ) (m : ℕ) :
     sourceSlotPhase s (fun i => hp (f i)) (fun i => hg (f i)) (fun i => j (f i)) S F u m =
       sourceSlotPhase s hp hg j (S.image f) (F.image f) u m := by

@@ -15,14 +15,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.P3Lowrank
 
 attribute [local instance] bmsFintype
@@ -36,12 +29,7 @@ theorem smallPhysical_relabel {M : ℕ} (y : P.SmallResidues) (a : P.Labels M) (
   apply forall_congr'
   intro g'
   have hne : g'.val ≠ g.val := by
-    intro he
-    have h1' := g'.property
-    have h2' := g.property
-    rw [he] at h1'
-    rw [h1'] at h2'
-    exact Bool.false_ne_true h2'
+    aesop
   rw [relabelLabels_ne_group a g h p g'.val hne]
 
 theorem tilted_prod_relabel_all (F : FixedData) (n : ℕ) {M : ℕ} (a : P.Labels M)
@@ -57,7 +45,7 @@ theorem tilted_prod_relabel_all (F : FixedData) (n : ℕ) {M : ℕ} (a : P.Label
     funext x
     by_cases hx : x = (g, h)
     · subst hx
-      simp only [Function.update_self, relabelLabels_self]
+      simp [Function.update_self, relabelLabels_self]
     · rw [Function.update_of_ne hx]
       rcases x with ⟨g', i⟩
       simp only [f]
@@ -71,8 +59,7 @@ theorem memoryMass_relabel (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F
     (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val) :
     P.memoryMass F J n (relabelState g h p z) * tiltedMu F P n g.val (z.2.1 g.val h) =
       P.memoryMass F J n z * tiltedMu F P n g.val p := by
-  have hiff : P.smallPhysical (relabelState g h p z).1 (relabelState g h p z).2.1 ↔
-      P.smallPhysical z.1 z.2.1 := smallPhysical_relabel z.1 z.2.1 g h p
+  have hiff  := smallPhysical_relabel z.1 z.2.1 g h p
   unfold PrimeGroups.memoryMass
   split_ifs with h1 h2 h2
   · simp only [relabelState]
@@ -101,7 +88,7 @@ theorem initTerm_nonneg (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.el
   unfold initTerm
   split_ifs
   · exact abs_nonneg _
-  · exact le_rfl
+  rfl
 
 theorem init_single (F : FixedData) (J n B : ℕ)
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
@@ -132,7 +119,7 @@ theorem init_single (F : FixedData) (J n B : ℕ)
     rw [Finset.sum_eq_zero fun z _ => ite_eq_right (hz z)]
     exact hRHS0
   let α : P.Prime g.val := ⟨vx, hvx⟩
-  have hmu : muHat F P n g vx = tiltedMu F P n g.val α := muHat_of_mem F P n g α
+  have hmu := muHat_of_mem F P n g α
   let T := Finset.univ.filter (fun z : BoundedMemoryState P (J + F.ell) B =>
     Q z.val ∧ z.val.2.1 g.val h = α)
   let S := Finset.univ.filter (fun z : BoundedMemoryState P (J + F.ell) B => Q z.val)
@@ -145,9 +132,6 @@ theorem init_single (F : FixedData) (J n B : ℕ)
     by_cases hc : Q z.val ∧ z.val.2.1 g.val h = α
     · rw [ite_eq_left ⟨hc.1, congrArg Subtype.val hc.2⟩, ite_eq_left hc]
     · rw [ite_eq_right (fun h' => hc ⟨h'.1, Subtype.ext h'.2⟩), ite_eq_right hc]
-  have hS : (∑ z : BoundedMemoryState P (J + F.ell) B,
-      (if Q z.val then initTerm F J n z.val else 0)) = ∑ z ∈ S, initTerm F J n z.val :=
-    (Finset.sum_filter _ _).symm
   have key := relabel_sum_le (fun z : BoundedMemoryState P (J + F.ell) B => initTerm F J n z.val)
     T S Finset.univ (fun z p => relabelB g h p z) (tiltedMu F P n g.val)
     (tiltedMu F P n g.val α) 1
@@ -187,7 +171,7 @@ theorem init_single (F : FixedData) (J n B : ℕ)
         exact hM.symm
       · have hem' : ¬ ∀ g', (relabelState g h p z.val).2.2 g' = 0 := hem
         rw [ite_eq_right hem, ite_eq_right hem', zero_mul, zero_mul])
-  rw [hLHS, hS, hmu]
+  rw [hLHS, ((Finset.sum_filter _ _).symm), hmu]
   calc _ ≤ tiltedMu F P n g.val α / 1 * ∑ z ∈ S, initTerm F J n z.val := key
     _ = _ := by ring
 

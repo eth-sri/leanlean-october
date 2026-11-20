@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingDensity
 public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 
@@ -14,9 +15,9 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
 variable {κ ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem actual_second_varying_balanced_source (source : Finset κ) (F : Finset ι)
     (x : κ → SecondProfileData ι) (w : κ → ℂ)
@@ -54,18 +55,17 @@ theorem actual_second_varying_balanced_source (source : Finset κ) (F : Finset �
     intro hh
     rw [hω₁ j.1 hjS j.2.1 hN (star_ne_zero.mp hh),star_one]
   have h2 := hω₂ j.1 hjS j.2.2 hM
-  have h3 : star (ω₁ (primeProductNorm p j.2.1/X₀)) ≠ 0 → ω₂ (primeProductNorm p j.2.2/X₀) ≠ 0 → ∀ i,
-      V i (secondRelativeLog (secondActualNorms p (x j.1) j.2.1 j.2.2) G₀ E₀ V₀ K₀ X₀ i) = 1 :=
+  have h3  :=
     fun ha hb => hcut j hj (star_ne_zero.mp ha) hb
   have he := InverseSecondProfileUniform.fresh_physical_profile
     (fun x => star (W₁ x)) W₂ Φ V G₀ E₀ V₀ K₀ X₀ Y L hG hE hV hK hX
     (fun x => star (ω₁ x)) ω₂ (secondActualNorms p (x j.1) j.2.1 j.2.2)
     (secondActualNorms_pos p hp (x j.1) (hn j.1 hjS).1 (hn j.1 hjS).2 j.2.1 j.2.2)
-    (by simpa [secondActualNorms] using h1)
-    (by simpa [secondActualNorms] using h2)
-    (by simpa [secondActualNorms] using h3)
+    (by assumption)
+    (by assumption)
+    (by assumption)
   rw [hsep] at he
-  simpa [secondActualNorms] using he
+  assumption
 
 end
 end SevenEighths.InverseMoment

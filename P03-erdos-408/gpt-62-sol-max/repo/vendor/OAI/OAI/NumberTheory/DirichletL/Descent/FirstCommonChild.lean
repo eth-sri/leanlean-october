@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 
 @[expose] public section
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic FourierBridge
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
+open FourierBridge
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp in
 theorem firstCommonColumn_eq_rayIdealRow
@@ -50,7 +51,7 @@ theorem firstCommonColumn_eq_rayIdealRow
   rw [hy,Real.exp_log (div_pos (primeProductNorm_pos p hp U) hX),hR]
   cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true,star_mul] <;> ring
 
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+variable (hcop : OAI.PrincipalFamily.Coprime p)
 
 def firstBareCubeCoefficient (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (C : Finset ι → ℂ) (d : Eis) : Finset ι → ℂ :=

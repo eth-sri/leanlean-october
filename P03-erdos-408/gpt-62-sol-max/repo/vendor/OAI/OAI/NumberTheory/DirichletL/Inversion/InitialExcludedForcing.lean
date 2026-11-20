@@ -13,7 +13,7 @@ open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeR
 open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedForcing
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
+open InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool
 open InverseInitialExcludedPool InverseInitialExcludedOverlap
 open InverseInitialCommonTuples InverseInitialCommonTransform
@@ -34,8 +34,8 @@ theorem residual_excluded_forcing
     (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
     (hsub:columns (originalOutside (originalSource Z r b) E) P j⊆F)
     (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)(u:O):
-    letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     residualNormalizedPolynomial (originalSource Z r b) P j η (fun _=>1) W Z r z G u=
       ((Z^(-(r+z-2*G)/2):ℝ):ℂ)*inputConjugateRow
         (poolPrimary F) (poolPrimary_good F hF) Finset.univ
@@ -43,8 +43,8 @@ theorem residual_excluded_forcing
         (fun A=>if residual P j∣(∏i∈A,i.val) then
           residualOverlapWindow P j W Z z G
             (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0) u := by
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   rw [residual_filtered _ E hE hP.2.1 hj hPE η hη,
     residual_eq_large_input _ F hP hj hF hsub η (fun _=>1) W Z r z G u]
   simp only [one_mul]
@@ -83,8 +83,8 @@ theorem original_tuples_excluded_input
     (hsub:tupleColumns (originalOutside (originalSource Z r b) E) T P j⊆F)
     (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)(a:κ→ℂ)(u:O) :
     let S := originalSource Z r b
-    letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     (∑k∈T,a k*residualNormalizedPolynomial S (P k) j η (fun _=>1) W Z r z G u)=
       ((Z^(-(r+z-2*G)/2):ℝ):ℂ)*inputConjugateRow
         (poolPrimary F) (poolPrimary_good F hF) Finset.univ
@@ -93,8 +93,8 @@ theorem original_tuples_excluded_input
           residualOverlapWindow (P k) j W Z z G
             (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0)) u := by
   intro S
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   rw [input_finset_sum (poolPrimary F) (poolPrimary_good F hF)]
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl

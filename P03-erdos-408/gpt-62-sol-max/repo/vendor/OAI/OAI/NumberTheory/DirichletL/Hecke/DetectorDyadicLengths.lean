@@ -33,7 +33,7 @@ lemma dyadic_scale_bounds (U : ℝ) (hU : 8≤U) (j k : ℕ)
   obtain ⟨hj,hk⟩ := HeckeDetectorDyadicBridge.scales_le_eight_terminal (U^21) j k hprod
   obtain ⟨hr,hr',he⟩ := log_scale_bounds U ((2 : ℝ)^j) hU (one_le_pow₀ (by norm_num)) hj
   obtain ⟨hm,hm',he'⟩ := log_scale_bounds U ((2 : ℝ)^k) hU (one_le_pow₀ (by norm_num)) hk
-  exact ⟨hr,hr',hm,hm',he,he'⟩
+  simp_all
 
 lemma support_exponents (U t r m ε : ℝ) (hU : 1<U) (hcost : 8≤U^ε)
     (hleft : U^r<4*U^t) (hright : U^t/8<U^r*U^m) :

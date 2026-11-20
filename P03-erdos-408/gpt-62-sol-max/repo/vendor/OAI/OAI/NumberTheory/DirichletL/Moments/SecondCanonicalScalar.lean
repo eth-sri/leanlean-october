@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalScalar
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm
 open CenteredMomentSectorLocalization CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O

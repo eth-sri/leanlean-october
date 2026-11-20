@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondChildProfile
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondHeightFamily
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredMomentSecondChildProfile CenteredMomentChildRows CenteredMomentChildAssembly
-open CenteredMomentSecondScaled RayFourExpansion ConcretePrimeRowBridge ActualEisensteinCubic
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow
+open CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion CenteredMomentSecondChildProfile
+open CenteredMomentChildRows CenteredMomentChildAssembly CenteredMomentSecondScaled RayFourExpansion
+open ConcretePrimeRowBridge ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 def fixedBadMask : O := goodLambda*2
@@ -27,8 +27,7 @@ theorem fixedBadMask_coprime (n : O) (hn : Supported (Ideal.span {n})) :
     ((supported_span_iff n).mp hn).1
   have h2 := negative_two_prime.irreducible.coprime_iff_not_dvd.mpr
     (by simpa only [neg_dvd] using ((supported_span_iff n).mp hn).2)
-  have htwo : IsCoprime (2:O) n := h2.of_isCoprime_of_dvd_left ⟨-1,by ring⟩
-  exact hl.mul_left htwo
+  exact hl.mul_left (h2.of_isCoprime_of_dvd_left ⟨-1,by ring⟩)
 
 theorem heightCoeff_eq_fixed_rowWeight (τ : Character) (t : ℝ)
     (I : Ideal O) (hI : Supported I) :

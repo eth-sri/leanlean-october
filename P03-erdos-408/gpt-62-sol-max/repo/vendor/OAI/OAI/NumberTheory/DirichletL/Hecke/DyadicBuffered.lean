@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth
@@ -16,7 +16,7 @@ open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth
 theorem presentationComplexity_mono_height (χ : Character) {t H : ℝ}
     (ht : |t|≤H) : presentationComplexity χ t≤presentationComplexity χ H := by
   unfold presentationComplexity complexity
-  have hH : 0≤H := (abs_nonneg t).trans ht
+  have hH  := (abs_nonneg t).trans ht
   rw [abs_of_nonneg hH]
   gcongr
 
@@ -60,7 +60,7 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
   have hs' : s.re ∈ Icc l r ∧ s.im ∈ Icc (-T) T := by
     change s.re ∈ uIcc l r ∧ s.im ∈ uIcc (-T) T at hs
     simpa [uIcc_of_le hlr,uIcc_of_le (by linarith : -T≤T)] using hs
-  have hsi : |s.im|≤T := abs_le.mpr hs'.2
+  have hsi  := abs_le.mpr hs'.2
   constructor
   · simp only [add_re,shift_re]
     linarith [hs'.1.1]

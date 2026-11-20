@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
 public import OAI.NumberTheory.DirichletL.Descent.GeneratorTransport
 public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
@@ -37,9 +38,9 @@ theorem child_ball_unit_sum {A:Type*}[AddCommMonoid A](u:Oˣ)(R:ℝ)(f:O→A) :
     rfl
 
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,goodLambda∉Ideal.span {p i})
+  (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p goodLambda)
 
 theorem canonical_ball_generator_energy
     (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(I:Ideal O)(hI:primaryGenerator I≠0)

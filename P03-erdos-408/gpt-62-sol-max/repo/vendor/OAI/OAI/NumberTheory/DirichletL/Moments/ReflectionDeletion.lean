@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ComparisonReflection
 public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 
@@ -61,12 +62,12 @@ lemma residual_outside (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I : I
     outside S (residual S I) := by
   rw [outside_iff_factors S hS ⟨_, residual_ne_zero S I⟩, residual_factors]
   intro P hP
-  exact (Multiset.mem_filter.mp hP).2
+  simp_all
 lemma split_product (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
     (D : SmoothIdeal S) (J : OutsideIdeal S) :
     extract S (D.val.val * J.val.val) = D.val.val ∧
       residual S (D.val.val * J.val.val) = J.val.val := by
-  have hd : (normalizedFactors D.val.val).filter (· ∈ S) = normalizedFactors D.val.val :=
+  have hd  :=
     Multiset.filter_eq_self.mpr (fun P hP => D.property (Multiset.mem_toFinset.mpr hP))
   have hj : (normalizedFactors J.val.val).filter (· ∈ S) = 0 := by
     apply Multiset.filter_eq_nil.mpr
@@ -76,7 +77,7 @@ lemma split_product (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
     apply Multiset.filter_eq_nil.mpr
     intro P hP
     exact not_not.mpr (D.property (Multiset.mem_toFinset.mpr hP))
-  have hj' : (normalizedFactors J.val.val).filter (· ∉ S) = normalizedFactors J.val.val :=
+  have hj'  :=
     Multiset.filter_eq_self.mpr ((outside_iff_factors S hS J.val).mp J.property)
   simp only [extract, residual, normalizedFactors_mul D.val.property J.val.property,
     Multiset.filter_add, hd, hj, hd', hj', add_zero, zero_add,
@@ -99,8 +100,8 @@ lemma outside_iff_coprime (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I 
     simp only [primeSupport]
     have hf : normalizedFactors P = {P} := by
       simpa using normalizedFactors_prod_of_prime (m := ({P} : Multiset (Ideal O)))
-        (by intro Q hQ; simpa only [Multiset.mem_singleton.mp hQ] using hP)
-    simp [hf]
+        (by simp_all)
+    simp_all
   simp only [outside]
   apply forall_congr'
   intro P
@@ -146,9 +147,7 @@ lemma radial_summable_norm (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0
   apply (inverse_norm_sq_summable.mul_left (C*X^2)).of_nonneg_of_le (fun _ => norm_nonneg _)
   intro I
   have hx := div_pos (norm_pos I) hX
-  have h : ‖F (norm I / X)‖ ≤ C / (norm I / X)^2 :=
-    (le_div_iff₀ (sq_pos_of_pos hx)).mpr (by nlinarith [hb _ hx])
-  exact h.trans_eq (by field_simp)
+  exact ((le_div_iff₀ (sq_pos_of_pos hx)).mpr (by nlinarith [hb _ hx])).trans_eq (by field_simp)
 
 lemma plain_summable (η : Character) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
     Summable (fun I : NI => idealCoeff η I.val * F (norm I / X)) := by
@@ -166,9 +165,7 @@ lemma pair_radial_summable_norm (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (h
   apply (hs.mul_left (C*X^2)).of_nonneg_of_le (fun _ => norm_nonneg _)
   intro p
   have hx := div_pos (mul_pos (norm_pos p.1) (norm_pos p.2)) hX
-  have h : ‖F (norm p.1 * norm p.2 / X)‖ ≤ C / (norm p.1 * norm p.2 / X)^2 :=
-    (le_div_iff₀ (sq_pos_of_pos hx)).mpr (by nlinarith [hb _ hx])
-  exact h.trans_eq (by field_simp)
+  exact ((le_div_iff₀ (sq_pos_of_pos hx)).mpr (by nlinarith [hb _ hx])).trans_eq (by field_simp)
 
 lemma restricted_pair_summable (η : Character) (S : Finset (Ideal O))
     (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0 < X) :
@@ -238,7 +235,7 @@ theorem restoration_plain (η : Character) (S : Finset (Ideal O))
 lemma normalization_factor (X N : ℝ) (hX : 0<X) (hN : 0<N) :
     (Real.sqrt N : ℂ)⁻¹ * (Real.sqrt (X/N) : ℂ)⁻¹ = (Real.sqrt X : ℂ)⁻¹ := by
   rw [Real.sqrt_div hX.le, Complex.ofReal_div]
-  have hn : (Real.sqrt N : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hN).ne'
+  have hn  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hN).ne'
   field_simp
 
 lemma normalized_restoration_term (η : Character) (S : Finset (Ideal O))
@@ -292,8 +289,8 @@ lemma outside_mul_prime (S : Finset (Ideal O)) (hS : ∀ Q ∈ S, Prime Q)
     outside S (P*I) ↔ outside S I := by
   have hn (Q : Ideal O) (hQ : Q ∈ S) : ¬ Q ∣ P := by
     intro hd
-    have he : Q = P := associated_iff_eq.mp (((hS Q hQ).dvd_prime_iff_associated hP).mp hd)
-    exact hPS (he ▸ hQ)
+    have he  := associated_iff_eq.mp (((hS Q hQ).dvd_prime_iff_associated hP).mp hd)
+    simp_all
   simp only [outside]
   apply forall_congr'
   intro Q
@@ -307,7 +304,7 @@ lemma prime_shift_tsum (η : Character) (S : Finset (Ideal O))
     (∑' I : NI, if P ∣ I.val then
       (if outside S I.val then idealCoeff η I.val else 0) * F (norm I / X) else 0) =
     idealCoeff η P * outsideSum η S F (X / (P.absNorm : ℝ)) := by
-  let f : NI → ℂ := fun I => if P ∣ I.val then
+  let f  := fun I => if P ∣ I.val then
     (if outside S I.val then idealCoeff η I.val else 0) * F (norm I / X) else 0
   let g : NI → ℂ := fun I => idealCoeff η P *
     ((if outside S I.val then idealCoeff η I.val else 0) * F (norm I / (X / (P.absNorm : ℝ))))
@@ -369,7 +366,7 @@ lemma subset_product_nonzero (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) 
     (∏ P ∈ S, P) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero)
 lemma subset_product_norm_pos (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) :
     0 < (Ideal.absNorm (∏ P ∈ S, P) : ℝ) := by
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (subset_product_nonzero S hS))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (subset_product_nonzero S hS)
 
 theorem finite_deletion_plain (η : Character) (S : Finset (Ideal O))
     (hS : ∀ P ∈ S, Prime P) (F : ℝ → ℂ) (hF : DecayTwo F) (X : ℝ) (hX : 0<X) :
@@ -379,8 +376,8 @@ theorem finite_deletion_plain (η : Character) (S : Finset (Ideal O))
   | empty => simp [outsideSum, outside]
   | @insert P S hPS ih =>
     have hP := hS P (Finset.mem_insert_self _ _)
-    have hSS : ∀ Q ∈ S, Prime Q := fun Q hQ => hS Q (Finset.mem_insert_of_mem hQ)
-    have hn : 0 < (P.absNorm : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)
+    have hSS  := fun Q hQ => hS Q (Finset.mem_insert_of_mem hQ)
+    have hn : 0 < (P.absNorm : ℝ) := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hP.ne_zero)
     rw [outsideSum_insert η S hSS P hP hPS F hF X hX,
       ih hSS X hX, ih hSS (X / (P.absNorm : ℝ)) (div_pos hX hn),
       Finset.sum_powerset_insert hPS, Finset.mul_sum]
@@ -389,7 +386,7 @@ theorem finite_deletion_plain (η : Character) (S : Finset (Ideal O))
     rw [← Finset.sum_neg_distrib]
     apply Finset.sum_congr rfl
     intro D hD
-    have hPD : P ∉ D := fun h => hPS ((Finset.mem_powerset.mp hD) h)
+    have hPD  := fun h => hPS ((Finset.mem_powerset.mp hD) h)
     rw [Finset.card_insert_of_notMem hPD, Finset.prod_insert hPD, map_mul,
       map_mul, Nat.cast_mul, pow_succ]
     have hh : X / ((P.absNorm : ℝ) * (Ideal.absNorm (∏ Q ∈ D,Q) : ℝ)) =
@@ -428,7 +425,7 @@ theorem normalized_finite_deletion (η : Character) (S : Finset (Ideal O))
   rw [he, finite_deletion_plain η S hS F hF X hX, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro D hD
-  have hDS : ∀ P ∈ D, Prime P := fun P hP => hS P ((Finset.mem_powerset.mp hD) hP)
+  have hDS  := fun P hP => hS P ((Finset.mem_powerset.mp hD) hP)
   have ht := normalized_dilation_term η F X hX ⟨∏P∈D,P, subset_product_nonzero D hDS⟩
   dsimp only [norm] at ht
   dsimp only [norm]
@@ -488,8 +485,7 @@ theorem deletion_reflection (η ηi : Character) (S : Finset (Ideal O))
     (∀ D ∈ S.powerset, Summable (reflectedTerm η ηi S hS F X Q D)) ∧
     HeckeDyadic.polynomial (η.excludePrimes S hS) false W X 0 0 =
       G * ∑ D ∈ S.powerset, ∑' H : SmoothIdeal S, reflectedTerm η ηi S hS F X Q D H := by
-  have hnorm (D : Finset (Ideal O)) (hD : D ∈ S.powerset) :
-      0 < (Ideal.absNorm (∏ P ∈ D,P) : ℝ) :=
+  have hnorm (D : Finset (Ideal O)) (hD : D ∈ S.powerset)  :=
     subset_product_norm_pos D (fun P hP => hS P ((Finset.mem_powerset.mp hD) hP))
   constructor
   · intro D hD

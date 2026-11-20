@@ -52,7 +52,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
     refine ⟨0, 0, fun E κ' B' _ _ => ⟨0, le_rfl, ?_⟩⟩
     filter_upwards [Real.tendsto_log_atTop.eventually_gt_atTop 1] with x hL
     intro _ _ s V A B cf ψ₁ Y σ k h _ _ _ _ _ _ _ _ _ _ _ hk₁ hk₂
-    have : Real.log x ^ Cm < 1 := Real.rpow_lt_one_of_one_lt_of_neg hL (lt_of_not_ge hCm)
+    have  := Real.rpow_lt_one_of_one_lt_of_neg hL (lt_of_not_ge hCm)
     have : (1 : ℝ) ≤ k := by exact_mod_cast hk₁
     linarith
   set D := 6 * Cm + 6 + 2 * K + 2 * CU + 5 with hD
@@ -69,10 +69,10 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
     h₁₂ hrange
   obtain ⟨a, hai, ha₁, harep, hat⟩ := hmelx ψ₁ hψ hψs hψd
   set L := Real.log x with hLdef
-  have hL : 28 ≤ L := hf.big
+  have hL  := hf.big
   have hL1 : 1 ≤ L := by linarith
   have hx0 : 0 < x := by linarith [hf.box.2.1]
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
+  have hY0  := lt_of_lt_of_le (by positivity) hY₁
   set e := Real.exp (c * L / Real.log L ^ 20) with he
   have hxe : x / e ≤ x := div_le_self hx0.le (Real.one_le_exp (by positivity))
   have hBx : B ≤ x / e := by
@@ -113,7 +113,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
     (fun ps hps pl hpl => by
       have h₁ := (hs ps hps).2.2
       have h₂ := (hspP pl hpl).2.2
-      have he1 : 2 * Real.exp (L ^ (0.36 : ℝ)) ≤ e := hf.m36
+      have he1  := hf.m36
       push_cast
       calc (ps : ℝ) * pl ≤ Real.exp (L ^ (0.36 : ℝ)) * (x / e) :=
             mul_le_mul h₁ (h₂.trans hBx) (Nat.cast_nonneg _) (by positivity)
@@ -134,7 +134,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
       refine (Nat.Prime.coprime_iff_not_dvd hpP).2 fun hdvd => ?_
       have hpk := Nat.le_of_dvd (by omega) hdvd
       have : (p : ℝ) ≤ k := by exact_mod_cast hpk
-      have : 2 * L ^ Cm ≤ e := hf.mCm
+      have  := hf.mCm
       have : 0 < L ^ Cm := by positivity
       linarith [(hspP p hp).2.1])
   simp_rw [hdecomp]
@@ -145,18 +145,13 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
     have h₂ := (hrange t₂ ⟨h₁₂, le_rfl⟩).2
     have := le_abs_self t₂
     have := neg_abs_le t₁
-    have : 0 ≤ x * L ^ (Cm + 2) := by positivity
     linarith
-  have hrange' : ∀ t ∈ Set.Icc t₁ t₂, ∀ ξ : ℝ, |ξ| ≤ L ^ Cf →
-      L ^ E ≤ |t + (σ + 2 * Real.pi * ξ)| ∧
-        |t + (σ + 2 * Real.pi * ξ)| + 2 ≤ 2 * (x * L ^ (Cm + 2)) :=
-    fun t ht ξ hξ => shifted_range hL hCf hB₁ hB₂ (hrange t ht).1 (hrange t ht).2 hσ hξ
   refine (integral_norm_sum_sq_le (boxSet N₀ k) _
     (fun m _ => Erdos821.P5Marked.norm_cchi_le k h m.2.2 _) _
     (fun m _ => continuous_boxTerm (fun p hp => (hs p hp).1.pos)
       (fun p hp => (hspP p hp).1.pos) cf ψ₁ σ m) h₁₂).trans ?_
   have hterm := fun m (_ : m ∈ boxSet N₀ k) => integral_boxTerm_le hc hvlo hCm hf hB2 hAP1
-    hAP2 hai ha₁ harep hat hs hV hA hB hcf hψs hY₁ hY₂ hk₁ hk₂ h₁₂ hlen hrange' m
+    hAP2 hai ha₁ harep hat hs hV hA hB hcf hψs hY₁ hY₂ hk₁ hk₂ h₁₂ hlen (fun t ht ξ hξ => shifted_range hL hCf hB₁ hB₂ (hrange t ht).1 (hrange t ht).2 hσ hξ) m
   refine (mul_le_mul_of_nonneg_left (sum_le_sum hterm) (Nat.cast_nonneg _)).trans ?_
   rw [sum_const, nsmul_eq_mul]
   -- the number of indices
@@ -177,7 +172,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
       _ ≤ (4 * L) ^ 3 * L ^ (3 * Cm) := mul_le_mul h₃ h₂ (by positivity) (by positivity)
       _ = 64 * L ^ (3 * Cm + 3) := h₄
   exact tupleBound_le hL1 hvlo hKA.le (Nat.cast_nonneg _) hcard
-    (by rw [hAs]; linarith [le_max_left ((A₀ + D) / 2) 1]) (by rw [hD]; ring)
+    (by rw [hAs]; linarith [le_max_left ((A₀ + D) / 2) 1]) (by ring)
     (le_max_left _ _)
 
 end Erdos408.TwoSided.TupleHigh

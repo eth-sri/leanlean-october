@@ -1,6 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityEnergy
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
+public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
+public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
+public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 
 @[expose] public section
 
@@ -15,9 +20,9 @@ open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholeP
 open InverseMomentWholePriorityPhysical InversePrioritySecondSource InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem global_priority_physical_source
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))

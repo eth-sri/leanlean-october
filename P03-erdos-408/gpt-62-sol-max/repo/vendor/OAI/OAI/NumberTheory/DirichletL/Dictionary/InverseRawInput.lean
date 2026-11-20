@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawConjugateGates
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedForcing
 
@@ -11,12 +12,11 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseRawInput
-open CompletedGauss
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open ConcreteTraceCRT FirstCauchyArithmetic SecondPassArithmetic IdealMobiusDivisorSum
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialConjugateEnergy
-open InverseInitialPoissonBridge InverseInitialExcludedForcing InverseInitialExcludedPool
-open UniqueFactorizationMonoid
+open CompletedGauss ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
+open ConcretePrimeRowBridge ConcreteTraceCRT FirstCauchyArithmetic SecondPassArithmetic
+open IdealMobiusDivisorSum InverseInitialArithmetic InverseInitialRayAttachment
+open InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialExcludedForcing
+open InverseInitialExcludedPool UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 private theorem admissible_one : Admissible (1:Ideal O):=by
@@ -26,18 +26,18 @@ private theorem admissible_one : Admissible (1:Ideal O):=by
 theorem input_generator_one (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)
     (η:O→*ℂ)(H:Finset (primePool F)→ℂ)(u:O):
     letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+      poolPrimary_maximal F hF;
     inputConjugateRow (poolPrimary F) (poolPrimary_good F hF) Finset.univ η
       (primaryGenerator (1:Ideal O)) 1 1 H u=
     inputConjugateRow (poolPrimary F) (poolPrimary_good F hF) Finset.univ η 1 1 1 H u:=by
   let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    poolPrimary_maximal F hF
   rw [initial_input_row (poolPrimary F) (poolPrimary_good F hF),
     initial_input_row (poolPrimary F) (poolPrimary_good F hF)]
   unfold supportConjugateSum
   apply Finset.sum_congr rfl
   intro A hA
-  have he:(fun i:primePool F=>Ideal.span {poolPrimary F i})=(fun i=>i.val):=
+  have he:=
     funext (poolPrimary_span F hF)
   have hm:rowCoprimeMask (fun i:primePool F=>Ideal.span {poolPrimary F i}) A
       (primaryGenerator (1:Ideal O))=1:=by
@@ -62,14 +62,13 @@ theorem complete_pool_selector (E:Finset (Ideal O))(hE:∀P∈E,Prime P)
   have hout:outside E (∏i∈A,i.val):=
     pool_product_outside F E hE
       (fun I hI=>(mem_outsideIdealsUpTo.mp (Finset.mem_filter.mp hI).1).2.2) A
-  have hN:((∏i∈A,i.val).absNorm:ℝ)≤(Dpool:ℝ):=
+  have hN:=
     ((div_le_iff₀ (Real.rpow_pos_of_pos hZ r)).mp (hW _ hw)).trans hbudget
-  have hmem:(∏i∈A,i.val)∈F:=by
-    apply Finset.mem_filter.mpr
-    refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,?_,hout⟩,hprod.2.1⟩
-    · exact Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hprod.1)
-    · exact_mod_cast hN
-  exact ite_eq_left hmem
+  refine ite_eq_left ?_
+  apply Finset.mem_filter.mpr
+  refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,?_,hout⟩,hprod.2.1⟩
+  · exact Ideal.one_le_absNorm_of_ne_bot (hprod.1)
+  · exact_mod_cast hN
 
 theorem original_complete_star_input
     (E:Finset (Ideal O))(hE:∀P∈E,Prime P)(Dpool:ℕ)(hbad:fixedBadPrimes⊆E)
@@ -78,14 +77,14 @@ theorem original_complete_star_input
     let F:=InitialMeanSquare.outsideSquarefreeIdeals E Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible E Dpool hbad;
     letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+      poolPrimary_maximal F hF;
     star (originalTotalPolynomial F 1 η (fun _=>1) W Z r 0 u)=
       ((Z^(-r/2):ℝ):ℂ)*inputConjugateRow (poolPrimary F) (poolPrimary_good F hF)
         Finset.univ (elementCharacter (conjugateIdealCharacter η)) 1 1 1
         (initialTest (poolPrimary F) (fun _=>1) (fun x=>star (W x)) Z r) u:=by
   intro F hF
   let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    poolPrimary_maximal F hF
   have he:=selected_conjugate_row F hF 1 admissible_one (fun _ _=>isCoprime_one_right)
     (conjugateIdealCharacter η) (fun I=>star (W ((I.absNorm:ℝ)/Z^r))) u
   dsimp only at he
@@ -118,7 +117,7 @@ theorem original_complete_child_norm
     let F:=InitialMeanSquare.outsideSquarefreeIdeals E Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible E Dpool hbad;
     letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+      poolPrimary_maximal F hF;
     ‖originalTotalPolynomial F 1 η (fun _=>1) (InverseMoment.childLogTest W t) Z r 0 u‖^2=
       ‖((Z^(-r/2):ℝ):ℂ)*inputConjugateRow (poolPrimary F) (poolPrimary_good F hF)
         Finset.univ (elementCharacter (conjugateIdealCharacter η)) 1 1 1
@@ -126,7 +125,7 @@ theorem original_complete_child_norm
           (InverseMoment.childLogTest (fun x=>star (W x)) (-t)) Z r) u‖^2:=by
   intro F hF
   let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    poolPrimary_maximal F hF
   have hw:∀x,InverseMoment.childLogTest W t x≠0→x≤b:=by
     intro x hx
     exact hW x ((mul_ne_zero_iff.mp hx).1)

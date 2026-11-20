@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicBounded
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Complex
 namespace SevenEighths.HeckeDyadicReflection
 open HeckeFamily HeckePrimitive HeckeStripActual
@@ -30,11 +30,10 @@ theorem functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   have h1 : s≠1 := by intro h; norm_num [h] at hs
   have hs0 : 1-s≠0 := sub_ne_zero.mpr (Ne.symm h1)
   have hs1 : 1-s≠1 := by intro h; apply h0; linear_combination -h
-  have hΓ : Complex.Gamma (1-s)≠0 := Complex.Gamma_ne_zero_of_re_pos (by simp; linarith)
   have he := completedL_functional_equation c χ hu hp hs0 hs1
   rw [sub_sub_cancel] at he
   rw [LFunction_eq_uncompleted c χ hu hp hχ,he,
-    completedL_eq_standard c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv hs0 hs1 hΓ]
+    completedL_eq_standard c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv hs0 hs1 (Complex.Gamma_ne_zero_of_re_pos (by simp; linarith))]
   have ha : ((HeckeStrip.completionScale (conductor c)) : ℂ)≠0 :=
     Complex.ofReal_ne_zero.mpr (HeckeStrip.completionScale_pos _
       (lt_of_lt_of_le zero_lt_one (conductor_ge_one c))).ne'
@@ -60,10 +59,8 @@ theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
     intro x hx
     have hnum : DifferentiableAt ℝ Real.Gamma (1-x) :=
       Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.2])
-    have hden : DifferentiableAt ℝ Real.Gamma (x+2) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.1])
     exact ((hnum.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => 1-y) (show ContinuousAt (fun y : ℝ => 1-y) x by fun_prop)).div
-      (hden.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => y+2) (show ContinuousAt (fun y : ℝ => y+2) x by fun_prop))
+      ((Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.1])).continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => y+2) (show ContinuousAt (fun y : ℝ => y+2) x by fun_prop))
       (Real.Gamma_pos_of_pos (show 0<x+2 by linarith [hx.1])).ne').continuousWithinAt
   obtain ⟨C,hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hcont
   refine ⟨|C|+1,by positivity,?_⟩
@@ -99,10 +96,8 @@ theorem gamma_ratio_strip_bound : ∃ C : ℝ, 0<C ∧ ∀ s : ℂ,
     linarith
   have hf := CubicReflectionKernel.norm_Gamma_shift_factor s 2
   norm_num only [Nat.cast_ofNat] at hf
-  have hf' : ‖∏ k ∈ Finset.range 2,(s+k)‖≤(3+|s.im|)^2 :=
-    hf.trans (pow_le_pow_left₀ (by positivity) (show ‖s‖+2≤3+|s.im| by linarith) 2)
   rw [heq,norm_mul]
-  exact (mul_le_mul hf' hb' (norm_nonneg _) (sq_nonneg _)).trans_eq (mul_comm _ _)
+  exact (mul_le_mul (hf.trans (pow_le_pow_left₀ (by positivity) (show ‖s‖+2≤3+|s.im| by linarith) 2)) hb' (norm_nonneg _) (sq_nonneg _)).trans_eq (mul_comm _ _)
 
 theorem completionScale_rpow_le {Q x : ℝ} (hQ : 0<Q) (hx : 0≤x) :
     HeckeStrip.completionScale Q ^ x≤Q^(x/2) := by

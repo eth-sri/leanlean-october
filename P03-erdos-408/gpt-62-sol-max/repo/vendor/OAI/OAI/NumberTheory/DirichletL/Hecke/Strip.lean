@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter Asymptotics Set MeasureTheory
 
 namespace SevenEighths.HeckeStrip
@@ -80,7 +80,7 @@ def leftConstant : ℝ :=
 theorem leftConstant_pos : 0 < leftConstant :=
   mul_pos (Real.rpow_pos_of_pos (by positivity) _) gammaConstant_pos
 
-theorem left_boundary_of_functional_equation (Q D : ℝ) (hQ : 0 < Q) (_hD : 0 ≤ D)
+theorem left_boundary_of_functional_equation (Q D : ℝ) (hQ : 0 < Q)
     (L Ldual : ℂ → ℂ) (ε : ℂ) (hε : ‖ε‖ = 1)
     (hfe : ∀ z : ℂ, z.re = -(1 / 10) → L z =
       ε * (completionScale Q : ℂ) ^ (1 - 2 * z) *
@@ -203,7 +203,7 @@ theorem normalized_boundary_bound (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
     (hL : ‖L z‖ ≤ C * Q ^ (3 / 5 : ℝ) * (3 + |z.im|) ^ 2) :
     ‖normalized Q L z‖ ≤ 9 * C := by
   have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
-  have hn : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
+  have hn  := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
   have hh := height_le_shift_norm z hz
   have hh2 : (3 + |z.im|) ^ 2 ≤ 9 * ‖z + 2‖ ^ 2 := by
     nlinarith [abs_nonneg z.im, norm_nonneg (z + 2)]
@@ -233,7 +233,7 @@ theorem uniform_strip_bound_of_edges (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
       apply normalized_boundary_bound Q C hQ hC L w
         (show w ∈ closedStrip from ⟨by rw [hw]; norm_num, by rw [hw]⟩) (hright w hw)
   have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
-  have hnz : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
+  have hnz  := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
   rw [norm_normalized Q hQ] at hn
   have hb := (div_le_iff₀ (mul_pos hq (sq_pos_of_pos hnz))).mp hn
   have hh := shift_norm_le_height z hz
@@ -277,10 +277,10 @@ theorem uniform_strip_bound_of_functional_equation
   have hc := leftConstant_pos
   apply uniform_strip_bound Q ((1 + leftConstant) * D) hQ (by positivity) L hL hgrowth ?_ ?_ z hz
   · intro w hw
-    apply (left_boundary_of_functional_equation Q D hQ0 hD L Ldual ε hε hfe hdual w hw).trans
-    have hbase : leftConstant * D ≤ (1 + leftConstant) * D := by nlinarith
-    exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hbase (Real.rpow_nonneg hQ0.le _)) (sq_nonneg _)
+    apply (left_boundary_of_functional_equation Q D hQ0 L Ldual ε hε hfe hdual w hw).trans
+    refine mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_right ?_ (Real.rpow_nonneg hQ0.le _)) (sq_nonneg _)
+    nlinarith
   · intro w hw
     apply (hright w hw).trans
     nlinarith
@@ -316,7 +316,7 @@ theorem mellin_uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (f : ℝ → ℂ)
         A * Real.exp (B * |z.im|) := by
   apply uncompleted_exp_bound a ha (mellin f)
   obtain ⟨C, hC, hb⟩ := VerticalContourShift.mellin_uniform_strip_bound f
-    (-(1 / 10)) (11 / 10) (by simpa using hleft) (by simpa using hright)
+    (-(1 / 10)) (11 / 10) (by simp_all) (by simp_all)
   exact ⟨C, hC, fun z hz => hb z hz.1 hz.2⟩
 
 end SevenEighths.HeckeStrip

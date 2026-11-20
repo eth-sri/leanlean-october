@@ -28,7 +28,7 @@ lemma retained_tsum (R:ℝ)(f:O→ℂ):
     apply hh
     apply CenteredMomentSecondRetainedRows.retained_mem_rows R 1 h one_ne_zero
     simpa only [one_mul] using hn
-  simp only [hz,Complex.ofReal_zero,zero_mul]
+  simp_all
 
 lemma retainedFourierTerm_finite (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
     (χa:MulChar (Residue a) ℂ)(χb:MulChar (Residue b) ℂ)(G:Residue r→ℂ)
@@ -66,7 +66,7 @@ lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
       apply Finset.sum_congr rfl
       intro h hh
       ring
-    · simp [hab]
+    simp_all
   simp_rw [hp,Finset.mul_sum]
   calc
     _=∑a:α,∑h∈rows,∑b:β,μ*(if p a b then c a b*f a b h else 0):=by

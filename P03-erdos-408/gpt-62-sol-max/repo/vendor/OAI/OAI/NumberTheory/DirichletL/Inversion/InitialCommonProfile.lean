@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonLists
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonRatios
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapIdealFourier
@@ -10,11 +11,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonProfile
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios
-open InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialOverlapFourier
+open InverseInitialOverlapIdealFourier
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
@@ -24,7 +25,7 @@ omit [DecidableEq σ] in
 theorem slotRatio_pos (Z:ℝ)(hZ:0<Z)(ell:σ→ℝ)(i:σ){P:Ideal Eis}(hP:Prime P) :
     0<slotRatio Z ell i P := by
   apply div_pos _ (Real.rpow_pos_of_pos hZ _)
-  exact_mod_cast Nat.pos_of_ne_zero (fun h=>hP.ne_zero (Ideal.absNorm_eq_zero_iff.mp h))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hP.ne_zero)
 
 theorem common_profile_separation
     (W:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
@@ -42,10 +43,7 @@ theorem common_profile_separation
         (Real.log yj) t*logPhase t (Real.log yc)*
         primeMark I (fun i=>poolList F (L i))
           (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A := by
-  have hm (t:ℝ) : primeMark I (fun i=>poolList F (L i))
-      (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A =
-      primeMark I L (fun i P=>a i P*logPhase (-t) (Real.log (slotRatio Z ell i P)))
-        (activeIndices id I L (∏i∈A,i.val)) :=
+  have hm (t:ℝ)  :=
     (original_ideal_mark F I L hL
       (fun i P=>a i P*logPhase (-t) (Real.log (slotRatio Z ell i P))) A).symm.trans
       (indexed_mark_active id I L _ _)

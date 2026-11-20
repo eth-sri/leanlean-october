@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRowwise
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical ContDiff
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
@@ -75,7 +75,7 @@ lemma inverseLogFamily_eq (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (p : ℝ�
 lemma inverseLogFamily_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b : ℝ)
     (ha : 0<a) (hs : Function.support W⊆Icc a b) (p : ℝ×ℝ) :
     Function.support (inverseLogFamily reverse n V W p)⊆Icc (-(|Real.log a|+|Real.log b|)) (|Real.log a|+|Real.log b|) := by
-  have he : inverseLogFamily reverse n V W p=realInterpolatedLog (baseProfile reverse n V W p.2) p :=
+  have he  :=
     funext (inverseLogFamily_eq reverse n V W p)
   rw [he]
   exact realInterpolatedLog_support _ a b ha ((baseProfile_support reverse n V W p.2).trans hs) p

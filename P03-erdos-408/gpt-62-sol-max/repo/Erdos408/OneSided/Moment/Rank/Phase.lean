@@ -83,11 +83,11 @@ theorem fourierFactor_average {P : ℕ} (hP : 0 < P) {o o' : Option ℕ}
   rw [hsum]
   by_cases hm : P ∣ m
   · -- `ζ^m = 1`: the average is `1`
-    have h1 : unitRoot P ^ m = 1 := (hζ.pow_eq_one_iff_dvd m).2 hm
+    have h1 := (hζ.pow_eq_one_iff_dvd m).2 hm
     have hpp : p = p' := (dvd_add_mul_iff hP (ho p rfl) (ho' p' rfl)).1 hm
     simp [h1, hpp, hP']
   · -- `ζ^m ≠ 1` is a `P`-th root of unity: the geometric sum vanishes
-    have h1 : unitRoot P ^ m ≠ 1 := fun h => hm ((hζ.pow_eq_one_iff_dvd m).1 h)
+    have h1 := fun h => hm ((hζ.pow_eq_one_iff_dvd m).1 h)
     have hpp : p ≠ p' := fun h => hm ((dvd_add_mul_iff hP (ho p rfl) (ho' p' rfl)).2 h)
     have hP1 : (unitRoot P ^ m) ^ P = 1 := by
       rw [← pow_mul, mul_comm, pow_mul, hζ.pow_eq_one, one_pow]
@@ -108,7 +108,7 @@ theorem exists_pivot {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSystems 
     card_pos.1 (by have := hcard C hC; omega)
   choose! rep hrep using hrep
   have hblk : ∀ a ∈ 𝒞.biUnion id, ∃ C ∈ 𝒞, a ∈ C := fun a ha => by
-    simpa using mem_biUnion.1 ha
+    simp_all
   choose! blk hblk using hblk
   -- the block of an address of `C` is `C`, by disjointness
   have key : ∀ C ∈ 𝒞, ∀ a ∈ C, blk a = C := fun C hC a ha =>
@@ -165,7 +165,7 @@ theorem norm_blockPhase_le {P : ℕ} (hP : 0 < P) (U : Finset α) (piv : α → 
   split_ifs
   · rcases o with _ | p
     · simp
-    · simp [norm_pow, norm_unitRoot hP]
+    · simp [norm_unitRoot hP]
   · simp
 
 /-- For a frequency vector `κ`, the product of the Fourier factors of the pairs
@@ -220,7 +220,7 @@ theorem prod_fourierFactor_eq (P : ℕ) {U : Finset α} {piv : α → α}
     have hβ : β a = none := by
       rcases h : β a with _ | p
       · rfl
-      · exact (hnone p h).elim
+      simp_all
     rw [prod_eq_zero (mem_univ a) (by simp [ha, hβ, fourierFactor]),
       prod_eq_zero (mem_univ a) (by simp [blockPhase, ha, hβ])]
 
@@ -246,7 +246,7 @@ theorem exists_blockPhase {𝒞 : Finset (Finset α)} (h𝒞 : 𝒞 ∈ blockSys
   refine ⟨blockPhase P U piv, norm_blockPhase_le hP U piv, fun κ a ha => by
     simp [blockPhase, ha], fun β hβ => ?_⟩
   have hP' : (P : ℂ) ≠ 0 := by exact_mod_cast hP.ne'
-  have hb : ∀ a, ∀ p, β a = some p → p < P := hβ
+  have hb  := hβ
   rw [prod_blockRealized_eq h𝒞 hpiv β]
   calc ∏ a ∈ U, (if β a ≠ none ∧ β a = β (piv a) then 1 else 0 : ℂ)
       = ∏ a, ((P : ℂ)⁻¹ * ∑ k ∈ range P,

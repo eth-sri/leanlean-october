@@ -8,7 +8,7 @@ public import Mathlib.MeasureTheory.Integral.Pi
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped BigOperators Classical SchwartzMap FourierTransform
 open MeasureTheory FourierBridge JointLogSeparation
 noncomputable section
 

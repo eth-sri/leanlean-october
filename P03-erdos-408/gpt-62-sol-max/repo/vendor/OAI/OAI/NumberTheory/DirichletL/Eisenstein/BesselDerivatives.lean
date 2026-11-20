@@ -1,6 +1,9 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Eisenstein.PrimePowerGaussSums
+
+public import OAI.NumberTheory.DirichletL.Eisenstein.UpperStripIdentity
 
 @[expose] public section
 
@@ -11,78 +14,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Filter MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 def cubicBesselDensityDeriv (x t : ℝ) : ℝ := -(x/(2*t))*cubicBesselDensity x t
 
@@ -91,8 +33,7 @@ lemma cubicBesselDensity_hasDerivAt (x t : ℝ) :
   have he := ((((hasDerivAt_id x).pow 2).div_const (4*t)).const_sub (-t)).exp.const_mul (t^(-(2:ℝ)/3))
   simp only [Pi.pow_apply,id_eq,Nat.cast_ofNat,mul_one] at he
   convert he using 1
-  · funext y
-    rfl
+  · rfl
   · unfold cubicBesselDensityDeriv cubicBesselDensity
     ring
 
@@ -106,7 +47,7 @@ lemma cubicBesselDensityDeriv_bound (delta x t : ℝ)
     (hdelta : 0<delta) (hx : delta≤x) (ht : 0<t) :
     ‖cubicBesselDensityDeriv x t‖≤
       (4/delta)*Real.exp (-x/2)*(t^(-(2:ℝ)/3)*Real.exp (-t/2)) := by
-  have hxp : 0<x := hdelta.trans_le hx
+  have hxp  := hdelta.trans_le hx
   have hdamp : (x/(2*t))*Real.exp (-(x^2/(8*t)))≤4/x := by
     have hrewrite : x/(2*t)=(4/x)*(x^2/(8*t)) := by field_simp;ring
     rw [hrewrite,mul_assoc]
@@ -207,9 +148,7 @@ lemma schlafliBesselK_cubic_hasDerivAt (x : ℝ) (hx : 0<x) :
       (p:=-(1:ℝ)/3) (Or.inl (by positivity : x/2≠0))).const_mul (1/2:ℝ)
     convert hh using 1 <;> norm_num ; ring
   have hr := hp.mul (cubicBesselIntegral_hasDerivAt x hx)
-  have hreal : HasDerivAt (fun y : ℝ => (1/2:ℝ)*(y/2)^(-(1:ℝ)/3)*
-      (∫t in Set.Ioi (0:ℝ),cubicBesselDensity y t)) (cubicBesselRealDeriv x) x := by
-    exact hr
+  have hreal := hr
   apply hreal.ofReal_comp.congr_of_eventuallyEq
   filter_upwards [Ioi_mem_nhds hx] with y hy
   exact schlafliBesselK_cubic_real y hy
@@ -255,7 +194,7 @@ lemma cubicBesselDerivativeUpper_nonneg (delta : ℝ) (hdelta : 0<delta) :
 
 lemma schlafliBesselK_cubic_derivative_bound (delta x : ℝ) (hdelta : 0<delta) (hx : delta≤x) :
     ‖schlafliBesselK_cubic_derivative x‖≤cubicBesselDerivativeUpper delta*Real.exp (-x/2) := by
-  have hxp : 0<x := hdelta.trans_le hx
+  have hxp  := hdelta.trans_le hx
   have hp1 : (x/2)^(-(1:ℝ)/3)≤(delta/2)^(-(1:ℝ)/3) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) (by linarith) (by norm_num)
   have hp4 : (x/2)^(-(4:ℝ)/3)≤(delta/2)^(-(4:ℝ)/3) :=
@@ -285,7 +224,6 @@ end
 
 section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -300,7 +238,7 @@ lemma cubicUnitGaussSum_prime_cube_shift_pos (p:Eis) (hp:Prime p)
       (Ideal.absNorm (Ideal.span {p}):ℂ)^3*cubicUnitGaussSum h (p^(n+1)):=by
   by_cases hd:p^n∣h
   · obtain ⟨r,rfl⟩:=hd
-    have harg:p^n*r*p^3=p^(n+3)*r:=by rw [pow_add];ring
+    have harg:p^n*r*p^3=p^(n+3)*r:=by ring
     rw [harg,show n+4=(n+3)+1 by omega,
       cubicUnitGaussSum_prime_power_lift p hp hprimary (n+3) r,
       cubicUnitGaussSum_prime_power_lift p hp hprimary n r]
@@ -311,8 +249,8 @@ lemma cubicUnitGaussSum_prime_cube_shift_pos (p:Eis) (hp:Prime p)
       exact hd (cubicUnitGaussSum_prime_power_support p hp hprimary n h hh)
     have hhigh:cubicUnitGaussSum (h*p^3) (p^(n+4))=0:=by
       by_contra hh
-      have hh':cubicUnitGaussSum (h*p^3) (p^((n+3)+1))≠0:=by convert hh using 1
-      have hd':p^(n+3)∣h*p^3:=cubicUnitGaussSum_prime_power_support p hp hprimary (n+3) (h*p^3) hh'
+      have hh':cubicUnitGaussSum (h*p^3) (p^((n+3)+1))≠0:=by assumption
+      have hd':=cubicUnitGaussSum_prime_power_support p hp hprimary (n+3) (h*p^3) hh'
       have hd'':p^3*p^n∣p^3*h:=by simpa only [pow_add,mul_comm,mul_left_comm,mul_assoc] using hd'
       exact hd ((mul_dvd_mul_iff_left (pow_ne_zero 3 hp.ne_zero)).mp hd'')
     rw [hhigh,hlow,mul_zero]
@@ -403,9 +341,7 @@ end
 
 section
 
-open scoped BigOperators Classical Topology
-open Filter Set
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open Filter Set ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ)
@@ -430,21 +366,13 @@ theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ
   have hg:AnalyticOnNhd ℂ g D:=fun s hs=>
     (((hA s hs).mul (hT h1 s hs)).mul (hH h0 s hs)).mul (hH h2 s hs) |>.add
       ((((hB s hs).mul (hT h2 s hs)).mul (hH h0 s hs)).mul (hH h1 s hs))
-  have hconvex:Convex ℝ D:=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
-  have hstart:(5+Complex.I:ℂ)∈D:=by norm_num [D]
-  have hopen:IsOpen {s:ℂ|4<s.re ∧ 0<s.im}:=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hev:f=ᶠ[𝓝 (5+Complex.I:ℂ)]g:=by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
+  have heq:= eqOn_of_upperStrip hf hg (by norm_num) (by
+    intro s hre him
     dsimp only [f,g,T,H]
-    rw [translatedCuspFamily_opposite_initial h0 s hs.1 hs.2,
-      translatedCuspFamily_opposite_initial h1 s hs.1 hs.2,
-      translatedCuspFamily_opposite_initial h2 s hs.1 hs.2,hrel s hs.1 hs.2]
-    ring
-  have heq:=hf.eqOn_of_preconnected_of_eventuallyEq hg hconvex.isPreconnected hstart hev
+    rw [translatedCuspFamily_opposite_initial h0 s hre him,
+      translatedCuspFamily_opposite_initial h1 s hre him,
+      translatedCuspFamily_opposite_initial h2 s hre him,hrel s hre him]
+    ring)
   have hlimH (h:Eis):Tendsto (H h) (𝓝[≠] (4/3:ℂ)) (𝓝 (H h (4/3))):=
     (cuspWhittakerHeightFactor_analyticAt (3*h) (4/3) (by norm_num)).continuousAt.tendsto.mono_left
       nhdsWithin_le_nhds
@@ -479,15 +407,13 @@ lemma gaussPrimeWeight_analytic (p:Eis) (hp:Prime p) (s:ℂ):
     AnalyticAt ℂ (fun z:ℂ=>(Ideal.absNorm (Ideal.span {p}):ℂ)^(-z)) s:=by
   apply Complex.analyticAt_iff_eventually_differentiableAt.mpr
   exact Eventually.of_forall fun z=>(differentiableAt_id.neg).const_cpow (Or.inl
-    (Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))))
+    (Ideal.cast_absNorm_ne_zero_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)))
 
 lemma gaussPrimeWeight_center (p:Eis) (hp:Prime p):
     (Ideal.absNorm (Ideal.span {p}):ℂ)^3*
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ)))^3=
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹:=by
-  have hQ:(Ideal.absNorm (Ideal.span {p}):ℂ)≠0:=Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+  have hQ:(Ideal.absNorm (Ideal.span {p}):ℂ)≠0:=Ideal.cast_absNorm_ne_zero_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   rw [←Complex.cpow_nat_mul,←Complex.cpow_natCast _ 3,←Complex.cpow_add _ _ hQ]
   convert Complex.cpow_neg_one (Ideal.absNorm (Ideal.span {p}):ℂ) using 1 ;congr 1 ;norm_num
 
@@ -514,16 +440,7 @@ theorem unramifiedGaussResidue_prime_recurrence (p:Eis) (hp:Prime p)
 
 end
 
-section
 
-open scoped BigOperators Classical Topology
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ComplexConjugate
 
 def inverseCuspPath (c d : ℂ) (v : ℝ) (direction : ℂ) (t : ℝ) : ℂ×ℝ :=
   (-d/c-(t:ℂ)*star direction/(c^2*((v^2+t^2*‖direction‖^2:ℝ):ℂ)),
@@ -541,8 +458,7 @@ theorem inverseCuspPath_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
     (hc : c≠0) (hv : 0<v) :
     HasDerivAt (inverseCuspPath c d v direction)
       (-(star direction)/(c^2*(v:ℂ)^2),0) 0 := by
-  have hn : ‖c‖≠0 := norm_ne_zero_iff.mpr hc
-  have hvc : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
+  have hvc  := Complex.ofReal_ne_zero.mpr hv.ne'
   have hden : HasDerivAt (fun t : ℝ=>v^2+t^2*‖direction‖^2) 0 0 := by
     convert (((hasDerivAt_id (0:ℝ)).pow 2).mul_const (‖direction‖^2)).const_add (v^2) using 1 <;> norm_num
   have hnum : HasDerivAt (fun t : ℝ=>(t:ℂ)*star direction) (star direction) 0 := by

@@ -1,17 +1,17 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
-public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalPhysicalEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform
-open InverseSecondChildWindows
+open InverseMoment InverseMomentFirstProfileUniform InverseSecondChildWindows
 
 theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
     (lo hi : Fin 3→ℝ) (hm : 0≤m)
@@ -25,16 +25,16 @@ theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
   let R := m+Real.log bcap
   let a := Real.exp (-R)/(hi 0*hi 1*hi 2)
   let b := Real.exp R/(lo 0*lo 1*lo 2)
-  have hhip (i : Fin 3) : 0<hi i := (hlo i).trans_le (hhi i)
+  have hhip (i : Fin 3)  := (hlo i).trans_le (hhi i)
   have hh0 := hhip 0
   have hh1 := hhip 1
   have hh2 := hhip 2
   have hl0 := hlo 0
   have hl1 := hlo 1
   have hl2 := hlo 2
-  have ha : 0<a := by dsimp [a];positivity
+  have ha : 0<a := by positivity
   have hb : 0<b := by dsimp [b];positivity
-  obtain ⟨w,hwc,hwone,hws⟩ := positive_cutoff a (a+b+1) ha (by linarith)
+  obtain ⟨w,hwc,hwone,hws⟩ := positive_cutoff a (a+b+1) ha
   refine ⟨w,a/2,a+b+2,half_pos ha,by linarith,hwc,by convert hws using 1; ring_nf,?_⟩
   intro c θ u v r n hc hcb hu hv hr hn hnz
   have hu0 := (hlo 0).trans_le hu.1
@@ -85,8 +85,8 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (lo ∘ left) (hi ∘ left) hm₁ hg₁ (fun i=>hlo (left i)) (fun i=>hhi (left i))
   obtain ⟨w₂,a₂,b₂,ha₂,hab₂,hwc₂,hws₂,hfresh₂⟩ := fresh_three_window g₂ m₂ bcap
     (lo ∘ right) (hi ∘ right) hm₂ hg₂ (fun i=>hlo (right i)) (fun i=>hhi (right i))
-  let l : Fin 9→ℝ := ![lo 0,lo 1,lo 2,lo 3,lo 4,lo 5,lo 6,a₁,a₂]
-  let u : Fin 9→ℝ := ![hi 0,hi 1,hi 2,hi 3,hi 4,hi 5,hi 6,b₁,b₂]
+  let l  := ![lo 0,lo 1,lo 2,lo 3,lo 4,lo 5,lo 6,a₁,a₂]
+  let u  := ![hi 0,hi 1,hi 2,hi 3,hi 4,hi 5,hi 6,b₁,b₂]
   have hl (i : Fin 9) : 0<l i := by
     fin_cases i
     · exact hlo 0
@@ -102,7 +102,7 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
   have hH (i : Fin 9) : 0≤H i := by dsimp [H];exact add_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (hBρ i)
   choose V hVc hVs hVone hVsupport hVzero using
     fun i : Fin 9=>FourierBridge.exists_complex_smooth_cutoff (H i) (hH i)
-  let U (i : Fin 9) : 𝓢(ℝ,ℂ) := (hVc i).toSchwartzMap (hVs i)
+  let U (i : Fin 9)  := (hVc i).toSchwartzMap (hVs i)
   refine ⟨w₁,w₂,U,(fun i=>H i+1),min a₁ a₂,max b₁ b₂,lt_min ha₁ ha₂,
     (min_le_left _ _).trans (hab₁.trans (le_max_left _ _)),hwc₁,hwc₂,?_,?_,
     (fun i=>by linarith [hH i]),hVc,(fun i=>(subset_tsupport _).trans (hVsupport i)),hfresh₁,hfresh₂,?_⟩

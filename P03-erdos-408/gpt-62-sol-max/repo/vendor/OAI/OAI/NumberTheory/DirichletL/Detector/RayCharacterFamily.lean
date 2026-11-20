@@ -13,14 +13,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeNonprincipal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeRayCharacterFamily
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve
+open CanonicalRowCompletion UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def fixedTwistSupport : Finset (Ideal O) :=
@@ -44,24 +43,21 @@ theorem large_supported_twists_nonprincipal (u : FreeRow)
     (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).residue≠1 := by
   obtain ⟨v,hv⟩ := exists_supported_primary_unit u.val hs
   let r : O := (v:O)*u.val
-  have hspan : (Ideal.span {r}:Ideal O)=Ideal.span {u.val} :=
+  have hspan  :=
     Ideal.span_singleton_mul_left_unit v.isUnit u.val
-  have hr : Supported (Ideal.span {r}) := hspan.symm ▸ hs
+  have hr  := hspan.symm ▸ hs
   have hx : (1:O)^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*(2:O)^0*r := by simp [r]
   let η := (fixedSourcePrincipal ∅ (by simp)).product
     (HeckeRayQuotient.character M H hH θ).inverse
   let χ := (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).inverse
-  have hχ : ∀n,elementCoeff χ n=rowTwist (HeckeRowClosure.elementHom η) rowMaskElement 1 u.val n :=
-    HeckePrimeNonprincipal.inverse_twist_elementCoeff _ _ _ _ _ _ (rawRow_elementCoeff u)
   intro hp
   have hprincipal : χ.residue=1 := by
     change (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).residue⁻¹=1
     exact congrArg Inv.inv hp |>.trans inv_one
   have hfixed := HeckeRowNonprincipal.principal_row_fixed_support η χ rowMaskElement 1 u.val
-    rowMaskElement_ne_zero (dvd_mul_left _ _) (dvd_mul_right _ _) v⁻¹ 0 0 r hr hv hx hχ hprincipal
+    rowMaskElement_ne_zero (dvd_mul_left _ _) (dvd_mul_right _ _) v⁻¹ 0 0 r hr hv hx (HeckePrimeNonprincipal.inverse_twist_elementCoeff _ _ _ _ _ _ (rawRow_elementCoeff u)) hprincipal
     (fun P _=>hspan.symm ▸ u.property.2 P)
-  have hη : η.modulus=M := inverse_twist_base_modulus M H hH θ
-  rw [hη] at hfixed
+  rw [(inverse_twist_base_modulus M H hH θ)] at hfixed
   have hn := HeckeExceptionalRows.row_norm_bound (fixedTwistSupport M) (fixedTwistSupport_prime M) hfixed
   rw [hspan] at hn
   exact not_lt_of_ge (show rowNorm u≤(HeckeExceptionalRows.bound (fixedTwistSupport M):ℝ) by unfold rowNorm;exact_mod_cast hn) hl

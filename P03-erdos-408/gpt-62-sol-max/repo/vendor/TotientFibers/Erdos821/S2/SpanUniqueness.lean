@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanLifecycle
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -29,8 +28,7 @@ theorem spanLiveAt_none (g : P.BigGroup) (p : P.Prime g.val)
     ¬ Q.spanLiveAt g p none i := by
   simp only [spanLiveAt, pendingBefore, pendingAfter, or_false]
   change Q.activeVisits g p = ∅ at hs
-  rw [hs]
-  simp
+  simp_all
 
 theorem spanLiveAt_some (g : P.BigGroup) (p : P.Prime g.val) (b e : Fin (n + 1))
     (hs : Q.spanValid g p (some (b, e))) (i : Fin (n + 1)) :
@@ -45,15 +43,14 @@ theorem spanLiveAt_some (g : P.BigGroup) (p : P.Prime g.val) (b e : Fin (n + 1))
     · exact Or.inl ha
     · by_cases hb : b < i
       · exact Or.inr (Or.inl ⟨hb, hi.2, ha⟩)
-      · have hib : i = b := le_antisymm (le_of_not_gt hb) hi.1
+      · have hib  := le_antisymm (le_of_not_gt hb) hi.1
         have hbe : b ≠ e := by
           intro he
           apply ha
           simpa only [hib] using Q.coincident_span_active g p b e hs he
-        have he : i < e := by
-          subst i
-          exact lt_of_le_of_ne hs.1 hbe
-        exact Or.inr (Or.inr ⟨hi.1, he, ha⟩)
+        refine Or.inr (Or.inr ⟨hi.1, ?_, ha⟩)
+        subst i
+        exact lt_of_le_of_ne hs.1 hbe
 
 theorem span_eq_of_live_iff (g : P.BigGroup) (p : P.Prime g.val)
     (s t : PrimeSpan n) (hs : Q.spanValid g p s) (ht : Q.spanValid g p t)
@@ -82,9 +79,9 @@ theorem span_eq_of_live_iff (g : P.BigGroup) (p : P.Prime g.val)
         ((he e).mp ((Q.spanLiveAt_some g p b e hs e).mpr ⟨hs.1, le_rfl⟩))
       have hd := (Q.spanLiveAt_some g p b e hs d).mp
         ((he d).mpr ((Q.spanLiveAt_some g p c d ht d).mpr ⟨ht.1, le_rfl⟩))
-      have hbc : b = c := le_antisymm hc.1 hb.1
-      have hed : e = d := le_antisymm he'.2 hd.2
-      simp [hbc, hed]
+      have hbc  := le_antisymm hc.1 hb.1
+      have hed  := le_antisymm he'.2 hd.2
+      simp_all
 
 theorem lifespan_eq_of_memories (S T : LifespanAssignment P n)
     (hS : Q.lifespanValid S) (hT : Q.lifespanValid T)
@@ -99,13 +96,12 @@ theorem lifespan_eq_of_memories (S T : LifespanAssignment P n)
     have hm := congrArg (fun s : Multiset (P.Prime g.val) => p ∈ s) he
     simpa only [pendingBeforePrimes, Finset.mem_val, Finset.mem_filter,
       Finset.mem_univ, true_and] using Iff.of_eq hm
-  have hafter : Q.pendingAfter g p (S g p) i ↔ Q.pendingAfter g p (T g p) i := by
-    have he := congrArg (pendingPrimes (P := P)) (ha i g)
-    rw [Q.pendingPrimes_memoryAfter, Q.pendingPrimes_memoryAfter] at he
-    have hm := congrArg (fun s : Multiset (P.Prime g.val) => p ∈ s) he
-    simpa only [pendingAfterPrimes, Finset.mem_val, Finset.mem_filter,
-      Finset.mem_univ, true_and] using Iff.of_eq hm
-  exact or_congr Iff.rfl (or_congr hbefore hafter)
+  refine or_congr Iff.rfl (or_congr hbefore ?_)
+  have he := congrArg (pendingPrimes (P := P)) (ha i g)
+  rw [Q.pendingPrimes_memoryAfter, Q.pendingPrimes_memoryAfter] at he
+  have hm := congrArg (fun s : Multiset (P.Prime g.val) => p ∈ s) he
+  simpa only [pendingAfterPrimes, Finset.mem_val, Finset.mem_filter,
+    Finset.mem_univ, true_and] using Iff.of_eq hm
 
 
 end ResiduePath

@@ -11,9 +11,8 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic
-open InverseInitialCommonRatios
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap
+open UniqueFactorizationMonoid ActualEisensteinCubic InverseInitialCommonRatios
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
@@ -30,7 +29,7 @@ theorem remaining_moebius (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
     (J:Finset ι)(y:Remaining L J) :
     (moebius (remainingIdeal L J y):ℂ)=(-1:ℂ)^Fintype.card {i:ι // i∉J} := by
-  let:∀i:{i:ι // i∉J},((y i).val).IsMaximal:=fun i=>
+  let:=fun i=>
     (Ideal.isPrime_of_prime (hprime i.val _ (y i).property)).isMaximal
       (hprime i.val _ (y i).property).ne_zero
   simpa only [remainingIdeal,Finset.card_univ] using prime_product_moebius

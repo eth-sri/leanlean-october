@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfile
+public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 public import OAI.NumberTheory.DirichletL.Moments.SecondScaled
 
 @[expose] public section
@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondScaled
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondChildProfile
 open HeckeFamily HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeExpansion

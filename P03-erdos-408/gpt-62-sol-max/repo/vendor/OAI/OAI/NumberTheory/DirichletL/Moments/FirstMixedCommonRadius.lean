@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedAllowance
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadiusSaving
 
@@ -8,16 +9,15 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadiusSaving
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedCommonRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
-open CenteredMomentFirstMixedAllowance CenteredMomentCommonRadiusSaving
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentDescentLedger
+open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentSectorLocalization CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
+open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
+open ConcreteTraceCRT ActualEisensteinCubic CenteredMomentFirstMixedAllowance
+open CenteredMomentCommonRadiusSaving
 local notation "O" => ActualEisensteinCubic.O
 
 theorem column_saving_gates (η τ : Character) (m : O)
@@ -33,8 +33,7 @@ theorem column_saving_gates (η τ : Character) (m : O)
   have hq := canonical_active_log_le η τ m I J A Z hZ hmod
   have hc : 0≤Real.logb Z ((commonPart I J).absNorm:ℝ) := by
     apply Real.logb_nonneg hZ
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (commonPart_ne_zero I J))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (commonPart_ne_zero I J)
   have hm := le_max_left (3*Real.logb Z ((commonPart I J).absNorm:ℝ)-
     5*Real.logb Z ((commonPart J I).absNorm:ℝ)-
     Real.logb Z ((Ideal.span {activeConductor I J}).absNorm:ℝ)) (0:ℝ)
@@ -43,7 +42,7 @@ theorem column_saving_gates (η τ : Character) (m : O)
   · unfold extractedAllowance; linarith [hq.2]
 
 theorem actual_main_column_saving (η τ : Character) (m : O)
-    (I J E : Ideal O) (_hI : Supported I) (_hJ : Supported J)
+    (I J E : Ideal O)
     (A : Finset (CommonIndex I J)) (K X Z j sigma delta reserve : ℝ) (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J}) :
@@ -65,7 +64,7 @@ theorem actual_main_column_saving (η τ : Character) (m : O)
   ring
 
 theorem actual_error_column_saving (η τ : Character) (m : O)
-    (I J E : Ideal O) (_hI : Supported I) (_hJ : Supported J)
+    (I J E : Ideal O)
     (A : Finset (CommonIndex I J)) (K X Z j sigma delta reserve : ℝ) (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})

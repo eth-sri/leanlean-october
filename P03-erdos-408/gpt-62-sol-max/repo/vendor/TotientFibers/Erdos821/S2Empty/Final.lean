@@ -6,7 +6,6 @@ public import Erdos821.S2.AnalyticParametersTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -47,7 +46,7 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
       1 - e ≤ baselinePrime F (N x) p.val := by
     intro g p
     have h := baseline_prime_floor_of_admissible F P x hP g p
-    simpa [e] using h
+    assumption
   have hcardBig : Fintype.card P.BigGroup = P.bigGroups.card := by
     unfold PrimeGroups.BigGroup PrimeGroups.bigGroups
     exact Fintype.card_of_subtype
@@ -64,7 +63,6 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
         · exact he0
       _ = (J + F.ell : ℝ) * F.C₀ * T x *
           ((N x : ℝ) + 1) / Real.exp ((L x) ^ F.c) := by
-        dsimp [e]
         ring
       _ ≤ 1 / 2 := by
         simpa [M, Nat.cast_add] using hbudgetRaw

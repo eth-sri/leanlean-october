@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstToSecond
 public import OAI.NumberTheory.DirichletL.Descent.PrincipalChild
 
@@ -8,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Descent.PrincipalChild
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondPrincipalCaller
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
-open SecondPassIntegration CompletedHeight
-open InverseMoment InversePrincipalEnergy RayFourExpansion
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge SecondPassIntegration
+open CompletedHeight InverseMoment InversePrincipalEnergy RayFourExpansion
 local notation "Eis" => ActualEisensteinCubic.O
 
 def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
@@ -60,10 +60,9 @@ theorem principalWindow_upper (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (hs : Function.support om ⊆ Set.Icc a b) (M : ℝ) (hb : b≤Real.exp M)
     (negative : Bool) (t x : ℝ) (hx : principalWindow om a b ha hs negative t x≠0) :
     x≤Real.exp M := by
-  have hmem : x∈Function.support om := by
-    rw [←principalWindow_support om a b ha hs negative t]
-    exact hx
-  exact (hs hmem).2.trans hb
+  refine (hs ?_).2.trans hb
+  rw [←principalWindow_support om a b ha hs negative t]
+  exact hx
 
 section Arithmetic
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -114,8 +113,8 @@ theorem firstCoreTest_markedRadial (slots : Finset σ) (lists : σ→Finset ι)
   cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true,
     conjugateProfile_apply,uniformTwistedSchwartz_apply,normTwistedSource,star_mul] <;> ring
 
-variable [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem secondInputCoefficient_overlap_zero
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))

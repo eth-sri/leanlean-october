@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.ParametersHighData
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 
 namespace SevenEighths.Parameters
 

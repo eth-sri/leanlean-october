@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LowSourceScales
 
 @[expose] public section
@@ -15,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 lemma elementNorm_finset_prod {ι : Type*} (F : Finset ι) (p : ι→O) :
     elementNorm (∏i∈F,p i)=∏i∈F,elementNorm (p i) := by
   induction F using Finset.induction_on with
-  | empty => simp [elementNorm_one]
+  | empty => simp
   | @insert i F hi ih => simp only [Finset.prod_insert hi,elementNorm_mul,ih]
 
 lemma lowUnselectedProduct_norm_ge_one {K : ℕ} (slots : Fin K→Finset O)
@@ -23,8 +24,7 @@ lemma lowUnselectedProduct_norm_ge_one {K : ℕ} (slots : Fin K→Finset O)
     1≤elementNorm (∏i : J,(a i).val) := by
   have hn : (∏i : J,(a i).val)≠0 := Finset.prod_ne_zero_iff.mpr (fun i _=>hslots i.val _ (a i).property)
   unfold elementNorm
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hn))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hn)
 
 lemma lowUnselectedProduct_norm_bound {K : ℕ} (ell : Fin K→ℝ)
     (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6)
@@ -32,7 +32,7 @@ lemma lowUnselectedProduct_norm_bound {K : ℕ} (ell : Fin K→ℝ)
     (hslots : ∀i x,x∈slots i→elementNorm x≤b*Z^(ell i))
     (J : Finset (Fin K)) (a : LowUnselectedTuple slots J) :
     elementNorm (∏i : J,(a i).val)≤b^K*Z^(1/6:ℝ) := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hz  := lt_of_lt_of_le zero_lt_one hZ
   have hsub : ∑i∈J,ell i≤1/6 :=
     (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (fun i _ _=>hell i)).trans hsum
   have hc : J.card≤K := by simpa using Finset.card_le_card (Finset.subset_univ J)

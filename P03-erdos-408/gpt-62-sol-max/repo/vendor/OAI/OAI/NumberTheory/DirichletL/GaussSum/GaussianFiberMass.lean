@@ -9,16 +9,10 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 
 namespace ActualEisensteinCubic
 
@@ -32,7 +26,7 @@ theorem breveE_real_trace_div (r : ℝ) (u v : ℤ) :
     ShortDraftTrace.omega_conj u v
   have hL : ((u : ℂ) + (v : ℂ) * omega3) / eisLam +
       star (((u : ℂ) + (v : ℂ) * omega3) / eisLam) = (v : ℂ) := by
-    simpa only [eisLam, Complex.star_def] using htrace
+    assumption
   change Complex.exp (2 * Real.pi * Complex.I *
     (((((u : ℂ) + (v : ℂ) * omega3) / eisLam) / (r : ℂ)) +
       star (((((u : ℂ) + (v : ℂ) * omega3) / eisLam) / (r : ℂ))))) = _
@@ -65,14 +59,14 @@ theorem cpow_half_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
       (r : ℂ) ^ (1 / 2 : ℂ) := by
   have ha0 : a ≠ 0 := by
     intro h
-    simp [h] at ha
+    simp_all
   have harg := arg_ne_pi_of_re_pos ha
   have hlog : Complex.log ((r : ℂ) / a) = (Real.log r : ℂ) - Complex.log a := by
     rw [div_eq_mul_inv, Complex.log_ofReal_mul hr (inv_ne_zero ha0),
       Complex.log_inv a harg]
     ring
   have hr0 : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
-  have hdiv : (r : ℂ) / a ≠ 0 := div_ne_zero hr0 ha0
+  have hdiv  := div_ne_zero hr0 ha0
   rw [Complex.cpow_def_of_ne_zero ha0,
     Complex.cpow_def_of_ne_zero hdiv,
     Complex.cpow_def_of_ne_zero hr0, hlog, ← Complex.exp_add]
@@ -109,7 +103,7 @@ theorem actual_fiber_gaussian_eq_shifted
         (EisensteinFiberShift.shiftX (a : ℝ) (b : ℝ) (x : ℝ) (y : ℝ))
         (EisensteinFiberShift.shiftY (a : ℝ) (b : ℝ) (x : ℝ) (y : ℝ))
         (m,n) := by
-  have hqZ : a*a-a*b+b*b ≠ 0 :=
+  have hqZ  :=
     ne_of_gt (coordinate_norm_pos_of_nonzero a b hc)
   have hqR : EisensteinFiberShift.q (a : ℝ) (b : ℝ) ≠ 0 := by
     dsimp [EisensteinFiberShift.q, EisensteinFiberShift.Q]
@@ -137,7 +131,6 @@ end ActualEisensteinCubic
 
 namespace EisensteinAbelFiber
 
-open scoped Topology
 open Filter
 
 theorem shifted_gaussian_mass (x y : ℝ) :
@@ -210,7 +203,6 @@ namespace ActualEisensteinCubic
 
 section
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
 theorem actual_fiber_gaussian_mass (a b x y : ℤ)
@@ -254,13 +246,12 @@ theorem eis_gaussian_summable {η : ℝ} (hη : 0 < η) :
     Summable (fun z : O => Complex.exp (-(Real.pi : ℂ) * (η : ℂ) *
       (‖eisEmbedding z‖ ^ 2 : ℂ))) := by
   have hbase := RankTwoPoisson.eis_gauss_summable hη
-  have hcomp : Summable (fun z : O =>
-      RankTwoPoisson.eisGauss η (latticeCoordEquiv z)) :=
+  have hcomp  :=
     (latticeCoordEquiv.summable_iff).2 hbase
   convert hcomp using 1
   funext z
   let p := ActualEisensteinCoordinates.coords z
-  have hz : z = ActualEisensteinCoordinates.eval p.1 p.2 :=
+  have hz  :=
     (ActualEisensteinCoordinates.eval_coords z).symm
   rw [hz]
   have hnormC : ((‖eisEmbedding
@@ -285,7 +276,7 @@ theorem actual_oscillatory_kernel_summable (c : O) (hc : c ≠ 0)
           (Ideal.Quotient.mk (Ideal.span {c}) z ^ 2) *
       Complex.exp (-(Real.pi : ℂ) * (η : ℂ) *
         (‖eisEmbedding z‖ ^ 2 : ℂ))) := by
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+  let  := finite_quotient_span hc
   have hbase := (eis_gaussian_summable hη).norm
   apply hbase.of_norm_bounded
   intro z
@@ -320,8 +311,8 @@ theorem exp_imag_denominator_error (θ A η : ℝ) (hA : 0 ≤ A) :
       |θ| * (A * η ^ 2) := by
   let r : ℝ := 1 + A * η ^ 2
   have hAη : 0 ≤ A * η ^ 2 := mul_nonneg hA (sq_nonneg _)
-  have hr : 1 ≤ r := by dsimp [r]; linarith
-  have hrpos : 0 < r := lt_of_lt_of_le zero_lt_one hr
+  have hr : 1 ≤ r := by linarith
+  have hrpos  := lt_of_lt_of_le zero_lt_one hr
   have hdiff : |θ / r - θ| = |θ| * ((r - 1) / r) := by
     have heq : θ / r - θ = -θ * ((r - 1) / r) := by
       field_simp
@@ -346,7 +337,6 @@ end GaussianPhasePointwise
 
 namespace ActualEisensteinCubic
 
-open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
 theorem actual_O_fiber_gaussian_mass (c r : O) (hc : c ≠ 0) :
@@ -382,7 +372,7 @@ theorem actual_O_fiber_gaussian_mass (c r : O) (hc : c ≠ 0) :
   simpa only [W, hceq, hreq, happly] using hsum
 
 theorem original_abel_gauss_limit (c : O) (hc : c ≠ 0) :
-    letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+    letI  := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
     let a := (ActualEisensteinCoordinates.coords c).1
     let b := (ActualEisensteinCoordinates.coords c).2
@@ -399,7 +389,7 @@ theorem original_abel_gauss_limit (c : O) (hc : c ≠ 0) :
       (𝓝 (K * ∑ r : O ⧸ Ideal.span {c},
         (eisTraceModChar ShortDraftTrace.breveE
           ConcreteBreveE.breveE_period_coordinates c hc) (r ^ 2))) := by
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+  let  := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   let a := (ActualEisensteinCoordinates.coords c).1
   let b := (ActualEisensteinCoordinates.coords c).2

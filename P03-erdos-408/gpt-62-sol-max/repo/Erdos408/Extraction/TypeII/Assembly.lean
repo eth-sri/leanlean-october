@@ -41,8 +41,6 @@ theorem count_at {A₁ C₁r c₃ EM2 : ℝ} (hA₁ : 0 < A₁) (hc₃ : 0 < c�
   have hη : Real.log x ^ (-(45 / 100) : ℝ) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg hL (by norm_num)
   have hθ0 : 0 < θ := by linarith
-  have hθ1 : θ ≤ 1 := by have : 0 ≤ Real.log x ^ (-(45 / 100) : ℝ) := by positivity
-                         linarith
   have hS := sum_candidate_inv_le (x := x) hsf.log_ge hEM2
   have hsmall := rankin_small hsf.one_lt hsf.log_ge hL28 hc₃ hlogY hS hrank
   intro w hw
@@ -131,7 +129,6 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hs0 : 0 ≤ s := by linarith [hX.s1]
   have hx2 : 2 ≤ x := by linarith [hX.x4]
   have hx0 : 0 < x := by linarith
-  have hu1 : 1 ≤ L ^ (1 / 200 : ℝ) := Real.one_le_rpow hL1 (by norm_num)
   -- the number of factors
   have hjs : ((r + 2 : ℕ) : ℝ) ≤ Cj * s + 1 := by
     unfold compositeCutoff at hjJ
@@ -152,10 +149,9 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
     hX.T25 hX.Tc (j := r + 2) (by omega) hjY
   have hsf1 := scaleFacts_of hc₃ hmert hκ hx2 hX.L16 hX.T50 hX.gamma_low hX.T21
     hX.T25 hX.Tc (j := 1) le_rfl (by
-      have : (0 : ℝ) ≤ (r + 2 : ℕ) := Nat.cast_nonneg _
       push_cast at hjY ⊢; linarith)
   -- the endpoint
-  have hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a) := fun a ha =>
+  have hV  := fun a ha =>
     hL₀ x a hX.LL0 ha
   have hlay : 2 * ((inertPerCluster K CN x : ℝ) + 1) * K ≤ 4 / 100 * T := by
     have h1 : (inertPerCluster K CN x : ℝ) ≤ |CN| * s + 1 := inertPerCluster_le hK hs0
@@ -169,9 +165,8 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hSE0 : 0 ≤ endBound q K CN c E₂ x := by
     have := hE.norm_pos
     unfold endBound
-    have : 0 < 1 - q := by linarith
     positivity
-  have hF1 : endBound q K CN c E₂ x ≤ L ^ (1 / 200 : ℝ) :=
+  have hF1  :=
     (endBound_le_exp hq hq₁ hK hc hE₂0 hT1 hs0).trans hX.expE
   have hF3 : (r + 2 : ℝ) ≤ L ^ (1 / 200 : ℝ) := by
     have := hX.F3
@@ -180,7 +175,7 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   -- the factor sums
   have hlogY : Real.log (proxyCutoff x) = L / T ^ 25 := by unfold proxyCutoff; rw [Real.log_exp]
   have hγ2 : 2 ≤ x ^ γ := by
-    have h1 : Real.exp 2 ≤ Real.exp (L ^ (28 / 100 : ℝ)) := Real.exp_le_exp.2 hX.L28
+    have h1  := Real.exp_le_exp.2 hX.L28
     have h2 : (2 : ℝ) ≤ Real.exp 2 := by linarith [Real.add_one_le_exp (2 : ℝ)]
     linarith [hsf.exp_le_rpow]
   have hEγ : EM2 ≤ Real.log (x ^ γ) := by

@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAssembly
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstFrequency
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalQuadraticSieve CanonicalRowCompletion
 open CenteredMomentFirstNormalization CenteredMomentFirstReduced CenteredMomentFirstAssembly
 open CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentPrimitive CenteredMomentGaussEnergy CenteredMomentChildAssembly CenteredMomentMobiusRegroup
-open RayFourExpansion
+open CenteredMomentPrimitive CenteredMomentGaussEnergy CenteredMomentChildAssembly
+open CenteredMomentMobiusRegroup RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]

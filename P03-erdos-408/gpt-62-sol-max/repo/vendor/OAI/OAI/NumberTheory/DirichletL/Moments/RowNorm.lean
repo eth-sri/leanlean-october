@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.Initial
+public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
+public import OAI.NumberTheory.DirichletL.Moments.Primitive
 public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 
 @[expose] public section
@@ -11,9 +12,8 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRowNorm
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentFourier
+open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def pairResidue (a b : O) (ha : Supported (Ideal.span {a}))
@@ -26,7 +26,7 @@ def pairResidue (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (z : O) :
     pairResidue a b ha hb (Ideal.Quotient.mk _ z) =
       idealRowHom z (Ideal.span {a}) * star (idealRowHom z (Ideal.span {b})) := by
-  simp only [pairResidue, frequencyReduction_mk, supportedModulusCharacter_mk]
+  rfl
 
 def pairFourier (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (h : O) : ℂ :=

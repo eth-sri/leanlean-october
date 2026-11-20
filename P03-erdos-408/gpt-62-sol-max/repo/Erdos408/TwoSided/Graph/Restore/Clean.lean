@@ -144,7 +144,7 @@ lemma dvd_sharedProduct_iff {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P
     obtain ⟨i, hi, hi'⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 hg'
     have hsi : s g' i ∈ P g' :=
       mem_of_mem_sharedLabels hs (by simpa [sharedSlots] using hi)
-    have heq : p = s g' i :=
+    have heq  :=
       (Nat.prime_dvd_prime_iff_eq hpp (hprime g' _ hsi)).1 hi'
     obtain rfl : g = g' := by
       by_contra hne
@@ -218,7 +218,7 @@ lemma edgeProduct_merge (C : ι → Finset (Fin J)) (s : ι → Fin J → ℕ)
   have h : ∀ i, (if i ∈ C g then a g i else merge C s l g i.castSucc) =
       if i ∈ C g then a g i else s g i := fun i => by
     by_cases hi : i ∈ C g
-    · rw [ite_eq_left hi, ite_eq_left hi]
+    · simp_all
     · rw [ite_eq_right hi, ite_eq_right hi, merge_castSucc_of_notMem hi]
   simp_rw [h]
   rw [prod_ite, mul_comm]
@@ -412,7 +412,7 @@ lemma physTerm_eq_stripTerm {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀
   set DR := sharedProduct C s
   set DC := slotProduct C a
   have hDR : (DR : ℝ) ≠ 0 := Nat.cast_ne_zero.2 (sharedProduct_pos hprime hs).ne'
-  have hE : edgeProduct C (merge C s l) a = DR * DC := edgeProduct_merge C s l a
+  have hE := edgeProduct_merge C s l a
   have hΨ : Ψ (((DR * w : ℕ) : ℝ) / (x * ((DR * DC : ℕ) : ℝ))) = Ψ (w / (x * DC)) := by
     congr 1
     push_cast

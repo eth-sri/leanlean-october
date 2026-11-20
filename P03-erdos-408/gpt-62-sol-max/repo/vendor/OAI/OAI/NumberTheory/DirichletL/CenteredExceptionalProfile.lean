@@ -56,11 +56,11 @@ theorem exists_unit_probe (Q K P : Ideal O) (hK : K ≠ 0) [P.IsMaximal]
   have hnP := congrArg Prod.snd hx
   dsimp only at hnQJ hnP
   have hn : n - 1 ∈ Q * J := Ideal.Quotient.eq.mp (by simpa using hnQJ)
-  have hnJ : Ideal.Quotient.mk J n = 1 :=
+  have hnJ  :=
     (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mpr (Ideal.mul_le_right hn)
-  have hcJ : IsCoprime (Ideal.span {n}) J :=
+  have hcJ  :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (hnJ ▸ isUnit_one)
-  have hcP : IsCoprime (Ideal.span {n}) P :=
+  have hcP  :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (hnP ▸ u.isUnit)
   refine ⟨n, Ideal.mul_le_left hn, ?_, hnP⟩
   rw [hsplit]
@@ -76,9 +76,9 @@ theorem valuation_mod_six_of_unit_agreement (Q K I J P : Ideal O)
     valuation I P % 6 = valuation J P % 6 := by
   obtain ⟨I₀, hsplitI, hI₀, hcI⟩ := split_at_prime I P hI.1
   obtain ⟨J₀, hsplitJ, hJ₀, hcJ⟩ := split_at_prime J P hJ.1
-  have hsI : CanonicalQuadraticSieve.Supported I₀ :=
+  have hsI  :=
     ((CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplitI ▸ hI)).2
-  have hsJ : CanonicalQuadraticSieve.Supported J₀ :=
+  have hsJ  :=
     ((CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplitJ ▸ hJ)).2
   have hpows : actualSextic P hg ^ valuation I P = actualSextic P hg ^ valuation J P := by
     apply MulChar.ext
@@ -86,8 +86,8 @@ theorem valuation_mod_six_of_unit_agreement (Q K I J P : Ideal O)
     obtain ⟨n, hn, hcK, hnP⟩ := exists_unit_probe (Q * I₀ * J₀) K P hK
       ((hQP.mul_left hcI).mul_left hcJ) u
     have hval := heq n (Ideal.mul_le_left (Ideal.mul_le_left hn)) hcK
-    have hIn : n - 1 ∈ I₀ := Ideal.mul_le_right (Ideal.mul_le_left hn)
-    have hJn : n - 1 ∈ J₀ := Ideal.mul_le_right hn
+    have hIn  := Ideal.mul_le_right (Ideal.mul_le_left hn)
+    have hJn  := Ideal.mul_le_right hn
     rw [hsplitI, hsplitJ, map_mul, map_mul, map_pow, map_pow,
       idealRowHom_congr_mod I₀ n 1 hIn, idealRowHom_congr_mod J₀ n 1 hJn,
       idealRowHom_one_supported I₀ hsI, idealRowHom_one_supported J₀ hsJ,
@@ -114,8 +114,8 @@ theorem elementCoeff_eq_one_of_inducedBy (χ ψ : Character) (h : InducedBy χ �
     elementCoeff χ n = 1 := by
   have hn0 : n ≠ 0 := by
     intro hz
-    have h1 : (1 : O) ∈ Q := by simpa [hz] using Q.neg_mem hn
-    exact hQ ((Ideal.eq_top_iff_one Q).mpr h1)
+    refine hQ ((Ideal.eq_top_iff_one Q).mpr ?_)
+    simpa [hz] using Q.neg_mem hn
   rw [elementCoeff_eq_of_inducedBy χ ψ h n hn0 hc]
   change ψ.residue (Ideal.Quotient.mk ψ.modulus n) = 1
   rw [(Ideal.Quotient.mk_eq_one_iff_sub_mem _).mpr (hψ hn), map_one]
@@ -160,9 +160,9 @@ theorem actual_row_on_fixed_units (η χ : Character) (m f z : O)
     (n : O) (hn : n - 1 ∈ Ideal.span {(72 : O)})
     (hc : IsCoprime (Ideal.span {n}) (Ideal.span {m})) :
     elementCoeff χ n = elementCoeff η n * idealRowHom n (Ideal.span {r}) := by
-  have hd72 : λ₀ ^ 2 ∣ (72 : O) := ActualEisensteinCubic.lambda_sq_dvd_three.trans
+  have hd72  := ActualEisensteinCubic.lambda_sq_dvd_three.trans
     (show (3 : O) ∣ 72 from ⟨24, by norm_num⟩)
-  have hp : λ₀ ^ 2 ∣ n - 1 := hd72.trans (Ideal.mem_span_singleton.mp hn)
+  have hp  := hd72.trans (Ideal.mem_span_singleton.mp hn)
   rw [hχ n, rowTwist_eq_actualPeriodicRow_primary _ _ _ _ hmLam hm2 u a b r hr hpr hx n hp]
   change ((elementCoeff η n * coprimalityMask m n) * numeratorBadTwist u a b r hr n) *
     idealRowHom n (Ideal.span {r}) = _
@@ -201,19 +201,19 @@ theorem valuation_span_eq_zero_of_not_mem (x : O) (P : Ideal O) (hx : x ∉ P) :
   apply Multiset.count_eq_zero.mpr
   intro hP
   have hle := ((Ideal.mem_normalizedFactors_iff (Ideal.span_singleton_eq_bot.not.mpr hx0)).mp hP).2
-  exact hx (hle (Ideal.subset_span (by simp)))
+  simp_all
 
 theorem valuation_supported_numerator (x : O) (u : Oˣ) (a b : ℕ) (r : O)
     (hr : r ≠ 0) (hx : x = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
     (P : Ideal O) (hg : λ₀ ∉ P) (h2 : (2 : O) ∉ P) :
     valuation (Ideal.span {x}) P = valuation (Ideal.span {r}) P := by
   have hu : Ideal.span {(u : O)} = (1 : Ideal O) := by
-    simpa only [Ideal.one_eq_top] using (Ideal.span_singleton_eq_top.mpr u.isUnit)
+    simp
   have hl0 : Ideal.span {λ₀} ≠ (0 : Ideal O) :=
     Ideal.span_singleton_eq_bot.not.mpr PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero
   have h20 : Ideal.span {(2 : O)} ≠ (0 : Ideal O) :=
     Ideal.span_singleton_eq_bot.not.mpr (by norm_num)
-  have hr0 : Ideal.span {r} ≠ (0 : Ideal O) := Ideal.span_singleton_eq_bot.not.mpr hr
+  have hr0  := Ideal.span_singleton_eq_bot.not.mpr hr
   rw [hx]
   simp only [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_pow, hu, one_mul]
   rw [valuation_mul _ _ _ (mul_ne_zero (pow_ne_zero _ hl0) (pow_ne_zero _ h20)) hr0,
@@ -456,11 +456,11 @@ theorem outside_fixed_support (Q : Ideal O) (hQ : Q ≠ 0)
     exact ⟨Ideal.isPrime_of_prime hP, hPJ' ▸ hQJ⟩
   have h72 : (72 : O) ∉ P := by
     intro hh
-    have hle : Q ≤ P := hQ72.trans ((Ideal.span_singleton_le_iff_mem _).mpr hh)
+    have hle  := hQ72.trans ((Ideal.span_singleton_le_iff_mem _).mpr hh)
     have he := Ideal.isCoprime_iff_sup_eq.mp hcop
     rw [sup_eq_right.mpr hle] at he
     exact hP.ne_one (by simpa only [Ideal.one_eq_top] using he)
-  have hl : λ₀ ∣ (72 : O) :=
+  have hl  :=
     (dvd_pow_self λ₀ (by decide : (2 : ℕ) ≠ 0)).trans
       (ActualEisensteinCubic.lambda_sq_dvd_three.trans (show (3 : O) ∣ 72 from ⟨24, by norm_num⟩))
   have h2 : (2 : O) ∣ 72 := ⟨36, by norm_num⟩

@@ -66,7 +66,6 @@ lemma gramPeriodicMonoid_primary (C : CalibrationData) (B : O)
   rw [←he]
   congr 1
   let := finite_quotient_span C.generator_ne_zero
-  let : Fintype (O⧸Ideal.span {C.generator}) := Fintype.ofFinite _
   change star (C.residue (Ideal.Quotient.mk _ n))=(C.residue (Ideal.Quotient.mk _ n))⁻¹
   rw [MulChar.star_apply',MulChar.inv_apply_eq_inv']
 

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFinite
 
@@ -11,8 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorDyadicBridge
-open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def fourierSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U⌉₊
@@ -35,8 +35,8 @@ lemma annular_covered (U D : ℝ) (hD : 0<D) (hDU : D≤8*U)
     (J : Ideal O) (hJ : J≠0) (hw : W ((J.absNorm : ℝ)/D)≠0) :
     J∈fourierSet U := by
   apply mem_idealsUpTo.mpr
-  refine ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ),?_⟩
-  have hr : (J.absNorm : ℝ)/D<2 := lt_of_not_ge (fun hn => hw (hW _ hn))
+  refine ⟨Ideal.one_le_absNorm_of_ne_bot (hJ),?_⟩
+  have hr  := lt_of_not_ge (fun hn => hw (hW _ hn))
   have hn : (J.absNorm : ℝ)≤16*U := by
     have hh := (div_lt_iff₀ hD).mp hr
     linarith

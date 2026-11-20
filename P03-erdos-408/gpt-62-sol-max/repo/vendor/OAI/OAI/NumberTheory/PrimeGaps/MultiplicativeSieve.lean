@@ -11,23 +11,19 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 open scoped ComplexConjugate
 
@@ -120,8 +116,7 @@ theorem multiply_sum_units {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) 
   apply Fintype.sum_of_injective Units.val Units.val_injective
   · intro x hx
     have hu : ¬IsUnit x := by
-      rintro ⟨u,rfl⟩
-      exact hx ⟨u,rfl⟩
+      assumption
     rw [MulChar.map_nonunit _ hu,zero_mul]
   · intro u
     rfl
@@ -188,10 +183,10 @@ noncomputable def unitFrequency {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) : ℚ := (
 
 theorem unitFrequency_den {q : ℕ} [NeZero q] (u : (ZMod q)ˣ) : (unitFrequency u).den=q := by
   have hc : Nat.Coprime u.val.val q := (ZMod.isUnit_iff_coprime _ _).mp
-    (by simpa only [ZMod.natCast_zmod_val] using u.isUnit)
+    (by simp)
   have he : unitFrequency u=Rat.divInt (u.val.val:ℤ) (q:ℤ) := by
     rw [Rat.divInt_eq_div]
-    simp only [unitFrequency,Int.cast_natCast]
+    rfl
   rw [he,Rat.den_divInt]
   simp only [ite_eq_right (Int.natCast_ne_zero.mpr (NeZero.ne q)), Int.natAbs_natCast,
     Int.gcd_natCast_natCast,hc.symm.gcd_eq_one,Nat.div_one]
@@ -248,8 +243,8 @@ theorem multiplicative_large_sieve (Q N : ℕ) (a : Fin N→ℂ) :
     simp only [Finset.univ_eq_empty,Finset.sum_empty,Nat.cast_zero,zero_pow (by decide : 2≠0),
       zero_mul,add_zero]
     positivity
-  have hQpos : 0<Q := Nat.pos_of_ne_zero hQ
-  let s : Finset ℚ := Finset.univ.image (fareyFrequency (Q:=Q))
+  have hQpos  := Nat.pos_of_ne_zero hQ
+  let s  := Finset.univ.image (fareyFrequency (Q:=Q))
   have hs : ∀ r∈s,0≤r ∧ r<1 ∧ r.den≤Q := by
     intro r hr
     obtain ⟨⟨q,u⟩,_,rfl⟩ := Finset.mem_image.mp hr
@@ -302,8 +297,7 @@ theorem primitiveCharacterMean_cauchy {Q : ℕ}
   let w : (Σ q:Fin Q,DirichletCharacter ℂ (q.val+1))→ℝ := fun x =>
     if x.2.IsPrimitive then ((x.1.val+1:ℕ):ℝ)/((x.1.val+1).totient:ℝ) else 0
   have hw (x : Σ q:Fin Q,DirichletCharacter ℂ (q.val+1)) : 0≤w x := by
-    dsimp [w]
-    split <;> positivity
+    positivity
   have hsum (a : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ) :
       (∑ x : Σ q:Fin Q,DirichletCharacter ℂ (q.val+1),w x*a x.1 x.2)=
         primitiveCharacterMean Q a := by
@@ -390,7 +384,7 @@ theorem primitive_polya_vinogradov {q : ℕ} (hq : 1<q) {χ : DirichletCharacter
   let : NeZero q := ⟨by omega⟩
   let : Fact (1<q) := ⟨hq⟩
   let θ : ZMod q→ℝ := fun x=>(x.val:ℝ)/q
-  let f : ZMod q→ℝ := fun u=>‖∑ n∈Finset.range N,bvExp ((n:ℝ)*θ u)‖
+  let f  := fun u=>‖∑ n∈Finset.range N,bvExp ((n:ℝ)*θ u)‖
   have hr : (∑ u∈(Finset.univ : Finset (ZMod q)).erase 0,f u)≤(q:ℝ)*(harmonic q:ℝ) := by
     have h:=exponential_kernel_offdiagonal_bound Finset.univ θ (by omega : 0<q)
       (fun _ _ _ _ hne m => residue_frequency_separation hne m) N (Finset.mem_univ (0:ZMod q))

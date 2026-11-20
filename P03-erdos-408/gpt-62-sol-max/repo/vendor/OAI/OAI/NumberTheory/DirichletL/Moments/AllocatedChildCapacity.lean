@@ -1,7 +1,9 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
-public import OAI.NumberTheory.DirichletL.Moments.CommonMaskChildCapacity
+public import OAI.NumberTheory.DirichletL.Moments.ReflectionLength
+public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 
@@ -10,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentAllocatedChildCapacity
 open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
@@ -27,8 +29,8 @@ lemma clipped_log (Z U : ℝ) (hZ : 1<Z) (hU : 0<U) :
   by_cases h : 1≤U
   · rw [clippedScale,max_eq_right h,max_eq_right (neg_nonpos.mpr (Real.logb_nonneg hZ h))]
     ring
-  · have hu : U≤1 := (lt_of_not_ge h).le
-    have hl : Real.logb Z U≤0 := Real.logb_nonpos hZ hU.le hu
+  · have hu  := (lt_of_not_ge h).le
+    have hl  := Real.logb_nonpos hZ hU.le hu
     rw [clippedScale,max_eq_left hu,max_eq_left (neg_nonneg.mpr hl),Real.logb_one]
     ring
 
@@ -81,9 +83,8 @@ def preVolume (s : Data ι) : ℝ := s.X₁*s.X₂*∏i,s.P i
 lemma selectedNorm_ge_one (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2))) :
     1≤selectedNorm D a := by
   have hn (j : Fin 2) : (1:ℝ)≤Ideal.absNorm (selectedPlain D a j) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
-  exact one_le_mul_of_one_le_of_one_le (hn 0) (hn 1)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j))
+  solve_by_elim [one_le_mul_of_one_le_of_one_le]
 
 lemma remainingLogs_le (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
     (Z : ℝ) (hZ : 1<Z) (P : ι→ℝ) (hP : ∀i,1≤P i) :

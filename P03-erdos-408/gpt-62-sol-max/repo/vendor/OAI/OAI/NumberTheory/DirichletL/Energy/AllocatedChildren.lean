@@ -11,16 +11,14 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSlots
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalRowSource
+open CenteredMomentNaturalFixedRaySource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
 open CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight
-open CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
+open CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight CenteredMomentOriginalRadialComparison
+open CenteredMomentInductionEnergy CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O"=>HeckeFamily.O
 
@@ -81,8 +79,7 @@ lemma natural_subset_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z�
   have hh:=natural_radial_eq_energy (α:=F) η r hz W₁ W₂
     (fun i:F=>pool i) (fun i:F=>β i) (fun i:F=>P i) X₁ X₂ hX₁ hX₂
     (fun i=>hP i i.property)
-  have hp (z:O):(∏i:F,naturalSlot (naturalCharacter η z) (pool i) (β i) (P i))=
-      ∏i∈F,naturalSlot (naturalCharacter η z) (pool i) (β i) (P i):=
+  have hp (z:O):=
     Finset.prod_coe_sort F (fun i:α=>naturalSlot (naturalCharacter η z) (pool i) (β i) (P i))
   simp_rw [hp] at hh
   exact hh
@@ -114,16 +111,15 @@ lemma child_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠0)
       allocatedEnergy η r D a V₁ V₂ pool β P t X₁ X₂ hX₁ hX₂ D₁ D₂ J:=by
   have hd₁:0<(Ideal.absNorm (∏I∈D₁,I):ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.prod_ne_zero_iff.mpr hD₁))
-  have hd₂:0<(Ideal.absNorm (∏I∈D₂,I):ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.prod_ne_zero_iff.mpr hD₂))
-  exact natural_subset_radial_eq_energy η r hz (liveIndices D a\J)
+  refine natural_subset_radial_eq_energy η r hz (liveIndices D a\J)
     (V₁.profile (rawScale D a X₁ 0) (rawScale_pos D a X₁ hX₁ 0) t)
     (V₂.profile (rawScale D a X₂ 1) (rawScale_pos D a X₂ hX₂ 1) t)
     pool (fun i=>heightCoefficient (β i) t) P
     (clippedScale (rawScale D a X₁ 0)/(Ideal.absNorm (∏I∈D₁,I):ℝ))
     (clippedScale (rawScale D a X₂ 1)/(Ideal.absNorm (∏I∈D₂,I):ℝ))
     (div_pos (by unfold clippedScale;positivity) hd₁)
-    (div_pos (by unfold clippedScale;positivity) hd₂) (fun i _=>hP i)
+    (div_pos (by unfold clippedScale;positivity) ?_) (fun i _=>hP i)
+  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.prod_ne_zero_iff.mpr hD₂))
 
 def commonAllocatedEnergy (s:Input α)(τ:Character)(v:ℝ)(C R:Ideal O)
     (B:actualAllocations s.pools C)(D:Ideal O)

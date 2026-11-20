@@ -10,19 +10,16 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeDetectorLower
-open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition
-open GammaZeroDetector
+open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition GammaZeroDetector
 local notation "O" => HeckeFamily.O
 
 lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :
     (3/4 : ℝ) ≤ ‖Complex.exp (-1/((U^20 : ℝ) : ℂ))‖ := by
-  have hUp : 0 < U := by linarith
   have hp : 4 ≤ U^20 := by
     calc
       4 ≤ U^2 := by nlinarith
       _ ≤ U^20 := pow_le_pow_right₀ (by linarith : 1 ≤ U) (by norm_num : 2 ≤ 20)
-  have hi : 1/(U^20) ≤ (1/4 : ℝ) := by
-    exact one_div_le_one_div_of_le (by norm_num) hp
+  have hi := one_div_le_one_div_of_le (by norm_num) hp
   rw [Complex.norm_exp]
   have he : (-1/((U^20 : ℝ) : ℂ)).re = -1/(U^20) := by
     rw [show (-1 : ℂ) = ((-1 : ℝ) : ℂ) by norm_num,←Complex.ofReal_div,Complex.ofReal_re]
@@ -46,9 +43,8 @@ theorem terminal_uniform_lower (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ
   obtain ⟨UT,hUT⟩ := terminalRemainder_uniform_small 1 1 (1/8) (by norm_num) (by norm_num) (by norm_num)
   refine ⟨max 2 (max UG UT),?_⟩
   intro U hU χ hχ V T hVb hTb hVone hVzero hTone D hD hDU hQ ρ hρ hzero hheight
-  have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
+  have hU2  := (le_max_left _ _).trans hU
   have hU1 : 1 ≤ U := by linarith
-  have hUp : 0 < U := by linarith
   have hg := hUG U ((le_max_left UG UT).trans ((le_max_right 2 _).trans hU)) hU1
     χ hχ V hVb D (by linarith) hDU hQ ρ hρ hzero hheight
   have ht := hUT U ((le_max_right UG UT).trans ((le_max_right 2 _).trans hU)) hU1
@@ -91,8 +87,7 @@ theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) 
   obtain ⟨U₁,hU₁⟩ := terminal_uniform_lower R θ hR hθ hθ'
   refine ⟨max 2 U₁,?_⟩
   intro U hU χ hχ V T hVb hTb hVone hVzero hTone hTzero D hD hDU hQ ρ hρ hzero hheight
-  have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
-  have hUpos : 0 < U := by linarith
+  have hU2  := (le_max_left _ _).trans hU
   have ht := hU₁ U ((le_max_right _ _).trans hU) χ hχ V T hVb hTb hVone hVzero hTone D hD hDU hQ ρ hρ hzero hheight
   obtain ⟨j,hj,k,hk,hb⟩ := exists_dyadic_block χ V T D (U^20) (U^21)
     (by positivity) hTzero hVone hVzero ρ (1/2) ht

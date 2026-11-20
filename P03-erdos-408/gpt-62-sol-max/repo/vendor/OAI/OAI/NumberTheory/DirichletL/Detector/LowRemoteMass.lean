@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LowActualIdealLists
 public import OAI.NumberTheory.DirichletL.Detector.LowCentralGeometry
 public import OAI.NumberTheory.DirichletL.Detector.GaussianPhysicalMass
@@ -13,7 +14,6 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma canonicalSlot_count (T : Finset PrimeIdeal) (hT : ∀P∈T,Supported P.val)
     (H : ℝ) (hH : 1≤H) (hnorm : ∀P∈T,(Ideal.absNorm P.val:ℝ)≤H) :
@@ -49,8 +49,7 @@ lemma canonicalTuple_count {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
 lemma slotProduct_norm_ge_one {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0) (J : Finset (Fin K)) :
     1≤elementNorm (slotProduct p J) := by
   unfold elementNorm
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr (slotProduct_nonzero p hp J)))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (slotProduct_nonzero p hp J))
 
 lemma compensationSubsetWeight_norm_le_one {K : ℕ} (η : HeckeFamily.Character)
     (W : Fin K→ℝ→ℂ) (hW : ∀i x,‖W i x‖≤1) (Y : Fin K→ℝ)
@@ -77,8 +76,8 @@ lemma compensation_scale_mass_bound {K : ℕ} (η : HeckeFamily.Character) (C : 
       (fun i : SelectedSlot J=>W i.val)
       (fun p i=>elementNorm (p i.val).val/Z^(ell i.val))≤
         (elementNorm C.generator*(128*max 1 b)^K)*Z := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hp (p : ∀i,canonicalSlotSupport (T i)) (i : Fin K) : (p i).val≠0 :=
+  have hz  := lt_of_lt_of_le zero_lt_one hZ
+  have hp (p : ∀i,canonicalSlotSupport (T i)) (i : Fin K)  :=
     canonicalSlotSupport_nonzero _ (hT i) _ (p i).property
   have hterm (p : ∀i,canonicalSlotSupport (T i)) :
       ‖compensationSubsetWeight η W (fun i=>Z^(ell i)) (fun i=>(p i).val) J‖*
@@ -86,11 +85,9 @@ lemma compensation_scale_mass_bound {K : ℕ} (η : HeckeFamily.Character) (C : 
         lowPhysicalScale C (Z^(17/48:ℝ)/elementNorm (slotProduct (fun i=>(p i).val) J))
           (Z^(23/48:ℝ)/elementNorm (slotProduct (fun i=>(p i).val) J))≤
       elementNorm C.generator*Z^(5/6:ℝ) := by
-    have hcoeff : ‖compensationSubsetWeight η W (fun i=>Z^(ell i)) (fun i=>(p i).val) J‖*
-        (∏i : SelectedSlot J,‖W i.val (elementNorm (p i.val).val/Z^(ell i.val))‖)≤1 := (mul_le_of_le_one_left (Finset.prod_nonneg (fun _ _=>norm_nonneg _)) (compensationSubsetWeight_norm_le_one η W hW _ _ (hp p) J)).trans (Finset.prod_le_one₀ (fun _ _=>norm_nonneg _) (fun (i : SelectedSlot J) _=>hW i.val _))
     have hL := slotProduct_norm_ge_one _ (hp p) J
     rw [lowPhysicalScale_source C Z _ hz]
-    apply (mul_le_of_le_one_left (by unfold elementNorm;positivity) hcoeff).trans
+    apply (mul_le_of_le_one_left (by unfold elementNorm;positivity) ((mul_le_of_le_one_left (Finset.prod_nonneg (fun _ _=>norm_nonneg _)) (compensationSubsetWeight_norm_le_one η W hW _ _ (hp p) J)).trans (Finset.prod_le_one₀ (fun _ _=>norm_nonneg _) (fun (i : SelectedSlot J) _=>hW i.val _)))).trans
     exact div_le_self (by unfold elementNorm;positivity) (one_le_pow₀ hL)
   unfold gaussianPhysicalScaleMass
   apply (Finset.sum_le_sum (fun p _=>hterm p)).trans

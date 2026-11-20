@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierSeparation
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorPartition
 
@@ -9,7 +10,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical
 open HeckeFamily HeckeDetectorProfiles
 noncomputable section
 
@@ -41,9 +42,9 @@ theorem actual_pair_profile (χ : Character) (Ω V T W₁ W₂ : ℝ → ℂ)
   by_cases hW₂ : W₂ ((Ideal.absNorm J : ℝ)/N) = 0
   · simp [hW₂, plainCoefficient]
   have hx : 0 < (Ideal.absNorm I : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hy : 0 < (Ideal.absNorm J : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ)
   have hscale (R : ℝ) := scaled_exp_log_product (Ideal.absNorm I) (Ideal.absNorm J) D N R hx hy hD hN
   have htwo : (2*D*N/Dstar)*Real.exp
       (Real.log ((Ideal.absNorm I : ℝ)/D)+Real.log ((Ideal.absNorm J : ℝ)/N)) =

@@ -59,7 +59,7 @@ theorem cube_common_profile_integral {K : ℕ} {ι : Type*} [Fintype ι]
         ((1/(2*Real.pi):ℝ):ℂ)^3*(∫t,F t ∂heightMeasure) := by
   have hh := finiteCentralCubeRows_eq_integral e he he' S hS hmax hfirst η R hR T hT
     (fun _=>a) (fun _=>B) (fun _=>H) (fun _=>i) ψ
-    (fun u hu=>⟨ha,ha1,hB,hH,hbin u hu⟩) W Yp W0 W1 a0 b0 a1 b1 ha0 ha1' hW0 hW1 X Y Z hX hY hZ
+    (fun u hu=>⟨ha,ha1,hB,hH,hbin u hu⟩) W Yp ⟨W0, W1, a0, b0, a1, b1, ha0, ha1', hW0, hW1⟩ X Y Z hX hY hZ
   dsimp only at hh ⊢
   simpa only [cube_sum_eq_common_profile] using hh
 

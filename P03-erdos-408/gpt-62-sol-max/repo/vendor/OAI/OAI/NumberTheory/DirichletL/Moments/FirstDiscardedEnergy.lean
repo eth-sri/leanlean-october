@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscarded
 
 @[expose] public section
@@ -46,7 +47,7 @@ theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r
       intro x hx
       obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
       rw [norm_mul,(quotientTrace _ _).norm_apply,mul_one,tripleResidue_mk]
-      exact tripleRow_norm_le_one a b r ha hb χa χb G hG z
+      solve_by_elim [tripleRow_norm_le_one]
     _ = _ := by simp [normValue,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
 
 theorem activeFunction_norm_le_one (I J : Ideal O) (hI : CanonicalQuadraticSieve.Supported I)
@@ -115,7 +116,6 @@ theorem canonical_kernel_scale (I J : Ideal O)
   rw [normValue_mul,normValue_mul]
   unfold normValue
   rw [primeSubsetGenerator,span_idealGenerator,residualGenerator_span I J hI,residualGenerator_span J I hJ,div_div]
-  congr 1
   ring
 
 theorem canonical_discarded_term_bound (A : ℕ) :
@@ -138,12 +138,12 @@ theorem canonical_discarded_term_bound (A : ℕ) :
   have hE : (∏ P∈E,P.val)≠(0:Ideal O) := by
     have hh := Ideal.span_singleton_eq_bot.not.mpr he
     simpa only [e,primeSubsetGenerator,span_idealGenerator,Ideal.zero_eq_bot] using hh
-  have hNe : 0<normValue e := norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr he)
+  have hNe  := norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr he)
   have hNe1 : 1≤normValue e := by
     change (1:ℝ)≤(Ideal.absNorm (Ideal.span {e}):ℝ)
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr he))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr he)
   have hk := div_pos hK hNe
-  have hkK : K/normValue e≤K := div_le_self hK.le hNe1
+  have hkK  := div_le_self hK.le hNe1
   have hT := (firstNominalScale_pos I J _ hE K X hK hX).trans_le hsec
   have hscale := actual_first_kernel_reference I J _ hI.1 hJ.1 hE K X HN Tsec hK hX hi hj hsec
   rw [← canonical_kernel_scale I J hI hJ E K] at hscale

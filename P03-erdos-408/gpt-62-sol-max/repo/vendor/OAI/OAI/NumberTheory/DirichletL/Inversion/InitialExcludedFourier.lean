@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedForcing
 
 @[expose] public section
@@ -8,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped BigOperators Classical ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 namespace SevenEighths.InverseInitialExcludedFourier
@@ -20,8 +21,8 @@ open InverseInitialEnergyCallerWindow
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
-open InverseInitialCommonTransform InverseInitialLargePool
-open InverseInitialExcludedPool InverseInitialExcludedForcing
+open InverseInitialCommonTransform InverseInitialLargePool InverseInitialExcludedPool
+open InverseInitialExcludedForcing
 theorem original_tuples_excluded_fourier
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
@@ -42,8 +43,8 @@ theorem original_tuples_excluded_fourier
       (fun q:∀i∈I,Ideal Eis=>j*survivingProduct I q) j⊆F) :
     let S := originalSource Z r b₀
     let P := fun q:∀i∈I,Ideal Eis=>j*survivingProduct I q
-    letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     (∑q∈I.pi L,(∏i∈I.attach,a i.val (q i.val i.property))*
       residualNormalizedPolynomial S (P q) j η (fun _=>1) W Z r z G u)=
       ∫t:ℝ,density (CubicReflectionKernel.logSchwartz W a₀ b₀ ha₀ hs hW)
@@ -56,11 +57,11 @@ theorem original_tuples_excluded_fourier
               (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))))
             (childLogTest wFresh t) Z (r+z-2*G)) u) := by
   intro S P
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   have hjpos : 0<(j.absNorm:ℝ)/Z^G := by
     apply div_pos _ (Real.rpow_pos_of_pos hZ G)
-    exact_mod_cast Nat.pos_of_ne_zero (fun h=>hj0 (Ideal.absNorm_eq_zero_iff.mp h))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hj0)
   let g := CubicReflectionKernel.logSchwartz W a₀ b₀ ha₀ hs hW
   let H : Finset (primePool F)→ℝ→ℂ := fun A t=>density g (Real.log ((j.absNorm:ℝ)/Z^G)) t*
     (primeMark I (fun i=>poolList F (L i))
@@ -83,8 +84,7 @@ theorem original_tuples_excluded_fourier
     apply original_profile_point W wFresh a₀ b₀ ha₀ hs hW F I L hL a hcop Z hZ ell lo hi jlo jhi ha hFresh A
       ((j.absNorm:ℝ)/Z^G) (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) hj hjpos
     apply div_pos _ (Real.rpow_pos_of_pos hZ _)
-    exact_mod_cast Nat.pos_of_ne_zero (fun h=>(InitialMeanSquare.poolProduct_admissible F hF A).1
-      (Ideal.absNorm_eq_zero_iff.mp h))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((InitialMeanSquare.poolProduct_admissible F hF A).1)
   rw [original_tuples_excluded_input W Z r z G b₀ hZ (fun x hx=>(hs hx).2) E hE
     (I.pi L) P j hP (fun q _=>dvd_mul_right j _) hPE F hF hFE hsub η hη (fun q=>∏i∈I.attach,a i.val (q i.val i.property)) u]
   change ((Z^(-(r+z-2*G)/2):ℝ):ℂ)*inputConjugateRow

@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialTail
+public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
+public import OAI.NumberTheory.DirichletL.Moments.InductionEnergy
 public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceFamily
 
 @[expose] public section
@@ -8,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentNaturalRadialCutoff
 open HeckeFamily ConcreteTraceCRT CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialTail CenteredMomentOriginalRadialComparison
-local notation "O" => HeckeFamily.O
+open CenteredMomentOriginalRadialComparison
 
 lemma reciprocal_cutoff_bound (Z xi:ℝ) (order:ℕ) (hZ:0<Z) :
     ((1+Z^xi)^order)⁻¹≤Z^(-xi*(order:ℝ)) := by

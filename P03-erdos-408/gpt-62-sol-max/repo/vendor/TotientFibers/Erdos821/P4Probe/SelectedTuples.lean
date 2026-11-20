@@ -58,8 +58,8 @@ def flatPartialRows (S : P.BigGroup → Finset (Fin J)) :
     PartialSample (bigFlatSet P J S) (BigAlphabet P J) ≃ BigRowPartial S where
   toFun x g i := x ⟨(g, i.val), by simp [bigFlatSet, i.property]⟩
   invFun x z := x z.val.1 ⟨z.val.2, by simpa [bigFlatSet] using z.property⟩
-  left_inv x := by funext z; rfl
-  right_inv x := by funext g i; rfl
+  left_inv x := by rfl
+  right_inv x := by rfl
 
 def flatSelectedSiteEquiv (S : P.BigGroup → Finset (Fin J)) :
     {z // z ∈ bigFlatSet P J S} ≃ (Σ g : P.BigGroup, {i // i ∈ S g}) where

@@ -20,10 +20,10 @@ theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
   by_cases hs : s.Nonempty
   · let a := s.min' hs
     let b := s.max' hs
-    have ha : a ∈ s := Finset.min'_mem _ hs
-    have hb : b ∈ s := Finset.max'_mem _ hs
-    have hab : a ≤ b := Finset.min'_le _ _ hb
-    have hbN : b < N := Finset.mem_range.mp (Finset.mem_filter.mp hb).1
+    have ha  := Finset.min'_mem _ hs
+    have hb  := Finset.max'_mem _ hs
+    have hab  := Finset.min'_le _ _ hb
+    have hbN  := Finset.mem_range.mp (Finset.mem_filter.mp hb).1
     refine ⟨a, b + 1, by omega, by omega, ?_⟩
     change s = Finset.Ico a (b + 1)
     ext j
@@ -32,7 +32,7 @@ theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
       exact Finset.mem_Ico.mpr ⟨Finset.min'_le _ _ hj, Nat.lt_succ_iff.mpr (Finset.le_max' _ _ hj)⟩
     · intro hj
       rcases Finset.mem_Ico.mp hj with ⟨haj, hjb⟩
-      have hjb' : j ≤ b := Nat.lt_succ_iff.mp hjb
+      have hjb'  := Nat.lt_succ_iff.mp hjb
       apply Finset.mem_filter.mpr
       refine ⟨Finset.mem_range.mpr (lt_of_le_of_lt hjb' hbN), ?_⟩
       exact ⟨(Finset.mem_filter.mp ha).2.1.trans (hd haj),
@@ -126,7 +126,7 @@ theorem norm_sum_le_bad_card_add_good_blocks
 length-plus-two bound. -/
 theorem floor_interval_card_le (L U : ℝ) (hLU : L ≤ U) :
     ((Finset.Icc ⌊L⌋ ⌊U⌋).card : ℝ) ≤ U - L + 2 := by
-  have hfloor : ⌊L⌋ ≤ ⌊U⌋ := Int.floor_le_floor hLU
+  have hfloor  := Int.floor_le_floor hLU
   have hcardZ := Int.card_Icc_of_le ⌊L⌋ ⌊U⌋ (show ⌊L⌋ ≤ ⌊U⌋ + 1 by omega)
   have hcard : ((Finset.Icc ⌊L⌋ ⌊U⌋).card : ℝ) = (⌊U⌋ : ℝ) + 1 - (⌊L⌋ : ℝ) := by
     exact_mod_cast hcardZ
@@ -141,10 +141,10 @@ theorem phase_bad_near_integer (d : ℕ → ℝ) (N : ℕ) (β L U : ℝ)
     (hj : j ∈ Finset.range N \ (Finset.Icc ⌊L⌋ ⌊U⌋).biUnion (phaseGoodBlock d N β)) :
     ∃ k : ℤ, |d j - (k : ℝ)| < β := by
   classical
-  have hjN : j < N := Finset.mem_range.mp (Finset.mem_sdiff.mp hj).1
+  have hjN  := Finset.mem_range.mp (Finset.mem_sdiff.mp hj).1
   have hnotmem := (Finset.mem_sdiff.mp hj).2
   let k : ℤ := ⌊d j⌋
-  have hk : k ∈ Finset.Icc ⌊L⌋ ⌊U⌋ :=
+  have hk  :=
     Finset.mem_Icc.mpr ⟨Int.floor_le_floor (hrange j hjN).1,
       Int.floor_le_floor (hrange j hjN).2⟩
   have hnot : ¬((k : ℝ) + β ≤ d j ∧ d j ≤ (k : ℝ) + 1 - β) := by
@@ -157,7 +157,7 @@ theorem phase_bad_near_integer (d : ℕ → ℝ) (N : ℕ) (β L U : ℝ)
   by_cases hleft : d j - (k : ℝ) < β
   · refine ⟨k, ?_⟩
     rwa [abs_of_nonneg (sub_nonneg.mpr hklo)]
-  · have hleft' : β ≤ d j - (k : ℝ) := le_of_not_gt hleft
+  · have hleft'  := le_of_not_gt hleft
     have hright : (k : ℝ) + 1 - β < d j := by
       apply lt_of_not_ge
       intro hupper
@@ -211,7 +211,7 @@ theorem norm_sum_le_near_integer_bound_local
       ‖∑ j ∈ Finset.Ico a b, z j‖ ≤ C) :
     ‖∑ j ∈ Finset.range N, z j‖ ≤ B + (U - L + 2) * C := by
   classical
-  let e : ℕ → ℝ := fun j => d (min j (N - 1))
+  let e  := fun j => d (min j (N - 1))
   have heq (j : ℕ) (hj : j < N) : e j = d j := by
     dsimp [e]
     rw [min_eq_left (by omega)]
@@ -224,7 +224,6 @@ theorem norm_sum_le_near_integer_bound_local
         have := min_le_right i (N - 1)
         omega
       · change min j (N - 1) < N
-        have := min_le_right j (N - 1)
         omega
       · exact min_le_min_right _ hij
   have hindices : nearIntegerIndices e N β = nearIntegerIndices d N β := by
@@ -238,7 +237,7 @@ theorem norm_sum_le_near_integer_bound_local
   · intro k hk a b hab hbN hstrip
     apply hcancel k hk a b hab hbN
     intro j hj
-    have hjN : j < N := lt_of_lt_of_le (Finset.mem_Ico.mp hj).2 hbN
+    have hjN  := lt_of_lt_of_le (Finset.mem_Ico.mp hj).2 hbN
     simpa only [heq j hjN] using hstrip j hj
 
 end Problem337

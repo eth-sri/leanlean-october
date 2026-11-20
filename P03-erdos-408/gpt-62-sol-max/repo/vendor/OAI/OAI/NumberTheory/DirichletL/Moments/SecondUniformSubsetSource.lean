@@ -1,52 +1,70 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondLiveSourceDescent
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalChosenBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalScalar
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalPhysical
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
+public import OAI.NumberTheory.DirichletL.Moments.SecondEnergySplit
+public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
+public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
+public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
+public import OAI.NumberTheory.DirichletL.Moments.SecondSupportedChildren
+public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
+public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalAggregate
 public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
-public import OAI.NumberTheory.DirichletL.Moments.SecondSourceRemainder
-public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalLiveSource
+
+
+
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalUniformSource
+public import OAI.NumberTheory.DirichletL.Moments.SecondSourceDiagonal
+public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
+public import OAI.NumberTheory.DirichletL.Moments.SecondLocalization
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalSourceCaps
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalAggregate
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalSourceFamily
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalKernel
+public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalBudget
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCommonSaving
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPhysicalSaving
+public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondUniformSubsetSource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentOriginalCommonHarmonic
+open CenteredMomentSecondNonexceptionalChosenBlock
+open CenteredMomentSecondNonexceptionalAggregate CenteredMomentSecondExceptionalFamily
+open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate
+open CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit
+open CenteredMomentActiveSource CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
+open CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSourceRow
+open CenteredMomentSectorLocalization CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
+open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
 open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
 open CenteredMomentSecondActivePhysicalDictionary
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
 open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
-open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
-
-lemma control_mono {wlo whi : ℝ} (p : Profiles wlo whi)
-    {S T : Finset (ℕ×ℕ)} (h : S⊆T) : p.control S≤p.control T := by
-  unfold Profiles.control
-  exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) _)
-    (Seminorm.le_def.mp (Finset.sup_mono h) _)
-    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+open CenteredMomentLogDyadic MeasureTheory UniqueFactorizationMonoid
+open CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
 
 lemma moment_mono {j k : ℕ} (h : j≤k) : profileMoment j≤profileMoment k := by
   apply integral_mono (columnDensity_moments _ logAnnulus_compact logAnnulus_smooth j)
@@ -59,7 +77,7 @@ lemma factor_mono {wlo whi : ℝ} {S T : Finset (ℕ×ℕ)} (hST : S⊆T)
     (s : Input ι) (p : Profiles wlo whi) {j k : ℕ} (hjk : j≤k)
     (Q : Ideal O) {A B : ℝ} (hA : 0≤A) (hAB : A≤B) :
     profileFactor S s p j Q A≤profileFactor T s p k Q B := by
-  have hp:=control_mono p hST
+  have hp:=p.control_mono hST
   have hpn:=p.control_nonneg S
   have hpn':=p.control_nonneg T
   have hm:=moment_mono hjk

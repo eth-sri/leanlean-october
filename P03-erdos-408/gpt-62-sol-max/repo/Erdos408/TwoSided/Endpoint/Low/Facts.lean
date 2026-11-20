@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.TwoSided.Endpoint.Low.Model
 
 /-!
@@ -152,7 +153,6 @@ theorem norm_combine_le {d : ℕ} {Ts : Finset (Fin (d + 1) → ℕ)} {Bc : (Fin
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
           have hb := hΔ Q hQ
           rw [hcast] at hb
-          have hpos : (0 : ℝ) < ∏ i, (Q i : ℝ) := by rw [← hcast]; exact_mod_cast hl Q hQ
           calc |Bc (Fin.init Q)| * ‖Pm (∏ i, Q i) - Θ / ((∏ i, Q i : ℕ) : ℂ)‖
               ≤ 1 * (α * Y / ∏ i, (Q i : ℝ) + β) :=
                 mul_le_mul (hBc _) hb (norm_nonneg _) zero_le_one
@@ -175,10 +175,10 @@ theorem one_lt_of_ne_zero {ψ₁ : ℝ → ℂ} (hc : Continuous ψ₁)
     intro z hz
     by_contra h
     exact absurd (hs z h).1 (not_le.2 hz)
-  have hcl : closure (Set.Iio (1 : ℝ)) ⊆ {y | ψ₁ y = 0} :=
+  have hcl  :=
     (IsClosed.closure_subset_iff (isClosed_eq hc continuous_const)).2 hsub
   rw [closure_Iio] at hcl
-  have h1 : ψ₁ 1 = 0 := hcl (Set.mem_Iic.2 le_rfl)
+  have h1  := hcl (Set.mem_Iic.2 le_rfl)
   refine lt_of_le_of_ne (hs y hy).1 fun h => hy ?_
   rw [← h, h1]
 
@@ -223,9 +223,7 @@ theorem eventually_three_rpow_le {c : ℝ} (hc : 0 < c) :
     rw [← Real.rpow_natCast]
     exact_mod_cast hT20
   have hTpos : 0 < T ^ 20 := by positivity
-  have hhalf : L / L ^ (1 / 2 : ℝ) = L ^ (1 / 2 : ℝ) := by
-    rw [div_eq_iff (by positivity), ← Real.rpow_add hL]
-    norm_num
+  have hhalf : L / L ^ (1 / 2 : ℝ) = L ^ (1 / 2 : ℝ) := by rpow_ring hL
   calc 3 * L ^ (0.47 : ℝ) = c / 2 * (6 / c * L ^ (0.47 : ℝ)) := by field_simp; ring
     _ ≤ c / 2 * L ^ (1 / 2 : ℝ) := by gcongr
     _ = c / 2 * L / L ^ (1 / 2 : ℝ) := by rw [mul_div_assoc, hhalf]
@@ -271,8 +269,8 @@ theorem eventually_log_le_rpow (c : ℝ) :
   simp only [logLog, Real.rpow_one] at hT h2
   set L := Real.log x
   set T := Real.log L
-  have hT1 : 1 ≤ T := le_of_max_le_left hT
-  have hT2 : 2 * c ≤ T := le_of_max_le_right hT
+  have hT1  := le_of_max_le_left hT
+  have hT2  := le_of_max_le_right hT
   have hT20 : T ≤ T ^ 20 := le_self_pow₀ hT1 (by norm_num)
   have hε : c / T ^ 20 ≤ 1 / 2 := by
     rw [div_le_iff₀ (by positivity)]

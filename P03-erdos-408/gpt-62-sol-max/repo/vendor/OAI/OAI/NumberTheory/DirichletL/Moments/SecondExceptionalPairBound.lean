@@ -1,28 +1,33 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairDictionary
-public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalWindow
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
+public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
+public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
+
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalPairBound
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
 open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonExceptionalWindow
+open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
+open CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentHeckeColumnWindow
+open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSourceMass
+open CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair CenteredMomentLogDyadic
+open RayFourExpansion CenteredMomentSmooth
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
+open CenteredMomentSecondHeightFamily
 open CenteredMomentSecondExceptionalPairDictionary
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -47,11 +52,6 @@ def originalPair (s:Input ι)(η:Character)(χ ξ:RayCharacter)(A:O)
             (fun I:sectorPool D hD.1 S=>β (D*I)*heightCoeff η t I)) ξ I*
           star (columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/Y)) w)) (-z)‖)
 
-omit [DecidableEq ι] in
-lemma window_withHeight (s:Input ι)(τ η:Character)(v t θ X:ℝ)(C:Ideal O)(hC:Supported C)
-    (R seed L:Ideal O)(V:ℝ→ℂ)(z:O):
-    windowColumn (withHeight s τ v) C hC R seed L η t θ X V z=
-      windowColumn s C hC R seed L η t θ X V z:=rfl
 
 end SevenEighths.CenteredMomentSecondExceptionalPairBound
 

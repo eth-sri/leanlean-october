@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailCoefficient
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailScale
 
@@ -34,9 +35,9 @@ theorem coordinates_sourcePoint (p : ι→O) (k : Fin 5→Finset ι) (h : O) :
 theorem original_frequency_fiber_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hcop : OAI.PrincipalFamily.Coprime p)
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (Ψ : O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : O)

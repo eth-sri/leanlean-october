@@ -21,15 +21,9 @@ lemma continuedCompensatedLocal_ramified_bound (η : Character) (u : FreeRow) (P
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))‖≤
         385*(P.val.absNorm:ℝ)^(max (1-w.re) 0) := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
-  have ha : ‖actualACube η p‖≤1 := by
-    have h := actualAPhase_norm_le_one η p
-    rw [←actualACube_sq,norm_pow] at h
-    nlinarith [norm_nonneg (actualACube η p)]
+  obtain ⟨hp, hspan, _, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  have ha := actualACube_norm_le η p
   rw [continuedCompensatedLocal_ramified η u P hs hP x w z]
   have hb := ramifiedSelected_bound p hp hg.1 hg.2 _ _ _ x w z
     (hspan.symm ▸ hQ) (targetMonoid_norm_le_one η p) ha
@@ -43,11 +37,8 @@ lemma continuedCompensatedLocal_unramified_bound (η : Character) (u : FreeRow) 
     ‖continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))‖≤961 := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  obtain ⟨hp, hspan, _, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hnot : ¬p∣u.val := by
     intro hd
     apply hP

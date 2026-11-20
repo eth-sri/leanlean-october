@@ -68,4 +68,24 @@ noncomputable def primeF (x : ℝ) : ℝ :=
 noncomputable def primeFSq (x : ℝ) : ℝ :=
   ∑ p ∈ primesIoc 1 x, (F p : ℝ) ^ 2
 
+/-- The primes in `[a, b]`. -/
+noncomputable def primesIcc (a b : ℝ) : Finset ℕ :=
+  (Finset.Icc ⌈a⌉₊ ⌊b⌋₊).filter Nat.Prime
+
+/-- Membership in `primesIcc 2 z`. -/
+lemma mem_primesIcc_two {z : ℝ} {p : ℕ} : p ∈ primesIcc 2 z ↔ p.Prime ∧ (p : ℝ) ≤ z := by
+  simp only [primesIcc, Finset.mem_filter, Finset.mem_Icc]
+  constructor
+  · rintro ⟨⟨-, h⟩, hp⟩
+    exact ⟨hp, (Nat.le_floor_iff' hp.ne_zero).1 h⟩
+  · rintro ⟨hp, h⟩
+    refine ⟨⟨?_, (Nat.le_floor_iff' hp.ne_zero).2 h⟩, hp⟩
+    rw [Nat.ceil_le]
+    exact_mod_cast hp.two_le
+
+/-- `primesIcc 2 w` and `primesIoc 1 w` are both the primes up to `w`. -/
+lemma primesIcc_two_eq (w : ℝ) : primesIcc 2 w = primesIoc 1 w := by
+  ext p
+  rw [mem_primesIcc_two, mem_primesIoc_one]
+
 end Erdos408

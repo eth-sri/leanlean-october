@@ -8,7 +8,7 @@ public import Mathlib.RingTheory.UniqueFactorizationDomain.Finsupp
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
@@ -28,7 +28,7 @@ lemma idealFromValuations_ne_zero (v : PrimeIdeal →₀ ℕ) : idealFromValuati
 
 @[simp] lemma primeValuations_apply (I : Id) (P : PrimeIdeal) :
     primeValuations I P=(normalizedFactors I).count P.val := by
-  simp only [primeValuations,Finsupp.subtypeDomain_apply,factorization_eq_count]
+  rfl
 
 @[simp] lemma primeValuations_one : primeValuations 1=0 := by
   simp only [primeValuations,factorization_one,Finsupp.subtypeDomain_zero]
@@ -55,7 +55,7 @@ lemma primeValuations_pow (I : Id) (n : ℕ) :
     Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
 
 @[simp] lemma idealFromValuations_zero : idealFromValuations 0=1 := by
-  simp [idealFromValuations]
+  rfl
 
 lemma idealFromValuations_add (v w : PrimeIdeal →₀ ℕ) :
     idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w := by
@@ -116,9 +116,7 @@ def finsuppPairEquiv {α β γ : Type*} [Zero β] [Zero γ] :
   left_inv v := by
     apply Prod.ext <;> ext a <;> rfl
   right_inv v := by
-    apply Finsupp.ext
-    intro a
-    exact Prod.eta (v a)
+    aesop
 
 abbrev HighValuation := (ℕ×ℕ)×(ℕ×ℕ)
 abbrev NonzeroIdeal := {I : Id // I≠0}
@@ -130,11 +128,6 @@ def highValuationEquiv : ((NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroId
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)).trans
       ((Equiv.prodCongr finsuppPairEquiv finsuppPairEquiv).trans finsuppPairEquiv)
 
-@[simp] lemma highValuationEquiv_apply
-    (a : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) (P : PrimeIdeal) :
-    highValuationEquiv a P =
-      ((primeValuations a.1.1.val P,primeValuations a.1.2.val P),
-        (primeValuations a.2.1.val P,primeValuations a.2.2.val P)) := rfl
 
 end SevenEighths.ProbePhysical
 end

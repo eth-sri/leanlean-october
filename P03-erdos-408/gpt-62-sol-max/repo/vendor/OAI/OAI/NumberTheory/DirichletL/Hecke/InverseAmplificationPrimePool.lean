@@ -60,13 +60,13 @@ theorem eventually_fixed_ray_amplification
         4*(1+2*Real.log (x*b))*E*Real.log x/(c*x) := by
   obtain ⟨c,hc,hcard⟩ := CenteredMomentPrimePool.eventually_primePool_card M H hH S
     φ hφ hφc hφp hφ0 hφne a b B ha hab hB hφs hφB
-  have hb : 0<b := ha.trans_le hab
+  have hb  := ha.trans_le hab
   refine ⟨c,hc,?_⟩
   filter_upwards [hcard,eventually_gt_atTop (1 : ℝ),eventually_ge_atTop (1/b)] with x hcard hx hxB
   intro data rows W wa wb D U E hwa hwb hWs hW hD hrows hraw0 hraw1
-  have hx0 : 0<x := zero_lt_one.trans hx
-  have hxblog : 1≤x*b := (div_le_iff₀ hb).mp hxB
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hx0  := zero_lt_one.trans hx
+  have hxblog  := (div_le_iff₀ hb).mp hxB
+  have hlog  := Real.log_pos hx
   have hc' : c*x/Real.log x≤((typedPrimePool M H S a b x).card : ℝ) := by
     rw [typedPrimePool_card]
     exact hcard

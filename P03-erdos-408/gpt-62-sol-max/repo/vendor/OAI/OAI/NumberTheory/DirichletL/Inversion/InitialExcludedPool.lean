@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCompletePool
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 
@@ -35,17 +36,17 @@ theorem admissible_mem_excluded_complete (E:Finset (Ideal O)){I:Ideal O}
     I∈InitialMeanSquare.outsideSquarefreeIdeals E D := by
   apply Finset.mem_filter.mpr
   refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,hD,hout⟩,hI.2.1⟩
-  exact Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
+  exact Ideal.one_le_absNorm_of_ne_bot (hI.1)
 
 theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset κ)
     (P:κ→Ideal O)(j:Ideal O)(hE:∀Q∈E,Prime Q)
     (hP:∀k∈T,Admissible (P k))(hj:∀k∈T,j∣P k)
     (hPE:∀k∈T,outside E (P k))
-    (hA:∀n∈A,Squarefree n→Supported n)(bmax Xmax:ℝ)(hb:0≤bmax)(_hX:0≤Xmax):
+    (hA:∀n∈A,Squarefree n→Supported n)(bound:ℝ):
     ∃D:ℕ,tupleColumns (originalOutside A E) T P j⊆
       InitialMeanSquare.outsideSquarefreeIdeals E D ∧
-      ∀b X:ℝ,0≤b→b≤bmax→0≤X→X≤Xmax→b*X≤(D:ℝ) := by
-  let D:=max (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊
+      bound≤(D:ℝ) := by
+  let D:=max (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bound⌉₊
   refine ⟨D,?_,?_⟩
   · intro c hc
     obtain ⟨k,hk,hc⟩:=Finset.mem_biUnion.mp hc
@@ -61,10 +62,8 @@ theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset 
     exact (original_column_norm_bound A (hP k hk) (hj k hk) hcA).trans
       ((Nat.mul_le_mul_left (A.sup Ideal.absNorm)
         (Finset.le_sup (f:=fun k=>(P k).absNorm) hk)).trans (le_max_left _ _))
-  · intro b X hb0 hbb hX0 hXX
-    apply (mul_le_mul hbb hXX hX0 hb).trans
-    exact (Nat.le_ceil (bmax*Xmax)).trans (by exact_mod_cast (le_max_right
-      (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊))
+  · exact (Nat.le_ceil bound).trans (by exact_mod_cast (le_max_right
+      (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bound⌉₊))
 
 end SevenEighths.InverseInitialExcludedPool
 

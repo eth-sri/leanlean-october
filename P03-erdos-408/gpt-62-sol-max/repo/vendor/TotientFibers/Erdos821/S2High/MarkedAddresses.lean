@@ -5,7 +5,6 @@ public import Erdos821.S2High.PivotAssignments
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2High
 
@@ -14,7 +13,6 @@ open Erdos821.Blueprint.Graph
 variable {F : FixedData} {P : PrimeGroups} {J m n B : ℕ} {A : Model F P J m}
 
 local notation "PivotAddrFin" => BirthAddressFin P (J + F.ell) n B
-local notation "PivotAddr" => Erdos821.S2Core.BirthAddress P (J + F.ell) n B
 abbrev PivotBlocks (pi : Finset (Finset PivotAddrFin)) := {C : Finset PivotAddrFin // C ∈ pi}
 
 def performedAddressSet (pi : Finset (Finset PivotAddrFin)) : Finset PivotAddrFin :=

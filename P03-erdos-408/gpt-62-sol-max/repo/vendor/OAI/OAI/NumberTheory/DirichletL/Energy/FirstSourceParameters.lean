@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMargins
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstSourceParameters
@@ -48,7 +48,6 @@ theorem parameter_gates (M A B κ ε:ℝ)(hM:0≤M)(hA:0≤A)(hB:0≤B)
   have hb:=bounds M B κ ε hM hB hκ0 hε
   have hr:=hb.2.2.2.1
   have hrs:reserve M B ε≤amplification ε/100:=min_le_left _ _
-  have hm:=hb.2.2.2.2.2.1
   have hes:0<sourceEpsilon M A B ε:=by unfold sourceEpsilon;positivity
   have hesr:sourceEpsilon M A B ε≤reserve M B ε:=by
     unfold sourceEpsilon
@@ -80,7 +79,7 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
   have hκ0:0≤κ:=by linarith
   have h:=actual_frequency_four_budget M A B (A+1) κ ε hM hA hB (by linarith) hκ0 hε
   obtain ⟨_,_,hem,_,_,hevent⟩:=h
-  have hr:0<reserve M B ε:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
+  have hr:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
   filter_upwards [hevent] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro k εchild hchild j

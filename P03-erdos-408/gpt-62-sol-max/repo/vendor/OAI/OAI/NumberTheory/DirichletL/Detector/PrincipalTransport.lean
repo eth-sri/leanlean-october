@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalContours
 public import OAI.NumberTheory.DirichletL.ContinuationPolynomialContour
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -9,12 +10,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalTransport
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds
+open ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary
+open ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma gaussianMoment_tendsto (n : ℕ) : Tendsto (gaussianMoment n) atTop (𝓝 0) := by
@@ -24,7 +25,7 @@ lemma gaussianMoment_tendsto (n : ℕ) : Tendsto (gaussianMoment n) atTop (𝓝 
     calc
       _ ≤ ((2:ℝ)^(n-1)*(1^n+|t|^n))*Real.exp (-(t^2)) :=
         mul_le_mul_of_nonneg_right h (Real.exp_pos _).le
-      _ = _ := by simp only [one_pow]; ring
+      _ = _ := by ring
   exact squeeze_zero (gaussianMoment_nonneg n) hb
     (by simpa using (Continuation.polynomialGaussian_tendsto n).const_mul ((2:ℝ)^(n-1)))
 
@@ -78,21 +79,20 @@ theorem verticalIntegral_eq_of_shifted_gaussian (F : ℂ → ℂ) {a c A : ℝ}
 theorem principal_box_majorant {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a ξlo : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξlo : 1/6<ξlo) :
     ∃ A : ℝ,0≤A ∧ ∀σ∈Icc a 3,∀ξ∈Icc ξlo 2,∀p : HeightSpace,
-      ‖continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
+      ‖continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z
         ((σ:ℂ)+p.1.1*I) ((3:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)*
         LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I))*
         LFunction (fixedSourcePrincipal S hS.prime) ((3:ℂ)+p.2*I)‖≤A*jointEnvelope 8 p := by
   obtain ⟨C,hC,hR⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound
     (η.excludePrimes S hS.prime) a hβ
-  obtain ⟨D,hD,hd⟩ := ProbeRadialMellin.radial_mellin_strip_decay W0 a0 b0 ha0 hW0 ξlo 2
+  obtain ⟨D,hD,hd⟩ := ProbeRadialMellin.radial_mellin_strip_decay mw.left mw.leftLo mw.leftHi mw.left_pos mw.left_support ξlo 2
     (by linarith) 10
-  obtain ⟨E,hE,he⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay W1 a1 b1 ha1 hW1
-    (W1.smooth ⊤) 3 3 10
+  obtain ⟨E,hE,he⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support
+    (mw.right.smooth ⊤) 3 3 10
   let A := arithmeticAmplitude S J T b X Y Z a 3 2 3 C 2 (6*ξlo-1)
   let B := realGaussianBound a 3 ξlo 2*2^8*D*E
   have hA : 0≤A := arithmeticAmplitude_nonneg S hS.prime J T b X Y Z a 3 2 3 C 2 (6*ξlo-1)
@@ -114,14 +114,14 @@ theorem principal_box_majorant {ι : Type*} (η : Character) (S : Finset Id)
   have hb := arithmetic_onLines_bound_of_gaps η S hS J T b hT X Y Z a 3 2 3 σ ξ 3 C
     hX hY hZ ha hσ hξ' (by norm_num) (by norm_num) 2 (6*ξlo-1)
     (by norm_num) (by linarith) hC hR p hw hz
-  have hp := profile_moment_majorant W0 W1 8 hσ hξ hD.le hE.le (hd ξ hξ)
+  have hp := profile_moment_majorant mw.left mw.right 8 hσ hξ hD.le hE.le (hd ξ hξ)
     (he 3 ⟨le_rfl,le_rfl⟩) p
   rw [←arithmetic_profile_eq_source,norm_mul]
   calc
-    _ ≤ (A*jointHeight p.1.1 p.1.2 p.2^8)*‖profile W0 W1
+    _ ≤ (A*jointHeight p.1.1 p.1.2 p.2^8)*‖profile mw.left mw.right
         ((σ:ℂ)+p.1.1*I) ((3:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)‖ :=
       mul_le_mul_of_nonneg_right hb (norm_nonneg _)
-    _ = A*(jointHeight p.1.1 p.1.2 p.2^8*‖onLines W0 W1 σ ξ 3 p‖) := by
+    _ = A*(jointHeight p.1.1 p.1.2 p.2^8*‖onLines mw.left mw.right σ ξ 3 p‖) := by
       simp only [onLines,ofReal_ofNat]; ring
     _ ≤ A*(B*jointEnvelope 8 p) := mul_le_mul_of_nonneg_left hp hA
     _ = _ := by ring
@@ -129,20 +129,19 @@ theorem principal_box_majorant {ι : Type*} (η : Character) (S : Finset Id)
 theorem continued_x_shift {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a ξ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8<a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a)
     (hξ : 1/6<ξ) (hξ2 : ξ≤2) (v u : ℝ) :
-    verticalIntegral a (fun s => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
+    verticalIntegral a (fun s => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z
       s ((3:ℂ)+u*I) ((ξ:ℂ)+v*I)*LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+v*I))*
         LFunction (fixedSourcePrincipal S hS.prime) ((3:ℂ)+u*I)) =
-    verticalIntegral 3 (fun s => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
+    verticalIntegral 3 (fun s => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z
       s ((3:ℂ)+u*I) ((ξ:ℂ)+v*I)*LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+v*I))*
         LFunction (fixedSourcePrincipal S hS.prime) ((3:ℂ)+u*I)) := by
-  obtain ⟨A,hA,hb⟩ := principal_box_majorant η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨A,hA,hb⟩ := principal_box_majorant η S hS J T b hT mw
     X Y Z a ξ hX hY hZ ha.le hβ hξ
-  have hh := continued_source_differentiable_strip η S hS J T b hT W0 W1 X Y Z hZ
+  have hh := continued_source_differentiable_strip η S hS J T b hT mw.left mw.right X Y Z hZ
     ((3:ℂ)+u*I) ((ξ:ℂ)+v*I) (by norm_num) (by simpa using (show (4/25:ℝ)≤ξ by linarith)) ha hβ
     (c:=3)
   apply verticalIntegral_eq_of_shifted_gaussian _ 8 v ha3
@@ -186,28 +185,26 @@ lemma continued_principal_differentiable_z {ι : Type*} (η : Character) (S : Fi
   intro z hz
   have h0 : (6*z:ℂ)≠0 := by
     intro he; have hh := congrArg Complex.re he; norm_num at hh; change (1/6:ℝ)<z.re at hz; linarith
-  have h1 : (6*z:ℂ)≠1 := by
-    intro he; have hh := congrArg Complex.re he; norm_num at hh; change (1/6:ℝ)<z.re at hz; linarith
-  exact ((LFunction_differentiableAt (fixedSourcePrincipal S hS.prime) h0 (Or.inl h1)).comp z
+  refine ((LFunction_differentiableAt (fixedSourcePrincipal S hS.prime) h0 (Or.inl ?_)).comp z
     (differentiableAt_id.const_mul 6)).differentiableWithinAt
+  intro he; have hh := congrArg Complex.re he; norm_num at hh; change (1/6:ℝ)<z.re at hz; linarith
 
 theorem continued_z_shift {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a ξ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a)
     (hξ : 1/6<ξ) (hξ2 : ξ≤2) (t u : ℝ) :
-    verticalIntegral ξ (fun z => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
+    verticalIntegral ξ (fun z => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z
       ((a:ℂ)+t*I) ((3:ℂ)+u*I) z*LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
         LFunction (fixedSourcePrincipal S hS.prime) ((3:ℂ)+u*I)) =
-    verticalIntegral 2 (fun z => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
+    verticalIntegral 2 (fun z => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z
       ((a:ℂ)+t*I) ((3:ℂ)+u*I) z*LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
         LFunction (fixedSourcePrincipal S hS.prime) ((3:ℂ)+u*I)) := by
-  obtain ⟨A,hA,hb⟩ := principal_box_majorant η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨A,hA,hb⟩ := principal_box_majorant η S hS J T b hT mw
     X Y Z a ξ hX hY hZ ha hβ hξ
-  have hh := continued_principal_differentiable_z η S hS J T b hT W0 W1 X Y Z hX hZ
+  have hh := continued_principal_differentiable_z η S hS J T b hT mw.left mw.right X Y Z hX hZ
     ((a:ℂ)+t*I) ((3:ℂ)+u*I) (by simpa using ha) (by norm_num)
   apply verticalIntegral_eq_of_shifted_gaussian _ 8 t hξ2
     (hh.mono (by intro z hz; change (1/6:ℝ)<z.re; exact hξ.trans_le hz.1)) (A:=A*cauchy u)
@@ -256,19 +253,18 @@ lemma verticalIntegral_congr_line (F G : ℂ → ℂ) (a : ℝ)
 theorem continued_triple_x_shift {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a ξ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8<a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a) (hξ : 1/6<ξ) (hξ2 : ξ≤2) :
-    let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z s w z*
+    let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z s w z*
       LFunction (fixedSourcePrincipal S hS.prime) (6*z)*LFunction (fixedSourcePrincipal S hS.prime) w
     verticalIntegral a (fun s => verticalIntegral ξ (fun z => verticalIntegral 3 (fun w => F s w z)))=
       verticalIntegral 3 (fun s => verticalIntegral ξ (fun z => verticalIntegral 3 (fun w => F s w z))) := by
-  let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z s w z*
+  let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z s w z*
     LFunction (fixedSourcePrincipal S hS.prime) (6*z)*LFunction (fixedSourcePrincipal S hS.prime) w
-  have hiA := continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  have hiA := continued_source_joint_integrable η S hS J T b hT mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support
     X Y Z a ξ 3 3 hX hY hZ ha.le hβ (by linarith) (by norm_num) (by norm_num) (by linarith) (by norm_num)
-  have hi3 := continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  have hi3 := continued_source_joint_integrable η S hS J T b hT mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support
     X Y Z 3 ξ 3 3 hX hY hZ (by norm_num) (hβ.trans_le ha3) (by linarith)
     (by norm_num) (by norm_num) (by linarith) (by norm_num)
   change verticalIntegral a (fun s => verticalIntegral ξ (fun z => verticalIntegral 3 (fun w => F s w z)))=_
@@ -277,25 +273,24 @@ theorem continued_triple_x_shift {ι : Type*} (η : Character) (S : Finset Id)
   intro u
   apply verticalIntegral_congr_line
   intro v
-  exact continued_x_shift η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  exact continued_x_shift η S hS J T b hT mw
     X Y Z a ξ hX hY hZ ha ha3 hβ hξ hξ2 v u
 
 theorem continued_triple_z_shift {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a ξ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a) (hξ : 1/6<ξ) (hξ2 : ξ≤2) :
-    let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z s w z*
+    let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z s w z*
       LFunction (fixedSourcePrincipal S hS.prime) (6*z)*LFunction (fixedSourcePrincipal S hS.prime) w
     verticalIntegral a (fun s => verticalIntegral ξ (fun z => verticalIntegral 3 (fun w => F s w z)))=
       verticalIntegral a (fun s => verticalIntegral 2 (fun z => verticalIntegral 3 (fun w => F s w z))) := by
-  let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z s w z*
+  let F := fun s w z => continuedSourceMultiplier η S hS.prime J T b mw.left mw.right X Y Z s w z*
     LFunction (fixedSourcePrincipal S hS.prime) (6*z)*LFunction (fixedSourcePrincipal S hS.prime) w
-  obtain ⟨Cξ,Kξ,hCξ,hKξ,hξi⟩ := continued_source_slices η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨Cξ,Kξ,hCξ,hKξ,hξi⟩ := continued_source_slices η S hS J T b hT mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support
     X Y Z a ξ 3 3 hX hY hZ ha hβ (by linarith) (by norm_num) (by norm_num) (by linarith) (by norm_num) 0
-  obtain ⟨C2,K2,hC2,hK2,h2i⟩ := continued_source_slices η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨C2,K2,hC2,hK2,h2i⟩ := continued_source_slices η S hS J T b hT mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support
     X Y Z a 2 3 3 hX hY hZ ha hβ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) 0
   change verticalIntegral a (fun s => verticalIntegral ξ (fun z => verticalIntegral 3 (fun w => F s w z)))=_
   apply verticalIntegral_congr_line
@@ -306,7 +301,7 @@ theorem continued_triple_z_shift {ι : Type*} (η : Character) (S : Finset Id)
     verticalIntegral_swap (fun z w => F ((a:ℂ)+t*I) w z) 2 3 hi2]
   apply verticalIntegral_congr_line
   intro u
-  exact continued_z_shift η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  exact continued_z_shift η S hS J T b hT mw
     X Y Z a ξ hX hY hZ ha ha3 hβ hξ hξ2 t u
 
 lemma continued_triple_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
@@ -330,11 +325,10 @@ lemma continued_triple_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
 theorem source_initial_placement {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a e : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8<a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e) (he2 : e≤11/6) :
-    let K := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+    let K := fun s => sourceMultiplier mw.left mw.right X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s)
     let π := fixedSourcePrincipal S hS.prime
     verticalIntegral 3 (fun s => verticalIntegral 2 (fun z => verticalIntegral 3
@@ -342,22 +336,21 @@ theorem source_initial_placement {ι : Type*} (η : Character) (S : Finset Id)
     verticalIntegral a (fun s => verticalIntegral (1/6+e) (fun z => verticalIntegral 3
       (fun w => K s w z*LFunction π (6*z)*LFunction π w))) := by
   dsimp only
-  rw [←continued_triple_eq_raw η S hS.prime J T b W0 W1 X Y Z 3 2 3,
-    ←continued_triple_eq_raw η S hS.prime J T b W0 W1 X Y Z a (1/6+e) 3]
-  have hx := continued_triple_x_shift η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  rw [←continued_triple_eq_raw η S hS.prime J T b mw.left mw.right X Y Z 3 2 3,
+    ←continued_triple_eq_raw η S hS.prime J T b mw.left mw.right X Y Z a (1/6+e) 3]
+  have hx := continued_triple_x_shift η S hS J T b hT mw
     X Y Z a 2 hX hY hZ ha ha3 hβ (by norm_num) le_rfl
-  have hz := continued_triple_z_shift η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  have hz := continued_triple_z_shift η S hS J T b hT mw
     X Y Z a (1/6+e) hX hY hZ ha.le ha3 hβ (by linarith) (by linarith)
   exact hx.symm.trans hz.symm
 
 theorem source_initial_ordered_at_a {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a e : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8<a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e) (he2 : e≤11/6) :
-    let K := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+    let K := fun s => sourceMultiplier mw.left mw.right X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s)
     let π := fixedSourcePrincipal S hS.prime
     let R := HeckeReciprocal.regularizedL π 1
@@ -367,19 +360,18 @@ theorem source_initial_ordered_at_a {ι : Type*} (η : Character) (S : Finset Id
       (fun w => K s w z*LFunction π (6*z)*LFunction π w)))+
     R*verticalIntegral a (fun s => verticalIntegral (33/200) (fun z => K s 1 z*LFunction π (6*z)))+
     R^2/6*verticalIntegral a (fun s => K s 1 (1/6)) := by
-  exact (source_initial_placement η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  exact (source_initial_placement η S hS J T b hT mw
     X Y Z a e hX hY hZ ha ha3 hβ he he2).trans
-    (source_ordered_outer η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    (source_ordered_outer η S hS J T b hT mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support
       X Y Z a e 3 hX hY hZ ha.le hβ (by norm_num) he)
 
 theorem source_initial_joint_ordered_at_a {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z a e : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8<a) (ha3 : a≤3) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e) (he2 : e≤11/6) :
-    let K := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+    let K := fun s => sourceMultiplier mw.left mw.right X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s)
     let π := fixedSourcePrincipal S hS.prime
     let R := HeckeReciprocal.regularizedL π 1
@@ -390,12 +382,12 @@ theorem source_initial_joint_ordered_at_a {ι : Type*} (η : Character) (S : Fin
       (fun w => K s w z*LFunction π (6*z)*LFunction π w)))+
     R*verticalIntegral a (fun s => verticalIntegral (33/200) (fun z => K s 1 z*LFunction π (6*z)))+
     R^2/6*verticalIntegral a (fun s => K s 1 (1/6)) := by
-  let K := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+  let K := fun s => sourceMultiplier mw.left mw.right X Y Z (η.excludePrimes S hS.prime) s
     (globalClosedCorrection η S s) (slotMultiplier η J T b s)
   let π := fixedSourcePrincipal S hS.prime
-  have hh := source_initial_ordered_at_a η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  have hh := source_initial_ordered_at_a η S hS J T b hT mw
     X Y Z a e hX hY hZ ha ha3 hβ he he2
-  have hf := (source_joint_fubini η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  have hf := (source_joint_fubini η S hS J T b hT mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support
     X Y Z 3 2 3 3 hX hY hZ (by norm_num) (hβ.trans_le ha3) (by norm_num)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num)).1
   have hi : (((1/(2*Real.pi):ℝ):ℂ)^3)*(∫p : HeightSpace,

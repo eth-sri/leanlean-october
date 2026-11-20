@@ -58,7 +58,7 @@ theorem norm_mulCoeff_le_primeFactors {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m �
     · rw [mem_coe, mem_filter, mem_product] at hmn
       exact Nat.mem_primeFactors.2 ⟨hI₁ _ hmn.1.1, ⟨mn.2, hmn.2.symm⟩, hl⟩
     · rw [mem_coe, mem_filter, mem_product] at hmn hmn'
-      have h₁ : 0 < mn.1 := (hI₁ _ hmn.1.1).pos
+      have h₁  := (hI₁ _ hmn.1.1).pos
       have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by rw [hmn.2, h, hmn'.2]
       exact Prod.ext h (Nat.eq_of_mul_eq_mul_left h₁ h₂)
   unfold OneSided.mulCoeff
@@ -99,13 +99,12 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
       L ^ (2 * CU + 5) := by
   have hL0 : 0 < L := by linarith
   set B := P / Y * L ^ CU * (4 * L) with hB
-  have hB0 : 0 ≤ B := by positivity
   -- `∑ |q_n|² ≤ N_q B²`
   have hsum : ∑ n ∈ Icc 1 Nq, ‖cq n‖ ^ 2 ≤ Nq * B ^ 2 := by
     calc ∑ n ∈ Icc 1 Nq, ‖cq n‖ ^ 2 ≤ ∑ _n ∈ Icc 1 Nq, B ^ 2 := by
           refine sum_le_sum fun n hn => pow_le_pow_left₀ (norm_nonneg _) ?_ 2
           refine (hcq n hn).trans (mul_le_mul_of_nonneg_left ?_ (by positivity))
-          have hn1 : 1 ≤ n := (mem_Icc.1 hn).1
+          have hn1  := (mem_Icc.1 hn).1
           have : Real.log n ≤ Real.log Nq :=
             Real.log_le_log (by exact_mod_cast hn1) (by exact_mod_cast (mem_Icc.1 hn).2)
           linarith
@@ -114,11 +113,9 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
   have hNqP : (Nq : ℝ) * (P / Y) ≤ 8 := by
     rw [mul_div_assoc', div_le_iff₀ hY]
     nlinarith [Nat.cast_nonneg (α := ℝ) Nq]
-  have hlog0 : 0 ≤ Real.log Nq := Real.log_natCast_nonneg Nq
-  have hNq0 : (0 : ℝ) ≤ Nq := Nat.cast_nonneg _
   have hPY : 0 ≤ P / Y := by positivity
   set W := L ^ CU * (4 * L) with hW
-  have hBW : B = P / Y * W := by rw [hB, hW]; ring
+  have hBW : B = P / Y * W := by ring
   have hW2 : W ^ 2 = 16 * L ^ (2 * CU + 2) := by
     have e₁ : (L ^ CU) ^ 2 = L ^ (2 * CU) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
@@ -134,7 +131,6 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
     have hτ' : (τ₂ - τ₁) * (P / Y) ≤ 1 := by
       rw [mul_div_assoc', div_le_one hY]
       exact hτ
-    have : 0 ≤ (τ₂ - τ₁) * (P / Y) := mul_nonneg (by linarith) hPY
     have : (τ₂ - τ₁) * (P / Y) * (Nq * (P / Y)) ≤ 1 * 8 :=
       mul_le_mul hτ' hNqP (by positivity) zero_le_one
     nlinarith [sq_nonneg W]
@@ -153,7 +149,6 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
     rw [← Real.rpow_natCast, ← Real.rpow_add hL0]
     norm_num
     ring_nf
-  have hL2 : 0 ≤ L ^ (2 * CU + 2) := by positivity
   calc (τ₂ - τ₁ + 8 * Nq * (1 + Real.log Nq)) * ∑ n ∈ Icc 1 Nq, ‖cq n‖ ^ 2
       ≤ (τ₂ - τ₁ + 8 * Nq * (1 + Real.log Nq)) * (Nq * B ^ 2) :=
         mul_le_mul_of_nonneg_left hsum (by positivity)
@@ -162,7 +157,7 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
     _ ≤ L ^ (2 * CU + 5) := by
         rw [hL5]
         have : (8 + 512 * (1 + 2 * L)) * 16 ≤ L ^ 3 := by
-          have : (160 : ℝ) ^ 2 ≤ L ^ 2 := pow_le_pow_left₀ (by norm_num) hL 2
+          have  := pow_le_pow_left₀ (by norm_num) hL 2
           nlinarith
         nlinarith
 
@@ -176,7 +171,7 @@ theorem norm_smallPoly_le {P V vlo : ℝ} (hP : 1 ≤ P) (hvlo : 0 < vlo) (hV : 
     obtain ⟨-, h₁, h₂⟩ := hsP p hp
     rw [mem_Ioc]
     exact ⟨(Nat.floor_lt hP0.le).2 h₁, Nat.le_floor h₂⟩
-  have hcard : (#sP : ℝ) ≤ P + 1 :=
+  have hcard  :=
     (Nat.cast_le.2 (card_le_card hsub)).trans (card_Ioc_floor_le hP0.le)
   refine (norm_sum_le _ _).trans ?_
   calc ∑ p ∈ sP, ‖(((P * V)⁻¹ : ℝ) : ℂ) * (p : ℂ) ^ ((τ : ℂ) * Complex.I)‖
@@ -251,14 +246,12 @@ theorem boxScales_of {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k
       ∀ Nq : ℕ, (Nq : ℝ) ≤ 4 * N * R → Real.log Nq ≤ 2 * Real.log x := by
   obtain ⟨hL, hx, h₁, h₂, h₃⟩ := hs
   set L := Real.log x
-  have hL0 : 0 < L := by linarith
   have hx0 : 0 < x := by linarith
   have hLC : 1 ≤ L ^ (Cm + 2) := Real.one_le_rpow (by linarith) (by linarith)
   have hLC' : L ^ (Cm + 2) ≤ x := by
     refine le_trans (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)) h₃
   have he₁ : 1 ≤ Real.exp (L ^ (0.27 : ℝ)) := Real.one_le_exp (by positivity)
-  have hP0 : 0 < P := lt_of_lt_of_le (by positivity) hd.hP₁
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hd.hY₁
+  have hP0  := lt_of_lt_of_le (by positivity) hd.hP₁
   have hexp : Real.exp (L ^ (0.47 : ℝ)) ≤ x := by
     have := Real.exp_pos (L ^ (0.47 : ℝ))
     linarith
@@ -293,8 +286,12 @@ noncomputable def boxCoeff (Y P : ℝ) (spN uR : Finset ℕ) {k : ℕ} (χ : Dir
     (c : ℕ → ℂ) : ℕ → ℂ :=
   OneSided.mulCoeff spN uR (fun p => ((P / Y : ℝ) : ℂ) * χ p) c
 
+section
+
+variable {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ} {c : ℕ → ℂ}
+
 /-- `G = P_s Q` with `Q = ∑_{n ≤ N_q} q_n n^{iτ}`, `N_q = ⌊hi⌋ ⌊2R⌋`. -/
-theorem boxPoly_eq {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ} {c : ℕ → ℂ}
+theorem boxPoly_eq
     (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c) (χ : DirichletCharacter ℂ k) (τ : ℝ) :
     boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c τ =
       (∑ p ∈ sP, (((P * V)⁻¹ : ℝ) : ℂ) * (p : ℂ) ^ ((τ : ℂ) * Complex.I)) *
@@ -311,8 +308,7 @@ theorem boxPoly_eq {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k :
     omega
 
 /-- The mean value of `Q` over an interval of length `≤ 4T₀` is `≤ L^{2C_U + 5}`. -/
-theorem boxMeanValue_le' {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ}
-    {c : ℕ → ℂ} (hCm : 0 ≤ Cm) (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c)
+theorem boxMeanValue_le' (hCm : 0 ≤ Cm) (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c)
     (hs : BoxScales Cm x) (χ : DirichletCharacter ℂ k) {τ₁ τ₂ : ℝ} (h₁₂ : τ₁ ≤ τ₂)
     (hlen : τ₂ - τ₁ ≤ 4 * (x * Real.log x ^ (Cm + 2))) :
     (τ₂ - τ₁ + 8 * (⌊hi⌋₊ * ⌊2 * R⌋₊ : ℕ) * (1 + Real.log (⌊hi⌋₊ * ⌊2 * R⌋₊ : ℕ))) *
@@ -322,13 +318,13 @@ theorem boxMeanValue_le' {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ
   obtain ⟨hT₀, hT₀P, -, -, hlog⟩ := boxScales_of hCm hd hs
   have hL := hs.1
   have hx0 : 0 < x := by linarith [hs.2.1]
-  have hP0 : 0 < P := lt_of_lt_of_le (by positivity) hd.hP₁
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hd.hY₁
-  have hN0 : 0 < N := lt_of_lt_of_le (Real.exp_pos _) hd.hN₁
-  have hR0 : 0 < R := lt_of_lt_of_le (Real.exp_pos _) hd.hR₁
+  have hP0  := lt_of_lt_of_le (by positivity) hd.hP₁
+  have hY0  := lt_of_lt_of_le (by positivity) hd.hY₁
+  have hN0  := lt_of_lt_of_le (Real.exp_pos _) hd.hN₁
+  have hR0  := lt_of_lt_of_le (Real.exp_pos _) hd.hR₁
   have hNq : ((⌊hi⌋₊ * ⌊2 * R⌋₊ : ℕ) : ℝ) ≤ 4 * N * R := by
     push_cast
-    have h₁ : (⌊hi⌋₊ : ℝ) ≤ 2 * N := natFloor_le_of_le hd.hhi (by positivity)
+    have h₁  := natFloor_le_of_le hd.hhi (by positivity)
     have h₂ : (⌊2 * R⌋₊ : ℝ) ≤ 2 * R := Nat.floor_le (by positivity)
     calc (⌊hi⌋₊ : ℝ) * ⌊2 * R⌋₊ ≤ 2 * N * (2 * R) :=
           mul_le_mul h₁ h₂ (Nat.cast_nonneg _) (by positivity)
@@ -347,14 +343,12 @@ theorem boxMeanValue_le' {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ
 
 /-- **The trivial bound of one box.** `∫_{τ₁}^{τ₂} |G|² ≤ (2/v₋)² L^{2C_U + 5}` for
 `τ₂ - τ₁ ≤ 4T₀`, since `|P_s| ≤ 2/v₋`. -/
-theorem integral_boxPoly_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ}
-    {c : ℕ → ℂ} (hvlo : 0 < vlo) (hCm : 0 ≤ Cm)
+theorem integral_boxPoly_le (hvlo : 0 < vlo) (hCm : 0 ≤ Cm)
     (hd : BoxData x Cm CU vlo Y P N R V lo hi sP uR k c) (hs : BoxScales Cm x)
     (χ : DirichletCharacter ℂ k) {τ₁ τ₂ : ℝ} (h₁₂ : τ₁ ≤ τ₂)
     (hlen : τ₂ - τ₁ ≤ 4 * (x * Real.log x ^ (Cm + 2))) :
     ∫ τ in τ₁..τ₂, ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c τ‖ ^ 2 ≤
       (2 / vlo) ^ 2 * Real.log x ^ (2 * CU + 5) := by
-  have hx0 : 0 < x := by linarith [hs.2.1]
   have hP1 : 1 ≤ P := le_trans (by
     rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 2)]
     have : 2 ≤ Real.exp (Real.log x ^ (0.27 : ℝ)) := by
@@ -365,8 +359,7 @@ theorem integral_boxPoly_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset 
     linarith) hd.hP₁
   set Nq := ⌊hi⌋₊ * ⌊2 * R⌋₊
   set cq := boxCoeff Y P ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c
-  have hQ : Continuous fun τ : ℝ =>
-      ‖∑ n ∈ Icc 1 Nq, cq n * (n : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ^ 2 :=
+  have hQ  :=
     (continuous_dirichletSum_Icc Nq cq).norm.pow 2
   have hG : Continuous fun τ : ℝ =>
       ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c τ‖ ^ 2 :=
@@ -388,5 +381,7 @@ theorem integral_boxPoly_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset 
         refine mul_le_mul_of_nonneg_left ((OneSided.integral_norm_dirichlet_sq_le Nq cq τ₁ τ₂).trans
           ?_) (by positivity)
         exact boxMeanValue_le' hCm hd hs χ h₁₂ hlen
+
+end
 
 end Erdos408.TwoSided.TupleHigh

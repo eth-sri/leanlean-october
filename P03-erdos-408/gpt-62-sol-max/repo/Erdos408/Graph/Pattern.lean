@@ -327,7 +327,7 @@ theorem rawPairing_eq (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ 
       · exact absurd ⟨h₁.1, h₁.2, h₂.1, h₂.2.1⟩ hc
       all_goals simp
   · split_ifs with h₁ h₂
-    · exact absurd h₂.2.2 (by rw [hE]; rw [hN] at hn'; omega)
+    · omega
     all_goals simp
   · rw [hg N hN', mul_zero]
 

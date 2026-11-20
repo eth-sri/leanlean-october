@@ -25,7 +25,7 @@ lemma calibrated_physicalRow_first_w (eps : ℝ) (heps : 0<eps)
       physicalCompensatedRow S hS T hT η u x w z) w := by
   by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
   · simp only [hc,star_zero,zero_mul]
-    exact differentiableAt_const _
+    fun_prop
   · have hp := calibrated_row_nonprincipal S hS.prime hmax hS.bad u hu hc
     apply DifferentiableAt.const_mul
     unfold physicalCompensatedRow continuedCompensatedRow

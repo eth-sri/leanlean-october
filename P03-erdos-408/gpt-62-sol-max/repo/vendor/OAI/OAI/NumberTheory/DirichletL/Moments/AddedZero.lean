@@ -10,13 +10,12 @@ public import OAI.NumberTheory.DirichletL.Moments.Extraction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentAddedZero
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentRowNorm CenteredMomentFourier CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentGaussEnergy CenteredMomentZeroMode
-open CenteredExceptionalCount CenteredMomentRectangle CenteredMomentExtraction
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentRowNorm
+open CenteredMomentFourier CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
+open CenteredMomentGaussEnergy CenteredMomentZeroMode CenteredExceptionalCount CenteredMomentRectangle
+open CenteredMomentExtraction UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_one_ideal : Supported (1 : Ideal O) := by

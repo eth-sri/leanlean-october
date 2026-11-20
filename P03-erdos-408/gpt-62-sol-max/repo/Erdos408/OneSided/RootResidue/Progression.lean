@@ -77,7 +77,7 @@ theorem abs_card_prog_sub_le {α β : ℝ} {q r : ℕ} (hq : 0 < q) (hr : r < q)
     have : (r : ℝ) < q := by exact_mod_cast hr
     linarith
   have hxy : x ≤ y := div_le_div_of_nonneg_right (by linarith) hq'.le
-  have hyx : (β - α) / q = y - x := by simp only [x, y]; ring
+  have hyx : (β - α) / q = y - x := by ring
   have hcard : #(prog α β q r) = ⌈y⌉₊ - ⌈x⌉₊ := by
     rw [prog, card_image_of_injective _ fun i j hij => by simpa [hq.ne'] using hij, Nat.card_Ico]
   rw [hcard, Nat.cast_sub (Nat.ceil_mono hxy), hyx, abs_le]
@@ -92,7 +92,7 @@ mod `S l` (CRT), so there are `(β - α)/(S l) + O(1)` of them. -/
 theorem abs_card_modEq_dvd_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ β) {S l : ℕ} (hS : 0 < S)
     (hl : 0 < l) (hlS : l.Coprime S) (w : ℕ) :
     |(#{x ∈ Ico ⌈α⌉₊ ⌈β⌉₊ | x ≡ w [MOD S] ∧ l ∣ x} : ℝ) - (β - α) / (S * l : ℕ)| ≤ 1 := by
-  have hq : 0 < S * l := Nat.mul_pos hS hl
+  have hq  := Nat.mul_pos hS hl
   set z := (Nat.chineseRemainder hlS.symm w 0 : ℕ)
   have hz := (Nat.chineseRemainder hlS.symm w 0).2
   have hset : ({x ∈ Ico ⌈α⌉₊ ⌈β⌉₊ | x ≡ w [MOD S] ∧ l ∣ x} : Finset ℕ) =
@@ -179,15 +179,14 @@ theorem abs_card_coprime_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ �
     obtain ⟨p, hp, hpl, hpS⟩ := Nat.Prime.not_coprime_iff_dvd.1 hlS
     simp only [N, Nat.cast_eq_zero, card_eq_zero, filter_eq_empty_iff]
     rintro x - ⟨hxw, hlx⟩
-    have hpu : p ∣ Nat.gcd u S := Nat.dvd_gcd (hpl.trans (Nat.dvd_of_mem_divisors hl)) hpS
+    have hpu  := Nat.dvd_gcd (hpl.trans (Nat.dvd_of_mem_divisors hl)) hpS
     have hpw : p ∣ w := by
       have := (Nat.ModEq.of_dvd hpS hxw).symm
       exact (Nat.modEq_zero_iff_dvd.1 (this.trans
         (Nat.modEq_zero_iff_dvd.2 (hpl.trans hlx))))
-    have h1 : p ∣ 1 := by
-      have := Nat.dvd_gcd hpw hpu
-      rwa [hw.gcd_eq_one] at this
-    exact hp.one_lt.ne' (Nat.dvd_one.1 h1)
+    refine hp.one_lt.ne' (Nat.dvd_one.1 ?_)
+    have := Nat.dvd_gcd hpw hpu
+    rwa [hw.gcd_eq_one] at this
   have hrestrict : ∑ l ∈ u.divisors, (ArithmeticFunction.moebius l : ℝ) * N l =
       ∑ l ∈ u.divisors with l.Coprime S, (ArithmeticFunction.moebius l : ℝ) * N l := by
     rw [sum_filter]
@@ -206,7 +205,7 @@ theorem abs_card_coprime_sub_le {α β : ℝ} (hα : 0 ≤ α) (hαβ : α ≤ �
         (ArithmeticFunction.moebius l : ℝ) * ((β - α) / (S * l : ℕ)))|
       ≤ ∑ l ∈ u.divisors with l.Coprime S, (1 : ℝ) := by
         refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun l hl => ?_)
-        have hl0 : 0 < l := Nat.pos_of_mem_divisors (mem_filter.1 hl).1
+        have hl0  := Nat.pos_of_mem_divisors (mem_filter.1 hl).1
         rw [← mul_sub, abs_mul]
         have h₁ : |(ArithmeticFunction.moebius l : ℝ)| ≤ 1 := by
           exact_mod_cast ArithmeticFunction.abs_moebius_le_one
@@ -241,7 +240,7 @@ theorem abs_densityTerm_le (S l : ℕ) : |densityTerm S l| ≤ ((l : ℝ) ^ 2)�
 /-- The terms of the coprime density are summable. -/
 theorem summable_densityTerm (S : ℕ) : Summable (densityTerm S) :=
   Summable.of_norm_bounded (Real.summable_nat_pow_inv.2 one_lt_two) fun l => by
-    rw [Real.norm_eq_abs]; exact abs_densityTerm_le S l
+    exact abs_densityTerm_le S l
 
 /-- The tail bound `|∑_{l ≥ K} [(l, S) = 1] μ(l)/l²| ≤ 2/K`. -/
 theorem abs_coprimeDensity_sub_le (S : ℕ) {K : ℕ} (hK : 0 < K) :
@@ -257,8 +256,8 @@ theorem abs_coprimeDensity_sub_le (S : ℕ) {K : ℕ} (hK : 0 < K) :
     have hI : Ioo (K - 1) (K + n) = Ico K (K + n) := by ext; simp only [mem_Ioo, mem_Ico]; omega
     rw [hI, sum_Ico_eq_sum_range, Nat.add_sub_cancel_left]
     exact sum_congr rfl fun i _ => by simp only [g]; push_cast; ring
-  have hgs : Summable g := summable_of_sum_range_le hg0 hpart
-  have htail : Summable fun i => densityTerm S (i + K) :=
+  have hgs  := summable_of_sum_range_le hg0 hpart
+  have htail  :=
     (summable_nat_add_iff K).2 (summable_densityTerm S)
   rw [coprimeDensity, ← (summable_densityTerm S).sum_add_tsum_nat_add K, add_sub_cancel_left]
   calc |∑' i, densityTerm S (i + K)| ≤ ∑' i, |densityTerm S (i + K)| := by
@@ -266,7 +265,7 @@ theorem abs_coprimeDensity_sub_le (S : ℕ) {K : ℕ} (hK : 0 < K) :
     _ ≤ ∑' i, g i := by
         refine htail.abs.tsum_le_tsum (fun i => ?_) hgs
         have := abs_densityTerm_le S (i + K)
-        simpa only [g] using this
+        assumption
     _ ≤ 2 / K := Real.tsum_le_of_sum_range_le hg0 hpart
 
 /-- **The Euler average.** For `1 ≤ α ≤ β`,
@@ -280,10 +279,10 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
   set N := ⌈β⌉₊
   set L := ({l ∈ Icc 1 N | l.Coprime S} : Finset ℕ)
   set C : ℕ → ℝ := fun l => #{x ∈ I | x ≡ w [MOD S] ∧ l ∣ x}
-  have hβ : 1 ≤ β := hα.trans hαβ
+  have hβ  := hα.trans hαβ
   have hN : (N : ℝ) < β + 1 := Nat.ceil_lt_add_one (by linarith)
   have hN1 : 1 ≤ N := Nat.one_le_iff_ne_zero.2 (by
-    rw [Ne, Nat.ceil_eq_zero, not_le]; linarith)
+    positivity)
   -- step 1: swap the sums
   have hswap : ∑ u ∈ I with u ≡ w [MOD S], eulerFactor S u =
       ∑ l ∈ L, (ArithmeticFunction.moebius l : ℝ) / l * C l := by
@@ -294,7 +293,7 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
         have := (mem_Ico_ceil.1 (mem_filter.1 hu).1).1
         rw [h, Nat.cast_zero] at this
         linarith
-      have huN : u < N := (mem_Ico.1 (mem_filter.1 hu).1).2
+      have huN  := (mem_Ico.1 (mem_filter.1 hu).1).2
       rw [eulerFactor, ← sum_filter]
       refine sum_congr ?_ fun _ _ => rfl
       ext l
@@ -346,7 +345,6 @@ theorem abs_sum_eulerFactor_sub_le {α β : ℝ} (hα : 1 ≤ α) (hαβ : α �
           sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun _ _ _ => by positivity
       _ ≤ 1 + Real.log N := sum_Icc_inv_le N
       _ ≤ 1 + Real.log (β + 1) := by
-          have : (0 : ℝ) < N := by exact_mod_cast hN1
           gcongr
   have htail : |(β - α) / S * (∑ l ∈ range (N + 1), densityTerm S l - coprimeDensity S)| ≤ 2 := by
     have h := abs_coprimeDensity_sub_le S (Nat.succ_pos N)

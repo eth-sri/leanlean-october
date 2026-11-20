@@ -37,7 +37,7 @@ lemma lowIdealRows_norm_bound (R : Finset O) (Q : ℝ) (hR : ∀m∈R,elementNor
   obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hI
   exact hR m hm
 
-theorem low_element_energy_le_units (R : Finset O) (_hR : ∀m∈R,m≠0) (F : O→ℂ) :
+theorem low_element_energy_le_units (R : Finset O) (F : O→ℂ) :
     (∑m∈R,‖F m‖^2)≤∑u : Oˣ,∑I∈lowIdealRows R,‖F (u.val*idealGenerator I)‖^2 := by
   let P : Finset (Oˣ×Id) := Finset.univ×ˢlowIdealRows R
   have hsub : R.image lowElementRowPoint⊆P := by
@@ -79,7 +79,7 @@ lemma low_element_rowTwist_energy (R : Finset O) (hR : ∀z∈R,z≠0)
     (∑z∈R,‖F (CanonicalRowCompletion.rowTwist Ψ m 1 z)‖^2)≤
       ∑u : Oˣ,∑I∈lowIdealRows R,
         ‖F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I))‖^2 := by
-  apply (low_element_energy_le_units R hR (fun z=>F (CanonicalRowCompletion.rowTwist Ψ m 1 z))).trans_eq
+  apply (low_element_energy_le_units R (fun z=>F (CanonicalRowCompletion.rowTwist Ψ m 1 z))).trans_eq
   rw [Finset.sum_comm,Finset.sum_comm (f:=fun (u : Oˣ) (I : Id)=>
     ‖F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I))‖^2)]
   apply Finset.sum_congr rfl

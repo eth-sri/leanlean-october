@@ -23,7 +23,7 @@ def CompletePoolRankMoments (q D:ℕ) {σ:Type}[DecidableEq σ]
     (base:O→*ℂ)(W:𝓢(ℝ,ℂ))(Z Mmax Fcap z c eps A:ℝ)(K degree:ℕ):Prop :=
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D;
   let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q);
-  letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+  letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF;
   CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ base slots lists a W
     Z Mmax Fcap z c eps A K degree
@@ -61,7 +61,7 @@ theorem rank_energy_exists_zero (L cstar cutoff eta:ℝ)(hcut:0<cutoff)(K:ℕ)(W
   dsimp only [CompletePoolRankMoments]
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D
   have hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF
   apply canonical_rank_negative
   simp only [rankRowCap,Nat.cast_zero]
   linarith

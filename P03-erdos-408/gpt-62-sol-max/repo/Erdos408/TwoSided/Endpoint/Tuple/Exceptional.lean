@@ -45,7 +45,7 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
   refine ⟨K, hK, ?_⟩
   filter_upwards [hev, Real.tendsto_log_atTop.eventually_ge_atTop 2] with x hx hL
   intro Y P Tmax s coeff hY₁ hY₂ hT₀ hTY hP₁ hP₂ hs hcoeff
-  have hP0 : 0 < P := lt_of_lt_of_le (by positivity) hP₁
+  have hP0  := lt_of_lt_of_le (by positivity) hP₁
   set coeff' : ℕ → ℂ := fun p => coeff p * (p : ℂ) / (2 * P) with hcoeff'
   have hc' : ∀ p ∈ s, ‖coeff' p‖ ≤ 1 := by
     intro p hp
@@ -70,7 +70,7 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
     rw [Erdos821.Blueprint.Analytic.primePolynomial, Erdos821.Blueprint.Analytic.dp,
       Finset.mul_sum, Finset.sum_div]
     refine Finset.sum_congr rfl fun p hp => ?_
-    have hp0 : (0 : ℝ) < p := lt_of_lt_of_le hP0 (hs p hp).2.1
+    have hp0  := lt_of_lt_of_le hP0 (hs p hp).2.1
     rw [mellin_eq_cpow hp0, Complex.ofReal_natCast, hcoeff']
     have : (p : ℂ) ≠ 0 := by exact_mod_cast hp0.ne'
     have : (P : ℂ) ≠ 0 := by exact_mod_cast hP0.ne'

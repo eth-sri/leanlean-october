@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionChoices
-public import OAI.NumberTheory.DirichletL.Moments.RetainedComparisonEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RetainedWeightedSource
+public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
 
 @[expose] public section

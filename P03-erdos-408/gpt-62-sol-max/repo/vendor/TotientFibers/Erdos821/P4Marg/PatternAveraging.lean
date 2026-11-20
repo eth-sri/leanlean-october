@@ -34,7 +34,7 @@ lemma slot_not_mem_patternSideCoordinates (ν : Pattern P J ell m)
   by_cases hb : block g = side
   · simp only [patternSideCoordinates, hb, ite_true] at hmem
     obtain ⟨j, hj, hslot⟩ := Finset.mem_image.mp hmem
-    have hji : j = i := slot_injective ν hslot
+    have hji  := slot_injective ν hslot
     exact hi (hji ▸ hj)
   · simp [patternSideCoordinates, hb] at hmem
 
@@ -47,7 +47,7 @@ lemma shared_not_mem_patternSideCoordinates (ν : Pattern P J ell m)
   · simp only [patternSideCoordinates, hb, ite_true] at hmem
     obtain ⟨j, hj, hslot⟩ := Finset.mem_image.mp hmem
     obtain ⟨j', hshared, hnot⟩ := hi
-    have hji : j' = j := slot_injective ν (hshared.trans hslot.symm)
+    have hji  := slot_injective ν (hshared.trans hslot.symm)
     exact hnot (hji ▸ hj)
   · simp [patternSideCoordinates, hb] at hmem
 
@@ -276,14 +276,14 @@ lemma bigCoordinateAverage_eq_self_of_replace_invariant (P : PrimeGroups) (M : �
 theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
   intro F P J m hj block Q h ξ θ ζ c hV f g
   let ν : Pattern P J F.ell m := signedPattern hj block Q h ξ c
-  let A : Model F P J m := (onePatternFamily F P J m ν).model 1 ζ
-  let S₀ : P.BigGroup → Finset (Fin (J + F.ell)) :=
+  let A  := (onePatternFamily F P J m ν).model 1 ζ
+  let S₀  :=
     patternSideCoordinates ν block false
-  let S₁ : P.BigGroup → Finset (Fin (J + F.ell)) :=
+  let S₁  :=
     patternSideCoordinates ν block true
-  let H : P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → ℂ :=
+  let H  :=
     modelDensity A θ ζ
-  let K : P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → ℂ :=
+  let K  :=
     A.idealRaw θ
   let fA := bigCoordinateAverage P (J + F.ell) S₀ f
   let gB := bigCoordinateAverage P (J + F.ell) S₁ g
@@ -331,13 +331,10 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
     apply bigCoordinateAverage_eq_self_of_replace_invariant P (J + F.ell) hV S₁
       (fun b => H a b)
     intro b y
-    have hcoef : ∀ v u,
-        (A.pattern v).coefficient a (replaceBigLabels S₁ b y) u =
-          (A.pattern v).coefficient a b u := by
-      intro v u
-      change ν.coefficient a (replaceBigLabels S₁ b y) u = ν.coefficient a b u
-      exact signedPattern_coefficient_target_mix (ell := F.ell) hj block Q h ξ c a b y u
-    exact modelDensity_replace_right A S₁ hS₁ θ ζ a b y hcoef
+    refine modelDensity_replace_right A S₁ hS₁ θ ζ a b y ?_
+    intro v u
+    change ν.coefficient a (replaceBigLabels S₁ b y) u = ν.coefficient a b u
+    exact signedPattern_coefficient_target_mix (ell := F.ell) hj block Q h ξ c a b y u
   have hsource := idealFullPair_source_average
     P (J + F.ell) S₀ K hKfixed f g
   have hsource' :

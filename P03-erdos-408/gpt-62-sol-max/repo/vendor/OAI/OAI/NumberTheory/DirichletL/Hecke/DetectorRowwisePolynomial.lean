@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwise
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwise
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff Topology
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePolynomial
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
@@ -92,7 +93,7 @@ theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     · subst J
       simpa only [coefficient_zero,zero_mul,neg_zero] using hasDerivAt_const σ (0 : ℂ)
     have hn : 0<(J.absNorm : ℝ)/D := div_pos
-      (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hz)) hD
+      (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hz)) hD
     convert (power_sigma_deriv _ σ freq hn).const_mul
       (coefficient χ inv J*W ((J.absNorm : ℝ)/D)) using 1
     unfold logProfile
@@ -116,7 +117,7 @@ theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     · subst J
       simpa only [coefficient_zero,zero_mul,mul_zero] using hasDerivAt_const freq (0 : ℂ)
     have hn : 0<(J.absNorm : ℝ)/D := div_pos
-      (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hz)) hD
+      (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hz)) hD
     convert (power_freq_deriv _ σ freq hn).const_mul
       (coefficient χ inv J*W ((J.absNorm : ℝ)/D)) using 1
     unfold logProfile
@@ -138,7 +139,7 @@ theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     simp only [coefficient_zero,zero_mul]
     exact continuous_const
   have hn : 0<(J.absNorm : ℝ)/D := div_pos
-    (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hz)) hD
+    (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hz)) hD
   apply Continuous.const_mul
   apply Continuous.const_cpow _ (Or.inl (Complex.ofReal_ne_zero.mpr hn.ne'))
   unfold HeckeDyadic.shift

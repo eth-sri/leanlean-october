@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Mask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupportedCorrelation
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentCommonSupport
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
 
 def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     MulChar (Residue d) ℂ where
@@ -32,11 +31,10 @@ def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     by_contra hn
     have hm := idealRowHom_sixth_mask x (Ideal.span {d}) hd
     rw [idealRowHom_argument_pow x 6 _ hd, Ideal.isCoprime_span_singleton_iff] at hm
-    have hcop : IsCoprime d x := by
-      by_contra h
-      rw [ite_eq_right h] at hm
-      exact (pow_ne_zero 6 hn) hm
-    exact hx (isUnit_residue_of_coprime d x hcop)
+    refine hx (isUnit_residue_of_coprime d x ?_)
+    by_contra h
+    rw [ite_eq_right h] at hm
+    exact (pow_ne_zero 6 hn) hm
 
 @[simp] theorem supportedModulusCharacter_mk (d : O)
     (hd : Supported (Ideal.span {d})) (x : O) :

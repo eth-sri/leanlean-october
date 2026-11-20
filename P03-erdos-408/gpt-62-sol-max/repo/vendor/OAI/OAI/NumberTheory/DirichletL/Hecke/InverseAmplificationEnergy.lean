@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationMask
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -24,13 +24,12 @@ theorem prime_column_energy (χ ψ : Character) (P : SmoothMobiusCorrection.Prim
   have hNp : (0 : ℝ)<P.val.absNorm := by linarith
   have hc : ‖idealCoeff χ P.val*(P.val.absNorm : ℂ)^(-(1/2 : ℂ))‖≤1 := by
     rw [norm_mul]
-    have hh : ‖(P.val.absNorm : ℂ)^(-(1/2 : ℂ))‖≤1 := by
-      change ‖((P.val.absNorm : ℝ) : ℂ)^(-(1/2 : ℂ))‖≤1
-      rw [Complex.norm_cpow_eq_rpow_re_of_pos hNp]
-      norm_num
-      exact Real.rpow_le_one_of_one_le_of_nonpos hN (by norm_num)
-    exact (mul_le_of_le_one_left (norm_nonneg _)
-      (idealCoeff_norm_le_one χ P.val)).trans hh
+    refine (mul_le_of_le_one_left (norm_nonneg _)
+      (idealCoeff_norm_le_one χ P.val)).trans ?_
+    change ‖((P.val.absNorm : ℝ) : ℂ)^(-(1/2 : ℂ))‖≤1
+    rw [Complex.norm_cpow_eq_rpow_re_of_pos hNp]
+    norm_num
+    exact Real.rpow_le_one_of_one_le_of_nonpos hN (by norm_num)
   rw [prime_column_identity χ ψ P hm W a b ha hWs hW D σ freq hD]
   have hn := norm_sub_le (polynomial ψ true W D σ freq)
     (idealCoeff χ P.val*(P.val.absNorm : ℂ)^(-(1/2 : ℂ))*polynomial ψ true W (D/(P.val.absNorm : ℝ)) σ freq)

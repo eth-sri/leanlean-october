@@ -22,7 +22,7 @@ theorem distinct_history_guard_hasFiniteSupport {β : Type*} [Zero β]
     (f : MemoryHistory A n → β) :
     Function.HasFiniteSupport (fun H : MemoryHistory A n =>
       if H.Valid ∧ H.DistinctBirths ∧ guard H then f H else 0) := by
-  have hf : Set.Finite {H : MemoryHistory A n | H.Valid ∧ H.DistinctBirths} :=
+  have hf  :=
     @Set.toFinite (MemoryHistory A n) {H | H.Valid ∧ H.DistinctBirths}
       (MemoryHistory.valid_distinct_finite A n)
   apply hf.subset
@@ -42,7 +42,7 @@ theorem memoryTailExpression_summable (A : Model F P J m) (n B : ℕ) (rho theta
   convert distinct_history_guard_hasFiniteSupport A n (fun H => ¬ H.Truncated B)
     (fun H => H.Weight rho theta) using 1
   ext H
-  by_cases h : H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B <;> simp [h]
+  simp
 
 theorem memoryTailExpression_abs_summable (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
     Summable (fun H : MemoryHistory A n =>
@@ -51,7 +51,7 @@ theorem memoryTailExpression_abs_summable (A : Model F P J m) (n B : ℕ) (rho t
   convert distinct_history_guard_hasFiniteSupport A n (fun H => ¬ H.Truncated B)
     (fun H => ‖H.Weight rho theta‖) using 1
   ext H
-  by_cases h : H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B <;> simp [h]
+  simp
 
 theorem truncatedDistinctMemoryExpression_summable (A : Model F P J m) (n B : ℕ)
     (rho theta : ℝ) :
@@ -62,7 +62,7 @@ theorem truncatedDistinctMemoryExpression_summable (A : Model F P J m) (n B : �
     (fun H => H.Weight rho theta) using 1
   ext H
   by_cases hv : H.Valid <;> by_cases hd : H.DistinctBirths <;> by_cases ht : H.Truncated B <;>
-    simp [hv, hd, ht]
+    simp_all
 
 theorem distinctMemoryExpression_split (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
     distinctMemoryExpression A n rho theta =
@@ -73,7 +73,7 @@ theorem distinctMemoryExpression_split (A : Model F P J m) (n B : ℕ) (rho thet
   apply tsum_congr
   intro H
   by_cases hv : H.Valid <;> by_cases hd : H.DistinctBirths <;> by_cases ht : H.Truncated B <;>
-    simp [hv, hd, ht]
+    simp_all
 
 theorem memoryTailExpression_norm_le (A : Model F P J m) (n B : ℕ) (rho theta : ℝ) :
     ‖memoryTailExpression A n B rho theta‖ ≤

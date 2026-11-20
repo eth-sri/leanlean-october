@@ -28,7 +28,7 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
+open scoped ENNReal MeasureTheory
 open MeasureTheory Set
 
 noncomputable section
@@ -40,13 +40,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteS
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceTranslationEstimateH1 :
     MeasurableSpace E := borel E
-local instance instBorelSpaceTranslationEstimateH1 :
-    BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceTranslationEstimateH1 :
-    OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddTranslationEstimateH1 : MeasurableAdd E := by
-  infer_instance
 
 variable (μ : Measure E) [μ.IsAddRightInvariant] [IsFiniteMeasureOnCompacts μ] [SFinite μ]
 
@@ -80,13 +73,10 @@ theorem norm_translateL2_sub_h1ToL2_le (a : E) (u : ↥(h1 (μ := μ) (E := E)))
             translateL2 (μ := μ) (F := ℝ) a v.1 - v.1 := by
         exact htr.sub hfst
       exact (continuous_norm.comp hsub)
-    have hg :
-        Continuous fun v : V =>
-          ‖a‖ * ‖v.2‖ := by
-      have hsnd : Continuous fun v : V => v.2 := continuous_snd
-      have hnorm : Continuous fun v : V => ‖v.2‖ := continuous_norm.comp hsnd
-      exact (continuous_const.mul hnorm)
-    exact isClosed_le hf hg
+    refine isClosed_le hf ?_
+    have hsnd : Continuous fun v : V => v.2 := continuous_snd
+    have hnorm : Continuous fun v : V => ‖v.2‖ := continuous_norm.comp hsnd
+    exact (continuous_const.mul hnorm)
   have hRange : (LinearMap.range (graph (μ := μ) (E := E)) : Set V) ⊆ S := by
     rintro v ⟨f, rfl⟩
     -- Reduce to the `C¹_c` estimate.
@@ -102,18 +92,12 @@ theorem norm_translateL2_sub_h1ToL2_le (a : E) (u : ↥(h1 (μ := μ) (E := E)))
         (u : V) ∈
           ((LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure :
             Set V) := by
-      have hu0 : (u : V) ∈ h1 (μ := μ) (E := E) := u.2
-      dsimp [h1] at hu0
-      exact hu0
-    have hu1 :
-        (u : V) ∈
-          ((LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure :
-            Set V) := hu0
-    rw [Submodule.topologicalClosure_coe] at hu1
-    exact hu1
-  have huS : (u : V) ∈ S := hClosure hu
+      have hu0  := u.2
+      assumption
+    assumption
+  have huS  := hClosure hu
   -- Unpack membership in `S` and rewrite in terms of the bundled maps `h1ToL2` and `h1ToL2Grad`.
-  simpa [S, V, h1ToL2, h1ToL2Grad] using huS
+  assumption
 
 end
 

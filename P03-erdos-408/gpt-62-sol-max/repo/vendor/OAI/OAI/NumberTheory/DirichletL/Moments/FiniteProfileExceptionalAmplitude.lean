@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedDetectorAmplitude
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw

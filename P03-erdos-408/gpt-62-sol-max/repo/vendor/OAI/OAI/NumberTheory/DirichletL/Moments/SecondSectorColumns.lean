@@ -67,9 +67,7 @@ theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
       if IsCoprime C a ∧ IsCoprime C b ∧ IsCoprime a b then F a b else 0)=
     ∑ a : sectorPool C hC S,∑ b : sectorPool D hD S,
       if IsCoprime (a:Ideal O) (b:Ideal O) then F a b else 0 := by
-  have he (a : Ideal O) :
-      (∑ b : sectorPool D hD S,if IsCoprime a (b:Ideal O) then F a b else 0)=
-      ∑ b∈sectorPool D hD S,if IsCoprime a b then F a b else 0 :=
+  have he (a : Ideal O)  :=
     Finset.sum_coe_sort (sectorPool D hD S) (fun b : Ideal O => if IsCoprime a b then F a b else 0)
   simp_rw [he]
   rw [Finset.sum_coe_sort (sectorPool C hC S)

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical BigOperators ContDiff
 open MeasureTheory Set
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -19,9 +19,6 @@ private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_
 def coefficient (χ : Character) (I : Ideal O) : ℂ :=
   (IdealMangoldt.value I : ℂ) * idealCoeff χ I
 
-@[simp] theorem coefficient_zero (χ : Character) : coefficient χ 0 = 0 := by
-  unfold coefficient
-  rw [IdealMangoldt.value_zero, Complex.ofReal_zero, zero_mul]
 
 def series (χ : Character) (s : ℂ) : ℂ := -deriv (LFunction χ) s / LFunction χ s
 

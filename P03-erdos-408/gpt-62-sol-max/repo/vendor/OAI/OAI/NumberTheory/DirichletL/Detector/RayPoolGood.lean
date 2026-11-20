@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical CanonicalQuadraticSieve PrincipalSignalComparison
@@ -21,7 +22,7 @@ theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
   have heq := hmax.eq_of_le hJ.ne_top hPJ
   rw [←heq] at hηJ
   have hd : P.val∣η.modulus := Ideal.dvd_iff_le.mpr hηJ
-  have hn := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot))
+  have hn := Nat.le_of_dvd (Ideal.absNorm_pos_of_ne_bot (η.modulus_ne_bot))
     (map_dvd Ideal.absNorm hd)
   exact (not_le_of_gt hN) (by exact_mod_cast hn)
 

@@ -29,7 +29,7 @@ lemma eventually_endpoint_budget (a : ℝ) {c δ : ℝ} (hc : 0 < c) (hδ : 0 < 
   filter_upwards [eventually_logLog_rpow_le 61 hδ, eventually_le_logLog (max 1 (|a| * β))]
     with x hL hT
   set T := logLog x
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT
+  have hT1  := (le_max_left _ _).trans hT
   rw [show (61 : ℝ) = ((61 : ℕ) : ℝ) by norm_num, rpow_natCast] at hL
   have h20 : 1 ≤ T ^ 20 := one_le_pow₀ hT1
   have h1 : 2 * T ^ 20 / c + 1 ≤ (2 / c + 1) * T ^ 20 := by
@@ -44,7 +44,7 @@ lemma eventually_endpoint_budget (a : ℝ) {c δ : ℝ} (hc : 0 < c) (hδ : 0 < 
     simp only [β]
     nlinarith
   have h5 : 0 ≤ (2 * T ^ 20 / c + 1) ^ 3 + T ^ 3 := by positivity
-  have hβ : |a| * β ≤ T := (le_max_right _ _).trans hT
+  have hβ  := (le_max_right _ _).trans hT
   calc a * ((2 * T ^ 20 / c + 1) ^ 3 + T ^ 3) ≤ |a| * ((2 * T ^ 20 / c + 1) ^ 3 + T ^ 3) :=
         mul_le_mul_of_nonneg_right (le_abs_self a) h5
     _ ≤ |a| * (β * T ^ 60) := mul_le_mul_of_nonneg_left h4 (abs_nonneg a)
@@ -88,7 +88,7 @@ lemma eventually_squares_budget (κ D : ℝ) : ∀ᶠ x : ℝ in atTop,
     eventually_logLog_rpow_le 1 (show (0 : ℝ) < 1 / 2 by norm_num),
     eventually_le_log ((6 * (|κ| + 1)) ^ 2), eventually_ge_atTop 1, eventually_le_logLog 0]
     with x he hT hL hx hT0
-  have hL0 : 0 < Real.log x := lt_of_lt_of_le (by positivity) hL
+  have hL0  := lt_of_lt_of_le (by positivity) hL
   rw [rpow_one] at hT
   have hsq : 6 * (|κ| + 1) ≤ Real.log x ^ (1 / 2 : ℝ) := by
     rw [← sqrt_eq_rpow, le_sqrt (by positivity) hL0.le]
@@ -101,8 +101,6 @@ lemma eventually_squares_budget (κ D : ℝ) : ∀ᶠ x : ℝ in atTop,
     ring_nf
   have hκx : κ * x + 1 ≤ (|κ| + 1) * x := by
     nlinarith [le_abs_self κ]
-  have hep := exp_pos (-(Real.log x ^ (28 / 100 : ℝ)))
-  have hLD := rpow_pos_of_pos hL0 (-(D + 1))
   calc (κ * x + 1) * Real.exp (-(Real.log x ^ (28 / 100 : ℝ))) * (6 * logLog x)
       ≤ ((|κ| + 1) * x) * Real.log x ^ (-(D + 1)) * (6 * Real.log x ^ (1 / 2 : ℝ)) := by
         gcongr

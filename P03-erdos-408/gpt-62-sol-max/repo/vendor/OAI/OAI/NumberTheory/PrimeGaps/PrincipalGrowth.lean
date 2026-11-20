@@ -51,21 +51,6 @@ lemma zeta_deriv_eq_regular {s : ℂ} (hs : 0 < s.re) (hs1 : s≠1) :
   have hh := (zetaRegular_differentiableAt hs).hasDerivAt.add hd
   simpa only [Pi.add_def, Pi.div_def, id_eq, zero_mul, one_mul, zero_sub, neg_div, sub_eq_add_neg, zero_add] using hh.deriv
 
-lemma horizontal_growth_lipschitz {f : ℂ → ℂ} {t D : ℝ}
-    (hf : ∀ s : ℂ, 1 ≤ s.re → s.im=t → DifferentiableAt ℂ f s)
-    (hb : ∀ s : ℂ, 1 ≤ s.re → s.im=t → ‖s‖+2 ≤ 4*(|t|+2) → ‖deriv f s‖ ≤ D)
-    {z w : ℂ} (hz : 1 ≤ z.re) (hw : 1 ≤ w.re) (hzt : z.im=t) (hwt : w.im=t)
-    (hzn : ‖z‖+2 ≤ 4*(|t|+2)) (hwn : ‖w‖+2 ≤ 4*(|t|+2)) :
-    ‖f z-f w‖ ≤ D*‖z-w‖ := by
-  let S := ({s : ℂ | 1 ≤ s.re} ∩ {s : ℂ | s.im=t}) ∩ Metric.closedBall 0 (4*(|t|+2)-2)
-  have hi : Convex ℝ {s : ℂ | s.im=t} := convex_hyperplane (.mk Complex.add_im Complex.smul_im) t
-  have hS : Convex ℝ S := ((convex_halfSpace_re_ge 1).inter hi).inter (convex_closedBall 0 _)
-  apply Convex.norm_image_sub_le_of_norm_deriv_le (s:=S) (fun z hz => hf z hz.1.1 hz.1.2) ?_ hS
-    ⟨⟨hw,hwt⟩,by simp [Metric.mem_closedBall,dist_zero_right]; linarith⟩
-    ⟨⟨hz,hzt⟩,by simp [Metric.mem_closedBall,dist_zero_right]; linarith⟩
-  intro s hs
-  exact hb s hs.1.1 hs.1.2 (by have := hs.2; simp only [Metric.mem_closedBall,dist_zero_right] at this; linarith)
-
 lemma zeta_high_line_bounds {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
     ∃ K : ℝ, 1 ≤ K ∧ ∀ t : ℝ, 1 ≤ |t| →
       (∀ ψ : DirichletCharacter ℂ 1, ∀ s : ℂ, 1 ≤ s.re → ‖s‖+2 ≤ 4*(|t|+2) →
@@ -75,8 +60,6 @@ lemma zeta_high_line_bounds {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/2) :
   obtain ⟨K₀,hK₀,h₀⟩ := character_line_bounds hε hε1
   obtain ⟨K₁,hK₁,h₁⟩ := zetaRegular_bounds hε hε1
   let K := K₀*3^(2*ε)+K₁*4^(2*ε)+1
-  have hK₀' : 0 < K₀ := by linarith
-  have hK₁' : 0 < K₁ := by linarith
   have hK : 1 ≤ K := by dsimp [K]; linarith [show 0 < K₀*3^(2*ε) by positivity, show 0 < K₁*4^(2*ε) by positivity]
   refine ⟨K,hK,?_⟩
   intro t ht
@@ -116,15 +99,13 @@ lemma zeta_high_line_lower_aux {t K P : ℝ} (ht : 1 ≤ |t|) (hK : 1 ≤ K) (hP
       ‖characterRegular ψ s‖ ≤ K*P)
     (hd : ∀ s : ℂ, 1 ≤ s.re → s.im=t → ‖s‖+2 ≤ 4*(|t|+2) → ‖deriv riemannZeta s‖ ≤ K*P) :
     (1/(512*K^7))/P^7 ≤ ‖riemannZeta (1+I*t)‖ := by
-  have hK0 : 0 < K := by linarith
-  have hP0 : 0 < P := by linarith
-  have hKP : 1 ≤ K*P := one_le_mul_of_one_le_of_one_le hK hP
+  have hKP  := one_le_mul_of_one_le_of_one_le hK hP
   have hh : 1/(256*(K*P)^6*(2*K*P)) ≤ ‖riemannZeta (1+I*t)‖ := by
     apply three_four_one_lower (norm_nonneg _) hKP (by linarith)
     intro δ hδ hδ1
     have hn0 : ‖(1:ℂ)+I*t‖+2 ≤ 4*(|t|+2) := by
-      simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by linarith [abs_nonneg t])
-    have hnδ := line_sample_norm hδ.le hδ1 (t:=t) (u:=t) (by linarith [abs_nonneg t])
+      simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by linarith)
+    have hnδ := line_sample_norm hδ.le hδ1 (t:=t) (u:=t) (by linarith)
     have hL0 : ‖DirichletCharacter.LFunctionTrivChar 1 (1+δ)‖ ≤ 2*(K*P)/δ := by
       have hn : ‖(1:ℂ)+δ‖+2 ≤ 4*(|t|+2) := by
         simpa using line_sample_norm hδ.le hδ1 (t:=t) (u:=0) (by simp)
@@ -157,7 +138,7 @@ lemma zeta_high_line_lower_aux {t K P : ℝ} (ht : 1 ≤ |t|) (hK : 1 ≤ K) (hP
     have hL2 : ‖riemannZeta (1+δ+2*I*t)‖ ≤ 2*K*P := by
       have hn : ‖(1:ℂ)+δ+2*I*t‖+2 ≤ 4*(|t|+2) := by
         simpa only [show I*((2*t:ℝ):ℂ)=2*I*t by push_cast; ring] using
-          line_sample_norm hδ.le hδ1 (t:=t) (u:=2*t) (by rw [abs_mul]; norm_num)
+          line_sample_norm hδ.le hδ1 (t:=t) (u:=2*t) (by norm_num)
       have hp := LFunction_norm_le_regular_add_pole (1:DirichletCharacter ℂ 1)
         (s:=1+δ+2*I*t) (by simp; linarith)
       rw [DirichletCharacter.LFunction_modOne_eq] at hp
@@ -166,7 +147,7 @@ lemma zeta_high_line_lower_aux {t K P : ℝ} (ht : 1 ≤ |t|) (hK : 1 ≤ K) (hP
         have hb := Complex.abs_im_le_norm ((1:ℂ)+δ+2*I*t-1)
         simp [abs_mul] at hb
         linarith
-      have hfrac : 1/‖(1:ℂ)+δ+2*I*t-1‖ ≤ 1 := div_le_one_of_le₀ hden (norm_nonneg _)
+      have hfrac  := div_le_one_of_le₀ hden (norm_nonneg _)
       linarith
     have hprod := (1:DirichletCharacter ℂ 1).norm_LFunction_product_ge_one hδ t
     simp only [one_pow,DirichletCharacter.LFunction_modOne_eq,norm_mul,norm_pow] at hprod
@@ -181,7 +162,6 @@ lemma zeta_high_line_lower {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
     ∃ c : ℝ, 0 < c ∧ ∀ t : ℝ, 1 ≤ |t| →
       c*(|t|+2)^(-ε) ≤ ‖riemannZeta (1+I*t)‖ := by
   obtain ⟨K,hK,hg⟩ := zeta_high_line_bounds (by linarith : 0 < ε/14) (by linarith : ε/14 ≤ 1/2)
-  have hK0 : 0 < K := by linarith
   refine ⟨1/(512*K^7),by positivity,?_⟩
   intro t ht
   let P : ℝ := (|t|+2)^(ε/7)
@@ -193,88 +173,32 @@ lemma zeta_high_line_lower {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
   have hP7 : P^7=(|t|+2)^ε := by
     dsimp [P]
     rw [←Real.rpow_mul_natCast (by positivity : 0 ≤ |t|+2)]
-    congr 1
     norm_num
   rw [hP7] at hh
   simpa only [Real.rpow_neg (by positivity : 0 ≤ |t|+2),div_eq_mul_inv] using hh
-
-lemma zeta_high_strip_lower_aux {t c K P δ : ℝ} (ht : 1 ≤ |t|) (hc : 0<c) (hK : 1≤K) (hP : 1≤P)
-    (hδ : 0≤δ) (hδ1 : δ≤1)
-    (hr : ∀ ψ : DirichletCharacter ℂ 1,∀ s : ℂ,1 ≤ s.re → ‖s‖+2≤4*(|t|+2) →
-      ‖characterRegular ψ s‖≤K*P)
-    (hd : ∀ s : ℂ,1 ≤ s.re → s.im=t → ‖s‖+2≤4*(|t|+2) → ‖deriv riemannZeta s‖≤K*P)
-    (hl : c/P≤‖riemannZeta (1+I*t)‖) :
-    (c/(4*K^2))/P^3≤‖riemannZeta (1+δ+I*t)‖ := by
-  have hK0 : 0<K := by linarith
-  have hP0 : 0<P := by linarith
-  by_cases hnear : δ≤c/(2*K*P^2)
-  · have hn0 : ‖(1:ℂ)+I*t‖+2≤4*(|t|+2) := by
-      simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by linarith [abs_nonneg t])
-    have hnδ := line_sample_norm hδ hδ1 (t:=t) (u:=t) (by linarith [abs_nonneg t])
-    have hf (s : ℂ) (_hs : 1 ≤ s.re) (him : s.im=t) : DifferentiableAt ℂ riemannZeta s := by
-      apply differentiableAt_riemannZeta
-      intro hs
-      simp [hs] at him
-      rw [←him] at ht
-      norm_num at ht
-    have hdif := horizontal_growth_lipschitz hf hd
-      (z:=1+I*t) (w:=1+δ+I*t) (by simp) (by simp; linarith) (by simp) (by simp) hn0 hnδ
-    have hnorm : ‖(1:ℂ)+I*t-(1+δ+I*t)‖=δ := by
-      rw [show (1:ℂ)+I*t-(1+δ+I*t)=-(δ:ℂ) by ring,norm_neg,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hδ]
-    rw [hnorm] at hdif
-    have hdb : ‖riemannZeta (1+I*t)-riemannZeta (1+δ+I*t)‖≤c/(2*P) := by
-      apply hdif.trans
-      calc
-        K*P*δ ≤ K*P*(c/(2*K*P^2)) := mul_le_mul_of_nonneg_left hnear (by positivity)
-        _ = _ := by field_simp
-    have htri := norm_add_le (riemannZeta (1+I*t)-riemannZeta (1+δ+I*t)) (riemannZeta (1+δ+I*t))
-    rw [sub_add_cancel] at htri
-    have hva : c/(2*P)≤‖riemannZeta (1+δ+I*t)‖ := by
-      have he : c/P=2*(c/(2*P)) := by ring
-      rw [he] at hl
-      linarith
-    apply le_trans ?_ hva
-    rw [div_div]
-    apply div_le_div_of_nonneg_left hc.le (by positivity)
-    have hP3 : P≤P^3 := by simpa using pow_le_pow_right₀ hP (show (1:ℕ)≤3 by norm_num)
-    have hK2 : 1≤K^2 := one_le_pow₀ hK
-    nlinarith [mul_le_mul_of_nonneg_left hP3 (show (0:ℝ)≤4*K^2 by positivity)]
-  · have hδ0 : 0<δ := (by positivity : 0<c/(2*K*P^2)).trans (lt_of_not_ge hnear)
-    have hInt := character_interior_lower (1:DirichletCharacter ℂ 1) hK hP hδ0 hδ1 hr
-    rw [DirichletCharacter.LFunction_modOne_eq] at hInt
-    apply le_trans ?_ hInt
-    calc
-      (c/(4*K^2))/P^3 = (c/(2*K*P^2))/(2*K*P) := by field_simp; norm_num
-      _ ≤ δ/(2*K*P) := div_le_div_of_nonneg_right (le_of_not_ge hnear) (by positivity)
 
 lemma zeta_high_strip_lower {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
     ∃ c : ℝ,0<c ∧ ∀ σ t : ℝ, 1≤σ → σ≤2 → 1 ≤ |t| →
         c*(|t|+2)^(-ε)≤‖riemannZeta (σ+I*t)‖ := by
   obtain ⟨K,hK,hg⟩ := zeta_high_line_bounds (by linarith : 0<ε/6) (by linarith : ε/6≤1/2)
   obtain ⟨c,hc,hl⟩ := zeta_high_line_lower (by linarith : 0<ε/3) (by linarith : ε/3≤1)
-  have hK0 : 0<K := by linarith
   refine ⟨c/(4*K^2),by positivity,?_⟩
   intro σ t hσ hσ2 ht
-  let X : ℝ := (|t|+2)
-  let P : ℝ := X^(ε/3)
-  have hX : 1≤X := by dsimp [X]; linarith [abs_nonneg t]
-  have hX0 : 0<X := by linarith
-  have hP : 1≤P := Real.one_le_rpow hX (by positivity)
   have he : 2*(ε/6)=ε/3 := by ring
-  have hl' : c/P≤‖riemannZeta (1+I*t)‖ := by
-    have hh := hl t ht
-    change c*X^(-(ε/3))≤_ at hh
-    change c/X^(ε/3)≤_
-    simpa only [Real.rpow_neg hX0.le,div_eq_mul_inv] using hh
-  have hb := zeta_high_strip_lower_aux ht hc hK hP (δ:=σ-1) (by linarith) (by linarith)
-    (fun ψ s hs hn => by simpa only [he] using (hg t ht).1 ψ s hs hn)
-    (fun s hs him hn => by simpa only [he] using (hg t ht).2 s hs him hn) hl'
-  have hP3 : P^3=X^ε := by dsimp [P]; rw [←Real.rpow_mul_natCast hX0.le]; congr 1; norm_num
-  rw [hP3] at hb
-  have hs : (1:ℂ)+((σ-1:ℝ):ℂ)+I*t=(σ:ℂ)+I*t := by push_cast; ring
-  rw [hs] at hb
-  change (c/(4*K^2))*X^(-ε)≤_
-  simpa only [Real.rpow_neg hX0.le,div_eq_mul_inv] using hb
+  have hX : 1≤|t|+2 := by linarith [abs_nonneg t]
+  refine horizontal_strip_lower hX hε.le hc hK hσ hσ2 ?_
+    (fun s hs him hn => by simpa only [he] using (hg t ht).2 s hs him hn) (hl t ht) ?_
+  · intro s _ him
+    apply differentiableAt_riemannZeta
+    intro hs
+    simp [hs] at him
+    rw [←him] at ht
+    norm_num at ht
+  · intro δ hδ hδ1
+    simpa only [DirichletCharacter.LFunction_modOne_eq] using
+      character_interior_lower (1:DirichletCharacter ℂ 1) hK
+        (Real.one_le_rpow hX (by positivity)) hδ hδ1
+        (fun ψ s hs hn => by simpa only [he] using (hg t ht).1 ψ s hs hn)
 
 lemma principal_deriv_eq_regular {s : ℂ} (hs : 0 < s.re) :
     deriv (poleRemovedL (1:DirichletCharacter ℂ 1)) s = zetaRegular s+(s-1)*deriv zetaRegular s := by
@@ -308,7 +232,7 @@ lemma principal_strip_lower {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
       c*(|t|+2)/((|t|+2)^ε) ≤ ‖poleRemovedL (1:DirichletCharacter ℂ 1) (σ+I*t)‖ := by
   obtain ⟨c₀,hc₀,hl⟩ := zeta_high_strip_lower hε hε1
   let F := poleRemovedL (1:DirichletCharacter ℂ 1)
-  let S : Set ℂ := (fun p : ℝ×ℝ => (p.1:ℂ)+I*p.2) '' (Set.Icc 1 2 ×ˢ Set.Icc (-1) 1)
+  let S  := (fun p : ℝ×ℝ => (p.1:ℂ)+I*p.2) '' (Set.Icc 1 2 ×ˢ Set.Icc (-1) 1)
   have hS : IsCompact S := (isCompact_Icc.prod isCompact_Icc).image (by fun_prop)
   have hmem (z : ℂ) : z∈S ↔ 1 ≤ z.re ∧ z.re ≤ 2 ∧ |z.im| ≤ 1 := by
     constructor
@@ -325,13 +249,13 @@ lemma principal_strip_lower {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
   let D := max M 1
   have hD : 0 < D := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
   let c := min (c₀/3) (1/(3*D))
-  have hc : 0 < c := by dsimp [c]; positivity
+  have hc : 0 < c := by positivity
   refine ⟨c,hc,?_⟩
   intro σ t hσ hσ2
   let z : ℂ := (σ:ℂ)+I*t
   have hz : 1 ≤ z.re := by simpa [z] using hσ
   have hT : 1 ≤ |t|+2 := by linarith [abs_nonneg t]
-  have hP : 1 ≤ (|t|+2)^ε := Real.one_le_rpow hT hε.le
+  have hP  := Real.one_le_rpow hT hε.le
   by_cases ht : 1 ≤ |t|
   · have hz1 : z≠1 := by intro hh; have hi := congrArg Complex.im hh; simp [z] at hi; simp [hi] at ht; norm_num at ht
     have he : F z=(z-1)*riemannZeta z := by
@@ -350,8 +274,8 @@ lemma principal_strip_lower {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) :
         (mul_le_mul_of_nonneg_right (min_le_left _ _) (by positivity)) (by positivity)
       _ = ((|t|+2)/3)*(c₀/(|t|+2)^ε) := by ring
       _ ≤ _ := mul_le_mul hnorm hlow (by positivity) (norm_nonneg _)
-  · have ht1 : |t| ≤ 1 := le_of_not_ge ht
-    have hzS : z∈S := (hmem z).mpr ⟨hz,by simpa [z] using hσ2,by simpa [z] using ht1⟩
+  · have ht1  := le_of_not_ge ht
+    have hzS  := (hmem z).mpr ⟨hz,by simpa [z] using hσ2,by simpa [z] using ht1⟩
     have hb := (hM z hzS).trans (le_max_left M 1)
     have hn : 0 < ‖F z‖ := norm_pos_iff.mpr (poleRemovedL_ne_zero 1 hz)
     rw [norm_inv,inv_eq_one_div] at hb

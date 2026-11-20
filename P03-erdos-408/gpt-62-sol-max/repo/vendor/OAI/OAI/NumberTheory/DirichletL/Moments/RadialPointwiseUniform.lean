@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseEnergy
 
 @[expose] public section
@@ -10,9 +12,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRadialPointwiseUniform
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell
-open CenteredMomentSlotRatios
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentRadialPointwiseEnergy
+open CenteredMomentUniformDivisorShell CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -26,18 +27,14 @@ def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
   have he (J:Finset ι):∃C:ℝ,0<C ∧ Bound J C ε:=
     actual_pointwise_divisor (Fintype.card ι) (by simpa using Finset.card_le_univ J) ε hε
   choose C hC hb using he
-  let D:ℝ:=1+∑J:Finset ι,C J
-  have hs:0≤∑J:Finset ι,C J:=Finset.sum_nonneg (fun J _=>(hC J).le)
-  refine ⟨D,by dsimp [D];linarith,?_⟩
+  obtain ⟨D, hD, hmajor⟩ := exists_real_majorant 0 C
+  refine ⟨D,hD,?_⟩
   intro J s r I hI E Z hE hZ hc
-  have hd:C J≤D:=by
-    have hh:=Finset.single_le_sum (fun J _=>(hC J).le) (Finset.mem_univ J)
-    dsimp [D];linarith
   apply (hb J s r I hI E Z hE hZ hc).trans
   apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
   apply mul_le_mul_of_nonneg_right _ (mul_nonneg s.profile_nonneg hE)
   apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by linarith) _)
-  exact mul_le_mul_of_nonneg_right hd (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+  exact mul_le_mul_of_nonneg_right (hmajor J) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
 
  theorem actual_uniform_divisor (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C:ℝ,0<C ∧ ∀(J:Finset ι) (s:Data J),(∀i:J,s.lo i=lo i) → (∀i:J,s.hi i=hi i) →

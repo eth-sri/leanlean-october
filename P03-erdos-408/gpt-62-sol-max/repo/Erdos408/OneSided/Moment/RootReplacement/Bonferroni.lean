@@ -65,7 +65,7 @@ theorem lineAssignments_prod (x : ℝ) (d : Data K) {I : Finset ℕ} (hI : I ⊆
   have hr : ∏ p ∈ bandPrimes x d,
       (((p : ℂ) + 1)⁻¹ * ∑ l ∈ range (p + 1), if p ∈ I then (f p l : ℂ) else 1) =
         ((∏ p ∈ I, (((p : ℝ) + 1)⁻¹ * ∑ l ∈ range (p + 1), f p l) : ℝ) : ℂ) := by
-    have hp1 : ∀ p : ℕ, (p : ℂ) + 1 ≠ 0 := fun p => by exact_mod_cast Nat.succ_ne_zero p
+    have hp1 : ∀ p : ℕ, (p : ℂ) + 1 ≠ 0 := fun p => by norm_cast
     rw [prod_congr rfl fun (p : ℕ) _ => show ((p : ℂ) + 1)⁻¹ *
         ∑ l ∈ range (p + 1), (if p ∈ I then (f p l : ℂ) else 1) =
           if p ∈ I then ((p : ℂ) + 1)⁻¹ * ∑ l ∈ range (p + 1), (f p l : ℂ) else 1 by
@@ -103,7 +103,7 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
     rfl
   rw [hc, Complex.norm_real, Real.norm_eq_abs] at h
   -- step: the modulus `S⁶ ≤ p_max^{6k}`
-  have hprod : ∏ p ∈ S, (p : ℝ) ≤ pmax ^ k :=
+  have hprod  :=
     calc ∏ p ∈ S, (p : ℝ) ≤ ∏ _p ∈ S, pmax :=
           prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) fun p hp => hpmax p (hS hp)
       _ = pmax ^ S.card := prod_const _
@@ -175,7 +175,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   obtain ⟨h, hh⟩ : ∃ h : Finset ℕ → (ℕ → ℕ) → ℝ, h = fun I ℓ => ∏ p ∈ I, (1 - lam p (ℓ p)) :=
     ⟨_, rfl⟩
   obtain ⟨Q, hQ⟩ : ∃ Q : Finset ℕ, Q = bandPrimes x d \ act := ⟨_, rfl⟩
-  have hQP : Q ⊆ bandPrimes x d := hQ ▸ sdiff_subset
+  have hQP  := hQ ▸ sdiff_subset
   -- step: pass to real quantities
   have hgoal : ((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃,
           ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ) -
@@ -196,9 +196,9 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   set c := primitiveDensity with hc
   have hw0 : 0 ≤ w := inv_nonneg.2 (by positivity)
   have hz0 : 0 ≤ z := inv_nonneg.2 (Nat.cast_nonneg _)
-  have hvol0 : 0 ≤ vol :=
+  have hvol0  :=
     mul_nonneg (mul_nonneg (sub_nonneg.2 hab₁) (sub_nonneg.2 hab₂)) (sub_nonneg.2 hab₃)
-  have hc2 : |c| ≤ 2 := RootResidue.abs_primitiveDensity_le
+  have hc2  := RootResidue.abs_primitiveDensity_le
   have herr : 0 ≤ C₀ * pmax ^ (6 * (act.card + T)) * min U V ^ (-(1 / 5 : ℝ)) :=
     mul_nonneg (mul_nonneg hC₀ (pow_nonneg (by linarith) _))
       (Real.rpow_nonneg (le_min (by linarith) (by linarith)) _)
@@ -367,7 +367,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   have hb : |c * vol * b| ≤ 2 * vol * aE := by
     rw [abs_mul]
     exact mul_le_mul hcv hAgap (abs_nonneg _) (by positivity)
-  have hcE : c * vol * aE ≤ 2 * vol * aE :=
+  have hcE  :=
     mul_le_mul_of_nonneg_right ((le_abs_self _).trans hcv) hAE₀
   have h4 : 4 * vol * aE ≤ 4 * vol * dampMass x d act lam ^ T / T.factorial := by
     rw [mul_div_assoc]
@@ -378,7 +378,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           min U V ^ (-(1 / 5 : ℝ)) := by
     rw [← add_mul]
     calc _ ≤ (((bandPrimes x d).card : ℝ) + 1) ^ T * e := mul_le_mul_of_nonneg_right hcard herr
-      _ = _ := by simp only [e]; ring
+      _ = _ := by ring
   have hrE := abs_le.1 hdE
   linarith [abs_le.1 hRgap, abs_nonneg a]
 

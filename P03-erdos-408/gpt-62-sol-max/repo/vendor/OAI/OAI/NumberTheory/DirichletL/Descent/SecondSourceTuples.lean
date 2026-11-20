@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 public import OAI.NumberTheory.DirichletL.Descent.SecondGenerator
 
@@ -8,9 +9,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondGenerator
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers
+open scoped Classical
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -35,7 +35,7 @@ local notation "Eis" => ActualEisensteinCubic.O
   newAssigned : Fin Jn → ι
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 
 def originalSecondTuple {Jo Jn : ℕ} (u v : Eisˣ) (x : SecondOriginalSource ι Jo Jn) : SecondTuple Jo Jn where
   outer := ⟨x.q0,x.quotient,sourceIdeal p (x.common \ x.divisor)⟩

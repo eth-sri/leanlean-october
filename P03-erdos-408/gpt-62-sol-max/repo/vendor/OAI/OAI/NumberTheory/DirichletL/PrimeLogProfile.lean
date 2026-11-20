@@ -1,13 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.CompactProfileFamily
+public import OAI.NumberTheory.DirichletL.GaussSum.ActiveReindexing
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology FourierTransform SchwartzMap
+open scoped Classical ContDiff FourierTransform
 open Set Filter MeasureTheory
 namespace SevenEighths.PrimeLogProfile
 
@@ -30,7 +30,7 @@ theorem safeInverse_smooth : ContDiff ℝ ∞ safeInverse := by
   · subst x
     have he : safeInverse =ᶠ[nhds (0 : ℝ)] (fun _ => 0) := by
       filter_upwards [Metric.ball_mem_nhds (0 : ℝ) (by norm_num : (0 : ℝ)<1/4)] with y hy
-      have hy' : |y|<1/4 := by simpa [Metric.mem_ball, dist_zero_right, Real.norm_eq_abs] using hy
+      have hy' : |y|<1/4 := by simp_all
       have hone : QuadraticInitialBound.sieveBump (4*y)=1 := by
         apply QuadraticInitialBound.sieveBump.one_of_mem_closedBall
         change dist (4*y) 0≤1
@@ -116,19 +116,7 @@ theorem uniform_mellin_decay (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     funext u
     exact (logFamily_eq W A σ u).symm
   rw [he]
-  have ht : |t|=(2*Real.pi)*|t/(2*Real.pi)| := by
-    rw [abs_div,abs_of_pos (by positivity : 0<2*Real.pi)]
-    field_simp
-  have hbase : 1+|t|≤(1+2*Real.pi)*(1+|t/(2*Real.pi)|) := by
-    rw [ht]
-    nlinarith [Real.pi_pos,abs_nonneg (t/(2*Real.pi))]
-  calc
-    _ ≤ ((1+2*Real.pi)*(1+|t/(2*Real.pi)|))^j *
-        ‖𝓕 (logFamily W (A,σ)) (t/(2*Real.pi))‖ :=
-      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) hbase j) (norm_nonneg _)
-    _ = (1+2*Real.pi)^j*((1+|t/(2*Real.pi)|)^j *
-        ‖𝓕 (logFamily W (A,σ)) (t/(2*Real.pi))‖) := by rw [mul_pow,mul_assoc]
-    _ ≤ _ := mul_le_mul_of_nonneg_left (hb (A,σ) ⟨hA,hσ⟩ _) (by positivity)
+  exact CompactProfileFamily.mellin_weight (norm_nonneg _) (hb (A,σ) ⟨hA,hσ⟩ _)
 
 theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Icc a b) (hP : 0<P)
@@ -138,7 +126,7 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
   by_cases hy : W y=0
   · simp [profile,hy]
   have hs := hWs hy
-  have hyp : 0<y := ha.trans_le hs.1
+  have hyp  := ha.trans_le hs.1
   have hlogs : |Real.log y|≤|Real.log a|+|Real.log b| := by
     apply abs_le.mpr
     constructor
@@ -156,7 +144,7 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     (hhalf.trans (le_abs_self _))
   rw [profile,hi,Real.log_mul (ne_of_gt hP) (ne_of_gt hyp)]
   push_cast
-  have hn : (Real.log P : ℂ)≠0 := Complex.ofReal_ne_zero.mpr hp.ne'
+  have hn  := Complex.ofReal_ne_zero.mpr hp.ne'
   have hn' : (Real.log P : ℂ)+(Real.log y : ℂ)≠0 := by
     have : 0<Real.log P+Real.log y := by
       linarith [(abs_le.mp hlogs).1,abs_nonneg (Real.log a),abs_nonneg (Real.log b)]

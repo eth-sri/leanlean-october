@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalSource
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
@@ -17,8 +17,7 @@ lemma nonzero_tsum_indicator (f : O→ℂ) :
     (∑'k : O,if k=0 then 0 else f k)=∑'k : GramFrequency,f k.val := by
   rw [←tsum_subtype_eq_of_support_subset (s:={k : O | k≠0}) (by
     intro k hk hz
-    subst k
-    exact hk (by simp))]
+    simp_all)]
   apply tsum_congr
   intro k
   exact ite_eq_right k.property

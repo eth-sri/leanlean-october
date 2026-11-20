@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
+public import OAI.NumberTheory.DirichletL.Detector.CentralPrimeSum
+public import OAI.NumberTheory.DirichletL.PrimeRows.CubePhaseBins
+public import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeThresholds
+public import OAI.NumberTheory.DirichletL.PrimeRows.CentralHeightCost
 public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 
 @[expose] public section
@@ -8,20 +11,14 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical BigOperators ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots
+open ProbeCentralAllSlots HeckePrimeAmplitudeBins
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-
-omit [NeZero M] in
-theorem fixedPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
 
 theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -41,33 +38,39 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
       ∀(a : ℝ) (i : ℕ),i≤n → 51/100≤a → a≤1 →
       detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
         (3*(i+1:ℕ)*Z^τ)<a+2*e →
-      let Y : Fin N→ℝ := fun j=>Z^(ell j)
-      let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+      let Y  := fun j=>Z^(ell j)
+      let T  := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
       ∀t : HeightSpace,((|t.1.1|≤(3*i+1:ℕ)*Z^τ ∧ |t.2|≤(3*i+1:ℕ)*Z^τ) ∧ |t.1.2|≤(3*i+1:ℕ)*Z^τ) →
       let x : ℂ := (((a+16*e:ℝ):ℂ)+t.1.1*Complex.I)
       let w : ℂ := (((1-a-6*e:ℝ):ℂ)+t.2*Complex.I)
       let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
-      let Q : Fin N→ℂ := fun j=>HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z
-      let g : Fin N→ℝ := fun j=>amplitude (Y j) (a-1/2) mesh (Q j)
+      let Q  := fun j=>HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z
+      let g  := fun j=>amplitude (Y j) (a-1/2) mesh (Q j)
       (∀j,0≤g j ∧ g j≤a-1/2 ∧ g j∈labels (a-1/2) mesh ∧
         ‖Q j‖≤(Y j)^(g j+mesh) ∧ (0<g j → (Z^d)^(2*(ell j/d)*g j)≤‖Q j‖^2)) ∧
       ‖∑P:(∀j,T j),calibratedTupleValue S hS hmax η u (fun j=>(P j).val)
-          (fun j=>fixedPoolOutside M H S N c b Y j (P j).val (P j).property) W Y x w z‖≤
+          (fun j=>poolOutside (RayQuotient.identityClass M H) S c b Y j (P j).val (P j).property) W Y x w z‖≤
         C*(η.modulus.absNorm:ℝ)^(2*eps)*rowNorm u^(a-1/2+12*e+eps*(N+8))*Z^loss*
           (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh)) := by
-  obtain ⟨C,hC,hbound⟩ := actual_cube_prime_bound M H hH N n e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss
-    he he1 heps hc hcb hA hR hdmin hdmax hrmin hτ hε hκ hcost hmesh hδ hbudget hgap hmargin hheight hloss
-    S hS hfirst hmax W hWs hW hWB
+  have hb (j : Fin N) := actual_phase_bins_on_cube M H hH S hS.prime hS.bad hmax (W j) c b hc hcb
+    (hWs j) (hW j) R dmin dmax rmin τ ε e κ cost mesh δ margin n
+    hR hdmin hdmax hrmin hτ hε he he1 hκ hcost hmesh hδ hbudget hgap hmargin hheight
+  have hbAll := Filter.eventually_all.mpr hb
+  obtain ⟨C,hC,hbound⟩ := ProbeCentralPrimeSum.actual_central_prime_sum N e eps c b A
+    he he1 heps hc (hc.trans_le hcb) hA S hS hfirst hmax
   have hdj := power_pools_eventually_disjoint (RayQuotient.identityClass M H) S
     (fun _ : Fin N=>c) (fun _=>b) ell (fun _=>hc) (fun _=>hcb) hell
   refine ⟨C,hC,?_⟩
   intro η
-  filter_upwards [hbound η,hdj,eventually_ge_atTop (1:ℝ)] with Z hbound hdis hZ
+  have hscale := HeckeDetectorDyadicGeometry.uniform_scale_threshold dmin 2 hdmin
+  filter_upwards [hbAll,central_pool_good_eventually η e c b dmin rmin he hc hcb hdmin hrmin,
+    cube_height_power_eventually n τ (2+4*eps) loss hτ (by positivity) hloss,
+    hscale,source_cube_height_eventually τ hτ, hdj] with Z hb hg hheightZ hscaleZ hZ hdis
   intro d hd hd' u hu hulo hcal huhi a i hi ha ha1 hbin
   dsimp only
   intro t ht
-  have hd0 : 0<d := hdmin.trans_le hd
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hd0  := hdmin.trans_le hd
+  have hZp  := zero_lt_one.trans_le hZ.1
   have hr (j : Fin N) : rmin≤ell j/d := by
     apply (le_div_iff₀ hd0).mpr
     exact (by nlinarith [mul_le_mul_of_nonneg_right hd' hrmin.le] : rmin*d≤dmax*rmin).trans (hello j)
@@ -76,10 +79,68 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
     exact (hellhi j).trans (by nlinarith [mul_le_mul_of_nonneg_right hd hR])
   have heq (j : Fin N) : (Z^d)^(ell j/d)=Z^(ell j) := by
     rw [←Real.rpow_mul hZp.le,mul_div_cancel₀ _ hd0.ne']
-  have hb := hbound d hd hd' u hu hulo hcal huhi a i hi ha ha1 hbin (fun j=>ell j/d) hr hr'
-  have hfun : (fun j : Fin N => (Z^d)^(ell j/d)) = (fun j => Z^(ell j)) := funext heq
-  rw [hfun] at hb
-  exact hb hdis t ht
+  let Y := fun j=>Z^(ell j)
+  let r := fun j=>ell j/d
+  let T  := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+  let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
+  let g  := fun j=>amplitude (Y j) (a-1/2) mesh
+    (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z)
+  have hU  := hscaleZ d hd
+  have hY (j : Fin N) : 1≤Y j := Real.one_le_rpow hZ.1 ((mul_nonneg hdmax hrmin.le).trans (hello j))
+  have hYp (j : Fin N)  := zero_lt_one.trans_le (hY j)
+  have hphase (j : Fin N) := by
+    have h := hb j d hd hd' hU hZ.2 η u hulo hcal huhi a i hi ha ha1 hbin (r j) t (hr j) (hr' j) ht
+    simpa only [r,heq j] using h
+  refine ⟨fun j=>⟨(hphase j).1,(hphase j).2.1,(hphase j).2.2.1,(hphase j).2.2.2.1,(hphase j).2.2.2.2.1⟩,?_⟩
+  let p  := fun j=>(Y j)^(g j+mesh)
+  have hp (j : Fin N) : 1≤p j := Real.one_le_rpow (hY j) (by have := (hphase j).1;dsimp [g];linarith)
+  have hph (j : Fin N) : ‖phaseSlot u (T j) (W j) (Y j) z‖≤(Y j)^(-(4/25:ℝ))*p j := by
+    have hj := (hphase j).2.2.2.2.2
+    have hsum : phaseSlot u (T j) (W j) (Y j) z=
+        ∑P∈T j,W j ((P.val.absNorm:ℝ)/Y j)*(P.val.absNorm:ℂ)^(z-1)*
+          (-star (CanonicalRowCompletion.idealRowHom u.val P.val)) :=
+      Finset.sum_coe_sort (T j) (fun P=>W j ((P.val.absNorm:ℝ)/Y j)*(P.val.absNorm:ℂ)^(z-1)*
+        (-star (CanonicalRowCompletion.idealRowHom u.val P.val)))
+    have hj' : ‖phaseSlot u (T j) (W j) (Y j) z‖≤(Y j)^(-(4/25:ℝ)+g j+mesh) := by
+      rw [hsum]
+      convert hj using 1
+      simp only [Y,g,z]
+      congr 1
+      norm_num
+    apply hj'.trans_eq
+    dsimp only [p]
+    rw [←Real.rpow_add (hYp j)]
+    congr 1
+    ring
+  have hgood (j : Fin N) (P : PrimeIdeal) (hP : P∈T j) :=
+    hg (RayQuotient.identityClass M H) S d (r j) hd (hr j) P (by simpa only [r,heq j] using hP)
+  have hfreq := cube_buffered_heights t ((3*i+1:ℕ)*Z^τ) (Z^τ) i ht
+    (Real.rpow_nonneg (zero_le_one.trans hZ.1) _) (by push_cast;have hh : 0≤Z^τ := Real.rpow_nonneg (zero_le_one.trans hZ.1) _;nlinarith)
+  have hbound' := hbound u hu η (rayCubeFamily M H hH u) (Z^τ) a i hZ.2 ha ha1 hbin T
+    (poolOutside (RayQuotient.identityClass M H) S c b Y) hdis (fun j P hP=>(hgood j P hP).2.1)
+    (fun j P hP=>(hgood j P hP).2.2.1) (fun j P hP=>(hgood j P hP).2.2.2)
+    W Y hY (fun j=>(hWs j).trans Ioo_subset_Icc_self) hWB
+    (((a+16*e:ℝ):ℂ)+t.1.1*Complex.I) (((1-a-6*e:ℝ):ℂ)+t.2*Complex.I) z
+    (by simp) (by simp) (by simp [z]) (by simpa using hfreq.1) (by simpa using hfreq.2.1) p hp hph
+  have hprod : (∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j)=∏j,(Y j)^(-(4/25:ℝ)+g j+mesh) := by
+    rw [←Finset.prod_mul_distrib]
+    apply Finset.prod_congr rfl
+    intro j hj
+    dsimp only [p]
+    rw [←Real.rpow_add (hYp j)]
+    congr 1
+    ring
+  calc
+    _ ≤ C*(η.modulus.absNorm:ℝ)^(2*eps)*rowNorm u^(a-1/2+12*e+eps*(N+8))*
+        (3+(3*i+2:ℕ)*Z^τ)^(2+4*eps)*((∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j)) := by
+      exact hbound'.trans_eq (by ring)
+    _ ≤ C*(η.modulus.absNorm:ℝ)^(2*eps)*rowNorm u^(a-1/2+12*e+eps*(N+8))*Z^loss*
+        ((∏j,(Y j)^(-(4/25:ℝ)))*(∏j,p j)) := by
+      apply mul_le_mul_of_nonneg_right _ (mul_nonneg
+        (Finset.prod_nonneg (fun j _=>Real.rpow_nonneg (hYp j).le _))
+        (Finset.prod_nonneg (fun j _=>zero_le_one.trans (hp j))))
+      exact mul_le_mul_of_nonneg_left (hheightZ i hi) (by unfold rowNorm;positivity)
+    _ = _ := by rw [hprod]
 
 end SevenEighths.ProbeHighRowFamily
 

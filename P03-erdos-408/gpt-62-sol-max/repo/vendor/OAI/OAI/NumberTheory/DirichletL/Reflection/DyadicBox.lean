@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.DyadicTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 
@@ -34,7 +34,6 @@ def retainedDyadicBox (scale B : ℝ) : Finset (ℕ×ℕ×ℕ) :=
 lemma center_mem_retainedDyadicBox (scale B : ℝ) (hs : 0<scale)
     (i : ℕ×ℕ×ℕ) (hi : rawDyadicCenter scale i≤B) : i∈retainedDyadicBox scale B := by
   let R := max 1 (B/scale)
-  have hR : 1≤R := le_max_left _ _
   have hp : (2:ℝ)^(i.1+i.2.2+3*i.2.1)≤R :=
     ((le_div_iff₀ hs).mpr (by nlinarith only [rawDyadicCenter_pow_lower scale hs.le i,hi])).trans (le_max_right _ _)
   have hl := Real.log_le_log (by positivity : (0:ℝ)<2^(i.1+i.2.2+3*i.2.1)) hp
@@ -58,7 +57,7 @@ theorem retainedDyadicBox_count_small_power (ε : ℝ) (hε : 0<ε) :
   refine ⟨(2+1/((ε/6)*Real.log 2))^6,by positivity,?_⟩
   intro scale B
   have hR : 1≤max 1 (B/scale) := le_max_left _ _
-  have hp : 0<max 1 (B/scale) := lt_of_lt_of_le zero_lt_one hR
+  have hp  := lt_of_lt_of_le zero_lt_one hR
   have hh := columnDyadicLength_small_power (ε/6) (by positivity) _ hR
   rw [retainedDyadicBox_card]
   push_cast

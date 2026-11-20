@@ -10,16 +10,15 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialConjugateEnergy
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
+open CompletedGauss ConcreteTraceCRT InverseInitialOverlap InverseInitialPoissonBridge
+open InverseInitialRayAttachment UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 def conjugateIdealCharacter (η : Ideal O →* ℂ) : Ideal O →* ℂ where
   toFun I := star (η I)
   map_one' := by rw [map_one,star_one]
-  map_mul' I J := by simp [map_mul]
+  map_mul' I J := by simp_all
 
 @[simp] theorem conjugateIdealCharacter_apply (η : Ideal O →* ℂ) (I : Ideal O) :
     conjugateIdealCharacter η I = star (η I) := rfl
@@ -80,7 +79,6 @@ theorem originalFixedPolynomial_norm_sq_conjugatedResidual (S : Finset (Ideal O)
 theorem admissible_row_four_le_one (I : Ideal O) (hI : Admissible I) (u : O) :
     ‖idealRowHom u I‖^4 ≤ 1 := by
   have he := norm_idealRowHom_four_eq_two I hI u
-  have hs : 0≤‖idealRowHom u I‖^2 := sq_nonneg _
   have ht : ‖idealRowHom u I‖^4=(‖idealRowHom u I‖^2)^2 := by ring
   rw [ht] at he ⊢
   nlinarith
@@ -225,7 +223,7 @@ theorem original_smoothed_overlap_triangle (S : Finset (Ideal O)) {P : Ideal O}
     Real.sqrt (smoothedEnergy Φ Y (originalTotalPolynomial S P η a W Z r z)) ≤
       ∑ j∈idealDivisors P,Z^(-G j)*‖η j‖^2*
         Real.sqrt (smoothedEnergy Φ Y (conjugatedResidual S P j η a W Z r z (G j))) := by
-  have hjd (j : Ideal O) (hj : j∈idealDivisors P) : j∣P := (mem_idealDivisors hP.1).mp hj
+  have hjd (j : Ideal O) (hj : j∈idealDivisors P)  := (mem_idealDivisors hP.1).mp hj
   have hs := weighted_overlap_triangle (idealDivisors P) (radialWeight Φ Y)
     (radialWeight_nonneg Φ hΦ hY) (fun j => originalFixedPolynomial S P j η a W Z r z)
     (fun j hj => original_energy_summable S hP (hjd j hj) hS η a W hZ r z (G j) Φ hY)

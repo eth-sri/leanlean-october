@@ -21,9 +21,9 @@ lemma conductor_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (Mcap d:ℝ)(hs:s.width≤Mcap)(hd:0≤d):
     (max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d≤
       (max 1 ((fixedConductorFactor:ℝ)*bΦ))^d*Z^(Mcap*d):=by
-  have hZ:0<Z:=zero_lt_one.trans_le s.base_ge_one
-  have hM:0≤Mcap:=s.width_nonneg.trans hs
-  have hz:1≤Z^Mcap:=Real.one_le_rpow s.base_ge_one hM
+  have hZ:=zero_lt_one.trans_le s.base_ge_one
+  have hM:=s.width_nonneg.trans hs
+  have hz:=Real.one_le_rpow s.base_ge_one hM
   have hc:1≤max 1 ((fixedConductorFactor:ℝ)*bΦ):=le_max_left _ _
   have hbase:max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)≤
       (max 1 ((fixedConductorFactor:ℝ)*bΦ))*Z^Mcap:=by
@@ -51,7 +51,7 @@ lemma physical_slot_product {α:Type*}[Fintype α](Z:ℝ)(hZ:1≤Z)(w:α→ℝ)(
 lemma short_slot_mass {α:Type*}[Fintype α]{Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (Mcap:ℝ)(hs:s.width≤Mcap)(w:α→ℝ)(hwidth:(∑i,w i)≤Mcap):
     max 1 s.radial.scale*Z^(s.width/4)*(∏i,Z^(w i))≤Z^(s.width+5*Mcap/4):=by
-  have hz:0<Z:=zero_lt_one.trans_le s.base_ge_one
+  have hz:=zero_lt_one.trans_le s.base_ge_one
   calc
     _≤Z^s.width*Z^(Mcap/4)*Z^Mcap:=by
       apply mul_le_mul (mul_le_mul (radial_scale s)

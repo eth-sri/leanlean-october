@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
 
 @[expose] public section
@@ -33,12 +34,12 @@ lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :
 lemma divisor_count (I : Ideal O) (hI : I ≠ 0) :
     ((idealDivisors I).card : ℝ) ≤ 128*(Ideal.absNorm I : ℝ) := by
   apply DescentFiberCost.finite_ideal_count_real
-  · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  · exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
   · intro J hJ
     exact ne_zero_of_dvd_ne_zero hI ((mem_idealDivisors hI).mp hJ)
   · intro J hJ
     exact_mod_cast Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
+      (Ideal.absNorm_pos_of_ne_bot (hI))
       (map_dvd Ideal.absNorm ((mem_idealDivisors hI).mp hJ))
 
 theorem cutoffCoefficient_bound (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B)
@@ -68,16 +69,15 @@ lemma norm_weight_two (I : Ideal O) (hI : I ≠ 0) :
     ‖CubicEisenstein.fullIdealWeight 2 I‖ = 1/(Ideal.absNorm I : ℝ)^2 := by
   rw [CubicEisenstein.fullIdealWeight,ite_eq_right hI,Complex.cpow_neg,Complex.cpow_ofNat,
     norm_inv,norm_pow,Complex.norm_natCast]
-  simp [one_div]
+  simp
 
 lemma weighted_norm_le_one (χ : Character) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
     ‖IdealEuler.weighted (idealCoeff χ) s I‖ ≤ 1 := by
   by_cases hI : I = 0
   · subst I
-    rw [map_zero, norm_zero]
     norm_num
   have hN : 1 ≤ (Ideal.absNorm I : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
   change ‖idealCoeff χ I*CubicEisenstein.fullIdealWeight s I‖ ≤ 1
   rw [norm_mul,CubicEisenstein.fullIdealWeight,ite_eq_right hI]
   have hc : (Ideal.absNorm I : ℂ) = ((Ideal.absNorm I : ℝ) : ℂ) := by norm_cast
@@ -96,11 +96,10 @@ theorem exponentialTerm_bound (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB :
   by_cases hI : I = 0
   · simp [hI,exponentialTerm,cutoffCoefficient,CubicEisenstein.fullIdealWeight]
   have hN : (0 : ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have he : ‖Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ)/(Y : ℂ))‖ =
       Real.exp (-(Ideal.absNorm I : ℝ)/Y) := by
     rw [Complex.norm_exp]
-    congr 1
     simp
   rw [exponentialTerm,norm_mul,norm_mul,he,norm_weight_two I hI]
   calc
@@ -121,14 +120,14 @@ theorem exponentialTerm_summable (χ : Character) (V : ℝ → ℂ) (B : ℝ) (h
 
 lemma cutoff_defect_bound (V : ℝ → ℂ) (B : ℝ)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (x : ℝ) : ‖1-V x‖ ≤ 1+B :=
-  (norm_sub_le _ _).trans (by simpa using add_le_add_left (hV x) 1)
+  (norm_sub_le _ _).trans (by simp_all)
 
 def terminalRemainder (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal O) : ℂ :=
   exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D)) *
     (1-T ((Ideal.absNorm I : ℝ)/U))
 
 lemma exponentialTerm_half (χ : Character) (V : ℝ → ℂ) (D Y : ℝ)
-    (_hY : 0 < Y) (s : ℂ) (I : Ideal O) :
+ (s : ℂ) (I : Ideal O) :
     exponentialTerm χ V D s Y I = exponentialTerm χ V D s (2*Y) I *
       Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ)/(2*(Y : ℂ))) := by
   unfold exponentialTerm
@@ -161,7 +160,7 @@ theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ
         ←Complex.ofReal_neg,←Complex.ofReal_div,Complex.ofReal_re]
     rw [hc]
     exact div_le_div_of_nonneg_right (by linarith [lt_of_not_ge hI]) (by positivity)
-  rw [terminalRemainder,exponentialTerm_half χ V D Y hY s I]
+  rw [terminalRemainder,exponentialTerm_half χ V D Y s I]
   simp only [norm_mul]
   have h1 := mul_le_mul
     (exponentialTerm_bound χ V B hB hV D (2*Y) (by positivity) s hs I) he
@@ -218,7 +217,6 @@ theorem terminalRemainder_uniform_small (B BT ε : ℝ)
   obtain ⟨U₀,hU₀⟩ := Filter.eventually_atTop.mp ((tendsto_order.mp ht).2 ε hε)
   refine ⟨U₀,?_⟩
   intro U hU₀' hU χ V T hV hT hTone D s hs
-  have hUpos : 0 < U := by linarith
   have hb := terminalRemainder_tsum_bound χ V T B BT hB hBT hV hT hTone
     D (U^20) (U^21) (by positivity) (by positivity) s hs
   have he : -(U^21)/(2*U^20) = -U/2 := by
@@ -228,7 +226,6 @@ theorem terminalRemainder_uniform_small (B BT ε : ℝ)
   rw [he,hp] at hb
   have hC : (6144*B*U^60*(1+B)*(1+BT)*Real.exp (-U/2))*
       (∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖) = C*(U^60*Real.exp (-U/2)) := by
-    dsimp [C]
     ring
   rw [hC] at hb
   exact hb.trans_lt (hU₀ U hU₀')

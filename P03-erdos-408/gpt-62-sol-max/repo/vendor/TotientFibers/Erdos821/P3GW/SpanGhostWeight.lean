@@ -12,9 +12,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Gw
 
-open Erdos821.S2Core
-open Erdos821.S2Core.ResiduePath
-open Erdos821.Blueprint.Graph
+open Erdos821.S2Core Erdos821.S2Core.ResiduePath Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
 variable {A : Model F P J m}
@@ -41,7 +39,7 @@ theorem pendingBefore_stop_or_after (S : LifespanAssignment P n) (i : Fin (n + 1
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at h
     have hf : False := by
-      simp only [Erdos821.S2Core.ResiduePath.pendingBefore] at h
+      assumption
     exact hf.elim
   · rw [he] at h
     simp only [Erdos821.S2Core.ResiduePath.pendingBefore] at h
@@ -64,12 +62,10 @@ theorem stop_hits_disjoint (S : LifespanAssignment P n) (i : Fin (n + 1))
   have hh' := (Finset.mem_filter.mp hh).2
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at hs
-    have hf : False := by simp only [ghostStopAt] at hs
-    exact hf.elim
+    assumption
   · rw [he] at hs hh'
     simp only [ghostStopAt, pendingAfter] at hs hh'
-    obtain ⟨rfl, _⟩ := hs
-    omega
+    simp_all
 
 theorem pendingZeroPrimes_eq_stop_union_hits
     (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
@@ -99,7 +95,7 @@ theorem pendingZeroPrimes_eq_stop_union_hits
       exact Finset.mem_filter.mpr ⟨Finset.mem_univ p, ⟨hbefore', ha, hzero⟩⟩
   · intro hp
     rcases Finset.mem_union.mp hp with hs | hh
-    · have hs' : p ∈ Q.ghostStopPrimes S i g := hs
+    · have hs'  := hs
       have hbefore := Q.ghostStopPrimes_subset S hS i g hs'
       have hzero := Q.ghostStop_residue_zero S hS i g p hs'
       simp only [pendingZeroPrimes, Finset.mem_filter]
@@ -134,7 +130,7 @@ end ResiduePath
 theorem mul_self_inv_factor (a b : ℝ) (ha : a ≠ 0) :
     a * (a * b)⁻¹ = b⁻¹ := by
   by_cases hb : b = 0
-  · simp [hb]
+  · simp_all
   · field_simp [ha, hb]
 
 theorem value_mul_tiltedMu (F : FixedData) (P : PrimeGroups) (n : ℕ)
@@ -183,11 +179,7 @@ theorem groupGhostWeight_factor
     have hmem := Q.memoryBefore_card S i g
     have htermLE' :=
       Finset.card_le_card (Finset.subset_univ (Q.ghostTerminationIndices S i g))
-    have htermLE :
-        (Q.ghostTerminationIndices S i g).card ≤ (Q.memoryBefore S i g).card := by
-      simpa only [Finset.card_univ, Fintype.card_fin] using htermLE'
-    have hstopLE :
-        (Q.ghostStopPrimes S i g).card ≤ (Q.pendingBeforePrimes S i g).card :=
+    have hstopLE  :=
       Finset.card_le_card (Q.ghostStopPrimes_subset S hS i g)
     have hsub :
         (Q.pendingBeforePrimes S i g).card -
@@ -205,12 +197,10 @@ theorem groupGhostWeight_factor
         (Q.pendingBeforePrimes S i g).card - t =
           (Q.pendingBeforePrimes S i g).card - s := by
       simpa [t, s] using hsub
-    have ht' : t ≤ (Q.pendingBeforePrimes S i g).card := by
-      simpa [t] using htermLEBefore
     have hs' : s ≤ (Q.pendingBeforePrimes S i g).card := by
-      simpa [s] using hstopLE
+      assumption
     have hts : t = s := by omega
-    simpa [t, s] using hts
+    assumption
   have hexponent :
       (zeroMemoryIndices (Q.memoryBefore S i g)).card -
           (Q.ghostTerminationIndices S i g).card = R.card := by

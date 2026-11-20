@@ -12,7 +12,7 @@ open ActualEisensteinCubic
 open CompletedGauss (primaryGenerator primaryGenerator_mul)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open InverseInitialFibers (divisor_card_mul_le divisor_card_pos)
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 @[ext] structure OuterTriple where
@@ -92,7 +92,7 @@ lemma cube_factor_dvd_target {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
 lemma core_dvd_outer_label {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
     {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) (i : Fin 3) :
     x.core ⟨i.val+5, by omega⟩ ∣ γ.q0 * f := by
-  have hrad : (x.core 4 * x.secondCube).radical ∣ γ.q0 * f :=
+  have hrad  :=
     (cube_radical_dvd hx).trans (mul_dvd_mul_left _ (core_dvd_label hx 0))
   fin_cases i
   · exact hx.a1.trans hrad
@@ -127,7 +127,7 @@ theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : 
     (hx : Valid x γ f k) (hy : Valid y γ f k)
     (hc : x.core = y.core) (ho : x.oldAssigned = y.oldAssigned)
     (hn : x.newAssigned = y.newAssigned) : x = y := by
-  have hcore (i : Fin 8) : x.core i = y.core i := congrFun hc i
+  have hcore (i : Fin 8)  := congrFun hc i
   have hv : x.commonResidual = y.commonResidual := by
     apply mul_left_cancel₀ (mul_ne_zero
       (mul_ne_zero (core_ne_zero hx hf hq 0) (core_ne_zero hx hf hq 1))
@@ -141,10 +141,9 @@ theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : 
     exact hx.b_split.trans (by simpa only [hcore, hj] using hy.b_split.symm)
   have hg : x.extractedCommon = y.extractedCommon := by
     rw [← hx.extracted_eq, ← hy.extracted_eq, hcore]
-  have hr : x.frequency = y.frequency := by
-    apply mul_left_cancel₀ (mul_ne_zero hx.generator_d hx.generator_d2)
-    exact hx.row_eq.trans (by simpa only [hcore] using hy.row_eq.symm)
-  exact SecondTuple.ext (hx.outer_eq.trans hy.outer_eq.symm) hc hv hj hb hg hr ho hn
+  refine SecondTuple.ext (hx.outer_eq.trans hy.outer_eq.symm) hc hv hj hb hg ?_ ho hn
+  apply mul_left_cancel₀ (mul_ne_zero hx.generator_d hx.generator_d2)
+  exact hx.row_eq.trans (by simpa only [hcore] using hy.row_eq.symm)
 
 theorem valid_tuple_card_le {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
     (γ : OuterTriple) (f : Ideal O) (k : O)
@@ -209,19 +208,17 @@ theorem valid_tuple_card_le_separated {Jo Jn : ℕ} (T : Finset (SecondTuple Jo 
   let dq := (idealDivisors γ.q0).card
   let dt := (idealDivisors γ.quotient).card
   let dr := (idealDivisors γ.residual).card
-  have hqf : (idealDivisors (γ.q0*f)).card ≤ dq*df := divisor_card_mul_le _ _ hq hf
+  have hqf  := divisor_card_mul_le _ _ hq hf
   have hsq : (idealDivisors ((γ.q0*f)^2)).card ≤ (dq*df)^2 :=
     (divisor_card_sq_le _ (mul_ne_zero hq hf)).trans (Nat.pow_le_pow_left hqf 2)
   have hold : (idealDivisors (γ.q0*f*γ.quotient)).card ≤ dq*df*dt :=
     (divisor_card_mul_le _ _ (mul_ne_zero hq hf) ht).trans (Nat.mul_le_mul_right _ hqf)
-  have hnew : (idealDivisors (f*γ.residual)).card ≤ df*dr := divisor_card_mul_le _ _ hf hr
+  have hnew  := divisor_card_mul_le _ _ hf hr
   apply (valid_tuple_card_le T γ f k hf hq ht hr hT).trans
   calc
     _ ≤ df^4 * (dq*df)^2 * (dq*df)^3 * (dq*df*dt)^Jo * (df*dr)^Jn := by
       gcongr
     _ = _ := by
-      dsimp [df, dq, dt, dr]
-      simp only [mul_pow, pow_add]
       ring
 
 theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
@@ -237,12 +234,6 @@ theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo J
     (pow_le_pow_right₀ (divisor_card_pos γ.quotient ht) ho))
     (pow_le_pow_right₀ (divisor_card_pos γ.residual hr) hn)
 
-def originalSource {Jo Jn : ℕ} (source : Finset (SecondTuple Jo Jn))
-    (oldLists : Fin Jo → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (newLists : Fin Jn → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (keep : SecondTuple Jo Jn → Prop) : Finset (SecondTuple Jo Jn) :=
-  source.filter fun x => (∀ i, x.oldAssigned i ∈ oldLists i) ∧
-    (∀ i, x.newAssigned i ∈ newLists i) ∧ keep x
 
 end
 end SevenEighths.InverseSecondFibers

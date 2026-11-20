@@ -25,9 +25,7 @@ lemma markedArray_finite (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
   congr 1
   · symm
     rw [←Finset.prod_subset hTS]
-    · apply Finset.prod_congr rfl
-      intro a ha
-      simp only [ite_eq_left ha]
+    · simp
     · intro a ha hna
       simp only [ite_eq_right hna]
   · exact Finsupp.prod_of_support_subset v hv _ (fun a _=>h0 a)
@@ -83,7 +81,7 @@ theorem marked_hasProd (T : Finset α) (m f : α→β→ℂ) (h0 : ∀a,f a 0=1)
       intro S v
       split_ifs
       · exact markedArray_norm_le T m f hm v
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      simp
   change Tendsto (fun S : Finset α=>∏a∈S,∑'b,markedLocal T m f a b) atTop _
   apply ht.congr'
   filter_upwards [eventually_ge_atTop T] with S hTS

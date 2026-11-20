@@ -91,8 +91,7 @@ private lemma integral_step_div {q x : ℝ} (hq : 1 ≤ q) (hqx : q ≤ x) :
     simp [not_le.2 (lt_of_le_of_ne ht'.2 ht)]
   rw [h1, zero_add]
   refine intervalIntegral.integral_congr fun t ht => ?_
-  rw [Set.uIcc_of_le hqx] at ht
-  simp [ht.1]
+  simp_all
 
 /-- Fubini: `∫_1^x B(t) dt / t = ∑_{q ≤ x} (F q / q) log (x / q)`. -/
 private lemma integral_harmonicF_div {x : ℝ} (hx : 1 ≤ x) :
@@ -136,7 +135,6 @@ private lemma integral_log_div {x : ℝ} (hx : 1 ≤ x) :
   · simp
   · intro t ht
     convert ((hasDerivAt_log (hpos t ht).ne').pow 2).div_const 2 using 1
-    simp only [Nat.cast_ofNat]
     ring
   · exact intervalIntegrable_log_div hx
 
@@ -154,7 +152,6 @@ private lemma abs_harmonicFPair_sub_le {α M x : ℝ} (hx : 1 ≤ x)
     |harmonicFPair x - α ^ 2 / 2 * log x ^ 2| ≤
       |α| * (M * log x) + M * harmonicF x + harmonicF x / log 2 := by
   have hx0 : 0 < x := by linarith
-  have hlog2 : 0 < log 2 := log_pos one_lt_two
   -- the main term: `∫_1^x B(t) dt / t = α L² / 2 + O(M L)`
   have hI : |∑ q ∈ primesIoc 1 x, (F q : ℝ) / q * log (x / q) - α * (log x ^ 2 / 2)| ≤
       M * log x := by
@@ -227,7 +224,6 @@ theorem cross_term {α K : ℝ}
         K' * Real.log x ^ 2 / Real.log (Real.log x) ^ 5 := by
   obtain ⟨E, hE, hB⟩ := exists_harmonicF_le
   obtain ⟨y₀, hy₀⟩ := eventually_atTop.1 h
-  have hlog2 : 0 < log 2 := log_pos one_lt_two
   set c₁ := |α| + 1 / log 2
   set c₂ := E / log 2
   set C := c₁ + c₂ + 32 * |K| with hC
@@ -258,7 +254,6 @@ theorem cross_term {α K : ℝ}
   have hT2 : log √L = T / 2 := log_sqrt (by linarith)
   have hT0 : 0 < T := by linarith [log_pos hs1]
   set M := c₁ * √L + c₂ + 32 * |K| * L / T ^ 5 with hM
-  have hM0 : 0 ≤ M := add_nonneg (add_nonneg (mul_nonneg hc₁ (sqrt_nonneg L)) hc₂) (by positivity)
   -- uniform bound `|E| ≤ M` on `[1, x]`, split at `exp √L`
   have hErr : ∀ t : ℝ, 1 ≤ t → t ≤ x → |harmonicF t - α * log t| ≤ M := by
     intro t ht1 htx
@@ -293,10 +288,10 @@ theorem cross_term {α K : ℝ}
     exact mul_le_mul_of_nonneg_left hsu (by linarith)
   have hLu : L ≤ L ^ 2 / T ^ 5 := (le_mul_of_one_le_right (by linarith) hs1.le).trans hu
   have hML : M * L ≤ C * (L ^ 2 / T ^ 5) :=
-    calc M * L = c₁ * (L * √L) + c₂ * L + 32 * |K| * (L ^ 2 / T ^ 5) := by rw [hM]; ring
+    calc M * L = c₁ * (L * √L) + c₂ * L + 32 * |K| * (L ^ 2 / T ^ 5) := by ring
       _ ≤ c₁ * (L ^ 2 / T ^ 5) + c₂ * (L ^ 2 / T ^ 5) + 32 * |K| * (L ^ 2 / T ^ 5) := by
         gcongr
-      _ = C * (L ^ 2 / T ^ 5) := by rw [hC]; ring
+      _ = C * (L ^ 2 / T ^ 5) := by ring
   calc |harmonicFPair x - α ^ 2 / 2 * L ^ 2|
       ≤ |α| * (M * L) + M * harmonicF x + harmonicF x / log 2 :=
         abs_harmonicFPair_sub_le hx hErr

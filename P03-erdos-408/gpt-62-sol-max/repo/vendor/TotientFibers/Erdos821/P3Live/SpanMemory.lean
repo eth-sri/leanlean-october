@@ -8,7 +8,6 @@ public import Erdos821.S2.HistoryProjection
 
 set_option autoImplicit false
 
-open scoped BigOperators
 
 noncomputable section
 
@@ -26,10 +25,7 @@ theorem storedMemory_eq_map {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g)
     storedMemory (P := P) a B =
       B.val.map (fun i => (⟨a i, 0⟩ : P.Particle g)) := by
   unfold storedMemory
-  have h : ((B.toList.map (fun i => (⟨a i, 0⟩ : P.Particle g))) : Multiset (P.Particle g))
-      = B.val.map (fun i => (⟨a i, 0⟩ : P.Particle g)) := by
-    rw [← Multiset.map_coe, Finset.coe_toList]
-  exact h
+  rw [← Multiset.map_coe, Finset.coe_toList]
 
 /-- Translation distributes over addition. -/
 theorem translateMemory_add (delta : ℤ) {g : P.Group} (a b : P.Memory g) :
@@ -41,25 +37,25 @@ theorem translateMemory_add (delta : ℤ) {g : P.Group} (a b : P.Memory g) :
 theorem translateMemory_map (delta : ℤ) {g : P.Group} {α : Type*}
     (s : Finset α) (f : α → P.Particle g) :
     translateMemory delta (s.val.map f) = s.val.map (fun x => translateParticle delta (f x)) := by
-  simp only [translateMemory, Multiset.map_map, Function.comp_def]
+  simp [translateMemory, Multiset.map_map, Function.comp_def]
 
 /-- The two cover conditions across one edge coincide. -/
 theorem edge_cover_iff_aux {n : ℕ} (i : Fin n) (birth stop : Fin (n + 1)) :
     (birth ≤ i.castSucc ∧ i.castSucc < stop) ↔
       (birth < i.succ ∧ i.succ ≤ stop) := by
   simp only [Fin.le_def, Fin.lt_def, Fin.val_succ, Fin.val_castSucc]
-  constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨by omega, by omega⟩
-  · rintro ⟨h1, h2⟩
-    exact ⟨by omega, by omega⟩
+  simp
 
 namespace ResiduePath
 
 variable {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n)
 
+section
+
+variable (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val)
+
 /-- Source labels cover exactly the active visit at `castSucc`. -/
-theorem source_active_iff (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) :
+theorem source_active_iff :
     (∃ j : Fin (J + F.ell), Q.source i g.val j = p) ↔
       i.castSucc ∈ Q.activeVisits g p := by
   simp only [activeVisits, ResiduePath.source, Finset.mem_filter, Finset.mem_univ,
@@ -72,11 +68,10 @@ theorem source_active_iff (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) :
     have he : (Q.sourcePerm i g.val) ((Q.sourcePerm i g.val).symm j₀) = j₀ :=
       Equiv.apply_symm_apply _ _
     simp only [PrimeGroups.act] at hj₀ ⊢
-    rw [he]
-    exact hj₀
+    simpa using hj₀
 
 /-- Target labels cover exactly the active visit at `succ`. -/
-theorem target_active_iff (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) :
+theorem target_active_iff :
     (∃ j : Fin (J + F.ell), Q.target i g.val j = p) ↔
       i.succ ∈ Q.activeVisits g p := by
   simp only [activeVisits, ResiduePath.target, Finset.mem_filter, Finset.mem_univ,
@@ -89,8 +84,9 @@ theorem target_active_iff (i : Fin n) (g : P.BigGroup) (p : P.Prime g.val) :
     have he : (Q.targetPerm i g.val) ((Q.targetPerm i g.val).symm j₀) = j₀ :=
       Equiv.apply_symm_apply _ _
     simp only [PrimeGroups.act] at hj₀ ⊢
-    rw [he]
-    exact hj₀
+    simpa using hj₀
+
+end
 
 /-- When neither endpoint is active, pending before/after coincide. -/
 theorem pending_edge_iff_inactive (S : LifespanAssignment P n) (i : Fin n)
@@ -99,32 +95,37 @@ theorem pending_edge_iff_inactive (S : LifespanAssignment P n) (i : Fin n)
     Q.pendingAfter g p (S g p) i.castSucc ↔
       Q.pendingBefore g p (S g p) i.succ := by
   rcases he : S g p with _ | ⟨birth, stop⟩
-  · simp only [pendingAfter, pendingBefore]
+  · rfl
   · simp only [pendingAfter, pendingBefore, h0, h1, not_false_eq_true,
       and_true]
     exact edge_cover_iff_aux i birth stop
 
+section
+
+variable (S : LifespanAssignment P n) (i : Fin (n + 1))
+  (g : P.BigGroup) (p : P.Prime g.val)
+
 /-- Pending-after implies inactive at that visit. -/
-theorem pendingAfter_not_active (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (p : P.Prime g.val)
+theorem pendingAfter_not_active
     (h : Q.pendingAfter g p (S g p) i) : i ∉ Q.activeVisits g p := by
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at h
-    simp only [pendingAfter] at h
+    simp [pendingAfter] at h
   · rw [he] at h
     simp only [pendingAfter] at h
     exact h.2.2
 
 /-- Pending-before implies inactive at that visit. -/
-theorem pendingBefore_not_active (S : LifespanAssignment P n) (i : Fin (n + 1))
-    (g : P.BigGroup) (p : P.Prime g.val)
+theorem pendingBefore_not_active
     (h : Q.pendingBefore g p (S g p) i) : i ∉ Q.activeVisits g p := by
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at h
-    simp only [pendingBefore] at h
+    simp [pendingBefore] at h
   · rw [he] at h
     simp only [pendingBefore] at h
     exact h.2.2
+
+end
 
 end ResiduePath
 
@@ -136,14 +137,14 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
   set off0 : ℤ := Q.offset i0 with hoff0
   set off1 : ℤ := Q.offset i1 with hoff1
   set delta : ℤ := Q.step i with hdelta
-  have hOff : off1 = off0 + delta := residuePath_offset_succ Q i
-  have hSrcInj : Function.Injective (Q.source i g.val) :=
+  have hOff := residuePath_offset_succ Q i
+  have hSrcInj :=
     Q.source_injective hValid i g.val
-  have hTgtInj : Function.Injective (Q.target i g.val) :=
+  have hTgtInj :=
     Q.target_injective hValid i g.val
-  have hCompat : (A.pattern (Q.pattern i)).compatible (Q.source i) (Q.target i) :=
+  have hCompat :=
     (hValid.2 i).1
-  have hBan : (A.pattern (Q.pattern i)).ban (Q.source i) (Q.target i) (Q.free i) :=
+  have hBan :=
     (hValid.2 i).2
   -- memories and slots
   set memAfter : P.Memory g.val := Q.memoryAfter S i0 g with hmemAfter
@@ -156,8 +157,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
   have hAfterNodup : (pendingPrimes memAfter).Nodup := by
     rw [hmemAfter, Q.pendingPrimes_memoryAfter]
     exact Finset.nodup _
-  have hPrimeInj : Function.Injective
-      (fun k : Fin memAfter.card => (memoryEntry memAfter k).1) :=
+  have hPrimeInj :=
     memoryEntry_prime_injective memAfter hAfterNodup
   -- embeddings for image finsets
   set srcEmb : Fin (J + F.ell) ↪ P.Prime g.val := ⟨Q.source i g.val, hSrcInj⟩ with hsrcEmb
@@ -176,8 +176,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     Q.reconstructedTransferChoice S (fun _ _ => 0) i with hTR
   have hRdef : retrievedIndices TR g = Finset.univ.image (Q.promotionIndex S i g) := rfl
   -- promotion prime membership
-  have hPromMem : ∀ j : {j : Fin (J + F.ell) // j ∈ prom},
-      Q.target i g.val j.val ∈ pendingPrimes memAfter :=
+  have hPromMem :=
     fun j => Q.promotion_prime_mem S i g j
   -- Step 1: PromVals ⊆ Pafter, StoreVals ⊆ Pbefore
   have hPromSub : PromVals ⊆ Pafter := by
@@ -206,19 +205,17 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
       p ∈ Pafter → i1 ∈ Q.activeVisits g p → p ∈ PromVals := by
     intro p hPafterMem hActive
     obtain ⟨j, hjt⟩ := (Q.target_active_iff i g p).mpr hActive
-    have hTgtMem : Q.target i g.val j ∈ Pafter := hjt ▸ hPafterMem
+    have hTgtMem := hjt ▸ hPafterMem
     -- unshared: shared would force source active, contradicting `p ∈ Pafter`
     have hNotShared : ¬ (A.pattern (Q.pattern i)).shared g.val j := by
       intro hSh
-      have hEq : Q.source i g.val j = Q.target i g.val j :=
+      have hEq :=
         hCompat g.val j hSh
       rw [hjt] at hEq
       have hSrcActive : i0 ∈ Q.activeVisits g p := by
         rw [← hEq]
         exact Q.source_activeVisit i g j
-      have hNot : i0 ∉ Q.activeVisits g p :=
-        Q.pendingAfter_not_active S i0 g p (Finset.mem_filter.mp hPafterMem).2
-      exact hNot hSrcActive
+      exact (Q.pendingAfter_not_active S i0 g p (Finset.mem_filter.mp hPafterMem).2) hSrcActive
     have hjProm : j ∈ prom := by
       apply Finset.mem_filter.mpr
       exact ⟨Finset.mem_univ _, hNotShared, hTgtMem⟩
@@ -234,15 +231,13 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
       exact (Finset.mem_filter.mp hPbeforeMem).2
     have hNotShared : ¬ (A.pattern (Q.pattern i)).shared g.val j := by
       intro hSh
-      have hEq : Q.source i g.val j = Q.target i g.val j :=
+      have hEq :=
         hCompat g.val j hSh
       rw [hjs] at hEq
       have hTgtActive : i1 ∈ Q.activeVisits g p := by
         rw [hEq]
         exact Q.target_activeVisit i g j
-      have hNot : i1 ∉ Q.activeVisits g p :=
-        Q.pendingBefore_not_active S i1 g p (Finset.mem_filter.mp hPbeforeMem).2
-      exact hNot hTgtActive
+      exact (Q.pendingBefore_not_active S i1 g p (Finset.mem_filter.mp hPbeforeMem).2) hTgtActive
     have hjStore : j ∈ store := by
       apply Finset.mem_filter.mpr
       exact ⟨Finset.mem_univ _, hNotShared, hPend⟩
@@ -259,8 +254,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
       have hPafterMem : Q.target i g.val j ∈ Pafter :=
         (Finset.mem_filter.mp hjProm).2.2
       have hP : p ∈ Pafter := hTgtEq ▸ hPafterMem
-      have hAct : i1 ∈ Q.activeVisits g p := hTgtEq ▸ Q.target_activeVisit i g j
-      exact ⟨hP, hAct⟩
+      exact ⟨hP, (hTgtEq ▸ Q.target_activeVisit i g j)⟩
     · rintro ⟨hP, hAct⟩
       exact hPromOfActive p hP hAct
   have hStoreIff : ∀ p : P.Prime g.val,
@@ -275,8 +269,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
       have hP : p ∈ Pbefore := by
         apply Finset.mem_filter.mpr
         exact ⟨Finset.mem_univ _, hSrcEq ▸ hPend⟩
-      have hAct : i0 ∈ Q.activeVisits g p := hSrcEq ▸ Q.source_activeVisit i g j
-      exact ⟨hP, hAct⟩
+      exact ⟨hP, (hSrcEq ▸ Q.source_activeVisit i g j)⟩
     · rintro ⟨hP, hAct⟩
       exact hStoreOfActive p hP hAct
   -- Step 4: pending-before splits into survivors plus stores
@@ -285,14 +278,14 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     constructor
     · intro hPmem
       have hPendBefore := (Finset.mem_filter.mp hPmem).2
-      have hNot1 : i1 ∉ Q.activeVisits g p :=
+      have hNot1 :=
         Q.pendingBefore_not_active S i1 g p hPendBefore
       by_cases h0 : i0 ∈ Q.activeVisits g p
       · -- active before: a store
         have hStoreMem := hStoreOfActive p hPmem h0
         exact Finset.mem_union.mpr (Or.inr hStoreMem)
       · -- inactive both: a survivor
-        have hPendAfter : Q.pendingAfter g p (S g p) i0 :=
+        have hPendAfter :=
           (Q.pending_edge_iff_inactive S i g p h0 hNot1).mpr hPendBefore
         have hPafterMem : p ∈ Pafter := Finset.mem_filter.mpr
           ⟨Finset.mem_univ _, hPendAfter⟩
@@ -300,30 +293,27 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
           intro hProm
           obtain ⟨_, hAct⟩ := (hPromIff p).mp hProm
           exact hNot1 hAct
-        have hSurv : p ∈ Pafter \ PromVals :=
-          Finset.mem_sdiff.mpr ⟨hPafterMem, hNotProm⟩
-        exact Finset.mem_union.mpr (Or.inl hSurv)
+        exact Finset.mem_union.mpr (Or.inl (Finset.mem_sdiff.mpr ⟨hPafterMem, hNotProm⟩))
     · intro hMem
       rcases Finset.mem_union.mp hMem with hSurv | hStore
       · -- survivor: pending-after + inactive both gives pending-before
         have hPafterMem := (Finset.mem_sdiff.mp hSurv).1
         have hNotProm := (Finset.mem_sdiff.mp hSurv).2
         have hPendAfter := (Finset.mem_filter.mp hPafterMem).2
-        have hNot0 : i0 ∉ Q.activeVisits g p :=
+        have hNot0 :=
           Q.pendingAfter_not_active S i0 g p hPendAfter
         -- must be inactive next, else promotion
-        have hNot1 : i1 ∉ Q.activeVisits g p := by
-          by_contra hAct
-          exact hNotProm (hPromOfActive p hPafterMem hAct)
-        exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,
-          (Q.pending_edge_iff_inactive S i g p hNot0 hNot1).mp hPendAfter⟩
+        refine Finset.mem_filter.mpr ⟨Finset.mem_univ _,
+          (Q.pending_edge_iff_inactive S i g p hNot0 ?_).mp hPendAfter⟩
+        by_contra hAct
+        exact hNotProm (hPromOfActive p hPafterMem hAct)
       · exact hStoreSub hStore
   have hDisj : Disjoint (Pafter \ PromVals) StoreVals := by
     apply Finset.disjoint_left.mpr
     intro p hSurv hStore
     have hPafterMem := (Finset.mem_sdiff.mp hSurv).1
     have hPendAfter := (Finset.mem_filter.mp hPafterMem).2
-    have hNot0 : i0 ∉ Q.activeVisits g p :=
+    have hNot0 :=
       Q.pendingAfter_not_active S i0 g p hPendAfter
     obtain ⟨_, hAct⟩ := (hStoreIff p).mp hStore
     exact hNot0 hAct
@@ -379,13 +369,12 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     constructor
     · rintro ⟨k, heq⟩
       -- prime k = p, need p ∈ Pafter (since prime k ∈ Pafter via pendingPrimes)
-      have hPrimeMem : (memoryEntry memAfter k).1 ∈ Pafter := by
-        have hpend : (memoryEntry memAfter k).1 ∈ pendingPrimes memAfter := by
-          apply Multiset.mem_map.mpr
-          exact ⟨memoryEntry memAfter k, memoryEntry_mem memAfter k, rfl⟩
-        rw [Q.pendingPrimes_memoryAfter] at hpend
-        exact hpend
-      exact heq ▸ hPrimeMem
+      refine heq ▸ ?_
+      have hpend : (memoryEntry memAfter k).1 ∈ pendingPrimes memAfter := by
+        apply Multiset.mem_map.mpr
+        exact ⟨memoryEntry memAfter k, memoryEntry_mem memAfter k, rfl⟩
+      rw [Q.pendingPrimes_memoryAfter] at hpend
+      exact hpend
     · intro hPafterMem
       -- p ∈ Pafter = pendingPrimes, so ∃ k with prime k = p
       have hpend : p ∈ pendingPrimes memAfter := by
@@ -400,13 +389,12 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     · intro hp
       obtain ⟨k, hkR, heq⟩ := Finset.mem_map.mp hp
       -- k ∈ R, prime k = p, need p ∈ PromVals (since k ∈ R → prime k ∈ PromVals via hRetFilter)
-      have hPrimeProm : (memoryEntry memAfter k).1 ∈ PromVals := by
-        have hkMem : k ∈ Finset.univ.filter
-            (fun k : Fin memAfter.card => (memoryEntry memAfter k).1 ∈ PromVals) := by
-          rw [← hRetFilter]
-          exact hkR
-        exact (Finset.mem_filter.mp hkMem).2
-      exact heq ▸ hPrimeProm
+      refine heq ▸ ?_
+      have hkMem : k ∈ Finset.univ.filter
+          (fun k : Fin memAfter.card => (memoryEntry memAfter k).1 ∈ PromVals) := by
+        rw [← hRetFilter]
+        exact hkR
+      exact (Finset.mem_filter.mp hkMem).2
     · intro hPromMem
       have hPromMem' : p ∈ prom.map tgtEmb := hPromVals ▸ hPromMem
       obtain ⟨j, hjProm, heqTgt⟩ := Finset.mem_map.mp hPromMem'
@@ -420,9 +408,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
       · -- prime of promotionIndex = target j = p
         have hSpec := Q.promotionIndex_spec S i g ⟨j, hjProm⟩
         have heqTgt' : Q.target i g.val j = p := heqTgt
-        have hEq : (memoryEntry memAfter (Q.promotionIndex S i g ⟨j, hjProm⟩)).1 = p :=
-          hSpec.trans heqTgt'
-        exact hEq
+        exact hSpec.trans heqTgt'
   -- Survivors as a mapped image.
   have hMapSdiff : ((Finset.univ \ retrievedIndices TR g).map primeEmb) =
       ((Finset.univ.map primeEmb) \ ((retrievedIndices TR g).map primeEmb)) :=
@@ -474,9 +460,7 @@ theorem SpanEdgeMemoryTask_proof : SpanEdgeMemoryTask := by
     rw [e0, e1', et]
     exact congrArg (fun r : ZMod p.val => (⟨p, r⟩ : P.Particle g.val)) hZ
   -- Stored slots translate to `f1` of their source primes (source visit is a hit).
-  have hStoreResidue : ∀ j : Fin (J + F.ell),
-      ((((off0 - Q.spanAnchor (S g (Q.source i g.val j)) : ℤ)) :
-        ZMod (Q.source i g.val j).val)) = 0 :=
+  have hStoreResidue :=
     fun j => Q.span_active_hit S hLife i0 g _ (Q.source_activeVisit i g j)
   have hStorePt : ∀ j ∈ store,
       translateParticle delta (⟨Q.source i g.val j, 0⟩ : P.Particle g.val) =

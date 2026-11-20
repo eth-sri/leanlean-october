@@ -64,9 +64,8 @@ theorem remainingRaw_exact (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   have hb := (allocation_data S (P^k) B (Finset.mem_filter.mp B.property).1).1
   have he := raw_scale_identity B hb Traw scale
   rw [rawReduction_exact S P hP k hslot B scale] at he
-  have hn : (Ideal.absNorm P:ℝ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr hP
-  exact (eq_div_iff (pow_ne_zero k hn)).mpr he
+  refine (eq_div_iff (pow_ne_zero k ?_)).mpr he
+  exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr hP
 
 end SevenEighths.CenteredMomentAmplificationAllocationScale
 

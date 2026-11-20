@@ -19,8 +19,7 @@ open scoped BigOperators
 
 lemma mrt_log_gap {x y N : ℝ} (hx : 0 < x) (hxy : x ≤ y) (hyN : y ≤ N) :
     (y - x) / N ≤ Real.log y - Real.log x := by
-  have hy : 0 < y := hx.trans_le hxy
-  have hN : 0 < N := hy.trans_le hyN
+  have hy  := hx.trans_le hxy
   have hlog := Real.one_sub_inv_le_log_of_pos (div_pos hy hx)
   rw [Real.log_div hy.ne' hx.ne', inv_div] at hlog
   calc
@@ -33,19 +32,15 @@ lemma mrt_quadratic_gap_sum {R : ℝ} (hR : 0 < R) (N : ℕ) :
     (∑ k ∈ Ioc 0 N, (1 + ((k : ℝ) / R) ^ 2)⁻¹) ≤ 2 * R + 1 := by
   let K := Nat.ceil R
   let M := max K N
-  have hK : 0 < K := Nat.ceil_pos.mpr hR
-  have hRK : R ≤ (K : ℝ) := Nat.le_ceil R
-  have hKR : (K : ℝ) < R + 1 := Nat.ceil_lt_add_one hR.le
+  have hK  := Nat.ceil_pos.mpr hR
+  have hRK  := Nat.le_ceil R
+  have hKR  := Nat.ceil_lt_add_one hR.le
   have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
   have hKM : K ≤ M := le_max_left _ _
   have hsplit : Ioc 0 M = Ioc 0 K ∪ Ioc K M := by
-    ext k
-    simp only [mem_Ioc, mem_union]
-    omega
+    simp_all
   have hd : Disjoint (Ioc 0 K) (Ioc K M) := by
-    rw [disjoint_left]
-    simp only [mem_Ioc]
-    omega
+    simp
   have hnear : (∑ k ∈ Ioc 0 K, (1 + ((k : ℝ) / R) ^ 2)⁻¹) ≤ (K : ℝ) := by
     calc
       _ ≤ ∑ _k ∈ Ioc 0 K, (1 : ℝ) := by
@@ -93,13 +88,9 @@ lemma mrt_nat_distance_sum (φ : ℕ → ℝ) (hφ : ∀ k, 0 ≤ φ k)
       φ 0 + 2 * ∑ k ∈ Ioc 0 N, φ k := by
   have hm' := mem_Ioc.mp hm
   have hsplit : Ioc 0 N = Ioc 0 m ∪ Ioc m N := by
-    ext n
-    simp only [mem_Ioc, mem_union]
-    omega
+    simp_all
   have hd : Disjoint (Ioc 0 m) (Ioc m N) := by
-    rw [disjoint_left]
-    simp only [mem_Ioc]
-    omega
+    simp
   have hleft : (∑ n ∈ Ioc 0 m, φ (Nat.dist n m)) = ∑ k ∈ range m, φ k := by
     apply sum_bij (fun n _ => m - n)
     · intro n hn
@@ -176,7 +167,7 @@ theorem mrt_logarithmic_kernel_row {T : ℝ} (hT : 0 < T) {N m : ℕ}
       8 * (T + (N : ℝ)) := by
   have hN : (0 : ℝ) < N := by exact_mod_cast (mem_Ioc.mp hm).1.trans_le (mem_Ioc.mp hm).2
   let R := (N : ℝ) / T
-  have hR : 0 < R := div_pos hN hT
+  have hR  := div_pos hN hT
   have hterm (n : ℕ) (hn : n ∈ Ioc 0 N) :
       2 * T / (1 + T ^ 2 * (Real.log (m : ℝ) - Real.log (n : ℝ)) ^ 2) ≤
       2 * T * (1 + ((Nat.dist n m : ℝ) / R) ^ 2)⁻¹ := by

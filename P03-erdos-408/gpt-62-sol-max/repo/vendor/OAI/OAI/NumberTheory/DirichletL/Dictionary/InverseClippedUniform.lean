@@ -10,13 +10,12 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
+open DetectorDictionaryInverseUniform HeckeInverseAmplification InverseMoment InverseInitialClippedColumns
+open InverseInitialOverlapFourier ActualEisensteinCubic CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
@@ -32,7 +31,7 @@ theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) 
     rw [he]
     exact (twistProfile_support _ _ _).trans
       ((baseProfile_support _ _ _ _ _).trans HeckeDetectorDyadicProfiles.positiveAnnular_support)
-  have ht : tsupport (W : ℝ→ℂ) ⊆ Set.Icc (1/4 : ℝ) (9/4) :=
+  have ht  :=
     closure_minimal hw isClosed_Icc
   cases scaled
   · exact hw
@@ -54,7 +53,7 @@ theorem exists_reference_window :
       tsupport (w : ℝ→ℂ) ⊆ Set.Icc (1/18 : ℝ) (13/4) ∧
       ∀x∈Set.Icc (1/9 : ℝ) (9/4), w x = 1 := by
   obtain ⟨w,hc,hone,hs⟩ := InverseSecondChildWindows.positive_cutoff
-    (1/9 : ℝ) (9/4) (by norm_num) (by norm_num)
+    (1/9 : ℝ) (9/4) (by norm_num)
   refine ⟨w,hc,?_,hone⟩
   convert hs using 1
   norm_num
@@ -111,7 +110,7 @@ theorem familyDensity_moment (J : ℕ) :
       (∫v : ℝ, (1+‖v‖)^J * ‖familyDensity scaled reverse n U tstar r σ t c v‖) ≤
         C*(1+‖t‖)^K := by
   let p := (volume : Measure ℝ).integrablePower
-  let S : Finset (ℕ×ℕ) := Finset.Iic (p,J+p)
+  let S  := Finset.Iic (p,J+p)
   obtain ⟨T,A,hA,hop⟩ := EisensteinSchwartzPoisson.schwartzCLM_finite_seminorm_control
     (CubicReflectionKernel.logPullbackCLM (1/4) (9/4)) S
   obtain ⟨K,B,hB,hsource⟩ := inverseSourceSchwartz_uniform T
@@ -119,7 +118,6 @@ theorem familyDensity_moment (J : ℕ) :
   have hC : 0<C := by
     have h₀ := coefficientMomentBound_nonneg 0 (2*A*B) (by positivity)
     have hJ := coefficientMomentBound_nonneg J (2*A*B) (by positivity)
-    dsimp [C]
     positivity
   refine ⟨K,C,hC,?_⟩
   intro scaled reverse n hn U hU tstar r σ hσ t c
@@ -156,10 +154,6 @@ theorem familyDensity_moment (J : ℕ) :
   exact mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
 section Rows
-variable {ι ρ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 end Rows
 

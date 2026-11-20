@@ -11,11 +11,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorPlainSlotProfile
 open HeckeFamily HeckeInverseAmplification HeckeDyadic CenteredMomentDetectorDictionary
 open CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
 lemma conjugate_source_support (F:ProbeFinalAssembly.SourceData D):

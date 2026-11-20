@@ -11,77 +11,16 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
 open CubicKubota
@@ -114,8 +53,8 @@ lemma ramifiedSource_height_fourier_average (side:Bool) (h:Eis)
   rw [arbitraryIntervalWhittaker,←integral_const_mul]
   apply setIntegral_congr_fun measurableSet_Icc
   intro v hv
-  have hv0:0<v:=ha.trans_le hv.1
-  have hvz:(v:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hv0.ne'
+  have hv0:=ha.trans_le hv.1
+  have hvz:=Complex.ofReal_ne_zero.mpr hv0.ne'
   have hinner:(∫z in periodDomain,g (cuspCoordinateLift (v,z)))=
       ρ v*((v:ℂ)^(2-s)*sourceFourierKernel s (ninthCuspFrequency h*v))*
         ramifiedCuspGaussSeries side h hf s:=by
@@ -128,10 +67,7 @@ lemma ramifiedSource_height_fourier_average (side:Bool) (h:Eis)
     simp_rw [he]
     rw [integral_const_mul,ramifiedSourceEisenstein_fourier side h hf v hv0 s hs]
     ring
-  have hp:(v:ℂ)^(-s-1)=(v:ℂ)^(2-s)/(v:ℂ)^3:=by
-    rw [show -s-1=(2-s)-3 by ring,Complex.cpow_sub _ _ hvz]
-    congr 1
-    exact Complex.cpow_natCast _ 3
+  have hp := cpow_cusp_height (s := s) hvz
   dsimp only
   rw [hinner,hp]
   ring
@@ -218,9 +154,9 @@ theorem ramifiedSource_height_residue (side:Bool) (h:Eis)
       ramifiedArithmeticResidue side h hf*
         arbitraryIntervalWhittaker a b ρ (ninthCuspFrequency h) (4/3) := by
   let M:=integralComplexMatrix (lowerCuspMatrix (ramifiedCuspRoot side:Eis))
-  let coeff:RamifiedSixBranch→ℂ→ℂ:=fun i s=>
+  let coeff:=fun i s=>
     ramifiedSixWeight side h hf i s*arbitraryIntervalWhittaker a b ρ (ninthCuspFrequency h) s
-  have hc:∀i s,1<s.re→AnalyticAt ℂ (coeff i) s:=fun i s hs=>
+  have hc:=fun i s hs=>
     (ramifiedSixWeight_analytic side h hf i s).mul
       (arbitraryIntervalWhittaker_analyticAt a b ha ρ (ninthCuspFrequency h) s hs)
   have he:=finite_unramified_residue (ramifiedSixIndex side h hf) coeff hc
@@ -234,13 +170,11 @@ theorem ramifiedSource_height_residue (side:Bool) (h:Eis)
         ramifiedCuspGaussSeries_eq_six,Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro i hi'
-      dsimp only [coeff]
       ring)
   refine he.trans ?_
   rw [ramifiedArithmeticResidue,Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro i hi
-  dsimp only [coeff]
   ring
 
 theorem ramifiedSource_height_residue_integral (side:Bool) (h:Eis)
@@ -260,7 +194,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
+open scoped MatrixGroups Pointwise Manifold ENNReal InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 section
@@ -279,7 +213,6 @@ lemma kernelCorrespondenceTest_field (f : kernelSmoothTests) (p : EuclideanSpati
       letI : Fintype (IntegralCoverCosets H globalKubotaKernel) := Fintype.ofFinite _
       ∑q : IntegralCoverCosets H globalKubotaKernel,
         kernelTestField f (euclideanAction (kernelCorrespondenceMatrix g q) p) := by
-  let : Fintype (IntegralCoverCosets H globalKubotaKernel) := Fintype.ofFinite _
   change kernelCorrespondenceFunction hJK e g he f.1
     (integralOrbitProjection globalKubotaKernel (euclideanToHyperbolic p))=_
   rw [kernelCorrespondenceFunction_lift]
@@ -319,7 +252,7 @@ lemma kernelCorrespondenceTest_energyDensity_le (f : kernelSmoothTests) (w : Hyp
     _ ≤ (Fintype.card (IntegralCoverCosets H globalKubotaKernel):ℝ)*
         ∑q : IntegralCoverCosets H globalKubotaKernel,
           coverEnergyDensity (kernelTestField f ∘ euclideanAction (A q)) p := by
-      simpa only [Finset.card_univ,Function.comp_def] using hh
+      assumption
     _ = _ := by
       have hcard : Fintype.card (IntegralCoverCosets H globalKubotaKernel)=
           H.relIndex globalKubotaKernel := by
@@ -340,8 +273,8 @@ lemma kernelCorrespondenceTest_energyDensity_le (f : kernelSmoothTests) (w : Hyp
 lemma kernelCorrespondenceTest_energy_le (f : kernelSmoothTests) :
     kernelDirichletEnergy (kernelCorrespondenceTest hHK hJK e g he f)≤
       (H.relIndex globalKubotaKernel:ℝ)*(J.relIndex globalKubotaKernel:ℝ)*kernelDirichletEnergy f := by
-  let density : KernelQuotient→ℂ := fun q=>(kernelQuotientEnergyDensity f q:ℂ)
-  have hdm : Measurable density := Complex.continuous_ofReal.measurable.comp
+  let density  := fun q=>(kernelQuotientEnergyDensity f q:ℂ)
+  have hdm  := Complex.continuous_ofReal.measurable.comp
     (kernelQuotientEnergyDensity_continuous f).measurable
   have hdi : Integrable density (integralQuotientVolume globalKubotaKernel) :=
     (kernelQuotientEnergyDensity_integrable f).ofReal
@@ -386,7 +319,6 @@ def kernelCorrespondenceTestLinear : kernelSmoothTests→ₗ[ℂ]kernelSmoothTes
     funext q
     induction q using Quotient.inductionOn with
     | _ w =>
-      let : Fintype (IntegralCoverCosets H globalKubotaKernel) := Fintype.ofFinite _
       change kernelCorrespondenceFunction hJK e g he (f+h).1
         (integralOrbitProjection globalKubotaKernel w)=
           kernelCorrespondenceFunction hJK e g he f.1 (integralOrbitProjection globalKubotaKernel w)+
@@ -397,7 +329,6 @@ def kernelCorrespondenceTestLinear : kernelSmoothTests→ₗ[ℂ]kernelSmoothTes
     funext q
     induction q using Quotient.inductionOn with
     | _ w =>
-      let : Fintype (IntegralCoverCosets H globalKubotaKernel) := Fintype.ofFinite _
       change kernelCorrespondenceFunction hJK e g he (c•f).1
         (integralOrbitProjection globalKubotaKernel w)=
           c • kernelCorrespondenceFunction hJK e g he f.1 (integralOrbitProjection globalKubotaKernel w)
@@ -464,7 +395,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
@@ -554,10 +485,8 @@ theorem ramifiedSource_active_weighted_periodic (b : Bool) (h : Eis)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ramifiedScaledMode (b : Bool) (h : Eis) (v : ℝ) (hv : 0<v) (z : ℂ) : ℂ :=
@@ -599,7 +528,7 @@ theorem ramifiedSource_scaled_fourier_off_support (b : Bool) (h : Eis)
     push Not at he
     apply hχ
     ext x
-    simpa only [AddChar.one_apply] using he x
+    simp_all
   obtain ⟨x,hx⟩ := hex
   obtain ⟨y,rfl⟩ := Ideal.Quotient.mk_surjective x
   change (∫z in periodDomain,ramifiedScaledMode b h v hv z)=0
@@ -612,11 +541,10 @@ lemma ramifiedSource_height_continuous (b : Bool) (v : ℝ) (hv : 0<v) :
     Continuous (fun z : ℂ=>ramifiedSourceFunction (ramifiedCuspRoot b:Eis) (upperPoint z v hv)) := by
   let c : ℂ→UpperCoordinates := fun z=>⟨(z,v),hv⟩
   have hc : Continuous c := by
-    apply Continuous.subtype_mk
-    exact continuous_id.prodMk continuous_const
+    fun_prop
   have ht := continuous_upperCoordinates.comp hc
   have ht' : Continuous (fun z : ℂ=>upperPoint z v hv) := by
-    simpa only [Function.comp_def,c] using ht
+    assumption
   exact (ramifiedSourceFunction_continuous _).comp ht'
 
 theorem ramifiedSource_scaled_fourier_active (b : Bool) (h : Eis)

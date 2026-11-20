@@ -34,9 +34,9 @@ theorem no_slot_endpoint
     hφ0 hφne a b B ha hab hB hφs hφB
   obtain ⟨x0,hx0⟩ := eventually_atTop.mp havg
   let A := max 1 (max x0 (1/b))
-  have hb : 0<b := ha.trans_le hab
+  have hb  := ha.trans_le hab
   have hA : 1≤A := le_max_left _ _
-  have hAp : 0<A := zero_lt_one.trans_le hA
+  have hAp  := zero_lt_one.trans_le hA
   have hAx0 : x0≤A := (le_max_left _ _).trans (le_max_right _ _)
   have hbA : 1≤b*A := by
     have hh : 1/b≤A := (le_max_right _ _).trans (le_max_right _ _)
@@ -46,7 +46,6 @@ theorem no_slot_endpoint
     hA hbA (by positivity) (by positivity)
   let F := (b*A)^6*((b*A)^6)^κ/A
   let K := (4/d)*F*Klog
-  have hF : 0≤F := by dsimp [F]; positivity
   have hK : 0≤K := by dsimp [K]; positivity
   refine ⟨c,κ,K,hc,hc1,hκ,hK,?_⟩
   filter_upwards [hlog,eventually_ge_atTop (1 : ℝ)] with U hlog hU
@@ -56,25 +55,25 @@ theorem no_slot_endpoint
   let D := U^r
   let V := b*x
   let N := U*V^6
-  have hUp : 0<U := zero_lt_one.trans_le hU
-  have hp : 0≤p := amplificationPower_nonneg c r
-  have hpR : p≤R/3 := amplificationPower_upper c r R hc1 hr hrR
-  have hxA : A≤x := fixed_multiplier_lower U A p hU hAp.le hp
+  have hUp  := zero_lt_one.trans_le hU
+  have hp  := amplificationPower_nonneg c r
+  have hpR  := amplificationPower_upper c r R hc1 hr hrR
+  have hxA  := fixed_multiplier_lower U A p hU hAp.le hp
   have hV : 1≤V := by
     change 1≤b*(A*U^p)
     rw [←mul_assoc]
     exact one_le_mul_of_one_le_of_one_le hbA (Real.one_le_rpow hU hp)
-  have hD : 1≤D := Real.one_le_rpow hU hr
-  have hDp : 0<D := zero_lt_one.trans_le hD
+  have hD  := Real.one_le_rpow hU hr
+  have hDp  := zero_lt_one.trans_le hD
   have hN : 1≤N := one_le_mul_of_one_le_of_one_le hU (one_le_pow₀ hV)
-  have hDN : D^(1+c)≤N := amplified_norm_dominates U A b c r hU hbA
-  have hxb : x*b=V := mul_comm x b
+  have hDN  := amplified_norm_dominates U A b c r hU hbA
+  have hxb  := mul_comm x b
   have hav := hx0 x (hAx0.trans hxA) data rows W wa wb D U
     (C*N*(N*D)^κ) hwa hwb hWs hW hDp hrows
     (by rw [hxb]; exact hraw0.scaleEnergy hc.le hκ.le hC U D V hD hN hDN)
     (by rw [hxb]; exact hraw1.scaleEnergy hc.le hκ.le hC U D V hD hN hDN)
   have hlog' := hlog p hp hpR
-  have hnorm : N*(N*D)^κ/x=F*U^(1+5*p+κ*(1+6*p+r)) :=
+  have hnorm  :=
     amplified_energy_power U A b p r κ hUp
   have hexp := hbudget r hr hrR
   have hpow : U^(1+5*p+κ*(1+6*p+r)+ε/2)≤U^(sourceExponent r+ε) :=
@@ -91,7 +90,6 @@ theorem no_slot_endpoint
       exact mul_le_mul_of_nonneg_left hlog' (by positivity)
     _ = C*K*U^(1+5*p+κ*(1+6*p+r)+ε/2) := by
       rw [Real.rpow_add hUp (1+5*p+κ*(1+6*p+r)) (ε/2)]
-      dsimp [K]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow (mul_nonneg hC hK)
 

@@ -34,13 +34,8 @@ theorem eventually_raw_add_comparison_le (hG : GraphTransference)
     (hc₀ : 0 < c₀) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (_hal : alo ≤ ahi)
     (hahi : ahi < 1 / 5) (hc : 0 < c) (hκ : 1 < κ) :
     ∃ (m₀ J : ℕ) (C₁ CG : ℝ), ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
-        ∃ (N : ℕ) (Aν Bν : Fin N → ι → Finset (Fin J)) (β : Fin N → ℂ)
-          (φ φ' ψ ψ' : Fin N → ℕ → ℂ) (U U' : Fin N → ℝ),
-          (∀ ν, ComparisonPattern m₀ big (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) (U ν)
-            (U' ν)) ∧
-          ∑ ν, ‖β ν‖ ≤ Real.log x ^ C₁ ∧
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
+        WithComparisonFamily big m₀ J C₁ x fun _ Aν Bν β φ φ' ψ ψ' _ _ =>
           ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
             (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
             InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →

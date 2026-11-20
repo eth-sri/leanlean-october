@@ -2,20 +2,21 @@ module
 
 public import OAI.NumberTheory.DirichletL.Energy.SlotHeight
 public import OAI.NumberTheory.DirichletL.Energy.Reindex
-public import OAI.NumberTheory.DirichletL.Moments.SlotClassTransport
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationFamilyEnergy
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentAllocatedRayDictionary
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentCommonMaskEnergy
+open CenteredMomentInductionEnergy CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open HeckePrimeAnnular CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
 local notation "O" => HeckeFamily.O
 
@@ -40,7 +41,6 @@ def originalImage (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C)
 
 section RayData
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 structure Matches (s : Input α) (η₀ : Character)
@@ -50,6 +50,17 @@ structure Matches (s : Input α) (η₀ : Character)
   profile : ∀ i y, s.W i y = W y * (y : ℂ)^(-HeckeDyadic.shift (σ i) (freq i))
   pool : ∀ i, s.slots i = primePool M H bslot (Z^(w i))
   scale : ∀ i, s.P i = Z^(w i)
+
+/-- Input packets realizing the prescribed ray data, with a uniform slot count
+and common bounds on their supports, amplitudes, and two scale parameters. -/
+abbrev ForBoundedRaySources (η₀ : Character) (θ : α → RayQuotient.Characters M H)
+    (w σ freq lows highs : α → ℝ) (Wslot : ℝ → ℂ)
+    (bslot Z Mslot lower upper b : ℝ) (N : ℕ) (P : Input α → Prop) : Prop :=
+    ∀src:Input α,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
+    (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
+    (∀i,src.lo i=lows i) → (∀i,src.hi i=highs i) →
+    Fintype.card α≤N → lower≤src.lower → src.upper≤upper →
+    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b → P src
 
 variable {M H hH}
 variable {s : Input α} {η₀ : Character} {θ : α → RayQuotient.Characters M H}

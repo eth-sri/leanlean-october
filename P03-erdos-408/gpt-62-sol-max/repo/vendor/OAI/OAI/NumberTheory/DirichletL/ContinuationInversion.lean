@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open MeasureTheory Set Filter Asymptotics
-open scoped Topology FourierTransform
+open scoped FourierTransform
 namespace SevenEighths.Continuation
 
 theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
@@ -22,7 +22,7 @@ theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
   have himage : Real.exp ∘ Neg.neg '' (univ : Set ℝ) = Ioi 0 := by
     rw [Set.image_comp, Set.image_univ_of_surjective neg_surjective,
       Set.image_univ, Real.range_exp]
-  have hinj : univ.InjOn (Real.exp ∘ Neg.neg) :=
+  have hinj  :=
     Real.exp_injective.injOn.comp neg_injective.injOn (univ.mapsTo_univ _)
   rw [MellinConvergent, ← himage,
     integrableOn_image_iff_integrableOn_abs_deriv_smul MeasurableSet.univ hder hinj] at hf

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 
@@ -25,16 +25,15 @@ lemma gaussianJointMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasCompact
     (J : ℕ) (A : ℝ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→gaussianJointMoment V hV J R≤C*R^(-A) := by
   obtain ⟨L,hL,hbox⟩ := hV.isBounded.exists_pos_norm_le
-  have hb : ∀s,V s≠0→|s|≤L := by
-    intro s hs
-    simpa only [Real.norm_eq_abs] using hbox s (subset_tsupport V hs)
-  exact gaussianLogWindow_fourier_moment V hV L hL.le hb A J
+  refine gaussianLogWindow_fourier_moment V hV L hL.le ?_ A J
+  intro s hs
+  simpa only [Real.norm_eq_abs] using hbox s (subset_tsupport V hs)
 
-lemma gaussianJointMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (J N : ℕ) :
-    ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→gaussianJointMoment V hV J R≤C/(1+R)^N := by
-  obtain ⟨B,hB,hzero⟩ := gaussianJointMoment_power_bound V hV J 0
-  obtain ⟨C,hC,hdecay⟩ := gaussianJointMoment_power_bound V hV J (N:ℝ)
+private lemma polynomial_decay_of_power_bounds (f : ℝ → ℝ)
+    (hpower : ∀ A : ℝ, ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 0 < R → f R ≤ C * R ^ (-A))
+    (N : ℕ) : ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 0 < R → f R ≤ C / (1 + R) ^ N := by
+  obtain ⟨B,hB,hzero⟩ := hpower 0
+  obtain ⟨C,hC,hdecay⟩ := hpower (N:ℝ)
   refine ⟨(B+C)*(2:ℝ)^N,by positivity,?_⟩
   intro R hR
   have hden : 0<(1+R)^N := pow_pos (by linarith) _
@@ -58,24 +57,26 @@ lemma gaussianJointMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
     rw [he] at hm
     exact hm.trans (by nlinarith [mul_nonneg hB.le (pow_nonneg (by norm_num : (0:ℝ)≤2) N)])
 
-theorem gaussianJointMoment_summed (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (s : ℝ) (hs : 0<s) :
-    ∃C : ℝ,0<C ∧ ∀Z : ℝ,0<Z→
-      Summable (fun j : ℕ=>((2:ℝ)^j)^s*gaussianJointMoment V hV J ((2:ℝ)^j/Z)) ∧
-      (∑'j : ℕ,((2:ℝ)^j)^s*gaussianJointMoment V hV J ((2:ℝ)^j/Z))≤C*Z^s := by
+/-- Bounds of arbitrary power order give a summable dyadic profile. -/
+theorem dyadic_profile_sum (f : ℝ → ℝ) (hnonneg : ∀ R > 0, 0 ≤ f R)
+    (hpower : ∀ A : ℝ, ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 0 < R → f R ≤ C * R ^ (-A))
+    (s : ℝ) (hs : 0 < s) :
+    ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 0 < Z →
+      Summable (fun j : ℕ => ((2 : ℝ)^j)^s * f ((2 : ℝ)^j / Z)) ∧
+      (∑' j : ℕ, ((2 : ℝ)^j)^s * f ((2 : ℝ)^j / Z)) ≤ C * Z ^ s := by
   obtain ⟨N,hN⟩ := exists_nat_gt s
-  obtain ⟨B,hB,hbound⟩ := gaussianJointMoment_polynomial_decay V hV J N
+  obtain ⟨B,hB,hbound⟩ := polynomial_decay_of_power_bounds f hpower N
   obtain ⟨C,hC,hkernel⟩ := CompletedDyadic.kernel_sum_bound s (N:ℝ) hs hN
   refine ⟨B*C,by positivity,?_⟩
   intro Z hZ
   obtain ⟨hks,hkt⟩ := hkernel Z⁻¹ (inv_pos.mpr hZ)
-  have hb (j : ℕ) : ((2:ℝ)^j)^s*gaussianJointMoment V hV J ((2:ℝ)^j/Z)≤
+  have hb (j : ℕ) : ((2:ℝ)^j)^s*f ((2:ℝ)^j/Z)≤
       B*CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := by
     have hh := mul_le_mul_of_nonneg_left (hbound ((2:ℝ)^j/Z) (div_pos (by positivity) hZ))
       (Real.rpow_nonneg (by positivity : (0:ℝ)≤2^j) s)
     simpa only [CompletedDyadic.kernelTerm,Real.rpow_natCast,div_eq_mul_inv,mul_assoc,mul_left_comm,mul_comm] using hh
-  have hnon (j : ℕ) : 0≤((2:ℝ)^j)^s*gaussianJointMoment V hV J ((2:ℝ)^j/Z) :=
-    mul_nonneg (Real.rpow_nonneg (by positivity : (0:ℝ)≤2^j) s) (gaussianJointMoment_nonneg V hV J _)
+  have hnon (j : ℕ) : 0≤((2:ℝ)^j)^s*f ((2:ℝ)^j/Z) :=
+    mul_nonneg (Real.rpow_nonneg (by positivity : (0:ℝ)≤2^j) s) (hnonneg _ (by positivity))
   have hsum := Summable.of_nonneg_of_le hnon hb (hks.mul_left B)
   refine ⟨hsum,?_⟩
   calc
@@ -83,6 +84,14 @@ theorem gaussianJointMoment_summed (V : SchwartzMap ℝ ℂ)
     _ = B*∑'j : ℕ,CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := tsum_mul_left
     _ ≤ B*(C*(Z⁻¹)^(-s)) := mul_le_mul_of_nonneg_left hkt hB.le
     _ = (B*C)*Z^s := by rw [Real.inv_rpow hZ.le,Real.rpow_neg hZ.le,inv_inv]; ring
+
+theorem gaussianJointMoment_summed (V : SchwartzMap ℝ ℂ)
+    (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (s : ℝ) (hs : 0<s) :
+    ∃C : ℝ,0<C ∧ ∀Z : ℝ,0<Z→
+      Summable (fun j : ℕ=>((2:ℝ)^j)^s*gaussianJointMoment V hV J ((2:ℝ)^j/Z)) ∧
+      (∑'j : ℕ,((2:ℝ)^j)^s*gaussianJointMoment V hV J ((2:ℝ)^j/Z))≤C*Z^s :=
+  dyadic_profile_sum _ (fun R _ => gaussianJointMoment_nonneg V hV J R)
+    (gaussianJointMoment_power_bound V hV J) s hs
 
 end SevenEighths.ProbePhysical
 end

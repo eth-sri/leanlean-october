@@ -1,13 +1,14 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.CentralWTail
+public import OAI.NumberTheory.DirichletL.PrimeRows.CentralTail
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -25,72 +26,49 @@ theorem central_row_w_cutoff_error (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (N : ℕ) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀X Y Z : ℝ,0<X → 0<Y → 0<Z → ∀a B H : ℝ,∀i : ℕ,
       (51/100:ℝ)≤a → a≤1 → 2<B → 0≤H → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
-      ‖centralRowIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H-
-        centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H‖≤
+      ‖centralRowIntegral S hS hmax P hPS η u mw.left mw.right X Y Z a e H-
+        centralRectangleIntegral S hS hmax P hPS η u mw.left mw.right X Y Z a e H‖≤
         C*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(a+16*e+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N := by
-  obtain ⟨C,hC,hbound⟩ := uniform_central_w_height_tail (ι:=ι) K e he he' S hS hmax hfirst
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N (17/50) le_rfl (by norm_num)
+  obtain ⟨C,hC,hbound⟩ := uniform_central_cutoff_error (ι:=ι) K e he he' S hS hmax hfirst
+    mw.left mw.right mw.leftLo mw.leftHi mw.rightLo mw.rightHi mw.left_pos mw.right_pos mw.left_support mw.right_support N (17/50) le_rfl (by norm_num)
   let n : ℂ := ((1/(2*Real.pi):ℝ):ℂ)^3
   refine ⟨‖n‖*C,mul_nonneg (norm_nonneg _) hC,?_⟩
   intro η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
   let E : Set HeightSpace := {t | |t.1.1|≤H}
   let T : Set HeightSpace := {t | |t.1.1|≤H ∧ |t.2|≤H}
-  let R : Set HeightSpace := {t | |t.1.1|≤H ∧ H < |t.2|}
-  let f := continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z (a+16*e) (1-a-6*e) (17/50)
   have hE : MeasurableSet E := measurableSet_le (by fun_prop) measurable_const
   have hT : MeasurableSet T := hE.inter (measurableSet_le (show Measurable (fun t : HeightSpace => |t.2|) by fun_prop) measurable_const)
-  have hi : IntegrableOn f E heightMeasure := continuedPhysicalRowKernel_buffered_integrable e a B H i he he' ha haTop hB hH
-    S hS hmax hfirst P hPS η u hu ψ hbin W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
-    (a+16*e) (17/50) le_rfl (by linarith) le_rfl
-  have hdiff : E\T=R := by
-    ext t
-    change (|t.1.1|≤H ∧ ¬(|t.1.1|≤H ∧ |t.2|≤H)) ↔ (|t.1.1|≤H ∧ H < |t.2|)
-    constructor
-    · rintro ⟨hx,hw⟩
-      exact ⟨hx,lt_of_not_ge (fun h=>hw ⟨hx,h⟩)⟩
-    · rintro ⟨hx,hw⟩
-      exact ⟨hx,fun h=>not_le_of_gt hw h.2⟩
-  have heq : centralRowIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H-
-        centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H=
-      n*(∫t in R,f t ∂heightMeasure) := by
-    rw [← hdiff,setIntegral_sdiff hT hi (fun t ht=>ht.1)]
-    dsimp [centralRowIntegral,centralRectangleIntegral,n,E,T,f]
-    ring
-  rw [heq,norm_mul]
-  calc
-    _ ≤ ‖n‖*(∫t in R,‖f t‖ ∂heightMeasure) := mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (norm_nonneg _)
-    _ ≤ ‖n‖*(C*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(a+16*e+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N) :=
-      mul_le_mul_of_nonneg_left (hbound η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
-        (a+16*e) ⟨le_rfl,by linarith⟩) (norm_nonneg _)
-    _ = _ := by ring
+  have hb := hbound η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
+    (a+16*e) ⟨le_rfl,by linarith⟩ E T hE hT (fun _ ht => ht) (fun _ ht => ht.1)
+    (fun t ht => Or.inr (lt_of_not_ge fun ha => ht.2 ⟨ht.1, ha⟩))
+  rw [centralRowIntegral, centralRectangleIntegral, ← mul_sub, norm_mul]
+  exact (mul_le_mul_of_nonneg_left hb (norm_nonneg n)).trans_eq (by dsimp [n]; ring)
 
 theorem uniform_original_row_rectangle_error (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (N : ℕ) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀X Y Z : ℝ,0<X → 0<Y → 1≤Z → ∀a B H : ℝ,∀i : ℕ,
       (51/100:ℝ)≤a → a≤1 → 2<B → 0≤H → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
-      ‖rowIntegral η S (calibrationForSet S hmax) (fun j=>CompletedGauss.primaryGenerator (P j).val) W0 W1 X Y Z u-
-        centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H‖≤
+      ‖rowIntegral η S (calibrationForSet S hmax) (fun j=>CompletedGauss.primaryGenerator (P j).val) mw.left mw.right X Y Z u-
+        centralRectangleIntegral S hS hmax P hPS η u mw.left mw.right X Y Z a e H‖≤
         C*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(2+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N := by
   obtain ⟨C0,hC0,h0⟩ := uniform_original_row_central_error (ι:=ι) K e he he' S hS hmax hfirst
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N
+    mw N
   obtain ⟨C1,hC1,h1⟩ := central_row_w_cutoff_error (ι:=ι) K e he he' S hS hmax hfirst
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N
+    mw N
   refine ⟨C0+C1,add_nonneg hC0 hC1,?_⟩
   intro η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
   have h0' := h0 η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
@@ -98,13 +76,13 @@ theorem uniform_original_row_rectangle_error (K : ℕ)
   have hcost := contourArithmeticCost_nonneg η u P
   have hz : Z^(a+16*e+(17/50:ℝ)-1)≤Z^(2+(17/50:ℝ)-1) :=
     Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-  have h1'' : ‖centralRowIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H-
-      centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H‖≤
+  have h1'' : ‖centralRowIntegral S hS hmax P hPS η u mw.left mw.right X Y Z a e H-
+      centralRectangleIntegral S hS hmax P hPS η u mw.left mw.right X Y Z a e H‖≤
       C1*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(2+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N := by
     apply h1'.trans
     gcongr
     exact pow_nonneg (height_pos _).le _
-  apply (norm_sub_le_norm_sub_add_norm_sub _ (centralRowIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H) _).trans
+  apply (norm_sub_le_norm_sub_add_norm_sub _ (centralRowIntegral S hS hmax P hPS η u mw.left mw.right X Y Z a e H) _).trans
   exact (add_le_add h0' h1'').trans_eq (by ring)
 
 end SevenEighths.ProbeHighRowFamily

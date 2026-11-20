@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
 
 @[expose] public section
@@ -8,13 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFixedWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseSecondChildWindows InverseSecondProfileUniform
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes
+open InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile
+open InverseInitialClippedColumns InverseSecondChildWindows InverseSecondProfileUniform
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
@@ -42,7 +42,7 @@ theorem exists_actual_initial_windows
       (∀i,0≤M i) ∧ (∀i,HasCompactSupport (V i:ℝ→ℂ)) ∧
       (∀i,Function.support (V i)⊆Set.Icc (-M i) (M i)) ∧
       ∀{ι:Type*}[DecidableEq ι](p:ι→Eis)(_hp:∀i,p i≠0)
-      [∀i,(Ideal.span {p i}).IsMaximal]
+      [OAI.PrincipalFamily.Maximal p]
       (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
       (_hdiv:∀x∈S,x.divisor⊆x.common)(_hf:∀x∈S,x.frequency≠0)
       (ψ:Fin 4→ℝ→ℂ)(_hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
@@ -51,18 +51,17 @@ theorem exists_actual_initial_windows
         W₁ W₂ wFresh wFresh (fun i=>V i) Z D B v θ H c₁ c₂ θ₁ θ₂ := by
   let m:=|Real.log a|+|Real.log b|
   obtain ⟨wFresh,V,M,af,bf,haf,hab,hwc,hws,hM,hVc,hVs,hw,hcut⟩ :=
-    fixed_windows m bcap lo hi (fun _=>0) (by dsimp [m];positivity) hcap hlo hhi (by simp)
+    fixed_windows m bcap lo hi (fun _=>0) (by dsimp [m];positivity) hlo hhi (by simp)
   refine ⟨wFresh,V,M,af,bf,haf,hab,hwc,hws,hM,hVc,hVs,?_⟩
   intro ι _ p hp _ pool S hdiv hf ψ hψ Z D B v θ H c₁ c₂ θ₁ θ₂ hZ hc₁ hb₁ hc₂ hb₂
   let g₁ := CubicReflectionKernel.logSchwartz W₁ a b ha hs₁ hW₁
   let g₂ := CubicReflectionKernel.logSchwartz W₂ a b ha hs₂ hW₂
-  have hg₁ : Function.support g₁⊆Set.Icc (-m) m := log_source_support W₁ a b ha hs₁ hW₁
-  have hg₂ : Function.support g₂⊆Set.Icc (-m) m := log_source_support W₂ a b ha hs₂ hW₂
+  have hg₁  := log_source_support W₁ a b ha hs₁ hW₁
+  have hg₂  := log_source_support W₂ a b ha hs₂ hW₂
   have hvalid : ∀x∈pointSource pool (windowSource p S ψ Z D B v θ H),Valid x :=
     pointSource_valid pool _ (fun x hx=>hdiv x (Finset.mem_filter.mp hx).1)
       (fun x hx=>hf x (Finset.mem_filter.mp hx).1)
-  have hpos (x:Point ι)(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H)) :
-      ∀i,0<relativeNorm (coordinates p x) Z D B v θ H i :=
+  have hpos (x:Point ι)(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H))  :=
     relativeNorm_pos _ (coordinates_pos p hp x (hvalid x hx)) hZ D B v θ H
   have hblock (x:Point ι)(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H)) :
       ∀i:Fin 4,relativeNorm (coordinates p x) Z D B v θ H (outerIndex i)∈Set.Icc (lo i) (hi i) :=
@@ -82,7 +81,7 @@ theorem exists_actual_initial_windows
       exact hn
   · intro x hx hn
     have he := hw g₂ hg₂ c₂ θ₂ _ _ _ hc₂ hb₂ (hblock x hx 0) (hblock x hx 2) (hpos x hx 5) ?_
-    · rwa [relative_column_right] at he
+    · assumption
     · change positiveSource g₂ c₂ θ₂
         (relativeNorm (coordinates p x) Z D B v θ H 0 *
           relativeNorm (coordinates p x) Z D B v θ H 2 *

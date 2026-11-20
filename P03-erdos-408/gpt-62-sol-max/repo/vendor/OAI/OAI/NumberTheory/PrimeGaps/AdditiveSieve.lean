@@ -12,23 +12,19 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 open scoped ComplexConjugate
 
@@ -157,7 +153,7 @@ theorem bvExp_sub_one_lower {x : ℝ} (hx : |x|≤1/2) :
     nlinarith [Real.pi_pos]
   have h := Real.mul_abs_le_abs_sin hs
   rw [abs_mul,abs_of_pos Real.pi_pos] at h
-  have hpi : Real.pi≠0 := ne_of_gt Real.pi_pos
+  have hpi  := ne_of_gt Real.pi_pos
   have he : 2/Real.pi*(Real.pi*|x|)=2*|x| := by field_simp
   rw [he] at h
   have hid : 2*Real.pi*x/2=Real.pi*x := by ring
@@ -166,18 +162,15 @@ theorem bvExp_sub_one_lower {x : ℝ} (hx : |x|≤1/2) :
 
 theorem exponential_sum_bound (N : ℕ) {x : ℝ} (hx : |x|≤1/2) (hx0 : x≠0) :
     ‖∑ n∈Finset.range N,bvExp ((n:ℝ)*x)‖≤1/(2*|x|) := by
-  have ha : 0 < |x| := abs_pos.mpr hx0
   have hden := bvExp_sub_one_lower hx
-  have hn : 0<‖bvExp x-1‖ := lt_of_lt_of_le (by positivity : 0<4*|x|) hden
   have he := geom_sum_mul (bvExp x) N
   have hnorm := congrArg norm he
   rw [norm_mul] at hnorm
   have hu : ‖bvExp x^N-1‖≤2 := by
     calc
       _ ≤ ‖bvExp x^N‖+‖(1:ℂ)‖ := norm_sub_le _ _
-      _ = 2 := by simp [norm_pow]; norm_num
-  have htimes : ‖∑ n∈Finset.range N,bvExp x^n‖*(4*|x|)≤2 := by
-    exact (mul_le_mul_of_nonneg_left hden (norm_nonneg _)).trans (hnorm.trans_le hu)
+      _ = 2 := by norm_num
+  have htimes := (mul_le_mul_of_nonneg_left hden (norm_nonneg _)).trans (hnorm.trans_le hu)
   simp_rw [bvExp_nat_mul]
   apply (le_div_iff₀ (by positivity : (0:ℝ)<2*|x|)).mpr
   nlinarith
@@ -187,7 +180,7 @@ theorem reciprocal_sum_le_harmonic {ι : Type*} (s : Finset ι) (t : ι→ℝ) (
     (hsep : ∀ i∈s,∀ j∈s,i≠j→1≤|t i-t j|) :
     (∑ i∈s,1/t i)≤(harmonic D:ℝ) := by
   classical
-  let r : ι→ℕ := fun i => ⌊t i⌋₊
+  let r  := fun i => ⌊t i⌋₊
   have hr : ∀ i∈s,r i∈Finset.Icc 1 D := by
     intro i hi
     exact Finset.mem_Icc.mpr ⟨Nat.le_floor (by simpa using (ht i hi).1),
@@ -244,7 +237,7 @@ theorem reciprocal_sum_le_scaled_harmonic {ι : Type*} (s : Finset ι) (t : ι�
   have he : Complex.I * ((2*Real.pi*(m:ℝ):ℝ):ℂ)=(m:ℂ)*(2*Real.pi*Complex.I) := by
     push_cast
     ring
-  rw [he,Complex.exp_int_mul,Complex.exp_two_pi_mul_I,one_zpow]
+  simp_all
 
 theorem bvExp_sub_int (x : ℝ) (m : ℤ) : bvExp (x-m)=bvExp x := by
   rw [sub_eq_add_neg,bvExp_add]
@@ -396,7 +389,7 @@ theorem additive_large_sieve {ι : Type*} (s : Finset ι) (θ : ι→ℝ)
   simpa only [inner_bvExponentialVector_coefficients,EuclideanSpace.norm_sq_eq,WithLp.ofLp_toLp] using h
 
 theorem rat_abs_lower (r : ℚ) (hr : r≠0) : 1/(r.den:ℝ)≤|(r:ℝ)| := by
-  have hn : r.num≠0 := fun h => hr (Rat.zero_of_num_zero h)
+  have hn  := fun h => hr (Rat.zero_of_num_zero h)
   have ha : (1:ℝ)≤|(r.num:ℝ)| := by
     exact_mod_cast Int.one_le_abs hn
   rw [Rat.cast_def,abs_div,abs_of_pos (by exact_mod_cast r.den_pos : (0:ℝ)<r.den)]

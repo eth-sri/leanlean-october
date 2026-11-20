@@ -9,13 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.ChildRows
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondScaled
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-open CenteredMomentSecondDescent CenteredMomentProductCRT CenteredMomentUnequal CenteredMomentPartition
+open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm
+open CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion CenteredMomentSecondDescent
+open CenteredMomentProductCRT CenteredMomentUnequal CenteredMomentPartition
 local notation "O" => ActualEisensteinCubic.O
 
 def movingCoefficient {α : Type*} (A : O) (a : α → O) (c : α → ℂ) (i : α) : ℂ :=

@@ -23,24 +23,27 @@ reindexes `TwoSidedCorrelation`'s groups once, with `ι = ↥(Sg ∪ Bg)`.
 
 namespace Erdos408.TwoSided
 
-/-- PD (6.1) for groups indexed by `ι`; the hypotheses of `GraphTransference`. -/
-def GroupAdmissible (c₀ C₀ vlo vhi x : ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
-    (P : ι → Finset ℕ) (big : Finset ι) : Prop :=
-  (∀ g h, g ≠ h → Disjoint (P g) (P h)) ∧
-  c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card ∧
-  ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x) ∧
-  c₀ * Real.log (Real.log x) ≤ big.card ∧ (big.card : ℝ) ≤ C₀ * Real.log (Real.log x) ∧
-  (∀ g, vlo ≤ harmonicMass (P g) ∧ harmonicMass (P g) ≤ vhi) ∧
-  (∀ g ∉ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
-    (Real.exp (Real.log x ^ (0.36 : ℝ)))) ∧
-  (∀ g ∈ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.39 : ℝ)))
-    (Real.exp (Real.log x ^ (0.46 : ℝ)))) ∧
-  ∀ g ∈ big, ∃ y z : ℝ, P g = primesIcc y z
-
 /-- At most `K₀ + C_N s` disjoint inert bands with exponents in the window. -/
 def InertAdmissible (K₀ : ℕ) (CN alo ahi x : ℝ) {r : ℕ} (a : Fin r → ℝ) : Prop :=
   (r : ℝ) ≤ K₀ + CN * Real.log (Real.log (Real.log x)) ∧ (∀ i, alo ≤ a i ∧ a i ≤ ahi) ∧
     ∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))
+
+/-- The admissible inert bands, test functions and scales at an endpoint. -/
+abbrev ForEndpointTests {ι : Type} (big : Finset ι) (K₀ d m₀ : ℕ) (CN alo ahi c x Cm : ℝ)
+    (M₁ : ℕ → ℝ) (Goal : ∀ (r : ℕ), (Fin r → ℝ) → (Fin (d + 1) → ℝ) → (Fin (d + 1) → ℝ) →
+      ((Fin d → ℕ) → ℝ) → ∀ (J : ℕ), (ι → Finset (Fin J)) → ((ι → Fin (J + 1) → ℕ) → ℂ) →
+      (ℝ → ℂ) → ℝ → ℝ → ℕ → ℤ → Prop) : Prop :=
+    ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
+        InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
+      ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
+        (∀ g, (C g).card ≤ m₀) → (∀ g ∉ big, C g = ∅) → (∀ p, ‖b p‖ ≤ 1) →
+        (∀ p p', (∀ g ∈ big, p g = p' g) → b p = b p') →
+      ∀ ψ₁ : ℝ → ℂ, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ₁ →
+        (∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) → (∀ (j : ℕ) (y : ℝ), ‖iteratedDeriv j ψ₁ y‖ ≤ M₁ j) →
+      ∀ (Y σ : ℝ) (k : ℕ) (h : ℤ),
+        x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y →
+        Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ)) →
+        |σ| ≤ Real.log x ^ Cm → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → Goal r a u v Bc J C b ψ₁ Y σ k h
 
 /-- The clipped invariant core. -/
 def CoreAdmissible (B₀ x : ℝ) {ι : Type} [Fintype ι] (P : ι → Finset ℕ) (G : ℕ → ℝ) :
@@ -103,15 +106,6 @@ noncomputable def strippedComparison (x q₀ : ℝ) {ι : Type} [Fintype ι] [De
           markedListWeight P q₀ (unsharedSlots fun g => A g ∪ B g)
             (fun p => ψ (slotProduct A fun g i => p g i.castSucc))
             (w + slotProduct (fun g => A g ∪ B g) a)
-
-/-- One comparison pattern of `GraphTransference`'s family. -/
-def ComparisonPattern (m₀ : ℕ) {ι : Type} [Fintype ι] (big : Finset ι) {J : ℕ}
-    (A B : ι → Finset (Fin J)) (φ φ' ψ ψ' : ℕ → ℂ) (U U' : ℝ) : Prop :=
-  (∀ g, Disjoint (A g) (B g) ∧ (A g ∪ B g).card ≤ m₀) ∧ (∀ g ∉ big, A g = ∅ ∧ B g = ∅) ∧
-    ((∃ g, (A g).Nonempty) ∧ ∃ g, (B g).Nonempty) ∧
-    (∀ n, ‖φ n‖ ≤ 1 ∧ ‖φ' n‖ ≤ 1 ∧ ‖ψ n‖ ≤ 1 ∧ ‖ψ' n‖ ≤ 1) ∧
-    (∀ n, φ n ≠ 0 → U ≤ n ∧ n ≤ Real.exp 1 * U) ∧
-    ∀ n, φ' n ≠ 0 → U' ≤ n ∧ n ≤ Real.exp 1 * U'
 
 /-- The first endpoint of a comparison at scale `Y`, PD (6.28). -/
 noncomputable def endpointCoeff (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ)

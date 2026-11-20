@@ -244,9 +244,6 @@ theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
   have hB : 2 * (16 * U + 2 * V + 1) ^ 2 ≤ (rootBound U V : ℝ) := Nat.le_ceil _
   have hP₁0 : (0 : ℝ) ≤ P.1 := by positivity
   have hP₂0 : (0 : ℝ) ≤ P.2 := by positivity
-  have hc0 : (0 : ℝ) ≤ rootC P₀.1 P₀.2 := by positivity
-  have hd0 : (0 : ℝ) ≤ rootD P₀.1 P₀.2 := by positivity
-  have hv0 : (0 : ℝ) ≤ P₀.2 := by positivity
   have h₁ : (rootD P₀.1 P₀.2 : ℝ) * P.1 ≤ (1 + 2 * V) * (16 * U) :=
     mul_le_mul (by linarith) hP₁' hP₁0 (by linarith)
   have h₂ : (rootC P₀.1 P₀.2 : ℝ) * P.2 ≤ (16 * U) * (2 * V) :=
@@ -256,8 +253,6 @@ theorem rootMapInv_mem_square (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn)
   have h₅ : 0 ≤ (rootD P₀.1 P₀.2 : ℝ) * P.1 := by positivity
   have h₆ : 0 ≤ (rootC P₀.1 P₀.2 : ℝ) * P.2 := by positivity
   have h₇ : 0 ≤ (P₀.2 : ℝ) * P.1 := by positivity
-  have h₈ : 0 ≤ (P₀.1 : ℝ) * P.2 := by positivity
-  have hUV : 0 ≤ U * V := by positivity
   simp only [rootMapInv, mem_product, mem_Icc]
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
   all_goals

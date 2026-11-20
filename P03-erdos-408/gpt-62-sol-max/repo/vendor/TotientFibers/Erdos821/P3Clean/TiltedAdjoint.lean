@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.MassPositivity
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -53,10 +52,8 @@ theorem tiltedBannedRaw_backward (A : Model F P J m) (n : ℕ) (theta : ℝ)
   apply Finset.sum_congr rfl
   intro u _
   have hmatches : (A.pattern v).matchesBig a b ↔ (A.pattern v).matchesBig b a := by
-    unfold Pattern.matchesBig
     exact forall_congr' (fun _ => forall_congr' (fun _ => imp_congr_right (fun _ => eq_comm)))
-  have hg : ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u) ↔
-      ((A.pattern v).matchesBig b a ∧ bigBan (A.pattern v) b a u) :=
+  have hg  :=
     and_congr hmatches (bigBan_comm (A.pattern v) a b u)
   by_cases h : (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u
   · have hs (t : ℝ) : star (t : ℂ) = (t : ℂ) := Complex.conj_ofReal t

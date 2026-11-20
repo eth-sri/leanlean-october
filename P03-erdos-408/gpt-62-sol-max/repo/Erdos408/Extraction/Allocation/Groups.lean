@@ -170,7 +170,6 @@ lemma harmonicMass_dyadicGroup : ∃ Y₀ : ℝ, ∀ y : ℝ, Y₀ ≤ y →
     have hS := sum_le_sum_of_subset_of_nonneg (f := fun q : ℕ => (1 : ℝ) / q) hsub
       fun q _ _ => by positivity
     have hexp : Real.exp y - 1 ≤ Real.exp (2 * y) := by
-      have := exp_le_exp.2 (show y ≤ 2 * y by linarith)
       linarith
     have hm := (abs_le.1 (hM (Real.exp y - 1) (Real.exp (2 * y)) hey hexp)).2
     rw [log_exp] at hm
@@ -205,7 +204,6 @@ lemma disjoint_of_mem_doublingGroups {x a b : ℝ} (hx : 1 ≤ Real.log x) {g g'
     Disjoint g g' := by
   obtain ⟨i, rfl, -⟩ := exists_of_mem_doublingGroups hg
   obtain ⟨i', rfl, -⟩ := exists_of_mem_doublingGroups hg'
-  have hL : 0 < Real.log x ^ a := rpow_pos_of_pos (by linarith) a
   have key : ∀ i i' : ℕ, i < i' → 2 * (2 ^ i * Real.log x ^ a) ≤ 2 ^ i' * Real.log x ^ a := by
     intro i i' h
     rw [← mul_assoc, ← pow_succ']
@@ -363,7 +361,7 @@ lemma disjoint_band {x a a' : ℝ} (hx : 1 ≤ Real.log x) (h : 1 ≤ (a' - a) *
   have h3 : Real.log x ^ a' = Real.log x ^ a * Real.log x ^ (a' - a) := by
     rw [← rpow_add hL]
     ring_nf
-  have h4 : 0 < Real.log x ^ a := rpow_pos_of_pos hL a
+  have h4  := rpow_pos_of_pos hL a
   have h5 : Real.exp (2 * Real.log x ^ a) < Real.exp (Real.log x ^ a') :=
     exp_lt_exp.2 (by rw [h3]; nlinarith)
   linarith [hq.2.2, hq'.2.1]
@@ -376,7 +374,7 @@ lemma eventually_harmonicMass_band : ∀ᶠ x : ℝ in atTop,
   have hL : Tendsto (fun x : ℝ => Real.log x ^ (11 / 100 : ℝ)) atTop atTop :=
     (tendsto_rpow_atTop (by norm_num)).comp tendsto_log_atTop
   filter_upwards [hL.eventually_ge_atTop (6 * (E + 1)), eventually_le_log 1] with x hY hx a ha
-  have hLa : 6 * (E + 1) ≤ Real.log x ^ a :=
+  have hLa  :=
     hY.trans (rpow_le_rpow_of_exponent_le hx ha)
   have hLa0 : 0 < Real.log x ^ a := by linarith
   have hsub : primesIoc (Real.exp (Real.log x ^ a)) (Real.exp (2 * Real.log x ^ a)) ⊆
@@ -408,7 +406,6 @@ private lemma natCeil_le_max_add_one (y : ℝ) : (⌈y⌉₊ : ℝ) ≤ max y 0 
 lemma inertPerCluster_le {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) {x : ℝ} (hs : 0 ≤ logLogLog x) :
     (inertPerCluster K CN x : ℝ) ≤ max CN 0 * logLogLog x / K + 1 := by
   refine (natCeil_le_max_add_one _).trans ?_
-  have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
   gcongr
   refine max_le ?_ (by positivity)
   gcongr
@@ -427,11 +424,10 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
   have hε : 0 < min (1 / 200 : ℝ) (1 / (25 * K)) := lt_min (by norm_num) (by positivity)
   filter_upwards [eventually_mul_logLogLog_le (2 * max CN 0) hε,
     eventually_le_logLog (25 * K + Real.exp 1), eventually_le_log 1] with x hsT hT hx
-  have he1 : 1 ≤ Real.exp 1 := one_le_exp zero_le_one
+  have he1  := one_le_exp zero_le_one
   have hT1 : 1 ≤ logLog x := by nlinarith
   have hT0 : 0 < logLog x := by linarith
   have hs : 0 ≤ logLogLog x := by
-    rw [logLogLog]
     exact Real.log_nonneg hT1
   have hN := inertPerCluster_le hK CN hs
   set N := inertPerCluster K CN x
@@ -439,7 +435,6 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
   have hoff : ∀ i < N, (i : ℝ) * (2 / logLog x) ≤ min (1 / 200 : ℝ) (1 / (25 * K)) := by
     intro i hi
     have hi' : (i : ℝ) + 1 ≤ N := by exact_mod_cast hi
-    have h1 : (i : ℝ) ≤ max CN 0 * logLogLog x / K := by linarith
     have h2 : max CN 0 * logLogLog x / K ≤ max CN 0 * logLogLog x := by
       rw [div_le_iff₀ hK0]
       have : 0 ≤ max CN 0 * logLogLog x := mul_nonneg (le_max_right _ _) hs
@@ -478,7 +473,6 @@ lemma eventually_inertBands {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ x : ℝ
         have h4 : 0 ≤ (i' : ℝ) * (2 / logLog x) := by positivity
         have h5 : (c' : ℝ) * (8 / 100 / K) - c * (8 / 100 / K) ≥ 8 / 100 / K := by
           rw [← sub_mul]
-          have : (1 : ℝ) ≤ c' - c := by linarith
           have : 0 ≤ 8 / 100 / (K : ℝ) := by positivity
           nlinarith
         have h6 : 1 ≤ (8 / 100 / K - 1 / (25 * K)) * logLog x := by

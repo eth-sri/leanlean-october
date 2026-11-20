@@ -9,7 +9,6 @@ namespace OAI
 
 noncomputable section
 open Set Filter
-open scoped Topology
 namespace SevenEighths.HeckeMellinIdentity
 
 def regularized (P : WeakFEPair ℂ) (s : ℂ) : ℂ :=
@@ -25,7 +24,7 @@ theorem regularized_eq (P : WeakFEPair ℂ) (hk : P.k = 1) {s : ℂ}
   unfold regularized WeakFEPair.Λ
   rw [hk]
   simp only [smul_eq_mul, Complex.ofReal_one]
-  have h1' : (1 : ℂ) - s ≠ 0 := sub_ne_zero.mpr (Ne.symm h1)
+  have h1'  := sub_ne_zero.mpr (Ne.symm h1)
   field_simp
   ring
 
@@ -63,7 +62,7 @@ theorem eq_of_f (P Q : WeakFEPair ℂ) (hP : P.k = 1) (hQ : Q.k = 1)
     intro t ht
     dsimp only
     rw [hf t ht, hf₀]) h0 h1
-  simpa only [Complex.ofReal_one, Complex.one_cpow, one_mul] using h
+  simp_all
 
 end SevenEighths.HeckeMellinIdentity
 

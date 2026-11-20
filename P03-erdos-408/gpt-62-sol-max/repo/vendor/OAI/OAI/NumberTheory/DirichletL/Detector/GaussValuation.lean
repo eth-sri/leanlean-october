@@ -26,7 +26,7 @@ theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
   · apply primePowerGauss_zero_off_support
     rw [pow_dvd_pow_iff hp.ne_zero hp.not_isUnit]
     omega
-  · have hle : n ≤ j := Nat.le_of_lt hnj
+  · have hle  := Nat.le_of_lt hnj
     have heq : p ^ j = p ^ n * p ^ (j - n) := by rw [← pow_add, Nat.add_sub_of_le hle]
     rw [heq]
     apply primePowerGauss_nonprincipal_extra_divisibility p hp.ne_zero χ hχ
@@ -39,7 +39,7 @@ theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
       (if n + 1 ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ (n + 1) else 0) -
       (if n ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n else 0) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  let : Finite (O ⧸ Ideal.span {p}) := ConcreteTraceCRT.finite_quotient_span hp.ne_zero
+  let  := ConcreteTraceCRT.finite_quotient_span hp.ne_zero
   have hcard : (Nat.card (O ⧸ Ideal.span {p})ˣ : ℂ) =
       (Ideal.absNorm (Ideal.span {p}) : ℂ) - 1 := by
     rw [Nat.card_units, Nat.cast_sub (Nat.card_pos : 0 < Nat.card (O ⧸ Ideal.span {p})),

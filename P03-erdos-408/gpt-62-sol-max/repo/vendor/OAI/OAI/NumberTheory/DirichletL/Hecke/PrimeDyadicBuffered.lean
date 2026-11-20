@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicControl
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicEstimates
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicEstimates
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Metric MeasureTheory Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeLogarithmic HeckeDeletionBounds
@@ -19,11 +20,9 @@ def binCost (B : ℝ) (χ : Character) (H : ℝ) : ℝ :=
 theorem binCost_nonneg {B : ℝ} (hB : 0≤B) (χ : Character) (H : ℝ) : 0≤binCost B χ H := by
   have hc : 1≤complexity χ H :=
     (Real.one_le_exp (by norm_num : (0 : ℝ)≤1)).trans (complexity_ge_exp χ H)
-  have hr : (1 : ℝ)≤(radical χ.modulus).absNorm := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (radical_ne_zero χ.modulus))
-  exact add_nonneg (mul_nonneg hB (Real.log_nonneg hc))
-    (mul_nonneg (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le (Real.log_nonneg hr))
+  refine add_nonneg (mul_nonneg hB (Real.log_nonneg hc))
+    (mul_nonneg (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le (Real.log_nonneg ?_))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (radical_ne_zero χ.modulus)
 
 theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)

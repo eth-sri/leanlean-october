@@ -9,41 +9,24 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState
+open CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData CenteredMomentSourceRow
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyNaturalInputMatches
 open CenteredMomentAmplificationChildInput CenteredMomentFirstSourceReduction
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "zeroInput"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
 
-theorem balanced_eq_positive_empty (η₀:Character)(θ:Fin 0→RayQuotient.Characters M H)
-    (w σ freq:Fin 0→ℝ):
-    zeroInput=CenteredMomentEnergyPositiveHighSource.balancedInput M H hH η₀ θ
-      (fun _=>0) continuous_const 1 1 0 0 (by norm_num)
-      (by simp [Function.support]) w σ freq (fun i=>Fin.elim0 i)
-      s p ha t X₁ X₂ hX₁ hX₂:=by
-  unfold CenteredMomentEnergyZeroReferencePhysical.balancedInput
-    CenteredMomentEnergyPositiveHighSource.balancedInput input naturalInput naturalData completeInput
-  congr 5 <;> exact Subsingleton.elim _ _
 
 variable (η₀:Character)(θ:Fin 0→RayQuotient.Characters M H)(w σ freq:Fin 0→ℝ)
-def positiveEmptyInput : Input (Fin 0):=
-  CenteredMomentEnergyPositiveHighSource.balancedInput M H hH η₀ θ
-  (fun _=>0) continuous_const 1 1 0 0 (by norm_num)
-  (by simp [Function.support]) w σ freq (fun i=>Fin.elim0 i)
-  s p ha t X₁ X₂ hX₁ hX₂
 
-local notation "positiveInput"=>positiveEmptyInput M H hH s p ha t X₁ X₂ hX₁ hX₂ η₀ θ w σ freq
 
 theorem declared_capacity (hZ:1<Z):
     let Mdecl:=max s.width (length Z X₁+length Z X₂);

@@ -68,7 +68,7 @@ theorem unit_phase_inverse (η : ℂ) (hη : ‖η‖ = 1) : star η * η = 1 :=
 
 theorem principal_coord_cancellation {Q : ℝ} (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
     (star η * (Q : ℂ) ^ s) * coordD Q η 1 s = 1 := by
-  have hQ0 : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ.ne'
+  have hQ0  := Complex.ofReal_ne_zero.mpr hQ.ne'
   unfold coordD
   simp only [star_one, mul_one]
   calc
@@ -86,7 +86,7 @@ theorem principal_B_norm {Q : ℝ} (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1
   rw [norm_mul, norm_star, hη, one_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ]
 
 theorem compensated_unit_error_bound (V W D P B q : ℂ) (T : ℝ)
-    (_hT : 0 ≤ T) (hV : ‖V‖ ≤ 1 / 2) (hW : ‖W‖ ≤ 1)
+ (hV : ‖V‖ ≤ 1 / 2) (hW : ‖W‖ ≤ 1)
     (hD : ‖D‖ ≤ 1 / 2) (hq : ‖q‖ ≤ 1)
     (hVT : ‖V‖ ≤ T) (hDT : ‖D‖ ≤ T)
     (hE : ‖P + D‖ ≤ 28 * T) (hBE : ‖B‖ * ‖P + D‖ ≤ 28 * T)
@@ -149,7 +149,7 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
   have hQ0 : 0 < Q := by linarith
   have hQ1 : 1 ≤ Q := by linarith
   have hQ4 : 4 ≤ Q := by linarith
-  have hpow (x y : ℝ) (h : x ≤ y) : Q ^ x ≤ Q ^ y :=
+  have hpow (x y : ℝ) (h : x ≤ y)  :=
     Real.rpow_le_rpow_of_exponent_le hQ1 h
   have hV : ‖coordV Q (1 / 6)‖ = Q ^ (-1 : ℝ) := by
     rw [coordV_norm Q hQ0]; norm_num
@@ -162,7 +162,7 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
     norm_num
     congr 1
     ring
-  have hD : ‖coordD Q η 1 s‖ ≤ Q ^ (-s.re) :=
+  have hD  :=
     coordD_norm_le Q hQ0 η 1 s hη.le (by simp)
   have hK : ‖coordK Q η s 1‖ ≤ Q ^ (-s.re) := by
     convert coordK_norm_le Q hQ1 η s 1 hη.le using 1
@@ -218,7 +218,7 @@ theorem principal_replacement_error {Q : ℝ} {A η s : ℂ}
   have hV : ‖coordV Q (1 / 6)‖ = Q ^ (-1 : ℝ) := by
     rw [coordV_norm Q hQ0]; norm_num
   have hVhalf : ‖coordV Q (1 / 6)‖ ≤ 1 / 2 := by
-    rw [hV]; exact rpow_le_half Q (-1) hQ4 (by norm_num)
+    rw [hV]; exact rpow_le_half Q _ hQ4 (by norm_num)
   have hD := coordD_norm_le Q hQ0 η 1 s hη.le (by simp)
   have hDhalf := hD.trans (rpow_le_half Q (-s.re) hQ4 (by linarith))
   have hWq : coordW Q 1 1 = (Q : ℂ) ^ (-1 : ℂ) := by simp [coordW]
@@ -230,7 +230,7 @@ theorem principal_replacement_error {Q : ℝ} {A η s : ℂ}
   have hDT : ‖coordD Q η 1 s‖ ≤ Q ^ (-(7 / 8 : ℝ)) :=
     hD.trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hE := principal_marked_error_bounds hQ hA hη hs
-  exact compensated_unit_error_bound _ _ _ _ _ _ _ (Real.rpow_nonneg hQ0.le _)
+  exact compensated_unit_error_bound _ _ _ _ _ _ _
     hVhalf hW hDhalf hq hVT hDT hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
 
@@ -252,9 +252,9 @@ theorem principal_slot_error {Q : ℝ} {A η s : ℂ}
 
 theorem weighted_slot_error {ι : Type*} (S : Finset ι) (w : ι → ℝ) (B : ι → ℂ)
     (δ : ℝ) (hw : ∀ i ∈ S, 0 ≤ w i) (hB : ∀ i ∈ S, ‖B i + 1‖ ≤ δ) :
-    ‖(∑ i ∈ S, (w i : ℂ) * B i) + (∑ i ∈ S, w i : ℝ)‖ ≤
+    ‖(∑ i ∈ S, (w i : ℂ) * B i) + (∑ i ∈ S, w i)‖ ≤
       δ * ∑ i ∈ S, w i := by
-  have hid : (∑ i ∈ S, (w i : ℂ) * B i) + (∑ i ∈ S, w i : ℝ) =
+  have hid : (∑ i ∈ S, (w i : ℂ) * B i) + (∑ i ∈ S, w i) =
       ∑ i ∈ S, (w i : ℂ) * (B i + 1) := by
     simp only [mul_add, mul_one, Finset.sum_add_distrib, Complex.ofReal_sum]
   rw [hid]
@@ -273,7 +273,7 @@ theorem weighted_principal_slot_error {ι : Type*} (S : Finset ι) (w Q : ι →
     (hA : ∀ i ∈ S, ‖A i‖ ≤ 1) (hη : ∀ i ∈ S, ‖η i‖ = 1)
     (hs : 7 / 8 ≤ s.re) :
     ‖(∑ i ∈ S, (w i : ℂ) * principalSlot (Q i) (A i) (η i) s) +
-        (∑ i ∈ S, w i : ℝ)‖ ≤
+        (∑ i ∈ S, w i)‖ ≤
       (1440 * P ^ (-(7 / 8 : ℝ))) * ∑ i ∈ S, w i := by
   apply weighted_slot_error S w _ _ hw
   intro i hi
@@ -289,7 +289,7 @@ theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
   | empty => simp
   | @insert a S ha ih =>
     have haF := hF a (Finset.mem_insert_self a S)
-    have hSF : ∀ i ∈ S, ‖F i - 1‖ ≤ δ := fun i hi => hF i (Finset.mem_insert_of_mem hi)
+    have hSF  := fun i hi => hF i (Finset.mem_insert_of_mem hi)
     have hprod := ih hSF
     have haN : ‖F a‖ ≤ 1 + δ := by
       have h := norm_sub_norm_le (F a) (1 : ℂ)
@@ -302,7 +302,7 @@ theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
       _ ≤ (1 + δ) * ((1 + δ) ^ S.card - 1) + δ := by
         rw [norm_mul]
         exact add_le_add (mul_le_mul haN hprod (norm_nonneg _) (by linarith)) haF
-      _ = _ := by rw [pow_succ]; ring
+      _ = _ := by ring
 
 theorem product_error_linear (n : ℕ) {δ : ℝ} (hδ : 0 ≤ δ) (hδ1 : δ ≤ 1) :
     (1 + δ) ^ n - 1 ≤ n * 2 ^ n * δ := by
@@ -313,14 +313,14 @@ theorem product_error_linear (n : ℕ) {δ : ℝ} (hδ : 0 ≤ δ) (hδ1 : δ �
     have hbase : 0 ≤ (1 + δ) ^ n - 1 := by
       exact sub_nonneg.mpr (one_le_pow₀ (by linarith))
     calc
-      _ = (1 + δ) * ((1 + δ) ^ n - 1) + δ := by rw [pow_succ]; ring
+      _ = (1 + δ) * ((1 + δ) ^ n - 1) + δ := by ring
       _ ≤ 2 * ((n : ℝ) * 2 ^ n * δ) + δ := by
         gcongr
         linarith
       _ ≤ _ := by rw [Nat.cast_succ, pow_succ]; nlinarith
 
 def principalScalar {κ : Type*} (S : Finset κ) (M : κ → ℝ) : ℂ :=
-  (-1 : ℂ) ^ S.card * (∏ i ∈ S, M i : ℝ)
+  (-1 : ℂ) ^ S.card * (∏ i ∈ S, M i)
 
 theorem principalScalar_eq {κ : Type*} (S : Finset κ) (M : κ → ℝ) :
     principalScalar S M = ∏ i ∈ S, (-(M i : ℂ)) := by
@@ -338,7 +338,7 @@ theorem fixed_product_relative_error {κ : Type*} (S : Finset κ)
   rw [principalScalar_eq, ← Finset.prod_div_distrib]
   apply product_error S _ δ hδ
   intro i hi
-  have hMi : (M i : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (hM i hi).ne'
+  have hMi  := Complex.ofReal_ne_zero.mpr (hM i hi).ne'
   have hid : W i / (-(M i : ℂ)) - 1 = -(W i + (M i : ℂ)) / (M i : ℂ) := by
     field_simp
     ring
@@ -371,7 +371,7 @@ theorem principal_geometric_bounds {Q : ℝ} {η s : ℂ}
   have hV : ‖coordV Q (1 / 6)‖ ≤ 1 / 2 := by
     rw [coordV_norm Q hQ0]
     norm_num
-    exact rpow_le_half Q (-1) hQ4 (by norm_num)
+    exact rpow_le_half Q _ hQ4 (by norm_num)
   refine ⟨hV, ?_, ?_⟩
   · rw [principal_W, ← principal_V]; exact hV
   · exact (coordD_norm_le Q hQ0 η 1 s hη (by simp)).trans
@@ -464,7 +464,7 @@ theorem region_marked_error_bounds {Q : ℝ} {A η s w z : ℂ}
   have hQ0 : 0 < Q := by linarith
   have hQ1 : 1 ≤ Q := by linarith
   have hQ4 : 4 ≤ Q := by linarith
-  have hpow (x y : ℝ) (h : x ≤ y) : Q ^ x ≤ Q ^ y :=
+  have hpow (x y : ℝ) (h : x ≤ y)  :=
     Real.rpow_le_rpow_of_exponent_le hQ1 h
   have hV := coordV_norm Q hQ0 z
   have hR := coordR_norm_le Q hQ0 A s z hA
@@ -525,7 +525,7 @@ theorem region_replacement_error {Q : ℝ} {A η s w z : ℂ}
     (coordD_norm_le Q hQ0 η 1 s hη.le (by simp)).trans
       (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hE := region_marked_error_bounds hQ hA hη hs hw hz
-  exact compensated_unit_error_bound _ _ _ _ _ _ _ (Real.rpow_nonneg hQ0.le _)
+  exact compensated_unit_error_bound _ _ _ _ _ _ _
     hg.1 hW hg.2.2 hq hVT hDT hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
 

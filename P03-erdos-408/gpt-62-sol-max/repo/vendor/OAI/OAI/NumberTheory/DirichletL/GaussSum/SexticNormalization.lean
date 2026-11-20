@@ -8,15 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -76,8 +68,6 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
     (by decide : (2 : ℕ) ≠ 0) (by decide : (2 : ℕ) < 6)
   have hχ4 : χ ^ 4 ≠ 1 := canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
     (by decide : (4 : ℕ) ≠ 0) (by decide : (4 : ℕ) < 6)
-  have hχ3 : χ ^ 3 = (quadraticChar (O ⧸ Ideal.span {p})).ringHomComp
-      (Int.castRingHom ℂ) := canonicalSextic_pow_three_quadratic (Ideal.span {p}) hgood
   have hχ6 : χ ^ 6 = 1 := canonicalSextic_pow_six (Ideal.span {p}) hgood
   have hs : s ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℂ) := by
     have hnormO := primary_generator_mul_conj_eq_card
@@ -90,7 +80,7 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
     dsimp [s]
     exact_mod_cast (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp))
   have hmul := JacobiQuadratic.normalized_gauss_sextic_relation
-    χ ψ hchar hψ hχ1 hχ2 hχ4 hχ3 hχ6 s hs hs0
+    χ ψ hchar hψ hχ1 hχ2 hχ4 (canonicalSextic_pow_three_quadratic (Ideal.span {p}) hgood) hχ6 s hs hs0
   have hfour : (4 : O ⧸ Ideal.span {p}) ≠ 0 := by
     have htwo : (2 : O ⧸ Ideal.span {p}) ≠ 0 := Ring.two_ne_zero hchar
     convert pow_ne_zero 2 htwo using 1 ; norm_num
@@ -115,11 +105,6 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
 
 end
 
-section
-
-open EisensteinEmbedding ConcreteTraceCRT IdealGaussCRT
-
-end
 
 section
 
@@ -155,7 +140,7 @@ open EisensteinEmbedding ConcreteTraceCRT
 
 noncomputable def normalizedTraceGauss
     (a : O) (ha : a ≠ 0) (χ : MulChar (O ⧸ Ideal.span {a}) ℂ) : ℂ := by
-  letI : Finite (O ⧸ Ideal.span {a}) := finite_quotient_span ha
+  letI  := finite_quotient_span ha
   letI : Fintype (O ⧸ Ideal.span {a}) := Fintype.ofFinite _
   exact gaussSum χ (eisTraceModChar ShortDraftTrace.breveE
     breveE_period_coordinates a ha) / (‖eisEmbedding a‖ : ℂ)
@@ -164,7 +149,6 @@ end ConcreteBreveE
 
 namespace FixedRayActiveSet
 
-open scoped BigOperators
 
 end FixedRayActiveSet
 
@@ -215,14 +199,13 @@ theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
     simpa only [pow_one] using
       (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
         (by decide : (1 : ℕ) ≠ 0) (by decide : (1 : ℕ) < 6))
-  have hχ6 : χ ^ 6 = 1 := canonicalSextic_pow_six (Ideal.span {p}) hgood
   have horder : orderOf χ = 6 :=
     canonicalSextic_order_six (Ideal.span {p}) hgood hchar
   have hχ5 : χ ^ 5 = χ⁻¹ := by
     apply (inv_eq_of_mul_eq_one_right ?_).symm
     calc
       χ * χ ^ 5 = χ ^ 6 := by group
-      _ = 1 := hχ6
+      _ = 1 := (canonicalSextic_pow_six (Ideal.span {p}) hgood)
   have hprod := gaussSum_mul_gaussSum_pow_orderOf_sub_one hχ1 hψ
   rw [horder, show 6 - 1 = 5 by decide, hχ5] at hprod
   have hs : s ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℂ) := by

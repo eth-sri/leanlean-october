@@ -53,8 +53,8 @@ theorem ramifiedFactor_hasProd (S : Finset (Ideal O)) (hS : SourceExclusions S)
 theorem supported_prime_coprime (P : PrimeIdeal) (hs : Supported P.val) (u : O)
     (hn : ¬P.val∣Ideal.span {u}) : IsCoprime P.val (Ideal.span {u}) := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have he : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
+  have hp  := supported_primeGenerator_prime P hs
+  have he  := span_primaryGenerator_of_supported P.val hs
   have hnot : ¬p∣u := by
     intro hd
     apply hn

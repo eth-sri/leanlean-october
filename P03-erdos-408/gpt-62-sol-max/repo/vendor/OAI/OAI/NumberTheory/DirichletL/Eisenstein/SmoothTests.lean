@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.RowCaps
 
 @[expose] public section
@@ -9,76 +11,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff Manifold
+open scoped Matrix Manifold
 
 instance hyperbolicSpatialChartedSpace : ChartedSpace SpatialCoordinates HyperbolicSpace :=
   hyperbolicSpatialChart.singletonChartedSpace hyperbolicSpatialChart_source
@@ -88,7 +34,6 @@ instance hyperbolicSpatialIsManifold : IsManifold 𝓘(ℝ,SpatialCoordinates) �
 
 lemma kernelLocalLift_source_out (q : KernelQuotient) : q∈(kernelLocalLift q.out).source := by
   have h := kernelQuotient_localHomeomorph.apply_self_mem_localInverseAt_source (x := q.out)
-  change integralOrbitProjection globalKubotaKernel q.out∈(kernelLocalLift q.out).source at h
   rwa [show integralOrbitProjection globalKubotaKernel q.out=q from Quotient.out_eq q] at h
 
 instance kernelSpatialChartedSpace : ChartedSpace SpatialCoordinates KernelQuotient where
@@ -115,8 +60,6 @@ lemma kernelProjection_contMDiff : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(�
   intro w
   rw [contMDiffAt_iff]
   refine ⟨(continuous_integralOrbitProjection globalKubotaKernel).continuousAt,?_⟩
-  have hp : hyperbolicSpatialCoordinates w∈hyperbolicSpatialChart.target :=
-    hyperbolicSpatialChart.map_source (Set.mem_univ _)
   have hq : integralOrbitProjection globalKubotaKernel
       (hyperbolicSpatialChart.symm (hyperbolicSpatialCoordinates w))∈
       (kernelLocalLift (integralOrbitProjection globalKubotaKernel w).out).source := by
@@ -127,7 +70,7 @@ lemma kernelProjection_contMDiff : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(�
   have h : ContDiffWithinAt ℝ ∞
       (kernelCoordinateTransition (integralOrbitProjection globalKubotaKernel w).out) Set.univ
       (hyperbolicSpatialCoordinates w) :=
-    (kernelCoordinateTransition_contDiffAt _ _ hp hq).contDiffWithinAt
+    (kernelCoordinateTransition_contDiffAt _ _ (hyperbolicSpatialChart.map_source (Set.mem_univ _)) hq).contDiffWithinAt
   unfold kernelCoordinateTransition at h
   simpa only [extChartAt_coe,extChartAt_coe_symm,modelWithCornersSelf_coe,
     modelWithCornersSelf_coe_symm,Function.id_comp,Function.comp_id,Set.range_id,
@@ -139,15 +82,14 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal NNReal
+open scoped Manifold ENNReal NNReal
 
 def kernelSmoothTests : Submodule ℂ (KernelQuotient→ℂ) where
   carrier f := ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f ∧ HasCompactSupport f
   zero_mem' := ⟨contMDiff_const,HasCompactSupport.zero⟩
   add_mem' hf hg := ⟨hf.1.add hg.1,hf.2.add hg.2⟩
   smul_mem' c f hf := by
-    have hc : ContDiff ℝ ∞ (fun z : ℂ => c*z) := contDiff_const.mul contDiff_id
-    exact ⟨hc.contMDiff.comp hf.1,hf.2.smul_left⟩
+    exact ⟨(contDiff_const.mul contDiff_id).contMDiff.comp hf.1,hf.2.smul_left⟩
 
 lemma kernelSmoothTests_memLp (f : kernelSmoothTests) :
     MemLp f.1 2 (integralQuotientVolume globalKubotaKernel) :=
@@ -165,7 +107,6 @@ lemma kernelL2_smooth_compact_approx (f : KernelQuotientL2) (ε : ℝ) (hε : 0<
   obtain ⟨g,hgK,hfg,hgc,hgLp⟩ := kernelL2_continuous_compact_approx f
     (ENNReal.ofReal (ε/2)) (by positivity)
   let mass : ℝ≥0∞ := (integralQuotientVolume globalKubotaKernel Set.univ)^((2:ℝ≥0∞).toReal⁻¹)
-  have hm : mass≠(∞:ℝ≥0∞) := ENNReal.rpow_ne_top_of_nonneg (by norm_num) (measure_ne_top _ _)
   let deltaLoss : ℝ := ε/(2*(mass.toReal+1))
   have hδ : 0<deltaLoss := div_pos hε (by positivity)
   obtain ⟨k,hkg,hksupp⟩ := hgc.exists_contMDiff_approx 𝓘(ℝ,SpatialCoordinates) ⊤
@@ -185,7 +126,7 @@ lemma kernelL2_smooth_compact_approx (f : KernelQuotientL2) (ε : ℝ) (hε : 0<
     calc
       _ ≤ mass*ENNReal.ofReal deltaLoss := eLpNorm_le_of_ae_bound (hgc.sub k.contMDiff.continuous).aestronglyMeasurable hb
       _ = ENNReal.ofReal (mass.toReal*deltaLoss) := by
-        rw [ENNReal.ofReal_mul ENNReal.toReal_nonneg,ENNReal.ofReal_toReal hm]
+        rw [ENNReal.ofReal_mul ENNReal.toReal_nonneg,ENNReal.ofReal_toReal (ENNReal.rpow_ne_top_of_nonneg (by norm_num) (measure_ne_top _ _))]
       _ ≤ ENNReal.ofReal (ε/2) := ENNReal.ofReal_le_ofReal hmul
   refine ⟨kt,?_⟩
   have he : (f : KernelQuotient→ℂ)-kt.1=((f : KernelQuotient→ℂ)-g)+(g-(k : KernelQuotient→ℂ)) := by
@@ -219,7 +160,7 @@ lemma kernelSmoothTestsToL2_dense : DenseRange kernelSmoothTestsToL2 := by
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal
+open scoped Manifold ENNReal
 
 lemma hyperbolicSpatialChart_symm_eq {p : SpatialCoordinates}
     (hp : p∈hyperbolicSpatialChart.target) :
@@ -232,7 +173,6 @@ lemma hyperbolicSpatialChart_symm_eq {p : SpatialCoordinates}
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
 namespace InitialMeanSquare
 
 section
@@ -240,40 +180,17 @@ open ActualEisensteinCubic SecondPassArithmetic
 open SecondPassIntegration (elementNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-
-variable (hp : ∀i,p i≠0)
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end
 
 lemma normCharacter_norm_le_one {q : ℕ} (χ : DirichletCharacter ℂ q) (a : O) :
     ‖normCharacter χ a‖≤1 := χ.norm_le_one _
 
 end
-section
 
-open ActualEisensteinCubic SecondPassArithmetic
-open FirstPassCubeLabels (primeProductNorm columnLog)
-open SecondPassIntegration (elementNorm)
-
-section
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-end
-
-end
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open MeasureTheory ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (columnLog)
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 
@@ -281,7 +198,7 @@ theorem descent_ideal_inverse_sum (S : Finset (Ideal O)) (H : ℝ)
     (hS : ∀ I∈S,I≠0) (hH : ∀ I∈S,(Ideal.absNorm I : ℝ)≤H) :
     (∑ I∈S,1/(Ideal.absNorm I : ℝ))≤128*Real.exp 1*(normLogBin H+1 : ℝ) := by
   have hpos (I : Ideal O) (hI : I∈S) : 1≤(Ideal.absNorm I : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hS I hI (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hS I hI)
   let T := Finset.range (normLogBin H+1)
   let bin (j : ℕ) := S.filter (fun I => normLogBin (Ideal.absNorm I)=j)
   have hmap : ∀ I∈S,normLogBin (Ideal.absNorm I : ℝ)∈T := by
@@ -324,13 +241,12 @@ theorem descent_normLogBin_small_power (ε : ℝ) (hε : 0<ε) (H : ℝ) (hH : 1
     _ ≤ H^ε/ε+H^ε := add_le_add le_rfl hp
     _ = _ := by ring
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel squarefreeLabel b0Label j2Label cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
 
 def cubeProductIdeal (x : CubeCoordinates ι) : Ideal O :=
   Ideal.span {primeProduct p x.support x.leftExponent}*
@@ -413,9 +329,8 @@ theorem cubeParityKey_fiber_card (s : Finset (CubeCoordinates ι)) (q : Ideal O 
     (hk : ∀ x∈s,cubeParityKey p x=q) :
     s.card≤(idealDivisors (q.2^2*q.1)).card^3 := by
   let D := idealDivisors (q.2^2*q.1)
-  have hprod0 : q.2^2*q.1≠0 := mul_ne_zero (pow_ne_zero _ hq2) hq1
   let encode (x : s) : Fin 3 → D := fun i => ⟨cubeDivisorKey p x.val i,by
-    apply (mem_idealDivisors hprod0).mpr
+    apply (mem_idealDivisors (mul_ne_zero (pow_ne_zero _ hq2) hq1)).mpr
     have h := cubeDivisorKey_dvd p x.val i
     simpa only [cubeParityKey_product,hk x.val x.property] using h⟩
   have hi : Function.Injective encode := by

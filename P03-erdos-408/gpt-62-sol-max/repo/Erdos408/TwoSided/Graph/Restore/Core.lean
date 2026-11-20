@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.Extraction.Allocation.Groups
 public import Erdos408.TwoSided.Setup
 
@@ -86,9 +87,7 @@ lemma eventually_band_lt_and_le_slot {c : ℝ} (hc : 0 < c) :
       calc T ^ 20 * L ^ (0.46 : ℝ) ≤ 50 ^ 20 * L ^ (0.4 : ℝ) * L ^ (0.46 : ℝ) :=
             mul_le_mul_of_nonneg_right hT20 (by positivity)
         _ ≤ c * L ^ (0.14 : ℝ) * L ^ (0.4 : ℝ) * L ^ (0.46 : ℝ) := by gcongr
-        _ = c * L := by
-            rw [mul_assoc, mul_assoc, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
-            norm_num
+        _ = c * L := by rpow_ring hL0
     rw [Real.rpow_def_of_pos hx0, Real.exp_le_exp, mul_div_assoc', le_div_iff₀ (pow_pos hT0' 20)]
     linarith
 
@@ -97,8 +96,7 @@ primes lie above the bands and below the slots. -/
 theorem eventually_centeredCore_mul_prime (q c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
     (d : ℕ) (hahi : ahi < 1 / 5) (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
           ∀ p ∈ Finset.univ.biUnion P, ∀ n : ℕ,
@@ -113,15 +111,15 @@ theorem eventually_centeredCore_mul_prime (q c₀ C₀ vlo vhi alo ahi : ℝ) (K
     intro i hpb
     unfold band at hpb
     obtain ⟨hpb, -⟩ := mem_filter.1 hpb
-    have h₂ : (p : ℝ) ≤ Real.exp (2 * Real.log x ^ a i) :=
+    have h₂  :=
       (Nat.le_floor_iff (Real.exp_pos _).le).1 (mem_Icc.1 hpb).2
     have hai : Real.log x ^ a i ≤ Real.log x ^ (1 / 5 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le hL (by linarith [(ha.2.1 i).2])
-    have : Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ Real.exp (2 * Real.log x ^ a i) := hp₁.trans h₂
+    have  := hp₁.trans h₂
     rw [Real.exp_le_exp] at this
     linarith
   -- `p` lies below every slot
-  have hpu : ∀ i, (p : ℝ) ≤ x ^ u i := fun i =>
+  have hpu  := fun i =>
     hp₂.trans (hslot.trans (Real.rpow_le_rpow_of_exponent_le hx1.le (hu.1 i)))
   unfold centeredCore markedWeight
   rw [TypeII.slotCount_prime_mul u v Bc hpr hpu]
@@ -133,7 +131,7 @@ lemma coreAdmissible_mul_prime {B₀ x : ℝ} {ι : Type} [Fintype ι] {P : ι �
     ∀ p ∈ Finset.univ.biUnion P, ∀ n, G (p * n) = G n := by
   intro p hp n
   rcases Nat.eq_zero_or_pos n with rfl | hn
-  · rw [mul_zero]
+  · rfl
   obtain ⟨g, -, hpg⟩ := mem_biUnion.1 hp
   have hpr := hprime g p hpg
   rw [hG.1 (p * n), hG.1 n]

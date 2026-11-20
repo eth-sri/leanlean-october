@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Euler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp
 local notation "O" => HeckeFamily.O
@@ -30,7 +30,7 @@ theorem markExclusions_prime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   constructor
   · rintro (h|⟨Q,hQ,he⟩)
     · exact Or.inl h
-    · exact Or.inr ((Subtype.ext he : Q=P) ▸ hQ)
+    aesop
   · rintro (h|h)
     · exact Or.inl h
     · exact Or.inr ⟨P,h,rfl⟩

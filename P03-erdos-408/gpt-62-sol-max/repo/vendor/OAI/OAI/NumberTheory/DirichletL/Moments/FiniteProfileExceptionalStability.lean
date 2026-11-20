@@ -10,11 +10,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedAnnuli
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff FourierTransform
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource
-open EisensteinSchwartzPoisson CenteredMomentLattice
+open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource EisensteinSchwartzPoisson
+open CenteredMomentLattice
 
 def sourcePlain (a b:ℝ) (ha:0<a) (W:𝓢(ℝ,ℂ))
     (hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b) : Plain :=

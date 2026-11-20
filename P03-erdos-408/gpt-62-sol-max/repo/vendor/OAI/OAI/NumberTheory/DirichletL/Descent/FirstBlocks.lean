@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 
@@ -14,8 +15,8 @@ open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstBlockedPhysicalRows (F : Finset ι) (selector : Finset ι → ℂ)
     (C₁ C₂ : Finset ι → ℂ) (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
@@ -64,11 +65,9 @@ theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → �
       apply Finset.sum_congr rfl
       intro V hV
       rw [first_common_source_mode]
-      dsimp only [H]
       ring
     _ = _ := by
       rw [firstCommonColumn_pair]
-      dsimp only [H]
       ring
 
 theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι → ℂ)

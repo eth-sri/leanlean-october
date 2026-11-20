@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeFamily CenteredMomentPrimeSlot

@@ -2,7 +2,8 @@ module
 
 public import Erdos821.S34.AtomProof
 public import Erdos821.S34.CharacterCellBridge
-public import Erdos821.S34.RationalCharacterBridge
+public import Erdos821.P4Rat.RationalFourier
+public import Erdos821.P4Rat.PrimitiveInduction
 public import Erdos821.S34.ComparisonGeometry
 public import Erdos821.S34.MajorPrecision
 public import Erdos821.S34.MinorDyadic
@@ -12,7 +13,7 @@ public import Erdos821.S34.DirichletApproximation
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.Blueprint.Analytic
@@ -35,7 +36,7 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
   have hhExp : 0 < hExp := by dsimp [hExp, comparisonPowerH]; linarith
   have hξExp : 0 < ξExp := by dsimp [ξExp, comparisonPowerXi]; linarith
   have hDExp : 0 < DExp := by dsimp [DExp, comparisonPowerD]; linarith
-  obtain ⟨K, hK, hCharacter⟩ := characterCellTask_proof Blueprint.classical_inputs.harmonic P m q DExp hq hDExp
+  obtain ⟨K, hK, hCharacter⟩ := P4Cell.CharacterCellTask_proof Blueprint.classical_inputs.harmonic P m q DExp hq hDExp
   let threshold := 3 + 60 * integerBilinearConstant + 3 * K + 2 * (1 + 64 * Real.pi)
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   refine ⟨q, hExp, ξExp, hq, hhExp, hξExp, ?_⟩
@@ -92,11 +93,11 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
     let V := dyadScale k
     have hU : L x ^ q ≤ U := by simpa only [hX, U] using hScales G hG a ha X
     have hV : L x ^ q ≤ V := by simpa only [hY, V] using hScales G hG b hb Y
-    have hU1 : 1 ≤ U := hS1.trans hU
-    have hV1 : 1 ≤ V := hS1.trans hV
-    have hUp : 0 < U := hS.trans_le hU
-    have hVp : 0 < V := hS.trans_le hV
-    have hUV : 0 < U * V := mul_pos hUp hVp
+    have hU1  := hS1.trans hU
+    have hV1  := hS1.trans hV
+    have hUp  := hS.trans_le hU
+    have hVp  := hS.trans_le hV
+    have hUV  := mul_pos hUp hVp
     have hZS : 1 ≤ U * V / S := by
       apply (le_div_iff₀ hS).mpr
       have hm := mul_le_mul hU hV hS.le hUp.le
@@ -110,7 +111,7 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
     · have hβZ' : |β| * (U * V) ≤ 2 * S := by
         apply hβZ.trans
         exact (div_le_iff₀ hrp).mpr (by nlinarith)
-      have hm := dyadic_major_comparison rationalFourierTask_proof primitiveInductionTask_proof
+      have hm := dyadic_major_comparison P4Rat.RationalFourierTask_proof P4Rat.PrimitiveInductionTask_proof
         G a b Q r u h ξ U V S θ β ζ δ hr hrQ hWidth.1 hWidth.2 hξ
         hU1 hV1 hS.le hθ hβZ' hδ hmajorPower.1 hMass
         (primeCap a ha) (primeCap b hb) (Gram a ha) (Gram b hb)
@@ -119,7 +120,7 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
         (mul_le_mul_of_nonneg_right hmajorPower.2 (tuple_norm_nonneg G b (dyadRestriction G b k f)))
         (tuple_norm_nonneg G a (dyadRestriction G a j g)))
     · have hrQ' : (Q : ℝ) < r := by exact_mod_cast (Nat.lt_of_not_ge hrQ)
-      have hrUV : (r : ℝ) ≤ U * V := hrS.trans (div_le_self hUV.le hS1)
+      have hrUV  := hrS.trans (div_le_self hUV.le hS1)
       have hlog : Real.log (2 * r) ≤ L x ^ (P.d + 1) := by
         have ht := hLog G hG a b ha hb X Y r hrR
         apply ht
@@ -131,25 +132,22 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
         (fun F => (hFrame G hG b hb Q h hQ hWidth.1 F).2)
       have hcost := minor_power_precision (L x) integerBilinearConstant B κ P.d U V r
         (by linarith) integerBilinearConstant_pos hIntK hB.le hκ hd.le hU hV hrR hrQ' hrS hlog
-      have hcost' : 20 * integerBilinearConstant * L x ^ κ * Real.sqrt (bilinearDecay U V r) ≤ L x ^ (-B) :=
-        hcost.trans (Real.rpow_le_rpow_of_exponent_le hL1 (by linarith))
       exact hm.trans (mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right hcost' (tuple_norm_nonneg G b (dyadRestriction G b k f)))
+        (mul_le_mul_of_nonneg_right (hcost.trans (Real.rpow_le_rpow_of_exponent_le hL1 (by linarith))) (tuple_norm_nonneg G b (dyadRestriction G b k f)))
         (tuple_norm_nonneg G a (dyadRestriction G a j g)))
   have hbound := comparison_bound_from_dyads G a b Q h ξ θ ζ (L x ^ (-B)) f g hE hdyadic
-  have hNA : ((occupiedDyads G a).card : ℝ) ≤ L x ^ (P.d + 1) := hDyads G hG a ha
-  have hNB : ((occupiedDyads G b).card : ℝ) ≤ L x ^ (P.d + 1) := hDyads G hG b hb
+  have hNA  := hDyads G hG a ha
+  have hNB  := hDyads G hG b hb
   have hcard := mul_le_mul hNA hNB (Nat.cast_nonneg _) (Real.rpow_nonneg hLp.le _)
-  have hcost : ((occupiedDyads G a).card : ℝ) * (occupiedDyads G b).card * L x ^ (-B) ≤ L x ^ (-A) := by
-    calc
-      _ ≤ (L x ^ (P.d + 1) * L x ^ (P.d + 1)) * L x ^ (-B) := mul_le_mul_of_nonneg_right hcard hE
-      _ = L x ^ (2 * (P.d + 1) - B) := by
-        rw [← Real.rpow_add hLp, ← Real.rpow_add hLp]
-        congr 1
-        ring
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (by dsimp [B]; linarith)
-  exact hbound.trans (mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_right hcost (tuple_norm_nonneg G b f)) (tuple_norm_nonneg G a g))
+  refine hbound.trans (mul_le_mul_of_nonneg_right
+    (mul_le_mul_of_nonneg_right ?_ (tuple_norm_nonneg G b f)) (tuple_norm_nonneg G a g))
+  calc
+    _ ≤ (L x ^ (P.d + 1) * L x ^ (P.d + 1)) * L x ^ (-B) := mul_le_mul_of_nonneg_right hcard hE
+    _ = L x ^ (2 * (P.d + 1) - B) := by
+      rw [← Real.rpow_add hLp, ← Real.rpow_add hLp]
+      congr 1
+      ring
+    _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (by dsimp [B]; linarith)
 
 end
 end Erdos821.Blueprint.Analytic

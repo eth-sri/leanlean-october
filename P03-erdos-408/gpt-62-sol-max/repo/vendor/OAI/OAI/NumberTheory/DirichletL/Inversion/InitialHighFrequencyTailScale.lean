@@ -14,7 +14,7 @@ open ActualEisensteinCubic ConcreteTraceCRT InverseInitialProfile
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem initial_denominator_bound (C d v n₁ n₂ L : ℝ)
-    (hC : 1≤C) (_hd : 0≤d) (hv : 0≤v) (hn₁ : 0≤n₁) (hn₂ : 0≤n₂)
+    (hC : 1≤C) (hv : 0≤v) (hn₁ : 0≤n₁) (hn₂ : 0≤n₂)
     (hL : 0≤L) (hdL : d≤L) (h₁ : C*v*n₁≤L) (h₂ : C*v*n₂≤L) :
     d*v^2*n₁*n₂≤L^3 := by
   have h₁' : v*n₁≤L := by nlinarith [mul_nonneg (sub_nonneg.mpr hC) (mul_nonneg hv hn₁)]
@@ -29,7 +29,7 @@ theorem initial_scalar_bound (Z D m d v n₁ n₂ : ℝ) (hZ : 0<Z)
   have hroot : 1≤Real.sqrt (n₁*n₂) := by
     rw [Real.one_le_sqrt]
     exact one_le_mul_of_one_le_of_one_le hn₁ hn₂
-  have hden : 1≤d*v*Real.sqrt (n₁*n₂) :=
+  have hden  :=
     one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hd hv) hroot
   rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by positivity)]
   have h := div_le_self (show 0≤Z^(-D)*Z^m by positivity) hden
@@ -56,12 +56,12 @@ theorem physical_frequency_tail_uniform (A : ℕ) :
   refine ⟨s,C₀,hC₀,?_⟩
   intro W₁ W₂ Φ Z D m C d v n₁ n₂ L T Γ B₁ B₂ hZ hC hd hv hn₁ hn₂ hL
     hdL h₁ h₂ hT hΓ hB₁ hB₂ hw₁ hw₂ F a hF ha
-  have hd0 : 0<d := zero_lt_one.trans_le hd
-  have hv0 : 0<v := zero_lt_one.trans_le hv
-  have hn₁0 : 0<n₁ := zero_lt_one.trans_le hn₁
-  have hn₂0 : 0<n₂ := zero_lt_one.trans_le hn₂
-  have hL0 : 0<L := zero_lt_one.trans_le hL
-  have hden := initial_denominator_bound C d v n₁ n₂ L hC hd0.le hv0.le hn₁0.le hn₂0.le hL0.le hdL h₁ h₂
+  have hd0  := zero_lt_one.trans_le hd
+  have hv0  := zero_lt_one.trans_le hv
+  have hn₁0  := zero_lt_one.trans_le hn₁
+  have hn₂0  := zero_lt_one.trans_le hn₂
+  have hL0  := zero_lt_one.trans_le hL
+  have hden := initial_denominator_bound C d v n₁ n₂ L hC hv0.le hn₁0.le hn₂0.le hL0.le hdL h₁ h₂
   have hK : Z^m/L^3≤Z^m/(d*v^2*n₁*n₂) :=
     div_le_div_of_nonneg_left (by positivity) (by positivity) hden
   have hscalar := initial_scalar_bound Z D m d v n₁ n₂ hZ hd hv hn₁ hn₂

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.DualShell
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
@@ -30,8 +30,7 @@ lemma frequencyDyad_bounds (j : ℕ) (h : O) (hh : h ∈ frequencyDyad j) :
     h ≠ 0 ∧ (2 : ℝ)^j / 2 ≤ (Ideal.absNorm (Ideal.span {h}) : ℝ) ∧
       (Ideal.absNorm (Ideal.span {h}) : ℝ) ≤ (2 : ℝ)^j := by
   obtain ⟨hn, hj⟩ := (mem_frequencyDyad h j).mp hh
-  have hnorm : Ideal.absNorm (Ideal.span {h}) ≠ 0 := by
-    exact Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hn)
+  have hnorm := Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hn)
   have hu := Nat.le_pow_clog (by norm_num : 1 < 2) (Ideal.absNorm (Ideal.span {h}))
   have hl := two_pow_clog_le_double _ (Nat.one_le_iff_ne_zero.mpr hnorm)
   rw [hj] at hu hl
@@ -43,7 +42,7 @@ def frequencyDyadicEquiv : {h : O // h ≠ 0} ≃ Σ j : ℕ, frequencyDyad j wh
   toFun h := ⟨Nat.clog 2 (Ideal.absNorm (Ideal.span {h.val})),
     ⟨h.val, (mem_frequencyDyad _ _).mpr ⟨h.property, rfl⟩⟩⟩
   invFun h := ⟨h.2.val, ((mem_frequencyDyad _ _).mp h.2.property).1⟩
-  left_inv h := by cases h; rfl
+  left_inv h := by rfl
   right_inv h := by
     rcases h with ⟨j, h, hh⟩
     have hj := ((mem_frequencyDyad h j).mp hh).2

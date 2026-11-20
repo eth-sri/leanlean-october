@@ -9,82 +9,21 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CompletedUnitRows
 open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open CompletedGauss hiding O
 open CanonicalQuadraticSieve hiding O
 open CanonicalRowCompletion
-local instance : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 def unitRowFamily (Ψ : ActualEisensteinCubic.O→*ℂ) (mask : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ) {F : ℝ}
     (f : idealRange F) (I : Ideal ActualEisensteinCubic.O) : ActualEisensteinCubic.O→*ℂ :=
@@ -92,40 +31,12 @@ def unitRowFamily (Ψ : ActualEisensteinCubic.O→*ℂ) (mask : ActualEisenstein
 
 end CompletedUnitRows
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open CanonicalCoefficientClass (IsBaseRayTwist)
-open RayFourExpansion (RayCharacter)
 
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-
-end
-section
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open CanonicalCoefficientClass (IsBaseRayTwist)
-open RayFourExpansion (RayCharacter)
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-
-end
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 namespace CubicEisenstein
 
@@ -147,7 +58,7 @@ lemma euclideanAxisPath_self (p : EuclideanSpatial) (j : Fin 3) :
 
 lemma euclideanAxisPath_hasDerivAt (p : EuclideanSpatial) (j : Fin 3) (t : ℝ) :
     HasDerivAt (euclideanAxisPath p j) (euclideanCoordinateVector j) t := by
-  have he : euclideanAxisPath p j=(fun t => p+(t-p j)•euclideanCoordinateVector j) :=
+  have he  :=
     funext (euclideanAxisPath_affine p j)
   rw [he]
   simpa only [sub_zero,one_smul,zero_add,Pi.add_apply,id_eq] using!
@@ -168,7 +79,7 @@ lemma euclideanAxisSlice_derivatives (f : EuclideanSpatial→ℂ)
   constructor
   · simpa only [euclideanAxisPath_self] using euclideanAxisSlice_deriv f p j (p j)
       (by simpa only [euclideanAxisPath_self] using (hf p hp).differentiableAt (by simp))
-  · have hc : ContinuousAt (fun t => euclideanAxisPath p j t 2) (p j) :=
+  · have hc  :=
       (by fun_prop : Continuous (fun q : EuclideanSpatial => q 2)).continuousAt.comp
         (euclideanAxisPath_hasDerivAt p j (p j)).continuousAt
     have hpos : 0<euclideanAxisPath p j (p j) 2 := by rw [euclideanAxisPath_self]; exact hp
@@ -204,8 +115,7 @@ lemma positiveEuclideanLaplacian_congr (f g : EuclideanSpatial→ℂ) (p : Eucli
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv Manifold
+open scoped LineDeriv Manifold
 
 namespace CubicEisenstein
 
@@ -239,8 +149,8 @@ lemma kernelDirichletForm_supported_equation_chart (χ : PositiveChartCutoff)
       kernelCoordinateLaplacian f p=A (kernelEuclideanProjection p)) :
     kernelDirichletForm f g=∫q,star (A q)*g.1 q∂integralQuotientVolume globalKubotaKernel := by
   let S := tsupport χ.func
-  have hS : MeasurableSet S := χ.compact.measurableSet
-  have hi : Integrable (fun q => star (A q)*g.1 q) (integralQuotientVolume globalKubotaKernel) :=
+  have hS  := χ.compact.measurableSet
+  have hi  :=
     hA.star.integrable_mul (kernelSmoothTests_memLp g)
   have himg : kernelChartCoreImage χ⊆kernelEuclideanProjection '' S :=
     Set.image_mono (kernelChartCore_subset χ)
@@ -250,7 +160,7 @@ lemma kernelDirichletForm_supported_equation_chart (χ : PositiveChartCutoff)
       symm
       apply setIntegral_eq_integral_of_forall_compl_eq_zero
       intro p hp
-      have hz : kernelCoreLift χ g p=0 := image_eq_zero_of_notMem_tsupport
+      have hz  := image_eq_zero_of_notMem_tsupport
         (fun h => hp (kernelCoreLift_tsupport_outer χ g h))
       rw [hz,mul_zero,zero_div]
     _ = ∫p in S,star (A (kernelEuclideanProjection p))*g.1 (kernelEuclideanProjection p)/(p 2:ℂ)^3 := by
@@ -262,10 +172,10 @@ lemma kernelDirichletForm_supported_equation_chart (χ : PositiveChartCutoff)
       · by_cases hgp : kernelEuclideanProjection p∈tsupport g.1
         · rw [kernelCoreLift_laplacian χ f p hc,heq p (χ.positive hp) hgp]
           rfl
-        · have hz : g.1 (kernelEuclideanProjection p)=0 := image_eq_zero_of_notMem_tsupport hgp
+        · have hz  := image_eq_zero_of_notMem_tsupport hgp
           change star _*g.1 (kernelEuclideanProjection p)/_=star _*g.1 (kernelEuclideanProjection p)/_
           rw [hz,mul_zero,zero_div,mul_zero,zero_div]
-      · have hz : kernelCoreLift χ g p=0 := image_eq_zero_of_notMem_tsupport
+      · have hz  := image_eq_zero_of_notMem_tsupport
           (fun h => hc (kernelCoreLift_tsupport χ hinj g hg h))
         rw [kernelCoreLift_eq_on_outer χ hinj g hg hp] at hz
         change g.1 (kernelEuclideanProjection p)=0 at hz
@@ -279,7 +189,7 @@ lemma kernelDirichletForm_supported_equation_chart (χ : PositiveChartCutoff)
     _ = _ := by
       apply setIntegral_eq_integral_of_forall_compl_eq_zero
       intro q hq
-      have hz : g.1 q=0 := image_eq_zero_of_notMem_tsupport (fun h => hq (himg (hg h)))
+      have hz  := image_eq_zero_of_notMem_tsupport (fun h => hq (himg (hg h)))
       rw [hz,mul_zero]
 
 theorem kernelDirichletForm_supported_equation (f g : kernelSmoothTests)

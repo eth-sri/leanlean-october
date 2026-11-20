@@ -27,9 +27,7 @@ def joinPartial (S T : Finset ι)
     (a : PartialSample S α) (b : PartialSample T α) : PartialSample (S ∪ T) α :=
   fun i => if hi : i.val ∈ S then a ⟨i.val, hi⟩ else
     b ⟨i.val, by
-      rcases Finset.mem_union.mp i.property with hs | ht
-      · exact False.elim (hi hs)
-      · exact ht⟩
+      grind⟩
 
 def partialUnionEquiv (S T : Finset ι) (hST : Disjoint S T) :
     PartialSample (S ∪ T) α ≃ PartialSample S α × PartialSample T α where
@@ -41,9 +39,7 @@ def partialUnionEquiv (S T : Finset ι) (hST : Disjoint S T) :
     by_cases hi : i.val ∈ S
     · simp [splitPartial, joinPartial, hi]
     · have ht : i.val ∈ T := by
-        rcases Finset.mem_union.mp i.property with hs | ht
-        · exact False.elim (hi hs)
-        · exact ht
+        grind
       simp [splitPartial, joinPartial, hi]
   right_inv := by
     intro z
@@ -95,7 +91,7 @@ lemma partialProductWeight_join (w : ∀ i, α i → ℝ)
   rw [← Fintype.prod_subtype_mul_prod_subtype
     (fun i : {i // i ∈ S ∪ T} => i.val ∈ S)]
   rw [hs, ht]
-  simp only [partialProductWeight]
+  rfl
 
 end
 
@@ -109,10 +105,10 @@ noncomputable section
 
 theorem DisjointMarginalTask_proof : DisjointMarginalTask := by
   intro ι _ α _ w S T hsum hST H
-  let U : Finset ι := S ∪ T
+  let U  := S ∪ T
   let e : PartialSample U α ≃ PartialSample S α × PartialSample T α :=
     partialUnionEquiv S T hST
-  let K : PartialSample U α → ℂ := fun c => H (e c).1 (e c).2
+  let K  := fun c => H (e c).1 (e c).2
   have hnorm :
       (∑ y : ProductSample α, (productWeight w y : ℂ) *
         H (fun i => y i.val) (fun i => y i.val)) =
@@ -136,7 +132,7 @@ theorem DisjointMarginalTask_proof : DisjointMarginalTask := by
       have hc : joinPartial S T (e c).1 (e c).2 = c := by
         change (partialUnionEquiv S T hST).invFun
           ((partialUnionEquiv S T hST).toFun c) = c
-        exact (partialUnionEquiv S T hST).left_inv c
+        simp
       rw [hc] at hw
       rw [hw]
 

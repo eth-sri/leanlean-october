@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondMarkedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondWeights
 
@@ -14,9 +15,9 @@ open InverseInitialArithmetic (sourceIdeal sourcePrime sourceIdeal_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hcop in
 omit [DecidableEq ι] in
@@ -156,11 +157,8 @@ theorem actual_second_nonzero_weight_squarefree
   have hJC : IsCoprime J C :=
     (sourceIdeal_coprime_of_disjoint p hcop x.cube.support x.firstCommon hCB.symm).of_isCoprime_of_dvd_left hj
   have hdg : E ∣ G := sourceIdeal_dvd p _ _ hE
-  have hcspan : Ideal.span {((∏ i ∈ x.firstCommon,p i)*jLabel p x.cube.support
-      (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} = C*J :=
-    (Ideal.span_singleton_mul_span_singleton _ _).symm
   obtain ⟨hgmask,hvmask⟩ := secondSignedSourceWeight_nonzero_masks p hp hcop hg Ψ _ _ _ z x.second hE hw
-  rw [hcspan] at hgmask hvmask
+  rw [((Ideal.span_singleton_mul_span_singleton _ _).symm)] at hgmask hvmask
   change IsCoprime G (C*J) at hgmask
   change IsCoprime V (G*(C*J)) at hvmask
   have heJC : IsCoprime E (J*C) := by

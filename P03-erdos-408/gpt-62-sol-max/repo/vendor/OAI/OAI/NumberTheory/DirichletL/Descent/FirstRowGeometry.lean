@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
@@ -17,7 +18,7 @@ local notation "O" => ActualEisensteinCubic.O
 lemma first_whole_frequency_numeric (K P dn an cn a1 a2 sn tn hn L : ℝ)
     (hK : 0<K) (hP : 0<P) (hdn : 0<dn) (han : 0<an)
     (hcn : 0<cn) (ha1 : 0<a1) (ha2 : 0<a2)
-    (hsn : 0<sn) (htn : 0<tn) (_hhn : 0≤hn) (hL : 0<L)
+    (hsn : 0<sn) (htn : 0<tn) (hL : 0<L)
     (hS : a1*cn*sn≤L) (hT : a2*cn*tn≤L)
     (hratio : (K/(dn*(sn*tn*an)))*hn≤P) :
     hn≤L^2*an*dn/((K/P)*a1*a2*cn^2) := by
@@ -35,7 +36,7 @@ lemma first_whole_frequency_numeric (K P dn an cn a1 a2 sn tn hn L : ℝ)
   convert div_le_div_of_nonneg_right hfull hP.le using 1 <;> field_simp
 
 theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     (S N Q : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (hv : ∀ i∈S,0<v₁ i+v₂ i)
     (hNQ : Disjoint N Q) (hNS : Disjoint N S) (hQS : Disjoint Q S)
@@ -72,7 +73,7 @@ theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
     (‖eisEmbedding a2‖^2) (primeProductNorm p N) (primeProductNorm p Q)
     (‖eisEmbedding h‖^2) L hK hP (primeProductNorm_pos p hp _) (primeProductNorm_pos p hp _)
     (primeProductNorm_pos p hp _) (hpos _) (hpos _) (primeProductNorm_pos p hp _)
-    (primeProductNorm_pos p hp _) (sq_nonneg _) hL hcol₁ hcol₂ hratio
+    (primeProductNorm_pos p hp _) hL hcol₁ hcol₂ hratio
   have hcon := first_conductor_norm_bound p hp S v₁ v₂ ε₁ ε₂ hv B hB.le hb₁ hb₂
   have hnum := first_row_numeric_bound (primeProductNorm p active) (‖eisEmbedding e‖^2)
     (‖eisEmbedding j‖^2) (‖eisEmbedding a1‖^2) (‖eisEmbedding a2‖^2)

@@ -1,39 +1,42 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondSummedBlock
-public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.SecondHarmonicBudget
 public import OAI.NumberTheory.DirichletL.Moments.SourceAbsoluteEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 public import OAI.NumberTheory.DirichletL.Moments.SecondMaskedWindow
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalColumns
 public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+
+
+
+
+
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondOriginalChildren
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
+open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalScalar CenteredMomentLogDyadic CenteredMomentSmooth
+open CenteredMomentSupport CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy
+open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentMobiusRegroup
+open CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization
+open RayFourExpansion CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns
+open CenteredMomentSecondWindowBudget CenteredMomentRestrictedSource CenteredMomentFirstSectors
+open CenteredMomentSecondWindowSource CenteredMomentSecondIdealBlockBound
 local notation "O" => ActualEisensteinCubic.O
 
-open Filter
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
+open Filter CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData
+open CenteredMomentCommonRadialPointwise CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass
+open CenteredMomentSourceProfileMass CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def core (s:Input ι) (C:Ideal O) (C0 Z δ E:ℝ) : ℝ :=
   C0*Z^δ*(profileCost s*E)*(s.X₁*s.X₂*∏i,s.P i)/(Ideal.absNorm C:ℝ)

@@ -108,7 +108,7 @@ theorem four_mul_circleDist_le (t : ℝ) : 4 * circleDist t ≤ ‖ephase t - 1�
   set y := t - round t with hy
   have hyt : ephase t = ephase y := by
     rw [hy, sub_eq_add_neg, ephase_add, ← Int.cast_neg, ephase_intCast, mul_one]
-  have hy2 : |y| ≤ 1 / 2 := abs_sub_round t
+  have hy2  := abs_sub_round t
   -- `|e(y) - 1| = 2 |sin(π y)| ≥ 4 |y|`
   have e : ephase y = Complex.exp (Complex.I * ((2 * π * y : ℝ) : ℂ)) := by
     rw [ephase]
@@ -179,8 +179,7 @@ theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
     · intro h hh
       simp only [mem_Icc] at hh ⊢
       omega
-    · intro j _
-      simp
+    · simp
     · intro h hh
       simp only [mem_Icc] at hh
       rw [← ephase_natCast_mul, ← ephase_add]
@@ -201,19 +200,19 @@ theorem norm_sum_ephase_le (A : ℕ) (t : ℝ) :
   split_ifs with h0
   · exact htriv
   · refine le_min htriv ?_
-    have hpos : 0 < circleDist t := lt_of_le_of_ne (circleDist_nonneg t) (Ne.symm h0)
+    have hpos  := lt_of_le_of_ne (circleDist_nonneg t) (Ne.symm h0)
     have h4 := four_mul_circleDist_le t
     have hne : ephase t - 1 ≠ 0 := by
       intro h
       rw [h, norm_zero] at h4
       linarith
-    have hne' : ephase t ≠ 1 := sub_ne_zero.1 hne
+    have hne'  := sub_ne_zero.1 hne
     rw [e, geom_sum_eq hne', norm_mul, norm_ephase, one_mul, norm_div]
     have hnum : ‖ephase t ^ (2 * A + 1) - 1‖ ≤ 2 := by
       refine (norm_sub_le _ _).trans ?_
       rw [norm_pow, norm_ephase, one_pow, norm_one]
       norm_num
-    have hden : 0 < ‖ephase t - 1‖ := norm_pos_iff.2 hne
+    have hden  := norm_pos_iff.2 hne
     calc ‖ephase t ^ (2 * A + 1) - 1‖ / ‖ephase t - 1‖ ≤ 2 / ‖ephase t - 1‖ :=
           div_le_div_of_nonneg_right hnum hden.le
       _ ≤ 2 / (4 * circleDist t) := div_le_div_of_nonneg_left (by norm_num) (by positivity) h4
@@ -279,7 +278,7 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
           rw [hexp]
           refine (norm_sum_le _ _).trans (sum_le_sum fun k _ => (norm_sum_le _ _).trans
             (sum_le_sum fun k' _ => le_of_eq ?_))
-          rw [norm_mul, norm_mul, norm_star]
+          simp
   -- AM–GM and the symmetry of the Gram matrix
   have hamgm : ∑ k ∈ IB, ∑ k' ∈ IB, ‖f k‖ * ‖f k'‖ * ‖G k k'‖ ≤
       ∑ k ∈ IB, ‖f k‖ ^ 2 * ∑ k' ∈ IB, ‖G k k'‖ := by
@@ -324,7 +323,6 @@ theorem kerLe_phaseBox (ϑ : ℝ) (A B : ℕ) :
 theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d ≤ Q)
     (hcop : Int.gcd c d = 1) (happ : |ϑ - c / d| ≤ 1 / (d * Q)) {j : ℤ} (hj : j ≠ 0)
     (hjd : 2 * |j| ≤ d) : 1 / (2 * d) ≤ circleDist (j * ϑ) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   have hQ' : (d : ℝ) ≤ Q := by exact_mod_cast hdQ
   -- `d ∤ j c`
   have hndvd : ¬ (d : ℤ) ∣ j * c := by
@@ -335,7 +333,7 @@ theorem circleDist_mul_ge {ϑ : ℝ} {c : ℤ} {d Q : ℕ} (hd : 0 < d) (hdQ : d
         exact hcop
       exact hc.dvd_of_dvd_mul_right h
     have h2 := Int.le_of_dvd (abs_pos.2 hj) ((dvd_abs _ _).2 h1)
-    have : (1 : ℤ) ≤ |j| := Int.one_le_abs hj
+    have  := Int.one_le_abs hj
     omega
   have h1 := one_div_le_circleDist_div hd hndvd
   have hjr : (2 : ℝ) * |(j : ℝ)| ≤ d := by exact_mod_cast hjd
@@ -426,7 +424,6 @@ private theorem sum_inv_le_one_add_log (n : ℕ) :
 private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0 ≤ n) (T : Finset ℤ)
     (hsep : ∀ m ∈ T, ∀ m' ∈ T, m ≠ m' → 1 / (2 * d) ≤ circleDist ((m - m' : ℤ) * ϑ)) :
     ∑ m ∈ T, dirBound n (m * ϑ) ≤ 2 * n + 4 * d * (1 + Real.log (2 * d)) := by
-  have hd' : (0 : ℝ) < d := by exact_mod_cast hd
   set bucket : ℤ → ℕ := fun m => ⌊4 * d * circleDist (m * ϑ)⌋₊
   have hmaps : ∀ m ∈ T, bucket m ∈ range (2 * d + 1) := by
     intro m _
@@ -457,7 +454,7 @@ private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0
           exact Nat.floor_le (by have := circleDist_nonneg (m * ϑ); positivity)
         have hc : 0 < circleDist (m * ϑ) := by
           by_contra hc
-          have : circleDist (m * ϑ) = 0 := le_antisymm (not_lt.1 hc) (circleDist_nonneg _)
+          have  := le_antisymm (not_lt.1 hc) (circleDist_nonneg _)
           rw [this] at hfl
           linarith
         calc dirBound n (m * ϑ) ≤ 1 / (2 * circleDist (m * ϑ)) := dirBound_le_inv hc.ne'
@@ -484,7 +481,7 @@ private theorem sum_block_le {ϑ : ℝ} {d : ℕ} (hd : 0 < d) {n : ℝ} (hn : 0
     ring
   rw [htail]
   have hlog := sum_inv_le_one_add_log (2 * d)
-  have : bnd 0 = n := by simp [hbnd]
+  have : bnd 0 = n := by rfl
   rw [this]
   push_cast at hlog ⊢
   nlinarith

@@ -16,10 +16,8 @@ namespace Erdos821.S2Core
 open Erdos821.Blueprint.Graph
 
 theorem baselinePrime_le_one (F : FixedData) (n p : ℕ) : baselinePrime F n p ≤ 1 := by
-  have hs : 0 ≤ ∑ i : Fin (n + 1), eta F n i :=
-    Finset.sum_nonneg (fun i _ => (Erdos821.P3Adj.eta_pos F n i).le)
   unfold baselinePrime
-  exact sub_le_self _ (mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg p)) hs)
+  exact sub_le_self _ (mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg p)) (Finset.sum_nonneg (fun i _ => (Erdos821.P3Adj.eta_pos F n i).le)))
 
 theorem bigBaseline_norm_le_one (F : FixedData) (P : PrimeGroups) (n : ℕ)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 ≤ baselinePrime F n p.val) :
@@ -40,7 +38,7 @@ theorem bigBaseline_norm_le_one (F : FixedData) (P : PrimeGroups) (n : ℕ)
         exact hb g p
       · intro p _
         exact baselinePrime_le_one F n p.val
-  simpa only [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg h0] using h1
+  simpa [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg h0] using h1
 
 theorem closedResidueExpression_norm_le_memory_bound
     {F : FixedData} {P : PrimeGroups} {J m : ℕ} (A : Model F P J m)
@@ -57,7 +55,7 @@ theorem closedResidueExpression_norm_le_memory_bound
       rw [hId theta, norm_mul]
       exact (mul_le_mul (bigBaseline_norm_le_one F P n hb) (hMem theta)
         (norm_nonneg _) zero_le_one).trans_eq (one_mul C))
-  simpa only [sub_zero, abs_one, mul_one] using h
+  simpa using h
 
 
 end Erdos821.S2Core

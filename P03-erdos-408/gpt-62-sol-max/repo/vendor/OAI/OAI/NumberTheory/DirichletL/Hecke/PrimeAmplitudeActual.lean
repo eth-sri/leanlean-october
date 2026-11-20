@@ -9,11 +9,10 @@ namespace OAI
 
 noncomputable section
 open Filter Set
-open scoped Topology ContDiff
+open scoped ContDiff
 namespace SevenEighths.HeckePrimeAmplitudeActual
 open HeckeFamily HeckePrimeRay HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)

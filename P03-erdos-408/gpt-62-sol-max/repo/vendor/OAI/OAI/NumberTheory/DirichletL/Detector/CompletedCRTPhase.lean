@@ -13,7 +13,7 @@ open CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma reciprocitySign_star (a b : O) : star (reciprocitySign a b)=reciprocitySign a b := by
-  simp only [reciprocitySign, star_intCast]
+  simp [reciprocitySign, star_intCast]
 
 lemma sexticPair_mul_left (a b c : O) :
     sexticPair (a*b) c = sexticPair a c * sexticPair b c := by

@@ -28,14 +28,14 @@ theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
     by_cases hu : u.val=1
     · simp [g1,g2,g3,mem_rowBand,hu]
     · by_cases hsmall : rowNorm u<L
-      · have hU : ¬U≤rowNorm u := not_le.mpr (hsmall.trans_le hLU)
-        have hL' : ¬L≤rowNorm u := not_le.mpr hsmall
+      · have hU  := not_le.mpr (hsmall.trans_le hLU)
+        have hL'  := not_le.mpr hsmall
         simp [g1,g2,g3,mem_rowBand,hu,hnorm,hsmall,hL',hU]
-      · have hL' : L≤rowNorm u := le_of_not_gt hsmall
+      · have hL'  := le_of_not_gt hsmall
         by_cases hlarge : U≤rowNorm u
-        · have hU : ¬rowNorm u<U := not_lt.mpr hlarge
+        · have hU  := not_lt.mpr hlarge
           simp [g1,g2,g3,mem_rowBand,hu,hnorm,hsmall,hL',hlarge,hU]
-        · have hU : rowNorm u<U := lt_of_not_ge hlarge
+        · have hU  := lt_of_not_ge hlarge
           simp [g1,g2,g3,mem_rowBand,hu,hnorm,hsmall,hL',hlarge,hU]
   have hsum1 : (∑'u,g1 u)=∑u∈rowBand 1 L,f u := by
     rw [tsum_eq_sum (s:=rowBand 1 L) (fun u hu=>Set.indicator_of_notMem hu f)]

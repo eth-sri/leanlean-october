@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceMellinInversion
 
 @[expose] public section
@@ -9,76 +10,14 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CompletedGauss
-open scoped BigOperators Classical ContDiff
 open Finset AddChar MulChar EisensteinEmbedding
 
 section
@@ -86,7 +25,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 lemma nonzeroDualIdeal_norm_pos (I : NonzeroDualIdeal) :
     0<(Ideal.absNorm I.val:ℝ) := by
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr I.property)
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (I.property)
 
 lemma nonzeroDualIdeal_inv_pow_summable (n : ℕ) (hn : 1<n) :
     Summable (fun I : NonzeroDualIdeal => ((Ideal.absNorm I.val:ℝ)^n)⁻¹) := by
@@ -107,7 +46,6 @@ lemma rawDualKernel_inverse_square (scale ρ q : ℝ) (x : ℕ×NonzeroDualIdeal
       (Ideal.absNorm x.2.2.val:ℝ)^3)^2)⁻¹ =
       (scale^2*ρ^6)⁻¹*((q^6)⁻¹)^x.1 *
         (((Ideal.absNorm x.2.1.val:ℝ)^2)⁻¹*((Ideal.absNorm x.2.2.val:ℝ)^6)⁻¹) := by
-  simp only [mul_pow,mul_inv_rev,←pow_mul,←inv_pow]
   ring
 
 theorem rawDualKernelTerm_summable_norm
@@ -121,7 +59,7 @@ theorem rawDualKernelTerm_summable_norm
   obtain ⟨C,hC,hdec⟩:=CubicReflectionKernel.paperKernel_euler_power_decay
     V a b ha hsupp hV 2 0
   have hq6 : 1<q^6 := one_lt_pow₀ hq (by norm_num)
-  have hg : Summable (fun m : ℕ => ((q^6)⁻¹)^m) :=
+  have hg  :=
     summable_geometric_of_lt_one (by positivity) ((inv_lt_one₀ (by positivity)).mpr hq6)
   have hi := nonzeroDualIdeal_inv_pow_summable 2 (by norm_num)
   have hj := nonzeroDualIdeal_inv_pow_summable 6 (by norm_num)
@@ -155,11 +93,6 @@ theorem rawDualKernelTerm_summable_norm
 
 end
 
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
 
 open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
@@ -174,7 +107,6 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
@@ -209,8 +141,7 @@ lemma arithmeticResidueSum_neg_unit (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
       obtain ⟨k,hk⟩:=ramified_arithmetic_support h (-u) n hn he
       apply hd
       refine ⟨k,?_⟩
-      simp only [Units.val_neg] at hk
-      linear_combination -hk
+      simp_all
     rw [hl,hr]
 
 lemma principalResidueTerm_neg (h:Eis) (u:Eisˣ) (n:ℕ) :
@@ -228,7 +159,7 @@ lemma principalArithmeticResidue_neg (h:Eis) :
   let N:=max (ramifiedFrequencyBound (-h)+1) (ramifiedFrequencyBound h+1)
   rw [principalArithmeticResidue_eq_sum (-h) (neg_ne_zero.mpr hh) N (le_max_left _ _),
     principalArithmeticResidue_eq_sum h hh N (le_max_right _ _)]
-  apply congrArg (fun z:ℂ=>z/((9*Real.sqrt 3/2:ℝ):ℂ))
+  apply congrArg (fun z:ℂ=>z/(periodCovolume : ℂ))
   simp_rw [principalResidueTerm_neg]
   exact Fintype.sum_equiv (Equiv.neg Eisˣ)
     (fun u=>∑n∈Finset.range N,principalResidueTerm h (-u) n)

@@ -103,7 +103,7 @@ lemma card_monomialIndex_le (K : ℕ) (CN x : ℝ) :
         rw [card_powerset, card_product, card_range]
         refine Nat.pow_le_pow_right (by norm_num) (Nat.mul_le_mul_right _ ?_)
         simpa using card_le_card (mem_powerset.1 hU)
-    _ = _ := by rw [sum_const, card_powerset, card_range, smul_eq_mul]
+    _ = _ := by simp
 
 /-- With `0 ≤ c₁, c_w ≤ 1`, the coefficients are at most `1`. -/
 lemma abs_expansionCoeff_le {c₁ cw : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1) (hcw : 0 ≤ cw)
@@ -131,7 +131,6 @@ theorem abs_sum_expansion_le {c₁ cw c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hc₁ 
   rw [abs_mul, abs_mul, abs_of_nonneg hx]
   have h1 := abs_expansionCoeff_le hc₁ hc₁' hcw hcw' i m
   have h2 := hF i hi m hm
-  have hR : 0 ≤ R := (abs_nonneg _).trans h2
   calc |expansionCoeff c₁ cw i m| * x * |F i m| ≤ 1 * x * R := by gcongr
     _ = x * R := by ring
 

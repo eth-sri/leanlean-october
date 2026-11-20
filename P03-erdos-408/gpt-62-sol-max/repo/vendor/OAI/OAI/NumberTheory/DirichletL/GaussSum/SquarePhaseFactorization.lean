@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.GaussSum.CubicTrace
 public import OAI.NumberTheory.DirichletL.Fourier.PositiveLogProfiles
 
@@ -10,66 +11,10 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace ActualEisensteinCubic
 
@@ -82,7 +27,7 @@ theorem primary_associated_eq (x y : O) (hxy : Associated x y)
       ring
     rw [heq]
     exact dvd_sub hy (dvd_mul_of_dvd_left hx _)
-  have huone : (u : O) = 1 := A3_primary_unit_eq_one _ u.isUnit huprimary
+  have huone  := A3_primary_unit_eq_one _ u.isUnit huprimary
   simpa only [huone, mul_one] using hu
 
 theorem primary_multiset_prod (s : Multiset O)
@@ -102,7 +47,7 @@ theorem primary_maximal_divisor_good (t : O) (ht : lambda ^ 2 ∣ t - 1)
   intro hlam
   have hlam2 : lambda ^ 2 ∈ P := by
     simpa only [pow_two] using P.mul_mem_left lambda hlam
-  have hsub : t - 1 ∈ P := Ideal.mem_of_dvd P ht hlam2
+  have hsub  := Ideal.mem_of_dvd P ht hlam2
   have hone : (1 : O) ∈ P := by simpa using P.sub_mem htP hsub
   exact (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal))
     ((Ideal.eq_top_iff_one _).mpr hone)
@@ -116,7 +61,7 @@ theorem exists_primary_prime_factorization (t : O) (ht0 : t ≠ 0)
   have hfgood : ∀ r ∈ f, lambda ∉ (Ideal.span {r} : Ideal O) := by
     intro r hr
     have hp := hf r hr
-    let : (Ideal.span {r} : Ideal O).IsMaximal :=
+    let  :=
       PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
     apply primary_maximal_divisor_good t ht
     exact Ideal.mem_span_singleton.mpr ((Multiset.dvd_prod hr).trans hft.dvd)
@@ -127,11 +72,11 @@ theorem exists_primary_prime_factorization (t : O) (ht0 : t ≠ 0)
     | empty => exact ⟨0, Associated.refl _, by simp⟩
     | @cons a f ih =>
       have ha := hf a (Multiset.mem_cons_self _ _)
-      let : (Ideal.span {a} : Ideal O).IsMaximal :=
+      let  :=
         PrincipalIdealRing.isMaximal_of_irreducible ha.irreducible
       obtain ⟨r, hrspan, hrprimary, _⟩ := cubicJacobi_exists_primary_generator
         (Ideal.span {a}) (hfgood a (Multiset.mem_cons_self _ _))
-      have har : Associated a r := Ideal.span_singleton_eq_span_singleton.mp hrspan
+      have har  := Ideal.span_singleton_eq_span_singleton.mp hrspan
       obtain ⟨s, hsf, hs⟩ := ih
         (fun r hr => hf r (Multiset.mem_cons_of_mem hr))
         (fun r hr => hfgood r (Multiset.mem_cons_of_mem hr))
@@ -158,7 +103,6 @@ theorem maximal_eq_or_eq_of_same_residue_char
     (hRP : ringChar (O ⧸ R) = ringChar (O ⧸ P)) : R = P ∨ R = Q := by
   classical
   let : Field (O ⧸ P) := Ideal.Quotient.field P
-  let : Fintype (O ⧸ P) := Fintype.ofFinite _
   obtain ⟨a, b, _, _, _, _, hcover⟩ := rational_prime_ideal_cover
     (ringChar (O ⧸ P)) (CharP.char_is_prime (O ⧸ P) _)
   have hp := hcover P inferInstance (residue_char_mem P)
@@ -201,8 +145,7 @@ theorem prime_generator_not_mem_of_ne (P Q : Ideal O)
     (q : O) (hQ : Q = Ideal.span {q}) : q ∉ P := by
   intro hq
   have hle : Q ≤ P := by
-    rw [hQ]
-    exact (Ideal.span_singleton_le_iff_mem _).mpr hq
+    simp_all
   exact hne (Ideal.IsMaximal.eq_of_le (inferInstance : Q.IsMaximal)
     (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal)) hle).symm
 
@@ -216,8 +159,8 @@ theorem cubic_reciprocity_equal_residue_char
       cubicChar Q hQgood (Ideal.Quotient.mk Q p) := by
   classical
   let t : O := -(p + q)
-  have hpP : p ∈ P := by rw [hP]; exact Ideal.subset_span (by simp)
-  have hqQ : q ∈ Q := by rw [hQ]; exact Ideal.subset_span (by simp)
+  have hpP : p ∈ P := by rw [hP]; simp
+  have hqQ : q ∈ Q := by rw [hQ]; simp
   have hqP : q ∉ P := prime_generator_not_mem_of_ne P Q hne q hQ
   have hpQ : p ∉ Q := prime_generator_not_mem_of_ne Q P hne.symm p hP
   have htP : t ∉ P := by
@@ -235,10 +178,9 @@ theorem cubic_reciprocity_equal_residue_char
       cubicChar P hPgood (Ideal.Quotient.mk P r) =
       cubicChar Q hQgood (Ideal.Quotient.mk Q r) := by
     intro r hr
-    let R : Ideal O := Ideal.span {r}
+    let R  := Ideal.span {r}
     let : R.IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible (hs r hr).1.irreducible
-    have hrR : r ∈ R := Ideal.subset_span (by simp)
-    have htR : t ∈ R := Ideal.mem_span_singleton.mpr (hst ▸ Multiset.dvd_prod hr)
+    have htR  := Ideal.mem_span_singleton.mpr (hst ▸ Multiset.dvd_prod hr)
     have hRgood : lambda ∉ R := primary_maximal_divisor_good t
       (neg_add_primary p q hpprimary hqprimary) R htR
     have hRP := prime_divisor_residue_char_ne P Q R hne hchar t htP htQ htR
@@ -250,7 +192,7 @@ theorem cubic_reciprocity_equal_residue_char
     have hsum : Ideal.Quotient.mk R p + Ideal.Quotient.mk R q = 0 := by
       have hz := Ideal.Quotient.eq_zero_iff_mem.mpr htR
       simpa only [t, map_neg, map_add, neg_eq_zero] using hz
-    have heq : Ideal.Quotient.mk R p = -Ideal.Quotient.mk R q := eq_neg_of_add_eq_zero_left hsum
+    have heq  := eq_neg_of_add_eq_zero_left hsum
     rw [heq, ← neg_one_mul (Ideal.Quotient.mk R q), map_mul,
       A3_cubicChar_neg_one, one_mul]
   have hmul : ∀ f : Multiset O,
@@ -268,8 +210,8 @@ theorem cubic_reciprocity_equal_residue_char
         (fun x hx => hf x (Multiset.mem_cons_of_mem hx))]
   have htval := hmul s hlocal
   rw [hst] at htval
-  have hpzero : Ideal.Quotient.mk P p = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr hpP
-  have hqzero : Ideal.Quotient.mk Q q = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr hqQ
+  have hpzero  := Ideal.Quotient.eq_zero_iff_mem.mpr hpP
+  have hqzero  := Ideal.Quotient.eq_zero_iff_mem.mpr hqQ
   simp only [t, map_neg, map_add, hpzero, hqzero, zero_add, add_zero] at htval
   rw [← neg_one_mul (Ideal.Quotient.mk P q), map_mul, A3_cubicChar_neg_one, one_mul,
     ← neg_one_mul (Ideal.Quotient.mk Q p), map_mul, A3_cubicChar_neg_one, one_mul] at htval
@@ -283,8 +225,8 @@ theorem cubic_reciprocity_primary
     cubicChar P hPgood (Ideal.Quotient.mk P q) =
       cubicChar Q hQgood (Ideal.Quotient.mk Q p) := by
   by_cases hPQ : P = Q
-  · have hqP : q ∈ P := by rw [hPQ, hQ]; exact Ideal.subset_span (by simp)
-    have hpQ : p ∈ Q := by rw [← hPQ, hP]; exact Ideal.subset_span (by simp)
+  · have hqP : q ∈ P := by rw [hPQ, hQ]; simp
+    have hpQ : p ∈ Q := by simp_all
     rw [Ideal.Quotient.eq_zero_iff_mem.mpr hqP,
       Ideal.Quotient.eq_zero_iff_mem.mpr hpQ, MulChar.map_zero, MulChar.map_zero]
   · by_cases hchar : ringChar (O ⧸ Q) = ringChar (O ⧸ P)
@@ -315,7 +257,7 @@ def cubicTwoIdeal : Ideal O := Ideal.span {(-2 : O)}
 instance cubicTwoIdeal_isMaximal : cubicTwoIdeal.IsMaximal := by
   rcases rational_prime_factor_cases 2 Nat.prime_two with hm |
       ⟨a, b, _, _, _, ha, _, _, _⟩
-  · simpa only [cubicTwoIdeal, Ideal.span_singleton_neg, Nat.cast_ofNat] using hm
+  · simpa [cubicTwoIdeal, Ideal.span_singleton_neg, Nat.cast_ofNat] using hm
   · have hin : (Ideal.span {a} : Ideal O) ∈ {I : Ideal O | Ideal.absNorm I = 2} := by
       change Ideal.absNorm (Ideal.span {a}) = 2
       rwa [← qNat_eq_absNorm_span]
@@ -327,11 +269,10 @@ theorem cubicTwoIdeal_good : lambda ∉ cubicTwoIdeal := by
   exact Ideal.subset_span (by simp)
 
 theorem cubicTwoIdeal_residue_char : ringChar (O ⧸ cubicTwoIdeal) = 2 := by
-  let : Field (O ⧸ cubicTwoIdeal) := Ideal.Quotient.field cubicTwoIdeal
-  let : Fintype (O ⧸ cubicTwoIdeal) := Fintype.ofFinite _
+  let  := Ideal.Quotient.field cubicTwoIdeal
   have hmem : (2 : O) ∈ cubicTwoIdeal := by
     rw [cubicTwoIdeal, Ideal.span_singleton_neg]
-    exact Ideal.subset_span (by simp)
+    simp
   have hz : (2 : O ⧸ cubicTwoIdeal) = 0 := by
     simpa only [map_ofNat] using Ideal.Quotient.eq_zero_iff_mem.mpr hmem
   exact (Nat.prime_dvd_prime_iff_eq (CharP.char_is_prime (O ⧸ cubicTwoIdeal) _)
@@ -368,7 +309,6 @@ theorem canonicalSextic_four_prod_eq_fixed_two
 
 end ActualEisensteinCubic
 
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 
@@ -415,15 +355,15 @@ open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoo
 
 theorem canonicalProductGauss_three_eq_quadraticGamma
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hgood : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) :
     canonicalProductGauss p hp hcop hgood (fun _ => 3) =
       quadraticGammaO (∏ i, p i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)) := by
   let c := ∏ i, p i
   have hc : c ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+  let  := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   let (i : ι) : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
   let (i : ι) : Field (O ⧸ Ideal.span {p i}) := Ideal.Quotient.field _
@@ -449,7 +389,7 @@ theorem I_zpow_eq_of_mod_four {a b : ℤ} (h : (a : ZMod 4) = b) :
 theorem fourTerms_eq_of_mod_four {a b c d : ℤ}
     (ha : (a : ZMod 4) = c) (hb : (b : ZMod 4) = d) :
     breveGaussianFourTerms a b = breveGaussianFourTerms c d := by
-  have hn : ((-b : ℤ) : ZMod 4) = (-d : ℤ) := by simpa using congrArg Neg.neg hb
+  have hn : ((-b : ℤ) : ZMod 4) = (-d : ℤ) := by simp_all
   have hs : ((b-a : ℤ) : ZMod 4) = (d-c : ℤ) := by
     push_cast
     rw [ha, hb]
@@ -463,23 +403,22 @@ theorem quadraticGammaO_eq_rayValue (c : O) (hc : c ≠ 0) :
     quadraticGammaO c hc = quadraticRayValue (residue c) := by
   have h := quadraticGammaO_eq_fourTerms (coords c).1 (coords c).2 (by rwa [eval_coords])
   have h' : quadraticGammaO c hc = breveGaussianFourTerms (coords c).1 (coords c).2 := by
-    simpa only [eval_coords] using h
+    simpa [eval_coords] using h
   rw [h']
   unfold quadraticRayValue residue
   exact fourTerms_eq_of_mod_four (by simp) (by simp)
 
 theorem canonicalProductGauss_three_eq_rayValue
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hgood : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) :
     canonicalProductGauss p hp hcop hgood (fun _ => 3) =
       quadraticRayValue (residue (∏ i, p i)) := by
   rw [canonicalProductGauss_three_eq_quadraticGamma p hp hcop hgood hchar,
     quadraticGammaO_eq_rayValue]
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
 
 theorem fixed_two_mk_eq_residue_lift (c : O) :
     Ideal.Quotient.mk cubicTwoIdeal c =
@@ -526,9 +465,9 @@ def fixedGQuotientValue (r : O ⧸ Ideal.span {(4 : O)}) : ℂ :=
 
 theorem canonicalProductG_eq_fixedGValue
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hgood : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
     canonicalProductG p hp hcop hgood = fixedGValue (residue (∏ i, p i)) := by
@@ -541,9 +480,9 @@ theorem canonicalProductG_eq_fixedGValue
 
 theorem canonicalProductG_eq_fixed_quotient
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hgood : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
     canonicalProductG p hp hcop hgood =

@@ -119,9 +119,7 @@ theorem exists_phasedGhost_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ :
 one has norm at most `L^{C_e}` for the chain measure, uniformly in the root box. -/
 theorem exists_phasedEdge_normLe {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) (hg : 0 < g) :
-    ∃ Ce : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∃ Ce : ℝ, ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ ψ : Fin K → Option ℕ → ℂ, (∀ i o, ‖ψ i o‖ ≤ 1) →
         NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
@@ -144,9 +142,7 @@ chain measure, uniformly in the root box. -/
 theorem eventually_chainEdge_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
     (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
         NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
           (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
@@ -159,9 +155,7 @@ open scoped Classical in
 rank `r` is at most `L^{C₁(N+1)} (C₁ exp(-L^{α₋}))^r`. -/
 theorem exists_realized_history_le {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) :
-    ∃ C₁ : ℝ, ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∃ C₁ : ℝ, ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ 𝒞 ∈ blockSystems (BirthAddr (K := K) x B N),
         ∑ s, chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s *

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrincipalDifference
 
 @[expose] public section
@@ -9,72 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -82,7 +28,7 @@ theorem column_sqrt_ratio_bounds (N n : ℝ) (hN : 0 < N) (hn : N / 2 ≤ n ∧ 
     1 / 4 ≤ Real.sqrt (n / N) ∧ Real.sqrt (n / N) ≤ 2 := by
   have hq0 : 0 ≤ n / N := div_nonneg (by linarith) hN.le
   have hq1 : (1 / 2 : ℝ) ≤ n / N := (le_div_iff₀ hN).mpr (by linarith)
-  have hq2 : n / N ≤ 1 := (div_le_one hN).mpr hn.2
+  have hq2  := (div_le_one hN).mpr hn.2
   have hs := Real.sq_sqrt hq0
   have hp := Real.sqrt_nonneg (n / N)
   constructor <;> nlinarith
@@ -110,8 +56,8 @@ theorem dual_middle_argument (M B b N i j F D₁ d D₂ e q : ℝ)
   have hb0 : 0 < b := by linarith
   have hi0 : 0 < i := by linarith
   have hj0 : 0 < j := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd.1
-  have he0 : 0 < e := hD₂.trans_le he.1
+  have hd0  := hD₁.trans_le hd.1
+  have he0  := hD₂.trans_le he.1
   have hr : 0 < middleRatio B b D₁ d D₂ e := by
     have hh := middleRatio_bounds B b D₁ d D₂ e hB hb hD₁ hd hD₂ he
     linarith
@@ -136,9 +82,9 @@ theorem actual_dual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
         (_hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
         (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
         (_hr : Function.Injective rows) (_hl : Function.Injective left) (_hri : Function.Injective right)
-        (_hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
-        (_hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-        (_hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+        (_hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+        (_hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+        (_hright : OAI.IdealFamilyBand Admissible right (N / 2) N)
         (a : n → ℂ) (b : p → ℂ) (h : O), h ≠ 0 →
         (1 + N * Real.sqrt (F / (M * B)) * ‖eisEmbedding h‖ ^ 2 / (D₁ * D₂)) ^ A *
           (∑ D : S, ∑ E : T, ∑ i, ‖∑ j, ∑ k,
@@ -159,13 +105,13 @@ theorem actual_dual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hh)))) (mul_pos hD₁0 hD₂0)
   let x : S → T → m → ℝ := fun D E i => Real.log
     (middleRatio B (Ideal.absNorm (rows i)) D₁ (Ideal.absNorm D.val) D₂ (Ideal.absNorm E.val))
-  let y : n → ℝ := fun j => Real.log (Real.sqrt ((Ideal.absNorm (left j) : ℝ) / N))
-  let z : p → ℝ := fun k => Real.log (Real.sqrt ((Ideal.absNorm (right k) : ℝ) / N))
-  have hx (D : S) (E : T) (i : m) : |x D E i| ≤ 4 :=
+  let y  := fun j => Real.log (Real.sqrt ((Ideal.absNorm (left j) : ℝ) / N))
+  let z  := fun k => Real.log (Real.sqrt ((Ideal.absNorm (right k) : ℝ) / N))
+  have hx (D : S) (E : T) (i : m)  :=
     middleRatio_log_bound _ (middleRatio_bounds _ _ _ _ _ _ hB0 (hrows i).2 hD₁0
       (hS D.val D.property) hD₂0 (hT E.val E.property))
-  have hy (j : n) : |y j| ≤ 4 := middleRatio_log_bound _ (column_sqrt_ratio_bounds N _ hN0 (hleft j).2)
-  have hz (k : p) : |z k| ≤ 4 := middleRatio_log_bound _ (column_sqrt_ratio_bounds N _ hN0 (hright k).2)
+  have hy (j : n)  := middleRatio_log_bound _ (column_sqrt_ratio_bounds N _ hN0 (hleft j).2)
+  have hz (k : p)  := middleRatio_log_bound _ (column_sqrt_ratio_bounds N _ hN0 (hright k).2)
   have he := hb R hR ε hε S T D₁ D₂ B N hD₁ hD₂ hN hS hT rows left right hr hl hri
     (fun i => ⟨(hrows i).1, (hrows i).2.2⟩) (fun j => ⟨(hleft j).1, (hleft j).2.2⟩)
     (fun k => ⟨(hright k).1, (hright k).2.2⟩) a b x y z hx hy hz
@@ -182,8 +128,8 @@ theorem principal_middle_prefactor_bound (M B b D₁ d D₂ e : ℝ)
     (hD₁ : 0 < D₁) (hd : D₁ ≤ d) (hD₂ : 0 < D₂) (he : D₂ ≤ e) :
     Real.sqrt (M / b) / (d * e) ≤ 2 * Real.sqrt (M / B) / (D₁ * D₂) := by
   have hb0 : 0 < b := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd
-  have he0 : 0 < e := hD₂.trans_le he
+  have hd0  := hD₁.trans_le hd
+  have he0  := hD₂.trans_le he
   have hq : M / b ≤ 4 * (M / B) := by
     calc
       _ ≤ (4 * M) / B := (div_le_div_iff₀ hb0 hB).mpr (by nlinarith [mul_nonneg hM.le (show 0 ≤ 4 * b - B by linarith)])
@@ -239,25 +185,27 @@ variable (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
   (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
   (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
   (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-  (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+  (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
   (a : n → ℂ) (b : p → ℂ) (h : O) (hh : h ≠ 0)
 
 include hD₁ hD₂ hB hN hM hS hT hr hl hri hrows hh
 
 end CanonicalQuadraticSieve
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
 lemma abs_le_inv_of_mul_sq_le_one {v t : ℝ} (hv : 0<v) (h : v^2*t^2≤1) :
     |t|≤1/v := by
   apply (le_div_iff₀ hv).mpr
-  have he : |v*t|≤1 := (sq_le_one_iff_abs_le_one _).mp (by simpa only [mul_pow] using h)
+  have he : |v*t|≤1 := (sq_le_one_iff_abs_le_one _).mp (by simpa [mul_pow] using h)
   simpa only [abs_mul,abs_of_pos hv,mul_comm] using he
 
-lemma heightLog_first_bounds (A B C D x y v : ℝ)
+section
+
+variable (A B C D x y v : ℝ)
+
+lemma heightLog_first_bounds
     (hrel : A*D=B^2+C^2) (hv : 0<v)
     (hq : quadraticHeightDenominator A B C D x y v≠0) :
     |heightLogDx A B C D x y v|≤1/v ∧
@@ -271,7 +219,7 @@ lemma heightLog_first_bounds (A B C D x y v : ℝ)
     abs_le_inv_of_mul_sq_le_one hv (by nlinarith),
     abs_le_inv_of_mul_sq_le_one hv (by nlinarith)⟩
 
-lemma heightLog_second_bounds (A B C D x y v : ℝ)
+lemma heightLog_second_bounds
     (hrel : A*D=B^2+C^2) (hv : 0<v)
     (hA : 0≤A) (hq : 0<quadraticHeightDenominator A B C D x y v)
     (hAv : A*v^2≤quadraticHeightDenominator A B C D x y v) :
@@ -280,14 +228,12 @@ lemma heightLog_second_bounds (A B C D x y v : ℝ)
     |heightLogDvv A B C D x y v|≤7/v^2 := by
   let q := quadraticHeightDenominator A B C D x y v
   let r := v^2*A/q
-  have hr0 : 0≤r := div_nonneg (mul_nonneg (sq_nonneg v) hA) hq.le
-  have hr1 : r≤1 := (div_le_one hq).mpr (by simpa only [mul_comm] using hAv)
+  have hr0  := div_nonneg (mul_nonneg (sq_nonneg v) hA) hq.le
+  have hr1 : r≤1 := (div_le_one hq).mpr (by simpa [mul_comm] using hAv)
   have he := heightLog_eikonal A B C D x y v hrel hv.ne' hq.ne'
   have hx := mul_nonneg (sq_nonneg v) (sq_nonneg (heightLogDx A B C D x y v))
   have hy := mul_nonneg (sq_nonneg v) (sq_nonneg (heightLogDy A B C D x y v))
   have hz := mul_nonneg (sq_nonneg v) (sq_nonneg (heightLogDv A B C D x y v))
-  have hx1 : v^2*(heightLogDx A B C D x y v)^2≤1 := by nlinarith
-  have hy1 : v^2*(heightLogDy A B C D x y v)^2≤1 := by nlinarith
   have hxx : v^2*heightLogDxx A B C D x y v =
       v^2*(heightLogDx A B C D x y v)^2-2*r := by
     dsimp [heightLogDxx,heightLogDx,r,q]
@@ -309,6 +255,8 @@ lemma heightLog_second_bounds (A B C D x y v : ℝ)
     hconv _ (abs_le.mpr ⟨?_,?_⟩)⟩
   all_goals nlinarith [sq_nonneg r,mul_nonneg hr0 (sub_nonneg.mpr hr1)]
 
+end
+
 lemma actual_quadraticHeight_nonneg (u : Fin 2 → ℂ) (x y v : ℝ) :
     Complex.normSq (u 0)*v^2 ≤
       quadraticHeightDenominator (Complex.normSq (u 0)) ((u 0*star (u 1)).re)
@@ -319,7 +267,7 @@ lemma actual_quadraticHeight_nonneg (u : Fin 2 → ℂ) (x y v : ℝ) :
   exact le_add_of_nonneg_left (sq_nonneg _)
 
 open Filter
-open scoped BigOperators Classical Topology Matrix
+open scoped Matrix
 
 abbrev SpatialCoordinates := Fin 3 → ℝ
 
@@ -335,7 +283,11 @@ def spatialLogDD (A B C D : ℝ) (p : SpatialCoordinates) : Fin 3 → ℝ :=
     heightLogDyy A B C D (p 0) (p 1) (p 2),
     heightLogDvv A B C D (p 0) (p 1) (p 2)]
 
-lemma spatial_axis_hasDerivAt (s : ℂ) (A B C D : ℝ) (p : SpatialCoordinates) (j : Fin 3)
+section
+
+variable (s : ℂ) (A B C D : ℝ) (p : SpatialCoordinates) (j : Fin 3)
+
+lemma spatial_axis_hasDerivAt
     (hv : p 2≠0) (hq : quadraticHeightDenominator A B C D (p 0) (p 1) (p 2)≠0) :
     HasDerivAt (axisSlice (fun q => spatialHeightPower s A B C D (q 0) (q 1) (q 2)) p j)
       (spatialHeightPower s A B C D (p 0) (p 1) (p 2)*s*(spatialLogD A B C D p j:ℂ)) (p j) := by
@@ -349,9 +301,9 @@ lemma spatial_axis_hasDerivAt (s : ℂ) (A B C D : ℝ) (p : SpatialCoordinates)
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,heightLogDy] using h
   · have h := hasDerivAt_logRatioPower s (hasDerivAt_id (p 2))
       (quadraticHeightDenominator_hasDerivAt_v A B C D (p 0) (p 1) (p 2)) hv hq
-    simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,heightLogDv] using h
+    assumption
 
-lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordinates) (j : Fin 3)
+lemma spatial_axis_hasDerivAt_deriv
     (hv : p 2≠0) (hq : quadraticHeightDenominator A B C D (p 0) (p 1) (p 2)≠0) :
     HasDerivAt (deriv (axisSlice (fun q => spatialHeightPower s A B C D (q 0) (q 1) (q 2)) p j))
       (spatialHeightPower s A B C D (p 0) (p 1) (p 2)*
@@ -386,6 +338,8 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDv,heightLogDvv,div_eq_mul_inv] using h
 
+end
+
 def rowSmoothPower (s : ℂ) (u : Fin 2 → ℂ) (p : SpatialCoordinates) : ℂ :=
   spatialHeightPower s (Complex.normSq (u 0)) ((u 0*star (u 1)).re)
     (-(u 0*star (u 1)).im) (Complex.normSq (u 1)) (p 0) (p 1) (p 2)
@@ -398,13 +352,17 @@ def rowLogDD (u : Fin 2 → ℂ) (p : SpatialCoordinates) (j : Fin 3) : ℝ :=
   spatialLogDD (Complex.normSq (u 0)) ((u 0*star (u 1)).re)
     (-(u 0*star (u 1)).im) (Complex.normSq (u 1)) p j
 
-lemma row_denominator_pos (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) :
+section
+
+variable (u : Fin 2 → ℂ)
+
+lemma row_denominator_pos (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) :
     0 < quadraticHeightDenominator (Complex.normSq (u 0)) ((u 0*star (u 1)).re)
       (-(u 0*star (u 1)).im) (Complex.normSq (u 1)) (p 0) (p 1) (p 2) := by
   rw [← heightDenominator_eq_quadratic]
   exact heightDenominator_pos _ _ hv u hu
 
-lemma rowLogD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+lemma rowLogD_bound (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     |rowLogD u p j| ≤ 1/(p 2) := by
   have h := heightLog_first_bounds _ _ _ _ (p 0) (p 1) (p 2)
     (complex_row_quadratic_relation (u 0) (u 1)) hv (row_denominator_pos u hu p hv).ne'
@@ -413,7 +371,7 @@ lemma rowLogD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (h
   · exact h.2.1
   · exact h.2.2
 
-lemma rowLogDD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+lemma rowLogDD_bound (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     |rowLogDD u p j| ≤ 7/(p 2)^2 := by
   have h := heightLog_second_bounds _ _ _ _ (p 0) (p 1) (p 2)
     (complex_row_quadratic_relation (u 0) (u 1)) hv (Complex.normSq_nonneg _)
@@ -423,22 +381,28 @@ lemma rowLogDD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (
   · exact h.2.1
   · exact h.2.2
 
-lemma row_axis_hasDerivAt (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
+end
+
+section
+
+variable (s : ℂ) (u : Fin 2 → ℂ)
+
+lemma row_axis_hasDerivAt (hu : u≠0)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     HasDerivAt (axisSlice (rowSmoothPower s u) p j)
       (rowSmoothPower s u p*s*(rowLogD u p j:ℂ)) (p j) :=
   spatial_axis_hasDerivAt _ _ _ _ _ p j hv.ne' (row_denominator_pos u hu p hv).ne'
 
-lemma row_axis_hasDerivAt_deriv (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
+lemma row_axis_hasDerivAt_deriv (hu : u≠0)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     HasDerivAt (deriv (axisSlice (rowSmoothPower s u) p j))
       (rowSmoothPower s u p*(s^2*(rowLogD u p j:ℂ)^2+s*(rowLogDD u p j:ℂ))) (p j) :=
   spatial_axis_hasDerivAt_deriv _ _ _ _ _ p j hv.ne' (row_denominator_pos u hu p hv).ne'
 
+end
+
 end CubicEisenstein
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -455,7 +419,7 @@ lemma hasDerivAt_deriv_tsum_of_bounds {ι : Type*} (f : ι → ℝ → ℂ)
   have hfirstSum (y : ℝ) (hy : y∈U) :=
     hasDerivAt_tsum_of_isPreconnected hM₁ hU hUc
       (fun i z hz => (hfirst i z hz).hasDerivAt) hbound₁ hx hsum hy
-  have hsumFirst : Summable (fun i => deriv (f i) x) :=
+  have hsumFirst  :=
     Summable.of_norm_bounded hM₁ (fun i => hbound₁ i x hx)
   have hsecondSum := hasDerivAt_tsum_of_isPreconnected hM₂ hU hUc
     (fun i z hz => (hsecond i z hz).hasDerivAt) hbound₂ hx hsumFirst hx
@@ -463,7 +427,11 @@ lemma hasDerivAt_deriv_tsum_of_bounds {ι : Type*} (f : ι → ℝ → ℂ)
   filter_upwards [hU.mem_nhds hx] with y hy
   exact (hfirstSum y hy).deriv
 
-lemma norm_row_axis_deriv (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
+section
+
+variable (s : ℂ) (u : Fin 2 → ℂ)
+
+lemma norm_row_axis_deriv (hu : u≠0)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     ‖deriv (axisSlice (rowSmoothPower s u) p j) (p j)‖ ≤
       ‖rowSmoothPower s u p‖ * (‖s‖ * (1/(p 2))) := by
@@ -474,7 +442,7 @@ lemma norm_row_axis_deriv (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
       mul_le_mul_of_nonneg_left (rowLogD_bound u hu p hv j) (by positivity)
     _ = _ := by ring
 
-lemma norm_row_axis_deriv2 (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
+lemma norm_row_axis_deriv2 (hu : u≠0)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     ‖deriv (deriv (axisSlice (rowSmoothPower s u) p j)) (p j)‖ ≤
       ‖rowSmoothPower s u p‖ * (‖s‖^2 * (1/(p 2))^2 + ‖s‖ * (7/(p 2)^2)) := by
@@ -483,16 +451,22 @@ lemma norm_row_axis_deriv2 (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
   calc
     _ ≤ ‖s^2*(rowLogD u p j:ℂ)^2‖+‖s*(rowLogDD u p j:ℂ)‖ := norm_add_le _ _
     _ = ‖s‖^2*|rowLogD u p j|^2 + ‖s‖*|rowLogDD u p j| := by
-      simp only [norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs]
+      simp
     _ ≤ _ := by
       have hfirst := rowLogD_bound u hu p hv j
       have hsecond := rowLogDD_bound u hu p hv j
       gcongr
 
+end
+
 def smoothSummand (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates) : ℂ :=
   (cosetCharacter r)⁻¹ * rowSmoothPower s (embeddedRow r) p
 
-lemma smoothSummand_eq_actual (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates) (hv : 0<p 2) :
+section
+
+variable (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates)
+
+lemma smoothSummand_eq_actual (hv : 0<p 2) :
     smoothSummand s r p =
       summand (upperSection ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hv) s r := by
   rw [smoothSummand,← eigenfunction_summand_eq_actual_series]
@@ -500,21 +474,18 @@ lemma smoothSummand_eq_actual (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates
   exact (actualHeightPower_eq_spatial s (embeddedRow r) (embeddedRow_ne_zero r)
     (p 0) (p 1) (p 2) hv).symm
 
-lemma smooth_axis_differentiable (s : ℂ) (r : CuspCosets)
-    (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+lemma smooth_axis_differentiable (hv : 0<p 2) (j : Fin 3) :
     DifferentiableAt ℝ (axisSlice (smoothSummand s r) p j) (p j) :=
   ((row_axis_hasDerivAt s (embeddedRow r) (embeddedRow_ne_zero r) p hv j).const_mul _).differentiableAt
 
-lemma smooth_axis_deriv_differentiable (s : ℂ) (r : CuspCosets)
-    (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+lemma smooth_axis_deriv_differentiable (hv : 0<p 2) (j : Fin 3) :
     DifferentiableAt ℝ (deriv (axisSlice (smoothSummand s r) p j)) (p j) := by
   change DifferentiableAt ℝ (deriv (fun t => (cosetCharacter r)⁻¹ *
     axisSlice (rowSmoothPower s (embeddedRow r)) p j t)) (p j)
   rw [deriv_const_mul_field']
   exact ((row_axis_hasDerivAt_deriv s (embeddedRow r) (embeddedRow_ne_zero r) p hv j).const_mul _).differentiableAt
 
-lemma norm_smooth_axis_deriv (s : ℂ) (r : CuspCosets)
-    (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+lemma norm_smooth_axis_deriv (hv : 0<p 2) (j : Fin 3) :
     ‖deriv (axisSlice (smoothSummand s r) p j) (p j)‖ ≤
       ‖smoothSummand s r p‖ * (‖s‖ * (1/(p 2))) := by
   have h := norm_row_axis_deriv s (embeddedRow r) (embeddedRow_ne_zero r) p hv j
@@ -522,8 +493,7 @@ lemma norm_smooth_axis_deriv (s : ℂ) (r : CuspCosets)
   simpa only [smoothSummand,deriv_const_mul_field,norm_mul,norm_inv,
     norm_cosetCharacter,inv_one,one_mul] using h
 
-lemma norm_smooth_axis_deriv2 (s : ℂ) (r : CuspCosets)
-    (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+lemma norm_smooth_axis_deriv2 (hv : 0<p 2) (j : Fin 3) :
     ‖deriv (deriv (axisSlice (smoothSummand s r) p j)) (p j)‖ ≤
       ‖smoothSummand s r p‖ * (‖s‖^2 * (1/(p 2))^2 + ‖s‖ * (7/(p 2)^2)) := by
   have h := norm_row_axis_deriv2 s (embeddedRow r) (embeddedRow_ne_zero r) p hv j
@@ -531,17 +501,17 @@ lemma norm_smooth_axis_deriv2 (s : ℂ) (r : CuspCosets)
   simpa only [smoothSummand,deriv_const_mul_field',deriv_const_mul_field,norm_mul,norm_inv,
     norm_cosetCharacter,inv_one,one_mul] using h
 
-lemma smoothSummand_axis_update (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates)
+lemma smoothSummand_axis_update
     (j : Fin 3) (t : ℝ) :
     axisSlice (smoothSummand s r) (Function.update p j t) j =
       axisSlice (smoothSummand s r) p j := by
   funext z
-  simp only [axisSlice,Function.update_idem]
+  simp [axisSlice,Function.update_idem]
+
+end
 
 end CubicEisenstein
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -557,18 +527,12 @@ lemma continuous_clampedCoordinates (deltaLoss : ℝ) (hδ : 0<deltaLoss) :
 
 lemma continuous_axis_update (p : SpatialCoordinates) (j : Fin 3) :
     Continuous (fun t : ℝ => Function.update p j t) := by
-  apply continuous_pi
-  intro k
-  by_cases h : k=j
-  · subst k
-    simp only [Function.update_self]
-    fun_prop
-  · simpa only [Function.update_of_ne h] using (continuous_const : Continuous (fun _ : ℝ => p k))
+  fun_prop
 
 lemma smoothSummand_eq_clamped (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates)
     (deltaLoss : ℝ) (hδ : 0<deltaLoss) (hp : deltaLoss≤p 2) :
     smoothSummand s r p = summand (coordinateSection (clampedCoordinates deltaLoss hδ p)) s r := by
-  have hv : 0<p 2 := lt_of_lt_of_le hδ hp
+  have hv  := lt_of_lt_of_le hδ hp
   simpa only [coordinateSection,clampedCoordinates,max_eq_right hp] using smoothSummand_eq_actual s r p hv
 
 theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
@@ -581,9 +545,9 @@ theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
         ‖deriv (axisSlice (smoothSummand s r) p j) t‖≤M₁ r ∧
         ‖deriv (deriv (axisSlice (smoothSummand s r) p j)) t‖≤M₂ r := by
   let deltaLoss : ℝ := p 2/2
-  have hδ : 0<deltaLoss := by dsimp [deltaLoss]; positivity
+  have hδ : 0<deltaLoss := by positivity
   let path := fun t => clampedCoordinates deltaLoss hδ (Function.update p j t)
-  have hpath : Continuous path := (continuous_clampedCoordinates deltaLoss hδ).comp (continuous_axis_update p j)
+  have hpath  := (continuous_clampedCoordinates deltaLoss hδ).comp (continuous_axis_update p j)
   let C := rowBound (coordinateSection (path (p j)))+1
   have hC : 0<C := by dsimp [C]; linarith [rowBound_pos (coordinateSection (path (p j)))]
   have hb : ∀ᶠ t in 𝓝 (p j), rowBound (coordinateSection (path t))<C :=
@@ -601,12 +565,12 @@ theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
   refine ⟨ε,hε,M,fun r => M r*c₁,fun r => M r*c₂,hM,hM.mul_right _,hM.mul_right _,?_⟩
   intro t ht
   obtain ⟨hht,hbt⟩ := hball t ht
-  have hpos : 0 < (Function.update p j t) 2 := lt_trans hδ hht
+  have hpos  := lt_trans hδ hht
   refine ⟨hpos,fun r => ?_⟩
   have hm : ‖smoothSummand s r (Function.update p j t)‖≤M r := by
     rw [smoothSummand_eq_clamped s r _ deltaLoss hδ hht.le]
     exact hbound (path t,s) hbt.le le_rfl le_rfl r
-  have hfrac : 1 / (Function.update p j t) 2 ≤ 1/deltaLoss := one_div_le_one_div_of_le hδ hht.le
+  have hfrac  := one_div_le_one_div_of_le hδ hht.le
   have hfrac₂ : 7 / ((Function.update p j t) 2)^2 ≤ 7/deltaLoss^2 := by
     apply div_le_div_of_nonneg_left (by norm_num) (sq_pos_of_pos hδ)
     nlinarith
@@ -620,17 +584,22 @@ theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
     dsimp [c₂]
     gcongr
 
-lemma smooth_axis_differentiable_at (s : ℂ) (r : CuspCosets)
-    (p : SpatialCoordinates) (j : Fin 3) (t : ℝ) (hv : 0<(Function.update p j t) 2) :
+section
+
+variable (s : ℂ) (r : CuspCosets)
+  (p : SpatialCoordinates) (j : Fin 3) (t : ℝ)
+
+lemma smooth_axis_differentiable_at (hv : 0<(Function.update p j t) 2) :
     DifferentiableAt ℝ (axisSlice (smoothSummand s r) p j) t := by
   have h := smooth_axis_differentiable s r (Function.update p j t) hv j
   simpa only [smoothSummand_axis_update,Function.update_self] using h
 
-lemma smooth_axis_deriv_differentiable_at (s : ℂ) (r : CuspCosets)
-    (p : SpatialCoordinates) (j : Fin 3) (t : ℝ) (hv : 0<(Function.update p j t) 2) :
+lemma smooth_axis_deriv_differentiable_at (hv : 0<(Function.update p j t) 2) :
     DifferentiableAt ℝ (deriv (axisSlice (smoothSummand s r) p j)) t := by
   have h := smooth_axis_deriv_differentiable s r (Function.update p j t) hv j
   simpa only [smoothSummand_axis_update,Function.update_self] using h
+
+end
 
 end CubicEisenstein
 

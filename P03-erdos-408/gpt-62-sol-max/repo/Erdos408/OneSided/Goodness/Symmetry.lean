@@ -52,7 +52,7 @@ theorem omitProd_permuteLists {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Pe
     (o : Fin K → Fin (J + 1)) :
     omitProd (permuteLists p σ) o = omitProd p fun i => σ i (o i) :=
   prod_congr rfl fun i _ =>
-    prod_equiv (σ i) (by simp [(σ i).injective.ne_iff]) fun _ _ => rfl
+    prod_equiv (σ i) (by simp) fun _ _ => rfl
 
 /-! ### Goodness does not see the order -/
 

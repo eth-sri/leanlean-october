@@ -38,11 +38,10 @@ theorem addressValue_mem_group {F : FixedData} {P : PrimeGroups} {J m n B : ℕ}
 theorem big_groups_eq_of_common_prime {P : PrimeGroups} (g h : P.BigGroup) (p : ℕ)
     (hg : p ∈ P.primes g.val) (hh : p ∈ P.primes h.val) : g = h := by
   by_contra hne
-  have hval : g.val ≠ h.val := by
-    intro he
-    apply hne
-    exact Subtype.ext he
-  exact (Finset.disjoint_left.mp (P.disjoint g.val h.val hval) hg) hh
+  refine (Finset.disjoint_left.mp (P.disjoint g.val h.val ?_) hg) hh
+  intro he
+  apply hne
+  exact Subtype.ext he
 
 
 end Erdos821.S2High

@@ -93,7 +93,7 @@ theorem sum_pathsFrom_last {N : ℕ} (π₀ : Fin (N + 1) → FreeState x d Y d�
   refine sum_eq_single_of_mem _ ?_ fun π hπ hne => absurd ?_ hne
   · refine mem_pathsFrom.2 ⟨fun j hj => ?_, fun j hj => ?_⟩
     · simp [hj.ne]
-    · simp [hj]
+    simp_all
   · funext j
     by_cases hj : (j : ℕ) = N
     · simp [hj, (mem_pathsFrom.1 hπ).2 j hj]
@@ -206,7 +206,7 @@ theorem postProd_last (hq : 0 < q) {N : ℕ} (hbig : ∀ p ∈ bandPrimes x d, N
       by_contra h
       push Not at h
       exact hm (sum_eq_zero fun xp _ => h xp)
-    have hp : xp.1.1 ∈ bandPrimes x d :=
+    have hp  :=
       (mem_particles.1 (show (xp.1.1, xp.1.2) ∈ particles x d from xp.2)).1
     exact prod_eq_zero hp (ite_eq_left ⟨_, statusOf_of_pend hS hxp⟩)
 
@@ -223,7 +223,7 @@ theorem chainFree_pos (s : ChainState x d Y d₀ u v r B) : (chainFree s).1.1.1 
 open scoped Classical in
 /-- **The last visit**: the running sum of the last ghost is the path sum. -/
 theorem distinctFold_zero_eq (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (hB : (bandPrimes x d).card ≤ B) {N : ℕ}
     (hbig : ∀ p ∈ bandPrimes x d, N < p) (π₀ : Fin (N + 1) → FreeState x d Y d₀ u v r)
     (s : ChainState x d Y d₀ u v r B) {Bn : Multiset ℕ} (hS : Consistent s.2.1.1 s.2.2.1 Bn) :
@@ -324,7 +324,7 @@ theorem sum_comm_four {α β γ δ : Type*} (sa : Finset α) (sb : Finset β) (s
 open scoped Classical in
 /-- One term of the running sum at an earlier visit, against the induction hypothesis. -/
 theorem distinctFold_term_eq
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {N n t : ℕ}
+    (hdisj : d.BandsDisjoint x) {N n t : ℕ}
     (π₁ : Fin (N + 1) → FreeState x d Y d₀ u v r)
     (ih : ∀ (s : ChainState x d Y d₀ u v r B) (Bn : Multiset ℕ),
       Consistent s.2.1.1 s.2.2.1 Bn →
@@ -388,9 +388,9 @@ theorem distinctFold_term_eq
   have hS' : Consistent sg.2.1.1 sg.2.2.1 (Bn + batchBirths g.2) := by
     rw [show sg.2.2.1 = ghostMem s.2.2.1 g from chainGhostOut_mem hv]
     exact consistent_ghostMem hS (ghostOK_of_valid hv hnd)
-  have hg : EdgeGood (s := sg) hc₀ (Bn + batchBirths g.2) fl := edgeGood_of_valid hc₀ hm hnd'
+  have hg  := edgeGood_of_valid hc₀ hm hnd'
   have hf' : FreeValid x d Y d₀ u v r B sg (toEdge₀ c₀) := (freeValid_congr rfl rfl _).2 hf
-  have hev : EdgeValid x d Y d₀ u v r B sg (toEdge c₀ St fl) :=
+  have hev  :=
     (edgeValid_iff sg (toEdge c₀ St fl)).2 ⟨(freeValid_toEdge sg c₀ St fl).2 hf', hm⟩
   have hc' := consistent_edgeMem hdisj hc₀ hf' hS' St hg
   set out := chainEdgeOut x d Y d₀ u v r B sg (toEdge c₀ St fl) with hout
@@ -410,13 +410,7 @@ theorem distinctFold_term_eq
     ite_eq_left hnd]
   -- collect the pending factors into the visit weight
   have hvw := visitWeight_eq q N t s g
-  have hρ : (pendingWeight q : ℂ) ^ pendingHits x d c₀.2.1.1 (edgeMem sg (toEdge c₀ St fl)) *
-      distinctFold q A₀ Y d₀ u v r B N n (t + 1) out
-        (Bn + batchBirths g.2 + freshBirths (toEdge c₀ St fl)) =
-      ∑ π ∈ pathsFrom π₁ (t + 1) (freeOut s (toEdge₀ c₀)),
-        weightFrom A₀ π (t + 1) * endInd π *
-          (lifeProd q N π (t + 1) (edgeTgt s (toEdge c₀ St fl)) (edgeMem sg (toEdge c₀ St fl))
-            (Bn + batchBirths g.2 + freshBirths (toEdge c₀ St fl)) : ℂ) := hih
+  have hρ  := hih
   calc (pendingWeight q : ℂ) ^ pendingHits x d s.1.1 s.2.2.1 *
         (chainGhostCoef q x d Y d₀ u v r B N t s g *
           (freeCoef A₀ s (toEdge₀ c₀) *
@@ -442,7 +436,7 @@ theorem distinctFold_term_eq
 open scoped Classical in
 /-- **An earlier visit**: the induction step of the running sum. -/
 theorem distinctFold_succ_eq (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (hB : (bandPrimes x d).card ≤ B) {N n t : ℕ}
     (htn : t + 1 + n = N)
     (ih : ∀ (π₁ : Fin (N + 1) → FreeState x d Y d₀ u v r) (s : ChainState x d Y d₀ u v r B)
@@ -523,7 +517,7 @@ theorem distinctFold_succ_eq (hq : 0 < q)
     swap
     · simp [hnd]
     set sg := chainGhostOut x d Y d₀ u v r B s g
-    have hmem : sg.2.2.1 = ghostMem s.2.2.1 g := chainGhostOut_mem hv
+    have hmem  := chainGhostOut_mem hv
     have hS' : Consistent sg.2.1.1 sg.2.2.1 (Bn + batchBirths g.2) := by
       rw [hmem]
       exact consistent_ghostMem hS (ghostOK_of_valid hv hnd)
@@ -562,7 +556,7 @@ theorem distinctFold_succ_eq (hq : 0 < q)
 running distinct-birth history sum, with the incoming pending factor, is the line-free path
 sum through the state weighted by the lifespan product. -/
 theorem distinctFold_eq_path (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (hB : (bandPrimes x d).card ≤ B) {N : ℕ}
     (hbig : ∀ p ∈ bandPrimes x d, N < p) :
     ∀ n t : ℕ, t + n = N → ∀ (π₀ : Fin (N + 1) → FreeState x d Y d₀ u v r)

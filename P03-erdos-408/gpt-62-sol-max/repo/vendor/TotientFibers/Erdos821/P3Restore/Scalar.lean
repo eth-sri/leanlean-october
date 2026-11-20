@@ -65,8 +65,7 @@ theorem scalar_bound (ℓ E Cv Ca Ch C c CG G K : ℝ) (n a r0 : ℕ)
       ℓ ^ (-E * (n : ℝ)) := by
   have hℓ0 : 0 < ℓ := by linarith
   have hℓ1 : 1 ≤ ℓ := by linarith
-  have hT0 : 0 ≤ Real.log ℓ := Real.log_nonneg hℓ1
-  have hG5 : 5 ≤ G := by rw [hG]; linarith
+  have hT0  := Real.log_nonneg hℓ1
   have hK0 : 0 ≤ K := by rw [hK]; linarith
   have hfin : ℓ ^ (-E * (n : ℝ)) = Real.exp (Real.log ℓ * (-E * n)) := rpow_eq_exp hℓ0 _
   -- low ranks
@@ -83,7 +82,7 @@ theorem scalar_bound (ℓ E Cv Ca Ch C c CG G K : ℝ) (n a r0 : ℕ)
     calc _ ≤ Real.exp (8 * Real.log ℓ) * Real.exp (2 * (Real.log ℓ * Ca - Real.log ℓ * (-G))) :=
           mul_le_mul_of_nonneg_right (sq_le_exp_eight hℓ0 ha) (Real.exp_pos _).le
       _ = Real.exp (Real.log ℓ * K) := by rw [← Real.exp_add, hK]; ring_nf
-  have hMax : max 1 ((a : ℝ) ^ 2 * (ℓ ^ Ca / ℓ ^ (-G)) ^ 2) ≤ Real.exp (Real.log ℓ * K) :=
+  have hMax  :=
     max_le (Real.one_le_exp (mul_nonneg hT0 hK0)) hY
   have hM0 : 0 ≤ max 1 ((a : ℝ) ^ 2 * (ℓ ^ Ca / ℓ ^ (-G)) ^ 2) :=
     le_trans zero_le_one (le_max_left _ _)
@@ -139,8 +138,8 @@ theorem scalar_bound (ℓ E Cv Ca Ch C c CG G K : ℝ) (n a r0 : ℕ)
   set V := (a : ℝ) ^ 2 * (C / Real.exp (ℓ ^ c)) with hV
   have hV0 : 0 ≤ V := mul_nonneg (pow_nonneg (Nat.cast_nonneg _) _)
     (div_nonneg hC.le (Real.exp_pos _).le)
-  have hVle : V ≤ Real.exp (-(ℓ ^ c / 2)) := smallV_le hℓ0 hC ha h5
-  have hhalf : Real.exp (-(ℓ ^ c / 2)) ≤ 1 / 2 := exp_neg_half_le h6
+  have hVle  := smallV_le hℓ0 hC ha h5
+  have hhalf  := exp_neg_half_le h6
   have h1V : 0 < 1 - V := by linarith
   have hVp : V ^ r0 ≤ Real.exp (r0 * (-(ℓ ^ c / 2))) := by
     rw [← exp_pow']
@@ -151,8 +150,6 @@ theorem scalar_bound (ℓ E Cv Ca Ch C c CG G K : ℝ) (n a r0 : ℕ)
   have hhigh : ℓ ^ (Ch * ((n + 1 : ℕ) : ℝ)) * V ^ r0 / (1 - V) ≤
       1 / 2 * Real.exp (Real.log ℓ * (-E * n)) := by
     rw [div_le_iff₀ h1V, hZ]
-    have hZ0 : 0 ≤ Real.exp (Real.log ℓ * (Ch * ((n : ℝ) + 1))) * V ^ r0 :=
-      mul_nonneg (Real.exp_pos _).le (pow_nonneg hV0 _)
     calc Real.exp (Real.log ℓ * (Ch * ((n : ℝ) + 1))) * V ^ r0
         ≤ Real.exp (Real.log ℓ * (Ch * ((n : ℝ) + 1))) * Real.exp (r0 * (-(ℓ ^ c / 2))) :=
           mul_le_mul_of_nonneg_left hVp (Real.exp_pos _).le
@@ -163,17 +160,12 @@ theorem scalar_bound (ℓ E Cv Ca Ch C c CG G K : ℝ) (n a r0 : ℕ)
           have h14 : Real.log (1 / 4) = - Real.log 4 := by
             rw [one_div, Real.log_inv]
           rw [h14]
-          have he : (2 * (Ch + E + 2) * n * Real.log ℓ) / 2 =
-              (Ch + E + 2) * n * Real.log ℓ := by ring
           have hr : (r0 : ℝ) * (-(ℓ ^ c / 2)) = -((ℓ ^ c * r0) / 2) := by ring
           rw [hr]
           have hlin : Real.log ℓ * (Ch * ((n : ℝ) + 1)) =
               Ch * Real.log ℓ + Ch * n * Real.log ℓ := by ring
           have hlin2 : Real.log ℓ * (-E * n) = -(E * n * Real.log ℓ) := by ring
           rw [hlin, hlin2]
-          have hexp : (Ch + E + 2) * n * Real.log ℓ =
-              Ch * n * Real.log ℓ + E * n * Real.log ℓ + 2 * n * Real.log ℓ := by ring
-          have hq : (Ch + E + 2) * n * Real.log ℓ ≤ (ℓ ^ c * r0) / 2 := by linarith
           linarith
       _ = 1 / 4 * Real.exp (Real.log ℓ * (-E * n)) := by
           rw [Real.exp_add, Real.exp_log (by norm_num)]
@@ -190,8 +182,8 @@ theorem r0_bounds (ℓ c K C'' Cv : ℝ) (n : ℕ) (hℓ : 1 ≤ ℓ) (hK : 0 �
     (⌈C'' * n * Real.log ℓ / ℓ ^ c⌉₊ : ℝ) * (K + 1) + 1 + Cv ≤ 5 * n ∧
       C'' * n * Real.log ℓ ≤ ℓ ^ c * ⌈C'' * n * Real.log ℓ / ℓ ^ c⌉₊ := by
   have hℓ0 : 0 < ℓ := by linarith
-  have hc : 0 < ℓ ^ c := Real.rpow_pos_of_pos hℓ0 c
-  have hT : 0 ≤ Real.log ℓ := Real.log_nonneg hℓ
+  have hc  := Real.rpow_pos_of_pos hℓ0 c
+  have hT  := Real.log_nonneg hℓ
   set y := C'' * n * Real.log ℓ / ℓ ^ c with hy
   have hy0 : 0 ≤ y :=
     div_nonneg (mul_nonneg (mul_nonneg hC'' (Nat.cast_nonneg _)) hT) hc.le
@@ -218,7 +210,7 @@ theorem ev_log_le {c : ℝ} (hc : 0 < c) (D : ℝ) :
   have hε : (0 : ℝ) < 1 / (|D| + 1) := by positivity
   filter_upwards [(isLittleO_log_rpow_atTop hc).bound hε, eventually_ge_atTop (1 : ℝ)]
     with ℓ h hℓ
-  have hT : 0 ≤ Real.log ℓ := Real.log_nonneg hℓ
+  have hT  := Real.log_nonneg hℓ
   have hp : 0 ≤ ℓ ^ c := Real.rpow_nonneg (by linarith) c
   rw [Real.norm_of_nonneg hT, Real.norm_of_nonneg hp] at h
   have h' : (|D| + 1) * Real.log ℓ ≤ ℓ ^ c := by
@@ -237,7 +229,6 @@ theorem ev_N_ge (M : ℝ) :
   filter_upwards [ev_rpow_ge (by norm_num : (0 : ℝ) < 52 / 100) M,
     eventually_ge_atTop (0 : ℝ)] with ℓ h h0
   have h1 := Nat.le_ceil (ℓ ^ ((52 : ℝ) / 100))
-  have h2 : 0 ≤ ℓ ^ ((52 : ℝ) / 100) := Real.rpow_nonneg h0 _
   push_cast
   linarith
 

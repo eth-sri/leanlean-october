@@ -18,8 +18,7 @@ theorem factor_deriv {N : ℝ} (hN : 0 < N) (a s : ℂ) :
   have h' : HasDerivAt (EulerFactors.factor N a)
       (a*(N : ℂ)^(-s)*Complex.log (N : ℂ)) s := by
     convert h using 1
-    · funext z
-      rfl
+    · rfl
     · dsimp
       ring
   exact h'.deriv
@@ -35,7 +34,7 @@ theorem factor_logDeriv_norm {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
   have hf := (factor_bounds hσ hN ha hs).2
   rw [logDeriv_apply, factor_deriv hn0, div_eq_mul_inv, norm_mul, norm_mul,
     ← Complex.ofReal_log hn0.le, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hl]
-  have hterm : ‖a*(N : ℂ)^(-s)‖ ≤ 1 := ht.trans hδ
+  have hterm  := ht.trans hδ
   calc
     _ ≤ (1*Real.log N)*localBound σ := by gcongr
     _ = _ := by ring
@@ -46,7 +45,7 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
       localBound σ * Real.log ((radical M).absNorm : ℝ) := by
   have hp0 (P : SmoothMobiusCorrection.PrimeIdeal) : 0 < (P.val.absNorm : ℝ) := by
     have h := SmoothMobiusCorrection.prime_norm_two_le P
-    exact_mod_cast (by omega : 0 < P.val.absNorm)
+    positivity
   have hp2 (P : SmoothMobiusCorrection.PrimeIdeal) : 2 ≤ (P.val.absNorm : ℝ) := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P
   have he : logDeriv (HeckeFiniteDeletion.factors M ψ) s =

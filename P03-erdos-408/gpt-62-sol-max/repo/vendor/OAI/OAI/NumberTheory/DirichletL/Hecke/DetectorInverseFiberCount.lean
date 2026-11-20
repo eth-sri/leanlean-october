@@ -64,16 +64,12 @@ theorem inverse_fiber_count {Row Label Slot : Type*}
     (fun u => ∏ s∈selected,physical M H row W b widths zs U u s) hDp (by norm_num)
     (HeckeDetectorDyadicActual.inverse_profile_support _ _) hE height hheight hfreq
     (hraw selected hsub hcap1' hcap2')
-  have he' : ∑ u∈rows,
-      ‖polynomial (χ u label) true (inverseTest U tstar r) (U^r) (witness u).zero.re
-        (witness u).frequency*(∏ s∈selected,physical M H row W b widths zs U u s)‖^2≤
-      (12*(1+height)*C)*U^(1+εm) := by
-    convert he using 1; ring
-  exact HeckeDetectorRowCount.inverse_count rows (fun u => χ u label)
+  refine HeckeDetectorRowCount.inverse_count rows (fun u => χ u label)
     (inverseTest U tstar r) (U^r) (fun u => (witness u).zero.re) (fun u => (witness u).frequency)
     (fun u => ∏ s∈selected,physical M H row W b widths zs U u s)
     U (2*a-1) r (weightedMean slots widths g) z (2*ε) ((2*a-1)*mesh) εm
-    (12*(1+height)*C) hUp (fun u hu => (hsp u hu).2.2.1) hspike he'
+    (12*(1+height)*C) hUp (fun u hu => (hsp u hu).2.2.1) hspike ?_
+  convert he using 1; ring
 
 end SevenEighths.HeckeDetectorInverseFiberCount
 

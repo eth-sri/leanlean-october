@@ -10,77 +10,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CompletedGauss
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 section
 open CubicEisenstein
@@ -100,7 +38,7 @@ theorem completedBesselProfile_mellin (Ψ : ActualEisensteinCubic.O→*ℂ)
     (hΨ : ∀a,‖Ψ a‖≤1) (q : ℝ) (hq : 0<q) (s : ℂ) (hs : 3/2<s.re) :
     mellin (completedBesselProfile Ψ q) (2*s)=
       besselMellinFactor q s*completedDirichletSeries Ψ s := by
-  let : Countable ActualEisensteinCubic.O :=
+  let  :=
     ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let : Countable (Ideal ActualEisensteinCubic.O) :=
     ConcretePrimeRowBridge.idealGenerator_injective.countable
@@ -139,9 +77,8 @@ end
 
 theorem inverseBesselMellinFactor_differentiable (q : ℝ) (hq : 0<q) :
     Differentiable ℂ (inverseBesselMellinFactor q) := by
-  have hq0 : ((4*Real.pi*q:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr (by positivity)
   have h1 : Differentiable ℂ (fun s : ℂ=>((4*Real.pi*q:ℝ):ℂ)^(2*s+1)) :=
-    (show Differentiable ℂ (fun s : ℂ=>2*s+1) from by fun_prop).const_cpow (Or.inl hq0)
+    (show Differentiable ℂ (fun s : ℂ=>2*s+1) from by fun_prop).const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr (by positivity)))
   have h2 : Differentiable ℂ (fun s : ℂ=>(2:ℂ)^(1-2*s)) :=
     (show Differentiable ℂ (fun s : ℂ=>1-2*s) from by fun_prop).const_cpow
       (Or.inl (by norm_num : (2:ℂ)≠0))
@@ -160,8 +97,8 @@ theorem inverseBesselMellinFactor_strip_bound (q : ℝ) (hq : 0<q) (a b : ℝ) :
   let Ca := (4*Real.pi*q)^(2*a+1)+(4*Real.pi*q)^(2*b+1)
   let Cb := (2:ℝ)^(1-2*b)+(2:ℝ)^(1-2*a)
   have hqpos : 0<4*Real.pi*q := by positivity
-  have hCa : 0≤Ca := by dsimp [Ca];positivity
-  have hCb : 0≤Cb := by dsimp [Cb];positivity
+  have hCa : 0≤Ca := by positivity
+  have hCb : 0≤Cb := by positivity
   refine ⟨Ca*Cb*Cg,by positivity,?_⟩
   intro s hs
   have hp1 : ‖((4*Real.pi*q:ℝ):ℂ)^(2*s+1)‖≤Ca := by
@@ -219,7 +156,6 @@ end CompletedGauss
 
 namespace CubicEisenstein
 open Filter MeasureTheory Asymptotics
-open scoped BigOperators Classical Topology MatrixGroups
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -306,8 +242,8 @@ lemma reflectedCuspProfile_reverse (A:ℂ) (hA:A≠0) (Q:ℝ) (hQ:0<Q)
   have harg:(Q*(Q*v)⁻¹)⁻¹=v := by field_simp
   rw [reflectedCuspProfile_eq_inv_square,harg] at he
   rw [reflectedCuspProfile_eq_inv_square,he,Complex.ofReal_inv,Complex.ofReal_mul]
-  have hcQ:(Q:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hQ.ne'
-  have hcv:(v:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hv.ne'
+  have hcQ:=Complex.ofReal_ne_zero.mpr hQ.ne'
+  have hcv:=Complex.ofReal_ne_zero.mpr hv.ne'
   field_simp
 
 theorem cusp_mellin_entire_both (f g:ℝ→ℂ) (A:ℂ) (hA:A≠0)
@@ -326,7 +262,6 @@ theorem cusp_mellin_entire_both (f g:ℝ→ℂ) (A:ℂ) (hA:A≠0)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
@@ -375,15 +310,14 @@ theorem primary_squarefree_cube_eq_iff {I J I' J':Ideal Eis}
     have hright:primaryGenerator (I'*J'^3)≠0:=by
       rw [primaryGenerator_mul,CubicEisenstein.primaryGenerator_pow]
       exact mul_ne_zero hgI' (pow_ne_zero _ hgJ')
-    have he:I*J^3=I'*J'^3:=by
-      calc
-        I*J^3=Ideal.span {primaryGenerator (I*J^3)}:=(primaryGenerator_spec _ hleft).1.symm
-        _=Ideal.span {primaryGenerator (I'*J'^3)}:=by
-          apply congrArg (fun z:Eis => (Ideal.span {z}:Ideal Eis))
-          simpa only [primaryGenerator_mul,CubicEisenstein.primaryGenerator_pow] using h
-        _=I'*J'^3:=(primaryGenerator_spec _ hright).1
-    exact squarefree_cube_decomposition_unique
-      (primaryGenerator_ne_zero_ideal J hgJ) (primaryGenerator_ne_zero_ideal J' hgJ') hI hI' he
+    refine squarefree_cube_decomposition_unique
+      (primaryGenerator_ne_zero_ideal J hgJ) (primaryGenerator_ne_zero_ideal J' hgJ') hI hI' ?_
+    calc
+      I*J^3=Ideal.span {primaryGenerator (I*J^3)}:=(primaryGenerator_spec _ hleft).1.symm
+      _=Ideal.span {primaryGenerator (I'*J'^3)}:=by
+        apply congrArg (fun z:Eis => (Ideal.span {z}:Ideal Eis))
+        simpa only [primaryGenerator_mul,CubicEisenstein.primaryGenerator_pow] using h
+      _=I'*J'^3:=(primaryGenerator_spec _ hright).1
   · rintro ⟨rfl,rfl⟩
     rfl
 
@@ -400,7 +334,6 @@ theorem primary_squarefree_cube_injective :
 end
 
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 def besselSmoothingIntegrand (F : ℝ→ℂ) (q : ℝ) (V : ℝ→ℂ) (X : ℝ) (s : ℂ) : ℂ :=
   mellin V (s-1/2)*(X:ℂ)^(s-1/2)*continuedBesselDirichlet F q s
@@ -428,7 +361,7 @@ lemma besselSmoothingIntegrand_strip_bound (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
   obtain ⟨Cv,hCv,hv⟩ := VerticalContourShift.mellin_uniform_strip_bound V (lo-1/2) (hi-1/2)
     (hVc _) (hVc _)
   let Cx : ℝ := X^(lo-1/2)+X^(hi-1/2)
-  have hCx : 0≤Cx := by dsimp [Cx];positivity
+  have hCx : 0≤Cx := by positivity
   refine ⟨Cv*Cx*Cd,mul_nonneg (mul_nonneg hCv hCx) hCd,?_⟩
   intro s hs
   have hvb : ‖mellin V (s-1/2)‖≤Cv := hv (s-1/2)
@@ -498,8 +431,6 @@ theorem completedT_mellin_shift (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CompletedGauss
 open CubicEisenstein

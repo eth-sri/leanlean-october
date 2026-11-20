@@ -71,8 +71,7 @@ theorem normBound_averageSmallCoordinateKernel (F : FixedData) (J n B : ℕ)
   have hw1 : (∑ t : T, w t) = 1 := by
     simp only [w, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
     exact mul_inv_cancel₀ hn.ne'
-  have hrel (t : T) : NormBound (coordinateMass F J n B)
-      (fun a b => K (smallCoordinatePermEquiv t.1 a) (smallCoordinatePermEquiv t.2 b)) C :=
+  have hrel (t : T)  :=
     normBound_relabel _ K C hK (smallCoordinatePermEquiv t.1) (smallCoordinatePermEquiv t.2)
       (coordinateMass_actSmall F J n B t.1) (coordinateMass_actSmall F J n B t.2)
   have h := normBound_convex_sum (coordinateMass F J n B)

@@ -9,11 +9,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstChildWindows
+open CanonicalRowCompletion FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell
+open InverseMomentFirstChildWindows
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_live_bin_rank_children
@@ -34,7 +34,7 @@ theorem actual_live_bin_rank_children
     (ω₁ ω₂:𝓢(ℝ,ℂ))(K degree:ℕ):
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad;
-    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF;
     CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
       (poolPrimary_good F hF) Finset.univ base slots lists a ω₁ Z Mnext Fnext z cnext eps A K degree →
     CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
@@ -49,7 +49,7 @@ theorem actual_live_bin_rank_children
   intro h₁ h₂ k l jj negative
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF
   obtain ⟨hel,hr,hrL,helL,hFL,hgap,hqn⟩:=actual_long_bin_geometry S D hbad bW Z N V cutoff eta L j
     hZ hL heta1 hV hparentcap hbW hlog hne
   have hs:(N-3*actualCubeLength Z j)+3*actualCubeLength Z j+V=N+V:=by ring

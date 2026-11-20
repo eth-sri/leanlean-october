@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstZeroSource
 public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
@@ -17,9 +18,9 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))

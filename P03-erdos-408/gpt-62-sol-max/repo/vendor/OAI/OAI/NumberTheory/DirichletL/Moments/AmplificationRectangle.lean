@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationShortening
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationShortening
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentAmplificationRectangle
 open CenteredMomentRectangle CenteredMomentExtraction CenteredMomentAmplificationShortening
 local notation "O" => ActualEisensteinCubic.O
@@ -16,8 +17,7 @@ theorem centralRoot_extract (p : O) (hp : p ≠ 0) (k : ℕ) (T : ℝ) (hT : 0 <
     (Real.sqrt T : ℂ)⁻¹ = (primeRoot p k)⁻¹ *
       (Real.sqrt (T / (Ideal.absNorm (Ideal.span {p}) : ℝ)^k) : ℂ)⁻¹ := by
   have hN : 0 < (Ideal.absNorm (Ideal.span {p}) : ℝ) := Nat.cast_pos.mpr
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp)))
+    (Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp))
   have hroot : Real.sqrt T = Real.sqrt ((Ideal.absNorm (Ideal.span {p}) : ℝ)^k) *
       Real.sqrt (T / (Ideal.absNorm (Ideal.span {p}) : ℝ)^k) := by
     rw [← Real.sqrt_mul (pow_nonneg hN.le k)]

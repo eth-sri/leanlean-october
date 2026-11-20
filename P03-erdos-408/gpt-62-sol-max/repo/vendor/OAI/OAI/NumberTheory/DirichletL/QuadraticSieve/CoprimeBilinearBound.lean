@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.CrossFactorization
 
 @[expose] public section
@@ -9,71 +10,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CoprimeBilinearSieve
 open FiniteSieveOperator CoprimeSieveOperator CoprimeMobiusExtension
 
@@ -92,9 +33,9 @@ theorem disjoint_bilinear_expansion {ι n p : Type*} [DecidableEq ι]
         (if D ⊆ left j ∧ D ⊆ right k then star (z j) * v k else 0) := by
     calc
       _ = (if Disjoint (left j) (right k) then (1 : ℂ) else 0) *
-          (star (z j) * v k) := by split_ifs <;> simp
+          (star (z j) * v k) := by simp
       _ = _ := by
-        rw [disjoint_indicator_expansion B _ _ (hl j) (hr k), Finset.sum_mul]
+        rw [disjoint_indicator_expansion B _ _ (hl j), Finset.sum_mul]
         apply Finset.sum_congr rfl
         intro D _
         split_ifs <;> simp
@@ -202,7 +143,7 @@ theorem ideal_coprime_bilinear_operator_bound {m n p : Type*}
     (ε : ℝ) (hε : 0 < ε)
     (left : n → Ideal O) (right : p → Ideal O)
     (hl0 : ∀ j, left j ≠ 0) (hr0 : ∀ k, right k ≠ 0)
-    (N₁ N₂ : ℝ) (hN₁ : 0 ≤ N₁) (_hN₂ : 0 ≤ N₂)
+    (N₁ N₂ : ℝ) (hN₁ : 0 ≤ N₁)
     (hlN : ∀ j, (Ideal.absNorm (left j) : ℝ) ≤ N₁)
     (hrN : ∀ k, (Ideal.absNorm (right k) : ℝ) ≤ N₂)
     (A : Matrix m n ℂ) (C : Matrix m p ℂ) (a : n → ℂ) (b : p → ℂ) :
@@ -279,7 +220,7 @@ theorem divisor_mask_energy_small_power {n : Type*} [Fintype n]
 
 theorem rectangular_cauchy {α β : Type*} (S : Finset α) (T : Finset β)
     (H : α → β → ℝ) (E : α → ℝ) (F : β → ℝ) (C : ℝ)
-    (_hC : 0 ≤ C) (hH : ∀ d ∈ S, ∀ e ∈ T, (H d e) ^ 2 ≤ C * E d * F e) :
+ (hH : ∀ d ∈ S, ∀ e ∈ T, (H d e) ^ 2 ≤ C * E d * F e) :
     (∑ d ∈ S, ∑ e ∈ T, H d e) ^ 2 ≤
       (S.card : ℝ) * T.card * C * (∑ d ∈ S, E d) * (∑ e ∈ T, F e) := by
   classical
@@ -346,12 +287,10 @@ theorem divisor_block_bound {m n p : Type*}
   have hs := (supportConstant_pos ε hε).le
   have hd := (divisorConstant_pos ε hε).le
   have hC : 0 ≤ C := by dsimp [C]; positivity
-  have hEL (D) : 0 ≤ EL D := by dsimp [EL]; positivity
-  have hER (E) : 0 ≤ ER E := by dsimp [ER]; positivity
   have hp (D : Ideal O) (hD : D ∈ S) (E : Ideal O) (hE : E ∈ T) :
       (blockValue left right A B a b D E) ^ 2 ≤ C * EL D * ER E := by
     have hh := IdealCoprimeBilinearSieve.ideal_coprime_bilinear_operator_bound
-      ε hε left right hl0 hr0 N₁ N₂ hN₁ hN₂ hlN hrN (A D) (B E)
+      ε hε left right hl0 hr0 N₁ N₂ hN₁ hlN hrN (A D) (B E)
       (fun j => if D ∣ left j then a j else 0)
       (fun k => if E ∣ right k then b k else 0)
     change (blockValue left right A B a b D E) ^ 2 ≤
@@ -364,8 +303,8 @@ theorem divisor_block_bound {m n p : Type*}
         gcongr
         · exact hA D hD
         · exact hB E hE
-      _ = _ := by dsimp [C]; ring
-  have hc := rectangular_cauchy S T (blockValue left right A B a b) EL ER C hC hp
+      _ = _ := by ring
+  have hc := rectangular_cauchy S T (blockValue left right A B a b) EL ER C hp
   have he1 := divisor_mask_energy_small_power ε hε S left hl0 N₁ hlN a
   have he2 := divisor_mask_energy_small_power ε hε T right hr0 N₂ hrN b
   apply hc.trans
@@ -414,7 +353,7 @@ theorem extendByZero_energy (S : Finset n) (f : n → p) (u : n → ℂ)
       simp [extendByZero_zero S f u k hk]
     _ = ∑ j ∈ S, ‖extendByZero S f u (f j)‖ ^ 2 := by
       rw [Finset.sum_image]
-      exact fun j hj k hk h => hf hj hk h
+      assumption
     _ = _ := Finset.sum_congr rfl (fun j hj => by rw [extendByZero_apply_image S f u hf j hj])
 
 omit [Fintype n] [DecidableEq n] in
@@ -478,7 +417,6 @@ theorem submatrix_norm_le {m q : Type*} [Fintype m] [Fintype q]
 
 end FiniteSieveRestriction
 
-open scoped BigOperators
 namespace FiniteSieveOperator
 
 theorem squared_norm_le_of_energy {m n : Type*} [Fintype m] [Fintype n]
@@ -495,7 +433,6 @@ theorem squared_norm_le_of_energy {m n : Type*} [Fintype m] [Fintype n]
 
 end FiniteSieveOperator
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 abbrev O := ActualEisensteinCubic.O
 open ConcretePrimeRowBridge ActualEisensteinCubic CompletedGauss
@@ -517,7 +454,7 @@ theorem idealSexticRow_ambient
   · intro j hj
     let i : primePool F := ⟨j.val, mem_primePool_iff.mpr
       ⟨I, hIF, (mem_idealSupport_iff G I j).mp hj⟩⟩
-    have hi : i ∈ idealSupport F I :=
+    have hi  :=
       (mem_idealSupport_iff F I i).mpr ((mem_idealSupport_iff G I j).mp hj)
     exact ⟨i, hi, Subtype.ext rfl⟩
   · intro i hi
@@ -569,7 +506,7 @@ theorem mem_idealRange {X : ℝ} {I : Ideal O} :
       omega
     exact (Nat.cast_le.mpr hN).trans (Nat.floor_le hX)
   · rintro ⟨ha, hN⟩
-    exact ⟨⟨Nat.one_le_iff_ne_zero.mpr (fun h => ha.1 (Ideal.absNorm_eq_zero_iff.mp h)),
+    exact ⟨⟨Ideal.one_le_absNorm_of_ne_bot (ha.1),
       Nat.le_floor hN⟩, ha⟩
 
 theorem idealRange_mono {X Y : ℝ} (h : X ≤ Y) : idealRange X ⊆ idealRange Y := by

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongBins
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongNormalization
 
 @[expose] public section
 
@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open CanonicalRowCompletion SecondPassArithmetic
 
@@ -17,7 +17,7 @@ theorem actual_cube_bin_count (b L eps:ℝ)(hb:0≤b)(hL:0≤L)(heps:0<eps) :
       ((cubeLogRange b X).card:ℝ)^2≤C*Z^eps := by
   have hLp:0<L+1:=by linarith
   have hd:0<3*eps/(L+1):=by positivity
-  obtain ⟨C,hC,hh⟩:=cubeLogRange_sq_small_power b (3*eps/(L+1)) hb hd
+  obtain ⟨C,hC,hh⟩:=cubeLogRange_sq_small_power b (3*eps/(L+1)) hd
   refine ⟨C,hC,?_⟩
   intro X Z hX hZ hXL
   have hz:0<Z:=zero_lt_one.trans_le hZ

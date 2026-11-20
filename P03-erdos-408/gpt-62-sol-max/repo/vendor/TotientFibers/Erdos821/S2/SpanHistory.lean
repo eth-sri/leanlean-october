@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanEdgeValidity
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -43,11 +42,6 @@ theorem reconstructedHistory_valid (hMem : SpanEdgeMemoryTask)
   · intro i
     exact ⟨Q.reconstructedTransferChoice_valid hMem S hq hS hk y hy i, trivial⟩
 
-theorem reconstructedHistory_projection (S : LifespanAssignment P n)
-    (hS : Q.lifespanValid S) (y : P.SmallResidues) :
-    (Q.reconstructedHistory S hS y).toResiduePath = Q := by
-  cases Q
-  rfl
 
 
 end ResiduePath

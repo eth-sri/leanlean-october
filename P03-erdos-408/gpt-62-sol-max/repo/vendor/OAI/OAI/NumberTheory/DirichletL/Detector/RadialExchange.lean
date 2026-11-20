@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
 public import OAI.NumberTheory.DirichletL.Detector.FrequencySupport
@@ -56,8 +57,7 @@ lemma frequency_rpow_summable (σ : ℝ) (hσ : 1<σ) :
   have he (H : NonzeroFrequency) : ‖frequencyWeight (σ:ℂ) H‖=(elementNorm H.val)^(-σ) := by
     have hH : 0<elementNorm H.val := by
       unfold elementNorm
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr H.property))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr H.property)
     rw [frequencyWeight,Complex.norm_cpow_eq_rpow_re_of_pos hH]
     simp
   simpa only [he,Complex.ofReal_re] using frequencyWeight_summable_norm (σ:ℂ) hσ
@@ -68,8 +68,7 @@ theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
       (K*elementNorm H.val/elementNorm ((C.generator*A)*s))^(-σ)) := by
   have hd : 0<elementNorm ((C.generator*A)*s) := by
     unfold elementNorm
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs)))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs))
   have hr (H : NonzeroFrequency) :
       (K*elementNorm H.val/elementNorm ((C.generator*A)*s))^(-σ)=
         (K/elementNorm ((C.generator*A)*s))^(-σ)*(elementNorm H.val)^(-σ) := by

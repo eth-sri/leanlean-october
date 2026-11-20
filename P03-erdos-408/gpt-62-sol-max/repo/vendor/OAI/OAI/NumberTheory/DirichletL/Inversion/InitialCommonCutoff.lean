@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialCommonCutoff
 open InverseMoment InverseInitialCommonProfile InverseInitialCommonRatios
@@ -56,7 +56,7 @@ theorem tupleProfile_insert_fresh
     wFresh yc*tupleProfile I L a Z ell W yj yc c=tupleProfile I L a Z ell W yj yc c := by
   rw [tupleProfile_gates I L a hcop]
   exact insert_original_fresh I L a (slotRatio Z ell) lo hi W wFresh a₀ b₀ jlo jhi
-    hs ha hFresh (activeIndices id I L c) yj yc hj hc
+     ha hFresh (activeIndices id I L c) yj yc hj hc
 
 end SevenEighths.InverseInitialCommonCutoff
 

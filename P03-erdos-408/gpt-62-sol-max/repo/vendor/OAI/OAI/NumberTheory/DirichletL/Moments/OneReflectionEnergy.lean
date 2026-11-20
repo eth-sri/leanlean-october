@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentOneReflectionEnergy
 open HeckeFamily CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
-open CenteredMomentReflectedUniformPair CenteredMomentComparisonReflection
-open EisensteinSchwartzPoisson
+open CenteredMomentReflectedUniformPair CenteredMomentComparisonReflection EisensteinSchwartzPoisson
 
 lemma polynomial_inverse_plain (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
     HeckeDyadic.polynomial χ.inverse false W X 0 0=

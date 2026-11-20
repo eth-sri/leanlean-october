@@ -14,15 +14,13 @@ open Filter
 namespace SevenEighths.CenteredMomentFirstReferenceBlock
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
-open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
-open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets
+open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentSourceRow
+open CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentFirstDivisorSupport
+open CenteredMomentChildAssembly CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
+open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget CenteredMomentSectorLocalization
+open CenteredMomentLogDyadic CenteredMomentMobiusRegroup CenteredMomentSecondHeightFamily
+open CenteredMomentFirstPhysicalAnnularCommonBound CenteredMomentOriginalCommonHarmonic
+open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets
 open CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
 local notation "O"=>HeckeFamily.O
 
@@ -66,13 +64,12 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
   intro ι _ _ s R seed a₁ a₂ ha₁ ha₂ hs₁ hs₂ C D hC hD hCD E ξ₁ ξ₂ F rows K hK n hcap EL ER hEL hER
     V refL refR hleft hright
   have hz:0≤Z:=zero_le_one.trans hZ.1.le
-  have hcb:0≤Cb:=hCb.le
-  have hf:0≤fixedPresentationCost:=fixedPresentationCost_pos.le
+  have hf:=fixedPresentationCost_pos.le
   have hprodlo:0≤∏i,s.lo i:=Finset.prod_nonneg (fun i _=>(s.lo_pos i).le)
   have hV:0<V:=volume_pos s
   have hRL:0≤refL:=by dsimp [refL]; positivity
   have hRR:0≤refR:=by dsimp [refR]; positivity
-  have hLE:∀i:Fin 4,0≤refL*EL i:=fun i=>mul_nonneg hRL (hEL i)
+  have hLE:=fun i=>mul_nonneg hRL (hEL i)
   have hRE:∀i:Fin 4,0≤refR*ER i:=fun i=>mul_nonneg hRR (hER i)
   have hz₁:s.W₁ 0=0:=by by_contra hn;have hh:=hs₁ 0 hn;linarith
   have hz₂:s.W₂ 0=0:=by by_contra hn;have hh:=hs₂ 0 hn;linarith

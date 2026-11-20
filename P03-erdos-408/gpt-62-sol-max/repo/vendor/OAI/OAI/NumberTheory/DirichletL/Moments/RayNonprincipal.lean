@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeRay
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentRayNonprincipal
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion HeckePrimeRay
@@ -19,7 +19,7 @@ theorem product_principal_descent (χ θ:Character)
     (hp:(χ.product θ).residue=1) :
     FiniteConductor.FactorsThroughIdeal χ.residue
       (θ.modulus.map (Ideal.Quotient.mk χ.modulus)) := by
-  let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
+  let  := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   rw [FiniteConductor.factorsThroughIdeal_iff]
   intro u hu
   obtain ⟨q,hq,hqu⟩ := (Ideal.mem_map_iff_of_surjective
@@ -29,9 +29,9 @@ theorem product_principal_descent (χ θ:Character)
     dsimp [a]; rw [map_add,map_one,hqu]; ring
   have hθa:Ideal.Quotient.mk θ.modulus a=1 := by
     simp only [a,map_add,map_one,Ideal.Quotient.eq_zero_iff_mem.mpr hq,add_zero]
-  have hcχ:IsCoprime (Ideal.span {a}) χ.modulus :=
+  have hcχ :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (ha ▸ u.isUnit)
-  have hcθ:IsCoprime (Ideal.span {a}) θ.modulus :=
+  have hcθ :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (hθa ▸ isUnit_one)
   have hcp:IsCoprime (Ideal.span {a}) (χ.product θ).modulus :=
     (hcχ.mul_right hcθ).of_isCoprime_of_dvd_right
@@ -61,7 +61,6 @@ theorem actual_row_twist_nonprincipal (η χ θ:Character) (Q:Ideal O) (m A z:O)
   exact hex ⟨χ,ψ,hψ,hind,hQ.trans hmod,hrow⟩
 
 variable (M:Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ) (hH:RayOrthogonality.globalUnits M≤H)
 
 theorem all_ray_twists_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)

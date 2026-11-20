@@ -9,74 +9,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped FourierTransform
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicReflectionKernel
 
 section
-open scoped Classical FourierTransform SchwartzMap ContDiff
 open MeasureTheory
 
 def momentScale : ℝ :=
@@ -85,7 +31,6 @@ def momentScale : ℝ :=
 
 end
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
 open MeasureTheory Filter Asymptotics
 
 def paperScale : ℝ := (2 * Real.pi) ^ 4 / 27
@@ -103,7 +48,7 @@ theorem logProfile_compact (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   apply HasCompactSupport.of_support_subset_isCompact
     (K := Set.Icc (Real.log a) (Real.log b)) isCompact_Icc
   intro u hu
-  have huv : V (Real.exp u) ≠ 0 := hu
+  have huv  := hu
   have hm := hsupp huv
   constructor
   · simpa only [Real.log_exp] using Real.log_le_log ha hm.1
@@ -176,8 +121,6 @@ theorem paperKernel_eq_logFourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ
 
 end CubicReflectionKernel
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter
 namespace CubicReflectionKernel
 
 theorem paperKernel_contDiffOn (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
@@ -212,7 +155,6 @@ theorem paperKernel_compact_source_smooth
     ContDiffOn ℝ ∞ (paperKernel V) (Set.Ioi 0) :=
   paperKernel_contDiffOn V (logSchwartz V a b ha hsupp hV) (by intro u; rfl)
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
 open MeasureTheory Filter Asymptotics
 
 theorem compact_source_mellin_hasDerivAt
@@ -249,7 +191,6 @@ theorem Gamma_differentiableAt_of_re_pos (z : ℂ) (hz : 0 < z.re) :
   intro m hm
   have hr := congrArg Complex.re hm
   simp only [Complex.neg_re, Complex.natCast_re] at hr
-  have hn : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   linarith
 
 theorem gammaMultiplier_differentiableAt (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
@@ -279,7 +220,6 @@ theorem kernelMellinIntegrand_differentiableAt
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
 
 namespace DescentWeightedCauchy
 

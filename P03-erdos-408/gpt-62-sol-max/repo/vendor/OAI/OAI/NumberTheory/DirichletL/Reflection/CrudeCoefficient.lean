@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.KernelBaseline
+public import OAI.NumberTheory.DirichletL.Reflection.KernelActual
 public import OAI.NumberTheory.DirichletL.Descent.MarkedPhase
 
 @[expose] public section

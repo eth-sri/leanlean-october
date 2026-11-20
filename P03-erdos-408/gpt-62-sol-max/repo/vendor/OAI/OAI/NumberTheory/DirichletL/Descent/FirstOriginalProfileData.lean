@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceEnergy
 public import OAI.NumberTheory.DirichletL.Descent.PriorityProfile
 public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
@@ -17,7 +18,7 @@ open CompletedHeight FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 abbrev OriginalIndex (ι : Type*) := Σ _ : FirstOriginalOuter ι,Ideal O×O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 def leftNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.rightBit)‖^2
 def rightNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.leftBit)‖^2

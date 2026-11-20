@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.ThreeBlocks
 
 @[expose] public section
@@ -15,12 +16,12 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance frozenSplitFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
-def frozenArgument [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) : Eis →* ℂ :=
+def frozenArgument [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ) (F : Finset ι) : Eis →* ℂ :=
   ∏ i ∈ F, frozenCofactorCharacter (Ideal.span {p i}) (hg i) (j i)
 
-def frozenCore [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis)
+def frozenCore [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (c : Eis)
     (j : ι → ℕ) (F : Finset ι) : ℂ :=
   ∏ i ∈ F, frozenPrimeScalar (p i) c (hp i) (hg i) (j i) *
     frozenCofactorCharacter (Ideal.span {p i}) (hg i) (j i) (∏ k ∈ F.erase i, p k)
@@ -34,9 +35,9 @@ theorem frozen_cofactor_split (hp : ∀ i, p i ≠ 0) (R S F : Finset ι)
     ← Finset.mul_prod_erase F p hi]
   ring
 
-theorem frozenPhase_split [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem frozenPhase_split [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ)
     (R S F : Finset ι) (hRS : Disjoint R S) (hF : Disjoint (R ∪ S) F)
     (hu : (R ∪ S) ∪ F = Finset.univ) :
     frozenPhase D hp hg j F = frozenCore hp hg c j F *
@@ -56,8 +57,8 @@ theorem frozenPhase_split [∀ i, (Ideal.span {p i}).IsMaximal]
   simp only [Finset.prod_mul_distrib,frozenCore,frozenArgument,MonoidHom.finsetProd_apply]
 
 omit [Fintype ι] in
-theorem frozenArgument_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) (z : Eis) :
+theorem frozenArgument_norm_le_one [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p λ₀) (j : ι → ℕ) (F : Finset ι) (z : Eis) :
     ‖frozenArgument hg j F z‖ ≤ 1 := by
   simp only [frozenArgument,MonoidHom.finsetProd_apply,norm_prod]
   apply Finset.prod_le_one₀

@@ -32,14 +32,12 @@ lemma auxSideSets_disjoint (ν : Pattern P J ell m) (block : P.BigGroup → Bool
     by_contra hh
     have hz := (Finset.mem_filter.mp hzF).2
     change z.2 ∈ (if block z.1 = false then ν.changed z.1.val else ∅) at hz
-    rw [ite_eq_right hh] at hz
-    exact Finset.notMem_empty _ hz
+    simp_all
   have hT : block z.1 = true := by
     by_contra hh
     have hz := (Finset.mem_filter.mp hzT).2
     change z.2 ∈ (if block z.1 = true then ν.changed z.1.val else ∅) at hz
-    rw [ite_eq_right hh] at hz
-    exact Finset.notMem_empty _ hz
+    simp_all
   cases hF.symm.trans hT
 
 lemma bigAux_selected_pair_expect (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
@@ -86,11 +84,8 @@ lemma bigAux_selected_pair_expect (ν : Pattern P J ell m) (block : P.BigGroup �
   have hwF : partialProductWeight (bigFlatWeight P J) (bigFlatSet P J SF) a =
       Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts SF) (eF a) :=
     (partialProductWeight_rows SF a).trans (rowPartialTuple_weight SF (flatPartialRows SF a)).symm
-  have hwT : partialProductWeight (bigFlatWeight P J) (bigFlatSet P J ST) b =
-      Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts ST) (eT b) :=
-    (partialProductWeight_rows ST b).trans (rowPartialTuple_weight ST (flatPartialRows ST b)).symm
   exact congrArg (fun r : ℝ => (r : ℂ) * H (eF a) (eT b))
-    (congrArg₂ (fun r s : ℝ => r * s) hwF hwT)
+    (congrArg₂ (fun r s : ℝ => r * s) hwF ((partialProductWeight_rows ST b).trans (rowPartialTuple_weight ST (flatPartialRows ST b)).symm))
 
 end
 end Erdos821.P4Probe

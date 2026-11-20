@@ -17,7 +17,6 @@ open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMo
 open CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
  def withHeight (s:Input ι) (η:Character) (t:ℝ) : Input ι := {s with η:=η,t:=t}
 

@@ -51,7 +51,7 @@ theorem balanceDenominator_bounds {δ y : ℝ}
     35 / 54 ≤ balanceDenominator δ y ∧ balanceDenominator δ y ≤ 5 / 2 := by
   obtain ⟨hd0, hd1⟩ := denominator_bounds hy0 hy1
   obtain ⟨hp0, hp1⟩ := primeWeight_bounds hy0 hy1
-  have ha : 0 ≤ 5 / 6 - δ := sub_nonneg.mpr hδ1
+  have ha  := sub_nonneg.mpr hδ1
   have hl1 := mul_le_mul_of_nonneg_left hd0 ha
   have hl2 := mul_le_mul_of_nonneg_left hp0 hδ0
   have hu1 := mul_le_mul_of_nonneg_left hd1 ha
@@ -97,7 +97,7 @@ theorem balanced_endpoint_margin {δ y : ℝ}
     nlinarith only [hscaled, hvpos]
   have hEpos : 0 < -balancedExponent δ y := by
     by_contra hn
-    have hn' : -balancedExponent δ y ≤ 0 := le_of_not_gt hn
+    have hn'  := le_of_not_gt hn
     have hp := mul_nonpos_of_nonneg_of_nonpos (le_of_lt hJpos) hn'
     nlinarith only [hcancel, hp]
   have hup := mul_le_mul_of_nonneg_right hJhi (le_of_lt hEpos)

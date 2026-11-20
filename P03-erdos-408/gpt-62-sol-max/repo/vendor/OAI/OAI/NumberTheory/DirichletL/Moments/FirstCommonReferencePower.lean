@@ -17,7 +17,6 @@ open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
 open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
 open CenteredMomentFirstCommonSourcePowerBudget
 local notation "O"=>HeckeFamily.O
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):ℝ:=
   C^ε*(b^N)^α*E/q*(V/C)^(α-1)*Z^(-allowance)
@@ -26,8 +25,8 @@ lemma reference_power_identity (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ)
     (hb:0<b)(hV:0<V)(hC:0<C)(hq:0<q)(hZ:0<Z):
     (q*(V/C)^2*Z^allowance)*normalizedPower b V C q Z allowance ε E N α=
       C^(ε-1)*V*E*(b^N*V/C)^α:=by
-  have hx:0<V/C:=div_pos hV hC
-  have hbN:0<b^N:=pow_pos hb N
+  have hx:=div_pos hV hC
+  have hbN:=pow_pos hb N
   have hprod:Z^allowance*Z^(-allowance)=1:=by
     rw [←Real.rpow_add hZ,add_neg_cancel,Real.rpow_zero]
   unfold normalizedPower

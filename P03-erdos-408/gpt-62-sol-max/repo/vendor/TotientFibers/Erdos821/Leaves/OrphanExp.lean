@@ -23,17 +23,13 @@ theorem fin_tail_filter (n : ℕ) (j : Fin n) :
     by_cases hlast : i = Fin.last n
     · left; exact hlast
     · right
-      have hex : ∃ j0 : Fin n, j0.castSucc = i :=
+      have hex  :=
         Fin.exists_castSucc_eq.mpr hlast
       obtain ⟨i0, hi0⟩ := hex
       refine ⟨i0, ?_, hi0⟩
-      have hlt : j.castSucc < i0.castSucc := hi0 ▸ hi
+      have hlt  := hi0 ▸ hi
       exact Fin.castSucc_lt_castSucc_iff.mp hlt
-  · intro hi
-    rcases hi with rfl | ⟨i0, hi0, heq⟩
-    · exact Fin.castSucc_lt_last j
-    · rw [← heq]
-      exact Fin.castSucc_lt_castSucc_iff.mpr hi0
+  bound
 
 theorem fin_last_tail_empty (n : ℕ) :
     (Finset.univ.filter (fun i : Fin (n+1) => Fin.last n < i)) = ∅ := by
@@ -61,10 +57,7 @@ theorem fin_prefix {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
         intro hcon
         obtain ⟨i0, _, hi0⟩ := Finset.mem_image.mp hcon
         have hne : i0.castSucc ≠ Fin.last n := by
-          intro hcontra
-          have hex : ∃ k : Fin n, k.castSucc = Fin.last n := ⟨i0, hcontra⟩
-          have := (Fin.exists_castSucc_eq.mp hex)
-          exact this rfl
+          simp
         exact hne hi0
       rw [Finset.prod_insert hlast_not,
         Finset.prod_image (Fin.castSucc_injective n).injOn]
@@ -95,18 +88,13 @@ theorem fin_interval_stable (n : ℕ) (j i : Fin n) :
   constructor
   · intro ht
     obtain ⟨hlt, htu⟩ := ht
-    have hne : t ≠ Fin.last n := ne_of_lt (lt_of_lt_of_le htu (Fin.le_last _))
-    have hex : ∃ t0 : Fin n, t0.castSucc = t := Fin.exists_castSucc_eq.mpr hne
+    have hne  := ne_of_lt (lt_of_lt_of_le htu (Fin.le_last _))
+    have hex  := Fin.exists_castSucc_eq.mpr hne
     obtain ⟨t0, ht0⟩ := hex
     refine ⟨t0, ⟨?_, ?_⟩, ht0⟩
-    · have h : j.castSucc < t0.castSucc := ht0 ▸ hlt
-      exact Fin.castSucc_lt_castSucc_iff.mp h
-    · have h : t0.castSucc < i.castSucc := ht0 ▸ htu
-      exact Fin.castSucc_lt_castSucc_iff.mp h
-  · intro ht
-    obtain ⟨t0, ⟨hj, hi⟩, ht0⟩ := ht
-    rw [← ht0]
-    exact ⟨Fin.castSucc_lt_castSucc_iff.mpr hj, Fin.castSucc_lt_castSucc_iff.mpr hi⟩
+    · aesop
+    aesop
+  bound
 
 theorem fin_tail_interval (n : ℕ) (j : Fin n) :
     (Finset.univ.filter (fun t : Fin (n+1) => j.castSucc < t ∧ t < Fin.last n))
@@ -116,16 +104,14 @@ theorem fin_tail_interval (n : ℕ) (j : Fin n) :
   constructor
   · intro ht
     obtain ⟨hlt, htu⟩ := ht
-    have hne : t ≠ Fin.last n := ne_of_lt htu
-    have hex : ∃ t0 : Fin n, t0.castSucc = t := Fin.exists_castSucc_eq.mpr hne
+    have hne  := ne_of_lt htu
+    have hex  := Fin.exists_castSucc_eq.mpr hne
     obtain ⟨t0, ht0⟩ := hex
     refine ⟨t0, ?_, ht0⟩
-    have h : j.castSucc < t0.castSucc := ht0 ▸ hlt
-    exact Fin.castSucc_lt_castSucc_iff.mp h
+    aesop
   · intro ht
     obtain ⟨t0, hj, ht0⟩ := ht
-    rw [← ht0]
-    exact ⟨Fin.castSucc_lt_castSucc_iff.mpr hj, Fin.castSucc_lt_last _⟩
+    aesop
 
 theorem fin_orphan {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
     (∏ i, (1 - f i)) =
@@ -154,10 +140,7 @@ theorem fin_orphan {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
         intro hcon
         obtain ⟨i0, _, hi0⟩ := Finset.mem_image.mp hcon
         have hne : i0.castSucc ≠ Fin.last n := by
-          intro hcontra
-          have hex : ∃ k : Fin n, k.castSucc = Fin.last n := ⟨i0, hcontra⟩
-          have := (Fin.exists_castSucc_eq.mp hex)
-          exact this rfl
+          simp
         exact hne hi0
       rw [Finset.sum_insert hlast_not, add_comm]
       congr 1
@@ -211,7 +194,7 @@ theorem single_avg_swap (h : Fin n → ZMod p) (η : Fin n → ℝ) :
     · intro r _ hr
       have hne : ¬ (r + h i = 0) := by
         intro hcon
-        have : r = -h i := add_eq_zero_iff_eq_neg.mp hcon
+        have  := add_eq_zero_iff_eq_neg.mp hcon
         exact hr this
       simp [hne]
     · simp
@@ -219,13 +202,16 @@ theorem single_avg_swap (h : Fin n → ZMod p) (η : Fin n → ℝ) :
 
 theorem avg_one2 : ((p : ℝ)⁻¹ * ∑ _r : ZMod p, (1 : ℝ)) = 1 := by
   have hcard : (∑ _r : ZMod p, (1 : ℝ)) = (p : ℝ) := by
-    rw [Finset.sum_const, Finset.card_univ, ZMod.card p]
     simp
   rw [hcard]
   have hp : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne p)
   field_simp
 
-theorem double_residue_sum2 (h : Fin n → ZMod p) (η : Fin n → ℝ)
+section
+
+variable (h : Fin n → ZMod p) (η : Fin n → ℝ)
+
+theorem double_residue_sum2
     (j : Fin n) (i : Fin n) :
     (∑ r : ZMod p,
       ((if r + h j = 0 then (1:ℝ) else 0) * (if r + h i = 0 then (1:ℝ) else 0) *
@@ -240,14 +226,14 @@ theorem double_residue_sum2 (h : Fin n → ZMod p) (η : Fin n → ℝ)
         = (if r + h i = 0 then (1:ℝ) else 0) := by
       intro r
       by_cases hr : r + h i = 0
-      · have hrj : r + h j = 0 := heq ▸ hr
+      · have hrj  := heq ▸ hr
         simp [hr, hrj]
-      · have hrj : ¬ (r + h j = 0) := fun hcon => hr (heq ▸ hcon)
+      · have hrj  := fun hcon => hr (heq ▸ hcon)
         simp [hr, hrj]
     simp only [hprod]
     rw [ite_eq_left heq, one_mul]
     rw [Finset.sum_eq_single (-h i)]
-    · have hr0 : (-h i) + h i = 0 := neg_add_cancel (h i)
+    · have hr0  := neg_add_cancel (h i)
       rw [ite_eq_left hr0, one_mul]
       apply Finset.prod_congr rfl
       intro t _
@@ -258,7 +244,7 @@ theorem double_residue_sum2 (h : Fin n → ZMod p) (η : Fin n → ℝ)
     · intro r _ hrne
       have hrne' : ¬ (r + h i = 0) := by
         intro hcon
-        have : r = -h i := add_eq_zero_iff_eq_neg.mp hcon
+        have  := add_eq_zero_iff_eq_neg.mp hcon
         exact hrne this
       simp [hrne']
     · simp
@@ -268,14 +254,13 @@ theorem double_residue_sum2 (h : Fin n → ZMod p) (η : Fin n → ℝ)
     by_cases hrj : r + h j = 0
     · have hri : ¬ (r + h i = 0) := by
         intro hcon
-        have ej : r = -h j := add_eq_zero_iff_eq_neg.mp hrj
-        have ei : r = -h i := add_eq_zero_iff_eq_neg.mp hcon
-        have h1 : -h j = -h i := by rw [← ej, ← ei]
-        exact heq (neg_inj.mp h1)
+        have ej  := add_eq_zero_iff_eq_neg.mp hrj
+        have ei  := add_eq_zero_iff_eq_neg.mp hcon
+        simp_all
       simp [hrj, hri]
     · simp [hrj]
 
-theorem double_avg_swap2 (h : Fin n → ZMod p) (η : Fin n → ℝ) :
+theorem double_avg_swap2 :
     (∑ r : ZMod p, ∑ j : Fin n, ∑ i ∈ Finset.univ.filter (fun i => j < i),
       η j * η i *
         (((if r + h j = 0 then (1:ℝ) else 0) * (if r + h i = 0 then (1:ℝ) else 0) *
@@ -296,6 +281,8 @@ theorem double_avg_swap2 (h : Fin n → ZMod p) (η : Fin n → ℝ) :
   rw [← Finset.mul_sum]
   congr 1
   exact double_residue_sum2 h η j i
+
+end
 
 end Erdos821.GraphLemmas
 
@@ -318,7 +305,7 @@ theorem orphan_expansion (p n : ℕ) [NeZero p] (η : Fin n → ℝ) (h : Fin n 
             (1 - η t * (if r + h t = 0 then (1:ℝ) else 0)) := by
     intro r
     have hh := Erdos821.GraphLemmas.fin_orphan n (fun i => η i * (if r + h i = 0 then (1:ℝ) else 0))
-    simpa [mul_assoc] using hh
+    assumption
   -- sum over r
   have hsum : (∑ r : ZMod p, ∏ i, (1 - η i * (if r + h i = 0 then (1:ℝ) else 0)))
       = (∑ _r : ZMod p, (1:ℝ)) - (∑ r : ZMod p, ∑ i, η i * (if r + h i = 0 then (1:ℝ) else 0)) +

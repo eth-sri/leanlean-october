@@ -18,14 +18,12 @@ theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime :
   have hk2 : 2≤k := by
     by_contra h
     have hk1 : k=1 := by omega
-    subst k
-    exact hprime (by simpa using hP)
+    simp_all
   refine ⟨pow_ne_zero _ hP.ne_zero,?_⟩
   intro Q hQ
   rw [hP.irreducible.normalizedFactors_pow] at hQ ⊢
   have hQP := (Multiset.mem_replicate.mp hQ).2
-  subst Q
-  simpa using hk2
+  simp_all
 
 def logWeight (I : Ideal O) : ℝ := IdealMangoldt.value I / Real.log (Ideal.absNorm I)
 
@@ -41,11 +39,11 @@ theorem logWeight_le_one (I : Ideal O) : logWeight I≤1 := by
 theorem logWeight_prime {P : Ideal O} (hP : Prime P) : logWeight P=1 := by
   have hp2 : (2 : ℝ)≤P.absNorm := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩
-  have hp : 0<Real.log (P.absNorm : ℝ) := Real.log_pos (by linarith)
+  have hp  := Real.log_pos (by linarith)
   rw [logWeight, PNT.IdealPrimeMass.value_prime hP, div_self hp.ne']
 
 theorem logWeight_eq_zero {I : Ideal O} (hI : ¬IsPrimePow I) : logWeight I=0 := by
-  simp only [logWeight, IdealMangoldt.value, ite_eq_right hI, zero_div]
+  simp [logWeight, IdealMangoldt.value, ite_eq_right hI, zero_div]
 
 theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal O→ℂ) :
     (∑ I∈S, (logWeight I : ℂ)*idealCoeff χ I*f I) -
@@ -59,7 +57,7 @@ theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal 
   · simp only [hP, ite_true, not_true_eq_false, and_false, ite_false,
       logWeight_prime hP, Complex.ofReal_one, one_mul, sub_self]
   · by_cases hp : IsPrimePow I
-    · simp [hP,hp]
+    · simp_all
     · simp [hP,hp,logWeight_eq_zero hp]
 
 theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
@@ -85,7 +83,7 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
       intro I hI
       rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (logWeight_nonneg _)]
-      have hcoeff : logWeight I*‖idealCoeff χ I‖≤1 :=
+      have hcoeff  :=
         (mul_le_of_le_one_right (logWeight_nonneg I) (idealCoeff_norm_le_one χ I)).trans
           (logWeight_le_one I)
       exact (mul_le_mul_of_nonneg_right hcoeff (norm_nonneg _)).trans

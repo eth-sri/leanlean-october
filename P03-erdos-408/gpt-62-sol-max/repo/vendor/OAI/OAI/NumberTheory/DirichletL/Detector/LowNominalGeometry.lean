@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.LowOriginalPools
+public import OAI.NumberTheory.DirichletL.Detector.LowSlotScales
+public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 
 @[expose] public section
 
@@ -11,7 +12,6 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeRaySlots
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowUnselectedLength {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) : ℝ := ∑i∈J,ell i
 
@@ -61,7 +61,6 @@ lemma lowPhysicalScale_nominal_bound (C : CalibrationData) (Z L c d : ℝ)
     (hZ : 0<Z) (hc : 0<c) (hL : c*Z^d≤L) :
     lowPhysicalScale C (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L)≤
       (elementNorm C.generator/c^2)*Z^(5/6-2*d:ℝ) := by
-  have hl : 0<L := lt_of_lt_of_le (by positivity) hL
   rw [lowPhysicalScale_source C Z L hZ]
   calc
     _≤elementNorm C.generator*Z^(5/6:ℝ)/(c*Z^d)^2 :=

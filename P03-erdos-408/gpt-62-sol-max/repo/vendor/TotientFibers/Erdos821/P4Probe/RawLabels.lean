@@ -21,7 +21,7 @@ def splitBigLabels (P : PrimeGroups) (J ell : ℕ) :
     funext g i
     refine Fin.addCases (fun j => ?_) (fun j => ?_) i <;> simp
   right_inv a := by
-    apply Prod.ext <;> funext g i <;> simp
+    simp
 
 lemma idealMass_split (P : PrimeGroups) (J ell : ℕ) (a : P.BigLabels (J + ell)) :
     P.idealMass a = P.idealMass ((splitBigLabels P J ell a).1) *
@@ -39,8 +39,7 @@ lemma raw_shared_iff {P : PrimeGroups} {J ell m : ℕ} (g : P.Group) (i : Fin (J
     exact h ▸ j.isLt
   · intro hi
     refine ⟨⟨i.val, hi⟩, ?_, ?_⟩
-    · apply Fin.ext
-      rfl
+    · rfl
     · simp [rawPattern]
 
 lemma raw_matches_prefix {P : PrimeGroups} {J ell m : ℕ}
@@ -52,12 +51,11 @@ lemma raw_matches_prefix {P : PrimeGroups} {J ell m : ℕ}
     funext g j
     exact h g (Fin.castAdd ell j) ((raw_shared_iff g.val _).mpr j.isLt)
   · intro h g i hi
-    have hj : i.val < J := (raw_shared_iff g.val i).mp hi
+    have hj  := (raw_shared_iff g.val i).mp hi
     let j : Fin J := ⟨i.val, hj⟩
-    have he : Fin.castAdd ell j = i := by apply Fin.ext; rfl
+    have he : Fin.castAdd ell j = i := by rfl
     have hv := congrFun (congrFun h g) j
-    change a g (Fin.castAdd ell j) = b g (Fin.castAdd ell j) at hv
-    rwa [he] at hv
+    assumption
 
 lemma raw_freshMass_tail {P : PrimeGroups} {J ell m : ℕ} (b : P.BigLabels (J + ell)) :
     (rawPattern P J ell m).freshMass b = P.idealMass ((splitBigLabels P J ell b).2) := by
@@ -75,8 +73,7 @@ lemma raw_freshMass_tail {P : PrimeGroups} {J ell m : ℕ} (b : P.BigLabels (J +
   intro i _
   have hi : ¬(rawPattern P J ell m).shared g.val (Fin.natAdd J i) := by
     rw [raw_shared_iff]
-    change ¬J + i.val < J
-    omega
+    simp
   rw [ite_eq_right hi]
   rfl
 
@@ -86,12 +83,6 @@ def prefixProduct {P : PrimeGroups} {J : ℕ} (a : P.BigLabels J) : ℕ :=
 lemma raw_DBig_prefix {P : PrimeGroups} {J ell m : ℕ}
     (a : P.BigLabels (J + ell)) (u : P.BigAux J) :
     (rawPattern P J ell m).DBig a u = prefixProduct ((splitBigLabels P J ell a).1) := by
-  unfold Pattern.DBig prefixProduct
-  apply Finset.prod_congr rfl
-  intro g _
-  apply Finset.prod_congr rfl
-  intro i _
-  simp only [rawPattern, Finset.notMem_empty, ite_false]
   rfl
 
 end

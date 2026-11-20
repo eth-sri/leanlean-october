@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceDictionary
 public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
@@ -44,7 +45,7 @@ lemma triple_sum {τ : Type*} {υ : Type*} {ξ : Type*} {A : Type*} [AddCommMono
       ∑j∈S×ˢ(T×ˢU),g j.1 j.2.1 j.2.2 := by
     apply Finset.sum_bij (fun j _=>(j.1.val,j.2.1.val,j.2.2.val))
     · intro j _
-      exact Finset.mem_product.mpr ⟨j.1.property,Finset.mem_product.mpr ⟨j.2.1.property,j.2.2.property⟩⟩
+      simp
     · intro i _ j _ h
       apply Prod.ext
       · exact Subtype.ext (congrArg Prod.fst h)
@@ -153,7 +154,7 @@ def heightCoefficient (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) : ℂ :=
 lemma heightCoefficient_norm (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) (hI : I≠0) :
     ‖heightCoefficient β t I‖=‖β I‖ := by
   have hn : (0:ℝ)<I.absNorm := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   rw [heightCoefficient,norm_mul]
   have hp : ‖(I.absNorm:ℂ)^(Complex.I*t)‖=1 := by
     simpa using Complex.norm_cpow_eq_rpow_re_of_pos hn (Complex.I*t)

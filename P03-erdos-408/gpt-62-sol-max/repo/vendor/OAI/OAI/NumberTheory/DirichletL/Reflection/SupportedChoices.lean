@@ -31,7 +31,7 @@ def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→I
     (slot_choice_mask_split L T q.2.val q.1.val F K).mpr ⟨q.1.property,q.2.property⟩⟩
   left_inv p := by
     apply Subtype.ext
-    exact (slotChoiceSplit L T).symm_apply_apply p.val
+    simp
   right_inv q := by
     apply Prod.ext <;> apply Subtype.ext
     · exact congrArg Prod.snd ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))

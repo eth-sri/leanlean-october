@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.HeckeMaskDescent
 open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge
@@ -20,10 +20,10 @@ theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :
   let : StrongNormalizationMonoid O := UniqueFactorizationMonoid.strongNormalizationMonoid
   let s := (normalizedFactors r).filter (fun p => ¬p ∣ a)
   refine ⟨s.prod, IsCoprime.symm ?_⟩
-  apply isCoprime_of_prime_dvd (by rintro ⟨h,-⟩; exact hr h)
+  apply isCoprime_of_prime_dvd (by simp_all)
   intro p hp hpr hpnew
   by_cases hpa : p ∣ a
-  · have hpc : ¬p ∣ c := fun h => hp.not_isUnit (hac.isUnit_of_dvd' hpa h)
+  · have hpc  := fun h => hp.not_isUnit (hac.isUnit_of_dvd' hpa h)
     have hps : ¬p ∣ s.prod := by
       intro h
       obtain ⟨q,hq,hpq⟩ := hp.exists_mem_multiset_dvd h
@@ -33,7 +33,7 @@ theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :
     exact (hp.dvd_or_dvd ht).elim hps hpc
   · obtain ⟨q,hq,hpq⟩ := exists_mem_normalizedFactors_of_dvd hr hp.irreducible hpr
     have hqs : q ∈ s := Multiset.mem_filter.mpr ⟨hq,fun h => hpa (hpq.dvd.trans h)⟩
-    have ht : p ∣ s.prod*c := dvd_mul_of_dvd_left (hpq.dvd.trans (Multiset.dvd_prod hqs)) c
+    have ht  := dvd_mul_of_dvd_left (hpq.dvd.trans (Multiset.dvd_prod hqs)) c
     exact hpa (by convert dvd_sub hpnew ht using 1 ; ring)
 
 theorem exists_primitive_above (χ : Character) (Q : Ideal O)
@@ -41,7 +41,7 @@ theorem exists_primitive_above (χ : Character) (Q : Ideal O)
       (Q.map (Ideal.Quotient.mk χ.modulus))) :
     ∃ ψ : Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       Q ≤ ψ.modulus ∧ InducedBy χ ψ := by
-  let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
+  let  := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   obtain ⟨K,φ,hMK,hQK,hK,hprim,hnorm,hmask⟩ :=
     ConductorPresentation.exists_primitive_presentation_above_quotient
       χ.modulus χ.residue (Q.map (Ideal.Quotient.mk χ.modulus)) hdesc
@@ -59,7 +59,7 @@ theorem descent_of_mask (χ χ' ψ : Character) (r : O) (hr : r ≠ 0)
     (hind : InducedBy χ' ψ) :
     FiniteConductor.FactorsThroughIdeal χ.residue
       (ψ.modulus.map (Ideal.Quotient.mk χ.modulus)) := by
-  let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
+  let  := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   rw [FiniteConductor.factorsThroughIdeal_iff]
   intro u hu
   obtain ⟨q,hq,hqu⟩ := (Ideal.mem_map_iff_of_surjective
@@ -92,10 +92,10 @@ theorem descent_of_mask (χ χ' ψ : Character) (r : O) (hr : r ≠ 0)
     exact MulChar.apply_ne_zero_iff.mpr (hnχ ▸ u.isUnit)
   have hn0 : n ≠ 0 := by
     intro hz
-    have hunit : IsUnit goodLambda := (htall.of_mul_right_right).isUnit_of_dvd'
+    have hunit  := (htall.of_mul_right_right).isUnit_of_dvd'
       (by change goodLambda ∣ n; rw [hz]; exact dvd_zero _) (dvd_refl _)
     exact goodLambda_prime.not_isUnit hunit
-  have hcop : IsCoprime (Ideal.span {n}) χ'.modulus :=
+  have hcop  :=
     (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hnχ')
   have heq := elementCoeff_eq_of_inducedBy χ' ψ hind n hn0 hcop
   rw [he n,ite_eq_left ht] at heq
@@ -112,8 +112,8 @@ theorem inducedBy_mask (χ χ' ψ : Character) (r : O)
   by_cases hc : IsCoprime I χ'.modulus
   · have hn' := CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ' I |>.mpr ⟨hI,hc⟩
     let n := idealGenerator I
-    have hn0 : n ≠ 0 := idealGenerator_ne_zero I hI
-    have hspan : Ideal.span {n} = I := span_idealGenerator I
+    have hn0  := idealGenerator_ne_zero I hI
+    have hspan  := span_idealGenerator I
     have hval' : elementCoeff χ' n = idealCoeff χ' I := by
       rw [← idealCoeff_span χ' hn0,hspan]
     have hval : elementCoeff χ n = idealCoeff χ I := by

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SourceLiveColumn
 
 @[expose] public section
@@ -10,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAllocationCost
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAddedZeroUniform
+open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 
  theorem actualAllocations_uniform_small_power (N : ℕ) (ε : ℝ) (hε : 0<ε) :
@@ -24,7 +24,7 @@ local notation "O" => ActualEisensteinCubic.O
   refine ⟨(1+D)^(N+1),by positivity,?_⟩
   intro ι _ hn S C hC
   have hNC : (1:ℝ)≤Ideal.absNorm C := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hC)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hC)
   have hb : 1≤(1+D)*(Ideal.absNorm C:ℝ)^δ := by
     nlinarith [Real.one_le_rpow hNC hδ.le]
   have hd : δ*(N+1:ℕ)=ε := by

@@ -21,8 +21,8 @@ private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
     (∑ i, w i * (d i).smoothedKernel W X) =
       (1 / (2 * Real.pi) : ℂ) * ∫ t : ℝ,
         besselSmoothingIntegrand F thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I) := by
-  let : Countable Eis := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-  let G : ι → ℝ → ℂ := fun i => cuspBarProfile cubicSourceConjugateFunction (d i).point
+  let  := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+  let G  := fun i => cuspBarProfile cubicSourceConjugateFunction (d i).point
   let J : ι → ℝ → ℂ := fun i t =>
     besselSmoothingIntegrand (G i) thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I)
   have hVs := Vstar_support W lo hi hsupp

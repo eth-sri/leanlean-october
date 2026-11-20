@@ -111,11 +111,9 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
     have hp:=supported s R seed p
     have hg:=actual_common_gates s R seed hseed hz₁ hz₂ p.val.1 p.val.2 p.property
     have hND:1≤(p.val.2.absNorm:ℝ):=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hp.2.1)
-    have hcapD:sourceRadius s/(p.val.2.absNorm:ℝ)≤Z^(B+1):=
-      (div_le_self hH.le hND).trans hcap
     have hh:=hblock.2 s R seed a₁ a₂ ha₁ ha₂ hs₁ hs₂ p.val.1 p.val.2 hp.1 hp.2 hg.2.2.1 E 1 1
       (fixedPair s.η p.val.1 p.val.2 hp.1 E 1 1) (retainedRows (localRadius s R seed K Z ξ p E) 1)
-      K hK (fun i => (n i).val) hcapD EL ER hEL hER (hcol p E hE n hne).1 (hcol p E hE n hne).2
+      K hK (fun i => (n i).val) ((div_le_self hH.le hND).trans hcap) EL ER hEL hER (hcol p E hE n hne).1 (hcol p E hE n hne).2
     simp only [pow_zero,one_mul] at hh
     convert hh using 1 <;>
       simp only [CenteredMomentFirstReferenceSource.originalBlock,A,sourceFactor,pairedBudget,radicalWeight,
@@ -133,7 +131,6 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
     _≤_:=hh
     _=_:=by
       rw [show Z^ε=Z^(ε/2)*Z^(ε/2) by rw [←Real.rpow_add (by linarith [hblock.1]:0<Z)];congr 1;ring]
-      dsimp [A]
       ring
 
 end SevenEighths.CenteredMomentFirstReferenceEnergy

@@ -10,15 +10,15 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourceError
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
 open CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool
-open CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow
+open CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization CenteredMomentGaussEnergy
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
  theorem source_error_residual (S : Finset (Ideal O)) (c : Ideal O → ℂ)

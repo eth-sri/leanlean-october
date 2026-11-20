@@ -1,17 +1,17 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
-public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstNeighborhood
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
+public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 theorem unramifiedFactor_first_neighborhood_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)

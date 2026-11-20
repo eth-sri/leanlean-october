@@ -63,8 +63,7 @@ theorem SourceData.probe_low {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
   exact normalizedProbe_low F.modulus ⊤ le_top F.S F.exclusions F.maximal 1 2 1 loss
     (by norm_num) (by norm_num) hloss D.ell (fun j=>(D.slots_bounds j).1) D.slots_injective D.slots_sum
     (fun _=>F.w) (fun _=>F.smooth) (fun _=>F.compact) (fun _=>F.support)
-    (fun _=>F.bounded) (fun _=>F.nonzero) F.W F.W 1 2 1 2 (by norm_num) (by norm_num)
-    F.complex_support F.complex_support F.real F.real F.nonnegative F.nonnegative F.complex_nonzero F.complex_nonzero η
+    (fun _=>F.bounded) (fun _=>F.nonzero) ⟨F.W, F.W, 1, 2, 1, 2, (by norm_num), (by norm_num), F.complex_support, F.complex_support⟩ F.real F.real F.nonnegative F.nonnegative F.complex_nonzero F.complex_nonzero η
 
 end SevenEighths.ProbeFinalAssembly
 

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonPairedSource
 
 @[expose] public section
@@ -39,7 +40,7 @@ theorem scalar_volume_exact (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pool
   rw [commonScalar,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _),hs]
   have hsq:=Real.sq_sqrt hr.le
-  have hn:Real.sqrt (rawReduction B.val s.P)≠0:=(Real.sqrt_pos.mpr hr).ne'
+  have hn:=(Real.sqrt_pos.mpr hr).ne'
   field_simp
   rw [hsq]
   ring
@@ -51,7 +52,7 @@ theorem scalar_volume_bound (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
   rw [scalar_volume_exact]
   have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
   have hN:(0:ℝ)<Ideal.absNorm C:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hC)
   by_cases hz:frozenCoefficient B.val C R s.ν s.W s.P=0
   · rw [hz,norm_zero,zero_mul,zero_div]
     exact div_nonneg (mul_nonneg (frozenProfile_nonneg s) (Real.sqrt_nonneg _)) hN.le

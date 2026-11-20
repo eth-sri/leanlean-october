@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.Extraction.TypeII.Pointwise
 
 /-!
@@ -27,7 +28,7 @@ theorem recipSum_le {E x γ : ℝ} {N : ℕ}
   have h := hE _ _ h2 hN
   rw [abs_le] at h
   have hl : 0 < Real.log (x ^ γ) := Real.log_pos (by linarith)
-  have : E / Real.log (x ^ γ) ≤ 1 := (div_le_one hl).2 hEγ
+  have  := (div_le_one hl).2 hEγ
   unfold recipSum
   linarith [h.2]
 
@@ -40,7 +41,6 @@ theorem highProd_le {E x : ℝ} {N : ℕ} {ρ : ℝ} (hρ : 0 ≤ ρ)
     highProd x N ρ ≤
       Real.exp (2 * ρ * (Real.log (Real.log N / Real.log (proxyCutoff x)) + 1)) := by
   unfold highProd
-  have hY0 : 0 < proxyCutoff x := by linarith
   have hpos : ∀ p ∈ primesIoc (proxyCutoff x) N, (0 : ℝ) < p := fun p hp => by
     have := (mem_primesIoc.1 hp).2.1
     linarith
@@ -52,13 +52,11 @@ theorem highProd_le {E x : ℝ} {N : ℕ} {ρ : ℝ} (hρ : 0 ≤ ρ)
     have h := hE _ _ h2 hN
     rw [abs_le] at h
     have hl : 0 < Real.log (proxyCutoff x) := Real.log_pos (by linarith)
-    have : E / Real.log (proxyCutoff x) ≤ 1 := (div_le_one hl).2 hEY
+    have  := (div_le_one hl).2 hEY
     have hρs : ∑ i ∈ primesIoc (proxyCutoff x) N, ρ / (i : ℝ) =
         ρ * ∑ i ∈ primesIoc (proxyCutoff x) N, (1 : ℝ) / i := by
       rw [mul_sum]; exact sum_congr rfl fun i _ => by ring
     rw [hρs]
-    have hsum : ∑ p ∈ primesIoc (proxyCutoff x) N, (1 : ℝ) / p ≤
-        Real.log (Real.log N / Real.log (proxyCutoff x)) + 1 := by linarith [h.2]
     nlinarith
 
 /-! ### Polynomial bookkeeping in `s` -/
@@ -128,7 +126,7 @@ theorem inertPerCluster_le {K : ℕ} (hK : 1 ≤ K) {CN x : ℝ} (hs : 0 ≤ log
       le_mul_of_one_le_right (by positivity) hK'
     linarith
   have h2 := Nat.ceil_lt_add_one (show 0 ≤ |CN| * logLogLog x by positivity)
-  have h3 : ⌈CN * logLogLog x / K⌉₊ ≤ ⌈|CN| * logLogLog x⌉₊ := Nat.ceil_mono h1
+  have h3  := Nat.ceil_mono h1
   have h4 : (⌈CN * logLogLog x / K⌉₊ : ℝ) ≤ ⌈|CN| * logLogLog x⌉₊ := by exact_mod_cast h3
   linarith
 
@@ -138,16 +136,15 @@ theorem slotBound_le_mul {c E₂ x : ℝ} (hc : 0 < c) (hE₂ : 0 ≤ E₂) (hT 
   unfold slotBound
   set T := logLog x
   have hT20 : 1 ≤ T ^ 20 := one_le_pow₀ hT
-  have hc2 : 0 ≤ 2 / c := by positivity
   have h1 : 2 * T ^ 20 / c + 1 ≤ (2 / c + 1) * T ^ 20 := by
     have : 2 * T ^ 20 / c = 2 / c * T ^ 20 := by ring
     rw [this]; nlinarith
   have h2 : T + E₂ + 1 ≤ (E₂ + 2) * T ^ 20 := by
     have : T ≤ T ^ 20 := le_self_pow₀ hT (by norm_num)
     nlinarith
-  have h1' : (2 * T ^ 20 / c + 1) ^ 3 ≤ ((2 / c + 1) * T ^ 20) ^ 3 :=
+  have h1'  :=
     pow_le_pow_left₀ (by positivity) h1 3
-  have h2' : (T + E₂ + 1) ^ 3 ≤ ((E₂ + 2) * T ^ 20) ^ 3 :=
+  have h2'  :=
     pow_le_pow_left₀ (by positivity) h2 3
   have e1 : ((2 / c + 1) * T ^ 20) ^ 3 = (2 / c + 1) ^ 3 * T ^ 60 := by ring
   have e2 : ((E₂ + 2) * T ^ 20) ^ 3 = (E₂ + 2) ^ 3 * T ^ 60 := by ring
@@ -163,8 +160,7 @@ theorem exp_factors_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {K : ℕ} (hK : 1 
       Real.exp (K * (Real.log 2 + Real.log (2 / (1 - q))) * (|CN| * logLogLog x + 2)) := by
   have hb : 1 ≤ 2 / (1 - q) := by rw [le_div_iff₀ (by linarith)]; linarith
   have hb0 : 0 < 2 / (1 - q) := by linarith
-  have hlb : 0 ≤ Real.log (2 / (1 - q)) := Real.log_nonneg hb
-  have hl2 : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
+  have hlb  := Real.log_nonneg hb
   have hN' := inertPerCluster_le (CN := CN) hK hs
   set N' := inertPerCluster K CN x
   rw [← pow_add, ← Real.rpow_natCast, ← Real.rpow_natCast, Real.rpow_def_of_pos (by norm_num),
@@ -251,7 +247,6 @@ theorem sum_candidate_log_le {E x : ℝ} (hL : 1 ≤ Real.log x)
   refine (sum_le_sum_of_subset_of_nonneg (candidatePrimes_subset hL) fun p hp _ => ?_).trans
     (by linarith [h.2])
   have := (mem_primesIoc_one.1 hp).1.one_lt.le
-  have : 0 ≤ Real.log p := Real.log_nonneg (by exact_mod_cast this)
   positivity
 
 /-- `∑_P 1/p ≤ log(L^{0.45}/log 2) + E/log 2 + 1/2`, by Mertens' second theorem. -/
@@ -318,9 +313,8 @@ theorem rankin_small {x γ c₃ S₀ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x)
   set η := Real.log x ^ (-(45 / 100) : ℝ) with hη
   have hL0 : 0 < Real.log x := by linarith
   have hη0 : 0 < η := by positivity
-  have hη1 : η ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hL (by norm_num)
   have hxγ : 0 < x ^ γ := by positivity
-  have hw0 : 0 < w := lt_of_lt_of_le hxγ hw
+  have hw0  := lt_of_lt_of_le hxγ hw
   -- `w^{1-η} ≤ w exp(-γ L^{0.55})`
   have hwθ : w ^ (1 - η) ≤ w * Real.exp (-(γ * Real.log x ^ (55 / 100 : ℝ))) := by
     rw [Real.rpow_sub hw0, Real.rpow_one, div_eq_mul_inv]
@@ -349,14 +343,13 @@ theorem rankin_small {x γ c₃ S₀ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x)
       exact Real.log_le_log hp0 hle
     calc Real.log p * η ≤ Real.log x ^ (45 / 100 : ℝ) * η :=
           mul_le_mul_of_nonneg_right hlogp hη0.le
-      _ = 1 := by
-          rw [hη, ← Real.rpow_add hL0]; norm_num
+      _ = 1 := by rpow_ring hL0
   have hhalf : ∀ p ∈ candidatePrimes x, (p : ℝ) ^ (-(1 - η)) ≤ 1 / 2 := by
     intro p hp
     obtain ⟨hpp, hlo, -⟩ := mem_candidatePrimes hL hp
     have hp6 : (6 : ℝ) ≤ p := by
       have h2 : (2.7 : ℝ) ≤ Real.exp 1 := by have := Real.exp_one_gt_d9; linarith
-      have h3 : Real.exp 2 ≤ Real.exp (Real.log x ^ (28 / 100 : ℝ)) := Real.exp_le_exp.2 hL28
+      have h3  := Real.exp_le_exp.2 hL28
       have h4 : Real.exp 2 = Real.exp 1 * Real.exp 1 := by rw [← Real.exp_add]; norm_num
       nlinarith
     have := hpθ p hp

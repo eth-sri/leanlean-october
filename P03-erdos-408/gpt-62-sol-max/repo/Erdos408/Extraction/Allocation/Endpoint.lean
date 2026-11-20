@@ -150,7 +150,7 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
     (hnx : (n : ℝ) ≤ κ * x) :
     |slotCount x u v B n - slotMean x u v B| ≤ (2 / ε + 1) ^ 3 + H ^ 3 := by
   have hx0 : 0 < x := by linarith
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hn0 : n ≠ 0 := by omega
   -- the primes of `n` above `x^ε`
   set D := n.primeFactors.filter fun p : ℕ => x ^ ε < (p : ℝ)
@@ -209,7 +209,7 @@ lemma abs_slotCount_sub_slotMean_le {x κ ε H : ℝ} (hx : 1 < x) (hκ : Real.l
             have := hlo'.trans_le hhi'
             have := (rpow_lt_rpow_left_iff hx).1 this
             linarith [hu l]
-          have hvi : v i ≤ 1 := (single_le_sum (fun l _ => hvl l) (mem_univ i)).trans hv
+          have hvi  := (single_le_sum (fun l _ => hvl l) (mem_univ i)).trans hv
           refine mem_primesIoc.2 ⟨hp, ?_, hhi.trans ?_⟩
           · exact lt_of_le_of_lt (rpow_le_rpow_of_exponent_le hx.le (hu i)) hlo
           · simpa using rpow_le_rpow_of_exponent_le hx.le hvi
@@ -232,25 +232,25 @@ lemma eventually_sum_primesIoc_le {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atT
     eventually_le_logLog (4 * |Real.log c| + 4 * (E + 1) + c + 1),
     eventually_mul_logLogLog_le 20 (show (0 : ℝ) < 1 / 2 by norm_num), eventually_gt_atTop 1]
     with x hL hT hT' hs hx
-  have hT1 : 1 ≤ logLog x := (le_max_right _ _).trans hT
+  have hT1  := (le_max_right _ _).trans hT
   have hT0 : 0 < logLog x := by linarith
   have hx0 : 0 < x := by linarith
-  have hLpos : 0 < Real.log x := Real.log_pos hx
+  have hLpos  := Real.log_pos hx
   rw [rpow_one, show (22 : ℝ) = ((22 : ℕ) : ℝ) by norm_num, rpow_natCast] at hL
   set T := logLog x
   set ε := c / T ^ 20
   have hT20 : 0 < T ^ 20 := by positivity
-  have hε : 0 < ε := div_pos hc hT20
+  have hε  := div_pos hc hT20
   -- `ε L ≥ T ≥ 1`
   have hεL : T ≤ ε * Real.log x := by
-    have hcT : 1 / c ≤ T := (le_max_left _ _).trans hT
+    have hcT  := (le_max_left _ _).trans hT
     rw [div_le_iff₀ hc] at hcT
     rw [show ε * Real.log x = c * Real.log x / T ^ 20 by ring, le_div_iff₀ hT20]
     calc T * T ^ 20 = T ^ 20 * T * 1 := by ring
       _ ≤ T ^ 20 * T * (T * c) := by gcongr
       _ = c * T ^ 22 := by ring
       _ ≤ c * Real.log x := by gcongr
-  have hεx : Real.log (x ^ ε) = ε * Real.log x := Real.log_rpow hx0 ε
+  have hεx  := Real.log_rpow hx0 ε
   have h2 : 2 ≤ x ^ ε := by
     rw [← exp_log (rpow_pos_of_pos hx0 ε), hεx]
     have := add_one_le_exp (ε * Real.log x)
@@ -277,7 +277,6 @@ lemma eventually_sum_primesIoc_le {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atT
     nlinarith
   have hlc : -Real.log c ≤ T / 4 := by
     have h1 := neg_abs_le (Real.log c)
-    have h2 : 0 ≤ E := hE
     linarith
   rw [hlog] at hm
   linarith

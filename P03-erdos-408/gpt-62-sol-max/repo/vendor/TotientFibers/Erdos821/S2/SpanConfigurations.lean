@@ -9,7 +9,6 @@ public import Erdos821.S2.SpanUniqueness
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -58,8 +57,7 @@ theorem history_distinct (hBirth : SpanBirthTask)
   exact hBirth F P J m n A c.1.val c.2.1.val c.1.property c.2.1.property hk c.2.2.1.val
 
 theorem history_projection : c.history.toResiduePath = c.1.val := by
-  unfold history
-  rw [MemoryHistory.reorderBatches_projection, ResiduePath.reconstructedHistory_projection]
+  rfl
 
 theorem history_injective : Function.Injective (history (A := A) (n := n)) := by
   intro c d he
@@ -74,13 +72,13 @@ theorem history_injective : Function.Injective (history (A := A) (n := n)) := by
     (fun i g => congrArg (fun H : MemoryHistory A n => (H.before i).2.2 g) he)
     (fun i g => congrArg (fun H : MemoryHistory A n => (H.after i).2.2 g) he))
   cases hs
-  have hy : y = y' := Subtype.ext (by
+  have hy  := Subtype.ext (by
     have hv := congrArg (fun H : MemoryHistory A n => (H.before 0).1) he
     change translateSmallResidues (q.val.offset 0) y.val =
       translateSmallResidues (q.val.offset 0) y'.val at hv
     simpa only [ResiduePath.offset_zero, translateSmallResidues_zero] using hv)
   cases hy
-  have ho : sigma = tau :=
+  have ho  :=
     MemoryHistory.reorderBatches_injective _
       (fun i g => q.val.ghostBatchLabels_injective s.val i g) he
   cases ho

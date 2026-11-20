@@ -19,31 +19,11 @@ namespace Erdos821.Classical
 
 noncomputable section
 
-/-- Mellin phase used in the analytic blueprint. -/
-def mellin (n : ℕ) (t : ℝ) : ℂ := Complex.exp (Complex.I * t * Real.log n)
-
-/-- A finite Dirichlet polynomial. -/
-def dp (s : Finset ℕ) (c : ℕ → ℂ) (t : ℝ) : ℂ :=
-  ∑ n ∈ s, c n * mellin n t
-
-/-- The coefficient square norm on a finite support. -/
-def sqNorm (s : Finset ℕ) (c : ℕ → ℂ) : ℝ := ∑ n ∈ s, ‖c n‖ ^ 2
-
-/-- Copy of the architect's `MeanSquares` contract, bridged below. -/
-def MeanSquares : Prop :=
-  ∃ K : ℝ, 0 < K ∧ ∀ (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ), lo ≤ hi →
-    (∫ t : ℝ in lo..hi, ‖dp (Finset.Icc 1 Y) a t‖ ^ 2) ≤
-      K * (hi - lo + Y * Real.log (2 * Y)) * sqNorm (Finset.Icc 1 Y) a ∧
-    ∀ E : Finset ℝ, (∀ t ∈ E, lo ≤ t ∧ t ≤ hi) →
-      (∀ t ∈ E, ∀ u ∈ E, t ≠ u → 1 ≤ |t - u|) →
-      (∑ t ∈ E, ‖dp (Finset.Icc 1 Y) a t‖ ^ 2) ≤
-        K * (hi - lo + 1 + Y * Real.log (2 * Y)) * Real.log (2 * Y) ^ 2 *
-          sqNorm (Finset.Icc 1 Y) a
+open Blueprint (MeanSquares)
+open Blueprint.Analytic (mellin dp sqNorm)
 
 lemma ioc_zero_eq_icc_one (Y : ℕ) : Finset.Ioc 0 Y = Finset.Icc 1 Y := by
-  ext n
-  simp only [Finset.mem_Ioc, Finset.mem_Icc]
-  omega
+  rfl
 
 lemma mellin_add (n : ℕ) (x y : ℝ) :
     mellin n (x + y) = mellin n x * mellin n y := by
@@ -62,20 +42,26 @@ lemma mellin_norm (n : ℕ) (x : ℝ) : ‖mellin n x‖ = 1 := by
   rw [he]
   exact Complex.norm_exp_ofReal_mul_I _
 
-lemma sqNorm_mellin_mul (s : Finset ℕ) (a : ℕ → ℂ) (x : ℝ) :
+section
+
+variable (s : Finset ℕ) (a : ℕ → ℂ)
+
+lemma sqNorm_mellin_mul (x : ℝ) :
     sqNorm s (fun n => a n * mellin n x) = sqNorm s a := by
   unfold sqNorm
   apply Finset.sum_congr rfl
   intro n hn
   rw [norm_mul, mellin_norm, mul_one]
 
-lemma dp_shift (s : Finset ℕ) (a : ℕ → ℂ) (x y : ℝ) :
+lemma dp_shift (x y : ℝ) :
     dp s a (x + y) = dp s (fun n => a n * mellin n x) y := by
   unfold dp
   apply Finset.sum_congr rfl
   intro n hn
   rw [mellin_add]
   ring
+
+end
 
 lemma intervalIntegral_symmetric_reflect (T : ℝ) (f : ℝ → ℝ) :
     (∫ t : ℝ in -T..T, f (-t)) = (∫ t : ℝ in -T..T, f t) := by
@@ -88,7 +74,11 @@ lemma mrt_negative_phase_eq_dp (n : ℕ) (t : ℝ) :
   push_cast
   ring
 
-lemma mrtExponentialPolynomial_eq_dp (Y : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+
+variable (Y : ℕ) (a : ℕ → ℂ)
+
+lemma mrtExponentialPolynomial_eq_dp (t : ℝ) :
     OAI.TwoPointCorrelations.mrtExponentialPolynomial (Finset.Ioc 0 Y) a
         (fun n => -Real.log (n : ℝ)) t = dp (Finset.Icc 1 Y) a (-t) := by
   unfold OAI.TwoPointCorrelations.mrtExponentialPolynomial dp
@@ -97,7 +87,7 @@ lemma mrtExponentialPolynomial_eq_dp (Y : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   intro n hn
   rw [mrt_negative_phase_eq_dp]
 
-lemma symmetric_mean_square (Y : ℕ) (a : ℕ → ℂ) {T : ℝ} (hT : 0 < T) :
+lemma symmetric_mean_square {T : ℝ} (hT : 0 < T) :
     (∫ t : ℝ in -T..T, ‖dp (Finset.Icc 1 Y) a t‖ ^ 2) ≤
       8 * Real.exp 1 * (T + Y) * sqNorm (Finset.Icc 1 Y) a := by
   have hm := OAI.TwoPointCorrelations.mrt_dirichlet_mean_square Y a hT
@@ -114,7 +104,9 @@ lemma symmetric_mean_square (Y : ℕ) (a : ℕ → ℂ) {T : ℝ} (hT : 0 < T) :
       _ = _ := intervalIntegral_symmetric_reflect T
         (fun t => ‖dp (Finset.Icc 1 Y) a t‖ ^ 2)
   rw [hreflect] at hm
-  simpa only [sqNorm, ioc_zero_eq_icc_one] using hm
+  assumption
+
+end
 
 
 
@@ -132,7 +124,11 @@ lemma mellin_hasDerivAt (n : ℕ) (x : ℝ) :
   · simp [mellin]
     ring_nf
 
-lemma dp_hasDerivAt (s : Finset ℕ) (a : ℕ → ℂ) (x : ℝ) :
+section
+
+variable (s : Finset ℕ) (a : ℕ → ℂ)
+
+lemma dp_hasDerivAt (x : ℝ) :
     HasDerivAt (fun t => dp s a t)
       (dp s (fun n => a n * (Complex.I * Real.log n)) x) x := by
   change HasDerivAt (fun t => ∑ n ∈ s, a n * mellin n t)
@@ -140,10 +136,12 @@ lemma dp_hasDerivAt (s : Finset ℕ) (a : ℕ → ℂ) (x : ℝ) :
   simpa only [mul_assoc] using
     HasDerivAt.fun_sum (fun n (_ : n ∈ s) => (mellin_hasDerivAt n x).const_mul (a n))
 
-lemma dp_derivative_continuous (s : Finset ℕ) (a : ℕ → ℂ) :
+lemma dp_derivative_continuous :
     Continuous (fun t => dp s (fun n => a n * (Complex.I * Real.log n)) t) := by
   unfold dp mellin
   fun_prop
+
+end
 
 lemma half_lt_log_two_mul_nat {Y : ℕ} (hY : Y ≠ 0) :
     (1 / 2 : ℝ) < Real.log (2 * Y) := by
@@ -154,9 +152,13 @@ lemma half_lt_log_two_mul_nat {Y : ℕ} (hY : Y ≠ 0) :
   apply Real.log_le_log (by norm_num)
   nlinarith
 
+section
+
+variable (Y : ℕ) (a : ℕ → ℂ)
+
 /-- Translation of a symmetric mean-square estimate to an arbitrary
 interval; the coefficient phases introduced by translation preserve `sqNorm`. -/
-lemma continuous_of_symmetric_mean (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ)
+lemma continuous_of_symmetric_mean (lo hi : ℝ)
     (hlohi : lo ≤ hi)
     (hsym : ∀ (b : ℕ → ℂ) (T : ℝ), 0 < T →
       (∫ t : ℝ in -T..T, ‖dp (Finset.Icc 1 Y) b t‖ ^ 2) ≤
@@ -176,15 +178,15 @@ lemma continuous_of_symmetric_mean (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ)
     positivity
   have hlt : lo < hi := by
     by_contra h
-    have h' : hi ≤ lo := le_of_not_gt h
+    have h'  := le_of_not_gt h
     exact hI (le_antisymm hlohi h')
   let T : ℝ := (hi - lo) / 2
   let mid : ℝ := (lo + hi) / 2
   let s := Finset.Icc 1 Y
-  let b : ℕ → ℂ := fun n => a n * mellin n mid
+  let b  := fun n => a n * mellin n mid
   have hT : 0 < T := by dsimp [T]; linarith
-  have hleft : mid - T = lo := by dsimp [mid, T]; ring
-  have hright : mid + T = hi := by dsimp [mid, T]; ring
+  have hleft : mid - T = lo := by ring
+  have hright : mid + T = hi := by ring
   have hdp : ∀ x, dp s a (x + mid) = dp s b x := by
     intro x
     simpa [b, add_comm] using dp_shift s a mid x
@@ -224,7 +226,7 @@ lemma continuous_of_symmetric_mean (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ)
   rw [htranslate]
   exact hm.trans hscale
 
-lemma dp_derivative_sqNorm_le (Y : ℕ) (a : ℕ → ℂ) :
+lemma dp_derivative_sqNorm_le :
     sqNorm (Finset.Icc 1 Y) (fun n => a n * (Complex.I * Real.log n)) ≤
       Real.log (2 * Y) ^ 2 * sqNorm (Finset.Icc 1 Y) a := by
   by_cases hY : Y = 0
@@ -232,8 +234,6 @@ lemma dp_derivative_sqNorm_le (Y : ℕ) (a : ℕ → ℂ) :
   have hYpos : 0 < (Y : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero hY
   have hYone : (1 : ℝ) ≤ (Y : ℝ) := by
     exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hY)
-  have hL : 0 < Real.log (2 * (Y : ℝ)) :=
-    Real.log_pos (by nlinarith)
   simp only [sqNorm]
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
@@ -241,7 +241,7 @@ lemma dp_derivative_sqNorm_le (Y : ℕ) (a : ℕ → ℂ) :
   have hn' := Finset.mem_Icc.mp hn
   have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn'.1
   have hnY : (n : ℝ) ≤ (Y : ℝ) := by exact_mod_cast hn'.2
-  have hlog0 : 0 ≤ Real.log (n : ℝ) := Real.log_nonneg hn1
+  have hlog0  := Real.log_nonneg hn1
   have hlogn : Real.log (n : ℝ) ≤ Real.log (2 * (Y : ℝ)) := by
     calc
       Real.log (n : ℝ) ≤ Real.log (Y : ℝ) :=
@@ -255,6 +255,8 @@ lemma dp_derivative_sqNorm_le (Y : ℕ) (a : ℕ → ℂ) :
   rw [norm_mul, norm_mul, Complex.norm_I, one_mul, Complex.norm_real,
     Real.norm_eq_abs, mul_pow]
   simpa [mul_comm] using mul_le_mul_of_nonneg_left hpow (sq_nonneg ‖a n‖)
+
+end
 
 /-- The one-dimensional Sobolev inequality on a unit interval. -/
 lemma local_sampling (F G : ℝ → ℂ) (hF : ∀ x, HasDerivAt F (G x) x)
@@ -313,8 +315,8 @@ lemma spaced_sampling (F G : ℝ → ℂ) (hF : ∀ x, HasDerivAt F (G x) x)
     ∑ t ∈ E, ‖F t‖ ^ 2 ≤
       ∫ x in Set.Icc lo (hi + 1), 2 * ‖F x‖ ^ 2 + ‖G x‖ ^ 2 := by
   classical
-  let Q : ℝ → ℝ := fun x => 2 * ‖F x‖ ^ 2 + ‖G x‖ ^ 2
-  have hfc : Continuous F := continuous_iff_continuousAt.mpr
+  let Q  := fun x => 2 * ‖F x‖ ^ 2 + ‖G x‖ ^ 2
+  have hfc  := continuous_iff_continuousAt.mpr
     (fun x => (hF x).continuousAt)
   have hqc : Continuous Q := by dsimp [Q]; fun_prop
   have hqd : Set.Pairwise (↑E) (fun t u : ℝ =>
@@ -366,31 +368,26 @@ lemma discrete_of_interval_mean (C : ℝ) (hC : 0 < C) (Y : ℕ) (a : ℕ → �
     apply Real.log_le_log (by norm_num)
     nlinarith
   let s := Finset.Icc 1 Y
-  let b : ℕ → ℂ := fun n => a n * (Complex.I * Real.log n)
-  let F : ℝ → ℂ := fun t => dp s a t
-  let G : ℝ → ℂ := fun t => dp s b t
+  let b  := fun n => a n * (Complex.I * Real.log n)
+  let F  := fun t => dp s a t
+  let G  := fun t => dp s b t
   let M : ℝ := hi - lo + 1 + Y * Real.log (2 * Y)
   let L : ℝ := Real.log (2 * (Y : ℝ))
   have hM : 0 ≤ M := by
     dsimp [M]
-    have hlog : 0 ≤ Real.log (2 * (Y : ℝ)) := by linarith
     positivity
   have hS : 0 ≤ sqNorm s a := Finset.sum_nonneg fun n hn => sq_nonneg _
-  have hS' : 0 ≤ sqNorm s b := Finset.sum_nonneg fun n hn => sq_nonneg _
   have hFderiv : ∀ x, HasDerivAt F (G x) x := by
     intro x
     exact dp_hasDerivAt s a x
-  have hGcont : Continuous G := by
-    exact dp_derivative_continuous s a
-  have hsample :
-      (∑ t ∈ E, ‖F t‖ ^ 2) ≤
-        ∫ x in Set.Icc lo (hi + 1), 2 * ‖F x‖ ^ 2 + ‖G x‖ ^ 2 :=
+  have hGcont := dp_derivative_continuous s a
+  have hsample  :=
     spaced_sampling F G hFderiv hGcont E
       (fun t ht => Set.mem_Icc.mpr (hE t ht)) hsep
-  have hFcont : Continuous F := continuous_iff_continuousAt.mpr
+  have hFcont  := continuous_iff_continuousAt.mpr
     (fun x => (hFderiv x).continuousAt)
-  have hFc : Continuous (fun x => ‖F x‖ ^ 2) := hFcont.norm.pow 2
-  have hGc : Continuous (fun x => ‖G x‖ ^ 2) := hGcont.norm.pow 2
+  have hFc  := hFcont.norm.pow 2
+  have hGc  := hGcont.norm.pow 2
   have hFi : IntegrableOn (fun x => 2 * ‖F x‖ ^ 2) (Set.Icc lo (hi + 1)) :=
     hFc.integrableOn_Icc.const_mul 2
   have hGi : IntegrableOn (fun x => ‖G x‖ ^ 2) (Set.Icc lo (hi + 1)) :=
@@ -421,17 +418,16 @@ lemma discrete_of_interval_mean (C : ℝ) (hC : 0 < C) (Y : ℕ) (a : ℕ → �
         rw [MeasureTheory.integral_add hFi hGi, MeasureTheory.integral_const_mul]
       _ = _ := by rw [hFset, hGset]
   have hlen : (hi + 1 - lo) + Y * Real.log (2 * Y) = M := by
-    dsimp [M]
     ring
   have hmeanF := hmean a lo (hi + 1) (by linarith)
   have hmeanG := hmean b lo (hi + 1) (by linarith)
   rw [hlen] at hmeanF hmeanG
   have hFbound :
       (∫ x : ℝ in lo..hi + 1, ‖F x‖ ^ 2) ≤ C * M * sqNorm s a := by
-    simpa [F, s] using hmeanF
+    assumption
   have hGbound :
       (∫ x : ℝ in lo..hi + 1, ‖G x‖ ^ 2) ≤ C * M * sqNorm s b := by
-    simpa [G, s, b] using hmeanG
+    assumption
   have hderivNorm : sqNorm s b ≤ L ^ 2 * sqNorm s a := by
     simpa [s, b, L] using dp_derivative_sqNorm_le Y a
   have hGbound' :
@@ -449,7 +445,7 @@ lemma discrete_of_interval_mean (C : ℝ) (hC : 0 < C) (Y : ℕ) (a : ℕ → �
       _ ≤ 2 * (C * M * sqNorm s a) + C * M * L ^ 2 * sqNorm s a :=
         add_le_add (mul_le_mul_of_nonneg_left hFbound (by norm_num)) hGbound'
       _ = _ := by ring
-  have hLsq : (1 / 2 : ℝ) ^ 2 ≤ L ^ 2 :=
+  have hLsq  :=
     pow_le_pow_left₀ (by norm_num) hLhalf.le 2
   have hfactor : 2 + L ^ 2 ≤ 9 * L ^ 2 := by nlinarith [hLsq]
   have hscale : C * M * (2 + L ^ 2) * sqNorm s a ≤
@@ -461,7 +457,7 @@ lemma discrete_of_interval_mean (C : ℝ) (hC : 0 < C) (Y : ℕ) (a : ℕ → �
       _ = _ := by ring
   calc
     (∑ t ∈ E, ‖dp (Finset.Icc 1 Y) a t‖ ^ 2) = ∑ t ∈ E, ‖F t‖ ^ 2 := by
-      simp [F, s]
+      rfl
     _ ≤ ∫ x in Set.Icc lo (hi + 1), 2 * ‖F x‖ ^ 2 + ‖G x‖ ^ 2 := hsample
     _ = 2 * (∫ x : ℝ in lo..hi + 1, ‖F x‖ ^ 2) +
           (∫ x : ℝ in lo..hi + 1, ‖G x‖ ^ 2) := henergy
@@ -469,7 +465,7 @@ lemma discrete_of_interval_mean (C : ℝ) (hC : 0 < C) (Y : ℕ) (a : ℕ → �
     _ ≤ 9 * C * M * L ^ 2 * sqNorm s a := hscale
     _ = 9 * C * (hi - lo + 1 + Y * Real.log (2 * Y)) *
           Real.log (2 * Y) ^ 2 * sqNorm (Finset.Icc 1 Y) a := by
-      simp [M, L, s]
+      rfl
 
 
 lemma continuous_mean_square_bound (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ)
@@ -484,7 +480,7 @@ lemma continuous_mean_square_bound (Y : ℕ) (a : ℕ → ℂ) (lo hi : ℝ)
 square estimates from Lemma 1.4 of the paper. -/
 theorem meanSquares : MeanSquares := by
   let C : ℝ := 16 * Real.exp 1
-  have hC : 0 < C := by dsimp [C]; positivity
+  have hC : 0 < C := by positivity
   refine ⟨9 * C, by positivity, ?_⟩
   intro Y a lo hi hlohi
   constructor
@@ -496,21 +492,16 @@ theorem meanSquares : MeanSquares := by
     have hS : 0 ≤ sqNorm (Finset.Icc 1 Y) a :=
       Finset.sum_nonneg fun n hn => sq_nonneg _
     have hFactor : C ≤ 9 * C := by nlinarith
-    have hscale : C * (hi - lo + Y * Real.log (2 * Y)) *
-          sqNorm (Finset.Icc 1 Y) a ≤
-        9 * C * (hi - lo + Y * Real.log (2 * Y)) *
-          sqNorm (Finset.Icc 1 Y) a := by
-      have hCX : C * (hi - lo + Y * Real.log (2 * Y)) ≤
-          9 * C * (hi - lo + Y * Real.log (2 * Y)) :=
-        mul_le_mul_of_nonneg_right hFactor (by positivity)
-      exact mul_le_mul_of_nonneg_right hCX hS
-    exact hcont.trans hscale
+    refine hcont.trans ?_
+    have hCX : C * (hi - lo + Y * Real.log (2 * Y)) ≤
+        9 * C * (hi - lo + Y * Real.log (2 * Y)) :=
+      mul_le_mul_of_nonneg_right hFactor (by positivity)
+    exact mul_le_mul_of_nonneg_right hCX hS
   · intro E hE hsep
     exact discrete_of_interval_mean C hC Y a
       (fun b left right hleft => continuous_mean_square_bound Y b left right hleft)
       lo hi hlohi E hE hsep
 
-theorem blueprint_meanSquares : Erdos821.Blueprint.MeanSquares := by exact meanSquares
 
 end
 

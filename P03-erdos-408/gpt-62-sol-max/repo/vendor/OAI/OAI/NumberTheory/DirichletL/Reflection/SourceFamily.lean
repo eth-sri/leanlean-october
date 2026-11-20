@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.ActualExtractedEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.ExtractedEnergy
 
 @[expose] public section
 

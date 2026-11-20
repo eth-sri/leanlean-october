@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstSectorTailNatu
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstRemainder

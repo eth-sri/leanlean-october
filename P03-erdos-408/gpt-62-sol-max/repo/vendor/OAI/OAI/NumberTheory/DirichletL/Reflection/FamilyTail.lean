@@ -1,7 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.UniformTail
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.TruncatedSource
+public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
 
 @[expose] public section
 
@@ -37,10 +38,9 @@ lemma familyRawScale_le_literal (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admis
     (hKr : (Ideal.absNorm K:ℝ)≤QK) (hPr : (Ideal.absNorm (∏ i,S.ideal i):ℝ)≤QP) :
     familyRawScale F s X QK QP≤literalRawScale (F.reflected K hK S) s X := by
   rw [literalRawScale_reflected]
-  have hk : (0:ℝ)<Ideal.absNorm K := by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hK.1)
+  have hk : (0:ℝ)<Ideal.absNorm K := by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hK.1)
   have hp : (0:ℝ)<Ideal.absNorm (∏ i,S.ideal i) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (S.ideal i))))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (S.ideal i)))
   apply div_le_div_of_nonneg_left (actualKernelCoefficient_pos F s hc 0 X hX).le (by positivity)
   exact mul_le_mul (pow_le_pow_left₀ hk.le hKr 2) (pow_le_pow_left₀ hp.le hPr 2) (sq_nonneg _) (sq_nonneg _)
 
@@ -55,10 +55,10 @@ lemma reflected_norm_le_centers (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admis
   exact mul_le_mul (mul_le_mul_of_nonneg_left hKr (Nat.cast_nonneg _)) hPr
     (Nat.cast_nonneg _) (mul_nonneg (Nat.cast_nonneg _) hk)
 
-theorem original_family_dyadic_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
+theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
-    ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
+    ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
       (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
       (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
@@ -72,10 +72,9 @@ theorem original_family_dyadic_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
           (slotIndices φ (PrimeIndex K) σ) (CompletedHeight.normTwistedSource W θ) X u i else 0‖≤
         C*(1+‖θ‖)^degree*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*
           T^(-(A:ℝ))*(familyRawScale F s X QK QP^2)⁻¹ := by
-  obtain ⟨degree,C,hC,hbound⟩ := literal_dyadic_tail_uniform_height_type_uniform
-    (N:=N) (a:=a) (c:=c) (mode:=mode) lo hi hlo A W hWs hW
+  obtain ⟨degree,C,hC,hbound⟩ := InverseReflectedArithmeticHeight.literal_dyadic_tail_height_arithmetic_uniform lo hi hlo A W hWs hW
   refine ⟨degree,C,hC,?_⟩
-  intro φ σ _ _ F K hK S D s hc hN hbase hchar jF hj u θ X T QK QP hX hT hQK hQP hKr hPr
+  intro N a c mode φ σ _ _ F K hK S D s hc hN hbase hchar jF hj u θ X T QK QP hX hT hQK hQP hKr hPr
   have hs := familyRawScale_le_literal F K hK S s hc X QK QP hX hKr hPr
   have hsp := familyRawScale_pos F s hc X QK QP hX hQK hQP
   have hcut (i : ℕ×ℕ×ℕ) (hi : i∉retainedDyads (familyRawScale F s X QK QP) (16*T)) :
@@ -91,7 +90,7 @@ theorem original_family_dyadic_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     · exact hj f
     · norm_num [reflectedExponent]
     · norm_num [reflectedExponent]
-  have hh := hbound (F.reflected K hK S) D s hc hN hbase hchar (reflectedExponent jF) hj'
+  have hh := hbound (N:=N) (a:=a) (c:=c) (mode:=mode) (F.reflected K hK S) D s hc hN hbase hchar (reflectedExponent jF) hj'
     (slotIndices φ (PrimeIndex K) σ) u θ X T hX hT
     (fun i => i∉retainedDyads (familyRawScale F s X QK QP) (16*T)) hcut
   have hleft : ‖∑' i : ℕ×ℕ×ℕ, if i∉retainedDyads (familyRawScale F s X QK QP) (16*T) then
@@ -108,6 +107,7 @@ theorem original_family_dyadic_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
   apply hleft.trans
   have hnorm := reflected_norm_le_centers F K hK S QK QP hKr hPr
   gcongr
+
 end
 end SevenEighths.InverseReflectedPhase
 

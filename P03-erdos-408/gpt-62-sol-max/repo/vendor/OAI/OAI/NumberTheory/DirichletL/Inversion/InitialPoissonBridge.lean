@@ -8,11 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseInitialPoissonBridge
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
-open UniqueFactorizationMonoid InverseInitialOverlap
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid InverseInitialOverlap
 local notation "Eis" => ActualEisensteinCubic.O
 
 def rowPolynomial (F : Finset (Ideal Eis)) (A : Ideal Eis → ℂ) (u : Eis) : ℂ :=
@@ -29,7 +28,7 @@ theorem idealRowHom_eq_idealSexticRow
     (F : Finset (Ideal Eis)) (hF : ∀ I ∈ F, Admissible I)
     {I : Ideal Eis} (hI : I ∈ F) (u : Eis) :
     idealRowHom u I = idealSexticRow F (pool_positive F hF) (pool_good F hF) I u := by
-  let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
+  let  := primePool_maximal F (pool_positive F hF)
   conv_lhs => rw [← idealSupport_product_eq F hI (hF I hI).2.1]
   rw [map_prod]
   change (∏ q ∈ idealSupport F I, idealRowHom u q.val) =
@@ -49,7 +48,7 @@ theorem indexed_smoothed_summable {β : Type*} (C : Finset β)
     intro I hI
     obtain ⟨c,hc,rfl⟩ := Finset.mem_image.mp hI
     exact hL c hc
-  let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
+  let  := primePool_maximal F (pool_positive F hF)
   have he (u : Eis) : (∑ c ∈ C, A c*idealRowHom u (L c)) =
       ∑ c ∈ C, A c*idealSexticRow F (pool_positive F hF) (pool_good F hF) (L c) u := by
     apply Finset.sum_congr rfl
@@ -69,7 +68,7 @@ theorem columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
     {c : Ideal Eis} (hc : c ∈ columns S P j) : Admissible c := by
   obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp hc
   obtain ⟨hnS,hns,hg⟩ := mem_original.mp hn
-  have hjn : j ∣ n := hg ▸ GCDMonoid.gcd_dvd_left n P
+  have hjn  := hg ▸ GCDMonoid.gcd_dvd_left n P
   have hs := (supported_mul_iff (idealQuotient j n) (residual P j)).mpr
     ⟨supported_of_dvd (hS n hnS hns) (idealQuotient_dvd hjn),
      supported_of_dvd (admissible_supported hP) (idealQuotient_dvd hj)⟩
@@ -89,11 +88,9 @@ theorem norm_idealRowHom_four_eq_two (I : Ideal Eis) (hI : Admissible I) (u : Ei
     ‖idealRowHom u I‖^4 = ‖idealRowHom u I‖^2 := by
   let F : Finset (Ideal Eis) := {I}
   have hF : ∀ J ∈ F, Admissible J := by
-    intro J hJ
-    have he : J=I := Finset.mem_singleton.mp hJ
-    simpa only [he] using hI
+    aesop
   rw [idealRowHom_eq_idealSexticRow F hF (Finset.mem_singleton_self I)]
-  let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
+  let  := primePool_maximal F (pool_positive F hF)
   have he := congrArg norm (finiteSquarefreeRow_self_pair
     (fun q : primePool F => q.val) (primePool_good F (pool_good F hF)) (idealSupport F I) u)
   simp only [norm_mul,norm_star,←pow_two] at he
@@ -178,7 +175,6 @@ lemma norm_rpow_half_sq {Z : ℝ} (hZ : 0 < Z) (D : ℝ) :
     ‖((Z^(-D/2) : ℝ) : ℂ)‖^2=Z^(-D) := by
   rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZ _),
     ←Real.rpow_natCast,←Real.rpow_mul hZ.le]
-  congr 1
   norm_num
 
 theorem original_fixed_overlap_smoothed_summable

@@ -58,7 +58,7 @@ theorem PosModel.mem_lists (M : PosModel) {x : ℝ} {d : Data K} (s : M.State x 
 
 /-- With copied pads and disjoint bands, the cross-edge ban only concerns the last slots. -/
 theorem ban_iff_last {x : ℝ} {d : Data K} {J : ℕ}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {p p' : Lists K J}
+    (hdisj : d.BandsDisjoint x) {p p' : Lists K J}
     (hp' : p' ∈ lists x d J) (hpad : ∀ i (h : Fin J), p' i h.castSucc = p i h.castSucc) :
     (∀ i i' h', p' i (Fin.last _) ≠ p i' h') ↔
       ∀ i i', p' i (Fin.last _) ≠ p i' (Fin.last _) := by
@@ -79,7 +79,7 @@ variable (M : PosModel) {x : ℝ} {d : Data K}
 
 /-- With an antisymmetric determinant and disjoint bands, the row operation is Hermitian. -/
 theorem star_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ)
+    (hdisj : d.BandsDisjoint x) (q A₀ Y d₀ : ℝ)
     (s s' : M.State x d) : star (M.rowOp q A₀ x d Y d₀ s' s) = M.rowOp q A₀ x d Y d₀ s s' := by
   classical
   by_cases hpad : ∀ i (h : Fin (padCount x)), s'.1.2 i h.castSucc = s.1.2 i h.castSucc
@@ -121,9 +121,7 @@ theorem star_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
       ring
     · rw [rowOp, rowOp, ite_eq_right (mt hiff.1 hC), ite_eq_right hC, star_zero]
   · -- step: the pads differ in both directions
-    have hpad' : ¬∀ i (h : Fin (padCount x)), s.1.2 i h.castSucc = s'.1.2 i h.castSucc :=
-      fun h => hpad fun i k => (h i k).symm
-    rw [rowOp, rowOp, ite_eq_right fun h => hpad' h.1, ite_eq_right fun h => hpad h.1,
+    rw [rowOp, rowOp, ite_eq_right fun h => (fun h => hpad fun i k => (h i k).symm) h.1, ite_eq_right fun h => hpad h.1,
       star_zero]
 
 /-- The slot symmetrization is Hermitian. -/
@@ -155,14 +153,14 @@ theorem conjTranspose_goodOp (Y d₀ : ℝ) : (M.goodOp x d Y d₀)ᴴ = M.goodO
 
 /-- With an antisymmetric determinant and disjoint bands, the row operation is Hermitian. -/
 theorem conjTranspose_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ) :
+    (hdisj : d.BandsDisjoint x) (q A₀ Y d₀ : ℝ) :
     (M.rowOp q A₀ x d Y d₀)ᴴ = M.rowOp q A₀ x d Y d₀ := by
   ext s s'
   rw [Matrix.conjTranspose_apply, M.star_rowOp hdet hdisj]
 
 /-- With an antisymmetric determinant and disjoint bands, `𝒜` is Hermitian. -/
 theorem conjTranspose_edgeOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (q A₀ Y d₀ : ℝ) :
+    (hdisj : d.BandsDisjoint x) (q A₀ Y d₀ : ℝ) :
     (M.edgeOp q A₀ x d Y d₀)ᴴ = M.edgeOp q A₀ x d Y d₀ := by
   simp only [edgeOp, Matrix.conjTranspose_mul, conjTranspose_goodOp, conjTranspose_symOp,
     M.conjTranspose_rowOp hdet hdisj, mul_assoc]

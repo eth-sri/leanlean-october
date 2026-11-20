@@ -36,12 +36,12 @@ lemma pairPrincipalGauss_eq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible
       (mul_ne_zero hI.2 hJ.2) = cubicPairGauss I J hI hJ := by
   let a := primaryGenerator I
   let b := primaryGenerator J
-  let : Finite (O ⧸ Ideal.span {a * b}) := finite_quotient_span (mul_ne_zero hI.2 hJ.2)
+  let  := finite_quotient_span (mul_ne_zero hI.2 hJ.2)
   let : Fintype (O ⧸ Ideal.span {a * b}) := Fintype.ofFinite _
-  let : Finite (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := finite_quotient_product hI.2 hJ.2
+  let  := finite_quotient_product hI.2 hJ.2
   let : Fintype (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := Fintype.ofFinite _
-  let : Finite (O ⧸ Ideal.span {a}) := finite_quotient_span hI.2
-  let e : (O ⧸ Ideal.span {a * b}) ≃+* (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) :=
+  let  := finite_quotient_span hI.2
+  let e  :=
     Ideal.quotEquivOfEq (Ideal.span_singleton_mul_span_singleton a b).symm
   have hnorm : (‖eisEmbedding (a * b)‖ : ℂ) = (‖eisEmbedding a‖ : ℂ) * (‖eisEmbedding b‖ : ℂ) := by
     rw [map_mul, norm_mul, Complex.ofReal_mul]
@@ -87,7 +87,7 @@ theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
   have ht (h : O) :
       (∑ r : O ⧸ Ideal.span {c}, row r * ψ (Ideal.Quotient.mk (Ideal.span {c}) h * r)) =
         (cubicRow I h * star (cubicRow J h)) * G := by
-    have hh := canonical_principal_gauss_transform_of_nontrivial (pairPrime I J)
+    have hh := canonical_principal_gauss_transform (pairPrime I J)
       (pairPrime_coprime I J hI hJ hcop) (pairPrime_good I J hI hJ) (pairExponent I J)
       (pairExponent_nonprincipal I J hI hJ) c (pairPrime_modulus I J hI hJ) ψ
       (Ideal.Quotient.mk (Ideal.span {c}) h)

@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.Extraction.TypeII.Numeric
 
 /-!
@@ -40,15 +41,11 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
         u ^ 4 := by
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hu0 : 0 ≤ u := by linarith
   set w := L ^ (-3 : ℝ) with hw
-  have hw0 : 0 < w := by positivity
-  have hL3 : L ^ (3 : ℝ) = L ^ (3 : ℕ) := by exact_mod_cast Real.rpow_natCast L 3
+  have hL3 : L ^ (3 : ℝ) = L ^ (3 : ℕ) := by norm_cast
   have hwinv : w = (L ^ (3 : ℕ))⁻¹ := by rw [hw, Real.rpow_neg hL0.le, hL3]
   have hLm12 : L ^ (-12 : ℝ) = (L ^ (12 : ℕ))⁻¹ := by
-    rw [Real.rpow_neg hL0.le]; congr 1; exact_mod_cast Real.rpow_natCast L 12
+    norm_cast
   -- the three terms
   have hT1 : M 0 * endBound q K CN c E₂ x * (⌊κ * x + 1⌋₊ / L ^ (3 : ℝ)) *
       ((r + 1 : ℕ) * recipSum x γ ⌊κ * x + 1⌋₊ + highProd x ⌊κ * x + 1⌋₊ (r + 1 : ℕ)) ^ (r + 1) ≤
@@ -69,7 +66,6 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
       have h1 : L ^ 8 * (L ^ (12 : ℕ))⁻¹ = (L ^ (4 : ℕ))⁻¹ := by field_simp
       rw [h1]
       exact inv_anti₀ (by positivity) (pow_le_pow_right₀ hL (by norm_num))
-    have hLr : 0 ≤ L ^ (-12 : ℝ) := by positivity
     calc (A : ℝ) ^ 2 * (M 0 * (2 ^ (K * inertPerCluster K CN x) *
           normBound q K CN c E₂ x * (C₂ * (κ * x) * L ^ (-12 : ℝ))))
         ≤ 25 * L ^ 8 * (M 0 * (u * (C₂ * (κ * x) * L ^ (-12 : ℝ)))) := by gcongr
@@ -80,8 +76,6 @@ theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ →
       endBound q K CN c E₂ x * (4 * (κ * x + 1)) *
       (recipSum x γ ⌊κ * x + 1⌋₊ + highProd x ⌊κ * x + 1⌋₊ 1) ^ (r + 1) ≤
       M 1 * u * (7 * κ * w) * u * (8 * κ * x) * u := by
-    have hτ0 : 0 ≤ (3 * L ^ (-3 : ℝ) * (κ * x + 1) + 1) / x := by positivity
-    have hT0 : 0 ≤ logLog x ^ (CΦ * 1) := Real.rpow_nonneg (Real.log_nonneg hL) _
     gcongr
   unfold bound4
   have hsum := add_le_add (add_le_add hT1 hT2) hT3
@@ -116,23 +110,18 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
         Real.log x ^ (-(1 / 10) : ℝ) * u ^ 6 := by
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hu0 : 0 ≤ u := by linarith
   set e := L ^ (-(1 / 10) : ℝ) with he
   have he0 : 0 < e := by positivity
-  have hLinv : L ^ (-1 : ℝ) = L⁻¹ := Real.rpow_neg_one L
+  have hLinv  := Real.rpow_neg_one L
   -- the strip term
   have hstrip : 2 * cW * K' ≤ 6 * CW * u * e := by
-    have h1 : L ^ (9 / 10 : ℝ) / L = e := by
-      rw [he, div_eq_mul_inv, ← Real.rpow_neg_one, ← Real.rpow_add hL0]; norm_num
+    have h1 : L ^ (9 / 10 : ℝ) / L = e := by rpow_ring hL0
     calc 2 * cW * K' ≤ 2 * (CW * u / L) * (3 * L ^ (9 / 10 : ℝ)) := by gcongr
       _ = 6 * CW * u * (L ^ (9 / 10 : ℝ) / L) := by ring
       _ = 6 * CW * u * e := by rw [h1]
   -- the candidate-logarithm term
   have hlogt : 2 * SP * highProd x ⌊κ * x + 1⌋₊ 1 * (Real.log (proxyCutoff x) / c₃) /
       (γ ^ 2 * L ^ (19 / 10 : ℝ)) ≤ 4 / c₃ * u ^ 2 * e := by
-    have hL19 : 0 < L ^ (19 / 10 : ℝ) := by positivity
     have h1 : L ^ (45 / 100 : ℝ) * L / L ^ (19 / 10 : ℝ) ≤ e := by
       rw [← Real.rpow_add_one hL0.ne', ← Real.rpow_sub hL0, he]
       exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
@@ -152,8 +141,6 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
       have : u ≤ u ^ 2 := by nlinarith
       gcongr
     nlinarith
-  have hbr0 : 0 ≤ 2 * cW * K' + 2 * SP * highProd x ⌊κ * x + 1⌋₊ 1 *
-      (Real.log (proxyCutoff x) / c₃) / (γ ^ 2 * L ^ (19 / 10 : ℝ)) := by positivity
   unfold bound5
   have hcWN : cW * ⌊κ * x + 1⌋₊ ≤ CW * u / L * (2 * κ * x) := by gcongr
   calc (r + 2 : ℝ) * (M 0 * endBound q K CN c E₂ x * cW * ⌊κ * x + 1⌋₊ *

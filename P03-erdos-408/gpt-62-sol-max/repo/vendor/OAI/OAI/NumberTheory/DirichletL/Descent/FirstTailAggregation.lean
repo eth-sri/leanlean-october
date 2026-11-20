@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCanonicalTail
 public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
@@ -16,9 +17,9 @@ open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 section
 variable {ι:Type*} [DecidableEq ι]
-  (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstLocalPhysicalTail (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
@@ -47,10 +48,10 @@ end
 
 theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
     ∃Ctail:ℝ,0<Ctail ∧ ∀{ι:Type*} [DecidableEq ι]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
       (a:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂:O)
@@ -76,8 +77,8 @@ theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
   refine ⟨Cb*128^3,by positivity,?_⟩
   intro ι _ p hp _ hinj hcop hg hc pool bs labels a Ψ₁ Ψ₂ m₁ m₂ H₁ H₂ W K B L F Γ E T
     hB hL hF hΓ hE hΨ₁ hΨ₂ hadm hb₁ hb₂ hI0 hIF ha hs hlocal
-  have hBp:0<B:=zero_lt_one.trans_le hB
-  have hlabel:(labels.card:ℝ)≤128*F:=DescentFiberCost.finite_ideal_count_real labels F hF hI0 hIF
+  have hBp:=zero_lt_one.trans_le hB
+  have hlabel:=DescentFiberCost.finite_ideal_count_real labels F hF hI0 hIF
   have hbcount:(bs.card:ℝ)≤Cb*B^(1+ε)*B:=by
     apply hcount p hp hinj bs B B hB hBp.le hadm hb₁ hb₂
     intro b hb
@@ -120,7 +121,7 @@ theorem full_first_tail_from_local (ε:ℝ) (hε:0<ε) :
       symm
       apply Finset.sum_subset (Finset.filter_subset _ _)
       intro C hC hnot
-      have hn:¬primeProductNorm p C≤L:=fun h=>hnot (Finset.mem_filter.mpr ⟨hC,h⟩)
+      have hn:=fun h=>hnot (Finset.mem_filter.mpr ⟨hC,h⟩)
       apply Finset.sum_eq_zero
       intro I hI
       rw [show z b C I=0 from cube_tail_support_test p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ _

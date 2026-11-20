@@ -36,8 +36,6 @@ instance (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :
   inferInstanceAs (Fintype {c : P.BigGroup → Finset (Fin m) //
     ∀ side : Bool, ∃ g : P.BigGroup, block g = side ∧ (c g).Nonempty})
 
-instance (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :
-    DecidableEq (ProbeChoice P m block) := Classical.decEq _
 
 def liftChoice (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
     (g : P.Group) : Finset (Fin J) :=
@@ -65,7 +63,7 @@ lemma liftChoice_probe (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
   split_ifs at hi with hg
   · obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hi
     exact j.isLt
-  · simp at hi
+  simp_all
 
 def rawPattern (P : PrimeGroups) (J ell m : ℕ) : Pattern P J ell m where
   changed := fun _ => ∅
@@ -112,14 +110,13 @@ theorem probeFamily_residual (F : FixedData) (P : PrimeGroups) (J m : ℕ)
   refine ⟨e none, block, ?_, ?_, ?_⟩
   · intro g
     simp [probeFamily, e, rawPattern]
-  · intro a b u
-    simp [probeFamily, e, rawPattern]
+  · simp [probeFamily, e, rawPattern]
   · intro v hv
     have hn : e.symm v ≠ none := by
       intro he
       apply hv
       apply e.symm.injective
-      simpa using he
+      simp_all
     obtain ⟨c, hc⟩ := Option.ne_none_iff_exists'.mp hn
     have hp : (probeFamily F P J m hj block Q h ξ).pattern v =
         signedPattern hj block Q h ξ c := by

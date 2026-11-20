@@ -73,10 +73,10 @@ theorem localKernel_fourier_inversion (x : ℝ) :
 theorem localKernelFourier_iterated_decay (r N : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ ξ : ℝ,
       ‖iteratedDeriv r localKernelFourier ξ‖ ≤ C / (1 + |ξ|) ^ N := by
-  let G : 𝓢(ℝ, ℂ) := 𝓕 complexKernelSchwartz
+  let G  := 𝓕 complexKernelSchwartz
   let C₀ : ℝ := 2 ^ N * (Finset.Iic (N, r)).sup
     (fun m => SchwartzMap.seminorm ℝ m.1 m.2) G
-  refine ⟨C₀ + 1, by dsimp [C₀]; positivity, ?_⟩
+  refine ⟨C₀ + 1, by positivity, ?_⟩
   intro ξ
   have hseminorm := SchwartzMap.one_add_le_sup_seminorm_apply
     (𝕜 := ℝ) (E := ℝ) (F := ℂ)
@@ -87,8 +87,8 @@ theorem localKernelFourier_iterated_decay (r N : ℕ) :
       norm_iteratedFDeriv_eq_norm_iteratedDeriv] using hseminorm
   have hpos : 0 < (1 + |ξ|) ^ N := pow_pos (by positivity) _
   have hnorm : ‖iteratedDeriv r localKernelFourier ξ‖ * (1 + |ξ|) ^ N ≤ C₀ := by
-    nlinarith [hdec]
-  have h₀ : ‖iteratedDeriv r localKernelFourier ξ‖ ≤ C₀ / (1 + |ξ|) ^ N :=
+    linarith
+  have h₀  :=
     (le_div_iff₀ hpos).2 hnorm
   have hconst : C₀ / (1 + |ξ|) ^ N ≤ (C₀ + 1) / (1 + |ξ|) ^ N :=
     (div_le_div_iff₀ hpos hpos).2 (by linarith)
@@ -101,7 +101,7 @@ def logCutoff (u : ℝ) : ℝ := logCutoffBump u
 
 theorem logCutoff_eq_one (u : ℝ) (hu : |u| ≤ 1) : logCutoff u = 1 := by
   apply logCutoffBump.one_of_mem_closedBall
-  simpa [logCutoff, logCutoffBump, Metric.mem_closedBall, Real.dist_eq] using hu
+  simpa [logCutoffBump, Metric.mem_closedBall, Real.dist_eq] using hu
 
 theorem logCutoff_eq_zero (u : ℝ) (hu : 2 ≤ |u|) : logCutoff u = 0 := by
   apply logCutoffBump.zero_of_le_dist
@@ -121,7 +121,7 @@ theorem logCompactWeight_contDiff : ContDiff ℝ ∞ logCompactWeight := by
     have hneg : ContDiff ℝ ∞ (fun u : ℝ => -u) := contDiff_neg.comp contDiff_id
     have harg : ContDiff ℝ ∞ (fun u : ℝ => ((-u : ℝ) : ℂ)) :=
       Complex.ofRealCLM.contDiff.comp hneg
-    exact Complex.contDiff_exp.comp harg
+    fun_prop
   change ContDiff ℝ ∞ (fun u : ℝ => (logCutoff u : ℂ) *
     Complex.exp ((-u : ℝ) : ℂ))
   exact hcut.mul hexp
@@ -138,7 +138,7 @@ theorem logCompactWeight_support_subset :
       linarith
     · rw [abs_of_pos (by linarith)]
       linarith
-  have hz : logCutoff u = 0 := logCutoff_eq_zero u hrad
+  have hz  := logCutoff_eq_zero u hrad
   have hzero : logCompactWeight u = 0 := by simp [logCompactWeight, hz]
   exact hu hzero
 
@@ -157,7 +157,7 @@ theorem logCompactWeight_deriv_bound (r : ℕ) (u : ℝ) :
     SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ logCompactWeightSchwartz r u
 
 theorem localKernelFourier_contDiff : ContDiff ℝ ∞ localKernelFourier := by
-  simpa [localKernelFourier] using (𝓕 complexKernelSchwartz).smooth ⊤
+  exact (𝓕 complexKernelSchwartz).smooth ⊤
 
 theorem e_add (x y : ℝ) : e (x + y) = e x * e y := by
   unfold e
@@ -181,9 +181,8 @@ theorem localLogConvolutionTerm_fourier (n : ℕ) (c : ℂ) (H v : ℝ)
           mellin v (-t) * (c * mellin n t) := by
   let q : ℝ := H / (2 * Real.pi * v)
   have hq : 0 < q := by
-    dsimp [q]
-    exact div_pos hH (mul_pos (by positivity) hv)
-  have hqne : q ≠ 0 := hq.ne'
+    positivity
+  have hqne  := hq.ne'
   have hscale : q * (v / H) = 1 / (2 * Real.pi) := by
     dsimp [q]
     field_simp [hH.ne', hv.ne', Real.pi_ne_zero]
@@ -210,16 +209,11 @@ theorem localLogConvolutionTerm_fourier (n : ℕ) (c : ℂ) (H v : ℝ)
       congr 1; push_cast; field_simp [Real.pi_ne_zero]
     rw [hmn, hmv]
     ring
-  let F : ℝ → ℂ := fun ξ =>
+  let F  := fun ξ =>
     e (ξ * (v / H * Real.log ((n : ℝ) / v))) * localKernelFourier ξ
   have hEcont : Continuous (fun ξ : ℝ => e (ξ * (v / H * Real.log ((n : ℝ) / v)))) := by
     unfold e
     fun_prop
-  have hFint : Integrable F := by
-    have hKint : Integrable localKernelFourier := (𝓕 complexKernelSchwartz).integrable
-    have hmul := hKint.bdd_mul (c := 1) hEcont.aestronglyMeasurable
-      (Filter.Eventually.of_forall fun ξ => by simp [e, Complex.norm_exp])
-    exact hmul.congr (Filter.Eventually.of_forall fun ξ => by rfl)
   have hscaleInt : (∫ ξ : ℝ, F ξ) =
       (q : ℂ) * ∫ t : ℝ, F (q * t) := by
     have hcomp := MeasureTheory.Measure.integral_comp_div
@@ -235,7 +229,7 @@ theorem localLogConvolutionTerm_fourier (n : ℕ) (c : ℂ) (H v : ℝ)
       _ = |q| • ∫ t : ℝ, F (q * t) := hcomp
       _ = (q : ℂ) * ∫ t : ℝ, F (q * t) := by
         rw [abs_of_pos hq]
-        simp only [Complex.real_smul]
+        rfl
   have hinv := localKernel_fourier_inversion (v * Real.log ((n : ℝ) / v) / H)
   have harg (ξ : ℝ) :
       (v * Real.log ((n : ℝ) / v) / H) * ξ =
@@ -294,10 +288,6 @@ theorem localLogConvolution_fourier (s : Finset ℕ) (a : ℕ → ℂ)
     have hmul := hKint.bdd_mul (c := ‖a n‖) hcont.aestronglyMeasurable
       (Filter.Eventually.of_forall hbound)
     exact hmul.congr (Filter.Eventually.of_forall fun t => by ring)
-  have hsumInt : Integrable (fun t : ℝ =>
-      ∑ n ∈ s, localKernelFourier (q * t) * mellin v (-t) *
-        (a n * mellin n t)) :=
-    integrable_finsetSum s (fun n hn => htermInt n)
   have hsum : (∑ n ∈ s,
       ((H / (2 * Real.pi * v) : ℝ) : ℂ) *
         ∫ t : ℝ, localKernelFourier (q * t) * mellin v (-t) *
@@ -333,7 +323,7 @@ theorem localLogConvolution_fourier (s : Finset ℕ) (a : ℕ → ℂ)
 theorem localKernel_eq_zero_of_radius (x : ℝ)
     (hx : 1 / (8 * Real.pi) ≤ |x|) : localKernel x = 0 := by
   by_contra hne
-  have hmem : x ∈ Function.support localKernel := Function.mem_support.mpr hne
+  have hmem  := Function.mem_support.mpr hne
   change x ∈ Function.support (unitKernelBump.normed volume) at hmem
   rw [unitKernelBump.support_normed_eq] at hmem
   have hxsmall : |x| < 1 / (8 * Real.pi) := by
@@ -372,7 +362,7 @@ theorem localKernel_phase_sub_one_mul_bound (ξ : ℝ) (hξ : |ξ| ≤ 1) (x : �
     ‖(e (-(x * ξ)) - 1) * (localKernel x : ℂ)‖ ≤ (1 / 2) * localKernel x := by
   by_cases hk : localKernel x = 0
   · simp [hk]
-  have hmem : x ∈ Function.support localKernel := Function.mem_support.mpr hk
+  have hmem  := Function.mem_support.mpr hk
   change x ∈ Function.support (unitKernelBump.normed volume) at hmem
   rw [unitKernelBump.support_normed_eq] at hmem
   have hx : |x| < 1 / (8 * Real.pi) := by
@@ -404,8 +394,7 @@ theorem localKernelFourier_close_one (ξ : ℝ) (hξ : |ξ| ≤ 1) :
     ‖localKernelFourier ξ - 1‖ ≤ 1 / 2 := by
   have hk := localKernel_complex_integrable
   have hp := localKernel_phase_integrable ξ
-  have hsub : Integrable (fun x : ℝ =>
-      e (-(x * ξ)) * (localKernel x : ℂ) - (localKernel x : ℂ)) := hp.sub hk
+  have hsub  := hp.sub hk
   have hbound : Integrable (fun x : ℝ => (1 / 2) * localKernel x) := by
     simpa [mul_comm] using localKernel_integrable.const_mul (1 / 2)
   have heq : localKernelFourier ξ - 1 =
@@ -473,7 +462,7 @@ theorem localConvolution_support_subset (s : Finset ℕ) (a : ℕ → ℂ)
           have hnle' : (n : ℝ) ≤ ((s.sup id : ℕ) : ℝ) := by exact_mod_cast hnle
           have hsum : (n : ℝ) + (1 / (8 * Real.pi)) * H ≤
               ((s.sup id : ℕ) : ℝ) + (1 / (8 * Real.pi)) * H := by linarith
-          have hmain : (n : ℝ) + (1 / (8 * Real.pi)) * H < v := hsum.trans_lt hright
+          have hmain := hsum.trans_lt hright
           have hneg : (n : ℝ) - v < 0 := by linarith
           rw [abs_of_neg hneg]
           linarith [hmain]
@@ -488,13 +477,17 @@ theorem localConvolution_contDiff (s : Finset ℕ) (a : ℕ → ℂ) (H : ℝ) :
   apply ContDiff.sum
   intro n hn
   have harg : ContDiff ℝ ∞ (fun v : ℝ => ((n : ℝ) - v) / H) := by fun_prop
-  have hK : ContDiff ℝ ∞ (fun v : ℝ => localKernel (((n : ℝ) - v) / H)) :=
+  have hK  :=
     localKernel_contDiff.comp harg
   have hKc : ContDiff ℝ ∞ (fun v : ℝ => (localKernel (((n : ℝ) - v) / H) : ℂ)) :=
     Complex.ofRealCLM.contDiff.comp hK
   simpa [localConvolutionTerm] using contDiff_const.mul hKc
 
-theorem localConvolutionTerm_support_subset (n : ℕ) (c : ℂ) (H : ℝ)
+section
+
+variable (n : ℕ) (c : ℂ) (H : ℝ)
+
+theorem localConvolutionTerm_support_subset
     (hH : 0 < H) :
     Function.support (localConvolutionTerm n c H) ⊆
       Set.Icc ((n : ℝ) - (1 / (8 * Real.pi)) * H)
@@ -521,24 +514,30 @@ theorem localConvolutionTerm_support_subset (n : ℕ) (c : ℂ) (H : ℝ)
     simp [localConvolutionTerm, localKernel_eq_zero_of_radius _ hrad]
   exact hv hzero
 
-theorem localConvolutionTerm_contDiff (n : ℕ) (c : ℂ) (H : ℝ) :
+theorem localConvolutionTerm_contDiff :
     ContDiff ℝ ∞ (localConvolutionTerm n c H) := by
   unfold localConvolutionTerm
   have harg : ContDiff ℝ ∞ (fun v : ℝ => ((n : ℝ) - v) / H) := by fun_prop
-  have hK : ContDiff ℝ ∞ (fun v : ℝ => localKernel (((n : ℝ) - v) / H)) :=
+  have hK  :=
     localKernel_contDiff.comp harg
   have hKc : ContDiff ℝ ∞ (fun v : ℝ => (localKernel (((n : ℝ) - v) / H) : ℂ)) :=
     Complex.ofRealCLM.contDiff.comp hK
   simpa using contDiff_const.mul hKc
 
-theorem localConvolutionTerm_integrable (n : ℕ) (c : ℂ) (H : ℝ)
+theorem localConvolutionTerm_integrable
     (hH : 0 < H) : Integrable (localConvolutionTerm n c H) := by
-  have hcs : HasCompactSupport (localConvolutionTerm n c H) :=
+  have hcs  :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc
       (localConvolutionTerm_support_subset n c H hH)
   exact (localConvolutionTerm_contDiff n c H).continuous.integrable_of_hasCompactSupport hcs
 
-theorem localConvolutionTerm_phase_integrable (n : ℕ) (c : ℂ) (H θ : ℝ)
+end
+
+section
+
+variable (n : ℕ) (c : ℂ) (H θ : ℝ)
+
+theorem localConvolutionTerm_phase_integrable
     (hH : 0 < H) :
     Integrable (fun v : ℝ => e (-(v * θ)) * localConvolutionTerm n c H v) := by
   have hterm := localConvolutionTerm_integrable n c H hH
@@ -548,11 +547,11 @@ theorem localConvolutionTerm_phase_integrable (n : ℕ) (c : ℂ) (H θ : ℝ)
   exact hterm.bdd_mul (c := 1) hecont.aestronglyMeasurable
     (Filter.Eventually.of_forall fun v => by simp [e, Complex.norm_exp])
 
-theorem localConvolutionTerm_fourier (n : ℕ) (c : ℂ) (H θ : ℝ)
+theorem localConvolutionTerm_fourier
     (hH : 0 < H) :
     (∫ v : ℝ, e (-(v * θ)) * localConvolutionTerm n c H v) =
       c * e (-((n : ℝ) * θ)) * (H : ℂ) * localKernelFourier (-(H * θ)) := by
-  let g : ℝ → ℂ := fun u => e (u * (H * θ)) * (localKernel u : ℂ)
+  let g  := fun u => e (u * (H * θ)) * (localKernel u : ℂ)
   have hphase (v : ℝ) :
       e (-(v * θ)) * localConvolutionTerm n c H v =
         c * e (-((n : ℝ) * θ)) * g (((n : ℝ) - v) / H) := by
@@ -568,9 +567,7 @@ theorem localConvolutionTerm_fourier (n : ℕ) (c : ℂ) (H θ : ℝ)
         c * e (-((n : ℝ) * θ)) * (∫ v : ℝ, g (((n : ℝ) - v) / H)) := by
     calc
       _ = ∫ v : ℝ, c * e (-((n : ℝ) * θ)) * g (((n : ℝ) - v) / H) := by
-        apply integral_congr_ae
-        filter_upwards with v
-        exact hphase v
+        simp_all
       _ = _ := by rw [integral_const_mul]
   have hsubst : (∫ v : ℝ, g (((n : ℝ) - v) / H)) =
       (H : ℂ) * (∫ u : ℝ, g u) := by
@@ -609,6 +606,8 @@ theorem localConvolutionTerm_fourier (n : ℕ) (c : ℂ) (H θ : ℝ)
     ring
   rw [htermIntegral, hsubst, hg]
   ring
+
+end
 
 noncomputable def localConvolutionSchwartz (s : Finset ℕ) (a : ℕ → ℂ)
     (H : ℝ) (hH : 0 < H) : 𝓢(ℝ, ℂ) :=
@@ -658,8 +657,6 @@ theorem localConvolutionFourier_eq (s : Finset ℕ) (a : ℕ → ℂ)
       rw [hfreq]
       ring
 
-@[simp] theorem norm_e (x : ℝ) : ‖e x‖ = 1 := by
-  simp [e, Complex.norm_exp]
 
 @[simp] theorem norm_mellin (x t : ℝ) : ‖mellin x t‖ = 1 := by
   simp [Blueprint.Analytic.mellin, Complex.norm_exp]
@@ -682,16 +679,20 @@ theorem integrable_norm_sq_schwartz (f : 𝓢(ℝ, ℂ)) :
   simpa [pow_two] using hsq
 
 set_option maxHeartbeats 1000000 in
-theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
+section
+
+variable (s : Finset ℕ) (a : ℕ → ℂ)
+
+theorem localConvolution_energy_bound
     (H : ℝ) (hH : 0 < H) :
     (∫ θ in (-1 / H)..(1 / H), ‖localAdditivePolynomial s a θ‖ ^ 2) ≤
       4 / H ^ 2 * (∫ v : ℝ, ‖localConvolution s a H v‖ ^ 2) := by
   let lo : ℝ := -1 / H
   let hi : ℝ := 1 / H
-  let F : 𝓢(ℝ, ℂ) := localConvolutionSchwartz s a H hH
+  let F  := localConvolutionSchwartz s a H hH
   have hlohi : lo ≤ hi := by
     dsimp [lo, hi]
-    have hp : 0 < 1 / H := one_div_pos.mpr hH
+    have hp  := one_div_pos.mpr hH
     have hstrict : -(1 / H) < 1 / H := by linarith [hp]
     simpa only [neg_div] using hstrict.le
   have hθBound (θ : ℝ) (hmem : θ ∈ Set.Icc lo hi) : |H * θ| ≤ 1 := by
@@ -699,7 +700,7 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
       have hθ' := hmem.1
       have hθ'' := hmem.2
       dsimp [lo, hi] at hθ' hθ''
-      have hlow : -(1 / H) ≤ θ := by simpa only [neg_div] using hθ'
+      have hlow : -(1 / H) ≤ θ := by simpa [neg_div] using hθ'
       exact abs_le.mpr ⟨hlow, hθ''⟩
     rw [abs_mul, abs_of_pos hH]
     calc
@@ -733,15 +734,14 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
             (H * ‖localKernelFourier (-(H * θ))‖ *
               ‖localAdditivePolynomial s a (-θ)‖) := by
           field_simp [hH.ne']
-    have hsq : ‖localAdditivePolynomial s a (-θ)‖ ^ 2 ≤
-        ((2 / H) * ‖(𝓕 F) θ‖) ^ 2 :=
+    have hsq  :=
       pow_le_pow_left₀ (norm_nonneg _) hlin 2
-    have hcoef : (2 / H) ^ 2 = 4 / H ^ 2 := by field_simp [hH.ne']; ring
+    have hcoef : (2 / H) ^ 2 = 4 / H ^ 2 := by ring
     rw [mul_pow] at hsq
     rw [hcoef] at hsq
     exact hsq
-  let A : ℝ → ℝ := fun θ => ‖localAdditivePolynomial s a (-θ)‖ ^ 2
-  let B : ℝ → ℝ := fun θ => (4 / H ^ 2) * ‖(𝓕 F) θ‖ ^ 2
+  let A  := fun θ => ‖localAdditivePolynomial s a (-θ)‖ ^ 2
+  let B  := fun θ => (4 / H ^ 2) * ‖(𝓕 F) θ‖ ^ 2
   have hleftCont : Continuous A := by
     dsimp [A]
     exact ((continuous_localAdditivePolynomial s a).comp continuous_neg).norm.pow 2
@@ -749,10 +749,9 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
       (fun θ : ℝ => (𝓕 F) θ) := by fun_prop
   have hrightCont : Continuous B := by
     dsimp [B]
-    exact continuous_const.mul (hFourierCont.norm.pow 2)
+    fun_prop
   have hpoint' : ∀ θ ∈ Set.Icc lo hi, A θ ≤ B θ := by
-    intro θ hθ
-    exact hpoint θ hθ
+    assumption
   have hintervalCore : (∫ θ in lo..hi, A θ) ≤ ∫ θ in lo..hi, B θ := by
     apply intervalIntegral.integral_mono_on hlohi
       (hleftCont.intervalIntegrable lo hi) (hrightCont.intervalIntegrable lo hi)
@@ -760,14 +759,11 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
   have hinterval :
       (∫ θ in lo..hi, ‖localAdditivePolynomial s a (-θ)‖ ^ 2) ≤
         ∫ θ in lo..hi, B θ := by
-    have hA : (∫ θ in lo..hi, ‖localAdditivePolynomial s a (-θ)‖ ^ 2) =
-        ∫ θ in lo..hi, A θ := rfl
-    rw [hA]
-    exact hintervalCore
+    assumption
   have hsym :
       (∫ θ in lo..hi, ‖localAdditivePolynomial s a θ‖ ^ 2) =
         (∫ θ in lo..hi, ‖localAdditivePolynomial s a (-θ)‖ ^ 2) := by
-    let G : ℝ → ℝ := fun θ => ‖localAdditivePolynomial s a θ‖ ^ 2
+    let G  := fun θ => ‖localAdditivePolynomial s a θ‖ ^ 2
     change (∫ θ in lo..hi, G θ) = ∫ θ in lo..hi, G (-θ)
     have hstart : -hi = lo := by simp [lo, hi, neg_div]
     have hend : -lo = hi := by simp [lo, hi, neg_div]
@@ -775,8 +771,7 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
     have hcomp' : (∫ θ in lo..hi, G (-θ)) = ∫ θ in lo..hi, G θ := by
       simpa only [hstart, hend] using hcomp
     exact hcomp'.symm
-  have hFint : Integrable (fun θ : ℝ => ‖(𝓕 F) θ‖ ^ 2) := by
-    exact integrable_norm_sq_schwartz (𝓕 F)
+  have hFint := integrable_norm_sq_schwartz (𝓕 F)
   have hBint : Integrable B := by
     dsimp [B]
     simpa [mul_comm] using hFint.const_mul (4 / H ^ 2)
@@ -791,7 +786,7 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
     rw [integral_const_mul]
   calc
     _ = ∫ θ in lo..hi, ‖localAdditivePolynomial s a θ‖ ^ 2 := by
-      dsimp [lo, hi]
+      rfl
     _ = ∫ θ in lo..hi, ‖localAdditivePolynomial s a (-θ)‖ ^ 2 := hsym
     _ ≤ ∫ θ in lo..hi, B θ := hinterval
     _ ≤ ∫ θ : ℝ, B θ := hBinterval
@@ -799,11 +794,13 @@ theorem localConvolution_energy_bound (s : Finset ℕ) (a : ℕ → ℂ)
     _ = 4 / H ^ 2 * (∫ v : ℝ, ‖F v‖ ^ 2) := by
       rw [SchwartzMap.integral_norm_sq_fourier]
 
-theorem norm_dp_le (s : Finset ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem norm_dp_le (t : ℝ) :
     ‖dp s a t‖ ≤ ∑ n ∈ s, ‖a n‖ := by
   unfold dp
   calc
     ‖∑ n ∈ s, a n * mellin n t‖ ≤ ∑ n ∈ s, ‖a n * mellin n t‖ := norm_sum_le _ _
-    _ = ∑ n ∈ s, ‖a n‖ := by simp [norm_mellin]
+    _ = ∑ n ∈ s, ‖a n‖ := by simp
+
+end
 
 end Erdos821.P5Energy

@@ -9,8 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_large_cube_sum_comm (Ψ : O →* ℂ) (W : ℝ → ℂ)
@@ -21,10 +20,10 @@ theorem marked_large_cube_sum_comm (Ψ : O →* ℂ) (W : ℝ → ℂ)
   have hf : (Function.support a).Finite :=
     (completedT_finite_support Ψ W hW X hX).subset (by
       intro p hp
-      exact fun h=>hp (by simp only [a,h,mul_zero,zero_mul]))
+      exact fun h=>hp (by simp [a,h,mul_zero,zero_mul]))
   have hs : Summable a := summable_of_hasFiniteSupport hf
   let e := Equiv.prodComm (Ideal O) (Ideal O)
-  have ht : Summable (fun p=>a (e p)) := e.summable_iff.mpr hs
+  have ht  := e.summable_iff.mpr hs
   calc
     _ = ∑'p:Ideal O×Ideal O,a p := hs.tsum_prod.symm
     _ = ∑'p:Ideal O×Ideal O,a (e p) := (e.tsum_eq a).symm
@@ -52,7 +51,7 @@ theorem marked_inner_completed_sum (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ)
     (∑'I:Ideal O,summand Ψ W X I B*d (I*B^3)) =
       (cubeWeight Ψ B * (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹) *
         ∑'I:Ideal O,columnWeight Ψ I * W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))*d (I*B^3) := by
-  have hN : 0 < (Ideal.absNorm B:ℝ) := lt_of_lt_of_le zero_lt_one (norm_at_least_one B hB)
+  have hN  := lt_of_lt_of_le zero_lt_one (norm_at_least_one B hB)
   have hY : 0 < X/(Ideal.absNorm B:ℝ)^3 := div_pos hX (pow_pos hN _)
   have ht (I:Ideal O) : summand Ψ W X I B =
       (cubeWeight Ψ B * (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹) *

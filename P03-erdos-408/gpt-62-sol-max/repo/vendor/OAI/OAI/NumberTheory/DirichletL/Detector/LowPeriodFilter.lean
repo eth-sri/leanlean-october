@@ -29,10 +29,8 @@ lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
       intro i
       by_contra hbad
       have hc0 := hc i (p i).val (p i).property hbad
-      have hprod : (∏j,c j (p j).val)=0 := Finset.prod_eq_zero (Finset.mem_univ i) hc0
-      exact hh (by dsimp [H];rw [hprod,zero_mul])
-    let q : ∀i,(T i).filter (good i) := fun i=>⟨(p i).val,Finset.mem_filter.mpr ⟨(p i).property,hn i⟩⟩
-    exact hp (Finset.mem_image.mpr ⟨q,Finset.mem_univ _,rfl⟩)
+      exact hh (by dsimp [H];rw [(Finset.prod_eq_zero (Finset.mem_univ i) hc0),zero_mul])
+    exact hp (Finset.mem_image.mpr ⟨(fun i=>⟨(p i).val,Finset.mem_filter.mpr ⟨(p i).property,hn i⟩⟩),Finset.mem_univ _,rfl⟩)
   have he := Finset.sum_subset (Finset.subset_univ (Finset.univ.image forget))
     (fun p hp hnot=>hz p hnot)
   change (∑p,H p)=_
@@ -49,8 +47,8 @@ lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMax
   intro Q hQ hdiv
   rw [span_primaryGenerator_of_supported P.val hP] at hdiv
   have hpmax := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
-  have he : P.val=Q := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
-  exact hout (he.symm ▸ hQ)
+  have he  := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
+  simp_all
 
 def lowPeriodPrimeList (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) : Finset PrimeIdeal :=

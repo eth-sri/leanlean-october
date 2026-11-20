@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassWeighted
 
 @[expose] public section
@@ -28,7 +29,7 @@ lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
 
 theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(Z ell R Bfirst t eta a loss : ℝ),
     1≤Z → 0≤ell+eta → 0≤a →

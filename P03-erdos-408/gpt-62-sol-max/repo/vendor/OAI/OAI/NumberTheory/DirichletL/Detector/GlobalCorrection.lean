@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GlobalHolomorphic
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalProduct
@@ -34,7 +35,7 @@ lemma globalPrimeDefectBound_summable : Summable globalPrimeDefectBound := by
   change 240*‖CubicEisenstein.fullIdealWeight ((17/10:ℝ):ℂ) P.val‖=globalPrimeDefectBound P
   unfold globalPrimeDefectBound CubicEisenstein.fullIdealWeight
   simp only [P.property.ne_zero,ite_false]
-  rw [Complex.norm_natCast_cpow_of_pos (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero))]
+  rw [Complex.norm_natCast_cpow_of_pos (Ideal.absNorm_pos_of_ne_bot (P.property.ne_zero))]
   norm_num
 
 structure CorrectionTail (S : Finset Id) : Prop where
@@ -150,7 +151,7 @@ theorem exists_uniform_global_cutoff :
     exact Subtype.ext (congrArg (fun P : {P : PrimeIdeal // P∉F}=>P.val) h)
   constructor
   · intro P hP
-    have hn : ¬Ideal.absNorm P.val≤N := fun hn=>hP (hS P hn)
+    have hn  := fun hn=>hP (hS P hn)
     exact (le_max_left _ _).trans (Nat.le_of_lt (Nat.lt_of_not_ge hn))
   · apply le_trans ?_ hF.le
     exact Summable.tsum_le_tsum_of_inj inc hi

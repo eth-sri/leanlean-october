@@ -23,9 +23,8 @@ lemma deleted_short_length (Z M:ℝ)(hZ:1<Z)(hM:0≤M)
   have hY:1≤comparisonFirst Z M:=Real.one_le_rpow hZ.le (by linarith)
   have hdiv:comparisonFirst Z M/((∏I∈D,I).absNorm:ℝ)≤comparisonFirst Z M:=
     div_le_self (zero_le_one.trans hY) hn
-  have hm:max 1 (comparisonFirst Z M/((∏I∈D,I).absNorm:ℝ))≤comparisonFirst Z M:=max_le hY hdiv
   have he:=Real.logb_le_logb_of_le hZ
-    (lt_of_lt_of_le zero_lt_one (le_max_left 1 _)) hm
+    (lt_of_lt_of_le zero_lt_one (le_max_left 1 _)) (max_le hY hdiv)
   simpa only [length,comparisonFirst,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using he
 
 end SevenEighths.CenteredMomentEnergyReferenceDeletionCapacity

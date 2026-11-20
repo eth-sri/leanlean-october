@@ -8,77 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 
@@ -163,7 +98,7 @@ lemma primeUnionToFree_bijective (lengthScale Q0 k:Ideal Eis) (T:Finset (Ideal E
     change Sum.elim Subtype.val Subtype.val P=Sum.elim Subtype.val Subtype.val R at hv
     cases P with
     | inl P=>cases R with
-      | inl R=>exact congrArg Sum.inl (Subtype.ext hv)
+      | inl R=>simp_all
       | inr R=>
         change P.val=R.val at hv
         exact (Finset.disjoint_left.mp hd P.property (hv.symm ▸ R.property)).elim
@@ -171,7 +106,7 @@ lemma primeUnionToFree_bijective (lengthScale Q0 k:Ideal Eis) (T:Finset (Ideal E
       | inl R=>
         change P.val=R.val at hv
         exact (Finset.disjoint_left.mp hd R.property (hv ▸ P.property)).elim
-      | inr R=>exact congrArg Sum.inr (Subtype.ext hv)
+      | inr R=>simp_all
   · intro P
     have hm:P.val.val∈CompletedGauss.primeSupport k∪T:=by
       rw [←hs]
@@ -278,8 +213,7 @@ lemma activePrimeUnionMap_bijective (e:α⊕β ≃ γ) (A:Finset γ)
     cases x with
     | inl x=>exact ⟨Sum.inl x,Subtype.ext hx⟩
     | inr x=>
-      have hm:x∈optionalPrimeActive e A:=(mem_optionalPrimeActive e A x).mpr (hx.symm ▸ a.property)
-      exact ⟨Sum.inr ⟨x,hm⟩,Subtype.ext hx⟩
+      exact ⟨Sum.inr ⟨x,((mem_optionalPrimeActive e A x).mpr (hx.symm ▸ a.property))⟩,Subtype.ext hx⟩
 
 noncomputable def activePrimeUnionEquiv (e:α⊕β ≃ γ) (A:Finset γ)
     (hA:∀a:α,e (Sum.inl a)∈A) : α⊕optionalPrimeActive e A ≃ A :=
@@ -353,22 +287,6 @@ end
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
-section
-variable (R I F Q0:Ideal Eis) (hR:R≠0) (hI:I≠0) (hF:Squarefree F)
-    (m f z:Eis) (hm0:m≠0) (hf:Ideal.span {f}=F) (hz:Ideal.span {z}=I)
-    (um:Eisˣ) (am bm:ℕ) (g:Eis) (hg:Supported (Ideal.span {g}))
-    (hm:m=um.val*lambda^am*(2:Eis)^bm*g)
-    (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r}))
-    (hx:f^4*z=u.val*lambda^a*(2:Eis)^b*r)
-    (hbad:∀P∈fixedBadPrimes,P∣Ideal.span {m}*F)
-    (hcop:IsCoprime Q0 (rowResidualPart I (Ideal.span {m}*F)))
-    (hA:rowPowerfulPart R=rowPowerfulPart I)
-    (hT:rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
-include R I F Q0 hR hI hF m f z hm0 hf hz um am bm g hg hm u a b r hr hx hbad hcop hA hT
-
-local notation "splitIndex" => (goodMaskFreePrimeFiberEquiv R I F Q0 hR hI hF m f z hm0 hf hz um am bm g hg hm u a b r hr hx hbad hcop hA hT)
-
-end
 
 lemma reflection_row_mask_bad (q:ℕ) (m:Eis) (F:Ideal Eis) :
     ∀P∈fixedBadPrimes,P∣Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F := by
@@ -384,24 +302,13 @@ lemma residual_coprime_free_base (q:ℕ) (hq:q≠0) (m:Eis) (F I:Ideal Eis) :
 
 end CanonicalRowCompletion
 
-local instance (priority := 2000) residualLabelDecidableEq (A B:Type*) : DecidableEq (A⊕B) :=
-  Classical.decEq _
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-variable {α β:Type*} [Fintype α] [Fintype β]
 
 end CompletedGauss
 end
 
-open scoped BigOperators Classical
 
-local instance (priority := 2000) residualEquivDecidableEq (A B:Type*) : DecidableEq (A⊕B) :=
-  Classical.decEq _
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
-local notation "Eis" => ActualEisensteinCubic.O
-variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι]
 
 end CompletedGauss
 

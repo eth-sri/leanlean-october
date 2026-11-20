@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedCenteredCapped
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorRectangle CenteredMomentAllocatedCenteredCapped
-open ConcretePrimeRowBridge CenteredMomentExceptionalCappedAmplitude
+open CenteredMomentDivisorRectangle CenteredMomentAllocatedCenteredCapped ConcretePrimeRowBridge
+open CenteredMomentExceptionalCappedAmplitude
 local notation "O" => HeckeFamily.O
 theorem allocated_source_control (lo hi ε B:ℝ) (hlo:0<lo) (hhi:0≤hi) (hε:0<ε) (hB:0≤B):
     ∃J:ℕ,∃R:Finset (ℕ×ℕ),(0,0)∈R ∧ ∀Q:Ideal O,Q≠0 → ∃C:ℝ,0<C ∧

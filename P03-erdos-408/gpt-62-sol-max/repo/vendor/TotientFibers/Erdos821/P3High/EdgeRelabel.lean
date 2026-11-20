@@ -19,14 +19,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.S2High Erdos821.P3Lowrank
 
 attribute [local instance] bmsFintype
@@ -37,18 +30,24 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 def muHat (F : FixedData) (P : PrimeGroups) (n : ℕ) (g : P.BigGroup) (v : ℕ) : ℝ :=
   if hv : v ∈ P.primes g.val then tiltedMu F P n g.val ⟨v, hv⟩ else 0
 
-theorem muHat_nonneg (F : FixedData) (P : PrimeGroups) (n : ℕ)
+section
+
+variable (F : FixedData) (P : PrimeGroups) (n : ℕ)
+
+theorem muHat_nonneg
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
     (g : P.BigGroup) (v : ℕ) : 0 ≤ muHat F P n g v := by
   unfold muHat
   split_ifs with hv
   · exact (hμ g ⟨v, hv⟩).le
-  · exact le_rfl
+  rfl
 
-theorem muHat_of_mem (F : FixedData) (P : PrimeGroups) (n : ℕ) (g : P.BigGroup)
+theorem muHat_of_mem (g : P.BigGroup)
     (p : P.Prime g.val) : muHat F P n g p.val = tiltedMu F P n g.val p := by
   unfold muHat
   rw [dite_eq_left p.property]
+
+end
 
 def edgeFresh (A : Model F P J m) {s : P.MemoryState (J + F.ell)} (c : EdgeChoice A s)
     (x : P.BigGroup × Fin (J + F.ell)) : Prop :=
@@ -73,11 +72,14 @@ theorem norm_imaginaryPower (k : ℕ) (ζ : ℝ) : ‖imaginaryPower k ζ‖ = 1
 
 theorem coefficient_le_sup {ell : ℕ} (ν : Pattern P J ell m) (a b : P.BigLabels (J + ell))
     (u : P.BigAux J) : ‖ν.coefficient a b u‖ ≤ coefficientSup ν := by
-  unfold coefficientSup
   exact le_csSup (Set.finite_range _).bddAbove ⟨(a, b, u), rfl⟩
 
-theorem norm_coef_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
+section
+
+variable (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
+  (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
+
+theorem norm_coef_major :
     ‖edgeChoiceCoefficient (majorantModel A) n rho theta i s t c‖ =
       |rawEdgeWeight A n rho (A.pattern c.2.2.1) c.2.2.2.1 (permuteActive c.1 s)
         (permuteActive c.2.1 t) c.2.2.2.2| * coefficientSup (A.pattern c.2.2.1) := by
@@ -88,13 +90,12 @@ theorem norm_coef_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin
   split_ifs
   · rw [norm_mul, norm_imaginaryPower, mul_one]
     change ‖((coefficientSup (A.pattern c.2.2.1) : ℝ) : ℂ)‖ = _
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hsup]
+    simp_all
   · rw [norm_star, norm_mul, norm_imaginaryPower, mul_one]
     change ‖((coefficientSup (A.pattern c.2.2.1) : ℝ) : ℂ)‖ = _
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hsup]
+    simp_all
 
-theorem norm_coef_le_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
-    (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
+theorem norm_coef_le_major :
     ‖edgeChoiceCoefficient A n rho theta i s t c‖ ≤
       ‖edgeChoiceCoefficient (majorantModel A) n rho theta i s t c‖ := by
   rw [norm_coef_major]
@@ -106,6 +107,8 @@ theorem norm_coef_le_major (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : 
     exact coefficient_le_sup _ _ _ _
   · rw [norm_star, norm_mul, norm_imaginaryPower, mul_one]
     exact coefficient_le_sup _ _ _ _
+
+end
 
 /-- Replacing a fresh target label by a label outside the ban keeps the raw edge valid. -/
 theorem rawEdgeValid_relabel (A : Model F P J m) (ν : Pattern P J F.ell m) (fwd : Bool)
@@ -189,7 +192,7 @@ theorem freshBigFactor_relabel (n : ℕ) (ν : Pattern P J F.ell m)
       freshBigFactor F n ν prom a * tiltedMu F P n g.val p := by
   have key := tilted_prod_relabel F n
     (fun x : P.BigGroup × Fin (J + F.ell) => ν.shared x.1.val x.2 ∨ x.2 ∈ prom x.1)
-    a g h p (by simp only [not_or]; exact ⟨hsh, hpr⟩)
+    a g h p (by simp_all)
   rw [Fintype.prod_prod_type, Fintype.prod_prod_type] at key
   unfold freshBigFactor
   convert key
@@ -225,9 +228,7 @@ theorem eterm_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (s : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) (t : P.MemoryState (J + F.ell)) :
     0 ≤ eterm A n rho theta i s c t := by
   unfold eterm
-  split_ifs
-  · exact norm_nonneg _
-  · exact le_rfl
+  positivity
 
 theorem eterm_relabel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
@@ -305,7 +306,7 @@ theorem edge_single (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) 
     rw [Finset.sum_eq_zero fun t _ => ite_eq_right (hz t)]
     exact hRHS0
   let α : P.Prime x.1.val := ⟨vx, hvx⟩
-  have hmu : muHat F P n x.1 vx = tiltedMu F P n x.1.val α := muHat_of_mem F P n x.1 α
+  have hmu := muHat_of_mem F P n x.1 α
   let k := c.2.1 x.1.val x.2
   let T := Finset.univ.filter (fun t : BoundedMemoryState P (J + F.ell) B =>
     Q t.val ∧ edgeChoiceValid (majorantModel A) .all i s t.val c ∧ t.val.2.1 x.1.val k = α)
@@ -367,9 +368,7 @@ theorem edge_single (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n) 
       intro t ht p hp
       obtain ⟨-, -, hval, hlab⟩ := Finset.mem_filter.1 ht
       have hpf : p ∉ forb := (Finset.mem_filter.1 hp).2
-      have hban : ∀ j ∈ (A.pattern c.2.2.1).changed x.1.val, c.2.2.2.1 x.1.val j ≠ p :=
-        fun j hj he => hpf (Finset.mem_image.2 ⟨j, hj, he⟩)
-      have hr := (eterm_relabel A n rho theta i hμ s c t.val x p hfr hval hban).2
+      have hr := (eterm_relabel A n rho theta i hμ s c t.val x p hfr hval (fun j hj he => hpf (Finset.mem_image.2 ⟨j, hj, he⟩))).2
       change eterm A n rho theta i s c t.val * P.memoryWeight v t.val * tiltedMu F P n x.1.val p =
         eterm A n rho theta i s c (relabelState x.1 k p t.val) *
           P.memoryWeight v (relabelState x.1 k p t.val) * tiltedMu F P n x.1.val α

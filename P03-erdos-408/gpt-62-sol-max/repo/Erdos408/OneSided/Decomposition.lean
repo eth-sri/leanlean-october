@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Decomposition.Bound
 public import Erdos408.OneSided.Decomposition.Eventually
 
@@ -73,16 +74,16 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
     rcases lt_or_gt_of_ne hii with h | h
     · exact hdisj _ _ (hd.gap i i' h)
     · exact (hdisj _ _ (hd.gap i' i h)).symm
-  have hrough' : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m :=
+  have hrough'  :=
     fun i => hrough _ (hd.window i).2
   have hV : ∀ i, 0 < harmonicMass (band x (d.a i)) := fun i => by
     linarith [(hmass _ (hd.window i).1).1]
-  have hle15 : ∀ i, L ^ d.a i ≤ L ^ (1 / 5 : ℝ) := fun i =>
+  have hle15  := fun i =>
     Real.rpow_le_rpow_of_exponent_le hL1 ((hd.window i).2.trans hahi.le)
   -- the scales
-  have hHm : 2 ≤ d.Hm := (h2 _ hd.γ_ge).trans hd.Hm_ge
+  have hHm  := (h2 _ hd.γ_ge).trans hd.Hm_ge
   have hHn : 1 ≤ d.Hn := by linarith [(h2 _ hd.γ_ge).trans hd.Hn_ge]
-  have hXge : x / CX ≤ d.X := hd.X_ge
+  have hXge  := hd.X_ge
   have hX : 1 ≤ d.X := le_trans (by rw [le_div_iff₀ hCX0]; linarith) hXge
   have hlog : 1 + Real.log (17 * d.X) ≤ 2 * L := by
     have : Real.log (17 * d.X) ≤ Real.log (17 * CX) + L := by
@@ -120,11 +121,10 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
   have hε0 : 0 ≤ ε := by positivity
   have hε : ∀ i, ∀ y ∈ band x (d.a i), 1 / ((y : ℝ) * harmonicMass (band x (d.a i))) ≤ ε := by
     intro i y hy
-    have hy₁ : Real.exp (L ^ alo) ≤ y := (Real.exp_le_exp.2
+    have hy₁  := (Real.exp_le_exp.2
       (Real.rpow_le_rpow_of_exponent_le hL1 (hd.window i).1)).trans (exp_le_of_mem_band hy)
     have hVi := (hmass _ (hd.window i).1).1
     have hyV : Real.exp (L ^ alo) / 2 ≤ y * harmonicMass (band x (d.a i)) := by
-      have := Real.exp_pos (L ^ alo)
       nlinarith
     rw [div_le_iff₀ (by linarith [Real.exp_pos (L ^ alo)])]
     calc (1 : ℝ) = ε * (Real.exp (L ^ alo) / 2) := by
@@ -147,13 +147,12 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
       ‖pairError A₀ x d Y (∏ i, p i) (∏ i, p' i)‖ ≤ B := by
     intro p hp p' _ hpY hp'Y hpY4 hp'Y4
     -- `(17X)^{3/4} Y ≤ (17X)^{3/4} e^{2K L^{1/5}} ≤ X`
-    have h34' : (17 * d.X) ^ (3 / 4 : ℝ) ≤ d.X / Y := by
-      rw [le_div_iff₀ hY0]
-      have := h34 d.X hXge
-      have := Real.rpow_nonneg (show (0 : ℝ) ≤ 17 * d.X by linarith) (3 / 4 : ℝ)
-      nlinarith [hlab p hp]
-    exact norm_pairError_le_of A₀ hL1 hα hβ (by linarith) hHn hX hlog hY0 h34' hpY hp'Y hpY4
+    refine norm_pairError_le_of A₀ hL1 hα hβ (by linarith) hHn hX hlog hY0 ?_ hpY hp'Y hpY4
       hp'Y4
+    rw [le_div_iff₀ hY0]
+    have := h34 d.X hXge
+    have := Real.rpow_nonneg (show (0 : ℝ) ≤ 17 * d.X by linarith) (3 / 4 : ℝ)
+    nlinarith [hlab p hp]
   refine (norm_square_decomposition_le q A₀ hd hdisj' hrough' hHm hHn hV hY hYW hN hε0 hε hB0
     hB).trans ?_
   -- the decay: `16 Y² B (K² + (KJ)² + 2KJ) ε ≤ X Y c₁ L^E e^{-L^{a₋}} ≤ X Y L^{-D'}`
@@ -173,26 +172,20 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
     have hJ0 : (0 : ℝ) ≤ J := Nat.cast_nonneg _
     have hKL : (K : ℝ) * J ≤ (K + 1) * L := mul_le_mul (by linarith) hJ hJ0 (by linarith)
     have hKL' : (K : ℝ) ≤ (K + 1) * L := by nlinarith
-    have hKJ0 : (0 : ℝ) ≤ K * J := mul_nonneg hK0 hJ0
+    have hKJ0  := mul_nonneg hK0 hJ0
     nlinarith [mul_le_mul hKL hKL hKJ0 (by positivity), mul_le_mul hKL' hKL' hK0 (by positivity),
       mul_le_mul hKL' (le_refl ((K + 1 : ℝ) * L)) (by positivity) (by positivity)]
-  have hLE : L ^ E = L ^ (4 * C) * L ^ 3 * L ^ (3 * |A₀|) * L ^ 2 := by
-    rw [show E = 4 * C + 3 + 3 * |A₀| + 2 by ring, Real.rpow_add hL0, Real.rpow_add hL0,
-      Real.rpow_add hL0, show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num,
-      show (2 : ℝ) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast, Real.rpow_natCast]
+  have hLE : L ^ E = L ^ (4 * C) * L ^ 3 * L ^ (3 * |A₀|) * L ^ 2 := by rpow_ring hL0
   have hbr : 16 * (L ^ (4 * C) * L ^ 3 * (160 + 1408 * L ^ (3 * A₀))) *
       ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε ≤ L ^ (-D') := by
     refine le_trans ?_ hdecay
     rw [hLE]
-    have hL4 : 0 ≤ L ^ (4 * C) * L ^ 3 := by positivity
-    have hexp : 0 ≤ Real.exp (-L ^ alo) := (Real.exp_pos _).le
     calc 16 * (L ^ (4 * C) * L ^ 3 * (160 + 1408 * L ^ (3 * A₀))) *
           ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε
         ≤ 16 * (L ^ (4 * C) * L ^ 3 * (1568 * L ^ (3 * |A₀|))) *
           (4 * ((K : ℝ) + 1) ^ 2 * L ^ 2) * ε := by
           gcongr
       _ = c₁ * (L ^ (4 * C) * L ^ 3 * L ^ (3 * |A₀|) * L ^ 2) * Real.exp (-L ^ alo) := by
-          simp only [c₁, ε]
           ring
   calc 16 * Y ^ 2 * B * ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε
       = d.X * Y * (16 * (L ^ (4 * C) * L ^ 3 * (160 + 1408 * L ^ (3 * A₀))) *

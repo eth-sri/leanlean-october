@@ -12,12 +12,11 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMixedRoot
-open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentCanonicalFirst CenteredMomentRankinRadical CenteredMomentCompleteCommon
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
-open CenteredMomentFirstScale CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CenteredMomentFirstMixedAllowance CenteredMomentFirstCanonicalAllowance
+open CenteredMomentFirstNonexceptionalPrefactor CenteredMomentCanonicalFirst CenteredMomentRankinRadical
+open CenteredMomentCompleteCommon CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CenteredMomentFirstScale
+open CenteredMomentSupportedCorrelation
 local notation "O"=>HeckeFamily.O
 
 lemma active_span_swap (C D:Ideal O):
@@ -42,11 +41,10 @@ lemma allowance_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D)
 lemma allowance_root (Z C D P R b:ℝ)(hZ:1<Z)(hC:0<C)(hD:0<D)(hP:0<P)(hR:0<R)
     (hb:b≤Real.logb Z C+Real.logb Z D-2*Real.logb Z P-Real.logb Z R):
     Real.sqrt R/Real.sqrt (C*D)*Z^(b/2)≤1/P:=by
-  have hz:0<Z:=zero_lt_one.trans hZ
-  have hlz:0<Real.log Z:=Real.log_pos hZ
+  have hlz:=Real.log_pos hZ
   have hb':b≤(Real.log C+Real.log D-2*Real.log P-Real.log R)/Real.log Z:=by
     convert hb using 1 ; simp only [Real.logb] ; ring
-  have hh: b*Real.log Z≤Real.log C+Real.log D-2*Real.log P-Real.log R:=
+  have hh:=
     (le_div_iff₀ hlz).mp hb'
   apply (Real.log_le_log_iff (by positivity) (by positivity)).mp
   simp (disch := positivity) only [Real.log_mul,Real.log_div,Real.log_sqrt,
@@ -55,7 +53,7 @@ lemma allowance_root (Z C D P R b:ℝ)(hZ:1<Z)(hC:0<C)(hD:0<D)(hP:0<P)(hR:0<R)
 
 lemma paired_reference_root (qL qR V C D Z bL bR EL ER:ℝ)
     (hqL:0<qL)(hqR:0<qR)(hV:0<V)(hC:0<C)(hD:0<D)(hZ:0<Z)
-    (_hEL:0≤EL)(_hER:0≤ER):
+:
     Real.sqrt ((qL*(V/C)^2*Z^bL*EL)*(qR*(V/D)^2*Z^bR*ER))=
       V^2/(C*D)*Real.sqrt (qL*qR)*Z^((bL+bR)/2)*Real.sqrt (EL*ER):=by
   have hbase:Real.sqrt ((qL*(V/C)^2*Z^bL)*(qR*(V/D)^2*Z^bR))=
@@ -83,20 +81,20 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
         ((F.right.modulus.absNorm:ℝ)*(T/(D.absNorm:ℝ))^2*Z^(allowance D C Z)*ER))≤
       ‖inactiveWeight C D E‖*(Real.exp M/a)*fixedPresentationCost*K*(η.modulus.absNorm:ℝ)/
         (commonRadical C D).absNorm*Real.sqrt (EL*ER):=by
-  have hF:0<fixedPresentationCost:=fixedPresentationCost_pos
-  have hNC:0<(C.absNorm:ℝ):=norm_pos C hC.1
-  have hND:0<(D.absNorm:ℝ):=norm_pos D hD.1
-  have hNR:0<((Ideal.span {activeConductor C D}).absNorm:ℝ):=active_norm_pos C D
-  have hP:0<((commonRadical C D).absNorm:ℝ):=norm_pos _ (commonRadical_ne_zero C D)
-  have hqL:0<(F.left.modulus.absNorm:ℝ):=norm_pos _ F.left.modulus_ne_bot
-  have hqR:0<(F.right.modulus.absNorm:ℝ):=norm_pos _ F.right.modulus_ne_bot
-  have he:0<‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖:=
+  have hF:=fixedPresentationCost_pos
+  have hNC:=norm_pos C hC.1
+  have hND:=norm_pos D hD.1
+  have hNR:=active_norm_pos C D
+  have hP:=norm_pos _ (commonRadical_ne_zero C D)
+  have hqL:=norm_pos _ F.left.modulus_ne_bot
+  have hqR:=norm_pos _ F.right.modulus_ne_bot
+  have he:=
     norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero _ (subsetGenerator_supported C D hC E)))
-  have hrpos:0<‖eisEmbedding (activeConductor C D)‖:=
+  have hrpos:=
     norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero _ (activeConductor_supported C D hC)))
   have hs:=scalar_conductor_algebra _ _ K T _ _ _ (Real.exp M/a) fixedPresentationCost
     (η.modulus.absNorm:ℝ) (F.left.modulus.absNorm:ℝ) (F.right.modulus.absNorm:ℝ)
-    (norm_nonneg _) (norm_nonneg _) hK.le hT (mul_pos hNC hND)
+     (norm_nonneg _) hK.le (mul_pos hNC hND)
     (sq_pos_of_pos he) hrpos (by positivity) fixedPresentationCost_pos.le (Nat.cast_nonneg _)
     hqL.le hqR.le (weighted_scalar_volume C D hC E K A₀ B₀ a T M hK hA hB ha hT hl hr)
     F.conductor_caps.1 F.conductor_caps.2
@@ -106,7 +104,7 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
     (allowance_pair C D hC hD hCD Z hZ)
   rw [←eisEmbedding_norm_sq_eq_absNorm_span,Real.sqrt_sq (norm_nonneg _)] at haR
   rw [paired_reference_root _ _ T _ _ Z _ _ EL ER hqL hqR hT hNC hND
-    (zero_lt_one.trans hZ) hEL hER]
+    (zero_lt_one.trans hZ)]
   calc
     _=(‖scalar C D hC E K A₀ B₀‖*T/((C.absNorm:ℝ)*D.absNorm)*
         Real.sqrt ((F.left.modulus.absNorm:ℝ)*F.right.modulus.absNorm))*
@@ -127,7 +125,6 @@ theorem actual_fixed_reference_pair (C D:Ideal O)(hC:Supported C)(hD:Supported D
 
 open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
 open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentSupportedCorrelation
 
 theorem original_fixed_reference_pair {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(R seed:Ideal O)(a₁ a₂:ℝ)(ha₁:0<a₁)(ha₂:0<a₂)

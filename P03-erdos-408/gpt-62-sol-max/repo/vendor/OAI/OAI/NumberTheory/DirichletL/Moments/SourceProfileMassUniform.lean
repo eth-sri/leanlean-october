@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceProfileMassUniform
 open ActualEisensteinCubic CenteredMomentAddedZeroUniform CenteredMomentSourceMass

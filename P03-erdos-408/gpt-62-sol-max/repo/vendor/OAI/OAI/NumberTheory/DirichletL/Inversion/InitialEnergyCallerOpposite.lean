@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerCanonical
 
 @[expose] public section
@@ -9,10 +10,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
-open SevenEighths.InverseInitialEnergyCallerCanonical
+open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum SevenEighths.InverseMoment
+open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialQuotientGeometry
+open SevenEighths.InverseInitialClippedColumns SevenEighths.InverseInitialEnergyCallerCanonical
 namespace SevenEighths.InverseInitialEnergyCallerOpposite
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -34,17 +34,16 @@ theorem energy_neg_rows (T labels : Finset (Ideal Eis)) (rows : Finset Eis)
   congr 1
   apply Finset.sum_bij (fun k _=>-k)
   · exact hneg
-  · intro a ha b hb he
-    exact neg_injective he
+  · simp
   · intro b hb
     exact ⟨-b,hneg b hb,neg_neg b⟩
   · intro k hk
     rfl
 
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end SevenEighths.InverseInitialEnergyCallerOpposite
 

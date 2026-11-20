@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierActual
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicSource
 
@@ -9,7 +10,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open Set Complex
 namespace SevenEighths.HeckeDetectorDyadicBridge
 open HeckeFamily HeckeDyadic HeckeDetectorFourier
@@ -17,7 +18,7 @@ open HeckeFamily HeckeDyadic HeckeDetectorFourier
 lemma norm_phase (x D : ℝ) (hx : 0<x) (hD : 0<D) (s : ℂ) (t : ℝ) :
     (x : ℂ)^(-s)*FourierBridge.logPhase t (Real.log (x/D)) =
       (D : ℂ)^(-s)*((x/D : ℝ) : ℂ)^(-HeckeDyadic.shift s.re (2*Real.pi*t-s.im)) := by
-  have hxD : 0<x/D := div_pos hx hD
+  have hxD  := div_pos hx hD
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hx.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hxD.ne')]
@@ -26,7 +27,7 @@ lemma norm_phase (x D : ℝ) (hx : 0<x) (hD : 0<D) (s : ℂ) (t : ℝ) :
   unfold FourierBridge.logPhase HeckeDyadic.shift
   rw [← Complex.exp_add, ← Complex.exp_add, Real.log_div hx.ne' hD.ne']
   congr 1
-  have hs : s=(s.re : ℂ)+(s.im : ℂ)*I := (Complex.re_add_im s).symm
+  have hs  := (Complex.re_add_im s).symm
   rw [hs]
   simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im, mul_zero,
     sub_zero, add_zero, add_im, mul_im, mul_one, zero_add]
@@ -82,7 +83,7 @@ theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ
   apply Finset.sum_congr rfl
   intro J hJ
   have hnorm : 0<(J.absNorm : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hS J hJ))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hS J hJ)
   have hp := norm_phase (J.absNorm : ℝ) D hnorm hD s t
   simp only [Complex.ofReal_natCast] at hp
   calc
@@ -135,7 +136,6 @@ theorem inverse_phase_eq (χ : Character) (V W : ℝ→ℂ) (Dstar D : ℝ) (hD 
 lemma normalization_norm (D : ℝ) (hD : 0<D) (s : ℂ) :
     ‖(D : ℂ)^((1/2 : ℂ)-s)‖=D^(1/2-s.re) := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hD]
-  congr 1
   simp
 
 theorem pair_phase_norm (χ : Character) (V W₁ W₂ : ℝ→ℂ) (Dstar D N : ℝ)

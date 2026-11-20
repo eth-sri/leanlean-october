@@ -7,7 +7,7 @@ public import Erdos821.S34.TupleBilinear
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -19,7 +19,7 @@ def comparisonScalar (G : PrimeGroups) (a b : Fin G.size → ℕ)
     cellKernel G a Q h ξ (product G a D) (product G a X) *
     cellKernel G b Q h ξ (product G b E) (product G b Y) * tuplePhase G a b θ ζ D E))
 
-theorem major_retained_comparison (hfourier : RationalFourierTask) (hind : PrimitiveInductionTask)
+theorem major_retained_comparison (hfourier : P4Rat.RationalFourierTask) (hind : P4Rat.PrimitiveInductionTask)
     (G : PrimeGroups) (a b : Fin G.size → ℕ) (Q r : ℕ) (u : ℤ)
     (h ξ U V S θ β ζ ε : ℝ) (hr : 1 ≤ r) (hrQ : r ≤ Q)
     (hh : 0 < h) (hh2 : h ≤ Real.log 2) (hξ : 0 < ξ)
@@ -66,7 +66,7 @@ theorem major_retained_comparison (hfourier : RationalFourierTask) (hind : Primi
       (Q : ℝ) ^ 4 * (2 * h * (|ζ| + 64 * Real.pi * S)) := by
     rw [hfreeze_eq]
     exact dyadic_multiplier_freeze G a b Q h ξ U V S β ζ u r hh hh2 hξ hU hV hS hβ X Y hX hY
-  have hrepro : ‖I - rational X Y‖ ≤ 3 * ε * Real.sqrt (r.totient : ℝ) :=
+  have hrepro  :=
     rational_kernel_reproduction hfourier hind G a b Q r u h ξ ε hr hrQ hε hε1 X Y hcopA hcopB hrepA hrepB
   have heq : tuplePhase G a b θ ζ X Y - comparisonScalar G a b Q h ξ θ ζ X Y =
       M X Y * (rational X Y - I) - (comparisonScalar G a b Q h ξ θ ζ X Y - M X Y * I) := by

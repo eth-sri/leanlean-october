@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneousError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceError
-open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound
-open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentEnergyReferenceHomogeneousError
+open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound CenteredMomentCommonMaskEnergy
+open CenteredMomentOriginalRadialComparison CenteredMomentEnergyReferenceHomogeneousError
 local notation "O"=>HeckeFamily.O
 
 theorem short_energy_bound (b:ℝ):

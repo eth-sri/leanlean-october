@@ -9,78 +9,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv ContDiff
+open scoped LineDeriv
 
 structure PositiveChartCutoff where
   func : EuclideanSpatial → ℝ
@@ -121,11 +65,11 @@ lemma kernelLocalizedField_smooth (χ : PositiveChartCutoff) (f : kernelSmoothTe
   intro p
   by_cases hp : 0 < p 2
   · exact χ.smooth.contDiffAt.smul (kernelTestField_contDiffAt f p hp)
-  · have hn : p ∉ tsupport χ.func := fun h => hp (χ.positive h)
+  · have hn  := fun h => hp (χ.positive h)
     have hz := notMem_tsupport_iff_eventuallyEq.mp hn
     apply (contDiffAt_const : ContDiffAt ℝ ∞ (fun _ : EuclideanSpatial => (0 : ℂ)) p).congr_of_eventuallyEq
     filter_upwards [hz] with q hq
-    simp only [kernelLocalizedField,hq,Pi.zero_apply,zero_smul]
+    simp [kernelLocalizedField,hq,Pi.zero_apply,zero_smul]
 
 def kernelLocalizedSchwartz (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
     𝓢(EuclideanSpatial,ℂ) :=
@@ -200,7 +144,7 @@ lemma kernelLocalizedField_energy_bound (χ : PositiveChartCutoff) (f : kernelSm
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff ENNReal
+open scoped ENNReal
 
 def kernelEuclideanProjection : EuclideanSpatial → KernelQuotient :=
   integralOrbitProjection globalKubotaKernel ∘ euclideanToHyperbolic
@@ -209,11 +153,11 @@ lemma euclideanToHyperbolic_measurePreserving_on (S : Set EuclideanSpatial)
     (hS : MeasurableSet S) (_hpos : S⊆euclideanUpperHalf) :
     MeasurePreserving euclideanToHyperbolic (hyperbolicEuclideanVolume.restrict S)
       (hyperbolicVolume.restrict (hyperbolicEuclideanCoordinates ⁻¹' S)) := by
-  have hU : MeasurableSet (hyperbolicEuclideanCoordinates ⁻¹' S) :=
+  have hU  :=
     hyperbolicEuclideanCoordinates_continuous.measurable hS
   have hset : euclideanToHyperbolic ⁻¹' (hyperbolicEuclideanCoordinates ⁻¹' S)=ᵐ[hyperbolicEuclideanVolume]S := by
     filter_upwards [hyperbolicEuclideanVolume_ae_positive] with p hp
-    simp only [Set.mem_preimage,hyperbolicEuclideanCoordinates_toHyperbolic p hp]
+    simp [Set.mem_preimage,hyperbolicEuclideanCoordinates_toHyperbolic p hp]
   refine ⟨euclideanToHyperbolic_measurable,?_⟩
   rw [hyperbolicVolume,Measure.restrict_map euclideanToHyperbolic_measurable hU,
     Measure.restrict_congr_set hset]
@@ -233,7 +177,7 @@ lemma kernelEuclideanProjection_measurePreserving_on (S : Set EuclideanSpatial)
     (hinj : Set.InjOn kernelEuclideanProjection S) :
     MeasurePreserving kernelEuclideanProjection (hyperbolicEuclideanVolume.restrict S)
       ((integralQuotientVolume globalKubotaKernel).restrict (kernelEuclideanProjection '' S)) := by
-  have hU : MeasurableSet (hyperbolicEuclideanCoordinates ⁻¹' S) :=
+  have hU  :=
     hyperbolicEuclideanCoordinates_continuous.measurable hS
   have hi : Set.InjOn (integralOrbitProjection globalKubotaKernel)
       (hyperbolicEuclideanCoordinates ⁻¹' S) := by
@@ -335,13 +279,8 @@ lemma kernelEuclideanProjection_volume_integral_le (S : Set EuclideanSpatial)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CompletedGauss
 
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-
-end
 
 open ActualEisensteinCubic CanonicalQuadraticSieve
 
@@ -369,7 +308,7 @@ namespace ReflectedBranchData
 
 def value {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedBranchData levelBound K I F Q)
     (W : ℝ→ℂ) (X ρ q : ℝ) (k : idealRange (completedResidualScale K I Q)) : ℂ := by
-  letI : ∀p : d.primes,p.val.IsMaximal := d.maximal
+  letI  := d.maximal
   exact ∑'i : ℕ×ℕ×ℕ,reflectedBranchBlock (fun p : d.primes => p.val) d.good
     (fun p => completedLocalExponent I F p.val) d.label W
     (completedResidualScale K I Q) (completedBranchScale K (X/d.levelScale) I F Q (fun p : d.primes => p.val) d.label)
@@ -393,7 +332,6 @@ def value {rays : ℕ} {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedFibe
 
 end ReflectedFiberData
 
-open ActualEisensteinCubic CanonicalQuadraticSieve
 
 namespace ReflectedFiberData
 

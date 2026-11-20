@@ -10,9 +10,8 @@ public import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology BigOperators
-open Set Metric Filter Complex ActualEisensteinCubic
-open SevenEighths.IdealEuler SevenEighths.IdealCharacter
+open scoped Classical BigOperators
+open Set Metric Filter Complex ActualEisensteinCubic SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open SmoothMobiusCorrection (PrimeIdeal)
 
 namespace SevenEighths.HeckeEulerLog
@@ -39,11 +38,10 @@ theorem weighted_norm_le (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
   simp only [CubicEisenstein.fullIdealWeight, P.property.ne_zero, ite_false, norm_mul]
   change ‖a P.val‖ * ‖SmoothMobiusCorrection.primeNormPower P s‖ ≤ _
   rw [SmoothMobiusCorrection.norm_primeNormPower]
-  have hn : (1 : ℝ) ≤ Ideal.absNorm P.val := by
-    exact_mod_cast (show 1 ≤ Ideal.absNorm P.val from
-      (by have := SmoothMobiusCorrection.prime_norm_two_le P; omega))
-  exact (mul_le_of_le_one_left (by positivity) (ha _)).trans
-    (Real.rpow_le_rpow_of_exponent_le hn (neg_le_neg hs))
+  refine (mul_le_of_le_one_left (by positivity) (ha _)).trans
+    (Real.rpow_le_rpow_of_exponent_le ?_ (neg_le_neg hs))
+  exact_mod_cast (show 1 ≤ Ideal.absNorm P.val from
+    (by have := SmoothMobiusCorrection.prime_norm_two_le P; omega))
 
 theorem weighted_norm_le_half (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (P : PrimeIdeal) {s : ℂ} (hs : 1 ≤ s.re) : ‖weighted a s P.val‖ ≤ 1 / 2 := by
@@ -58,7 +56,7 @@ theorem log_factor_norm_le (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 
     ‖-Complex.log (1 - weighted a s P.val)‖ ≤ majorant σ P := by
   have hhalf := weighted_norm_le_half a ha P (hσ.trans hs)
   have h := Complex.norm_log_one_add_half_le_self
-    (z := -weighted a s P.val) (by simpa using hhalf)
+    (z := -weighted a s P.val) (by simp_all)
   simp only [norm_neg, ← sub_eq_add_neg] at h ⊢
   exact h.trans (mul_le_mul_of_nonneg_left (weighted_norm_le a ha P hs) (by norm_num))
 
@@ -114,10 +112,10 @@ theorem eulerLogBound_ge_one : 1 ≤ eulerLogBound := by
 
 theorem eulerLog_norm_le (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     {s : ℂ} (hs : 3 / 2 ≤ s.re) : ‖eulerLog a s‖ ≤ eulerLogBound := by
-  have hb : ∀ P : PrimeIdeal, ‖-Complex.log (1 - weighted a s P.val)‖ ≤ majorant (3 / 2) P :=
+  have hb  :=
     fun P ↦ log_factor_norm_le a ha P (by norm_num) hs
   have hsum := majorant_summable (by norm_num : (1 : ℝ) < 3 / 2)
-  have hnorm : Summable (fun P : PrimeIdeal ↦ ‖-Complex.log (1 - weighted a s P.val)‖) :=
+  have hnorm  :=
     hsum.of_nonneg_of_le (fun _ ↦ norm_nonneg _) hb
   calc
     ‖eulerLog a s‖ ≤ ∑' P : PrimeIdeal, ‖-Complex.log (1 - weighted a s P.val)‖ :=
@@ -190,14 +188,13 @@ theorem principalLog_differentiableOn :
   have hslit : 1 - (2 : ℂ) / (s + 1) ∈ Complex.slitPlane := by
     simpa only [sub_eq_add_neg, neg_div] using Complex.mem_slitPlane_of_norm_lt_one
       (z := -(2 : ℂ) / (s + 1)) (by simpa using hnorm)
-  have hs1 : s + 1 ≠ 0 := by
-    intro h
-    have hre := congrArg Complex.re h
-    norm_num at hre
-    linarith
-  exact ((Complex.differentiableAt_log hslit).comp s
+  refine ((Complex.differentiableAt_log hslit).comp s
     ((differentiableAt_const (1 : ℂ)).sub ((differentiableAt_const (2 : ℂ)).div
-      (differentiableAt_id.add_const 1) hs1))).differentiableWithinAt
+      (differentiableAt_id.add_const 1) ?_))).differentiableWithinAt
+  intro h
+  have hre := congrArg Complex.re h
+  norm_num at hre
+  linarith
 
 theorem exp_principalLog {s : ℂ} (hs : 1 < s.re) :
     Complex.exp (principalLog s) = (s - 1) / (s + 1) := by

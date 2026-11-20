@@ -135,7 +135,7 @@ theorem statusOf_ne_pending_iff {p : ℕ} :
     exact h _ hs
   · intro h ℓ hs
     obtain ⟨xp, hxp, hS⟩ := exists_of_statusOf_eq_pending hs
-    have hp : xp.1.1 = p := congrArg Prod.fst hxp
+    have hp  := congrArg Prod.fst hxp
     rcases h xp hp with h0 | ha
     · exact hS h0
     · unfold statusOf at hs
@@ -156,16 +156,12 @@ theorem statusOf_congr {J' : ℕ} {act' : Lists K J'} {S' : Particle x d → ℕ
   · push Not at h₂
     rw [statusOf_of_none h₁ h₂, statusOf_of_none (fun h => h₁ (ha.2 h))
       fun xp hxp => (hm xp hxp) ▸ h₂ xp hxp]
-    simp only [hB]
+    simp [hB]
 
 /-- A particle is a band prime with a line `ℓ ≤ p`. -/
 theorem mem_particles {p ℓ : ℕ} : (p, ℓ) ∈ particles x d ↔ p ∈ bandPrimes x d ∧ ℓ ≤ p := by
   simp only [particles, mem_biUnion, mem_image, mem_range, Prod.mk.injEq]
-  constructor
-  · rintro ⟨p', hp', ℓ', hℓ', rfl, rfl⟩
-    exact ⟨hp', Nat.lt_succ_iff.1 hℓ'⟩
-  · rintro ⟨hp, hℓ⟩
-    exact ⟨p, hp, ℓ, Nat.lt_succ_iff.2 hℓ, rfl, rfl⟩
+  simp
 
 /-- The line `[z]_p` is at most `p`. -/
 theorem lineOf_le {p : ℕ} (hp : 0 < p) (z : ℤ × ℤ) : lineOf p z ≤ p := by

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeCutoff
 
 @[expose] public section
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWholeCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
     (G E S T : Finset ι) (hGS : Disjoint G S) (hGT : Disjoint G T)
     (L : ℝ) (hL : 0 ≤ L)
     (hS : primeProductNorm p (G ∪ S) ≤ L)
@@ -36,8 +37,8 @@ def correlatedSecondRadius {ι : Type*} [DecidableEq ι] (p : ι → O)
 theorem full_second_correlated_tail (order : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+      (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (hinj : Function.Injective (fun i => Ideal.span {p i}))
       (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
       (F : Finset ι) (Ψ : O →* ℂ) (_hΨ : ∀ a, ‖Ψ a‖ ≤ 1)
@@ -72,7 +73,7 @@ theorem full_second_correlated_tail (order : ℕ) :
   have hde := mul_ne_zero hd he
   have hdN : 0 < ‖eisEmbedding d‖^2 := SecondPassIntegration.elementNorm_pos d hd
   have heN : 0 < ‖eisEmbedding e‖^2 := SecondPassIntegration.elementNorm_pos e he
-  have henorm : ‖eisEmbedding e‖^2 = primeProductNorm p E.val :=
+  have henorm  :=
     primeSubsetGenerator_norm_eq_productNorm p E.val
   have hkR := (outside_childFrequencyBall (d*e) hde (R G E.val) k hk).le
   have hR' : ‖eisEmbedding d‖^2 * (primeProductNorm p E.val/primeProductNorm p G)^2 * L^2 * H ≤

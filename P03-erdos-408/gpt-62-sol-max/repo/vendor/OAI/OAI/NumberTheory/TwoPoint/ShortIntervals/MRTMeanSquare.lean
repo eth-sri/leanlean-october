@@ -125,7 +125,7 @@ lemma mrt_symmetric_row_bound {ι : Type*} (S : Finset ι) (K : ι → ι → �
     simp only [← mul_sum, ← sum_add_distrib]
     apply sum_congr rfl
     intro i hi
-    have hk : (∑ j ∈ S, K j i) = ∑ j ∈ S, K i j :=
+    have hk  :=
       sum_congr rfl fun j hj => hsymm j hj i hi
     rw [hk]
     ring
@@ -153,7 +153,7 @@ theorem mrt_weighted_mean_square_of_rows {ι : Type*} (S : Finset ι)
   apply mrt_symmetric_row_bound S _ (fun i => ‖a i‖) C
     (fun _ _ _ _ => by positivity) _ hrow
   intro i _ j _
-  rw [show (freq i - freq j) ^ 2 = (freq j - freq i) ^ 2 by ring]
+  ring
 
 lemma mrtExponentialPolynomial_continuous {ι : Type*} (S : Finset ι)
     (a : ι → ℂ) (freq : ι → ℝ) : Continuous (mrtExponentialPolynomial S a freq) := by
@@ -177,7 +177,7 @@ lemma mrt_unweighted_mean_square_le {ι : Type*} (S : Finset ι)
       apply intervalIntegral.integral_mono_on hb (hf.intervalIntegrable (-T) T)
         ((continuous_const.mul hc).intervalIntegrable (-T) T)
       intro t ht
-      have hat : |t| ≤ T := abs_le.mpr ht
+      have hat  := abs_le.mpr ht
       have hh : 0 ≤ 1 + -|t| / T := by
         have := (div_le_one hT).mpr hat
         rw [neg_div]
@@ -209,7 +209,6 @@ theorem mrt_dirichlet_mean_square (N : ℕ) (a : ℕ → ℂ) {T : ℝ} (hT : 0 
     convert mrt_logarithmic_kernel_row hT hm using 1
     apply sum_congr rfl
     intro n _
-    congr 2
     ring
   calc
     _ ≤ Real.exp 1 * ∫ t : ℝ, Real.exp (-|t| / T) *

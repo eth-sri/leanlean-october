@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Descent.Hybrid
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
 
@@ -66,11 +67,10 @@ theorem quotientSupport_norm_le (D : Ideal Eis) (hD : D ≠ 0)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
     (Ideal.absNorm J : ℝ) ≤ N := by
   have hDJ := (mem_quotientSupport D J hD S).mp hJ
-  have hn : Ideal.absNorm J ≤ Ideal.absNorm (D * J) := by
-    apply Nat.le_of_dvd
-    · exact Nat.pos_of_ne_zero (fun hz => hS0 _ hDJ (Ideal.absNorm_eq_zero_iff.mp hz))
-    · exact map_dvd Ideal.absNorm (dvd_mul_left J D)
-  exact (Nat.cast_le.mpr hn).trans (hS _ hDJ)
+  refine (Nat.cast_le.mpr ?_).trans (hS _ hDJ)
+  apply Nat.le_of_dvd
+  · exact Ideal.absNorm_pos_of_ne_bot (hS0 _ hDJ)
+  · exact map_dvd Ideal.absNorm (dvd_mul_left J D)
 
 theorem quotientSupport_shell (D : Ideal Eis) (hD : D ≠ 0)
     (S : Finset (Ideal Eis)) (L : ℝ)
@@ -81,11 +81,10 @@ theorem quotientSupport_shell (D : Ideal Eis) (hD : D ≠ 0)
       (Ideal.absNorm J : ℝ) ≤ 2 * max 1 (L / (Ideal.absNorm D : ℝ)) := by
   have hDJ := (mem_quotientSupport D J hD S).mp hJ
   have hnD : 0 < (Ideal.absNorm D : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (fun hz => hD (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD)
   have hJ0 := quotientSupport_nonzero D hD S hS0 J hJ
   have hnJ : 1 ≤ (Ideal.absNorm J : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (fun hz => hJ0 (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hJ0)
   have hs := hS (D * J) hDJ
   simp only [map_mul, Nat.cast_mul] at hs
   constructor

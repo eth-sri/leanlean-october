@@ -32,8 +32,7 @@ factors of `n` in its group (each prime lies in one group), so there are at most
 `max(1, v₋⁻¹)^k / n`; and `|ι| ≤ 2 C₀ T`. -/
 theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo) (m₀ : ℕ) :
     ∃ C₇ : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (J : ℕ) (A : ι → Finset (Fin J)), (∀ g, (A g).card ≤ m₀) →
         ∀ n : ℕ, 1 ≤ n →
           ∑ l ∈ (auxLabels P A).filter (fun l => slotProduct A l = n),
@@ -76,9 +75,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
             inv_nonneg.2 (hvlo.le.trans (hadm.2.2.2.2.2.1 g).1)) fun g _ => ?_
           rw [Finset.prod_const]
           have hV := hadm.2.2.2.2.2.1 g
-          have hVβ : (harmonicMass (P g))⁻¹ ≤ β :=
-            (inv_anti₀ hvlo hV.1).trans (le_max_right _ _)
-          exact (pow_le_pow_left₀ (inv_nonneg.2 (hvlo.le.trans hV.1)) hVβ _).trans
+          exact (pow_le_pow_left₀ (inv_nonneg.2 (hvlo.le.trans hV.1)) ((inv_anti₀ hvlo hV.1).trans (le_max_right _ _)) _).trans
             (pow_le_pow_right₀ hβ1 (hA g))
       _ = β ^ k := by rw [Finset.prod_const, Finset.card_univ, ← pow_mul]
   -- the fibre has at most `max(1, m₀)^k` labels: each slot holds a prime factor of `n` in
@@ -100,7 +97,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
       obtain ⟨g', -, hg'⟩ := (Prime.dvd_finsetProd_iff hpp _).1 hpn
       obtain ⟨i, hi, hgi⟩ := (Prime.dvd_finsetProd_iff hpp _).1 hg'
       have hmem : l₀ g' i ∈ P g' := by simpa [hi] using hl₀a g' i
-      have heq : p = l₀ g' i := (Nat.prime_dvd_prime_iff_eq (hprime g p hpP)
+      have heq  := (Nat.prime_dvd_prime_iff_eq (hprime g p hpP)
         (hprime g' _ hmem)).1 hgi
       have hgg : g' = g := by
         by_contra hne
@@ -157,7 +154,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
         Finset.sum_le_card_nsmul _ _ _ hterm
     _ = S.card * β ^ k / n := by rw [nsmul_eq_mul, mul_div_assoc]
     _ ≤ max 1 (m₀ : ℝ) ^ k * β ^ k / n := by gcongr
-    _ = γ ^ k / n := by rw [hγ, mul_pow]
+    _ = γ ^ k / n := by rw [mul_pow]
     _ ≤ Real.log x ^ (2 * m₀ * C₀ * Real.log γ) / n := by gcongr
 
 /-- **Lemma C2 (minor arcs).** WD's `MinorArcTask`: for `C, δ, A > 0` there are

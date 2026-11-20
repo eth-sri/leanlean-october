@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.RayCoefficients
 
 @[expose] public section
@@ -11,73 +12,15 @@ noncomputable section
 namespace SecondPassArithmetic
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 section
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
@@ -85,9 +28,9 @@ open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (activeGaussRowFactor)
 
 theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (M S T : Finset ι) (hd : Disjoint S T)
     (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
@@ -105,7 +48,7 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
             (Y * ‖eisEmbedding k‖ ^ 2 / (‖eisEmbedding e‖ ^ 2 * ‖eisEmbedding n‖ ^ 2)) *
               activeGaussRowFactor p hp hinj hg T S e k := by
   dsimp only
-  let P : ι → Ideal O := fun i => Ideal.span {p i}
+  let P  := fun i => Ideal.span {p i}
   let Q := activePrimes P T S
   let q : activeSupport T S → O := fun i => p i.val
   let hQ := activePrimes_pairwise_isCoprime P hinj T S
@@ -118,7 +61,7 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
   have h := canonical_masked_radial_poisson_collected P hinj M Q hQ
     (fun i => hg i.val) (fun i => hc i.val) j
     (activeExponent_ne_zero T S) (activeExponent_lt_six T S) W Y hY
-  have hn : ‖eisEmbedding (finitePrimeModulus Q)‖ = ‖eisEmbedding n‖ :=
+  have hn  :=
     GaussGeneratorTransport.finitePrimeModulus_norm_eq_product q
   dsimp only at h
   rw [hn] at h
@@ -156,9 +99,7 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
@@ -166,8 +107,8 @@ open FirstPassCubeLabels (columnLog primeProductNorm )
 open FourierBridge (logPhase)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def secondGaussTerm (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O) (H₁ H₂ : Finset ι → ℂ)
@@ -180,57 +121,21 @@ def secondGaussTerm (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 end
 
-section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
 
-section
-open ActualEisensteinCubic
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-open FirstPassCubeLabels (primeProductNorm_pos)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-section
-
-open scoped BigOperators Classical
-open ActualEisensteinCubic
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-
-end
-
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
-open SecondPassFiber (OldTuple newLabel newRow Valid)
 
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 theorem exists_label_unit (f : O) (I : Ideal O) (hf : Ideal.span {f} = I) :
     ∃ u : Oˣ, f = (u : O) * idealGenerator I := by
-  have hs : Ideal.span {idealGenerator I} = Ideal.span {f} := (span_idealGenerator I).trans hf.symm
+  have hs  := (span_idealGenerator I).trans hf.symm
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs
-  exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
+  exact ⟨u, by simpa [mul_comm] using hu.symm⟩
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def fixedChildRow (F : Finset ι) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (f y : O) : ℂ :=

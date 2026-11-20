@@ -10,11 +10,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicSupport
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped BigOperators Classical ContDiff FourierTransform
 open MeasureTheory
 namespace SevenEighths.HeckeDetectorFrequency
-open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier
-open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
+open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorCoefficientBounds
+open HeckeDetectorFinite HeckeDetectorDyadicBridge
 local notation "O" => HeckeFamily.O
 
 theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
@@ -47,9 +47,8 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   let y := fun I : Ideal O => Real.log ((Ideal.absNorm I : ℝ)/N)
   let g := logSource Ω cutoff cutoff hΩc hΩ (cutoff.smooth ⊤) (cutoff.smooth ⊤)
     (2*D*N/Dstar) (D*N/U^20) (D*N/U^21)
-  have hUpos : 0 < U := by linarith
-  have hD : 0 < D := by dsimp [D]; positivity
-  have hN : 0 < N := by dsimp [N]; positivity
+  have hD : 0 < D := by positivity
+  have hN : 0 < N := by positivity
   have heq : dyadicBlock χ cutoff cutoff Dstar (U^20) (U^21) s j k =
       ∑ I ∈ expandedSet U, ∑ J ∈ expandedSet U, a I*b J*g (x I+y J) := by
     rw [dyadicBlock_eq_fourier_rectangle χ cutoff cutoff Dstar (U^20) (U^21)
@@ -68,8 +67,6 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   have hg₀ : (∫ t : ℝ, ‖(𝓕 g) t‖) ≤ C₀ := by
     simpa only [pow_zero,one_mul] using hb₀ (2*D*N/Dstar) (D*N/U^20) (D*N/U^21)
       (by positivity) (by positivity) (by positivity)
-  have hgn : (∫ t : ℝ, (1+‖t‖)^n*‖(𝓕 g) t‖) ≤ Cn :=
-    hbn (2*D*N/Dstar) (D*N/U^20) (D*N/U^21) (by positivity) (by positivity) (by positivity)
   have hmass := coefficient_mass χ cutoff cutoff_norm_le U Dstar D N hU s hs
   apply hb.trans
   apply add_le_add
@@ -77,7 +74,7 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
       _ ≤ ((67108864*U^42)/F^n)*Cn := by
         apply mul_le_mul
         · exact div_le_div_of_nonneg_right hmass (by positivity)
-        · exact hgn
+        · exact (hbn (2*D*N/Dstar) (D*N/U^20) (D*N/U^21) (by positivity) (by positivity) (by positivity))
         · exact integral_nonneg (fun t => by positivity)
         · positivity
       _ = _ := by ring

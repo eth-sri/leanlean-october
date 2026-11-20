@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssigned
 
 @[expose] public section
@@ -15,7 +16,7 @@ open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClip
 namespace SevenEighths.InverseInitialEnergyCallerSupport
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 

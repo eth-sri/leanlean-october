@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsActual
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -44,7 +45,7 @@ lemma rowClosedMarked_unramified (eta a X W V rho : ℂ) (hρ : rho^6=1)
         (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹
         (eta*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)*X*W)
         (-(eta/rho)*X+(rho*W)*evenRatio (Ideal.absNorm (Ideal.span {p})) a X V) 1 := by
-  have hn : rho≠0 := by intro h; simp [h] at hρ
+  have hn : rho≠0 := by intro h; simp_all
   rw [←rowMarkedSeries_eq_closed p hp hg hc eta a X W V rho hρ hV hR 0 (by decide),
     rowMarkedSeries_unramified p hp hg,
     principalMarkedSeries_eq p hp hg hc _ _ _ _ _ hV
@@ -66,8 +67,7 @@ theorem sourceRowSeries_unramified_euler (eta a rho x w z : ℂ) (hρ : rho^6=1)
         unramifiedClosed Q (a^2) eta rho x w z := by
   dsimp only
   have hQ : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   have hr := evenRatio_eq_coordR (Ideal.absNorm (Ideal.span {p}):ℝ) hQ a x z
   simp only [Complex.ofReal_natCast] at hr
   have hr' : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a

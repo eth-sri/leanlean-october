@@ -9,9 +9,8 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialPhysicalSlots
-open HeckeFamily HeckeDyadic HeckeInverseAmplification
-open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialMarkedDictionary
-open InverseInitialConjugateEnergy
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialRawDictionary
+open InverseInitialDetectorSource InverseInitialMarkedDictionary InverseInitialConjugateEnergy
 local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -112,8 +111,8 @@ theorem live_tuple_admissible {ι : Type*} [Fintype ι]
   refine ⟨hsprod.1,?_,?_⟩
   · apply Finset.squarefree_prod_of_pairwise_isCoprime
     · intro i _ j _ hij
-      let : (p i).IsMaximal := (Ideal.isPrime_of_prime (hd i).1).isMaximal (hd i).1.ne_zero
-      let : (p j).IsMaximal := (Ideal.isPrime_of_prime (hd j).1).isMaximal (hd j).1.ne_zero
+      let  := (Ideal.isPrime_of_prime (hd i).1).isMaximal (hd i).1.ne_zero
+      let  := (Ideal.isPrime_of_prime (hd j).1).isMaximal (hd j).1.ne_zero
       exact (Ideal.isCoprime_of_isMaximal (hi.ne hij)).isRelPrime
     · intro i _
       exact (hd i).1.squarefree

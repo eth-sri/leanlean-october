@@ -10,11 +10,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical ContDiff
 open Set MeasureTheory
 namespace SevenEighths.CenteredMomentOneReflectionScaleEnergy
-open HeckeFamily HeckeDyadic CenteredMomentSectorLocalization
-open CenteredMomentReflectedUniformPair CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic CenteredMomentSectorLocalization CenteredMomentReflectedUniformPair
+open CenteredMomentReflectedNormalization
 open CenteredMomentScaleSupremum (scaleTest)
 
 lemma annulus_complex_support :

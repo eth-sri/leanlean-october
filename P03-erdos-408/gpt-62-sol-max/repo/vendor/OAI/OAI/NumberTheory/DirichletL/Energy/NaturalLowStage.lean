@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.NaturalLowPhysical
+public import OAI.NumberTheory.DirichletL.Energy.NaturalPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveLowSourceControlled
 public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
@@ -13,29 +13,26 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowStage
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource
-open CenteredMomentEnergyNaturalSourceAdmission
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
+open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentEnergyNaturalLowSourceBound
+open CenteredMomentEnergyPositiveLowBandSource CenteredMomentEnergyNaturalSourceAdmission
 open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
+open CenteredMomentEnergyPhysicalRegime
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyNaturalLowPhysical CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyNaturalPhysical CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyBandMonotonicity
 
 theorem actual_low_from_bands
@@ -52,8 +49,7 @@ theorem actual_low_from_bands
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃Uout:Finset (ℕ×ℕ),∃Jout:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
-      internalQ Q η₀≤Ideal.span {(72:O)}→
+    ForSmallInternalConductors M fun η₀ Q =>
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
     ∀εchild C₀ C₁:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b bΦ Bmask (2*max Lgoal Mparent+reserve Mglobal B ε/4)
@@ -74,9 +70,9 @@ theorem actual_low_from_bands
     CenteredMomentEnergyPositiveLowSourceControlled.actual_low_stages_from_physical (α:=α)
       M H hH W hW.continuous aslot bslot lo hi a b bΦ Mparent (r/4) (r/4)
       (2*amplification ε+1) haslot hWs hbslot ha hb hbΦ hMp (by positivity) (by positivity)
-  obtain ⟨U,J,hphysical⟩:=actual_natural_low_physical (α:=α) M H hH W hW aslot bslot lo hi a b bΦ
+  obtain ⟨U,J,hphysical⟩:=actual_natural_physical (α:=α) M H hH false W hW aslot bslot lo hi a b bΦ
     haslot hWs hbslot ha hb Mglobal A B Bmask Mparent Mchild Lgoal Lslot Mchild κ ε k
-    hMg hA hB hBm hMp hMc hL hLs hMA hready hκ hbeta hκbeta hε hslot hdrop Ψ degree S
+    hMg hA hB hBm hMc hL hLs hMA hready hκ hbeta hκbeta hε hslot hdrop Ψ degree S
   let Umerge:=S∪U
   let Jmerge:=degree+J
   have hS:S⊆Umerge:=Finset.subset_union_left
@@ -112,15 +108,17 @@ theorem actual_low_from_bands
     degree Jmerge S Umerge C₁ C₁ hp.1.le halower le_rfl le_rfl le_rfl hlen le_rfl
     (hell.trans hmarg.2.1) hdeg hS hC₁ le_rfl hpos
   have hm:=hp.2 εchild C₀ C₁ hell hC₀ hC₁ hzsmall hpsmall
-  have hm':PhysicalLowAt (α:=α) M H hH W hW.continuous aslot bslot lo hi haslot hWs
+  have hm':PhysicalAt (α:=α) M H hH false W hW.continuous aslot bslot lo hi haslot hWs
       a b bΦ Bmask Lgoal Lslot Mchild Mparent κ (r/4) (physicalLoss Mglobal B ε k)
       Z ha Ψ η₀ Q Umerge Jmerge (Cp*(C₀+C₁+1)):=by
     intro T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hrho hs
       p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
+    dsimp only
+    intro _
     have hh:=hm T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hrho hs
-      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
+      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow trivial
     have hz:0≤Z:=zero_le_one.trans hp.1.le
-    have hcontrol:=profile_control_mono p hU
+    have hcontrol:=p.control_mono hU
     have hc0:=p.control_nonneg U
     have hheight1:1≤1+|t|+height:=by linarith [abs_nonneg t]
     apply hh.trans

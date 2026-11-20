@@ -112,7 +112,6 @@ lemma allocationFactor_nonneg (x : ℝ) (j v : ℕ) : 0 ≤ allocationFactor x j
 /-- The allocation factor is at most `1`, since `d_j(n) ≤ j^{Ω(n)}`. -/
 lemma allocationFactor_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (v : ℕ) :
     allocationFactor x j v ≤ 1 := by
-  have hj0 : (0 : ℝ) < j := by exact_mod_cast hj
   rw [allocationFactor, candidateOmega_eq_cardFactors, inv_pow, ← div_eq_mul_inv,
     div_le_one (by positivity)]
   exact_mod_cast card_finMulAntidiag_le j _
@@ -156,8 +155,7 @@ lemma dampedDensity_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < dampedDensity x
   refine mul_pos (prod_pos fun p hp => ?_) (prod_pos fun p hp => inv_pos.2 ?_)
   · have hp2 : (2 : ℝ) ≤ p := by
       have := (mem_filter.1 hp).1
-      rw [mem_Icc, Nat.ceil_le] at this
-      exact this.1
+      simp_all
     rw [sub_pos, div_lt_one (by linarith)]
     linarith
   · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
@@ -172,7 +170,7 @@ lemma coreFactor_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ 
   · have := dampedDensity_pos x hj
     have : 0 < Real.log e := Real.log_pos (by linarith [h.1])
     positivity
-  · exact le_rfl
+  rfl
 
 /-- The core is nonnegative when `x^γ ≥ 1`. -/
 lemma proxyCore_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ γ) (v : ℕ) :

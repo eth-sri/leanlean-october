@@ -10,24 +10,21 @@ public import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacitySource
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
+open CenteredMomentSourceLiveColumn CenteredMomentFirstAmplifiedCapacityRadius
+open CenteredMomentSecondCapacitySourceShift CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
+open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
 open CenteredMomentAmplifiedRetainedRadius
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 theorem frozen_reduction_log (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C)
     (Z:ℝ)(hZ:1<Z)(hne:frozenCoefficient B.val C R s.ν s.W s.P≠0):
@@ -41,7 +38,7 @@ theorem frozen_reduction_log (s:Input ι)(C R:Ideal O)(B:actualAllocations s.poo
   rw [Real.logb_mul (pow_pos ha _).ne' hr.ne',Real.logb_pow] at hl
   nlinarith
 
-theorem inherited_affine_parent (s:Input ι)(C _R:Ideal O)(B:actualAllocations s.pools C)
+theorem inherited_affine_parent (s:Input ι)(C :Ideal O)(B:actualAllocations s.pools C)
     (Z κ M:ℝ)(hZ:1<Z)(hκ:1/6≤κ)(hP:∀i,1≤s.P i)
     (hcap:CenteredMomentEnergyBands.length Z s.X₁+
       CenteredMomentEnergyBands.length Z s.X₂+6*κ*(∑i,Real.logb Z (s.P i))≤M):

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.ActiveGaussFactorization
 public import OAI.NumberTheory.DirichletL.Poisson.RadialFourier
 
@@ -10,61 +11,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace ActualEisensteinCubic
 
@@ -74,7 +26,7 @@ section
     {S T : Finset α} (h : S ≠ T) : (activeSupport S T).Nonempty := by
   by_contra hn
   apply h
-  have he : activeSupport S T = ∅ := Finset.not_nonempty_iff_eq_empty.mp hn
+  have he  := Finset.not_nonempty_iff_eq_empty.mp hn
   ext i
   simp only [activeSupport, Finset.union_eq_empty, Finset.sdiff_eq_empty_iff_subset] at he
   exact ⟨fun hi => he.1 hi, fun hi => he.2 hi⟩
@@ -161,8 +113,7 @@ theorem primeDensity_nonneg_le_one
   have hfactor (i : ι) : 0 ≤ 1 - (1 : ℝ) / Ideal.absNorm (P i) ∧
       1 - (1 : ℝ) / Ideal.absNorm (P i) ≤ 1 := by
     have hnorm : (1 : ℝ) ≤ Ideal.absNorm (P i) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (Ideal.absNorm_eq_zero_iff.not.mpr (NeZero.ne (P i)))
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (NeZero.ne (P i))
     constructor
     · exact sub_nonneg.mpr ((div_le_one (by linarith)).mpr hnorm)
     · have : 0 ≤ (1 : ℝ) / Ideal.absNorm (P i) := by positivity
@@ -180,16 +131,14 @@ noncomputable def idealPairPoissonZeroMode
     (hFgood : ∀ I ∈ F,
       ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
     (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (scale : ℝ) : ℂ := by
-  letI : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
+  letI  := primePool_maximal F hFpos
   exact squarefreePairPoissonZeroMode (fun i : primePool F => i.1)
     Subtype.val_injective (primePool_good F hFgood)
     (idealSupport F I) (idealSupport F J) W scale
 
 end ConcretePrimeRowBridge
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
 
 end ActualEisensteinCubic
 
@@ -202,7 +151,7 @@ noncomputable def idealPrimeDensity (F : Finset (Ideal O)) (I : Ideal O) : ℝ :
 theorem idealPrimeDensity_mem_Icc
     (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥) (I : Ideal O) :
     idealPrimeDensity F I ∈ Set.Icc (0 : ℝ) 1 := by
-  let : ∀ i : primePool F, (i.val).IsMaximal := primePool_maximal F hFpos
+  let  := primePool_maximal F hFpos
   exact primeDensity_nonneg_le_one (fun i : primePool F => i.val) (idealSupport F I)
 
 end ConcretePrimeRowBridge
@@ -213,10 +162,6 @@ end ShortDraftHeckeBridge
 
 namespace ConcretePrimeRowBridge
 
-section
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
-
-end
 
 open ActualEisensteinCubic ShortDraftHeckeBridge
 
@@ -241,7 +186,7 @@ theorem idealSupport_product_eq
   calc
     _ = ∏ P ∈ (idealSupport F I).image Subtype.val, P := by
       rw [Finset.prod_image]
-      exact fun a ha b hb h => Subtype.val_injective h
+      simp
     _ = ∏ P ∈ (UniqueFactorizationMonoid.normalizedFactors I).toFinset, P := by
       rw [idealSupport_image_eq_factors F hI]
     _ = (UniqueFactorizationMonoid.normalizedFactors I).prod := by
@@ -281,7 +226,6 @@ theorem activePrimeModulus_norm_sq
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
 
 end ConcretePrimeRowBridge
 

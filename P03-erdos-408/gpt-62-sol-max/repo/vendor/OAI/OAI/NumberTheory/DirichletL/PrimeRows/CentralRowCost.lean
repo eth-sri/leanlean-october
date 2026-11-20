@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
-open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
+open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct ProbeRowReflectedAllocation
+open ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
 local notation "O" => HeckeFamily.O
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
@@ -35,21 +35,20 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hF : 1≤F := by
     dsimp [F]
     exact_mod_cast fixedConductorConstant_pos S hS
-  have hFp : 0<F := zero_lt_one.trans_le hF
+  have hFp  := zero_lt_one.trans_le hF
   refine ⟨(2:ℝ)^eps*F^(1/2+12*e+4*eps),by positivity,?_⟩
   intro u a H ha ha1 hH
   let N : ℝ := F*rowNorm u
   let L : ℝ := 3+H
   let A : ℝ := a-1/2+6*e
   let R : ℝ := 6*e+2*eps
-  have hn : 0<rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
-  have hN : 0<N := mul_pos hFp hn
+  have hn  := zero_lt_one.trans_le (rowNorm_ge_one u)
+  have hN  := mul_pos hFp hn
   have hL : 0<L := by dsimp [L];linarith
-  have hA : 0≤A := by dsimp [A];linarith
-  have hR : 0≤R := by dsimp [R];positivity
-  have hrad : ((radical (rowCharacter S hS u).modulus).absNorm:ℝ)≤N :=
+  have hR : 0≤R := by positivity
+  have hrad  :=
     original_row_deletion_radical_le S hS u
-  have hq : ((rowCharacter S hS u).modulus.absNorm:ℝ)≤N := original_row_conductor_le S hS u
+  have hq  := original_row_conductor_le S hS u
   have hc : presentationComplexity (rowCharacter S hS u) H≤2*N^2*L^2 := by
     unfold presentationComplexity HeckeLogarithmic.complexity
     rw [abs_of_nonneg hH]
@@ -68,7 +67,7 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     apply mul_le_mul_of_nonneg_right _ (sq_nonneg L)
     exact mul_le_mul_of_nonneg_left hrpow (Real.rpow_nonneg hN.le _)
   rw [cost_power_identity N L A R eps hN hL] at hbound
-  have hexp : A+R+2*eps=a-1/2+12*e+4*eps := by dsimp [A,R];ring
+  have hexp : A+R+2*eps=a-1/2+12*e+4*eps := by ring
   rw [hexp] at hbound
   apply hbound.trans
   dsimp only [N]

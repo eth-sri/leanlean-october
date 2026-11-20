@@ -8,19 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalLedger
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentSecondPhysicalLedger
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentForcing CenteredMomentSecondCanonicalNonunit
-open CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
+open CenteredMomentSecondPhysicalLedger CenteredMomentFiniteProfileExceptional
+open CenteredMomentFiniteProfileExceptionalCommon CenteredMomentCommonRadialData
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentCommonExceptionalCost CenteredMomentAllocatedDetectorAmplitude
+open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentForcing
+open CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic
+open CenteredMomentSectorLocalization CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondCanonicalScalar
 local notation "O"=>HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -38,7 +38,7 @@ lemma profileMass_self {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p
 lemma count_power (Z h f e:ℝ)(hZ:1<Z)(hh:0<h)(hf:0<f):
     Z^((Real.logb Z h-4*Real.logb Z f)/6+e)=
       h^(1/6:ℝ)/f^(2/3:ℝ)*Z^e:=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz:=zero_lt_one.trans hZ
   rw [show (Real.logb Z h-4*Real.logb Z f)/6+e=
     Real.logb Z h*(1/6)-Real.logb Z f*(2/3)+e by ring,
     Real.rpow_add hz,Real.rpow_sub hz,Real.rpow_mul hz.le,Real.rpow_mul hz.le,
@@ -53,7 +53,6 @@ omit [DecidableEq ι] in
 lemma profileFactor_nonneg {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q:Ideal O)(K:ℝ)(hK:0≤K):
     0≤profileFactor Sprofile s p J Q K:=by
   unfold profileFactor
-  have hp:=Profiles.control_nonneg p Sprofile
   positivity
 
 lemma sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)
@@ -78,7 +77,7 @@ lemma sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)
   ring
 
 theorem central_sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)
-    (hC:Supported C)(_hD:Supported D)(U:Finset (CommonIndex C D))
+    (hC:Supported C)(U:Finset (CommonIndex C D))
     (K Z ε δ θ r Kphys:ℝ)(n:Fin 4→ℤ)(hZ:1<Z):
     (1/volume s.toData)*outerScalar C D Kphys n*normalizer C D U*
       sourceBudget Sprofile s p J Q C D U K Z ε δ θ r 1 (Real.logb Z (dyadicScale (n 1)))/

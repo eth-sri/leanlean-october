@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalReopen
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentCommonSupport CenteredMomentFourier
+open CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))

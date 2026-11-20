@@ -28,8 +28,7 @@ lemma puncture_period_coprime (Q : Ideal Eis) (m : Eis) (hQ : Q∣Ideal.span {m}
     (P : Ideal Eis) (hP : P.IsMaximal) (hm : m∉P) : IsCoprime Q P := by
   let : P.IsMaximal := hP
   have hp : ¬P∣Ideal.span {m} := by
-    intro h
-    exact hm ((Ideal.dvd_iff_le.mp h) (Ideal.subset_span (Set.mem_singleton m)))
+    simp_all
   exact (maximal_coprime_of_not_dvd P (Ideal.span {m}) hp).symm.of_isCoprime_of_dvd_left hQ
 
 theorem original_completed_actual_puncture_lists (lists : σ→Finset (Ideal Eis))

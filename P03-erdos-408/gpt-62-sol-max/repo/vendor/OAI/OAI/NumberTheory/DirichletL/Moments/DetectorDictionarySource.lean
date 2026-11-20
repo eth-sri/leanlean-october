@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open ProbePhysical CenteredMomentPrimeSlot
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
 lemma source_product_le_rowMask (S : Finset (Ideal O))
@@ -36,7 +35,6 @@ lemma source_product_le_rowMask (S : Finset (Ideal O))
   rwa [he] at hd
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def sourceMomentBase (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) :

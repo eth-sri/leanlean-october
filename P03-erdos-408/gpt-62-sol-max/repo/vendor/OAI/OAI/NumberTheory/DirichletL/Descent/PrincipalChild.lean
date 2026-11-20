@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InversePrincipalEnergy
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InversePrincipalEnergy
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

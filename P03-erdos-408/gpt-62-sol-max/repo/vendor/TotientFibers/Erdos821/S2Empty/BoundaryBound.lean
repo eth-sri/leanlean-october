@@ -65,7 +65,6 @@ theorem initial_boundary_mass_le_two_of_budget
     exact lt_of_lt_of_le (by linarith [hehalf]) (hfloor g p)
   have hfactor : Erdos821.S2Core.initialMemoryBoundaryMass A n = smallTerm * bigTerm := by
     rw [initial_boundary_mass_factorization F P J m n A hV hbase]
-    dsimp [smallTerm, bigTerm, M]
     ring
   have hsmall_le : smallTerm ≤ 1 := by
     simpa [smallTerm, M] using small_boundary_factor_le_one P (J + F.ell) hV
@@ -82,8 +81,6 @@ theorem initial_boundary_mass_le_two_of_budget
       lt_of_lt_of_le (by linarith [hehalf]) (hfloor g p)
     unfold tiltedMu
     exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) hbaseP)
-  have hcardSmall : 0 < (Fintype.card P.SmallResidues : ℝ) := by
-    exact_mod_cast (Fintype.card_pos_iff.mpr ⟨fun _ _ => 0⟩)
   have hsmallProduct :
       0 ≤ ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℤ)) := by
     apply Finset.prod_nonneg
@@ -97,9 +94,6 @@ theorem initial_boundary_mass_le_two_of_budget
     apply Finset.sum_nonneg
     intro s hs
     split_ifs <;> positivity
-  have hsmall0 : 0 ≤ smallTerm := by
-    dsimp [smallTerm]
-    exact mul_nonneg (mul_nonneg (by positivity) hsmallProduct) hsmallSum
   have hweight0 (b : BigLabels P M) : 0 ≤ bigLabelWeight F P n M b := by
     unfold bigLabelWeight
     apply Finset.prod_nonneg

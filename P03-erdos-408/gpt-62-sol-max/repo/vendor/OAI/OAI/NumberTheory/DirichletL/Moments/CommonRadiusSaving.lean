@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonRadiusSaving
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentDescentLedger CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentDescentLedger
+open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentSectorLocalization CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
+open CenteredMomentFirstCanonicalAllowance CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
+open ConcreteTraceCRT ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 theorem common_saving_identity (c d x w q wo B sigma branch delta reserve ell : ℝ) :
@@ -64,7 +63,7 @@ theorem error_saving_lower (c d x q B sigma delta reserve l : ℝ)
       firstSaving c (d+x) ((k:ℝ)*l) q (if k=6 then 0 else l) B
         (x+max (d-c-2*((k:ℝ)*l)+(if k=6 then 0 else l)) 0+
           sigma+delta+reserve) 0 := by
-  have hw : 0≤(k:ℝ)*l := mul_nonneg (Nat.cast_nonneg k) hl
+  have hw  := mul_nonneg (Nat.cast_nonneg k) hl
   have hwo : 0≤(if k=6 then (0:ℝ) else l) := by split_ifs <;> linarith
   have hh := common_saving_lower c d x ((k:ℝ)*l) q (if k=6 then 0 else l)
     B sigma 1 delta reserve 0 hc hw hq hwo hB hallow

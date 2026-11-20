@@ -126,7 +126,7 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
   have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
-  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
+  have hz  := tendsto_nhds_unique hlim
     (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
   exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
 
@@ -137,7 +137,7 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
   apply ContinuousOn.div
   · apply hA.continuousOn.comp (by fun_prop)
     intro x hx
-    simpa [uIcc_of_le hab] using hx
+    simp_all
   · fun_prop
   · intro x hx h
     have hh := congrArg Complex.im h
@@ -218,7 +218,7 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
   unfold verticalIntegral
   rw [he']
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi  := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]
 
@@ -245,7 +245,7 @@ theorem verticalIntegral_hecke (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
   · simpa [HeckeOrigin.poleRemoved_one] using h
   · intro z hza hzb hzp
     have hz0 : z≠0 := by intro h; subst z; simp at hza; linarith
-    have hz1 : z≠1 := by simpa using hzp
+    have hz1 : z≠1 := by simp_all
     rw [HeckeOrigin.poleRemoved_eq χ hz0 hz1]
     norm_num
     field_simp
@@ -271,7 +271,6 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
       intro h
       have h' := congrArg Complex.re h
       simp at h'
-      have : z.re=0 := by linarith
       linarith
     have hz1 : 6*z≠1 := by
       intro h
@@ -279,7 +278,6 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
       push_cast
       linear_combination h / 6
     rw [HeckeOrigin.poleRemoved_eq χ hz0 hz1]
-    have hden : z-(1/6:ℂ)≠0 := sub_ne_zero.mpr (by simpa using hzp)
     push_cast
     field_simp
 

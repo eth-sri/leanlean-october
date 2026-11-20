@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
 public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
@@ -17,13 +18,12 @@ local notation "O"=>ActualEisensteinCubic.O
 
 lemma factor_four_bound (a b c d L:ℝ)(ha:1≤a)(hb:1≤b)(hc:1≤c)(hd:1≤d)
     (h:a*b*c*d≤L): a≤L ∧ b≤L ∧ c≤L ∧ d≤L:=by
-  have ha0:0≤a:=zero_le_one.trans ha
-  have hb0:0≤b:=zero_le_one.trans hb
-  have hc0:0≤c:=zero_le_one.trans hc
-  have hd0:0≤d:=zero_le_one.trans hd
-  have hab:1≤a*b:=ha.trans (le_mul_of_one_le_right ha0 hb)
-  have habc:1≤a*b*c:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc)
-  have habd:1≤a*b*d:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hd)
+  have ha0:=zero_le_one.trans ha
+  have hb0:=zero_le_one.trans hb
+  have hc0:=zero_le_one.trans hc
+  have hd0:=zero_le_one.trans hd
+  have hab:=ha.trans (le_mul_of_one_le_right ha0 hb)
+  have habc:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc)
   have ha':a≤a*b*c*d:=by
     calc
       a≤a*b:=le_mul_of_one_le_right ha0 hb
@@ -57,9 +57,9 @@ theorem first_profile_live_factors (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fi
   exact ⟨hb₁.1,hb₂.1,hb₁.2.1,hb₁.2.2.1⟩
 
 variable {ι:Type*}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+    (hcop:OAI.PrincipalFamily.Coprime p)
+    (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem original_live_profile_caps
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)
@@ -84,12 +84,9 @@ theorem original_live_profile_caps
     · exact hs 5
     · exact primeProductNorm_ge_one p hp _
     · exact primeProductNorm_ge_one p hp _
-  have hprof:firstNormProfile (fun y=>star (W y)) W Φ (fun _ _=>1) K
-      (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
-        (divisorElement p x.1) x.2.2 j)≠0:=by
-    intro hz
-    exact hn (by unfold sourceSummand;rw [hz,mul_zero])
-  exact first_profile_live_factors W Φ K L _ hq hW hprof
+  refine first_profile_live_factors W Φ K L _ hq hW ?_
+  intro hz
+  exact hn (by unfold sourceSummand;rw [hz,mul_zero])
 
 end SevenEighths.InverseMomentFirstLiveCaps
 

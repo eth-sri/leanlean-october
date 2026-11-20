@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapEnergy
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapInputFourier
+public import OAI.NumberTheory.DirichletL.Descent.CommonMeasure
 
 @[expose] public section
 
@@ -8,16 +10,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
 open FirstPassCubeLabels
 namespace SevenEighths.InverseInitialMarkedInputEnergy
-open InverseMoment InverseInitialOverlapFourier
-open InverseInitialRayAttachment InverseInitialArithmetic
+open InverseMoment InverseInitialOverlapFourier InverseInitialRayAttachment InverseInitialArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis) [OAI.PrincipalFamily.Maximal p]
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem marked_input_integrable (g:𝓢(ℝ,ℂ))(F:Finset ι)(Ψ:Eis→*ℂ)(j u:Eis)
     (I:Finset σ)(L:σ→Finset ι)(a:σ→ι→ℂ)(y:σ→ι→ℝ)

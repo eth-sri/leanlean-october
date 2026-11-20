@@ -43,12 +43,12 @@ def analyticGeometry (F : FixedData) : Blueprint.Analytic.Geometry where
   ext g
   simp only [PrimeGroups.smallGroups, PrimeGroups.bigGroups,
     Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and]
-  simp only [Bool.not_eq_false]
+  simp
 
 @[simp] lemma bigGroup_card (P : PrimeGroups) :
     Fintype.card P.BigGroup = P.bigGroups.card := by
   exact (Fintype.card_subtype _).trans (by
-    simp only [PrimeGroups.bigGroups])
+    rfl)
 
 lemma admissible_analytic (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (hP : P.Admissible F x) (hint : intervalBigGroups P) :

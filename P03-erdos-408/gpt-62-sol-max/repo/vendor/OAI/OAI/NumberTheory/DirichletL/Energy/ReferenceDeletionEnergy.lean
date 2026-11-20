@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceWeightedEnergy
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionBudget
 
@@ -11,13 +12,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceSource CenteredMomentEnergyReferenceWeightedEnergy
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
+open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion
+open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
+open CenteredMomentRadialPolynomialEnergy CenteredMomentCommonMaskRadialEnergy
+open CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -51,7 +51,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
   refine ⟨C^2,sq_pos_of_pos hC,?_⟩
   intro Z Bmask bΦ a b s W₁ W₂ ha hb hs₁ hs₂ pool β P t X₁ X₂ E p hp hP hβ hs hX₁ hX₂ hE hple hchildren
   let R:=CompletedGauss.primeSupport s.puncture
-  have hR:∀I∈R,Prime I:=support_prime s.puncture
+  have hR:=support_prime s.puncture
   let κ:={D:Finset (Ideal O)//D∈R.powerset}×
     {D:Finset (Ideal O)//D∈R.powerset}×{J:Finset α//J∈(Finset.univ:Finset α).powerset}
   let cf(z:O)(j:κ):=signedCoefficient (naturalCharacter s.character z) R j.1.val j.2.1.val j.2.2.val
@@ -67,8 +67,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
   have hρ(j:κ):0≤ρ j:=uniformMajorant_nonneg _ _ _ _ _ _ (fun i _=>hM i)
   have hq(j:κ):0≤q j:=Real.rpow_nonneg (Nat.cast_nonneg _) _
   have hn(D:Finset (Ideal O))(hD:D∈R.powerset):0<((∏I∈D,I).absNorm:ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Finset.prod_ne_zero_iff.mpr (fun I hi=>(hR I (Finset.mem_powerset.mp hD hi)).ne_zero)))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Finset.prod_ne_zero_iff.mpr (fun I hi=>(hR I (Finset.mem_powerset.mp hD hi)).ne_zero))
   have hcf(z:O)(j:κ):‖cf z j‖≤ρ j:=by
     apply signedCoefficient_uniform _ R hR _ _ (Finset.mem_powerset.mp j.1.property)
       (Finset.mem_powerset.mp j.2.1.property) _ pool (fun i=>heightCoefficient (β i) t) P bslot M

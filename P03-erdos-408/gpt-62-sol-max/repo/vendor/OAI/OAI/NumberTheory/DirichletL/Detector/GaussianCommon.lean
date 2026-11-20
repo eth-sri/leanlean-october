@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSubset
 
 @[expose] public section
@@ -7,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianSubset
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
@@ -39,21 +41,13 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
   refine ⟨V,hV,?_,?_⟩
   · intro N s hs
     choose B hB hb using fun A : Finset (Fin K)=>gaussianJointMoment_summed (V A) (hV A) N s hs
-    let B0 := (∑A∈(Finset.univ : Finset (Fin K)).powerset,B A)+1
-    have hB0 : 0<B0 := by
-      have hh : 0≤∑A∈(Finset.univ : Finset (Fin K)).powerset,B A :=
-        Finset.sum_nonneg (fun A _=>(hB A).le)
-      dsimp only [B0]
-      linarith
+    obtain ⟨B0, hB0, hball⟩ := exists_real_majorant 0 B
     refine ⟨B0,hB0,?_⟩
     intro A Z hZ
     obtain ⟨hsm,hbd⟩ := hb A Z hZ
     refine ⟨hsm,hbd.trans ?_⟩
     apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZ.le s)
-    have hm : A∈(Finset.univ : Finset (Fin K)).powerset := Finset.mem_powerset.mpr (Finset.subset_univ A)
-    have hh := Finset.single_le_sum (fun A _=>(hB A).le) hm
-    dsimp only [B0]
-    linarith
+    exact hball A
   · intro η C W0 W1 hW0 hW1 slotPrimes hp P hP X Y Z hX hY hZ
     rw [compensatedPhysicalProbe_eq_subsets]
     apply Finset.sum_congr rfl

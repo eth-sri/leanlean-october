@@ -58,7 +58,6 @@ theorem smoothed_window_energy_from_shifted {α : Type*}
       have h := (gauss_column_integrable S a ha β τ t θ X hX V hVc hVs z).const_mul (Real.sqrt (u z):ℂ)
       convert h using 1
       funext w
-      dsimp only [φ]
       ring
     have hb (w : ℝ) : (∑ z : rows,‖φ z w‖^2)≤E*((1+‖w‖)^J)^2 := by
       simp only [φ]
@@ -76,7 +75,6 @@ theorem smoothed_window_energy_from_shifted {α : Type*}
         ← integral_const_mul]
       apply integral_congr_ae
       filter_upwards [] with w
-      dsimp only [φ]
       ring
     simp only [he,hnorm] at hh
     rw [Finset.sum_coe_sort rows (fun z : O => u z*‖gaussPolynomial S a ha c z‖^2)] at hh

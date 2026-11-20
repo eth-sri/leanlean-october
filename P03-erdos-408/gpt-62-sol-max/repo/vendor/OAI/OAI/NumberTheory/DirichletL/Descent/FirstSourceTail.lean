@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstSourceSize
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstSourceSize
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
@@ -16,7 +17,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem choose_actual_first_tail_order (Mmax Fmax eta tau saving : ℝ)
     (hMm : 0≤Mmax) (hFm : 0≤Fmax) (heta : 0≤eta) (htau : 0<tau) :
     ∃ order : ℕ,∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→O) (_hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
       (b : CubeCoordinates ι) (C D : Finset ι),Disjoint C b.support →
       D⊆C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit →
       ∀ (Z M r ell V G₁ G₂ P : ℝ),1≤Z → 0≤M → M≤Mmax → 0≤ell → 0≤V → -eta≤r →

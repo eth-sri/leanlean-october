@@ -97,9 +97,9 @@ theorem PatternComparisonBridgeTask_proof : PatternComparisonBridgeTask := by
         idealFullPair (unsignedKernel ν block Q h ξ θ ζ) fA gB) := by ring
   have hsigma : ‖sigma‖ = 1 := by simp [sigma]
   rw [halg, norm_mul, hsigma, one_mul]
-  have hF : ∀ s a a' b t, fA (labelJoin ν block s a b t) = fA (labelJoin ν block s a' b t) :=
+  have hF  :=
     bigAverage_join_false ν block f
-  have hG : ∀ s a b b' t, gB (labelJoin ν block s a b t) = gB (labelJoin ν block s a b' t) :=
+  have hG  :=
     bigAverage_join_true ν block g
   have herror : idealFullPair (rawPrefixKernel P J F.ell θ ζ) fA gB -
       idealFullPair (unsignedKernel ν block Q h ξ θ ζ) fA gB =
@@ -128,10 +128,10 @@ theorem PatternComparisonBridgeTask_proof : PatternComparisonBridgeTask := by
       (selectedCounts (patternAuxCoordinates ν block true)) m
     rw [sideCounts_true_eq]
     exact kTrue_bigSlots hj block c gT hgT hneT
-  let a : SharedRows ν → ℝ := fun s => ∑ y,
+  let a  := fun s => ∑ y,
     Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block true) y *
       ‖conditionalF ν block fA s y‖ ^ 2
-  let b : SharedRows ν → ℝ := fun s => ∑ x,
+  let b  := fun s => ∑ x,
     Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false) x *
       ‖conditionalG ν block gB s x‖ ^ 2
   have ha : ∀ s, 0 ≤ a s := fun s => Finset.sum_nonneg (fun y _ =>
@@ -152,11 +152,11 @@ theorem PatternComparisonBridgeTask_proof : PatternComparisonBridgeTask := by
       (conditionalF ν block fA s) (conditionalG ν block gB s)) ε
     (fun s => (rowWeight_pos hV _ s).le) ha hb
     (fun s => (analytic_mellin_norm _ _).le) hε he
-  have hEf : (∑ s, rowWeight (sharedRows ν) s * a s) ≤ ∑ x, P.idealMass x * ‖f x‖ ^ 2 :=
-    (conditionalF_energy_le ν block hV fA).trans
+  have hEf  :=
+    (conditional_energy_le ν block false hV fA).trans
       (bigCoordinateAverage_sqNorm_le P (J + F.ell) hV (patternSideCoordinates ν block false) f)
-  have hEg : (∑ s, rowWeight (sharedRows ν) s * b s) ≤ ∑ x, P.idealMass x * ‖g x‖ ^ 2 :=
-    (conditionalG_energy_le ν block hV gB).trans
+  have hEg  :=
+    (conditional_energy_le ν block true hV gB).trans
       (bigCoordinateAverage_sqNorm_le P (J + F.ell) hV (patternSideCoordinates ν block true) g)
   apply hbound.trans
   unfold idealVectorNorm

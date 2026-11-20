@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 namespace SevenEighths.HeckeDetectorClassBudget
 open HeckeDetectorFiberPartition HeckeDetectorWitnessRows
@@ -17,7 +17,7 @@ def alphabetBound (mesh : ℝ) : ℕ := 2+(⌈(1/2 : ℝ)/mesh⌉+1 : ℤ).toNat
 
 theorem labels_card_le (cap mesh : ℝ) (hcap : cap≤1/2) (hm : 0<mesh) :
     (HeckePrimeAmplitudeBins.labels cap mesh).card≤alphabetBound mesh := by
-  have hceil : ⌈cap/mesh⌉≤⌈(1/2 : ℝ)/mesh⌉ :=
+  have hceil  :=
     Int.ceil_mono (div_le_div_of_nonneg_right hcap hm.le)
   have hsub : Finset.Icc (0 : ℤ) ⌈cap/mesh⌉ ⊆ Finset.Icc (0 : ℤ) ⌈(1/2 : ℝ)/mesh⌉ := by
     intro n hn

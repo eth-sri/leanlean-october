@@ -13,14 +13,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergySlotHeight
+open HeckeFamily HeckeDyadic ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentEnergyState
+open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
+open CenteredMomentNaturalRowSource CenteredMomentEnergyAllocatedChildren CenteredMomentEnergySlotHeight
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentEnergyProfiles CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondHeightFamily CenteredMomentLattice CenteredMomentRetainedProfile CenteredMomentTwist
+open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentEnergyProfiles
+open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentLattice
+open CenteredMomentRetainedProfile CenteredMomentTwist
 local notation "O"=>HeckeFamily.O
 
 def unpuncturedState {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ):NaturalState Z 0 bΦ where
@@ -86,8 +85,7 @@ theorem independent_child_energy {α:Type*}[Fintype α][DecidableEq α]
     pool β P X₁ X₂ hX₁ hX₂ hP
   simp only [CenteredMomentNaturalMaskedFloor.twist_polynomial _ W₁ a b ha hs₁ t₁,
     CenteredMomentNaturalMaskedFloor.twist_polynomial _ W₂ a b ha hs₂ t₂] at hh
-  simpa only [independentProfiles,unpuncturedState,NaturalState.mask,
-    show (1:Fin 2)≠0 by decide,ite_false,ite_true,effectiveState,effectiveRadial] using hh
+  assumption
 
 theorem independent_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
     {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(ha:0<a)

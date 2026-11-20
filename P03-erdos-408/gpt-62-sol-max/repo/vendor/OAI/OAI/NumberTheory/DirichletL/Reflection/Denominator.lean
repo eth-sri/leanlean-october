@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.NormalizedEnergy
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Inversion.ReflectedNormalization
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem extractedOutsideScalar_scale (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
         Real.sqrt ((Ideal.absNorm (frozenExtracted F jF e 0):ℝ)*
           (Ideal.absNorm (frozenExtracted F jF e 2):ℝ))) := by
   have hn (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (frozenExtracted_ne_zero F jF e v)
   unfold extractedOutsideScalar frozenBranchScale
   have hh := sqrt_extraction_identity _ _ _ r U B (hn 1) (hn 2) (hn 0) hr hU hB
   calc
@@ -51,7 +52,7 @@ lemma power_normalizer {Z : ℝ} (hZ : 1≤Z) (v ell el S₀ B₀ Td : ℝ) :
     smallScalar (Z^(v+3*ell+el-Td)) /
       (Z^(el/3)*Real.sqrt (Z^v)*Z^ell*Real.sqrt (Z^S₀*Z^B₀)) =
       outsideScalar Z v ell el S₀ B₀ Td := by
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZ0  := lt_of_lt_of_le zero_lt_one hZ
   rw [Real.sqrt_eq_rpow,Real.sqrt_eq_rpow,← Real.rpow_add hZ0,
     ← Real.rpow_mul hZ0.le,← Real.rpow_mul hZ0.le,
     ← Real.rpow_add hZ0,← Real.rpow_add hZ0,← Real.rpow_add hZ0]
@@ -68,9 +69,9 @@ theorem extractedOutsideScalar_log_widths (F : PrimeFamily φ) (jF : φ→ℕ) (
         (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 0))
         (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 2))
         (Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-Real.logb Z R) := by
-  have hz0 : 0<Z := lt_trans zero_lt_one hZ
+  have hz0  := lt_trans zero_lt_one hZ
   have hn (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (frozenExtracted_ne_zero F jF e v)
   rw [extractedOutsideScalar_scale F jF e r U B R hr hU hB]
   symm
   rw [← power_normalizer hZ.le]

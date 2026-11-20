@@ -21,9 +21,7 @@ def pullback (e : R ≃+* S) (χ : MulChar S ℂ) : MulChar R ℂ where
   map_nonunit' := by
     intro x hx
     apply χ.map_nonunit
-    intro h
-    apply hx
-    simpa using h.map e.symm.toMonoidHom
+    simp_all
 
 @[simp] theorem pullback_apply (e : R ≃+* S) (χ : MulChar S ℂ) (x : R) :
     pullback e χ x = χ (e x) := rfl
@@ -31,14 +29,8 @@ def pullback (e : R ≃+* S) (χ : MulChar S ℂ) : MulChar R ℂ where
 @[simp] theorem pullback_symm (e : R ≃+* S) (χ : MulChar S ℂ) :
     pullback e.symm (pullback e χ) = χ := by
   apply MulChar.ext'
-  intro x
   simp
 
-@[simp] theorem pullback_mul (e : R ≃+* S) (χ ψ : MulChar S ℂ) :
-    pullback e (χ * ψ) = pullback e χ * pullback e ψ := by
-  apply MulChar.ext'
-  intro x
-  rfl
 
 theorem primitive_pullback (e : R ≃+* S) (χ : MulChar S ℂ)
     (hχ : IsPrimitiveOnIdeals χ) : IsPrimitiveOnIdeals (pullback e χ) := by
@@ -53,8 +45,7 @@ theorem primitive_pullback (e : R ≃+* S) (χ : MulChar S ℂ)
       change e.symm (e x) ∈ I
       simpa using hx
     rw [hJ] at he
-    have hx0 : x = 0 := e.injective (by simpa using he)
-    exact hx0
+    exact e.injective (by simpa using he)
   obtain ⟨u, hu, hχu⟩ := hχ J hJ
   let v : Rˣ := Units.map e.symm.toMonoidHom u
   refine ⟨v, ?_, ?_⟩

@@ -20,7 +20,7 @@ theorem marked_selected_column_sum (F : Finset (Ideal O))
     let p := CanonicalQuadraticSieve.poolPrimary F
     let hp := CanonicalQuadraticSieve.poolPrimary_ne_zero F hF
     letI : ∀i:ConcretePrimeRowBridge.primePool F,(Ideal.span {p i}).IsMaximal :=
-      fun i=>by rw [CanonicalQuadraticSieve.poolPrimary_span F hF i]; infer_instance
+      CanonicalQuadraticSieve.poolPrimary_maximal F hF
     let hcop := CanonicalQuadraticSieve.poolPrimary_coprime F hF
     let hg := CanonicalQuadraticSieve.poolPrimary_good F hF
     (∑I∈F,columnWeight (rowTwist Ψ m f z) I * W (Ideal.absNorm I)*d I) =
@@ -30,15 +30,14 @@ theorem marked_selected_column_sum (F : Finset (Ideal O))
   dsimp only
   let : ∀i:ConcretePrimeRowBridge.primePool F,
       (Ideal.span {CanonicalQuadraticSieve.poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [CanonicalQuadraticSieve.poolPrimary_span F hF i]; infer_instance
+    CanonicalQuadraticSieve.poolPrimary_maximal F hF
   rw [InitialMeanSquare.sum_selected_ideals F (fun I hI=>(hF I hI).2.1)]
   apply Finset.sum_congr rfl
   intro S hS
   have hspan : (Ideal.span {∏i∈S,CanonicalQuadraticSieve.poolPrimary F i}) = ∏i∈S,i.val := by
     rw [FiniteGaussPhase.span_finset_prod]
     exact Finset.prod_congr rfl (fun i _=>CanonicalQuadraticSieve.poolPrimary_span F hF i)
-  have hpr (i:ConcretePrimeRowBridge.primePool F) :
-      ConcretePrimeRowBridge.goodLambda^2∣CanonicalQuadraticSieve.poolPrimary F i-1 :=
+  have hpr (i:ConcretePrimeRowBridge.primePool F)  :=
     (primaryPrime_spec i.val (CanonicalQuadraticSieve.poolPrimary_ne_zero F hF i)).2.2.2
   have h := columnWeight_finset (CanonicalQuadraticSieve.poolPrimary F)
     (CanonicalQuadraticSieve.poolPrimary_ne_zero F hF)
@@ -70,8 +69,8 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
     (hW : ∀ t,W t≠0 → t≤b) (hD : b*X≤D) (d : Ideal O → ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     fixedChildRow (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
       (poolPrimary_good F hF) Finset.univ Ψ m
       (fun T=>W (primeProductNorm (poolPrimary F) T/X)*d (∏i∈T,i.val)) f z =
@@ -79,8 +78,8 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
       W ((Ideal.absNorm I:ℝ)/X)*d I := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   dsimp only
   symm
   rw [marked_weighted_column_tsum_eq S D hSp Ψ (m*excludedGenerator S) f z

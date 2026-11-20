@@ -51,7 +51,7 @@ theorem reconstructed_fixed_square_energy_le
     exact sq_nonneg _
 
 theorem finite_double_row_energy {I J : Type*} [Fintype I] [Fintype J]
-    (rows : Finset (Ideal Eis)) (F : I → J → Ideal Eis → ℂ) (E : ℝ) (_hE : 0 ≤ E)
+    (rows : Finset (Ideal Eis)) (F : I → J → Ideal Eis → ℂ) (E : ℝ)
     (hF : ∀ i j, (∑ k ∈ rows, ‖F i j k‖ ^ 2) ≤ E) :
     (∑ k ∈ rows, ‖∑ i, ∑ j, F i j k‖ ^ 2) ≤
       ((Fintype.card I : ℝ) * (Fintype.card J : ℝ)) ^ 2 * E := by
@@ -106,8 +106,8 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
     intro n hn
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hn
     exact ⟨⟨(hS p hp).1, (hS p hp).2.1⟩, (hS p hp).2.2.2.1⟩
-  have hBsup : ∀ p ∈ S, (Ideal.absNorm p.2 : ℝ) ≤ B := fun p hp => (hS p hp).2.2.2.2
-  have hlen : ∀ p ∈ S, (Ideal.absNorm p.1 : ℝ) ≤ N ∧ (Ideal.absNorm p.2 : ℝ) ≤ B :=
+  have hBsup  := fun p hp => (hS p hp).2.2.2.2
+  have hlen  :=
     fun p hp => (hS p hp).2.2.2
   have hlabel (j : Fin (columnDyadicLength B + 1))
       (i : Fin (columnDyadicLength N + 1)) :
@@ -138,7 +138,7 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
         (divisorDyadicBin_bounds (hybridSquarePool S) B (hybridSquarePool_bounds S B hBsup) j t ht).1
         rows nset Pset D a (sourceGridCoefficient beta t) hrows hnset hP ha hD hβ
       apply (reconstructed_fixed_square_energy_le D t (fun d hd => (hD d hd).1) rows Pset a beta).trans
-      convert hfix using 1 ; dsimp only [E] ; ring
+      convert hfix using 1 ; ring
     have he := hybrid_square_dyad_energy S B hBsup j rows
       (fun t k => ∑ d ∈ hybridCommonBlock S N i t,
         ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d)
@@ -159,7 +159,7 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
       Finset.sum_congr rfl (fun k hk => congrArg (fun z : ℂ => ‖z‖ ^ 2) (hrow k hk))
     _ ≤ ((Fintype.card (Fin (columnDyadicLength B + 1)) : ℝ) *
         (Fintype.card (Fin (columnDyadicLength N + 1)) : ℝ)) ^ 2 * (256 ^ 2 * E) :=
-      finite_double_row_energy rows F (256 ^ 2 * E) (by positivity) hlabel
+      finite_double_row_energy rows F (256 ^ 2 * E) hlabel
     _ = _ := by simp only [Fintype.card_fin, Nat.cast_add, Nat.cast_one, E]; ring
 
 end

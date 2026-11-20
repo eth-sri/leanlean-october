@@ -25,7 +25,7 @@ theorem gaussRow_pair_summable (a b : O) (ha : Supported (Ideal.span {a}))
   let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
     (supported_element_ne_zero b hb))
   let : Fintype (Residue (a * b)) := Fintype.ofFinite _
-  let P : Residue (a * b) → ℂ := fun x =>
+  let P  := fun x =>
     normalizedResidueGauss a (supported_element_ne_zero a ha)
       (supportedModulusCharacter a ha) (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
     star (normalizedResidueGauss b (supported_element_ne_zero b hb)

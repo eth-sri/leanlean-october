@@ -37,9 +37,9 @@ lemma highAbsoluteMajorant_eq_of_re (x w z x' w' z' : ℂ)
     (p : (Ideal O×Ideal O)×(Ideal O×Ideal O)) :
     highAbsoluteMajorant x w z p=highAbsoluteMajorant x' w' z' p := by
   unfold highAbsoluteMajorant
-  rw [fullIdealWeight_norm_eq_of_re (x-1/2) (x'-1/2) (by simp [hx]),
+  rw [fullIdealWeight_norm_eq_of_re (x-1/2) (x'-1/2) (by simp_all),
     fullIdealWeight_norm_eq_of_re (3*x-2) (3*x'-2) (by simp [hx]),
-    fullIdealWeight_norm_eq_of_re (w-1) (w'-1) (by simp [hw]),
+    fullIdealWeight_norm_eq_of_re (w-1) (w'-1) (by simp_all),
     fullIdealWeight_norm_eq_of_re (6*z) (6*z') (by simp [hz])]
 
 def fullHighCoefficient (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
@@ -66,7 +66,7 @@ lemma fullHighCoefficient_norm_le (S : Finset (Ideal O)) (D : Ideal O) (η : Hec
 lemma fullHighCoefficient_continuous (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
     (mask : NonzeroFrequency→ℂ) (p : FullHighIndex) :
     Continuous (fun q : (ℂ × ℂ) × ℂ => fullHighCoefficient S D η mask q.1.1 q.1.2 q.2 p) := by
-  have hH : (elementNorm p.1.val:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (elementNorm_pos _ p.1.property).ne'
+  have hH  := Complex.ofReal_ne_zero.mpr (elementNorm_pos _ p.1.property).ne'
   unfold fullHighCoefficient frequencyWeight markedIdealHighSummand bareIdealHighSummand
   have hc : Continuous (fun q : (ℂ × ℂ) × ℂ => (elementNorm p.1.val:ℂ)^(-q.2)) :=
     continuous_snd.neg.const_cpow (Or.inl hH)
@@ -76,10 +76,8 @@ lemma fullHighCoefficient_continuous (S : Finset (Ideal O)) (D : Ideal O) (η : 
     (fullIdealWeight_continuous _).comp (by fun_prop)
   have h3 : Continuous (fun q : (ℂ × ℂ) × ℂ => fullIdealWeight q.1.2 p.2.2.1) :=
     (fullIdealWeight_continuous _).comp (by fun_prop)
-  have h4 : Continuous (fun q : (ℂ × ℂ) × ℂ => fullIdealWeight (6*q.2) p.2.2.2) :=
-    (fullIdealWeight_continuous _).comp (by fun_prop)
   exact (continuous_const.mul hc).mul
-    (continuous_const.mul ((((continuous_const.mul h1).mul h2).mul h3).mul h4))
+    (continuous_const.mul ((((continuous_const.mul h1).mul h2).mul h3).mul ((fullIdealWeight_continuous _).comp (by fun_prop))))
 
 end SevenEighths.ProbePhysical
 end

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 
 @[expose] public section
@@ -18,10 +19,10 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
     (hMm:0≤Mmax) (hFm:0≤Fmax) (heta:0≤eta) (htau:0<tau) :
     ∃(s:Finset (ℕ×ℕ)) (Ctail:ℝ),0<Ctail ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
       (a:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂:O)
@@ -57,7 +58,7 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
   intro ι σ _ _ p hp _ hinj hcop hg hc pool bs labels a Ψ₁ Ψ₂ m₁ m₂ slots lists weights extra₁ extra₂
     test₁ test₂ W Z M r ell V Γ G₁ G₂ hZ hbin hM hMmax hell hV hr hwhole hΓ hG₁ hG₂ hΨ₁ hΨ₂
     hadm hb₁ hb₂ hI0 hIF ha hslots hw he₁ he₂ ht₁ ht₂ hs₁ hs₂
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz:=zero_lt_one.trans hZ
   let B:=Z^(ell+eta)
   let L:=Z^(r+eta)
   let E:=65536*(Cm*(B^2*L)*G₁)*(Cm*(B^2*L)*G₂)*
@@ -78,14 +79,11 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
         (firstDyadicPhysicalCutoff p b C I Z M r ell V eta tau) D‖≤E:=by
     have hCB:Disjoint C b.support:=Finset.disjoint_left.mpr (fun i hi hib=>
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp (Finset.mem_filter.mp hC).1) hi)).2 hib)
-    have hupper (x:ℝ) (hx:1≤x):x≤Z^(firstDyadicExponent Z x+eta):=
+    have hupper (x:ℝ) (hx:1≤x):=
       (first_dyadic_bounds Z eta x hZ hbin hx).2.2
     have hlower (x:ℝ) (hx:1≤x):Z^(firstDyadicExponent Z x-eta)≤x:=by
       exact (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith : firstDyadicExponent Z x-eta≤firstDyadicExponent Z x)).trans
         (first_dyadic_bounds Z eta x hZ hbin hx).2.1
-    have hjpos:0<‖eisEmbedding (jLabel p b.support
-      (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit)‖^2:=
-      SecondPassIntegration.elementNorm_pos _ (primeProduct_ne_zero p hp _ _)
     have he:=hloc p hp hinj hcop hg hc pool b C D (extra₁ b) (extra₂ b) I Ψ₁ Ψ₂ m₁ m₂
       slots lists weights (test₁ b) (test₂ b) W (B^2) G₁ G₂ Z M r ell V
       (firstDyadicExponent Z (primeProductNorm p C))

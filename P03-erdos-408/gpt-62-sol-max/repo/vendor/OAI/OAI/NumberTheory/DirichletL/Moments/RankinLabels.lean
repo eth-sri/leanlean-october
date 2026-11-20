@@ -40,7 +40,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
         have he : primeSupport R=primeSupport w.1 := by
           rw [← hwr,commonRadical_support,← heq w hw,Finset.inter_self]
         rw [he,heq w hw]
-        exact ⟨Finset.Subset.refl _,Finset.Subset.refl _⟩)
+        simp)
       X₁ X₂ hX₁ hX₂ (fun w hw => hN w (Finset.mem_filter.mp hw).1)
     exact hb.trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) hRN hε.le) (by positivity))
@@ -98,7 +98,7 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       exact_mod_cast hb
     obtain ⟨w,hw,hwe⟩ := Finset.mem_image.mp hv
     have hb := hpow (commonRadical v.1 v.2) (commonRadical_ne_zero _ _)
-    have hn : (Ideal.absNorm (commonRadical v.1 v.2):ℝ) ≤ Y := hwe ▸ hR w hw
+    have hn  := hwe ▸ hR w hw
     exact hc.trans (hb.trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) hn (by positivity)) hD.le))
   have he := Finset.card_eq_sum_card_fiberwise

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateLabels
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateLabels
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 include hp
 
 theorem actual_cell_triple_margins

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothSummands
 public import OAI.NumberTheory.DirichletL.Poisson.LatticeEnvelopes
 
@@ -10,72 +11,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped ArithmeticFunction.Moebius
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -85,8 +29,8 @@ open FirstPassCubeLabels (columnLog primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 include hinj in
@@ -125,7 +69,7 @@ theorem secondInputCoefficient_norm_le_test
     ‖secondInputCoefficient p hg Ψ m c d H S‖ ≤ ‖H S‖ := by
   have he : secondInputCoefficient p hg Ψ m c d H S =
       secondInputCoefficient p hg Ψ m c d (fun _ => 1) S * H S := by
-    simp only [secondInputCoefficient, mul_one]
+    simp [secondInputCoefficient, mul_one]
   rw [he, norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) ((secondInputCoefficient_norm_le p hg Ψ m c d S).trans (hΨ _))
 
@@ -137,9 +81,9 @@ theorem tail_radial_scalar_le (Y E n lengthScale H P : ℝ) (A : ℕ)
     (hden : E*n^2 ≤ lengthScale^3) (hH : 0 ≤ H) (hP : 0 ≤ P) :
     (Y/n) * (P / ((min 1 (Y/(E*n^2)))^2 * (1+H)^A)) ≤
       Y*P*(1+lengthScale^3/Y)^2 / (1+H)^A := by
-  have hn0 : 0 < n := lt_of_lt_of_le zero_lt_one hn
-  have he : 0 < E*n^2 := mul_pos hE (sq_pos_of_pos hn0)
-  have hs : 0 < Y/(E*n^2) := div_pos hY he
+  have hn0  := lt_of_lt_of_le zero_lt_one hn
+  have he  := mul_pos hE (sq_pos_of_pos hn0)
+  have hs  := div_pos hY he
   have hr : 0 ≤ lengthScale^3/Y := div_nonneg (pow_nonneg (zero_le_one.trans hL) _) hY.le
   have hi : (min 1 (Y/(E*n^2)))⁻¹ ≤ 1+lengthScale^3/Y := by
     by_cases h : 1 ≤ Y/(E*n^2)
@@ -147,12 +91,11 @@ theorem tail_radial_scalar_le (Y E n lengthScale H P : ℝ) (A : ℕ)
       linarith
     · rw [min_eq_right (le_of_lt (lt_of_not_ge h)), inv_div]
       exact (div_le_div_of_nonneg_right hden hY.le).trans (by linarith)
-  have hi0 : 0 ≤ (min 1 (Y/(E*n^2)))⁻¹ := inv_nonneg.mpr (le_min zero_le_one hs.le)
+  have hi0  := inv_nonneg.mpr (le_min zero_le_one hs.le)
   have hi2 := pow_le_pow_left₀ hi0 hi 2
-  have hyn : Y/n ≤ Y := div_le_self hY.le hn
+  have hyn  := div_le_self hY.le hn
   calc
     _ = (Y/n)*P*((min 1 (Y/(E*n^2)))⁻¹)^2 / (1+H)^A := by
-      simp only [div_eq_mul_inv, mul_inv_rev, inv_pow]
       ring
     _ ≤ _ := by
       apply div_le_div_of_nonneg_right _ (pow_nonneg (by linarith) _)
@@ -167,22 +110,10 @@ theorem sum_pair_indicator {α : Type*} (s : Finset α) (P : α → Prop) [Decid
       apply Finset.sum_congr rfl
       intro a ha
       by_cases h : P a
-      · simp only [h, true_and, ite_true]
-      · simp only [h, false_and, ite_false, Finset.sum_const_zero]
+      · simp_all
+      simp_all
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul, pow_two]; ring
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
-include hp hinj
-
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
@@ -197,7 +128,6 @@ open RayFourExpansion (RayCharacter)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 

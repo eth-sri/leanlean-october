@@ -10,16 +10,13 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalLedger
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost
-open CenteredMomentSupport CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondCanonicalLedger CenteredMomentForcing
-open CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentSmooth
+open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows
+open CenteredMomentSecondPhysicalCost CenteredMomentSupport CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondCanonicalLedger CenteredMomentForcing CenteredMomentSecondSectorFrequency
+open CenteredMomentFirstWholeKernel CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physicalBlock_effective_window (η:Character) (t:ℝ)
@@ -33,8 +30,8 @@ theorem physicalBlock_effective_window (η:Character) (t:ℝ)
   split_ifs at hz with hpart
   · obtain ⟨I,hI,hIs⟩:=Finset.exists_ne_zero_of_sum_ne_zero hz
     obtain ⟨J,hJ,hterm⟩:=Finset.exists_ne_zero_of_sum_ne_zero hIs
-    have hk: ((_:ℂ)*((_:ℝ):ℂ))≠0:=(mul_ne_zero_iff.mp hterm).2
-    have hw: (_:ℝ)≠0:=Complex.ofReal_ne_zero.mp (mul_ne_zero_iff.mp hk).2
+    have hk:=(mul_ne_zero_iff.mp hterm).2
+    have hw:=Complex.ofReal_ne_zero.mp (mul_ne_zero_iff.mp hk).2
     exact (dyadicWeight_support (n 0)
       (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hw).1).1).1).2
   · exact False.elim (hz rfl)
@@ -125,10 +122,10 @@ theorem actual_physical_log_ledger (η:Character) (t:ℝ)
   have hf:0<forcingNorm C D U:=common_product_pos C D hC _
   have hw:=physicalBlock_scale_lower η t S β C D hC hD U R rows W K n a H ha hlower hne
   have hl:a*H/(C.absNorm:ℝ)≤dyadicScale (n 2):=by
-    have hh: H/(C.absNorm:ℝ)*a≤dyadicScale (n 2):=(le_div_iff₀ ha).mp hw.1
+    have hh:=(le_div_iff₀ ha).mp hw.1
     convert hh using 1; ring
   have hr:a*H/(D.absNorm:ℝ)≤dyadicScale (n 3):=by
-    have hh: H/(D.absNorm:ℝ)*a≤dyadicScale (n 3):=(le_div_iff₀ ha).mp hw.2
+    have hh:=(le_div_iff₀ ha).mp hw.2
     convert hh using 1; ring
   have hk:=physicalBlock_effective_window η t S β C D hC hD U R rows W K n hne
   have he:secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K=

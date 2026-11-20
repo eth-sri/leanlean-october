@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SlotRatios
 
@@ -21,7 +22,7 @@ private theorem exists_tsum_term {α : Type*} (f : α → ℂ) (h : (∑' x,f x)
     ∃ x,f x ≠ 0 := by
   by_contra hn
   push Not at hn
-  exact h (by simp only [hn,tsum_zero])
+  simp_all
 
 theorem allocated_nonzero_witness (η : Character) (m A z : O) (t : ℝ)
     (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
@@ -85,8 +86,7 @@ theorem actualExtracted_norm_boundary (D : Ideal O) (hD : Squarefree D)
     (v : ι → Ideal O) (hv : ∀ i,v i ≠ 0) (I J : Ideal O)
     (hn : allocationTerm D Finset.univ (factorTuple v I J) a ≠ 0) :
     (Ideal.absNorm D:ℝ) ≤ selectedNorm D a*∏ i∈frozenIndices D a,(Ideal.absNorm (v i):ℝ) := by
-  have h := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (actualExtracted_ne_zero D a v hv))) (map_dvd Ideal.absNorm (divisor_dvd_actualExtracted D hD a v I J hn))
+  have h := Nat.le_of_dvd (Ideal.absNorm_pos_of_ne_bot (actualExtracted_ne_zero D a v hv)) (map_dvd Ideal.absNorm (divisor_dvd_actualExtracted D hD a v I J hn))
   simpa only [actualExtracted,map_mul,map_prod,Nat.cast_mul,Nat.cast_prod,selectedNorm] using
     (show (Ideal.absNorm D:ℝ) ≤ Ideal.absNorm (actualExtracted D a v) by exact_mod_cast h)
 

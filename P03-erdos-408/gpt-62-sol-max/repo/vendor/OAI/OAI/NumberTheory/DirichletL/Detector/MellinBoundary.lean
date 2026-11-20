@@ -3,6 +3,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrincipalMellinResidues
 public import OAI.NumberTheory.DirichletL.ContinuationPolynomialContour
 public import Mathlib.MeasureTheory.Group.Prod
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -77,7 +78,7 @@ theorem boundaryControl_of_pole_product (F V G : ℂ → ℂ) {a b p C D δ : �
     linarith
   have hc (x : ℝ) (hx : x∈uIcc a b) (hd : δ≤|x-p|) :
       Continuous (fun t : ℝ => F ((x:ℂ)+t*I)) := by
-    have hn (t : ℝ) : (x:ℂ)+t*I≠p := hne x t (hd.trans (pole_distance_vertical p x t))
+    have hn (t : ℝ)  := hne x t (hd.trans (pole_distance_vertical p x t))
     have hv := hV.comp_continuous (by fun_prop : Continuous (fun t : ℝ => (x:ℂ)+t*I))
       (by intro t; simpa using hx)
     have hg := hG.comp_continuous (by fun_prop : Continuous (fun t : ℝ => (x:ℂ)+t*I))
@@ -140,7 +141,7 @@ theorem source_w_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
   let δ : ℝ := min (1/20) (cw-1)
   have hδ : 0<δ := lt_min (by norm_num) (sub_pos.mpr hcw)
   have hab : (19/20:ℝ)≤cw := by linarith
-  have hu : uIcc (19/20:ℝ) cw=Icc (19/20:ℝ) cw := uIcc_of_le hab
+  have hu  := uIcc_of_le hab
   obtain ⟨C,hC,hV⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay W1 a1 b1 ha1 hW1
     (W1.smooth ⊤) (19/20) cw (JH+JL+2)
   let G (w : ℂ) := wScalar W0 X Z eta s z * (Y:ℂ)^(w-1) *
@@ -186,7 +187,7 @@ theorem source_w_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ)
           (mul_le_mul (mul_le_mul_of_nonneg_left hv (norm_nonneg _))
             (hHBbd x (hu ▸ hx) t hboundary) (norm_nonneg _) (by positivity))
           (hLbd x (hu ▸ hx) t hboundary) (norm_nonneg _) (by positivity)
-      _ = _ := by rw [pow_add]; ring
+      _ = _ := by ring
 
 lemma gaussian_strip_norm_le (s : ℂ) {a b x : ℝ} (ha : 0<a) (hx : x∈Icc a b) (t : ℝ) :
     ‖Complex.exp ((s+((x:ℂ)+t*I)-1)^2)‖≤Real.exp ((|s.re|+b+1)^2) := by
@@ -194,8 +195,7 @@ lemma gaussian_strip_norm_le (s : ℂ) {a b x : ℝ} (ha : 0<a) (hx : x∈Icc a 
   apply Real.exp_le_exp.mpr
   have hr : ((s+((x:ℂ)+t*I)-1)^2).re = (s.re+x-1)^2-(s.im+t)^2 := by simp [pow_two]
   rw [hr]
-  have hxb : 0<x := ha.trans_le hx.1
-  have hK : 0≤|s.re|+b+1 := by linarith [abs_nonneg s.re, hx.2]
+  have hxb  := ha.trans_le hx.1
   have hA : |s.re+x-1|≤|s.re|+b+1 := by
     rw [abs_le]
     constructor <;> linarith [neg_abs_le s.re, le_abs_self s.re, hx.2]
@@ -259,7 +259,7 @@ theorem source_z_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 : ℝ)
   let δ : ℝ := min (1/600) e
   have hδ : 0<δ := lt_min (by norm_num) he
   have hab : (33/200:ℝ)≤1/6+e := by linarith
-  have hu : uIcc (33/200:ℝ) (1/6+e)=Icc (33/200:ℝ) (1/6+e) := uIcc_of_le hab
+  have hu  := uIcc_of_le hab
   obtain ⟨C,hC,hV⟩ := ProbeRadialMellin.radial_mellin_strip_decay W0 a0 b0 ha0 hW0
     (33/200) (1/6+e) (by norm_num) (JH+JL+2)
   let G (z : ℂ) := zScalar W1 X Z eta s z * (H 1 z*B 1 z) *
@@ -314,7 +314,7 @@ theorem source_z_boundary (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 : ℝ)
           (mul_le_mul (zScalar_norm_le W1 hX hZ (by norm_num) (hu ▸ hx) eta s t)
             (hHBbd x (hu ▸ hx) t hboundary) (norm_nonneg _) hS)
           (hLbd x (hu ▸ hx) t hboundary) (norm_nonneg _) (by positivity)
-      _ = _ := by rw [pow_add]; ring
+      _ = _ := by ring
 
 def profile (W0 W1 : SchwartzMap ℝ ℂ) (s w z : ℂ) : ℂ :=
   Complex.exp ((s+z-1)^2) * mellin (paperRadialFourier W0) z * mellin W1 w
@@ -347,7 +347,7 @@ lemma jointHeight_le_shear (t v w : ℝ) :
   unfold jointHeight
   change 1+|t|+|v|+|w|≤2*height (t+v)*height v*(1+|w|)
   calc
-    _ ≤ 2*height (t+v)*height v+|w| := by linarith [h1]
+    _ ≤ 2*height (t+v)*height v+|w| := by linarith
     _ ≤ 2*height (t+v)*height v+(2*height (t+v)*height v)*|w| := by
       have hh : 1≤2*height (t+v)*height v := by nlinarith
       have hhh := mul_le_mul_of_nonneg_right hh (abs_nonneg w)
@@ -356,10 +356,9 @@ lemma jointHeight_le_shear (t v w : ℝ) :
 
 lemma weighted_to_cauchy {f C : ℝ} (J : ℕ) (t : ℝ) (hf : 0≤f)
     (h : height t^(J+2)*f≤C) : height t^J*f≤C*cauchy t := by
-  have hh : (1+|t|)^2*(height t^J*f)≤C := by
-    simpa [height,pow_add,mul_assoc,mul_comm,mul_left_comm] using h
-  exact CubicReflectionKernel.weighted_two_to_cauchy
-    (mul_nonneg (pow_nonneg (height_pos t).le _) hf) t hh
+  refine CubicReflectionKernel.weighted_two_to_cauchy
+    (mul_nonneg (pow_nonneg (height_pos t).le _) hf) t ?_
+  simpa [height,pow_add,mul_assoc,mul_comm,mul_left_comm] using h
 
 lemma weighted_coupled_cauchy (J : ℕ) (t v w A B C D : ℝ)
     (hA : 0≤A) (hB : 0≤B) (hC : 0≤C) (_hD : 0≤D)
@@ -379,7 +378,6 @@ lemma weighted_coupled_cauchy (J : ℕ) (t v w A B C D : ℝ)
       have hc := cauchy_nonneg v
       have hd := cauchy_nonneg w
       have hw := (height_pos w).le
-      have hv := (height_pos v).le
       gcongr
     _ = _ := by ring
 
@@ -469,32 +467,30 @@ lemma profile_moment_majorant (W0 W1 : SchwartzMap ℝ ℂ) (J : ℕ)
         (realGaussianBound_pos _ _ _ _).le
     _ = _ := by unfold jointEnvelope; ring
 
-theorem profile_uniform_moments (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
+theorem profile_uniform_moments (mw : MellinWindows)
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       Integrable (fun p : HeightSpace => jointHeight p.1.1 p.1.2 p.2^J*
-        ‖onLines W0 W1 σ ξ υ p‖) heightMeasure ∧
-      (∫p : HeightSpace, jointHeight p.1.1 p.1.2 p.2^J*‖onLines W0 W1 σ ξ υ p‖ ∂heightMeasure)≤K := by
-  obtain ⟨C,hC,hR⟩ := ProbeRadialMellin.radial_mellin_strip_decay W0 a0 b0 ha0 hW0 zlo zhi hzlo (J+2)
-  obtain ⟨D,hD,hW⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay W1 a1 b1 ha1 hW1
-    (W1.smooth ⊤) wlo whi (J+2)
+        ‖onLines mw.left mw.right σ ξ υ p‖) heightMeasure ∧
+      (∫p : HeightSpace, jointHeight p.1.1 p.1.2 p.2^J*‖onLines mw.left mw.right σ ξ υ p‖ ∂heightMeasure)≤K := by
+  obtain ⟨C,hC,hR⟩ := ProbeRadialMellin.radial_mellin_strip_decay mw.left mw.leftLo mw.leftHi mw.left_pos mw.left_support zlo zhi hzlo (J+2)
+  obtain ⟨D,hD,hW⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support
+    (mw.right.smooth ⊤) wlo whi (J+2)
   let A := realGaussianBound slo shi zlo zhi*2^J*C*D
   have hA : 0<A := by dsimp [A]; exact mul_pos (mul_pos (mul_pos (realGaussianBound_pos _ _ _ _)
     (by positivity)) hC) hD
   refine ⟨A*(1+|∫p, jointEnvelope J p ∂heightMeasure|),by positivity,?_⟩
   intro σ hσ ξ hξ υ hυ
-  have hbound := profile_moment_majorant W0 W1 J hσ hξ hC.le hD.le (hR ξ hξ) (hW υ hυ)
-  have hc := onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ (hzlo.trans_le hξ.1)
+  have hbound := profile_moment_majorant mw.left mw.right J hσ hξ hC.le hD.le (hR ξ hξ) (hW υ hυ)
+  have hc := onLines_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support σ ξ υ (hzlo.trans_le hξ.1)
   have hf : Integrable (fun p : HeightSpace => jointHeight p.1.1 p.1.2 p.2^J*
-      ‖onLines W0 W1 σ ξ υ p‖) heightMeasure := by
+      ‖onLines mw.left mw.right σ ξ υ p‖) heightMeasure := by
     apply ((jointEnvelope_integrable J).const_mul A).mono'
     · exact ((by unfold jointHeight; fun_prop : Continuous (fun p : HeightSpace =>
         jointHeight p.1.1 p.1.2 p.2^J)).mul hc.norm).aestronglyMeasurable
     · apply Eventually.of_forall
       intro p
-      have hn : 0≤jointHeight p.1.1 p.1.2 p.2^J*‖onLines W0 W1 σ ξ υ p‖ :=
+      have hn : 0≤jointHeight p.1.1 p.1.2 p.2^J*‖onLines mw.left mw.right σ ξ υ p‖ :=
         mul_nonneg (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _)
       rw [Real.norm_eq_abs,abs_of_nonneg hn]
       exact hbound p
@@ -525,18 +521,16 @@ lemma weighted_tail_pointwise (f : HeightSpace → ℂ) (J N : ℕ) {T : ℝ} (h
   have hn := pow_le_pow_left₀ (by linarith : 0≤1+T) (height_le_joint_on_tail hp) N
   have hh := mul_le_mul_of_nonneg_left hn
     (mul_nonneg (pow_nonneg (jointHeight_pos p.1.1 p.1.2 p.2).le J) (norm_nonneg (f p)))
-  convert hh using 1 ; rw [pow_add] ; ring
+  convert hh using 1 ; ring
 
-theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
+theorem profile_uniform_tails (mw : MellinWindows)
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi, ∀T : ℝ, 0≤T →
       (∫p : HeightSpace in outsideBox T, jointHeight p.1.1 p.1.2 p.2^J*
-        ‖onLines W0 W1 σ ξ υ p‖ ∂heightMeasure)≤K/(1+T)^N := by
-  obtain ⟨K,hK,hM⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+        ‖onLines mw.left mw.right σ ξ υ p‖ ∂heightMeasure)≤K/(1+T)^N := by
+  obtain ⟨K,hK,hM⟩ := profile_uniform_moments mw
     slo shi zlo zhi wlo whi hzlo (J+N)
-  obtain ⟨K0,hK0,hM0⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨K0,hK0,hM0⟩ := profile_uniform_moments mw
     slo shi zlo zhi wlo whi hzlo J
   refine ⟨K,hK,?_⟩
   intro σ hσ ξ hξ υ hυ T hT
@@ -544,32 +538,30 @@ theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
   have hi0 := (hM0 σ hσ ξ hξ υ hυ).1
   calc
     _ ≤ ∫p : HeightSpace in outsideBox T,
-        (jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines W0 W1 σ ξ υ p‖)/(1+T)^N ∂heightMeasure := by
+        (jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines mw.left mw.right σ ξ υ p‖)/(1+T)^N ∂heightMeasure := by
       apply setIntegral_mono_on hi0.integrableOn (hi.div_const _).integrableOn (outsideBox_measurable T)
       intro p hp
       exact weighted_tail_pointwise _ J N hT hp
     _ = (∫p : HeightSpace in outsideBox T,
-        jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines W0 W1 σ ξ υ p‖ ∂heightMeasure)/(1+T)^N :=
+        jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines mw.left mw.right σ ξ υ p‖ ∂heightMeasure)/(1+T)^N :=
       integral_div _ _
     _ ≤ (∫p : HeightSpace,
-        jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines W0 W1 σ ξ υ p‖ ∂heightMeasure)/(1+T)^N := by
+        jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines mw.left mw.right σ ξ υ p‖ ∂heightMeasure)/(1+T)^N := by
       apply div_le_div_of_nonneg_right _ (by positivity)
       apply setIntegral_le_integral hi
       exact Eventually.of_forall (fun p => mul_nonneg
         (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _))
     _ ≤ _ := div_le_div_of_nonneg_right hb (by positivity)
 
-theorem profile_arithmetic_integrable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1) (σ ξ υ : ℝ) (hξ : 0<ξ)
+theorem profile_arithmetic_integrable (mw : MellinWindows) (σ ξ υ : ℝ) (hξ : 0<ξ)
     (G : HeightSpace → ℂ) (hG : AEStronglyMeasurable G heightMeasure) (A : ℝ) (J : ℕ)
     (hbound : ∀p, ‖G p‖≤A*jointHeight p.1.1 p.1.2 p.2^J) :
-    Integrable (fun p => G p*onLines W0 W1 σ ξ υ p) heightMeasure := by
-  obtain ⟨K,hK,hM⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    Integrable (fun p => G p*onLines mw.left mw.right σ ξ υ p) heightMeasure := by
+  obtain ⟨K,hK,hM⟩ := profile_uniform_moments mw
     σ σ ξ ξ υ υ hξ J
   have hi := (hM σ ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ υ ⟨le_rfl,le_rfl⟩).1
   apply (hi.const_mul A).mono'
-  · exact hG.mul (onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ hξ).aestronglyMeasurable
+  · exact hG.mul (onLines_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support σ ξ υ hξ).aestronglyMeasurable
   · apply Eventually.of_forall
     intro p
     rw [norm_mul]
@@ -657,36 +649,34 @@ lemma weighted_slice_pointwise (f : HeightSpace → ℂ) (axis : SliceAxis) (J N
   have hh := mul_le_mul_of_nonneg_left hn
     (mul_nonneg (pow_nonneg (jointHeight_pos (sliceMap axis T q).1.1
       (sliceMap axis T q).1.2 (sliceMap axis T q).2).le J) (norm_nonneg (f (sliceMap axis T q))))
-  convert hh using 1 ; rw [pow_add] ; ring
+  convert hh using 1 ; ring
 
-theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
+theorem profile_uniform_slices (mw : MellinWindows)
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀axis : SliceAxis, ∀T : ℝ,
       Integrable (fun q : ℝ×ℝ =>
         jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^J*
-        ‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖) (volume.prod volume) ∧
+        ‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖) (volume.prod volume) ∧
       (∫q : ℝ×ℝ,
         jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^J*
-        ‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖ ∂volume.prod volume)≤K/height T^N := by
-  obtain ⟨C,hC,hR⟩ := ProbeRadialMellin.radial_mellin_strip_decay W0 a0 b0 ha0 hW0
+        ‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖ ∂volume.prod volume)≤K/height T^N := by
+  obtain ⟨C,hC,hR⟩ := ProbeRadialMellin.radial_mellin_strip_decay mw.left mw.leftLo mw.leftHi mw.left_pos mw.left_support
     zlo zhi hzlo (J+N+2)
-  obtain ⟨D,hD,hW⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay W1 a1 b1 ha1 hW1
-    (W1.smooth ⊤) wlo whi (J+N+2)
+  obtain ⟨D,hD,hW⟩ := CubicReflectionKernel.compact_source_mellin_strip_decay mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support
+    (mw.right.smooth ⊤) wlo whi (J+N+2)
   let A := realGaussianBound slo shi zlo zhi*2^(J+N)*C*D
   have hA : 0<A := by dsimp [A]; exact mul_pos (mul_pos (mul_pos (realGaussianBound_pos _ _ _ _)
     (by positivity)) hC) hD
   refine ⟨A*(1+|sliceMass (J+N)|),by positivity,?_⟩
   intro σ hσ ξ hξ υ hυ axis T
-  have hb := profile_moment_majorant W0 W1 (J+N) hσ hξ hC.le hD.le (hR ξ hξ) (hW υ hυ)
+  have hb := profile_moment_majorant mw.left mw.right (J+N) hσ hξ hC.le hD.le (hR ξ hξ) (hW υ hυ)
   let f (q : ℝ×ℝ) := jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2
-    (sliceMap axis T q).2^J*‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖
+    (sliceMap axis T q).2^J*‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖
   have hbound (q : ℝ×ℝ) : f q≤(A/height T^N)*sliceEnvelope axis (J+N) T q := by
     calc
       _ ≤ (jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^(J+N)*
-          ‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖)/height T^N :=
+          ‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖)/height T^N :=
         weighted_slice_pointwise _ axis J N T q
       _ ≤ (A*jointEnvelope (J+N) (sliceMap axis T q))/height T^N :=
         div_le_div_of_nonneg_right (hb _) (pow_nonneg (height_pos T).le N)
@@ -698,7 +688,7 @@ theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
     (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _)
   have hf : Integrable f (volume.prod volume) := by
     apply ((sliceEnvelope_integrable axis (J+N) T).const_mul (A/height T^N)).mono'
-    · have hc := (onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ
+    · have hc := (onLines_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support σ ξ υ
         (hzlo.trans_le hξ.1)).comp (sliceMap_continuous axis T)
       exact ((by cases axis <;> unfold sliceMap jointHeight <;> fun_prop : Continuous (fun q : ℝ×ℝ =>
         jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^J)).mul hc.norm).aestronglyMeasurable
@@ -713,79 +703,75 @@ theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
       linarith [le_abs_self (sliceMass (J+N))]
     _ = _ := by ring
 
-theorem profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
+theorem profile_arithmetic_tails (mw : MellinWindows)
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀A : ℝ, 0≤A → ∀G : HeightSpace → ℂ,
       AEStronglyMeasurable G heightMeasure →
       (∀p, ‖G p‖≤A*jointHeight p.1.1 p.1.2 p.2^J) →
-      Integrable (fun p => G p*onLines W0 W1 σ ξ υ p) heightMeasure ∧
+      Integrable (fun p => G p*onLines mw.left mw.right σ ξ υ p) heightMeasure ∧
       ∀T : ℝ, 0≤T →
-      (∫p : HeightSpace in outsideBox T, ‖G p*onLines W0 W1 σ ξ υ p‖ ∂heightMeasure)
+      (∫p : HeightSpace in outsideBox T, ‖G p*onLines mw.left mw.right σ ξ υ p‖ ∂heightMeasure)
         ≤ A*K/(1+T)^N := by
-  obtain ⟨K,hK,hT⟩ := profile_uniform_tails W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨K,hK,hT⟩ := profile_uniform_tails mw
     slo shi zlo zhi wlo whi hzlo J N
-  obtain ⟨K0,hK0,hM⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨K0,hK0,hM⟩ := profile_uniform_moments mw
     slo shi zlo zhi wlo whi hzlo J
   refine ⟨K,hK,?_⟩
   intro σ hσ ξ hξ υ hυ A hA G hG hbound
-  have hi := profile_arithmetic_integrable W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  have hi := profile_arithmetic_integrable mw
     σ ξ υ (hzlo.trans_le hξ.1) G hG A J hbound
   refine ⟨hi,?_⟩
   intro T hT0
   calc
     _ ≤ ∫p : HeightSpace in outsideBox T,
-        A*(jointHeight p.1.1 p.1.2 p.2^J*‖onLines W0 W1 σ ξ υ p‖) ∂heightMeasure := by
+        A*(jointHeight p.1.1 p.1.2 p.2^J*‖onLines mw.left mw.right σ ξ υ p‖) ∂heightMeasure := by
       apply setIntegral_mono_on hi.norm.integrableOn
         (((hM σ hσ ξ hξ υ hυ).1).const_mul A).integrableOn (outsideBox_measurable T)
       intro p hp
       rw [norm_mul]
       simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hbound p) (norm_nonneg _)
     _ = A*(∫p : HeightSpace in outsideBox T,
-        jointHeight p.1.1 p.1.2 p.2^J*‖onLines W0 W1 σ ξ υ p‖ ∂heightMeasure) :=
+        jointHeight p.1.1 p.1.2 p.2^J*‖onLines mw.left mw.right σ ξ υ p‖ ∂heightMeasure) :=
       integral_const_mul _ _
     _ ≤ A*(K/(1+T)^N) := mul_le_mul_of_nonneg_left (hT σ hσ ξ hξ υ hυ T hT0) hA
     _ = _ := by ring
 
-theorem profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
+theorem profile_arithmetic_slices (mw : MellinWindows)
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀axis : SliceAxis, ∀T A : ℝ, 0≤A → ∀G : ℝ×ℝ → ℂ,
       AEStronglyMeasurable G (volume.prod volume) →
       (∀q, ‖G q‖≤A*jointHeight (sliceMap axis T q).1.1
         (sliceMap axis T q).1.2 (sliceMap axis T q).2^J) →
-      Integrable (fun q => G q*onLines W0 W1 σ ξ υ (sliceMap axis T q)) (volume.prod volume) ∧
-      (∫q : ℝ×ℝ, ‖G q*onLines W0 W1 σ ξ υ (sliceMap axis T q)‖ ∂volume.prod volume)
+      Integrable (fun q => G q*onLines mw.left mw.right σ ξ υ (sliceMap axis T q)) (volume.prod volume) ∧
+      (∫q : ℝ×ℝ, ‖G q*onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖ ∂volume.prod volume)
         ≤ A*K/height T^N := by
-  obtain ⟨K,hK,hM⟩ := profile_uniform_slices W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨K,hK,hM⟩ := profile_uniform_slices mw
     slo shi zlo zhi wlo whi hzlo J N
   refine ⟨K,hK,?_⟩
   intro σ hσ ξ hξ υ hυ axis T A hA G hG hbound
   obtain ⟨hm,hmb⟩ := hM σ hσ ξ hξ υ hυ axis T
-  have hdom (q : ℝ×ℝ) : ‖G q*onLines W0 W1 σ ξ υ (sliceMap axis T q)‖≤
+  have hdom (q : ℝ×ℝ) : ‖G q*onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖≤
       A*(jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2
-        (sliceMap axis T q).2^J*‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖) := by
+        (sliceMap axis T q).2^J*‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖) := by
     rw [norm_mul]
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hbound q) (norm_nonneg _)
-  have hi : Integrable (fun q => G q*onLines W0 W1 σ ξ υ (sliceMap axis T q))
+  have hi : Integrable (fun q => G q*onLines mw.left mw.right σ ξ υ (sliceMap axis T q))
       (volume.prod volume) := by
     apply (hm.const_mul A).mono'
-    · exact hG.mul (((onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ
+    · exact hG.mul (((onLines_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support σ ξ υ
         (hzlo.trans_le hξ.1)).comp (sliceMap_continuous axis T)).aestronglyMeasurable)
     · exact Eventually.of_forall hdom
   refine ⟨hi,?_⟩
   calc
     _ ≤ ∫q : ℝ×ℝ,
         A*(jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2
-          (sliceMap axis T q).2^J*‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖) ∂volume.prod volume :=
+          (sliceMap axis T q).2^J*‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖) ∂volume.prod volume :=
       integral_mono hi.norm (hm.const_mul A) hdom
     _ = A*(∫q : ℝ×ℝ,
         jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2
-          (sliceMap axis T q).2^J*‖onLines W0 W1 σ ξ υ (sliceMap axis T q)‖ ∂volume.prod volume) :=
+          (sliceMap axis T q).2^J*‖onLines mw.left mw.right σ ξ υ (sliceMap axis T q)‖ ∂volume.prod volume) :=
       integral_const_mul _ _
     _ ≤ A*(K/height T^N) := mul_le_mul_of_nonneg_left hmb hA
     _ = _ := by ring

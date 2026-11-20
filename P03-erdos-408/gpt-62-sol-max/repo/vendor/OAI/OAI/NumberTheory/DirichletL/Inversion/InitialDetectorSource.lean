@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ComplexConjugate
+open scoped Classical
 namespace SevenEighths.InverseInitialDetectorSource
 open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorCoefficientTransfer
 open InverseInitialRawDictionary InverseInitialConjugateEnergy

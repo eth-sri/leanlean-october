@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LocalSummation
 public import OAI.NumberTheory.DirichletL.Detector.EulerCoordinates
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerCoordinates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -38,8 +39,7 @@ lemma coordK_eq_geometric (Q : ℝ) (hQ : 0<Q) (eta x w : ℂ) :
 lemma one_sub_ne_zero_of_norm_lt_one (a : ℂ) (ha : ‖a‖<1) : 1-a ≠ 0 := by
   intro h
   have he : a=1 := by linear_combination -h
-  rw [he, norm_one] at ha
-  exact lt_irrefl _ ha
+  simp_all
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -60,8 +60,7 @@ theorem principalFullSeries_euler_identity (eta a x w z : ℂ)
         unramifiedClosed Q (a^2) eta 1 x w z := by
   dsimp only
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   simp only [Complex.ofReal_natCast]
   have hratio := evenRatio_eq_coordR (Ideal.absNorm (Ideal.span {p}):ℝ) hQ a x z
   simp only [Complex.ofReal_natCast] at hratio

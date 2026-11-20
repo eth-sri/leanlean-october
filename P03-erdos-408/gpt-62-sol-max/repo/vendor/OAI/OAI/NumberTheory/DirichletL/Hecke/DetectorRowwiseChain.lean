@@ -30,18 +30,12 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
     have c1 := cm 1 i (by norm_num)
     have c2 := cm 2 i (by norm_num)
     fin_cases j <;> fin_cases k
-    · simpa [F] using c0
+    · assumption
     · convert c1.const_mul I using 1
-      ext p
-      simp [F]
       rfl
     · convert c1.neg using 1
-      ext p
-      simp [F]
       rfl
     · convert (c2.const_mul I).neg using 1
-      ext p
-      simp [F]
       rfl
   have dFx (k : Fin 2) (i : ι) (hi : i∈rows) (x y : ℝ) :
       HasDerivAt (fun u => F 0 k i u y) (F 1 k i x y) x := by
@@ -53,9 +47,8 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
     fin_cases j
     · simpa [F] using dy 0 i x y (by norm_num)
     · convert (dy 1 i x y (by norm_num)).neg using 1
-      · ext t
-        simp [F]
-      · simp [F]
+      · rfl
+      rfl
   have eF (j k : Fin 2) (x : ℝ) (hx : x∈Icc a b) (y : ℝ) (hy : y∈Icc c d) :
       ∑ i∈rows, ‖F j k i x y‖^2≤E := by
     fin_cases j <;> fin_cases k

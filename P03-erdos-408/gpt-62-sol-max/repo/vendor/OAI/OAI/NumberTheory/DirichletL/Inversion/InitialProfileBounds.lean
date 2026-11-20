@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseInitialProfileBounds
 open InverseInitialProfile InverseMoment FourierBridge
 

@@ -1,8 +1,10 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.KernelTransfer
 
 @[expose] public section
+
 
 namespace OAI
 
@@ -48,8 +50,7 @@ theorem cubic_frequency_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, K / 2 ≤ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ∧
           (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ K)
-        (_hcols : ∀ j, Admissible (cols j) ∧ N / 2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧
-          (Ideal.absNorm (cols j) : ℝ) ≤ N)
+        (_hcols : OAI.IdealFamilyBand Admissible cols (N / 2) N)
         (a b : n → ℂ) (E : ℝ) (_hE : 0 ≤ E)
         (_ha : (∑ j, ‖a j‖ ^ 2) ≤ E) (_hb : (∑ j, ‖b j‖ ^ 2) ≤ E),
         (1 + M * K / N ^ 2) ^ A *

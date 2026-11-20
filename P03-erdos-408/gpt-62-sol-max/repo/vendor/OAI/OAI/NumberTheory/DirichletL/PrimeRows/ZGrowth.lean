@@ -3,6 +3,8 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 
+public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalProductBounds
+
 @[expose] public section
 
 namespace OAI
@@ -29,31 +31,19 @@ theorem physicalRow_first_z_bounded (eps : ℝ)
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
   have hLb : 0≤HeckeReciprocalBound.bound 2 := by unfold HeckeReciprocalBound.bound; positivity
   have hL : 0≤L := by dsimp [L];positivity
-  have hA (P : T) : 0≤A P := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) x.re (Nat.cast_nonneg _)
+  have hA (P : T)  := selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) x.re (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
-  have hN : 0≤N := Nat.cast_nonneg _
   refine ⟨L*(Ch*N)*(∏P:T,A P),by positivity,?_⟩
   intro z hz
-  have hl : ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖≤HeckeReciprocalBound.bound 2 :=
-    HeckeStripActual.LFunction_norm_le _ (by norm_num) (by simp only [Complex.mul_re];norm_num;linarith)
   have hh' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
     simpa only [Real.rpow_one] using hh eps S hS hfirst T η u x w z hx hw hz hxw
-  have hg : ‖∏P∈T.attach,continuedCompensatedLocal η u P.val
-      (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
-      (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
-      ((P.val.val.absNorm:ℂ)^(-w))‖≤∏P:T,A P := by
-    rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
-    intro P hP
-    exact continuedCompensatedLocal_first_bound η u P.val _
-      (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) x.re x w z hx le_rfl
-      hw hz (by linarith [hfirst.positive])
-  unfold physicalCompensatedRow continuedCompensatedRow
-  simp only [norm_mul]
-  rw [mul_assoc L]
-  apply mul_le_mul _ (mul_le_mul hh' hg (norm_nonneg _) (by dsimp [N];positivity))
-    (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hL
-  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hl (norm_nonneg _)) (norm_nonneg _)
+  have hg : ‖rowLocalProduct S hS T hT η u x w z‖ ≤ ∏ P : T, A P :=
+    rowLocalProduct_first_bound S hS T hT η u x w z x.re hx le_rfl hw hz (by linarith [hfirst.positive]) A (fun _ => le_rfl)
+  have hl : ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖ ≤ HeckeReciprocalBound.bound 2 :=
+    HeckeStripActual.LFunction_norm_le _ (by norm_num) (by simp only [Complex.mul_re];norm_num;linarith)
+  simpa only [one_mul] using
+    (physicalRow_norm_le S hS T hT η u x w z 1 hl le_rfl (le_of_eq (by rw [one_mul])) hh' hg).trans_eq
+      (show _ = L*(Ch*N)*(∏P:T,A P) by dsimp [L]; ring)
 
 end SevenEighths.ProbeHighRowFamily
 

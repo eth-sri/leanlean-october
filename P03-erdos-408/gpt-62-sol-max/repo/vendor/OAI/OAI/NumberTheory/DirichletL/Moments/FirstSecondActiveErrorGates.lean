@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularActiveInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondActiveErrorGates
@@ -18,7 +18,6 @@ open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomen
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
-local instance {α : Type*} : DecidableEq α := Classical.decEq _
 variable {ι : Type*} [Fintype ι]
 
 def errorInput (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
@@ -44,7 +43,7 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
       sourceRadius d≤geometry N b b₁ b₂*H := by
   dsimp only
   have hC := norm_ge_one C (allocation_ne s C B)
-  have hNp : 0<(Q.absNorm:ℝ)^k := pow_pos (zero_lt_one.trans_le (norm_ge_one Q hQ)) k
+  have hNp  := pow_pos (zero_lt_one.trans_le (norm_ge_one Q hQ)) k
   have hH : 0<volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k) :=
     div_pos (volume_pos s) (mul_pos (zero_lt_one.trans_le hC) hNp)
   have hv : volume (errorInput s C R B τ t Q k Bp υ v)≤
@@ -66,7 +65,7 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
     nlinarith
   refine ⟨hH,hr.1,hv.trans (mul_le_mul_of_nonneg_right hpow hH.le),?_⟩
   exact hr.2.trans ((mul_le_mul_of_nonneg_left hv (show 0≤b^N*b₁*b₂ by positivity)).trans_eq (by
-    unfold geometry;rw [show 2*N=N+N by omega,pow_add];ring))
+    unfold geometry;ring))
 
 theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) (hε : 0<ε) :
@@ -90,7 +89,7 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     hK hξ hz₁ hz₂ hVp hKi hRN hυ hlive
   let d := errorInput s C R B τ t Q k Bp υ v
   let G := geometry N b b₁ b₂
-  have hg : 1≤G := geometry_ge_one N b b₁ b₂ hb h₁ h₂
+  have hg  := geometry_ge_one N b b₁ b₂ hb h₁ h₂
   have hcap := error_caps N b b₁ b₂ hb h₁ h₂ s hc he C R B τ t hB Q hQ k hslot Bp υ v
   have hd : 0<(C.absNorm:ℝ)*(Q.absNorm:ℝ)^k := mul_pos
     (zero_lt_one.trans_le (norm_ge_one C (allocation_ne s C B)))
@@ -99,15 +98,13 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     have hc := norm_ge_one C (allocation_ne s C B)
     have hq : 1 ≤ (Q.absNorm : ℝ)^k := one_le_pow₀ (norm_ge_one Q hQ)
     nlinarith
-  have hHV : volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)≤volume s :=
-    div_le_self (volume_pos s).le hd1
-  have hm := mul_le_mul_of_nonneg_left hHV (zero_le_one.trans hg)
+  have hm := mul_le_mul_of_nonneg_left (div_le_self (volume_pos s).le hd1) (zero_le_one.trans hg)
   have hpoly := polynomial_caps G (volume s) (volume d) (sourceRadius d) K Z A D ε ξ
-    hg hZ.1 hZ.2.2 (volume_pos s) (volume_pos d) hcap.2.1 hK
+    hg hZ.1 hZ.2.2 (volume_pos s) (volume_pos d) hK
     (hcap.2.2.1.trans hm) (hcap.2.2.2.trans hm) hVp hKi
   obtain ⟨I,hI⟩ := hlive
   have hi := child_column_norm (activeInput (child s C R B τ t)) (Q^k) (R*C) seed Bp υ v hz₁ hz₂ I hI
-  have hone : 1≤G*(volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)) :=
+  have hone  :=
     (norm_ge_one I hi.1).trans (hi.2.2.trans hcap.2.2.2)
   rw [←mul_div_assoc] at hone
   have hprod : (C.absNorm:ℝ)*(Q.absNorm:ℝ)^k≤G*volume s := by
@@ -124,14 +121,12 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
   have h₁ : A+ε≤exponent A D P q ε ξ := le_max_left _ _
   have h₂ : 2*A+D+ε+ξ/2≤exponent A D P q ε ξ :=
     (le_max_left _ _).trans (le_max_right _ _)
-  have h₃ : A+P+ε≤exponent A D P q ε ξ :=
-    (le_max_left _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
   have h₄ : q≤exponent A D P q ε ξ :=
     (le_max_right _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
-  have hpow {x y : ℝ} (h : x≤y) : Z^x≤Z^y := Real.rpow_le_rpow_of_exponent_le hZ.1.le h
+  have hpow {x y : ℝ} (h : x≤y)  := Real.rpow_le_rpow_of_exponent_le hZ.1.le h
   exact ⟨mul_ne_zero (mul_ne_zero hR (allocation_ne s C B)) (pow_ne_zero k hQ),hK,
     hpoly.1.trans (hpow h₁),hcap.2.1,hpoly.2.1.trans (hpow h₁),
-    hυ.trans (hpow h₄),hpunct.trans (hpow h₃),nominal_pos d K hK,
+    hυ.trans (hpow h₄),hpunct.trans (hpow ((le_max_left _ _).trans ((le_max_right _ _).trans (le_max_right _ _)))),nominal_pos d K hK,
     hpoly.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
     hpoly.2.2.2.1,hpoly.2.2.2.2.trans (hpow h₂)⟩
 

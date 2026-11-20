@@ -1,20 +1,21 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileIdentity
-public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsLive
+public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 def originalNorms (x : OriginalIndex ι) : Fin 6→ℝ :=
   sourceNorms (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)

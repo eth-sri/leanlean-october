@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.OneReflectionScaleEnergy
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionWeightedEnergy
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionRetainedLength
@@ -10,16 +11,13 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionTailMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectedChoiceEnergy
-open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum
-open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedTruncation
-open CenteredMomentReflectionDeletion CenteredMomentReflectionTailMass
-open CenteredMomentNaturalPrimitive CenteredMomentReflectionRetainedLength
-open Filter
+open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentReflectedUniformPair
+open CenteredMomentSectorLocalization CenteredMomentReflectionWeightedEnergy
+open CenteredMomentReflectedTruncation CenteredMomentReflectionDeletion CenteredMomentReflectionTailMass
+open CenteredMomentNaturalPrimitive CenteredMomentReflectionRetainedLength Filter
 
-local notation "O" => HeckeFamily.O
 
 theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
@@ -39,7 +37,7 @@ theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) 
   intro u hY hu
   have hS := redundantSet_prime χ.modulus ψ.modulus
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (ψ.modulus_ne_bot)
   have hD := subset_product_norm_pos u.1.1.val
     (fun P hP=>hS P ((Finset.mem_powerset.mp u.1.1.property) hP))
   have hc : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (redundantIdeal χ.modulus ψ.modulus):ℝ)≤C*Z^M := by

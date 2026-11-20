@@ -5,7 +5,7 @@ public import Erdos821.P4Probe.Bridge
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.P4Probe
 open Blueprint.Graph
@@ -24,11 +24,11 @@ lemma balanced_blocks {α : Type*} [Fintype α] [DecidableEq α] :
   have hfalse : Finset.univ.filter (fun g => block g = false) = s := by
     ext g
     simp only [Finset.mem_filter, Finset.mem_univ, true_and, block]
-    by_cases hg : g ∈ s <;> simp [hg]
+    simp
   have htrue : Finset.univ.filter (fun g => block g = true) = Finset.univ \ s := by
     ext g
     simp only [Finset.mem_filter, Finset.mem_sdiff, Finset.mem_univ, true_and, block]
-    by_cases hg : g ∈ s <;> simp [hg]
+    simp
   exact ⟨block, hfalse ▸ hcard, by rw [htrue, Finset.card_sdiff_of_subset hs]; simp [hcard]⟩
 
 lemma balanced_block_lower {α : Type*} [Fintype α] [DecidableEq α]

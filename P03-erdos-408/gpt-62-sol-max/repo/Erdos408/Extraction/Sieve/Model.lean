@@ -63,7 +63,7 @@ lemma modelMean_empty (f : Finset ℕ → ℝ) : modelMean ∅ f = f ∅ := by
 /-- The model mean only sees the values on subsets of `A`. -/
 lemma modelMean_congr {A : Finset ℕ} {f g : Finset ℕ → ℝ} (h : ∀ S ⊆ A, f S = g S) :
     modelMean A f = modelMean A g :=
-  sum_congr rfl fun S hS => by rw [h S (mem_powerset.1 hS)]
+  sum_congr rfl fun S hS => by simp_all
 
 /-- The mean of a constant. -/
 lemma modelMean_const (A : Finset ℕ) (c : ℝ) : modelMean A (fun _ => c) = c := by
@@ -118,13 +118,13 @@ lemma modelMean_insert {A : Finset ℕ} {b : ℕ} (hb : b ∉ A) (f : Finset ℕ
   rw [modelMean, sum_powerset_insert hb, modelMean, modelMean, mul_sum, mul_sum]
   congr 1
   · refine sum_congr rfl fun T hT => ?_
-    have hbT : b ∉ T := fun h => hb (mem_powerset.1 hT h)
+    have hbT  := fun h => hb (mem_powerset.1 hT h)
     have : insert b A \ T = insert b (A \ T) := by
       rw [insert_sdiff_of_notMem _ hbT]
     rw [modelWeight, modelWeight, this, prod_insert (fun h => hb (mem_sdiff.1 h).1)]
     ring
   · refine sum_congr rfl fun T hT => ?_
-    have hbT : b ∉ T := fun h => hb (mem_powerset.1 hT h)
+    have hbT  := fun h => hb (mem_powerset.1 hT h)
     have : insert b A \ insert b T = A \ T := by
       rw [insert_sdiff_insert, sdiff_insert_of_notMem hb]
     rw [modelWeight, modelWeight, this, prod_insert hbT]
@@ -138,9 +138,9 @@ lemma modelMean_union {A B : Finset ℕ} (hAB : Disjoint A B) (f : Finset ℕ �
   | empty =>
     simp only [union_empty, modelMean_empty]
   | insert b B hbB ih =>
-    have hbA : b ∉ A := fun h => disjoint_left.1 hAB h (mem_insert_self b B)
-    have hAB' : Disjoint A B := disjoint_of_subset_right (subset_insert b B) hAB
-    have hb : b ∉ A ∪ B := by simp [hbA, hbB]
+    have hbA  := fun h => disjoint_left.1 hAB h (mem_insert_self b B)
+    have hAB'  := disjoint_of_subset_right (subset_insert b B) hAB
+    have hb : b ∉ A ∪ B := by simp_all
     rw [union_insert, modelMean_insert hb, ih hAB', ih hAB']
     simp only [modelMean_insert hbB, union_insert]
     rw [modelMean_add, modelMean_mul_left, modelMean_mul_left]
@@ -149,12 +149,12 @@ lemma modelMean_union {A B : Finset ℕ} (hAB : Disjoint A B) (f : Finset ℕ �
 `E_A[f] = E_U[f]`. -/
 lemma modelMean_eq_of_subset {A U : Finset ℕ} (hUA : U ⊆ A) {f : Finset ℕ → ℝ}
     (hf : ∀ S ⊆ A, f S = f (S ∩ U)) : modelMean A f = modelMean U f := by
-  have hA : A = U ∪ (A \ U) := (union_sdiff_of_subset hUA).symm
+  have hA  := (union_sdiff_of_subset hUA).symm
   rw [hA, modelMean_union disjoint_sdiff]
   refine modelMean_congr fun S hS => ?_
   rw [← modelMean_const (A \ U) (f S)]
   refine modelMean_congr fun T hT => ?_
-  have hsub : S ∪ T ⊆ A := union_subset (hS.trans hUA) (hT.trans sdiff_subset)
+  have hsub  := union_subset (hS.trans hUA) (hT.trans sdiff_subset)
   rw [hf _ hsub, union_inter_distrib_right, inter_eq_left.2 hS,
     disjoint_iff_inter_eq_empty.1 (disjoint_of_subset_left hT sdiff_disjoint), union_empty]
 
@@ -174,20 +174,20 @@ lemma modelMean_prod {ι : Type*} [DecidableEq ι] (I : Finset ι) (B : ι → F
     have hdisj : Disjoint (B i₀) (I.biUnion B) := by
       rw [disjoint_biUnion_right]
       intro i hi
-      exact hB (by simp) (by simp [hi]) (fun h => hi₀ (h ▸ hi))
+      exact hB (by simp) (by simp_all) (fun h => hi₀ (h ▸ hi))
     rw [biUnion_insert, modelMean_union hdisj, prod_insert hi₀, ← ih hB', mul_comm,
       ← modelMean_mul_left]
     refine modelMean_congr fun S hS => ?_
     rw [mul_comm, ← modelMean_mul_left]
     refine modelMean_congr fun T hT => ?_
     rw [prod_insert hi₀]
-    have hT0 : T ∩ B i₀ = ∅ :=
+    have hT0  :=
       disjoint_iff_inter_eq_empty.1 (disjoint_of_subset_left hT hdisj.symm)
     congr 1
     · rw [union_inter_distrib_right, inter_eq_left.2 hS, hT0, union_empty]
     · refine prod_congr rfl fun i hi => ?_
-      have hS0 : S ∩ B i = ∅ := disjoint_iff_inter_eq_empty.1
-        (disjoint_of_subset_left hS (hB (by simp) (by simp [hi]) fun h => hi₀ (h ▸ hi)))
+      have hS0  := disjoint_iff_inter_eq_empty.1
+        (disjoint_of_subset_left hS (hB (by simp) (by simp_all) fun h => hi₀ (h ▸ hi)))
       rw [union_inter_distrib_right, hS0, empty_union]
 
 /-! ### Two explicit means -/
@@ -234,7 +234,7 @@ lemma le_modelMean_card_mul_zpow {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {t :
   refine sum_le_sum fun p hp => ?_
   -- the mean of `[p ∈ S] t^{|S \ {p}|}` is `(1/p) ∏_{A \ {p}} (1 - (1 - t)/p')`
   have hpA : p ∉ A.erase p := notMem_erase p A
-  have hA' : insert p (A.erase p) = A := insert_erase hp
+  have hA' := insert_erase hp
   conv_rhs => rw [← hA', modelMean_insert hpA]
   have h0 : modelMean (A.erase p) (fun S => if p ∈ S then t ^ #(S.erase p) else 0) = 0 := by
     rw [modelMean_congr (g := fun _ => (0 : ℝ)) fun S hS => ite_eq_right fun h => hpA (hS h)]
@@ -260,7 +260,7 @@ lemma sum_modelWeight_mem {A : Finset ℕ} {p : ℕ} (hp : p ∈ A) :
   have h : ∑ S ∈ A.powerset with p ∈ S, modelWeight A S =
       modelMean A fun S => if p ∈ S then 1 else 0 := by
     rw [modelMean, sum_filter]
-    exact sum_congr rfl fun S _ => by split_ifs <;> simp
+    exact sum_congr rfl fun S _ => by simp
   rw [h, ← insert_erase hp, modelMean_insert (notMem_erase p A)]
   have h0 : modelMean (A.erase p) (fun S => if p ∈ S then (1 : ℝ) else 0) = 0 := by
     rw [modelMean_congr (g := fun _ => (0 : ℝ)) fun S hS =>
@@ -280,7 +280,7 @@ lemma modelWeight_sdiff {A R S : Finset ℕ} (hRA : R ⊆ A) (hS : S ⊆ A \ R) 
     · rintro ⟨hA, hS'⟩
       by_cases hR : p ∈ R
       · exact Or.inr hR
-      · exact Or.inl ⟨⟨hA, hR⟩, hS'⟩
+      simp_all
     · rintro (⟨⟨hA, -⟩, hS'⟩ | hR)
       · exact ⟨hA, hS'⟩
       · exact ⟨hRA hR, fun h => (mem_sdiff.1 (hS h)).2 hR⟩

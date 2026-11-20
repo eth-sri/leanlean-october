@@ -209,7 +209,7 @@ theorem fullCorrelation_unit_right (u : Aˣ) (v k : A) (f g : A → ℂ) :
     constructor
     · intro h
       have heq : v * x - k = (u : A) * y := by linear_combination h
-      rw [heq, ← mul_assoc, Units.inv_mul, one_mul]
+      simp_all
     · intro h
       rw [h, ← mul_assoc, Units.mul_inv, one_mul]
       ring

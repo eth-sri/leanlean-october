@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondPunctureBudget
 
 @[expose] public section
@@ -24,7 +25,7 @@ theorem actual_second_common_center
     (hG : primeProductNorm p x.second.sourceCommon ≤ Z^(g+eta))
     (hD : Z^(theta-eta) ≤ primeProductNorm p x.second.divisor) :
     -2*eta ≤ g-theta := by
-  have hh : Z^(theta-eta) ≤ Z^(g+eta) :=
+  have hh  :=
     hD.trans ((primeProductNorm_mono p hp hE).trans hG)
   have hh' := (Real.rpow_le_rpow_left_iff hZ).mp hh
   linarith
@@ -48,7 +49,7 @@ theorem actual_second_label_center
   norm_num at hh'
   linarith
 
-variable [∀ i, (Ideal.span {p i}).IsMaximal]
+variable [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 

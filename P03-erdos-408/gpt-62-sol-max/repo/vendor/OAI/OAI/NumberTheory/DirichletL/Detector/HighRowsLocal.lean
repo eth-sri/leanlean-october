@@ -42,13 +42,11 @@ theorem rowHighPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (u : O
       idealRowHighLocalFactor η u P.val x w z := by
   have hs := (rowHighPrimeTerm_summable_norm η u x w z hx hw hz P).of_norm
   rw [hs.tsum_prod,hs.prod.tsum_prod]
-  have he (e l : ℕ) :
-      (∑' b : ℕ×ℕ, rowHighPrimeTerm η u x w z P ((e,l),b))=
-        ∑' k,∑' m,rowHighPrimeTerm η u x w z P ((e,l),(k,m)) :=
+  have he (e l : ℕ)  :=
     (hs.prod_factor (e,l)).tsum_prod
   simp_rw [he]
   rw [tsum_eq_sum (s:=Finset.range 2) (fun e he=>by
-    have hh : 2≤e := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
+    have hh  := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
     simp only [rowHighPrimeTerm_zero_of_two_le η u x w z P e _ _ _ hh,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
@@ -67,7 +65,7 @@ theorem excludedRowHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
       by_cases hb : b=0
       · subst b
         simp only [Prod.fst_zero,Prod.snd_zero,pow_zero,bareIdealHighSummand_row_one,mul_one]
-      · simp only [ite_eq_right hb,zero_mul]
+      simp_all
     simp only [he,tsum_ite_eq]
   · rw [ite_eq_right hP]
     simp only [markedIdealHighSummand,highIdealMask_prime_outside S hS P hP,one_mul]
@@ -86,7 +84,7 @@ theorem excludedIdealHighSeries_row_hasProd_outside (S : Finset Id) (hS : ∀P�
   convert h using 1
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
-  split_ifs <;> simp_all
+  simp
 
 end SevenEighths.ProbePhysical
 end

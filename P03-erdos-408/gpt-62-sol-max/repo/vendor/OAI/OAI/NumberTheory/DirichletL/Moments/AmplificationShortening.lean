@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.Extraction
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationShortening
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentAmplification CenteredMomentAmplificationLocal CenteredMomentAmplificationGlobal
-open ProbePhysical
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentGaussEnergy
+open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentAmplification
+open CenteredMomentAmplificationLocal CenteredMomentAmplificationGlobal ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
 
 def residualCharacter (p : O) (k : ℕ) (u : O) : ℂ :=
@@ -29,7 +28,6 @@ theorem crossFactor_primary (p u : O) (k : ℕ)
     idealRowHom_primary_reciprocity u p hup hpp hu hp,
     sexticReciprocityPhase_symm u p,mul_pow]
   unfold residualCharacter
-  rw [show 2*k=k+k by omega,pow_add]
   ring
 
 theorem gauss_primary_power_product (p u : O) (k : ℕ)

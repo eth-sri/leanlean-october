@@ -25,7 +25,6 @@ theorem baselinePrime_bounds_of_cutoff (F : FixedData) (P : PrimeGroups) (x : �
   rcases hP with ⟨_, _, _, _, hV, hPrime⟩
   have hpRange := hPrime g.val p.val p.property
   simp only [g.property, ite_true] at hpRange
-  have hpstar : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := hpRange.1
   have hpPos : 0 < (p.val : ℝ) := by
     exact_mod_cast (P.prime g.val p.val p.property).pos
   let e : ℝ := ∑ i : Fin (n + 1), eta F n i
@@ -42,7 +41,7 @@ theorem baselinePrime_bounds_of_cutoff (F : FixedData) (P : PrimeGroups) (x : �
     calc
       2 * e ≤ 2 * ((n + 1 : ℝ)) := by nlinarith
       _ ≤ Real.exp ((L x) ^ F.c) := by nlinarith
-      _ ≤ (p.val : ℝ) := hpstar
+      _ ≤ (p.val : ℝ) := (hpRange.1)
   have hbaseEq : baselinePrime F n p.val = 1 - e / (p.val : ℝ) := by
     dsimp [e]
     rw [baselinePrime_eq_sum_div]

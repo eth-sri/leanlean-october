@@ -10,8 +10,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 lemma smallDamping_le_one {P : PrimeGroups} {F : FixedData} {J : ℕ}
     (y : P.SmallResidues) (a : P.Labels (J + F.ell))
@@ -50,9 +49,6 @@ lemma smallDamping_le_one {P : PrimeGroups} {F : FixedData} {J : ℕ}
       exact hsum
     linarith
   have hq0 : (0:ℝ) ≤ F.q := F.q_pos.le
-  have hq1 : F.q ≤ 1 := F.q_lt.le
-  -- Need to match exponent form in goal (which uses separate casts as in definition, same as hexp_nonneg)
-  -- smallDamping unfolds to F.q ^ (((omega:ℝ) - (↑J+↑ell)*↑card)/2) (with separate casts), same as hexp_nonneg. Good!
-  exact Real.rpow_le_one hq0 hq1 hexp_nonneg
+  exact Real.rpow_le_one hq0 F.q_lt.le hexp_nonneg
 
 end Erdos821.P3Edge

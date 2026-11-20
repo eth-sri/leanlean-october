@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalWidth
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalPool
 public import OAI.NumberTheory.DirichletL.Reflection.PoolArithmetic
 
 @[expose] public section
@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.PoolArithmetic
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O

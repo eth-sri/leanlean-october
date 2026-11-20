@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Algebra.Order.Archimedean.Basic
@@ -47,10 +48,9 @@ lemma decay_le_high (t α : ℝ) (ht : 0 < t) (j : ℕ) :
 
 lemma decay_summable (t α : ℝ) (ht : 0 < t) (hα : α < 3) :
     Summable (fun j : ℕ => ((2 : ℝ)^j)^α / (1 + t * (2 : ℝ)^j)^3) := by
-  have hr : (2 : ℝ)^(α - 3) < 1 := by
-    exact Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  exact ((summable_geometric_of_lt_one (by positivity) hr).mul_left (t^(-3 : ℝ))).of_nonneg_of_le
+  refine ((summable_geometric_of_lt_one (by positivity) ?_).mul_left (t^(-3 : ℝ))).of_nonneg_of_le
     (fun j => by positivity) (decay_le_high t α ht)
+  exact Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
 
 lemma decayConstant_pos (α : ℝ) (hα : 0 < α) (hα3 : α < 3) :
     0 < decayConstant α := by
@@ -99,11 +99,11 @@ theorem dyadic_decay_bound (t α : ℝ) (ht : 0 < t) (hα : 0 < α) (hα3 : α <
     nlinarith [mul_nonneg (div_nonneg (by positivity : 0 ≤ (2 : ℝ)^α)
       (by linarith : 0 ≤ (2 : ℝ)^α - 1)) (by positivity : 0 ≤ t^(-α)),
       mul_le_mul_of_nonneg_right hp hden.le]
-  · have hit : 1 ≤ t⁻¹ := (one_le_inv₀ ht).mpr (le_of_not_ge ht1)
+  · have hit  := (one_le_inv₀ ht).mpr (le_of_not_ge ht1)
     obtain ⟨n, hn, hn'⟩ := exists_nat_pow_near hit (by norm_num : (1 : ℝ) < 2)
     let k := n+1
     have hk0 : 0 < (2 : ℝ)^k := by positivity
-    have hk : t⁻¹ ≤ (2 : ℝ)^k := le_of_lt hn'
+    have hk  := le_of_lt hn'
     have hk' : (2 : ℝ)^k ≤ 2*t⁻¹ := by
       dsimp [k]
       rw [pow_succ]
@@ -148,9 +148,9 @@ theorem two_power_majorant (B : ℝ → ℝ) (C P Q t α β : ℝ)
     (∑' j : ℕ, B ((2 : ℝ)^j) / (1 + t*(2 : ℝ)^j)^3) ≤
       C * (P*decayConstant α*t^(-α) + Q*decayConstant β*t^(-β)) := by
   let f (γ : ℝ) (j : ℕ) := ((2 : ℝ)^j)^γ / (1+t*(2 : ℝ)^j)^3
-  have hsα : Summable (f α) := decay_summable t α ht hα3
-  have hsβ : Summable (f β) := decay_summable t β ht hβ3
-  have hs : Summable (fun j => C*(P*f α j+Q*f β j)) :=
+  have hsα  := decay_summable t α ht hα3
+  have hsβ  := decay_summable t β ht hβ3
+  have hs  :=
     ((hsα.mul_left P).add (hsβ.mul_left Q)).mul_left C
   have hle (j : ℕ) : B ((2 : ℝ)^j) / (1+t*(2 : ℝ)^j)^3 ≤
       C*(P*f α j+Q*f β j) := by
@@ -226,7 +226,6 @@ theorem sieve_poisson_bound (B : ℝ → ℝ) (A M N δ ξ : ℝ)
   have hden : (fun j : ℕ => B ((2 : ℝ)^j)/(1+(M/N^2)*(2 : ℝ)^j)^3) =
       (fun j : ℕ => B ((2 : ℝ)^j)/(1+M*(2 : ℝ)^j/N^2)^3) := by
     funext j
-    congr 2
     ring
   rw [hden] at hh
   apply (mul_le_mul_of_nonneg_left hh (div_pos hM hN).le).trans_eq
@@ -236,10 +235,7 @@ theorem sieve_poisson_bound (B : ℝ → ℝ) (A M N δ ξ : ℝ)
       (M*N)^(2/3 : ℝ) := by
     norm_num
     rw [Real.mul_rpow hM.le hN.le]
-    have hn' : N * N^(- (1/3 : ℝ)) = N^(2/3 : ℝ) := by
-      calc
-        _ = N^(1 : ℝ) * N^(-(1/3 : ℝ)) := by rw [Real.rpow_one]
-        _ = _ := by rw [← Real.rpow_add hN]; norm_num
+    have hn' : N * N^(- (1/3 : ℝ)) = N^(2/3 : ℝ) := by rpow_ring hN
     nlinarith [congrArg (fun x => M^(2/3 : ℝ)*x) hn']
   calc
     _ = A*N*decayConstant (1/3+δ)*(N^δ*(M/N)*(M/N^2)^(-(1/3+δ))) +
@@ -251,7 +247,7 @@ theorem sieve_poisson_bound (B : ℝ → ℝ) (A M N δ ξ : ℝ)
 
 lemma descent_factor_le_one (e d u v : ℝ) (he : 1 ≤ e) (hed : e ≤ d)
     (hv : v ≤ 0) (huv : u+v ≤ 0) : e^u*d^v ≤ 1 := by
-  have hd : 1 ≤ d := he.trans hed
+  have hd  := he.trans hed
   by_cases hu : 0 ≤ u
   · calc
       _ ≤ d^u*d^v := mul_le_mul_of_nonneg_right

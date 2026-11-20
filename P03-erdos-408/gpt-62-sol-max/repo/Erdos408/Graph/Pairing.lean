@@ -58,7 +58,7 @@ lemma physical_act {M : ℕ} (π : G.Permutations M) (n : ℤ) (a : G.Labels M) 
 lemma stateMass_act {F : FixedData} {J m : ℕ} (A : Model F G J m)
     (π : G.Permutations (J + F.ell)) (n : ℤ) (a : G.Labels (J + F.ell)) :
     A.stateMass (n, G.act π a) = A.stateMass (n, a) := by
-  simp only [Model.stateMass, physical_act]
+  simp [Model.stateMass, physical_act]
 
 /-- Against the state mass and complete label sums, the symmetrized kernel
 pairs as the raw kernel. -/
@@ -84,8 +84,6 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
             (A.stateMass (n, a) : ℂ) * s * A.physicalRaw false (n, a) (n', G.act τ b) * t
       _ = _ := Finset.sum_congr rfl fun a _ => Equiv.sum_comp (actEquiv τ) fun b =>
           (A.stateMass (n, a) : ℂ) * s * A.physicalRaw false (n, a) (n', b) * t
-  have hcard : ((Fintype.card (G.Permutations (J + F.ell)) : ℂ) ^ 2) ≠ 0 :=
-    pow_ne_zero 2 (Nat.cast_ne_zero.mpr Fintype.card_ne_zero)
   calc _ = ∑ ab : G.Labels (J + F.ell) × G.Labels (J + F.ell),
           ∑ πτ : G.Permutations (J + F.ell) × G.Permutations (J + F.ell),
             ((Fintype.card (G.Permutations (J + F.ell)) : ℂ) ^ 2)⁻¹ *
@@ -109,7 +107,7 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
     _ = _ := by
         simp_rw [hperm, Finset.sum_const, Finset.card_univ, Fintype.card_prod, nsmul_eq_mul,
           ← mul_assoc]
-        rw [Nat.cast_mul, ← pow_two, mul_inv_cancel₀ hcard, one_mul]
+        rw [Nat.cast_mul, ← pow_two, mul_inv_cancel₀ (pow_ne_zero 2 (Nat.cast_ne_zero.mpr Fintype.card_ne_zero)), one_mul]
 
 /-! ### The pairing -/
 
@@ -127,7 +125,7 @@ theorem pairing_eq_sum {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_map.mp hn
     obtain ⟨h₁, h₂⟩ := hS k hk
     rw [Finset.mem_Ico, Int.ceil_le, Int.lt_ceil]
-    exact ⟨by exact_mod_cast h₁, by exact_mod_cast h₂⟩
+    norm_cast
   · intro n _ hn
     have : extend S f n = 0 := by
       refine ite_eq_right fun h => hn (Finset.mem_map.mpr ⟨n.toNat, h.2, ?_⟩)
@@ -195,7 +193,7 @@ lemma normOn_extend {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_map.mp hn
     obtain ⟨h₁, h₂⟩ := hS k hk
     rw [Finset.mem_Ico, Int.ceil_le, Int.lt_ceil]
-    exact ⟨by exact_mod_cast h₁, by exact_mod_cast h₂⟩
+    norm_cast
   · intro n _ hn
     have : extend S f n = 0 := by
       refine ite_eq_right fun h => hn (Finset.mem_map.mpr ⟨n.toNat, h.2, ?_⟩)

@@ -14,12 +14,10 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentDetectorPlainSource
 open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
-open CenteredMomentAddedZeroUniform
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion
-open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy
-open CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentHeckeColumnWindow
+open CenteredMomentAddedZeroUniform CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
+open CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
+open CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy CenteredMomentRetainedEnergy
+open CenteredMomentRectangle CenteredMomentSourceRectangleEnergy CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -62,7 +60,6 @@ theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
         rowTwistedSum η (m*idealGenerator R) A z W₂ t X₂)*
         ∏ i,rowSlot η (m*idealGenerator R) A z (slots i)
           (fun I=>ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)) t := by
-  let : DecidableEq (ι⊕Fin 2) := Classical.decEq _
   have hs₁' : Function.support W₁⊆Set.Iic b₁ := fun x hx=>(hs₁ hx).2
   have hs₂' : Function.support W₂⊆Set.Iic b₂ := fun x hx=>(hs₂ hx).2
   have hy₁ := comparisonScale_pos b₁

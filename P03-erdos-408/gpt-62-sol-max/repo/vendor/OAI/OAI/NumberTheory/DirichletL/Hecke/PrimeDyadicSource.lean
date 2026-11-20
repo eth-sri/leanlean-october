@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -34,7 +34,7 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
         C*(Z^d)^((a-1/2)*r+ε) := by
   obtain ⟨Cd,hCd,hdirect⟩ := scaled_direct_bound e κ η he he' hκ hη
   obtain ⟨n,htail⟩ := uniform_external_tail_order τ dmax (2*R+κ) 0
-    hτ hdmax (by positivity) (by norm_num)
+    hτ (by positivity) (by norm_num)
   obtain ⟨C₂,hC₂,hm₂⟩ := PrimeLogProfile.uniform_mellin_decay W A B hA hWs hW
     (-σmax) (2-σmin) 2
   obtain ⟨Cn,hCn,hmn⟩ := PrimeLogProfile.uniform_mellin_decay W A B hA hWs hW
@@ -43,8 +43,7 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   intro Z d hZ hd hd' hU2 hT ι _ χ hχ a i ha ha' hmax r σ freq L
     hr hrR hσmin hσmax hL k hQ hfreq hheight
   let U := Z^d
-  have hU : 1≤U := Real.one_le_rpow hZ hd
-  have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
+  have hU  := Real.one_le_rpow hZ hd
   have hs : Icc (a+8*e-σ) (2-σ)⊆Icc (-σmax) (2-σmin) := by
     intro x hx
     exact ⟨by linarith [hx.1],by linarith [hx.2]⟩

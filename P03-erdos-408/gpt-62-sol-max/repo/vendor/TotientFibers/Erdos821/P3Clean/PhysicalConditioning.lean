@@ -17,8 +17,6 @@ open Erdos821.Blueprint.Graph
 local instance (priority := 11000) physicalBoolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
 
-local instance physicalLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
 
 theorem physicalSmallCoefficient_norm_sq (F : FixedData) (P : PrimeGroups) (J : ℕ)
     (y : P.SmallResidues) (z : ℂ) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :

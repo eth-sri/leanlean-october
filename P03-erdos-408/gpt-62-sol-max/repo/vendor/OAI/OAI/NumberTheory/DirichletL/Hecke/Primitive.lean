@@ -10,7 +10,6 @@ public import OAI.NumberTheory.DirichletL.PeriodicThetaRegularity
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.HeckePrimitive
 open HeckeFamily
 
@@ -133,9 +132,7 @@ theorem symm_completed_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv).Λ s := by
   apply HeckeMellinIdentity.eq_of_f (pair c χ hu hp).symm
     (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv) rfl rfl _ rfl h0 h1
-  intro t _
-  change (pair c χ hu hp).g t = _
-  rw [pair_g, pair_f]
+  simp
 
 theorem completedL_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
@@ -161,7 +158,7 @@ theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) �
   unfold LFunction continuedLattice HeckeTheta.latticeL
   simp only [Complex.cpow_neg]
   have hπ : (Real.pi : ℂ)^s ≠ 0 := by
-    exact (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [Real.pi_ne_zero])
+    simp
   field_simp
 
 end SevenEighths.HeckePrimitive

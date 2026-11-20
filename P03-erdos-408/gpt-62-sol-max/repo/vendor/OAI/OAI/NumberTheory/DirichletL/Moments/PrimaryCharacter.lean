@@ -32,7 +32,7 @@ theorem maskedPrimaryHom_unit_mul (r : O) (χ : MulChar (Residue r) ℂ) (u : O�
 
 theorem maskedPrimaryHom_ramified (r : O) (χ : MulChar (Residue r) ℂ) (n : O) (hn : λ₀∣n) :
     maskedPrimaryHom r χ n=0 := by
-  have h3 : λ₀∣(3:O) := (dvd_pow_self λ₀ (by decide : 2≠0)).trans ActualEisensteinCubic.lambda_sq_dvd_three
+  have h3  := (dvd_pow_self λ₀ (by decide : 2≠0)).trans ActualEisensteinCubic.lambda_sq_dvd_three
   have hc : ¬IsCoprime (3:O) n := fun hc =>
     PrimaryIdealUnitReindex.lambda_prime_actual.not_isUnit (hc.isUnit_of_dvd' h3 hn)
   change (if IsCoprime (3:O) n then (1:ℂ) else 0)*_=0
@@ -47,7 +47,7 @@ theorem maskedPrimaryHom_primary (r : O) (χ : MulChar (Residue r) ℂ) (n : O)
 
 theorem maskedPrimaryHom_periodic (r : O) (χ : MulChar (Residue r) ℂ) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {3*r}) (maskedPrimaryHom r χ) := by
-  let F : O →* ℂ := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {r})).toMonoidHom
+  let F  := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {r})).toMonoidHom
   apply periodic_of_primary _ _ _ F _ (maskedPrimaryHom_unit_mul r χ)
     (maskedPrimaryHom_ramified r χ) (maskedPrimaryHom_primary r χ)
   · apply Ideal.span_singleton_le_span_singleton.mpr
@@ -88,7 +88,7 @@ theorem primaryCharacter_all (r : O) (hr : r≠0) (χ : MulChar (Residue r) ℂ)
     have hs := CompletedGauss.primaryGenerator_spec (Ideal.span {n}) hg
     obtain ⟨u,hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs.1.symm
     have hp : λ₀^2∣(u:O)*n-1 := by
-      have hp' : λ₀^2∣CompletedGauss.primaryGenerator (Ideal.span {n})-1 := hs.2
+      have hp'  := hs.2
       rwa [mul_comm,hu]
     rw [← elementCoeff_unit_mul (primaryCharacter r hr χ) u n,
       ← maskedPrimaryHom_unit_mul r χ u n,primaryCharacter_primary r hr χ _ hp,

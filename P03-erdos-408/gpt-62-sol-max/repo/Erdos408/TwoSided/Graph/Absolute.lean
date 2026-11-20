@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.TwoSided.Graph.BoundsDamping
 public import Erdos408.TwoSided.Graph.Endpoint
 
@@ -29,8 +30,7 @@ frequency `ζ`, every dyad `X = 2^m`, every `|f| ≤ 1` and every clipped core,
 theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀ : 0 < q₀)
     (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (J : ℕ) :
     ∃ Cabs : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (C : ι → Finset (Fin J))
           (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
           (κK : ℝ), (∀ p p' a, ‖K p p' a‖ ≤ κK) →
@@ -51,8 +51,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
   set T := Real.log L
   have hX1 : 1 ≤ X := one_le_pow₀ (by norm_num)
   have hL0 : 0 < L := by linarith
-  have hT0 : 0 ≤ T := Real.log_nonneg (by linarith)
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK 0 0 0)
+  have hκ  := (norm_nonneg _).trans (hK 0 0 0)
   have h := GraphBounds.norm_patternPairing_le P hvlo (fun g => (hP.2.2.2.2.2.1 g).1) hq₀ hq₀₁
     hc hc1 C K hK ζ (dyadSource X) hf (norm_targetEndpoint_le hx1 hq₀₁ hG J X)
   -- `|S_X| ≤ X + 1 ≤ L X`
@@ -85,10 +84,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
       ≤ (L * X) * κK * L ^ B₀ * L ^ (2 * C₀ * Real.log K₁) := by
         refine mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hS hκ) hLB)
           hKs (pow_nonneg (by linarith) _) ?_
-        have : 0 ≤ L * X := by positivity
         positivity
-    _ = κK * X * L ^ (B₀ + 1 + 2 * C₀ * Real.log K₁) := by
-        rw [Real.rpow_add hL0, Real.rpow_add hL0, Real.rpow_one]
-        ring
+    _ = κK * X * L ^ (B₀ + 1 + 2 * C₀ * Real.log K₁) := by rpow_ring hL0
 
 end Erdos408.TwoSided

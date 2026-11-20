@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
 @[expose] public section
@@ -13,9 +14,9 @@ open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmeti
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+variable (hcop : OAI.PrincipalFamily.Coprime p)
+variable (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
@@ -33,8 +34,6 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
       (positiveSource (priorityLogWindow om a b ha hsom true) 1 (-theta))
       (positiveSource (priorityLogWindow om a b ha hsom false) 1 theta) Φ K Y s := by
   intro source
-  let W₁ := fun y=>star (normTwistedSource om theta ((s 0*s 2*s 5*s 7)*y/X))
-  let W₂ := fun y=>normTwistedSource om theta ((s 1*s 2*s 5*s 8)*y/X)
   have he := original_family_profiles p hp hg source pool (fun _=>commonSelector p (fun _=>1) l)
     (coefficient p hp hcop hg Ψ m mark true) (coefficient p hp hcop hg Ψ m mark false)
     (weight p hp hcop hg β cutoff Ψ m) om a b ha hsom Φ
@@ -44,8 +43,8 @@ theorem original_refined_cell_profile_identity (pool : Finset ι) (Q : Finset (�
         exact ⟨hh.1,hh.2.1,hh.2.2.1⟩) hX hleft hright
   change _=firstFamilyPhysicalRows p hg source pool _ _ _ _ _ _ Φ _ _ _ _ K _ _ s
   rw [←he]
-  have hl : s 0*s 2*s 5*s 7≠0 := hleft.trans_ne (ne_of_gt hX)
-  have hr : s 1*s 2*s 5*s 8≠0 := hright.trans_ne (ne_of_gt hX)
+  have hl  := hleft.trans_ne (ne_of_gt hX)
+  have hr  := hright.trans_ne (ne_of_gt hX)
   simp only [firstFamilyPhysicalRows,firstBlockedPhysicalRows,sourceSummand,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro x hx

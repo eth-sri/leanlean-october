@@ -1,5 +1,7 @@
 module
 
+import OAI.RpowArithmetic
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Decomposition
 public import Erdos408.OneSided.Goodness.Removal
 public import Erdos408.OneSided.Moment.Memory
@@ -99,17 +101,13 @@ private theorem exp_add_thirty_mul_rpow_le {E L n : ℝ} (hE : 0 < E) (hL : 8 �
   -- the first term: `L^{-(E + 1) n} = a L^{-n} ≤ a / 64`
   have hLn : L ^ (-n) ≤ 1 / 64 :=
     calc L ^ (-n) ≤ L ^ (-2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
-      _ = 1 / (L * L) := by
-          rw [Real.rpow_neg hL0.le, show (2 : ℝ) = (2 : ℕ) by norm_num, Real.rpow_natCast]
-          ring
+      _ = 1 / (L * L) := by rpow_ring hL0
       _ ≤ 1 / 64 := by
           gcongr
           calc (64 : ℝ) = 8 * 8 := by norm_num
             _ ≤ L * L := mul_le_mul hL hL (by norm_num) hL0.le
   have h₁ : 30 * L ^ (-((E + 1) * n)) ≤ a / 2 := by
-    have hsplit : L ^ (-((E + 1) * n)) = a * L ^ (-n) := by
-      rw [ha, ← Real.rpow_add hL0]
-      ring_nf
+    have hsplit : L ^ (-((E + 1) * n)) = a * L ^ (-n) := by rpow_ring hL0
     rw [hsplit]
     have ha0 : 0 ≤ a := by positivity
     calc 30 * (a * L ^ (-n)) ≤ 30 * (a * (1 / 64)) := by gcongr
@@ -119,8 +117,7 @@ private theorem exp_add_thirty_mul_rpow_le {E L n : ℝ} (hE : 0 < E) (hL : 8 �
     have := Real.log_le_rpow_div hL0.le (show (0 : ℝ) < 1 / 4 by norm_num)
     linarith
   have hn' : n ≤ 2 * L ^ (1 / 2 : ℝ) := by linarith
-  have hn0 : 0 ≤ n := by linarith
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hlog0  := Real.log_nonneg hL1
   have hprod : E * n * Real.log L ≤ 8 * E * L ^ (3 / 4 : ℝ) :=
     calc E * n * Real.log L ≤ E * (2 * L ^ (1 / 2 : ℝ)) * (4 * L ^ (1 / 4 : ℝ)) := by
           gcongr
@@ -162,10 +159,10 @@ theorem eventually_detMoment {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ 
       Real.tendsto_log_atTop).eventually_ge_atTop (8 * momentPrec Dstar C + 1),
     eventually_gt_atTop 0] with x hroot hline hL hLE hx0 d hd j k
   set L := Real.log x
-  have hLE' : 8 * momentPrec Dstar C + 1 ≤ L ^ (1 / 100 : ℝ) := hLE
-  have hHm : 0 < d.Hm := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hm_ge
-  have hHn : 0 < d.Hn := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hn_ge
-  have hX : 0 < d.X := mul_pos hHm hHn
+  have hLE'  := hLE
+  have hHm  := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hm_ge
+  have hHn  := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hn_ge
+  have hX  := mul_pos hHm hHn
   obtain ⟨hn₂, hn⟩ := two_mul_momentPower_bounds (show 0 < L by linarith)
   set B := L ^ (-((momentPrec Dstar C + 1) * ((2 * momentPower x : ℕ) : ℝ)))
   have hB : 0 ≤ B := Real.rpow_nonneg (by linarith) _
@@ -260,7 +257,7 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
   refine ⟨|CA| + 2 * (|CB| + |CD|), ?_⟩
   filter_upwards [hA, hB, hM, hD, eventually_ge_atTop (Real.exp 1)] with x hA hB hM hD hx
   intro d hd j
-  have hx0 : 0 < x := (Real.exp_pos 1).trans_le hx
+  have hx0  := (Real.exp_pos 1).trans_le hx
   have hL : 1 ≤ Real.log x := by
     rw [← Real.log_exp 1]; exact Real.log_le_log (Real.exp_pos 1) hx
   have hL0 : 0 < Real.log x := by linarith
@@ -269,7 +266,6 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
   -- `4C - E₀ = -(D₁ + 2)`
   have hexp : 4 * C - momentPrec Dstar C = -(D₁ + 2) := by
     simp only [momentPrec, D₁]; ring
-  have hP : 0 ≤ L ^ (-(D₁ + 2)) := (rpow_pos_of_pos hL0 _).le
   -- each pad dyad contributes `O(X Y L^{-D₁ - 2})`
   have hterm : ∀ k : ℕ, ‖((2 : ℂ) ^ k)⁻¹ * rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ ≤
       (|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2)) := by
@@ -277,7 +273,6 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
     have h₁ := hB d hd j k
     have h₂ := hD d hd j k (hM d hd j k)
     rw [hexp] at h₂
-    have hUV : 0 ≤ (2 : ℝ) ^ k * 2 ^ j * d.X := by positivity
     have hrow : ‖rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ ≤
         (|CB| + |CD|) * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) := by
       calc ‖rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖

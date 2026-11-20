@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfiles
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped BigOperators Classical ContDiff
 noncomputable section
 
 theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
@@ -80,7 +80,7 @@ lemma product_derivative_bound (F G : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
     _ ≤ ∑ i ∈ Finset.range (j+1), (j.choose i : ℝ)*CF*CG := by
       apply Finset.sum_le_sum
       intro i hi
-      have hi' : i ≤ j := by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hi)
+      have hi' : i ≤ j := by simp_all
       exact mul_le_mul (mul_le_mul_of_nonneg_left (hFb i (hi'.trans hj)) (by positivity))
         (hGb (j-i) ((Nat.sub_le j i).trans hj)) (norm_nonneg _) (by positivity)
     _ = (2 : ℝ)^j*CF*CG := by

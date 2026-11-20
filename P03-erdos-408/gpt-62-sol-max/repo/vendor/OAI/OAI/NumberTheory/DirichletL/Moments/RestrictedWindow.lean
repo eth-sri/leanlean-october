@@ -38,7 +38,7 @@ theorem finite_weighted_le_restricted {α : Type*} (keep : O → Prop)
   apply mul_nonneg (sq_nonneg _)
   split_ifs
   · exact hU z
-  · exact le_rfl
+  rfl
 
 theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
     (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)
@@ -68,7 +68,6 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
       have h := (plain_column_integrable S a ha β τ t θ X hX V hVc hVs z).const_mul (Real.sqrt (u z):ℂ)
       convert h using 1
       funext w
-      dsimp only [φ]
       ring
     have hb (w : ℝ) : (∑ z : rows,‖φ z w‖^2)≤E*((1+‖w‖)^J)^2 := by
       simp only [φ]
@@ -95,7 +94,6 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
         ← integral_const_mul]
       apply integral_congr_ae
       filter_upwards [] with w
-      dsimp only [φ]
       ring
     simp only [he,hnorm] at hh
     rw [Finset.sum_coe_sort rows (fun z : O => u z*‖rowPolynomial S a c z‖^2)] at hh

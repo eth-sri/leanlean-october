@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailFiber
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailAggregate
 
@@ -18,9 +19,9 @@ local notation "O"=>ActualEisensteinCubic.O
 theorem original_physical_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hcop : OAI.PrincipalFamily.Coprime p)
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (Ψ : O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : O)
@@ -47,9 +48,7 @@ theorem original_physical_tail (A : ℕ) :
     Z D m L T Γ B₁ B₂ hZ hL hT hΓ hB₁ hB₂ hW₁ hW₂ pool S w hvalid hw hpool hnorm hleft hright htail
   let R : ℝ := Z^(m-D)*B₁*B₂*(C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ)/
     ((min 1 (Z^m/L^3))^2*(1+T)^A)
-  have hR : 0≤R := by dsimp [R]; positivity
   let B : ℝ := Γ*(128*L)^2*R
-  have hB : 0≤B := by dsimp [B]; positivity
   have hkey (k) (hk : k∈sourceKeys S) (ρ : SecondRayIndex) :
       ‖∑h∈sourceFrequencies S k,
         w (sourcePoint k h)*physicalTerm p hp hcop hg Ψ j (primeMark slots lists a)
@@ -71,7 +70,6 @@ theorem original_physical_tail (A : ℕ) :
       (fun h hh=>hvalid (sourcePoint k h) (hf h hh))
       (fun h hh=>hw (sourcePoint k h) (hf h hh)) htailk
     apply hb.trans_eq
-    dsimp [B,R]
     ring
   have hsum := original_source_norm_fibers S Finset.univ
     (fun x ρ=>w x*physicalTerm p hp hcop hg Ψ j (primeMark slots lists a) W₁ W₂ Φ Z D m x ρ)
@@ -82,8 +80,8 @@ theorem original_physical_tail (A : ℕ) :
   rw [←Finset.mul_sum]
   calc
     _ ≤ (128*L)^5*(B*(∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖)) :=
-      mul_le_mul_of_nonneg_right (sourceKeys_card p hp hinj pool S L hL hpool hnorm) (by positivity)
-    _ = _ := by dsimp [B,R]; ring
+      mul_le_mul_of_nonneg_right (sourceKeys_card p hinj pool S L hL hpool hnorm) (by positivity)
+    _ = _ := by ring
 
 end SevenEighths.InverseInitialHighFrequencyTail
 

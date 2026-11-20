@@ -8,22 +8,18 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationRadicalChoice
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
-open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
+open CompletedGauss RayFourExpansion CenteredMomentFirstAmplificationChoice
+open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentAmplificationActiveFactor CenteredMomentPrimePool CenteredMomentPrimeElements
+open CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
+open CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationErrorEnergy
+open CenteredMomentAmplificationGlobal CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
+open CenteredMomentFirstScale CenteredMomentChildRows CenteredMomentHeckeExpansion
 local notation "O"=>ActualEisensteinCubic.O
-local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem exists_pool_error_families {ι : Type*} [Fintype ι]
     (P : Finset (Ideal O)) (hP : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
@@ -43,7 +39,7 @@ theorem exists_pool_error_families {ι : Type*} [Fintype ι]
   have hf (p : elementPool P) (i : Fin 3) := by
     have hd := elementPool_data P hP hbad p p.property
     have hPid := hP _ hd.2.1
-    letI : (Ideal.span {p.val}).IsMaximal :=
+    letI  :=
       (Ideal.isPrime_of_prime hPid).isMaximal hPid.ne_zero
     exact CenteredMomentAmplificationRadicalFamily.exists_original_error_ball_family (ι:=ι) η m p hm hd.1 hPid hd.2.2.2.1
       hd.2.2.2.2.1 hd.2.2.2.2.2 hd.2.2.1 hmLam hm2 (errorIndex i) (errorIndex_cases i)
@@ -200,7 +196,7 @@ theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
     I J E hE K X Tsec hK hX hsec j hj hMdyad
   let K0 := nominalLog I J E K X Z
   let kdyad := Real.logb Z (dyadicScale j)
-  have henclose : kdyad≤K0+frequencyLoss Z Csec xi :=
+  have henclose  :=
     retained_nominal_upper I J E hE K X Z Csec Tsec xi hK hX hZ
       (zero_lt_one.trans_le hC) hsec j hj
   have hδ := frequencyLoss_nonneg Z Csec xi hZ hC hxi

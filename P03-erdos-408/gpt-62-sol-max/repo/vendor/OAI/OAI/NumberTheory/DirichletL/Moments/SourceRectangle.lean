@@ -10,13 +10,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceLiveColumn
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceRectangle
 open ActualEisensteinCubic HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentExtraction CenteredMomentFirstSectors
-open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile CenteredMomentRemainingBox
+open CenteredMomentExtraction CenteredMomentFirstSectors CenteredMomentSourceLiveColumn
+open CenteredMomentCommonProfile CenteredMomentRemainingBox
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -34,10 +34,10 @@ omit [Fintype ι] in
     pack v I J (Sum.inl i)=v i := rfl
 omit [Fintype ι] in
 @[simp] theorem pack_left (v : ι→Ideal O) (I J : Ideal O) :
-    pack v I J (Sum.inr 0)=I := by simp [pack]
+    pack v I J (Sum.inr 0)=I := by rfl
 omit [Fintype ι] in
 @[simp] theorem pack_right (v : ι→Ideal O) (I J : Ideal O) :
-    pack v I J (Sum.inr 1)=J := by simp [pack]
+    pack v I J (Sum.inr 1)=J := by rfl
 
 theorem pack_product (v : ι→Ideal O) (I J : Ideal O) :
     finiteTupleProduct (pack v I J)=(∏ i,v i)*I*J := by
@@ -54,7 +54,7 @@ def tuplePoolEquiv (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)
     intro i
     cases i with
     | inl i => exact (v.1 i).property
-    | inr j => fin_cases j <;> simp [pack,tuplePools]⟩
+    | inr j => fin_cases j <;> simp [tuplePools]⟩
   left_inv v := by
     apply Subtype.ext
     funext i
@@ -84,7 +84,7 @@ theorem finite_column_regroup (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (w :
       intro I hI
       apply Finset.sum_congr rfl
       intro v hv
-      rw [(Finset.mem_filter.mp hv).2]
+      simp_all
     _ = _ := Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _
 
 def PlainCoverage (S : Finset (Ideal O)) (W : ℝ→ℂ) (B : Ideal O) (X Y : ℝ) : Prop :=

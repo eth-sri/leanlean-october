@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalCap
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedDiagonal
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
 open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap
 open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger
-open CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily
-open CenteredMomentAmplificationErrorEnergy
+open CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger CenteredMomentSectorLocalization
+open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
 local notation "O"=>HeckeFamily.O
 
 theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
@@ -36,13 +35,12 @@ theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
       ((τ.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z))≤
       Z^(Real.logb Z V-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))+
         branch*sigma+delta+reserve+eps*Real.logb Z V):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz:=zero_lt_one.trans hZ
   have hnc:=norm_pos C hC.1
   have hnd:=norm_pos D hD.1
   have hne:=norm_pos _ (subsetGenerator_supported C D hC E).1
   have hnr:=active_norm_pos C D
   have hnq:=norm_pos _ τ.modulus_ne_bot
-  have hη:=norm_pos _ η.modulus_ne_bot
   have hf:=fixedPresentationCost_pos
   have hc:0≤Real.logb Z (C.absNorm:ℝ):=Real.logb_nonneg hZ (by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hC.1))
@@ -52,8 +50,8 @@ theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
   have hfix:=fixed_presentation_log_nonneg Z hZ
   have hm:max (Real.logb Z (D.absNorm:ℝ)-Real.logb Z (C.absNorm:ℝ)-2*w+wo) 0≤
       Real.logb Z (D.absNorm:ℝ)+wo:=max_le (by linarith) (by linarith)
-  have he:eps*(Real.logb Z (C.absNorm:ℝ)+w)≥0:=mul_nonneg heps (add_nonneg hc hw)
-  have hq:=actual_reference_width η τ C D hC E K Z hK hZ hmod
+  have he:=mul_nonneg heps (add_nonneg hc hw)
+  have hq:=actual_reference_width η τ C D hC E K Z hmod
   have hnom:nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z=
       Real.logb Z ((Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}).absNorm:ℝ)+
       Real.logb Z ((Ideal.span {activeConductor C D}).absNorm:ℝ)+2*Real.logb Z V-
@@ -96,11 +94,10 @@ theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:
       ((τ.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z))≤
       Z^(Real.logb Z V-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))+
         sigma+delta+reserve+eps*Real.logb Z V):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hpv:=normValue_pos p hp
   have hcpos:=norm_pos C hC.1
   have hqpos:=norm_pos _ τ.modulus_ne_bot
-  have hl:0≤Real.logb Z (normValue p):=Real.logb_nonneg hZ (normValue_ge_one p hp)
+  have hl:=Real.logb_nonneg hZ (normValue_ge_one p hp)
   have hw:0≤errorRemoval p Z k:=by unfold errorRemoval;positivity
   have hwo:0≤errorMoving p Z k:=by unfold errorMoving;split_ifs <;> positivity
   have hh:=actual_common_diagonal η τ C D hC hD hCD E K V Z

@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourcePool
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFactor
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool
-open CenteredMomentSourceRow
+open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 def errorMovingExponent (n : ℕ) : ℕ := if n=5 then 0 else 1

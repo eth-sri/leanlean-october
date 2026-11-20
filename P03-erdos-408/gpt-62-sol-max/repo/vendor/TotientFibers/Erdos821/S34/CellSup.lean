@@ -1,7 +1,6 @@
 module
 
 public import Erdos821.P4Char.Basic
-public import Erdos821.S34.CharacterTasks
 public import Mathlib.Algebra.Order.Star.Real
 public import Mathlib.Analysis.CStarAlgebra.Classes
 
@@ -13,17 +12,14 @@ open scoped BigOperators Classical
 
 namespace Erdos821.S34Core
 
-theorem primitiveCharacterTask_proof : PrimitiveCharacterTask :=
-  Erdos821.P4Char.PrimitiveCharacterTask_proof
-
 end Erdos821.S34Core
 
 namespace Erdos821.Blueprint.Analytic
 
 theorem cell_kernel_sup_proof : Erdos821.Blueprint.Analytic.cell_kernel_sup_statement := by
   intro G k Q h ξ hξ D X
-  have hcount := Erdos821.S34Core.primitiveCharacterTask_proof.1 Q
-  have hchar := Erdos821.S34Core.primitiveCharacterTask_proof.2
+  have hcount := P4Char.PrimitiveCharacterTask_proof.1 Q
+  have hchar := P4Char.PrimitiveCharacterTask_proof.2
   unfold cellKernel
   split_ifs with hc
   · have hν : 0 < cellMass G k h (cell h X) := hξ.trans_le hc.2

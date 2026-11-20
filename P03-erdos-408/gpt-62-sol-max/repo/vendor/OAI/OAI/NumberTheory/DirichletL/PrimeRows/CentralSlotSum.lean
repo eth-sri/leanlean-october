@@ -32,9 +32,9 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
   let f : T→Ideal O := fun P=>P.val.val
   have hf : Function.Injective f := fun P Q h=>Subtype.ext (Subtype.ext h)
   let E : T→ℂ := fun P=>centralRegularError η u P.val (hT P.val P.property).1 x w z
-  let G : T→ℂ := fun P=>((f P).absNorm:ℂ)^(1/2:ℂ)*E P
+  let G  := fun P=>((f P).absNorm:ℂ)^(1/2:ℂ)*E P
   have hnorm (P : T) : ‖G P‖≤1440*(if f P∣Ideal.span {u.val} then ((f P).absNorm:ℝ)^(1:ℝ) else 1) := by
-    have hQ : (480:ℝ)≤(f P).absNorm := (hT P.val P.property).2.1
+    have hQ  := (hT P.val P.property).2.1
     have hQ0 : (0:ℝ)<(f P).absNorm := by linarith
     have hQ1 : (1:ℝ)≤(f P).absNorm := by linarith
     have hb := (central_actual_local_bounds η u P.val (hT P.val P.property).1
@@ -55,8 +55,7 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
           norm_num
         · simp only [ite_eq_right hp,mul_one]
           rw [mul_left_comm,←Real.rpow_add hQ0]
-          have hh : ((f P).absNorm:ℝ)^((1/2:ℝ)-(51/100:ℝ))≤1 := by
-            exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : (1/2:ℝ)-51/100≤0)).trans_eq (Real.rpow_zero _)
+          have hh := (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : (1/2:ℝ)-51/100≤0)).trans_eq (Real.rpow_zero _)
           norm_num only [show (1/2:ℝ)+-(51/100:ℝ)=(1/2:ℝ)-(51/100:ℝ) by ring]
           nlinarith
   have hb := hbound f hf (Ideal.span {u.val}) (Ideal.span_singleton_eq_bot.not.mpr u.property.1)

@@ -11,76 +11,15 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 def kernelLiftedCutoff (χ : PositiveChartCutoff) (w : HyperbolicSpace) : ℝ :=
   χ.func (hyperbolicEuclideanCoordinates w)
@@ -201,7 +140,7 @@ lemma kernelLocalizedField_reverse_energy (χ : PositiveChartCutoff) (f : kernel
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff ENNReal
+open scoped ENNReal
 
 lemma kernelLocalizedDensity_nonneg (χ : PositiveChartCutoff) (f : kernelSmoothTests)
     (p : EuclideanSpatial) : 0≤kernelLocalizedDensity χ f p := by
@@ -222,8 +161,8 @@ lemma hyperbolicVolume_le_densityBound (S : Set EuclideanSpatial) (hS : Measurab
 instance hyperbolicVolume_finiteOnCompacts : IsFiniteMeasureOnCompacts hyperbolicVolume where
   lt_top_of_isCompact K hK := by
     let S := hyperbolicEuclideanCoordinates '' K
-    have hSK : IsCompact S := hK.image hyperbolicEuclideanCoordinates_continuous
-    have hS : MeasurableSet S := hSK.measurableSet
+    have hSK  := hK.image hyperbolicEuclideanCoordinates_continuous
+    have hS  := hSK.measurableSet
     have hpos : S⊆euclideanUpperHalf := by
       rintro p ⟨w,hw,rfl⟩
       exact hyperbolicHeight_pos w
@@ -252,7 +191,7 @@ instance hyperbolicVolume_finiteOnCompacts : IsFiniteMeasureOnCompacts hyperboli
 private lemma integrable_sq_mul_of_compact (a b : HyperbolicSpace → ℝ)
     (ha : Continuous a) (hb : Continuous b) (hc : HasCompactSupport a) :
     Integrable (fun w => (a w)^2*b w) hyperbolicVolume := by
-  have hs : HasCompactSupport (fun w => (a w)^2) :=
+  have hs  :=
     hc.comp_left (g := fun x : ℝ => x^2) (by simp)
   exact ((ha.pow 2).mul hb).integrable_of_hasCompactSupport hs.mul_right
 
@@ -273,7 +212,7 @@ lemma kernelLiftedCutoffEnergy_integral (χ : PositiveChartCutoff) (f : kernelSm
 
 lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
-    (B D H : ℝ) (_hB : 0≤B) (hD : 0≤D) (hH : 0≤H)
+    (B D H : ℝ) (hD : 0≤D) (hH : 0≤H)
     (hheight : ∀p∈tsupport χ.func,p 2≤B)
     (hderiv : ∀p∈tsupport χ.func,
       (∑j : Fin 3,‖fderiv ℝ χ.func p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2)≤D)
@@ -282,10 +221,10 @@ lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
     ‖kernelCutoffGradientCLM χ (kernelGradientToL2 f)‖^2≤
       2*B^2*(H*‖kernelLocalizedH1 χ f‖^2+D*‖kernelSmoothTestsToL2 f‖^2) := by
   let S := tsupport χ.func
-  have hS : MeasurableSet S := χ.compact.measurableSet
-  have hpos : S⊆euclideanUpperHalf := χ.positive
+  have hS  := χ.compact.measurableSet
+  have hpos  := χ.positive
   have hmeasure := hyperbolicVolume_le_densityBound S hS hpos H hdensity
-  have hloc : IntegrableOn (kernelLocalizedDensity χ f) S hyperbolicEuclideanVolume :=
+  have hloc  :=
     (((kernelLocalizedDensity_integrable χ f).integrableOn).smul_measure
       (c := ENNReal.ofReal H) ENNReal.ofReal_ne_top).mono_measure hmeasure
   have hmass : IntegrableOn (fun p => ‖kernelTestField f p‖^2) S hyperbolicEuclideanVolume := by
@@ -373,7 +312,7 @@ lemma kernelCutoffGradient_core_bounded (χ : PositiveChartCutoff)
   have hdensity : ∀p∈tsupport χ.func,((p 2)^3)⁻¹≤H := fun p hp =>
     (hr ⟨p,hp,rfl⟩).trans (le_max_right _ _)
   refine ⟨2*B^2*(H+D),by positivity,fun f => ?_⟩
-  refine (kernelCutoffGradient_core_estimate χ hinj B D H hB hD hH hheight hderiv hdensity f).trans ?_
+  refine (kernelCutoffGradient_core_estimate χ hinj B D H hD hH hheight hderiv hdensity f).trans ?_
   rw [mul_assoc (2*B^2)]
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   nlinarith [mul_nonneg hH (sq_nonneg ‖kernelSmoothTestsToL2 f‖),
@@ -408,7 +347,7 @@ lemma kernelCutoffGradient_faithful (g : KernelGradientL2)
     rw [hχ]
     norm_num
   obtain ⟨r,hr,hcov⟩ := isLindelof_univ.elim_countable_subcover U hU hcover
-  let : Countable r := hr.to_subtype
+  let  := hr.to_subtype
   have heach (χ : Cutoff) : ∀ᵐw∂KernelFundamentalVolume,kernelLiftedCutoff χ.1 w • g w=0 := by
     have hzero := hg χ.1 χ.2
     change kernelCutoffGradient χ.1 g=0 at hzero
@@ -426,11 +365,11 @@ lemma kernelCutoffGradient_faithful (g : KernelGradientL2)
   obtain ⟨χ,hχ⟩ := Set.mem_iUnion.mp (hcov (Set.mem_univ w))
   obtain ⟨hχr,hχw⟩ := Set.mem_iUnion.mp hχ
   have hsm := hw ⟨χ,hχr⟩
-  have hne : kernelLiftedCutoff χ.1 w≠0 := hχw
+  have hne  := hχw
   exact ((smul_eq_zero.mp hsm).resolve_left hne).trans hz.symm
 
 theorem kernelEnergyMass_eq_zero (u : KernelEnergyGraph) (hu : kernelEnergyMass u=0) : u=0 := by
-  have hgrad : kernelEnergyGradient u=0 :=
+  have hgrad  :=
     kernelCutoffGradient_faithful _ (fun χ hinj => kernelEnergyCutoffGradient_eq_zero χ hinj u hu)
   apply norm_eq_zero.mp
   have hn := kernelEnergyGraph_norm_sq u
@@ -449,7 +388,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff InnerProductSpace
+open scoped InnerProductSpace
 
 lemma kernelEnergyGraph_inner (u v : KernelEnergyGraph) :
     inner ℂ u v=inner ℂ (kernelEnergyMass u) (kernelEnergyMass v)+
@@ -484,8 +423,7 @@ lemma kernelVariationalResolvent_injective : Function.Injective kernelVariationa
   intro F hF
   change kernelEnergyMass (kernelVariationalSolution F)=0 at hF
   have hu : kernelVariationalSolution F=0 := kernelEnergyMass_injective (by
-    rw [map_zero]
-    exact hF)
+    assumption)
   have he : (fun g : KernelQuotientL2 => inner ℂ F g)=(fun _ => (0 : ℂ)) :=
     kernelEnergyMass_dense.equalizer (by fun_prop) continuous_const (by
       funext v
@@ -497,8 +435,7 @@ lemma kernelVariationalResolvent_injective : Function.Injective kernelVariationa
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped InnerProductSpace
 
 def kernelLaplacianEquation : (KernelQuotientL2 × KernelQuotientL2) →L[ℂ] KernelQuotientL2 :=
   kernelVariationalResolvent.comp ((ContinuousLinearMap.fst ℂ KernelQuotientL2 KernelQuotientL2)+

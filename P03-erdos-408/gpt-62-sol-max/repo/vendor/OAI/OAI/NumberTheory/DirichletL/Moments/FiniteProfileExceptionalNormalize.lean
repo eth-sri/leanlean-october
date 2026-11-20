@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalUnit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentHeckeTwist

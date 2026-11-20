@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityParentBounds
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
 
@@ -15,8 +16,8 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpan
 open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 lemma tail_forget (hp : ∀i,p i≠0) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalBound
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical
 open Set Complex
 namespace SevenEighths.CenteredMomentPlainGlobalActual
 open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
@@ -35,10 +36,10 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
   have hB:0≤B:=apply_nonneg _ _
   have hQ:1≤Q:=by
     dsimp [Q]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr χ.modulus_ne_bot)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (χ.modulus_ne_bot)
   have hV:1≤V:=by dsimp [V]; linarith [abs_nonneg freq]
-  have hQ0:0≤Q:=zero_le_one.trans hQ
-  have hrad:((HeckeDeletionBounds.radical χ.modulus).absNorm:ℝ)≤Q:=radical_norm_le_modulus χ
+  have hQ0:=zero_le_one.trans hQ
+  have hrad:=radical_norm_le_modulus χ
   have hrad0:0≤((HeckeDeletionBounds.radical χ.modulus).absNorm:ℝ):=Nat.cast_nonneg _
   have hcost:Q^(3/5:ℝ)*((HeckeDeletionBounds.radical χ.modulus).absNorm:ℝ)^((1/10+(3/10)):ℝ)≤Q:=by
     calc
@@ -64,7 +65,7 @@ open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound
   have hb:=finite_strip_bound χ hχ W a b ha hWs (W.smooth ⊤) D freq (Cm*B) (Cg*Q*V^2)
     hD (mul_nonneg hCm.le hB) (by positivity) (hm W hWs) hgrowth
   have hQV:1≤Q*V^2:=one_le_mul_of_one_le_of_one_le hQ (one_le_pow₀ hV)
-  have he:E≤E*(Q*V^2):=le_mul_of_one_le_right hE hQV
+  have he:=le_mul_of_one_le_right hE hQV
   apply hb.trans
   dsimp only [C]
   change _≤Cm*(Cg*(Real.pi+3)+E*Real.pi)/(2*Real.pi)*B*Q*V^2

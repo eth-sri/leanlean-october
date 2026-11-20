@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstSectorTailUnif
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
@@ -44,14 +44,13 @@ theorem local_input_tail (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
   have hV0 : 0<volume s.toData := volume_pos s
   have hVcap : volume s.toData≤Z^(3*B) := hV.trans
     (Real.rpow_le_rpow_of_exponent_le hZ.1.le (by linarith))
-  have hTcap : (volume s.toData)^2/K≤Z^(3*B) := by
-    rw [div_eq_mul_inv]
-    apply (mul_le_mul (pow_le_pow_left₀ hV0.le hV 2) hKi (inv_nonneg.mpr hK.le) (by positivity)).trans_eq
-    rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_add hz]
-    congr 1
-    norm_num
-    ring
-  exact hZ.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K _ hK hVcap hTcap le_rfl
+  refine hZ.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K _ hK hVcap ?_ le_rfl
+  rw [div_eq_mul_inv]
+  apply (mul_le_mul (pow_le_pow_left₀ hV0.le hV 2) hKi (inv_nonneg.mpr hK.le) (by positivity)).trans_eq
+  rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_add hz]
+  congr 1
+  norm_num
+  ring
 
 end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 

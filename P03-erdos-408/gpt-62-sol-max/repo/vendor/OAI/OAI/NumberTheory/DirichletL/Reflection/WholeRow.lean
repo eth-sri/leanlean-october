@@ -51,7 +51,7 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
           literalDyadicRow F K hK S jF Pset D s hc u i W θ X
             (fun K => r K*shapeArgument (primaryGenerator K))
             (fun P => aw P*shapeArgument (primaryGenerator P)) := by
-  let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
+  let  := PrimaryIdealUnitReindex.finite_units
   let : Fintype Eisˣ := Fintype.ofFinite _
   have htw : ContDiff ℝ ∞ (CompletedHeight.normTwistedSource W θ) := by
     have he : (CompletedHeight.uniformTwistedSchwartz W lo hi hlo hWs hW θ:ℝ→ℂ)=
@@ -87,7 +87,6 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
       (CompletedHeight.normTwistedSource W θ) lo hi hlo hts htw X hX,
       actual_shape_separation,hprod P.val.val P.val.property]
     simp only [tsum_mul_left]
-    dsimp only [wt,block]
     ring
   unfold literalWholeRow
   simp_rw [hp]

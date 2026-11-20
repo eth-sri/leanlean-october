@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.DivisorWitness
 
 @[expose] public section
@@ -22,7 +23,7 @@ theorem selected_log_identity (D : Ideal O)
       Real.logb Z (formalReductionFactor D a P)+
         ∑ i∈frozenIndices D a,Real.logb Z ((Ideal.absNorm (v i:Ideal O):ℝ)/P i) := by
   have hn (i : ι) : (Ideal.absNorm (v i:Ideal O):ℝ) ≠ 0 :=
-    Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hv i))
+    Ideal.cast_absNorm_ne_zero_of_ne_bot (hv i)
   unfold formalReductionFactor
   rw [Real.logb_mul (selectedNorm_pos D a).ne' (Finset.prod_ne_zero_iff.mpr (fun i _ => hn i)),
     Real.logb_mul (selectedNorm_pos D a).ne' (Finset.prod_ne_zero_iff.mpr (fun i _ => (hP i).ne')),
@@ -45,10 +46,10 @@ theorem nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
       (∑ i,logWindow (lo i) (hi i))/Real.log Z := by
   obtain ⟨v,I,J,ha,hβ,hrect⟩ := allocated_nonzero_witness η m A z t S β D a
     W₁ W₂ X₁ X₂ Y₁ Y₂ hne
-  have hv (i : ι) : (v i:Ideal O) ≠ 0 := (hS i (v i) (v i).property).ne_zero
+  have hv (i : ι)  := (hS i (v i) (v i).property).ne_zero
   have hb := actualExtracted_norm_boundary D hD a (fun i => v i) hv I J ha
   have hND : (0:ℝ) < Ideal.absNorm D := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD.ne_zero)
   have hl := Real.logb_le_logb_of_le hZ hND hb
   rw [selected_log_identity D a (fun i => v i) hv P hP Z] at hl
   have hr : |∑ i∈frozenIndices D a,Real.logb Z ((Ideal.absNorm (v i:Ideal O):ℝ)/P i)| ≤

@@ -10,9 +10,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 namespace OAI
 
 namespace SevenEighths.InverseAmbientProfileTower
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open SevenEighths.InverseMoment
+open scoped BigOperators Classical SchwartzMap FourierTransform
+open MeasureTheory FourierBridge JointLogSeparation SevenEighths.InverseMoment
 noncomputable section
 
 abbrev Ambient (ι : Type*) := Frequency × (ι → ℝ)
@@ -30,10 +29,10 @@ theorem ambientWeight_one_le {ι : Type*} [Fintype ι] (J : ℕ) (p : Ambient ι
   unfold ambientWeight
   exact one_le_mul_of_one_le_of_one_le
     (one_le_mul_of_one_le_of_one_le
-      (one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by linarith [norm_nonneg p.1.1]))
-        (one_le_pow₀ (by linarith [norm_nonneg p.1.2.1])))
-        (one_le_pow₀ (by linarith [norm_nonneg p.1.2.2])))
-    (Finset.one_le_prod₀ (fun i _ => one_le_pow₀ (by linarith [norm_nonneg (p.2 i)])))
+      (one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by simp))
+        (one_le_pow₀ (by simp)))
+        (one_le_pow₀ (by simp)))
+    (Finset.one_le_prod₀ (fun i _ => one_le_pow₀ (by simp)))
 
 theorem ambientWeight_add {ι : Type*} [Fintype ι] (J K : ℕ) (p : Ambient ι) :
     ambientWeight (J + K) p = ambientWeight J p * ambientWeight K p := by
@@ -57,7 +56,7 @@ private theorem coordinate_factor_le {ι : Type*} [Fintype ι]
     1 + ‖u i‖ ≤ ∏ j, (1 + ‖u j‖) :=
   by
   have hm (j : ι) : max (1 + ‖u j‖) 1 = 1 + ‖u j‖ :=
-    max_eq_left (by linarith [norm_nonneg (u j)])
+    max_eq_left (by simp)
   simpa only [hm] using
     Finset.le_prod_max_one (Finset.mem_univ i) (fun j => 1 + ‖u j‖)
 

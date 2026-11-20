@@ -24,7 +24,6 @@ lemma rowBaseFinite_selected_bound (eta a rho x w z : ℂ)
     ‖rowBaseFinite p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
       rho j e l‖≤16*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by
-  have hpow : 0≤(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by positivity
   have hv := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z hz)
   have ht' (k : Fin 2) (m : ℕ) :
       ‖rowMarkedTerm p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
@@ -32,7 +31,7 @@ lemma rowBaseFinite_selected_bound (eta a rho x w z : ℂ)
         rho j e l k.val m‖≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by
     have ht : e+3*l≠0 := by rcases hf with h|h|h|h <;> omega
     rw [←sourceRowTerm_pos p hp hg eta a rho x w z j e l k.val m ht]
-    exact sourceRowTerm_selected_base p hp hg hc eta a rho x w z heta ha hρ hx hw hz
+    exact sourceRowTerm_selected_base p hp hg hc eta a rho x w z heta ha hρ hx hz
       j e l k.val m hj (by omega) hf
   unfold rowBaseFinite
   apply (norm_sum_le _ _).trans

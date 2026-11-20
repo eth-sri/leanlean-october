@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondLiveFamily
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Moments.SecondLiveBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondBlockSupport
+public import OAI.NumberTheory.DirichletL.Moments.SecondReducedPredicate
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalBudget
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
@@ -10,13 +13,12 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFamily
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm
+open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm
 open CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth
 open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns
 open CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock CenteredMomentSecondBlockSupport
@@ -27,8 +29,7 @@ local notation "O" => HeckeFamily.O
 
 theorem span_thirty_six_norm : (Ideal.span {(36:O)}).absNorm=1296 := by
   have h := ActualEisensteinCubic.rational_modulus_card 36 (by norm_num)
-  rw [Ideal.absNorm_apply,Submodule.cardQuot_apply]
-  exact h
+  assumption
 
 theorem reflected_modulus_bound (τ:Character) :
     (reflected τ).modulus.absNorm≤1296*τ.modulus.absNorm := by
@@ -90,9 +91,9 @@ theorem selected_nonunit_norm (C D:Ideal O) (hC:Supported C) (hD:Supported D)
   obtain ⟨h₁,h₂⟩ := selected_nonunit_dvd C D hC hD hCD U
   constructor
   · simpa only [map_mul] using Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)) (map_dvd Ideal.absNorm h₁)
+      (Ideal.absNorm_pos_of_ne_bot (hC.1)) (map_dvd Ideal.absNorm h₁)
   · simpa only [map_mul] using Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)) (map_dvd Ideal.absNorm h₂)
+      (Ideal.absNorm_pos_of_ne_bot (hD.1)) (map_dvd Ideal.absNorm h₂)
 
 structure Family (η:Character) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
     (U:Finset (CommonIndex C D)) (τ:RayCharacter→Character) : Prop where
@@ -220,9 +221,8 @@ theorem live_norm_le_four_radius (C D:Ideal O)(U:Finset (CommonIndex C D))
     (liveRows_weight C D U radius rows z hz)
   have hG := normValue_ge_one _ hg
   have hV := normValue_ge_one _ hv
-  have hprod : 1≤normValue (commonFrequencyGenerator C D)*normValue (nonunitFrequencyGenerator C D U) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hG) (sub_nonneg.mpr hV)]
-  exact hn.trans (div_le_self (by positivity) hprod)
+  refine hn.trans (div_le_self (by positivity) ?_)
+  nlinarith [mul_nonneg (sub_nonneg.mpr hG) (sub_nonneg.mpr hV)]
 
 end SevenEighths.CenteredMomentSecondExceptionalFamily
 

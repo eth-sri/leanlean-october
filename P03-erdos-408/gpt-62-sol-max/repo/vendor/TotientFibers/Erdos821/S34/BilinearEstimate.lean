@@ -22,8 +22,8 @@ private theorem interval_from_real_bounds (s : Finset ℤ) (X H : ℝ)
     (hs : ∀ n ∈ s, X ≤ (n : ℝ) ∧ (n : ℝ) ≤ X + H) :
     ∀ n ∈ s, ⌈X⌉ ≤ n ∧ n < ⌈X⌉ + (⌊H⌋₊ + 1 : ℕ) := by
   intro n hn
-  have hlo : ⌈X⌉ ≤ n := Int.ceil_le.mpr (hs n hn).1
-  have hceil : X ≤ (⌈X⌉ : ℝ) := Int.le_ceil X
+  have hlo  := Int.ceil_le.mpr (hs n hn).1
+  have hceil  := Int.le_ceil X
   have hoff : ((n - ⌈X⌉).toNat : ℝ) = (n : ℝ) - ⌈X⌉ := by
     exact_mod_cast (show ((n - ⌈X⌉).toNat : ℤ) = n - ⌈X⌉ by omega)
   have hnat : (n - ⌈X⌉).toNat ≤ ⌊H⌋₊ := Nat.le_floor (by rw [hoff]; linarith [(hs n hn).2])
@@ -50,8 +50,6 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
   refine ⟨Real.sqrt K₂, Real.sqrt_pos.mpr hKpos, ?_⟩
   intro U V N M α β u r s t a b hU hV hr hu hα hβ hs ht
   have hUpos : 0 < U := by linarith
-  have hVpos : 0 < V := by linarith
-  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (show 0 < r by omega)
   have hr₁ : (1 : ℝ) ≤ r := by exact_mod_cast hr
   have hβ' : |β| ≤ 1 / (r : ℝ) ^ 2 := by
     simpa only [zpow_neg, zpow_ofNat, one_div] using hβ
@@ -67,7 +65,7 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
   have hlog₂ : 0 < Real.log 2 := Real.log_pos (by norm_num)
   have hlog : Real.log 2 ≤ Real.log (2 * (r : ℝ)) :=
     Real.log_le_log (by norm_num) (by linarith)
-  have hlogpos : 0 < Real.log (2 * (r : ℝ)) := hlog₂.trans_le hlog
+  have hlogpos  := hlog₂.trans_le hlog
   have hF : 0 ≤ F := by dsimp [F]; positivity
   have hcount : 2 * (C * V) / r + 1 ≤ (2 * C + 1) * (1 + V / r) := by
     have hvr : 0 ≤ V / (r : ℝ) := by positivity
@@ -75,7 +73,7 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
     nlinarith
   have hlen : ((⌊C * U⌋₊ + 1 : ℕ) : ℝ) ≤ B * U := by
     have hf := Nat.floor_le (show 0 ≤ C * U by positivity)
-    have hcu : (C + 1) * U ≤ B * U := mul_le_mul_of_nonneg_right hB₁ hUpos.le
+    have hcu  := mul_le_mul_of_nonneg_right hB₁ hUpos.le
     push_cast
     linarith
   have hH : (harmonic (2 * r) : ℝ) ≤ 1 + Real.log (2 * (r : ℝ)) := by
@@ -106,7 +104,7 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
       _ ≤ ((2 * C + 1) * (1 + V / r)) * (B * (U + r * Real.log (2 * r))) * Ea := by
         exact mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right hcount (by positivity)) hEa
-      _ = K₂ * ((1 + V / r) * (U + r * Real.log (2 * r))) * Ea := by dsimp [K₂]; ring
+      _ = K₂ * ((1 + V / r) * (U + r * Real.log (2 * r))) * Ea := by ring
       _ ≤ K₂ * F * Ea := by
         apply mul_le_mul_of_nonneg_right _ hEa
         apply mul_le_mul_of_nonneg_left _ hKpos.le
@@ -127,7 +125,7 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
     have hc := norm_sum_mul_sq t b (fun v => ∑ n ∈ s, a n * bvExp (α * n * v))
     have he := mul_le_mul_of_nonneg_left henergy hEb
     have hh := hc.trans he
-    convert hh using 1; dsimp [Eb]; ring
+    convert hh using 1; ring
   have hrhs : 0 ≤ Real.sqrt K₂ * Real.sqrt Ea * Real.sqrt Eb * Real.sqrt F := by positivity
   have hrhssq : (Real.sqrt K₂ * Real.sqrt Ea * Real.sqrt Eb * Real.sqrt F) ^ 2 = K₂ * Ea * Eb * F := by
     simp only [mul_pow, Real.sq_sqrt hKpos.le, Real.sq_sqrt hEa, Real.sq_sqrt hEb, Real.sq_sqrt hF]

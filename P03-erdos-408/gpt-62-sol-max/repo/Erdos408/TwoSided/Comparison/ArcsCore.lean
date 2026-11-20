@@ -26,7 +26,7 @@ theorem eventually_add_le_rpow {a b : ℝ} (c₁ c₂ : ℝ) (ha : 0 ≤ a) (hab
     ∀ᶠ L : ℝ in atTop, c₁ * L ^ a + c₂ ≤ L ^ b := by
   filter_upwards [(tendsto_rpow_atTop (sub_pos.2 hab)).eventually_ge_atTop (|c₁| + |c₂|),
     eventually_ge_atTop 1] with L h₁ hL
-  have hLa : 1 ≤ L ^ a := Real.one_le_rpow hL ha
+  have hLa  := Real.one_le_rpow hL ha
   have hsplit : L ^ b = L ^ (b - a) * L ^ a := by
     rw [← Real.rpow_add (by linarith)]
     ring_nf
@@ -80,11 +80,11 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
     (hW : ∀ n, ‖markedListWeight P q₀ (unsharedSlots C) b n‖ ≤ L ^ CW) :
     ∑ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊, ‖endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ w‖ ^ 2 ≤
       Y * L ^ (2 * CW + 3) := by
-  have hM0 : 0 ≤ M0 := (norm_nonneg _).trans (hψ 0)
+  have hM0  := (norm_nonneg _).trans (hψ 0)
   have hpt : ∀ w ∈ Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊,
       ‖endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ w‖ ≤ M0 * L ^ (1 + CW) := by
     intro w hw
-    have hw1 : 1 ≤ w := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne')
+    have hw1  := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne')
       (Finset.mem_Icc.1 hw).1
     have hw2 : (w : ℝ) ≤ x ^ 3 :=
       ((Nat.le_floor_iff (by positivity)).1 (Finset.mem_Icc.1 hw).2).trans (by linarith)
@@ -168,7 +168,7 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
     have he : L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)) = L ^ (-Am' + (CA + CB) / 2) := by
       rw [← Real.rpow_add hL0, ← Real.rpow_add hL0]
       ring_nf
-    have hle : L ^ (-Am' + (CA + CB) / 2) ≤ L ^ (-Am) :=
+    have hle  :=
       Real.rpow_le_rpow_of_exponent_le hL hAm
     calc 4 * (Kmin * L ^ (-Am')) * (Real.sqrt Y * L ^ (CA / 2)) *
           (Real.sqrt Y * L ^ (CB / 2))
@@ -189,7 +189,6 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
     rw [Real.sqrt_mul (by norm_num), show -(2 * A₀) = -A₀ * 2 by ring, Real.rpow_mul hL0.le,
       Real.rpow_two, Real.sqrt_sq hA0]
     have : Real.sqrt 2 ≤ 2 := by
-      rw [Real.sqrt_le_left (by norm_num)]
       norm_num
     exact mul_le_mul_of_nonneg_right this hA0
   have hR2 : (R : ℝ) ^ 2 ≤ L ^ (2 * Carc) := by
@@ -251,7 +250,6 @@ private theorem sq_mul_rpow_le {H Y x κ L CA A₀ : ℝ} (hx : 0 < x) (hL : 0 <
   have hsq : (H / Y) ^ 2 ≤ 16 * κ ^ 2 / x ^ 2 := by
     calc (H / Y) ^ 2 ≤ (4 * κ / x) ^ 2 := pow_le_pow_left₀ hHY hHY' 2
       _ = 16 * κ ^ 2 / x ^ 2 := by ring
-  have hp : 0 ≤ L ^ (-(2 * A₀)) := by positivity
   calc (H / Y) ^ 2 * L ^ CA ≤ 16 * κ ^ 2 / x ^ 2 * (L ^ (CA + 2 * A₀) * L ^ (-(2 * A₀))) := by
         rw [hsplit]
         gcongr
@@ -300,10 +298,10 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
       4 * (Kmin * Real.log x ^ (-Am')) := by
   set b₁ : ℕ → ℂ := fun n => φ n * (n : ℂ) ^ (-((σ : ℂ) * Complex.I)) with hb₁
   set b₂ : ℕ → ℂ := fun n => φ' n * (n : ℂ) ^ (-((σ : ℂ) * Complex.I)) with hb₂
-  have hU0 : 0 < U := lt_of_lt_of_le (Real.exp_pos _) hU38
-  have hU'0 : 0 < U' := lt_of_lt_of_le (Real.exp_pos _) hU'38
+  have hU0  := lt_of_lt_of_le (Real.exp_pos _) hU38
+  have hU'0  := lt_of_lt_of_le (Real.exp_pos _) hU'38
   have he4 : Real.exp 1 ≤ 4 := (Real.exp_one_lt_d9).le.trans (by norm_num)
-  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g =>
+  have hV  := fun g =>
     (lt_of_lt_of_le hvlo (hadm.2.2.2.2.2.1 g).1).ne'
   have hμ : ∀ (S : ι → Finset (Fin J)) (l : ι → Fin J → ℕ), 0 ≤ labelMass P S l :=
     labelMass_nonneg P
@@ -345,10 +343,10 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
   have hU₀u : U₀ ≤ 2 * U := by rcases hU₀ with rfl | rfl <;> linarith
   have hV₀u : V₀ ≤ 2 * U' := by rcases hV₀ with rfl | rfl <;> linarith
   have hUV : U * U' ≤ U₀ * V₀ := mul_le_mul hU₀l hV₀l hU'0.le (by linarith)
-  have hUV0 : 0 < U * U' := mul_pos hU0 hU'0
+  have hUV0  := mul_pos hU0 hU'0
   have hrad : Real.log x ^ Carc / (U₀ * V₀) ≤ Real.log x ^ Carc / (U * U') :=
     div_le_div_of_nonneg_left (Real.rpow_nonneg (by linarith) _) hUV0 hUV
-  have hrad1 : Real.log x ^ Carc / (U * U') ≤ 1 := (div_le_one hUV0).2 hLCarc
+  have hrad1  := (div_le_one hUV0).2 hLCarc
   refine hC2x U₀ V₀ θ 1 s t α β (hU38.trans hU₀l) (hU'38.trans hV₀l) ?_ one_ne_zero
     (by simpa using hLC) hs ht (hα.trans (div_le_div_of_nonneg_right hC₇C (by linarith)))
     (hβ.trans (div_le_div_of_nonneg_right hC₇C (by linarith))) ?_

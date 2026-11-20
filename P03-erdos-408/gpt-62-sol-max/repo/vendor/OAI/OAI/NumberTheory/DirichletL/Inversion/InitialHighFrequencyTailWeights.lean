@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWeights
 
 @[expose] public section
@@ -8,15 +9,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialEnergyCallerWeights
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment
+open InverseInitialArithmetic InverseInitialEnergyCallerWeights
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι]
 
 theorem marked_support_norm_bound
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (hdis : (slots:Set σ).PairwiseDisjoint lists)
@@ -32,18 +33,18 @@ theorem marked_support_norm_bound
   exact (primeMark_norm_le_divisor_count slots lists a S hdis ha).trans (by exact_mod_cast hc)
 
 theorem initialColumn_mark_factor
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (Ψ : O→*ℂ) (j C d h : O) (H : Finset ι→ℂ) (S : Finset ι) :
     initialColumn p hp hcop hg Ψ j C d h H S =
       initialColumn p hp hcop hg Ψ j C d h (fun _=>1) S * H S := by
   simp only [initialColumn,mul_one]
 
 theorem initialColumn_mark_norm
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (Ψ : O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1)
     (j C d h : O) (H : Finset ι→ℂ) (S : Finset ι) :

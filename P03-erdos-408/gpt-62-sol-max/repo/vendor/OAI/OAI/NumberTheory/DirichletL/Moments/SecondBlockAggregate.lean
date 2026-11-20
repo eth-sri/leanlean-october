@@ -14,13 +14,12 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
-open CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow
-open CenteredMomentSectorLocalization CenteredMomentActiveSource
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSourceRow
+open CenteredMomentFirstSectors CenteredMomentCanonicalFirst CenteredMomentSecondLocalization
+open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained
+open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization CenteredMomentActiveSource
 open CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows
 open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
 open CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
@@ -50,7 +49,7 @@ theorem active_kernel_windows (η : Character)
           ((dyadicWeight (n 0) (secondEffectiveScale C D A K)*dyadicWeight (n 1) (normValue h)*
             dyadicWeight (n 2) (Ideal.absNorm (I:Ideal O):ℝ)*
             dyadicWeight (n 3) (Ideal.absNorm (J:Ideal O):ℝ):ℝ):ℂ) := by
-  refine (active_physical_kernel_partition η S β H hH C D hC hD I J A h hA W K R hK).trans ?_
+  refine (active_physical_kernel_partition S β H hH C D hC hD I J A h hA W K R hK).trans ?_
   apply Finset.sum_congr rfl
   intro n hn
   exact (physical_kernel_dyadic C D I J hC hD
@@ -69,7 +68,7 @@ theorem sector_finite_blocks (η : Character) (t : ℝ)
         physicalBlock η t (activeSource S β) β C D hC hD U R (retainedRows R A) W K
           (fun i=>(n i:ℤ)) := by
   dsimp only
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
+  have hA  :=
     mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
       (nonunitFrequencyGenerator_ne_zero C D hC U)
   unfold physicalBlock

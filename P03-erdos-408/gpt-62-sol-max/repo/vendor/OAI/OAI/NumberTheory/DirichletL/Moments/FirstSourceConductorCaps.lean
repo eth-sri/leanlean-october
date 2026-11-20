@@ -9,16 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSourceConductorCaps
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
-open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentAmplificationRadicalFamily CenteredMomentChildRows
-open CenteredMomentSecondHeightFamily
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open CompletedGauss RayFourExpansion CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentAmplificationRadicalFamily
+open CenteredMomentChildRows CenteredMomentSecondHeightFamily
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma divisor_norm_le (I C : Ideal O) (hC : C≠0) (h : I∣C) :
@@ -57,7 +55,7 @@ lemma rayCost_nonneg : 0≤rayCost :=
 theorem radical_once_cap (ρ υ : Character) (χ : RayCharacter) (p : O) (hp : p≠0) (k : ℕ)
     (hυ : υ.modulus.absNorm≤radicalBound (childCharacter ρ χ) fixedBadMask p k) :
     (υ.modulus.absNorm:ℝ)≤rayCost*(ρ.modulus.absNorm:ℝ)*(Ideal.span {p}).absNorm := by
-  have hP : (1:ℕ)≤(Ideal.span {p}).absNorm := Nat.one_le_iff_ne_zero.mpr
+  have hP  := Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp))
   have ht : (if k=0 then 1 else (Ideal.span {p}).absNorm)≤(Ideal.span {p}).absNorm := by
     split_ifs <;> omega
@@ -105,7 +103,7 @@ theorem eventually_caps (ε : ℝ) (hε : 0<ε) :
   filter_upwards [he,eventually_gt_atTop (1:ℝ)] with Z hconst hZ
   refine ⟨hZ,?_⟩
   intro η C D hC E ξ₁ ξ₂ F q B hη hCcap
-  have hz : 0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   have hm:=fixed_pair_caps η C D hC E ξ₁ ξ₂ F
   have hb : fixedPresentationCost*(η.modulus.absNorm:ℝ)*(C.absNorm:ℝ)^2≤Z^(q+2*B+ε) := by
     calc

@@ -53,8 +53,8 @@ theorem fullFourier_eq_congruence (a s : O) (ha : a≠0) (hs : s≠0)
     (F : (O ⧸ Ideal.span {a}) → ℂ) (χ : (O ⧸ Ideal.span {s}) → ℂ) (H : O) :
     fullFourier a s ha hs F χ H =
       (Ideal.absNorm (Ideal.span {s}):ℂ) * congruenceCoefficient a s ha F χ H := by
-  let : Finite (O ⧸ Ideal.span {a*s}) := finite_quotient_span (mul_ne_zero ha hs)
-  let : Finite (O ⧸ Ideal.span {s}) := finite_quotient_span hs
+  let  := finite_quotient_span (mul_ne_zero ha hs)
+  let  := finite_quotient_span hs
   let : Fintype (O ⧸ Ideal.span {a*s}) := Fintype.ofFinite _
   let : Fintype (O ⧸ Ideal.span {s}) := Fintype.ofFinite _
   unfold fullFourier rawFourier

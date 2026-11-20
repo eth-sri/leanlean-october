@@ -1,13 +1,14 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondReducedEnergy
+public import OAI.NumberTheory.DirichletL.Moments.SecondSixthSource
+public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondMaskedWindow
@@ -29,7 +30,7 @@ theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : 
       (movingCoefficient A (sectorElement C hC.1 S)
         (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ I=
       (if L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I := by
-  have hi : IsCoprime C (I:Ideal O) := (Finset.mem_filter.mp I.property).2
+  have hi  := (Finset.mem_filter.mp I.property).2
   rw [divisorCoefficient,movingCoefficient,sectorElement_span,
     hτ I (sectorPool_supported C hC.1 S I) hi t]
   dsimp only [sectorElement]

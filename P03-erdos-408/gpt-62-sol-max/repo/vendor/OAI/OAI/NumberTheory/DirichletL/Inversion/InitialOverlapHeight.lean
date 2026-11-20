@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped BigOperators Classical SchwartzMap
 open MeasureTheory FourierBridge
 namespace SevenEighths.InverseInitialOverlapHeight
 open InverseInitialOverlapFourier InverseMoment JointLogSeparation
@@ -25,9 +25,9 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
   intro θ κ inst xj φ E hE hφ hbound
   have hint:=AnalyticBridge.schwartz_fourier_one_plus_integrable (frequencyTwist g θ) J
   let h : ℝ→ℝ := fun t=>(1+‖t‖)^J
-  have hp (t:ℝ) : 0<h t := by dsimp [h];positivity
-  let b : ℝ→ℂ := fun t=>density (frequencyTwist g θ) xj t*(h t:ℂ)
-  let f : κ→ℝ→ℂ := fun k t=>φ k t/(h t:ℂ)
+  have hp (t:ℝ) : 0<h t := by positivity
+  let b  := fun t=>density (frequencyTwist g θ) xj t*(h t:ℂ)
+  let f  := fun k t=>φ k t/(h t:ℂ)
   have he (k:κ)(t:ℝ) : b t*f k t=density (frequencyTwist g θ) xj t*φ k t := by
     dsimp [b,f]
     have hn : (h t:ℂ)≠0 := by exact_mod_cast (hp t).ne'

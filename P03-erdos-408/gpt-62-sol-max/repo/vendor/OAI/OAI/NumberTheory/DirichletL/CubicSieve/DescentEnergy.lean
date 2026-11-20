@@ -29,19 +29,18 @@ theorem descended_energy_small_power {n : Type*} [Fintype n]
     (∑ D ∈ columnDivisorPool cols, ∑ E ∈ idealDivisors D,
       ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) ≤
         (divisorConstant ε hε * N^ε)^2 * ∑ j, ‖a j‖^2 := by
-  have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
+  have hc0 (j : n)  := primaryGenerator_ne_zero_ideal _ (hc j).2
   let B := divisorConstant ε hε * N^ε
   have hB : 0 ≤ B := mul_nonneg (divisorConstant_pos ε hε).le (Real.rpow_nonneg hN0 _)
   have hcard (D : Ideal O) (hD : D ∈ columnDivisorPool cols) :
       ((idealDivisors D).card : ℝ) ≤ B := by
     have hd := columnDivisorPool_norm_bounds cols hc0 N hN D hD
-    have hd0 : D ≠ 0 := by
-      intro he
-      have hh := hd.1
-      norm_num [he] at hh
-    exact ((IdealDivisorBound.ideal_divisor_small_power ε hε).choose_spec.2 D hd0).trans
+    refine ((IdealDivisorBound.ideal_divisor_small_power ε hε).choose_spec.2 D ?_).trans
       (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (Nat.cast_nonneg _) hd.2 hε.le)
         (divisorConstant_pos ε hε).le)
+    intro he
+    have hh := hd.1
+    norm_num [he] at hh
   calc
     _ ≤ ∑ D ∈ columnDivisorPool cols, B * ∑ j, ‖if D ∣ cols j then a j else 0‖^2 := by
       apply Finset.sum_le_sum
@@ -59,7 +58,7 @@ theorem descended_energy_small_power {n : Type*} [Fintype n]
       rw [Finset.mul_sum]
     _ ≤ B * (B * ∑ j, ‖a j‖^2) := mul_le_mul_of_nonneg_left
       (divisor_mask_energy_small_power ε hε _ cols hc0 N hN a) hB
-    _ = _ := by dsimp [B]; ring
+    _ = _ := by ring
 
 end
 end SevenEighths.CubicSieve

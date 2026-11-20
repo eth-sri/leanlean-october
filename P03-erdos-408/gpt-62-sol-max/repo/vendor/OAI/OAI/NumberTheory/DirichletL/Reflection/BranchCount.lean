@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.NormalizedPhysical
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Reflection.UpperThreshold
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
 @[expose] public section
@@ -30,7 +31,7 @@ theorem branch_count_small_power (ε : ℝ) (hε : 0<ε) :
   intro ι _ F hF
   have hI : (∏ i,F.ideal i)≠0 := Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (F.ideal i))
   have hnorm : (0:ℝ)<Ideal.absNorm (∏ i,F.ideal i) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hh := hb (∏ i,F.ideal i) hI
   rw [primeFamily_support_card F hF] at hh
   simp only [Fintype.card_fun,Fintype.card_fin,Nat.cast_pow,Nat.cast_ofNat]
@@ -57,9 +58,8 @@ theorem surviving_branch_count_small_power (ε : ℝ) (hε : 0<ε) :
   obtain ⟨C,hC,hb⟩ := branch_count_small_power ε hε
   refine ⟨C,hC,?_⟩
   intro ι _ F hF jF A nset bset
-  have hcard : ((survivingFrozenBranches F jF A nset bset).card:ℝ)≤Fintype.card (ι→Fin 3) := by
-    exact_mod_cast Finset.card_le_univ _
-  exact (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2).trans (hb F hF)
+  refine (pow_le_pow_left₀ (Nat.cast_nonneg _) ?_ 2).trans (hb F hF)
+  exact_mod_cast Finset.card_le_univ _
 
 end
 end SevenEighths.InverseReflectedPhase

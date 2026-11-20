@@ -1,13 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassEnergy
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
 

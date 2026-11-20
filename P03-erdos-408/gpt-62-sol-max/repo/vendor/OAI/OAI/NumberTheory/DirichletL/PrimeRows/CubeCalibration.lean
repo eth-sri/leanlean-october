@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary

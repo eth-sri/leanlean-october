@@ -44,8 +44,8 @@ theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
           (fun z hz z' hz' h => ?_)
         · -- `u τ(z)/U ∈ [1, 16]`
           obtain ⟨h₁, h₂, -⟩ := hbox z hz
-          have h₁' : (1 : ℝ) ≤ u * tau r z / U := (one_le_div hU).2 h₁
-          have h₂' : u * tau r z / U ≤ 16 := (div_le_iff₀ hU).2 h₂
+          have h₁'  := (one_le_div hU).2 h₁
+          have h₂'  := (div_le_iff₀ hU).2 h₂
           refine mem_coe.2 (mem_Icc.2 ⟨Int.le_floor.2 (by exact_mod_cast h₁'), ?_⟩)
           have := Int.floor_le (u * tau r z / U)
           exact_mod_cast this.trans h₂'

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSupport
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerOpposite
 
@@ -16,7 +17,7 @@ open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→Eis)(hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 omit [DecidableEq ι] in
 theorem child_erase {J:ℕ}(u:Eisˣ)(x:Source (ι:=ι) J) :

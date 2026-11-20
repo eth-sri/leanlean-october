@@ -2,19 +2,20 @@ module
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstScale
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
-public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
+public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
+public import OAI.NumberTheory.DirichletL.Moments.DescentLedger
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstPhysicalLedger
 open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger
+open CenteredMomentSectorLocalization CenteredMomentDescentLedger
 open CanonicalQuadraticSieve CenteredMomentRankinRadical
 local notation "O" => ActualEisensteinCubic.O
 

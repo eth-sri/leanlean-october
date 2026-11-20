@@ -8,26 +8,16 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 noncomputable section
 
 namespace ShortDraftCusp
 
-variable {R : Type*} [CommRing R]
 
-def U (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,t;0,1]
-def L (t : R) : Matrix (Fin 2) (Fin 2) R := !![1,0;t,1]
-def E : Matrix (Fin 2) (Fin 2) R := !![0,-1;1,0]
 
 end ShortDraftCusp
 
 namespace ShortDraftConcretePhase
-open ShortDraftTrace
 
 end ShortDraftConcretePhase
 
@@ -45,7 +35,7 @@ theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   have hprod : g * conj g = (Fintype.card F : ℂ) := by
     have h := gaussSum_mul_gaussSum_eq_card hχ hψ
     rw [← star_gaussSum_eq] at h
-    simpa only [g, Complex.star_def] using h
+    assumption
   have hnorm : ‖g‖ ^ 2 = (Fintype.card F : ℝ) := by
     apply Complex.ofReal_injective
     calc
@@ -61,8 +51,8 @@ theorem norm_normalized_gaussSum (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     ‖((Real.sqrt (Fintype.card F) : ℝ) : ℂ)⁻¹ * gaussSum χ ψ‖ = 1 := by
   have hcard : (0 : ℝ) < Fintype.card F := by
-    exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
-  have hsqrt : Real.sqrt (Fintype.card F) ≠ 0 :=
+    positivity
+  have hsqrt  :=
     ne_of_gt (Real.sqrt_pos.2 hcard)
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (Real.sqrt_pos.2 hcard), norm_gaussSum_eq_sqrt_card χ ψ hχ hψ]
@@ -72,10 +62,7 @@ end ShortDraftGauss
 
 namespace EisensteinRayPhase
 
-abbrev SquareClass := ZMod 2 × ZMod 2
 
-def R (a b : SquareClass) : ℤ :=
-  (-1) ^ (a.1.val * b.2.val + a.2.val * b.1.val + a.2.val * b.2.val)
 
 end EisensteinRayPhase
 
@@ -88,16 +75,12 @@ theorem sextic_power_is_unit_mask (χ : MulChar R ℂ)
     χ (u ^ 6) = if IsUnit u then 1 else 0 := by
   classical
   rw [map_pow, ← MulChar.pow_apply' χ (by decide : 6 ≠ 0), hχ]
-  by_cases hu : IsUnit u
-  · simp [hu, MulChar.one_apply]
-  · simp [hu]
+  rfl
 
 end ShortDraftSextic
 
 namespace ShortDraftGaussJacobi
-open Finset
 
-variable {F : Type*} [Field F] [Fintype F]
 
 end ShortDraftGaussJacobi
 
@@ -115,13 +98,10 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
       (g := fun x : F => x ^ 2) (f := fun x : F => ψ (x ^ 2))]
     apply Finset.sum_congr rfl
     intro y _
-    have hterm : (∑ x ∈ Finset.univ with x ^ 2 = y, ψ (x ^ 2)) =
-        (#{x : F | x ^ 2 = y}.toFinset : ℂ) * ψ y := by
-      rw [Finset.sum_congr rfl (fun x hx => by
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx
-        rw [hx])]
-      simp
-    exact hterm
+    rw [Finset.sum_congr rfl (fun x hx => by
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx
+      rw [hx])]
+    simp
   have hcount (y : F) :
       (#{x : F | x ^ 2 = y}.toFinset : ℂ) =
         (quadraticChar F y : ℂ) + 1 := by
@@ -136,14 +116,12 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
 end ShortDraftQuadraticGauss
 
 namespace ShortDraftQuotientPhase
-variable {A B : Type*} [CommGroup A] [CommGroup B]
 
 end ShortDraftQuotientPhase
 
 namespace EisensteinEPrimaryPhase
 
 abbrev Coord := ZMod 4 × ZMod 4
-abbrev Bit := ZMod 2
 
 def mul (x y : Coord) : Coord :=
   (x.1 * y.1 - x.2 * y.2,
@@ -154,20 +132,9 @@ def odd (x : Coord) : Prop := x.1.val % 2 = 1 ∨ x.2.val % 2 = 1
 instance : DecidablePred odd := fun x =>
   inferInstanceAs (Decidable (x.1.val % 2 = 1 ∨ x.2.val % 2 = 1))
 
-def rep (e f : Bit) : Coord :=
-  if f = 0 then (if e = 0 then (1, 0) else (-1, 0))
-  else (if e = 0 then (1, 2) else (-1, -2))
 
-def norm (x : Coord) : ZMod 4 :=
-  x.1 * x.1 - x.1 * x.2 + x.2 * x.2
 
-def ePrimary (x : Coord) : Prop :=
-  let cube := mul (mul x x) x
-  cube.1 - 2 * cube.2 = 1
 
-instance : DecidablePred ePrimary := fun x =>
-  inferInstanceAs (Decidable ((mul (mul x x) x).1 -
-    2 * (mul (mul x x) x).2 = 1))
 
 theorem odd_mul (x y : Coord) (hx : odd x) (hy : odd y) : odd (mul x y) := by
   decide +revert
@@ -243,7 +210,7 @@ theorem unique_coordinates {a b c d : ℤ}
       smul_eq_mul, mul_one, mul_zero, zero_add] using h1
 
 theorem omega_sq : omega ^ 2 = -omega - 1 := by
-  simpa [omega] using IsCyclotomicExtension.Rat.Three.eta_sq hζ
+  exact IsCyclotomicExtension.Rat.Three.eta_sq hζ
 
 theorem eval_mul (a b c d : ℤ) :
     eval a b * eval c d = eval (a*c-b*d) (a*d+b*c-b*d) := by
@@ -260,8 +227,8 @@ theorem eval_mul (a b c d : ℤ) :
 theorem eval_congr_mod_four {a b c d : ℤ}
     (ha : (a : ZMod 4) = c) (hb : (b : ZMod 4) = d) :
     ∃ z : O, eval a b - eval c d = 4 * z := by
-  have ha4 : (4 : ℤ) ∣ a-c := (ZMod.intCast_eq_intCast_iff_dvd_sub c a 4).mp ha.symm
-  have hb4 : (4 : ℤ) ∣ b-d := (ZMod.intCast_eq_intCast_iff_dvd_sub d b 4).mp hb.symm
+  have ha4  := (ZMod.intCast_eq_intCast_iff_dvd_sub c a 4).mp ha.symm
+  have hb4  := (ZMod.intCast_eq_intCast_iff_dvd_sub d b 4).mp hb.symm
   obtain ⟨u, hu⟩ := ha4
   obtain ⟨v, hv⟩ := hb4
   refine ⟨(u : O) + (v : O) * omega, ?_⟩

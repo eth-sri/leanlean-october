@@ -1,13 +1,14 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
+public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
+public import OAI.NumberTheory.DirichletL.Hecke.Dyadic
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily UniqueFactorizationMonoid
 

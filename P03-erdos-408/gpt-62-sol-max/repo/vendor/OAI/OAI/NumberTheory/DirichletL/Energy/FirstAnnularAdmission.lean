@@ -8,35 +8,33 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalLedger
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 open Filter
 
 universe u
 namespace SevenEighths.CenteredMomentEnergyFirstAnnularAdmission
-open HeckeFamily ActualEisensteinCubic ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
-open CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFirstPhysicalLedger CenteredMomentFirstExtractedLedger
+open HeckeFamily ActualEisensteinCubic ConcretePrimeRowBridge CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstReferenceSource
+open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstNonexceptionalWeightSum
+open CenteredMomentFirstNonexceptionalLocalWeightSum CenteredMomentFirstPhysicalDyadicCount
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
+open CenteredMomentExceptionalAmplitudePair CenteredMomentFirstPhysicalLedger
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 omit [DecidableEq ι] in
 lemma source_dyad_retained (s:Input ι)(R seed:Ideal O)(K Z ξ:ℝ)
     (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))
     (n:SourceBlocks s R seed K Z ξ p E):
     Retained (localRadius s R seed K Z ξ p E) (n 1):=by
-  have hn: (n 1:ℤ)∈retainedIndices (localRadius s R seed K Z ξ p E):=(n 1).property
+  have hn:=(n 1).property
   exact ((mem_retainedIndices _ _).mp hn).1
 
 omit [DecidableEq ι] in
 lemma source_dyad_gt_one (s:Input ι)(R seed:Ideal O)(K Z ξ:ℝ)
     (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))
     (n:SourceBlocks s R seed K Z ξ p E):1<dyadicScale (n 1):=by
-  have hn: (n 1:ℤ)∈retainedIndices (localRadius s R seed K Z ξ p E):=(n 1).property
+  have hn:=(n 1).property
   obtain ⟨q,hq,hweight⟩:=((mem_retainedIndices _ _).mp hn).2
   exact hq.trans_lt ((dyadicWeight_support (n 1)) hweight).2
 
@@ -104,7 +102,7 @@ theorem fixed_endpoint_radius (N:ℕ)(upper b₁ b₂ A Z:ℝ)
     (hhi:∀i,|s.hi i|≤upper)(hs₁:|s.b₁|≤b₁)(hs₂:|s.b₂|≤b₂)
     (hV:volume s.toData≤Z^A):sourceRadius s≤Z^(A+1):=by
   apply input_radius_cap (fun _:ι=>upper) b₁ b₂ A Z s hhi hs₁ hs₂ (by linarith) _ hV
-  have hpow:upper^(Fintype.card ι)≤upper^N:=pow_le_pow_right₀ hu hN
+  have hpow:=pow_le_pow_right₀ hu hN
   simpa only [Finset.prod_const,Finset.card_univ] using
     (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hpow hb₁) hb₂).trans hfixed
 

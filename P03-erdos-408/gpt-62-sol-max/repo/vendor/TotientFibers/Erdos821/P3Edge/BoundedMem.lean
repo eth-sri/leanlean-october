@@ -6,7 +6,6 @@ public import Mathlib.Basic.Finite.Prod
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -31,13 +30,12 @@ lemma finite_multiset_bounded (α : Type*) [Fintype α] [DecidableEq α] (N : �
     have hcount : ∀ a : α, z1.count a = z2.count a := by
       intro a
       have h : f ⟨z1, h1⟩ a = f ⟨z2, h2⟩ a := by rw [heq]
-      simp only [f] at h
       exact congrArg Fin.val h
     -- Multisets determined by counts
     have heqz : z1 = z2 := by
       ext a
       exact hcount a
-    simp [heqz]
+    simp_all
   exact Finite.of_injective f hfinj
 
 end Erdos821.P3Edge

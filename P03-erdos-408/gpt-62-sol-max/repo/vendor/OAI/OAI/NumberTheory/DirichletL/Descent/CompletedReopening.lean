@@ -21,8 +21,8 @@ def outsideCanonicalMarkedRow {σ : Type*} [DecidableEq σ]
     (W : ℝ→ℂ) (X : ℝ) : ℂ :=
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  letI :=
+    poolPrimary_maximal F hF
   finiteCanonicalMarkedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m f z slots lists a W X
 

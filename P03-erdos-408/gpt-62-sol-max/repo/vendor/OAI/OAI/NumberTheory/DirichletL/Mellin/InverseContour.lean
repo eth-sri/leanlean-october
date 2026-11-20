@@ -1,5 +1,8 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.MainTermDifference
 
 @[expose] public section
@@ -9,72 +12,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicReflectionKernel
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
 open MeasureTheory Filter Set
 
 def inverseMellinIntegrand (V : ℝ → ℂ) (j : ℕ) (y : ℝ) (s : ℂ) : ℂ :=
@@ -257,7 +206,6 @@ theorem paperKernel_euler_power_decay
 end CubicReflectionKernel
 
 namespace DescentFiberCost
-open scoped BigOperators Classical
 open ConcretePrimeRowBridge
 
 abbrev O := ActualEisensteinCubic.O
@@ -269,7 +217,7 @@ theorem finite_ideal_count_real (s : Finset (Ideal O)) (H : ℝ) (hH : 1 ≤ H)
     intro I hI
     apply mem_idealsUpTo.mpr
     refine ⟨?_, Nat.le_floor (hN I hI)⟩
-    exact Nat.one_le_iff_ne_zero.mpr (fun h => hpos I hI (Ideal.absNorm_eq_zero_iff.mp h))
+    exact Ideal.one_le_absNorm_of_ne_bot (hpos I hI)
   have hc := (Finset.card_le_card hs).trans (CompactScaleBridge.idealsUpTo_card_le ⌊H⌋₊)
   have hfloor : (⌊H⌋₊ : ℝ) ≤ H := Nat.floor_le (by linarith)
   have hr : (s.card : ℝ) ≤ 64 * ((⌊H⌋₊ : ℝ) + 1) := by exact_mod_cast hc
@@ -327,7 +275,7 @@ end DescentFiberCost
 
 namespace EisensteinSchwartzPoisson
 open MeasureTheory Set
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 theorem fourier_real_line_integrable (f : 𝓢(ℂ, ℂ)) :
     Integrable (fun x : ℝ => 𝓕 (f : ℂ → ℂ) (x : ℂ)) := by
@@ -425,8 +373,6 @@ theorem paperRadialFourier_halfline_integral (W : 𝓢(ℝ, ℂ)) :
 
 end EisensteinSchwartzPoisson
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Set
 namespace CubicReflectionKernel
 
 def logRadius (a b : ℝ) : ℝ := |Real.log a| + |Real.log b| + 1
@@ -517,8 +463,6 @@ theorem logPullbackCLM_eq_actual (a b : ℝ) (ha : 0 < a) (W : SchwartzMap ℝ �
 
 end CubicReflectionKernel
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Set
 namespace CubicReflectionKernel
 
 theorem compact_family_deriv_sup_bound (F : ℝ → ℝ → ℂ)
@@ -526,7 +470,7 @@ theorem compact_family_deriv_sup_bound (F : ℝ → ℝ → ℂ)
     (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set ℝ) (hJ : IsCompact J)
     (j : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ J, ∀ u : ℝ, ‖iteratedFDeriv ℝ j (F σ) u‖ ≤ C := by
-  have hc := (section_iteratedDeriv_smooth F hF j).continuous.norm
+  have hc := (SevenEighths.CompactProfileFamily.section_iteratedDeriv_smooth F hF j).continuous.norm
   obtain ⟨M, hM⟩ := (hJ.prod hK).bddAbove_image hc.continuousOn
   refine ⟨|M| + 1, by positivity, ?_⟩
   intro σ hσ u
@@ -535,7 +479,7 @@ theorem compact_family_deriv_sup_bound (F : ℝ → ℝ → ℂ)
   · exact (hM (Set.mem_image_of_mem _ (show (σ, u) ∈ J ×ˢ K from ⟨hσ, hu⟩))).trans
       (by linarith [le_abs_self M])
   · have hs : Function.support (iteratedDeriv j (F σ)) ⊆ K :=
-      (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset (F σ) j).trans
+      (subset_tsupport _).trans ((SevenEighths.CompactProfileFamily.tsupport_iteratedDeriv_subset (F σ) j).trans
         (closure_minimal (hsupp σ) hK.isClosed))
     have hz : iteratedDeriv j (F σ) u = 0 := by by_contra hn; exact hu (hs hn)
     simp only [hz, norm_zero]
@@ -549,17 +493,11 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
       (∫ u : ℝ, ‖iteratedDeriv j (fun u => F σ u * W u) u‖) ≤
         C * (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
   choose c hc hcb using fun i : Fin (j + 1) => compact_family_deriv_sup_bound F hF K hK hsupp J hJ i.val
-  let D := (∑ i : Fin (j + 1), c i) + 1
-  have hD : 0 < D := by
-    have : 0 ≤ ∑ i : Fin (j + 1), c i := Finset.sum_nonneg (fun i _ => (hc i).le)
-    dsimp [D]
-    linarith
+  obtain ⟨D, hD, hcD⟩ := exists_real_majorant 0 c
   have hder (i : ℕ) (hi : i ≤ j) (σ : ℝ) (hσ : σ ∈ J) (u : ℝ) :
       ‖iteratedFDeriv ℝ i (F σ) u‖ ≤ D := by
     let k : Fin (j + 1) := ⟨i, by omega⟩
-    have hsum : c k ≤ ∑ l : Fin (j + 1), c l :=
-      Finset.single_le_sum (fun l _ => (hc l).le) (Finset.mem_univ k)
-    exact (hcb k σ hσ u).trans (by dsimp [D]; linarith)
+    exact (hcb k σ hσ u).trans (hcD k)
   let B : ℝ := ∑ i ∈ Finset.range (j + 1), (j.choose i : ℝ) * D
   have hB : 0 ≤ B := by dsimp [B]; positivity
   refine ⟨(B + 1) * (volume.real K + 1), by positivity, ?_⟩
@@ -587,7 +525,7 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
     intro u hu
     exact hsupp σ (mul_ne_zero_iff.mp hu).1
   have hs : Function.support (iteratedDeriv j (fun u => F σ u * W u)) ⊆ K :=
-    (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset _ j).trans
+    (subset_tsupport _).trans ((SevenEighths.CompactProfileFamily.tsupport_iteratedDeriv_subset _ j).trans
       (closure_minimal hmul hK.isClosed))
   have hzero : ∀ u, u ∉ K → ‖iteratedDeriv j (fun u => F σ u * W u) u‖ = 0 := by
     intro u hu

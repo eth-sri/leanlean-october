@@ -20,12 +20,11 @@ lemma logarithmic_cost_eventually (C ε : ℝ) (hε : 0<ε) :
   have hbound : ∀ᶠ U : ℝ in atTop,
       C^2*((Real.logb 2 U)^2/U^(ε/2))^2≤1 := by
     have hh : Tendsto (fun U : ℝ => C^2*((Real.logb 2 U)^2/U^(ε/2))^2)
-        atTop (𝓝 0) := by simpa using ht'
+        atTop (𝓝 0) := by simp_all
     exact (tendsto_order.mp hh).2 1 (by norm_num) |>.mono (fun _ h => h.le)
   filter_upwards [hbound,eventually_gt_atTop (0 : ℝ)] with U hb hU
   have he : (U^(ε/2))^2=U^ε := by
     rw [← Real.rpow_natCast,← Real.rpow_mul hU.le]
-    congr 1
     norm_num
   rw [div_pow, he] at hb
   have hh := (div_le_iff₀ (Real.rpow_pos_of_pos hU ε)).mp
@@ -104,7 +103,7 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
   refine ⟨U₀,?_⟩
   intro Z d hZ hd hd' hT hlarge hU ι _ χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσ hσ' hfreq hheight M S hprod
-  have hσlo : 51/100≤σ := ha.trans hσ
+  have hσlo  := ha.trans hσ
   obtain ⟨hcost,hconst⟩ := hU₀ (Z^d) hlarge
   obtain ⟨hMu,hSu⟩ := hupper Z d hZ hd hd' hT χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσlo hσ' hfreq hheight

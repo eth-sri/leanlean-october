@@ -10,116 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-end
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
-
-section
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-open FirstPassCubeLabels (columnLog jLabel b0Label)
-open JointLogSeparation (
-  frequencyTwist frequencyTwist_apply outerWindow tripleCoefficient)
-
-end
-
-section
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-open FirstPassCubeLabels (columnLog jLabel b0Label)
-open JointLogSeparation (
-  frequencyTwist frequencyTwist_apply outerWindow tripleCoefficient)
-
-end
-
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-open EisensteinSchwartzPoisson (paperRadialFourier)
-open FirstPassCubeLabels (columnLog jLabel b0Label)
-open JointLogSeparation (tripleCoefficient frequencyTwist frequencyTwist_apply)
-
-end
-
-open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 def HasSieveExponent (α : ℝ) : Prop :=
@@ -129,7 +30,7 @@ def HasSieveExponent (α : ℝ) : Prop :=
 theorem hasSieveExponent_two : HasSieveExponent 2 := by
   intro ε hε
   let C := QuadraticInitialBound.initialSieveConstant
-  have hC : 0 < C := QuadraticInitialBound.initialSieveConstant_pos
+  have hC  := QuadraticInitialBound.initialSieveConstant_pos
   refine ⟨4 * C, by positivity, ?_⟩
   intro M N hM hN
   have hc : (⌈N⌉₊ : ℝ) ≤ 2 * N := by
@@ -137,7 +38,7 @@ theorem hasSieveExponent_two : HasSieveExponent 2 := by
     linarith
   have hc2 : (⌈N⌉₊ : ℝ) ^ 2 ≤ 4 * N ^ 2 := by nlinarith [Nat.cast_nonneg (α := ℝ) ⌈N⌉₊]
   have hmn : 1 ≤ M * N := by nlinarith [mul_le_mul hM hN (by norm_num : (0 : ℝ) ≤ 1) (show 0 ≤ M by linarith)]
-  have he : 1 ≤ (M * N) ^ ε := Real.one_le_rpow hmn hε.le
+  have he  := Real.one_le_rpow hmn hε.le
   rw [Real.rpow_two]
   calc
     _ ≤ C * (M + (⌈N⌉₊ : ℝ) ^ 2) := sieveNorm_initial M N hM hN
@@ -164,8 +65,6 @@ theorem sqrt_divisor_sieve_pair_le (M N D₁ D₂ Q C : ℝ)
     (h₂ : sieveNorm M (N / D₂) ≤ C * (N / D₂ + Q)) :
     Real.sqrt (D₁ * D₂ * sieveNorm M (N / D₁) * sieveNorm M (N / D₂)) ≤
       C * (N + Q * (D₁ * D₂)) := by
-  have hD₁0 : 0 < D₁ := by linarith
-  have hD₂0 : 0 < D₂ := by linarith
   have hD₁le : D₁ ≤ D₁ * D₂ := by nlinarith
   have hD₂le : D₂ ≤ D₁ * D₂ := by nlinarith
   apply Real.sqrt_le_iff.mpr

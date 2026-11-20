@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWholeKernel
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentLogDyadic
 open CenteredMomentSectorLocalization CenteredMomentFirstWholeKernel

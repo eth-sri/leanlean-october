@@ -82,13 +82,12 @@ theorem sectorFrequency_partition_nonunit (η : Character) (t : ℝ)
       ∑' h : O,if canonicalPartition C D U (nonunitFrequencyGenerator C D U*h) then
         sectorFrequency η t S β C D hC hD F
           ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h) else 0 := by
-  let f : O→ℂ := fun w=>if canonicalPartition C D U w then
+  let f  := fun w=>if canonicalPartition C D U w then
     sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w) else 0
   have hs : Function.support f⊆Set.range (fun h=>nonunitFrequencyGenerator C D U*h) := by
     intro w hw
     have hp : canonicalPartition C D U w := by
-      by_contra hn
-      exact hw (by simp only [f,ite_eq_right hn])
+      aesop
     obtain ⟨h,hh⟩ := nonunitFrequencyGenerator_dvd C D hC U w hp
     exact ⟨h,hh.symm⟩
   have he := (mul_right_injective₀ (nonunitFrequencyGenerator_ne_zero C D hC U)).tsum_eq hs

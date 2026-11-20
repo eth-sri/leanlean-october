@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.S34.BilinearDecayArithmetic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
@@ -31,16 +32,12 @@ theorem rpow_cost_absorption (L C a b : ℝ) (hL : 1 ≤ L) (hC : C ≤ L) (hab 
   have hp : 0 < L := by linarith
   calc
     _ ≤ L * L ^ b := mul_le_mul_of_nonneg_right hC (Real.rpow_nonneg hp.le _)
-    _ = L ^ (b + 1) := by
-      calc
-        _ = L ^ b * L ^ (1 : ℝ) := by rw [Real.rpow_one]; ring
-        _ = _ := (Real.rpow_add hp _ _).symm
+    _ = L ^ (b + 1) := by rpow_ring hp
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL hab
 
 theorem floor_rpow_bounds (L q : ℝ) (hL : 0 < L) (hpow : 2 ≤ L ^ q) :
     0 < (⌊L ^ q⌋₊ : ℝ) ∧ L ^ q / 2 ≤ (⌊L ^ q⌋₊ : ℝ) ∧ (⌊L ^ q⌋₊ : ℝ) ≤ L ^ q := by
   have hfloor := Nat.lt_floor_add_one (L ^ q)
-  have hnonneg : (0 : ℝ) ≤ (⌊L ^ q⌋₊ : ℝ) := Nat.cast_nonneg _
   have hlow : L ^ q / 2 ≤ (⌊L ^ q⌋₊ : ℝ) := by linarith
   refine ⟨?_, hlow, Nat.floor_le (Real.rpow_nonneg hL.le _)⟩
   linarith
@@ -57,11 +54,11 @@ theorem minor_power_precision (L K B κ d U V r : ℝ)
   have hL1 : 1 ≤ L := by linarith
   have hLp : 0 < L := by linarith
   have hq : 1 ≤ q := by dsimp [q, comparisonPowerQ]; linarith
-  have hp2 : 2 ≤ L ^ q := hL.trans (by simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hL1 hq)
+  have hp2  := hL.trans (by simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hL1 hq)
   have hpowp : 0 < L ^ q := Real.rpow_pos_of_pos hLp _
   obtain ⟨hQp, hQlo, hQhi⟩ := floor_rpow_bounds L q hLp hp2
-  have hUp : 0 < U := hpowp.trans_le hU
-  have hVp : 0 < V := hpowp.trans_le hV
+  have hUp  := hpowp.trans_le hU
+  have hVp  := hpowp.trans_le hV
   have hminor := bilinear_decay_minor_bound U V r ⌊L ^ q⌋₊ (L ^ q) (L ^ (d + 1))
     hUp hVp hr hQp hpowp hrQ hrS hlog
   have hVinv : 1 / V ≤ L ^ (-q) := by
@@ -96,14 +93,7 @@ theorem minor_power_precision (L K B κ d U V r : ℝ)
   calc
     _ ≤ 20 * K * L ^ κ * (3 * L ^ (-(B + κ + 11))) :=
       mul_le_mul_of_nonneg_left hroot (by positivity)
-    _ = 60 * K * L ^ (-B - 11) := by
-      have he : L ^ κ * L ^ (-(B + κ + 11)) = L ^ (-B - 11) := by
-        rw [← Real.rpow_add hLp]
-        congr 1
-        ring
-      calc
-        _ = 60 * K * (L ^ κ * L ^ (-(B + κ + 11))) := by ring
-        _ = _ := by rw [he]
+    _ = 60 * K * L ^ (-B - 11) := by rpow_ring hLp
     _ ≤ _ := rpow_cost_absorption L (60 * K) (-B - 2) (-B - 11) hL1 hKL (by linarith)
 
 end

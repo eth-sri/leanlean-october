@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -41,7 +41,7 @@ theorem integrand_differentiableAt (χ : Character) (W : ℝ → ℂ)
     · exact CubicReflectionKernel.compact_source_mellin_differentiable W a b ha hWs hW s
     · exact ((differentiableAt_id.add_const (HeckeDyadic.shift σ freq)).sub_const (1/2)).const_cpow
         (Or.inl (Complex.ofReal_ne_zero.mpr hD.ne'))
-  · exact hseries.comp s (differentiableAt_id.add_const (HeckeDyadic.shift σ freq))
+  fun_prop
 
 theorem integrand_norm (χ : Character) (W : ℝ → ℂ)
     (D σ freq : ℝ) (hD : 0<D) (s : ℂ) :

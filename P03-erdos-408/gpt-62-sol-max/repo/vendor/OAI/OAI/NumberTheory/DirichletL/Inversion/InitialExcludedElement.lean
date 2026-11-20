@@ -28,12 +28,10 @@ theorem elementCharacter_eq_elementHom (χ:Character)(hproper:χ.modulus≠⊤):
 
 theorem deleted_modulus_proper (χ:Character)(q:ℕ):
     (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)).modulus≠⊤ := by
-  have htwo:(Ideal.span {(2:O)}:Ideal O)∈reflectionExcludedPrimes q:=
-    reflectionExcludedPrimes_bad q (by simp [fixedBadPrimes])
   have hle:(χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)).modulus≤
       Ideal.span {(2:O)}:=by
     change χ.modulus*(∏P∈reflectionExcludedPrimes q,P)≤Ideal.span {(2:O)}
-    exact Ideal.mul_le_right.trans (Ideal.dvd_iff_le.mp (Finset.dvd_prod_of_mem (fun P=>P) htwo))
+    exact Ideal.mul_le_right.trans (Ideal.dvd_iff_le.mp (Finset.dvd_prod_of_mem (fun P=>P) (reflectionExcludedPrimes_bad q (by simp [fixedBadPrimes]))))
   intro he
   exact twoIdeal_maximal.ne_top (top_le_iff.mp (he ▸ hle))
 

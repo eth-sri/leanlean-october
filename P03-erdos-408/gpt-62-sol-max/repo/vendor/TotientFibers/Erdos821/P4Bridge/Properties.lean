@@ -12,16 +12,7 @@ open Blueprint.Graph P4Probe
 noncomputable section
 variable {P : PrimeGroups} {J ell m : ℕ}
 
-@[simp] lemma prefixSplit_apply (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (u : P.BigLabels J) :
-    prefixSplit ν block u = ((fun g i => u g i.val),
-      selectedAuxTuple ν block false u, selectedAuxTuple ν block true u) := rfl
 
-@[simp] lemma labelSplit_apply (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (u : P.BigLabels (J + ell)) :
-    labelSplit ν block u = ((fun g i => u g (ν.slot i.val),
-      selectedLabelTuple ν block false u, selectedLabelTuple ν block true u),
-      (splitBigLabels P J ell u).2) := rfl
 
 @[simp] lemma labelSplit_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
@@ -78,7 +69,7 @@ lemma prod_sharedRows {R : Type*} [CommMonoid R] (ν : Pattern P J ell m)
   rw [hs, Finset.prod_filter]
   apply Finset.prod_congr rfl
   intro i _
-  by_cases hi : i ∈ ν.changed g.val <;> simp [hi]
+  simp
 
 lemma sharedPrefixProduct_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (a : P.BigLabels (J + ell)) :
@@ -114,12 +105,12 @@ lemma matchesBig_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   constructor
   · intro hab
     funext g i
-    have hi : i.val ∉ ν.changed g.val := by simpa [sharedRows] using i.property
-    exact hab g (ν.slot i.val) ⟨i.val, rfl, hi⟩
+    refine hab g (ν.slot i.val) ⟨i.val, rfl, ?_⟩
+    simpa [sharedRows] using i.property
   · intro hab g i hi
     obtain ⟨j, rfl, hj⟩ := hi
-    have hz : j ∈ sharedRows ν g := by simp [sharedRows, hj]
-    exact congrFun (congrFun hab g) ⟨j, hz⟩
+    refine congrFun (congrFun hab g) ⟨j, ?_⟩
+    simp [sharedRows, hj]
 
 @[simp] lemma matchesBig_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s s' : SharedRows ν) (a a' : SideTuple ν block false)

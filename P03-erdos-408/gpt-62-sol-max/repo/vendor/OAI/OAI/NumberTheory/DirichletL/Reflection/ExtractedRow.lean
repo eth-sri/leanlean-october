@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.ExtractedKernel
 
 @[expose] public section
@@ -61,7 +62,7 @@ lemma quotientSupport_norm_div (D : Ideal Eis) (hD : D ≠ 0) (S : Finset (Ideal
     (hS : ∀ I ∈ S, (Ideal.absNorm I:ℝ) ≤ Y) (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
     (Ideal.absNorm J:ℝ) ≤ Y/(Ideal.absNorm D:ℝ) := by
   have hpos : (0:ℝ) < Ideal.absNorm D := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD)
   have hh := hS (D*J) ((mem_quotientSupport D J hD S).mp hJ)
   rw [map_mul,Nat.cast_mul] at hh
   exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hh)

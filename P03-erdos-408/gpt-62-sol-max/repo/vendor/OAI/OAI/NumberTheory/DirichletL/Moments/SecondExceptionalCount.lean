@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalLedger
-public import OAI.NumberTheory.DirichletL.Moments.HeckeExceptionalEnergy
+public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
+public import OAI.NumberTheory.DirichletL.Moments.Forcing
 public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
 
 @[expose] public section
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondExceptionalCount
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge

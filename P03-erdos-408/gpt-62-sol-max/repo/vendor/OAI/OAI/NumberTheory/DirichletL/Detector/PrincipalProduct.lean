@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.NormalProduct
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss SmoothMobiusCorrection
 local notation "O" => ActualEisensteinCubic.O

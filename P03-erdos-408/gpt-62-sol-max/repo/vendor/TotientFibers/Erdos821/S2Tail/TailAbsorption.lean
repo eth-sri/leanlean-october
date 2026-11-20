@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.S2.TailAbsorptionTask
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
@@ -25,12 +26,11 @@ theorem tail_scale_bounds : ∀ᶠ x : ℝ in atTop,
   have hLnonneg : 0 ≤ L x := hLpos.le
   have hTnonneg : 0 ≤ T x := Real.log_nonneg hx
   have hlogNonneg : 0 ≤ Real.log (L x) := Real.log_nonneg hx
-  have hpowNonneg : 0 ≤ (L x) ^ ((1 : ℝ) / 10) := Real.rpow_nonneg hLnonneg _
   have hTle : T x ≤ (L x) ^ ((1 : ℝ) / 10) := by
     change ‖Real.log (L x)‖ ≤ 1 * ‖(L x) ^ ((1 : ℝ) / 10)‖ at hsmallx
     have habs : |Real.log (L x)| ≤ 1 * |(L x) ^ ((1 : ℝ) / 10)| := by
       simpa only [Real.norm_eq_abs] using hsmallx
-    rw [abs_of_nonneg hlogNonneg, abs_of_nonneg hpowNonneg] at habs
+    rw [abs_of_nonneg hlogNonneg, abs_of_nonneg (Real.rpow_nonneg hLnonneg _)] at habs
     simpa [T] using habs
   let w : ℝ := (L x) ^ ((52 : ℝ) / 100)
   have hwge : 1 ≤ w := by
@@ -50,9 +50,7 @@ theorem tail_scale_bounds : ∀ᶠ x : ℝ in atTop,
   have hwpow : w * (L x) ^ ((1 : ℝ) / 10) ≤ L x := by
     have hadd : (52 : ℝ) / 100 + (1 : ℝ) / 10 ≤ 1 := by norm_num
     calc
-      w * (L x) ^ ((1 : ℝ) / 10) = (L x) ^ ((52 : ℝ) / 100 + (1 : ℝ) / 10) := by
-        dsimp [w]
-        rw [← Real.rpow_add hLpos]
+      w * (L x) ^ ((1 : ℝ) / 10) = (L x) ^ ((52 : ℝ) / 100 + (1 : ℝ) / 10) := by rpow_ring hLpos
       _ ≤ (L x) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx hadd
       _ = L x := Real.rpow_one _
   have hwt : w * T x ≤ L x := by
@@ -64,12 +62,11 @@ theorem tail_scale_bounds : ∀ᶠ x : ℝ in atTop,
       (N x : ℝ) * T x ≤ (4 * w) * T x := mul_le_mul_of_nonneg_right hN hTnonneg
       _ = 4 * (w * T x) := by ring
       _ ≤ 4 * L x := mul_le_mul_of_nonneg_left hwt (by norm_num)
-  have hNplusT : ((N x + 1 : ℕ) : ℝ) * T x ≤ 5 * L x := by
-    calc
-      ((N x + 1 : ℕ) : ℝ) * T x ≤ (5 * w) * T x := mul_le_mul_of_nonneg_right hNplus hTnonneg
-      _ = 5 * (w * T x) := by ring
-      _ ≤ 5 * L x := mul_le_mul_of_nonneg_left hwt (by norm_num)
-  exact ⟨hx, hTnonneg, hTle, hNT, hNplusT⟩
+  refine ⟨hx, hTnonneg, hTle, hNT, ?_⟩
+  calc
+    ((N x + 1 : ℕ) : ℝ) * T x ≤ (5 * w) * T x := mul_le_mul_of_nonneg_right hNplus hTnonneg
+    _ = 5 * (w * T x) := by ring
+    _ ≤ 5 * L x := mul_le_mul_of_nonneg_left hwt (by norm_num)
 
 theorem TailAbsorptionTask_proof : Erdos821.S2Core.TailAbsorptionTask := by
   intro Ccap Cpath E hCcap hCpath hE
@@ -98,13 +95,12 @@ theorem TailAbsorptionTask_proof : Erdos821.S2Core.TailAbsorptionTask := by
     have hcut : l ^ (2 : ℕ) ≤ (memoryCutoff x : ℝ) := by
       dsimp [l, memoryCutoff]
       exact Nat.le_ceil _
-    have hCcapLog : 0 ≤ Ccap * Real.log 2 := mul_nonneg hCcap.le hlog2.le
     have hE : 0 ≤ E := hE.le
     have htermCap : Ccap * n * t * Real.log 2 ≤ 4 * Ccap * Real.log 2 * l := by
       calc
         Ccap * n * t * Real.log 2 = (Ccap * Real.log 2) * (n * t) := by ring
         _ ≤ (Ccap * Real.log 2) * (4 * l) :=
-          mul_le_mul_of_nonneg_left hnT hCcapLog
+          mul_le_mul_of_nonneg_left hnT (mul_nonneg hCcap.le hlog2.le)
         _ = 4 * Ccap * Real.log 2 * l := by ring
     have htermPath : Cpath * n1 * t ≤ 5 * Cpath * l := by
       calc
@@ -121,9 +117,6 @@ theorem TailAbsorptionTask_proof : Erdos821.S2Core.TailAbsorptionTask := by
       linarith [htermCap, htermPath, htermE]
     have hcapLog : (cap : ℝ) * Real.log 2 ≤ Ccap * n * t * Real.log 2 :=
       mul_le_mul_of_nonneg_right hcap' hlog2.le
-    have hcutLog : l ^ (2 : ℕ) * Real.log 2 ≤
-        (memoryCutoff x : ℝ) * Real.log 2 :=
-      mul_le_mul_of_nonneg_right hcut hlog2.le
     have hDle : D ≤ Real.log 2 * l := by
       calc
         D ≤ l * Real.log 2 := (div_le_iff₀ hlog2).mp (by simpa [l] using hsD)
@@ -141,7 +134,7 @@ theorem TailAbsorptionTask_proof : Erdos821.S2Core.TailAbsorptionTask := by
         _ = ((cap : ℝ) - (memoryCutoff x : ℝ)) * Real.log 2 +
               Cpath * n1 * t + E * n * t := by rw [hcast]
         _ ≤ Ccap * n * t * Real.log 2 + Cpath * n1 * t + E * n * t -
-              l ^ (2 : ℕ) * Real.log 2 := by nlinarith [hcapLog, hcutLog]
+              l ^ (2 : ℕ) * Real.log 2 := by nlinarith [hcapLog, (mul_le_mul_of_nonneg_right hcut hlog2.le)]
         _ ≤ D * l - l ^ (2 : ℕ) * Real.log 2 := by linarith [hsum]
         _ ≤ 0 := sub_nonpos.mpr hDmul
     have hBase : (2 : ℝ) ^ ((cap : ℤ) - (memoryCutoff x : ℤ)) =

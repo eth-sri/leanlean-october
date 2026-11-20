@@ -98,7 +98,7 @@ theorem loc_edge (x : BirthAddress P (J + F.ell) n B) (i : Fin n)
   · simp only [addrLoc, Sum.inr.injEq, Sum.inl.injEq] at hx
     subst hx
     refine ⟨?_, rfl⟩
-    simp only [MemoryHistory.addressPerformed, MemoryHistory.freshTargetSlots, edgePerf]
+    rfl
   · simp [addrLoc] at hx
 
 end Local
@@ -147,7 +147,7 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
     intro j hj
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_init H B _ hl
-    have hp : (j ∈ H.performedFin B) = True :=
+    have hp  :=
       propext ⟨fun _ => trivial, fun _ => (mem_performedFin A n B H j).mpr hloc.1⟩
     rw [hp]
     exact congrArg _ hloc.2
@@ -161,7 +161,7 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
     intro j hj
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_ghost H B _ i hl
-    have hp : (j ∈ H.performedFin B) = ghostPerf (addrIdx P (J + F.ell) n B j) (H.ghost i) :=
+    have hp  :=
       propext ((mem_performedFin A n B H j).trans hloc.1)
     rw [hp]
     exact congrArg _ hloc.2
@@ -175,7 +175,7 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
     intro j hj
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_edge H B _ i hl
-    have hp : (j ∈ H.performedFin B) = edgePerf A (addrIdx P (J + F.ell) n B j) (H.edge i) :=
+    have hp  :=
       propext ((mem_performedFin A n B H j).trans hloc.1)
     rw [hp]
     exact congrArg _ hloc.2
@@ -202,7 +202,7 @@ def affected (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) 
 theorem card_affected_le (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) :
     (affected (F := F) (J := J) n B U).card ≤ U.card := by
   let emb : Fin n ↪ Unit ⊕ (Fin n ⊕ Fin (n + 1)) :=
-    ⟨fun i => .inr (.inl i), fun a b h => by simpa using h⟩
+    ⟨fun i => .inr (.inl i), fun a b h => by simp_all⟩
   calc (affected (F := F) (J := J) n B U).card
       = ((affected (F := F) (J := J) n B U).map emb).card := (Finset.card_map _).symm
     _ ≤ (U.image (fun j => addrLoc (addrIdx P (J + F.ell) n B j))).card := by
@@ -238,10 +238,9 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
     exists_represents (P.allPrimes.sup id + 1) (Nat.succ_pos _) pi hpi
   let U := pi.biUnion id
   let Aff := affected (F := F) (J := J) n B U
-  let c : Fin n → ℝ := fun i => if i ∈ Aff then CA else CE
-  let LF : Ξ → MemoryHistory A n → ℂ := fun ξ =>
+  let c  := fun i => if i ∈ Aff then CA else CE
+  let LF  := fun ξ =>
     localFactor A n (initF n B (mm ξ) U) (ghostF n B (mm ξ) U) (edgeF A n B (mm ξ) U)
-  have hcardC : (Fintype.card Ξ : ℂ) ≠ 0 := by exact_mod_cast hcard.ne'
   -- Step 1: the frozen expression is an average of local-multiplier history sums.
   have hexpr : lowRankHistoryExpression A n B rho theta pi =
       (Fintype.card Ξ : ℂ)⁻¹ * ∑ ξ, ∑ d : BoundedHistoryData A n B,
@@ -303,9 +302,9 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
         rw [hci, edgeF_unaffected A n B (mm ξ) U i hi]
         exact hE i
   -- Step 3: the affected-edge count.
-  have hk : Aff.card ≤ 2 * birthRank pi :=
+  have hk  :=
     (card_affected_le n B U).trans (birth_support_le pi hpi)
-  have hratio : 1 ≤ CA / CE := (one_le_div hCE).mpr hCEA
+  have hratio  := (one_le_div hCE).mpr hCEA
   have hprod : ∏ i, c i = CE ^ n * (CA / CE) ^ Aff.card := by
     have hci : ∀ i, c i = CE * (if i ∈ Aff then CA / CE else 1) := by
       intro i

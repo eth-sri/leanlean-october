@@ -16,14 +16,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.P3Lowrank
 
 attribute [local instance] bmsFintype
@@ -90,9 +83,9 @@ theorem ghost_sigma_ext {M B : ℕ} (s : P.MemoryState M) (t1 t2 : BoundedMemory
   obtain ⟨A2, b2, l2⟩ := c2
   simp only at h1 h2 h3
   subst h1
-  have hb : b1 = b2 := funext fun g => Fin.ext (h2 g)
+  have hb  := funext fun g => Fin.ext (h2 g)
   subst hb
-  have hl : l1 = l2 := funext fun g => eq_of_heq (h3 g)
+  have hl  := funext fun g => eq_of_heq (h3 g)
   subst hl
   rfl
 
@@ -266,7 +259,7 @@ theorem gtRelabel_eq_self {M B : ℕ} {s : P.MemoryState M} (g : P.BigGroup) (h 
   by_cases hg : g' = g
   · subst hg
     rw [gtRelabel_apply_self]
-    simp only [dite_eq_left hh, Function.update_eq_self]
+    simp
   · rw [gtRelabel_apply_ne g h _ tr g' hg]
 
 theorem prod_update_scale {ι : Type*} [Fintype ι] [DecidableEq ι] (f : ι → ℝ) (x : ι)
@@ -303,9 +296,8 @@ theorem gtWeight_relabel (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1))
         (tiltedMu F P n g.val p) := by
     funext h'
     by_cases he : h' = ⟨h.val, hh⟩
-    · subst he
-      rw [Function.update_self, Function.update_self]
-    · rw [Function.update_of_ne he, Function.update_of_ne he]
+    · simp_all
+    simp_all
   have key := prod_update_scale (fun h' => tiltedMu F P n g.val ((tr g).2.2 h')) ⟨h.val, hh⟩
     (tiltedMu F P n g.val p) (tiltedMu F P n g.val ((tr g).2.2 ⟨h.val, hh⟩))
     (tiltedMu F P n g.val p) (mul_comm _ _)
@@ -329,7 +321,7 @@ theorem gtTerm_nonneg (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M
   unfold gtTerm
   split_ifs
   · exact mul_nonneg (abs_nonneg _) (pow_nonneg hv _)
-  · exact le_rfl
+  rfl
 
 theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B : ℕ} (v : ℝ)
     (hv : 0 ≤ v)
@@ -347,7 +339,7 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
     Finset.sum_nonneg fun tr _ => by
       split_ifs
       · exact hf0 tr
-      · exact le_rfl
+      rfl
   have hRHS0 := mul_nonneg (muHat_nonneg F P n hμ g vx) hR0
   by_cases hvx : vx ∈ P.primes g.val
   swap
@@ -357,11 +349,11 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
       rw [← he]
       unfold gtValAt
       rw [dite_eq_left hb]
-      exact ((tr g).2.2 _).property
+      simp
     rw [Finset.sum_eq_zero fun tr _ => ite_eq_right (hz tr)]
     exact hRHS0
   let α : P.Prime g.val := ⟨vx, hvx⟩
-  have hmu : muHat F P n g vx = tiltedMu F P n g.val α := muHat_of_mem F P n g α
+  have hmu  := muHat_of_mem F P n g α
   let T := Finset.univ.filter (fun tr : GT P s B => Q tr ∧
     (gtValid tr ∧ P.memorySize (gtTarget s tr) ≤ B) ∧
       (h.val < (tr g).2.1.val ∧ gtValAt tr (g, h) = vx))
@@ -399,7 +391,7 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
       obtain ⟨-, -, -, hb1, hv1⟩ := Finset.mem_filter.1 htr1
       obtain ⟨-, -, -, hb2, hv2⟩ := Finset.mem_filter.1 htr2
       have hp : p1 = p2 := by
-        have h3 : gtValAt (gtRelabel g h p1 tr1) (g, h) = gtValAt (gtRelabel g h p2 tr2) (g, h) :=
+        have h3  :=
           congrArg (fun tr => gtValAt tr (g, h)) he
         rw [gtValAt_relabel_self g h p1 tr1 hb1, gtValAt_relabel_self g h p2 tr2 hb2] at h3
         exact Subtype.ext h3
@@ -417,9 +409,6 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
       intro tr htr p _
       obtain ⟨-, -, hvb, hb, hv⟩ := Finset.mem_filter.1 htr
       have hα := hlab tr hb hv
-      have hvb' : gtValid (gtRelabel g h p tr) ∧
-          P.memorySize (gtTarget s (gtRelabel g h p tr)) ≤ B :=
-        ⟨(gtValid_relabel g h p tr).mpr hvb.1, by rw [memorySize_gtTarget_relabel]; exact hvb.2⟩
       have hW := gtWeight_relabel F n rho i g h p tr hb
       have hW' := congrArg abs hW
       rw [abs_mul, abs_mul, abs_of_pos (hμ _ _), abs_of_pos (hμ _ _), hα] at hW'
@@ -428,7 +417,7 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
         unfold PrimeGroups.memoryWeight
         rw [memorySize_gtTarget_relabel]
       unfold gtTerm
-      rw [ite_eq_left hvb, ite_eq_left hvb', hw]
+      rw [ite_eq_left hvb, ite_eq_left (⟨(gtValid_relabel g h p tr).mpr hvb.1, by rw [memorySize_gtTarget_relabel]; exact hvb.2⟩), hw]
       calc |gtWeight F n rho i tr| * P.memoryWeight v (gtTarget s tr) * tiltedMu F P n g.val p
           = (|gtWeight F n rho i tr| * tiltedMu F P n g.val p) *
               P.memoryWeight v (gtTarget s tr) := by ring

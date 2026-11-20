@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Detector.InitialMajorant
 public import OAI.NumberTheory.DirichletL.Detector.MellinScaling
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -22,9 +23,9 @@ lemma sourceMellinWeight_eq_scale (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x
 
 lemma sourceScale_continuous (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Continuous (fun q : (ℂ × ℂ) × ℂ =>sourceScale X Y Z q.1.1 q.1.2 q.2) := by
-  have hx : (X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hz : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hx  := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hy  := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hz  := Complex.ofReal_ne_zero.mpr hZ.ne'
   unfold sourceScale
   exact (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>(1/2:ℂ)-q.2)).const_cpow (Or.inl hx)).mul
     (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.1+q.2-1)).const_cpow (Or.inl hz)))) |>.mul
@@ -36,24 +37,22 @@ lemma sourceScale_norm (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (x w z : �
     Complex.norm_cpow_eq_rpow_re_of_pos hY,Complex.norm_cpow_eq_rpow_re_of_pos hZ]
   norm_num [Complex.sub_re,Complex.add_re]
 
-theorem sourceMellinWeight_initial_integrable (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+theorem sourceMellinWeight_initial_integrable (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (σ ξ υ : ℝ) (hξ : 0<ξ) :
-    Integrable (fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z
+    Integrable (fun p : HeightSpace=>sourceMellinWeight mw.left mw.right X Y Z
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((ξ:ℂ)+p.1.2*Complex.I)) heightMeasure := by
   let G := fun p : HeightSpace=>sourceScale X Y Z
     ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((ξ:ℂ)+p.1.2*Complex.I)
   have hc0 := (sourceScale_continuous X Y Z hX hY hZ).comp
     (show Continuous (fun p : HeightSpace=>(((σ:ℂ)+p.1.1*Complex.I,(υ:ℂ)+p.2*Complex.I),
       (ξ:ℂ)+p.1.2*Complex.I)) by fun_prop)
-  have hc : Continuous G := by simpa only [G,Function.comp_def] using hc0
+  have hc : Continuous G := by assumption
   have hb (p : HeightSpace) : ‖G p‖≤(X^(1/2-ξ)*Z^(σ+ξ-1)*Y^(υ-1))*jointHeight p.1.1 p.1.2 p.2^0 := by
     simp only [G,sourceScale_norm X Y Z hX hY hZ]
     simp
   simpa only [sourceMellinWeight_eq_scale,onLines,G] using
-    profile_arithmetic_integrable W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 σ ξ υ hξ G
+    profile_arithmetic_integrable mw σ ξ υ hξ G
       hc.aestronglyMeasurable _ 0 hb
 
 lemma sourceMellinWeight_initial_continuous (W0 W1 : SchwartzMap ℝ ℂ)

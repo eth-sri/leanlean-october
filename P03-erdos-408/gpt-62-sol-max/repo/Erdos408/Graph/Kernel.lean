@@ -52,7 +52,7 @@ lemma prod_block_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bo
   have hsmall : ∏ g : {g : G.Group // ¬ G.big g = true}, ∏ i ∈ blockSlots ν block s g.val,
       x g i = 1 := by
     refine Finset.prod_eq_one fun g _ => ?_
-    have : ν.changed g.val = ∅ := ν.small g.val (by simpa using g.property)
+    have  := ν.small g.val (by simpa using g.property)
     simp [blockSlots, this]
   rw [hsmall, mul_one]
   refine Finset.prod_congr rfl fun g _ => ?_
@@ -123,7 +123,7 @@ lemma selectedCellMass_nonneg (ν : Pattern G J 1 m) (block : G.BigGroup → Boo
   split_ifs
   · exact Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun i _ =>
       inv_nonneg.mpr (mul_nonneg (Finset.sum_nonneg fun p _ => by positivity) (by positivity))
-  · exact le_rfl
+  rfl
 
 /-- A cell of positive mass is the cell of some selected product. -/
 lemma mem_image_of_selectedCellMass_pos {ν : Pattern G J 1 m} {block : G.BigGroup → Bool}
@@ -282,7 +282,7 @@ lemma inv_mul_inv_le_sSup (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) {
   obtain ⟨u₁, -, hu₁⟩ := Finset.mem_image.mp (Finset.mem_filter.mp hj).1
   obtain ⟨u₂, -, hu₂⟩ := Finset.mem_image.mp (Finset.mem_filter.mp hj').1
   -- auxiliary labels from `u₁` in block `false` and from `u₂` in block `true`
-  let u : G.BigAux J := fun g => if block g = false then u₁ g else u₂ g
+  let u  := fun g => if block g = false then u₁ g else u₂ g
   have hp₁ : selectedProduct ν block false u = selectedProduct ν block false u₁ := by
     refine Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i _ => ?_
     by_cases hb : block g = false <;> simp [u, hb]

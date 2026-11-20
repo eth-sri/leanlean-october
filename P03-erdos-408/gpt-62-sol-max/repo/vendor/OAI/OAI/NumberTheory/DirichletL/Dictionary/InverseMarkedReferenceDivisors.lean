@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceCoefficients
+public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 
 @[expose] public section
@@ -30,14 +30,14 @@ theorem tuple_product_squarefree (P:ι→Ideal O)(hP:∀i,Prime (P i))
 
 omit [DecidableEq ι] in
 theorem tuple_product_support (P:ι→Ideal O)(hP:∀i,Prime (P i))
-    (_hinj:Function.Injective P) : primeSupport (∏i,P i)=Finset.univ.image P := by
+ : primeSupport (∏i,P i)=Finset.univ.image P := by
   have hn:(∏i,P i)≠0:=Finset.prod_ne_zero_iff.mpr (fun i hi=>(hP i).ne_zero)
   ext Q
   rw [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff hn,Finset.mem_image]
   constructor
   · rintro ⟨hQ,hd⟩
     obtain ⟨i,hi,hd⟩:=(hQ.dvd_finsetProd_iff P).mp hd
-    have he:Q=P i:=associated_iff_eq.mp (hQ.associated_of_dvd (hP i) hd)
+    have he:=associated_iff_eq.mp (hQ.associated_of_dvd (hP i) hd)
     exact ⟨i,hi,he.symm⟩
   · rintro ⟨i,hi,rfl⟩
     exact ⟨hP i,Finset.dvd_prod_of_mem P hi⟩
@@ -51,7 +51,7 @@ theorem tuple_divisors_eq_subsets (P:ι→Ideal O)(hP:∀i,Prime (P i))
     apply Finset.filter_eq_self.mpr
     intro J hJ
     exact hs.squarefree_of_dvd ((mem_idealDivisors hs.ne_zero).mp hJ)
-  rw [←hf,squarefree_divisors_eq_image _ hs.ne_zero,tuple_product_support P hP hinj,
+  rw [←hf,squarefree_divisors_eq_image _ hs.ne_zero,tuple_product_support P hP,
     Finset.powerset_image,Finset.image_image]
   congr 1
   funext J
@@ -60,7 +60,7 @@ theorem tuple_divisors_eq_subsets (P:ι→Ideal O)(hP:∀i,Prime (P i))
 omit [Fintype ι] in
 theorem tuple_subset_product_injective (P:ι→Ideal O)(hP:∀i,Prime (P i))
     (hinj:Function.Injective P) : Function.Injective (fun J:Finset ι=>∏i∈J,P i) := by
-  let:∀i,(P i).IsMaximal:=fun i=>(Ideal.isPrime_of_prime (hP i)).isMaximal (hP i).ne_zero
+  let:=fun i=>(Ideal.isPrime_of_prime (hP i)).isMaximal (hP i).ne_zero
   exact FirstCauchyArithmetic.family_product_injective P hinj
 
 theorem sum_tuple_divisors (P:ι→Ideal O)(hP:∀i,Prime (P i))

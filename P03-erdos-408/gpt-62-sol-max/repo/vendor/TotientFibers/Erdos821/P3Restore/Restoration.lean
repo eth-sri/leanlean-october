@@ -13,7 +13,6 @@ equality-rank sum of low-rank expressions; low ranks use `LowRankMemoryTask`, hi
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Restore
@@ -36,7 +35,6 @@ theorem birthAddress_card_le (P : PrimeGroups) (J ell n B : ℕ) (ℓ C0 : ℝ)
   rw [Erdos821.S2Core.birthAddress_card]
   push_cast
   have hT : 0 ≤ Real.log ℓ := Real.log_nonneg (by linarith)
-  have hb0 : (0 : ℝ) ≤ (Fintype.card P.BigGroup : ℝ) := Nat.cast_nonneg _
   have hℓsq : ℓ ≤ ℓ ^ 2 := by nlinarith
   have hJB : ((J : ℝ) + ell) + B ≤ 2 * ℓ ^ 2 := by linarith
   have heq : ((J : ℝ) + ell) * (Fintype.card P.BigGroup : ℝ) * ((n : ℝ) + 1) +
@@ -45,7 +43,7 @@ theorem birthAddress_card_le (P : PrimeGroups) (J ell n B : ℕ) (ℓ C0 : ℝ)
   rw [heq]
   calc ((n : ℝ) + 1) * (Fintype.card P.BigGroup : ℝ) * (((J : ℝ) + ell) + B)
       ≤ (3 * ℓ) * (C0 * Real.log ℓ) * (2 * ℓ ^ 2) := by
-        apply mul_le_mul (mul_le_mul hn hb hb0 (by linarith)) hJB (by positivity)
+        apply mul_le_mul (mul_le_mul hn hb (Nat.cast_nonneg _) (by linarith)) hJB (by positivity)
           (mul_nonneg (by linarith) (mul_nonneg hC0.le hT))
     _ = (6 * C0 * Real.log ℓ) * ℓ ^ 3 := by ring
     _ ≤ ℓ * ℓ ^ 3 := mul_le_mul_of_nonneg_right h6 (by positivity)
@@ -55,8 +53,7 @@ end Erdos821.P3Restore
 
 namespace Erdos821.S2Core
 
-open Erdos821.Blueprint.Graph
-open Erdos821.P3Restore
+open Erdos821.Blueprint.Graph Erdos821.P3Restore
 
 theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
     RestoredMemoryNormTask F r := by
@@ -113,7 +110,6 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   have q3 : 6 * F.C₀ * Real.log (L x) ≤ L x := by
     have h : 6 * F.C₀ * Real.log (L x) ≤ (L x) ^ (1 : ℝ) := q3
     rwa [Real.rpow_one] at h
-  have q4 : (K + 1) * C'' * Real.log (L x) ≤ (L x) ^ F.c := q4
   have q5 : 32 * Real.log (L x) ≤ (L x) ^ F.c := q5
   have q6 : 4 * Real.log C ≤ (L x) ^ F.c := q6
   have q7 : 2 * Real.log 2 ≤ (L x) ^ F.c := q7
@@ -122,7 +118,7 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   set CG := (Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card with hCGdef
   have hℓ0 : 0 < L x := by linarith
   have hℓ1 : 1 ≤ L x := by linarith
-  have hT0 : 0 ≤ Real.log (L x) := Real.log_nonneg hℓ1
+  have hT0 := Real.log_nonneg hℓ1
   -- the number of potential birth addresses
   have hcard : (Fintype.card P.BigGroup : ℝ) = (P.bigGroups.card : ℝ) := by
     congr 1
@@ -140,8 +136,7 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
     linarith
   have hBc : (memoryCutoff x : ℝ) ≤ (L x) ^ 2 + 1 :=
     (Nat.ceil_lt_add_one (sq_nonneg (L x))).le
-  have ha : (Fintype.card (BirthAddress P (J + F.ell) (N x) (memoryCutoff x)) : ℝ) ≤
-      (L x) ^ (4 : ℕ) :=
+  have ha :=
     birthAddress_card_le P J F.ell (N x) (memoryCutoff x) (L x) F.C₀ q1 q2 F.C₀_pos
       hbig hn hBc q3
   -- the rank cutoff
@@ -150,14 +145,13 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   obtain ⟨hr0, hr0'⟩ := r0_bounds (L x) F.c K C'' Cv (N x) hℓ1 hK0 hC''0 q4 hA4
   have h5 : 8 * Real.log (L x) + Real.log C ≤ (L x) ^ F.c / 2 := by linarith only [q5, q6]
   have h7 : Real.log 4 + Ch * Real.log (L x) ≤ 2 * (N x : ℝ) * Real.log (L x) := by
-    have hn1 : Ch + 1 ≤ (N x : ℝ) := le_trans (le_max_right _ _) q8
     have hl4 : Real.log 4 ≤ Real.log (L x) := Real.log_le_log (by norm_num) q1
-    have h1 := mul_le_mul_of_nonneg_right hn1 hT0
+    have h1 := mul_le_mul_of_nonneg_right (le_trans (le_max_right _ _) q8) hT0
     have h2 := mul_nonneg hCh0 hT0
     have h3 : (Ch + 1) * Real.log (L x) = Ch * Real.log (L x) + Real.log (L x) := by ring
     linarith only [h1, h2, h3, hl4, hT0]
   -- local norm inputs for the low-rank task
-  have hmass : ∀ s : P.MemoryState (J + F.ell), 0 ≤ P.memoryMass F J (N x) s :=
+  have hmass :=
     memoryMass_nonneg F J (N x) (fun g => (hV g).1) hb
   have hw : ∀ s : P.MemoryState (J + F.ell), 0 < P.memoryWeight r.v s := by
     intro s
@@ -166,8 +160,6 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
   have hCG0 : 0 ≤ CG :=
     pow_nonneg (Real.exp_pos _).le _
   have hCEpos : 0 < (L x) ^ (-G) := Real.rpow_pos_of_pos hℓ0 _
-  have hCECA : (L x) ^ (-G) ≤ (L x) ^ Ca' :=
-    Real.rpow_le_rpow_of_exponent_le hℓ1 (by linarith)
   have hedge : ∀ (i : Fin (N x))
       (phi : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℂ),
       (∀ s t c, ‖phi s t c‖ ≤ 1) →
@@ -186,7 +178,7 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
     have h2 := normBound_project _ _ _ (Real.rpow_nonneg hℓ0.le _) hmass h1
       (fun s => P.memorySize s ≤ memoryCutoff x)
     exact normBound_mono h2 (Real.rpow_le_rpow_of_exponent_le hℓ1 hCaCa')
-  have hbd : initialMemoryBoundaryMass A (N x) ≤ 2 := hBx x hxb P hP m A
+  have hbd := hBx x hxb P hP m A
   -- the finite rank expansion and the two rank ranges
   rw [truncatedDistinctMemoryExpression_rank_expansion]
   have hVle := smallV_le hℓ0 hCpos ha h5
@@ -204,7 +196,7 @@ theorem RestoredMemoryNormTask_proof (F : FixedData) (r : MemoryParameters F) :
     (div_nonneg hCpos.le (Real.exp_pos _).le) (by linarith) ?_ ?_) ?_
   · intro π hπ _
     have h := hLR F P J m (N x) (memoryCutoff x) A r.rho theta
-      CG ((L x) ^ (-G)) ((L x) ^ Ca') hCG0 hCEpos hCECA hmass
+      CG ((L x) ^ (-G)) ((L x) ^ Ca') hCG0 hCEpos (Real.rpow_le_rpow_of_exponent_le hℓ1 (by linarith)) hmass
       (fun i phi hphi => actual_projected_ghost_norm F J (N x) (memoryCutoff x) r hV hb hmu
         i phi hphi)
       hedge (fun i => hCx x hxc P hP A hA hk0 hk hId theta i) π hπ

@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentFirstAnnularEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentFirstAnnularMajorant
+open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
 local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}
@@ -73,8 +72,7 @@ theorem energy_le_dyadic (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {
       dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2:=
     mul_le_mul_of_nonneg_left (mul_le_of_le_one_right (sq_nonneg _) (profile_le_one _))
       (dyadicWeight_bounds j _).1
-  have hl:Summable (fun z:O=>dyadicWeight j (normValue z)*
-      (‖gaussPolynomial S a ha c z‖^2*(profile (normValue z/H)).re)):=
+  have hl:=
     hs.of_nonneg_of_le (fun z=>mul_nonneg (dyadicWeight_bounds j _).1
       (mul_nonneg (sq_nonneg _) (profile_nonneg _))) hdom
   exact hl.tsum_le_tsum hdom hs

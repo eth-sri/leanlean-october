@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 
@@ -34,59 +34,13 @@ lemma gaussianWeightedMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
       congr 2
       ring
 
-lemma gaussianWeightedMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (k : ℝ) (N : ℕ) :
-    ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→gaussianWeightedMoment V hV J k R≤C/(1+R)^N := by
-  obtain ⟨B,hB,hzero⟩ := gaussianWeightedMoment_power_bound V hV J k 0
-  obtain ⟨C,hC,hdecay⟩ := gaussianWeightedMoment_power_bound V hV J k (N:ℝ)
-  refine ⟨(B+C)*(2:ℝ)^N,by positivity,?_⟩
-  intro R hR
-  have hden : 0<(1+R)^N := pow_pos (by linarith) _
-  by_cases hr1 : R≤1
-  · have hh := hzero R hR
-    simp only [neg_zero,Real.rpow_zero,mul_one] at hh
-    apply hh.trans
-    apply (le_div_iff₀ hden).mpr
-    have hp : (1+R)^N≤(2:ℝ)^N := pow_le_pow_left₀ (by linarith) (by linarith) _
-    have hb := mul_le_mul_of_nonneg_left hp hB.le
-    nlinarith [mul_nonneg hC.le (pow_nonneg (by norm_num : (0:ℝ)≤2) N)]
-  · have hh := hdecay R hR
-    rw [Real.rpow_neg hR.le,Real.rpow_natCast] at hh
-    apply hh.trans
-    apply (le_div_iff₀ hden).mpr
-    have hp : (1+R)^N≤(2*R)^N := pow_le_pow_left₀ (by linarith) (by linarith) _
-    have hm := mul_le_mul_of_nonneg_left hp (show 0≤C*(R^N)⁻¹ by positivity)
-    rw [mul_pow] at hm
-    have hn : R^N≠0 := ne_of_gt (pow_pos hR _)
-    have he : (C*(R^N)⁻¹)*((2:ℝ)^N*R^N)=C*(2:ℝ)^N := by field_simp
-    rw [he] at hm
-    exact hm.trans (by nlinarith [mul_nonneg hB.le (pow_nonneg (by norm_num : (0:ℝ)≤2) N)])
-
 theorem gaussianWeightedMoment_summed (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (k s : ℝ) (hs : 0<s) :
     ∃C : ℝ,0<C ∧ ∀Z : ℝ,0<Z→
       Summable (fun j : ℕ=>((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z)) ∧
-      (∑'j : ℕ,((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z))≤C*Z^s := by
-  obtain ⟨N,hN⟩ := exists_nat_gt s
-  obtain ⟨B,hB,hbound⟩ := gaussianWeightedMoment_polynomial_decay V hV J k N
-  obtain ⟨C,hC,hkernel⟩ := CompletedDyadic.kernel_sum_bound s (N:ℝ) hs hN
-  refine ⟨B*C,by positivity,?_⟩
-  intro Z hZ
-  obtain ⟨hks,hkt⟩ := hkernel Z⁻¹ (inv_pos.mpr hZ)
-  have hb (j : ℕ) : ((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z)≤
-      B*CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := by
-    have hh := mul_le_mul_of_nonneg_left (hbound ((2:ℝ)^j/Z) (div_pos (by positivity) hZ))
-      (Real.rpow_nonneg (by positivity : (0:ℝ)≤2^j) s)
-    simpa only [CompletedDyadic.kernelTerm,Real.rpow_natCast,div_eq_mul_inv,mul_assoc,mul_left_comm,mul_comm] using hh
-  have hnon (j : ℕ) : 0≤((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z) :=
-    mul_nonneg (Real.rpow_nonneg (by positivity : (0:ℝ)≤2^j) s) (gaussianWeightedMoment_nonneg V hV J k _ (by positivity))
-  have hsum := Summable.of_nonneg_of_le hnon hb (hks.mul_left B)
-  refine ⟨hsum,?_⟩
-  calc
-    _ ≤ ∑'j : ℕ,B*CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := hsum.tsum_le_tsum hb (hks.mul_left B)
-    _ = B*∑'j : ℕ,CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := tsum_mul_left
-    _ ≤ B*(C*(Z⁻¹)^(-s)) := mul_le_mul_of_nonneg_left hkt hB.le
-    _ = (B*C)*Z^s := by rw [Real.inv_rpow hZ.le,Real.rpow_neg hZ.le,inv_inv]; ring
+      (∑'j : ℕ,((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z))≤C*Z^s :=
+  dyadic_profile_sum _ (fun R hR => gaussianWeightedMoment_nonneg V hV J k R hR.le)
+    (gaussianWeightedMoment_power_bound V hV J k) s hs
 
 def gaussianRemoteMoment (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (J : ℕ) (s Z A : ℝ) (j : ℕ) : ℝ :=
@@ -103,11 +57,11 @@ theorem gaussianRemoteMoment_summed (V : SchwartzMap ℝ ℂ)
   obtain ⟨Cp,hCp,hp⟩ := gaussianWeightedMoment_summed V hV J (N:ℝ) s hs
   refine ⟨Cm+Cp,by positivity,?_⟩
   intro Z A hZ hA
-  have hAp : 0<A := lt_of_lt_of_le zero_lt_one hA
-  have hAN : 0<A^N := pow_pos hAp N
+  have hAp  := lt_of_lt_of_le zero_lt_one hA
+  have hAN  := pow_pos hAp N
   obtain ⟨hsm,htm⟩ := hm Z hZ
   obtain ⟨hsp,htp⟩ := hp Z hZ
-  let U : ℕ→ℝ := fun j=>
+  let U  := fun j=>
     (((2:ℝ)^j)^s*gaussianWeightedMoment V hV J (-(N:ℝ)) ((2:ℝ)^j/Z)+
       ((2:ℝ)^j)^s*gaussianWeightedMoment V hV J (N:ℝ) ((2:ℝ)^j/Z))/A^N
   have hU : Summable U := (hsm.add hsp).div_const _
@@ -119,7 +73,7 @@ theorem gaussianRemoteMoment_summed (V : SchwartzMap ℝ ℂ)
   have hb (j : ℕ) : gaussianRemoteMoment V hV J s Z A j≤U j := by
     let R := (2:ℝ)^j/Z
     have hR : 0<R := div_pos (by positivity) hZ
-    have hM : 0≤gaussianJointMoment V hV J R := gaussianJointMoment_nonneg V hV J R
+    have hM  := gaussianJointMoment_nonneg V hV J R
     unfold gaussianRemoteMoment
     split_ifs with hj
     · have he : A^N≤R^(-(N:ℝ))+R^(N:ℝ) := by
@@ -142,7 +96,7 @@ theorem gaussianRemoteMoment_summed (V : SchwartzMap ℝ ℂ)
       calc
         _ ≤ (((2:ℝ)^j)^s*gaussianJointMoment V hV J R)*(R^(-(N:ℝ))+R^(N:ℝ)) :=
           mul_le_mul_of_nonneg_left he (mul_nonneg (Real.rpow_nonneg (by positivity) _) hM)
-        _ = _ := by unfold gaussianWeightedMoment;dsimp only [R];ring
+        _ = _ := by unfold gaussianWeightedMoment;ring
     · dsimp only [U]
       apply div_nonneg _ hAN.le
       exact add_nonneg

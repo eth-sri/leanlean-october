@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.MaskedVolume
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Moments.Primary
+public import OAI.NumberTheory.DirichletL.Moments.Mask
 public import OAI.NumberTheory.DirichletL.CenteredExceptionalProfile
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalPair
@@ -38,7 +40,7 @@ theorem primaryCoefficient_good (ψ : Character) (I : Ideal O) (hI : primaryGene
 theorem primaryCoefficient_norm (ψ : Character) (I : Ideal O) : ‖primaryCoefficient ψ I‖ ≤ 1 := by
   change ‖if primaryGenerator I=0 then 0 else idealCoeff ψ I‖ ≤ 1
   split_ifs
-  · simp only [norm_zero,zero_le_one]
+  · simp
   · exact idealCoeff_norm_le_one ψ I
 
 def periodicValue (c : O) (ψ : Character) (r : O ⧸ Ideal.span {c}) : ℂ :=
@@ -55,19 +57,18 @@ theorem periodicValue_mk (c : O) (h3 : (3:O) ∣ c) (ψ : Character)
     constructor
     · intro h; convert dvd_sub h hd using 1 ; ring
     · intro h; convert dvd_add hd h using 1 ; ring
-  have hres : Ideal.Quotient.mk ψ.modulus (Quotient.out (Ideal.Quotient.mk (Ideal.span {c}) x)) =
-      Ideal.Quotient.mk ψ.modulus x :=
+  have hres  :=
     Ideal.Quotient.eq.mpr (hmod (Ideal.mem_span_singleton.mpr hc))
   simp only [periodicValue,hprimary,elementCoeff,hres]
 
 theorem periodicValue_norm (c : O) (ψ : Character) (r : O ⧸ Ideal.span {c}) :
     ‖periodicValue c ψ r‖ ≤ 1 := by
-  let : Finite (O ⧸ ψ.modulus) := Ring.HasFiniteQuotients.finiteQuotient ψ.modulus_ne_bot
+  let  := Ring.HasFiniteQuotients.finiteQuotient ψ.modulus_ne_bot
   let : Fintype (O ⧸ ψ.modulus) := Fintype.ofFinite _
   unfold periodicValue
   split_ifs
   · exact norm_finite_character_le_one ψ.residue _
-  · simp only [norm_zero,zero_le_one]
+  simp
 
 theorem lattice_eq_ideal_sum (c : O) (h3 : (3:O) ∣ c) (ψ : Character)
     (hmod : (Ideal.span {c} : Ideal O) ≤ ψ.modulus) (W : ℝ → ℂ) (X : ℝ) :
@@ -102,7 +103,7 @@ theorem lattice_eq_ideal_sum (c : O) (h3 : (3:O) ∣ c) (ψ : Character)
 theorem fixed_period_volume (c : O) (hc : c ≠ 0) (h3 : (3:O) ∣ c)
     (ψ : Character) (hmod : (Ideal.span {c} : Ideal O) ≤ ψ.modulus)
     (W : 𝓢(ℝ,ℂ)) (X : ℝ) (hX : 0 < X) :
-    letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+    letI  := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
     ‖(∑' I : Ideal O, primaryCoefficient ψ I*W ((Ideal.absNorm I:ℝ)/X)) -
       (X/‖eisEmbedding c‖^2:ℝ) • ((∑ r : O ⧸ Ideal.span {c}, periodicValue c ψ r)*paperRadialFourier W 0)‖ ≤
@@ -121,7 +122,7 @@ theorem masked_hecke_volume
     (ψ : Character) (hmod : (Ideal.span {c} : Ideal O) ≤ ψ.modulus)
     (R : Ideal O) (hR : R ≠ 0) (W : 𝓢(ℝ, ℂ)) (b X : ℝ) (hX : 0 < X)
     (hs : Function.support (W : ℝ → ℂ) ⊆ Set.Iic b) :
-    letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+    letI  := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
     let Ψ := primaryCoefficient ψ
     let v := (1 / (‖eisEmbedding c‖ ^ 2 : ℂ)) *
@@ -132,17 +133,16 @@ theorem masked_hecke_volume
       ((idealDivisors R).card : ℝ) *
         ((Fintype.card (O ⧸ Ideal.span {c}) : ℝ) * pvControl W) := by
   classical
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+  let  := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   let Ψ := primaryCoefficient ψ
   let v := (1 / (‖eisEmbedding c‖ ^ 2 : ℂ)) *
     ((∑ r : O ⧸ Ideal.span {c}, periodicValue c ψ r) * paperRadialFourier W 0)
   let B := (Fintype.card (O ⧸ Ideal.span {c}) : ℝ) * pvControl W
-  let L : ℝ → ℂ := fun Y => ∑' I : Ideal O, Ψ I * W ((Ideal.absNorm I : ℝ) / Y)
-  have hB : 0 ≤ B := mul_nonneg (Nat.cast_nonneg _) (pvControl_nonneg W)
+  let L  := fun Y => ∑' I : Ideal O, Ψ I * W ((Ideal.absNorm I : ℝ) / Y)
   have hnD (D : Ideal O) (hD : D ∈ idealDivisors R) : 0 < (Ideal.absNorm D : ℝ) := by
-    have hD0 : D ≠ 0 := ne_zero_of_dvd_ne_zero hR ((mem_idealDivisors hR).mp hD)
-    exact_mod_cast Nat.pos_of_ne_zero (fun hz => hD0 (Ideal.absNorm_eq_zero_iff.mp hz))
+    have hD0  := ne_zero_of_dvd_ne_zero hR ((mem_idealDivisors hR).mp hD)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD0)
   have hsingle (D : Ideal O) (hD : D ∈ idealDivisors R) :
       ‖L (X / Ideal.absNorm D) - ((X / Ideal.absNorm D : ℝ) : ℂ) * v‖ ≤ B := by
     have h := fixed_period_volume c hc h3 ψ hmod W
@@ -178,7 +178,7 @@ theorem masked_hecke_volume
       intro D hD
       rw [norm_mul]
       exact (mul_le_mul (hcoef D) (hsingle D hD) (norm_nonneg _) zero_le_one).trans_eq (one_mul B)
-    _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]
+    _ = _ := by simp
 
 def fixedPeriod (Q : Ideal O) : O := 3*ConcretePrimeRowBridge.idealGenerator Q
 
@@ -238,7 +238,7 @@ theorem induced_primaryCoefficient (χ ψ : Character)
   change (if primaryGenerator I=0 then 0 else idealCoeff χ I)=
     (if IsCoprime I χ.modulus then (1:ℂ) else 0)*(if primaryGenerator I=0 then 0 else idealCoeff ψ I)
   rw [hind I]
-  split_ifs <;> simp only [one_mul,zero_mul]
+  split_ifs <;> simp
 
 theorem primaryCoefficient_actual_row (η χ : Character) (m A₀ z : O)
     (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m)
@@ -251,11 +251,11 @@ theorem primaryCoefficient_actual_row (η χ : Character) (m A₀ z : O)
   by_cases hg : primaryGenerator I=0
   · rw [ite_eq_left hg]
     let n := ConcretePrimeRowBridge.idealGenerator I
-    have hn : n ≠ 0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
-    have hs : Ideal.span {n}=I := ConcretePrimeRowBridge.span_idealGenerator I
+    have hn  := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
+    have hs  := ConcretePrimeRowBridge.span_idealGenerator I
     have hbad : ¬Supported (Ideal.span {n}) := by
       intro h
-      have hp : primaryGenerator (Ideal.span {n}) ≠ 0 :=
+      have hp  :=
         PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff n |>.mpr ((CanonicalQuadraticSieve.supported_span_iff n).mp h).1
       exact hp (hs ▸ hg)
     rw [← hs,idealCoeff_span χ hn,hrow,

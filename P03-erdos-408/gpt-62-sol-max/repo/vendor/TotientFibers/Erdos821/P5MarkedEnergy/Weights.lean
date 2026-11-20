@@ -8,7 +8,6 @@ integral into a medium time range and a weighted tail. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory
 
 namespace Erdos821.P5Marked
@@ -39,7 +38,6 @@ theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 
     rw [abs_mul, abs_of_pos hh]
     rwa [le_div_iff₀ hh, mul_comm] at hc
   set u := 1 + |h * t| with hu
-  have hu2 : 2 ≤ u := by linarith
   have hshift : 1 + |h * (t + c)| ≤ 2 * u := by
     have : |h * (t + c)| ≤ |h * t| + |h * c| := by rw [mul_add]; exact abs_add_le _ _
     linarith

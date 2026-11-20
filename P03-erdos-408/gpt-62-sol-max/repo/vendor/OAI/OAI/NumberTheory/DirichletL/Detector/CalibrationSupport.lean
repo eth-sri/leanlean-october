@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalAnalytic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow
 local notation "O" => ActualEisensteinCubic.O
@@ -29,9 +29,7 @@ theorem calibrationForSet_coprime_of_excluded (S : Finset (Ideal O))
     (hmask : ∀ P ∈ S, ¬P ∣ Ideal.span {a}) :
     IsCoprime (calibrationForSet S hS).generator a := by
   apply (calibrationForSet_coprime_iff S hS a).mpr
-  intro P hP ha
-  apply hmask P hP
-  exact Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr ha))
+  simp_all
 
 end SevenEighths.ProbePhysical
 end

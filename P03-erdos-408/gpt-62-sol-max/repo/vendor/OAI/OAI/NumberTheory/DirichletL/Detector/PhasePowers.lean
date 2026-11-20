@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PrimePhase
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbePhase
 open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay QuadraticAllOddCRT
 local notation "O" => ActualEisensteinCubic.O
@@ -24,7 +24,7 @@ lemma odd_residue_one : EisensteinEPrimaryPhase.odd (residue (1 : O)) := by
 lemma odd_residue_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
     EisensteinEPrimaryPhase.odd (residue (a ^ n)) := by
   induction n with
-  | zero => simpa only [pow_zero] using odd_residue_one
+  | zero => simpa using odd_residue_one
   | succ n ih =>
     rw [pow_succ, residue_mul]
     exact odd_mul _ _ ih ha
@@ -94,7 +94,6 @@ theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (resid
   · rw [pow_add, pow_one, G_mul a (a ^ (3 * l)) ha (odd_residue_pow a ha _),
       G_cube_power a ha l, pow_mul, reciprocitySign_pow_right a (a ^ 3) ha l,
       reciprocitySign_cube_right a a ha ha]
-    simp only [pow_one, one_mul, pow_add]
     ring
 
 end SevenEighths.ProbePhase

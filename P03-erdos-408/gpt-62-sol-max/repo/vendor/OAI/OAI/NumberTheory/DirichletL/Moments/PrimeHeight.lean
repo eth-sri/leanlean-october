@@ -15,19 +15,18 @@ open HeckeFamily HeckePrimeRay HeckePrimeAnnular HeckeDyadic HeckeZeroSupremum
 local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
-    (hWs : Function.support W⊆Icc A B) (hW : Continuous W) (_hD : 1≤D) :
+    (hWs : Function.support W⊆Icc A B) (hW : Continuous W) :
     ∃C : ℝ,0<C ∧ ∀(χ : Character)(P σ freq : ℝ),1≤P → P≤D → lo≤σ → σ≤hi →
       ‖rayPrimePolynomial M H χ W B P σ freq‖≤C := by
   obtain ⟨Cw,hCw,hprofile⟩ := fixed_profile_norm_bound W hW A B lo hi hA
   let S := annulusSet B D
   refine ⟨((S.card:ℝ)+1)*Cw,by positivity,?_⟩
   intro χ P σ freq hP hPD hσ hσhi
-  have hp : 0<P := zero_lt_one.trans_le hP
+  have hp  := zero_lt_one.trans_le hP
   have hsub : (annulusSet B P).filter (fun I=>Prime I ∧ I∈RayQuotient.identityClass M H)⊆S := by
     intro I hI
     have hi := ConcretePrimeRowBridge.mem_idealsUpTo.mp (Finset.mem_filter.mp hI).1
@@ -60,7 +59,7 @@ lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D�
     (hU : 1<(Z*T)^D) (hP : 0<P) :
     ((Z*T)^D)^(κ*Real.logb ((Z*T)^D) P+2*(loss/(2*D)))=
       P^κ*Z^loss*T^loss := by
-  have hu : 0<(Z*T)^D := zero_lt_one.trans hU
+  have hu  := zero_lt_one.trans hU
   rw [Real.rpow_add hu]
   have hs : ((Z*T)^D)^(κ*Real.logb ((Z*T)^D) P)=P^κ := by
     rw [mul_comm κ,Real.rpow_mul hu.le,Real.rpow_logb hu (ne_of_gt hU) hP]
@@ -71,7 +70,7 @@ lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D�
 
 theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
-    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (_hLs : 0≤Lslot) (hloss : 0<loss)
+    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧ ∀ Z P : ℝ,Z₀≤Z → 1≤P → P≤Z^Lslot →
     ∀χ : Character,(χ.modulus.absNorm:ℝ)≤Z^Lmod →
@@ -96,10 +95,10 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   let Z₀ := max 2 (M.absNorm:ℝ)
   refine ⟨C,Z₀,hC,lt_of_lt_of_le (by norm_num : (1:ℝ)<2) (le_max_left _ _),?_⟩
   intro Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi hlarge
-  have hz2 : 2≤Z := (le_max_left _ _).trans hZ
+  have hz2  := (le_max_left _ _).trans hZ
   have hz : 0<Z := by linarith
   have hz1 : 1≤Z := by linarith
-  have hMZ : (M.absNorm:ℝ)≤Z := (le_max_right _ _).trans hZ
+  have hMZ  := (le_max_right _ _).trans hZ
   let T := 3+|freq|
   let Zt := Z*T
   let U := Zt^d
@@ -114,13 +113,13 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hzt1 hd1
   have hU : 1<U := by linarith
   have hUp : 0<U := by linarith
-  have hPU : P≤U := hPcap.trans ((Real.rpow_le_rpow_of_exponent_le hz1 hsd).trans
+  have hPU  := hPcap.trans ((Real.rpow_le_rpow_of_exponent_le hz1 hsd).trans
     (Real.rpow_le_rpow hz.le hZzt hd.le))
   let r := Real.logb U P
-  have hr : 0≤r := Real.logb_nonneg hU hP
+  have hr  := Real.logb_nonneg hU hP
   have hr1 : r≤1 := (Real.logb_le_iff_le_rpow hU (zero_lt_one.trans_le hP)).mpr
     (by simpa only [Real.rpow_one] using hPU)
-  have hPr : U^r=P := Real.rpow_logb hUp (ne_of_gt hU) (zero_lt_one.trans_le hP)
+  have hPr  := Real.rpow_logb hUp (ne_of_gt hU) (zero_lt_one.trans_le hP)
   have hQ (θ : RayQuotient.Characters M H) : ((twistedFamily M H hH χ θ).modulus.absNorm:ℝ)≤U := by
     have ht : ((twistedFamily M H hH χ θ).modulus.absNorm:ℝ)≤(χ.modulus.absNorm:ℝ)*M.absNorm := by
       exact_mod_cast HeckePrimeScale.twisted_modulus_bound M H hH χ θ
@@ -163,22 +162,22 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     ∀σ freq : ℝ,lo≤σ → σ≤hi →
       ‖rayPrimePolynomial M H χ W B P σ freq‖^2≤C*(1+|freq|)^degree*Z^loss*P^κ := by
   obtain ⟨Cbig,Z₀,hCbig,hZ₀,hbig⟩ := ray_prime_all_height_large M H hH W A B hA hWs hW
-    Lmod Lslot loss lo hi κ hLm hLs hloss hbeta hκ
+    Lmod Lslot loss lo hi κ hLm hloss hbeta hκ
   let K := 2*(|Real.log A|+|Real.log B|)+1
   have hK : 0≤K := by dsimp [K];positivity
   obtain ⟨Csmall,hCs,hsmall⟩ := ray_prime_bounded_scale M H W A B lo hi (Real.exp K) hA hWs hW.continuous
-    (Real.one_le_exp hK)
+    
   let degree := ⌈loss⌉₊
   let C0 := Cbig+Csmall^2
-  have hC0 : 0<C0 := by dsimp [C0];positivity
+  have hC0 : 0<C0 := by positivity
   refine ⟨degree,C0*(3:ℝ)^degree,Z₀,by positivity,hZ₀,?_⟩
   intro Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi
-  have hz1 : 1≤Z := hZ₀.le.trans hZ
+  have hz1  := hZ₀.le.trans hZ
   have hκ0 : 0≤κ := by linarith
-  have hpκ : 1≤P^κ := Real.one_le_rpow hP hκ0
-  have hzloss : 1≤Z^loss := Real.one_le_rpow hz1 hloss.le
+  have hpκ  := Real.one_le_rpow hP hκ0
+  have hzloss  := Real.one_le_rpow hz1 hloss.le
   have htbase : 1≤3+|freq| := by linarith [abs_nonneg freq]
-  have htloss : 1≤(3+|freq|)^loss := Real.one_le_rpow htbase hloss.le
+  have htloss  := Real.one_le_rpow htbase hloss.le
   have hbase : ‖rayPrimePolynomial M H χ W B P σ freq‖^2≤C0*P^κ*Z^loss*(3+|freq|)^loss := by
     by_cases hlarge : K≤Real.log P
     · exact (hbig Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi hlarge).trans

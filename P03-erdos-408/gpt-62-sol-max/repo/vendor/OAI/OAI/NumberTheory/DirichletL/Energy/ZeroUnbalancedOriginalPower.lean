@@ -9,17 +9,15 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalPower
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyZeroUnbalancedOriginalSource CenteredMomentEnergyReferenceScalarReserve
-open CenteredMomentEnergyStageReserveBounded
-open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyStageReserveBounded CenteredMomentEnergyReferenceProfileBudget
+open CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 theorem original_from_zero_low
@@ -86,14 +84,14 @@ theorem original_from_zero_low
       nlinarith only [mul_nonneg hK (mul_nonneg hdiag hA)]
     apply le_trans _ hk
     convert ht using 1 ; ring
-  have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+  have hz:=zero_lt_one.trans hZ.1
+  have hlog:=(Real.log_pos hZ.1).le
   have hLpos:0≤L:=by linarith only [hM, hBmask, hxi, hL]
   let P:=Z^(s.width+e)
   let Qmain:=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d*(1+2*(L*Real.log Z))*Z^(s.width+e)
   let Qerror:=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*d)*Z^(-2*saving)*
     max 1 s.radial.scale*Z^(s.width/4)
-  have hP:0≤P:=by dsimp only [P];positivity
+  have hP:0≤P:=by positivity
   have hQmain:0≤Qmain:=by dsimp only [Qmain];positivity
   have hQerror:0≤Qerror:=by dsimp only [Qerror];positivity
   have htotal:=add_le_add (add_le_add (mul_le_mul_of_nonneg_right hdir hP)
@@ -105,8 +103,7 @@ theorem original_from_zero_low
   refine le_trans ?_ (hlast.trans_eq ?_)
   · dsimp only [P,Qmain,Qerror] at hfirst
     convert hfirst using 1 <;> (try dsimp only [E,A]) <;> ring
-  · dsimp only [E,A]
-    ring
+  ring
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalPower
 

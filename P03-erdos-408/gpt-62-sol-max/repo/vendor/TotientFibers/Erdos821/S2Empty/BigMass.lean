@@ -47,10 +47,9 @@ theorem big_tilted_sum_le_inv (F : FixedData) (P : PrimeGroups) (n : ℕ)
       unfold tiltedMu PrimeGroups.mu
       field_simp [hV.ne', hp, hbasePos.ne']
     rw [htilt]
-    have hmuNonneg : 0 ≤ P.mu g.val p := by
-      unfold PrimeGroups.mu
-      positivity
-    exact mul_le_mul_of_nonneg_left hratio hmuNonneg
+    refine mul_le_mul_of_nonneg_left hratio ?_
+    unfold PrimeGroups.mu
+    positivity
   calc
     _ ≤ ∑ p : P.Prime g.val, P.mu g.val p * (1 - e)⁻¹ := by
       apply Finset.sum_le_sum

@@ -60,6 +60,16 @@ def labels (x : ℝ) : Finset (Fin K → ℕ) := Fintype.piFinset fun i => band 
 /-- `∏_i V_i`, the product of the harmonic masses of the bands. -/
 def bandMass (x : ℝ) : ℝ := ∏ i, harmonicMass (band x (d.a i))
 
+/-- Distinct bands have no common prime. -/
+abbrev BandsDisjoint (x : ℝ) : Prop := ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))
+
+/-- Every band has harmonic mass at least one half. -/
+abbrev BandsLower (x : ℝ) : Prop := ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))
+
+/-- The harmonic mass of each band lies between one half and one. -/
+abbrev BandsBalanced (x : ℝ) : Prop :=
+  ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) ∧ harmonicMass (band x (d.a i)) ≤ 1
+
 end Data
 
 variable {K : ℕ}
@@ -80,6 +90,14 @@ structure Admissible (C CX alo ahi g x : ℝ) (d : Data K) : Prop where
     d.Hm ≤ m ∧ (m : ℝ) ≤ 2 * d.Hm ∧ IsRough x m ∧ ‖d.α m‖ ≤ Real.log x ^ C
   β_supp : ∀ n, d.β n ≠ 0 →
     d.Hn ≤ n ∧ (n : ℝ) ≤ 2 * d.Hn ∧ IsRough x n ∧ ‖d.β n‖ ≤ Real.log x ^ C
+
+/-- The dyadic windows for the varying one-sided data. -/
+abbrev ForAdmissibleDyads (C CX alo ahi g x : ℝ)
+    (Goal : Data K → ℕ → ℕ → ℝ → ℝ → ℝ → Prop) : Prop :=
+    ∀ d : Data K, Admissible C CX alo ahi g x d →
+      ∀ j k : ℕ,
+      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
+      d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 → Goal d j k u v r
 
 /-- P4: the twisted cancellation of `α`, for characters of modulus at most `L^{A₀}` and
 frequencies `|t| ≤ 2 X L^B`. -/

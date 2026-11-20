@@ -42,11 +42,7 @@ theorem barePhysicalFourier_unit_frequency (A s : O)
   let u := residueUnit (A*s) b hcop.symm
   have hcA := idealRowHom_ne_zero_of_coprime A b hA hcop.of_mul_right_left.symm
   have hcs := idealRowHom_ne_zero_of_coprime s b hs hcop.of_mul_right_right.symm
-  have hF (x : Residue (A*s)) :
-      movingQuotient A s (supportedElement_ne_zero s hs) ((u : Residue (A*s))*x) =
-        (idealRowHom b (Ideal.span {A}) * (idealRowHom b (Ideal.span {s}))⁻¹) *
-          movingQuotient A s (supportedElement_ne_zero s hs) x := by
-    exact movingQuotient_unit_scale A s hs b hcop.of_mul_right_right x
+  have hF (x : Residue (A*s)) := movingQuotient_unit_scale A s hs b hcop.of_mul_right_right x
   have he := finite_fourier_unit_scale (movingQuotient A s (supportedElement_ne_zero s hs))
     (quotientTrace (A*s) hAs) u _ (mul_ne_zero hcA (inv_ne_zero hcs)) hF
     (Ideal.Quotient.mk _ H)

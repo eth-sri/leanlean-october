@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.HeckeHeight
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
@@ -27,10 +28,9 @@ theorem dilated_support (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
     Function.support (dilated W c) ⊆ Set.Icc (a / B) b := by
   intro x hx
   have hv := hs hx
-  have hc0 : 0 < c := lt_of_lt_of_le zero_lt_one hc
-  have hB0 : 0 < B := lt_of_lt_of_le zero_lt_one hB
+  have hB0  := lt_of_lt_of_le zero_lt_one hB
   have hx0 : 0 < x := (mul_pos_iff.mp (lt_of_lt_of_le ha hv.1)).resolve_right
-    (by intro h; linarith [h.1]) |>.2
+    (by intro h; linarith) |>.2
   constructor
   · apply (div_le_iff₀ hB0).mpr
     exact hv.1.trans (by nlinarith)
@@ -40,9 +40,9 @@ theorem seminorm_dilation_le (f g : 𝓢(ℝ, ℂ)) (ζ : ℂ) (c B : ℝ)
     (hζ : ‖ζ‖ = 1) (hc : 1 ≤ c) (hcB : c ≤ B)
     (hg : ∀ x, g x = ζ * f (c * x)) (k n : ℕ) :
     SchwartzMap.seminorm ℝ k n g ≤ B ^ n * SchwartzMap.seminorm ℝ k n f := by
-  have hc0 : 0 ≤ c := le_trans zero_le_one hc
-  have hB0 : 0 ≤ B := hc0.trans hcB
-  have he : (g : ℝ → ℂ) = fun x => ζ * f (c * x) := funext hg
+  have hc0  := le_trans zero_le_one hc
+  have hB0  := hc0.trans hcB
+  have he  := funext hg
   apply SchwartzMap.seminorm_le_bound' ℝ k n g (by positivity)
   intro x
   rw [he, iteratedDeriv_const_mul_field,
@@ -74,13 +74,13 @@ theorem normPowerProfile_dilated (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
   rw [normPowerProfile_apply, normPowerProfile_apply]
   by_cases hz : W (c * x) = 0
   · simp [dilated, hz]
-  have hc0 : 0 < c := lt_of_lt_of_le zero_lt_one hc
+  have hc0  := lt_of_lt_of_le zero_lt_one hc
   have hx : 0 < x := (mul_pos_iff.mp (lt_of_lt_of_le ha (hs hz).1)).resolve_right
-    (by intro h; linarith [h.1]) |>.2
+    (by intro h; linarith) |>.2
   have hp := Complex.mul_cpow_ofReal_nonneg hc0.le hx.le (Complex.I * t)
   rw [← Complex.ofReal_mul] at hp
   rw [hp]
-  have hn : (c : ℂ) ^ (Complex.I * t) ≠ 0 :=
+  have hn  :=
     norm_ne_zero_iff.mp (by rw [norm_real_imaginary_power c t hc0]; norm_num)
   dsimp only [dilated]
   simp only [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
@@ -133,20 +133,18 @@ theorem clipDilation_le (b S : ℝ) (hS : 0 < S) (hret : 1 ≤ S * b) :
   · exact hret.trans (by nlinarith [le_max_right (1 : ℝ) b])
   · nlinarith [le_max_left (1 : ℝ) b]
 
-theorem clipped_source (W : ℝ → ℂ) (S x : ℝ) (hS : 0 < S) :
+theorem clipped_source (W : ℝ → ℂ) (S x : ℝ) :
     dilated W (clipDilation S) (x / clippedScale S) = W (x / S) := by
-  have hclip : clippedScale S ≠ 0 := ne_of_gt (lt_of_lt_of_le zero_lt_one (clippedScale_ge_one S))
+  have hclip  := ne_of_gt (lt_of_lt_of_le zero_lt_one (clippedScale_ge_one S))
   unfold dilated clipDilation
-  congr 1
-  field_simp
+  simp_all
 
 theorem strict_subunit_ideal_zero (W : ℝ → ℂ) (b S : ℝ) (hS : 0 < S)
     (hs : Function.support W ⊆ Set.Iic b) (hstrict : S * b < 1)
     (I : Ideal O) (hI : I ≠ 0) : W ((Ideal.absNorm I : ℝ) / S) = 0 := by
   by_contra h
   have hn : 1 ≤ (Ideal.absNorm I : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
   have hu := (div_le_iff₀ hS).mp (hs h)
   nlinarith
 
@@ -169,7 +167,7 @@ theorem clipped_ideal_sum (A : Ideal O → ℂ) (W : ℝ → ℂ) (S : ℝ) (hS 
         ((Ideal.absNorm I : ℝ) / clippedScale S) := by
   apply tsum_congr
   intro I
-  rw [clipped_source W S _ hS]
+  rw [clipped_source W S _]
 
 theorem clipped_rowTwistedSum (η : Character) (m A₀ z : O)
     (W : ℝ → ℂ) (t S : ℝ) (hS : 0 < S) :

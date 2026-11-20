@@ -82,7 +82,7 @@ lemma weighted_squarefree_bulk (Q eta a G1 C omega X W V : ℂ)
     weightedScalar Q eta a G1 C omega X W V
       ((omega⁻¹*G1)*(Q^(6*r)*(Q-1))) 1 (2*r) 1 (r+1+d) =
       evenRatio Q a X V ^ r * (-eta*(Q-1)*X*W*V^(d+1)) := by
-  have hω : omega ≠ 0 := by intro h; rw [h, zero_pow (by decide)] at ho; norm_num at ho
+  have hω : omega ≠ 0 := by intro h; simp_all
   unfold weightedScalar
   rw [localCubePhase_even C omega hC ho]
   simp only [one_mul, pow_one]

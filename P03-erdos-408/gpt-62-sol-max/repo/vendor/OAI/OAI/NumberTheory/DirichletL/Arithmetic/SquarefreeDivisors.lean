@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Mellin.ReflectedKernel
 
 @[expose] public section
@@ -9,72 +10,14 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace SquarefreeDivisorBound
-open scoped BigOperators Classical
 open Filter IdealMobiusDivisorSum
 
 abbrev O := ActualEisensteinCubic.O
@@ -87,10 +30,10 @@ theorem squarefree_divisor_card_le (I : Ideal O) (hI : I ≠ ⊥) :
 theorem prime_support_subsets_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ I : Ideal O, I ≠ ⊥ →
       (2 : ℝ) ^ (primeSupport I).card ≤ C * (Ideal.absNorm I : ℝ) ^ ε := by
-  have ht : Tendsto (fun n : ℕ => (n : ℝ) ^ ε) atTop atTop :=
+  have ht  :=
     (tendsto_rpow_atTop hε).comp tendsto_natCast_atTop_atTop
   obtain ⟨N, hN⟩ := eventually_atTop.mp (ht.eventually (eventually_ge_atTop (2 : ℝ)))
-  let small : Finset (Ideal O) :=
+  let small  :=
     (Ideal.finite_setOfPred_absNorm_le (S := O) N).toFinset
   refine ⟨(2 : ℝ) ^ small.card, by positivity, ?_⟩
   intro I hI
@@ -100,7 +43,7 @@ theorem prime_support_subsets_bound (ε : ℝ) (hε : 0 < ε) :
   have hBS : B ⊆ primeSupport I := Finset.sdiff_subset
   have hlarge (P : Ideal O) (hP : P ∈ B) : (2 : ℝ) ≤ (Ideal.absNorm P : ℝ) ^ ε := by
     apply hN
-    have hn : P ∉ small := (Finset.mem_sdiff.mp hP).2
+    have hn  := (Finset.mem_sdiff.mp hP).2
     have hgt : N < Ideal.absNorm P := by
       apply Nat.lt_of_not_ge
       intro hp
@@ -115,7 +58,7 @@ theorem prime_support_subsets_bound (ε : ℝ) (hε : 0 < ε) :
         (Real.finsetProd_rpow B (fun P => (Ideal.absNorm P : ℝ))
           (fun _ _ => by positivity) ε)
       _ = _ := by simp only [map_prod, Nat.cast_prod]
-  have hNI : 0 < Ideal.absNorm I := Nat.pos_iff_ne_zero.mpr
+  have hNI  := Nat.pos_iff_ne_zero.mpr
     (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
   have hnorm : Ideal.absNorm (∏ P ∈ B, P) ≤ Ideal.absNorm I :=
     Nat.le_of_dvd hNI (map_dvd Ideal.absNorm (support_product_dvd hI hBS))
@@ -221,10 +164,12 @@ end SquarefreeDivisorBound
 
 namespace VerticalContourShift
 open MeasureTheory Filter Set
-open scoped Topology
 
-theorem horizontal_integral_tendsto_zero
-    (f : ℂ → ℂ) (a b C : ℝ) (hab : a ≤ b)
+section
+
+variable (f : ℂ → ℂ) (a b C : ℝ)
+
+theorem horizontal_integral_tendsto_zero (hab : a ≤ b)
     (hbound : ∀ σ ∈ Icc a b, ∀ t : ℝ,
       ‖f ((σ : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2)) :
     Tendsto (fun t : ℝ => ∫ σ : ℝ in a..b, f ((σ : ℂ) + t * Complex.I))
@@ -240,8 +185,7 @@ theorem horizontal_integral_tendsto_zero
   intro σ hσ
   exact hbound σ (Ioc_subset_Icc_self (by simpa [uIoc_of_le hab] using hσ)) t
 
-theorem integral_eq_of_strip_decay
-    (f : ℂ → ℂ) (a b C : ℝ) (hab : a ≤ b)
+theorem integral_eq_of_strip_decay (hab : a ≤ b)
     (hdiff : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → DifferentiableAt ℂ f z)
     (ha : Integrable (fun t : ℝ => f ((a : ℂ) + t * Complex.I)))
     (hb : Integrable (fun t : ℝ => f ((b : ℂ) + t * Complex.I)))
@@ -251,7 +195,7 @@ theorem integral_eq_of_strip_decay
       ∫ t : ℝ, f ((b : ℂ) + t * Complex.I) := by
   let H (t : ℝ) : ℂ := ∫ σ : ℝ in a..b, f ((σ : ℂ) + t * Complex.I)
   let V (σ t : ℝ) : ℂ := ∫ u : ℝ in -t..t, f ((σ : ℂ) + u * Complex.I)
-  have htop : Tendsto H atTop (𝓝 0) := horizontal_integral_tendsto_zero f a b C hab hbound
+  have htop  := horizontal_integral_tendsto_zero f a b C hab hbound
   have hbottom : Tendsto (fun t : ℝ => H (-t)) atTop (𝓝 0) := by
     let g (z : ℂ) := f (star z)
     have hg : ∀ σ ∈ Icc a b, ∀ t : ℝ,
@@ -287,17 +231,16 @@ theorem integral_eq_of_strip_decay
         Complex.I * (∫ t : ℝ, f ((a : ℂ) + t * Complex.I)))) :=
     ((hbottom.sub htop).add (tendsto_const_nhds.mul hVb)).sub
       (tendsto_const_nhds.mul hVa)
-  have heq : Complex.I * (∫ t : ℝ, f ((b : ℂ) + t * Complex.I)) -
-      Complex.I * (∫ t : ℝ, f ((a : ℂ) + t * Complex.I)) = 0 := by
-    have hzero : Tendsto (fun t : ℝ => H (-t) - H t + Complex.I * V b t - Complex.I * V a t)
-        atTop (𝓝 0) := by
-      simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℂ)) atTop (𝓝 0))
-    simpa using tendsto_nhds_unique hlim hzero
-  exact (mul_left_cancel₀ Complex.I_ne_zero (sub_eq_zero.mp heq)).symm
+  refine (mul_left_cancel₀ Complex.I_ne_zero (sub_eq_zero.mp ?_)).symm
+  have hzero : Tendsto (fun t : ℝ => H (-t) - H t + Complex.I * V b t - Complex.I * V a t)
+      atTop (𝓝 0) := by
+    simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℂ)) atTop (𝓝 0))
+  simpa using tendsto_nhds_unique hlim hzero
+
+end
 
 end VerticalContourShift
 
-open scoped BigOperators Classical
 namespace FirstPassCubeLabels
 abbrev O := ActualEisensteinCubic.O
 open ActualEisensteinCubic
@@ -353,7 +296,7 @@ theorem mask_mul (a b : O) :
 theorem mask_pow (a : O) (m : ℕ) :
     rowCoprimeMask P S (a ^ m) = rowCoprimeMask P S a ^ m := by
   rw [← row_sixth P hg S, row_pow, ← row_sixth P hg S]
-  simp only [← pow_mul, Nat.mul_comm]
+  ring
 
 theorem mask_prod {κ : Type*} (B : Finset κ) (a : κ → O) :
     rowCoprimeMask P S (∏ j ∈ B, a j) = ∏ j ∈ B, rowCoprimeMask P S (a j) := by
@@ -363,8 +306,7 @@ theorem mask_prod {κ : Type*} (B : Finset κ) (a : κ → O) :
 theorem row_zero_of_mask_zero (a : O) (h : rowCoprimeMask P S a = 0) :
     finiteSquarefreeRow P hg S a = 0 := by
   have hq := row_sixth P hg S a
-  rw [h] at hq
-  exact (pow_eq_zero_iff (by decide : (6 : ℕ) ≠ 0)).mp hq
+  simp_all
 
 theorem row_power_mul_mask_power (a : O) (k m : ℕ) (hk : 0 < k) :
     finiteSquarefreeRow P hg S a ^ k * rowCoprimeMask P S a ^ m =
@@ -393,7 +335,7 @@ theorem localFactor_eq (side parityBit ε₁ ε₂ : Bool) (a : O) :
     have h6 : finiteSquarefreeRow P hg S a ^ 6 = 1 := (row_sixth P hg S a).trans hm
     simp only [localFactor, hm, one_mul, ← pow_add]
     rw [pow_eq_pow_mod _ h6, exponent_table]
-    split <;> simp
+    simp
 
 end Rows
 
@@ -403,19 +345,23 @@ def evenDouble (m : ℕ) (ε₁ ε₂ : Bool) : Bool := !parity m && ε₁ && ε
 
 def b0Exponent (m : ℕ) (ε₁ ε₂ : Bool) : ℕ := m / 2 - bit (evenDouble m ε₁ ε₂)
 
-theorem multiplicity_decomposition (m : ℕ) (ε₁ ε₂ : Bool) (hm : 0 < m) :
+section
+
+variable (m : ℕ) (ε₁ ε₂ : Bool)
+
+theorem multiplicity_decomposition (hm : 0 < m) :
     2 * b0Exponent m ε₁ ε₂ + 2 * bit (evenDouble m ε₁ ε₂) + bit (parity m) = m := by
   have hmod := Nat.mod_lt m (by decide : 0 < 2)
-  have hdiv := Nat.mod_add_div m 2
   cases ε₁ <;> cases ε₂ <;> by_cases h : m % 2 = 1 <;>
     simp [b0Exponent, evenDouble, parity, bit, h] <;> omega
 
-theorem b0Exponent_pos_of_not_retained (m : ℕ) (ε₁ ε₂ : Bool) (hm : 0 < m)
+theorem b0Exponent_pos_of_not_retained (hm : 0 < m)
     (hret : retained (parity m) ε₁ ε₂ = false) : 0 < b0Exponent m ε₁ ε₂ := by
-  have hmod := Nat.mod_lt m (by decide : 0 < 2)
   have hdiv := Nat.mod_add_div m 2
   cases ε₁ <;> cases ε₂ <;> by_cases h : m % 2 = 1 <;>
     simp_all [b0Exponent, evenDouble, parity, retained, bit] <;> omega
+
+end
 
 section Reassembly
 variable {ι κ : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -465,8 +411,12 @@ def b0Label (p : κ → O) (B : Finset κ) (v : κ → ℕ)
     (ε₁ ε₂ : κ → Bool) : O :=
   primeProduct p B (fun j => b0Exponent (v j) (ε₁ j) (ε₂ j))
 
-theorem first_pass_label_identity (p : κ → O) (B : Finset κ) (v : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) (hv : ∀ j ∈ B, 0 < v j) (side : Bool) :
+section
+
+variable (p : κ → O) (B : Finset κ) (v : κ → ℕ)
+  (ε₁ ε₂ : κ → Bool)
+
+theorem first_pass_label_identity (hv : ∀ j ∈ B, 0 < v j) (side : Bool) :
     rowCoprimeMask P S (cubeRadical p B) *
       finiteSquarefreeRow P hg S (aLabel p B (if side then ε₂ else ε₁)) ^ 4 *
       finiteSquarefreeRow P hg S (crtLabel p B v ε₁ ε₂ side) *
@@ -483,8 +433,7 @@ theorem first_pass_label_identity (p : κ → O) (B : Finset κ) (v : κ → ℕ
   cases side <;> simp only [localFactor, Bool.false_eq_true, ↓reduceIte,
     ← _root_.pow_mul, _root_.Nat.mul_comm]
 
-theorem cube_product_decomposition (p : κ → O) (B : Finset κ) (v : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) (hv : ∀ j ∈ B, 0 < v j) :
+theorem cube_product_decomposition (hv : ∀ j ∈ B, 0 < v j) :
     primeProduct p B v = b0Label p B v ε₁ ε₂ ^ 2 * j2Label p B v ε₁ ε₂ ^ 2 *
       squarefreeLabel p B v := by
   simp only [b0Label, j2Label, squarefreeLabel, primeProduct, ← Finset.prod_pow,
@@ -495,8 +444,7 @@ theorem cube_product_decomposition (p : κ → O) (B : Finset κ) (v : κ → �
   have h := multiplicity_decomposition (v j) (ε₁ j) (ε₂ j) (hv j hj)
   omega
 
-theorem jLabel_eq_squarefree_mul_j2 (p : κ → O) (B : Finset κ) (v : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) :
+theorem jLabel_eq_squarefree_mul_j2 :
     jLabel p B v ε₁ ε₂ = squarefreeLabel p B v * j2Label p B v ε₁ ε₂ := by
   simp only [jLabel, squarefreeLabel, j2Label, primeProduct, ← Finset.prod_mul_distrib,
     ← pow_add]
@@ -506,9 +454,15 @@ theorem jLabel_eq_squarefree_mul_j2 (p : κ → O) (B : Finset κ) (v : κ → �
   cases hp : parity (v j) <;> cases ε₁ j <;> cases ε₂ j <;>
     simp [bit, retained, evenDouble, hp]
 
+end
+
 include hg in
 
-theorem radical_mask_absorbs (p : κ → O) (B : Finset κ) (v : κ → ℕ) :
+section
+
+variable (p : κ → O) (B : Finset κ) (v : κ → ℕ)
+
+theorem radical_mask_absorbs :
     rowCoprimeMask P S (cubeRadical p B) * rowCoprimeMask P S (primeProduct p B v) =
       rowCoprimeMask P S (cubeRadical p B) := by
   simp only [cubeRadical, primeProduct, mask_prod P hg S, mask_pow P hg S,
@@ -518,7 +472,7 @@ theorem radical_mask_absorbs (p : κ → O) (B : Finset κ) (v : κ → ℕ) :
   unfold rowCoprimeMask
   split <;> simp
 
-theorem masked_dual_dilation (p : κ → O) (B : Finset κ) (v : κ → ℕ) (z : O) (c : ℂ) :
+theorem masked_dual_dilation (z : O) (c : ℂ) :
     rowCoprimeMask P S (cubeRadical p B) * c * star (finiteSquarefreeRow P hg S z) =
       (rowCoprimeMask P S (cubeRadical p B) * c *
         finiteSquarefreeRow P hg S (primeProduct p B v)) *
@@ -530,8 +484,7 @@ theorem masked_dual_dilation (p : κ → O) (B : Finset κ) (v : κ → ℕ) (z 
         star (finiteSquarefreeRow P hg S z) := by rw [radical_mask_absorbs P hg S]
     _ = _ := by rw [← finiteSquarefreeRow_self_pair P hg S (primeProduct p B v)]; ring
 
-theorem first_pass_after_dual_dilation
-    (p : κ → O) (B : Finset κ) (v : κ → ℕ) (ε₁ ε₂ : κ → Bool)
+theorem first_pass_after_dual_dilation (ε₁ ε₂ : κ → Bool)
     (hv : ∀ j ∈ B, 0 < v j) (side : Bool) (z : O) :
     (rowCoprimeMask P S (cubeRadical p B) *
       finiteSquarefreeRow P hg S (aLabel p B (if side then ε₂ else ε₁)) ^ 4 *
@@ -549,6 +502,8 @@ theorem first_pass_after_dual_dilation
   rw [first_pass_label_identity P hg S p B v ε₁ ε₂ hv side] at hd
   exact hd
 
+end
+
 theorem cube_pair_product_decomposition
     (p : κ → O) (B : Finset κ) (v₁ v₂ : κ → ℕ) (ε₁ ε₂ : κ → Bool)
     (hv : ∀ j ∈ B, 0 < v₁ j + v₂ j) :
@@ -563,34 +518,33 @@ end Reassembly
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay
-open RayFourExpansion
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
+open MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay RayFourExpansion
 
-def quadraticSymbol {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) : ℂ :=
+def quadraticSymbol {ι : Type*} (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) : ℂ :=
   quadraticRow (fun i => Ideal.span {p i}) hg A (∏ i ∈ B, p i)
 
 theorem quadraticSymbol_eq_cross_product {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) :
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) :
     quadraticSymbol p hg A B = ∏ i ∈ A, ∏ k ∈ B, crossSymbol p hg i k ^ 3 := by
   simp only [quadraticSymbol, quadraticRow, finiteSquarefreeRow, map_prod,
     ← Finset.prod_pow, crossSymbol]
 
 theorem quadraticSymbol_mul_reverse {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) :
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) :
     quadraticSymbol p hg A B * quadraticSymbol p hg B A = quadraticCrossPhase p hg A B := by
   rw [quadraticSymbol_eq_cross_product, quadraticSymbol_eq_cross_product]
   rw [Finset.prod_comm (s := B) (t := A)]
   simp only [quadraticCrossPhase, Finset.prod_mul_distrib]
 
+
 theorem quadraticSymbol_eq_zero_of_not_disjoint {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) (h : ¬ Disjoint A B) :
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) (h : ¬ Disjoint A B) :
     quadraticSymbol p hg A B = 0 := by
   obtain ⟨i, hiA, hiB⟩ := Finset.not_disjoint_iff.mp h
   rw [quadraticSymbol_eq_cross_product]
@@ -601,9 +555,9 @@ theorem quadraticSymbol_eq_zero_of_not_disjoint {ι : Type*} [DecidableEq ι]
   simp only [crossSymbol, hz, MulChar.map_zero, zero_pow (by decide : 3 ≠ 0)]
 
 theorem quadraticSymbol_sq_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) (hd : Disjoint A B) :
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) (hd : Disjoint A B) :
     quadraticSymbol p hg A B ^ 2 = 1 := by
   rw [quadraticSymbol_eq_cross_product, ← Finset.prod_pow]
   apply Finset.prod_eq_one
@@ -621,9 +575,9 @@ theorem quadraticSymbol_sq_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι]
       canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hg i) (p k)
 
 theorem quadraticSymbol_reciprocity {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (A B : Finset ι) :
     quadraticSymbol p hg A B =
       quadraticRayPair (residue (∏ i ∈ A, p i)) (residue (∏ i ∈ B, p i)) *
@@ -639,9 +593,9 @@ theorem quadraticSymbol_reciprocity {ι : Type*} [Fintype ι] [DecidableEq ι]
       quadraticSymbol_eq_zero_of_not_disjoint p hg B A (fun h => hd h.symm), mul_zero]
 
 theorem quadraticSymbol_reciprocity_characters {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (A B : Finset ι) :
     quadraticSymbol p hg A B =
       ∑ χ : RayCharacter, ∑ η : RayCharacter,
@@ -652,6 +606,7 @@ theorem quadraticSymbol_reciprocity_characters {ι : Type*} [Fintype ι] [Decida
   rw [rayMask_prime_product p hc A, rayMask_prime_product p hc B, one_mul, one_mul] at hr
   rw [hr]
   simp only [Finset.sum_mul]
+
 
 end QuadraticInitialBound
 

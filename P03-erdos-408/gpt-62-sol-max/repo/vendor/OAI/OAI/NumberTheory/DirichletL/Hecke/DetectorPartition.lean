@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
 
 @[expose] public section
@@ -61,7 +62,7 @@ theorem annular_support (V : ℝ → ℂ)
     (hne : annularCutoff V (x/(2 : ℝ)^j) ≠ 0) :
     (2 : ℝ)^j / 2 < x ∧ x < 2*(2 : ℝ)^j := by
   have hp : 0 < (2 : ℝ)^j := by positivity
-  have hy : 0 ≤ x/(2 : ℝ)^j := div_nonneg hx hp.le
+  have hy  := div_nonneg hx hp.le
   have hlo : 1/2 < x/(2 : ℝ)^j := by
     by_contra h
     have hh := le_of_not_gt h
@@ -82,7 +83,7 @@ def length (X : ℝ) : ℕ := ⌈Real.logb 2 X⌉₊
 theorem norm_le_last_scale (X : ℝ) (hX : 0 < X) : X ≤ (2 : ℝ)^(length X) := by
   have h := (Real.logb_le_iff_le_rpow (by norm_num : (1 : ℝ) < 2) hX).mp
     (Nat.le_ceil (Real.logb 2 X))
-  simpa only [Real.rpow_natCast, length] using h
+  simpa [Real.rpow_natCast, length] using h
 
 theorem length_bound (X : ℝ) (hX : 1 ≤ X) :
     (length X : ℝ) + 1 < Real.logb 2 X + 2 := by
@@ -106,8 +107,6 @@ theorem pair_scale_bounds (V T : ℝ → ℂ)
       (2 : ℝ)^j*(2 : ℝ)^k < 8*U := by
   obtain ⟨hjlo,hjhi⟩ := annular_support V hsmall hlarge x hx j hj
   obtain ⟨hklo,hkhi⟩ := annular_support V hsmall hlarge y hy k hk
-  have hJ : 0 < (2 : ℝ)^j := by positivity
-  have hK : 0 < (2 : ℝ)^k := by positivity
   have hxd : x < 2*D := by
     by_contra h
     apply hfirst
@@ -156,10 +155,10 @@ theorem actual_pair_reassembly (χ : HeckeFamily.Character) (V T : ℝ → ℂ)
           annularCutoff V ((Ideal.absNorm p.2 : ℝ)/(2 : ℝ)^k) := by
   apply finite_pair_reassembly S _ _ _ V hsmall hlarge
   · intro p hp
-    exact ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hS p hp).1),
+    exact ⟨Ideal.one_le_absNorm_of_ne_bot ((hS p hp).1),
       (hS p hp).2.2.1.trans (norm_le_last_scale X hX)⟩
   · intro p hp
-    exact ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hS p hp).2.1),
+    exact ⟨Ideal.one_le_absNorm_of_ne_bot ((hS p hp).2.1),
       (hS p hp).2.2.2.trans (norm_le_last_scale Z hZ)⟩
 
 theorem exists_large_pair (J K : ℕ) (F : ℕ → ℕ → ℂ) :

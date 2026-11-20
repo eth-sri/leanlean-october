@@ -83,15 +83,9 @@ theorem big_averaged_clean_norm (F : FixedData) :
     (bigAveragedRawKernel A n theta forward (B := B))
     (bigAveragedConditionedKernel A n theta forward (B := B)) C hC hm hH
   intro a b
-  have hV (g : P.SmallGroup) : 0 < P.V g.val := F.vMin_pos.trans_le ((hP.2.2.2.2.1 g.val).1)
+  have hV (g : P.SmallGroup)  := F.vMin_pos.trans_le ((hP.2.2.2.2.1 g.val).1)
   have h := bigAveragedRawKernel_entry A n theta forward a b hV
-  by_cases hs : smallCleanGate J F.ell a.1 b.1 a.2.2.val b.2.2.val
-  · rw [ite_eq_left hs] at h
-    simp only [smallCleanGate] at hs
-    simpa only [ite_eq_left hs] using h
-  · rw [ite_eq_right hs] at h
-    simp only [smallCleanGate] at hs
-    simpa only [ite_eq_right hs] using h
+  assumption
 
 
 end Erdos821.P3Clean

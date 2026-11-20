@@ -9,35 +9,26 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 open ActualEisensteinCubic
 
-open Filter
 
 namespace RationalQuant
 
 end RationalQuant
 
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open RationalPrimeExtraction ShortDraftLatticeCount
 
 namespace RationalPrimeExtraction
 
 end RationalPrimeExtraction
 
-open ActualEisensteinCubic ShortDraftLatticeCount
 
 namespace RationalPrimeExtraction
 
-open ActualEisensteinCubic ShortDraftLatticeCount
 
 end RationalPrimeExtraction
 
@@ -65,7 +56,7 @@ theorem quadratic_phase_abs_le (a b k l : ℝ) :
     nlinarith [sq_nonneg (|k| - |l|), sq_abs k, sq_abs l]
   have hk : k ^ 2 ≤ 2 * Q := by nlinarith [hsum, sq_nonneg l]
   have hl : l ^ 2 ≤ 2 * Q := by nlinarith [hsum, sq_nonneg k]
-  have hkl : 2 * |k| * |l| ≤ 2 * Q := hcross.trans hsum
+  have hkl  := hcross.trans hsum
   have h1 := mul_le_mul_of_nonneg_left hk (abs_nonneg (a - b))
   have h2 := mul_le_mul_of_nonneg_left hkl (abs_nonneg a)
   have h3 := mul_le_mul_of_nonneg_left hl (abs_nonneg b)
@@ -81,8 +72,7 @@ theorem quadratic_phase_abs_le (a b k l : ℝ) :
             have hh := abs_add_le ((a - b) * k ^ 2) (2 * a * k * l)
             linarith
       _ = _ := by
-        simp [abs_mul,  abs_of_nonneg (sq_nonneg k),
-          abs_of_nonneg (sq_nonneg l)]
+        simp
   unfold phaseBoundConstant
   nlinarith [htri, h1, h2, h3, hQ]
 
@@ -90,7 +80,6 @@ end OscSpecial
 
 namespace GaussianMoment
 
-open scoped Topology
 open Filter
 
 theorem scaled_moment_vanishes_const (K : ℝ) (hK : 0 < K) :
@@ -125,7 +114,7 @@ private theorem breveE_period_div_lam_O (z : O) :
     ShortDraftTrace.breveE (eisEmbedding z / eisLam) = 1 := by
   let a := (ActualEisensteinCoordinates.coords z).1
   let b := (ActualEisensteinCoordinates.coords z).2
-  have hz : z = ActualEisensteinCoordinates.eval a b :=
+  have hz  :=
     (ActualEisensteinCoordinates.eval_coords z).symm
   rw [hz, eisEmbedding_eval]
   exact ConcreteBreveE.breveE_period_coordinates a b
@@ -137,7 +126,6 @@ theorem fixedDualPhase_period_two (c y w : O) :
     fixedDualPhase c (y + 2*w) = fixedDualPhase c y := by
   let d : O := -(c * (y*w+w^2))
   have hO : -(c * (y + 2*w)^2) = -(c*y^2) + 4*d := by
-    dsimp [d]
     ring
   have h4 : eisEmbedding (4*d) = 4 * eisEmbedding d := by
     simp only [map_mul, map_ofNat]
@@ -154,7 +142,7 @@ theorem fixedDualPhase_eq_of_mod_two (c y z : O)
     (h : Ideal.Quotient.mk (Ideal.span {(2 : O)}) y =
       Ideal.Quotient.mk (Ideal.span {(2 : O)}) z) :
     fixedDualPhase c y = fixedDualPhase c z := by
-  have hsub : y-z ∈ Ideal.span {(2 : O)} :=
+  have hsub  :=
     (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp h
   obtain ⟨w, hw⟩ := (Ideal.mem_span_singleton).mp hsub
   have hy : y = z + 2*w := by
@@ -165,7 +153,7 @@ theorem fixedDualPhase_eq_of_mod_two (c y z : O)
 
 theorem fixedDualPhase_weighted_partition (c : O) (W : O → ℂ)
     (hsum : Summable (fun y : O => fixedDualPhase c y * W y)) :
-    letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
+    letI  :=
       finite_quotient_span (by norm_num : (2 : O) ≠ 0)
     letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
     (∑' y : O, fixedDualPhase c y * W y) =
@@ -174,7 +162,7 @@ theorem fixedDualPhase_weighted_partition (c : O) (W : O → ℂ)
           ∑' w : O,
             W (GaussianShiftedPartition.representative 2 r + 2*w) := by
   let h2 : (2 : O) ≠ 0 := by norm_num
-  let : Finite (O ⧸ Ideal.span {(2 : O)}) := finite_quotient_span h2
+  let  := finite_quotient_span h2
   let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
   rw [GaussianAbelPartition.tsum_by_finite_fibers
     (Ideal.Quotient.mk (Ideal.span {(2 : O)})) _ hsum]
@@ -203,7 +191,6 @@ end ActualEisensteinCubic
 
 namespace OscSpecial
 
-open scoped Topology
 open Filter
 
 noncomputable def dualScale (η a b : ℝ) : ℝ :=
@@ -228,10 +215,9 @@ theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
   · exact hlim
   · filter_upwards [self_mem_nhdsWithin] with η hη
     change 0 < η at hη
-    have hr : 0 < r η a b := by
-      unfold r
-      positivity
-    exact div_pos (mul_pos hη hq) (mul_pos (by norm_num) hr)
+    refine div_pos (mul_pos hη hq) (mul_pos (by norm_num) ?_)
+    unfold r
+    positivity
 
 theorem abel_mass_dual_scale (a b : ℝ) (hq : 0 < q a b)
     (F : ℝ → ℂ) (L : ℂ)

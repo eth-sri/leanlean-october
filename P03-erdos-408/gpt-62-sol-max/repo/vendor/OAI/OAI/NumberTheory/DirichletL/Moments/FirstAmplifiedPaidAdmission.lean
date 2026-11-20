@@ -15,20 +15,17 @@ open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidAdmission
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
+open CenteredMomentSourceLiveColumn CenteredMomentFirstAmplifiedCapacityRadius
+open CenteredMomentSecondCapacitySourceShift CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
+open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
 open CenteredMomentAmplifiedRetainedRadius
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentFirstAmplifiedCapacitySource
 open CenteredMomentFirstAmplifiedActiveAffine CenteredMomentFirstAmplifiedActiveCapacitySource
@@ -88,8 +85,8 @@ theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
       Real.logb Z (volume s)-Mdecl+6*(sigma/3)+delta1+Real.logb Z (ratioPenalty n) := by
   dsimp only
   have hq:=norm_pos τ.modulus τ.modulus_ne_bot
-  have hqref:0<cost*(τ.modulus.absNorm:ℝ):=mul_pos hcost hq
-  have hf:=inherited_affine_parent s C R0 B Z κ Mdecl hZ hκ hP hcap
+  have hqref:=mul_pos hcost hq
+  have hf:=inherited_affine_parent s C B Z κ Mdecl hZ hκ hP hcap
   have hPchild:∀i,1≤(child s C R0 B τ t).P i:=fun i=>hP i.val
   have hparent:=common_affine (child s C R0 B τ t) Cpick B₂ Z κ (Real.logb Z (volume s)) Mdecl hZ hκ hPchild hf
   have hr:=actual_main_reference_shift s.η τ C D hC hD hCD E K (volume s) Z
@@ -113,10 +110,10 @@ theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
       Real.logb Z (ratioPenalty n) := by
     rcases hside with hside|hside
     · subst Cpick
-      exact common_raw_reference_shift (child s C R0 B τ t) υ t S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
+      exact common_raw_reference_shift false (child s C R0 B τ t) υ t S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
         B₂ hB₂ U R rows W _ a Z (cost*(τ.modulus.absNorm:ℝ)) n hqref hrad ha hZ hlower hne
     · subst Cpick
-      exact common_raw_reference_shift_right (child s C R0 B τ t) υ t S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
+      exact common_raw_reference_shift true (child s C R0 B τ t) υ t S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
         B₂ hB₂ U R rows W _ a Z (cost*(τ.modulus.absNorm:ℝ)) n hqref hrad ha hZ hlower hne
   rw [common_volume,Real.logb_mul hcost.ne' hq.ne'] at hg
   dsimp only at hr
@@ -192,14 +189,14 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
       Real.logb Z (ratioPenalty n) := by
     rcases hside with hside|hside
     · subst Cpick
-      exact common_raw_reference_shift (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) υ v S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
+      exact common_raw_reference_shift false (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) υ v S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
         B₂ hB₂ U R rows W _ a Z (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving p Z k)) n hqref hrad ha hZ hlower hne
     · subst Cpick
-      exact common_raw_reference_shift_right (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) υ v S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
+      exact common_raw_reference_shift true (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) υ v S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
         B₂ hB₂ U R rows W _ a Z (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving p Z k)) n hqref hrad ha hZ hlower hne
-  have hQ:(Ideal.span {p})≠(0:Ideal O):=Ideal.span_singleton_eq_bot.not.mpr hp
+  have hQ:=Ideal.span_singleton_eq_bot.not.mpr hp
   have hv:=active_error_volume s C R0 B τ t (Ideal.span {p}) hQ k hslot Bp υ v
-  have hn:(Ideal.absNorm (Ideal.span {p}):ℝ)=normValue p:=by simp only [normValue]
+  have hn:(Ideal.absNorm (Ideal.span {p}):ℝ)=normValue p:=by rfl
   rw [hn] at hv
   rw [hv] at hg
   dsimp only at hr

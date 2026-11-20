@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesCaps
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesChildren
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesChildren
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseInitialArithmetic InverseSecondSourceBlocks ActualEisensteinCubic
+open FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
  theorem source_cell_exponent_cap {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hk : ∀x∈source,x.second.frequency≠0) (Z Lcap : ℝ) (hZ : 1<Z)
     (hnorm : ∀x∈source,∀i,outerNorms p x i≤Z^Lcap)
@@ -29,7 +30,7 @@ local notation "O" => ActualEisensteinCubic.O
   exact hs.trans (hnorm x (cell_subset p source d hx) i)
 
 theorem source_cell_mass_gate {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hk : ∀x∈source,x.second.frequency≠0)
     (Z Lcap ell Ractive j t eta eps pi : ℝ) (hZ : 1<Z) (hj : 0≤j) (heps : 0≤eps)

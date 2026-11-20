@@ -57,15 +57,15 @@ theorem correctedFiniteCoefficient_product (I J : Ideal O)
   let B := d*m^3
   have hAs := supported_completed c n hc hn
   have hBs := supported_completed d m hd hm
-  have hAB : IsCoprime A B := hcop.of_mul_left_left.of_mul_right_left
-  have hnA : n∣A := by refine ⟨c*n^2,?_⟩; dsimp only [A]; ring
-  have hmB : m∣B := by refine ⟨d*m^2,?_⟩; dsimp only [B]; ring
-  have hcA : c∣A := dvd_mul_right c (n^3)
-  have hdB : d∣B := dvd_mul_right d (m^3)
-  have hcd : IsCoprime c d := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hdB
-  have hcm : IsCoprime c m := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hmB
-  have hnd : IsCoprime n d := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hdB
-  have hnm : IsCoprime n m := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hmB
+  have hAB  := hcop.of_mul_left_left.of_mul_right_left
+  have hnA : n∣A := by refine ⟨c*n^2,?_⟩; ring
+  have hmB : m∣B := by refine ⟨d*m^2,?_⟩; ring
+  have hcA  := dvd_mul_right c (n^3)
+  have hdB  := dvd_mul_right d (m^3)
+  have hcd  := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hdB
+  have hcm  := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hmB
+  have hnd  := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hdB
+  have hnm  := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hmB
   have hphase := completed_cubic_cross_cancel c n d m hc hn hd hm hpc hpn hpd hpm hcd hcm hnd hnm
   change sexticPair A B * sexticPair c d^2 * star (reciprocitySign A B)=1 at hphase
   change gaussTwo (I*J) hIJ.2 * star (G (A*B)) *

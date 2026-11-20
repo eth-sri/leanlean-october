@@ -19,7 +19,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem physical_pair_summable (C D I J : Ideal O) (hI : Supported (C*I)) (hJ : Supported (D*J))
     (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
     Summable (fun j : O=>idealCorrelation (C*I) (D*J) hI hJ j*physicalKernel C D W K R j I J) := by
-  have hk : 0<K/((Ideal.absNorm (C*I):ℝ)*Ideal.absNorm (D*J)) :=
+  have hk  :=
     div_pos hK (mul_pos (CenteredMomentFirstScale.norm_pos _ hI.1) (CenteredMomentFirstScale.norm_pos _ hJ.1))
   have hc (j : O) : ‖idealCorrelation (C*I) (D*J) hI hJ j‖≤
       (Ideal.absNorm (C*I):ℝ)*Ideal.absNorm (D*J) := by

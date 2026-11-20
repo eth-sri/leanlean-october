@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
@@ -74,9 +74,9 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
     rw [← he]
     apply tsum_congr
     intro I
-    have hI : I.val ≠ 0 := I.property
+    have hI  := I.property
     rw [CubicEisenstein.fullIdealWeight, ite_eq_right hI]
-    simp only [norm, Complex.ofReal_natCast]
+    rfl
   rw [hc]
   cases inverse
   · exact LFunction_eq_series χ hs

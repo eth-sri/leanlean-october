@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainMomentParameters
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainRelativeClass
@@ -11,18 +13,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate
+open scoped Classical BigOperators ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainMarkedFineField
 open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
 open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ProbeFinalAssembly
-open QuadraticInitialBound CenteredMomentDetectorDictionary
-open CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentInductionEnergy
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentNaturalFixedRaySource
-open CenteredMomentFiniteProfileExceptional CenteredMomentDetectorPlainFiberSource
-local notation "O"=>HeckeFamily.O
+open QuadraticInitialBound CenteredMomentDetectorDictionary CenteredMomentEnergyBands
+open CenteredMomentEnergyState CenteredMomentInductionEnergy CenteredMomentDetectorEnergyInitialState
+open CenteredMomentDetectorPlainMarkedState CenteredMomentDetectorPlainMomentParameters
+open CenteredMomentNaturalFixedRaySource CenteredMomentFiniteProfileExceptional
+open CenteredMomentDetectorPlainFiberSource
 
 def PositiveFineSourceInput {Δ:ℝ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ):Prop:=
   ∀bΦ:ℝ,0<bΦ→∃degree:ℕ,∃seminorms:Finset (ℕ×ℕ),
@@ -61,14 +62,7 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
   let data:=sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η
   choose C hC hbound using fun label=>henergy (data label)
   choose U₀ hU₀ using fun label=>Filter.eventually_atTop.mp (hbound label)
-  let Csum:ℝ:=1+∑label,C label
-  have hCsum:0<Csum:=by
-    have h:=Finset.sum_nonneg (fun label (_:label∈Finset.univ)=>(hC label).le)
-    dsimp [Csum];linarith
-  have hClabel (label):C label≤Csum:=by
-    have h:=Finset.single_le_sum (fun label (_:label∈Finset.univ)=>(hC label).le)
-      (Finset.mem_univ label)
-    dsimp [Csum];linarith
+  obtain ⟨Csum, hCsum, hClabel⟩ := exists_real_majorant 0 C
   have hscale:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d→U₀ label≤Z^d:=by
     apply Filter.eventually_all.mpr
     intro label
@@ -80,7 +74,7 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
   refine ⟨hs.1,?_⟩
   intro rows hrows d hd a tstar T allowance i B hB hdata hprof hwidth hupper hreal
     bin label left right hne height hheight hexternal F selected hselected hcap j k hjk σ hσ t ht
-  have hU:1<Z^d:=source_base_gt_one D Z d hs.1 hd
+  have hU:1<Z^d:=source_base_gt_one Z d hs.1 hd
   obtain ⟨state,hchar,hQ,hpuncture,hΦ,hK,hkeep,hwidthstate,hcapacity,hwidths,hrow⟩:=
     hs.2 rows hrows d hd a D.ε tstar T allowance i B hB hdata hprof hwidth hupper hreal
       bin label left right hne selected hselected hcap

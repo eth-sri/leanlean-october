@@ -44,7 +44,7 @@ theorem dyadic_normalized_coefficient_energy
     (a : Ideal Eis → ℂ) (ha : ∀ P ∈ S, ‖a P‖ ≤ 1) :
     (∑ P ∈ S, ‖a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ)‖ ^ 2) ≤ 256 := by
   have hL0 : 0 < L := by linarith
-  have hP0 (P : Ideal Eis) (hP : P ∈ S) : 0 < (Ideal.absNorm P : ℝ) :=
+  have hP0 (P : Ideal Eis) (hP : P ∈ S)  :=
     hL0.trans_le (hS P hP).1
   have hcount : (S.card : ℝ) ≤ 128 * (2 * L) := by
     apply DescentFiberCost.finite_ideal_count_real S (2 * L) (by linarith)
@@ -110,7 +110,7 @@ theorem inverseCubicKernel_eq_zero_of_not_coprime (P n : Ideal Eis)
   have hc := CubicSieve.idealSymbol_cube_mask P (CompletedGauss.primaryGenerator n) hP
   rw [(CompletedGauss.primaryGenerator_spec n hn).1, ite_eq_right hcop] at hc
   have hz := (pow_eq_zero_iff (by decide : (3 : ℕ) ≠ 0)).mp hc
-  simp only [inverseCubicKernel, hz, star_zero]
+  simp [inverseCubicKernel, hz, star_zero]
 
 theorem hybrid_cubic_column_mask
     (P n b c m h t : Ideal Eis)
@@ -127,7 +127,7 @@ theorem hybrid_cubic_column_mask
     simp only [he]
   · have hPn : ¬ IsCoprime P n := by
       rw [hn, IsCoprime.mul_right_iff]
-      exact fun hcop => hc hcop.1
+      simp_all
     rw [inverseCubicKernel_eq_zero_of_not_coprime P n hP hngen hPn]
     simp
 
@@ -198,7 +198,6 @@ theorem normalized_ideal_product_weight (R P : Ideal Eis) (z : ℂ) :
       (Real.sqrt (Ideal.absNorm R : ℝ) : ℂ)⁻¹ *
         (z / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ)) := by
   rw [map_mul, Nat.cast_mul, Real.sqrt_mul (Nat.cast_nonneg _), Complex.ofReal_mul]
-  simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
 theorem hybrid_extracted_block_identity

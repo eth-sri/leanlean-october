@@ -173,105 +173,19 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
     rw [mul_assoc, norm_mul, mul_pow, show (16 : ℝ) = 4 ^ 2 by norm_num]
     gcongr
     exact norm_labelPoly_le x d hY lam χ₁ τ
-  -- the coefficients are at most `L^C`
-  have hLC : 0 ≤ L ^ C := Real.rpow_nonneg hL0.le _
-  have hu : ∀ m ∈ d.mRange, ‖d.α m * χ₂ m‖ ≤ L ^ C := by
-    intro m _
-    rw [norm_mul]
-    by_cases h : d.α m = 0
-    · rw [h, norm_zero, zero_mul]
-      exact hLC
-    · calc ‖d.α m‖ * ‖χ₂ m‖ ≤ L ^ C * 1 :=
-            mul_le_mul (hd.α_supp m h).2.2.2 (χ₂.norm_le_one _) (norm_nonneg _) hLC
-        _ = L ^ C := mul_one _
-  have hv : ∀ n ∈ d.nRange, ‖d.β n * χ₃ n‖ ≤ L ^ C := by
-    intro n _
-    rw [norm_mul]
-    by_cases h : d.β n = 0
-    · rw [h, norm_zero, zero_mul]
-      exact hLC
-    · calc ‖d.β n‖ * ‖χ₃ n‖ ≤ L ^ C * 1 :=
-            mul_le_mul (hd.β_supp n h).2.2.2 (χ₃.norm_le_one _) (norm_nonneg _) hLC
-        _ = L ^ C := mul_one _
-  -- the ranges lie in `[1, ⌊2H_m⌋]` and `[1, ⌊2H_n⌋]`
-  set N₁ := ⌊2 * d.Hm⌋₊
-  set N₂ := ⌊2 * d.Hn⌋₊
-  have hI₁ : ∀ m ∈ d.mRange, 1 ≤ m ∧ m ≤ N₁ := fun m hm => by
-    rw [Data.mRange, Finset.mem_Icc] at hm
-    exact ⟨(Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne').trans hm.1, hm.2⟩
-  have hI₂ : ∀ n ∈ d.nRange, 1 ≤ n ∧ n ≤ N₂ := fun n hn => by
-    rw [Data.nRange, Finset.mem_Icc] at hn
-    exact ⟨(Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne').trans hn.1, hn.2⟩
-  have hmean := integral_norm_sum_mul_sum_sq_le hI₁ hI₂ hLC hLC hu hv hab
-  -- `M_α N_β = X⁻¹ (∑_m α_m χ(m) m^{iτ}) (∑_n β_n ψ(n) n^{iτ})`
-  have hprod : ∀ τ : ℝ, ‖markedPoly d χ₂ τ * unmarkedPoly d χ₃ τ‖ ^ 2 = d.X⁻¹ ^ 2 *
-      ‖(∑ m ∈ d.mRange, d.α m * χ₂ m * (m : ℂ) ^ ((τ : ℂ) * Complex.I)) *
-        (∑ n ∈ d.nRange, d.β n * χ₃ n * (n : ℂ) ^ ((τ : ℂ) * Complex.I))‖ ^ 2 := by
-    intro τ
-    unfold markedPoly unmarkedPoly Data.X
-    rw [mul_mul_mul_comm, norm_mul, mul_pow, ← mul_inv, ← Complex.ofReal_mul, norm_inv,
-      Complex.norm_real, Real.norm_of_nonneg (by positivity)]
-  simp_rw [hprod] at h16
-  rw [intervalIntegral.integral_const_mul] at h16
-  -- the length `N = N₁ N₂` has `1 ≤ N ≤ 4X` and `1 + log N ≤ 3L`
-  have hN₁ : (N₁ : ℝ) ≤ 2 * d.Hm := Nat.floor_le (by linarith)
-  have hN₂ : (N₂ : ℝ) ≤ 2 * d.Hn := Nat.floor_le (by linarith)
-  have hN₁' : 1 ≤ N₁ := Nat.le_floor (by push_cast; linarith)
-  have hN₂' : 1 ≤ N₂ := Nat.le_floor (by push_cast; linarith)
-  have hN : ((N₁ * N₂ : ℕ) : ℝ) ≤ 4 * d.X := by
-    push_cast
-    unfold Data.X
-    calc (N₁ : ℝ) * N₂ ≤ (2 * d.Hm) * (2 * d.Hn) :=
-          mul_le_mul hN₁ hN₂ (Nat.cast_nonneg _) (by linarith)
-      _ = 4 * (d.Hm * d.Hn) := by ring
-  have hN1 : (1 : ℝ) ≤ ((N₁ * N₂ : ℕ) : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have hlogN0 : 0 ≤ Real.log ((N₁ * N₂ : ℕ) : ℝ) := Real.log_nonneg hN1
-  have hlogN : 1 + Real.log ((N₁ * N₂ : ℕ) : ℝ) ≤ 3 * L := by
-    have := Real.log_le_log (by linarith) hN
-    linarith
-  have h₁ : b - a + 8 * ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ≤
-      b - a + 96 * d.X * L := by
-    have h : 8 * ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ≤
-        8 * (4 * d.X) * (3 * L) := by gcongr
-    linarith
-  have h₂ : (L ^ C) ^ 2 * (L ^ C) ^ 2 *
-      (((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ^ 3) ≤
-      L ^ (4 * C) * (108 * d.X * L ^ 3) := by
-    have e : (L ^ C) ^ 2 * (L ^ C) ^ 2 = L ^ (4 * C) := by
-      rw [← pow_add, ← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-      norm_num
-      ring_nf
-    rw [e]
-    refine mul_le_mul_of_nonneg_left ?_ (by positivity)
-    calc ((N₁ * N₂ : ℕ) : ℝ) * (1 + Real.log ((N₁ * N₂ : ℕ) : ℝ)) ^ 3
-        ≤ (4 * d.X) * (3 * L) ^ 3 := by gcongr
-      _ = 108 * d.X * L ^ 3 := by ring
-  -- collect the powers of `L`
-  set y := (b - a) / d.X with hy
-  have hy0 : 0 ≤ y := div_nonneg (by linarith) hX.le
-  set P := L ^ (4 * C) * L ^ 3 with hP
-  have hP0 : 0 ≤ P := by positivity
-  have hPL : P * L = L ^ meanExp C := by
-    rw [hP, meanExp, mul_assoc, ← pow_succ, ← Real.rpow_natCast, ← Real.rpow_add hL0]
+  set y := (b - a) / d.X
+  let P := L^(4*C)*L^3
+  have hy0 : 0 ≤ y := div_nonneg (sub_nonneg.mpr hab) hX.le
+  have hbnd := integral_norm_markedPoly_mul_sq_interval hd hx hL hlog χ₂ χ₃ hab
+  have hkey : y+96*L ≤ 96*L*(1+y) := by nlinarith [mul_nonneg hy0 (show 0 ≤ 96*L-1 by linarith)]
+  have hPL : P*L = L^meanExp C := by
+    dsimp only [P]
+    rw [meanExp, mul_assoc, ← pow_succ, ← Real.rpow_natCast, ← Real.rpow_add hL0]
     norm_num
-  have hkey : P * (y + 96 * L) ≤ 96 * (P * L) * (1 + y) := by
-    have h := mul_nonneg (mul_nonneg hP0 hy0) (show 0 ≤ 96 * L - 1 by linarith)
-    have e : 96 * (P * L) * (1 + y) - P * (y + 96 * L) = P * y * (96 * L - 1) := by ring
-    linarith
-  calc ∫ τ in a..b, ‖labelPoly x d Y lam χ₁ τ * markedPoly d χ₂ τ * unmarkedPoly d χ₃ τ‖ ^ 2
-      ≤ 16 * (d.X⁻¹ ^ 2 * ((b - a + 96 * d.X * L) * (L ^ (4 * C) * (108 * d.X * L ^ 3)))) := by
-        refine h16.trans ?_
-        gcongr
-        refine hmean.trans ?_
-        have h96 : 0 < 96 * d.X * L := by positivity
-        exact mul_le_mul h₁ h₂ (by positivity) (by linarith)
-    _ = 1728 * (P * (y + 96 * L)) := by
-        rw [hy, hP]
-        field_simp
-        ring
-    _ ≤ 1728 * (96 * (P * L) * (1 + y)) := by gcongr
-    _ = 165888 * L ^ meanExp C * (1 + y) := by rw [← hPL]; ring
+  calc
+    _ ≤ 16 * (108*P*(y+96*L)) := h16.trans (mul_le_mul_of_nonneg_left hbnd (by norm_num))
+    _ ≤ 16 * (108*P*(96*L*(1+y))) := by dsimp [P]; gcongr
+    _ = _ := by rw [← hPL]; ring
 
 /-- `∫_a^b (∑_i f_i)² ≤ |s| ∑_i ∫_a^b f_i²`, by Cauchy's inequality at each point. -/
 private theorem intervalIntegral_sq_sum_le {ι : Type*} (s : Finset ι) {f : ι → ℝ → ℝ}
@@ -331,7 +245,6 @@ theorem norm_arcTerm_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (
     ((continuous_labelPoly x d Y lam χ.1).mul (continuous_markedPoly hHm χ.2.1)).mul
       (continuous_unmarkedPoly hHn χ.2.2)
   have hgc : Continuous g := continuous_finsetSum _ fun χ _ => (hQc χ).norm
-  have hg0 : ∀ τ, 0 ≤ g τ := fun τ => Finset.sum_nonneg fun χ _ => norm_nonneg _
   have hgB : ∀ τ, g τ ≤ ∑ _χ : DirichletCharacter ℂ k × DirichletCharacter ℂ k ×
       DirichletCharacter ℂ k, 4 * (d.Hm⁻¹ * ∑ m ∈ d.mRange, ‖d.α m‖) *
         (d.Hn⁻¹ * ∑ n ∈ d.nRange, ‖d.β n‖) := fun τ =>
@@ -368,11 +281,11 @@ theorem norm_arcTerm_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (
           gcongr with χ
           exact hM χ.1 χ.2.1 χ.2.2 a b hab
       _ = n ^ 2 * M * (1 + (b - a) / d.X) := by rw [Finset.sum_const, nsmul_eq_mul, hcard]; ring
-  obtain ⟨hInt, hBound⟩ := integral_kernel_mul_le hgc hg0 hgB hX hXT hε hEg hMg
+  obtain ⟨hInt, hBound⟩ := integral_kernel_mul_le hgc (fun τ => Finset.sum_nonneg fun χ _ => norm_nonneg _) hgB hX hXT hε hEg hMg
   have hc0 : 0 ≤ c := by
     have h0 := (norm_nonneg _).trans (hKb 0 0)
     simpa using h0
-  have hG : ∀ τ, ‖sidePoly x d Y lam k h τ‖ ≤ d.X * Y * g τ :=
+  have hG :=
     norm_sidePoly_le hY hHm hHn k h lam hunit hpos
   rw [arcTerm_eq_integral hY hX k h lam hKi hK hsupp hpos]
   calc ‖∫ q : ℝ × ℝ, Kf q * (sidePoly x d Y lam k h q.1 * star (sidePoly x d Y lam k h (-q.2)))‖

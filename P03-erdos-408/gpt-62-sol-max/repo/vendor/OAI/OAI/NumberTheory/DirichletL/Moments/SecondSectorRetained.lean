@@ -37,9 +37,9 @@ theorem physical_sector_summable (η : Character) (t : ℝ)
   intro J hJ
   by_cases hcop : IsCoprime (I:Ideal O) (J:Ideal O)
   · simp only [ite_eq_left hcop]
-    have hCI : Supported (C*(I:Ideal O)) := (supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩
-    have hDJ : Supported (D*(J:Ideal O)) := (supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩
-    have hk : 0<K/((Ideal.absNorm (C*(I:Ideal O)):ℝ)*Ideal.absNorm (D*(J:Ideal O))) :=
+    have hCI  := (supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩
+    have hDJ  := (supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩
+    have hk  :=
       div_pos hK (mul_pos (CenteredMomentFirstScale.norm_pos _ hCI.1) (CenteredMomentFirstScale.norm_pos _ hDJ.1))
     have hc (j : O) : ‖idealCorrelation (C*I) (D*J) hCI hDJ j‖≤
         (Ideal.absNorm (C*(I:Ideal O)):ℝ)*Ideal.absNorm (D*(J:Ideal O)) := by

@@ -9,76 +9,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
@@ -141,8 +81,8 @@ lemma integralComplexMatrix_injective : Function.Injective integralComplexMatrix
 
 lemma levelThree_trace_divisible_nine (M : levelThree) :
     (9:O)∣((M:SL(2,O)) 0 0+(M:SL(2,O)) 1 1-2) := by
-  have ha : (3:O)∣((M:SL(2,O)) 0 0-1) := by simpa using levelThree_entry M 0 0
-  have hd : (3:O)∣((M:SL(2,O)) 1 1-1) := by simpa using levelThree_entry M 1 1
+  have ha : (3:O)∣((M:SL(2,O)) 0 0-1) := by exact levelThree_entry M 0 0
+  have hd : (3:O)∣((M:SL(2,O)) 1 1-1) := by exact levelThree_entry M 1 1
   have hb : (3:O)∣(M:SL(2,O)) 0 1 := by simpa using levelThree_entry M 0 1
   have hc : (3:O)∣(M:SL(2,O)) 1 0 := by simpa using levelThree_entry M 1 0
   have hdet : (M:SL(2,O)) 0 0*(M:SL(2,O)) 1 1-(M:SL(2,O)) 0 1*(M:SL(2,O)) 1 0=1 := by
@@ -153,7 +93,11 @@ lemma levelThree_trace_divisible_nine (M : levelThree) :
   rw [he]
   exact dvd_sub (by simpa only [show (3:O)*3=9 by ring] using mul_dvd_mul hb hc) (by simpa only [show (3:O)*3=9 by ring] using mul_dvd_mul ha hd)
 
-lemma unitary_row_normSq (k : SL(2,ℂ)) (hk : k∈compactSubgroup) (i : Fin 2) :
+section
+
+variable (k : SL(2,ℂ))
+
+lemma unitary_row_normSq (hk : k∈compactSubgroup) (i : Fin 2) :
     Complex.normSq (k i 0)+Complex.normSq (k i 1)=1 := by
   have hu := Matrix.mem_unitaryGroup_iff.mp hk
   have he := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A i i).re) hu
@@ -162,7 +106,7 @@ lemma unitary_row_normSq (k : SL(2,ℂ)) (hk : k∈compactSubgroup) (i : Fin 2) 
   simp only [Complex.normSq_apply]
   nlinarith
 
-lemma unitary_trace_norm_le_two (k : SL(2,ℂ)) (hk : k∈compactSubgroup) : ‖k 0 0+k 1 1‖≤2 := by
+lemma unitary_trace_norm_le_two (hk : k∈compactSubgroup) : ‖k 0 0+k 1 1‖≤2 := by
   have h0 := unitary_row_normSq k hk 0
   have h1 := unitary_row_normSq k hk 1
   have ha : ‖k 0 0‖≤1 := by
@@ -173,7 +117,7 @@ lemma unitary_trace_norm_le_two (k : SL(2,ℂ)) (hk : k∈compactSubgroup) : ‖
     nlinarith [norm_nonneg (k 1 1),sq_nonneg ‖k 1 0‖]
   exact (norm_add_le _ _).trans (by linarith)
 
-lemma unitary_trace_two_eq_one (k : SL(2,ℂ)) (hk : k∈compactSubgroup)
+lemma unitary_trace_two_eq_one (hk : k∈compactSubgroup)
     (ht : k 0 0+k 1 1=2) : k=1 := by
   have h0 := unitary_row_normSq k hk 0
   have h1 := unitary_row_normSq k hk 1
@@ -197,7 +141,9 @@ lemma unitary_trace_two_eq_one (k : SL(2,ℂ)) (hk : k∈compactSubgroup)
       Complex.normSq_nonneg (k 1 0),Complex.normSq_nonneg (k 1 1-1)]))
   apply Subtype.ext
   funext i j
-  fin_cases i <;> fin_cases j <;> simpa using (by first | exact ha | exact hb | exact hc | exact hd)
+  fin_cases i <;> fin_cases j <;> assumption
+
+end
 
 lemma matrix_trace_conjugate (g h : SL(2,ℂ)) :
     (g⁻¹*h*g) 0 0+(g⁻¹*h*g) 1 1=h 0 0+h 1 1 := by
@@ -235,7 +181,7 @@ lemma levelThree_unitary_conjugate_eq_one (M : levelThree) (g : SL(2,ℂ))
     rw [htr]
     apply sub_eq_zero.mp
     rw [hmap,haz,map_zero,mul_zero]
-  have hk1 : k=1 := unitary_trace_two_eq_one k hk ht2
+  have hk1  := unitary_trace_two_eq_one k hk ht2
   have hM1 : complexMatrix M=1 := by
     have h := congrArg (fun A : SL(2,ℂ) => g*A*g⁻¹) hk1
     simpa [k,mul_assoc] using h
@@ -281,8 +227,7 @@ lemma hyperbolicOrderKey_injective : Function.Injective hyperbolicOrderKey := by
 lemma hyperbolicOrderKey_lt_of_frobenius {w u : HyperbolicSpace}
     (h : hyperbolicFrobenius w<hyperbolicFrobenius u) : hyperbolicOrderKey w<hyperbolicOrderKey u := by
   refine ⟨0,?_,h⟩
-  intro j hj
-  exact False.elim (not_lt_of_ge (Fin.zero_le j) hj)
+  simp
 
 attribute [fun_prop] hyperbolicGram_continuous hyperbolicFrobenius_continuous
 
@@ -290,8 +235,12 @@ lemma hyperbolicKeyCoordinates_continuous (i : Fin 9) :
     Continuous (fun w => hyperbolicKeyCoordinates w i) := by
   fin_cases i <;> simp only [hyperbolicKeyCoordinates] <;> fun_prop
 
-lemma hyperbolicOrderKey_lt_measurable {X : Type*} [TopologicalSpace X] [MeasurableSpace X]
-    [BorelSpace X] (f g : X → HyperbolicSpace) (hf : Continuous f) (hg : Continuous g) :
+section
+
+variable {X : Type*} [TopologicalSpace X] [MeasurableSpace X]
+  [BorelSpace X]
+
+lemma hyperbolicOrderKey_lt_measurable (f g : X → HyperbolicSpace) (hf : Continuous f) (hg : Continuous g) :
     MeasurableSet {x | hyperbolicOrderKey (f x)<hyperbolicOrderKey (g x)} := by
   change MeasurableSet {x | ∃i : Fin 9,(∀j : Fin 9,j < i → hyperbolicKeyCoordinates (f x) j=hyperbolicKeyCoordinates (g x) j) ∧
     hyperbolicKeyCoordinates (f x) i<hyperbolicKeyCoordinates (g x) i}
@@ -308,8 +257,7 @@ lemma hyperbolicOrderKey_lt_measurable {X : Type*} [TopologicalSpace X] [Measura
   · exact measurableSet_lt ((hyperbolicKeyCoordinates_continuous i).comp hf).measurable
       ((hyperbolicKeyCoordinates_continuous i).comp hg).measurable
 
-lemma hyperbolicOrderKey_le_measurable {X : Type*} [TopologicalSpace X] [MeasurableSpace X]
-    [BorelSpace X] (f g : X → HyperbolicSpace) (hf : Continuous f) (hg : Continuous g) :
+lemma hyperbolicOrderKey_le_measurable (f g : X → HyperbolicSpace) (hf : Continuous f) (hg : Continuous g) :
     MeasurableSet {x | hyperbolicOrderKey (f x)≤hyperbolicOrderKey (g x)} := by
   have he : {x | hyperbolicOrderKey (f x)≤hyperbolicOrderKey (g x)}=
       {x | hyperbolicOrderKey (g x)<hyperbolicOrderKey (f x)}ᶜ := by
@@ -318,6 +266,8 @@ lemma hyperbolicOrderKey_le_measurable {X : Type*} [TopologicalSpace X] [Measura
     exact ⟨fun h => not_lt_of_ge h,fun h => le_of_not_gt h⟩
   rw [he]
   exact (hyperbolicOrderKey_lt_measurable g f hg hf).compl
+
+end
 
 instance integralSLCountable : Countable (SL(2,O)) := by
   let : Countable O := latticeCoordEquiv.injective.countable
@@ -333,7 +283,11 @@ lemma integralSubgroup_smul (H : Subgroup (SL(2,O))) (M : H) (w : HyperbolicSpac
 def hyperbolicFundamentalSet (H : Subgroup (SL(2,O))) : Set HyperbolicSpace :=
   {w | ∀M : H,hyperbolicOrderKey w≤hyperbolicOrderKey (M • w)}
 
-lemma hyperbolicFundamentalSet_measurable (H : Subgroup (SL(2,O))) :
+section
+
+variable (H : Subgroup (SL(2,O)))
+
+lemma hyperbolicFundamentalSet_measurable :
     MeasurableSet (hyperbolicFundamentalSet H) := by
   unfold hyperbolicFundamentalSet
   simp only [Set.ofPred_forall]
@@ -342,7 +296,7 @@ lemma hyperbolicFundamentalSet_measurable (H : Subgroup (SL(2,O))) :
   exact hyperbolicOrderKey_le_measurable _ _ continuous_id
     (continuous_hyperbolic_action (integralComplexMatrix (M:SL(2,O))))
 
-lemma exists_key_orbit_minimum (H : Subgroup (SL(2,O))) (w : HyperbolicSpace) :
+lemma exists_key_orbit_minimum (w : HyperbolicSpace) :
     ∃M : H,∀N : H,hyperbolicOrderKey (M • w)≤hyperbolicOrderKey (N • w) := by
   let S : Set H := {M | hyperbolicFrobenius (M • w)≤hyperbolicFrobenius w}
   have hs : Set.Finite S := subgroup_hyperbolic_sublevel_finite H w _
@@ -355,13 +309,13 @@ lemma exists_key_orbit_minimum (H : Subgroup (SL(2,O))) (w : HyperbolicSpace) :
     apply hyperbolicOrderKey_lt_of_frobenius
     exact hM.trans_lt (lt_of_not_ge hN)
 
-lemma hyperbolicFundamentalSet_covers (H : Subgroup (SL(2,O))) (w : HyperbolicSpace) :
+lemma hyperbolicFundamentalSet_covers (w : HyperbolicSpace) :
     ∃M : H,M • w∈hyperbolicFundamentalSet H := by
   obtain ⟨M,hM⟩ := exists_key_orbit_minimum H w
   refine ⟨M,fun N => ?_⟩
   simpa only [mul_smul] using hM (N*M)
 
-lemma hyperbolicFundamentalSet_orbit_unique (H : Subgroup (SL(2,O))) (w : HyperbolicSpace)
+lemma hyperbolicFundamentalSet_orbit_unique (w : HyperbolicSpace)
     (hw : w∈hyperbolicFundamentalSet H) (M : H)
     (hMw : M • w∈hyperbolicFundamentalSet H) : M • w=w := by
   apply hyperbolicOrderKey_injective
@@ -369,13 +323,12 @@ lemma hyperbolicFundamentalSet_orbit_unique (H : Subgroup (SL(2,O))) (w : Hyperb
   · simpa only [inv_smul_smul] using hMw M⁻¹
   · exact hw M
 
-lemma subgroup_action_free (H : Subgroup (SL(2,O))) (hH : H≤levelThree) (M : H)
+lemma subgroup_action_free (hH : H≤levelThree) (M : H)
     (w : HyperbolicSpace) (hM : M • w=w) : M=1 := by
   have he := levelThree_action_free (⟨(M:SL(2,O)),hH M.property⟩ : levelThree) w hM
-  apply Subtype.ext
-  exact congrArg (fun N : levelThree => (N:SL(2,O))) he
+  simp_all
 
-theorem hyperbolicFundamentalSet_isFundamentalDomain (H : Subgroup (SL(2,O))) (hH : H≤levelThree) :
+theorem hyperbolicFundamentalSet_isFundamentalDomain (hH : H≤levelThree) :
     IsFundamentalDomain H (hyperbolicFundamentalSet H) hyperbolicVolume := by
   apply IsFundamentalDomain.mk' (hyperbolicFundamentalSet_measurable H).nullMeasurableSet
   intro w
@@ -384,8 +337,10 @@ theorem hyperbolicFundamentalSet_isFundamentalDomain (H : Subgroup (SL(2,O))) (h
   have he : (N*M⁻¹) • (M • w)=M • w :=
     hyperbolicFundamentalSet_orbit_unique H (M • w) hM (N*M⁻¹) (by
       simpa only [mul_smul,inv_smul_smul] using hN)
-  have hNM : N*M⁻¹=1 := subgroup_action_free H hH _ _ he
+  have hNM  := subgroup_action_free H hH _ _ he
   exact mul_inv_eq_one.mp hNM
+
+end
 
 lemma globalKubotaKernel_le_levelThree : globalKubotaKernel≤levelThree := by
   intro M hM
@@ -398,7 +353,7 @@ theorem globalKubotaKernel_isFundamentalDomain :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
 local notation "O" => ActualEisensteinCubic.O
@@ -421,12 +376,16 @@ lemma measurable_integralOrbitProjection (H : Subgroup (SL(2,O))) :
 def integralQuotientVolume (H : Subgroup (SL(2,O))) : Measure (IntegralOrbitQuotient H) :=
   Measure.map (integralOrbitProjection H) (hyperbolicVolume.restrict (hyperbolicFundamentalSet H))
 
-lemma quotient_projection_measurePreserving (H : Subgroup (SL(2,O))) :
+section
+
+variable (H : Subgroup (SL(2,O)))
+
+lemma quotient_projection_measurePreserving :
     MeasurePreserving (integralOrbitProjection H)
       (hyperbolicVolume.restrict (hyperbolicFundamentalSet H)) (integralQuotientVolume H) :=
   ⟨measurable_integralOrbitProjection H,rfl⟩
 
-theorem integralQuotientVolume_independent (H : Subgroup (SL(2,O))) (hH : H≤levelThree)
+theorem integralQuotientVolume_independent (hH : H≤levelThree)
     (D : Set HyperbolicSpace) (hD : IsFundamentalDomain H D hyperbolicVolume) :
     Measure.map (integralOrbitProjection H) (hyperbolicVolume.restrict D)=integralQuotientVolume H := by
   apply Measure.ext
@@ -441,11 +400,13 @@ theorem integralQuotientVolume_independent (H : Subgroup (SL(2,O))) (hH : H≤le
   change integralOrbitProjection H (M • w)∈S ↔ integralOrbitProjection H w∈S
   rw [integralSubgroup_smul,integralOrbitProjection_eq]
 
-lemma integralQuotientVolume_integral (H : Subgroup (SL(2,O)))
+lemma integralQuotientVolume_integral
     (f : IntegralOrbitQuotient H → ℂ) (hf : AEStronglyMeasurable f (integralQuotientVolume H)) :
     (∫q,f q∂integralQuotientVolume H)=
       ∫w in hyperbolicFundamentalSet H,f (integralOrbitProjection H w)∂hyperbolicVolume :=
   integral_map (measurable_integralOrbitProjection H).aemeasurable hf
+
+end
 
 lemma hyperbolicEuclideanVolume_ne_zero : hyperbolicEuclideanVolume≠0 := by
   have hU : IsOpen euclideanUpperHalf := isOpen_lt continuous_const (by fun_prop)
@@ -487,19 +448,25 @@ lemma kernelQuotientEisenstein_mk (s : ℂ) (hs : 2<s.re) (w : HyperbolicSpace) 
     kernelQuotientEisenstein s hs (integralOrbitProjection globalKubotaKernel w)=
       hyperbolicEisenstein s w := rfl
 
-lemma kernel_seed_invariant (a b : ℝ) (s : ℂ) (M : globalKubotaKernel) (w : HyperbolicSpace) :
+section
+
+variable (a b : ℝ) (s : ℂ) (M : globalKubotaKernel) (w : HyperbolicSpace)
+
+lemma kernel_seed_invariant :
     smoothCuspSeed a b s (M • w)=smoothCuspSeed a b s w := by
   obtain ⟨hM,hchar⟩ := (globalKubotaKernel_mem (M:SL(2,O))).mp M.property
   have he := smoothCuspSeed_automorphy a b s (⟨(M:SL(2,O)),hM⟩ : levelThree) w
   rw [hchar,one_mul] at he
   exact he
 
-lemma kernel_defect_invariant (a b : ℝ) (s : ℂ) (M : globalKubotaKernel) (w : HyperbolicSpace) :
+lemma kernel_defect_invariant :
     smoothCuspSeedDefect a b s (M • w)=smoothCuspSeedDefect a b s w := by
   obtain ⟨hM,hchar⟩ := (globalKubotaKernel_mem (M:SL(2,O))).mp M.property
   have he := smoothCuspSeedDefect_automorphy a b s (⟨(M:SL(2,O)),hM⟩ : levelThree) w
   rw [hchar,one_mul] at he
   exact he
+
+end
 
 def kernelQuotientSeed (a b : ℝ) (s : ℂ) : IntegralOrbitQuotient globalKubotaKernel → ℂ :=
   Quotient.lift (smoothCuspSeed a b s) (by
@@ -515,7 +482,6 @@ def kernelQuotientDefect (a b : ℝ) (s : ℂ) : IntegralOrbitQuotient globalKub
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 open ActualEisensteinCubic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
@@ -524,7 +490,11 @@ def largeCubeCoefficient (H₀ : ℝ) (B : Ideal O) : ℂ :=
   if B=⊥ then 0 else ∑ H∈idealDivisors B,
     if H₀ ≤ (Ideal.absNorm H : ℝ) then (UniqueFactorizationMonoid.moebius H : ℂ) else 0
 
-theorem largeCubeCoefficient_norm_le (H₀ : ℝ) (B : Ideal O) :
+section
+
+variable (H₀ : ℝ) (B : Ideal O)
+
+theorem largeCubeCoefficient_norm_le :
     ‖largeCubeCoefficient H₀ B‖ ≤ (idealDivisors B).card := by
   by_cases hB : B=⊥
   · simp [hB,largeCubeCoefficient]
@@ -542,7 +512,7 @@ theorem largeCubeCoefficient_norm_le (H₀ : ℝ) (B : Ideal O) :
         · simp [h]
       _ = _ := by simp
 
-theorem largeCubeCoefficient_support (H₀ : ℝ) (B : Ideal O)
+theorem largeCubeCoefficient_support
     (h : largeCubeCoefficient H₀ B ≠ 0) : B≠⊥ ∧ H₀ ≤ (Ideal.absNorm B : ℝ) := by
   have hB : B≠⊥ := fun hb => h (by simp [hb,largeCubeCoefficient])
   refine ⟨hB,?_⟩
@@ -552,8 +522,10 @@ theorem largeCubeCoefficient_support (H₀ : ℝ) (B : Ideal O)
     by_contra hn
     exact hterm (ite_eq_right hn)
   have hdiv := (mem_idealDivisors hB).mp hH
-  have hpos : 0 < Ideal.absNorm B := Nat.pos_iff_ne_zero.mpr (fun hn => hB (Ideal.absNorm_eq_zero_iff.mp hn))
+  have hpos  := Nat.pos_iff_ne_zero.mpr (fun hn => hB (Ideal.absNorm_eq_zero_iff.mp hn))
   exact hlarge.trans (by exact_mod_cast Nat.le_of_dvd hpos (map_dvd Ideal.absNorm hdiv))
+
+end
 
 theorem large_cube_convolution (H₀ : ℝ) (c : Ideal O →* ℂ) (hc0 : c 0=0)
     (f : Ideal O → ℂ)

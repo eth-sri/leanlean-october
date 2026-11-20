@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 public import OAI.NumberTheory.DirichletL.Descent.OriginalCellPriority
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalCellPriority
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 
-lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+lemma refined_parent_source (p : ι→O) [OAI.PrincipalFamily.Maximal p]
     (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l j : ℕ) :
     globalParentSource (originalSubsetSource (refinedOuter p pool Q k (labelGate p j)))
@@ -35,10 +36,10 @@ lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
     apply Finset.mem_filter.mpr
     refine ⟨?_,?_⟩
     · simpa only [originalOuterCell_eq_caps] using ho
-    · simpa [labelGate,fillFirstQuotient,toOriginal,ofOriginal] using hj
+    assumption
 
-theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -56,7 +57,7 @@ theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.spa
     (fun b=>if negative then b.rightExponent.support else b.leftExponent.support)
     negative Ψ m slots lists a om X t Y hY
   rw [refined_parent_source] at he
-  cases negative <;> simpa [refinedChildEnergy,divisorElement] using he
+  cases negative <;> assumption
 
 end SevenEighths.InverseMomentFirstOriginalProfile
 end

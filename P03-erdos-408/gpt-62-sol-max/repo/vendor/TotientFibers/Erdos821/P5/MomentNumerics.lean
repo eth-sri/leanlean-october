@@ -27,7 +27,7 @@ theorem moment_numerical_bound (L Y P a b A C : ℝ)
   let R := C * Y * B ^ 3 * Nat.factorial m * (3 / P) ^ m / (L ^ (-A)) ^ (2 * m)
   have hL1 : 1 ≤ L := by
     have h : (1 : ℝ) ≤ Real.exp 1 := by
-      simpa only [Real.exp_zero] using Real.exp_le_exp.mpr (show (0 : ℝ) ≤ 1 by norm_num)
+      norm_num
     exact h.trans hL
   have hLpos : 0 < L := by linarith
   have hlogL : 1 ≤ Real.log L := by
@@ -39,9 +39,8 @@ theorem moment_numerical_bound (L Y P a b A C : ℝ)
   change (m : ℝ) ≤ 2 * L ^ (1 - a) at hmlength
   change Real.log Y - m * Real.log P ≤ Real.log 2 + L ^ b + m * Real.log 2 at hresid
   change Real.log (m : ℝ) ≤ Real.log 2 + Real.log L at hlogm
-  have hmpos : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm1)
+  have hmpos : (0 : ℝ) < m := by norm_cast
   have hfactpos : (0 : ℝ) < Nat.factorial m := by exact_mod_cast Nat.factorial_pos m
-  have hlogYpos : 0 < Real.log Y := by linarith
   have hlog2nonneg : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
   have hlog2le : Real.log 2 ≤ 1 := by
     linarith [Real.log_le_sub_one_of_pos (show (0 : ℝ) < 2 by norm_num)]
@@ -98,7 +97,7 @@ theorem moment_numerical_bound (L Y P a b A C : ℝ)
       (show 0 ≤ |Real.log C| + 1 by positivity)
   have hfinal : Real.log R ≤ (|Real.log C| + 30 + 4 * A) *
       (L ^ b + L ^ (1 - a) * Real.log L) := by
-    have hpowb : 0 ≤ L ^ b := Real.rpow_nonneg hLpos.le b
+    have hpowb  := Real.rpow_nonneg hLpos.le b
     have hpowlog : 0 ≤ L ^ (1 - a) * Real.log L := by positivity
     have hsecond : 12 * Real.log L + (5 + 2 * A) * (m : ℝ) * Real.log L ≤
         (22 + 4 * A) * (L ^ (1 - a) * Real.log L) := by

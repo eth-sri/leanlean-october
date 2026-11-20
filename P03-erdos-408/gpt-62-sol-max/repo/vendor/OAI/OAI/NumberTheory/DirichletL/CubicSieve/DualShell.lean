@@ -1,8 +1,10 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualCoefficients
 
 @[expose] public section
+
 
 namespace OAI
 
@@ -33,8 +35,7 @@ theorem cubic_dual_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, K / 2 ≤ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ∧
           (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ K)
-        (hcols : ∀ j, Admissible (cols j) ∧ N / 2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧
-          (Ideal.absNorm (cols j) : ℝ) ≤ N) (a : n → ℂ),
+        (hcols : OAI.IdealFamilyBand Admissible cols (N / 2) N) (a : n → ℂ),
         (1 + M * K / N ^ 2) ^ A *
           (∑ i, ‖cubicDualRow cols (fun j => (hcols j).1) a W M (rows i)‖) ≤
           C * (elementSieveNorm K N *

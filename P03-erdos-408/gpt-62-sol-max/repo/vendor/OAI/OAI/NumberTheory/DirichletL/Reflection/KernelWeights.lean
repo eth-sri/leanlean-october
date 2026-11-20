@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.KernelSeparation
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
+open scoped Classical BigOperators
 open MeasureTheory FourierBridge InverseKernelSourceUniform
 noncomputable section
 
@@ -122,11 +122,11 @@ theorem reciprocal_source_window_identity (windows : Fin 4→ℝ→ℂ) (M : Fin
   have hn0 := (Real.sqrt_pos.mpr hn).ne'
   have hQn0 := (Real.sqrt_pos.mpr hQn).ne'
   simp only [Complex.ofReal_mul,Complex.ofReal_div] at he ⊢
-  have hrC : (r:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr.ne'
-  have hbC : (b:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hb.ne'
-  have hQbC : (Qb:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQb.ne'
-  have hnC : (Real.sqrt n:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn0
-  have hQnC : (Real.sqrt Qn:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQn0
+  have hrC  := Complex.ofReal_ne_zero.mpr hr.ne'
+  have hbC  := Complex.ofReal_ne_zero.mpr hb.ne'
+  have hQbC  := Complex.ofReal_ne_zero.mpr hQb.ne'
+  have hnC  := Complex.ofReal_ne_zero.mpr hn0
+  have hQnC  := Complex.ofReal_ne_zero.mpr hQn0
   convert he using 1 <;> field_simp
 
 end

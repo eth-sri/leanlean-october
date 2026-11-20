@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 
 @[expose] public section
@@ -19,8 +20,8 @@ def deletionWeight (χ:Character)(j:Ideal O):ℂ:=
 theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
     ‖deletionWeight χ j‖≤1 := by
   have hn:1≤(j.absNorm:ℝ):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj)
-  have hp:0<(j.absNorm:ℝ):=lt_of_lt_of_le zero_lt_one hn
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hj)
+  have hp:=lt_of_lt_of_le zero_lt_one hn
   have hw:‖(j.absNorm:ℂ)^(-(1/2:ℂ))‖≤1:=by
     rw [←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hp]
     apply Real.rpow_le_one_of_one_le_of_nonpos hn

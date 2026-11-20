@@ -23,9 +23,8 @@ lemma rayMask_supported (a : O) (ha : Supported (Ideal.span {a})) : RayFourExpan
     intro hz
     exact ((supported_span_iff a).mp ha).2
       (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp hz))
-  have h4 : IsCoprime (4:O) a := by
-    simpa only [show (2:O)^2=4 by norm_num] using (h2.pow_left : IsCoprime ((2:O)^2) a)
-  exact ite_eq_left ((isUnit_quotient_span_iff (4:O) a).mpr h4)
+  refine ite_eq_left ((isUnit_quotient_span_iff (4:O) a).mpr ?_)
+  simpa only [show (2:O)^2=4 by norm_num] using (h2.pow_left : IsCoprime ((2:O)^2) a)
 
 lemma completedCorrection_supported (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
     completedCorrection I J=star (G (completedIndex I J)) := by

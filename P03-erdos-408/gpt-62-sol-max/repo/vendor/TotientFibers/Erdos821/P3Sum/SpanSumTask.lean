@@ -71,36 +71,36 @@ theorem span_interval_product_split {n : ℕ} (birth stop a z : Fin n)
     · rintro ⟨hbi, his, hnot⟩
       by_cases hleft : i < a
       · exact Or.inl (Or.inl ⟨hbi, hleft⟩)
-      · have hia : a ≤ i := le_of_not_gt hleft
+      · have hia  := le_of_not_gt hleft
         have hneA : i ≠ a := by
           intro he
           subst i
           exact hnot ha
-        have hait : a < i := lt_of_le_of_ne hia (Ne.symm hneA)
+        have hait  := lt_of_le_of_ne hia (Ne.symm hneA)
         by_cases hright : z < i
         · exact Or.inr ⟨hright, his⟩
-        · have hiz : i ≤ z := le_of_not_gt hright
+        · have hiz  := le_of_not_gt hright
           have hneZ : i ≠ z := by
             intro he
             subst i
             exact hnot hz
-          have hitz : i < z := lt_of_le_of_ne hiz hneZ
+          have hitz  := lt_of_le_of_ne hiz hneZ
           exact Or.inl (Or.inr ⟨hait, hitz, hnot⟩)
     · intro hi
       rcases hi with hleft | hright
       · rcases hleft with hpre | hmid
         · obtain ⟨hbi, hia⟩ := hpre
-          have his : i < stop := lt_of_lt_of_le hia (le_trans haz hze)
+          have his  := lt_of_lt_of_le hia (le_trans haz hze)
           have hnot : i ∉ active := by
             intro hi
             exact (not_lt_of_ge (hfirst i hi)) hia
           simp [hbi, his, hnot]
         · obtain ⟨hai, hiz, hnot⟩ := hmid
-          have hbi : birth < i := lt_of_le_of_lt hba hai
-          have his : i < stop := lt_of_lt_of_le hiz hze
+          have hbi  := lt_of_le_of_lt hba hai
+          have his  := lt_of_lt_of_le hiz hze
           simp [hbi, his, hnot]
       · obtain ⟨hzi, his⟩ := hright
-        have hbi : birth < i := lt_of_le_of_lt (le_trans hba haz) hzi
+        have hbi  := lt_of_le_of_lt (le_trans hba haz) hzi
         have hnot : i ∉ active := by
           intro hi
           exact (not_lt_of_ge (hlast i hi)) hzi
@@ -143,8 +143,8 @@ theorem inactive_span_sum
         onePrimeExpectation p.val (n + 1) (eta F n)
           (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
   classical
-  let η : Fin (n + 1) → ℝ := fun i => eta F n i
-  let h : Fin (n + 1) → ZMod p.val := fun i => (Q.offset i : ZMod p.val)
+  let η  := fun i => eta F n i
+  let h  := fun i => (Q.offset i : ZMod p.val)
   let B : ℝ := baselinePrime F n p.val
   let C : ℝ := ((p.val : ℝ) * B)⁻¹
   let pairSum : ℝ :=
@@ -152,7 +152,7 @@ theorem inactive_span_sum
       η birth * η stop * (if h birth = h stop then 1 else 0) *
         ∏ t ∈ Finset.univ.filter (fun t : Fin (n + 1) => birth < t ∧ t < stop),
           (1 - η t * if h t = h birth then 1 else 0)
-  let pairTerm : Fin (n + 1) → Fin (n + 1) → ℝ := fun birth stop =>
+  let pairTerm  := fun birth stop =>
     if birth < stop ∧ h birth = h stop then
       C * η birth * η stop *
         ∏ t ∈ Finset.univ.filter (fun t : Fin (n + 1) => birth < t ∧ t < stop),
@@ -170,8 +170,7 @@ theorem inactive_span_sum
       exact ⟨hlt rfl, ((hcast stop birth).mp hres).symm⟩
     · rintro ⟨hlt, hres⟩
       refine ⟨hlt.le, ?_, by simp, (hcast stop birth).mpr hres.symm, by simp⟩
-      intro _
-      exact hlt
+      simpa using hlt
   have hpcast : (p.val : ℝ) ≠ 0 := by
     exact_mod_cast (NeZero.ne p.val)
   have hweight (birth stop : Fin (n + 1)) :
@@ -185,7 +184,6 @@ theorem inactive_span_sum
           Finset.univ.filter (fun t : Fin (n + 1) =>
             birth < t ∧ t < stop ∧ t ∉ (∅ : Finset (Fin (n + 1)))) =
           Finset.univ.filter (fun t : Fin (n + 1) => birth < t ∧ t < stop) := by
-        ext t
         simp
       rw [hfilter]
       rw [show baselinePrime F n p.val = B by rfl]
@@ -258,12 +256,12 @@ theorem active_span_sum_formula
         onePrimeExpectation p.val (n + 1) (eta F n)
           (fun i => (Q.offset i : ZMod p.val)) (Q.activeVisits g p) := by
   classical
-  let η : Fin (n + 1) → ℝ := fun i => eta F n i
+  let η := fun i => eta F n i
   let h : Fin (n + 1) → ZMod p.val := fun i => (Q.offset i : ZMod p.val)
-  let active : Finset (Fin (n + 1)) := Q.activeVisits g p
+  let active := Q.activeVisits g p
   have hne : active.Nonempty := Finset.nonempty_iff_ne_empty.mpr hnonempty
-  let a : Fin (n + 1) := active.min' hne
-  let z : Fin (n + 1) := active.max' hne
+  let a := active.min' hne
+  let z := active.max' hne
   have ha : a ∈ active := Finset.min'_mem active hne
   have hz : z ∈ active := Finset.max'_mem active hne
   have hfirst : ∀ i ∈ active, a ≤ i := by
@@ -275,11 +273,11 @@ theorem active_span_sum_formula
   have haz : a ≤ z := Finset.min'_le_max' active hne
   let B : ℝ := baselinePrime F n p.val
   let f : Fin (n + 1) → ℝ := fun i => η i * if h i = h a then 1 else 0
-  let birthCode : Fin (n + 1) → Option (Fin (n + 1)) :=
+  let birthCode :=
     fun birth => if birth = a then none else some birth
-  let stopCode : Fin (n + 1) → Option (Fin (n + 1)) :=
+  let stopCode :=
     fun stop => if stop = z then none else some stop
-  let T : Option (Fin (n + 1)) → Option (Fin (n + 1)) → ℝ :=
+  let T :=
     activeSpanTerm p.val (n + 1) η h active a z
   have hcast (i j : Fin (n + 1)) :
       ((Q.offset i - Q.offset j : ℤ) : ZMod p.val) = 0 ↔ h i = h j := by
@@ -312,8 +310,8 @@ theorem active_span_sum_formula
       (∀ i ∈ active, h i = h a) ∧ h birth = h a ∧ h stop = h a ∧
         birth ≤ a ∧ z ≤ stop := by
     rcases hv with ⟨_, _, hinside, hstop, hhit⟩
-    have hbirthA : h birth = h a := by
-      exact ((hcast a birth).mp (hhit a ha)).symm
+    have hbirthA :=
+      ((hcast a birth).mp (hhit a ha)).symm
     have hstopA : h stop = h a := by
       have hstopB := (hcast stop birth).mp hstop
       have hAB := (hcast a birth).mp (hhit a ha)
@@ -460,17 +458,16 @@ theorem active_span_sum_formula
               by_contra hneq
               apply hf
               simp [f, hneq]
-          have hvalid_from_T : Q.spanValid g p (some (birth, stop)) := by
-            unfold ResiduePath.spanValid
-            refine ⟨le_trans hba (le_trans haz hze), ?_, ?_, ?_, ?_⟩
-            · intro hempty
-              exact (hnonempty hempty).elim
-            · intro i hi
-              exact ⟨le_trans hba (hfirst i hi), le_trans (hlast i hi) hze⟩
-            · exact (hcast stop birth).mpr (hstopA.trans hbirthA.symm)
-            · intro i hi
-              exact (hcast i birth).mpr ((hall i hi).trans hbirthA.symm)
-          exact hv hvalid_from_T
+          refine hv ?_
+          unfold ResiduePath.spanValid
+          refine ⟨le_trans hba (le_trans haz hze), ?_, ?_, ?_, ?_⟩
+          · intro hempty
+            exact (hnonempty hempty).elim
+          · intro i hi
+            exact ⟨le_trans hba (hfirst i hi), le_trans (hlast i hi) hze⟩
+          · exact (hcast stop birth).mpr (hstopA.trans hbirthA.symm)
+          · intro i hi
+            exact (hcast i birth).mpr ((hall i hi).trans hbirthA.symm)
         · simp [T, activeSpanTerm, hall]
       simp [hTzero]
   have hnone : Q.spanWeight g p none = 0 := by

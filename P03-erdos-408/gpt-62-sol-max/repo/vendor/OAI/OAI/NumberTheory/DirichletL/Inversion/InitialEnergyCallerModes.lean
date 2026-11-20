@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
@@ -17,9 +18,9 @@ open SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialPr
 namespace SevenEighths.InverseInitialEnergyCallerModes
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem canonicalColumn_marked_sum
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
@@ -40,11 +41,9 @@ theorem canonicalColumn_marked_sum
     exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
   have hd : Ideal.span {primaryGenerator (sourceIdeal p x.divisor)}=sourceIdeal p x.divisor :=
     (primaryGenerator_spec _ (hgen _)).1
-  have ht : Ideal.span {quotient p x}=sourceIdeal p (x.common\x.divisor) :=
-    (primaryGenerator_spec _ (hgen _)).1
   obtain ⟨u,hu,hsplit⟩ := fresh_initial_split_fixed_family p hp hcop hg hpr
     x.common x.divisor x.overlap hE (primaryGenerator (sourceIdeal p x.divisor))
-    (quotient p x) hd ht (σ:=σ)
+    (quotient p x) hd ((primaryGenerator_spec _ (hgen _)).1) (σ:=σ)
   have hu1 : u=1 := by
     apply Units.val_injective
     apply mul_right_cancel₀ (hgen x.divisor)
@@ -83,18 +82,6 @@ theorem sourcePoint_outer_phase (x : Source (ι:=ι) 0) (N M : Finset ι)
     simp [coordinates,physicalCoordinates,sourcePoint]
   simp [secondOuterPhase,relativeLog,relativeNorm,secondRelativeNorm,hc₀,hc₁,hc₂,hc₃]
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem sourcePoint_unitSector
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (x : Source (ι:=ι) 0) (N M : Finset ι) :
-    unitSector p hp hpr (sourcePoint x N M)=unitSector p hp hpr (sourcePoint x ∅ ∅) := by
-  have hgen : primaryGenerator (sourceIdeal p x.divisor)≠0 := by
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-  apply Units.val_injective
-  apply mul_right_cancel₀ hgen
-  exact (unitSector_spec p hp hpr (sourcePoint x N M)).symm.trans
-    (unitSector_spec p hp hpr (sourcePoint x ∅ ∅))
 
 def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis) (x : Source (ι:=ι) 0)
@@ -143,9 +130,7 @@ theorem canonicalPairMode_rectangle
     dsimp only
     rw [sourcePoint_outer_phase p x N M
       (profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) Z D B v θ H]
-    simp only [canonicalColumn]
-    simp only [sourcePoint_unitSector p hp hpr x N M]
-    simp only [outerCoefficient,sourcePoint,divisor,quotient,x₀]
+    rfl
   simp_rw [hpoint,←Finset.mul_sum]
   rw [←Finset.sum_mul,←Finset.mul_sum,←star_sum]
   have hleft := canonicalColumn_marked_sum p hp hcop hg hpr x₀ hE F (secondRayMinus Ψ ρ) j x.frequency

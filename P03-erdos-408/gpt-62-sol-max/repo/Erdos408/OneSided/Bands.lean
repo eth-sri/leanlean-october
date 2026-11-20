@@ -83,7 +83,7 @@ integer. -/
 theorem eventually_not_dvd_of_isRough {ahi : ℝ} (hahi : ahi < 1 / 5) :
     ∀ᶠ x : ℝ in atTop, ∀ a ≤ ahi, ∀ p ∈ band x a, ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m := by
   filter_upwards [eventually_lt_roughLevel hahi] with x hx a ha p hp m hm hrough hdvd
-  have hpm : p ∈ m.primeFactors :=
+  have hpm  :=
     Nat.mem_primeFactors.2 ⟨TypeII.band_prime hp, hdvd, hm⟩
   linarith [hx a ha p hp, hrough p hpm]
 
@@ -115,10 +115,10 @@ theorem eventually_harmonicMass_band {alo : ℝ} (halo : 1 / 10 ≤ alo) :
   have hL10 := (tendsto_rpow_atTop (by norm_num : (0 : ℝ) < 1 / 10)).comp Real.tendsto_log_atTop
   filter_upwards [hL10.eventually_ge_atTop (5 + 4 * E),
     Real.tendsto_log_atTop.eventually_ge_atTop (max L₀ 1)] with x hx hL a ha
-  have hL1 : 1 ≤ Real.log x := le_of_max_le_right hL
+  have hL1  := le_of_max_le_right hL
   refine ⟨hL₀ x a (le_of_max_le_left hL) (halo.trans ha), ?_⟩
   set u := Real.log x ^ a with hu
-  have hu5 : 5 + 4 * E ≤ u :=
+  have hu5  :=
     (show 5 + 4 * E ≤ Real.log x ^ (1 / 10 : ℝ) from hx).trans
       (Real.rpow_le_rpow_of_exponent_le hL1 (halo.trans ha))
   -- the band lies in `(exp(u - 1), exp(2u)]`

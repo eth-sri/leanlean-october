@@ -22,7 +22,7 @@ theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
     intro P
     rw [momentData_coeff,idealCoeff_product,rawRow_coeff,fixedSourcePrincipal_prime]
     simp
-  exact congrArg (fun f : Ideal O→*₀ℂ=>f I) he
+  congr
 
 theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal O) :
     idealCoeff ((rawRow u).inverse.product χ) I=
@@ -33,7 +33,6 @@ theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal
   ring
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def sourceMomentData (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) :

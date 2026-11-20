@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
 public import OAI.NumberTheory.DirichletL.Moments.Forcing
 
@@ -25,7 +27,7 @@ theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
   rcases lt_or_gt_of_ne hcd with hlt | hgt
   · have hz := unequal_prime_power_zero_of_not_six p hp hg hchar hc
       (show 1 ≤ d-c by omega) (by simpa only [min_eq_left hlt.le] using h6) (-k)
-    have he : c+(d-c)=d := Nat.add_sub_of_le hlt.le
+    have he  := Nat.add_sub_of_le hlt.le
     have hn := norm_ne_zero_iff.mpr hne
     rw [actualCorrelation_norm_swap] at hn
     have hz' : actualCorrelation (p^d) (p^c) (supported_power p hp d) (supported_power p hp c)
@@ -34,7 +36,7 @@ theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
     exact hn (by rw [hz',norm_zero])
   · have hz := unequal_prime_power_zero_of_not_six p hp hg hchar hd
       (show 1 ≤ c-d by omega) (by simpa only [min_eq_right hgt.le] using h6) k
-    have he : d+(c-d)=c := Nat.add_sub_of_le hgt.le
+    have he  := Nat.add_sub_of_le hgt.le
     exact hne (by simpa only [← pow_add,he,min_eq_right hgt.le] using hz)
 
 def localSaving (c d : ℕ) (nonunit : Prop) : ℝ :=
@@ -49,7 +51,7 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
   by_cases hcd : c=d
   · subst d
     by_cases h6 : 6∣c
-    · have hc6 : 6 ≤ c := Nat.le_of_dvd (by omega) h6
+    · have hc6  := Nat.le_of_dvd (by omega) h6
       have hn1 : c ≠ 1 := by omega
       simp only [localSaving,min_self,h6,not_true_eq_false,false_and,and_false,
         ite_false,hn1,add_zero]
@@ -68,7 +70,7 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
           and_true,ite_false,ite_true,add_zero]
         have hcr : (1:ℝ) ≤ c := by exact_mod_cast hc
         linarith
-  · have hmin : 6 ≤ min c d := Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one (le_min hc hd)) (huneq hcd)
+  · have hmin  := Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one (le_min hc hd)) (huneq hcd)
     have hmr : (6:ℝ) ≤ min c d := by exact_mod_cast hmin
     have hmc : ((min c d : ℕ) : ℝ) ≤ c := by exact_mod_cast min_le_left c d
     have hmd : ((min c d : ℕ) : ℝ) ≤ d := by exact_mod_cast min_le_right c d
@@ -88,7 +90,7 @@ theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
 section Global
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem local_nonzero_of_global (p : ι → O) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, Supported (Ideal.span {p i}))
     (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ) (w : O)
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)
@@ -125,8 +127,7 @@ theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span
     Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) =
       ∑ i, (c i : ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
   simp only [map_prod,map_pow,Nat.cast_prod,Nat.cast_pow]
-  rw [Real.logb_prod _ _ (fun i _ => pow_ne_zero _ (Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)))]
+  rw [Real.logb_prod _ _ (fun i _ => pow_ne_zero _ (Ideal.cast_absNorm_ne_zero_of_ne_bot ((hp i).1)))]
   simp only [Real.logb_pow]
 
 def secondSaving (p : ι → O) (c d : ι → ℕ) (w : O) (Z : ℝ) : ℝ :=
@@ -145,8 +146,7 @@ theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}
     Real.logb Z (Ideal.absNorm (∏ i ∈ S, Ideal.span {p i}) : ℝ) =
       ∑ i ∈ S, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
   simp only [map_prod,Nat.cast_prod]
-  exact Real.logb_prod _ _ (fun i _ => Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))
+  exact Real.logb_prod _ _ (fun i _ => Ideal.cast_absNorm_ne_zero_of_ne_bot ((hp i).1))
 
 theorem secondSaving_eq_norm_ledger (p : ι → O)
     (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ) (w : O) (Z : ℝ) :
@@ -193,8 +193,8 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
   simp only [localSaving,Nat.cast_min]
   split_ifs <;> ring
 
-theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, Supported (Ideal.span {p i})) (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
+theorem actual_secondSaving_lower (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, Supported (Ideal.span {p i})) (hg : OAI.PrincipalFamily.Avoids p goodLambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ)
     (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (w : O) (Z : ℝ) (hZ : 1 < Z)
@@ -218,7 +218,7 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
         (actual_localSaving_lower (p i) (hp i) (hg i) (hchar i) (c i) (d i) (hc i) (hd i)
           (dividedFrequency p c d w i) (local_nonzero_of_global p hp hcop c d w hne i))
       apply Real.logb_nonneg hZ
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot ((hp i).1)
 
 end Global
 

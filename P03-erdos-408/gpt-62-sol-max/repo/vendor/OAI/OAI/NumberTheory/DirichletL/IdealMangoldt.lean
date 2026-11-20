@@ -47,9 +47,8 @@ theorem value_pow {P : Ideal O} (hP : Prime P) {k : ℕ} (hk : 0 < k) :
 theorem value_nonneg (I : Ideal O) : 0 ≤ value I := by
   by_cases hI : IsPrimePow I
   · rw [value, ite_eq_left hI]
-    apply Real.log_nonneg
-    exact_mod_cast (SmoothMobiusCorrection.prime_norm_two_le ⟨_, (primeBase_spec hI).1⟩).trans' (by decide : 1 ≤ 2)
-  · simp only [value, hI, ite_false, le_refl]
+    positivity
+  · simp [value, hI, ite_false, le_refl]
 
 theorem isPrimePow_absNorm {I : Ideal O} (hI : IsPrimePow I) :
     IsPrimePow (Ideal.absNorm I) := by
@@ -67,7 +66,7 @@ theorem prime_mem_primesOver_of_dvd_norm {P : Ideal O} (hP : Prime P)
     {p : ℕ} (hp : p.Prime) (hd : p ∣ Ideal.absNorm P) :
     P ∈ (Ideal.span {(p : ℤ)}).primesOver O := by
   obtain ⟨Q, hQ, hQu, hQP⟩ := Ideal.exists_isMaximal_dvd_of_dvd_absNorm' hp P hd
-  have heq : P = Q := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero |>.eq_of_le
+  have heq  := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero |>.eq_of_le
     hQ.ne_top (Ideal.dvd_iff_le.mp hQP)
   subst Q
   exact ⟨Ideal.isPrime_of_prime hP, ⟨hQu.symm⟩⟩
@@ -96,7 +95,7 @@ theorem primeBase_injective_on_norm {I J : Ideal O} (hI : IsPrimePow I)
     have hnJ : Ideal.absNorm (primeBase I) ^ l = Ideal.absNorm J := by
       simpa only [map_pow] using congrArg Ideal.absNorm hPl
     exact hnI.trans (hn.trans hnJ.symm)
-  exact hPk.symm.trans ((congrArg (primeBase I ^ ·) hkl).trans hPl)
+  simp_all
 
 def normFiber (n : ℕ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset
@@ -125,7 +124,7 @@ theorem coeff_eq_zero_of_not_primePow {n : ℕ} (hn : ¬IsPrimePow n)
     (w : Ideal O → ℝ) : coeff w n = 0 := by
   apply Finset.sum_eq_zero
   intro I hI
-  rw [value_eq_zero_of_norm_not_primePow (by simpa only [(mem_normFiber n I).mp hI] using hn),
+  rw [value_eq_zero_of_norm_not_primePow (by simp_all),
     mul_zero]
 
 def primesOver (p : ℕ) [Fact p.Prime] : Finset (Ideal O) :=
@@ -147,7 +146,7 @@ theorem primesOver_log_sum_le (p : ℕ) [hp : Fact p.Prime] :
         Real.log (Ideal.absNorm P) = Real.log p := by
       have hPP := (mem_primesOver p P).mp hP
       let : P.IsPrime := hPP.1
-      let : P.LiesOver (Ideal.span {(p : ℤ)}) := hPP.2
+      let  := hPP.2
       rw [ShortDraftHeckeBridge.absNorm_split hp.out h1 P]
     rw [Finset.sum_congr rfl hv, Finset.sum_const, nsmul_eq_mul, primesOver_card,
       ShortDraftHeckeBridge.split_count_of_mod_one hp.out h1]
@@ -157,7 +156,7 @@ theorem primesOver_log_sum_le (p : ℕ) [hp : Fact p.Prime] :
         Real.log (Ideal.absNorm P) = 2 * Real.log p := by
       have hPP := (mem_primesOver p P).mp hP
       let : P.IsPrime := hPP.1
-      let : P.LiesOver (Ideal.span {(p : ℤ)}) := hPP.2
+      let  := hPP.2
       rw [ShortDraftHeckeBridge.absNorm_inert hp.out h2 P, Nat.cast_pow, Real.log_pow]
       norm_num
     rw [Finset.sum_congr rfl hv, Finset.sum_const, nsmul_eq_mul, primesOver_card,
@@ -172,7 +171,7 @@ theorem primesOver_log_sum_le (p : ℕ) [hp : Fact p.Prime] :
       Real.log (Ideal.absNorm P) = Real.log 3 := by
     have hPP := (mem_primesOver 3 P).mp hP
     let : P.IsPrime := hPP.1
-    let : P.LiesOver (Ideal.span {(3 : ℤ)}) := hPP.2
+    let  := hPP.2
     rw [ShortDraftHeckeBridge.absNorm_ramified P]
     norm_num
   rw [Finset.sum_congr rfl hv, Finset.sum_const, nsmul_eq_mul, primesOver_card]
@@ -239,7 +238,7 @@ theorem coeff_summable_nterm (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
     Summable (nterm (fun n => (coeff w n : ℂ)) σ) := by
   have hs : Summable (nterm (fun n => (vonMangoldt n : ℂ)) σ) := by
     simpa only [← nterm_eq_norm_term] using
-      (@ArithmeticFunction.LSeriesSummable_vonMangoldt (σ : ℂ) (by simpa using hσ)).norm
+      (@ArithmeticFunction.LSeriesSummable_vonMangoldt (σ : ℂ) (by simp_all)).norm
   apply (hs.mul_left 2).of_nonneg_of_le
   · intro n
     exact ite_nonneg (by positivity) (div_nonneg (norm_nonneg _) (Real.rpow_nonneg (by positivity) _))

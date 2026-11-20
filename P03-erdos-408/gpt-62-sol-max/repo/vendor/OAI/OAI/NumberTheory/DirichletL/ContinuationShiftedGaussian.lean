@@ -17,7 +17,7 @@ theorem vertical_integral_eq_of_shifted_polynomial_gaussian_bound (F : ℂ→ℂ
     (hbound : ∀x∈Icc a b,∀t : ℝ,
       ‖F ((x:ℂ)+t*I)‖≤C*polynomialGaussian n (t+q)) :
     (∫t : ℝ,F ((a:ℂ)+t*I))=∫t : ℝ,F ((b:ℂ)+t*I) := by
-  let G : ℂ→ℂ := fun s=>F (s-(q:ℂ)*I)
+  let G  := fun s=>F (s-(q:ℂ)*I)
   have hg : DifferentiableOn ℂ G {s : ℂ | a≤s.re ∧ s.re≤b} := by
     apply hhol.comp (differentiable_id.sub_const ((q:ℂ)*I)).differentiableOn
     intro s hs

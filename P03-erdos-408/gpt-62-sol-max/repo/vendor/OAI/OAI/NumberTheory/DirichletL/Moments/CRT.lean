@@ -40,8 +40,7 @@ theorem fullCorrelation_pi {ι : Type*} [Fintype ι] {R : ι → Type*}
     · have heq : v * x - u * y = k := funext h
       simp only [heq, ite_true, h, star_prod, Finset.prod_mul_distrib]
     · obtain ⟨i, hi⟩ := not_forall.mp h
-      have hne : v * x - u * y ≠ k := fun heq => hi (congrFun heq i)
-      rw [ite_eq_right hne]
+      rw [ite_eq_right (fun heq => hi (congrFun heq i))]
       symm
       apply Finset.prod_eq_zero (Finset.mem_univ i)
       simp only [hi, ite_false]
@@ -65,10 +64,9 @@ def crtCharacter {S ι : Type*} [CommRing S] [Fintype ι] {R : ι → Type*}
   map_mul' := by intro x y; simp [map_mul, Finset.prod_mul_distrib]
   map_nonunit' := by
     intro x hx
-    have hn : ¬IsUnit (e x) := fun h => hx ((isUnit_map_iff e x).mp h)
     have hsome : ∃ i, ¬IsUnit (e x i) := by
       by_contra h
-      apply hn
+      apply (fun h => hx ((isUnit_map_iff e x).mp h))
       exact Pi.isUnit_iff.mpr (by simpa only [not_exists, not_not] using h)
     obtain ⟨i, hi⟩ := hsome
     exact Finset.prod_eq_zero (Finset.mem_univ i) ((χ i).map_nonunit hi)

@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralErrorSaving
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralCube
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -19,8 +20,7 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
+    (mw : MellinWindows) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀Z : ℝ,1≤Z →
@@ -30,17 +30,17 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
       ∀a B H : ℝ,∀i : ℕ,(51/100:ℝ)≤a → a≤1 → 2<B → Z^τ≤H → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
       ‖rowIntegral η S (calibrationForSet S hmax) (fun j=>CompletedGauss.primaryGenerator (P j).val)
-          W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z u-
-        centralCubeIntegral S hS hmax P hPS η u W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a e H‖≤
+          mw.left mw.right (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z u-
+        centralCubeIntegral S hS hmax P hPS η u mw.left mw.right (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a e H‖≤
         C*(η.modulus.absNorm:ℝ)^2*Z^(-saving) := by
   obtain ⟨N,hN⟩ := exists_nat_gt (((17/2:ℝ)+saving)/τ)
-  have hN' : (17/2:ℝ)+saving<τ*N := by exact (div_lt_iff₀ hτ).mp hN |>.trans_eq (mul_comm _ _)
+  have hN' := (div_lt_iff₀ hτ).mp hN |>.trans_eq (mul_comm _ _)
   obtain ⟨C,hC,hbound⟩ := uniform_original_row_cube_error (ι:=ι) K e he he' S hS hmax hfirst
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N
+    mw N
   refine ⟨C*(b^K)^3,mul_nonneg hC (pow_nonneg (pow_nonneg hb.le _) _),?_⟩
   intro η u hu P hP hPS ψ Z hZ huZ length hl hp a B H i ha haTop hB hHlo hH hbin
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hH0 : 0≤H := (Real.rpow_nonneg hZ0.le τ).trans hHlo
+  have hZ0  := lt_of_lt_of_le zero_lt_one hZ
+  have hH0  := (Real.rpow_nonneg hZ0.le τ).trans hHlo
   have hmain := hbound η u hu P hP hPS ψ (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z
     (Real.rpow_pos_of_pos hZ0 _) (Real.rpow_pos_of_pos hZ0 _) hZ a B H i ha haTop hB hH0 hH hbin
   have hcost := central_arithmetic_cost_bound η u P Z b ζ hZ hb.le hζ huZ length hl hp

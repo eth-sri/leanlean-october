@@ -11,9 +11,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization
-open HeckeFamily CenteredMomentCommonRadialData
-open CenteredMomentFirstReferenceEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFirstReferenceEnergy
+open CenteredMomentSecondWindowBudget CenteredMomentFirstPhysicalSource
 
 lemma window_pair_le (J₁ J₂ : ℕ) (t L R H : ℝ) (hH : 0 ≤ H)
     (hL : L ≤ H) (hR : R ≤ H) :
@@ -65,7 +64,7 @@ theorem physical_power_identity (Z K q Mdecl ell : ℝ) (hZ : 1 < Z)
     (hK : 0 < K) (hq : 0 < q) :
     K * q * Z ^ (Mdecl - (Real.logb Z K + Real.logb Z q) + ell) =
       Z ^ (Mdecl + ell) := by
-  have hz : 0 < Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   have hKq : K * q = Z ^ (Real.logb Z K + Real.logb Z q) := by
     rw [Real.rpow_add hz, Real.rpow_logb hz hZ.ne' hK, Real.rpow_logb hz hZ.ne' hq]
   rw [hKq, ← Real.rpow_add hz]
@@ -88,7 +87,7 @@ lemma heightEnvelope_le (t : ℝ) :
 lemma heightEnvelope_pow_le (J : ℕ) (t : ℝ) :
     heightEnvelope t ^ J ≤ (1 + 2 * Real.pi) ^ (2 * J) * (1 + ‖t‖) ^ J := by
   have hh := pow_le_pow_left₀ (heightEnvelope_pos t).le (heightEnvelope_le t) J
-  simpa only [mul_pow, ← pow_mul] using hh
+  simp_all [mul_pow, ← pow_mul]
 
 def normalizationConstant (lowerProduct : ℝ) : ℝ :=
   16 * (Real.exp (Real.log 4) / lowerProduct) * fixedPresentationCost
@@ -122,9 +121,7 @@ theorem sourceFactor_pairedBudget_le (lowerProduct : ℝ) (hlower : 0 < lowerPro
   have hden := div_le_div_of_nonneg_left (Real.exp_pos (Real.log 4)).le hlower hsupport
   have hmass : 0 ≤ (s.η.modulus.absNorm : ℝ) := Nat.cast_nonneg _
   have hpresent := fixedPresentationCost_pos.le
-  have hsource' : sourceFactor s a₁ a₂ K ≤
-      (Real.exp (Real.log 4) / lowerProduct) * fixedPresentationCost * K *
-        (s.η.modulus.absNorm : ℝ) :=
+  have hsource'  :=
     mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hden hpresent) hK.le) hmass
   have hbound := (mul_le_mul_of_nonneg_left hbudget hsource).trans
@@ -151,8 +148,7 @@ def polynomialConstant (lowerProduct : ℝ) (J₁ J₂ : ℕ) : ℝ :=
   normalizationConstant lowerProduct * (1 + 2 * Real.pi) ^ (2 * (J₁ + J₂))
 
 lemma polynomialConstant_pos (lowerProduct : ℝ) (J₁ J₂ : ℕ)
-    (hlower : 0 < lowerProduct) : 0 < polynomialConstant lowerProduct J₁ J₂ := by
-  exact mul_pos (normalizationConstant_pos lowerProduct hlower) (pow_pos (by positivity) _)
+    (hlower : 0 < lowerProduct) : 0 < polynomialConstant lowerProduct J₁ J₂ := mul_pos (normalizationConstant_pos lowerProduct hlower) (pow_pos (by positivity) _)
 
 omit [DecidableEq ι] in
 theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < lowerProduct)
@@ -185,9 +181,8 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
     _ = _ := by unfold polynomialConstant; ring
 
 open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSourceMass
+open CenteredMomentFirstNonexceptionalWeightSum
 
 theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : ℕ)
     (hi : ι → ℝ) (b₁ b₂ B ξ ε lowerProduct : ℝ)
@@ -223,7 +218,7 @@ theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : �
     hs₁ hs₂ hV hKi EL ER hEL hER hcols
   have hnormal := sourceFactor_pairedBudget_polynomial lowerProduct hlower s a₁ a₂ K Z
     F Mdecl ell J₁ J₂ lossL lossR EL ER ha₁ ha₂ hK hZ hF hsupport hL hR heL heR
-  have hz : 0 < Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   have hp : 0 ≤ Cb * Z ^ ε / (seed.absNorm : ℝ) := by positivity
   calc
     _ ≤ Cb * Z ^ ε / (seed.absNorm : ℝ) * sourceFactor s a₁ a₂ K *

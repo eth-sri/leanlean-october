@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Lattice
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
@@ -62,8 +62,8 @@ lemma interpolatedProfile_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   rw [interpolatedProfile,CenteredMomentLattice.normPowerProfile_apply]
   unfold twistProfile
   by_cases hw : W x=0
-  · simp [hw]
-  · have hx : 0<x := ha.trans_le (hs hw).1
+  · simp_all
+  · have hx  := ha.trans_le (hs hw).1
     calc
       _=W x*((x:ℂ)^(Complex.I*t)*(x:ℂ)^(-HeckeDyadic.shift σ 0)) := by ring
       _=W x*(x:ℂ)^(Complex.I*t-HeckeDyadic.shift σ 0) := by

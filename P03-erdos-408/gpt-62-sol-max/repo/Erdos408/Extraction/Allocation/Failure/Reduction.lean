@@ -117,7 +117,7 @@ lemma failureProb_le_sideProd {c₁ c₂ x : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' :
     (hV : ∀ g ∈ candidateGroups x, 1 / 2 ≤ harmonicMass g) (w : ℕ) :
     failureProb c₁ c₂ x w ≤ Real.exp (c₂ * logLog x) *
       (sideProd c₁ (smallGroups x) (w + 1) w + sideProd c₁ (bigGroups x) (w + 1) w) := by
-  have hs : ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 :=
+  have hs  :=
     fun g hg => successCoin_mem hc₁ hc₁' (hV g hg) w
   refine (failureProb_le_exp_mul hs).trans (mul_le_mul_of_nonneg_left ?_ (exp_pos _).le)
   have hZ : ∀ F ⊆ candidateGroups x, ∏ g ∈ F, (1 - chernoffTheta * successCoin c₁ g w) ≤
@@ -148,7 +148,7 @@ lemma sum_proxyCore_mul_sideProd_le {x γ c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
   set I := Icc 1 (M + 1)
   set f : ℕ × (Fin j → ℕ) → ℝ := fun t => (∏ i, coreFactor x γ j (t.2 i)) *
     (if t.1 * ∏ i, t.2 i ≤ M + 1 then sideProd c₁ F t.1 (t.1 * ∏ i, t.2 i - 1) else 0)
-  have hFV : ∀ g ∈ F, 1 / 2 ≤ harmonicMass g := fun g hg => hV g (hF hg)
+  have hFV  := fun g hg => hV g (hF hg)
   have hf0 : ∀ t, 0 ≤ f t := fun t => mul_nonneg
     (prod_nonneg fun i _ => coreFactor_nonneg hj hγ _)
     (by split_ifs; exacts [sideProd_nonneg hc₁ hc₁' hFV _ _, le_rfl])
@@ -215,7 +215,7 @@ lemma sum_tuples_eq_freeFactorSum {x γ c₁ : ℝ} (hγ : 0 ≤ x ^ γ) (j' X :
       freeFactorSum x γ c₁ j' X F := by
   unfold freeFactorSum
   refine sum_congr rfl fun d hd => ?_
-  have hd1 : 1 ≤ d := (mem_Icc.1 (mem_filter.1 hd).1).1
+  have hd1  := (mem_Icc.1 (mem_filter.1 hd).1).1
   rw [sum_piFinset_succ, sum_comm]
   refine sum_congr rfl fun e he => ?_
   have hr1 : 1 ≤ ∏ i, e i := by
@@ -232,7 +232,7 @@ lemma sum_tuples_eq_freeFactorSum {x γ c₁ : ℝ} (hγ : 0 ≤ x ^ γ) (j' X :
   rw [← sum_subset hsub]
   · refine sum_congr rfl fun a ha => ?_
     obtain ⟨h1, h2⟩ := mem_Ioc.1 ha
-    have hxa : x ^ γ < a := (Nat.floor_lt hγ).1 h1
+    have hxa  := (Nat.floor_lt hγ).1 h1
     have hle : d * (a * r) ≤ X := by
       have := (Nat.le_div_iff_mul_le hrd).1 h2
       calc d * (a * r) = a * (r * d) := by ring
@@ -273,10 +273,10 @@ theorem sum_proxyCoeff_mul_failureProb_le {x γ c₁ c₂ κ : ℝ} (hc₁ : 0 �
         freeFactorSum x γ c₁ j' (⌊κ * x⌋₊ + 1) (bigGroups x)) := by
   set M := ⌊κ * x⌋₊
   have hj : 1 ≤ j' + 1 := by omega
-  have hs : ∀ w, ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 :=
+  have hs  :=
     fun w g hg => successCoin_mem hc₁ hc₁' (hV g hg) w
   have hF0 : ∀ w, 0 ≤ failureProb c₁ c₂ x w := fun w => failureProb_nonneg (hs w)
-  have hG0 : ∀ v, 0 ≤ proxyCore x γ (j' + 1) v := proxyCore_nonneg hj hγ
+  have hG0  := proxyCore_nonneg hj hγ
   have hAG : ∀ w, proxyCoeff x γ (j' + 1) (w + 1) ≤ proxyCore x γ (j' + 1) (w + 1) := by
     intro w
     rw [proxyCoeff_eq x γ _ (by omega)]
@@ -285,8 +285,6 @@ theorem sum_proxyCoeff_mul_failureProb_le {x γ c₁ c₂ κ : ℝ} (hc₁ : 0 �
     intro w
     rw [proxyCoeff_eq x γ _ (by omega)]
     exact mul_nonneg (hG0 _) (allocationFactor_nonneg x _ _)
-  have hFV : ∀ F ⊆ candidateGroups x, ∀ g ∈ F, 1 / 2 ≤ harmonicMass g :=
-    fun F hF g hg => hV g (hF hg)
   calc ∑ w ∈ Icc 1 M with x / κ ≤ ((w : ℕ) : ℝ),
         proxyCoeff x γ (j' + 1) (w + 1) * failureProb c₁ c₂ x w
       ≤ ∑ w ∈ Icc 1 M, proxyCoeff x γ (j' + 1) (w + 1) * failureProb c₁ c₂ x w :=

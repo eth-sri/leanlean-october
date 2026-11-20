@@ -24,8 +24,8 @@ theorem retained_mem_rows (R : ℝ) (A h : O) (hA : A≠0)
   have hAh : A*h≠0 := by
     intro hz
     have hn : normValue (A*h)=0 := by simp [hz,normValue]
-    linarith [he.1]
-  have hh0 : h≠0 := right_ne_zero_of_mul hAh
+    linarith
+  have hh0  := right_ne_zero_of_mul hAh
   apply mem_rowNormDisk.mpr
   constructor
   · have hn := normValue_pos h hh0

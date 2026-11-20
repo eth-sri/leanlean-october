@@ -33,19 +33,16 @@ theorem full_memory_norm_le_two (A : Model F P J m) (n B : ℕ)
   have hpow : 0 ≤ (2 : ℝ) ^
       (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) :=
     zpow_nonneg (by norm_num) _
-  have ht : (2 : ℝ) ^
+  refine (distinctMemoryExpression_norm_le_cutoff A n B rho v theta CG CE hv hCG hCE hG hE).trans
+    ((add_le_add hTrunc ?_).trans_eq (by ring))
+  calc
+    _ = (2 : ℝ) ^
         (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) *
-        CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n ≤ U := by
-    calc
-      _ = (2 : ℝ) ^
-          (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) *
-          (CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n) := by ring
-      _ ≤ (2 : ℝ) ^
-          (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) * V :=
-        mul_le_mul_of_nonneg_left hCost hpow
-      _ ≤ U := hGain
-  exact (distinctMemoryExpression_norm_le_cutoff A n B rho v theta CG CE hv hCG hCE hG hE).trans
-    ((add_le_add hTrunc ht).trans_eq (by ring))
+        (CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n) := by ring
+    _ ≤ (2 : ℝ) ^
+        (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) * V :=
+      mul_le_mul_of_nonneg_left hCost hpow
+    _ ≤ U := hGain
 
 theorem averagedMoment_le_of_bounds (hPath : PhysicalPathExpansionTask)
     (A : Model F P J m) (r : ℕ) (hr : 0 < r) (X epsilon C D : ℝ) (heps : 0 ≤ epsilon)

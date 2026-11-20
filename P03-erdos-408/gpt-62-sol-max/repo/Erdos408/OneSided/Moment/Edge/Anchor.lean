@@ -89,13 +89,12 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
     linear_combination (-(z₁.1 * z₂.2 - z₁.2 * z₂.1)) * hw
   -- the line condition: `p ∣ P (α₁ - α₂)`, so `p ∣ α₁ - α₂`
   have hpα : (p : ℤ) ∣ α₁ - α₂ := by
-    have hPα : (p : ℤ) ∣ P * (α₁ - α₂) := by
-      have : P * (α₁ - α₂) = (z₁.1 * z₂.2 - z₁.2 * z₂.1) + p * (α₁ * n₂ - n₁ * α₂) := by
-        rw [hpl, h₁, h₂]
-        ring
-      rw [this]
-      exact dvd_add hdvd (dvd_mul_right _ _)
-    exact ((Nat.prime_iff_prime_int.mp hp).dvd_or_dvd hPα).resolve_left hP
+    refine ((Nat.prime_iff_prime_int.mp hp).dvd_or_dvd ?_).resolve_left hP
+    have : P * (α₁ - α₂) = (z₁.1 * z₂.2 - z₁.2 * z₂.1) + p * (α₁ * n₂ - n₁ * α₂) := by
+      rw [hpl, h₁, h₂]
+      ring
+    rw [this]
+    exact dvd_add hdvd (dvd_mul_right _ _)
   obtain ⟨m, hm⟩ := hpα
   -- `τ(z_k) = α_k τ(z) + det(z, z_k) τ(w)`
   have hτ : ∀ y : ℤ × ℤ, tau r y = ((y.1 * w.2 - y.2 * w.1 : ℤ) : ℝ) * tau r z +
@@ -143,14 +142,14 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
 /-- **Products of band primes**: if `f i, g i` are both `1` or both primes of the band of
 group `i`, with disjoint bands, then `∏ f = ∏ g` forces `f = g`. -/
 theorem eq_of_prod_eq_of_band {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {f g : Fin K → ℕ}
+    (hdisj : d.BandsDisjoint x) {f g : Fin K → ℕ}
     (hfg : ∀ i, (f i = 1 ∧ g i = 1) ∨ (f i ∈ band x (d.a i) ∧ g i ∈ band x (d.a i)))
     (h : ∏ i, f i = ∏ i, g i) : f = g := by
   funext i
   rcases hfg i with ⟨hf, hg⟩ | ⟨hf, -⟩
   · rw [hf, hg]
   · have hfp := TypeII.band_prime hf
-    have hdvd : f i ∣ ∏ j, g j := h ▸ dvd_prod_of_mem f (mem_univ i)
+    have hdvd  := h ▸ dvd_prod_of_mem f (mem_univ i)
     obtain ⟨j, -, hj⟩ := (Prime.dvd_finsetProd_iff hfp.prime g).1 hdvd
     rcases hfg j with ⟨-, hg1⟩ | ⟨-, hgj⟩
     · rw [hg1] at hj
@@ -177,7 +176,7 @@ theorem listProd_pos_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K 
 
 /-- With disjoint bands, the omission product of valid lists determines the omission tuple. -/
 theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {p : Lists K J}
+    (hdisj : d.BandsDisjoint x) {p : Lists K J}
     (hp : p ∈ lists x d J) {o o' : Fin K → Fin (J + 1)} (h : omitProd p o = omitProd p o') :
     o = o' := by
   have h₁ := omitProd_mul_prod p o
@@ -200,7 +199,7 @@ theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
 theorem eq_of_mul_eq_of_coprime {D₁ D₂ Z₁ Z₂ P : ℕ} (h : D₁ * Z₁ = D₂ * Z₂) (hD₁ : D₁ ∣ P)
     (hD₂ : D₂ ∣ P) (hZ₁ : Nat.Coprime Z₁ P) (hZ₂ : Nat.Coprime Z₂ P) (hpos : 0 < D₁) :
     D₁ = D₂ ∧ Z₁ = Z₂ := by
-  have h₁ : D₁ ∣ D₂ := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
+  have h₁  := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
   have h₂ : D₂ ∣ D₁ := (hZ₁.coprime_dvd_right hD₂).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
   have hD := Nat.dvd_antisymm h₁ h₂
   refine ⟨hD, ?_⟩
@@ -216,7 +215,7 @@ band `i_*` banned from the source lists. Then two raw dirty edges with omission 
 other promoted primes `Z_k` (banned from the source lists) and targets `z_k` with the same line
 at `p_*` have `o₁ = o₂` and `Z₁ = Z₂`. -/
 theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < U) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     {p : Lists K J} (hp : p ∈ lists x d J) {z : ℤ × ℤ} (hz : z ∈ rootPositions U V u v r)
     {I : Finset (Fin K)} (hI : I.Nonempty) {T : Fin K → ℕ}
     (hsep : Separated x d d₀ I (I.max' hI) (tau r (complement z) / tau r z) p T)
@@ -233,7 +232,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
     (hdet₂ : z.1 * z₂.2 - z.2 * z₂.1 =
       (omitProd p o₂ : ℤ) * ((∏ i, p i (o₂ i) : ℕ) - (ps * (∏ j, Z₂ j) * ∏ j, T j : ℕ))) :
     o₁ = o₂ ∧ Z₁ = Z₂ := by
-  have hprime : ∀ i h, (p i h).Prime := fun i h =>
+  have hprime  := fun i h =>
     TypeII.band_prime (mem_band_of_mem_lists hp i h)
   have hpsp := TypeII.band_prime hps
   set P := listProd p with hPdef

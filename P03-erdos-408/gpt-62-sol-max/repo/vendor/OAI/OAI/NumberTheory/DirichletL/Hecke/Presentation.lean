@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.CharacterTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 namespace SevenEighths.HeckePresentation
 open HeckeFamily
 
@@ -29,12 +29,10 @@ def principalResidue (η : Character) : MulChar (O ⧸ Ideal.span {generator η}
 @[simp] theorem principalResidue_mk (η : Character) (z : O) :
     principalResidue η (Ideal.Quotient.mk (Ideal.span {generator η}) z) =
       elementCoeff η z := by
-  simp only [principalResidue, CharacterTransport.pullback_apply, quotientEquiv,
-    Ideal.quotEquivOfEq_mk, elementCoeff]
+  rfl
 
 theorem principalResidue_unit (η : Character) (u : Oˣ) :
     principalResidue η (Ideal.Quotient.mk (Ideal.span {generator η}) (u : O)) = 1 := by
-  rw [principalResidue_mk]
   exact η.unit_trivial u
 
 def principalCharacter (η : Character) : Character :=
@@ -57,9 +55,7 @@ private theorem pullback_one {R S : Type*} [CommRing R] [CommRing S] (e : R ≃+
   · have hxe : IsUnit (e x) := hx.map e.toMonoidHom
     rw [MulChar.one_apply hxe, MulChar.one_apply hx]
   · have he : ¬ IsUnit (e x) := by
-      intro h
-      apply hx
-      simpa using h.map e.symm.toMonoidHom
+      simp_all
     rw [MulChar.map_nonunit _ he, MulChar.map_nonunit _ hx]
 
 theorem principalResidue_ne_one (η : Character) (hη : η.residue ≠ 1) :
@@ -71,18 +67,17 @@ theorem principalResidue_ne_one (η : Character) (hη : η.residue ≠ 1) :
 
 theorem LFunction_principalCharacter (η : Character) (hη : η.residue ≠ 1) (s : ℂ) :
     LFunction (principalCharacter η) s = LFunction η s := by
-  have hp : (principalCharacter η).residue ≠ 1 := principalResidue_ne_one η hη
+  have hp  := principalResidue_ne_one η hη
   have ha := LFunction_entire_nonprincipal (principalCharacter η) hp
   have hb := LFunction_entire_nonprincipal η hη
-  have he : LFunction (principalCharacter η) = LFunction η := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
-    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
-    unfold LFunction
-    congr 1
-    apply continuedLattice_eq_of_elementCoeff_eq _ _ (principalCharacter_elementCoeff η)
-      (by linarith) (by intro h; norm_num [h] at hz)
-  exact congr_fun he s
+  refine congr_fun ?_ s
+  apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
+    (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
+  filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
+  unfold LFunction
+  congr 1
+  apply continuedLattice_eq_of_elementCoeff_eq _ _ (principalCharacter_elementCoeff η)
+    (by linarith) (by intro h; norm_num [h] at hz)
 
 theorem uniform_strip_bound (η : Character)
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (hη : η.residue ≠ 1)

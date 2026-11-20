@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Detector.RawSourceIntegral
 public import OAI.NumberTheory.DirichletL.Detector.SixthSeries
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -43,20 +44,18 @@ lemma rawSourceTripleIntegral_eq_source (η : HeckeFamily.Character)
   exact rawArithmeticSeries_eq_sixth_high S hS hpS hbad D η
     ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
     (by norm_num [Complex.add_re,Complex.mul_re])
-    (by norm_num [Complex.add_re,Complex.mul_re])
-    (by norm_num [Complex.add_re,Complex.mul_re])
+    (by norm_num)
+    (by norm_num)
 
 theorem markedPhysicalProbe_eq_source_triple (η : HeckeFamily.Character)
     (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal O) (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    markedPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z=
-      sourceTripleIntegral η S hS D W0 W1 X Y Z := by
-  rw [markedPhysicalProbe_eq_raw_triple η S hS hpS hbad hSne D W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    markedPhysicalProbe η (calibrationForSet S hS) D mw.left mw.right X Y Z=
+      sourceTripleIntegral η S hS D mw.left mw.right X Y Z := by
+  rw [markedPhysicalProbe_eq_raw_triple η S hS hpS hbad hSne D mw
     X Y Z hX hY hZ]
-  exact rawSourceTripleIntegral_eq_source η S hS hpS hbad D W0 W1 X Y Z
+  exact rawSourceTripleIntegral_eq_source η S hS hpS hbad D mw.left mw.right X Y Z
 
 end SevenEighths.ProbePhysical
 end

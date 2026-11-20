@@ -1,17 +1,18 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.Cancellation
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Moments.Primary
+public import OAI.NumberTheory.DirichletL.Moments.Mask
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentCounting
-open CenteredMomentPrimary
-open QuadraticInitialBound
+open CenteredMomentPrimary QuadraticInitialBound
 
 theorem norm_tsum_ideal_ball (f : Ideal O → ℂ) (H M : ℝ)
     (hH : 0 ≤ H) (hM : 0 ≤ M) (hzero : f ⊥ = 0)
@@ -32,9 +33,8 @@ theorem norm_tsum_ideal_ball (f : Ideal O → ℂ) (H M : ℝ)
   · obtain ⟨I, hI⟩ := hS
     have hI0 : I ≠ ⊥ := by intro h; exact (hmem I).mp hI (h ▸ hzero)
     have hn : 1 ≤ (Ideal.absNorm I : ℝ) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (fun hz => hI0 (Ideal.absNorm_eq_zero_iff.mp hz))
-    have hH1 : 1 ≤ H := hn.trans (hsupport I ((hmem I).mp hI))
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI0)
+    have hH1  := hn.trans (hsupport I ((hmem I).mp hI))
     have hcount := DescentFiberCost.finite_ideal_count_real S H hH1
       (fun J hJ hz => (hmem J).mp hJ (hz ▸ hzero))
       (fun J hJ => hsupport J ((hmem J).mp hJ))
@@ -52,7 +52,7 @@ theorem norm_linear_coefficient_le (S : ℝ → ℂ) (v : ℂ) (C E : ℝ) (hE :
     (herror : ∀ X : ℝ, 0 < X → ‖S X - (X : ℂ) * v‖ ≤ E)
     (habsolute : ∀ X : ℝ, 0 < X → ‖S X‖ ≤ C * X) : ‖v‖ ≤ C := by
   by_contra hn
-  have hδ : 0 < ‖v‖ - C := sub_pos.mpr (lt_of_not_ge hn)
+  have hδ  := sub_pos.mpr (lt_of_not_ge hn)
   let X := (E + 1) / (‖v‖ - C)
   have hX : 0 < X := div_pos (by linarith) hδ
   have heq : X * (‖v‖ - C) = E + 1 := div_mul_cancel₀ _ hδ.ne'

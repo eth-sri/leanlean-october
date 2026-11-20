@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstSecondLossParameters
-public import OAI.NumberTheory.DirichletL.Moments.FirstMixedMainError
+public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
+public import OAI.NumberTheory.DirichletL.Moments.FirstSourceConductorCaps
 
 @[expose] public section
 

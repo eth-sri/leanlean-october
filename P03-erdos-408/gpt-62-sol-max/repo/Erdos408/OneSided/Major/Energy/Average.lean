@@ -26,8 +26,8 @@ positive. -/
 theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ, 0 ≤ w ξ)
     (hh : AEStronglyMeasurable h) {M : ℝ} (hM : ∀ ξ, |h ξ| ≤ M) :
     (∫ ξ, w ξ * h ξ) ^ 2 ≤ (∫ ξ, w ξ) * ∫ ξ, w ξ * h ξ ^ 2 := by
-  have h₁ : Integrable fun ξ => w ξ * h ξ :=
-    hw.mul_bdd hh (Filter.Eventually.of_forall fun ξ => by rw [Real.norm_eq_abs]; exact hM ξ)
+  have h₁  :=
+    hw.mul_bdd hh (Filter.Eventually.of_forall fun ξ => by exact hM ξ)
   have h₂ : Integrable fun ξ => w ξ * h ξ ^ 2 :=
     hw.mul_bdd (hh.pow 2) (Filter.Eventually.of_forall fun ξ => by
       rw [Real.norm_eq_abs, abs_pow]
@@ -50,18 +50,16 @@ theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ
     exact integral_nonneg fun ξ => mul_nonneg (hw0 ξ) (sq_nonneg _)
   have hd := discrim_le_zero hq
   rw [discrim] at hd
-  have e : (-2 * ∫ ξ, w ξ * h ξ) ^ 2 = 4 * (∫ ξ, w ξ * h ξ) ^ 2 := by ring
   linarith
 
-/-- The energy of an average: if `0 ≤ F(τ) ≤ c ∫ w(ξ) h(ξ, τ) dξ` with `w ≥ 0` integrable and
-`0 ≤ h ≤ M` continuous, and `∫_a^b h(ξ, ·)² ≤ E` for every `ξ`, then
-`∫_a^b F² ≤ c² (∫ w)² E`. -/
-theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ → ℝ}
+/-- Energy of a weighted average with an integrable majorant for the inner energies. -/
+theorem integral_sq_le_of_le_integral_majorant {a b c M : ℝ} (hab : a ≤ b) {w : ℝ → ℝ}
     (hw : Integrable w) (hw0 : ∀ ξ, 0 ≤ w ξ) {h : ℝ → ℝ → ℝ}
     (hh : Continuous (Function.uncurry h)) (hh0 : ∀ ξ τ, 0 ≤ h ξ τ)
-    (hhM : ∀ ξ τ, h ξ τ ≤ M) (hE : ∀ ξ, ∫ τ in a..b, h ξ τ ^ 2 ≤ E) {F : ℝ → ℝ}
+    (hhM : ∀ ξ τ, h ξ τ ≤ M) {g : ℝ → ℝ} (hg : Integrable g)
+    (hE : ∀ ξ, w ξ * (∫ τ in a..b, h ξ τ ^ 2) ≤ g ξ) {F : ℝ → ℝ}
     (hF0 : ∀ τ, 0 ≤ F τ) (hF : ∀ τ, F τ ≤ c * ∫ ξ, w ξ * h ξ τ) :
-    ∫ τ in a..b, F τ ^ 2 ≤ c ^ 2 * (∫ ξ, w ξ) ^ 2 * E := by
+    ∫ τ in a..b, F τ ^ 2 ≤ c ^ 2 * (∫ ξ, w ξ) * ∫ ξ, g ξ := by
   set μ := volume.restrict (Set.Ioc a b)
   have : IsFiniteMeasure μ := isFiniteMeasure_restrict.2 measure_Ioc_lt_top.ne
   set W := ∫ ξ, w ξ
@@ -91,24 +89,36 @@ theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ
       _ = c ^ 2 * (∫ ξ, w ξ * h ξ τ) ^ 2 := by ring
       _ ≤ c ^ 2 * (W * ∫ ξ, w ξ * h ξ τ ^ 2) := by gcongr; exact h₁
       _ = c ^ 2 * W * ∫ ξ, f τ ξ := by ring
-  -- the inner energies are at most `w(ξ) E`
-  have hin : ∀ ξ, ∫ τ in Set.Ioc a b, f τ ξ ≤ w ξ * E := by
+  -- apply the weighted majorant to the inner energies
+  have hin : ∀ ξ, ∫ τ in Set.Ioc a b, f τ ξ ≤ g ξ := by
     intro ξ
     simp only [f]
     rw [integral_const_mul, ← intervalIntegral.integral_of_le hab]
-    exact mul_le_mul_of_nonneg_left (hE ξ) (hw0 ξ)
+    exact hE ξ
   rw [intervalIntegral.integral_of_le hab]
   calc ∫ τ in Set.Ioc a b, F τ ^ 2 ≤ ∫ τ in Set.Ioc a b, c ^ 2 * W * ∫ ξ, f τ ξ :=
         integral_mono_of_nonneg (Filter.Eventually.of_forall fun τ => sq_nonneg _)
           (hf.integral_prod_left.const_mul _) (Filter.Eventually.of_forall hCS)
     _ = c ^ 2 * W * ∫ ξ, ∫ τ in Set.Ioc a b, f τ ξ := by
         rw [integral_const_mul, integral_integral_swap hf]
-    _ ≤ c ^ 2 * W * ∫ ξ, w ξ * E :=
+    _ ≤ c ^ 2 * W * ∫ ξ, g ξ :=
         mul_le_mul_of_nonneg_left (integral_mono_of_nonneg (Filter.Eventually.of_forall fun ξ =>
-          integral_nonneg fun τ => mul_nonneg (hw0 ξ) (sq_nonneg _)) (hw.mul_const E)
+          integral_nonneg fun τ => mul_nonneg (hw0 ξ) (sq_nonneg _)) hg
           (Filter.Eventually.of_forall hin)) (by positivity)
-    _ = c ^ 2 * W ^ 2 * E := by
-        rw [integral_mul_const]
-        ring
+
+/-- The energy of an average: if `0 ≤ F(τ) ≤ c ∫ w(ξ) h(ξ, τ) dξ` with `w ≥ 0` integrable and
+`0 ≤ h ≤ M` continuous, and `∫_a^b h(ξ, ·)² ≤ E` for every `ξ`, then
+`∫_a^b F² ≤ c² (∫ w)² E`. -/
+theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ → ℝ}
+    (hw : Integrable w) (hw0 : ∀ ξ, 0 ≤ w ξ) {h : ℝ → ℝ → ℝ}
+    (hh : Continuous (Function.uncurry h)) (hh0 : ∀ ξ τ, 0 ≤ h ξ τ)
+    (hhM : ∀ ξ τ, h ξ τ ≤ M) (hE : ∀ ξ, ∫ τ in a..b, h ξ τ ^ 2 ≤ E) {F : ℝ → ℝ}
+    (hF0 : ∀ τ, 0 ≤ F τ) (hF : ∀ τ, F τ ≤ c * ∫ ξ, w ξ * h ξ τ) :
+    ∫ τ in a..b, F τ ^ 2 ≤ c ^ 2 * (∫ ξ, w ξ) ^ 2 * E := by
+  have hb := integral_sq_le_of_le_integral_majorant hab hw hw0 hh hh0 hhM (hw.mul_const E)
+    (fun ξ => mul_le_mul_of_nonneg_left (hE ξ) (hw0 ξ)) hF0 hF
+  rw [integral_mul_const] at hb
+  convert hb using 1
+  ring
 
 end Erdos408.OneSided

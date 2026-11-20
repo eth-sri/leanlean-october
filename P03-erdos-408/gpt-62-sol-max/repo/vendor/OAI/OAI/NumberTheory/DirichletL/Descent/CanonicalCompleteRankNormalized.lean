@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.CanonicalCompleteRank
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongCosts
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongHeightBin
+public import OAI.NumberTheory.DirichletL.Descent.CanonicalLiveBinRank
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalCompleteNormalized
 
 @[expose] public section
@@ -17,6 +19,7 @@ open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHei
 open InverseInitialClippedColumns FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
 
+set_option maxHeartbeats 500000 in
 theorem actual_complete_normalized_rank_step
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
     (hsW:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
@@ -61,20 +64,12 @@ theorem actual_complete_normalized_rank_step
       let S:=reflectionExcludedPrimes q;
       let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
       let hF:=InitialMeanSquare.outsideSquarefree_admissible S D (reflectionExcludedPrimes_bad q);
-      letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+      letI :=poolPrimary_maximal F hF;
       let _om:=radialFromLog Vlog (Vlog.smooth ⊤) Alog hbox;
-      CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
-        (poolPrimary_good F hF) Finset.univ base slots lists a ω₁₁
-        Z (M-3*(cutoff/2)/2) (N+V+15*eta) z₀ (margin-7*eta) epschild A K degree →
-      CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
-        (poolPrimary_good F hF) Finset.univ base slots lists a ω₁₂
-        Z (M-3*(cutoff/2)/2) (N+V+15*eta) z₀ (margin-7*eta) epschild A K degree →
-      CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
-        (poolPrimary_good F hF) Finset.univ base slots lists a ω₂₁
-        Z (M-3*(cutoff/2)/2) (N+V+15*eta) z₀ (margin-7*eta) epschild A K degree →
-      CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
-        (poolPrimary_good F hF) Finset.univ base slots lists a ω₂₂
-        Z (M-3*(cutoff/2)/2) (N+V+15*eta) z₀ (margin-7*eta) epschild A K degree →
+      let rank w := CanonicalRankMoments (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
+        (poolPrimary_good F hF) Finset.univ base slots lists a w
+        Z (M-3*(cutoff/2)/2) (N+V+15*eta) z₀ (margin-7*eta) epschild A K degree
+      rank ω₁₁ → rank ω₁₂ → rank ω₂₁ → rank ω₂₂ →
       normalizedColumnEnergy (poolPrimary F) (poolPrimary_ne_zero F hF)
         (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m slots lists a labels
         (nonzeroChildFrequencyBall 1 (Z^M)) (secondLabelWeight K) (normTwistedSource W theta)
@@ -82,29 +77,89 @@ theorem actual_complete_normalized_rank_step
       Cs*(1+‖theta‖)^shortDegree*Z^(N+V-cstar/256)+
       Cb*(1+A)*(1+‖theta‖)^(2*(InverseClippingProfiles.momentOrder (firstDegree degree)+(volume:Measure ℝ).integrablePower))*
         Z^(N+V+lossFinal+2*L*epsFirst+eps) := by
-  obtain ⟨w11,w12,w21,w22,af1,bf1,af2,bf2,window,bw,ds,ha1,hab1,ha2,hab2,
-    hw11,hw12,hw21,hw22,hs11,hs12,hs21,hs22,hbw,hbA,hbexp,hstep⟩:=
-    actual_complete_state_from_rank_moments lo hi hlo hhi W hsW hW Vlog Alog hbox hone
-      L cstar eta tau saving em ed eps hL hcstar heta heta1 hetac htau htau1 hem hed heps K
+  have hL0:0≤L:=by linarith
+  obtain ⟨w11,w12,w21,w22,af1,bf1,af2,bf2,window,bw,ha1,hab1,ha2,hab2,
+    hw11,hw12,hw21,hw22,hs11,hs12,hs21,hs22,hbw,hbA,hbexp,hbin⟩:=
+    actual_marked_bin_height lo hi hlo hhi W hsW hW Vlog Alog hbox hone L eta tau saving em ed
+      hL0 heta.le heta1 htau htau1 hem hed K
+  obtain ⟨ds,hstate⟩:=actual_complete_state_from_live_bins lo hi hlo hhi W hsW hW L cstar eta eps
+    hL0 hcstar heta heta1 hetac heps K K
   refine ⟨w11,w12,w21,w22,af1,bf1,af2,bf2,window,bw,ds,ha1,hab1,ha2,hab2,
     hw11,hw12,hw21,hw22,hs11,hs12,hs21,hs22,hbw,hbA,hbexp,?_⟩
   intro epsFirst epsSecond heF heS degree q hq
-  obtain ⟨Cs,Cb,Z₀,hCs,hCb,hZ₀,hstep⟩:=hstep epsFirst epsSecond heF heS degree q hq
-  refine ⟨Cs,Cb,Z₀,hCs,hCb,hZ₀,?_⟩
+  obtain ⟨Ccoef,C,hcoef,hC,hbin⟩:=hbin epsFirst epsSecond heF heS degree
+  obtain ⟨Cs,Z₀,hCs,hZ₀,hstate⟩:=hstate q hq
+  let Cb:=C*Ccoef^2*Real.exp (2*epsFirst)
+  refine ⟨Cs,Cs*Cb,Z₀,hCs,by dsimp [Cb];positivity,hZ₀,?_⟩
   intro σ _ m hm Z N V M z₀ margin cutoff pi epschild A loss lossFinal theta hZ hZ2 h2 hExp hlog
     hN hV hM hFcap hMF hzcap hbZ hAZ hwin hcut hcutL hcutc hsmall hmN hmargin hreserve hpuncture
     hpi hpieta hemc hedc hechild hsave hloss hprincipal hretained htail hA
     labels hlabels D hD slots hcard lists H hdis hH1 hH hprod base Ψ hbase hΨ hperiod a ha
   dsimp only
   intro h11 h12 h21 h22
-  have hh:=hstep m hm Z N V M z₀ margin cutoff pi epschild A loss lossFinal theta hZ hZ2 h2 hExp hlog
-    hN hV hM hFcap hMF hzcap hbZ hAZ hwin hcut hcutL hcutc hsmall hmN hmargin hreserve hpuncture
-    hpi hpieta hemc hedc hechild hsave hloss hprincipal hretained htail hA
-    labels hlabels D hD slots hcard lists H hdis hH1 hH hprod base Ψ hbase hΨ hperiod a ha h11 h12 h21 h22
-  rw [outside_complete_normalized_energy (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
+  rw [← outside_complete_normalized_energy (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
     Ψ m slots lists a labels (fun I hI=>(hlabels I hI).1) (secondLabelWeight K)
-    (normTwistedSource W theta) (Z^N) Z (N+V) (Z^M) (by linarith)] at hh
-  exact hh
+    (normTwistedSource W theta) (Z^N) Z (N+V) (Z^M) (by linarith)]
+  have hz:0<Z:=by linarith
+  have hZ1:1≤Z:=by linarith
+  let d:=2*(InverseClippingProfiles.momentOrder (firstDegree degree)+(volume:Measure ℝ).integrablePower)
+  let E:=Cb*(1+A)*Z^(N+V+lossFinal+2*L*epsFirst)*(1+‖theta‖)^d
+  have hE:0≤E:=by dsimp [E,Cb];positivity
+  have hbins:∀j∈cubeLogRange hi (Z^N),
+      (progressingCubes (reflectionExcludedPrimes q) D (Z^(cutoff-V))
+        (activeCubeLogBin (reflectionExcludedPrimes q) D hi (Z^N) j)).Nonempty →
+      Z^(-V)*rowFamilyEnergy labels (fun I z=>markedReopenedCubeBin (reflectionExcludedPrimes q) D
+        (progressingCubes (reflectionExcludedPrimes q) D (Z^(cutoff-V))
+          (activeCubeLogBin (reflectionExcludedPrimes q) D hi (Z^N) j))
+        Ψ m (idealGenerator I) z (normTwistedSource W theta) (Z^N) (Z^(cutoff-V)) slots lists a) (Z^M)≤E := by
+    intro j hj hne
+    let ell:=actualCubeLength Z j
+    let S:=reflectionExcludedPrimes q
+    let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
+    have hF:=InitialMeanSquare.outsideSquarefree_admissible S D (reflectionExcludedPrimes_bad q)
+    let : OAI.PrincipalFamily.Maximal (poolPrimary F):=poolPrimary_maximal F hF
+    let Q:=progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D hi (Z^N) j)
+    obtain ⟨hel,hr,hrL,helL,hFL,hgap,hqn⟩:=actual_long_bin_geometry S D (reflectionExcludedPrimes_bad q)
+      hi Z N V cutoff eta L j (by linarith) hL heta1 hV hFcap hbZ hlog hne
+    have hwindow : Real.exp window ≤ Z^(4*eta) :=
+      hwin.trans (Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith))
+    have hbt : bw ≤ Z^(6*eta) := by
+      rw [hbexp]
+      exact hwin.trans (Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith))
+    have children := actual_live_bin_rank_children S D (reflectionExcludedPrimes_bad q)
+      Z N V M cutoff eta L bw window hi (normWidth Z (Ideal.span {m})) z₀ margin epschild A
+      (M-3*(cutoff/2)/2) (N+V+15*eta) (margin-7*eta) tau
+      j (by linarith) hL heta.le heta1 hcut hsmall hV hFcap hbZ hlog hExp h2 hbw hbt hwindow hne
+      base Ψ hbase m hm hmargin hpuncture le_rfl le_rfl le_rfl slots lists a
+    have hsN:(N-3*ell)+3*ell=N:=by ring
+    have hpr:3*eta+epsFirst*(5*ell+2*(N-3*ell)+7*eta)≤lossFinal:=by
+      have hNL:N≤L:=by linarith
+      nlinarith
+    have hh:=hbin theta S D (reflectionExcludedPrimes_bad q) (reflectionExcludedPrimes_prime q)
+      Q labels Ψ m slots lists a Z M (N-3*ell) ell V (Z^(cutoff-V)) pi epschild A loss lossFinal
+      hZ2 h2 hExp hM hFL (by linarith) hel hV hr hAZ
+      (by intro v hv;rw [←cubeIdeal_primeProduct_norm F hF];exact (hqn v hv).1)
+      (by intro v hv;rw [←cubeIdeal_primeProduct_norm F hF];exact (hqn v hv).2)
+      hrL helL (by linarith) hwin hpi hpieta hemc hedc hechild (by linarith) hloss hcard
+      (by linarith) hpr hretained (by linarith) hΨ hA
+      (fun I hI=>(hlabels I hI).2.1) (fun I hI=>(hlabels I hI).1.1)
+      (fun I hI=>((hlabels I hI).2.2).trans (Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)))
+      hdis ha (by simpa only [hsN] using hD) 
+      (fun _ k _ => children w11 w12 K degree h11 h12 k.1 k.2.1 k.2.2 true)
+      (fun _ k _ => children w21 w22 K degree h21 h22 k.1 k.2.1 k.2.2 false)
+    rw [hsN] at hh
+    apply hh.trans
+    have hc:=mul_le_mul_of_nonneg_right
+      (actual_long_uniform_parent_cost Z ell N V L epsFirst Ccoef C A lossFinal hZ1 helL heF.le hC hA)
+      (show 0≤(1+‖theta‖)^d by positivity)
+    simpa only [hsN] using hc
+  have hs:=hstate m hm Z N V M z₀ margin cutoff hZ hN (by linarith) hV (by linarith) hM (by linarith)
+    hzcap hcut.le hcutL hcutc hmN hmargin hreserve labels hlabels D hD slots hcard lists H
+    hdis hH1 hH hprod Ψ hΨ hperiod theta a ha E hE hbins
+  apply hs.trans_eq
+  dsimp [E,d]
+  rw [Real.rpow_add hz (N+V+lossFinal+2*L*epsFirst) eps]
+  ring
 
 end SevenEighths.InverseMoment
 

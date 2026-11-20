@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialTotalFourier
+public import OAI.NumberTheory.DirichletL.Inversion.InitialInputRadial
+public import OAI.NumberTheory.DirichletL.Inversion.InitialAssignments
+public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapHeight
+public import OAI.NumberTheory.DirichletL.Inversion.InitialMarkedInputEnergy
 
 @[expose] public section
 
@@ -8,10 +11,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical SchwartzMap ContDiff FourierTransform
+open scoped Classical ContDiff
 namespace SevenEighths.InverseInitialOriginalHeight
-open InverseMoment InverseInitialProfile InverseInitialProfileBounds FourierBridge
-open JointLogSeparation CompletedHeight
+open InverseMoment InverseInitialProfile InverseInitialProfileBounds FourierBridge JointLogSeparation
+open CompletedHeight
 
 theorem child_eq_normTwisted (W:ℝ→ℂ)(θ:ℝ):childLogTest W θ=normTwistedSource W θ:=by
   rw [childLogTest_eq_clipped]

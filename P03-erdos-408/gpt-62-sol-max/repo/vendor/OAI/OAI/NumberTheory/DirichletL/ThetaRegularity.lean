@@ -11,7 +11,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical Topology
+open scoped Classical
 open Filter Asymptotics
 
 namespace SevenEighths.ThetaRegularity
@@ -28,8 +28,6 @@ theorem lattice_gap (z : O) (hz : z ≠ 0) : 1 ≤ ‖eisEmbedding z‖ ^ 2 := b
 
 variable (c : O) [NeZero c]
 
-local instance residueFinite : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span (NeZero.ne c)
-local instance residueFintype : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
 
 end SevenEighths.ThetaRegularity
 

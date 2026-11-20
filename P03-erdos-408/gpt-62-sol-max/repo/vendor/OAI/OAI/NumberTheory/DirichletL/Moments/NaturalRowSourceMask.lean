@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily CompletedGauss UniqueFactorizationMonoid ConcretePrimeRowBridge

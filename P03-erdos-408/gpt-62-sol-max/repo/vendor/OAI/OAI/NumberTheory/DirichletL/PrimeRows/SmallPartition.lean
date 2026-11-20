@@ -49,7 +49,7 @@ lemma small_rows_biUnion (L : ℝ) :
     refine Finset.mem_biUnion.mpr ⟨n,?_,mem_smallDyadicRows.mpr ⟨hn,hh.2.2⟩⟩
     rw [mem_smallDyadicIndices]
     have hlo := (mem_dyadicRows.mp hn).2.1
-    simpa only [one_mul] using hlo.trans hh.2.2.le
+    linarith
 
 lemma sum_small_dyadicRows (L : ℝ) (f : FreeRow→ℂ) :
     (∑u∈rowBand 1 L,f u)=∑n∈smallDyadicIndices L,∑u∈smallDyadicRows L n,f u := by

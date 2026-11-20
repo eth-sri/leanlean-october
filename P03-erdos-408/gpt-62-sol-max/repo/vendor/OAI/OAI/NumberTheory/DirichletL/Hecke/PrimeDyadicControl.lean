@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric Complex
 namespace SevenEighths.HeckePrimeDyadicControl
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds
+open HeckeReciprocalGrowth
 
 theorem logDeriv_eq_of_mask (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
@@ -21,7 +21,7 @@ theorem logDeriv_eq_of_mask (χ ψ : Character)
     (hψs : LFunction ψ s ≠ 0) :
     logDeriv (LFunction χ) s = logDeriv (LFunction ψ) s +
       logDeriv (factors χ.modulus ψ) s := by
-  have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  have hψ  := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
   have heq : LFunction χ =ᶠ[nhds s] (fun z => LFunction ψ z * factors χ.modulus ψ z) := by
     filter_upwards [(Complex.isOpen_re_gt 0).mem_nhds hs] with z hz
     exact LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hz
@@ -40,8 +40,8 @@ theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
   refine ⟨B,hB,?_⟩
   intro χ hχ a t ha ha' hzero z hz
   obtain ⟨ψ,_,hp,hn,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have hregular : regular ψ = LFunction ψ := regular_eq_nonprincipal ψ hψ
+  have hψ  := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  have hregular  := regular_eq_nonprincipal ψ hψ
   have hzeroψ : ∀ w ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular ψ w ≠ 0 := by
     intro w hw
     rw [hregular]
@@ -65,7 +65,7 @@ theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     unfold complexity
     have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
     gcongr
-  have hc0 : 0 < complexity ψ t := (Real.exp_pos 1).trans_le (complexity_ge_exp ψ t)
+  have hc0  := (Real.exp_pos 1).trans_le (complexity_ge_exp ψ t)
   rw [logDeriv_eq_of_mask χ ψ hmask hχ hzpos (by simpa [hregular] using hzeroψ z hz2)]
   apply (norm_add_le _ _).trans
   exact add_le_add (hbound.trans (mul_le_mul_of_nonneg_left (Real.log_le_log hc0 hQ) hB)) hdel
@@ -116,7 +116,7 @@ theorem buffered_rectangle_control (e : ℝ)
   apply mul_le_mul_of_nonneg_left _ hB
   apply Real.log_le_log ((Real.exp_pos 1).trans_le (complexity_ge_exp _ _))
   unfold complexity
-  have hH : 0 ≤ (3*i+2 : ℕ)*T := (abs_nonneg z.im).trans hzi
+  have hH  := (abs_nonneg z.im).trans hzi
   rw [abs_of_nonneg hH]
   gcongr
 

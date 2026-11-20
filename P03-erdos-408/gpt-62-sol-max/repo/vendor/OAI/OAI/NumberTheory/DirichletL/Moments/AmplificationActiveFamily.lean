@@ -7,15 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationActiveFactor
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationActiveFactor
-open CenteredMomentAmplificationFamilyEnergy CenteredMomentAmplificationSourceDomain
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open CompletedGauss RayFourExpansion CenteredMomentAmplificationShortening
+open CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationFamilyEnergy
+open CenteredMomentAmplificationSourceDomain CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
+open CenteredMomentChildRows CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
+open CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
  theorem actual_error_energy_active (S : Finset (Ideal O)) (p : O) (hp : Prime p)

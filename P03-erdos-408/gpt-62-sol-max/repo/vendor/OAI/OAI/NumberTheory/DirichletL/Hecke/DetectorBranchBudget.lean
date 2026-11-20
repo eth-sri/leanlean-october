@@ -27,7 +27,7 @@ theorem no_slot_plain_loss (m δ ε εm mesh ν : ℝ)
   linarith
 
 theorem inverse_marked_loss (r δ x ε εm mesh ν : ℝ)
-    (hδ : 0≤δ) (hδ1 : δ≤1) (_hx : 0≤x) (hx1 : x≤1/2)
+    (hδ : 0≤δ) (hδ1 : δ≤1) (hx1 : x≤1/2)
     (hε : 0≤ε) (hmesh : 0≤mesh) (hν : 0≤ν) :
     1-δ*r-2*(δ*x)*((1-r)/2-ν)+2*ε+δ*mesh+εm≤
       inverseExponent δ x r+commonLoss ε εm mesh ν := by
@@ -38,7 +38,7 @@ theorem inverse_marked_loss (r δ x ε εm mesh ν : ℝ)
   nlinarith
 
 theorem plain_marked_loss (m δ x Δ ε εm mesh ν : ℝ)
-    (hδ : 0≤δ) (hδ1 : δ≤1) (_hx : 0≤x) (hx1 : x≤1/2)
+    (hδ : 0≤δ) (hδ1 : δ≤1) (hx1 : x≤1/2)
     (hε : 0≤ε) (hmesh : 0≤mesh) (hν : 0≤ν) :
     1-2*δ*m-2*(δ*x)*((1-2*m)/(9/2+12*Δ)-ν)+4*ε+δ*mesh+εm≤
       1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ)+commonLoss ε εm mesh ν := by
@@ -51,7 +51,7 @@ theorem plain_marked_loss (m δ x Δ ε εm mesh ν : ℝ)
   rw [heq]
   linarith
 
-theorem inverse_requested_capacity (r ν : ℝ) (hr : 23/37≤r) (_hr1 : r<1)
+theorem inverse_requested_capacity (r ν : ℝ) (hr : 23/37≤r)
     (hν : 0<ν) (hνcap : ν<(1-r)/2) :
     0≤(1-r)/2-ν ∧ (1-r)/2-ν≤7/37 ∧
       r+2*((1-r)/2-ν)<1 ∧ 2*r+8*((1-r)/2-ν)<3 := by
@@ -68,7 +68,6 @@ theorem plain_requested_capacity (Δ x t r m ε ν : ℝ)
     0≤(1-2*m)/(9/2+12*Δ)-ν ∧ (1-2*m)/(9/2+12*Δ)-ν≤7/37 ∧
       2*m+6*(3/4+2*Δ)*((1-2*m)/(9/2+12*Δ)-ν)≤1 := by
   have hcross := crossing_bounds hx hx1 ht ht1
-  have hm : 1/4≤m := by linarith [hcross.2.2.1]
   have hd : 0<9/2+12*Δ := by linarith
   have hc : (1-2*m)/(9/2+12*Δ)≤7/37 := (div_le_iff₀ hd).mpr (by nlinarith)
   refine ⟨by linarith,by linarith,?_⟩

@@ -10,7 +10,7 @@ namespace SevenEighths.IdealLogDerivative
 
 open ActualEisensteinCubic UniqueFactorizationMonoid IdealEuler
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
-open scoped BigOperators Classical Topology
+open scoped BigOperators Classical
 
 noncomputable section
 
@@ -59,10 +59,9 @@ theorem value_mul_coprime {B C : Ideal O} (hBC : IsRelPrime B C) :
       (if B = 1 then IdealMangoldt.value C else 0) := by
   by_cases hB : B = 1
   · subst B
-    simp only [one_mul, IdealMangoldt.value_one, ite_self, ite_true, zero_add]
+    norm_num
   by_cases hC : C = 1
-  · subst C
-    simp only [mul_one, IdealMangoldt.value_one, ite_self, ite_true, add_zero]
+  · simp_all
   have hnot : ¬IsPrimePow (B * C) := by
     intro h
     exact (primePow_coprime_factor h hBC).elim hB hC
@@ -82,7 +81,7 @@ theorem idealDivisors_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
     obtain ⟨j, hj, hDj⟩ := (dvd_prime_pow hP k).mp hD
     exact ⟨j, Finset.mem_range.mpr (by omega), (associated_iff_eq.mp hDj).symm⟩
   · rintro ⟨j, hj, rfl⟩
-    exact pow_dvd_pow P (by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hj)
+    exact pow_dvd_pow P (by simp_all)
 
 theorem sum_value_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
     (∑ D ∈ idealDivisors (P ^ k), (IdealMangoldt.value D : ℂ)) =
@@ -106,8 +105,8 @@ theorem sum_value_mul (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 0)
     apply Ideal.isCoprime_iff_sup_eq.mpr
     apply Ideal.isUnit_iff.mp
     exact hBC (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right)
-  have h1B : (1 : Ideal O) ∈ idealDivisors B := (mem_idealDivisors hB).mpr (one_dvd _)
-  have h1C : (1 : Ideal O) ∈ idealDivisors C := (mem_idealDivisors hC).mpr (one_dvd _)
+  have h1B  := (mem_idealDivisors hB).mpr (one_dvd _)
+  have h1C  := (mem_idealDivisors hC).mpr (one_dvd _)
   rw [QuadraticDivisorSplit.sum_divisors_coprime_product B C hB hC hcop]
   calc
     _ = ∑ D ∈ idealDivisors B, ∑ E ∈ idealDivisors C,
@@ -137,8 +136,8 @@ theorem sum_value_divisors (B : Ideal O) (hB : B ≠ 0) :
     push_cast
     rfl
   | @hcp B C hBC ihB ihC =>
-    have hB0 : B ≠ 0 := left_ne_zero_of_mul hB
-    have hC0 : C ≠ 0 := right_ne_zero_of_mul hB
+    have hB0  := left_ne_zero_of_mul hB
+    have hC0  := right_ne_zero_of_mul hB
     rw [sum_value_mul B C hB0 hC0 hBC, ihB hB0, ihC hC0, map_mul, Nat.cast_mul,
       Real.log_mul (by exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hB0))
         (by exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hC0)), Complex.ofReal_add]
@@ -150,7 +149,7 @@ theorem value_le_log_norm (B : Ideal O) :
     rw [IdealMangoldt.value_pow hP hk, map_pow, Nat.cast_pow, Real.log_pow]
     apply le_mul_of_one_le_left
     · exact Real.log_natCast_nonneg _
-    · exact_mod_cast hk
+    norm_cast
   · rw [IdealMangoldt.value, ite_eq_right h]
     exact Real.log_natCast_nonneg _
 
@@ -159,7 +158,7 @@ theorem weighted_eq_term (a : Ideal O →*₀ ℂ) (s : ℂ) (B : Ideal O) :
   by_cases hB : B = 0
   · subst B
     simp only [map_zero, LSeries.term_zero]
-  · have hn : Ideal.absNorm B ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr hB
+  · have hn  := Ideal.absNorm_eq_zero_iff.not.mpr hB
     change a B * CubicEisenstein.fullIdealWeight s B = _
     simp only [CubicEisenstein.fullIdealWeight, hB, ite_false,
       LSeries.term_of_ne_zero hn, Complex.cpow_neg, div_eq_mul_inv]
@@ -179,7 +178,7 @@ theorem log_weighted_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤
     HasSum (fun B : Ideal O => (Real.log (Ideal.absNorm B) : ℂ) * weighted a s B)
       (-deriv (series a) s) := by
   obtain ⟨x, hx, hxs⟩ := exists_between hs
-  have hu := weighted_summable_norm a ha (x : ℂ) (by simpa using hx)
+  have hu := weighted_summable_norm a ha (x : ℂ) (by simp_all)
   have hd (B : Ideal O) : DifferentiableOn ℂ (fun z => weighted a z B) {z : ℂ | x < z.re} :=
     fun z _ => (weighted_hasDerivAt a z B).differentiableAt.differentiableWithinAt
   have hU : IsOpen {z : ℂ | x < z.re} := isOpen_lt continuous_const Complex.continuous_re
@@ -285,7 +284,7 @@ theorem coeff_LSeries_eq_neg_logDeriv_of_eq (a : Ideal O →*₀ ℂ)
     LSeries (coeff a) s = -deriv F s / F s := by
   have hd : deriv F s = deriv (series a) s := by
     apply Filter.EventuallyEq.deriv_eq
-    have hU : {z : ℂ | 1 < z.re} ∈ nhds s :=
+    have hU  :=
       (isOpen_lt continuous_const Complex.continuous_re).mem_nhds hs
     filter_upwards [hU] with z hz
     exact hF z hz

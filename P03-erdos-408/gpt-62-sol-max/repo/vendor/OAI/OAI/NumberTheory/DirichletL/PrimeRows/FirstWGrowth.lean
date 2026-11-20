@@ -1,9 +1,12 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedFirstBounds
 public import OAI.NumberTheory.DirichletL.PrimeRows.PrincipalMask
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
+
+public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalProductBounds
 
 @[expose] public section
 
@@ -19,13 +22,12 @@ theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
     ∃C : ℝ,0<C ∧ ∀s : ℂ,-(1/100:ℝ)≤s.re →
       ‖HeckeOrigin.continued χ s‖≤C*(3+|s.im|)^2 := by
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue≠1 := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
+  have hψ  := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
   obtain ⟨Cd,hCd,hd⟩ := HeckeDeletionBounds.factors_any_re_subpower_bound 1 (by norm_num)
   let R : ℝ := (HeckeDeletionBounds.radical χ.modulus).absNorm
   have hR : 1≤R := by
     dsimp only [R]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (HeckeDeletionBounds.radical_ne_zero χ.modulus))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (HeckeDeletionBounds.radical_ne_zero χ.modulus)
   have hU := HeckeLogarithmicInput.uniformConstant_nonneg
   let C : ℝ := HeckeLogarithmicInput.uniformConstant*(ψ.modulus.absNorm:ℝ)^(3/5:ℝ)*Cd*R^(101/100:ℝ)
   have hC : 0≤C := by dsimp [C];positivity
@@ -41,7 +43,7 @@ theorem nonprincipal_first_growth (χ : Character) (hχ : χ.residue≠1) :
   calc
     _ ≤ (HeckeLogarithmicInput.uniformConstant*(ψ.modulus.absNorm:ℝ)^(3/5:ℝ)*(3+|s.im|)^2)*
         (Cd*R^(101/100:ℝ)) := mul_le_mul hl hdel (norm_nonneg _) (by positivity)
-    _ = C*(3+|s.im|)^2 := by dsimp [C];ring
+    _ = C*(3+|s.im|)^2 := by ring
     _ ≤ (1+C)*(3+|s.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
 theorem calibrated_numerator_first_growth (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -78,7 +80,7 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
   let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
   let C : ℝ := L*Cn*(Ch*N)*∏P:T,A P
-  have hA (P : T) : 0≤A P :=
+  have hA (P : T)  :=
     selectedFirstBound_nonneg (P.val.val.absNorm : ℝ) x.re (Nat.cast_nonneg _)
   have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
   have hC : 0≤C :=
@@ -88,39 +90,14 @@ theorem calibrated_physicalRow_first_w_growth (eps : ℝ)
   intro w hw
   have hn' := hn w (hl.trans hw)
   have hh' := hh eps S hS hfirst T η u x w z hx (hl.trans hw) hz (by linarith)
-  have hg : ‖∏P∈T.attach,continuedCompensatedLocal η u P.val
-      (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
-      (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
-      ((P.val.val.absNorm:ℂ)^(-w))‖≤∏P:T,A P := by
-    rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
-    intro P hP
-    exact continuedCompensatedLocal_first_bound η u P.val _
-      (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) x.re x w z hx le_rfl
-      (hl.trans hw) hz (by linarith [hfirst.positive])
-  have he : star ((calibrationForSet S hmax).residueMonoid u.val)*
-      physicalCompensatedRow S hS T hT η u x w z=
-      (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
-        HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x)*
-      (star ((calibrationForSet S hmax).residueMonoid u.val)*
-        HeckeOrigin.continued (rowCharacter S hS.prime u) w)*
-      continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z*
-      ∏P∈T.attach,continuedCompensatedLocal η u P.val
-        (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
-        (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
-        ((P.val.val.absNorm:ℂ)^(-w)) := by
-    unfold physicalCompensatedRow continuedCompensatedRow
-    ring
-  rw [he,norm_mul,norm_mul,norm_mul]
+  have hg : ‖rowLocalProduct S hS T hT η u x w z‖ ≤ ∏ P : T, A P :=
+    rowLocalProduct_first_bound S hS T hT η u x w z x.re hx le_rfl (hl.trans hw) hz (by linarith [hfirst.positive]) A (fun _ => le_rfl)
   have hh'' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
     simpa only [Real.rpow_one] using hh'
   calc
-    _ ≤ L*(Cn*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := by
-      rw [norm_mul]
-      apply mul_le_mul _ hg (norm_nonneg _) (by dsimp [L,N];positivity)
-      apply mul_le_mul _ hh'' (norm_nonneg _) (by dsimp [L,N];positivity)
-      exact mul_le_mul_of_nonneg_left hn' (by positivity)
-    _ = C*(3+|w.im|)^2 := by dsimp [C];ring
+    _ ≤ L*(Cn*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := physicalRow_norm_le S hS T hT η u x w z (star ((calibrationForSet S hmax).residueMonoid u.val))
+      le_rfl le_rfl hn' hh'' hg
+    _ = C*(3+|w.im|)^2 := by ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
 end SevenEighths.ProbeHighRowFamily

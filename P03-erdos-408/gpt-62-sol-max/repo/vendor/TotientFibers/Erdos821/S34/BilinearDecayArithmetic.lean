@@ -21,10 +21,7 @@ theorem bilinear_scale_sqrt_bound (U V r H : ℝ)
         Real.sqrt (U + (1 + V / r) * (U + r * Real.log (2 * r))) ≤
       4 * H * Real.sqrt (bilinearDecay U V r) := by
   let F := U + (1 + V / r) * (U + r * Real.log (2 * r))
-  have hrpos : 0 < r := by linarith
   have hlog : 0 ≤ Real.log (2 * r) := Real.log_nonneg (by linarith)
-  have hF : 0 ≤ F := by dsimp [F]; positivity
-  have hUV : 0 < U * V := mul_pos hU hV
   have he : F / (U * V) = 2 / V + 1 / r + Real.log (2 * r) / U + r * Real.log (2 * r) / (U * V) := by
     dsimp [F]
     field_simp
@@ -34,7 +31,7 @@ theorem bilinear_scale_sqrt_bound (U V r H : ℝ)
     rw [show 2 / V = 2 * (1 / V) by ring]
     unfold bilinearDecay
     have h1 : 0 ≤ 1 / r := by positivity
-    have h2 : 0 ≤ Real.log (2 * r) / U := div_nonneg hlog hU.le
+    have h2  := div_nonneg hlog hU.le
     have h3 : 0 ≤ r * Real.log (2 * r) / (U * V) := by positivity
     have h4 : 0 ≤ 1 / V := by positivity
     linarith
@@ -56,7 +53,6 @@ theorem bilinear_decay_minor_bound (U V r Q S Y : ℝ)
     (hrQ : Q < r) (hrS : r ≤ U * V / S)
     (hlog : Real.log (2 * r) ≤ Y) :
     bilinearDecay U V r ≤ 1 / V + 1 / Q + Y / U + Y / S := by
-  have hrpos : 0 < r := by linarith
   have hlog0 : 0 ≤ Real.log (2 * r) := Real.log_nonneg (by linarith)
   unfold bilinearDecay
   apply add_le_add

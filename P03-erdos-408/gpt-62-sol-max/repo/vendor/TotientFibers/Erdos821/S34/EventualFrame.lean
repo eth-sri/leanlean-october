@@ -1,6 +1,6 @@
 module
 
-public import Erdos821.S34.CharacterCellTasks
+public import Erdos821.P4Cell.CharacterCellTask
 public import Erdos821.S34.KernelTransport
 
 @[expose] public section
@@ -11,7 +11,7 @@ open Filter
 
 namespace Erdos821.S34Core
 noncomputable section
-open Blueprint Blueprint.Analytic
+open Blueprint Blueprint.Analytic P4Cell
 
 theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
     (hL : 1 ≤ L) (hK : 0 ≤ K) (hKL : K ≤ L ^ (2 : ℕ))
@@ -19,7 +19,6 @@ theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
     1 + (Q : ℝ) ^ 2 * (K * L ^ (-(2 * q + ξexp + 2))) / L ^ (-ξexp) ≤ 2 := by
   have hLpos : 0 < L := by linarith
   have hξpos : 0 < L ^ (-ξexp) := Real.rpow_pos_of_pos hLpos _
-  have hδ : 0 ≤ K * L ^ (-(2 * q + ξexp + 2)) := mul_nonneg hK (Real.rpow_nonneg hLpos.le _)
   have hQsq : (Q : ℝ) ^ 2 ≤ L ^ (2 * q) := by
     have hs := pow_le_pow_left₀ (Nat.cast_nonneg Q) hQ 2
     have he : (L ^ q) ^ (2 : ℕ) = L ^ (2 * q) := by
@@ -31,7 +30,7 @@ theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
   have hb : (Q : ℝ) ^ 2 * (K * L ^ (-(2 * q + ξexp + 2))) ≤ L ^ (-ξexp) := by
     calc
       _ ≤ L ^ (2 * q) * (K * L ^ (-(2 * q + ξexp + 2))) :=
-        mul_le_mul_of_nonneg_right hQsq hδ
+        mul_le_mul_of_nonneg_right hQsq (mul_nonneg hK (Real.rpow_nonneg hLpos.le _))
       _ = K * L ^ (-ξexp - 2) := by
         rw [mul_left_comm, ← Real.rpow_add hLpos]
         congr 1
@@ -69,9 +68,7 @@ theorem eventually_cell_operator_norm (hchar : CharacterCellTask) (hc : Harmonic
   have hξ : 0 < L x ^ (-ξexp) := Real.rpow_pos_of_pos hLpos _
   have hgram (j : ℤ) (_hj : L x ^ (-ξexp) ≤ cellMass G k h j)
       (χ : CharacterIndex Q) (hχ : χ ∈ primitiveCharacters Q)
-      (ψ : CharacterIndex Q) (hψ : ψ ∈ primitiveCharacters Q) (hne : χ ≠ ψ) :
-      ‖expect G k (fun z => if cell h (product G k z) = j then
-        star (charValue χ (product G k z)) * charValue ψ (product G k z) else 0)‖ ≤ δ :=
+      (ψ : CharacterIndex Q) (hψ : ψ ∈ primitiveCharacters Q) (hne : χ ≠ ψ)  :=
     hx G hG k hk Q h j χ ψ hQ hh hχ hψ hne
   have hfac := gram_factor_le_two (L x) qexp ξexp K Q hL1 hK.le hKL hQ
   have hnorm := mul_le_mul_of_nonneg_right hfac

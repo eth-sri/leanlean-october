@@ -27,7 +27,7 @@ lemma excludedHighArray_mul (S : Finset Id) (hS : ∀P∈S,Prime P)
     excludedHighArray S η x w z (a*b)=excludedHighArray S η x w z a*excludedHighArray S η x w z b := by
   simp only [excludedHighArray,Prod.fst_mul,Prod.snd_mul,markedIdealHighSummand,
     highIdealMask_unmarked_mul S hS a b,
-    bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hc]
+    bareIdealHighSummand_mul η 1 x w z _ _ _ _ _ _ _ _ hc]
   ring
 
 def excludedHighPrimeTerm (S : Finset Id) (η : HeckeFamily.Character) (x w z : ℂ)
@@ -70,7 +70,7 @@ theorem markedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     apply highIdeals_injective.tsum_eq (f:=fun a : HighIdeal=>
       markedIdealHighSummand S (∏P∈T,P.val) η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2)
     intro a ha
-    have hh : bareIdealHighSummand η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2≠0 :=
+    have hh  :=
       (mul_ne_zero_iff.mp ha).2
     have hc := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
     let b : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal) :=

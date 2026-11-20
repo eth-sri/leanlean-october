@@ -107,13 +107,11 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
   set DR := sharedProduct C s
   set DC := slotProduct C a
   have hDR : 0 < DR := sharedProduct_pos hprime hs
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
-  have hM : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
-  have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
+  have hκ  := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
+  have hM  := (abs_nonneg _).trans (hΨ 0)
+  have hLG  := (abs_nonneg _).trans (hG 0)
   have hμs := labelMass_nonneg P (sharedSlots C) s
   have hμa := labelMass_nonneg P C a
-  have hT := targetMass_nonneg hV C
-  have hw' : (0 : ℝ) < w := by exact_mod_cast hw
   have hR : 0 ≤ labelMass P (sharedSlots C) s * labelMass P C a * targetMass P C ^ 2 * κK *
       M₀ * LF * LG / w *
       q₀ ^ ((groupPrimeCount P (DR * w) : ℤ) - ((J + 1) * Fintype.card ι : ℕ)) *
@@ -133,15 +131,15 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
     by_cases hc : PhysCond C (DR * w) (merge C s l) (merge C s l') a
     · rw [ite_eq_left hc]
       obtain ⟨h₁, h₂, -⟩ := hc
-      have hE : edgeProduct C (merge C s l) a = DR * DC := edgeProduct_merge C s l a
-      have hl : ∀ g, ∀ j ∈ unsharedSlots C g, l g j ∣ DR * w := fun g j hj => by
+      have hE := edgeProduct_merge C s l a
+      have hl  := fun g j hj => by
         have := (h₁ g).2 j
         rwa [merge_of_mem hj] at this
-      have hl' : ∀ g, ∀ j ∈ unsharedSlots C g, l' g j ∣ DR * (w + DC) := fun g j hj => by
+      have hl'  := fun g j hj => by
         have := (h₂ g).2 j
         rwa [merge_of_mem hj, hE, ← mul_add] at this
       rw [ite_eq_left hl, ite_eq_left hl', one_mul, one_mul]
-      have hLF : |F (DR * w)| ≤ LF :=
+      have hLF  :=
         hF _ (Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero hDR.ne' (by omega))) hN
       unfold physValue
       rw [hE, physWeight_eq hprime hs a, show DR * w + DR * DC = DR * (w + DC) by ring]
@@ -152,7 +150,7 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
       unfold targetMass at hW0 ⊢
       rw [abs_of_nonneg hW0]
       have hDRw : (0 : ℝ) < ((DR * w : ℕ) : ℝ) := by
-        have : 0 < DR * w := Nat.mul_pos hDR hw
+        have  := Nat.mul_pos hDR hw
         exact_mod_cast this
       have hq₁ := pow_sub_le_zpow hq₀ hq₀₁ (groupPrimeCount P (DR * w))
         ((J + 1) * Fintype.card ι)
@@ -194,9 +192,9 @@ lemma norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 0 < 
           q₀ ^ ((groupPrimeCount P w : ℤ) - ((J + 1) * Fintype.card ι : ℕ)) *
           q₀ ^ ((groupPrimeCount P (w + slotProduct C a) : ℤ) -
             ((J + 1) * Fintype.card ι : ℕ))) := by
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
-  have hM : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
-  have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
+  have hκ  := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
+  have hM  := (abs_nonneg _).trans (hΨ 0)
+  have hLG  := (abs_nonneg _).trans (hG 0)
   have hμs := labelMass_nonneg P (sharedSlots C) s
   have hμa := labelMass_nonneg P C a
   have hT := targetMass_nonneg hV C

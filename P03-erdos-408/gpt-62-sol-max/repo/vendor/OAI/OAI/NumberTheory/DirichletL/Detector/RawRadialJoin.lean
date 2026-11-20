@@ -73,13 +73,7 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
     rw [verticalIntegral_const_mul]
     dsimp only [c]
     simp only [Complex.ofReal_mul,Complex.ofReal_div]
-    ring_nf
-    congr 1
-    apply congrArg (verticalIntegral ξ)
-    funext z
-    apply tsum_congr
-    intro H
-    congr 1 ; congr 1 ; ring_nf
+    ring
   · simp only [zero_mul,tsum_zero,verticalIntegral,integral_zero,mul_zero]
 
 end SevenEighths.ProbePhysical

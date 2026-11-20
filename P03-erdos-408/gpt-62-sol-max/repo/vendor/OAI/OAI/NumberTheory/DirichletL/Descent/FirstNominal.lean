@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstProfileIdentity
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 noncomputable section
 
 def firstRootScale (s : Fin 9 → ℝ) : ℝ :=
@@ -50,7 +50,7 @@ theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
       ((q 3:ℂ)*↑(Real.sqrt (q 4))*(q 5:ℂ)*↑(Real.sqrt (q 7))*↑(Real.sqrt (q 8)))/
         (firstRootScale s:ℂ) := by exact_mod_cast hd
   rw [hdC]
-  have hDc : (firstRootScale s:ℂ) ≠ 0 :=
+  have hDc  :=
     Complex.ofReal_ne_zero.mpr (firstRootScale_pos s hs).ne'
   field_simp [hDc]
 

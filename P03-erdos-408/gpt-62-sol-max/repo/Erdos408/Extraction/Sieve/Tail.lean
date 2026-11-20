@@ -27,7 +27,7 @@ noncomputable section
 lemma presieved_eq_sum_rough {κ x z : ℝ} (hκx : 0 ≤ κ * x) (g : ℕ → ℝ) (hg0 : g 0 = 0) :
     presieved κ x z g = ∑ n ∈ (Icc 1 ⌊κ * x + 1⌋₊).filter (Rough z), g (n - 1) := by
   set A := (Icc 1 ⌊κ * x⌋₊).filter (fun u => ∀ p ∈ primesIcc 2 z, ¬ p ∣ u + 1)
-  have hinj : Set.InjOn (fun u : ℕ => u + 1) A := fun a _ b _ h => by simpa using h
+  have hinj : Set.InjOn (fun u : ℕ => u + 1) A := fun a _ b _ h => by simp_all
   have h1 : presieved κ x z g = ∑ n ∈ A.image (· + 1), g (n - 1) := by
     rw [sum_image hinj]
     rfl
@@ -117,7 +117,6 @@ lemma tail_budget {x L T z Y γ D₀ E κ m N Z S Pr J : ℝ} (hx0 : 0 < x) (hL 
     (hJ : 0 ≤ J) :
     |m| * T ^ 62 * (N / Z + J * S) ≤
       |m| * (4 * κ + 6 * κ * D₀ * exp E) * (x / L) * (T ^ 62 * (L / z) + T ^ 62 * T ^ 44 * J) := by
-  have hz0 : 0 < z := by linarith
   have hZ0 : 0 < Z := by linarith
   have hT22 : 1 ≤ T ^ 22 := one_le_pow₀ hT
   have h1 : N / Z ≤ x / L * (4 * κ * (L / z)) := by
@@ -255,7 +254,7 @@ theorem eventually_composite (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : 
       have h61 : T ^ 4 ≤ T ^ 61 := pow_le_pow_right₀ (by linarith) (by norm_num)
       have h62 : 2 * T ^ 61 ≤ T ^ 62 := by
         have h0 : 0 ≤ T ^ 61 := by positivity
-        have : T ^ 62 = T ^ 61 * T := pow_succ T 61
+        have  := pow_succ T 61
         nlinarith
       calc _ ≤ |slotCount x u v B (n - 1)| + |slotMean x u v B| := abs_sub _ _
         _ ≤ T ^ 62 := by linarith

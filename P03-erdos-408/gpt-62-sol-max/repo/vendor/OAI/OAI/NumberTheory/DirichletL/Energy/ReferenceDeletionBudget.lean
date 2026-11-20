@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
@@ -17,14 +18,13 @@ local notation "O"=>HeckeFamily.O
 
 lemma product_norm_ge_one (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
     (1:ℝ)≤(∏I∈D,I).absNorm:=by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (subset_product_nonzero D hD))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (subset_product_nonzero D hD)
 
 lemma weighted_inverse_sqrt (I:Ideal O)(hI:I≠0)(t:ℝ)(ht:t≤1/2):
     weight I*(I.absNorm:ℝ)^t≤1:=by
   have hn:(1:ℝ)≤I.absNorm:=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  have hp:(0:ℝ)<I.absNorm:=zero_lt_one.trans_le hn
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
+  have hp:=zero_lt_one.trans_le hn
   rw [weight,Real.sqrt_eq_rpow,←Real.rpow_neg hp.le,←Real.rpow_add hp]
   exact Real.rpow_le_one_of_one_le_of_nonpos hn (by linarith)
 
@@ -74,7 +74,7 @@ lemma slot_majorant_mass (R:Finset (Ideal O))(hR:∀I∈R,Prime I)
     (∑J∈F.powerset,∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I))≤
       (∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i))*(∏I∈R,localMass I)^F.card:=by
   rw [←Finset.prod_one_add]
-  have he:1+∑I∈R,weight I≤∏I∈R,localMass I:=
+  have he:=
     (one_add_sum_weight R).trans (deletion_le_euler R hR)
   have hp (i:α)(hi:i∈F):1+(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I)≤
       max 1 (Real.sqrt (max 1 (b i))*M i)*(∏I∈R,localMass I):=by
@@ -119,12 +119,8 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
           (Finset.mem_powerset.mp hD₂) J b M (fun i hi=>hM i (hJF hi)) t ht
       _=_:=by simp only [Finset.sum_const,nsmul_eq_mul];ring
   let N:ℝ:=(∏I∈R,I).absNorm
-  have hN:1≤N:=product_norm_ge_one R hR
-  have hN0:0<N:=zero_lt_one.trans_le hN
-  have hmass:0≤∑J∈F.powerset,∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I):=by
-    exact Finset.sum_nonneg (fun J hJ=>Finset.prod_nonneg (fun i hi=>mul_nonneg
-      (mul_nonneg (Real.sqrt_nonneg _) (hM i ((Finset.mem_powerset.mp hJ) hi)))
-      (Finset.sum_nonneg (fun I _=>weight_nonneg I))))
+  have hN:=product_norm_ge_one R hR
+  have hN0:=zero_lt_one.trans_le hN
   have hpow:(∏I∈R,localMass I)^F.card≤Ce^F.card*N^(eps/2):=by
     calc
       _≤(Ce*N^delta)^F.card:=pow_le_pow_left₀

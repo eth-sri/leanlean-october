@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical FourierTransform ContDiff
 
 namespace SevenEighths.InverseMoment
 open MeasureTheory CanonicalCubeSeparation FourierBridge JointLogSeparation CompletedHeight

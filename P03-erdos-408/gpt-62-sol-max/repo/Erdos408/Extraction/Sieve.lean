@@ -74,7 +74,6 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     with x hTIIx hAllx h10x hprex htailx ⟨hT, heh, hj2, he1, hiL, hLz, hLc, hJ⟩ hsize hP hTC
       hxκ hL k hk u v B Φ hslot hB hΦ
   have hx0 : 0 < x := by linarith
-  have hL0 : 0 < Real.log x := by linarith
   have hB' : ∀ Q, |B Q| ≤ 1 := fun Q => by rw [abs_le]; constructor <;> linarith [hB Q]
   set T := logLog x
   set J := compositeCutoff 1001 x
@@ -91,13 +90,11 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     have h2 := hAllx k hk u v B Φ j hslot hB hΦ hj2' hjJ
     have hLc₁ : Real.log x ^ (-c₁) ≤ Real.log x ^ (-c') :=
       rpow_le_rpow_of_exponent_le hL (neg_le_neg (min_le_left _ _))
-    have hLc₂ : Real.log x ^ (-c₂) ≤ Real.log x ^ (-c') :=
-      rpow_le_rpow_of_exponent_le hL (neg_le_neg (min_le_right _ _))
     have hpos : 0 ≤ x / Real.log x := by positivity
     have hf : (0 : ℝ) < j.factorial := by exact_mod_cast Nat.factorial_pos j
     have hf1 : (1 : ℝ) ≤ j.factorial := by
       exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.factorial_ne_zero j)
-    have hfi : ((j.factorial : ℝ))⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hf1
+    have hfi  := inv_le_one_of_one_le₀ hf1
     rw [abs_mul, abs_of_pos (inv_pos.2 hf)]
     set Comp := compositeSum (1 / 2) (1 / 12) K (30000 * K) x (presieveExponent c 200 x) κ j Φ u v B
     set Prox := proxySum (1 / 2) (1 / 12) K (30000 * K) x (presieveExponent c 200 x) κ j Φ u v B
@@ -110,7 +107,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
       have e2 : C₂ * (x / Real.log x) * Real.log x ^ (-c₂) ≤
           |C₂| * (x / Real.log x * Real.log x ^ (-c')) := by
         rw [mul_assoc]
-        exact mul_le_mul (le_abs_self _) (mul_le_mul_of_nonneg_left hLc₂ hpos) (by positivity)
+        exact mul_le_mul (le_abs_self _) (mul_le_mul_of_nonneg_left (rpow_le_rpow_of_exponent_le hL (neg_le_neg (min_le_right _ _))) hpos) (by positivity)
           (abs_nonneg _)
       have e3 := abs_sub_abs_le_abs_sub Comp Prox
       simp only [C₁₂]
@@ -141,7 +138,6 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
     have h2 := (hsize k hk u v B hslot hB').2
     have h61 : T ^ 4 ≤ T ^ 61 := pow_le_pow_right₀ hT (by norm_num)
     have h62 : 2 * T ^ 61 ≤ T ^ 62 := by
-      have : T ^ 62 = T ^ 61 * T := pow_succ T 61
       have hT2 : (2 : ℝ) ≤ T := by
         have := abs_nonneg CP
         have := abs_nonneg C₃

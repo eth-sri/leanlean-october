@@ -3,6 +3,8 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 
+public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalProductBounds
+
 @[expose] public section
 
 namespace OAI
@@ -34,11 +36,8 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
   intro w hw
   have hn' := hn u hu w hw
   have hh' := hh eps S hS hfirst T η u x w z (by linarith) (by linarith) hz (by linarith)
-  have hg : ‖∏P∈T.attach,continuedCompensatedLocal η u P.val
-      (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
-      (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
-      ((P.val.val.absNorm:ℂ)^(-w))‖≤∏P:T,A P := by
-    rw [norm_prod]
+  have hg : ‖rowLocalProduct S hS T hT η u x w z‖ ≤ ∏ P : T, A P := by
+    rw [rowLocalProduct, norm_prod]
     change (∏P:T,‖continuedCompensatedLocal η u P.val _ x w z
       (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
       ((P.val.val.absNorm:ℂ)^(-w))‖)≤_
@@ -56,31 +55,12 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
     · rw [ite_eq_right hp]
       have hnq := Real.rpow_nonneg (show (0:ℝ)≤P.val.val.absNorm by positivity) (1/2:ℝ)
       nlinarith
-  have he : star ((calibrationForSet S hmax).residueMonoid u.val)*
-      physicalCompensatedRow S hS T hT η u x w z=
-      (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
-        HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x)*
-      (star ((calibrationForSet S hmax).residueMonoid u.val)*
-        HeckeOrigin.continued (rowCharacter S hS.prime u) w)*
-      continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z*
-      ∏P∈T.attach,continuedCompensatedLocal η u P.val
-        (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
-        (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
-        ((P.val.val.absNorm:ℂ)^(-w)) := by
-    unfold physicalCompensatedRow continuedCompensatedRow
-    ring
-  rw [he,norm_mul,norm_mul,norm_mul]
   have hh'' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
     simpa only [Real.rpow_one] using hh'
-  have hn'' : ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
-      HeckeOrigin.continued (rowCharacter S hS.prime u) w‖≤Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2 := hn'
   calc
-    _ ≤ L*(Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := by
-      rw [norm_mul]
-      apply mul_le_mul _ hg (norm_nonneg _) (by dsimp [L,N];positivity)
-      apply mul_le_mul _ hh'' (norm_nonneg _) (by dsimp [L,N];positivity)
-      exact mul_le_mul_of_nonneg_left hn'' (by positivity)
-    _ = C*(3+|w.im|)^2 := by dsimp [C];ring
+    _ ≤ L*(Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := physicalRow_norm_le S hS T hT η u x w z (star ((calibrationForSet S hmax).residueMonoid u.val))
+      le_rfl le_rfl hn' hh'' hg
+    _ = C*(3+|w.im|)^2 := by ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
 end SevenEighths.ProbeHighRowFamily

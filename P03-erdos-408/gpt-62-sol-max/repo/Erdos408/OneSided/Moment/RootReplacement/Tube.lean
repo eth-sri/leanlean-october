@@ -83,7 +83,7 @@ theorem PosModel.rowOp_ne_zero_imp (M : PosModel) {q A₀ x : ℝ} {d : Data K} 
   have hk := abs_lt_of_plateau_ne_zero hpl
   rw [abs_div, abs_of_pos hY, div_lt_iff₀ hY] at hk
   set D := padProd s.1.2
-  have hDpos : (0 : ℝ) < D := hd₀.trans_le hD₀
+  have hDpos  := hd₀.trans_le hD₀
   obtain ⟨k, hkD⟩ := hdvd
   have hk' : M.det s.1.1 s'.1.1 / (D : ℤ) = k := by
     rw [hkD, Int.mul_ediv_cancel_left _ (by exact_mod_cast hDpos.ne')]
@@ -118,7 +118,7 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
     (A B : Fin (N + 1) → ℝ) (hA : ∀ j, U ≤ A j ∧ A j ≤ 16 * U)
     (hdet : ∀ j : Fin N, |A j.castSucc * B j.succ - B j.castSucc * A j.succ| ≤ 10 * H)
     (j : Fin (N + 1)) : |A 0 * B j - B 0 * A j| ≤ 2560 * N * H := by
-  have hApos : ∀ j, 0 < A j := fun j => hU.trans_le (hA j).1
+  have hApos  := fun j => hU.trans_le (hA j).1
   -- step: the slopes move by at most `10 H / U²` per edge
   have hslope : ∀ n (hn : n < N + 1),
       |B ⟨n, hn⟩ / A ⟨n, hn⟩ - B 0 / A 0| ≤ n * (10 * H / U ^ 2) := by
@@ -131,8 +131,7 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
       have hb := hApos ⟨n + 1, hn⟩
       have hstep : |B ⟨n + 1, hn⟩ / A ⟨n + 1, hn⟩ - B ⟨n, by omega⟩ / A ⟨n, by omega⟩| ≤
           10 * H / U ^ 2 := by
-        have hd : |A ⟨n, by omega⟩ * B ⟨n + 1, hn⟩ - B ⟨n, by omega⟩ * A ⟨n + 1, hn⟩| ≤
-            10 * H := hdet ⟨n, by omega⟩
+        have hd  := hdet ⟨n, by omega⟩
         have hUU : U ^ 2 ≤ A ⟨n + 1, hn⟩ * A ⟨n, by omega⟩ := by
           rw [sq]
           exact mul_le_mul (hA _).1 (hA _).1 hU.le hb.le
@@ -160,7 +159,6 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
     field_simp
   rw [hid, abs_mul, abs_of_pos (mul_pos h0 hjpos)]
   have hs := hslope j j.isLt
-  have hs₀ : 0 ≤ (j : ℝ) * (10 * H / U ^ 2) := by positivity
   calc A 0 * A j * |B j / A j - B 0 / A 0| ≤ (16 * U) * (16 * U) * (j * (10 * H / U ^ 2)) :=
         mul_le_mul (mul_le_mul (hA 0).2 (hA j).2 hjpos.le (by linarith)) hs (abs_nonneg _)
           (by positivity)
@@ -220,7 +218,7 @@ theorem tube_of_live {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 < Y) (hd
   obtain ⟨hz₀, hdet, -⟩ := confCoeff_ne_zero_imp hY hd₀ hR hc
   obtain ⟨u, v, r, hu₁, hu₂, -, -, hr₀, hr₁, hind⟩ := hω
   have hU : 0 < d₀ * Y * d.Hm := by positivity
-  have hu : 0 < u := hU.trans_le hu₁
+  have hu  := hU.trans_le hu₁
   -- step: every visit is a position at the root `(u, v, r)`
   have hvis : ∀ i, d₀ * Y * d.Hm ≤ u * tau r (ω i).1.1.1 ∧
       u * tau r (ω i).1.1.1 ≤ 16 * (d₀ * Y * d.Hm) := by
@@ -252,7 +250,7 @@ theorem tube_of_live {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ} (hY : 0 < Y) (hd
     linarith
   refine ⟨h₂', ?_⟩
   -- step: `τ(z_j) ∈ (0, 16]`, and `z_{j,1} = τ(z_j) - r z_{j,2}`
-  have hτ₀ : 0 < tau r (ω j).1.1.1 := pos_of_mul_pos_right (hU.trans_le (hvis j).1) hu.le
+  have hτ₀  := pos_of_mul_pos_right (hU.trans_le (hvis j).1) hu.le
   have hτ₁ : tau r (ω j).1.1.1 ≤ 16 := by
     by_contra h
     push Not at h

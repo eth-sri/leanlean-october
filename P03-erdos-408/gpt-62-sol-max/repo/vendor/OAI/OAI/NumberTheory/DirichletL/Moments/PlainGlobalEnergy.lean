@@ -9,14 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentPlainGlobalEnergy
-open HeckeFamily HeckeDyadic CenteredMomentCoreFloor
-open CenteredMomentPlainGlobalActual CenteredMomentPositiveSummability
+open HeckeFamily HeckeDyadic CenteredMomentCoreFloor CenteredMomentPlainGlobalActual
+open CenteredMomentPositiveSummability
 open CenteredMomentRadialEligibleEnergy (Radial)
-open QuadraticInitialBound ConcreteTraceCRT
-open CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentDetectorDictionary
-open HeckeInverseAmplification CompletedHeight CenteredMomentHeckeHeight
+open QuadraticInitialBound ConcreteTraceCRT CenteredMomentHeckeTwist CenteredMomentTwist
+open CenteredMomentDetectorDictionary HeckeInverseAmplification CompletedHeight CenteredMomentHeckeHeight
 open CenteredMomentLattice CenteredMomentHeckeCancellation CenteredMomentAbsoluteEnergy
 local notation "O"=>HeckeFamily.O
 
@@ -67,8 +66,8 @@ local notation "O"=>HeckeFamily.O
   have hb:∀z,‖(if r.keep z then F z else 0)‖≤B:=by
     intro z
     by_cases h:r.keep z
-    · simpa only [ite_eq_left h] using hF z h
-    · simpa only [ite_eq_right h,norm_zero] using hB
+    · simp_all
+    simp_all
   have hs:=bounded_radial_summable _ B hb r.keep r.profile r.scale r.scale_pos
   have heq:(fun z:O=>if r.keep z then
       ‖(if r.keep z then F z else 0)‖^2*(r.profile (‖eisEmbedding z‖^2/r.scale)).re else 0)=

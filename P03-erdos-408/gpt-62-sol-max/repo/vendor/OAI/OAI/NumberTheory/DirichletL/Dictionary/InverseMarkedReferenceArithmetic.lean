@@ -62,8 +62,8 @@ theorem remaining_tuple_coprime (L:ι→Finset (Ideal O))(hp:∀i,∀P∈L i,Pri
   intro i j hij
   have hiP:=hp i.val _ (Finset.mem_pi.mp ht i.val i.property)
   have hjP:=hp j.val _ (Finset.mem_pi.mp ht j.val j.property)
-  let:(t i.val i.property).IsMaximal:=(Ideal.isPrime_of_prime hiP).isMaximal hiP.ne_zero
-  let:(t j.val j.property).IsMaximal:=(Ideal.isPrime_of_prime hjP).isMaximal hjP.ne_zero
+  let:=(Ideal.isPrime_of_prime hiP).isMaximal hiP.ne_zero
+  let:=(Ideal.isPrime_of_prime hjP).isMaximal hjP.ne_zero
   apply Ideal.isCoprime_of_isMaximal
   intro he
   dsimp only at he

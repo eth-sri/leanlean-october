@@ -43,5 +43,3 @@ theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
   simp [f.hf, l1, add_mul, Real.fourier_deriv f.hf' l5 f.hf'', Real.fourier_deriv f.hf l4 f.hf']
   field_simp [pi_ne_zero] ; ring_nf ; simp
 
-@[simp] theorem deriv_ofReal : deriv ofReal = fun _ => 1 := by
-  ext x ; exact ((hasDerivAt_id x).ofReal_comp).deriv

@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainUnmarkedField
 
 @[expose] public section
@@ -7,20 +9,17 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainUnmarkedField
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentDetectorPlainFiberSource
+open HeckeDyadic HeckeRowClosure HeckeInverseAmplification CenteredMomentDetectorPlainFiberSource
 open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
-open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorDictionary
+open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainExceptional
+open CenteredMomentDetectorPlainUnmarkedState CenteredMomentDetectorPlainMomentParameters
+open CenteredMomentDetectorPlainProfileControl CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentNaturalFixedRaySource QuadraticInitialBound
 
 open ProbeDetectorPlainUnmarkedField
 variable {Δ:ℝ}
@@ -55,15 +54,9 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   let η₀:=fun label=>sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η label
   let Q:=fun label=>internalQ (sourceFixedIdeal S) (η₀ label)
   choose A hA hzero using (fun label=>henergy (η₀ label))
-  let Amax:ℝ:=1+∑label,A label
-  have hsum:0≤∑label,A label:=Finset.sum_nonneg (fun j _=>(hA j).le)
-  have hAmax:0<Amax:=by dsimp [Amax];linarith
-  have hA_bound (label):A label≤Amax:=by
-    have hh:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hA j).le) (Finset.mem_univ label)
-    dsimp [Amax];linarith
+  obtain ⟨Amax, hAmax, hA_bound⟩ := exists_real_majorant 0 A
   let C:=Amax*(1+diagonalControl radialMajorant)*Cp
   have hdiag:0≤diagonalControl radialMajorant:=diagonalControl_nonneg _
-  have hC:0<C:=mul_pos (mul_pos hAmax (by linarith)) hCp
   have hC_bound (label):A label*diagonalControl radialMajorant*Cp≤C:=by
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul (hA_bound label) (by linarith) hdiag hAmax.le) hCp.le
@@ -77,13 +70,13 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
       with Z hz
     intro d hd
     exact hU₀ (Z^d) (hz d hd)
-  refine ⟨C,hC,?_⟩
+  refine ⟨C,(mul_pos (mul_pos hAmax (by linarith)) hCp),?_⟩
   filter_upwards [source_batch_plain_retained S η,source_label_fixed_allowance D S η,hscales]
     with Z hret hmod hscales
   refine ⟨hret.1,?_⟩
   intro rows hrows d hd a tstar T heightAllowance i B hB hdata hprofile hwidth
     bin label left right hne height hheight j k hjk σ hσ t ht F value
-  have hU:1<Z^d:=source_base_gt_one D Z d hret.1 hd
+  have hU:1<Z^d:=source_base_gt_one Z d hret.1 hd
   have hnorm:‖t‖≤height:=by simpa only [Real.norm_eq_abs] using abs_le.mpr ht
   have hp:(detectorProfiles F.reverse j k σ t).control control ^2≤Cp*(1+height)^Jheight:=by
     apply (hprofiles F.reverse j k hjk σ hσ t).trans
@@ -96,9 +89,6 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
         bin label left right hne ∅ j k σ t
   have hb:=retained_unmarked_bound D F (η₀ label) (Q label) hU (hmod.2 label d hd)
     degree control (A label) (hscales label d hd) j k σ t
-  have hpow:(Z^d)^(max 1 (2*F.m)+delta D+stageError D)≤
-      (Z^d)^(max 1 (2*F.m)+D.t):=
-    Real.rpow_le_rpow_of_exponent_le hU.le (final_exponent_budget D _)
   have hfinal:value≤C*(1+height)^Jheight*(Z^d)^(max 1 (2*F.m)+D.t):=by
     apply hcompare.trans (hb.trans ?_)
     calc
@@ -106,7 +96,7 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
           (Z^d)^(max 1 (2*F.m)+D.t):=by
         apply mul_le_mul
         · exact mul_le_mul_of_nonneg_left hp (mul_nonneg (hA label).le hdiag)
-        · exact hpow
+        · exact (Real.rpow_le_rpow_of_exponent_le hU.le (final_exponent_budget D _))
         · exact Real.rpow_nonneg (zero_lt_one.trans hU).le _
         · exact mul_nonneg (mul_nonneg (hA label).le hdiag)
             (mul_nonneg hCp.le (by positivity))

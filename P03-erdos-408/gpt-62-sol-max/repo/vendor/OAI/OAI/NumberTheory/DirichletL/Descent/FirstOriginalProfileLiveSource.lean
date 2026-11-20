@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileParents
 
 @[expose] public section
@@ -7,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileParents
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 def refinedOuter (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex)
     (gate : FirstOriginalOuter ι→Prop) : Finset (FirstOriginalOuter ι) :=
@@ -55,7 +56,7 @@ theorem refined_source_radius (hp : ∀i,p i≠0)
   have hxold := original_cell_subset p pool Q labels Ysource k hxcell
   obtain ⟨ho,hf⟩ := Finset.mem_sigma.mp hxold
   have hm := (mem_firstRetainedSource p labels x.1.1 Ysource x.2).mp hf
-  have houter : x.1∈refinedOuter p pool Q k gate := Finset.mem_filter.mpr ⟨ho,hgate⟩
+  have houter  := Finset.mem_filter.mpr ⟨ho,hgate⟩
   have hE := firstPhysicalMultiplier_ne_zero p hp x.1.1.support x.1.1.leftExponent x.1.1.rightExponent
     x.1.1.leftBit x.1.1.rightBit x.2.1 (hn x.2.1 hm.1)
   apply Finset.mem_sigma.mpr

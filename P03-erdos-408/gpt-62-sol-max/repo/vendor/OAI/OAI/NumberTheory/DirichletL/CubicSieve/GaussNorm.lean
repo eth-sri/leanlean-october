@@ -25,22 +25,22 @@ lemma primeIndex_product (I : Ideal O) (hI : Admissible I) :
 
 theorem gaussTwo_norm_one (I : Ideal O) (hI : Admissible I) : ‖gaussTwo I hI.2‖ = 1 := by
   let c := primaryGenerator I
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hI.2
+  let  := finite_quotient_span hI.2
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   let (P : PrimeIndex I) : Fintype (O ⧸ P.val) := Fintype.ofFinite _
-  let (P : PrimeIndex I) : Field (O ⧸ P.val) := Ideal.Quotient.field P.val
-  have hc : Ideal.span {c} = ∏ P : PrimeIndex I, P.val :=
+  let (P : PrimeIndex I)  := Ideal.Quotient.field P.val
+  have hc  :=
     (primaryGenerator_spec I hI.2).1.trans (primeIndex_product I hI).symm
-  let e : (O ⧸ Ideal.span {c}) ≃+* ∀ P : PrimeIndex I, O ⧸ P.val :=
+  let e  :=
     (Ideal.quotEquivOfEq hc).trans
       (IdealGaussCRT.quotientProdEquivPi (fun P : PrimeIndex I => P.val)
         (CanonicalRowCompletion.primeIndex_pairwise_coprime I))
-  let χ : ∀ P : PrimeIndex I, MulChar (O ⧸ P.val) ℂ :=
+  let χ  :=
     fun P => actualSextic P.val (primeIndex_good I hI.2 P) ^ 2
   let ψ := eisTraceModChar ShortDraftTrace.breveE
     ConcreteBreveE.breveE_period_coordinates c hI.2
   have hψ : ψ.IsPrimitive := GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive c hI.2
-  have hχ : ∀ P : PrimeIndex I, χ P ≠ 1 := fun P =>
+  have hχ  := fun P =>
     cubicExponent_nonprincipal P.val (primeIndex_good I hI.2 P) false
   have hnormsq := IdealGaussCRT.norm_gauss_finite_crt_sq (fun P : PrimeIndex I => O ⧸ P.val)
     e χ ψ hχ (fun P => IdealGaussCRT.coordinateAddChar_isPrimitive

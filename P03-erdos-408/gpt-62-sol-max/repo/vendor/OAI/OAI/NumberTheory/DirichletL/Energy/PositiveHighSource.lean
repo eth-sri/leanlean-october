@@ -2,7 +2,9 @@ module
 
 public import OAI.NumberTheory.DirichletL.Energy.NaturalInputMatches
 public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionSymmetric
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLivePower
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceRobustOriginal
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarReserve
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 public import OAI.NumberTheory.DirichletL.Energy.FixedRadialReduction
 public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 
@@ -11,25 +13,22 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSource
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState
+open CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialReduction
+open CenteredMomentEnergyPhysicalEntry CenteredMomentCommonRadialData CenteredMomentSourceRow
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentNaturalFixedRaySource
+open CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable (η₀:Character)(θ:α→ RayQuotient.Characters M H)
 variable (W:ℝ→ ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)(haslot:0<aslot)
@@ -48,10 +47,6 @@ def balancedInput:Input α:=
 
 local notation "balancedSource"=>balancedInput M H hH η₀ θ W hW aslot bslot lo hi haslot hWs w σ freq hσ s p ha t X₁ X₂ hX₁ hX₂
 
-omit [DecidableEq α] in
-lemma balanced_matches:
-    CenteredMomentAllocatedRayDictionary.Matches M H hH balancedSource η₀ θ w σ freq W bslot Z:=by
-  constructor <;> intros <;> rfl
 
 omit [DecidableEq α] in
 lemma balanced_volume:

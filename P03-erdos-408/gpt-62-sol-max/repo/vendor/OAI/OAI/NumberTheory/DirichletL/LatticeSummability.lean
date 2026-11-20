@@ -23,7 +23,7 @@ theorem normForm_eq_zero_iff (x y : ℝ) : normForm x y = 0 ↔ x = 0 ∧ y = 0 
     have hx : x ^ 2 = 0 := by
       nlinarith [sq_nonneg (x - y), sq_nonneg x, sq_nonneg y]
     have hy : y ^ 2 = 0 := by nlinarith [sq_nonneg (x - y), sq_nonneg x, sq_nonneg y]
-    exact ⟨sq_eq_zero_iff.mp hx, sq_eq_zero_iff.mp hy⟩
+    simp_all
   · rintro ⟨rfl, rfl⟩
     simp [normForm]
 
@@ -59,7 +59,7 @@ theorem summable_normForm_neg_rpow {σ : ℝ} (hσ : 1 < σ) :
   · subst n
     simp [normForm, Real.zero_rpow (by linarith : -σ ≠ 0),
       Real.zero_rpow (by linarith : -(2 * σ) ≠ 0)]
-  · have hnpos : 0 < ‖n‖ := norm_pos_iff.mpr hn
+  · have hnpos  := norm_pos_iff.mpr hn
     calc
       normForm n.1 n.2 ^ (-σ) ≤ ((1 / 2 : ℝ) * ‖n‖ ^ 2) ^ (-σ) :=
         Real.rpow_le_rpow_of_nonpos (by positivity) (normForm_ge_half_norm_sq n)
@@ -73,7 +73,7 @@ theorem summable_normForm_neg_rpow {σ : ℝ} (hσ : 1 < σ) :
 
 theorem summable_one_div_normForm_rpow {σ : ℝ} (hσ : 1 < σ) :
     Summable (fun n : ℤ × ℤ => 1 / normForm n.1 n.2 ^ σ) := by
-  simpa only [Real.rpow_neg (normForm_nonneg _ _), one_div] using
+  simpa [Real.rpow_neg (normForm_nonneg _ _), one_div] using
     summable_normForm_neg_rpow hσ
 
 theorem summable_weighted_normForm {w : ℤ × ℤ → ℂ} {C σ : ℝ}

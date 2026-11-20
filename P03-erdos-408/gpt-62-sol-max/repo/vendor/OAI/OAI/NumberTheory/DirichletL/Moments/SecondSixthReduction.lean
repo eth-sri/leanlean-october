@@ -61,10 +61,9 @@ theorem fixed_sixth_row (η : Character) (m h n : O) (C D : Ideal O)
       ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h) n=
     rowTwist (elementHom η) (m*sixthFactor C D U) 1 (reducedNumerator C D U*h) n := by
   rw [fixed_sixth_factorization]
-  have he : m ^ 6 * 1 ^ 4 * ((reducedNumerator C D U * sixthFactor C D U ^ 6) * h) =
-      (m * sixthFactor C D U) ^ 6 * 1 ^ 4 * (reducedNumerator C D U * h) := by ring
-  exact congrArg
-    (fun x => elementHom η n * idealRowHom x (Ideal.span {n})) he
+  refine congrArg
+    (fun x => elementHom η n * idealRowHom x (Ideal.span {n})) ?_
+  ring
 
 theorem fixed_sixth_inducing_iff (η : Character) (Q : Ideal O) (m h : O)
     (hm : m≠0) (hh : h≠0) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:O)∣m)

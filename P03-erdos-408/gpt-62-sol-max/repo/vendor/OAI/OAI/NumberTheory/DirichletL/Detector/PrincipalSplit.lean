@@ -1,6 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Detector.CompensatedRows
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -42,15 +43,12 @@ lemma rowIntegral_principal {K : ℕ} (η : HeckeFamily.Character) (S : Finset I
     frequencyWeight,elementNorm_one,map_one,star_one,Complex.ofReal_one,Complex.one_cpow,one_mul]
 
 lemma rowIntegral_summable {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData)
-    (p : Fin K→O) (hp : ∀i,p i≠0) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (p : Fin K→O) (hp : ∀i,p i≠0) (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    Summable (rowIntegral η S C p W0 W1 X Y Z) := by
+    Summable (rowIntegral η S C p mw.left mw.right X Y Z) := by
   let e : FreeRow→NonzeroFrequency := fun u=>⟨u.val,u.property.1⟩
   have he : Function.Injective e := fun a b h=>Subtype.ext (congrArg (fun v : NonzeroFrequency=>v.val) h)
-  have hi := (compensatedRows_counting_product_integrable e he η S C p hp W0 W1
-    a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ).integral_prod_left
+  have hi := (compensatedRows_counting_product_integrable e he η S C p hp mw X Y Z hX hY hZ).integral_prod_left
   rw [integrable_count_iff] at hi
   exact hi.of_norm.mul_left _
 

@@ -8,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSourceSeededPowerDescent
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent
-open CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget
+open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondSourcePowerDescent
+open CenteredMomentSecondWindowBudget CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentSourceInputTailUniform
 local notation "O"=>HeckeFamily.O
 
 def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:ℝ)
@@ -54,7 +54,7 @@ lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ)
 theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
     ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
     (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
-    (_hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
+(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
     let E:=Ebase*Z^(ell+deficit/6+paid);
     ∀j,seededFactors Cm Ce Cd Ct Z epsilon delta theta B saving radius t (cost*q)
@@ -62,9 +62,8 @@ theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t
       fixedFactors Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed J Sf W j*
         mainPowers q Z radius ell deficit paid saving r j:=by
   dsimp only
-  have hEp:0≤Ebase*Z^(ell+deficit/6+paid):=mul_nonneg hE (Real.rpow_nonneg hZ.le _)
   have hsqrt:Real.sqrt ((Ebase*Z^(ell+deficit/6+paid))*(Ebase*Z^(ell+deficit/6+paid)))=
-      Ebase*Z^(ell+deficit/6+paid):=by rw [←pow_two,Real.sqrt_sq hEp]
+      Ebase*Z^(ell+deficit/6+paid):=by rw [←pow_two,Real.sqrt_sq (mul_nonneg hE (Real.rpow_nonneg hZ.le _))]
   have hneg:(loProduct*wlo*wlo)^(-2/3:ℝ)≤loFloor^(-2/3:ℝ):=
     Real.rpow_le_rpow_of_nonpos hlo hloProduct (by norm_num)
   intro j
@@ -101,7 +100,7 @@ theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
   have hh:=coefficients_mono N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed _ _
     hu hb1 hb2 hK hseed
     (seeded_factors_main Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
-      ell deficit paid r loProduct wlo loFloor seed J Sf W hCm hCe hZ hE hradius hlo hloProduct)
+      ell deficit paid r loProduct wlo loFloor seed J Sf W hCe hZ hE hradius hlo hloProduct)
   intro j
   exact (hh j).trans_eq (coefficients_mul N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed _ _ j)
 

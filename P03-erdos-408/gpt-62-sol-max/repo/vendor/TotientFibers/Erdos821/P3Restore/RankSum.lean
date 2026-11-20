@@ -25,14 +25,12 @@ theorem rank_coefficient_real (a r : ℕ) :
       ((birthMobius π).natAbs : ℝ)) ≤ (a : ℝ) ^ (2 * r) := by
   rw [Finset.filter_filter]
   have h := Erdos821.S2.rank_coefficient_count a r
-  have h' : (∑ π ∈ Finset.univ.powerset.powerset.filter
-      (fun π : Finset (Finset (Fin a)) => BirthCollection π ∧ birthRank π = r),
-        (birthMobius π).natAbs) ≤ a ^ (2 * r) := h
+  have h'  := h
   exact_mod_cast h'
 
 theorem norm_birthMobius {a : ℕ} (π : Finset (Finset (Fin a))) :
     ‖(birthMobius π : ℂ)‖ = ((birthMobius π).natAbs : ℝ) := by
-  rw [Complex.norm_intCast, Nat.cast_natAbs, Int.cast_abs]
+  simp
 
 /-- Split the Möbius-weighted rank expansion at rank `r0`. -/
 theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z q : ℝ) (r0 : ℕ)
@@ -49,17 +47,17 @@ theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z 
     (fun π : Finset (Finset (Fin a)) => BirthCollection π) with h𝒞
   set M := max 1 ((a : ℝ) ^ 2 * Y) with hM
   set V := (a : ℝ) ^ 2 * q with hVdef
-  let f : ℕ → ℝ := fun r => if r < r0 then X * Y ^ r else Z * q ^ r
+  let f  := fun r => if r < r0 then X * Y ^ r else Z * q ^ r
   have hf0 : ∀ r, 0 ≤ f r := by
     intro r
     simp only [f]
     split_ifs
-    · exact mul_nonneg hX (pow_nonneg hY _)
+    · positivity
     · exact mul_nonneg hZ (pow_nonneg hq _)
   have hterm : ∀ π ∈ 𝒞, ‖(birthMobius π : ℂ) * low π‖ ≤
       ((birthMobius π).natAbs : ℝ) * f (birthRank π) := by
     intro π hπ
-    have hbc : BirthCollection π := (Finset.mem_filter.mp hπ).2
+    have hbc  := (Finset.mem_filter.mp hπ).2
     rw [norm_mul, norm_birthMobius]
     apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
     simp only [f]
@@ -78,13 +76,12 @@ theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z 
     apply Finset.sum_congr rfl
     intro π hπ
     rw [(Finset.mem_filter.mp hπ).2]
-  have hcount : ∀ r, ∑ π ∈ 𝒞.filter (fun π => birthRank π = r),
-      ((birthMobius π).natAbs : ℝ) ≤ (a : ℝ) ^ (2 * r) := fun r => rank_coefficient_real a r
+  have hcount  := fun r => rank_coefficient_real a r
   have hM1 : 1 ≤ M := le_max_left _ _
   have hlowsum : ∑ r ∈ t.filter (· < r0), (a : ℝ) ^ (2 * r) * f r ≤ r0 * X * M ^ r0 := by
     have hle : ∀ r ∈ t.filter (· < r0), (a : ℝ) ^ (2 * r) * f r ≤ X * M ^ r0 := by
       intro r hr
-      have hr0 : r < r0 := (Finset.mem_filter.mp hr).2
+      have hr0  := (Finset.mem_filter.mp hr).2
       have hfr : f r = X * Y ^ r := ite_eq_left hr0
       rw [hfr]
       calc (a : ℝ) ^ (2 * r) * (X * Y ^ r) = X * ((a : ℝ) ^ 2 * Y) ^ r := by
@@ -110,7 +107,7 @@ theorem rank_sum_bound {a : ℕ} (low : Finset (Finset (Fin a)) → ℂ) (X Y Z 
       Z * V ^ r0 / (1 - V) := by
     have heq : ∀ r ∈ t.filter (fun r => ¬ r < r0), (a : ℝ) ^ (2 * r) * f r = Z * V ^ r := by
       intro r hr
-      have hr0 : ¬ r < r0 := (Finset.mem_filter.mp hr).2
+      have hr0  := (Finset.mem_filter.mp hr).2
       have hfr : f r = Z * q ^ r := ite_eq_right hr0
       rw [hfr, hVdef, pow_mul, mul_pow]
       ring

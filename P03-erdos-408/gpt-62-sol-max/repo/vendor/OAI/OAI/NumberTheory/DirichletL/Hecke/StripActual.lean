@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology BigOperators
+open scoped Classical
 open Set MeasureTheory
 namespace SevenEighths.HeckeStripActual
 open HeckeFamily HeckePrimitive
@@ -46,7 +46,7 @@ theorem completionScale_cpow (s : ℂ) :
     Complex.inv_cpow_ofReal_nonneg (mul_nonneg Real.pi_pos.le (scale_pos c).le),
     Complex.ofReal_mul, Complex.mul_cpow_ofReal_nonneg Real.pi_pos.le (scale_pos c).le,
     mul_inv_rev]
-  simp only [Complex.cpow_neg]
+  simp [Complex.cpow_neg]
 
 theorem completedL_eq_standard (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
@@ -64,7 +64,7 @@ theorem LFunction_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
   have hsum := IdealEuler.weighted_summable_norm (idealCoeff η) (idealCoeff_norm_le_one η) s hs1
   apply (norm_tsum_le_tsum_norm hsum).trans
   apply Summable.tsum_le_tsum _ hsum
-    (CubicEisenstein.fullIdealWeight_summable_norm (σ : ℂ) (by simpa using hσ))
+    (CubicEisenstein.fullIdealWeight_summable_norm (σ : ℂ) (by simp_all))
   intro I
   change ‖idealCoeff η I * CubicEisenstein.fullIdealWeight s I‖ ≤ _
   rw [norm_mul]
@@ -80,7 +80,7 @@ theorem pair_strong (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   · apply HeckeCharacterAnalytic.coefficients_zero_of_nonprincipal
       (character c χ⁻¹ (inverse_unit_trivial c χ hu))
     change χ⁻¹ ≠ 1
-    simpa only [ne_eq, inv_eq_one] using hχ
+    simp_all
 
 theorem LFunction_eq_uncompleted (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
@@ -104,7 +104,7 @@ theorem LFunction_eq_uncompleted (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
     have h0 : z ≠ 0 := by intro h; norm_num [h] at hz
     have h1 : z ≠ 1 := by intro h; norm_num [h] at hz
-    have hΓ : Complex.Gamma z ≠ 0 := Complex.Gamma_ne_zero_of_re_pos (by linarith)
+    have hΓ  := Complex.Gamma_ne_zero_of_re_pos (by linarith)
     rw [completedL_eq_standard c χ hu hp h0 h1 hΓ]
     have haz : (a : ℂ)^z ≠ 0 := (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [ha.ne'])
     change LFunction (character c χ hu) z = (a : ℂ)^(-z) * (Complex.Gamma z)⁻¹ *
@@ -120,15 +120,15 @@ theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       (HeckeStrip.completionScale (conductor c) : ℂ)^(1-2*s) *
       (Complex.Gamma (1-s) / Complex.Gamma s) *
         LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s) := by
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs
+  have h0 : s ≠ 0 := by intro h; simp_all
   have h1 : s ≠ 1 := by intro h; norm_num [h] at hs
-  have hs0 : 1-s ≠ 0 := sub_ne_zero.mpr (Ne.symm h1)
+  have hs0  := sub_ne_zero.mpr (Ne.symm h1)
   have hs1 : 1-s ≠ 1 := by intro h; apply h0; linear_combination -h
   have hΓdual : Complex.Gamma (1-s) ≠ 0 := Complex.Gamma_ne_zero_of_re_pos (by simp [hs]; norm_num)
   have hΓ : Complex.Gamma s ≠ 0 := by
     have h := Complex.Gamma_ne_zero_of_re_pos (s := s+1) (by simp [hs]; norm_num)
     rw [Complex.Gamma_add_one s h0] at h
-    exact (mul_ne_zero_iff.mp h).2
+    simp_all
   have he := completedL_functional_equation c χ hu hp hs0 hs1
   rw [sub_sub_cancel] at he
   rw [completedL_eq_standard c χ hu hp h0 h1 hΓ,
@@ -136,7 +136,7 @@ theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   let a := HeckeStrip.completionScale (conductor c)
   have ha : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr
     (HeckeStrip.completionScale_pos _ (lt_of_lt_of_le zero_lt_one (conductor_ge_one c))).ne'
-  have haz : (a : ℂ)^s ≠ 0 := (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [ha])
+  have haz : (a : ℂ)^s ≠ 0 := (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp_all)
   have hpow : (a : ℂ)^(1-s) = (a : ℂ)^s * (a : ℂ)^(1-2*s) := by
     rw [← Complex.cpow_add _ _ ha]
     congr 1
@@ -159,7 +159,7 @@ theorem LFunction_exp_growth (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       ‖LFunction (character c χ hu) z‖ ≤ A * Real.exp (B * |z.im|) := by
   let f : ℝ → ℂ := fun t => (pair c χ hu hp).f t / 6
   have hP := pair_strong c χ hu hp hχ
-  have hconv (s : ℂ) : MellinConvergent f s := (hP.hasMellin s).1.div_const 6
+  have hconv (s : ℂ)  := (hP.hasMellin s).1.div_const 6
   have h := HeckeStrip.mellin_uncompleted_exp_bound
     (HeckeStrip.completionScale (conductor c))
     (HeckeStrip.completionScale_pos _ (lt_of_lt_of_le zero_lt_one (conductor_ge_one c))) f

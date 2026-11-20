@@ -59,15 +59,15 @@ theorem tau_mem_of_mem_rootPositions {U V u v r : ℝ} (hU : 0 < U) (hUu : U ≤
   unfold rootPositions at hz
   rw [mem_filter] at hz
   obtain ⟨-, -, h1, h2, -⟩ := hz
-  have hu0 : 0 < u := hU.trans_le hUu
+  have hu0  := hU.trans_le hUu
   constructor
   · by_contra h
     push Not at h
-    have : u * tau r z < u * (1 / 16) := mul_lt_mul_of_pos_left h hu0
+    have  := mul_lt_mul_of_pos_left h hu0
     linarith
   · by_contra h
     push Not at h
-    have : u * 16 < u * tau r z := mul_lt_mul_of_pos_left h hu0
+    have  := mul_lt_mul_of_pos_left h hu0
     nlinarith
 
 /-- Positions of the root box are primitive. -/
@@ -114,8 +114,7 @@ theorem lineOf_eq_iff {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : Int.gcd
     have := Int.dvd_gcd h1 h2
     rw [hw] at this
     have hp1 := hp.one_lt
-    have : (p : ℤ) ≤ 1 := Int.le_of_dvd one_pos (by exact_mod_cast this)
-    omega
+    simp_all
   have hlt : ∀ w : ℤ × ℤ, (w.1 : ZMod p) ≠ 0 → lineOf p w < p := fun w hw => by
     simp only [lineOf, hw, ↓reduceIte]
     exact ZMod.val_lt _
@@ -129,8 +128,7 @@ theorem lineOf_eq_iff {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : Int.gcd
   · rw [heq z h1, h1]
     have := hlt z' h1'
     constructor
-    · intro h
-      omega
+    · omega
     · intro h
       have h2 := hprim z hz h1
       simp only [zero_mul, zero_sub, neg_eq_zero] at h
@@ -140,8 +138,7 @@ theorem lineOf_eq_iff {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : Int.gcd
   · rw [heq z' h1', h1']
     have := hlt z h1
     constructor
-    · intro h
-      omega
+    · omega
     · intro h
       have h2 := hprim z' hz' h1'
       simp only [mul_zero, sub_zero] at h
@@ -247,10 +244,9 @@ theorem exists_block_embedding {Y d₀ U V u v r : ℝ} {D : ℕ} {δ : ℤ} (h�
         zdet z z' = D * ((emb z).1 * (emb z').2 - (emb z).2 * (emb z').1) := by
   set H := d₀ * Y with hH
   have hH0 : 0 < H := by positivity
-  have hD0 : (0 : ℝ) < D := hd₀.trans_le hD
-  have hD0' : (D : ℤ) ≠ 0 := by exact_mod_cast hD0.ne'
+  have hD0  := hd₀.trans_le hD
   set w₀ := complement z₀ with hw₀
-  have hdet1 : zdet z₀ w₀ = 1 := zdet_complement (gcd_eq_one_of_mem_rootPositions hz₀)
+  have hdet1  := zdet_complement (gcd_eq_one_of_mem_rootPositions hz₀)
   obtain ⟨hτ₀1, hτ₀2⟩ := tau_mem_of_mem_rootPositions hU hUu hu hz₀
   set τ₀ := tau r z₀ with hτ₀
   have hτ₀pos : 0 < τ₀ := by linarith
@@ -369,7 +365,7 @@ theorem kerLe_shiftKernel_of_box {Y d₀ U V u v r ϑ n : ℝ} {D : ℕ} {δ : �
           rootCell (d₀ * Y) r z' = rootCell (d₀ * Y) r z + δ then
         ephase (ϑ * (zdet z z' / D : ℤ)) else 0) n := by
   set H := d₀ * Y with hH
-  have hD0 : (0 : ℝ) < D := hd₀.trans_le hD
+  have hD0  := hd₀.trans_le hD
   have hD0' : (D : ℤ) ≠ 0 := by exact_mod_cast hD0.ne'
   refine KerLe.block (fun z => (lineKey D z, rootCell H r z))
     (fun z' => (lineKey D z', rootCell H r z' - δ)) ?_ ?_
@@ -402,7 +398,6 @@ theorem kerLe_shiftKernel_of_box {Y d₀ U V u v r ϑ n : ℝ} {D : ℕ} {δ : �
         intro z' hz'
         rw [mem_filter, Prod.mk.injEq] at hz'
         refine mem_blockSet.2 ⟨hz'.1, hz'.2.1.trans hz₀.2.1.symm, Or.inr ?_⟩
-        have := hz'.2.2
         rw [hz₀.2.2]
         linarith
       have hE := (hbox A' B' hAB hA hB).comp_embed (hinj.mono hsrc) (hinj.mono htgt)
@@ -413,11 +408,10 @@ theorem kerLe_shiftKernel_of_box {Y d₀ U V u v r ϑ n : ℝ} {D : ℕ} {δ : �
       have hzb := hsrc hz
       have hzb' := htgt hz'
       rw [mem_filter, Prod.mk.injEq] at hz hz'
-      have hdvd : (D : ℤ) ∣ zdet z z' :=
+      have hdvd  :=
         (lineKey_eq_iff hDsq (gcd_eq_one_of_mem_rootPositions hz.1)
           (gcd_eq_one_of_mem_rootPositions hz'.1)).1 (hz.2.1.trans hz'.2.1.symm)
       have hcell : rootCell H r z' = rootCell H r z + δ := by
-        have := hz'.2.2
         rw [hz.2.2]
         linarith
       have hq : zdet z z' / D = (emb z).1 * (emb z').2 - (emb z).2 * (emb z').1 := by

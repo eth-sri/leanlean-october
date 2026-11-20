@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlocks
 public import OAI.NumberTheory.DirichletL.Descent.FirstProfileUniform
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstProfileUniform
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open JointLogSeparation MeasureTheory
 noncomputable section
 
@@ -31,8 +32,7 @@ theorem first_fresh_physical_profile
   by_cases hw₁ : ω₁ (q 7/s 7) = 0
   · have hh : W₁ (q 0*q 2*q 5*q 7/(s 0*s 2*s 5*s 7)) = 0 := by
       by_contra hn
-      have := hω₁ hn
-      simp only [hw₁,zero_ne_one] at this
+      simp_all
     simp only [firstNormProfile,hh,hw₁,mul_zero,zero_mul,zero_div]
   by_cases hw₂ : ω₂ (q 8/s 8) = 0
   · have hh : W₂ (q 1*q 2*q 5*q 8/(s 1*s 2*s 5*s 8)) = 0 := by
@@ -85,8 +85,8 @@ theorem first_balanced_density_integrable (g : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g�
 open ActualEisensteinCubic FirstPassCubeLabels
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp in
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in

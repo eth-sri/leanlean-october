@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceLive
+public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginalSource
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarReserve
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
+public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
 public import OAI.NumberTheory.DirichletL.Energy.FixedRadialReduction
 public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 
@@ -9,21 +12,17 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferencePhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceLive CenteredMomentEnergyOriginalSource
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyOriginalSource
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
+open CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentFirstSourceReduction
+open CenteredMomentSourceInputTailUniform CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 
 def balancedInput {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)
     (ha:0<a)(t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):Input (Fin 0):=

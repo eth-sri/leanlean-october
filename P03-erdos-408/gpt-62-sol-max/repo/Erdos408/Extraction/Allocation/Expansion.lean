@@ -48,10 +48,6 @@ lemma markedWeight_eq_prod {ι : Type*} (s : Finset ι) {q : ℝ} (hq : q ≠ 0)
   push_cast
   rw [sum_sub_distrib, sum_const, nsmul_eq_mul, mul_one]
 
-/-- The single-band weight is the marked weight of one band. -/
-lemma bandWeight_eq (q x a : ℝ) (n : ℕ) {ι : Type*} (i : ι) (G : ι → Finset ℕ)
-    (hG : G i = band x a) : bandWeight q x a n = markedWeight {i} q G n := by
-  simp [bandWeight, markedWeight, hG]
 
 /-! ### Expanding products of `1 - y` -/
 
@@ -142,7 +138,7 @@ lemma successProb_eq (c₁ c₂ x : ℝ) (w : ℕ) :
   refine sum_congr rfl fun P _ => ?_
   rw [patternWeight, prod_one_sub_eq_sum, mul_sum]
   refine sum_congr rfl fun Q hQ => ?_
-  have hPQ : Disjoint P Q := disjoint_of_subset_right (mem_powerset.1 hQ) disjoint_sdiff
+  have hPQ  := disjoint_of_subset_right (mem_powerset.1 hQ) disjoint_sdiff
   rw [show ∀ a b c d : ℝ, a * b * (c * d) = a * (b * c * d) by intros; ring,
     ← prod_successCoin, prod_union hPQ]
   ring
@@ -173,7 +169,7 @@ lemma inertMonomial_eq (q : ℝ) (hq : q ≠ 0) (K : ℕ) (x : ℝ) (S : Finset 
         band x (inertExponent K x (S.equivFin.symm i).1.1 (S.equivFin.symm i).1.2)) n := by
   rw [markedWeight_eq_prod _ hq, inertMonomial, ← prod_coe_sort S]
   rw [← (S.equivFin.symm).prod_comp]
-  exact prod_congr rfl fun i _ => bandWeight_eq q x _ n i _ rfl
+  rfl
 
 end
 

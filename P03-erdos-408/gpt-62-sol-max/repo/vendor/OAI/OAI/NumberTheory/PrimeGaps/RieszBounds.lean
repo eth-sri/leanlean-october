@@ -25,7 +25,7 @@ lemma near_line_denominator {z w : ℂ} {r : ℝ} (hz : 1 ≤  z.re) (hr : r ≤
     have := congrArg Complex.re h
     simp at this
     linarith
-  have hna : 3/4 ≤ ‖w‖ := hwre.trans (Complex.re_le_norm w)
+  have hna  := hwre.trans (Complex.re_le_norm w)
   have hnb : 3/4 ≤ ‖w+1‖ := by
     have h := Complex.re_le_norm (w+1)
     simp only [Complex.add_re,Complex.one_re] at h
@@ -63,8 +63,7 @@ lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
     have ht := norm_add_le (f z-f w) (f w)
     rw [sub_add_cancel] at ht
     linarith
-  have hne (w : ℂ) (hw : w∈Metric.closedBall z r) : f w≠0 := by
-    exact norm_pos_iff.mp ((by positivity : 0 < m/2).trans_le (hlo w hw))
+  have hne (w : ℂ) (hw : w∈Metric.closedBall z r) := norm_pos_iff.mp ((by positivity : 0 < m/2).trans_le (hlo w hw))
   refine ⟨hne,?_,?_⟩
   · apply DifferentiableOn.diffContOnCl
     rw [closure_ball _ hr.ne']
@@ -74,7 +73,7 @@ lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
       (analyticAt_id.mul (analyticAt_id.add analyticAt_const)) (mul_ne_zero hw0 hw1)).differentiableWithinAt
   · intro w hw
     obtain ⟨hw0,hw1,hden⟩ := near_line_denominator hz hr1 hw
-    have hnorm : 0 < ‖w‖*‖w+1‖ := mul_pos (norm_pos_iff.mpr hw0) (norm_pos_iff.mpr hw1)
+    have hnorm  := mul_pos (norm_pos_iff.mpr hw0) (norm_pos_iff.mpr hw1)
     have hb₀ : ‖deriv f w‖/‖f w‖ ≤ 2*M/m := by
       apply (div_le_div₀ hM (hb w hw) (by positivity : 0 < m/2) (hlo w hw)).trans_eq
       ring
@@ -137,79 +136,115 @@ lemma near_strip_geometry {σ t d P η : ℝ} (hσ : 1 ≤ σ) (hσ2 : σ ≤ 2)
     one_mul,sub_self,zero_add,add_zero,abs_of_nonneg (by linarith : 0 ≤ σ)] at hnz
   constructor <;> linarith [abs_nonneg t]
 
-lemma nonprincipal_logRiesz_bound (n : ℕ) :
+lemma primitive_logRiesz_bound (n : ℕ) :
     ∃ D : ℝ, 0 < D ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
-      χ.IsPrimitive → χ≠1 → ∀ σ t : ℝ, 1 ≤ σ → σ ≤ 2 →
-        ‖iteratedDeriv n (logRiesz χ.LFunction) (σ+I*t)‖ ≤
+      χ.IsPrimitive → ∀ σ t : ℝ, 1 ≤ σ → σ ≤ 2 →
+        ‖iteratedDeriv n (logRiesz (poleRemovedL χ)) (σ+I*t)‖ ≤
           D*((q:ℝ)+2)^(1/2:ℝ)*(|t|+2)^(-(3/2:ℝ)) := by
+  classical
   let ε : ℝ := 1/(4*(n+1:ℕ))
-  have hε : 0 < ε := by dsimp [ε]; positivity
+  have hε : 0 < ε := by positivity
   have hε1 : ε ≤ 1 := by
-    dsimp [ε]
     apply (div_le_one (by positivity : 0 < 4*((n+1:ℕ):ℝ))).mpr
-    have hn : (1:ℝ) ≤ (n+1:ℕ) := by exact_mod_cast (Nat.succ_pos n)
-    linarith
-  obtain ⟨c,hc,hl⟩ := nonprincipal_strip_lower hε hε1
-  obtain ⟨K₀,hK₀,hb⟩ := LFunction_deriv_norm_small_power (by linarith : 0 < ε/2) (by linarith : ε/2 ≤ 1/2)
-  let K := K₀*3^ε
-  have hK : 0 < K := by dsimp [K]; positivity
+    exact_mod_cast (show 1 ≤ 4*(n+1) by omega)
+  obtain ⟨cp,hcp,hlp⟩ := principal_strip_lower hε hε1
+  obtain ⟨cn,hcn,hln⟩ := nonprincipal_strip_lower hε hε1
+  obtain ⟨Kp,hKp,hbp⟩ := principal_deriv_growth hε hε1
+  obtain ⟨Kn,hKn,hbn⟩ := LFunction_deriv_norm_small_power
+    (by linarith : 0 < ε/2) (by linarith : ε/2 ≤ 1/2)
+  let c := min cp cn
+  let K := max (3*Kp) Kn*3^ε
+  have hc : 0<c := lt_min hcp hcn
+  have hm : 0<max (3*Kp) Kn := hKn.trans_le (le_max_right _ _)
+  have hK : 0<K := by dsimp [K]; positivity
   let d := min (min (1/4) (ε/4)) (c/(2*K))
-  have hd : 0 < d := by dsimp [d]; positivity
-  have hd1 : d ≤ 1/4 := (min_le_left _ _).trans (min_le_left _ _)
-  have hdε : d ≤ ε/4 := (min_le_left _ _).trans (min_le_right _ _)
-  have hKd : K*d ≤ c/2 := by
-    have h := min_le_right (min (1/4) (ε/4)) (c/(2*K))
-    change d ≤ c/(2*K) at h
-    have hh := mul_le_mul_of_nonneg_left h hK.le
-    have he : K*(c/(2*K))=c/2 := by field_simp
-    rwa [he] at hh
+  have hd : 0<d := by dsimp [d]; positivity
+  have hd1 : d≤1/4 := (min_le_left _ _).trans (min_le_left _ _)
+  have hdε : d≤ε/4 := (min_le_left _ _).trans (min_le_right _ _)
+  have hKd : K*d≤c/2 := by
+    have hh := (le_div_iff₀ (show 0<2*K by positivity)).mp
+      (show d≤c/(2*K) from min_le_right _ _)
+    linarith
   let D := (n.factorial:ℝ)*(32*K/c)/d^n
-  have hD : 0 < D := by dsimp [D]; positivity
-  refine ⟨D,hD,?_⟩
-  intro q _ χ hχp hχ σ t hσ hσ2
-  let X : ℝ := ((q:ℝ)+2)*(|t|+2)
-  let P : ℝ := X^ε
-  have hX : 1 ≤ X := by dsimp [X]; nlinarith [Nat.cast_nonneg (α:=ℝ) q,abs_nonneg t]
-  have hX0 : 0 < X := by linarith
-  have hP : 1 ≤ P := Real.one_le_rpow hX hε.le
-  have hlow : c*1/P ≤ ‖χ.LFunction (σ+I*t)‖ := by
-    have h := hl q χ hχp hχ σ t hσ hσ2
-    change c*X^(-ε) ≤ _ at h
-    simpa only [mul_one,Real.rpow_neg hX0.le,div_eq_mul_inv] using h
-  have hbound : ∀ w∈Metric.closedBall ((σ:ℂ)+I*t) (d/P^2), ‖deriv χ.LFunction w‖ ≤ K*1*P := by
+  refine ⟨D,by dsimp [D]; positivity,?_⟩
+  intro q _ χ hχp σ t hσ hσ2
+  let T := |t|+2
+  let Q : ℝ := (q:ℝ)+2
+  let X := Q*T
+  let P := X^ε
+  let A := if χ=1 then T else 1
+  have hQ : 1≤Q := by dsimp [Q]; linarith only [Nat.cast_nonneg (α := ℝ) q]
+  have hT : 1≤T := by dsimp [T]; linarith [abs_nonneg t]
+  have hTX : T≤X := le_mul_of_one_le_left (zero_le_one.trans hT) hQ
+  have hX := hT.trans hTX
+  have hT0 : 0<T := zero_lt_one.trans_le hT
+  have hX0 : 0<X := zero_lt_one.trans_le hX
+  have hP := Real.one_le_rpow hX hε.le
+  have hP0 : 0<P := zero_lt_one.trans_le hP
+  have hA : 0<A := by dsimp [A]; split <;> positivity
+  have hlow : c*A/P ≤ ‖poleRemovedL χ (σ+I*t)‖ := by
+    by_cases hχ : χ=1
+    · subst χ
+      have hq : q=1 := by simpa [DirichletCharacter.IsPrimitive,DirichletCharacter.conductor_one] using hχp.symm
+      subst q
+      simp only [A, if_pos rfl]
+      refine le_trans ?_ (hlp σ t hσ hσ2)
+      change c*T/P ≤ cp*T/T^ε
+      gcongr
+      · exact min_le_left _ _
+      · exact Real.rpow_le_rpow hT0.le hTX hε.le
+    · have h := hln q χ hχp hχ σ t hσ hσ2
+      change cn*X^(-ε) ≤ _ at h
+      rw [Real.rpow_neg hX0.le,←div_eq_mul_inv] at h
+      simp only [A,poleRemovedL,hχ,if_false,mul_one]
+      exact (div_le_div_of_nonneg_right (min_le_right _ _) hP0.le).trans h
+  have hbound : ∀ w∈Metric.closedBall ((σ:ℂ)+I*t) (d/P^2),
+      ‖deriv (poleRemovedL χ) w‖ ≤ K*A*P := by
     intro w hw
     obtain ⟨hre,hnorm⟩ := near_strip_geometry hσ hσ2 hP hd.le hd1 hdε hw
-    have h := hb q χ hχ w (by linarith)
-    rw [show 2*(ε/2)=ε by ring] at h
-    have hn : ((q:ℝ)+2)*(‖w‖+2) ≤ 3*X := by
-      dsimp [X]
-      nlinarith [mul_nonneg (show (0:ℝ) ≤ q+2 by positivity) (sub_nonneg.mpr hnorm)]
-    calc
-      _ ≤ K₀*((q+2)*(‖w‖+2))^ε := h
-      _ ≤ K₀*(3*X)^ε := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hn hε.le) hK₀.le
-      _ = K*1*P := by rw [Real.mul_rpow (by norm_num) hX0.le]; dsimp [K,P]; ring
-  have hh := logRiesz_power_bound n hP zero_lt_one hc hK hd hd1 hKd (by simpa using hσ)
-    (fun w _ => (DirichletCharacter.differentiable_LFunction hχ).analyticAt w) hbound hlow
-  have he : ε*(2*n+2:ℕ)=1/2 := by
-    dsimp [ε]
-    push_cast
-    field_simp
-    ring
+    by_cases hχ : χ=1
+    · subst χ
+      have hq : q=1 := by simpa [DirichletCharacter.IsPrimitive,DirichletCharacter.conductor_one] using hχp.symm
+      subst q
+      simp only [A, if_pos rfl]
+      change _ ≤ K*T*P
+      calc
+        _ ≤ Kp*(‖w‖+2)*(‖w‖+2)^ε := hbp w hre
+        _ ≤ Kp*(3*T)*(3*X)^ε := by
+          have h := hnorm.trans (mul_le_mul_of_nonneg_left hTX (by norm_num))
+          gcongr
+        _ = (3*Kp)*3^ε*T*P := by rw [Real.mul_rpow (by norm_num) hX0.le]; ring
+        _ ≤ _ := by dsimp [K]; gcongr; exact le_max_left _ _
+    · have h := hbn q χ hχ w (by linarith)
+      rw [show 2*(ε/2)=ε by ring] at h
+      simp only [poleRemovedL,hχ,if_false,A,mul_one]
+      calc
+        _ ≤ Kn*(Q*(‖w‖+2))^ε := h
+        _ ≤ Kn*(3*X)^ε := by
+          have : Q*(‖w‖+2)≤3*X := by calc
+            _ ≤ Q*(3*T) := by gcongr
+            _ = _ := by dsimp [X]; ring
+          gcongr
+        _ = Kn*3^ε*P := by rw [Real.mul_rpow (by norm_num) hX0.le, mul_assoc]
+        _ ≤ _ := by dsimp [K]; gcongr; exact le_max_right _ _
+  have hh := logRiesz_power_bound n hP hA hc hK hd hd1 hKd (by simpa using hσ)
+    (fun w _ => (poleRemovedL_differentiable χ).analyticAt w) hbound hlow
+  simp only [Complex.add_im,Complex.ofReal_im,Complex.mul_im,Complex.I_re,Complex.I_im,
+    zero_mul,one_mul,zero_add] at hh
+  change _ ≤ D*P^(2*n+2)/T^2 at hh
+  have he : ε*(2*n+2:ℕ)=1/2 := by dsimp [ε]; push_cast; field_simp; ring
   have hpow : P^(2*n+2)=X^(1/2:ℝ) := by
     dsimp [P]
     rw [←Real.rpow_mul_natCast hX0.le,he]
-  simp only [Complex.add_im,Complex.ofReal_im,Complex.mul_im,Complex.I_re,Complex.I_im,
-    zero_mul,one_mul,zero_add] at hh
-  change ‖iteratedDeriv n (logRiesz χ.LFunction) (σ+I*t)‖ ≤ D*P^(2*n+2)/(|t|+2)^2 at hh
-  rw [hpow] at hh
-  apply hh.trans_eq
-  dsimp [X]
-  rw [Real.mul_rpow (by positivity) (by positivity),Real.rpow_neg (by positivity : 0 ≤ |t|+2)]
-  have ht : (|t|+2)^(1/2:ℝ)*(|t|+2)^(3/2:ℝ)=(|t|+2)^2 := by
-    rw [←Real.rpow_add (by positivity),show (1/2:ℝ)+3/2=2 by norm_num]
-    norm_num
+  refine hh.trans_eq ?_
+  change D*P^(2*n+2)/T^2 = D*Q^(1/2:ℝ)*T^(-(3/2:ℝ))
+  rw [hpow, show X=Q*T from rfl, Real.mul_rpow (zero_le_one.trans hQ) hT0.le,
+    Real.rpow_neg hT0.le]
+  have ht : T^(1/2:ℝ)*T^(3/2:ℝ)=T^2 := by
+    rw [←Real.rpow_add hT0,show (1/2:ℝ)+3/2=2 by norm_num,Real.rpow_two]
   field_simp
-  rw [←ht]
+  rw [← ht]
+  ring
 
 end LargePrimeGaps
 

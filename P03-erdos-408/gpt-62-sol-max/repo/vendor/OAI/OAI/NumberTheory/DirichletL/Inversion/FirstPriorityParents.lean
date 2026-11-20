@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentAssembly
 
@@ -9,11 +10,11 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondParentAssembly
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseFirstPriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment
+open InverseInitialArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
 @[ext] structure Source (ι : Type*) (Jo : ℕ) where
@@ -28,7 +29,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 def extractedSupport (negative : Bool) (x : Source ι Jo) : Finset ι :=
   ((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪x.quotientSupport
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 def parent (x : Source ι Jo) : SecondParentSource ι Jo where
   cube := x.cube
@@ -66,8 +67,7 @@ omit [DecidableEq ι] in
 @[simp] theorem forget_append {Jn : ℕ} (x : SecondParentSource ι Jo)
     (q : Fin Jn→SmoothMobiusCorrection.PrimeIdeal) : forgetAppended (appendParent x q)=x := by
   apply SecondParentSource.ext <;> try rfl
-  funext i
-  simp only [forgetAppended,appendParent,Fin.addCases_left]
+  simp [forgetAppended,appendParent,Fin.addCases_left]
 
 omit [DecidableEq ι] in
 theorem appendParent_injective {Jn : ℕ} :
@@ -75,7 +75,7 @@ theorem appendParent_injective {Jn : ℕ} :
       appendParent q.1 q.2) := by
   intro q r h
   apply Prod.ext
-  · simpa only [forget_append] using congrArg forgetAppended h
+  · simpa using congrArg forgetAppended h
   · funext i
     simpa only [appendParent,Fin.addCases_right] using
       congrArg (fun x : SecondParentSource ι (Jo+Jn)=>x.oldAssigned (Fin.natAdd Jo i)) h
@@ -139,7 +139,7 @@ def fixedPoint (b : CubeCoordinates ι) (C E : Finset ι)
     (old : Fin Jo→SmoothMobiusCorrection.PrimeIdeal) (D : Finset ι) : Source ι Jo :=
   ⟨b,C,E,D,old⟩
 
-variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hp : ∀ i,p i≠0) (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (selector : Finset ι→ℂ) (r : RayFourExpansion.RayCharacter×RayFourExpansion.RayCharacter)

@@ -9,17 +9,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum
 open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSecondExceptionalPhysicalSaving
-open CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
-open CenteredMomentRankinRadical
+open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
+open CenteredMomentFirstCanonicalAllowance CenteredMomentRankinRadical
 local notation "O"=>HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -58,9 +56,8 @@ theorem original_budget_physical_saving_full
     (mul_nonneg (profileFactor_nonneg Sprofile s p J Q K hK) (Real.rpow_nonneg (by linarith) _))
     (Real.rpow_nonneg (by positivity) _)
   have hv:=volume_pos s.toData
-  have hz:0<Z:=zero_lt_one.trans hZ
-  have hE:0≤E:=by dsimp [E];positivity
-  rw [central_sourceBudget_exact Sprofile s p J Q C D hC hD U K Z ε δ θ r Kphys n hZ,
+  have hE:0≤E:=by positivity
+  rw [central_sourceBudget_exact Sprofile s p J Q C D hC U K Z ε δ θ r Kphys n hZ,
     common_ideal_product]
   change A*centralPhysicalCost C D U Kphys (volume s.toData) n/
     ((Ideal.absNorm (commonRadical C D):ℝ)*(forcingNorm C D U)^(1/3:ℝ))≤_

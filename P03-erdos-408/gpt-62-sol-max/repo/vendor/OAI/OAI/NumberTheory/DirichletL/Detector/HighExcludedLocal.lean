@@ -23,7 +23,7 @@ lemma highExclusion_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdea
       intro Q hQ hd
       have hn : (⟨Q,hS Q hQ⟩ : PrimeIdeal)≠P := by
         intro hh
-        exact hP ((congrArg Subtype.val hh) ▸ hQ)
+        aesop
       exact (hS Q hQ).not_isUnit ((primeIdeal_coprime ⟨Q,hS Q hQ⟩ P hn).isUnit_of_dvd hd)
     rw [ite_eq_left houtside,ite_eq_right hP]
 
@@ -56,7 +56,7 @@ theorem excludedHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
       by_cases hb : b=0
       · subst b
         simp only [Prod.fst_zero,Prod.snd_zero,pow_zero,bareIdealHighSummand_one,mul_one]
-      · simp only [ite_eq_right hb,zero_mul]
+      simp_all
     simp only [he,tsum_ite_eq]
   · rw [ite_eq_right hP]
     simp only [markedIdealHighSummand,highIdealMask_prime_outside S hS P hP,one_mul]
@@ -75,7 +75,7 @@ theorem excludedIdealHighSeries_hasProd_outside (S : Finset Id) (hS : ∀P∈S,P
   convert h using 1
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
-  split_ifs <;> simp_all
+  simp
 
 end SevenEighths.ProbePhysical
 end

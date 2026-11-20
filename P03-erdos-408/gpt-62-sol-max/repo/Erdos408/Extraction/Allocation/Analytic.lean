@@ -54,12 +54,11 @@ theorem exists_failure_mass_le (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ) :
   refine hred.trans ?_
   have h1 := hfree j' hjJ (smallGroups x) (by simp)
   have h2 := hfree j' hjJ (bigGroups x) (by simp)
-  have hX : ((⌊κ * x⌋₊ + 1 : ℕ) : ℝ) ≤ 2 * κ * x := by
-    push_cast
-    have := Nat.floor_le (show 0 ≤ κ * x by positivity)
-    nlinarith
-  exact final_le failureDecay_pos failureDecay_le_one (by linarith)
-    (exp_logLog (by linarith)) (Nat.cast_nonneg _) hX h1 h2
+  refine final_le failureDecay_pos failureDecay_le_one (by linarith)
+    (exp_logLog (by linarith)) (Nat.cast_nonneg _) ?_ h1 h2
+  push_cast
+  have := Nat.floor_le (show 0 ≤ κ * x by positivity)
+  nlinarith
 
 /-- E8: the core has a fixed-log-power mean square. -/
 theorem exists_sum_proxyCore_sq_le (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ) :

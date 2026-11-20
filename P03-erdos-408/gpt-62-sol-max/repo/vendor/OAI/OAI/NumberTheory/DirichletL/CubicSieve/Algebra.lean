@@ -12,12 +12,12 @@ public import Mathlib.Tactic.NormNum
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 theorem square_eq_star_of_fourth_eq (z : ℂ) (hz : z ^ 4 = z) : z ^ 2 = star z := by
   by_cases h0 : z = 0
-  · simp [h0]
+  · simp_all
   have h3 : z ^ 3 = 1 := by
     apply mul_right_cancel₀ h0
     simpa only [← pow_succ, one_mul] using hz
@@ -26,7 +26,7 @@ theorem square_eq_star_of_fourth_eq (z : ℂ) (hz : z ^ 4 = z) : z ^ 2 = star z 
   rw [← Complex.inv_eq_conj hn]
   apply mul_right_cancel₀ h0
   rw [inv_mul_cancel₀ h0]
-  simpa only [← pow_succ] using h3
+  assumption
 
 variable {R : Type*} [CommRing R] [Finite Rˣ]
 
@@ -42,9 +42,7 @@ theorem cubic_cube_eq_mask (χ : MulChar R ℂ) (hχ : χ ^ 3 = 1) (x : R) :
     χ (x ^ 3) = if IsUnit x then 1 else 0 := by
   classical
   rw [map_pow, ← MulChar.pow_apply' χ (by decide : (3 : ℕ) ≠ 0), hχ]
-  by_cases hx : IsUnit x
-  · rw [ite_eq_left hx, MulChar.one_apply hx]
-  · rw [ite_eq_right hx, MulChar.map_nonunit _ hx]
+  rfl
 
 end
 end SevenEighths.CubicSieve

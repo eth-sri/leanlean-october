@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorCountFromMoments
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBranchBudget
@@ -43,13 +43,13 @@ theorem count_from_raw_moments
   have ha' : 1/2≤a := by linarith
   have hδ1 : δ≤1 := by dsimp [δ]; linarith
   obtain ⟨hq0,hqδ⟩ := F.mean_bounds ha'
-  have hx : 0≤x := div_nonneg hq0 hδ.le
+  have hx  := div_nonneg hq0 hδ.le
   have hx' : x≤1/2 := (div_le_iff₀ hδ).mpr (by dsimp [δ]; linarith)
   have hqx : δ*x=F.q := by dsimp [x]; field_simp
   have hgeom := F.lengths hU
   have hr0 : 0≤F.r := by linarith [hgeom.2.2.2.1]
   have hr2 : F.r≤2 := by linarith [hgeom.2.1]
-  have hUp : 0<U := zero_lt_one.trans hU
+  have hUp  := zero_lt_one.trans hU
   obtain ⟨hconst,hconstP,hconstI,hconstI0⟩ := fiberConstant_bounds C height K₀ hC hh hK
   have promote (C' p q : ℝ) (hC' : C'≤fiberConstant C height K₀)
       (hb : (F.rows.card : ℝ)≤C'*U^p) (hpq : p≤q) :
@@ -72,10 +72,10 @@ theorem count_from_raw_moments
       (F.rows.card : ℝ)≤fiberConstant C height K₀*
         U^(inverseExponent δ x F.r+commonLoss ε εm F.mesh ν) := by
     intro hr hr1 hv
-    obtain ⟨hz,hz',hcap1,hcap2⟩ := inverse_requested_capacity F.r ν hr hr1 hν hv
+    obtain ⟨hz,hz',hcap1,hcap2⟩ := inverse_requested_capacity F.r ν hr hν hv
     have hb := F.inverse_marked_count moments hU ha' hC hh hf ((1-F.r)/2-ν) hz hz' hcap1 hcap2
     apply promote _ _ _ hconstI hb
-    have hl := inverse_marked_loss F.r δ x ε εm F.mesh ν hδ.le hδ1 hx hx' hε F.mesh_nonneg hν.le
+    have hl := inverse_marked_loss F.r δ x ε εm F.mesh ν hδ.le hδ1 hx' hε F.mesh_nonneg hν.le
     rwa [hqx] at hl
   have hP : F.r≤crossing x tstar → F.m<1/2 → ν<(1-2*F.m)/(9/2+12*Δ) →
       (F.rows.card : ℝ)≤fiberConstant C height K₀*
@@ -86,7 +86,7 @@ theorem count_from_raw_moments
     have hb := F.plain_marked_count moments hU ha' hΔ hC hh hf
       ((1-2*F.m)/(9/2+12*Δ)-ν) hz hz' hcap
     apply promote _ _ _ hconstP hb
-    have hl := plain_marked_loss F.m δ x Δ ε εm F.mesh ν hδ.le hδ1 hx hx' hε F.mesh_nonneg hν.le
+    have hl := plain_marked_loss F.m δ x Δ ε εm F.mesh ν hδ.le hδ1 hx' hε F.mesh_nonneg hν.le
     simpa only [hqx] using hl
   have hc' := count_bound_of_source_branches (F.rows.card : ℝ) (fiberConstant C height K₀) U δ x Δ
     tstar F.r F.m (commonLoss ε εm F.mesh ν) ν ε hconst hU.le hδ.le hδcap hx hx' hΔ hΔ'

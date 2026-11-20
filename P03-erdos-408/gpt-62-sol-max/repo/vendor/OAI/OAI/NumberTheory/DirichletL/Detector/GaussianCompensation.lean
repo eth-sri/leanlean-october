@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GaussianPhysicalTuple
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalNorms
 
@@ -8,17 +9,15 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalNorms
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma physicalElementNorm_pos (a : O) (ha : a≠0) : 0<elementNorm a := by
   unfold elementNorm
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr ha))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr ha)
 
 lemma elementNorm_slotProduct {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
     elementNorm (slotProduct p J)=∏i∈J,elementNorm (p i) := by

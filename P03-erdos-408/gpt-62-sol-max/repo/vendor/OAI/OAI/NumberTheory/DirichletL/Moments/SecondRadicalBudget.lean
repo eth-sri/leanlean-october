@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalFamily
 
 @[expose] public section
@@ -7,14 +8,14 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalFamily
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical Topology
+open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentSecondRadicalBudget
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily
-open CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm
-open CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
+open CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger
+open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentChildRows
+open CenteredMomentPartitionNorm CenteredMomentHeckeColumnWindow RayFourExpansion
+open CenteredMomentCommonSupport CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def fixedFactor : ℕ := (Ideal.span {(12:O)}).absNorm*
@@ -24,12 +25,9 @@ theorem fixedFactor_pos : 0<fixedFactor := by
   unfold fixedFactor
   apply Nat.mul_pos
   · apply Nat.mul_pos
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr (by norm_num)))
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero))
-  · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (by norm_num)))
+    · exact Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))
+    · exact Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero)
+  · exact Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))
 
 theorem child_modulus_bound (η : Character) (χ : RayCharacter) :
     (childCharacter η χ).modulus.absNorm≤η.modulus.absNorm*(Ideal.span {(12:O)}).absNorm := by
@@ -39,7 +37,7 @@ theorem child_modulus_bound (η : Character) (χ : RayCharacter) :
     apply Ideal.dvd_iff_le.mpr
     exact le_inf Ideal.mul_le_left Ideal.mul_le_right
   simpa only [map_mul] using Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) (map_dvd Ideal.absNorm hd)
+    (Ideal.absNorm_pos_of_ne_bot (hn)) (map_dvd Ideal.absNorm hd)
 
 theorem active_radical_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
@@ -72,7 +70,7 @@ theorem active_radical_norm_bound (C D : Ideal O) (hC : Supported C) (hD : Suppo
     rw [nonunitFrequencyGenerator_span]
     simpa only [unitIdeal,commonPrime_span C D hC] using hp (nonunitPartitionSet C D U)
   simpa only [map_mul] using Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero (hp U) hv)))
+    (Ideal.absNorm_pos_of_ne_bot (mul_ne_zero (hp U) hv))
     (map_dvd Ideal.absNorm (active_radical_dvd C D hC hD hCD U w hne))
 
 theorem exists_second_budgeted_family (η : Character) (χ : RayCharacter)
@@ -107,12 +105,11 @@ theorem conductor_log_bound (η τ : Character) (A B : Ideal O) (hA : A≠0) (hB
     Real.logb Z (τ.modulus.absNorm:ℝ)≤Real.logb Z (η.modulus.absNorm:ℝ)+
       Real.logb Z (fixedFactor:ℝ)+Real.logb Z (A.absNorm:ℝ)+Real.logb Z (B.absNorm:ℝ) := by
   have hτ : (0:ℝ)<τ.modulus.absNorm := by
-    exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot))
-  have hη : (η.modulus.absNorm:ℝ)≠0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
+    exact_mod_cast (Ideal.absNorm_pos_of_ne_bot (τ.modulus_ne_bot))
+  have hη : (η.modulus.absNorm:ℝ)≠0 := Ideal.cast_absNorm_ne_zero_of_ne_bot (η.modulus_ne_bot)
   have hK : (fixedFactor:ℝ)≠0 := Nat.cast_ne_zero.mpr (Nat.ne_zero_of_lt fixedFactor_pos)
-  have ha : (A.absNorm:ℝ)≠0 := Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hA)
-  have hb : (B.absNorm:ℝ)≠0 := Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hB)
+  have ha : (A.absNorm:ℝ)≠0 := Ideal.cast_absNorm_ne_zero_of_ne_bot (hA)
+  have hb : (B.absNorm:ℝ)≠0 := Ideal.cast_absNorm_ne_zero_of_ne_bot (hB)
   have hh := Real.logb_le_logb_of_le hZ hτ (show (τ.modulus.absNorm:ℝ)≤
       (η.modulus.absNorm:ℝ)*fixedFactor*A.absNorm*B.absNorm by exact_mod_cast hN)
   rwa [Real.logb_mul (mul_ne_zero (mul_ne_zero hη hK) ha) hb,

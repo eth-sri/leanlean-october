@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.Damping
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -30,7 +29,7 @@ theorem clean_projected_norm (F : FixedData) (r : MemoryParameters F) :
   refine ⟨Cs, ?_⟩
   intro x P hP hL J m n B A theta i C hC hb hbig
   let : Fintype (CutPendingState P B) := Fintype.ofFinite _
-  have hV (g : P.Group) : 0 < P.V g := F.vMin_pos.trans_le (hP.2.2.2.2.1 g).1
+  have hV (g : P.Group)  := F.vMin_pos.trans_le (hP.2.2.2.2.1 g).1
   have hm := memoryMass_nonneg (P := P) (F := F) J n hV hb
   have hCC : 0 ≤ C * (L x) ^ Cs := mul_nonneg hC (Real.rpow_nonneg hL.le _)
   have hcoordinate := hraw x P hP hL J m n B A theta (edgeForward i) C hC
@@ -69,8 +68,7 @@ theorem clean_projected_norm (F : FixedData) (r : MemoryParameters F) :
     unfold projectKernel
     rw [memoryEdgeKernel_rho]
     rw [memoryEdgeKernel_clean]
-    by_cases hs : P.memorySize s ≤ B <;> by_cases ht : P.memorySize t ≤ B <;>
-      simp [hs, ht]
+    simp
   rw [he] at h
   exact h
 

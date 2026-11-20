@@ -154,7 +154,6 @@ theorem pendingAfter_last (g : P.BigGroup) (p : P.Prime g.val) (span : PrimeSpan
   · intro hs
     have hlt := hs.2.1
     change n < stop.val at hlt
-    have hstop := stop.isLt
     omega
 
 theorem memoryBefore_zero (S : LifespanAssignment P n) (g : P.BigGroup) : Q.memoryBefore S 0 g = 0 := by
@@ -173,11 +172,10 @@ theorem coincident_span_active (g : P.BigGroup) (p : P.Prime g.val) (birth stop 
   have hn : Q.activeVisits g p ≠ ∅ := by
     intro hn
     have hlt := hs.2.1 hn
-    rw [he] at hlt
-    exact lt_irrefl _ hlt
+    simp_all
   obtain ⟨i, hi⟩ := Finset.nonempty_iff_ne_empty.mpr hn
   have hc := hs.2.2.1 i hi
-  have hie : i = birth := le_antisymm (he.symm ▸ hc.2) hc.1
+  have hie  := le_antisymm (he.symm ▸ hc.2) hc.1
   exact hie ▸ hi
 
 /-- Termination uses old pending particles; a new ghost starts only afterwards. -/
@@ -186,9 +184,9 @@ theorem ghost_occupancy_update (g : P.BigGroup) (p : P.Prime g.val) (span : Prim
     ((Q.pendingBefore g p span i ∧ ¬ Q.ghostStopAt g p span i) ∨ Q.ghostBirthAt g p span i) ↔
       Q.pendingAfter g p span i := by
   rcases span with _ | ⟨birth, stop⟩
-  · simp [pendingBefore, pendingAfter, ghostStopAt, ghostBirthAt]
+  · simp [pendingBefore, pendingAfter, ghostBirthAt]
   · by_cases hi : i ∈ Q.activeVisits g p
-    · simp [pendingBefore, pendingAfter, ghostStopAt, ghostBirthAt, hi]
+    · simp [pendingBefore, pendingAfter, ghostBirthAt, hi]
     · have hord := hs.1
       have hbad : ¬ (birth = stop ∧ birth = i) := by
         rintro ⟨he, rfl⟩

@@ -40,7 +40,7 @@ theorem rowMean_eq {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
   have hval : HeckePrimeAmplitudeBins.amplitude (U^(widths s)) cap mesh (physical u s)=
       binValue slots cap mesh bin s := by
     simpa only [amplitudeLabel,binValue,dite_eq_left hs] using hv
-  exact congrArg (fun x => widths s*x) hval
+  congr
 
 theorem classMean_bounds {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     (U δ mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)

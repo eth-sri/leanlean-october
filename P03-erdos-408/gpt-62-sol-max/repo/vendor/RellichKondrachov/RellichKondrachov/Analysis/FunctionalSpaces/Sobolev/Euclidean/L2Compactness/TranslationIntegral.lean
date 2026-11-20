@@ -33,7 +33,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology
+open scoped ENNReal MeasureTheory
 open MeasureTheory Set
 
 noncomputable section
@@ -47,10 +47,6 @@ local instance instMeasurableSpaceEL2CompactnessTranslationIntegral : Measurable
 local instance instBorelSpaceEL2CompactnessTranslationIntegral : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessTranslationIntegral :
     OpensMeasurableSpace E := by infer_instance
-local instance instMeasurableAddEL2CompactnessTranslationIntegral : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessTranslationIntegral : MeasurableNeg E := by
-  infer_instance
 
 variable {ψ : E → ℝ}
 
@@ -60,10 +56,9 @@ private lemma kernelMeasure_compl_ball_eq_zero_of_tsupport_subset {deltaLoss : �
   classical
   have hψzero : ∀ x : E, x ∈ (Metric.ball (0 : E) deltaLoss)ᶜ → ψ x = 0 := by
     intro x hx
-    have hx' : x ∉ tsupport ψ := by
-      intro hx_ts
-      exact hx (hψsupp hx_ts)
-    exact image_eq_zero_of_notMem_tsupport (f := ψ) hx'
+    refine image_eq_zero_of_notMem_tsupport (f := ψ) ?_
+    intro hx_ts
+    exact hx (hψsupp hx_ts)
   have hmeas : MeasurableSet ((Metric.ball (0 : E) deltaLoss)ᶜ) :=
     (measurableSet_ball : MeasurableSet (Metric.ball (0 : E) deltaLoss)).compl
   have hEq :
@@ -93,13 +88,10 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
     ⟨kernelMeasure_univ (E := E) (ψ := ψ) hψc hψcs hψ0 hψint⟩
   have hμzero : μ ((Metric.ball (0 : E) deltaLoss)ᶜ) = 0 := by
     simpa [μ] using kernelMeasure_compl_ball_eq_zero_of_tsupport_subset (E := E) (ψ := ψ) hψsupp
-  have hAE_ball : (Metric.ball (0 : E) deltaLoss) ∈ MeasureTheory.ae μ :=
-    (MeasureTheory.mem_ae_iff.2 hμzero)
-  -- On `Metric.ball 0 deltaLoss`, the squared translation error is bounded by `η²`.
   have hAE_bound :
       ∀ᵐ t : E ∂μ,
         ‖‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2‖ ≤ η ^ 2 := by
-    filter_upwards [hAE_ball] with t ht
+    filter_upwards [((MeasureTheory.mem_ae_iff.2 hμzero))] with t ht
     have hle : ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ≤ η := hmod t ht
     have hsq :
         ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2 ≤ η ^ 2 :=

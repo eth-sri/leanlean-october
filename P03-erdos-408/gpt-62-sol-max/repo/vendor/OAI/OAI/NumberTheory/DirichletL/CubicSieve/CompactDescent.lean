@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.Smoothed
 public import OAI.NumberTheory.DirichletL.CubicSieve.DescentEnergy
 
@@ -8,9 +9,9 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.DescentEnergy
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
+open scoped BigOperators Classical
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
+open IdealMobiusDivisorSum SecondPassArithmetic
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -20,7 +21,7 @@ lemma majorant_radial_summable (P : O → ℂ) (M : ℝ) (hM : 0 < M) :
   intro z hz
   rw [rowMajorant_zero_outside M hM z hz, zero_mul]
 
-lemma majorant_rescale (d z : O) (_hd : d ≠ 0) (M : ℝ) :
+lemma majorant_rescale (d z : O) (M : ℝ) :
     rowMajorant (‖eisEmbedding (d*z)‖^2 / M) =
       rowMajorant (‖eisEmbedding z‖^2 / (M / (Ideal.absNorm (Ideal.span {d}) : ℝ))) := by
   rw [map_mul, norm_mul, mul_pow, eisEmbedding_norm_sq_eq_absNorm_span d]
@@ -38,7 +39,7 @@ lemma dividedMajorant_tsum (P : O → ℂ) (d : O) (hd : d ≠ 0)
   rw [← show (fun z : O => rowMajorant (‖eisEmbedding (d*z)‖^2 / M) * P z) =
       (fun z : O => rowMajorant (‖eisEmbedding z‖^2 /
         (M / (Ideal.absNorm (Ideal.span {d}) : ℝ))) * P z) by
-          funext z; rw [majorant_rescale d z hd M]]
+          funext z; rw [majorant_rescale d z M]]
   apply tsum_eq_sum
   intro z hz
   have hout : d*z ∉ rowMajorantBall M := by
@@ -98,9 +99,8 @@ lemma compact_gcd_mobius_descent {n : Type*} [Fintype n]
   congr 1
   rw [dividedMajorant_tsum _ _ hgen M hM, span_idealGenerator]
   apply majorant_coprime_tsum
-  have hNE : 0 < (Ideal.absNorm E : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
-  exact div_pos hM hNE
+  refine div_pos hM ?_
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hE0)
 
 lemma gcdPool_cubic_admissible {n : Type*} [Fintype n]
     (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))

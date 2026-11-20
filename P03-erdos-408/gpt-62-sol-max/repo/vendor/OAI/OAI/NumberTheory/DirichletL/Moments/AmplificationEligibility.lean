@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationEnergy
-public import OAI.NumberTheory.DirichletL.Moments.AmplificationMask
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationRectangle
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationMask
 
 @[expose] public section
@@ -77,7 +77,6 @@ theorem actual_eligible_amplification {α : Type*} (S : Finset α) (a : α → O
         (((M+6*L)/ell)*(∑ y ∈ (eligiblePairs rows (elementPool P) (eligible R s)).image outputRow,
           ‖CenteredMomentGaussEnergy.gaussPolynomial S a ha c y‖^2)+
           ∑ x ∈ eligiblePairs rows (elementPool P) (eligible R s),errorEnergy S a ha c x.1 x.2) := by
-  have hpos : (0:ℝ)<P.card := by exact_mod_cast Finset.card_pos.mpr hP
   have hb := gauss_energy_amplification S a ha c rows (elementPool P) (eligible R s) hrows
     (fun p hpP => (elementPool_data P hp hbad p hpP).1)
     (fun p hpP => (elementPool_data P hp hbad p hpP).2.2.2.1)

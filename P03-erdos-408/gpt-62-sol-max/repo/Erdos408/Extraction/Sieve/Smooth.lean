@@ -35,7 +35,6 @@ lemma abs_card_modEq_sub_le {q : ℕ} (hq : 0 < q) (v : ℕ) {m N : ℕ} (hm : 1
   have h := Nat.Ioc_filter_modEq_card (m - 1) N hq v
   set A : ℚ := ((N : ℚ) - v) / q
   set B : ℚ := (((m - 1 : ℕ) : ℚ) - v) / q
-  have hq' : (0 : ℚ) < q := by exact_mod_cast hq
   have hAB : A - B = ((N + 1 - m : ℕ) : ℚ) / q := by
     simp only [A, B]
     rw [Nat.cast_sub hm, Nat.cast_sub hmN]
@@ -63,21 +62,21 @@ lemma abs_card_modEq_sub_le {q : ℕ} (hq : 0 < q) (v : ℕ) {m N : ℕ} (hm : 1
   exact hR
 
 /-- `f(u) = ∑_{1 ≤ m ≤ u} (f(m) - f(m-1))` when `f(0) = 0`. -/
-lemma eq_sum_Icc_sub {f : ℕ → ℝ} (hf0 : f 0 = 0) (u : ℕ) :
+lemma eq_sum_Icc_sub {E : Type*} [AddCommGroup E] {f : ℕ → E} (hf0 : f 0 = 0) (u : ℕ) :
     f u = ∑ m ∈ Icc 1 u, (f m - f (m - 1)) := by
   induction u with
-  | zero => simp [hf0]
-  | succ u ih => rw [sum_Icc_succ_top (by omega), ← ih, Nat.add_sub_cancel]; ring
+  | zero => assumption
+  | succ u ih => rw [sum_Icc_succ_top (by omega), ← ih, Nat.add_sub_cancel]; abel
 
 /-- A sum over `[1, N]` restricted by a condition, through the increments of `f`. -/
-lemma sum_filter_eq_sum_sub {f : ℕ → ℝ} (hf0 : f 0 = 0) (N : ℕ) (p : ℕ → Prop)
+lemma sum_filter_eq_sum_sub {E : Type*} [AddCommGroup E] {f : ℕ → E} (hf0 : f 0 = 0) (N : ℕ) (p : ℕ → Prop)
     [DecidablePred p] :
     ∑ u ∈ (Icc 1 N).filter p, f u =
-      ∑ m ∈ Icc 1 N, (f m - f (m - 1)) * #((Icc m N).filter p) := by
+      ∑ m ∈ Icc 1 N, #((Icc m N).filter p) • (f m - f (m - 1)) := by
   rw [sum_congr rfl fun u _ => eq_sum_Icc_sub hf0 u]
   rw [sum_comm' (t' := Icc 1 N) (s' := fun m => (Icc m N).filter p)]
   · refine sum_congr rfl fun m _ => ?_
-    rw [sum_const, nsmul_eq_mul, mul_comm]
+    rw [sum_const]
   · intro u m
     simp only [mem_filter, mem_Icc]
     constructor
@@ -88,24 +87,23 @@ lemma sum_filter_eq_sum_sub {f : ℕ → ℝ} (hf0 : f 0 = 0) (N : ℕ) (p : ℕ
 
 /-- A sum over a residue class modulo `q` in `[1, N]` is `1/q` of the full sum, up to the
 total variation. -/
+lemma norm_sum_modEq_sub_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {q : ℕ} (hq : 0 < q) (v N : ℕ) {f : ℕ → E} (hf0 : f 0 = 0) :
+    ‖∑ u ∈ (Icc 1 N).filter (· ≡ v [MOD q]), f u - (1 / q : ℝ) • ∑ u ∈ Icc 1 N, f u‖ ≤
+      ∑ m ∈ Icc 1 N, ‖f m - f (m - 1)‖ := by
+  have hfull : ∑ u ∈ Icc 1 N, f u = ∑ m ∈ Icc 1 N, (N + 1 - m : ℕ) • (f m - f (m - 1)) := by
+    simpa [Nat.card_Icc] using sum_filter_eq_sum_sub hf0 N (fun _ => True)
+  rw [sum_filter_eq_sum_sub hf0, hfull, smul_sum, ←sum_sub_distrib]
+  refine (norm_sum_le _ _).trans (sum_le_sum fun m hm => ?_)
+  obtain ⟨hm1,hmN⟩ := mem_Icc.1 hm
+  simp only [←Nat.cast_smul_eq_nsmul ℝ, smul_smul, ←sub_smul, norm_smul, Real.norm_eq_abs]
+  rw [div_mul_eq_mul_div, one_mul]
+  exact mul_le_of_le_one_left (norm_nonneg _) (abs_card_modEq_sub_le hq v hm1 (by omega))
+
 lemma abs_sum_modEq_sub_le {q : ℕ} (hq : 0 < q) (v N : ℕ) {f : ℕ → ℝ} (hf0 : f 0 = 0) :
     |∑ u ∈ (Icc 1 N).filter (· ≡ v [MOD q]), f u - (1 / q) * ∑ u ∈ Icc 1 N, f u| ≤
       ∑ m ∈ Icc 1 N, |f m - f (m - 1)| := by
-  have hfull : ∑ u ∈ Icc 1 N, f u = ∑ m ∈ Icc 1 N, (f m - f (m - 1)) * ((N + 1 - m : ℕ) : ℝ) := by
-    have := sum_filter_eq_sum_sub hf0 N (fun _ => True)
-    rw [filter_true_of_mem fun _ _ => trivial] at this
-    rw [this]
-    refine sum_congr rfl fun m _ => ?_
-    rw [filter_true_of_mem fun _ _ => trivial, Nat.card_Icc]
-  rw [sum_filter_eq_sum_sub hf0, hfull, mul_sum, ← sum_sub_distrib]
-  refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun m hm => ?_)
-  obtain ⟨hm1, hmN⟩ := mem_Icc.1 hm
-  have h := abs_card_modEq_sub_le hq v hm1 (by omega : m ≤ N + 1)
-  rw [show (f m - f (m - 1)) * (#((Icc m N).filter (· ≡ v [MOD q])) : ℝ) -
-      1 / q * ((f m - f (m - 1)) * ((N + 1 - m : ℕ) : ℝ)) =
-      (f m - f (m - 1)) * ((#((Icc m N).filter (· ≡ v [MOD q])) : ℝ) -
-        ((N + 1 - m : ℕ) : ℝ) / q) by ring, abs_mul]
-  exact mul_le_of_le_one_right (abs_nonneg _) h
+  simpa [smul_eq_mul, Real.norm_eq_abs] using norm_sum_modEq_sub_le hq v N hf0
 
 /-- By the Chinese remainder theorem, `r ∣ u + 1 ∧ d ∣ u` is a residue class modulo `r d`. -/
 lemma exists_modEq_iff {r d : ℕ} (hr : 0 < r) (hrd : Nat.Coprime r d) :

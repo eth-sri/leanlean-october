@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTail
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailPower
 
@@ -18,9 +19,9 @@ local notation "O"=>ActualEisensteinCubic.O
 theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+      (hcop : OAI.PrincipalFamily.Coprime p)
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (Ψ : O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : O)
@@ -42,20 +43,18 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
   obtain ⟨A,hA⟩ := initial_tail_rapid_order Lcap saving τ hτ
   obtain ⟨s,C₀,hC₀,hraw⟩ := original_physical_tail A
   let R : ℝ := ∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖
-  have hR : 0≤R := Finset.sum_nonneg (fun _ _=>norm_nonneg _)
   refine ⟨s,128^7*(R+1)*C₀,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L Γ B₁ B₂ hZ hL hcap hsize hm hmd hΓ hB₁ hB₂ hW₁ hW₂ pool S w
     hvalid hw hpool hnorm hleft hright htail
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz  := zero_lt_one.trans_le hZ
   have hb := hraw p hp hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L (Z^τ) Γ B₁ B₂ hz hL (by positivity) hΓ hB₁ hB₂ hW₁ hW₂
     pool S w hvalid hw hpool hnorm hleft hright htail
-  have hs : 0≤s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ := apply_nonneg _ _
   apply hb.trans
   calc
     _ = ((128*L)^7*Z^(m-D)/((min 1 (Z^m/L^3))^2*(1+Z^τ)^A))*
-        (Γ*R*B₁*B₂*C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ) := by dsimp [R];ring
+        (Γ*R*B₁*B₂*C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ) := by ring
     _ ≤ (128^7*Z^(-saving))*(Γ*R*B₁*B₂*C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ) :=
       mul_le_mul_of_nonneg_right (hA Z L m D hZ hL hcap hsize hm hmd) (by positivity)
     _ ≤ (128^7*Z^(-saving))*(Γ*(R+1)*B₁*B₂*C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ) := by

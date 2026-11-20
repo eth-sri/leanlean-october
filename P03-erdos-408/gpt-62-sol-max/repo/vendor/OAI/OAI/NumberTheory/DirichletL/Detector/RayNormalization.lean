@@ -8,7 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeRayNormalization
 open HeckeFamily ProbePhysical ProbeRaySlots
@@ -19,7 +19,7 @@ theorem log_power_absorption (c ell d : ℝ) (hc : 0<c) (hell : 0<ell) (hd : 0<d
   have hh := (isLittleO_log_rpow_atTop hd).bound (div_pos hc hell)
   filter_upwards [hh,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   have hZ0 : 0<Z := by linarith
-  have hlog : 0<Real.log Z := Real.log_pos hZ1
+  have hlog  := Real.log_pos hZ1
   have hzd : 0<Z^d := Real.rpow_pos_of_pos hZ0 _
   have hb : ell*Real.log Z≤c*Z^d := by
     have hb' : Real.log Z≤(c/ell)*Z^d := by
@@ -38,11 +38,11 @@ theorem log_power_absorption (c ell d : ℝ) (hc : 0<c) (hell : 0<ell) (hd : 0<d
       ring_nf
 
 theorem principalScalar_inverse_of_slot_bounds {ι : Type*} (J : Finset ι)
-    (ell mass : ι→ℝ) (Z d eps : ℝ) (hZ : 1≤Z) (_hd : 0≤d)
+    (ell mass : ι→ℝ) (Z d eps : ℝ) (hZ : 1≤Z)
     (hbudget : d*J.card≤eps) (hm : ∀i∈J,Z^(ell i/6-d)≤mass i) :
     |(Probe.principalScalar J Z (∑i∈J,ell i) mass)⁻¹|≤Z^eps := by
   have hZ0 : 0<Z := by linarith
-  have hm0 : ∀i∈J,0≤mass i := fun i hi=>(Real.rpow_nonneg hZ0.le _).trans (hm i hi)
+  have hm0  := fun i hi=>(Real.rpow_nonneg hZ0.le _).trans (hm i hi)
   have hprod : Z^(∑i∈J,(ell i/6-d))≤∏i∈J,mass i := by
     rw [Real.rpow_sum_of_pos hZ0]
     exact Finset.prod_le_prod₀ (fun i _=>Real.rpow_nonneg hZ0.le _) hm
@@ -67,7 +67,6 @@ theorem principalScalar_inverse_of_slot_bounds {ι : Type*} (J : Finset ι)
   simpa only [Real.rpow_neg hZ0.le,inv_inv] using hi
 
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 
@@ -109,7 +108,7 @@ theorem ray_principalScalar_inverse_subpower {ι : Type*} (J : Finset ι)
     exact ray_slot_subpower_lower M H hH S (W i) (a i) (b i) (ha i hi) (hab i hi)
       (hsupp i hi) (hW i hi) (hc i hi) (hp i hi) (hW0 i hi) (hWne i hi) (ell i) d (hell i hi) hd
   filter_upwards [hm,eventually_ge_atTop (1:ℝ)] with Z hmass hZ
-  exact principalScalar_inverse_of_slot_bounds J ell _ Z d eps hZ hd.le hb hmass
+  exact principalScalar_inverse_of_slot_bounds J ell _ Z d eps hZ hb hmass
 
 end SevenEighths.ProbeRayNormalization
 end

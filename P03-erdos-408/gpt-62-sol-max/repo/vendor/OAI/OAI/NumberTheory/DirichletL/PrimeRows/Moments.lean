@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open ProbePhysical
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion ProbePhysical
 
 def momentData (η : Character) : RowData where
   η := η
@@ -56,7 +55,7 @@ theorem numerator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     · rw [ite_eq_right hP,rawRow_prime_outside S hS hbad u P hP,
         momentData_prime_outside S hS hbad _ u P hP,
         fixedSourcePrincipal_prime,ite_eq_right hP,one_mul]
-  exact congrArg (fun F : Ideal O→*₀ℂ => F I) he
+  congr
 
 theorem denominator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow) (I : Ideal O) :
@@ -75,7 +74,7 @@ theorem denominator_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     · rw [ite_eq_left hP,momentData_coeff,excludedTarget_prime,ite_eq_left hP,zero_mul,map_zero]
     · rw [ite_eq_right hP,momentData_prime_outside S hS hbad _ u P hP,
         excludedTarget_prime,ite_eq_right hP,idealCoeff_inverse_conj,map_mul]
-      simp only [starRingEnd_self_apply]
+      simp
   simpa only [idealCoeff_inverse_conj] using congrArg (fun F : Ideal O→*₀ℂ => F I) he
 
 end SevenEighths.ProbeHighRowFamily

@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorNormalized
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorMoments
+public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorExponent
+public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorDyadic
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeBinPartition
 
@@ -27,7 +29,7 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
   obtain ⟨C,hC,hbound⟩ := bounded_dyadic_power_sum loss hl
   refine ⟨C,hC,?_⟩
   intro Z v hZ hv
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp  := zero_lt_one.trans_le hZ
   calc
     _ = ∑k∈smallDyadicIndices (Z^v),(1:ℝ) := by simp
     _ ≤ ∑k∈smallDyadicIndices (Z^v),((2:ℝ)^k)^loss := by
@@ -41,7 +43,7 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
       exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
 
 lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
-    (_hdmin : 0<dmin) (hdmin1 : dmin<1/100) (hmargin : 0<margin)
+ (hdmin1 : dmin<1/100) (hmargin : 0<margin)
     (hdmax : vmax+2*margin≤dmax) :
     ∀ᶠZ : ℝ in atTop,∀rows : Finset FreeRow,
       (∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧ rowNorm u≤Z^vmax) →
@@ -55,12 +57,11 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
     (tendsto_rpow_atTop (show 0<(1/100:ℝ)-dmin by linarith)).eventually (eventually_ge_atTop (2:ℝ)),
     (tendsto_rpow_atTop hmargin).eventually (eventually_ge_atTop (2:ℝ))] with Z hZ hsmall hmarginZ
   intro rows hrows k hne
-  have hZp : 0<Z := zero_lt_one.trans hZ
+  have hZp  := zero_lt_one.trans hZ
   obtain ⟨u,hu⟩ := hne
   have hur := (Finset.mem_inter.mp hu).1
   have hud := mem_dyadicRows.mp (Finset.mem_inter.mp hu).2
   have hlow : (2:ℝ)^k≤rowNorm u := by simpa only [one_mul] using hud.2.1
-  have hhigh : rowNorm u<2*(2:ℝ)^k := by simpa only [one_mul] using hud.2.2
   have hv0 : 0≤sourceDyadExponent Z k := by
     apply (Real.rpow_le_rpow_left_iff hZ).mp
     rw [sourceDyad_scale hZ,Real.rpow_zero]

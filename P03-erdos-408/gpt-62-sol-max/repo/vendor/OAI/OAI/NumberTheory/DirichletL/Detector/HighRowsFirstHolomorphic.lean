@@ -14,7 +14,6 @@ lemma first_open_region_denominators (Q : ℝ) (A eta v x z : ℂ)
     (hx : 1/2≤x.re) (hz : 1/3≤z.re) :
     1-coordR Q A x z≠0 ∧ 1-coordV Q z≠0 ∧ 1-coordD Q eta v x≠0 := by
   have hQ0 : 0<Q := by linarith
-  have hQ1 : 1≤Q := by linarith
   have hR : ‖coordR Q A x z‖≤1/2 := by
     apply (coordR_norm_le Q hQ0 A x z hA).trans
     apply rpow_le_half Q _ hQ
@@ -23,12 +22,11 @@ lemma first_open_region_denominators (Q : ℝ) (A eta v x z : ℂ)
     rw [coordV_norm Q hQ0]
     apply rpow_le_half Q _ hQ
     linarith
-  have hD : ‖coordD Q eta v x‖≤1/2 := by
-    apply (coordD_norm_le Q hQ0 eta v x he hv).trans
-    apply rpow_le_half Q _ hQ
-    linarith
-  exact ⟨ProbeLocal.one_sub_ne_zero_of_norm_le_half _ hR,
-    ProbeLocal.one_sub_ne_zero_of_norm_le_half _ hV,ProbeLocal.one_sub_ne_zero_of_norm_le_half _ hD⟩
+  refine ⟨ProbeLocal.one_sub_ne_zero_of_norm_le_half _ hR,
+    ProbeLocal.one_sub_ne_zero_of_norm_le_half _ hV,ProbeLocal.one_sub_ne_zero_of_norm_le_half _ ?_⟩
+  apply (coordD_norm_le Q hQ0 eta v x he hv).trans
+  apply rpow_le_half Q _ hQ
+  linarith
 
 theorem unramifiedClosed_first_analytic_x (Q : ℝ) (A eta v w z : ℂ)
     (hQ : 4≤Q) (hA : ‖A‖≤1) (he : ‖eta‖≤1) (hv : ‖v‖≤1) (hz : 1/3≤z.re) :
@@ -36,7 +34,7 @@ theorem unramifiedClosed_first_analytic_x (Q : ℝ) (A eta v w z : ℂ)
   apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
   intro x hx
   have hd := first_open_region_denominators Q A eta v x z hQ hA he hv hx.le hz
-  exact (unramifiedClosed_differentiableAt Q (by linarith) A eta v x w z hd.1 hd.2.1 hd.2.2).differentiableWithinAt
+  exact (unramifiedClosed_differentiableAt Q (by linarith) A eta v x w z hd.1 hd.2.2).differentiableWithinAt
 
 theorem unramifiedClosed_first_analytic_w (Q : ℝ) (A eta v x z : ℂ)
     (hQ : 4≤Q) (hA : ‖A‖≤1) (he : ‖eta‖≤1) (hv : ‖v‖≤1)
@@ -45,7 +43,7 @@ theorem unramifiedClosed_first_analytic_w (Q : ℝ) (A eta v x z : ℂ)
   apply DifferentiableOn.analyticOnNhd _ isOpen_univ
   intro w hw
   have hd := first_open_region_denominators Q A eta v x z hQ hA he hv hx hz
-  exact (unramifiedClosed_differentiableAt_w Q (by linarith) A eta v x w z hd.1 hd.2.1 hd.2.2).differentiableWithinAt
+  exact (unramifiedClosed_differentiableAt_w Q (by linarith) A eta v x w z).differentiableWithinAt
 
 theorem unramifiedClosed_first_analytic_z (Q : ℝ) (A eta v x w : ℂ)
     (hQ : 4≤Q) (hA : ‖A‖≤1) (he : ‖eta‖≤1) (hv : ‖v‖≤1) (hx : 1/2≤x.re) :
@@ -53,7 +51,7 @@ theorem unramifiedClosed_first_analytic_z (Q : ℝ) (A eta v x w : ℂ)
   apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
   intro z hz
   have hd := first_open_region_denominators Q A eta v x z hQ hA he hv hx hz.le
-  exact (unramifiedClosed_differentiableAt_z Q (by linarith) A eta v x w z hd.1 hd.2.1 hd.2.2).differentiableWithinAt
+  exact (unramifiedClosed_differentiableAt_z Q (by linarith) A eta v x w z hd.1 hd.2.1).differentiableWithinAt
 
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O

@@ -132,7 +132,7 @@ lemma eq_one_of_mem_unsharedLists {P : ι → Finset ℕ} {C : ι → Finset (Fi
     {l : ι → Fin (J + 1) → ℕ} (hl : l ∈ unsharedLists P C) {g : ι} {j : Fin (J + 1)}
     (hj : j ∉ unsharedSlots C g) : l g j = 1 := by
   have := mem_unsharedLists.1 hl g j
-  rwa [ite_eq_right hj, mem_singleton] at this
+  simp_all
 
 /-- Unshared parts lie in `P g` in the unshared slots. -/
 lemma mem_of_mem_unsharedLists {P : ι → Finset ℕ} {C : ι → Finset (Fin J)}
@@ -198,7 +198,7 @@ lemma sum_allLists_eq {R : Type*} [AddCommMonoid R] (P : ι → Finset ℕ)
     obtain ⟨hs, hl⟩ := mem_product.1 hsl
     exact Prod.ext (shared_merge hs l) (pad_merge hl)
   · intro p _
-    simp only [merge_shared_pad]
+    simp [merge_shared_pad]
 
 /-- The shared labels are determined by the shared slots of their merges. -/
 lemma eq_of_merge_castSucc {P : ι → Finset ℕ} {C : ι → Finset (Fin J)}

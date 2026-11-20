@@ -156,7 +156,7 @@ theorem gridDivisorHybridBlock_extract
             inverseCubicKernel (R * P) ((r * c) * p.1)) *
           (if IsCoprime P (p.2 * t) then 1 else 0) := by ring
       _ = _ := by rw [hid]; ring
-  · have huc : (p, r * c) ∉ T := (mem_quotientGridSupport r hr T p c).not.mp hu
+  · have huc  := (mem_quotientGridSupport r hr T p c).not.mp hu
     simp [hu, hybridColumnCoefficient, extractedGridCoefficient, huc]
 
 end

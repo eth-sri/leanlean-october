@@ -54,7 +54,7 @@ theorem actual_nonexceptional_iff (η τ : Character) (χ : RayCharacter)
       z≠0 ∧ ¬FixedInducingRow τ Q fixedBadMask 1 z := by
   unfold nonexceptional
   by_cases hz:z=0
-  · simp only [hz,ne_eq,not_true_eq_false,false_and]
+  · simp_all
   · rw [actual_reduced_inducing_iff η τ χ C D hC U hτ Q m z hm hz hmLam hm2]
 
 end SevenEighths.CenteredMomentSecondReducedPredicate

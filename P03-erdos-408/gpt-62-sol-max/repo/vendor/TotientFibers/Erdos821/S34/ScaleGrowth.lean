@@ -14,8 +14,7 @@ open Blueprint.Analytic
 theorem eventually_power_le_label_scale (A c ε : ℝ) (hc : 0 < c) (hε : 0 < ε) :
     ∀ᶠ x : ℝ in atTop, L x ^ A ≤ ε * Real.exp (L x ^ c) := by
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
-  have ht : Tendsto (fun x => L x ^ c) atTop atTop := (tendsto_rpow_atTop hc).comp hL
-  have ho := (isLittleO_rpow_exp_atTop (A / c)).comp_tendsto ht
+  have ho := (isLittleO_rpow_exp_atTop (A / c)).comp_tendsto ((tendsto_rpow_atTop hc).comp hL)
   have hb := ho.bound hε
   filter_upwards [hb, hL.eventually_gt_atTop 0] with x hx hLx
   have he : (L x ^ c) ^ (A / c) = L x ^ A := by

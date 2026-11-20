@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairBound
 
 @[expose] public section
@@ -8,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentSecondDivisorSupport
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly
@@ -23,10 +24,10 @@ theorem live_right_divisor_norm (D I L:Ideal O)(hD:D≠0)(hI:I≠0)
     (hne:β (D*I)≠0)(hLI:L∣I):
     (L.absNorm:ℝ)≤H/(D.absNorm:ℝ):=by
   have hDpos:(0:ℝ)<D.absNorm:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD)
   have hnorm:(L.absNorm:ℝ)≤I.absNorm:=by
     exact_mod_cast Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)) (map_dvd Ideal.absNorm hLI)
+      (Ideal.absNorm_pos_of_ne_bot (hI)) (map_dvd Ideal.absNorm hLI)
   have hb:=hβ (D*I) hne
   rw [map_mul,Nat.cast_mul] at hb
   apply hnorm.trans

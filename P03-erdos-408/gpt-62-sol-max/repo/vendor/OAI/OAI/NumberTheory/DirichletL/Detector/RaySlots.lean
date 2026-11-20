@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalResidueActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-open PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical PNT.AnnularPrimeMass PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
 def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
@@ -23,6 +22,10 @@ def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
       Ideal.absNorm P.val≤⌊x*b⌋₊ ∧ P.val∉S := by
   simp only [pool,Finset.mem_subtype,Finset.mem_sdiff,mem_annularPrimeIdeals,P.property]
   tauto
+
+theorem poolOutside (C : Set Id) (S : Finset Id) (a b : ℝ) {ι : Type*} (Y : ι → ℝ) :
+    ∀ j P, P ∈ pool C S a b (Y j) → P.val ∉ S :=
+  fun j P hP => ((mem_pool C S a b (Y j) P).mp hP).2.2.2
 
 theorem pool_norm_bounds (C : Set Id) (S : Finset Id) {a b x : ℝ}
     (ha : 0≤a) (hab : a≤b) (hx : 0<x) (P : PrimeIdeal) (hP : P∈pool C S a b x) :
@@ -53,7 +56,6 @@ theorem pool_mass_eq_deleted (C : Set Id) (S : Finset Id) (W : ℝ→ℝ)
   norm_num
 
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 include hH

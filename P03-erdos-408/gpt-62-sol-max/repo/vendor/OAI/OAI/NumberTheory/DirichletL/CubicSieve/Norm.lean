@@ -29,7 +29,7 @@ theorem idealSymbol_eq_idealSexticRow_sq
       (idealSexticRow F hFp hFg I z) ^ 2 := by
   rw [← CanonicalRowCompletion.idealRowHom_square]
   congr 1
-  let : ∀ i : primePool F, (i.val).IsMaximal := primePool_maximal F hFp
+  let  := primePool_maximal F hFp
   conv_lhs => rw [← idealSupport_product_eq F hI hsq, map_prod]
   unfold idealSexticRow finiteSquarefreeRow
   apply Finset.prod_congr rfl
@@ -41,8 +41,8 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   let F := idealRange N
   let R := (idealRange M).image primaryGenerator
   have hF : ∀ I ∈ F, Admissible I := fun I hI => (mem_idealRange.mp hI).1
-  have hFp : ∀ I ∈ F, I ≠ ⊥ := fun I hI => primaryGenerator_ne_zero_ideal I (hF I hI).2
-  have hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P :=
+  have hFp  := fun I hI => primaryGenerator_ne_zero_ideal I (hF I hI).2
+  have hFg  :=
     fun I hI P hP => (primaryPrime_spec P
       (primaryPrime_factor_ne_zero I P (hF I hI).2 hP)).2.1
   have hnat : 1 ≤ ⌈N⌉₊ := Nat.one_le_ceil_iff.mpr (by linarith)

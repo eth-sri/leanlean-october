@@ -1,7 +1,11 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Energy.ZeroBalancedAdmission
-public import OAI.NumberTheory.DirichletL.Energy.SourceInputReindexGates
+public import OAI.NumberTheory.DirichletL.Moments.SourceInputReindex
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedRayDictionary
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
+public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularActiveInput
+public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 
 @[expose] public section
 
@@ -17,8 +21,6 @@ open CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 variable {α β:Type*}[Fintype α][Fintype β]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 local instance : DecidableEq (β⊕Fin 2):=Classical.decEq _
 
 lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal O)(m A:O)

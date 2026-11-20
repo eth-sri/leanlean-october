@@ -1,17 +1,23 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonWindow
+public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonHeight
+public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonSymmetry
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 
 @[expose] public section
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentCommonRadialData CenteredMomentHeckeWindowEnergy
-open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
+open CenteredMomentCommonRadialData CenteredMomentHeckeWindowEnergy CenteredMomentExceptionalAmplitudePair
+open CenteredMomentAllocatedDetectorAmplitude
 universe u
 
 theorem heightCost_phase (t θ:ℝ):

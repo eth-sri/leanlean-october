@@ -14,8 +14,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Rare
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     MemoryRareTask F r := by
@@ -25,9 +24,9 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     Erdos821.P3Edge.promo_allmaps_bound r.rho r.rho_pos r.rho_lt (F.ell + m)
   obtain ⟨Csmall0, hCsmall0_pos, hCsmall0⟩ :=
     Erdos821.P3Edge.small_count_damp F.q F.q_pos F.q_lt F.ell
-  have hCb_ge : 1 ≤ Erdos821.P3Edge.bigGroupConst F r m Cprom :=
+  have hCb_ge  :=
     Erdos821.P3Edge.bigGroupConst_ge_one F r m Cprom
-  have hCcol_ge : 1 ≤ Erdos821.P3Edge.colRevConst F m :=
+  have hCcol_ge  :=
     Erdos821.P3Edge.colRevConst_ge_one F m
   have hCs_ge : 1 ≤ max 1 (max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0) := le_max_left _ _
   -- Group constants of the product of the row and column constants.
@@ -36,60 +35,28 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     Erdos821.P3Edge.bigGroupConst F r m Cprom
   let CS2 : ℝ := max 1 (max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0) *
     max 1 (max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0)
-  have hCB2_ge : 1 ≤ CB2 :=
+  have hCB2_ge  :=
     one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hCcol_ge hCb_ge) hCb_ge
-  have hCS2_ge : 1 ≤ CS2 := one_le_mul_of_one_le_of_one_le hCs_ge hCs_ge
+  have hCS2_ge  := one_le_mul_of_one_le_of_one_le hCs_ge hCs_ge
   let Kbig : ℝ := F.C₀ * Real.log CB2
   let Ksmall : ℝ := F.C₀ * Real.log CS2
-  have hKbig_nn : 0 ≤ Kbig := mul_nonneg F.C₀_pos.le (Real.log_nonneg hCB2_ge)
-  have hKsmall_nn : 0 ≤ Ksmall := mul_nonneg F.C₀_pos.le (Real.log_nonneg hCS2_ge)
   refine ⟨C₁ + Kbig + Ksmall, fun J C₂ => ?_⟩
   obtain ⟨xp, hxp⟩ := promotionContextBadOmission_card_le_eventually F C₂ J m
   obtain ⟨xs, hxs⟩ := storeOnlyContextBadOmission_card_le_eventually F C₂ J m
-  let xfact : ℝ := 10 * ((Erdos821.P3Edge.taylorTerms F).factorial : ℝ)
-  refine ⟨max (max 3 (Real.exp xfact)) (max xp xs), ?_⟩
+  refine ⟨max (Erdos821.P3Edge.edgeLogThreshold F) (max xp xs), ?_⟩
   intro x hx P hP A hA hk0 hk theta i phi hphi
-  have hx_base : max 3 (Real.exp xfact) ≤ x := le_trans (le_max_left _ _) hx
-  have hx3 : 3 ≤ x := le_trans (le_max_left _ _) hx_base
-  have hxexp : Real.exp xfact ≤ x := le_trans (le_max_right _ _) hx_base
-  have hxps : max xp xs ≤ x := le_trans (le_max_right _ _) hx
-  have hxp' : x ≥ xp := le_trans (le_max_left _ _) hxps
-  have hxs' : x ≥ xs := le_trans (le_max_right _ _) hxps
-  have hL1 : 1 < L x := Erdos821.P3Edge.one_lt_L hx3
-  have hLpos : 0 < L x := lt_trans zero_lt_one hL1
-  have hx1 : 1 ≤ L x := hL1.le
-  have hL10 : 10 * ((Erdos821.P3Edge.taylorTerms F).factorial : ℝ) ≤ L x := by
-    have hlog := Real.log_le_log (Real.exp_pos _) hxexp
-    rwa [Real.log_exp] at hlog
-  have hVlo : ∀ g : P.Group, F.vMin ≤ P.V g := fun g => (hP.2.2.2.2.1 g).1
-  have hVhi : ∀ g : P.Group, P.V g ≤ F.vMax := fun g => (hP.2.2.2.2.1 g).2
-  have hVpos : ∀ g : P.Group, 0 < P.V g := fun g => Erdos821.P3Edge.V_pos_of_adm hP g
-  have hVne : ∀ g : P.Group, P.V g ≠ 0 := fun g => ne_of_gt (hVpos g)
-  have htilted_nn : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      0 ≤ tiltedMu F P (N x) g.val p :=
-    fun g p => (Erdos821.P3Edge.tiltedMu_pos hx1 hP (N x) rfl hL10 g p).le
-  have htilted_sum : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p ≤ 2 :=
-    fun g => Erdos821.P3Edge.tiltedMu_sum_le_two hx1 hP (N x) rfl hL10 g
-  have hcard_big : ((Fintype.card P.BigGroup : ℕ) : ℝ) ≤ F.C₀ * Real.log (L x) := by
-    have hle : (P.bigGroups.card : ℝ) ≤ F.C₀ * T x := hP.2.2.2.1
-    have hcard_eq : (Fintype.card P.BigGroup : ℝ) = (P.bigGroups.card : ℝ) := by
-      rw [PrimeGroups.bigGroups]
-      simp [Fintype.card_subtype]
-    rw [hcard_eq]
-    exact hle
-  have hcard_small : ((Fintype.card P.SmallGroup : ℕ) : ℝ) ≤ F.C₀ * Real.log (L x) := by
-    have hle : (P.smallGroups.card : ℝ) ≤ F.C₀ * T x := hP.2.1
-    have hcard_eq : (Fintype.card P.SmallGroup : ℝ) = (P.smallGroups.card : ℝ) := by
-      rw [PrimeGroups.smallGroups]
-      simp [Fintype.card_subtype]
-    rw [hcard_eq]
-    exact hle
-  have hbig_pow : CB2 ^ Fintype.card P.BigGroup ≤ (L x) ^ Kbig :=
-    Erdos821.P3Edge.pow_groups_le_rpow CB2 (lt_of_lt_of_le zero_lt_one hCB2_ge) _
-      F.C₀ (L x) Kbig F.C₀_pos hL1 hKbig_nn (le_refl _) hcard_big
-  have hsmall_pow : CS2 ^ Fintype.card P.SmallGroup ≤ (L x) ^ Ksmall :=
-    Erdos821.P3Edge.pow_groups_le_rpow CS2 (lt_of_lt_of_le zero_lt_one hCS2_ge) _
-      F.C₀ (L x) Ksmall F.C₀_pos hL1 hKsmall_nn (le_refl _) hcard_small
+  obtain ⟨hL1,hL10⟩ := Erdos821.P3Edge.edge_log_gates ((le_max_left _ _).trans hx)
+  have hLpos := zero_lt_one.trans hL1
+  have hxps := (le_max_right _ _).trans hx
+  have hxp' := (le_max_left _ _).trans hxps
+  have hxs' := (le_max_right _ _).trans hxps
+  have hVlo  := fun g => (hP.2.2.2.2.1 g).1
+  have hVhi  := fun g => (hP.2.2.2.2.1 g).2
+  have hVpos  := fun g => Erdos821.P3Edge.V_pos_of_adm hP g
+  have hVne  := fun g => ne_of_gt (hVpos g)
+  obtain ⟨htilted_nn, htilted_sum⟩ := Erdos821.P3Edge.edge_tilted_bounds hP hL1 hL10
+  have hbig_pow := Erdos821.P3Edge.big_group_pow hP hL1 hCB2_ge
+  have hsmall_pow := Erdos821.P3Edge.small_group_pow hP hL1 hCS2_ge
   -- Context constants.
   let Gr : ℝ := Erdos821.P3Edge.bigGroupConst F r m Cprom ^ Fintype.card P.BigGroup *
     (max 1 (max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0)) ^ Fintype.card P.SmallGroup
@@ -103,7 +70,6 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
       (one_le_mul_of_one_le_of_one_le (one_le_pow₀ hCcol_ge) (one_le_pow₀ hCb_ge))
       (one_le_pow₀ hCs_ge)
   have hGG : Gr * Gc = CB2 ^ Fintype.card P.BigGroup * CS2 ^ Fintype.card P.SmallGroup := by
-    simp only [Gr, Gc, CB2, CS2, mul_pow]
     ring
   let BP : ℝ := (Fintype.card (P.BigPermutations (J + F.ell)) : ℝ)
   have hBP : 0 < BP := by
@@ -122,12 +88,12 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
   have ha : ∀ ctx, 0 ≤ a ctx := fun ctx =>
     div_nonneg (mul_nonneg (Erdos821.P3Edge.patternSup_nonneg A ctx.1)
       (haux ctx.1 ctx.2.1)) hBP.le
-  let R : EdgeTransferContext A → ℝ := fun ctx => a ctx * Gr
-  let C : EdgeTransferContext A → ℝ := fun ctx => a ctx * Gc
+  let R  := fun ctx => a ctx * Gr
+  let C  := fun ctx => a ctx * Gc
   have hR : ∀ ctx, 0 ≤ R ctx := fun ctx => mul_nonneg (ha ctx) (by linarith)
   have hC : ∀ ctx, 0 ≤ C ctx := fun ctx => mul_nonneg (ha ctx) (by linarith)
   let keep : P.MemoryState (J + F.ell) → Prop := fun s => P.memorySize s ≤ memoryCutoff x
-  have hm : ∀ s : P.MemoryState (J + F.ell), 0 ≤ P.memoryMass F J (N x) s := fun s =>
+  have hm  := fun s =>
     Erdos821.P3Edge.memoryMass_nonneg F J (N x) hVpos htilted_nn s
   have hw : ∀ s : P.MemoryState (J + F.ell), 0 < P.memoryWeight r.v s := fun s => Erdos821.P3Edge.memoryWeight_pos r s
   let Ωc : ℝ := (Fintype.card (OmissionChoices P (J + F.ell) F.ell) : ℝ)
@@ -143,17 +109,15 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     (P.memoryMass F J (N x)) (P.memoryWeight r.v) R C (memoryCutoff x) hm hw hΩpos hR hC
     (by
       intro ctx O s T
-      have h := promotionContextKernel_rowCost_le A r theta i ctx O s T hVlo hVpos
+      have h := sectorContextKernel_rowCost_le true A r theta i ctx O s T hVlo hVpos
         htilted_nn htilted_sum Cprom Csmall0 hCprom hCsmall0
       refine le_trans h (le_of_eq ?_)
-      simp only [R, a, Gr, BP]
       ring)
     (by
       intro ctx O t S
-      have h := promotionContextKernel_columnCost_le A r theta i ctx O t S hVlo hVhi
+      have h := sectorContextKernel_columnCost_le true A r theta i ctx O t S hVlo hVhi
         htilted_nn htilted_sum Cprom Csmall0 hCprom hCsmall0
       refine le_trans h (le_of_eq ?_)
-      simp only [C, a, Gc, BP]
       ring)
     (by
       intro ctx s
@@ -171,17 +135,15 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     (P.memoryMass F J (N x)) (P.memoryWeight r.v) R C (memoryCutoff x) hm hw hΩpos hR hC
     (by
       intro ctx O s T
-      have h := storeOnlyContextKernel_rowCost_le A r theta i ctx O s T hVlo hVpos
+      have h := sectorContextKernel_rowCost_le false A r theta i ctx O s T hVlo hVpos
         htilted_nn htilted_sum Cprom Csmall0 hCprom hCsmall0
       refine le_trans h (le_of_eq ?_)
-      simp only [R, a, Gr, BP]
       ring)
     (by
       intro ctx O t S
-      have h := storeOnlyContextKernel_columnCost_le A r theta i ctx O t S hVlo hVhi
+      have h := sectorContextKernel_columnCost_le false A r theta i ctx O t S hVlo hVhi
         htilted_nn htilted_sum Cprom Csmall0 hCprom hCsmall0
       refine le_trans h (le_of_eq ?_)
-      simp only [C, a, Gc, BP]
       ring)
     (by
       intro ctx t
@@ -241,7 +203,7 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     simp_rw [hsqrtS]
     rw [← Finset.sum_mul, hsum_a]
   -- The power of `L(x)`.
-  have hGG1 : 1 ≤ Gr * Gc := one_le_mul_of_one_le_of_one_le hGr hGc
+  have hGG1  := one_le_mul_of_one_le_of_one_le hGr hGc
   have hsqrtGG : Real.sqrt (Gr * Gc) ≤ (L x) ^ Kbig * (L x) ^ Ksmall := by
     have h1 : Real.sqrt (Gr * Gc) ≤ Gr * Gc := by
       rw [Real.sqrt_le_left (by linarith)]
@@ -254,7 +216,6 @@ theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
   have hX : X = Real.sqrt (Gr * Gc) * Real.sqrt ((memoryCutoff x : ℝ) / Ωc) := by
     simp only [X]
     rw [Real.sqrt_mul (by linarith)]
-  have hpm0 : 0 ≤ A.patternMass := Erdos821.P3Edge.patternMass_nonneg A
   have hmain : A.patternMass * X ≤
       (L x) ^ (C₁ + Kbig + Ksmall) *
         Real.sqrt ((memoryCutoff x : ℝ) / (omissionNumber F P J : ℝ)) := by

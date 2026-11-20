@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceError
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationErrorPool
-open CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePolynomial
-open CenteredMomentAmplificationSourcePool CenteredMomentSourceRow CenteredMomentLiveDomain
-open CenteredMomentGaussEnergy CenteredMomentFirstSectors CenteredMomentOriginalChildEnergy
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentAmplificationSourceDomain
+open CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool
+open CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentGaussEnergy CenteredMomentFirstSectors
+open CenteredMomentOriginalChildEnergy
 local notation "O" => ActualEisensteinCubic.O
 
  theorem residual_polynomial_eq_punctured (S : Finset (Ideal O)) (c f : Ideal O → ℂ)

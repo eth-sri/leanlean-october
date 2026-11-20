@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.FiniteFourier
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -25,11 +24,9 @@ theorem exists_phase_of_norm_one (z : ℂ) (h : ‖z‖ = 1) :
     ∃ theta : ℝ, phase theta = z := by
   refine ⟨z.arg / (2 * Real.pi), ?_⟩
   have hpi : (2 : ℝ) * Real.pi ≠ 0 := ne_of_gt (mul_pos two_pos Real.pi_pos)
-  have he : (2 : ℝ) * Real.pi * (z.arg / (2 * Real.pi)) = z.arg :=
-    mul_div_cancel₀ _ hpi
   unfold phase
   have hc : (2 : ℂ) * (Real.pi : ℂ) * ((z.arg / (2 * Real.pi) : ℝ) : ℂ) = (z.arg : ℂ) := by
-    exact_mod_cast he
+    exact_mod_cast (mul_div_cancel₀ _ hpi)
   rw [hc]
   simpa only [h, Complex.ofReal_one, one_mul] using Complex.norm_mul_exp_arg_mul_I z
 

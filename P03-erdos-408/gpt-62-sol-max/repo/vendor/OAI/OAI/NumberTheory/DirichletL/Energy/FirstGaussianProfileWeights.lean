@@ -7,24 +7,16 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstGaussianCoefficients
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget
-open QuadraticInitialBound
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget
+open CenteredMomentFirstChildProfileControl CenteredMomentEnergyFirstGaussianCoefficients
+open CenteredMomentSecondWindowBudget QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def losses (epsilon delta theta B:ℝ):Fin 4→ℝ:=
   ![2*delta+epsilon,2*epsilon+2*delta+2*(5*B+1)*theta,0,0]
-
-private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):
-    p.control S≤p.control T:=by
-  unfold Profiles.control
-  exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
-    (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
-    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
 
 private lemma zero_control_le {a b:ℝ}(p:Profiles a b)(U:Finset (ℕ×ℕ))(h:(0,0)∈U):
     SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*
@@ -82,9 +74,9 @@ theorem actual_weights {a b:ℝ}(N:ℕ)(upper b1 b2 Amax loFloor:ℝ)
   have hpS:=p.control_nonneg Sp
   have hpT:=p.control_nonneg Tchild
   have hSpc: (p.control Sp)^2≤(p.control U)^2:=
-    (sq_le_sq₀ hpS hp).mpr (control_mono p hS)
+    (sq_le_sq₀ hpS hp).mpr (p.control_mono hS)
   have hTpc: (p.control Tchild)^2≤(p.control U)^2:=
-    (sq_le_sq₀ hpT hp).mpr (control_mono p hT)
+    (sq_le_sq₀ hpT hp).mpr (p.control_mono hT)
   have h00c:(SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*
       SchwartzMap.seminorm ℝ 0 0 (p.profile 1))^2≤(p.control U)^2:=
     (sq_le_sq₀ (mul_nonneg (apply_nonneg _ _) (apply_nonneg _ _)) hp).mpr (zero_control_le p U h00)

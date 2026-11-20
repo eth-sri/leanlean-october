@@ -13,7 +13,6 @@ open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion ProbeCompleted
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowSeparatedIntegrand (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (X Y : ℝ) (B : RayRing→O→ℂ) (v : ℝ) : ℂ :=

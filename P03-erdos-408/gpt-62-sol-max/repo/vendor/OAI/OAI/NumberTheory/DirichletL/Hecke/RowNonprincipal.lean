@@ -43,16 +43,16 @@ theorem nonprincipal_of_local_factor (χ : Character)
   have hnP := congrArg Prod.snd hx
   dsimp only at hnQJ hnP
   have hn : n - 1 ∈ Q * J := Ideal.Quotient.eq.mp (by simpa using hnQJ)
-  have hnQ : n - 1 ∈ Q := Ideal.mul_le_left hn
-  have hnJ : n - 1 ∈ J := Ideal.mul_le_right hn
-  have hnprimary : λ₀ ^ 2 ∣ n - 1 := Ideal.mem_span_singleton.mp (hQ hnQ)
+  have hnQ  := Ideal.mul_le_left hn
+  have hnJ  := Ideal.mul_le_right hn
+  have hnprimary  := Ideal.mem_span_singleton.mp (hQ hnQ)
   have hv : elementCoeff χ n = ψ (u : O ⧸ P ^ c) := by
     rw [hrow n hnprimary, map_mul, hφ n 1 hnQ, map_one, one_mul,
       idealRowHom_congr_mod J n 1 hnJ, idealRowHom_one_supported J hJ, mul_one]
     rw [← canonicalPrimePowerCharacter_mk P hg hc n, hnP]
-  have hv0 : elementCoeff χ n ≠ 0 := hv ▸ (MulChar.apply_ne_zero_iff.mpr u.isUnit)
+  have hv0  := hv ▸ (MulChar.apply_ne_zero_iff.mpr u.isUnit)
   intro hχ
-  have hunit : IsUnit (Ideal.Quotient.mk χ.modulus n) := MulChar.apply_ne_zero_iff.mp hv0
+  have hunit  := MulChar.apply_ne_zero_iff.mp hv0
   have hv1 : elementCoeff χ n = 1 := by
     change χ.residue _ = 1
     rw [hχ, MulChar.one_apply hunit]
@@ -74,7 +74,7 @@ theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
   let φ := HeckeRowClosure.elementHom η * coprimalityMask m * numeratorBadTwist u a b r hr
   refine nonprincipal_of_local_factor χ (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)}) J P
       ?_ φ ?_ hJ hg hchar hc hc6 hcop ?_
-  · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
+  · have hd3  := ActualEisensteinCubic.lambda_sq_dvd_three
     have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
     exact Ideal.mul_le_right.trans ((Ideal.span_singleton_le_iff_mem _).mpr
       (Ideal.mem_span_singleton.mpr hd72))
@@ -97,7 +97,7 @@ theorem extract_prime_power (I : Ideal O) (hI : CanonicalQuadraticSieve.Supporte
       CanonicalQuadraticSieve.Supported J ∧ IsCoprime J P := by
   let S := (normalizedFactors I).toFinset
   let J := ∏ Q ∈ S.erase P, Q ^ (normalizedFactors I).count Q
-  have hPS : P ∈ S := Multiset.mem_toFinset.mpr hP
+  have hPS  := Multiset.mem_toFinset.mpr hP
   have hsplit : I = P ^ (normalizedFactors I).count P * J := by
     calc
       I = (normalizedFactors I).prod := (Ideal.prod_normalizedFactors_eq_self hI.1).symm
@@ -131,7 +131,7 @@ theorem principal_row_multiplicity (η χ : Character) (m f z : O)
   have hgood := supported_factors_good (Ideal.span {r}) hr P hP
   let : P.IsMaximal := hgood.1
   obtain ⟨J, hsplit, hJ, hJP⟩ := extract_prime_power _ hr P hP
-  have hc : 1 ≤ (normalizedFactors (Ideal.span {r})).count P := Multiset.count_pos.mpr hP
+  have hc  := Multiset.count_pos.mpr hP
   exact actual_row_nonprincipal η χ m f z hmLam hm2 u a b r hr hpr hx P J
     hgood.2.1 hgood.2.2 hJ hc hc6 hsplit ((hcop.mul_left hJP).pow_right) hχ hprincipal
 
@@ -157,14 +157,13 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
   refine ⟨?_, hfree P hP⟩
   apply Multiset.mem_toFinset.mpr
   have hgood := supported_factors_good (Ideal.span {r}) hr P hP
-  let : P.IsMaximal := hgood.1
   apply (Ideal.mem_normalizedFactors_iff hQ).mpr
   refine ⟨Ideal.isPrime_of_prime (prime_of_normalized_factor P hP), ?_⟩
   by_contra hQP
   have hcop : IsCoprime Q P := by
     apply Ideal.coprime_of_no_prime_ge
     intro J hQJ hPJ hJ
-    have hPJ' : P = J := hgood.1.eq_of_le hJ.ne_top hPJ
+    have hPJ'  := hgood.1.eq_of_le hJ.ne_top hPJ
     exact hQP (hPJ' ▸ hQJ)
   have hd := principal_row_multiplicity η χ m f z hmLam hm2 u a b r hr hpr hx hχ hprincipal P hP hcop
   exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) (hfree P hP) hd

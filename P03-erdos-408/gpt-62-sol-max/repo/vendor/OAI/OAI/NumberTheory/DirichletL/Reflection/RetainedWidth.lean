@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.FamilyTail
 public import OAI.NumberTheory.DirichletL.Reflection.UpperThreshold
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.UpperThreshold
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -38,10 +39,10 @@ theorem actual_retained_width_uniform
         F.ideal jF e + δ+η := by
   let Cf := 27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2*kn*kb^3/(kK^2*kP^2)
   have hcn : (0:ℝ)<Ideal.absNorm (Ideal.span {c}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hc))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hc)
   have htau := sourceCuspScale_pos s.index
   have hCf : 0<Cf := by dsimp only [Cf]; positivity
-  obtain ⟨Z₀,hZ₀,hlog⟩ := InverseTerminalWidths.constant_log_error (16*Cf) η (by positivity) hη
+  obtain ⟨Z₀,hZ₀,hlog⟩ := InverseTerminalWidths.constant_log_error (16*Cf) η hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro φ _ F jF e Z X QK QP δ i hZ hX hQK hQP hi
   have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ

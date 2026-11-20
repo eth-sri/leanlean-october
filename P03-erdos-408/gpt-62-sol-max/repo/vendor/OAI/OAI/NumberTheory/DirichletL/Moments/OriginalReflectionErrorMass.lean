@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionEnergy
 public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
 public import OAI.NumberTheory.DirichletL.Moments.Counting
@@ -11,21 +12,21 @@ public import OAI.NumberTheory.DirichletL.Moments.ComparisonReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentOriginalReflectionErrorMass
-open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay CenteredMomentCounting
+open CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection QuadraticInitialBound
+open ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 
 lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
     (I : Ideal O) (hI : I≠0) :
     ‖annularWeight W D 0 freq I‖=‖W ((I.absNorm:ℝ)/D)‖ := by
   have hn : 0<(I.absNorm:ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (div_pos hn hD)]
-  simp only [Complex.neg_re,shift_re,neg_zero,Real.rpow_zero,mul_one]
+  simp
 
 lemma actual_coefficient_norm (χ : Character) (W : ℝ→ℂ) (D freq B : ℝ)
     (hD : 0<D) (hB : 0≤B) (hW : ∀x,‖W x‖≤B) (I : Ideal O) :
@@ -40,11 +41,10 @@ lemma actual_coefficient_support (χ : Character) (W : ℝ→ℂ) (b D freq : �
     (hD : 0<D) (hs : Function.support W⊆Set.Iic b) (I : Ideal O)
     (hne : idealCoeff χ I*annularWeight W D 0 freq I≠0) :
     (I.absNorm:ℝ)≤max 1 b*D := by
-  have hw : W ((I.absNorm:ℝ)/D)≠0:=by
-    intro hz
-    exact hne (by simp only [annularWeight,hz,zero_mul,mul_zero])
-  exact ((div_le_iff₀ hD).mp (hs hw)).trans
+  refine ((div_le_iff₀ hD).mp (hs ?_)).trans
     (mul_le_mul_of_nonneg_right (le_max_right 1 b) hD.le)
+  intro hz
+  exact hne (by simp only [annularWeight,hz,zero_mul,mul_zero])
 
 lemma polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
     polynomial χ false W D 0 freq=
@@ -65,10 +65,9 @@ lemma normalized_linear_bound (D c : ℝ) (hD : 0<D) (v : ℂ)
     (hv : ‖v‖≤c*D) : ‖(D:ℂ)^(-(1/2:ℂ))*v‖≤c*Real.sqrt D := by
   rw [inverse_half_power D hD.le,norm_mul,norm_inv,Complex.norm_real,
     Real.norm_of_nonneg (Real.sqrt_nonneg D)]
-  have hs:Real.sqrt D≠0:=(Real.sqrt_pos.mpr hD).ne'
+  have hs:=(Real.sqrt_pos.mpr hD).ne'
   have hd:D/Real.sqrt D=Real.sqrt D:=by
-    apply (div_eq_iff hs).mpr
-    simpa only [pow_two] using (Real.sq_sqrt hD.le).symm
+    simp
   calc
     _ ≤ (Real.sqrt D)⁻¹*(c*D):=mul_le_mul_of_nonneg_left hv (inv_nonneg.mpr (Real.sqrt_nonneg D))
     _ = c*(D/Real.sqrt D):=by ring

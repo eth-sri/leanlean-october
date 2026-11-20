@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
 public import OAI.NumberTheory.DirichletL.Moments.RadicalFamily
 
@@ -10,21 +11,18 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentAmplificationRadicalFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentRadicalFamily CenteredMomentFirstFamily
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open CompletedGauss RayFourExpansion CenteredMomentRadicalFamily CenteredMomentFirstFamily
 open CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy
 open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
 open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
 open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
-open CenteredMomentSecondChildProfile
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool
-open CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentCommonAllocationSum
-open CenteredMomentFirstAmplificationChoice
+open CenteredMomentSecondChildProfile CenteredMomentAmplificationGlobal
+open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationChildEnergy
+open CenteredMomentAmplificationErrorPool CenteredMomentSourceLiveColumn
+open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass
+open CenteredMomentSourceMass CenteredMomentCommonAllocationSum CenteredMomentFirstAmplificationChoice
 open CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -175,7 +173,7 @@ theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (
   have ht : 0<T' := by
     apply div_pos hT
     apply pow_pos
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hs.1)
   have he := finite_original_error_energy S₀ (fun I => β I*rowWeight η m 1 1 t I)
     p hp hs hg hc hpp n hn T hT rows hrows W K hK hW hmajor
   have hf := hτ S₀ C hC β t W K hK hW

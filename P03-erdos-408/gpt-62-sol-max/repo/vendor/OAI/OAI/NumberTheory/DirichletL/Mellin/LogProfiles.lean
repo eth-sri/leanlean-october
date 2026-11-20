@@ -1,16 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
+public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 @[expose] public section
 
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open MulChar AddChar Filter Asymptotics MeasureTheory
 
 namespace ShortDraftMellin
 
@@ -78,35 +75,14 @@ end FiniteFieldSieve
 
 namespace ProductResidueSieve
 
-variable {R S : Type*} [CommRing R] [CommRing S]
 
-def mulCharProd (χ : MulChar R ℂ) (η : MulChar S ℂ) : MulChar (R × S) ℂ where
-  toFun x := χ x.1 * η x.2
-  map_one' := by simp
-  map_mul' x y := by simp [mul_mul_mul_comm]
-  map_nonunit' x hx := by
-    rw [Prod.isUnit_iff] at hx
-    by_cases h₁ : IsUnit x.1
-    · have h₂ : ¬IsUnit x.2 := by tauto
-      simp [MulChar.map_nonunit η h₂]
-    · simp [MulChar.map_nonunit χ h₁]
 
-def addCharProd (ψ : AddChar R ℂ) (φ : AddChar S ℂ) : AddChar (R × S) ℂ where
-  toFun x := ψ x.1 * φ x.2
-  map_zero_eq_one' := by simp
-  map_add_eq_mul' x y := by
-    simp only [Prod.fst_add, Prod.snd_add, AddChar.map_add_eq_mul]
-    ring
 
-@[simp] theorem mulCharProd_apply (χ : MulChar R ℂ) (η : MulChar S ℂ) (x : R × S) :
-    mulCharProd χ η x = χ x.1 * η x.2 := rfl
 
-@[simp] theorem addCharProd_apply (ψ : AddChar R ℂ) (φ : AddChar S ℂ) (x : R × S) :
-    addCharProd ψ φ x = ψ x.1 * φ x.2 := rfl
 
 end ProductResidueSieve
 
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 
 open scoped ContDiff
@@ -158,7 +134,7 @@ theorem coupled_factor_derivative_bound
     (hR : 0 ≤ R) (hH : 1 ≤ H)
     (ha : |a| ≤ H) (hexp : Real.exp (a * y) ≤ H)
     (hj : j ≤ n)
-    (_hCF : 0 ≤ CF)
+
     (hFdecay : ∀ i ≤ n, ∀ u, 0 ≤ u →
       (1 + u) ^ (A + n) * ‖iteratedFDeriv ℝ i F u‖ ≤ CF) :
     ‖iteratedFDeriv ℝ j (fun z : ℝ => F (R * Real.exp (a * z))) y‖ ≤
@@ -177,7 +153,7 @@ theorem coupled_factor_derivative_bound
 theorem derivative_scale_absorption
     (R u m H CF : ℝ) (A n j : ℕ)
     (hR : 0 ≤ R) (hm : 0 < m)
-    (_hH : 0 ≤ H) (hCF : 0 ≤ CF)
+ (hCF : 0 ≤ CF)
     (hu : 0 ≤ u) (hlower : m * (1 + R) ≤ 1 + u)
     (hj : j ≤ n) :
     m ^ (A + n) * (1 + R) ^ A *
@@ -186,28 +162,27 @@ theorem derivative_scale_absorption
       (j.factorial : ℝ) * CF * (H ^ 2) ^ j := by
   have hRp : 1 ≤ 1 + R := by linarith
   have hden : 0 < (1 + u) ^ (A + n) := by positivity
-  have hpowR : (1 + R) ^ (A + j) ≤ (1 + R) ^ (A + n) :=
+  have hpowR  :=
     pow_le_pow_right₀ hRp (Nat.add_le_add_left hj A)
   have hscale : m ^ (A + n) * (1 + R) ^ A * (1 + R) ^ j ≤
       (1 + u) ^ (A + n) := by
     calc
       m ^ (A + n) * (1 + R) ^ A * (1 + R) ^ j =
-          m ^ (A + n) * (1 + R) ^ (A + j) := by rw [pow_add]; ring
+          m ^ (A + n) * (1 + R) ^ (A + j) := by ring
       _ ≤ m ^ (A + n) * (1 + R) ^ (A + n) :=
         mul_le_mul_of_nonneg_left hpowR (by positivity)
       _ = (m * (1 + R)) ^ (A + n) := by rw [mul_pow]
       _ ≤ (1 + u) ^ (A + n) := by gcongr
   let Q : ℝ := (j.factorial : ℝ) * CF * (H ^ 2) ^ j
   have hQ : 0 ≤ Q := by dsimp [Q]; positivity
-  have hQscale : Q * (m ^ (A + n) * (1 + R) ^ A * (1 + R) ^ j) ≤
-      Q * (1 + u) ^ (A + n) := mul_le_mul_of_nonneg_left hscale hQ
+  have hQscale  := mul_le_mul_of_nonneg_left hscale hQ
   calc
     m ^ (A + n) * (1 + R) ^ A *
         ((j.factorial : ℝ) * (CF / (1 + u) ^ (A + n)) *
           (H ^ 2 * (1 + R)) ^ j) =
       Q * (m ^ (A + n) * (1 + R) ^ A * (1 + R) ^ j) /
         (1 + u) ^ (A + n) := by dsimp [Q]; rw [mul_pow]; ring
-    _ ≤ Q := (div_le_iff₀ hden).mpr (by simpa [mul_comm, mul_left_comm, mul_assoc] using hQscale)
+    _ ≤ Q := (div_le_iff₀ hden).mpr (by assumption)
     _ = (j.factorial : ℝ) * CF * (H ^ 2) ^ j := rfl
 
 theorem coupled_factor_uniform_derivative
@@ -224,13 +199,12 @@ theorem coupled_factor_uniform_derivative
       ‖iteratedFDeriv ℝ j (fun z : ℝ => F (R * Real.exp (a * z))) y‖ ≤
         (j.factorial : ℝ) * CF * (H ^ 2) ^ j := by
   have hcomp := coupled_factor_derivative_bound F R a y H CF A n j hF hR hH
-    ha hexpUpper hj hCF hFdecay
+    ha hexpUpper hj hFdecay
   have hscale : 0 ≤ m ^ (A + n) * (1 + R) ^ A := by positivity
-  have hlower : m * (1 + R) ≤ 1 + R * Real.exp (a * y) := by
-    nlinarith [mul_nonneg hR (sub_nonneg.mpr hexpLower)]
-  exact (mul_le_mul_of_nonneg_left hcomp hscale).trans
+  refine (mul_le_mul_of_nonneg_left hcomp hscale).trans
     (derivative_scale_absorption R (R * Real.exp (a * y)) m H CF A n j
-      hR hm (by linarith) hCF (by positivity) hlower hj)
+      hR hm hCF (by positivity) ?_ hj)
+  nlinarith [mul_nonneg hR (sub_nonneg.mpr hexpLower)]
 
 theorem fourier_seminorm_from_derivative_integrals
     (g : 𝓢(ℝ, ℂ)) (k : ℕ) :
@@ -255,7 +229,7 @@ theorem fourier_seminorm_from_derivative_integrals
 
 theorem uniform_fourier_seminorm_transfer
     (g : 𝓢(ℝ, ℂ)) (k : ℕ) (S C : ℝ)
-    (hS : 0 ≤ S) (_hC : 0 ≤ C)
+    (hS : 0 ≤ S)
     (hsource : ∀ i ≤ k,
       S * ((SchwartzMap.seminorm ℝ 0 i) g +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) g) ≤ C) :
@@ -265,7 +239,7 @@ theorem uniform_fourier_seminorm_transfer
           ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)) * C := by
   let V : ℝ := 2 ^ (volume : Measure ℝ).integrablePower *
     ∫ t : ℝ, (1 + ‖t‖) ^ (-(volume : Measure ℝ).integrablePower : ℝ)
-  have hV : 0 ≤ V := by dsimp [V]; positivity
+  have hV : 0 ≤ V := by positivity
   have hI (i : ℕ) (hi : i ≤ k) :
       S * (∫ t : ℝ, ‖iteratedFDeriv ℝ i g t‖) ≤ V * C := by
     have hbase := SchwartzMap.integral_pow_mul_iteratedFDeriv_le ℝ volume g 0 i
@@ -302,7 +276,7 @@ theorem uniform_fourier_seminorm_transfer
       have hp0 : p.1 = 0 := by
         have hlt := Finset.mem_range.mp (Finset.mem_product.mp hp).1
         omega
-      have hp2 : p.2 ≤ k := Nat.lt_succ_iff.mp
+      have hp2  := Nat.lt_succ_iff.mp
         (Finset.mem_range.mp (Finset.mem_product.mp hp).2)
       simpa [hp0] using hI p.2 hp2
     _ = (2 : ℝ) ^ k * (k + 1) * V * C := by
@@ -331,24 +305,24 @@ theorem uniform_fourier_coefficient_moment
   let p := (volume : Measure ℝ).integrablePower
   let V : ℝ := 2 ^ p * ∫ t : ℝ, (1 + ‖t‖) ^ (-(p : ℝ))
   let K := J + p
-  have hV : 0 ≤ V := by dsimp [V]; positivity
-  have hfourier_zero := uniform_fourier_seminorm_transfer g 0 S C hS hC
+  have hV : 0 ≤ V := by positivity
+  have hfourier_zero := uniform_fourier_seminorm_transfer g 0 S C hS
     (by intro i hi; exact hsource i (by omega))
-  have hfourier_K := uniform_fourier_seminorm_transfer g K S C hS hC
-    (by intro i hi; exact hsource i (by simpa [K, p] using hi))
+  have hfourier_K := uniform_fourier_seminorm_transfer g K S C hS
+    (by assumption)
   have hmoment := fourier_coefficient_moment g J
   calc
     S * (∫ t : ℝ, ‖t‖ ^ J * ‖(𝓕 g) t‖) ≤
         S * (V * ((SchwartzMap.seminorm ℝ 0 0) (𝓕 g) +
           (SchwartzMap.seminorm ℝ K 0) (𝓕 g))) :=
-      mul_le_mul_of_nonneg_left (by simpa [V, K, p] using hmoment) hS
+      mul_le_mul_of_nonneg_left (by assumption) hS
     _ = V * (S * (SchwartzMap.seminorm ℝ 0 0) (𝓕 g) +
         S * (SchwartzMap.seminorm ℝ K 0) (𝓕 g)) := by ring
     _ ≤ V * ((2 : ℝ) ^ 0 * (0 + 1) * V * C +
         (2 : ℝ) ^ K * (K + 1) * V * C) := by
       apply mul_le_mul_of_nonneg_left _ hV
       exact add_le_add (by simpa [V] using hfourier_zero)
-        (by simpa [K, V] using hfourier_K)
+        (by assumption)
     _ = _ := by simp [V, K, p, Nat.cast_add]
 
 noncomputable def coefficientMomentBound (J : ℕ) (C : ℝ) : ℝ :=
@@ -373,7 +347,7 @@ theorem uniform_fourier_one_plus_moment
   let b := 𝓕 g
   have hI0 : Integrable (fun t : ℝ => ‖b t‖) volume := by
     simpa using b.integrable_pow_mul volume 0
-  have hIJ : Integrable (fun t : ℝ => ‖t‖ ^ J * ‖b t‖) volume :=
+  have hIJ  :=
     b.integrable_pow_mul volume J
   have hIrhs : Integrable
       (fun t : ℝ => (2 : ℝ) ^ J *
@@ -473,8 +447,8 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
       (∀ s, |s| ≤ T → V s = 1) ∧
       tsupport V ⊆ Set.Icc (-(T + 1)) (T + 1) ∧
       V 0 = 1 := by
-  let U : Set ℝ := Set.Ioo (-(T + 1)) (T + 1)
-  let K : Set ℝ := Set.Icc (-T) T
+  let U  := Set.Ioo (-(T + 1)) (T + 1)
+  let K  := Set.Icc (-T) T
   have hU : IsOpen U := isOpen_Ioo
   have hK : IsClosed K := isClosed_Icc
   have hKU : K ⊆ U := by
@@ -483,9 +457,9 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
     constructor <;> linarith
   obtain ⟨f, hf, _, hsupport, hone⟩ :=
     exists_contDiff_support_eq_eq_one_iff (n := ⊤) hU hK hKU
-  let V : ℝ → ℂ := fun s => (f s : ℂ)
-  have hf' : ContDiff ℝ ∞ f := by simpa using hf
-  have hVs : ContDiff ℝ ∞ V := Complex.ofRealCLM.contDiff.comp hf'
+  let V  := fun s => (f s : ℂ)
+  have hf' : ContDiff ℝ ∞ f := by simp_all
+  have hVs  := Complex.ofRealCLM.contDiff.comp hf'
   have hVsupport : Function.support V = Function.support f := by
     ext s
     simp [V, Function.mem_support]
@@ -494,15 +468,14 @@ theorem exists_complex_smooth_cutoff (T : ℝ) (hT : 0 ≤ T) :
     intro s hs
     rw [hVsupport, hsupport] at hs
     exact ⟨hs.1.le, hs.2.le⟩
-  have hVtsupportI : tsupport V ⊆
-      Set.Icc (-(T + 1)) (T + 1) :=
+  have hVtsupportI  :=
     closure_minimal hVsupportI isClosed_Icc
-  have hVc : HasCompactSupport V :=
+  have hVc  :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hVsupportI
   have hone' : ∀ s, |s| ≤ T → V s = 1 := by
     intro s hs
     have hsK : s ∈ K := by simpa [K, abs_le] using hs
-    have hfs : f s = 1 := (hone s).mp hsK
+    have hfs  := (hone s).mp hsK
     simp [V, hfs]
   exact ⟨V, hVc, hVs, hone', hVtsupportI,
     hone' 0 (by simpa using hT)⟩
@@ -527,11 +500,11 @@ theorem exists_complex_smooth_cutoff_with_derivative_bounds
   obtain ⟨i, hi, hnonzero⟩ := hy
   have hyderiv : y ∈ Function.support (iteratedFDeriv ℝ i V) := by
     simpa [Function.mem_support] using hnonzero
-  have hysupport : y ∈ tsupport V :=
+  have hysupport  :=
     (support_iteratedFDeriv_subset i) hyderiv
   have hyinterval := hVsupport hysupport
-  have hylower : -(T + 1) ≤ y := hyinterval.1
-  have hyupper : y ≤ T + 1 := hyinterval.2
+  have hylower  := hyinterval.1
+  have hyupper  := hyinterval.2
   constructor
   · exact Real.exp_le_exp.mpr hylower
   constructor
@@ -560,9 +533,9 @@ theorem schwartz_derivative_decay_finite
   let T : ℝ := (SchwartzMap.seminorm ℝ 0 i) F +
     (SchwartzMap.seminorm ℝ M i) F
   let N : ℝ := ‖iteratedFDeriv ℝ i F u‖
-  have hN : 0 ≤ N := by dsimp [N]; positivity
+  have hN : 0 ≤ N := by positivity
   have hpow : (1 + u) ^ (A + j) ≤ (1 + u) ^ M :=
-    pow_le_pow_right₀ (by linarith) (by dsimp [M]; omega)
+    pow_le_pow_right₀ (by linarith) (by omega)
   have hadd := add_pow_le (show (0 : ℝ) ≤ 1 by norm_num) hu M
   have htwo : (2 : ℝ) ^ (M - 1) ≤ (2 : ℝ) ^ M :=
     pow_le_pow_right₀ (by norm_num) (Nat.sub_le M 1)
@@ -581,8 +554,7 @@ theorem schwartz_derivative_decay_finite
   have hM : u ^ M * N ≤ (SchwartzMap.seminorm ℝ M i) F := by
     simpa [N, Real.norm_eq_abs, abs_of_nonneg hu] using
       SchwartzMap.le_seminorm ℝ M i F u
-  have hT : N + u ^ M * N ≤ T := add_le_add h0 hM
-  have hTnonneg : 0 ≤ T := by dsimp [T]; positivity
+  have hT  := add_le_add h0 hM
   have hTsum : T ≤ ∑ k ∈ Finset.range (K + 1),
       ((SchwartzMap.seminorm ℝ 0 k) F +
         (SchwartzMap.seminorm ℝ M k) F) := by

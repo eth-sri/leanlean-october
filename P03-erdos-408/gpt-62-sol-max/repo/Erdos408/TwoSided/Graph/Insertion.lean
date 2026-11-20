@@ -45,7 +45,7 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
           (∫ ξ in {ξ : ℝ | Real.log x ^ Cf < |ξ|}, ‖a ξ‖) ≤ KA * Real.log x ^ (-At) := by
   have hκ0 : 0 < κ := by linarith
   obtain ⟨Cf, KΨ, hCf, -, hmel⟩ := Erdos821.P5Mellin.mellinCutoffTask_proof
-    Erdos821.Classical.blueprint_lem_fourier_separation 1 κ⁻¹ κ (fun j => max (M j) 0)
+    Erdos821.Classical.lem_fourier_separation 1 κ⁻¹ κ (fun j => max (M j) 0)
     one_pos (inv_pos.2 hκ0) ((inv_lt_one_of_one_lt₀ hκ).trans hκ) (fun j => le_max_right _ _)
   refine ⟨Cf, KΨ, hCf, fun At hAt => ?_⟩
   obtain ⟨KA, hKA, hx⟩ := hmel At hAt
@@ -137,8 +137,7 @@ since `1 ≤ D ≤ x/κ` (U10); for such `n` every target `n + D` lies in `[X, 3
 theorem eventually_cutoffPairing_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 0 < q₀) (hκ : 1 < κ)
     (J : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (N : ℕ) (C : Fin N → ι → Finset (Fin J))
           (K : Fin N → (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
           (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) (a : ℝ → ℂ),
@@ -168,13 +167,8 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
     (M : ℕ → ℝ) (A : ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)
     (hc₀ : 0 < c₀) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hc : 0 < c) (hκ : 1 < κ) :
     ∃ (m₀ J : ℕ) (C₁ Cres : ℝ), ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
-        ∃ (N : ℕ) (Aν Bν : Fin N → ι → Finset (Fin J)) (β : Fin N → ℂ)
-          (φ φ' ψ ψ' : Fin N → ℕ → ℂ) (U U' : Fin N → ℝ),
-          (∀ ν, ComparisonPattern m₀ big (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) (U ν)
-            (U' ν)) ∧
-          ∑ ν, ‖β ν‖ ≤ Real.log x ^ C₁ ∧
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
+        WithComparisonFamily big m₀ J C₁ x fun _ Aν Bν β φ φ' ψ ψ' _ _ =>
           ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
             (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
             InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
@@ -198,13 +192,8 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
     eventually_cutoffPairing_eq q₀ c₀ C₀ vlo vhi κ hq₀ hκ J, eventually_card_dyads_le,
     Real.tendsto_log_atTop.eventually_ge_atTop 2] with x hGx habs hmelx hG1 hG2 hcard hL
   intro ι _ _ P big hadm
-  obtain ⟨hdisj, hs₁, hs₂, hb₁, hb₂, hV, hSm, hBg, hBi⟩ := hadm
-  obtain ⟨N, Aν, Bν, β, φ, φ', ψ, ψ', U, U', hp₁, hp₂, hp₃, hp₄, hp₅, hp₆, hβ, hpair⟩ :=
-    hGx P big hdisj hs₁ hs₂ hb₁ hb₂ hV hSm hBg hBi
-  have hadm : GroupAdmissible c₀ C₀ vlo vhi x P big :=
-    ⟨hdisj, hs₁, hs₂, hb₁, hb₂, hV, hSm, hBg, hBi⟩
-  refine ⟨N, Aν, Bν, β, φ, φ', ψ, ψ', U, U',
-    fun ν => ⟨fun g => hp₁ ν g, hp₂ ν, hp₃ ν, hp₄ ν, hp₅ ν, hp₆ ν⟩, hβ, ?_⟩
+  obtain ⟨N, Aν, Bν, β, φ, φ', ψ, ψ', U, U', hpat, hβ, hpair⟩ := hGx P big hadm
+  refine ⟨N, Aν, Bν, β, φ, φ', ψ, ψ', U, U', hpat, hβ, ?_⟩
   intro r a u v Bc G Ψ hin hsl hBc hco hcu
   obtain ⟨α, hαi, hα₁, hαrep, hαt⟩ := hmelx Ψ hcu
   set F := centeredCore x q a u v Bc
@@ -213,13 +202,13 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
   have hL1 : 1 ≤ L := by linarith
   -- the comparison kernels are bounded by `|β_ν|`
   have hK : ∀ ν p p' l, ‖comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) p p' l‖ ≤
-      ‖β ν‖ := fun ν => norm_comparisonKernel_le (hp₄ ν)
+      ‖β ν‖ := fun ν => norm_comparisonKernel_le (hpat ν).2.2.2.1
   -- `2π L^{C_f} ≤ L^{C_f + 3}` and `2 ≤ L^{2 C₃}`
   have hL3 : 2 * Real.pi ≤ L ^ (3 : ℝ) := by
     rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
     nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hL 3]
   have hL2C : 2 ≤ L ^ (2 * C₃) := by
-    calc (2 : ℝ) ≤ L ^ (1 : ℝ) := by rw [Real.rpow_one]; exact hL
+    calc (2 : ℝ) ≤ L ^ (1 : ℝ) := by simpa using hL
       _ ≤ L ^ (2 * C₃) := Real.rpow_le_rpow_of_exponent_le hL1 (by
           have := le_max_right B₀ 0; linarith)
   -- the bound at one dyad
@@ -282,7 +271,6 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
       have hν := fun ν => habs P big hadm (fun h => Aν ν h ∪ Bν ν h)
         (comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) ‖β ν‖ (hK ν) G hco m
         hm (-(2 * Real.pi * ξ)) _ hf
-      have hC₁ : L ^ C₁ ≤ L ^ |C₁| := Real.rpow_le_rpow_of_exponent_le hL1 (le_abs_self _)
       have hC₁' : 1 ≤ L ^ |C₁| := Real.one_le_rpow hL1 (abs_nonneg _)
       have hCa : L ^ Cabs ≤ L ^ |Cabs| := Real.rpow_le_rpow_of_exponent_le hL1 (le_abs_self _)
       calc _ ≤ _ := norm_add_le _ _
@@ -295,7 +283,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
             · exact Finset.sum_congr rfl fun ν _ => by ring
         _ ≤ (L ^ |C₁| + L ^ |C₁|) * (2 ^ m * L ^ |Cabs|) := by
             gcongr
-            exact hβ.trans hC₁
+            exact hβ.trans (Real.rpow_le_rpow_of_exponent_le hL1 (le_abs_self _))
         _ = 2 * L ^ |C₁| * 2 ^ m * L ^ |Cabs| := by ring
     have hsplit := norm_integral_mul_le_of_split hαi (by positivity) hin₁ hin₂
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hX.le]
@@ -315,7 +303,6 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
   rw [hG2 P big hadm N (fun ν h => Aν ν h ∪ Bν ν h)
     (fun ν => comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ α
     hcu.2.1 hαi hαrep]
-  have hb₀0 : 0 ≤ b₀ := by positivity
   have e₁ : L * L * L ^ (-A - 2) = L ^ (-A) := by
     have h := Real.rpow_add hL0 (-A - 2) 2
     rw [show -A - 2 + 2 = -A by ring, Real.rpow_two] at h
@@ -335,7 +322,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
     _ = L * (dyads x).card * b₀ := by rw [Finset.sum_const, nsmul_eq_mul]; ring
     _ ≤ L * (4 * L) * b₀ := by gcongr
     _ = 4 * |Cgr| * (L * L * L ^ (-A - 2)) + 8 * KA * (L * L * L ^ (-|A| - 4)) := by
-        rw [hb₀]; ring
+        ring
     _ ≤ (4 * |Cgr| + 8 * KA) * L ^ (-A) := by
         rw [e₁, e₂]
         nlinarith [abs_nonneg Cgr]

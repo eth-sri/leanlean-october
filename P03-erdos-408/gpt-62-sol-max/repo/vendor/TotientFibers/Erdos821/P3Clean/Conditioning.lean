@@ -1,7 +1,7 @@
 module
 
 public import Erdos821.P3Clean.Damping
-public import Erdos821.P3Clean.SmallFibres
+public import Erdos821.P3.SmallPrefix
 public import Erdos821.Leaves.Damped
 
 /-! The Cauchy estimate for a small-conditioning map, with its fibre count explicit. -/
@@ -61,9 +61,8 @@ theorem small_conditioning_multiplier_uniform (F : FixedData) :
   intro M z V hMz hV
   have hq : F.q ^ ((z - M : ℕ) : ℝ) ≤ F.q ^ (((z - M : ℕ) : ℝ) / 2) := by
     apply Real.rpow_le_rpow_of_exponent_ge F.q_pos F.q_lt.le
-    have hh : (0 : ℝ) ≤ ((z - M : ℕ) : ℝ) := Nat.cast_nonneg _
     linarith
-  have hVpos : 0 < V := F.vMin_pos.trans_le hV
+  have hVpos  := F.vMin_pos.trans_le hV
   rw [← Nat.cast_sub hMz]
   exact (mul_le_mul_of_nonneg_left hq
     (mul_nonneg (zpow_nonneg hVpos.le _) (Nat.cast_nonneg _))).trans
@@ -87,12 +86,10 @@ theorem small_prefix_multiplier_uniform (F : FixedData) :
         (Finset.univ.filter (fun p : P.Prime g => y p = 0)).card - (J + F.ell) + F.ell := by
       omega
     rw [heq] at hc
-    have hcast : ((smallPrefixFibre J F.ell y d).card : ℝ) ≤
-        (((Finset.univ.filter (fun p : P.Prime g => y p = 0)).card -
-          (J + F.ell) + F.ell).descFactorial F.ell : ℝ) := by exact_mod_cast hc
-    exact (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hcast (zpow_nonneg (F.vMin_pos.trans_le hV).le _))
+    refine (mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left ?_ (zpow_nonneg (F.vMin_pos.trans_le hV).le _))
       (Real.rpow_nonneg F.q_pos.le _)).trans (hbound _ _ _ hz hV)
+    exact_mod_cast hc
   · have hzero := Finset.not_nonempty_iff_eq_empty.mp hs
     simpa only [hzero, Finset.card_empty, Nat.cast_zero, mul_zero, zero_mul] using hC.le
 

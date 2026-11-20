@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.RowRadicalConductor
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 public import OAI.NumberTheory.DirichletL.PrimeRows.DiskControl
@@ -12,12 +13,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Valuation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ComplexConjugate
+open scoped Classical BigOperators ComplexConjugate
 open Set Complex
 namespace SevenEighths.ProbeRowReflectedAllocation
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckeFiniteDeletion HeckeReciprocalGrowth
+open HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)
@@ -67,7 +67,7 @@ theorem allocation_of_deficit {k : ℕ} (q : Fin k → ℝ)
       (Finset.prod_nonneg (fun i _ => Real.rpow_nonneg (hq0 i) _))
 
 lemma prime_norm_ge_one (P : Ideal O) (hP : Prime P) : (1 : ℝ) ≤ P.absNorm := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hP.ne_zero)
 
 lemma original_row_conductor_le (S : Finset (Ideal O))
     (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
@@ -131,8 +131,6 @@ theorem buffered_reflected_right_bound (e ε : ℝ)
   obtain ⟨C, hC, hb⟩ := buffered_regular_control e ε he he' hε
   refine ⟨C, hC, ?_⟩
   intro ι _ χ B a i hB ha ha1 hmax j hχ w hw hwi
-  have hwr : (1-conj w).re = a+6*e := by simp; linarith
-  have hwm : (1-conj w).im = w.im := by simp
   have hz : 1-conj w ∈ Metric.closedBall ((2 : ℂ)+w.im*I) (2-a-6*e) := by
     rw [Metric.mem_closedBall, dist_eq_norm]
     have heq : 1-conj w-((2 : ℂ)+w.im*I) = ((a+6*e-2 : ℝ) : ℂ) := by
@@ -143,7 +141,7 @@ theorem buffered_reflected_right_bound (e ε : ℝ)
     linarith
   have h := hb χ B a i hB ha ha1 hmax j w.im hwi (1-conj w) hz
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal _ hχ] at h
-  have hH : 0 ≤ (3*i+2 : ℕ)*B := (abs_nonneg _).trans hwi
+  have hH  := (abs_nonneg _).trans hwi
   have hc : presentationComplexity (χ j) w.im ≤
       presentationComplexity (χ j) ((3*i+2 : ℕ)*B) := by
     unfold presentationComplexity HeckeLogarithmic.complexity

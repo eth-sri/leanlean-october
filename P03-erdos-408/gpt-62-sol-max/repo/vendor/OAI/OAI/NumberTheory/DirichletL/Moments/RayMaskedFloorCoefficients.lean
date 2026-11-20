@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSlots
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeDyadic HeckePrimeAnnular CenteredMomentCommonMaskEnergy
 local notation "O" => HeckeFamily.O
@@ -32,10 +32,9 @@ local notation "O" => HeckeFamily.O
       rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (ha.trans_le hs.1)]
       simpa only [Complex.neg_re,shift_re] using hprofile σ ⟨hσlo,hσhi⟩ _ hs
   · intro hn
-    have hw : W ((I.absNorm:ℝ)/P)≠0 := by
-      intro hh
-      exact hn (by simp [heightCoefficient,annularWeight,hh])
-    exact (div_le_iff₀ hP).mp (hWs hw).2
+    refine (div_le_iff₀ hP).mp (hWs ?_).2
+    intro hh
+    exact hn (by simp [heightCoefficient,annularWeight,hh])
 
 end SevenEighths.CenteredMomentRayMaskedFloor
 

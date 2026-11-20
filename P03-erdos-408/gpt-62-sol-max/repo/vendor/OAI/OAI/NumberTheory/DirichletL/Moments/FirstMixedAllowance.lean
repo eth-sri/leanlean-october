@@ -1,6 +1,10 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstExceptionalPaidScales
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityDefect
+public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalLedger
+public import OAI.NumberTheory.DirichletL.Moments.SecondCanonical
+public import OAI.NumberTheory.DirichletL.Moments.DescentLedger
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondLossParameters
 public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 
 @[expose] public section
@@ -8,13 +12,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedAllowance
 open CanonicalQuadraticSieve CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentRankinRadical CenteredMomentFirstCanonicalAllowance
-open CenteredMomentFirstPhysicalLedger CenteredMomentFirstScale CenteredMomentSectorLocalization
-open CenteredMomentDescentLedger CenteredMomentFirstExceptionalPaidScales
+open CenteredMomentRankinRadical CenteredMomentFirstCanonicalAllowance CenteredMomentFirstPhysicalLedger
+open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentDescentLedger
 local notation "O"=>ActualEisensteinCubic.O
 
 def allowance (C D:Ideal O)(Z:ℝ):ℝ:=

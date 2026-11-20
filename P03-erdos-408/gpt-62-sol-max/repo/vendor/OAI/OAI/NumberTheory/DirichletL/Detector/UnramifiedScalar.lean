@@ -55,7 +55,7 @@ theorem unramified_squarefree_kone (r m : ℕ) :
   · rw [ite_eq_right hm]
     by_cases hm0 : m=0
     · subst m
-      rw [ite_eq_right (by omega)]
+      rfl
     · rw [ite_eq_left ⟨rfl, by omega⟩, gaussValuationTable,
         ite_eq_left (by omega : 6 ∣ 6*r), ite_eq_right (by omega), ite_eq_right (by omega), sub_self, mul_zero]
 
@@ -80,7 +80,7 @@ theorem unramified_even_kone (r m : ℕ) :
       actualSextic_pow_six_mul_add _ hg hc, actualSextic_fifth_inverse _ hg hc]
     have hχ : actualSextic (Ideal.span {p}) hg ≠ 1 := by
       intro h
-      have hpow : actualSextic (Ideal.span {p}) hg ^ 1 = 1 := by simpa using h
+      have hpow : actualSextic (Ideal.span {p}) hg ^ 1 = 1 := by simp_all
       have hdiv := (actualSextic_pow_eq_one_iff _ hg hc 1).mp hpow
       norm_num at hdiv
     have hi := primeGauss_inverse_pair p hp.ne_zero (actualSextic (Ideal.span {p}) hg) hχ
@@ -98,7 +98,7 @@ theorem unramified_even_kone (r m : ℕ) :
   · rw [ite_eq_right hm]
     by_cases hm0 : m=0
     · subst m
-      rw [ite_eq_right (by omega)]
+      rfl
     · rw [ite_eq_left ⟨rfl, by omega⟩, gaussValuationTable,
         ite_eq_right (by omega : ¬6 ∣ 6*r+5), ite_eq_right (by omega), mul_zero]
 

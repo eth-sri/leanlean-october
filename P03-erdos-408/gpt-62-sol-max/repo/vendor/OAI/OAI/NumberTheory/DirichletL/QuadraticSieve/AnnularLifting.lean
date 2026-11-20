@@ -12,74 +12,15 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 
-open scoped BigOperators Classical
 
 section
 open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel
@@ -124,7 +65,7 @@ lemma exists_lifted_annular_scale (M x : ℝ) (hM : 0<M) (hx : M<x) (hupper : x�
     ∃j : Fin 7, ((2:ℝ)^j.val*M)/2≤x ∧ x≤(2:ℝ)^j.val*M := by
   have hratio : 1≤x/M := (le_div_iff₀ hM).mpr (by linarith)
   obtain ⟨k,hlo,hhi⟩ := exists_nat_pow_near hratio (by norm_num : (1:ℝ)<2)
-  have hratioU : x/M≤49 := (div_le_iff₀ hM).mpr hupper
+  have hratioU  := (div_le_iff₀ hM).mpr hupper
   have hk : k<6 := by
     by_contra hn
     have h6 : 6≤k := by omega
@@ -205,8 +146,7 @@ theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
-open FiniteSieveRestriction
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum FiniteSieveRestriction
 
 def liftingDivisibleColumns (N : ℝ) : Finset (idealRange N) :=
   Finset.univ.filter (fun J => liftingPrime∣J.val)
@@ -218,7 +158,6 @@ def liftingQuotientColumn (N : ℝ) (J : liftingDivisibleColumns N) : idealRange
     refine mem_idealRange.mpr ⟨admissible_idealQuotient hj.1 hd,?_⟩
     have hn := idealQuotient_norm_le liftingPrime_prime.ne_zero hd N hj.2
     rw [liftingPrime_norm] at hn
-    have hN : 0≤N := (Nat.cast_nonneg _).trans hj.2
     exact hn.trans (by norm_num; linarith)⟩
 
 theorem liftingQuotientColumn_injective (N : ℝ) : Function.Injective (liftingQuotientColumn N) := by
@@ -312,7 +251,7 @@ theorem liftingFreeCoefficient_shell (N X : ℝ) (a : idealRange N → ℂ)
   intro J hJ
   have hj : a J≠0 := by
     intro hz
-    exact hJ (by simp only [liftingFreeCoefficient,hz,ite_self])
+    exact hJ (by simp [liftingFreeCoefficient,hz,ite_self])
   exact ha J hj
 
 theorem liftingDividedCoefficient_shell (N X : ℝ) (a : idealRange N → ℂ)
@@ -429,7 +368,7 @@ theorem ballQuadraticEnergy_column_shells_at_scale (M N : ℝ) (lengthScale : �
 theorem columnDyadicLength_scale_upper (N : ℝ) (hN : 1≤N) :
     (2:ℝ)^columnDyadicLength N≤2*N := by
   have hlog : 0<Real.log 2 := Real.log_pos (by norm_num)
-  have hq : 0≤Real.log N/Real.log 2 := div_nonneg (Real.log_nonneg hN) hlog.le
+  have hq  := div_nonneg (Real.log_nonneg hN) hlog.le
   have hceil := Nat.ceil_lt_add_one hq
   calc
     _ = (2:ℝ)^((columnDyadicLength N:ℕ):ℝ) := (Real.rpow_natCast _ _).symm
@@ -451,9 +390,8 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss
-open IdealCoprimeSieveOperator DivisorBlockCauchy
+open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealCoprimeSieveOperator
+open DivisorBlockCauchy
 
 theorem gcdPool_admissible {n : Type*} [Fintype n] (cols : n → Ideal O)
     (hcols : ∀j, Admissible (cols j)) (D : Ideal O) (hD : D∈gcdPool cols) : Admissible D := by
@@ -539,8 +477,8 @@ theorem cutoffRescaleCoefficient_eq (C η r q : ℝ) (hr : 0<r) (hq : 0<q) :
     cutoffRescaleCoefficient C η r q=C*r^(1-η)*q^(2+η) := by
   rw [cutoffRescaleCoefficient,Real.div_rpow hr.le hq.le,
     Real.rpow_sub hr,Real.rpow_one,Real.rpow_add hq,Real.rpow_two]
-  have hrp : r^η≠0 := (Real.rpow_pos_of_pos hr η).ne'
-  have hqp : q^η≠0 := (Real.rpow_pos_of_pos hq η).ne'
+  have hrp  := (Real.rpow_pos_of_pos hr η).ne'
+  have hqp  := (Real.rpow_pos_of_pos hq η).ne'
   field_simp
 
 theorem cutoffRescaleCoefficient_bounds (C η r q : ℝ)
@@ -574,7 +512,6 @@ theorem selectedPoissonK_rescale (C M X η r q : ℝ)
 
 end
 
-open scoped BigOperators Classical
 
 def largeGcdThreshold (α N : ℝ) : ℝ := N^(1-1/α)
 
@@ -584,15 +521,13 @@ theorem largeGcdThreshold_quotient_power (α N : ℝ) (hα : α≠0) (hN : 0<N) 
     rw [show 1/α=1-(1-1/α) by ring,Real.rpow_sub hN,Real.rpow_one]
     rfl
   rw [he,←Real.rpow_mul hN.le]
-  field_simp
-  rw [Real.rpow_one]
+  simp_all
 
 theorem largeGcdThreshold_bounds (α N : ℝ) (hα1 : 1≤α) (hα2 : α≤2) (hN : 4≤N) :
     1≤largeGcdThreshold α N ∧ largeGcdThreshold α N≤N/2 := by
   have hα : 0<α := by linarith
-  have hN0 : 0<N := by linarith
   have ha : 0≤1-1/α := by
-    have hi : 1/α≤1 := (div_le_one hα).mpr hα1
+    have hi  := (div_le_one hα).mpr hα1
     linarith
   have hb : 1-1/α≤(1/2:ℝ) := by
     have hi : (1/2:ℝ)≤1/α := (le_div_iff₀ hα).mpr (by linarith)
@@ -603,13 +538,12 @@ theorem largeGcdThreshold_bounds (α N : ℝ) (hα1 : 1≤α) (hα2 : α≤2) (h
     _ = Real.sqrt N := (Real.sqrt_eq_rpow N).symm
     _ ≤ N/2 := (Real.sqrt_le_iff).mpr ⟨by positivity,by nlinarith⟩
 
-theorem high_kernel_chosen_scale (M N K : ℝ) (hM : 0<M) (_hN : 0<N) (hK : 0<K)
+theorem high_kernel_chosen_scale (M N K : ℝ) (hM : 0<M) (hK : 0<K)
     (hcut : N^2/M≤K) : Real.sqrt ((2*M)/K)*N≤2*M := by
   have hNK : N^2≤M*K := by
     have h := (div_le_iff₀ hM).mp hcut
     nlinarith
   let s := Real.sqrt ((2*M)/K)
-  have hs0 : 0≤s := Real.sqrt_nonneg _
   have hs : s^2*K=2*M := by
     dsimp only [s]
     rw [Real.sq_sqrt (by positivity),div_mul_cancel₀ _ hK.ne']
@@ -625,7 +559,7 @@ theorem chosen_large_gcd_main (α M N K : ℝ) (hα : α≠0)
     (hM : 0<M) (hN : 0<N) (hK : 0<K) (hcut : N^2/M≤K) :
     2*M+Real.sqrt ((2*M)/K)*(N/largeGcdThreshold α N)^α≤4*M := by
   rw [largeGcdThreshold_quotient_power α N hα hN]
-  linarith [high_kernel_chosen_scale M N K hM hN hK hcut]
+  linarith [high_kernel_chosen_scale M N K hM hK hcut]
 
 theorem chosen_large_gcd_full (α deltaLoss C M N K : ℝ) (hα1 : 1≤α) (hα2 : α≤2)
     (hδ : 0≤deltaLoss) (hC : 0≤C) (hM : 0<M) (hN : 4≤N) (hK : 0<K)

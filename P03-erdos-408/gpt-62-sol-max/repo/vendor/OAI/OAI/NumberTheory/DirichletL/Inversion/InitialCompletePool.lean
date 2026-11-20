@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialLargeFourier
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Inversion.InitialLargePool
 public import OAI.NumberTheory.DirichletL.Descent.CompleteMarkedPool
 
 @[expose] public section
@@ -9,12 +10,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 open UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialCompletePool
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialLargePool
-open InverseInitialCommonTuples InverseInitialEnergyCallerWindow
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialLargePool InverseInitialCommonTuples
+open InverseInitialEnergyCallerWindow
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem original_column_norm_bound (S:Finset (Ideal Eis)){P j c:Ideal Eis}
@@ -23,11 +24,10 @@ theorem original_column_norm_bound (S:Finset (Ideal Eis)){P j c:Ideal Eis}
   obtain ⟨hcs,hcj,hres,hnS⟩ := (mem_columns hP.2.1 hj).mp hc
   have hn := norm_reconstruct hres
   have hj0 := (admissible_of_dvd hP hj).1
-  have hjpos : 1≤j.absNorm := Nat.one_le_iff_ne_zero.mpr
-    (fun h=>hj0 (Ideal.absNorm_eq_zero_iff.mp h))
+  have hjpos : 1≤j.absNorm := Ideal.one_le_absNorm_of_ne_bot (hj0)
   have hnn : (reconstruct P j c).absNorm≤S.sup Ideal.absNorm := Finset.le_sup hnS
   have hPN : (residual P j).absNorm≤P.absNorm := Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (fun h=>hP.1 (Ideal.absNorm_eq_zero_iff.mp h)))
+    (Ideal.absNorm_pos_of_ne_bot (hP.1))
     (map_dvd Ideal.absNorm (idealQuotient_dvd hj))
   calc
     c.absNorm≤j.absNorm*c.absNorm := Nat.le_mul_of_pos_left _ hjpos

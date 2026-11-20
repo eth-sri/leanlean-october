@@ -14,8 +14,7 @@ open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentLiveDomain
 open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentGaussEnergy
+open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
  theorem finite_column_mem {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
@@ -34,14 +33,13 @@ local notation "O" => ActualEisensteinCubic.O
       by_contra h
       exact hn (Finset.mem_inter.mpr ⟨hI,hST I hI h⟩)
     rw [hc,zero_mul]
-  have ht : (∑ I∈S∩T,c I*f I)=∑ I∈T,c I*f I := by
-    apply Finset.sum_subset Finset.inter_subset_right
-    intro I hI hn
-    have hc : c I=0 := by
-      by_contra h
-      exact hn (Finset.mem_inter.mpr ⟨hTS I hI h,hI⟩)
-    rw [hc,zero_mul]
-  exact hs.symm.trans ht
+  refine hs.symm.trans ?_
+  apply Finset.sum_subset Finset.inter_subset_right
+  intro I hI hn
+  have hc : c I=0 := by
+    by_contra h
+    exact hn (Finset.mem_inter.mpr ⟨hTS I hI h,hI⟩)
+  rw [hc,zero_mul]
 
  theorem supported_residualPool (C : Ideal O) (hC : Supported C) (S : Finset (Ideal O)) :
     supportedColumns (residualPool C hC.1 S)=residualPool C hC.1 (supportedColumns S) := by

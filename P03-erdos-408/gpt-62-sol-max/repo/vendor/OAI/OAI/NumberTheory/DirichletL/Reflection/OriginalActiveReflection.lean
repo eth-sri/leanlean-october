@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.OriginalSplitReflection
+public import OAI.NumberTheory.DirichletL.Reflection.MarkedTuples
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalSlotSupport
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalChoicePhysical
 
 @[expose] public section
@@ -74,37 +75,69 @@ theorem actual_marked_active_reflection
     (A : Finset (FreeReflection.pool R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)}))) (T : Finset σ) =>
       originalSplitControlled D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood
         ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T) p
-  rw [actual_marked_slot_split_reflection D R I F Q hR hI hF hm hf hz hbad hcop hpow hmask
-    L hmax hgood hS hSodd Ψ hΨnorm hQ hΨperiod hmLam hm2 c hc hcQ G N hN hNp Call
-    w W hWcompact lo hi hlo hsupp hW X hX]
-  dsimp only
-  apply congrArg (fun z : ℂ => thetaDerivativeScalar⁻¹*z)
-  apply Finset.sum_congr rfl
+  let Sp (p : ∀ i, L i) := slotChoiceFamily L hmax hgood p
+  let good (p : ∀ i, L i) := ∀ P : FreePrimeIndex D.movingIdeal (Q*Ideal.span {(72:Eis)}),∀ i,(p i).val≠P.val.val
+  let wt (p : ∀ i, L i) := ∏ i, w i (p i)
+  let row := fun p : (∀ i, L i) => markedCompletedT (rowTwist Ψ m f z) W X
+    (fun A => ∏ i,if (Sp p).ideal i∣A then (1:ℂ) else 0)
+  have hzrow (p : (∀ i, L i)) (hp : ¬good p) : row p=0 := by
+    simp only [good,not_forall,not_not] at hp
+    obtain ⟨P,i,he⟩ := hp
+    exact actual_marked_row_overlap_zero D (Sp p) Ψ Q hmLam hm2 P i he W X
+  have hrestrict : (∑ p : (∀ i, L i),wt p*row p)=∑ p : {p // good p},wt p.val*row p.val := by
+    calc
+      _ = ∑ p : (∀ i, L i),if h:good p then wt p*row p else 0 := by
+        apply Finset.sum_congr rfl
+        intro p hp
+        by_cases hg : good p
+        · rw [dite_eq_left hg]
+        · rw [dite_eq_right hg,hzrow p hg,mul_zero]
+      _ = _ := (sum_subtype_dite_decidable good (fun p _ => wt p*row p)).symm
+  change (∑ p : (∀ i, L i),wt p*row p)=_
+  rw [hrestrict]
+  have he (p : originalSlotChoices D (Q*Ideal.span {(72:Eis)}) L) :=
+    actual_marked_selected_reflection D R I F Q hR hI hF hm hf hz hbad hcop hpow hmask
+      (Sp p.val) (hS p.val) (hSodd p.val) p.property Ψ hΨnorm hQ hΨperiod hmLam hm2 c hc hcQ G N hN
+      (hNp p.val) (Call p) W hWcompact lo hi hlo hsupp hW X hX
+  dsimp only [row]
+  simp_rw [he]
+  simp only [Finset.mul_sum, frozenInactiveWeight]
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl ?_
   intro h hh
-  apply congrArg (fun z : ℂ => fixedThetaRowCoeff c hc (D.fixedFactor Ψ Q) h*z)
-  apply Finset.sum_congr rfl
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl ?_
   intro A hA
-  apply congrArg (fun z : ℂ => frozenInactiveWeight R F (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)}) A*z)
-  apply Finset.sum_congr rfl
+  rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl ?_
   intro T hT
-  apply Finset.sum_congr rfl
-  intro b hb
-  apply congrArg (fun z : ℂ =>
-    ((∏ i : {i // i∉T},(Ideal.absNorm (b.val i).val:ℂ)⁻¹)*(∏ i : {i // i∉T},w i.val (b.val i)))*z)
-  apply Finset.sum_congr rfl
-  intro a ha
-  apply congrArg (fun z : ℂ => (∏ i : T,w i.val (a.val i))*z)
-  dsimp only [Call]
-  have hv := originalSplitControlled_physical D R I F (Q*Ideal.span {(72:Eis)})
-    hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood
-    ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T)
-    ((originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm (b,a))
-    (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X
-  exact hv.trans (congrArg
-    (originalSplitPhysical R I F (Q*Ideal.span {(72:Eis)}) hbad L hmax hgood
+  let split := originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T
+  let physical := originalSplitPhysical R I F (Q*Ideal.span {(72:Eis)}) hbad L hmax hgood
       ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T)
-      (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X)
-    ((originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).apply_symm_apply (b,a)))
+      (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X
+  have hs := original_supported_slot_sum D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask
+    L hmax hgood T w (fun p => physical (split p))
+  simp only [split, Equiv.apply_symm_apply] at hs
+  have hs := congrArg (fun x : ℂ => thetaDerivativeScalar⁻¹ *
+    (fixedThetaRowCoeff c hc (D.fixedFactor Ψ Q) h *
+    (frozenInactiveWeight R F (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)}) A * x))) hs
+  simp only [Finset.mul_sum, frozenInactiveWeight] at hs
+  refine Eq.trans ?_ hs
+  refine Finset.sum_congr rfl ?_
+  intro p hp
+  dsimp only [Call]
+  erw [show _ = physical (split p) from
+    originalSplitControlled_physical D R I F (Q*Ideal.span {(72:Eis)})
+      hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood
+      ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T) p
+      (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X]
+  have hprod : (∏ i∈(Finset.univ:Finset σ)\T,(Ideal.absNorm ((Sp p.val).ideal i):ℂ)⁻¹) =
+      ∏ i∈(Finset.univ:Finset σ)\T,(Ideal.absNorm (p.val i).val:ℂ)⁻¹ := rfl
+  rw [← hprod]
+  dsimp only [wt, split, Sp]
+  ac_nf
+  congr 5
+  exact Finset.prod_congr (by ext; simp) (fun _ _ => rfl)
 
 end
 end SevenEighths.InverseReflectedPhase

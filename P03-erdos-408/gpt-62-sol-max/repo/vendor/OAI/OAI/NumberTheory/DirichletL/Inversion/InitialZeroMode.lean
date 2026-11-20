@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialRayAttachment
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
@@ -11,17 +12,16 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT
+open EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
-theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
+theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,λ₀∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (_hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p λ₀)(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (pool:Finset ι)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀q∈lists i,‖a i q‖≤1)→
@@ -32,7 +32,6 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
   refine ⟨128*b*(Cm*b^(eps/2)*B)^2+1,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj pool Ψ hΨ m c d slots lists a hdis ha W hW hs X hX
   let T:=pool.powerset.filter (fun A=>W (primeProductNorm p A/X)≠0)
-  have hXb:0<b*X:=mul_pos hb hX
   have hnorm:∀A∈T,primeProductNorm p A≤b*X:=by
     intro A hA
     exact (div_le_iff₀ hX).mp (hs _ (Finset.mem_filter.mp hA).2)
@@ -81,7 +80,6 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
       rw [Real.mul_rpow hb.le hX.le,Real.rpow_add hX,Real.rpow_one]
       have hh:(X^(eps/2))^2=X^eps:=by
         rw [←Real.rpow_natCast,←Real.rpow_mul hX.le]
-        congr 1
         norm_num
       calc
         _=(128*b*(Cm*b^(eps/2)*B)^2)*(X*(X^(eps/2))^2):=by ring
@@ -91,9 +89,9 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
 theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
     (Φ:𝓢(ℝ,ℂ)):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,λ₀∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (_hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p λ₀)(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (pool:Finset ι)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀q∈lists i,‖a i q‖≤1)→
@@ -102,7 +100,7 @@ theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
       (∀G∈pool.powerset,∀E∈G.powerset,(0:O)∈K G E)→
       ‖(X⁻¹:ℂ)*truncatedSecondZero p hg pool Ψ m c d
         (fun A=>primeMark slots lists a A*W (primeProductNorm p A/X)) Φ Y K‖≤C*Y*X^eps := by
-  obtain ⟨Cm,hCm,hm⟩:=marked_coefficient_mass eps b B heps hb hB
+  obtain ⟨Cm,hCm,hm⟩:=marked_coefficient_mass eps b B heps hb
   refine ⟨Cm*‖paperRadialFourier Φ 0‖+1,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj pool Ψ hΨ m c d slots lists a hdis ha W hW hs X Y hX hY K hK
   rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hX]

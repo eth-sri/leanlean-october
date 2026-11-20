@@ -29,7 +29,7 @@ def tripleResidue (a b r : O) (χa : MulChar (Residue a) ℂ)
 @[simp] theorem tripleResidue_mk (a b r : O) (χa : MulChar (Residue a) ℂ)
     (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ) (z : O) :
     tripleResidue a b r χa χb G (Ideal.Quotient.mk _ z)=tripleRow a b r χa χb G z := by
-  simp only [tripleResidue,tripleRow,frequencyReduction_mk]
+  rfl
 
 theorem tripleRow_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
     (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ)

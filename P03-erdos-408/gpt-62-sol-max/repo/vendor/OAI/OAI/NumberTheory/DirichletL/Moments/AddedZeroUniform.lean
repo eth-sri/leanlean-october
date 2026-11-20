@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.AddedZero
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentGaussEnergy
+open CenteredMomentAddedZero CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev Tuple (ι : Type*) := (ι ⊕ Fin 2) → Ideal O
@@ -29,16 +29,14 @@ lemma tupleEquiv_slot {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (
     tupleEquiv e v ((e i).castAdd 2) = v (Sum.inl i) := by
   change v ((coordinateEquiv e).symm _) = _
   have h : coordinateEquiv e (Sum.inl i) = (e i).castAdd 2 := by
-    simp only [coordinateEquiv, Equiv.trans_apply, Equiv.sumCongr_apply,
-      Sum.map_inl, finSumFinEquiv_apply_left]
+    rfl
   rw [← h, Equiv.symm_apply_apply]
 
 lemma tupleEquiv_plain {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (j : Fin 2) :
     tupleEquiv e v (j.natAdd n) = v (Sum.inr j) := by
   change v ((coordinateEquiv e).symm _) = _
   have h : coordinateEquiv e (Sum.inr j) = j.natAdd n := by
-    simp only [coordinateEquiv, Equiv.trans_apply, Equiv.sumCongr_apply,
-      Sum.map_inr, finSumFinEquiv_apply_right, Equiv.refl_apply]
+    rfl
   rw [← h, Equiv.symm_apply_apply]
 
 theorem tupleProduct_reindex {ι : Type*} [Fintype ι] {n : ℕ}

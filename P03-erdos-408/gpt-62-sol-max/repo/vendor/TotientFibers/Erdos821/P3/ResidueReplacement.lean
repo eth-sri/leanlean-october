@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.Blueprint.Graph
 public import Mathlib.Data.Int.CardIntervalMod
 public import Mathlib.Algebra.Order.Ring.Star
@@ -12,8 +13,7 @@ public import Mathlib.Data.ZMod.QuotientRing
 
 noncomputable section
 open scoped BigOperators
-open Filter
-open Erdos821.Blueprint.Graph
+open Filter Erdos821.Blueprint.Graph
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Core
@@ -53,12 +53,10 @@ lemma factorial_ge_rpow_div_exp (n : ℕ) (hn : 0 < n) :
     ((n : ℝ) / Real.exp 1) ^ n ≤ (n.factorial : ℝ) := by
   have hncast : (0 : ℝ) < n := by exact_mod_cast hn
   have hnge : (1 : ℝ) ≤ n := by
-    exact_mod_cast (Nat.one_le_iff_ne_zero.mpr hn.ne')
+    norm_cast
   have hseq : 1 ≤ Stirling.stirlingSeq n := by
     have hseq0 := stirlingSeq_lower_one (n - 1)
-    have hsub : n - 1 + 1 = n := by omega
-    rw [hsub] at hseq0
-    exact hseq0
+    simp_all
   unfold Stirling.stirlingSeq at hseq
   have hden : 0 < Real.sqrt (2 * (n : ℝ)) *
       ((n : ℝ) / Real.exp 1) ^ n := by positivity
@@ -114,7 +112,7 @@ lemma groupPrime_upper_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
     (hP : P.Admissible F x) (hL : 1 ≤ L x) (p : P.GroupPrime) :
     (p.val : ℝ) ≤ Real.exp ((L x) ^ F.d) := by
   have hmem : p.val ∈ Finset.univ.biUnion P.primes := by
-    simpa [PrimeGroups.allPrimes] using p.property
+    exact p.property
   rcases Finset.mem_biUnion.mp hmem with ⟨g, hg, hpg⟩
   rcases hP with ⟨_, _, _, _, _, hprime⟩
   have hp := hprime g p.val hpg
@@ -124,8 +122,8 @@ lemma groupPrime_upper_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
       exact hp.2
   | false =>
       simp [hb] at hp
-      have hbd : F.b ≤ F.d := le_of_lt (lt_trans F.bc F.cd)
-      have hpow : (L x) ^ F.b ≤ (L x) ^ F.d :=
+      have hbd  := le_of_lt (lt_trans F.bc F.cd)
+      have hpow  :=
         Real.rpow_le_rpow_of_exponent_le hL hbd
       exact hp.2.trans (Real.exp_le_exp.mpr hpow)
 
@@ -198,8 +196,8 @@ lemma allPrimes_sum_le_exp_bound {F : FixedData} {P : PrimeGroups} {x : ℝ}
             intro p hp
             have hpM := groupPrime_upper_of_admissible hP hL
               (⟨p, Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ _, hp⟩⟩ : P.GroupPrime)
-            simpa [M] using hpM
-      _ = (P.primes g).card * M := by simp [mul_comm]
+            assumption
+      _ = (P.primes g).card * M := by simp
       _ ≤ ((Nat.ceil M + 1 : ℕ) : ℝ) * M := by
             exact mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) hMpos.le
       _ ≤ 3 * M ^ 2 := by
@@ -228,18 +226,16 @@ lemma groupPrime_sum_eq_allPrimes {P : PrimeGroups} (f : ℕ → ℝ) :
 lemma tendsto_T_div_L_rpow (r : ℝ) (hr : 0 < r) :
     Tendsto (fun x : ℝ => T x / (L x) ^ r) atTop (nhds 0) := by
   have hL : Tendsto L atTop atTop := by
-    change Tendsto Real.log atTop atTop
     exact Real.tendsto_log_atTop
-  have hratio : Tendsto (fun y : ℝ => Real.log y / y ^ r) atTop (nhds 0) :=
+  have hratio  :=
     (isLittleO_log_rpow_atTop hr).tendsto_div_nhds_zero
-  simpa [T, L, Function.comp_def] using hratio.comp hL
+  exact hratio.comp hL
 
 lemma eventually_const_mul_L_le_exp_Lpow (c d : ℝ) (hd : 0 < d) :
     ∀ᶠ x : ℝ in atTop, c * L x ≤ Real.exp ((L x) ^ d) := by
   have hL : Tendsto L atTop atTop := by
-    change Tendsto Real.log atTop atTop
     exact Real.tendsto_log_atTop
-  have hpow : Tendsto (fun x : ℝ => (L x) ^ d) atTop atTop :=
+  have hpow  :=
     (tendsto_rpow_atTop hd).comp hL
   have hdecay :=
     (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero d⁻¹ 1 (by norm_num)).comp hpow
@@ -251,22 +247,21 @@ lemma eventually_const_mul_L_le_exp_Lpow (c d : ℝ) (hd : 0 < d) :
     simpa [mul_assoc] using
       hcT.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 by norm_num))
   filter_upwards [hsmall, hL.eventually_ge_atTop 1] with x hx hLx
-  have hpowEq : ((L x) ^ d) ^ d⁻¹ = L x :=
+  have hpowEq  :=
     Real.rpow_rpow_inv (le_trans (by norm_num) hLx) hd.ne'
   have hsmall' : c * L x * Real.exp (-((L x) ^ d)) < 1 := by
     simpa [hpowEq, mul_assoc] using hx
   have hdiv : c * L x / Real.exp ((L x) ^ d) < 1 := by
     rw [div_eq_mul_inv, ← Real.exp_neg]
-    simpa [mul_assoc] using hsmall'
+    assumption
   exact (div_lt_one (Real.exp_pos _)).mp hdiv |>.le
 
 lemma eventually_const_mul_L_rpow_le_exp_L_rpow
     (c s d : ℝ) (hd : 0 < d) :
     ∀ᶠ x : ℝ in atTop, c * (L x) ^ s ≤ Real.exp ((L x) ^ d) := by
   have hL : Tendsto L atTop atTop := by
-    change Tendsto Real.log atTop atTop
     exact Real.tendsto_log_atTop
-  have hpow : Tendsto (fun x : ℝ => (L x) ^ d) atTop atTop :=
+  have hpow  :=
     (tendsto_rpow_atTop hd).comp hL
   have hdecay :=
     (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (s / d) 1 (by norm_num)).comp hpow
@@ -286,7 +281,7 @@ lemma eventually_const_mul_L_rpow_le_exp_L_rpow
     simpa [hpowEq, mul_assoc] using hx
   have hdiv : c * (L x) ^ s / Real.exp ((L x) ^ d) < 1 := by
     rw [div_eq_mul_inv, ← Real.exp_neg]
-    simpa [mul_assoc] using hsmall'
+    assumption
   exact (div_lt_one (Real.exp_pos _)).mp hdiv |>.le
 
 lemma L_rpow_052_mul_rpow_div_eq_inv {x d : ℝ} (hL : 1 ≤ L x) :
@@ -297,9 +292,7 @@ lemma L_rpow_052_mul_rpow_div_eq_inv {x d : ℝ} (hL : 1 ≤ L x) :
     (L x) ^ ((52 : ℝ) / 100) * (L x) ^ d / L x =
         (L x) ^ (((52 : ℝ) / 100) + d) / L x := by
           rw [← Real.rpow_add hLpos]
-    _ = (L x) ^ (((52 : ℝ) / 100 + d) - 1) := by
-          simpa [Real.rpow_one] using
-            (Real.rpow_sub hLpos (((52 : ℝ) / 100) + d) 1).symm
+    _ = (L x) ^ (((52 : ℝ) / 100 + d) - 1) := by rpow_ring hLpos
     _ = (L x) ^ (-( ((48 : ℝ) / 100 - d))) := by congr 1; ring
     _ = ((L x) ^ ((48 : ℝ) / 100 - d))⁻¹ := by
           rw [Real.rpow_neg hLpos.le]
@@ -327,7 +320,7 @@ lemma dyad_card_inv_le_exp_of_scale {x gamma X : ℝ} (hx : 0 < x)
       _ ≤ X / 2 := div_le_div_of_nonneg_right hXpow (by norm_num)
       _ ≤ (dyad X).card := hlen
   have hden : 0 < Real.exp (gamma * L x) / 2 := by positivity
-  have hcard : 0 < ((dyad X).card : ℝ) := lt_of_lt_of_le hden hbase
+  have hcard  := lt_of_lt_of_le hden hbase
   calc
     ((dyad X).card : ℝ)⁻¹ ≤ (Real.exp (gamma * L x) / 2)⁻¹ := by
       exact (inv_le_inv₀ hcard hden).2 hbase
@@ -349,7 +342,7 @@ lemma interval_modEq_count_error (a b r v : ℤ) (hr : 0 < r) (hab : a ≤ b) :
     apply div_le_div_of_nonneg_right
     · exact_mod_cast (sub_le_sub_right hab v)
     · exact_mod_cast hr.le
-  have hceil : ⌈ya⌉ ≤ ⌈yb⌉ := Int.ceil_le_ceil hy
+  have hceil  := Int.ceil_le_ceil hy
   have hcount :
       (({z ∈ Finset.Ico a b | z ≡ v [ZMOD r]}.card : ℤ)) = ⌈yb⌉ - ⌈ya⌉ := by
     have hc := Int.Ico_filter_modEq_card a b hr v
@@ -400,8 +393,8 @@ lemma interval_crt_modEq_count_error {ι : Type*} [DecidableEq ι]
   classical
   let Q : ℕ := ∏ i : {i // i ∈ s}, m i.1
   let e := ZMod.prodEquivPi (fun i : {i // i ∈ s} => m i.1) hc
-  let y : (i : {i // i ∈ s}) → ZMod (m i.1) := r
-  let c : ZMod Q := e.symm y
+  let y  := r
+  let c  := e.symm y
   let v : ℤ := c.val
   have hQ : 0 < Q := by
     dsimp [Q]
@@ -425,7 +418,7 @@ lemma interval_crt_modEq_count_error {ι : Type*} [DecidableEq ι]
     · intro hz i
       have hi := congrFun hz i
       rw [happly z i] at hi
-      simpa [y] using hi
+      assumption
     · intro hz
       funext i
       rw [happly z i]
@@ -498,7 +491,7 @@ lemma elementarySymmetric_insert [DecidableEq ι] (x : ι → ℝ) (s : Finset �
             ∑ t ∈ Finset.powersetCard k s, x a * (∏ i ∈ t, x i) := by
           apply Finset.sum_congr rfl
           intro t ht
-          have hat : a ∉ t := Finset.notMem_mono (Finset.mem_powersetCard.mp ht).1 ha
+          have hat  := Finset.notMem_mono (Finset.mem_powersetCard.mp ht).1 ha
           rw [Finset.prod_insert hat]
         _ = x a * (∑ t ∈ Finset.powersetCard k s, ∏ i ∈ t, x i) := by
           rw [Finset.mul_sum]
@@ -506,15 +499,14 @@ lemma elementarySymmetric_insert [DecidableEq ι] (x : ι → ℝ) (s : Finset �
   · intro t ht u hu htu
     have hts := (Finset.mem_powersetCard.mp ht).1
     have hus := (Finset.mem_powersetCard.mp hu).1
-    have hat : a ∉ t := fun h => ha (hts h)
-    have hau : a ∉ u := fun h => ha (hus h)
+    have hat  := fun h => ha (hts h)
+    have hau  := fun h => ha (hus h)
     apply Finset.ext
     intro z
-    have hzmem : z ∈ insert a t ↔ z ∈ insert a u :=
+    have hzmem  :=
       eq_iff_iff.mp (congrArg (fun w : Finset ι => z ∈ w) htu)
     by_cases hza : z = a
-    · subst z
-      simp [hat, hau]
+    · simp_all
     · simpa [hza] using hzmem
 
 def inclusionTruncation (x : ι → ℝ) (s : Finset ι) (h : ℕ) : ℝ :=
@@ -532,7 +524,7 @@ lemma elementarySymmetric_empty (x : ι → ℝ) (k : ℕ) :
   · have hcard : (∅ : Finset ι).card < k := by simp; omega
     unfold elementarySymmetric
     rw [Finset.powersetCard_eq_empty.mpr hcard]
-    simp [hk]
+    simp_all
 
 lemma inclusionTruncation_zero (x : ι → ℝ) (s : Finset ι) :
     inclusionTruncation x s 0 = 1 := by
@@ -556,7 +548,6 @@ lemma inclusionTruncation_insert [DecidableEq ι] (x : ι → ℝ) (s : Finset �
       rw [inclusionTruncation_succ x (insert a s) (h + 1), ih,
         elementarySymmetric_insert x s a ha (h + 1),
         inclusionTruncation_succ x s (h + 1), inclusionTruncation_succ x s h]
-      simp only [pow_succ]
       ring
 
 lemma inclusionTruncation_bonferroni [DecidableEq ι] (x : ι → ℝ) :
@@ -623,13 +614,12 @@ lemma pow_add_linear_lower (u v : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) (n : ℕ) :
           push_cast
           ring
         _ ≤ (u + v) ^ (n + 1) * (u + v) := hmul
-        _ = (u + v) ^ (n + 1 + 1) := by rw [pow_succ]; ring
+        _ = (u + v) ^ (n + 1 + 1) := by rfl
 
 lemma pow_add_factorial_bound (u v : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) (n : ℕ) :
     u ^ (n + 1) / ((n + 1).factorial : ℝ) +
       v * u ^ n / (n.factorial : ℝ) ≤
         (u + v) ^ (n + 1) / ((n + 1).factorial : ℝ) := by
-  have hfact0 : 0 < (n.factorial : ℝ) := by positivity
   have hfact1 : 0 < ((n + 1).factorial : ℝ) := by positivity
   have hf : ((n + 1).factorial : ℝ) = (n + 1 : ℝ) * (n.factorial : ℝ) := by
     simp [Nat.factorial_succ]
@@ -640,8 +630,7 @@ lemma pow_add_factorial_bound (u v : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) (n : ℕ
   rw [hterm, ← add_div]
   apply (div_le_div_iff₀ hfact1 hfact1).2
   have hpow := pow_add_linear_lower u v hu hv n
-  have hmul : 0 ≤ ((u + v) ^ (n + 1) -
-      (u ^ (n + 1) + (n + 1 : ℝ) * v * u ^ n)) * ((n + 1).factorial : ℝ) :=
+  have hmul  :=
     mul_nonneg (sub_nonneg.mpr hpow) hfact1.le
   nlinarith
 
@@ -697,13 +686,8 @@ lemma elementarySymmetric_two_range_sum_bound {P : PrimeGroups}
   classical
   let f : P.GroupPrime → ℝ := fun p => (p.val : ℝ)
   let C : ℝ := Real.exp (((H + 1 : ℕ) : ℝ) * (3 * y))
-  have hsum0 : 0 ≤ ∑ p ∈ U, f p :=
-    Finset.sum_nonneg fun p hp => by positivity
   have hExp1 : 1 ≤ Real.exp (3 * y) := by
-    have hy3 : 0 ≤ 3 * y := by positivity
-    calc
-      1 ≤ 1 + 3 * y := by linarith
-      _ ≤ Real.exp (3 * y) := by simpa [add_comm] using Real.add_one_le_exp (3 * y)
+    simp_all
   have hper : ∀ k ≤ H + 1,
       elementarySymmetric f U k ≤ C := by
     intro k hk
@@ -735,7 +719,7 @@ lemma elementarySymmetric_two_range_sum_bound {P : PrimeGroups}
     calc
       _ ≤ ∑ k ∈ Finset.range (H + 1), C :=
         Finset.sum_le_sum fun k hk => by
-          have hk' : k < H + 1 := Finset.mem_range.mp hk
+          have hk'  := Finset.mem_range.mp hk
           exact hper k (Nat.le_trans (Nat.le_of_lt_succ hk') (Nat.le_succ H))
       _ = _ := by simp
   have hsum2 :
@@ -815,14 +799,13 @@ lemma residuePrimePathFactor_active_split {P : PrimeGroups} (n : ℕ)
   classical
   by_cases hp : p.val ∈ activePrimeSet n active
   · by_cases hr : r ∈ activeAllowedResidues n h active p
-    · have hhit : ∀ i, p.val ∈ active i →
-          (p.val : ℤ) ∣ (r.val : ℤ) + h i := (Finset.mem_filter.mp hr).2
+    · have hhit  := (Finset.mem_filter.mp hr).2
       rw [ite_eq_left hp, ite_eq_left hr]
       unfold residuePrimePathFactor residuePathDamping
       apply Finset.prod_congr rfl
       intro i hi
       by_cases hactive : p.val ∈ active i
-      · simp [hactive, hhit i hactive]
+      · simp_all
       · simp [hactive]
     · have hbad : ∃ i, p.val ∈ active i ∧
           ¬ (p.val : ℤ) ∣ (r.val : ℤ) + h i := by
@@ -837,7 +820,7 @@ lemma residuePrimePathFactor_active_split {P : PrimeGroups} (n : ℕ)
       rw [ite_eq_left hp, ite_eq_right hr]
       unfold residuePrimePathFactor
       apply Finset.prod_eq_zero (Finset.mem_univ i)
-      simp [hi, hdiv]
+      simp_all
   · have hnone : ∀ i, p.val ∉ active i := by
       intro i hi
       exact hp ((mem_activePrimeSet_iff n active p.val).2 ⟨i, hi⟩)
@@ -845,7 +828,7 @@ lemma residuePrimePathFactor_active_split {P : PrimeGroups} (n : ℕ)
     unfold residuePrimePathFactor residuePathDamping
     apply Finset.prod_congr rfl
     intro i hi
-    simp [hnone i]
+    simp_all
 
 lemma residuePrimePathFactor_as_allowed_sum {P : PrimeGroups} (n : ℕ)
     (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
@@ -857,21 +840,7 @@ lemma residuePrimePathFactor_as_allowed_sum {P : PrimeGroups} (n : ℕ)
   rw [residuePrimePathFactor_active_split]
   by_cases hp : p.val ∈ activePrimeSet n active
   · rw [ite_eq_left hp]
-    by_cases hr : r ∈ activeAllowedResidues n h active p
-    · rw [ite_eq_left hr]
-      rw [Finset.sum_eq_single r]
-      · simp
-      · intro r' hr' hne
-        simp [Ne.symm hne]
-      · simp [hr]
-    · rw [ite_eq_right hr]
-      symm
-      apply Finset.sum_eq_zero
-      intro r' hr'
-      by_cases heq : r = r'
-      · subst r'
-        exact (hr hr').elim
-      · simp [heq]
+    simp
   · rw [ite_eq_right hp]
     have hnone : ∀ i, p.val ∉ active i := by
       intro i hi
@@ -938,7 +907,7 @@ lemma pathFactor_as_groupPrime_product {P : PrimeGroups} (n : ℕ)
     _ = ∏ p ∈ P.allPrimes.attach, integerPrimePathFactor n q h active p.val z :=
       (Finset.prod_attach P.allPrimes (fun p => integerPrimePathFactor n q h active p z)).symm
     _ = ∏ p : P.GroupPrime, integerPrimePathFactor n q h active p.val z := by
-      simp [PrimeGroups.GroupPrime]
+      rfl
 
 lemma pathFactor_active_inactive_product {P : PrimeGroups} (n : ℕ)
     (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
@@ -995,11 +964,10 @@ lemma one_sub_prod_le_sum_one_sub {ι : Type*} [DecidableEq ι]
       have hfs : ∀ i ∈ s, 0 ≤ f i ∧ f i ≤ 1 := by
         intro i hi
         exact hf i (Finset.mem_insert_of_mem hi)
-      have hp0 : 0 ≤ ∏ i ∈ s, f i := Finset.prod_nonneg (fun i hi => (hfs i hi).1)
-      have hp1 : ∏ i ∈ s, f i ≤ 1 := Finset.prod_le_one₀
+      have hp1  := Finset.prod_le_one₀
         (fun i hi => (hfs i hi).1) (fun i hi => (hfs i hi).2)
       rw [Finset.prod_insert ha, Finset.sum_insert ha]
-      have hmul : f a * (1 - ∏ i ∈ s, f i) ≤ 1 - ∏ i ∈ s, f i :=
+      have hmul  :=
         calc
           f a * (1 - ∏ i ∈ s, f i) ≤ 1 * (1 - ∏ i ∈ s, f i) :=
             mul_le_mul_of_nonneg_right hfa.2 (sub_nonneg.mpr hp1)
@@ -1059,8 +1027,7 @@ lemma activeGroupPrimes_card_le_visits {P : PrimeGroups} (n J ell : ℕ)
     apply Finset.card_le_card_of_injOn (fun p : P.GroupPrime => p.val)
     · intro p hp
       exact (Finset.mem_filter.mp hp).2
-    · intro p hp q hq hval
-      exact Subtype.ext hval
+    simp
   calc
     (activeGroupPrimes (P := P) n active).card ≤
         (activePrimeSet n active).card := hcardImage
@@ -1085,8 +1052,8 @@ lemma residueMissCoefficient_nonneg {P : PrimeGroups} (n : ℕ)
       · simp [hdiv]
     · intro i hi
       by_cases hdiv : (p.val : ℤ) ∣ (r.val : ℤ) + h i
-      · simpa [hdiv] using (hq i).2
-      · simp [hdiv]
+      · simp_all
+      simp_all
   exact sub_nonneg.mpr hprod
 
 lemma residueMissCoefficient_le_one {P : PrimeGroups} (n : ℕ)
@@ -1098,7 +1065,7 @@ lemma residueMissCoefficient_le_one {P : PrimeGroups} (n : ℕ)
     apply Finset.prod_nonneg
     intro i hi
     split_ifs with hdiv
-    · exact (hq i).1
+    · simp_all
     · norm_num
   dsimp [residueMissCoefficient]
   linarith
@@ -1110,7 +1077,7 @@ lemma residueMissCoefficient_le_sum_hits {P : PrimeGroups} (n : ℕ)
       ∑ i : Fin (n + 1),
         (if (p.val : ℤ) ∣ (r.val : ℤ) + h i then (1 : ℝ) else 0) := by
   classical
-  let f : Fin (n + 1) → ℝ := fun i =>
+  let f  := fun i =>
     if (p.val : ℤ) ∣ (r.val : ℤ) + h i then q i else 1
   have hf : ∀ i ∈ (Finset.univ : Finset (Fin (n + 1))), 0 ≤ f i ∧ f i ≤ 1 := by
     intro i hi
@@ -1123,7 +1090,7 @@ lemma residueMissCoefficient_le_sum_hits {P : PrimeGroups} (n : ℕ)
           (if (p.val : ℤ) ∣ (r.val : ℤ) + h i then q i else 1) ≤
         ∑ i : Fin (n + 1),
           (1 - (if (p.val : ℤ) ∣ (r.val : ℤ) + h i then q i else 1)) := by
-            simpa [f] using hbase
+            assumption
     _ ≤ ∑ i : Fin (n + 1),
           (if (p.val : ℤ) ∣ (r.val : ℤ) + h i then (1 : ℝ) else 0) := by
             apply Finset.sum_le_sum
@@ -1172,7 +1139,7 @@ lemma residueMissMean_bounds {P : PrimeGroups} (n : ℕ)
       residueMissMean n q h p ≤ (n + 1 : ℝ) / (p.val : ℝ) := by
   have hp : 0 < (p.val : ℝ) := by
     have hmem : p.val ∈ Finset.univ.biUnion P.primes := by
-      simpa [PrimeGroups.allPrimes] using p.property
+      exact p.property
     rcases Finset.mem_biUnion.mp hmem with ⟨g, hg, hpg⟩
     exact_mod_cast (P.prime g p.val hpg).pos
   have hsum0 : 0 ≤ ∑ r : Fin p.val, residueMissCoefficient n q h p r :=
@@ -1191,7 +1158,7 @@ lemma residueMissMean_bounds {P : PrimeGroups} (n : ℕ)
 lemma log_one_sub_ge_neg_two_mul {u : ℝ} (hu0 : 0 ≤ u) (huhalf : u ≤ 1 / 2) :
     -2 * u ≤ Real.log (1 - u) := by
   have hpos : 0 < 1 - u := by linarith
-  have hinvpos : 0 < (1 - u)⁻¹ := inv_pos.mpr hpos
+  have hinvpos  := inv_pos.mpr hpos
   have hlog := Real.log_le_sub_one_of_pos hinvpos
   rw [Real.log_inv] at hlog
   have hdiv : (1 - u)⁻¹ - 1 ≤ 2 * u := by
@@ -1255,11 +1222,11 @@ lemma inactiveMissProduct_lower {P : PrimeGroups} (n : ℕ)
     rw [Finset.univ_eq_attach]
     exact Finset.prod_attach U (fun p => 1 - residueMissMean n q h p)
   rw [hsum, hprodEq] at hprod
-  simpa [U] using hprod
+  assumption
 
 lemma groupPrime_prime {P : PrimeGroups} (p : P.GroupPrime) : Nat.Prime p.val := by
   have hmem : p.val ∈ Finset.univ.biUnion P.primes := by
-    simpa [PrimeGroups.allPrimes] using p.property
+    exact p.property
   rcases Finset.mem_biUnion.mp hmem with ⟨g, hg, hpg⟩
   exact P.prime g p.val hpg
 
@@ -1267,8 +1234,7 @@ lemma groupPrime_pairwise_coprime {P : PrimeGroups} :
     Pairwise (Function.onFun Nat.Coprime (fun p : P.GroupPrime => p.val)) := by
   intro p q hpq
   apply (Nat.coprime_primes (groupPrime_prime p) (groupPrime_prime q)).2
-  intro hval
-  exact hpq (Subtype.ext hval)
+  simp_all
 
 def finResidueOfInt (p : ℕ) [NeZero p] (z : ℤ) : Fin p :=
   (ZMod.finEquiv p).symm (z : ZMod p)
@@ -1284,7 +1250,7 @@ lemma finResidueOfInt_modulus_dvd (p : ℕ) [NeZero p] (z : ℤ) :
     (p : ℤ) ∣ z - ((finResidueOfInt p z).val : ℤ) := by
   have hcast : ((finResidueOfInt p z).val : ZMod p) = (z : ZMod p) := by
     rw [finResidueOfInt_val]
-    exact ZMod.natCast_zmod_val (z : ZMod p)
+    simp
   have hcast' : (p : ℤ) ∣ z - ((finResidueOfInt p z).val : ℤ) := by
     exact (ZMod.intCast_eq_intCast_iff_dvd_sub
       ((finResidueOfInt p z).val : ℤ) z p).mp (by exact_mod_cast hcast)
@@ -1297,14 +1263,13 @@ lemma finEquiv_apply_eq_natCast (p : ℕ) [NeZero p] (r : Fin p) :
     | zero => exact (NeZero.ne 0 rfl).elim
     | succ p => rfl
   have hcast := ZMod.natCast_zmod_val (ZMod.finEquiv p r)
-  rw [hval] at hcast
-  exact hcast.symm
+  simp_all
 
 lemma finResidueOfInt_eq_of_dvd (p : ℕ) [NeZero p] (z : ℤ)
     (r : Fin p) (hr : (p : ℤ) ∣ z - (r.val : ℤ)) :
     r = finResidueOfInt p z := by
   let r₀ := finResidueOfInt p z
-  have hr₀ : (p : ℤ) ∣ z - (r₀.val : ℤ) := by simpa [r₀] using finResidueOfInt_modulus_dvd p z
+  have hr₀ := finResidueOfInt_modulus_dvd p z
   have hp : 0 < p := Nat.pos_of_ne_zero (NeZero.ne p)
   have hrdiv : (p : ℤ) ∣ (r.val : ℤ) - z := by
     have hneg := dvd_neg.mpr hr
@@ -1314,10 +1279,10 @@ lemma finResidueOfInt_eq_of_dvd (p : ℕ) [NeZero p] (z : ℤ)
     simpa [sub_eq_add_neg, add_comm] using hneg
   have hrmem : r ∈ Finset.univ.filter (fun t : Fin p =>
       (p : ℤ) ∣ (t.val : ℤ) + -z) := by
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, by simpa [sub_eq_add_neg] using hrdiv⟩
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, by assumption⟩
   have hr₀mem : r₀ ∈ Finset.univ.filter (fun t : Fin p =>
       (p : ℤ) ∣ (t.val : ℤ) + -z) := by
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, by simpa [sub_eq_add_neg] using hr₀div⟩
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, by assumption⟩
   have hcard := card_fin_residue_divisibility_le_one p hp (-z)
   exact (Finset.card_le_one.mp hcard) r hrmem r₀ hr₀mem
 
@@ -1333,14 +1298,14 @@ lemma integerPrimePathFactor_one_sub_eq_miss_sum {P : PrimeGroups} (n : ℕ)
   have : NeZero p.val := ⟨(groupPrime_prime p).ne_zero⟩
   let r₀ := finResidueOfInt p.val z
   have hmod := finResidueOfInt_modulus_dvd p.val z
-  have hr₀ : (p.val : ℤ) ∣ z - (r₀.val : ℤ) := by simpa [r₀] using hmod
+  have hr₀ : (p.val : ℤ) ∣ z - (r₀.val : ℤ) := by assumption
   have hsum :
       (∑ r : Fin p.val,
         if (p.val : ℤ) ∣ z - (r.val : ℤ) then
           residueMissCoefficient n q h p r else 0) =
         residueMissCoefficient n q h p r₀ := by
     rw [Finset.sum_eq_single r₀]
-    · simp [hr₀]
+    · simp_all
     · intro r hr hne
       have hnot : ¬ (p.val : ℤ) ∣ z - (r.val : ℤ) := by
         intro hdiv
@@ -1371,8 +1336,7 @@ lemma interval_crt_groupPrime_count_error {P : PrimeGroups}
   have hc : Pairwise (Function.onFun Nat.Coprime (fun i : {p // p ∈ s} => m i.val)) := by
     intro i j hij
     apply groupPrime_pairwise_coprime
-    intro hv
-    exact hij (Subtype.ext hv)
+    simp_all
   have hcoords (z : ℤ) (i : {p // p ∈ s}) :
       ((z : ZMod (m i.val)) = y i) ↔
         (i.val.val : ℤ) ∣ z - (r i).val := by
@@ -1433,12 +1397,12 @@ lemma interval_crt_groupPrime_average_error {P : PrimeGroups}
       abs (M⁻¹ * (({z ∈ Finset.Ico a b | ∀ i : {p // p ∈ s},
         (i.val.val : ℤ) ∣ z - (r i).val}.card : ℝ) -
           (Finset.Ico a b).card / Q)) ≤ M⁻¹ := by
-    have hInv : 0 ≤ M⁻¹ := inv_nonneg.mpr hM.le
+    have hInv  := inv_nonneg.mpr hM.le
     have hcrt' :
         abs ((({z ∈ Finset.Ico a b | ∀ i : {p // p ∈ s},
           (i.val.val : ℤ) ∣ z - (r i).val}.card : ℝ) -
           (Finset.Ico a b).card / Q)) ≤ 1 := by
-      simpa [Q] using hcrt
+      assumption
     rw [abs_mul, abs_of_nonneg hInv]
     calc
       M⁻¹ * abs ((({z ∈ Finset.Ico a b | ∀ i : {p // p ∈ s},
@@ -1455,7 +1419,7 @@ lemma interval_crt_groupPrime_average_error {P : PrimeGroups}
     dsimp [M]
     field_simp [hM.ne', hQ.ne']
   rw [← hEq]
-  simpa [M, Q] using hscaled
+  assumption
 
 def combineGroupPrimeResidues {P : PrimeGroups}
     (A U : Finset P.GroupPrime)
@@ -1496,12 +1460,12 @@ lemma combineGroupPrimeResidues_hits_iff {P : PrimeGroups}
   · intro hall
     constructor
     · intro p
-      have hp' : p.val ∈ A ∪ U := Finset.mem_union_left U p.property
+      have hp'  := Finset.mem_union_left U p.property
       have h := hall ⟨p.val, hp'⟩
       rw [combineGroupPrimeResidues_active A U rA rU ⟨p.val, hp'⟩ p.property] at h
       exact h
     · intro p
-      have hp' : p.val ∈ A ∪ U := Finset.mem_union_right A p.property
+      have hp'  := Finset.mem_union_right A p.property
       have h := hall ⟨p.val, hp'⟩
       rw [combineGroupPrimeResidues_inactive A U hdisj rA rU ⟨p.val, hp'⟩ p.property] at h
       exact h
@@ -1523,7 +1487,7 @@ lemma integerPrimePathFactor_as_residue_sum {P : PrimeGroups} (n : ℕ)
   have : NeZero p.val := ⟨(groupPrime_prime p).ne_zero⟩
   let r₀ := finResidueOfInt p.val z
   have hmod := finResidueOfInt_modulus_dvd p.val z
-  have hr₀ : (p.val : ℤ) ∣ z - (r₀.val : ℤ) := by simpa [r₀] using hmod
+  have hr₀ : (p.val : ℤ) ∣ z - (r₀.val : ℤ) := by assumption
   have hunique : ∀ r : Fin p.val, (p.val : ℤ) ∣ z - (r.val : ℤ) → r = r₀ := by
     intro r hr
     have hrmem : r ∈ Finset.univ.filter (fun t : Fin p.val =>
@@ -1654,18 +1618,13 @@ lemma prod_ite_zero_eq_indicator_mul_prod {ι : Type*} [DecidableEq ι]
       (if ∀ i ∈ s, cond i then (1 : ℝ) else 0) * ∏ i ∈ s, w i := by
   classical
   by_cases hall : ∀ i ∈ s, cond i
-  · have hprod : (∏ i ∈ s, if cond i then w i else 0) = ∏ i ∈ s, w i := by
-      apply Finset.prod_congr rfl
-      intro i hi
-      simp [hall i hi]
-    rw [hprod, ite_eq_left hall]
-    simp
+  · simp_all
   · rw [ite_eq_right hall]
     push Not at hall
     obtain ⟨i, hi, hcond⟩ := hall
     rw [Finset.prod_eq_zero hi]
     · simp
-    · simp [hcond]
+    simp_all
 
 def integerMissValue {P : PrimeGroups} (n : ℕ) (q : Fin (n + 1) → ℝ)
     (h : Fin (n + 1) → ℤ) (p : P.GroupPrime) (z : ℤ) : ℝ :=
@@ -1679,14 +1638,14 @@ lemma integerMissValue_bounds {P : PrimeGroups} (n : ℕ)
   classical
   let S := Finset.univ.filter fun r : Fin p.val =>
     (p.val : ℤ) ∣ z - (r.val : ℤ)
-  have hp : 0 < p.val := (groupPrime_prime p).pos
+  have hp  := (groupPrime_prime p).pos
   have hS_eq : S = Finset.univ.filter fun r : Fin p.val =>
       (p.val : ℤ) ∣ (r.val : ℤ) + (-z) := by
     ext r
     simp only [S, Finset.mem_filter, Finset.mem_univ, true_and]
     constructor
     · intro hd
-      have hneg : (p.val : ℤ) ∣ -(z - (r.val : ℤ)) := dvd_neg.mpr hd
+      have hneg  := dvd_neg.mpr hd
       convert hneg using 1; ring
     · intro hd
       have hneg : (p.val : ℤ) ∣ -((r.val : ℤ) - z) := dvd_neg.mpr hd
@@ -1722,9 +1681,13 @@ def inactiveResidueAssignmentWeight {P : PrimeGroups} (n : ℕ)
     (U : Finset P.GroupPrime) (a : ∀ p : P.GroupPrime, p ∈ U → Fin p.val) : ℝ :=
   ∏ p ∈ U.attach, residueMissCoefficient n q h p.val (a p.val p.property)
 
-lemma integerMissProduct_expansion {P : PrimeGroups} (n : ℕ)
-    (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
-    (U : Finset P.GroupPrime) (z : ℤ) :
+section
+
+variable {P : PrimeGroups} (n : ℕ)
+  (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
+  (U : Finset P.GroupPrime)
+
+lemma integerMissProduct_expansion (z : ℤ) :
     (∏ p ∈ U, integerMissValue n q h p z) =
       ∑ a ∈ U.pi (fun p : P.GroupPrime => (Finset.univ : Finset (Fin p.val))),
         (if inactiveResidueAssignmentHits U z a then (1 : ℝ) else 0) *
@@ -1742,8 +1705,7 @@ lemma integerMissProduct_expansion {P : PrimeGroups} (n : ℕ)
       (w := fun p : {p // p ∈ U} =>
         residueMissCoefficient n q h p.val (a p.val p.property)))
 
-lemma inactiveResidueAssignmentWeight_sum {P : PrimeGroups} (n : ℕ)
-    (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ) (U : Finset P.GroupPrime) :
+lemma inactiveResidueAssignmentWeight_sum :
     (∑ a ∈ U.pi (fun p : P.GroupPrime => (Finset.univ : Finset (Fin p.val))),
       inactiveResidueAssignmentWeight n q h U a) =
       ∏ p ∈ U, ∑ r : Fin p.val, residueMissCoefficient n q h p r := by
@@ -1752,6 +1714,8 @@ lemma inactiveResidueAssignmentWeight_sum {P : PrimeGroups} (n : ℕ)
     (Finset.prod_sum U
       (fun p : P.GroupPrime => (Finset.univ : Finset (Fin p.val)))
       (fun p r => residueMissCoefficient n q h p r)).symm
+
+end
 
 lemma active_inactive_assignment_class_average_error {P : PrimeGroups}
     (n : ℕ) (active : Fin (n + 1) → Finset ℕ) (U : Finset P.GroupPrime)
@@ -1770,7 +1734,7 @@ lemma active_inactive_assignment_class_average_error {P : PrimeGroups}
   let S := A ∪ U
   let rA' : (p : {p // p ∈ A}) → Fin p.val.val := fun p => rA p.val p.property
   let rU' : (p : {p // p ∈ U}) → Fin p.val.val := fun p => rU p.val p.property
-  let rS : (p : {p // p ∈ S}) → Fin p.val.val :=
+  let rS  :=
     fun p => combineGroupPrimeResidues A U rA' rU' p
   have hcombine := combineGroupPrimeResidues_hits_iff A U hdisj rA' rU'
   have hfilter :
@@ -1785,11 +1749,11 @@ lemma active_inactive_assignment_class_average_error {P : PrimeGroups}
       refine ⟨hz, ?_⟩
       apply (hcombine z).mpr
       exact ⟨by simpa [activeAssignmentHits, rA'] using hA,
-        by simpa [inactiveResidueAssignmentHits, rU'] using hU⟩
+        by assumption⟩
     · rintro ⟨hz, hS⟩
       rcases (hcombine z).mp hS with ⟨hA, hU⟩
       exact ⟨hz, by simpa [activeAssignmentHits, rA'] using hA,
-        by simpa [inactiveResidueAssignmentHits, rU'] using hU⟩
+        by assumption⟩
   have hsum :
       (∑ z ∈ Finset.Ico lo hi,
         (if activeAssignmentHits n active z rA then (1 : ℝ) else 0) *
@@ -1854,7 +1818,7 @@ lemma inactiveIntegerProduct_eq_miss_product {P : PrimeGroups} (n : ℕ)
             residueMissCoefficient n q h p r else 0)) := by
   apply Finset.prod_congr rfl
   intro p hp
-  have hnot : p.val ∉ activePrimeSet n active := (Finset.mem_filter.mp hp).2
+  have hnot  := (Finset.mem_filter.mp hp).2
   have hactive : ∀ i, p.val ∉ active i := by
     intro i hi
     exact hnot ((mem_activePrimeSet_iff n active p.val).2 ⟨i, hi⟩)
@@ -1897,8 +1861,7 @@ lemma activeModulusReal_le_exp_of_card {P : PrimeGroups} (n : ℕ)
         apply Finset.prod_le_prod₀
         · intro p hp
           positivity
-        · intro p hp
-          exact hprime p hp
+        assumption
       _ = (Real.exp y) ^ Aset.card := by simp
   have hpow : (Real.exp y) ^ Aset.card ≤ (Real.exp y) ^ K := by
     gcongr
@@ -1982,7 +1945,7 @@ lemma groupPrime_lower_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
     (hP : P.Admissible F x) (hL : 1 ≤ L x) (p : P.GroupPrime) :
     Real.exp ((L x) ^ F.a) ≤ (p.val : ℝ) := by
   have hmem : p.val ∈ Finset.univ.biUnion P.primes := by
-    simpa [PrimeGroups.allPrimes] using p.property
+    exact p.property
   rcases Finset.mem_biUnion.mp hmem with ⟨g, hg, hpg⟩
   rcases hP with ⟨_, _, _, _, _, hprime⟩
   have hp := hprime g p.val hpg
@@ -1991,8 +1954,8 @@ lemma groupPrime_lower_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
       simp [hb] at hp
       exact hp.1
   | true =>
-      have hac : F.a ≤ F.c := le_of_lt (lt_trans F.ab F.bc)
-      have hpow : (L x) ^ F.a ≤ (L x) ^ F.c :=
+      have hac  := le_of_lt (lt_trans F.ab F.bc)
+      have hpow  :=
         Real.rpow_le_rpow_of_exponent_le hL hac
       simp [hb] at hp
       exact (Real.exp_le_exp.mpr hpow).trans hp.1
@@ -2015,7 +1978,7 @@ lemma N_add_one_le_five_Lpow52 {x : ℝ} (hL : 1 ≤ L x) :
   have hy : (1 : ℝ) ≤ (L x) ^ ((52 : ℝ) / 100) := by
     have h := Real.rpow_le_rpow_of_exponent_le hL
       (show (0 : ℝ) ≤ (52 : ℝ) / 100 by norm_num)
-    simpa using h
+    simp_all
   have hceil : (R x : ℝ) < (L x) ^ ((52 : ℝ) / 100) + 1 := by
     dsimp [R]
     exact Nat.ceil_lt_add_one (by positivity)
@@ -2027,9 +1990,8 @@ lemma eventually_N_add_one_div_exp_a_lt_half (F : FixedData) :
     ∀ᶠ x : ℝ in atTop,
       ((N x + 1 : ℕ) : ℝ) / Real.exp ((L x) ^ F.a) < 1 / 2 := by
   have hlog : Tendsto L atTop atTop := by
-    change Tendsto Real.log atTop atTop
     exact Real.tendsto_log_atTop
-  have hpow : Tendsto (fun x : ℝ => (L x) ^ F.a) atTop atTop :=
+  have hpow  :=
     (tendsto_rpow_atTop F.a_pos).comp hlog
   have hdecay :=
     (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero F.a⁻¹ (1 : ℝ) (by norm_num)).comp hpow
@@ -2038,9 +2000,9 @@ lemma eventually_N_add_one_div_exp_a_lt_half (F : FixedData) :
     by
       simpa [one_mul] using
         hdecay.eventually (Iio_mem_nhds (show (0 : ℝ) < 1 / 10 by norm_num))
-  have hLlarge : ∀ᶠ x : ℝ in atTop, 1 ≤ L x := hlog.eventually_ge_atTop 1
+  have hLlarge  := hlog.eventually_ge_atTop 1
   filter_upwards [hsmall, hLlarge] with x hsmallx hLx
-  have hpowEq : ((L x) ^ F.a) ^ F.a⁻¹ = L x :=
+  have hpowEq  :=
     Real.rpow_rpow_inv (le_trans (by norm_num) hLx) F.a_pos.ne'
   have hN := N_add_one_le_five_L hLx
   have hratio : ((N x + 1 : ℕ) : ℝ) / Real.exp ((L x) ^ F.a) =
@@ -2076,17 +2038,19 @@ lemma residueMissMean_le_half_of_admissible {F : FixedData} {P : PrimeGroups} {x
       div_le_div_of_nonneg_left hNumerator hExp hpLower
     _ ≤ 1 / 2 := le_of_lt hsmall
 
-lemma residuePrimePathFactor_eq_one_sub_miss {P : PrimeGroups} (n : ℕ)
-    (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
-    (active : Fin (n + 1) → Finset ℕ) (p : P.GroupPrime) (r : Fin p.val)
+section
+
+variable {P : PrimeGroups} (n : ℕ)
+  (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
+  (active : Fin (n + 1) → Finset ℕ)
+
+lemma residuePrimePathFactor_eq_one_sub_miss (p : P.GroupPrime) (r : Fin p.val)
     (hactive : ∀ i, p.val ∉ active i) :
     residuePrimePathFactor n q h active p r =
       1 - residueMissCoefficient n q h p r := by
   simp [residuePrimePathFactor, residueMissCoefficient, hactive]
 
-lemma residuePrimeExpectationFactor_eq_one_sub_missMean {P : PrimeGroups}
-    (n : ℕ) (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
-    (active : Fin (n + 1) → Finset ℕ) (p : P.GroupPrime)
+lemma residuePrimeExpectationFactor_eq_one_sub_missMean (p : P.GroupPrime)
     (hactive : ∀ i, p.val ∉ active i) :
     (p.val : ℝ)⁻¹ *
         ∑ r : Fin p.val, residuePrimePathFactor n q h active p r =
@@ -2099,9 +2063,7 @@ lemma residuePrimeExpectationFactor_eq_one_sub_missMean {P : PrimeGroups}
   have hp : (p.val : ℝ) ≠ 0 := by exact_mod_cast (groupPrime_prime p).ne_zero
   field_simp [hp]
 
-lemma residuePrimeExpectationFactor_active_split {P : PrimeGroups} (n : ℕ)
-    (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
-    (active : Fin (n + 1) → Finset ℕ) (p : P.GroupPrime) :
+lemma residuePrimeExpectationFactor_active_split (p : P.GroupPrime) :
     (p.val : ℝ)⁻¹ *
         ∑ r : Fin p.val, residuePrimePathFactor n q h active p r =
       if p.val ∈ activePrimeSet n active then
@@ -2115,9 +2077,7 @@ lemma residuePrimeExpectationFactor_active_split {P : PrimeGroups} (n : ℕ)
       exact hp ((mem_activePrimeSet_iff n active p.val).2 ⟨i, hi⟩)
     simpa [hp] using residuePrimeExpectationFactor_eq_one_sub_missMean n q h active p hnone
 
-lemma residueExpectation_active_inactive_factorization {P : PrimeGroups} (n : ℕ)
-    (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
-    (active : Fin (n + 1) → Finset ℕ) :
+lemma residueExpectation_active_inactive_factorization :
     P.residueExpectation n q h active =
       (∏ p ∈ activeGroupPrimes (P := P) n active,
         (p.val : ℝ)⁻¹ *
@@ -2140,8 +2100,10 @@ lemma residueExpectation_active_inactive_factorization {P : PrimeGroups} (n : �
       residuePrimeExpectationFactor_active_split n q h active p
   · apply Finset.prod_congr rfl
     intro p hp
-    have hnot : p.val ∉ activePrimeSet n active := (Finset.mem_filter.mp hp).2
+    have hnot  := (Finset.mem_filter.mp hp).2
     simpa [hnot] using residuePrimeExpectationFactor_active_split n q h active p
+
+end
 
 lemma inactiveResidueAssignmentWeight_bounds {P : PrimeGroups} (n : ℕ)
     (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
@@ -2190,16 +2152,6 @@ lemma active_inactive_miss_monomial_average_error {P : PrimeGroups}
   have hM : 0 < M := by
     dsimp [M, I]
     exact_mod_cast hcard
-  have hM0 : 0 ≤ M⁻¹ := inv_nonneg.mpr hM.le
-  have hmodA : 0 < activeModulusReal (P := P) n active := by
-    unfold activeModulusReal
-    apply Finset.prod_pos
-    intro p hp
-    exact_mod_cast (groupPrime_prime p).pos
-  have hmodU : 0 < ∏ p ∈ U, (p.val : ℝ) := by
-    apply Finset.prod_pos
-    intro p hp
-    exact_mod_cast (groupPrime_prime p).pos
   have hmodSub :
       (∏ i : {p // p ∈ S}, (i.val.val : ℝ)) =
         activeModulusReal (P := P) n active * ∏ p ∈ U, (p.val : ℝ) := by
@@ -2321,11 +2273,7 @@ lemma active_inactive_miss_monomial_average_error {P : PrimeGroups}
       _ = M⁻¹ * (B.card : ℝ) := by simp [mul_comm]
   have hcardB : (B.card : ℝ) = ∏ p ∈ U, (p.val : ℝ) := by
     exact_mod_cast (inactiveResidueAssignment_card U)
-  have htarget :
-      (activeModulusReal (P := P) n active)⁻¹ *
-          ∏ p ∈ U, residueMissMean n q h p =
-        ∑ a ∈ B, inactiveResidueAssignmentWeight n q h U a *
-          (∏ i : {p // p ∈ S}, (i.val.val : ℝ))⁻¹ := hmeanExpand
+  have htarget  := hmeanExpand
   rw [show (Finset.Ico lo hi : Finset ℤ) = I by rfl,
     show ((Finset.Ico lo hi).card : ℝ)⁻¹ = M⁻¹ by rfl,
     hactualExpand, htarget]
@@ -2381,7 +2329,6 @@ lemma active_inactive_miss_elementary_average_error {P : PrimeGroups}
   have hM : 0 < M := by
     dsimp [M, I]
     exact_mod_cast hcard
-  have hM0 : 0 ≤ M⁻¹ := inv_nonneg.mpr hM.le
   have hsumActual :
       ∑ z ∈ I,
           (if activeAssignmentHits n active z rA then (1 : ℝ) else 0) *
@@ -2432,8 +2379,8 @@ lemma active_inactive_miss_elementary_average_error {P : PrimeGroups}
       _ ≤ ∑ v ∈ V, M⁻¹ * ∏ p ∈ v, (p.val : ℝ) := by
             apply Finset.sum_le_sum
             intro v hv
-            have hvsub : v ⊆ U := (Finset.mem_powersetCard.mp hv).1
-            have hdv : Disjoint A v := hdisj.mono_right hvsub
+            have hvsub  := (Finset.mem_powersetCard.mp hv).1
+            have hdv  := hdisj.mono_right hvsub
             simpa [I, M] using
               active_inactive_miss_monomial_average_error n q h hq active v hdv rA
                 lo hi hlohi hcard
@@ -2464,12 +2411,10 @@ lemma active_inactive_miss_elementary_average_error {P : PrimeGroups}
                   ∏ p ∈ v, integerMissValue n q h p z -
               (activeModulusReal (P := P) n active)⁻¹ *
                 ∏ p ∈ v, residueMissMean n q h p) := by
-              apply Finset.sum_congr rfl
-              intro v hv
-              ring
+              rfl
       _ = _ := by rw [Finset.sum_sub_distrib]
   rw [hsumDiff]
-  simpa [I, M, elementarySymmetric] using herrorSum
+  assumption
 
 lemma active_inactive_miss_truncation_average_error {P : PrimeGroups}
     (n : ℕ) (q : Fin (n + 1) → ℝ) (h : Fin (n + 1) → ℤ)
@@ -2490,7 +2435,6 @@ lemma active_inactive_miss_truncation_average_error {P : PrimeGroups}
           elementarySymmetric (fun p => (p.val : ℝ)) U k := by
   classical
   let I := Finset.Ico lo hi
-  let M : ℝ := (I.card : ℝ)
   let K := Finset.range (H + 1)
   have hsumActual :
       ∑ z ∈ I,
@@ -2565,7 +2509,7 @@ lemma active_inactive_miss_truncation_average_error {P : PrimeGroups}
       hdisj rA lo hi hlohi hcard k
     have hsign : |(-1 : ℝ) ^ k| = 1 := by simp
     rw [hsign, one_mul]
-    simpa [I] using hbase
+    assumption
   have hsumDiff :
       (∑ k ∈ K, (-1 : ℝ) ^ k *
           (((Finset.Ico lo hi).card : ℝ)⁻¹ *
@@ -2584,7 +2528,6 @@ lemma active_inactive_miss_truncation_average_error {P : PrimeGroups}
           ((-1 : ℝ) ^ k) *
             ((activeModulusReal (P := P) n active)⁻¹ *
               elementarySymmetric (fun p => residueMissMean n q h p) U k)) := by
-    symm
     rw [Finset.sum_sub_distrib]
   calc
     _ ≤ ∑ k ∈ K,
@@ -2636,40 +2579,40 @@ lemma active_inactive_miss_product_average_error {P : PrimeGroups}
   let I := Finset.Ico lo hi
   let M : ℝ := (I.card : ℝ)
   let X : P.GroupPrime → ℤ → ℝ := fun p z => integerMissValue n q h p z
-  let Xz (z : ℤ) : P.GroupPrime → ℝ := fun p => X p z
+  let Xz (z : ℤ)  := fun p => X p z
   let μ : P.GroupPrime → ℝ := fun p => residueMissMean n q h p
   let ind : ℤ → ℝ := fun z => if activeAssignmentHits n active z rA then 1 else 0
   have hMpos : 0 < M := by
     dsimp [M, I]
     exact_mod_cast hcard
-  have hM0 : 0 ≤ M⁻¹ := inv_nonneg.mpr hMpos.le
+  have hM0  := inv_nonneg.mpr hMpos.le
   have hQpos : 0 < activeModulusReal (P := P) n active := by
     unfold activeModulusReal
     apply Finset.prod_pos
     intro p hp
     exact_mod_cast (groupPrime_prime p).pos
-  have hQ0 : 0 ≤ (activeModulusReal (P := P) n active)⁻¹ :=
+  have hQ0  :=
     inv_nonneg.mpr hQpos.le
   have hX : ∀ p ∈ U, ∀ z, 0 ≤ X p z ∧ X p z ≤ 1 := by
     intro p hp z
     exact integerMissValue_bounds n q h hq p z
   have hμ' : ∀ p ∈ U, 0 ≤ μ p ∧ μ p ≤ 1 := by
-    simpa [μ] using hμ
+    assumption
   have hHsuccEven : (H + 1) % 2 = 1 := by omega
   have hstep : inclusionTruncation μ U H - inclusionTruncation μ U (H + 1) =
       elementarySymmetric μ U (H + 1) := by
     have hdiv : H = 2 * (H / 2) := by omega
-    have hHone : H + 1 = 2 * (H / 2) + 1 := congrArg (fun t : ℕ => t + 1) hdiv
+    have hHone  := congrArg (fun t : ℕ => t + 1) hdiv
     have hsign : (-1 : ℝ) ^ (H + 1) = -1 := by
       calc
         (-1 : ℝ) ^ (H + 1) = (-1 : ℝ) ^ (2 * (H / 2) + 1) :=
           congrArg (fun t : ℕ => (-1 : ℝ) ^ t) hHone
-        _ = (-1 : ℝ) ^ (2 * (H / 2)) * (-1 : ℝ) := by rw [pow_succ]
+        _ = (-1 : ℝ) ^ (2 * (H / 2)) * (-1 : ℝ) := by rfl
         _ = ((-1 : ℝ) ^ 2) ^ (H / 2) * (-1 : ℝ) := by rw [← pow_mul]
         _ = -1 := by norm_num
     rw [inclusionTruncation_succ, hsign]
     ring
-  have hμsumNonneg : 0 ≤ ∑ p ∈ U, μ p :=
+  have hμsumNonneg  :=
     Finset.sum_nonneg fun p hp => (hμ' p hp).1
   have htailElem :
       elementarySymmetric μ U (H + 1) ≤
@@ -2682,7 +2625,6 @@ lemma active_inactive_miss_product_average_error {P : PrimeGroups}
       _ ≤ lambdaTot ^ (H + 1) / ((H + 1).factorial : ℝ) := by
           apply div_le_div_of_nonneg_right _ (by positivity)
           exact pow_le_pow_left₀ hμsumNonneg hlambdaTotsum (H + 1)
-  have htail0 : 0 ≤ lambdaTot ^ (H + 1) / ((H + 1).factorial : ℝ) := by positivity
   have hXupper (z : ℤ) :
       ∏ p ∈ U, (1 - X p z) ≤ inclusionTruncation (Xz z) U H := by
     apply (inclusionTruncation_bonferroni (Xz z) U (fun p hp => hX p hp z) H).1
@@ -2781,7 +2723,6 @@ lemma active_inactive_miss_product_average_error {P : PrimeGroups}
       _ ≤ E0 + E1 +
           (activeModulusReal (P := P) n active)⁻¹ *
             (lambdaTot ^ (H + 1) / ((H + 1).factorial : ℝ)) := by
-          have hE1' : 0 ≤ E1 := by positivity
           linarith
   have hlower : meanProd - avgProd ≤ E0 + E1 +
       (activeModulusReal (P := P) n active)⁻¹ *
@@ -2798,7 +2739,6 @@ lemma active_inactive_miss_product_average_error {P : PrimeGroups}
       _ ≤ E0 + E1 +
           (activeModulusReal (P := P) n active)⁻¹ *
             (lambdaTot ^ (H + 1) / ((H + 1).factorial : ℝ)) := by
-          have hE0' : 0 ≤ E0 := by positivity
           linarith
   rw [show (Finset.Ico lo hi : Finset ℤ) = I by rfl,
     show ((Finset.Ico lo hi).card : ℝ)⁻¹ = M⁻¹ by rfl]
@@ -2850,10 +2790,10 @@ lemma scaled_errors_to_relative_budget {A S lambdaTot Q errCRT tail prod : ℝ}
   have hscaled : Q * errCRT + tail ≤ Real.exp (-A * S - 2 * lambdaTot) := by
     calc
       _ ≤ Real.exp (t - 4) + Real.exp (t - 4) := by
-          exact add_le_add (by simpa [t] using hCRT) (by simpa [t] using hTail)
+          exact add_le_add (by assumption) (by assumption)
       _ ≤ Real.exp t := hsum
       _ = Real.exp (-A * S - 2 * lambdaTot) := by rfl
-  have hQinv : 0 ≤ Q⁻¹ := inv_nonneg.mpr hQ.le
+  have hQinv  := inv_nonneg.mpr hQ.le
   calc
     errCRT + Q⁻¹ * tail = Q⁻¹ * (Q * errCRT + tail) := by
       field_simp [hQ.ne']
@@ -2909,9 +2849,6 @@ lemma uniform_residue_replacement_of_error_budget {P : PrimeGroups}
     activeAssignmentWeight n q h active a
   let base := (activeModulusReal (P := P) n active)⁻¹ *
     ∏ p ∈ U, (1 - residueMissMean n q h p)
-  have hM0 : 0 ≤ M⁻¹ := by
-    dsimp [M, I]
-    exact inv_nonneg.mpr (by exact_mod_cast hcard.le)
   have hdisj : Disjoint Aset U := by
     apply Finset.disjoint_left.mpr
     intro p hpA hpU
@@ -2938,9 +2875,7 @@ lemma uniform_residue_replacement_of_error_budget {P : PrimeGroups}
               rw [pathFactor_as_active_assignment_sum]
               apply Finset.sum_congr rfl
               intro a ha
-              by_cases hh : activeAssignmentHits n active z a
-              · simp [hh, w, U, integerMissValue]
-              · simp [hh, w, U, integerMissValue]
+              rfl
         _ = ∑ a ∈ B, ∑ z ∈ I,
               ((if activeAssignmentHits n active z a then (1 : ℝ) else 0) * w a) *
                 ∏ p ∈ U, (1 - integerMissValue n q h p z) := by
@@ -2989,7 +2924,7 @@ lemma uniform_residue_replacement_of_error_budget {P : PrimeGroups}
         residueMissMean n q h p ≤ 1 := by simpa [U] using hμ
     have hprod := active_inactive_miss_product_average_error n q h hq active U hdisj a
       hμ' lambdaTot hlambdaTot hlambdaTotsum lo hi hlohi hcard H hHeven
-    simpa [I, M, base] using hprod
+    assumption
   have hweightedErr : ∀ a ∈ B,
       abs (w a *
           ((M⁻¹ * ∑ z ∈ I,
@@ -3088,10 +3023,7 @@ lemma uniform_residue_replacement_of_error_budget {P : PrimeGroups}
         eps * ((activeModulusReal (P := P) n active)⁻¹ *
           ∏ p ∈ U, (1 - residueMissMean n q h p)) := by
       convert herr using 1; ring
-    calc
-      _ ≤ eps * ((activeModulusReal (P := P) n active)⁻¹ *
-          ∏ p ∈ U, (1 - residueMissMean n q h p)) := herrAssoc
-      _ = eps * base := by simp [base]
+    assumption
   have hbudget :
       (∑ a ∈ B, w a *
           (((Finset.Ico lo hi).card : ℝ)⁻¹ *
@@ -3126,7 +3058,7 @@ lemma uniform_residue_replacement_of_error_budget {P : PrimeGroups}
                     intro a ha
                     ring
               _ = _ := by rw [← Finset.mul_sum]
-  simpa [hmeanExpand] using hsumBound
+  assumption
 
 set_option maxHeartbeats 1000000 in
 theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : ℝ)
@@ -3149,12 +3081,11 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
     let cCRT : ℝ := cActive + 3 * (10 * Ktr + 3) + 3
     let cScale : ℝ := 5 * (A + 2 * cLambda) + 4
     let delta : ℝ := (48 : ℝ) / 100 - F.d
-    have hF_d_pos : 0 < F.d :=
+    have hF_d_pos  :=
       lt_trans F.a_pos (lt_trans F.ab (lt_trans F.bc F.cd))
     have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
     have hdelta : 0 < delta := by dsimp [delta]; linarith [F.d_lt]
     have hcLambda : 0 < cLambda := by
-      dsimp [cLambda]
       positivity [F.C₀_pos, F.vMax_pos]
     have hKtr : 0 < Ktr := by
       dsimp [Ktr]
@@ -3166,19 +3097,17 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       dsimp [cCRT]
       positivity [hcActive, hKtr]
     have hcScale : 0 < cScale := by
-      dsimp [cScale]
-      positivity [hA, hcLambda]
+      positivity
     have hLtop : Tendsto L atTop atTop := by
-      change Tendsto Real.log atTop atTop
       exact Real.tendsto_log_atTop
     have hTtop : Tendsto T atTop atTop := by
       change Tendsto (fun x : ℝ => Real.log (Real.log x)) atTop atTop
       exact Real.tendsto_log_atTop.comp Real.tendsto_log_atTop
-    have hXpowTop : Tendsto (fun x : ℝ => x ^ gamma) atTop atTop :=
+    have hXpowTop  :=
       tendsto_rpow_atTop hgamma
-    have hL_event : ∀ᶠ x : ℝ in atTop, 1 ≤ L x := hLtop.eventually_ge_atTop 1
-    have hT_event : ∀ᶠ x : ℝ in atTop, 2 ≤ T x := hTtop.eventually_ge_atTop 2
-    have hX_event : ∀ᶠ x : ℝ in atTop, 2 ≤ x ^ gamma := hXpowTop.eventually_ge_atTop 2
+    have hL_event  := hLtop.eventually_ge_atTop 1
+    have hT_event  := hTtop.eventually_ge_atTop 2
+    have hX_event  := hXpowTop.eventually_ge_atTop 2
     have hmiss_event := eventually_N_add_one_div_exp_a_lt_half F
     have hprimeExp_event := eventually_const_mul_L_le_exp_Lpow
       (6 * F.C₀) F.d hF_d_pos
@@ -3206,12 +3135,12 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
     obtain ⟨x0, hx0⟩ := Filter.eventually_atTop.1 hGood
     refine ⟨max x0 2, ?_⟩
     intro x hx P hP h active hactive X hXlo hXhi
-    have hx0' : x0 ≤ x := le_trans (le_max_left x0 2) hx
-    have hxTwo : 2 ≤ x := le_trans (le_max_right x0 2) hx
+    have hx0'  := le_trans (le_max_left x0 2) hx
+    have hxTwo  := le_trans (le_max_right x0 2) hx
     obtain ⟨hL, hT, hxPow, hsmallMiss, hPrimeExp, hDegreeExp, hCRTsmall, hScalesmall⟩ :=
       hx0 x hx0'
     let n := N x
-    let q : Fin (n + 1) → ℝ := visitQ F.q n
+    let q  := visitQ F.q n
     let NT : ℝ := (n : ℝ) * T x
     let lambdaTot : ℝ := cLambda * NT
     let H : ℕ := 2 * Nat.ceil (Ktr * NT)
@@ -3252,7 +3181,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       calc
         NT ≤ 5 * (L x) ^ ((52 : ℝ) / 100) * T x := hNTle5
         _ ≤ 5 * L x * L x := by gcongr
-        _ = 5 * (L x) ^ 2 := by rw [pow_two]; ring
+        _ = 5 * (L x) ^ 2 := by ring
     have hLambda0 : 0 ≤ lambdaTot := by dsimp [lambdaTot]; positivity
     have hq : ∀ i, 0 ≤ q i ∧ q i ≤ 1 := by
       intro i
@@ -3262,7 +3191,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       exact (hactive i).2
     have hActiveCard := activeGroupPrimes_card_le_visits n J F.ell active hactiveCardVisit
     have hActiveCard' : (activeGroupPrimes (P := P) n active).card ≤ Kactive := by
-      simpa [Kactive] using hActiveCard
+      assumption
     have hKactiveCast : (Kactive : ℝ) ≤ cActive *
         (L x) ^ ((52 : ℝ) / 100) * T x := by
       dsimp [Kactive, cActive]
@@ -3284,7 +3213,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
               apply mul_le_mul_of_nonneg_left hPcount
               positivity
         _ = _ := by ring
-    have hY0 : 0 ≤ y := by dsimp [y]; positivity
+    have hY0 : 0 ≤ y := by positivity
     have hYone : 1 ≤ y := by
       dsimp [y]
       have hpow := Real.rpow_le_rpow_of_exponent_le hL
@@ -3294,10 +3223,6 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       calc
         2 ≤ 1 + y := by linarith
         _ ≤ Real.exp y := by simpa [add_comm] using Real.add_one_le_exp y
-    have hExp3Y4 : 4 ≤ Real.exp (3 * y) := by
-      calc
-        4 ≤ 1 + 3 * y := by nlinarith [hYone]
-        _ ≤ Real.exp (3 * y) := by simpa [add_comm] using Real.add_one_le_exp (3 * y)
     have hKactive := activeModulusReal_le_exp_of_card n active Kactive y hY0 hActiveCard'
       (fun p hp => groupPrime_upper_of_admissible hP hL p)
     have hQpos : 0 < Q := by
@@ -3305,7 +3230,6 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       apply Finset.prod_pos
       intro p hp
       exact_mod_cast (groupPrime_prime p).pos
-    have hQinv : 0 ≤ Q⁻¹ := inv_nonneg.mpr hQpos.le
     have hQ := hKactive
     have hmu0 : ∀ p ∈ U, 0 ≤ residueMissMean n q h p := by
       intro p hp
@@ -3341,10 +3265,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
               _ ≤ 2 * (n : ℝ) * (2 * F.C₀ * T x) :=
                 mul_le_mul_of_nonneg_left hPcount (by positivity)
           exact mul_le_mul_of_nonneg_right hNP (F.vMax_pos.le)
-        _ = lambdaTot := by dsimp [lambdaTot, cLambda, NT]; ring
-    have hprodLower := inactiveMissProduct_lower n q h active hmu0 hmuHalf
-    have hNplusExp : ((N x + 1 : ℕ) : ℝ) ≤ 5 * L x := by
-      exact N_add_one_le_five_L hL
+        _ = lambdaTot := by ring
     have hTcount : (P.count : ℝ) ≤ 2 * F.C₀ * L x := by
       calc
         (P.count : ℝ) ≤ 2 * F.C₀ * T x := hPcount
@@ -3356,7 +3277,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
           mul_le_mul_of_nonneg_left hTcount (by norm_num)
         _ = 6 * F.C₀ * L x := by ring
     have hYPrimeExp : 6 * F.C₀ * L x ≤ Real.exp y := by simpa [y] using hPrimeExp
-    have hprimeFactor : 3 * (P.count : ℝ) ≤ Real.exp y := hPcountExp.trans hYPrimeExp
+    have hprimeFactor  := hPcountExp.trans hYPrimeExp
     have hSigmaSubset : (∑ p ∈ U, (p.val : ℝ)) ≤
         (∑ p : P.GroupPrime, (p.val : ℝ)) := by
       exact Finset.sum_le_sum_of_subset_of_nonneg U.subset_univ
@@ -3378,7 +3299,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       calc
         (n : ℝ) * T x ≤ 5 * (L x) ^ ((52 : ℝ) / 100) * T x := hNTplus2
         _ ≤ 5 * L x * L x := by gcongr
-        _ = 5 * (L x) ^ 2 := by rw [pow_two]; ring
+        _ = 5 * (L x) ^ 2 := by ring
     have hTtwo : (L x) ^ ((52 : ℝ) / 100) * T x ≥ 1 := by
       have hTge1 : 1 ≤ T x := by linarith
       calc
@@ -3387,7 +3308,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
           mul_le_mul hpow52_one hTge1 (by norm_num) (by linarith)
     have hceilArg : 0 ≤ Ktr * NT := by positivity
     have hceilLower : Ktr * NT ≤ (Nat.ceil (Ktr * NT) : ℝ) := by exact_mod_cast Nat.le_ceil (Ktr * NT)
-    have hceilUpper : (Nat.ceil (Ktr * NT) : ℝ) < Ktr * NT + 1 :=
+    have hceilUpper  :=
       Nat.ceil_lt_add_one hceilArg
     have hHeven : H % 2 = 0 := by simp [H]
     have hHdegLower : 2 * Ktr * NT ≤ ((H + 1 : ℕ) : ℝ) := by
@@ -3404,8 +3325,8 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
       dsimp [H]
       push_cast
       let B : ℝ := (L x) ^ ((52 : ℝ) / 100) * T x
-      have hB : 1 ≤ B := by simpa [B] using hTtwo
-      have hceilUpper' : (Nat.ceil (Ktr * NT) : ℝ) ≤ Ktr * NT + 1 := hceilUpper.le
+      have hB : 1 ≤ B := by assumption
+      have hceilUpper'  := hceilUpper.le
       have hceilBound : 2 * (Nat.ceil (Ktr * NT) : ℝ) + 1 ≤
           2 * Ktr * NT + 3 := by
         have htwice := mul_le_mul_of_nonneg_left hceilUpper' (by norm_num : 0 ≤ (2 : ℝ))
@@ -3414,7 +3335,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
         calc
           NT = (n : ℝ) * T x := by rfl
           _ ≤ 5 * (L x) ^ ((52 : ℝ) / 100) * T x := hNTplus2
-          _ = 5 * B := by dsimp [B]; ring
+          _ = 5 * B := by ring
       have hNTBound : 2 * Ktr * NT ≤ 10 * Ktr * B := by
         calc
           2 * Ktr * NT ≤ 2 * Ktr * (5 * B) :=
@@ -3434,13 +3355,12 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
                   (10 * Ktr * B))
             _ = (10 * Ktr + 3) * B := by ring
         _ = (10 * Ktr + 3) * (L x) ^ ((52 : ℝ) / 100) * T x := by
-          dsimp [B]
           ring
     have hHplus2coarse : ((H + 2 : ℕ) : ℝ) ≤
         (10 * Ktr + 4) * (L x) ^ 2 := by
       dsimp [H]
       push_cast
-      have hceilUpper' : (Nat.ceil (Ktr * NT) : ℝ) ≤ Ktr * NT + 1 := hceilUpper.le
+      have hceilUpper'  := hceilUpper.le
       have hceilBound : 2 * (Nat.ceil (Ktr * NT) : ℝ) + 2 ≤ 2 * Ktr * NT + 4 := by
         have htwice := mul_le_mul_of_nonneg_left hceilUpper' (by norm_num : 0 ≤ (2 : ℝ))
         nlinarith only [htwice]
@@ -3463,26 +3383,19 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
             _ = (10 * Ktr + 4) * (L x) ^ 2 := by ring
     have hHplus2Exp : ((H + 2 : ℕ) : ℝ) ≤ Real.exp y := by
       exact le_trans hHplus2coarse (by simpa [y, Real.rpow_natCast] using hDegreeExp)
-    have hTpow52ge : 1 ≤ (L x) ^ ((52 : ℝ) / 100) * T x := hTtwo
-    have hHdegreeLinear : ((H + 1 : ℕ) : ℝ) ≤
-        (10 * Ktr + 3) * (L x) ^ ((52 : ℝ) / 100) * T x := hHdegUpper
-    have hHplus2LinearCoarse : ((H + 2 : ℕ) : ℝ) ≤
-        (10 * Ktr + 4) * (L x) ^ 2 := hHplus2coarse
-    have hHplus2exp : ((H + 2 : ℕ) : ℝ) ≤ Real.exp y := hHplus2Exp
-    have hNScale : NT ≤ 5 * (L x) ^ ((52 : ℝ) / 100) * T x := hNTplus2
-    have hNScaleCoarse : NT ≤ 5 * (L x) ^ 2 := hNTcoarse
+    have hHdegreeLinear  := hHdegUpper
+    have hHplus2exp  := hHplus2Exp
     have hNTpositive : 0 < NT := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 4) hNT4
     have hKtrFactor : 0 < 2 * Ktr * NT :=
       mul_pos (mul_pos (by norm_num : (0 : ℝ) < 2) hKtr) hNTpositive
-    have htailDegreePos : 0 < ((H + 1 : ℕ) : ℝ) := by
-      exact lt_of_lt_of_le hKtrFactor hHdegLower
+    have htailDegreePos := lt_of_lt_of_le hKtrFactor hHdegLower
     have htailRatio :
         Real.exp 1 * lambdaTot / ((H + 1 : ℕ) : ℝ) ≤ 1 / 2 := by
       have hnum0 : 0 ≤ A + 2 * cLambda + 1 :=
         add_nonneg (add_nonneg hA.le
           (mul_nonneg (show (0 : ℝ) ≤ 2 from by norm_num) hcLambda.le))
           (show (0 : ℝ) ≤ 1 from by norm_num)
-      have hfrac0 : 0 ≤ (A + 2 * cLambda + 1) / Real.log 2 :=
+      have hfrac0  :=
         div_nonneg hnum0 hlog2.le
       have hrest0 : 0 ≤ (A + 2 * cLambda + 1) / Real.log 2 + 1 :=
         add_nonneg hfrac0 (show (0 : ℝ) ≤ 1 from by norm_num)
@@ -3492,12 +3405,11 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
           Real.exp 1 * cLambda ≤ Real.exp 1 * cLambda +
               ((A + 2 * cLambda + 1) / Real.log 2 + 1) := le_add_of_nonneg_right hrest0
           _ = Real.exp 1 * cLambda + (A + 2 * cLambda + 1) / Real.log 2 + 1 := by ring
-      have hKnum : Real.exp 1 * cLambda * NT ≤ Ktr * NT :=
+      have hKnum  :=
         mul_le_mul_of_nonneg_right hKfirst hNT0
       calc
         Real.exp 1 * lambdaTot / ((H + 1 : ℕ) : ℝ) =
             (Real.exp 1 * cLambda * NT) / ((H + 1 : ℕ) : ℝ) := by
-              dsimp [lambdaTot]
               ring
         _ ≤ (Ktr * NT) / ((H + 1 : ℕ) : ℝ) :=
             div_le_div_of_nonneg_right hKnum htailDegreePos.le
@@ -3584,7 +3496,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
         _ = Real.exp (3 * ((H + 1 : ℕ) : ℝ) * y + 2 * y) := by
               rw [← Real.exp_add]
               congr 1; ring
-    have hXtwo : 2 ≤ X := le_trans hxPow hXlo
+    have hXtwo  := le_trans hxPow hXlo
     have hInvLen := dyad_card_inv_le_exp_of_scale hxpos hXlo hXtwo
     have hM0 : 0 ≤ ((dyad X).card : ℝ)⁻¹ := by positivity
     have hQM : Q * (((dyad X).card : ℝ)⁻¹) ≤
@@ -3634,12 +3546,10 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
               _ = Real.exp (-gamma * L x + Dval) := by
                     rw [← Real.exp_add]
                     congr 1
-                    dsimp [Dval]
-                    push_cast
                     ring
     have hDcoef : ((Kactive : ℝ) + 3 * ((H + 1 : ℕ) : ℝ) + 3) ≤
         cCRT * (L x) ^ ((52 : ℝ) / 100) * T x := by
-      have hbase : 1 ≤ (L x) ^ ((52 : ℝ) / 100) * T x := hTtwo
+      have hbase  := hTtwo
       calc
         _ ≤ cActive * (L x) ^ ((52 : ℝ) / 100) * T x +
             3 * ((10 * Ktr + 3) * (L x) ^ ((52 : ℝ) / 100) * T x) + 3 := by
@@ -3672,10 +3582,10 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
     have hDle : Dval ≤ (gamma / 4) * L x := by
       have h := (div_lt_iff₀ (by linarith : 0 < L x)).mp hDsmall
       exact le_of_lt h
-    have hscaleUpper : NT ≤ 5 * (L x) ^ ((52 : ℝ) / 100) * T x := hNTplus2
+    have hscaleUpper  := hNTplus2
     have hScaleCoef : A * NT + 2 * lambdaTot + 4 ≤ cScale *
         (L x) ^ ((52 : ℝ) / 100) * T x := by
-      have hbase : 1 ≤ (L x) ^ ((52 : ℝ) / 100) * T x := hTtwo
+      have hbase  := hTtwo
       dsimp [lambdaTot, cLambda, cScale]
       calc
         _ ≤ 5 * (A + 2 * (4 * F.C₀ * F.vMax)) *
@@ -3714,8 +3624,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
     have hCRTtarget : -gamma * L x + Dval ≤ -A * NT - 2 * lambdaTot - 4 := by
       have hγL0 : 0 ≤ gamma * L x := mul_nonneg hgamma.le (by linarith [hL])
       nlinarith only [hDle, hScaleLe, hγL0]
-    have hCRTexp : Real.exp (-gamma * L x + Dval) ≤
-        Real.exp (-A * NT - 2 * lambdaTot - 4) :=
+    have hCRTexp  :=
       Real.exp_le_exp.mpr hCRTtarget
 
     let sumLow : ℝ :=
@@ -3735,7 +3644,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
             Real.exp (-2 * ∑ p ∈ U, residueMissMean n q h p) := by
               apply Real.exp_le_exp.mpr
               nlinarith only [hmuSum]
-        _ ≤ missProd := by simpa [missProd] using hprodBase
+        _ ≤ missProd := by assumption
     have hCRT : Q * errCRT ≤ Real.exp (-A * NT - 2 * lambdaTot - 4) := by
       calc
         Q * errCRT = Q * (((dyad X).card : ℝ)⁻¹ * (sumLow + sumHigh)) := by
@@ -3755,7 +3664,7 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
           ((dyad X).card : ℝ)⁻¹ * sumHigh + Q⁻¹ * tail ≤
         Real.exp (-A * NT) * Q⁻¹ * missProd := by
       calc
-        _ = errCRT + Q⁻¹ * tail := by dsimp [errCRT]
+        _ = errCRT + Q⁻¹ * tail := by rfl
         _ ≤ Real.exp (-A * NT) * (Q⁻¹ * missProd) := hbudget
         _ = Real.exp (-A * NT) * Q⁻¹ * missProd := by ring
     have hXceiltwo : X ≤ 2 * X := by linarith [hXlo]
@@ -3770,24 +3679,21 @@ theorem uniform_residue_replacement_proof (F : FixedData) (J : ℕ) (A gamma : �
         linarith [hcardLower]
       exact_mod_cast hcardReal
     have hcard : 0 < (Finset.Ico lo hi).card := by
-      simpa [lo, hi, dyad] using hcardDyad
+      assumption
     have hExpAssoc : Real.exp (-A * NT) = Real.exp (-A * (N x : ℝ) * T x) := by
       congr 1
-      dsimp [NT, n]
       ring
-    have heps : 0 ≤ Real.exp (-A * NT) := (Real.exp_pos _).le
     have hbudgetFinal :
         ((Finset.Ico lo hi).card : ℝ)⁻¹ * sumLow +
           ((Finset.Ico lo hi).card : ℝ)⁻¹ * sumHigh + Q⁻¹ * tail ≤
         Real.exp (-A * NT) * Q⁻¹ * missProd := by
-      simpa [lo, hi, dyad] using herrorBudget
-    have hepsTarget : 0 ≤ Real.exp (-A * (N x : ℝ) * T x) := (Real.exp_pos _).le
+      assumption
     have hbudgetTarget :
         ((Finset.Ico lo hi).card : ℝ)⁻¹ * sumLow +
           ((Finset.Ico lo hi).card : ℝ)⁻¹ * sumHigh + Q⁻¹ * tail ≤
         Real.exp (-A * (N x : ℝ) * T x) * Q⁻¹ * missProd := by
       rw [← hExpAssoc]
-      simpa [lo, hi, dyad] using herrorBudget
+      assumption
     exact uniform_residue_replacement_of_error_budget
       (P := P) n q h hq active hmu lambdaTot hLambda0 hmuSum
       lo hi hlohi hcard H hHeven (Real.exp (-A * (N x : ℝ) * T x))

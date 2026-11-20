@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Detector.InitialRows
 public import OAI.NumberTheory.DirichletL.Detector.TupleKernel
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -32,27 +33,25 @@ lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
     (e : ρ→NonzeroFrequency) (he : Function.Injective e)
     {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData)
-    (p : Fin K→O) (hp : ∀i,p i≠0) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (p : Fin K→O) (hp : ∀i,p i≠0) (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    Integrable (fun q : ρ×HeightSpace=>compensatedRowOnLines η S C p W0 W1 X Y Z (e q.1) q.2)
+    Integrable (fun q : ρ×HeightSpace=>compensatedRowOnLines η S C p mw.left mw.right X Y Z (e q.1) q.2)
       ((Measure.count:Measure ρ).prod heightMeasure) := by
   let F : Finset (Fin K)→ρ×HeightSpace→ℂ := fun J q=>tuplePhysicalScalar η p J*
     (highRowOnLines η S C (Ideal.span {∏i∈Finset.univ\J,p i}) 3 3 2 (e q.1) q.2*
-      sourceMellinWeight W0 W1 (X/elementNorm (∏i∈J,p i)) (Y/elementNorm (∏i∈J,p i))
+      sourceMellinWeight mw.left mw.right (X/elementNorm (∏i∈J,p i)) (Y/elementNorm (∏i∈J,p i))
         (Z*elementNorm (∏i∈Finset.univ\J,p i))
         ((3:ℂ)+q.2.1.1*Complex.I) ((3:ℂ)+q.2.2*Complex.I) ((2:ℂ)+q.2.1.2*Complex.I))
   have hF (J : Finset (Fin K)) : Integrable (F J) ((Measure.count:Measure ρ).prod heightMeasure) := by
     apply Integrable.const_mul
     apply highRows_counting_product_integrable e he η S C _ 3 3 2 (by norm_num) (by norm_num) (by norm_num)
-      (fun t : HeightSpace=>sourceMellinWeight W0 W1 (X/elementNorm (∏i∈J,p i))
+      (fun t : HeightSpace=>sourceMellinWeight mw.left mw.right (X/elementNorm (∏i∈J,p i))
         (Y/elementNorm (∏i∈J,p i)) (Z*elementNorm (∏i∈Finset.univ\J,p i))
         ((3:ℂ)+t.1.1*Complex.I) ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I))
-    · exact sourceMellinWeight_initial_integrable W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    · exact sourceMellinWeight_initial_integrable mw
         _ _ _ (div_pos hX (tuple_norm_pos p hp J)) (div_pos hY (tuple_norm_pos p hp J))
         (mul_pos hZ (tuple_norm_pos p hp (Finset.univ\J))) 3 2 3 (by norm_num)
-    · exact sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1
+    · exact sourceMellinWeight_initial_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support
         _ _ _ (div_pos hX (tuple_norm_pos p hp J)) (div_pos hY (tuple_norm_pos p hp J))
         (mul_pos hZ (tuple_norm_pos p hp (Finset.univ\J))) 3 2 3 (by norm_num)
   have hi := integrable_finsetSum (Finset.univ:Finset (Fin K)).powerset (fun J _=>hF J)
@@ -62,7 +61,7 @@ lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
   symm
   exact compensatedRow_kernel_subsets η S p hp (e q.1).val
     (star (C.residueMonoid (e q.1).val)*frequencyWeight ((2:ℂ)+q.2.1.2*Complex.I) (e q.1))
-    W0 W1 X Y Z hX hY hZ _ _ _
+    mw.left mw.right X Y Z hX hY hZ _ _ _
 
 lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]
     [MeasurableSpace ρ] [MeasurableSingletonClass ρ]
@@ -79,16 +78,14 @@ lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]
 
 theorem compensatedRowTripleIntegral_eq_tsum {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (C : CalibrationData) (p : Fin K→O) (hp : ∀i,p i≠0)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    compensatedRowTripleIntegral η S C W0 W1 p X Y Z=
+    compensatedRowTripleIntegral η S C mw.left mw.right p X Y Z=
       ∑'u : FreeRow,((1/(2*Real.pi):ℝ):ℂ)^3*
-        ∫t,compensatedRowOnLines η S C p W0 W1 X Y Z ⟨u.val,u.property.1⟩ t ∂heightMeasure := by
+        ∫t,compensatedRowOnLines η S C p mw.left mw.right X Y Z ⟨u.val,u.property.1⟩ t ∂heightMeasure := by
   let e : FreeRow→NonzeroFrequency := fun u=>⟨u.val,u.property.1⟩
   have he : Function.Injective e := fun a b h=>Subtype.ext (congrArg (fun u : NonzeroFrequency=>u.val) h)
-  have hi := compensatedRows_counting_product_integrable e he η S C p hp W0 W1
-    a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
+  have hi := compensatedRows_counting_product_integrable e he η S C p hp mw X Y Z hX hY hZ
   unfold compensatedRowTripleIntegral compensatedRowSeries
   rw [tsum_mul_left]
   congr 1

@@ -93,8 +93,8 @@ theorem liftError_eq_pairError (A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K
   -- `mn ≥ 2` when `α_m β_n ≠ 0`
   have hmn : ∀ m n : ℕ, d.α m ≠ 0 → d.β n ≠ 0 → 2 ≤ m * n := by
     intro m n hm hn
-    have h₁ : (2 : ℝ) ≤ m := hHm.trans (hd.α_supp m hm).1
-    have h₂ : (1 : ℝ) ≤ n := hHn.trans (hd.β_supp n hn).1
+    have h₁  := hHm.trans (hd.α_supp m hm).1
+    have h₂  := hHn.trans (hd.β_supp n hn).1
     have : (2 : ℝ) ≤ m * n := by nlinarith
     exact_mod_cast this
   unfold liftError pairError
@@ -157,7 +157,7 @@ open scoped Classical in
 `|Q_Y - Q_Y^maj - ∑_{k ≤ N} 2^{-k} ⟨f, 𝒯 f⟩_{2^k}| ≤ 16 Y² B (K² + (KJ)² + 2KJ) ε`. -/
 theorem norm_square_decomposition_le (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K}
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 2 ≤ d.Hm) (hHn : 1 ≤ d.Hn) (hV : ∀ i, 0 < harmonicMass (band x (d.a i)))
     {Y : ℝ} (hY : 1 ≤ Y) (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x)

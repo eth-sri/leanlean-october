@@ -19,8 +19,6 @@ open Erdos821.Blueprint.Graph
 local instance (priority := 11000) boolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
 
-local instance smallLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
 
 theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
     {α β : I → Type*} [∀ i, Fintype (β i)]
@@ -126,11 +124,10 @@ theorem small_array_conditioning_log_gain (F : FixedData) :
   obtain ⟨C, hC, hbound⟩ := small_array_conditioning_uniform F
   refine ⟨F.C₀ * Real.log (max 1 C), ?_⟩
   intro x P hP hL J y f
-  have hV (g : P.SmallGroup) : F.vMin ≤ P.V g.val := (hP.2.2.2.2.1 g.val).1
+  have hV (g : P.SmallGroup)  := (hP.2.2.2.2.1 g.val).1
   have hpow : C ^ Fintype.card P.SmallGroup ≤ (max 1 C) ^ Fintype.card P.SmallGroup :=
     pow_le_pow_left₀ hC.le (le_max_right _ _) _
-  have hg : (max 1 C) ^ Fintype.card P.SmallGroup ≤ (L x) ^ (F.C₀ * Real.log (max 1 C)) := by
-    exact small_group_gain F (max 1 C) (le_max_left _ _) x P hP hL
+  have hg := small_group_gain F (max 1 C) (le_max_left _ _) x P hP hL
   exact (hbound P J y hV f).trans (mul_le_mul_of_nonneg_right
     (hpow.trans hg)
     (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))

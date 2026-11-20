@@ -10,12 +10,9 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeUnitRows
-open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion
-open ActualEisensteinCubic CubicRamified ConcreteTraceCRT
-open CanonicalQuadraticSieve
+open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion ActualEisensteinCubic CubicRamified
+open ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
-local notation "ω" => HeckeFamily.omega
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem supported_unit_thirty_six (n : O) (hn : Supported (Ideal.span {n})) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(36 : O)}) n) := by
@@ -29,11 +26,11 @@ theorem supported_unit_thirty_six (n : O) (hn : Supported (Ideal.span {n})) :
 
 theorem unitSupplement_unit (u v : Oˣ) : unitSupplement u (v : O) = 1 := by
   have hspan : (Ideal.span {(v : O)} : Ideal O) = 1 := by
-    simpa only [Ideal.one_eq_top] using Ideal.span_singleton_eq_top.mpr v.isUnit
+    simp
   have hs : Supported (1 : Ideal O) := ⟨one_ne_zero, by
     intro P hP
     rw [UniqueFactorizationMonoid.normalizedFactors_one] at hP
-    exact False.elim (Multiset.notMem_zero P hP)⟩
+    simp_all⟩
   change (if Supported (Ideal.span {(v : O)}) then idealRowHom (u : O) (Ideal.span {(v : O)}) else 0) = 1
   rw [hspan, ite_eq_left hs, map_one]
 

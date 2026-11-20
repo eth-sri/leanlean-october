@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityBranches
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
@@ -17,11 +18,11 @@ open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourE
 open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
-variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→Eis) [OAI.PrincipalFamily.Maximal p]
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem global_priority_signed_branches
-    (hp:∀i,p i≠0) (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (hp:∀i,p i≠0) (hcop:OAI.PrincipalFamily.Coprime p)
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)

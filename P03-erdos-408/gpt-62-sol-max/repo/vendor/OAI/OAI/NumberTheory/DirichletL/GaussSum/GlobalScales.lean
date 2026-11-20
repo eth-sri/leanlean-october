@@ -8,71 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CompletedGauss
 open ActualEisensteinCubic
@@ -85,75 +26,19 @@ theorem largeCubeCoefficient_small_power (ε : ℝ) (hε : 0 < ε) :
 
 end CompletedGauss
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
-
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
-open SecondPassFiber (newLabel newRow)
-
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end
-
-end
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
 
 end SecondPassArithmetic
 
-section
-
-open scoped BigOperators Classical
-open MeasureTheory
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end SecondPassArithmetic
-
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
-
-end SecondPassIntegration
-end
 
 namespace SecondPassArithmetic
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum CompletedGauss
 open QuadraticSquarefreeKernel
@@ -164,7 +49,7 @@ def liftingPrime : Ideal O := Ideal.span {liftingPrimeElement}
 theorem liftingPrimeElement_norm : ShortDraftLatticeCount.qNat liftingPrimeElement=7 := by
   unfold ShortDraftLatticeCount.qNat liftingPrimeElement
   rw [ShortDraftLatticeCount.coords_eval]
-  norm_num [ShortDraftLatticeCount.q]
+  rfl
 
 theorem liftingPrime_norm : Ideal.absNorm liftingPrime=7 := by
   rw [liftingPrime,←qNat_eq_absNorm_span,liftingPrimeElement_norm]
@@ -182,17 +67,17 @@ theorem liftingPrime_prime : Prime liftingPrime := by
 theorem liftingPrime_supported : Supported liftingPrime := by
   apply (supported_span_iff liftingPrimeElement).mpr
   have hlam : ShortDraftLatticeCount.qNat lambda=3 := by
-    have he : lambda=ActualEisensteinCoordinates.eval (-1) 1 := theta_counter_lambda_eq
+    have he  := theta_counter_lambda_eq
     rw [he]
     unfold ShortDraftLatticeCount.qNat
     rw [ShortDraftLatticeCount.coords_eval]
-    norm_num [ShortDraftLatticeCount.q]
+    rfl
   have htwo : ShortDraftLatticeCount.qNat (2:O)=4 := by
     have he : (2:O)=ActualEisensteinCoordinates.eval 2 0 := by simp [ActualEisensteinCoordinates.eval]
     rw [he]
     unfold ShortDraftLatticeCount.qNat
     rw [ShortDraftLatticeCount.coords_eval]
-    norm_num [ShortDraftLatticeCount.q]
+    rfl
   constructor
   · rintro ⟨z,hz⟩
     have h := congrArg ShortDraftLatticeCount.qNat hz
@@ -211,7 +96,7 @@ theorem supported_pow {I : Ideal O} (hI : Supported I) (k : ℕ) : Supported (I^
     intro P hP
     change P∈UniqueFactorizationMonoid.normalizedFactors (1:Ideal O) at hP
     rw [UniqueFactorizationMonoid.normalizedFactors_one] at hP
-    exact (Multiset.notMem_zero P hP).elim
+    simp_all
   | succ k hk =>
     rw [pow_succ]
     exact (supported_mul_iff _ _).mpr ⟨hk,hI⟩

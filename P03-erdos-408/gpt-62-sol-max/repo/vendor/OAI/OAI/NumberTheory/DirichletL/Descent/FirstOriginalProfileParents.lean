@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCellEnergy
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfilePhysical
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 
 @[expose] public section
@@ -8,11 +11,11 @@ public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment InverseMomentFirstChildWindows ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable {ι : Type*} [DecidableEq ι] (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma originalNorms_eq_caps : originalNorms p=InverseFirstGlobalCaps.originalNorms p := by

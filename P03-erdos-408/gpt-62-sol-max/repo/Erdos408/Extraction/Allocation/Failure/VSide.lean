@@ -73,7 +73,7 @@ lemma SideGroup.modelWeight_nonneg (c : ℕ) : ∀ p ∈ g, 0 ≤ modelWeight c 
 lemma SideGroup.sideModel_mem (c : ℕ) :
     0 ≤ sideModel g c ∧ sideModel g c ≤ 1 ∧ (∑ p ∈ g, modelWeight c p) / 2 ≤ sideModel g c := by
   have hμ := hg.sum_modelWeight_le c
-  have hμ0 : 0 ≤ ∑ p ∈ g, modelWeight c p := sum_nonneg (hg.modelWeight_nonneg c)
+  have hμ0  := sum_nonneg (hg.modelWeight_nonneg c)
   have he2 := sum_powersetCard_two_prod_le g (hg.modelWeight_nonneg c)
   have he20 : 0 ≤ ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p :=
     sum_nonneg fun K hK => prod_nonneg fun p hp =>
@@ -84,7 +84,7 @@ lemma SideGroup.sideModel_mem (c : ℕ) :
 /-- `0 ≤ μ_g + e₂,g ≤ 3/2`. -/
 lemma SideGroup.sideModelAbs_le (c : ℕ) : sideModelAbs g c ≤ 3 / 2 := by
   have hμ := hg.sum_modelWeight_le c
-  have hμ0 : 0 ≤ ∑ p ∈ g, modelWeight c p := sum_nonneg (hg.modelWeight_nonneg c)
+  have hμ0  := sum_nonneg (hg.modelWeight_nonneg c)
   have he2 := sum_powersetCard_two_prod_le g (hg.modelWeight_nonneg c)
   unfold sideModelAbs
   nlinarith

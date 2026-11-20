@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.CrossSeparation
 
 @[expose] public section
@@ -9,70 +10,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 namespace IdealMobiusDivisorSum
 abbrev O := ActualEisensteinCubic.O
@@ -87,7 +29,7 @@ theorem mem_idealDivisors {I J : Ideal O} (hI : I ≠ ⊥) :
   constructor
   · exact And.right
   · intro hJI
-    have hn : 0 < Ideal.absNorm I := Nat.pos_iff_ne_zero.mpr
+    have hn  := Nat.pos_iff_ne_zero.mpr
       (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
     exact ⟨Nat.le_of_dvd hn (map_dvd Ideal.absNorm hJI), hJI⟩
 
@@ -102,8 +44,7 @@ theorem support_product_ne_zero {I : Ideal O} {S : Finset (Ideal O)}
 
 theorem factors_support_product {I : Ideal O} {S : Finset (Ideal O)}
     (hS : S ⊆ primeSupport I) : normalizedFactors (∏ P ∈ S, P) = S.val := by
-  have hp : ∀ P ∈ S.val, Prime P := fun P hP => support_prime (hS hP)
-  simpa using normalizedFactors_prod_of_prime hp
+  simpa using normalizedFactors_prod_of_prime (fun P hP => support_prime (hS hP))
 
 theorem squarefree_support_product {I : Ideal O} {S : Finset (Ideal O)}
     (hS : S ⊆ primeSupport I) : Squarefree (∏ P ∈ S, P) := by
@@ -141,10 +82,10 @@ theorem squarefree_divisor_support {I J : Ideal O} (hI : I ≠ ⊥)
 
 theorem squarefree_support_product_self {J : Ideal O} (hJ : Squarefree J) :
     (∏ P ∈ primeSupport J, P) = J := by
-  have hn : (normalizedFactors J).Nodup :=
+  have hn  :=
     (squarefree_iff_nodup_normalizedFactors hJ.ne_zero).mp hJ
   have hv : (primeSupport J).val = normalizedFactors J := by
-    simpa only [primeSupport, Multiset.toFinset_val] using hn.dedup
+    exact hn.dedup
   calc
     _ = (primeSupport J).val.prod := (Finset.prod_val _).symm
     _ = (normalizedFactors J).prod := by rw [hv]
@@ -170,8 +111,7 @@ theorem primeSupport_empty_iff (I : Ideal O) (hI : I ≠ ⊥) :
       apply Multiset.toFinset_eq_empty.mp
       exact h
     have hp := Ideal.prod_normalizedFactors_eq_self hI
-    rw [hz, Multiset.prod_zero] at hp
-    simpa only [Ideal.one_eq_top] using hp.symm
+    simp_all
   · intro h
     subst I
     simp [primeSupport, ← Ideal.one_eq_top]
@@ -183,7 +123,7 @@ theorem sum_moebius_divisors (I : Ideal O) (hI : I ≠ ⊥) :
     symm
     apply Finset.sum_subset (Finset.filter_subset _ _)
     intro J hJ hnot
-    have hn : ¬ Squarefree J := by simpa [hJ] using hnot
+    have hn : ¬ Squarefree J := by simp_all
     rw [moebius_of_not_squarefree hn, Int.cast_zero]
   rw [hfilter, squarefree_divisors_eq_image I hI, Finset.sum_image]
   · have heq : (∑ S ∈ (primeSupport I).powerset, (moebius (∏ P ∈ S, P) : ℂ)) =
@@ -197,7 +137,6 @@ theorem sum_moebius_divisors (I : Ideal O) (hI : I ≠ ⊥) :
 
 end IdealMobiusDivisorSum
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
@@ -262,7 +201,7 @@ def primaryGeneratorHom : Ideal O →*₀ O where
 
 theorem primaryGenerator_ne_zero_ideal (I : Ideal O) (h : primaryGenerator I ≠ 0) : I ≠ 0 := by
   intro hI
-  exact h (by simp [hI])
+  simp_all
 
 theorem primaryPrime_factor_ne_zero (I P : Ideal O) (hI : primaryGenerator I ≠ 0)
     (hP : P ∈ UniqueFactorizationMonoid.normalizedFactors I) : primaryPrime P ≠ 0 := by
@@ -274,10 +213,7 @@ theorem primaryPrime_factor_ne_zero (I P : Ideal O) (hI : primaryGenerator I ≠
 
 theorem span_multiset_prod (s : Multiset O) :
     Ideal.span {s.prod} = (s.map (fun x => Ideal.span {x})).prod := by
-  induction s using Multiset.induction_on with
-  | empty => simp
-  | @cons a s ih => simp only [Multiset.prod_cons, Multiset.map_cons,
-      ← Ideal.span_singleton_mul_span_singleton, ih]
+  simp
 
 theorem primaryGenerator_spec (I : Ideal O) (h : primaryGenerator I ≠ 0) :
     Ideal.span {primaryGenerator I} = I ∧ lambda ^ 2 ∣ primaryGenerator I - 1 := by
@@ -326,7 +262,6 @@ theorem primaryGenerator_norm_sq (I : Ideal O) (h : primaryGenerator I ≠ 0) :
     ‖ConcreteTraceCRT.eisEmbedding (primaryGenerator I)‖ ^ 2 = (Ideal.absNorm I : ℝ) := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span, (primaryGenerator_spec I h).1]
 
-open ActualEisensteinCubic
 
 theorem compact_window_bound (W : ℝ → ℂ) (hW : HasCompactSupport W) :
     ∃ B : ℝ, 0 < B ∧ ∀ y, W y ≠ 0 → y ≤ B := by
@@ -337,13 +272,10 @@ theorem compact_window_bound (W : ℝ → ℂ) (hW : HasCompactSupport W) :
 
 theorem norm_at_least_one (I : Ideal O) (hI : I ≠ 0) :
     (1 : ℝ) ≤ Ideal.absNorm I := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
 
 theorem triple_scale_bounds (a b c : ℝ) (ha : 1 ≤ a) (hb : 1 ≤ b) (hc : 1 ≤ c) :
     a ≤ a * b ^ 3 * c ^ 3 ∧ b ≤ a * b ^ 3 * c ^ 3 ∧ c ≤ a * b ^ 3 * c ^ 3 := by
-  have ha0 : 0 ≤ a := by linarith
-  have hb0 : 0 ≤ b := by linarith
-  have hc0 : 0 ≤ c := by linarith
   have hb3 : 1 ≤ b ^ 3 := one_le_pow₀ hb
   have hc3 : 1 ≤ c ^ 3 := one_le_pow₀ hc
   constructor
@@ -370,19 +302,18 @@ theorem finite_support_norm_triple (W : ℝ → ℂ) (hW : HasCompactSupport W)
   have hS : S.Finite := Ideal.finite_setOfPred_absNorm_le M
   apply (hS.prod (hS.prod hS)).subset
   rintro ⟨I, J, H⟩ hF
-  have hF0 : F (I, J, H) ≠ 0 := hF
-  have hI : I ≠ 0 := fun h => hF0 (hzero I J H (Or.inl h))
-  have hJ : J ≠ 0 := fun h => hF0 (hzero I J H (Or.inr (Or.inl h)))
-  have hH : H ≠ 0 := fun h => hF0 (hzero I J H (Or.inr (Or.inr h)))
-  have hw : W ((Ideal.absNorm I : ℝ) * (Ideal.absNorm J : ℝ) ^ 3 *
-      (Ideal.absNorm H : ℝ) ^ 3 / X) ≠ 0 := fun h => hF0 (hwindow I J H h)
+  have hF0  := hF
+  have hI  := fun h => hF0 (hzero I J H (Or.inl h))
+  have hJ  := fun h => hF0 (hzero I J H (Or.inr (Or.inl h)))
+  have hH  := fun h => hF0 (hzero I J H (Or.inr (Or.inr h)))
+  have hw  := fun h => hF0 (hwindow I J H h)
   have hsize := (div_le_iff₀ hX).mp (hbound _ hw)
   have hb := triple_scale_bounds _ _ _ (norm_at_least_one I hI)
     (norm_at_least_one J hJ) (norm_at_least_one H hH)
   have hIM : Ideal.absNorm I ≤ M := by exact_mod_cast (hb.1.trans hsize).trans hM.le
   have hJM : Ideal.absNorm J ≤ M := by exact_mod_cast (hb.2.1.trans hsize).trans hM.le
-  have hHM : Ideal.absNorm H ≤ M := by exact_mod_cast (hb.2.2.trans hsize).trans hM.le
-  exact ⟨hIM, hJM, hHM⟩
+  refine ⟨hIM, hJM, ?_⟩
+  exact_mod_cast (hb.2.2.trans hsize).trans hM.le
 
 end
 section
@@ -414,7 +345,7 @@ def cubicRow (I : Ideal O) (hI : primaryGenerator I ≠ 0) (x : O ⧸ I) : ℂ :
 
 def gaussTwo (I : Ideal O) (hI : primaryGenerator I ≠ 0) : ℂ := by
   let n := primaryGenerator I
-  letI : Finite (O ⧸ Ideal.span {n}) := finite_quotient_span hI
+  letI  := finite_quotient_span hI
   letI : Fintype (O ⧸ Ideal.span {n}) := Fintype.ofFinite _
   let e := Ideal.quotEquivOfEq (primaryGenerator_spec I hI).1
   let ψ := eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates n hI

@@ -22,10 +22,6 @@ def primeSlot (L : Finset ι) (a : ι → ℂ) (A : Finset ι) : ℂ :=
 def primeMark (I : Finset σ) (L : σ → Finset ι) (a : σ → ι → ℂ)
     (A : Finset ι) : ℂ := ∏ i ∈ I, primeSlot (L i) (a i) A
 
-omit [DecidableEq σ] in
-@[simp] theorem primeMark_empty (L : σ → Finset ι) (a : σ → ι → ℂ)
-    (A : Finset ι) : primeMark ∅ L a A = 1 := by
-  simp [primeMark]
 
 theorem primeMark_eq_tuple_sum (I : Finset σ) (L : σ → Finset ι)
     (a : σ → ι → ℂ) (A : Finset ι) :
@@ -88,9 +84,7 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
   have hcard : (∑ i ∈ I, (L i ∩ A).card) ≤ A.card := by
     rw [← Finset.card_biUnion hdis]
     apply Finset.card_le_card
-    intro p hp
-    obtain ⟨i, hi, hp⟩ := Finset.mem_biUnion.mp hp
-    exact (Finset.mem_inter.mp hp).2
+    simp
   calc
     ‖primeMark I L a A‖ = ∏ i ∈ I, ‖primeSlot (L i) (a i) A‖ := by
       exact norm_prod _ _

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceChildProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowControl
-open CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyReferenceChildProfiles CenteredMomentFiniteProfileExceptional
 
 lemma height_product (v t H:ℝ)(hH:0≤H):
     1+‖v‖+‖t‖≤(1+‖v‖)*(1+|t|+H):=by
@@ -30,16 +29,12 @@ theorem reflected_child_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   refine ⟨n,T,D^2,sq_pos_of_pos hD,?_⟩
   intro W hs j k v t height hheight
   have hbase:=hd W hs j k v t
-  have hgrowth:(1+‖v‖+‖t‖)^n≤((1+‖v‖)*(1+|t|+height))^n:=
-    pow_le_pow_left₀ (by positivity) (height_product v t height hheight) n
   have hprof:((reflectionProfiles ha hlo hhi W hs j k v t).control S)^2≤
       (D*sourceControl T W*((1+‖v‖)*(1+|t|+height))^n)^2:=
     pow_le_pow_left₀ (Profiles.control_nonneg _ _) (hbase.trans
-      (mul_le_mul_of_nonneg_left hgrowth (mul_nonneg hD.le (sourceControl_nonneg _ _)))) 2
+      (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (height_product v t height hheight) n) (mul_nonneg hD.le (sourceControl_nonneg _ _)))) 2
   apply (mul_le_mul_of_nonneg_right hprof (by positivity)).trans_eq
   simp only [mul_pow] at *
-  rw [pow_add,show (1+|t|+height)^(2*n)=((1+|t|+height)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul],
-    show (1+‖v‖)^(2*n)=((1+‖v‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 end SevenEighths.CenteredMomentEnergyReferenceLowControl

@@ -269,7 +269,7 @@ theorem sum_norm_groupCoeff_le {P : ι → Finset ℕ} {M m : ℕ} {S : ι → F
         if groupRep S p ⊆ divs (univ.biUnion P) n then ‖groupCoeff P S b p‖ else 0) ≤
       ((max 1 vlo⁻¹) ^ Fintype.card ι * 2 ^ #(divs (univ.biUnion P) n)) ^ (m + 1) := by
   set B := max 1 vlo⁻¹
-  have hV0 : ∀ g, 0 < harmonicMass (P g) := fun g => hvlo.trans_le (hV g)
+  have hV0  := fun g => hvlo.trans_le (hV g)
   rw [← sum_filter, filter_groupLists_eq]
   -- each list has weight at most `∏_g V_g^{-|S g|}`
   have h1 : ∀ p ∈ slotLists P S n, ‖groupCoeff P S b p‖ ≤
@@ -323,12 +323,10 @@ theorem sum_norm_groupCoeff_le {P : ι → Finset ℕ} {M m : ℕ} {S : ι → F
         have hω : (primeCount (P g) n : ℝ) ≤ 2 ^ primeCount (P g) n := by
           exact_mod_cast Nat.lt_two_pow_self.le
         have h21 : (1 : ℝ) ≤ 2 ^ primeCount (P g) n := one_le_pow₀ (by norm_num)
-        have hinv : (harmonicMass (P g))⁻¹ ≤ B :=
-          ((inv_le_inv₀ (hV0 g) hvlo).2 (hV g)).trans (le_max_right _ _)
         have hbase : (primeCount (P g) n : ℝ) * (harmonicMass (P g))⁻¹ ≤
             B * 2 ^ primeCount (P g) n := by
           rw [mul_comm]
-          exact mul_le_mul hinv hω (Nat.cast_nonneg _) (by linarith)
+          exact mul_le_mul (((inv_le_inv₀ (hV0 g) hvlo).2 (hV g)).trans (le_max_right _ _)) hω (Nat.cast_nonneg _) (by linarith)
         have hone : 1 ≤ B * 2 ^ primeCount (P g) n := by nlinarith
         calc ((primeCount (P g) n : ℝ) * (harmonicMass (P g))⁻¹) ^ #(S g)
             ≤ (B * 2 ^ primeCount (P g) n) ^ #(S g) :=
@@ -360,8 +358,6 @@ theorem sum_norm_groupCoeff_div_le {P : ι → Finset ℕ} {M : ℕ} {S : ι →
     have hf : ∀ g, ∏ i, f g i (p g i) = ∏ i ∈ S g, (harmonicMass (P g))⁻¹ / (p g i : ℝ) :=
       fun g => Fintype.prod_ite_mem (S g) _
     simp only [hf]
-    have hA : 0 ≤ ∏ g, (harmonicMass (P g))⁻¹ ^ #(S g) :=
-      prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV0 g).le) _
     have heq : (∏ g, (harmonicMass (P g))⁻¹ ^ #(S g)) / ∏ g, ∏ i ∈ S g, (p g i : ℝ) =
         ∏ g, ∏ i ∈ S g, (harmonicMass (P g))⁻¹ / (p g i : ℝ) := by
       rw [← prod_div_distrib]
@@ -372,7 +368,7 @@ theorem sum_norm_groupCoeff_div_le {P : ι → Finset ℕ} {M : ℕ} {S : ι →
         (harmonicMass (P g))⁻¹ ^ #(S g) := fun g => by
       rw [norm_pow, norm_inv, Complex.norm_real, Real.norm_of_nonneg (hV0 g).le]
     simp only [hnorm]
-    exact div_le_div_of_nonneg_right (mul_le_of_le_one_right hA (hb p))
+    exact div_le_div_of_nonneg_right (mul_le_of_le_one_right (prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV0 g).le) _) (hb p))
       (prod_nonneg fun g _ => prod_nonneg fun i _ => Nat.cast_nonneg _)
   have hf0 : ∀ g i y, 0 ≤ f g i y := by
     intro g i y

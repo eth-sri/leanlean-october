@@ -19,7 +19,7 @@ theorem nat_mul_log_nonneg (N : ℕ) : 0 ≤ (N : ℝ) * Real.log (2 * N) := by
 
 /-- P1's discrete mean square applies to every prime-polynomial power with the same K. -/
 theorem discrete_prime_polynomial_moment
-    (hm : Blueprint.MeanSquares := Erdos821.Classical.blueprint_meanSquares) :
+    (hm : Blueprint.MeanSquares := Erdos821.Classical.meanSquares) :
     ∃ K : ℝ, 0 < K ∧ ∀ (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
       (lo hi : ℝ) (E : Finset ℝ),
       (∀ p ∈ s, p.Prime) → lo ≤ hi →

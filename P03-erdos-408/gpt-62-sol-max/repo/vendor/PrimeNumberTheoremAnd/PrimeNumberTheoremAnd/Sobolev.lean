@@ -97,7 +97,7 @@ theorem deriv_smul {f : CS (n + 1) E} : (R • f).deriv = R • f.deriv := by
 
 noncomputable def scale (g : CS n E) (R : ℝ) : CS n E := by
   by_cases h : R = 0
-  · exact ⟨0, contDiff_const, by simp [HasCompactSupport, tsupport]⟩
+  · exact ⟨0, contDiff_const, by simp [HasCompactSupport]⟩
   · refine ⟨fun x => funscale g R x, ?_, ?_⟩
     · exact g.h1.comp (contDiff_const_smul R⁻¹)
     · exact g.h2.comp_smul (inv_ne_zero h)
@@ -175,8 +175,8 @@ def sub (f g : W1 n E) : W1 n E where
   toFun := f - g
   smooth := f.smooth.sub g.smooth
   integrable k hk := by
-    have hf : ContDiff ℝ k f := f.smooth.of_le (by simp [hk])
-    have hg : ContDiff ℝ k g := g.smooth.of_le (by simp [hk])
+    have hf : ContDiff ℝ k f := f.smooth.of_le (by simp_all)
+    have hg : ContDiff ℝ k g := g.smooth.of_le (by simp_all)
     simpa [iteratedDeriv_sub hf hg] using (f.integrable hk).sub (g.integrable hk)
 
 instance : Sub (W1 n E) where sub := sub
@@ -187,10 +187,9 @@ theorem integrable_iteratedDeriv_Schwarz {f : 𝓢(ℝ, ℂ)} : Integrable (iter
   | succ n ih =>
     rw [iteratedDeriv_succ']
     have hd : (SchwartzMap.derivCLM ℝ ℂ f : ℝ → ℂ) = _root_.deriv f := by
-      funext x
-      exact SchwartzMap.derivCLM_apply ℝ f x
+      rfl
     rw [← hd]
-    exact ih (f := SchwartzMap.derivCLM ℝ ℂ f)
+    fun_prop
 
 noncomputable def ofSchwartz (f : 𝓢(ℝ, ℂ)) : W1 n ℂ where
   toFun := f
@@ -224,7 +223,7 @@ def ofCS2 (f : CS 2 ℂ) : W21 := by
     | zero =>
       simpa using (f.h1.continuous_deriv one_le_two).integrable_of_hasCompactSupport f.h2.deriv
     | succ k =>
-      have hk0 : k = 0 :=
+      have hk0  :=
         Nat.eq_zero_of_le_zero (Nat.le_of_succ_le_succ (Nat.le_of_succ_le_succ hk))
       subst k
       simpa [iteratedDeriv_succ] using

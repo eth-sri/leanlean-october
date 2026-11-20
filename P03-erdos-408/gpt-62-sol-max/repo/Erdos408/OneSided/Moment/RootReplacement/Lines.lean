@@ -45,12 +45,12 @@ theorem mem_lineSet {Q : Finset ℕ} {ℓ : ℕ → ℕ} :
   rw [lineSet, mem_image]
   constructor
   · rintro ⟨f, hf, rfl⟩
-    refine ⟨fun p hp => ?_, fun p hp => by simp [hp]⟩
-    simpa [hp, Nat.lt_succ_iff] using mem_pi.1 hf p hp
+    refine ⟨fun p hp => ?_, fun p hp => by simp_all⟩
+    simp_all
   · rintro ⟨h₁, h₂⟩
     refine ⟨fun p _ => ℓ p, mem_pi.2 fun p hp => mem_range.2 (Nat.lt_succ_of_le (h₁ p hp)), ?_⟩
     funext p
-    by_cases hp : p ∈ Q <;> simp [hp, h₂]
+    simp_all
 
 /-- If every point of `t` has `N ≠ 0` preimages in `s` under `f`, then the average of `F ∘ f`
 over `s` is the average of `F` over `t`. -/
@@ -252,7 +252,7 @@ theorem card_rows_eq {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {S : ℕ} [NeZ
     obtain ⟨c, hc⟩ := hψ.2 fun p => (x p).2
     have hx' : (fun p => (ψ (u, c).1 p, ψ (u, c).2 p)) = x := by
       funext p
-      simp only [hu, hc]
+      simp [hu, hc]
     refine ⟨(u, c), mem_filter.2 ⟨mem_univ _, (hmem _).2 ?_⟩, hx'⟩
     rw [hx']
     exact hx

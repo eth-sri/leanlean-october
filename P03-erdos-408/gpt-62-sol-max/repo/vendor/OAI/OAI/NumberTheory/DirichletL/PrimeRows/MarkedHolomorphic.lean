@@ -1,14 +1,14 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedContinuation
-public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedHolomorphic
+public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedAnalytic
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 local notation "O" => HeckeFamily.O

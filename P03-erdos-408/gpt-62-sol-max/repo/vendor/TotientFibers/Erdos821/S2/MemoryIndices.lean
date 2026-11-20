@@ -19,7 +19,7 @@ variable {P : PrimeGroups}
 theorem memoryEntry_enumeration {g : P.Group} (z : P.Memory g) :
     (Finset.univ : Finset (Fin z.card)).val.map (memoryEntry z) = z := by
   let v : List.Vector (P.Particle g) z.card := ⟨z.toList, Multiset.length_toList z⟩
-  have he : memoryEntry z = v.get := by funext i; rfl
+  have he : memoryEntry z = v.get := by rfl
   have hl : List.ofFn (memoryEntry z) = z.toList := by
     rw [he, ← List.Vector.toList_ofFn, List.Vector.ofFn_get]
     rfl
@@ -83,7 +83,7 @@ theorem local_rho_cancellation (rho q eta V : ℝ) (hρ : rho ≠ 0)
     rho ^ Z * (-eta / rho) ^ t * (q / rho ^ (2 : ℕ)) ^ (Z - t) *
       (-eta * V / rho) ^ b * rho ^ (Z - t + b) =
       (-eta) ^ t * q ^ (Z - t) * (-eta * V) ^ b := by
-  have hZ : Z = (Z - t) + t := (Nat.sub_add_cancel ht).symm
+  have hZ  := (Nat.sub_add_cancel ht).symm
   rw [show rho ^ Z = rho ^ (Z - t) * rho ^ t by rw [← pow_add, ← hZ]]
   simp only [div_pow, pow_add]
   field_simp [hρ]
@@ -102,7 +102,7 @@ theorem ghostChoiceWeight_rho_cancel (F : FixedData) (n : ℕ) (rho : ℝ) (hρ 
   apply Finset.prod_congr rfl
   intro g _
   have hn := congrArg (fun Z => rho ^ Z) (ghostChoiceValid_zero_card c hc g)
-  have ht : (c.1 g).card ≤ (zeroMemoryIndices (s.2.2 g)).card := Finset.card_le_card (hc g).1
+  have ht  := Finset.card_le_card (hc g).1
   simp only [div_one, one_pow]
   calc
     _ = (rho ^ (zeroMemoryIndices (s.2.2 g)).card * (-eta F n i / rho) ^ (c.1 g).card *

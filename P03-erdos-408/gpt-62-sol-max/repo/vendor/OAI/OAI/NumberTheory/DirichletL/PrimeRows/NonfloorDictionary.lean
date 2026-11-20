@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralClassPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection
-open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst
+open HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O)
 variable (H : Subgroup (O ⧸ M)ˣ)

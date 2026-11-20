@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonSectors
 open CenteredMomentCompleteCommon CenteredMomentSupport IdealMobiusDivisorSum UniqueFactorizationMonoid
@@ -32,12 +32,10 @@ theorem supportExtract_of_disjoint (I : Ideal O) (S : Finset (Ideal O))
 theorem reconstructed_commonSupport (C D a b : Ideal O)
     (hC : C≠0) (hD : D≠0) (ha : a≠0) (hb : b≠0)
     (hCD : primeSupport C=primeSupport D)
-    (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b) :
+ (hab : IsCoprime a b) :
     commonSupport (C*a) (D*b)=primeSupport C := by
   unfold commonSupport
   rw [primeSupport_mul C a hC ha,primeSupport_mul D b hD hb,← hCD]
-  have h₁ := (IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC ha).mpr hCa
-  have h₂ := (IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC hb).mpr hCb
   have h₃ := (IdealCoprimeSieveOperator.primeSupport_disjoint_iff ha hb).mpr hab
   ext P
   simp only [Finset.mem_inter,Finset.mem_union]
@@ -54,7 +52,7 @@ theorem reconstructed_commonParts (C D a b : Ideal O)
     (hCD : primeSupport C=primeSupport D)
     (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b) :
     commonPart (C*a) (D*b)=C ∧ commonPart (D*b) (C*a)=D := by
-  have hs := reconstructed_commonSupport C D a b hC hD ha hb hCD hCa hCb hab
+  have hs := reconstructed_commonSupport C D a b hC hD ha hb hCD hab
   have h₁ := (IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC ha).mpr hCa
   have h₂ := (IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC hb).mpr hCb
   constructor

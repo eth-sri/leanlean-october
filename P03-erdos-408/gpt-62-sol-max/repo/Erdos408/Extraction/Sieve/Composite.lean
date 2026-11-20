@@ -48,17 +48,6 @@ def tuplesWithProd (A : Finset ℕ) (j n : ℕ) : Finset (Fin j → ℕ) :=
 
 /-! ### Roughness -/
 
-/-- Membership in `primesIcc 2 z`. -/
-lemma mem_primesIcc_two {z : ℝ} {p : ℕ} : p ∈ primesIcc 2 z ↔ p.Prime ∧ (p : ℝ) ≤ z := by
-  simp only [primesIcc, mem_filter, mem_Icc]
-  constructor
-  · rintro ⟨⟨-, h⟩, hp⟩
-    exact ⟨hp, (Nat.le_floor_iff' hp.ne_zero).1 h⟩
-  · rintro ⟨hp, h⟩
-    refine ⟨⟨?_, (Nat.le_floor_iff' hp.ne_zero).2 h⟩, hp⟩
-    rw [Nat.ceil_le]
-    exact_mod_cast hp.two_le
-
 /-- `n` is rough iff each of its prime factors exceeds `z`. -/
 lemma rough_iff {z : ℝ} {n : ℕ} : Rough z n ↔ ∀ p, p.Prime → p ∣ n → z < p := by
   simp only [Rough, mem_primesIcc_two]
@@ -105,15 +94,13 @@ lemma card_tuplesWithProd_le {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) (j n :
     exact hA _ (Fintype.mem_piFinset.1 hpA i)
   constructor
   · rcases (tuplesWithProd A j n).eq_empty_or_nonempty with h | ⟨p₀, hp₀⟩
-    · rw [h, card_empty]
-      exact Nat.zero_le _
+    · simp_all
     have hlen : n.primeFactorsList.length = j := by
       rw [← (hperm p₀ hp₀).length_eq, List.length_ofFn]
     calc #(tuplesWithProd A j n) ≤ #(n.primeFactorsList.permutations.toFinset) := by
           refine card_le_card_of_injOn List.ofFn (fun p hp => ?_) fun p _ q _ h =>
             List.ofFn_injective h
-          rw [mem_coe, List.mem_toFinset]
-          exact List.mem_permutations.2 (hperm p hp)
+          simp_all
       _ ≤ n.primeFactorsList.permutations.length := List.toFinset_card_le _
       _ = j.factorial := by rw [List.length_permutations, hlen]
   · rintro ⟨p, hp⟩
@@ -126,7 +113,7 @@ lemma card_tuplesWithProd_of_squarefree {A : Finset ℕ} (hA : ∀ p ∈ A, p.Pr
     #(tuplesWithProd A #n.primeFactors n) = (#n.primeFactors).factorial := by
   refine le_antisymm (card_tuplesWithProd_le hA _ _).1 ?_
   set F := n.primeFactors
-  let e : Fin #F ≃ F := F.equivFin.symm
+  let e  := F.equivFin.symm
   -- each permutation of `Fin #F` gives an ordering of the prime factors
   let t : Equiv.Perm (Fin #F) → Fin #F → ℕ := fun σ i => e (σ i)
   have ht : ∀ σ, t σ ∈ tuplesWithProd A #F n := by
@@ -162,8 +149,12 @@ lemma length_primeFactorsList_of_squarefree {n : ℕ} (hn : Squarefree n) :
 def compositeWeight (A : Finset ℕ) (J n : ℕ) : ℝ :=
   ∑ j ∈ Icc 2 J, ((j.factorial : ℝ))⁻¹ * #(tuplesWithProd A j n)
 
+section
+
+variable {A : Finset ℕ}
+
 /-- `a(n)` is the term `j = Ω(n)`. -/
-lemma compositeWeight_eq {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) (J n : ℕ) :
+lemma compositeWeight_eq (hA : ∀ p ∈ A, p.Prime) (J n : ℕ) :
     compositeWeight A J n = if n.primeFactorsList.length ∈ Icc 2 J then
       ((n.primeFactorsList.length.factorial : ℝ))⁻¹ *
         #(tuplesWithProd A n.primeFactorsList.length n) else 0 := by
@@ -178,11 +169,11 @@ lemma compositeWeight_eq {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) (J n : ℕ
     have : #(tuplesWithProd A j n) = 0 := by
       by_contra hne
       have := (card_tuplesWithProd_le hA j n).2 (card_pos.1 (Nat.pos_of_ne_zero hne))
-      exact h (this ▸ hj)
+      simp_all
     rw [this, Nat.cast_zero, mul_zero]
 
 /-- `0 ≤ a(n) ≤ 1`. -/
-lemma compositeWeight_mem {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) (J n : ℕ) :
+lemma compositeWeight_mem (hA : ∀ p ∈ A, p.Prime) (J n : ℕ) :
     0 ≤ compositeWeight A J n ∧ compositeWeight A J n ≤ 1 := by
   rw [compositeWeight_eq hA]
   split_ifs
@@ -196,22 +187,28 @@ lemma compositeWeight_mem {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) (J n : �
   · exact ⟨le_rfl, zero_le_one⟩
 
 /-- A prime has `a(p) = 0`. -/
-lemma compositeWeight_prime {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) (J : ℕ) {p : ℕ}
+lemma compositeWeight_prime (hA : ∀ p ∈ A, p.Prime) (J : ℕ) {p : ℕ}
     (hp : p.Prime) : compositeWeight A J p = 0 := by
   rw [compositeWeight_eq hA, Nat.primeFactorsList_prime hp, ite_eq_right (by simp)]
 
 /-- A squarefree `n` with `2 ≤ ω(n) ≤ J` and prime factors in `A` has `a(n) = 1`. -/
-lemma compositeWeight_squarefree {A : Finset ℕ} (hA : ∀ p ∈ A, p.Prime) {J n : ℕ}
+lemma compositeWeight_squarefree (hA : ∀ p ∈ A, p.Prime) {J n : ℕ}
     (hn : Squarefree n) (hnA : n.primeFactors ⊆ A) (h2 : 2 ≤ #n.primeFactors)
     (hJ : #n.primeFactors ≤ J) : compositeWeight A J n = 1 := by
   rw [compositeWeight_eq hA, length_primeFactorsList_of_squarefree hn,
     ite_eq_left (mem_Icc.2 ⟨h2, hJ⟩), card_tuplesWithProd_of_squarefree hA hn hnA]
   have : ((#n.primeFactors).factorial : ℝ) ≠ 0 := by
-    exact_mod_cast (Nat.factorial_pos _).ne'
+    positivity
   exact inv_mul_cancel₀ this
 
+end
+
+section
+
+variable {j : ℕ} (A : Finset ℕ)
+
 /-- The tuples with entries above `z` are the tuples from the primes above `z`. -/
-lemma sum_piFinset_ite_eq {j : ℕ} (A : Finset ℕ) (z : ℝ) (F : (Fin j → ℕ) → ℝ) :
+lemma sum_piFinset_ite_eq (z : ℝ) (F : (Fin j → ℕ) → ℝ) :
     ∑ p ∈ Fintype.piFinset (fun _ : Fin j => A), (if ∀ i, z < (p i : ℝ) then F p else 0) =
       ∑ p ∈ Fintype.piFinset (fun _ : Fin j => A.filter fun q : ℕ => z < (q : ℝ)), F p := by
   rw [← sum_filter]
@@ -225,7 +222,7 @@ lemma sum_piFinset_ite_eq {j : ℕ} (A : Finset ℕ) (z : ℝ) (F : (Fin j → �
     exact ⟨fun i => (h i).1, fun i => (h i).2⟩
 
 /-- The sum over `j`-tuples is a sum over their products, counted with multiplicity. -/
-lemma sum_piFinset_eq_sum_tuplesWithProd {j : ℕ} (A : Finset ℕ) (hA : ∀ p ∈ A, p.Prime)
+lemma sum_piFinset_eq_sum_tuplesWithProd (hA : ∀ p ∈ A, p.Prime)
     (N : ℕ) (G : ℕ → ℝ) (hG : ∀ n, N < n → G n = 0) :
     ∑ p ∈ Fintype.piFinset (fun _ : Fin j => A), G (∏ i, p i) =
       ∑ n ∈ Icc 1 N, #(tuplesWithProd A j n) * G n := by
@@ -253,6 +250,8 @@ lemma sum_piFinset_eq_sum_tuplesWithProd {j : ℕ} (A : Finset ℕ) (hA : ∀ p 
           by_contra hle
           exact hnN (mem_Icc.2 ⟨h1, not_lt.1 hle⟩)
         rw [hG _ this, mul_zero]
+
+end
 
 /-- E3: the rough sum minus its prime part and `∑_{2 ≤ j ≤ J} Comp_j / j!` is
 at most the sum of `|G|` over the rough `n ≤ Y` that are not squarefree with
@@ -350,7 +349,7 @@ lemma abs_sum_rough_sub_le {z Y : ℝ} (J : ℕ) (G : ℕ → ℝ) (hG1 : G 1 = 
       have hnA : n.primeFactors ⊆ A := by
         intro q hq
         have hqp := Nat.prime_of_mem_primeFactors hq
-        have hqn : q ≤ n := Nat.le_of_mem_primeFactors hq
+        have hqn  := Nat.le_of_mem_primeFactors hq
         have hzq := rough_iff.1 hnz q hqp (Nat.dvd_of_mem_primeFactors hq)
         refine mem_filter.2 ⟨mem_filter.2 ⟨mem_Icc.2 ⟨Nat.ceil_le.2 hzq.le, ?_⟩, hqp⟩, hzq⟩
         exact hqn.trans (mem_Icc.1 hnN).2
@@ -390,7 +389,6 @@ lemma card_filter_dvd_Icc (N d : ℕ) : #((Icc 1 N).filter (d ∣ ·)) = N / d :
 /-- At most `N / ⌊z⌋` of the rough `n ≤ N` are not squarefree. -/
 lemma card_rough_not_squarefree_le {z : ℝ} (hz : 1 ≤ z) (N : ℕ) :
     (#((Icc 1 N).filter fun n => Rough z n ∧ ¬ Squarefree n) : ℝ) ≤ N / ⌊z⌋₊ := by
-  have hz1 : 1 ≤ ⌊z⌋₊ := Nat.le_floor (by exact_mod_cast hz)
   set P := (Ioc ⌊z⌋₊ N).filter Nat.Prime
   have hsub : (Icc 1 N).filter (fun n => Rough z n ∧ ¬ Squarefree n) ⊆
       P.biUnion fun p => (Icc 1 N).filter (p * p ∣ ·) := by
@@ -399,9 +397,9 @@ lemma card_rough_not_squarefree_le {z : ℝ} (hz : 1 ≤ z) (N : ℕ) :
     rw [Nat.squarefree_iff_prime_squarefree] at hsq
     simp only [not_forall, not_not] at hsq
     obtain ⟨p, hp, hpp⟩ := hsq
-    have hpn : p ∣ n := (Dvd.intro p rfl).trans hpp
+    have hpn  := (Dvd.intro p rfl).trans hpp
     have hzp := rough_iff.1 hr p hp hpn
-    have hpN : p ≤ N := (Nat.le_of_dvd (mem_Icc.1 hnN).1 hpn).trans (mem_Icc.1 hnN).2
+    have hpN  := (Nat.le_of_dvd (mem_Icc.1 hnN).1 hpn).trans (mem_Icc.1 hnN).2
     refine mem_biUnion.2 ⟨p, mem_filter.2 ⟨mem_Ioc.2 ⟨?_, hpN⟩, hp⟩, mem_filter.2 ⟨hnN, hpp⟩⟩
     exact (Nat.floor_lt (by linarith)).2 hzp
   have h1 := (card_le_card hsub).trans card_biUnion_le
@@ -421,7 +419,7 @@ lemma card_rough_not_squarefree_le {z : ℝ} (hz : 1 ≤ z) (N : ℕ) :
     _ ≤ N * (1 / ⌊z⌋₊) := by
         refine mul_le_mul_of_nonneg_left ?_ (Nat.cast_nonneg _)
         rcases le_or_gt ⌊z⌋₊ N with h | h
-        · have := sum_Ioc_inv_sq_le hz1 N h
+        · have := sum_Ioc_inv_sq_le (Nat.le_floor (by exact_mod_cast hz)) N h
           have : (0 : ℝ) ≤ 1 / N := by positivity
           linarith
         · rw [Ioc_eq_empty (by omega), sum_empty]
@@ -449,8 +447,7 @@ lemma sum_two_pow_card_primeFactors_le {z Y D : ℝ} (hz : 0 ≤ z) (hzY : z ≤
     obtain ⟨hnY, hr⟩ := mem_filter.1 hn
     have hqp := Nat.prime_of_mem_primeFactors hq
     refine mem_primesIoc.2 ⟨hqp, rough_iff.1 hr q hqp (Nat.dvd_of_mem_primeFactors hq), ?_⟩
-    have hqY : q ≤ ⌊Y⌋₊ := (Nat.le_of_mem_primeFactors hq).trans (mem_Icc.1 hnY).2
-    have : (q : ℝ) ≤ ⌊Y⌋₊ := by exact_mod_cast hqY
+    have : (q : ℝ) ≤ ⌊Y⌋₊ := by exact_mod_cast ((Nat.le_of_mem_primeFactors hq).trans (mem_Icc.1 hnY).2)
     exact this.trans (Nat.floor_le hY0)
   -- `2^{ω(n)} = #{S ⊆ Q : S ⊆ ω(n)}`
   have h2 : ∀ n ∈ R, (2 : ℝ) ^ #n.primeFactors =
@@ -484,7 +481,7 @@ lemma sum_two_pow_card_primeFactors_le {z Y D : ℝ} (hz : 0 ≤ z) (hzY : z ≤
         have hdn : d ∣ n := prod_primes_dvd n (fun p hp => (hSp p hp).prime)
           fun p hp => Nat.dvd_of_mem_primeFactors (hSn hp)
         obtain ⟨b, rfl⟩ := hdn
-        have hb : (d * b) / d = b := Nat.mul_div_cancel_left b hd
+        have hb := Nat.mul_div_cancel_left b hd
         simp only [mem_coe, hb]
         have hb0 : 0 < b := by
           rcases Nat.eq_zero_or_pos b with h | h
@@ -575,11 +572,6 @@ lemma sum_two_pow_card_primeFactors_le {z Y D : ℝ} (hz : 0 ≤ z) (hzY : z ≤
 
 /-! ### The sieve upper bound for rough numbers -/
 
-/-- `primesIcc 2 w` and `primesIoc 1 w` are both the primes up to `w`. -/
-lemma primesIcc_two_eq (w : ℝ) : primesIcc 2 w = primesIoc 1 w := by
-  ext p
-  rw [mem_primesIcc_two, mem_primesIoc_one]
-
 /-- Sets of primes inject into their products: a sum over the sets with
 product at most `Y` is at most the sum over `r ≤ Y`. -/
 lemma sum_powerset_prod_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (Y : ℝ) (F : ℕ → ℝ)
@@ -589,12 +581,12 @@ lemma sum_powerset_prod_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (Y : ℝ
   have hinj : Set.InjOn (fun D : Finset ℕ => ∏ p ∈ D, p)
       (P.powerset.filter fun D => ((∏ p ∈ D, p : ℕ) : ℝ) ≤ Y) := by
     intro D₁ h₁ D₂ h₂ h
-    have hD₁ : ∀ p ∈ D₁, p.Prime := fun p hp =>
+    have hD₁  := fun p hp =>
       hP p (mem_powerset.1 (mem_filter.1 h₁).1 hp)
-    have hD₂ : ∀ p ∈ D₂, p.Prime := fun p hp =>
+    have hD₂  := fun p hp =>
       hP p (mem_powerset.1 (mem_filter.1 h₂).1 hp)
     rw [← Nat.primeFactors_prod hD₁, ← Nat.primeFactors_prod hD₂]
-    exact congrArg Nat.primeFactors h
+    congr
   rw [← sum_image hinj]
   refine sum_le_sum_of_subset_of_nonneg (fun r hr => ?_) fun r _ _ => hF r
   obtain ⟨D, hD, rfl⟩ := mem_image.1 hr
@@ -613,11 +605,11 @@ lemma card_powerset_prod_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) {Y : �
 lemma abs_card_multiples_sub_le {Y : ℝ} (hY : 0 ≤ Y) {d : ℕ} (hd : 0 < d) :
     |((⌊Y⌋₊ / d : ℕ) : ℝ) - Y / d| ≤ 2 := by
   have hd' : (0 : ℝ) < d := by exact_mod_cast hd
-  have h1 : ((⌊Y⌋₊ / d : ℕ) : ℝ) ≤ Y / d :=
+  have h1  :=
     Nat.cast_div_le.trans (div_le_div_of_nonneg_right (Nat.floor_le hY) hd'.le)
   have h2 : (⌊Y⌋₊ : ℝ) < ((⌊Y⌋₊ / d : ℕ) : ℝ) * d + d := by
     exact_mod_cast Nat.lt_div_mul_add (a := ⌊Y⌋₊) hd
-  have h3 : Y < ⌊Y⌋₊ + 1 := Nat.lt_floor_add_one Y
+  have h3  := Nat.lt_floor_add_one Y
   have h4 : Y / d - 2 ≤ ((⌊Y⌋₊ / d : ℕ) : ℝ) := by
     rw [div_sub' hd'.ne', div_le_iff₀ hd']
     have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
@@ -636,14 +628,13 @@ lemma card_rough_le (h₃ : BlockSieve) : ∃ D₀ : ℝ, 0 ≤ D₀ ∧ ∀ z Y
   have hz0 : 0 < z := by linarith
   have hY0 : 0 < Y := by linarith
   have hlz : 0 < Real.log z := Real.log_pos (by linarith)
-  have hlzY : Real.log z ≤ Real.log Y := Real.log_le_log hz0 hzY
+  have hlzY  := Real.log_le_log hz0 hzY
   set v := Y ^ (1 / 20 : ℝ)
   set w := min z v
   -- `2 ≤ w`, `log z ≤ 20 log w` and `w¹⁰ ≤ Y^{1/2}`
   have hv : z ^ (1 / 20 : ℝ) ≤ v := Real.rpow_le_rpow hz0.le hzY (by norm_num)
   have hz20 : (2 : ℝ) ≤ z ^ (1 / 20 : ℝ) := by
     calc (2 : ℝ) = ((2 : ℝ) ^ (20 : ℝ)) ^ (1 / 20 : ℝ) := by
-          rw [← Real.rpow_mul (by norm_num)]
           norm_num
       _ ≤ z ^ (1 / 20 : ℝ) := Real.rpow_le_rpow (by positivity) (by exact_mod_cast hz)
           (by norm_num)
@@ -668,7 +659,6 @@ lemma card_rough_le (h₃ : BlockSieve) : ∃ D₀ : ℝ, 0 ≤ D₀ ∧ ∀ z Y
     have h2 : Y ^ (1 / 2 : ℝ) * Y ^ (1 / 2 : ℝ) = Y := by
       rw [← Real.rpow_add hY0]
       norm_num
-    have h3 : 0 ≤ Y ^ (1 / 2 : ℝ) := by positivity
     nlinarith
   -- the block sieve on `[1, Y]` with the primes up to `w`
   set P := primesIcc 2 w
@@ -715,8 +705,8 @@ lemma card_rough_le (h₃ : BlockSieve) : ∃ D₀ : ℝ, 0 ≤ D₀ ∧ ∀ z Y
         |∑ i ∈ (Icc 1 ⌊Y⌋₊).filter (fun b => ∀ p ∈ D, p ∣ b), (1 : ℝ) -
           Y * ∏ p ∈ D, 1 / (p : ℝ)| ≤ 2 := by
       intro D hD
-      have hDp : ∀ p ∈ D, p.Prime := fun p hp => hPp p (mem_powerset.1 (mem_filter.1 hD).1 hp)
-      have hd : 0 < ∏ p ∈ D, p := prod_pos fun p hp => (hDp p hp).pos
+      have hDp  := fun p hp => hPp p (mem_powerset.1 (mem_filter.1 hD).1 hp)
+      have hd  := prod_pos fun p hp => (hDp p hp).pos
       have hfilt : (Icc 1 ⌊Y⌋₊).filter (fun b => ∀ p ∈ D, p ∣ b) =
           (Icc 1 ⌊Y⌋₊).filter ((∏ p ∈ D, p) ∣ ·) := by
         refine filter_congr fun b _ => ⟨fun h => prod_primes_dvd b (fun p hp => (hDp p hp).prime)
@@ -738,7 +728,7 @@ lemma card_rough_le (h₃ : BlockSieve) : ∃ D₀ : ℝ, 0 ≤ D₀ ∧ ∀ z Y
         Y * ∏ p ∈ D, 1 / (p : ℝ)| := sum_nonneg fun _ _ => abs_nonneg _
   have hKB1 := mul_le_mul_of_nonneg_left hmain (abs_nonneg KB)
   have hKB2 := mul_le_mul_of_nonneg_left hrem (abs_nonneg KB)
-  have hKB3 : KB * (Y * ∏ p ∈ P, (1 - 1 / (p : ℝ))) ≤ |KB| * (Y * ∏ p ∈ P, (1 - 1 / (p : ℝ))) :=
+  have hKB3  :=
     mul_le_mul_of_nonneg_right (le_abs_self KB) hmain0
   have hKB4 := mul_le_mul_of_nonneg_right (le_abs_self KB) hrem0
   have hfin : 2 * w ^ 10 ≤ 4 * Y / Real.log z := by

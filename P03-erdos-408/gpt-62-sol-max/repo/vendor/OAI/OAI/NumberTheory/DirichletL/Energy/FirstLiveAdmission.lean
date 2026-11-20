@@ -18,10 +18,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstLiveAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
@@ -31,10 +30,9 @@ open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
 open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
+open CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool
+open CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily
+open CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion
 open CenteredMomentLogDyadic CenteredMomentRowNorm
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -49,7 +47,7 @@ theorem first_block_active_rows_nonempty
       (dyadicScale (n 2)) (dyadicScale (n 3)) ≠ 0) :
     (activeRows rows n).Nonempty := by
   by_contra h
-  have he : activeRows rows n = ∅ := Finset.not_nonempty_iff_eq_empty.mp h
+  have he  := Finset.not_nonempty_iff_eq_empty.mp h
   apply hne
   rw [block_activeRows, he]
   simp only [block, Finset.sum_empty, mul_zero]
@@ -208,8 +206,7 @@ theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       · exact ht.1
       · exact ht.2.1
     simpa only [show A+2*(A+1)+1 = 3*A+3 by ring] using hx
-  have hE : Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E} ≠ 0 := by
-    exact Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _)
+  have hE : Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E} ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr (primeSubsetGenerator_ne_zero _ _)
   have hne := first_block_active_rows_nonempty s.η (fixedBadMask*idealGenerator R) 1 s.t
     _ _ C D hC hD E rows W K n hblock
   have hrec := (active_row_reciprocals C D _ hE K (volume s) Z Csec Tsec ξ

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
 public import OAI.NumberTheory.DirichletL.IdealCharacter
 
@@ -33,9 +34,9 @@ theorem full_zero_off_diagonal (u v : O)
     · rw [hx0,zero_mul]
     by_cases hy0 : ψ (Ideal.Quotient.mk _ y) = 0
     · rw [hy0,star_zero,mul_zero]
-    have hux : IsCoprime u x := ((Ideal.isCoprime_span_singleton_iff x u).mp
+    have hux  := ((Ideal.isCoprime_span_singleton_iff x u).mp
       ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hx0))).symm
-    have hvy : IsCoprime v y := ((Ideal.isCoprime_span_singleton_iff y v).mp
+    have hvy  := ((Ideal.isCoprime_span_singleton_iff y v).mp
       ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hy0))).symm
     simp only [sub_zero] at hc
     have hu : u ∣ v*x := by
@@ -109,7 +110,7 @@ theorem divisible_ideal_card (S : Finset (Ideal O)) (s : Ideal O) (hs : s ≠ 0)
     obtain ⟨I,hI⟩ := hempty
     have hscale : 1 ≤ Y/(Ideal.absNorm s : ℝ) := by
       have hn : (1:ℝ) ≤ Ideal.absNorm (idealQuotient s I) := by
-        exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hquot I hI))
+        exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hquot I hI)
       exact hn.trans (hbound I hI)
     have hc := DescentFiberCost.finite_ideal_count_real (S.image (idealQuotient s)) _ hscale
       (by intro J hJ; obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hJ; exact hquot I hI)
@@ -146,7 +147,7 @@ theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
     rw [Finset.sum_eq_single i]
     · rw [hroot]
     · intro j hj hji
-      have hne : a i ≠ a j := fun he => hji (hinj hi hj he).symm
+      have hne  := fun he => hji (hinj hi hj he).symm
       rw [actual_zero_off_diagonal _ _ (ha i) (ha j) (hp i) (hp j) hne,zero_div,mul_zero]
     · exact fun hnot => False.elim (hnot hi)
   rw [he]
@@ -154,9 +155,8 @@ theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
   apply Finset.sum_le_sum
   intro i hi
   rw [norm_mul,norm_mul,norm_star,norm_div,Complex.norm_natCast,← pow_two]
-  have hN : 0 < (Ideal.absNorm (Ideal.span {a i}) : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (ha i).1)
-  exact mul_le_of_le_one_right (sq_nonneg _) ((div_le_one hN).mpr (actual_same_zero_norm_le _ (ha i)))
+  refine mul_le_of_le_one_right (sq_nonneg _) ((div_le_one ?_).mpr (actual_same_zero_norm_le _ (ha i)))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((ha i).1)
 
 theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i}))

@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceNaturalPrime
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
@@ -10,15 +12,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentRelativeCapacityRemoval
 open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
 open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentSecondHeightFamily Filter
+open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
+open Filter
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 include hH
 
@@ -38,21 +39,16 @@ theorem relative_slots_uniform {ι:Type*}[Fintype ι]
         C*(1+|t|+V)^degree*Z^loss*P^κ := by
   choose degree C hC hb using fun i=>natural_character_slot_bound M H hH (W i) (a i) (b i)
     (ha i) (hWs i) (hW i) Lmod Lslot loss lo hi κ hLm hLs hloss hbeta hκ
-  let Ctotal:ℝ:=1+∑i,C i
-  have hCtotal:1≤Ctotal:=by
-    have hsum:=Finset.sum_nonneg (fun i (_:i∈Finset.univ)=>(hC i).le)
-    dsimp [Ctotal];linarith
-  have hCi (i:ι):C i≤Ctotal:=by
-    have hsum:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hC j).le) (Finset.mem_univ i)
-    dsimp [Ctotal];linarith
+  obtain ⟨Ctotal, hCupper, hCi⟩ := exists_real_majorant 1 C
+  have hCtotal := hCupper.le
   refine ⟨∑i,degree i,Ctotal,hCtotal,?_⟩
   intro ν
   have hev:∀ᶠZ:ℝ in atTop,∀i:ι,_ := Filter.eventually_all.mpr (fun i=>hb i (ν i))
   obtain ⟨Zbase,hbase⟩:=eventually_atTop.mp hev
   refine ⟨max 2 Zbase,lt_max_of_lt_left (by norm_num),?_⟩
   intro i Z P hZ hP hPcap η z hz F hcond Q hQM hQν hex σ t v V hσ hσhi hV hv
-  have hZ0:Zbase≤Z:=(le_max_right _ _).trans hZ
-  have hZp:0<Z:=lt_of_lt_of_le (by norm_num:0<(2:ℝ)) ((le_max_left _ _).trans hZ)
+  have hZ0:=(le_max_right _ _).trans hZ
+  have hZp:=lt_of_lt_of_le (by norm_num:0<(2:ℝ)) ((le_max_left _ _).trans hZ)
   refine (hbase Z hZ0 i P hP hPcap η z hz F hcond Q hQM hQν hex σ t v hσ hσhi).trans ?_
   apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (zero_le_one.trans hP) _)
   apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZp.le _)
@@ -100,12 +96,12 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   refine ⟨R,hR,CenteredMomentLiveCapacity.remaining_capacity J R hR w n₁ n₂ width κ hpay,hcost,?_⟩
   intro Z hZ η z hz F hcond Q hQM hQν hex σ freq t V hσ hσhi hV hfreq W₁ W₂ X₁ X₂
   dsimp only
-  have hZ1:1≤Z:=hZ₀.le.trans hZ
-  have hZp:0<Z:=zero_lt_one.trans_le hZ1
+  have hZ1:=hZ₀.le.trans hZ
+  have hZp:=zero_lt_one.trans_le hZ1
   let B:=C*(1+|t|+V)^degree*Z^loss
   have hB:1≤B:=by
     have ht:1≤(1+|t|+V)^degree:=one_le_pow₀ (by linarith [abs_nonneg t])
-    have hz:1≤Z^loss:=Real.one_le_rpow hZ1 hloss.le
+    have hz:=Real.one_le_rpow hZ1 hloss.le
     exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hC ht) hz
   have hs:∀i∈R,‖normalizedSlot η fixedBadMask 1 z (primePool M H (b i) (Z^(w i)))
       (fun I=>idealCoeff (ν i) I*annularWeight (W i) (Z^(w i)) (σ i) (freq i) I) t (Z^(w i))‖^2≤
@@ -119,14 +115,14 @@ theorem actual_relative_capacity_removal {ι:Type*}[Fintype ι][DecidableEq ι]
   have he:=selectedProduct_energy_remove J R hR η fixedBadMask 1 z W₁ W₂
     (fun i=>primePool M H (b i) (Z^(w i)))
     (fun i I=>idealCoeff (ν i) I*annularWeight (W i) (Z^(w i)) (σ i) (freq i) I)
-    (fun i=>Z^(w i)) t X₁ X₂ Z κ hZp w (fun _=>B) (fun i hi=>zero_le_one.trans hB) hs
+    (fun i=>Z^(w i)) t X₁ X₂ Z κ hZp w (fun _=>B) hs
   apply he.trans
   gcongr 1
   have hcard:R.card≤N:=Finset.card_le_univ R
   have hpow:(∏i∈R,B)≤B^N:=by
     rw [Finset.prod_const]
     exact pow_le_pow_right₀ hB hcard
-  have hcostZ:Z^(κ*∑i∈R,w i)≤Z^(excess/6+κ*mesh):=
+  have hcostZ:=
     Real.rpow_le_rpow_of_exponent_le hZ1 hcost
   have hsplit:B^N=C^N*(1+|t|+V)^(degree*N)*Z^(loss*(N:ℝ)):=by
     dsimp [B]

@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Extraction
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentHeckeExpansion
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRectangle
+open CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
 local notation "O" => ActualEisensteinCubic.O
 
 def rowWeight (η : Character) (m A z : O) (t : ℝ) : Ideal O →*₀ ℂ where
@@ -56,10 +56,10 @@ theorem actual_hecke_rectangle_sum
   let f₂ := fun J : Ideal O => w J * W₂ ((Ideal.absNorm J : ℝ) / X₂)
   let g₁ := fun I : Ideal O => w I * W₁ ((Ideal.absNorm I : ℝ) / Y₁)
   let g₂ := fun J : Ideal O => w J * W₂ ((Ideal.absNorm J : ℝ) / Y₂)
-  have hf₁ : Summable f₁ := annular_ideal_sum_summable w W₁ b₁ X₁ hX₁ hs₁
-  have hf₂ : Summable f₂ := annular_ideal_sum_summable w W₂ b₂ X₂ hX₂ hs₂
-  have hg₁ : Summable g₁ := annular_ideal_sum_summable w W₁ b₁ Y₁ hY₁ hs₁
-  have hg₂ : Summable g₂ := annular_ideal_sum_summable w W₂ b₂ Y₂ hY₂ hs₂
+  have hf₁  := annular_ideal_sum_summable w W₁ b₁ X₁ hX₁ hs₁
+  have hf₂  := annular_ideal_sum_summable w W₂ b₂ X₂ hX₂ hs₂
+  have hg₁  := annular_ideal_sum_summable w W₁ b₁ Y₁ hY₁ hs₁
+  have hg₂  := annular_ideal_sum_summable w W₂ b₂ Y₂ hY₂ hs₂
   have hterm (I J : Ideal O) :
       rowWeight η m A z t (I * J) * idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ I J =
         f₁ I * f₂ J - g₁ I * g₂ J := by
@@ -72,7 +72,6 @@ theorem actual_hecke_rectangle_sum
     rw [Summable.tsum_sub (hf₂.mul_left _) (hg₂.mul_left _), tsum_mul_left, tsum_mul_left]
   simp_rw [hinner]
   rw [Summable.tsum_sub (hf₁.mul_right _) (hg₁.mul_right _), tsum_mul_right, tsum_mul_right]
-  simp only [rowTwistedSum_eq_weight]
   rfl
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]

@@ -1,20 +1,23 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondSquarefreeBlock
+public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
+public import OAI.NumberTheory.DirichletL.Moments.SecondMaskedWindow
+public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalColumns
+public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
 public import OAI.NumberTheory.DirichletL.Moments.MobiusHarmonicMass
+public import OAI.NumberTheory.DirichletL.Moments.SourceAbsoluteEnvelope
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondHarmonicBudget
-open CenteredMomentSecondWindowBudget CenteredMomentMobiusHarmonicMass
-open CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSecondWindowBudget CenteredMomentMobiusHarmonicMass CenteredMomentMobiusRegroup
+open UniqueFactorizationMonoid
 
 lemma paired_divisor (J₁ J₂:ℕ) (t E₁ E₂ n:ℝ) (hn:0≤n) :
     windowBudget J₁ t (E₁/n)*windowBudget J₂ t (E₂/n)=

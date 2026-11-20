@@ -58,11 +58,10 @@ theorem mertens_second : ∃ E : ℝ, 0 ≤ E ∧ ∀ y z : ℝ, 2 ≤ y → y �
       E / Real.log y := by
   have hK : 0 ≤ Real.log 4 + 6 + Mertens.E₁ := by
     have := Mertens.E₁.nonneg
-    have : 0 ≤ Real.log 4 := log_nonneg (by norm_num)
-    linarith
+    positivity
   refine ⟨2 * (Real.log 4 + 6 + Mertens.E₁), by linarith, fun y z hy hyz ↦ ?_⟩
   have hly : 0 < Real.log y := log_pos (by linarith)
-  have hlyz : Real.log y ≤ Real.log z := log_le_log (by linarith) hyz
+  have hlyz  := log_le_log (by linarith) hyz
   rw [sum_primesIoc_eq _ hyz, Mertens.sum_prime_div_eq, Mertens.sum_prime_div_eq,
     log_div (by linarith) hly.ne']
   have hy' := Mertens.E₂p.abs_le hy
@@ -78,7 +77,7 @@ theorem card_primesIoc_le : ∃ K : ℝ, 0 ≤ K ∧ ∀ x : ℝ, 2 ≤ x →
     ((primesIoc 1 x).card : ℝ) ≤ K * x / Real.log x := by
   have h4 : 0 ≤ Real.log 4 := log_nonneg (by norm_num)
   refine ⟨2 * Real.log 4 + 2, by linarith, fun x hx ↦ ?_⟩
-  have hlx : 0 < Real.log x := log_pos (by linarith)
+  have hlx  := log_pos (by linarith)
   have hcard : (primesIoc 1 x).card = Nat.primeCounting ⌊x⌋₊ := by
     rw [← Nat.primesLE_card_eq_primeCounting, primesIoc_one]
     congr 1
@@ -114,12 +113,31 @@ theorem sum_log_primesIoc_le {x : ℝ} (hx : 0 ≤ x) :
 
 /-- For `x ≥ 1` the dyad `(x, 2x]` contains a prime. -/
 theorem dyadicPrimes_card_pos {x : ℝ} (hx : 1 ≤ x) : 0 < (dyadicPrimes x).card := by
-  have hn : ⌊x⌋₊ ≠ 0 := (Nat.floor_pos.mpr hx).ne'
+  have hn  := (Nat.floor_pos.mpr hx).ne'
   obtain ⟨p, hp, hlt, hle⟩ := Nat.exists_prime_lt_and_le_two_mul ⌊x⌋₊ hn
-  have h2 : 2 * ⌊x⌋₊ ≤ ⌊2 * x⌋₊ := by
-    apply Nat.le_floor
-    push_cast
-    linarith [Nat.floor_le (show 0 ≤ x by linarith)]
-  exact card_pos.mpr ⟨p, mem_filter.mpr ⟨mem_Ioc.mpr ⟨hlt, hle.trans h2⟩, hp⟩⟩
+  refine card_pos.mpr ⟨p, mem_filter.mpr ⟨mem_Ioc.mpr ⟨hlt, hle.trans ?_⟩, hp⟩⟩
+  apply Nat.le_floor
+  push_cast
+  linarith [Nat.floor_le (show 0 ≤ x by linarith)]
+
+/-- Mertens' third theorem, lower bound: `∏_{p ≤ y} (1 - 1/p) ≥ c₃ / log y`. -/
+theorem mertens_third_lower : ∃ c₃ : ℝ, 0 < c₃ ∧ ∀ y : ℝ, 2 ≤ y →
+    c₃ / Real.log y ≤ ∏ p ∈ primesIcc 2 y, (1 - (1 : ℝ) / p) := by
+  obtain ⟨C, hC⟩ := Mertens.E₃.abs_le
+  refine ⟨Real.exp (-eulerMascheroniConstant) * Real.exp (-(|C| / Real.log 2)), by positivity,
+    fun y hy => ?_⟩
+  have hly : Real.log 2 ≤ Real.log y := Real.log_le_log (by norm_num) hy
+  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlpos : 0 < Real.log y := lt_of_lt_of_le hl2 hly
+  rw [primesIcc_two_eq, primesIoc_one, Mertens.prod_one_minus_div_prime_eq (by linarith)]
+  have hE := hC y hy
+  have hE' : -(|C| / Real.log 2) ≤ Mertens.E₃ y := by
+    have h1 : C / Real.log y ≤ |C| / Real.log 2 := by
+      calc C / Real.log y ≤ |C| / Real.log y := by gcongr; exact le_abs_self C
+        _ ≤ |C| / Real.log 2 := div_le_div_of_nonneg_left (abs_nonneg C) hl2 hly
+    have := neg_abs_le (Mertens.E₃ y)
+    rw [abs_le] at hE
+    linarith
+  gcongr
 
 end Erdos408

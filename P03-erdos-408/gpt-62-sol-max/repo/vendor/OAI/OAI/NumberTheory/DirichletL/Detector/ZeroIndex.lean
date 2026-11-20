@@ -33,11 +33,8 @@ lemma zeroIndex_inner_pos (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
   intro m hm
   dsimp only
   unfold zeroIndexTerm
-  rw [ite_eq_right hk, zero_index_scalar p hp χ k (6*m) hk]
-  by_cases h : m=0
-  · subst m; simp
-  · have h6 : 6*m≠0 := by omega
-    simp [h, h6]
+  rw [ite_eq_right hk, zero_index_scalar p χ k (6*m)]
+  simp_all
 
 def zeroIndexSeries (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) : ℂ :=
   ∑' k, ∑' m, zeroIndexTerm p χ W V k m

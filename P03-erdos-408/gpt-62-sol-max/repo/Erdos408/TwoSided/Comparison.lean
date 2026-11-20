@@ -38,8 +38,7 @@ theorem exists_comparison_bound
     (hκ : 1 < κ) (m₀ : ℕ) (A'' : ℝ) :
     ∃ A' Cm : ℝ, ∀ E κ' : ℝ, ∃ CC : ℝ, ∀ᶠ x : ℝ in atTop,
       PrimeTwistBound x A' E Cm κ' → IntegerKernelBound x Cm κ' →
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
           (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
@@ -76,7 +75,7 @@ theorem exists_comparison_bound
   have hL1 : 1 ≤ L := by linarith
   have hyb0 : 0 ≤ yb := by positivity
   -- the source test reads only the big groups
-  have hCcard : ∀ g, (Aν g ∪ Bν g).card ≤ m₀ := fun g => (hpat.1 g).2
+  have hCcard  := fun g => (hpat.1 g).2
   have hCbig : ∀ g ∉ big, Aν g ∪ Bν g = ∅ := fun g hg => by
     rw [(hpat.2.1 g hg).1, (hpat.2.1 g hg).2, Finset.empty_union]
   have hb₁ : ∀ p : ι → Fin (J + 1) → ℕ, ‖ψ' (slotProduct Bν fun g i => p g i.castSucc)‖ ≤ 1 :=
@@ -129,7 +128,6 @@ theorem exists_comparison_bound
     have e₁ : L ^ Ccost * L ^ (-(A'' + KΨ + Ccost)) = L ^ (-(A'' + KΨ)) := by
       rw [← Real.rpow_add hL0]
       ring_nf
-    have hp : 0 ≤ L ^ (-(A'' + KΨ)) := by positivity
     calc Karc * (L ^ (-(A'' + KΨ)) + L ^ Ccost * (Real.sqrt (CE * L ^ (-(2 * (A'' + KΨ +
           Ccost)))) + L ^ (-(A'' + KΨ + Ccost))))
         ≤ |Karc| * (L ^ (-(A'' + KΨ)) + L ^ Ccost * (Real.sqrt |CE| *
@@ -162,7 +160,7 @@ theorem exists_comparison_bound
               (y m * (x * U * U')) (2 * Real.pi * ξ))‖
         ≤ ∑ _m : Fin n, yb * B := by
           refine Finset.sum_le_sum fun m _ => ?_
-          have hy0 : 0 ≤ y m := le_trans (by positivity) (hy m).1
+          have hy0  := le_trans (by positivity) (hy m).1
           rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hy0]
           exact mul_le_mul (hy m).2 (hB m) (norm_nonneg _) hyb0
       _ = n * yb * B := by

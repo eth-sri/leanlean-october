@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice
-open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource CenteredMomentSecondWindowBudget
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
+open CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy CenteredMomentSmooth
+open CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic CenteredMomentSecondWindowSource
+open CenteredMomentSecondWindowBudget IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
 

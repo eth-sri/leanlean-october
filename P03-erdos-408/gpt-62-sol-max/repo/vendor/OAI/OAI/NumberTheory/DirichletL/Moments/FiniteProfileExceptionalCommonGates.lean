@@ -10,13 +10,13 @@ public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentSourceMass CenteredMomentAddedZeroUniform
+open CenteredMomentExceptionalAmplitudePair CenteredMomentFixedRowMask CenteredExceptionalProfile
+open CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbePhysical
 

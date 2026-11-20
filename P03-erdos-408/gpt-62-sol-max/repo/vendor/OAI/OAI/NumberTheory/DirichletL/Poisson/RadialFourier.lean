@@ -10,66 +10,21 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped ContDiff
 
 namespace EisensteinSchwartzPoisson
 
 section
 open MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
+open scoped RealInnerProductSpace
 
 def radialTestCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℝ (Function.hasTemperateGrowth_norm_sq ℂ)
@@ -77,16 +32,13 @@ def radialTestCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℂ, ℂ) :=
       simp only [pow_one, one_mul, norm_pow, Real.norm_of_nonneg (norm_nonneg z)]
       nlinarith [sq_nonneg (‖z‖ - 1)]⟩
 
-@[simp] theorem radialTestCLM_apply (W : 𝓢(ℝ, ℂ)) : radialTestCLM W = radialTest W := by
-  ext z
-  rfl
 
 def radialFourierCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℂ, ℂ) :=
   (FourierTransform.fourierCLM ℝ 𝓢(ℂ, ℂ)).comp radialTestCLM
 
 @[simp] theorem radialFourierCLM_apply (W : 𝓢(ℝ, ℂ)) :
     radialFourierCLM W = 𝓕 (radialTest W) := by
-  simp [radialFourierCLM]
+  rfl
 
 theorem paperRadialFourier_eq_plane (W : 𝓢(ℝ, ℂ)) (t : ℝ) :
     paperRadialFourier W t =
@@ -107,7 +59,7 @@ theorem paperRadialFourier_weighted_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ)
         (Finset.Iic (2 * A, 0)).sup (schwartzSeminormFamily ℝ ℂ ℂ)
           (radialFourierCLM W) := by
   let ξ : ℂ := paperFrequency (Real.sqrt t : ℂ)
-  have hn : ‖ξ‖ ^ 2 = (4 / 3 : ℝ) * t := paperFrequency_sqrt_norm_sq t ht
+  have hn  := paperFrequency_sqrt_norm_sq t ht
   have hscale : 0 ≤ (2 / Real.sqrt 3 : ℝ) := by positivity
   have hpow : (1 + t) ^ A ≤ (1 + ‖ξ‖) ^ (2 * A) := by
     have hbase : 1 + t ≤ (1 + ‖ξ‖) ^ 2 := by
@@ -144,8 +96,7 @@ theorem schwartzCLM_finite_seminorm_control
     Seminorm.bound_of_continuous (schwartz_withSeminorms ℝ ℝ ℂ) q hq
   refine ⟨s, C, ?_, ?_⟩
   · exact_mod_cast (pos_iff_ne_zero.mpr hC : 0 < C)
-  · intro W
-    exact Seminorm.le_def.mp hbound W
+  assumption
 
 theorem paperRadialFourier_source_weighted_bound (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -165,7 +116,6 @@ end
 
 section
 open MeasureTheory
-open scoped SchwartzMap ContDiff
 
 def halfEulerCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
   (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x / 2 : ℝ) : ℂ))).comp
@@ -196,8 +146,7 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
   | zero => simp
   | succ j ih =>
     rw [iteratedDeriv_succ']
-    have hd : deriv (fun y : ℝ => g (a * Real.exp (y / 2))) =
-        fun y : ℝ => halfEulerCLM g (a * Real.exp (y / 2)) :=
+    have hd  :=
       funext (fun y => (hasDerivAt_halfFlow g a y).deriv)
     rw [hd, ih (halfEulerCLM g),
       Function.iterate_succ_apply]
@@ -205,7 +154,6 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
  theorem sqrt_exp_half (t : ℝ) : Real.sqrt (Real.exp t) = Real.exp (t / 2) := by
   rw [Real.sqrt_eq_iff_eq_sq (le_of_lt (Real.exp_pos _)) (le_of_lt (Real.exp_pos _))]
   rw [← Real.exp_nat_mul]
-  congr 1
   ring
 
  theorem eulerDeriv_sqrt_profile (g : 𝓢(ℝ, ℂ)) (j : ℕ) (x : ℝ) (hx : 0 ≤ x) :
@@ -246,7 +194,7 @@ theorem sqrt_profile_rapid_bound (g : 𝓢(ℝ, ℂ)) (A : ℕ) (x : ℝ) (hx : 
   · have hp : (1 + x) ^ A ≤ (2 * x) ^ A := by gcongr; linarith
     calc
       _ ≤ (2 * x) ^ A * ‖g (Real.sqrt x)‖ := mul_le_mul_of_nonneg_right hp (norm_nonneg _)
-      _ = 2 ^ A * (x ^ A * ‖g (Real.sqrt x)‖) := by rw [mul_pow]; ring
+      _ = 2 ^ A * (x ^ A * ‖g (Real.sqrt x)‖) := by ring
       _ ≤ 2 ^ A * SchwartzMap.seminorm ℝ (2 * A) 0 g := by gcongr
       _ ≤ _ := by gcongr; linarith
 
@@ -272,8 +220,6 @@ def paperRealRayCLM : 𝓢(ℂ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLM ℝ paperFrequency_real_temperate
     ⟨1, 1, by simpa using paperFrequency_real_growth⟩
 
-@[simp] theorem paperRealRayCLM_apply (g : 𝓢(ℂ, ℂ)) (s : ℝ) :
-    paperRealRayCLM g s = g (paperFrequency (s : ℂ)) := rfl
 
 def halfEulerIterateCLM : ℕ → 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ)
   | 0 => ContinuousLinearMap.id ℝ _
@@ -294,7 +240,7 @@ def paperFourierRayCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
 @[simp] theorem paperFourierRayCLM_apply (W : 𝓢(ℝ, ℂ)) (s : ℝ) :
     paperFourierRayCLM W s =
       (2 / Real.sqrt 3 : ℝ) • radialFourierCLM W (paperFrequency (s : ℂ)) := by
-  simp [paperFourierRayCLM]
+  rfl
 
 theorem paperRadialFourier_eq_ray (W : 𝓢(ℝ, ℂ)) :
     paperRadialFourier W = fun x : ℝ => paperFourierRayCLM W (Real.sqrt x) := by
@@ -334,7 +280,7 @@ theorem schwartzCLM_family_finite_seminorm_control
   let qj : ℕ → Seminorm ℝ 𝓢(ℝ, ℂ) := fun j =>
     (SchwartzMap.seminorm ℝ 0 0 + SchwartzMap.seminorm ℝ (2 * A) 0).comp
       (T j).toLinearMap
-  let q : Seminorm ℝ 𝓢(ℝ, ℂ) := ∑ j ∈ Finset.range (K + 1), qj j
+  let q  := ∑ j ∈ Finset.range (K + 1), qj j
   have hqfun : (q : 𝓢(ℝ, ℂ) → ℝ) = fun W => ∑ j ∈ Finset.range (K + 1),
       (SchwartzMap.seminorm ℝ 0 0 (T j W) +
         SchwartzMap.seminorm ℝ (2 * A) 0 (T j W)) := by
@@ -384,7 +330,6 @@ theorem paperRadialFourier_euler_bound (W : 𝓢(ℝ, ℂ)) (A K : ℕ) :
 end
 
 open ConcreteTraceCRT ActualEisensteinCubic
-open scoped SchwartzMap
 
 theorem inverse_square_le_cauchy_product (a b q : ℝ) (hq : 0 ≤ q)
     (hQ : (a ^ 2 + b ^ 2) / 2 ≤ q) :
@@ -397,9 +342,9 @@ theorem inverse_square_le_cauchy_product (a b q : ℝ) (hq : 0 ≤ q)
     nlinarith [sq_nonneg (a ^ 2), sq_nonneg (b ^ 2),
       mul_nonneg (sq_nonneg a) (sq_nonneg b)]
   calc
-    _ = 1 / (1 + q) ^ 2 := by simp only [one_div]
+    _ = 1 / (1 + q) ^ 2 := by simp
     _ ≤ 4 / ((1 + a ^ 2) * (1 + b ^ 2)) :=
-      (div_le_div_iff₀ (by positivity) (by positivity)).mpr (by simpa using hden)
+      (div_le_div_iff₀ (by positivity) (by positivity)).mpr (by simp_all)
     _ = _ := by simp only [div_eq_mul_inv, mul_inv_rev]; ring
 
 theorem eisenstein_cauchy_summable :
@@ -434,7 +379,6 @@ theorem polynomial_tail_majorant (A : ℕ) (K T q B f : ℝ)
     (hK : 0 < K) (hT : 0 ≤ T) (hq : 0 ≤ q) (hf : 0 ≤ f)
     (htail : T ≤ K * q) (hbound : (1 + K * q) ^ (A + 2) * f ≤ B) :
     f ≤ (B / ((min 1 K) ^ 2 * (1 + T) ^ A)) * ((1 + q) ^ 2)⁻¹ := by
-  have hm : 0 < min 1 K := lt_min (by norm_num) hK
   have hm1 : min 1 K ≤ 1 := min_le_left _ _
   have hmK : min 1 K ≤ K := min_le_right _ _
   have hbase : min 1 K * (1 + q) ≤ 1 + K * q := by
@@ -483,20 +427,17 @@ theorem paperRadialFourier_lattice_tail (A : ℕ) :
   intro W K T hK hT
   let B := C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   let D := (min 1 K) ^ 2 * (1 + T) ^ A
-  have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hm : 0 < min 1 K := lt_min (by norm_num) hK
-  have hD : 0 < D := by dsimp [D]; positivity
+  have hB : 0 ≤ B := by positivity
+  have hD : 0 < D := by positivity
   let S := {h : O | T ≤ K * ‖eisEmbedding h‖ ^ 2}
   have hp (h : S) :
       ‖paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
         (B / D) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ := by
     exact polynomial_tail_majorant A K T _ B _ hK hT (sq_nonneg _)
       (norm_nonneg _) h.property (hb W _ (by positivity))
-  have hmajor : Summable (fun h : S => (B / D) *
-      ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹) :=
+  have hmajor  :=
     (eisenstein_cauchy_summable.subtype S).mul_left (B / D)
-  have hs : Summable (fun h : S =>
-      ‖paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖) :=
+  have hs  :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp hmajor
   calc
     _ ≤ ∑' h : S, (B / D) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ :=
@@ -507,11 +448,10 @@ theorem paperRadialFourier_lattice_tail (A : ℕ) :
     _ ≤ (B / D) * (eisensteinCauchyMass + 1) := by
       gcongr
       linarith
-    _ = _ := by dsimp [B, D]; ring
+    _ = _ := by ring
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace ConcretePrimeRowBridge
 open ActualEisensteinCubic ShortDraftHeckeBridge
@@ -529,12 +469,12 @@ theorem idealSupport_injective_on_squarefree
     constructor
     · intro hP
       let p : primePool F := ⟨P, mem_primePool_iff.mpr ⟨I, hI, hP⟩⟩
-      have hp : p ∈ idealSupport F I := (mem_idealSupport_iff F I p).mpr hP
+      have hp  := (mem_idealSupport_iff F I p).mpr hP
       rw [h] at hp
       exact (mem_idealSupport_iff F J p).mp hp
     · intro hP
       let p : primePool F := ⟨P, mem_primePool_iff.mpr ⟨J, hJ, hP⟩⟩
-      have hp : p ∈ idealSupport F J := (mem_idealSupport_iff F J p).mpr hP
+      have hp  := (mem_idealSupport_iff F J p).mpr hP
       rw [← h] at hp
       exact (mem_idealSupport_iff F I p).mp hp
   rw [← Ideal.prod_normalizedFactors_eq_self hsI.ne_zero,

@@ -11,77 +11,18 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped ArithmeticFunction.Moebius
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
+open scoped MatrixGroups Pointwise Manifold ENNReal InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 section
@@ -320,7 +261,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped MatrixGroups InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
@@ -405,7 +346,7 @@ end
 section
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
@@ -441,7 +382,7 @@ lemma period_fourier_fractional_translation (f:ℂ→ℂ)
     (∫z in periodDomain,f (z+3*eisEmbedding q/eisEmbedding c)*
       ShortDraftTrace.breveE (-cuspFrequency (h*c)*z))=
     ∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z) := by
-  let g:ℂ→ℂ:=fun z=>f z*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z)
+  let g:=fun z=>f z*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z)
   have hg (n:Eis) (z:ℂ):g (z+3*eisEmbedding n)=g z:=by
     dsimp [g]
     rw [hf,cuspFrequency_negative_period]
@@ -460,8 +401,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma cube_upperPoint_continuous (v:ℝ) (hv:0<v) : Continuous (fun z:ℂ=>upperPoint z v hv) := by
   let c:ℂ→UpperCoordinates:=fun z=>⟨(z,v),hv⟩
   have hc:Continuous c:=by
-    apply Continuous.subtype_mk
-    exact continuous_id.prodMk continuous_const
+    fun_prop
   simpa only [Function.comp_def,c] using continuous_upperCoordinates.comp hc
 
 theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Continuous F)
@@ -472,15 +412,15 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
         (div_pos hv (pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hp)) 3)))*
         ShortDraftTrace.breveE (-cuspFrequency (h*p^3)*z) := by
   let V:=v/‖eisEmbedding p‖^3
-  have hV:0<V:=div_pos hv (pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hp)) 3)
-  let f:ℂ→ℂ:=fun z=>F (upperPoint z V hV)
-  let H:ℂ→ℂ:=fun z=>cubeAverage p hp F (upperPoint z v hv)*ShortDraftTrace.breveE (-cuspFrequency h*z)
-  have hf:Continuous f:=hF.comp (cube_upperPoint_continuous V hV)
+  have hV:=div_pos hv (pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hp)) 3)
+  let f:=fun z=>F (upperPoint z V hV)
+  let H:=fun z=>cubeAverage p hp F (upperPoint z v hv)*ShortDraftTrace.breveE (-cuspFrequency h*z)
+  have hf:=hF.comp (cube_upperPoint_continuous V hV)
   have hfperiod (n:Eis) (z:ℂ):f (z+3*eisEmbedding n)=f z:=by
     dsimp [f]
     rw [←complexTranslation_action]
     exact hperiod n _
-  have hH:Continuous H:=
+  have hH:=
     ((cubeAverage_continuous p hp F hF).comp (cube_upperPoint_continuous v hv)).mul (cusp_character_continuous h)
   have hHperiod (n:Eis) (z:ℂ):H (z+3*eisEmbedding n)=H z:=by
     dsimp [H]
@@ -508,7 +448,7 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
     · rw [map_pow]
       field_simp [eisEmbedding_ne_zero hp]
     · rfl
-  let:Finite (Eis⧸Ideal.span {p^3}):=finite_quotient_span (pow_ne_zero 3 hp)
+  let:=finite_quotient_span (pow_ne_zero 3 hp)
   let:Fintype (Eis⧸Ideal.span {p^3}):=Fintype.ofFinite _
   have hi (r:Eis⧸Ideal.span {p^3}):IntegrableOn (term r) periodDomain:=by
     apply periodDomain_integrable_of_continuous
@@ -523,7 +463,7 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
   have hcard:(Nat.card (Eis⧸Ideal.span {p^3}):ℂ)=(Ideal.absNorm (Ideal.span {p}):ℂ)^3:=by
     change (Ideal.absNorm (Ideal.span {p^3}):ℂ)=_
     rw [←Ideal.span_singleton_pow,map_pow,Nat.cast_pow]
-  have hqN:Ideal.absNorm (Ideal.span {p})≠0:=
+  have hqN:=
     (Ideal.absNorm_ne_zero_iff _).mpr (finite_quotient_span hp)
   have hq:(Ideal.absNorm (Ideal.span {p}):ℂ)≠0:=by exact_mod_cast hqN
   change (∫z in periodDomain,H z)=∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency (h*p^3)*z)
@@ -542,15 +482,14 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
 
 end
 
-open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open scoped MatrixGroups
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem cubeSource_fourier (p:Eis) (hp:p≠0) (h:Eis) (v:ℝ) (hv:0<v) :
     (∫z in periodDomain,cubeAverage p hp cubicSourceResidualFunction (upperPoint z v hv)*
       ShortDraftTrace.breveE (-cuspFrequency h*z))=
-    ((9*Real.sqrt 3/2:ℝ):ℂ)*sourceResidualFullModeAmplitude (v/‖eisEmbedding p‖^3) (h*p^3) := by
+    (periodCovolume : ℂ)*sourceResidualFullModeAmplitude (v/‖eisEmbedding p‖^3) (h*p^3) := by
   rw [cubeAverage_fourier p hp cubicSourceResidualFunction cubicSourceResidualFunction_continuous
     cubicSource_period_three h v hv]
   simp_rw [cubicSourceResidualFunction_eq_bessel]
@@ -562,7 +501,7 @@ lemma cubeSource_amplitude_of_eigenrelation (p:Eis) (hp:p≠0)
     (h:Eis) (v:ℝ) (hv:0<v) :
     sourceResidualFullModeAmplitude (v/‖eisEmbedding p‖^3) (h*p^3)=
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*sourceResidualFullModeAmplitude v h := by
-  have hc:((9*Real.sqrt 3/2:ℝ):ℂ)≠0:=Complex.ofReal_ne_zero.mpr (by positivity)
+  have hc:(periodCovolume : ℂ)≠0:=Complex.ofReal_ne_zero.mpr (by positivity)
   apply mul_left_cancel₀ hc
   calc
     _=∫z in periodDomain,cubeAverage p hp cubicSourceResidualFunction (upperPoint z v hv)*
@@ -573,17 +512,16 @@ lemma cubeSource_amplitude_of_eigenrelation (p:Eis) (hp:p≠0)
       simp_rw [hU,mul_assoc]
       exact integral_const_mul _ _
     _=(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*
-      (((9*Real.sqrt 3/2:ℝ):ℂ)*sourceResidualFullModeAmplitude v h):=by
+      ((periodCovolume : ℂ)*sourceResidualFullModeAmplitude v h):=by
       simp_rw [cubicSourceResidualFunction_eq_bessel]
       rw [sourceBesselFunction_fourier]
     _=_:=by ring
 
 lemma schlafliBesselK_cubic_ne_zero (x:ℝ) (hx:0<x) : schlafliBesselK (1/3:ℂ) x≠0 := by
-  have hp:0<(schlafliBesselK (1/3:ℂ) x).re:=
+  have hp:=
     lt_of_lt_of_le (mul_pos cubicBesselLowerConstant_pos (Real.exp_pos _)) (schlafliBesselK_cubic_lower x hx)
   intro he
-  rw [he,Complex.zero_re] at hp
-  exact (lt_irrefl 0) hp
+  simp_all
 
 theorem sourceResidualFourierCoefficient_cube_of_eigenrelation (p:Eis) (hp:p≠0)
     (hU:∀w:HyperbolicSpace,cubeAverage p hp cubicSourceResidualFunction w=
@@ -591,8 +529,8 @@ theorem sourceResidualFourierCoefficient_cube_of_eigenrelation (p:Eis) (hp:p≠0
     (h:Eis) (hh:h≠0) :
     sourceResidualFourierCoefficient (h*p^3)=(‖eisEmbedding p‖:ℂ)*sourceResidualFourierCoefficient h := by
   have hhp:h*p^3≠0:=mul_ne_zero hh (pow_ne_zero 3 hp)
-  have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
-  have hrC:(‖eisEmbedding p‖:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hr.ne'
+  have hr:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
+  have hrC:=Complex.ofReal_ne_zero.mpr hr.ne'
   have hf:‖cuspFrequency (h*p^3)‖=‖cuspFrequency h‖*‖eisEmbedding p‖^3:=by
     rw [cuspFrequency_mul_right,norm_mul,map_pow,norm_pow]
   have hx:0<4*Real.pi*‖cuspFrequency h‖:=by

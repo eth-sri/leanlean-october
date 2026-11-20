@@ -40,10 +40,10 @@ theorem residualPair_image (C D : Ideal O) (hC : C≠0) (hD : D≠0)
     rcases he with ⟨rfl,rfl⟩
     obtain ⟨hpools,hCa,hCb,hab⟩ := Finset.mem_filter.mp hab
     obtain ⟨ha,hb⟩ := Finset.mem_product.mp hpools
-    have has : C*a∈S := (mem_residualPool C hC S a).mp ha
-    have hbs : D*b∈T := (mem_residualPool D hD T b).mp hb
-    have ha0 : a≠0 := right_ne_zero_of_mul (hS _ has)
-    have hb0 : b≠0 := right_ne_zero_of_mul (hT _ hbs)
+    have has  := (mem_residualPool C hC S a).mp ha
+    have hbs  := (mem_residualPool D hD T b).mp hb
+    have ha0  := right_ne_zero_of_mul (hS _ has)
+    have hb0  := right_ne_zero_of_mul (hT _ hbs)
     exact Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨has,hbs⟩,
       reconstructed_commonParts C D a b hC hD ha0 hb0 hCD hCa hCb hab⟩
   · intro hp
@@ -100,10 +100,7 @@ theorem sum_common_sectors (S T : Finset (Ideal O)) (F : Ideal O → Ideal O →
     (fun p : Ideal O × Ideal O => F p.1 p.2)
   symm
   convert hh using 1
-  · apply Finset.sum_congr rfl
-    intro p hp
-    rcases p with ⟨C,D⟩
-    congr 1
+  · rfl
   · exact (Finset.sum_product S T (fun p : Ideal O × Ideal O => F p.1 p.2)).symm
 
 end SevenEighths.CenteredMomentFirstSectors

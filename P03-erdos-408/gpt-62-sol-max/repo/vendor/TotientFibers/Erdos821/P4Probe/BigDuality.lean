@@ -27,22 +27,22 @@ lemma bigCoordinateAverage_duality (P : PrimeGroups) (M : ℕ)
     (S : P.BigGroup → Finset (Fin M)) (f g : P.BigLabels M → ℂ) :
     (∑ a, (P.idealMass a : ℂ) * star (f a) * bigCoordinateAverage P M S g a) =
       ∑ a, (P.idealMass a : ℂ) * star (bigCoordinateAverage P M S f a) * g a := by
-  let ff : ProductSample (BigAlphabet P M) → ℂ := fun x => f ((flattenBig P M).symm x)
-  let gg : ProductSample (BigAlphabet P M) → ℂ := fun x => g ((flattenBig P M).symm x)
+  let ff  := fun x => f ((flattenBig P M).symm x)
+  let gg  := fun x => g ((flattenBig P M).symm x)
   have hl : (∑ a, (P.idealMass a : ℂ) * star (f a) * bigCoordinateAverage P M S g a) =
       ∑ x : ProductSample (BigAlphabet P M), (productWeight (bigFlatWeight P M) x : ℂ) *
         star (ff x) * productAverage (bigFlatWeight P M) (bigFlatSet P M S) gg x := by
     apply Fintype.sum_equiv (flattenBig P M)
     intro a
     rw [bigFlatWeight_eq, bigFlat_average]
-    simp [ff]
+    rfl
   have hr : (∑ a, (P.idealMass a : ℂ) * star (bigCoordinateAverage P M S f a) * g a) =
       ∑ x : ProductSample (BigAlphabet P M), (productWeight (bigFlatWeight P M) x : ℂ) *
         star (productAverage (bigFlatWeight P M) (bigFlatSet P M S) ff x) * gg x := by
     apply Fintype.sum_equiv (flattenBig P M)
     intro a
     rw [bigFlatWeight_eq, bigFlat_average]
-    simp [gg]
+    rfl
   rw [hl, hr]
   exact productAverage_duality (bigFlatWeight P M) (bigFlatSet P M S) ff gg
 

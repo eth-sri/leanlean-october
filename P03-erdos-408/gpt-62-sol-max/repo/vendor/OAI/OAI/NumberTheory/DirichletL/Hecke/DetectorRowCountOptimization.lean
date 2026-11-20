@@ -24,20 +24,20 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
   let target := max (shortExponent δ x t) (longExponent δ t)+Δ/4+ε+6*ν+5*γ
   have hshort : shortExponent δ x t≤max (shortExponent δ x t) (longExponent δ t) := le_max_left _ _
   have hlong : longExponent δ t≤max (shortExponent δ x t) (longExponent δ t) := le_max_right _ _
-  have hbase := short_ge_base hδ hx hx' ht'
+  have hbase := short_ge_base hδ hx' ht'
   have hcross := crossing_bounds hx hx' ht ht'
-  have hchoose := selected_short_bound (t:=t) (r:=r) hδ hx hx'
-  have promote (p : ℝ) (hp : B≤C*U^p) (hpt : p≤target) : B≤C*U^target :=
+  have hchoose := selected_short_bound (t:=t) (r:=r) hδ hx'
+  have promote (p : ℝ) (hp : B≤C*U^p) (hpt : p≤target)  :=
     hp.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hU hpt) hC)
   by_cases hr1 : 1≤r
   · have hmax : max 1 ((1+5*r)/6)=(1+5*r)/6 := max_eq_right (by linarith)
     rw [hmax] at hI0
     apply promote _ hI0
-    have hl := long_count_bound hδ' hγ hright
+    have hl := long_count_bound hδ' hright
     dsimp [target]
     have hcγ : (5/6-δ)*γ≤γ := by nlinarith [mul_nonneg hδ hγ]
     nlinarith
-  have hr1' : r<1 := lt_of_not_ge hr1
+  have hr1'  := lt_of_not_ge hr1
   have hmax : max 1 ((1+5*r)/6)=1 := max_eq_left (by linarith)
   rw [hmax] at hI0
   by_cases hrc : crossing x t≤r
@@ -51,13 +51,13 @@ theorem count_bound_of_source_branches (B C U δ x Δ t r m ε ν γ : ℝ)
       have hs := hchoose.2 hrc
       dsimp [target]
       linarith
-  have hrc' : r≤crossing x t := (lt_of_not_ge hrc).le
+  have hrc'  := (lt_of_not_ge hrc).le
   by_cases hm : 1/2≤m
   · apply promote _ hP0
     have hm' := mul_le_mul_of_nonneg_left hm hδ
     dsimp [target]
     linarith
-  have hm' : m<1/2 := lt_of_not_ge hm
+  have hm'  := lt_of_not_ge hm
   by_cases hcap : (1-2*m)/(9/2+12*Δ)≤ν
   · apply promote _ hP0
     have hk0 : 0<3/4+2*Δ := by linarith

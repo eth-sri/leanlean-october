@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonLinearSource
 public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 
@@ -8,13 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonExceptionalGates
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentSourceMass CenteredMomentAddedZeroUniform
+open CenteredMomentExceptionalAmplitudePair CenteredMomentFixedRowMask CenteredExceptionalProfile
+open CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -28,7 +29,7 @@ omit [DecidableEq ι] in
 theorem coordinate_norm_le (s:Input ι)(C:Ideal O)(hC:C≠0)
     (B:actualAllocations s.pools C)(j:ι⊕Fin 2):
     (Ideal.absNorm (B.val j):ℝ)≤Ideal.absNorm C:=by
-  exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC))
+  exact_mod_cast Nat.le_of_dvd (Ideal.absNorm_pos_of_ne_bot (hC))
     (map_dvd Ideal.absNorm (coordinate_dvd s C B j))
 
 omit [DecidableEq ι] in
@@ -37,7 +38,7 @@ theorem extracted_lower (s:Input ι)(C:Ideal O)(hC:C≠0)(B:actualAllocations s.
     Z^(r-Real.logb Z (Ideal.absNorm C:ℝ))≤X/Ideal.absNorm (B.val j):=by
   have hz:=zero_lt_one.trans hZ
   have hN:(0:ℝ)<Ideal.absNorm C:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hC)
   rw [Real.rpow_sub hz,Real.rpow_logb hz hZ.ne' hN]
   exact div_le_div₀ ((Real.rpow_nonneg hz.le r).trans hX) hX (alloc_norm_pos s C B j)
     (coordinate_norm_le s C hC B j)

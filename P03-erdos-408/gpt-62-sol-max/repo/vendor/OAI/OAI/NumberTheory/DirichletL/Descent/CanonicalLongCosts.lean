@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
 
 theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
@@ -17,7 +17,7 @@ theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
     (Ccoef*(Real.exp 1*Z^ell)^epsilon)^2≤
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*L*epsilon) := by
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hex:(Real.exp 1)^epsilon=Real.exp epsilon:=by rw [Real.rpow_def_of_pos (Real.exp_pos _),Real.log_exp,one_mul]
+  have hex:(Real.exp 1)^epsilon=Real.exp epsilon:=by simp
   have hex2:(Real.exp epsilon)^2=Real.exp (2*epsilon):=by rw [←Real.exp_nat_mul];norm_num
   have hid:(Ccoef*(Real.exp 1*Z^ell)^epsilon)^2=
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*ell*epsilon) := by

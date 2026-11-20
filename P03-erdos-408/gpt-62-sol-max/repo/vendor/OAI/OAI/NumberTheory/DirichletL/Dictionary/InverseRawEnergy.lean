@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical BigOperators FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
+open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
+open FourierBridge HeckeInverseAmplification
 
 theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     (χ : ι→Character) (inv : Bool) (A : ι→ℂ)
@@ -55,7 +55,6 @@ theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
       ←integral_mul_const]
     apply integral_congr_ae
     filter_upwards with v
-    dsimp [B,φ,g]
     ring
   simp_rw [heq] at hh
   rw [Finset.sum_coe_sort rows (fun i=>‖polynomial (χ i) inv (clippedTest W c θ) D 0 0*A i‖^2)] at hh

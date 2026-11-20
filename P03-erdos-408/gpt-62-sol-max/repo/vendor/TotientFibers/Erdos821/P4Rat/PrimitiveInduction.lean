@@ -6,7 +6,7 @@ public import Erdos821.Blueprint.Analytic
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.P4Rat
 
@@ -62,13 +62,11 @@ theorem PrimitiveInductionTask_proof : PrimitiveInductionTask := by
   have hInt : ψ.primitiveCharacter (((n : ℤ)) : ZMod ψ.conductor) =
       ψ ((((n : ℤ))) : ZMod r) :=
     ψ.primitiveCharacter_apply_of_isCoprime hn.isCoprime
-  have hNat : ψ.primitiveCharacter ((n : ZMod ψ.conductor)) = ψ ((n : ZMod r)) := by
-    have h1 : ((((n : ℕ) : ℤ)) : ZMod ψ.conductor) = ((n : ZMod ψ.conductor)) := by
-      rw [Int.cast_natCast]
-    have h2 : ((((n : ℕ) : ℤ)) : ZMod r) = ((n : ZMod r)) := by
-      rw [Int.cast_natCast]
-    rw [← h1, ← h2]
-    exact hInt
-  exact hNat
+  have h1 : ((((n : ℕ) : ℤ)) : ZMod ψ.conductor) = ((n : ZMod ψ.conductor)) := by
+    rw [Int.cast_natCast]
+  have h2 : ((((n : ℕ) : ℤ)) : ZMod r) = ((n : ZMod r)) := by
+    rw [Int.cast_natCast]
+  rw [← h1, ← h2]
+  exact hInt
 
 end Erdos821.P4Rat

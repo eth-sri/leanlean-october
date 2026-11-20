@@ -73,8 +73,8 @@ theorem sum_divisors_truncModel {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {J 
       ∑ d ∈ n.divisors, (if ∏ p ∈ R j ∪ U, p = d then c j * ∏ p ∈ U, (w p - 1) else 0) =
         if R j ∪ U ⊆ divs Q n then c j * ∏ p ∈ U, (w p - 1) else 0 := by
     intro U hU
-    have hUQ : U ⊆ Q \ R j := mem_powerset.1 (mem_filter.1 hU).1
-    have hsub : R j ∪ U ⊆ Q := union_subset (hR j hj) (hUQ.trans sdiff_subset)
+    have hUQ  := mem_powerset.1 (mem_filter.1 hU).1
+    have hsub  := union_subset (hR j hj) (hUQ.trans sdiff_subset)
     rw [sum_ite_eq]
     by_cases h : R j ∪ U ⊆ divs Q n
     · rw [ite_eq_left h, ite_eq_left (Nat.mem_divisors.2 ⟨(prod_dvd_iff hQ hsub n).2 h, hn⟩)]
@@ -205,7 +205,6 @@ theorem sum_norm_truncModel_div_le {Q : Finset ℕ} (J : Finset κ) (R : κ → 
       have : ∏ p ∈ U, ‖w p - 1‖ ≤ 1 := by
         refine prod_le_one₀ (fun _ _ => norm_nonneg _) fun p hp => hw p ?_
         exact sdiff_subset ((mem_powerset.1 (mem_filter.1 hU).1) hp)
-      have hc := norm_nonneg (c j)
       gcongr
       calc ‖c j‖ * ∏ p ∈ U, ‖w p - 1‖ ≤ ‖c j‖ * 1 := by gcongr
         _ = ‖c j‖ := mul_one _
@@ -220,8 +219,8 @@ theorem sum_norm_truncModel_div_le {Q : Finset ℕ} (J : Finset κ) (R : κ → 
       ∑ d ∈ s, (if ∏ p ∈ R j ∪ U, p = d then ‖c j‖ / (∏ p ∈ R j ∪ U, p : ℕ) else 0) ≤
         ‖c j‖ / (∏ p ∈ R j, (p : ℝ)) * ∏ p ∈ U, (1 / (p : ℝ)) := by
     intro U hU
-    have hUQ : U ⊆ Q \ R j := mem_powerset.1 (mem_filter.1 hU).1
-    have hdisj : Disjoint (R j) U := disjoint_of_subset_right hUQ disjoint_sdiff
+    have hUQ  := mem_powerset.1 (mem_filter.1 hU).1
+    have hdisj  := disjoint_of_subset_right hUQ disjoint_sdiff
     rw [sum_ite_eq]
     have heq : ‖c j‖ / ((∏ p ∈ R j ∪ U, p : ℕ) : ℝ) =
         ‖c j‖ / (∏ p ∈ R j, (p : ℝ)) * ∏ p ∈ U, (1 / (p : ℝ)) := by
@@ -358,8 +357,6 @@ theorem sum_pow_card_divs_le {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {z : �
     intro U hU
     rw [← sum_filter, sum_const, nsmul_eq_mul, Nat.Ioc_filter_dvd_card_eq_div, prod_div_distrib,
       prod_const]
-    have hpos : (0 : ℝ) < ∏ p ∈ U, (p : ℝ) :=
-      prod_pos fun p hp => by exact_mod_cast (hQ p (mem_powerset.1 hU hp)).pos
     have hdiv : ((N / ∏ p ∈ U, p : ℕ) : ℝ) ≤ N / ∏ p ∈ U, (p : ℝ) := by
       rw [← Nat.cast_prod]
       exact Nat.cast_div_le

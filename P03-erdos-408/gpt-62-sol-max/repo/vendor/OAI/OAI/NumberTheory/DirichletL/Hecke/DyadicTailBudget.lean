@@ -14,7 +14,7 @@ theorem exists_external_tail_order (τ B p : ℝ) (hτ : 0<τ) :
   obtain ⟨n,hn⟩ := exists_nat_gt ((B-p)/τ)
   refine ⟨n,?_⟩
   intro Z hZ
-  have hZp : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZp  := lt_of_lt_of_le zero_lt_one hZ
   have hn' : B≤p+τ*(n : ℝ) := by
     have h := (div_lt_iff₀ hτ).mp hn
     nlinarith
@@ -33,13 +33,13 @@ theorem constant_absorbed_eventually (C ε : ℝ) (hε : 0<ε) :
   exact (tendsto_rpow_atTop hε).eventually (Filter.eventually_ge_atTop C)
 
 theorem uniform_external_tail_order (τ dmax B R : ℝ)
-    (hτ : 0<τ) (_hdmax : 0≤dmax) (hB : 0≤B) (hR : 0≤R) :
+    (hτ : 0<τ) (hB : 0≤B) (hR : 0≤R) :
     ∃ n : ℕ, ∀ Z d p : ℝ, 1≤Z → 0≤d → d≤dmax → -R≤p →
       (Z^d)^B/(1+Z^τ/2)^n≤(2 : ℝ)^n*(Z^d)^p := by
   obtain ⟨n,hn⟩ := exists_external_tail_order τ (dmax*B) (-dmax*R) hτ
   refine ⟨n,?_⟩
   intro Z d p hZ hd hd' hp
-  have hZp : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZp  := lt_of_lt_of_le zero_lt_one hZ
   have hnum : (Z^d)^B≤Z^(dmax*B) := by
     rw [←Real.rpow_mul hZp.le]
     exact Real.rpow_le_rpow_of_exponent_le hZ (mul_le_mul_of_nonneg_right hd' hB)

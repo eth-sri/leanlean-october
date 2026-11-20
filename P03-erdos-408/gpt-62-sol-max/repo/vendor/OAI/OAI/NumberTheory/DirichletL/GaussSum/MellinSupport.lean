@@ -9,75 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -124,17 +62,14 @@ theorem completedMellinCoefficient_tsum_primary_pairs (Ψ:Eis→*ℂ)
   · intro p hp
     change completedMellinCoefficient Ψ p*w p≠0 at hp
     have hc:completedMellinCoefficient Ψ p≠0 := by
-      intro hz
-      exact hp (by rw [hz,zero_mul])
+      simp_all
     obtain ⟨hs,hI,hJ⟩:=completedMellinCoefficient_support Ψ p hc
     let q:({I:Ideal Eis // Squarefree I ∧ primaryGenerator I≠0} ×
       {J:Ideal Eis // primaryGenerator J≠0}):=(⟨p.1.val,hs,hI⟩,⟨p.2.val,hJ⟩)
     have hq:primaryCubePairToMellinIndex q=p := by
-      exact Prod.ext (Subtype.ext rfl) (Subtype.ext rfl)
+      rfl
     refine ⟨⟨q,?_⟩,hq⟩
-    change completedMellinCoefficient Ψ (primaryCubePairToMellinIndex q)*
-      w (primaryCubePairToMellinIndex q)≠0
-    simpa only [hq] using hp
+    assumption
   · intro p
     rfl
 
@@ -155,7 +90,7 @@ end CompletedGauss
 
 namespace CubicEisenstein
 open Filter MeasureTheory Asymptotics
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
 open CubicKubota EisensteinCuspModThree
@@ -256,8 +191,8 @@ lemma upper_triangular_right_cusp_ratio (g T:SL(2,ℂ)) (hT:T 1 0=0)
     change (∑k:Fin 2,g i k*T k 0)=_
     rw [Fin.sum_univ_two,hT,mul_zero,add_zero]
   have hn:g 1 0*T 0 0≠0:=by rwa [hcol] at hc
-  have hg: g 1 0≠0:=(mul_ne_zero_iff.mp hn).1
-  have ht:T 0 0≠0:=(mul_ne_zero_iff.mp hn).2
+  have hg:=(mul_ne_zero_iff.mp hn).1
+  have ht:=(mul_ne_zero_iff.mp hn).2
   refine ⟨hg,?_⟩
   rw [hcol,hcol]
   field_simp
@@ -269,7 +204,7 @@ theorem conjugateSource_integral_cusp_mellin_entire (M:SL(2,Eis)) (hc:M 1 0≠0)
     Differentiable ℂ (mellin (cuspBarProfile cubicSourceConjugateFunction
       (eisEmbedding (M 0 0)/eisEmbedding (M 1 0)))) := by
   obtain ⟨G,j,T,hT,_,_,hM⟩:=three_cusp_decomposition M
-  let g:SL(2,ℂ):=integralComplexMatrix (G:SL(2,Eis))*integralComplexMatrix (cuspRepresentative j)
+  let g:=integralComplexMatrix (G:SL(2,Eis))*integralComplexMatrix (cuspRepresentative j)
   have he:integralComplexMatrix M=g*integralComplexMatrix T:=by
     rw [hM,map_mul,map_mul]
   have ht:integralComplexMatrix T 1 0=0:=by
@@ -291,11 +226,9 @@ lemma exists_integral_matrix_cusp_ratio (a c:Eis) (hc:c≠0) :
   change a=d*a' at ha
   change c=d*c' at hc'
   have hd:d≠0:=by
-    intro hz
-    exact hc (by rw [hc',hz,zero_mul])
+    simp_all
   have hcp:c'≠0:=by
-    intro hz
-    exact hc (by rw [hc',hz,mul_zero])
+    simp_all
   obtain ⟨u,v,huv⟩:=IsBezout.gcd_eq_sum a c
   change u*a+v*c=d at huv
   have hred:u*a'+v*c'=1:=by
@@ -310,8 +243,8 @@ lemma exists_integral_matrix_cusp_ratio (a c:Eis) (hc:c≠0) :
   refine ⟨M,hcp,?_⟩
   change eisEmbedding a'/eisEmbedding c'=eisEmbedding a/eisEmbedding c
   rw [ha,hc',map_mul,map_mul]
-  have hde:eisEmbedding d≠0:=eisEmbedding_ne_zero hd
-  have hce:eisEmbedding c'≠0:=eisEmbedding_ne_zero hcp
+  have hde:=eisEmbedding_ne_zero hd
+  have hce:=eisEmbedding_ne_zero hcp
   field_simp
 
 theorem conjugateSource_rational_cusp_mellin_entire (a c:Eis) (hc:c≠0) :
@@ -332,8 +265,7 @@ theorem conjugateSource_finite_twist_cusp_mellin_entire (h c:Eis) (hc:c≠0) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
 
@@ -347,22 +279,22 @@ def signedOmegaUnit (s:Bool) (j:Fin 3) :Eisˣ :=
 
 lemma signedOmegaUnit_val (s:Bool) (j:Fin 3) :
     (signedOmegaUnit s j:Eis)=if s then -(omega^j.val) else omega^j.val := by
-  cases s <;> simp [signedOmegaUnit,ramifiedOmegaUnit_val]
+  cases s <;> rfl
 
 lemma signedOmegaUnit_surjective : Function.Surjective (fun p:Bool×Fin 3=>signedOmegaUnit p.1 p.2) := by
   intro u
   obtain ⟨j,hj|hj⟩:=unit_eq_sign_omega u
   · refine ⟨(false,j),Units.ext ?_⟩
-    simpa only [signedOmegaUnit_val,Bool.false_eq_true,ite_false] using hj.symm
+    exact hj.symm
   · refine ⟨(true,j),Units.ext ?_⟩
-    simpa only [signedOmegaUnit_val,ite_true] using hj.symm
+    exact hj.symm
 
 def signedOmegaEquiv : (Bool×Fin 3)≃Eisˣ := Equiv.ofBijective
   (fun p=>signedOmegaUnit p.1 p.2)
   ((Fintype.bijective_iff_surjective_and_card _).mpr ⟨signedOmegaUnit_surjective,by
     have hc:Fintype.card Eisˣ=6:=by
-      simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
-    simp [hc]⟩)
+      simpa using PrimaryIdealUnitReindex.card_units_eq_six
+    simp_all⟩)
 
 lemma cubicSymbol_norm_one (c n:Eis) (hn:lambda^2∣n-1) (hc:IsCoprime c n) :
     ‖eisEmbedding (symbol c n)‖=1 := by
@@ -375,7 +307,7 @@ lemma arithmeticResidueSum_norm_mul_primary (h n:Eis) (hn:lambda^2∣n-1)
     (u:Eisˣ) (r:ℕ) (hr:2≤r) :
     ‖arithmeticResidueSum (h*n) (u.val*lambda^r)‖=
       ‖arithmeticResidueSum h (u.val*lambda^r)‖ := by
-  have hc: IsCoprime (u.val*lambda^r) n :=
+  have hc :=
     (ramified_primary_coprime u r n hn).of_mul_left_right
   have he:=congrArg norm (arithmeticResidueSum_frequency_twist h (u.val*lambda^r) n
     (ramifiedElement_ne_zero u r) (ramifiedElement_level u r hr)
@@ -414,7 +346,6 @@ end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
-local instance ramifiedCoordinateUnitsFintype : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 def ramifiedCoordMul (x y:ℤ×ℤ) :ℤ×ℤ := (x.1*y.1-x.2*y.2,x.1*y.2+x.2*y.1-x.2*y.2)
 def ramifiedCoordPow (x:ℤ×ℤ) :ℕ→ℤ×ℤ
@@ -525,7 +456,7 @@ lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
       rw [show r.val+4=(r.val+2)+2 by omega,pow_add]
       ring
     rw [he] at hb
-    have hh: n.val+2≤r.val+4 := (Nat.pow_le_pow_iff_right (by decide : 1<(3:ℕ))).mp hb
+    have hh := (Nat.pow_le_pow_iff_right (by decide : 1<(3:ℕ))).mp hb
     omega
   let z:=lowRamifiedQuotientCoord a r s j n
   have hu:(signedOmegaUnit s j:Eis)=omega^j.val ∨
@@ -536,14 +467,11 @@ lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
     (by omega) hu (lowRamifiedQuotientCoord_relation a r s j n hn)
   have hz:ramifiedCongruence (ActualEisensteinCoordinates.eval z.1 z.2) j.val (n.val+2):=by
     by_contra hc
-    rw [ite_eq_right hc] at he
-    exact hA he
+    simp_all
   exact ⟨hn,by simpa only [ramifiedCongruence,ShortDraftLatticeCount.coords_eval] using hz⟩
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
@@ -574,10 +502,8 @@ lemma lowRamifiedRawWeight_bound (a r:Fin 3) (s:Bool) (j:Fin 3) (k:Fin 5) :
       if lowRamifiedSupport a r (s,j,k) then (1/3:ℝ) else 0 := by
   split_ifs with hs
   · have hh:1≤k.val:=lowRamifiedSupport_exponent a r (s,j,k) hs
-    have hb:ramifiedDecayRatio^(k.val+2)≤ramifiedDecayRatio^3:=
-      pow_le_pow_of_le_one ramifiedDecayRatio_pos.le ramifiedDecayRatio_lt_one.le (by omega)
     exact (ramifiedRawWeight_norm_le (lowRamifiedFrequency a r) (signedOmegaUnit s j) k.val).trans
-      (hb.trans_eq ramifiedDecayRatio_cube)
+      ((pow_le_pow_of_le_one ramifiedDecayRatio_pos.le ramifiedDecayRatio_lt_one.le (by omega)).trans_eq ramifiedDecayRatio_cube)
   · have hz:arithmeticResidueSum (lowRamifiedFrequency a r)
         ((signedOmegaUnit s j:Eis)*lambda^(k.val+2))=0:=by
       by_contra hne
@@ -605,7 +531,7 @@ theorem lowRamifiedRawWeight_sum (a r:Fin 3) (n:Eis) (hn:lambda^2∣n-1) :
       rw [←Finset.sum_filter]
       simp only [Finset.sum_const,nsmul_eq_mul,lowRamifiedSupportSet]
     _≤5/3:=by
-      have hc:(lowRamifiedSupportSet a r).card≤5:=lowRamifiedSupport_card a r
+      have hc:=lowRamifiedSupport_card a r
       exact_mod_cast (show ((lowRamifiedSupportSet a r).card:ℝ)*(1/3:ℝ)≤5/3 by
         have hcr:((lowRamifiedSupportSet a r).card:ℝ)≤5:=by exact_mod_cast hc
         linarith)

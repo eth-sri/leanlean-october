@@ -24,9 +24,8 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
   have hi := Fintype.mem_piFinset.mp hv (Sum.inl i)
   have hd := hslot i (v (Sum.inl i)) hi
   have he := congrFun hvB (Sum.inl i)
-  have hc : IsCoprime (P^k) (v (Sum.inl i)) := hd.2.pow_left
   have hh := supportExtract_of_disjoint (v (Sum.inl i)) (primeSupport (P^k))
-    ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff (pow_ne_zero k hP) hd.1).mpr hc).symm
+    ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff (pow_ne_zero k hP) hd.1).mpr (hd.2.pow_left)).symm
   exact he.symm.trans hh
 
  theorem allocation_plain_product (S : (ι ⊕ Fin 2) → Finset (Ideal O))

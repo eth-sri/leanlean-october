@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssignedPair
 
 @[expose] public section
@@ -25,13 +26,12 @@ theorem assigned_quotient_subset {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
 
 theorem divisor_weight_mono {t:Ideal Eis}(ht:t≠0){J K:ℕ}(hJK:J≤K) :
     ((idealDivisors t).card:ℝ)^J≤((idealDivisors t).card:ℝ)^K := by
-  have hc : (1:ℝ)≤(idealDivisors t).card := by
-    exact_mod_cast Finset.card_pos.mpr ⟨1,(mem_idealDivisors ht).mpr (one_dvd t)⟩
-  exact pow_le_pow_right₀ hc hJK
+  refine pow_le_pow_right₀ ?_ hJK
+  exact_mod_cast Finset.card_pos.mpr ⟨1,(mem_idealDivisors ht).mpr (one_dvd t)⟩
 
 theorem assigned_quotient_mass (K:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→Eis)(_hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
       (S:Finset (Source (ι:=ι) 0))(J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι)
       (_hJ:J₁.card+J₂.card≤K)(Z R:ℝ)(_hZ:1≤Z)(_hR:R≤U)
       (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R),
@@ -44,9 +44,7 @@ theorem assigned_quotient_mass (K:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
   have hZp : 0<Z := zero_lt_one.trans_le hZ
   let T := quotientSet p (assignedSource S J₁ J₂ L₁ L₂)
   have ht : ∀t∈T,t≠0 := quotientSet_nonzero p hp _
-  have hnorm : ∀t∈T,(t.absNorm:ℝ)≤Z^R :=
-    fun t hh=>hn t (assigned_quotient_subset p S J₁ J₂ L₁ L₂ hh)
-  have hm := hb T (Z^R) (Real.rpow_pos_of_pos hZp _) ht hnorm
+  have hm := hb T (Z^R) (Real.rpow_pos_of_pos hZp _) ht (fun t hh=>hn t (assigned_quotient_subset p S J₁ J₂ L₁ L₂ hh))
   have hpow : (Z^R)^(π/(U+1))≤Z^π := by
     rw [←Real.rpow_mul hZp.le]
     apply Real.rpow_le_rpow_of_exponent_le hZ

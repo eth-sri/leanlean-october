@@ -47,11 +47,11 @@ lemma last_block_dvd (I J K L : Id) : L ∣ I*J*K*L := by
   refine ⟨I*J*K,?_⟩
   ring
 
-theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
+theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character) (u : O)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
-    bareIdealHighCoefficient η 1 (I*I') (J*J') (K*K') (L*L') =
-      bareIdealHighCoefficient η 1 I J K L * bareIdealHighCoefficient η 1 I' J' K' L' := by
+    bareIdealHighCoefficient η u (I*I') (J*J') (K*K') (L*L') =
+      bareIdealHighCoefficient η u I J K L * bareIdealHighCoefficient η u I' J' K' L' := by
   have hII := hcop.mono (first_block_dvd I J K L) (first_block_dvd I' J' K' L')
   by_cases h : highSupport I J K L ∧ highSupport I' J' K' L'
   · have hprod := (highSupport_mul I J K L I' J' K' L' hII).mpr h
@@ -60,15 +60,14 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
       ⟨(supported_mul_iff I (J^3)).mpr ⟨h.2.1,supported_pow h.2.2.1 3⟩,h.2.2.2.1⟩
     have hsB := (supported_mul_iff (I'*J'^3) K').mpr
       ⟨(supported_mul_iff I' (J'^3)).mpr ⟨h'.2.1,supported_pow h'.2.2.1 3⟩,h'.2.2.2.1⟩
-    have hc3 : IsCoprime ((I*J*K*L)^3) ((I'*J'*K'*L')^3) := hcop.pow_left.pow_right
     have hab := primaryGenerator_coprime _ _ hsA hsB
-      (hc3.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
+      (hcop.pow_left.pow_right.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
     have hba := primaryGenerator_coprime _ _ h'.2.2.2.2 hsA
       (hcop.symm.pow_right.mono (last_block_dvd I' J' K' L') (completed_block_dvd_cube I J K L))
     have hab' := primaryGenerator_coprime _ _ h.2.2.2.2 hsB
       (hcop.pow_right.mono (last_block_dvd I J K L) (completed_block_dvd_cube I' J' K' L'))
     simp only [primaryGenerator_mul,primaryGenerator_pow] at hab hba hab'
-    have he := bareSourceCoefficient_product_frequency η I I'
+    have he := bareSourceCoefficient_product_frequency η u I I'
       ⟨h.1,supported_primaryGenerator_ne_zero I h.2.1⟩
       ⟨h'.1,supported_primaryGenerator_ne_zero I' h'.2.1⟩
       ⟨hprod.1,supported_primaryGenerator_ne_zero (I*I') hprod.2.1⟩ hII
@@ -89,7 +88,7 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     unfold highSupport at hprod h h'
     unfold bareIdealHighCoefficient
     rw [dite_eq_left hprod,dite_eq_left h,dite_eq_left h']
-    simp only [primaryGenerator_mul,one_mul]
+    simp only [primaryGenerator_mul]
     dsimp only at he
     convert he using 1 ; ring_nf
   · have hprod := mt (highSupport_mul I J K L I' J' K' L' hII).mp h
@@ -97,7 +96,7 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     unfold bareIdealHighCoefficient
     rw [dite_eq_right hprod]
     by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
+    · have hj  := fun hj=>h ⟨hi,hj⟩
       unfold highSupport at hj
       rw [dite_eq_right hj,mul_zero]
     · unfold highSupport at hi
@@ -107,13 +106,13 @@ lemma fullIdealWeight_mul (s : ℂ) (I J : Id) :
     fullIdealWeight s (I*J)=fullIdealWeight s I*fullIdealWeight s J :=
   (IdealEuler.normWeight s).map_mul I J
 
-theorem bareIdealHighSummand_mul (η : HeckeFamily.Character) (x w z : ℂ)
+theorem bareIdealHighSummand_mul (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
-    bareIdealHighSummand η 1 x w z (I*I') (J*J') (K*K') (L*L') =
-      bareIdealHighSummand η 1 x w z I J K L * bareIdealHighSummand η 1 x w z I' J' K' L' := by
+    bareIdealHighSummand η u x w z (I*I') (J*J') (K*K') (L*L') =
+      bareIdealHighSummand η u x w z I J K L * bareIdealHighSummand η u x w z I' J' K' L' := by
   unfold bareIdealHighSummand
-  rw [bareIdealHighCoefficient_mul η I J K L I' J' K' L' hcop,
+  rw [bareIdealHighCoefficient_mul η u I J K L I' J' K' L' hcop,
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
 

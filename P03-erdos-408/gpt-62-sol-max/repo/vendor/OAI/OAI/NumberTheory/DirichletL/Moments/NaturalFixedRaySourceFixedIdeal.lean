@@ -1,18 +1,20 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceSupport
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFiber
+public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyData
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceInternal
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily CenteredMomentDetectorDictionary
+open CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily
+open ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}

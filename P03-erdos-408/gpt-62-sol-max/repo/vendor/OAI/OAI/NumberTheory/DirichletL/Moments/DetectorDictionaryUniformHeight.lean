@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformLog
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical ContDiff
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
@@ -26,7 +26,6 @@ open HeckeInverseAmplification HeckeDyadic JointLogSeparation
     (realInterpolatedLogSchwartz W a b ha hs hW) (realInterpolatedLogSchwartz_apply W a b ha hs hW) T
   refine ⟨n,A*B,mul_pos hA hB,?_⟩
   intro σ hσ t
-  have hp : (σ,0)∈Icc (0:ℝ) 1 ×ˢ ({0}:Set ℝ) := ⟨hσ,rfl⟩
   have hheight : ‖t/(2*Real.pi)‖≤‖t‖ := by
     rw [norm_div,Real.norm_of_nonneg (by positivity : 0≤2*Real.pi)]
     exact div_le_self (norm_nonneg _) (by linarith [Real.pi_gt_three])
@@ -35,7 +34,7 @@ open HeckeInverseAmplification HeckeDyadic JointLogSeparation
   apply hh.trans
   have hb : T.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (frequencyTwist (realInterpolatedLogSchwartz W a b ha hs hW (σ,0)) (t/(2*Real.pi)))≤B*(1+‖t‖)^n :=
-    (hbound (σ,0) hp (t/(2*Real.pi))).trans
+    (hbound (σ,0) (⟨hσ,rfl⟩) (t/(2*Real.pi))).trans
     (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) n) hB.le)
   exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
 

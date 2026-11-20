@@ -40,8 +40,6 @@ theorem original_source_cost {χ : Type*} [Fintype χ] (rmax : ℕ) (ε : ℝ) (
     apply pow_le_pow_right₀ (by norm_num)
     omega
   have hcf : (Fintype.card χ:ℝ)^2≤(Fintype.card χ:ℝ)^2+1 := by linarith
-  have hprod : 0≤(∏ i,H i)^ε := Real.rpow_nonneg (Finset.prod_nonneg (fun i _ => zero_le_one.trans (hH i))) _
-  have hnp : 0≤(Ideal.absNorm (J*Q):ℝ)^ε := Real.rpow_nonneg (Nat.cast_nonneg _) _
   calc
     _ = (Fintype.card χ:ℝ)^2*(Fintype.card (Finset (FreeReflection.pool J Q Q₀)):ℝ)^2*
         (Fintype.card (Finset σ):ℝ)^2*(∏ i,256*(columnDyadicLength (H i)+1:ℝ))^2 := by
@@ -51,7 +49,7 @@ theorem original_source_cost {χ : Type*} [Fintype χ] (rmax : ℕ) (ε : ℝ) (
       gcongr
       · exact hp J Q Q₀ hJ hQ
       · exact hh H hcard hH
-    _ = _ := by dsimp [C];ring
+    _ = _ := by ring
 end
 end SevenEighths.InverseReflectedPhase
 

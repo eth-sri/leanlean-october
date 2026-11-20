@@ -31,7 +31,7 @@ theorem compositeSum_eq (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ)
     exact mem_Icc.2 ⟨hpp.one_lt.le, hhi⟩
   rw [← sum_subset hsub]
   · refine sum_congr rfl fun p hp => ?_
-    have hpr : ∀ i, (p i).Prime := fun i =>
+    have hpr  := fun i =>
       (mem_primesIcc.1 (Fintype.mem_piFinset.1 hp i)).1
     unfold cutPsi primeWeight
     split_ifs with h
@@ -65,8 +65,6 @@ theorem proxySum_eq (q cw : ℝ) (K : ℕ) (CN x γ κ : ℝ) (j : ℕ) (Φ : �
     proxySum q cw K CN x γ κ j Φ u v B =
       ∑ m ∈ Fintype.piFinset (fun _ : Fin j => Icc 1 ⌊κ * x + 1⌋₊),
         cutPsi Φ (endpoint q cw K CN x u v B) x (∏ i, m i) * ∏ i, strippedProxy x γ j (m i) := by
-  unfold proxySum cutPsi
-  push_cast
   rfl
 
 /-- Telescoping a difference of tuple sums. -/

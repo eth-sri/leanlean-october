@@ -8,21 +8,20 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
+open CenteredMomentSecondHeightFamily CenteredMomentFirstMixedNormalizationActual
+open CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor
+open CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstCanonicalFamily
+open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale
+open ConcreteTraceCRT CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
 open CenteredMomentCommonRadiusSaving
 local notation "O"=>HeckeFamily.O
 
 lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
-    (_hw:0≤w)(hwo:wo≤2*w):
+(hwo:wo≤2*w):
     -d+max (d-c-2*w+wo) 0+branch*sigma+delta+reserve≤
       -min c d+branch*sigma+delta+reserve := by
   have h:max (d-c-2*w+wo) 0≤d-min c d:=by
@@ -50,7 +49,7 @@ theorem actual_reference_shift (η τ:Character)(C D:Ideal O)
   have hE:=norm_pos _ (subsetGenerator_supported C D hC E).1
   have hR:=active_norm_pos C D
   have hz:0<Z:=zero_lt_one.trans hZ
-  have hh:=actual_reference_width η τ C D hC E K Z hK hZ hmod
+  have hh:=actual_reference_width η τ C D hC E K Z hmod
   dsimp only
   rw [nominal_equal_support C D _ hC.1 hD.1 hCD K V]
   simp (disch := positivity) only [Real.logb_mul,Real.logb_div,Real.logb_pow,
@@ -77,7 +76,7 @@ theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
     (max (Real.logb Z (D.absNorm:ℝ)-Real.logb Z (C.absNorm:ℝ)) 0+2*sigma+delta+reserve)
     hK hV hZ hred (by norm_num) hmod
   have hg:=enlarged_gain_extraction (Real.logb Z (C.absNorm:ℝ))
-    (Real.logb Z (D.absNorm:ℝ)) 0 0 sigma 2 delta reserve (by norm_num) (by norm_num)
+    (Real.logb Z (D.absNorm:ℝ)) 0 0 sigma 2 delta reserve (by norm_num)
   dsimp only at hh ⊢
   simp only [Real.rpow_zero,mul_one,one_mul,Real.logb_one,add_zero,sub_zero] at hh hg
   change _≤_
@@ -117,7 +116,7 @@ theorem actual_error_reference_shift (η τ:Character)(C D:Ideal O)
     hK hV hZ hred hcost hmod
   have hg:=enlarged_gain_extraction (Real.logb Z (C.absNorm:ℝ))
     (Real.logb Z (D.absNorm:ℝ)) (errorRemoval p Z k) (errorMoving p Z k)
-    sigma 1 delta reserve hw hwo
+    sigma 1 delta reserve hwo
   dsimp only at hh ⊢
   simp only [one_mul] at hg
   rw [errorCommonRadius]

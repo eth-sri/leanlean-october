@@ -47,9 +47,9 @@ theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
               (Real.log (normValue h/dyadicScale (n 1)))
               (Real.log ((Ideal.absNorm I:ℝ)/dyadicScale (n 2)))
               (Real.log ((Ideal.absNorm J:ℝ)/dyadicScale (n 3))) := by
-  let q : Fin 4→ℝ := ![secondEffectiveScale C D A K,normValue h,
+  let q  := ![secondEffectiveScale C D A K,normValue h,
     (Ideal.absNorm I:ℝ),(Ideal.absNorm J:ℝ)]
-  have he : (∑ n : Blocks a b,((∏i : Fin 4,dyadicWeight (n i) (q i)):ℝ):ℝ)=1 :=
+  have he  :=
     dyadic_product_partition a b q ha hband
   calc
     _ = physicalKernel C D W K R (A*h) I J*(1:ℂ) := (mul_one _).symm

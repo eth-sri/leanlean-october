@@ -19,6 +19,22 @@ lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
   rw [span_primaryGenerator_of_supported P.val hs]
   exact Ideal.isPrime_of_prime P.property
 
+/-- Gather the prime, span and good reduction properties of the primary generator. -/
+theorem supported_primary_data (P : PrimeIdeal) (hs : Supported P.val)
+    (p : O) (h : p = primaryGenerator P.val) :
+    Prime p ∧ (Ideal.span {p} = P.val) ∧ Supported (Ideal.span {p}) ∧
+      (lambda ∉ Ideal.span {p} ∧ ringChar (O ⧸ Ideal.span {p}) ≠ 2) := by
+  subst p
+  have hp := supported_primeGenerator_prime P hs
+  have he := span_primaryGenerator_of_supported P.val hs
+  have hsp := he.symm ▸ hs
+  exact ⟨hp, he, hsp, supported_prime_data _ hp hsp⟩
+
+lemma actualACube_norm_le (η : HeckeFamily.Character) (p : O) : ‖actualACube η p‖≤1 := by
+  have h := actualAPhase_norm_le_one η p
+  rw [←actualACube_sq,norm_pow] at h
+  nlinarith [norm_nonneg (actualACube η p)]
+
 lemma targetMonoid_primaryGenerator (η : HeckeFamily.Character) (I : Ideal O) (hs : Supported I) :
     targetMonoid η (primaryGenerator I)=HeckeFamily.idealCoeff η I := by
   calc
@@ -37,11 +53,8 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
       (1-HeckeFamily.idealCoeff η P.val*(Q:ℂ)^(-x)) /
         ((1-(Q:ℂ)^(-6*z))*(1-(Q:ℂ)^(-w))) * idealClosedCorrection η P x w z := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  obtain ⟨hp, hspan, hsp, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     rw [hspan]
@@ -63,8 +76,7 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)
   have hD : 1-coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x≠0 := by
     intro he
-    have hh : coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x=1 := (sub_eq_zero.mp he).symm
-    rw [hh,norm_one] at hDnorm
+    rw [((sub_eq_zero.mp he).symm),norm_one] at hDnorm
     exact lt_irrefl _ hDnorm
   have he := idealHighLocalFactor_euler_identity η p hp hg.1 hg.2 hprimary hsp x w z hV hR hW hD
   dsimp only at he ⊢

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.CubeSlotSource
 
 @[expose] public section
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment IdealMobiusDivisorSum
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
@@ -66,8 +66,8 @@ theorem cubeAbsorbedCoefficient_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε)
   refine ⟨((2:ℝ)^rmax*D^rmax)^2,by positivity,?_⟩
   intro σ _ _ H hH L w hw hr
   have hn : (1:ℝ)≤Ideal.absNorm H := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hH (Ideal.absNorm_eq_zero_iff.mp h))
-  have hn0 : 0<(Ideal.absNorm H:ℝ) := lt_of_lt_of_le zero_lt_one hn
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hH)
+  have hn0  := lt_of_lt_of_le zero_lt_one hn
   have hde : δ*(rmax:ℝ)*2≤ε := by
     dsimp [δ]
     have hp : (0:ℝ)<2*rmax+1 := by positivity

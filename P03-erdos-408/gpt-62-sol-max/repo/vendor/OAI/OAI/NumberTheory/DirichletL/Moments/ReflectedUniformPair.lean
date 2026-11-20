@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedPairEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedUniformPair
-open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
+open HeckeFamily FourierBridge EisensteinSchwartzPoisson CenteredMomentReflectedProfileMeasure
+open CenteredMomentReflectedPairEnergy
 
 def heightScale (A n : ℕ) (s t : ℝ) : ℝ := (1+s)^A/(1+‖t‖)^n
 

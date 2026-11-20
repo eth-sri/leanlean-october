@@ -78,7 +78,6 @@ theorem translationLift_form (mass : α → ℝ) (H : α → α → G → ℂ)
   intro r _
   symm
   apply Fintype.sum_equiv (Equiv.addLeft r)
-  intro d
   simp
 
 theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → ℂ) (C : ℝ)
@@ -95,7 +94,7 @@ theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → �
   simp only [norm_mul, Complex.norm_natCast] at h
   have hn : 0 < (Fintype.card G : ℝ) := by exact_mod_cast Fintype.card_pos
   rw [Real.sqrt_mul hn.le, Real.sqrt_mul hn.le] at h
-  have hr : (Real.sqrt (Fintype.card G : ℝ)) ^ 2 = (Fintype.card G : ℝ) :=
+  have hr  :=
     Real.sq_sqrt hn.le
   have heq (U V : ℝ) : C * (Real.sqrt (Fintype.card G : ℝ) * Real.sqrt U) *
       (Real.sqrt (Fintype.card G : ℝ) * Real.sqrt V) =

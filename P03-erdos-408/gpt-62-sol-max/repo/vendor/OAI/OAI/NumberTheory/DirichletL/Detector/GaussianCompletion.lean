@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GaussianMellin
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalAnalytic
 
@@ -19,7 +20,7 @@ def gaussianCompletedProfile (y : ℝ) : ℂ := gaussianMellinProfile y/(Real.sq
 
 lemma gaussianCompleted_Vstar (y : ℝ) (hy : 0<y) :
     Vstar gaussianCompletedProfile y=gaussianMellinProfile y := by
-  have h : (Real.sqrt y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
+  have h  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
   simp only [Vstar,gaussianCompletedProfile]
   field_simp
 
@@ -34,10 +35,10 @@ lemma gaussian_mellinSummand (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
   · subst J
     simp [mellinSummand,spectralSummand,fullIdealWeight,correctedSummand,markedSummand,CompletedGauss.summand]
   have hi : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
-  have hq : 0<(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/Z :=
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ)
+  have hq  :=
     div_pos (mul_pos hi (pow_pos hj 3)) hZ
   have hp (v : ℝ) : mellinSummand S D Ψ σ Z (I,J) v=
       (((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/Z:ℝ):ℂ)^(-((σ:ℂ)+v*Complex.I))*

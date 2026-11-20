@@ -31,7 +31,7 @@ lemma movingQuotient_mk (A s : O) (hs : s≠0) (m : O) :
       idealRowHom m (Ideal.span {A}) * sexticGauss s hs (-m) := by
   have hd : A*s ∣ representative (A*s) (Ideal.Quotient.mk _ m)-m :=
     Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec _ _))
-  have hA : representative (A*s) (Ideal.Quotient.mk _ m)-m ∈ (Ideal.span {A}:Ideal O) :=
+  have hA  :=
     Ideal.mem_span_singleton.mpr ((dvd_mul_right A s).trans hd)
   have hs' : -representative (A*s) (Ideal.Quotient.mk _ m)-(-m) ∈ (Ideal.span {s}:Ideal O) := by
     apply Ideal.mem_span_singleton.mpr
@@ -91,9 +91,8 @@ theorem actualCongruenceCoefficient_zero_off_calibration (S : Finset (Ideal O))
     actualCongruenceCoefficient (calibrationForSet S hS) A s hA H=0 := by
   have he := actualPhysicalFourier_zero_off_calibration S hS A s hA hs hcop H hH
   rw [actualPhysicalFourier_eq] at he
-  have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hs)
-  exact (mul_eq_zero.mp he).resolve_left hn
+  refine (mul_eq_zero.mp he).resolve_left ?_
+  exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hs)
 
 end SevenEighths.ProbePhysical
 end

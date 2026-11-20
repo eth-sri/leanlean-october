@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 
 @[expose] public section
@@ -25,8 +26,7 @@ lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
     (2 : ℝ)^l.val/2 ≤ (Ideal.absNorm (cols j.val) : ℝ) ∧
       (Ideal.absNorm (cols j.val) : ℝ) ≤ (2 : ℝ)^l.val := by
   have hp : 1 ≤ (Ideal.absNorm (cols j.val) : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (primaryGenerator_ne_zero_ideal _ (hc j.val).2))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (primaryGenerator_ne_zero_ideal _ (hc j.val).2)
   have hb := divisorDyadicLabel_bounds N (cols j.val) hp (hn j.val)
   have hj := j.property
   change divisorDyadicLabel N (cols j.val) = l at hj

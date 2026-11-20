@@ -106,11 +106,8 @@ lemma productFull_energy_split (w : ∀ i, α i → ℝ)
     productSqNorm w (fun x => f x - productFull w I f x) +
         productSqNorm w (productFull w I f) = productSqNorm w f := by
   have hfg := productFull_pair_self w hsum I f
-  have hgf : productPair w (productFull w I f) f =
-      productPair w (productFull w I f) (productFull w I f) :=
-    (productFull_duality w I f f).symm.trans hfg
   have h := productPair_sub_sub w f (productFull w I f)
-  rw [hfg, hgf] at h
+  rw [hfg, ((productFull_duality w I f f).symm.trans hfg)] at h
   have hre := congrArg Complex.re h
   simp only [productPair_self_re, Complex.sub_re, Complex.add_re] at hre
   linarith

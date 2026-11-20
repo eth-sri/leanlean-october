@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstRowGeometry
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstRowGeometry
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
@@ -15,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem first_physical_row_scale_bound
     (Z M r ell V delta B j eta tau dn cn jn : ℝ) (hZ : 0<Z)
-    (_hdn : 0≤dn) (hcn : 0<cn) (_hjn : 0<jn)
+    (hcn : 0<cn)
     (hd : dn≤Z^(delta+eta)) (hc : Z^(B-eta)≤cn) (hj : Z^(j-eta)≤jn) :
     Z^tau*(Z^(r+eta))^2*(Z^(ell+eta))^4*(Z^(V+eta))^2*dn /
       (Z^M*cn^2*jn) ≤ Z^(firstPhysicalHeight M r ell V delta B j+12*eta+tau) := by
@@ -38,7 +39,7 @@ theorem first_physical_row_scale_bound
       ring
 
 theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     (S N Q : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (hv : ∀ i∈S,0<v₁ i+v₂ i)
     (hNQ : Disjoint N Q) (hNS : Disjoint N S) (hQS : Disjoint Q S)
@@ -64,8 +65,7 @@ theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
   exact hrow.trans (first_physical_row_scale_bound Z M r ell V delta B j eta tau
     (primeProductNorm p divisor) (primeProductNorm p common)
     (‖eisEmbedding (jLabel p S (fun i=>v₁ i+v₂ i) ε₁ ε₂)‖^2) hZ
-    (primeProductNorm_pos p hp _).le (primeProductNorm_pos p hp _)
-    (SecondPassIntegration.elementNorm_pos _ (primeProduct_ne_zero p hp _ _)) hd hc hj)
+    (primeProductNorm_pos p hp _) hd hc hj)
 
 end
 end SevenEighths.InverseMoment

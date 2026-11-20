@@ -23,12 +23,12 @@ lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   intro v
   apply CubicReflectionKernel.weighted_two_to_cauchy (by positivity) v
   have hp : 1≤(1+|v|)^J := one_le_pow₀ (by linarith [abs_nonneg v])
-  have hs : Real.sqrt ((1+|v|)^J)≤(1+|v|)^J := Real.sqrt_le_self_iff.mpr (Or.inr hp)
+  have hs  := Real.sqrt_le_self_iff.mpr (Or.inr hp)
   have hb' := hb 0 (by simp) v
   simp only [Complex.ofReal_zero,zero_add] at hb'
   calc
     _≤(1+|v|)^2*(‖mellin W ((v:ℂ)*Complex.I)‖*(1+|v|)^J) := by gcongr
-    _=(1+|v|)^(J+2)*‖mellin W ((v:ℂ)*Complex.I)‖ := by rw [pow_add];ring
+    _=(1+|v|)^(J+2)*‖mellin W ((v:ℂ)*Complex.I)‖ := by ring
     _≤C := hb'
 
 theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
@@ -58,9 +58,7 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   let Q := lowPhysicalScale (calibrationForSet S hS) X Y
   have hQ : 0<Q := lowPhysicalScale_pos _ X Y hX (lt_of_lt_of_le zero_lt_one hY)
   let A := (Q/Y)*(1+(Y^2/Q)^(1/6:ℝ)+(Y^2/Q)^2/Y)*Y^δ
-  have hA : 0≤A := by dsimp [A]; positivity
   let E := ∑σ : RayRing,Real.sqrt (∑m∈lowNumeratorRows a₀ b₀ ha₀ hb₀ Q hQ,‖B σ m‖^2)
-  have hE : 0≤E := Finset.sum_nonneg (fun _ _=>Real.sqrt_nonneg _)
   have hh (v : ℝ) : ‖lowSeparatedIntegrand (calibrationForSet S hS) W0 W1
       (lowOuterCutoff a₀ b₀) X Y B v‖≤(CM*Real.sqrt K*Real.sqrt A*E)*(1+v^2)⁻¹ := by
     have hg := hgram W0 X Y hX hY B v hP
@@ -72,7 +70,7 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
           (Real.sqrt K*Real.sqrt A*E) := by convert hg using 1 ;ring
       _≤(CM/(1+v^2))*(Real.sqrt K*Real.sqrt A*E) :=
         mul_le_mul_of_nonneg_right (hm v) (by positivity)
-      _=_ := by rw [div_eq_mul_inv];ring
+      _=_ := by ring
   have hi := norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul
     (CM*Real.sqrt K*Real.sqrt A*E)) (Filter.Eventually.of_forall hh)
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hi

@@ -32,7 +32,6 @@ theorem spanWeight_zero_of_invalid (g : P.BigGroup) (p : P.Prime g.val)
   cases span with
   | none => exact ite_eq_right hn
   | some be =>
-    rcases be with ⟨b, e⟩
     exact ite_eq_right hn
 
 theorem spanProduct_zero_of_invalid (S : LifespanAssignment P n)

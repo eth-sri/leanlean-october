@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.IdealUnit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
@@ -69,7 +69,7 @@ lemma prime_coprime_highIdeals (P : PrimeIdeal) (v : PrimeIdeal→₀HighValuati
   have hc (f : HighValuation→ℕ) (hf0 : f 0=0) :
       IsCoprime P.val (idealFromValuations (v.mapRange f hf0)) := by
     apply prime_coprime_idealFromValuations
-    simp only [Finsupp.mapRange_apply,hv,hf0]
+    simp_all
   exact ((hc _ rfl).mul_right (hc _ rfl)).mul_right (hc _ rfl) |>.mul_right (hc _ rfl)
 
 def highValuationTerm (η : HeckeFamily.Character) (x w z : ℂ)
@@ -93,7 +93,7 @@ theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
     simp only [highValuationTerm,highIdeals_zero,Prod.fst_one,Prod.snd_one,
       bareIdealHighSummand_one,Finsupp.prod_zero_index]
   | @single_add P b v hP hb ih =>
-    have hv : v P=0 := Finsupp.notMem_support_iff.mp hP
+    have hv  := Finsupp.notMem_support_iff.mp hP
     have hc := prime_coprime_highIdeals P v hv
     have hpow : IsCoprime (P.val^b.1.1*P.val^b.1.2*P.val^b.2.1*P.val^b.2.2)
         ((highIdeals v).1.1*(highIdeals v).1.2*(highIdeals v).2.1*(highIdeals v).2.2) :=
@@ -104,7 +104,7 @@ theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
     rw [Finsupp.prod_add_index_of_disjoint hd,Finsupp.prod_single_index (highPrimeTerm_zero η x w z P),←ih]
     unfold highValuationTerm
     rw [highIdeals_add,highIdeals_single]
-    exact bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hpow
+    exact bareIdealHighSummand_mul η 1 x w z _ _ _ _ _ _ _ _ hpow
 
 theorem highValuationTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicCell
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesBudget
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRank
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRank
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstLabelCell
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
@@ -17,7 +18,7 @@ open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSour
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 def extra (negative : Bool) (c : CubeCoordinates ι) : Finset ι :=
   if negative then c.rightExponent.support else c.leftExponent.support

@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 
 @[expose] public section
 
@@ -10,18 +11,17 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceLowBranchGeometry
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
+open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowBranchGeometry
 local notation "O"=>HeckeFamily.O
 
 lemma original_long_positive (Z M X₁ X₂ ell κ:ℝ)(hZ:1<Z)(hM:0<M)
-    (_hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hκ:3/4≤κ)
+(hX₂:0<X₂)(hell:0≤ell)(hκ:3/4≤κ)
     (hshort:length Z X₁≤M/4)
     (hlarge:5*M/6≤length Z X₁+length Z X₂+ell)
     (hcap:length Z X₁+length Z X₂+6*κ*ell≤M):
     0<Real.logb Z X₂ ∧ length Z X₂=Real.logb Z X₂ ∧ 1≤X₂:=by
-  have hbudget:=slot_budgets M (length Z X₁+length Z X₂) ell κ hM.le hell hκ hlarge (by linarith)
+  have hbudget:=slot_budgets M (length Z X₁+length Z X₂) ell κ hell hκ hlarge (by linarith)
   have hpos:0<length Z X₂:=by linarith [hbudget.1]
   have he:=length_eq_max_log Z X₂ hZ hX₂
   have hl:0<Real.logb Z X₂:=by
@@ -77,9 +77,8 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       length Z (X₂/((∏P∈D₂,P).absNorm:ℝ)):=by
     rw [length_eq_max_log Z _ hZ hp₂];exact le_max_right _ _
   have hlen₁:=length_nonneg Z X₁ hZ
-  have hlen₂:=length_nonneg Z X₂ hZ
   have hslot:0≤6*κ*ell:=mul_nonneg (by linarith) hell
-  have hl:=original_long_positive Z s.width X₁ X₂ ell κ hZ hM hX₁ hX₂ hell hκ hshort hlarge hcap
+  have hl:=original_long_positive Z s.width X₁ X₂ ell κ hZ hM hX₂ hell hκ hshort hlarge hcap
   have hrange:=divisor_reflection_range s hZ Mcap X₂ hwidth hl.2.2 D₂ hD₂
   dsimp only at hrange
   have hlogdiv:=Real.logb_div (b:=Z) hX₂.ne' (zero_lt_one.trans_le hn₂).ne'
@@ -94,12 +93,12 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     have hkz:=mul_le_mul_of_nonneg_left hze (by linarith:0≤6*κ)
     linarith
   · obtain ⟨he,hbudget⟩:=slot_budgets s.width (length Z X₁+length Z X₂) ell κ
-      hM.le hell hκ hlarge (by linarith)
+       hell hκ hlarge (by linarith)
     have hlow:=reflected_low s.width (length Z (X₁/((∏P∈D₁,P).absNorm:ℝ)))
       (Real.logb Z (X₂/((∏P∈D₂,P).absNorm:ℝ))) ell z κ xi
       (max 0 (s.width-Real.logb Z (X₂/((∏P∈D₂,P).absNorm:ℝ))+xi))
-      hM.le (length_nonneg Z _ hZ)
-      (hd₁.trans hshort) hell hz hze hκ he hbudget hxi
+      hM.le
+      (hd₁.trans hshort) hze hκ he hbudget hxi
       (by rw [←length_eq_max_log Z _ hZ hp₂];exact lt_of_not_ge hd) le_rfl
     exact Or.inr (reflected_low_admissible s.width xi _ _ z κ hxiM hlow.2.1 hlow.2.2)
 

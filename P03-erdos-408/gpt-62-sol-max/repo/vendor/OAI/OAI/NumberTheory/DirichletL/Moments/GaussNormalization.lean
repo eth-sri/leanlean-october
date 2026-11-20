@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentGaussNormalization
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentOriginalChildEnergy

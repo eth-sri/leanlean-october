@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneous
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
+open CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison
+open CenteredMomentCommonMaskExpansion CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 open CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
 local notation "O"=>HeckeFamily.O
 
@@ -70,15 +69,12 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   · have hw:=sourceControl_zero S hS Wlong hzero
     subst Wlong
     simp [polynomial,summand,radialEnergy]
-  have hpos:0<sourceControl S Wlong:=lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero)
   let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
   let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
-  have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
-  have hcontrol:sourceControl T Wlong≤sourceControl S Wlong:=
-    Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong
+  have hSrc:0<Src:=mul_pos (mul_pos hCt (lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero))) (by positivity)
   have hnorm:H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤Src:=
     (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hcontrol hCt.le) (by positivity))
+      (mul_le_mul_of_nonneg_left (Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong) hCt.le) (by positivity))
   obtain ⟨Pbound,hPbound,hbound⟩:=CenteredMomentCommonMaskRadialEnergy.slots_bounded F pool β P
   have hh:=hZ.2 (fun _=>G) (naturalCharacter s.character)
     (fun z=>∏i∈F,naturalSlot (naturalCharacter s.character z) (pool i) (β i) (P i))

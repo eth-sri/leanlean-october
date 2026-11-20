@@ -9,78 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -152,7 +87,6 @@ end CubicEisenstein
 
 namespace CompletedGauss
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 lemma mellin_eq_of_positive_eq (F G : ℝ→ℂ) (hFG : ∀v : ℝ,0<v→F v=G v) (s : ℂ) :
     mellin F s=mellin G s := by
@@ -214,8 +148,6 @@ theorem besselSmoothingIntegrand_finite_integrable {ι : Type*} [Fintype ι]
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 
@@ -264,7 +196,7 @@ theorem unramifiedGaussResidue_primary_cube (b:Eis) (hb:b≠0)
   | empty=>simp
   | @cons p s ih=>
     have hp:=hpr p (Multiset.mem_cons_self _ _)
-    have hs:∀q∈s,Prime q∧lambda^2∣q-1:=fun q hq=>hpr q (Multiset.mem_cons_of_mem hq)
+    have hs:=fun q hq=>hpr q (Multiset.mem_cons_of_mem hq)
     rw [Multiset.prod_cons,show h*(p*s.prod)^3=(h*s.prod^3)*p^3 by ring,
       unramifiedGaussResidue_prime_cube p hp.1 hp.2]
     exact ih h hs
@@ -289,9 +221,9 @@ theorem unramifiedResidualCoefficient_prime_product_norm {ι:Type*}
   | @insert i s hi ih=>
     have hpi:=hp i (Finset.mem_insert_self _ _)
     have hpri:=hprimary i (Finset.mem_insert_self _ _)
-    have hps:∀j∈s,Prime (p j):=fun j hj=>hp j (Finset.mem_insert_of_mem hj)
-    have hprs:∀j∈s,lambda^2∣p j-1:=fun j hj=>hprimary j (Finset.mem_insert_of_mem hj)
-    have hcpi:IsCoprime (p i) (∏j∈s,p j):=IsCoprime.prod_right (fun j hj=>
+    have hps:=fun j hj=>hp j (Finset.mem_insert_of_mem hj)
+    have hprs:=fun j hj=>hprimary j (Finset.mem_insert_of_mem hj)
+    have hcpi:=IsCoprime.prod_right (fun j hj=>
       hpair i (Finset.mem_insert_self _ _) j (Finset.mem_insert_of_mem hj) (by intro he;subst j;exact hi hj))
     have hpb:¬p i∣h*(∏j∈s,p j):=by
       intro hd
@@ -318,9 +250,9 @@ theorem unramifiedResidualCoefficient_squarefree_cube_norm (I J:Ideal Eis)
   · exact primaryPrime_support_coprime I hI
   · intro P hP hd
     have hp:=primaryPrime_isPrime_of_mem I P hI hP
-    have hpp:lambda^2∣primaryPrime P-1:=
+    have hpp:=
       (primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2
-    have hc:IsCoprime (u.val*lambda^m) (primaryPrime P):=
+    have hc:=
       (ramified_primary_coprime u m _ hpp).of_mul_left_right
     exact hp.not_isUnit (hc.symm.isUnit_of_dvd hd)
 
@@ -421,7 +353,7 @@ theorem ramifiedBesselValue_prime_power_vanish (side:Bool) (p:Eis) (hp:Prime p)
       apply Finset.sum_eq_zero
       intro i hi
       rw [ramifiedSixIndex_multiplier]
-      have hc:IsCoprime ((ramifiedSixUnit side i:Eis)*lambda^(ramifiedSixPower i)) p:=
+      have hc:=
         (ramified_primary_coprime (ramifiedSixUnit side i) (ramifiedSixPower i) p hpp).of_mul_left_right
       have hnot:¬p∣((ramifiedSixUnit side i:Eis)*lambda^(ramifiedSixPower i))*h:=by
         intro hd
@@ -456,7 +388,7 @@ lemma ramified_norm_third (u:Eisˣ) (m:ℕ) :
 lemma cubicBesselNormalizer_ramified_mul_norm (h:Eis) (u:Eisˣ) (m:ℕ) :
     ‖cubicBesselNormalizer (h*(u.val*lambda^m))‖=
       ‖cubicBesselNormalizer h‖*(3:ℝ)^((m:ℝ)/6) := by
-  have hp:0<‖eisEmbedding (u.val*lambda^m)‖:=
+  have hp:=
     norm_pos_iff.mpr (eisEmbedding_ne_zero (ramifiedElement_ne_zero u m))
   rw [cubicBesselNormalizer_mul,norm_mul]
   have he:=Complex.norm_cpow_eq_rpow_re_of_pos hp (1/3:ℂ)
@@ -494,8 +426,6 @@ theorem unramifiedResidualCoefficient_squarefree_cube_bound (I J:Ideal Eis)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
@@ -583,7 +513,7 @@ theorem ramifiedBesselValue_squarefree_cube_bound :
       primaryGenerator I≠0→primaryGenerator J≠0→Squarefree I→∀(u:Eisˣ) (m:ℕ),
       ‖ramifiedBesselValue side ((u.val*lambda^m)*primaryGenerator I*(primaryGenerator J)^3)‖≤
         C*(3:ℝ)^((m:ℝ)/6)*‖eisEmbedding (primaryGenerator J)‖ := by
-  let V:ℂ:=((9*Real.sqrt 3/2:ℝ):ℂ)
+  let V:ℂ:=(periodCovolume : ℂ)
   let A:ℝ:=‖(3:ℂ)^(2/3:ℂ)‖*‖V⁻¹‖
   let B:ℝ:=unramifiedCoefficientBaseBound*(3:ℝ)^(1/2:ℝ)
   have hA:0≤A:=mul_nonneg (norm_nonneg _) (norm_nonneg _)
@@ -592,7 +522,6 @@ theorem ramifiedBesselValue_squarefree_cube_bound :
   intro side I J hI hJ hsq u m
   let h:=(u.val*lambda^m)*primaryGenerator I*(primaryGenerator J)^3
   let D:ℝ:=B*(3:ℝ)^((m:ℝ)/6)*‖eisEmbedding (primaryGenerator J)‖
-  have hD:0≤D:=by dsimp only [D]; positivity
   unfold ramifiedBesselValue
   split_ifs with hf
   · have hs:‖cubicBesselNormalizer h*ramifiedArithmeticResidue side h hf‖≤6*D:=by
@@ -613,7 +542,7 @@ theorem ramifiedBesselValue_squarefree_cube_bound :
           rw [norm_mul]
           exact (mul_le_mul_of_nonneg_right (ramifiedSixWeight_norm_le_one side h hf i) (norm_nonneg _)).trans
             (by simpa only [one_mul,D,B,h] using ramifiedSix_normalized_term_bound side I J hI hJ hsq u m hf i)
-        _=6*D:=by simp [RamifiedSixBranch]
+        _=6*D:=by simp
     have he:‖(3:ℂ)^(2/3:ℂ)*cubicBesselNormalizer h*ramifiedArithmeticResidue side h hf/V‖≤A*(6*D):=by
       rw [div_eq_mul_inv,mul_assoc ((3:ℂ)^(2/3:ℂ)),norm_mul,norm_mul]
       dsimp only [A]

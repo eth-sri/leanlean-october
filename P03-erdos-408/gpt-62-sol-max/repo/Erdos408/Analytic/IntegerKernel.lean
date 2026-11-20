@@ -4,7 +4,7 @@ public import Erdos408.Analytic.Core
 public import Erdos408.Hypotheses
 public import Mathlib.Analysis.SpecialFunctions.JapaneseBracket
 public import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
-public import PrimeNumberTheoremAnd.PerronFormula
+public import Erdos408.Analytic.PerronTools
 
 /-!
 # The integer kernel in progressions
@@ -28,6 +28,8 @@ namespace Erdos408
 open Filter Classical
 
 namespace IntegerKernel
+
+open PerronTools
 
 open Complex DirichletCharacter MeasureTheory Set Topology LSeries
 
@@ -53,35 +55,6 @@ theorem norm_LFunction_le_of_re_eq_two {N : ℕ} [NeZero N] (χ : DirichletChara
   exact (norm_tsum_le_tsum_norm (h1.of_nonneg_of_le (fun _ ↦ norm_nonneg _) hle)).trans
     (Summable.tsum_le_tsum hle (h1.of_nonneg_of_le (fun _ ↦ norm_nonneg _) hle) h1)
 
-/-- Each term of the L-series at `s - iu` times `Y^s / (s (s + 1))` is a Perron kernel at
-`Y / n`. -/
-theorem term_mul_perron_f_eq {N : ℕ} (χ : DirichletCharacter ℂ N) (u : ℝ) {Y : ℝ}
-    (hY : 0 < Y) {n : ℕ} (hn : n ≠ 0) (s : ℂ) :
-    term (fun n ↦ χ n) (s - u * I) n * Perron.f Y s =
-      χ n * (n : ℂ) ^ ((u : ℂ) * I) * Perron.f (Y / n) s := by
-  have hn0 : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn
-  have h := Perron.f_mul_eq_f hY (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)) s
-  rw [ofReal_natCast, cpow_neg] at h
-  rw [term_of_ne_zero hn, ← h, cpow_sub _ _ hn0]
-  field_simp
-
-/-- The line integral of the Perron kernel at `y > 1` is `2π (1 - 1/y)`. -/
-theorem integral_perron_f_of_one_lt {y : ℝ} (hy : 1 < y) :
-    ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = 2 * Real.pi * (1 - 1 / y) := by
-  have h := Perron.formulaGtOne (σ := 2) hy (by norm_num)
-  rw [VerticalIntegral', VerticalIntegral, smul_eq_mul, smul_eq_mul] at h
-  change 1 / (2 * Real.pi * I) * (I * ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I)) = _ at h
-  generalize ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = J at h ⊢
-  rw [← h]
-  field_simp
-
-/-- The line integral of the Perron kernel at `0 < y < 1` vanishes. -/
-theorem integral_perron_f_of_lt_one {y : ℝ} (hy0 : 0 < y) (hy : y < 1) :
-    ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = 0 := by
-  have h := Perron.formulaLtOne (σ := 2) hy0 hy (by norm_num)
-  rw [VerticalIntegral, smul_eq_mul] at h
-  simpa using h
-
 /-- The smoothed Perron formula: the vertical integral of `kernelIntegrand` on `re s = 2`
 is `2πi ∑_{n ≤ Y} χ(n) n^{iu} (1 - n / Y)`. -/
 theorem verticalIntegral_kernelIntegrand {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
@@ -89,60 +62,9 @@ theorem verticalIntegral_kernelIntegrand {N : ℕ} [NeZero N] (χ : DirichletCha
     VerticalIntegral (kernelIntegrand χ u Y) 2 =
       2 * Real.pi * I * ∑ m ∈ Finset.Icc 1 ⌊Y⌋₊,
         χ m * (m : ℂ) ^ ((u : ℂ) * I) * (1 - m / Y) := by
-  have hY0 : 0 < Y := by linarith
-  have hre : ∀ t : ℝ, 1 < ((2 : ℝ) + t * I - u * I).re := fun t ↦ by simp
-  -- Expand the integrand as a Dirichlet series of Perron kernels.
-  set g : ℕ → ℝ → ℂ := fun n t ↦
-    term (fun n ↦ χ n) ((2 : ℝ) + t * I - u * I) n * Perron.f Y ((2 : ℝ) + t * I) with hg
-  have hsum : ∀ t : ℝ, kernelIntegrand χ u Y ((2 : ℝ) + t * I) = ∑' n, g n t := by
-    intro t
-    rw [kernelIntegrand, LFunction_eq_LSeries χ (hre t), LSeries, ← tsum_mul_right]
-  have hg_eq : ∀ n, n ≠ 0 → ∀ t,
-      g n t = χ n * (n : ℂ) ^ ((u : ℂ) * I) * Perron.f (Y / n) ((2 : ℝ) + t * I) :=
-    fun n hn t ↦ term_mul_perron_f_eq χ u hY0 hn _
-  -- Each term is integrable, and the integrals of the norms are summable.
-  have hg_int : ∀ n, Integrable (g n) := by
-    intro n
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [hg]
-    · rw [funext (hg_eq n hn)]
-      have hYn : 0 < Y / n := div_pos hY0 (Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn))
-      exact (Perron.isIntegrable hYn (by norm_num) (by norm_num)).const_mul _
-  have hg_norm : ∀ n, ∫ t, ‖g n t‖ =
-      ‖term (fun n ↦ χ n) 2 n‖ * ∫ t : ℝ, ‖Perron.f Y ((2 : ℝ) + t * I)‖ := by
-    intro n
-    rw [← integral_const_mul]
-    congr 1 with t
-    rw [hg, norm_mul, norm_term_eq, norm_term_eq]
-    simp
-  have hg_sum : Summable fun n ↦ ∫ t, ‖g n t‖ := by
-    simp_rw [hg_norm]
-    exact (summable_norm_iff.mpr (LSeriesSummable_of_one_lt_re χ (by norm_num))).mul_right _
-  -- Evaluate each term with the Perron formula.
-  have hg_val : ∀ n, ∫ t, g n t = if n ∈ Finset.Icc 1 ⌊Y⌋₊ then
-      2 * Real.pi * (χ n * (n : ℂ) ^ ((u : ℂ) * I) * (1 - n / Y)) else 0 := by
-    intro n
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [hg]
-    have hn0 : (0 : ℝ) < n := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)
-    rw [funext (hg_eq n hn), integral_const_mul]
-    split_ifs with hmem
-    · have hnY : (n : ℝ) < Y :=
-        lt_of_le_of_ne ((Nat.le_floor_iff hY0.le).mp (Finset.mem_Icc.mp hmem).2) (hYN n)
-      rw [integral_perron_f_of_one_lt ((one_lt_div hn0).mpr hnY)]
-      push_cast
-      rw [one_div_div]
-      ring
-    · have hYn : Y < n := (Nat.floor_lt hY0.le).mp (by
-        simp only [Finset.mem_Icc, not_and_or, not_le] at hmem
-        omega)
-      rw [integral_perron_f_of_lt_one (div_pos hY0 hn0) ((div_lt_one hn0).mpr hYn), mul_zero]
-  -- Interchange the sum and the integral.
-  rw [VerticalIntegral, smul_eq_mul, funext hsum,
-    ← integral_tsum_of_summable_integral_norm hg_int hg_sum, tsum_congr hg_val,
-    tsum_eq_sum (s := Finset.Icc 1 ⌊Y⌋₊) (fun n hn ↦ ite_eq_right hn),
-    Finset.sum_congr rfl (fun n hn ↦ ite_eq_left hn), ← Finset.mul_sum]
-  ring
+  exact verticalIntegral_perronLSeries (u := u) (a := fun n => χ n) (by linarith) hYN
+    (LSeriesSummable_of_one_lt_re χ (by norm_num)) fun t => by
+      rw [kernelIntegrand, LFunction_eq_LSeries χ (by simp)]
 
 /-- Cauchy's theorem on the half-strip `σ ≤ re s ≤ σ'`, `im s ≥ T`: the integral up the
 right side equals the integral up the left side minus the bottom side. -/
@@ -242,7 +164,7 @@ theorem exp_mul_sqrt_log_le {k C : ℝ} (hk : 1 ≤ k) (hC : 0 ≤ C) (t u : ℝ
 /-- On `re s ≥ 1/2`, the Perron kernel is at most `8 Y^{re s} / (1 + |im s|)²`. -/
 theorem norm_perron_f_le_of_re {Y : ℝ} (hY : 0 < Y) {s : ℂ} (hs : 1 / 2 ≤ s.re) :
     ‖Perron.f Y s‖ ≤ 8 * Y ^ s.re / (1 + |s.im|) ^ 2 := by
-  have h1 : max (1 / 2) |s.im| ≤ ‖s‖ :=
+  have h1  :=
     max_le (hs.trans ((le_abs_self _).trans (abs_re_le_norm s))) (abs_im_le_norm s)
   have h2 : max 1 |s.im| ≤ ‖s + 1‖ := by
     refine max_le ?_ (by simpa using abs_im_le_norm (s + 1))
@@ -269,7 +191,7 @@ theorem norm_perron_f_le_of_re {Y : ℝ} (hY : 0 < Y) {s : ℂ} (hs : 1 / 2 ≤ 
 /-- Off the real axis, the Perron kernel is at most `Y^{re s} / (im s)²`. -/
 theorem norm_perron_f_le_of_im {Y : ℝ} (hY : 0 < Y) {s : ℂ} (hs : s.im ≠ 0) :
     ‖Perron.f Y s‖ ≤ Y ^ s.re / s.im ^ 2 := by
-  have h1 : |s.im| ≤ ‖s‖ := abs_im_le_norm s
+  have h1  := abs_im_le_norm s
   have h2 : |s.im| ≤ ‖s + 1‖ := by simpa using abs_im_le_norm (s + 1)
   have h3 : s.im ^ 2 ≤ ‖s * (s + 1)‖ := by
     rw [norm_mul, ← sq_abs]
@@ -298,7 +220,7 @@ theorem continuous_kernelIntegrand_line {N : ℕ} [NeZero N] (χ : DirichletChar
     (u : ℝ) {Y : ℝ} (hY : 0 < Y) {σ : ℝ} (hσ : 0 < σ) (hσ1 : σ ≠ 1) :
     Continuous fun t : ℝ ↦ kernelIntegrand χ u Y (σ + t * I) := by
   refine continuous_iff_continuousAt.mpr fun t ↦ ?_
-  refine ((differentiableAt_kernelIntegrand χ u hY (by simpa using hσ) fun h ↦ hσ1 ?_)
+  refine ((differentiableAt_kernelIntegrand χ u hY (by simp_all) fun h ↦ hσ1 ?_)
     |>.continuousAt).comp (by fun_prop : Continuous fun t : ℝ ↦ (σ : ℂ) + t * I).continuousAt
   simpa using congrArg re h
 
@@ -306,7 +228,7 @@ theorem continuous_kernelIntegrand_line {N : ℕ} [NeZero N] (χ : DirichletChar
 theorem integrable_one_add_abs_rpow : Integrable fun t : ℝ ↦ (1 + |t|) ^ (-(7 / 4 : ℝ)) := by
   have h := integrable_one_add_norm (E := ℝ) (μ := volume) (r := 7 / 4)
     (by rw [Module.finrank_self]; norm_num)
-  simpa only [Real.norm_eq_abs] using h
+  assumption
 
 /-- The smoothed sums `∑_{n ≤ Y} χ(n) n^{iu} (1 - n / Y)` at heights `|u| ≥ 6`: shifting
 the line of integration to `re s = 63/64` away from `|im s - u| < 3` gives
@@ -471,16 +393,15 @@ theorem norm_perronSum_le : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧ ∀ (k : ℕ)
       show _ ≤ Real.exp (C * Real.sqrt (Real.log (k * (|u| + 3))))
       gcongr
       linarith
-    have h2 : ‖Perron.f Y (x + y * I)‖ ≤ 4 * Y ^ 2 / u ^ 2 := by
-      refine (norm_perron_f_le_of_im hY0 (by simpa using hy0)).trans ?_
-      simp only [add_re, ofReal_re, mul_re, I_re, mul_zero, ofReal_im, I_im, mul_one,
-        sub_self, add_zero, add_im, mul_im, zero_add]
-      rw [div_le_div_iff₀ (by positivity) hu0]
-      have hYx : Y ^ x ≤ Y ^ 2 := by
-        rw [← Real.rpow_natCast]
-        exact Real.rpow_le_rpow_of_exponent_le hY.le (by norm_num; exact hx.2)
-      nlinarith [Real.rpow_pos_of_pos hY0 x]
-    exact mul_le_mul h1 h2 (norm_nonneg _) (by linarith)
+    refine mul_le_mul h1 ?_ (norm_nonneg _) (by linarith)
+    refine (norm_perron_f_le_of_im hY0 (by simpa using hy0)).trans ?_
+    simp only [add_re, ofReal_re, mul_re, I_re, mul_zero, ofReal_im, I_im, mul_one,
+      sub_self, add_zero, add_im, mul_im, zero_add]
+    rw [div_le_div_iff₀ (by positivity) hu0]
+    have hYx : Y ^ x ≤ Y ^ 2 := by
+      rw [← Real.rpow_natCast]
+      exact Real.rpow_le_rpow_of_exponent_le hY.le (by norm_num; exact hx.2)
+    nlinarith [Real.rpow_pos_of_pos hY0 x]
   -- the part of the line `re s = 2` near the pole
   have hmid : ‖VIntegral F 2 (u - 3) (u + 3)‖ ≤ Z * (4 * Y ^ 2 / u ^ 2) * |u + 3 - (u - 3)| := by
     rw [VIntegral, norm_smul, norm_I, one_mul]
@@ -572,14 +493,11 @@ theorem mul_perronSum_eq {N : ℕ} (χ : DirichletCharacter ℂ N) (u : ℝ) {Y 
   refine Finset.sum_subset (Finset.Icc_subset_Icc_right hR) (fun m _ hm ↦ ?_) |>.symm.trans
     (Finset.sum_congr rfl fun m hm ↦ ?_)
   · have hYm : Y < m := (Nat.floor_lt hY.le).mp (by
-      simp only [Finset.mem_Icc, not_and_or, not_le] at hm
-      rcases hm with hm | hm
-      · exact absurd hm (by simp at *; omega)
-      · exact hm)
+      simp_all)
     rw [max_eq_right (by linarith), ofReal_zero, mul_zero]
-  · have hmY : (m : ℝ) ≤ Y := (Nat.le_floor_iff hY.le).mp (Finset.mem_Icc.mp hm).2
+  · have hmY  := (Nat.le_floor_iff hY.le).mp (Finset.mem_Icc.mp hm).2
     rw [max_eq_left (by linarith)]
-    have hY0 : (Y : ℂ) ≠ 0 := ofReal_ne_zero.mpr hY.ne'
+    have hY0  := ofReal_ne_zero.mpr hY.ne'
     push_cast
     field_simp
 
@@ -588,7 +506,7 @@ theorem norm_natCast_cpow_I_mul_le (u : ℝ) (n : ℕ) : ‖(n : ℂ) ^ ((u : �
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · rcases eq_or_ne u 0 with rfl | hu
     · simp
-    · rw [Nat.cast_zero, zero_cpow (by simpa using hu), norm_zero]
+    · rw [Nat.cast_zero, zero_cpow (by simp_all), norm_zero]
       exact zero_le_one
   · rw [norm_natCast_cpow_of_pos hn]
     simp
@@ -601,8 +519,6 @@ theorem abs_trapezoid_le {A B M m : ℕ} (hMA : M ≤ A) (hAB : A ≤ B) :
           max ((A + 1 / 2 : ℝ) - m) 0 + max ((A - M + 1 / 2 : ℝ) - m) 0)| ≤
       M * (if m ∈ Finset.Ioc (A - M) A ∪ Finset.Ioc B (B + M) then 1 else 0) := by
   simp only [Finset.mem_Ioc, Finset.mem_union]
-  have hM : (0 : ℝ) ≤ M := Nat.cast_nonneg M
-  have hMA' : (M : ℝ) ≤ A := by exact_mod_cast hMA
   have hAB' : (A : ℝ) ≤ B := by exact_mod_cast hAB
   rcases (by omega : m + M ≤ A ∨ (A < m + M ∧ m ≤ A) ∨ (A < m ∧ m ≤ B) ∨
       (B < m ∧ m ≤ B + M) ∨ B + M < m) with h | h | h | h | h
@@ -674,12 +590,11 @@ theorem norm_mul_sum_Ioc_sub_le {N : ℕ} (χ : DirichletCharacter ℂ N) (u : �
           (M : ℝ) * (if n ∈ Finset.Ioc (A - M) A ∪ Finset.Ioc B (B + M) then 1 else 0) := by
         refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun n _ ↦ ?_)
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-        have hf : ‖f n‖ ≤ 1 := by
-          simp only [f, norm_mul]
-          simpa using mul_le_mul (χ.norm_le_one n) (norm_natCast_cpow_I_mul_le u n)
-            (norm_nonneg _) zero_le_one
-        exact (mul_le_mul hf (abs_trapezoid_le (by omega) hAB) (abs_nonneg _) zero_le_one).trans
+        refine (mul_le_mul ?_ (abs_trapezoid_le (by omega) hAB) (abs_nonneg _) zero_le_one).trans
           (by rw [one_mul])
+        simp only [f, norm_mul]
+        simpa using mul_le_mul (χ.norm_le_one n) (norm_natCast_cpow_I_mul_le u n)
+          (norm_nonneg _) zero_le_one
     _ ≤ M * (2 * M) := by
         rw [← Finset.mul_sum, Finset.sum_boole]
         gcongr
@@ -721,10 +636,9 @@ theorem norm_sum_Ioc_le : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧ ∀ (k : ℕ) [
     intro Y hY hYt hYN
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
     refine mul_le_mul hYt ((hS k χ u Y hu hY hYN).trans ?_) (norm_nonneg _) (by positivity)
-    have hE : 0 ≤ K * E := mul_nonneg hK (Real.exp_pos _).le
     simp only [G]
     gcongr
-  have hhalf : ∀ n : ℕ, ∀ m : ℕ, (m : ℝ) ≠ n + 1 / 2 := natCast_ne_add_half
+  have hhalf  := natCast_ne_add_half
   have h₁ := hnode (B + M + 1 / 2) (by linarith) (by simp only [Yt]; linarith)
     (by exact_mod_cast hhalf (B + M))
   have h₂ := hnode (B + 1 / 2) (by linarith) (by simp only [Yt]; linarith) (hhalf B)
@@ -746,7 +660,6 @@ theorem norm_sum_Ioc_le : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧ ∀ (k : ℕ) [
     have h7 := norm_sub_le (((B + M + 1 / 2 : ℝ) : ℂ) * perronSum χ u (B + M + 1 / 2))
       (((B + 1 / 2 : ℝ) : ℂ) * perronSum χ u (B + 1 / 2))
     linarith
-  have hM0 : (0 : ℝ) < M := by linarith
   have hT : ‖T‖ ≤ 2 * M + 4 * (Yt * G Yt) / M := by
     calc ‖T‖ = (M * ‖T‖) / M := by field_simp
       _ ≤ (M * (2 * M) + 4 * (Yt * G Yt)) / M := by gcongr
@@ -761,7 +674,7 @@ theorem norm_sum_filter_modEq_le_of_coprime {k a : ℕ} [NeZero k] (ha : a.Copri
     (f : ℕ → ℂ) (s : Finset ℕ) {X : ℝ}
     (hX : ∀ χ : DirichletCharacter ℂ k, ‖∑ n ∈ s, χ n * f n‖ ≤ X) :
     ‖∑ n ∈ s.filter (· ≡ a [MOD k]), f n‖ ≤ X := by
-  have hu : IsUnit (a : ZMod k) := (ZMod.isUnit_iff_coprime a k).mpr ha
+  have hu  := (ZMod.isUnit_iff_coprime a k).mpr ha
   have hφ : (0 : ℝ) < k.totient := by
     exact_mod_cast Nat.totient_pos.mpr (Nat.pos_of_ne_zero (NeZero.ne k))
   have hcard : (Finset.univ : Finset (DirichletCharacter ℂ k)).card = k.totient := by
@@ -776,7 +689,7 @@ theorem norm_sum_filter_modEq_le_of_coprime {k a : ℕ} [NeZero k] (ha : a.Copri
     simp_rw [← mul_assoc, ← Finset.sum_mul,
       DirichletCharacter.sum_char_inv_mul_char_eq ℂ hu (n : ZMod k),
       ZMod.natCast_eq_natCast_iff, Nat.ModEq.comm (a := a)]
-    split_ifs <;> simp
+    simp
   have hle : ‖(k.totient : ℂ) * ∑ n ∈ s.filter (· ≡ a [MOD k]), f n‖ ≤ k.totient * X := by
     rw [← horth]
     calc _ ≤ ∑ χ : DirichletCharacter ℂ k, X := (norm_sum_le _ _).trans
@@ -830,8 +743,8 @@ theorem sum_filter_modEq_eq_gcd {k a : ℕ} (hk : 0 < k) (A B : ℕ) (u : ℝ) :
 /-- `y ↦ y^{iu}` is `|u| / y`-Lipschitz to the right of `y`. -/
 theorem norm_cpow_I_mul_sub_le (u : ℝ) {y z : ℝ} (hy : 0 < y) (hyz : y ≤ z) :
     ‖(z : ℂ) ^ ((u : ℂ) * I) - (y : ℂ) ^ ((u : ℂ) * I)‖ ≤ |u| * (z - y) / y := by
-  have hz : 0 < z := hy.trans_le hyz
-  have hlog : 0 ≤ Real.log z - Real.log y := sub_nonneg.mpr (Real.log_le_log hy hyz)
+  have hz  := hy.trans_le hyz
+  have hlog  := sub_nonneg.mpr (Real.log_le_log hy hyz)
   have hlog' : Real.log z - Real.log y ≤ (z - y) / y := by
     rw [← Real.log_div hz.ne' hy.ne']
     refine (Real.log_le_sub_one_of_pos (div_pos hz hy)).trans_eq ?_
@@ -858,7 +771,7 @@ theorem norm_step_sub_le (u : ℝ) {y h : ℝ} (hy : 0 < y) (hh : 0 ≤ h) :
   have hderiv : ∀ z ∈ Icc y (y + h), HasDerivWithinAt φ
       ((z : ℂ) ^ ((u : ℂ) * I) - (y : ℂ) ^ ((u : ℂ) * I)) (Icc y (y + h)) z := by
     intro z hz
-    have hz0 : z ≠ 0 := (hy.trans_le hz.1).ne'
+    have hz0  := (hy.trans_le hz.1).ne'
     have h2 := (hasDerivAt_ofReal_cpow_const hz0 h1).div_const (1 + u * I)
     have h3 := (hasDerivAt_id z).ofReal_comp.mul_const ((y : ℂ) ^ ((u : ℂ) * I))
     refine (h2.sub h3).hasDerivWithinAt.congr_deriv ?_
@@ -1031,27 +944,27 @@ theorem norm_sum_filter_modEq_le_of_large : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K �
         K * Real.exp (C * Real.sqrt (Real.log (k * (|u| + 3)))) * (H / k) ^ (-(1 / 128 : ℝ)) := by
   obtain ⟨C, K₀, hC, hK₀, hII⟩ := norm_sum_Ioc_le
   refine ⟨C, 2 + 288 * K₀, hC, by positivity, fun H A B k a u hHk hHA hBH hk hAB hu ↦ ?_⟩
-  have hk0 : 0 < k := hk
+  have hk0  := hk
   have hk' : (1 : ℝ) ≤ k := by exact_mod_cast hk
   have hHbig : (3 : ℝ) ^ 128 ≤ H := by
     have := (le_div_iff₀ (by linarith : (0 : ℝ) < k)).mp hHk
     nlinarith [pow_pos (by norm_num : (0 : ℝ) < 3) 128]
-  have hH0 : 0 < H := lt_of_lt_of_le (by positivity) hHbig
+  have hH0  := lt_of_lt_of_le (by positivity) hHbig
   -- remove `g = (a, k)`
   set g := a.gcd k
-  have hg : 0 < g := Nat.gcd_pos_of_pos_right a hk0
-  have hgk : g ≤ k := Nat.le_of_dvd hk0 (Nat.gcd_dvd_right a k)
+  have hg  := Nat.gcd_pos_of_pos_right a hk0
+  have hgk  := Nat.le_of_dvd hk0 (Nat.gcd_dvd_right a k)
   have hg' : (1 : ℝ) ≤ g := by exact_mod_cast hg
   have hgk' : (g : ℝ) ≤ k := by exact_mod_cast hgk
   set k' := k / g
-  have hk'0 : 0 < k' := Nat.div_pos hgk hg
+  have hk'0  := Nat.div_pos hgk hg
   have : NeZero k' := ⟨hk'0.ne'⟩
-  have hcop : (a / g).Coprime k' := Nat.coprime_div_gcd_div_gcd hg
+  have hcop  := Nat.coprime_div_gcd_div_gcd hg
   rw [sum_filter_modEq_eq_gcd hk0 A B u, norm_mul]
   -- the scale `H' = H / g = h^{128}`
   set H' := H / g
   have hH'k : H / k ≤ H' := div_le_div_of_nonneg_left hH0.le (by linarith) hgk'
-  have hH'H : H' ≤ H := div_le_self hH0.le hg'
+  have hH'H  := div_le_self hH0.le hg'
   have hH'0 : 0 < H' := by positivity
   set h := H' ^ (1 / 128 : ℝ)
   have hh128 : h ^ 128 = H' := by
@@ -1105,13 +1018,10 @@ theorem norm_sum_filter_modEq_le_of_large : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K �
   have hE' : 0 ≤ E' := (Real.exp_pos _).le
   have hEE : E' ≤ E := by
     have hkk : (k' : ℝ) ≤ k := by exact_mod_cast Nat.div_le_self k g
-    have hk'1 : (1 : ℝ) ≤ k' := by exact_mod_cast hk'0
     exact Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt
       (Real.log_le_log (by positivity) (by nlinarith [abs_nonneg u]))) hC)
   set Yt : ℝ := B' + M + 1
-  have hX : ∀ χ : DirichletCharacter ℂ k',
-      ‖∑ m ∈ Finset.Ioc A' B', χ m * (fun m : ℕ ↦ (m : ℂ) ^ ((u : ℂ) * I)) m‖ ≤
-        2 * M + 4 * (Yt / M) * (K₀ * E' * (Yt ^ (63 / 64 : ℝ) + Yt ^ 2 / u ^ 2)) :=
+  have hX :=
     fun χ ↦ hII k' χ u A' B' M hu6 hM hMA (Nat.div_le_div_right hAB)
   have hres := norm_sum_filter_modEq_le_of_coprime hcop _ _ hX
   -- the sizes in terms of `h`
@@ -1123,7 +1033,6 @@ theorem norm_sum_filter_modEq_le_of_large : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K �
   have hb2 : Yt / M ≤ 6 * h := by
     rw [div_le_iff₀ hM0]
     have : 6 * h * (h ^ 127 / 2) ≤ 6 * h * M := mul_le_mul_of_nonneg_left hM2 (by positivity)
-    have h6 : 6 * h * (h ^ 127 / 2) = 3 * h ^ 128 := by ring
     linarith
   have hb3 : Yt ^ (63 / 64 : ℝ) ≤ 3 * h ^ 126 := by
     calc Yt ^ (63 / 64 : ℝ) ≤ (3 * h ^ 128) ^ (63 / 64 : ℝ) :=
@@ -1143,7 +1052,6 @@ theorem norm_sum_filter_modEq_le_of_large : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K �
     have h2 : u ^ 4 ≤ (h ^ 192) ^ 2 := by
       calc u ^ 4 = (u ^ 2) ^ 2 := by ring
         _ ≤ (h ^ 192) ^ 2 := pow_le_pow_left₀ (by positivity) (not_lt.mp hle) 2
-    have : (h ^ 192) ^ 2 = (h ^ 128) ^ 3 := by ring
     linarith
   have hb4 : Yt ^ 2 / u ^ 2 ≤ 9 * h ^ 64 := by
     rw [div_le_iff₀ (lt_trans (by positivity) hu192)]
@@ -1151,7 +1059,7 @@ theorem norm_sum_filter_modEq_le_of_large : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K �
       _ = 9 * h ^ 64 * h ^ 192 := by ring
       _ ≤ 9 * h ^ 64 * u ^ 2 := mul_le_mul_of_nonneg_left hu192.le (by positivity)
   have hh64 : h ^ 64 ≤ h ^ 126 := pow_le_pow_right₀ (by linarith) (by norm_num)
-  have hKE : 0 ≤ K₀ * E' := mul_nonneg hK₀ hE'
+  have hKE  := mul_nonneg hK₀ hE'
   have hsum : 2 * (M : ℝ) + 4 * (Yt / M) * (K₀ * E' * (Yt ^ (63 / 64 : ℝ) + Yt ^ 2 / u ^ 2)) ≤
       (2 + 288 * K₀ * E) * h ^ 127 := by
     have h1 : K₀ * E' * (Yt ^ (63 / 64 : ℝ) + Yt ^ 2 / u ^ 2) ≤ K₀ * E' * (12 * h ^ 126) :=
@@ -1159,10 +1067,8 @@ theorem norm_sum_filter_modEq_le_of_large : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K �
     have h2 : 4 * (Yt / M) * (K₀ * E' * (Yt ^ (63 / 64 : ℝ) + Yt ^ 2 / u ^ 2)) ≤
         4 * (6 * h) * (K₀ * E' * (12 * h ^ 126)) := by
       gcongr
-    have h3 : K₀ * E' ≤ K₀ * E := mul_le_mul_of_nonneg_left hEE hK₀
-    have h4 : 4 * (6 * h) * (K₀ * E' * (12 * h ^ 126)) = 288 * (K₀ * E') * h ^ 127 := by ring
+    have h3  := mul_le_mul_of_nonneg_left hEE hK₀
     have h5 : 288 * (K₀ * E') * h ^ 127 ≤ 288 * (K₀ * E) * h ^ 127 := by gcongr
-    have h6 : (2 + 288 * K₀ * E) * h ^ 127 = 2 * h ^ 127 + 288 * (K₀ * E) * h ^ 127 := by ring
     linarith
   -- normalize
   have hg1 := norm_natCast_cpow_I_mul_le u g
@@ -1196,11 +1102,9 @@ theorem norm_sum_filter_modEq_le : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧
   refine ⟨C, K₀ + 4, hC, by positivity, fun H A B k a u hHk hHA hBH hk hu ↦ ?_⟩
   have hk' : (1 : ℝ) ≤ k := by exact_mod_cast hk
   have hHbig : (3 : ℝ) ^ 128 * k ≤ H := (le_div_iff₀ (by linarith)).mp hHk
-  have h3k : (3 : ℝ) * k ≤ 3 ^ 128 * k := by gcongr; norm_num
   have hH0 : 0 < H := by linarith
   set E := Real.exp (C * Real.sqrt (Real.log (k * (|u| + 3))))
   have hE : 1 ≤ E := Real.one_le_exp (mul_nonneg hC (Real.sqrt_nonneg _))
-  have hR : 0 ≤ (H / k) ^ (-(1 / 128 : ℝ)) := Real.rpow_nonneg (by positivity) _
   have hRHS : 0 ≤ 12 / (1 + |u|) := by positivity
   rcases lt_or_ge B A with hBA | hAB
   · rw [Finset.Ioc_eq_empty (by omega), Finset.filter_empty, Finset.sum_empty, norm_zero,
@@ -1222,7 +1126,6 @@ theorem norm_sum_filter_modEq_le : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧
   have hz0 : 0 < ‖1 + (u : ℂ) * I‖ := by linarith [abs_nonneg u]
   have ht1 : H⁻¹ * (2 * (B + k) / (k * ‖1 + (u : ℂ) * I‖)) ≤ 12 / (1 + |u|) := by
     rw [inv_mul_eq_div, div_div, div_le_div_iff₀ (by positivity) (by positivity)]
-    have : (B : ℝ) + k ≤ 3 * H := by linarith
     have h1 : 2 * (B + k) * (1 + |u|) ≤ 2 * (3 * H) * (2 * ‖1 + (u : ℂ) * I‖) :=
       mul_le_mul (by linarith) hz (by positivity) (by positivity)
     have h2 : H * ‖1 + (u : ℂ) * I‖ ≤ H * (k * ‖1 + (u : ℂ) * I‖) := by
@@ -1244,8 +1147,6 @@ theorem norm_sum_filter_modEq_le : ∃ C K : ℝ, 0 ≤ C ∧ 0 ≤ K ∧
       _ ≤ y ^ 512 := pow_le_pow_right₀ hy1 (by norm_num)
       _ = (y ^ 128) ^ 4 := by ring
   have ht2 : H⁻¹ * ((B + k - A) * |u| / A) ≤ 4 * (H / k) ^ (-(1 / 128 : ℝ)) := by
-    have h1 : (B : ℝ) + k - A ≤ 2 * H := by linarith
-    have h2 : H / 2 ≤ A := by linarith
     have h3 : (B + k - A) * |u| / A ≤ 4 * |u| := by
       rw [div_le_iff₀ hA0]
       nlinarith [abs_nonneg u]
@@ -1286,7 +1187,7 @@ theorem eventually_log_le_mul_rpow {b ε : ℝ} (hb : 0 < b) (hε : 0 < ε) :
 /-- A constant is eventually at most `ε` times any positive power. -/
 theorem eventually_const_le_mul_rpow (c : ℝ) {b ε : ℝ} (hb : 0 < b) (hε : 0 < ε) :
     ∀ᶠ X : ℝ in atTop, c ≤ ε * X ^ b := by
-  filter_upwards [(tendsto_rpow_atTop hb).eventually_ge_atTop (c / ε)] with X hL
+  filter_upwards [(tendsto_rpow_atTop hb).eventually_ge_atTop _] with X hL
   rwa [div_le_iff₀' hε] at hL
 
 /-- The growth conditions on `X`, used at `X = L = log x` to absorb the losses of the
@@ -1319,10 +1220,9 @@ theorem eventually_growth (Cm C K : ℝ) : ∀ᶠ X : ℝ in atTop,
     eventually_log_le_mul_rpow (b := 1 / 1100) (by norm_num) (ε := 1) one_pos]
     with X hL1 hlogL h2 hc hsqrt h95 hlog98 h98 h99 hlog1100
   have hL0 : 0 < X := by linarith
-  have hlog0 : 0 ≤ Real.log X := Real.log_nonneg hL1
-  have hp : 0 ≤ X ^ (0.98 : ℝ) := Real.rpow_nonneg hL0.le _
+  have hlog0  := Real.log_nonneg hL1
   rw [Real.rpow_one] at hlogL h2
-  have hsq : Real.sqrt X = X ^ (1 / 2 : ℝ) := Real.sqrt_eq_rpow X
+  have hsq  := Real.sqrt_eq_rpow X
   -- `a log X ≤ X^{0.98} / 4` and `|C| √X ≤ X^{0.98} / 1024`
   have hloga : a * Real.log X ≤ X ^ (0.98 : ℝ) / 4 := by
     have := mul_le_mul_of_nonneg_left hlog98 ha
@@ -1356,49 +1256,35 @@ theorem eventually_growth (Cm C K : ℝ) : ∀ᶠ X : ℝ in atTop,
           rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
           norm_num
 
-/-- The integer kernel on residue classes for large `x`: at scales `H ≥ exp(L^{0.98})`, for
-moduli `k ≤ L^{C_m}` and `1 ≤ |u| ≤ x³`,
-`H⁻¹ |∑_{n ∈ (A, B], n ≡ a} n^{iu}| ≤ 12 ((1 + |u|)⁻¹ + exp(-L^{0.95}))`. -/
-theorem eventually_norm_sum_filter_modEq_le (Cm : ℝ) : ∀ᶠ x : ℝ in atTop,
-    ∀ (H : ℝ) (A B k a : ℕ) (u : ℝ), Real.exp (Real.log x ^ (0.98 : ℝ)) ≤ H → H ≤ A + 1 →
-      (B : ℝ) ≤ 2 * H → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → 1 ≤ |u| → |u| ≤ x ^ 3 →
-      H⁻¹ * ‖∑ n ∈ (Finset.Ioc A B).filter (· ≡ a [MOD k]), (n : ℂ) ^ ((u : ℂ) * I)‖ ≤
-        12 * ((1 + |u|)⁻¹ + Real.exp (-Real.log x ^ (0.95 : ℝ))) := by
-  obtain ⟨C, K, hC, hK, hbound⟩ := norm_sum_filter_modEq_le
-  filter_upwards [Real.tendsto_log_atTop.eventually (eventually_growth Cm C K),
-    eventually_ge_atTop 2] with x hx hx2
-  obtain ⟨hl1, hl2, hl3, hl4, -, -⟩ := hx
-  intro H A B k a u hH hHA hBH hk hkl hu1 hux
+/-- Convert a logarithmic lower bound on the scale and a budget for losses into a kernel error bound. -/
+lemma progression_error_of_logBudget {Cm C K x H u G δ : ℝ} {k : ℕ} (hC : 0≤C)
+    (hx2 : 2≤x) (hl1 : 1≤Real.log x) (hk : 1≤k) (hkl : (k:ℝ)≤Real.log x^Cm) (hux : |u|≤x^3)
+    (hH0 : 0<H) (hlogH : G≤Real.log H)
+    (hl2 : Cm*Real.log (Real.log x)+Real.log 2≤Real.log x)
+    (hl3 : 128*Real.log 3≤G-|Cm| *Real.log (Real.log x))
+    (hl4 : Real.log (|K|+1)+|C| *(2*Real.sqrt (Real.log x))-(G-|Cm| *Real.log (Real.log x))/128≤δ) :
+    (3:ℝ)^128≤H/k ∧ K*Real.exp (C*Real.sqrt (Real.log (k*(|u|+3))))*(H/k)^(-(1/128:ℝ))≤Real.exp δ := by
   set l := Real.log x
   have hl0 : 0 < l := by linarith
   have hk' : (1 : ℝ) ≤ k := by exact_mod_cast hk
-  have hH0 : 0 < H := (Real.exp_pos _).trans_le hH
-  have hloglog : 0 ≤ Real.log l := Real.log_nonneg hl1
+  have hloglog  := Real.log_nonneg hl1
   -- `log k ≤ C_m log L` and `log H ≥ L^{0.98}`
   have hlogk : Real.log k ≤ |Cm| * Real.log l := by
     have := Real.log_le_log (by linarith) hkl
     rw [Real.log_rpow hl0] at this
     exact this.trans (mul_le_mul_of_nonneg_right (le_abs_self _) hloglog)
-  have hlogH : l ^ (0.98 : ℝ) ≤ Real.log H := by
-    have := Real.log_le_log (Real.exp_pos _) hH
-    rwa [Real.log_exp] at this
   set ℓ := Real.log (H / k)
-  have hℓ : l ^ (0.98 : ℝ) - |Cm| * Real.log l ≤ ℓ := by
+  have hℓ : G - |Cm| * Real.log l ≤ ℓ := by
     simp only [ℓ]
     rw [Real.log_div hH0.ne' (by linarith)]
     linarith
   -- the scale condition `H / k ≥ 3^{128}`
-  have hK1 : 0 ≤ Real.log (|K| + 1) := Real.log_nonneg (by linarith [abs_nonneg K])
-  have hCl : 0 ≤ |C| * (2 * Real.sqrt l) := by positivity
-  have h95 : 0 ≤ l ^ (0.95 : ℝ) := Real.rpow_nonneg hl0.le _
-  have hlog3 : 0 < Real.log 3 := Real.log_pos (by norm_num)
   have hHk : (3 : ℝ) ^ 128 ≤ H / k := by
     have h3 : (3 : ℝ) ^ 128 = Real.exp (128 * Real.log 3) := by
       rw [show (128 : ℝ) * Real.log 3 = Real.log (3 ^ 128) by rw [Real.log_pow]; norm_num,
         Real.exp_log (by positivity)]
     rw [h3, ← Real.exp_log (by positivity : 0 < H / k)]
     exact Real.exp_le_exp.mpr (by linarith)
-  refine (hbound H A B k a u hHk hHA hBH hk hu1).trans ?_
   -- the exponential factor
   have hlogku : Real.log (k * (|u| + 3)) ≤ 4 * l := by
     have hx3 : |u| + 3 ≤ 2 * x ^ 3 := by nlinarith [pow_le_pow_left₀ (by norm_num) hx2 3]
@@ -1421,13 +1307,12 @@ theorem eventually_norm_sum_filter_modEq_le (Cm : ℝ) : ∀ᶠ x : ℝ in atTop
   have hR : (H / k) ^ (-(1 / 128 : ℝ)) = Real.exp (-(ℓ / 128)) := by
     rw [Real.rpow_def_of_pos (by positivity)]
     congr 1
-    simp only [ℓ]
     ring
   have hKexp : K ≤ Real.exp (Real.log (|K| + 1)) := by
     rw [Real.exp_log (by positivity)]
     linarith [le_abs_self K]
   have hsmall : K * Real.exp (C * Real.sqrt (Real.log (k * (|u| + 3)))) *
-      (H / k) ^ (-(1 / 128 : ℝ)) ≤ Real.exp (-l ^ (0.95 : ℝ)) := by
+      (H / k) ^ (-(1 / 128 : ℝ)) ≤ Real.exp δ := by
     rw [hR]
     calc K * Real.exp (C * Real.sqrt (Real.log (k * (|u| + 3)))) * Real.exp (-(ℓ / 128))
         ≤ Real.exp (Real.log (|K| + 1)) * Real.exp (|C| * (2 * Real.sqrt l)) *
@@ -1436,10 +1321,29 @@ theorem eventually_norm_sum_filter_modEq_le (Cm : ℝ) : ∀ᶠ x : ℝ in atTop
       _ = Real.exp (Real.log (|K| + 1) + |C| * (2 * Real.sqrt l) - ℓ / 128) := by
           rw [← Real.exp_add, ← Real.exp_add]
           ring_nf
-      _ ≤ Real.exp (-l ^ (0.95 : ℝ)) := Real.exp_le_exp.mpr (by linarith)
-  have h12 : 12 / (1 + |u|) = 12 * (1 + |u|)⁻¹ := by rw [div_eq_mul_inv]
-  have hexp := Real.exp_pos (-l ^ (0.95 : ℝ))
-  linarith
+      _ ≤ Real.exp δ := Real.exp_le_exp.mpr (by linarith)
+  exact ⟨hHk,hsmall⟩
+
+/-- The integer kernel on residue classes for large `x`: at scales `H ≥ exp(L^{0.98})`, for
+moduli `k ≤ L^{C_m}` and `1 ≤ |u| ≤ x³`,
+`H⁻¹ |∑_{n ∈ (A, B], n ≡ a} n^{iu}| ≤ 12 ((1 + |u|)⁻¹ + exp(-L^{0.95}))`. -/
+theorem eventually_norm_sum_filter_modEq_le (Cm : ℝ) : ∀ᶠ x : ℝ in atTop,
+    ∀ (H : ℝ) (A B k a : ℕ) (u : ℝ), Real.exp (Real.log x ^ (0.98 : ℝ)) ≤ H → H ≤ A + 1 →
+      (B : ℝ) ≤ 2 * H → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm → 1 ≤ |u| → |u| ≤ x ^ 3 →
+      H⁻¹ * ‖∑ n ∈ (Finset.Ioc A B).filter (· ≡ a [MOD k]), (n : ℂ) ^ ((u : ℂ) * I)‖ ≤
+        12 * ((1 + |u|)⁻¹ + Real.exp (-Real.log x ^ (0.95 : ℝ))) := by
+  obtain ⟨C, K, hC, hK, hbound⟩ := norm_sum_filter_modEq_le
+  filter_upwards [Real.tendsto_log_atTop.eventually (eventually_growth Cm C K),
+    eventually_ge_atTop 2] with x hx hx2
+  obtain ⟨hl1, hl2, hl3, hl4, -, -⟩ := hx
+  intro H A B k a u hH hHA hBH hk hkl hu1 hux
+  have hH0 := (Real.exp_pos _).trans_le hH
+  have hlogH : Real.log x ^ (0.98 : ℝ) ≤ Real.log H := by
+    simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos _) hH
+  obtain ⟨hHk,hsmall⟩ := progression_error_of_logBudget (K:=K) (δ:=-Real.log x^(0.95:ℝ)) hC hx2 hl1 hk hkl hux hH0 hlogH hl2 hl3 (by linarith)
+  have hb := hbound H A B k a u hHk hHA hBH hk hu1
+  rw [div_eq_mul_inv] at hb
+  linarith [Real.exp_pos (-Real.log x ^ (0.95 : ℝ))]
 
 end IntegerKernel
 
@@ -1457,14 +1361,14 @@ theorem eventually_integerKernelBound (Cm : ℝ) :
   intro H lo hi hH _ hlo hhi k a hk hkl u hu1 hux
   set l := Real.log x
   have hl0 : 0 < l := by linarith
-  have hloglog : 0 < Real.log l ^ 22 := pow_pos (Real.log_pos hl1) 22
+  have hloglog  := pow_pos (Real.log_pos hl1) 22
   -- `exp(L^{0.98}) ≤ exp(L / T²²)`
   have hscale : Real.exp (l ^ (0.98 : ℝ)) ≤ H := by
     refine le_trans (Real.exp_le_exp.mpr ?_) hH
     calc l ^ (0.98 : ℝ) = l / l ^ (0.02 : ℝ) := by
           rw [show (0.98 : ℝ) = 1 - 0.02 by norm_num, Real.rpow_sub hl0, Real.rpow_one]
       _ ≤ l / Real.log l ^ 22 := div_le_div_of_nonneg_left hl0.le hloglog hlog22
-  have hH0 : 0 < H := (Real.exp_pos _).trans_le hscale
+  have hH0  := (Real.exp_pos _).trans_le hscale
   refine hx H ⌊lo⌋₊ ⌊hi⌋₊ k a u hscale (hlo.trans (Nat.lt_floor_add_one lo).le) ?_ hk hkl hu1
     hux
   calc (⌊hi⌋₊ : ℝ) ≤ ⌊2 * H⌋₊ := by exact_mod_cast Nat.floor_mono hhi
@@ -1504,13 +1408,12 @@ theorem eventually_kernel_premise (CX B : ℝ) : ∃ cG : ℝ, ∀ᶠ x : ℝ in
       exact Real.exp_le_exp.mpr hl99
     nlinarith [Real.exp_pos (l ^ (0.98 : ℝ))]
   have hHn0 : 0 < Hn := by linarith [Real.exp_pos (l ^ (0.98 : ℝ))]
-  have hHm0 : 0 < Hm := (Real.exp_pos _).trans_le (hxγ.trans hHm)
   -- `|Δ| ≤ x³`
   have hΔx : |Δ| ≤ x ^ 3 := by
     have hlB : l ^ B ≤ x := by
       simpa [Real.norm_eq_abs, abs_of_pos hx0, abs_of_nonneg (Real.rpow_nonneg hl0.le B)]
         using hlogB
-    have hCX : Hm * Hn ≤ |CX| * x := hmn.trans (mul_le_mul_of_nonneg_right (le_abs_self _)
+    have hCX  := hmn.trans (mul_le_mul_of_nonneg_right (le_abs_self _)
       hx0.le)
     calc |Δ| ≤ 4 * (Hm * Hn) * l ^ B + 2 := hΔ2
       _ ≤ 4 * (|CX| * x) * x + 2 := by gcongr

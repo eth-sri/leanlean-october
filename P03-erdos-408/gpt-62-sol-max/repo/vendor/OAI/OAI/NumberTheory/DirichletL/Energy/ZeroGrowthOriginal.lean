@@ -11,18 +11,18 @@ public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
-open CenteredMomentEnergyZeroGrowthBounded CenteredMomentEnergyZeroRetainedError
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentEnergyReferenceProfileBudget
-open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentInductionEnergy CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
+open HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthBounded
+open CenteredMomentEnergyZeroRetainedError CenteredMomentEnergyReferenceState
+open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceDeletionEnergy
+open CenteredMomentEnergyReferenceProfileBudget CenteredMomentFiniteProfileExceptional
+open CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison
+open CenteredMomentAllocatedNaturalRadial CenteredMomentInductionEnergy
+open CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
 local notation "O"=>HeckeFamily.O
 
 def swapProfiles {a b:ℝ}(p:Profiles a b):Profiles a b where
@@ -83,21 +83,21 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
   filter_upwards [hlive,hdead] with Z hZ hZd
   refine ⟨hZ.1,?_⟩
   intro Bmask L Mcap loss Q degree K hK hgrowth hBmask hL hLreflect s hQ hs
-  have hz:0<Z:=zero_lt_one.trans hZ.1
+  have hz:=zero_lt_one.trans hZ.1
   have hL0:0≤L:=by linarith only [s.width_nonneg, hs, hBmask, hdefect, hxi, hL]
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+  have hlog:=(Real.log_pos hZ.1).le
   have hd:=diagonalControl_nonneg s.radial.profile
   let Rcap:=max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)
   let Pmain:=Rcap^epsilon*(1+2*(L*Real.log Z))*Z^(s.width+loss+defect+xi)
   let Perror:=Rcap^(2*epsilon)*Z^(-2*saving)*max 1 s.radial.scale*Z^L
   have hPm:0≤Pmain:=by dsimp only [Pmain,Rcap];positivity
-  have hPe:0≤Perror:=by dsimp only [Perror,Rcap];positivity
+  have hPe:0≤Perror:=by positivity
   have hordered (p:Profiles a b)(t Xshort Xlong:ℝ)(hXs:0<Xshort)(horder:Xshort≤Xlong)
       (hcap:Xshort≤Z^L)(hsupport:1≤b*Xlong):
       s.plainEnergy p t Xshort Xlong≤
         Cweight*Cprofile*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J*
           (s.puncture.radical.absNorm:ℝ)^epsilon*(Pmain+Perror):=by
-    have hXl:0<Xlong:=hXs.trans_le horder
+    have hXl:=hXs.trans_le horder
     have hp:=hprofile (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) t 0 (le_refl 0)
     simp only [add_zero,zero_add,pow_zero,mul_one] at hp
     let A:=Cprofile*(p.control U)^2*(1+|t|)^J
@@ -171,7 +171,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
       · intro Ds hDs Dl hDl' I hI
         obtain ⟨hNs,_⟩:=divisor_norm s Ds hDs
         obtain ⟨hNl,_⟩:=divisor_norm s Dl hDl'
-        have hpS:0<((∏P∈Ds,P).absNorm:ℝ):=zero_lt_one.trans_le hNs
+        have hpS:=zero_lt_one.trans_le hNs
         have hpL:0<((∏P∈Dl,P).absNorm:ℝ):=zero_lt_one.trans_le hNl
         have heffective (f:O→ℂ):radialEnergy f (effectiveState s).radial.keep
             s.radial.profile s.radial.scale=radialEnergy f s.radial.keep s.radial.profile s.radial.scale:=

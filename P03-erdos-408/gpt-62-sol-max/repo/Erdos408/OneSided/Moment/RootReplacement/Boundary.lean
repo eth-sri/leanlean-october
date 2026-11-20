@@ -105,8 +105,8 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   have hY₁ : (1 : ℝ) ≤ 2 ^ j := one_le_pow₀ (by norm_num)
   have hd₁ : (1 : ℝ) ≤ 2 ^ k := one_le_pow₀ (by norm_num)
   have hγ : 0 ≤ d.γ := (Real.rpow_pos_of_pos (by linarith) _).le.trans hd.γ_ge
-  have hHm : 1 ≤ d.Hm := (Real.one_le_rpow hx hγ).trans hd.Hm_ge
-  have hHn : 1 ≤ d.Hn := (Real.one_le_rpow hx hγ).trans hd.Hn_ge
+  have hHm  := (Real.one_le_rpow hx hγ).trans hd.Hm_ge
+  have hHn  := (Real.one_le_rpow hx hγ).trans hd.Hn_ge
   have hU₁ : 1 ≤ 2 ^ k * 2 ^ j * d.Hm := by
     have := mul_le_mul hd₁ hY₁ zero_le_one (by positivity)
     nlinarith
@@ -118,12 +118,12 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   set Λ := Real.exp (2 * Real.log x ^ (1 / 5 : ℝ)) with hΛ_def
   have hL5 : 1 ≤ Real.log x ^ (1 / 5 : ℝ) := Real.one_le_rpow hL (by norm_num)
   have hΛ : 2 ≤ Λ := by linarith [Real.add_one_le_exp (2 * Real.log x ^ (1 / 5 : ℝ))]
-  have hexp : ∀ i, Real.exp (2 * Real.log x ^ d.a i) ≤ Λ := fun i =>
+  have hexp  := fun i =>
     Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hL
       (((hd.window i).2.trans hahi.le))) zero_le_two)
   have hband : ∀ i, ∀ q ∈ band x (d.a i), (q : ℝ) ≤ Λ := fun i q hq =>
     (le_exp_of_mem_band hq).trans (hexp i)
-  have hcard : ∀ i, ((band x (d.a i)).card : ℝ) ≤ Λ := fun i =>
+  have hcard  := fun i =>
     (card_band_le x (d.a i)).trans (hexp i)
   have hJ : (padCount x : ℝ) + 1 ≤ Λ := by
     have hJL : (padCount x : ℝ) ≤ Real.log x ^ (1 / 5 : ℝ) :=
@@ -136,8 +136,8 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   -- step: the tube, with `d₀, Y ≤ ∏ labels ≤ Λ^{K(J+1)}`
   obtain ⟨-, -, hd₀le, hYle⟩ := confCoeff_ne_zero_imp (by positivity) (by positivity) hR hc
   have hM := listProd_le_pow (hlab (ω 0))
-  have hY : (2 : ℝ) ^ j ≤ Λ ^ (K * (padCount x + 1)) := hYle.le.trans hM
-  have hd₀ : (2 : ℝ) ^ k ≤ Λ ^ (K * (padCount x + 1)) := hd₀le.trans hM
+  have hY  := hYle.le.trans hM
+  have hd₀  := hd₀le.trans hM
   have hMS : Λ ^ (K * (padCount x + 1)) ≤ Λ ^ (K * (padCount x + 2)) :=
     pow_le_pow_right₀ (by linarith) (by gcongr; omega)
   have hN : (1 : ℝ) ≤ ((2 * momentPower x : ℕ) : ℝ) := by
@@ -154,11 +154,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
     calc |((ω j').1.1.1.2 : ℝ)| ≤ 2560 * (2 * momentPower x) * (2 ^ k * 2 ^ j) := ht
       _ ≤ 2560 * (2 * momentPower x) * (Λ ^ (K * (padCount x + 2))) ^ 2 := by gcongr
   -- step: sum over the visits
-  have hvisit : ∀ j' : Fin (2 * momentPower x + 1),
-      (((cubeIndices n).filter (VisitBad x d (2 ^ j) (2 ^ k * 2 ^ j * d.Hm) d.Hn (ω j').1.2 n
-        (ω j').1.1.1)).card : ℝ) ≤
-        (n : ℝ) ^ 2 * (10 ^ 7 * ((2 * momentPower x : ℕ) : ℝ) *
-          (Λ ^ (K * (padCount x + 2))) ^ 9) := fun j' =>
+  have hvisit  := fun j' =>
     card_filter_visitBad_le_pow hU hV hUV hΛ (hlab (ω j')) hband hcard hJ hY₁ hY hn hN (hz j')
   calc ((badCubes x d (2 ^ j) (2 ^ k) n ω).card : ℝ)
       ≤ ((univ.biUnion fun j' => (cubeIndices n).filter (VisitBad x d (2 ^ j)

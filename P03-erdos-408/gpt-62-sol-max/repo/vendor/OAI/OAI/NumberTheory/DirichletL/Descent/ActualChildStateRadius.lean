@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open InverseSecondFibers CompletedGauss
@@ -21,7 +22,7 @@ def actualCellRowRadius (Z M ell A t V j eta : ℝ) (d : BlockIndex) : ℝ :=
   Z^(actualCellRowExponent Z M ell A t V j eta d)
 
 theorem actual_cell_radius_nonnegative_on_keys {ι : Type*} [DecidableEq ι]
-    (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) [OAI.PrincipalFamily.Maximal p]
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (Z M ell A t V j eta : ℝ) (hZ : 1<Z)
     (hrows : ∀d,∀x∈cell p source d,x.second.frequency∈nonzeroChildFrequencyBall (actualSecondMultiplier p x)

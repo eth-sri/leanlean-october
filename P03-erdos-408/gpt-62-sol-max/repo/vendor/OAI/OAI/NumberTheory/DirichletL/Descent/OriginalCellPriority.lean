@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalCanonicalEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
@@ -20,8 +21,8 @@ def originalSubsetSource (outer:Finset (FirstOriginalOuter ι)):Finset (Source �
   outer.image ofOriginal
 
 theorem original_subset_canonical_priority
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+    (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (outer:Finset (FirstOriginalOuter ι))(pool:Finset ι)
@@ -44,10 +45,7 @@ theorem original_subset_canonical_priority
     negative Ψ m slots lists a om X t Y hY
   rw [show originalSubsetSource outer=outer.image ofOriginal from rfl,
     Finset.sum_image (fun _ _ _ _ h=>ofOriginal_injective h)] at he
-  have hs (k:FirstOriginalOuter ι): originalSelector selector (ofOriginal k)=selector k :=
-    originalSelector_ofOriginal_fun selector k
-  simp_rw [hs] at he
-  simpa only [originalSubsetSource,ofOriginal,originalSelector,toOriginal,eraseFirstQuotient] using he
+  assumption
 
 end SevenEighths.InverseMoment
 

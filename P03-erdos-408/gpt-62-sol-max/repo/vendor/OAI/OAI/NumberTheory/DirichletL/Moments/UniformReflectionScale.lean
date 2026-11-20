@@ -10,10 +10,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentUniformReflectionScale
-open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
-open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
-open CenteredMomentOneReflectionScaleEnergy CenteredMomentUniformReflectionProfile
-open CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentSectorLocalization
+open CenteredMomentScaleSupremum CenteredMomentOneReflectionScaleEnergy
+open CenteredMomentUniformReflectionProfile CenteredMomentReflectedNormalization
 
 theorem actual_rowwise_scales (A J : ℕ) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],
@@ -64,13 +63,12 @@ theorem actual_rowwise_scales (A J : ℕ) :
     simp only [←mul_assoc]
     have hp : ((1+‖v‖)^J)^2=(1+‖v‖)^(2*J) := by rw [←pow_mul,Nat.mul_comm J 2]
     apply hh.trans_eq
-    rw [hp]
     ring
   have hh:=hbound G χ (fun i=>polynomial (χ i) false Wshort (Real.exp (ly i)) 0 (omega i)*P i)
     s (fun i=>Real.exp (lx i)) hspos (fun i=>Real.exp_pos _) D
     ((1+2*(hi-lo))*((1+2*(high-low))*E)) hD (mul_nonneg hdx (mul_nonneg hdy hE)) hGD hfixed
   simp only [actual_log_window,←mul_assoc] at hh
-  convert hh using 1
+  assumption
 
 end SevenEighths.CenteredMomentUniformReflectionScale
 

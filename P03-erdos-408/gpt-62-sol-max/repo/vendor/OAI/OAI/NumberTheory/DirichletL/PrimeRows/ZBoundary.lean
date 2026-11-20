@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ZGrowth
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -52,13 +52,11 @@ lemma zRowScalar_bounded {K : ℕ}
     (x w : ℂ) (l r : ℝ) (hl : 0<l) :
     ∃A : ℝ,0≤A ∧ ∀v∈Icc l r,∀t : ℝ,
       ‖zRowScalar P u W1 X Y Z x w ((v:ℂ)+t*I)‖≤A := by
-  let B : Fin K→ℝ := fun i=>scaleBound (elementNorm (CompletedGauss.primaryGenerator (P i).val)) (l-1) (r-1)
+  let B  := fun i=>scaleBound (elementNorm (CompletedGauss.primaryGenerator (P i).val)) (l-1) (r-1)
   let A := scaleBound X (1/2-r) (1/2-l)*scaleBound Z (x.re+l-1) (x.re+r-1)*
     ‖(Y:ℂ)^(w-1)‖*Real.exp ((|x.re|+r+1)^2)*‖mellin W1 w‖*
     (∏i,B i)*scaleBound (elementNorm u.val) (-r) (-l)
   have hB (i : Fin K) : 0≤B i := (scaleBound_pos _ _ _).le
-  have hBP : 0≤∏i,B i := Finset.prod_nonneg (fun i _=>hB i)
-  have hscale (a b c : ℝ) : 0≤scaleBound a b c := (scaleBound_pos _ _ _).le
   refine ⟨max A 0,le_max_right _ _,?_⟩
   intro v hv t
   have hXb := cpow_le_scaleBound hX (1/2-((v:ℂ)+t*I))
@@ -76,10 +74,9 @@ lemma zRowScalar_bounded {K : ℕ}
     apply cpow_le_scaleBound
       (elementNorm_pos _ (supported_primeGenerator_prime (P i) (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero)
     simpa using And.intro (sub_le_sub_right hv.1 1) (sub_le_sub_right hv.2 1)
-  have hFb : ‖frequencyWeight (((v:ℂ)+t*I)) ⟨u.val,u.property.1⟩‖≤scaleBound (elementNorm u.val) (-r) (-l) := by
-    apply cpow_le_scaleBound (elementNorm_pos _ u.property.1)
-    simpa using And.intro (neg_le_neg hv.2) (neg_le_neg hv.1)
-  exact (norm_mul_seven_le hXb hZb le_rfl hGb le_rfl hPb hFb).trans (le_max_left A 0)
+  refine (norm_mul_seven_le hXb hZb le_rfl hGb le_rfl hPb ?_).trans (le_max_left A 0)
+  apply cpow_le_scaleBound (elementNorm_pos _ u.property.1)
+  simpa using And.intro (neg_le_neg hv.2) (neg_le_neg hv.1)
 
 theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
     (eps : ℝ) (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -102,7 +99,7 @@ theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
     rw [norm_mul,norm_star]
     exact (mul_le_of_le_one_left (norm_nonneg _)
       ((calibrationForSet S hmax).residueMonoid_norm_le_one _)).trans (hrow _ (by simpa using hl.trans hv.1))
-  have hm' : ‖mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) ((v:ℂ)+t*I)‖≤D*cauchy t :=
+  have hm'  :=
     CubicReflectionKernel.weighted_two_to_cauchy (norm_nonneg _) t (hm v hv t)
   rw [continuedPhysicalRowKernel_z_factor,norm_mul,norm_mul]
   calc

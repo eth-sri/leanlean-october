@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.Partition
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 
@@ -26,7 +27,7 @@ theorem commonIdeal_norm_pos (p : ι → O) (hp : ∀ i, Supported (Ideal.span {
   apply Finset.prod_pos
   intro i hi
   apply pow_pos
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((hp i).1)
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem unitIdeal_norm_pos (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
@@ -34,7 +35,7 @@ theorem unitIdeal_norm_pos (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p 
   simp only [unitIdeal, map_prod, Nat.cast_prod]
   apply Finset.prod_pos
   intro i hi
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((hp i).1)
 
 theorem partitionNormalizer_mul_unit_norm (p : ι → O) (c d : ι → ℕ)
     (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (U : Finset ι) :

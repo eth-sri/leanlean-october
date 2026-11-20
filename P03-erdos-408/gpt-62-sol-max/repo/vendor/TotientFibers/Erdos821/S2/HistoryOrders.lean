@@ -54,8 +54,6 @@ theorem reorderBatches_distinct (sigma : H.BatchOrders) :
   unfold DistinctBirths
   rw [H.reorderBatches_birthValues]
 
-theorem reorderBatches_projection (sigma : H.BatchOrders) :
-    (H.reorderBatches sigma).toResiduePath = H.toResiduePath := rfl
 
 theorem reorderBatches_injective
     (hp : ∀ i g, Function.Injective ((H.ghost i).2.2 g)) :

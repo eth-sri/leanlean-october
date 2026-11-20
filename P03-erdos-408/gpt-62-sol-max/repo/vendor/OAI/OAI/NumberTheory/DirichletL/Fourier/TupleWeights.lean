@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.DivisorBlocks
 public import OAI.NumberTheory.DirichletL.CubicSieve.IntegratedTransfer
 
@@ -10,110 +11,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-namespace JointLogSeparation
-
-end JointLogSeparation
-
-namespace SecondPassIntegration
-
-section
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-open FourierBridge (logPhase)
-
-def tupleOuterWeight (V : Fin 7 → ℝ → ℂ) (w : OldTuple → ℂ)
-    (z ud ue uv kap : OldTuple → ℝ) (q : Frequency) (x : OldTuple) : ℂ :=
-  w x * outerWindow V (z x) (ud x) (ue x) (uv x) (kap x) *
-    logPhase (q.1 + q.2.1) (z x) * logPhase q.2.2 (kap x - ud x - 2 * ue x - 2 * uv x)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
-open SecondPassFiber (OldTuple newLabel newRow Valid)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end SecondPassIntegration
-
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 namespace JointLogSeparation
 
 lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
@@ -124,13 +26,6 @@ lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
 
 end JointLogSeparation
 
-namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels
-
-end SecondPassIntegration
-end
-
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 open ActualEisensteinCubic
@@ -158,12 +53,10 @@ theorem supported_span_iff (z : O) :
           (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hz)⟩
       exact (h.2 _ hm).1 (Ideal.subset_span (by simp))
     · intro hz
-      have hm : (Ideal.span {(2 : O)} : Ideal O) ∈
-          UniqueFactorizationMonoid.normalizedFactors (Ideal.span {z}) := by
-        apply (Ideal.mem_normalizedFactors_iff h.1).mpr
-        exact ⟨twoIdeal_maximal.isPrime,
-          (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hz)⟩
-      exact (h.2 _ hm).2 twoIdeal_characteristic
+      refine (h.2 _ ?_).2 twoIdeal_characteristic
+      apply (Ideal.mem_normalizedFactors_iff h.1).mpr
+      exact ⟨twoIdeal_maximal.isPrime,
+        (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hz)⟩
   · rintro ⟨hLam, htwo⟩
     have hz : z ≠ 0 := fun heq => hLam (heq ▸ dvd_zero lambda)
     refine ⟨Ideal.span_singleton_eq_bot.not.mpr hz, ?_⟩
@@ -180,18 +73,14 @@ theorem supported_span_iff (z : O) :
     · intro hchar
       have htwoP : (2 : O) ∈ P := by
         apply Ideal.Quotient.eq_zero_iff_mem.mp
-        have hzero : (2 : O ⧸ P) = 0 := (ringChar.spec (O ⧸ P) 2).mpr (by rw [hchar])
-        simpa only [map_ofNat] using hzero
+        have hzero  := (ringChar.spec (O ⧸ P) 2).mpr (by rw [hchar])
+        assumption
       have heq := maximal_ideal_eq_span_of_mem P inferInstance (2 : O) twoIdeal_maximal htwoP
       rw [heq] at hzP
       exact htwo (Ideal.mem_span_singleton.mp hzP)
 
 def badPrime (i : Bool) : Ideal O := if i then Ideal.span {(2 : O)} else Ideal.span {lambda}
 
-instance badPrime_maximal (i : Bool) : (badPrime i).IsMaximal := by
-  cases i
-  · exact lambdaIdeal_maximal
-  · exact twoIdeal_maximal
 
 theorem badPrime_mask (z : O) :
     rowCoprimeMask badPrime Finset.univ z = if Supported (Ideal.span {z}) then 1 else 0 := by
@@ -200,7 +89,7 @@ theorem badPrime_mask (z : O) :
     Bool.false_eq_true, ite_false, ite_true, Ideal.mem_span_singleton]
   by_cases hLam : lambda ∣ z <;> by_cases htwo : (2 : O) ∣ z <;> simp [hLam, htwo]
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open CompletedGauss FiniteSieveOperator
 
 theorem highKernelNorm_mono {M N K M' N' K' : ℝ}
     (hM : M ≤ M') (hN : N ≤ N') (hK : K' ≤ K) :
@@ -219,14 +108,13 @@ theorem highKernel_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N K : ℝ) (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N) :
     ‖operator (fun i j => quadraticRow (cols j) (primaryGenerator (rows i)))‖ ^ 2 ≤
       highKernelNorm M N K := by
   let r : m → highKernelRange M K := fun i => ⟨rows i, hrows i⟩
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
   have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
-  have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
-  have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (highKernelMatrix M N K)
+  have h := FiniteSieveRestriction.submatrix_norm_le r hri c (fun i j h => hc (congrArg Subtype.val h)) (highKernelMatrix M N K)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 theorem highKernel_quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
@@ -234,7 +122,7 @@ theorem highKernel_quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fi
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (hdiv : ∀ j, D ∣ cols j) (M N K : ℝ)
     (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N) :
     ‖FiniteSieveOperator.operator (fun i j =>
       quadraticRow (idealQuotient D (cols j)) (primaryGenerator (rows i)))‖ ^ 2 ≤
       highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K := by
@@ -251,7 +139,7 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
     (D : Ideal O) (hD : D ≠ 0) (rows : m → Ideal O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols) (M N K : ℝ)
     (hrows : ∀ i, rows i ∈ highKernelRange M K)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N) :
     ‖FiniteSieveOperator.operator (quotientMatrix D rows cols)‖ ^ 2 ≤
       highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K := by
   let S : Finset n := Finset.univ.filter (fun j => D ∣ cols j)
@@ -287,7 +175,7 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
       rw [Finset.sum_coe_sort S (fun j : n => ‖a j‖ ^ 2)]
       exact Finset.sum_le_univ_sum_of_nonneg (fun j => sq_nonneg ‖a j‖)
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator
+open IdealCoprimeSieveOperator
 
 def totalQuotient (D I : Ideal O) : Ideal O := if D ∣ I then idealQuotient D I else 1
 
@@ -301,7 +189,7 @@ theorem totalQuotient_norm_le (D I : Ideal O) (hI : Admissible I)
     (Ideal.absNorm (totalQuotient D I) : ℝ) ≤ N := by
   by_cases h : D ∣ I
   · rw [totalQuotient, ite_eq_left h]
-    have hn : 0 < Ideal.absNorm I := Nat.pos_iff_ne_zero.mpr
+    have hn  := Nat.pos_iff_ne_zero.mpr
       (fun hz => hI.1 (Ideal.absNorm_eq_zero_iff.mp hz))
     exact (Nat.cast_le.mpr (Nat.le_of_dvd hn (map_dvd Ideal.absNorm (idealQuotient_dvd h)))).trans hIN
   · simpa only [totalQuotient, ite_eq_right h, map_one, Nat.cast_one] using hN

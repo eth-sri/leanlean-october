@@ -1,8 +1,10 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.PlainPositiveEnergy
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskRadialEnergy
-public import OAI.NumberTheory.DirichletL.Moments.NaturalCoreFloor
+public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalEnergy
+public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceFamily
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalControl
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 
@@ -11,14 +13,14 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalMaskedFloor
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentPlainPositiveEnergy CenteredMomentPlainGlobalEnergy
-open CenteredMomentCommonMaskRadialEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExceptionalProfile
-open CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist
-open CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentPlainPositiveEnergy
+open CenteredMomentPlainGlobalEnergy CenteredMomentCommonMaskRadialEnergy
+open CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile CenteredMomentCoreFloor
+open CenteredMomentLattice CenteredMomentTwist CenteredMomentAllocatedNaturalSource
+open HeckeInverseAmplification
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O" => HeckeFamily.O
 
@@ -53,17 +55,16 @@ theorem excluded_pair (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) :
     rw [primeSupport_product_radical R hR] at hh
     change radialEnergy (fun z=>polynomial (excluded (χ z) R) false W₁ X₁ 0 0 *
       polynomial (excluded (χ z) R) false W₂ X₂ 0 0) r.keep r.profile r.scale ≤ _ at hh
-    exact hh.trans_eq (by dsimp [E]; ring)
+    exact hh.trans_eq (by ring)
   · intro D₁ hD₁ D₂ hD₂ J hJ
     have hn (D : Finset (Ideal O)) (hD : D∈(CompletedGauss.primeSupport R).powerset) :
         0<(Ideal.absNorm (∏I∈D,I):ℝ) := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Finset.prod_ne_zero_iff.mpr (fun I hi=>(support_prime R I (Finset.mem_powerset.mp hD hi)).ne_zero)))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Finset.prod_ne_zero_iff.mpr (fun I hi=>(support_prime R I (Finset.mem_powerset.mp hD hi)).ne_zero))
     have he := hpair W₁ W₂ hs₁ hs₂ χ r Q
       (X₁/(Ideal.absNorm (∏I∈D₁,I):ℝ)) (X₂/(Ideal.absNorm (∏I∈D₂,I):ℝ)) 0 0
       hQ (div_pos hX₁ (hn D₁ hD₁)) (div_pos hX₂ (hn D₂ hD₂)) hχ hmod
     norm_num only [abs_zero,add_zero,show (3:ℝ)^4=81 by norm_num] at he
-    simpa only [Finset.empty_sdiff,Finset.prod_empty,mul_one] using he.trans_eq (by dsimp [E]; ring)
+    simpa only [Finset.empty_sdiff,Finset.prod_empty,mul_one] using he.trans_eq (by ring)
 
 lemma twist_polynomial (χ : Character) (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (hs : Function.support (W:ℝ→ℂ)⊆Set.Icc a b) (t X : ℝ) :
@@ -100,19 +101,17 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
     unfold F fixedConductorFactor
     norm_cast
     apply Nat.mul_pos
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero))
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0)))
+    · exact Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero)
+    · exact Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0))
   refine ⟨4*n,T,C*Ct^4*F^4,by positivity,?_⟩
   intro W₁ W₂ hs₁ hs₂ η Q R r bΦ hR hbΦ hsΦ hz hex Z m q ρ t X₁ X₂ hZ hm hq hscale hρ hX₁ hX₂ hη
   let r' : Radial := {r with keep := fun z=>r.keep z ∧ r.profile (‖eisEmbedding z‖^2/r.scale)≠0}
-  let χ : O→Character := fun z=>if hz:z≠0 then (naturalRow η z hz).character else η
+  let χ  := fun z=>if hz:z≠0 then (naturalRow η z hz).character else η
   have hχ (z:O) (h:r'.keep z) : (χ z).residue≠1 := by
     have hn := hz z h.1
-    have hc : χ z=(naturalRow η z hn).character := by simp [χ,hn]
-    exact (congrArg (fun ψ : Character=>ψ.residue≠1) hc).mpr
+    refine (congrArg (fun ψ : Character=>ψ.residue≠1) ?_).mpr
       ((naturalRow η z hn).nonprincipal hn Q R hR (hex z h.1))
+    simp [χ,hn]
   have hmod (z:O) (h:r'.keep z) : ((χ z).modulus.absNorm:ℝ)≤F*bΦ*Z^(m+q) := by
     have hn := hz z h.1
     have hh : ((Ideal.span {z}).absNorm:ℝ)≤bΦ*Z^m := by
@@ -122,8 +121,8 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
       (naturalRow η z hn).modulus_power_bound Z q m bΦ (zero_lt_one.trans_le hZ) hbΦ hη hh
   let V₁ := normPowerProfile W₁ a b ha hs₁ (W₁.smooth ⊤) t
   let V₂ := normPowerProfile W₂ a b ha hs₂ (W₂.smooth ⊤) t
-  have hv₁ : Function.support (V₁:ℝ→ℂ)⊆Set.Icc a b := (normPowerProfile_support W₁ a b ha hs₁ (W₁.smooth ⊤) t).trans hs₁
-  have hv₂ : Function.support (V₂:ℝ→ℂ)⊆Set.Icc a b := (normPowerProfile_support W₂ a b ha hs₂ (W₂.smooth ⊤) t).trans hs₂
+  have hv₁  := (normPowerProfile_support W₁ a b ha hs₁ (W₁.smooth ⊤) t).trans hs₁
+  have hv₂  := (normPowerProfile_support W₂ a b ha hs₂ (W₂.smooth ⊤) t).trans hs₂
   have he := hpair V₁ V₂ hv₁ hv₂ χ r' R (F*bΦ*Z^(m+q)) X₁ X₂ hR
     (by positivity) hX₁ hX₂ hχ hmod
   have hid : zeroEnergy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 t W₁ W₂ X₁ X₂ r =
@@ -143,7 +142,7 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
         rw [norm_mul,twist_polynomial,twist_polynomial]
         split_ifs with h
         · rfl
-        · exact False.elim (h hp)
+        rfl
     · simp [r',hk]
   rw [←hid] at he
   have hB₁ := ht W₁ hs₁ t
@@ -152,7 +151,7 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
       (Ct^4*(T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2)*(1+‖t‖)^(4*n) := by
     have hh := pow_le_pow_left₀ (mul_nonneg (apply_nonneg _ _) (apply_nonneg _ _))
       (mul_le_mul hB₁ hB₂ (apply_nonneg _ _) (by positivity)) 2
-    exact hh.trans_eq (by dsimp [V₁,V₂]; rw [Nat.mul_comm 4 n,pow_mul]; ring)
+    exact hh.trans_eq (by ring)
   have hp : Z^m*(Z^(m+q))^4≤Z^(m+q+4*ρ) := by
     rw [←Real.rpow_natCast,←Real.rpow_mul (zero_le_one.trans hZ),←Real.rpow_add (zero_lt_one.trans_le hZ)]
     apply Real.rpow_le_rpow_of_exponent_le hZ

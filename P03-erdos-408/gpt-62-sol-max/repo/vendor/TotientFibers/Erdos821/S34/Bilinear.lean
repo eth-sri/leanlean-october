@@ -6,7 +6,6 @@ public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 
 set_option autoImplicit false
 
-open scoped BigOperators
 
 namespace Erdos821.S34.Proofs
 
@@ -17,8 +16,8 @@ theorem rational_frequency_separation (α β : ℝ) (u d q : ℤ) (r : ℕ)
     (hα : α = (u : ℝ) / r + β) (hβ : |β| ≤ 1 / (r : ℝ) ^ 2)
     (hd : d ≠ 0) (hspan : |(d : ℝ)| ≤ (r : ℝ) / 2) :
     1 / (2 * (r : ℝ)) ≤ |α * d - q| := by
-  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (show 0 < r by omega)
-  have hrne : (r : ℝ) ≠ 0 := ne_of_gt hrpos
+  have hrpos : 0 < (r : ℝ) := by norm_cast
+  have hrne  := ne_of_gt hrpos
   have hdabs : d.natAbs < r := by
     have h : |(d : ℝ)| < (r : ℝ) := by linarith
     have hi : |d| < (r : ℤ) := by exact_mod_cast h

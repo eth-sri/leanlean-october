@@ -12,7 +12,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
 
-open Erdos821.Blueprint.Graph hiding GhostChoice absoluteMemoryGhostKernel absoluteScaledMemoryGhostKernel deleteMemoryIndices ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEntry memoryGhostKernel zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
 def singleWeight {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1))
@@ -65,8 +65,7 @@ lemma globalSummand_eq_prod (c : GhostChoice s t) :
       by_contra hcon
       push Not at hcon
       apply hvalid
-      intro g
-      exact hcon g
+      assumption
     obtain ⟨g0, hg0⟩ := hneg
     have hzero : (∏ g : P.BigGroup,
       (if singleValid g (s.2.2 g) (t.2.2 g) (c.1 g) (c.2.1 g) (c.2.2 g) then

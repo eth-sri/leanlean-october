@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.SlotSums
 
 @[expose] public section
@@ -34,8 +35,7 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   have hN : 1≤N := by
     dsimp [N]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
   have hdK : d*(K:ℝ)≤eps := by
     dsimp [d]
     rw [div_mul_eq_mul_div,div_le_iff₀ (by positivity : (0:ℝ)<(K:ℝ)+1)]

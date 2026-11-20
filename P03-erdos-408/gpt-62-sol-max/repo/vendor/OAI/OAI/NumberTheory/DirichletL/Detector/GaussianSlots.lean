@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianCoupled
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap FourierTransform
+open scoped Classical
 open MeasureTheory Filter Set FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 
@@ -38,7 +38,7 @@ lemma logPhase_neg_argument (t y : ℝ) : logPhase t (-y)=logPhase (-t) y := by
 lemma gaussianFixedWindow_Vstar_twist (t x : ℝ) (hx : 0<x) :
     Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x=
       gaussianAnnulus x*logPhase t (Real.log x) := by
-  have hs : (Real.sqrt x:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
+  have hs  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
   unfold Vstar CompletedHeight.normTwistedSource gaussianFixedWindow
   field_simp
 
@@ -70,7 +70,7 @@ theorem gaussian_selected_slot_family {ι : Type*} [Fintype ι]
     | none => |Real.log (1/2)|+|Real.log 2|+1
     | some i => M i
   have hM' : ∀o,0≤M' o := by intro o; cases o with
-    | none => dsimp [M']; positivity
+    | none => positivity
     | some i => exact hM i
   have hW : ∀o y,gaussianSlotWindow W o y≠0→|y|≤M' o := by
     intro o y

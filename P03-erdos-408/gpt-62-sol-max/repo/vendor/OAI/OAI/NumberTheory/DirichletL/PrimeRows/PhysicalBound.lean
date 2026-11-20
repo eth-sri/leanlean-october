@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.WeightedTuple
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleBound
 public import OAI.NumberTheory.DirichletL.PrimeRows.ScalarGrowth
@@ -37,8 +38,7 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   have hN : 0<N := by
     dsimp [N]
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
   have ht : ∀i P,P∈T i→CanonicalQuadraticSieve.Supported P.val ∧ (4:ℝ)≤P.val.absNorm := by
     intro i P hP
     exact ⟨outside_prime_supported S hS.bad P (hT i P hP),by exact_mod_cast hS.tail.norm_four P (hT i P hP)⟩
@@ -55,7 +55,7 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
   have heq (P:∀i,T i) : calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
       (fun i=>hT i (P i).val (P i).property) W Y x w z=L*G P :=
     calibratedTupleValue_factor S hS hmax η u _ (hdis P) _ W Y x w z
-  have hLb : ‖L‖≤CL*(η.modulus.absNorm:ℝ)^(δ/2)*N^(3/5+δ/2)*(3+|x.im|)^2*(3+|w.im|)^2 :=
+  have hLb  :=
     hL η u hu x w z hxβ hw (by rw [hz];exact hr)
   have hGb : (∑P:(∀i,T i),‖G P‖)≤CG*N^(δ/2)*∏i,(Y i)^r :=
     hG (1/4) S hS hfirst η u T ht Y hY W hWS hWB x w z hx hw hz (by linarith)

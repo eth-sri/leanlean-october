@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve
-open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap
-open SevenEighths.InverseInitialProfile
+open scoped BigOperators Classical SchwartzMap
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
+open UniqueFactorizationMonoid CanonicalQuadraticSieve SevenEighths.InverseInitialPoissonBridge
+open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialKernelBridge
 
 local notation "Eis" => ActualEisensteinCubic.O

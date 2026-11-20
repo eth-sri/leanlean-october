@@ -38,10 +38,10 @@ lemma finite_weighted_truncation_norm {α β : Type*} [Fintype α]
       exact (mul_le_mul_of_nonneg_right (hw p) (norm_nonneg _)).trans (by simpa using he p)
     _ = _ := by simp
 
-theorem original_family_row_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
+theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
-    ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
+    ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
       (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
       (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
       (D : ∀ P : Pset, IsCoprime K P.val →
@@ -59,10 +59,9 @@ theorem original_family_row_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
           literalDyadicRow F K hK S jF Pset D s hc u i W θ X r aw‖≤
         Pset.card*(C*(1+‖θ‖)^degree*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*
           T^(-(A:ℝ))*(familyRawScale F s X QK QP^2)⁻¹) := by
-  obtain ⟨degree,C,hC,hbound⟩ := original_family_dyadic_tail
-    (N:=N) (a:=a) (c:=c) (mode:=mode) lo hi hlo A W hWs hW
+  obtain ⟨degree,C,hC,hbound⟩ := original_family_dyadic_tail_uniform_degree lo hi hlo A W hWs hW
   refine ⟨degree,C,hC,?_⟩
-  intro φ σ _ _ F K hK S jF Pset D s hc hN hbase hchar hj hprod u θ X T QK QP r aw hX hT hQK hQP hKr hPr hr haw
+  intro N a c mode φ σ _ _ F K hK S jF Pset D s hc hN hbase hchar hj hprod u θ X T QK QP r aw hX hT hQK hQP hKr hPr hr haw
   let L := {P : Pset // IsCoprime K P.val}
   let block := fun (P : L) i => literalDyadicBlock (F.reflected K hK (S P.val.val))
     (D P.val P.property) s hc (reflectedExponent jF) (slotIndices φ (PrimeIndex K) σ)
@@ -108,6 +107,7 @@ theorem original_family_row_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)
   · positivity
+
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -20,8 +20,8 @@ theorem periodic_of_primary (M : Ideal O)
     (hagree : ∀ x, λ₀ ^ 2 ∣ x - 1 → G x = F x) :
     CanonicalCoefficientClass.FactorsModulo M G := by
   intro x y hxy
-  have hdiff : λ₀ ^ 2 ∣ x - y := Ideal.mem_span_singleton.mp (hM hxy)
-  have hdiff' : λ₀ ∣ x - y := (dvd_pow_self λ₀ (by decide : 2 ≠ 0)).trans hdiff
+  have hdiff  := Ideal.mem_span_singleton.mp (hM hxy)
+  have hdiff'  := (dvd_pow_self λ₀ (by decide : 2 ≠ 0)).trans hdiff
   by_cases hx : λ₀ ∣ x
   · have hy : λ₀ ∣ y := by
       convert dvd_sub hx hdiff' using 1 ; ring
@@ -30,7 +30,7 @@ theorem periodic_of_primary (M : Ideal O)
     have hspec := CompletedGauss.primaryGenerator_spec (Ideal.span {x}) hg
     obtain ⟨u, hu'⟩ := Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
     have hp : λ₀ ^ 2 ∣ (u : O) * x - 1 := by
-      have hp' : λ₀ ^ 2 ∣ CompletedGauss.primaryGenerator (Ideal.span {x}) - 1 := hspec.2
+      have hp'  := hspec.2
       rwa [mul_comm, hu']
     have hq : λ₀ ^ 2 ∣ (u : O) * y - 1 := by
       have hd := hdiff.trans (dvd_mul_left (x-y) (u : O))
@@ -47,9 +47,6 @@ def quotientRow (M : Ideal O) (G : O →* ℂ)
     refine Quotient.inductionOn₂' x y ?_
     exact G.map_mul
 
-@[simp] theorem quotientRow_mk (M : Ideal O) (G : O →* ℂ)
-    (hG : CanonicalCoefficientClass.FactorsModulo M G) (z : O) :
-    quotientRow M G hG (Ideal.Quotient.mk M z) = G z := rfl
 
 def residueRow (M : Ideal O) (G : O →* ℂ)
     (hG : CanonicalCoefficientClass.FactorsModulo M G) : MulChar (O ⧸ M) ℂ :=
@@ -59,15 +56,7 @@ theorem residueRow_mk (M : Ideal O) (G : O →* ℂ)
     (hG : CanonicalCoefficientClass.FactorsModulo M G) (z : O) :
     residueRow M G hG (Ideal.Quotient.mk M z) =
       if IsUnit (Ideal.Quotient.mk M z) then G z else 0 := by
-  by_cases hz : IsUnit (Ideal.Quotient.mk M z)
-  · obtain ⟨u, hu⟩ := hz
-    rw [ite_eq_left (hu ▸ u.isUnit), ← hu]
-    change MulChar.ofUnitHom (Units.map (quotientRow M G hG)) (u : O ⧸ M) = G z
-    rw [MulChar.ofUnitHom_coe]
-    change quotientRow M G hG (u : O ⧸ M) = G z
-    rw [hu, quotientRow_mk]
-  · rw [ite_eq_right hz]
-    exact MulChar.map_nonunit _ hz
+  rfl
 
 def rowCharacter (M : Ideal O) (hM : M ≠ ⊥) (G : O →* ℂ)
     (hG : CanonicalCoefficientClass.FactorsModulo M G)
@@ -94,7 +83,7 @@ theorem elementHom_periodic (η : Character) :
   exact Ideal.Quotient.eq.mpr hxy
 
 theorem elementHom_norm (η : Character) (x : O) : ‖elementHom η x‖ ≤ 1 := by
-  let : Finite (O ⧸ η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
+  let  := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Fintype (O ⧸ η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue _
 
@@ -120,7 +109,7 @@ theorem rowTwist_periodic (η : Character) (m f z : O)
     (CanonicalRowCompletion.actualPeriodicRow (elementHom η) m u a b r hr)
     (CanonicalRowCompletion.actualPeriodicRow_periodic _ _ (elementHom_periodic η) _ _ _ _ _ hr)
     (rowTwist_unit_mul η m f z) ?_ ?_
-  · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
+  · have hd3  := ActualEisensteinCubic.lambda_sq_dvd_three
     have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
     exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans
       ((Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hd72))
@@ -156,7 +145,7 @@ theorem rowTwist_nonzero_unit (η : Character) (m f z n : O)
     IsUnit (Ideal.Quotient.mk
       (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}) n) := by
   obtain ⟨hs, hc⟩ := rowTwist_nonzero_coprime η m f z n hmLam hm2 hn
-  have hm : IsCoprime n m := hc.of_isCoprime_of_dvd_right ⟨m^5*f^4*z, by ring⟩
+  have hm  := hc.of_isCoprime_of_dvd_right ⟨m^5*f^4*z, by ring⟩
   have hr : IsCoprime n r := hc.of_isCoprime_of_dvd_right
     ⟨m^6*((u : O)*λ₀^a*(2 : O)^b), by
       rw [show m^6*f^4*z = m^6*(f^4*z) by ring, hx]; ring⟩
@@ -204,7 +193,7 @@ theorem row_modulus_norm_le (η : Character) (m f z : O)
       rowConductorBound η m f z := by
   have hprod : (Ideal.span {f^4*z} : Ideal O) ≠ ⊥ :=
     Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (pow_ne_zero _ hf) hz)
-  let : Finite (O ⧸ Ideal.span {f^4*z}) := Ring.HasFiniteQuotients.finiteQuotient hprod
+  let  := Ring.HasFiniteQuotients.finiteQuotient hprod
   have hle : (Ideal.span {f^4*z} : Ideal O) ≤ Ideal.span {r} := by
     apply (Ideal.span_singleton_le_iff_mem _).mpr
     apply Ideal.mem_span_singleton.mpr
@@ -245,8 +234,8 @@ theorem idealCoeff_eq_row (η χ : Character) (m f z : O)
   · subst I
     rw [map_zero, map_zero, zero_mul]
   let n := ConcretePrimeRowBridge.idealGenerator I
-  have hn : n ≠ 0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
-  have hs : Ideal.span {n} = I := ConcretePrimeRowBridge.span_idealGenerator I
+  have hn  := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
+  have hs  := ConcretePrimeRowBridge.span_idealGenerator I
   rw [← hs, idealCoeff_span χ hn, heq]
   change elementCoeff η n * _ = idealCoeff η (Ideal.span {n}) * _
   rw [idealCoeff_span η hn]

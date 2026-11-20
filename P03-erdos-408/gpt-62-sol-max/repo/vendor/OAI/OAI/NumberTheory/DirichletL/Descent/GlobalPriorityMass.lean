@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityBranches
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
@@ -18,9 +19,9 @@ local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hcop:OAI.PrincipalFamily.Coprime p)
       {Jo:ℕ}(original:Finset (Source ι Jo))(extra:CubeCoordinates ι→Finset ι)
       (negative:Bool)(Ψ:O→*ℂ)(m:O)(w:Source ι Jo→ℂ)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(B:ℝ),
@@ -38,8 +39,6 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
   let Cr:ℝ:=Fintype.card (RayCharacter×RayCharacter)
   let Cc:ℝ:=Fintype.card FirstCoreIndex
   refine ⟨(32*512)*Cr*Cc*coefficientBound*Cm^2,by
-    have hr:0<Cr:=by dsimp [Cr];exact_mod_cast Fintype.card_pos
-    have hc:0<Cc:=by dsimp [Cc];exact_mod_cast Fintype.card_pos
     have:=coefficientBound_pos;positivity,?_⟩
   intro ι σ _ _ p hp _ hg hcop Jo original extra negative Ψ m w slots lists a B hslots ha hΨ hw hB U hU0 hU
   let N:=fun x:Source ι Jo=>(primeProductNorm p (wholeExtractedSupport (fun x=>extra x.cube) negative x))^(2*ε)
@@ -83,7 +82,6 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
       simp only [Finset.sum_const,Finset.card_univ,Finset.card_powerset,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
       have he:((2:ℝ)^slots.card)^2=(4:ℝ)^slots.card:=by rw [←pow_mul,pow_mul'];norm_num
       rw [←he]
-      dsimp only [Cr,Cc,N]
       ring
 end SevenEighths.InverseMoment
 

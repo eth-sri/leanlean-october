@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.IdealPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter
-open SevenEighths.IdealMangoldt
+open ActualEisensteinCubic ArithmeticFunction Filter SevenEighths.IdealMangoldt
 open scoped BigOperators Classical Topology
 
 noncomputable section
@@ -22,7 +21,7 @@ def higherClassCoeff (C : Set (Ideal O)) (n : ℕ) : ℝ :=
   classCoeff {I | I ∈ C ∧ ¬Prime I} n
 
 theorem value_prime {P : Ideal O} (hP : Prime P) : value P = Real.log (Ideal.absNorm P) := by
-  simpa only [pow_one] using value_pow hP (k := 1) (by decide)
+  simpa using value_pow hP (k := 1) (by decide)
 
 theorem prime_of_isPrimePow_of_norm_prime {I : Ideal O}
     (hI : IsPrimePow I) (hn : (Ideal.absNorm I).Prime) : Prime I := by
@@ -59,13 +58,11 @@ theorem classCoeff_eq_prime_add_higher (C : Set (Ideal O)) (n : ℕ) :
   rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro I hI
-  by_cases hC : I ∈ C <;> by_cases hP : Prime I <;> simp [hC, hP]
+  by_cases hC : I ∈ C <;> by_cases hP : Prime I <;> simp_all
 
 @[simp] theorem higherClassCoeff_zero (C : Set (Ideal O)) : higherClassCoeff C 0 = 0 :=
   coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
 
-@[simp] theorem primeClassCoeff_zero (C : Set (Ideal O)) : primeClassCoeff C 0 = 0 :=
-  coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
 
 theorem higherClassCoeff_eq_zero_of_prime (C : Set (Ideal O)) {n : ℕ} (hn : n.Prime) :
     higherClassCoeff C n = 0 := by
@@ -74,7 +71,7 @@ theorem higherClassCoeff_eq_zero_of_prime (C : Set (Ideal O)) {n : ℕ} (hn : n.
   simp only [Set.mem_ofPred_eq]
   split_ifs with h
   · rw [value_eq_zero_of_nonprime_of_norm_prime h.2
-      (by simpa only [(mem_normFiber n I).mp hI] using hn), mul_zero]
+      (by simp_all), mul_zero]
   · exact zero_mul _
 
 theorem higherClassCoeff_le_nonprime_vonMangoldt (C : Set (Ideal O)) (n : ℕ) :
@@ -136,7 +133,7 @@ theorem primeLogMass_eq_cumsum (C : Set (Ideal O)) (N : ℕ) :
     primeLogMass C N = cumsum (primeClassCoeff C) N := by
   have hmap : ∀ P ∈ primeIdealsBelow C N, Ideal.absNorm P ∈ Finset.range N := by
     intro P hP
-    exact Finset.mem_range.mpr ((mem_primeIdealsBelow C N P).mp hP).2.2
+    simp_all
   rw [primeLogMass, ← Finset.sum_fiberwise_of_maps_to hmap]
   unfold cumsum
   apply Finset.sum_congr rfl
@@ -147,9 +144,9 @@ theorem primeLogMass_eq_cumsum (C : Set (Ideal O)) (N : ℕ) :
     simp only [Finset.mem_filter, mem_primeIdealsBelow, mem_normFiber]
     constructor
     · rintro ⟨⟨hC, hP, hN⟩, heq⟩
-      exact ⟨heq, hC, hP⟩
+      simp_all
     · rintro ⟨heq, hC, hP⟩
-      exact ⟨⟨hC, hP, heq ▸ Finset.mem_range.mp hn⟩, heq⟩
+      simp_all
   · intro P hP
     rfl
 

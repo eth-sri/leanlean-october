@@ -5,7 +5,7 @@ public import Erdos821.S34.ProductDyads
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.S34Core
@@ -23,7 +23,7 @@ theorem atomExponent_nonneg (P : Geometry) (m : ℕ) : 0 ≤ atomExponent P m :=
 
 theorem eventually_cell_width (hexp : ℝ) (hh : 0 < hexp) :
     ∀ᶠ x in atTop, 0 < L x ^ (-hexp) ∧ L x ^ (-hexp) ≤ Real.log 2 := by
-  have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
+  have hL  := Real.tendsto_log_atTop
   have ht := (tendsto_rpow_neg_atTop hh).comp hL
   have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   filter_upwards [ht.eventually (eventually_lt_nhds hlog2), hL.eventually_gt_atTop 0] with x hx hLx
@@ -35,7 +35,7 @@ theorem eventually_big_prime_power (P : Geometry) (q : ℝ) :
   have hc : 0 < P.c := by rcases P.ordered with ⟨ha, hab, hbc, hcd, hd⟩; linarith
   filter_upwards [eventually_power_le_label_scale q P.c (1 / 2) hc (by norm_num)] with x hx
   intro G hG g hg p hp
-  have hs : g ∉ G.small := (Finset.mem_sdiff.mp hg).2
+  have hs  := (Finset.mem_sdiff.mp hg).2
   have hbound := hG.2.2.2.1 g p hp
   rw [ite_eq_right hs] at hbound
   have he := Real.exp_pos (L x ^ P.c)

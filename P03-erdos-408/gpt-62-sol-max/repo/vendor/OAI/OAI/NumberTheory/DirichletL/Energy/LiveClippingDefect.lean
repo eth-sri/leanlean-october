@@ -2,7 +2,11 @@ module
 
 public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowReflectionError
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowChild
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowError
 
 @[expose] public section
 
@@ -94,15 +98,15 @@ theorem endpoint_threshold (b δ : ℝ) (hδ : 0 < δ) :
   let Z₀ := Real.exp (1 + 2 * Real.log (max 1 b) / δ)
   have hb : 0 ≤ Real.log (max 1 b) := Real.log_nonneg (le_max_left _ _)
   have he : 0 < 1 + 2 * Real.log (max 1 b) / δ := by positivity
-  have hZ₀ : 1 < Z₀ := Real.one_lt_exp_iff.mpr he
+  have hZ₀  := Real.one_lt_exp_iff.mpr he
   refine ⟨Z₀, hZ₀, ?_⟩
   intro Z hZZ
-  have hZ : 1 < Z := hZ₀.trans_le hZZ
+  have hZ  := hZ₀.trans_le hZZ
   have hlog := Real.log_le_log (Real.exp_pos _) hZZ
   rw [Real.log_exp] at hlog
   have hbound : 2 * Real.log (max 1 b) ≤ δ * Real.log Z := by
-    have hh : 2 * Real.log (max 1 b) / δ ≤ Real.log Z := by linarith
-    exact (div_le_iff₀ hδ).mp hh |>.trans_eq (mul_comm _ _)
+    refine (div_le_iff₀ hδ).mp ?_ |>.trans_eq (mul_comm _ _)
+    linarith
   rw [Real.logb, ← mul_div_assoc]
   exact (div_le_iff₀ (Real.log_pos hZ)).mpr hbound
 
@@ -197,8 +201,8 @@ theorem robust_balanced_long_nonneg (M total ell kappa xi defect : ℝ)
   constructor <;> linarith
 
 theorem robust_reflected_low (M short along ell z kappa xi defect reflected : ℝ)
-    (hM : 0 ≤ M) (_hs : 0 ≤ short) (hsM : short ≤ M/4)
-    (_hell : 0 ≤ ell) (_hz : 0 ≤ z) (hze : z ≤ ell) (hk : 3/4 ≤ kappa)
+    (hM : 0 ≤ M) (hsM : short ≤ M/4)
+ (hze : z ≤ ell) (hk : 3/4 ≤ kappa)
     (he : ell ≤ M/21+2*defect/7)
     (hbudget : (6*kappa-1)*ell ≤ M/6+defect)
     (hxi : 0 ≤ xi) (hdefect : 0 ≤ defect) (hdefectM : defect ≤ M)
@@ -208,13 +212,12 @@ theorem robust_reflected_low (M short along ell z kappa xi defect reflected : �
       reflected+short+6*kappa*z ≤ 13*M/14+xi+11*defect/7 := by
   have haz : 0 < along := by
     by_contra hn
-    have ha : along ≤ 0 := le_of_not_gt hn
+    have ha  := le_of_not_gt hn
     rw [max_eq_left ha] at hhigh
     linarith
   rw [max_eq_right haz.le] at hhigh
   have hzbudget : (6*kappa-1)*z ≤ M/6+defect :=
     (mul_le_mul_of_nonneg_left hze (by linarith)).trans hbudget
-  have hzcap : z ≤ M/21+2*defect/7 := hze.trans he
   refine ⟨haz, ?_⟩
   by_cases hr : 0 ≤ M-along+xi
   · rw [max_eq_right hr] at href
@@ -274,7 +277,7 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
   · apply Or.inr
     obtain ⟨hellbound, hslot⟩ := robust_slot_budgets M (Real.logb Z (X₁*X₂)) ell κ e
       hell hκ hlarge hcap
-    apply robust_reflected_low M _ _ ell z κ ξ e reflected hM hshort0 hshort hell hz hze hκ
+    apply robust_reflected_low M _ _ ell z κ ξ e reflected hM hshort hze hκ
       hellbound hslot hξ he (robust_defect_le_width M ξ e hM hξ hreserve) _ href
     rw [← CenteredMomentEnergyReferenceLowBranchGeometry.length_eq_max_log Z _ hZ hlongpos]
     exact lt_of_not_ge hlo

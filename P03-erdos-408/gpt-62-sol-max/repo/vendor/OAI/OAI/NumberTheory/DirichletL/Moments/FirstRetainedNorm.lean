@@ -90,14 +90,13 @@ theorem original_retained_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad 
   apply Finset.sum_le_sum
   intro p hp
   rw [norm_mul]
-  have hw:‖rowWeight s.η m A 1 t p.val.1*star (rowWeight s.η m A 1 t p.val.2)‖≤1:=by
-    rw [norm_mul,norm_star]
-    exact (mul_le_of_le_one_left (norm_nonneg _)
-      (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one _ _ _ _ _ _
-        (commonLabels_supported _ p).1.1)).trans
-      (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one _ _ _ _ _ _
-        (commonLabels_supported _ p).2.1)
-  exact (mul_le_of_le_one_left (norm_nonneg _) hw).trans (sector_norm s Rbad seed m A t _ _ _ _ _ W K X Z ξ)
+  refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (sector_norm s Rbad seed m A t _ _ _ _ _ W K X Z ξ)
+  rw [norm_mul,norm_star]
+  exact (mul_le_of_le_one_left (norm_nonneg _)
+    (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one _ _ _ _ _ _
+      (commonLabels_supported _ p).1.1)).trans
+    (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one _ _ _ _ _ _
+      (commonLabels_supported _ p).2.1)
 
 end SevenEighths.CenteredMomentFirstRetainedNorm
 

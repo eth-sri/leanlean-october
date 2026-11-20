@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.MarkedDualSource
+public import OAI.NumberTheory.DirichletL.Reflection.MarkedRestriction
 
 @[expose] public section
 
@@ -46,13 +46,12 @@ theorem marked_source_of_controlled [Fintype ι]
     apply mul_ne_zero _ hQall
     simp only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot]
     norm_num
-  let : Finite (Eis⧸Ideal.span {call}) := ConcreteTraceCRT.finite_quotient_span hcall
+  let  := ConcreteTraceCRT.finite_quotient_span hcall
   let : Fintype (Eis⧸Ideal.span {call}) := Fintype.ofFinite _
-  have hcallQ : Ideal.span {call}≤Ideal.span {(9:Eis)}*Qall := by
-    rw [ConcretePrimeRowBridge.span_idealGenerator]
-  exact markedCompletedT_fixed_active_strata P.generator P.generator_ne_zero P.generator_prime
+  refine markedCompletedT_fixed_active_strata P.generator P.generator_ne_zero P.generator_prime
     P.generator_primary P.generator_good j S φ hφnorm Q hφperiod c hc hcQ G N hN
-    C call hcall hcallQ W hWcompact lo hi hlo hsupp hW X hX
+    C call hcall ?_ W hWcompact lo hi hlo hsupp hW X hX
+  rw [ConcretePrimeRowBridge.span_idealGenerator]
 end PrimeFamily
 end
 end SevenEighths.InverseReflectedPhase

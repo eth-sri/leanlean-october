@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
-public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
+public import OAI.NumberTheory.DirichletL.CubicSieve.ArithmeticBins
 
 @[expose] public section
 
@@ -9,71 +9,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CanonicalQuadraticSieve
 
@@ -85,7 +28,7 @@ theorem list_prod_le_power (xs : List ℝ) (U : ℝ) (hU : 0≤U)
     have hx := hxs x (by simp)
     have ht : ∀y∈xs, 0≤y ∧ y≤U := fun y hy => hxs y (by simp [hy])
     simp only [List.prod_cons,List.length_cons,pow_succ]
-    have hp : 0≤xs.prod := List.prod_nonneg (fun y hy => (ht y hy).1)
+    have hp  := List.prod_nonneg (fun y hy => (ht y hy).1)
     exact (mul_le_mul hx.2 (ih ht) hp hU).trans_eq (mul_comm _ _)
 
 theorem list_prod_budget (xs budget : List ℝ) (U : ℝ) (hU : 1≤U)
@@ -108,40 +51,40 @@ theorem poisson_nine_terms_box
     lk*(2*uh*d*ln^2*f*e*(4*N/T+a) + 2*d*ln^2*lat*du*f*e*(N+2*T*a) +
       32768*cs*eS) + uh*d^2*cp*b ≤ 262144*U^8*S := by
   let budget : List ℝ := [d,lk,ln,f,e,vh,vz,dv,uh,du,lat,cd,cs,ct,cp]
-  have hp (xs : List ℝ) (hx : ∀x∈xs, x∈budget) (hn : xs.length≤8) : xs.prod≤U^8 :=
+  have hp (xs : List ℝ) (hx : ∀x∈xs, x∈budget) (hn : xs.length≤8)  :=
     list_prod_budget xs budget U hU hbudget hx hn
   have hc1 : d*lk*vh*ln^2*f*e≤U^8 := by
-    have hh := hp [d,lk,vh,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [d,lk,vh,ln,ln,f,e] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have hc2 : d*lk*vz*ln^2*f*e≤U^8 := by
-    have hh := hp [d,lk,vz,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [d,lk,vz,ln,ln,f,e] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have hc3 : d*lk*ln^2*lat*dv*f*e≤U^8 := by
-    have hh := hp [d,lk,ln,ln,lat,dv,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [d,lk,ln,ln,lat,dv,f,e] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have hc4 : d*lk*cd≤U^8 := by
-    have hh := hp [d,lk,cd] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [d,lk,cd] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
   have hc5 : d*ct≤U^8 := by
-    have hh := hp [d,ct] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [d,ct] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
   have hc6 : lk*uh*d*ln^2*f*e≤U^8 := by
-    have hh := hp [lk,uh,d,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [lk,uh,d,ln,ln,f,e] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have hc7 : lk*d*ln^2*lat*du*f*e≤U^8 := by
-    have hh := hp [lk,d,ln,ln,lat,du,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [lk,d,ln,ln,lat,du,f,e] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have hc8 : lk*cs≤U^8 := by
-    have hh := hp [lk,cs] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [lk,cs] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
   have hc9 : uh*d^2*cp≤U^8 := by
-    have hh := hp [uh,d,d,cp] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
+    have hh := hp [uh,d,d,cp] (by simp [List.forall_mem_cons, budget]) (by simp)
     simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
   have haS : a≤S := (by nlinarith only [ha, hT] : a≤T*a).trans hTa
-  have hdiv : N/T≤N := div_le_self hN hT
+  have hdiv  := div_le_self hN hT
   have h1 : M+a≤2*S := by linarith only [hMS, haS]
   have h2 : M+2*T*a≤3*S := by nlinarith only [hMS, hTa]
-  have h3 : M+2*T*a≤3*S := h2
+  have h3  := h2
   have h6 : 4*N/T+a≤5*S := by rw [mul_div_assoc]; linarith only [hdiv, hNS, haS]
   have h7 : N+2*T*a≤3*S := by nlinarith only [hNS, hTa]
   have hU8 : 0≤U^8 := by positivity
@@ -221,32 +164,14 @@ theorem poissonComparisonMajorant_unit_box
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-end
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 end SecondPassArithmetic
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 namespace CubicEisenstein
 
@@ -255,7 +180,7 @@ def matrixGram (g : SL(2,ℂ)) : Matrix (Fin 2) (Fin 2) ℂ :=
 
 lemma matrixGram_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup) :
     matrixGram (g*k)=matrixGram g := by
-  have hku : (k : Matrix (Fin 2) (Fin 2) ℂ)*star (k : Matrix (Fin 2) (Fin 2) ℂ)=1 :=
+  have hku  :=
     Matrix.mem_unitaryGroup_iff.mp hk
   unfold matrixGram
   simp only [Matrix.SpecialLinearGroup.coe_mul,star_mul]
@@ -268,7 +193,7 @@ lemma matrixGram_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup) :
 def hyperbolicGram : HyperbolicSpace → Matrix (Fin 2) (Fin 2) ℂ :=
   Quotient.lift matrixGram (by
     intro g h hgh
-    have hk : g⁻¹*h∈compactSubgroup := QuotientGroup.leftRel_apply.mp hgh
+    have hk  := QuotientGroup.leftRel_apply.mp hgh
     have hh : h=g*(g⁻¹*h) := by group
     rw [hh]
     exact (matrixGram_right_unitary g (g⁻¹*h) hk).symm)
@@ -311,9 +236,7 @@ def complexMatrixRow (g : SL(2,ℂ)) (i : Fin 2) : Fin 2 → ℂ := fun j => g i
 
 lemma complexMatrixRow_mul (g h : SL(2,ℂ)) (i : Fin 2) :
     complexMatrixRow (g*h) i=rowOperator h (complexMatrixRow g i) := by
-  funext j
-  simp only [complexMatrixRow,rowOperator_apply,Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply,Matrix.vecMul,dotProduct]
+  rfl
 
 def matrixFrobenius (g : SL(2,ℂ)) : ℝ :=
   rowEnergy (complexMatrixRow g 0)+rowEnergy (complexMatrixRow g 1)
@@ -325,7 +248,7 @@ lemma matrixFrobenius_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup)
 def hyperbolicFrobenius : HyperbolicSpace → ℝ :=
   Quotient.lift matrixFrobenius (by
     intro g h hgh
-    have hk : g⁻¹*h∈compactSubgroup := QuotientGroup.leftRel_apply.mp hgh
+    have hk  := QuotientGroup.leftRel_apply.mp hgh
     have hh : h=g*(g⁻¹*h) := by group
     rw [hh]
     exact (matrixFrobenius_right_unitary g (g⁻¹*h) hk).symm)

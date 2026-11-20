@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.LowOriginalEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
@@ -51,12 +51,12 @@ theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id
     (1/2) 2 (by norm_num) gaussianFixedWindow gaussianFixedWindow_support gaussianFixedWindow_contDiff
     Ck ε hCk hε hε1 K
   let C0 := (lowCorrectionEnergy+1)*((Fintype.card RayCharacter:ℝ)+1)*6*C
-  have hC0 : 0<C0 := by have hh := lowCorrectionEnergy_nonneg;dsimp [C0];positivity
+  have hC0 : 0<C0 := by have hh := lowCorrectionEnergy_nonneg;positivity
   refine ⟨degree,C0,Z₀,hC0,hZ₀,?_⟩
   intro Z d ell0 shift hZ hd hd1 hell hellcap hshift R hR T hT hout hdis J H hH1 hH hprod W hW Y t σ
   let L := fun i : SelectedSlot J=>lowPrimeIdealList (lowPeriodPrimeList η S hS (T i.val))
   have hLP (i : SelectedSlot J) : lowPeriodPrimeList η S hS (T i.val)⊆T i.val := Finset.filter_subset _ _
-  have hLS (i : SelectedSlot J) : ∀P∈lowPeriodPrimeList η S hS (T i.val),Supported P.val :=
+  have hLS (i : SelectedSlot J)  :=
     fun P hP=>hT i.val P (hLP i hP)
   have hlists : Pairwise (fun i j=>Disjoint (L i) (L j)) :=
     lowPrimeIdealList_disjoint _ (lowPeriodPrimeList_disjoint η S hS _
@@ -101,9 +101,7 @@ theorem low_selected_physical_energy (η : HeckeFamily.Character) (S : Finset Id
   apply hm.trans
   dsimp [C0]
   have hc0 := lowCorrectionEnergy_nonneg
-  have hcount : 0≤(Fintype.card RayCharacter:ℝ) := Nat.cast_nonneg _
   have hzpos : 0≤Z^((5/6-2*d)+507*ε) := Real.rpow_nonneg (le_trans zero_le_one (hZ₀.le.trans hZ)) _
-  have htpos : 0≤(1+|t|)^degree := by positivity
   calc
     _=(lowCorrectionEnergy*(Fintype.card RayCharacter:ℝ)*6*C)*(1+|t|)^degree*
         Z^((5/6-2*d)+507*ε) := by ring

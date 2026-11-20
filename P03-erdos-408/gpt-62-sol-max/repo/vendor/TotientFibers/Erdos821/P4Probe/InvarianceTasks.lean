@@ -13,7 +13,6 @@ namespace Erdos821.P4Probe
 
 noncomputable section
 
-local instance invariantSiteDecidableEq (s M : ℕ) : DecidableEq (RowSite s M) := Classical.decEq _
 
 /-- The remaining analytic-free row-symmetry fact: ANOVA component energy is
 invariant under independent row permutations when the original vector is
@@ -42,10 +41,7 @@ theorem symmetricFullComponentTask_of_counting (hcount : ProbeCountingTask)
       (productAnova (flatWeight w) Finset.univ S (fun y => f (flattenRows.symm y)))
   have hE : ∀ S, 0 ≤ E S := fun S =>
     productSqNorm_nonneg (flatWeight w) (fun z a => hw z.1 a) _
-  have hEinv : ∀ (π : Fin s → Equiv.Perm (Fin (J + ell))) S,
-      E (S.map (rowPermutation s (J + ell) π).toEmbedding) = E S :=
-    hinv s (J + ell) α w f hsym
-  have hc := hcount s J ell m block E hm hell hmJ hM hE hEinv
+  have hc := hcount s J ell m block E hm hell hmJ hM hE (hinv s (J + ell) α w f hsym)
   dsimp only at hc ⊢
   rw [flat_fullProbe_energy w hsum]
   have ht : (∑ S ∈ (Finset.univ : Finset (RowSite s (J + ell))).powerset, E S) =

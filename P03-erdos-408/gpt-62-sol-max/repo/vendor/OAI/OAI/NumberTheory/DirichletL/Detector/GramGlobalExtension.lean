@@ -60,8 +60,7 @@ theorem canonical_common_extension (P : ι→Ideal O) [∀i,(P i).IsMaximal]
         (fun y : O⧸P i^c i=>Ideal.Quotient.mk _ n₁*y)
         (primePowerRow (P i) (hg i) (hc i)) (primePowerRow (P i) (hg i) (hc i))
         (Ideal.Quotient.mk _ k) := by
-    simpa only [IdealGaussCRT.quotientProdEquivPi_mk
-      (fun i => P i ^ c i) hpc] using he
+    assumption
   rw [hprod]
   apply Finset.prod_congr rfl
   intro i hi
@@ -69,10 +68,9 @@ theorem canonical_common_extension (P : ι→Ideal O) [∀i,(P i).IsMaximal]
   by_contra h
   push Not at h
   obtain ⟨a,b,hab⟩ := hn
-  have hmem : (1:O)∈P i := by
-    rw [←hab]
-    exact (P i).add_mem ((P i).mul_mem_left a h.1) ((P i).mul_mem_left b h.2)
-  exact (Ideal.IsMaximal.ne_top (I:=P i) inferInstance) ((Ideal.eq_top_iff_one (P i)).mpr hmem)
+  refine (Ideal.IsMaximal.ne_top (I:=P i) inferInstance) ((Ideal.eq_top_iff_one (P i)).mpr ?_)
+  rw [←hab]
+  exact (P i).add_mem ((P i).mul_mem_left a h.1) ((P i).mul_mem_left b h.2)
 
 theorem actualCommon_eq_globalExtension (C : O) (hC : Supported (Ideal.span {C}))
     (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,goodLambda∉P i)

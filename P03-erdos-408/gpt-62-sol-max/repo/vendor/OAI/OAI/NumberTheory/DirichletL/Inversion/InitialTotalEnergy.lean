@@ -4,6 +4,8 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialFiniteEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalLimit
 public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroModeBudget
 
+public import OAI.NumberTheory.DirichletL.Inversion.InitialAssignments
+
 @[expose] public section
 
 namespace OAI
@@ -33,28 +35,14 @@ theorem original_input_bound
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) Dpool (reflectionExcludedPrimes_bad q);
-    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF;
     let p:=poolPrimary F;
     let _hp:=poolPrimary_ne_zero F hF;
     let _hcop:=poolPrimary_coprime F hF;
     let hg:=poolPrimary_good F hF;
-    ∀{σ:Type}[DecidableEq σ](all assigned:Finset σ),assigned⊆all→all.card≤K→
-    ∀(lists:σ→Finset (primePool F))(Hslot:σ→ℝ)(coeff:σ→primePool F→ℂ),
-      (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
-      (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
-      (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
-      (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
-      (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
-      (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
+    ForInitialAssignments (fun P : primePool F => (P.val.absNorm : ℝ)) K Z fun σ _ all assigned lists Hslot coeff qelem z al bl primeW =>
     ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
-    ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
-      (∏i∈assigned,bl i)≤Z^η→
-      (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
-      D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
-      2*r+8*assignedCenter all z≤3*m-2*gap→
-      r+assignedCenter all z+7*η≤cap→
+    ForInitialSourceScales all assigned Hslot z bl Z cap η gap fun D m r =>
     ∀(c θ:ℝ),1≤c→c≤bcap→
       ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Z^m)*
         (‖((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
@@ -78,7 +66,7 @@ theorem original_input_bound
   obtain ⟨Cf,Z₀,hCf,hZ₀,hfinite⟩:=hfinite q hq
   refine ⟨Cf+Cz,Z₀,by linarith,hZ₀,?_⟩
   intro Z hZ Dpool hD F hFa
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
+  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hFa
   intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent c θ hc hbc
@@ -86,7 +74,7 @@ theorem original_input_bound
   have hDcap:D≤cap:=by
     have hg:0≤assignedCenter assigned z:=Finset.sum_nonneg (fun i hi=>hz i (hassigned hi))
     rw [hDeq];linarith
-  have hconj:(fun x=>star (clippedSource W c θ x))=clippedSource (fun x=>star (W x)) c (-θ):=
+  have hconj:=
     funext (clippedSource_conjugate W c θ)
   have hn:=nonzero_frequency_norm_le p hp hcop hg
     (InverseInitialRayAttachment.poolPrimary_injective F hFa) (poolPrimary_odd F hFa)

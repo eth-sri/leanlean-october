@@ -4,12 +4,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicContour
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
 
+public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
+
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -61,7 +63,7 @@ theorem central_segment_bound (χ : Character) (W : ℝ → ℂ)
 
 theorem horizontal_join_bound (χ : Character) (W : ℝ → ℂ)
     (D σ freq l r y C K : ℝ) (n : ℕ)
-    (hD : 1≤D) (hlr : l≤r) (hC : 0≤C) (_hK : 0≤K)
+    (hD : 1≤D) (hlr : l≤r) (hC : 0≤C)
     (hm : ∀ x ∈ Icc l r, (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤C)
     (hs : ∀ x ∈ Icc l r, ‖series χ ((x : ℂ)+y*I+shift σ freq)‖≤K) :
     ‖∫ x : ℝ in l..r, integrand χ W D σ freq ((x : ℂ)+y*I)‖ ≤
@@ -100,22 +102,12 @@ theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
        2*(Cn*D^(r+σ-1/2)*K/(1+T)^n)*|r-l| +
        (Cn*D^(r+σ-1/2)*eulerBound (r+σ))/(1+T)^n*Real.pi) := by
   have hDp : 0<D := by linarith
-  have hmem (x t : ℝ) (hx : x∈Icc l r) (ht : t∈Icc (-T) T) :
-      ((x : ℂ)+t*I) ∈ (uIcc l r ×ℂ uIcc (-T) T) := by
-    change (((x : ℂ)+t*I).re∈uIcc l r) ∧ (((x : ℂ)+t*I).im∈uIcc (-T) T)
-    simpa [uIcc_of_le hlr,uIcc_of_le (by linarith : -T≤T)] using And.intro hx ht
   have hcentral := central_segment_bound χ W D l σ freq C₂ K T hDp hC₂ hK hT
-    hm₂ (fun t ht => hs _ (hmem l t ⟨le_rfl,hlr⟩ ht))
-  have hm (x : ℝ) (hx : x∈Icc l r) (t : ℝ) :
-      (1+|t|)^n*‖mellin W ((x : ℂ)+t*I)‖≤Cn := by
-    apply le_trans _ (hmn x hx t)
-    gcongr
-    · exact le_add_of_nonneg_right (abs_nonneg t)
-    · omega
-  have hbottom := horizontal_join_bound χ W D σ freq l r (-T) Cn K n hD hlr hCn hK
-    (fun x hx => hm x hx (-T)) (fun x hx => hs _ (hmem x (-T) hx ⟨le_rfl,by linarith⟩))
-  have htop := horizontal_join_bound χ W D σ freq l r T Cn K n hD hlr hCn hK
-    (fun x hx => hm x hx T) (fun x hx => hs _ (hmem x T hx ⟨by linarith,le_rfl⟩))
+    hm₂ (fun t ht => hs _ (HeckeDyadic.contour_mem_rect hlr hT ⟨le_rfl,hlr⟩ ht))
+  have hbottom := horizontal_join_bound χ W D σ freq l r (-T) Cn K n hD hlr hCn
+    (fun x hx => HeckeDyadic.mellin_le_of_higher_decay W x (-T) Cn n (hmn x hx (-T))) (fun x hx => hs _ (HeckeDyadic.contour_mem_rect hlr hT hx ⟨le_rfl,by linarith⟩))
+  have htop := horizontal_join_bound χ W D σ freq l r T Cn K n hD hlr hCn
+    (fun x hx => HeckeDyadic.mellin_le_of_higher_decay W x T Cn n (hmn x hx T)) (fun x hx => hs _ (HeckeDyadic.contour_mem_rect hlr hT hx ⟨by linarith,le_rfl⟩))
   simp only [abs_neg,abs_of_nonneg hT,ofReal_neg] at hbottom htop
   have htail := absolute_tail_bound χ W D r σ freq Cn T n hDp hr hCn hT
     (hmn r ⟨hlr,le_rfl⟩)

@@ -118,11 +118,10 @@ def ell (n : ℕ) : ℝ := n - (n.choose 2 : ℝ)
 lemma ell_le_one (n : ℕ) : ell n ≤ 1 := by
   unfold ell
   rcases Nat.lt_or_ge n 3 with h | h
-  · interval_cases n <;> norm_num [Nat.choose]
+  · interval_cases n <;> norm_num
   · rw [Nat.choose_two_right]
     have h2 : (n : ℝ) * (n - 1) / 2 ≤ ((n * (n - 1) / 2 : ℕ) : ℝ) + 1 := by
       have := Nat.div_add_mod (n * (n - 1)) 2
-      have hm := Nat.mod_lt (n * (n - 1)) (show 0 < 2 by norm_num)
       have : ((n * (n - 1) : ℕ) : ℝ) = 2 * ((n * (n - 1) / 2 : ℕ) : ℝ) +
           ((n * (n - 1) % 2 : ℕ) : ℝ) := by exact_mod_cast this.symm
       have hm' : ((n * (n - 1) % 2 : ℕ) : ℝ) ≤ 1 := by exact_mod_cast (by omega)
@@ -135,7 +134,7 @@ lemma ell_le_one (n : ℕ) : ell n ≤ 1 := by
 lemma ell_le_natCast_mul_zpow (n : ℕ) : ell n ≤ (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) := by
   unfold ell
   rcases Nat.lt_or_ge n 3 with h | h
-  · interval_cases n <;> norm_num [Nat.choose]
+  · interval_cases n <;> norm_num
   · have h0 : 0 ≤ (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) := by positivity
     have : (n : ℝ) ≤ (n.choose 2 : ℝ) := by
       rw [Nat.choose_two_right]
@@ -160,7 +159,7 @@ lemma one_sub_mul_successCoin_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) {g : Finset �
         ell (primeCount g w) := by
   have hmw : 0 ≤ markedWeight {g} (1 / 2) id (w + 1) := by
     rw [markedWeight_singleton]
-    exact div_nonneg (by positivity) hg.le
+    positivity
   have h := ell_div_le_markedWeight hg w
   have hθ := chernoffTheta_pos.le
   unfold successCoin
@@ -209,9 +208,9 @@ lemma sum_lowSubsets_eq (g : Finset ℕ) (α : ℝ) (w : ℕ) :
     simp only [lowSubsets, mem_filter, mem_powerset, s, subset_iff]
     constructor
     · rintro ⟨⟨h1, h2⟩, h3⟩
-      exact ⟨fun p hp => ⟨h1 hp, h3 p hp⟩, h2⟩
+      simp_all
     · rintro ⟨h1, h2⟩
-      exact ⟨⟨fun p hp => (h1 hp).1, h2⟩, fun p hp => (h1 hp).2⟩
+      simp_all
   have : ∑ K ∈ lowSubsets g, lowCoeff α K.card * (if ∀ p ∈ K, p ∣ w then 1 else 0) =
       ∑ K ∈ (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w), lowCoeff α K.card := by
     rw [sum_filter]

@@ -8,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceAllocationEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceLiveColumn
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
+open CenteredMomentCommonAllocationSum
 local notation "O" => ActualEisensteinCubic.O
 
  theorem gaussPolynomial_allocation {α γ : Type*} [Fintype γ]
@@ -25,7 +25,6 @@ local notation "O" => ActualEisensteinCubic.O
   exact Finset.sum_comm
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 end SevenEighths.CenteredMomentSourceAllocationEnergy
 

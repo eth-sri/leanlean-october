@@ -113,8 +113,8 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
       ((moebius j:ℂ)*idealCoeff χ j*(j.absNorm:ℂ)^(-(1/2:ℂ)))*
         polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t := by
   let A:=ConcretePrimeRowBridge.idealsUpTo ⌈X*b⌉₊
-  let V:ℝ→ℂ:=fun x=>W x*(x:ℂ)^(-shift σ t)
-  have hc:∀I:Ideal O,I≠0→W ((I.absNorm:ℝ)/X)≠0→I∈A:=
+  let V:=fun x=>W x*(x:ℂ)^(-shift σ t)
+  have hc:=
     InverseInitialRawDictionary.finite_source_cover W X b hX hW
   have hcv:∀I:Ideal O,I≠0→V ((I.absNorm:ℝ)/X)≠0→I∈A:=by
     intro I hi hv
@@ -133,8 +133,8 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
   rw [hfinite,hsource,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro j hj
-  have hjd: j∣∏P∈S,P:=(mem_idealDivisors (prime_product_squarefree S hS).ne_zero).mp hj
-  have hj0:j≠0:=ne_zero_of_dvd_ne_zero (prime_product_squarefree S hS).ne_zero hjd
+  have hjd:=(mem_idealDivisors (prime_product_squarefree S hS).ne_zero).mp hj
+  have hj0:=ne_zero_of_dvd_ne_zero (prime_product_squarefree S hS).ne_zero hjd
   have hjpos:0<(j.absNorm:ℝ):=by
     exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj0)
   rw [polynomial_all_ideals]

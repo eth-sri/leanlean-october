@@ -1,14 +1,16 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.DyadIntegral
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -37,10 +39,9 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+    (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    Integrable (fun p : HeightSpace=>continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z
+    Integrable (fun p : HeightSpace=>continuedPhysicalRowKernel S hS hmax P hPS η u mw.left mw.right X Y Z
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure := by
   let W : Fin K→ℝ→ℂ := fun _ y=>if y=1 then 1 else 0
   let Yp : Fin K→ℝ := fun i=>(P i).val.absNorm
@@ -55,7 +56,7 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
   have hdis (Q : ∀i,T i) : Function.Injective (fun i=>(Q i).val) := by rw [hTP Q];exact hP
   have hYp (i : Fin K) : 1≤Yp i := by
     dsimp [Yp]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (P i).property.ne_zero)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot ((P i).property.ne_zero)
   have hWS (i : Fin K) : Function.support (W i)⊆Icc (1:ℝ) 1 := by
     intro y hy
     by_cases h : y=1
@@ -68,11 +69,10 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
   let U : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
   have hU : 1≤U := by
     dsimp [U]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
   obtain ⟨C,hC,hmain⟩ := calibrated_physical_dyad_integral K e (1/2) 1 1 r 1 σ υ he he'
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) hr (by norm_num) hσ hσβ hυ
-    S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    S hS hmax hfirst mw
   have hR (v : FreeRow) (hv : v∈({u}:Finset FreeRow)) :
       v.val≠1 ∧ U≤((Ideal.span {v.val}:Ideal O).absNorm:ℝ) ∧
       ((Ideal.span {v.val}:Ideal O).absNorm:ℝ)≤2*U := by
@@ -86,15 +86,15 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
   have hf : Continuous (fun p : HeightSpace=>frequencyWeight ((r:ℂ)+p.1.2*Complex.I) ⟨u.val,u.property.1⟩) := by
     unfold frequencyWeight
     exact (by fun_prop : Continuous (fun p : HeightSpace=>-((r:ℂ)+p.1.2*Complex.I))).const_cpow (Or.inl hfn)
-  have hs := sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1 X Y Z hX hY hZ σ r υ (by linarith)
-  have hme : AEStronglyMeasurable (fun p : HeightSpace=>continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z
+  have hs := sourceMellinWeight_initial_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support X Y Z hX hY hZ σ r υ (by linarith)
+  have hme : AEStronglyMeasurable (fun p : HeightSpace=>continuedPhysicalRowKernel S hS hmax P hPS η u mw.left mw.right X Y Z
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure := by
-    simp_rw [continuedPhysicalRowKernel_eq_calibratedTuple S hS hmax P hPS η u W0 W1 X Y Z W Yp hWeq]
+    simp_rw [continuedPhysicalRowKernel_eq_calibratedTuple S hS hmax P hPS η u mw.left mw.right X Y Z W Yp hWeq]
     exact (hs.mul hf).aestronglyMeasurable.mul hm
   apply hi.mono' hme
   apply Filter.Eventually.of_forall
   intro p
-  rw [continuedPhysicalRowKernel_eq_calibratedTuple S hS hmax P hPS η u W0 W1 X Y Z W Yp hWeq]
+  rw [continuedPhysicalRowKernel_eq_calibratedTuple S hS hmax P hPS η u mw.left mw.right X Y Z W Yp hWeq]
   rw [mul_assoc,norm_mul]
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
   dsimp only [physicalDyadNorm]

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.NonprincipalGate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
@@ -57,13 +57,12 @@ theorem NaturalRow.nonprincipal {η : Character} {z : O} (F : NaturalRow η z)
     (hz : z≠0) (Q R : Ideal O) (hR : R≠0)
     (hex : ¬FixedInducingRow η Q (fixedBadMask*idealGenerator R) 1 z) :
     F.character.residue≠1 := by
-  have hbase : ¬FixedInducingRow η Q fixedBadMask 1 z := by
-    intro h
-    exact hex ((fixedInducingRow_mul_mask_iff η Q fixedBadMask (idealGenerator R) 1 z
-      fixedBadMask_ne_zero (idealGenerator_ne_zero R hR) one_ne_zero hz
-      (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr h)
-  exact CenteredMomentNonprincipalGate.actual_row_nonprincipal η F.character Q fixedBadMask 1 z
-    (by simpa only [one_mul] using F.element) hbase
+  refine CenteredMomentNonprincipalGate.actual_row_nonprincipal η F.character Q fixedBadMask 1 z
+    (by simpa only [one_mul] using F.element) ?_
+  intro h
+  exact hex ((fixedInducingRow_mul_mask_iff η Q fixedBadMask (idealGenerator R) 1 z
+    fixedBadMask_ne_zero (idealGenerator_ne_zero R hR) one_ne_zero hz
+    (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr h)
 
 def fixedConductorFactor : ℕ := (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm
 

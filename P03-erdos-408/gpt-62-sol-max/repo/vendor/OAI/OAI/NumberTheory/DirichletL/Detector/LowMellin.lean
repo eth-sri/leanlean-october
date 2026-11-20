@@ -53,7 +53,7 @@ lemma low_sqrt_ratio (B q X Y : ℝ) (hB : 0<B) (hq : 0<q) (hX : 0<X) (hY : 0<Y)
     (Real.sqrt (B*q*X):ℂ)⁻¹=
       (Real.sqrt (B*X*Y):ℂ)⁻¹*((q/Y:ℝ):ℂ)^(-(1/2:ℂ)) := by
   have hQ : 0<B*X*Y := by positivity
-  have hb : 0<q/Y := div_pos hq hY
+  have hb  := div_pos hq hY
   have he : B*q*X=(B*X*Y)*(q/Y) := by field_simp
   rw [he,Real.sqrt_mul hQ.le,Complex.ofReal_mul,Complex.cpow_neg,ProbeEuler.cpow_half_eq_sqrt _ hb.le]
   simp only [mul_inv_rev,mul_comm]
@@ -66,9 +66,9 @@ theorem physical_radial_low_mellin (W : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
         ∫v : ℝ,((m/(B*X*Y):ℝ):ℂ)^(-((v:ℂ)*Complex.I))*
           ((q/Y:ℝ):ℂ)^(-(1/2:ℂ)+(v:ℂ)*Complex.I)*mellin W ((v:ℂ)*Complex.I) := by
   have hQ : 0<B*X*Y := by positivity
-  have ha : 0<m/(B*X*Y) := div_pos hm hQ
-  have hb : 0<q/Y := div_pos hq hY
-  have hbc : ((q/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr hb.ne'
+  have ha  := div_pos hm hQ
+  have hb  := div_pos hq hY
+  have hbc  := Complex.ofReal_ne_zero.mpr hb.ne'
   have he : m/(B*q*X)=(m/(B*X*Y))/(q/Y) := by field_simp
   rw [he,low_mellin_ratio W a0 b0 ha0 hW hWs _ _ ha hb,low_sqrt_ratio B q X Y hB hq hX hY]
   simp_rw [Complex.cpow_add _ _ hbc]

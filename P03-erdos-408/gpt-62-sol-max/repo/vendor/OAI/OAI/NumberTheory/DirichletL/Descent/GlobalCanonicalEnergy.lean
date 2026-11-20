@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalParents
 public import OAI.NumberTheory.DirichletL.Descent.GlobalParentEnergy
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
@@ -9,15 +10,15 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
 open InverseFirstPriorityParents
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem global_canonical_to_original_priority
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))

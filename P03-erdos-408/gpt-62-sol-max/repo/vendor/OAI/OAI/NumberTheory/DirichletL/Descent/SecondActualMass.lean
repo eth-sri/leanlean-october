@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondTripleBounds
 
 @[expose] public section
@@ -15,7 +17,7 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma nonzero_ideal_norm_one (I : Ideal Eis) (hI : I ≠ 0) : 1 ≤ (Ideal.absNorm I : ℝ) := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
 
 theorem triple_normalized_mass_source_bounds (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (Γ : Finset OuterTriple) (B T R : ℝ),
@@ -38,7 +40,7 @@ theorem triple_normalized_mass_source_bounds (K : ℕ) (ε : ℝ) (hε : 0 < ε)
 
 theorem actual_second_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
-      (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
       {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : Eisˣ)
       (Z ell R j t g theta eta : ℝ), 0 < Z →
       (∀ x ∈ source, x.quotient ≠ 0) →

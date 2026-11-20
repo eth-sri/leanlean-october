@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.Reciprocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductX
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily
+open PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma marked_differentiableAt_x (η : Character) (P : PrimeIdeal) (x w z : ℂ)
@@ -92,7 +92,7 @@ theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id
   have hR := HeckeReciprocal.reciprocal_differentiableAt (η.excludePrimes S hS.prime) hβ
   apply DifferentiableAt.differentiableWithinAt
   unfold continuedSourceMultiplier
-  fun_prop (disch := first | assumption | exact Or.inl hn)
+  fun_prop (disch := simpa using Or.inl hn)
 
 theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)

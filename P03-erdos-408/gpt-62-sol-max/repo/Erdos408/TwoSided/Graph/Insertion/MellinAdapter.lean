@@ -36,7 +36,7 @@ theorem eventually_iteratedDeriv_bound (CΨ : ℝ) (M : ℕ → ℝ) :
     Real.tendsto_log_atTop.eventually_gt_atTop 0] with x hlx hT1 hL0
   intro Ψ k y hk
   set T := Real.log (Real.log x)
-  have hlT : 0 ≤ Real.log T := Real.log_nonneg hT1
+  have hlT  := Real.log_nonneg hT1
   rw [Real.norm_of_nonneg hlT, id, Real.norm_of_nonneg (by linarith)] at hlx
   -- `c log T ≤ T`
   have hcT : c * Real.log T ≤ T := by

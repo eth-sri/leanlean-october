@@ -10,10 +10,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open CanonicalQuadraticSieve ProbePhysical
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
+open ProbePhysical
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -38,16 +38,14 @@ theorem outside_good_coprime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) (P : PrimeIdeal) (hP : P.val∉S) :
     λ₀∉P.val ∧ IsCoprime P.val (Ideal.span {rowMaskElement}) := by
   let : P.val.IsMaximal := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
-  have hn : P.val∉fixedBadPrimes := fun hh => hP (hbad hh)
-  have hg := (prime_good_iff_not_bad P.val).mpr hn
+  have hg := (prime_good_iff_not_bad P.val).mpr (fun hh => hP (hbad hh))
   refine ⟨hg.1,?_⟩
   have hc := (prime_coprime_fixedProduct S hS P).mpr hP
   rw [IsCoprime.prod_right_iff] at hc
   have hLam : Ideal.span {λ₀}∈S := hbad (Finset.mem_insert_self _ _)
-  have h2 : Ideal.span {(2 : O)}∈S := hbad (by simp [fixedBadPrimes])
   unfold rowMaskElement
   rw [←Ideal.span_singleton_mul_span_singleton]
-  exact (hc _ h2).mul_right (hc _ hLam)
+  exact (hc _ (hbad (by simp [fixedBadPrimes]))).mul_right (hc _ hLam)
 
 theorem rawRow_prime_outside (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) (u : FreeRow) (P : PrimeIdeal) (hP : P.val∉S) :

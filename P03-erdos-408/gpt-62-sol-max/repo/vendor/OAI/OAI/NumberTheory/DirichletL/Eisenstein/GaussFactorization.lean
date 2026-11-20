@@ -11,78 +11,15 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Filter MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -96,7 +33,7 @@ lemma sourceFourierKernel_cubic_height (h : ActualEisensteinCubic.O) (hh : h≠0
     (v:ℂ)^(-(4/3:ℂ)-1)*sourceFourierKernel (4/3) (cuspFrequency h*v)=
       cubicBesselNormalizer h*
         (schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)/(v:ℂ)^2) := by
-  have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
+  have hv0  := Complex.ofReal_ne_zero.mpr hv.ne'
   rw [sourceFourierKernel_four_thirds _ (mul_ne_zero (cuspFrequency_ne_zero h hh) hv0)]
   have hnorm : ‖cuspFrequency h*(v:ℂ)‖=‖cuspFrequency h‖*v := by
     rw [norm_mul,Complex.norm_of_nonneg hv.le]
@@ -113,7 +50,7 @@ lemma sourceFourierKernel_cubic_height (h : ActualEisensteinCubic.O) (hh : h≠0
   have hvpow : (v:ℂ)^(-(4/3:ℂ)-1)*(v:ℂ)^(1/3:ℂ)=1/(v:ℂ)^2 := by
     rw [←Complex.cpow_add _ _ hv0,show -(4/3:ℂ)-1+1/3=-(2:ℂ) by ring,
       Complex.cpow_neg,Complex.cpow_ofNat]
-    simp only [one_div]
+    simp
   have harg : 4*Real.pi*(‖cuspFrequency h‖*v)=4*Real.pi*‖cuspFrequency h‖*v := by ring
   rw [hpow,harg]
   unfold cubicBesselNormalizer
@@ -125,19 +62,9 @@ lemma sourceFourierKernel_cubic_height (h : ActualEisensteinCubic.O) (hh : h≠0
 
 end
 
-section
-open Filter MeasureTheory
-open scoped Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
-
-local notation "O" => ActualEisensteinCubic.O
-
-end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Filter MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -161,7 +88,6 @@ end
 
 section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -224,8 +150,8 @@ lemma denominatorCRTMap_surjective (a b : Eis) (hab : IsCoprime (3*a) b) :
   have hxi : IsCoprime b xi := by
     apply (isUnit_quotient_span_iff b xi).mp
     simpa only [xi,GaussianShiftedPartition.representative_spec] using t.2
-  have had : denominatorCondition a d := (denominatorCondition_congr a d delta hda).mpr r.2
-  have hbd : IsCoprime b d := (isCoprime_right_congr_of_dvd b d xi hdb).mpr hxi
+  have had  := (denominatorCondition_congr a d delta hda).mpr r.2
+  have hbd  := (isCoprime_right_congr_of_dvd b d xi hdb).mpr hxi
   have hd : denominatorCondition (a*b) d := ⟨had.1.mul_left hbd,had.2⟩
   let q : AdmissibleResidue (a*b):=⟨Ideal.Quotient.mk (Ideal.span {3*(a*b)}) d,
     (denominatorCondition_congr (a*b) _ d (denominatorRep_mk_congr (a*b) d)).mpr hd⟩
@@ -257,7 +183,7 @@ lemma residueAdditive_congr (h c d e : Eis) (hc : c≠0) (hde : 3*c ∣ d-e) :
     residueAdditive h c d=residueAdditive h c e := by
   obtain ⟨n,hn⟩:=hde
   have hd:d=e+3*c*n:=by linear_combination hn
-  have he:eisEmbedding c≠0:=eisEmbedding_ne_zero hc
+  have he:=eisEmbedding_ne_zero hc
   unfold residueAdditive
   rw [hd]
   have hh : cuspFrequency h*eisEmbedding (e+3*c*n)/eisEmbedding c=
@@ -275,7 +201,7 @@ lemma residueAdditive_three_congr (h b d e : Eis) (hb : b≠0) (hde : b ∣ d-e)
     residueAdditive (3*h) b d=residueAdditive (3*h) b e := by
   obtain ⟨n,hn⟩:=hde
   have hd:d=e+b*n:=by linear_combination hn
-  have he:eisEmbedding b≠0:=eisEmbedding_ne_zero hb
+  have he:=eisEmbedding_ne_zero hb
   unfold residueAdditive
   rw [hd]
   have hh : cuspFrequency (3*h)*eisEmbedding (e+b*n)/eisEmbedding b=
@@ -312,8 +238,8 @@ lemma arithmetic_crt_summand (h a b alpha beta : Eis)
   let d:=denominatorRep (a*b) r.1
   let delta:=denominatorRep a (denominatorCRTMap a b r).1.1
   let xi:=GaussianShiftedPartition.representative b (denominatorCRTMap a b r).2.1
-  have hdprimary : lambda^2∣d-1:=lambda_sq_dvd_three.trans r.2.2
-  have hdelta : 3*a∣delta-d:=denominatorRep_mk_congr a d
+  have hdprimary :=lambda_sq_dvd_three.trans r.2.2
+  have hdelta :=denominatorRep_mk_congr a d
   have hxi : b∣xi-d:=by
     apply Ideal.mem_span_singleton.mp
     apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
@@ -349,8 +275,8 @@ theorem arithmeticResidueSum_crt (h a b alpha beta : Eis)
     intro r
     exact arithmetic_crt_summand h a b alpha beta ha hb halevel hbprimary hbez r
   rw [heq,(denominatorCRTEquiv a b hab).tsum_eq (fun r=>f r.1*g r.2)]
-  let : Finite (AdmissibleResidue a):=finite_admissibleResidue a ha
-  let : Finite (Eis ⧸ Ideal.span {b}):=finite_quotient_span hb
+  let :=finite_admissibleResidue a ha
+  let :=finite_quotient_span hb
   let : Fintype (AdmissibleResidue a):=Fintype.ofFinite _
   let : Fintype (CubicUnitResidue b):=Fintype.ofFinite _
   change (∑' r : AdmissibleResidue a × CubicUnitResidue b,f r.1*g r.2)=
@@ -360,8 +286,7 @@ theorem arithmeticResidueSum_crt (h a b alpha beta : Eis)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma residueAdditive_mul (h c t d : Eis) :
@@ -440,7 +365,7 @@ lemma cubicUnitResidueMul_injective (b t : Eis) (ht : IsCoprime b t) :
 
 def cubicUnitResidueMulEquiv (b t : Eis) (hb : b≠0) (ht : IsCoprime b t) :
     CubicUnitResidue b ≃ CubicUnitResidue b := by
-  letI : Finite (Eis ⧸ Ideal.span {b}):=finite_quotient_span hb
+  letI :=finite_quotient_span hb
   exact Equiv.ofBijective (cubicUnitResidueMul b t ht)
     ⟨cubicUnitResidueMul_injective b t ht,
       Finite.surjective_of_injective (cubicUnitResidueMul_injective b t ht)⟩
@@ -494,7 +419,7 @@ theorem arithmeticResidueSum_coprime_product (h a b : Eis)
   obtain ⟨beta,alpha,hbez⟩:=hab
   have hbez' : alpha*b+beta*(3*a)=1:=by linear_combination hbez
   have hab' : IsCoprime (3*a) b:=⟨beta,alpha,hbez⟩
-  have hb3 : (3:Eis)∣b-1:=three_dvd_lambda_sq.trans hbprimary
+  have hb3 :=three_dvd_lambda_sq.trans hbprimary
   have hbt : denominatorCondition a b:=⟨hab'.of_mul_left_right,hb3⟩
   have hA := arithmeticResidueSum_frequency_twist (h*alpha) a b ha halevel hbt
   have hAf : 3*a∣(h*alpha)*b-h:=⟨-h*beta,by linear_combination h*hbez'⟩

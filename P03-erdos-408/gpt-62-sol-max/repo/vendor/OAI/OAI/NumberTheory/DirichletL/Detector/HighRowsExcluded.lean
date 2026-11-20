@@ -26,7 +26,7 @@ theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime
   · intro a b hc
     simp only [Prod.fst_mul,Prod.snd_mul,markedIdealHighSummand,
       highIdealMask_unmarked_mul S hS a b,
-      bareIdealHighSummand_row_mul η u x w z _ _ _ _ _ _ _ _ hc]
+      bareIdealHighSummand_mul η u x w z _ _ _ _ _ _ _ _ hc]
     ring
   · intro a ha
     have hh : bareIdealHighSummand η u x w z a.1.1 a.1.2 a.2.1 a.2.2≠0 :=

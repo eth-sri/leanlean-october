@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 
 @[expose] public section
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open InverseSecondFibers
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
 
 theorem actualSecondChild_label_units {Jo Jn : ℕ} (u v : Eisˣ)
     (x : MarkedSecondSource ι Jo Jn) :

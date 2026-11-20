@@ -145,11 +145,10 @@ theorem abs_comp_sub_prox0_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj
   set γ := presieveExponent c Ch x
   set N := ⌊κ * x + 1⌋₊
   have hx := hsf.one_lt
-  have hxγ : 1 ≤ x ^ γ := Real.one_le_rpow hx.le hsf.gamma_pos.le
+  have hxγ  := Real.one_le_rpow hx.le hsf.gamma_pos.le
   have hSE0 : 0 ≤ endBound q K CN c E₂ x := by
     have := hE.norm_pos
     unfold endBound
-    have : 0 < 1 - q := by linarith
     positivity
   have hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 →
       |endpoint q cw K CN x u v B h| ≤ endBound q K CN c E₂ x :=
@@ -188,16 +187,11 @@ theorem abs_comp_sub_prox0_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj
   have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) := by
     have := cutoff_deriv_bound_nonneg hΦ 1
     push_cast at this
-    have : 0 ≤ κ * x := by positivity
     positivity
   have hL0 : 0 ≤ Real.log x := by linarith [hsf.log_ge]
-  have hL3 : 0 ≤ (N : ℝ) / Real.log x ^ (3 : ℝ) :=
-    div_nonneg (Nat.cast_nonneg _) (Real.rpow_nonneg hL0 _)
   have hcard := card_clusterSets_le K (inertPerCluster K CN x)
   have hNb := hE.norm_pos
   have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := Real.rpow_nonneg hL0 _
-  have hC : 0 ≤ C₂ * (κ * x) * Real.log x ^ (-12 : ℝ) :=
-    mul_nonneg (mul_nonneg hC₂ (by positivity)) hLr
   gcongr
 
 /-- E5 at one scale: `|Prox_j^0 - Prox_j| ≤ j B₅`. -/
@@ -230,7 +224,6 @@ theorem abs_prox0_sub_prox_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ
   have hSE0 : 0 ≤ endBound q K CN c E₂ x := by
     have := hE.norm_pos
     unfold endBound
-    have : 0 < 1 - q := by linarith
     positivity
   have hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 →
       |endpoint q cw K CN x u v B h| ≤ endBound q K CN c E₂ x :=

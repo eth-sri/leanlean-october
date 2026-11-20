@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialKernelBridge
 
 @[expose] public section
@@ -10,11 +11,10 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialRayAttachment
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialArithmetic InverseInitialProfile
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion
+open CompletedGauss UniqueFactorizationMonoid FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT
+open EisensteinSchwartzPoisson InverseInitialOverlap InverseInitialPoissonBridge
+open InverseInitialKernelBridge InverseInitialArithmetic InverseInitialProfile
 local notation "O" => ActualEisensteinCubic.O
 
 def elementCharacter (η : Ideal O →* ℂ) : O →* ℂ where
@@ -57,14 +57,14 @@ theorem selected_mask (F : Finset (Ideal O)) (j : Ideal O) (hj : Admissible j)
 theorem selected_conjugate_row (F : Finset (Ideal O))
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (hcop : ∀ I ∈ F,IsCoprime I j) (η : Ideal O →* ℂ) (H : Ideal O → ℂ) (u : O) :
-    let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+      poolPrimary_maximal F hF
     (∑ I ∈ F,(moebius I : ℂ)*η I*H I*star (idealRowHom u I)) =
       inputConjugateRow (poolPrimary F) (poolPrimary_good F hF) Finset.univ
         (elementCharacter η) (primaryGenerator j) 1 1
         (fun A => if (∏ i ∈ A,i.val)∈F then H (∏ i ∈ A,i.val) else 0) u := by
-  let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) =
       (fun i : primePool F => i.val) := funext (poolPrimary_span F hF)
   dsimp only
@@ -86,9 +86,9 @@ theorem selected_conjugate_row (F : Finset (Ideal O))
 
 section RayModes
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,goodLambda∉Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p goodLambda)
 open FirstPassCubeLabels (primeProductNorm primeProductNorm_union)
 
 def initialTest (σ : Finset ι → ℂ) (V : ℝ → ℂ) (Z D : ℝ) (A : Finset ι) : ℂ :=
@@ -140,7 +140,7 @@ theorem initial_pair_rays
   simpa only [Fintype.sum_prod_type,secondRayCoefficient,secondRayMinus,secondRayPlus,
     initialColumn_eq_secondPre] using he
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 
 theorem initial_product_kernel (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ)
     (G U T E : Finset ι) (hGU : Disjoint G U) (hGT : Disjoint G T)

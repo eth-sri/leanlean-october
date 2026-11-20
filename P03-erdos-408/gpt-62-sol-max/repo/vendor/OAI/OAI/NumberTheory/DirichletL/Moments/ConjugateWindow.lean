@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentConjugateWindow
 open FourierBridge CenteredMomentSmooth

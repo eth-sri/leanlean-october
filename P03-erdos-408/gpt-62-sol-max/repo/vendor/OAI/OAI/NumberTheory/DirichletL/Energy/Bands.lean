@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Energy.Floor
 public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorState
 
@@ -8,18 +10,30 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentEnergyBands
 open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot QuadraticInitialBound
+open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot
+open QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)
 
 lemma length_nonneg (Z X:ℝ)(hZ:1<Z):0≤length Z X:=
   Real.logb_nonneg hZ (le_max_left _ _)
+
+/-- Run an estimate for slot samples with nonnegative widths, capped by the mesh
+and by `Lslot`, and with spectral parameters in the declared bounds. -/
+abbrev WithSlotBounds {α : Type*} (Lslot lo hi : ℝ) (w σ freq : α → ℝ)
+    (height mesh : ℝ) (P : Prop) : Prop :=
+  0 ≤ mesh → (∀ i, 0 ≤ w i) → (∀ i, w i ≤ mesh) → (∀ i, w i ≤ Lslot) →
+  (∀ i, lo ≤ σ i) → (∀ i, σ i ≤ hi) → 0 ≤ height → (∀ i, |freq i| ≤ height) → P
+
+/-- The conductors allowed in the small-modulus band estimates. -/
+abbrev ForSmallInternalConductors (M : Ideal O) (P : Character → Ideal O → Prop) : Prop :=
+  ∀ (η₀ : Character) (Q : Ideal O), Q ≤ M →
+    internalQ Q η₀ ≠ 0 → internalQ Q η₀ ≠ ⊤ → internalQ Q η₀ ≤ Ideal.span {(72 : O)} → P η₀ Q
 
 def ZeroAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
@@ -30,24 +44,36 @@ def ZeroAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ) (low : Bool := false):Prop:=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=internalQ Q η₀→s.width≤Mcap→
   ∀p:Profiles a b,∀X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
     length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
-    energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
-      (fun i=>primePool M H bslot (Z^(w i)))
-      (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
-        HeckePrimeAnnular.annularWeight W (Z^(w i)) (σ i) (v i) I)
-      (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale≤
-      C*diagonalControl s.radial.profile*(p.control S)^2*
-        (1+|t|+height)^degree*Z^(s.width+ε)
+    (fun bound : Prop =>
+      if low then length Z X₁ + length Z X₂ + (∑ i, w i) ≤ 5 * s.width / 6 → bound else bound)
+      (energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
+        (fun i=>primePool M H bslot (Z^(w i)))
+        (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
+          HeckePrimeAnnular.annularWeight W (Z^(w i)) (σ i) (v i) I)
+        (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale≤
+        C*diagonalControl s.radial.profile*(p.control S)^2*
+          (1+|t|+height)^degree*Z^(s.width+ε))
+
+
+/-- Supply the zero-slot and positive-slot child estimates in the same
+normalized profile range. -/
+abbrev WithChildBands (Wslot : ℝ → ℂ) (bslot a b L Lslot lo hi Mcap εchild κ Z : ℝ)
+    (η₀ : Character) (Q : Ideal O) (degree : ℕ) (S : Finset (ℕ × ℕ))
+    (P : ℝ → ℝ → Prop) : Prop :=
+    ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
+    ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
+    PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
+      Mcap εchild κ Z η₀ Q degree S C₁ → P C₀ C₁
 
 theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
     (hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
@@ -63,10 +89,7 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
     ha hb hbΦ hmask hε hLs hbeta hκ
   choose J S C hC hbound using hs
   let S₀:Finset (ℕ×ℕ):=Finset.univ.biUnion S
-  let C₀:ℝ:=1+∑T:Finset α,C T
-  have hC₀:0<C₀:=by
-    have hh:=Finset.sum_nonneg (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hC T).le)
-    dsimp [C₀];linarith
+  obtain ⟨C₀, hC₀, hCcap⟩ := exists_real_majorant 0 C
   refine ⟨∑T:Finset α,J T,S₀,C₀,hC₀,?_⟩
   intro η₀
   have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr (fun T=>hbound T η₀)
@@ -79,15 +102,8 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
   have hsub:S T⊆S₀:=by
     intro x hx
     exact Finset.mem_biUnion.mpr ⟨T,Finset.mem_univ _,hx⟩
-  have hpc:p.control (S T)≤p.control S₀:=by
-    unfold Profiles.control
-    exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono hsub) (p.profile 0))
-      (Seminorm.le_def.mp (Finset.sup_mono hsub) (p.profile 1))
-      (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
-  have hc:C T≤C₀:=by
-    have hh:=Finset.single_le_sum (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hC T).le)
-      (Finset.mem_univ T)
-    dsimp [C₀];linarith
+  have hpc:p.control (S T)≤p.control S₀:= p.control_mono hsub
+  have hc := hCcap T
   have hj:J T≤∑T:Finset α,J T:=Finset.single_le_sum (fun _ _=>Nat.zero_le _) (Finset.mem_univ T)
   have hpow:(1+|t|+height)^(J T)≤(1+|t|+height)^(∑T:Finset α,J T):=
     pow_le_pow_right₀ (by linarith [abs_nonneg t]) hj

@@ -9,11 +9,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.HeckeDyadicControl
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds
+open HeckeReciprocalGrowth
 
 theorem original_disk_control (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
@@ -28,8 +28,8 @@ theorem original_disk_control (e ε : ℝ)
   refine ⟨Dp*Cd,mul_pos hDp hCd,?_⟩
   intro χ hχ a t ha ha' hzero z hz
   obtain ⟨ψ,_,hp,hn,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have hregular : regular ψ = LFunction ψ := regular_eq_nonprincipal ψ hψ
+  have hψ  := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  have hregular  := regular_eq_nonprincipal ψ hψ
   have hzeroψ : ∀ w ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular ψ w ≠ 0 := by
     intro w hw
     rw [hregular]
@@ -48,7 +48,7 @@ theorem original_disk_control (e ε : ℝ)
     linarith
   have hzpos : 0 < z.re := by linarith
   have hdel := hdelete χ.modulus ψ z hzre
-  have hL : LFunction χ z = LFunction ψ z*factors χ.modulus ψ z :=
+  have hL  :=
     LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hzpos
   have hR : HeckeReciprocal.reciprocal χ z =
       (LFunction ψ z)⁻¹*(factors χ.modulus ψ z)⁻¹ := by
@@ -62,7 +62,7 @@ theorem original_disk_control (e ε : ℝ)
     unfold complexity
     have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
     gcongr
-  have hc0 : 0 ≤ complexity ψ t := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ t)
+  have hc0  := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ t)
   have hr0 : 0 ≤ ((radical χ.modulus).absNorm : ℝ) := by positivity
   rw [hL,hR,norm_mul,norm_mul]
   calc

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Detector.PhaseCancellation
 public import OAI.NumberTheory.DirichletL.Detector.Sextic
 
@@ -8,10 +9,10 @@ public import OAI.NumberTheory.DirichletL.Detector.Sextic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss ConcreteTraceCRT
+open ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
@@ -36,7 +37,7 @@ theorem quadraticRayValue_eq_normalizedTraceGauss (p : O) (hp : p ≠ 0)
       ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ 3) := by
   let pp : Unit → O := fun _ => p
   have hpp : ∀ i, pp i ≠ 0 := fun _ => hp
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {pp i})) := by
+  have hcop : OAI.PrincipalFamily.Coprime pp := by
     intro i j hij
     exact (hij (Subsingleton.elim i j)).elim
   have he := canonicalProductGauss_three_eq_rayValue pp hpp hcop (fun _ => hg) (fun _ => hc)
@@ -60,16 +61,13 @@ theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   let χ := actualSextic (Ideal.span {p}) hg
-  have h6 : χ ^ 6 = 1 := (ProbePrimePower.actualSextic_pow_eq_one_iff _ hg hc 6).mpr (by decide)
   have h3 : χ ^ 3 ≠ 1 := fun h => (by decide : ¬6 ∣ 3)
     ((ProbePrimePower.actualSextic_pow_eq_one_iff _ hg hc 3).mp h)
   have hi : (χ ^ 3)⁻¹ = χ ^ 3 := by
     apply inv_eq_of_mul_eq_one_right
     rw [← pow_add]
-    exact h6
-  have hψ : (quotientTrace p hp).IsPrimitive :=
-    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
-  have he := ProbeGauss.normalizedGauss_inverse_pair (χ ^ 3) (quotientTrace p hp) h3 hψ
+    exact ((ProbePrimePower.actualSextic_pow_eq_one_iff _ hg hc 6).mpr (by decide))
+  have he := ProbeGauss.normalizedGauss_inverse_pair (χ ^ 3) (quotientTrace p hp) h3 (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp)
   rw [hi, ← pow_two] at he
   rw [normalizedTraceGauss_eq_normalizedGauss]
   rw [he]

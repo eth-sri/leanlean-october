@@ -45,7 +45,7 @@ theorem integral_norm_sq_sum_ephase {κ : Type*} (X : Finset κ) {β : κ → �
       ephase (θ * β x) * c x * star (ephase (θ * β x') * c x') := fun x x' => by
     have h1 := continuous_ephase_mul (β x)
     have h2 := continuous_ephase_mul (β x')
-    exact (h1.mul continuous_const).mul ((h2.mul continuous_const).star)
+    fun_prop
   apply Complex.ofReal_injective
   rw [← intervalIntegral.integral_ofReal]
   have e1 : ∀ θ : ℝ, ((‖∑ x ∈ X, ephase (θ * β x) * c x‖ ^ 2 : ℝ) : ℂ) =
@@ -108,8 +108,8 @@ private theorem le_sqrt_mul_sqrt_of_amgm {m A B : ℝ} (hA : 0 ≤ A) (hB : 0 �
     have h1 := h (Real.sqrt B / Real.sqrt A) (by positivity)
     have e : (Real.sqrt B / Real.sqrt A * A + B / (Real.sqrt B / Real.sqrt A)) / 2 =
         Real.sqrt A * Real.sqrt B := by
-      have hA' : A = Real.sqrt A ^ 2 := (Real.sq_sqrt hA).symm
-      have hB' : B = Real.sqrt B ^ 2 := (Real.sq_sqrt hB).symm
+      have hA'  := (Real.sq_sqrt hA).symm
+      have hB'  := (Real.sq_sqrt hB).symm
       rw [hA', hB']
       field_simp
       rw [Real.sqrt_sq hsA.le, Real.sqrt_sq hsB.le]
@@ -200,7 +200,7 @@ theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ 
       exact mul_nonneg hε (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
     · have h := (hfib θ hθ hw0).bilinear hε (fT θ) (gT θ)
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      have h1 : ‖Φ θ‖ ≤ ε * a θ * b θ := h
+      have h1 := h
       calc |w θ| * ‖Φ θ‖ ≤ 1 * (ε * a θ * b θ) :=
             mul_le_mul (hw θ) h1 (norm_nonneg _) zero_le_one
         _ = ε * (a θ * b θ) := by ring
@@ -229,26 +229,25 @@ theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ 
   have hA0 : 0 ≤ A := sum_nonneg fun q _ => sq_nonneg _
   have hB0 : 0 ≤ B := sum_nonneg fun q _ => sq_nonneg _
   -- `∫ a b ≤ (t A + B/t)/2` for every `t > 0`
-  have hamgm : ∀ t : ℝ, 0 < t → ∫ θ in lo..lo + 1, a θ * b θ ≤ (t * A + B / t) / 2 := by
-    intro t ht
-    have hle : ∀ θ ∈ Set.Icc lo (lo + 1), a θ * b θ ≤ (t * a θ ^ 2 + b θ ^ 2 / t) / 2 := by
-      intro θ _
-      have : 0 ≤ (t * a θ - b θ) ^ 2 / t := div_nonneg (sq_nonneg _) ht.le
-      have e : (t * a θ - b θ) ^ 2 / t = t * a θ ^ 2 + b θ ^ 2 / t - 2 * (a θ * b θ) := by
-        field_simp
-        ring
-      linarith
-    have hc1 : Continuous fun θ => t * a θ ^ 2 := continuous_const.mul (hac.pow 2)
-    have hc2 : Continuous fun θ => b θ ^ 2 / t := (hbc.pow 2).div_const t
-    have hc3 : Continuous fun θ => (t * a θ ^ 2 + b θ ^ 2 / t) / 2 := (hc1.add hc2).div_const 2
-    refine (intervalIntegral.integral_mono_on (by linarith) ((hac.mul hbc).intervalIntegrable _ _)
-      (hc3.intervalIntegrable _ _) hle).trans (le_of_eq ?_)
-    rw [intervalIntegral.integral_div, intervalIntegral.integral_add
-      (hc1.intervalIntegrable _ _) (hc2.intervalIntegrable _ _), intervalIntegral.integral_div,
-      intervalIntegral.integral_const_mul]
-    simp only [ha, hb]
-    rw [hA, hB]
-  exact le_sqrt_mul_sqrt_of_amgm hA0 hB0 hamgm
+  refine le_sqrt_mul_sqrt_of_amgm hA0 hB0 ?_
+  intro t ht
+  have hle : ∀ θ ∈ Set.Icc lo (lo + 1), a θ * b θ ≤ (t * a θ ^ 2 + b θ ^ 2 / t) / 2 := by
+    intro θ _
+    have : 0 ≤ (t * a θ - b θ) ^ 2 / t := div_nonneg (sq_nonneg _) ht.le
+    have e : (t * a θ - b θ) ^ 2 / t = t * a θ ^ 2 + b θ ^ 2 / t - 2 * (a θ * b θ) := by
+      field_simp
+      ring
+    linarith
+  have hc1 : Continuous fun θ => t * a θ ^ 2 := continuous_const.mul (hac.pow 2)
+  have hc2 : Continuous fun θ => b θ ^ 2 / t := (hbc.pow 2).div_const t
+  have hc3 : Continuous fun θ => (t * a θ ^ 2 + b θ ^ 2 / t) / 2 := (hc1.add hc2).div_const 2
+  refine (intervalIntegral.integral_mono_on (by linarith) ((hac.mul hbc).intervalIntegrable _ _)
+    (hc3.intervalIntegrable _ _) hle).trans (le_of_eq ?_)
+  rw [intervalIntegral.integral_div, intervalIntegral.integral_add
+    (hc1.intervalIntegrable _ _) (hc2.intervalIntegrable _ _), intervalIntegral.integral_div,
+    intervalIntegral.integral_const_mul]
+  simp only [ha, hb]
+  rw [hA, hB]
 
 /-- **The cutoff in Fourier space** (PD `mem:cutoff-fourier`): there is a constant `C` such that a
 kernel `H(p, p') ψ(T/Y) e(θ T)` has norm at most `C (n_min + n_triv/U)/2`, whenever the twisted
@@ -305,7 +304,6 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
     intro p p'
     refine hint (hcont.mul (continuous_const.mul ((continuous_const.mul (hcontξ _)).mul
       continuous_const))) (C * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) fun ξ => ?_
-    have h0 : 0 ≤ ‖g p‖ * ‖H p p'‖ * ‖f p'‖ := by positivity
     refine le_trans (b := C * fourierDecay ξ * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) ?_ (le_of_eq (by ring))
     rw [norm_mul]
     refine mul_le_mul (hdec ξ) (le_of_eq ?_) (norm_nonneg _)
@@ -329,7 +327,7 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
     rw [norm_mul]
     have hN : 0 ≤ NG * NF := mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     by_cases hξ : |ξ| ≤ U
-    · have hB : ‖Bf ξ‖ ≤ nmin * NG * NF := (hmin ξ hξ).bilinear hmin0 f g
+    · have hB  := (hmin ξ hξ).bilinear hmin0 f g
       calc ‖ψh ξ‖ * ‖Bf ξ‖ ≤ (C * fourierDecay ξ) * (nmin * NG * NF) :=
             mul_le_mul (hdec ξ) hB (norm_nonneg _) (mul_nonneg hC0 (hdec0 ξ))
         _ ≤ (C * fourierDecay ξ) * ((nmin + ntriv / U) * NG * NF) := by
@@ -338,7 +336,7 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
             exact mul_le_mul_of_nonneg_right (le_add_of_nonneg_right (by positivity)) hN
         _ = _ := by ring
     · push Not at hξ
-      have hB : ‖Bf ξ‖ ≤ ntriv * NG * NF := (htriv ξ).bilinear htriv0 f g
+      have hB  := (htriv ξ).bilinear htriv0 f g
       calc ‖ψh ξ‖ * ‖Bf ξ‖ ≤ (C / U * fourierDecay ξ) * (ntriv * NG * NF) :=
             mul_le_mul (htail U ξ hU hξ) hB (norm_nonneg _)
               (mul_nonneg (div_nonneg hC0 hU0.le) (hdec0 ξ))

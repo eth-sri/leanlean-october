@@ -127,11 +127,9 @@ theorem length_batchPrimes_le {N : ℕ} {s : ChainState x d Y d₀ u v r B}
     {h : History x d Y d₀ u v r N} (hw : chainWeight q A₀ s h ≠ 0) (j : Fin (N + 1)) :
     (batchPrimes x d (h.1 j).2).length ≤ B := by
   classical
-  have hg : chainGhostCoef q x d Y d₀ u v r B N j (chainVisit s h j) (h.1 j) ≠ 0 :=
-    fun h0 => hw (by rw [chainWeight, prod_eq_zero (mem_univ j) h0, zero_mul])
   have hv : GhostValid (HitsAt x d (chainVisit s h j).1.1) B (chainVisit s h j).2.2.1 (h.1 j) := by
     by_contra hv
-    exact hg (by rw [chainGhostCoef, ghostCoef, ite_eq_right hv])
+    exact (fun h0 => hw (by rw [chainWeight, prod_eq_zero (mem_univ j) h0, zero_mul])) (by rw [chainGhostCoef, ghostCoef, ite_eq_right hv])
   rw [length_batchPrimes]
   refine le_trans (sum_le_sum fun xp _ => ?_) hv.2.2
   exact Nat.le_add_left _ _
@@ -160,68 +158,6 @@ def offsetWeight (M t : ℕ) {N : ℕ} (s : ChainState x d Y d₀ u v r B)
   (∏ j : Fin (N + 1), chainGhostCoef q x d Y d₀ u v r B M (j + t) (chainVisit s h j) (h.1 j)) *
     ∏ j : Fin N, chainEdgeCoef q A₀ x d Y d₀ u v r B M
       (chainGhostOut x d Y d₀ u v r B (chainVisit s h j.castSucc) (h.1 j.castSucc)) (h.2 j)
-
-/-- The visits of a history after its first edge are the visits of its tail. -/
-private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N)
-    (j : Fin (N + 1)) :
-    chainVisit (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) j.succ =
-      chainVisit (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h j := by
-  induction j using Fin.induction with
-  | zero => rfl
-  | succ j ih =>
-    simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
-
-/-- The end of a history is the end of its tail. -/
-private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
-    (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N) :
-    chainEnd (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) =
-      chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by
-  rw [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
-  rfl
-
-/-- A history with no edges is a single ghost choice. -/
-private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
-    ∑ h ∈ histories x d Y d₀ u v r B 0, F h =
-      ∑ c ∈ multBox B ×ˢ multBox B, F (fun _ => c, Fin.elim0) := by
-  refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
-  · intro c hc
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
-    exact ⟨fun _ => hc, fun i => i.elim0⟩
-  · intro h _
-    exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-  · intro c _
-    rfl
-  · intro h _
-    congr 1
-    exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-
-/-- A history with `N + 1` edges is a first ghost choice, a first edge choice, and a history
-with `N` edges. -/
-private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 1) → ℂ) :
-    ∑ h ∈ histories x d Y d₀ u v r B (N + 1), F h =
-      ∑ c ∈ multBox B ×ˢ multBox B, ∑ e ∈ edgeChoices x d Y d₀ u v r,
-        ∑ h ∈ histories x d Y d₀ u v r B N, F (Fin.cons c h.1, Fin.cons e h.2) := by
-  simp only [← sum_product']
-  refine sum_nbij' (fun h => (h.1 0, h.2 0, Fin.tail h.1, Fin.tail h.2))
-    (fun t => (Fin.cons t.1 t.2.2.1, Fin.cons t.2.1 t.2.2.2)) ?_ ?_ ?_ ?_ ?_
-  · intro h hh
-    simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact ⟨hh.1 0, hh.2 0, fun i => hh.1 _, fun i => hh.2 _⟩
-  · intro t ht
-    simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
-    exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
-  · intro h _
-    simp
-  · intro t _
-    simp
-  · intro h _
-    simp
 
 open scoped Classical in
 /-- `distinctFold` is the history sum restricted to births that are distinct and avoid `Bn`. -/

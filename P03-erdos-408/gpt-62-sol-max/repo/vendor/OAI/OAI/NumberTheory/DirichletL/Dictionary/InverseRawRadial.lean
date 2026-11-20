@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRadial
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve
-open ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
+open InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve ConcreteTraceCRT
+open ActualEisensteinCubic
 
 theorem exists_raw_radial_majorant :
     ∃Φ : 𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧

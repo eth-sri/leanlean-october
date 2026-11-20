@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDetectorSource
 public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 
@@ -8,11 +9,11 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary InverseMoment
+open InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
 
 private theorem child_cover (Wref : ℝ→ℂ) (b D : ℝ) (hD : 0<D)
     (hWref : ∀x,Wref x≠0 → x≤b) (s : ℝ) :
@@ -54,7 +55,7 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
   let S:=ConcretePrimeRowBridge.idealsUpTo ⌈D*b⌉₊
   have hcover : ∀I : Ideal O,I≠0 → clippedTest W c θ ((I.absNorm:ℝ)/D)≠0 → I∈S := by
     intro I hI hi
-    have hIp : 0<(I.absNorm:ℝ)/D:=div_pos (by exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))) hD
+    have hIp : 0<(I.absNorm:ℝ)/D:=div_pos (by exact_mod_cast (Ideal.absNorm_pos_of_ne_bot (hI))) hD
     apply finite_source_cover Wref D b hD hWref I hI
     intro hz
     have he:=hagree _ hIp
@@ -81,7 +82,7 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
   by_cases hz : I=0
   · subst I
     simp only [coefficient_zero,zero_mul,mul_zero,integral_zero]
-  have hIp : 0<(I.absNorm:ℝ)/D:=div_pos (by exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hz))) hD
+  have hIp : 0<(I.absNorm:ℝ)/D:=div_pos (by exact_mod_cast (Ideal.absNorm_pos_of_ne_bot (hz))) hD
   rw [clipped_test_fourier W lo hi hlo hs hW Wref c θ _ hc hIp (hagree _ hIp),
     ←integral_const_mul,←integral_const_mul]
   apply integral_congr_ae

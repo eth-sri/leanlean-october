@@ -45,7 +45,7 @@ theorem mem_columns {S:Finset (Ideal O)}{P j c:Ideal O}
     exact quotient_mul_cancel (ne_zero_of_dvd_ne_zero hP.ne_zero hj)
 
 theorem sum_reconstruct (S:Finset (Ideal O)){P j:Ideal O}
-    (_hP:Squarefree P)(_hj:j∣P)(f:Ideal O→ℂ):
+(f:Ideal O→ℂ):
     (∑n∈original S P j,f n)=∑c∈columns S P j,f (j*c) := by
   rw [columns,Finset.sum_image]
   · apply Finset.sum_congr rfl
@@ -72,7 +72,7 @@ theorem polynomial_slice (S:Finset (Ideal O)){P j:Ideal O}
     (∑n∈original S P j,(moebius n:ℂ)*ψ n*a n*W ((n.absNorm:ℝ)/X))=
     ((moebius j:ℂ)*ψ j)*∑c∈columns S P j,(moebius c:ℂ)*ψ c*a (j*c)*
       W ((c.absNorm:ℝ)/(X/(j.absNorm:ℝ))) := by
-  rw [sum_reconstruct S hP hj,Finset.mul_sum]
+  rw [sum_reconstruct S,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro c hc
   rw [coefficient_identity ψ hj ((mem_columns hP hj).mp hc).2.1,cutoff_argument]

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.CubicDyadicDecay
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 noncomputable section
 
@@ -54,14 +54,12 @@ theorem frequencyCost_descendant_of_bound (C ε A δ ξ M N d e : ℝ)
         (N^(3*δ)*M^(-δ) *
           (decayConstant (1/3+δ)*(M*N)^(2/3 : ℝ) +
             decayConstant (ξ+δ)*M^(1-ξ)*N^(2*ξ-1))) := by
-  have hd : 1 ≤ d := he.trans hed
-  have hd0 : 0 < d := by linarith
-  have he0 : 0 < e := by linarith
+  have hd  := he.trans hed
   have hp := (decayConstant_pos (1/3+δ) (by linarith) hα3).le
   have hq := (decayConstant_pos (ξ+δ) (by linarith) hβ3).le
   have henv := poisson_envelope_descendant_le M N e d δ ξ
     (decayConstant (1/3+δ)) (decayConstant (ξ+δ)) hM hN he hed hδ hξ hp hq
-  have hny : (N/d)^ε ≤ N^ε := Real.rpow_le_rpow (by positivity) (div_le_self hN.le hd) hε.le
+  have hny  := Real.rpow_le_rpow (by positivity) (div_le_self hN.le hd) hε.le
   have hfac : 0 ≤ 2*C*IdealCoprimeSieveOperator.supportConstant ε hε*A := by
     have hp := (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le
     positivity
@@ -86,8 +84,8 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
   let Y := M^(1-ξ)*N^(2*ξ-1)
   let S := M+X+Y
   have hX : 0 ≤ X := Real.rpow_nonneg (by positivity) _
-  have hY : 0 ≤ Y := by dsimp [Y]; positivity
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  have hY : 0 ≤ Y := by positivity
+  have hS : 0 ≤ S := by positivity
   have hshape : P*X+Q*Y ≤ (P+Q)*S := by
     dsimp only [S]
     nlinarith [mul_nonneg hP hM0.le, mul_nonneg hQ hM0.le, mul_nonneg hP hY, mul_nonneg hQ hX]

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical BigOperators ContDiff
 open MeasureTheory Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily

@@ -56,7 +56,7 @@ theorem original_completed_puncture_lists (lists : σ→Finset (Ideal Eis))
   apply sum_puncture_lists lists S
   intro p hp
   obtain ⟨i,hi⟩ := hp
-  have hm : m*excludedGenerator S∈(p i).val := (p i).val.mul_mem_left m (excludedGenerator_mem S hi)
+  have hm  := (p i).val.mul_mem_left m (excludedGenerator_mem S hi)
   have hz := markedCompletedT_zero_punctured Ψ (m*excludedGenerator S) f z (p i).val
     (hprime i _ (p i).property) hm W X (fun A => ∏ j,if (p j).val∣A then (1:ℂ) else 0)
     (fun A hA => Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hA))

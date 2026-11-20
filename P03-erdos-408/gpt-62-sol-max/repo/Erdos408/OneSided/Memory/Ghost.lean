@@ -55,6 +55,89 @@ theorem sum_multBox_prod (B : ℕ) (G : X → ℕ → ℕ → ℝ) :
   simp_rw [h₁]
   exact (prod_univ_sum (fun _ => range (B + 1)) fun x d => ∑ n ∈ range (B + 1), G x d n).symm
 
+/-- The tail of the exponential series: `∑_{n ≤ B, n ≥ m} e^n / n! ≤ e^m exp(e)`. -/
+theorem sum_exp_tail_le {B m : ℕ} {e : ℝ} (he : 0 ≤ e) :
+    ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0) ≤ e ^ m * Real.exp e := by
+  set g : ℕ → ℝ := fun k => e ^ k / k.factorial with hg
+  have hg0 : ∀ k, 0 ≤ g k := fun k => by positivity
+  -- each term is at most `e^m g(n - m)`
+  have hpt : ∀ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0) ≤
+      e ^ m * ((if m ≤ n then 1 else 0) * g (n - m)) := by
+    intro n _
+    split_ifs with hmn
+    · obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hmn
+      rw [Nat.add_sub_cancel_left, hg, mul_one, one_mul, pow_add, mul_div_assoc]
+      refine mul_le_mul_of_nonneg_left
+        (div_le_div_of_nonneg_left (by positivity) (by positivity) ?_) (by positivity)
+      exact_mod_cast Nat.factorial_le (Nat.le_add_left k m)
+    · simp
+  -- the shifted terms are a part of the exponential series
+  have hshift : ∑ n ∈ range (B + 1), (if m ≤ n then 1 else 0) * g (n - m) ≤
+      ∑ k ∈ range (B + 1), g k := by
+    simp only [ite_mul, one_mul, zero_mul]
+    rw [← sum_filter, ← sum_image (g := fun n => n - m) (f := g) fun n hn n' hn' h => by
+      rw [mem_coe, mem_filter] at hn hn'
+      simp only at h
+      omega]
+    refine sum_le_sum_of_subset_of_nonneg (fun k hk => ?_) fun k _ _ => hg0 k
+    obtain ⟨n, hn, rfl⟩ := mem_image.1 hk
+    simp only [mem_filter, mem_range] at hn ⊢
+    omega
+  calc ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0)
+      ≤ ∑ n ∈ range (B + 1), e ^ m * ((if m ≤ n then 1 else 0) * g (n - m)) := sum_le_sum hpt
+    _ = e ^ m * ∑ n ∈ range (B + 1), (if m ≤ n then 1 else 0) * g (n - m) := (mul_sum _ _ _).symm
+    _ ≤ e ^ m * ∑ k ∈ range (B + 1), g k := mul_le_mul_of_nonneg_left hshift (by positivity)
+    _ ≤ e ^ m * Real.exp e :=
+        mul_le_mul_of_nonneg_left (Real.sum_le_exp_of_nonneg he _) (by positivity)
+
+omit [Fintype X] [DecidableEq X] in
+/-- The per-particle sum with at least `m` births: the binomial theorem in the first variable
+and the tail of the exponential series in the second. For a particle that cannot hit, only
+`(0, 0)` survives. -/
+theorem sum_binom_exp_req_le {B s m : ℕ} {a b e : ℝ} (P : Prop) [Decidable P] (ha : 0 ≤ a)
+    (hb : 0 ≤ b) (he : 0 ≤ e) (hab : a + b ≤ 1) (hs : s ≤ B) (hP : ¬P → s = 0) :
+    ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1),
+        (if d ≤ s ∧ (P ∨ n = 0) then
+          s.choose d * a ^ d * b ^ (s - d) * (e ^ n / n.factorial) else 0) *
+          (if m ≤ n then 1 else 0) ≤
+      if P then e ^ m * Real.exp e else 1 := by
+  by_cases hP' : P
+  · simp only [hP', true_or, and_true, ite_true]
+    have h₁ : ∀ d ∈ range (B + 1), ∑ n ∈ range (B + 1),
+        (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) * (e ^ n / n.factorial) else 0) *
+          (if m ≤ n then 1 else 0) =
+        (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) else 0) *
+          ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0) := by
+      intro d _
+      rw [mul_sum]
+      refine sum_congr rfl fun n _ => ?_
+      split_ifs <;> ring
+    rw [sum_congr rfl h₁, ← sum_mul]
+    -- the binomial theorem
+    have h₂ : ∑ d ∈ range (B + 1), (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) else 0) =
+        (a + b) ^ s := by
+      rw [← sum_filter, add_pow]
+      have : (range (B + 1)).filter (· ≤ s) = range (s + 1) := by
+        ext d; simp only [mem_filter, mem_range]; omega
+      rw [this]
+      exact sum_congr rfl fun d _ => by ring
+    rw [h₂]
+    calc (a + b) ^ s * ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0)
+        ≤ 1 * (e ^ m * Real.exp e) :=
+          mul_le_mul (pow_le_one₀ (add_nonneg ha hb) hab) (sum_exp_tail_le he)
+            (sum_nonneg fun n _ => mul_nonneg (by positivity) (by split_ifs <;> norm_num))
+            zero_le_one
+      _ = e ^ m * Real.exp e := one_mul _
+  · have hs0 := hP hP'
+    subst s
+    simp only [hP', false_or, nonpos_iff_eq_zero, ite_false]
+    rw [sum_eq_single 0, sum_eq_single 0]
+    · split_ifs <;> norm_num
+    · intro n _ hn; simp [hn]
+    · simp
+    · intro d _ hd; simp [hd]
+    · simp
+
 omit [Fintype X] [DecidableEq X] in
 /-- The per-particle sum: the binomial theorem in the first variable and the exponential
 series in the second. For a particle that cannot hit, only `(0, 0)` survives. -/
@@ -64,38 +147,7 @@ theorem sum_binom_exp_le {B s : ℕ} {a b e : ℝ} (P : Prop) [Decidable P] (ha 
         (if d ≤ s ∧ (P ∨ n = 0) then
           s.choose d * a ^ d * b ^ (s - d) * (e ^ n / n.factorial) else 0) ≤
       if P then Real.exp e else 1 := by
-  by_cases hP' : P
-  · simp only [hP', true_or, and_true, ite_true]
-    have h₁ : ∀ d ∈ range (B + 1), ∑ n ∈ range (B + 1),
-        (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) * (e ^ n / n.factorial) else 0) =
-        (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) else 0) *
-          ∑ n ∈ range (B + 1), e ^ n / n.factorial := by
-      intro d _
-      split_ifs <;> simp [mul_sum]
-    rw [sum_congr rfl h₁, ← sum_mul]
-    have h₂ : ∑ d ∈ range (B + 1), (if d ≤ s then s.choose d * a ^ d * b ^ (s - d) else 0) =
-        (a + b) ^ s := by
-      rw [← sum_filter, add_pow]
-      have : (range (B + 1)).filter (· ≤ s) = range (s + 1) := by
-        ext d; simp only [mem_filter, mem_range]; omega
-      rw [this]
-      exact sum_congr rfl fun d _ => by ring
-    rw [h₂]
-    calc (a + b) ^ s * ∑ n ∈ range (B + 1), e ^ n / n.factorial
-        ≤ 1 * Real.exp e :=
-          mul_le_mul (pow_le_one₀ (add_nonneg ha hb) hab) (Real.sum_le_exp_of_nonneg he _)
-            (sum_nonneg fun n _ => div_nonneg (pow_nonneg he _) (Nat.cast_nonneg _)) zero_le_one
-      _ = Real.exp e := one_mul _
-  · have hs0 := hP hP'
-    subst hs0
-    simp only [hP', false_or, nonpos_iff_eq_zero, ite_false]
-    rw [sum_eq_single 0, sum_eq_single 0]
-    · simp
-    · intro n _ hn; simp [hn]
-    · intro h; simp at h
-    · intro d _ hd
-      exact sum_eq_zero fun n _ => ite_eq_right fun h => hd h.1
-    · intro h; simp at h
+  simpa using sum_binom_exp_req_le (B := B) (m := 0) P ha hb he hab hs hP
 
 /-! ### The ghost operation -/
 
@@ -150,35 +202,41 @@ theorem norm_ghostCoef (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {B : ℕ} 
   rw [ghostCoef, ite_eq_left hc, Complex.norm_real, Real.norm_eq_abs, abs_prod]
   exact prod_congr rfl fun x _ => abs_ghostFactor hν hsurv x _ _ _
 
-/-- The row sums: `∑_c |a(S, c)| v₀^{size(out)} ≤ exp(v₀ ∑_{hits} |cre| ν) v₀^{size(S)}`. -/
-theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
-    (hdel : surv + |del| / v₀ ≤ 1) {B : ℕ} (S : MemState X B) :
+/-- **The ghost rows with required births**: restricted to the choices with at least `m x`
+births of each particle `x`, the weighted row sums are at most
+`∏_{x hit} (|cre x| ν x v₀)^{m x} exp(v₀ ∑_{hits} |cre| ν) v₀^{size(S)}`. -/
+theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
+    (hdel : surv + |del| / v₀ ≤ 1) (m : X → ℕ) {B : ℕ} (S : MemState X B) :
     ∑ c ∈ multBox B ×ˢ multBox B,
-        ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize (ghostOut hit B S c).1 ≤
-      Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1 := by
-  -- the per-particle bound `G`
+        ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
+          v₀ ^ memSize (ghostOut hit B S c).1 ≤
+      (∏ x, if hit x then (|cre x| * ν x * v₀) ^ m x else 1) *
+        (Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1) := by
+  -- the per-particle bound `G`, with the requirement
   set G : X → ℕ → ℕ → ℝ := fun x d n =>
-    if d ≤ hitPart hit S.1 x ∧ (hit x ∨ n = 0) then
+    (if d ≤ hitPart hit S.1 x ∧ (hit x ∨ n = 0) then
       (hitPart hit S.1 x).choose d * (|del| / v₀) ^ d * surv ^ (hitPart hit S.1 x - d) *
         ((|cre x| * ν x * v₀) ^ n / n.factorial)
-    else 0 with hG
+    else 0) * (if m x ≤ n then 1 else 0) with hG
   have hG0 : ∀ x d n, 0 ≤ G x d n := by
     intro x d n
     simp only [hG]
+    refine mul_nonneg ?_ (by split_ifs <;> norm_num)
     split_ifs
     · have := hν x
       positivity
-    · exact le_rfl
+    rfl
   -- each choice is bounded by `v₀^{size(S)} ∏_x G`
   have hterm : ∀ c ∈ multBox B ×ˢ multBox B,
-      ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize (ghostOut hit B S c).1 ≤
+      ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
+          v₀ ^ memSize (ghostOut hit B S c).1 ≤
         v₀ ^ memSize S.1 * ∏ x, G x (c.1 x) (c.2 x) := by
     intro c _
     by_cases hc : GhostValid hit B S.1 c
     · rw [norm_ghostCoef hν hsurv S hc, ghostOut, dite_eq_left hc]
       simp only [memSize]
       rw [← prod_pow_eq_pow_sum, ← prod_pow_eq_pow_sum, ← prod_mul_distrib,
-        ← prod_mul_distrib]
+        ← prod_mul_distrib, ← prod_mul_distrib]
       refine le_of_eq (prod_congr rfl fun x _ => ?_)
       have hd := hc.1 x
       have hn : hit x ∨ c.2 x = 0 := by
@@ -189,41 +247,59 @@ theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
         unfold hitPart; split_ifs <;> omega
       rw [hG]
       dsimp only
-      rw [ite_eq_left ⟨hd, hn⟩]
+      rw [ite_eq_left (show c.1 x ≤ hitPart hit S.1 x ∧ (hit x ∨ c.2 x = 0) from ⟨hd, hn⟩)]
       obtain ⟨r, hr⟩ : ∃ r, S.1 x = r + c.1 x := ⟨S.1 x - c.1 x, by omega⟩
       rw [hr, show r + c.1 x - c.1 x + c.2 x = r + c.2 x by omega, pow_add, pow_add]
-      have hv : v₀ ≠ 0 := hv₀.ne'
       simp only [div_pow, mul_pow]
       field_simp
-    · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul]
+    · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul, zero_mul]
       exact mul_nonneg (pow_nonneg hv₀.le _) (prod_nonneg fun x _ => hG0 x _ _)
   -- sum over the box, factor over particles, and bound each factor
   have hfac : ∀ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G x d n ≤
-      if hit x then Real.exp (|cre x| * ν x * v₀) else 1 := by
+      if hit x then (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1 := by
     intro x
     have hhB : hitPart hit S.1 x ≤ B := by
       have := mem_memStates.1 S.2
       have := le_memSize S.1 x
       unfold hitPart; split_ifs <;> omega
-    refine sum_binom_exp_le (hit x) (div_nonneg (abs_nonneg _) hv₀.le) hsurv
+    refine sum_binom_exp_req_le (hit x) (div_nonneg (abs_nonneg _) hv₀.le) hsurv
       (by have := hν x; positivity) (by linarith) hhB fun hx => ?_
     simp [hitPart, hx]
   calc ∑ c ∈ multBox B ×ˢ multBox B,
-        ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize (ghostOut hit B S c).1
+        ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
+          v₀ ^ memSize (ghostOut hit B S c).1
       ≤ ∑ c ∈ multBox B ×ˢ multBox B, v₀ ^ memSize S.1 * ∏ x, G x (c.1 x) (c.2 x) :=
         sum_le_sum hterm
     _ = v₀ ^ memSize S.1 * ∏ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G x d n := by
         rw [← mul_sum, sum_multBox_prod]
-    _ ≤ v₀ ^ memSize S.1 * ∏ x, (if hit x then Real.exp (|cre x| * ν x * v₀) else 1) :=
+    _ ≤ v₀ ^ memSize S.1 * ∏ x, (if hit x then
+          (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1) :=
         mul_le_mul_of_nonneg_left (prod_le_prod₀
           (fun x _ => sum_nonneg fun d _ => sum_nonneg fun n _ => hG0 x d n)
           (fun x _ => hfac x)) (pow_nonneg hv₀.le _)
-    _ = Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1 := by
-        rw [prod_ite, prod_const_one, mul_one, ← Real.exp_sum, mul_sum, mul_comm]
-        congr 2
-        exact sum_congr rfl fun x _ => by ring
+    _ = (∏ x, if hit x then (|cre x| * ν x * v₀) ^ m x else 1) *
+          (Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1) := by
+        have hsplit : ∀ x, (if hit x then
+            (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1) =
+            (if hit x then (|cre x| * ν x * v₀) ^ m x else 1) *
+              (if hit x then Real.exp (|cre x| * ν x * v₀) else 1) := fun x => by
+          split_ifs <;> ring
+        simp only [hsplit, prod_mul_distrib]
+        rw [prod_ite (fun x => Real.exp (|cre x| * ν x * v₀)), prod_const_one, mul_one,
+          ← Real.exp_sum, mul_sum]
+        have hexp : ∑ x with hit x, |cre x| * ν x * v₀ = ∑ x with hit x, v₀ * (|cre x| * ν x) :=
+          sum_congr rfl fun x _ => by ring
+        rw [hexp]
+        ring
 
-omit [Fintype X] [DecidableEq X] in
+/-- The row sums: `∑_c |a(S, c)| v₀^{size(out)} ≤ exp(v₀ ∑_{hits} |cre| ν) v₀^{size(S)}`. -/
+theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (hv₀ : 0 < v₀)
+    (hdel : surv + |del| / v₀ ≤ 1) {B : ℕ} (S : MemState X B) :
+    ∑ c ∈ multBox B ×ˢ multBox B,
+        ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize (ghostOut hit B S c).1 ≤
+      Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1 := by
+  simpa using ghost_row_req (hit := hit) (cre := cre) hν hsurv hv₀ hdel (fun _ => 0) S
+
 /-- `C(r + d, d) / (r + d)! = 1 / (r! d!)`, in the form used for the column identity. -/
 theorem choose_cast_eq (r d : ℕ) :
     (((r + d).choose d : ℕ) : ℝ) = ((r + d).factorial : ℝ) / (r.factorial * d.factorial) := by
@@ -242,7 +318,6 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     ∑ S : MemState X B, ∑ c ∈ multBox B ×ˢ multBox B with ghostOut hit B S c = T,
         memWeight ν S.1 * ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize S.1 ≤
       Real.exp (v₀ * |del| * ∑ x with hit x, ν x) * (memWeight ν T.1 * v₀ ^ memSize T.1) := by
-  have hv : v₀ ≠ 0 := hv₀.ne'
   -- the per-particle column factor `G'`: `d` deletions, `n` births
   set G' : X → ℕ → ℕ → ℝ := fun x d n =>
     if n ≤ hitPart hit T.1 x ∧ (hit x ∨ d = 0) then
@@ -255,7 +330,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     split_ifs
     · have := hν x
       positivity
-    · exact le_rfl
+    rfl
   set V : (X → ℕ) × (X → ℕ) → ℝ := fun c =>
     memWeight ν T.1 * v₀ ^ memSize T.1 * ∏ x, G' x (c.1 x) (c.2 x) with hV
   have hV0 : ∀ c, 0 ≤ V c := fun c =>
@@ -299,7 +374,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
         have := hc.1 x
         simp only [hitPart, hx, ite_false] at this
         omega
-      have hn0 : c.2 x = 0 := hc.2.1 x hx
+      have hn0  := hc.2.1 x hx
       simp only [hitPart, hx, ite_false] at hT ⊢
       rw [ite_eq_left ⟨by omega, Or.inr hd0⟩, hT, hd0, hn0]
       simp

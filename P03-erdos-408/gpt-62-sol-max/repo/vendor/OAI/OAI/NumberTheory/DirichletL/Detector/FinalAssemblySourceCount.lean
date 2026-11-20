@@ -8,21 +8,16 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
-open ProbeHighRowFamily
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst
+open HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff ProbeHighRowFamily
 
 theorem balanced_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (_hH : RayOrthogonality.globalUnits M≤H) (_S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (_hφ : ContDiff ℝ ∞ φ) (_hφc : HasCompactSupport φ)
-    (_hφp : tsupport φ⊆Ioi 0) (_hφ0 : ∀y,0≤φ y) (_hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (_ha₀ : 0<a₀) (_hab₀ : a₀≤b₀) (_hB₀ : 0<B₀)
-    (_hφs : Function.support φ⊆Ioo a₀ b₀) (_hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (_hεm : 0<εm)
+    {εm : ℝ}
     (Label : Type) [Fintype Label] (N n : ℕ)
     (dmin dmax τ logCost heightCost momentCost binWidth : ℝ)
     (hdmin : 0<dmin) (hdmax : 0<dmax) (hτ : 0<τ)
@@ -42,7 +37,7 @@ theorem balanced_source_count_from_raw_moments
       (B.rows.card:ℝ)≤K*C*Z^(logCost+heightCost+momentCost)*(Z^d)^(Endpoint.balancedRowCount (2*a-1) (1/2-q/(2*a-1))+Δ/4+159*ε+εm+B.mesh+7*ν) := by
   obtain ⟨K₀,hK₀,hcount⟩ := counts.balanced
   obtain ⟨K,hK,hpref⟩ := source_count_prefactor_eventually (Label:=Label)
-    N dmin dmax logCost heightCost momentCost binWidth K₀ hdmin hdmax hl (by linarith) hb
+    N dmin dmax logCost heightCost momentCost binWidth K₀ hdmin hdmax hl (by linarith)
   refine ⟨K,hK,?_⟩
   filter_upwards [eventually_all_rpow_ge hcount dmin hdmin,hpref,
     source_count_frequency_eventually n dmax τ heightCost hdmax hτ hh,
@@ -59,12 +54,7 @@ theorem balanced_source_count_from_raw_moments
 
 theorem high_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (_hH : RayOrthogonality.globalUnits M≤H) (_S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (_hφ : ContDiff ℝ ∞ φ) (_hφc : HasCompactSupport φ)
-    (_hφp : tsupport φ⊆Ioi 0) (_hφ0 : ∀y,0≤φ y) (_hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (_ha₀ : 0<a₀) (_hab₀ : a₀≤b₀) (_hB₀ : 0<B₀)
-    (_hφs : Function.support φ⊆Ioo a₀ b₀) (_hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (_hεm : 0<εm)
+    {εm : ℝ}
     (Label : Type) [Fintype Label] (N n : ℕ)
     (dmin dmax τ logCost heightCost momentCost binWidth : ℝ)
     (hdmin : 0<dmin) (hdmax : 0<dmax) (hτ : 0<τ)
@@ -80,7 +70,7 @@ theorem high_source_count_from_raw_moments
       (B.rows.card:ℝ)≤K*C*Z^(logCost+heightCost+momentCost)*(Z^d)^(1-(2*a-1)+78*ε+εm) := by
   obtain ⟨K₀,hK₀,hcount⟩ := counts.high
   obtain ⟨K,hK,hpref⟩ := source_count_prefactor_eventually (Label:=Label)
-    N dmin dmax logCost heightCost momentCost binWidth K₀ hdmin hdmax hl (by linarith) hb
+    N dmin dmax logCost heightCost momentCost binWidth K₀ hdmin hdmax hl (by linarith)
   refine ⟨K,hK,?_⟩
   filter_upwards [eventually_all_rpow_ge hcount dmin hdmin,hpref,
     source_count_frequency_eventually n dmax τ heightCost hdmax hτ hh,
@@ -97,12 +87,7 @@ theorem high_source_count_from_raw_moments
 
 theorem adaptive_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
-    (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀y,0≤φ y) (hφne : φ≠0)
-    (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
-    (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀y,φ y≤B₀)
-    (εm : ℝ) (hεm : 0<εm)
+    {εm : ℝ}
     (Label : Type) [Fintype Label] (N n : ℕ)
     (dmin dmax τ logCost heightCost momentCost binWidth : ℝ)
     (hdmin : 0<dmin) (hdmax : 0<dmax) (hτ : 0<τ)
@@ -121,10 +106,10 @@ theorem adaptive_source_count_from_raw_moments
         Moments (B.fiber bin j J K hne) Δ (if 2*a-1≤5/6 then counts.cB else counts.cH) (if 2*a-1≤5/6 then counts.kB else counts.kH) (C*Z^momentCost) (Z^heightCost) εm) →
       (B.rows.card:ℝ)≤K*C*Z^(logCost+heightCost+momentCost)*(Z^d)^(adaptiveRowExponent (2*a-1) q Δ ε εm B.mesh ν) := by
   obtain ⟨KB,hKB,hbalanced⟩ := balanced_source_count_from_raw_moments
-    M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
+    M H
     Label N n dmin dmax τ logCost heightCost momentCost binWidth hdmin hdmax hτ hl hh hb counts
   obtain ⟨KH,hKH,hhigh⟩ := high_source_count_from_raw_moments
-    M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
+    M H
     Label N n dmin dmax τ logCost heightCost momentCost binWidth hdmin hdmax hτ hl hh hb counts
   refine ⟨max KB KH,lt_of_lt_of_le hKB (le_max_left _ _),?_⟩
   filter_upwards [hbalanced,hhigh,eventually_ge_atTop (1:ℝ)] with Z hb hh hZ

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Descent.Widths
 public import OAI.NumberTheory.DirichletL.Descent.Basic
 
@@ -10,12 +11,11 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid InverseMoment CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
 
 theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
     (Z M O₀ H Ck CO CH : ℝ) (hZ : 1 < Z) (hCk : 0 < Ck) (hCO : 0 < CO) (hCH : 0 < CH)
@@ -44,12 +44,12 @@ theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
   unfold Real.logb at hl
   linarith
 
-theorem constant_log_error (C η : ℝ) (_hC : 0 < C) (hη : 0 < η) :
+theorem constant_log_error (C η : ℝ) (hη : 0 < η) :
     ∃ Z₀ : ℝ, 1 < Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z → Real.log C / Real.log Z ≤ η := by
   refine ⟨max 2 (Real.exp (Real.log C / η)), lt_of_lt_of_le (by norm_num) (le_max_left _ _), ?_⟩
   intro Z hZ
   have hz : 1 < Z := lt_of_lt_of_le (by norm_num) ((le_max_left _ _).trans hZ)
-  have he : Real.exp (Real.log C / η) ≤ Z := (le_max_right _ _).trans hZ
+  have he  := (le_max_right _ _).trans hZ
   have hl := Real.log_le_log (Real.exp_pos _) he
   rw [Real.log_exp] at hl
   apply (div_le_iff₀ (Real.log_pos hz)).mpr
@@ -201,9 +201,9 @@ theorem width_error_threshold (B : Ideal O) (hB : B ≠ 0)
       Real.log (CH * Ck * CO) / Real.log Z ≤ η ∧
       Real.log (widthConstant B Ck CO CH Cf) / Real.log Z ≤ η := by
   have hb := actual_ideal_norm_pos B hB
-  obtain ⟨a, ha, h₁⟩ := constant_log_error (CH * Ck * CO) η (by positivity) hη
+  obtain ⟨a, ha, h₁⟩ := constant_log_error (CH * Ck * CO) η hη
   obtain ⟨b, hb', h₂⟩ := constant_log_error (widthConstant B Ck CO CH Cf) η
-    (by unfold widthConstant; positivity) hη
+     hη
   exact ⟨max a b, ha.trans_le (le_max_left _ _), fun Z hZ =>
     ⟨h₁ Z ((le_max_left _ _).trans hZ), h₂ Z ((le_max_right _ _).trans hZ)⟩⟩
 
@@ -321,7 +321,7 @@ def ramifiedWidth (Z : ℝ) (m : ℕ) : ℝ := ((m : ℝ) - 4) * Real.logb Z 3
 
 theorem ramified_width_threshold (η : ℝ) (hη : 0 < η) :
     ∃ Z₀ : ℝ, 1 < Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z → ∀ m : ℕ, -η ≤ ramifiedWidth Z m := by
-  obtain ⟨Z₀, hZ₀, hlog⟩ := constant_log_error ((3 : ℝ) ^ (4 : ℕ)) η (by norm_num) hη
+  obtain ⟨Z₀, hZ₀, hlog⟩ := constant_log_error ((3 : ℝ) ^ (4 : ℕ)) η hη
   refine ⟨Z₀, hZ₀, ?_⟩
   intro Z hZ m
   have hz := hZ₀.trans_le hZ
@@ -329,7 +329,6 @@ theorem ramified_width_threshold (η : ℝ) (hη : 0 < η) :
   change Real.logb Z ((3 : ℝ) ^ (4 : ℕ)) ≤ η at hl
   rw [Real.logb_pow] at hl
   have hn : 0 ≤ Real.logb Z 3 := Real.logb_nonneg hz (by norm_num)
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   unfold ramifiedWidth
   norm_num at hl
   nlinarith

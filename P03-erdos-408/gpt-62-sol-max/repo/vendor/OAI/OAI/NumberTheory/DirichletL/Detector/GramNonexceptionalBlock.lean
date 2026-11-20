@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPeriodicPoisson
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge
+open UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "Joint" => ProbeGramPeriodicPoisson.Joint
@@ -43,10 +43,10 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       (normalizedFactors (Ideal.span {r})).count p := by
     rw [hk]
     exact good_factor_count p hgp hchar u a b r hr
-  have heR : ¬6∣(normalizedFactors (Ideal.span {r})).count p := hcount ▸ he
+  have heR  := hcount ▸ he
   obtain ⟨M,hM,hMN,hres⟩ := exists_nonexceptional_residue S hS σ C k hC hk0 u a b r hr hk
     P hg c hc hfac p hp0 hgp hchar hfixed hcommon heR
-  let : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient hM
+  let  := Ring.HasFiniteQuotients.finiteQuotient hM
   let : Fintype (O⧸M) := Fintype.ofFinite _
   obtain ⟨f,hf,hfn,hfm⟩ := hres d
   have hmean : (∑'v : (O⧸M)×(O⧸M),f v.1 v.2)=0 := by

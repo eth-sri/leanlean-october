@@ -16,7 +16,7 @@ theorem norm_sq_le_anchor_integral (F F' : ℝ→ℂ)
     (hF : Continuous F) (hF' : Continuous F')
     (hd : ∀ x, HasDerivAt F (F' x) x) {a b x : ℝ} (hx : x∈Icc a b) :
     ‖F x‖^2≤‖F a‖^2+∫ t in a..b, (‖F t‖^2+‖F' t‖^2) := by
-  let G : ℝ→ℝ := fun t => ‖F t‖^2+‖F' t‖^2
+  let G  := fun t => ‖F t‖^2+‖F' t‖^2
   have hG : Continuous G := (hF.norm.pow 2).add (hF'.norm.pow 2)
   have hh := intervalIntegral.sub_le_integral_of_hasDeriv_right_of_le hx.1
     (hF.norm.pow 2).continuousOn
@@ -31,7 +31,6 @@ theorem norm_sq_le_anchor_integral (F F' : ℝ→ℂ)
   have hm := intervalIntegral.integral_mono_interval (μ:=volume) (le_refl a) hx.1 hx.2
     (Filter.Eventually.of_forall (fun t => show 0≤G t by dsimp [G]; positivity))
     (hG.intervalIntegrable a b)
-  change ‖F x‖^2≤‖F a‖^2+∫ t in a..b, G t
   linarith
 
 theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
@@ -79,8 +78,7 @@ theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
   have cy (j k : Fin 2) (i : ι) (hi : i∈rows) (x : ℝ) :
       Continuous (F j k i x) :=
     (hcont j k i hi).comp (continuous_const.prodMk continuous_id)
-  have he (j : Fin 2) (x : ℝ) (hx : x∈Icc a b) :
-      ∑ i∈rows, ‖F j 0 i x (py i)‖^2≤(1+2*(d-c))*E :=
+  have he (j : Fin 2) (x : ℝ) (hx : x∈Icc a b)  :=
     rowwise_energy rows (fun i => F j 0 i x) (fun i => F j 1 i x)
       (fun i hi => cy j 0 i hi x) (fun i hi => cy j 1 i hi x)
       (fun i hi y => hdy j i hi x y) c d E hcd py hpy

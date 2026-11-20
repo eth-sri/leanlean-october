@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.ActualSelected
 
 @[expose] public section
@@ -19,7 +20,7 @@ def frozenInactiveWeight (J F Q Q₀ : Ideal Eis) (A : Finset (FreeReflection.po
 lemma one_sub_inverse_norm_le_one (I : Ideal Eis) (hI : I≠0) :
     ‖1-(Ideal.absNorm I:ℂ)⁻¹‖≤1 := by
   have hn : (1:ℝ)≤Ideal.absNorm I := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
   have hi : (Ideal.absNorm I:ℝ)⁻¹≤1 := inv_le_one_of_one_le₀ hn
   have he : (1-(Ideal.absNorm I:ℂ)⁻¹)=((1-(Ideal.absNorm I:ℝ)⁻¹):ℝ) := by push_cast;rfl
   rw [he,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by linarith)]

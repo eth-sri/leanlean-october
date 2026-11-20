@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 @[expose] public section
@@ -8,16 +10,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialRetainedSupport
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialKernelBridge SecondPassArithmetic
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss InverseInitialArithmetic
+open InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialKernelBridge SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p goodLambda)
 
 theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
     (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
@@ -43,13 +44,12 @@ theorem live_whole_columns (hpr:∀i,goodLambda^2∣p i-1)
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₂ h₂)⟩
 
 include hp in
-omit [DecidableEq ι] [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalFamily.Maximal p] in
 theorem ideal_coordinates_one (x:Point ι):
     1≤coordinates p x 0 ∧ 1≤coordinates p x 1 ∧ 1≤coordinates p x 2 ∧
     1≤coordinates p x 4 ∧ 1≤coordinates p x 5 := by
   have hi (S:Finset ι):(1:ℝ)≤((sourceIdeal p S).absNorm:ℝ):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp S))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (sourceIdeal_ne_zero p hp S)
   exact ⟨hi _,hi _,hi _,hi _,hi _⟩
 
 theorem live_ideal_caps (hpr:∀i,goodLambda^2∣p i-1)
@@ -73,7 +73,7 @@ theorem live_ideal_caps (hpr:∀i,goodLambda^2∣p i-1)
   have hdiv:coordinates p x 1≤coordinates p x 0:=by
     change ((sourceIdeal p x.divisor).absNorm:ℝ)≤(sourceIdeal p x.common).absNorm
     exact_mod_cast Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp _)))
+      (Ideal.absNorm_pos_of_ne_bot (sourceIdeal_ne_zero p hp _))
       (map_dvd Ideal.absNorm (sourceIdeal_dvd p _ _ hx.divisor_subset))
   exact ⟨hcp.trans hbig,hdiv.trans (hcp.trans hbig),hsp.trans hbig,
     (le_mul_of_one_le_left (by linarith) hpair).trans h₁,

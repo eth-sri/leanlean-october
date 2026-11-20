@@ -1,6 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedAllIntegral
+public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingPhysical
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 
 @[expose] public section
@@ -28,7 +33,7 @@ theorem physical_block_rpow_budget
       Z^((secondCount ell R j t g θ+11*η/2)*(1+εmass)) *
       Z^(2*(max 0 (secondFormalColumn r A B t g v)+secondFormalLabel B θ v j)+ε) ≤
     Z^(r+3*ell+V+40*η+τ+π+ε) := by
-  have hZpos : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZpos  := lt_of_lt_of_le zero_lt_one hZ
   rw [second_physical_scalar Z hZpos]
   have hexp : Real.exp ((9/2:ℝ)*(η*Real.log Z))=Z^((9/2:ℝ)*η) := by
     rw [Real.rpow_def_of_pos hZpos]
@@ -52,7 +57,6 @@ theorem physical_block_scalar_budget
       Z^((secondCount ell R j t g θ+11*η/2)*(1+εmass)) *
       Z^(2*(max 0 (secondFormalColumn r A B t g v)+secondFormalLabel B θ v j)+ε) ≤
     C*‖ray‖*Z^(r+3*ell+V+40*η+τ+π+ε) := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
   rw [second_source_scalar_norm _ _ _ _ (by positivity) (by positivity) (by positivity) (by positivity)]
   have hh := mul_le_mul_of_nonneg_left
     (physical_block_rpow_budget Z hZ M r ell V δ A B R j t g θ v η τ π ε εmass hclip hεmass)

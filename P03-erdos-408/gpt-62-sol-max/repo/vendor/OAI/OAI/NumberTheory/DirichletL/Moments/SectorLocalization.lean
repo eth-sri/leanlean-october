@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.Tail
 public import OAI.NumberTheory.DirichletL.Moments.DescentLedger
 
@@ -39,7 +40,7 @@ theorem annulus_zero_high (x : ℝ) (hx : 1 ≤ x) : annulus x=0 := by
 
 theorem annulus_bounds (x : ℝ) : 0 ≤ annulus x ∧ annulus x ≤ 1 := by
   by_cases hx : x ≤ 1/4
-  · rw [annulus_zero_low x hx]; constructor <;> norm_num
+  · rw [annulus_zero_low x hx]; norm_num
   have hm := cutoff_antitone (show x ≤ 2*x by linarith)
   have h₁ := cutoff_bounds x
   have h₂ := cutoff_bounds (2*x)
@@ -75,7 +76,7 @@ theorem dyadicWeight_zero_low (n : ℤ) (q : ℝ) (hq : q ≤ dyadicScale n/4) :
 theorem dyadicWeight_zero_high (n : ℤ) (q : ℝ) (hq : dyadicScale n ≤ q) :
     dyadicWeight n q=0 := by
   apply annulus_zero_high
-  exact (le_div_iff₀ (dyadicScale_pos n)).mpr (by simpa using hq)
+  exact (le_div_iff₀ (dyadicScale_pos n)).mpr (by simp_all)
 
 theorem dyadicWeight_support (n : ℤ) :
     Function.support (dyadicWeight n) ⊆ Set.Ioo (dyadicScale n/4) (dyadicScale n) := by
@@ -112,9 +113,9 @@ theorem dyadicWeight_finite (q : ℝ) : (Function.support (fun n => dyadicWeight
     intro n hn
     by_contra hh
     exact hn (dyadicWeight_outside_pair q k hlo hhi n hh)
-  · have hz : ∀ n,dyadicWeight n q=0 := fun n =>
+  · have hz  := fun n =>
       dyadicWeight_zero_low n q ((le_of_not_gt hq).trans (div_nonneg (dyadicScale_pos n).le (by norm_num)))
-    simp [hz]
+    simp_all
 
 theorem dyadicWeight_summable (q : ℝ) : Summable (fun n => dyadicWeight n q) :=
   summable_of_hasFiniteSupport (dyadicWeight_finite q)
@@ -131,7 +132,7 @@ theorem dyadicWeight_partition (q : ℝ) (hq : 0 < q) : ∑' n,dyadicWeight n q=
     rw [dyadicScale_add]; field_simp
   have h₂ : 2*(q/dyadicScale (k+2))=q/dyadicScale (k+1) := by
     rw [show k+2=(k+1)+1 by omega,dyadicScale_add]; field_simp
-  rw [h₁,h₂,cutoff_zero _ ((le_div_iff₀ (dyadicScale_pos k)).mpr (by simpa using hlo))]
+  rw [h₁,h₂,cutoff_zero _ ((le_div_iff₀ (dyadicScale_pos k)).mpr (by simp_all))]
   have hs : q/dyadicScale (k+2) ≤ 1/2 := by
     apply (div_le_iff₀ (dyadicScale_pos (k+2))).mpr
     rw [show k+2=(k+1)+1 by omega,dyadicScale_add]
@@ -179,7 +180,7 @@ theorem retainedWeight_nonneg (R q : ℝ) : 0 ≤ retainedWeight R q := by
   intro n
   split_ifs
   · exact (dyadicWeight_bounds n q).1
-  · exact le_rfl
+  rfl
 
 theorem discardedWeight_nonneg (R q : ℝ) : 0 ≤ discardedWeight R q := by
   apply tsum_nonneg
@@ -290,13 +291,11 @@ theorem normValue_mul (v h : O) : normValue (v*h)=normValue v*normValue h := by
 
 theorem normValue_pos (h : O) (hh : h ≠ 0) : 0 < normValue h := by
   unfold normValue
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hh))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hh)
 
 theorem normValue_ge_one (h : O) (hh : h ≠ 0) : 1 ≤ normValue h := by
   unfold normValue
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hh))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hh)
 
 theorem retained_norm_enclosure (R : ℝ) (v h : O) (hv : v ≠ 0)
     (hne : retainedWeight R (normValue (v*h)) ≠ 0) : normValue h ≤ 4*R/normValue v := by
@@ -317,7 +316,7 @@ theorem frequencyLoss_nonneg (Z Csec ξ : ℝ) (hZ : 1 < Z) (hC : 1 ≤ Csec) (h
 
 theorem source_enclosure_power (Z Csec L ξ Nv : ℝ) (hZ : 1 < Z) (hC : 0 < Csec) (hNv : 0 < Nv) :
     4*(Csec*Z^L)*Z^(ξ/2)/Nv=Z^(L-Real.logb Z Nv+frequencyLoss Z Csec ξ) := by
-  have hz : 0 < Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   rw [frequencyLoss,show L-Real.logb Z Nv+(ξ/2+Real.logb Z (4*Csec))=
     (L+ξ/2)+Real.logb Z (4*Csec)-Real.logb Z Nv by ring,
     Real.rpow_sub hz,Real.rpow_add hz,Real.rpow_add hz,
@@ -380,7 +379,7 @@ theorem actual_discarded_lattice_tail (A : ℕ) :
   obtain ⟨s,C,hC,ht⟩ := CenteredMomentTail.uniform_sector_lattice_tail A
   refine ⟨s,C,hC,?_⟩
   intro W Tsec Z Csec H ξ K B hT hZ hCsec hthreshold hK hB c hc
-  let D : Set O := {h | discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0}
+  let D  := {h | discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0}
   have hb := ht W D (kernelReference Tsec H) (Z^(ξ/4)) B
     (kernelReference_pos Tsec H hT) (Real.rpow_nonneg (zero_lt_one.trans hZ).le _) hB
     (fun h hh => by

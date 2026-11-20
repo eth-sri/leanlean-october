@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRows
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -58,7 +59,7 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
   let N : ℝ := P.val.absNorm
   have hN : 0<N := by
     dsimp [N]
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (P.property.ne_zero)
   have hc : 1<(2-σ)+σ := by linarith
   have he (t : ℝ) : integrand χ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I)=
       integrand ψ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I)-

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.RetainedReflection
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedNormalization
 
@@ -8,15 +9,12 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentOriginalReflectionApproximation
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
-open CenteredMomentRetainedReflection CenteredMomentTwistedReflection
-open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
+open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentSectorLocalization
+open CenteredMomentReflectedTruncation CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
+open CenteredMomentRetainedReflection CenteredMomentTwistedReflection EisensteinSchwartzPoisson
 
 def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ) : ℂ :=
   if hY : 0<Y then ∑n∈retainedAnnuli R Y hY,(Real.sqrt (dyadicScale n):ℂ)*
@@ -38,8 +36,7 @@ def retainedOriginal (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) : ℂ :=
 lemma radical_le_original (χ ψ : Character)
     (hcap : ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm) :
     (Ideal.absNorm (redundantIdeal χ.modulus ψ.modulus):ℝ)≤(χ.modulus.absNorm:ℝ) := by
-  have hp : 1≤ψ.modulus.absNorm := Nat.one_le_iff_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+  have hp : 1≤ψ.modulus.absNorm := Ideal.one_le_absNorm_of_ne_bot (ψ.modulus_ne_bot)
   exact_mod_cast (show (redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm by
     nlinarith)
 

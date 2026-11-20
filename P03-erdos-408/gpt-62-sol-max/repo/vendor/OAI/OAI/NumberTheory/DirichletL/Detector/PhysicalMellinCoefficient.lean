@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficientScaling
 public import OAI.NumberTheory.DirichletL.Detector.MellinPowers
 
@@ -39,7 +40,7 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
       bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I hI) A s hA H *
       (fullIdealWeight (t+1-z+1/2) I*fullIdealWeight (1+3*(t+1-z)) J) := by
   dsimp only
-  have hA : Supported (Ideal.span {completedIndex I J}) := supported_completed _ _ ((supported_span_primaryGenerator_iff I).mpr hI)
+  have hA  := supported_completed _ _ ((supported_span_primaryGenerator_iff I).mpr hI)
     ((supported_span_primaryGenerator_iff J).mpr hJ)
   rw [physical_spectral_coefficient_scale S D I J η (calibrationForSet S hS) s hs hI hJ hsf
     hcop.of_mul_right_left X hX t H]
@@ -54,9 +55,9 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
   rw [hr]
   rw [completedIndex_norm I J hI hJ]
   have hi : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI.1)
   have hj : (0:ℝ)<Ideal.absNorm J := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ.1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ.1)
   have hn := sourceNormPower_identity (Ideal.absNorm I) (Ideal.absNorm J) (elementNorm H) X
     hi hj (elementNorm_pos H hH) hX t z
   rw [show -(t+1-z)-1/2= -(t+1-z+1/2) by ring] at hn

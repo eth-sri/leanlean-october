@@ -29,7 +29,6 @@ termination_by n
 decreasing_by
   have hp := Nat.prime_of_mem_primeFactors p.2
   have hle := Nat.le_of_mem_primeFactors p.2
-  have := hp.two_le
   omega
 
 /-- Unfolding `F` at `n ≥ 2`. -/
@@ -110,7 +109,7 @@ private theorem induction_on_primes_mul {P : ℕ → Prop} (h1 : P 1)
     have hle := Nat.minFac_le (show 0 < n by omega)
     have hdvd := Nat.minFac_dvd n
     have hq : n / n.minFac < n := Nat.div_lt_self (by omega) hmin.one_lt
-    have hq0 : n / n.minFac ≠ 0 := (Nat.div_pos hle hmin.pos).ne'
+    have hq0  := (Nat.div_pos hle hmin.pos).ne'
     rw [← Nat.mul_div_cancel' hdvd]
     exact hmul _ _ hmin.ne_zero hq0
       (hp _ hmin fun m hm hlt => ih m (by omega) hm) (ih _ hq hq0)
@@ -119,7 +118,7 @@ private theorem induction_on_primes_mul {P : ℕ → Prop} (h1 : P 1)
 theorem log_div_log_three_le_F {n : ℕ} (hn : n ≠ 0) : Real.log n / Real.log 3 ≤ F n := by
   have h3 : 0 < Real.log 3 := Real.log_pos (by norm_num)
   refine induction_on_primes_mul (P := fun n => Real.log n / Real.log 3 ≤ F n)
-    (by simp [F_one]) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
+    (by simp) (fun p hp ih => ?_) (fun a b ha hb iha ihb => ?_) n hn
   · by_cases h2 : p = 2
     · subst h2
       simp only [F_two, Nat.cast_one, Nat.cast_ofNat]
@@ -183,7 +182,7 @@ private theorem F_totient_add {n : ℕ} (hn : n ≠ 0) :
       simp only [zero_add, Nat.add_sub_cancel]
       ring
   | zero => exact absurd rfl hn
-  | one => simp [F_one]
+  | one => rfl
   | coprime a b ha hb hab iha ihb =>
     have ha0 : a ≠ 0 := by omega
     have hb0 : b ≠ 0 := by omega
@@ -211,8 +210,7 @@ private theorem iterate_totient_eq_one_iff_of_even {n : ℕ} (hn : 2 ≤ n) (he 
   | zero =>
     obtain ⟨m, rfl⟩ := he
     rw [← two_mul, F_mul two_ne_zero (by omega), F_two]
-    simp only [Function.iterate_zero, id_eq]
-    omega
+    simp
   | succ k ih =>
     have hF := F_totient_add (show n ≠ 0 by omega)
     rw [ite_eq_left (even_iff_two_dvd.1 he)] at hF

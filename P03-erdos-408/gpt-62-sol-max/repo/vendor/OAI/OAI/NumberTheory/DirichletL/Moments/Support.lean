@@ -73,7 +73,7 @@ theorem extracted_residual_coprime (I J : Ideal O) (S : Finset (Ideal O)) :
   rw [supportExtract_support, supportResidual_support]
   exact Finset.disjoint_left.mpr (by
     intro P hP hQ
-    exact (Finset.mem_sdiff.mp hQ).2 (Finset.mem_inter.mp hP).2)
+    simp_all)
 
 theorem common_support_residual_coprime (I J : Ideal O) :
     let S := primeSupport I ∩ primeSupport J
@@ -84,8 +84,7 @@ theorem common_support_residual_coprime (I J : Ideal O) :
   rw [supportResidual_support, supportResidual_support]
   apply Finset.disjoint_left.mpr
   intro P hP hQ
-  exact (Finset.mem_sdiff.mp hP).2
-    (Finset.mem_inter.mpr ⟨(Finset.mem_sdiff.mp hP).1, (Finset.mem_sdiff.mp hQ).1⟩)
+  simp_all
 
 theorem supportExtract_mul (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0)
     (S : Finset (Ideal O)) :
@@ -101,7 +100,7 @@ theorem supportExtract_prime (P : Ideal O) (hP : Prime P) (S : Finset (Ideal O))
     supportExtract P S = if P ∈ S then P else 1 := by
   have hf : normalizedFactors P = {P} := by
     simpa using (normalizedFactors_prod_of_prime (m := ({P} : Multiset (Ideal O)))
-      (by intro Q hQ; simpa only [Multiset.mem_singleton.mp hQ] using hP))
+      (by simp_all))
   simp only [supportExtract, hf, Multiset.filter_singleton]
   split_ifs <;> simp
 

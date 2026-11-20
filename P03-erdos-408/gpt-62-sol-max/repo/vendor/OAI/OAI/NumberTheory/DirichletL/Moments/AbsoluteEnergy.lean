@@ -8,20 +8,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAbsoluteEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion
-open CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
+open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CenteredMomentHeckeExpansion
+open CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass
+open CenteredMomentAddedZeroUniform ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)
     (I : Ideal O) : ‖rowWeight η m A z t I‖ ≤ 1 := by
   by_cases hI : I=0
   · subst I
-    rw [map_zero,norm_zero]
     norm_num
   · exact CenteredMomentFirstTailAggregate.rowWeight_norm_le_one η m A z t I hI
 
@@ -34,9 +32,9 @@ theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K
     (∑' z : O, ‖Φ (‖eisEmbedding z‖^2/K)‖) ≤ diagonalControl Φ*max 1 K := by
   by_cases hlarge : 1≤K
   · simpa only [max_eq_right hlarge] using radial_weight_lattice_bound Φ K hlarge
-  have hsmall : K≤1 := (not_le.mp hlarge).le
+  have hsmall  := (not_le.mp hlarge).le
   let B := 4*(Finset.Iic (2,0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ
-  have hB : 0≤B := by dsimp [B]; positivity
+  have hB : 0≤B := by positivity
   have hp (z : O) : ‖Φ (‖eisEmbedding z‖^2/K)‖ ≤
       B*((1+1*‖eisEmbedding z‖^2)^2)⁻¹ := by
     have hq : 0≤‖eisEmbedding z‖^2/K := div_nonneg (sq_nonneg _) hK.le

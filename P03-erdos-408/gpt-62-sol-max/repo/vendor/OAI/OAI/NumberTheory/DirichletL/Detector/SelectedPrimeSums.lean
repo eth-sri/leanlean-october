@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedActual
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 
@@ -21,7 +22,7 @@ lemma finite_ideal_count (S : Finset (Ideal O)) (H : ℝ) (hH : 0≤H)
       apply Finset.eq_empty_iff_forall_notMem.mpr
       intro I hI
       have hp : (1:ℝ)≤Ideal.absNorm I := by
-        exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hS I hI))
+        exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hS I hI)
       have := hN I hI
       linarith
     simp only [he,Finset.card_empty,Nat.cast_zero]
@@ -45,7 +46,7 @@ lemma annularPower_nonneg (a b r : ℝ) (ha : 0<a) : 0≤annularPower a b r :=
 
 lemma annular_rpow (a b P q r : ℝ) (ha : 0<a) (hb : 0<b) (hP : 0<P)
     (hqa : a*P≤q) (hqb : q≤b*P) : q^r≤annularPower a b r*P^r := by
-  have hq : 0<q := (mul_pos ha hP).trans_le hqa
+  have hq  := (mul_pos ha hP).trans_le hqa
   by_cases hr : 0≤r
   · calc
       q^r≤(b*P)^r := Real.rpow_le_rpow hq.le hqb hr
@@ -72,9 +73,9 @@ theorem annular_slot_majorant (eps a b r d : ℝ) (heps : 0<eps)
   intro U hU P hP S hS hSP
   have hP0 : 0<P := by linarith
   have hU1 : (1:ℝ)≤Ideal.absNorm U := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hU)
-  have hUpow : 1≤(Ideal.absNorm U:ℝ)^eps := Real.one_le_rpow hU1 heps.le
-  have hq (I : Ideal O) (hI : I∈S) : 0<(Ideal.absNorm I:ℝ) :=
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hU)
+  have hUpow  := Real.one_le_rpow hU1 heps.le
+  have hq (I : Ideal O) (hI : I∈S)  :=
     (mul_pos ha hP0).trans_le (hSP I hI).1
   have hc := finite_ideal_count S (b*P) (by positivity) hS (fun I hI=>(hSP I hI).2)
   have heP : P*P^(r-1)=P^r := by
@@ -110,7 +111,7 @@ theorem annular_slot_majorant (eps a b r d : ℝ) (heps : 0<eps)
     split_ifs
     · rw [←Real.rpow_add (hq I hI)]
       exact le_add_of_nonneg_left (by positivity)
-    · simp only [mul_one,add_zero,le_refl]
+    simp
   apply hsum.trans
   have hup : 128*b*A*P^r≤128*b*A*(Ideal.absNorm U:ℝ)^eps*P^r := by
     nlinarith [mul_nonneg (show 0≤128*b*A*P^r by positivity) (show 0≤(Ideal.absNorm U:ℝ)^eps-1 by linarith)]
@@ -147,7 +148,7 @@ theorem weighted_slot_bound (eps a b r d B K : ℝ) (heps : 0<eps)
   have hpoint (I : Ideal O) (hI : I∈T) :
       ‖W ((Ideal.absNorm I:ℝ)/P)*(Ideal.absNorm I:ℂ)^(z-1)*G I‖≤
         (B*K)*((Ideal.absNorm I:ℝ)^(r-1)*(if I∣U then (Ideal.absNorm I:ℝ)^d else 1)) := by
-    have hN : (0:ℝ)<Ideal.absNorm I := (mul_pos ha hP0).trans_le (hbounds I hI).1
+    have hN  := (mul_pos ha hP0).trans_le (hbounds I hI).1
     have hc : ‖(Ideal.absNorm I:ℂ)^(z-1)‖=(Ideal.absNorm I:ℝ)^(r-1) := by
       simpa only [Complex.ofReal_natCast,Complex.sub_re,Complex.one_re,hz] using
         Complex.norm_cpow_eq_rpow_re_of_pos hN (z-1)

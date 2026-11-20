@@ -54,7 +54,7 @@ def activeExponent (C D : Ideal O) (U : Finset (CommonIndex C D))
 
 theorem activeExponent_pos (C D : Ideal O) (U : Finset (CommonIndex C D))
     (P : ActiveIndex C D U) : 0<activeExponent C D U P := by
-  have hp : ¬6∣fixedExponent C D U P.val := (Finset.mem_filter.mp P.property).2
+  have hp  := (Finset.mem_filter.mp P.property).2
   exact Nat.pos_of_ne_zero (fun h=>hp (Nat.dvd_of_mod_eq_zero h))
 
 theorem reducedNumerator_active_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :

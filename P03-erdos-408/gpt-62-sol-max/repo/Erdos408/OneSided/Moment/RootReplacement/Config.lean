@@ -127,14 +127,6 @@ theorem confInd_mem_Icc (x : ℝ) (d : Data K) (Y d₀ : ℝ) (ω : Conf x d Y d
     prod_le_one₀ (fun j _ => (visitInd_mem_Icc x d Y d₀ u v r (ω j)).1)
       fun j _ => (visitInd_mem_Icc x d Y d₀ u v r (ω j)).2⟩
 
-/-- The damping defect lies in `[0, 1]` for `q ∈ (0, 1)`. -/
-theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  unfold dampDefect
-  have h₁ : Real.sqrt q ≤ 1 := Real.sqrt_le_one.mpr hq₁.le
-  have h₀ : 0 ≤ Real.sqrt q := Real.sqrt_nonneg q
-  split_ifs <;> constructor <;> linarith
-
 /-- The line factor lies in `[0, 1]` for `q ∈ (0, 1)`. -/
 theorem confLineFactor_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} {d : Data K}
     {Y d₀ : ℝ} (p : ℕ) (ω : Conf x d Y d₀) (l : ℕ) :
@@ -285,7 +277,7 @@ theorem visitInd_eq_zero_of_ne_one {t : (squareModel d Y d₀).State x d}
     (ht : visitInd x d Y d₀ u v r t ≠ 1) : visitInd x d Y d₀ u v r t = 0 := by
   unfold visitInd at ht ⊢
   split_ifs at ht ⊢ with h
-  · exact (ht rfl).elim
+  · simp_all
   · rfl
 
 /-- The line-free weight of a path is the kernel `𝒮 𝒯 𝒮` along the included path, times the
@@ -322,7 +314,7 @@ configurations whose visits are all positions at `ϱ`; along them the edge opera
 `𝒢 (𝒮 𝒯 𝒮) 𝒢`, with `𝒮 𝒯 𝒮` independent of the root. -/
 theorem rootMoment_eq_sum_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
     (hR : 0 < momentPower x)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (u v r : ℝ)
+    (hdisj : d.BandsDisjoint x) (u v r : ℝ)
     (ℓ : ℕ → ℕ) :
     rootMoment q A₀ x d Y d₀ u v r ℓ =
       ∑ ω : Conf x d Y d₀, confCoeff A₀ x d Y d₀ ω * (confInd x d Y d₀ ω u v r : ℂ) *
@@ -339,9 +331,7 @@ theorem rootMoment_eq_sum_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d�
       push Not at h
       choose path hpath using h
       exact hω ⟨path, funext hpath⟩
-    have h0 : visitInd x d Y d₀ u v r (ω j) = 0 :=
-      ite_eq_right fun h => hj ((mem_range_toSquare_iff (ω j)).2 h.1)
-    rw [confInd, prod_eq_zero (mem_univ j) h0, Complex.ofReal_zero, mul_zero, zero_mul]
+    rw [confInd, prod_eq_zero (mem_univ j) (ite_eq_right fun h => hj ((mem_range_toSquare_iff (ω j)).2 h.1)), Complex.ofReal_zero, mul_zero, zero_mul]
   · -- step: along an included path, the weight splits into `c(ω)` and `A(ω, ϱ)`
     have hline : ∀ p, lineFactor q p path (ℓ p) = confLineFactor q p (toSquare ∘ path) (ℓ p) :=
       fun p => rfl

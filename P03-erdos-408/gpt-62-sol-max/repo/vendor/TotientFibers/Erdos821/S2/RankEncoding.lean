@@ -22,7 +22,7 @@ lemma adjacent_swaps_product {α : Type*} [DecidableEq α] (l : List α) :
     | cons x xs ih =>
       cases l₂ with
       | nil => simp
-      | cons y ys => simp [ih]
+      | cons y ys => simp_all
   exact congrArg List.prod (hz l l.tail)
 
 lemma adjacent_pairs_length {α : Type*} (l : List α) :
@@ -89,7 +89,7 @@ theorem swapPairCode_injective {a r : ℕ} :
     · intro i hi hi'
       have hir : i < r := by rw [← (rankSwapList_properties σ).1]; exact hi
       have he := congrArg (fun f : Fin r → Fin a × Fin a => f ⟨i, hir⟩) h
-      simpa only [swapPairCode, List.get_eq_getElem] using he
+      assumption
   apply Subtype.ext
   calc
     σ.val = ((rankSwapList σ).map (fun p => Equiv.swap p.1 p.2)).prod :=
@@ -105,7 +105,7 @@ theorem rankPermutations_card_le (a r : ℕ) :
     _ ≤ Fintype.card (Fin r → Fin a × Fin a) := Fintype.card_le_of_injective _ swapPairCode_injective
     _ = a ^ (2 * r) := by
       rw [Fintype.card_pi_const, Fintype.card_prod, Fintype.card_fin]
-      rw [← pow_two, ← pow_mul]
+      ring
 
 
 end Erdos821.S2

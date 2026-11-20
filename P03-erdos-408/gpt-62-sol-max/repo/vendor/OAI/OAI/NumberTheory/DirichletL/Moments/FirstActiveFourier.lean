@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstReduced
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentFirstReduced
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed
+open CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
 theorem shifted_active_fourier {ι : Type*} [Fintype ι]
@@ -36,10 +36,10 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
   simp_rw [CenteredMomentFirstReduced.principalSexticRow_mul P hcop hg j
     (finitePrimeModulus P) (span_finitePrimeModulus P),
     principalSexticRow_mk P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P),mul_assoc]
-  rw [← Finset.mul_sum,canonical_principal_gauss_transform P hcop hg hchar j hj0 hj6,
+  rw [← Finset.mul_sum,canonical_principal_gauss_transform P hcop hg j
+    (fun i => canonicalSextic_pow_ne_one _ _ (hchar i) (hj0 i) (hj6 i)),
     principalSexticRow_mk P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P)]
-  change finiteSexticRow P hg j v*(star (finiteSexticRow P hg j h)*canonicalGaussSum P hcop hg j)=_
-  ring
+  rfl
 
 theorem tripleFourier_active {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i,(P i).IsMaximal]

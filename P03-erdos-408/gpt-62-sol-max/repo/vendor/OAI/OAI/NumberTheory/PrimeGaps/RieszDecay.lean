@@ -10,19 +10,13 @@ namespace LargePrimeGaps
 
 open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Filter Topology
 
-open Complex Filter Topology MeasureTheory
 
 open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open scoped FourierTransform
 
 noncomputable def logRieszVertical {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
     (σ t : ℝ) : ℂ := logRiesz (poleRemovedL χ) (σ+2*π*t*I)
@@ -32,7 +26,7 @@ lemma logRieszVertical_contDiff {q : ℕ} [NeZero q] (χ : DirichletCharacter �
   have h : ∀ t : ℝ, AnalyticAt ℂ (logRiesz (poleRemovedL χ)) ((σ:ℂ)+(2*π*I)*(t:ℂ)) := by
     intro t
     apply logRiesz_poleRemoved_analyticAt
-    simpa using hσ
+    simp_all
   convert vertical_contDiff h using 1
   ext t
   dsimp [logRieszVertical]
@@ -46,7 +40,7 @@ lemma logRieszVertical_iteratedDeriv {q : ℕ} [NeZero q] (χ : DirichletCharact
   have h : ∀ t : ℝ, AnalyticAt ℂ (logRiesz (poleRemovedL χ)) ((σ:ℂ)+(2*π*I)*(t:ℂ)) := by
     intro t
     apply logRiesz_poleRemoved_analyticAt
-    simpa using hσ
+    simp_all
   have he : logRieszVertical χ σ=(fun t : ℝ => logRiesz (poleRemovedL χ) ((σ:ℂ)+(2*π*I)*(t:ℂ))) := by
     ext t
     dsimp [logRieszVertical]
@@ -64,7 +58,7 @@ lemma logRieszVertical_bound (n : ℕ) :
   intro q _ χ hp σ t hσ hσ2
   have he : (σ:ℂ)+2*π*t*I=(σ:ℂ)+I*((2*π*t:ℝ):ℂ) := by push_cast; ring
   rw [logRieszVertical_iteratedDeriv χ hσ,norm_mul,norm_pow,he]
-  have hc : ‖(2:ℂ)*π*I‖=2*π := by simp [abs_of_pos pi_pos]
+  have hc : ‖(2:ℂ)*π*I‖=2*π := by simp
   rw [hc]
   have ht : (|2*π*t|+2)^(-(3/2:ℝ)) ≤ decayMajorant t := by
     dsimp [decayMajorant]
@@ -94,10 +88,10 @@ lemma logRiesz_mellinInv_bound (n : ℕ) :
           D*((q:ℝ)+2)^(1/2:ℝ)*x^σ/(Real.log x)^n := by
   obtain ⟨D,hD,hb⟩ := logRieszVertical_bound n
   let J : ℝ := ∫ t, decayMajorant t
-  refine ⟨D*(|J|+1),by dsimp [J]; positivity,?_⟩
+  refine ⟨D*(|J|+1),by positivity,?_⟩
   intro q _ χ hp σ x hσ hσ2 hx
   have hx0 : 0<x := by linarith
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hlog  := Real.log_pos hx
   have hi := logRieszVertical_integrable χ hp hσ hσ2
   have hg := logRieszVertical_contDiff χ hσ
   have hb' : (∫ t, ‖iteratedDeriv n (logRieszVertical χ σ) t‖) ≤ D*((q:ℝ)+2)^(1/2:ℝ)*J :=
@@ -110,7 +104,6 @@ lemma logRiesz_mellinInv_bound (n : ℕ) :
   change (1/x)^(-σ)*‖𝓕⁻ (logRieszVertical χ σ) (Real.log x)‖ ≤ _
   rw [one_div,Real.inv_rpow hx0.le,←Real.rpow_neg hx0.le,neg_neg]
   have hJ : J ≤ |J|+1 := by linarith [le_abs_self J]
-  have hfac : 0≤ D*((q:ℝ)+2)^(1/2:ℝ) := by positivity
   calc
     _ ≤ x^σ*(D*((q:ℝ)+2)^(1/2:ℝ)*J/|Real.log x|^n) := mul_le_mul_of_nonneg_left hf (by positivity)
     _ ≤ x^σ*(D*((q:ℝ)+2)^(1/2:ℝ)*(|J|+1)/(Real.log x)^n) := by
@@ -118,7 +111,6 @@ lemma logRiesz_mellinInv_bound (n : ℕ) :
       gcongr
     _ = _ := by ring
 
-open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def primeCoefficients {q : ℕ} (χ : DirichletCharacter ℂ q) (n : ℕ) : ℂ :=
   χ (n:ZMod q)*(ArithmeticFunction.vonMangoldt n:ℂ)
@@ -174,7 +166,7 @@ lemma primeRiesz_mellinInv {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
       rieszSum (primeCoefficients χ) x-characterMain χ*poleRieszKernel (1/x) := by
   have he : rieszSum (primeCoefficients χ) x=
       mellinInv σ (logRiesz (poleRemovedL χ)) (1/x)+characterMain χ*poleRieszKernel (1/x) := by
-    rw [←rieszSum_mellinInv hσ.le hx _ (primeCoefficients_summable χ (by simpa using hσ))]
+    rw [←rieszSum_mellinInv hσ.le hx _ (primeCoefficients_summable χ (by simp_all))]
     calc
       _ = mellinInv σ (fun s => logRiesz (poleRemovedL χ) s+
           characterMain χ*(1/((s-1)*s*(s+1)))) (1/x) := by
@@ -182,7 +174,7 @@ lemma primeRiesz_mellinInv {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
         congr 1
         apply integral_congr_ae
         filter_upwards [] with t
-        rw [primeRiesz_identity χ (by simpa using hσ)]
+        rw [primeRiesz_identity χ (by simp_all)]
       _ = mellinInv σ (logRiesz (poleRemovedL χ)) (1/x)+
           mellinInv σ (fun s => characterMain χ*(1/((s-1)*s*(s+1)))) (1/x) :=
         mellinInv_add_of_verticalIntegrable (one_div_pos.mpr hx)
@@ -210,13 +202,11 @@ lemma primeRiesz_error_bound (n : ℕ) :
   rw [norm_mul,Complex.norm_real,Real.norm_eq_abs]
   have ht : |-1+1/(2*x)|≤1 := by
     rw [abs_le]
-    have hx0 : 0<x := by linarith
     have ht0 : 0≤1/(2*x) := by positivity
     have ht1 : 1/(2*x)≤1 := (div_le_one (by positivity)).mpr (by linarith)
     constructor <;> linarith
   exact (mul_le_mul (characterMain_norm_le χ) ht (abs_nonneg _) (by norm_num)).trans_eq (one_mul _)
 
-open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def weightedPrefix (a : ℕ → ℂ) (x : ℝ) : ℂ :=
   ∑ n∈Finset.Ioc 0 ⌊x⌋₊, ((x-(n:ℝ):ℝ):ℂ)*a n
@@ -232,10 +222,7 @@ lemma weightedPrefix_difference {x h : ℝ} (hh : 0≤h) (a : ℕ → ℂ) :
     simp only [Finset.mem_Ioc,Finset.mem_union]
     omega
   have hd : Disjoint (Finset.Ioc 0 ⌊x⌋₊) (Finset.Ioc ⌊x⌋₊ ⌊x+h⌋₊) := by
-    rw [Finset.disjoint_left]
-    intro n h₁ h₂
-    simp only [Finset.mem_Ioc] at h₁ h₂
-    omega
+    simp
   unfold weightedPrefix
   rw [he,Finset.sum_union hd]
   have hs : (∑ n∈Finset.Ioc 0 ⌊x⌋₊, ((x+h-(n:ℝ):ℝ):ℂ)*a n)=
@@ -299,7 +286,7 @@ lemma prefix_unsmoothing {x h L : ℝ} (hx : 0≤x) (hh : 0<h) (hL : 0≤L)
       _ ≤ ‖E (x+h)-E x‖+‖T‖+‖δ*(h:ℂ)^2/2‖ :=
         (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
       _ ≤ (‖E (x+h)‖+‖E x‖)+((h+1)*(h*L))+‖δ‖*h^2/2 := by
-        have hT : ‖T‖≤(h+1)*(h*L) := weightedPrefix_tail_bound hx hh.le hL a ha
+        have hT  := weightedPrefix_tail_bound hx hh.le hL a ha
         have hδ : ‖δ*(h:ℂ)^2/2‖=‖δ‖*h^2/2 := by
           simp [norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hh]
         rw [hδ]
@@ -311,7 +298,6 @@ lemma prefix_unsmoothing {x h L : ℝ} (hx : 0≤x) (hh : 0<h) (hL : 0≤L)
   rw [mul_comm _ h, mul_comm _ h, hd]
   exact hn
 
-open Complex Real Set MeasureTheory Filter Topology
 
 lemma weightedPrefix_eq_mul_rieszSum (a : ℕ → ℂ) {x : ℝ} (hx : 0<x) :
     weightedPrefix a x=(x:ℂ)*rieszSum a x := by
@@ -326,7 +312,7 @@ lemma weightedPrefix_eq_mul_rieszSum (a : ℕ → ℂ) {x : ℝ} (hx : 0<x) :
 lemma rpow_one_add_inv_log {x : ℝ} (hx : 1<x) :
     x^(1+1/Real.log x)=Real.exp 1*x := by
   have hx0 : 0<x := by linarith
-  have hlog : Real.log x≠0 := (Real.log_pos hx).ne'
+  have hlog  := (Real.log_pos hx).ne'
   rw [Real.rpow_add hx0,Real.rpow_one,Real.rpow_def_of_pos hx0]
   rw [mul_one_div_cancel hlog]
   ring
@@ -340,10 +326,10 @@ lemma primeWeighted_error_bound (a : ℝ) :
   refine ⟨D*Real.exp 1,by positivity,?_⟩
   intro q _ χ hp x hx hL
   have hx0 : 0<x := by linarith
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hlog  := Real.log_pos hx
   have hσ : 1<1+1/Real.log x := by linarith [one_div_pos.mpr hlog]
   have hσ2 : 1+1/Real.log x≤2 := by
-    have : 1/Real.log x≤1 := (div_le_one hlog).mpr hL
+    have  := (div_le_one hlog).mpr hL
     linarith
   have he : weightedPrefix (primeCoefficients χ) x-characterMain χ*(x:ℂ)^2/2=
       (x:ℂ)*(rieszSum (primeCoefficients χ) x-characterMain χ*(x:ℂ)/2) := by
@@ -357,7 +343,7 @@ lemma primeWeighted_error_bound (a : ℝ) :
       rw [rpow_one_add_inv_log hx,Real.rpow_neg hlog.le,Real.rpow_natCast]
       ring
     _ ≤ _ := by
-      have hn : a≤(⌈a⌉₊:ℝ) := Nat.le_ceil a
+      have hn  := Nat.le_ceil a
       gcongr
 
 end LargePrimeGaps

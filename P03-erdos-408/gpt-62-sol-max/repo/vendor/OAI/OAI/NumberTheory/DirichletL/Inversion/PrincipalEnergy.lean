@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
 @[expose] public section
@@ -9,15 +10,14 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InversePrincipalEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
-open InverseMoment
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson SecondPassArithmetic
+open FirstPassCubeLabels IdealMobiusDivisorSum InverseMoment
 local notation "Eis" => ActualEisensteinCubic.O
 
 section
 variable {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 include hinj in
@@ -265,19 +265,17 @@ lemma mass_le_divisor_mass (F : Finset ι) (H : Finset ι → ℂ) :
       ∑ G ∈ F.powerset, ((idealDivisors (supportIdeal p G)).card : ℝ) * ‖H G‖ ^ 2 := by
   apply Finset.sum_le_sum
   intro G _
-  have ho : (1 : Ideal Eis) ∈ idealDivisors (supportIdeal p G) :=
-    (mem_idealDivisors (supportIdeal_ne_zero p G)).mpr (one_dvd _)
   have hc : (1 : ℝ) ≤ ((idealDivisors (supportIdeal p G)).card : ℝ) := by
-    exact_mod_cast Finset.one_le_card.mpr ⟨1, ho⟩
+    exact_mod_cast Finset.one_le_card.mpr ⟨1, ((mem_idealDivisors (supportIdeal_ne_zero p G)).mpr (one_dvd _))⟩
   simpa only [one_mul] using mul_le_mul_of_nonneg_right hc (sq_nonneg ‖H G‖)
 
 end
 
 theorem marked_radial_divisor_mass (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
       (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (_hcop : OAI.PrincipalFamily.Coprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) →
@@ -349,8 +347,8 @@ theorem uniform_row_control :
 
 section
 variable {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 theorem principal_energy_le (hp : ∀ i, p i ≠ 0)
@@ -365,8 +363,6 @@ theorem principal_energy_le (hp : ∀ i, p i ≠ 0)
       Y * (‖paperRadialFourier W 0‖ + QuadraticInitialBound.pvControl W) *
         ∑ G ∈ F.powerset, ((idealDivisors (supportIdeal p G)).card : ℝ) * ‖H G‖ ^ 2 := by
   have hY0 : 0 < Y := lt_of_lt_of_le zero_lt_one hY
-  have hd : 0 ≤ ∑ G ∈ F.powerset, ((idealDivisors (supportIdeal p G)).card : ℝ) * ‖H G‖ ^ 2 :=
-    Finset.sum_nonneg (fun G _ => mul_nonneg (Nat.cast_nonneg _) (sq_nonneg _))
   calc
     _ ≤ Y * ‖paperRadialFourier W 0‖ * ∑ G ∈ F.powerset, ‖H G‖ ^ 2 +
         QuadraticInitialBound.pvControl W *
@@ -380,7 +376,7 @@ theorem principal_energy_le (hp : ∀ i, p i ≠ 0)
       apply add_le_add
       · exact mul_le_mul_of_nonneg_left (mass_le_divisor_mass p F H) (mul_nonneg hY0.le (norm_nonneg _))
       · exact mul_le_mul_of_nonneg_right
-          (le_mul_of_one_le_left (QuadraticInitialBound.pvControl_nonneg W) hY) hd
+          (le_mul_of_one_le_left (QuadraticInitialBound.pvControl_nonneg W) hY) (Finset.sum_nonneg (fun G _ => mul_nonneg (Nat.cast_nonneg _) (sq_nonneg _)))
     _ = _ := by ring
 
 end
@@ -388,10 +384,10 @@ end
 theorem marked_principal_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+      (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (_hcop : OAI.PrincipalFamily.Coprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) →

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O

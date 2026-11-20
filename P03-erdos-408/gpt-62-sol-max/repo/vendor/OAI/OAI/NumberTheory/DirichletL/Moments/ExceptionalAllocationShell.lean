@@ -1,5 +1,8 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Moments.UniformDivisorShell
 
 @[expose] public section
@@ -10,9 +13,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalAllocationShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
-open CenteredMomentUniformDivisorShell
+open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
+open CenteredMomentDivisorBoundary CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
 local notation "O" => ActualEisensteinCubic.O
 
 lemma exact_max_cancellation (r r₁ : ℝ) :
@@ -37,11 +39,11 @@ theorem active_exceptional_weight {ι κ : Type*} [Fintype ι] [Fintype κ]
     (s : Source ι) (v : Source κ) (D : Ideal O) (hD : Squarefree D)
     (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
     (b : Allocation D (Finset.univ : Finset (κ⊕Fin 2)))
-    (_ha : a∈s.active D) (hb : b∈v.active D) (Z r : ℝ) (hZ : 1<Z) :
+ (hb : b∈v.active D) (Z r : ℝ) (hZ : 1<Z) :
     exceptionalWeight s v D a b Z r ≤ Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ) := by
   have hz : 0<Z := zero_lt_one.trans hZ
   have hn : (0:ℝ)<Ideal.absNorm D := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD.ne_zero)
   have hv := v.active_boundary D hD b hb Z hZ
   have hm := exact_max_cancellation r (Real.logb Z (formalReductionFactor D a s.P))
   have he : -Real.logb Z (formalReductionFactor D a s.P)-
@@ -92,7 +94,7 @@ theorem actual_exceptional_shell {ι κ : Type*} [Fintype ι] [Fintype κ]
     calc
       _ ≤ ∑_a∈s.active D,∑_b∈v.active D,Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ) :=
         Finset.sum_le_sum (fun a ha=>Finset.sum_le_sum (fun b hb=>
-          active_exceptional_weight s v D (hD D hd) a b ha hb Z r hZ))
+          active_exceptional_weight s v D (hD D hd) a b hb Z r hZ))
       _ = ((s.active D).card:ℝ)*((v.active D).card:ℝ)*(Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ)) := by simp; ring
       _ ≤ (C₁*(Ideal.absNorm D:ℝ)^ε)*(C₂*(Ideal.absNorm D:ℝ)^ε)*
           (Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ)) :=
@@ -120,16 +122,12 @@ theorem uniform_subset_shell {ι : Type*} [Fintype ι] [DecidableEq ι]
     actual_exceptional_shell (ι:=p.1) (κ:=p.2) (Fintype.card ι)
       (by simpa using Finset.card_le_univ p.1) (by simpa using Finset.card_le_univ p.2) ε hε
   choose C hC hbound using he
-  let B : ℝ := 1+∑p : Finset ι×Finset ι,C p
-  have hs : 0≤∑p : Finset ι×Finset ι,C p := Finset.sum_nonneg (fun p _=>(hC p).le)
-  refine ⟨B,by dsimp [B]; linarith,?_⟩
+  obtain ⟨B, hB, hmajor⟩ := exists_real_majorant 0 C
+  refine ⟨B,hB,?_⟩
   intro J L s v Ds hD T Z r hT hZ hlo hhi
-  have hc : C (J,L)≤B := by
-    have hp := Finset.single_le_sum (fun p _=>(hC p).le) (Finset.mem_univ (J,L))
-    dsimp [B]; linarith
   exact (hbound (J,L) s v Ds hD T Z r hT hZ hlo hhi).trans
     (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg (by linarith) _)) (Real.rpow_nonneg (by linarith) _))
+      (mul_le_mul_of_nonneg_right (hmajor (J,L)) (Real.rpow_nonneg (by linarith) _)) (Real.rpow_nonneg (by linarith) _))
 
 theorem exceptional_shell_subpower {ι : Type*} [Fintype ι] [DecidableEq ι]
     (lo hi : ι→ℝ) (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :

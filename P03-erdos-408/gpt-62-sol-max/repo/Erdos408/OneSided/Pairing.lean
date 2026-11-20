@@ -39,15 +39,15 @@ theorem mem_positions_bounds {d : Data K} {Y d₀ : ℝ} (hU : 0 ≤ d₀ * Y * 
 
 /-- The labels of a state have product at most `exp(4K L^{1/2})`: there are `K (J + 1)`
 labels, each at most `exp(2 L^{a_hi})`, and `(J + 1) L^{a_hi} ≤ 2 L^{0.01 + a_hi}`. -/
-theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
+theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} 
     (hd : Admissible C CX alo ahi g x d) (hahi : ahi < 1 / 5) (hL : 1 ≤ Real.log x)
-    (t : State x d Y d₀) :
-    (listProd t.1.2 : ℝ) ≤ Real.exp (4 * K * Real.log x ^ (1 / 2 : ℝ)) := by
-  obtain ⟨-, hband, -, -⟩ := state_props t
+    (p : Lists K (padCount x))
+    (hband : ∀ i h, p i h ∈ band x (d.a i)) :
+    (listProd p : ℝ) ≤ Real.exp (4 * K * Real.log x ^ (1 / 2 : ℝ)) := by
   set L := Real.log x
-  set J := padCount x
+  let J := padCount x
   -- each label is at most `exp(2 L^{a_hi})`
-  have hlabel : ∀ i h, (t.1.2 i h : ℝ) ≤ Real.exp (2 * L ^ ahi) := by
+  have hlabel : ∀ i h, (p i h : ℝ) ≤ Real.exp (2 * L ^ ahi) := by
     intro i h
     have h₁ := Real.rpow_le_rpow_of_exponent_le hL (hd.window i).2
     exact (le_exp_of_mem_band (hband i h)).trans (Real.exp_le_exp.2 (by linarith))
@@ -63,7 +63,7 @@ theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
   have hJa : ((J : ℝ) + 1) * L ^ ahi ≤ 2 * L ^ (1 / 2 : ℝ) := by nlinarith
   unfold listProd
   push_cast
-  calc ∏ i, ∏ h, (t.1.2 i h : ℝ) ≤ ∏ _i : Fin K, ∏ _h : Fin (J + 1), Real.exp (2 * L ^ ahi) :=
+  calc ∏ i, ∏ h, (p i h : ℝ) ≤ ∏ _i : Fin K, ∏ _h : Fin (J + 1), Real.exp (2 * L ^ ahi) :=
         prod_le_prod₀ (fun i _ => prod_nonneg fun h _ => Nat.cast_nonneg _) fun i _ =>
           prod_le_prod₀ (fun h _ => Nat.cast_nonneg _) fun h _ => hlabel i h
     _ = Real.exp (K * ((J + 1 : ℕ) * (2 * L ^ ahi))) := by
@@ -71,7 +71,6 @@ theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
           ← Real.exp_nat_mul, ← Real.exp_nat_mul]
     _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := by
         refine Real.exp_le_exp.2 ?_
-        have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
         push_cast
         nlinarith
 
@@ -90,12 +89,12 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   set L := Real.log x with hLdef
   have hL0 : 0 < L := by linarith
   -- band facts and the scales
-  have hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)) := by
+  have hdisj : d.BandsDisjoint x := by
     intro i j hij
     rcases lt_or_gt_of_ne hij with h | h
     · exact hE1 _ _ (hd.gap i j h)
     · exact (hE1 _ _ (hd.gap j i h)).symm
-  have hrough : ∀ i, ∀ p ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m :=
+  have hrough :=
     fun i => hE2 (d.a i) (hd.window i).2
   have hγ : 0 < d.γ := (Real.rpow_pos_of_pos hL0 _).trans_le hd.γ_ge
   have hHm : 1 ≤ d.Hm := (Real.one_le_rpow hx1 hγ.le).trans hd.Hm_ge
@@ -142,7 +141,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   have hHexp : H ≤ Real.exp (8 * K * (R + 1)) := by
     have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg _
     calc H ≤ listProd t.1.2 := le_listProd_of_rowOp_ne_zero hY0 ht
-      _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := listProd_le_exp hd hahi hL t
+      _ ≤ Real.exp (4 * K * L ^ (1 / 2 : ℝ)) := listProd_le_exp hd hahi hL t.1.2 (state_props t).2.1
       _ ≤ _ := Real.exp_le_exp.2 (by nlinarith)
   -- the hypotheses of the cell bound
   set N := ⌊17 * (512 * H + 1)⌋₊ with hN
@@ -208,13 +207,12 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
     have h₁ : (21 : ℝ) ^ (R + 1) ≤ 21 ^ n := pow_le_pow_right₀ (by norm_num) (by omega)
     have h₂ : (64 : ℝ) ^ (2 * R + 1) ≤ 64 ^ n := pow_le_pow_right₀ (by norm_num) (by omega)
     have h₃ : (N : ℝ) ≤ 8721 ^ n * Real.exp (4 * K) ^ n := by
-      have h₄ : (8721 : ℝ) ≤ 8721 ^ n := le_self_pow₀ (by norm_num) hn0
       have h₅ : Real.exp (8 * K * (R + 1)) = Real.exp (4 * K) ^ n := by
         rw [← Real.exp_nat_mul, hn]
         push_cast
         ring_nf
       rw [← h₅]
-      exact hNH.trans (mul_le_mul_of_nonneg_right h₄ (Real.exp_pos _).le)
+      exact hNH.trans (mul_le_mul_of_nonneg_right (le_self_pow₀ (by norm_num) hn0) (Real.exp_pos _).le)
     rw [hC₀, mul_pow, mul_pow, mul_pow]
     calc (21 : ℝ) ^ (R + 1) * 64 ^ (2 * R + 1) * N
         ≤ 21 ^ n * 64 ^ n * (8721 ^ n * Real.exp (4 * K) ^ n) :=
@@ -225,7 +223,6 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   have hS0 : 0 ≤ S := sqNorm_nonneg _
   have hρ0 : 0 ≤ ‖ρ‖ := norm_nonneg _
   have hNσ : 0 ≤ (N : ℝ) * σ := mul_nonneg (Nat.cast_nonneg _) hσ0
-  have hσZ : 0 ≤ 64 * σ * Z := mul_nonneg (mul_nonneg (by norm_num) hσ0) hZ0.le
   rw [hpair]
   refine le_of_pow_le_pow_left₀ hn0
     (mul_nonneg (mul_nonneg (by positivity) hZ0.le) (by positivity)) ?_
@@ -239,7 +236,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
     _ ≤ 21 ^ (R + 1) * (64 * σ * Z) ^ (2 * R + 1) * (N * σ) * (Z * L ^ (-(E * (n : ℝ)))) :=
         mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
           (pow_le_pow_left₀ (mul_nonneg hm0 hS0) hS' _) (by positivity)) hNσ) hmom'
-          (mul_nonneg hm0 hρ0) (mul_nonneg (mul_nonneg (by positivity) (pow_nonneg hσZ _)) hNσ)
+          (mul_nonneg hm0 hρ0) (mul_nonneg (mul_nonneg (by positivity) (pow_nonneg (mul_nonneg (mul_nonneg (by norm_num) hσ0) hZ0.le) _)) hNσ)
     _ = (21 ^ (R + 1) * 64 ^ (2 * R + 1) * N) * (σ ^ n * L ^ (-(E * (n : ℝ)))) * Z ^ n := by
         rw [hn]
         ring

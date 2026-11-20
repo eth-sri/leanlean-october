@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
 
 @[expose] public section
@@ -12,9 +13,9 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGau
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem secondChildColumn_drop_puncture (Ψ : Eis →* ℂ) (m d f k : Eis)
     (hd : d ∣ m*f) (H : Finset ι → ℂ) (S : Finset ι) :
@@ -112,7 +113,6 @@ theorem actual_second_split_fixed_family
   let d := primeSubsetGenerator (fun i => Ideal.span {p i}) D
   let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E
   let r := secondMaskQuotient p E G hEG
-  let c := (∏ i ∈ C,p i)*jLabel p B v ε₁ ε₂
   have hd := actual_first_divisor_dvd_child p B C D V hCB hD v ε₁ ε₂ hv m r e
   have hk := actual_second_extracted_support_killed p B C G E V A hEG hA v ε₁ ε₂ hv m
   have hm : (m*b0Label p B v ε₁ ε₂*d)*r = ((m*b0Label p B v ε₁ ε₂)*r)*d := by ring

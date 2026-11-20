@@ -42,14 +42,14 @@ theorem eventually_scales {ahi c : ℝ} (hahi : ahi < 1 / 5) (hc : 0 < c) :
   simp only [Function.comp_apply] at h₁ h₂
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hT : 0 < Real.log L := Real.log_pos hL
+  have hT  := Real.log_pos hL
   refine ⟨hL, hT, ?_, ?_⟩
   · have : L ^ (0.27 : ℝ) = L ^ (0.27 - ahi) * L ^ ahi := by
       rw [← Real.rpow_add hL0]; ring_nf
     rw [this]
     exact mul_lt_mul_of_pos_right h₁ (Real.rpow_pos_of_pos hL0 _)
   · have h20 : Real.log L ^ (20 : ℝ) = Real.log L ^ 20 := by
-      rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+      norm_num
     rw [Real.norm_of_nonneg (Real.rpow_nonneg hT.le _),
       Real.norm_of_nonneg (Real.rpow_nonneg hL0.le _), h20] at h₂
     have hT20 : 0 < Real.log L ^ 20 := by positivity
@@ -166,10 +166,9 @@ theorem markedListWeight_eq_removal {ι : Type} [Fintype ι] [DecidableEq ι]
       simp only [mem_filter, mem_erase]
       constructor
       · rintro ⟨hp, hpd⟩
-        have hne : p ≠ ps := by
-          rintro rfl
-          exact hsq p hp (by rw [pow_two]; exact Nat.mul_dvd_of_dvd_div hdvd hpd)
-        exact ⟨hne, hp, hpd.trans (Nat.div_dvd_of_dvd hdvd)⟩
+        refine ⟨?_, hp, hpd.trans (Nat.div_dvd_of_dvd hdvd)⟩
+        rintro rfl
+        exact hsq p hp (by rw [pow_two]; exact Nat.mul_dvd_of_dvd_div hdvd hpd)
       · rintro ⟨hne, hp, hpd⟩
         exact ⟨hp, (dvd_div_iff_of_coprime hdvd
           (coprime_of_prime_ne (hpr gs p hp) (hpr gs ps hpsP) hne)).2 hpd⟩

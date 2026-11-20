@@ -130,10 +130,7 @@ theorem original_energy_of_remaining (S:Finset (Ideal O))(L:ι→Finset (Ideal O
       intro x hx
       exact mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (hres J x))
         (assignedMass_nonneg L J x coeff Z (G J) hZ)
-    have hn : 0≤∑x:Assigned L J,assignedMass L J x coeff Z (G J)*
-        Real.sqrt (∑u∈rows,w u*‖remainingPolynomial S L J x coeff η W Z r z (G J) u‖^2) :=
-      Finset.sum_nonneg (fun x _=>mul_nonneg (assignedMass_nonneg L J x coeff Z (G J) hZ) (Real.sqrt_nonneg _))
-    have hh:=Real.sqrt_le_sqrt (hb.trans (pow_le_pow_left₀ hn hc 2))
+    have hh:=Real.sqrt_le_sqrt (hb.trans (pow_le_pow_left₀ (Finset.sum_nonneg (fun x _=>mul_nonneg (assignedMass_nonneg L J x coeff Z (G J) hZ) (Real.sqrt_nonneg _))) hc 2))
     rwa [Real.sqrt_sq (mul_nonneg hm (Real.sqrt_nonneg E))] at hh
   refine (finite_weighted_triangle Finset.univ.powerset rows w hw
     (fun J u=>∑x:Assigned L J,assignedTerm S L J x coeff η W Z r z (G J) u)).trans ?_

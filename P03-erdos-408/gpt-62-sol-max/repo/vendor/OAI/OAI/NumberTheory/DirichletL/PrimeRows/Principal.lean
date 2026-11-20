@@ -10,10 +10,10 @@ public import OAI.NumberTheory.DirichletL.UnitSexticWitness
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
-open CanonicalQuadraticSieve UniqueFactorizationMonoid
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion CanonicalQuadraticSieve
+open UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -32,19 +32,19 @@ lemma supported_coprime_row_fixed (r : O) (hr : Supported (Ideal.span {r})) :
     IsCoprime (Ideal.span {r})
       ((fixedSourcePrincipal ∅ (by simp)).modulus*Ideal.span {rowMaskElement}*
         Ideal.span {(72:O)}) := by
-  have hl : IsCoprime λ₀ r :=
+  have hl  :=
     PrimaryIdealUnitReindex.lambda_prime_actual.irreducible.coprime_iff_not_dvd.mpr
       ((supported_span_iff r).mp hr).1
   have hn : IsCoprime (-2:O) r := negative_two_prime.irreducible.coprime_iff_not_dvd.mpr
     (by simpa only [neg_dvd] using ((supported_span_iff r).mp hr).2)
   have h2 : IsCoprime (2:O) r := hn.of_isCoprime_of_dvd_left ⟨-1,by ring⟩
-  have h9 : IsCoprime (9:O) r := ShortDraftCRT.nine_coprime_of_not_lambda_dvd r
+  have h9  := ShortDraftCRT.nine_coprime_of_not_lambda_dvd r
     ((supported_span_iff r).mp hr).1
   have h72 : IsCoprime (72:O) r := by
     convert (h2.pow_left (m:=3)).mul_left h9 using 1; norm_num
   have hm := (h2.mul_left hl).symm
   have hmod : (fixedSourcePrincipal ∅ (by simp)).modulus=(1:Ideal O) := by
-    simp [fixedSourcePrincipal,HeckeRayFamily.character,Character.ofResidue]
+    rfl
   rw [hmod,one_mul]
   exact ((Ideal.isCoprime_span_singleton_iff _ _).mpr hm).mul_right
     ((Ideal.isCoprime_span_singleton_iff _ _).mpr h72.symm)
@@ -53,16 +53,15 @@ theorem rawRow_principal_supported_isUnit (u : FreeRow)
     (hu : Supported (Ideal.span {u.val})) (hp : (rawRow u).residue=1) : IsUnit u.val := by
   obtain ⟨v,hv⟩ := exists_supported_primary_unit u.val hu
   let r : O := (v:O)*u.val
-  have hspan : (Ideal.span {r}:Ideal O)=Ideal.span {u.val} :=
+  have hspan  :=
     Ideal.span_singleton_mul_left_unit v.isUnit u.val
-  have hr : Supported (Ideal.span {r}) := hspan.symm ▸ hu
+  have hr  := hspan.symm ▸ hu
   have hx : (1:O)^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*(2:O)^0*r := by
     simp [r]
   have hempty : normalizedFactors (Ideal.span {r})=0 := by
     apply Multiset.eq_zero_iff_forall_notMem.mpr
     intro P hP
-    have hcop : IsCoprime
-        ((fixedSourcePrincipal ∅ (by simp)).modulus*Ideal.span {rowMaskElement}*Ideal.span {(72:O)}) P :=
+    have hcop  :=
       (supported_coprime_row_fixed r hr).symm.of_isCoprime_of_dvd_right (dvd_of_mem_normalizedFactors hP)
     have hd := HeckeRowNonprincipal.principal_row_multiplicity
       (fixedSourcePrincipal ∅ (by simp)) (rawRow u) rowMaskElement 1 u.val
@@ -90,7 +89,6 @@ theorem rowCharacter_unit_nonprincipal (S : Finset (Ideal O)) (hS : ∀P∈S,Pri
     (v : Oˣ) (hu : u.val=(v:O)) (hv : v≠1) :
     (rowCharacter S hS u).residue≠1 := by
   obtain ⟨P,hmax,hPS,hN,hg,hodd,hval0,hval1⟩ := UnitSexticWitness.exists_unit_witness v hv S 0
-  let : P.IsMaximal := hmax
   have hP0 : P≠0 := by
     intro he
     simp [he] at hN
@@ -98,7 +96,7 @@ theorem rowCharacter_unit_nonprincipal (S : Finset (Ideal O)) (hS : ∀P∈S,Pri
   have he : idealCoeff (rowCharacter S hS u) P=idealRowHom (v:O) P := by
     rw [rowCharacter_coeff S hS hbad,highExclusion_prime S hS Q,ite_eq_right hPS,one_mul,hu]
   intro hp
-  have hv0 : idealCoeff (rowCharacter S hS u) P≠0 := he ▸ hval0
+  have hv0  := he ▸ hval0
   exact hval1 (he.symm.trans (idealCoeff_principal_eq_one _ hp P hv0))
 
 theorem rowCharacter_principal_supported_eq_one (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)

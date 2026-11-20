@@ -1,6 +1,6 @@
 module
 
-public import Erdos408.Statement
+public import Erdos408.Basic
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 public import Mathlib.NumberTheory.DirichletCharacter.Basic
@@ -90,10 +90,6 @@ noncomputable def markedWeight {ι : Type*} (s : Finset ι) (q : ℝ) (G : ι �
 noncomputable def stripPrimes (P : Finset ℕ) (n : ℕ) : ℕ :=
   ∏ p ∈ n.primeFactors with p ∉ P, p ^ n.factorization p
 
-/-- The primes in `[a, b]`. -/
-noncomputable def primesIcc (a b : ℝ) : Finset ℕ :=
-  (Finset.Icc ⌈a⌉₊ ⌊b⌋₊).filter Nat.Prime
-
 /-- The analytic premise replacing PD (6.38): twisted prime sums over
 intervals `I ⊂ [H, 2H]` with `exp(L / T²²) ≤ H ≤ x`, for characters of
 modulus at most `L^{C_m}` and `L^E ≤ |u| ≤ x³`, are at most `κ L^{-A}`. -/
@@ -118,6 +114,40 @@ def IntegerKernelBound (x Cm κ : ℝ) : Prop :=
           (n : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤
         κ * ((1 + |u|)⁻¹ + Real.exp (-Real.log x ^ (0.95 : ℝ)))
 
+/-- The conclusion of `TwoSidedCorrelation` for large `x`, after its
+premises. -/
+def TwoSidedBody (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (B₀ κ CΨ : ℝ)
+    (M : ℕ → ℝ) (A Cstar x : ℝ) : Prop :=
+  ∀ (Sg Bg : Finset (Finset ℕ)) (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
+    (Bc : (Fin d → ℕ) → ℝ) (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
+    Disjoint Sg Bg → (Sg ∪ Bg : Set (Finset ℕ)).PairwiseDisjoint id →
+    c₀ * Real.log (Real.log x) ≤ Sg.card → (Sg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
+    c₀ * Real.log (Real.log x) ≤ Bg.card → (Bg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
+    (∀ P ∈ Sg ∪ Bg, vlo ≤ harmonicMass P ∧ harmonicMass P ≤ vhi) →
+    (∀ P ∈ Sg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
+      (Real.exp (Real.log x ^ (0.36 : ℝ)))) →
+    (∀ P ∈ Bg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.39 : ℝ)))
+      (Real.exp (Real.log x ^ (0.46 : ℝ)))) →
+    (∀ P ∈ Bg, ∃ y z : ℝ, P = primesIcc y z) →
+    (r : ℝ) ≤ K₀ + CN * Real.log (Real.log (Real.log x)) →
+    (∀ i, alo ≤ a i ∧ a i ≤ ahi) →
+    (∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))) →
+    (∀ i, c / Real.log (Real.log x) ^ 20 ≤ u i) →
+    ∑ i, v i ≤ 1 - c / Real.log (Real.log x) ^ 20 →
+    (∀ Q, |Bc Q| ≤ 1) →
+    (∀ n, G n = G (stripPrimes ((Sg ∪ Bg).biUnion id) n)) →
+    (∀ n, 0 ≤ G n ∧ G n ≤ Real.log x ^ B₀) →
+    ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Ψ → (∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) →
+    (∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * Real.log (Real.log x) ^ (CΨ * k)) →
+    |∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊,
+        Ψ (w / x) / w *
+          (markedWeight Finset.univ q (fun i => band x (a i)) w *
+            ((∑ Q ∈ slotTuples x u v with ∏ i, Q i ∣ w, Bc (Fin.init Q)) -
+              ∑ Q ∈ slotTuples x u v, Bc (Fin.init Q) / ∏ i, (Q i : ℝ))) *
+          G (w + 1) * markedWeight (Sg ∪ Bg) q₀ id w *
+          markedWeight (Sg ∪ Bg) q₀ id (w + 1)| ≤
+      Cstar * Real.log x ^ (-A)
+
 /-- The extended two-sided marked correlation (PD Theorem 6.1).
 
 The fixed data are: `q, q₀ ∈ (0, 1)`; active-group constants
@@ -140,40 +170,7 @@ def TwoSidedCorrelation : Prop :=
     ahi < 1 / 5 → 0 < c → d ≤ 2 → 1 < κ →
     ∃ A' Cm : ℝ, ∀ E κ' : ℝ, ∃ Cstar : ℝ, ∀ᶠ x : ℝ in atTop,
       PrimeTwistBound x A' E Cm κ' → IntegerKernelBound x Cm κ' →
-      ∀ (Sg Bg : Finset (Finset ℕ)) (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ)
-        (Bc : (Fin d → ℕ) → ℝ) (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
-        -- active groups as in PD (6.1)
-        Disjoint Sg Bg → (Sg ∪ Bg : Set (Finset ℕ)).PairwiseDisjoint id →
-        c₀ * Real.log (Real.log x) ≤ Sg.card → (Sg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-        c₀ * Real.log (Real.log x) ≤ Bg.card → (Bg.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-        (∀ P ∈ Sg ∪ Bg, vlo ≤ harmonicMass P ∧ harmonicMass P ≤ vhi) →
-        (∀ P ∈ Sg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
-          (Real.exp (Real.log x ^ (0.36 : ℝ)))) →
-        (∀ P ∈ Bg, P ⊆ primesIcc (Real.exp (Real.log x ^ (0.39 : ℝ)))
-          (Real.exp (Real.log x ^ (0.46 : ℝ)))) →
-        (∀ P ∈ Bg, ∃ y z : ℝ, P = primesIcc y z) →
-        -- inert bands
-        (r : ℝ) ≤ K₀ + CN * Real.log (Real.log (Real.log x)) →
-        (∀ i, alo ≤ a i ∧ a i ≤ ahi) →
-        (∀ i j, i ≠ j → Disjoint (band x (a i)) (band x (a j))) →
-        -- slots, the last one spare
-        (∀ i, c / Real.log (Real.log x) ^ 20 ≤ u i) →
-        ∑ i, v i ≤ 1 - c / Real.log (Real.log x) ^ 20 →
-        (∀ Q, |Bc Q| ≤ 1) →
-        -- the clipped invariant core
-        (∀ n, G n = G (stripPrimes ((Sg ∪ Bg).biUnion id) n)) →
-        (∀ n, 0 ≤ G n ∧ G n ≤ Real.log x ^ B₀) →
-        -- the cutoff
-        ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) Ψ → (∀ y, Ψ y ≠ 0 → κ⁻¹ ≤ y ∧ y ≤ κ) →
-        (∀ (k : ℕ) (y : ℝ), |iteratedDeriv k Ψ y| ≤ M k * Real.log (Real.log x) ^ (CΨ * k)) →
-        |∑ w ∈ Finset.Icc 1 ⌊κ * x⌋₊,
-            Ψ (w / x) / w *
-              (markedWeight Finset.univ q (fun i => band x (a i)) w *
-                ((∑ Q ∈ slotTuples x u v with ∏ i, Q i ∣ w, Bc (Fin.init Q)) -
-                  ∑ Q ∈ slotTuples x u v, Bc (Fin.init Q) / ∏ i, (Q i : ℝ))) *
-              G (w + 1) * markedWeight (Sg ∪ Bg) q₀ id w *
-              markedWeight (Sg ∪ Bg) q₀ id (w + 1)| ≤
-          Cstar * Real.log x ^ (-A)
+      TwoSidedBody q q₀ c₀ C₀ vlo vhi alo ahi K₀ CN c d B₀ κ CΨ M A Cstar x
 
 /-- The extended one-sided marked Type II estimate (PD Theorem 3.1).
 
@@ -281,6 +278,71 @@ noncomputable def patternPairing {ι : Type*} [Fintype ι] [DecidableEq ι] (P :
             (J + 1) * Fintype.card ι) : ℝ) : ℂ) *
         g (n + edgeProduct C p a)
 
+namespace TwoSided
+
+/-- PD (6.1) for groups indexed by `ι`; the hypotheses of `GraphTransference`. -/
+def GroupAdmissible (c₀ C₀ vlo vhi x : ℝ) {ι : Type} [Fintype ι] [DecidableEq ι]
+    (P : ι → Finset ℕ) (big : Finset ι) : Prop :=
+  (∀ g h, g ≠ h → Disjoint (P g) (P h)) ∧
+  c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card ∧
+  ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x) ∧
+  c₀ * Real.log (Real.log x) ≤ big.card ∧ (big.card : ℝ) ≤ C₀ * Real.log (Real.log x) ∧
+  (∀ g, vlo ≤ harmonicMass (P g) ∧ harmonicMass (P g) ≤ vhi) ∧
+  (∀ g ∉ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
+    (Real.exp (Real.log x ^ (0.36 : ℝ)))) ∧
+  (∀ g ∈ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.39 : ℝ)))
+    (Real.exp (Real.log x ^ (0.46 : ℝ)))) ∧
+  ∀ g ∈ big, ∃ y z : ℝ, P g = primesIcc y z
+
+/-- Consider arbitrary finite group data satisfying the two-sided hypotheses. -/
+abbrev ForAdmissibleGroups (c₀ C₀ vlo vhi x : ℝ)
+    (Goal : ∀ (ι : Type) [Fintype ι] [DecidableEq ι], (ι → Finset ℕ) → Finset ι → Prop) : Prop :=
+    ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
+        GroupAdmissible c₀ C₀ vlo vhi x P big → Goal ι P big
+
+/-- One comparison pattern of `GraphTransference`'s family. -/
+def ComparisonPattern (m₀ : ℕ) {ι : Type*} [Fintype ι] (big : Finset ι) {J : ℕ}
+    (A B : ι → Finset (Fin J)) (φ φ' ψ ψ' : ℕ → ℂ) (U U' : ℝ) : Prop :=
+  (∀ g, Disjoint (A g) (B g) ∧ (A g ∪ B g).card ≤ m₀) ∧ (∀ g ∉ big, A g = ∅ ∧ B g = ∅) ∧
+    ((∃ g, (A g).Nonempty) ∧ ∃ g, (B g).Nonempty) ∧
+    (∀ n, ‖φ n‖ ≤ 1 ∧ ‖φ' n‖ ≤ 1 ∧ ‖ψ n‖ ≤ 1 ∧ ‖ψ' n‖ ≤ 1) ∧
+    (∀ n, φ n ≠ 0 → U ≤ n ∧ n ≤ Real.exp 1 * U) ∧
+    ∀ n, φ' n ≠ 0 → U' ≤ n ∧ n ≤ Real.exp 1 * U'
+
+/-- An admissible comparison family of prescribed mass with an additional bound. -/
+abbrev WithComparisonFamily {ι : Type*} [Fintype ι] (big : Finset ι) (m₀ J : ℕ) (C₁ x : ℝ)
+    (Goal : ∀ N : ℕ, (Fin N → ι → Finset (Fin J)) → (Fin N → ι → Finset (Fin J)) →
+      (Fin N → ℂ) → (Fin N → ℕ → ℂ) → (Fin N → ℕ → ℂ) → (Fin N → ℕ → ℂ) →
+      (Fin N → ℕ → ℂ) → (Fin N → ℝ) → (Fin N → ℝ) → Prop) : Prop :=
+  ∃ (N : ℕ) (A B : Fin N → ι → Finset (Fin J)) (β : Fin N → ℂ)
+    (φ φ' ψ ψ' : Fin N → ℕ → ℂ) (U U' : Fin N → ℝ),
+    (∀ ν, ComparisonPattern m₀ big (A ν) (B ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν) (U ν) (U' ν)) ∧
+    ∑ ν, ‖β ν‖ ≤ Real.log x ^ C₁ ∧ Goal N A B β φ φ' ψ ψ' U U'
+
+end TwoSided
+
+namespace Graph
+
+/-- The conclusion of `GraphTransference` for the groups `P` with big groups
+`big`, at scale `x`. -/
+def FamilyBound (q₀ : ℝ) (m₀ J : ℕ) (C₁ C E C₃ C₄ x : ℝ) {ι : Type*} [Fintype ι]
+    [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι) : Prop :=
+  TwoSided.WithComparisonFamily big m₀ J C₁ x fun _ A B β φ φ' ψ ψ' _ _ =>
+    -- the transferred pairing
+    ∀ ζ : ℝ, |ζ| ≤ Real.log x ^ C₄ → ∀ X : ℝ, √x ≤ X → X ≤ x ^ 2 →
+      ∀ (S S' : Finset ℕ) (f g : ℕ → ℂ), (∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) →
+        (∀ n, ‖f n‖ ≤ 1) → (∀ n ∉ S', g n = 0) →
+        physicalNormSq P (J + 1) S f ≤ X * Real.log x ^ (2 * C₃) →
+        physicalNormSq P (J + 1) S' g ≤ X * Real.log x ^ (2 * C₃) →
+        ‖patternPairing P q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) ζ S f g +
+            ∑ ν, patternPairing P q₀ (fun h => A ν h ∪ B ν h)
+              (fun p p' a => β ν * φ ν (slotProduct (A ν) a) * φ' ν (slotProduct (B ν) a) *
+                ψ ν (slotProduct (A ν) fun h i => p' h i.castSucc) *
+                ψ' ν (slotProduct (B ν) fun h i => p h i.castSucc)) ζ S f g‖ ≤
+          C * X * Real.log x ^ (-E + 2 * C₃)
+
+end Graph
+
 /-- The graph transference input: PD Propositions 6.2 and 6.3, composed (WD
 Theorem 3.5, Corollary 3.11, Theorem 4.1 and Lemma 4.3), with `ℓ = k = 1` and
 the group exponents of PD (6.1), for endpoints that depend on the position
@@ -307,40 +369,8 @@ is a cell indicator times a character value, with weight at most `ξ⁻¹`. -/
 def GraphTransference : Prop :=
   ∀ (q₀ c₀ C₀ vlo vhi : ℝ), 0 < q₀ → q₀ < 1 → 0 < c₀ → 0 < vlo →
     ∀ E C₃ C₄ : ℝ, ∃ (m₀ J : ℕ) (C₁ C : ℝ), ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        -- active groups as in PD (6.1)
-        (∀ g h, g ≠ h → Disjoint (P g) (P h)) →
-        c₀ * Real.log (Real.log x) ≤ (Finset.univ \ big).card →
-        ((Finset.univ \ big).card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-        c₀ * Real.log (Real.log x) ≤ big.card → (big.card : ℝ) ≤ C₀ * Real.log (Real.log x) →
-        (∀ g, vlo ≤ harmonicMass (P g) ∧ harmonicMass (P g) ≤ vhi) →
-        (∀ g ∉ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.27 : ℝ)))
-          (Real.exp (Real.log x ^ (0.36 : ℝ)))) →
-        (∀ g ∈ big, P g ⊆ primesIcc (Real.exp (Real.log x ^ (0.39 : ℝ)))
-          (Real.exp (Real.log x ^ (0.46 : ℝ)))) →
-        (∀ g ∈ big, ∃ y z : ℝ, P g = primesIcc y z) →
-        ∃ (N : ℕ) (A B : Fin N → ι → Finset (Fin J)) (β : Fin N → ℂ)
-          (φ φ' ψ ψ' : Fin N → ℕ → ℂ) (U U' : Fin N → ℝ),
-          -- the comparison patterns
-          (∀ ν g, Disjoint (A ν g) (B ν g) ∧ (A ν g ∪ B ν g).card ≤ m₀) ∧
-          (∀ ν, ∀ g ∉ big, A ν g = ∅ ∧ B ν g = ∅) ∧
-          (∀ ν, (∃ g, (A ν g).Nonempty) ∧ ∃ g, (B ν g).Nonempty) ∧
-          (∀ ν n, ‖φ ν n‖ ≤ 1 ∧ ‖φ' ν n‖ ≤ 1 ∧ ‖ψ ν n‖ ≤ 1 ∧ ‖ψ' ν n‖ ≤ 1) ∧
-          (∀ ν n, φ ν n ≠ 0 → U ν ≤ n ∧ n ≤ Real.exp 1 * U ν) ∧
-          (∀ ν n, φ' ν n ≠ 0 → U' ν ≤ n ∧ n ≤ Real.exp 1 * U' ν) ∧
-          ∑ ν, ‖β ν‖ ≤ Real.log x ^ C₁ ∧
-          -- the transferred pairing
-          ∀ ζ : ℝ, |ζ| ≤ Real.log x ^ C₄ → ∀ X : ℝ, √x ≤ X → X ≤ x ^ 2 →
-            ∀ (S S' : Finset ℕ) (f g : ℕ → ℂ), (∀ n ∈ S, X ≤ n ∧ (n : ℝ) < 2 * X) →
-              (∀ n, ‖f n‖ ≤ 1) → (∀ n ∉ S', g n = 0) →
-              physicalNormSq P (J + 1) S f ≤ X * Real.log x ^ (2 * C₃) →
-              physicalNormSq P (J + 1) S' g ≤ X * Real.log x ^ (2 * C₃) →
-              ‖patternPairing P q₀ (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1) ζ S f g +
-                  ∑ ν, patternPairing P q₀ (fun h => A ν h ∪ B ν h)
-                    (fun p p' a => β ν * φ ν (slotProduct (A ν) a) * φ' ν (slotProduct (B ν) a) *
-                      ψ ν (slotProduct (A ν) fun h i => p' h i.castSucc) *
-                      ψ' ν (slotProduct (B ν) fun h i => p h i.castSucc)) ζ S f g‖ ≤
-                C * X * Real.log x ^ (-E + 2 * C₃)
+      TwoSided.ForAdmissibleGroups c₀ C₀ vlo vhi x fun _ _ _ P big =>
+        Graph.FamilyBound q₀ m₀ J C₁ C E C₃ C₄ x P big
 
 /-- The block sieve (WD Lemma 2.9, PD Lemma 2.6).
 

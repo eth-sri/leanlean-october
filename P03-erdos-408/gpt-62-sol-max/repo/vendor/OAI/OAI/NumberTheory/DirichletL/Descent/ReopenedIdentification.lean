@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
-public import OAI.NumberTheory.DirichletL.Descent.ReopenedPriority
+public import OAI.NumberTheory.DirichletL.Descent.ReopenedMarks
 
 @[expose] public section
 
@@ -20,8 +20,8 @@ theorem complete_pool_whole_cube_mark {σ : Type*} [DecidableEq σ]
     (T : Finset (primePool F)) (v : primePool F→₀ℕ) :
     indexedIdealMark (fun i:primePool F=>i.val) slots lists a
       ((∏i∈T,i.val)*cubeIdeal F v^3) = primeMark slots lists a (T∪v.support) := by
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   have hinj : Function.Injective (fun i:primePool F=>Ideal.span {poolPrimary F i}) := by
     intro i j h
     dsimp only at h
@@ -44,8 +44,8 @@ theorem reopened_marked_global_column {σ : Type*} [DecidableEq σ]
     (v : primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     let Y := X/(Ideal.absNorm (cubeIdeal F v):ℝ)^3
     (∑' I:Ideal O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*W ((Ideal.absNorm I:ℝ)/Y)*
       indexedIdealMark (fun i:primePool F=>i.val) slots lists a (I*cubeIdeal F v^3)) =
@@ -54,8 +54,8 @@ theorem reopened_marked_global_column {σ : Type*} [DecidableEq σ]
       (fun T=>primeMark slots lists a (T∪v.support)*W (primeProductNorm (poolPrimary F) T/Y)) f z := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   let Y := X/(Ideal.absNorm (cubeIdeal F v):ℝ)^3
   have hN := norm_at_least_one (cubeIdeal F v) (cubeIdeal_ne_zero F v)
   have hY : 0<Y := by dsimp [Y];positivity

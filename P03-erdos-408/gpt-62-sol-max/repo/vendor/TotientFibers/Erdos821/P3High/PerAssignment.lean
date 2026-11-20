@@ -17,14 +17,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.P3Lowrank Erdos821.S2High
 
 attribute [local instance] bmsFintype ghostChoiceFintype edgeChoiceFintype
@@ -77,7 +70,7 @@ def initMult {n B : ℕ} (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx
 theorem prescribed_local {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
     (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ)
     (hH : Prescribed B H U tgt) :
-    localFactorR A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
+    localFactor A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
       (fun i => edgeMult A (slE F J U i) (valsE F J tgt i)) H = 1 := by
   have hI : initMult U tgt (H.before 0) = 1 := by
     unfold initMult
@@ -108,15 +101,15 @@ theorem prescribed_local {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
     simp only [S2Core.MemoryHistory.freshTargetSlots, Finset.mem_filter, Finset.mem_univ,
       true_and] at h1'
     exact ⟨h1', h2⟩
-  unfold localFactorR
+  unfold localFactor
   rw [hI, Finset.prod_eq_one (fun i _ => hG i), Finset.prod_eq_one (fun i _ => hE i)]
   ring
 
 theorem localFactor_nonneg {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
     (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ) :
-    0 ≤ localFactorR A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
+    0 ≤ localFactor A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
       (fun i => edgeMult A (slE F J U i) (valsE F J tgt i)) H := by
-  unfold localFactorR initMult ghostMult edgeMult
+  unfold localFactor initMult ghostMult edgeMult
   apply mul_nonneg (mul_nonneg _ _) _
   · split_ifs <;> norm_num
   · exact Finset.prod_nonneg fun i _ => by dsimp only; split_ifs <;> norm_num
@@ -202,7 +195,7 @@ theorem prod_slots_le (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B))
   have hn3 : 0 ≤ ∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) :=
     Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ =>
       mul_nonneg two_pos.le (h0 _ _)
-  have hn1' : 0 ≤ ∏ x ∈ slI F J U, 2 * muHat F P n x.1 (valsI F J tgt x) := hn1.trans hle1
+  have hn1' := hn1.trans hle1
   calc _ ≤ (∏ x ∈ slI F J U, 2 * muHat F P n x.1 (valsI F J tgt x)) *
         (∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, 2 * muHat F P n x.1 (valsG F J tgt i x)) *
         (∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x)) :=
@@ -238,9 +231,9 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
   let Φ0 := initMult (F := F) (J := J) U tgt
   let φG : Fin (n + 1) → (s t : P.MemoryState (J + F.ell)) → GhostChoice s t → ℝ :=
     fun i => ghostMult (slG F J U i) (valsG F J tgt i)
-  let φE : Fin n → (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ :=
+  let φE :=
     fun i => edgeMult A (slE F J U i) (valsE F J tgt i)
-  let cG : Fin (n + 1) → ℝ := fun i =>
+  let cG := fun i =>
     (∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) * CG
   let cE : Fin n → ℝ := fun i =>
     (∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x)) * CE
@@ -251,9 +244,9 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
   have step1 : ∑' H : MemoryHistory A n,
       (if H.Valid ∧ H.Truncated B ∧ Prescribed B H U tgt then ‖H.Weight rho theta‖ else 0) ≤
       ∑ d : BoundedHistoryData A n B,
-        (if (mkH d).Valid then ‖(mkH d).Weight rho theta‖ * localFactorR A n Φ0 φG φE (mkH d)
+        (if (mkH d).Valid then ‖(mkH d).Weight rho theta‖ * localFactor A n Φ0 φG φE (mkH d)
           else 0) := by
-    rw [tsum_truncR A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
+    rw [tsum_trunc A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
     apply Finset.sum_le_sum
     intro d _
     by_cases hc : (mkH d).Valid ∧ (mkH d).Truncated B ∧ Prescribed B (mkH d) U tgt
@@ -346,10 +339,8 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
         simp only [initTerm, ite_eq_right hem]
         split_ifs <;> rfl
     rw [Finset.sum_congr rfl (fun s _ => hrw s)]
-    have hI0 : 0 ≤ ∏ x ∈ slI F J U, muHat F P n x.1 (valsI F J tgt x) :=
-      Finset.prod_nonneg fun x _ => h0 _ _
     exact (init_slots F J n B hμ hmass1 (valsI F J tgt) (slI F J U)).trans
-      (mul_le_mul_of_nonneg_left (initTerm_sum_le A n B) hI0)
+      (mul_le_mul_of_nonneg_left (initTerm_sum_le A n B) (Finset.prod_nonneg fun x _ => h0 _ _))
   have hIBM : 0 ≤ initialMemoryBoundaryMass A n :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
   have hprodG : (∏ i, cG i) = (∏ i : Fin (n + 1),
@@ -359,8 +350,6 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
       ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x)) * CE ^ n := by
     simp only [cE, Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
   have hslots := prod_slots_le n B U tgt hμ
-  have hK : 0 ≤ CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n :=
-    mul_nonneg (mul_nonneg (pow_nonneg hCG _) (pow_nonneg hCE _)) hIBM
   have hn2 : 0 ≤ ∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x) :=
     Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ => h0 _ _
   have hn3 : 0 ≤ ∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) :=
@@ -378,6 +367,6 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
             (∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) *
             (∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x))) := by
         rw [hprodG, hprodE]; ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left hslots hK
+    _ ≤ _ := mul_le_mul_of_nonneg_left hslots (mul_nonneg (mul_nonneg (pow_nonneg hCG _) (pow_nonneg hCE _)) hIBM)
 
 end Erdos821.P3High

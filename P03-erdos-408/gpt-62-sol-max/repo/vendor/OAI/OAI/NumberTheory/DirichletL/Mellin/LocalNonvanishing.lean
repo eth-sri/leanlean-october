@@ -9,26 +9,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 
-open Filter Asymptotics
 
 namespace TargetLocalReduction
 
@@ -36,14 +21,13 @@ end TargetLocalReduction
 
 namespace ActualEisensteinCubic
 
-open AddChar MulChar
 
 end ActualEisensteinCubic
 
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
 
 namespace ShortDraftHeckeBridge
+
+open scoped LSeries.notation
 
 abbrev O := ActualEisensteinSieve.O
 
@@ -134,7 +118,6 @@ private theorem pairing_algebra
 
 namespace ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
-open scoped ComplexConjugate
 
 private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
@@ -159,8 +142,7 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
   have hs : (s : ℂ) ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℂ) := by
     simpa only [s, ← starRingEnd_apply, Complex.mul_conj',
       Nat.card_eq_fintype_card] using hnormC
-  have hsreal : s ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℝ) := by
-    exact Complex.ofReal_injective (by exact_mod_cast hs)
+  have hsreal := Complex.ofReal_injective (by exact_mod_cast hs)
   have hcard : 0 < (Fintype.card (O ⧸ Ideal.span {p}) : ℝ) := by positivity
   have hsroot : s = Real.sqrt (Fintype.card (O ⧸ Ideal.span {p})) := by
     nlinarith [Real.sq_sqrt hcard.le, Real.sqrt_nonneg
@@ -193,9 +175,7 @@ theorem first_poisson_prime_sign_pairing
     (-gm) * G * t = eps * (star alpha * g2) * t ∧
     (-g1) * star G * t⁻¹ = (alpha * star g2) * t⁻¹ ∧
     (-star gm) * star G * t⁻¹ = star eps * (alpha * star g2) * t⁻¹ := by
-  have hz : eisEmbedding p ≠ 0 := eisEmbedding_ne_zero hp
-  have hs : (‖eisEmbedding p‖ : ℂ) ≠ 0 := by
-    exact_mod_cast (norm_ne_zero_iff.mpr hz)
+  have hz  := eisEmbedding_ne_zero hp
   have hanorm : ‖eisEmbedding p / (‖eisEmbedding p‖ : ℂ)‖ = 1 := by
     rw [norm_div, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (norm_nonneg (eisEmbedding p))]
@@ -227,11 +207,9 @@ theorem first_poisson_prime_sign_pairing
 
 end ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 
-variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
 end ShortDraftLocal
 

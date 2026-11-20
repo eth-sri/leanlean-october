@@ -22,7 +22,7 @@ theorem slot_log_ratio_bound (W : ℝ → ℂ) (a b P Z : ℝ) (I : Ideal O)
     (hW : W ((Ideal.absNorm I:ℝ)/P) ≠ 0) :
     |Real.logb Z ((Ideal.absNorm I:ℝ)/P)| ≤ logWindow a b/Real.log Z := by
   have hw := hs hW
-  have hr : 0 < (Ideal.absNorm I:ℝ)/P := ha.trans_le hw.1
+  have hr  := ha.trans_le hw.1
   have hlow := Real.log_le_log ha hw.1
   have hhigh := Real.log_le_log hr hw.2
   have habs : |Real.log ((Ideal.absNorm I:ℝ)/P)| ≤ logWindow a b := by

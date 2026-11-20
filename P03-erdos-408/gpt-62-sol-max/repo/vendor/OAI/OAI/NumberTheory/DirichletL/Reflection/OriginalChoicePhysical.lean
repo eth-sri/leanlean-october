@@ -58,8 +58,7 @@ lemma originalSplitControlled_physical (p : originalSlotChoices D Q₀ L)
       (reflectedExponent jF) (slotIndices τ (PrimeIndex (rowResidualPart I (Ideal.span {m}*F))) T) W X=
     originalSplitPhysical R I F Q₀ hbad L hmax hgood Frozen T C s hc jF W X
       (originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T p) := by
-  exact originalSplitControlled_value D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
-    L hmax hgood Frozen T C p s hc jF W X
+  rfl
 
 end
 end SevenEighths.InverseReflectedPhase

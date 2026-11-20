@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 
 @[expose] public section
@@ -7,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseSecondUniformCutoff ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
@@ -25,10 +26,9 @@ lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
     (hLc : L≤Z^Lcol) (hYi : Y⁻¹≤Z^LY) :
     uniformSecondRadius p Z delta eta G E L Y (Z^tau)≤
       Z^(delta+eta+2*Lcol+tau+LY) := by
-  have hr : primeProductNorm p E/primeProductNorm p G≤1 :=
+  have hr  :=
     (div_le_one (primeProductNorm_pos p hp G)).mpr (primeProductNorm_mono p hp hEG)
-  have hr0 : 0≤primeProductNorm p E/primeProductNorm p G := by
-    exact div_nonneg (primeProductNorm_pos p hp E).le (primeProductNorm_pos p hp G).le
+  have hr0 := div_nonneg (primeProductNorm_pos p hp E).le (primeProductNorm_pos p hp G).le
   have hs : (primeProductNorm p E/primeProductNorm p G)^2≤1 := pow_le_one₀ hr0 hr
   unfold uniformSecondRadius
   rw [div_eq_mul_inv]
@@ -61,11 +61,11 @@ theorem supported_outer_caps
   intro x hx i
   have hret := supported_subset p extra original negative J lists pool _ b X hx
   have hm := (mem_unifiedSource p pool _ _ x).mp hret
-  have hg : primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤Z^Lcap :=
+  have hg  :=
     (geometrySource_gate p _ b X x hx).trans hgeom
-  have hG : primeProductNorm p x.second.sourceCommon≤Z^Lcap :=
+  have hG  :=
     (le_mul_of_one_le_right (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
-  have hV : primeProductNorm p x.second.overlap≤Z^Lcap :=
+  have hV  :=
     (le_mul_of_one_le_left (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
   fin_cases i
   · exact hG

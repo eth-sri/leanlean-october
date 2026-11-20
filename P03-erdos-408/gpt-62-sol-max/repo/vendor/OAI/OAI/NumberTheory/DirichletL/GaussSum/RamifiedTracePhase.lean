@@ -9,20 +9,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
 
 namespace TraceLambdaPhase
 
 open EisensteinEmbedding ConcreteTraceCRT Complex
-open scoped ComplexConjugate
 
 theorem eisLam_sq : eisLam ^ 2 = (-3 : ℂ) := by
   change (1 + 2 * omega3) ^ 2 = -3
@@ -53,22 +45,15 @@ end TraceLambdaPhase
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
 
 end ActualEisensteinCubic
 
 namespace PoissonFirstLocal
-open scoped Classical
 
 end PoissonFirstLocal
 
 namespace ActualEisensteinCubic
 
-section
-
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
-
-end
 
 noncomputable def finiteSquarefreeRow
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -94,36 +79,7 @@ theorem finiteSquarefreeRow_sixth_power
     rw [canonicalSextic_sixth_power_mask]
     simp [show a ∉ P i by intro hai; exact hex ⟨i, hi, hai⟩]
 
-theorem finiteSquarefreeRow_difference
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    (∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6)) =
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), weight n := by
-  classical
-  rw [← Finset.sum_sub_distrib]
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [finiteSquarefreeRow_sixth_power]
-  by_cases h : ∃ i ∈ support n, a ∈ P i <;> simp [h]
 
-theorem finiteSquarefreeRow_difference_norm
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6))‖ ≤
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), ‖weight n‖ := by
-  rw [finiteSquarefreeRow_difference]
-  exact norm_sum_le _ _
 
 end ActualEisensteinCubic
 
@@ -133,7 +89,6 @@ end AnalyticBridge
 
 namespace ShortDraftCusp
 
-variable {R : Type*} [CommRing R]
 
 end ShortDraftCusp
 
@@ -156,7 +111,7 @@ theorem breveE_quarter_trace (a b : ℤ) :
   rw [hconj]
   have hL : ((a : ℂ) + (b : ℂ) * omega3) / eisLam +
       star (((a : ℂ) + (b : ℂ) * omega3) / eisLam) = (b : ℂ) := by
-    simpa only [eisLam, Complex.star_def] using htrace
+    assumption
   have harg : 2 * Real.pi * Complex.I *
       (((((a : ℂ) + (b : ℂ) * omega3) / eisLam) / 4) +
         (star (((a : ℂ) + (b : ℂ) * omega3) / eisLam)) / 4) =
@@ -208,7 +163,7 @@ theorem breveGaussianFourTerms_formula (a b : ℤ) :
     exact breveE_quarter_trace b (b-a)
   dsimp [breveGaussianFourTerms]
   rw [hfirst, hsecond, hthird]
-  simp only [map_zero_eq_one]
+  simp
 
 end ActualEisensteinCubic
 

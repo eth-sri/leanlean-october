@@ -9,77 +9,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
-open IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
+open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
+open FiniteSieveRestriction
 
 def weightedRayGramMatrix {m n : Type*} [Fintype m]
     (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) (rows : m → Ideal O) (cols : n → Ideal O)
@@ -92,8 +35,7 @@ def weightedRayGramMatrix {m n : Type*} [Fintype m]
 end
 
 section
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
-open QuadraticSquarefreeKernel
+open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction QuadraticSquarefreeKernel
 
 def rayPairValue (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
     (a : idealRange N → ℂ) (I : Ideal O) : ℂ :=
@@ -121,8 +63,8 @@ theorem exists_dyadic_shell (n lengthScale : ℕ) (hn : 1 ≤ n) (hL : (n : ℝ)
     ∃ j ∈ Finset.range (lengthScale + 1), (2 : ℝ) ^ j / 2 < n ∧ (n : ℝ) ≤ (2 : ℝ) ^ j := by
   have hex : ∃ j : ℕ, (n : ℝ) ≤ (2 : ℝ) ^ j := ⟨lengthScale, hL⟩
   let j := Nat.find hex
-  have hj : (n : ℝ) ≤ (2 : ℝ) ^ j := Nat.find_spec hex
-  have hjL : j ≤ lengthScale := Nat.find_min' hex hL
+  have hj  := Nat.find_spec hex
+  have hjL  := Nat.find_min' hex hL
   refine ⟨j, Finset.mem_range.mpr (by omega), ?_, hj⟩
   have hjfind : j = Nat.find hex := rfl
   rcases j with _ | j
@@ -135,7 +77,6 @@ theorem exists_dyadic_shell (n lengthScale : ℕ) (hn : 1 ≤ n) (hL : (n : ℝ)
 
 end CanonicalQuadraticSieve
 
-open scoped SchwartzMap ContDiff
 namespace QuadraticInitialBound
 
 def annularSieveBump : ContDiffBump (3 / 4 : ℝ) where
@@ -145,11 +86,9 @@ def annularSieveBump : ContDiffBump (3 / 4 : ℝ) where
   rIn_lt_rOut := by norm_num
 
 def annularSieveCutoff : 𝓢(ℝ, ℂ) := by
-  have hc : HasCompactSupport (fun t : ℝ => (annularSieveBump t : ℂ)) :=
+  have hc  :=
     annularSieveBump.hasCompactSupport.comp_left Complex.ofReal_zero
-  have hs : ContDiff ℝ ∞ (fun t : ℝ => (annularSieveBump t : ℂ)) :=
-    Complex.ofRealCLM.contDiff.comp annularSieveBump.contDiff
-  exact hc.toSchwartzMap hs
+  exact hc.toSchwartzMap (Complex.ofRealCLM.contDiff.comp annularSieveBump.contDiff)
 
 @[simp] theorem annularSieveCutoff_apply (t : ℝ) : annularSieveCutoff t = (annularSieveBump t : ℂ) := rfl
 
@@ -176,7 +115,6 @@ theorem annularSieveBump_zero_of_ge {t : ℝ} (ht : 5 / 4 ≤ t) : annularSieveB
 
 end QuadraticInitialBound
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -196,14 +134,8 @@ def annularRayGcdBlock (M N K : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.
 
 end
 
-section
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
-open IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
-end
-
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
-open QuadraticSquarefreeKernel
+open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction QuadraticSquarefreeKernel
 
 theorem annularHighWeight_eq_zero (M : ℝ) (hM : 0 < M) (I : Ideal O)
     (hI : 2 * M ≤ (Ideal.absNorm I : ℝ)) : annularHighWeight M I = 0 := by
@@ -229,7 +161,7 @@ theorem annularRayGcdBlock_eq_tsum (M N K : ℝ) (hM : 0 < M)
     intro I hI
     have hp : Supported I ∧ K < (Ideal.absNorm (squarefreePart I) : ℝ) := by
       have h := mem_highKernelRange.mp hI
-      exact ⟨h.1, h.2.2⟩
+      simp_all
     rw [ite_eq_left hp, QuadraticInitialBound.annularSieveCutoff_apply]
     rfl
   · by_cases hp : Supported I ∧ K < (Ideal.absNorm (squarefreePart I) : ℝ)
@@ -250,12 +182,7 @@ end FiniteSieveOperator
 
 namespace CanonicalQuadraticSieve
 
-section
-open FiniteSieveOperator
 
-end
-
-open IdealCoprimeSieveOperator DivisorBlockCauchy
 
 end CanonicalQuadraticSieve
 

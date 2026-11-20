@@ -6,13 +6,7 @@ public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 
 namespace ShortDraftCRT
 
@@ -120,7 +114,6 @@ theorem omega_sq : ω₃ ^ 2 = -ω₃ - 1 := by
     unfold ω₃
     ring
   rw [hs', Complex.I_sq] at hquad
-  norm_num at hquad
   linear_combination hquad
 
 theorem omega_conj : conj ω₃ = ω₃ ^ 2 := by
@@ -161,7 +154,7 @@ private theorem lam_eq_sqrt3_mul_I :
 private theorem sub_conj_eq (z : ℂ) :
     z - conj z = 2 * (z.im : ℂ) * Complex.I := by
   apply Complex.ext
-  · simp [Complex.mul_re]
+  · simp
   · simp [Complex.mul_im]
     ring
 
@@ -169,8 +162,6 @@ theorem breveE_div_lam_eq_e (z : ℂ) :
     breveE (z / (1 + 2 * ω₃)) =
       Complex.exp (4 * Real.pi * Complex.I * (z.im / Real.sqrt 3)) := by
   have hs : (Real.sqrt 3 : ℝ) ≠ 0 := ne_of_gt (Real.sqrt_pos.2 (by norm_num))
-  have hl : ((Real.sqrt 3 : ℝ) : ℂ) * Complex.I ≠ 0 :=
-    mul_ne_zero (by exact_mod_cast hs) Complex.I_ne_zero
   change Complex.exp (2 * Real.pi * Complex.I *
     (z / (1 + 2 * ω₃) + conj (z / (1 + 2 * ω₃)))) = _
   rw [lam_eq_sqrt3_mul_I]

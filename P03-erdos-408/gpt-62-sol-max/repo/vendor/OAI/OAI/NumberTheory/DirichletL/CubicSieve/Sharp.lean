@@ -19,7 +19,7 @@ theorem hasCubicExponent_four_thirds : HasCubicExponent (4/3 : ℝ) := by
   intro M N hM hN
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
-  have hMN : 0 < M*N := mul_pos hM0 hN0
+  have hMN  := mul_pos hM0 hN0
   have hp : 1 ≤ N^(ε/2) := Real.one_le_rpow hN (by positivity)
   have hNpow : N^ξ ≤ N^(4/3 : ℝ)*N^(ε/2) := by
     rw [← Real.rpow_add hN0]
@@ -46,7 +46,7 @@ theorem hasCubicExponent_four_thirds : HasCubicExponent (4/3 : ℝ) := by
         _ = C*((M*N)^(ε/2)*(M*N)^(ε/2))*(M+N^(4/3 : ℝ)+(M*N)^(2/3 : ℝ)) := by ring
         _ = _ := by rw [he]
 
-lemma four_thirds_le_cross (M N : ℝ) (_hM : 1 ≤ M) (hN : 1 ≤ N) (hNM : N ≤ M) :
+lemma four_thirds_le_cross (M N : ℝ) (hN : 1 ≤ N) (hNM : N ≤ M) :
     N^(4/3 : ℝ) ≤ (M*N)^(2/3 : ℝ) := by
   have hN0 : 0 ≤ N := by linarith
   calc
@@ -64,16 +64,15 @@ theorem sieveNorm_sharp (ε : ℝ) (hε : 0 < ε) :
   intro M N hM hN
   have hM0 : 0 ≤ M := by linarith
   have hN0 : 0 ≤ N := by linarith
-  have hcross : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (mul_nonneg hM0 hN0) _
   by_cases hNM : N ≤ M
-  · have hh := four_thirds_le_cross M N hM hN hNM
+  · have hh := four_thirds_le_cross M N hN hNM
     calc
       _ ≤ C*(M*N)^ε*(M+N^(4/3 : ℝ)+(M*N)^(2/3 : ℝ)) := hb M N hM hN
       _ ≤ C*(M*N)^ε*(2*(M+N+(M*N)^(2/3 : ℝ))) :=
         mul_le_mul_of_nonneg_left (by linarith) (by positivity)
       _ = _ := by ring
   · have hMN := le_of_not_ge hNM
-    have hh := four_thirds_le_cross N M hN hM hMN
+    have hh := four_thirds_le_cross N M hM hMN
     have hs : N+M^(4/3 : ℝ)+(N*M)^(2/3 : ℝ) ≤
         2*(M+N+(M*N)^(2/3 : ℝ)) := by
       rw [mul_comm N M] at hh ⊢

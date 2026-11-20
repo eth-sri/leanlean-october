@@ -83,7 +83,7 @@ theorem natural_reference_error_homogeneous {α:Type*}(F:Finset α)(bshort:ℝ)(
   intro T hT W hsW χ pool β P t X K Φ keep hX hK hP hp hβ hs hΦ
   let A:=(schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W
   have hA:0≤A:=apply_nonneg _ _
-  have hWA:∀x,‖W x‖≤A:=SchwartzMap.norm_le_seminorm ℝ W
+  have hWA:=SchwartzMap.norm_le_seminorm ℝ W
   let R:=fun z:O=>polynomial (χ z) false W X 0 t *
     ∏i∈T,naturalSlot (χ z) (pool i) (heightCoefficient (β i) t) (P i)
   let V:=errorConstant F bshort 1 b M*A^2*X*∏i∈T,P i
@@ -97,7 +97,7 @@ theorem natural_reference_error_homogeneous {α:Type*}(F:Finset α)(bshort:ℝ)(
       (fun i hi I hI=>by rw [heightCoefficient_norm _ _ _ (hp i hi I hI).ne_zero];exact hβ i hi I hI)
       (fun i hi I hI hn=>hs i hi I hI (left_ne_zero_of_mul hn))
     exact hh
-  have hsum:Summable (fun z:O=>‖Φ (‖eisEmbedding z‖^2/K)‖*‖R z‖^2):=
+  have hsum:=
     Summable.of_nonneg_of_le (fun z=>mul_nonneg (norm_nonneg _) (sq_nonneg _))
       (fun z=>mul_le_mul_of_nonneg_left (hr z) (norm_nonneg _))
       ((radial_norm_summable Φ K hK).mul_right V)
@@ -109,7 +109,7 @@ theorem natural_reference_error_homogeneous {α:Type*}(F:Finset α)(bshort:ℝ)(
     _=(∑'z:O,‖Φ (‖eisEmbedding z‖^2/K)‖)*V:=tsum_mul_right
     _≤(diagonalControl Φ*max 1 K)*V:=mul_le_mul_of_nonneg_right
       (radial_weight_lattice_bound_all Φ K hK) hV
-    _=_:=by dsimp [V,A];ring
+    _=_:=by ring
 
 end SevenEighths.CenteredMomentEnergyReferenceHomogeneousError
 

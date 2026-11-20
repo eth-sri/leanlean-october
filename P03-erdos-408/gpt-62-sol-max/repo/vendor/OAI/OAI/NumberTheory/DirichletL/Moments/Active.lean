@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentActive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-open CanonicalRowCompletion CenteredMomentCanonical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
+open CenteredMomentCanonical
 
 def netExponent (c d : ℕ) : ℕ := (c + 5 * d) % 6
 
@@ -26,7 +26,7 @@ theorem local_pair_reduction (P : Ideal O) [P.IsMaximal]
     exact pow_orderOf_eq_one _
   have h5 : actualSextic P hg ^ 5 = (actualSextic P hg)⁻¹ := by
     apply eq_inv_of_mul_eq_one_left
-    simpa only [← pow_succ] using h6
+    assumption
   rw [MulChar.star_apply', ← MulChar.mul_apply]
   congr 1
   unfold netExponent

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalAnnularCommonBoun
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstWindowBudgets
 open CenteredMomentSecondWindowBudget
@@ -51,12 +51,11 @@ theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
   rw [Finset.mul_sum]
 
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
-open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentSourceRow
+open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice CenteredMomentCanonicalFirst
+open CenteredMomentCommonSupport CenteredMomentGaussEnergy CenteredMomentLogDyadic RayFourExpansion
+open CompletedGauss CenteredMomentChildAssembly CenteredMomentMobiusRegroup
+open CenteredMomentSectorLocalization
 universe u
 
 end SevenEighths.CenteredMomentFirstWindowBudgets

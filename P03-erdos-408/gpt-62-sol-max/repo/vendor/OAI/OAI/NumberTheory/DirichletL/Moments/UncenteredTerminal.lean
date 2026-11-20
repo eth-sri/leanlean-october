@@ -1,19 +1,18 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.TerminalEnergy
 public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
+
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentUncenteredTerminal
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow CenteredMomentSourceMass
+open CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
@@ -28,7 +27,6 @@ def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
 def comparisonScale (b : ℝ) : ℝ := 1/(2*max 1 b)
 
 lemma comparisonScale_pos (b : ℝ) : 0<comparisonScale b := by
-  have hb : 0<max 1 b := zero_lt_one.trans_le (le_max_left _ _)
   unfold comparisonScale
   positivity
 
@@ -39,7 +37,7 @@ theorem comparison_first_zero (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   have ht := hs h
   by_cases hI : I=0
   · simp only [hI,mul_zero,map_zero,Nat.cast_zero,zero_div,Set.mem_Icc] at ht
-    linarith [ht.1]
+    linarith
   have hn : 1≤(Ideal.absNorm (B*I):ℝ) :=
     QuadraticMainBoundary.norm_one_le (mul_ne_zero hB hI)
   have hmax : 1≤max 1 b := le_max_left _ _

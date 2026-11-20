@@ -148,7 +148,7 @@ theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)
         ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 7 h‖^2) := by
   apply eligible_pool_average P hP
   intro p hpP
-  let : (Ideal.span {p}).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible (hp p hpP).irreducible
+  let  := PrincipalIdealRing.isMaximal_of_irreducible (hp p hpP).irreducible
   exact polynomial_amplification_actual S a ha c p (hp p hpP) (hs p hpP)
     (hgood p hpP) (hc p hpP) h (hph p hpP)
 

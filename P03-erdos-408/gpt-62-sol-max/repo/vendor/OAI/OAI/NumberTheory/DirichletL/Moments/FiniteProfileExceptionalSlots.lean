@@ -6,11 +6,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCapped
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open ConcretePrimeRowBridge
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 theorem capped_slots_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
@@ -46,7 +45,7 @@ theorem capped_slots_source_control
   exact whole_product_normalization _ (fun i=>rowSlot η m A z (S i) (β i) t)
     (fun i=>128*b i*M i) P (C*(sourceControl R W₁*sourceControl R W₂)*Z^ε*(1+‖t‖)^J) T (max 1 L) (by positivity) hT
     (zero_lt_one.trans_le (le_max_left _ _))
-    (fun i=>mul_nonneg (mul_nonneg (by norm_num) (hb i)) (hM i)) hP hslots
+     hP hslots
     (hbound W₁ W₂ hs₁ hs₂ Z hZ η m A z hm hA hz hml hm2 hc he t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY)
 
 end SevenEighths.CenteredMomentFiniteProfileExceptional

@@ -7,20 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstReferenceEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstColumnPairing
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceEnergy
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst
-open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy
-open CenteredMomentFirstMixedAllowance CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentSecondRetainedAggregate CenteredMomentChildAssembly
-open CenteredMomentFirstNonexceptionalWeightSum
+open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy CenteredMomentFirstMixedAllowance
+open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentSecondRetainedAggregate
+open CenteredMomentChildAssembly CenteredMomentFirstNonexceptionalWeightSum
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma fixed_pair_moduli (η:Character)(C D:Ideal O)(hC:Supported C)
     (E:Finset (CommonIndex C D))(χ:RayCharacter):

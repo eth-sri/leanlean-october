@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatchCount
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorCountFromMoments
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorClassBudget
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
@@ -25,8 +26,8 @@ lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : �
     (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))
     (hne : (B.fiberRows bin j J K).Nonempty) : (B.fiber bin j J K hne).q=q := by
   let u := hne.choose
-  have hu : u ∈ B.fiberRows bin j J K := hne.choose_spec
-  have huR : u∈B.rows := (Finset.mem_filter.mp hu).1
+  have hu  := hne.choose_spec
+  have huR  := (Finset.mem_filter.mp hu).1
   rw [←hq u huR]
   unfold Fiber.q rowMean weightedMean
   congr 1

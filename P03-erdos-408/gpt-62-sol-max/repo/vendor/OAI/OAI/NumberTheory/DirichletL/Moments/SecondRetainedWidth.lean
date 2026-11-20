@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondRetainedWidth
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalBudget CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentCanonicalFirst
-open CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
+open CenteredMomentSecondRadicalBudget CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondHeightFamily CenteredMomentChildRows
+open CenteredMomentCanonicalFirst CenteredMomentSupport CenteredMomentHeckeColumnWindow
+open CenteredMomentSectorLocalization RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem retained_geometry (R : ℝ) (G V z : O)

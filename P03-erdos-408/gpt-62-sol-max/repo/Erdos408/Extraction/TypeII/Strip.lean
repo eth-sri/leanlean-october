@@ -79,7 +79,6 @@ theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
     exact_mod_cast Nat.one_le_iff_ne_zero.2 this
   have hmbm : (mb : ℝ) ≤ m := by exact_mod_cast stripPrimes_le _ hm0
   have hlogmb : Real.log mb ≤ Real.log m := Real.log_le_log (by linarith) hmbm
-  have hlogmb0 : 0 ≤ Real.log mb := Real.log_nonneg hmb1
   have hL19 : Real.log x ^ (19 / 10 : ℝ) ≤ Real.log x ^ (2 : ℕ) := by
     rw [← Real.rpow_natCast]
     exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
@@ -105,10 +104,8 @@ theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
       field_simp
       ring
     rw [heq, abs_neg, abs_of_nonneg (by
-      have : 0 ≤ Real.log m - Real.log mb := by linarith
       positivity)]
     apply div_le_div_of_nonneg_left (by
-      have : 0 ≤ Real.log m - Real.log mb := by linarith
       positivity) hden0
     calc γ ^ 2 * Real.log x ^ (19 / 10 : ℝ) ≤ (γ * Real.log x) ^ 2 := hden
       _ = γ * Real.log x * (γ * Real.log x) := sq _
@@ -121,7 +118,6 @@ theorem abs_proxy_sub_le_log (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
     have hgap : Real.log x ^ (9 / 10 : ℝ) ≤ Real.log m - Real.log mb := by linarith
     rw [sub_zero, abs_of_nonneg (by positivity)]
     have hgD : 0 ≤ dampedWeight x j m / dampedDensity x j := by positivity
-    have hlogm0 : 0 < Real.log m := by linarith
     have hL19 : Real.log x ^ (19 / 10 : ℝ) = Real.log x * Real.log x ^ (9 / 10 : ℝ) := by
       rw [← Real.rpow_one_add' hL0.le (by norm_num)]; norm_num
     calc dampedWeight x j m / (dampedDensity x j * Real.log m)
@@ -173,43 +169,7 @@ theorem sum_proxyEnv_div_le (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j
     (hYN : proxyCutoff x ≤ N) {w : ℕ → ℝ} (hw : ∀ m, w m ≤ proxyEnv x γ j m) :
     ∑ m ∈ Icc 1 N, w m * cmul (fun p => (p : ℝ)⁻¹) m ≤
       ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := by
-  obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
-  have hD := dampedDensity_pos hL hj
-  have hγL : 0 < γ * Real.log x := by positivity
-  set ν := (dampedDensity x j * (γ * Real.log x))⁻¹ with hν
-  have hterm : ∀ m ∈ Icc 1 N, w m * cmul (fun p => (p : ℝ)⁻¹) m ≤
-      ν * (dampedWeight x j m / m) := by
-    intro m hm
-    have hm0 : m ≠ 0 := by have := (mem_Icc.1 hm).1; omega
-    rw [cmul_inv hm0]
-    calc w m * (m : ℝ)⁻¹ ≤ dampedWeight x j m / (dampedDensity x j * (γ * Real.log x)) *
-          (m : ℝ)⁻¹ := by
-          gcongr
-          exact (hw m).trans (proxyEnv_le hL hγ hj m)
-      _ = ν * (dampedWeight x j m / m) := by rw [hν]; ring
-  have hsum := sum_dampedWeight_div_le hL hYP hYN hj
-  have hPP : 0 ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ :=
-    prod_nonneg fun p hp => by
-      have : (2 : ℝ) ≤ p := by exact_mod_cast (mem_primesIoc.1 hp).1.two_le
-      rw [inv_nonneg, sub_nonneg, div_le_one (by linarith)]; linarith
-  have hPc : 0 < ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ := by
-    have := hD; unfold dampedDensity at this
-    exact pos_of_mul_pos_right this hPi.le
-  calc ∑ m ∈ Icc 1 N, w m * cmul (fun p => (p : ℝ)⁻¹) m
-      ≤ ∑ m ∈ Icc 1 N, ν * (dampedWeight x j m / m) := sum_le_sum hterm
-    _ = ν * ∑ m ∈ Icc 1 N, dampedWeight x j m / m := (mul_sum _ _ _).symm
-    _ ≤ ν * ((∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹) *
-          ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹) :=
-        mul_le_mul_of_nonneg_left hsum (by positivity)
-    _ = (∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹) /
-          ((∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x)) := by
-        have key : ∀ a b c d : ℝ, b ≠ 0 → (a * b * c)⁻¹ * (b * d) = d / (a * c) := by
-          intro a b c d hb
-          rw [div_eq_mul_inv, mul_inv, mul_inv, mul_inv]
-          field_simp
-        rw [hν, dampedDensity]
-        exact key _ _ _ _ hPc.ne'
-    _ ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := div_le_self hPP hY
+  exact sum_proxy_harmonic_le hL hγ hj hY hYP hYN (fun m => (hw m).trans (proxyEnv_le hL hγ hj m))
 
 /-- The count `∑_{m ≤ w} W(m) ≤ c w / (γ L)`, from the rough-count bound for `g_j`. -/
 theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
@@ -226,8 +186,6 @@ theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ 
       (A₁ / c₃ + 1) / (γ * Real.log x) * w := by
   obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
   have hD := dampedDensity_pos hL hj
-  have hγL : 0 < γ * Real.log x := by positivity
-  have hEnv0 := proxyEnv_nonneg hL hγ hj
   by_cases hwγ : w < x ^ γ
   · -- below `x^γ` the envelope vanishes
     refine le_trans (le_of_eq (sum_eq_zero fun m _ => ?_)) (by positivity)
@@ -236,7 +194,7 @@ theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ 
     · rfl
   push Not at hwγ
   set W := ⌊w⌋₊
-  have hWw : (W : ℝ) ≤ w := Nat.floor_le hw
+  have hWw  := Nat.floor_le hw
   have hsub : ∑ m ∈ Icc 1 N, (if (m : ℝ) ≤ w then proxyEnv x γ j m else 0) ≤
       ∑ m ∈ Icc 1 W, dampedWeight x j m / (dampedDensity x j * (γ * Real.log x)) := by
     rw [← sum_filter]
@@ -271,7 +229,7 @@ theorem sum_proxyEnv_count_le {A₁ c₃ θ : ℝ} (hL : 1 ≤ Real.log x) (hγ 
   -- the `P`-numbers
   have h2 : (W : ℝ) ^ θ * ∏ p ∈ candidatePrimes x, (1 - (p : ℝ) ^ (-θ))⁻¹ ≤
       w * dampedDensity x j := by
-    have hWθ : (W : ℝ) ^ θ ≤ w ^ θ := Real.rpow_le_rpow (Nat.cast_nonneg _) hWw hθ.le
+    have hWθ  := Real.rpow_le_rpow (Nat.cast_nonneg _) hWw hθ.le
     have hPiθ : 0 ≤ ∏ p ∈ candidatePrimes x, (1 - (p : ℝ) ^ (-θ))⁻¹ :=
       prod_nonneg fun p hp => by
         have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (mem_candidatePrimes hL hp).1.two_le
@@ -309,7 +267,7 @@ theorem sum_dyadic_le {N K' : ℕ} {y cW : ℝ} (hy : 0 < y) {W : ℕ → ℝ}
           _ ≤ 2 ^ (K' + 1) * y := by gcongr <;> norm_num⟩
       classical
       set k := Nat.find hex with hk
-      have hk1 : (m : ℝ) ≤ 2 ^ (k + 1) * y := Nat.find_spec hex
+      have hk1  := Nat.find_spec hex
       have hk2 : 2 ^ k * y < m := by
         rcases Nat.eq_zero_or_pos k with h0 | h0
         · rw [h0, pow_zero, one_mul]; exact h1
@@ -321,7 +279,6 @@ theorem sum_dyadic_le {N K' : ℕ} {y cW : ℝ} (hy : 0 < y) {W : ℕ → ℝ}
         push Not at hK
         have : (2 : ℝ) ^ K' * y ≤ 2 ^ k * y := by gcongr; norm_num
         linarith
-      have hm0 : (0 : ℝ) < m := by linarith
       calc W m / m ≤ W m / (2 ^ k * y) :=
             div_le_div_of_nonneg_left (hW0 m) (by positivity) hk2.le
         _ = (if (m : ℝ) ≤ 2 ^ (k + 1) * y then W m else 0) / (2 ^ k * y) := by
@@ -356,7 +313,6 @@ theorem sum_abs_delta_le {x γ : ℝ} {j N K' : ℕ} {c₃ cW SP : ℝ} (hx : 1 
         (Real.log (proxyCutoff x) / c₃) / (γ ^ 2 * Real.log x ^ (19 / 10 : ℝ)) := by
   have hD := dampedDensity_pos hL hj
   obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
-  have hL0 : 0 < Real.log x := by linarith
   have hden : 0 < γ ^ 2 * Real.log x ^ (19 / 10 : ℝ) := by positivity
   have hxγ0 : 0 < x ^ γ := by positivity
   set Q := (dampedDensity x j * (γ ^ 2 * Real.log x ^ (19 / 10 : ℝ)))⁻¹ with hQ
@@ -425,10 +381,9 @@ theorem sum_abs_delta_le {x γ : ℝ} {j N K' : ℕ} {c₃ cW SP : ℝ} (hx : 1 
   have hlog := sum_dampedWeight_log_div_le hL hj N
   have hdens := sum_dampedWeight_div_le hL hYP hYN hj
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  have ht1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hj'
+  have ht1  := inv_le_one_of_one_le₀ hj'
   have hSP0 : 0 ≤ SP := le_trans (sum_nonneg fun p hp => by
     have := (mem_candidatePrimes hL hp).1.one_lt.le
-    have : 0 ≤ Real.log p := Real.log_nonneg (by exact_mod_cast this)
     positivity) hSP
   have hPi1 : 0 ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ :=
     prod_nonneg fun p hp => by
@@ -484,7 +439,7 @@ theorem abs_strip_step_le {x γ : ℝ} {j N r : ℕ} {SΨ cW : ℝ} (hL : 1 ≤ 
           ∏ k, U k (m' k)| ≤
       SΨ * cW * N * (∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹) ^ r *
         ∑ m ∈ Icc 1 N, |unstrippedProxy x γ j m - strippedProxy x γ j m| / m := by
-  have hS : 0 ≤ SΨ := (abs_nonneg _).trans (hΨ 0)
+  have hS  := (abs_nonneg _).trans (hΨ 0)
   set P₁ := ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ with hP1
   have hcount' : ∀ w : ℝ, 0 ≤ w → ∑ a ∈ Icc 1 N, (if (a : ℝ) ≤ w then U 0 a else 0) ≤ cW * w :=
     fun w hw => (sum_le_sum fun a _ => by split_ifs <;> [exact hU 0 a; exact le_rfl]).trans
@@ -502,7 +457,7 @@ theorem abs_strip_step_le {x γ : ℝ} {j N r : ℕ} {SΨ cW : ℝ} (hL : 1 ≤ 
         ∏ k, U k (m' k)| ≤
       SΨ * cW * N * P₁ ^ r * (|unstrippedProxy x γ j m₀ - strippedProxy x γ j m₀| / m₀) := by
     intro m₀ hm₀
-    have hm₀1 : 1 ≤ m₀ := (mem_Icc.1 hm₀).1
+    have hm₀1  := (mem_Icc.1 hm₀).1
     have hm₀0 : (0 : ℝ) < m₀ := by exact_mod_cast hm₀1
     set d := |unstrippedProxy x γ j m₀ - strippedProxy x γ j m₀|
     have hpt : ∀ m' ∈ Fintype.piFinset (fun _ : Fin (r + 1) => Icc 1 N),

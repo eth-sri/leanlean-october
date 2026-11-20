@@ -22,7 +22,7 @@ lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     ‖coordV Q z‖<1 ∧ ‖coordR Q ((actualACube η p)^2) x z‖<1 ∧
       ‖coordW Q rho w‖<1 ∧ ‖coordD Q (targetMonoid η p) rho x‖<1 := by
   dsimp only
-  have hP : Prime (Ideal.span {p}:Ideal O) := (Ideal.prime_span_singleton_iff).mpr hp
+  have hP  := (Ideal.prime_span_singleton_iff).mpr hp
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨_,hP⟩
   have hQ0 : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by linarith

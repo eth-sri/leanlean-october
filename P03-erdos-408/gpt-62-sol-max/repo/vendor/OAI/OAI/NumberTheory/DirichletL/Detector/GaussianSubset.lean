@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianCompensation
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev SelectedSlot {K : ℕ} (J : Finset (Fin K)) := ↥(Finset.univ\J)
 
@@ -63,7 +62,6 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
         compensationRowTest η C W0 W1 (p k) J X Y ((2:ℝ)^j) t*
           selectedSlotFactor W P (p k) J t)*
             gaussianJointDensity V hV ((2:ℝ)^j/(Z*∏i∈Finset.univ\J,P i)) t := by
-  have hbase : 0<Z*∏i∈Finset.univ\J,P i := mul_pos hZ (Finset.prod_pos (fun i _=>hP i))
   have hh := physical_selected_gaussian_reassembly
     (fun i : SelectedSlot J=>W i.val) V hV hsep η C W0 W1 hW0 hW1 F
     (fun k=>compensationSubsetWeight η W P (p k) J)
@@ -71,7 +69,7 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
     (fun k=>X/elementNorm (slotProduct (p k) J)) (fun k=>Y/elementNorm (slotProduct (p k) J))
     (fun k hk=>div_pos hX (slotProduct_norm_pos (p k) (hp k hk) J))
     (fun k hk=>div_pos hY (slotProduct_norm_pos (p k) (hp k hk) J))
-    (Z*∏i∈Finset.univ\J,P i) hbase
+    (Z*∏i∈Finset.univ\J,P i) (mul_pos hZ (Finset.prod_pos (fun i _=>hP i)))
     (fun k (i : SelectedSlot J)=>elementNorm (p k i.val)/P i.val)
     (fun k hk i=>div_pos (physicalElementNorm_pos _ (hp k hk i.val)) (hP i.val))
   calc

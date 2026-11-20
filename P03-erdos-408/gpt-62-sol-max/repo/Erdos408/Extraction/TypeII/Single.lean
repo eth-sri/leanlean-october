@@ -81,7 +81,7 @@ theorem tupleWeight_support {r : ℕ} (hr : 1 ≤ r) {V : Fin r → ℕ → ℝ}
     (h : tupleWeight (Icc 1 N) V n ≠ 0) :
     x ^ γ < n ∧ ∀ p ∈ n.primeFactors, Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p := by
   obtain ⟨m, hmS, hprod, hne⟩ := exists_of_tupleWeight_ne_zero _ h
-  have hpos : ∀ k, 1 ≤ m k := fun k => (mem_Icc.1 (hmS k)).1
+  have hpos  := fun k => (mem_Icc.1 (hmS k)).1
   have hk := (hV ⟨0, hr⟩).support _ (hne ⟨0, hr⟩)
   refine ⟨?_, fun p hp => ?_⟩
   · rw [← hprod]
@@ -91,8 +91,8 @@ theorem tupleWeight_support {r : ℕ} (hr : 1 ≤ r) {V : Fin r → ℕ → ℝ}
   · rw [← hprod] at hp
     obtain ⟨hpp, hpd, -⟩ := Nat.mem_primeFactors.1 hp
     obtain ⟨k, -, hpk⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 hpd
-    have hk0 : m k ≠ 0 := by have := hpos k; omega
-    exact ((hV k).support _ (hne k)).2 p (Nat.mem_primeFactors.2 ⟨hpp, hpk, hk0⟩)
+    refine ((hV k).support _ (hne k)).2 p (Nat.mem_primeFactors.2 ⟨hpp, hpk, ?_⟩)
+    have := hpos k; omega
 
 end Weights
 
@@ -113,7 +113,7 @@ theorem cutPsi_eq_zero (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ
   have hΦ0 : Φ (((h : ℝ) - 1) / x) ≠ 0 := fun h0 => hne (by rw [h0, zero_mul])
   have h1 := (hΦ.2.2.1 _ hΦ0).2
   rw [div_le_iff₀ hx] at h1
-  have h2 : κ * x + 1 < h := (Nat.floor_lt (by positivity)).1 hh
+  have h2  := (Nat.floor_lt (by positivity)).1 hh
   linarith
 
 /-- `|Ψ(h)| ≤ M₀ S_E` when `|E| ≤ S_E` on `[1, x²]`, `κ x ≤ x²` and `κ ≤ x`. -/
@@ -122,10 +122,10 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |E h| ≤ SE) (h : ℕ) :
     |cutPsi Φ E x h| ≤ M 0 * SE := by
   unfold cutPsi
-  have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by
+  have hM0  := fun y => by
     have := hΦ.2.2.2 0 y
     simpa using this
-  have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
+  have hM00  := (abs_nonneg _).trans (hM0 0)
   by_cases hΦ0 : Φ (((h : ℝ) - 1) / x) = 0
   · rw [hΦ0, zero_mul, abs_zero]
     positivity
@@ -134,7 +134,6 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
   rw [div_le_iff₀ hx] at h2
   have hx1 : 1 ≤ κ⁻¹ * x := by
     rw [← div_eq_inv_mul, le_div_iff₀ hκ]; linarith
-  have hh1 : (1 : ℝ) ≤ (h : ℝ) - 1 := by linarith
   have hh : 2 ≤ h := by
     have : (2 : ℝ) ≤ h := by linarith
     exact_mod_cast this
@@ -177,11 +176,8 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
   set E := endpoint q cw K CN x u v B
   set α := primeProxyDiff x γ j
   have hx0 : 0 < x := by linarith
-  have hκ0 : 0 < κ := by linarith
-  have hlam1 : 1 ≤ lam := hxγ.trans hlam
-  have hmu1 : 1 ≤ mu := hxγ.trans hmu
-  have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by simpa using hΦ.2.2.2 0 y
-  have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
+  have hM0  := fun y => by simpa using hΦ.2.2.2 0 y
+  have hM00  := (abs_nonneg _).trans (hM0 0)
   have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := Real.rpow_nonneg (Real.log_pos hx).le _
   -- split off the frozen cutoff
   have hsplit : ∑ m ∈ Ioc ⌊lam⌋₊ ⌊lam * (1 + δ)⌋₊, ∑ n ∈ Ioc ⌊mu⌋₊ ⌊mu * (1 + δ)⌋₊,
@@ -243,13 +239,13 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
       have hn2 : 2 ≤ n := by
         have : (1 : ℝ) < n := by linarith
         exact_mod_cast this
-      have hmn4 : 4 ≤ m * n := Nat.mul_le_mul hm2 hn2
+      have hmn4  := Nat.mul_le_mul hm2 hn2
       have hEb : |E (m * n - 1)| ≤ SE := by
         refine hSE _ (by omega) ?_
         rw [Nat.cast_sub (by omega)]
         push_cast
         linarith
-      have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) :=
+      have hτ  :=
         (abs_nonneg _).trans hfr
       calc |Φ ((((m * n : ℕ) : ℝ) - 1) / x) - Φ (lam * mu / x)| * |E (m * n - 1)| * |α m| *
             βc n ≤ (M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x)) * SE * 1 *
@@ -258,7 +254,7 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
             · exact hα m
             · exact (hββ n).2
         _ = _ := by ring
-    · have : |Φ ((((m * n : ℕ) : ℝ) - 1) / x) - Φ (lam * mu / x)| = 0 :=
+    · have  :=
         le_antisymm hfr (abs_nonneg _)
       rw [this]
       simp
@@ -456,12 +452,12 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
   set L := Real.log x
   have hx0 : 0 < x := by linarith
   have hκ0 : 0 < κ := by linarith
-  have hL0 : 0 < L := Real.log_pos hx
+  have hL0  := Real.log_pos hx
   have hL3 : 0 < L ^ (3 : ℝ) := by positivity
   have hκx : κ * x ≤ x ^ 2 := by nlinarith
   have hΨ0 : ∀ h, N < h → cutPsi Φ E x h = 0 := fun h hh => cutPsi_eq_zero hΦ hx0 hκ0 hh
   have hΨ := abs_cutPsi_le (E := E) hΦ hx0 hκ0 hκx hxκ hSE0 hSE
-  have hV0 : ∀ i m, 0 ≤ V i m := fun i => (hV i).nonneg
+  have hV0  := fun i => (hV i).nonneg
   set β := tupleWeight (Icc 1 N) V with hβdef
   have hβ0 : ∀ n, 0 ≤ β n := tupleWeight_nonneg _ hV0
   set βc : ℕ → ℝ := fun n => if β n ≤ L ^ (3 : ℝ) then β n else 0 with hβcdef
@@ -475,7 +471,6 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
     refine sum_congr rfl fun m₀ _ => ?_
     rw [← sum_add_distrib]
     refine sum_congr rfl fun n _ => ?_
-    simp only [hβtdef]
     ring
   rw [hsplit, add_comm, add_assoc]
   refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
@@ -494,7 +489,7 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
     have hβt : ∀ n, 0 ≤ βt n ∧ βt n ≤ β n * (dampedWeight x j n * cmul (fun _ => (r : ℝ)) n) /
         L ^ (3 : ℝ) := by
       intro n
-      have hh0 : 0 ≤ dampedWeight x j n * cmul (fun _ => (r : ℝ)) n :=
+      have hh0  :=
         mul_nonneg (dampedWeight_nonneg x j n) (cmul_nonneg (fun _ _ => Nat.cast_nonneg r) n)
       simp only [hβtdef, hβcdef]
       split_ifs with h
@@ -520,10 +515,9 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
     have hprod := sum_tupleWeight_mul_le (Icc 1 N) hV0
       (l := fun p => proxyLoc x j p * r / p) (fun p _ => by
         have := proxyLoc_nonneg x j p; positivity) (Icc 1 N)
-    have hS : 0 ≤ M 0 * SE * (N / L ^ (3 : ℝ)) := by
-      have := (abs_nonneg _).trans (hΨ 0)
-      positivity
-    exact mul_le_mul_of_nonneg_left hprod hS
+    refine mul_le_mul_of_nonneg_left hprod ?_
+    have := (abs_nonneg _).trans (hΨ 0)
+    positivity
   · -- the clipped part, box by box
     have hββ : ∀ n, 0 ≤ βc n ∧ βc n ≤ β n := fun n => by
       simp only [hβcdef]; split_ifs <;> simp [hβ0 n]

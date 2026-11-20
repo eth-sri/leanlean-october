@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
 
@@ -47,7 +48,7 @@ theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
     rw [norm_mul]
     have hn : 1 ≤ norm I := by
       unfold HeckeDyadic.norm
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr I.property)
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (I.property)
     have hc : ‖coefficient χ I.val‖ ≤ IdealMangoldt.value I.val := by
       rw [coefficient, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (IdealMangoldt.value_nonneg _)]

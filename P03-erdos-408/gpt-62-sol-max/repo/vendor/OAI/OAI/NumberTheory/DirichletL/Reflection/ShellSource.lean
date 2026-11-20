@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.FullDyadic
 public import OAI.NumberTheory.DirichletL.Reflection.PhysicalIntegral
 
@@ -22,7 +23,7 @@ lemma shell_windows_one (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
     (∏ i : Fin 4, completedShellWindow (kernelLogCoordinates QK QP ((2:ℝ)^k) ((2:ℝ)^j)
       (Ideal.absNorm K:ℝ) (Ideal.absNorm P:ℝ) (Ideal.absNorm n.val:ℝ) (Ideal.absNorm b.val:ℝ) i))=1 := by
   have hnorm (I : Ideal Eis) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hn := dualIdealDyad_bounds k n.val n.property
   have hb := dualIdealDyad_bounds j b.val b.property
   apply Finset.prod_eq_one

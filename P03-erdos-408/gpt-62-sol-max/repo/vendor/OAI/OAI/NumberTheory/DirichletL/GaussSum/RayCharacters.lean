@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.GaussSum.CompletedExpansion
 
 @[expose] public section
@@ -9,81 +10,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace RayFourExpansion
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase QuadraticGaussRay
-open ActualEisensteinCoordinates MixedCrossSeparation
+open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase QuadraticGaussRay ActualEisensteinCoordinates
+open MixedCrossSeparation
 
 theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(4 : O)}) p) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have h2 : (2 : O) ∉ Ideal.span {p} := by
     intro hm
     have hz : (2 : O ⧸ Ideal.span {p}) = 0 := by
@@ -96,9 +36,7 @@ theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
   have hcop : IsCoprime (Ideal.span {p}) (Ideal.span {(2 : O)}) := by
     apply Ideal.isCoprime_of_isMaximal
     intro heq
-    apply h2
-    rw [heq]
-    exact Ideal.subset_span (by simp)
+    simp_all
   obtain ⟨a, b, hab⟩ := IdealGaussCRT.bezout_of_principal_coprime hcop
   have hcp : IsCoprime p (2 : O) := ⟨a, b, hab⟩
   have hcp4 : IsCoprime p (4 : O) := by
@@ -112,23 +50,23 @@ theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
   exact IsUnit.of_mul_eq_one_right _ hm
 
 theorem prime_product_unit_mod_four {ι : Type*} (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(4 : O)}) (∏ i ∈ S, p i)) := by
   rw [map_prod]
   exact IsUnit.prod_iff.mpr (fun i _ => prime_unit_mod_four (p i) (hchar i))
 
 theorem rayMask_prime_product {ι : Type*} (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
     rayMask (∏ i ∈ S, p i) = 1 := by
   rw [rayMask, ite_eq_left (prime_product_unit_mod_four p hchar S)]
 
 theorem canonicalProductG_character_expansion
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hgood : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
     canonicalProductG p hp hcop hgood =
@@ -140,9 +78,9 @@ theorem canonicalProductG_character_expansion
 
 theorem quadraticCrossPhase_character_expansion
     {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (A B : Finset ι) (hd : Disjoint A B) :
     quadraticCrossPhase p hg A B =
@@ -157,13 +95,13 @@ theorem quadraticCrossPhase_character_expansion
 end RayFourExpansion
 
 namespace MixedCrossSeparation
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
-open QuadraticGaussRay ActualEisensteinCoordinates GaussGeneratorTransport
+open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion QuadraticGaussRay
+open ActualEisensteinCoordinates GaussGeneratorTransport
 
 theorem convertedColumnBlock_image
     {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (e : κ → ι) (he : Function.Injective e)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (e : κ → ι) (he : Function.Injective e)
     (A : Finset κ) (inverse : Bool) :
     convertedColumnBlock (fun i => p (e i)) (fun i => hp (e i)) (fun i => hg (e i)) A inverse =
       convertedColumnBlock p hp hg (A.image e) inverse := by
@@ -176,8 +114,8 @@ theorem convertedColumnBlock_image
 
 theorem quadraticCrossPhase_image
     {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (e : κ → ι) (he : Function.Injective e)
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (e : κ → ι) (he : Function.Injective e)
     (A B : Finset κ) :
     quadraticCrossPhase (fun i => p (e i)) (fun i => hg (e i)) A B =
       quadraticCrossPhase p hg (A.image e) (B.image e) := by
@@ -205,19 +143,17 @@ private theorem positive_active_image {ι : Type*} [DecidableEq ι] (S T : Finse
   constructor
   · intro hi
     obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hi
-    have hm := a.property
-    rcases Finset.mem_union.mp hm with hleft | hright
+    rcases Finset.mem_union.mp a.property with hleft | hright
     · exact ((Finset.mem_filter.mp ha).2 hleft).elim
     · exact hright
   · intro hi
-    have hn : i ∉ S \ T := fun h => (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp h).1
     exact Finset.mem_image.mpr ⟨⟨i, Finset.mem_union_right _ hi⟩,
-      Finset.mem_filter.mpr ⟨Finset.mem_univ _, hn⟩, rfl⟩
+      Finset.mem_filter.mpr ⟨Finset.mem_univ _, (fun h => (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp h).1)⟩, rfl⟩
 
 theorem activeConvertedGauss_eq_columnBlocks
     {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) (S T : Finset ι) :
     activeConvertedGauss p hp hg S T =
       convertedColumnBlock p hp hg (S \ T) true *
@@ -348,10 +284,8 @@ theorem idealSexticRow_support_product {ι : Type*} [DecidableEq ι]
       (supportIdealFamily_good P hg B) (∏ i ∈ S, P i) h =
       finiteSquarefreeRow P hg S h := by
   let F := supportIdealFamily P B
-  have hIF : (∏ i ∈ S, P i) ∈ F :=
-    Finset.mem_image.mpr ⟨S, Finset.mem_powerset.mpr hS, rfl⟩
   let idx (i : ι) (hi : i ∈ S) : primePool F :=
-    ⟨P i, mem_primePool_iff.mpr ⟨∏ j ∈ S, P j, hIF,
+    ⟨P i, mem_primePool_iff.mpr ⟨∏ j ∈ S, P j, (Finset.mem_image.mpr ⟨S, Finset.mem_powerset.mpr hS, rfl⟩),
       (factor_family_product_iff P S (P i)).mpr ⟨i, hi, rfl⟩⟩⟩
   symm
   unfold idealSexticRow finiteSquarefreeRow

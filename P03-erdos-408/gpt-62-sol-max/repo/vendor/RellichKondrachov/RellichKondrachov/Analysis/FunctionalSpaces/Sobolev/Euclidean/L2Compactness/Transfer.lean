@@ -34,7 +34,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
+open scoped ENNReal MeasureTheory Convolution Pointwise
 open MeasureTheory Set
 
 noncomputable section
@@ -47,10 +47,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 local instance instMeasurableSpaceEL2CompactnessTransfer : MeasurableSpace E := borel E
 local instance instBorelSpaceEL2CompactnessTransfer : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessTransfer : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddEL2CompactnessTransfer : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessTransfer : MeasurableNeg E := by
   infer_instance
 
 variable {K : Set E} {ψ : E → ℝ}
@@ -69,10 +65,8 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   let s : Set E := Kψ (K := K) (ψ := ψ)
   have hs_compact : IsCompact s := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
   have hs : MeasurableSet s := hs_compact.measurableSet
-  have hs_lt_top : (volume : Measure E) s < (⊤ : ℝ≥0∞) :=
-    hs_compact.measure_lt_top (μ := (volume : Measure E))
   let μs : Measure E := (volume : Measure E).restrict s
-  have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨hs_lt_top⟩
+  have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨(hs_compact.measure_lt_top (μ := (volume : Measure E)))⟩
   have : IsFiniteMeasure μs := by
     infer_instance
   let mS : ℝ := (MeasureTheory.measureUnivNNReal μs) ^ ((2 : ℝ≥0∞).toReal⁻¹)
@@ -87,11 +81,11 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
     smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs v
   have hBuBv : 0 ≤ ‖Bu - Bv‖ := norm_nonneg _
   -- Work on `F := Su - Sv` and restrict to the finite-measure set `s`.
-  let F : (E →₂[(volume : Measure E)] ℝ) := Su - Sv
-  let g : E → ℝ := fun x => (F : E → ℝ) x
-  have hg : MeasureTheory.MemLp g (2 : ℝ≥0∞) (volume : Measure E) := MeasureTheory.Lp.memLp F
-  have hg_restrict : MeasureTheory.MemLp g (2 : ℝ≥0∞) μs := hg.restrict s
-  let Fs : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μs := hg_restrict.toLp g
+  let F  := Su - Sv
+  let g  := fun x => (F : E → ℝ) x
+  have hg  := MeasureTheory.Lp.memLp F
+  have hg_restrict  := hg.restrict s
+  let Fs  := hg_restrict.toLp g
   -- Show `Fs` is pointwise bounded by `‖Bu - Bv‖` on `μs`.
   have hF_ae :
       (g =ᵐ[μs] fun x : E =>
@@ -112,8 +106,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
           fun x : E =>
             smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x := by
       have h := hsub.trans (hu.sub hv)
-      filter_upwards [h] with x hx
-      simpa [Pi.sub_apply] using hx
+      assumption
     exact MeasureTheory.ae_restrict_of_ae (μ := (volume : Measure E)) (s := s) hF
   have hFs_ae : ((Fs : E → ℝ) =ᵐ[μs] g) := by
     simpa [Fs, g] using
@@ -126,12 +119,12 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
       intro x hx
       let x' : ↥(Kψ (K := K) (ψ := ψ)) := ⟨x, hx⟩
       have hBu : Bu x' = smoothFun (E := E) (K := K) ψ u x := by
-        simp [Bu, x']
+        rfl
       have hBv : Bv x' = smoothFun (E := E) (K := K) ψ v x := by
-        simp [Bv, x']
+        rfl
       have : ‖(Bu - Bv) x'‖ ≤ ‖Bu - Bv‖ :=
         (Bu - Bv).norm_coe_le_norm x'
-      simpa [hBu, hBv] using this
+      assumption
     filter_upwards
       [MeasureTheory.ae_restrict_mem (μ := (volume : Measure E)) hs,
         hFs_ae, hF_ae] with x hx hFs hF
@@ -141,7 +134,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   have hnorm_Fs : ‖Fs‖ ≤ mS * ‖Bu - Bv‖ := by
     have := (MeasureTheory.Lp.norm_le_of_ae_bound (μ := μs) (p := (2 : ℝ≥0∞))
       (f := Fs) (hC := hBuBv) hbound)
-    simpa [mS] using this
+    assumption
   -- Relate the `L²` norm on `volume` to the restricted norm on `μs` using extension-by-zero.
   have hsupport :
       ∀ x : E, x ∉ s →
@@ -155,11 +148,11 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
       exact
         (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) v)
     have hu0 : smoothFun (E := E) (K := K) ψ u x = 0 := by
-      have : x ∉ Function.support (smoothFun (E := E) (K := K) ψ u) := fun hx' => hx (hu_supp hx')
-      simpa [Function.support] using this
+      have  := fun hx' => hx (hu_supp hx')
+      simpa using this
     have hv0 : smoothFun (E := E) (K := K) ψ v x = 0 := by
-      have : x ∉ Function.support (smoothFun (E := E) (K := K) ψ v) := fun hx' => hx (hv_supp hx')
-      simpa [Function.support] using this
+      have  := fun hx' => hx (hv_supp hx')
+      simpa using this
     simp [hu0, hv0]
   have hF0 :
       ∀ᵐ x ∂(volume : Measure E), x ∉ s → g x = 0 := by
@@ -183,21 +176,20 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
             fun x : E =>
               smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x := by
         have h := hsub.trans (hu.sub hv)
-        filter_upwards [h] with x hx
-        simpa [Pi.sub_apply] using hx
-      simpa [g] using hF
+        assumption
+      assumption
     filter_upwards [hF_ae_full] with x hx
     intro hxnot
-    have : smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x = 0 :=
+    have  :=
       hsupport x hxnot
     simpa [hx] using this
   have hF_ind :
       (s.indicator g =ᵐ[(volume : Measure E)] g) := by
     filter_upwards [hF0] with x hx
     by_cases hxmem : x ∈ s
-    · simp [g, hxmem]
-    · have : g x = 0 := hx hxmem
-      simp [g, hxmem, this]
+    · simp [hxmem]
+    · have  := hx hxmem
+      simp [hxmem, this]
   -- Conclude `‖F‖ = ‖Fs‖` using `extendByZeroₗᵢ` and the indicator identity.
   let Fext :
       MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume : Measure E) :=
@@ -215,19 +207,17 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
       ∀ᵐ x ∂(volume : Measure E), x ∈ s → (Fs : E → ℝ) x = g x := by
     -- rewrite the AE equality `Fs = g` on the restricted measure as an implication on `volume`
     have := (MeasureTheory.ae_restrict_iff' (μ := (volume : Measure E)) (s := s) hs).1 hFs_ae
-    simpa [g] using this
+    assumption
   have hindicator :
       (s.indicator (fun x : E => (Fs : E → ℝ) x) =ᵐ[(volume : Measure E)] s.indicator g) := by
     filter_upwards [hFs_on] with x hx
     by_cases hxmem : x ∈ s
     · simp [hxmem, hx hxmem]
     · simp [hxmem]
-  have hFext_ae' :
-      (Fext : E → ℝ) =ᵐ[(volume : Measure E)] g := by
-    exact hFext_ae.trans (hindicator.trans hF_ind)
+  have hFext_ae' := hFext_ae.trans (hindicator.trans hF_ind)
   have hFext_eq : Fext = F := by
     refine MeasureTheory.Lp.ext ?_
-    simpa [g, F] using hFext_ae'
+    assumption
   have hnorm_F : ‖F‖ ≤ mS * ‖Bu - Bv‖ := by
     -- use `‖F‖ = ‖Fs‖` via the isometry.
     have hnorm_ext : ‖Fext‖ = ‖Fs‖ := by
@@ -249,10 +239,8 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
   let s : Set E := Kψ (K := K) (ψ := ψ)
   have hs_compact : IsCompact s := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
   have hs : MeasurableSet s := hs_compact.measurableSet
-  have hs_lt_top : (volume : Measure E) s < (⊤ : ℝ≥0∞) :=
-    hs_compact.measure_lt_top (μ := (volume : Measure E))
   let μs : Measure E := (volume : Measure E).restrict s
-  have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨hs_lt_top⟩
+  have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨(hs_compact.measure_lt_top (μ := (volume : Measure E)))⟩
   have : IsFiniteMeasure μs := by
     infer_instance
   let mS : ℝ := (MeasureTheory.measureUnivNNReal μs) ^ ((2 : ℝ≥0∞).toReal⁻¹)
@@ -266,8 +254,6 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
     smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs '' U
   let B : Set (E →₂[(volume : Measure E)] ℝ) :=
     smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs '' U
-  have hA_compact : IsCompact (closure A) :=
-    smoothBCF_image_closedBall_isCompact (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (R := R) hR
   have hdist_smoothL2_le :=
     dist_smoothL2_le_mul_dist_smoothBCF (K := K) (ψ := ψ) hK hKm hψc hψcs
   have hTB_B : TotallyBounded B := by
@@ -304,7 +290,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
       let deltaLoss : ℝ := ε / mS
       have hδpos : 0 < deltaLoss := div_pos hε hmSpos
       obtain ⟨t, htAsub, htFin, htCover⟩ :=
-        exists_finite_cover_balls_of_isCompact_closure (s := A) (ε := deltaLoss) hA_compact hδpos
+        exists_finite_cover_balls_of_isCompact_closure (s := A) (ε := deltaLoss) (smoothBCF_image_closedBall_isCompact (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (R := R) hR) hδpos
       let tFin : Finset (BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ) :=
         htFin.toFinset
       have htFin_mem :
@@ -318,25 +304,22 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
               u ∈ U ∧
                 smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u = f.1 := by
         intro f
-        have hf_t : f.1 ∈ t := (htFin_mem (f := f.1)).1 f.2
-        have hfA : f.1 ∈ A := htAsub hf_t
-        rcases hfA with ⟨u, huU, huEq⟩
+        have hf_t := (htFin_mem (f := f.1)).1 f.2
+        rcases (htAsub hf_t) with ⟨u, huU, huEq⟩
         exact ⟨u, huU, huEq⟩
       choose uOf huOfU huOfEq using hrep
       let tL2 : Set (E →₂[(volume : Measure E)] ℝ) :=
         Set.range fun f : ι => smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs (uOf f)
-      have htL2_fin : tL2.Finite := Set.finite_range _
-      refine ⟨tL2, htL2_fin, ?_⟩
+      refine ⟨tL2, (Set.finite_range _), ?_⟩
       intro w hw
       rcases hw with ⟨u, huU, rfl⟩
       have hBu : (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u) ∈ A := by
         exact ⟨u, huU, rfl⟩
-      have : smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u ∈ ⋃ x ∈ t, Metric.ball x deltaLoss :=
+      have  :=
         htCover hBu
       rcases mem_iUnion.1 this with ⟨f, hf⟩
       rcases mem_iUnion.1 hf with ⟨hf_t, hf_ball⟩
-      have hf_tFin : f ∈ tFin := (htFin_mem (f := f)).2 hf_t
-      let f' : ι := ⟨f, hf_tFin⟩
+      let f' : ι := ⟨f, ((htFin_mem (f := f)).2 hf_t)⟩
       have hf_ball' :
           dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u) f < deltaLoss := hf_ball
       have hdist :
@@ -371,9 +354,8 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
       exact ⟨f', rfl⟩
   -- Compactness follows from total boundedness + completeness of `L²`.
   have hTB_closure : TotallyBounded (closure B) := hTB_B.closure
-  have hcomplete : IsComplete (closure B) := isClosed_closure.isComplete
   have hcompact_closure : IsCompact (closure B) :=
-    isCompact_iff_totallyBounded_isComplete.2 ⟨hTB_closure, hcomplete⟩
+    isCompact_iff_totallyBounded_isComplete.2 ⟨hTB_closure, isClosed_closure.isComplete⟩
   simpa [B, U] using hcompact_closure
 
 end Volume

@@ -39,7 +39,7 @@ lemma rowZeroIndex_zero (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
 include hp in
 theorem rowZeroIndex_pos_ramified (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
     (j k m : ℕ) (hj : j≠0) (hk : k≠0) : rowZeroIndexTerm p χ W V j k m=0 := by
-  rw [rowZeroIndexTerm,ite_eq_right hk,zero_index_scalar p hp χ k (j+6*m) hk,
+  rw [rowZeroIndexTerm,ite_eq_right hk,zero_index_scalar p χ k (j+6*m),
     ite_eq_right (by omega),zero_mul,zero_mul]
 
 include hp in

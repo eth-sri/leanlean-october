@@ -65,7 +65,7 @@ theorem eventually_abs_proxySum_le (h₂ : TwoSidedCorrelation) (q cw : ℝ) (hq
   obtain ⟨C₅, hcore⟩ := exists_sum_proxyCore_sq_le c Ch Cj κ hc hκ
   set c' := c₃ / 2 with hc'
   have hc'0 : 0 < c' := by positivity
-  have hc₃' : c₃ = 2 * c' := by rw [hc']; ring
+  have hc₃' : c₃ = 2 * c' := by ring
   -- the two-sided estimate for each number `d ≤ 2` of weighted slots
   have hbody : ∀ d : Fin 3, ∃ Cs : ℝ, ∀ᶠ x : ℝ in atTop,
       TwoSidedBody q (1 / 2) c₂ 1 (1 / 2) 3 (11 / 100) (39 / 200) K (max CN 0) c d
@@ -88,10 +88,8 @@ theorem eventually_abs_proxySum_le (h₂ : TwoSidedCorrelation) (q cw : ℝ) (hq
     (hCsx ⟨k, by omega⟩) hgroups hbands hmassband hH hx hxκ hT
     hBd hterms hsq hfailx' (hcorex j hj hjJ) hk hadm hB hΦ hj
   refine hbound.trans ?_
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL  := Real.log_pos hx
   have hpos : 0 ≤ x / Real.log x * Real.log x ^ (-c') := by
-    have := rpow_pos_of_pos hL (-c')
-    have : 0 < x := by linarith
     positivity
   rw [mul_assoc, mul_assoc]
   refine mul_le_mul_of_nonneg_right ?_ hpos

@@ -27,7 +27,6 @@ theorem primeCharacterError_nonprincipal_bound (A B : ℝ)
   obtain ⟨M, hM, hbound⟩ := primeCharacterError_log_bound A B hA hB
   refine ⟨M, hM, ?_⟩
   intro y q χ hq hy hlog hpower hqlog hχ
-  let : NeZero q := ⟨Nat.ne_of_gt hq⟩
   have hcond : (χ.conductor : ℝ) ≤ (Real.log y) ^ B := by
     calc
       (χ.conductor : ℝ) ≤ q := by
@@ -35,9 +34,6 @@ theorem primeCharacterError_nonprincipal_bound (A B : ℝ)
       _ ≤ (Real.log y) ^ B := hqlog
   let : NeZero χ.conductor :=
     ⟨Nat.ne_of_gt (Nat.pos_of_dvd_of_pos χ.conductor_dvd_level hq)⟩
-  have hprim : χ.primitiveCharacter ≠ 1 := by
-    intro h
-    exact hχ ((primitiveCharacter_eq_one_iff hq χ).mp h)
   have hmain := hbound χ.conductor χ.primitiveCharacter
     χ.primitiveCharacter_isPrimitive y hy hlog hpower hcond
   calc
@@ -89,11 +85,10 @@ theorem thetaCharacterPrefix_norm_le {q : ℕ} (y : ℝ)
             ‖χ (n : ZMod q) *
               ((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ := norm_sum_le _ _
       _ ≤ ∑ n ∈ Finset.Ioc 0 X,
-            (ArithmeticFunction.vonMangoldt n - theta n : ℝ) := by
+            (ArithmeticFunction.vonMangoldt n - theta n) := by
           apply Finset.sum_le_sum
           intro n hn
-          have hnonneg :
-              0 ≤ ArithmeticFunction.vonMangoldt n - theta n :=
+          have hnonneg  :=
             sub_nonneg.mpr (theta_le_vonMangoldt n)
           calc
             ‖χ (n : ZMod q) *
@@ -102,19 +97,19 @@ theorem thetaCharacterPrefix_norm_le {q : ℕ} (y : ℝ)
                   ‖((ArithmeticFunction.vonMangoldt n - theta n : ℝ) : ℂ)‖ :=
                     norm_mul _ _
             _ = ‖χ (n : ZMod q)‖ *
-                  (ArithmeticFunction.vonMangoldt n - theta n : ℝ) := by
+                  (ArithmeticFunction.vonMangoldt n - theta n) := by
                     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hnonneg]
-            _ ≤ 1 * (ArithmeticFunction.vonMangoldt n - theta n : ℝ) :=
+            _ ≤ 1 * (ArithmeticFunction.vonMangoldt n - theta n) :=
               mul_le_mul_of_nonneg_right (χ.norm_le_one _) hnonneg
             _ = ArithmeticFunction.vonMangoldt n - theta n := by ring
       _ = Chebyshev.psi (X : ℝ) - Chebyshev.theta (X : ℝ) :=
         sum_vonMangoldt_sub_theta X
       _ ≤ 2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) :=
         Chebyshev.psi_sub_theta_le hXreal
-  have hlogXnonneg : 0 ≤ Real.log (X : ℝ) := Real.log_nonneg hXreal
+  have hlogXnonneg  := Real.log_nonneg hXreal
   have hlogXle : Real.log (X : ℝ) ≤ Real.log y :=
     Real.log_le_log (by linarith) hXle
-  have hsqrtXle : Real.sqrt (X : ℝ) ≤ Real.sqrt y := Real.sqrt_le_sqrt hXle
+  have hsqrtXle  := Real.sqrt_le_sqrt hXle
   have hmain :
       2 * Real.sqrt (X : ℝ) * Real.log (X : ℝ) ≤
         2 * Real.sqrt y * Real.log y := by
@@ -147,7 +142,6 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
         ‖thetaCharacterPrefix y χ‖ ≤ K * y * (Real.log y) ^ (-A) := by
   let c₀ : ℝ := (Real.log 2)⁻¹
   have hc₀ : 0 < c₀ := by
-    dsimp [c₀]
     positivity
   obtain ⟨M, hM, hSW⟩ :=
     primeCharacterError_nonprincipal_bound (A + 1) B (by linarith) hB
@@ -170,7 +164,7 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
     filter_upwards [eventually_log_rpow_le_rpow (A + 2)
       (by norm_num : (0 : ℝ) < (1 / 2 : ℝ))] with y hy
     simpa only [Real.sqrt_eq_rpow] using hy
-  have hLargeEvent : ∀ᶠ y : ℝ in atTop, c₀ ^ 2 ≤ y :=
+  have hLargeEvent  :=
     eventually_ge_atTop (c₀ ^ 2)
   have hEvents : ∀ᶠ y : ℝ in atTop,
       2 ≤ Real.log y ∧
@@ -185,14 +179,14 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
   rcases hY with ⟨hLtwo, hSWpower, hCpower, hPpower, hlarge⟩
   intro q χ hq hqlog hχ
   let L : ℝ := Real.log y
-  have hLtwo' : 2 ≤ L := by simpa [L] using hLtwo
+  have hLtwo' : 2 ≤ L := by assumption
   have hLpos : 0 < L := by linarith
   have hLone : 1 ≤ L := by linarith
   have hypos : 0 < y := by
-    have hc₀sq : 0 < c₀ ^ 2 := sq_pos_of_pos hc₀
+    have hc₀sq  := sq_pos_of_pos hc₀
     exact lt_of_lt_of_le hc₀sq hlarge
   have hSWpower' : L ^ (2 * (A + 1) + 2) ≤ y := by
-    simpa [L] using hSWpower
+    assumption
   have hYexp : Real.exp L = y := by
     dsimp [L]
     exact Real.exp_log hypos
@@ -203,7 +197,7 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
         linarith
       _ ≤ Real.exp L := Real.exp_le_exp.mpr (by linarith)
       _ = y := hYexp
-  have hlog1 : 1 ≤ Real.log y := by simpa [L] using hLone
+  have hlog1 : 1 ≤ Real.log y := by assumption
   have herror := hSW y q χ hq hYtwo hlog1 hSWpower' hqlog hχ
   have htheta := thetaCharacterPrefix_norm_le y χ (by linarith) hχ
   have hXone : 1 ≤ ⌊y⌋₊ := by
@@ -211,7 +205,7 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
     exact_mod_cast (show (1 : ℝ) ≤ y by linarith)
   have hXne : ⌊y⌋₊ ≠ 0 := by omega
   have hXle : (⌊y⌋₊ : ℝ) ≤ y := Nat.floor_le (by linarith)
-  have hNatPow : 2 ^ Nat.log 2 ⌊y⌋₊ ≤ ⌊y⌋₊ :=
+  have hNatPow  :=
     Nat.pow_log_le_self 2 hXne
   have hNatPowReal : (2 : ℝ) ^ Nat.log 2 ⌊y⌋₊ ≤ (⌊y⌋₊ : ℝ) := by
     exact_mod_cast hNatPow
@@ -226,10 +220,10 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
   have hNatLog :
       (Nat.log 2 ⌊y⌋₊ : ℝ) ≤ L / Real.log 2 := by
     apply (le_div_iff₀ hlog2pos).2
-    simpa [mul_comm] using hNatLogMul
-  have hqone : 1 ≤ q := Nat.one_le_iff_ne_zero.mpr (Nat.ne_of_gt hq)
+    assumption
+  have hqone  := Nat.one_le_iff_ne_zero.mpr (Nat.ne_of_gt hq)
   have hqreal : 1 ≤ (q : ℝ) := by exact_mod_cast hqone
-  have hlogqnonneg : 0 ≤ Real.log (q : ℝ) := Real.log_nonneg hqreal
+  have hlogqnonneg  := Real.log_nonneg hqreal
   have hlogqle : Real.log (q : ℝ) ≤ (q : ℝ) := Real.log_le_self (by positivity)
   have hmulRpow (u v : ℝ) : L ^ u * L ^ v = L ^ (u + v) := by
     rw [← Real.rpow_add hLpos]
@@ -318,7 +312,7 @@ theorem thetaCharacterPrefix_log_bound (A B : ℝ)
   calc
     ‖thetaCharacterPrefix y χ‖ ≤
         ‖primeCharacterError y χ‖ + 2 * Real.sqrt y * L := by
-      simpa [L] using htheta
+      assumption
     _ ≤ (M * y * L ^ (-(A + 1)) +
           (Nat.log 2 ⌊y⌋₊ : ℝ) * Real.log (q : ℝ)) +
           2 * Real.sqrt y * L := add_le_add herror le_rfl
@@ -430,8 +424,7 @@ end Erdos821.DivisorHarmonic
 
 namespace Erdos821.Blueprint
 
-open Analytic
-open OAI.LargePrimeGaps
+open Analytic OAI.LargePrimeGaps
 
 set_option maxHeartbeats 1000000 in
 /-- The harmonic character estimate follows from the theta-character prefix bound by Abel
@@ -542,7 +535,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
           positivity
         _ ≤ Real.exp u := Real.exp_le_exp.mpr hYbigLog'
     exact le_trans (le_max_right 1 Yθ) hYexp
-  have hnYθ : Yθ ≤ (n : ℝ) := hYθLe.trans hnExp
+  have hnYθ := hYθLe.trans hnExp
   have hnOne : 1 ≤ (n : ℝ) := by
     have h : 1 < Real.exp u := by
       have := Real.add_one_le_exp u
@@ -561,7 +554,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
     dsimp [n]
     omega
   have hnmReal : (n : ℝ) ≤ (m : ℝ) := by exact_mod_cast hnm
-  have hmOne : 1 ≤ (m : ℝ) := by exact hnOne.trans hnmReal
+  have hmOne := hnOne.trans hnmReal
   have hmPos : 0 < (m : ℝ) := by linarith
   have hmLeHi : (m : ℝ) ≤ hi := by
     dsimp [m]
@@ -661,7 +654,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
           _ ≤ M * L ^ (-E) * (y + y) :=
             mul_le_mul_of_nonneg_left (by linarith [hny]) hMR
           _ = 2 * M * y * L ^ (-E) := by ring
-  have haEq : a = n + 1 := hna.symm
+  have haEq := hna.symm
   have hPrimeInterval :
       (Finset.Icc a m).filter Nat.Prime = (Finset.Ioc n m).filter Nat.Prime := by
     have haSucc : a = Nat.succ n := by omega
@@ -800,7 +793,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
       hIntPointwise
   have hLogRatio : Real.log ((m : ℝ) / (n : ℝ)) ≤ C * L := by
     have hnCastPos : 0 < (n : ℝ) := by linarith [hnOne]
-    have hnCastOne : 1 ≤ (n : ℝ) := hnOne
+    have hnCastOne := hnOne
     have hmNonneg : 0 ≤ (m : ℝ) := by linarith [hmOne]
     have hratio : (m : ℝ) / (n : ℝ) ≤ (m : ℝ) := by
       apply (div_le_iff₀ hnCastPos).2
@@ -893,7 +886,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
             ‖∫ y in Set.Ioc (n : ℝ) (m : ℝ), deriv weight y * partialTheta y‖ := norm_sub_le _ _
       _ ≤ (2 * M * L ^ (-E)) + R * (C * L) := by
         have hend : ‖weight (m : ℝ) * partialTheta (m : ℝ)‖ ≤ 2 * M * L ^ (-E) := by
-          have hmne : (m : ℝ) ≠ 0 := hmPos.ne'
+          have hmne := hmPos.ne'
           calc
             _ = ‖weight (m : ℝ)‖ * ‖partialTheta (m : ℝ)‖ := norm_mul _ _
             _ ≤ (1 / (m : ℝ)) * (2 * M * (m : ℝ) * L ^ (-E)) :=
@@ -927,7 +920,7 @@ theorem HarmonicCharacters_proof : HarmonicCharacters := by
                   (Real.rpow_nonneg hLpos.le _)) (by positivity)
             _ = 6 * M * C * L ^ (B + 1 - E) := by
               have hpow : L ^ B * L ^ (-E) * L = L ^ (B + 1 - E) := by
-                have hLpowOne : L ^ (1 : ℝ) = L := Real.rpow_one L
+                have hLpowOne := Real.rpow_one L
                 calc
                   _ = L ^ B * (L ^ (-E) * L ^ (1 : ℝ)) := by
                     conv_rhs => rw [hLpowOne]

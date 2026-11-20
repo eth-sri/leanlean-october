@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LocalWeights
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -38,17 +38,15 @@ include hc in
 lemma firstGauss_ne_zero : primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 ≠ 0 := by
   have hχ : actualSextic (Ideal.span {p}) hg ≠ 1 := by
     intro h
-    have he : actualSextic (Ideal.span {p}) hg ^ 1 = 1 := by simpa using h
+    have he : actualSextic (Ideal.span {p}) hg ^ 1 = 1 := by simp_all
     have hd := (actualSextic_pow_eq_one_iff _ hg hc 1).mp he
     norm_num at hd
   have he := primeGauss_inverse_pair p hp.ne_zero (actualSextic (Ideal.span {p}) hg) hχ
-  have hω : actualSextic (Ideal.span {p}) hg (-1) ≠ 0 :=
-    (actualSextic (Ideal.span {p}) hg).apply_ne_zero_iff.mpr isUnit_one.neg
   have hQ : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   intro hz
   rw [hz, zero_mul] at he
-  exact (mul_ne_zero hω hQ) he.symm
+  exact (mul_ne_zero ((actualSextic (Ideal.span {p}) hg).apply_ne_zero_iff.mpr isUnit_one.neg) hQ) he.symm
 
 omit [(Ideal.span {p}).IsMaximal] in
 include hp in
@@ -60,7 +58,7 @@ include hc
 omit hc in
 @[simp] theorem markedTerm_zero_index (eta a X W V : ℂ) (k m : ℕ) :
     principalMarkedTerm p hp hg eta a X W V 0 0 k m = 0 := by
-  simp only [principalMarkedTerm, mul_zero, add_zero, ite_true]
+  rfl
 
 omit hc in
 lemma markedTerm_higher_outer (eta a X W V : ℂ) (e l k m : ℕ) :

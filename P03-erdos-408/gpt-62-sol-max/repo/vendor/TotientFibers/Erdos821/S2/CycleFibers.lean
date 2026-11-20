@@ -60,7 +60,7 @@ lemma cycleProduct_blocks {a : ℕ} {π : Finset (Finset (Fin a))}
   · intro hB
     obtain ⟨c, hc, rfl⟩ := Finset.mem_image.mp hB
     obtain ⟨C, _, rfl⟩ := Finset.mem_image.mp hc
-    simpa only [(cycleChoice_spec τ C).2] using C.property
+    simpa [(cycleChoice_spec τ C).2] using C.property
   · intro hB
     let C : π := ⟨B, hB⟩
     exact Finset.mem_image.mpr ⟨(τ C).val,
@@ -80,7 +80,7 @@ lemma cycleProduct_injective {a : ℕ} {π : Finset (Finset (Fin a))}
   have hCB : C = B := by
     apply Subtype.ext
     have hs := congrArg Equiv.Perm.support hC
-    simpa only [(cycleChoice_spec τ' C).2, (cycleChoice_spec τ B).2] using hs
+    simpa [(cycleChoice_spec τ' C).2, (cycleChoice_spec τ B).2] using hs
   subst C
   exact hC.symm
 
@@ -103,7 +103,7 @@ lemma exists_cycleChoices {a : ℕ} {π : Finset (Finset (Fin a))}
       exact hc B
     · intro hd
       let B : π := ⟨d.support, by rw [← hσ]; exact Finset.mem_image.mpr ⟨d, hd, rfl⟩⟩
-      have he : c B = d := cycleFactors_support_injective σ (hc B) hd (hs B)
+      have he  := cycleFactors_support_injective σ (hc B) hd (hs B)
       exact Finset.mem_image.mpr ⟨B, Finset.mem_univ _, he⟩
   refine ⟨τ, ?_⟩
   apply Equiv.Perm.cycleFactorsFinset_injective

@@ -54,7 +54,7 @@ lemma logb_four_mul (b : ℝ) (hb : 0<b) :
   rw [Real.logb_mul (by norm_num) hb.ne']
   congr 1
   rw [show (4:ℝ)=(2:ℝ)^2 by norm_num,Real.logb_pow]
-  norm_num [Real.logb_self_eq_one]
+  norm_num
 
 theorem indices_card_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
     ((indices a b).card:ℝ)≤3+Real.logb 2 (b/a) := by
@@ -93,15 +93,15 @@ theorem indices_card_log_bound (C R Z a b : ℝ) (hC : 1≤C) (hR : 0≤R)
     ((indices a b).card:ℝ)≤
       (3+Real.logb 2 C+R/Real.log 2)*(1+Real.log Z) := by
   have hb := ha.trans_le hab
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
-  have hCp : 0<C := zero_lt_one.trans_le hC
+  have hZp  := zero_lt_one.trans_le hZ
+  have hCp  := zero_lt_one.trans_le hC
   have hlog := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (div_pos hb ha) hratio
   rw [Real.logb_mul hCp.ne' (Real.rpow_pos_of_pos hZp R).ne',
     Real.logb_rpow_eq_mul_logb_of_pos hZp] at hlog
   apply (indices_card_bound a b ha hab).trans
   have hc0 := Real.logb_nonneg (by norm_num : (1:ℝ)<2) hC
   have hz0 := Real.log_nonneg hZ
-  have hr0 : 0≤R/Real.log 2 := div_nonneg hR (Real.log_pos (by norm_num : (1:ℝ)<2)).le
+  have hr0  := div_nonneg hR (Real.log_pos (by norm_num : (1:ℝ)<2)).le
   have hp := mul_nonneg (show 0≤3+Real.logb 2 C by linarith) hz0
   have he : R*Real.logb 2 Z=(R/Real.log 2)*Real.log Z := by unfold Real.logb;ring
   rw [he] at hlog
@@ -115,14 +115,12 @@ theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<
   let K : ℝ := 3+Real.logb 2 C+R/Real.log 2
   have hK : 0<K := by
     have hc := Real.logb_nonneg (by norm_num : (1:ℝ)<2) hC
-    have hr := div_nonneg hR (Real.log_pos (by norm_num : (1:ℝ)<2)).le
-    dsimp [K]
-    linarith
+    positivity
   have hlog := (isLittleO_log_rpow_rpow_atTop (4:ℝ) hε).bound (by norm_num : (0:ℝ)<1)
   refine ⟨16*K^4,by positivity,?_⟩
   filter_upwards [hlog,Filter.eventually_ge_atTop (Real.exp 1),Filter.eventually_ge_atTop (1:ℝ)] with Z hlog hZexp hZ
   intro a b ha hab hratio
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp  := zero_lt_one.trans_le hZ
   have hz : 1≤Real.log Z := by
     have hh := Real.log_le_log (Real.exp_pos (1:ℝ)) hZexp
     simpa only [Real.log_exp] using hh

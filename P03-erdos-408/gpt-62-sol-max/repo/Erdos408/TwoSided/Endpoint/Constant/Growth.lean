@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.TwoSided.Endpoint.Constant.High
 
 /-!
@@ -24,10 +25,7 @@ theorem rpow_mul_rpow_le {L a b e : ℝ} (hL : 1 ≤ L) (h : a + b ≤ e) : L ^ 
   exact Real.rpow_le_rpow_of_exponent_le hL h
 
 /-- `(L^a)² = L^{2a}`. -/
-theorem rpow_sq_eq {L a : ℝ} (hL : 0 < L) : (L ^ a) ^ 2 = L ^ (2 * a) := by
-  rw [← Real.rpow_natCast, ← Real.rpow_mul hL.le]
-  norm_num
-  ring_nf
+theorem rpow_sq_eq {L a : ℝ} (hL : 0 < L) : (L ^ a) ^ 2 = L ^ (2 * a) := by rpow_ring hL
 
 /-- The class bound in powers of `L`. -/
 theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤ x)
@@ -60,9 +58,7 @@ theorem classBound_le_rpow {x D As B' G Nexp C₈ CW Z CNN JB : ℝ} (hx : 1 ≤
   have hδ2 : 2 * (3 * L ^ (-D)) ^ 2 = 18 * L ^ (-(2 * D)) := by
     rw [mul_pow, rpow_sq_eq hL0]
     ring_nf
-  have hX : (x ^ (-(1 / 150 : ℝ))) ^ 2 * x ^ (1 / 300 : ℝ) = x ^ (-(1 / 100 : ℝ)) := by
-    rw [rpow_sq_eq hx0, ← Real.rpow_add hx0]
-    norm_num
+  have hX : (x ^ (-(1 / 150 : ℝ))) ^ 2 * x ^ (1 / 300 : ℝ) = x ^ (-(1 / 100 : ℝ)) := by rpow_ring hx0
   have hε : 24 / x ^ (1 / 300 : ℝ) + x ^ (-(1 / 150 : ℝ)) ≤ 25 * x ^ (-(1 / 300 : ℝ)) := by
     rw [Real.rpow_neg hx0.le (1 / 300), div_eq_mul_inv]
     have : x ^ (-(1 / 150 : ℝ)) ≤ x ^ (-(1 / 300 : ℝ)) :=
@@ -160,8 +156,8 @@ theorem total_le_rpow {x D As B' C₈ CNN Nexp JB CW d' M₀ M₁ Cm A₀ c₁ c
   have hL0 : 0 < L := by linarith
   have hcB := classBound_nonneg (θ := L ^ (-As)) (C₈ := C₈) (Nexp := Nexp) (Hc := L ^ (CW + 1))
     hx hδ hc hCNN hJB
-  have hc₁ : 0 ≤ c₁ * L ^ (-(A₀ + 4 + 4 * D + 2 * d' + 2 * Cm)) := hcB.trans hcls
-  have hc₂ : 0 ≤ c₂ * L ^ (-(A₀ + 4 + 4 * D)) :=
+  have hc₁ := hcB.trans hcls
+  have hc₂ :=
     (errBound_nonneg hx (Real.rpow_nonneg hL0.le _)).trans herr
   have hc₁' : 0 ≤ c₁ := nonneg_of_mul_nonneg_left hc₁ (Real.rpow_pos_of_pos hL0 _)
   have hc₂' : 0 ≤ c₂ := nonneg_of_mul_nonneg_left hc₂ (Real.rpow_pos_of_pos hL0 _)
@@ -208,10 +204,7 @@ theorem total_le_rpow {x D As B' C₈ CNN Nexp JB CW d' M₀ M₁ Cm A₀ c₁ c
         gcongr
     _ = 256 * (8 * M₀ ^ 2 * c₁ + 2 * c₂) * (L ^ (4 + 4 * D) * L ^ (-(A₀ + 4 + 4 * D))) := by
         ring
-    _ = 256 * (8 * M₀ ^ 2 * c₁ + 2 * c₂) * L ^ (-A₀) := by
-        rw [← Real.rpow_add hL0]
-        congr 2
-        ring
+    _ = 256 * (8 * M₀ ^ 2 * c₁ + 2 * c₂) * L ^ (-A₀) := by rpow_ring hL0
 
 /-- The growth facts in `L` alone used by S19. -/
 theorem eventually_constGrowth_log (Cm D G K : ℝ) (hK : 0 ≤ K) : ∀ᶠ L : ℝ in atTop,
@@ -265,9 +258,7 @@ theorem eventually_constGrowth_log (Cm D G K : ℝ) (hK : 0 ≤ K) : ∀ᶠ L : 
       have h73 : L ^ (0.73 : ℝ) * Real.log L ≤ L ^ (0.74 : ℝ) := by
         calc L ^ (0.73 : ℝ) * Real.log L ≤ L ^ (0.73 : ℝ) * (1 * L ^ (0.01 : ℝ)) :=
               mul_le_mul_of_nonneg_left hlog1 (Real.rpow_nonneg hL0.le _)
-          _ = L ^ (0.74 : ℝ) := by
-              rw [one_mul, ← Real.rpow_add hL0]
-              norm_num
+          _ = L ^ (0.74 : ℝ) := by rpow_ring hL0
       have := absorb K L (L ^ (0.73 : ℝ) * Real.log L) 600 (by norm_num) hL0.le
         (by rw [hKabs]; exact h73.trans h74)
       rwa [hKabs] at this
@@ -305,7 +296,6 @@ theorem eventually_constScales (Cm D G K B' : ℝ) (hK : 0 ≤ K) : ∀ᶠ x : �
   have hx0 : 0 < x := by linarith
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
-  have hexp : Real.exp L = x := Real.exp_log hx0
   rw [Real.norm_of_nonneg (Real.rpow_nonneg hL0.le _), Real.norm_of_nonneg
     (Real.rpow_nonneg hx0.le _), one_mul] at hG
   refine ⟨hx2, hL4, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -319,7 +309,7 @@ theorem eventually_constScales (Cm D G K B' : ℝ) (hK : 0 ≤ K) : ∀ᶠ x : �
   · calc 16 * Real.exp (L ^ (0.47 : ℝ)) = Real.exp (Real.log 16 + L ^ (0.47 : ℝ)) := by
           rw [Real.exp_add, Real.exp_log (by norm_num)]
       _ ≤ Real.exp L := Real.exp_le_exp.2 (by linarith)
-      _ = x := hexp
+      _ = x := (Real.exp_log hx0)
   · rw [Real.rpow_def_of_pos hL0 D, show (2 : ℝ) = Real.exp (Real.log 2) by
       rw [Real.exp_log (by norm_num)], ← Real.exp_add]
     exact Real.exp_le_exp.2 (by linarith)
@@ -346,10 +336,8 @@ theorem time_scales {x Y Cm : ℝ} (hx2 : 2 ≤ x) (hL1 : 1 ≤ Real.log x)
   set L := Real.log x with hL
   have hx0 : 0 < x := by linarith
   have hL0 : 0 < L := by linarith
-  have hE36 : Real.exp (L ^ (0.36 : ℝ)) ≤ Real.exp (L ^ (0.38 : ℝ)) :=
-    Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num))
   have h1E : 1 ≤ Real.exp (L ^ (0.36 : ℝ)) := Real.one_le_exp (by positivity)
-  have hYx : x * Real.exp (L ^ (0.36 : ℝ)) ≤ Y := (mul_le_mul_of_nonneg_left hE36 hx0.le).trans hY₁
+  have hYx : x * Real.exp (L ^ (0.36 : ℝ)) ≤ Y := (mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num))) hx0.le).trans hY₁
   have hxY : x ≤ Y := (le_mul_of_one_le_right hx0.le h1E).trans hYx
   have h16 : 16 * Y ≤ x ^ 2 := by
     calc 16 * Y ≤ x * (16 * Real.exp (L ^ (0.47 : ℝ))) := by linarith
@@ -359,13 +347,12 @@ theorem time_scales {x Y Cm : ℝ} (hx2 : 2 ≤ x) (hL1 : 1 ≤ Real.log x)
     have : 2 * x ^ 2 ≤ x * x ^ 2 := mul_le_mul_of_nonneg_right hx2 (sq_nonneg x)
     linarith [show x * x ^ 2 = x ^ 3 by ring]
   have hx21 : 4 ≤ x ^ 2 := by nlinarith
-  have hLC : 0 ≤ L ^ (Cm + 2) := Real.rpow_nonneg hL0.le _
   have hT : x * L ^ (Cm + 2) * Real.exp (L ^ (0.36 : ℝ)) ≤ Y := by
     calc x * L ^ (Cm + 2) * Real.exp (L ^ (0.36 : ℝ)) =
           x * (L ^ (Cm + 2) * Real.exp (L ^ (0.36 : ℝ))) := by ring
       _ ≤ x * Real.exp (L ^ (0.38 : ℝ)) := mul_le_mul_of_nonneg_left h38 hx0.le
       _ ≤ Y := hY₁
-  have hT0 : 0 ≤ x * L ^ (Cm + 2) := mul_nonneg hx0.le hLC
+  have hT0 : 0 ≤ x * L ^ (Cm + 2) := mul_nonneg hx0.le (Real.rpow_nonneg hL0.le _)
   refine ⟨hYx, by linarith, ?_, by linarith, hT, hT0,
     (le_mul_of_one_le_right hT0 h1E).trans hT, by linarith⟩
   have : x ^ (1 / 2 : ℝ) ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by linarith)
@@ -382,8 +369,8 @@ theorem grid_scales {x D : ℝ} (hL4 : 4 ≤ Real.log x) (hD : 1 ≤ D)
       4 ≤ Real.log x ^ (-D) * x := by
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
-  have hLD : 0 < L ^ D := Real.rpow_pos_of_pos hL0 D
-  have hδdef : L ^ (-D) = (L ^ D)⁻¹ := Real.rpow_neg hL0.le D
+  have hLD := Real.rpow_pos_of_pos hL0 D
+  have hδdef := Real.rpow_neg hL0.le D
   refine ⟨Real.rpow_pos_of_pos hL0 _, ?_, ?_, ?_⟩
   · rw [hδdef]
     have : L ≤ L ^ D := by
@@ -405,7 +392,7 @@ theorem grid_reach {x Y D : ℝ} (hx0 : 0 < x) (hL1 : 1 ≤ Real.log x) (hD : 0 
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
   set I := ⌈3 * L ^ (1 + D)⌉₊ with hIdef
-  have hLD : 0 < L ^ D := Real.rpow_pos_of_pos hL0 D
+  have hLD := Real.rpow_pos_of_pos hL0 D
   have hLD1 : L ^ (1 + D) = L * L ^ D := by rw [Real.rpow_add hL0, Real.rpow_one]
   refine ⟨?_, ?_⟩
   · have h1 := Nat.ceil_lt_add_one (show (0 : ℝ) ≤ 3 * L ^ (1 + D) by positivity)
@@ -440,34 +427,17 @@ theorem integral_twistedPoly_const_le_rpow {x Y σ T₀ a b C₈ CNN Nexp JB D A
     (hψ : ∀ y, ψ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) (hψd : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ)
     (hM₀ : ∀ y, ‖ψ y‖ ≤ M₀) (hM₁ : ∀ y, ‖iteratedDeriv 1 ψ y‖ ≤ M₁)
     (hκ : ‖κ‖ ≤ Real.log x ^ d')
-    (hPs : ∀ p ∈ Ps, p.Prime ∧ Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ p ∧
-      (p : ℝ) ≤ Real.exp (Real.log x ^ (0.36 : ℝ)))
+    (hPs : SmallPrimesInBand x Ps)
     (hk : 1 ≤ k) (hkL : (k : ℝ) ≤ Real.log x ^ Cm) (hH : ∀ n, ‖H n‖ ≤ Real.log x ^ (CW + 1))
     (hY₁ : x * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y) (hY₂ : 8 * Y ≤ x ^ 3)
     (hT₀ : T₀ * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ Y)
     (hδx : 1 ≤ Real.log x ^ (-D) * (Real.exp (Real.log x ^ (0.27 : ℝ)) / 2))
     (hδx' : 4 ≤ Real.log x ^ (-D) * x)
-    (hE10 : ∀ (R : ℝ) (β lo hi : ℕ) (u : ℝ), x ^ (99 / 100 : ℝ) ≤ R → R ≤ lo + 1 →
-      (hi : ℝ) ≤ 2 * R → 1 ≤ |u| → |u| ≤ x ^ 3 →
-      ‖(R : ℂ)⁻¹ * ∑ n ∈ (Finset.Ioc lo hi).filter (· ≡ β [MOD k]),
-          (∑ d ∈ n.divisors, A₀' d) * (n : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤
-        Real.log x ^ C₈ * (12 / |u| + x ^ (-(1 / 150 : ℝ))))
-    (hmodel : ∀ R : ℝ, 1 ≤ R → ∑ n ∈ Finset.Ioc ⌊R⌋₊ ⌊2 * R⌋₊,
-      ‖H n - ∑ d ∈ n.divisors, A₀' d‖ ^ 2 ≤ CNN * R * Real.log x ^ (-Nexp))
-    (hOrd : ∀ (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (cq : ℕ → ℂ) {a b θ : ℝ}, a ≤ b →
-      ∫ t in {t ∈ Set.Ioc a b | ‖∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ θ},
-          ‖(∑ p ∈ s, cs p * (p : ℂ) ^ ((t : ℂ) * Complex.I)) *
-            ∑ n ∈ Finset.Icc 1 N, cq n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤
-        θ ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Finset.Icc 1 N, ‖cq n‖ ^ 2))
+    (hE10 : DivisorModelTwist x C₈ k A₀')
+    (hmodel : DivisorModelError x CNN Nexp H A₀')
+    (hOrd : OrdinaryTimesBound)
     (hJB : 0 ≤ JB)
-    (hS16 : ∀ (P : ℝ) (s : Finset ℕ) (coeff : ℕ → ℂ),
-      Real.exp (Real.log x ^ (0.27 : ℝ)) / 2 ≤ P → P ≤ Real.exp (Real.log x ^ (0.36 : ℝ)) →
-      (∀ p ∈ s, p.Prime ∧ P ≤ p ∧ (p : ℝ) ≤ 2 * P) → (∀ p ∈ s, ‖coeff p‖ ≤ 1) →
-      (((Finset.Icc (-⌈T₀⌉ - 1) ⌈T₀⌉).filter fun j : ℤ =>
-          ∃ t : ℝ, (j : ℝ) ≤ t ∧ t ≤ j + 1 ∧ |t| ≤ T₀ ∧
-            Real.log x ^ (-As) <
-              ‖(P : ℂ)⁻¹ * ∑ p ∈ s, coeff p * (p : ℂ) ^ ((t : ℂ) * Complex.I)‖).card : ℝ) ≤
-        JB)
+    (hS16 : ExceptionalTimesBound x T₀ (Real.log x ^ (-As)) JB)
     (h2Y : 2 * Y + 1 ≤ x ^ 3) (hCNN : 0 ≤ CNN)
     (hxC : x ^ (-(1 / 100 : ℝ)) ≤ Real.log x ^ (-G))
     (hxD : JB * x ^ (-(1 / 150 : ℝ)) ≤ Real.log x ^ (-G))

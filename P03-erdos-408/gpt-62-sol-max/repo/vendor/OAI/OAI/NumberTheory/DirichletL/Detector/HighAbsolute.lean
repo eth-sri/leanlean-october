@@ -18,9 +18,9 @@ def frequencyWeight (z : ℂ) (u : NonzeroFrequency) : ℂ := (elementNorm u.val
 
 lemma frequencyWeight_norm (z : ℂ) (u : NonzeroFrequency) :
     ‖frequencyWeight z u‖=‖eisEmbedding u.val‖^(-2*z.re) := by
-  have hn : 0<‖eisEmbedding u.val‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero u.property)
+  have hn  := norm_pos_iff.mpr (eisEmbedding_ne_zero u.property)
   unfold frequencyWeight elementNorm
-  have hN : (Ideal.absNorm (Ideal.span {u.val}):ℝ)=‖eisEmbedding u.val‖^2 :=
+  have hN  :=
     (eisEmbedding_norm_sq_eq_absNorm_span u.val).symm
   rw [hN,
     Complex.norm_cpow_eq_rpow_re_of_pos (sq_pos_of_pos hn), Complex.neg_re,

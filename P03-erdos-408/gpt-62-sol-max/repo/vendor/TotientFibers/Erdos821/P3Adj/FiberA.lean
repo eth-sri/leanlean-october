@@ -12,7 +12,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
 
-open Erdos821.Blueprint.Graph hiding GhostChoice absoluteMemoryGhostKernel absoluteScaledMemoryGhostKernel deleteMemoryIndices ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEntry memoryGhostKernel zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph
 open Erdos821.S2Core
 
 variable {P : PrimeGroups} {g : P.BigGroup} (s u : P.Memory g.val)
@@ -27,7 +27,6 @@ def Sv (s : P.Memory g.val) (v : P.Particle g.val) : Finset (Fin s.card) :=
 
 lemma Sv_card (s : P.Memory g.val) (v : P.Particle g.val) :
     (Sv (P := P) (g := g) s v).card = s.count v := by
-  unfold Sv
   exact (count_eq_card_filter s v).symm
 
 lemma Sv_disjoint (s : P.Memory g.val) (v w : P.Particle g.val) (hvw : v ≠ w) :
@@ -101,7 +100,7 @@ lemma fiber_imp_inter_card (A : Finset (Fin s.card))
   have hcount : (deleteMemoryIndices s A).count v = u.count v := by
     rw [hmem.2]
   rw [delete_count_Sv s A v] at hcount
-  have hSv : (Sv (P := P) (g := g) s v).card = s.count v := Sv_card s v
+  have hSv  := Sv_card s v
   have hsdiff : (((Sv (P := P) (g := g) s v) \ A).card)
       = (Sv (P := P) (g := g) s v).card - (A ∩ (Sv (P := P) (g := g) s v)).card := by
     rw [Finset.card_sdiff]
@@ -140,7 +139,7 @@ lemma fiber_imp_valid (A : Finset (Fin s.card)) (hA : A ∈ fiberA (P := P) (g :
       have hiA := hi.2
       have hiZ := hmem.1 hiA
       have hnot : i ∉ zeroMemoryIndices s := by
-        have hdisj' : Disjoint (Sv (P := P) (g := g) s v) (zeroMemoryIndices s) := hdisj
+        have hdisj'  := hdisj
         rw [Finset.disjoint_left] at hdisj'
         exact hdisj' hiS
       exact hnot hiZ
@@ -153,8 +152,7 @@ lemma fiber_imp_valid (A : Finset (Fin s.card)) (hA : A ∈ fiberA (P := P) (g :
         have hle'' := delete_le (P := P) (g := g) s A
         rw [Multiset.le_iff_count] at hle''
         exact hle'' v
-      rw [hmem.2] at hle'
-      exact hle'
+      simp_all
     omega
   · rw [← hmem.2]
     exact delete_le s A
@@ -170,10 +168,10 @@ lemma fiberA_card :
     have hcount_le : ∀ v : P.Particle g.val, u.count v ≤ s.count v := by
       rw [← Multiset.le_iff_count]
       exact hle
-    let k : P.Particle g.val → ℕ := fun v => s.count v - u.count v
-    let t : ∀ v : P.Particle g.val, Finset (Finset (Fin s.card)) :=
+    let k  := fun v => s.count v - u.count v
+    let t  :=
       fun v => Finset.powersetCard (k v) (Sv (P := P) (g := g) s v)
-    let Pf : Finset (∀ v : P.Particle g.val, Finset (Fin s.card)) :=
+    let Pf  :=
       Fintype.piFinset t
     -- Forward map lands in piFinset
     have hfw_mem : ∀ A ∈ fiberA (P := P) (g := g) s u,
@@ -201,12 +199,12 @@ lemma fiberA_card :
       have hDmem : ∀ v, D v ⊆ Sv (P := P) (g := g) s v ∧ (D v).card = k v := by
         intro v
         have hv : D v ∈ t v := by
-          have hmem : D ∈ Pf := hD
+          have hmem  := hD
           simp only [Pf, t, Fintype.mem_piFinset] at hmem
           exact hmem v
         simp only [t, k, Finset.mem_powersetCard] at hv
         exact hv
-      let A0 : Finset (Fin s.card) := Finset.univ.biUnion D
+      let A0  := Finset.univ.biUnion D
       have hA0_mem : A0 ∈ fiberA (P := P) (g := g) s u := by
         have hA0_sub : A0 ⊆ zeroMemoryIndices s := by
           unfold A0
@@ -224,7 +222,7 @@ lemma fiberA_card :
               -- hcard : card = s.count - u.count, with preserved equality gives 0?
               have hpresv := hpres v hvz
               omega
-            have hempty : D v = ∅ := Finset.card_eq_zero.mp hcard0
+            have hempty  := Finset.card_eq_zero.mp hcard0
             rw [hempty]
             exact Finset.empty_subset _
         have hA0_del : deleteMemoryIndices s A0 = u := by
@@ -239,7 +237,7 @@ lemma fiberA_card :
             · rintro ⟨hxS, hxU⟩
               rw [Finset.mem_biUnion] at hxU
               obtain ⟨w, _, hxDw⟩ := hxU
-              have hxSw : x ∈ Sv (P := P) (g := g) s w := (hDmem w).1 hxDw
+              have hxSw  := (hDmem w).1 hxDw
               by_cases hvw : v = w
               · subst hvw
                 exact hxDw
@@ -249,13 +247,13 @@ lemma fiberA_card :
                   exact hdisj hxS hxSw
                 exact False.elim hcontra
             · intro hxD
-              have hxS : x ∈ Sv (P := P) (g := g) s v := (hDmem v).1 hxD
+              have hxS  := (hDmem v).1 hxD
               have hxU : x ∈ Finset.univ.biUnion D := by
                 rw [Finset.mem_biUnion]
                 exact ⟨v, Finset.mem_univ v, hxD⟩
               exact ⟨hxS, hxU⟩
-          have hcardD : (D v).card = k v := (hDmem v).2
-          have hSv : (Sv (P := P) (g := g) s v).card = s.count v := Sv_card s v
+          have hcardD  := (hDmem v).2
+          have hSv  := Sv_card s v
           have hsdiff : (((Sv (P := P) (g := g) s v) \ A0).card)
               = (Sv (P := P) (g := g) s v).card - ((Sv (P := P) (g := g) s v) ∩ A0).card := by
             have h := Finset.card_sdiff (s := A0) (t := Sv (P := P) (g := g) s v)
@@ -278,7 +276,7 @@ lemma fiberA_card :
         · rintro ⟨hxS, hxU⟩
           rw [Finset.mem_biUnion] at hxU
           obtain ⟨w, _, hxDw⟩ := hxU
-          have hxSw : x ∈ Sv (P := P) (g := g) s w := (hDmem w).1 hxDw
+          have hxSw  := (hDmem w).1 hxDw
           by_cases hvw : v = w
           · subst hvw
             exact hxDw
@@ -288,7 +286,7 @@ lemma fiberA_card :
               exact hdisj hxS hxSw
             exact False.elim hcontra
         · intro hxD
-          have hxS : x ∈ Sv (P := P) (g := g) s v := (hDmem v).1 hxD
+          have hxS  := (hDmem v).1 hxD
           have hxU : x ∈ Finset.univ.biUnion D := by
             rw [Finset.mem_biUnion]
             exact ⟨v, Finset.mem_univ v, hxD⟩

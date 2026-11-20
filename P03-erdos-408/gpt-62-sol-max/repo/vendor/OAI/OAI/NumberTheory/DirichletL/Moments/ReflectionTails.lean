@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma ideal_norm_rpow_summable (B : ℕ) (hB : 2≤B) :
@@ -34,13 +33,11 @@ lemma plain_term_rapid_bound (η : Character) (F : ℝ→ℂ) (B : ℕ) (D Y : �
       (D*Y^B)*(I.val.absNorm:ℝ)^(-(B:ℝ)) := by
   have hi : 0<(I.val.absNorm:ℝ) := HeckeDyadic.norm_pos I
   have hx : 0<(I.val.absNorm:ℝ)/Y := div_pos hi hY
-  have hb : ‖F ((I.val.absNorm:ℝ)/Y)‖≤D/((I.val.absNorm:ℝ)/Y)^B :=
-    (le_div_iff₀ (pow_pos hx B)).mpr (by simpa only [mul_comm] using hF _ hx)
   calc
     _≤‖F ((I.val.absNorm:ℝ)/Y)‖:=by
       rw [norm_mul]
       exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η _)
-    _≤D/((I.val.absNorm:ℝ)/Y)^B:=hb
+    _≤D/((I.val.absNorm:ℝ)/Y)^B:=((le_div_iff₀ (pow_pos hx B)).mpr (by simpa only [mul_comm] using hF _ hx))
     _=_:=by
       rw [Real.rpow_neg hi.le,Real.rpow_natCast,div_pow]
       field_simp
@@ -92,7 +89,7 @@ lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
   apply (le_div_iff₀ (pow_pos hR A)).mpr
   calc
     _≤(x^B*‖F x‖)*x^A :=mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hR.le hRx A) (by positivity)
-    _=x^(B+A)*‖F x‖ :=by rw [pow_add];ring
+    _=x^(B+A)*‖F x‖ :=by ring
     _≤D :=hF x hx
 
 end SevenEighths.CenteredMomentComparisonReflection

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.SurvivingEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.Surviving
 
 @[expose] public section
 

@@ -2,7 +2,10 @@ module
 
 public import Erdos821.S2.SpanLifecycle
 public import Erdos821.S2.LifespanEnds
-public import Erdos821.S2.OrphanResidues
+public import Erdos821.S2.LifespanAlgebra
+public import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
+public import Mathlib.Algebra.Order.Archimedean.Real.Basic
+public import Mathlib.Data.ZMod.Defs
 
 /-! The finite one-prime lifespan sum, including the absent and orphan cases. -/
 

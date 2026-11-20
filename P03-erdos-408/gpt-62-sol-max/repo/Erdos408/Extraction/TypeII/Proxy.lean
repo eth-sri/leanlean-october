@@ -38,8 +38,7 @@ theorem factorization_stripPrimes (n : ℕ) :
     (stripPrimes P n).factorization = n.factorization.filter (· ∉ P) := by
   rw [stripPrimes_eq_prod]
   refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, mem_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors hp.1
+  simp_all
 
 theorem primeFactors_stripPrimes (n : ℕ) :
     (stripPrimes P n).primeFactors = n.primeFactors.filter (· ∉ P) := by
@@ -85,8 +84,7 @@ theorem factorization_partPrimes (n : ℕ) :
     (partPrimes P n).factorization = n.factorization.filter (· ∈ P) := by
   rw [partPrimes_eq_prod]
   refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, mem_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors hp.1
+  simp_all
 
 theorem primeFactors_partPrimes (n : ℕ) :
     (partPrimes P n).primeFactors = n.primeFactors.filter (· ∈ P) := by
@@ -139,16 +137,14 @@ theorem dampedWeight_eq_cmul (x : ℝ) (j : ℕ) {n : ℕ} (hn : n ≠ 0) :
     obtain ⟨p, hp, hpY⟩ := h
     rw [prod_eq_zero hp, mul_zero]
     obtain ⟨hpn, hpP⟩ := mem_filter.1 hp
-    have hv : n.factorization p ≠ 0 :=
+    have hv  :=
       (Nat.prime_of_mem_primeFactors hpn).factorization_pos_of_dvd hn
         (Nat.dvd_of_mem_primeFactors hpn) |>.ne'
     simp [proxyLoc, hpP, hpY, hv]
 
 theorem dampedWeight_nonneg (x : ℝ) (j n : ℕ) : 0 ≤ dampedWeight x j n := by
   unfold dampedWeight
-  split_ifs
-  · positivity
-  · exact le_rfl
+  positivity
 
 theorem dampedWeight_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (n : ℕ) : dampedWeight x j n ≤ 1 := by
   unfold dampedWeight
@@ -175,9 +171,9 @@ theorem mem_candidatePrimes {x : ℝ} (hL : 1 ≤ Real.log x) {p : ℕ} (hp : p 
     have hi2 := (mem_filter.1 hi).2
     unfold dyadicGroup at hpG
     obtain ⟨hpp, hlo, hhi⟩ := mem_primesIcc.1 hpG
-    have hLa : Real.log x ^ (28 / 100 : ℝ) ≤ Real.log x ^ a :=
+    have hLa  :=
       Real.rpow_le_rpow_of_exponent_le hL ha
-    have hLb : Real.log x ^ b ≤ Real.log x ^ (45 / 100 : ℝ) :=
+    have hLb  :=
       Real.rpow_le_rpow_of_exponent_le hL hb
     have h2i : (1 : ℝ) ≤ 2 ^ i := one_le_pow₀ (by norm_num)
     have hLa0 : 0 ≤ Real.log x ^ a := by positivity
@@ -256,7 +252,7 @@ theorem strippedProxy_le {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ 
         (dampedDensity x j * (γ * Real.log x)) := by
   have hD := dampedDensity_pos hL hj
   have hg := dampedWeight_nonneg x j n
-  have hxγ : 1 ≤ x ^ γ := Real.one_le_rpow hx.le hγ.le
+  have hxγ  := Real.one_le_rpow hx.le hγ.le
   unfold strippedProxy
   split_ifs with h h'
   · have hn : γ * Real.log x < Real.log (candidateStrip x n) := by

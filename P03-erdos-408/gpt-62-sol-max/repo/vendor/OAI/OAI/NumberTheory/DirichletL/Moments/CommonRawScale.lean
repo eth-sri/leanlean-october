@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AllocationCost
 
 @[expose] public section
@@ -28,7 +29,7 @@ def remainingRaw (B : Tuple ι) (T : ℝ) (P : ι → ℝ) : ℝ :=
 omit [Fintype ι] in
 theorem plainNorm_pos (B : Tuple ι) (hB : ∀ i,B i≠0) : 0<plainNorm B := by
   unfold plainNorm
-  apply mul_pos <;> exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hB _))
+  apply mul_pos <;> exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hB _)
 
 omit [Fintype ι] in
 theorem frozenScale_pos (B : Tuple ι) (P : ι → ℝ) (hP : ∀ i,0<P i) (i : ι) :
@@ -59,8 +60,8 @@ theorem raw_scale_identity (B : Tuple ι) (hB : ∀ i,B i≠0) (T : ℝ) (P : ι
       field_simp [(plainNorm_pos B hB).ne']
     _ = _ := by rw [h]
 
-theorem remainingRaw_source (B : Tuple ι) (_hB : ∀ i,B i≠0)
-    (B₁ B₂ : Ideal O) (_hB₁ : B₁≠0) (_hB₂ : B₂≠0) (T : ℝ) (P : ι → ℝ) :
+theorem remainingRaw_source (B : Tuple ι)
+    (B₁ B₂ : Ideal O) (T : ℝ) (P : ι → ℝ) :
     remainingRaw B (T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂)) P=
       (T/((Ideal.absNorm (B₁*B (Sum.inr 0)):ℝ)*Ideal.absNorm (B₂*B (Sum.inr 1))))*
         ∏ i : liveIndices B,P i := by

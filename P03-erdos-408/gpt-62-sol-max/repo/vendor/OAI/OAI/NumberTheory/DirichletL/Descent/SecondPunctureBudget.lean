@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 
 @[expose] public section
@@ -7,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in

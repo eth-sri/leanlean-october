@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Local
 
 @[expose] public section
@@ -31,9 +32,9 @@ def residualPrimeScalar (p c0 : Eis) [hP : (Ideal.span {p}).IsMaximal]
 
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
-theorem controlled_marked_phase [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem controlled_marked_phase [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a0 c0 mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι) :
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (i : ι) :
     (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) 0 (D.epsilon i) =
         markedPrimeScalar (p i) c0 (hp i) (hg i)*
@@ -47,9 +48,9 @@ theorem controlled_marked_phase [∀ i, (Ideal.span {p i}).IsMaximal]
   simp only [markedPrimeScalar, cofactor, map_prod, Finset.prod_pow,
     MixedCrossSeparation.crossSymbol]
 
-theorem controlled_residual_phase [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem controlled_residual_phase [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a0 c0 mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι) :
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (i : ι) :
     (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) 1 (D.epsilon i) =
         residualPrimeScalar (p i) c0 (hp i) (hg i)*

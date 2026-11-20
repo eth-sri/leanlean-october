@@ -28,10 +28,10 @@ theorem sum_tuple_eq_sum_fiber {M r : ℕ} (hr : 1 ≤ r) (Ψ : ℕ → ℝ)
         Ψ (m₀ * ∏ k, m' k) * α m₀ * ∏ k, v k (m' k) =
       ∑ m₀ ∈ Icc 1 M, ∑ n ∈ Icc 1 M, Ψ (m₀ * n) * α m₀ * tupleWeight (Icc 1 M) v n := by
   refine sum_congr rfl fun m₀ hm₀ => ?_
-  have hm₀1 : 1 ≤ m₀ := (mem_Icc.1 hm₀).1
+  have hm₀1  := (mem_Icc.1 hm₀).1
   have hT : ∀ m ∈ Fintype.piFinset (fun _ : Fin r => Icc 1 M), ∏ k, m k ∈ Icc 1 (M ^ r) := by
     intro m hm
-    have hk : ∀ k, m k ∈ Icc 1 M := Fintype.mem_piFinset.1 hm
+    have hk  := Fintype.mem_piFinset.1 hm
     refine mem_Icc.2 ⟨Finset.one_le_prod fun k _ => (mem_Icc.1 (hk k)).1, ?_⟩
     calc ∏ k, m k ≤ ∏ _k : Fin r, M := prod_le_prod fun k _ => (mem_Icc.1 (hk k)).2
       _ = M ^ r := by rw [prod_const, card_univ, Fintype.card_fin]
@@ -44,7 +44,7 @@ theorem sum_tuple_eq_sum_fiber {M r : ℕ} (hr : 1 ≤ r) (Ψ : ℕ → ℝ)
     refine mem_Icc.2 ⟨h1, h2.trans ?_⟩
     calc M = M ^ 1 := (pow_one M).symm
       _ ≤ M ^ r := Nat.pow_le_pow_right (by omega) hr
-  · have hn1 : 1 ≤ n := (mem_Icc.1 hn).1
+  · have hn1  := (mem_Icc.1 hn).1
     have : M < n := by
       by_contra h
       exact hnM (mem_Icc.2 ⟨hn1, by omega⟩)
@@ -56,11 +56,10 @@ theorem abs_sum_tail_le {M : ℕ} (Ψ α βt β h : ℕ → ℝ) {S B : ℝ} (hB
     (hβt : ∀ n, 0 ≤ βt n ∧ βt n ≤ β n * h n / B) :
     |∑ m₀ ∈ Icc 1 M, ∑ n ∈ Icc 1 M, Ψ (m₀ * n) * α m₀ * βt n| ≤
       S * (M / B) * ∑ n ∈ Icc 1 M, β n * h n / n := by
-  have hS : 0 ≤ S := (abs_nonneg _).trans (hΨ 0)
+  have hS  := (abs_nonneg _).trans (hΨ 0)
   have hcount : ∀ n ∈ Icc 1 M, ∑ m₀ ∈ Icc 1 M, |Ψ (m₀ * n)| ≤ S * (M / n) := by
     intro n hn
-    have hn1 : 1 ≤ n := (mem_Icc.1 hn).1
-    have hn0 : (0 : ℝ) < n := by exact_mod_cast hn1
+    have hn1  := (mem_Icc.1 hn).1
     have hsub : ∑ m₀ ∈ Icc 1 M, |Ψ (m₀ * n)| = ∑ m₀ ∈ Icc 1 (M / n), |Ψ (m₀ * n)| := by
       symm
       refine sum_subset (fun m hm => ?_) fun m hm hmn => ?_
@@ -107,7 +106,7 @@ theorem sum_cells_eq {R : Type*} [AddCommMonoid R] (f : ℕ → R) (lam : ℕ �
   | zero => simp
   | succ A ih =>
     rw [sum_range_succ, ih]
-    have h0A : ⌊lam 0⌋₊ ≤ ⌊lam A⌋₊ :=
+    have h0A  :=
       Nat.floor_le_floor (monotone_nat_of_le_succ hmono (Nat.zero_le A))
     exact sum_Ioc_consecutive f h0A (Nat.floor_le_floor (hmono A))
 
@@ -118,9 +117,7 @@ theorem sum_Icc_eq_sum_cells {R : Type*} [AddCommMonoid R] (f : ℕ → R) (lam 
     (hlow : ∀ m : ℕ, 1 ≤ m → (m : ℝ) ≤ lam 0 → f m = 0) (hhigh : ∀ m, M < m → f m = 0) :
     ∑ m ∈ Icc 1 M, f m = ∑ a ∈ range A, ∑ m ∈ Ioc ⌊lam a⌋₊ ⌊lam (a + 1)⌋₊, f m := by
   rw [sum_cells_eq f lam hmono A]
-  have hMA : M ≤ ⌊lam A⌋₊ := Nat.le_floor hA
-  have h0A : ⌊lam 0⌋₊ ≤ ⌊lam A⌋₊ :=
-    Nat.floor_le_floor (monotone_nat_of_le_succ hmono (Nat.zero_le A))
+  have hMA  := Nat.le_floor hA
   have e1 : ∑ m ∈ Icc 1 M, f m = ∑ m ∈ Ioc 0 ⌊lam A⌋₊, f m := by
     refine sum_subset (fun m hm => ?_) fun m hm hmM => ?_
     · obtain ⟨h1, h2⟩ := mem_Icc.1 hm

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralRowCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds
 open ProbeRowRadicalConductor
@@ -55,7 +55,7 @@ lemma target_complexity_power_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime 
   rw [show 2*((fixedConductorConstant S:ℝ)*η.modulus.absNorm*rowNorm u)^2*(3+H)^2=
     (2*(fixedConductorConstant S:ℝ)^2)*(η.modulus.absNorm:ℝ)^2*rowNorm u^2*(3+H)^2 by ring]
   rw [Real.mul_rpow (by unfold rowNorm;positivity) (by positivity),
-    Real.mul_rpow (by positivity) (by unfold rowNorm;positivity),Real.mul_rpow (by positivity) (by positivity)]
+    Real.mul_rpow (by positivity) (by positivity),Real.mul_rpow (by positivity) (by positivity)]
   rw [←Real.rpow_two (η.modulus.absNorm:ℝ),←Real.rpow_two (rowNorm u),←Real.rpow_two (3+H),
     ←Real.rpow_mul (by positivity : (0:ℝ)≤η.modulus.absNorm),
     ←Real.rpow_mul (rowNorm_ge_one u |>.trans' (by norm_num : (0:ℝ)≤1)),
@@ -74,11 +74,11 @@ theorem centralRemainingScalar_arithmetic_bound (e eps : ℝ)
   have hF : 0<(fixedConductorConstant S:ℝ) := by exact_mod_cast fixedConductorConstant_pos S hS.prime
   refine ⟨C*(2*(fixedConductorConstant S:ℝ)^2)^eps,by positivity,?_⟩
   intro η u ι _ ψ B a H i hB ha ha1 hH hbin x w z hx hw hz hxi
-  have hh : 0≤H := (abs_nonneg _).trans hxi
+  have hh  := (abs_nonneg _).trans hxi
   have hb := hbound S hS hfirst η u ψ B a H i hB ha ha1 hH hbin x w z hx hw hz hxi
   apply hb.trans
   have hc := target_complexity_power_bound S hS.prime η u H eps hh heps.le
-  have hn : 0<rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
+  have hn  := zero_lt_one.trans_le (rowNorm_ge_one u)
   calc
     _ ≤ C*rowNorm u^eps*((2*(fixedConductorConstant S:ℝ)^2)^eps*(η.modulus.absNorm:ℝ)^(2*eps)*
         rowNorm u^(2*eps)*(3+H)^(2*eps)) := mul_le_mul_of_nonneg_left hc (by positivity)
@@ -99,8 +99,8 @@ theorem central_remaining_rowCost_bound (e eps : ℝ)
   obtain ⟨C1,hC1,h1⟩ := central_rowCost_bound S hS.prime e eps he heps
   refine ⟨C0*C1,mul_pos hC0 hC1,?_⟩
   intro η u ι _ ψ B a H i hB ha ha1 hH hbin x w z hx hw hz hxi
-  have hh : 0≤H := (abs_nonneg _).trans hxi
-  have hn : 0<rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
+  have hh  := (abs_nonneg _).trans hxi
+  have hn  := zero_lt_one.trans_le (rowNorm_ge_one u)
   have hL : 0<3+H := by linarith
   have h0' := h0 η u ψ B a H i hB ha ha1 hH hbin x w z hx hw hz hxi
   have h1' := h1 u a H ha ha1 hh

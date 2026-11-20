@@ -10,12 +10,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary
+open InverseInitialPhysicalSlots HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 
 theorem sourceMoment_physical_scale (Z d ell : ℝ) (hZ : 0≤Z) (hd : d≠0) :
@@ -87,7 +86,7 @@ theorem sourceMoment_live_disjoint {Δ : ℝ} {D : Parameters.HighData Δ}
     (Real.rpow_pos_of_pos hU _) F.complex_support P hs
   have ht' := livePrime_data M H F.W 1 2 (U^(ell t))
     (Real.rpow_pos_of_pos hU _) F.complex_support P ht
-  rcases hsep with hsep|hsep <;> linarith [hs'.2.2.1,hs'.2.2.2,ht'.2.2.1,ht'.2.2.2]
+  rcases hsep with hsep|hsep <;> linarith
 
 theorem sourceMoment_live_denominator {Δ : ℝ} {D : Parameters.HighData Δ}
     (F : ProbeFinalAssembly.SourceData D) {ι : Type*} [Fintype ι]
@@ -128,12 +127,12 @@ theorem sourceMoment_capacity_eventually {Slot : Type*} [Fintype Slot]
   refine ⟨hZ,?_⟩
   intro d hd
   have hd0 : 0<d := by linarith
-  have hz0 : 0<Z := zero_lt_one.trans_le hZ
+  have hz0  := zero_lt_one.trans_le hZ
   have hu0 : 0<Z^d := Real.rpow_pos_of_pos hz0 _
-  have hu1 : 1≤Z^d := Real.one_le_rpow hZ hd0.le
+  have hu1  := Real.one_le_rpow hZ hd0.le
   refine ⟨?_,?_⟩
   · intro s
-    have hh : 1≤(Z^d)^(ell s/d) := Real.one_le_rpow hu1 (div_nonneg (hell s) hd0.le)
+    have hh  := Real.one_le_rpow hu1 (div_nonneg (hell s) hd0.le)
     linarith
   · intro selected
     have hf : (2:ℝ)^selected.card≤(2:ℝ)^Fintype.card Slot :=
@@ -150,7 +149,6 @@ theorem sourceMoment_capacity_eventually {Slot : Type*} [Fintype Slot]
 
 section Source
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem sourceMoment_fiber_prime_geometry_eventually

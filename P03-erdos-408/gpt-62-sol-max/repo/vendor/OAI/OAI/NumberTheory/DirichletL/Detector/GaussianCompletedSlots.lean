@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSlots
 public import OAI.NumberTheory.DirichletL.Detector.GaussianDecomposition
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDecomposition
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap
+open scoped Classical
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
@@ -29,7 +30,7 @@ lemma correctedSummand_fixed_finite (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     (Function.support (fun p : Id×Id=>correctedSummand S D Ψ gaussianFixedWindow T p.1 p.2)).Finite := by
   apply (completedT_finite_support Ψ gaussianFixedWindow gaussianFixedWindow_compact T hT).subset
   intro p hp hz
-  exact hp (by simp only [correctedSummand,markedSummand,hz,mul_zero])
+  exact hp (by simp [correctedSummand,markedSummand,hz,mul_zero])
 
 lemma gaussian_slot_integrable {ι : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (q : ι→ℝ) (b : SchwartzMap ℝ ℂ) (x : ℝ) (c : ℂ) :
@@ -69,12 +70,11 @@ lemma gaussian_selected_summand {ι : Type*} [Fintype ι]
   · subst J
     simp [correctedSummand,markedSummand,CompletedGauss.summand]
   have hi : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ)
   have hT : (0:ℝ)<2^j := by positivity
   have hN := div_pos (mul_pos hi (pow_pos hj 3)) hT
-  have hprod : 0<∏i,q i := Finset.prod_pos (fun i _=>hq i)
   have hh := hsep ((2:ℝ)^j/Z) (div_pos hT hZ) _ hN q hq
   have he : (2:ℝ)^j/Z*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)/(∏i,q i)=
       (2:ℝ)^j*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)/(Z*∏i,q i) := by ring
@@ -86,7 +86,7 @@ lemma gaussian_selected_summand {ι : Type*} [Fintype ι]
   calc
     _ = c*(gaussianAnnulus ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)*
       (∏i,W i (q i))*gaussianMellinProfile
-        ((2:ℝ)^j*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)/(Z*∏i,q i))) := by dsimp [c]; ring
+        ((2:ℝ)^j*((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)/(Z*∏i,q i))) := by ring
     _ = c*∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t)
       ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/(2:ℝ)^j)*
         (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*
@@ -96,7 +96,6 @@ lemma gaussian_selected_summand {ι : Type*} [Fintype ι]
       apply integral_congr_ae
       apply Filter.Eventually.of_forall
       intro t
-      dsimp [c]
       ring
 
 lemma correctedSummand_gaussian_factor (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
@@ -117,7 +116,7 @@ lemma gaussian_selected_completed_integrable {ι : Type*} [Fintype ι]
   let hf := correctedSummand_fixed_finite S D Ψ T hT
   have hz (p : Id×Id) (hp : p∉hf.toFinset) :
       correctedSummand S D Ψ gaussianFixedWindow T p.1 p.2=0 := by
-    simpa only [Set.Finite.mem_toFinset,Function.mem_support,not_not] using hp
+    simp_all
   have hr (t : ℝ) : correctedCompletedT S D Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T=
       ∑p∈hf.toFinset,correctedSummand S D Ψ

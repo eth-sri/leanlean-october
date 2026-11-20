@@ -39,7 +39,7 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
         (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z‖≤C*Z^(3/16+loss) := by
   let D := max 1 B
   have hD : 0<D := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hDc : (D:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hD.ne'
+  have hDc  := Complex.ofReal_ne_zero.mpr hD.ne'
   let Wn := fun i x=>W i x/(D:ℂ)
   have hWn : ∀i,Function.support (Wn i)⊆Set.Icc a b := by
     intro i x hx
@@ -56,7 +56,7 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
     dsimp [Wn]
     field_simp
   let ε := min (loss/512) (1/2)
-  have he : 0<ε := by dsimp [ε];positivity
+  have he : 0<ε := by positivity
   have he1 : ε<1 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
   have heloss : 256*ε≤loss := by have hh := min_le_left (loss/512) (1/2:ℝ);dsimp only [ε];linarith
   intro η

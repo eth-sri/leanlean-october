@@ -64,14 +64,10 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
       rw [hu,show R P=idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z from ite_eq_left hp]
       exact mul_div_cancel₀ _ (source_idealHighLocalFactor_ne_zero S hS η P (hT P hp) x w z hx hw hz)
     · simp only [R,hp,ite_false,mul_one,markedLocal,one_mul]
-  have he' : HasProd (fun P : PrimeIdeal=>∑'b : HighValuation,
-      markedLocal T completedValuationMark (excludedHighPrimeTerm S η x w z) P b)
-      (markedIdealHighSeries S 1 η 1 x w z *
-        ∏P∈T,idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z) := by
-    convert he using 1
-    funext P
-    exact (heq P).symm
-  exact (markedIdealHighSeries_hasProd S hS.prime T η x w z hx hw hz).unique he'
+  refine (markedIdealHighSeries_hasProd S hS.prime T η x w z hx hw hz).unique ?_
+  convert he using 1
+  funext P
+  exact (heq P).symm
 
 end SevenEighths.ProbePhysical
 end

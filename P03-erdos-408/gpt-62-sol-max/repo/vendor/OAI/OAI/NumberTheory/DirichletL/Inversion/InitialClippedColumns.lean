@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialProfile
 public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
 public import OAI.NumberTheory.DirichletL.Inversion.AmbientProfileTower
@@ -10,10 +11,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open SevenEighths.InverseMoment
+open scoped BigOperators Classical
+open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels
+open SecondPassArithmetic CompletedGauss SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialClippedColumns
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -35,20 +35,20 @@ theorem child_test_clipping (w : ℝ → ℂ) {Z q : ℝ} (hZ : 0 < Z) (hq : 0 <
 
 section Arithmetic
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def freshColumns (pool : Finset ι) (w : ℝ → ℂ) (X : ℝ) : Finset (Finset ι) :=
   pool.powerset.filter (fun U => w (primeProductNorm p U/X) ≠ 0)
 
-omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalFamily.Maximal p] in
 theorem mem_freshColumns (pool : Finset ι) (w : ℝ → ℂ) (X : ℝ) (U : Finset ι) :
     U ∈ freshColumns p pool w X ↔ U ⊆ pool ∧ w (primeProductNorm p U/X) ≠ 0 := by
   simp [freshColumns]
 
 include hp in
-omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalFamily.Maximal p] in
 theorem freshColumns_clipping_range (pool : Finset ι) (w : ℝ → ℂ)
     (a b Z N : ℝ) (hZ : 1 < Z) (hb : 1 ≤ b)
     (hw : Function.support w ⊆ Set.Icc a b)
@@ -60,7 +60,7 @@ theorem freshColumns_clipping_range (pool : Finset ι) (w : ℝ → ℂ)
     ((mem_freshColumns p pool w (Z^N) U).mp hU).2
 
 include hp in
-omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalFamily.Maximal p] in
 theorem freshColumns_initial_clipping_shift (pool : Finset ι) (w : ℝ → ℂ)
     (a b Z N η : ℝ) (hZ : 1 < Z) (hb : 1 ≤ b)
     (hw : Function.support w ⊆ Set.Icc a b)

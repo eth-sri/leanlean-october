@@ -10,15 +10,13 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
+open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale
 open CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity
 open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 theorem active_error_slot_logs_le (s : Input ι) (C R : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
@@ -27,8 +25,7 @@ theorem active_error_slot_logs_le (s : Input ι) (C R : Ideal O)
     (υ : Character) (v Z : ℝ) (hZ : 1<Z) (hP : ∀i,1≤s.P i) :
     (∑i,Real.logb Z ((errorInput s C R B τ t Q k Bp υ v).P i))≤
       ∑i,Real.logb Z (s.P i) := by
-  have hp : ∀i,1≤(activeInput (child s C R B τ t)).P i := fun i=>hP i.val
-  have hs := common_slot_logs_le (activeInput (child s C R B τ t)) (Q^k) Bp Z hZ hp
+  have hs := common_slot_logs_le (activeInput (child s C R B τ t)) (Q^k) Bp Z hZ (fun i=>hP i.val)
   exact hs.trans (common_slot_logs_le s C B Z hZ hP)
 
 theorem active_error_parent_affine (s : Input ι) (C R : Ideal O)

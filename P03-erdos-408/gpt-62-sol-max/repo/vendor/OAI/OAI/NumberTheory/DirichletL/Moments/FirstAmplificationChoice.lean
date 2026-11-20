@@ -1,10 +1,14 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
+public import OAI.NumberTheory.DirichletL.Moments.DescentLedger
 public import OAI.NumberTheory.DirichletL.Moments.FirstScale
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationSlotGap
-public import OAI.NumberTheory.DirichletL.Moments.AmplificationOriginalErrors
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationActiveFamily
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorEnergy
+public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildEnergy
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationAllocationScale
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
@@ -13,28 +17,25 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstAmplificationChoice
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentSectorLocalization CenteredMomentPrimePool
-open CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentSectorLocalization
+open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
+open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow
+open CenteredMomentGaussNormalization
+open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
+open CenteredMomentAmplificationSlotGap
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ballProfile : 𝓢(ℝ,ℂ) := QuadraticInitialBound.sieveCutoff
 
 theorem ballProfile_nonneg (x : ℝ) : 0 ≤ (ballProfile x).re := by
-  simpa only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,Complex.ofReal_re]
-    using (QuadraticInitialBound.sieveBump.nonneg (x:=x))
+  exact (QuadraticInitialBound.sieveBump.nonneg (x:=x))
 
 theorem ballProfile_le_one (x : ℝ) : (ballProfile x).re ≤ 1 := by
-  simpa only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,Complex.ofReal_re]
-    using (QuadraticInitialBound.sieveBump.le_one (x:=x))
+  exact (QuadraticInitialBound.sieveBump.le_one (x:=x))
 
 theorem ballProfile_one (x : ℝ) (hx : 0≤x) (hx1 : x≤1) : ballProfile x=1 := by
   simp only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,
@@ -73,9 +74,7 @@ theorem primeTest_ne_zero : (primeTest : ℝ→ℝ)≠0 := by
   have h : primeTest (3/4)=1 := primeTest.one_of_mem_closedBall
     (by simp [primeTest,Metric.mem_closedBall])
   intro hz
-  have he := congrFun hz (3/4)
-  change primeTest (3/4)=0 at he
-  linarith
+  simp_all
 
 theorem eventually_log_card_power (c ell loss : ℝ)
     (hc : 0<c) (hell : 0<ell) (hloss : 0<loss) :
@@ -83,8 +82,8 @@ theorem eventually_log_card_power (c ell loss : ℝ)
       Z^(ell-loss)≤c*Z^ell/Real.log (Z^ell) := by
   have hb := (isLittleO_log_rpow_atTop hloss).bound (div_pos hc hell)
   filter_upwards [hb,eventually_gt_atTop (1:ℝ)] with Z hbound hZ
-  have hz : 0<Z := zero_lt_one.trans hZ
-  have hlog : 0<Real.log Z := Real.log_pos hZ
+  have hz  := zero_lt_one.trans hZ
+  have hlog  := Real.log_pos hZ
   have hpow : 0<Z^loss := Real.rpow_pos_of_pos hz _
   have hh : ell*Real.log Z≤c*Z^loss := by
     have hh' : Real.log Z≤(c/ell)*Z^loss := by
@@ -101,7 +100,6 @@ theorem eventually_log_card_power (c ell loss : ℝ)
 
 section Pool
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 include hH
@@ -135,7 +133,7 @@ theorem eventually_actual_pool (Sbad : Finset (Ideal O))
     (tendsto_rpow_atTop he).eventually (eventually_ge_atTop (2*(cap/(ell/2)))),
     eventually_scale_gap b eta (ell/2) hgap,eventually_gt_atTop (1:ℝ)]
     with Z hcard hlarge htwo hcap hslot hZ
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   have hlarge' : Z^(ell/2)≤(primePool M H Sbad (1/2) 1 (Z^ell)).card := by
     simpa only [show ell-ell/2=ell/2 by ring] using hlarge
   have hp : (primePool M H Sbad (1/2) 1 (Z^ell)).Nonempty := by
@@ -194,10 +192,7 @@ theorem dyadic_energy_eq_sum (n : ℤ) (f : O→ℂ) :
       ∑ h∈dyadRows n,dyadicWeight n (normValue h)*‖f h‖^2 := by
   apply tsum_eq_sum
   intro h hh
-  have hz : dyadicWeight n (normValue h)=0 := by
-    by_contra hn
-    exact hh ((mem_dyadRows n h).mpr hn)
-  rw [hz,zero_mul]
+  simp_all
 
 theorem dyadic_energy_le_sum (n : ℤ) (f : O→ℂ) :
     (∑' h : O,dyadicWeight n (normValue h)*‖f h‖^2)≤
@@ -378,13 +373,12 @@ theorem eventually_dyadic_amplification (M : Ideal O) [NeZero M]
     hZ hsigma hM (fun Q hQ => (hdata Q hQ).2.2.1)
     (fun Q hQ => (hdata Q hQ).2.2.2) hR hs hsize n hK
 
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion
-open ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion
-open HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
+open CenteredMomentOriginalChildEnergy CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
+open CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion ConcretePrimeRowBridge
+open CanonicalRowCompletion RayFourExpansion HeckeRowClosure CenteredMomentChildRows
+open CenteredMomentHeckeColumnWindow CenteredMomentAmplificationActiveFamily
+open CenteredMomentAmplificationActiveFactor
 
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -481,7 +475,7 @@ def active (D : OriginalData ι) : OriginalData ι :=
 theorem active_subset (D : OriginalData ι) (i : ι ⊕ Fin 2) : D.active.S i⊆D.S i := by
   cases i <;> simp only [active]
   · exact Finset.filter_subset _ _
-  · exact fun _ h => h
+  rfl
 
 theorem active_profile (D : OriginalData ι) : D.active.profile=D.profile := rfl
 
@@ -516,7 +510,7 @@ theorem active_beta (D : OriginalData ι) : D.active.beta=D.beta := by
   have hv' := Finset.mem_filter.mp hv
   apply D.active_profile_zero v hv'.1
   intro hm
-  exact hn (Finset.mem_filter.mpr ⟨hm,hv'.2⟩)
+  simp_all
 
 theorem active_columns_subset (D : OriginalData ι) : D.active.columns⊆D.columns :=
   Finset.image_subset_image (Fintype.piFinset_subset _ _ D.active_subset)
@@ -555,9 +549,9 @@ theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
 end OriginalData
 
 open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger
-open CenteredMomentDescentLedger CenteredMomentCommonSupport
-open CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
+open CenteredMomentFirstCanonicalFamily CenteredMomentDescentLedger
+open CenteredMomentCommonSupport CenteredMomentFirstColumns CenteredMomentRankinRadical
+open ActualEisensteinCubic
 
 def nominalLog (I J E : Ideal O) (K X Z : ℝ) : ℝ :=
   Real.logb Z (firstNominalScale I J E K X)
@@ -569,8 +563,7 @@ theorem canonical_active_log_le (η τ : Character) (m : O) (I J : Ideal O)
     0≤Real.logb Z (τ.modulus.absNorm:ℝ) ∧
     Real.logb Z ((Ideal.span {activeConductor I J}).absNorm:ℝ)≤
       Real.logb Z (τ.modulus.absNorm:ℝ) := by
-  have hpos : 0<τ.modulus.absNorm := Nat.pos_of_ne_zero
-    (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot)
+  have hpos  := Ideal.absNorm_pos_of_ne_bot (τ.modulus_ne_bot)
   have hd : Ideal.span {activeConductor I J}∣τ.modulus := by
     rw [hmod,←Ideal.span_singleton_mul_span_singleton]
     exact (dvd_mul_left (Ideal.span {activeConductor I J}) _).trans (dvd_mul_left _ _)

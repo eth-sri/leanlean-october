@@ -7,7 +7,6 @@ public import Erdos821.S2.PrimeIndices
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -37,7 +36,7 @@ theorem ghostBatchLabels_enumeration (S : LifespanAssignment P n) (i : Fin (n + 
     List.ofFn (Q.ghostBatchLabels S i g) = (Q.ghostBirthPrimes S i g).toList := by
   let v : List.Vector (P.Prime g.val) (Q.ghostBirthPrimes S i g).card :=
     ⟨(Q.ghostBirthPrimes S i g).toList, Finset.length_toList _⟩
-  have he : Q.ghostBatchLabels S i g = v.get := by funext h; rfl
+  have he : Q.ghostBatchLabels S i g = v.get := by rfl
   rw [he, ← List.Vector.toList_ofFn, List.Vector.ofFn_get]
   rfl
 
@@ -102,7 +101,7 @@ theorem ghost_pending_disjoint (S : LifespanAssignment P n) (i : Fin (n + 1)) (g
   have hpre := (Finset.mem_filter.mp (Finset.mem_sdiff.mp hp).1).2
   have hborn := (Finset.mem_filter.mp hb).2
   rcases he : S g p with _ | ⟨birth, stop⟩
-  · simp only [he, pendingBefore] at hpre
+  · simp [he, pendingBefore] at hpre
   · rw [he] at hpre hborn
     obtain ⟨rfl, _⟩ := hborn
     exact lt_irrefl _ hpre.1
@@ -124,8 +123,7 @@ theorem ghostDeleted_eq_map (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : 
   let R : P.Particle g.val → Prop := fun z => z.1 ∈ Q.ghostStopPrimes S i g
   have hi : Q.ghostTerminationIndices S i g = Finset.univ.filter
       (fun h => R (memoryEntry (Q.memoryBefore S i g) h)) := by
-    ext h
-    simp only [ghostTerminationIndices, Finset.mem_filter, Finset.mem_univ, true_and, R]
+    rfl
   have hd := deleteMemoryIndices_filter (P := P) (g := g.val) (Q.memoryBefore S i g) R
   rw [hi]
   calc

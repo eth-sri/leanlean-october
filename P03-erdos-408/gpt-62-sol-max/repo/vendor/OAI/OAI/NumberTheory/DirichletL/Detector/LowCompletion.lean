@@ -16,11 +16,11 @@ local notation "Id" => Ideal O
 
 lemma summand_zero_completedIndex (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) (I J : Id)
     (h : completedIndex I J=0) : summand Ψ W X I J=0 := by
-  have hprod : primaryGenerator I*primaryGenerator J^3=0 := h
+  have hprod  := h
   rcases mul_eq_zero.mp hprod with hI|hJ
   · simp only [summand,columnWeight,squarefreeGaussCoefficient,hI,ne_eq,not_true_eq_false,
       and_false,dite_false,zero_mul,zero_div]
-  · have hj : primaryGenerator J=0 := (pow_eq_zero_iff (by decide : 3≠0)).mp hJ
+  · have hj  := (pow_eq_zero_iff (by decide : 3≠0)).mp hJ
     have hc : cubeWeight Ψ J=0 := by
       change star (FiniteGaussPhase.angularFactor (primaryGenerator J))^3*
         Ψ (primaryGenerator J)^3/(Ideal.absNorm J:ℂ)=0

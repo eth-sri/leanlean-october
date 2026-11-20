@@ -1,13 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoinDecay
+public import OAI.NumberTheory.DirichletL.PrimeRows.SliceIntegral
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -58,7 +58,7 @@ lemma continuedRow_horizontal_measurable {K : ℕ}
       · fun_prop
   · exact hphysical.const_mul _
 
-lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr : l≤r) (_hC : 0≤C)
+lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr : l≤r)
     (hm : Measurable (Function.uncurry F))
     (hi : ∀v∈Ioc l r,Integrable (F v) (volume.prod volume))
     (hb : ∀v∈Ioc l r,(∫q : ℝ×ℝ,‖F v q‖ ∂volume.prod volume)≤C) :

@@ -8,21 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplifiedRetainedRadius
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentFirstAmplificationChoice
+open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy
+open CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization CenteredMomentSourceRow
+open CenteredMomentGaussNormalization
 local notation "O" => ActualEisensteinCubic.O
 
 theorem ballProfile_support_upper (x : ℝ) (hx : 0≤x) (h : ballProfile x≠0) : x<2 := by
   have hb : x∈Function.support QuadraticInitialBound.sieveBump := by
-    intro hz
-    exact h (by simp only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,hz,Complex.ofReal_zero])
+    simp_all
   rw [QuadraticInitialBound.sieveBump.support_eq] at hb
   simpa only [Metric.mem_ball,dist_zero_right,Real.norm_eq_abs,abs_of_nonneg hx,
     QuadraticInitialBound.sieveBump] using hb
@@ -32,7 +30,7 @@ theorem ballProfile_radius_le (x Y V : ℝ) (hx : 0≤x) (hY : 0<Y) (hV : 0<V)
   by_cases hz : ballProfile (x/Y)=0
   · simpa only [hz,Complex.zero_re] using ballProfile_nonneg (x/V)
   have hs := ballProfile_support_upper (x/Y) (div_nonneg hx hY.le) hz
-  have hxy : x≤V := ((div_lt_iff₀ hY).mp hs).le.trans hscale
+  have hxy  := ((div_lt_iff₀ hY).mp hs).le.trans hscale
   rw [ballProfile_one (x/V) (div_nonneg hx hV.le) ((div_le_one hV).mpr hxy)]
   exact ballProfile_le_one _
 
@@ -153,7 +151,7 @@ theorem retained_nominal_upper (I J E : Ideal O) (hE : E≠0)
   exact hsec
 
 open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationGlobal
+open CenteredMomentAmplificationGlobal
 
 end SevenEighths.CenteredMomentAmplifiedRetainedRadius
 

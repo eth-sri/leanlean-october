@@ -24,7 +24,7 @@ theorem exists_reserve (εm:ℝ)(hε:0<εm):
 theorem shifted_capacity (ρ gap η r r' ell G:ℝ)
     (hρ:0<ρ)(hρmax:ρ≤1/4)(hgap:2*gap≤ρ)
     (hη:0<η)(hηmax:η≤1/7)(hr:0≤r)(hell:0≤ell)
-    (_hG:0≤G)(hGmax:G≤ell)(hlo:r-η≤r')(hhi:r'≤r)
+(hGmax:G≤ell)(hlo:r-η≤r')(hhi:r'≤r)
     (hfirst:r+2*ell<1)(hsecond:2*r+8*ell<3):
     0≤1+ρ ∧ 1+ρ≤2 ∧ -2≤r'+ell-2*G ∧
       r'+2*ell≤(1+ρ)-2*gap ∧

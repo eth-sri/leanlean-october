@@ -8,18 +8,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstChildLower
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondInputGates
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
+open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic CenteredMomentCommonProfile
+open CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
 open CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
-local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
 def exponent (A D P q ε ξ:ℝ):ℝ:=
   max (A+ε) (max (2*A+D+ε+ξ/2) (max (A+P+ε) q))

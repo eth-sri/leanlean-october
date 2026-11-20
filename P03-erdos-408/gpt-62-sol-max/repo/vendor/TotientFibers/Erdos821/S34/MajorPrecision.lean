@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.S34.PrecisionPowers
 
 @[expose] public section
@@ -13,7 +14,7 @@ theorem rpow_quot_product (L K a b c : ℝ) (hL : 0 < L) :
     L ^ a * (K * L ^ b) / L ^ c = K * L ^ (a + b - c) := by
   calc
     _ = K * (L ^ a * L ^ b / L ^ c) := by ring
-    _ = _ := by rw [← Real.rpow_add hL, ← Real.rpow_sub hL]
+    _ = _ := by rpow_ring hL
 
 theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q : ℕ)
     (hL : 3 ≤ L) (hK : 0 < K) (hKL : 3 * K ≤ L)
@@ -32,7 +33,6 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
   have hLp : 0 < L := by linarith
   have hKle : K ≤ L := by linarith
   let ε := (Q : ℝ) ^ 2 * (K * L ^ (-DExp)) / L ^ (-ξExp)
-  have hε0 : 0 ≤ ε := by dsimp [ε]; positivity
   have hQ2 : (Q : ℝ) ^ 2 ≤ L ^ (2 * q) := by
     have ht := pow_le_pow_left₀ (Nat.cast_nonneg Q) hQ 2
     simpa only [rpow_nat_pow L q 2 hLp.le, Nat.cast_ofNat] using ht
@@ -105,14 +105,7 @@ theorem major_power_precision (L K B q d C₄ hExp ξExp DExp ζ NA NB : ℝ) (Q
     calc
       _ ≤ 3 * (K * L ^ (-B - q - 20)) * L ^ (q / 2) :=
         mul_le_mul (mul_le_mul_of_nonneg_left hε (by norm_num)) hrootQ (Real.sqrt_nonneg _) (by positivity)
-      _ = (3 * K) * L ^ (-B - q / 2 - 20) := by
-        have he : L ^ (-B - q - 20) * L ^ (q / 2) = L ^ (-B - q / 2 - 20) := by
-          rw [← Real.rpow_add hLp]
-          congr 1
-          ring
-        calc
-          _ = (3 * K) * (L ^ (-B - q - 20) * L ^ (q / 2)) := by ring
-          _ = _ := by rw [he]
+      _ = (3 * K) * L ^ (-B - q / 2 - 20) := by rpow_ring hLp
       _ ≤ _ := rpow_cost_absorption L (3 * K) (-B - 2) (-B - q / 2 - 20) hL1 hKL (by linarith)
   refine ⟨hε1, ?_⟩
   have hs := add_le_add (add_le_add hdiscard hfreeze) hchar

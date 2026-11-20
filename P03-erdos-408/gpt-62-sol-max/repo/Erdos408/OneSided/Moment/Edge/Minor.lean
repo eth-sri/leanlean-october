@@ -41,7 +41,7 @@ theorem integral_ephase_period (a : ℝ) (n : ℤ) :
     ∫ θ in a..a + 1, ephase (θ * n) = if n = 0 then 1 else 0 := by
   split_ifs with hn
   · simp [hn, ephase_zero]
-  · have hc : (2 * π * Complex.I * n : ℂ) ≠ 0 :=
+  · have hc  :=
       mul_ne_zero (mul_ne_zero (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.2 Real.pi_ne_zero))
         Complex.I_ne_zero) (Int.cast_ne_zero.2 hn)
     have e : ∀ θ : ℝ, ephase (θ * n) = Complex.exp ((2 * π * Complex.I * n) * θ) := by
@@ -96,12 +96,12 @@ private theorem one_div_sq_le_abs_sub {Q₀ k k' h h' : ℕ} (hk : k ∈ Icc 1 Q
     have he' : h * k' = h' * k := by exact_mod_cast (sub_eq_zero.1 he)
     have h1 : k ∣ k' := (Nat.Coprime.symm hh).dvd_of_dvd_mul_left ⟨h', by linarith [he']⟩
     have h2 : k' ∣ k := (Nat.Coprime.symm hh').dvd_of_dvd_mul_left ⟨h, by linarith [he']⟩
-    have hkk : k = k' := Nat.dvd_antisymm h1 h2
+    have hkk  := Nat.dvd_antisymm h1 h2
     subst hkk
     have : h = h' := by
       have := Nat.eq_of_mul_eq_mul_right hk.1 he'
       exact this
-    exact hne (by rw [this])
+    simp_all
   have h1 : (1 : ℝ) ≤ |((h * k' - h' * k : ℤ) : ℝ)| := by exact_mod_cast Int.one_le_abs hcross
   have e : (h : ℝ) / k - h' / k' = ((h * k' - h' * k : ℤ) : ℝ) / (k * k') := by
     push_cast
@@ -134,11 +134,10 @@ theorem minorWeight_spec (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ 
   have hQ1' : (1 : ℝ) ≤ Q₀ := by exact_mod_cast hQ1
   -- `4 δ Q₀² ≤ 1`
   have hδQ : 4 * δ * (Q₀ : ℝ) ^ 2 ≤ 1 := by
-    have hq2 : (Q₀ : ℝ) ^ 2 ≤ P ^ 2 := pow_le_pow_left₀ (by positivity) hQP 2
+    have hq2  := pow_le_pow_left₀ (by positivity) hQP 2
     have e : 4 * δ * (Q₀ : ℝ) ^ 2 = 8 * P * Q₀ ^ 2 / Y := by rw [hδ, arcRadius]; ring
     rw [e, div_le_one hY0]
     have : 8 * P * (Q₀ : ℝ) ^ 2 ≤ 8 * P * P ^ 2 := by gcongr
-    have e2 : 8 * P * P ^ 2 = 8 * P ^ 3 := by ring
     linarith
   have hsep : 2 * δ < 1 / (Q₀ : ℝ) ^ 2 := by
     rw [lt_div_iff₀ (by positivity)]
@@ -244,9 +243,9 @@ theorem minorWeight_spec (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x ^ 
       rw [Nat.Coprime, ← this, hcop]
     have hnn : ∀ k h, 0 ≤ ind k h := fun k h => by
       rcases hind01 k h with h0 | h0 <;> norm_num [h0]
-    have hle1 : ind d c.toNat ≤ ∑ h ∈ (range d).filter (fun h => Nat.Coprime h d), ind d h :=
+    have hle1  :=
       single_le_sum (f := fun h => ind d h) (fun h _ => hnn d h) hmemf
-    have hle2 : ∑ h ∈ (range d).filter (fun h => Nat.Coprime h d), ind d h ≤ N :=
+    have hle2  :=
       single_le_sum (f := fun k => ∑ h ∈ (range k).filter (fun h => Nat.Coprime h k), ind k h)
         (fun k _ => sum_nonneg fun h _ => hnn k h) (mem_Icc.2 ⟨hd1, hdQ⟩)
     linarith
@@ -267,11 +266,10 @@ theorem sub_arcIntegral_eq (hP : 1 ≤ Real.log x ^ A₀) (hY : 8 * (Real.log x 
   have hδ0 : 0 < δ := by rw [hδ, arcRadius]; positivity
   have hQP : (Q₀ : ℝ) ≤ P := Nat.floor_le (by linarith)
   have hδQ : 4 * δ * (Q₀ : ℝ) ^ 2 ≤ 1 := by
-    have hq2 : (Q₀ : ℝ) ^ 2 ≤ P ^ 2 := pow_le_pow_left₀ (by positivity) hQP 2
+    have hq2  := pow_le_pow_left₀ (by positivity) hQP 2
     have e : 4 * δ * (Q₀ : ℝ) ^ 2 = 8 * P * Q₀ ^ 2 / Y := by rw [hδ, arcRadius]; ring
     rw [e, div_le_one hY0]
     have : 8 * P * (Q₀ : ℝ) ^ 2 ≤ 8 * P * P ^ 2 := by gcongr
-    have e2 : 8 * P * P ^ 2 = 8 * P ^ 3 := by ring
     linarith
   -- each arc lies in the period `(lo, lo + 1]`
   have hsub : ∀ k ∈ Icc 1 Q₀, ∀ h ∈ (range k).filter (fun h => Nat.Coprime h k),
@@ -395,7 +393,7 @@ theorem exists_dirichlet_minor {P Y θ u : ℝ} (hP : 0 < P) (hY : 0 < Y)
       omega
     · exact h
   set d := d'.toNat with hd
-  have hdd : (d : ℤ) = d' := Int.toNat_of_nonneg hd'0.le
+  have hdd  := Int.toNat_of_nonneg hd'0.le
   have hcop : Int.gcd c d = 1 := by
     have := Int.gcd_div_gcd_div_gcd (i := j) (j := k) hg0
     rw [hdd]
@@ -406,12 +404,10 @@ theorem exists_dirichlet_minor {P Y θ u : ℝ} (hP : 0 < P) (hY : 0 < Y)
   have hd0 : 0 < d := by omega
   have hdk : (d : ℤ) ≤ k := by
     rw [hdd, hd']
-    have : (1 : ℤ) ≤ g := by exact_mod_cast hg0
     nlinarith
   have hdQ : d ≤ Q := by
-    have : (d : ℤ) ≤ Q := hdk.trans (by exact_mod_cast hkQ)
+    have  := hdk.trans (by exact_mod_cast hkQ)
     exact_mod_cast this
-  have hd0' : (0 : ℝ) < d := by exact_mod_cast hd0
   have hk0' : (0 : ℝ) < k := by exact_mod_cast hk0
   -- `|ϑ - c/d| = |kϑ - j|/k ≤ 1/(k(Q+1)) ≤ 1/(dQ)`
   have happ : |θ + u / Y - c / d| ≤ 1 / (d * Q) := by
@@ -429,13 +425,12 @@ theorem exists_dirichlet_minor {P Y θ u : ℝ} (hP : 0 < P) (hY : 0 < Y)
           div_le_div_of_nonneg_right hjk hk0'.le
       _ ≤ 1 / (d * Q) := by
           rw [div_div, one_div_le_one_div (by positivity) (by positivity)]
-          have : (0 : ℝ) ≤ Q := Nat.cast_nonneg _
           nlinarith
   refine ⟨c, d, hcop, ?_, hdQ, happ⟩
   -- `d ≤ P` would put `θ` within `δ` of `c/d`
   by_contra hdP
   push Not at hdP
-  have hdQ₀ : d ≤ ⌊P⌋₊ := Nat.le_floor hdP
+  have hdQ₀  := Nat.le_floor hdP
   have h1 := hθ c d hd0 hdQ₀ hcop
   have h2 : |θ - c / d| ≤ |θ + u / Y - c / d| + |u / Y| := by
     calc |θ - c / d| = |(θ + u / Y - c / d) - u / Y| := by ring_nf
@@ -480,7 +475,7 @@ theorem exists_plateau_fourier :
   set f : ℝ → ℂ := fun t => (plateau t : ℂ) with hfdef
   have hf : ContDiff ℝ ∞ f := Complex.ofRealCLM.contDiff.comp Mellin.contDiff_plateau
   have hsupp : ∀ t, 5 < |t| → f t = 0 := fun t ht => by
-    simp only [hfdef, Mellin.plateau_eq_zero ht.le, Complex.ofReal_zero]
+    simp [hfdef, Mellin.plateau_eq_zero ht.le, Complex.ofReal_zero]
   have hbd : ∀ k : ℕ, ∃ M, 0 ≤ M ∧ ∀ t, ‖iteratedDeriv k f t‖ ≤ M := by
     intro k
     obtain ⟨M, hM⟩ := (hf.continuous_iteratedDeriv k (by exact_mod_cast le_top)).bounded_above_of_compact_support
@@ -520,7 +515,6 @@ theorem exists_plateau_fourier :
     nlinarith [norm_nonneg (ft f ξ)]
   · -- `|ψ̂| ≤ 10 M₄ / s² ≤ (20 M₄ / U) g` with `s = (2πξ)² ≥ U`
     set s := (2 * π * ξ) ^ 2 with hs
-    have hξ : 1 < |ξ| := lt_of_le_of_lt hU hUξ
     have hpi : 1 < 2 * π := by linarith [Real.two_le_pi]
     have hsU : U ≤ s := by
       rw [hs, mul_pow, ← sq_abs ξ]
@@ -529,7 +523,6 @@ theorem exists_plateau_fourier :
       calc U ≤ |ξ| ^ 2 := this
         _ = 1 * |ξ| ^ 2 := (one_mul _).symm
         _ ≤ (2 * π) ^ 2 * |ξ| ^ 2 := mul_le_mul_of_nonneg_right h1 (sq_nonneg _)
-    have hs1 : 1 ≤ s := hU.trans hsU
     have hU0 : 0 < U := by linarith
     have hspos : 0 < s := by linarith
     rw [fourierDecay, ← hs, ← div_eq_mul_inv, le_div_iff₀ (by linarith)]
@@ -542,7 +535,6 @@ theorem exists_plateau_fourier :
       rw [le_div_iff₀ hspos]
       nlinarith
     have e3 : 10 * M₄ / s ≤ 10 * M₄ / U := div_le_div_of_nonneg_left (by positivity) hU0 hsU
-    have hM02 : 0 ≤ 10 * (M₀ + M₂) := by positivity
     have e4 : 20 * M₄ / U ≤ (10 * (M₀ + M₂) + 20 * M₄) / U :=
       div_le_div_of_nonneg_right (by linarith) hU0.le
     have : 2 * (10 * M₄ / U) = 20 * M₄ / U := by ring

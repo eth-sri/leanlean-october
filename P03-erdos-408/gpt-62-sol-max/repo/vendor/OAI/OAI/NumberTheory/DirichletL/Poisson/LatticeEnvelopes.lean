@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
 
@@ -10,72 +11,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap
 
 namespace EisensteinSchwartzPoisson
 open ActualEisensteinCubic ConcreteTraceCRT
@@ -116,7 +60,7 @@ theorem nonzero_lattice_envelope_sum
     apply (le_div_iff₀ (by positivity)).mpr
     simpa only [mul_comm] using hbound h
   have hs := (scaled_eisenstein_cauchy_summable t ht).subtype (fun h : O => h ≠ 0)
-  have hfs : Summable f := Summable.of_nonneg_of_le hf hp (hs.mul_left C)
+  have hfs  := Summable.of_nonneg_of_le hf hp (hs.mul_left C)
   refine ⟨hfs, ?_⟩
   have hh := hfs.tsum_le_tsum hp (hs.mul_left C)
   rw [tsum_mul_left] at hh
@@ -210,7 +154,7 @@ variable (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
   (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
   (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
   (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-  (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+  (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
   (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
   (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
 
@@ -218,8 +162,8 @@ include hD₁ hD₂ hB hN hM hS hT hr hl hri hrows ha hb
 
 theorem actual_original_middle_all_frequencies
     (W : 𝓢(ℝ, ℂ))
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N) :
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N) :
     Summable (fun h : {h : O // h ≠ 0} =>
       originalMiddleAt W S T rows left right (a h.val) (b h.val) M h.val) ∧
     (∑' h : {h : O // h ≠ 0},
@@ -227,7 +171,7 @@ theorem actual_original_middle_all_frequencies
         2 * nonzeroLatticeEnvelopeConstant * originalMiddleDecayConstant W *
           Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀) := by
   let t := Real.sqrt (M / B) / (D₁ * D₂)
-  have ht : 0 < t := by dsimp only [t]; positivity
+  have ht : 0 < t := by positivity
   let C := originalMiddleDecayConstant W * Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀)
   have hC : 0 ≤ C := mul_nonneg (originalMiddleDecayConstant_nonneg W) (Real.sqrt_nonneg _)
   have hpoint (h : {h : O // h ≠ 0}) :
@@ -248,9 +192,9 @@ theorem actual_original_middle_all_frequencies
       (fun _ _ _ => norm_nonneg _) M B D₁ D₂ hM (by linarith) (by linarith) (by linarith)
       (fun i => (hrows i).2.1) (fun D hD => (hS D hD).1) (fun E hE => (hT E hE).1)
     have harg : Real.sqrt (M / B) * ‖eisEmbedding h.val‖ ^ 2 / (D₁ * D₂) =
-        t * ‖eisEmbedding h.val‖ ^ 2 := by dsimp only [t]; ring
+        t * ‖eisEmbedding h.val‖ ^ 2 := by ring
     rw [harg] at hk'
-    have hpre : 2 * Real.sqrt (M / B) / (D₁ * D₂) = 2 * t := by dsimp only [t]; ring
+    have hpre : 2 * Real.sqrt (M / B) / (D₁ * D₂) = 2 * t := by ring
     rw [hpre] at hp
     change originalMiddleAt W S T rows left right (a h.val) (b h.val) M h.val ≤ _ at hp
     calc
@@ -263,7 +207,7 @@ theorem actual_original_middle_all_frequencies
   refine ⟨hs, (mul_le_mul_iff_right₀ ht).mp ?_⟩
   calc
     _ ≤ nonzeroLatticeEnvelopeConstant * (2 * t * C) := hv
-    _ = _ := by dsimp only [C]; ring
+    _ = _ := by ring
 
 end
 
@@ -286,12 +230,12 @@ theorem actual_dual_middle_all_frequencies
     (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
     (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
     (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
     (W : 𝓢(ℝ, ℂ))
-    (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N) :
+    (hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+    (hright : OAI.IdealFamilyBand Admissible right (N / 2) N) :
     Summable (fun h : {h : O // h ≠ 0} =>
       dualMiddleAt W S T rows left right (a h.val) (b h.val) M F h.val) ∧
     (∑' h : {h : O // h ≠ 0},
@@ -300,8 +244,7 @@ theorem actual_dual_middle_all_frequencies
           Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀) := by
   let t := (N * Real.sqrt (F / (M * B))) / (D₁ * D₂)
   let r := M / (F * N)
-  have ht : 0 < t := by dsimp only [t]; positivity
-  have hr0 : 0 < r := by dsimp only [r]; positivity
+  have ht : 0 < t := by positivity
   let C := dualMiddleDecayConstant W * Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀)
   have hC : 0 ≤ C := mul_nonneg (dualMiddleDecayConstant_nonneg W) (Real.sqrt_nonneg _)
   have hpoint (h : {h : O // h ≠ 0}) :
@@ -323,11 +266,10 @@ theorem actual_dual_middle_all_frequencies
       (fun _ _ _ => norm_nonneg _) (M / F) B D₁ D₂ (div_pos hM hF) (by linarith) (by linarith) (by linarith)
       (fun i => (hrows i).2.1) (fun D hD => (hS D hD).1) (fun E hE => (hT E hE).1)
     have harg : N * Real.sqrt (F / (M * B)) * ‖eisEmbedding h.val‖ ^ 2 / (D₁ * D₂) =
-        t * ‖eisEmbedding h.val‖ ^ 2 := by dsimp only [t]; ring
+        t * ‖eisEmbedding h.val‖ ^ 2 := by ring
     rw [harg] at hk'
     have hpre : 2 * Real.sqrt ((M / F) / B) / (D₁ * D₂) = 2 * t * r := by
       rw [dual_middle_scale_identity M F B N hM hF (by linarith) (by linarith)]
-      dsimp only [t, r]
       ring
     rw [hpre] at hp
     change dualMiddleAt W S T rows left right (a h.val) (b h.val) M F h.val ≤ _ at hp
@@ -341,7 +283,7 @@ theorem actual_dual_middle_all_frequencies
   refine ⟨hs, (mul_le_mul_iff_right₀ ht).mp ?_⟩
   calc
     _ ≤ nonzeroLatticeEnvelopeConstant * ((2 * t * r) * C) := hv
-    _ = _ := by dsimp only [C, r]; ring
+    _ = _ := by ring
 
 end
 
@@ -384,7 +326,6 @@ theorem dual_middle_scale_shape (M F B N D T α : ℝ)
     (hD : D ≤ T * (N * Real.sqrt (F / (M * B)))) :
     (M / (F * N)) * (N + B ^ α * D) ≤
       M / F + T * Real.sqrt (M / F) * B ^ (α - 1 / 2) := by
-  have hratio : 0 ≤ M / (F * N) := by positivity
   calc
     _ ≤ (M / (F * N)) * (N + B ^ α * (T * (N * Real.sqrt (F / (M * B))))) := by gcongr
     _ = M / F + T * (Real.sqrt ((M / F) / B) * B ^ α) := by
@@ -403,7 +344,7 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
   (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
   (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
   (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-  (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+  (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
   (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
   (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
 
@@ -411,8 +352,8 @@ include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
 theorem HasSieveExponent.original_middle_block
     (W : 𝓢(ℝ, ℂ))
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (hcut : D₁ * D₂ ≤ U * Real.sqrt (M / B)) :
     (∑' h : {h : O // h ≠ 0},
       originalMiddleAt W S T rows left right (a h.val) (b h.val) M h.val) ≤
@@ -439,8 +380,8 @@ theorem HasSieveExponent.original_middle_block
 
 theorem HasSieveExponent.dual_middle_block
     (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F)
-    (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+    (hright : OAI.IdealFamilyBand Admissible right (N / 2) N)
     (hcut : D₁ * D₂ ≤ U * (N * Real.sqrt (F / (M * B)))) :
     (∑' h : {h : O // h ≠ 0},
       dualMiddleAt W S T rows left right (a h.val) (b h.val) M F h.val) ≤
@@ -469,7 +410,7 @@ end CanonicalQuadraticSieve
 
 namespace CubicEisenstein
 open Filter
-open scoped BigOperators Classical Topology Matrix MatrixGroups
+open scoped Matrix MatrixGroups
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
@@ -535,8 +476,7 @@ theorem integral_hyperbolicHeight_mul_le_one (M : SL(2,O)) (hc : M 1 0≠0) (w :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
@@ -559,7 +499,7 @@ lemma high_coset_unique (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
       by_contra hne
       have hc : ((M*N⁻¹ : levelThree) : SL(2,O)) 1 0≠0 := by
         intro hc
-        have hT : M*N⁻¹ ∈ cuspStabilizer := (mem_cuspStabilizer_iff _).mpr hc
+        have hT  := (mem_cuspStabilizer_iff _).mpr hc
         exact hne ((cosetOf_eq_iff M N).mpr ⟨M*N⁻¹,hT,by group⟩)
       have hp := integral_hyperbolicHeight_mul_le_one
         ((M*N⁻¹ : levelThree) : SL(2,O)) hc (complexMatrix N • w)

@@ -1,5 +1,7 @@
 module
 
+public import OAI.FiniteMajorant
+
 public import OAI.NumberTheory.DirichletL.Reflection.TailAbsorption
 
 @[expose] public section
@@ -48,19 +50,11 @@ theorem geometry_source_scale_cap {γ : Type*} [Fintype γ]
       (Ideal.absNorm (∏ j,F.ideal j):ℝ)≤Z^Lcap → QK≤Z^Lcap → QP≤Z^Lcap → X⁻¹≤Z^Lcap →
       (familyRawScale F (s i) X QK QP)⁻¹≤Z^(7*Lcap+1) := by
   let b := fun i => 27*(sourceCuspScale (s i).index)^2*(Ideal.absNorm (Ideal.span {c i}):ℝ)^2
-  let Z₀ := (∑ i,b i)+2
-  have hb : ∀ i,0≤b i := fun i => by dsimp only [b];positivity
-  have hz : 1<Z₀ := by
-    have hh := Finset.sum_nonneg (fun i (_ : i∈Finset.univ) => hb i)
-    dsimp only [Z₀]
-    linarith
+  obtain ⟨Z₀, hz, hbZ⟩ := exists_real_majorant 1 b
   refine ⟨Z₀,hz,?_⟩
   intro i φ _ F Z X QK QP Lcap hZ hX hK hP hFc hKc hPc hXc
   have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hz hZ)
-  have hc : b i≤Z := by
-    have hh : b i≤∑ j,b j := Finset.single_le_sum (fun j _ => hb j) (Finset.mem_univ i)
-    dsimp only [Z₀] at hZ
-    linarith
+  have hc := (hbZ i).trans hZ
   apply (familyRawScale_inverse_cap F (s i) Z X QK QP Lcap hzpos hX hK hP hFc hKc hPc hXc).trans
   calc
     _ ≤ Z*Z^(7*Lcap) := mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hzpos.le _)

@@ -43,20 +43,20 @@ theorem pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h k : ZMod n) 
     (fun x => ((x : ZMod n), a * ((x⁻¹ : (ZMod n)ˣ) : ZMod n))) (fun p hp => ?_)
     (fun x hx => ?_) (fun p hp => ?_) (fun x _ => ?_) (fun p hp => ?_)
   · obtain ⟨h₁, h₂⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
+    have hu  := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
     refine mem_filter.2 ⟨mem_univ _, ?_⟩
     simp only [hu, ↓reduceDIte, IsUnit.unit_spec]
     exact h₂
   · refine mem_filter.2 ⟨mem_univ _, ?_, (mem_filter.1 hx).2⟩
     rw [mul_left_comm, Units.mul_inv, mul_one]
   · obtain ⟨h₁, -⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
+    have hu  := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
     simp only [hu, ↓reduceDIte, IsUnit.unit_spec]
     refine Prod.ext rfl ?_
     rw [← h₁, mul_comm p.1, mul_assoc, hu.mul_val_inv, mul_one]
   · simp
   · obtain ⟨h₁, -⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
+    have hu  := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
     simp only [hu, ↓reduceDIte]
     congr 1
     rw [IsUnit.unit_spec, ← h₁, mul_comm p.1, mul_assoc, mul_assoc, hu.mul_val_inv,
@@ -132,6 +132,6 @@ theorem norm_pairSum_hyperbola_le :
     _ ≤ ∑ _j : ZMod n, B := by
         refine sum_le_sum fun j _ => (hC n _ _).trans ?_
         rw [gcd_val_mul_of_isUnit k ha]
-    _ = n * B := by rw [sum_const, card_univ, ZMod.card, nsmul_eq_mul]
+    _ = n * B := by simp
 
 end Erdos408.OneSided.RootResidue

@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Bands
 public import Erdos408.OneSided.Moment.RootReplacement.Bonferroni
 public import Erdos408.OneSided.Moment.RootReplacement.Tube
@@ -39,7 +40,7 @@ variable {K : ℕ}
 
 /-- The lists of a state of the square model are lists of band primes. -/
 theorem mem_lists_of_state {x : ℝ} {d : Data K} {Y d₀ : ℝ}
-    (s : (squareModel d Y d₀).State x d) : s.1.2 ∈ lists x d (padCount x) := by
+    (s : (squareModel d Y d₀).State x d) : s.1.2 ∈ lists x d _ := by
   classical
   exact (mem_product.1 (mem_filter.1 s.2).1).2
 
@@ -71,21 +72,27 @@ theorem sum_biUnion_le_sum_sum {ι α : Type*} [DecidableEq α] (s : Finset ι)
     have h₀ : 0 ≤ ∑ a ∈ t i ∩ s.biUnion t, f a := sum_nonneg fun a _ => hf a
     linarith
 
+section
+
+variable {x : ℝ} {d : Data K} {Y d₀ : ℝ}
+
 /-- The active primes are band primes. -/
-theorem confActive_subset {x : ℝ} {d : Data K} {Y d₀ : ℝ} (ω : Conf x d Y d₀) :
+theorem confActive_subset (ω : Conf x d Y d₀) :
     confActive ω ⊆ bandPrimes x d := by
   intro p hp
   simp only [confActive, mem_biUnion, mem_image, mem_univ, true_and] at hp
   obtain ⟨j, i, h, rfl⟩ := hp
-  exact mem_biUnion.2 ⟨i, mem_univ _, mem_band_of_mem_lists (mem_lists_of_state (ω j)) i h⟩
+  exact mem_biUnion.2 ⟨i, mem_univ _, mem_band_of_mem_lists (mem_lists_of_state _) i h⟩
 
 /-- At most `(N + 1) K (J + 1)` primes are active along a configuration. -/
-theorem card_confActive_le {x : ℝ} {d : Data K} {Y d₀ : ℝ} (ω : Conf x d Y d₀) :
+theorem card_confActive_le (ω : Conf x d Y d₀) :
     (confActive ω).card ≤ (2 * momentPower x + 1) * (K * (padCount x + 1)) := by
   unfold confActive
   refine (card_biUnion_le_card_mul _ _ (K * (padCount x + 1)) fun j _ => ?_).trans (by simp)
   refine (card_biUnion_le_card_mul _ _ (padCount x + 1) fun i _ => ?_).trans (by simp)
   exact card_image_le.trans (by simp)
+
+end
 
 /-- At a prime outside the lists of a configuration, the line factor loses at most `N + 1`
 in total over the lines: `1 - λ_p(l) ≤ ∑_j [l = [z_j]_p]`. -/
@@ -101,7 +108,7 @@ theorem sum_one_sub_confLineFactor_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x 
     exact ⟨j', i, h, hih⟩
   have hlam : ∀ l, 1 - confLineFactor q p ω l ≤
       ∑ j ∈ range (2 * momentPower x + 1),
-        if l = confLines p ω j then (1 : ℝ) else 0 := by
+        if l = confLines p ω j then (1) else 0 := by
     intro l
     unfold confLineFactor
     rw [hact, prod_empty, one_mul, filter_true_of_mem fun j _ => notMem_empty j]
@@ -112,10 +119,10 @@ theorem sum_one_sub_confLineFactor_le {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x 
       split_ifs <;> linarith
   calc ∑ l ∈ range (p + 1), (1 - confLineFactor q p ω l)
       ≤ ∑ l ∈ range (p + 1), ∑ j ∈ range (2 * momentPower x + 1),
-          if l = confLines p ω j then (1 : ℝ) else 0 := sum_le_sum fun l _ => hlam l
+          if l = confLines p ω j then (1) else 0 := sum_le_sum fun l _ => hlam l
     _ = ∑ j ∈ range (2 * momentPower x + 1), ∑ l ∈ range (p + 1),
-          if l = confLines p ω j then (1 : ℝ) else 0 := sum_comm
-    _ ≤ ∑ j ∈ range (2 * momentPower x + 1), (1 : ℝ) := sum_le_sum fun j _ => by
+          if l = confLines p ω j then (1) else 0 := sum_comm
+    _ ≤ ∑ j ∈ range (2 * momentPower x + 1), (1) := sum_le_sum fun j _ => by
           rw [sum_ite_eq']
           split_ifs <;> norm_num
     _ = 2 * momentPower x + 1 := by simp
@@ -151,7 +158,7 @@ theorem eventually_dampMass_le {q alo ahi : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     calc ∑ p ∈ bandPrimes x d, 1 / (p : ℝ)
         ≤ ∑ i, ∑ p ∈ band x (d.a i), 1 / (p : ℝ) :=
           sum_biUnion_le_sum_sum _ _ _ fun p => by positivity
-      _ ≤ ∑ _i : Fin K, (1 : ℝ) := sum_le_sum fun i _ => (hx (d.a i) (hd i).1).2
+      _ ≤ ∑ _i : Fin K, (1) := sum_le_sum fun i _ => (hx _ (hd i).1).2
       _ = K := by simp
   calc dampMass x d (confActive ω) (fun p l => confLineFactor q p ω l)
       ≤ ∑ p ∈ bandPrimes x d \ confActive ω, (2 * momentPower x + 1) * (1 / (p : ℝ)) :=
@@ -179,34 +186,40 @@ theorem PosModel.card_filter_pos_le (M : PosModel) (x : ℝ) (d : Data K) (P : M
     (univ.filter fun t : M.State x d => t.1.1 = P).card ≤ (lists x d (padCount x)).card := by
   refine card_le_card_of_injOn (fun t => t.1.2) (fun t _ => ?_) fun t ht t' ht' h => ?_
   · exact (mem_product.1 (mem_filter.1 t.2).1).2
-  · have hpos : t.1.1 = t'.1.1 := (mem_filter.1 ht).2.trans (mem_filter.1 ht').2.symm
+  · have hpos  := (mem_filter.1 ht).2.trans (mem_filter.1 ht').2.symm
     exact Subtype.ext (Prod.ext hpos h)
 
+section
+
+variable (M : PosModel) {x : ℝ} {d : Data K} (s : M.State x d)
+
 /-- A row of the slot symmetrization has total norm at most `|lists|`. -/
-theorem PosModel.sum_norm_symOp_le (M : PosModel) {x : ℝ} {d : Data K} (s : M.State x d) :
+theorem PosModel.sum_norm_symOp_le :
     ∑ t, ‖M.symOp x d s t‖ ≤ (lists x d (padCount x)).card := by
   classical
   rw [← sum_filter_of_ne (p := fun t : M.State x d => t.1.1 = s.1.1) fun t _ h =>
     ((M.symOp_ne_zero_imp (norm_ne_zero_iff.1 h)).1).symm]
   calc ∑ t ∈ univ.filter (fun t : M.State x d => t.1.1 = s.1.1), ‖M.symOp x d s t‖
-      ≤ ∑ t ∈ univ.filter (fun t : M.State x d => t.1.1 = s.1.1), (1 : ℝ) :=
+      ≤ ∑ t ∈ univ.filter (fun t : M.State x d => t.1.1 = s.1.1), (1) :=
         sum_le_sum fun t _ => M.norm_symOp_le s t
     _ ≤ (lists x d (padCount x)).card := by
         rw [sum_const, nsmul_one]
         exact_mod_cast M.card_filter_pos_le x d s.1.1
 
 /-- A column of the slot symmetrization has total norm at most `|lists|`. -/
-theorem PosModel.sum_norm_symOp_le' (M : PosModel) {x : ℝ} {d : Data K} (s : M.State x d) :
+theorem PosModel.sum_norm_symOp_le' :
     ∑ t, ‖M.symOp x d t s‖ ≤ (lists x d (padCount x)).card := by
   classical
   rw [← sum_filter_of_ne (p := fun t : M.State x d => t.1.1 = s.1.1) fun t _ h =>
     (M.symOp_ne_zero_imp (norm_ne_zero_iff.1 h)).1]
   calc ∑ t ∈ univ.filter (fun t : M.State x d => t.1.1 = s.1.1), ‖M.symOp x d t s‖
-      ≤ ∑ t ∈ univ.filter (fun t : M.State x d => t.1.1 = s.1.1), (1 : ℝ) :=
+      ≤ ∑ t ∈ univ.filter (fun t : M.State x d => t.1.1 = s.1.1), (1) :=
         sum_le_sum fun t _ => M.norm_symOp_le t s
     _ ≤ (lists x d (padCount x)).card := by
         rw [sum_const, nsmul_one]
         exact_mod_cast M.card_filter_pos_le x d s.1.1
+
+end
 
 /-- The arc integral is at most (number of arcs) × (arc length) `≤ Λ² · 4Λ / Y`,
 `Λ = L^{A₀}`. -/
@@ -215,8 +228,8 @@ theorem norm_arcIntegral_le_cube {A₀ x Y : ℝ} (hL : 0 ≤ Real.log x) (hY : 
       Real.log x ^ A₀ * Real.log x ^ A₀ * (4 * Real.log x ^ A₀ / Y) := by
   unfold arcIntegral
   set Λ := Real.log x ^ A₀
-  have hΛ : 0 ≤ Λ := Real.rpow_nonneg hL A₀
-  have hF : (⌊Λ⌋₊ : ℝ) ≤ Λ := Nat.floor_le hΛ
+  have hΛ  := Real.rpow_nonneg hL A₀
+  have hF  := Nat.floor_le hΛ
   -- step: each arc integral is at most the arc length
   have hint : ∀ k h : ℕ, ‖∫ θ in (-(2 * Λ / Y))..(2 * Λ / Y),
       Complex.exp (2 * π * Complex.I * ((((h : ℝ) / k + θ) * n : ℝ) : ℂ))‖ ≤ 4 * Λ / Y := by
@@ -238,7 +251,7 @@ theorem norm_arcIntegral_le_cube {A₀ x Y : ℝ} (hL : 0 ≤ Real.log x) (hY : 
           (norm_sum_le _ _).trans (sum_le_sum fun h _ => hint k h))
     _ ≤ ∑ k ∈ Icc 1 ⌊Λ⌋₊, Λ * (4 * Λ / Y) := sum_le_sum fun k hk => by
         rw [sum_const, nsmul_eq_mul]
-        have hk : ((((range k).filter fun h => Nat.Coprime h k).card : ℕ) : ℝ) ≤ Λ := by
+        have hk : ((((range k).filter fun h => Nat.Coprime h k).card) : ℝ) ≤ Λ := by
           refine le_trans ?_ hF
           exact_mod_cast (card_filter_le _ _).trans ((card_range k).le.trans (mem_Icc.1 hk).2)
         gcongr
@@ -267,7 +280,7 @@ theorem PosModel.norm_rowOp_one_le (M : PosModel) {A₀ x : ℝ} {d : Data K} {Y
     (hd₀ : 0 < d₀) (hb : 0 < d.bandMass x) (hAr : ∀ n, ‖arcIntegral A₀ x Y n‖ ≤ Ar)
     (s s' : M.State x d) :
     ‖M.rowOp 1 A₀ x d Y d₀ s s'‖ ≤ (d.bandMass x)⁻¹ * (1 + Ar) := by
-  have hAr₀ : 0 ≤ Ar := (norm_nonneg _).trans (hAr 0)
+  have hAr₀  := (norm_nonneg _).trans (hAr 0)
   unfold PosModel.rowOp
   by_cases hc : (∀ i (h : Fin (padCount x)), s'.1.2 i h.castSucc = s.1.2 i h.castSucc) ∧
       (∀ i i' h', s'.1.2 i (Fin.last _) ≠ s.1.2 i' h') ∧
@@ -275,12 +288,12 @@ theorem PosModel.norm_rowOp_one_le (M : PosModel) {A₀ x : ℝ} {d : Data K} {Y
       (padProd s.1.2 : ℤ) ∣ M.det s.1.1 s'.1.1
   · rw [ite_eq_left_of_eq_true _ _ (eq_true hc)]
     obtain ⟨-, -, hD₀, -, -⟩ := hc
-    have hD : (0 : ℝ) < padProd s.1.2 := hd₀.trans_le hD₀
+    have hD  := hd₀.trans_le hD₀
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
     refine mul_le_mul ?_ ?_ (norm_nonneg _) (by positivity)
     · rw [Real.one_rpow, mul_one, abs_mul, abs_mul, abs_mul, abs_mul,
         abs_of_pos (inv_pos.2 hb), abs_of_pos (div_pos hd₀ hD)]
-      have hdD : d₀ / padProd s.1.2 ≤ 1 := (div_le_one hD).2 hD₀
+      have hdD  := (div_le_one hD).2 hD₀
       calc (d.bandMass x)⁻¹ * (d₀ / padProd s.1.2) * |dyadicBump (lastProd s.1.2 / Y)| *
             |dyadicBump (lastProd s'.1.2 / Y)| *
             |plateau ((M.det s.1.1 s'.1.1 / padProd s.1.2 : ℤ) / Y)|
@@ -298,7 +311,7 @@ theorem norm_confKernel_le {A₀ x : ℝ} {d : Data K} {Y d₀ Tm : ℝ}
     (hT : ∀ t t', ‖(squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ t t'‖ ≤ Tm)
     (s s' : (squareModel d Y d₀).State x d) :
     ‖confKernel A₀ x d Y d₀ s s'‖ ≤ ((lists x d (padCount x)).card : ℝ) ^ 2 * Tm := by
-  have hTm : 0 ≤ Tm := (norm_nonneg _).trans (hT s s)
+  have hTm  := (norm_nonneg _).trans (hT s s)
   have hrow : ∀ t', ‖∑ t, (squareModel d Y d₀).symOp x d s t *
       (squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ t t'‖ ≤
         Tm * ∑ t, ‖(squareModel d Y d₀).symOp x d s t‖ := fun t' => by
@@ -313,7 +326,7 @@ theorem norm_confKernel_le {A₀ x : ℝ} {d : Data K} {Y d₀ Tm : ℝ}
           (squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ t t') *
           (squareModel d Y d₀).symOp x d t' s'‖ := by
         rw [confKernel, Matrix.mul_apply]
-        simp only [Matrix.mul_apply]
+        rfl
     _ ≤ ∑ t', ‖∑ t, (squareModel d Y d₀).symOp x d s t *
           (squareModel d Y d₀).rowOp 1 A₀ x d Y d₀ t t'‖ *
           ‖(squareModel d Y d₀).symOp x d t' s'‖ :=
@@ -330,8 +343,12 @@ theorem norm_confKernel_le {A₀ x : ℝ} {d : Data K} {Y d₀ Tm : ℝ}
 
 /-! ### Counting configurations in the tube -/
 
+section
+
+variable {x : ℝ} {d : Data K} {J : ℕ} {E : ℝ}
+
 /-- With every band of size at most `E`, there are at most `E^{K(J+1)}` lists. -/
-theorem card_lists_le {x : ℝ} {d : Data K} {J : ℕ} {E : ℝ}
+theorem card_lists_le
     (hE : ∀ i, ((band x (d.a i)).card : ℝ) ≤ E) :
     ((lists x d J).card : ℝ) ≤ E ^ (K * (J + 1)) := by
   classical
@@ -353,7 +370,7 @@ theorem card_lists_le {x : ℝ} {d : Data K} {J : ℕ} {E : ℝ}
           ← pow_mul, mul_comm]
 
 /-- With every band prime at most `E`, the product of the labels is at most `E^{K(J+1)}`. -/
-theorem listProd_le {x : ℝ} {d : Data K} {J : ℕ} {E : ℝ}
+theorem listProd_le
     (hE : ∀ i, ∀ p ∈ band x (d.a i), (p : ℝ) ≤ E) {p : Lists K J} (hp : p ∈ lists x d J) :
     (listProd p : ℝ) ≤ E ^ (K * (J + 1)) := by
   unfold listProd
@@ -365,6 +382,8 @@ theorem listProd_le {x : ℝ} {d : Data K} {J : ℕ} {E : ℝ}
     _ = E ^ (K * (J + 1)) := by
         rw [prod_const, prod_const, card_univ, card_univ, Fintype.card_fin, Fintype.card_fin,
           ← pow_mul, mul_comm]
+
+end
 
 open scoped Classical in
 /-- The coefficient budget for explicit bounds: with at most `W ≥ 1` lists, label products at
@@ -444,7 +463,7 @@ theorem sum_norm_confCoeff_le_of_bounds {A₀ x : ℝ} {d : Data K} {Y d₀ W Tm
   have hcoef : ∀ ω : Conf x d Y d₀,
       ‖confCoeff A₀ x d Y d₀ ω‖ ≤ stateMass x d * (W ^ 2 * Tm) ^ (2 * momentPower x) := by
     intro ω
-    have hTm : 0 ≤ Tm := (norm_nonneg _).trans (hT (ω 0) (ω 0))
+    have hTm  := (norm_nonneg _).trans (hT (ω 0) (ω 0))
     have hκ : ∀ j : Fin (2 * momentPower x),
         ‖confKernel A₀ x d Y d₀ (ω j.castSucc) (ω j.succ)‖ ≤ W ^ 2 * Tm := fun j =>
       (norm_confKernel_le hT _ _).trans (mul_le_mul_of_nonneg_right
@@ -500,7 +519,6 @@ theorem budget_exponent_le {L : ℝ} (hL : 1 ≤ L) (K R J : ℕ)
   have hL₀ : 0 < L := by linarith
   have ha := Real.one_le_rpow hL (by norm_num : (0 : ℝ) ≤ 1 / 2)
   have hb := Real.one_le_rpow hL (by norm_num : (0 : ℝ) ≤ 1 / 100)
-  have hc := Real.rpow_nonneg hL₀.le (1 / 5 : ℝ)
   have hK₀ : (0 : ℝ) ≤ K := Nat.cast_nonneg K
   have hR₀ : (0 : ℝ) ≤ R := Nat.cast_nonneg R
   have hJ₀ : (0 : ℝ) ≤ J := Nat.cast_nonneg J
@@ -555,7 +573,7 @@ theorem eventually_sum_norm_confCoeff_le {C CX alo ahi g : ℝ} (halo : 1 / 10 <
     exact Real.exp_le_exp.2 (by linarith)
   have hband : ∀ i, ∀ p ∈ band x (d.a i), (p : ℝ) ≤ P ^ 2 := fun i p hp =>
     (le_exp_of_mem_band hp).trans (hexp i)
-  have hcardb : ∀ i, ((band x (d.a i)).card : ℝ) ≤ P ^ 2 := fun i =>
+  have hcardb := fun i =>
     (card_band_le x (d.a i)).trans (hexp i)
   set M := padCount x + 1
   set W := (P ^ 2) ^ (K * M)
@@ -575,9 +593,7 @@ theorem eventually_sum_norm_confCoeff_le {C CX alo ahi g : ℝ} (halo : 1 / 10 <
   have hd₀ : (0 : ℝ) < 2 ^ k := by positivity
   set Λ := Real.log x ^ A₀
   have hΛ : 0 ≤ Λ := Real.rpow_nonneg hL₀.le A₀
-  have hΛ3 : Λ * Λ * Λ = Real.log x ^ (3 * A₀) := by
-    rw [← Real.rpow_add hL₀, ← Real.rpow_add hL₀]
-    ring_nf
+  have hΛ3 : Λ * Λ * Λ = Real.log x ^ (3 * A₀) := by rpow_ring hL₀
   have hAr : Λ * Λ * (4 * Λ / 2 ^ j) ≤ 4 * Real.log x ^ (3 * A₀) := by
     rw [← hΛ3]
     have : 4 * Λ / 2 ^ j ≤ 4 * Λ := div_le_self (by positivity) hY

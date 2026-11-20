@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Baseline
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -45,7 +44,7 @@ theorem betweenMass_nonneg (F : FixedData) (P : PrimeGroups) (n : ℕ)
     · positivity
     · apply Finset.prod_nonneg
       intro g _
-      exact groupMemoryMass_nonneg F P n g.val (hb g) (a.2.val.2 g)
+      solve_by_elim [groupMemoryMass_nonneg]
 
 
 end Erdos821.P3Clean

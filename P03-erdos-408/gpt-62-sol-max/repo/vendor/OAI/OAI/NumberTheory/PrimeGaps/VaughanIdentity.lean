@@ -11,31 +11,26 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
-open scoped ComplexConjugate
 
 theorem monotone_weighted_prefix_bound (g : ℕ→ℂ) (w : ℕ→ℝ) (hw : Monotone w)
     (hw0 : 0≤w 0) {B : ℝ} (hB : 0≤B) (N : ℕ)
     (hg : ∀ n≤N,‖∑ i∈Finset.range n,g i‖≤B) :
     ‖∑ i∈Finset.range N,(w i:ℂ)*g i‖≤2*w (N-1)*B := by
-  have hwpos (n : ℕ) : 0≤w n := hw0.trans (hw (Nat.zero_le n))
+  have hwpos (n : ℕ)  := hw0.trans (hw (Nat.zero_le n))
   have hd (n : ℕ) : 0≤w (n+1)-w n := sub_nonneg.mpr (hw (by omega))
   have he:=Finset.sum_range_by_parts w g N
   simp only [Complex.real_smul] at he
@@ -60,9 +55,7 @@ theorem log_nat_monotone : Monotone (fun n:ℕ=>Real.log n) := by
   by_cases hn : n=0
   · subst n
     simp only [Nat.cast_zero,Real.log_zero]
-    by_cases hm : m=0
-    · simp [hm]
-    · exact Real.log_nonneg (by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hm)
+    positivity
   · exact Real.log_le_log (by exact_mod_cast Nat.pos_of_ne_zero hn) (by exact_mod_cast hnm)
 
 theorem primitive_log_character_bound {q : ℕ} (hq : 1<q) {χ : DirichletCharacter ℂ q}
@@ -237,7 +230,7 @@ theorem triangularCharacterSum_single {q M N L : ℕ} (a : Fin M→ℂ) (b : Fin
   apply Finset.sum_congr rfl
   intro n _
   by_cases hn:b n=0
-  · simp [hn,sequenceMask]
+  · simp [hn]
   · have he:=hb n hn
     by_cases ht:L<t m <;> simp [sequenceMask,he,ht] ; ring
 
@@ -256,7 +249,7 @@ theorem triangular_primitive_mean_dyadic (Q M N k L : ℕ) (a : Fin M→ℂ) (b 
         (sequenceSize_nonneg _))
   | succ k ih =>
     let H:=L+2^k
-    let p : Fin M→Prop := fun m=>t m ≤ H
+    let p  := fun m=>t m ≤ H
     let r : Fin N→Prop := fun n=>n.val<H
     let a₀:=sequenceMask p a
     let a₁:=sequenceMask (fun m=>¬p m) a
@@ -275,7 +268,6 @@ theorem triangular_primitive_mean_dyadic (Q M N k L : ℕ) (a : Fin M→ℂ) (b 
         split at hn <;> simp_all
       have h:=hb n hn'.1
       simp only [pow_succ] at h
-      dsimp [H]
       omega
     have hsplit := primitiveCharacterMean_mono (Q:=Q)
       (f:=fun _ χ=>‖triangularCharacterSum a b t χ‖)
@@ -322,32 +314,25 @@ theorem sum_divisorsAntidiagonal_hyperbola (X : ℕ) (F : ℕ→ℕ→ℂ) :
     dsimp only at hn1 hnX hdm hn0
     have hd : 0 < d := by
       by_contra hh
-      have he : d=0 := by omega
-      simp only [he,zero_mul] at hdm
-      omega
+      simp_all
     have hm : 0 < m := by
       by_contra hh
-      have he : m=0 := by omega
-      simp only [he,mul_zero] at hdm
-      omega
+      simp_all
     exact Finset.mem_sigma.mpr ⟨Finset.mem_Icc.mpr ⟨hd,by nlinarith⟩,
       Finset.mem_Icc.mpr ⟨hm,(Nat.le_div_iff_mul_le hd).mpr (by nlinarith)⟩⟩
   · rintro ⟨n,d,m⟩ hx ⟨n',d',m'⟩ hy he
-    have hv:(d,m)=(d',m'):=by simpa using congrArg (fun x:(d:ℕ)×ℕ=>(x.1,x.2)) he
-    have hd:d=d':=congrArg Prod.fst hv
-    have hm:m=m':=congrArg Prod.snd hv
-    have hn: d*m = n := (Nat.mem_divisorsAntidiagonal.mp (Finset.mem_sigma.mp hx).2).1
-    have hn': d'*m' = n' := (Nat.mem_divisorsAntidiagonal.mp (Finset.mem_sigma.mp hy).2).1
-    subst d'; subst m'
-    have hnn:n=n':=hn.symm.trans hn'
-    cases hnn; rfl
+    have hv:(d,m)=(d',m'):=by simp_all
+    have hd:=congrArg Prod.fst hv
+    have hm:=congrArg Prod.snd hv
+    have hn := (Nat.mem_divisorsAntidiagonal.mp (Finset.mem_sigma.mp hx).2).1
+    simp_all
   · rintro ⟨d,m⟩ hy
     obtain ⟨hd,hm⟩:=Finset.mem_sigma.mp hy
     obtain ⟨hd1,hdX⟩:=Finset.mem_Icc.mp hd
     obtain ⟨hm1,hmX⟩:=Finset.mem_Icc.mp hm
     refine ⟨⟨d*m,(d,m)⟩,?_,rfl⟩
     exact Finset.mem_sigma.mpr ⟨Finset.mem_Icc.mpr ⟨by nlinarith,
-      by have h: m*d ≤ X:=(Nat.le_div_iff_mul_le hd1).mp hmX; nlinarith⟩,
+      by have h:=(Nat.le_div_iff_mul_le hd1).mp hmX; nlinarith⟩,
       Nat.mem_divisorsAntidiagonal.mpr ⟨rfl,by positivity⟩⟩
   · intro x _; rfl
 
@@ -371,7 +356,7 @@ theorem arithmeticCharacterSum_convolution {q : ℕ} (X : ℕ)
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro p hp
-      have he: p.1*p.2=n := (Nat.mem_divisorsAntidiagonal.mp hp).1
+      have he := (Nat.mem_divisorsAntidiagonal.mp hp).1
       rw [←he,Nat.cast_mul,map_mul]
       ring
     _ = _ := by

@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.CoarsePhysical
-public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedIntegral
+public import OAI.NumberTheory.DirichletL.PrimeRows.FirstIntegral
 
 @[expose] public section
 
@@ -20,6 +20,22 @@ lemma coarsePrimeCost_image {K : ℕ} (P : Fin K→PrimeIdeal) (hP : Function.In
   unfold coarsePrimeCost
   rw [Finset.prod_image (by intro a ha b hb hab;exact hP hab)]
   rw [Finset.prod_mul_distrib,←Finset.prod_pow]
+  simp
+
+lemma coarsePrimeCost_image_le {K : ℕ} (P : Fin K→PrimeIdeal) :
+    coarsePrimeCost (Finset.univ.image P) ≤ (8192:ℝ)^K*(∏i,(P i).val.absNorm:ℝ)^3 := by
+  have hp : ∀ Q : PrimeIdeal, 1 ≤ 8192 * Q.val.absNorm ^ 3 := by
+    intro Q
+    have hQ : 1 ≤ Q.val.absNorm := Nat.one_le_iff_ne_zero.mpr
+      (fun h => Q.property.ne_zero (Ideal.absNorm_eq_zero_iff.mp h))
+    exact Nat.one_le_iff_ne_zero.mpr (by positivity)
+  have h := Finset.prod_image_le_of_one_le (s := Finset.univ) (g := P) (f := fun Q => 8192 * Q.val.absNorm ^ 3)
+    (fun Q _ => hp Q)
+  unfold coarsePrimeCost
+  have h' : (∏ Q ∈ Finset.univ.image P, (8192:ℝ) * (Q.val.absNorm:ℝ)^3) ≤
+      ∏ i, (8192:ℝ) * ((P i).val.absNorm:ℝ)^3 := by exact_mod_cast h
+  refine h'.trans_eq ?_
+  rw [Finset.prod_mul_distrib, ← Finset.prod_pow]
   simp
 
 lemma prime_frequency_amplitude_le_one {K : ℕ}
@@ -59,7 +75,7 @@ theorem rowAmplitudeOnLines_buffered_polynomial (K : ℕ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
-      ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
+      ∀(P : Fin K→PrimeIdeal),∀hPS : ∀j,(P j).val∉S,
       ∀ψ : ι→Character,∀a B H : ℝ,∀i : ℕ,(51/100:ℝ)≤a → a≤1 → 2<B → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
       ∀σ∈Icc (a+16*e) 2,∀r∈Icc (17/50:ℝ) 1,∀t : HeightSpace,|t.1.1|≤H →
@@ -67,7 +83,7 @@ theorem rowAmplitudeOnLines_buffered_polynomial (K : ℕ)
         C*contourArithmeticCost η u P*(3+|H|)^2*(3+|t.2|)^2 := by
   obtain ⟨C,hC,hbound⟩ := calibrated_physicalRow_buffered_polynomial_growth (ι:=ι) e he he' S hS hfirst hmax
   refine ⟨C*(8192:ℝ)^K,by positivity,?_⟩
-  intro η u hu P hP hPS ψ a B H i ha haTop hB hH hbin σ hσ r hr t ht
+  intro η u hu P hPS ψ a B H i ha haTop hB hH hbin σ hσ r hr t ht
   have hw := prime_frequency_amplitude_le_one S hS P hPS u r (by linarith [hr.1]) hr.2 t.1.2
   have hb := hbound η u hu (Finset.univ.image P) (contourTupleOutside S P hPS) ψ a B H i ha haTop hB hH hbin
     ((σ:ℂ)+t.1.1*I) ((((1-a-6*e):ℝ):ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)
@@ -76,10 +92,12 @@ theorem rowAmplitudeOnLines_buffered_polynomial (K : ℕ)
   unfold rowAmplitudeOnLines
   rw [norm_mul]
   apply (mul_le_of_le_one_left (norm_nonneg _) hw).trans
-  apply hb.trans_eq
-  rw [coarsePrimeCost_image P hP]
-  unfold contourArithmeticCost
-  ring
+  refine hb.trans ?_
+  have hP := coarsePrimeCost_image_le P
+  calc
+    _ ≤ C * (η.modulus.absNorm:ℝ)^2 * ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^6 *
+          ((8192:ℝ)^K*(∏i,(P i).val.absNorm:ℝ)^3) * (3+|H|)^2 * (3+|t.2|)^2 := by gcongr
+    _ = _ := by unfold contourArithmeticCost; ring
 
 theorem rowAmplitudeOnLines_first_polynomial (K : ℕ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (1/4) S)

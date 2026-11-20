@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.SourceBudget
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
 
@@ -23,7 +23,7 @@ theorem actual_dyad_count_budget (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
   let a := ε/(3*(L+1))
   have ha : 0<a := div_pos hε (by positivity)
   let B := 2+1/(a*Real.log 2)
-  have hB : 0<B := by dsimp only [B];have := Real.log_pos (by norm_num : (1:ℝ)<2);positivity
+  have hB : 0<B := by positivity
   refine ⟨B^3,by positivity,?_⟩
   intro Z Hrow Hslot hZ hR hS hRc hSc
   have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ

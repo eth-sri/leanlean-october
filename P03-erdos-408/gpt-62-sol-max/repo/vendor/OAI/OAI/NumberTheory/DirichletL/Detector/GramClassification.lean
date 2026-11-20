@@ -63,9 +63,7 @@ lemma outside_exceptional_good (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : 
     (p : Id) (hp : Prime p) (hout : p∉IdealMobiusDivisorSum.primeSupport (exceptionalModulus S hS C)) :
     λ₀∉p ∧ ringChar (O⧸p)≠2 := by
   let : p.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
-  have hle : exceptionalModulus S hS C≤Ideal.span {(72:O)} :=
-    le_trans Ideal.mul_le_left Ideal.mul_le_right
-  have hh := CenteredExceptionalProfile.outside_fixed_support _ (exceptionalModulus_nonzero S hS C) hle p hp hout
+  have hh := CenteredExceptionalProfile.outside_fixed_support _ (exceptionalModulus_nonzero S hS C) (le_trans Ideal.mul_le_left Ideal.mul_le_right) p hp hout
   exact ⟨hh.1,ActualEisensteinCubic.quotient_char_ne_two_of_two_not_mem p hh.2.1⟩
 
 end SevenEighths.ProbeGramCommon

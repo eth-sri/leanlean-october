@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorLower
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical
 namespace SevenEighths.HeckeDetectorFrequency
 open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorLower
 open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorPartition
-local notation "O" => HeckeFamily.O
 
 def phaseProduct (χ : Character) (D U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ) : ℂ :=
   phasePolynomial (expandedSet U)
@@ -45,9 +44,8 @@ theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
   obtain ⟨UL,hUL⟩ := exists_dyadic_zero_witness R θ hR hθ hθ'
   refine ⟨2500*C₀,max 2 (max UF UL),by positivity,?_⟩
   intro U hU χ hχ D hD hDU hQ ρ hρ hzero hheight
-  have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
+  have hU2  := (le_max_left _ _).trans hU
   have hU1 : 1 ≤ U := by linarith
-  have hUpos : 0 < U := by linarith
   obtain ⟨j,hj,k,hk,hblock,hsupport⟩ :=
     hUL U ((le_max_right UF UL).trans ((le_max_right 2 _).trans hU))
       χ hχ cutoff cutoff cutoff_norm_le cutoff_norm_le cutoff_one cutoff_zero cutoff_one cutoff_zero

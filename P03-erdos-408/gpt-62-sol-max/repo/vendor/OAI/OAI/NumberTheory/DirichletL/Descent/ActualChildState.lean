@@ -1,16 +1,17 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 public import OAI.NumberTheory.DirichletL.Descent.SecondSharpPuncture
 public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
-public import OAI.NumberTheory.DirichletL.Descent.SourceDepth
+
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
@@ -43,7 +44,7 @@ lemma actual_cell_label_nonneg (Z B j eta : ℝ) (d : BlockIndex)
   positivity
 
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 include hp
 
 omit [DecidableEq ι] in
@@ -54,7 +55,7 @@ theorem actual_cell_norm_centers {Jo Jn : ℕ}
     Z^(secondCellExponent Z d i-eta)≤outerNorms p x i ∧
       outerNorms p x i≤Z^(secondCellExponent Z d i+eta) := by
   have hr := cell_ratios p hp source hk d x hx i
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   have hlo := (le_div_iff₀ (dyadScale_pos (d i))).mp hr.1
   have hhi := (div_le_iff₀ (dyadScale_pos (d i))).mp hr.2.le
   constructor
@@ -90,8 +91,8 @@ theorem actual_cell_child_margins
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j _ eta hZ hparent hA ht hV hj
     (by unfold actualCellClipping;have := le_max_right 0 (secondCellColumnExponent Z (Z^(r-A-B-t)) d);linarith)
     heta hQ h1 h2 hT
-  · simpa only [outerNorms,Matrix.cons_val_zero] using hG
-  · simpa only [outerNorms,Matrix.cons_val_one,Matrix.cons_val_zero] using hD
+  · assumption
+  assumption
 
 theorem actual_cell_child_total_upper {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source)
@@ -111,9 +112,9 @@ theorem actual_cell_child_total_upper {Jo Jn : ℕ}
   have hD := (actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).1
   have hgt := actual_second_common_center p hp x (hs.second_divisor x hxs) Z
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) eta hZ
-    (by simpa [outerNorms] using hG) (by simpa [outerNorms] using hD)
+    (by assumption) (by assumption)
   have hj := actual_second_label_center p hp x Z ell j eta hZ h1 h2 hJ
-  have hd : d∈keys p source := (mem_keys_iff p source d).mpr ⟨x,hx⟩
+  have hd  := (mem_keys_iff p source d).mpr ⟨x,hx⟩
   have hc := second_cell_clipping_width Z (Z^(r-A-B-t)) b eta d hZ
     (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _) hb
     (source_cell_joint_bound p hp source hk b _ hgeom d hd) hthreshold

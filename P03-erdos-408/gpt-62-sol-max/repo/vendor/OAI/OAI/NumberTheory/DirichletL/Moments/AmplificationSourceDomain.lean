@@ -62,7 +62,7 @@ theorem residualIdeal_injOn (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : �
   have hj := residualIdeal_reconstruct p hp J (valuationColumns_supported S p k J hJ)
   rw [(Finset.mem_filter.mp hI).2] at hi
   rw [(Finset.mem_filter.mp hJ).2] at hj
-  exact hi.symm.trans ((congrArg (fun x => (Ideal.span {p})^k*x) he).trans hj)
+  simp_all
 
 theorem residualColumns_supported (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : ℕ)
     (I : Ideal O) (hI : I∈residualColumns S p hp k) : Supported I := by

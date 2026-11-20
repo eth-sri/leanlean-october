@@ -10,25 +10,20 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
-open scoped ComplexConjugate
 
 theorem sequenceSize_le_of_norm_le {N : ℕ} (a : Fin N→ℂ) {A : ℝ}
     (hA : 0 ≤ A) (ha : ∀ n,‖a n‖ ≤ A) : sequenceSize a ≤ Real.sqrt N*A := by
@@ -37,9 +32,8 @@ theorem sequenceSize_le_of_norm_le {N : ℕ} (a : Fin N→ℂ) {A : ℝ}
     calc
       _ ≤ ∑ _n:Fin N,A^2 := Finset.sum_le_sum (fun n _=>pow_le_pow_left₀ (norm_nonneg _) (ha n) 2)
       _ = _ := by simp
-  have hs : (Real.sqrt (N:ℝ))^2=(N:ℝ) := Real.sq_sqrt (Nat.cast_nonneg _)
   apply (sq_le_sq₀ (sequenceSize_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) hA)).mp
-  simpa only [mul_pow,hs] using hh
+  simpa only [mul_pow,(Real.sq_sqrt (Nat.cast_nonneg _))] using hh
 
 noncomputable def vaughanFirstSequence (V M : ℕ) : Fin M→ℂ :=
   fun m=>if V < m.val then (ArithmeticFunction.moebius m.val:ℂ) else 0
@@ -69,7 +63,7 @@ theorem vaughanSecondSequence_norm_le (U N : ℕ) (n : Fin N) :
 theorem vaughanSecondSequence_size_le (U N : ℕ) :
     sequenceSize (vaughanSecondSequence U N) ≤ Real.sqrt N*Real.log N := by
   apply sequenceSize_le_of_norm_le _ _ (vaughanSecondSequence_norm_le U N)
-  simpa using log_nat_monotone (Nat.zero_le N)
+  positivity
 
 theorem vaughan_typeII_block_mean (Q X U V M N k : ℕ) (hk : N ≤ 2^k)
     (p : Fin M→Prop) (r : Fin N→Prop) :
@@ -95,13 +89,9 @@ theorem sum_Icc_one_eq_range_of_zero {E : Type*} [AddCommMonoid E]
     (∑ n∈Finset.Icc 1 N,F n)=∑ n∈Finset.range (N+1),F n := by
   apply Finset.sum_subset
   · intro n hn
-    have h:=Finset.mem_Icc.mp hn
-    exact Finset.mem_range.mpr (by omega)
+    simp_all
   · intro n hn hn'
-    have h:=Finset.mem_range.mp hn
-    have hh:¬(1 ≤ n ∧ n ≤ N):=by simpa using hn'
-    have he:n=0:=by omega
-    simpa [he] using hF
+    simp_all
 
 theorem sum_range_filter_prefix {E : Type*} [AddCommMonoid E]
     (F : ℕ→E) {N K : ℕ} (hK : K ≤ N) :
@@ -229,7 +219,7 @@ theorem arithmeticCutoff_mul_support (U V n : ℕ) (f g : ArithmeticFunction ℝ
   rw [ArithmeticFunction.mul_apply]
   apply Finset.sum_eq_zero
   intro p hp
-  have he:p.1*p.2=n:=(Nat.mem_divisorsAntidiagonal.mp hp).1
+  have he:=(Nat.mem_divisorsAntidiagonal.mp hp).1
   by_cases h1:p.1 ≤ U
   · by_cases h2:p.2 ≤ V
     · have h:=Nat.mul_le_mul h1 h2
@@ -255,13 +245,11 @@ theorem vaughanShortCoefficient_abs_le (U V n : ℕ) :
         · rw [ArithmeticFunction.intCoe_apply]
           exact_mod_cast (ArithmeticFunction.abs_moebius_le_one (n:=p.1))
         · simp
-      have hl: |arithmeticCutoff U ArithmeticFunction.vonMangoldt p.2| ≤
-          ArithmeticFunction.vonMangoldt p.2 := by
-        rw [arithmeticCutoff_apply]
-        split_ifs
-        · exact (abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg).le
-        · simp
-      exact (mul_le_mul hm hl (abs_nonneg _) zero_le_one).trans_eq (one_mul _)
+      refine (mul_le_mul hm ?_ (abs_nonneg _) zero_le_one).trans_eq (one_mul _)
+      rw [arithmeticCutoff_apply]
+      split_ifs
+      · exact (abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg).le
+      · simp
     _ = _ := by
       rw [Nat.sum_divisorsAntidiagonal' (fun _ d=>ArithmeticFunction.vonMangoldt d),
         ArithmeticFunction.vonMangoldt_sum]
@@ -269,14 +257,12 @@ theorem vaughanShortCoefficient_abs_le (U V n : ℕ) :
 theorem arithmeticCutoff_eq_of_support (D : ℕ) (f : ArithmeticFunction ℝ)
     (hf : ∀ n,D<n→f n=0) : arithmeticCutoff D f=f := by
   ext n
-  by_cases hn:n ≤ D
-  · simp [arithmeticCutoff_apply,hn]
-  · simp [arithmeticCutoff_apply,hn,hf n (lt_of_not_ge hn)]
+  simp_all
 
 theorem vonMangoldt_cutoff_l1 (X U : ℕ) :
     arithmeticL1 X (arithmeticCutoff U ArithmeticFunction.vonMangoldt) ≤ (U:ℝ)*Real.log U := by
   apply arithmeticL1_cutoff_le
-  · simpa using log_nat_monotone (Nat.zero_le U)
+  · positivity
   · intro n hn
     rw [abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg]
     exact ArithmeticFunction.vonMangoldt_le_log.trans (log_nat_monotone (Finset.mem_Icc.mp hn).2)
@@ -287,7 +273,7 @@ theorem moebius_cutoff_l1 (X V : ℕ) :
     zero_le_one (fun n _=>by
       rw [ArithmeticFunction.intCoe_apply]
       exact_mod_cast (ArithmeticFunction.abs_moebius_le_one (n:=n)))
-  simpa only [mul_one] using h
+  simp_all
 
 theorem vaughanShortCoefficient_l1 (X U V : ℕ) :
     arithmeticL1 X (arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)*
@@ -299,7 +285,7 @@ theorem vaughanShortCoefficient_l1 (X U V : ℕ) :
   change arithmeticL1 X f ≤ _
   rw [←he]
   apply arithmeticL1_cutoff_le
-  · simpa using log_nat_monotone (Nat.zero_le (V*U))
+  · positivity
   · intro n hn
     exact (vaughanShortCoefficient_abs_le U V n).trans (log_nat_monotone (Finset.mem_Icc.mp hn).2)
 
@@ -313,13 +299,11 @@ theorem primitive_vaughan_bound {q : ℕ} (hq : 1 < q)
         (vaughanSecondSequence U (X+1)) (fun m=>X/m.val+1) χ‖ := by
   have hH : 0 ≤ (harmonic q:ℝ) := by exact_mod_cast (harmonic_pos (by omega : q≠0)).le
   have hK : 0 ≤ Real.sqrt q*(harmonic q:ℝ) := mul_nonneg (Real.sqrt_nonneg _) hH
-  have hL : 0 ≤ (2:ℝ)*Real.log (X+1:ℕ)*(Real.sqrt q*(harmonic q:ℝ)) :=
-    mul_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg (by exact_mod_cast (show 1 ≤ X+1 by omega)))) hK
   have h0 := (arithmeticCharacterSum_le_l1 X (arithmeticCutoff U ArithmeticFunction.vonMangoldt) χ).trans
     (vonMangoldt_cutoff_l1 X U)
   have h1 := (arithmeticCharacterSum_log_convolution_bound hq hχ X
     (arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ))).trans
-      (mul_le_mul_of_nonneg_right (moebius_cutoff_l1 X V) hL)
+      (mul_le_mul_of_nonneg_right (moebius_cutoff_l1 X V) (mul_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg (by exact_mod_cast (show 1 ≤ X+1 by omega)))) hK))
   have h2 := (arithmeticCharacterSum_zeta_convolution_bound hq hχ X
     (arithmeticCutoff V (ArithmeticFunction.moebius:ArithmeticFunction ℝ)*
       arithmeticCutoff U ArithmeticFunction.vonMangoldt)).trans
@@ -384,7 +368,7 @@ theorem sum_Ico_one_pow_two {A : Type*} [AddCommMonoid A] (F : ℕ→A) (k : ℕ
   | succ k ih =>
     rw [Finset.sum_range_succ,←ih,Finset.sum_Ico_consecutive]
     · exact one_le_pow₀ (by omega)
-    · exact pow_le_pow_right₀ (by omega) (Nat.le_succ k)
+    · solve_by_elim [pow_le_pow_right₀]
 
 theorem vaughan_hyperbolaBlock_mean (Q X U V D E k : ℕ) (hD : 0 < D)
     (hk : X/D+1 ≤ 2^k) :
@@ -422,9 +406,7 @@ theorem hyperbolaBlock_extend {q : ℕ} (X E : ℕ) (hE : X+1 ≤ E)
       ((Finset.mem_Ico.mp hm).2).trans_le hE⟩
   · intro m hm hm'
     have hx : X < m := by
-      have h:=Finset.mem_Ico.mp hm
-      have hh : ¬(1 ≤ m ∧ m < X+1) := by simpa only [Finset.mem_Ico] using hm'
-      omega
+      simp_all
     simp [Nat.div_eq_of_lt hx,hb]
 
 theorem arithmeticCharacterSum_convolution_dyadic {q : ℕ} (X k : ℕ)

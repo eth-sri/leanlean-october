@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.TwoSided.Graph.BoundsLists
 
 /-!
@@ -69,7 +70,7 @@ theorem targetEndpoint_eq_zero (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι →
 theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀ < 1) {ι : Type}
     [Fintype ι] {P : ι → Finset ℕ} {G : ℕ → ℝ} (hG : CoreAdmissible B₀ x P G) (J : ℕ)
     (X : ℝ) (n : ℕ) : ‖targetEndpoint q₀ P J G X n‖ ≤ Real.log x ^ B₀ := by
-  have hL0 : 0 < Real.log x := Real.log_pos hx
+  have hL0  := Real.log_pos hx
   have hh0 : 0 ≤ physicalDamping q₀ P (J + 1) n := pow_nonneg (Real.sqrt_nonneg _) _
   have hh1 : physicalDamping q₀ P (J + 1) n ≤ 1 :=
     pow_le_one₀ (Real.sqrt_nonneg _) (Real.sqrt_le_one.2 hq₀₁.le)
@@ -80,7 +81,7 @@ theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀
           mul_le_mul (hG.2 n).2 hh1 hh0 (Real.rpow_nonneg hL0.le _)
       _ = Real.log x ^ B₀ := mul_one _
   · rw [norm_zero]
-    exact Real.rpow_nonneg hL0.le _
+    positivity
 
 /-- A dyad `X = 2^m` satisfies `√x ≤ X ≤ x²`. -/
 theorem mem_dyads {x : ℝ} {m : ℕ} (hm : m ∈ dyads x) : √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2 :=
@@ -113,8 +114,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     (d : ℕ) (B₀ : ℝ) (hq : 0 < q) (hq₁ : q < 1) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo)
     (halo : 1 / 10 < alo) (hc : 0 < c) (J : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
           (G : ℕ → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
@@ -142,8 +142,8 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     by_cases hg : g ∈ big
     · exact (Finset.mem_filter.1 (hP.2.2.2.2.2.2.2.1 g hg hp)).2
     · exact (Finset.mem_filter.1 (hP.2.2.2.2.2.2.1 g hg hp)).2
-  have hV : ∀ g, 0 < harmonicMass (P g) := fun g => hvlo.trans_le (hP.2.2.2.2.2.1 g).1
-  have hcount' : 2 * ∏ g, ((Finset.card (P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ (J + 1) ≤ X :=
+  have hV  := fun g => hvlo.trans_le (hP.2.2.2.2.2.1 g).1
+  have hcount' :=
     (hcount P big hP).trans hX₁
   -- the damping `0 ≤ h ≤ 1`
   have hh : ∀ n, 0 ≤ physicalDamping q₀ P (J + 1) n ∧ physicalDamping q₀ P (J + 1) n ≤ 1 :=
@@ -158,7 +158,6 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       have hn0 : (0 : ℝ) < n := by linarith
       have hn1 : 1 ≤ n := by exact_mod_cast hX1.trans hXn
       have hnx : (n : ℝ) ≤ x ^ 3 := by
-        have : x ^ 3 = x * x ^ 2 := by ring
         nlinarith
       have hFn := hF r a u v Bc ha hslot hB n hn1 hnx
       rw [Complex.norm_conj, norm_mul, Complex.norm_real, Real.norm_eq_abs,
@@ -167,7 +166,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
         Complex.I_im, mul_one, sub_self, Real.rpow_zero]
       rw [show Real.log x = L from rfl, abs_mul, abs_mul, abs_mul, abs_of_nonneg (hh n).1,
         abs_of_pos (inv_pos.2 hL0), abs_of_nonneg (div_nonneg (by linarith) hn0.le)]
-      have hXn' : X / n ≤ 1 := (div_le_one hn0).2 hXn
+      have hXn'  := (div_le_one hn0).2 hXn
       calc L⁻¹ * |centeredCore x q a u v Bc n| * (X / n) * physicalDamping q₀ P (J + 1) n
           ≤ L⁻¹ * L * 1 * 1 := by
             refine mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hFn (by positivity)) hXn'
@@ -202,9 +201,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       refine Real.rpow_le_rpow_of_exponent_le hL1 ?_
       rw [Nat.cast_ofNat]
       linarith [le_max_left B₀ 0]
-    have hsplit : L ^ (2 * (max B₀ 0 + 1)) = L ^ (2 * max B₀ 0) * L ^ 2 := by
-      rw [show 2 * (max B₀ 0 + 1) = 2 * max B₀ 0 + (2 : ℕ) by push_cast; ring,
-        Real.rpow_add hL0, Real.rpow_natCast]
+    have hsplit : L ^ (2 * (max B₀ 0 + 1)) = L ^ (2 * max B₀ 0) * L ^ 2 := by rpow_ring hL0
     have hL4 : 4 ≤ L ^ 2 := by nlinarith
     have hP0 : 0 ≤ L ^ (2 * max B₀ 0) := Real.rpow_nonneg hL0.le _
     have hprod0 : 0 ≤ ∏ g, ((Finset.card (P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ (J + 1) :=

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePlain
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical BigOperators ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeDetectorRowwise

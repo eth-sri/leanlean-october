@@ -50,7 +50,7 @@ theorem norm_star_dotProduct_sq_le (u v : ι → ℂ) :
     ‖star u ⬝ᵥ v‖ ^ 2 ≤ sqNorm u * sqNorm v := by
   have h : ‖star u ⬝ᵥ v‖ ≤ ∑ i, ‖u i‖ * ‖v i‖ := by
     refine (norm_sum_le _ _).trans_eq (sum_congr rfl fun i _ => ?_)
-    rw [Pi.star_apply, norm_mul, norm_star]
+    simp
   exact (pow_le_pow_left₀ (norm_nonneg _) h 2).trans (sum_mul_sq_le_sq_mul_sq _ _ _)
 
 /-- The adjoint: `⟨u, M v⟩ = ⟨M^* u, v⟩`. -/
@@ -67,7 +67,7 @@ theorem sqNorm_sum_smul_le {κ : Type*} (T : Finset κ) (c : κ → ℂ) (v : κ
   have h : ‖(∑ P ∈ T, c P • v P) i‖ ≤ ∑ P ∈ T, ‖c P‖ * ‖v P i‖ := by
     rw [Finset.sum_apply]
     refine (norm_sum_le _ _).trans_eq (sum_congr rfl fun P _ => ?_)
-    rw [Pi.smul_apply, smul_eq_mul, norm_mul]
+    simp
   exact (pow_le_pow_left₀ (norm_nonneg _) h 2).trans (sum_mul_sq_le_sq_mul_sq _ _ _)
 
 /-! ### Alternating powers -/

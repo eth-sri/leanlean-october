@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 
 @[expose] public section
@@ -87,12 +88,12 @@ theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecon
   rw [assignedSecondCoefficient_attach]
   simp only [attachPairedSlots,erase_attachSecondSlots]
 
-variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 theorem actual_second_varying_lists_weighted_count
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     {Jo : ℕ} (u v : Oˣ) (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)

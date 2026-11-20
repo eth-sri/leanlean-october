@@ -9,7 +9,6 @@ namespace OAI
 
 noncomputable section
 open Filter
-open scoped Topology
 namespace SevenEighths.HeckePrimeScale
 open HeckeFamily
 
@@ -37,7 +36,6 @@ theorem product_modulus_bound (χ ψ : Character) :
   exact FiniteConductor.absNorm_inf_le_mul χ.modulus ψ.modulus
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem twisted_modulus_bound (χ : Character) (θ : RayQuotient.Characters M H) :

@@ -38,7 +38,7 @@ theorem mul_exp_le_exp_neg_div_four {c y τ : ℝ} (hc : 0 ≤ c)
   have h1 : (4 * c + 1) * Real.exp y ≤ Real.exp (-τ) := by
     rw [← Real.exp_log (by positivity : (0 : ℝ) < 4 * c + 1), ← Real.exp_add]
     exact Real.exp_le_exp.2 (by linarith)
-  have h2 : 0 < Real.exp y := Real.exp_pos y
+  have h2  := Real.exp_pos y
   nlinarith
 
 /-- **Domination by `ℓ^99`**: once `ℓ ≥ 1` exceeds `40 (A + B)`, the quantity `A + B ℓ^96` is at
@@ -49,7 +49,7 @@ theorem add_mul_pow_le_pow_div {ℓ A B : ℝ} (hA : 0 ≤ A) (hℓ : 1 ≤ ℓ)
   have h3 : ℓ ≤ ℓ ^ 3 := le_self_pow₀ hℓ (by norm_num)
   have h1 : 40 * (A + B) * ℓ ^ 96 ≤ ℓ ^ 3 * ℓ ^ 96 :=
     mul_le_mul_of_nonneg_right (h.trans h3) (by positivity)
-  have h2 : A * 1 ≤ A * ℓ ^ 96 := mul_le_mul_of_nonneg_left h96 hA
+  have h2  := mul_le_mul_of_nonneg_left h96 hA
   have h4 : ℓ ^ 99 = ℓ ^ 3 * ℓ ^ 96 := by ring
   rw [h4]
   linarith
@@ -63,7 +63,7 @@ theorem budget_gap (K : ℕ) {ℓ σ : ℝ} (hℓK : 4 * Real.exp 4 * K ≤ ℓ)
   have hℓ : 1 ≤ ℓ := by linarith
   set τ := ℓ ^ 76 with hτ
   set T := ⌈τ⌉₊ with hT
-  have hτT : τ ≤ T := Nat.le_ceil τ
+  have hτT  := Nat.le_ceil τ
   have hℓτ : ℓ ≤ τ := le_self_pow₀ hℓ (by norm_num)
   have h74 : ℓ ^ 74 ≤ τ := pow_le_pow_right₀ hℓ (by norm_num)
   have hT0 : (0 : ℝ) < T := by linarith
@@ -75,7 +75,7 @@ theorem budget_gap (K : ℕ) {ℓ σ : ℝ} (hℓK : 4 * Real.exp 4 * K ≤ ℓ)
       _ ≤ (σ / T) ^ T * Real.exp T :=
           mul_le_mul_of_nonneg_left hf (pow_nonneg (div_nonneg hσ0 hT0.le) T)
       _ = (Real.exp 1 * σ / T) ^ T := by
-          rw [← Real.exp_one_pow, ← mul_pow]; congr 1; ring
+          rw [← Real.exp_one_pow, ← mul_pow]; ring
   -- step: `e σ / T ≤ e⁻³`
   have h2 : Real.exp 1 * σ / T ≤ Real.exp (-3) := by
     rw [div_le_iff₀ hT0]
@@ -110,9 +110,9 @@ theorem budget_gap (K : ℕ) {ℓ σ : ℝ} (hℓK : 4 * Real.exp 4 * K ≤ ℓ)
 theorem budget_faces {ℓ m U V : ℝ} (hℓ : 1 ≤ ℓ) (hm : Real.exp (ℓ ^ 99) ≤ m) (hU : m ≤ U)
     (hV : m ≤ V) (h : 2 * ℓ ^ 96 + Real.log 81 ≤ ℓ ^ 99) :
     Real.exp (ℓ ^ 74) * ((16 * U + 2 * V + 2) / (U * V)) ≤ Real.exp (-ℓ ^ 76) / 4 := by
-  have hm1 : 1 ≤ m := (Real.one_le_exp (by positivity)).trans hm
-  have hU1 : 1 ≤ U := hm1.trans hU
-  have hV1 : 1 ≤ V := hm1.trans hV
+  have hm1  := (Real.one_le_exp (by positivity)).trans hm
+  have hU1  := hm1.trans hU
+  have hV1  := hm1.trans hV
   -- step: the faces are at most `20 / m ≤ 20 exp(-ℓ^99)`
   have hmexp : 1 / m ≤ Real.exp (-ℓ ^ 99) := by
     rw [Real.exp_neg, ← one_div]; exact one_div_le_one_div_of_le (Real.exp_pos _) hm
@@ -142,7 +142,7 @@ theorem budget_discrepancy (K : ℕ) {ℓ s n μ C₀ nP pmax : ℝ} (a T : ℕ)
     (h : (98 * K + 30) * ℓ ^ 96 + Real.log (480 * C₀ + 1) ≤ ℓ ^ 99 / 40) :
     Real.exp (ℓ ^ 74) * (15 * (n ^ 3 * (nP + 1) ^ T * C₀ * pmax ^ (6 * (a + T)) * μ)) ≤
       Real.exp (-ℓ ^ 76) / 4 := by
-  have hs1 : 1 ≤ s := (Real.one_le_exp (by positivity)).trans hs
+  have hs1  := (Real.one_le_exp (by positivity)).trans hs
   have hs0 : 0 < s := by linarith
   have hsexp : 1 / s ≤ Real.exp (-(ℓ ^ 99 / 40)) := by
     rw [Real.exp_neg, ← one_div]; exact one_div_le_one_div_of_le (Real.exp_pos _) hs
@@ -157,7 +157,6 @@ theorem budget_discrepancy (K : ℕ) {ℓ s n μ C₀ nP pmax : ℝ} (a T : ℕ)
       _ ≤ 8 * Real.exp (-(ℓ ^ 99 / 40)) := by gcongr
   -- step: `n_P + 1 ≤ (K + 1) exp(2ℓ^20) ≤ exp(K + 2ℓ^20)`
   have h2 : nP + 1 ≤ Real.exp (K + 2 * ℓ ^ 20) := by
-    have : 1 ≤ Real.exp (2 * ℓ ^ 20) := Real.one_le_exp (by positivity)
     calc nP + 1 ≤ (K + 1) * Real.exp (2 * ℓ ^ 20) := by linarith
       _ ≤ Real.exp K * Real.exp (2 * ℓ ^ 20) := by gcongr; exact Real.add_one_le_exp _
       _ = Real.exp (K + 2 * ℓ ^ 20) := (Real.exp_add _ _).symm
@@ -178,7 +177,6 @@ theorem budget_discrepancy (K : ℕ) {ℓ s n μ C₀ nP pmax : ℝ} (a T : ℕ)
           rw [← Real.exp_nat_mul, ← Real.exp_nat_mul, Real.exp_add, Real.exp_add, Real.exp_add]
           ring
   -- step: the exponent is at most `(98K + 28) ℓ^96 + ℓ^74 - ℓ^99/40`
-  have h96 : 1 ≤ ℓ ^ 96 := one_le_pow₀ hℓ
   have h74 : ℓ ^ 74 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
   have h76 : ℓ ^ 76 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
   have h761 : 1 ≤ ℓ ^ 76 := one_le_pow₀ hℓ
@@ -216,7 +214,7 @@ theorem budget_boundary {ℓ s n b μ C₀ : ℝ} (hℓ : 1 ≤ ℓ) (hC₀ : 0 
     (hμ : μ ≤ 1 / s ^ 8) (hb : b ≤ n ^ 2 * Real.exp (ℓ ^ 50))
     (h : 3 * ℓ ^ 96 + Real.log (16 * C₀ + 17) ≤ ℓ ^ 99 / 40) :
     Real.exp (ℓ ^ 74) * (b * (4 / n ^ 3 + C₀ * μ)) ≤ Real.exp (-ℓ ^ 76) / 4 := by
-  have hs1 : 1 ≤ s := (Real.one_le_exp (by positivity)).trans hs
+  have hs1  := (Real.one_le_exp (by positivity)).trans hs
   have hs0 : 0 < s := by linarith
   have hn0 : 0 < n := by linarith
   have hsexp : 1 / s ≤ Real.exp (-(ℓ ^ 99 / 40)) := by
@@ -228,7 +226,7 @@ theorem budget_boundary {ℓ s n b μ C₀ : ℝ} (hℓ : 1 ≤ ℓ) (hC₀ : 0 
     have h4 : 4 / n ≤ 4 / s := div_le_div_of_nonneg_left (by norm_num) hs0 hsn
     have hn2 : n ^ 2 / s ^ 8 ≤ 4 / s := by
       rw [div_le_div_iff₀ (by positivity) hs0]
-      have : n ^ 2 ≤ (2 * s) ^ 2 := pow_le_pow_left₀ hn0.le hns 2
+      have  := pow_le_pow_left₀ hn0.le hns 2
       have : s ^ 3 ≤ s ^ 8 := pow_le_pow_right₀ hs1 (by norm_num)
       nlinarith
     rw [e1]
@@ -285,7 +283,7 @@ theorem eventually_budget (K : ℕ) {C₀ : ℝ} (hC₀ : 0 ≤ C₀) :
     (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
   filter_upwards [hlim.eventually_ge_atTop M, eventually_ge_atTop 1] with x hxM hx1
   intro n a m U V σ nP pmax b hn1 hn2 hn3 hm hmU hmV hσ0 hσ hnP0 hnP hp1 hp ha hb0 hb
-  have hL0 : 0 ≤ Real.log x := Real.log_nonneg hx1
+  have hL0  := Real.log_nonneg hx1
   -- step: rewrite every power of `L` as a power of `ℓ = L^{1/100}`
   set ℓ := Real.log x ^ (1 / 100 : ℝ) with hℓ
   have hpow : ∀ k : ℕ, Real.log x ^ ((k : ℝ) / 100) = ℓ ^ k := fun k => by
@@ -312,9 +310,8 @@ theorem eventually_budget (K : ℕ) {C₀ : ℝ} (hC₀ : 0 ≤ C₀) :
   have hdom := add_mul_pow_le_pow_div (B := 98 * K + 30) hA0 hℓ1 (by linarith)
   have hKℓ : 0 ≤ (K : ℝ) * ℓ ^ 96 := by positivity
   have hℓ96 : 0 ≤ ℓ ^ 96 := by positivity
-  have hℓ99 : 0 ≤ ℓ ^ 99 := by positivity
   -- step: `s = m^{1/40}` and `min(U, V)^{-1/5} ≤ s⁻⁸`
-  have hm0 : 0 < m := (Real.exp_pos _).trans_le hm
+  have hm0  := (Real.exp_pos _).trans_le hm
   have hs : Real.exp (ℓ ^ 99 / 40) ≤ m ^ (1 / 40 : ℝ) := by
     rw [div_eq_mul_one_div, Real.exp_mul]
     exact Real.rpow_le_rpow (Real.exp_pos _).le hm (by norm_num)

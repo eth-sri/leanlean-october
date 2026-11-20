@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalNormal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
-open CenteredMomentHeckeCancellation CenteredMomentLattice
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
+open CenteredMomentLattice
 local notation "O" => HeckeFamily.O
 
 theorem rectangle_source_control (a b ε B : ℝ)

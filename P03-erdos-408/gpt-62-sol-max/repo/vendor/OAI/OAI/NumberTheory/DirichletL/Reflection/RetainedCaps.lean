@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedWidth
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.RetainedWidth
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 
@@ -44,7 +45,7 @@ lemma extracted_log_le_shell (Z Q : ℝ) (hZ : 1<Z) (hQ : 0<Q)
     (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) :
     Real.logb Z (Q/Ideal.absNorm I)≤Real.logb Z Q := by
   have hn : (1:ℝ)≤Ideal.absNorm I := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
   apply Real.logb_le_logb_of_le hZ (div_pos hQ (lt_of_lt_of_le zero_lt_one hn))
   exact div_le_self hQ.le hn
 

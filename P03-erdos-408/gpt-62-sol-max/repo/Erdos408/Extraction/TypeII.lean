@@ -58,7 +58,7 @@ theorem eventually_compositeSum_sub_proxySum (h₁ : OneSidedTypeII) (q cw : ℝ
   refine ⟨max K₀ 1, fun K hK CN c Ch Cj κ CΦ M hc hκ => ?_⟩
   obtain ⟨C₂, hC₂, hbox⟩ := hK₀ K (le_of_max_le_left hK) c Ch Cj κ hc hκ
     fun A Cm Kan => eventually_proxyTwist c Ch Cj A Cm Kan hc
-  obtain ⟨c₃, hc₃, hmert⟩ := TypeII.mertens_third_lower
+  obtain ⟨c₃, hc₃, hmert⟩ := mertens_third_lower
   obtain ⟨A₁, C₁r, hA₁, hG⟩ := TypeII.sum_dampedWeight_le
   obtain ⟨E₂, hE₂0, hE₂⟩ := TypeII.sum_inv_primes_le
   obtain ⟨L₀, hL₀⟩ := TypeII.harmonicMass_band_ge

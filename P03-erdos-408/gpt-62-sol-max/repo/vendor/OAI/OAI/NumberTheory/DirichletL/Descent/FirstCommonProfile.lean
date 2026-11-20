@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstNominal
 public import OAI.NumberTheory.DirichletL.Descent.FirstCoupledReindex
 
@@ -55,9 +56,9 @@ theorem firstNormProfile_actual_common {ι : Type*} [DecidableEq ι]
     (primeProductNorm_pos p hp D).le
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstCoupledRayColumns (F : Finset ι) (C₁ C₂ : Finset ι → ℂ)
     (H : Finset ι → Finset ι → ℂ) (h : Eis) : ℂ :=

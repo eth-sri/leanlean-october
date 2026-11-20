@@ -1,7 +1,19 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.MemberGeometry
-public import OAI.NumberTheory.DirichletL.Reflection.MemberBudgetUniformDegree
+public import OAI.NumberTheory.DirichletL.Reflection.MemberEnergySpec
+public import OAI.FiniteMajorant
+public import OAI.NumberTheory.DirichletL.Reflection.OriginalBranchSum
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CountBudget
+public import OAI.NumberTheory.DirichletL.Reflection.FullEnergyBasic
+public import OAI.NumberTheory.DirichletL.Reflection.ActualSizeCaps
+public import OAI.NumberTheory.DirichletL.Reflection.GlobalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.TupleMembers
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
+public import OAI.NumberTheory.DirichletL.Reflection.WholeGlobalBound
+public import OAI.NumberTheory.DirichletL.Reflection.RetainedBudgetUniformDegree
+public import OAI.NumberTheory.DirichletL.Reflection.WholeTail
 
 @[expose] public section
 
@@ -11,9 +23,11 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
+
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
+set_option maxHeartbeats 650000 in
 theorem original_member_geometry_uniform_uniform_degree
     (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
@@ -37,98 +51,64 @@ theorem original_member_geometry_uniform_uniform_degree
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ], ∀ (J I F B R Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hF : F≠0) (_hB : B≠0) (_hR : R≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R) →
     ∀ (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
-      (Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot : ℝ),
-      Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<Cf → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^M →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I (B*F*R)):ℝ) →
-      (Ideal.absNorm F:ℝ)≤Cf*Z^V →
-      Real.log (CH*Ck*CO)/Real.log Z≤η →
-      Real.log (widthConstant B Ck CO CH Cf)/Real.log Z≤η →
-      CanonicalMargins F₀ M (normWidth Z R) z₀ margin → F₀=N+V →
-      Nstar=N-3*hhat → V≤d → hhat≤d+η →
-      H=Real.logb Z QK → za=Real.logb Z (QP/2) → Nstar=Real.logb Z X →
-      0≤M → 0≤O₀ → 0≤za → za≤z₀ →
-      0<cstar → cstar/2≤margin → d≤cstar/200 →
-      η≤cstar/1000 → δ+η≤cstar/1000 → π≤cstar/1000 →
-      QK≤Z^Lrow → (QP/2)≤Z^Lslot →
-      Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
-      X⁻¹≤Z^Lcap → QK≤Z^Lcap → QP≤Z^Lcap → -saving≤F₀-3*cstar/16-O₀/2 →
+      (rb : CappedReflectionBudget I F B R Z₀ η ε δ Lscale Lcap saving),
       let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
       let j := fun b : A => completedLocalExponent J F b.val.val
-      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lcap →
-      (familyRawScale G s X QK QP)⁻¹≤Z^Lscale →
-      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lpool → κ+ρ*Lpool≤cstar/16 →
+      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤rb.Z^Lcap →
+      (familyRawScale G s rb.X rb.QK rb.QP)⁻¹≤rb.Z^Lscale →
+      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤rb.Z^Lpool → κ+ρ*Lpool≤rb.cstar/16 →
     ∀ (rows : Finset (Ideal Eis)) (tuples : Finset (σ→Ideal Eis)) (hne : tuples.Nonempty)
       (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
       (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i)
       (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal Eis))),
-      let S := tuplePrimeFamily tuples hne hmax hgood
-      let Pset := tuples.image slotTupleProduct
       ∀ (hrows : ∀ K∈rows,Admissible K),
-      (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
-      (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
-      (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
-      (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
-      (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
-    ∃ D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
-      ControlledStratumArithmetic (G.reflected K.val (hrows K.val K.property) (S P.val)).generator Nlevel a c₀ mode,
-    ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
-      1≤QK → 2≤QP →
-      (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
-      (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
-      (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
-      (∑ K : rows,‖memberTupleRow tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ X r aw‖^2)≤
-        C*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by
-  obtain ⟨degree,hu⟩ := original_member_tuple_full_budget_uniform_degree
-    ε hε lo hi hlo W hWs hW ρ hρ η hηpos κ δ Lscale Lpool hκ hδL hLpool Lcap saving hδ
-  refine ⟨degree,?_⟩
+      MemberTupleEnergy (N:=Nlevel) G rows hrows tuples hne hmax hgood hinj s hc₀ j W
+        rb.X rb.QK rb.QP (fun θ => C*(1+‖θ‖)^degree*rb.Z^(rb.F₀-3*rb.cstar/16-rb.O₀/2)) := by
+  obtain ⟨Adecay,hTailSize⟩ := actual_finite_source_tail_budget_uniform_degree Lcap δ saving hδ
+  obtain ⟨degree,hu⟩ := original_sector_retained_budget_uniform_degree
+    ε hε lo hi hlo W hWs hW ρ hρ η hηpos κ δ Lscale Lpool hκ hδL hLpool
+  obtain ⟨degreeTail,Ct₀,hCt₀,hTailProfiles⟩ := original_family_whole_tail_uniform_degree lo hi hlo Adecay W hWs hW
+  refine ⟨max degree (degreeTail*2),?_⟩
   intro Nlevel γ _ a c₀ mode _ s hc₀ hNlevel hbase hac
-  have hb (i : γ) := hu (Nlevel:=Nlevel) (a:=a i) (c₀:=c₀ i) (mode:=mode i)
-    (s i) (hc₀ i) (hNlevel i) (hbase i) (hac i)
-  choose C Z₀ hC hZ₀ henergy using hb
-  let degreeAll := degree
-  let CAll := (∑ i,C i)+1
-  let ZAll := (∑ i,|Z₀ i|)+2
-  have hc (i : γ) : C i≤CAll := by
-    have hh : C i≤∑ j,C j := Finset.single_le_sum (fun j _ => (hC j).le) (Finset.mem_univ i)
-    dsimp only [CAll]
-    linarith
-  have hz (i : γ) : Z₀ i≤ZAll := by
-    have hh : |Z₀ i|≤∑ j,|Z₀ j| := Finset.single_le_sum (fun j _ => abs_nonneg (Z₀ j)) (Finset.mem_univ i)
-    have hh' := le_abs_self (Z₀ i)
-    dsimp only [ZAll]
-    linarith
-  have hCA : 0<CAll := by
-    have hh : 0≤∑ i,C i := Finset.sum_nonneg (fun i _ => (hC i).le)
-    dsimp only [CAll]
-    linarith
-  have hZA : 1<ZAll := by
-    have hh : 0≤∑ i,|Z₀ i| := Finset.sum_nonneg (fun i _ => abs_nonneg _)
-    dsimp only [ZAll]
-    linarith
-  refine ⟨CAll,ZAll,hCA,hZA,?_⟩
+  choose Cm Zmin hCm hZmin henergy using
+    fun i => hu (Nlevel:=Nlevel) (a:=a i) (c₀:=c₀ i) (mode:=mode i)
+      (s i) (hc₀ i) (hNlevel i) (hbase i) (hac i)
+  obtain ⟨C,hC,hCoefficient⟩ := exists_real_majorant 0 (fun i => wholeGlobalConstant Nlevel (s i) (Cm i) Ct₀)
+  obtain ⟨Z₀,hZ₀,hThreshold⟩ := exists_real_majorant 1 (fun i => max (Zmin i) 128)
+  refine ⟨C,Z₀,hC,hZ₀,?_⟩
   intro i
   dsimp only
-  intro σ _ _ J I F B R Q₀ hJ hI hF hB hR hpower hmask A
-    Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot
-    hZ hCk hCO hCH hCf hX hQK hQP hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
-    heH heza heN hM hO hzwidth hzcap hcstar hmargin hd hη hτ hπ hrowcap hslotcap hconst hbudget hXi hKcap hPcap hexp
+  intro σ _ _ J I F B R Q₀ hJ hI hF hB hR hpower hmask A rb
     hFcap hscap hpool hsmall rows tuples hne hmax hgood hinj hrows hGN hGchar hrowcop hprod hScop hSN hSchar
-  obtain ⟨D,hD⟩ := henergy i J I F B R Q₀ hJ hI hF hB hR hpower hmask A
-    Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot
-    ((hz i).trans hZ) hCk hCO hCH hCf hX hQK hQP hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
-    heH heza heN hM hO hzwidth hzcap hcstar hmargin hd hη hτ hπ hrowcap hslotcap hconst hbudget hXi hKcap hPcap hexp
-    hFcap hscap hpool hsmall rows tuples hne hmax hgood hinj hrows hGN hGchar hrowcop hprod hScop hSN hSchar
+  let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
+  let j := fun b : A => completedLocalExponent J F b.val.val
+  have hpair := (poolPrimeFamily J (B*F*R) Q₀).restrict_pairwise (poolPrimeFamily_pairwise J (B*F*R) Q₀) A
+  have h128 := (le_max_right (Zmin i) (128:ℝ)).trans ((hThreshold i).trans rb.scale_ge)
+  have hZi := (le_max_left (Zmin i) (128:ℝ)).trans (hThreshold i)
+  have hz1 := hZ₀.le.trans rb.scale_ge
+  have hzp := zero_lt_one.trans_le hz1
+  have hh := wholeGlobalBound_of_retained (σ:=σ) G j (fun b => Nat.mod_lt _ (by decide)) hpair
+    (s i) (hc₀ i) (hNlevel i) (hbase i) (hac i) rb.X_pos (Real.rpow_pos_of_pos hzp δ) rb.QK_pos rb.QP_pos
+    (Real.rpow_nonneg hzp.le _) (Real.rpow_le_rpow_of_exponent_le hz1 rb.target_lower)
+    (hCm i).le hCt₀.le hTailProfiles
+    (fun rows Pset hqk hqp hr hp => hTailSize (s i) G rows Pset rb.Z rb.X rb.QK rb.QP
+      h128 rb.X_pos hqk (by linarith) hr hp hFcap rb.row_scale_cap rb.slot_scale_cap rb.source_cap)
+    (by simpa only [mul_assoc,OriginalReflectionBudget.lowerThreshold] using
+      henergy i J I F B R Q₀ hJ hI hF hB hR hpower hmask A (rb.toOriginalReflectionBudget.lowerThreshold hZi) hscap hpool hsmall)
+  obtain ⟨D,hD⟩ := hh rows (tuples.image slotTupleProduct) (tuplePrimeFamily tuples hne hmax hgood)
+    hrows hGN hGchar hrowcop hprod hScop hSN hSchar
   refine ⟨D,?_⟩
   intro θ r aw hqk hqp hKr hPr hr haw
-  apply (hD θ r aw hqk hqp hKr hPr hr haw).trans
-  have hZpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZA hZ)
-  have hheight : 1≤1+‖θ‖ := by linarith [norm_nonneg θ]
-  apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZpos.le _)
-  exact mul_le_mul (hc i) (le_refl _) (by positivity) hCA.le
+  have he := hD θ r (slotProductCoefficient tuples aw) hqk hqp hKr hPr hr
+    (fun P hP => slotProductCoefficient_norm tuples hinj aw haw P hP)
+  refine (le_of_eq ?_).trans (he.trans ?_)
+  · refine Finset.sum_congr rfl (fun K _ => ?_)
+    congr 2
+    exact (literalWholeRow_eq_member_tuples tuples hmax hgood G K.val (hrows K.val K.property)
+      hne hinj (D K) (s i) (hc₀ i) j W θ rb.X r aw).symm
+  · exact mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_right (hCoefficient i) (by positivity)) (Real.rpow_nonneg hzp.le _)
+
 end
 end SevenEighths.InverseReflectedPhase
 

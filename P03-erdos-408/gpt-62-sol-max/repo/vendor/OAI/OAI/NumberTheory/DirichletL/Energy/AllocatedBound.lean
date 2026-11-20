@@ -7,12 +7,12 @@ public import OAI.NumberTheory.DirichletL.Energy.AllocatedChildren
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
 open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentNaturalRowSource CenteredMomentRadialEligibleEnergy
+open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentNaturalRowSource
+open CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 

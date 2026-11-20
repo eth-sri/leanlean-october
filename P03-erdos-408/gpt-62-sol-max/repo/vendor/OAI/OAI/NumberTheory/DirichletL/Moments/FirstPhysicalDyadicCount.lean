@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicAssembly
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicAssembly
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentDyadicCount
@@ -46,7 +47,7 @@ lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
   exact congrArg (fun z => (z i).val) hxy
 
 theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
-    (_hCr : 0<Cr) (hε : 0<ε) :
+ (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀K R H nC nD : ℝ,0<K → 0<H → 1≤nC → 1≤nD →
       R≤Cr*Z^L → H≤Z^B →
@@ -56,8 +57,8 @@ theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
   refine ⟨C,hC,?_⟩
   filter_upwards [hcount,Filter.eventually_ge_atTop (1:ℝ)] with Z hcount hZ
   intro K R H nC nD hK hH hnC hnD hR hHcap
-  have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hp : 1≤Z^(B+L) := Real.one_le_rpow hZ (add_nonneg hB hL)
+  have hz  := zero_lt_one.trans_le hZ
+  have hp  := Real.one_le_rpow hZ (add_nonneg hB hL)
   have hbound : 1≤max 1 Cr*Z^(B+L) :=
     one_le_mul_of_one_le_of_one_le (le_max_left _ _) hp
   have hR' : max 1 R≤max 1 Cr*Z^(B+L) := by
@@ -90,13 +91,13 @@ theorem original_blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
         (K R H : ℝ),0<K → 0<H → R≤Cr*Z^L → H≤Z^B →
       (Fintype.card (Blocks (effectiveScale C D E K) R
         (H/Ideal.absNorm C) (H/Ideal.absNorm D)):ℝ)≤C₀*Z^ε := by
-  obtain ⟨C₀,hC₀,hcount⟩ := blocks_subpower B L Cr ε hB hL hCr hε
+  obtain ⟨C₀,hC₀,hcount⟩ := blocks_subpower B L Cr ε hB hL hε
   refine ⟨C₀,hC₀,?_⟩
   filter_upwards [hcount] with Z hcount
   intro C D hC hD E K R H hK hH hR hHcap
   have norm_one (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) :
       (1:ℝ)≤Ideal.absNorm I := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hI)
   exact hcount _ _ _ _ _ (effectiveScale_pos C D E K hK) hH
     (norm_one C hC) (norm_one D hD) hR hHcap
 

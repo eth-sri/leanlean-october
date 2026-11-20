@@ -37,7 +37,7 @@ private theorem card_arcCentres_le (R : ℕ) : ((arcCentres R).card : ℝ) ≤ 4
         push_cast
         nlinarith [show (R : ℝ) ≤ (R : ℝ) ^ 2 by
           rcases Nat.eq_zero_or_pos R with h0 | h0
-          · simp [h0]
+          · simp_all
           · nlinarith [show (1 : ℝ) ≤ R by exact_mod_cast h0]]
 
 /-- **One shifted bilinear form (S8–S10).** For `j ≥ 4` there is `K > 0` such that: for
@@ -70,7 +70,6 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
   intro Y H T₀ ε A B Ξ₀ R Λ Ls c D s' f g hY hH hHY hT₀ hε hΞ hD hfA hgB hM₁ hMε hΞ₀
   set s := Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊ with hs
   have hY0 : 0 < Y := by linarith
-  have hH0 : 0 < H := by linarith
   have hsupp : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y := fun n hn =>
     ⟨Nat.ceil_le.1 (Finset.mem_Icc.1 hn).1,
       (Nat.le_floor_iff (by positivity)).1 (Finset.mem_Icc.1 hn).2⟩
@@ -103,7 +102,6 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
         intervalIntegral.integral_comp_neg (fun t => ‖twistedPoly Y f (-u) r t‖ ^ 2), neg_neg]
       exact mul_le_mul_of_nonneg_left (hΞ₀ r u hr₁ hr₂) (by positivity)
     refine h.trans ?_
-    have hsA : ∑ n ∈ s, ‖f n‖ ^ 2 ≤ A := hfA
     calc K / Y * (∫ t in (-T₀)..T₀,
           ‖∑ n ∈ s, star (f n) * e ((u : ℝ) / r * n) * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2) +
           K * Z * (1 / H + 2 * Real.log (4 * Y)) * ∑ n ∈ s, ‖f n‖ ^ 2 +

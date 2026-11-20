@@ -42,8 +42,7 @@ lemma original_active_family_ideal (S : PrimeFamily σ)
     exact D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b.val)
   | inr x => cases x with
     | inl a =>
-      change (E (Sum.inl a)).val.val=a.val
-      exact D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inl a)
+      rfl
     | inr t => rfl
 
 lemma original_active_family_generator (S : PrimeFamily σ)

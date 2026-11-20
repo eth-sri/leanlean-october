@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFixedRayInducingTransport
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile
-open CanonicalRowCompletion ConcretePrimeRowBridge
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion ConcretePrimeRowBridge
 open CenteredMomentExceptionalPair CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 

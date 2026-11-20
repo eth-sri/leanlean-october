@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalEnergy
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentPlainPositiveScale
 open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalActual CenteredMomentPlainGlobalEnergy
 open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
@@ -26,9 +27,9 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
   rw [←plain_height_norm χ W a b ha hWs (W.smooth ⊤) freq D hD,norm_mul,norm_inv,
     Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)]
   apply (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr (Real.sqrt_nonneg _))).trans
-  have hsq:(Real.sqrt D)^2=D:=Real.sq_sqrt hD.le
-  have hroot:0<Real.sqrt D:=Real.sqrt_pos.mpr hD
-  have hle:Real.sqrt D≤1:=by exact (Real.sqrt_le_one).mpr hD1
+  have hsq:=Real.sq_sqrt hD.le
+  have hroot:=Real.sqrt_pos.mpr hD
+  have hle:= (Real.sqrt_le_one).mpr hD1
   have he:(Real.sqrt D)⁻¹*((128*max 0 b*B)*D)=(128*max 0 b*B)*Real.sqrt D:=by
     calc
       _=(128*max 0 b*B)*((Real.sqrt D)⁻¹*(Real.sqrt D*Real.sqrt D)):=by rw [←pow_two,hsq];ring
@@ -44,7 +45,7 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
         C*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)*
           (χ.modulus.absNorm:ℝ)*(3+|freq|)^2:=by
   obtain ⟨S,C,hC,hg⟩:=global_polynomial_bound a b ha
-  let S':Finset (ℕ×ℕ):=insert (0,0) S
+  let S':=insert (0,0) S
   let C':ℝ:=C+128*max 0 b
   have hC':0<C':=add_pos_of_pos_of_nonneg hC (by positivity)
   refine ⟨S',C',hC',?_⟩
@@ -55,7 +56,7 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
   have hzero:SchwartzMap.seminorm ℝ 0 0 W≤S'.sup (schwartzSeminormFamily ℝ ℝ ℂ) W:=
     Seminorm.le_finset_sup_apply (p:=schwartzSeminormFamily ℝ ℝ ℂ) (s:=S') (i:=(0,0)) (x:=W) (Finset.mem_insert_self (0,0) S)
   have hQ:1≤(χ.modulus.absNorm:ℝ):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr χ.modulus_ne_bot)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (χ.modulus_ne_bot)
   have hV:1≤(3+|freq|)^2:=one_le_pow₀ (by linarith [abs_nonneg freq])
   by_cases hD1:1≤D
   · apply (hg W hWs χ hχ D freq hD1).trans

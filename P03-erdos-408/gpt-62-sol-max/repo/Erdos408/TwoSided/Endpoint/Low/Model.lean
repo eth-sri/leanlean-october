@@ -30,7 +30,7 @@ theorem sum_divisors_eq_sum_filter {A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ 
   have h₁ : ∑ d ∈ n.divisors, A d = ∑ d ∈ n.divisors ∩ D, A d := by
     refine (sum_subset inter_subset_left fun d hd hd' => ?_).symm
     by_contra h
-    exact hd' (mem_inter.2 ⟨hd, hA d h⟩)
+    simp_all
   rw [h₁]
   congr 1
   ext d
@@ -116,9 +116,8 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
     obtain ⟨w, hw, rfl⟩ := mem_image.1 hn
     obtain ⟨⟨hw₁, hmw⟩, hYw⟩ := mem_filter.1 hw |>.imp_left mem_filter.1
     have hwN := (mem_Icc.1 hw₁).2
-    have hcast : ((w / m : ℕ) : ℝ) = w / m := Nat.cast_div hmw hm'.ne'
+    have hcast  := Nat.cast_div hmw hm'.ne'
     have hw2 : (w : ℝ) ≤ 2 * Y := (Nat.cast_le.2 hwN).trans (Nat.floor_le (by
-      have : (0 : ℝ) ≤ m := hm'.le
       linarith))
     refine mem_Ioc.2 ⟨?_, ?_⟩
     · rw [← Nat.cast_lt (α := ℝ), hcast]

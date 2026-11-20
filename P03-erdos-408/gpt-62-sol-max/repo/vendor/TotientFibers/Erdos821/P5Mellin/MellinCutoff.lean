@@ -20,13 +20,13 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
   have hR : 0 < R := by
     dsimp [R]
     positivity
-  let bounds₁ : ℕ → ℝ := fun j => piExpCompDerivativeConstant hi bounds j
+  let bounds₁  := fun j => piExpCompDerivativeConstant hi bounds j
   have hbounds₁ : ∀ j, 0 ≤ bounds₁ j := by
     intro j
     exact piExpCompDerivativeConstant_nonneg hi bounds hbounds j
   obtain ⟨Cf, K, hCf, hK, hFourierA⟩ :=
     hFourier 1 C R hC hR bounds₁ hbounds₁
-  have hCfpos : 0 < Cf := lt_trans hC hCf
+  have hCfpos  := lt_trans hC hCf
   refine ⟨Cf, K, hCfpos, hK, ?_⟩
   intro A hA
   obtain ⟨KA, hKA, hEvent⟩ := hFourierA A hA
@@ -40,16 +40,16 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
     exact Real.log_le_log (Real.exp_pos 1) hx
   filter_upwards [hEvent, hLlarge] with x hx hL
   intro Ψ hcut
-  let F : (Fin 1 → ℝ) → ℂ := (Ψ ∘ Real.exp) ∘ coordinateEval
+  let F  := (Ψ ∘ Real.exp) ∘ coordinateEval
   have hFsmooth : ContDiff ℝ ∞ F := by
     dsimp [F]
     exact (hcut.1.comp Real.contDiff_exp).comp_continuousLinearMap
       (g := coordinateEval)
   have hFsupport : Function.support F ⊆ Metric.closedBall 0 R := by
     intro y hy
-    have hFne : F y ≠ 0 := Function.mem_support.mp hy
+    have hFne  := Function.mem_support.mp hy
     have hΨne : Ψ (Real.exp (y 0)) ≠ 0 := by
-      simpa [F, coordinateEval] using hFne
+      assumption
     have hinterval := hcut.2.1 (Function.mem_support.mpr hΨne)
     have hloglo : Real.log lo ≤ y 0 := by
       calc
@@ -67,13 +67,11 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
     have hyNorm : ‖y‖ ≤ R := by
       apply (pi_norm_le_iff_of_nonneg (x := y) (r := R) hR.le).2
       intro i
-      have hi0 : i = 0 := Subsingleton.elim i 0
+      have hi0  := Subsingleton.elim i 0
       subst i
-      change |y 0| ≤ R
-      exact habs
+      assumption
     apply Metric.mem_closedBall.mpr
-    rw [dist_zero_right]
-    exact hyNorm
+    simpa using hyNorm
   have hFderiv : ∀ j y,
       ‖iteratedFDeriv ℝ j F y‖ ≤ bounds₁ j * L x ^ (C * ((j : ℝ) + 1)) := by
     intro j y

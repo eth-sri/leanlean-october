@@ -14,7 +14,7 @@ open HeckeFamily HeckeDeletionBounds HeckeReciprocalGrowth HeckeLogarithmic
 theorem presentation_cost (χ : Character) (U H ε : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hε : 0≤ε) (hε' : ε≤1) :
     (presentationComplexity χ H)^ε≤2*U^(2*ε)*(3+H)^2 := by
-  have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
+  have hU  := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
   have hbase : 1≤3+H := by linarith
   have hc := presentationComplexity_le_of_modulus_le χ U H hQ
   rw [abs_of_nonneg hH] at hc
@@ -27,18 +27,17 @@ theorem presentation_cost (χ : Character) (U H ε : ℝ)
   rw [he] at hp
   have h2 : (2 : ℝ)^ε≤2 := by
     simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ)≤2) hε'
-  have hh : (3+H)^(2*ε)≤(3+H)^2 := by
-    rw [←Real.rpow_natCast]
-    exact Real.rpow_le_rpow_of_exponent_le hbase (by norm_num; linarith)
-  exact hp.trans (mul_le_mul (mul_le_mul_of_nonneg_right h2 (Real.rpow_nonneg (by linarith) _))
-    hh (Real.rpow_nonneg (by linarith) _) (by positivity))
+  refine hp.trans (mul_le_mul (mul_le_mul_of_nonneg_right h2 (Real.rpow_nonneg (by linarith) _))
+    ?_ (Real.rpow_nonneg (by linarith) _) (by positivity))
+  rw [←Real.rpow_natCast]
+  exact Real.rpow_le_rpow_of_exponent_le hbase (by norm_num; linarith)
 
 theorem positive_central_cost (χ : Character) (U H a e ε η r : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hε : 0≤ε) (hε' : ε≤1)
     (hheight : (3+H)^4≤U^η) :
     (U^r)^(a+6*e-1/2)*(presentationComplexity χ H)^ε≤
       2*U^((a-1/2+6*e)*r+2*ε+η) := by
-  have hU : 0<U := lt_of_lt_of_le zero_lt_one ((HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ)
+  have hU  := lt_of_lt_of_le zero_lt_one ((HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ)
   have hh : (3+H)^2≤U^η := by
     apply le_trans _ hheight
     exact pow_le_pow_right₀ (by linarith) (by decide : 2≤4)
@@ -58,7 +57,7 @@ theorem reflected_central_cost (χ : Character) (U H a e ε η m : ℝ)
       ((radical χ.modulus).absNorm : ℝ)^(6*e+2*ε)*(3+H)^2*
       (presentationComplexity χ H)^ε*(U^m)^(1/2-a-6*e)≤
       2*U^((a-1/2)*(1-m)+6*e*(2-m)+4*ε+η) := by
-  have hU : 0<U := lt_of_lt_of_le zero_lt_one ((HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ)
+  have hU  := lt_of_lt_of_le zero_lt_one ((HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ)
   have hcost := reflected_conductor_cost χ U a e ε hQ ha he hε
   have hcomplex := presentation_cost χ U H ε hQ hH hε hε'
   have hcomplex0 : 0≤(presentationComplexity χ H)^ε := Real.rpow_nonneg (by
@@ -82,7 +81,7 @@ theorem direct_external_cost (χ : Character) (U H κ η r R : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hκ : 0≤κ) (hκ' : κ≤1)
     (hr : 0≤r) (hrR : r≤R) (hheight : (3+H)^4≤U^η) :
     (U^r)^(3/2 : ℝ)*(presentationComplexity χ H)^κ≤2*U^(2*R+2+η) := by
-  have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
+  have hU  := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
   have h := positive_central_cost χ U H 2 0 κ η r hQ hH hκ hκ' hheight
   norm_num only [mul_zero,add_zero] at h
   apply h.trans
@@ -95,8 +94,8 @@ theorem reflected_external_cost (χ : Character) (U H κ η r R : ℝ)
     (hr : 0≤r) (hrR : r≤R) (hheight : (3+H)^4≤U^η) :
     (U^r)^(3/2 : ℝ)*(χ.modulus.absNorm : ℝ)^(3/5 : ℝ)*
       ((radical χ.modulus).absNorm : ℝ)^(1/10+κ)*(3+H)^2≤U^(2*R+2+η) := by
-  have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
-  have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
+  have hU  := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
+  have hUp  := lt_of_lt_of_le zero_lt_one hU
   have hR := (radical_norm_le_modulus χ).trans hQ
   have hh : (3+H)^2≤U^η :=
     (pow_le_pow_right₀ (by linarith) (by decide : 2≤4)).trans hheight

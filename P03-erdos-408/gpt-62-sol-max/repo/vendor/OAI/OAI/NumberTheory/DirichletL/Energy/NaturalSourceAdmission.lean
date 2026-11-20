@@ -7,29 +7,24 @@ public import OAI.NumberTheory.DirichletL.Energy.NaturalLowSourceBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalSourceAdmission
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState
-open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData
+open CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyNaturalLowSourceBound
+open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl
 open CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-open CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy
-open CenteredMomentSourceInputTailUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
+open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot
+open CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular CenteredMomentInductionEnergy
+open CenteredMomentSourceRow CenteredMomentRetainedEnergy CenteredMomentSourceInputTailUniform
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion
+open CenteredMomentHeckeHeight
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := energyOriginalSourceDecidableSum
 
-def lowerProduct (N : ℕ) (aslot a : ℝ) : ℝ := (min 1 aslot)^N*a*a
 
-lemma lowerProduct_pos (N : ℕ) {aslot a : ℝ} (hs : 0 < aslot) (ha : 0 < a) :
-    0 < lowerProduct N aslot a := by unfold lowerProduct; positivity
 
 section Source
 variable (Q : Ideal O) [NeZero Q]
@@ -46,10 +41,6 @@ local notation "s" => sourceInput Q H hH η₀ θ W hW aslot bslot lo hi haslot 
 local notation "s₀" => zeroSourceInput Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
   w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂
 
-theorem both_matches :
-    CenteredMomentAllocatedRayDictionary.Matches Q H hH s η₀ θ w σ freq W bslot Z ∧
-    CenteredMomentAllocatedRayDictionary.Matches Q H hH s₀ η₀ θ w σ freq W bslot Z := by
-  constructor <;> constructor <;> intros <;> rfl
 
 lemma volume_log (hZ : 1 < Z) :
     Real.logb Z (volume s) = Real.logb Z X₁ + Real.logb Z X₂ + ∑ i, w i ∧
@@ -70,13 +61,6 @@ theorem low_admission (hZ : 1 < Z)
   have h2 := raw_log_le_length Z X₂ hZ hX₂
   constructor <;> linarith [hv.1,hv.2]
 
-theorem lower_product_admission (N : ℕ) (hN : Fintype.card ι ≤ N) :
-    0 < lowerProduct N aslot a ∧
-    lowerProduct N aslot a ≤ (∏ i, (s).lo i)*a*a ∧
-    lowerProduct N aslot a ≤ (∏ i, (s₀).lo i)*a*a := by
-  have hh := lower_product s N aslot haslot hN (fun _ => le_rfl)
-  have hb := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hh ha.le) ha.le
-  exact ⟨lowerProduct_pos N haslot ha,hb,hb⟩
 
 end Source
 

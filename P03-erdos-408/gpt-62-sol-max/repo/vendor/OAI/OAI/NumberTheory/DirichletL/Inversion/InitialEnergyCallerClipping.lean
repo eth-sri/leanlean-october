@@ -1,6 +1,9 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerPhysical
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerUnits
+public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerBranch
+public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerMass
 
 @[expose] public section
 
@@ -8,15 +11,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss
 namespace SevenEighths.InverseInitialEnergyCallerClipping
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis)(hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [DecidableEq σ] in
 theorem normalized_energy_clipping
@@ -30,18 +33,6 @@ theorem normalized_energy_clipping
   unfold normalizedColumnEnergy
   simp_rw [norm_mul, canonical_row_clipping_norm p hp hcop hg pool Ψ m _ _
     slots lists a w hZ N h]
-
-theorem initial_scalar_identity (m D B _v θ η δ π ε:ℝ) :
-    prefactorCenter m D B θ+3*η+(D-B+θ+δ)+(B-θ+2*η)+π+
-      ((D-B+θ+δ)+ε)=m+5*η+2*δ+π+ε := by
-  unfold prefactorCenter
-  ring
-
-theorem initial_scalar_le (m D B v θ η δ π ε:ℝ)(hδ:δ≤3*η) :
-    prefactorCenter m D B θ+3*η+(D-B+θ+δ)+(B-θ+2*η)+π+
-      ((D-B+θ+δ)+ε)≤m+11*η+π+ε := by
-  rw [initial_scalar_identity m D B v θ η δ π ε]
-  linarith
 
 end SevenEighths.InverseInitialEnergyCallerClipping
 

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassSource
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 
@@ -47,7 +48,7 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
 
 theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall : 0<dsmall) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))
     (Z M r ell V delta A B R j t eta tau eps window pi : ℝ),

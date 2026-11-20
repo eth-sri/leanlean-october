@@ -15,9 +15,6 @@ noncomputable section
 
 open Blueprint.Analytic
 
-theorem cellFrameTask_proof : CellFrameTask :=
-  Erdos821.P4Frame.CellFrameTask_proof
-
 /-- A frame acts on its finite set of occupied cells, even when the cell
 index type itself is infinite. -/
 theorem frame_any_cell {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq κ]
@@ -42,7 +39,7 @@ theorem frame_any_cell {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq 
       ‖∑ x, if c' x = j then (w x : ℂ) * star (χ a x) * χ b x else 0‖ ≤ δ := by
     simp only [heq]
     exact hgram j.val (by rwa [hm] at hj) a b hab
-  have ht := cellFrameTask_proof α ↥cells γ w c' χ ξ δ hw hχ hξ hδ hg f
+  have ht := P4Frame.CellFrameTask_proof α ↥cells γ w c' χ ξ δ hw hχ hξ hδ hg f
   have ha : frameCellApply w c' χ ξ f = frameCellApply w c χ ξ f := by
     funext X
     simp only [frameCellApply, hk]
@@ -65,16 +62,16 @@ theorem cell_operator_norm (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
   let c := fun z : Tuple G k => cell h (product G k z)
   let χ := fun a : ↥(primitiveCharacters Q) => fun z : Tuple G k =>
     charValue a.val (product G k z)
-  have hw (z : Tuple G k) : 0 ≤ w z :=
+  have hw (z : Tuple G k)  :=
     Erdos821.S34.Proofs.tupleWeight_nonneg (coreGroups G) k z
   have hg (j : ℤ) (hj : ξ ≤ frameCellMass w c j)
       (a b : ↥(primitiveCharacters Q)) (hab : a ≠ b) :
       ‖∑ z, if c z = j then (w z : ℂ) * star (χ a z) * χ b z else 0‖ ≤ δ := by
-    have he : a.val ≠ b.val := fun he => hab (Subtype.ext he)
+    have he  := fun he => hab (Subtype.ext he)
     have ht := hgram j hj a.val a.property b.val b.property he
     simpa only [expect, w, c, χ, mul_ite, mul_zero, mul_assoc] using ht
   have hf := frame_any_cell w c χ ξ δ hw
-    (fun a z => primitiveCharacterTask_proof.2 Q a.val (product G k z)) hξ hδ hg f
+    (fun a z => P4Char.PrimitiveCharacterTask_proof.2 Q a.val (product G k z)) hξ hδ hg f
   have hk (D X : Tuple G k) : frameCellKernel w c χ ξ D X =
       cellKernel G k Q h ξ (product G k D) (product G k X) := by
     unfold frameCellKernel
@@ -95,7 +92,7 @@ theorem cell_operator_norm (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
   rw [ha] at hf
   have hc : (Fintype.card ↥(primitiveCharacters Q) : ℝ) ≤ (Q : ℝ) ^ 2 := by
     simpa only [Fintype.card_coe] using (show ((primitiveCharacters Q).card : ℝ) ≤ (Q : ℝ) ^ 2 by
-      exact_mod_cast primitiveCharacterTask_proof.1 Q)
+      exact_mod_cast P4Char.PrimitiveCharacterTask_proof.1 Q)
   calc
     _ ≤ (1 + (Fintype.card ↥(primitiveCharacters Q) : ℝ) * δ / ξ) * tupleNorm G k f := hf
     _ ≤ _ := by

@@ -6,7 +6,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter Topology
 attribute [local instance] Classical.propDecidable
 
@@ -17,7 +16,7 @@ open Erdos821.Blueprint.Graph
 set_option maxHeartbeats 600000 in
 theorem tendsto_log_sq_exp_neg_rpow (F : FixedData) :
     Tendsto (fun x : ℝ => (L x) ^ (2 : ℕ) * Real.exp (-((L x) ^ F.c))) atTop (𝓝 0) := by
-  have hc : 0 < F.c := lt_trans F.a_pos (lt_trans F.ab F.bc)
+  have hc  := lt_trans F.a_pos (lt_trans F.ab F.bc)
   have hpow : Tendsto (fun x : ℝ => (L x) ^ F.c) atTop atTop :=
     (_root_.tendsto_rpow_atTop hc).comp Real.tendsto_log_atTop
   have hbase := _root_.tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero
@@ -43,7 +42,7 @@ theorem tendsto_log_sq_exp_neg_rpow (F : FixedData) :
     change Tendsto
       (fun x : ℝ => ((L x) ^ F.c) ^ (2 / F.c) * Real.exp (-1 * ((L x) ^ F.c)))
       atTop (𝓝 0) at hcomp
-    simpa [neg_one_mul] using hcomp
+    simp_all
   exact hcomp'.congr' heq.symm
 
 set_option maxHeartbeats 600000 in

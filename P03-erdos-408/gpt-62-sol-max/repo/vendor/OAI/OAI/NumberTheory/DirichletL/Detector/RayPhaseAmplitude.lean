@@ -24,7 +24,7 @@ lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ)
   · intro P hP;rfl
 
 theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
-    (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (_hab : a≤b) (hD : 0<D)
+    (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (hD : 0<D)
     (hW : Function.support W⊆Set.Ioo a b)
     (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (g : Id→ℂ) :
     (∑P∈pool C S a b D,W ((P.val.absNorm:ℝ)/D)*g P.val)=
@@ -74,7 +74,7 @@ theorem central_phase_eq_amplitude (M : Id) [NeZero M]
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val)))=
       -(D:ℂ)^(z-1/2)*HeckePrimeRow.canonicalPrimeAmplitude M H u W b D z := by
-  have he := weighted_pool_eq_annular (RayQuotient.identityClass M H) S W a b D ha hab hD hW hS
+  have he := weighted_pool_eq_annular (RayQuotient.identityClass M H) S W a b D ha hD hW hS
     (fun P=>(P.absNorm:ℂ)^(z-1)*(-star (CanonicalRowCompletion.idealRowHom u P)))
   simp_rw [mul_assoc] at ⊢
   rw [he]

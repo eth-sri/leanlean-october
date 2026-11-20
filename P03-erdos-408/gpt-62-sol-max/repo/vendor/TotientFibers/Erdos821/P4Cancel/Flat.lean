@@ -2,7 +2,7 @@ module
 
 public import Erdos821.P4Cancel.Symmetrize
 public import Erdos821.P4Probe.RowBridge
-public import Erdos821.P4Probe.ProbeContraction
+public import Erdos821.P4Probe.ProjectionSelector
 public import Erdos821.P4Probe.RawTailPairing
 public import Erdos821.P4Probe.PairingSums
 
@@ -48,15 +48,15 @@ variable {P M}
 
 @[simp] lemma toRows_apply (a : P.BigLabels M) (g : Fin (rowCount P)) (i : Fin M) :
     toRows P M a g i = a (rowEquiv P g) i := by
-  simp [toRows, Equiv.piCongrLeft_symm_apply]
+  rfl
 
 @[simp] lemma toRows_symm_apply (x : ProbeSample (rowAlpha P) M) (g : Fin (rowCount P)) :
     (toRows P M).symm x (rowEquiv P g) = x g := by
-  simp [toRows, Equiv.piCongrLeft_apply_apply]
+  simp [toRows]
 
 @[simp] lemma toFlat_apply (a : P.BigLabels M) (z : RowSite (rowCount P) M) :
     toFlat P M a z = a (rowEquiv P z.1) z.2 := by
-  simp [toFlat, flattenRows]
+  rfl
 
 lemma rowW_nonneg (hV : ∀ g, 0 < P.V g) : ∀ g a, 0 ≤ rowW P g a :=
   fun _ a => (graph_mu_pos P _ (hV _) a).le
@@ -115,9 +115,9 @@ lemma toFlat_mix (T : Finset (RowSite (rowCount P) M)) (a b : P.BigLabels M) :
     mixCoords T (toFlat P M a) (toFlat P M b) = toFlat P M (siteMix T a b) := by
   funext z
   by_cases hz : z ∈ T
-  · have hz' : ((rowEquiv P).symm (rowEquiv P z.1), z.2) ∈ T := by simpa using hz
+  · have hz' : ((rowEquiv P).symm (rowEquiv P z.1), z.2) ∈ T := by simp_all
     simp [mixCoords, siteMix, hz]
-  · have hz' : ((rowEquiv P).symm (rowEquiv P z.1), z.2) ∉ T := by simpa using hz
+  · have hz' : ((rowEquiv P).symm (rowEquiv P z.1), z.2) ∉ T := by simp_all
     simp [mixCoords, siteMix, hz]
 
 /-- Average over a flat site set, on big labels. -/
@@ -152,7 +152,7 @@ lemma siteAvg_empty (hV : ∀ g, 0 < P.V g) (F : P.BigLabels M → ℂ) (a : P.B
     siteAvg ∅ F a = F a := by
   unfold siteAvg
   have hm : ∀ b, siteMix (∅ : Finset (RowSite (rowCount P) M)) a b = a := by
-    intro b; funext h i; simp [siteMix]
+    intro b; rfl
   simp only [hm]
   rw [← Finset.sum_mul]
   have ht : (∑ y : P.BigLabels M, (P.idealMass y : ℂ)) = 1 := by

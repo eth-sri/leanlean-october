@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.HeckeVolume
-public import OAI.NumberTheory.DirichletL.Moments.Cancellation
+public import OAI.NumberTheory.DirichletL.Moments.Primary
+public import OAI.NumberTheory.DirichletL.Moments.Mask
 
 @[expose] public section
 

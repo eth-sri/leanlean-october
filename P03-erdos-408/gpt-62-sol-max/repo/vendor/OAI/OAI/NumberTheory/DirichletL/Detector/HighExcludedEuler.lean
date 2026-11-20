@@ -84,10 +84,10 @@ theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
   · intro a b hc
     simp only [Prod.fst_mul,Prod.snd_mul,markedIdealHighSummand,
       highIdealMask_unmarked_mul S hS a b,
-      bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hc]
+      bareIdealHighSummand_mul η 1 x w z _ _ _ _ _ _ _ _ hc]
     ring
   · intro a ha
-    have hh : bareIdealHighSummand η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2≠0 :=
+    have hh  :=
       (mul_ne_zero_iff.mp ha).2
     have hs := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩

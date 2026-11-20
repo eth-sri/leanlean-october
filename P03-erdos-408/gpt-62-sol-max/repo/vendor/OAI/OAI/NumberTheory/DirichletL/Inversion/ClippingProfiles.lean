@@ -2,7 +2,6 @@ module
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
-public import OAI.NumberTheory.DirichletL.CompactProfileFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualProfiles
 public import OAI.NumberTheory.DirichletL.Descent.DescentHeight
 
@@ -58,10 +57,6 @@ def rootSchwartz (v : 𝓢(ℝ, ℂ)) (M B L ρ a H : ℝ)
   (rootedWindow_compact v M B L ρ a H hL hρ hv).toSchwartzMap
     (rootedWindow_contDiff v (v.smooth ⊤) L ρ a H)
 
-@[simp] lemma rootSchwartz_apply (v : 𝓢(ℝ, ℂ)) (M B L ρ a H y : ℝ)
-    (hL : 0 < L) (hρ : |ρ| ≤ B * L)
-    (hv : Function.support v ⊆ Set.Icc (-M) M) :
-    rootSchwartz v M B L ρ a H hL hρ hv y = rootedWindow v L ρ a H y := rfl
 
 def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
   ∑ i ∈ Finset.range (n+1), (2:ℝ)^i * (1+|a|)^i * derivativeSeminormSum v 0 i
@@ -78,7 +73,7 @@ theorem clipping_ratio_of_column_witness (w : ℝ → ℂ) (Z N q a b : ℝ)
   refine ⟨Real.one_le_rpow hZ.le hn, ?_⟩
   by_cases hN : 0 ≤ N
   · simpa [max_eq_right hN] using hb
-  · have hN' : N ≤ 0 := le_of_lt (lt_of_not_ge hN)
+  · have hN'  := le_of_lt (lt_of_not_ge hN)
     rw [max_eq_left hN', zero_sub, Real.rpow_neg hz.le]
     have hsupport := (hw hwitness).2
     calc
@@ -159,7 +154,7 @@ theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
       (volume : Measure ℝ) (innerₗ ℝ) f ρ) t
   change _ = Real.fourierChar (inner ℝ ρ t) • (𝓕 f) t at h
   have h' : (𝓕 (fun y => f (y+ρ))) t = Real.fourierChar (inner ℝ ρ t) • (𝓕 f) t := by
-    simpa only [Real.fourier_eq, VectorFourier.fourierIntegral, Function.comp_def, innerₗ_apply_apply] using h
+    assumption
   rw [h']
   simp only [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, logPhase]
   congr 2

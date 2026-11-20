@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationCount
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical Topology ContDiff
+open scoped BigOperators Classical ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentPrimePool
 open HeckeFamily PNT.AnnularPrimeMass CenteredMomentAmplificationCount
@@ -36,7 +36,6 @@ theorem annular_weighted_card_bound (C : Set (Ideal O)) (S : Finset (Ideal O))
 
 section FixedRay
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 include hH

@@ -46,10 +46,10 @@ theorem exp_comp_iteratedDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
       expCompDerivativeConstant hi bounds n * L x ^ (C * ((n : ℝ) + 1)) := by
   intro n r
   let H : ℝ := max 1 hi
-  have hH1 : 1 ≤ H := le_max_left 1 hi
-  have hHhi : hi ≤ H := le_max_right 1 hi
-  have hLpos : 0 < L x := lt_of_lt_of_le zero_lt_one hL
-  have hΨsmooth : ContDiff ℝ ∞ Ψ := hcut.1
+  have hH1  := le_max_left 1 hi
+  have hHhi  := le_max_right 1 hi
+  have hLpos  := lt_of_lt_of_le zero_lt_one hL
+  have hΨsmooth  := hcut.1
   have hExpSmooth : ContDiff ℝ ∞ Real.exp := Real.contDiff_exp
   have hΨtsupport : tsupport Ψ ⊆ Set.Icc lo hi := by
     change closure (Function.support Ψ) ⊆ Set.Icc lo hi
@@ -85,15 +85,15 @@ theorem exp_comp_iteratedDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
               simpa [hzero] using hnonneg
             · have hExpLeH : Real.exp r ≤ H := by
                 by_contra hnot
-                have hgt : H < Real.exp r := lt_of_not_ge hnot
-                have hgtHi : hi < Real.exp r := lt_of_le_of_lt hHhi hgt
+                have hgt  := lt_of_not_ge hnot
+                have hgtHi  := lt_of_le_of_lt hHhi hgt
                 have hfd : iteratedFDeriv ℝ c.length Ψ (Real.exp r) ≠ 0 := by
                   intro hfd
                   apply hzero
                   apply norm_eq_zero.mp
                   rw [← norm_iteratedFDeriv_eq_norm_iteratedDeriv, hfd]
                   simp
-                have hts : Real.exp r ∈ tsupport Ψ :=
+                have hts  :=
                   (support_iteratedFDeriv_subset c.length) (Function.mem_support.mpr hfd)
                 have hinterval := hΨtsupport hts
                 exact (not_le_of_gt hgtHi) hinterval.2
@@ -114,9 +114,7 @@ theorem exp_comp_iteratedDeriv_bound (x C lo hi : ℝ) (bounds : ℕ → ℝ)
                 have hlen : (c.length : ℝ) ≤ (n : ℝ) := by
                   exact_mod_cast OrderedFinpartition.length_le c
                 nlinarith
-              have hDerivativeNorm :
-                  ‖iteratedDeriv c.length Ψ (Real.exp r)‖ ≤
-                    bounds c.length * L x ^ (C * ((c.length : ℝ) + 1)) :=
+              have hDerivativeNorm  :=
                 hcut.2.2 c.length (Real.exp r)
               calc
                 _ = ‖∏ j : Fin c.length, iteratedDeriv (c.partSize j) Real.exp r‖ *

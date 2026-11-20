@@ -9,21 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
 
 namespace ActualEisensteinCubic
 
 open ConcreteTraceCRT
-open scoped ComplexConjugate
 
 theorem canonicalSextic_inverse_eq_conj_on_units (P : Ideal O)
     [P.IsMaximal] (hgood : lambda ∉ P) (u : (O ⧸ P)ˣ) :
@@ -38,7 +29,6 @@ theorem canonicalSextic_inverse_eq_conj_on_units (P : Ideal O)
 end ActualEisensteinCubic
 
 namespace FourierBridge
-open scoped ContDiff FourierTransform SchwartzMap
 
 end FourierBridge
 
@@ -47,7 +37,6 @@ namespace AnalyticBridge
 end AnalyticBridge
 
 namespace FourierBridge
-open scoped FourierTransform SchwartzMap
 
 theorem logPhase_norm (t y : ℝ) : ‖logPhase t y‖ = 1 := by
   simpa [logPhase] using
@@ -61,7 +50,6 @@ theorem logPhase_continuous_left (y : ℝ) :
 end FourierBridge
 
 namespace AnalyticBridge
-open scoped FourierTransform SchwartzMap
 
 end AnalyticBridge
 
@@ -71,26 +59,6 @@ end PowerExtraction
 
 namespace ActualEisensteinCubic
 
-section
-
-open AddChar MulChar
-
-@[instance_reducible] noncomputable def crtIntersectionFintype
-    {ι : Type*} [Fintype ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hdistinct : Function.Injective (fun i => Ideal.span {p i})) :
-    Fintype (O ⧸ ⨅ i, Ideal.span {p i}) := by
-  classical
-  letI (i : ι) : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
-  have hcop : Pairwise
-      (fun i k => IsCoprime (Ideal.span {p i}) (Ideal.span {p k})) := by
-    intro i k hik
-    exact Ideal.isCoprime_of_isMaximal (hdistinct.ne hik)
-  let e := Ideal.quotientInfRingEquivPiQuotient
-    (fun i => Ideal.span {p i}) hcop
-  exact Fintype.ofEquiv (∀ i, O ⧸ Ideal.span {p i}) e.symm.toEquiv
-
-end
 
 theorem canonicalSextic_sixth_power_mask (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (a : O) :

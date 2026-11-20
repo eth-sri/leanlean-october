@@ -82,7 +82,7 @@ theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
         ∑ p ∈ pairs, Cbound * ∑ c ∈ cset p.1, ‖F p c‖ ^ 2 := by
       apply mul_le_mul_of_nonneg_left (Finset.sum_le_sum hlocal)
       positivity
-    _ = _ := by rw [← Finset.mul_sum]; simp only [F]; ring
+    _ = _ := by rw [← Finset.mul_sum]; ring
 
 theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ N : ℝ, 1 ≤ N →
@@ -168,7 +168,6 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
     B mBad cset coef beta Cbound Ebound hCbound hcount hbeta hH hmc hmap hJ hP hcoef
   let E (h m c : Ideal Eis) := ‖∑ P ∈ Pset,
     coef h P * inverseCubicKernel P (c * (mBad * m))‖ ^ 2
-  have hnorm : 0 ≤ CubicSieve.sieveNorm N L := sq_nonneg _
   have he := hquad K X hK hX rows pairs hrows hpairs B mBad cset Pset coef beta
     Cbound hcount hbeta
   have hpos := positive_triple_enlarge pairs cset Hset cubicPairs E hH hmc
@@ -182,7 +181,7 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
         intro h hh
         apply (hcube N L hN cubicPairs Jset Pset mBad hmap hJ hP (coef h)).trans
         exact mul_le_mul_of_nonneg_left (hcoef h hh)
-          (mul_nonneg (mul_nonneg hD.le (Real.rpow_nonneg (by linarith) _)) hnorm)
+          (mul_nonneg (mul_nonneg hD.le (Real.rpow_nonneg (by linarith) _)) (sq_nonneg _))
       _ = _ := by simp
   apply he.trans
   calc

@@ -9,18 +9,16 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthMoments
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReflectionSupport
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReflectionSupport
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
 open CenteredMomentEnergyZeroGrowthChild CenteredMomentEnergyReferenceLowControl
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-open CenteredMomentSectorLocalization
+open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 
 theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
@@ -62,7 +60,7 @@ lemma actual_growth_power (Z b M xi epsilon loss Xshort Xlong Nshort Nlong x:ℝ
     Z^(max M (length Z (Real.exp x)+length Z (Xshort/Nshort))+loss)≤
       Nlong*Z^(M+loss+epsilon+xi):=by
   have hg:=live_deleted_growth Z b M xi Xshort Xlong Nshort Nlong
-    hZ hb hM hshort hlong hNs hNl hsupport hlive x hx
+    hZ hb hshort hlong hNs hNl hsupport hlive x hx
   have hN:=Real.logb_nonneg hZ hNl
   have hemax:max M (length Z (Real.exp x)+length Z (Xshort/Nshort))≤
       M+Real.logb Z Nlong+epsilon+xi:=max_le (by linarith) (by linarith)

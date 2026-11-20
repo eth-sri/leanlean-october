@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialUniformFresh
 
 theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
@@ -24,10 +24,7 @@ theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
   let hi:=lo+b*(2:ℝ)^K+1
   have hlo:0<lo:=by dsimp [lo];positivity
   have hb:0<b:=ha.trans_le hab
-  obtain ⟨W,hWc,hWone,hWs⟩:=InverseSecondChildWindows.positive_cutoff lo hi hlo (by
-    dsimp [hi]
-    have hbp : 0<b*(2:ℝ)^K:=by positivity
-    linarith)
+  obtain ⟨W,hWc,hWone,hWs⟩:=InverseSecondChildWindows.positive_cutoff lo hi hlo
   refine ⟨W,lo/2,hi+1,(SchwartzMap.seminorm ℝ 0 0) W,half_pos hlo,?_,by positivity,hWc,hWs,
     SchwartzMap.norm_le_seminorm ℝ W,?_⟩
   · dsimp [hi]
@@ -39,8 +36,7 @@ theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
     simp only [Finset.prod_const,one_pow,mul_one,div_one] at hh
     apply hWone
     refine ⟨hh.1,?_⟩
-    have hp:(2:ℝ)^I.card≤(2:ℝ)^K:=pow_le_pow_right₀ (by norm_num) hI
-    have hup:yc≤b*(2:ℝ)^K:=hh.2.trans (mul_le_mul_of_nonneg_left hp hb.le)
+    have hup:yc≤b*(2:ℝ)^K:=hh.2.trans (mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by norm_num) hI) hb.le)
     dsimp [hi]
     linarith
 

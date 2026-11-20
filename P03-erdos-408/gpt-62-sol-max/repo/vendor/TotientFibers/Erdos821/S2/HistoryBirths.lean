@@ -22,8 +22,7 @@ theorem sum_fin_dite {M : Type*} [AddCommMonoid M] (b B : ℕ) (hb : b ≤ B) (f
   induction B, hb using Nat.le_induction with
   | base =>
       apply Finset.sum_congr rfl
-      intro h _
-      simp
+      simp_all
   | succ B hb ih =>
       rw [Fin.sum_univ_castSucc]
       simpa only [Fin.val_castSucc, Fin.val_last, dite_eq_right (Nat.not_lt.mpr hb), add_zero] using ih
@@ -64,10 +63,7 @@ theorem birthValues_eq_addresses (B : ℕ) (hH : H.Truncated B) :
     · rw [ite_eq_left (show H.addressPerformed B (.inr (.inr (i, g, h))) from hh), dite_eq_left hh]
       simp only [addressValue, dite_eq_left hh]
     · rw [ite_eq_right (show ¬ H.addressPerformed B (.inr (.inr (i, g, h))) from hh), dite_eq_right hh]
-  have hb (i : Fin (n + 1)) (g : P.BigGroup) :
-      (∑ h : Fin B, if hh : h.val < ((H.ghost i).2.1 g).val then
-        ({((H.ghost i).2.2 g ⟨h.val, hh⟩).val} : Multiset ℕ) else 0) =
-      ∑ h : Fin ((H.ghost i).2.1 g).val, ({((H.ghost i).2.2 g h).val} : Multiset ℕ) :=
+  have hb (i : Fin (n + 1)) (g : P.BigGroup)  :=
     sum_fin_dite ((H.ghost i).2.1 g).val B (H.ghostBatch_le B hH i g)
       (fun h => ({((H.ghost i).2.2 g h).val} : Multiset ℕ))
   simp_rw [hin, hf, hg]
@@ -117,7 +113,7 @@ theorem distinct_birth_expansion_history (B : ℕ) (hH : H.Truncated B) :
   by_cases hd : H.DistinctBirths
   · have hf := (H.distinctBirths_iff_fin B hH).mp hd
     simpa only [ite_eq_left hd, ite_eq_left hf] using he
-  · have hf : ¬ Set.InjOn (H.valueFin B) (H.performedFin B) :=
+  · have hf  :=
       fun hf => hd ((H.distinctBirths_iff_fin B hH).mpr hf)
     simpa only [ite_eq_right hd, ite_eq_right hf] using he
 

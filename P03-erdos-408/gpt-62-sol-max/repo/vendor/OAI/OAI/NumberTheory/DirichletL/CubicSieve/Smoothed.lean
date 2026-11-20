@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualCoefficients
 
 @[expose] public section
@@ -52,11 +53,9 @@ lemma cubicDualRow_summable {n : Type*} [Fintype n]
   by_cases hcop : IsCoprime (cols j) (cols k)
   · simp only [ite_eq_left hcop]
     have hjN : 0 < (Ideal.absNorm (cols j) : ℝ) := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (primaryGenerator_ne_zero_ideal _ (hc j).2))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (primaryGenerator_ne_zero_ideal _ (hc j).2)
     have hkN : 0 < (Ideal.absNorm (cols k) : ℝ) := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (primaryGenerator_ne_zero_ideal _ (hc k).2))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (primaryGenerator_ne_zero_ideal _ (hc k).2)
     have hs := (cubic_pair_fourier_summable (cols j) (cols k) (hc j) (hc k) W
       (M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ))) (by positivity)).mul_left
       (star (a j) * a k * (star (gaussTwo (cols j) (hc j).2) * gaussTwo (cols k) (hc k).2) /
@@ -85,11 +84,9 @@ lemma cubicDualRow_tsum {n : Type*} [Fintype n]
       paperRadialFourier W (M * (Ideal.absNorm (Ideal.span {h}) : ℝ) /
         ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)))) := by
     have hjN : 0 < (Ideal.absNorm (cols j) : ℝ) := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (primaryGenerator_ne_zero_ideal _ (hc j).2))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (primaryGenerator_ne_zero_ideal _ (hc j).2)
     have hkN : 0 < (Ideal.absNorm (cols k) : ℝ) := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (primaryGenerator_ne_zero_ideal _ (hc k).2))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (primaryGenerator_ne_zero_ideal _ (hc k).2)
     convert cubic_pair_fourier_summable (cols j) (cols k) (hc j) (hc k) W
       (M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ))) (by positivity) using 1
     ext z

@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalState
 
 @[expose] public section
@@ -8,17 +10,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic
+open InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState
+open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
+open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 
@@ -42,14 +43,12 @@ theorem live_widths_nonnegative
   have hI:(1:ℝ)≤Ideal.absNorm (initialChild (toTuple p (sectorSource 1 x))).2.1:=by
     have hne:(initialChild (toTuple p (sectorSource 1 x))).2.1≠0:=
       mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _)
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hne)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hne)
   have hdiv:(1:ℝ)≤(sourceIdeal p x.divisor).absNorm:=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp _))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (sourceIdeal_ne_zero p hp _)
   have hfreq:(1:ℝ)≤‖eisEmbedding x.frequency‖^2:=by
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hf))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hf)
   have hr:(1:ℝ)≤‖eisEmbedding (initialChild (toTuple p (sectorSource 1 x))).2.2‖^2:=by
     rw [initial_child_row_norm p hp hpr]
     exact one_le_mul_of_one_le_of_one_le hdiv hfreq
@@ -60,7 +59,7 @@ theorem live_widths_nonnegative
       (by simpa only [Real.rpow_zero] using hr.trans hrow)
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem retained_full_puncture
     (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(D v H aC bC ad bd Z B θ η G:ℝ)(hZ:1<Z)

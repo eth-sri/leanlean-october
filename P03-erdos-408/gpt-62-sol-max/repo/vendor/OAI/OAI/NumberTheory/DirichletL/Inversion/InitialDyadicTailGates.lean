@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicAssemblyTail
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailAnnulus
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailRapid
@@ -10,12 +11,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseInitialDyadicTailBound
 open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialDyadicAssembly InverseInitialProfile
+open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialDyadicAssembly
+open InverseInitialProfile
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -23,7 +24,7 @@ theorem pointSource_erase_mem (pool : Finset ι) (S : Finset (Source (ι:=ι) 0)
     (x : Point ι) (hx : x∈pointSource pool S) : erasePoint x∈S := by
   obtain ⟨y,hy,hx⟩ := Finset.mem_biUnion.mp hx
   obtain ⟨⟨N,M⟩,hNM,rfl⟩ := Finset.mem_image.mp hx
-  simpa only [erase_sourcePoint] using hy
+  simp_all
 
 theorem pointSource_supports (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (hC : ∀x∈S,x.common⊆pool) (hV : ∀x∈S,x.overlap⊆pool)
@@ -54,13 +55,12 @@ omit [DecidableEq ι] in
 theorem sourceNorms_erase (p : ι→O) (x : Point ι) (i : Fin 4) :
     sourceNorms p (erasePoint x) i=coordinates p x (InverseSecondChildWindows.outerIndex i) := by
   have he : InverseInitialEnergyCallerModes.sourcePoint (erasePoint x) x.left x.right=x := by
-    cases x
     rfl
   simpa only [he] using sourceNorms_fresh p (erasePoint x) x.left x.right i
 
 omit [DecidableEq ι] in
 theorem live_mass_radial_gate
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     (a b : Fin 4→ℝ) (Z D m η τ bW : ℝ) (hZ : 1<Z) (hη : 0≤η)
     (hbW : 0<bW) (hfixed : 64*bW^2≤Z^η)
     (x : Point ι) (hx : Valid x)

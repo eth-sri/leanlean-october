@@ -24,7 +24,7 @@ theorem raw_input_bound
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^3≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) Dpool (reflectionExcludedPrimes_bad q);
-    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF;
     let p:=poolPrimary F;
     let hg:=poolPrimary_good F hF;
     ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
@@ -34,7 +34,7 @@ theorem raw_input_bound
         (initialTest p (fun _=>1) (childLogTest W t) Z r) u‖^2:ℝ)‖≤
       C*Z^(1+15*η+π+eps+loss)*(1+‖t‖)^(2*J) := by
   have hB:0≤SchwartzMap.seminorm ℝ 0 0 W:=apply_nonneg _ _
-  have hb:∀x,‖W x‖≤SchwartzMap.seminorm ℝ 0 0 W:=fun x=>by
+  have hb:=fun x=>by
     simpa only [pow_zero,one_mul,norm_iteratedFDeriv_zero] using W.le_seminorm ℝ 0 0 x
   obtain ⟨degree,Btree,hBtree,hbound⟩:=InverseInitialTotalEnergy.original_input_bound
     W a b 1 ha le_rfl hs (W.smooth ⊤) Φ _ hB hb 2 gap eps π η τ loss
@@ -44,9 +44,9 @@ theorem raw_input_bound
   obtain ⟨C,Z₀,hC,hZ₀,hbound⟩:=hbound q hq
   refine ⟨C,Z₀,hC,hZ₀,?_⟩
   intro Z hZ Dpool hpool F hF
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF
   intro p hg Ψ hΨ hperiod r t hrlo hr₁ hr₂ hrcap
-  have hZp:1<Z:=hZ₀.trans_le hZ
+  have hZp:=hZ₀.trans_le hZ
   have hpool':Btree*Z^((2:ℝ)+1)≤Dpool:=by norm_num;exact hpool
   have hp:=Real.one_le_rpow hZp.le hη.le
   have h:=hbound Z hZ Dpool hpool' (σ:=Fin 0) ∅ ∅ (by simp) (by simp)
@@ -60,8 +60,7 @@ theorem raw_input_bound
   simp only [Finset.sdiff_self,assignedElement,Finset.prod_empty] at h
   have hemark : primeMark (∅:Finset (Fin 0)) (fun _=> (∅:Finset (primePool F)))
       (fun _ _=> (0:ℂ))=(fun _=>1) := by
-    funext A
-    exact primeMark_empty _ _ A
+    rfl
   rw [hemark] at h
   simpa only [
     Real.rpow_one,←childLogTest_eq_clipped] using h

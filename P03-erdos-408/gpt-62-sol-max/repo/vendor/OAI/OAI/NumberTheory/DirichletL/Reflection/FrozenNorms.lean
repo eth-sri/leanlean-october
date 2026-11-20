@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.BoundedTemplates
 
 @[expose] public section
@@ -14,9 +15,9 @@ local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} {p : ι → Eis} {N a c : Eis} {mode : Bool}
 
-lemma frozenCofactorCharacter_cross_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+lemma frozenCofactorCharacter_cross_norm [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p λ₀)
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (i k : ι) (hik : i ≠ k) (j : ℕ) :
     ‖frozenCofactorCharacter (Ideal.span {p i}) (hg i) j (p k)‖ = 1 := by
   have hn := crossSymbol_norm hg hcop i k hik
@@ -31,9 +32,9 @@ lemma frozenCofactorCharacter_cross_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     change ‖MixedCrossSeparation.crossSymbol p hg i k‖^(2*j+2) = 1
     rw [hn,one_pow]
 
-lemma frozenCofactorCharacter_product_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+lemma frozenCofactorCharacter_product_norm [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p λ₀)
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (i : ι) (S : Finset ι) (hi : i ∉ S) (j : ℕ) :
     ‖frozenCofactorCharacter (Ideal.span {p i}) (hg i) j (∏ k ∈ S, p k)‖ = 1 := by
   rw [map_prod,norm_prod]
@@ -43,11 +44,11 @@ lemma frozenCofactorCharacter_product_norm [∀ i, (Ideal.span {p i}).IsMaximal]
 
 variable [Fintype ι]
 
-lemma frozenPrimeScalar_norm [∀ i, (Ideal.span {p i}).IsMaximal]
+lemma frozenPrimeScalar_norm [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (i : ι) (j : ℕ) (hj : j < 6) : ‖frozenPrimeScalar (p i) c (hp i) (hg i) j‖ = 1 := by
   have hh := local_phase_norm D hp hg hchar i j hj
   rw [controlled_frozen_phase,norm_mul] at hh
@@ -55,11 +56,11 @@ lemma frozenPrimeScalar_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     exact frozenCofactorCharacter_product_norm hg hcop i (Finset.univ.erase i) (by simp) j
   simpa only [hn,mul_one] using hh
 
-lemma frozenCore_norm [∀ i, (Ideal.span {p i}).IsMaximal]
+lemma frozenCore_norm [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (j : ι → ℕ) (F : Finset ι) (hj : ∀ i ∈ F, j i < 6) : ‖frozenCore hp hg c j F‖ = 1 := by
   rw [frozenCore,norm_prod]
   apply Finset.prod_eq_one

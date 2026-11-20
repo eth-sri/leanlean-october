@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.RetainedEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRowEnergy
 
@@ -39,10 +40,9 @@ theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
       (2*(max 1 b₁*max 1 b₂))*(∏ i∈frozenIndices D a,M i)^2/formalReductionFactor D a P *
         (‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ X₁ X₂‖^2+
          ‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ Y₁ Y₂‖^2) := by
-  have hT : 0 < T := hX ▸ mul_pos hX₁ hX₂
+  have hT  := hX ▸ mul_pos hX₁ hX₂
   have hN (j : Fin 2) : (0:ℝ) < Ideal.absNorm (selectedPlain D a j) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j))
   have hx : (X₁/Ideal.absNorm (selectedPlain D a 0))*(X₂/Ideal.absNorm (selectedPlain D a 1))=
       T/selectedNorm D a := by rw [div_mul_div_comm,hX]; rfl
   have hy : (Y₁/Ideal.absNorm (selectedPlain D a 0))*(Y₂/Ideal.absNorm (selectedPlain D a 1))=

@@ -51,7 +51,7 @@ def confDiff (q x : ℝ) (d : Data K) (Y d₀ : ℝ) (n : ℕ) (ω : Conf x d Y 
 /-- The normalized moment minus the Riemann sum is `∑_ω c(ω) D(ω)`. -/
 theorem sub_eq_sum_confDiff {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
     (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hR : 0 < momentPower x)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (n : ℕ) :
+    (hdisj : d.BandsDisjoint x) (n : ℕ) :
     ((d₀ * Y * d.Hm * d.Hn : ℝ) : ℂ)⁻¹ * detMoment q A₀ x d Y d₀ -
         (primitiveDensity : ℂ) * (((n : ℂ) ^ 3)⁻¹ * ∑ i ∈ cubeIndices n,
           lineAverage x d fun ℓ => rootMoment q A₀ x d Y d₀ (d₀ * Y * d.Hm * (1 + i.1 / n))
@@ -113,7 +113,7 @@ with `c(ω) ≠ 0` has per-configuration error at most `ε`, then the normalized
 `M ε` of `c₂` times the Riemann sum. -/
 theorem norm_sub_le_of_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ : ℝ}
     (hU : 0 < d₀ * Y * d.Hm) (hV : 0 < d.Hn) (hR : 0 < momentPower x)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {n : ℕ} (hn : 1 ≤ n)
+    (hdisj : d.BandsDisjoint x) {n : ℕ} (hn : 1 ≤ n)
     {M ε : ℝ} (hε : 0 ≤ ε)
     (hM : ∑ ω ∈ univ.filter (fun ω : Conf x d Y d₀ => ConfLive ω),
       ‖confCoeff A₀ x d Y d₀ ω‖ ≤ M)

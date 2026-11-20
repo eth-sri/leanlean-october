@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.PrimeRows.CentralExpansion
+public import OAI.NumberTheory.DirichletL.PrimeRows.CentralProduct
 
 @[expose] public section
 
@@ -38,7 +38,6 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
     (fun j=>add_nonneg (norm_nonneg _) (norm_nonneg _)) hT
   have hpoint (j : Fin N) : (‖A j‖+‖B j‖)+y j≤y j*((E+2)*p j) := by
     have h := hp j
-    have hp0 : 0≤p j := zero_le_one.trans h
     have he := mul_nonneg (show 0≤E+1 by linarith) (show 0≤p j-1 by linarith)
     have hm := mul_nonneg (hy j) he
     nlinarith [hA j,hB j]

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -52,7 +52,7 @@ theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
     (show (((v:ℂ)+t*I)-1).re∈Icc (l-1) (r-1) by simpa using hv)
   have hm' : height t^2*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖)≤D := by
     simpa [height,pow_add,mul_assoc,mul_comm,mul_left_comm] using hm v hv t
-  have hmc : height t^N*‖mellin W1 ((v:ℂ)+t*I)‖≤D*cauchy t :=
+  have hmc  :=
     CubicReflectionKernel.weighted_two_to_cauchy
       (mul_nonneg (pow_nonneg (height_pos t).le N) (norm_nonneg _)) t hm'
   rw [continuedPhysicalRowKernel_w_factor,norm_mul,norm_mul,norm_mul]
@@ -61,7 +61,7 @@ theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
         ‖mellin W1 ((v:ℂ)+t*I)‖)*(C*height t^N) := by
       apply mul_le_mul _ (hpoly v hv t) (norm_nonneg _) (by positivity)
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hYbd (norm_nonneg _)) (norm_nonneg _)
-    _ = A*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖) := by dsimp [A]; ring
+    _ = A*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖) := by ring
     _ ≤ A*(D*cauchy t) := mul_le_mul_of_nonneg_left hmc (by dsimp [A]; positivity)
     _ = _ := by ring
 

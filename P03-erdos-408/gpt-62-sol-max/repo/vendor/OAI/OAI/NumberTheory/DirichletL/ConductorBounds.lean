@@ -64,9 +64,7 @@ theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
     apply (factorsThroughIdeal_iff χ K).mpr
     intro u hu
     have huJ : ((quotientUnits I u : (R ⧸ I)ˣ) : R ⧸ I) - 1 ∈ J := by
-      change Ideal.Quotient.mk I ((u : R) - 1) ∈ J at hu
-      change Ideal.Quotient.mk I (u : R) - 1 ∈ J
-      simpa only [map_sub, map_one] using hu
+      assumption
     have heq := congrArg (fun f : Rˣ →* ℂˣ => ((f u : ℂˣ) : ℂ)) hφ
     exact heq.symm.trans ((factorsThroughIdeal_iff φ J).mp hdesc _ huJ)
   have hIK : I ≤ K := by
@@ -74,7 +72,7 @@ theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
     change Ideal.Quotient.mk I x ∈ J
     rw [Ideal.Quotient.eq_zero_iff_mem.mpr hx]
     exact J.zero_mem
-  have hKI : K ≤ I := hI.2 hK hIK
+  have hKI  := hI.2 hK hIK
   apply hJ
   apply le_antisymm _ bot_le
   intro x hx

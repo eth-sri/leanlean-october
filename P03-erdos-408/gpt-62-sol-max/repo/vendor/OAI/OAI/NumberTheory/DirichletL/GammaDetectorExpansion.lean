@@ -9,7 +9,7 @@ public import Mathlib.Analysis.MellinInversion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open MeasureTheory Set Filter Complex
 namespace SevenEighths.GammaDetectorExpansion
 open GammaZeroDetector HeckeFamily
@@ -37,7 +37,7 @@ theorem gamma_line_integrable : Integrable (fun t : ℝ => Gamma (line t)) := by
 theorem gamma_mellin_inverse {x : ℝ} (hx : 0 < x) :
     ((2*Real.pi : ℝ) : ℂ)⁻¹ *
       (∫ t : ℝ, (x : ℂ)^(-line t)*Gamma (line t)) = Complex.exp (-(x : ℂ)) := by
-  let f : ℝ → ℂ := fun x => (Real.exp (-x) : ℂ)
+  let f  := fun x => (Real.exp (-x) : ℂ)
   have hm (s : ℂ) (hs : 0 < s.re) : mellin f s = Gamma s := by
     rw [Gamma_eq_integral hs, GammaIntegral_eq_mellin]
   have hf : MellinConvergent f (2 : ℂ) := by
@@ -47,7 +47,7 @@ theorem gamma_mellin_inverse {x : ℝ} (hx : 0 < x) :
   have hv : VerticalIntegrable (mellin f) 2 := by
     change Integrable (fun t : ℝ => mellin f (line t))
     simpa only [hline] using gamma_line_integrable
-  have hi := mellinInv_mellin_eq 2 f hx hf hv (by unfold f; fun_prop)
+  have hi := mellinInv_mellin_eq 2 f hx hf hv (by fun_prop)
   change (1/(2*Real.pi)) • (∫ t : ℝ, (x : ℂ)^(-line t) • mellin f (line t)) = f x at hi
   simp_rw [hline] at hi
   simp only [smul_eq_mul, f, ofReal_exp, ofReal_neg] at hi
@@ -213,10 +213,9 @@ theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD :
   intro p
   by_cases hp : pairNorm p = 0
   · simp [pairCoefficient_zero_norm χ V D p hp]
-  · have hn : 0 < pairNorm p := lt_of_le_of_ne (by unfold pairNorm; positivity) (Ne.symm hp)
+  · have hn  := lt_of_le_of_ne (by unfold pairNorm; positivity) (Ne.symm hp)
     rw [norm_mul, norm_cpow_eq_rpow_re_of_pos hn]
-    simp only [neg_re, add_re]
-    norm_num
+    rfl
 
 theorem pairGamma_tsum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
     (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re)

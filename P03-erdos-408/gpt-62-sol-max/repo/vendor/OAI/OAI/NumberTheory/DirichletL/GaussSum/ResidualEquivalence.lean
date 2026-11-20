@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.RowCompletion.ControlledPrimeStrata
 public import OAI.NumberTheory.DirichletL.RowCompletion.FreePrimePools
 
@@ -10,94 +11,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical ContDiff
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
-variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι]
 
 end CompletedGauss
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι] {p:ι→Eis} {N:Eis}
 
 end FixedFourierGeometry
 end CubicEisenstein
 
-open scoped BigOperators Classical MatrixGroups
 
 namespace CubicEisenstein
 
@@ -109,8 +38,8 @@ noncomputable local instance primeQuotientFintype (P:Ideal Eis) [P.IsMaximal] : 
   Fintype.ofFinite _
 
 def primeInactiveFourierWeight {ι:Type*} [Fintype ι]
-    (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (A:Finset ι) : ℂ :=
+    (p:ι→Eis) [OAI.PrincipalFamily.Maximal p]
+    (hp:∀i,p i≠0) (hg:OAI.PrincipalFamily.Avoids p lambda) (j:ι→ℕ) (A:Finset ι) : ℂ :=
   ∏i∈(Finset.univ:Finset ι)\A,
     finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i))
       (fun x=>(actualSextic (Ideal.span {p i}) (hg i)^j i) x) 0
@@ -132,15 +61,13 @@ open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJaco
 open CanonicalRowCompletion
 local notation "Eis" => ActualEisensteinCubic.O
 
-noncomputable local instance fixedActiveQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
-  Fintype.ofFinite _
 
 abbrev FixedActiveCuspIndex {ι:Type*} (c:Eis) (p:ι→Eis) :=
   Σ_h:Eis⧸Ideal.span {c},ΣA:Finset ι,∀i:A,(Eis⧸Ideal.span {p i.val})ˣ
 
-variable {ι:Type*} [Fintype ι] (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
+variable {ι:Type*} [Fintype ι] (p:ι→Eis) [OAI.PrincipalFamily.Maximal p]
 variable (hp:∀i,p i≠0) (hprimary:∀i,lambda^2∣p i-1)
-variable (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ)
+variable (hg:OAI.PrincipalFamily.Avoids p lambda) (j:ι→ℕ)
 variable (c:Eis) (hc:c≠0) [Fintype (Eis⧸Ideal.span {c})]
 variable (G:∀h:Eis⧸Ideal.span {c},FixedFourierGeometry c h) (N:Eis)
 variable (hN:∀h,(9:Eis)*(G h).c0∣N)
@@ -153,7 +80,6 @@ def fixedActiveCuspDatum (t:FixedActiveCuspIndex c p) : SourceCuspDatum :=
 
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
 
 namespace CanonicalRowCompletion
 
@@ -166,7 +92,7 @@ def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
     (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
     (G:∀h:Eis⧸Ideal.span {c},FixedFourierGeometry c h)
     (φ:Eis→*ℂ) (W:ℝ→ℂ) (X:ℝ) : ℂ := by
-  letI : ∀P:FreePrimeIndex I Q,(Ideal.span {freePrimaryPrime I Q P}:Ideal Eis).IsMaximal:=
+  letI :=
     freePrimaryPrime_maximal I Q hI
   exact thetaDerivativeScalar⁻¹*
     ∑h:Eis⧸Ideal.span {c},fixedThetaRowCoeff c hc φ h*
@@ -310,7 +236,6 @@ lemma primeFiberEquiv_exponent
     D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported
     D.numeratorFactor hbad hcop hA hT P
 
-local notation "splitIndex" => D.primeFiberEquiv R I F Q0 hR hI hF hm hf hz hbad hcop hA hT
 
 end GoodMaskRowData
 

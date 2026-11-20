@@ -2,6 +2,7 @@ module
 
 public import OAI.NumberTheory.DirichletL.Detector.InitialProduct
 public import OAI.NumberTheory.DirichletL.Detector.RawMellinTerm
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -37,20 +38,17 @@ def originalRawOnLines (η : HeckeFamily.Character) (S : Finset (Ideal O))
 theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
     (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
-    (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Set.Icc a0 b0)
-    (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (D : Ideal O) (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    Integrable (fun p : SourceRawIndex S×HeightSpace=>originalRawOnLines η S hS D W0 W1 X Y Z p.1 p.2)
+    Integrable (fun p : SourceRawIndex S×HeightSpace=>originalRawOnLines η S hS D mw.left mw.right X Y Z p.1 p.2)
       ((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure) := by
   let mask := fun H : NonzeroFrequency=>star ((calibrationForSet S hS).residueMonoid H.val)
   have hm (H : NonzeroFrequency) : ‖mask H‖≤1 := by
     simpa only [mask,norm_star] using (calibrationForSet S hS).residueMonoid_norm_le_one H.val
-  let T := fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z
+  let T := fun p : HeightSpace=>sourceMellinWeight mw.left mw.right X Y Z
     ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
-  have hT : Integrable T heightMeasure := sourceMellinWeight_initial_integrable W0 W1 a0 b0 a1 b1
-    ha0 ha1 hW0 hW1 X Y Z hX hY hZ 3 2 3 (by norm_num)
-  have hcT : Continuous T := sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1
+  have hT : Integrable T heightMeasure := sourceMellinWeight_initial_integrable mw X Y Z hX hY hZ 3 2 3 (by norm_num)
+  have hcT : Continuous T := sourceMellinWeight_initial_continuous mw.left mw.right mw.rightLo mw.rightHi mw.right_pos mw.right_support
     X Y Z hX hY hZ 3 2 3 (by norm_num)
   have hi := initialHigh_counting_product_integrable (sourceRawEmbedding S) (sourceRawEmbedding_injective S)
     S D η mask hm 3 3 2 (by norm_num) (by norm_num) (by norm_num) T hT hcT
@@ -62,7 +60,7 @@ theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
   intro p
   dsimp only [Function.comp_def,Prod.map]
   rw [originalRawOnLines,rawPhysicalMellinTerm_eq_source η S hS hpS hbad D _ _ _ p.1.property.1
-    p.1.property.2 W0 W1 X Y Z hX p.1.val.1]
+    p.1.property.2 mw.left mw.right X Y Z hX p.1.val.1]
   have he : (4:ℂ)+p.2.1.1*Complex.I+1-((2:ℂ)+p.2.1.2*Complex.I)=
       3+((p.2.1.1-p.2.1.2:ℝ):ℂ)*Complex.I := by push_cast;ring
   have hsh : sourceHeightShear.symm p.2=((p.2.1.1-p.2.1.2,p.2.1.2),p.2.2) := rfl

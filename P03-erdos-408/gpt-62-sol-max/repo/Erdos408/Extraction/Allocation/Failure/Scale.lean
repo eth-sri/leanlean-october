@@ -34,7 +34,7 @@ lemma sum_local_le {g : Finset ℕ} (hg : SideGroup g) {X : ℕ} (hgX : ∀ p �
         (1 - β * (if primeCount g m = 1 then 1 else 0)) * (1 / (m : ℝ)) ≤
       (1 - β / 15) * ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹ := by
   set Dg := (Icc 1 X).filter (· ∈ Nat.factoredNumbers g)
-  have hgf : g.filter Nat.Prime = g := filter_true_of_mem hg.prime
+  have hgf  := filter_true_of_mem hg.prime
   set Eg := ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹
   have hsum : ∑ m ∈ Dg, (1 : ℝ) / m ≤ Eg := by
     have := sum_inv_le_prod_of_factored g Dg fun n hn => (mem_filter.1 hn).2
@@ -55,7 +55,7 @@ lemma sum_local_le {g : Finset ℕ} (hg : SideGroup g) {X : ℕ} (hgX : ∀ p �
     have : ∑ m ∈ Dg, (if primeCount g m = 1 then 1 else 0) * (1 / (m : ℝ)) =
         ∑ m ∈ Dg.filter (fun m => primeCount g m = 1), (1 : ℝ) / m := by
       rw [Finset.sum_filter (fun m => primeCount g m = 1) (fun m => (1 : ℝ) / m)]
-      exact sum_congr rfl fun m _ => by split_ifs <;> simp
+      exact sum_congr rfl fun m _ => by simp
     rw [this]
     exact sum_le_sum_of_subset_of_nonneg hgD fun m _ _ => by positivity
   -- `V_g ≥ E_g / 15`
@@ -107,10 +107,6 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
     filter_true_of_mem fun p hp => prime_of_mem_candidatePrimes hp
   have hPP : ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ = ∏ g ∈ 𝒞, ∏ p ∈ g, (1 - (1 : ℝ) / p)⁻¹ :=
     prod_biUnion hdisj
-  have hEP0 : 0 ≤ ∏ p ∈ P, (1 - (1 : ℝ) / p)⁻¹ := prod_nonneg fun p hp => by
-    have : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
-    have : (1 : ℝ) / p ≤ 1 / 2 := one_div_le_one_div_of_le (by norm_num) this
-    exact inv_nonneg.2 (by linarith)
   have hD : ∀ d ∈ D, d ≠ 0 ∧ ∀ p ∈ d.primeFactors, p ∈ 𝒞.biUnion id := by
     intro d hd
     obtain ⟨hd, hdP⟩ := mem_filter.1 hd
@@ -129,7 +125,7 @@ theorem sum_loneFactor_div_le {x : ℝ} (hx : 1 ≤ Real.log x)
     rw [hprod, loneFactor, div_eq_mul_one_div]
     congr 1
     refine prod_congr rfl fun g hgF => ?_
-    have hgpr : ∀ p ∈ g, p.Prime := (hg g (hF hgF)).prime
+    have hgpr  := (hg g (hF hgF)).prime
     rw [primeCount_keepPrimes hgpr hd0]
   set Dg : Finset ℕ → Finset ℕ := fun g => (Icc 1 X).filter (· ∈ Nat.factoredNumbers g)
   have hDg : ∀ d ∈ D, ∀ g ∈ 𝒞, keepPrimes g d ∈ Dg g := by
@@ -222,7 +218,6 @@ lemma card_tuples_le (X A m : ℕ) :
         rw [prod_div_distrib, prod_const_one]
         field_simp
     _ ≤ (X : ℝ) / (A + 1) * (1 + Real.log X) ^ (m + 1) := by
-        have h0 : 0 ≤ ∑ n ∈ Icc 1 X, (1 : ℝ) / n := sum_nonneg fun n _ => by positivity
         rw [pow_succ']
         gcongr
 
@@ -263,20 +258,17 @@ lemma term_le_of {Bc inner S0 W N Cnt Pi ε Φ δ wA Xr Bn : ℝ} (hBc0 : 0 ≤ 
     (hW : 0 ≤ W) (hN : 0 ≤ N) (hCnt : 0 ≤ Cnt) (hPi : 0 ≤ Pi) (hε : 0 ≤ ε) :
     Bc * inner ≤ Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ)) + W * N * (2 + 4 * Cnt) := by
   have hΦδ : 0 ≤ Φ + δ := by linarith
-  have h1 : S0 * (Φ + δ) ≤ W * (Bn * (Pi + 2 * ε) + N) * (Φ + δ) :=
+  have h1  :=
     mul_le_mul_of_nonneg_right hS0 hΦδ
   have h2 : W * (Bn * (Pi + 2 * ε)) ≤ W * (Xr * (Pi + 2 * ε)) :=
     mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hBn (by linarith)) hW
-  have h3 : W * (Bn * (Pi + 2 * ε)) * (Φ + δ) ≤ W * (Xr * (Pi + 2 * ε)) * (Φ + δ) :=
+  have h3  :=
     mul_le_mul_of_nonneg_right h2 hΦδ
   have h4 : W * N * (Φ + δ) ≤ W * N * 2 :=
     mul_le_mul_of_nonneg_left (by linarith) (mul_nonneg hW hN)
   have h5 : 4 * N * wA * Cnt ≤ 4 * N * W * Cnt :=
     mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hwA (by linarith)) hCnt
   have hin : inner ≤ W * Xr * (Pi + 2 * ε) * (Φ + δ) + W * N * (2 + 4 * Cnt) := by
-    have : W * (Bn * (Pi + 2 * ε) + N) * (Φ + δ) =
-        W * (Bn * (Pi + 2 * ε)) * (Φ + δ) + W * N * (Φ + δ) := by ring
-    have : W * (Xr * (Pi + 2 * ε)) * (Φ + δ) = W * Xr * (Pi + 2 * ε) * (Φ + δ) := by ring
     linarith
   have hE0 : 0 ≤ W * N * (2 + 4 * Cnt) := by positivity
   calc Bc * inner ≤ Bc * (W * Xr * (Pi + 2 * ε) * (Φ + δ) + W * N * (2 + 4 * Cnt)) :=
@@ -328,8 +320,12 @@ structure WeightFacts (x γ : ℝ) (j X : ℕ) (W K : ℝ) : Prop where
   le : ∀ e, ⌊x ^ γ⌋₊ < e → roughWeight x j e ≤ W
   ratio : ∀ e, ⌊x ^ γ⌋₊ < e → e ≤ X → roughWeight x j (⌊x ^ γ⌋₊ + 1) ≤ K * roughWeight x j e
 
+section
+
+variable {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)}
+
 /-- The bound for one `(d, e)`. -/
-lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)}
+lemma free_term_le
     (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) (hF : ∀ g ∈ F, SideGroup g)
     (hFS : ∀ g ∈ F, g ⊆ primesIcc 2 (proxyCutoff x))
     (hdisj : (F : Set (Finset ℕ)).PairwiseDisjoint id) (hγ : 1 ≤ x ^ γ)
@@ -378,11 +374,10 @@ lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset 
         (2 + 4 * ∏ g ∈ F, ((lowSubsets g).card : ℝ)) else 0) := by
     split_ifs
     · exact mul_nonneg (mul_nonneg hW (Nat.cast_nonneg _)) (by linarith)
-    · exact le_rfl
+    rfl
   have hlone := loneFactor_mem hc₁ hc₁' F d
   have hrd0 : (0 : ℝ) < (∏ i, (e i : ℝ)) * d := by
     have : (1 : ℝ) ≤ ∏ i, (e i : ℝ) := by exact_mod_cast hr1
-    have : (1 : ℝ) ≤ d := by exact_mod_cast hd
     positivity
   have hmain0 : 0 ≤ (∏ i, coreFactor x γ (j' + 1) (e i)) / ((∏ i, (e i : ℝ)) * d) *
       (X * W * (∏ p ∈ S, (1 - (1 : ℝ) / p) +
@@ -400,7 +395,7 @@ lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset 
   · rw [Ioc_eq_empty (by omega), sum_empty, mul_zero]
     linarith
   have hrdpos : 0 < (∏ i, e i) * d := Nat.mul_pos (by omega) (by omega)
-  have hAX : (⌊x ^ γ⌋₊ + 1) * ((∏ i, e i) * d) ≤ X :=
+  have hAX  :=
     (Nat.le_div_iff_mul_le hrdpos).1 (show ⌊x ^ γ⌋₊ + 1 ≤ X / ((∏ i, e i) * d) by omega)
   rw [ite_eq_left hAX]
   have hBX : X / ((∏ i, e i) * d) ≤ X := Nat.div_le_self _ _
@@ -420,7 +415,7 @@ lemma free_term_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset 
 
 /-- The free-factor sum: a main term `X W (Π + 2ε) ∑_d (Φ_F(d) + δ)/d (∑_a b(a)/a)^{j-1}` and a
 rounding term `W N (2 + 4 ∏_g #K_g) X/(A + 1) (1 + log X)^j`. -/
-theorem freeFactorSum_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)}
+theorem freeFactorSum_le
     (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) (hF : ∀ g ∈ F, SideGroup g)
     (hFS : ∀ g ∈ F, g ⊆ primesIcc 2 (proxyCutoff x))
     (hdisj : (F : Set (Finset ℕ)).PairwiseDisjoint id) (hγ : 1 ≤ x ^ γ)
@@ -454,6 +449,8 @@ theorem freeFactorSum_le {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (F
       have : 0 ≤ ∏ g ∈ F, ((lowSubsets g).card : ℝ) := prod_nonneg fun _ _ => by positivity
       exact mul_nonneg (mul_nonneg hW (Nat.cast_nonneg _)) (by linarith)
     exact sum_sum_ite_le X _ j' (filter_subset _ _) hc
+
+end
 
 end
 

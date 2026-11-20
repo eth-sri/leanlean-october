@@ -14,10 +14,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroRetainedError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalPrimitive CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyZeroReflectionSupport CenteredMomentOriginalRadialComparison
-open CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalPrimitive
+open CenteredMomentUniformReflectionApproximation CenteredMomentEnergyZeroReflectionSupport
+open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
 open CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
@@ -47,8 +46,8 @@ theorem finite_original_error (xi saving Cscale epsilon : ℝ)
   refine ⟨ψ,hψ,?_⟩
   intro G P Z M along Src Rcap hZ₀ hfar hSrc hR hGS hmod hcap
   have hZ:=hZ₁ Z ((le_max_right _ _).trans hZ₀)
-  have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hzero(i:ι):retainedSchwartz (χ i) (ψ i) (G i) (Z^along) (Z^(xi/4))=0:=
+  have hz:=zero_lt_one.trans hZ.1
+  have hzero(i:ι):=
     (hZ.2 (χ i) (ψ i) M along (hψ i).2.2 (hmod i) hfar).2.2.2 (G i)
   have hsource(i:ι):((χ i).modulus.absNorm:ℝ)≤Cscale*Z^(0:ℝ)*Z^along:=by
     simp only [Real.rpow_zero,mul_one]
@@ -82,14 +81,14 @@ theorem radial_original_error (xi saving Cscale epsilon : ℝ)
   refine ⟨H,C,Z₀,hC,hZ₀,?_⟩
   intro G χ P omega keep Φ K Pbound Wshort c d Z M along Xshort Src Rcap
     hZ hK hΦ hP hχ hd hshort hXshort hfar hSrc hR hGS hmod hcap
-  have hz:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
+  have hz:=zero_lt_one.trans (hZ₀.trans_le hZ)
   have hshortsum:=single_radial_summable χ P omega Wshort c d Xshort Pbound hd hXshort
     hshort hP keep Φ K hK
   unfold radialEnergy
   apply Real.tsum_le_of_sum_le (fun z=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)
   intro rows
   let S:=rows.filter keep
-  have hmem(z:↥S):keep (z:O):=(Finset.mem_filter.mp z.property).2
+  have hmem(z:↥S):=(Finset.mem_filter.mp z.property).2
   obtain ⟨ψ,hψ,hf⟩:=hfinite (fun z:↥S=>χ z) (fun z=>hχ z (hmem z))
   let Q(z:↥S):ℂ:=
     (polynomial (χ z) false Wshort Xshort 0 (omega z)*P z)*
@@ -128,14 +127,14 @@ theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
   have hS:(0,0)∈S:=by simp [S]
   refine ⟨n,S,C*Ct^2,by positivity,?_⟩
   filter_upwards [eventually_ge_atTop Z₀] with Z hZ
-  have hz:1<Z:=hZ₀.trans_le hZ
+  have hz:=hZ₀.trans_le hZ
   refine ⟨hz,?_⟩
   intro Bmask state Wlong Wshort hsLong hsShort t omega along Xshort hXshort hfar
   by_cases hzero:sourceControl S Wlong=0
   · have hw:=sourceControl_zero S hS Wlong hzero
     subst Wlong
     simp [polynomial,summand,radialEnergy]
-  have hpos:0<sourceControl S Wlong:=lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero)
+  have hpos:=lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero)
   let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
   let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
   have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
@@ -155,8 +154,6 @@ theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
   have hG:(G:ℝ→ℂ)=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t:=rfl
   simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t,mul_one] at hh
   apply hh.trans_eq
-  dsimp only [Src]
-  rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
@@ -167,7 +164,7 @@ theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
         QuadraticInitialBound.diagonalControl Φ*max 1 K*X:=by
   let A:=((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W)
   let V:=(128*max 1 b*A)^2*X
-  have hV:0≤V:=by dsimp [V];positivity
+  have hV:0≤V:=by positivity
   have hp(z:O):‖polynomial (χ z) false W X 0 (omega z)‖^2≤V:=by
     have hh:=pow_le_pow_left₀ (norm_nonneg _)
       (CenteredMomentOriginalReflectionErrorMass.plain_polynomial_bound (χ z) W b A X (omega z)
@@ -188,7 +185,6 @@ theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
     · exact mul_nonneg (norm_nonneg _) hV
   apply (hh.trans (mul_le_mul_of_nonneg_right
     (CenteredMomentAbsoluteEnergy.radial_weight_lattice_bound_all Φ K hK) hV)).trans_eq
-  dsimp [V,A]
   ring
 
 theorem natural_original_error_mass (a b bΦ epsilon xi saving:ℝ)

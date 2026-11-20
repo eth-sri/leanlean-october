@@ -22,7 +22,7 @@ lemma weight_bounds (x:ℝ):0≤weight x ∧ weight x≤1:=by
   constructor
   · exact mul_nonneg h₁.1 (sub_nonneg.mpr h₂.2)
   · exact (mul_le_mul_of_nonneg_left (sub_le_self _ h₂.1) h₁.1).trans
-      (by simpa only [mul_one] using h₁.2)
+      (by simp_all)
 
 lemma weight_zero_low (x:ℝ)(hx:x≤1/8):weight x=0:=by
   rw [weight,cutoff_one (4*x) (by linarith),sub_self,mul_zero]
@@ -51,10 +51,7 @@ def profile:𝓢(ℝ,ℂ):=
       intro x hx
       apply weight_support
       intro hz
-      apply hx
-      change (weight x:ℂ)=0
-      rw [hz]
-      rfl)).toSchwartzMap
+      simp_all)).toSchwartzMap
     (Complex.ofRealCLM.contDiff.comp weight_smooth)
 
 lemma profile_apply (x:ℝ):profile x=(weight x:ℂ):=rfl
@@ -83,8 +80,7 @@ lemma bands_card (H:ℝ)(hH:0<H):((bands H).card:ℝ)≤7:=by
   have he:(2*H)/(H/8)=16:=by field_simp;ring
   rw [he,show (16:ℝ)=(2:ℝ)^4 by norm_num,Real.logb_pow] at h
   norm_num [Real.logb_self_eq_one] at h
-  change ((indices (H/8) (2*H)).card:ℝ)≤7
-  exact_mod_cast h
+  norm_cast
 
 lemma weighted_partition (H q:ℝ)(hH:0<H):
     (profile (q/H)).re=(∑j∈bands H,dyadicWeight j q)*(profile (q/H)).re:=by
@@ -94,7 +90,7 @@ lemma weighted_partition (H q:ℝ)(hH:0<H):
     have hq:q∈Set.Icc (H/8) (2*H):=⟨by linarith [(le_div_iff₀ hH).mp hx.1],
       (div_le_iff₀ hH).mp hx.2⟩
     rw [bands,dyadic_partition_on_interval (H/8) (2*H) q (by positivity) hq]
-    exact (one_mul _).symm
+    simp
 
 end SevenEighths.CenteredMomentFirstAnnularMajorant
 

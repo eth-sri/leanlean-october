@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationAllocation
 public import OAI.NumberTheory.DirichletL.Moments.LiveDomain
 
@@ -8,13 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveDomain
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSource
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
+open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation
+open CenteredMomentSourceRow CenteredMomentLiveDomain
 local notation "O" => ActualEisensteinCubic.O
 
  theorem primeRoot_ne_zero (p : O) (hp : p ≠ 0) (k : ℕ) : primeRoot p k ≠ 0 := by
@@ -22,8 +23,7 @@ local notation "O" => ActualEisensteinCubic.O
   apply Complex.ofReal_ne_zero.mpr
   apply Real.sqrt_ne_zero'.mpr
   apply pow_pos
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hp))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp)
 
 theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i}))

@@ -46,7 +46,7 @@ theorem independent_event_pairing {α β : Type} [Fintype α] [Fintype β]
         weightedFrameNorm w g * weightedFrameNorm v f := by
   let W := fun p : α × β => w p.1 * v p.2
   let F := fun p : α × β => star (f p.2) * g p.1 * R p.1 p.2
-  have hW (p : α × β) : 0 ≤ W p := mul_nonneg (hw p.1) (hv p.2)
+  have hW (p : α × β)  := mul_nonneg (hw p.1) (hv p.2)
   have hmass : (∑ p : α × β, if EA p.1 ∨ EB p.2 then W p else 0) ≤
       (∑ x, if EA x then w x else 0) + (∑ y, if EB y then v y else 0) := by
     rw [Fintype.sum_prod_type]
@@ -84,7 +84,7 @@ theorem independent_event_pairing {α β : Type} [Fintype α] [Fintype β]
       ∑ p : α × β, if EA p.1 ∨ EB p.2 then W p else 0 := by
     apply Finset.sum_congr rfl
     intro p _
-    by_cases hp : EA p.1 ∨ EB p.2 <;> simp [hp]
+    simp
   rw [hmask] at ht
   have hnorm : weightedFrameNorm W F ≤ weightedFrameNorm w g * weightedFrameNorm v f := by
     unfold weightedFrameNorm

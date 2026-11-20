@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstTailAggregate
 open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve

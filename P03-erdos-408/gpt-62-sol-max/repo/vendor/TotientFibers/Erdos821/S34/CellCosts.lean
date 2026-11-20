@@ -21,7 +21,7 @@ theorem kernel_log_localization (G : PrimeGroups) (k : Fin G.size → ℕ)
     unfold cellKernel at hne
     split_ifs at hne with hc
     · exact hc.1
-    · exact False.elim (hne rfl)
+    simp_all
   have hDlo := Int.floor_le (Real.log D / h)
   have hDhi := Int.lt_floor_add_one (Real.log D / h)
   have hXlo := Int.floor_le (Real.log X / h)
@@ -40,10 +40,10 @@ theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
     (∑ D : Tuple G k, tupleWeight G k D * ‖cellKernel G k Q h ξ (product G k D) X‖) ≤
       (Q : ℝ) ^ 2 := by
   let ν := cellMass G k h (cell h X)
-  have hw (D : Tuple G k) : 0 ≤ tupleWeight G k D :=
+  have hw (D : Tuple G k)  :=
     Erdos821.S34.Proofs.tupleWeight_nonneg (coreGroups G) k D
   by_cases hret : ξ ≤ ν
-  · have hν : 0 < ν := hξ.trans_le hret
+  · have hν  := hξ.trans_le hret
     have hpoint (D : Tuple G k) :
         ‖cellKernel G k Q h ξ (product G k D) X‖ ≤
           if cell h (product G k D) = cell h X then (Q : ℝ) ^ 2 / ν else 0 := by

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicAssemblyRetained
 
 @[expose] public section
@@ -12,10 +13,9 @@ open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes
+open InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile
+open InverseInitialClippedColumns CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 def windowMass {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ) : ℝ :=
   ∑k∈F,∏i:Fin 4,dyadicWeight (k i).val (q i)
@@ -55,9 +55,9 @@ theorem windowMass_ne_zero_exists {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fi
   exact Finset.exists_ne_zero_of_sum_ne_zero hc
 
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
-  (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem windowBlock_eq_full
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
@@ -109,7 +109,7 @@ theorem tail_mass_live_bounds (a b:Fin 4→ℝ)(Z D m L:ℝ)(hZ:1<Z)
   obtain ⟨k,hk,hne⟩:=windowMass_ne_zero_exists _ _ hn
   refine ⟨k,hk,(Finset.mem_filter.mp hk).2,?_⟩
   intro i
-  have hi:(dyadicWeight (k i).val (sourceNorms p x i):ℂ)≠0 :=
+  have hi :=
     Finset.prod_ne_zero_iff.mp hne i (Finset.mem_univ i)
   have hr:dyadicWeight (k i).val (sourceNorms p x i)≠0 := by exact_mod_cast hi
   rw [exponent_scale Z hZ]
@@ -144,7 +144,7 @@ theorem exists_source_frequency_cap (S:Finset (Source (ι:=ι) 0)) :
   have hs:0≤∑x∈S,sourceNorms p x 3:=Finset.sum_nonneg (fun x hx=>hn x)
   refine ⟨1+∑x∈S,sourceNorms p x 3,by linarith,?_⟩
   intro x hx
-  have he:sourceNorms p x 3≤∑y∈S,sourceNorms p y 3 :=
+  have he :=
     Finset.single_le_sum (fun y hy=>hn y) hx
   linarith
 

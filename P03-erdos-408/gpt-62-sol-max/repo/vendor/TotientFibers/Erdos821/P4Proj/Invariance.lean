@@ -9,7 +9,7 @@ public import Erdos821.P4Count.ProbeCounting
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Proj
@@ -63,7 +63,6 @@ lemma symmetric_pushforward_invariant
     f (flattenRows.symm y)
   have hx : flattenRows.symm (rowPush (s := s) (M := M) (α := α) π y) =
       fun g i => (flattenRows.symm y) g ((π g).symm i) := by
-    funext g i
     rfl
   rw [hx]
   exact hsym (fun g => (π g).symm) _
@@ -73,17 +72,7 @@ lemma mem_map_rowPerm (π : Fin s → Equiv.Perm (Fin M))
     (S : Finset (RowSite s M)) (z : RowSite s M) :
     z ∈ S.map (rowPermutation s M π).toEmbedding ↔
       (rowPermutation s M π).symm z ∈ S := by
-  constructor
-  · intro h
-    rcases Finset.mem_map.mp h with ⟨a, ha, heq⟩
-    have hba : a = (rowPermutation s M π).symm z := by
-      rw [← heq]
-      exact (Equiv.symm_apply_apply _ _).symm
-    rw [hba] at ha
-    exact ha
-  · intro h
-    exact Finset.mem_map.mpr
-      ⟨_, h, Equiv.apply_symm_apply _ _⟩
+  simp
 
 omit [(g : Fin s) → Fintype (α g)] in
 /-- Mixing commutes with row-permutation pushforward over mapped sets. -/
@@ -95,37 +84,32 @@ lemma mix_pushforward (π : Fin s → Equiv.Perm (Fin M))
         (rowPush (s := s) (M := M) (α := α) π y) =
       rowPush (s := s) (M := M) (α := α) π (mixCoords S x y) := by
   funext ⟨g, i⟩
-  have hiff : ((g, i) ∈ S.map (rowPermutation s M π).toEmbedding) ↔
-      ((rowPermutation s M π).symm (g, i) ∈ S) :=
+  have hiff  :=
     mem_map_rowPerm π S (g, i)
   by_cases hz : (g, i) ∈ S.map (rowPermutation s M π).toEmbedding
-  · have hS : (rowPermutation s M π).symm (g, i) ∈ S := hiff.mp hz
+  · have hS  := hiff.mp hz
     have h1 : mixCoords (S.map (rowPermutation s M π).toEmbedding)
         (rowPush (s := s) (M := M) (α := α) π x)
         (rowPush (s := s) (M := M) (α := α) π y) (g, i) =
         (rowPush (s := s) (M := M) (α := α) π y) (g, i) := by
-      simp only [mixCoords]
       exact ite_eq_left hz
     have h2 : (mixCoords S x y) ((rowPermutation s M π).symm (g, i)) =
         y ((rowPermutation s M π).symm (g, i)) := by
-      simp only [mixCoords]
       exact ite_eq_left hS
     have h3 : (rowPush (s := s) (M := M) (α := α) π (mixCoords S x y)) (g, i) =
         (mixCoords S x y) ((rowPermutation s M π).symm (g, i)) := rfl
     have h4 : (rowPush (s := s) (M := M) (α := α) π y) (g, i) =
         y ((rowPermutation s M π).symm (g, i)) := rfl
     rw [h1, h3, h2, ← h4]
-  · have hS : (rowPermutation s M π).symm (g, i) ∉ S :=
+  · have hS  :=
       fun h => hz (hiff.mpr h)
     have h1 : mixCoords (S.map (rowPermutation s M π).toEmbedding)
         (rowPush (s := s) (M := M) (α := α) π x)
         (rowPush (s := s) (M := M) (α := α) π y) (g, i) =
         (rowPush (s := s) (M := M) (α := α) π x) (g, i) := by
-      simp only [mixCoords]
       exact ite_eq_right hz
     have h2 : (mixCoords S x y) ((rowPermutation s M π).symm (g, i)) =
         x ((rowPermutation s M π).symm (g, i)) := by
-      simp only [mixCoords]
       exact ite_eq_right hS
     have h3 : (rowPush (s := s) (M := M) (α := α) π (mixCoords S x y)) (g, i) =
         (mixCoords S x y) ((rowPermutation s M π).symm (g, i)) := rfl
@@ -156,49 +140,24 @@ lemma avg_pullback (w : ∀ g, α g → ℝ)
         (rowPush (s := s) (M := M) (α := α) π y'))
   rw [flatWeight_pushforward, mix_pushforward]
 
+section
+
+variable (π : Fin s → Equiv.Perm (Fin M))
+  (S : Finset (RowSite s M))
+
 /-- Mapping by `σ.symm` then `σ` is the identity on finsets. -/
-lemma map_symm_map (π : Fin s → Equiv.Perm (Fin M))
-    (S : Finset (RowSite s M)) :
+lemma map_symm_map :
     (S.map (rowPermutation s M π).symm.toEmbedding).map
       (rowPermutation s M π).toEmbedding = S := by
-  ext a
-  constructor
-  · intro h
-    rcases Finset.mem_map.mp h with ⟨b, hb_mem, hb_eq⟩
-    rcases Finset.mem_map.mp hb_mem with ⟨c, hc, hc_eq⟩
-    have hb_eq' : (rowPermutation s M π) b = a := hb_eq
-    have hc_eq' : (rowPermutation s M π).symm c = b := hc_eq
-    rw [← hc_eq'] at hb_eq'
-    have h0 : (rowPermutation s M π)
-        ((rowPermutation s M π).symm c) = c :=
-      Equiv.apply_symm_apply _ _
-    have hca : c = a := h0.symm.trans hb_eq'
-    rwa [hca] at hc
-  · intro ha
-    exact Finset.mem_map.mpr ⟨(rowPermutation s M π).symm a,
-      Finset.mem_map.mpr ⟨a, ha, rfl⟩, Equiv.apply_symm_apply _ _⟩
+  aesop
 
 /-- Mapping by `σ` then `σ.symm` is the identity on finsets. -/
-lemma map_map_symm (π : Fin s → Equiv.Perm (Fin M))
-    (S : Finset (RowSite s M)) :
+lemma map_map_symm :
     (S.map (rowPermutation s M π).toEmbedding).map
       (rowPermutation s M π).symm.toEmbedding = S := by
-  ext a
-  constructor
-  · intro h
-    rcases Finset.mem_map.mp h with ⟨b, hb_mem, hb_eq⟩
-    rcases Finset.mem_map.mp hb_mem with ⟨c, hc, hc_eq⟩
-    have hb_eq' : (rowPermutation s M π).symm b = a := hb_eq
-    have hc_eq' : (rowPermutation s M π) c = b := hc_eq
-    rw [← hc_eq'] at hb_eq'
-    have h0 : (rowPermutation s M π).symm
-        ((rowPermutation s M π) c) = c :=
-      Equiv.symm_apply_apply _ _
-    have hca : c = a := h0.symm.trans hb_eq'
-    rwa [hca] at hc
-  · intro ha
-    exact Finset.mem_map.mpr ⟨(rowPermutation s M π) a,
-      Finset.mem_map.mpr ⟨a, ha, rfl⟩, Equiv.symm_apply_apply _ _⟩
+  aesop
+
+end
 
 /-- Full projection pulls back through row permutations. -/
 lemma full_pullback (w : ∀ g, α g → ℝ)
@@ -213,21 +172,8 @@ lemma full_pullback (w : ∀ g, α g → ℝ)
   symm
   refine Finset.sum_bij (fun V _ => V.map (rowPermutation s M π).toEmbedding)
     ?_ ?_ ?_ ?_
-  · intro V hV
-    simp only [Finset.mem_powerset] at hV ⊢
-    exact Finset.map_subset_map.mpr hV
-  · intro V₁ _ V₂ _ hEq
-    have hsub12 : V₁.map (rowPermutation s M π).toEmbedding ⊆
-        V₂.map (rowPermutation s M π).toEmbedding := by
-      rw [hEq]
-    have h12 : V₁ ⊆ V₂ :=
-      Finset.map_subset_map.mp hsub12
-    have hsub21 : V₂.map (rowPermutation s M π).toEmbedding ⊆
-        V₁.map (rowPermutation s M π).toEmbedding := by
-      rw [← hEq]
-    have h21 : V₂ ⊆ V₁ :=
-      Finset.map_subset_map.mp hsub21
-    exact Finset.Subset.antisymm h12 h21
+  · simp
+  · simp
   · intro U hU
     simp only [Finset.mem_powerset] at hU
     refine ⟨U.map (rowPermutation s M π).symm.toEmbedding, ?_, ?_⟩
@@ -260,8 +206,12 @@ lemma univ_sdiff_map (π : Fin s → Equiv.Perm (Fin M))
     simp
   exact h1.trans ((mem_map_rowPerm π S z).not.trans h2.symm)
 
+section
+
+variable (w : ∀ g, α g → ℝ)
+
 /-- ANOVA components pull back through row permutations. -/
-lemma anova_pullback (w : ∀ g, α g → ℝ)
+lemma anova_pullback
     (π : Fin s → Equiv.Perm (Fin M))
     (S : Finset (RowSite s M)) (G : ProductSample (FlatAlphabet α M) → ℂ)
     (x : ProductSample (FlatAlphabet α M)) :
@@ -271,8 +221,7 @@ lemma anova_pullback (w : ∀ g, α g → ℝ)
       productAnova (flatWeight w) Finset.univ S
         (fun z => G (rowPush (s := s) (M := M) (α := α) π z)) x := by
   unfold productAnova
-  have hcompl : (Finset.univ \ S.map (rowPermutation s M π).toEmbedding) =
-      (Finset.univ \ S).map (rowPermutation s M π).toEmbedding :=
+  have hcompl  :=
     univ_sdiff_map π S
   rw [hcompl]
   have hcomp : (fun z => productAverage (flatWeight w)
@@ -297,7 +246,7 @@ lemma anova_pullback (w : ∀ g, α g → ℝ)
         rw [hcomp]
 
 /-- Symmetric ANOVA energies are invariant under row permutations. -/
-lemma anova_energy_invariant (w : ∀ g, α g → ℝ)
+lemma anova_energy_invariant
     (f : ProbeSample α M → ℂ)
     (hsym : ∀ (π : Fin s → Equiv.Perm (Fin M)) x,
       f (fun g i => x g (π g i)) = f x)
@@ -309,7 +258,7 @@ lemma anova_energy_invariant (w : ∀ g, α g → ℝ)
       productSqNorm (flatWeight w)
         (productAnova (flatWeight w) Finset.univ S
           (fun y => f (flattenRows.symm y))) := by
-  let G : ProductSample (FlatAlphabet α M) → ℂ :=
+  let G  :=
     fun y => f (flattenRows.symm y)
   have hG : (fun z => G (rowPush (s := s) (M := M) (α := α) π z)) = G := by
     funext y
@@ -332,6 +281,8 @@ lemma anova_energy_invariant (w : ∀ g, α g → ℝ)
         (S.map (rowPermutation s M π).toEmbedding) G
         (rowPush (s := s) (M := M) (α := α) π y)‖ ^ 2
   rw [flatWeight_pushforward, hpoint]
+
+end
 
 end
 end Erdos821.P4Proj

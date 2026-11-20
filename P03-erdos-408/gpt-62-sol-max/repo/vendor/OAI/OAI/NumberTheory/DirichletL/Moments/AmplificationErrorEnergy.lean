@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceError
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorPool
 
@@ -60,7 +61,7 @@ theorem finite_original_error_energy (S : Finset (Ideal O)) (c : Ideal O → ℂ
   have ht : 0<T' := by
     apply div_pos hT
     apply pow_pos
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hs.1)
   have he : (∑ h∈rows,‖amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h‖^2)=

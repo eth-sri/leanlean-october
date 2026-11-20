@@ -9,7 +9,6 @@ namespace OAI
 
 noncomputable section
 open Filter
-open scoped Topology
 namespace SevenEighths.HeckePrimeAmplitudeBins
 
 theorem upper_allowance_eventually (C dmin rmin ε mesh : ℝ)
@@ -23,7 +22,7 @@ theorem upper_allowance_eventually (C dmin rmin ε mesh : ℝ)
   have hZp : 0<Z := by linarith
   have hU : 0<Z^d := Real.rpow_pos_of_pos hZp _
   have hgr : rmin*mesh-ε≤r*mesh-ε := by nlinarith
-  have hexp : dmin*(rmin*mesh-ε)≤d*(r*mesh-ε) :=
+  have hexp  :=
     mul_le_mul hd' hgr (by linarith) (hd.trans_le hd').le
   have hc : C≤(Z^d)^(r*mesh-ε) := by
     apply hC.trans
@@ -50,8 +49,8 @@ theorem actual_bins_eventually (C dmin rmin ε mesh : ℝ)
   filter_upwards [upper_allowance_eventually C dmin rmin ε mesh hd hmesh hgap,
     eventually_gt_atTop (1 : ℝ)] with Z hallow hZ
   intro d hd' r cap hr' hcap Q hQ
-  have hU : 1<Z^d := Real.one_lt_rpow hZ (hd.trans_le hd')
-  have hP : 1<(Z^d)^r := Real.one_lt_rpow hU (hr.trans_le hr')
+  have hU  := Real.one_lt_rpow hZ (hd.trans_le hd')
+  have hP  := Real.one_lt_rpow hU (hr.trans_le hr')
   have hb := amplitude_bounds ((Z^d)^r) cap mesh Q hcap
   exact ⟨hb.1,hb.2,amplitude_mem_labels _ cap mesh Q hmesh,
     amplitude_upper _ cap mesh Q hP hmesh (hQ.trans (hallow d r cap hd' hr')),

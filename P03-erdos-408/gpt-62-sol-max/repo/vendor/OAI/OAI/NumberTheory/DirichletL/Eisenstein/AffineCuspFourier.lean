@@ -11,77 +11,13 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
@@ -190,7 +126,7 @@ lemma affineLowerTerm_weighted_translate (h h1 q r a k x m:Eis) (j n:ℕ)
   rw [hsolve,hrow]
   unfold affineLowerTerm
   have hphase:-ninthCuspFrequency h*(z+3*eisEmbedding m/eisEmbedding q)=(-Q)+(-ninthCuspFrequency h*z):=by
-    dsimp [Q];ring
+    ring
   rw [hphase,AddChar.map_add_eq_mul]
   dsimp only [c0]
   ring
@@ -314,7 +250,6 @@ end
 
 section
 open MeasureTheory Filter
-open scoped BigOperators Classical MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
@@ -355,8 +290,8 @@ theorem diagonal_unit_eisenstein_fourier (u t:Eisˣ) (j:ℕ) (h h1:Eis)
 lemma onceCusp_q_norm (t:Eisˣ) (j:Fin 3) :
     ‖eisEmbedding (onceCuspScale t*omega^j.val)‖^2=3 := by
   have hw:‖eisEmbedding omega‖=1:=by
-    let w:Eisˣ:=(omega_primitive.isUnit (by decide)).unit
-    have hw:(w:Eis)=omega:=(omega_primitive.isUnit (by decide)).unit_spec
+    let w:=(omega_primitive.isUnit (by decide)).unit
+    have hw:=(omega_primitive.isUnit (by decide)).unit_spec
     rw [←hw]
     exact GaussGeneratorTransport.norm_eisEmbedding_unit w
   simp only [onceCuspScale,map_mul,norm_mul,GaussGeneratorTransport.norm_eisEmbedding_unit,
@@ -374,7 +309,7 @@ end
 
 section
 open MeasureTheory Filter
-open scoped BigOperators Classical ENNReal
+open scoped ENNReal
 
 open ActualEisensteinCubic ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
@@ -425,7 +360,7 @@ theorem character_weighted_period_unfold (q:Eis) (hq:q≠0)
     (∑'n:Eis,ψ (Ideal.Quotient.mk (Ideal.span {q}) n)*
       ∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
       if ψ=1 then (Ideal.absNorm (Ideal.span {q}):ℂ)*(∫z:ℂ,f z) else 0 := by
-  let : Finite (Eis⧸Ideal.span {q}):=finite_quotient_span hq
+  let :=finite_quotient_span hq
   let : Fintype (Eis⧸Ideal.span {q}):=Fintype.ofFinite _
   rw [quotient_weighted_period_unfold q hq ψ f hf,tsum_fintype]
   split_ifs with hψ
@@ -439,7 +374,6 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
@@ -459,10 +393,9 @@ lemma affinePeriodChar_eq_one (q:Eis) (hq:q≠0) (ell:Eis) :
   constructor
   · intro h
     by_contra hd
-    have hz:Ideal.Quotient.mk (Ideal.span {q}) ell≠0:=by
-      intro he
-      exact hd (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp he))
-    exact GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive q hq hz h
+    refine GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive q hq ?_ h
+    intro he
+    exact hd (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp he))
   · intro hd
     have hz:Ideal.Quotient.mk (Ideal.span {q}) ell=0:=
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hd)
@@ -481,7 +414,7 @@ lemma affineCusp_general_weighted_translate (h q r a ell x m:Eis) (j n:ℕ)
   let delta:=3*eisEmbedding m/eisEmbedding q
   have hchar:eisEmbedding (symbol r (a+3*(x+a*m)))=
       eisEmbedding (symbol r (a+3*x))*ShortDraftTrace.breveE A:=by
-    have hd:lambda^2∣a+3*x-1:=primary_add_three a x hprimary
+    have hd:=primary_add_three a x hprimary
     have h:=ramified_symbol_primary_shift_signed j n r (a+3*x) (a*m) hr hd
     convert h using 1 ; congr 2 ;ring
   have hden:symbol (a+3*(x+a*m)) a=symbol (a+3*x) a:=
@@ -541,10 +474,8 @@ lemma affineCusp_masked_inner (h q r a ell x:Eis) (j n:ℕ)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma affineDenominator_zero (h h1 q r:Eis) (j n:ℕ) (a:PrimaryLower)
@@ -560,16 +491,15 @@ lemma affineDenominator_zero (h h1 q r:Eis) (j n:ℕ) (a:PrimaryLower)
     have ht:=dvd_add hbase (a.2.mul_left (ramifiedAffineParameter j n*q))
     convert ht using 1 ;ring
   obtain ⟨ell,hell⟩:=hdiv
-  have hell':3*ell=h+ramifiedAffineParameter j n*q*a.val:=hell.symm
+  have hell':=hell.symm
   have hne:¬q∣ell:=by
     rintro ⟨b,hb⟩
     have he:q*(3*b)=q*(h1+ramifiedAffineParameter j n*a.val):=by
       rw [hb,hh] at hell'
       linear_combination hell'
     have hc:=mul_left_cancel₀ hq he
-    have ht:(3:Eis)∣h1+ramifiedAffineParameter j n*a.val:=⟨b,hc.symm⟩
     apply hfreq
-    have hh:=dvd_sub ht (a.2.mul_left (ramifiedAffineParameter j n))
+    have hh:=dvd_sub (⟨b,hc.symm⟩) (a.2.mul_left (ramifiedAffineParameter j n))
     convert hh using 1 ;ring
   let e:=(cubicResidueElementEquiv a.val (primaryLower_ne_zero a)).trans (primaryDenominatorEquiv a)
   have hpair:=e.summable_iff.mpr hsum

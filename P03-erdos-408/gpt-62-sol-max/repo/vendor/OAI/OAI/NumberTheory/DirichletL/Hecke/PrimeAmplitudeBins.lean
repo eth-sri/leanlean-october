@@ -28,10 +28,10 @@ theorem amplitude_upper (P cap mesh : ℝ) (Q : ℂ) (hP : 1<P) (hm : 0<mesh)
   by_cases hQ : Q=0
   · subst Q
     simp only [norm_zero,amplitude,ite_true,zero_add]
-    exact Real.rpow_nonneg (by linarith) _
-  have hx : 0<‖Q‖ := norm_pos_iff.mpr hQ
-  have hl : 0<Real.log P := Real.log_pos hP
-  have hd : 0<mesh*Real.log P := mul_pos hm hl
+    positivity
+  have hx  := norm_pos_iff.mpr hQ
+  have hl  := Real.log_pos hP
+  have hd  := mul_pos hm hl
   let n : ℤ := ⌊Real.log ‖Q‖/(mesh*Real.log P)⌋
   by_cases hc : cap≤max 0 (mesh*(n : ℝ))
   · simpa [amplitude,hQ,n,min_eq_left hc] using hbound
@@ -49,15 +49,15 @@ theorem amplitude_lower (P cap mesh : ℝ) (Q : ℂ) (hP : 1<P) (hm : 0<mesh)
     (hg : 0<amplitude P cap mesh Q) :
     P^(amplitude P cap mesh Q)≤‖Q‖ := by
   have hQ : Q≠0 := by intro h; simp [amplitude,h] at hg
-  have hx : 0<‖Q‖ := norm_pos_iff.mpr hQ
-  have hl : 0<Real.log P := Real.log_pos hP
-  have hd : 0<mesh*Real.log P := mul_pos hm hl
+  have hx  := norm_pos_iff.mpr hQ
+  have hl  := Real.log_pos hP
+  have hd  := mul_pos hm hl
   let n : ℤ := ⌊Real.log ‖Q‖/(mesh*Real.log P)⌋
   have hpos : 0<mesh*(n : ℝ) := by
     have hmin : amplitude P cap mesh Q≤max 0 (mesh*(n : ℝ)) := by
       simp only [amplitude,ite_eq_right hQ]
       exact min_le_right _ _
-    have ht : 0<max 0 (mesh*(n : ℝ)) := hg.trans_le hmin
+    have ht  := hg.trans_le hmin
     exact (lt_max_iff.mp ht).resolve_left (lt_irrefl _)
   have he : amplitude P cap mesh Q=min cap (mesh*(n : ℝ)) := by
     simp only [amplitude,ite_eq_right hQ]
@@ -92,7 +92,7 @@ theorem amplitude_mem_labels (P cap mesh : ℝ) (Q : ℂ) (hm : 0<mesh) :
   by_cases hn : mesh*(n : ℝ)≤0
   · rw [max_eq_left hn]
     simp [labels]
-  have hn' : 0<mesh*(n : ℝ) := lt_of_not_ge hn
+  have hn'  := lt_of_not_ge hn
   rw [max_eq_right hn'.le]
   apply Finset.mem_insert_of_mem
   apply Finset.mem_insert_of_mem
@@ -102,7 +102,6 @@ theorem amplitude_mem_labels (P cap mesh : ℝ) (Q : ℂ) (hm : 0<mesh) :
     exact_mod_cast hh
   · have hh : (n : ℝ)≤cap/mesh := by
       apply (le_div_iff₀ hm).mpr
-      have hlt : max 0 (mesh*(n : ℝ))<cap := lt_of_not_ge hc
       have : mesh*(n : ℝ)≤max 0 (mesh*(n : ℝ)) := le_max_right _ _
       nlinarith
     exact_mod_cast hh.trans (Int.le_ceil _)
@@ -110,7 +109,7 @@ theorem amplitude_mem_labels (P cap mesh : ℝ) (Q : ℂ) (hm : 0<mesh) :
 theorem squared_spike (U w cap mesh : ℝ) (Q : ℂ) (hU : 1<U) (hw : 0<w)
     (hm : 0<mesh) (hg : 0<amplitude (U^w) cap mesh Q) :
     U^(2*w*amplitude (U^w) cap mesh Q)≤‖Q‖^2 := by
-  have hP : 1<U^w := Real.one_lt_rpow hU hw
+  have hP  := Real.one_lt_rpow hU hw
   have hb := amplitude_lower (U^w) cap mesh Q hP hm hg
   have hs := (sq_le_sq₀ (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _) (norm_nonneg _)).mpr hb
   convert hs using 1

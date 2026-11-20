@@ -21,8 +21,7 @@ lemma productAverage_empty (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a
   have ht : ∑ y : ProductSample α, (productWeight w y : ℂ) = 1 := by
     exact_mod_cast productWeight_total w hsum
   have hm (y : ProductSample α) : mixCoords (∅ : Finset ι) x y = x := by
-    funext i
-    simp [mixCoords]
+    rfl
   simp only [productAverage, hm]
   rw [← Finset.sum_mul, ht, one_mul]
 
@@ -63,7 +62,7 @@ lemma productFull_insert (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a =
     rw [← Finset.sum_neg_distrib]
     apply Finset.sum_congr rfl
     intro U hU
-    have hiU : i ∉ U := fun h => hi (Finset.mem_powerset.mp hU h)
+    have hiU  := fun h => hi (Finset.mem_powerset.mp hU h)
     rw [Finset.card_insert_of_notMem hiU,
       productAverage_union w hsum {i} U, Finset.singleton_union, pow_succ]
     ring

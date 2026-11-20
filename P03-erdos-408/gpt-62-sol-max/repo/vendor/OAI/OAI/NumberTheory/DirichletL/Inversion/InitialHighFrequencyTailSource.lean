@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailWeights
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
 
@@ -11,8 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialPhysicalMeasure
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialPhysicalMeasure
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -24,7 +24,6 @@ def sourcePoint (k : Fin 5→Finset ι) (h : O) : Point ι :=
 
 omit [DecidableEq ι] in
 theorem sourcePoint_key (x : Point ι) : sourcePoint (sourceKey x) x.frequency=x := by
-  cases x
   rfl
 
 def sourceKeys (S : Finset (Point ι)) : Finset (Fin 5→Finset ι) := S.image sourceKey
@@ -37,9 +36,7 @@ theorem mem_sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) (h
   constructor
   · intro hh
     obtain ⟨x,hx,he⟩ := Finset.mem_image.mp hh
-    obtain ⟨hx,hk⟩ := Finset.mem_filter.mp hx
-    rw [←hk,←he,sourcePoint_key]
-    exact hx
+    aesop
   · intro hh
     apply Finset.mem_image.mpr
     refine ⟨sourcePoint k h,Finset.mem_filter.mpr ⟨hh,?_⟩,rfl⟩
@@ -55,13 +52,13 @@ theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
   rw [sourceFrequencies,Finset.sum_image]
   · apply Finset.sum_congr rfl
     intro x hx
-    rw [←(Finset.mem_filter.mp hx).2,sourcePoint_key]
+    aesop
   · intro x hx y hy hxy
     have hk := (Finset.mem_filter.mp hx).2.trans (Finset.mem_filter.mp hy).2.symm
     rw [←sourcePoint_key x,←sourcePoint_key y,hk,hxy]
 
 theorem sourceKeys_card
-    (p : ι→O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (S : Finset (Point ι)) (L : ℝ) (hL : 1≤L)
     (hpool : ∀x∈S,∀i,sourceKey x i⊆pool)

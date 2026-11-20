@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.Physical
 public import Mathlib.Algebra.Group.Pi.Units
 
@@ -48,14 +49,13 @@ theorem residue_char_ne_two_of_lambda_mem (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∈ P) : ringChar (O ⧸ P) ≠ 2 := by
   let : Field (O ⧸ P) := Ideal.Quotient.field _
   intro hc
-  have hd : goodLambda ∣ (3 : O) :=
+  have hd  :=
     (dvd_pow_self goodLambda (by decide : (2 : ℕ) ≠ 0)).trans lambda_sq_dvd_three
   obtain ⟨k, hk⟩ := hd
   have h3m : (3 : O) ∈ P := by rw [hk]; exact P.mul_mem_right k hg
   have h3 : (3 : O ⧸ P) = 0 := by
     simpa only [map_ofNat] using Ideal.Quotient.eq_zero_iff_mem.mpr h3m
-  have h2 : (2 : O ⧸ P) = 0 := by
-    exact (ringChar.spec (O ⧸ P) 2).mpr (by rw [hc])
+  have h2 := (ringChar.spec (O ⧸ P) 2).mpr (by rw [hc])
   have h1 : (1 : O ⧸ P) = 0 := by linear_combination h3 - h2
   exact one_ne_zero h1
 
@@ -120,7 +120,7 @@ theorem calibrationFromPrimes_tau_norm {ι : Type*} [Fintype ι]
     ‖(calibrationFromPrimes P hcop).tau‖ = 1 := by
   let b := finitePrimeModulus P
   have hb : b ≠ 0 := finitePrimeModulus_ne_zero P
-  let : Finite (O ⧸ Ideal.span {b}) := ConcreteTraceCRT.finite_quotient_span hb
+  let  := ConcreteTraceCRT.finite_quotient_span hb
   let : Fintype (O ⧸ Ideal.span {b}) := Fintype.ofFinite _
   let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
   let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
@@ -138,8 +138,7 @@ theorem calibrationFromPrimes_tau_norm {ι : Type*} [Fintype ι]
   rw [hcard] at hg
   have hQ : 0 < elementNorm b := by
     unfold elementNorm
-    exact_mod_cast Nat.pos_of_ne_zero
-      (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hb))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hb)
   have hn : ‖∑ x : O ⧸ Ideal.span {b}, (∏ i, localCalibration (P i) (e x i)) * ψ x‖ =
       Real.sqrt (elementNorm b) := by
     have hs := Real.sq_sqrt hQ.le

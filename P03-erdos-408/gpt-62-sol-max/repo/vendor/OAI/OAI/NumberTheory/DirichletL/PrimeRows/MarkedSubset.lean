@@ -46,7 +46,7 @@ theorem markedRowSeries_subset_replacement (S : Finset (Ideal O)) (hS : ∀P∈S
         selectedRowLocal_outside S hS (T\J) η u P (hT P hPT) x w z hx hw hz,ite_eq_right hPA]
       simp only [A,B,ite_eq_right hPA,ite_eq_left hPJ,one_mul]
     · by_cases hPT : P∈T
-      · have hPA : P∈T\J := Finset.mem_sdiff.mpr ⟨hPT,hPJ⟩
+      · have hPA  := Finset.mem_sdiff.mpr ⟨hPT,hPJ⟩
         rw [ite_eq_left ((mem_markExclusions S T P).mpr (Or.inr hPT)),
           selectedRowLocal_outside S hS (T\J) η u P (hT P hPT) x w z hx hw hz,ite_eq_left hPA]
         simp only [A,B,ite_eq_left hPA,ite_eq_right hPJ,one_mul,mul_one]

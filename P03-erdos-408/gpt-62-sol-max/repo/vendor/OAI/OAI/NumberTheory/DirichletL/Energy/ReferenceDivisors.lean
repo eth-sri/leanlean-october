@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 
 @[expose] public section
@@ -18,11 +19,11 @@ lemma divisor_norm {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     1≤((∏P∈D,P).absNorm:ℝ) ∧ ((∏P∈D,P).absNorm:ℝ)≤Z^Bmask:=by
   have hs:D⊆IdealMobiusDivisorSum.primeSupport s.puncture:=Finset.mem_powerset.mp hD
   have hn:=IdealMobiusDivisorSum.support_product_ne_zero hs
-  have hp:0<(∏P∈D,P).absNorm:=Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)
+  have hp:0<(∏P∈D,P).absNorm:=Ideal.absNorm_pos_of_ne_bot (hn)
   refine ⟨by exact_mod_cast hp,?_⟩
   apply le_trans _ s.puncture_bound
   exact_mod_cast Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.puncture_ne_zero))
+    (Ideal.absNorm_pos_of_ne_bot (s.puncture_ne_zero))
     (map_dvd Ideal.absNorm (IdealMobiusDivisorSum.support_product_dvd s.puncture_ne_zero hs))
 
 lemma divided_scale_power (Z Y N:ℝ)(hZ:1<Z)(hY:0<Y)(hN:0<N):

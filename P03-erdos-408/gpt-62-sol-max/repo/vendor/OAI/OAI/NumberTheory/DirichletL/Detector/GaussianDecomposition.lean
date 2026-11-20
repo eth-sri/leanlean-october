@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GaussianWindows
 
 @[expose] public section
@@ -48,9 +49,9 @@ lemma gaussian_dyadic_correctedSummand (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
   · subst J
     simp [correctedSummand,markedSummand,summand]
   have hi : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ)
   have hN := mul_pos hi (pow_pos hj 3)
   unfold correctedSummand markedSummand summand
   rw [gaussianDyadicProfile_Vstar _ _ _ (div_pos hN (by positivity)),
@@ -67,8 +68,8 @@ lemma gaussian_correctedSummand_norm_ge_one (S : Finset Id) (D : Id) (Ψ : O→*
     1≤(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by
   have hI : I≠0 := by intro he; subst I; simp [correctedSummand,markedSummand,summand] at h
   have hJ : J≠0 := by intro he; subst J; simp [correctedSummand,markedSummand,summand] at h
-  have hi : 1≤Ideal.absNorm I := Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  have hj : 1≤Ideal.absNorm J := Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
+  have hi  := Ideal.one_le_absNorm_of_ne_bot (hI)
+  have hj  := Ideal.one_le_absNorm_of_ne_bot (hJ)
   exact_mod_cast one_le_mul_of_one_le_of_one_le hi (one_le_pow₀ hj)
 
 theorem correctedGaussian_eq_tsum_dyadic (S : Finset Id) (D : Id) (Ψ : O→*ℂ)

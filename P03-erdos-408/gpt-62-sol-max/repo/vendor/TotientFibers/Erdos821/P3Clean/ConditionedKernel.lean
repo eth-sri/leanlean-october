@@ -79,13 +79,9 @@ theorem rawClean_summand_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forw
       rw [ite_eq_left hs, ite_eq_left hb, ite_eq_left hv, rawCleanCoefficient_join A n theta forward ν a c b d v u s t hV]
       unfold bigCleanCoefficient
       ring
-    · have hv : ¬ rawEdgeValid A ν forward (joinLabels v u)
-          (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
-          (emptyTransfer (s.1, joinLabels a b, s.2)) := fun h => hb (hr.mp h).2
+    · have hv  := fun h => hb (hr.mp h).2
       simp only [ite_eq_left hs, ite_eq_right hb, ite_eq_right hv, mul_zero]
-  · have hv : ¬ rawEdgeValid A ν forward (joinLabels v u)
-        (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
-        (emptyTransfer (s.1, joinLabels a b, s.2)) := fun h => hs (hr.mp h).1
+  · have hv  := fun h => hs (hr.mp h).1
     simp only [ite_eq_right hs, ite_eq_right hv, mul_zero]
 
 theorem sum_aux_split (f : P.Aux J → ℂ) :

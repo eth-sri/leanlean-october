@@ -44,21 +44,25 @@ noncomputable section
 def cutoffMass (κ x : ℝ) (Φ : ℝ → ℝ) : ℝ :=
   (∑ n ∈ Icc 1 ⌊κ * x⌋₊, Φ (n / x)) / x
 
+section
+
+variable {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ}
+
 /-- A cutoff is bounded by `M₀`. -/
-lemma abs_le_of_isCutoff {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ}
+lemma abs_le_of_isCutoff
     (hΦ : IsCutoff κ CΦ M x Φ) (y : ℝ) : |Φ y| ≤ M 0 := by
   have := hΦ.2.2.2 0 y
-  rwa [iteratedDeriv_zero, Nat.cast_zero, mul_zero, rpow_zero, mul_one] at this
+  simp_all
 
 /-- The mass of a cutoff is nonnegative. -/
-lemma cutoffMass_nonneg {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ} (hx : 0 < x)
+lemma cutoffMass_nonneg (hx : 0 < x)
     (hΦ : IsCutoff κ CΦ M x Φ) : 0 ≤ cutoffMass κ x Φ :=
   div_nonneg (sum_nonneg fun _ _ => hΦ.2.1 _) hx.le
 
 /-- The mass of a cutoff is at most `κ M₀`. -/
-lemma cutoffMass_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ} (hκ : 1 < κ) (hx : 0 < x)
+lemma cutoffMass_le (hκ : 1 < κ) (hx : 0 < x)
     (hΦ : IsCutoff κ CΦ M x Φ) : cutoffMass κ x Φ ≤ κ * M 0 := by
-  have hM : 0 ≤ M 0 := (abs_nonneg _).trans (abs_le_of_isCutoff hΦ 0)
+  have hM  := (abs_nonneg _).trans (abs_le_of_isCutoff hΦ 0)
   rw [cutoffMass, div_le_iff₀ hx]
   calc ∑ n ∈ Icc 1 ⌊κ * x⌋₊, Φ (n / x) ≤ ∑ _n ∈ Icc 1 ⌊κ * x⌋₊, M 0 :=
         sum_le_sum fun n _ => (le_abs_self _).trans (abs_le_of_isCutoff hΦ _)
@@ -66,12 +70,14 @@ lemma cutoffMass_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ
     _ ≤ κ * x * M 0 := mul_le_mul_of_nonneg_right (Nat.floor_le (by positivity)) hM
     _ = κ * M 0 * x := by ring
 
+end
+
 /-! ### The parameters of E1 -/
 
 /-- `∑_{r ≤ R} 1/r ≤ 1 + log R`. -/
 lemma sum_Icc_inv_le (R : ℕ) : ∑ r ∈ Icc 1 R, (1 : ℝ) / r ≤ 1 + Real.log R := by
   have h := harmonic_le_one_add_log R
-  have he : ∀ n : ℕ, ((harmonic n : ℚ) : ℝ) = ∑ r ∈ Icc 1 n, (1 : ℝ) / r := by
+  have he : ∀ n : ℕ, ((harmonic n) : ℝ) = ∑ r ∈ Icc 1 n, (1 : ℝ) / r := by
     intro n
     induction n with
     | zero => simp
@@ -84,18 +90,17 @@ lemma sum_Icc_inv_le (R : ℕ) : ∑ r ∈ Icc 1 R, (1 : ℝ) / r ≤ 1 + Real.l
 
 /-- A number `r ≤ x` has at most `L` prime factors above `exp(L^{0.11})`, so the band primes
 dividing it have reciprocal mass at most `L exp(-L^{0.11})`. -/
-lemma sum_inv_dvd_le {𝔅 : Finset ℕ} {x : ℝ} (hx : 1 < x) (hL1 : 1 ≤ Real.log x)
+lemma sum_inv_dvd_le {𝔅 : Finset ℕ} {x : ℝ} (hL1 : 1 ≤ Real.log x)
     (h𝔅 : ∀ p ∈ 𝔅, p.Prime ∧ exp (Real.log x ^ (11 / 100 : ℝ)) ≤ p) {r : ℕ} (hr : 0 < r)
     (hrx : (r : ℝ) ≤ x) :
     ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p ≤
       Real.log x * exp (-Real.log x ^ (11 / 100 : ℝ)) := by
   set F := 𝔅.filter (· ∣ r)
   set q := exp (Real.log x ^ (11 / 100 : ℝ))
-  have hL : 0 < Real.log x := Real.log_pos hx
   have hq : 0 < q := exp_pos _
   have hFp : ∀ p ∈ F, p.Prime := fun p hp => (h𝔅 p (mem_filter.1 hp).1).1
   -- `q^{#F} ≤ ∏ F ≤ r ≤ x`
-  have hdvd : ∏ p ∈ F, p ∣ r := prod_primes_dvd r (fun p hp => (hFp p hp).prime)
+  have hdvd  := prod_primes_dvd r (fun p hp => (hFp p hp).prime)
     fun p hp => (mem_filter.1 hp).2
   have hle : (∏ p ∈ F, (p : ℝ)) ≤ x := by
     have : ((∏ p ∈ F, p : ℕ) : ℝ) ≤ r := by exact_mod_cast Nat.le_of_dvd hr hdvd
@@ -140,7 +145,6 @@ lemma eventually_inertBands_bounds {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
     tendsto_logLog.eventually_ge_atTop 1]
     with x ha hV hL hT hT1
   have hs0 : 0 ≤ logLogLog x := by
-    rw [logLogLog]
     exact log_nonneg hT1
   refine ⟨fun p hp => ?_, ?_⟩
   · obtain ⟨ci, hci, hpb⟩ := mem_biUnion.1 hp
@@ -171,7 +175,6 @@ lemma eventually_inertBands_bounds {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
           linarith
       _ = |CN| * logLogLog x + K := by field_simp
       _ ≤ (|CN| + K) * (logLogLog x + 1) := by
-          have := mul_nonneg (abs_nonneg CN) hs0
           have := mul_nonneg hK0.le hs0
           nlinarith [abs_nonneg CN]
       _ ≤ logLog x := hT
@@ -193,7 +196,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
               (4 * (2 * (⌈Real.log x ^ (1 / 10 : ℝ)⌉₊ + h₀)) + 2) * Real.log x ^ (1 / 10 : ℝ)) +
               A * exp (2 * Real.log x ^ (1 / 5 : ℝ)))) ≤
         x / Real.log x ^ 2 := by
-  have hpow : ∀ (y : ℝ) (n : ℕ), y ^ (n : ℝ) = y ^ n := fun y n => rpow_natCast y n
+  have hpow  := fun y n => rpow_natCast y n
   filter_upwards [eventually_gt_atTop 1, tendsto_log_atTop.eventually_ge_atTop (A + 4),
     tendsto_log_atTop.eventually_ge_atTop 1, tendsto_logLog.eventually_ge_atTop (max c 1),
     eventually_mul_rpow_le_log_rpow (4 / c) 20 (show (0 : ℝ) < 4 / 5 by norm_num),
@@ -208,15 +211,13 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
   set L := Real.log x
   set T := logLog x
   have hL0 : 0 < L := by linarith
-  have hT1 : 1 ≤ T := (le_max_right _ _).trans hT
-  have hTc : c ≤ T := (le_max_left _ _).trans hT
+  have hT1  := (le_max_right _ _).trans hT
   have hT0 : 0 < T := by linarith
   have hx0 : 0 < x := by linarith
   rw [rpow_one] at hS2a hS2b hS3a
   have hT20 : 0 < T ^ (20 : ℝ) := by positivity
   set ε := c / T ^ 20
   have hεT : ε = c / T ^ (20 : ℝ) := by rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, hpow]
-  have hε0 : 0 < ε := by positivity
   have hexpT : ∀ k : ℝ, exp (-(k * T)) = (L ^ k)⁻¹ := fun k => by
     rw [exp_neg, log_rpow_eq hL0]
   -- `m < x^ε`
@@ -237,7 +238,6 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
     have hh : 2 * L ^ (1 / 10 : ℝ) ≤ ((2 * (⌈L ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ) := by
       push_cast
       have := Nat.le_ceil (L ^ (1 / 10 : ℝ))
-      have : (0 : ℝ) ≤ h₀ := Nat.cast_nonneg _
       linarith
     have e1 : exp (-((2 * (⌈L ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ)) ≤ (L ^ (6 : ℝ))⁻¹ := by
       rw [← hexpT]
@@ -255,8 +255,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
         exp 1 * T) ≤ (L ^ (6 : ℝ))⁻¹ := by
       rw [← hexpT, Real.log_rpow hx0, Real.log_exp]
       refine exp_le_exp.2 ?_
-      have he : exp 1 < 3 := exp_one_lt_three
-      have h2 : 0 < L ^ (1 / 5 : ℝ) := by positivity
+      have he  := exp_one_lt_three
       have key : c * L ^ (4 / 5 : ℝ) / (8 * T ^ (20 : ℝ)) * (2 * L ^ (1 / 5 : ℝ)) = ε / 4 * L := by
         rw [hεT]
         conv_rhs => rw [← hL15]
@@ -283,7 +282,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
       refine mul_le_of_le_one_right (by positivity) ?_
       rw [mul_inv_le_iff₀ hL0, one_mul]
       exact hLA
-    have hA' : A * exp (-((2 * (⌈L ^ (1 / 10 : ℝ)⌉₊ + h₀) : ℕ) : ℝ)) ≤ A * (L ^ (6 : ℝ))⁻¹ :=
+    have hA'  :=
       mul_le_mul_of_nonneg_left e1 hA
     nlinarith
   · -- the remainders: `x^{1-ε/2} (2A+1) m^{4h+2} L^{2.1} ≤ x`
@@ -297,7 +296,6 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
         calc m = m ^ 1 * 1 := by ring
           _ ≤ m ^ (4 * h + 2) * L ^ (1 / 10 : ℝ) :=
             mul_le_mul (pow_le_pow_right₀ hm1 (by omega)) hL10 zero_le_one (by positivity)
-      have h2 : 0 ≤ m ^ (4 * h + 2) * L ^ (1 / 10 : ℝ) := by positivity
       nlinarith
     -- the exponent of `m^{4h+2}`
     have hh : (h : ℝ) ≤ 2 * (L ^ (1 / 10 : ℝ) + 1 + h₀) := by
@@ -314,12 +312,11 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
     have hexp1 : ((4 * h + 2 : ℕ) : ℝ) * (2 * L ^ (1 / 5 : ℝ)) ≤
         (16 * h₀ + 36) * L ^ (3 / 10 : ℝ) := by
       push_cast
-      have h0 : (0 : ℝ) ≤ h₀ := Nat.cast_nonneg _
       have h5 : 0 ≤ L ^ (1 / 5 : ℝ) := by positivity
       nlinarith
     -- `2A + 1 ≤ exp(L^{0.3})` and `L^{2.1} ≤ exp(L^{0.3})`
     have hA1 : 2 * A + 1 ≤ exp (L ^ (3 / 10 : ℝ)) := by
-      have : Real.log (2 * A + 1) ≤ L ^ (3 / 10 : ℝ) := hS3c
+      have  := hS3c
       calc 2 * A + 1 = exp (Real.log (2 * A + 1)) := (exp_log (by linarith)).symm
         _ ≤ _ := exp_le_exp.2 this
     have hL21 : L ^ (1 / 10 : ℝ) * L ^ 2 ≤ exp (L ^ (3 / 10 : ℝ)) := by
@@ -337,7 +334,6 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
       rw [hεT]
       rw [div_mul_eq_mul_div, div_le_iff₀ hc] at hS3b
       rw [div_mul_eq_mul_div, div_div, le_div_iff₀ (by positivity)]
-      have h0 : (0 : ℝ) ≤ h₀ := Nat.cast_nonneg _
       have h3 : 0 ≤ L ^ (3 / 10 : ℝ) := by positivity
       calc (16 * h₀ + 38) * L ^ (3 / 10 : ℝ) * (T ^ (20 : ℝ) * 2) =
             L ^ (3 / 10 : ℝ) * (2 * (16 * h₀ + 38) * T ^ (20 : ℝ)) := by ring
@@ -359,7 +355,6 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
           rw [← exp_add, ← exp_add]
           ring_nf
         _ ≤ exp (ε * L / 2) := exp_le_exp.2 hfin
-    have hxe : 0 < exp (ε * L / 2) := exp_pos _
     have hY : 0 ≤ x ^ (ε / 4) * x ^ (1 - ε) * x ^ (ε / 4) := by positivity
     rw [le_div_iff₀ (by positivity)]
     calc x ^ (ε / 4) * x ^ (1 - ε) * (x ^ (ε / 4) * (A * (m ^ (4 * h + 2) * L ^ (1 / 10 : ℝ)) +
@@ -478,7 +473,7 @@ theorem eventually_progression (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN 
         calc Y₀ ≤ x ^ (1 : ℝ) := rpow_le_rpow_of_exponent_le hx1.le (by linarith)
           _ = x := rpow_one x
       linarith
-    have h1 := sum_inv_dvd_le hx1 hL (fun p hp => ⟨(h𝔅 p hp).1, (h𝔅 p hp).2.1⟩) hr0 hrx
+    have h1 := sum_inv_dvd_le hL (fun p hp => ⟨(h𝔅 p hp).1, (h𝔅 p hp).2.1⟩) hr0 hrx
     have h2 := sum_inv_prod_gt_le h𝔅m hm1 (show 0 < Y₀ by positivity)
     have h3 : exp (-(Real.log Y₀ / Real.log m) + exp 1 * ∑ p ∈ 𝔅, (1 : ℝ) / p) ≤
         exp (-(Real.log Y₀ / Real.log m) + exp 1 * T) :=
@@ -571,7 +566,7 @@ theorem eventually_progression_one (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) 
   refine ⟨C, ?_⟩
   filter_upwards [hC, eventually_ge_atTop 1, tendsto_log_atTop.eventually_ge_atTop 1,
     tendsto_logLog.eventually_ge_atTop (max c 1)] with x hx hx1 hL hT Φ H hΦ hH hHb
-  have hT1 : 1 ≤ logLog x := le_trans (le_max_right _ _) hT
+  have hT1  := le_trans (le_max_right _ _) hT
   have hε : c / logLog x ^ 20 ≤ 1 := by
     rw [div_le_one (by positivity)]
     exact (le_max_left _ _).trans (hT.trans (le_self_pow₀ hT1 (by norm_num)))
@@ -609,9 +604,8 @@ theorem eventually_progression_slot (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K)
     eventually_mul_rpow_le_log_rpow 8 3 (show (0 : ℝ) < 1 by norm_num)]
     with x hx hx2 hT hL k hk u v B Φ H hslot hB hΦ hH hHb
   rw [rpow_one, show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, rpow_natCast] at hL
-  have hT1 : 1 ≤ logLog x := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hT
-  have hTc : c ≤ logLog x := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hT
-  have hTE : E ≤ logLog x := le_trans (le_max_right _ _) hT
+  have hT1  := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hT
+  have hTE  := le_trans (le_max_right _ _) hT
   have hx1 : 1 ≤ x := by linarith
   have hε0 : 0 ≤ c / logLog x ^ 20 := by positivity
   obtain ⟨hu, hv⟩ := hslot
@@ -627,7 +621,6 @@ theorem eventually_progression_slot (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K)
       calc (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ (2 * logLog x) ^ (k + 1) :=
             pow_le_pow_left₀ h0 (by linarith) _
         _ ≤ (2 * logLog x) ^ 3 := pow_le_pow_right₀ (by linarith) (by omega)
-    have h4 : (2 * logLog x) ^ 3 = 8 * logLog x ^ 3 := by ring
     push_cast
     linarith
   have h := hx (Fin (k + 1) → ℕ) (slotTuples x u v) (fun Q => ∏ i, Q i) (fun Q => B (Fin.init Q))
@@ -650,7 +643,7 @@ lemma sum_powerset_rem_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (objs : F
       |∑ u ∈ objs.filter (fun u => ∀ p ∈ D, p ∣ u + 1), wt u - X * ∏ p ∈ D, 1 / (p : ℝ)| =
       |∑ u ∈ objs.filter ((∏ p ∈ D, p) ∣ · + 1), wt u - X / ((∏ p ∈ D, p : ℕ) : ℝ)| := by
     intro D hD
-    have hDp : ∀ p ∈ D, p.Prime := fun p hp => hP p (mem_powerset.1 (mem_filter.1 hD).1 hp)
+    have hDp  := fun p hp => hP p (mem_powerset.1 (mem_filter.1 hD).1 hp)
     have hfilt : objs.filter (fun u => ∀ p ∈ D, p ∣ u + 1) =
         objs.filter ((∏ p ∈ D, p) ∣ · + 1) :=
       filter_congr fun u _ => ⟨fun h => prod_primes_dvd _ (fun p hp => (hDp p hp).prime) h,

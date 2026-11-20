@@ -35,10 +35,10 @@ private lemma sum_powersetCard_succ_insert (s : Finset ι) (a : ι) (ha : a ∉ 
   · refine congrArg _ (sum_congr rfl fun I hI => ?_)
     rw [prod_insert fun h => ha ((mem_powersetCard.1 hI).1 h)]
   · intro I hI J hJ h
-    have hI' : a ∉ I := fun h => ha ((mem_powersetCard.1 hI).1 h)
-    have hJ' : a ∉ J := fun h => ha ((mem_powersetCard.1 hJ).1 h)
+    have hI'  := fun h => ha ((mem_powersetCard.1 hI).1 h)
+    have hJ'  := fun h => ha ((mem_powersetCard.1 hJ).1 h)
     rw [← erase_insert hI', ← erase_insert hJ']
-    exact congrArg (·.erase a) h
+    congr
   · refine disjoint_left.2 fun I hI hI' => ?_
     obtain ⟨J, -, rfl⟩ := mem_image.1 hI'
     exact ha ((mem_powersetCard.1 hI).1 (mem_insert_self a J))
@@ -53,8 +53,7 @@ private lemma sum_powerset_filter_card_lt (s : Finset ι) (f : Finset ι → ℝ
   refine sum_congr rfl fun k hk => ?_
   rw [powersetCard_eq_filter, filter_filter]
   refine sum_congr (filter_congr fun I hI => ?_) fun _ _ => rfl
-  have := mem_range.1 hk
-  omega
+  simp_all
 
 /-- The signed Bonferroni sandwich in terms of the elementary symmetric polynomials
 `e_k(x) = ∑_{|I| = k} ∏_{i ∈ I} x_i`: the error `(-1)^T (∏_i (1 - x_i) - ∑_{k < T} (-1)^k e_k)`
@@ -75,7 +74,7 @@ private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
         powersetCard_eq_empty.2 (by simp)
       simp [sum_range_succ', powersetCard_zero, h]
   | insert a s ha ih =>
-    have hx' : ∀ i ∈ s, 0 ≤ x i ∧ x i ≤ 1 := fun i hi => hx i (mem_insert_of_mem hi)
+    have hx' := fun i hi => hx i (mem_insert_of_mem hi)
     obtain ⟨hxa0, hxa1⟩ := hx a (mem_insert_self a s)
     cases T with
     | zero =>
@@ -109,7 +108,6 @@ private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
       generalize ∑ k ∈ range T, (-1 : ℝ) ^ k * ∑ I ∈ s.powersetCard k, ∏ i ∈ I, x i = S0 at *
       have hid : (-1 : ℝ) ^ (T + 1) * ((1 - x a) * P - (S1 - x a * S0)) =
           (-1) ^ (T + 1) * (P - S1) + x a * ((-1) ^ T * (P - S0)) := by
-        rw [pow_succ]
         ring
       rw [hid]
       exact ⟨add_nonneg h1 (mul_nonneg hxa0 h0),
@@ -143,7 +141,6 @@ private lemma pow_succ_add_mul_le_add_pow (σ y : ℝ) (hσ : 0 ≤ σ) (hy : 0 
   induction n with
   | zero => simp
   | succ n ih =>
-    have hσn : 0 ≤ σ ^ n := pow_nonneg hσ n
     calc σ ^ (n + 1 + 1) + ((n + 1 : ℕ) + 1) * σ ^ (n + 1) * y
         ≤ (σ + y) * (σ ^ (n + 1) + (n + 1) * σ ^ n * y) := by
           have : 0 ≤ (n + 1) * σ ^ n * y * y := by positivity
@@ -166,12 +163,12 @@ theorem sum_powersetCard_prod_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i �
     | succ T =>
       simp [powersetCard_eq_empty.2 (show #(∅ : Finset ι) < T + 1 by simp)]
   | insert a s ha ih =>
-    have hx' : ∀ i ∈ s, 0 ≤ x i := fun i hi => hx i (mem_insert_of_mem hi)
+    have hx' := fun i hi => hx i (mem_insert_of_mem hi)
     have hxa : 0 ≤ x a := hx a (mem_insert_self a s)
-    have hσ : 0 ≤ ∑ i ∈ s, x i := sum_nonneg hx'
+    have hσ  := sum_nonneg hx'
     rw [sum_insert ha, add_comm]
     cases T with
-    | zero => simp [powersetCard_zero]
+    | zero => simp
     | succ T =>
       rw [sum_powersetCard_succ_insert s a ha]
       have h1 := (le_div_iff₀ (by positivity : (0 : ℝ) < (T + 1).factorial)).1 (ih hx' (T + 1))

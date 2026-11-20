@@ -28,23 +28,23 @@ theorem latticeL_eq_of_coefficients {N M : ℕ} [NeZero N] [NeZero M]
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
     intro z hz
     exact (regularizedLatticeL_differentiableAt w
-      (by intro h; simp [h] at hz)).differentiableWithinAt
+      (by intro h; simp_all)).differentiableWithinAt
   have hva : AnalyticOnNhd ℂ (regularizedLatticeL v) {z : ℂ | 0 < z.re} := by
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
     intro z hz
     exact (regularizedLatticeL_differentiableAt v
-      (by intro h; simp [h] at hz)).differentiableWithinAt
+      (by intro h; simp_all)).differentiableWithinAt
   have hident := Continuation.product_identity_on_halfPlane 0 1
     (regularizedLatticeL w) (fun _ => 1) (regularizedLatticeL v)
     hwa analyticOnNhd_const hva (by
       intro z hz
-      have hz' : 1 < z.re := by simpa using hz
+      have hz' : 1 < z.re := by simp_all
       have hz₀ : z ≠ 0 := by intro h; norm_num [h] at hz'
       have hz₁ : z ≠ 1 := by intro h; norm_num [h] at hz'
       simp only [mul_one, regularizedLatticeL_eq w hz₀ hz₁,
         regularizedLatticeL_eq v hz₀ hz₁,
         latticeL_eq_of_coefficients_right w v hcoeff hz']) hs
-  have hs₀ : s ≠ 0 := by intro h; simp [h] at hs
+  have hs₀ : s ≠ 0 := by intro h; simp_all
   simp only [mul_one, regularizedLatticeL_eq w hs₀ hs₁,
     regularizedLatticeL_eq v hs₀ hs₁] at hident
   exact mul_left_cancel₀ (sub_ne_zero.mpr hs₁) hident
@@ -64,7 +64,7 @@ theorem continuedLattice_eq_of_elementCoeff_eq (χ ψ : Character)
     continuedLattice χ s = continuedLattice ψ s := by
   apply HeckeTheta.latticeL_eq_of_coefficients (coefficients χ) (coefficients ψ) _ hs hs₁
   intro n
-  simp only [periodicCoeff_eq_elementCoeff, hχψ]
+  simp [periodicCoeff_eq_elementCoeff, hχψ]
 
 end SevenEighths.HeckeFamily
 

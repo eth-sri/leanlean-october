@@ -23,9 +23,9 @@ theorem exists_supported_row_presentation (η : Character) (m z : O)
       τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*Ideal.span {z} ∧
       ∀ n : O,elementCoeff τ n=rowTwist (elementHom η) m 1 z n := by
   let r := CompletedGauss.primaryGenerator (Ideal.span {z})
-  have hr0 : r≠0 := supported_primaryGenerator_ne_zero _ hz
+  have hr0  := supported_primaryGenerator_ne_zero _ hz
   have hs := CompletedGauss.primaryGenerator_spec (Ideal.span {z}) hr0
-  have hr : Supported (Ideal.span {r}) := hs.1 ▸ hz
+  have hr  := hs.1 ▸ hz
   obtain ⟨u,hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs.1
   have hx : (1:O)^4*z=(u:O)*λ₀^0*(2:O)^0*r := by
     simpa only [one_pow,pow_zero,mul_one,mul_comm] using hu.symm

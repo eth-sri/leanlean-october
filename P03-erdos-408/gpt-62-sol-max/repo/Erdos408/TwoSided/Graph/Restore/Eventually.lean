@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Analysis.Divisor
 public import Erdos408.TwoSided.Graph.Restore.Core
 public import Erdos408.TwoSided.Graph.Restore.General
@@ -51,7 +52,7 @@ lemma listCount_le_prod (P : ι → Finset ℕ) (C : ι → Finset (Fin J)) (n :
         rw [Fintype.card_piFinset]
         have : ∀ j, ((if j ∈ unsharedSlots C g then (P g).filter (· ∣ n) else {1}).card) =
             if j ∈ unsharedSlots C g then primeCount (P g) n else 1 := fun j => by
-          split_ifs <;> simp [primeCount]
+          split_ifs <;> rfl
         simp_rw [this]
         rw [Fintype.prod_ite_mem, prod_const]
 
@@ -59,7 +60,7 @@ lemma listCount_le_prod (P : ι → Finset ℕ) (C : ι → Finset (Fin J)) (n :
 private lemma pow_mul_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (z t : ℕ) :
     q₀ ^ z * (z : ℝ) ^ t ≤ t.factorial / Real.log q₀⁻¹ ^ t := by
   set θ := Real.log q₀⁻¹
-  have hθ : 0 < θ := Real.log_pos (one_lt_inv_iff₀.2 ⟨hq₀, hq₀₁⟩)
+  have hθ  := Real.log_pos (one_lt_inv_iff₀.2 ⟨hq₀, hq₀₁⟩)
   have hq : q₀ ^ z = Real.exp (-(θ * z)) := by
     rw [← Real.exp_log (pow_pos hq₀ z), Real.log_pow]
     simp only [θ, Real.log_inv]
@@ -67,7 +68,6 @@ private lemma pow_mul_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 
   have h := Real.pow_div_factorial_le_exp _ (mul_nonneg hθ.le (Nat.cast_nonneg z)) t
   rw [hq, le_div_iff₀ (pow_pos hθ t)]
   rw [div_le_iff₀ (by positivity), mul_pow] at h
-  have he := Real.exp_pos (θ * z)
   calc Real.exp (-(θ * z)) * (z : ℝ) ^ t * θ ^ t
       = Real.exp (-(θ * z)) * (θ ^ t * (z : ℝ) ^ t) := by ring
     _ ≤ Real.exp (-(θ * z)) * (Real.exp (θ * z) * t.factorial) :=
@@ -91,7 +91,7 @@ lemma listWeight_le {P : ι → Finset ℕ} {q₀ : ℝ} (hq₀ : 0 < q₀) (hq�
     {C : ι → Finset (Fin J)} {m₀ : ℕ} (hC : ∀ g, (C g).card ≤ m₀) (n : ℕ) :
     listWeight P q₀ C n ≤ (q₀⁻¹ ^ (J + 1) * listConst q₀ m₀) ^ Fintype.card ι := by
   set θ := Real.log q₀⁻¹
-  have hθ : 0 < θ := Real.log_pos (one_lt_inv_iff₀.2 ⟨hq₀, hq₀₁⟩)
+  have hθ  := Real.log_pos (one_lt_inv_iff₀.2 ⟨hq₀, hq₀₁⟩)
   have hgroup : ∀ g, q₀ ^ primeCount (P g) n *
       ((primeCount (P g) n : ℝ) ^ (unsharedSlots C g).card) ≤ listConst q₀ m₀ := by
     intro g
@@ -159,7 +159,7 @@ lemma groupPrimeCount_mul_log_two_le {P : ι → Finset ℕ} (hprime : ∀ g, �
   have hprime' : ∀ p ∈ S, p.Prime := fun p hp => by
     obtain ⟨g, -, hpg⟩ := mem_biUnion.1 (mem_filter.1 hp).1
     exact hprime g p hpg
-  have hdvd : ∏ p ∈ S, p ∣ n :=
+  have hdvd  :=
     prod_primes_dvd n (fun p hp => (hprime' p hp).prime) fun p hp => (mem_filter.1 hp).2
   have hle : 2 ^ S.card ≤ n := by
     calc 2 ^ S.card ≤ ∏ p ∈ S, p :=
@@ -302,7 +302,6 @@ lemma groupPrimeCount_le_of_scale {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p
     calc Real.log m ≤ Real.log (2 * x ^ 2) := Real.log_le_log (by exact_mod_cast hm1) hm
       _ = Real.log 2 + 2 * Real.log x := by
           rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow]; push_cast; ring
-  have h0 := Nat.cast_nonneg (α := ℝ) (groupPrimeCount P m)
   nlinarith
 
 /-- The final arithmetic of G5:
@@ -315,11 +314,9 @@ lemma restore_final_le {L κK M₀ B₀ cT cΛ vlo Q Tm Λ H Z Y : ℝ} (hL : 1 
     2 * (Tm ^ 2 * κK * M₀ * L * L ^ B₀ * Λ ^ 2) * H * (Y / vlo * Z) ≤
       κK * L ^ (2 * cT + 2 * cΛ + B₀ + 4) * Y := by
   have hL0 : 0 < L := by linarith
-  have hQ : 0 ≤ Q * L := hZ0.trans hZ
   have hX : Tm ^ 2 * κK * M₀ * L * L ^ B₀ * Λ ^ 2 ≤
       (L ^ cT) ^ 2 * κK * M₀ * L * L ^ B₀ * (L ^ cΛ) ^ 2 := by
     gcongr
-  have hX'0 : 0 ≤ (L ^ cT) ^ 2 * κK * M₀ * L * L ^ B₀ * (L ^ cΛ) ^ 2 := by positivity
   have hpow : ∀ c : ℝ, L ^ (2 * cT + 2 * cΛ + B₀ + c) =
       L ^ cT * L ^ cT * (L ^ cΛ * L ^ cΛ) * L ^ B₀ * L ^ c := fun c => by
     rw [show 2 * cT + 2 * cΛ + B₀ + c = cT + cT + (cΛ + cΛ) + B₀ + c by ring]
@@ -327,20 +324,13 @@ lemma restore_final_le {L κK M₀ B₀ cT cΛ vlo Q Tm Λ H Z Y : ℝ} (hL : 1 
   calc _ ≤ 2 * ((L ^ cT) ^ 2 * κK * M₀ * L * L ^ B₀ * (L ^ cΛ) ^ 2) * (3 * L) *
         (Y / vlo * (Q * L)) := by
         gcongr
-    _ = κK * Y * (L ^ (2 * cT + 2 * cΛ + B₀ + 3) * (6 * M₀ * Q / vlo)) := by
-        rw [hpow, show (3 : ℝ) = 1 + 1 + 1 by norm_num]
-        simp only [Real.rpow_add hL0, Real.rpow_one]
-        field_simp
-        ring
+    _ = κK * Y * (L ^ (2 * cT + 2 * cΛ + B₀ + 3) * (6 * M₀ * Q / vlo)) := by rpow_ring hL0
     _ ≤ κK * Y * (L ^ (2 * cT + 2 * cΛ + B₀ + 3) * L) := by
         gcongr
         refine le_trans ?_ hK₁
         have := le_abs_self M₀
         gcongr
-    _ = κK * L ^ (2 * cT + 2 * cΛ + B₀ + 4) * Y := by
-        rw [hpow, hpow, show (4 : ℝ) = 3 + 1 by norm_num, Real.rpow_add hL0 3 1,
-          Real.rpow_one]
-        ring
+    _ = κK * L ^ (2 * cT + 2 * cΛ + B₀ + 4) * Y := by rpow_ring hL0
 
 /-- The groups of (6.1) are nonempty, so shared labels exist. -/
 lemma sharedLabels_nonempty {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
@@ -364,7 +354,7 @@ lemma sharedProduct_mul_le_floor {x κ : ℝ} (hx0 : 0 < x) (hκ : 1 < κ) {Ψ :
     (hD : (DR : ℝ) * DC ≤ x / κ) (hψ : Ψ (w / (x * DC)) ≠ 0) : DR * w ≤ ⌊x ^ 2⌋₊ := by
   have hDC0 : (0 : ℝ) < DC := by
     by_contra h
-    have : (DC : ℝ) = 0 := le_antisymm (not_lt.1 h) (Nat.cast_nonneg _)
+    have  := le_antisymm (not_lt.1 h) (Nat.cast_nonneg _)
     rw [this, mul_zero, div_zero] at hψ
     have := (hsupp 0 hψ).1
     have : (0 : ℝ) < κ⁻¹ := by positivity
@@ -406,13 +396,13 @@ theorem norm_physSum_sub_stripSum_le_of_scale {q₀ c₀ C₀ vlo vhi B₀ κ M�
     have : Real.log x ≤ 0 := Real.log_nonpos hx0.le (by linarith)
     linarith
   obtain ⟨hdisj, hP, hV, hs⟩ := groupAdmissible_facts hL1 hadm
-  have hprime : ∀ g, ∀ p ∈ P g, p.Prime := fun g p hp => (hP g p hp).1
-  have hV0 : ∀ g, 0 < harmonicMass (P g) := fun g => hvlo.trans_le (hV g)
-  have hT0 : 0 ≤ Real.log (Real.log x) := Real.log_nonneg hL1
+  have hprime  := fun g p hp => (hP g p hp).1
+  have hV0  := fun g => hvlo.trans_le (hV g)
+  have hT0  := Real.log_nonneg hL1
   have hs' : (Fintype.card ι : ℝ) ≤ 2 * |C₀| * Real.log (Real.log x) := by
     refine hs.trans (mul_le_mul_of_nonneg_right ?_ hT0)
     linarith [le_abs_self C₀]
-  have hsL : (Fintype.card ι : ℝ) ≤ Real.log x := hs'.trans hAT
+  have hsL  := hs'.trans hAT
   have hedge : ∀ s' ∈ auxLabels P (sharedSlots C), ∀ a ∈ auxLabels P C,
       (sharedProduct C s' : ℝ) * slotProduct C a ≤ x / κ := fun s' hs₁ a ha =>
     sharedProduct_mul_slotProduct_le_of_scale hx0 hκ (fun g p hp => (hP g p hp).2.2) hs' hκT
@@ -423,14 +413,13 @@ theorem norm_physSum_sub_stripSum_le_of_scale {q₀ c₀ C₀ vlo vhi B₀ κ M�
     have h1 : (1 : ℝ) ≤ sharedProduct C s₀ := by
       exact_mod_cast sharedProduct_pos hprime hs₀
     have := hedge s₀ hs₀ a ha
-    have h0 : (0 : ℝ) ≤ slotProduct C a := Nat.cast_nonneg _
     nlinarith
   have hxκ : x / κ ≤ x ^ 2 := by
     rw [div_le_iff₀ (by linarith)]
     nlinarith
   have hF' : ∀ n, 1 ≤ n → n ≤ ⌊x ^ 2⌋₊ → |F n| ≤ Real.log x := fun n hn hnN => by
     refine hF n hn ?_
-    have : (n : ℝ) ≤ x ^ 2 := (Nat.le_floor_iff (by positivity)).1 hnN
+    have  := (Nat.le_floor_iff (by positivity)).1 hnN
     nlinarith
   have hG' : ∀ n, |G n| ≤ Real.log x ^ B₀ := fun n => by
     rw [abs_of_nonneg (hG.2 n).1]
@@ -445,13 +434,13 @@ theorem norm_physSum_sub_stripSum_le_of_scale {q₀ c₀ C₀ vlo vhi B₀ κ M�
   have hΩ₁ : ∀ w ∈ Icc 1 ⌊x ^ 2⌋₊, (groupPrimeCount P w : ℝ) ≤ 3 * Real.log x := by
     intro w hw
     obtain ⟨hw₁, hwN⟩ := mem_Icc.1 hw
-    have hw' : (w : ℝ) ≤ x ^ 2 := (Nat.le_floor_iff (by positivity)).1 hwN
+    have hw'  := (Nat.le_floor_iff (by positivity)).1 hwN
     exact groupPrimeCount_le_of_scale hprime hdisj hx0 hL10 hw₁ (by nlinarith)
   have hΩ₂ : ∀ a ∈ auxLabels P C, ∀ w ∈ Icc 1 ⌊x ^ 2⌋₊,
       (groupPrimeCount P (w + slotProduct C a) : ℝ) ≤ 3 * Real.log x := by
     intro a ha w hw
     obtain ⟨hw₁, hwN⟩ := mem_Icc.1 hw
-    have hw' : (w : ℝ) ≤ x ^ 2 := (Nat.le_floor_iff (by positivity)).1 hwN
+    have hw'  := (Nat.le_floor_iff (by positivity)).1 hwN
     refine groupPrimeCount_le_of_scale hprime hdisj hx0 hL10 (by omega) ?_
     push_cast
     linarith [hDC a ha]
@@ -466,8 +455,8 @@ theorem norm_physSum_sub_stripSum_le_of_scale {q₀ c₀ C₀ vlo vhi B₀ κ M�
   have hbΛ : 1 ≤ q₀⁻¹ ^ (J + 1) * listConst q₀ m₀ := one_le_mul_of_one_le_of_one_le
     (one_le_pow₀ (one_le_inv_iff₀.2 ⟨hq₀, hq₀₁.le⟩)) (one_le_listConst q₀ m₀)
   have hbT : 1 ≤ max 1 vlo⁻¹ ^ (m₀ + 1) := one_le_pow₀ (le_max_left _ _)
-  have hκK : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
-  have hM₀ : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
+  have hκK  := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
+  have hM₀  := (abs_nonneg _).trans (hΨ 0)
   have hharm : ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊, (1 : ℝ) / w ≤ 3 * Real.log x := by
     have h := OneSided.sum_Icc_inv_le ⌊x ^ 2⌋₊
     simp only [one_div]
@@ -481,7 +470,6 @@ theorem norm_physSum_sub_stripSum_le_of_scale {q₀ c₀ C₀ vlo vhi B₀ κ M�
   have hcount : (Fintype.card ι : ℝ) * J ^ 2 +
       J * (2 * (3 * Real.log x) + m₀ * Fintype.card ι) + m₀ * (3 * Real.log x) ≤
       (J ^ 2 + 6 * J + J * m₀ + 3 * m₀) * Real.log x := by
-    have h0 : (0 : ℝ) ≤ Fintype.card ι := Nat.cast_nonneg _
     have hJ : (0 : ℝ) ≤ J := Nat.cast_nonneg _
     have hm : (0 : ℝ) ≤ m₀ := Nat.cast_nonneg _
     nlinarith [mul_le_mul_of_nonneg_left hsL (sq_nonneg (J : ℝ)),
@@ -499,8 +487,7 @@ pairing is the stripped correlation up to `κ_K L^{C_r} e^{-L^{0.27}}`. -/
 theorem exists_eventually_norm_physSum_sub_stripSum_le (q₀ c₀ C₀ vlo vhi B₀ κ M₀ : ℝ)
     (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (hκ : 1 < κ) (m₀ J : ℕ) :
     ∃ Cr : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (C : ι → Finset (Fin J)), (∀ g, (C g).card ≤ m₀) →
         ∀ (K : (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
           (κK : ℝ), (∀ p p' a, ‖K p p' a‖ ≤ κK) →

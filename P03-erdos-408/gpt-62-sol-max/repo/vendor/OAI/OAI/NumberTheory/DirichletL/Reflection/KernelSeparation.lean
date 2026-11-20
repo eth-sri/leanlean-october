@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff SchwartzMap
+open scoped Classical BigOperators ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform
 noncomputable section
 

@@ -14,62 +14,6 @@ open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSuppo
 open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
-theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
-    (hcop : IsCoprime a b)
-    [Fintype (Residue a)] [Fintype (Residue b)] [Fintype (Residue (a * b))]
-    (Fa : Residue a → ℂ) (F : Residue b → ℂ)
-    (h : Residue (a * b)) :
-    (∑ x : Residue (a * b),
-      Fa (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
-        F (frequencyReduction b (a * b) (dvd_mul_left b a) x) *
-          quotientTrace (a * b) (mul_ne_zero ha hb) (h * x)) =
-      (∑ x : Residue a, Fa (Ideal.Quotient.mk _ b*x) *
-        quotientTrace a ha (frequencyReduction a (a*b) (dvd_mul_right a b) h*x)) *
-      (∑ y : Residue b, F (Ideal.Quotient.mk _ a*y) *
-        quotientTrace b hb (frequencyReduction b (a*b) (dvd_mul_left b a) h*y)) := by
-  let ua := residueUnit a b hcop
-  let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
-    (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
-  have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
-      ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
-    change (principalCRT a b hcop).toEquiv
-      ((principalCRT a b hcop).toEquiv.symm ((ua : Residue a) * x.1, (ub : Residue b) * x.2)) = _
-    exact (principalCRT a b hcop).toEquiv.apply_symm_apply _
-  have he (x : Residue a × Residue b) : e x =
-      scaledResidue a b (a * b) rfl x.1 + scaledResidue b a (a * b) (mul_comm a b) x.2 := by
-    apply (principalCRT a b hcop).injective
-    rw [heproj, map_add, principalCRT_scaled_left, principalCRT_scaled_right]
-    simp only [Prod.mk_add_mk, add_zero, zero_add, ua, ub, residueUnit_coe]
-  have hproj (x : Residue (a * b)) :
-      (frequencyReduction a (a * b) (dvd_mul_right a b) x,
-        frequencyReduction b (a * b) (dvd_mul_left b a) x) = principalCRT a b hcop x := by
-    obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-    simp only [frequencyReduction_mk, principalCRT_mk]
-  have hprojA (x : Residue a × Residue b) :
-      frequencyReduction a (a * b) (dvd_mul_right a b) (e x) = Ideal.Quotient.mk _ b * x.1 := by
-    have ht := congrArg Prod.fst (hproj (e x))
-    rw [heproj] at ht
-    simpa only [ua, residueUnit_coe] using ht
-  have hprojB (x : Residue a × Residue b) :
-      frequencyReduction b (a * b) (dvd_mul_left b a) (e x) = Ideal.Quotient.mk _ a * x.2 := by
-    have ht := congrArg Prod.snd (hproj (e x))
-    rw [heproj] at ht
-    simpa only [ub, residueUnit_coe] using ht
-  rw [← e.sum_comp]
-  simp_rw [hprojA, hprojB]
-  simp only [ he, mul_add, AddChar.map_add_eq_mul,
-    quotientTrace_scaled a b (a * b) rfl ha hb (mul_ne_zero ha hb),
-    quotientTrace_scaled b a (a * b) (mul_comm a b) hb ha (mul_ne_zero ha hb)]
-  simp only [Fintype.sum_prod_type, ]
-  simp only [Finset.mul_sum, Finset.sum_mul]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro x _
-  apply Finset.sum_congr rfl
-  intro y _
-  ring
-
 theorem sexticGauss_coprime_product (a b : O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (hcop : IsCoprime a b) (H : O) :
@@ -123,9 +67,9 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
       (idealRowHom (A*s) (Ideal.span {B}) * (idealRowHom (A*s) (Ideal.span {r}))⁻¹) *
       barePhysicalFourier A s hA (supportedElement_ne_zero s hs) H *
       barePhysicalFourier B r hB (supportedElement_ne_zero r hr) H := by
-  have hsc : IsCoprime s r := hcop.of_mul_left_right.of_mul_right_right
-  have hc1 : IsCoprime (B*r) s := hcop.of_mul_left_right.symm
-  have hc2 : IsCoprime (A*s) r := hcop.of_mul_right_right
+  have hsc  := hcop.of_mul_left_right.of_mul_right_right
+  have hc1  := hcop.of_mul_left_right.symm
+  have hc2  := hcop.of_mul_right_right
   have hAs := mul_ne_zero hA (supportedElement_ne_zero s hs)
   have hBr := mul_ne_zero hB (supportedElement_ne_zero r hr)
   let := finite_quotient_span hAs

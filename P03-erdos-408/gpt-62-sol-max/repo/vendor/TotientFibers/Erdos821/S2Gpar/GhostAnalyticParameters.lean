@@ -56,7 +56,7 @@ theorem eventually_N_plus_one_le_half_exp (F : FixedData) :
 
 theorem baselinePrime_ge_half_of_scale
     (F : FixedData) (x : ℝ) (p : ℕ)
-    (_hL : 1 ≤ L x)
+
     (hN : (N x : ℝ) + 1 ≤ (1 / 2) * Real.exp ((L x) ^ F.c))
     (hp : Real.exp ((L x) ^ F.c) ≤ (p : ℝ))
     (hppos : 0 < (p : ℝ)) :
@@ -104,11 +104,11 @@ theorem GhostAnalyticParametersTask_proof :
   let Acoef : ℝ := 4 * max 1 F.vMax * r.v / r.rho
   let Cv : ℝ := Acoef * F.C₀
   have hmax : 0 < max 1 F.vMax := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hv : 0 < r.v := lt_trans zero_lt_one r.v_gt
+  have hv  := lt_trans zero_lt_one r.v_gt
   have hAcoefPos : 0 < Acoef := by
     dsimp [Acoef]
     exact div_pos (mul_pos (mul_pos (by norm_num) hmax) hv) r.rho_pos
-  have hAcoef : 0 ≤ Acoef := hAcoefPos.le
+  have hAcoef  := hAcoefPos.le
   have hCv : 0 ≤ Cv := by dsimp [Cv]; exact mul_nonneg hAcoef F.C₀_pos.le
   have hscale := eventually_N_plus_one_le_half_exp F
   have hgood : ∀ᶠ x : ℝ in atTop,
@@ -119,11 +119,10 @@ theorem GhostAnalyticParametersTask_proof :
   refine ⟨Cv, hCv, x₀, ?_⟩
   intro x hx P hP
   rcases hx₀ x hx with ⟨hxexp, hN⟩
-  have hxpos : 0 < x := (Real.exp_pos 1).trans_le hxexp
   have hL : 1 ≤ L x := by
     have hlog := Real.log_le_log (Real.exp_pos 1) hxexp
     simpa only [L, Real.log_exp] using hlog
-  have hLpos : 0 < L x := lt_of_lt_of_le zero_lt_one hL
+  have hLpos  := lt_of_lt_of_le zero_lt_one hL
   rcases hP with ⟨_, _, _, hBigCount, hV, hPrime⟩
   have hVpos : ∀ g : P.Group, 0 < P.V g ∧ P.V g ≤ F.vMax := by
     intro g
@@ -134,10 +133,10 @@ theorem GhostAnalyticParametersTask_proof :
     intro g p
     have hrange := hPrime g.val p.val p.property
     rw [g.property] at hrange
-    have hpLower : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := hrange.1
+    have hpLower  := hrange.1
     have hpPos : 0 < (p.val : ℝ) := by
       exact_mod_cast (P.prime g.val p.val p.property).pos
-    exact baselinePrime_ge_half_of_scale F x p.val hL hN hpLower hpPos
+    exact baselinePrime_ge_half_of_scale F x p.val hN hpLower hpPos
   have hBaseline : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
       0 < baselinePrime F (N x) p.val := by
     intro g p
@@ -145,7 +144,7 @@ theorem GhostAnalyticParametersTask_proof :
   refine ⟨hVpos, ?_, ?_, ?_⟩
   · exact hBaseline
   · intro g
-    have hVg : 0 < P.V g.val := (hVpos g.val).1
+    have hVg  := (hVpos g.val).1
     calc
       (∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p) ≤
           ∑ p : P.Prime g.val,
@@ -159,7 +158,7 @@ theorem GhostAnalyticParametersTask_proof :
             P.V g.val * (p.val : ℝ) * baselinePrime F (N x) p.val := by
           have hmul := mul_le_mul_of_nonneg_left hbase
             (mul_nonneg hVg.le hpPos.le)
-          simpa [mul_assoc] using hmul
+          assumption
         have hminPos : 0 < P.V g.val * (p.val : ℝ) * (1 / 2) := by positivity
         have hmaxPos : 0 < P.V g.val * (p.val : ℝ) *
             baselinePrime F (N x) p.val := by positivity

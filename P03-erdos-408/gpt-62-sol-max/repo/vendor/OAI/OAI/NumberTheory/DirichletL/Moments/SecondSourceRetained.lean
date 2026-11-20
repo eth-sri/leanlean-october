@@ -23,7 +23,7 @@ def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ
 theorem retainedKernel_eq (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) :
     retainedKernel I J W K Tsec Z ξ=secondRetainedPair I J hI hJ W K Tsec Z ξ := by
-  simp only [retainedKernel,dite_eq_left hI,dite_eq_left hJ]
+  simp [retainedKernel,dite_eq_left hI,dite_eq_left hJ]
 
 theorem retainedEnergy_common_sectors (η : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) :

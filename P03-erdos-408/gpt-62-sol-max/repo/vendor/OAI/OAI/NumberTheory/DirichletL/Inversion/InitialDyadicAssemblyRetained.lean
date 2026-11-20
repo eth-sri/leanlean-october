@@ -9,10 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialDyadicAssembly
-open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount
-open Filter
+open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount Filter
 
 def retainedWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>radialCenter m (exponent Z (k 3).val)
@@ -34,11 +33,10 @@ theorem retained_exponents_eventually (b R Λ:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀D m L T:ℝ,D≤R→0≤m→L≤Λ→0<T→
       ∀k∈retainedWindows (fun _=>1) (physicalCaps b Z D T) Z D m L,
         ∀i,exponent Z (k i).val∈Set.Icc 0 (3*R+Λ+1) := by
-  filter_upwards [window_exponent_eventual_upper b 1 hb (by norm_num)] with Z hZ
+  filter_upwards [window_exponent_eventual_upper b 1 (by norm_num)] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro D m L T hD hm hL hT k hk
-  have hs:radialCenter m (exponent Z (k 3).val) (exponent Z (k 1).val) D
-      (exponent Z (k 0).val)≤L := (Finset.mem_filter.mp hk).2
+  have hs := (Finset.mem_filter.mp hk).2
   have hp:0<b*Z^D := mul_pos hb (Real.rpow_pos_of_pos (by linarith [hZ.1]) D)
   have h0:=hZ.2 (b*Z^D) D hp le_rfl (k 0).val (k 0).property
   have h1:=hZ.2 (b*Z^D) D hp le_rfl (k 1).val (k 1).property
@@ -94,8 +92,8 @@ theorem retained_card_subpower (b R Λ ε:ℝ)(hb:0<b)(hR:0≤R)(hΛ:0≤Λ)(hε
   exact (by exact_mod_cast hi :
     ((retainedWindows (fun _=>1) (physicalCaps b Z D T) Z D m L).card:ℝ)≤
       (Fintype.card (Windows (fun _=>1) (fun _=>Z^(3*R+Λ+1))):ℝ)).trans
-    (hc (fun _=>1) (fun _=>Z^(3*R+Λ+1)) (by intro i; norm_num)
-      (fun _=>hp) (by intro i; simp))
+    (hc (fun _=>1) (fun _=>Z^(3*R+Λ+1)) (by norm_num)
+      (fun _=>hp) (by simp))
 
 end SevenEighths.InverseInitialDyadicAssembly
 

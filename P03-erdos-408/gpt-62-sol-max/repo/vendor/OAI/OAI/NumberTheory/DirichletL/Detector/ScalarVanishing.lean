@@ -26,9 +26,7 @@ theorem higher_convolution_zero (p : O) (hp : Prime p)
     ConcreteTraceCRT.finite_quotient_span (mul_ne_zero hp.ne_zero (pow_ne_zero _ hp.ne_zero))
   let : Fintype (O ⧸ Ideal.span {p*p^(n+(m+2))}) := Fintype.ofFinite _
   have hmod : p*p^(n+(m+2)) = p^(m+2)*p^(n+1) := by
-    rw [← pow_succ', ← pow_add]
-    congr 1
-    omega
+    ring
   have hinner (V : O) : (∑' d : O ⧸ Ideal.span {p^(m+2)},
       χ (Ideal.Quotient.mk _ (representative (p^(m+2)) d)) *
         quotientTrace (p^(m+2)) (pow_ne_zero _ hp.ne_zero)

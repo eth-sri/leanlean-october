@@ -51,7 +51,7 @@ private theorem exists_norm_iteratedFDeriv_plateauTwist_le : ∃ C : ℝ, 0 ≤ 
     rw [plateau_eq_zero ht.le, Complex.ofReal_zero]
   obtain ⟨P, hP⟩ := exists_norm_iteratedFDeriv_le
     (Complex.ofRealCLM.contDiff.comp contDiff_plateau) hc 4
-  have hP0 : 0 ≤ P := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
+  have hP0  := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
   refine ⟨16 * P * (4 * π) ^ 4, by positivity, fun Λ lam hΛ hlam i hi y => ?_⟩
   refine (norm_iteratedFDeriv_twist_le (Complex.ofRealCLM.contDiff.comp contDiff_plateau)
     (fun j hj => hP j (hj.trans hi)) lam y).trans ?_
@@ -85,7 +85,7 @@ private theorem inv_one_add_div_two_pi_sq_le {a : ℝ} (ha : 0 ≤ a) :
 private theorem integrable_inv_one_add_abs_sq :
     Integrable fun u : ℝ => ((1 + |u|) ^ 2)⁻¹ := by
   refine integrable_inv_one_add_sq.mono' ?_ (Filter.Eventually.of_forall fun u => ?_)
-  · exact (Continuous.inv₀ (by fun_prop) fun u => by positivity).aestronglyMeasurable
+  · fun_prop
   · rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
     exact inv_anti₀ (by positivity) (by nlinarith [abs_nonneg u, sq_abs u])
 

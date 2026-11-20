@@ -12,9 +12,8 @@ open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentAmplificationSourcePolynomial
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation
-open CenteredMomentSourceRow CenteredMomentLiveDomain
+open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain CenteredMomentGaussEnergy
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
 local notation "O" => ActualEisensteinCubic.O
 
  theorem residual_primaryGaussRow (p : O) (hp : Prime p)
@@ -46,7 +45,7 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
         (sourceGenerator_supported (residualColumns S p hp k))
         (fun I : supportedColumns (residualColumns S p hp k) =>
           c ((Ideal.span {p})^k*I)*residualCharacter p k (primaryGenerator I)) h := by
-  let f : Ideal O → ℂ := fun I => residualCharacter p k (primaryGenerator I)*primaryGaussRow I h
+  let f  := fun I => residualCharacter p k (primaryGenerator I)*primaryGaussRow I h
   have he := residual_column_sum S p hp k c f
   have hl : (∑ I∈valuationColumns S p k,c I*f (residualIdeal p hp I))=
       gaussPolynomial Finset.univ
@@ -83,7 +82,6 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   rw [supported_residualColumns]
   apply Finset.sum_congr rfl
   intro I hI
-  dsimp only [f]
   ring
 
 end SevenEighths.CenteredMomentAmplificationSourcePolynomial

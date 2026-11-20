@@ -23,7 +23,7 @@ theorem visitQ_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < visitQ F.q 
 theorem visitQ_lt_one (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : visitQ F.q n i < 1 := by
   unfold visitQ
   split_ifs
-  · simpa only [Real.sqrt_one] using Real.sqrt_lt_sqrt F.q_pos.le F.q_lt
+  · simpa using Real.sqrt_lt_sqrt F.q_pos.le F.q_lt
   · exact F.q_lt
 
 theorem eta_nonneg (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 ≤ eta F n i :=
@@ -62,7 +62,6 @@ theorem tiltedMu_eq_mu_mul (F : FixedData) (P : PrimeGroups) (n : ℕ)
     (g : P.Group) (p : P.Prime g) :
     tiltedMu F P n g p = P.mu g p * (baselinePrime F n p.val)⁻¹ := by
   unfold tiltedMu PrimeGroups.mu
-  rw [mul_inv_rev]
   ring
 
 end Erdos821.P3Clean

@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Moment.Chain.Identity
 public import Erdos408.OneSided.Moment.Rank
 public import Erdos408.OneSided.Moment.Truncation
@@ -35,14 +36,16 @@ variable {K : ℕ}
 /-- The truncation cap `B = ⌈L²⌉`. -/
 def truncCap (x : ℝ) : ℕ := ⌈Real.log x ^ 2⌉₊
 
+section
+
+variable {q C CX alo ahi Dstar g : ℝ}
+
 /-- M3, the truncation: lowering the memory cap from the number of band primes to
 `B = ⌈L²⌉` changes the distinct-birth history sum by at most `exp(-L²/2)`. -/
-theorem eventually_distinctSum_truncation {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
+theorem eventually_distinctSum_truncation (hq : 0 < q)
     (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
     (hK : bandThreshold Dstar C ≤ K) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
         ‖distinctSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r (memCap x d)
               (2 * momentPower x) -
             distinctSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r (truncCap x)
@@ -54,12 +57,10 @@ theorem eventually_distinctSum_truncation {q C CX alo ahi Dstar g : ℝ} (hq : 0
 
 /-- M4–M10, the truncated memory bound: with the cap `B = ⌈L²⌉`, the distinct-birth history
 sum is at most `2 L^{-(E₀ + 2) N}`. -/
-theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
+theorem eventually_norm_distinctSum_le (hq : 0 < q)
     (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo)
     (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
         ‖distinctSum q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r (truncCap x)
             (2 * momentPower x)‖ ≤
           2 * Real.log x ^ (-((momentPrec Dstar C + 2) * (2 * momentPower x : ℕ))) := by
@@ -84,13 +85,13 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
     ⟨|C₁| + 1, by linarith [abs_nonneg C₁], by linarith⟩
   have hlog := Real.tendsto_log_atTop
   filter_upwards [hG, hE, hR, eventually_chainEdge_normLe hq hq₁ hC hD hCX halo hahi hK hg,
-    eventually_rpow_lt_of_mem_band (by linarith : (0 : ℝ) < alo) 1,
+    eventually_two_mul_add_one_le (K := K) (C := C) (CX := CX) (ahi := ahi) (g := g) halo,
     eventually_harmonicMass_band halo.le,
     hlog.eventually (eventually_highRank_sum_le (C₁ := C₁') (E := momentPrec Dstar C)
       (by linarith) hE₀.le halo.le),
     hlog.eventually (eventually_lowRank_sum_le K (E := momentPrec Dstar C) hC₀'1 hCe'0 hG₀ rfl),
     hlog.eventually (eventually_addrCount_le K), hlog.eventually_ge_atTop 16]
-    with x hGx hEx hRx hE₀x hbig hV hhigh hlow haddr hL16 d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁
+    with x hGx hEx hRx hE₀x hlarge hV hhigh hlow haddr hL16 d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁
   set L := Real.log x with hLdef
   have hL0 : 0 < L := by linarith
   have hL1 : 1 ≤ L := by linarith
@@ -113,29 +114,10 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
       simp [hQdef, BirthAddr, Fintype.card_sum, Fintype.card_prod, Fintype.card_fin]
     rw [hQeq]
     exact haddr N (padCount x) B hN₂ hJ hB
-  -- band primes exceed `L ≥ 2N + 1`
-  have hpN : ∀ p ∈ bandPrimes x d, 2 * (N + 1) ≤ p + 1 := by
-    intro p hp
-    obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-    have hLp := hbig (d.a i) (hd.window i).1 p hpi
-    rw [Real.rpow_one] at hLp
-    have hs := four_le_rpow_half hL16
-    have hss : L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) = L := by
-      rw [← Real.rpow_add hL0]
-      norm_num
-    have h4s : 4 * L ^ (1 / 2 : ℝ) ≤ L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ) :=
-      mul_le_mul_of_nonneg_right hs (by positivity)
-    have : 2 * ((N : ℝ) + 1) ≤ p + 1 := by linarith
-    exact_mod_cast this
-  -- the birth weights, the chain measure and the boundary norm
-  have hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p := by
-    intro p hp
-    obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
-    exact (primeWeight_le_two_div q x d hq.le hpi (hV (d.a i) (hd.window i).1).1
-      (hpN p hp)).1
-  have hν : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2 := fun i =>
-    sum_band_primeWeight_le q x d hq.le (hV (d.a i) (hd.window i).1).1 fun p hp =>
-      hpN p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩)
+  have hb (p : ℕ) (hp : p ∈ bandPrimes x d) : 1 / 2 ≤ baseline q N p :=
+    half_le_baseline hq.le (hlarge d hd p hp)
+  have hν₀ (p : ℕ) (_ : p ∈ bandPrimes x d) := primeWeight_nonneg_of_baseline hb p
+  have hν := sum_primeWeight_band_le_two (fun i => (hV (d.a i) (hd.window i).1).1) hb
   have hμ : ∀ s, 0 ≤ chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s := chainMeasure_nonneg hν₀
   have hW := wnormSq_chainInit_le (Y := 2 ^ j) (d₀ := 2 ^ k) (u := u) (v := v) (r := r) (B := B)
     hν₀ hν
@@ -145,16 +127,10 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
       ∀ h ∈ histories x d (2 ^ j) (2 ^ k) u v r B N, ∀ a p, births s h a = some p → p < P :=
     fun s h hh a p hp => Nat.lt_succ_of_le (le_sup (f := id) (births_mem_bandPrimes s hh a p hp))
   -- the operator bounds at `x`
-  have hGψ : ∀ (j' : ℕ) (ψ : Fin B → Option ℕ → ℂ), (∀ k o, ‖ψ k o‖ ≤ 1) →
-      NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
-        (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
-        (phasedGhost q x d (2 ^ j) (2 ^ k) u v r B N j' ψ) C₀' := fun j' ψ hψ =>
+  have hGψ  := fun j' ψ hψ =>
     NormLe.mono hμ (abs_nonneg _) hC₀'
       (hGx d hd (2 ^ j) (2 ^ k) u v r B N j' hB3 rfl ψ hψ).abs
-  have hEψ : ∀ ψ : Fin K → Option ℕ → ℂ, (∀ i o, ‖ψ i o‖ ≤ 1) →
-      NormLe (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
-        (chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N)
-        (phasedEdge q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B N ψ) (L ^ Ce') :=
+  have hEψ  :=
     fun ψ hψ => NormLe.mono hμ (Real.rpow_nonneg hL0.le _)
       (Real.rpow_le_rpow_of_exponent_le hL1 hCe')
       (hEx d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁ B N hB3 rfl ψ hψ)
@@ -237,32 +213,7 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
           (hhighsum.trans (hhigh N Q hN₂ hQ)))
     _ = 2 * L ^ (-((momentPrec Dstar C + 2) * N)) := by ring
 
-/-- The damping defects are in `[0, 1]`. -/
-private theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
-    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-  unfold dampDefect
-  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
-
-/-- For band primes beyond `N`, the baseline `b'_p` is in `[0, 1]`: each of the `N + 1`
-defects is at most `1`, and `p + 1 > N + 1`. -/
-private theorem baseline_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ} (hp : N < p) :
-    0 ≤ baseline q N p ∧ baseline q N p ≤ 1 := by
-  have hp1 : (0 : ℝ) < p + 1 := by positivity
-  -- `0 ≤ ∑_{j ≤ N} η'_j ≤ N + 1 ≤ p + 1`
-  have hsum₀ : 0 ≤ ∑ j ∈ range (N + 1), dampDefect q N j :=
-    sum_nonneg fun j _ => (dampDefect_mem_Icc hq hq₁ N j).1
-  have hsum₁ : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (p : ℝ) + 1 :=
-    calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
-          sum_le_sum fun j _ => (dampDefect_mem_Icc hq hq₁ N j).2
-      _ = (N : ℝ) + 1 := by simp
-      _ ≤ (p : ℝ) + 1 := by gcongr
-  have h₀ : 0 ≤ ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j := by positivity
-  have h₁ : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 := by
-    rw [inv_mul_le_iff₀ hp1, mul_one]
-    exact hsum₁
-  unfold baseline
-  constructor <;> linarith
+end
 
 /-- For `L ≥ 4`, `2 ≤ L^{1/2}` and `2 L^{1/2} ≤ L`. -/
 theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
@@ -276,7 +227,7 @@ theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
   have hs2 : 2 ≤ s := by
     by_contra h
     push Not at h
-    have : s * s < 2 * 2 := mul_lt_mul'' h h hs0 hs0
+    have  := mul_lt_mul'' h h hs0 hs0
     linarith
   refine ⟨hs2, ?_⟩
   calc 2 * s ≤ s * s := mul_le_mul_of_nonneg_right hs2 hs0
@@ -316,11 +267,8 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
           calc (4 : ℝ) = 2 * 2 := by norm_num
             _ ≤ L * L := mul_le_mul (by linarith) (by linarith) (by norm_num) hL0.le
   have h₁ : 2 * L ^ (-((E + 2) * n)) ≤ a / 2 := by
-    have hsplit : L ^ (-((E + 2) * n)) = a * L ^ (-n) := by
-      rw [ha, ← Real.rpow_add hL0]
-      ring_nf
+    have hsplit : L ^ (-((E + 2) * n)) = a * L ^ (-n) := by rpow_ring hL0
     rw [hsplit]
-    have ha0 : 0 ≤ a := by positivity
     calc 2 * (a * L ^ (-n)) ≤ 2 * (a * (1 / 4)) := by gcongr
       _ = a / 2 := by ring
   -- the second term: `(E + 1) n log L + log 2 ≤ 4 (E + 1) L + L ≤ L² / 2`
@@ -328,7 +276,7 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
     have := Real.log_le_rpow_div hL0.le (show (0 : ℝ) < 1 / 2 by norm_num)
     linarith
   have hn' : n ≤ 2 * L ^ (1 / 2 : ℝ) := by linarith
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hlog0  := Real.log_nonneg hL1
   have hprod : (E + 1) * n * Real.log L ≤ 4 * (E + 1) * L :=
     calc (E + 1) * n * Real.log L ≤ (E + 1) * (2 * L ^ (1 / 2 : ℝ)) * (2 * L ^ (1 / 2 : ℝ)) := by
           gcongr
@@ -354,9 +302,7 @@ of the root moment is at most `L^{-(E₀ + 1) N}`. -/
 theorem eventually_norm_lineAverage_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
     (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo)
     (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
         ‖lineAverage x d fun ℓ =>
             rootMoment q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r ℓ‖ ≤
           Real.log x ^ (-((momentPrec Dstar C + 1) * (2 * momentPower x : ℕ))) := by

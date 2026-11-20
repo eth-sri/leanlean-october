@@ -84,10 +84,10 @@ theorem original_source_energy
   refine ⟨A*C,U₀,mul_pos hA hC,hU₀,?_⟩
   intro U hU hpow ι inst dec hK L ell coeff hell hp hs hdis hratio hc hout primeW hprimeW hlive
     χ hχ hperiod hzero m r hm hmcap hD hfirst hsecond hparent rows hrows θ
-  have hUone:1<U:=hU₀.trans_le hU
-  have hUpos:0<U:=zero_lt_one.trans hUone
+  have hUone:=hU₀.trans_le hU
+  have hUpos:=zero_lt_one.trans hUone
   have hscale (i:ι):0<U^(ell i):=Real.rpow_pos_of_pos hUpos _
-  have hnorm (i:ι)(P:Ideal O)(hP:P∈L i):(P.absNorm:ℝ)≤2*U^(ell i):=
+  have hnorm (i:ι)(P:Ideal O)(hP:P∈L i):=
     (div_le_iff₀ (hscale i)).mp (hratio i P hP).2
   let E:ℝ:=C*U^(m+15*eta+π+eps+loss)*((1+‖θ‖)^degree)^2
   have hE:0≤E:=by dsimp [E];positivity
@@ -119,8 +119,8 @@ theorem original_source_energy
       hperiod hzero (r+(∑i,ell i)-2*(∑i∈J,ell i)) m r hm hmcap (hD J)
       (by simpa using (pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) hJ).trans hpow)
       (by simpa [assignedCenter] using hprod (Finset.univ\J))
-      rfl (by simpa [assignedCenter] using hfirst) (by simpa [assignedCenter] using hsecond)
-      (by simpa [assignedCenter] using hparent) rows hrows (assignedIdeal L J x) hje
+      rfl (by assumption) (by assumption)
+      (by assumption) rows hrows (assignedIdeal L J x) hje
       (assignedElement_span L J x)
       (assigned_ratio_interval L J x U hUpos ell K hJ (fun i _=>hratio i))
       (fun i _=>hp i) (fun i _ P hP _=>hratio i P hP)

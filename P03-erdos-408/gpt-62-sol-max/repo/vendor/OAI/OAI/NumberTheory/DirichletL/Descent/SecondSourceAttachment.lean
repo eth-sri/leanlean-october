@@ -1,6 +1,11 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRecursive
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.SecondModeIntegral
+public import OAI.NumberTheory.DirichletL.Descent.SecondWholeMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 
 @[expose] public section
 
@@ -51,9 +56,9 @@ theorem attachSecondExpansion_recover {Jo : ℕ} (x : MarkedSecondSource ι Jo 0
   funext i
   exact Fin.elim0 i
 
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def secondParentLabel {Jo : ℕ} (parent : SecondParentSource ι Jo) : Eis :=
   (∏ i∈parent.firstCommon,p i)*jLabel p parent.cube.support
@@ -68,20 +73,7 @@ def secondParentPuncture {Jo : ℕ} (m : Eis) (parent : SecondParentSource ι Jo
     b0Label p parent.cube.support (fun i => parent.cube.leftExponent i+parent.cube.rightExponent i)
       parent.cube.leftBit parent.cube.rightBit*secondParentDivisor p parent
 
-omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-theorem attached_inherited_profile {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) :
-    secondInheritedProfile p (attachSecondExpansion parent x) Ψ m z =
-      expansionProfileData p Ψ (secondParentPuncture p m parent)
-        (secondParentLabel p parent) (secondParentDivisor p parent) z ∅ ∅ x := rfl
 
-theorem attached_signed_weight {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) :
-    actualSecondSignedWeight p hp hcop hg Ψ
-      (m*ConcretePrimeRowBridge.idealGenerator (attachSecondExpansion parent x).quotient) z
-      (attachSecondExpansion parent x) =
-    secondSignedSourceWeight p hp hcop hg Ψ (secondParentPuncture p m parent)
-      (secondParentLabel p parent) (secondParentDivisor p parent) z x := rfl
 
 theorem secondExpansionSource_attached
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
@@ -107,9 +99,7 @@ theorem secondExpansionSource_attached
   rw [he]
   congr 1
   rw [Finset.sum_image (fun x hx y hy h => attachSecondExpansion_injective parent h)]
-  apply Finset.sum_congr rfl
-  intro x hx
-  rw [attached_inherited_profile,attached_signed_weight]
+  rfl
 
 end
 end SevenEighths.InverseMoment

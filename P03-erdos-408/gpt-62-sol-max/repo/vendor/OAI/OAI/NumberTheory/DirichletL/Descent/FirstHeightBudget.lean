@@ -1,13 +1,14 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalPhysicalEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
 open JointLogSeparation InverseAmbientProfileTower

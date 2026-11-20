@@ -1,13 +1,13 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.GaussianSummation
+public import OAI.NumberTheory.DirichletL.Detector.GaussianSeminorm
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology
+open scoped Classical
 open Filter Set Metric
 namespace SevenEighths.ProbePhysical
 
@@ -36,7 +36,7 @@ lemma iteratedDeriv_restrict_real (f : ℂ→ℂ)
     rw [he]
     exact ih (deriv f) (fun y=>(hf y).deriv)
 
-lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
+lemma gaussianFlow_disk_bound (a L : ℝ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→∀y : ℝ,|y|≤L→
       ∀z∈Metric.closedBall (y:ℂ) 1,‖gaussianFlow R z‖≤C*R^(-a) := by
   let c := ‖((1/(2*Real.pi):ℝ):ℂ)*(Real.pi:ℂ)^(1/2:ℂ)‖
@@ -75,7 +75,7 @@ lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
 lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L) (n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→∀y : ℝ,|y|≤L→
       ‖iteratedDeriv n (fun s : ℝ=>gaussianFlow R (s:ℂ)) y‖≤C*R^(-a) := by
-  obtain ⟨B,hB,hbound⟩ := gaussianFlow_disk_bound a L hL
+  obtain ⟨B,hB,hbound⟩ := gaussianFlow_disk_bound a L
   refine ⟨(n.factorial:ℝ)*B,by positivity,?_⟩
   intro R hR y hy
   rw [iteratedDeriv_restrict_real _ (fun x=>gaussianFlow_analytic R (x:ℂ)) n y]

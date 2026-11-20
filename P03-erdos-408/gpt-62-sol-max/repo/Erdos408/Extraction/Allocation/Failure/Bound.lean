@@ -55,7 +55,6 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
     have h2 : (1 : ℝ) / p < 1 := by rw [div_lt_one (by linarith)]; linarith
     exact mul_nonneg (pow_nonneg (by linarith) _) (inv_nonneg.2 (by linarith))
   · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
-    have hj0 : (0 : ℝ) < j := by exact_mod_cast hj
     -- `(1 - 1/(j p))^j ≤ exp(-1/p)`
     have h1 : (1 - (j : ℝ)⁻¹ / p) ^ j ≤ Real.exp (-(1 / p)) := by
       have h0 : 0 ≤ 1 - (j : ℝ)⁻¹ / p := by
@@ -85,7 +84,7 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
     calc (1 - (j : ℝ)⁻¹ / p) ^ j * (1 - (1 : ℝ) / p)⁻¹
         ≤ Real.exp (-(1 / p)) * Real.exp (1 / p + 2 * (1 / p ^ 2)) := by
           refine mul_le_mul h1 h2 (inv_nonneg.2 ?_) (exp_pos _).le
-          have : (1 : ℝ) / p ≤ 1 / 2 := one_div_le_one_div_of_le (by norm_num) hp2
+          have  := one_div_le_one_div_of_le (by norm_num) hp2
           linarith
       _ = Real.exp (2 * (1 / p ^ 2)) := by rw [← exp_add]; ring_nf
 
@@ -121,15 +120,14 @@ lemma sum_coreFactor_div_le {x γ : ℝ} (hx : 0 < x) (hγL : 0 < γ * Real.log 
   · rw [zero_div]
 
 /-- Real arithmetic for combining the factors of the main term. -/
-lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ} (m : ℕ) (hXr : 0 ≤ Xr) (hWP0 : 0 ≤ WP)
+lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ} (m : ℕ) (hXr : 0 ≤ Xr)
     (hWP : WP ≤ 2 * κ / γL) (hSd0 : 0 ≤ Sd) (hSd : Sd ≤ E * (Q + δ)) (hSb0 : 0 ≤ Sb)
     (hSb : Sb ≤ κ * H) (hκ : 0 ≤ κ) (hγL : 0 < γL) :
     Xr * WP * Sd * Sb ^ m ≤ Xr * (2 / γL) * (κ ^ (m + 1) * E) * (Q + δ) * H ^ m := by
-  have h1 : Sb ^ m ≤ (κ * H) ^ m := pow_le_pow_left₀ hSb0 hSb m
+  have h1  := pow_le_pow_left₀ hSb0 hSb m
   have h2 : Xr * WP * Sd * Sb ^ m ≤ Xr * (2 * κ / γL) * (E * (Q + δ)) * (κ * H) ^ m := by
-    have hpow0 : 0 ≤ Sb ^ m := pow_nonneg hSb0 m
-    have hWP' : 0 ≤ 2 * κ / γL := hWP0.trans hWP
-    have hEQ : 0 ≤ E * (Q + δ) := hSd0.trans hSd
+    have hpow0  := pow_nonneg hSb0 m
+    have hEQ  := hSd0.trans hSd
     calc Xr * WP * Sd * Sb ^ m ≤ Xr * (2 * κ / γL) * Sd * Sb ^ m :=
           mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_left hWP hXr) hSd0) hpow0
@@ -180,7 +178,6 @@ theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset
   -- `8 ε / Π ≤ 1`, so `2 ε K / Π ≤ 1/2` and `ε ≤ Π / 2`
   have h8 : 8 * ε / Pi ≤ 1 := by
     refine le_trans ?_ hδ'
-    have : 0 ≤ 8 * ε / Pi := by positivity
     calc 8 * ε / Pi = 8 * ε / Pi * 1 * 1 := by ring
       _ ≤ 8 * ε / Pi * K * (5 / 2) ^ F.card := by gcongr
       _ = 8 * ε * K / Pi * (5 / 2) ^ F.card := by ring
@@ -214,7 +211,7 @@ theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset
   have hSb := sum_coreFactor_div_le hx hγL hj X
   have hSb0 : 0 ≤ ∑ a ∈ Icc 1 X, coreFactor x γ (j' + 1) a / a :=
     sum_nonneg fun a _ => div_nonneg (coreFactor_nonneg hj hγ a) (Nat.cast_nonneg _)
-  have h := main_combine (Xr := (X : ℝ)) j' (Nat.cast_nonneg X) (by positivity) hWP hSd0 hSd hSb0
+  have h := main_combine (Xr := (X : ℝ)) j' (Nat.cast_nonneg X) hWP hSd0 hSd hSb0
     hSb hκ0.le hγL
   refine le_trans (le_of_eq ?_) (h.trans (le_of_eq ?_))
   · ring

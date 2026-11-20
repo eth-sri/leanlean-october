@@ -55,11 +55,9 @@ lemma bigFlat_average (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fi
   apply Fintype.sum_equiv (flattenBig P M)
   intro y
   rw [bigFlatWeight_eq]
-  have he : (fun g i => if i ∈ S g then y g i else a g i) =
-      (flattenBig P M).symm (mixCoords (bigFlatSet P M S) (flattenBig P M a) (flattenBig P M y)) := by
-    funext g i
-    by_cases hi : i ∈ S g <;> simp [flattenBig, mixCoords, bigFlatSet, hi]
-  exact congrArg (fun z => (P.idealMass y : ℂ) * f z) he
+  refine congrArg (fun z => (P.idealMass y : ℂ) * f z) ?_
+  funext g i
+  by_cases hi : i ∈ S g <;> simp [flattenBig, mixCoords, bigFlatSet, hi]
 
 lemma bigCoordinateAverage_sqNorm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g)
     (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) :

@@ -3,6 +3,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.LowNormalized
 public import OAI.NumberTheory.DirichletL.Hecke.CommonProbe
 public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -45,17 +46,16 @@ theorem normalizedProbe_low {K : ℕ}
     (W : Fin K→ℝ→ℝ) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hcompact : ∀j,HasCompactSupport (W j))
     (hsupp : ∀j,Function.support (W j)⊆Set.Ioo a b)
     (hWB : ∀j y,0≤W j y ∧ W j y≤B) (hne : ∀j,W j≠0)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
-    (hr0 : ∀y,(W0 y).im=0) (hr1 : ∀y,(W1 y).im=0)
-    (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0) :
+    (mw : MellinWindows)
+    (hr0 : ∀y,(mw.left y).im=0) (hr1 : ∀y,(mw.right y).im=0)
+    (hp0 : ∀y,0≤(mw.left y).re) (hp1 : ∀y,0≤(mw.right y).re) (hn0 : mw.left≠0) (hn1 : mw.right≠0) :
     letI : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
-    ∀η : Character,normalizedProbe M H S hmax ell a b W W0 W1 η=O[atTop](fun Z : ℝ=>Z^(3/16+loss)) := by
+    ∀η : Character,normalizedProbe M H S hmax ell a b W mw.left mw.right η=O[atTop](fun Z : ℝ=>Z^(3/16+loss)) := by
   let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
   intro η
   obtain ⟨C,hC,hb⟩ := original_normalized_compensatedPhysicalProbe_low M H hH S hS hmax
     a b B loss ha hab hloss ell hell hinj hsum W hW hcompact hsupp hWB hne
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 η
+    mw hr0 hr1 hp0 hp1 hn0 hn1 η
   apply isBigO_rpow_of_eventual_norm_bound
   exact ⟨C,hC,hb.mono (fun Z h=>h.2)⟩
 

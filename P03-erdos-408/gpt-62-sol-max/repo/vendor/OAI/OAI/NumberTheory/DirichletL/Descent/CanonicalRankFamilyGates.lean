@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankPuncture
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMonotone
 
@@ -61,9 +62,9 @@ theorem actual_rank_state_gates (m:O)(hm:m≠0)(Z N V M Q z c L:ℝ)
   · simpa only [he] using actual_rank_parent_puncture m hm Z hZ
 
 theorem canonical_rank_subslots {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+    (hcop:OAI.PrincipalFamily.Coprime p)
+    (hg:OAI.PrincipalFamily.Avoids p goodLambda)
     (pool:Finset ι)(base:O→*ℂ)(slots subslots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (W:𝓢(ℝ,ℂ))(Z M F z c eps A:ℝ)(K degree:ℕ)(hsub:subslots⊆slots)
     (h:CanonicalRankMoments p hp hcop hg pool base slots lists a W Z M F z c eps A K degree):

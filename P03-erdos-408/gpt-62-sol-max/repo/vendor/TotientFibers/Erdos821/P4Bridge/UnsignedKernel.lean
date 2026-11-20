@@ -70,7 +70,7 @@ lemma unsignedKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   · subst s'
     simp only [matchesBig_join, ite_true]
     let C := rowProduct (sharedRows ν) s
-    let H : SideTuple ν block false → SideTuple ν block true → ℂ := fun dA dB =>
+    let H  := fun dA dB =>
       Blueprint.Analytic.cellKernel (analyticGroups P) (sideCounts ν block false) Q h ξ
         (Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) dA)
         (Blueprint.Analytic.product (analyticGroups P) (sideCounts ν block false) a') *

@@ -54,7 +54,7 @@ theorem mem_initBirths {J : ℕ} {act : Lists K J} {p : ℕ} :
 
 open scoped Classical in
 /-- With disjoint bands, the labels of valid lists are distinct. -/
-theorem initBirths_nodup (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem initBirths_nodup (hdisj : d.BandsDisjoint x)
     {J : ℕ} {act : Lists K J} (hact : act ∈ lists x d J) : (initBirths act).Nodup := by
   refine Multiset.nodup_iff_count_le_one.2 fun p => ?_
   -- the multiplicity of `p` counts the slots with label `p`
@@ -78,7 +78,7 @@ theorem initBirths_nodup (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i))
     simp [hp]
 
 /-- The initial state with empty memory is consistent with the births of its labels. -/
-theorem consistent_init (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem consistent_init (hdisj : d.BandsDisjoint x)
     {J : ℕ} {act : Lists K J} (hact : act ∈ lists x d J) :
     Consistent act (0 : Particle x d → ℕ) (initBirths act) :=
   ⟨initBirths_nodup hdisj hact, fun i h => mem_initBirths.2 ⟨i, h, rfl⟩, fun _ => Nat.zero_le _,
@@ -93,14 +93,14 @@ theorem lifeTail_zero_eq_lineFactor {N : ℕ} (π : Fin (N + 1) → FreeState x 
 
 variable {q} in
 /-- The birth weight `ν(p)` of a prime of `𝒫_i` is `V_i⁻¹ c_p`. -/
-theorem primeWeight_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem primeWeight_eq (hdisj : d.BandsDisjoint x)
     {N : ℕ} {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
     primeWeight q x d N p = (harmonicMass (band x (d.a i)))⁻¹ * birthConst q N p := by
   rw [primeWeight, primeMass_eq hdisj hp, birthConst, one_div, mul_assoc, mul_inv]
 
 open scoped Classical in
 /-- The product over the slots of a valid list is the product over its labels. -/
-theorem prod_slots_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem prod_slots_eq (hdisj : d.BandsDisjoint x)
     {J : ℕ} {act : Lists K J} (hact : act ∈ lists x d J) (f : ℕ → ℝ) :
     ∏ i, ∏ h, f (act i h) =
       ∏ p ∈ bandPrimes x d, if ∃ i h, act i h = p then f p else 1 := by
@@ -131,7 +131,7 @@ open scoped Classical in
 /-- **The initial weight**: for a path starting at the line-free state `a`, the baselines,
 the initial measure and the lifespan product at `t = 0` give `σ ∏_p primeFactor_p`. -/
 theorem initial_weight_eq (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {N : ℕ}
+    (hdisj : d.BandsDisjoint x) {N : ℕ}
     (hbig : ∀ p ∈ bandPrimes x d, N < p) (π : Fin (N + 1) → FreeState x d Y d₀ u v r)
     (a : FreeState x d Y d₀ u v r) (hπ : π 0 = a) :
     (∏ p ∈ bandPrimes x d, baseline q N p) *
@@ -167,7 +167,7 @@ theorem initial_weight_eq (hq : 0 < q)
       (if ∃ i h, a.1.2 i h = p then 1 else birthConst q N p) *
         ∑ ℓ ∈ range (p + 1), lineFactor q p π ℓ := by
     intro p hp
-    have hp₀ : 0 < p := (prime_of_mem_bandPrimes hp).pos
+    have hp₀  := (prime_of_mem_bandPrimes hp).pos
     simp only [← lifeTail_zero_eq_lineFactor q π p]
     by_cases hl : ∃ i h, a.1.2 i h = p
     · have h0 : (0 : ℕ) ∈ activeSet p π := by
@@ -225,7 +225,7 @@ variable (x d Y d₀ u v r) in
 of positive mass, the line average of the root moment is `∏_p b'_p` times the distinct-birth
 history sum, with `N = 2R` and the cap `B` the number of band primes. -/
 theorem lineAverage_rootMoment_eq_chain (hq : 0 < q) (hR : 0 < momentPower x)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hbig : ∀ p ∈ bandPrimes x d, 2 * momentPower x < p)
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) :
     lineAverage x d (rootMoment q A₀ x d Y d₀ u v r) =
@@ -264,7 +264,7 @@ theorem lineAverage_rootMoment_eq_chain (hq : 0 < q) (hR : 0 < momentPower x)
     exact ⟨fun h => h 0 rfl, fun h j hj => by rw [show j = 0 from Fin.ext hj, h]⟩
   rw [hset]
   refine sum_congr rfl fun π hπ => ?_
-  have hπ0 : π 0 = a := (mem_filter.1 hπ).2
+  have hπ0  := (mem_filter.1 hπ).2
   have hw : weightFrom A₀ π 0 = pathWeight A₀ x d Y d₀ u v r π := by
     rw [weightFrom, filter_true_of_mem fun j _ => Nat.zero_le _, pathWeight]
   have hinit := initial_weight_eq q (B := memCap x d) hq hdisj hbig π a hπ0

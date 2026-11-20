@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.ShortCanonicalNormalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped BigOperators Classical
 namespace SevenEighths.InverseCanonicalShortAttachment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
@@ -75,8 +75,8 @@ lemma idealLists_disjoint {σ : Type u} [DecidableEq σ]
   intro P hP hQ
   obtain ⟨i,hi,he⟩:=Finset.mem_image.mp hP
   obtain ⟨i',hi',he'⟩:=Finset.mem_image.mp hQ
-  have hii : i=i' := Subtype.ext (he.trans he'.symm)
-  have hjk' : j.val≠k.val := fun he=>hjk (Subtype.ext he)
+  have hii  := Subtype.ext (he.trans he'.symm)
+  have hjk'  := fun he=>hjk (Subtype.ext he)
   exact Finset.disjoint_left.mp (h j.property k.property hjk') hi (hii.symm ▸ hi')
 
 lemma idealLists_prime_data {σ : Type u} (F : Finset (Ideal Eis))

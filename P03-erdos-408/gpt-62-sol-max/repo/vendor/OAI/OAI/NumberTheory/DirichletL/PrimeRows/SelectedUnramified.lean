@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Selected
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve
+open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
@@ -21,11 +21,8 @@ theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : Prim
       unramifiedMarked P.val.absNorm (actualAPhase η (primaryGenerator P.val))
         (idealCoeff η P.val) (idealRowHom u.val P.val) x w z := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  obtain ⟨hp, hspan, _, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hnot : ¬p∣u.val := by
     intro hd
     apply hn

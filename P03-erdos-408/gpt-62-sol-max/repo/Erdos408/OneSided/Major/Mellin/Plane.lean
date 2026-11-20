@@ -67,9 +67,7 @@ theorem continuous_ft_param {f : ℝ → ℝ → ℂ} (hf : Continuous (Function
     exact hx (abs_le.1 (not_lt.1 h))
   rw [h]
   refine continuous_parametric_integral_of_continuous ?_ isCompact_Icc
-  have hf' : Continuous fun p : (ℝ × ℝ) × ℝ => f p.1.1 p.2 :=
-    hf.comp (continuous_fst.fst.prodMk continuous_snd)
-  exact (Complex.continuous_exp.comp (by fun_prop)).mul hf'
+  exact (Complex.continuous_exp.comp (by fun_prop)).mul (hf.comp (continuous_fst.fst.prodMk continuous_snd))
 
 /-! ### Slices -/
 
@@ -91,7 +89,6 @@ theorem slice_fst {F : ℝ × ℝ → ℂ} (hF : ContDiff ℝ ∞ F)
     ContDiff ℝ 2 (fun ζ => F (ζ, z)) ∧ (∀ ζ, R < |ζ| → F (ζ, z) = 0) ∧
       ∀ ζ, ‖iteratedDeriv 2 (fun ζ => F (ζ, z)) ζ‖ ≤ ‖iteratedFDeriv ℝ 2 F (ζ, z)‖ := by
   have hl : (fun ζ => F (ζ, z)) = fun ζ => F ((0, z) + ζ • (1, 0)) := by
-    funext ζ
     simp
   refine ⟨(hF.comp (contDiff_id.prodMk contDiff_const)).of_le (by simp),
     fun ζ hζ => hsupp _ (hζ.trans_le (le_max_left _ _)), fun ζ => ?_⟩
@@ -110,7 +107,6 @@ theorem slice_snd {F : ℝ × ℝ → ℂ} (hF : ContDiff ℝ ∞ F)
     ContDiff ℝ 2 (fun z => F (ζ, z)) ∧ (∀ z, R < |z| → F (ζ, z) = 0) ∧
       ∀ z, ‖iteratedDeriv 2 (fun z => F (ζ, z)) z‖ ≤ ‖iteratedFDeriv ℝ 2 F (ζ, z)‖ := by
   have hl : (fun z => F (ζ, z)) = fun z => F ((ζ, 0) + z • (0, 1)) := by
-    funext z
     simp
   refine ⟨(hF.comp (contDiff_const.prodMk contDiff_id)).of_le (by simp),
     fun z hz => hsupp _ (hz.trans_le (le_max_right _ _)), fun z => ?_⟩
@@ -160,16 +156,16 @@ theorem norm_ft2_le (hF : ContDiff ℝ ∞ F) (hR : 0 ≤ R) (hsupp : ∀ p : �
     (hM : ∀ n ≤ 2, ∀ p, ‖iteratedFDeriv ℝ n F p‖ ≤ M) (v s : ℝ) :
     ‖ft2 F v s‖ ≤ 4 * R ^ 2 * M ∧ (2 * π * |v|) ^ 2 * ‖ft2 F v s‖ ≤ 4 * R ^ 2 * M ∧
       (2 * π * |s|) ^ 2 * ‖ft2 F v s‖ ≤ 4 * R ^ 2 * M := by
-  have hM₀ : ∀ p, ‖F p‖ ≤ M := fun p => by
+  have hM₀  := fun p => by
     simpa using hM 0 (Nat.zero_le _) p
   -- the inner transforms in `ζ`
-  have hH₀ : ∀ z, ‖ft (fun ζ => F (ζ, z)) v‖ ≤ 2 * R * M := fun z =>
+  have hH₀  := fun z =>
     norm_ft_le hR (slice_fst hF hsupp z).2.1 (fun ζ => hM₀ _) v
-  have hH₂ : ∀ z, (2 * π * |v|) ^ 2 * ‖ft (fun ζ => F (ζ, z)) v‖ ≤ 2 * R * M := fun z =>
+  have hH₂  := fun z =>
     norm_ft_mul_le (slice_fst hF hsupp z).1 hR (slice_fst hF hsupp z).2.1
       (fun ζ => ((slice_fst hF hsupp z).2.2 ζ).trans (hM 2 le_rfl _)) v
   -- the inner transforms in `z`
-  have hK₂ : ∀ ζ, (2 * π * |s|) ^ 2 * ‖ft (fun z => F (ζ, z)) s‖ ≤ 2 * R * M := fun ζ =>
+  have hK₂  := fun ζ =>
     norm_ft_mul_le (slice_snd hF hsupp ζ).1 hR (slice_snd hF hsupp ζ).2.1
       (fun z => ((slice_snd hF hsupp ζ).2.2 z).trans (hM 2 le_rfl _)) s
   have hKsupp : ∀ ζ, R < |ζ| → ft (fun z => F (ζ, z)) s = 0 := fun ζ hζ => by
@@ -190,7 +186,6 @@ theorem iteratedDeriv_slice_fst {F : ℝ × ℝ → ℂ} (hF : ContDiff ℝ ∞ 
     iteratedDeriv 2 (fun ζ => F (ζ, z)) ζ =
       fderiv ℝ (fun q => fderiv ℝ F q (1, 0)) (ζ, z) (1, 0) := by
   have hl : (fun ζ => F (ζ, z)) = fun ζ => F ((0, z) + ζ • (1, 0)) := by
-    funext ζ
     simp
   rw [hl, iteratedDeriv_two_comp_line hF]
   simp
@@ -224,7 +219,7 @@ theorem norm_ft2_mul_le (hF : ContDiff ℝ ∞ F) (hR : 0 ≤ R)
     ring
   have hnorm : ‖ft2 Ψ v s‖ = (2 * π * |v|) ^ 2 * ‖ft2 F v s‖ := by
     rw [hid, norm_mul, norm_pow]
-    simp [abs_of_pos pi_pos]
+    simp
   have hmix := (norm_ft2_le hΨc hR hΨsupp hΨM v s).2.2
   rw [hnorm] at hmix
   obtain ⟨h0, hv, hs⟩ := norm_ft2_le hF hR hsupp (fun n hn => hM n (by omega)) v s
@@ -235,7 +230,6 @@ theorem norm_ft2_mul_le (hF : ContDiff ℝ ∞ F) (hR : 0 ≤ R)
     nlinarith [sq_nonneg (1 - |v|), sq_nonneg |v|]
   have hs' : (1 + |s|) ^ 2 ≤ 2 * (1 + (2 * π * |s|) ^ 2) := by
     nlinarith [sq_nonneg (1 - |s|), sq_nonneg |s|]
-  have hN : 0 ≤ N := norm_nonneg _
   calc (1 + |v|) ^ 2 * (1 + |s|) ^ 2 * N
       ≤ 2 * (1 + (2 * π * |v|) ^ 2) * (2 * (1 + (2 * π * |s|) ^ 2)) * N := by gcongr
     _ = 4 * (N + (2 * π * |v|) ^ 2 * N + (2 * π * |s|) ^ 2 * N +
@@ -246,7 +240,7 @@ theorem norm_ft2_mul_le (hF : ContDiff ℝ ∞ F) (hR : 0 ≤ R)
 /-- `ft2 F` is jointly continuous. -/
 theorem continuous_ft2 (hF : Continuous F) (hsupp : ∀ p : ℝ × ℝ, R < ‖p‖ → F p = 0) :
     Continuous fun q : ℝ × ℝ => ft2 F q.1 q.2 := by
-  have h1 : Continuous fun q : ℝ × ℝ => ft (fun ζ => F (ζ, q.1)) q.2 :=
+  have h1  :=
     continuous_ft_param (f := fun z ζ => F (ζ, z)) (hF.comp continuous_swap)
       fun z ζ hζ => hsupp _ (hζ.trans_le (le_max_left _ _))
   exact continuous_ft_param (f := fun v z => ft (fun ζ => F (ζ, z)) v) (h1.comp continuous_swap)
@@ -282,7 +276,7 @@ theorem ft2_inversion (hF : ContDiff ℝ ∞ F) (hR : 0 ≤ R)
       _ ≤ (1 + |v|) ^ 2 * (1 + |s|) ^ 2 * ‖ft2 F v s‖ :=
           mul_le_mul_of_nonneg_right (by nlinarith) hN
       _ ≤ 64 * R ^ 2 * M := h
-  have hFi : Integrable (ft H) :=
+  have hFi  :=
     (integrable_inv_one_add_sq.const_mul _).mono' hFc.aestronglyMeasurable
       (Filter.Eventually.of_forall hb)
   rw [ft_eq_fourier] at hFi

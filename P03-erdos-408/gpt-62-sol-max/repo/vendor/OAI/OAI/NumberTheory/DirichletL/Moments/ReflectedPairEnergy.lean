@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedProfileMeasure
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedProfileMeasure
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedPairEnergy
 open HeckeFamily FourierBridge CenteredMomentReflectedProfileMeasure
@@ -37,7 +38,7 @@ lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
     apply Finset.sum_congr rfl
     intro I hI
     have hm := HeckeDetectorDyadicBridge.norm_phase (I.absNorm:ℝ) X
-      (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hs I hI))) hX 0 v
+      (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hs I hI)) hX 0 v
     simp only [neg_zero,Complex.cpow_zero,one_mul,Complex.zero_re,Complex.zero_im,sub_zero] at hm
     rw [hm]
   constructor

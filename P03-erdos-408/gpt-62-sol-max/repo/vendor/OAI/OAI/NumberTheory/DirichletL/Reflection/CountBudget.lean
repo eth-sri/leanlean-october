@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.TruncatedSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 
@@ -47,6 +47,23 @@ theorem retained_count_budget (ε δ Lscale : ℝ) (hε : 0<ε) (hδL : 0≤δ+L
       exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) (cutoff_ratio_cap Z scale δ Lscale hZ hδL hscale) ha.le) hC.le
     _ = (C*16^α)*Z^((δ+Lscale)*α) := by rw [Real.mul_rpow (by norm_num) (Real.rpow_nonneg hz.le _),←Real.rpow_mul hz.le];ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)) (by positivity)
+
+
+/-- Absorb the retained-dyad count and the norm of the prime pool into the
+power budget in a row estimate. -/
+lemma retained_budget_le {C Cd U Z K A ρ κ L e e' : ℝ} (hZ : 1 ≤ Z)
+    (hC : 0 ≤ C) (hCd : 0 ≤ Cd) (hU : 0 ≤ U) (hA : 0 ≤ A) (hρ : 0 ≤ ρ)
+    (hcount : K ≤ Cd * Z^κ) (hpool : A ≤ Z^L) (he : κ + L * ρ + e ≤ e') :
+    C*K*U*A^ρ*Z^e ≤ (C*Cd)*U*Z^e' := by
+  have hz : 0 < Z := zero_lt_one.trans_le hZ
+  have hp : A^ρ ≤ Z^(L*ρ) := by
+    rw [Real.rpow_mul hz.le]
+    exact Real.rpow_le_rpow hA hpool hρ
+  calc
+    _ ≤ C*(Cd*Z^κ)*U*Z^(L*ρ)*Z^e := by gcongr
+    _ = (C*Cd)*U*Z^(κ+L*ρ+e) := by rw [Real.rpow_add hz,Real.rpow_add hz]; ring
+    _ ≤ _ := by
+      exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ he) (by positivity)
 
 end
 end SevenEighths.InverseReflectedPhase

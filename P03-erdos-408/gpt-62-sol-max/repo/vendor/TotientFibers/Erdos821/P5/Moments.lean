@@ -37,7 +37,7 @@ theorem prime_polynomial_power (s : Finset ℕ) (b : ℕ → ℂ) (j : ℕ)
       (primePolynomial s b t) ^ j := by
   classical
   let w := fun z : Fin j → ↥s => ∏ i, b (z i).val / ((z i).val : ℂ)
-  have hsupport (z : Fin j → ↥s) : tupleProduct z ∈ Finset.Icc 1 ((s.sup id) ^ j) :=
+  have hsupport (z : Fin j → ↥s)  :=
     Finset.mem_Icc.mpr ⟨tupleProduct_pos z hprime, tupleProduct_le z⟩
   have hfiber (n : ℕ) : primePowerCoefficient s b j n * mellin n t =
       ∑ z ∈ (Finset.univ : Finset (Fin j → ↥s)).filter
@@ -80,7 +80,7 @@ theorem prime_product_fiber_card (s : Finset ℕ) (j n : ℕ)
   by_cases h : fiber.Nonempty
   · obtain ⟨z₀, hz₀⟩ := h
     let listOf := fun z : Fin j → ↥s => List.ofFn (fun i => (z i).val)
-    have h₀ : tupleProduct z₀ = n := (Finset.mem_filter.mp hz₀).2
+    have h₀  := (Finset.mem_filter.mp hz₀).2
     have hcard : fiber.card ≤ (listOf z₀).permutations.toFinset.card := by
       apply Finset.card_le_card_of_injOn listOf
       · intro z hz
@@ -101,7 +101,7 @@ theorem prime_product_fiber_card (s : Finset ℕ) (j n : ℕ)
         exact Subtype.ext (congrFun hv i)
     exact hcard.trans (by simpa only [listOf, List.length_permutations, List.length_ofFn] using
       (listOf z₀).permutations.toFinset_card_le)
-  · have : fiber = ∅ := Finset.not_nonempty_iff_eq_empty.mp h
+  · have  := Finset.not_nonempty_iff_eq_empty.mp h
     simp [fiber, this]
 
 /-- A finite fiber Cauchy bound, independent of the prime-polynomial application. -/

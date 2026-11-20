@@ -69,8 +69,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
     have h_add_restrict :
         (fun x : α => (f + g) x) =ᵐ[μ.restrict s] fun x : α => f x + g x := by
       exact (Lp.coeFn_add (μ := μ.restrict s) f g)
-    have h_add_on :
-        ∀ᵐ x : α ∂μ, x ∈ s → (f + g) x = f x + g x :=
+    have h_add_on  :=
       (ae_restrict_iff' (μ := μ) (s := s) hs).1 h_add_restrict
     filter_upwards
       [ extendByZeroFun_coe (μ := μ) (p := p) (s := s) hs (f + g)
@@ -122,8 +121,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
     have h_smul_restrict :
         (fun x : α => (c • f) x) =ᵐ[μ.restrict s] fun x : α => c • f x := by
       exact (Lp.coeFn_smul (μ := μ.restrict s) c f)
-    have h_smul_on :
-        ∀ᵐ x : α ∂μ, x ∈ s → (c • f) x = c • f x :=
+    have h_smul_on  :=
       (ae_restrict_iff' (μ := μ) (s := s) hs).1 h_smul_restrict
     filter_upwards
       [ extendByZeroFun_coe (μ := μ) (p := p) (s := s) hs (c • f)
@@ -162,7 +160,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
               calc
                 (c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f) x =
                     c • extendByZeroFun (μ := μ) (p := p) (s := s) hs f x := by
-                      simpa [Pi.smul_apply] using hsmul
+                      assumption
                 _ = 0 := by simp [hf0]
             simpa using hcx.symm
 

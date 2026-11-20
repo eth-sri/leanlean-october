@@ -11,14 +11,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActivePhysicalDictionary
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
-open CenteredMomentSecondSectorFrequency CenteredMomentActiveSource
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondSectorColumns CenteredMomentSecondSectorFrequency CenteredMomentActiveSource
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization
-open CenteredMomentSecondWholeKernel CenteredMomentLogDyadic
+open CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSectorLocalization CenteredMomentSecondWholeKernel CenteredMomentLogDyadic
 open CenteredMomentSecondSectorRetained CenteredMomentSmooth
 local notation "O"=>HeckeFamily.O
 
@@ -34,9 +32,7 @@ local notation "O"=>HeckeFamily.O
   rw [sectorPool_active,Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro I hI
-  by_cases h:β (C*I)=0
-  · simp only [h,ne_eq,not_true_eq_false,ite_false,hf I h]
-  · simp only [h,ne_eq,not_false_eq_true,ite_true]
+  simp_all
 
  theorem sector_pair_sum_active (C D:Ideal O)(hC:C≠0)(hD:D≠0)
     (S:Finset (Ideal O))(β:Ideal O→ℂ)(f:Ideal O→Ideal O→ℂ)
@@ -67,8 +63,8 @@ local notation "O"=>HeckeFamily.O
         intro I hI
         apply Finset.sum_congr rfl
         intro J hJ
-        have hc:Supported (C*I):=(supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 T I⟩
-        have hd:Supported (D*J):=(supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 T J⟩
+        have hc:=(supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 T I⟩
+        have hd:=(supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 T J⟩
         simp only [f,dite_eq_left hc,dite_eq_left hd]
       _=_:=by
         simp_rw [Finset.sum_coe_sort]

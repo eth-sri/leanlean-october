@@ -1,6 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Detector.RawIndexGrouping
+public import OAI.NumberTheory.DirichletL.Detector.MellinWindows
 
 @[expose] public section
 
@@ -42,22 +43,19 @@ def originalNestedOnLines (η : HeckeFamily.Character) (S : Finset (Ideal O))
 
 theorem originalRaw_integral_eq_nesting (η : HeckeFamily.Character)
     (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
-    (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
+    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (mw : MellinWindows)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
-    (∫p : SourceRawIndex S×HeightSpace,originalRawOnLines η S hS D W0 W1 X Y Z p.1 p.2
+    (∫p : SourceRawIndex S×HeightSpace,originalRawOnLines η S hS D mw.left mw.right X Y Z p.1 p.2
       ∂((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure))=
     ∑'K : SourceOuter S,∫w : ℝ,∫t : ℝ,∑'IJ : CompletedPair,∫z : ℝ,∑'H : NonzeroFrequency,
-      originalNestedOnLines η S hS D W0 W1 X Y Z (K,(w,(t,(IJ,(z,H))))) := by
-  have hi := originalRaw_counting_product_integrable η S hS hpS hbad D W0 W1 a0 b0 a1 b1
-    ha0 ha1 hW0 hW1 X Y Z hX hY hZ
+      originalNestedOnLines η S hS D mw.left mw.right X Y Z (K,(w,(t,(IJ,(z,H))))) := by
+  have hi := originalRaw_counting_product_integrable η S hS hpS hbad D mw X Y Z hX hY hZ
   have hp := physicalRawNesting_preserving S
   have hj := (hp.symm (physicalRawNesting S)).integrable_comp_of_integrable hi
-  have he := hp.integral_comp' (originalNestedOnLines η S hS D W0 W1 X Y Z)
-  have he' : (∫p : SourceRawIndex S×HeightSpace,originalRawOnLines η S hS D W0 W1 X Y Z p.1 p.2
+  have he := hp.integral_comp' (originalNestedOnLines η S hS D mw.left mw.right X Y Z)
+  have he' : (∫p : SourceRawIndex S×HeightSpace,originalRawOnLines η S hS D mw.left mw.right X Y Z p.1 p.2
       ∂((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure))=
-      ∫p : PhysicalNestedSpace S,originalNestedOnLines η S hS D W0 W1 X Y Z p
+      ∫p : PhysicalNestedSpace S,originalNestedOnLines η S hS D mw.left mw.right X Y Z p
         ∂((Measure.count:Measure (SourceOuter S)).prod (volume.prod (volume.prod
           ((Measure.count:Measure CompletedPair).prod (volume.prod (Measure.count:Measure NonzeroFrequency)))))) := by
     exact he

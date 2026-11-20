@@ -38,9 +38,7 @@ theorem allocation_data (S : ι → Finset (Ideal O)) (C : Ideal O)
     (fun v hv => Finset.mem_image.mpr ⟨v,hv,rfl⟩) F
   symm
   convert hh using 1
-  apply Finset.sum_congr rfl
-  intro B hB
-  congr 1
+  rfl
 
 theorem sum_actual_allocations (S : ι → Finset (Ideal O))
     (C a : Ideal O) (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a)
@@ -97,7 +95,7 @@ theorem actualAllocations_small_power [Nonempty ι] (ε : ℝ) (hε : 0<ε) :
       ((actualAllocations S C).card:ℝ)≤D*(Ideal.absNorm C:ℝ)^ε := by
   have hr : (0:ℝ)<Fintype.card ι := by exact_mod_cast Fintype.card_pos
   let δ := ε/(Fintype.card ι:ℝ)
-  have hδ : 0<δ := div_pos hε hr
+  have hδ  := div_pos hε hr
   obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨D^(Fintype.card ι),pow_pos hD _,?_⟩
   intro S C hC

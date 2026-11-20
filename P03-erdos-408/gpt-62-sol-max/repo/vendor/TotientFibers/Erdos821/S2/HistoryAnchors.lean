@@ -8,7 +8,6 @@ public import Erdos821.S2.HistoryFinite
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -43,12 +42,12 @@ theorem anchorOffset_eq_birth (hH : H.Valid) (hd : H.DistinctBirths)
       H.addressPerformed H.birthBound a ∧ H.addressValue H.birthBound a = p := ⟨a, ha, hp⟩
   rw [anchorOffset, dite_eq_left hx]
   have hs := Classical.choose_spec hx
-  have ht : H.Truncated H.birthBound := H.distinct_truncated hH hd
+  have ht  := H.distinct_truncated hH hd
   have hi := (H.distinctBirths_iff_addresses H.birthBound ht).mp hd
-  have he : Classical.choose hx = a := hi
+  have he  := hi
     (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hs.1⟩)
     (Finset.mem_filter.mpr ⟨Finset.mem_univ _, ha⟩) (hs.2.trans hp.symm)
-  exact congrArg H.birthOffset he
+  congr
 
 theorem anchorOffset_initial (hH : H.Valid) (hd : H.DistinctBirths) (g : P.BigGroup) (i : Fin (J + F.ell)) :
     H.anchorOffset ((H.before 0).2.1 g.val i).val = 0 :=
@@ -68,8 +67,7 @@ theorem anchorInvariant_initial (hH : H.Valid) (hd : H.DistinctBirths) : H.Ancho
     rw [ResiduePath.offset_zero, H.anchorOffset_initial hH hd]
   · intro g z hz
     rw [hH.1 g] at hz
-    have hz' : False := by simp at hz
-    exact hz'.elim
+    simp_all
 
 end MemoryHistory
 

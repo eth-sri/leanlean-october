@@ -107,7 +107,7 @@ theorem groupAdmissible_coe_sort {c₀ C₀ vlo vhi x : ℝ} {Sg Bg : Finset (Fi
   · rw [hsmall]; exact hS₂
   · rw [hbig]; exact hB₁
   · rw [hbig]; exact hB₂
-  · have hg' : g.1 ∉ Bg := fun h => hg (Finset.mem_filter.2 ⟨Finset.mem_univ _, h⟩)
+  · have hg'  := fun h => hg (Finset.mem_filter.2 ⟨Finset.mem_univ _, h⟩)
     rcases Finset.mem_union.1 g.2 with h | h
     · exact hSr g.1 h
     · exact absurd h hg'
@@ -138,7 +138,7 @@ theorem continuous_norm_twistedPoly_sq {Y : ℝ} (hY : 0 < Y) (c : ℕ → ℂ) 
   refine ((continuous_const.mul (continuous_finsetSum _ fun w hw =>
     continuous_const.mul ?_)).norm).pow 2
   refine Continuous.const_cpow (by fun_prop) (Or.inl ?_)
-  have hw : 1 ≤ w := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hY).ne')
+  have hw  := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hY).ne')
     (Finset.mem_Icc.1 hw).1
   exact_mod_cast (Nat.one_le_iff_ne_zero.1 hw)
 
@@ -157,9 +157,6 @@ theorem integral_norm_twistedPoly_sub_add_le {Y : ℝ} (hY : 0 < Y) (c₁ c₂ c
   refine intervalIntegral.integral_mono_on hab (hi _)
     ((((hi c₁).add (hi c₂)).add (hi c₃)).const_mul 3) fun t _ => ?_
   rw [twistedPoly_sub_add]
-  have h₁ := norm_nonneg (twistedPoly Y c₁ h k t)
-  have h₂ := norm_nonneg (twistedPoly Y c₂ h k t)
-  have h₃ := norm_nonneg (twistedPoly Y c₃ h k t)
   have hle : ‖twistedPoly Y c₁ h k t - twistedPoly Y c₂ h k t + twistedPoly Y c₃ h k t‖ ≤
       ‖twistedPoly Y c₁ h k t‖ + ‖twistedPoly Y c₂ h k t‖ + ‖twistedPoly Y c₃ h k t‖ :=
     (norm_add_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
@@ -191,8 +188,8 @@ theorem norm_integral_mul_le_of_split {a Φ : ℝ → ℂ} (ha : Integrable a) {
     ‖∫ ξ, a ξ * Φ ξ‖ ≤ B₁ * (∫ ξ, ‖a ξ‖) + B₂ * ∫ ξ in {ξ : ℝ | R < |ξ|}, ‖a ξ‖ := by
   have hs : MeasurableSet {ξ : ℝ | R < |ξ|} :=
     measurableSet_lt measurable_const continuous_abs.measurable
-  have hi₁ : Integrable fun ξ => B₁ * ‖a ξ‖ := ha.norm.const_mul B₁
-  have hi₂ : Integrable ({ξ : ℝ | R < |ξ|}.indicator fun ξ => B₂ * ‖a ξ‖) :=
+  have hi₁  := ha.norm.const_mul B₁
+  have hi₂  :=
     (ha.norm.const_mul B₂).indicator hs
   refine (norm_integral_le_of_norm_le (hi₁.add hi₂) (Eventually.of_forall fun ξ => ?_)).trans_eq
     ?_
@@ -242,7 +239,6 @@ theorem eventually_exp_neg_margin_le {c : ℝ} (hc : 0 < c) (D : ℝ) :
     linarith
   have key : D * T ≤ c * Real.log x / T ^ 20 := by
     rw [le_div_iff₀ (by positivity)]
-    have h21 : T ^ 21 = T * T ^ 20 := by ring
     have hT20 : 0 < T ^ 20 := by positivity
     nlinarith [le_abs_self D, mul_pos hT0 hT20]
   linarith
@@ -369,7 +365,7 @@ theorem abs_slotCount_le_of_le_cube {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k 
     _ ≤ #(Fintype.piFinset fun _ : Fin (k + 1) => P) := by
         rw [sum_const, nsmul_one]
         exact_mod_cast card_le_card hsub
-    _ = (#P : ℝ) ^ (k + 1) := by rw [Fintype.card_piFinset]; simp
+    _ = (#P : ℝ) ^ (k + 1) := by simp
     _ ≤ (3 / ε) ^ (k + 1) := pow_le_pow_left₀ (Nat.cast_nonneg _) hcard _
 
 /-- **Crude U7.** Eventually `|F(n)| ≤ L` for `1 ≤ n ≤ x³`, uniformly in at most `K₀ + C_N s`
@@ -397,7 +393,7 @@ theorem eventually_abs_centeredCore_le_log (q alo ahi : ℝ) (K₀ : ℕ) (CN c 
   rw [add_zero] at hpow
   set T := Real.log (Real.log x) with hTdef
   set s := Real.log T
-  have hT3c : 3 / c ≤ T := (le_max_left _ _).trans hT2
+  have hT3c := (le_max_left _ _).trans hT2
   have hTE : E ≤ T := ((le_max_left _ _).trans (le_max_right _ _)).trans hT2
   have hT2' : 2 ≤ T := ((le_max_right _ _).trans (le_max_right _ _)).trans hT2
   have hT0 : 0 < T := by linarith
@@ -485,7 +481,7 @@ theorem card_slotLists_le {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → 
         rw [Fintype.card_piFinset]
         rw [show (∏ i, #(if i ∈ S g then (P g).filter (· ∣ n) else {1})) =
             ∏ i, if i ∈ S g then primeCount (P g) n else 1 from
-          prod_congr rfl fun i _ => by split_ifs <;> simp [primeCount]]
+          prod_congr rfl fun i _ => by split_ifs <;> rfl]
         rw [Fintype.prod_ite_mem, prod_const]
 
 /-- One factor of the marked list weight: `q₀^{z - t} z^t V^{-t} ≤ K` for `t ≤ m₀ + 1` and
@@ -502,7 +498,7 @@ theorem exists_markedListWeight_factor_le {q₀ vlo : ℝ} (hq₀ : 0 < q₀) (h
   refine ⟨(1 + max B 0) * β ^ (m₀ + 1),
     one_le_mul_of_one_le_of_one_le (by linarith [le_max_right B 0]) (one_le_pow₀ hβ1),
     fun z t ht V hV => ?_⟩
-  have hV0 : 0 < V := hvlo.trans_le hV
+  have hV0  := hvlo.trans_le hV
   -- `z^t q₀^z ≤ 1 + max B 0`
   have hz : (z : ℝ) ^ t * q₀ ^ z ≤ 1 + max B 0 := by
     rcases Nat.eq_zero_or_pos z with rfl | hz
@@ -510,7 +506,7 @@ theorem exists_markedListWeight_factor_le {q₀ vlo : ℝ} (hq₀ : 0 < q₀) (h
       linarith [pow_le_one₀ (le_refl (0 : ℝ)) zero_le_one (n := t), le_max_right B 0]
     · have h₁ : (z : ℝ) ^ t ≤ (z : ℝ) ^ (m₀ + 1) :=
         pow_le_pow_right₀ (by exact_mod_cast hz) ht
-      have h₂ : (z : ℝ) ^ (m₀ + 1) * q₀ ^ z ≤ B := hB ⟨z, rfl⟩
+      have h₂  := hB ⟨z, rfl⟩
       nlinarith [pow_pos hq₀ z, le_max_left B 0]
   -- `(q₀⁻¹ V⁻¹)^t ≤ β^{m₀+1}`
   have hq : (q₀⁻¹ * V⁻¹) ^ t ≤ β ^ (m₀ + 1) := by
@@ -548,7 +544,7 @@ theorem exists_norm_markedListWeight_le_pow {q₀ vlo : ℝ} (hq₀ : 0 < q₀) 
     rfl
   have hpos : 0 ≤ q₀ ^ ((groupPrimeCount P n : ℤ) - ∑ g, ((S g).card : ℤ)) *
       ∏ g, (harmonicMass (P g))⁻¹ ^ (S g).card := by
-    have : ∀ g, 0 ≤ (harmonicMass (P g))⁻¹ := fun g =>
+    have  := fun g =>
       inv_nonneg.2 (hvlo.le.trans (hV g))
     exact mul_nonneg (zpow_nonneg hq₀.le _) (prod_nonneg fun g _ => pow_nonneg (this g) _)
   unfold markedListWeight
@@ -567,7 +563,7 @@ theorem exists_norm_markedListWeight_le_pow {q₀ vlo : ℝ} (hq₀ : 0 < q₀) 
     _ ≤ ∏ _g : ι, K := by
         refine prod_le_prod₀ (fun g _ => ?_) fun g _ =>
           hK (ω g) (S g).card (hS g) _ (hV g)
-        have : 0 ≤ (harmonicMass (P g))⁻¹ := inv_nonneg.2 (hvlo.le.trans (hV g))
+        have  := inv_nonneg.2 (hvlo.le.trans (hV g))
         positivity
     _ = K ^ Fintype.card ι := by rw [prod_const, card_univ]
 
@@ -577,8 +573,7 @@ all `S` with `|S g| ≤ m₀ + 1` and all `|b| ≤ 1`: `|W_S^b(n)| ≤ K^{#ι}`,
 theorem exists_norm_markedListWeight_le_rpow (q₀ c₀ C₀ vlo vhi : ℝ) (hq₀ : 0 < q₀)
     (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (m₀ : ℕ) :
     ∃ CW : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (M : ℕ) (S : ι → Finset (Fin M)) (b : (ι → Fin M → ℕ) → ℂ),
           (∀ g, (S g).card ≤ m₀ + 1) → (∀ p, ‖b p‖ ≤ 1) →
           ∀ n : ℕ, ‖markedListWeight P q₀ S b n‖ ≤ Real.log x ^ CW := by
@@ -590,16 +585,15 @@ theorem exists_norm_markedListWeight_le_rpow (q₀ c₀ C₀ vlo vhi : ℝ) (hq�
   simp only [Function.comp_apply] at hT
   intro ι _ _ P big hadm M S b hS hb n
   -- `|ι| ≤ 2 |C₀| T`
-  have hcard : (Fintype.card ι : ℝ) ≤ 2 * |C₀| * Real.log (Real.log x) := by
-    have h := card_sdiff_add_card_eq_card (subset_univ big)
-    rw [card_univ] at h
-    rw [← h]
-    push_cast
-    have h₁ := hadm.2.2.1
-    have h₂ := hadm.2.2.2.2.1
-    nlinarith [le_abs_self C₀]
-  exact (hK P (fun g => (hadm.2.2.2.2.2.1 g).1) M S b hS hb n).trans
-    (pow_le_rpow_mul_log hK1 hL hcard)
+  refine (hK P (fun g => (hadm.2.2.2.2.2.1 g).1) M S b hS hb n).trans
+    (pow_le_rpow_mul_log hK1 hL ?_)
+  have h := card_sdiff_add_card_eq_card (subset_univ big)
+  rw [card_univ] at h
+  rw [← h]
+  push_cast
+  have h₁ := hadm.2.2.1
+  have h₂ := hadm.2.2.2.2.1
+  nlinarith [le_abs_self C₀]
 
 /-! ### U8, algebraically -/
 
@@ -607,7 +601,7 @@ theorem exists_norm_markedListWeight_le_rpow (q₀ c₀ C₀ vlo vhi : ℝ) (hq�
 theorem markedWeight_congr {κ : Type*} (s : Finset κ) (q : ℝ) (G : κ → Finset ℕ) {m n : ℕ}
     (h : ∀ i ∈ s, ∀ p ∈ G i, p ∣ m ↔ p ∣ n) :
     markedWeight s q G m = markedWeight s q G n := by
-  have hc : ∀ i ∈ s, primeCount (G i) m = primeCount (G i) n := fun i hi =>
+  have hc := fun i hi =>
     Sieve.primeCount_congr (h i hi)
   unfold markedWeight
   rw [sum_congr rfl hc, prod_congr rfl fun i hi => by rw [hc i hi]]
@@ -656,7 +650,7 @@ theorem labelMass_nonneg {ι : Type} [Fintype ι] (P : ι → Finset ℕ) {J : �
     (C : ι → Finset (Fin J)) (a : ι → Fin J → ℕ) : 0 ≤ labelMass P C a := by
   unfold labelMass harmonicMass
   refine prod_nonneg fun g _ => prod_nonneg fun i _ => inv_nonneg.2 (mul_nonneg ?_ ?_)
-  · exact sum_nonneg fun p _ => by positivity
+  · positivity
   · exact Nat.cast_nonneg _
 
 /-- The free labels have total mass `1`. -/
@@ -680,17 +674,20 @@ theorem sum_labelMass {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Fins
     exact inv_mul_cancel₀ (hV g)
   · simp
 
+section
+
+variable {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [DecidableEq ι]
+  {P : ι → Finset ℕ} {big : Finset ι}
+
 /-- The group primes of admissible groups are prime. -/
-theorem prime_of_groupAdmissible {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [DecidableEq ι]
-    {P : ι → Finset ℕ} {big : Finset ι} (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big) {g : ι}
+theorem prime_of_groupAdmissible (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big) {g : ι}
     {p : ℕ} (hp : p ∈ P g) : p.Prime := by
   by_cases hg : g ∈ big
   · exact (mem_filter.1 (hadm.2.2.2.2.2.2.2.1 g hg hp)).2
   · exact (mem_filter.1 (hadm.2.2.2.2.2.2.1 g hg hp)).2
 
 /-- Free labels of admissible groups have positive slot products. -/
-theorem slotProduct_pos {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [DecidableEq ι]
-    {P : ι → Finset ℕ} {big : Finset ι} (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big) {J : ℕ}
+theorem slotProduct_pos (hadm : GroupAdmissible c₀ C₀ vlo vhi x P big) {J : ℕ}
     {C : ι → Finset (Fin J)} {l : ι → Fin J → ℕ} (hl : l ∈ auxLabels P C)
     (S : ι → Finset (Fin J)) : 0 < slotProduct S l := by
   rw [mem_auxLabels] at hl
@@ -700,6 +697,8 @@ theorem slotProduct_pos {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [De
   · exact (prime_of_groupAdmissible hadm this).pos
   · rw [mem_singleton.1 this]
     exact one_pos
+
+end
 
 /-- `D_{A ∪ B} = D_A D_B` for disjoint slots. -/
 theorem slotProduct_union {ι : Type} [Fintype ι] {J : ℕ} {A B : ι → Finset (Fin J)}
@@ -751,6 +750,24 @@ theorem integral_norm_sum_sq_le {ι : Type*} (M : Finset ι) (γ : ι → ℂ)
     _ = #M * ∑ m ∈ M, ∫ t in t₁..t₂, ‖J m t‖ ^ 2 := by
         rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_finsetSum
           fun m hm => (hc' m hm).intervalIntegrable _ _]
+
+/-- Cauchy–Schwarz for an unweighted sum of continuous functions. -/
+theorem integral_norm_sum_sq_unweighted_le {ι : Type*} (M : Finset ι)
+    (J : ι → ℝ → ℂ) (hJ : ∀ m ∈ M, Continuous (J m)) {a b : ℝ} (hab : a ≤ b) :
+    ∫ t in a..b, ‖∑ m ∈ M, J m t‖ ^ 2 ≤
+      #M * ∑ m ∈ M, ∫ t in a..b, ‖J m t‖ ^ 2 := by
+  simpa using integral_norm_sum_sq_le M (fun _ => 1) (fun _ _ => norm_one.le) J hJ hab
+
+/-- A common mean-square bound on each summand bounds the whole unweighted sum. -/
+theorem integral_norm_sum_sq_le_uniform {ι : Type*} (M : Finset ι)
+    (J : ι → ℝ → ℂ) (hJ : ∀ m ∈ M, Continuous (J m)) {a b B : ℝ} (hab : a ≤ b)
+    (hB : ∀ m ∈ M, ∫ t in a..b, ‖J m t‖ ^ 2 ≤ B) :
+    ∫ t in a..b, ‖∑ m ∈ M, J m t‖ ^ 2 ≤ (M.card : ℝ) ^ 2 * B := by
+  have hs := sum_le_sum hB
+  rw [sum_const, nsmul_eq_mul] at hs
+  rw [pow_two, mul_assoc]
+  exact (integral_norm_sum_sq_unweighted_le M J hJ hab).trans
+    (mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg _))
 
 end
 

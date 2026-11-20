@@ -21,9 +21,9 @@ theorem separated_interval_card (s : Finset ℤ) (f : ℤ → ℝ)
   by_cases hs : s.Nonempty
   · let a := s.min' hs
     let b := s.max' hs
-    have ha : a ∈ s := s.min'_mem hs
-    have hb : b ∈ s := s.max'_mem hs
-    have hab : a ≤ b := s.min'_le b hb
+    have ha  := s.min'_mem hs
+    have hb  := s.max'_mem hs
+    have hab  := s.min'_le b hb
     have hsub : s ⊆ Finset.Icc a b := by
       intro i hi
       exact Finset.mem_Icc.mpr ⟨s.min'_le i hi, s.le_max' i hi⟩
@@ -41,7 +41,7 @@ theorem separated_interval_card (s : Finset ℤ) (f : ℤ → ℝ)
       apply (le_div_iff₀ hlam).mpr
       nlinarith
     linarith
-  · have hempty : s = ∅ := Finset.not_nonempty_iff_eq_empty.mp hs
+  · have hempty  := Finset.not_nonempty_iff_eq_empty.mp hs
     simp only [hempty, Finset.card_empty, Nat.cast_zero]
     positivity
 
@@ -54,8 +54,8 @@ theorem separated_near_integer_card (s : Finset ℤ) (f : ℤ → ℝ)
     ((s.filter fun i => ∃ q : ℤ, |f i - q| ≤ β).card : ℝ) ≤
       (U - L + 2 * β + 1) * (2 * β / lam + 1) := by
   classical
-  let centers : Finset ℤ := Finset.Icc ⌈L - β⌉ ⌊U + β⌋
-  let fiber (q : ℤ) : Finset ℤ := s.filter fun i => |f i - q| ≤ β
+  let centers  := Finset.Icc ⌈L - β⌉ ⌊U + β⌋
+  let fiber (q : ℤ)  := s.filter fun i => |f i - q| ≤ β
   have hcover : (s.filter fun i => ∃ q : ℤ, |f i - q| ≤ β) ⊆ centers.biUnion fiber := by
     intro i hi
     obtain ⟨his, q, hq⟩ := Finset.mem_filter.mp hi

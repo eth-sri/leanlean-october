@@ -13,8 +13,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Birth
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 variable {A : Model F P J m} {n : ℕ}
@@ -39,7 +38,7 @@ theorem birthCutoff_truncated : H.Truncated (birthCutoff H) := by
   have hterm' :
       P.memorySize (H.before i) + P.memorySize (H.after i) +
         ∑ g : P.BigGroup, ((H.ghost i).2.1 g).val ≤ birthCutoff H := by
-    simpa [birthCutoff] using hterm
+    assumption
   constructor <;> omega
 
 end MemoryHistory
@@ -56,16 +55,11 @@ theorem initial_birth_at_zero
   rcases hs : S g p with _ | ⟨birth, stop⟩
   · have hnone : Q.activeVisits g p = ∅ := by
       simpa [ResiduePath.spanValid, hs] using hS g p
-    simp [hnone] at hactive
+    simp_all
   · have hspan : Q.spanValid g p (some (birth, stop)) := by
       simpa [hs] using hS g p
     have hbirth := (hspan.2.2.1 0 hactive).1
-    have hb0 : birth = 0 := by
-      apply Fin.ext
-      have hbirthVal : birth.val ≤ 0 := by
-        simpa using (Fin.le_iff_val_le_val).mp hbirth
-      simpa using Nat.le_antisymm hbirthVal (Nat.zero_le _)
-    exact ⟨stop, by simp [hb0]⟩
+    simp_all
 
 /-- A fresh active target can only occur at its assigned lifespan start. -/
 theorem fresh_birth_at_target
@@ -157,10 +151,9 @@ theorem fresh_birth_at_target
           exact ⟨hbirth_le_i, hstop, hactive⟩
         have hpending : p ∈ Q.pendingAfterPrimes S i.castSucc g := by
           exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hpendingSpan⟩
-        have hpromotion : h ∈ Q.promotionSlots S i g := by
-          apply Finset.mem_filter.mpr
-          exact ⟨Finset.mem_univ h, hfreshParts.1, hpending⟩
-        exact (hfreshParts.2 hpromotion).elim
+        refine (hfreshParts.2 ?_).elim
+        apply Finset.mem_filter.mpr
+        exact ⟨Finset.mem_univ h, hfreshParts.1, hpending⟩
 
 /-- The ghost batch enumerates each selected prime at most once. -/
 theorem ghostBatchLabels_injective
@@ -174,8 +167,8 @@ theorem ghostBatchLabels_injective
   intro h k he
   have hvalues : (ps.toList.get (idx h)).val = (ps.toList.get (idx k)).val :=
     congrArg Subtype.val he
-  have hget : ps.toList.get (idx h) = ps.toList.get (idx k) := Subtype.ext hvalues
-  have hidx : idx h = idx k := hnodup.get_inj_iff.mp hget
+  have hget  := Subtype.ext hvalues
+  have hidx  := hnodup.get_inj_iff.mp hget
   apply Fin.ext
   simpa [idx] using congrArg Fin.val hidx
 
@@ -263,14 +256,11 @@ theorem address_birth_classification
             rcases hborn' with ⟨hbirth, hnotactive⟩
             have hs' : S g p = some (i, stop) := by
               rw [hs, hbirth]
-            have hvalue :
-                (Q.reconstructedHistory S hS y).addressValue B
-                  (.inr (.inr (i, g, h))) = p.val := by
-              simp [MemoryHistory.addressValue, ResiduePath.reconstructedHistory,
-                ResiduePath.reconstructedGhostChoice, hindex, p,
-                ResiduePath.ghostBatchLabels]
-            exact ⟨g, p, i, by simp [addressPrime, hindex, p], hvalue,
+            refine ⟨g, p, i, by simp [addressPrime, hindex, p], ?_,
               ⟨stop, hs'⟩, rfl, by simp [ghostAddress, hnotactive]⟩
+            simp [MemoryHistory.addressValue, ResiduePath.reconstructedHistory,
+              ResiduePath.reconstructedGhostChoice, hindex, p,
+              ResiduePath.ghostBatchLabels]
 
 /-- Equal numerical birth values come from the same performed address. -/
 theorem performed_address_value_injective
@@ -304,7 +294,7 @@ theorem performed_address_value_injective
   have hspanB' := hspanB
   rcases hspanA' with ⟨sa, hsa⟩
   rcases hspanB' with ⟨sb, hsb⟩
-  have hpair : (ba, sa) = (bb, sb) := Option.some.inj (hsa.symm.trans hsb)
+  have hpair := Option.some.inj (hsa.symm.trans hsb)
   have hbirth : ba = bb := congrArg Prod.fst hpair
   have hvisitEq : addressVisit (P := P) (J := J) (F := F) (n := n) B a =
       addressVisit (P := P) (J := J) (F := F) (n := n) B b := by
@@ -318,7 +308,7 @@ theorem performed_address_value_injective
       _ ↔ ba ∉ Q.activeVisits ga pa := hghostA
       _ ↔ bb ∉ Q.activeVisits ga pa := by rw [hbirth]
       _ ↔ _ := hghostB.symm
-  have hprimeAddress : addressPrime Q S B a = addressPrime Q S B b :=
+  have hprimeAddress :=
     hprimeA.trans hprimeB.symm
   cases a with
   | inl xa =>
@@ -335,7 +325,7 @@ theorem performed_address_value_injective
             exact prime_group_eq (Q.labels 0 ga'.val haSlot)
               (Q.labels 0 gb'.val hbSlot) hraw
           subst gb'
-          have hlabels : Q.labels 0 ga'.val haSlot = Q.labels 0 ga'.val hbSlot :=
+          have hlabels :=
             Subtype.ext hraw
           have hslot := (hQ.1 0 ga'.val) hlabels
           subst hbSlot
@@ -389,7 +379,7 @@ theorem performed_address_value_injective
                       (Q.target j gb'.val hbSlot) hraw
                   subst gb'
                   subst j
-                  have hlabels : Q.target i ga'.val haSlot = Q.target i ga'.val hbSlot :=
+                  have hlabels :=
                     Subtype.ext hraw
                   have hslot := Q.target_injective hQ i ga'.val hlabels
                   subst hbSlot
@@ -434,8 +424,7 @@ theorem performed_address_value_injective
                       (Q.ghostBatchLabels S j gb' ⟨hbSlot.val, hindexB⟩) hraw
                   subst gb'
                   subst j
-                  have hlabels : Q.ghostBatchLabels S i ga' ⟨haSlot.val, hindexA⟩ =
-                      Q.ghostBatchLabels S i ga' ⟨hbSlot.val, hindexB⟩ := Subtype.ext hraw
+                  have hlabels := Subtype.ext hraw
                   have hslots := ghostBatchLabels_injective Q S i ga' hlabels
                   have hslot : haSlot = hbSlot := by
                     apply Fin.ext
@@ -451,8 +440,7 @@ theorem SpanBirthTask_proof : SpanBirthTask := by
   intro F P J m n A Q S hQ hS hk y
   let H := Q.reconstructedHistory S hS y
   let B := Erdos821.P3Birth.MemoryHistory.birthCutoff H
-  have htruncated : H.Truncated B := by
-    exact Erdos821.P3Birth.MemoryHistory.birthCutoff_truncated H
+  have htruncated := Erdos821.P3Birth.MemoryHistory.birthCutoff_truncated H
   rw [H.distinctBirths_iff_addresses B htruncated]
   exact Erdos821.P3Birth.performed_address_value_injective Q S hQ hS hk y B
 

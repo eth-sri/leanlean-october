@@ -46,7 +46,7 @@ theorem principalRegularization_analyticAt_of_local (F R : ℂ → ℂ)
   · subst s
     simp only [principalRegularization, Function.update_self]
   · rw [principalRegularization, Function.update_of_ne hs1]
-    exact (hs hs1).symm
+    simp_all
 
 omit [Finite (O ⧸ M)] in
 theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
@@ -106,7 +106,7 @@ theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residu
       -deriv (F χ) s / F χ s - (if χ = 1 then 1 / (s - 1) else 0) := by
   by_cases hχ : χ = 1
   · rw [regularizedFamily, ite_eq_left hχ, ite_eq_left hχ]
-    have hs1 : s ≠ 1 := by intro heq; simp only [heq, Complex.one_re] at hs; linarith
+    have hs1 : s ≠ 1 := by intro heq; simp_all
     exact principalRegularization_logDeriv _ _ hs1
       (hF.analytic χ s hs.le (Or.inr hs1)) (hF.nonzero χ s hs.le (Or.inr hs1))
   · simp only [regularizedFamily, hχ, ite_false, sub_zero]
@@ -138,9 +138,8 @@ theorem quotient_average_coeff (n : ℕ) :
         IdealLogDerivative.coeff (RayQuotient.idealCharacter M H hH χ) n) /
           (RayQuotient.classNumber M H : ℂ) := by
   rw [quotient_sum_coeff]
-  have hc : (RayQuotient.classNumber M H : ℂ) ≠ 0 := by
-    exact_mod_cast (RayQuotient.classNumber_pos M H).ne'
-  exact (mul_div_cancel_left₀ _ hc).symm
+  refine (mul_div_cancel_left₀ _ ?_).symm
+  exact_mod_cast (RayQuotient.classNumber_pos M H).ne'
 
 theorem quotientClassCoeff_LSeries (s : ℂ) (hs : 1 < s.re) :
     LSeries (fun n => (quotientClassCoeff M H n : ℂ)) s =

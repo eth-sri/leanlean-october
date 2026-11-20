@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
@@ -31,13 +32,11 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   have hXA : C.Xi A≠0 := by
     intro h
     have hn := C.Xi_norm_one A hA hcA
-    rw [h, norm_zero] at hn
-    norm_num at hn
+    simp_all
   have hXs : C.Xi s≠0 := by
     intro h
     have hn := C.Xi_norm_one s hs hcs
-    rw [h, norm_zero] at hn
-    norm_num at hn
+    simp_all
   rw [Xi_apply] at hXA hXs
   have hηA := left_ne_zero_of_mul hXA
   have hκA := right_ne_zero_of_mul hXA
@@ -49,8 +48,7 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   have hτ : C.tau≠0 := calibrationForSet_tau_ne_zero S hS
   have hq : 0<elementNorm C.generator := by
     unfold elementNorm
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
   have hroot : (Real.sqrt (elementNorm C.generator):ℂ)≠0 := by
     exact_mod_cast (Real.sqrt_pos.mpr hq).ne'
   have he := actualCongruenceCoefficient_calibration_factor S hS A s

@@ -11,77 +11,14 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped MatrixGroups InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 section
@@ -151,8 +88,7 @@ theorem kernelCoverLegAdjointFunction_cusp_decay (f : IntegralOrbitQuotient H→
       (integralOrbitProjection globalKubotaKernel (integralComplexMatrix M•upperPoint z v hv))‖≤
         (J.relIndex globalKubotaKernel:ℝ)*C/v^3 := by
   apply integralCoverTraceFunction_integral_cusp_decay J globalKubotaKernel _ C _ M z v hv hlarge
-  intro N zz vv hvv hl
-  exact hdec N zz vv hvv hl
+  assumption
 
 end
 
@@ -193,7 +129,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise
+open scoped MatrixGroups Pointwise
 
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -202,27 +138,26 @@ lemma integralProjection_quasiMeasurePreserving (H:Subgroup (SL(2,Eis)))
     Measure.QuasiMeasurePreserving (integralOrbitProjection H)
       hyperbolicVolume (integralQuotientVolume H) := by
   let proj:=integralOrbitProjection H
-  have hp:Measurable proj:=measurable_integralOrbitProjection H
+  have hp:=measurable_integralOrbitProjection H
   refine ⟨hp,Measure.AbsolutelyContinuous.mk fun S hS hzero=>?_⟩
   rw [Measure.map_apply hp hS]
   have hd:hyperbolicVolume ((proj ⁻¹' S)∩hyperbolicFundamentalSet H)=0:=by
     simpa only [integralQuotientVolume,proj,
       Measure.map_apply (measurable_integralOrbitProjection _) hS,
       Measure.restrict_apply ((measurable_integralOrbitProjection _) hS)] using hzero
-  have hinv:∀M:H,M • (proj ⁻¹' S)=proj ⁻¹' S:=by
-    intro M
-    ext w
-    constructor
-    · rintro ⟨u,hu,rfl⟩
-      change proj (M • u)∈S
-      change proj u∈S at hu
-      rwa [show proj (M • u)=proj u from integralOrbitProjection_eq H M u]
-    · intro hw
-      refine ⟨M⁻¹ • w,?_,smul_inv_smul M w⟩
-      change proj (M⁻¹ • w)∈S
-      rwa [show proj (M⁻¹ • w)=proj w from integralOrbitProjection_eq H M⁻¹ w]
-  exact (hyperbolicFundamentalSet_isFundamentalDomain H hH).measure_zero_of_invariant
-    (proj ⁻¹' S) hinv hd
+  refine (hyperbolicFundamentalSet_isFundamentalDomain H hH).measure_zero_of_invariant
+    (proj ⁻¹' S) ?_ hd
+  intro M
+  ext w
+  constructor
+  · rintro ⟨u,hu,rfl⟩
+    change proj (M • u)∈S
+    change proj u∈S at hu
+    rwa [show proj (M • u)=proj u from integralOrbitProjection_eq H M u]
+  · intro hw
+    refine ⟨M⁻¹ • w,?_,smul_inv_smul M w⟩
+    change proj (M⁻¹ • w)∈S
+    rwa [show proj (M⁻¹ • w)=proj w from integralOrbitProjection_eq H M⁻¹ w]
 
 theorem integralQuotient_continuous_lifts_eq (H:Subgroup (SL(2,Eis)))
     (hH:H≤CubicKubota.levelThree) (F G:IntegralOrbitQuotient H→ℂ)
@@ -232,7 +167,7 @@ theorem integralQuotient_continuous_lifts_eq (H:Subgroup (SL(2,Eis)))
     (he:F=ᵐ[integralQuotientVolume H]G) : f=g := by
   have hl: f=ᵐ[hyperbolicVolume]g:=by
     have hh:=(integralProjection_quasiMeasurePreserving H hH).ae_eq_comp he
-    simpa only [Function.comp_def,hF,hG] using hh
+    simpa [Function.comp_def,hF,hG] using hh
   exact Measure.eq_of_ae_eq hl hf hg
 
 theorem integralQuotient_zero_continuous_lift (H:Subgroup (SL(2,Eis)))
@@ -240,7 +175,7 @@ theorem integralQuotient_zero_continuous_lift (H:Subgroup (SL(2,Eis)))
     (f:HyperbolicSpace→ℂ) (hf:Continuous f)
     (hF:∀w,F (integralOrbitProjection H w)=f w)
     (hzero:F=ᵐ[integralQuotientVolume H]0) : ∀w,f w=0 := by
-  have he:f=0:=integralQuotient_continuous_lifts_eq H hH F 0 f 0 hf
+  have he:=integralQuotient_continuous_lifts_eq H hH F 0 f 0 hf
     continuous_const hF (fun _=>rfl) hzero
   intro w
   exact congrFun he w
@@ -249,7 +184,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 
 open CubicKubota ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
@@ -257,9 +192,9 @@ local notation "O" => ActualEisensteinCubic.O
 theorem cubeDifferenceL2_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p)
     (hprimary : ActualEisensteinCubic.lambda^2∣p-1) :
     cubeDifferenceL2 p hp.ne_zero=0 := by
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp.ne_zero)
+  let  := finite_quotient_span (pow_ne_zero 3 hp.ne_zero)
   let : Fintype (CubeResidues p) := Fintype.ofFinite _
-  let : ∀i : CubeLegIndex p,(cubeLegTarget p hp.ne_zero i).FiniteIndex :=
+  let  :=
     cubeLegTarget_finiteIndex p hp.ne_zero
   let : ∀i : CubeLegIndex p,(cubeLegTarget p hp.ne_zero i).IsFiniteRelIndex globalKubotaKernel :=
     fun i=>Subgroup.isFiniteRelIndex_of_finiteIndex
@@ -290,16 +225,14 @@ theorem cubeDifferenceL2_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p)
 theorem cubeSourceDifference_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p)
     (hprimary : ActualEisensteinCubic.lambda^2∣p-1) (w : HyperbolicSpace) :
     cubeSourceDifference p hp.ne_zero w=0 := by
-  have hz : cubeDifferenceQuotientFunction p hp.ne_zero
-      =ᵐ[integralQuotientVolume (cubeCommonCover p hp.ne_zero)]0 := by
-    apply (cubeDifferenceL2_representative p hp.ne_zero).symm.trans
-    rw [cubeDifferenceL2_eq_zero p hp hprimary]
-    exact Lp.coeFn_zero ℂ 2 _
-  exact integralQuotient_zero_continuous_lift (cubeCommonCover p hp.ne_zero)
+  refine integralQuotient_zero_continuous_lift (cubeCommonCover p hp.ne_zero)
     ((cubeCommonCover_le p hp.ne_zero).trans globalKubotaKernel_le_levelThree)
     (cubeDifferenceQuotientFunction p hp.ne_zero) (cubeSourceDifference p hp.ne_zero)
     (cubeSourceDifference_continuous p hp.ne_zero)
-    (cubeDifferenceQuotientFunction_projection p hp.ne_zero) hz w
+    (cubeDifferenceQuotientFunction_projection p hp.ne_zero) ?_ w
+  apply (cubeDifferenceL2_representative p hp.ne_zero).symm.trans
+  rw [cubeDifferenceL2_eq_zero p hp hprimary]
+  exact Lp.coeFn_zero ℂ 2 _
 
 theorem cubicSource_cubeAverage (p : ActualEisensteinCubic.O) (hp : Prime p)
     (hprimary : ActualEisensteinCubic.lambda^2∣p-1) (w : HyperbolicSpace) :
@@ -317,13 +250,8 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
-section
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
 
 section
 open ActualEisensteinCubic
@@ -343,14 +271,14 @@ lemma principalRamifiedWeight_analytic (h:Eis) (i:PrincipalRamifiedIndex h) (s:�
   apply AnalyticAt.mul _ analyticAt_const
   apply Complex.analyticAt_iff_eventually_differentiableAt.mpr
   exact Eventually.of_forall fun z=>(differentiableAt_id.neg).const_cpow
-    (Or.inl (by exact_mod_cast (pow_ne_zero (i.2.val+2) (by norm_num : (3:ℕ)≠0))))
+    (Or.inl (by norm_num))
 
 lemma scatteringCoefficient_eq_principalRamified (s:ℂ) (hs:2<s.re)
     (h:Eis) (hh:h≠0) :
     scatteringCoefficient s h=
       (∑i:PrincipalRamifiedIndex h,principalRamifiedWeight h i s*
         unramifiedCubicGaussSeries s (principalRamifiedIndex h i))/
-        ((9*Real.sqrt 3/2:ℝ):ℂ) := by
+        (periodCovolume : ℂ) := by
   rw [scatteringCoefficient_explicit_ramified s hs h hh,tsum_fintype]
   congr 1
   rw [Fintype.sum_prod_type]
@@ -363,7 +291,7 @@ theorem principalArithmeticResidue_eq_ramified_table (h:Eis) (hh:h≠0) :
     principalArithmeticResidue h=
       (∑i:PrincipalRamifiedIndex h,principalRamifiedWeight h i (4/3)*
         unramifiedGaussResidue (principalRamifiedIndex h i))/
-        ((9*Real.sqrt 3/2:ℝ):ℂ) := by
+        (periodCovolume : ℂ) := by
   let coeff (i:PrincipalRamifiedIndex h) (s:ℂ) :=
     principalRamifiedWeight h i s*cuspWhittakerHeightFactor s h
   have he:=finite_unramified_residue (principalRamifiedIndex h) coeff
@@ -388,7 +316,7 @@ theorem principalArithmeticResidue_eq_ramified_table (h:Eis) (hh:h≠0) :
   apply (eq_div_iff cusp_volume_ne_zero).mpr
   apply mul_right_cancel₀ hH
   calc
-    principalArithmeticResidue h*((9*Real.sqrt 3/2:ℝ):ℂ)*cuspWhittakerHeightFactor (4/3) h
+    principalArithmeticResidue h*(periodCovolume : ℂ)*cuspWhittakerHeightFactor (4/3) h
         = kernelCuspFourier h cubicEisensteinResidue := by
           rw [kernelCuspFourier_principal_residue]
           ring
@@ -405,7 +333,7 @@ theorem sourceArithmeticResidue_eq_ramified_table (h:Eis) (hh:h≠0) :
       if ShortDraftTrace.breveE (cuspFrequency h)=1 then
         ((∑i:PrincipalRamifiedIndex h,principalRamifiedWeight h i (4/3)*
             unramifiedGaussResidue (principalRamifiedIndex h i))+
-          3*unramifiedGaussResidue (9*h))/(4*((9*Real.sqrt 3/2:ℝ):ℂ))
+          3*unramifiedGaussResidue (9*h))/(4*(periodCovolume : ℂ))
       else 0 := by
   rw [sourceArithmeticResidue,principalArithmeticResidue_eq_ramified_table h hh]
   split_ifs
@@ -416,7 +344,6 @@ end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
-local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 lemma arithmeticResidueSum_frequency_cube (h c p:Eis) (hc:c≠0)
     (hlevel:(3:Eis)∣c) (hprimary:lambda^2∣p-1) (hcp:IsCoprime c p) :
@@ -465,8 +392,8 @@ lemma ramified_prime_frequency_not_dvd (h p:Eis) (hp:Prime p)
   rcases hp.dvd_mul.mp hd with hh|hc
   · exact hph hh
   have hcp: IsCoprime (9*(u.val*lambda^n)) p := by
-    have h3: IsCoprime (3:Eis) p:=(primary_coprime_three p hprimary).symm
-    have hram: IsCoprime (u.val*lambda^n) p:=
+    have h3:=(primary_coprime_three p hprimary).symm
+    have hram:=
       (ramified_primary_coprime u n p hprimary).of_mul_left_right
     convert h3.pow_left (m:=2) |>.mul_left hram using 1 ; norm_num
   exact hp.not_isUnit (hcp.symm.isUnit_of_dvd hc)
@@ -483,10 +410,9 @@ lemma sourceRayPhase_mul_primary (h p:Eis) (hprimary:lambda^2∣p-1) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -507,15 +433,14 @@ lemma principalArithmeticResidue_eq_sum (h:Eis) (hh:h≠0) (N:ℕ)
     (hN:ramifiedFrequencyBound h+1≤N) :
     principalArithmeticResidue h=
       (∑u:Eisˣ,∑n∈Finset.range N,principalResidueTerm h u n)/
-        ((9*Real.sqrt 3/2:ℝ):ℂ) := by
+        (periodCovolume : ℂ) := by
   rw [principalArithmeticResidue_eq_ramified_table h hh,Fintype.sum_prod_type]
   congr 1
   apply Finset.sum_congr rfl
   intro u hu
   change (∑n:Fin (ramifiedFrequencyBound h+1),
     principalRamifiedWeight h (u,n) (4/3)*unramifiedGaussResidue (principalRamifiedIndex h (u,n)))=_
-  have hcoeff (n:ℕ) : explicitRamifiedCoefficient h u (n+2)=
-      arithmeticResidueSum h (u.val*lambda^(n+2)):=
+  have hcoeff (n:ℕ) :=
     (arithmeticResidueSum_eq_explicitRamifiedCoefficient h u (n+2) (by omega)).symm
   simp only [principalRamifiedWeight,principalRamifiedIndex,hcoeff]
   change (∑n:Fin (ramifiedFrequencyBound h+1),principalResidueTerm h u n.val)=_
@@ -531,10 +456,10 @@ lemma principalResidueTerm_prime_recurrence (p:Eis) (hp:Prime p)
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 (9*h)*
         principalResidueTerm (h*p) u n := by
   let c:=u.val*lambda^(n+2)
-  have hc:c≠0:=ramifiedElement_ne_zero u (n+2)
-  have hlevel:(3:Eis)∣c:=ramifiedElement_level u (n+2) (by omega)
-  have hcp:IsCoprime c p:=(ramified_primary_coprime u (n+2) p hprimary).of_mul_left_right
-  have hfreq:¬p∣h*(9*c):=ramified_prime_frequency_not_dvd h p hp hprimary hph u (n+2)
+  have hc:=ramifiedElement_ne_zero u (n+2)
+  have hlevel:=ramifiedElement_level u (n+2) (by omega)
+  have hcp:=(ramified_primary_coprime u (n+2) p hprimary).of_mul_left_right
+  have hfreq:=ramified_prime_frequency_not_dvd h p hp hprimary hph u (n+2)
   have hA:=arithmeticResidueSum_frequency_cube h c p hc hlevel hprimary hcp
   have hG:=ramified_prime_Gauss_cancel h c p hc hlevel hp hprimary hcp
   change _*arithmeticResidueSum (h*p^3) c*unramifiedGaussResidue ((h*p^3)*(9*c))=_

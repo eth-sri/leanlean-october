@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilySource
 
@@ -14,9 +15,9 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstCanonicalCoefficient (b : CubeCoordinates ι) (C : Finset ι)
     (negative : Bool) (Ψ : O→*ℂ) (m d : O) (H : Finset ι→ℂ) (x : Ideal O×O) : Finset ι→ℂ :=
@@ -24,14 +25,6 @@ def firstCanonicalCoefficient (b : CubeCoordinates ι) (C : Finset ι)
     b.leftBit b.rightBit negative
     (canonicalCubeResidual p hg b C negative Ψ m (ConcretePrimeRowBridge.idealGenerator x.1) H) d
 
-theorem firstCanonicalCoefficient_old (b : CubeCoordinates ι) (C : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m d : O) (H : Finset ι→ℂ) (x : Ideal O×O) :
-    firstCanonicalCoefficient p hp hcop hg b C negative Ψ m d H x =
-      firstOldLabelCoefficient p hp hcop hg b.support (fun i=>b.leftExponent i+b.rightExponent i)
-        b.leftBit b.rightBit negative
-        (multiplicativeCoreColumn p Ψ m
-          (fun U=>H (((if negative then b.rightDivisor else b.leftDivisor)∪C)∪U)))
-        (∏i∈C,p i) d x.1 := rfl
 
 lemma first_unblocked_physical (F : Finset ι) (C₁ C₂ : Finset ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R K : ℝ) (d h : O) :

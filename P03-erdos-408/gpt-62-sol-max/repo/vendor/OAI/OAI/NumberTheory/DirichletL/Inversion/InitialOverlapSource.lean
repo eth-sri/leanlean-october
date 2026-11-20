@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialOverlapSource
 open InverseInitialOverlapFresh InverseInitialOverlapInputFourier
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
@@ -28,7 +28,7 @@ theorem tupleCoordinate_product (I : Finset σ) (y : σ→ι→ℝ) (q : ∀i∈
 theorem insert_original_fresh
     (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
     (lo hi : σ→ℝ) (W wFresh : ℝ→ℂ) (a₀ b₀ jlo jhi : ℝ)
-    (_hW : Function.support W⊆Set.Icc a₀ b₀)
+
     (ha : ∀i∈I,∀q∈L i,a i q≠0→y i q∈Set.Icc (lo i) (hi i))
     (hFresh : ∀(v:σ→ℝ)(yj yc:ℝ),
       (∀i∈I,v i∈Set.Icc (lo i) (hi i))→yj∈Set.Icc jlo jhi→0<yc→

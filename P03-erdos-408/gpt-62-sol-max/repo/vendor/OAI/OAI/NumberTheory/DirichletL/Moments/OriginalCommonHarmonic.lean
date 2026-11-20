@@ -65,9 +65,7 @@ omit [DecidableEq ι] in
   let S:=finiteColumns (Fintype.piFinset s.pools)
   let β:=coefficient s R seed
   have hm (I:Ideal O) (_:I∈S) (hI:β I≠0):seed∣I:=original_column_mask s R seed I hI
-  have hp:(C,D)∈commonShell S β (Ideal.absNorm (CenteredMomentRankinRadical.commonRadical C D):ℝ):=
-    Finset.mem_filter.mpr ⟨hlabel,le_rfl⟩
-  have hh:=active_common_data S β seed hs hm _ (C,D) hp
+  have hh:=active_common_data S β seed hs hm _ (C,D) (Finset.mem_filter.mpr ⟨hlabel,le_rfl⟩)
   have hn:=commonLabel_norm_bounds S β (sourceRadius s)
     (fun I _ hI=>(original_column_norm s R seed I hz₁ hz₂ hI).2) C D hlabel
   exact ⟨hh.1,hh.2.1,hh.2.2.1,hh.2.2.2.1,hh.2.2.2.2,hn⟩

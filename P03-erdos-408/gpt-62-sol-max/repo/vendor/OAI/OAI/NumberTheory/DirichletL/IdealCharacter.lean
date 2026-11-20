@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.IdealCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation
 open Submodule.IsPrincipal
 open scoped Classical
 
@@ -35,7 +34,7 @@ theorem isUnit_mk_iff_isCoprime (M : Ideal A) (a : A) :
     obtain ⟨b, hb⟩ := isUnit_iff_exists_inv'.mp h
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
     have hba : b * a - 1 ∈ M :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hb)
+      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by assumption)
     refine ⟨b, -(b * a - 1), M.neg_mem hba, ?_⟩
     ring
   · rintro ⟨b, c, hc, hbc⟩
@@ -119,7 +118,7 @@ theorem norm_residue_le_one (M : Ideal A) [Finite (A ⧸ M)]
   · obtain ⟨u, rfl⟩ := ha
     have h := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
     have hn : ‖χ (u : A ⧸ M)‖ = 1 := by
-      simpa only [MulChar.coe_equivToUnitHom] using h
+      assumption
     exact hn.le
   · rw [MulChar.map_nonunit χ ha, norm_zero]
     exact zero_le_one
@@ -187,7 +186,7 @@ theorem ofResidue_finite_deletion (M K : Ideal A)
   by_cases hI : I = ⊥
   · simp only [hI, ofResidue_bot, ite_true, ite_self, mul_zero]
   · simp only [hI, ite_false]
-    split_ifs <;> simp only [one_mul, zero_mul]
+    simp
 
 theorem ofResidue_product (M N : Ideal A)
     (χ : MulChar (A ⧸ M) ℂ) (ψ : MulChar (A ⧸ N) ℂ)

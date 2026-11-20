@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff
+open scoped BigOperators
 open MeasureTheory
 
 namespace Erdos821.P5Energy
@@ -47,9 +47,7 @@ theorem log_range_subset {u : ℝ} (hu : u ∈ Set.uIcc (Real.log (1 / 2)) (Real
     rw [Real.log_le_iff_le_exp (by norm_num)]
     have := Real.exp_one_gt_d9
     linarith
-  have hle : Real.log (1 / 2) ≤ Real.log (5 / 2) :=
-    Real.log_le_log (by norm_num) (by norm_num)
-  rw [Set.uIcc_of_le hle] at hu
+  rw [Set.uIcc_of_le (Real.log_le_log (by norm_num) (by norm_num))] at hu
   rw [abs_le]
   constructor <;> linarith [hu.1, hu.2]
 
@@ -90,7 +88,7 @@ theorem logKernel_energy_le {s : Finset ℕ} {a : ℕ → ℂ} {Y H : ℝ} (hY :
         ‖∫ t : ℝ, ampE (H / Y) t u * (phase (-(t * Real.log Y)) * dp s a t)‖ ^ 2 := by
   set g : ℝ → ℝ := fun v => ‖localLogConvolution s a H v‖ ^ 2 with hg
   set f : ℝ → ℝ := fun u => Y * Real.exp u with hf
-  have hfc : Continuous f := by rw [hf]; fun_prop
+  have hfc : Continuous f := by fun_prop
   have hcov := intervalIntegral.integral_comp_mul_deriv' (a := Real.log (1 / 2))
     (b := Real.log (5 / 2)) (f := f) (f' := f) (g := g)
     (fun x _ => by simpa [hf] using (Real.hasDerivAt_exp x).const_mul Y)
@@ -116,16 +114,15 @@ theorem logKernel_energy_le {s : Finset ℕ} {a : ℕ → ℂ} {Y H : ℝ} (hY :
       apply Continuous.norm
       apply (localLogConvolution_continuousOn s a H).comp_continuous (by fun_prop)
       intro x; exact mul_pos hY (Real.exp_pos x)
-    exact logCutoff_contDiff.continuous.mul (hgf.mul (by simp only [hf]; fun_prop))
+    exact logCutoff_contDiff.continuous.mul (hgf.mul (by assumption))
   have hΦint : Integrable Φ :=
     hΦcont.integrable_of_hasCompactSupport (logCutoff_hasCompactSupport.mul_right)
-  have hle : Real.log (1 / 2) ≤ Real.log (5 / 2) := Real.log_le_log (by norm_num) (by norm_num)
   have heq_on : ∫ x in Real.log (1 / 2)..Real.log (5 / 2), (g ∘ f) x * f x =
       ∫ x in Real.log (1 / 2)..Real.log (5 / 2), Φ x := by
     apply intervalIntegral.integral_congr
     intro u hu
     simp only [Function.comp, hΦ, logCutoff_eq_one u (log_range_subset hu), one_mul]
-  rw [heq_on, intervalIntegral.integral_of_le hle]
+  rw [heq_on, intervalIntegral.integral_of_le (Real.log_le_log (by norm_num) (by norm_num))]
   have hΦnn : ∀ u, 0 ≤ Φ u := fun u => by
     simp only [hΦ, hg, hf]
     exact mul_nonneg (logCutoff_nonneg u) (mul_nonneg (sq_nonneg _) (by positivity))
@@ -155,7 +152,6 @@ theorem local_mellin_energy (j : ℕ) (hj : 2 ≤ j) : ∃ K : ℝ, 0 < K ∧
   intro Y H s a hY10 hH1 hHY hs
   have hY : 0 < Y := by linarith
   have hH : 0 < H := by linarith
-  have hns : ∀ n ∈ s, 0 < (n : ℝ) := fun n hn => hY.trans_le (hs n hn).1
   have hab : Y / 2 ≤ 5 * Y / 2 := by linarith
   set X := ∫ t : ℝ, (1 + |H / Y * t|) ^ (-(j : ℤ)) * ‖dp s a t‖ ^ 2 with hX
   have hA := localConvolution_energy_bound s a H hH
@@ -188,7 +184,7 @@ theorem local_mellin_energy (j : ℕ) (hj : 2 ≤ j) : ∃ K : ℝ, 0 < K ∧
     exact intervalIntegral.integral_mono_on hab c1.intervalIntegrable
       ((c2.intervalIntegrable.const_mul 2).add (c3.intervalIntegrable.const_mul 2))
       (fun v _ => norm_sq_le_two _ _)
-  have hlog := logKernel_energy_le (s := s) (a := a) hY hH hns
+  have hlog := logKernel_energy_le (s := s) (a := a) hY hH (fun n hn => hY.trans_le (hs n hn).1)
   have hJ := hW (H / Y) (div_pos hH hY) (fun t => phase (-(t * Real.log Y)) * dp s a t)
     (∑ n ∈ s, ‖a n‖) ((continuous_phase.comp (by fun_prop)).mul (continuous_dp s a))
     (fun t => by rw [norm_mul, norm_phase, one_mul]; exact norm_dp_le s a t)
@@ -198,7 +194,6 @@ theorem local_mellin_energy (j : ℕ) (hj : 2 ≤ j) : ∃ K : ℝ, 0 < K ∧
   rw [hωX] at hJ
   have herr := error_energy hL s a hY hH1 hHY hs
   have hX0 : 0 ≤ X := integral_nonneg (fun t => by positivity)
-  have hsq0 : 0 ≤ sqNorm s a := Finset.sum_nonneg (fun n _ => sq_nonneg _)
   have hlogJ : ∫ v in (Y / 2)..(5 * Y / 2), ‖localLogConvolution s a H v‖ ^ 2 ≤
       H ^ 2 / (4 * Real.pi ^ 2 * Y) * (C * X) :=
     hlog.trans (mul_le_mul_of_nonneg_left hJ (by positivity))
@@ -226,7 +221,7 @@ theorem local_mellin_energy (j : ℕ) (hj : 2 ≤ j) : ∃ K : ℝ, 0 < K ∧
         (2 * C / Real.pi ^ 2 + 48 * (L : ℝ) ^ 2 + 1) * (H / Y) ^ 2 * sqNorm s a := by
         apply add_le_add
         · exact mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hK1 hY.le) hX0
-        · apply mul_le_mul_of_nonneg_right _ hsq0
+        · apply mul_le_mul_of_nonneg_right _ (Finset.sum_nonneg (fun n _ => sq_nonneg _))
           exact mul_le_mul_of_nonneg_right hK2 (by positivity)
 
 end Erdos821.P5Energy

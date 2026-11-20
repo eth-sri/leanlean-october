@@ -1,17 +1,18 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
+public import OAI.FiniteMajorant
+
+public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice
-open EisensteinSchwartzPoisson
+open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice EisensteinSchwartzPoisson
 
 theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
     ∃ n : ℕ, ∃ T : Finset (ℕ × ℕ), ∃ C : ℝ, 0 < C ∧
@@ -20,11 +21,8 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
           C * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) g * (1 + ‖t‖)^n := by
   let T := S.biUnion fun z => (Finset.range (z.2+1)).image fun i => (z.1,i)
   let c : ℕ × ℕ → ℝ := fun z => (2:ℝ)^z.2*(1+2*Real.pi)^z.2*(z.2+1)
-  let C := 1 + ∑ z ∈ S, c z
+  obtain ⟨C, hC, hcC⟩ := exists_finset_real_majorant S 0 c
   have hc (z) : 0 ≤ c z := by dsimp [c]; positivity
-  have hC : 0 < C := by
-    have := Finset.sum_nonneg (fun z (_ : z∈S) => hc z)
-    dsimp [C]; linarith
   refine ⟨S.sup Prod.snd,T,C,hC,?_⟩
   intro g t
   have hder (z) (hz : z ∈ S) : derivativeSeminormSum g z.1 z.2 ≤
@@ -38,9 +36,7 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
       _ = _ := by simp
   apply Seminorm.finset_sup_apply_le (by positivity)
   intro z hz
-  have hzC : c z ≤ C := by
-    have := Finset.single_le_sum (fun z (_ : z∈S) => hc z) hz
-    dsimp [C]; linarith
+  have hzC := hcC z hz
   calc
     _ ≤ ((2:ℝ)^z.2*(1+2*Real.pi)^z.2*derivativeSeminormSum g z.1 z.2) *
         (1+‖t‖)^z.2 := frequencyTwist_seminorm_polynomial g t z.1 z.2

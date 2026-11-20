@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSourceMask
 
 @[expose] public section
@@ -8,18 +10,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerRanges
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes
+open InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry
+open InverseInitialEnergyCallerSourceMask InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-  (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp hcop hg
 
@@ -47,7 +48,7 @@ theorem retained_label_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2
 
 theorem childLabels_subset_range
     (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
     (Z θ v η:ℝ)(hZ:0<Z)
     (hd:∀x∈coprimeSource p S,((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
@@ -77,13 +78,12 @@ theorem canonical_child_domains
       (initialChild (toTuple p (sectorSource u x))).2.2∈
         nonzeroChildFrequencyBall 1 (Z^(θ+H+2*η)) := by
   intro x hx u
-  refine ⟨childLabels_subset_range p hp hcop hg hc hpr S hdiv Z θ v η hZ hd hv
+  refine ⟨childLabels_subset_range p hp hcop hg hc S hdiv Z θ v η hZ hd hv
     (child_label_mem p S hx u),?_⟩
   rw [initial_child_row_ball p hp hpr]
   refine ⟨mul_pos ?_ (sq_pos_of_pos (norm_pos_iff.mpr
     (eisEmbedding_ne_zero (hf x (Finset.mem_filter.mp hx).1)))),?_⟩
-  · exact_mod_cast Nat.pos_of_ne_zero (fun h=>sourceIdeal_ne_zero p hp x.divisor
-      (Ideal.absNorm_eq_zero_iff.mp h))
+  · exact_mod_cast Ideal.absNorm_pos_of_ne_bot (sourceIdeal_ne_zero p hp x.divisor)
   · have he := (initial_child_enclosures p hp hpr x u Z θ v H η hZ
       (hd x hx) (hv x hx) (hh x hx)).2
     rwa [initial_child_row_norm p hp hpr] at he

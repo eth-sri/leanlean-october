@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped BigOperators Classical FourierTransform
 noncomputable section
 
 lemma frequency_interval_compl (R : ℝ) :
@@ -46,7 +46,7 @@ theorem exists_interval_frequency {α β : Type*} (S : Finset α) (T : Finset β
         (𝓕 g) u*phasePolynomial S a x u*phasePolynomial T b y u‖ ≤
         (∫ u : ℝ, ‖(𝓕 g) u‖)*
           ‖phasePolynomial S a x t*phasePolynomial T b y t‖ := by
-  have hf : Continuous (fun u => phasePolynomial S a x u * phasePolynomial T b y u) :=
+  have hf  :=
     (phasePolynomial_continuous S a x).mul (phasePolynomial_continuous T b y)
   have hi : Integrable (fun u => (𝓕 g) u *
       (phasePolynomial S a x u * phasePolynomial T b y u)) := by

@@ -9,14 +9,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -96,7 +91,7 @@ theorem general_inversion_gauss {F : Type*} [Field F] [Fintype F] [DecidableEq F
       rw [← hchar, MulChar.inv_apply']
     _ = gaussSum (χ ^ (j + 2)) (ψ.mulShift a) := by
       rw [gaussSum_eq_units_sum]
-      simp only [AddChar.mulShift_apply]
+      rfl
 
 theorem sextic_fourier_theta_row_general
     {F : Type*} [Field F] [Fintype F] [DecidableEq F]
@@ -177,7 +172,7 @@ theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
       have hχ7 : χ ^ (5 + 2) = χ := by
         calc
           χ ^ (5 + 2) = χ ^ (6 + 1) := by congr 1
-          _ = χ ^ 6 * χ := by rw [pow_add, pow_one]
+          _ = χ ^ 6 * χ := by rfl
           _ = χ := by rw [canonicalSextic_pow_six P hgood, one_mul]
       rw [hχ7]
       exact hχ1
@@ -199,9 +194,8 @@ theorem schwartz_fourier_one_plus_integrable
       (1 + ‖t‖) ^ J * ‖(𝓕 g) t‖) volume := by
   let b := 𝓕 g
   have hI0 : Integrable (fun t : ℝ => ‖b t‖) volume := by
-    simpa [b] using b.integrable_pow_mul volume 0
-  have hIJ : Integrable
-      (fun t : ℝ => ‖t‖ ^ J * ‖b t‖) volume :=
+    fun_prop
+  have hIJ  :=
     b.integrable_pow_mul volume J
   have hR : Integrable
       (fun t : ℝ => (2 : ℝ) ^ J *
@@ -328,7 +322,7 @@ theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   let g4 := gaussSum (χ ^ 4) ψ
   let J11 := jacobiSum χ χ
   let J13 := jacobiSum χ (χ ^ 3)
-  have hprod2 : χ * χ = χ ^ 2 := (pow_two χ).symm
+  have hprod2  := (pow_two χ).symm
   have hprod4 : χ * χ ^ 3 = χ ^ 4 := by group
   have hJ12 : g2 * J11 = g1 * g1 := by
     have h := jacobiSum_mul_nontrivial (by rw [hprod2]; exact hχ2) ψ

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.PriorityCellBudget
 
 @[expose] public section
@@ -20,7 +21,7 @@ def priorityCellScalar (Z Y L X ell Ractive j t eta eps epsmass B:ℝ) (ray:ℂ)
       (secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta))+eps)
 
 theorem source_cell_joint_bound {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn)) (hk:∀x∈source,x.second.frequency≠0)
     (b X:ℝ) (hgeom:∀x∈source,primeProductNorm p x.second.sourceCommon*
       primeProductNorm p x.second.overlap≤b*X) (d:BlockIndex) (hd:d∈keys p source):
@@ -28,14 +29,13 @@ theorem source_cell_joint_bound {ι:Type*} [DecidableEq ι]
   obtain ⟨x,hx⟩:=(mem_keys_iff p source d).mp hd
   have h0:scales d 0≤primeProductNorm p x.second.sourceCommon:=by
     simpa [outerNorms,scales] using (le_div_iff₀ (dyadScale_pos _)).mp (cell_ratios p hp source hk d x hx 0).1
-  have h2:scales d 2≤primeProductNorm p x.second.overlap:=by
-    simpa [outerNorms,scales] using (le_div_iff₀ (dyadScale_pos _)).mp (cell_ratios p hp source hk d x hx 2).1
-  exact (mul_le_mul h0 h2 (dyadScale_pos _).le (primeProductNorm_pos p hp _).le).trans
+  refine (mul_le_mul h0 ?_ (dyadScale_pos _).le (primeProductNorm_pos p hp _).le).trans
     (hgeom x (cell_subset p source d hx))
+  simpa [outerNorms,scales] using (le_div_iff₀ (dyadScale_pos _)).mp (cell_ratios p hp source hk d x hx 2).1
 
 theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) :
     ∃ Cbin:ℝ,0≤Cbin ∧ ∀ {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (_hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O) (_hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
     (Z M r ell V delta A B Ractive j t eta tau pi eps epsmass b C:ℝ)
     (ray:ℂ), 2≤Z → 0≤C → 1≤b → b≤Z^(6*eta) →
@@ -52,7 +52,6 @@ theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i)
   intro ι _ p hp _ Jo Jn source Z M r ell V delta A B Ractive j t eta tau pi eps epsmass b C
     ray hZ hC hb hthreshold hk hnorm hgeom hmass
   have hZ':1<Z:=lt_of_lt_of_le (by norm_num) hZ
-  have hz:0<Z:=zero_lt_one.trans hZ'
   have hcard:((keys p source).card:ℝ)≤(1+capConstant caps*Real.log Z)^4:=by
     have h:=keys_card_le_product p hp source hk caps Z hnorm
     have hr:((keys p source).card:ℝ)≤∏i:Fin 4,((dyadIndex (Z^(caps i)):ℝ)+1):=by exact_mod_cast h

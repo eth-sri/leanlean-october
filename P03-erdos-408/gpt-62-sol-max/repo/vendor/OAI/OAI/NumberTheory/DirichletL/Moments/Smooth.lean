@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.Initial
+public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
+public import OAI.NumberTheory.DirichletL.Moments.Primitive
 public import OAI.NumberTheory.DirichletL.Moments.Extraction
 
 @[expose] public section
@@ -38,7 +39,7 @@ theorem whole_kernel_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
       Integrable (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) ∧
       (1 + R) ^ A * (∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) ≤ C ∧
       (∀ t : ℝ, (1 + R) ^ A * (1 + ‖t‖) ^ J * ‖b t‖ ≤ C) := by
-  let U : Fin 4 → ℝ → ℂ := ![V 0, V 1, rootWindow (V 2), rootWindow (V 3)]
+  let U  := ![V 0, V 1, rootWindow (V 2), rootWindow (V 3)]
   let a : Fin 4 → ℝ := ![1, 1, -1, -1]
   have hU : ∀ i y, U i y ≠ 0 → |y| ≤ M i := by
     intro i y hy
@@ -159,7 +160,6 @@ theorem logPhase_norm_ratio (q X θ : ℝ) (hq : 0 < q) (hX : 0 < X) :
   ring
 
 open CenteredMomentRectangle
-local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentSmooth
 end

@@ -13,10 +13,8 @@ open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadialPointwise
 open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentCommonAllocationSum
+open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CanonicalQuadraticSieve
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
  def profileCost (s:Input ι) : ℝ :=

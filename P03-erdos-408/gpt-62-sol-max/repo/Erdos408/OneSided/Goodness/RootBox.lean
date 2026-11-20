@@ -45,8 +45,8 @@ theorem card_filter_specialLinearGroup_le {R : Type*} [CommRing R] [Fintype R] [
     intro g hg g' hg' hf
     have hl : l * g 0 0 + m * g 0 1 = 0 := (mem_filter.1 hg).2
     have hl' : l * g' 0 0 + m * g' 0 1 = 0 := (mem_filter.1 hg').2
-    have hs : x * g 0 1 - y * g 0 0 = x * g' 0 1 - y * g' 0 0 := congrArg Prod.fst hf
-    have hs' : x * g 1 1 - y * g 1 0 = x * g' 1 1 - y * g' 1 0 := congrArg Prod.snd hf
+    have hs  := congrArg Prod.fst hf
+    have hs'  := congrArg Prod.snd hf
     have hdet : g 0 0 * g 1 1 - g 0 1 * g 1 0 = 1 := by
       rw [← Matrix.det_fin_two]
       exact g.2
@@ -171,11 +171,9 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
     l * g 0 0 + m * g 0 1 = 0
   set E := C * U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))
   set n := (Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℝ)
-  have hn : 0 < n := Nat.cast_pos.2 Fintype.card_pos
   have hS1 : (1 : ℝ) ≤ S := by exact_mod_cast NeZero.one_le
   have hU0 : 0 < U := by linarith
   have hV0 : 0 < V := by linarith
-  have hm0 : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := by positivity
   -- the root matrix of a primitive position
   set M : ℕ × ℕ → Matrix (Fin 2) (Fin 2) (ZMod S) := fun P =>
     !![(P.1 : ZMod S), (rootC P.1 P.2 : ZMod S); (P.2 : ZMod S), (rootD P.1 P.2 : ZMod S)]
@@ -200,13 +198,13 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
     · refine mem_union_left _ ?_
       have hmem := (mem_filter.1 hbox).1
       have hcop := (mem_filter.1 hbox).2
-      have hP1 : 0 < P.1 := (Nat.ceil_pos.2 hU0).trans_le (mem_Icc.1 (mem_product.1 hmem).1).1
+      have hP1  := (Nat.ceil_pos.2 hU0).trans_le (mem_Icc.1 (mem_product.1 hmem).1).1
       have hdet : (M P).det = 1 := RootResidue.det_root_matrix hP1 hcop
       have hg : (g P : Matrix (Fin 2) (Fin 2) (ZMod S)) = M P := by
         simp only [g, hdet, ↓reduceDIte]
       refine mem_biUnion.2 ⟨g P, mem_filter.2 ⟨mem_univ _, ?_⟩, ?_⟩
       · rw [hg]
-        simpa [M] using hcong
+        assumption
       · refine mem_filter.2 ⟨by simpa only [one_mul] using hmem, hcop, hface.1, hface.2, hα',
           hβ', ?_⟩
         rw [hg]
@@ -224,7 +222,6 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
         30 * U * V * (β - α) / (S : ℝ) ^ 3 := by
       have he : primitiveDensity * U * V * (16 - 1) * (2 - 1) * (β - α) / n =
           primitiveDensity / n * (15 * U * V * (β - α)) := by ring
-      have hβα : 0 ≤ β - α := by linarith
       rw [he, ← hdens, abs_mul, abs_div, abs_of_pos (by positivity : (0 : ℝ) < (S : ℝ) ^ 3),
         abs_of_nonneg (by positivity : 0 ≤ 15 * U * V * (β - α))]
       have hσ := abs_coprimeDensity_le S
@@ -289,10 +286,9 @@ theorem exists_card_rootBox_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2
     intro P hP
     rw [mem_filter] at hP ⊢
     obtain ⟨hbox, hcong, h₁, h₂⟩ := hP
-    have hP1 : 0 < P.1 := by
-      have := (mem_rootBox_bounds hU0.le (by linarith) hbox).1
-      exact_mod_cast hU0.trans_le this
-    exact ⟨hbox, hcong, h₁, lt_min (by linarith) (rootRatio_lt_one hP1)⟩
+    refine ⟨hbox, hcong, h₁, lt_min (by linarith) (rootRatio_lt_one ?_)⟩
+    have := (mem_rootBox_bounds hU0.le (by linarith) hbox).1
+    exact_mod_cast hU0.trans_le this
   have hδε : 30 * U * V * δ / S = ε := by
     simp only [δ]
     field_simp
@@ -340,8 +336,7 @@ theorem exists_unimodular_of_dvd {G a : ℕ} (hGa : Nat.Coprime G a) {z : ℤ}
     obtain ⟨t', ht'⟩ := hc
     have hu' : (u : ZMod (G * a)) = G * t := by
       have := congrArg (Int.cast : ℤ → ZMod (G * a)) ht
-      push_cast at this
-      exact this
+      simpa using this
     have hc' : (z : ZMod (G * a)) * c + z₁ * u = a * t' := by
       have := congrArg (Int.cast : ℤ → ZMod (G * a)) ht'
       push_cast at this
@@ -355,9 +350,7 @@ theorem floor_mul_mem {z : ℤ} {r : ℝ} (hr : 0 ≤ r) :
       -(⌊(z.natAbs : ℝ) * r⌋₊ : ℤ) - 1} : Finset ℤ) := by
   have habs : ((z.natAbs : ℕ) : ℝ) = |(z : ℝ)| := by
     rw [Nat.cast_natAbs, Int.cast_abs]
-  have hj : (⌊(z.natAbs : ℝ) * r⌋₊ : ℤ) = ⌊(z.natAbs : ℝ) * r⌋ :=
-    Int.natCast_floor_eq_floor (by positivity)
-  rw [hj, habs, mem_insert, mem_insert, mem_singleton]
+  rw [(Int.natCast_floor_eq_floor (by positivity)), habs, mem_insert, mem_insert, mem_singleton]
   rcases le_total 0 z with hz | hz
   · left
     rw [abs_of_nonneg (by exact_mod_cast hz)]
@@ -382,10 +375,10 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
   obtain ⟨C₀, hC₀, h⟩ := exists_card_rootBox_le
   refine ⟨C₀, hC₀, fun U V hU hV G a hS z hz hza k α β hα hαβ hβ => ?_⟩
   have : NeZero (G * a) := ⟨hS.ne_zero⟩
-  have hGa : Nat.Coprime G a := (Nat.squarefree_mul_iff.1 hS).1
+  have hGa  := (Nat.squarefree_mul_iff.1 hS).1
   have hU0 : 0 < U := by linarith
   set N := z.natAbs
-  have hN : 0 < N := Int.natAbs_pos.2 hz
+  have hN  := Int.natAbs_pos.2 hz
   have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
   have hNz : (N : ℝ) = |(z : ℝ)| := by rw [Nat.cast_natAbs, Int.cast_abs]
   set E := C₀ * U * V * ((G : ℝ) * a) ^ 4 * min U V ^ (-(1 / 5 : ℝ)) + (16 * U + V + 2)
@@ -412,8 +405,7 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
       rw [mem_filter] at hP ⊢
       obtain ⟨hbox, hG, ha, h₁, h₂⟩ := hP
       refine ⟨hbox, hcong _ _ hG ?_, h₁, h₂⟩
-      rwa [show z * (rootC P.1 P.2 : ℤ) + (k - n) * (P.1 : ℤ) =
-        z * (rootC P.1 P.2 : ℕ) + (k - n) * (P.1 : ℕ) by rfl] at ha
+      assumption
     have := h U V hU hV (G * a) hS l m x y hxy (f j) (f (j + 1)) (hf0 j) (hmono j) (hf1 _)
     rw [Nat.cast_mul] at this
     exact (Nat.cast_le.2 (card_le_card hsub)).trans (this.trans_eq (by simp only [E]; ring))
@@ -430,8 +422,8 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
       have := (mem_rootBox_bounds hU0.le (by linarith) hbox).1
       exact_mod_cast hU0.trans_le this
     set r := rootRatio P
-    have hr0 : 0 ≤ r := rootRatio_nonneg P
-    have hr1 : r < 1 := rootRatio_lt_one hP1
+    have hr0  := rootRatio_nonneg P
+    have hr1  := rootRatio_lt_one hP1
     set j := ⌊(N : ℝ) * r⌋₊
     have hjle : (j : ℝ) ≤ N * r := Nat.floor_le (by positivity)
     have hjlt : (N : ℝ) * r < j + 1 := Nat.lt_floor_add_one _
@@ -452,7 +444,6 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
     rw [sum_range_sub (f := f)]
     simp only [f, Nat.cast_zero, zero_div, div_self hN0.ne']
     rw [min_eq_left hβ, max_eq_right hαβ, min_eq_right (hα.trans hαβ), max_eq_left hα]
-  have hE : 0 ≤ E := by positivity
   have hGa0 : (0 : ℝ) < (G : ℝ) * a := by
     have : (0 : ℝ) < ((G * a : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero hS.ne_zero
     exact_mod_cast this
@@ -471,7 +462,6 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
           exact_mod_cast card_le_three
         have hnn : 0 ≤ 30 * U * V * (f (j + 1) - f j) / ((G : ℝ) * a) + E := by
           have := hmono j
-          have : 0 ≤ f (j + 1) - f j := by linarith
           positivity
         calc ∑ n ∈ ({(j : ℤ), -(j : ℤ), -(j : ℤ) - 1} : Finset ℤ), ((piece n j).card : ℝ)
             ≤ ∑ _n ∈ ({(j : ℤ), -(j : ℤ), -(j : ℤ) - 1} : Finset ℤ),

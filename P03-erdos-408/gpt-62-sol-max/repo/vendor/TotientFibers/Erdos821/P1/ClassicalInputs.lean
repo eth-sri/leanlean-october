@@ -17,11 +17,11 @@ theorem classical_inputs_of_harmonic
     (harmonic : Erdos821.Blueprint.HarmonicCharacters) :
     Erdos821.Blueprint.ClassicalInputs := by
   exact ⟨prime_progressions_proof, mertens_proof, harmonic,
-    Erdos821.Blueprint.DivisorMoments_proof,
-    Erdos821.Classical.blueprint_meanSquares,
+    Erdos821.Classical.divisorMoments,
+    Erdos821.Classical.meanSquares,
     multiplicative_large_sieve_proof,
     Erdos821.Blueprint.DerivativeTests_proof,
-    Erdos821.Classical.blueprint_lem_fourier_separation⟩
+    Erdos821.Classical.lem_fourier_separation⟩
 
 theorem classical_inputs_proof : Erdos821.Blueprint.ClassicalInputs :=
   classical_inputs_of_harmonic Erdos821.Blueprint.HarmonicCharacters_proof

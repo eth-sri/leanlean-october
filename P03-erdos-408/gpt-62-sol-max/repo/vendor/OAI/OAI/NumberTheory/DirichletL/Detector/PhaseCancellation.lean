@@ -38,9 +38,8 @@ theorem cubicTwo_isUnit_of_odd (a : O)
   apply isUnit_iff_ne_zero.mpr
   intro hz
   have hm := Ideal.Quotient.eq_zero_iff_mem.mp hz
-  have hd : (2 : O) ∣ a := by
-    simpa only [cubicTwoIdeal, Ideal.mem_span_singleton, neg_dvd] using hm
-  exact ((odd_residue_iff_not_two_dvd a).mp ha) hd
+  refine ((odd_residue_iff_not_two_dvd a).mp ha) ?_
+  simpa only [cubicTwoIdeal, Ideal.mem_span_singleton, neg_dvd] using hm
 
 theorem G_norm_one_of_odd (a : O)
     (ha : EisensteinEPrimaryPhase.odd (residue a)) : ‖G a‖ = 1 :=

@@ -9,7 +9,7 @@ public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff FourierTransform SchwartzMap Nat
+open scoped BigOperators ContDiff FourierTransform Nat
 open MeasureTheory
 
 namespace Erdos821.P5Energy
@@ -69,11 +69,9 @@ theorem amp_iter_bound (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, ∀ c u :
   rw [hamp]
   refine hcomp.trans ?_
   have hfact : (i ! : ℝ) ≤ 2 := by
-    interval_cases i <;> norm_num [Nat.factorial]
-  have hpowi : D ^ i ≤ D ^ 2 := pow_le_pow_right₀ hD1 hi
-  have hsplit : D ^ (N + 2) = D ^ N * D ^ 2 := pow_add D N 2
-  have hDN : 0 < D ^ N := pow_pos hDpos N
-  have hD2 : 0 < D ^ 2 := pow_pos hDpos 2
+    interval_cases i <;> norm_num
+  have hpowi  := pow_le_pow_right₀ hD1 hi
+  have hsplit  := pow_add D N 2
   calc (i ! : ℝ) * (C / D ^ (N + 2)) * D ^ i ≤ 2 * (C / D ^ (N + 2)) * D ^ 2 := by
         apply mul_le_mul (mul_le_mul_of_nonneg_right hfact (by positivity)) hpowi
           (by positivity) (by positivity)
@@ -88,7 +86,7 @@ theorem amp_iter_bound_le_two (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, �
   intro i hi c u hu
   refine (hbound i hi c u).trans ?_
   have he : Real.exp (-u) * Real.exp u = 1 := by rw [← Real.exp_add]; simp
-  have heu : Real.exp u ≤ Real.exp 2 := Real.exp_le_exp.mpr hu
+  have heu  := Real.exp_le_exp.mpr hu
   have he1 : 1 ≤ Real.exp 2 := by
     have := Real.add_one_le_exp 2; linarith
   have hcx : 1 + |c| ≤ Real.exp 2 * (1 + |c * Real.exp (-u)|) := by
@@ -97,7 +95,6 @@ theorem amp_iter_bound_le_two (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, �
     rw [hc]
     have h0 : 0 ≤ |c * Real.exp (-u)| := abs_nonneg _
     nlinarith [mul_le_mul_of_nonneg_left heu h0]
-  have hpos : 0 < 1 + |c * Real.exp (-u)| := by positivity
   have hpow : (1 + |c|) ^ N ≤ Real.exp 2 ^ N * (1 + |c * Real.exp (-u)|) ^ N := by
     rw [← mul_pow]; exact pow_le_pow_left₀ (by positivity) hcx N
   rw [div_le_div_iff₀ (by positivity) (by positivity)]
@@ -109,13 +106,13 @@ theorem amp_iter_bound_le_two (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, �
 theorem choose_sum_bound {n : ℕ} (hn : n ≤ 2) (a b : ℕ → ℝ) (A B : ℝ)
     (ha0 : ∀ i, 0 ≤ a i) (hb0 : ∀ i, 0 ≤ b i) (ha : ∀ i ≤ n, a i ≤ A) (hb : ∀ i ≤ n, b i ≤ B) :
     ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * a i * b (n - i) ≤ 4 * A * B := by
-  have hA : 0 ≤ A := (ha0 0).trans (ha 0 (Nat.zero_le _))
-  have hB : 0 ≤ B := (hb0 0).trans (hb 0 (Nat.zero_le _))
+  have hA  := (ha0 0).trans (ha 0 (Nat.zero_le _))
+  have hB  := (hb0 0).trans (hb 0 (Nat.zero_le _))
   calc ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * a i * b (n - i)
       ≤ ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * A * B := by
         apply Finset.sum_le_sum
         intro i hi
-        have hi' : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+        have hi'  := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
         apply mul_le_mul (mul_le_mul_of_nonneg_left (ha i hi') (by positivity))
           (hb (n - i) (Nat.sub_le n i)) (hb0 _) (by positivity)
     _ = (2 : ℝ) ^ n * A * B := by
@@ -143,7 +140,7 @@ theorem mul_iter_bound {f g : ℝ → ℂ} (hf : ContDiff ℝ ∞ f) (hg : ContD
 theorem iteratedFDeriv_eq_zero_of_notMem {g : ℝ → ℂ}
     (hsupp : Function.support g ⊆ Set.Icc (-2) 2) (i : ℕ) {u : ℝ} (hu : u ∉ Set.Icc (-2 : ℝ) 2) :
     iteratedFDeriv ℝ i g u = 0 := by
-  have hts : tsupport g ⊆ Set.Icc (-2) 2 := closure_minimal hsupp isClosed_Icc
+  have hts  := closure_minimal hsupp isClosed_Icc
   by_contra hne
   exact hu (hts (support_iteratedFDeriv_subset i (Function.mem_support.mpr hne)))
 
@@ -159,11 +156,11 @@ theorem norm_fourier_le_of_support {f : ℝ → ℂ} (hsupp : ∀ u ∉ Set.Icc 
   rw [Real.fourier_real_eq_integral_exp_smul]
   rw [← setIntegral_eq_integral_of_forall_compl_eq_zero (s := Set.Icc (-2 : ℝ) 2)
     (fun u hu => by simp [hsupp u hu])]
-  have hfin : volume (Set.Icc (-2 : ℝ) 2) < ⊤ := by simp [Real.volume_Icc]
+  have hfin : volume (Set.Icc (-2 : ℝ) 2) < ⊤ := by simp
   refine (norm_setIntegral_le_of_norm_le_const hfin (C := A) (fun u _ => ?_)).trans ?_
   · rw [norm_smul, Complex.norm_exp_ofReal_mul_I, one_mul]; exact hA u
   · have : volume.real (Set.Icc (-2 : ℝ) 2) = 4 := by
-      simp [Measure.real, Real.volume_Icc]; norm_num
+      norm_num
     rw [this]; linarith
 
 /-- Two integrations by parts: decay of the Fourier transform of a compactly supported `C²`
@@ -188,7 +185,7 @@ theorem fourier_decay_of_compact {g : ℝ → ℂ} (hg : ContDiff ℝ ∞ g)
   have h0 : ‖𝓕 g η‖ ≤ 4 * A := by
     have := norm_fourier_le_of_support (f := iteratedDeriv 0 g) (hzero 0) (hbd 0 (by norm_num)) η
     simpa using this
-  have h2 : ‖𝓕 (iteratedDeriv 2 g) η‖ ≤ 4 * A :=
+  have h2  :=
     norm_fourier_le_of_support (hzero 2) (hbd 2 le_rfl) η
   have hF := Real.fourier_iteratedDeriv (f := g) (N := 2) (n := 2) (hg.of_le (by exact_mod_cast le_top))
     (fun n _ => hint n) le_rfl
@@ -198,13 +195,9 @@ theorem fourier_decay_of_compact {g : ℝ → ℂ} (hg : ContDiff ℝ ∞ g)
     rw [norm_smul, norm_pow]
     congr 1
     have : ‖2 * (Real.pi : ℂ) * Complex.I * (η : ℂ)‖ = |2 * Real.pi * η| := by
-      rw [norm_mul, norm_mul, norm_mul, Complex.norm_I, Complex.norm_real, Complex.norm_real,
-        Real.norm_eq_abs, Real.norm_eq_abs, abs_mul, abs_mul, abs_of_pos Real.pi_pos]
       simp
     rw [this, sq_abs]
-  simp only at h2
-  rw [hnorm] at h2
-  nlinarith
+  linarith
 
 /-- The compact amplitude product whose `u`-Fourier transform is the Mellin kernel. -/
 def gfun (c c' u : ℝ) : ℂ := logCompactWeight u * (amp c u * (starRingEnd ℂ) (amp c' u))
@@ -214,7 +207,6 @@ theorem conj_amp_eq (c : ℝ) :
   funext u; simp
 
 theorem conj_amp_contDiff (c : ℝ) : ContDiff ℝ ∞ (fun u => (starRingEnd ℂ) (amp c u)) := by
-  rw [conj_amp_eq]
   exact Complex.conjLIE.toContinuousLinearEquiv.contDiff.comp (amp_contDiff c)
 
 theorem gfun_contDiff (c c' : ℝ) : ContDiff ℝ ∞ (gfun c c') :=
@@ -233,13 +225,10 @@ theorem gfun_iter_bound (N : ℕ) : ∃ A : ℝ, 0 < A ∧ ∀ c c' : ℝ, ∀ i
   let W : ℝ := SchwartzMap.seminorm ℝ 0 0 logCompactWeightSchwartz +
     SchwartzMap.seminorm ℝ 0 1 logCompactWeightSchwartz +
     SchwartzMap.seminorm ℝ 0 2 logCompactWeightSchwartz
-  have hW0 : 0 ≤ W := by positivity
   refine ⟨16 * (W + 1) * B ^ 2, by positivity, ?_⟩
   intro c c' i hi u
-  have hpc : 0 < (1 + |c|) ^ N := by positivity
-  have hpc' : 0 < (1 + |c'|) ^ N := by positivity
   by_cases hu : u ∈ Set.Icc (-2 : ℝ) 2
-  · have hu2 : u ≤ 2 := hu.2
+  · have hu2  := hu.2
     have hw : ∀ k ≤ 2, ‖iteratedFDeriv ℝ k logCompactWeight u‖ ≤ W := by
       intro k hk
       rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv]

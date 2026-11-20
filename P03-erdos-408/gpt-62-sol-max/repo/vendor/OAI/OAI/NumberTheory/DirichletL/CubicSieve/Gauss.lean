@@ -57,7 +57,7 @@ def quotientCharacterTransport {R S : Type*} [CommRing R] [CommRing S]
   toFun x := χ (e x)
   map_one' := by simp
   map_mul' x y := by simp only [map_mul]
-  map_nonunit' x hx := MulChar.map_nonunit χ (fun h => hx (by simpa using h.map e.symm.toMonoidHom))
+  map_nonunit' x hx := MulChar.map_nonunit χ (fun h => hx (by simp_all))
 
 def principalCubicCharacter (I : Ideal O) (hI : Admissible I) :
     MulChar (O ⧸ Ideal.span {primaryGenerator I}) ℂ :=
@@ -75,13 +75,12 @@ lemma principalCubicCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
   rw [map_neg, map_one, cubicQuotientCharacter_neg_one]
 
 lemma gaussTwo_eq_gaussSum (I : Ideal O) (hI : Admissible I) :
-    let : Finite (O ⧸ Ideal.span {primaryGenerator I}) := finite_quotient_span hI.2
+    let  := finite_quotient_span hI.2
     let : Fintype (O ⧸ Ideal.span {primaryGenerator I}) := Fintype.ofFinite _
     gaussTwo I hI.2 = gaussSum (principalCubicCharacter I hI)
       (eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates
         (primaryGenerator I) hI.2) / (‖eisEmbedding (primaryGenerator I)‖ : ℂ) := by
-  dsimp only [gaussTwo, gaussSum, principalCubicCharacter, quotientCharacterTransport, cubicQuotientCharacter]
-  congr 1
+  rfl
 
 lemma gaussSum_inverse_of_even {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (heven : χ (-1) = 1) :
@@ -96,7 +95,7 @@ lemma cubic_pair_cross_phase (I J : Ideal O) (hI : Admissible I) (hJ : Admissibl
     (hcop : IsCoprime I J) :
     (principalCubicCharacter I hI)⁻¹ (Ideal.Quotient.mk _ (primaryGenerator J)) *
       principalCubicCharacter J hJ (Ideal.Quotient.mk _ (primaryGenerator I)) = 1 := by
-  let : Finite (O ⧸ Ideal.span {primaryGenerator I}) := finite_quotient_span hI.2
+  let  := finite_quotient_span hI.2
   rw [← MulChar.star_apply', principalCubicCharacter_mk, principalCubicCharacter_mk]
   change star (idealKernel I J) * idealKernel J I = 1
   rw [← idealKernel_reciprocity I J hI.2 hJ.2]
@@ -106,7 +105,7 @@ lemma cubic_pair_cross_phase (I J : Ideal O) (hI : Admissible I) (hJ : Admissibl
 def cubicPairGauss (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) : ℂ := by
   let a := primaryGenerator I
   let b := primaryGenerator J
-  let : Finite (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := finite_quotient_product hI.2 hJ.2
+  let  := finite_quotient_product hI.2 hJ.2
   let : Fintype (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := Fintype.ofFinite _
   exact (∑ x : O ⧸ (Ideal.span {a}) * (Ideal.span {b}),
     (principalCubicCharacter I hI)⁻¹ (Ideal.Quotient.factor Ideal.mul_le_left x) *
@@ -117,11 +116,11 @@ def cubicPairGauss (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) : ℂ
 theorem cubicPairGauss_separation (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hcop : IsCoprime I J) :
     cubicPairGauss I J hI hJ = star (gaussTwo I hI.2) * gaussTwo J hJ.2 := by
-  let : Finite (O ⧸ Ideal.span {primaryGenerator I}) := finite_quotient_span hI.2
+  let  := finite_quotient_span hI.2
   let : Fintype (O ⧸ Ideal.span {primaryGenerator I}) := Fintype.ofFinite _
-  let : Finite (O ⧸ Ideal.span {primaryGenerator J}) := finite_quotient_span hJ.2
+  let  := finite_quotient_span hJ.2
   let : Fintype (O ⧸ Ideal.span {primaryGenerator J}) := Fintype.ofFinite _
-  let : Finite (O ⧸ (Ideal.span {primaryGenerator I}) * (Ideal.span {primaryGenerator J})) :=
+  let  :=
     finite_quotient_product hI.2 hJ.2
   let : Fintype (O ⧸ (Ideal.span {primaryGenerator I}) * (Ideal.span {primaryGenerator J})) := Fintype.ofFinite _
   have hc : IsCoprime (Ideal.span {primaryGenerator I}) (Ideal.span {primaryGenerator J}) := by

@@ -128,7 +128,7 @@ theorem norm_sum_star_mul_cpow {Y : ℝ} (hY : 0 < Y) (f : ℕ → ℂ) (u : ℤ
     mul_inv_cancel_left₀ hY.ne', ← norm_star, star_sum]
   congr 1
   refine Finset.sum_congr rfl fun n hn => ?_
-  have hn0 : n ≠ 0 := (lt_of_lt_of_le (Nat.ceil_pos.2 hY) (Finset.mem_Icc.1 hn).1).ne'
+  have hn0  := (lt_of_lt_of_le (Nat.ceil_pos.2 hY) (Finset.mem_Icc.1 hn).1).ne'
   rw [star_mul', star_mul', star_star, star_natCast_cpow hn0, Erdos821.P5FourierArcProof.star_e,
     e]
   congr 2

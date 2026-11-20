@@ -41,12 +41,11 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
   set Ms : Set ℝ := {t | |t| ≤ X} with hMsdef
   set BH : Set ℝ := {t | θ < ‖A t‖} ∩ {t | X < |t|} with hBHdef
   set G : ℝ := (Λ * (24 / X + ε)) ^ 2 with hGdef
-  have hfc : Continuous f := (hA.mul (hB₀.add hB₁)).norm.pow 2
+  have hfc  := (hA.mul (hB₀.add hB₁)).norm.pow 2
   have hOm : MeasurableSet O := measurableSet_le hA.norm.measurable measurable_const
   have hMm : MeasurableSet Ms := measurableSet_le continuous_abs.measurable measurable_const
   have hBHm : MeasurableSet BH := (measurableSet_lt measurable_const hA.norm.measurable).inter
     (measurableSet_lt measurable_const continuous_abs.measurable)
-  have hAm0 : 0 ≤ Amax := (norm_nonneg _).trans (hAmax 0)
   have hne : ∀ t ∈ Set.Icc a b, t ≠ 0 := fun t ht h0 => by
     have := hca t ht
     rw [h0, abs_zero] at this
@@ -56,16 +55,12 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
       (1152 * Λ ^ 2 * (t ^ 2)⁻¹ + Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t +
         BH.indicator (fun _ => G) t + ‖B₁ t‖ ^ 2) := by
     intro t ht
-    have htI : t ∈ Set.Icc a b := Set.Ioc_subset_Icc_self ht
+    have htI  := Set.Ioc_subset_Icc_self ht
     have ht0 := hne t htI
-    have hct := hca t htI
-    have hat : 0 < |t| := abs_pos.2 ht0
     have hsq : (t ^ 2)⁻¹ = (|t|⁻¹) ^ 2 := by rw [inv_pow, sq_abs]
     have hi1 : 0 ≤ Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t :=
       Set.indicator_nonneg (fun _ _ => by positivity) t
     have hi2 : 0 ≤ BH.indicator (fun _ => G) t := Set.indicator_nonneg (fun _ _ => by positivity) t
-    have hB1 : 0 ≤ ‖B₁ t‖ ^ 2 := by positivity
-    have ht2 : 0 ≤ (t ^ 2)⁻¹ := by positivity
     by_cases hO : t ∈ O
     · rw [Set.indicator_of_mem hO]
       have : 0 ≤ 2 * Amax ^ 2 * (1152 * Λ ^ 2 * (t ^ 2)⁻¹ +
@@ -80,7 +75,7 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
       have hb := hB₀pt t htI
       by_cases hM : t ∈ Ms
       · rw [Set.indicator_of_mem hM]
-        have hsq' : ‖B₀ t‖ ^ 2 ≤ (Λ * (24 / |t| + ε)) ^ 2 :=
+        have hsq'  :=
           pow_le_pow_left₀ (norm_nonneg _) hb 2
         have h24 : (Λ * (24 / |t| + ε)) ^ 2 ≤ 1152 * Λ ^ 2 * (t ^ 2)⁻¹ + 2 * Λ ^ 2 * ε ^ 2 := by
           rw [hsq, div_eq_mul_inv]
@@ -90,7 +85,7 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
         rw [Set.indicator_of_mem (show t ∈ BH from ⟨hAθ, hXt⟩)]
         have h1 : Λ * (24 / |t| + ε) ≤ Λ * (24 / X + ε) := by
           gcongr
-        have hsq' : ‖B₀ t‖ ^ 2 ≤ G := pow_le_pow_left₀ (norm_nonneg _) (hb.trans h1) 2
+        have hsq'  := pow_le_pow_left₀ (norm_nonneg _) (hb.trans h1) 2
         have : 0 ≤ 1152 * Λ ^ 2 * (t ^ 2)⁻¹ := by positivity
         linarith
     have hA2 : ‖A t‖ ^ 2 ≤ Amax ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hAmax t) 2
@@ -105,7 +100,6 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
           Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t + BH.indicator (fun _ => G) t +
           ‖B₁ t‖ ^ 2) := by nlinarith [sq_nonneg Amax]
   -- integrability on `(a, b]`
-  have hIoc : MeasurableSet (Set.Ioc a b) := measurableSet_Ioc
   have hint : ∀ g : ℝ → ℝ, Continuous g → IntegrableOn g (Set.Ioc a b) :=
     fun g hg => (hg.integrableOn_Icc).mono_set Set.Ioc_subset_Icc_self
   have h1 : IntegrableOn (O.indicator f) (Set.Ioc a b) := (hint f hfc).indicator hOm
@@ -132,7 +126,7 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
   have hmono : ∫ t in Set.Ioc a b, f t ≤ ∫ t in Set.Ioc a b, (O.indicator f t + 2 * Amax ^ 2 *
       (1152 * Λ ^ 2 * (t ^ 2)⁻¹ + Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t +
         BH.indicator (fun _ => G) t + ‖B₁ t‖ ^ 2)) :=
-    setIntegral_mono_on (hint f hfc) (h1.add hg) hIoc hpt
+    setIntegral_mono_on (hint f hfc) (h1.add hg) measurableSet_Ioc hpt
   rw [integral_add h1 hg, integral_const_mul, integral_add h234 h5, integral_add h23 h4,
     integral_add h2 h3, setIntegral_indicator hOm, setIntegral_indicator hMm,
     setIntegral_indicator hBHm, setIntegral_const, setIntegral_const, integral_const_mul]

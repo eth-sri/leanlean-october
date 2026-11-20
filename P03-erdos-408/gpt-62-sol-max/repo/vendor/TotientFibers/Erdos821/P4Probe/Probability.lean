@@ -16,8 +16,8 @@ noncomputable section
 
 lemma graph_mu_pos (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g)
     (p : P.Prime g) : 0 < P.mu g p := by
-  have hp : 0 < (p.val : ℝ) := by exact_mod_cast (P.prime g p.val p.property).pos
-  exact inv_pos.mpr (mul_pos hV hp)
+  refine inv_pos.mpr (mul_pos hV ?_)
+  exact_mod_cast (P.prime g p.val p.property).pos
 
 lemma graph_mu_sum (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g) :
     ∑ p : P.Prime g, P.mu g p = 1 := by

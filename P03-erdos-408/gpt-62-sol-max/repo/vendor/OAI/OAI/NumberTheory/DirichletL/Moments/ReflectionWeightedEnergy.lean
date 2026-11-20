@@ -34,7 +34,7 @@ lemma annularMass_le_two (B : ℕ) (hB : 2≤B) (n : ℤ) :
   have hp := CenteredMomentSectorLocalization.dyadicScale_pos n
   unfold annularMass
   exact div_le_div_of_nonneg_left (Real.sqrt_nonneg _) (by positivity)
-    (pow_le_pow_right₀ (by linarith [CenteredMomentSectorLocalization.dyadicScale_pos n]) hB)
+    (pow_le_pow_right₀ (by linarith) hB)
 
 lemma coefficient_joint_summable (η ηi : Character) (S : Finset (Ideal O))
     (hS : ∀P∈S,Prime P) :
@@ -133,7 +133,6 @@ lemma sum_iSup_le_of_selection {ι : Type*} [Fintype ι] {α : ι→Type*}
   have he : ((Fintype.card ι:ℝ)+1)*δ=ε := by
     dsimp [δ]
     field_simp
-  have hn : (0:ℝ)≤Fintype.card ι := Nat.cast_nonneg _
   have hb := hselection a
   simp only [Finset.card_univ] at hh
   nlinarith
@@ -149,7 +148,7 @@ lemma selection_point_bound {ι : Type*} [Fintype ι] {α : ι→Type*}
     (hselection (Function.update base i a))
 
 theorem weighted_selection_energy {ι : Type*} [Fintype ι] {α : ι→Type*}
-    (base : ∀i,α i) (w f : ∀i,α i→ℂ) (M E : ℝ) (_hM : 0≤M)
+    (base : ∀i,α i) (w f : ∀i,α i→ℂ) (M E : ℝ)
     (hs : ∀i,Summable (fun a=>‖w i a‖))
     (hm : ∀i,(∑'a,‖w i a‖)≤M)
     (hselection : ∀a : ∀i,α i,(∑i,‖f i (a i)‖^2)≤E) :
@@ -217,7 +216,7 @@ theorem actual_masked_reflection_energy (ε : ℝ) (hε : 0<ε) :
   intro ι _ S hS η ηi B hB R E hR hcap mask f hmask hselection
   have hR0 : 0≤R := by linarith
   let M := C*R^(ε/2)
-  have hM : 0≤M := by dsimp [M];positivity
+  have hM : 0≤M := by positivity
   have hs (i : ι) := masked_signedWeight_summable_norm (η i) (ηi i) (S i)
     (hS i) (B i) (hB i) (mask i) (hmask i)
   have hm (i : ι) :
@@ -228,7 +227,7 @@ theorem actual_masked_reflection_energy (ε : ℝ) (hε : 0<ε) :
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) (hcap i) (by positivity : 0≤ε/2)) hC.le
   have hh := weighted_selection_energy (fun i=>baseIndex (S i))
-    (fun i a=>mask i a*signedWeight (η i) (ηi i) (S i) (B i) a) f M E hM hs hm hselection
+    (fun i a=>mask i a*signedWeight (η i) (ηi i) (S i) (B i) a) f M E hs hm hselection
   refine ⟨hh.1,hh.2.trans_eq ?_⟩
   have hr : (R^(ε/2))^2=R^ε := by
     rw [←Real.rpow_natCast,←Real.rpow_mul hR0]
@@ -250,7 +249,7 @@ theorem actual_reflection_energy (ε : ℝ) (hε : 0<ε) :
   refine ⟨C,hC,?_⟩
   intro ι _ S hS η ηi B hB R E hR hcap f hselection
   simpa only [norm_one,one_mul] using
-    h S hS η ηi B hB R E hR hcap (fun _ _=>1) f (by intro i a;simp) hselection
+    h S hS η ηi B hB R E hR hcap (fun _ _=>1) f (by simp) hselection
 
 end SevenEighths.CenteredMomentReflectionWeightedEnergy
 

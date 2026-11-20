@@ -67,8 +67,7 @@ theorem normBound_bigAveragedConditionedKernel (A : Model F P J m) (n B : ℕ)
     have h := normBound_mul_endpoints hm hC (hbig theta')
       (fun _ => smallSignedCoefficient A forward d) (fun _ => 1)
       (fun _ => (smallSignedCoefficient_norm A forward d).le) (fun _ => by simp)
-    have hk : fourierFibre (symmetricCycleKernel A n B theta forward d) psi =
-        (fun a b => smallSignedCoefficient A forward d * tiltedBannedKernel A n theta' forward a b) :=
+    have hk  :=
       funext (fun a => funext (he a))
     rw [hk]
     simpa only [mul_one] using h

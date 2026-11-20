@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedUnramified
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve
+open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def finiteLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
@@ -34,11 +34,8 @@ theorem ramifiedCorrection_eq_marked (η : Character) (u : FreeRow) (P : PrimeId
     ramifiedCorrection η u P hs x w z=
       1+(1-coordV P.val.absNorm z)*continuedMarkedLocal η u P hs x w z := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := (supported_prime_data p hp hsp).1
+  obtain ⟨hp, hspan, _, ⟨hg, _⟩⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hnorm : Ideal.absNorm (Ideal.span {p})=P.val.absNorm := congrArg Ideal.absNorm hspan
   change ramifiedClosed p hp hg (targetMonoid η p) (actualACube η p)
     (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ (unitPart u p hp))) x w z (multiplicity p u.val)=

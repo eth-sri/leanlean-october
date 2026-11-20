@@ -8,76 +8,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 
@@ -93,7 +28,7 @@ lemma ramifiedEmbedding_traceLambda : eisEmbedding ramifiedTraceLambda=eisLam :=
 
 lemma primary_add_three (a r : Eis) (ha : lambda^2∣a-1) :
     lambda^2∣a+3*r-1 := by
-  have h3 : (3:Eis)∣a-1 := three_dvd_lambda_sq.trans ha
+  have h3  := three_dvd_lambda_sq.trans ha
   exact lambda_sq_dvd_three.trans (by
     convert dvd_add h3 (dvd_mul_right (3:Eis) r) using 1 ;ring)
 
@@ -112,8 +47,6 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -181,10 +114,10 @@ theorem cuspSeedDefectProfile_dilate_bound :
   have hC : 0≤C := le_max_right _ _
   have hbound (x : ℝ) : ‖cuspBaseDefectFactor (4/3) x‖≤C := (hB x).trans (le_max_left _ _)
   refine ⟨4*C,by positivity,fun A hA v => ?_⟩
-  have hApos : 0<A := lt_of_lt_of_le zero_lt_one hA
+  have hApos  := lt_of_lt_of_le zero_lt_one hA
   by_cases hv : v∈Set.Icc A (2*A)
-  · have hv1 : 1≤v := hA.trans hv.1
-    have hvpos : 0<v := hApos.trans_le hv.1
+  · have hv1  := hA.trans hv.1
+    have hvpos  := hApos.trans_le hv.1
     have hp : ‖positiveHeightPower (4/3) v‖≤v^2 := by
       rw [positiveHeightPower_eq_cpow _ _ hvpos,Complex.norm_cpow_eq_rpow_re_of_pos hvpos]
       norm_num
@@ -207,7 +140,7 @@ theorem smoothCuspSeedDefect_dilate_bound :
   exact ⟨C,hC,fun A hA w => cuspCutoffCorrection_norm_le _ _ (by positivity) (hbound A hA) w⟩
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped InnerProductSpace
 
 lemma movingDefect_product_bound
     (f : KernelQuotient→ℂ) (K C : ℝ) (hK : 0≤K) (hC : 0≤C)
@@ -221,12 +154,11 @@ lemma movingDefect_product_bound
   | _ w =>
     change ‖f (integralOrbitProjection globalKubotaKernel w)‖*
       ‖smoothCuspSeedDefect A (2*A) (4/3) w‖≤_
-    have hApos : 0<A := zero_lt_one.trans hA
+    have hApos  := zero_lt_one.trans hA
     by_cases hz : smoothCuspSeedDefect A (2*A) (4/3) w=0
     · rw [hz,norm_zero,mul_zero]
       positivity
     obtain ⟨r,hr,hr'⟩ := smoothCuspSeedDefect_support A (2*A) (4/3) (by linarith) w hz
-    have hheight : 0<cosetHeight r w := hApos.trans_le hr
     have hf : ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/A^3 := by
       apply (hdec w r (hA.trans_le hr)).trans
       apply div_le_div_of_nonneg_left hK (pow_pos hApos 3)
@@ -273,11 +205,11 @@ theorem cubicEisensteinResidue_orthogonal_of_rapid_cusp_decay
     calc
       _ ≤ (3/2)*((K*C/A)*(integralQuotientVolume globalKubotaKernel).real Set.univ) :=
         mul_le_mul_of_nonneg_left (movingDefect_inner_bound F f hrep K C hK hC hdec hbound A hA) (by norm_num)
-      _ = B/A := by dsimp [B]; ring
+      _ = B/A := by ring
     exact hF
   apply norm_eq_zero.mp
   by_contra hn
-  have hnpos : 0<‖inner ℂ F cubicEisensteinResidue‖ := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hn)
+  have hnpos  := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hn)
   let A := B/‖inner ℂ F cubicEisensteinResidue‖+2
   have hA : 1<A := by
     have hh := div_nonneg hB hnpos.le
@@ -326,7 +258,7 @@ theorem cubicEisensteinResidue_orthogonal_of_cusp_chart_decay
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups
+open scoped MatrixGroups
 namespace CubicKubota
 
 section
@@ -436,12 +368,11 @@ lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
     · simpa [h] using hbC
     · exact ((hp.coprime_iff_not_dvd.mpr h).symm.pow_right).mul_right hbC
   have hpow (k:ℕ):(3:Eis)∣p^k-1 := by
-    have hd:(3:Eis)∣p-1:=CubicJacobiGlobal.three_dvd_primary_sub_one p hprimary
+    have hd:=CubicJacobiGlobal.three_dvd_primary_sub_one p hprimary
     simpa using hd.trans (sub_dvd_pow_sub_pow p 1 k)
   have hbA:(3:Eis)∣b-A 0 0 := by
     have h1:(3:Eis)∣a-A 0 0:=by
       refine ⟨q*A 1 0,?_⟩
-      dsimp [a]
       ring
     have h2:(3:Eis)∣a-b:=by
       rw [hab]

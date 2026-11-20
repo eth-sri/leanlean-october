@@ -45,8 +45,7 @@ theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationDa
   have hfin := elementWindow_finite_support W hW K hK
   have hzero : ∀ m, m∉hfin.toFinset → ∀ p, F m p=0 := by
     intro m hm p
-    have hz : W (elementNorm m/K)=0 := by simpa only [Set.Finite.mem_toFinset, Function.mem_support, not_not] using hm
-    simp only [F, hz, mul_zero, zero_mul]
+    aesop
   have hsum (m : O) : Summable (F m) :=
     (spectralRow_summable S D (rowCoefficient η C.Xi s hs m)
       (rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one s hs m) t ht).mul_left _

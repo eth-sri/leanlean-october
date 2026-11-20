@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstChildProfileControl
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
-open CenteredMomentFiniteProfileExceptionalPhysical
+open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonRadialPointwise
+open CenteredMomentCommonExceptionalCost CenteredMomentAllocatedDetectorAmplitude
+open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -80,8 +79,7 @@ lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     slotControl s.toData^2*frozenProfile s^2≤
       ((128*b)^N)^2*(b^N)^2*A^4*mass s^2 := by
-  have hb0:0≤b:=zero_le_one.trans hb
-  have hp : (max 1 s.upper)^Fintype.card ι≤b^N :=
+  have hp  :=
     (pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)
   have h128 : (1:ℝ)≤128*b := by linarith
   have hs : slotControl s.toData≤(128*b)^N*mass s^2 :=

@@ -32,7 +32,7 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
+open scoped ENNReal MeasureTheory
 open MeasureTheory Set
 
 section
@@ -57,9 +57,8 @@ def line (x a : E) (t : ℝ) : E :=
 lemma hasDerivAt_line (x a : E) (t : ℝ) :
     HasDerivAt (line (x := x) (a := a)) a t := by
   -- `t ↦ t • a` has derivative `a`, and adding the constant `x` preserves the derivative.
-  have hsmul : HasDerivAt (fun t : ℝ => t • a) a t := by
-    simpa [one_smul] using (hasDerivAt_id t).smul_const a
-  exact HasDerivAt.const_add x hsmul
+  refine HasDerivAt.const_add x ?_
+  simpa [one_smul] using (hasDerivAt_id t).smul_const a
 
 lemma hasDerivAt_comp_line
     {f : E → ℝ} (hf : ContDiff ℝ 1 f) (x a : E) (t : ℝ) :
@@ -95,7 +94,7 @@ lemma enorm_fderiv_apply_le_enorm_grad_mul (f : E → ℝ) (x a : E) :
         (f := (InnerProductSpace.toDual ℝ E).symm.toLinearIsometry)
         (fderiv ℝ f x))
   -- Replace the operator norm by the gradient norm.
-  simpa [h₂, mul_assoc, mul_left_comm, mul_comm] using h₁
+  simp_all
 
 lemma enorm_deriv_comp_line_le (x a : E) {f : E → ℝ} (hf : ContDiff ℝ 1 f) (t : ℝ) :
     ‖deriv (fun t => f (line (x := x) (a := a) t)) t‖ₑ ≤
@@ -118,8 +117,7 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
     have hInner : ContDiff ℝ ⊤ (fun t : ℝ => x + t • a) := by
       simpa [line] using
         (contDiff_const.add (contDiff_id.smul (contDiff_const : ContDiff ℝ ⊤ (fun _ : ℝ => a))))
-    have hInner' : ContDiff ℝ 1 (fun t : ℝ => x + t • a) := hInner.of_le (by simp)
-    exact (hf.comp hInner').contDiffOn
+    exact (hf.comp (hInner.of_le (by simp))).contDiffOn
   have hFTC :
       ‖f (x + a) - f x‖ₑ ≤ ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖deriv (fun t : ℝ => f (x + t • a)) t‖ₑ := by
     simpa using
@@ -136,10 +134,7 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
     simpa [line, mul_assoc, mul_left_comm, mul_comm] using
       (enorm_deriv_comp_line_le (x := x) (a := a) (f := f) hf (t := t))
   -- Pull out the constant `‖a‖ₑ`.
-  have :
-      (∫⁻ t in Set.Icc (0 : ℝ) 1, ‖deriv (fun t : ℝ => f (x + t • a)) t‖ₑ) ≤
-        ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖a‖ₑ * ‖grad (E := E) f (x + t • a)‖ₑ := by
-    exact lintegral_mono_ae hDerivBound
+  have := lintegral_mono_ae hDerivBound
   refine this.trans ?_
   -- Pull out the constant factor.
   have hMeas :

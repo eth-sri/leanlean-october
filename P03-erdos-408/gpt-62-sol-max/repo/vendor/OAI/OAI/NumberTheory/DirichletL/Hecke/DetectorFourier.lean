@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff FourierTransform
 open HeckeDetectorProfiles
 noncomputable section
 
@@ -21,7 +21,7 @@ theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
   let p := (volume : Measure ℝ).integrablePower
   obtain ⟨C,hC,hb⟩ := logSource_uniform_seminorm Ω V T hΩc hΩ L hL hwindow (J+p)
   let C' := (1+L^p)*C
-  have hC' : 0 ≤ C' := by dsimp [C']; positivity
+  have hC' : 0 ≤ C' := by positivity
   refine ⟨(2 : ℝ)^J*(FourierBridge.coefficientMomentBound 0 C'+
     FourierBridge.coefficientMomentBound J C'),?_,?_⟩
   · exact mul_nonneg (by positivity) (add_nonneg
@@ -54,7 +54,7 @@ theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
   calc
     _ ≤ (1+‖t‖)^N*((1+‖t‖)^J*‖(𝓕 g) t‖) :=
       mul_le_mul_of_nonneg_right hp (by positivity)
-    _ = _ := by rw [pow_add]; ring
+    _ = _ := by ring
 
 end
 end SevenEighths.HeckeDetectorFourier

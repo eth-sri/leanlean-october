@@ -5,13 +5,11 @@ public import Erdos821.S2.MemoryEdge
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 lemma norm_imaginaryPower (n : ℕ) (ζ : ℝ) : ‖imaginaryPower n ζ‖ = 1 := by
   unfold imaginaryPower
@@ -25,8 +23,6 @@ lemma norm_imaginaryPower (n : ℕ) (ζ : ℝ) : ‖imaginaryPower n ζ‖ = 1 :
 lemma norm_phase (t : ℝ) : ‖phase t‖ = 1 := by
   unfold phase
   rw [Complex.norm_exp]
-  have h0 : (2 * Real.pi * t * Complex.I).re = 0 := by
-    simp
-  rw [h0, Real.exp_zero]
+  simp
 
 end Erdos821.P3Edge

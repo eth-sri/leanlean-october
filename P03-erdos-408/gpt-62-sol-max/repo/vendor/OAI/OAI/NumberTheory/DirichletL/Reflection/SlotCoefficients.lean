@@ -28,16 +28,6 @@ def slotChoiceFamily (L : σ→Finset (Ideal Eis))
   maximal i := hmax i _ (p i).property
   good i := hgood i _ (p i).property
 
-omit [Fintype σ] in
-lemma slotChoiceFamily_active (L : σ→Finset (Ideal Eis))
-    (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
-    (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
-    (T : Finset σ) (a : ∀ i : T,L i.val) (b : ∀ i : {i // i∉T},L i.val) :
-    (slotChoiceFamily L hmax hgood ((slotChoiceSplit L T).symm (a,b))).restrict T=
-      slotChoiceFamily (fun i : T => L i.val) (fun i => hmax i.val) (fun i => hgood i.val) a := by
-  apply PrimeFamily.eq_of_ideal_eq
-  funext i
-  exact congrArg Subtype.val (slotChoiceSplit_active L T a b i)
 
 lemma slot_coefficient_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
     (w : ∀ i,L i→ℂ) (a : ∀ i : T,L i.val) (b : ∀ i : {i // i∉T},L i.val) :

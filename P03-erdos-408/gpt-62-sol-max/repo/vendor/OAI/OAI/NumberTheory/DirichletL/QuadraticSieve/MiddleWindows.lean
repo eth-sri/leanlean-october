@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.SupportNorms
 
 @[expose] public section
@@ -11,74 +12,17 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 
-open scoped BigOperators Classical SchwartzMap
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
@@ -93,7 +37,7 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
   (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
   (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
   (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-  (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+  (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
   (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
   (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
 
@@ -101,8 +45,8 @@ include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
 theorem HasSieveExponent.original_middle_window
     (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
       (Ideal.absNorm (D.val * E.val) : ℝ) ≤ U * Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) :
     Summable (fun h : {h : O // h ≠ 0} =>
@@ -141,8 +85,8 @@ theorem HasSieveExponent.original_middle_window
 
 theorem HasSieveExponent.dual_middle_window
     (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
-    (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+    (hright : OAI.IdealFamilyBand Admissible right (N / 2) N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
       (Ideal.absNorm (D.val * E.val) : ℝ) ≤ U *
         (N * Real.sqrt (F / (M * (Ideal.absNorm (rows i) : ℝ))))) :
@@ -188,7 +132,7 @@ open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FourierBri
 theorem large_principal_scale_shape (X N Q D V : ℝ) (hD : 0 < D)
     (hcut : X * N ≤ V * D) :
     (X / D) * (N + Q * D) ≤ V + X * Q := by
-  have hh : X * N / D ≤ V := (div_le_iff₀ hD).mpr hcut
+  have hh  := (div_le_iff₀ hD).mpr hcut
   calc
     _ = X * N / D + X * Q := by field_simp
     _ ≤ _ := add_le_add hh le_rfl
@@ -210,9 +154,9 @@ variable (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
   (hT : ∀ E ∈ T, D₂ ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ 2 * D₂)
   (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
   (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-  (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
-  (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-  (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+  (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
+  (hleft : OAI.IdealFamilyUpTo Admissible left N)
+  (hright : OAI.IdealFamilyUpTo Admissible right N)
   (a : n → ℂ) (b : p → ℂ)
 
 include hD₁ hD₂ hB hN hM hS hT hr hl hri hrows hleft hright
@@ -298,17 +242,32 @@ theorem originalMiddleWindowAt_eq_finset (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ide
       (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) * ‖eisEmbedding h‖ ^ 2 /
         ((Ideal.absNorm D : ℝ) * (Ideal.absNorm E : ℝ)))‖ else 0)
 
-omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
-theorem originalMiddleWindowAt_dyadic (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O)) (N : ℝ)
-    (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M : ℝ) (P : Ideal O → m → Prop) (h : O) :
-    originalMiddleWindowAt W S T rows left right a b M P h =
-      ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1),
-        originalMiddleWindowAt W (divisorDyadicBin S N j) (divisorDyadicBin T N k)
-          rows left right a b M P h := by
+/-- Assemble a uniform bound for nonempty dyadic rectangles into a pool bound. -/
+private theorem middle_pool {ι : Type*} (S T : Finset (Ideal O)) (N V : ℝ)
+    (f : Ideal O → Ideal O → ι → ℝ) (hV : 0 ≤ V)
+    (bound : ∀ j k, (divisorDyadicBin S N j).Nonempty → (divisorDyadicBin T N k).Nonempty →
+      Summable (fun h => ∑ D ∈ divisorDyadicBin S N j, ∑ E ∈ divisorDyadicBin T N k, f D E h) ∧
+        (∑' h, ∑ D ∈ divisorDyadicBin S N j, ∑ E ∈ divisorDyadicBin T N k, f D E h) ≤ V) :
+    Summable (fun h => ∑ D ∈ S, ∑ E ∈ T, f D E h) ∧
+      (∑' h, ∑ D ∈ S, ∑ E ∈ T, f D E h) ≤ ((columnDyadicLength N + 1 : ℕ) : ℝ) ^ 2 * V := by
   classical
-  simp_rw [originalMiddleWindowAt_eq_finset]
-  exact sum_divisorDyadicRectangles (A := ℝ) S T N _
+  let g := fun j k h => ∑ D ∈ divisorDyadicBin S N j, ∑ E ∈ divisorDyadicBin T N k, f D E h
+  have hg (j k) : Summable (g j k) ∧ (∑' h, g j k h) ≤ V := by
+    by_cases hs : (divisorDyadicBin S N j).Nonempty
+    · by_cases ht : (divisorDyadicBin T N k).Nonempty
+      · exact bound j k hs ht
+      · simpa [g, Finset.not_nonempty_iff_eq_empty.mp ht] using hV
+    · simpa [g, Finset.not_nonempty_iff_eq_empty.mp hs] using hV
+  simp_rw [sum_divisorDyadicRectangles S T N (fun D E => f D E _)]
+  change Summable (fun h => ∑ j, ∑ k, g j k h) ∧ (∑' h, ∑ j, ∑ k, g j k h) ≤ _
+  have hj (j) : Summable (fun h => ∑ k, g j k h) := summable_sum fun k _ => (hg j k).1
+  refine ⟨summable_sum fun j _ => hj j, ?_⟩
+  rw [Summable.tsum_finsetSum (fun j _ => hj j)]
+  simp_rw [Summable.tsum_finsetSum (fun k _ => (hg _ k).1)]
+  calc
+    _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
+      Finset.sum_le_sum fun j _ => Finset.sum_le_sum fun k _ => (hg j k).2
+    _ = _ := by simp [pow_two, mul_assoc]
 
 theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -317,12 +276,12 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
     (hT : ∀ E ∈ T, 1 ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ N)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
     (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
     (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
     (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
       (Ideal.absNorm (D.val * E.val) : ℝ) ≤ U * Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) :
     Summable (fun h : {h : O // h ≠ 0} =>
@@ -344,55 +303,19 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
     have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     dsimp only [V]
     positivity
-  let f := fun (j k : Fin (columnDyadicLength N + 1)) (h : {h : O // h ≠ 0}) =>
-    originalMiddleWindowAt W (divisorDyadicBin S N j) (divisorDyadicBin T N k)
-      rows left right (a h.val) (b h.val) M P h.val
-  have hf (j k : Fin (columnDyadicLength N + 1)) : Summable (f j k) ∧ (∑' h, f j k h) ≤ V := by
-    by_cases hSj : (divisorDyadicBin S N j).Nonempty
-    · by_cases hTk : (divisorDyadicBin T N k).Nonempty
-      · exact hexp.original_middle_window deltaLoss hδ ε hε (divisorDyadicBin S N j) (divisorDyadicBin T N k)
-          (divisorDyadicScale j.val) (divisorDyadicScale k.val) B N M U
-          (divisorDyadicScale_ge_one _) (divisorDyadicScale_ge_one _) hB hN
-          (divisorDyadicBin_scale_le S N hS j hSj) (divisorDyadicBin_scale_le T N hT k hTk)
-          hM (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
-          rows left right hr hl hri hrows a₀ b₀ a b ha hb hU W P hleft hright
-          (fun D E i hp => hP
-            ⟨D.val, (Finset.mem_filter.mp D.property).1⟩
-            ⟨E.val, (Finset.mem_filter.mp E.property).1⟩ i hp)
-      · have hz := Finset.not_nonempty_iff_eq_empty.mp hTk
-        have he : f j k = fun _ => 0 := by
-          funext h
-          apply originalMiddleWindowAt_eq_zero
-          intro D E i hp
-          have hh := E.property
-          simp only [hz, Finset.notMem_empty] at hh
-        rw [he]
-        simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
-    · have hz := Finset.not_nonempty_iff_eq_empty.mp hSj
-      have he : f j k = fun _ => 0 := by
-        funext h
-        apply originalMiddleWindowAt_eq_zero
-        intro D E i hp
-        have hh := D.property
-        simp only [hz, Finset.notMem_empty] at hh
-      rw [he]
-      simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
-  have he : (fun h : {h : O // h ≠ 0} =>
-      originalMiddleWindowAt W S T rows left right (a h.val) (b h.val) M P h.val) =
-      fun h => ∑ j, ∑ k, f j k h := by
-    funext h
-    exact originalMiddleWindowAt_dyadic W S T N rows left right (a h.val) (b h.val) M P h.val
-  rw [he]
-  refine ⟨summable_sum (fun j _ => summable_sum (fun k _ => (hf j k).1)), ?_⟩
-  rw [Summable.tsum_finsetSum (fun j _ => summable_sum (fun k _ => (hf j k).1))]
-  calc
-    _ = ∑ j, ∑ k, ∑' h, f j k h := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      exact Summable.tsum_finsetSum (fun k _ => (hf j k).1)
-    _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
-      Finset.sum_le_sum (fun j _ => Finset.sum_le_sum (fun k _ => (hf j k).2))
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, V, pow_two]; ring
+  simp_rw [originalMiddleWindowAt_eq_finset]
+  apply middle_pool S T N _ _ hV
+  intro j k hSj hTk
+  simpa only [originalMiddleWindowAt_eq_finset] using
+    hexp.original_middle_window deltaLoss hδ ε hε (divisorDyadicBin S N j) (divisorDyadicBin T N k)
+      (divisorDyadicScale j.val) (divisorDyadicScale k.val) B N M U
+      (divisorDyadicScale_ge_one _) (divisorDyadicScale_ge_one _) hB hN
+      (divisorDyadicBin_scale_le S N hS j hSj) (divisorDyadicBin_scale_le T N hT k hTk)
+      hM (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
+      rows left right hr hl hri hrows a₀ b₀ a b ha hb hU W P hleft hright
+      (fun D E i hp => hP
+        ⟨D.val, (Finset.mem_filter.mp D.property).1⟩
+        ⟨E.val, (Finset.mem_filter.mp E.property).1⟩ i hp)
 
 end
 
@@ -421,18 +344,6 @@ theorem dualMiddleWindowAt_eq_finset (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O
       (Real.sqrt (F * (Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ) / (M * (Ideal.absNorm (rows i) : ℝ))) * ‖eisEmbedding h‖ ^ 2 /
         ((Ideal.absNorm D : ℝ) * (Ideal.absNorm E : ℝ)))‖ else 0)
 
-omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
-theorem dualMiddleWindowAt_dyadic (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O)) (N : ℝ)
-    (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
-    (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (P : Ideal O → m → Prop) (h : O) :
-    dualMiddleWindowAt W S T rows left right a b M F P h =
-      ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1),
-        dualMiddleWindowAt W (divisorDyadicBin S N j) (divisorDyadicBin T N k)
-          rows left right a b M F P h := by
-  classical
-  simp_rw [dualMiddleWindowAt_eq_finset]
-  exact sum_divisorDyadicRectangles (A := ℝ) S T N _
-
 theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
     (S T : Finset (Ideal O)) (B N M F U : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hF : 0 < F) (hU : 0 ≤ U)
@@ -440,12 +351,12 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
     (hT : ∀ E ∈ T, 1 ≤ (Ideal.absNorm E : ℝ) ∧ (Ideal.absNorm E : ℝ) ≤ N)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
     (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
     (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
     (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
-    (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyBand Admissible left (N / 2) N)
+    (hright : OAI.IdealFamilyBand Admissible right (N / 2) N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
       (Ideal.absNorm (D.val * E.val) : ℝ) ≤ U * (N * Real.sqrt (F / (M * (Ideal.absNorm (rows i) : ℝ))))) :
     Summable (fun h : {h : O // h ≠ 0} =>
@@ -467,60 +378,23 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
     have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
     dsimp only [V]
     positivity
-  let f := fun (j k : Fin (columnDyadicLength N + 1)) (h : {h : O // h ≠ 0}) =>
-    dualMiddleWindowAt W (divisorDyadicBin S N j) (divisorDyadicBin T N k)
-      rows left right (a h.val) (b h.val) M F P h.val
-  have hf (j k : Fin (columnDyadicLength N + 1)) : Summable (f j k) ∧ (∑' h, f j k h) ≤ V := by
-    by_cases hSj : (divisorDyadicBin S N j).Nonempty
-    · by_cases hTk : (divisorDyadicBin T N k).Nonempty
-      · exact hexp.dual_middle_window deltaLoss hδ ε hε (divisorDyadicBin S N j) (divisorDyadicBin T N k)
-          (divisorDyadicScale j.val) (divisorDyadicScale k.val) B N M U
-          (divisorDyadicScale_ge_one _) (divisorDyadicScale_ge_one _) hB hN
-          (divisorDyadicBin_scale_le S N hS j hSj) (divisorDyadicBin_scale_le T N hT k hTk)
-          hM (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
-          rows left right hr hl hri hrows a₀ b₀ a b ha hb hU W F hF P hleft hright
-          (fun D E i hp => hP
-            ⟨D.val, (Finset.mem_filter.mp D.property).1⟩
-            ⟨E.val, (Finset.mem_filter.mp E.property).1⟩ i hp)
-      · have hz := Finset.not_nonempty_iff_eq_empty.mp hTk
-        have he : f j k = fun _ => 0 := by
-          funext h
-          apply dualMiddleWindowAt_eq_zero
-          intro D E i hp
-          have hh := E.property
-          simp only [hz, Finset.notMem_empty] at hh
-        rw [he]
-        simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
-    · have hz := Finset.not_nonempty_iff_eq_empty.mp hSj
-      have he : f j k = fun _ => 0 := by
-        funext h
-        apply dualMiddleWindowAt_eq_zero
-        intro D E i hp
-        have hh := D.property
-        simp only [hz, Finset.notMem_empty] at hh
-      rw [he]
-      simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
-  have he : (fun h : {h : O // h ≠ 0} =>
-      dualMiddleWindowAt W S T rows left right (a h.val) (b h.val) M F P h.val) =
-      fun h => ∑ j, ∑ k, f j k h := by
-    funext h
-    exact dualMiddleWindowAt_dyadic W S T N rows left right (a h.val) (b h.val) M F P h.val
-  rw [he]
-  refine ⟨summable_sum (fun j _ => summable_sum (fun k _ => (hf j k).1)), ?_⟩
-  rw [Summable.tsum_finsetSum (fun j _ => summable_sum (fun k _ => (hf j k).1))]
-  calc
-    _ = ∑ j, ∑ k, ∑' h, f j k h := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      exact Summable.tsum_finsetSum (fun k _ => (hf j k).1)
-    _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
-      Finset.sum_le_sum (fun j _ => Finset.sum_le_sum (fun k _ => (hf j k).2))
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, V, pow_two]; ring
+  simp_rw [dualMiddleWindowAt_eq_finset]
+  apply middle_pool S T N _ _ hV
+  intro j k hSj hTk
+  simpa only [dualMiddleWindowAt_eq_finset] using
+    hexp.dual_middle_window deltaLoss hδ ε hε (divisorDyadicBin S N j) (divisorDyadicBin T N k)
+      (divisorDyadicScale j.val) (divisorDyadicScale k.val) B N M U
+      (divisorDyadicScale_ge_one _) (divisorDyadicScale_ge_one _) hB hN
+      (divisorDyadicBin_scale_le S N hS j hSj) (divisorDyadicBin_scale_le T N hT k hTk)
+      hM (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
+      rows left right hr hl hri hrows a₀ b₀ a b ha hb hU W F hF P hleft hright
+      (fun D E i hp => hP
+        ⟨D.val, (Finset.mem_filter.mp D.property).1⟩
+        ⟨E.val, (Finset.mem_filter.mp E.property).1⟩ i hp)
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor {n p : Type*} [Fintype n] [Fintype p]
     (u : n → p → ℂ) (z : ℂ) (c : ℝ) (hc : 0 ≤ c) :
@@ -590,12 +464,12 @@ theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasS
     (K : Finset (Ideal O)) (B N M U : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hU : 0 ≤ U)
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
     (hr : Function.Injective rows) (hl : Function.Injective left) (hri : Function.Injective right)
-    (hrows : ∀ i, Admissible (rows i) ∧ B / 2 ≤ (Ideal.absNorm (rows i) : ℝ) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ B)
+    (hrows : OAI.IdealFamilyBand Admissible rows (B / 2) B)
     (a₀ : n → ℂ) (b₀ : p → ℂ) (a : O → n → ℂ) (b : O → p → ℂ)
     (ha : ∀ h j, ‖a h j‖ ≤ ‖a₀ j‖) (hb : ∀ h k, ‖b h k‖ ≤ ‖b₀ k‖)
     (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
-    (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
-    (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
+    (hleft : OAI.IdealFamilyUpTo Admissible left N)
+    (hright : OAI.IdealFamilyUpTo Admissible right N)
     (hP : ∀ d ∈ K, ∀ i, P d i →
       (Ideal.absNorm d : ℝ) ≤ U * Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ))) :
     Summable (fun h : {h : O // h ≠ 0} =>
@@ -608,8 +482,8 @@ theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasS
             (N + (2 * U) * Real.sqrt M * B ^ (α - 1 / 2))) := by
   let S := columnDivisorPool left
   let T := columnDivisorPool right
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  have hl0  := fun j => (hleft j).1.1
+  have hr0  := fun k => (hright k).1.1
   have hs := hexp.original_middle_pool deltaLoss hδ ε hε S T B N M U hB hN hM hU
     (columnDivisorPool_norm_bounds left hl0 N (fun j => (hleft j).2))
     (columnDivisorPool_norm_bounds right hr0 N (fun k => (hright k).2))

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
 public import OAI.NumberTheory.DirichletL.PrincipalMellinResidues
 public import OAI.NumberTheory.DirichletL.Hecke.SignalBounds
@@ -12,7 +13,7 @@ public import OAI.NumberTheory.DirichletL.Detector.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open MeasureTheory Set Filter Asymptotics Complex
 namespace SevenEighths.PrincipalSignalComparison
 open HeckeFamily PrincipalSlotEstimate ProbeEuler ProbeLocal Continuation HeckeSignal
@@ -74,8 +75,7 @@ theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
     DifferentiableAt ℂ (principalSlot Q A η) s := by
   have hQ0 : 0 < Q := by linarith
   have hQ4 : 4 ≤ Q := by linarith
-  have hQnz : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ0.ne'
-  have hQslit : (Q : ℂ) ∈ slitPlane := Complex.ofReal_mem_slitPlane.mpr hQ0
+  have hQnz  := Complex.ofReal_ne_zero.mpr hQ0.ne'
   have hg := principal_geometric_bounds hQ hη hs
   have hV := one_sub_ne_zero_of_norm_le_half _ hg.1
   have hD := one_sub_ne_zero_of_norm_le_half _ hg.2.2
@@ -91,12 +91,10 @@ theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
   have hp : DifferentiableAt ℂ (principalMarked Q A η) s := by
     unfold principalMarked markedFactor
     fun_prop (disch := first | assumption | exact Or.inl hQnz)
-  have hb : Differentiable ℂ (fun s : ℂ => star η * (Q : ℂ)^s) :=
-    (differentiable_id.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hQ0.ne'))).const_mul _
   have hrep : DifferentiableAt ℂ (principalReplacement Q A η) s := by
     unfold principalReplacement compensatedReplacement
-    fun_prop (disch := first | assumption | exact Or.inl hQnz)
-  exact hrep.div (unramifiedClosed_differentiableAt Q hQ0 A η 1 s 1 (1/6) hR hV hD)
+    fun_prop (disch := simpa using Or.inl hQnz)
+  exact hrep.div (unramifiedClosed_differentiableAt Q hQ0 A η 1 s 1 (1/6) hR hD)
     (principal_correction_ne_zero hQ hA hη hs)
 
 theorem slotRatio_continuous_line (S : Finset κ) (T : κ → Finset ι)
@@ -109,14 +107,11 @@ theorem slotRatio_continuous_line (S : Finset κ) (T : κ → Finset ι)
     intro t
     exact (principalSlot_differentiableAt (h.lower.trans (h.norm_lower j hj p hp))
       (h.phase_bound j hj p hp) (h.target_unit j hj p hp).le
-      (by simpa using ha)).continuousAt.comp (by fun_prop)
+      (by simp_all)).continuousAt.comp (by fun_prop)
   unfold slotRatio slotProduct
   apply Continuous.div_const
   apply continuous_finsetProd
-  intro j hj
-  apply continuous_finsetSum
-  intro p hp
-  exact continuous_const.mul (hc j hj p hp)
+  fun_prop
 
 def slotResidue (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) : ℂ :=
@@ -152,14 +147,14 @@ theorem kernel_continuous (χ : Character) (H : ℂ → ℂ)
   have hh := gaussianContourIntegrand_differentiableOn
     (HeckeSignalShift.quotient_holomorphic χ H hH ha hβ) (-11/16) hZ
   exact hh.continuousOn.comp_continuous (by fun_prop)
-    (by intro t; simpa using And.intro (le_refl a) ha2)
+    (by simp_all)
 
 theorem kernel_norm_bound (χ : Character) (H : ℂ → ℂ)
     (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
     {a C Z : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hC : 0 ≤ C) (hZ : 0 < Z)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2))
     (t : ℝ) : ‖kernel χ H a Z t‖ ≤ kernelEnvelope a C Z * polynomialGaussian 2 t := by
-  have hq := HeckeSignalShift.quotient_polynomial_bound χ H hb 2 ha hC
+  have hq := HeckeSignalShift.quotient_polynomial_bound χ H hb 2 ha
     (fun s hs _ => hR s hs) (s := (a : ℂ)+t*I) (by simpa using And.intro (le_refl a) ha2)
   simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_im,
     Complex.ofReal_re, mul_one, Complex.I_re, mul_zero, add_zero, zero_add] at hq
@@ -203,7 +198,6 @@ theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
   refine ⟨hint, ?_⟩
   have herror (t : ℝ) := slotRatio_error S T w Q A η h
     (s := (a : ℂ)+t*I) (by simpa using ha.le)
-  have heint := hg.mul_bdd (hc.sub continuous_const).aestronglyMeasurable (ae_of_all _ herror)
   have heq : slotResidue χ H a Z S T w Q A η - signal χ H (-11/16) Z =
       (1/(2*Real.pi) : ℂ) * ∫ t : ℝ,
         kernel χ H a Z t * (slotRatio S T w Q A η ((a : ℂ)+t*I) - 1) := by
@@ -217,12 +211,8 @@ theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
     congr 1
     apply integral_congr_ae
     filter_upwards [] with t
-    change kernel χ H a Z t * _ - kernel χ H a Z t = _
-    ring_nf
+    ring
   rw [heq, norm_mul]
-  have he0 : 0 ≤ slotErrorConstant S * P^(-(7/8 : ℝ)) := by
-    unfold slotErrorConstant
-    positivity
   have hbnd (t : ℝ) :
       ‖kernel χ H a Z t * (slotRatio S T w Q A η ((a : ℂ)+t*I)-1)‖ ≤
         (kernelEnvelope a C Z * (slotErrorConstant S * P^(-(7/8 : ℝ)))) *
@@ -301,8 +291,7 @@ theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
   rw [Ideal.isCoprime_iff_codisjoint,
     ← (Ideal.isMaximal_def.mp (inferInstance : P.val.IsMaximal)).not_le_iff_codisjoint]
   intro hle
-  have hn : 0 < Ideal.absNorm η.modulus := Nat.pos_of_ne_zero
-    (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
+  have hn  := Ideal.absNorm_pos_of_ne_bot (η.modulus_ne_bot)
   exact (Nat.not_le_of_gt hN) (Nat.le_of_dvd hn (Ideal.absNorm_dvd_absNorm_of_le hle))
 
 def sourceCorrection (η : Character) (E : Finset (Ideal HeckeFamily.O)) (s : ℂ) : ℂ :=
@@ -338,7 +327,7 @@ theorem source_normalizer_ne_zero (S : Finset κ) (T : κ → Finset ι)
 theorem source_power_identity {Z : ℝ} (hZ : 0 < Z) (s : ℂ) :
     ((Z^(17/48 : ℝ) : ℝ) : ℂ)^(1/3 : ℂ) * (Z : ℂ)^(s-5/6) =
       (Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)) * (Z : ℂ)^(s-11/16) := by
-  have hz : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hz  := Complex.ofReal_ne_zero.mpr hZ.ne'
   rw [← Complex.cpow_mul_ofReal_nonneg hZ.le (17/48) (1/3),
     ← Complex.cpow_add _ _ hz, ← Complex.cpow_add _ _ hz]
   congr 1

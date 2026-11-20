@@ -41,8 +41,7 @@ theorem assigned_card_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     (ell : ι → ℝ) (L : ι → Finset (Ideal O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i)) :
     ((assignedTuples L).card : ℝ) ≤ assignedConstant K b * U^(∑ i, ell i) := by
-  have hUp : 0 < U := lt_of_lt_of_le zero_lt_one hU
-  have hb0 : 0 ≤ b := le_trans zero_le_one hb
+  have hUp  := lt_of_lt_of_le zero_lt_one hU
   have hbase : 1 ≤ 128*b := by linarith
   simp only [assignedTuples, Fintype.card_piFinset, Nat.cast_prod]
   calc
@@ -92,7 +91,7 @@ theorem restricted_normalized_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU :
     (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
     (∑ q ∈ T, ‖assignedCoefficient a q‖) * U^(-(∑ i, ell i)) ≤
       assignedConstant K b := by
-  have hUp : 0 < U := lt_of_lt_of_le zero_lt_one hU
+  have hUp  := lt_of_lt_of_le zero_lt_one hU
   calc
     _ ≤ (assignedConstant K b * U^(∑ i, ell i)) * U^(-(∑ i, ell i)) :=
       mul_le_mul_of_nonneg_right (restricted_mass_le K hb hU hK ell L hL a ha T hT)

@@ -8,7 +8,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P3Clean
@@ -45,28 +44,24 @@ theorem bigPrime_lower (F : FixedData) (x : ℝ) (P : PrimeGroups) (hP : P.Admis
 
 theorem density_power_error (eps : ℝ) (he : 0 ≤ eps) (q : ℕ) (ht : (q : ℝ) * eps ≤ 1) :
     1 ≤ (1 + eps) ^ q ∧ (1 + eps) ^ q - 1 ≤ 2 * q * eps ∧ (1 + eps) ^ q ≤ 3 := by
-  have hlo : 1 ≤ (1 + eps) ^ q := one_le_pow₀ (by linarith)
   have hpow : (1 + eps) ^ q ≤ Real.exp ((q : ℝ) * eps) := by
     rw [Real.exp_nat_mul]
-    exact pow_le_pow_left₀ (by linarith) (by simpa only [add_comm] using Real.add_one_le_exp eps) q
+    exact pow_le_pow_left₀ (by linarith) (by simpa [add_comm] using Real.add_one_le_exp eps) q
   have ht0 : 0 ≤ (q : ℝ) * eps := mul_nonneg (Nat.cast_nonneg _) he
   have herr := Real.abs_exp_sub_one_le (x := (q : ℝ) * eps)
     (by simpa only [abs_of_nonneg ht0] using ht)
-  have hexp : 0 ≤ Real.exp ((q : ℝ) * eps) - 1 := by
-    exact sub_nonneg.mpr (Real.one_le_exp_iff.mpr ht0)
+  have hexp := sub_nonneg.mpr (Real.one_le_exp_iff.mpr ht0)
   rw [abs_of_nonneg hexp, abs_of_nonneg ht0] at herr
-  refine ⟨hlo, ?_, ?_⟩ <;> nlinarith
+  refine ⟨(one_le_pow₀ (by linarith)), ?_, ?_⟩ <;> nlinarith
 
 theorem eventually_polynomial_exp (c : ℝ) (hc : 0 < c) (K s E : ℝ) :
     ∀ᶠ x : ℝ in atTop, K * (L x) ^ s / Real.exp ((L x) ^ c) ≤ (L x) ^ (-E) := by
   have hlog : Tendsto L atTop atTop := Real.tendsto_log_atTop
-  have hpow : Tendsto (fun x => (L x) ^ c) atTop atTop := (tendsto_rpow_atTop hc).comp hlog
-  have hlim := (tendsto_exp_div_rpow_atTop ((s + E) / c)).comp hpow
+  have hlim := (tendsto_exp_div_rpow_atTop ((s + E) / c)).comp ((tendsto_rpow_atTop hc).comp hlog)
   filter_upwards [hlim.eventually (eventually_ge_atTop K), hlog.eventually (eventually_ge_atTop 1)] with x hx hL
   have hp : 0 < L x := zero_lt_one.trans_le hL
-  have hpc : 0 ≤ L x := hp.le
   have heq : ((L x) ^ c) ^ ((s + E) / c) = (L x) ^ (s + E) := by
-    rw [← Real.rpow_mul hpc]
+    rw [← Real.rpow_mul hp.le]
     congr 1
     field_simp [hc.ne']
   change K ≤ Real.exp ((L x) ^ c) / ((L x) ^ c) ^ ((s + E) / c) at hx

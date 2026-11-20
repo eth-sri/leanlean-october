@@ -10,12 +10,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve
-open CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT
-open InverseInitialDetectorSource
-open InverseMoment InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots
+open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve CanonicalRowCompletion
+open ConcretePrimeRowBridge ConcreteTraceCRT InverseInitialDetectorSource InverseMoment
+open InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots
 open InverseInitialConjugateEnergy InverseInitialEnergyCallerWindow InverseInitialExcludedPeriod
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawConjugateGates
 open IdealMobiusDivisorSum Filter
@@ -72,21 +71,20 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   obtain ⟨Ushift,hshift⟩:=eventually_atTop.mp (marked_shift_eventually data eta heta)
   refine ⟨C,max U₀ Ushift,hC,lt_max_of_lt_left hU₀,?_⟩
   intro U hU ι inst hK M neM H ell ζ hell hζ hdis hlarge r hr hfirst hsecond j hj rows hrows θ
-  have hU0:U₀≤U:=(le_max_left _ _).trans hU
-  have hUone:1<U:=hU₀.trans_le hU0
-  have hUp:0<U:=zero_lt_one.trans hUone
-  have hjshift: r-eta≤shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧
-      U^(shiftedExponent data U r j)=U^r/(j.absNorm:ℝ):=
+  have hU0:=(le_max_left _ _).trans hU
+  have hUone:=hU₀.trans_le hU0
+  have hUp:=zero_lt_one.trans hUone
+  have hjshift:=
     (hshift U ((le_max_right _ _).trans hU)).2 j hj r
-  let L:ι→Finset (Ideal O):=fun i=>livePrimes M H F.W 2 (U^(ell i))
-  let coeff:ι→Ideal O→ℂ:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
+  let L:=fun i=>livePrimes M H F.W 2 (U^(ell i))
+  let coeff:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
     idealCoeff (deletedBase data) P
   have hg (i:ι)(P:Ideal O)(hP:P∈L i):
       Prime P ∧ InverseInitialExcludedPool.outside (excluded data) P ∧
       idealCoeff (deletedBase data) P≠0 ∧ ‖idealCoeff (deletedBase data) P‖=1 ∧
       ‖coeff i P‖≤1:=
     deleted_source_live_prime F data M H _ (Real.rpow_pos_of_pos hUp _) (ζ i) (hζ i) (hlarge i) P hP
-  have hratio (i:ι)(P:Ideal O)(hP:P∈L i):((P.absNorm:ℝ)/U^(ell i))∈Set.Icc (1:ℝ) 2:=
+  have hratio (i:ι)(P:Ideal O)(hP:P∈L i):=
     F.complex_support (Finset.mem_filter.mp hP).2
   have hh:=henergy U hU0 hK L ell coeff hell
     (fun i P hP=>(hg i P hP).1)

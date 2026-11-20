@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReserve
 open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
 open CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
-    (_hM:0≤Mcap)(_hB:0≤Bmask)(hL:0≤L)(hd:0<d)
+(hL:0≤L)(hd:0<d)
     (hmain:d*(Bmask+Mcap+1)+loss+defect+xi≤ε)
     (herror:Bmask*d+Mcap*(2*d)-2*saving+L≤ε):
     ∃C:ℝ,0<C ∧ ∀Z:ℝ,1≤Z→∀s:NaturalState Z Bmask bΦ,s.width≤Mcap→
@@ -25,12 +25,10 @@ theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
           Z^(-2*saving)*max 1 s.radial.scale*Z^L)≤C*Z^(s.width+ε):=by
   let A:ℝ:=max 1 ((fixedConductorFactor:ℝ)*bΦ)
   let B:ℝ:=1+2*L/d
-  have hA:0<A:=zero_lt_one.trans_le (le_max_left _ _)
-  have hBp:0<B:=by dsimp [B];positivity
   refine ⟨A^d*B+A^(2*d),by positivity,?_⟩
   intro Z hZ s hs
-  have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hlog:0≤Real.log Z:=Real.log_nonneg hZ
+  have hz:=zero_lt_one.trans_le hZ
+  have hlog:=Real.log_nonneg hZ
   have hr:=radical_power s d hd.le
   have hc:=conductor_power s Mcap d hs hd.le
   have hc₂:=conductor_power s Mcap (2*d) hs (by positivity)

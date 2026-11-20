@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedAnnuli
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentReflectedNormalization
 open HeckeFamily CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
 open EisensteinSchwartzPoisson
@@ -54,10 +54,7 @@ theorem actual_annular_normalization (χ : Character) (W : ℝ→ℂ) (B n : ℕ
         HeckeDyadic.polynomial χ false
           (normalizedReflected CenteredMomentReflectedAnnuli.logWindow W B n (dyadicScale k) t)
           (dyadicScale k*Y) 0 0 := by
-  have hf : normalizedReflected CenteredMomentReflectedAnnuli.logWindow W B n (dyadicScale k) t=
-      (fun x=>(heightScale B n (dyadicScale k) t:ℂ)*
-        CenteredMomentReflectedAnnuli.annularProfile
-          (paperRadialFourier (CompletedHeight.normTwistedSource W t)) (dyadicScale k) x) :=
+  have hf  :=
     funext (normalized_profile_actual W B n (dyadicScale k) t)
   rw [hf,polynomial_const]
   have hh : (1+‖t‖)^n*CenteredMomentReflectedAnnuli.annularMass B k*

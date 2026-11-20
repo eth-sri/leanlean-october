@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectedSeries
 open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
-open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open EisensteinSchwartzPoisson
+open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 def dyadicIdealTerm (η : Character) (F : ℝ→ℂ) (Y : ℝ) (I : NI) (n : ℤ) : ℂ :=

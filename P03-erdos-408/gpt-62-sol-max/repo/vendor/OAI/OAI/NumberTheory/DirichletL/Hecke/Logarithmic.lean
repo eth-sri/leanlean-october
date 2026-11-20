@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.HeckeLogarithmic
 open HeckeFamily HeckeLogarithmicInput
@@ -35,9 +35,7 @@ theorem exists_uniform_polynomial_exponent :
     (K := 2*uniformConstant) (p := 1) (by norm_num)
   refine ⟨M, hM, ?_⟩
   intro η hp a e t ha he z hz
-  have hz2 : z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-2*e) :=
-    ball_subset_closedBall.trans (closedBall_subset_closedBall (by linarith)) hz
-  have h := regular_disk_growth η hp a e t ha he.le hz2
+  have h := regular_disk_growth η hp a e t ha he.le (ball_subset_closedBall.trans (closedBall_subset_closedBall (by linarith)) hz)
   have hQ : (η.modulus.absNorm : ℝ)^(3/5 : ℝ) ≤ (η.modulus.absNorm : ℝ) := by
     simpa using Real.rpow_le_rpow_of_exponent_le (modulus_norm_ge_one η)
       (show (3/5 : ℝ)≤1 by norm_num)

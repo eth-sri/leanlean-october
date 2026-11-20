@@ -12,11 +12,10 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentAmplificationShortening CenteredMomentFixedRay
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open CompletedGauss RayFourExpansion CenteredMomentAmplificationShortening CenteredMomentFixedRay
+open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSecondChildProfile
+open CenteredMomentSourceRow CenteredMomentChildRows
 local notation "O" => ActualEisensteinCubic.O
 
 def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=
@@ -25,7 +24,7 @@ def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=
 
 theorem amplificationPhase_mk (p u : O) (k : ℕ) :
     amplificationPhase p k (Ideal.Quotient.mk _ u)=sexticReciprocityPhase p u^k := by
-  simp only [amplificationPhase,QuadraticGaussRay.residueQuotientFour_mk,sexticReciprocityPhase]
+  rfl
 
 theorem amplificationPhase_norm (p : O) (k : ℕ) (r : RayRing) :
     ‖amplificationPhase p k r‖≤1 := by

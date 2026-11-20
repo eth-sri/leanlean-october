@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.RadialExchange
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 
@@ -17,8 +18,7 @@ local notation "Id" => Ideal O
 
 lemma elementNorm_pos (a : O) (ha : a≠0) : 0<elementNorm a := by
   unfold elementNorm
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr ha))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr ha)
 
 lemma actualCongruenceCoefficient_zero_frequency (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty) (A s : O) (hA : A≠0) (hs : s≠0)
@@ -68,11 +68,10 @@ theorem actualFrequency_mellin (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hSne
     (f:=fun H : O=>actualCongruenceCoefficient (calibrationForSet S hS) A s hA H*
       paperRadialFourier W (K*elementNorm H/elementNorm (((calibrationForSet S hS).generator*A)*s)))
   intro H hH
-  have hn : H≠0 := by
-    intro hz
-    subst H
-    exact hH (by dsimp only; rw [actualCongruenceCoefficient_zero_frequency S hS hSne A s hA hs hcop,zero_mul])
-  exact ⟨⟨H,hn⟩,rfl⟩
+  refine ⟨⟨H,?_⟩,rfl⟩
+  intro hz
+  subst H
+  exact hH (by dsimp only; rw [actualCongruenceCoefficient_zero_frequency S hS hSne A s hA hs hcop,zero_mul])
 
 end SevenEighths.ProbePhysical
 end

@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.RadialCenteredEnergy
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
+public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalCappedAmplitude
 
 @[expose] public section
@@ -8,14 +10,15 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalCappedAmplitude
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentAllocatedCenteredCapped
 open HeckeFamily CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentExceptionalCappedAmplitude
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
+open CenteredMomentExceptionalCappedAmplitude CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency CenteredMomentForcing
+open CenteredMomentChildRows CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
+open UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
@@ -24,8 +27,7 @@ lemma plain_norm_le_reduction (L:Ideal O) (a:Allocation L (Finset.univ:Finset (�
     (P:ι→ℝ) (hP:∀i,1≤P i) (j:Fin 2):
     (Ideal.absNorm (selectedPlain L a j):ℝ)≤formalReductionFactor L a P:=by
   have hN (k:Fin 2):(1:ℝ)≤Ideal.absNorm (selectedPlain L a k):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero L Finset.univ a (Sum.inr k)))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (selectedDivisor_ne_zero L Finset.univ a (Sum.inr k))
   have hh:(Ideal.absNorm (selectedPlain L a j):ℝ)≤selectedNorm L a:=by
     fin_cases j
     · exact le_mul_of_one_le_right (by positivity) (hN 1)
@@ -37,8 +39,7 @@ lemma allocated_lower (L:Ideal O) (a:Allocation L (Finset.univ:Finset (ι⊕Fin 
     (P:ι→ℝ) (hP:∀i,1≤P i) (Z r X:ℝ) (hZ:0<Z) (hX:Z^r≤X) (j:Fin 2):
     Z^r/formalReductionFactor L a P≤X/(Ideal.absNorm (selectedPlain L a j):ℝ):=by
   have hn:(0:ℝ)<Ideal.absNorm (selectedPlain L a j):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero L Finset.univ a (Sum.inr j)))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (selectedDivisor_ne_zero L Finset.univ a (Sum.inr j))
   exact (div_le_div_of_nonneg_left (Real.rpow_nonneg hZ.le _) hn
     (plain_norm_le_reduction L a P hP j)).trans (div_le_div_of_nonneg_right hX hn.le)
 

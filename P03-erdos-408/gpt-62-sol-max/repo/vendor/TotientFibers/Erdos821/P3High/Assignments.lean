@@ -16,14 +16,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.P3Lowrank Erdos821.S2High
 
 attribute [local instance] bmsFintype ghostChoiceFintype edgeChoiceFintype
@@ -62,7 +55,7 @@ theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
             Prescribed B H (performedAddressSet pi) (blockTarget pi hpi values)
           then ‖H.Weight rho theta‖ else 0) := by
   unfold highRankHistoryExpression
-  rw [tsum_truncR A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
+  rw [tsum_trunc A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
   have htr : ∀ values : PivotAssignment pi hpi, (∑' H : MemoryHistory A n,
       (if H.Valid ∧ H.Truncated B ∧
           Prescribed B H (performedAddressSet pi) (blockTarget pi hpi values)
@@ -71,7 +64,7 @@ theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
         (if (mkH d).Valid ∧ (mkH d).Truncated B ∧
             Prescribed B (mkH d) (performedAddressSet pi) (blockTarget pi hpi values)
           then ‖(mkH d).Weight rho theta‖ else 0) :=
-    fun values => tsum_truncR A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))
+    fun values => tsum_trunc A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))
   rw [Finset.sum_congr rfl (fun v _ => htr v), Finset.sum_comm]
   apply Finset.sum_le_sum
   intro d _
@@ -118,13 +111,13 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
           (blockTarget pi hpi values j) ≤
       (16 / (F.vMin * Real.exp ((L x) ^ F.c))) ^ birthRank pi := by
   have hmb := tiltedMu_group_mass_bounds F P x n hP hcut
-  have hμ : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < tiltedMu F P n g.val q :=
+  have hμ  :=
     fun g q => ((hmb g).1 q).1
   set X : ℝ := 2 / (F.vMin * Real.exp ((L x) ^ F.c)) with hX
   have hX0 : 0 ≤ X := by
     rw [hX]
     exact div_nonneg (by norm_num) (mul_nonneg F.vMin_pos.le (Real.exp_pos _).le)
-  have hY : 16 / (F.vMin * Real.exp ((L x) ^ F.c)) = 8 * X := by rw [hX]; ring
+  have hY : 16 / (F.vMin * Real.exp ((L x) ^ F.c)) = 8 * X := by ring
   let H : (C : {C // C ∈ pi}) → P.Prime (blockPivotGroup pi hpi C).val → ℝ := fun C p =>
     ∏ j ∈ C.val, 2 * muHat F P n (birthAddressGroup ((Fintype.equivFin _).symm j)) p.val
   have hstep1 : ∀ values : PivotAssignment pi hpi,

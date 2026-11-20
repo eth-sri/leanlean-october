@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicPartition
 public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedRows
@@ -13,13 +14,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicAssembly
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open CanonicalRowCompletion CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
 open CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentRowNorm
-open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentDyadicCount CenteredMomentPrimitive
+open CenteredMomentSupportedCorrelation CenteredMomentRowNorm CenteredMomentFirstWholeKernel
+open CenteredMomentLogDyadic CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open CenteredMomentPrimitive
 local notation "O"=>ActualEisensteinCubic.O
 
 def retainedBlock (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
@@ -127,14 +127,13 @@ lemma element_norm (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD 
 lemma element_norm_ge_one (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
     1≤‖eisEmbedding (element C D hD S a)‖^2:=by
   rw [element_norm]
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (column_supported C D hD S a).1)
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot ((column_supported C D hD S a).1)
 
 lemma element_norm_le (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S)
     (c:Ideal O→ℂ)(H:ℝ)(hcap:∀I,c I≠0→(I.absNorm:ℝ)≤H)(ha:c (D*a)≠0):
     ‖eisEmbedding (element C D hD S a)‖^2≤H/(D.absNorm:ℝ):=by
   have hDpos:(0:ℝ)<D.absNorm:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD)
   rw [element_norm]
   apply (le_div_iff₀ hDpos).mpr
   simpa only [map_mul,Nat.cast_mul,mul_comm] using hcap (D*a) ha
@@ -169,8 +168,7 @@ theorem retainedBlock_eq_blocks
     · simp [coefficient,hcb]
     have hnorm:1≤‖eisEmbedding h‖^2:=by
       rw [eisEmbedding_norm_sq_eq_absNorm_span]
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr (hrows h hh)))
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (hrows h hh))
     have hpart:=windows_partition (effectiveScale C D E K) R
       (H/(C.absNorm:ℝ)) (H/(D.absNorm:ℝ)) (‖eisEmbedding h‖^2)
       (‖eisEmbedding (element C C hC.1 S a)‖^2) (‖eisEmbedding (element C D hD.1 S b)‖^2)

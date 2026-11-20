@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyWidthSchedule
 open CenteredMomentSuccessorPaidParameters CenteredMomentFirstSecondLossParameters
@@ -32,27 +32,23 @@ theorem bounds (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε):
   have hs:0<amplification ε:=lt_min (by norm_num) (by positivity)
   have hs1:amplification ε≤1:=min_le_left _ _
   have hse:amplification ε≤ε/16000:=min_le_right _ _
-  have hn:0≤(count M ε:ℝ):=Nat.cast_nonneg _
   have hL:0<scale M B ε:=by unfold scale;positivity
   have hr:0<reserve M B ε:=lt_min (by positivity) (by positivity)
   have hrs:reserve M B ε≤amplification ε/100:=min_le_left _ _
   have hre:reserve M B ε≤ε/(1000000*scale M B ε):=min_le_right _ _
-  have hp:reserve M B ε*(1000000*scale M B ε)≤ε:=
+  have hp:=
     (le_div_iff₀ (by positivity)).mp hre
   have hnL:(count M ε:ℝ)≤scale M B ε:=by unfold scale;linarith
   have h1L:1≤scale M B ε:=by unfold scale;linarith
   have hnR:(count M ε:ℝ)*reserve M B ε≤ε/1000000:=by
     have hh:=mul_le_mul_of_nonneg_right hnL hr.le
     nlinarith
-  have hR:reserve M B ε≤ε/1000000:=by
-    have hh:=mul_le_mul_of_nonneg_right h1L hr.le
-    nlinarith
   have hm:0<mesh M B κ ε:=by unfold mesh;positivity
   have hmr:mesh M B κ ε≤reserve M B ε:=by
     unfold mesh
     apply (div_le_iff₀ (by positivity)).mpr
     nlinarith
-  have hkm:κ*mesh M B κ ε≤reserve M B ε:=mesh_cost κ _ hκ hr.le
+  have hkm:=mesh_cost κ _ hκ hr.le
   have hw:M<width M B ε (count M ε):=by
     have hd:=depth_covers M (amplification ε) hs
     change M<(count M ε:ℝ)*amplification ε/2 at hd
@@ -68,7 +64,7 @@ lemma reserve_cost (M B ε c:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε)
   have hs:0<amplification ε:=lt_min (by norm_num) (by positivity)
   have hr:0<reserve M B ε:=lt_min (by positivity) (by positivity)
   have hre:reserve M B ε≤ε/(1000000*scale M B ε):=min_le_right _ _
-  have hp:reserve M B ε*(1000000*scale M B ε)≤ε:=
+  have hp:=
     (le_div_iff₀ (by positivity)).mp hre
   have hh:=mul_le_mul_of_nonneg_right hc hr.le
   nlinarith
@@ -80,12 +76,10 @@ theorem one_time_losses (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε
     exceptional (amplification ε) df es d B theta≤ε/1000 ∧
       diagonal (amplification ε) d other es A≤ε/1000:=by
   have hb:=bounds M B κ ε hM hB hκ hε
-  have hs:=hb.2.2.1
-  have hr:=hb.2.2.2.1
   have hx:=reserve_cost M B ε (10*B+7) hM hB hε (by unfold scale;linarith [Nat.cast_nonneg (α:=ℝ) (count M ε)])
   have hy:=reserve_cost M B ε (M+2) hM hB hε (by unfold scale;linarith [Nat.cast_nonneg (α:=ℝ) (count M ε)])
   have htheta:=mul_le_mul_of_nonneg_left ht (show 0≤2*(5*B+1) by positivity)
-  have hmul:es*A≤reserve M B ε*M:=
+  have hmul:=
     (mul_le_mul_of_nonneg_left hA he0).trans (mul_le_mul_of_nonneg_right hes hM)
   constructor
   · unfold exceptional
@@ -127,8 +121,6 @@ lemma next_paid_loss (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
     loss M B ε k+edge 0 er d e d1 d2 theta κ (mesh M B κ ε)+other≤
       loss M B ε (k+1):=by
   have hb:=bounds M B κ ε hM hB hκ hε
-  have hr:=hb.2.2.2.1
-  have hm:=hb.2.2.2.2.2.2.1
   rw [loss_succ]
   unfold edge
   linarith

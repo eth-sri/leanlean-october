@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesBounds
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff
 noncomputable section
 
 lemma logSource_support (Ω V T : ℝ → ℂ) (A B C : ℝ) :
@@ -27,17 +27,16 @@ theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ �
   let P := (2 : ℝ)^K
   refine ⟨P*(P*(P*CΩ*(1+CV))*CE)*CT,by dsimp [P]; positivity,?_⟩
   intro A B D hA hB hD j hj y hy
-  let v : ℝ → ℂ := fun z => V (A*Real.exp z)
-  let e : ℝ → ℂ := fun z => expNeg (B*Real.exp z)
-  let t : ℝ → ℂ := fun z => T (D*Real.exp z)
+  let v  := fun z => V (A*Real.exp z)
+  let e  := fun z => expNeg (B*Real.exp z)
+  let t  := fun z => T (D*Real.exp z)
   have hv : ContDiff ℝ ∞ v := (V.smooth ⊤).comp (by fun_prop)
   have he : ContDiff ℝ ∞ e := expNeg_smooth.comp (by fun_prop)
   have ht : ContDiff ℝ ∞ t := (T.smooth ⊤).comp (by fun_prop)
   have hcv : ContDiff ℝ ∞ (fun z => 1-v z) := contDiff_const.sub hv
-  have hcomp (i : ℕ) (hi : i ≤ K) : ‖iteratedFDeriv ℝ i (fun z => 1-v z) y‖ ≤ 1+CV :=
+  have hcomp (i : ℕ) (hi : i ≤ K)  :=
     complement_derivative_bound v hv CV i y (hbV A hA i hi y hy)
-  have hfirst (i : ℕ) (hi : i ≤ K) :
-      ‖iteratedFDeriv ℝ i (fun z => Ω z*(1-v z)) y‖ ≤ P*CΩ*(1+CV) :=
+  have hfirst (i : ℕ) (hi : i ≤ K)  :=
     product_derivative_bound Ω _ hΩ hcv CΩ (1+CV) hCΩ (by positivity) K i hi y
       (fun q hq => hbΩ q hq y) hcomp
   have hsecond (i : ℕ) (hi : i ≤ K) :
@@ -65,7 +64,7 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   · rw [hz, mul_zero]; positivity
   have hys : y ∈ tsupport Ω := logSource_support Ω V T A B D
     ((support_iteratedFDeriv_subset j) (by simpa [Function.mem_support] using hz))
-  have hy : |y| ≤ L := abs_le.mpr (hwindow hys)
+  have hy  := abs_le.mpr (hwindow hys)
   exact mul_le_mul (by simpa [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg y) hy k)
     (hb A B D hA hB hD j hj y hy) (norm_nonneg _) (pow_nonneg hL k)
 

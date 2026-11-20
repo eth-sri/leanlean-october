@@ -37,11 +37,8 @@ theorem normBound_weightedAdjoint {α : Type*} (mass : α → ℝ) (K : α → �
     simp only [starRingEnd_apply]
     field_simp [hma]
   rw [hform, norm_star]
-  have heq : C * Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) *
-      Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) =
-      C * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
-        Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) := by ring
-  exact h.trans_eq heq
+  refine h.trans_eq ?_
+  ring
 
 
 end Erdos821.P3Clean

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
@@ -19,7 +19,7 @@ theorem rapid_tail_bound (F : ℝ → ℂ) (C T : ℝ) (n : ℕ) (hC : 0≤C) (h
       ‖F t‖≤(C/(1+T)^n)*(1+t^2)⁻¹ := by
     have ht' : T≤|t| := by
       by_contra h
-      have hab : |t|<T := lt_of_not_ge h
+      have hab  := lt_of_not_ge h
       exact ht ⟨(abs_lt.mp hab).1.le, (abs_lt.mp hab).2.le⟩
     have hp : (1+T)^n*(1+t^2)≤(1+|t|)^(n+2) := by
       rw [pow_add]
@@ -28,7 +28,7 @@ theorem rapid_tail_bound (F : ℝ → ℂ) (C T : ℝ) (n : ℕ) (hC : 0≤C) (h
       · nlinarith [sq_abs t, abs_nonneg t]
       · positivity
       · positivity
-    have hh : ‖F t‖*((1+T)^n*(1+t^2))≤C :=
+    have hh  :=
       (mul_le_mul_of_nonneg_left hp (norm_nonneg _)).trans (by simpa [mul_comm] using hF t)
     have hb := (le_div_iff₀ (by positivity : 0<(1+T)^n*(1+t^2))).mpr hh
     simpa [div_mul_eq_div_div, div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm] using hb

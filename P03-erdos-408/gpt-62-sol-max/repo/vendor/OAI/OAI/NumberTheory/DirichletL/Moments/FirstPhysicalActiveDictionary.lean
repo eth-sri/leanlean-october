@@ -11,16 +11,15 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalActiveDictionary
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
-open CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentRowNorm
+open CenteredMomentHeckeExpansion CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy
+open CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
+open CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
+open CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency
+open CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly
+open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive
+open IdealMobiusDivisorSum CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
 local notation "O" => HeckeFamily.O
 
 theorem columns_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
@@ -37,9 +36,7 @@ theorem column_sum_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
   rw [columns_active,Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro I hI
-  by_cases hi : β (D*I)=0
-  · simp only [hi,ne_eq,not_true_eq_false,ite_false,hf I hi]
-  · simp only [hi,ne_eq,not_false_eq_true,ite_true]
+  simp_all
 
 theorem column_pair_sum_active (C D : Ideal O) (hC : C≠0) (hD : D≠0)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (f : Ideal O→Ideal O→ℂ)
@@ -146,8 +143,8 @@ theorem block_active (η : Character) (m A : O) (t : ℝ)
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic
+open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale CenteredMomentSectorLocalization
+open CenteredMomentLogDyadic
 
 theorem original_sectorMass_active (s : Input ι) (R seed : Ideal O)
     (m A : O) (t : ℝ) (S : Finset (Ideal O)) (C D : Ideal O)

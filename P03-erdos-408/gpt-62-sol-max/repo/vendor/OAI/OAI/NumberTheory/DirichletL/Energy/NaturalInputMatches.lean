@@ -8,13 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyNaturalInputMatches
-open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
+open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot CenteredMomentEnergyState
+open CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData
+open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentHeckeSlots
+open CenteredMomentRetainedEnergy
 local notation "O" => HeckeFamily.O
 
 def profile (W : ℝ → ℂ) (σ freq y : ℝ) : ℂ :=
@@ -72,7 +72,6 @@ lemma norm_profile_le (W : ℝ → ℂ) (hW : Continuous W)
 section Input
 variable {ι : Type*} [Fintype ι]
 variable (Q : Ideal O) [NeZero Q]
-local instance : Finite (O ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne Q)
 variable (H : Subgroup (O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
 variable (η₀ : Character) (θ : ι → RayQuotient.Characters Q H)
 variable (W : ℝ → ℂ) (hW : Continuous W)
@@ -97,8 +96,6 @@ def input : Input ι :=
     (fun i => norm_profile_le W hW aslot bslot lo hi haslot hWs (σ i) (hσ i) (freq i))
     t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
 
-local notation "inp" => input Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
-  w σ freq hσ state p ha t X₁ X₂ Y₁ Y₂ hX₁ hX₂ hY₁ hY₂ hsame
 
 end Input
 end SevenEighths.CenteredMomentEnergyNaturalInputMatches

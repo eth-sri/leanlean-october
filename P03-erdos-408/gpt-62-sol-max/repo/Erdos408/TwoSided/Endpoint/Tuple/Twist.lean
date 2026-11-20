@@ -38,7 +38,7 @@ theorem norm_primeTwistPoly_le {x A' E Cm κ' : ℝ} (hP : PrimeTwistBound x A' 
     (χ : DirichletCharacter ℂ k) {u : ℝ} (hu₁ : Real.log x ^ E ≤ |u|) (hu₂ : |u| ≤ x ^ 3) :
     ‖(H : ℂ)⁻¹ * ∑ p ∈ (Finset.Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime,
         χ p * (p : ℂ) ^ ((u : ℂ) * Complex.I)‖ ≤ 4 * κ' * Real.log x ^ (-A') := by
-  have hH0 : 0 < H := lt_of_lt_of_le (Real.exp_pos _) hH₁
+  have hH0  := lt_of_lt_of_le (Real.exp_pos _) hH₁
   set B := κ' * Real.log x ^ (-A') with hB
   set m := ⌊lo⌋₊
   set N := ⌊hi⌋₊
@@ -60,9 +60,9 @@ theorem norm_primeTwistPoly_le {x A' E Cm κ' : ℝ} (hP : PrimeTwistBound x A' 
     rcases hn.1.eq_or_lt with h | h
     · rw [← h, Ioc_self, sum_empty, norm_zero]
       exact hB0
-    · have hN1 : 0 < N := lt_of_le_of_lt (Nat.zero_le _) (h.trans_le hn.2)
-      have hhi0 : 0 ≤ hi := (Nat.floor_pos.1 hN1).trans' zero_le_one
-      have hnhi : (n : ℝ) ≤ 2 * H :=
+    · have hN1  := lt_of_le_of_lt (Nat.zero_le _) (h.trans_le hn.2)
+      have hhi0  := (Nat.floor_pos.1 hN1).trans' zero_le_one
+      have hnhi  :=
         ((Nat.cast_le.2 hn.2).trans (Nat.floor_le hhi0)).trans hhi
       have h := hP H lo n hH₁ hH₂ hlo hnhi k hk₁ hk₂ χ u hu₁ hu₂
       rw [Nat.floor_natCast] at h

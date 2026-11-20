@@ -8,35 +8,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 
 namespace ShortDraftLocal
 
 end ShortDraftLocal
 
-open MulChar AddChar
 
 namespace ActualEisensteinCubic
 
@@ -100,7 +80,7 @@ theorem normFiber_eq_pair_of_prime_powers
         pairAF χ ψ (p ^ k))
     (n : ℕ) (hn : n ≠ 0) :
     normFiberCoeff weight n = pairInverseCoeff χ ψ n := by
-  have heq : toArithmeticFunction (normFiberCoeff weight) = pairAF χ ψ :=
+  have heq  :=
     (ArithmeticFunction.IsMultiplicative.eq_iff_eq_on_prime_powers
       _ hb _ (pairAF_mult χ ψ)).2 hlocal
   have h := congrFun (congrArg DFunLike.coe heq) n
@@ -113,8 +93,8 @@ theorem normFiber_eq_pair_of_prime_powers
 theorem pairAF_prime {q r : ℕ} (χ : DirichletCharacter ℂ q)
     (ψ : DirichletCharacter ℂ r) {p : ℕ} (hp : p.Prime) :
     pairAF χ ψ p = -(χ p + ψ p) := by
-  have h1χ : invCharAF χ 1 = 1 := (invCharAF_mult χ).map_one
-  have h1ψ : invCharAF ψ 1 = 1 := (invCharAF_mult ψ).map_one
+  have h1χ  := (invCharAF_mult χ).map_one
+  have h1ψ  := (invCharAF_mult ψ).map_one
   have hpχ : invCharAF χ p = -χ p := by
     rw [invCharAF_apply χ hp.ne_zero, ArithmeticFunction.moebius_apply_prime hp]
     simp
@@ -132,8 +112,7 @@ theorem pairAF_prime {q r : ℕ} (χ : DirichletCharacter ℂ q)
 theorem pairAF_prime_sq {q r : ℕ} (χ : DirichletCharacter ℂ q)
     (ψ : DirichletCharacter ℂ r) {p : ℕ} (hp : p.Prime) :
     pairAF χ ψ (p ^ 2) = χ p * ψ p := by
-  have h1χ : invCharAF χ 1 = 1 := (invCharAF_mult χ).map_one
-  have h1ψ : invCharAF ψ 1 = 1 := (invCharAF_mult ψ).map_one
+  have h1χ  := (invCharAF_mult χ).map_one
   have hpχ : invCharAF χ p = -χ p := by
     rw [invCharAF_apply χ hp.ne_zero, ArithmeticFunction.moebius_apply_prime hp]
     simp
@@ -163,7 +142,7 @@ theorem pairAF_prime_sq {q r : ℕ} (χ : DirichletCharacter ℂ q)
   conv_lhs => rw [Nat.sum_divisorsAntidiagonal
     (fun a b => invCharAF χ a * invCharAF ψ b)]
   rw [hdiv]
-  have hpge : 2 ≤ p := hp.two_le
+  have hpge  := hp.two_le
   have h1p2 : 1 ≠ p ^ 2 := by nlinarith
   have hpp2 : p ≠ p ^ 2 := by nlinarith
   have hnot1 : 1 ∉ ({p, p ^ 2} : Finset ℕ) := by
@@ -203,9 +182,6 @@ theorem not_both_principal {q : ℕ} [NeZero q]
   exact chiMinusThree_ne_one hη
 
 end ShortDraftHeckeBridge
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 
 namespace ShortDraftHeckeBridge
 

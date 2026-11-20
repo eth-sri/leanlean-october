@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.LowGramHeight
+public import OAI.NumberTheory.DirichletL.Detector.LowGramProfile
 public import OAI.NumberTheory.DirichletL.Detector.GramResidue
 
 @[expose] public section
@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramResidue
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical EisensteinSchwartzPoisson
 
@@ -44,9 +44,9 @@ theorem shellProfile_weighted_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) (A : �
   have hyb := (hs hy).2
   have hx0 := ha.trans_le hxa
   have hy0 := ha.trans_le hya
-  have hxy : 0<x*y := mul_pos hx0 hy0
+  have hxy  := mul_pos hx0 hy0
   have hxyb : x*y≤b^2 := by nlinarith [mul_le_mul hxb hyb hy0.le (hx0.le.trans hxb)]
-  have ht : 0≤T/(x*y) := div_nonneg hT hxy.le
+  have ht  := div_nonneg hT hxy.le
   have hp := hpaper U 0 (by omega) (T/(x*y)) ht
   simp only [LocalLogFourier.eulerDeriv,iteratedDeriv_zero,Real.exp_zero,mul_one] at hp
   have hscale : 1+T≤(1+b^2)*(1+T/(x*y)) := by

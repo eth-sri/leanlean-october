@@ -1,7 +1,12 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
-public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedAllIntegral
+public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingPhysical
+public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
+public import OAI.NumberTheory.DirichletL.Descent.SecondOriginalMass
 
 @[expose] public section
 
@@ -24,7 +29,7 @@ def outerNorms (p : ι → O) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : 
 
 omit [DecidableEq ι] in
 theorem outerNorms_ge_one (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hk : x.second.frequency ≠ 0) :
     ∀ i,1 ≤ outerNorms p x i := by
   intro i
@@ -45,17 +50,17 @@ theorem dyadScale_pos (n : ℕ) : 0 < dyadScale n := by unfold dyadScale; positi
 
 theorem dyadIndex_bounds (r : ℝ) (hr : 1 ≤ r) :
     dyadScale (dyadIndex r) ≤ r ∧ r < 2*dyadScale (dyadIndex r) := by
-  have hr0 : 0 < r := lt_of_lt_of_le zero_lt_one hr
+  have hr0  := lt_of_lt_of_le zero_lt_one hr
   have hlog : 0 ≤ Real.logb 2 r := Real.logb_nonneg (by norm_num) hr
   constructor
   · have h := (Real.le_logb_iff_rpow_le (by norm_num : (1:ℝ)<2) hr0).mp (Nat.floor_le hlog)
-    simpa only [dyadScale,dyadIndex,Real.rpow_natCast] using h
+    simpa [dyadScale,dyadIndex,Real.rpow_natCast] using h
   · have h := (Real.logb_lt_iff_lt_rpow (by norm_num : (1:ℝ)<2) hr0).mp
       (Nat.lt_floor_add_one (Real.logb 2 r))
     have ht : r < (2:ℝ)^(dyadIndex r+1) := by
       rw [←Real.rpow_natCast]
       simpa only [Nat.cast_add,Nat.cast_one,dyadIndex] using h
-    simpa only [dyadScale,pow_succ,mul_comm] using ht
+    simpa [dyadScale,pow_succ,mul_comm] using ht
 
 def index (p : ι → O) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : BlockIndex :=
   fun i => dyadIndex (outerNorms p x i)
@@ -75,7 +80,7 @@ omit [DecidableEq ι] in
 theorem cell_subset (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (d : BlockIndex) : cell p source d ⊆ source := Finset.filter_subset _ _
 
-theorem cell_conditions (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
+theorem cell_conditions (p : ι → O) [OAI.PrincipalFamily.Maximal p] {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (d : BlockIndex) :
     ActualSecondSourceConditions p (cell p source d) := ActualSecondSourceConditions.mono p hs (cell_subset p source d)
 
@@ -92,7 +97,7 @@ theorem mem_keys_iff (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecond
 
 omit [DecidableEq ι] in
 theorem cell_ratios (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
+    [OAI.PrincipalFamily.Maximal p] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
     (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d) (i : Fin 4) :
     1 ≤ outerNorms p x i / dyadScale (d i) ∧ outerNorms p x i / dyadScale (d i) < 2 := by
@@ -112,9 +117,9 @@ theorem sum_cells (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSou
 def scales (d : BlockIndex) : Fin 4 → ℝ := fun i => dyadScale (d i)
 
 theorem physical_source_partition
-    (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (pool : Finset ι) (Ψ : O →* ℂ) (m : O) (ray : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -140,7 +145,7 @@ def capBox (A : Fin 4 → ℝ) (Z : ℝ) : Finset BlockIndex :=
 
 omit [DecidableEq ι] in
 theorem keys_subset_capBox (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
+    [OAI.PrincipalFamily.Maximal p] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
     (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z^(A i)) :
     keys p source ⊆ capBox A Z := by
@@ -155,7 +160,7 @@ theorem keys_subset_capBox (p : ι → O) (hp : ∀ i,p i ≠ 0)
 
 omit [DecidableEq ι] in
 theorem keys_card_le_product (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
+    [OAI.PrincipalFamily.Maximal p] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
     (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z^(A i)) :
     (keys p source).card ≤ ∏ i : Fin 4,(dyadIndex (Z^(A i))+1) := by
@@ -172,9 +177,9 @@ theorem capConstant_nonneg (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) :
 theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ : 2 ≤ Z)
     (i : Fin 4) : (dyadIndex (Z^(A i)) : ℝ)+1 ≤ 1+capConstant A*Real.log Z := by
   have hZ0 : 0 < Z := by linarith
-  have hZi : 1 ≤ Z^(A i) := Real.one_le_rpow (by linarith) (hA i)
+  have hZi  := Real.one_le_rpow (by linarith) (hA i)
   have hf := Nat.floor_le (Real.logb_nonneg (by norm_num : (1:ℝ)<2) hZi)
-  have hAi : A i ≤ ∑ j,A j := Finset.single_le_sum (fun j _ => hA j) (Finset.mem_univ i)
+  have hAi  := Finset.single_le_sum (fun j _ => hA j) (Finset.mem_univ i)
   have hc := mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hAi
     (Real.log_pos (by norm_num : (1:ℝ)<2)).le) (Real.log_nonneg (by linarith : 1 ≤ Z))
   dsimp [dyadIndex,capConstant]
@@ -185,13 +190,7 @@ theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ :
       ring
     _ ≤ _ := by linarith
 
-omit [DecidableEq ι] in
-@[simp] theorem keys_empty (p : ι → O) (Jo Jn : ℕ) :
-    keys p (∅ : Finset (MarkedSecondSource ι Jo Jn)) = ∅ := by simp [keys]
 
-omit [DecidableEq ι] in
-@[simp] theorem cell_empty (p : ι → O) (Jo Jn : ℕ) (d : BlockIndex) :
-    cell p (∅ : Finset (MarkedSecondSource ι Jo Jn)) d = ∅ := by simp [cell]
 
 end SevenEighths.InverseSecondSourceBlocks
 

@@ -1,7 +1,9 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildState
-public import OAI.NumberTheory.DirichletL.Descent.SecondCutoffScale
+public import OAI.NumberTheory.DirichletL.Descent.SecondCorrelatedCutoff
+public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 
 @[expose] public section
@@ -9,14 +11,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 include hp
 
 theorem actual_cell_row_decrease {Jo Jn : ℕ}
@@ -35,7 +37,7 @@ theorem actual_cell_row_decrease {Jo Jn : ℕ}
   have hD := (actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).1
   have hh := actual_second_row_decrease p hp x (hs.second_divisor x (cell_subset p source d hx)) Z M ell A t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j eta cutoff hZ hA ht hterminal hsmall
-    (by simpa [outerNorms] using hG) (by simpa [outerNorms] using hD) h1 h2 hJ
+    (by assumption) (by assumption) h1 h2 hJ
   linarith
 
 theorem actual_cell_triple_puncture_nonzero

@@ -2,6 +2,8 @@ module
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.ScatteringCoefficients
 
+public import OAI.NumberTheory.DirichletL.Eisenstein.UpperStripIdentity
+
 @[expose] public section
 
 namespace OAI
@@ -11,78 +13,19 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Filter MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -103,50 +46,38 @@ lemma kernelCuspFourierFamily_analyticAt_nonreal (h : ActualEisensteinCubic.O) (
 
 def continuedNonzeroScattering (h : ActualEisensteinCubic.O) (s : ℂ) : ℂ :=
   kernelCuspFourierFamily h 2 3 (by norm_num) (by norm_num) s /
-    (((9*Real.sqrt 3/2:ℝ):ℂ)*cuspWhittakerHeightFactor s h)
+    ((periodCovolume : ℂ)*cuspWhittakerHeightFactor s h)
 
 def nonzeroScatteringResidue (h : ActualEisensteinCubic.O) : ℂ :=
   kernelCuspFourier h cubicEisensteinResidue /
-    (((9*Real.sqrt 3/2:ℝ):ℂ)*cuspWhittakerHeightFactor (4/3:ℂ) h)
+    ((periodCovolume : ℂ)*cuspWhittakerHeightFactor (4/3:ℂ) h)
 
 lemma kernelCuspFourierFamily_eq_upper (h : ActualEisensteinCubic.O) (hh : h≠0) :
     Set.EqOn (kernelCuspFourierFamily h 2 3 (by norm_num) (by norm_num))
-      (fun s => ((9*Real.sqrt 3/2:ℝ):ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h)
+      (fun s => (periodCovolume : ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h)
       {s : ℂ | 2<s.re ∧ 0<s.im} := by
   let domain : Set ℂ := {s | 2<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (2:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
   have hleft : AnalyticOnNhd ℂ (kernelCuspFourierFamily h 2 3 (by norm_num) (by norm_num)) domain := by
     intro s hs
     exact kernelCuspFourierFamily_analyticAt_nonreal h 2 3 (by norm_num) (by norm_num)
       s (by linarith [hs.1]) hs.2.ne'
   have hright : AnalyticOnNhd ℂ
-      (fun s => ((9*Real.sqrt 3/2:ℝ):ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h) domain := by
+      (fun s => (periodCovolume : ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h) domain := by
     intro s hs
     exact (analyticAt_const.mul (scatteringCoefficient_analyticOnNhd h s hs.1)).mul
       (cuspWhittakerHeightFactor_analyticAt h s (by linarith [hs.1]))
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s : ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hevent : (kernelCuspFourierFamily h 2 3 (by norm_num) (by norm_num))
-      =ᶠ[𝓝 (5+Complex.I:ℂ)]
-        (fun s => ((9*Real.sqrt 3/2:ℝ):ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h) := by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
+  exact eqOn_of_upperStrip hleft hright (by norm_num) (by
+    intro s hre him
     exact kernelCuspFourierFamily_nonzero_of_initial_overlap h hh 2 3
-      (by norm_num) (by norm_num) s (by linarith [hs.1])
-      (kernelEisensteinL2Correction_initial_overlap 2 3 (by norm_num) (by norm_num) s hs.1 hs.2)
-  exact hleft.eqOn_of_preconnected_of_eventuallyEq hright hconvex.isPreconnected hstart hevent
+      (by norm_num) (by norm_num) s (by linarith)
+      (kernelEisensteinL2Correction_initial_overlap 2 3 (by norm_num) (by norm_num) s hre him))
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+open scoped ENNReal
 
 theorem kernelCompact_projection_measure_bound (K : Set HyperbolicSpace) (hK : IsCompact K) :
     ∃N : ℕ,Measure.map (integralOrbitProjection globalKubotaKernel) (hyperbolicVolume.restrict K)≤
@@ -181,7 +112,7 @@ theorem kernelCompact_projection_measure_bound (K : Set HyperbolicSpace) (hK : I
       rw [←Measure.restrict_apply ((measurable_integralOrbitProjection _) hB),
         ←Measure.map_apply (measurable_integralOrbitProjection _) hB,hm.map_eq]
       exact Measure.restrict_le_self B
-    _ = _ := by simp [nsmul_eq_mul]
+    _ = _ := by simp
 
 section DominatedComplexL2
 variable {α : Type*} [MeasurableSpace α] {«μ» ν : Measure α} {c : ℝ≥0∞}
@@ -272,7 +203,7 @@ lemma scaledWhittakerProduct_differentiableAt («μ» : Measure ℝ) [IsFiniteMe
   have hb : 1<b := by dsimp [b]; linarith
   have hε : 0<ε := by dsimp [ε]; linarith
   have hsb : b+ε<s.re := by dsimp [b,ε]; linarith
-  have hU : {w : ℂ | b+ε<w.re}∈𝓝 s :=
+  have hU  :=
     (isOpen_lt continuous_const Complex.continuous_re).mem_nhds hsb
   have h := hasDerivAt_integral_of_dominated_loc_of_deriv_le
     («μ» := «μ».prod volume)
@@ -321,7 +252,7 @@ lemma scaledWhittakerProduct_eq_average (ρ : BoundedContinuousFunction ℝ ℂ)
   rw [integral_prod _ hi,←integral_const_mul]
   apply integral_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
-  have hvp : 0<v := ha.trans_le hv.1
+  have hvp  := ha.trans_le hv.1
   have hcv : 5≤(5/a)*v := by
     calc
       5=(5/a)*a := by field_simp
@@ -351,9 +282,7 @@ theorem cuspWeightedWhittakerInterval_differentiableAt (ρ : BoundedContinuousFu
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ComplexConjugate MatrixGroups ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped InnerProductSpace ENNReal
 
 local notation "O" => ActualEisensteinCubic.O
 

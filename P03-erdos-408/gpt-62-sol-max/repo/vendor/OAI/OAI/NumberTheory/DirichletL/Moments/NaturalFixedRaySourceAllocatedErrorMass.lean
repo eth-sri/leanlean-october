@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceAllocatedProfile
+public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
+public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 
@@ -9,11 +11,11 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentAllocatedNaturalSource
+open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentCounting
+open CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
 open CenteredMomentOriginalReflectionErrorMass
 local notation "O" => HeckeFamily.O
 
@@ -33,8 +35,8 @@ theorem naturalSlot_ideal_bound (χ : Character) (pool : Finset (Ideal O))
   have hsup : ∀I,f I≠0 → (I.absNorm:ℝ)≤max 1 b*P := by
     intro I hi
     have hm : I∈pool:=by by_contra hn;exact hi (by simp only [f,ite_eq_right hn])
-    have hb : β I≠0:=by intro hz;exact hi (by simp only [f,ite_eq_left hm,hz,mul_zero])
-    exact (hs I hm hb).trans (mul_le_mul_of_nonneg_right (le_max_right 1 b) hP.le)
+    refine (hs I hm ?_).trans (mul_le_mul_of_nonneg_right (le_max_right 1 b) hP.le)
+    intro hz;exact hi (by simp only [f,ite_eq_left hm,hz,mul_zero])
   have he : (∑'I:Ideal O,f I)=∑I∈pool,idealCoeff χ I*β I := by
     rw [tsum_eq_sum (s:=pool) (fun I hi=>by simp only [f,ite_eq_right hi])]
     exact Finset.sum_congr rfl (fun I hi=>by simp only [f,ite_eq_left hi])

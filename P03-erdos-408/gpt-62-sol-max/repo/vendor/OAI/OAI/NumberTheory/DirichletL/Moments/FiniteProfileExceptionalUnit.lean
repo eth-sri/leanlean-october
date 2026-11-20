@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalVolume
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
-open CenteredMomentHeckeCancellation CenteredMomentLattice
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
+open CenteredMomentLattice
 local notation "O" => HeckeFamily.O
 
 theorem rectangle_source_unit (a b ε B : ℝ)
@@ -39,7 +39,6 @@ theorem rectangle_source_unit (a b ε B : ℝ)
   intro Q hQ
   obtain ⟨D,hD,hDvol⟩ := hvol Q
   let V := 128*(b+b)
-  have hV : 0≤V := by dsimp [V]; positivity
   refine ⟨1+8*D*V,by positivity,?_⟩
   intro W₁ W₂ hs₁ hs₂ hS₁ hS₂ Z hZ η χ ψ hnorm hQψ hind m A z hml hm2 hrow
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
@@ -62,11 +61,10 @@ theorem rectangle_source_unit (a b ε B : ℝ)
     W₁ W₂ a b a b 1 1 ha ha hb hb zero_le_one zero_le_one hs₁ hs₂
     (W₁.smooth ⊤) (W₂.smooth ⊤) hbound₁ hbound₂
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
-  have hT : 0<T := hpX ▸ mul_pos (hL.trans_le hX₁) (hL.trans_le hX₂)
+  have hT  := hpX ▸ mul_pos (hL.trans_le hX₁) (hL.trans_le hX₂)
   have hn := CenteredMoment.normalized_centered_saving _ T L V _ hT (by
     simpa only [mul_one] using hraw)
   have hE := add_le_add (herr W₁ hs₁ hS₁) (herr W₂ hs₂ hS₂)
-  have hr : 0≤Real.sqrt T/L := div_nonneg (Real.sqrt_nonneg _) hL.le
   calc
     _ ≤ _ := hn
     _ ≤ 4*(D*Z^ε*(1+‖t‖)^J+D*Z^ε*(1+‖t‖)^J)*V*(Real.sqrt T/L) := by

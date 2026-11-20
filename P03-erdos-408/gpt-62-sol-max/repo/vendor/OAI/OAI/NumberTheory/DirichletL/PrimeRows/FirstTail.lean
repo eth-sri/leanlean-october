@@ -1,7 +1,9 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.Product
-public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRegion
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
+public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 @[expose] public section
 
@@ -35,7 +37,7 @@ theorem firstPrimeDefectBound_summable (eps : ℝ) (heps : 0<eps) :
   unfold firstPrimeDefectBound CubicEisenstein.fullIdealWeight
   simp only [P.property.ne_zero,ite_false]
   rw [Complex.norm_natCast_cpow_of_pos
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero))]
+    (Ideal.absNorm_pos_of_ne_bot (P.property.ne_zero))]
   simp only [Complex.neg_re,Complex.add_re,Complex.one_re,Complex.ofReal_re]
   congr 2
   ring

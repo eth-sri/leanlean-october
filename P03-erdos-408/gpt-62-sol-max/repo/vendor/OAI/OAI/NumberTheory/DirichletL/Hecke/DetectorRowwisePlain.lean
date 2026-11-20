@@ -63,7 +63,7 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       HasDerivAt (fun u => M n i u y) (-M (n+1) i x y) x := by
     interval_cases n
     · convert ((qx 0 i x y (by norm_num)).mul (qx 0 i x y (by norm_num))).mul_const (P i) using 1
-      · ext u; simp [M]
+      · rfl
       · simp [M]; ring
     · convert (((qx 0 i x y (by norm_num)).mul (qx 1 i x y (by norm_num))).const_mul 2).mul_const (P i) using 1
       · ext u; dsimp [M]; ring
@@ -72,7 +72,7 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       HasDerivAt (M n i x) (I*M (n+1) i x y) y := by
     interval_cases n
     · convert ((qy 0 i x y (by norm_num)).mul (qy 0 i x y (by norm_num))).mul_const (P i) using 1
-      · ext u; simp [M]
+      · rfl
       · simp [M]; ring
     · convert (((qy 0 i x y (by norm_num)).mul (qy 1 i x y (by norm_num))).const_mul 2).mul_const (P i) using 1
       · ext u; dsimp [M]; ring

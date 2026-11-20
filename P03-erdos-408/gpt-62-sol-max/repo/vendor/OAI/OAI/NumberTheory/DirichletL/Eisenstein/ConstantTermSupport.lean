@@ -9,74 +9,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 open MeasureTheory Set Filter
-open scoped BigOperators Classical
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid
@@ -98,7 +39,6 @@ lemma multiset_cube_remainder {α : Type*} [DecidableEq α] (s : Multiset α) (p
     exact (Nat.mul_div_cancel' (hdiv q hq)).symm
 
 lemma residue_lambda_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
   exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
 
 lemma constant_coefficient_unramified_count [NormalizationMonoid O]
@@ -106,18 +46,18 @@ lemma constant_coefficient_unramified_count [NormalizationMonoid O]
     (q : O) (hq : q ≠ normalize lambda) : 3 ∣ (normalizedFactors c).count q := by
   by_cases hmem : q ∈ normalizedFactors c
   · have hprime := prime_of_normalized_factor q hmem
-    let P : Ideal O := Ideal.span {q}
+    let P  := Ideal.span {q}
     let : P.IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hprime.irreducible
     have hg : lambda ∉ P := by
       intro hl
-      have ha : Associated q lambda :=
+      have ha  :=
         hprime.associated_of_dvd residue_lambda_prime (Ideal.mem_span_singleton.mp hl)
       apply hq
       exact (normalize_normalized_factor q hmem).symm.trans
         (normalize_eq_normalize_iff_associated.mpr ha)
     obtain ⟨p,hP,hprimary,-⟩ := cubicJacobi_exists_primary_generator P hg
-    have hqp : Associated q p := Ideal.span_singleton_eq_span_singleton.mp hP
-    have hp : Prime p := hqp.prime_iff.mp hprime
+    have hqp  := Ideal.span_singleton_eq_span_singleton.mp hP
+    have hp  := hqp.prime_iff.mp hprime
     obtain ⟨b,hfactor,hpb⟩ := (FiniteMultiplicity.of_prime_left hp hc).exists_eq_pow_mul_and_not_dvd
     have hd := constant_coefficient_primary_prime_exponent c p b (multiplicity p c)
       hc hlevel hp hprimary hpb hfactor hA
@@ -125,8 +65,7 @@ lemma constant_coefficient_unramified_count [NormalizationMonoid O]
     rw [normalize_normalized_factor q hmem] at hcount
     rw [← hcount,← multiplicity_eq_of_associated_left hqp]
     exact hd
-  · rw [Multiset.count_eq_zero.mpr hmem]
-    exact dvd_zero _
+  simp_all
 
 theorem constant_coefficient_cube_reduction (c : O) (hc : c ≠ 0)
     (hlevel : (3:O) ∣ c) (hA : arithmeticResidueSum 0 c ≠ 0) :
@@ -159,12 +98,12 @@ lemma constant_coefficient_ramified_equation (c : O) (hc : c ≠ 0) (hlevel : (3
     (hfactor : c=(u:O)*lambda^r*a^3) (A B : ℤ) :
     symbol (u:O) (primaryCoord A B)*(cubicExp A)^r=1 := by
   let t0 := primaryCoord A B
-  have ht0 : lambda^2 ∣ t0-1 := primaryCoord_primary A B
+  have ht0  := primaryCoord_primary A B
   obtain ⟨w,hw⟩ := exists_coprime_three_shift t0 3 a ht0 (primary_coprime_three t0 ht0) ha
   let t := t0+3*w*3
-  have ht : lambda^2 ∣ t-1 := primary_add_multiple_three t0 3 w ht0
+  have ht  := primary_add_multiple_three t0 3 w ht0
   have h9 : (9:O) ∣ t-t0 := ⟨w,by dsimp [t]; ring⟩
-  have hat : IsCoprime a t := hw.symm
+  have hat  := hw.symm
   have hlt : IsCoprime lambda t :=
     coprime_of_dvd_sub_one lambda t ((show lambda ∣ lambda^2 from ⟨lambda,by ring⟩).trans ht)
   have hct : IsCoprime c t := by
@@ -192,7 +131,7 @@ lemma unit_eq_sign_of_symbol_class (u : Oˣ)
     IsCyclotomicExtension.Rat.Three.Units.mem ζ u
   have hω : symbol omega (primaryCoord 0 1)=omega^2 := by
     rw [symbol_omega_eq_linearRay _ (primaryCoord_primary 0 1),linearRay_primaryCoord]
-    norm_num [cubicExp]
+    rfl
   have hω2 : symbol (omega^2) (primaryCoord 0 1)=omega^4 := by
     rw [symbol_pow_numerator omega _ (primaryCoord_primary 0 1) 2,hω,← pow_mul]
   have hn2 : omega^2 ≠ 1 := (omega_primitive.pow_eq_one_iff_dvd 2).not.mpr (by decide)
@@ -201,10 +140,10 @@ lemma unit_eq_sign_of_symbol_class (u : Oˣ)
   rcases hlist with h | h | h | h | h | h
   · exact Or.inl (by rw [h,Units.val_one])
   · exact Or.inr (by rw [h,Units.val_neg,Units.val_one])
-  · exact False.elim (hn2 (by simpa only [h,hη,hω] using hu))
+  · simp_all
   · exact False.elim (hn2 (by simpa only [h,Units.val_neg,hη,
       (symbol_neg_numerator _ _ (primaryCoord_primary 0 1)),hω] using hu))
-  · exact False.elim (hn4 (by simpa only [h,Units.val_pow_eq_pow_val,hη,hω2] using hu))
+  · simp_all
   · exact False.elim (hn4 (by simpa only [h,Units.val_neg,Units.val_pow_eq_pow_val,hη,
       (symbol_neg_numerator _ _ (primaryCoord_primary 0 1)),hω2] using hu))
 
@@ -213,8 +152,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
   obtain ⟨u,r,a,hr,hfactor⟩ := constant_coefficient_cube_reduction c hc hlevel hA
   have ha : a ≠ 0 := by
     intro hz
-    rw [hz,zero_pow (by decide : (3:ℕ) ≠ 0),mul_zero] at hfactor
-    exact hc hfactor
+    simp_all
   have h01 := constant_coefficient_ramified_equation c hc hlevel hA u r a ha hfactor 0 1
   have husign := unit_eq_sign_of_symbol_class u (by
     simpa only [cubicExp_zero,one_pow,mul_one] using h01)
@@ -225,7 +163,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
         cubicExp,Int.reduceMod,Int.toNat_one,pow_one] using h10
     · simpa only [hu,symbol_neg_one _ (primaryCoord_primary 1 0),one_mul,
         cubicExp,Int.reduceMod,Int.toNat_one,pow_one] using h10
-  have hdiv : 3 ∣ r := (omega_primitive.pow_eq_one_iff_dvd r).mp hωr
+  have hdiv  := (omega_primitive.pow_eq_one_iff_dvd r).mp hωr
   have hr0 : r=0 := by omega
   rw [hr0,pow_zero,mul_one] at hfactor
   rcases husign with hu | hu
@@ -249,7 +187,6 @@ theorem arithmeticResidueSum_ne_zero_iff_cube (c : O) (hc : c ≠ 0) (hlevel : (
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -264,8 +201,7 @@ theorem idealSupport_singleton_univ (D : Ideal O) :
   intro P
   apply (mem_idealSupport_iff {D} D P).mpr
   obtain ⟨I, hI, hP⟩ := mem_primePool_iff.mp P.property
-  have hID : I = D := Finset.mem_singleton.mp hI
-  simpa only [hID] using hP
+  simp_all
 
 theorem singleton_rowCoprimeMask_eq_idealZeroMask (D : Ideal O) (z : O) :
     rowCoprimeMask (fun P : primePool {D} => P.val) Finset.univ z = idealZeroMask D z := by
@@ -274,20 +210,17 @@ theorem singleton_rowCoprimeMask_eq_idealZeroMask (D : Ideal O) (z : O) :
     constructor
     · rintro ⟨P, _, hz⟩
       obtain ⟨I, hI, hP⟩ := mem_primePool_iff.mp P.property
-      have hID : I = D := Finset.mem_singleton.mp hI
+      have hID  := Finset.mem_singleton.mp hI
       exact ⟨P.val, hID ▸ hP, hz⟩
     · rintro ⟨P, hP, hz⟩
-      have hp : P ∈ primePool {D} := mem_primePool_iff.mpr ⟨D, Finset.mem_singleton_self D, hP⟩
-      exact ⟨⟨P, hp⟩, Finset.mem_univ _, hz⟩
+      exact ⟨⟨P, (mem_primePool_iff.mpr ⟨D, Finset.mem_singleton_self D, hP⟩)⟩, Finset.mem_univ _, hz⟩
   simp only [rowCoprimeMask, idealZeroMask, he]
 
 theorem canonical_quadraticRow_star (D : Ideal O) (hD : Admissible D) (z : O) :
     star (quadraticRow D z) = quadraticRow D z := by
   let F : Finset (Ideal O) := {D}
   have hF : ∀ I ∈ F, Admissible I := by
-    intro I hI
-    have hID := Finset.mem_singleton.mp hI
-    simpa only [hID] using hD
+    aesop
   rw [quadraticRow_eq_pool F hF D (Finset.mem_singleton_self D)]
   exact QuadraticInitialBound.quadraticRow_star _ _ _ _
 
@@ -295,9 +228,7 @@ theorem canonical_quadraticRow_squared (D : Ideal O) (hD : Admissible D) (z : O)
     quadraticRow D z * quadraticRow D z = idealZeroMask D z := by
   let F : Finset (Ideal O) := {D}
   have hF : ∀ I ∈ F, Admissible I := by
-    intro I hI
-    have hID := Finset.mem_singleton.mp hI
-    simpa only [hID] using hD
+    aesop
   rw [quadraticRow_eq_pool F hF D (Finset.mem_singleton_self D)]
   rw [← QuadraticSquarefreeKernel.quadraticRow_mul _ _ _ z z, ← pow_two,
     QuadraticSquarefreeKernel.quadraticRow_square, idealSupport_singleton_univ]
@@ -346,8 +277,8 @@ theorem gcdMaskPrimes_mask (D : Ideal O) (z : O) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge
+open ActualEisensteinCoordinates EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance
 
 theorem canonical_same_ray_pair_poisson
     {α : Type*} [DecidableEq α]
@@ -378,7 +309,7 @@ theorem canonical_same_ray_pair_poisson
   let A := idealSupport F I
   let B := idealSupport F J
   let : ∀ i : primePool F, (Ideal.span {p i}).IsMaximal :=
-    fun i => by change (Ideal.span {poolPrimary F i}).IsMaximal; rw [poolPrimary_span F hF i]; infer_instance
+    poolPrimary_maximal F hF
   have hd : Disjoint A B := idealSupport_disjoint_of_coprime F I J hcop
   have hpgI : primaryGenerator I = ∏ i ∈ A, p i := primaryGenerator_eq_poolProduct F hF I hIF
   have hpgJ : primaryGenerator J = ∏ i ∈ B, p i := primaryGenerator_eq_poolProduct F hF J hJF
@@ -398,8 +329,7 @@ theorem canonical_same_ray_pair_poisson
     A B hd hr W M hM
   simpa only [hn, hrowI, hrowJ] using ht
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance PrimaryIdealUnitReindex
+open PrimaryIdealUnitReindex
 
 theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (u : Oˣ) (z : O) :
@@ -407,18 +337,14 @@ theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : 
       quadraticRow I z * quadraticRow J z := by
   let F : Finset (Ideal O) := {I, J}
   have hF : ∀ lengthScale ∈ F, Admissible lengthScale := by
-    intro lengthScale hL
-    rcases Finset.mem_insert.mp hL with rfl | hL
-    · exact hI
-    · have hLJ := Finset.mem_singleton.mp hL
-      simpa only [hLJ] using hJ
+    aesop
   have hIF : I ∈ F := by simp [F]
   have hJF : J ∈ F := by simp [F]
   let p := poolPrimary F
   let A := idealSupport F I
   let B := idealSupport F J
   let : ∀ i : primePool F, (Ideal.span {p i}).IsMaximal :=
-    fun i => by change (Ideal.span {poolPrimary F i}).IsMaximal; rw [poolPrimary_span F hF i]; infer_instance
+    poolPrimary_maximal F hF
   have hcA : Pairwise (Function.onFun IsCoprime (fun i : A => Ideal.span {p i.val})) :=
     fun i j hij => poolPrimary_coprime F hF (fun h => hij (Subtype.ext h))
   have hcB : Pairwise (Function.onFun IsCoprime (fun i : B => Ideal.span {p i.val})) :=
@@ -440,7 +366,11 @@ theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : 
     (quadraticRow_eq_primarySubset F hF J hJF w).symm
   simpa only [hrowI, hrowJ] using h
 
-theorem canonical_masked_pair_summable {α : Type*} (R : α → Ideal O) (S : Finset α)
+section
+
+variable {α : Type*} (R : α → Ideal O)
+
+theorem canonical_masked_pair_summable (S : Finset α)
     (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     Summable (fun z : O => rowCoprimeMask R S z *
       (quadraticRow I z * quadraticRow J z) * W (‖eisEmbedding z‖ ^ 2 / M)) := by
@@ -459,8 +389,7 @@ theorem canonical_masked_pair_summable {α : Type*} (R : α → Ideal O) (S : Fi
       · exact quadraticRow_norm_le_one J z
     _ = _ := by ring
 
-theorem canonical_pair_lattice_eq_primary_ideal_sum
-    {α : Type*} (R : α → Ideal O) (S : Finset α)
+theorem canonical_pair_lattice_eq_primary_ideal_sum (S : Finset α)
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     (∑' z : O, if lambda ∣ z then 0 else rowCoprimeMask R S z *
@@ -484,8 +413,7 @@ theorem canonical_pair_lattice_eq_primary_ideal_sum
   have hn (lengthScale : GoodIdeal) := primaryGenerator_norm_sq lengthScale.val lengthScale.property
   simpa only [hn] using ht
 
-theorem canonical_mask_lattice_eq_six_all_ideals
-    {α : Type*} (R : α → Ideal O) (S : Finset α)
+theorem canonical_mask_lattice_eq_six_all_ideals (S : Finset α)
     (hmask : ∀ z : O, lambda ∣ z → rowCoprimeMask R S z = 0)
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
@@ -522,10 +450,12 @@ theorem canonical_mask_lattice_eq_six_all_ideals
   by_cases hg : primaryGenerator lengthScale ≠ 0
   · exact Set.indicator_of_mem hg f
   · rw [Set.indicator_of_notMem hg]
-    have hz : primaryGenerator lengthScale = 0 := not_not.mp hg
+    have hz  := not_not.mp hg
     dsimp only [f]
     rw [hz, hmask 0 (dvd_zero _)]
     simp only [zero_mul]
+
+end
 
 end
 
@@ -544,19 +474,22 @@ theorem badPrime_injective : Function.Injective badPrime := by
     apply hgood
     have he : (Ideal.span {lambda} : Ideal O) = Ideal.span {(2 : O)} := hij
     rw [← he]
-    exact Ideal.subset_span (by simp)
+    simp
   · exfalso
     apply hgood
     have he : (Ideal.span {(2 : O)} : Ideal O) = Ideal.span {lambda} := hij
-    rw [he]
-    exact Ideal.subset_span (by simp)
+    simp_all
   · rfl
 
-theorem supported_primaryGenerator_ne_zero (lengthScale : Ideal O) (hL : Supported lengthScale) :
+section
+
+variable (lengthScale : Ideal O)
+
+theorem supported_primaryGenerator_ne_zero (hL : Supported lengthScale) :
     primaryGenerator lengthScale ≠ 0 :=
   primaryGenerator_ne_zero_of_good_factors lengthScale hL.1 (fun P hP => (hL.2 P hP).1)
 
-theorem supported_span_primaryGenerator_iff (lengthScale : Ideal O) :
+theorem supported_span_primaryGenerator_iff :
     Supported (Ideal.span {primaryGenerator lengthScale}) ↔ Supported lengthScale := by
   constructor
   · intro h
@@ -569,9 +502,11 @@ theorem supported_span_primaryGenerator_iff (lengthScale : Ideal O) :
     rw [(primaryGenerator_spec lengthScale (supported_primaryGenerator_ne_zero lengthScale h)).1]
     exact h
 
-theorem badPrime_mask_primaryGenerator (lengthScale : Ideal O) :
+theorem badPrime_mask_primaryGenerator :
     rowCoprimeMask badPrime Finset.univ (primaryGenerator lengthScale) = if Supported lengthScale then 1 else 0 := by
   rw [badPrime_mask, supported_span_primaryGenerator_iff]
+
+end
 
 end CanonicalQuadraticSieve
 

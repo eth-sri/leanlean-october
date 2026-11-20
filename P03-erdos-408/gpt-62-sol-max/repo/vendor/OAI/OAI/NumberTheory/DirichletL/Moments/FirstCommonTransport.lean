@@ -11,9 +11,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstCommonTransport
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
-open CenteredMomentFirstSectorEnergy CompletedGauss
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCanonicalFirst
+open CenteredMomentCompleteCommon CenteredMomentActive CenteredMomentFirstSectorEnergy CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem extracted_support (I J:Ideal O):

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.FirstPriorityParents
 public import OAI.NumberTheory.DirichletL.Descent.SecondFullSource
 
@@ -16,7 +17,7 @@ open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 def quotientSupport (y : SecondParentSource ι Jo) : Finset ι :=
   Function.extend (sourceIdeal p) id (fun _=>∅) y.quotient
@@ -36,7 +37,7 @@ def residualLists (negative : Bool) (lists : σ→Finset ι)
   lists i \ (((if negative then y.cube.rightDivisor else y.cube.leftDivisor)∪y.firstCommon)∪
     quotientSupport p y)
 
-omit [DecidableEq σ] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq σ] [OAI.PrincipalFamily.Maximal p] in
 theorem residualLists_disjoint (negative : Bool) (lists : σ→Finset ι)
     (y : SecondParentSource ι Jo) (i : σ) :
     Disjoint (residualLists p negative lists y i) (quotientSupport p y) := by
@@ -51,7 +52,7 @@ def retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo)
   attachedSecondFamily parents (fun y=>secondDyadicSector pool (secondVariableCutoff p y (R y))
     residual (label y) j)
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem mem_retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
     (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ)
@@ -62,8 +63,8 @@ theorem mem_retainedPool (pool : Finset ι) (parents : Finset (SecondParentSourc
         (label (secondParentOf x)) j := mem_attachedSecondFamily _ _ _
 
 variable (hp : ∀ i,p i≠0)
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
@@ -141,7 +142,7 @@ theorem parentPoisson_full [Fintype κ]
     secondSourceTail p hp hg hinj pool Ψ₀ (secondParentPuncture p m y)
       (secondParentLabel p y) (secondParentDivisor p y) H rowMajorant Y K) hsum)
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 
 theorem retained_sum
     (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))

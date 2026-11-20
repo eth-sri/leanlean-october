@@ -9,17 +9,17 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentComparisonReflection
-open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT
-open EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
+open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge GaussGeneratorTransport
 local notation "O" => HeckeFamily.O
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma residue_nontrivial (c : O) (χ : MulChar (O⧸Ideal.span {c}) ℂ) (hχ : χ≠1) :
     Nontrivial (O⧸Ideal.span {c}) := by
   by_contra h
-  have : Subsingleton (O⧸Ideal.span {c}) := not_nontrivial_iff_subsingleton.mp h
+  have  := not_nontrivial_iff_subsingleton.mp h
   apply hχ
   ext x
   have hx : x=1 := Subsingleton.elim _ _
@@ -58,7 +58,7 @@ lemma bounded_radial_summable (η : Character) (W : ℝ→ℂ) (X : ℝ)
   intro z
   rw [norm_mul]
   apply mul_le_of_le_one_left (norm_nonneg _)
-  let : Finite (O⧸η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
+  let  := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Fintype (O⧸η.modulus) := Fintype.ofFinite _
   exact FiniteRayExpansion.norm_char_le_one η.residue _
 
@@ -72,8 +72,8 @@ theorem primitive_plain_reflection (c : O) [NeZero c]
       ∑' I : NI,idealCoeff (character c χ⁻¹ (inverse_unit_trivial c χ hu)) I.val*
         paperRadialFourier W ((I.val.absNorm:ℝ)/(‖eisEmbedding c‖^2/X)) := by
   have hc : 0<‖eisEmbedding c‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hQ : 0<‖eisEmbedding c‖^2 := sq_pos_of_pos hc
-  have hχi : χ⁻¹≠1 := inv_ne_one.mpr hχ
+  have hQ  := sq_pos_of_pos hc
+  have hχi  := inv_ne_one.mpr hχ
   have hs : Summable (fun z : O => ‖W (‖eisEmbedding z‖^2/X)‖) := by
     simpa only [scaledRadialTest_apply] using actual_eisenstein_summable_norm (scaledRadialTest W X hX)
   have hd : Summable (fun z : O => ‖paperRadialFourier W
@@ -124,13 +124,13 @@ theorem primitive_normalized_reflection (c : O) [NeZero c]
         HeckeDyadic.polynomial (character c χ⁻¹ (inverse_unit_trivial c χ hu)) false
           (paperRadialFourier W) (‖eisEmbedding c‖^2/X) 0 0 := by
   have hc : 0<‖eisEmbedding c‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hY : 0<‖eisEmbedding c‖^2/X := div_pos (sq_pos_of_pos hc) hX
+  have hY  := div_pos (sq_pos_of_pos hc) hX
   rw [polynomial_plain _ _ _ hX,primitive_plain_reflection c χ hu hp hχ W X hX,
     polynomial_plain _ _ _ hY]
   have hs : Real.sqrt (‖eisEmbedding c‖^2/X)=‖eisEmbedding c‖/Real.sqrt X := by
     rw [Real.sqrt_div (sq_nonneg _),Real.sqrt_sq hc.le]
-  have hx : (Real.sqrt X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hX).ne'
-  have hcn : (‖eisEmbedding c‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hc.ne'
+  have hx  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hX).ne'
+  have hcn  := Complex.ofReal_ne_zero.mpr hc.ne'
   have hsq : (Real.sqrt X:ℂ)^2=(X:ℂ) := by exact_mod_cast Real.sq_sqrt hX.le
   have hfac : (Real.sqrt X:ℂ)⁻¹*((X:ℂ)*TraceCharacter.normalizedGauss c χ/(‖eisEmbedding c‖:ℂ))=
       TraceCharacter.normalizedGauss c χ*(Real.sqrt (‖eisEmbedding c‖^2/X):ℂ)⁻¹ := by

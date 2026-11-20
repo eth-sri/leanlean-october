@@ -1,9 +1,11 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.PairPoisson
 
 @[expose] public section
+
 
 namespace OAI
 
@@ -22,7 +24,7 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
         (rows : m → O) (cols : n → Ideal O)
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
-        (_hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+        (_hcols : OAI.IdealFamilyUpTo Admissible cols N)
         (a b : n → ℂ) (E : ℝ) (_hE : 0 ≤ E)
         (_ha : (∑ j, ‖a j‖ ^ 2) ≤ E) (_hb : (∑ j, ‖b j‖ ^ 2) ≤ E)
         (x : m → ℝ) (y : n → ℝ) (_hx : ∀ i, |x i| ≤ Lr) (_hy : ∀ j, |y j| ≤ Lc),
@@ -44,12 +46,12 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
   have hfac : 0 ≤ elementSieveNorm M N * (IdealCoprimeSieveOperator.supportConstant ε hε * N ^ ε) :=
     mul_nonneg (elementSieveNorm_nonneg _ _)
       (mul_nonneg (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le (Real.rpow_nonneg hN _))
-  have hH : 0 ≤ H := mul_nonneg hfac hE
+  have hH  := mul_nonneg hfac hE
   have hyy (p : n × n) : |y p.1 + y p.2| ≤ 2 * Lc :=
     (abs_add_le _ _).trans (by linarith [hy p.1, hy p.2])
   have hphase (t : ℝ) : (∑ i, ‖∑ p : n × n, c i p * logPhase t (y p.1 + y p.2)‖) ≤ H := by
-    let aTwist : n → ℂ := fun j => a j * star (logPhase t (y j))
-    let bTwist : n → ℂ := fun j => b j * logPhase t (y j)
+    let aTwist  := fun j => a j * star (logPhase t (y j))
+    let bTwist  := fun j => b j * logPhase t (y j)
     have ha' : (∑ j, ‖aTwist j‖ ^ 2) ≤ E := by simpa only [aTwist, norm_mul, norm_star, logPhase_norm, mul_one] using ha
     have hb' : (∑ j, ‖bTwist j‖ ^ 2) ≤ E := by simpa only [bTwist, norm_mul, logPhase_norm, mul_one] using hb
     have he (i : m) : (∑ p : n × n, c i p * logPhase t (y p.1 + y p.2)) =
@@ -66,7 +68,7 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
       · rw [logPhase_add]
         simp only [star_mul, star_star]
         ring
-      · simp only [zero_mul]
+      simp
     simp_rw [he]
     have hbil := element_coprime_bilinear_bound ε hε M N hN rows cols hr hc hrows hcols aTwist bTwist
     apply (sq_le_sq₀ (by positivity) hH).mp

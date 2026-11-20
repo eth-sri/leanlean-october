@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityMass
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityParentBounds
 
@@ -16,7 +17,7 @@ open InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriori
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 def globalPriorityZeroAggregate
-    (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→O)[OAI.PrincipalFamily.Maximal p](hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (V:𝓢(ℝ,ℂ))(X Y:ℝ)(R:Finset ι→Finset ι→ℝ):ℝ:=
@@ -29,10 +30,10 @@ def globalPriorityZeroAggregate
 theorem global_priority_zero_aggregate (ε:ℝ)(hε:0<ε):
     ∃(s:Finset (ℕ×ℕ))(Czero:ℝ),0<Czero ∧
     ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (_hcop:OAI.PrincipalFamily.Coprime p)
       {Jo:ℕ}(extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
       (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀k∈lists i,‖a i k‖≤1)→(∀u,‖Ψ u‖≤1)→

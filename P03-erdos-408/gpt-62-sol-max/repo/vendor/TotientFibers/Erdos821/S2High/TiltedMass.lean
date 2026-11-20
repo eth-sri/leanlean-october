@@ -27,7 +27,6 @@ lemma reciprocalTilt_sum_eq_one (P : PrimeGroups) (g : P.BigGroup)
         ∑ p : P.Prime g.val, (P.V g.val)⁻¹ * (p.val : ℝ)⁻¹ := by
       apply Finset.sum_congr rfl
       intro p hp
-      rw [mul_inv_rev]
       ring
     _ = (P.V g.val)⁻¹ * ∑ p : P.Prime g.val, (p.val : ℝ)⁻¹ := by
       rw [← Finset.mul_sum]
@@ -38,7 +37,6 @@ theorem tiltedMu_factor (F : FixedData) (P : PrimeGroups) (n : ℕ)
     tiltedMu F P n g.val p =
       (P.V g.val * (p.val : ℝ))⁻¹ * (baselinePrime F n p.val)⁻¹ := by
   unfold tiltedMu
-  rw [mul_inv_rev]
   ring
 
 theorem tiltedMu_atom_bound (F : FixedData) (P : PrimeGroups) (n : ℕ)
@@ -46,10 +44,9 @@ theorem tiltedMu_atom_bound (F : FixedData) (P : PrimeGroups) (n : ℕ)
     (hV : F.vMin ≤ P.V g.val) (hp : Pstar ≤ (p.val : ℝ))
     (hPstarPos : 0 < Pstar) (hbase : 1 / 2 ≤ baselinePrime F n p.val) :
     tiltedMu F P n g.val p ≤ 2 / (F.vMin * Pstar) := by
-  have hVpos : 0 < P.V g.val := lt_of_lt_of_le F.vMin_pos hV
+  have hVpos  := lt_of_lt_of_le F.vMin_pos hV
   have hpPos : 0 < (p.val : ℝ) := by
     exact_mod_cast (P.prime g.val p.val p.property).pos
-  have hbasePos : 0 < baselinePrime F n p.val := by linarith
   have hden : F.vMin * Pstar * (1 / 2) ≤
       P.V g.val * (p.val : ℝ) * baselinePrime F n p.val := by
     calc
@@ -82,8 +79,8 @@ theorem tiltedMu_group_mass_bounds (F : FixedData) (P : PrimeGroups) (x : ℝ)
       (∑ p : P.Prime g.val, tiltedMu F P n g.val p) ≤ 2 := by
   have hAdm := hP
   rcases hP with ⟨_, _, _, _, hV, hPrime⟩
-  have hVmin : F.vMin ≤ P.V g.val := (hV g.val).1
-  have hVpos : 0 < P.V g.val := lt_of_lt_of_le F.vMin_pos hVmin
+  have hVmin  := (hV g.val).1
+  have hVpos  := lt_of_lt_of_le F.vMin_pos hVmin
   have hBase (p : P.Prime g.val) := baselinePrime_bounds_of_cutoff F P x n hAdm hcut g p
   have hPstar (p : P.Prime g.val) :
       Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := by
@@ -98,13 +95,11 @@ theorem tiltedMu_group_mass_bounds (F : FixedData) (P : PrimeGroups) (x : ℝ)
       (inv_pos.mpr (lt_of_lt_of_le (by norm_num : 0 < (1 / 2 : ℝ)) (hBase p).1))
   have hAtom (p : P.Prime g.val) := tiltedMu_atom_bound F P n g p
     (Real.exp ((L x) ^ F.c)) hVmin (hPstar p) (Real.exp_pos _) (hBase p).1
-  have hfactor (p : P.Prime g.val) :
-      tiltedMu F P n g.val p =
-        (P.V g.val * (p.val : ℝ))⁻¹ * (baselinePrime F n p.val)⁻¹ :=
+  have hfactor (p : P.Prime g.val)  :=
     tiltedMu_factor F P n g p
   have hInvLower (p : P.Prime g.val) :
       1 ≤ (baselinePrime F n p.val)⁻¹ := by
-    have hbasePos : 0 < baselinePrime F n p.val :=
+    have hbasePos  :=
       lt_of_lt_of_le (by norm_num : 0 < (1 / 2 : ℝ)) (hBase p).1
     simpa using one_div_le_one_div_of_le hbasePos (hBase p).2
   have hInvUpper (p : P.Prime g.val) :

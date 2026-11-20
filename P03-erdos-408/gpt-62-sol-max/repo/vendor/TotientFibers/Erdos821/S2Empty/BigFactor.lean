@@ -77,7 +77,7 @@ theorem big_label_product_le_two (P : PrimeGroups) (M : ℕ) (e : ℝ)
   have hKe : (K : ℝ) * e ≤ 1 / 2 := by
     dsimp [K]
     rw [Nat.cast_mul]
-    nlinarith [hbudget]
+    assumption
   have hbern := one_sub_pow_lower (by linarith [he1] : e ≤ 1) K
   have hden : 1 / 2 ≤ (1 - e) ^ K := by nlinarith [hbern, hKe]
   have hdenpos : 0 < (1 - e) ^ K := by linarith

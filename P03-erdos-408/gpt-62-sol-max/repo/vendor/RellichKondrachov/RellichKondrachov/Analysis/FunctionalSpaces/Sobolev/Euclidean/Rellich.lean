@@ -50,7 +50,7 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
+open scoped ENNReal MeasureTheory
 open MeasureTheory Set
 
 noncomputable section
@@ -63,12 +63,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceRellich : MeasurableSpace E := borel E
 local instance instBorelSpaceRellich : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceRellich : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddRellich : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegRellich : MeasurableNeg E := by
-  infer_instance
 local instance instFactOneLeTwoSobolevEuclideanRellich : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
 
 /-! ### Supported `H¹` subspace -/
@@ -99,7 +93,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
   classical
   have hr : (0 : ℝ) < 1 := by norm_num
   let H1vol : Type _ := ↥(h1 (μ := (volume : Measure E)) (E := E))
-  let T : ↥(h1On (E := E) K hKm) →L[ℝ] (E →₂[(volume : Measure E)] ℝ) :=
+  let T :=
     h1OnToL2 (E := E) K hKm
   let A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ((volume : Measure E).restrict K)) :=
     {u |
@@ -168,8 +162,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
           ‖h1ToL2Grad (μ := (volume : Measure E)) (E := E) (x : H1vol)‖ ≤ ‖(x : H1vol)‖ := by
         let V : Type _ := (E →₂[(volume : Measure E)] ℝ) × (E →₂[(volume : Measure E)] E)
         simpa [h1ToL2Grad, V] using (norm_snd_le (x := ((x : H1vol) : V)))
-      have hgrad_le_one :
-          ‖h1ToL2Grad (μ := (volume : Measure E)) (E := E) (x : H1vol)‖ ≤ (1 : ℝ) :=
+      have hgrad_le_one :=
         hgrad_le.trans hxH1
       have htr :=
         norm_translateL2_sub_h1ToL2_le (μ := (volume : Measure E)) (E := E) (-t) (x : H1vol)
@@ -189,13 +182,13 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         refine (mul_le_mul_of_nonneg_right ht' (norm_nonneg _)).trans ?_
         refine mul_le_mul_of_nonneg_left hgrad_le_one (by linarith)
       simpa [mul_one] using this
-    have hη : 0 ≤ ε / 2 := le_of_lt hδ
+    have hη  := le_of_lt hδ
     have hbound :=
       L2Compactness.integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
         (E := E) (ψ := ψ) hψc hψcs hψ0 hψint (deltaLoss := ε / 2) (η := ε / 2) hη hψsupp (T x) hmod
     simpa [hxEq] using hbound
   have hcomp : IsCompact (closure (T '' Metric.closedBall (0 : ↥(h1On (E := E) K hKm)) 1)) := by
-    have hR : 0 ≤ C := hCnonneg
+    have hR  := hCnonneg
     have hA_eq :
         T '' Metric.closedBall (0 : ↥(h1On (E := E) K hKm)) 1 =
           L2Compactness.extendByZeroL2 (E := E) (K := K) hKm '' A := by
@@ -212,18 +205,8 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
           -- Unfold membership in the defining `comap` without
           -- letting `simp` use `x.property`
           -- (which would rewrite the goal to `True`).
-          have hxmem :
-              (x : H1vol) ∈ h1On (E := E) K hKm := x.property
-          dsimp [h1On] at hxmem
-          change
-              ((h1ToL2 (μ := (volume : Measure E)) (E := E)).toLinearMap
-                    (x : H1vol)) ∈
-                LinearMap.range
-                  ((MeasureTheory.Lp.extendByZeroₗᵢ
-                        (μ := (volume : Measure E)) (E := ℝ)
-                        (p := (2 : ℝ≥0∞))
-                        (s := K) hKm).toLinearMap)
-          exact hxmem
+          have hxmem  := x.property
+          assumption
         rcases hxRange with ⟨u, hu⟩
         have hu0 :
             (MeasureTheory.Lp.extendByZeroₗᵢ
@@ -233,13 +216,12 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         have hTx : T x = L2Compactness.extendByZeroL2 (E := E) (K := K) hKm u := by
           calc
             T x = h1ToL2 (μ := (volume : Measure E)) (E := E) (x : H1vol) := by
-                  simp [T, h1OnToL2]
+                  rfl
             _ = (MeasureTheory.Lp.extendByZeroₗᵢ
                   (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞)) (s := K) hKm) u := by
                   simpa using hu0.symm
             _ = L2Compactness.extendByZeroL2 (E := E) (K := K) hKm u := by
-                  simpa using
-                    (L2Compactness.extendByZeroL2_eq_extendByZeroₗᵢ (E := E) (K := K) hKm u).symm
+                  rfl
         refine ⟨u, ?_, hTx.symm⟩
         exact ⟨x, hx, hTx⟩
       · intro hy

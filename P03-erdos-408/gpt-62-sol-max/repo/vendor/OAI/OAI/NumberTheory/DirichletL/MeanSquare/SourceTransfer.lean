@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.CubeBlocks
 
 @[expose] public section
@@ -9,96 +10,24 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace InitialMeanSquare
 
-section
-open ActualEisensteinCubic SecondPassArithmetic
-open FirstPassCubeLabels (primeProductNorm columnLog)
-open ConcreteTraceCRT (eisEmbedding)
-open SecondPassIntegration (elementNorm)
-
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end
-
-end
 
 open ActualEisensteinCubic SecondPassArithmetic IdealMobiusDivisorSum
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→O) [OAI.PrincipalFamily.Maximal p]
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 def sourceObservation (x : SecondExpansionData ι) : O×O :=
@@ -113,7 +42,6 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory LineDeriv
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv
 
 abbrev EuclideanL2 := Lp ℂ 2 (volume : Measure EuclideanSpatial)
 abbrev EuclideanGradientL2 := PiLp 2 (fun _ : Fin 3 => EuclideanL2)
@@ -165,7 +93,7 @@ lemma schwartz_mem_euclideanWeakGradientGraph (f : 𝓢(EuclideanSpatial,ℂ)) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv
+open scoped LineDeriv
 
 abbrev EuclideanH1Ambient := WithLp 2 (EuclideanL2 × EuclideanGradientL2)
 
@@ -173,9 +101,7 @@ def euclideanH1Submodule : Submodule ℂ EuclideanH1Ambient :=
   euclideanWeakGradientGraph.comap (WithLp.linearEquiv 2 ℂ (EuclideanL2 × EuclideanGradientL2)).toLinearMap
 
 lemma euclideanH1Submodule_isClosed : IsClosed (euclideanH1Submodule : Set EuclideanH1Ambient) := by
-  have hg : IsClosed (euclideanWeakGradientGraph : Set (EuclideanL2 × EuclideanGradientL2)) :=
-    euclideanGradientEquations.isClosed_ker
-  exact hg.preimage (WithLp.prodContinuousLinearEquiv 2 ℂ EuclideanL2 EuclideanGradientL2).continuous
+  exact euclideanGradientEquations.isClosed_ker.preimage (WithLp.prodContinuousLinearEquiv 2 ℂ EuclideanL2 EuclideanGradientL2).continuous
 
 abbrev EuclideanH1 := euclideanH1Submodule
 
@@ -211,10 +137,9 @@ lemma euclideanH1_norm_sq (u : EuclideanH1) :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace InitialMeanSquare
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CompletedGauss FirstCauchyArithmetic ShortDraftHeckeBridge
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CompletedGauss
+open FirstCauchyArithmetic ShortDraftHeckeBridge
 
 def normCharacter {q : ℕ} (χ : DirichletCharacter ℂ q) : O→*ℂ where
   toFun a := χ (Ideal.absNorm (Ideal.span {a}))
@@ -227,10 +152,8 @@ lemma pool_support_product (F : Finset (Ideal O)) (S : Finset (primePool F)) :
     idealSupport F (∏i∈S,i.val)=S := by
   have hp (i : primePool F) : Prime i.val :=
     Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
-  have hn : (∏i∈S,i.val)≠(0:Ideal O) :=
-    Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
   ext i
-  rw [mem_idealSupport_iff,UniqueFactorizationMonoid.mem_normalizedFactors_iff hn]
+  rw [mem_idealSupport_iff,UniqueFactorizationMonoid.mem_normalizedFactors_iff (Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero))]
   simp only [family_prime_dvd_product_iff _ Subtype.val_injective S i,hp,true_and]
 
 theorem sum_selected_ideals (F : Finset (Ideal O)) (hF : ∀I∈F,Squarefree I)
@@ -257,16 +180,14 @@ def selectedIdealTest (F : Finset (Ideal O)) (W : ℕ→ℂ) (S : Finset (primeP
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
 namespace InitialMeanSquare
 open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def sourceChildEnergy (F : Finset ι) (Ψ : O→*ℂ) (m : O) (T : Finset (O×O))
     (V : ℝ→ℂ) (X : ℝ) (testNegative rowNegative : Bool) (a b : ℝ) : ℝ :=

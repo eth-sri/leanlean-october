@@ -68,17 +68,17 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
     ∃ K : ℝ, 0≤K ∧ ∀ᶠ U : ℝ in atTop, ∀ p : ℝ, 0≤p → p≤P →
       (1+2*Real.log (b*(A*U^p)))*Real.log (A*U^p)≤K*U^η := by
   let K := (1+2*Real.log (b*A)+2*P)*(Real.log A+P)
-  have hLA : 0≤Real.log A := Real.log_nonneg hA
-  have hLB : 0≤Real.log (b*A) := Real.log_nonneg hbA
+  have hLA  := Real.log_nonneg hA
+  have hLB  := Real.log_nonneg hbA
   have hK : 0≤K := mul_nonneg (by positivity) (by positivity)
   have hlog := (isLittleO_log_rpow_rpow_atTop (2 : ℝ) hη).bound (by norm_num : (0 : ℝ)<1)
   refine ⟨K,hK,?_⟩
   filter_upwards [hlog,Real.tendsto_log_atTop.eventually (eventually_ge_atTop (1 : ℝ)),
     eventually_ge_atTop (1 : ℝ)] with U hlog hLU hU
   intro p hp hpP
-  have hUp : 0<U := zero_lt_one.trans_le hU
+  have hUp  := zero_lt_one.trans_le hU
   have hpow : 0<U^p := Real.rpow_pos_of_pos hUp _
-  have hx : 1≤A*U^p := one_le_mul_of_one_le_of_one_le hA (Real.one_le_rpow hU hp)
+  have hx  := one_le_mul_of_one_le_of_one_le hA (Real.one_le_rpow hU hp)
   have hlogx : Real.log (A*U^p)=Real.log A+p*Real.log U := by
     rw [Real.log_mul (ne_of_gt (zero_lt_one.trans_le hA)) hpow.ne',Real.log_rpow hUp]
   have hlogbx : Real.log (b*(A*U^p))=Real.log (b*A)+p*Real.log U := by
@@ -98,7 +98,7 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
   calc
     _ ≤ ((1+2*Real.log (b*A)+2*P)*Real.log U)*((Real.log A+P)*Real.log U) :=
       mul_le_mul hfirst hsecond (Real.log_nonneg hx) (by positivity)
-    _ = K*(Real.log U)^2 := by dsimp [K]; ring
+    _ = K*(Real.log U)^2 := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hsq hK
 
 end SevenEighths.HeckeInverseAmplification

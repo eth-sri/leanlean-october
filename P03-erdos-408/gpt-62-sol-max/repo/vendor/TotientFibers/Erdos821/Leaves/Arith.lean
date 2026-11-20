@@ -5,7 +5,6 @@ public import Erdos821.Blueprint.Analytic
 
 @[expose] public section
 
-open scoped BigOperators
 
 namespace Erdos821.Blueprint.Graph
 
@@ -33,11 +32,10 @@ theorem tilted_density_bound (p e : ℝ) (hp : 0 < p) (he : 0 ≤ e) (he' : 2 * 
 theorem active_both_divides_step (p : ℕ) (n k D : ℤ) (hp : Nat.Prime p)
     (hn : (p : ℤ) ∣ n) (hn' : (p : ℤ) ∣ n + k * D) (hk : ¬ (p : ℤ) ∣ k) :
     (p : ℤ) ∣ D := by
-  have hprime : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
   have hsub : (p : ℤ) ∣ (n + k * D) - n := dvd_sub hn' hn
   have heq : (n + k * D) - n = k * D := by ring
   rw [heq] at hsub
-  rw [Prime.dvd_mul hprime] at hsub
+  rw [Prime.dvd_mul (Nat.prime_iff_prime_int.mp hp)] at hsub
   rcases hsub with h | h
   · exact absurd h hk
   · exact h

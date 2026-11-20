@@ -19,7 +19,6 @@ namespace Erdos821.Blueprint.Graph
 /-- §1 logarithmic scales. -/
 def L (x : ℝ) : ℝ := Real.log x
 def T (x : ℝ) : ℝ := Real.log (L x)
-def W (x : ℝ) : ℝ := Real.exp (Real.sqrt (L x))
 def phase (t : ℝ) : ℂ := Complex.exp (2 * Real.pi * t * Complex.I)
 def imaginaryPower (n : ℕ) (ζ : ℝ) : ℂ := Complex.exp (ζ * Real.log n * Complex.I)
 
@@ -119,6 +118,21 @@ def t (g : P.Group) : ℕ := ell + (ν.changed g).card
 
 def D (a : P.Labels (J + ell)) (u : P.Aux J) : ℕ :=
   ∏ g, ∏ i : Fin J, if i ∈ ν.changed g then (u g i).val else (a g (ν.slot i)).val
+
+/-- Each factor in the dilation product is bounded by the largest prime. -/
+theorem D_le_sup_pow (a : P.Labels (J + ell)) (u : P.Aux J) :
+    ν.D a u ≤ P.allPrimes.sup id ^ (J * P.count) := by
+  have hs (g : P.Group) (p : P.Prime g) : p.val ≤ P.allPrimes.sup id :=
+    Finset.le_sup (f := id) (Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, p.property⟩)
+  calc
+    _ ≤ ∏ _g : P.Group, P.allPrimes.sup id ^ J := by
+      apply Finset.prod_le_prod'
+      intro g _
+      simpa only [Finset.card_univ, Fintype.card_fin] using
+        (Finset.prod_le_pow_card Finset.univ
+          (fun i : Fin J => if i ∈ ν.changed g then (u g i).val else (a g (ν.slot i)).val)
+          (P.allPrimes.sup id) (fun i _ => by split_ifs <;> apply hs))
+    _ = _ := by simp [pow_mul]
 
 def DBig (a : P.BigLabels (J + ell)) (u : P.BigAux J) : ℕ :=
   ∏ g, ∏ i : Fin J, if i ∈ ν.changed g.val then (u g i).val else (a g (ν.slot i)).val

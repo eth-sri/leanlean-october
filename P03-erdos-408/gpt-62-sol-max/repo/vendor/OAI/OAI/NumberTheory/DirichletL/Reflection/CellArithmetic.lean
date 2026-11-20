@@ -4,14 +4,15 @@ public import OAI.NumberTheory.DirichletL.Reflection.OriginalCellBounds
 public import OAI.NumberTheory.DirichletL.Reflection.PoolArithmetic
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 public import OAI.NumberTheory.DirichletL.Reflection.ChoiceTransport
-public import OAI.NumberTheory.DirichletL.Reflection.TupleSectors
+public import OAI.NumberTheory.DirichletL.Reflection.TupleFamily
+public import OAI.NumberTheory.DirichletL.Reflection.SourceFamily
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

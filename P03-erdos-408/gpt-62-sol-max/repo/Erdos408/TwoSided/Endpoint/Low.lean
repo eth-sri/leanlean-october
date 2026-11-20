@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.TwoSided.Endpoint.DivisorModel
 public import Erdos408.TwoSided.Endpoint.Low.Facts
 
@@ -25,6 +26,11 @@ namespace Erdos408.TwoSided
 
 open Filter
 
+section
+
+variable (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
+  (d : ℕ)
+
 /-- **Lemma E2 (low frequencies).** For the fixed data, `C_m`, `M₁`, `B'`, `C₈`, `N` and
 `C_N` there is `E₀` (Mertens' constant) such that, eventually, for groups as in (6.1), all
 bands, slots and `|B| ≤ 1`, every pattern `C`, test `b`, piece `ψ₁` supported in `[1, 2]`,
@@ -37,12 +43,10 @@ The model error is Cauchy plus E1(c) and `∑_Q 1/l_Q ≤ (T + E₀)^{d+1}` (U6)
 `κ_{h,k} (l_Q d)⁻¹ ∑_w ψ₁(w/Y) w^{iτ}`; with `#slotTuples ≤ x^{1-ε}` and
 `∑ |A_d| ≤ e^{2L^{0.47}} L^{C₈}` they total `≤ L^{O(1)} e^{2L^{0.47}} x^{-ε} ≤ exp(-cL/(2T²⁰))`
 (O2). The progression comparison is `LowFreq.norm_sum_dvd_twist_sub_le`. -/
-theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ) (CN c : ℝ)
-    (d : ℕ) (halo : 1 / 10 < alo) (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c) (Cm : ℝ)
+theorem exists_norm_lowFrequency_le (halo : 1 / 10 < alo) (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c) (Cm : ℝ)
     (M₁ : ℕ → ℝ) (B' C₈ : ℝ) (N : ℕ) (CNN : ℝ) :
     ∃ E₀ : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
         ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
@@ -79,13 +83,13 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hx0 : 0 < x := by linarith
   have hx1 : 1 ≤ x := by linarith
   have hL0 : 0 < L := by linarith
-  have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
-  have hxY : x ≤ Y := le_trans (le_mul_of_one_le_right hx0.le (Real.one_le_exp (by positivity)))
+  have hY0  := lt_of_lt_of_le (by positivity) hY₁
+  have hxY  := le_trans (le_mul_of_one_le_right hx0.le (Real.one_le_exp (by positivity)))
     hY₁
-  have hY1 : 1 ≤ Y := hx1.trans hxY
-  have hk0 : 0 < k := hk₁
-  have hM0 : 0 ≤ M₁ 0 := (norm_nonneg _).trans (hψd 0 0)
-  have hM1 : 0 ≤ M₁ 1 := (norm_nonneg _).trans (hψd 1 0)
+  have hY1  := hx1.trans hxY
+  have hk0  := hk₁
+  have hM0  := (norm_nonneg _).trans (hψd 0 0)
+  have hM1  := (norm_nonneg _).trans (hψd 1 0)
   obtain ⟨hPd, -, -, -, -, hVP, hsmall, hbig, -⟩ := hadm
   obtain ⟨-, ha, -⟩ := hin
   obtain ⟨hAs, hAm, hAms⟩ := hA
@@ -113,8 +117,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     have h₁ : L ^ (0.46 : ℝ) ≤ L ^ (0.47 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num)
     have h₂ : 0 < L ^ (0.47 : ℝ) := by positivity
-    have h₃ : ε * L = 2 * (c / 2 * L / T ^ 20) := by rw [hε]; ring
-    have h₄ : 0 ≤ c / 2 * L / T ^ 20 := by positivity
+    have h₃ : ε * L = 2 * (c / 2 * L / T ^ 20) := by ring
     linarith
   have hslot : ∀ Q ∈ slotTuples x u v, ∀ i, (Q i).Prime ∧
       Real.exp (L ^ (0.46 : ℝ)) < Q i := by
@@ -161,7 +164,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     refine Nat.coprime_of_dvd fun p hp hpd => hkp p ?_
     rcases hp.dvd_mul.1 hpd with h' | h'
     · exact hm p hp h'
-    · have hd0 : d ≠ 0 := (hAs d hd).1.ne_zero
+    · have hd0  := (hAs d hd).1.ne_zero
       rcases (hAs d hd).2.2 p (Nat.mem_primeFactors.2 ⟨hp, h', hd0⟩) with hg | ⟨i, hi⟩
       · obtain ⟨g, -, hg⟩ := Finset.mem_biUnion.1 hg
         linarith [hCm, (hgroup g p hg).2.1]
@@ -212,7 +215,6 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     have := LowFreq.norm_sum_dvd_sub_le hAD (fun d hd => (Finset.mem_Icc.1 hd).1) hM0 hρ0 hk0
       hG0 hΦ hΦs hm hmY hHm (hcop m hmp) (hAms (Y / m) hR)
     refine this.trans_eq ?_
-    rw [hα, hβ, hTV]
     ring
   -- step 5: the cancellation
   rw [LowFreq.twistedPoly_eq x q q₀ a u v Bc P C b (fun y hy => (hψs y hy).1) hY1 σ h k t]
@@ -233,8 +235,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       _ ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx1 hv1
       _ = x := Real.rpow_one x
       _ ≤ Y := hxY
-  have hΔ : ∀ Q ∈ Ts, ‖LowFreq.progSum ψ₁ Y τ h k H (∏ i, Q i) - Θ / ((∏ i, Q i : ℕ) : ℂ)‖ ≤
-      α * Y / (∏ i, Q i : ℕ) + β := fun Q hQ =>
+  have hΔ  := fun Q hQ =>
     hstep _ (hlpos Q hQ) (hlY Q hQ) (hH Q hQ) (hcopQ Q hQ)
   have hΔ₁ : ‖LowFreq.progSum ψ₁ Y τ h k H 1 - Θ‖ ≤ α * Y + β := by
     have := hstep 1 one_pos (by simpa using hY1) (fun n => by rw [one_mul])
@@ -252,7 +253,6 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hcard : (Ts.card : ℝ) ≤ x ^ (1 - ε) :=
     (Sieve.card_slotTuples_le hx0 u v).trans (Real.rpow_le_rpow_of_exponent_le hx1 hsl.2)
   have hβ0 : 0 ≤ β := by positivity
-  have hα0 : 0 ≤ α := by positivity
   have hsplit : Y⁻¹ * (2 * α * Y * Sinv + β * (Ts.card + Sinv)) =
       2 * α * Sinv + β * ((Ts.card + Sinv) / Y) := by
     field_simp
@@ -264,9 +264,8 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       ring_nf
     have hsq2 : Real.sqrt 2 ≤ 3 := by
       rw [show (3 : ℝ) = Real.sqrt (3 ^ 2) by rw [Real.sqrt_sq (by norm_num)]]
-      exact Real.sqrt_le_sqrt (by norm_num)
+      norm_num
     rw [hα, hsqρ]
-    have h0 : 0 ≤ M₁ 0 * Real.sqrt CNN * L ^ (-(N : ℝ) / 2) := by positivity
     calc 2 * (M₁ 0 * (Real.sqrt 2 * Real.sqrt CNN * L ^ (-(N : ℝ) / 2))) * Sinv
         = 2 * Real.sqrt 2 * (M₁ 0 * Real.sqrt CNN * L ^ (-(N : ℝ) / 2)) * Sinv := by ring
       _ ≤ 6 * (M₁ 0 * Real.sqrt CNN * L ^ (-(N : ℝ) / 2)) * (T + E) ^ (d + 1) := by
@@ -280,7 +279,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
             refine Finset.sum_le_sum fun d hd => ?_
             obtain ⟨hd1, hdX⟩ := Finset.mem_Icc.1 hd
             have hd0 : (0 : ℝ) < d := by exact_mod_cast hd1
-            have hdle : (d : ℝ) ≤ Real.exp (2 * L ^ (0.47 : ℝ)) :=
+            have hdle  :=
               (Nat.cast_le.2 hdX).trans (Nat.floor_le hX0.le)
             rw [mul_div_assoc', le_div_iff₀ hd0]
             exact (mul_le_mul_of_nonneg_left hdle (norm_nonneg (A d))).trans_eq (mul_comm _ _)
@@ -291,7 +290,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       rwa [iteratedDeriv_one] at this
     have hval : ∀ y, ‖ψ₁ y‖ ≤ M₁ 0 := fun y => by
       have := hψd 0 y
-      rwa [iteratedDeriv_zero] at this
+      assumption
     have hTVle : TV ≤ 2 * (M₁ 1 + |τ| * M₁ 0) := by
       have := LowFreq.sum_norm_sub_le (hψ.differentiable (by simp)) hval hderiv
         (fun y hy => (hψs y hy).1) hY0 τ Nw
@@ -311,8 +310,8 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
         _ ≤ 2 * Lp := by linarith only [hσ, ht, h₁, h₂]
     have hM' : M₁ 1 + |τ| * M₁ 0 ≤ (|M₁ 1| + 2 * |M₁ 0|) * Lp := by
       rw [abs_of_nonneg hM0, abs_of_nonneg hM1]
-      have h₁ : M₁ 1 ≤ M₁ 1 * Lp := le_mul_of_one_le_right hM1 hLp1
-      have h₂ : |τ| * M₁ 0 ≤ 2 * Lp * M₁ 0 := mul_le_mul_of_nonneg_right hτle hM0
+      have h₁  := le_mul_of_one_le_right hM1 hLp1
+      have h₂  := mul_le_mul_of_nonneg_right hτle hM0
       calc M₁ 1 + |τ| * M₁ 0 ≤ M₁ 1 * Lp + 2 * Lp * M₁ 0 := add_le_add h₁ h₂
         _ = (M₁ 1 + 2 * M₁ 0) * Lp := by ring
     have hβle : β ≤ Real.exp (2 * L ^ (0.47 : ℝ)) * L ^ C₈ *
@@ -335,8 +334,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
             div_le_div₀ (by positivity) h₁ hx0 hxY
         _ = 2 * Real.exp (-(ε * L)) := by rw [mul_div_assoc, h₂]
     have hεL : ε * L = 2 * (c / 2 * L / T ^ 20) := by rw [hε]; ring
-    have hfin' : K * L ^ Cexp * Real.exp (2 * L ^ (0.47 : ℝ)) ≤
-        Real.exp (c / 2 * L / T ^ 20) := hfin
+    have hfin'  := hfin
     have hKL : Real.exp (2 * L ^ (0.47 : ℝ)) * L ^ C₈ *
         (L ^ Cm * (2 * ((|M₁ 1| + 2 * |M₁ 0|) * Lp))) * (2 * Real.exp (-(ε * L))) =
         K * L ^ Cexp * Real.exp (2 * L ^ (0.47 : ℝ)) * Real.exp (-(ε * L)) := by
@@ -358,13 +356,11 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
 of the endpoint mean square over `|t| ≤ L^{B'}` is at most `C_L L^{-A₀}`: E2 with the model
 of E1 at precision `N = ⌈A₀ + B' + 2⌉`, using `(T + E₀)^{d+1} ≤ L` and
 `exp(-cL/(2T²⁰)) ≤ L^{-(A₀ + B')/2}`. -/
-theorem exists_integral_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K₀ : ℕ)
-    (CN c : ℝ) (d : ℕ) (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)
+theorem exists_integral_lowFrequency_le (hq : 0 < q) (hq₁ : q < 1) (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1)
     (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c)
     (m₀ : ℕ) (Cm A₀ : ℝ) (M₁ : ℕ → ℝ) (B' : ℝ) :
     ∃ CL : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
         ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
@@ -408,7 +404,6 @@ theorem exists_integral_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
     intro t ht
     refine (hE2 P big hadm r a u v Bc hin hsl hBc J C b ψ₁ hψ hψs hψd Y σ k h hY₁ hY₂ hσ hk₁
       hk₂ Amod hmod t ht).trans ?_
-    have hmar' : Real.exp (-(c / 2 * L / Real.log L ^ 20)) ≤ L ^ (-D) := hmar
     have hM : 6 * M₁ 0 * Real.sqrt CNN ≤ 6 * |M₁ 0| * Real.sqrt CNN := by
       gcongr
       exact le_abs_self _
@@ -425,8 +420,7 @@ theorem exists_integral_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
           rw [← mul_assoc]
           gcongr
       _ ≤ 6 * |M₁ 0| * Real.sqrt CNN * L ^ (-D) + L ^ (-D) := by gcongr
-      _ = K * L ^ (-D) := by rw [hK]; ring
-  have hK0 : 0 ≤ K := by positivity
+      _ = K * L ^ (-D) := by ring
   have hLB : 0 ≤ L ^ B' := by positivity
   calc ∫ t in -(L ^ B')..(L ^ B'),
         ‖twistedPoly Y (endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ) h k t‖ ^ 2
@@ -436,17 +430,14 @@ theorem exists_integral_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
     _ ≤ (K * L ^ (-D)) ^ 2 * |L ^ B' - -(L ^ B')| := by
         refine intervalIntegral.norm_integral_le_of_norm_le_const fun t ht => ?_
         rw [Real.norm_of_nonneg (by positivity)]
-        have ht' : |t| ≤ L ^ B' := by
-          rw [Set.uIoc_of_le (by linarith)] at ht
-          exact abs_le.2 ⟨ht.1.le, ht.2⟩
-        exact pow_le_pow_left₀ (norm_nonneg _) (hpt t ht') 2
+        refine pow_le_pow_left₀ (norm_nonneg _) (hpt t ?_) 2
+        rw [Set.uIoc_of_le (by linarith)] at ht
+        exact abs_le.2 ⟨ht.1.le, ht.2⟩
     _ = 2 * K ^ 2 * ((L ^ (-D)) ^ 2 * L ^ B') := by
         rw [abs_of_nonneg (by linarith)]
         ring
-    _ = 2 * K ^ 2 * L ^ (-A₀) := by
-        congr 1
-        rw [← Real.rpow_two, ← Real.rpow_mul hL0.le, ← Real.rpow_add hL0, hD]
-        congr 1
-        ring
+    _ = 2 * K ^ 2 * L ^ (-A₀) := by rpow_ring hL0
+
+end
 
 end Erdos408.TwoSided

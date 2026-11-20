@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.HeckeHeight
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeHeight
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentHeckeSlots
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentCounting CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O
@@ -22,7 +23,7 @@ theorem row_twisted_coefficient_norm (η : Character) (m A z : O) (t : ℝ)
     ‖(idealCoeff η P * CanonicalRowCompletion.idealRowHom (m^6*(A*z)) P) *
       (Ideal.absNorm P:ℂ)^(Complex.I*t)‖ ≤ 1 := by
   have hn : 0 < (Ideal.absNorm P:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hP)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hP)
   rw [norm_mul, norm_mul, show (Ideal.absNorm P:ℂ)=((Ideal.absNorm P:ℝ):ℂ) by simp,
     norm_real_imaginary_power _ t hn, mul_one]
   exact (mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η P)).trans
@@ -61,15 +62,15 @@ variable {ι : Type*} [Fintype ι]
 
 theorem whole_product_normalization (R : ℂ) (q : ι → ℂ) (k p : ι → ℝ)
     (D T L : ℝ) (hD : 0 ≤ D) (hT : 0 < T) (hL : 0 < L)
-    (_hk : ∀ i, 0 ≤ k i) (hp : ∀ i, 0 < p i)
+ (hp : ∀ i, 0 < p i)
     (hq : ∀ i, ‖q i‖ ≤ k i*p i)
     (hR : ‖(Real.sqrt T:ℂ)⁻¹*R‖ ≤ D*(Real.sqrt T/L)) :
     ‖(Real.sqrt (T*∏ i,p i):ℂ)⁻¹*(R*∏ i,q i)‖ ≤
       D*(∏ i,k i)*(Real.sqrt (T*∏ i,p i)/L) := by
   have hP : 0 < ∏ i,p i := Finset.prod_pos (fun i _ => hp i)
-  have hTP : 0 < T*∏ i,p i := mul_pos hT hP
-  have hsT : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hsTP : 0 < Real.sqrt (T*∏ i,p i) := Real.sqrt_pos.2 hTP
+  have hTP  := mul_pos hT hP
+  have hsT  := Real.sqrt_pos.2 hT
+  have hsTP  := Real.sqrt_pos.2 hTP
   have hQ : ‖∏ i,q i‖ ≤ (∏ i,k i)*(∏ i,p i) := by
     rw [norm_prod,← Finset.prod_mul_distrib]
     exact Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _) (fun i _ => hq i)

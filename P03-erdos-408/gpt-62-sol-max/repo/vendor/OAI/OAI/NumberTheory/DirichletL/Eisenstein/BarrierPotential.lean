@@ -9,80 +9,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
 
 lemma axisLaplacian_const_add (c : ℂ) (f : SpatialCoordinates→ℂ) (p : SpatialCoordinates) :
     axisLaplacian (fun q => c+f q) p=axisLaplacian f p := by
@@ -148,7 +85,7 @@ lemma kernelBarrierPotential_lower (a b : ℝ) (ha : 1<a) (hab : a<b) :
       ∀q,1-C*(K.indicator (fun _ => (1:ℝ))) q≤kernelBarrierPotential a b q := by
   let D := kernelQuotientBarrierDefect a b
   let K := tsupport D
-  have hK : IsCompact K := kernelQuotientBarrierDefect_hasCompactSupport a b ha hab
+  have hK  := kernelQuotientBarrierDefect_hasCompactSupport a b ha hab
   obtain ⟨C,hC⟩ := (kernelQuotientBarrierDefect_hasCompactSupport a b ha hab).exists_bound_of_continuous
     (kernelQuotientBarrierDefect_continuous a b ha hab)
   refine ⟨K,hK,max C 0,le_max_right _ _,fun q => ?_⟩
@@ -157,7 +94,7 @@ lemma kernelBarrierPotential_lower (a b : ℝ) (ha : 1<a) (hab : a<b) :
   by_cases hq : q∈K
   · rw [Set.indicator_of_mem hq,mul_one,kernelBarrierPotential]
     have hD : -max C 0≤D q := by
-      have hn : -‖D q‖≤D q := neg_abs_le (D q)
+      have hn  := neg_abs_le (D q)
       exact (neg_le_neg ((hC q).trans (le_max_left C 0))).trans hn
     have hdiv : -max C 0≤D q/kernelQuotientBarrier a b q := by
       apply (le_div_iff₀ hpos).mpr
@@ -166,21 +103,21 @@ lemma kernelBarrierPotential_lower (a b : ℝ) (ha : 1<a) (hab : a<b) :
       exact hm.trans hD
     linarith
   · rw [Set.indicator_of_notMem hq,mul_zero,sub_zero,kernelBarrierPotential]
-    have hz : D q=0 := image_eq_zero_of_notMem_tsupport hq
+    have hz  := image_eq_zero_of_notMem_tsupport hq
     change 1≤1+D q/kernelQuotientBarrier a b q
-    rw [hz,zero_div,add_zero]
+    simp_all
 
 lemma cuspBarrier_euclidean_eq (a b : ℝ) (p : EuclideanSpatial) (hp : 0<p 2) :
     cuspBarrier a b (euclideanToHyperbolic p)=cuspBarrierField a b p.ofLp := by
   rw [cuspBarrierField_eq a b p.ofLp hp,euclideanToHyperbolic_positive p hp]
   congr 1
-  simp only [spatialHorizontal,mul_comm]
+  simp [spatialHorizontal,mul_comm]
 
 lemma cuspBarrierDefect_euclidean_eq (a b : ℝ) (p : EuclideanSpatial) (hp : 0<p 2) :
     cuspBarrierDefect a b (euclideanToHyperbolic p)=cuspBarrierDefectField a b p.ofLp := by
   rw [cuspBarrierDefectField_eq a b p.ofLp hp,euclideanToHyperbolic_positive p hp]
   congr 1
-  simp only [spatialHorizontal,mul_comm]
+  simp [spatialHorizontal,mul_comm]
 
 lemma kernelQuotientBarrier_laplace_defect (a b : ℝ) (ha : 1<a) (hab : a<b)
     (p : EuclideanSpatial) (hp : 0<p 2) :
@@ -209,7 +146,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Manifold
 
 lemma kernelBarrierPotential_continuous (a b : ℝ) (ha : 1<a) (hab : a<b) :
     Continuous (kernelBarrierPotential a b) := by
@@ -239,10 +176,8 @@ lemma kernelSmoothTest_weighted_mass_integrable (V : KernelQuotient→ℝ) (hV :
   apply HasCompactSupport.of_support_subset_isCompact f.2.2
   intro q hq
   by_contra hn
-  have hz : f.1 q=0 := image_eq_zero_of_notMem_tsupport hn
-  apply hq
-  change V q*‖f.1 q‖^2=0
-  rw [hz,norm_zero,zero_pow (by decide : 2≠0),mul_zero]
+  have hz  := image_eq_zero_of_notMem_tsupport hn
+  simp_all
 
 end
 
@@ -266,48 +201,10 @@ end CubicEisenstein
 
 namespace SecondPassArithmetic
 
-section
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open RayFourExpansion (RayCharacter)
 
-end
 
-section
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open EisensteinSchwartzPoisson (paperRadialFourier)
 
-end
-section
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog)
-open JointLogSeparation (frequencyTwist)
-
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end
-
-section
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-
-end
-
-open ActualEisensteinCubic
-
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
 
 end SecondPassArithmetic
 

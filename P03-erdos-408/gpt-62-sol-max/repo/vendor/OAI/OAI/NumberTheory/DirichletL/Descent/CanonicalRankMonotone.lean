@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMoments
 
 @[expose] public section
@@ -7,15 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMoments
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+variable (hcop:OAI.PrincipalFamily.Coprime p)
+variable (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [DecidableEq σ] in
 theorem canonical_rank_negative (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
@@ -32,10 +33,9 @@ theorem canonical_rank_restrict (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)
     (h:CanonicalRankMoments p hp hcop hg pool base slots lists a W Z M₂ F₂ z c₂ eps A K degree):
     CanonicalRankMoments p hp hcop hg pool base slots lists a W Z M₁ F₁ z c₁ eps A K degree :=by
   intro Ψ hΨ m hm N V M Qwidth hN hV hM0 hQ hMc hFc hmargin hnorm ss hss labels hlabels s
-  have hmarg:CanonicalMargins (N+V) M Qwidth z c₂:=by
-    unfold CanonicalMargins at *
-    constructor <;> linarith [hmargin.1,hmargin.2]
-  exact h Ψ hΨ m hm N V M Qwidth hN hV hM0 hQ (hMc.trans hM) (hFc.trans hF) hmarg hnorm ss hss labels hlabels s
+  refine h Ψ hΨ m hm N V M Qwidth hN hV hM0 hQ (hMc.trans hM) (hFc.trans hF) ?_ hnorm ss hss labels hlabels s
+  unfold CanonicalMargins at *
+  constructor <;> linarith [hmargin.1,hmargin.2]
 
 omit [DecidableEq σ] in
 theorem canonical_rank_height_constant (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)

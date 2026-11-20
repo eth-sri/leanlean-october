@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Inversion.ClippingProfiles
-public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
+public import OAI.NumberTheory.DirichletL.Descent.SecondKernelMeasure
 public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 
 @[expose] public section
@@ -10,8 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment
 
 namespace SevenEighths.InverseInitialProfile
 
@@ -172,7 +171,7 @@ theorem family_common_measure
       rw [hid]
       congr 1
       rw [full_density_mode_fubini]
-      simpa only [profileMode, secondRootSchwartz, rootSchwartz_apply] using habs
+      assumption
     rw [hid', ← integral_const_mul]
     apply integral_congr_ae
     filter_upwards with p
@@ -186,7 +185,6 @@ theorem family_common_measure
     have hm0 : 0 ≤ (1+R)^A * ∫ t : ℝ, (1+‖t‖)^J * ‖b₃ t‖ := by positivity
     have h123 := mul_le_mul h12 hm hm0 (by positivity)
     have h123D := mul_le_mul_of_nonneg_right h123 hD
-    have hnorm : Real.exp (-3*L) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
     have heq : (1+R)^A * (Real.exp (-3*L) *
         (∫ t : ℝ, (1+‖t‖)^J * ‖sourceDensity g₁ c₁ θ₁ t‖) *
         (∫ t : ℝ, (1+‖t‖)^J * ‖sourceDensity g₂ c₂ θ₂ t‖) *
@@ -197,7 +195,7 @@ theorem family_common_measure
     change (1+R)^A * (_ * _ * _ * _ * D) ≤ _
     rw [heq]
     exact (mul_le_mul_of_nonneg_left h123D (Real.exp_pos _).le).trans
-      ((mul_le_of_le_one_left (by positivity) hnorm).trans_eq (by ring))
+      ((mul_le_of_le_one_left (by positivity) (Real.exp_le_one_iff.mpr (by linarith))).trans_eq (by ring))
 
 theorem clippedSource_conjugate (W : ℝ → ℂ) (c θ x : ℝ) :
     star (clippedSource W c θ x) = clippedSource (fun x => star (W x)) c (-θ) x := by
@@ -270,7 +268,7 @@ theorem physicalKernel_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
           (secondRelativeNorm q (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v))) := by
   have hn := secondNormProfile_nominal W₁ W₂ Φ
     (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v)) (Z^m)
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
+     (Real.rpow_pos_of_pos hZ _)
     (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
     (Real.rpow_pos_of_pos hZ _) q hq
   rw [original_column_scale hZ D B v, initial_radial_scale hZ D B v m θ H] at hn

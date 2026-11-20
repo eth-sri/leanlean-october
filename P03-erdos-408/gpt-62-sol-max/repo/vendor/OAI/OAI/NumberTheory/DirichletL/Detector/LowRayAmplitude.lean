@@ -26,7 +26,7 @@ lemma lowAdditiveCoefficient_common_support (C : CalibrationData) (W1 : ℝ→�
   refine ⟨ho.toFinset,?_⟩
   intro m v s hs
   apply lowAdditiveCoefficient_outer_zero
-  simpa only [Set.Finite.mem_toFinset,Set.mem_preimage,Function.mem_support,not_not] using hs
+  simp_all
 
 lemma lowRayAmplitude_group (C : CalibrationData) (W1 : ℝ→ℂ)
     (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (m : O) (v : ℝ)
@@ -48,8 +48,6 @@ lemma lowRayAmplitude_group (C : CalibrationData) (W1 : ℝ→ℂ)
   simp_rw [hr,Finset.sum_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
-  intro s hs
-  simp only [ite_mul,zero_mul]
   simp
 
 end SevenEighths.ProbePhysical

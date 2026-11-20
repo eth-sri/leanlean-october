@@ -49,7 +49,6 @@ theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : �
   · rw [ite_eq_left hj2]
     have hs := ramifiedStrictSelected_central_norm p hp hg hc eta a rho x w z hQ heta ha hρ
       (by rw [hx];linarith) (by rw [hz]) j hj
-    have hb : ‖ramifiedSelected p hp hg eta a rho x w z j‖≤385*Q^(1/2:ℝ)+6*Q^(1-w.re) := by linarith
     have hprod : Q^(-1:ℝ)*Q^(1-w.re)=Q^(-w.re) := by rw [←Real.rpow_add hQ0];congr 1;ring
     calc
       _≤Q^(-1:ℝ)*(2*(385*Q^(1/2:ℝ)+6*Q^(1-w.re))) := mul_le_mul_of_nonneg_left (hnorm.trans (by linarith)) hqi
@@ -59,7 +58,6 @@ theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : �
     have hs := ramifiedStrictSelected_boundary_norm p hp hg hc eta a rho x w z hQ heta ha hρ
       (by rw [hx];linarith) (by rw [hz]) j (by omega)
     have hqw : Q^(-w.re)≤Q^(1/2:ℝ) := Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith)
-    have hb : ‖ramifiedSelected p hp hg eta a rho x w z j‖≤391*Q^(1/2:ℝ) := by nlinarith
     calc
       _≤Q^(-1:ℝ)*(2*(391*Q^(1/2:ℝ))) := mul_le_mul_of_nonneg_left (hnorm.trans (by linarith)) hqi
       _=782*Q^(-(1/2:ℝ)) := by nlinarith [hpow]

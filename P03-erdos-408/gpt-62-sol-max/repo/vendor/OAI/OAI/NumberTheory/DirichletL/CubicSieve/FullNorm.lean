@@ -1,8 +1,10 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
 
 @[expose] public section
+
 
 namespace OAI
 
@@ -40,7 +42,7 @@ theorem element_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     (rows : m → O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N : ℝ) (hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N) :
     squaredNorm (fun i j => cubicRow (cols j) (rows i)) ≤ elementSieveNorm M N := by
   let r : m → elementRange M := fun i => ⟨rows i, (mem_elementRange M (rows i)).mpr (hrows i)⟩
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
@@ -69,7 +71,7 @@ theorem element_coprime_bilinear_bound {m n : Type*} [Fintype m] [Fintype n]
     (rows : m → O) (cols : n → Ideal O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (a b : n → ℂ) :
     (∑ i, ‖∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
       star (cubicRow (cols j) (rows i) * a j) * (cubicRow (cols k) (rows i) * b k) else 0‖) ^ 2 ≤
@@ -78,7 +80,7 @@ theorem element_coprime_bilinear_bound {m n : Type*} [Fintype m] [Fintype n]
   have hb := IdealCoprimeBilinearSieve.ideal_coprime_bilinear_operator_bound ε hε cols cols
     (fun j => primaryGenerator_ne_zero_ideal _ (hcols j).1.2)
     (fun j => primaryGenerator_ne_zero_ideal _ (hcols j).1.2)
-    N N hN hN (fun j => (hcols j).2) (fun j => (hcols j).2)
+    N N hN (fun j => (hcols j).2) (fun j => (hcols j).2)
     (fun i j => cubicRow (cols j) (rows i)) (fun i j => cubicRow (cols j) (rows i)) a b
   have hn := element_family_squared_norm_le rows cols hr hc M N hrows hcols
   have hfac : 0 ≤ IdealCoprimeSieveOperator.supportConstant ε hε * N ^ ε :=
@@ -94,8 +96,8 @@ theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     elementSieveNorm M N ≤ QuadraticInitialBound.initialSieveConstant * (M + (⌈N⌉₊ : ℝ) ^ 2) := by
   let F := idealRange N
   have hF : ∀ I ∈ F, Admissible I := fun I hI => (mem_idealRange.mp hI).1
-  have hFp : ∀ I ∈ F, I ≠ ⊥ := fun I hI => primaryGenerator_ne_zero_ideal I (hF I hI).2
-  have hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P :=
+  have hFp  := fun I hI => primaryGenerator_ne_zero_ideal I (hF I hI).2
+  have hFg  :=
     fun I hI P hP => (primaryPrime_spec P
       (primaryPrime_factor_ne_zero I P (hF I hI).2 hP)).2.1
   have hnat : 1 ≤ ⌈N⌉₊ := Nat.one_le_ceil_iff.mpr (by linarith)

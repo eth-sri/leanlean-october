@@ -52,7 +52,6 @@ theorem bareSourceCoefficient_prime_formula (η : HeckeFamily.Character) (p : O)
         star (localGamma p hp.ne_zero hg 3))^l *
       (actualSextic (Ideal.span {p}) hg (-1))^((e+3*l)*k+e*l+l.choose 2) *
       sourceScalar p hp hg (e+3*l) k j := by
-        simp only [pow_add,pow_mul,mul_pow]
         ring
     _ = _ := by
       rw [corrected_prime_cubic_signal p hp.ne_zero hg hchar hprimary hs]

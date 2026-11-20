@@ -46,7 +46,7 @@ lemma productAnova_insert_selected (w : ∀ i, α i → ℝ)
     (hi : i ∉ I) (hS : S ⊆ I) (f : ProductSample α → ℂ) :
     productAnova w (insert i I) (insert i S) f =
       fun x => productAnova w I S f x - productAverage w {i} (productAnova w I S f) x := by
-  have hiS : i ∉ S := fun h => hi (hS h)
+  have hiS  := fun h => hi (hS h)
   have hdiff : insert i I \ insert i S = I \ S := by
     ext j
     by_cases hj : j = i
@@ -83,7 +83,7 @@ lemma productAnova_independent (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
     (hi : i ∈ I) (hiS : i ∉ S) (f : ProductSample α → ℂ) :
     productAverage w {i} (productAnova w I S f) = productAnova w I S f := by
-  have hin : i ∈ I \ S := Finset.mem_sdiff.mpr ⟨hi, hiS⟩
+  have hin  := Finset.mem_sdiff.mpr ⟨hi, hiS⟩
   have hu : {i} ∪ (I \ S) = I \ S := by
     apply Finset.union_eq_right.mpr
     simpa only [Finset.singleton_subset_iff] using hin

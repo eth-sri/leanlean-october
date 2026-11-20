@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 public import OAI.NumberTheory.DirichletL.Moments.SupportedZeroEnergy
 
@@ -8,14 +9,12 @@ public import OAI.NumberTheory.DirichletL.Moments.SupportedZeroEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceZeroEnergy
-open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy
-open CenteredMomentFirstLocalization CenteredMomentSourceRow
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic HeckeFamily CenteredMomentRectangle CenteredMomentAddedZeroUniform
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSupportedZeroEnergy
+open CenteredMomentFirstLocalization CenteredMomentSourceRow EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem profileCoefficient_norm_le {ι : Type*} [Fintype ι]
@@ -100,7 +99,7 @@ theorem zeroEnergy_eq_zero_of_subunit {ι : Type*} [Fintype ι]
     by_contra hn
     have hh := hN v hv hn
     have hnorm : (1:ℝ)≤Ideal.absNorm (finiteTupleProduct v) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hh.1)
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hh.1)
     linarith
   have hc (I : Ideal O) : finiteColumnCoefficient S β I=0 := by
     unfold finiteColumnCoefficient

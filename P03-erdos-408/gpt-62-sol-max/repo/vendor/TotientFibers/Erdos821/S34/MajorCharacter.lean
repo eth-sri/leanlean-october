@@ -1,6 +1,7 @@
 module
 
-public import Erdos821.S34.RationalCharacterTasks
+public import Erdos821.P4Rat.RationalFourier
+public import Erdos821.P4Rat.PrimitiveInduction
 public import Erdos821.S34.CharacterReproduction
 public import Erdos821.S34.MajorPointwise
 
@@ -38,8 +39,8 @@ theorem finite_character_kernel_integral {α β γ : Type} [Fintype α] [Fintype
   intro D _
   ring
 
-theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
-    (hind : PrimitiveInductionTask) (G : PrimeGroups) (a b : Fin G.size → ℕ)
+theorem rational_kernel_reproduction (hfourier : P4Rat.RationalFourierTask)
+    (hind : P4Rat.PrimitiveInductionTask) (G : PrimeGroups) (a b : Fin G.size → ℕ)
     (Q r : ℕ) (u : ℤ) (h ξ ε : ℝ) (hr : 1 ≤ r) (hrQ : r ≤ Q)
     (hε : 0 ≤ ε) (hε1 : ε ≤ 1) (X : Tuple G a) (Y : Tuple G b)
     (hcopA : ∀ D : Tuple G a, Nat.Coprime (product G a D) r)
@@ -63,12 +64,12 @@ theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
   let vB := fun ψ : DirichletCharacter ℂ r => ψ (product G b Y : ZMod r)
   have ha (ψ : DirichletCharacter ℂ r) : ‖A ψ - vA ψ‖ ≤ ε := by
     obtain ⟨χ, hχ, hψ⟩ := hind Q r hr hrQ ψ
-    have he (D : Tuple G a) : charValue χ (product G a D) = ψ (product G a D : ZMod r) := hψ _ (hcopA D)
+    have he (D : Tuple G a)  := hψ _ (hcopA D)
     have ht := hrepA χ hχ
     simpa only [cellApply, A, vA, he] using ht
   have hb (ψ : DirichletCharacter ℂ r) : ‖B ψ - vB ψ‖ ≤ ε := by
     obtain ⟨χ, hχ, hψ⟩ := hind Q r hr hrQ ψ
-    have he (E : Tuple G b) : charValue χ (product G b E) = ψ (product G b E : ZMod r) := hψ _ (hcopB E)
+    have he (E : Tuple G b)  := hψ _ (hcopB E)
     have ht := hrepB χ hχ
     simpa only [cellApply, B, vB, he] using ht
   have hphase (D : Tuple G a) (E : Tuple G b) :
@@ -76,7 +77,7 @@ theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
         ∑ ψ, coeff ψ * ψ (product G a D : ZMod r) * ψ (product G b E : ZMod r) := by
     have ht := hexp (product G a D * product G b E) ((hcopA D).mul_left (hcopB E))
     simpa only [Nat.cast_mul, map_mul, mul_assoc] using ht
-  have hraw : e ((u : ℝ) * (product G a X * product G b Y) / r) = ∑ ψ, coeff ψ * vA ψ * vB ψ := hphase X Y
+  have hraw  := hphase X Y
   have hintegral : expect G a (fun D => expect G b (fun E =>
       cellKernel G a Q h ξ (product G a D) (product G a X) *
       cellKernel G b Q h ξ (product G b E) (product G b Y) *

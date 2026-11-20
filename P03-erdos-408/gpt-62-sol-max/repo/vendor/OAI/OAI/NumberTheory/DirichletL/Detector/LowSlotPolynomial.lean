@@ -89,11 +89,11 @@ theorem compensation_tuple_low_polynomial {K : ℕ} (η : HeckeFamily.Character)
   apply Finset.sum_congr rfl
   intro a ha
   let L := elementNorm (∏i : J,(a i).val)
-  have hL : 0<L := lowUnselectedProduct_norm_pos slots hslots J a
+  have hL  := lowUnselectedProduct_norm_pos slots hslots J a
   let C := calibrationForSet S hS
   let Ω := lowOuterCutoff (a0*a1) (max 1 (b0*b1))
   let N : ℂ := (Real.sqrt (lowPhysicalScale C (X/L) (Y/L)):ℂ)⁻¹*(1/(2*Real.pi):ℂ)
-  have hW1c : HasCompactSupport W1 := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
+  have hW1c  := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
   have hΩc : HasCompactSupport Ω := lowOuterCutoff_compact _ _ (mul_pos ha0 ha1)
     (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
   have hΩ0 : Ω 0=0 := lowOuterCutoff_small _ _ (mul_pos ha0 ha1) 0 (by positivity)

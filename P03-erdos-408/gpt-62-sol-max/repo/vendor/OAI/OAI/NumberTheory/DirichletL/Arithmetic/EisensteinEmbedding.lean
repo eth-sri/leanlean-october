@@ -11,14 +11,7 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
 
 namespace EisensteinEmbedding
@@ -42,16 +35,14 @@ theorem omega3_sq : omega3 ^ 2 + omega3 + 1 = 0 := by
       (3 + ((Real.sqrt 3 : ℝ) : ℂ) ^ 2 * Complex.I ^ 2) / 4 := by
     unfold omega3
     ring
-  rw [hs', Complex.I_sq] at hquad
-  norm_num at hquad
-  exact hquad
+  simp_all
 
 theorem omega3_im : omega3.im = Real.sqrt 3 / 2 := by
   simp [omega3]
 
 theorem omega3_im_ne_zero : omega3.im ≠ 0 := by
   rw [omega3_im]
-  exact div_ne_zero (ne_of_gt (Real.sqrt_pos.2 (by norm_num))) (by norm_num)
+  norm_num
 
 theorem lam_ne_zero (w : ℂ) (hw : w ^ 2 + w + 1 = 0) :
     1 + 2 * w ≠ 0 := by
@@ -64,14 +55,14 @@ theorem pb_minpoly : minpoly ℤ pb.gen =
     (Polynomial.X : Polynomial ℤ) ^ 2 + Polynomial.X + 1 := by
   have hζ := IsCyclotomicExtension.zeta_spec 3 ℚ K
   have hgen : pb.gen = hζ.toInteger := by
-    simpa only [pb] using hζ.integralPowerBasis_gen
+    exact hζ.integralPowerBasis_gen
   rw [hgen]
   calc
     minpoly ℤ (hζ.toInteger : O) =
         minpoly ℤ (hζ.toInteger : K) :=
           (NumberField.RingOfIntegers.minpoly_coe hζ.toInteger).symm
     _ = minpoly ℤ (IsCyclotomicExtension.zeta 3 ℚ K) := by
-          exact congrArg (minpoly ℤ) hζ.coe_toInteger
+          rfl
     _ = Polynomial.cyclotomic 3 ℤ :=
           (Polynomial.cyclotomic_eq_minpoly hζ (by decide)).symm
     _ = _ := Polynomial.cyclotomic_three ℤ
@@ -83,15 +74,12 @@ noncomputable def embedding (w : ℂ) (hw : w ^ 2 + w + 1 = 0) : O →+* ℂ :=
 
 theorem embedding_gen (w : ℂ) (hw : w ^ 2 + w + 1 = 0) :
     embedding w hw pb.gen = w := by
-  exact pb.lift_gen w (by
-    rw [pb_minpoly]
-    simpa only [map_add, map_pow, map_one, Polynomial.aeval_X] using hw)
+  solve_by_elim [pb.lift_gen]
 
 theorem pb_dim : pb.dim = 2 := by
   have hζ := IsCyclotomicExtension.zeta_spec 3 ℚ K
   have hdim := hζ.integralPowerBasis_dim
-  have htot : Nat.totient 3 = 2 := by decide
-  simpa only [pb, htot] using hdim
+  assumption
 
 theorem exists_ab (x : O) : ∃ a b : ℤ, x = a + b * pb.gen := by
   let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
@@ -129,12 +117,10 @@ theorem embedding_injective (w : ℂ) (hw : w ^ 2 + w + 1 = 0)
     simp only [Complex.add_im, Complex.intCast_im, zero_add,
       Complex.mul_im, Complex.intCast_re, Complex.intCast_im,
       zero_mul, add_zero, Complex.zero_im] at himz
-    have hbc : (b : ℝ) = 0 := (mul_eq_zero.mp himz).resolve_right him
-    exact_mod_cast hbc
+    simp_all
   have ha : a = 0 := by
-    rw [hb, Int.cast_zero, zero_mul, add_zero] at hz
-    exact_mod_cast hz
-  have hzero : x - y = 0 := by rw [hrepr, ha, hb]; simp
+    simp_all
+  have hzero : x - y = 0 := by simp_all
   exact sub_eq_zero.mp hzero
 
 theorem trace_period_on_ringOfIntegers
@@ -265,7 +251,7 @@ theorem finite_quotient_product {a b : O} (ha : a ≠ 0) (hb : b ≠ 0) :
     Finite (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := by
   apply Ring.HasFiniteQuotients.finiteQuotient
   intro h
-  have hab : a * b = 0 := Ideal.span_singleton_eq_bot.mp (by
+  have hab  := Ideal.span_singleton_eq_bot.mp (by
     simpa only [Ideal.span_singleton_mul_span_singleton] using h)
   exact mul_ne_zero ha hb hab
 
@@ -299,9 +285,8 @@ theorem eisEmbedding_conjO (x : O) :
     rw [← map_pow, omega_primitive.pow_eq_one, map_one]
   have hz0 : z ≠ 0 := by
     intro h
-    rw [h, zero_pow (by decide)] at hz3
-    exact zero_ne_one hz3
-  have hznorm : ‖z‖ = 1 := Complex.norm_eq_one_of_pow_eq_one hz3 (by decide)
+    simp_all
+  have hznorm  := Complex.norm_eq_one_of_pow_eq_one hz3 (by decide)
   have hzstar : star z = z ^ 2 := by
     apply mul_left_cancel₀ hz0
     calc
@@ -348,7 +333,6 @@ theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
 
 open AddChar MulChar
 
-open AddChar MulChar
 
 noncomputable def canonicalSextic (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) ℂ :=
@@ -463,11 +447,11 @@ private theorem complex_exp_trace_integer {t : ℂ}
   obtain ⟨n, hn⟩ := Complex.exp_eq_one_iff.mp ht
   refine ⟨n, ?_⟩
   have hnonzero : (2 * Real.pi * Complex.I : ℂ) ≠ 0 := by
-    exact mul_ne_zero (by exact_mod_cast mul_ne_zero (by norm_num : (2 : ℝ) ≠ 0) Real.pi_ne_zero) Complex.I_ne_zero
+    norm_num
   apply mul_left_cancel₀ hnonzero
   calc
     (2 * Real.pi * Complex.I : ℂ) * t = n * (2 * Real.pi * Complex.I) := by
-      simpa only [mul_assoc] using hn
+      assumption
     _ = (2 * Real.pi * Complex.I : ℂ) * n := by ring
 
 private theorem phase_integer {z : ℂ}
@@ -490,7 +474,7 @@ private theorem reconstruction (z : ℂ) :
       (omega3 * z / eisLam + conj (omega3 * z / eisLam)) +
       (z / eisLam + conj (z / eisLam)) * omega3 := by
   have hquad := omega3_sq
-  have hl : eisLam ≠ 0 := eisLam_ne_zero
+  have hl  := eisLam_ne_zero
   have hcl : conj eisLam = -eisLam := by
     simp only [eisLam, map_add, map_one, map_mul, map_ofNat, omega_conj]
     linear_combination 2 * hquad

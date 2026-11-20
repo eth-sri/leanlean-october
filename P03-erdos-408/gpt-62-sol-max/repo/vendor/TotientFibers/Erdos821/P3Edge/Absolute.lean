@@ -1,19 +1,17 @@
 module
 
-public import Erdos821.P3Edge.CoeffBound
+public import Erdos821.S2.MemoryEdge
 public import Erdos821.P3Edge.NormOsc
 public import Erdos821.P3Edge.LargeX
 
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
@@ -33,9 +31,7 @@ lemma absoluteMemoryEdgeKernel_nonneg (A : Model F P J m) (n : ℕ) (rho theta :
   apply mul_nonneg (edgeSymmetryFactor_nonneg P _)
   apply Finset.sum_nonneg
   intro c _
-  split_ifs with hc
-  · exact norm_nonneg _
-  · exact le_refl 0
+  positivity
 
 lemma norm_cast_absolute (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
     (i : Fin n) (s t : P.MemoryState (J + F.ell)) :

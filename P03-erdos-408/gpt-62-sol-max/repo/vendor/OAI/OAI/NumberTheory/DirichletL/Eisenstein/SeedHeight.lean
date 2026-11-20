@@ -10,84 +10,27 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace MatrixGroups
+open scoped InnerProductSpace
 
 lemma fullCuspHeight_le_barrier (x : FullCuspClasses) (w : HyperbolicSpace) :
     fullCuspHeight x w≤max 3 (cuspBarrier 2 3 w) := by
   by_cases hx : fullCuspHeight x w≤3
-  · exact hx.trans (le_max_left _ _)
+  · simp_all
   · have he : cuspBarrier 2 3 w=fullCuspHeight x w := by
       rw [cuspBarrier,fullCuspProfileSum_eq_single _
         (fun v hv => cuspBarrierProfile_zero 2 3 (by norm_num) v (by linarith)) w x (by linarith),
@@ -146,7 +89,7 @@ lemma compactHeightProfile_seed (a b B : ℝ) (ha : 0<a) (hab : a<b) (hB : a≤B
   by_cases hva : a≤v
   · rw [compactHeightProfile,Set.indicator_of_mem (show v∈Set.Icc a B from ⟨hva,hv⟩),
       Set.projIcc_of_mem hB ⟨hva,hv⟩,compactSeedProfile_apply]
-  · rw [compactHeightProfile,Set.indicator_of_notMem (by simp [Set.mem_Icc,hva]),
+  · rw [compactHeightProfile,Set.indicator_of_notMem (by simp_all),
       cuspSeedProfile,cuspTransition_zero a b v hab (le_of_not_ge hva)]
     simp
 
@@ -191,13 +134,13 @@ lemma kernelLocalSeedL2_ae_eq (S : Set KernelQuotient) (hS : IsCompact S)
   by_cases hq : q∈S
   · rw [Set.indicator_of_mem hq,Set.indicator_of_mem hq,hp]
     exact kernelCompactProfile_seed a b B ha hab hB.1 hB.2.1 s q (hB.2.2 q hq)
-  · rw [Set.indicator_of_notMem hq,Set.indicator_of_notMem hq]
+  simp_all
 
 end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped InnerProductSpace
 
 def kernelCorrectedSeed (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) : KernelQuotient→ℂ :=
   fun q => kernelQuotientSeed a b s q+kernelEisensteinL2Correction a b ha hab s q
@@ -255,7 +198,6 @@ end
 
 section
 open Filter
-open scoped BigOperators Classical Topology ContDiff
 
 section PartialDerivatives
 variable {A E G : Type*}
@@ -357,7 +299,7 @@ lemma rowEnergy_unit_isCompact : IsCompact {u : Fin 2→ℂ | rowEnergy u=1} := 
   intro u hu
   change rowEnergy u=1 at hu
   rw [Metric.mem_closedBall,dist_zero_right]
-  simpa only [hu,Real.sqrt_one] using norm_le_sqrt_rowEnergy u
+  simpa [hu,Real.sqrt_one] using norm_le_sqrt_rowEnergy u
 
 lemma rowEnergy_unit_ne_zero (u : Fin 2→ℂ) (hu : rowEnergy u=1) : u≠0 := by
   intro h
@@ -377,7 +319,7 @@ lemma regularSpatialHeight_contDiff (deltaLoss : ℝ) : ContDiff ℝ ∞ (regula
 
 lemma regularSpatialHeight_eq (deltaLoss : ℝ) (hδ : 0<deltaLoss) (p : SpatialCoordinates) (hp : deltaLoss≤p 2) :
     regularSpatialHeight deltaLoss p=p 2 := by
-  rw [regularSpatialHeight,ConcreteCompactWeight.positiveExtension_eq _ ((le_div_iff₀ hδ).mpr (by simpa using hp))]
+  rw [regularSpatialHeight,ConcreteCompactWeight.positiveExtension_eq _ ((le_div_iff₀ hδ).mpr (by simp_all))]
   field_simp
 
 def regularRowKernel (s : ℂ) (deltaLoss : ℝ) (u : Fin 2→ℂ) (p : SpatialCoordinates) : ℂ :=
@@ -429,7 +371,7 @@ lemma normalized_row_summand (s : ℂ) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
       smoothSummand s r p := by
   have hu := embeddedRow_ne_zero r
   have hE := rowEnergy_pos _ hu
-  have hv : 0<p 2 := hδ.trans_le hp
+  have hv  := hδ.trans_le hp
   have hD := heightDenominator_pos (spatialHorizontal p) (p 2) hv (embeddedRow r) hu
   rw [regularRowKernel,regularSpatialHeight_eq deltaLoss hδ p hp,heightDenominator_normalized]
   rw [summand,rowOperator_one,Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hE.ne'),
@@ -451,9 +393,7 @@ theorem regular_eisenstein_compact_smooth (s : ℂ) (hs : 2<s.re)
   apply compact_smooth_family_tsum (fun u p => ψ p*regularRowKernel s deltaLoss u p)
     {u : Fin 2→ℂ | rowEnergy u=1} (tsupport ψ) rowEnergy_unit_isCompact hcψ
   · intro u hu p
-    have hψp : ContDiffAt ℝ ∞ (fun q : (Fin 2→ℂ)×SpatialCoordinates => ψ q.2) (u,p) :=
-      hψ.contDiffAt.comp (u,p) contDiffAt_snd
-    exact hψp.mul (regularRowKernel_contDiffAt s deltaLoss hδ u (rowEnergy_unit_ne_zero u hu) p)
+    exact (hψ.contDiffAt.comp (u,p) contDiffAt_snd).mul (regularRowKernel_contDiffAt s deltaLoss hδ u (rowEnergy_unit_ne_zero u hu) p)
   · intro u hu
     exact tsupport_mul_subset_left
   · intro r
@@ -464,14 +404,14 @@ theorem smoothEisenstein_contDiffAt (s : ℂ) (hs : 2<s.re)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     ContDiffAt ℝ ∞ (smoothEisenstein s) p := by
   let deltaLoss : ℝ:=p 2/2
-  have hδ : 0<deltaLoss := by dsimp [deltaLoss]; positivity
+  have hδ : 0<deltaLoss := by positivity
   let χ : ContDiffBump p := ⟨1,2,by norm_num,by norm_num⟩
-  let ψ : SpatialCoordinates→ℂ:=fun q => (χ q:ℂ)
+  let ψ :=fun q => (χ q:ℂ)
   have hψ : ContDiff ℝ ∞ ψ := Complex.ofRealCLM.contDiff.comp χ.contDiff
   have hcψ : HasCompactSupport ψ := by
     have he : Function.support ψ=Function.support (fun q => χ q) := by
       ext q
-      simp [Function.mem_support,ψ]
+      simp [ψ]
     change IsCompact (closure (Function.support ψ))
     rw [he]
     exact χ.hasCompactSupport
@@ -490,7 +430,7 @@ theorem smoothEisenstein_contDiffAt (s : ℂ) (hs : 2<s.re)
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Manifold
 
 lemma kernel_contMDiff_of_spatial (f : KernelQuotient→ℂ) (F : SpatialCoordinates→ℂ)
     (hF : ∀p,0<p 2→ContDiffAt ℝ ∞ F p)
@@ -498,10 +438,10 @@ lemma kernel_contMDiff_of_spatial (f : KernelQuotient→ℂ) (F : SpatialCoordin
       f ((kernelQuotientChart q).symm p)=F p) :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f := by
   intro q
-  have hq : q∈(kernelQuotientChart q).source := mem_chart_source SpatialCoordinates q
-  have hp : kernelQuotientChart q q∈hyperbolicSpatialChart.target :=
+  have hq  := mem_chart_source SpatialCoordinates q
+  have hp  :=
     ((kernelQuotientChart q).map_source hq).1
-  have hc : ContinuousAt (kernelQuotientChart q) q :=
+  have hc  :=
     (kernelQuotientChart q).continuousOn.continuousAt ((kernelQuotientChart q).open_source.mem_nhds hq)
   have heq : f=ᶠ[𝓝 q] (fun t => F (kernelQuotientChart q t)) := by
     filter_upwards [(kernelQuotientChart q).open_source.mem_nhds hq] with t ht
@@ -546,11 +486,7 @@ lemma kernelQuotientSeed_contMDiff (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b) 
 
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
 namespace InitialMeanSquare
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FirstPassCubeLabels (primeProductNorm)
 
 end InitialMeanSquare
 

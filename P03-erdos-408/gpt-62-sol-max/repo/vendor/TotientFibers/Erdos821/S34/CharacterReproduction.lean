@@ -64,7 +64,7 @@ theorem cell_character_reproduction (G : PrimeGroups) (k : Fin G.size → ℕ)
     simpa only [expect, w, c, chars, b, mul_ite, mul_zero, mul_assoc] using
       hgram (c X) hret a.val a.property ha
   have ht := frame_reproduction w c chars ξ δ hξ hδ
-    (fun a D => primitiveCharacterTask_proof.2 Q a.val (product G k D)) X b hret hdiag hg
+    (fun a D => P4Char.PrimitiveCharacterTask_proof.2 Q a.val (product G k D)) X b hret hdiag hg
   have hk (D : Tuple G k) : frameCellKernel w c chars ξ D X =
       cellKernel G k Q h ξ (product G k D) (product G k X) := by
     unfold frameCellKernel
@@ -88,7 +88,7 @@ theorem cell_character_reproduction (G : PrimeGroups) (k : Fin G.size → ℕ)
   apply ht.trans
   have hc : (Fintype.card ↥(primitiveCharacters Q) : ℝ) ≤ (Q : ℝ) ^ 2 := by
     simpa only [Fintype.card_coe] using (show ((primitiveCharacters Q).card : ℝ) ≤ (Q : ℝ) ^ 2 by
-      exact_mod_cast primitiveCharacterTask_proof.1 Q)
+      exact_mod_cast P4Char.PrimitiveCharacterTask_proof.1 Q)
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hc hδ) hξ.le
 
 end

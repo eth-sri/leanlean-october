@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 public import OAI.NumberTheory.DirichletL.Moments.UniformRadialComparison
 
@@ -10,10 +11,9 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentCommonMaskRadialEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentUniformReflectionProfile
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentCommonMaskExpansion
+open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
+open CenteredMomentRadialPolynomialEnergy CenteredMomentUniformReflectionProfile
 local notation "O" => HeckeFamily.O
 
 lemma naturalSlot_bounded (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
@@ -84,8 +84,7 @@ theorem actual_radial_shared_energy {α : Type*} [DecidableEq α]
     have hn (D : Finset (Ideal O)) (hD : D∈R.powerset) :
         0<(Ideal.absNorm (∏I∈D,I):ℝ) := by
       apply Nat.cast_pos.mpr
-      exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Finset.prod_ne_zero_iff.mpr (fun I hI=>(hR I (Finset.mem_powerset.mp hD hI)).ne_zero)))
+      exact Ideal.absNorm_pos_of_ne_bot (Finset.prod_ne_zero_iff.mpr (fun I hI=>(hR I (Finset.mem_powerset.mp hD hI)).ne_zero))
     obtain ⟨PB,hPB,hbound⟩:=slots_bounded (F\J) pool β P
     have hsum:=pair_radial_summable χ
       (fun z=>∏j∈F\J,naturalSlot (χ z) (pool j) (β j) (P j))

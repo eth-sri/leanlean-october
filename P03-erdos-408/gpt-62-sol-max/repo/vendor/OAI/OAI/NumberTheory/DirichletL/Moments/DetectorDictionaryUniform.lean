@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical BigOperators SchwartzMap ContDiff
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
@@ -20,13 +20,13 @@ theorem compact_family_seminorm
     (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
     (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (k n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀p∈J,SchwartzMap.seminorm ℝ k n (G p)≤C := by
-  have hc := (section_iteratedDeriv_smooth F hF n).continuous.norm
+  have hc := (CompactProfileFamily.section_iteratedDeriv_smooth F hF n).continuous.norm
   obtain ⟨M,hM⟩ := (hJ.prod isCompact_Icc).bddAbove_image hc.continuousOn
   refine ⟨1+L^k*(|M|+1),by positivity,?_⟩
   intro p hp
   apply SchwartzMap.seminorm_le_bound' ℝ k n _ (by positivity)
   intro x
-  have he : (G p : ℝ→ℂ)=F p := funext (hG p)
+  have he  := funext (hG p)
   rw [he]
   by_cases hx : x∈Icc (-L) L
   · have hnorm : ‖iteratedDeriv n (F p) x‖≤|M|+1 := by
@@ -39,7 +39,7 @@ theorem compact_family_seminorm
   · have hout : iteratedDeriv n (F p) x=0 := by
       by_contra hn
       have hx' := (subset_tsupport (iteratedDeriv n (F p))) hn
-      have hh := (CubicReflectionKernel.tsupport_iteratedDeriv_subset (F p) n) hx'
+      have hh := (CompactProfileFamily.tsupport_iteratedDeriv_subset (F p) n) hx'
       exact hx ((closure_minimal (hs p) isClosed_Icc) hh)
     rw [hout,norm_zero,mul_zero]
     positivity

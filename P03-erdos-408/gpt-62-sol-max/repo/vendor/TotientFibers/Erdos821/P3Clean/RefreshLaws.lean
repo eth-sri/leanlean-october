@@ -37,14 +37,14 @@ theorem refreshKernel_eq_prod {I : Type*} [Fintype I] {α : I → Type*}
     intro i _
     by_cases hi : shared i
     · simp only [ite_eq_left hi, ite_eq_left (h i hi)]
-    · simp only [ite_eq_right hi]
+    simp_all
   · rw [refreshKernel, ite_eq_right h]
     obtain ⟨i, hi⟩ := not_forall.mp h
-    have hs : shared i := by by_contra hh; exact hi (fun hp => False.elim (hh hp))
-    have hab : a i ≠ b i := fun hh => hi (fun _ => hh)
+    have hs : shared i := by simp_all
+    have hab  := fun hh => hi (fun _ => hh)
     symm
     apply Finset.prod_eq_zero (Finset.mem_univ i)
-    simp only [ite_eq_left hs, ite_eq_right hab]
+    simp_all
 
 theorem refreshKernel_row_sum {I : Type*} [Fintype I] [DecidableEq I] {α : I → Type*} [∀ i, Fintype (α i)]
     (shared : I → Prop) (mu : ∀ i, α i → ℝ) (hmu : ∀ i, (∑ x, mu i x) = 1)

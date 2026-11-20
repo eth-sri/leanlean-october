@@ -50,7 +50,7 @@ theorem selectedProduct_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
 theorem selectedProduct_energy_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
     (η:Character) (m A z:O) (W₁ W₂:ℝ→ℂ)
     (S:α→Finset (Ideal O)) (β:α→Ideal O→ℂ) (P:α→ℝ) (t X₁ X₂ Z κ:ℝ)
-    (hZ:0<Z) (w B:α→ℝ) (_hB:∀i∈R,0≤B i)
+    (hZ:0<Z) (w B:α→ℝ)
     (hslot:∀i∈R,‖normalizedSlot η m A z (S i) (β i) t (P i)‖^2≤B i*Z^(κ*w i)) :
     ‖selectedProduct J η m A z W₁ W₂ S β P t X₁ X₂‖^2≤
       ((∏i∈R,B i)*Z^(κ*∑i∈R,w i))*

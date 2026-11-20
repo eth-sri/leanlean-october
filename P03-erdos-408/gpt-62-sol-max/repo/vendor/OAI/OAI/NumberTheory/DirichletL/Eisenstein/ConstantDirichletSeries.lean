@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyCutoffs
 
 @[expose] public section
@@ -9,72 +10,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
@@ -88,11 +30,10 @@ lemma constant_dirichlet_support (s : ℂ) :
   by_cases hzero : c.1=0
   · simp [arithmeticDirichletTerm,hzero] at hc
   · refine ⟨hzero, ?_⟩
-    have hA : arithmeticResidueSum 0 c.1 ≠ 0 := by
-      intro hA
-      apply hc
-      simp only [arithmeticDirichletTerm,ite_eq_right hzero,hA,mul_zero]
-    exact (arithmeticResidueSum_ne_zero_iff_cube c.1 hzero c.2).mp hA
+    refine (arithmeticResidueSum_ne_zero_iff_cube c.1 hzero c.2).mp ?_
+    intro hA
+    apply hc
+    simp only [arithmeticDirichletTerm,ite_eq_right hzero,hA,mul_zero]
 
 lemma totient_sum_good (s : ℂ) :
     (∑' I : GoodIdeal,(idealTotient I.1:ℂ)*unramifiedNormWeight s I.1)=unramifiedTotientSeries s := by
@@ -132,11 +73,9 @@ theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     apply hfull.congr
     rintro ⟨b,n,I⟩
     simp only [one_mul,cubeColumn_dirichletTerm]
-  have hsub : Summable (fun c : CubeLower => ‖arithmeticDirichletTerm s 0 c.1‖) :=
-    cubeColumnEquiv.summable_iff.mp hp
   have hind := (summable_subtype_iff_indicator
     (s := {c : LevelLower | c.1 ≠ 0 ∧ ∃ a : O,c.1=a^3})
-    (f := fun c => ‖arithmeticDirichletTerm s 0 c‖)).mp hsub
+    (f := fun c => ‖arithmeticDirichletTerm s 0 c‖)).mp (cubeColumnEquiv.summable_iff.mp hp)
   apply hind.congr
   intro c
   by_cases hc : c.1 ≠ 0 ∧ ∃ a : O,c.1=a^3
@@ -151,9 +90,8 @@ lemma ramified_geometric_sum (s : ℂ) (hs : 1<s.re) :
   have hn := norm_ramifiedRatio_lt_one s hs
   have hne : ramifiedRatio s ≠ 0 := by
     unfold ramifiedRatio
-    apply Complex.cpow_ne_zero_iff.mpr
-    exact Or.inl (by norm_num)
-  have hone : ramifiedRatio s ≠ 1 := by intro h; rw [h,norm_one] at hn; exact lt_irrefl 1 hn
+    norm_num
+  have hone : ramifiedRatio s ≠ 1 := by intro h; simp_all
   have hi : (3:ℂ)^(3*s-3)=(ramifiedRatio s)⁻¹ := by
     rw [ramifiedRatio,← Complex.cpow_neg]
     congr 1
@@ -166,8 +104,7 @@ theorem arithmeticDirichletSeries_zero_totient (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     arithmeticDirichletSeries s 0 =
       2*((3:ℂ)^(3*s-3)-1)⁻¹*unramifiedTotientSeries (3*s-2) := by
   have hc := (constantDirichlet_summable_norm s hs).of_norm
-  have hsub : Summable (fun c : CubeLower => arithmeticDirichletTerm s 0 c.1) := hc.subtype _
-  have hp := cubeColumnEquiv.summable_iff.mpr hsub
+  have hp := cubeColumnEquiv.summable_iff.mpr (hc.subtype _)
   change Summable (fun p : Bool × ℕ × GoodIdeal =>
     arithmeticDirichletTerm s 0 (cubeColumnMap p).1) at hp
   calc
@@ -200,7 +137,7 @@ theorem arithmeticDirichletSeries_zero_totient (s : ℂ) (hs : (4:ℝ)/3<s.re) :
 
 theorem scatteringCoefficient_zero_zeta (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     scatteringCoefficient s 0 =
-      (2/((9*Real.sqrt 3/2:ℝ):ℂ))*
+      (2/(periodCovolume : ℂ))*
       ((3:ℂ)^(3*s-3)-1)⁻¹ *
       (unramifiedIdealZeta (3*s-3)/unramifiedIdealZeta (3*s-2)) := by
   rw [scatteringCoefficient,arithmeticDirichletSeries_zero_totient s hs,
@@ -220,8 +157,8 @@ open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
     (hF : ∀ I ∈ F, Admissible I)
     (hM : idealRange M ⊆ F) (hN : idealRange N ⊆ F) :
-    letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    letI :=
+      poolPrimary_maximal F hF
     matrix M N = QuadraticInitialBound.quadraticMatrix (poolPrimary F)
       (poolPrimary_good F hF)
       (fun I : idealRange M => idealSupport F I.val)
@@ -242,8 +179,8 @@ theorem sieveNorm_reverse_le (M N : ℝ) :
     · exact (mem_idealRange.mp hI).1
   have hM : idealRange M ⊆ F := Finset.subset_union_left
   have hN : idealRange N ⊆ F := Finset.subset_union_right
-  let : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  let : OAI.PrincipalFamily.Maximal (poolPrimary F) :=
+    poolPrimary_maximal F hF
   have h := QuadraticInitialBound.quadraticSieveNorm_reverse_le
     (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
     (poolPrimary_good F hF) (poolPrimary_odd F hF)
@@ -257,8 +194,8 @@ end
 section
 
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
-open TruncatedPrincipalPoisson QuadraticSquarefreeKernel
+open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex TruncatedPrincipalPoisson
+open QuadraticSquarefreeKernel
 
 def dualPrincipalIdeal (I J : Ideal O) (V : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑' A : NonzeroIdeal,
@@ -278,12 +215,6 @@ theorem canonical_pair_ideal_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ
   simpa only [Function.comp_def, idealGenerator_norm_sq, unrestrictedPairCharacter] using h
 
 end
-section
-
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open QuadraticMainOperatorBound IdealCoprimeSieveOperator DivisorBlockCauchy
-
-end
 
 open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
 
@@ -293,8 +224,7 @@ def CoefficientOnShell (N X : ℝ) (a : idealRange N → ℂ) : Prop :=
 theorem column_dyadic_exists (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale) (J : idealRange N) :
     ∃ j ∈ Finset.range (lengthScale + 1), (2 : ℝ) ^ j / 2 < (Ideal.absNorm J.val : ℝ) ∧
       (Ideal.absNorm J.val : ℝ) ≤ (2 : ℝ) ^ j := by
-  have hn : 1 ≤ Ideal.absNorm J.val := Nat.one_le_iff_ne_zero.mpr
-    (fun hz => (mem_idealRange.mp J.property).1.1 (Ideal.absNorm_eq_zero_iff.mp hz))
+  have hn  := Ideal.one_le_absNorm_of_ne_bot ((mem_idealRange.mp J.property).1.1)
   exact exists_dyadic_shell (Ideal.absNorm J.val) lengthScale hn ((mem_idealRange.mp J.property).2.trans hNL)
 
 def columnDyadicSector (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale) (J : idealRange N) : Fin (lengthScale + 1) :=
@@ -311,9 +241,9 @@ theorem dyadicColumnCoefficient_shell (N : ℝ) (lengthScale : ℕ) (hNL : N ≤
   intro J hJ
   have he : columnDyadicSector N lengthScale hNL J = j := by
     by_contra hn
-    exact hJ (by simp only [dyadicColumnCoefficient, sectorCoefficient, ite_eq_right hn])
+    exact hJ (by simp [dyadicColumnCoefficient, sectorCoefficient, ite_eq_right hn])
   have hs := (column_dyadic_exists N lengthScale hNL J).choose_spec.2
-  have hv : (columnDyadicSector N lengthScale hNL J).val = j.val := congrArg Fin.val he
+  have hv  := congrArg Fin.val he
   change (column_dyadic_exists N lengthScale hNL J).choose = j.val at hv
   simpa only [hv] using hs
 
@@ -341,13 +271,13 @@ theorem coefficientAtScale_shell (N X : ℝ) (a : idealRange N → ℂ)
   unfold coefficientAtScale at hJ
   split_ifs at hJ with h
   · exact ha ⟨J.val, h⟩ hJ
-  · exact (hJ rfl).elim
+  simp_all
 
 theorem coefficientAtScale_row_sum (N X : ℝ) (a : idealRange N → ℂ)
     (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) (z : O) :
     (∑ J : idealRange N, quadraticRow J.val z * a J) =
       ∑ J : idealRange X, quadraticRow J.val z * coefficientAtScale N X a J := by
-  let f : Ideal O → ℂ := fun I => if h : I ∈ idealRange N then quadraticRow I z * a ⟨I, h⟩ else 0
+  let f  := fun I => if h : I ∈ idealRange N then quadraticRow I z * a ⟨I, h⟩ else 0
   have hleft : (∑ J : idealRange N, quadraticRow J.val z * a J) = ∑ I ∈ idealRange N, f I := by
     rw [← Finset.sum_coe_sort (idealRange N) f]
     apply Finset.sum_congr rfl
@@ -376,7 +306,7 @@ theorem coefficientAtScale_row_sum (N X : ℝ) (a : idealRange N → ℂ)
 theorem coefficientAtScale_energy (N X : ℝ) (a : idealRange N → ℂ)
     (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) :
     (∑ J : idealRange N, ‖a J‖ ^ 2) = ∑ J : idealRange X, ‖coefficientAtScale N X a J‖ ^ 2 := by
-  let f : Ideal O → ℝ := fun I => if h : I ∈ idealRange N then ‖a ⟨I, h⟩‖ ^ 2 else 0
+  let f  := fun I => if h : I ∈ idealRange N then ‖a ⟨I, h⟩‖ ^ 2 else 0
   have hleft : (∑ J : idealRange N, ‖a J‖ ^ 2) = ∑ I ∈ idealRange N, f I := by
     rw [← Finset.sum_coe_sort (idealRange N) f]
     apply Finset.sum_congr rfl

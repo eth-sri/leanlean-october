@@ -73,9 +73,6 @@ theorem norm_sum_mul_le_of_normLe {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i)
     (hg : ∀ i, ‖g i‖ ≤ ‖f i‖) :
     ‖∑ i, (μ i : ℂ) * g i * T f i‖ ≤ c * wnormSq μ f := by
   have hW := wnormSq_nonneg hμ f
-  have hX : 0 ≤ ∑ i, μ i * ‖f i‖ * ‖T f i‖ :=
-    sum_nonneg fun i _ => mul_nonneg (mul_nonneg (hμ i) (norm_nonneg _)) (norm_nonneg _)
-  -- `(∑ μ |f| |T f|)² ≤ ‖f‖²_μ ‖T f‖²_μ ≤ (c ‖f‖²_μ)²`
   have hsq : (∑ i, μ i * ‖f i‖ * ‖T f i‖) ^ 2 ≤ (c * wnormSq μ f) ^ 2 :=
     calc (∑ i, μ i * ‖f i‖ * ‖T f i‖) ^ 2 ≤ wnormSq μ f * wnormSq μ (T f) :=
           sum_sq_le_sum_mul_sum_of_sq_le_mul _ (fun i _ => mul_nonneg (hμ i) (sq_nonneg _))
@@ -87,7 +84,7 @@ theorem norm_sum_mul_le_of_normLe {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i)
         rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (hμ i)]
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (hg i) (hμ i))
           (norm_nonneg _)
-    _ ≤ c * wnormSq μ f := (sq_le_sq₀ hX (mul_nonneg hc hW)).1 hsq
+    _ ≤ c * wnormSq μ f := (sq_le_sq₀ (sum_nonneg fun i _ => mul_nonneg (mul_nonneg (hμ i) (norm_nonneg _)) (norm_nonneg _)) (mul_nonneg hc hW)).1 hsq
 
 end Norms
 
@@ -189,20 +186,6 @@ variable {q A₀ x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B : ℕ}
 
 /-! ### Band facts on the chain -/
 
-/-- The active labels of group `i` are primes of `𝒫_i`. -/
-theorem chainState_mem_band (s : ChainState x d Y d₀ u v r B) (i : Fin K)
-    (k : Fin (padCount x + 1)) : s.2.1.1 i k ∈ band x (d.a i) := by
-  have h := s.2.1.2
-  unfold lists at h
-  exact Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 h).1 i) k
-
-/-- The prime of a particle is a band prime. -/
-theorem particle_mem_bandPrimes (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
-  obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
-
 /-- Every performed birth of a history is a band prime. -/
 theorem births_mem_bandPrimes {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     {h : History x d Y d₀ u v r N} (hh : h ∈ histories x d Y d₀ u v r B N) :
@@ -226,159 +209,14 @@ theorem births_mem_bandPrimes {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     rw [Multiset.eq_of_mem_replicate hxp]
     exact particle_mem_bandPrimes xp
 
-/-- The chain measure is nonnegative when the birth weights of band primes are. -/
-theorem chainMeasure_nonneg {N : ℕ} (hν : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
-    (s : ChainState x d Y d₀ u v r B) : 0 ≤ chainMeasure q x d Y d₀ u v r B N s :=
-  mul_nonneg
-    (prod_nonneg fun i _ => prod_nonneg fun k _ =>
-      hν _ (mem_biUnion.2 ⟨i, mem_univ _, chainState_mem_band s i k⟩))
-    (memWeight_nonneg (fun xp => hν _ (particle_mem_bandPrimes xp)) _)
-
-variable (q x d) in
-/-- For a prime `p ∈ 𝒫_i` with `V_i ≥ 1/2` and `p + 1 ≥ 2(N + 1)`: `b'_p ≥ 1/2`, so
-`0 ≤ ν(p) ≤ 2 / (V_i p)`. -/
-theorem primeWeight_le_two_div (hq : 0 ≤ q) {N p : ℕ} {i : Fin K}
-    (hp : p ∈ band x (d.a i))
-    (hV : 1 / 2 ≤ harmonicMass (band x (d.a i))) (hpN : 2 * (N + 1) ≤ p + 1) :
-    0 ≤ primeWeight q x d N p ∧
-      primeWeight q x d N p ≤ 2 / (harmonicMass (band x (d.a i)) * p) := by
-  set V := harmonicMass (band x (d.a i)) with hVdef
-  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast (by omega : 1 ≤ p)
-  -- `b'_p ≥ 1/2`: each defect is at most `1`
-  have hb : 1 / 2 ≤ baseline q N p := by
-    have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ N + 1 :=
-      calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
-            sum_le_sum fun j _ => by
-              unfold dampDefect
-              split_ifs <;> linarith [Real.sqrt_nonneg q]
-        _ = N + 1 := by simp
-    have hpN' : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast hpN
-    have h : ((p : ℝ) + 1)⁻¹ * ∑ j ∈ range (N + 1), dampDefect q N j ≤ 1 / 2 := by
-      rw [inv_mul_le_iff₀ (by positivity)]
-      linarith
-    unfold baseline
-    linarith
-  -- `V(p) ≥ V_i`
-  have hmass : V ≤ primeMass x d p := by
-    have hle := single_le_sum (s := univ)
-      (f := fun i' => if p ∈ band x (d.a i') then harmonicMass (band x (d.a i')) else 0)
-      (fun i' _ => by
-        split_ifs
-        · exact sum_nonneg fun p _ => by positivity
-        · exact le_rfl) (mem_univ i)
-    simpa [hp, primeMass] using hle
-  have hV0 : 0 < V := by linarith
-  -- the denominator is at least `V_i p / 2`
-  have hpos : 0 < V * p / 2 := by positivity
-  have hden : V * p / 2 ≤ primeMass x d p * ((p : ℝ) + 1) * baseline q N p :=
-    calc V * p / 2 = V * p * (1 / 2) := by ring
-      _ ≤ primeMass x d p * ((p : ℝ) + 1) * baseline q N p :=
-          mul_le_mul (mul_le_mul hmass (by linarith) (by positivity) (by linarith)) hb
-            (by norm_num) (mul_nonneg (by linarith) (by positivity))
-  unfold primeWeight
-  refine ⟨(one_div_pos.2 (hpos.trans_le hden)).le, ?_⟩
-  calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p) ≤ 1 / (V * p / 2) :=
-        one_div_le_one_div_of_le hpos hden
-    _ = 2 / (V * p) := by field_simp
-
-variable (q x d) in
-/-- Under the hypotheses of `primeWeight_le_two_div`, the birth weights of a band sum to at
-most `2`. -/
-theorem sum_band_primeWeight_le (hq : 0 ≤ q) {N : ℕ} {i : Fin K}
-    (hV : 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hpN : ∀ p ∈ band x (d.a i), 2 * (N + 1) ≤ p + 1) :
-    ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2 := by
-  have hV0 : 0 < harmonicMass (band x (d.a i)) := by linarith
-  calc ∑ p ∈ band x (d.a i), primeWeight q x d N p
-      ≤ ∑ p ∈ band x (d.a i), 2 / (harmonicMass (band x (d.a i)) * p) :=
-        sum_le_sum fun p hp => (primeWeight_le_two_div q x d hq hp hV (hpN p hp)).2
-    _ = 2 / harmonicMass (band x (d.a i)) * harmonicMass (band x (d.a i)) := by
-        rw [harmonicMass, mul_sum]
-        exact sum_congr rfl fun p _ => by rw [div_mul_div_comm, mul_one]
-    _ = 2 := div_mul_cancel₀ _ hV0.ne'
-
 /-- **The boundary norm**: `‖𝐛‖² ≤ 2^{KM}`. On the support of `𝐛` the memory is empty, and
 the active lists carry at most `∏_{i,k} ∑_{p ∈ 𝒫_i} ν(p) ≤ 2^{KM}`. -/
 theorem wnormSq_chainInit_le {N : ℕ} (hν₀ : ∀ p ∈ bandPrimes x d, 0 ≤ primeWeight q x d N p)
     (hν : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2) :
     wnormSq (chainMeasure q x d Y d₀ u v r B N) (chainInit x d Y d₀ u v r B) ≤
       2 ^ (K * (padCount x + 1)) := by
-  -- on the support of `𝐛` the memory weight is one
-  have hpt : ∀ s : ChainState x d Y d₀ u v r B,
-      chainMeasure q x d Y d₀ u v r B N s * ‖chainInit x d Y d₀ u v r B s‖ ^ 2 =
-        (if s.1.1 = (1, 0) then 1 else 0) *
-          ((∏ i, ∏ k, primeWeight q x d N (s.2.1.1 i k)) *
-            if memSize s.2.2.1 = 0 then 1 else 0) := by
-    intro s
-    unfold chainInit chainMeasure
-    by_cases h₁ : s.1.1 = (1, 0) <;> by_cases h₂ : memSize s.2.2.1 = 0 <;> simp [h₁, h₂]
-    have h0 : ∀ xp, s.2.2.1 xp = 0 := fun xp => by
-      have := le_memSize s.2.2.1 xp
-      omega
-    simp [memWeight, h0]
-  -- at most one position is `e₁`, and at most one memory is empty
-  have hz : ∑ z : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r),
-      (if z.1 = (1, 0) then (1 : ℝ) else 0) ≤ 1 := by
-    have hc : #(univ.filter fun z : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r) =>
-        z.1 = (1, 0)) ≤ 1 :=
-      card_le_one.2 fun a ha b hb =>
-        Subtype.ext ((mem_filter.1 ha).2.trans (mem_filter.1 hb).2.symm)
-    rw [sum_boole]
-    exact_mod_cast hc
-  have hS : ∑ S : MemState (Particle x d) B, (if memSize S.1 = 0 then (1 : ℝ) else 0) ≤ 1 := by
-    have hc : #(univ.filter fun S : MemState (Particle x d) B => memSize S.1 = 0) ≤ 1 := by
-      refine card_le_one.2 fun a ha b hb => Subtype.ext (funext fun xp => ?_)
-      have ha' := le_memSize a.1 xp
-      have hb' := le_memSize b.1 xp
-      rw [(mem_filter.1 ha).2] at ha'
-      rw [(mem_filter.1 hb).2] at hb'
-      omega
-    rw [sum_boole]
-    exact_mod_cast hc
-  -- the lists carry at most `2^{KM}`
-  have hlists : ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k) ≤
-      2 ^ (K * (padCount x + 1)) :=
-    calc ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)
-        = ∑ a ∈ lists x d (padCount x), ∏ i, ∏ k, primeWeight q x d N (a i k) :=
-          sum_coe_sort _ (fun a : Lists K (padCount x) => ∏ i, ∏ k, primeWeight q x d N (a i k))
-      _ ≤ ∑ a ∈ Fintype.piFinset fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
-            band x (d.a i), ∏ i, ∏ k, primeWeight q x d N (a i k) := by
-          refine sum_le_sum_of_subset_of_nonneg (by unfold lists; exact filter_subset _ _)
-            fun a ha _ => prod_nonneg fun i _ => prod_nonneg fun k _ => hν₀ _ ?_
-          exact mem_biUnion.2 ⟨i, mem_univ _,
-            Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 ha i) k⟩
-      _ = ∏ i, ∑ a ∈ Fintype.piFinset fun _ : Fin (padCount x + 1) => band x (d.a i),
-            ∏ k, primeWeight q x d N (a k) :=
-          (prod_univ_sum (fun i => Fintype.piFinset fun _ : Fin (padCount x + 1) =>
-            band x (d.a i)) fun i a => ∏ k, primeWeight q x d N (a k)).symm
-      _ = ∏ i, ∏ _k : Fin (padCount x + 1), ∑ p ∈ band x (d.a i), primeWeight q x d N p :=
-          prod_congr rfl fun i _ => sum_prod_piFinset _ _
-      _ ≤ ∏ _i : Fin K, ∏ _k : Fin (padCount x + 1), (2 : ℝ) :=
-          prod_le_prod₀ (fun i _ => prod_nonneg fun k _ =>
-              sum_nonneg fun p hp => hν₀ p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩))
-            fun i _ => prod_le_prod₀ (fun k _ =>
-              sum_nonneg fun p hp => hν₀ p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩))
-              fun k _ => hν i
-      _ = 2 ^ (K * (padCount x + 1)) := by
-          rw [prod_const, prod_const, card_univ, card_univ, Fintype.card_fin, Fintype.card_fin,
-            ← pow_mul, mul_comm]
-  have hL : 0 ≤ ∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k) :=
-    sum_nonneg fun a _ => prod_nonneg fun i _ => prod_nonneg fun k _ =>
-      hν₀ _ (mem_biUnion.2 ⟨i, mem_univ _,
-        Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 a.2).1 i) k⟩)
-  calc wnormSq (chainMeasure q x d Y d₀ u v r B N) (chainInit x d Y d₀ u v r B)
-      = ∑ s : ChainState x d Y d₀ u v r B, (if s.1.1 = (1, 0) then 1 else 0) *
-          ((∏ i, ∏ k, primeWeight q x d N (s.2.1.1 i k)) *
-            if memSize s.2.2.1 = 0 then 1 else 0) := sum_congr rfl fun s _ => hpt s
-    _ = (∑ z : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r),
-          (if z.1 = (1, 0) then (1 : ℝ) else 0)) *
-        ((∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)) *
-          ∑ S : MemState (Particle x d) B, (if memSize S.1 = 0 then (1 : ℝ) else 0)) := by
-        rw [sum_mul_sum, sum_mul_sum]
-        simp only [Fintype.sum_prod_type, mul_sum]
-    _ ≤ 1 * ((∑ a : ↥(lists x d (padCount x)), ∏ i, ∏ k, primeWeight q x d N (a.1 i k)) * 1) := by
-        gcongr
-    _ ≤ 2 ^ (K * (padCount x + 1)) := by rw [one_mul, mul_one]; exact hlists
+  simp only [wnormSq, norm_sq_chainInit]
+  exact sum_chainMeasure_norm_chainInit_le hν₀ hν
 
 /-! ### The phased products -/
 

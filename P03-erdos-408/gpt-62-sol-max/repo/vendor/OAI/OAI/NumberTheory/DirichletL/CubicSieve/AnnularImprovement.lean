@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.CostGrowth
 public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
 
@@ -10,8 +11,7 @@ namespace OAI
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
-open SevenEighths.CubicDyadicDecay
+open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -41,8 +41,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     dsimp [H]
     have hs := (IdealCoprimeSieveOperator.supportConstant_pos θ hθ).le
     positivity
-  have hV : 0 < V := by dsimp [V]; positivity
-  have hDv : 0 < Dv := DivisorBlockCauchy.divisorConstant_pos θ hθ
+  have hDv  := DivisorBlockCauchy.divisorConstant_pos θ hθ
   refine ⟨V*Dv^2, by positivity, ?_⟩
   intro n _ _ M N hM hN cols hinj hc hcols a R hR
   have hM0 : 0 < M := by linarith
@@ -53,14 +52,14 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   have hU : 0 ≤ U := by dsimp [U]; positivity
   have hcost (D : Ideal O) (hD : D ∈ gcdPool cols) (E : Ideal O) (hE : E ∈ idealDivisors D) :
       frequencyCost C θ hθ (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ)) ≤ U := by
-    have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
+    have hc0 (j : n)  := primaryGenerator_ne_zero_ideal _ (hc j).2
     have hD0 := gcdPool_ne_zero cols hc0 D hD
     have hDE := (mem_idealDivisors hD0).mp hE
-    have hE0 : E ≠ 0 := ne_zero_of_dvd_ne_zero hD0 hDE
+    have hE0  := ne_zero_of_dvd_ne_zero hD0 hDE
     have he1 : 1 ≤ (Ideal.absNorm E : ℝ) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hE0)
     have hed : (Ideal.absNorm E : ℝ) ≤ (Ideal.absNorm D : ℝ) := by
-      exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0))
+      exact_mod_cast Nat.le_of_dvd (Ideal.absNorm_pos_of_ne_bot (hD0))
         (map_dvd Ideal.absNorm hDE)
     have hdN := (columnDivisorPool_norm_bounds cols hc0 N (fun j => (hcols j).2) D
       (gcdPool_subset_columnDivisorPool cols hc0 hD)).2

@@ -18,12 +18,12 @@ def calibratedNumerator (C : CalibrationData) (A m : O) : ℂ :=
 lemma calibratedNumerator_congr (C : CalibrationData) (A m n : O)
     (h : m-n ∈ (Ideal.span {C.generator*A} : Ideal O)) :
     calibratedNumerator C A m = calibratedNumerator C A n := by
-  have hd : C.generator*A ∣ m-n := Ideal.mem_span_singleton.mp h
+  have hd  := Ideal.mem_span_singleton.mp h
   have hb : Ideal.Quotient.mk (Ideal.span {C.generator}) m =
       Ideal.Quotient.mk (Ideal.span {C.generator}) n := by
     apply Ideal.Quotient.eq.mpr
     exact Ideal.mem_span_singleton.mpr ((dvd_mul_right C.generator A).trans hd)
-  have hA : m-n ∈ (Ideal.span {A} : Ideal O) :=
+  have hA  :=
     Ideal.mem_span_singleton.mpr ((dvd_mul_left A C.generator).trans hd)
   unfold calibratedNumerator CalibrationData.residueMonoid
   simp only [MonoidHom.comp_apply, RingHom.toMonoidHom_eq_coe,

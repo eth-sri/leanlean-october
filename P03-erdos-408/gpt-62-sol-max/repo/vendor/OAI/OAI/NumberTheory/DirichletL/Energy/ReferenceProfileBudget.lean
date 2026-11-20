@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceProfileBudget
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
@@ -32,14 +32,14 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
   let U:=((Ta∪T)∪Slong)∪{(0,0)}
   let J:=degree+4*na+2*n+2*nlong
   let C:=1+Ca^2*2^(4*na)+Cref*Dchild+Dref
-  have hC:0<C:=by dsimp only [C];positivity
+  have hC:0<C:=by positivity
   refine ⟨J,U,C,hC,?_⟩
   intro W₁ W₂ hs₁ hs₂ t height hheight
   dsimp only
   let H:=1+|t|+height
   let A:=sourceControl U W₁*sourceControl U W₂
   have hH:1≤H:=by dsimp only [H];linarith [abs_nonneg t]
-  have hH0:0≤H:=zero_le_one.trans hH
+  have hH0:=zero_le_one.trans hH
   have hA:0≤A:=mul_nonneg (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
   have haU:Ta⊆U:=by intro x hx;simp [U,hx]
   have hTU:T⊆U:=by intro x hx;simp [U,hx]

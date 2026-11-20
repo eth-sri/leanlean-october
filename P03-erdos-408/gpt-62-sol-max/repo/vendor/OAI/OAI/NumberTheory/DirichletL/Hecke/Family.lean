@@ -35,7 +35,7 @@ structure Character where
 def Character.ofResidue (M : Ideal O) (hM : M ≠ ⊥)
     (χ : MulChar (O ⧸ M) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk M (u : O)) = 1) : Character := by
-  letI : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient hM
+  letI  := Ring.HasFiniteQuotients.finiteQuotient hM
   letI : Fintype (O ⧸ M) := Fintype.ofFinite _
   exact {
     modulus := M
@@ -45,7 +45,7 @@ def Character.ofResidue (M : Ideal O) (hM : M ≠ ⊥)
     period := Fintype.card (O ⧸ M)
     period_pos := Fintype.card_pos
     period_mem := Ideal.Quotient.eq_zero_iff_mem.mp (by
-      simpa only [map_natCast] using Nat.cast_card_eq_zero (O ⧸ M)) }
+      simp_all) }
 
 instance (χ : Character) : NeZero χ.period := ⟨Nat.ne_of_gt χ.period_pos⟩
 

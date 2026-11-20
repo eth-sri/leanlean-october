@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.Poisson
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CompletedGauss CanonicalRowCompletion
 open CubicEisenstein hiding summand
 noncomputable section

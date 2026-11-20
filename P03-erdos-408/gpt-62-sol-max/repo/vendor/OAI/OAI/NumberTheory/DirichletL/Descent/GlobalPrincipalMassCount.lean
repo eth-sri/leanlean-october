@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMass
 
 @[expose] public section
@@ -15,7 +16,7 @@ open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
 lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (S : Finset (Finset ι)) (U : ℝ) (hU : 0<U) (hS : ∀A∈S,primeProductNorm p A≤U) :
     (S.card:ℝ)≤128*U := by
@@ -38,7 +39,7 @@ lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,
 
 theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(B H V T : ℝ),
     1≤B → 0≤H → 0<V → 0<T → (∀x∈S,SourceValid p x) →
@@ -86,7 +87,7 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     apply hf.trans
     apply mul_le_mul_of_nonneg_left _ hCf.le
     exact Real.rpow_le_rpow (Nat.cast_nonneg _)
-      (divisorTarget_norm_bound p hp (core x) B V T (zero_le_one.trans hB) hV.le hT.le
+      (divisorTarget_norm_bound p hp (core x) B V T (zero_le_one.trans hB) hV.le
         (hleft x hx) (hright x hx) (hcommon x hx) (hquot x hx)) heps.le
   have he : (S.card:ℝ)=∑q∈Q,((S.filter (fun x=>core x=q)).card:ℝ) := by
     calc

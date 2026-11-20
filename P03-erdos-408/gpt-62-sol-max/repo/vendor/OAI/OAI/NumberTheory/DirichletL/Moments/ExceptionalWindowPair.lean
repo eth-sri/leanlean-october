@@ -1,25 +1,24 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.PlainWindowEnergy
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
+public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWindowPair
 open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth
 open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
 
 theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)
     (hf:∀z∈rows,Integrable (f z))(hg:∀z∈rows,Integrable (g z))
     (a b:ℝ→ℝ)(ha:Integrable a)(hb:Integrable b)
-    (_ha0:∀u,0≤a u)(_hb0:∀v,0≤b v)(E:ℝ)(_hE:0≤E)
+(E:ℝ)
     (hpair:∀u v,∑z∈rows,‖f z u‖*‖g z v‖≤E*a u*b v):
     (∑z∈rows,‖∫u,f z u‖*‖∫v,g z v‖)≤E*(∫u,a u)*(∫v,b v):=by
   have hinner (u:ℝ):

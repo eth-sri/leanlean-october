@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.CubeSlots
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -79,7 +79,7 @@ lemma cubeChoicesJoin_surjective (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
   refine ⟨⟨T,b,a⟩,?_⟩
   apply (slotChoiceSplit L T).injective
   simp only [cubeChoicesJoin,Equiv.apply_symm_apply]
-  apply Prod.ext <;> funext i <;> apply Subtype.ext <;> rfl
+  rfl
 
 def cubeSlotChoiceEquiv (H : Ideal Eis) (L : σ→Finset (Ideal Eis)) :
     CubeSlotChoices H L ≃ (∀ i,L i) :=

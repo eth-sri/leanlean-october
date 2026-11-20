@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.TraceConductor
+public import OAI.NumberTheory.DirichletL.TraceCharacter
+public import OAI.NumberTheory.DirichletL.ConductorPresentation
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 
 @[expose] public section
@@ -9,7 +10,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical FourierTransform
+open scoped BigOperators Classical
 
 namespace SevenEighths.GaussianTheta
 
@@ -49,7 +50,7 @@ theorem coordinate_dual_phase (x y : ℝ) (p : ℤ × ℤ) :
   unfold RankTwoEisShift.dualPhase
   congr 1
   have hs : (Real.sqrt 3 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+    norm_num
   push_cast
   field_simp
   ring
@@ -133,7 +134,7 @@ theorem gaussian_summable (a : ℝ) (ha : 0 < a) :
 
 theorem paperE_norm (z : ℂ) : ‖paperE z‖ = 1 := by
   rw [paperE_eq_exp, Complex.norm_exp]
-  simp [Complex.mul_re, Complex.mul_im]
+  simp
 
 theorem weighted_gaussian_summable {R : Type*} [Fintype R]
     (q : O → R) (P : R → ℂ) (a : ℝ) (ha : 0 < a) :
@@ -154,7 +155,7 @@ theorem gaussian_coset_poisson (a : ℝ) (ha : 0 < a) (c : O) (hc : c ≠ 0) (r 
         ∑' h : O, paperE (eisEmbedding r * eisEmbedding h / eisEmbedding c) *
           gaussian (4 / (3 * (a * ‖eisEmbedding c‖ ^ 2))) (eisEmbedding h) := by
   have hc' := eisEmbedding_ne_zero hc
-  have hscale : 0 < a * ‖eisEmbedding c‖ ^ 2 :=
+  have hscale  :=
     mul_pos ha (sq_pos_of_pos (norm_pos_iff.mpr hc'))
   have he (z : O) : eisEmbedding (r + c * z) =
       eisEmbedding c * (eisEmbedding z + eisEmbedding r / eisEmbedding c) := by
@@ -249,17 +250,17 @@ theorem parameter_pos (t : ℝ) (ht : 0 < t) : 0 < parameter c t := by
 theorem parameter_dual (t : ℝ) (ht : 0 < t) :
     4 / (3 * (parameter c t * ‖eisEmbedding c‖ ^ 2)) = parameter c (1 / t) := by
   have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hs : Real.sqrt 3 ≠ 0 := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+  have hs  := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
   unfold parameter
   field_simp
   ring_nf
-  norm_num [Real.sq_sqrt]
+  norm_num
 
 theorem parameter_prefactor (t : ℝ) (ht : 0 < t) :
     2 / (Real.sqrt 3 * (parameter c t * ‖eisEmbedding c‖ ^ 2)) =
       1 / (‖eisEmbedding c‖ * t) := by
   have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hs : Real.sqrt 3 ≠ 0 := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+  have hs  := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
   unfold parameter
   field_simp
 
@@ -282,14 +283,13 @@ theorem theta_inversion (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) (ht : 0 < t) :
     theta c χ (1 / t) = (TraceCharacter.normalizedGauss c χ * (t : ℂ)) * theta c χ⁻¹ t := by
   have h := theta_functional_equation c χ hχ (1 / t) (one_div_pos.mpr ht)
-  simpa only [one_div, Complex.ofReal_inv, inv_inv, div_inv_eq_mul, one_mul] using h
+  simp_all
 
 theorem theta_root_nonzero (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) : TraceCharacter.normalizedGauss c χ ≠ 0 := by
   have h := TraceCharacter.normalizedGauss_norm c χ hχ
   intro hz
-  rw [hz, norm_zero] at h
-  exact zero_ne_one h
+  simp_all
 
 end SevenEighths.GaussianTheta
 

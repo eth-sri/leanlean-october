@@ -7,12 +7,7 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
 noncomputable section
 open Finset Complex
 
@@ -22,7 +17,6 @@ namespace GaussCRT
 
 end GaussCRT
 
-open scoped Classical
 
 namespace IdealGaussCRT
 
@@ -35,7 +29,7 @@ def leftAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar R ℂ where
     rw [map_zero, AddChar.map_zero_eq_one]
   map_add_eq_mul' z w := by
     change ψ (e.symm (z + w, 0)) = ψ (e.symm (z, 0)) * ψ (e.symm (w, 0))
-    rw [show (z + w, (0 : S)) = (z, 0) + (w, 0) by ext <;> simp,
+    rw [show (z + w, (0 : S)) = (z, 0) + (w, 0) by simp,
       map_add, AddChar.map_add_eq_mul]
 
 def rightAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar S ℂ where
@@ -45,13 +39,13 @@ def rightAddChar (e : T ≃+* R × S) (ψ : AddChar T ℂ) : AddChar S ℂ where
     rw [map_zero, AddChar.map_zero_eq_one]
   map_add_eq_mul' z w := by
     change ψ (e.symm (0, z + w)) = ψ (e.symm (0, z)) * ψ (e.symm (0, w))
-    rw [show ((0 : R), z + w) = (0, z) + (0, w) by ext <;> simp,
+    rw [show ((0 : R), z + w) = (0, z) + (0, w) by simp,
       map_add, AddChar.map_add_eq_mul]
 
 theorem addChar_crt_factor (e : T ≃+* R × S) (ψ : AddChar T ℂ) (x : T) :
     ψ x = leftAddChar e ψ (e x).1 * rightAddChar e ψ (e x).2 := by
   let z := e x
-  have hz : (z.1, (0 : S)) + ((0 : R), z.2) = z := by ext <;> simp
+  have hz : (z.1, (0 : S)) + ((0 : R), z.2) = z := by simp
   calc
     ψ x = ψ (e.symm z) := by simp [z]
     _ = ψ (e.symm (z.1, 0) + e.symm (0, z.2)) := by rw [← map_add, hz]
@@ -69,7 +63,7 @@ theorem gauss_sum_crt [Fintype T] [Fintype R] [Fintype S]
     (∑ x : T,
       χR (e x).1 * χS (e x).2 *
         (leftAddChar e ψ (e x).1 * rightAddChar e ψ (e x).2)) =
-        ∑ x : T, F (e x) := by congr 1; ext x; simp [F]; ring
+        ∑ x : T, F (e x) := by congr 1; ext x; ring
     _ = ∑ z : R × S, F z := Equiv.sum_comp e.toEquiv F
     _ = ∑ z : R, ∑ w : S, F (z, w) := Fintype.sum_prod_type F
     _ = gaussSum χR (leftAddChar e ψ) * gaussSum χS (rightAddChar e ψ) := by
@@ -360,11 +354,11 @@ theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
   let mb := Ideal.Quotient.mk (Ideal.span {a}) b
   let mv := Ideal.Quotient.mk (Ideal.span {a}) v
   have hprod : mb * mv = 1 := bezout_inverse_left hbez
-  have hu : IsUnit mv := IsUnit.of_mul_eq_one_right mb hprod
+  have hu  := IsUnit.of_mul_eq_one_right mb hprod
   have hχ : χ mb * χ mv = 1 := by rw [← map_mul, hprod, map_one]
   have hshift := gaussSum_mulShift χ ψ hu.unit
   have hshift' : χ mv * gaussSum χ (ψ.mulShift mv) = gaussSum χ ψ := by
-    simpa only [hu.unit_spec] using hshift
+    assumption
   calc
     gaussSum χ (ψ.mulShift mv) =
         (χ mb * χ mv) * gaussSum χ (ψ.mulShift mv) := by rw [hχ, one_mul]
@@ -381,11 +375,11 @@ theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
   let ma := Ideal.Quotient.mk (Ideal.span {b}) a
   let mu := Ideal.Quotient.mk (Ideal.span {b}) u
   have hprod : ma * mu = 1 := bezout_inverse_right hbez
-  have hu : IsUnit mu := IsUnit.of_mul_eq_one_right ma hprod
+  have hu  := IsUnit.of_mul_eq_one_right ma hprod
   have hχ : χ ma * χ mu = 1 := by rw [← map_mul, hprod, map_one]
   have hshift := gaussSum_mulShift χ ψ hu.unit
   have hshift' : χ mu * gaussSum χ (ψ.mulShift mu) = gaussSum χ ψ := by
-    simpa only [hu.unit_spec] using hshift
+    assumption
   calc
     gaussSum χ (ψ.mulShift mu) =
         (χ ma * χ mu) * gaussSum χ (ψ.mulShift mu) := by rw [hχ, one_mul]
@@ -412,8 +406,6 @@ theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
       χb (Ideal.Quotient.mk (Ideal.span {b}) a) *
       gaussSum χa (traceModChar ι ψ lam a ha hlam hbase) *
       gaussSum χb (traceModChar ι ψ lam b hb hlam hbase) := by
-  let e := Ideal.quotientMulEquivQuotientProd (Ideal.span {a})
-    (Ideal.span {b}) (principal_coprime_of_bezout hbez)
   have h := gauss_sum_ideal_crt (Ideal.span {a}) (Ideal.span {b})
     (principal_coprime_of_bezout hbez) χa χb
     (traceProdChar ι ψ lam a b ha hb hlam hbase)

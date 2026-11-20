@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRetained
 
@@ -11,11 +12,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained
-open CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation
-open ConcreteTraceCRT
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass CenteredMomentHeckeExpansion
+open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
+open CenteredMomentRetainedProfile CenteredMomentDivisorRetained CenteredMomentDivisorRectangle
+open CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 
 lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
@@ -34,7 +34,7 @@ lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
     · have hw:W ((Ideal.absNorm I:ℝ)/X)=0 := by
         by_contra hn
         have hh:=hs hn
-        have hbound:(Ideal.absNorm I:ℝ)≤b*X:=(div_le_iff₀ hX).mp hh
+        have hbound:=(div_le_iff₀ hX).mp hh
         exact hI ((mem_idealBall _ _).mpr ⟨h0,hbound⟩)
       rw [hw,mul_zero]
 
@@ -102,8 +102,7 @@ theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
     Summable (fun z:O=>if keep z then ‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ X₁ X₂‖^2*
       (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   have hN (j:Fin 2):(0:ℝ)<Ideal.absNorm (selectedPlain D a j) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j))
   unfold allocatedPositiveRow
   exact retained_positive_summable η m A t W₁ W₂ b₁ b₂ _ _ hs₁ hs₂
     (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1)) _ _ _ keep Φ K hK

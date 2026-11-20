@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.FirstScale
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscardedEnergy
 
@@ -30,11 +31,11 @@ theorem first_nominal_scale_le (I J : Ideal O) (E : Finset (CommonIndex I J))
   have hD := norm_pos (commonPart J I) (commonPart_ne_zero J I)
   have hE : (Ideal.absNorm (∏P∈E,P.val):ℝ)≤Ideal.absNorm (commonPart J I) := by
     exact_mod_cast Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (commonPart_ne_zero J I)))
+      (Ideal.absNorm_pos_of_ne_bot (commonPart_ne_zero J I))
       (map_dvd Ideal.absNorm (common_subset_product_dvd_right I J E))
   have hA : (Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)≤Ideal.absNorm (commonPart I J) := by
     exact_mod_cast Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (commonPart_ne_zero I J)))
+      (Ideal.absNorm_pos_of_ne_bot (commonPart_ne_zero I J))
       (map_dvd Ideal.absNorm (activeConductor_span_dvd I J))
   unfold firstNominalScale
   apply (div_le_div_of_nonneg_right

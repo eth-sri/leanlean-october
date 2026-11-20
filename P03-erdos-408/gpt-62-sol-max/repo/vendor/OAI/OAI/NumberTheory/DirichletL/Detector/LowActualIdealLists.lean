@@ -19,13 +19,11 @@ def lowPrimeListEquiv (T : Finset PrimeIdeal) : T≃lowPrimeIdealList T :=
   Equiv.ofBijective (fun p=>⟨p.val.val,Finset.mem_image.mpr ⟨p.val,p.property,rfl⟩⟩) (by
     constructor
     · intro p q h
-      exact Subtype.ext (Subtype.ext (congrArg (fun x : lowPrimeIdealList T=>x.val) h))
+      grind
     · intro I
       obtain ⟨P,hP,h⟩ := Finset.mem_image.mp I.property
       exact ⟨⟨P,hP⟩,Subtype.ext h⟩)
 
-@[simp] lemma lowPrimeListEquiv_val (T : Finset PrimeIdeal) (p : T) :
-    (lowPrimeListEquiv T p).val=p.val.val := rfl
 
 lemma lowPrimeIdealList_prime (T : Finset PrimeIdeal) (I : Id) (hI : I∈lowPrimeIdealList T) : Prime I := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hI
@@ -54,7 +52,7 @@ lemma lowPrimeIdealList_disjoint {ι : Type*} (T : ι→Finset PrimeIdeal)
   intro I hI hJ
   obtain ⟨P,hP,hPI⟩ := Finset.mem_image.mp hI
   obtain ⟨Q,hQ,hQI⟩ := Finset.mem_image.mp hJ
-  have he : P=Q := Subtype.ext (hPI.trans hQI.symm)
+  have he  := Subtype.ext (hPI.trans hQI.symm)
   exact Finset.disjoint_left.mp (hT hij) hP (he.symm ▸ hQ)
 
 lemma lowPrimeIdealList_norm (T : Finset PrimeIdeal) (H : ℝ)
@@ -75,7 +73,7 @@ theorem low_actual_ideal_polynomial {ι : Type*} [Fintype ι]
   let E := Equiv.piCongrRight (fun i=>canonicalSlotEquiv (T i) (hT i))
   rw [←Equiv.sum_comp E]
   simp only [E,Equiv.piCongrRight_apply,Pi.map_apply,canonicalSlotEquiv_val]
-  have hspan (p : ∀i,T i) (i : ι) : Ideal.span {primaryGenerator (p i).val.val}=(p i).val.val :=
+  have hspan (p : ∀i,T i) (i : ι)  :=
     span_primaryGenerator_of_supported _ (hT i _ (p i).property)
   simp_rw [hspan]
   rw [low_canonical_polynomial_period_filter η S hS hbad T hT hout W Y t (fun p=>F (fun i=>(p i).val))]

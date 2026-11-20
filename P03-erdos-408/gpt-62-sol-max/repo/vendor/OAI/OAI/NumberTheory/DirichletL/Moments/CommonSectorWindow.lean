@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.CommonSectorColumn
+public import OAI.NumberTheory.DirichletL.Moments.CommonLinearSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.SecondMaskedWindow
 public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
@@ -10,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonSectorWindow
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
@@ -19,7 +21,7 @@ open CenteredMomentSecondMaskedWindow CenteredMomentSecondSectorEnergy CenteredM
 open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
 open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalWholeWindow CenteredMomentSmooth CenteredMomentSecondWindowSource
+open CenteredMomentSmooth CenteredMomentSecondWindowSource
 open RayFourExpansion CenteredMomentLogDyadic
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _

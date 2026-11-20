@@ -1,33 +1,31 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceSupport
-public import OAI.NumberTheory.DirichletL.Moments.FirstActiveRadicalBudget
+public import OAI.NumberTheory.DirichletL.Moments.FirstInactiveRadicalMass
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstNonexceptionalPrefactor
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalSourceSupport
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstActiveRadicalBudget CenteredMomentRankinRadical
-open CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSupportedCorrelation
+open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open CenteredMomentFirstPhysicalSourceSupport CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic
+open CenteredMomentRankinRadical CenteredMomentExceptionalAmplitudePair CenteredMomentSupportedCorrelation
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma pair_conductor_root (q₁ q₂ B:ℝ)(_h₁:0≤q₁)(h₂:0≤q₂)
     (hB:0≤B)(hb₁:q₁≤B)(hb₂:q₂≤B):Real.sqrt (q₁*q₂)≤B := by
   have hh:=mul_le_mul hb₁ hb₂ h₂ hB
   have hs:=Real.sqrt_le_sqrt hh
-  simpa only [←pow_two,Real.sqrt_sq hB] using hs
+  simp_all
 
 lemma scalar_conductor_algebra (s μ K T N E r C F q q₁ q₂:ℝ)
-    (_hs:0≤s)(hμ:0≤μ)(hK:0≤K)(_hT:0<T)(hN:0<N)(hE:0<E)(hr:0<r)
+(hμ:0≤μ)(hK:0≤K)(hN:0<N)(hE:0<E)(hr:0<r)
     (hC:0≤C)(hF:0≤F)(hq:0≤q)(h₁:0≤q₁)(h₂:0≤q₂)
     (hscalar:s*T≤μ*C*K*Real.sqrt N/(E*r))
     (hc₁:q₁≤F*q*E*r^2)(hc₂:q₂≤F*q*E*r^2):
@@ -38,7 +36,7 @@ lemma scalar_conductor_algebra (s μ K T N E r C F q q₁ q₂:ℝ)
       mul_le_mul (div_le_div_of_nonneg_right hscalar hN.le) hroot
         (Real.sqrt_nonneg _) (by positivity)
     _=μ*C*F*K*q*(r/Real.sqrt N):=by
-      have hn:Real.sqrt N≠0:=ne_of_gt (Real.sqrt_pos.mpr hN)
+      have hn:=ne_of_gt (Real.sqrt_pos.mpr hN)
       have hn2:=Real.sq_sqrt hN.le
       field_simp
       linear_combination μ*C*K*F*q*hn2
@@ -52,8 +50,8 @@ theorem weighted_scalar_volume (C D:Ideal O)(hC:Supported C)(E:Finset (CommonInd
         (‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2*
           ‖eisEmbedding (activeConductor C D)‖) := by
   have hs:=reference_sqrt_lower (C.absNorm:ℝ) (D.absNorm:ℝ) A₀ B₀ a T M
-    (Nat.cast_nonneg _) (Nat.cast_nonneg _) hA.le hB.le ha.le hT.le hl hr
-  have hden:0<Real.sqrt A₀*Real.sqrt B₀:=mul_pos (Real.sqrt_pos.2 hA) (Real.sqrt_pos.2 hB)
+    (Nat.cast_nonneg _) (Nat.cast_nonneg _) hA.le ha.le hT.le hl hr
+  have hden:=mul_pos (Real.sqrt_pos.2 hA) (Real.sqrt_pos.2 hB)
   have hratio:T/(Real.sqrt A₀*Real.sqrt B₀)≤Real.exp M*Real.sqrt ((C.absNorm:ℝ)*D.absNorm)/a:=by
     apply (div_le_div_iff₀ hden ha).mpr
     nlinarith [hs]

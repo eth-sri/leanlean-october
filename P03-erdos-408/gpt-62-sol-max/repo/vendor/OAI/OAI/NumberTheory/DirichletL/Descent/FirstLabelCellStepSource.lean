@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepGates
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstLabelCell
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
@@ -30,7 +31,7 @@ def secondCutoff (p : ι→O) (Z M r ell V eta tau window : ℝ) (k : SourceInde
   uniformSecondRadius p Z (exponent Z (k 3)) eta G E
     (columnScale Z r k l negative*Real.exp window) (firstCellRadius Z M r ell V eta tau k j) (Z^tau)
 
-def source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+def source (p : ι→O) [OAI.PrincipalFamily.Maximal p]
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b : ℝ) :=
   supportedRetainedSource p (extra negative)
@@ -38,7 +39,7 @@ def source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
     negative J lists pool (secondCutoff p Z M r ell V eta tau window k l j negative)
     b (columnScale Z r k l negative)
 
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
 theorem source_valid (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -68,15 +69,13 @@ theorem source_row_gates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
     (∀d∈keys p S,0≤actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d) := by
   intro S
   have hz : 0<Z := zero_lt_one.trans hZ
-  have hc : columnScale Z r k l negative*Real.exp window≤
-      Z^(r-columnA Z k negative-exponent Z (k 2)-exponent Z l+4*eta) := by
-    unfold columnScale
-    rw [Real.rpow_add hz]
-    exact mul_le_mul_of_nonneg_left hwindow (Real.rpow_nonneg hz.le _)
-  exact supported_cell_row_gates p hp _ _ negative J lists pool Z M r ell V (exponent Z (k 3))
+  refine supported_cell_row_gates p hp _ _ negative J lists pool Z M r ell V (exponent Z (k 3))
     (columnA Z k negative) (exponent Z (k 2)) (exponent Z j) (exponent Z l) eta tau
     (columnScale Z r k l negative*Real.exp window) b (columnScale Z r k l negative)
-    hZ heta hbin (by unfold columnScale;positivity) hc
+    hZ heta hbin (by unfold columnScale;positivity) ?_
+  unfold columnScale
+  rw [Real.rpow_add hz]
+  exact mul_le_mul_of_nonneg_left hwindow (Real.rpow_nonneg hz.le _)
 
 include hp in
 theorem source_outer_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)

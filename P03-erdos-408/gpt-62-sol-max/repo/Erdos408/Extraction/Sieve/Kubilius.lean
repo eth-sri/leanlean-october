@@ -57,7 +57,7 @@ lemma exists_subset_prod_mem {m Y : ℝ} (hY : 1 ≤ Y) :
       exact ⟨S', hS'.trans (subset_insert a S), h1, h2⟩
     · refine ⟨insert a S, le_rfl, h, ?_⟩
       rw [prod_insert ha, mul_comm]
-      have ha' : (a : ℝ) ≤ m := hS a (mem_insert_self a S)
+      have ha'  := hS a (mem_insert_self a S)
       exact mul_le_mul (not_lt.1 hS₀) ha' (Nat.cast_nonneg _) (by linarith)
 
 /-- There are at most `N / (r d) + 1` numbers `u ≤ N` with `r ∣ u + 1` and `d ∣ u`. -/
@@ -96,7 +96,7 @@ lemma card_large_bandSet_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ �
             1 / ∏ p ∈ S, (p : ℝ) +
         Y₀ * m := by
   set T := 𝔅.powerset.filter fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ) ∧ ∏ p ∈ S, (p : ℝ) ≤ Y₀ * m
-  have h𝔅p : ∀ p ∈ 𝔅, p.Prime := fun p hp => (h𝔅 p hp).1
+  have h𝔅p  := fun p hp => (h𝔅 p hp).1
   -- every such `u` is divisible by `ℓ ∏ S'` for some `S' ∈ T`
   have hsub : (Icc 1 N).filter (fun u => (r ∣ u + 1 ∧ ℓ ∣ u) ∧
       Y₀ < ∏ p ∈ bandSet 𝔅 u, (p : ℝ)) ⊆
@@ -105,10 +105,10 @@ lemma card_large_bandSet_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ �
     obtain ⟨hu1, ⟨hru, hℓu⟩, hY⟩ := mem_filter.1 hu
     obtain ⟨S', hS', h1, h2⟩ := exists_subset_prod_mem hY₀ (bandSet 𝔅 u)
       (fun p hp => (h𝔅 p (mem_filter.1 hp).1).2) hY
-    have hS'𝔅 : S' ⊆ 𝔅 := hS'.trans (filter_subset _ _)
-    have hdvd : ∏ p ∈ S', p ∣ u := prod_primes_dvd u
+    have hS'𝔅  := hS'.trans (filter_subset _ _)
+    have hdvd  := prod_primes_dvd u
       (fun p hp => (h𝔅p p (hS'𝔅 hp)).prime) fun p hp => (mem_filter.1 (hS' hp)).2
-    have hcop : Nat.Coprime ℓ (∏ p ∈ S', p) := Nat.Coprime.prod_right fun p hp =>
+    have hcop  := Nat.Coprime.prod_right fun p hp =>
       ((h𝔅p p (hS'𝔅 hp)).coprime_iff_not_dvd.2 (hℓ𝔅 p (hS'𝔅 hp))).symm
     exact mem_biUnion.2 ⟨S', mem_filter.2 ⟨mem_powerset.2 hS'𝔅, h1, h2⟩,
       mem_filter.2 ⟨hu1, hru, hcop.mul_dvd_of_dvd_of_dvd hℓu hdvd⟩⟩
@@ -124,7 +124,7 @@ lemma card_large_bandSet_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ �
     push_cast
     field_simp
   have hT : (#T : ℝ) ≤ Y₀ * m := by
-    refine le_trans ?_ (card_powerset_prod_le h𝔅p (by positivity : (0 : ℝ) ≤ Y₀ * m))
+    refine le_trans ?_ (card_powerset_prod_le h𝔅p (by positivity))
     refine Nat.cast_le.2 (card_le_card fun S hS => ?_)
     obtain ⟨hS𝔅, -, h⟩ := mem_filter.1 hS
     refine mem_filter.2 ⟨hS𝔅, ?_⟩
@@ -174,7 +174,7 @@ lemma sum_progSet_eq_sum_fiberSum (𝔅 : Finset ℕ) (N r ℓ : ℕ) (f : ℕ �
     (fun u _ => mem_powerset.2 (filter_subset _ _))]
   refine sum_congr rfl fun S _ => ?_
   rw [fiberSum, sum_mul]
-  exact sum_congr rfl fun u hu => by rw [(mem_filter.1 hu).2]
+  exact sum_congr rfl fun u hu => by simp_all
 
 /-- Sets meeting the primes `p ∣ r` carry no weight. -/
 lemma fiberSum_eq_zero {𝔅 : Finset ℕ} (h𝔅 : ∀ p ∈ 𝔅, p.Prime) {N r ℓ : ℕ} (f : ℕ → ℝ)
@@ -234,7 +234,7 @@ lemma exists_dvdSieve (h₃ : BlockSieve) : ∃ (h₀ : ℕ) (KB : ℝ), DvdSiev
   obtain ⟨C₀, hC₀⟩ := sum_inv_primes_block_le
   obtain ⟨h₀, KB, hBS⟩ := h₃ (1 / 2) C₀ (by norm_num)
   refine ⟨h₀, KB, fun objs wt P z X hwt hz hP hX h heven hh => ?_⟩
-  have hPp : ∀ p ∈ P, p.Prime := fun p hp => (hP p hp).1
+  have hPp  := fun p hp => (hP p hp).1
   have h' := hBS objs wt P z X (fun p u => p ∣ u) (fun p => 1 / (p : ℝ)) hwt hz hP hX
     (fun p hp => by
       have h2 : (2 : ℝ) ≤ p := by exact_mod_cast (hPp p hp).two_le
@@ -272,13 +272,13 @@ lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
   have h𝔅' : ∀ p ∈ 𝔅', p ∈ 𝔅 ∧ ¬ p ∣ r := fun p hp => by
     obtain ⟨h1, h2⟩ := mem_sdiff.1 hp
     exact ⟨h1, fun h => h2 (mem_filter.2 ⟨h1, h⟩)⟩
-  have h𝔅p : ∀ p ∈ 𝔅, p.Prime := fun p hp => (h𝔅 p hp).1
-  have hSp : ∀ p ∈ S, p.Prime := fun p hp => h𝔅p p (h𝔅' p (hS hp)).1
+  have h𝔅p  := fun p hp => (h𝔅 p hp).1
+  have hSp  := fun p hp => h𝔅p p (h𝔅' p (hS hp)).1
   set P := 𝔅' \ S
   have hPp : ∀ p ∈ P, p.Prime := fun p hp => h𝔅p p (h𝔅' p (mem_sdiff.1 hp).1).1
   set d := ℓ * ∏ p ∈ S, p
-  have hd : 0 < d := Nat.mul_pos hℓ (prod_pos fun p hp => (hSp p hp).pos)
-  have hℓS : Nat.Coprime ℓ (∏ p ∈ S, p) :=
+  have hd  := Nat.mul_pos hℓ (prod_pos fun p hp => (hSp p hp).pos)
+  have hℓS  :=
     coprime_prod_of_not_dvd hSp fun p hp => hℓ𝔅 p (h𝔅' p (hS hp)).1
   set objs := (Icc 1 N).filter fun u => r ∣ u + 1 ∧ d ∣ u
   set X' := progMain N r ℓ f * ∏ p ∈ S, (1 : ℝ) / p
@@ -305,7 +305,7 @@ lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
       · intro hpS
         exact ⟨(h𝔅' p (hS hpS)).1, (dvd_prod_of_mem _ hpS).trans ((Dvd.intro_left _ rfl).trans hdu)⟩
     · rintro ⟨⟨hu, hru, hℓu⟩, hband⟩
-      have hSu : ∏ p ∈ S, p ∣ u := prod_primes_dvd u (fun p hp => (hSp p hp).prime)
+      have hSu  := prod_primes_dvd u (fun p hp => (hSp p hp).prime)
         fun p hp => by rw [← hband] at hp; exact (mem_filter.1 hp).2
       refine ⟨⟨hu, hru, hℓS.mul_dvd_of_dvd_of_dvd hℓu hSu⟩, fun p hp hpu => ?_⟩
       obtain ⟨hp𝔅', hpS⟩ := mem_sdiff.1 hp
@@ -319,7 +319,7 @@ lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
       |∑ u ∈ objs.filter (fun u => ∀ p ∈ D, p ∣ u), f u - X' * ∏ p ∈ D, 1 / (p : ℝ)| ≤ V := by
     intro D hD
     have hDP := mem_powerset.1 hD
-    have hDp : ∀ p ∈ D, p.Prime := fun p hp => hPp p (hDP hp)
+    have hDp  := fun p hp => hPp p (hDP hp)
     have hdD : Nat.Coprime d (∏ p ∈ D, p) := by
       refine Nat.coprime_mul_iff_left.2 ⟨coprime_prod_of_not_dvd hDp fun p hp =>
         hℓ𝔅 p (h𝔅' p (mem_sdiff.1 (hDP hp)).1).1, coprime_prod_prod hSp hDp ?_⟩
@@ -361,7 +361,7 @@ lemma abs_fiberSum_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
   have hsieve := hBS objs f P m X' (fun u _ => hf u) hm (fun p hp =>
     ⟨hPp p hp, (h𝔅 p (h𝔅' p (mem_sdiff.1 hp).1).1).2⟩) hX'0 h heven hh
   rw [hset, hmain] at hsieve
-  have hw0 : 0 ≤ progMain N r ℓ f * modelWeight 𝔅' S :=
+  have hw0  :=
     mul_nonneg hX0 (modelWeight_nonneg (fun p hp => (h𝔅p p (h𝔅' p hp).1).pos) S)
   have hrem0 : 0 ≤ ∑ D ∈ P.powerset.filter (fun D => ((∏ p ∈ D, p : ℕ) : ℝ) ≤ m ^ (4 * h + 2)),
       |∑ u ∈ objs.filter (fun u => ∀ p ∈ D, p ∣ u), f u - X' * ∏ p ∈ D, 1 / (p : ℝ)| :=
@@ -405,7 +405,7 @@ lemma sum_small_fibers_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
   set Q := 𝔅.powerset.filter (fun S => S ⊆ 𝔅' ∧ ∏ p ∈ S, (p : ℝ) ≤ Y₀)
   set X := progMain N r ℓ f
   set σ := ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p
-  have h𝔅p : ∀ p ∈ 𝔅, p.Prime := fun p hp => (h𝔅 p hp).1
+  have h𝔅p := fun p hp => (h𝔅 p hp).1
   have h𝔅'0 : ∀ p ∈ 𝔅', 0 < p := fun p hp => (h𝔅p p (mem_sdiff.1 hp).1).pos
   have hX0 : 0 ≤ X := by
     simp only [X, progMain]
@@ -419,7 +419,7 @@ lemma sum_small_fibers_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅
     have hsd : modelWeight 𝔅 S = modelWeight 𝔅' S * ∏ p ∈ 𝔅.filter (· ∣ r), (1 - (1 : ℝ) / p) :=
       modelWeight_sdiff hR hS'
     rw [hsd]
-    have h0 : 0 ≤ modelWeight 𝔅' S := modelWeight_nonneg h𝔅'0 S
+    have h0 := modelWeight_nonneg h𝔅'0 S
     have hprod := prod_mem_unit (𝔅.filter (· ∣ r)) (fun p => 1 - (1 : ℝ) / p) fun p hp => by
       have : (1 : ℝ) ≤ p := by exact_mod_cast (h𝔅p p (mem_filter.1 hp).1).one_lt.le
       constructor
@@ -483,11 +483,11 @@ lemma sum_large_fibers_le {𝔅 : Finset ℕ} {m : ℝ} (h𝔅 : ∀ p ∈ 𝔅,
             1 / ∏ p ∈ S, (p : ℝ) := by
   set Q := 𝔅.powerset.filter (fun S => S ⊆ bandCoprime 𝔅 r ∧ Y₀ < ∏ p ∈ S, (p : ℝ))
   set X := progMain N r ℓ f
-  have h𝔅0 : ∀ p ∈ 𝔅, 0 < p := fun p hp => (h𝔅 p hp).1.pos
+  have h𝔅0  := fun p hp => (h𝔅 p hp).1.pos
   have hX0 : 0 ≤ X := by
     simp only [X, progMain]
     exact mul_nonneg (by positivity) (sum_nonneg fun u _ => hf u)
-  have hM0 : 0 ≤ M₀ := (hf 0).trans (hfM 0)
+  have hM0  := (hf 0).trans (hfM 0)
   have hN0 : ∀ S, 0 ≤ fiberSum 𝔅 N r ℓ f S := fun S => sum_nonneg fun u _ => hf u
   have hterm : ∀ S ∈ Q, |fiberSum 𝔅 N r ℓ f S - X * modelWeight 𝔅 S| ≤
       fiberSum 𝔅 N r ℓ f S + X * (1 / ∏ p ∈ S, (p : ℝ)) := by
@@ -558,8 +558,8 @@ lemma abs_sum_bandSet_sub_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {�
   set X := progMain N r ℓ f
   set 𝔅' := bandCoprime 𝔅 r
   set g : Finset ℕ → ℝ := fun S => |fiberSum 𝔅 N r ℓ f S - X * modelWeight 𝔅 S|
-  have h𝔅p : ∀ p ∈ 𝔅, p.Prime := fun p hp => (h𝔅 p hp).1
-  have h𝔅0 : ∀ p ∈ 𝔅, 0 < p := fun p hp => (h𝔅p p hp).pos
+  have h𝔅p  := fun p hp => (h𝔅 p hp).1
+  have h𝔅0  := fun p hp => (h𝔅p p hp).pos
   have hX0 : 0 ≤ X := by
     simp only [X, progMain]
     exact mul_nonneg (by positivity) (sum_nonneg fun u _ => hf u)
@@ -609,7 +609,7 @@ lemma sum_inv_prod_gt_le {𝔅 : Finset ℕ} {m Y₀ : ℝ} (h𝔅 : ∀ p ∈ �
     (hm : 1 < m) (hY₀ : 0 < Y₀) :
     ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)), 1 / ∏ p ∈ S, (p : ℝ) ≤
       exp (-(Real.log Y₀ / Real.log m) + exp 1 * ∑ p ∈ 𝔅, (1 : ℝ) / p) := by
-  have hlm : 0 < Real.log m := Real.log_pos hm
+  have hlm  := Real.log_pos hm
   set σ := 1 / Real.log m
   have hσ : 0 < σ := by positivity
   have hp0 : ∀ p ∈ 𝔅, (0 : ℝ) < p := fun p hp => by exact_mod_cast (h𝔅 p hp).1.pos
@@ -618,10 +618,10 @@ lemma sum_inv_prod_gt_le {𝔅 : Finset ℕ} {m Y₀ : ℝ} (h𝔅 : ∀ p ∈ �
       1 / ∏ p ∈ S, (p : ℝ) ≤ Y₀ ^ (-σ) * ∏ p ∈ S, ((p : ℝ) ^ σ / p) := by
     intro S hS
     obtain ⟨hS𝔅, hSY⟩ := mem_filter.1 hS
-    have hpos : 0 < ∏ p ∈ S, (p : ℝ) := prod_pos fun p hp => hp0 p (mem_powerset.1 hS𝔅 hp)
+    have hpos  := prod_pos fun p hp => hp0 p (mem_powerset.1 hS𝔅 hp)
     rw [prod_div_distrib, Real.finsetProd_rpow _ _ (fun p hp =>
       (hp0 p (mem_powerset.1 hS𝔅 hp)).le)]
-    have h1 : Y₀ ^ σ ≤ (∏ p ∈ S, (p : ℝ)) ^ σ := Real.rpow_le_rpow hY₀.le hSY.le hσ.le
+    have h1  := Real.rpow_le_rpow hY₀.le hSY.le hσ.le
     rw [rpow_neg hY₀.le, ← mul_div_assoc, inv_mul_eq_div, div_div, le_div_iff₀ (by positivity),
       one_div_mul_eq_div, div_le_iff₀ hpos]
     nlinarith [rpow_pos_of_pos hY₀ σ]
@@ -655,7 +655,6 @@ lemma sum_inv_prod_gt_le {𝔅 : Finset ℕ} {m Y₀ : ℝ} (h𝔅 : ∀ p ∈ �
     _ = _ := by
         rw [← exp_sum, ← mul_sum, rpow_def_of_pos hY₀, ← exp_add]
         congr 1
-        simp only [σ]
         ring
 
 /-! ### Summing over the moduli -/
@@ -697,19 +696,17 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
     ∑ r ∈ Icc 1 R, |∑ u ∈ (Icc 1 N).filter (r ∣ · + 1), f u * (∑ i ∈ S with ℓ i ∣ u, b i) * H u -
         ∑ i ∈ S, b i * (progMain N r (ℓ i) f * modelMean 𝔅 fun T => H (∏ p ∈ T, p))| ≤
       N * M₀ * HR * Λ * δ + R * #S * (Y₀ * (|KB| * (m ^ (4 * h + 2) * V)) + M₀ * (Y₀ * m)) := by
-  have hM0 : 0 ≤ M₀ := (hf 0).trans (hfM 0)
+  have hM0  := (hf 0).trans (hfM 0)
   set τ := ∑ S ∈ 𝔅.powerset.filter (fun S : Finset ℕ => Y₀ < ∏ p ∈ S, (p : ℝ)),
     1 / ∏ p ∈ S, (p : ℝ)
   set E₀ := Y₀ * (|KB| * (m ^ (4 * h + 2) * V)) + M₀ * (Y₀ * m)
-  have hτ0 : 0 ≤ τ := sum_nonneg fun S _ => div_nonneg zero_le_one
-    (prod_nonneg fun p _ => Nat.cast_nonneg p)
   -- the bound for one pair `(r, ℓ_i)`
   have hpair : ∀ r ∈ Icc 1 R, ∀ i ∈ S,
       |∑ u ∈ progSet N r (ℓ i), f u * H u -
         progMain N r (ℓ i) f * modelMean 𝔅 fun T => H (∏ p ∈ T, p)| ≤
       N * M₀ * (1 / r) * (1 / ℓ i) * δ + E₀ := by
     intro r hr i hi
-    have hr0 : 0 < r := (mem_Icc.1 hr).1
+    have hr0  := (mem_Icc.1 hr).1
     have h1 := abs_sum_bandSet_sub_le hBS h𝔅 hm (N := N) hr0 (hℓ i hi) (hrℓ r hr i hi)
       (hℓ𝔅 i hi) hf0 hf hfM hV heven hh hY₀ (fun T => H (∏ p ∈ T, p)) fun T => hH _
     have hsum : ∑ u ∈ progSet N r (ℓ i), f u * H u =
@@ -725,20 +722,13 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
           rw [sum_const, Nat.card_Icc, Nat.add_sub_cancel, nsmul_eq_mul]
           push_cast
           field_simp
-    have hX0 : 0 ≤ progMain N r (ℓ i) f := by
-      rw [progMain]
-      exact mul_nonneg (by positivity) (sum_nonneg fun u _ => hf u)
     have hNr : (N : ℝ) / ((r * ℓ i : ℕ) : ℝ) = N * (1 / r) * (1 / ℓ i) := by
       push_cast
       field_simp
     have hd := hδ r hr
     have hd0 : 0 ≤ |KB| * exp (-(h : ℝ)) + 2 * ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p + τ := by
-      have : 0 ≤ ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p := sum_nonneg fun p _ => by positivity
       positivity
-    have e1 : progMain N r (ℓ i) f * (|KB| * exp (-(h : ℝ)) +
-        2 * ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p + τ) ≤
-        N * M₀ * (1 / r) * (1 / ℓ i) * (|KB| * exp (-(h : ℝ)) +
-        2 * ∑ p ∈ 𝔅.filter (· ∣ r), (1 : ℝ) / p + τ) := mul_le_mul_of_nonneg_right hX hd0
+    have e1  := mul_le_mul_of_nonneg_right hX hd0
     have e2 : M₀ * (N / ((r * ℓ i : ℕ) : ℝ) * τ) = N * M₀ * (1 / r) * (1 / ℓ i) * τ := by
       rw [hNr]
       ring
@@ -773,9 +763,6 @@ lemma sum_progression_le {h₀ : ℕ} {KB : ℝ} (hBS : DvdSieve h₀ KB) {𝔅 
       _ ≤ N * M₀ * (1 / r) * δ * Λ + #S * E₀ := by
           gcongr
       _ = _ := by ring
-  have hE₀ : 0 ≤ E₀ := by
-    have hV0 : 0 ≤ V := (sum_nonneg fun _ _ => abs_nonneg _).trans hV
-    positivity
   have hΛ0 : 0 ≤ Λ := (sum_nonneg fun i _ => by positivity).trans hΛ
   calc _ ≤ ∑ r ∈ Icc 1 R, (N * M₀ * (1 / r) * Λ * δ + #S * E₀) := sum_le_sum hr_term
     _ = N * M₀ * Λ * δ * ∑ r ∈ Icc 1 R, (1 : ℝ) / r + R * #S * E₀ := by

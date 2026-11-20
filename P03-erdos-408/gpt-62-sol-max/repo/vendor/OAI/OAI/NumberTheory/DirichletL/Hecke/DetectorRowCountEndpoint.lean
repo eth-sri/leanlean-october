@@ -65,8 +65,8 @@ theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
     generalize hJd : Endpoint.balanceDenominator δ (1/2-x) = J at *
     have hJdef : J=(5/6-δ)*D+δ*P := by
       rw [←hJd, Endpoint.balanceDenominator, hDd, hPd]
-    have hD : D ≠ 0 := hDb.ne'
-    have hJ : J ≠ 0 := hJb.ne'
+    have hD  := hDb.ne'
+    have hJ  := hJb.ne'
     field_simp [hD,hJ]
     rw [hJdef]
     ring

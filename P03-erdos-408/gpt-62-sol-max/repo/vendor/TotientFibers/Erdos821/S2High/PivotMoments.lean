@@ -9,8 +9,7 @@ open scoped BigOperators
 
 namespace Erdos821.S2High
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (n : ℕ) (hP : P.Admissible F x)
@@ -22,7 +21,7 @@ theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
   let a : ℝ := 2 / (F.vMin * Real.exp ((L x) ^ F.c))
   have hden : 0 < F.vMin * Real.exp ((L x) ^ F.c) :=
     mul_pos F.vMin_pos (Real.exp_pos _)
-  have haPos : 0 < a := by dsimp [a]; exact div_pos two_pos hden
+  have haPos : 0 < a := by positivity
   have ha : 0 ≤ a := haPos.le
   have hsum : (∑ p : P.Prime g.val, tiltedMu F P n g.val p) ≤ 2 := hm.2.2
   calc
@@ -42,7 +41,7 @@ theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
             _ = (tiltedMu F P n g.val p) ^ ((k - 1) + 1) :=
               (congrArg (fun j : ℕ => (tiltedMu F P n g.val p) ^ j)
                 (Nat.sub_add_cancel hk)).symm
-            _ = _ := by rw [pow_succ]
+            _ = _ := by rfl
         _ ≤ a ^ (k - 1) * tiltedMu F P n g.val p :=
           mul_le_mul_of_nonneg_right hpow hp0
     _ = a ^ (k - 1) * ∑ p : P.Prime g.val, tiltedMu F P n g.val p := by

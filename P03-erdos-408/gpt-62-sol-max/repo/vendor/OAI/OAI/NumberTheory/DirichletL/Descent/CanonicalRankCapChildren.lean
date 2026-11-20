@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMonotone
 
 @[expose] public section
@@ -7,16 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMonotone
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
 open InverseMomentFirstLabelCell InverseMomentFirstChildWindows InverseFirstGlobalCaps
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+variable (hcop:OAI.PrincipalFamily.Coprime p)
+variable (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem canonical_rank_cap_children
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
@@ -38,7 +39,7 @@ theorem canonical_rank_cap_children
       Z M r ell V eta tau window b eps A K degree :=by
   exact canonical_rank_moments_children p hp hcop hg hc hpr pool Q k l j negative base Ψ hΨ m hm
     slots lists a ω₁ ω₂ Z M r ell V eta tau window b cutoff Qwidth z c eps A K degree
-    hZ heta hbin hell hV hb hbt hwindow hd hterminal hsmall hparent hpuncture hQ
+    hZ heta hbin hell hV hb hbt hwindow hterminal hsmall hparent hpuncture hQ
     (canonical_rank_restrict p hp hcop hg pool base slots lists a ω₁ Z _ _ _ _ z _ _ eps A K degree hMc hFc hcc h₁)
     (canonical_rank_restrict p hp hcop hg pool base slots lists a ω₂ Z _ _ _ _ z _ _ eps A K degree hMc hFc hcc h₂)
 

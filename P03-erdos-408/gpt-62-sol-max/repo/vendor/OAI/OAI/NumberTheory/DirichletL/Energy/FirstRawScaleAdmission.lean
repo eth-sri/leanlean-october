@@ -8,18 +8,16 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
-open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput
-open CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice
+open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildSourceCaps CenteredMomentEnergyAmplifiedRayDictionary
+open CenteredMomentFirstAnnularInput CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice
 open CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α]
-local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
 def parentLower (s:Input α)(Z:ℝ):ℝ:=
   min (min (Real.logb Z s.X₁) (Real.logb Z s.X₂))
@@ -54,7 +52,7 @@ theorem active_error_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
     let r':=r-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k
     Z^r'≤d.X₁ ∧ Z^r'≤d.X₂ ∧ Z^r'≤d.Y₁ ∧ Z^r'≤d.Y₂:=by
   have hc:=child_lower s C R hC B τ t Z r hZ hX₁ hX₂ hY₁ hY₂
-  have hpn:(Ideal.span {p}:Ideal O)≠0:=Ideal.span_singleton_eq_bot.not.mpr hp
+  have hpn:=Ideal.span_singleton_eq_bot.not.mpr hp
   have hh:=child_lower (activeInput (child s C R B τ t)) ((Ideal.span {p})^k) (R*C)
     (pow_ne_zero k hpn) Bp υ v Z (r-Real.logb Z (C.absNorm:ℝ)) hZ
     hc.1 hc.2.1 hc.2.2.1 hc.2.2.2

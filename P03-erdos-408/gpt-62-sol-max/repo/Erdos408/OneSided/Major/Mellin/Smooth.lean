@@ -95,7 +95,7 @@ theorem iteratedDeriv_twist (c : ℝ) (k : ℕ) :
     have h : HasDerivAt (fun y : ℝ => 2 * π * Complex.I * ((c * y : ℝ) : ℂ))
         (2 * π * Complex.I * c) y := by
       have := ((hasDerivAt_id y).const_mul c).ofReal_comp.const_mul (2 * π * Complex.I)
-      simpa using this
+      simp_all
     rw [(h.cexp.const_mul _).deriv]
     ring
 
@@ -117,7 +117,7 @@ theorem norm_iteratedFDeriv_twist_le {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ 
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ ≤
       (i.choose j : ℝ) * (P * (2 * π * (1 + |c|)) ^ i) := by
     intro j hj
-    have hj' : j ≤ i := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
+    have hj'  := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
     have he' : ‖iteratedFDeriv ℝ (i - j) (fun y : ℝ =>
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ = (2 * π * |c|) ^ (i - j) := by
       rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_twist, norm_mul, norm_pow,
@@ -146,7 +146,7 @@ theorem plateau_eq_mul (t : ℝ) :
 
 /-- The plateau `ψ` is smooth. -/
 theorem contDiff_plateau : ContDiff ℝ ∞ plateau := by
-  have h : plateau = fun t => smoothTransition (5 - t) * smoothTransition (5 + t) :=
+  have h  :=
     funext plateau_eq_mul
   rw [h]
   exact (smoothTransition.contDiff.comp (contDiff_const.sub contDiff_id)).mul

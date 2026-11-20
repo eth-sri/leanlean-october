@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.Continuation
-public import OAI.NumberTheory.DirichletL.PrimeRows.FirstAnalytic
+public import OAI.NumberTheory.DirichletL.PrimeRows.FirstProduct
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstHolomorphic
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRamified
 
 @[expose] public section
@@ -55,15 +56,9 @@ theorem ramifiedCorrection_first_bound (η : Character) (u : FreeRow) (P : Prime
     (hx : (51/100 : ℝ)≤x.re) (hw : -(1/100 : ℝ)≤w.re) (hz : (17/50 : ℝ)≤z.re) (hxw : 1≤x.re+w.re) :
     ‖ramifiedCorrection η u P hs x w z‖≤193 := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
-  have ha : ‖actualACube η p‖≤1 := by
-    have h := actualAPhase_norm_le_one η p
-    rw [←actualACube_sq,norm_pow] at h
-    nlinarith [norm_nonneg (actualACube η p)]
+  obtain ⟨hp, hspan, _, hg⟩ := supported_primary_data P hs p rfl
+  let := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  have ha := actualACube_norm_le η p
   exact ramifiedClosed_first_region_bound p hp hg.1 hg.2 _ _ _ x w z
     (hspan.symm ▸ hQ) (targetMonoid_norm_le_one η p) ha
     (actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)) hx hw hz hxw _ (multiplicity_lt_six u p hp)

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerClipping
 public import OAI.NumberTheory.DirichletL.Descent.ClippedUniform
 
@@ -9,7 +10,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open ActualEisensteinCubic CompletedGauss
 namespace SevenEighths.InverseInitialEnergyCallerUniform
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile
@@ -19,8 +20,8 @@ theorem initial_height_bound (J:ℕ)(z:JointLogSeparation.Frequency×(Fin 6→�
     (h:ℝ)(hh:h = -leftHeight z ∨ h=rightHeight z) :
     (1+‖h‖)^(2*J)≤tripleHeight (4*J) z.1*coordinateHeight (4*J) z.2 := by
   have hb := child_height_moment_bound (2*J) z
-  have hl : 1≤(1+‖leftHeight z‖)^(2*J) := one_le_pow₀ (by linarith [norm_nonneg (leftHeight z)])
-  have hr : 1≤(1+‖rightHeight z‖)^(2*J) := one_le_pow₀ (by linarith [norm_nonneg (rightHeight z)])
+  have hl : 1≤(1+‖leftHeight z‖)^(2*J) := one_le_pow₀ (by simp)
+  have hr : 1≤(1+‖rightHeight z‖)^(2*J) := one_le_pow₀ (by simp)
   rw [show 2*(2*J)=4*J by omega] at hb
   rcases hh with rfl|rfl
   · rw [norm_neg]
@@ -33,9 +34,9 @@ theorem initial_raw_uniform
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       ∀J:ℕ,∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→Eis)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hcop:OAI.PrincipalFamily.Coprime p)
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (pool:Finset ι)(Ψ:Eis→*ℂ)(m:Eis)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
       (labels:Finset (Ideal Eis))(rows:Finset Eis)(D:Ideal Eis→ℝ)(_hD:∀f∈labels,0≤D f)

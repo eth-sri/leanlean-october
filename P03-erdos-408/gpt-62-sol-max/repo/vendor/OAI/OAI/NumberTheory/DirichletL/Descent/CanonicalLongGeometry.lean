@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
@@ -43,9 +43,9 @@ theorem actual_long_bin_geometry
     rw [hp]
     exact activeCubeLogBin_norms S D b (Z^N) j v hv
   obtain ⟨v,hv⟩:=hne
-  have hvbin: v∈activeCubeLogBin S D b (Z^N) j := (Finset.mem_filter.mp hv).1
+  have hvbin := (Finset.mem_filter.mp hv).1
   have hactive:= (Finset.mem_filter.mp hvbin).1
-  have hcube:(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)^3≤b*Z^N :=
+  have hcube :=
     (Finset.mem_filter.mp hactive).2
   have hsc:(Z^(actualCubeLength Z j))^3≤Z^(N+eta) := by
     calc

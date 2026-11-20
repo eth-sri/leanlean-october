@@ -12,10 +12,10 @@ open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic Canoni
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
+theorem actual_row_tail_energy_budget_uniform_degree
     (Lcap Lcount δ saving : ℝ) (hδ : 0<δ) :
-    ∃ A : ℕ, ∀ {φ : Type*} [Fintype φ] (F : PrimeFamily φ)
+    ∃ A : ℕ, ∀ {a c : Eis} {mode : Bool}
+      (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)), ∀ {φ : Type*} [Fintype φ] (F : PrimeFamily φ)
       (Z X QK QP nrow nslot : ℝ),
       1≤Z → 0<X → 0≤QK → 0≤QP → 0≤nrow → 0≤nslot →
       (Ideal.absNorm (∏ i,F.ideal i):ℝ)≤Z^Lcap →
@@ -26,10 +26,9 @@ theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
       (27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2)^4*Z^(-saving) := by
   obtain ⟨A,hA⟩ := choose_weighted_rapid_tail_order (17*Lcap) Lcount δ ((saving+Lcount)/2) hδ
   refine ⟨A,?_⟩
-  intro φ _ F Z X QK QP nrow nslot hZ hX hQK hQP hnrow hnslot hF hK hP hXi hrow hslot
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  intro a c mode s φ _ F Z X QK QP nrow nslot hZ hX hQK hQP hnrow hnslot hF hK hP hXi hrow hslot
+  have hz  := lt_of_lt_of_le zero_lt_one hZ
   let cusp := 27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2
-  have hcusp : 0≤cusp := by dsimp [cusp];positivity
   have hs := family_tail_polynomial_cap F s Z X QK QP Lcap hz hQK hQP hX hF hK hP hXi
   have ha := hA Z nslot hZ hnslot hslot
   have hb : nslot*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*(Z^δ)^(-(A:ℝ))*
@@ -47,6 +46,7 @@ theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
       rw [mul_pow,←pow_mul,←Real.rpow_mul_natCast hz.le,Real.rpow_add hz]
       ring_nf
     _ = _ := by congr 2;ring
+
 end
 end SevenEighths.InverseReflectedPhase
 

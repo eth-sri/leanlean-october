@@ -1,8 +1,10 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullExtraction
 
 @[expose] public section
+
 
 namespace OAI
 
@@ -31,7 +33,7 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
     (hsecond : ∀ z ∈ R, (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ≤ Y)
     (hcube : ∀ z ∈ R, (Ideal.absNorm (cubePart (Ideal.span {z})) : ℝ) ≤ H)
     (cols : n → Ideal O) (hinj : Function.Injective cols)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2) ≤
       (96 * 128 ^ 2 : ℝ) * H *
@@ -44,10 +46,10 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
     intro I hI
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
     exact ⟨goodPart_admissible _, (goodPart_norm_le _ (secondPart_squarefree _)).trans (hsecond z hz)⟩
-  have hca : ((firstImage R).card : ℝ) ≤ 128 * X :=
+  have hca  :=
     DescentFiberCost.finite_ideal_count_real _ X hX
       (fun I hI => primaryGenerator_ne_zero_ideal I (ha I hI).1.2) (fun I hI => (ha I hI).2)
-  have hcb : ((secondImage R).card : ℝ) ≤ 128 * Y :=
+  have hcb  :=
     DescentFiberCost.finite_ideal_count_real _ Y hY
       (fun I hI => primaryGenerator_ne_zero_ideal I (hb I hI).1.2) (fun I hI => (hb I hI).2)
   have hcc : ((cubeImage R).card : ℝ) ≤ 128 * H := by
@@ -96,8 +98,7 @@ theorem cubePart_norm_le_of_block (I : Ideal O) (hI : I ≠ 0)
     (hN : (Ideal.absNorm I : ℝ) ≤ X * Y ^ 2 * H ^ 3) :
     (Ideal.absNorm (cubePart I) : ℝ) ≤ H := by
   have hp := extracted_norm_product I hI
-  have hxy : X * Y ^ 2 ≤ (Ideal.absNorm (firstPart I) : ℝ) *
-      (Ideal.absNorm (secondPart I) : ℝ) ^ 2 :=
+  have hxy  :=
     mul_le_mul hx (pow_le_pow_left₀ hY.le hy 2) (sq_nonneg _) (Nat.cast_nonneg _)
   apply le_of_pow_le_pow_left₀ (by decide : (3 : ℕ) ≠ 0) hH
   apply (mul_le_mul_iff_right₀ (mul_pos hX (sq_pos_of_pos hY))).mp
@@ -118,7 +119,7 @@ theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
       (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ≤ 2 * Y)
     (hnorm : ∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
     (cols : n → Ideal O) (hinj : Function.Injective cols)
-    (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
+    (hcols : OAI.IdealFamilyUpTo Admissible cols N)
     (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2) ≤
       (192 * 128 ^ 2 : ℝ) * (M / (X * Y ^ 2)) ^ (1 / 3 : ℝ) *

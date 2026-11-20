@@ -14,7 +14,7 @@ open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPo
 open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
 open CenteredMomentSupportedCorrelation
 
-theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
+theorem fullModulusCorrelation_norm_le (u v : O)
     [Fintype (Residue u)] [Fintype (Residue v)]
     (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ) (j : O) :
     ‖fullModulusCorrelation u v χu χv j‖ ≤
@@ -49,8 +49,8 @@ theorem actualCorrelation_norm_le (u v : O)
   let : Fintype (Residue u) := Fintype.ofFinite _
   let : Fintype (Residue v) := Fintype.ofFinite _
   unfold actualCorrelation
-  exact fullModulusCorrelation_norm_le u v (supported_element_ne_zero u hu)
-    (supported_element_ne_zero v hv) _ _ j
+  exact fullModulusCorrelation_norm_le u v
+     _ _ j
 
 theorem weighted_set_lattice_tail (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -75,8 +75,7 @@ theorem weighted_set_lattice_tail (A : ℕ) :
     exact mul_le_mul_of_nonneg_right
       ((mul_le_of_le_one_left (norm_nonneg _) (hδ h.val h.property)).trans (hc h.val h.property))
       (norm_nonneg _)
-  have hsum : Summable (fun h : D =>
-      ‖δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖) :=
+  have hsum  :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp ((hs.subtype D).mul_left B)
   calc
     _ ≤ ∑' h : D, ‖δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ :=
@@ -104,11 +103,11 @@ theorem uniform_sector_lattice_tail (A : ℕ) :
   obtain ⟨s, C, hC, ht⟩ := weighted_set_lattice_tail A
   refine ⟨s, C, hC, ?_⟩
   intro W D K₀ T B hK₀ hT hB hD K hK c δ hc hδ
-  have hD' (h : O) (hh : h ∈ D) : T ≤ K * ‖eisEmbedding h‖ ^ 2 :=
+  have hD' (h : O) (hh : h ∈ D)  :=
     (hD h hh).trans (mul_le_mul_of_nonneg_right hK (sq_nonneg _))
   apply (ht W D K T B (hK₀.trans_le hK) hT hB hD' c δ hc hδ).trans
   apply div_le_div_of_nonneg_left (by positivity)
-    (by have : 0 < min 1 K₀ := lt_min zero_lt_one hK₀; positivity)
+    (by positivity)
   gcongr
 
 end SevenEighths.CenteredMomentTail

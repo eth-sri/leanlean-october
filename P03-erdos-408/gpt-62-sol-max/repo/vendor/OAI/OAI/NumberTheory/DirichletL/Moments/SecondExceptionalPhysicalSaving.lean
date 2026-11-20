@@ -1,6 +1,19 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalBudget
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairBound
+public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
+public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalSymmetry
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalKernel
+public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
+public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalLedger
 public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 
 @[expose] public section
@@ -8,16 +21,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalAllowance
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondExceptionalPhysicalSaving
 open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid IdealMobiusDivisorSum
 open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSecondExceptionalOriginalBlock CenteredMomentSecondExceptionalBudget
-open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstCanonicalAllowance
-open CenteredMomentRankinRadical
+open CenteredMomentSecondPhysicalLedger CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalScalar CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
+open CenteredMomentFirstCanonicalAllowance CenteredMomentRankinRadical
 local notation "O"=>HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]

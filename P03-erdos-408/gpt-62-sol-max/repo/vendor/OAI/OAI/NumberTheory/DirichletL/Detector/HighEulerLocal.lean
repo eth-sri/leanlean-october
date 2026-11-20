@@ -12,7 +12,6 @@ namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
 open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 lemma highPrimeTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :

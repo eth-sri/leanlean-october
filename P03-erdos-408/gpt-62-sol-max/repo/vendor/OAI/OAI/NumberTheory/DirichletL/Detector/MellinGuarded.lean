@@ -94,7 +94,7 @@ theorem guardedHighMellinCoefficient_eq_high (η : HeckeFamily.Character) (C : C
   · have hfull : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal O)) :=
       fun h=>hg ⟨h.1,h.2.1,h.2.2.1⟩
     rw [dite_eq_right hg,dite_eq_right hfull]
-    simp only [mul_zero,zero_mul]
+    simp
 
 end SevenEighths.ProbePhysical
 end

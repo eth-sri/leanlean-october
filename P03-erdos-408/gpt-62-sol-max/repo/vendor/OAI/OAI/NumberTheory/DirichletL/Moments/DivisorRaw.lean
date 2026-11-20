@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRows
 
 @[expose] public section
@@ -71,8 +72,7 @@ def selectedNorm (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ F
 
 theorem selectedNorm_pos (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2))) :
     0 < selectedNorm D a := by
-  apply mul_pos <;> exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (selectedDivisor_ne_zero D Finset.univ a _))
+  apply mul_pos <;> exact_mod_cast Ideal.absNorm_pos_of_ne_bot (selectedDivisor_ne_zero D Finset.univ a _)
 
 def rawRemaining (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (T : ℝ) (P : ι → ℝ) : ℝ := (T/selectedNorm D a)*∏ i∈liveIndices D a,P i

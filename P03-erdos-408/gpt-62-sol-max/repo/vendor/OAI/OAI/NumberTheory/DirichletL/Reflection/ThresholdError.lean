@@ -14,7 +14,7 @@ noncomputable section
 lemma fixed_abs_log_threshold (C η : ℝ) (hη : 0<η) :
     ∃ Z₀ : ℝ, 1<Z₀ ∧ ∀ Z : ℝ, Z₀≤Z → |Real.logb Z C|≤η := by
   obtain ⟨Z₀,hZ₀,h⟩ := InverseTerminalWidths.constant_log_error
-    (Real.exp |Real.log C|) η (Real.exp_pos _) hη
+    (Real.exp |Real.log C|) η hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro Z hZ
   have hz : 0<Real.log Z := Real.log_pos (lt_of_lt_of_le hZ₀ hZ)

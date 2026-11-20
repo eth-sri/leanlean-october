@@ -52,7 +52,7 @@ lemma mrtMeanSquareKernel_integrable {T : ℝ} (hT : 0 < T) (ω : ℝ) :
   have hl : IntegrableOn (mrtMeanSquareKernel T ω) (Iic 0) := by
     apply (integrableOn_exp_mul_complex_Iic
       (a := ((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
-      (by simpa using one_div_pos.mpr hT) 0).congr_fun
+      (by simp_all) 0).congr_fun
         (fun t ht => ?_) measurableSet_Iic
     exact (mrtMeanSquareKernel_left ω ht).symm
   simpa only [Iic_union_Ioi, integrableOn_univ] using hl.union hr
@@ -69,7 +69,7 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
           ((((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I) * t) := by
         apply setIntegral_congr_fun measurableSet_Ioi
         intro t ht
-        simpa using mrtMeanSquareKernel_right ω ht.le
+        exact mrtMeanSquareKernel_right ω ht.le
       _ = _ := by
         simpa using integral_exp_mul_complex_Ioi
           (a := ((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
@@ -85,19 +85,9 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
       _ = _ := by
         simpa using integral_exp_mul_complex_Iic
           (a := ((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
-          (by simpa using one_div_pos.mpr hT) 0
+          (by simp_all) 0
   rw [← integral_add_compl measurableSet_Iic hi, compl_Iic, hl, hr]
   have hTp : (T : ℂ) ≠ 0 := by exact_mod_cast hT.ne'
-  have hp : (((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I) ≠ 0 := by
-    intro h
-    have := congrArg Complex.re h
-    have he : (1 / T : ℝ) = 0 := by simpa using this
-    exact (one_div_pos.mpr hT).ne' he
-  have hm : (((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I) ≠ 0 := by
-    intro h
-    have := congrArg Complex.re h
-    have he : -(1 / T : ℝ) = 0 := by simpa using this
-    exact (neg_lt_zero.mpr (one_div_pos.mpr hT)).ne he
   have hp1 : (1 + (T : ℂ) * (ω : ℂ) * Complex.I) ≠ 0 := by
     intro h
     have := congrArg Complex.re h

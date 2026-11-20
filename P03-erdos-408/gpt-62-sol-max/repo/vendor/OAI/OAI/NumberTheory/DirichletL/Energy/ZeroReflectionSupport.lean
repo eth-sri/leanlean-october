@@ -52,7 +52,6 @@ theorem eventually_natural_choice_range (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
   intro χ ψ M a hcap hmod D hD H hY n hn
   have h := hZ.2 χ ψ M a hcap hmod ((⟨D,hD⟩,H),n) hY hn
   have hz := Real.log_pos hZ.1
-  have hm : 0≤(M-a+xi)*Real.log Z := h.2.1.trans h.2.2
   nlinarith
 
 theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
@@ -122,12 +121,12 @@ theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     rw [hz,tsum_zero]
 
 lemma deleted_short_length (Z b Xshort Xlong Nshort : ℝ)
-    (hZ : 1<Z)(_hb : 0<b)(hshort : 0<Xshort)(hlong : Xshort≤Xlong)
+    (hZ : 1<Z)(hshort : 0<Xshort)(hlong : Xshort≤Xlong)
     (hN : 1≤Nshort)(hsupport : 1≤b*Xlong) :
     length Z (Xshort/Nshort)≤Real.logb Z Xlong+Real.logb Z (max 1 b) := by
-  have hx : 0<Xlong := hshort.trans_le hlong
-  have hn : 0<Nshort := zero_lt_one.trans_le hN
-  have hd : Xshort/Nshort≤Xlong := (div_le_self hshort.le hN).trans hlong
+  have hx  := hshort.trans_le hlong
+  have hn  := zero_lt_one.trans_le hN
+  have hd  := (div_le_self hshort.le hN).trans hlong
   have hlog := Real.logb_le_logb_of_le hZ (div_pos hshort hn) hd
   have hprod : 1≤max 1 b*Xlong := hsupport.trans
     (mul_le_mul_of_nonneg_right (le_max_right _ _) hx.le)
@@ -139,17 +138,17 @@ lemma deleted_short_length (Z b Xshort Xlong Nshort : ℝ)
   · exact hlog.trans (le_add_of_nonneg_right (Real.logb_nonneg hZ (le_max_left _ _)))
 
 theorem live_deleted_growth (Z b M xi Xshort Xlong Nshort Nlong : ℝ)
-    (hZ : 1<Z)(hb : 0<b)(_hM : 0≤M)(hshort : 0<Xshort)(hlong : Xshort≤Xlong)
+    (hZ : 1<Z)(hb : 0<b)(hshort : 0<Xshort)(hlong : Xshort≤Xlong)
     (hNs : 1≤Nshort)(hNl : 1≤Nlong)(hsupport : 1≤b*Xlong)
     (hlive : 0≤M-Real.logb Z (Xlong/Nlong)+xi)
     (x : ℝ)(hx : x∈Set.Icc 0 (max 0 (M-Real.logb Z (Xlong/Nlong)+xi)*Real.log Z)) :
     length Z (Real.exp x)+length Z (Xshort/Nshort)≤
       M+Real.logb Z Nlong+Real.logb Z (max 1 b)+xi := by
-  have hxlong : 0<Xlong := hshort.trans_le hlong
-  have hnlong : 0<Nlong := zero_lt_one.trans_le hNl
+  have hxlong  := hshort.trans_le hlong
+  have hnlong  := zero_lt_one.trans_le hNl
   have hwindow := (reflection_window_length Z _ x hZ (le_max_left _ _) hx).1
   rw [max_eq_right hlive,Real.logb_div hxlong.ne' hnlong.ne'] at hwindow
-  have hshortbound := deleted_short_length Z b Xshort Xlong Nshort hZ hb hshort hlong hNs hsupport
+  have hshortbound := deleted_short_length Z b Xshort Xlong Nshort hZ hshort hlong hNs hsupport
   linarith
 
 theorem eventually_endpoint_defect (b epsilon : ℝ) (hepsilon : 0<epsilon) :

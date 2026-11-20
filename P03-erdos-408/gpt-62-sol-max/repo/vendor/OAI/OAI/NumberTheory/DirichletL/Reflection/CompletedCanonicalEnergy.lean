@@ -1,16 +1,20 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalFrozenEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.SourcePhysical
+public import OAI.NumberTheory.DirichletL.Reflection.SourceBudget
 public import OAI.NumberTheory.DirichletL.Reflection.CompletedFiberSource
-public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCellArithmetic
+public import OAI.NumberTheory.DirichletL.Reflection.CellArithmetic
+public import OAI.NumberTheory.DirichletL.Reflection.PuncturedMarks
+public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 universe v

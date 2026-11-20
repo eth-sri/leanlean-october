@@ -26,8 +26,7 @@ theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported 
   let ep : (S.filter p) × (S.filter p) → S × S := fun q => (e q.1,e q.2)
   have he : Function.Injective e := by
     intro I J h
-    apply Subtype.ext
-    exact congrArg (fun x : S => x.val) h
+    aesop
   have hep : Function.Injective ep := by
     intro q r h
     exact Prod.ext (he (congrArg Prod.fst h)) (he (congrArg Prod.snd h))
@@ -64,7 +63,7 @@ theorem zeroEnergy_eq_active_original (η : Character) (m A : O) (t : ℝ)
   congr 1
   exact idealZeroEnergy_filter (supportedColumns S) (fun I h => (Finset.mem_filter.mp h).2)
     (fun I => c I*rowWeight η m A 1 t I) K (fun I => c I≠0)
-    (fun I _ h => by simp only [not_not] at h; rw [h,zero_mul])
+    (fun I _ h => by simp_all)
 
 theorem finiteColumnCoefficient_witness {ι : Type*} [Fintype ι]
     (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (I : Ideal O)
@@ -116,7 +115,7 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       ‖zeroEnergy η m A t (finiteColumns S) (finiteColumnCoefficient S β) W K‖ ≤
         C*K*B^2*‖paperRadialFourier W 0‖*X^(1+ε) := by
   let δ := ε/(4*(N+2:ℕ))
-  have hδ : 0<δ := by dsimp [δ]; positivity
+  have hδ : 0<δ := by positivity
   have hn : (N+2:ℝ)≠0 := by positivity
   have hδn : δ*(N+2:ℕ)=ε/4 := by dsimp [δ]; push_cast; field_simp
   obtain ⟨D,hD,hd⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
@@ -126,11 +125,11 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
   let c := finiteColumnCoefficient S β
   let Q := activeColumns (finiteColumns S) c
   have hQ : ∀ I∈Q,Supported I := activeColumns_supported _ _
-  have hX0 : 0<X := zero_lt_one.trans_le hX
-  have hNX (I : Ideal O) (hI : I∈Q) : (Ideal.absNorm I:ℝ)≤X :=
+  have hX0  := zero_lt_one.trans_le hX
+  have hNX (I : Ideal O) (hI : I∈Q)  :=
     hN I (Finset.mem_filter.mp hI).1 (Finset.mem_filter.mp hI).2
   have hbase : 1≤(1+D)*X^δ := by
-    have hxδ : 1≤X^δ := Real.one_le_rpow hX hδ.le
+    have hxδ  := Real.one_le_rpow hX hδ.le
     nlinarith
   have hcoeff (I : Ideal O) (hI : I∈Q) :
       ‖c I*rowWeight η m A 1 t I‖ ≤ B*((1+D)^(N+2)*X^(ε/4)) := by

@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.PositiveHighPhysical
+public import OAI.NumberTheory.DirichletL.Energy.NaturalPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSourceBound
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
@@ -10,25 +10,22 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalHighStage
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
+open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentEnergyPositiveHighSource
+open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentEnergyPositiveHighParameters
+open CenteredMomentEnergyPositiveBalancedAdmission CenteredMomentEnergyWidthSchedule
+open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
+open CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission
+open CenteredMomentEnergyNaturalInputMatches
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_high_stage
@@ -45,8 +42,7 @@ theorem actual_high_stage
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(lowDegree:ℕ)(Slow:Finset (ℕ×ℕ)):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
-      internalQ Q η₀≤Ideal.span {(72:O)}→
+    ForSmallInternalConductors M fun η₀ Q =>
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
     ∀εchild C₀ C₁ Clow:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→0≤Clow→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 (max Lgoal Mparent)
@@ -60,16 +56,16 @@ theorem actual_high_stage
         (reflectedLoss Mglobal B ε k) κ Z η₀ Q J U (C*(C₀+C₁+Clow+1)) := by
   let r:=reserve Mglobal B ε
   have hκ0:0≤κ:=by linarith
-  have hb:0≤b:=zero_le_one.trans hhi
-  have hr:0<r:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
+  have hb:=zero_le_one.trans hhi
+  have hr:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
   have hr4:0<r/4:=by positivity
-  have hs:0<amplification ε:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
+  have hs:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
   obtain ⟨Ψ,hΨs,hΨn,hstage⟩:=actual_high_stage_from_physical (α:=α) M H hH
     W hW.continuous aslot bslot lo hi a b bΦ rho r Mparent Bmask (r/4) (r/4)
     (2*amplification ε+1) haslot hWs hbslot ha hlo hhi hbΦ hrho hr hMp hBm hr4 hr4
-  obtain ⟨Up,Jp,hphysical⟩:=CenteredMomentEnergyPositiveHighPhysical.actual_positive_high_physical
-    (α:=α) M H hH W hW aslot bslot lo hi a b bΦ haslot hWs hbslot ha hb
-    Mglobal A B Bmask Mparent Mchild Lgoal Lslot rho κ ε k hMg hA hB hBm hMp hMc hL hLs
+  obtain ⟨Up,Jp,hphysical⟩:=CenteredMomentEnergyNaturalPhysical.actual_natural_physical
+    (α:=α) M H hH true W hW aslot bslot lo hi a b bΦ haslot hWs hbslot ha hb
+    Mglobal A B Bmask Mparent Mchild Lgoal Lslot rho κ ε k hMg hA hB hBm hMc hL hLs
     hMA hready hκ hbeta hκbeta hε hslot hdrop Ψ degree S
   obtain ⟨J,U,Cf,hCf,hstageZ⟩:=hstage lowDegree Slow Jp Up
   refine ⟨U,J,?_⟩
@@ -88,7 +84,7 @@ theorem actual_high_stage
     (by exact le_rfl) hm.2.2.2.1 (hm.2.2.1.trans hm.2.2.2.1)
     (by have hpos:=hm.1.le.trans hm.2.2.2.1;linarith only [hpos,hs]) hlow hp
   have hconst:Cf*(Clow+Cp*(C₀+C₁+1)+1)≤(Cf*(Cp+1))*(C₀+C₁+Clow+1):=by
-    have hh:0≤Cp*Clow:=mul_nonneg hCp.le hClow
+    have hh:=mul_nonneg hCp.le hClow
     nlinarith only [mul_nonneg hCf.le hh,mul_nonneg hCf.le hC₀,mul_nonneg hCf.le hC₁]
   intro T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hslo hsupper
     p X₁ X₂ hX₁ hX₂ hXcap₁ hXcap₂ hcapacity hlarge
@@ -96,7 +92,7 @@ theorem actual_high_stage
     p X₁ X₂ hX₁ hX₂ hXcap₁ hXcap₂ hcapacity hlarge).trans
   have hd:=diagonalControl_nonneg state.radial.profile
   have hp0:=p.control_nonneg U
-  have hz:0≤Z:=zero_le_one.trans hphysicalNow.1.le
+  have hz:=zero_le_one.trans hphysicalNow.1.le
   gcongr
 
 end SevenEighths.CenteredMomentEnergyNaturalHighStage

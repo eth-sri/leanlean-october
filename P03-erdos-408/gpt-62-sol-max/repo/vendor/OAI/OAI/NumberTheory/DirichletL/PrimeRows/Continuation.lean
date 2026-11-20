@@ -10,14 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CompletedGauss
 local notation "O" => HeckeFamily.O
-
-lemma actualACube_norm_le (η : Character) (p : O) : ‖actualACube η p‖≤1 := by
-  have h := actualAPhase_norm_le_one η p
-  rw [←actualACube_sq,norm_pow] at h
-  nlinarith [norm_nonneg (actualACube η p)]
 
 def ramifiedProduct (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=

@@ -57,8 +57,8 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
   intro T hT hout hdis hnorm J X hX hXlo hXhi W hW t
   let slots := fun i=>canonicalSlotSupport (T i)
   let Yp := fun i=>Z^(ell i)
-  have hz : 0<Z := lt_trans zero_lt_one hInv.1
-  have hslots : ∀i n,n∈slots i→n≠0 := fun i=>canonicalSlotSupport_nonzero _ (hT i)
+  have hz  := lt_trans zero_lt_one hInv.1
+  have hslots  := fun i=>canonicalSlotSupport_nonzero _ (hT i)
   have hnormE : ∀i n,n∈slots i→elementNorm n≤max 1 b*Z^(ell i) := by
     intro i n hn
     obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hn
@@ -116,7 +116,7 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
       _≤(‖lowUnselectedWeight slots J W Yp p‖*Real.sqrt (3*q/L))*(G*V) := by
         have hh3 := hh.trans hh2
         simp only [G,V,div_eq_mul_inv,mul_assoc] at hh3 ⊢
-        convert hh3 using 1 ; congr 7
+        assumption
       _≤(‖lowUnselectedWeight slots J W Yp p‖*Real.sqrt (3*q/L))*
           (Ci*(1+‖t‖)^degree*Z^(3/16+254*ε)) :=
         mul_le_mul_of_nonneg_left hGV (by positivity)
@@ -127,7 +127,7 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
   have hm := hmass T hT J W Yp hW
   calc
     _≤Cg*((Ci*Real.sqrt (3*q)*(1+‖t‖)^degree*Z^(3/16+254*ε))*Cu) := by gcongr
-    _=_ := by dsimp [C0];ring
+    _=_ := by ring
 
 end SevenEighths.ProbePhysical
 end

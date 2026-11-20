@@ -35,8 +35,7 @@ theorem smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
     bound
   · apply Set.indicator_le'
     · intro x hx
-      rw [hΨ1 x |>.mp, Pi.one_apply]
-      simpa using hx
+      simp_all
     · exact fun x _ ↦ (hΨrange x).1
   · intro x
     apply Set.le_indicator_apply

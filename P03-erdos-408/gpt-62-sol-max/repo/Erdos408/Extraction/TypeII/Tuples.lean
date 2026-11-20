@@ -50,7 +50,7 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
   set H : ℕ → ℝ := fun i => ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
     Ψ (∏ k, m k) * ∏ k : Fin (r + 1), (if (k : ℕ) < i then B else A) (m k) with hH
   have h0 : H 0 = ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
-      Ψ (∏ k, m k) * ∏ k, A (m k) := by simp [hH]
+      Ψ (∏ k, m k) * ∏ k, A (m k) := by rfl
   have h1 : H (r + 1) = ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
       Ψ (∏ k, m k) * ∏ k, B (m k) := by
     simp only [hH]
@@ -71,21 +71,11 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
     have hsame : ∀ k : Fin r,
         (if ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) + 1 then B else A) =
           (if i.succAbove k < i then B else A) := by
-      intro k
-      have hne : i.succAbove k ≠ i := Fin.succAbove_ne i k
-      have : ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) + 1 ↔ i.succAbove k < i := by
-        rw [Fin.lt_def]
-        constructor
-        · intro h
-          have : ((i.succAbove k : Fin (r + 1)) : ℕ) ≠ i := fun h' => hne (Fin.ext h')
-          omega
-        · intro h; omega
-      simp only [this]
+      simp
     have hsame' : ∀ k : Fin r,
         (if ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) then B else A) =
           (if i.succAbove k < i then B else A) := by
-      intro k
-      simp only [Fin.lt_def]
+      simp
     simp only [hsame, hsame']
     ring
   have hL : ∑ m ∈ Fintype.piFinset (fun _ : Fin (r + 1) => S),
@@ -193,7 +183,7 @@ theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
     have hne : (univ.filter fun k => p ∣ m k).Nonempty := ⟨k, mem_filter.2 ⟨mem_univ _, hk⟩⟩
     simp only [idx, hne, dite_true]
     exact (mem_filter.1 ((univ.filter fun k => p ∣ m k).min'_mem hne)).2
-  let φ : (Fin r → ℕ) → Fin r × (Fin r → ℕ) := fun m =>
+  let φ := fun m =>
     (idx m, Function.update m (idx m) (m (idx m) / p))
   have hmaps : ∀ m ∈ factorizationTuples r n,
       φ m ∈ (univ : Finset (Fin r)) ×ˢ factorizationTuples r n' := by

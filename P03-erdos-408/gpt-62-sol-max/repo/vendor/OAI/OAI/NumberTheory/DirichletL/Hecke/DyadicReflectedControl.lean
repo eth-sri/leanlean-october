@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 
 @[expose] public section
@@ -7,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ComplexConjugate
+open scoped Classical ComplexConjugate
 open Complex Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth HeckeDeletionBounds HeckeDyadicReflection
 
 theorem radical_norm_ge_one (M : Ideal O) : 1≤((radical M).absNorm : ℝ) := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (radical_ne_zero M))
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (radical_ne_zero M)
 
 theorem buffered_reflected_line_control (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
@@ -34,8 +34,7 @@ theorem buffered_reflected_line_control (e ε : ℝ)
   have hwim : (1-conj s).im=s.im := by simp
   have hw := hrect χ hχ T a i hT ha ha' hmax j (1-conj s)
     (by rw [hwre]) (by rw [hwre]; linarith) (by rwa [hwim])
-  have hL : ‖LFunction (χ j) (1-conj s)‖≤
-      Cb*(presentationComplexity (χ j) ((3*i+2 : ℕ)*T))^ε :=
+  have hL  :=
     (le_add_of_nonneg_right (norm_nonneg _)).trans hw.2
   have href := hreflect (χ j) (hχ j) s (by rw [hs]; linarith) (by rw [hs]; linarith)
   have hexp : 1/2-s.re=a-1/2+6*e := by rw [hs]; ring
@@ -65,7 +64,7 @@ theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
     mul_pos (by linarith [HeckeLogarithmicInput.uniformConstant_nonneg]) hCd,?_⟩
   intro χ hχ s hs
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue≠1 := fun h => hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
+  have hψ  := fun h => hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
   have hg := HeckeLogarithmicInput.regular_right_growth ψ hp hs
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
   have hQ' : (ψ.modulus.absNorm : ℝ)^(3/5 : ℝ)≤(χ.modulus.absNorm : ℝ)^(3/5 : ℝ) :=

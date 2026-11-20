@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCaller
+public import OAI.NumberTheory.DirichletL.Inversion.InitialQuotientGeometry
+public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
 
 @[expose] public section

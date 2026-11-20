@@ -17,14 +17,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
 
-open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryHistory
-  TransferChoice TransferMode absoluteMemoryEdgeKernel absoluteMemoryGhostKernel
-  absoluteScaledMemoryGhostKernel deleteMemoryIndices distinctMemoryExpression
-  edgeChoiceCoefficient edgeChoiceValid edgeDelta edgeForward edgeSymmetryFactor freshBigFactor
-  ghostBirthCount ghostChoiceValid ghostChoiceWeight ghostReversalFactor memoryEdgeKernel
-  memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
-  smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
-  translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
+open Erdos821.Blueprint.Graph hiding permuteActive
 open Erdos821.S2Core Erdos821.P3Lowrank Erdos821.S2High
 
 /-- The scalar absorption into `L ^ (Ch * (N + 1))`. -/
@@ -37,12 +30,12 @@ theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ) (N : ℕ) (hℓ : 2 ≤ ℓ) (h
   apply mul_le_mul_of_nonneg_right _ hX
   have h1 : CG ^ (N + 1) ≤ (ℓ ^ Cv) ^ (N + 1) := pow_le_pow_left₀ hCG hCGle _
   have hCa' : 1 ≤ ℓ ^ (max Ca 0) := Real.one_le_rpow hℓ1 (le_max_right _ _)
-  have h2 : (ℓ ^ Ca) ^ N ≤ (ℓ ^ (max Ca 0)) ^ (N + 1) :=
+  have h2  :=
     calc (ℓ ^ Ca) ^ N ≤ (ℓ ^ (max Ca 0)) ^ N :=
           pow_le_pow_left₀ (Real.rpow_nonneg hℓ0.le _)
             (Real.rpow_le_rpow_of_exponent_le hℓ1 (le_max_left _ _)) _
       _ ≤ (ℓ ^ (max Ca 0)) ^ (N + 1) := pow_le_pow_right₀ hCa' (Nat.le_succ N)
-  have h3 : IBM ≤ ℓ ^ (N + 1) :=
+  have h3  :=
     calc IBM ≤ 2 := hIBM
       _ ≤ ℓ := hℓ
       _ = ℓ ^ 1 := (pow_one ℓ).symm
@@ -57,7 +50,7 @@ theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ) (N : ℕ) (hℓ : 2 ≤ ℓ) (h
   calc CG ^ (N + 1) * (ℓ ^ Ca) ^ N * IBM
       ≤ (ℓ ^ Cv) ^ (N + 1) * (ℓ ^ (max Ca 0)) ^ (N + 1) * ℓ ^ (N + 1) := by
         apply mul_le_mul (mul_le_mul h1 h2 hB0 hA0) h3 hIBM0
-        exact mul_nonneg hA0 (pow_nonneg (Real.rpow_nonneg hℓ0.le _) _)
+        positivity
 
 /-- The high-rank task, given the empty-boundary mass estimate. -/
 theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
@@ -75,7 +68,7 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
   have hε : 0 < F.vMin / (4 * (J : ℝ) + 4) := by positivity
   have ev2 := Erdos821.S34Core.eventually_power_le_label_scale 0 F.c
     (F.vMin / (4 * (J : ℝ) + 4)) hc hε
-  have ev3 : ∀ᶠ x : ℝ in atTop, (2 : ℝ) ≤ Real.log x :=
+  have ev3 :=
     Real.tendsto_log_atTop.eventually_ge_atTop 2
   obtain ⟨x₁, hx₁⟩ := Filter.eventually_atTop.1 (ev1.and (ev2.and ev3))
   refine ⟨16 / F.vMin, div_pos (by norm_num) hvmin, max (max xG xE) (max xB x₁), ?_⟩
@@ -89,7 +82,7 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
   set E : ℝ := Real.exp ((L x) ^ F.c) with hEdef
   have hE0 : 0 < E := Real.exp_pos _
   have hcut : ((N x : ℕ) + 1 : ℝ) ≤ E / 2 := by
-    have : ((N x : ℕ) : ℝ) + 1 ≤ (1 / 2) * Real.exp ((L x) ^ F.c) := hN
+    have  := hN
     rw [hEdef]
     linarith
   have h1E : (1 : ℝ) ≤ F.vMin / (4 * (J : ℝ) + 4) * E := by
@@ -105,12 +98,11 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
     linarith
   obtain ⟨hV, hbase, hsum2, hCvb⟩ := hxG x hxG' P hP
   have hmb := tiltedMu_group_mass_bounds F P x (N x) hP hcut
-  have hμ : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < tiltedMu F P (N x) g.val q :=
+  have hμ :=
     fun g q => ((hmb g).1 q).1
-  have hmass1 : ∀ g : P.BigGroup, 1 ≤ ∑ q : P.Prime g.val, tiltedMu F P (N x) g.val q :=
+  have hmass1 :=
     fun g => (hmb g).2.1
-  have hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
-      (1 / 2 : ℝ) ≤ ∑ q ∈ Finset.univ.filter (fun q => q ∉ forb), tiltedMu F P (N x) g.val q :=
+  have hmassJ :=
     fun g forb hcard => tiltedMass_avoiding_finite_set_ge_half F P x (N x) hP hcut g forb J
       hcard hsmall
   set CG : ℝ := (Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card with hCGdef

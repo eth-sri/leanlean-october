@@ -8,7 +8,6 @@ public import Mathlib.GroupTheory.Perm.Cycle.Concrete
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
@@ -34,8 +33,7 @@ lemma tailOrders_properties (B : Finset α) (x : α) (hx : x ∈ B)
   refine ⟨hn, ?_, hs, ?_⟩
   · intro hxl
     have hxm : x ∈ l.toFinset := List.mem_toFinset.mpr hxl
-    rw [hs] at hxm
-    exact Finset.notMem_erase x B hxm
+    simp_all
   · rw [hp.length_eq, Finset.length_toList, Finset.card_erase_of_mem hx]
 
 lemma anchoredCycle_properties (B : Finset α) (x : α) (hx : x ∈ B)
@@ -44,16 +42,14 @@ lemma anchoredCycle_properties (B : Finset α) (x : α) (hx : x ∈ B)
       (x :: l).formPerm.IsCycle ∧ (x :: l).formPerm.support = B ∧
       (x :: l).formPerm.toList x = x :: l := by
   obtain ⟨hn, hxl, hs, hlen⟩ := tailOrders_properties B x hx l hl
-  have hn' : (x :: l).Nodup := List.nodup_cons.mpr ⟨hxl, hn⟩
+  have hn'  := List.nodup_cons.mpr ⟨hxl, hn⟩
   have hlen' : 2 ≤ (x :: l).length := by simp only [List.length_cons, hlen]; omega
   have hs' : (x :: l).toFinset = B := by
     simp only [List.toFinset_cons, hs, Finset.insert_erase hx]
   refine ⟨hn', hlen', List.isCycle_formPerm hn' hlen', ?_, ?_⟩
   · rw [List.support_formPerm_of_nodup _ hn', hs']
     intro y hy
-    have := congrArg List.length hy
-    simp only [List.length_cons, List.length_nil] at this
-    omega
+    simp_all
   · simpa using Equiv.Perm.toList_formPerm_nontrivial (x :: l) hlen' hn'
 
 lemma anchoredCycle_image (B : Finset α) (x : α) (hx : x ∈ B)
@@ -67,7 +63,7 @@ lemma anchoredCycle_image (B : Finset α) (x : α) (hx : x ∈ B)
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hp.2.2.1, hp.2.2.2.1⟩
   · intro hc
     obtain ⟨_, hcyc, hs⟩ := Finset.mem_filter.mp hc
-    have hx' : x ∈ c.support := by simpa only [hs] using hx
+    have hx' : x ∈ c.support := by simp_all
     have hlist : (c.toList x).toFinset = B := by
       rw [← hs]
       ext y
@@ -80,26 +76,25 @@ lemma anchoredCycle_image (B : Finset α) (x : α) (hx : x ∈ B)
           (Equiv.Perm.mem_support.mp hy), hx'⟩
     cases heq : c.toList x with
     | nil =>
-      have := Equiv.Perm.toList_eq_nil_iff.mp heq
-      exact False.elim (this hx')
+      simp_all
     | cons y l =>
       have hy : y = x := by
-        simpa only [heq, List.getElem_cons_zero] using c.toList_getElem_zero x hx'
+        simpa [heq, List.getElem_cons_zero] using c.toList_getElem_zero x hx'
       subst y
-      have hnodup : (x :: l).Nodup := by simpa only [heq] using c.nodup_toList x
+      have hnodup : (x :: l).Nodup := by simpa [heq] using c.nodup_toList x
       have hn : l.Nodup := (List.nodup_cons.mp hnodup).2
-      have hxl : x ∉ l := (List.nodup_cons.mp hnodup).1
+      have hxl  := (List.nodup_cons.mp hnodup).1
       have hs' : insert x l.toFinset = B := by
-        simpa only [heq, List.toFinset_cons] using hlist
+        simp_all
       have htail : l.toFinset = B.erase x := by
         rw [← hs']
         simp only [Finset.erase_insert_eq_erase]
-        exact (Finset.erase_eq_of_notMem (by simpa using hxl)).symm
+        simp_all
       have hl : l ∈ tailOrders B x := by
         apply List.mem_toFinset.mpr
         apply List.mem_permutations.mpr
         apply List.perm_of_nodup_nodup_toFinset_eq hn (B.erase x).nodup_toList
-        simpa only [Finset.toList_toFinset] using htail
+        simp_all
       have hcform : (x :: l).formPerm = c := by
         rw [← heq, Equiv.Perm.formPerm_toList, hcyc.cycleOf_eq (Equiv.Perm.mem_support.mp hx')]
       exact Finset.mem_image.mpr ⟨l, hl, hcform⟩
@@ -110,9 +105,7 @@ lemma anchoredCycle_injective (B : Finset α) (x : α) (hx : x ∈ B)
   intro l hl l' hl' h
   have h1 := (anchoredCycle_properties B x hx hB l hl).2.2.2.2
   have h2 := (anchoredCycle_properties B x hx hB l' hl').2.2.2.2
-  have he := congrArg (fun c : Equiv.Perm α => c.toList x) h
-  rw [h1, h2] at he
-  exact List.cons.inj he |>.2
+  simp_all
 
 /-- There are (|B|-1)! cycles with prescribed support B. -/
 theorem cyclesOn_card (B : Finset α) (hB : 2 ≤ B.card) :

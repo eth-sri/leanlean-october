@@ -46,8 +46,8 @@ theorem slope_sub_slope {U H : ℝ} (hH : 0 < H) {P Q : ℕ × ℕ} (hP : 0 < (P
 theorem abs_slopeCell_sub_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ × ℕ}
     (hP : U ≤ P.1) (hQ : U ≤ Q.1) (hdet : |(det P Q : ℝ)| ≤ 10 * H) :
     |slopeCell (U ^ 2 / H) P - slopeCell (U ^ 2 / H) Q| ≤ 10 := by
-  have hP₀ : 0 < (P.1 : ℝ) := hU.trans_le hP
-  have hQ₀ : 0 < (Q.1 : ℝ) := hU.trans_le hQ
+  have hP₀  := hU.trans_le hP
+  have hQ₀  := hU.trans_le hQ
   set a := (P.2 : ℝ) / P.1 * (U ^ 2 / H)
   set b := (Q.2 : ℝ) / Q.1 * (U ^ 2 / H)
   -- the scaled slopes differ by at most `10`
@@ -80,7 +80,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
   set n := ⌊256 * H⌋₊
   obtain ⟨hP₀S, hP₀j⟩ := mem_filter.1 hP₀
   obtain ⟨hP₀U, -, hP₀cop⟩ := hS P₀ hP₀S
-  have hP₀pos : 0 < (P₀.1 : ℝ) := hU.trans_le hP₀U
+  have hP₀pos  := hU.trans_le hP₀U
   -- the scaled slopes in the cell lie in `[j, j + 1)`
   have hslope : ∀ P ∈ T, (j : ℝ) ≤ (P.2 : ℝ) / P.1 * (U ^ 2 / H) ∧
       (P.2 : ℝ) / P.1 * (U ^ 2 / H) < j + 1 := by
@@ -93,7 +93,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
   have hdet : ∀ P ∈ T, |det P₀ P| ≤ n := by
     intro P hP
     obtain ⟨hPU, hP16, -⟩ := hS P (mem_filter.1 hP).1
-    have hPpos : 0 < (P.1 : ℝ) := hU.trans_le hPU
+    have hPpos  := hU.trans_le hPU
     have hs := hslope P hP
     have hs₀ := hslope P₀ hP₀
     have h := slope_sub_slope (U := U) hH hP₀pos hPpos
@@ -107,11 +107,11 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
       by_contra hcon
       push Not at hcon
       have : 256 * H * U ^ 2 ≥ H * (P₀.1 * P.1) := by
-        have : (P₀.1 : ℝ) * P.1 ≤ 16 * U * (16 * U) :=
+        have  :=
           mul_le_mul hP₀16 hP16 hPpos.le (by positivity)
         nlinarith
       nlinarith [abs_nonneg (det P₀ P : ℝ), sq_nonneg U]
-    have h' : |det P₀ P| ≤ ⌊256 * H⌋ := Int.le_floor.2 (by rw [Int.cast_abs]; exact hle)
+    have h' : |det P₀ P| ≤ ⌊256 * H⌋ := Int.le_floor.2 (by simpa using hle)
     rwa [← Int.natCast_floor_eq_floor (by positivity)] at h'
   -- `P ↦ (det(P₀, P), ⌊P₁ / P₀₁⌋)` maps the cell into a box
   have hmaps : ∀ P ∈ T, (det P₀ P, P.1 / P₀.1) ∈ (Icc (-(n : ℤ)) n) ×ˢ range 17 := by
@@ -137,18 +137,17 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
     have hlin : (P₀.1 : ℤ) * (P.2 - P'.2) = (P.1 - P'.1) * P₀.2 := by
       unfold det at hd
       linarith
-    have hdvd : (P₀.1 : ℤ) ∣ P.1 - P'.1 :=
+    have hdvd  :=
       (Nat.isCoprime_iff_coprime.2 hP₀cop).dvd_of_dvd_mul_right ⟨P.2 - P'.2, hlin.symm⟩
-    have hmod : P'.1 % P₀.1 = P.1 % P₀.1 := Nat.modEq_iff_dvd.2 hdvd
-    have h1 : P.1 = P'.1 :=
+    have hmod  := Nat.modEq_iff_dvd.2 hdvd
+    have h1  :=
       calc P.1 = P₀.1 * (P.1 / P₀.1) + P.1 % P₀.1 := (Nat.div_add_mod _ _).symm
         _ = P₀.1 * (P'.1 / P₀.1) + P'.1 % P₀.1 := by rw [hq, hmod]
         _ = P'.1 := Nat.div_add_mod _ _
-    have h2 : P.2 = P'.2 := by
-      rw [h1, sub_self, zero_mul] at hlin
-      have := (mul_eq_zero.1 hlin).resolve_left hP₀ne
-      omega
-    exact Prod.ext h1 h2
+    refine Prod.ext h1 ?_
+    rw [h1, sub_self, zero_mul] at hlin
+    have := (mul_eq_zero.1 hlin).resolve_left hP₀ne
+    omega
   have hcard := card_le_card_of_injOn _ (fun P hP => hmaps P hP) hinj
   rw [card_product, Int.card_Icc, card_range,
     show (n + 1 - -(n : ℤ)).toNat = 2 * n + 1 by omega] at hcard
@@ -222,7 +221,6 @@ theorem abs_det_lt_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
   have hdet : (det t.1.1 t'.1.1 : ℝ) = D * τ := by
     exact_mod_cast (Int.mul_ediv_cancel' hdvd).symm
   rw [hdet, abs_mul, Nat.abs_cast]
-  have hD₀ : (0 : ℝ) ≤ D := Nat.cast_nonneg _
   nlinarith [abs_nonneg (τ : ℝ)]
 
 /-- The list product is the pad product times the product of the last slots. -/

@@ -1,7 +1,10 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
+
+public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionGeometry
 
 @[expose] public section
 
@@ -11,9 +14,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyLiveClippingDefect
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
+open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyLiveClippingDefect
 local notation "O" => HeckeFamily.O
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
@@ -36,7 +38,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
         length Z (Z^short)+length Z (Z^along)+6*κ*z≤s.width) ∨
       (max 0 (s.width-along+xi)+length Z (Z^short)+z≤5*s.width/6 ∧
         max 0 (s.width-along+xi)+length Z (Z^short)+6*κ*z≤s.width)):= by
-  have hbase : 0 < Z := zero_lt_one.trans hZ
+  have hbase  := zero_lt_one.trans hZ
   have hb := robust_balanced_long_nonneg s.width (Real.logb Z (X₁*X₂)) ell κ xi e
     s.width_nonneg hell hκ hxi hlarge hcap hreserve
   have hy₁ : 1 ≤ comparisonFirst Z s.width :=
@@ -57,15 +59,14 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   have hn₂ := (divisor_norm s D₂ hD₂).1
   have hlog₁ := Real.logb_nonneg hZ hn₁
   have hlog₂ := Real.logb_nonneg hZ hn₂
-  have hMcap : 0 ≤ Mcap := s.width_nonneg.trans hwidth
   have hLc : 0 ≤ L := by linarith
   have hslot : 0 ≤ (6*κ-1)*ell := mul_nonneg (by linarith) hell
   dsimp only
   refine ⟨hd₁.2.2, hd₂.2.2, by linarith, by linarith [s.width_nonneg],
     by linarith, hd₂.2.1, max_le hLc (by linarith [hd₂.1]), ?_⟩
-  have hp₁ : ∀ I ∈ D₁, Prime I := fun I hi =>
+  have hp₁  := fun I hi =>
     CenteredMomentNaturalRowSource.support_prime s.puncture I (Finset.mem_powerset.mp hD₁ hi)
-  have hp₂ : ∀ I ∈ D₂, Prime I := fun I hi =>
+  have hp₂  := fun I hi =>
     CenteredMomentNaturalRowSource.support_prime s.puncture I (Finset.mem_powerset.mp hD₂ hi)
   let along := Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ)
   have halong : Real.logb Z (comparisonSecond Z s.width X₁ X₂/((∏ P ∈ D₂, P).absNorm : ℝ)) = along := by
@@ -79,6 +80,53 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     have hh := robust_reflected_low_admissible s.width xi e _ (max 0 (s.width-along+xi)) z κ
       he hreserve hc.2.1 hc.2.2
     simpa only [hd₁.2.2] using hh
+
+/-- The original branch uses the input scales directly. The robust branch uses
+comparison scales with the same product and left length exactly one quarter
+of the available width. -/
+abbrev reflectionScales (robust : Bool) (Z width X₁ X₂ : ℝ) : ℝ × ℝ :=
+  if robust then (comparisonFirst Z width, comparisonSecond Z width X₁ X₂) else (X₁, X₂)
+
+/-- Scale and slot conditions for the original and robust reference windows. -/
+abbrev ReflectionWindow (robust : Bool) (Z width X₁ X₂ ell κ defect : ℝ) : Prop :=
+  if robust then
+    5 * width / 6 - defect ≤ Real.logb Z (X₁ * X₂) + ell ∧
+    Real.logb Z (X₁ * X₂) + ell + (6 * κ - 1) * ell ≤ width
+  else
+    length Z X₁ ≤ width / 4 ∧ 5 * width / 6 ≤ length Z X₁ + length Z X₂ + ell ∧
+    length Z X₁ + length Z X₂ + 6 * κ * ell ≤ width
+
+theorem reference_deleted_gates (robust : Bool) {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
+    (hZ:1<Z)(hB:0≤Bmask)(Mcap L X₁ X₂ ell z κ xi e:ℝ)
+    (hwidth:s.width≤Mcap)(hL:Mcap+Bmask+xi≤L)
+    (hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hz:0≤z)(hze:z≤ell)
+    (hκ:3/4≤κ)(hxi:0<xi)(he:0≤e)(hreserve:xi+11*e/7≤s.width/14)
+    (hwindow : ReflectionWindow robust Z s.width X₁ X₂ ell κ e)
+    (D₁ D₂:Finset (Ideal O))
+    (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
+    (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
+    let Y := reflectionScales robust Z s.width X₁ X₂
+    let short := Real.logb Z (Y.1 / ((∏ P ∈ D₁, P).absNorm : ℝ))
+    let along := Real.logb Z (Y.2 / ((∏ P ∈ D₂, P).absNorm : ℝ))
+    Z^short=Y.1/((∏P∈D₁,P).absNorm:ℝ) ∧
+    Z^along=Y.2/((∏P∈D₂,P).absNorm:ℝ) ∧
+    short≤s.width/4 ∧ short≤L ∧ along≤L ∧
+    s.width≤(Mcap+Bmask)+along ∧ max 0 (s.width-along+xi)≤L ∧
+    ((length Z (Z^short)+length Z (Z^along)+z≤5*s.width/6 ∧
+        length Z (Z^short)+length Z (Z^along)+6*κ*z≤s.width) ∨
+      (max 0 (s.width-along+xi)+length Z (Z^short)+z≤5*s.width/6 ∧
+        max 0 (s.width-along+xi)+length Z (Z^short)+6*κ*z≤s.width)):= by
+  cases robust
+  · obtain ⟨hshort, hlarge, hcap⟩ := hwindow
+    exact CenteredMomentEnergyOriginalHighReflectionGeometry.actual_deleted_gates s hZ
+      (by linarith) hB Mcap L X₁ X₂ ell z κ xi hwidth hL hX₁ hX₂ hell hz hze hκ hxi.le
+      (by linarith) hshort hlarge hcap D₁ D₂ hD₁ hD₂
+  · obtain ⟨hlarge, hcap⟩ := hwindow
+    have hg := actual_deleted_gates s hZ hB Mcap L X₁ X₂ ell z κ xi e hwidth hL
+      hX₁ hX₂ hell hz hze hκ hxi.le he hreserve hlarge hcap D₁ D₂ hD₁ hD₂
+    dsimp only at hg
+    simpa only [reflectionScales, ite_true, ← hg.1, ← hg.2.1,
+      Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using hg
 
 end SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
 

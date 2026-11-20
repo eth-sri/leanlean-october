@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityZero
 
 @[expose] public section
@@ -18,10 +19,10 @@ local notation "O"=>ActualEisensteinCubic.O
 theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(hdsmall:0<dsmall):
     ∃(s:Finset (ℕ×ℕ))(Czero:ℝ),0<Czero ∧
     ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (_hcop:OAI.PrincipalFamily.Coprime p)
       (Jo:ℕ),Jo≤Jmax→∀(extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)
       (original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)(negative:Bool)(Ψ:O→*ℂ)(m:O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
@@ -53,11 +54,10 @@ theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(h
   intro ι σ _ _ p hp _ hg hinj hcop Jo hJo extra pool original w negative Ψ m slots lists a
     hslots ha hΨ hw om lo hi hlo hs Z M r ell V delta A B Ractive j t eta tau window pi height R
     hZ hell hB hj hcost hsource hc₁ hc₂ hactive hcommon hquot hextra hhi hY hR
-  have hz:0<Z:=zero_lt_one.trans_le hZ
   let P:=Z^(firstKappa M r ell V delta A B Ractive)*Real.exp ((9/2:ℝ)*(eta*Real.log Z))
   let Q:=Cp*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
     (SchwartzMap.seminorm ℝ 0 0 om)^2
-  have hP:0≤P:=by dsimp [P];positivity
+  have hP:0≤P:=by positivity
   have hQ:0≤Q:=by dsimp [Q];positivity
   have he:=mul_le_mul_of_nonneg_left (hprincipal p hp hg hinj hcop extra pool original w negative Ψ m slots lists a
     hslots ha hΨ hw om lo hi hlo hs (Z^(r-A-B-t)) window
@@ -73,7 +73,7 @@ theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(h
       ∑x∈original,(primeProductNorm p (principalSupport extra negative x))^(2*ε)):=by
       dsimp [Q,P,physicalPrincipalFactor];ring
     _≤Q*(Cm*Real.exp (window*(1+ε))*Z^(r+3*ell+V+17*eta+tau+pi)):=mul_le_mul_of_nonneg_left hm hQ
-    _= _:=by dsimp [Q];ring
+    _= _:=by ring
 end SevenEighths.InverseMoment
 
 end

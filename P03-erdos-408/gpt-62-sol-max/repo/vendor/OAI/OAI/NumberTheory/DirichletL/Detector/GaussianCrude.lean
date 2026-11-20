@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 
 @[expose] public section
@@ -26,7 +27,7 @@ lemma gaussianAnnulus_scaled_square (N T : ℝ) (hN : 0<N) (hT : 0<T) :
   have hn : N/T<2 := by
     by_contra hh
     exact hz (gaussianAnnulus_large _ (le_of_not_gt hh))
-  have hn' : N<2*T := (div_lt_iff₀ hT).mp hn
+  have hn'  := (div_lt_iff₀ hT).mp hn
   calc
     _ ≤ N^2 := mul_le_of_le_one_right (sq_nonneg _) (gaussianAnnulus_norm_le_one _)
     _ ≤ _ := by nlinarith
@@ -39,9 +40,9 @@ lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*
           (gaussianAnnulus ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/T)*
             logPhase t (Real.log ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/T)))) := by
   have hi : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ)
   have hic : (Ideal.absNorm I:ℂ)≠0 := by exact_mod_cast hi.ne'
   have hjc : (Ideal.absNorm J:ℂ)≠0 := by exact_mod_cast hj.ne'
   unfold correctedSummand markedSummand CompletedGauss.summand spectralSummand fullIdealWeight
@@ -66,10 +67,10 @@ lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     unfold rowMajorant
     positivity
   have hi : (0:ℝ)<Ideal.absNorm I := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
-  have hN : 0<(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := mul_pos hi (pow_pos hj 3)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hJ)
+  have hN  := mul_pos hi (pow_pos hj 3)
   rw [gaussianFixedWindow_spectral_identity S D Ψ T t hT I J hI hJ,
     norm_mul,norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hN,
     norm_mul,logPhase_norm,mul_one]
@@ -94,7 +95,7 @@ theorem gaussianFixedWindow_completed_crude :
     _ ≤ ∑'p : Id×Id,4*T^2*rowMajorant 2 p := hs.norm.tsum_le_tsum
       (fun p=>gaussianFixedWindow_summand_crude S D Ψ hΨ T t hT p.1 p.2)
       ((rowMajorant_summable 2 (by norm_num)).mul_left (4*T^2))
-    _ = (4*M)*T^2 := by rw [tsum_mul_left];dsimp only [M];ring
+    _ = (4*M)*T^2 := by rw [tsum_mul_left];ring
     _ ≤ _ := by nlinarith [sq_nonneg T]
 
 end SevenEighths.ProbePhysical

@@ -35,9 +35,8 @@ theorem onePrimeExpectation_active (p n : ℕ) [NeZero p] (eta : Fin n → ℝ)
     constructor
     · intro he
       have he' := congrArg (fun z => h a + z) he
-      simpa only [add_assoc, add_neg_cancel_left, add_zero] using he'
-    · rintro he
-      simp [he]
+      simpa using he'
+    simp_all
   unfold onePrimeExpectation
   congr 1
   rw [Finset.sum_eq_single (-h a)]
@@ -87,20 +86,20 @@ theorem unmarked_product_split {R : Type*} [CommMonoid R] (n : ℕ)
   by_cases hi : i ∈ active
   · have hlo := hfirst i hi
     have hhi := hlast i hi
-    have hpre : ¬ i < a := not_lt.mpr hlo
-    have hpost : ¬ z < i := not_lt.mpr hhi
+    have hpre  := not_lt.mpr hlo
+    have hpost  := not_lt.mpr hhi
     simp [hi, hpre, hpost]
   · have hia : i ≠ a := fun he => hi (he.symm ▸ ha)
     have hiz : i ≠ z := fun he => hi (he.symm ▸ hz)
     by_cases hpre : i < a
-    · have hmid : ¬ a < i := not_lt.mpr (le_of_lt hpre)
-      have hpost : ¬ z < i := not_lt.mpr (le_trans (le_of_lt hpre) haz)
+    · have hmid  := not_lt.mpr (le_of_lt hpre)
+      have hpost  := not_lt.mpr (le_trans (le_of_lt hpre) haz)
       simp [hi, hpre, hmid, hpost]
     · by_cases hpost : z < i
-      · have hmid : ¬ i < z := not_lt.mpr (le_of_lt hpost)
+      · have hmid  := not_lt.mpr (le_of_lt hpost)
         simp [hi, hpre, hpost, hmid]
-      · have hlo : a < i := lt_of_le_of_ne (le_of_not_gt hpre) (Ne.symm hia)
-        have hhi : i < z := lt_of_le_of_ne (le_of_not_gt hpost) hiz
+      · have hlo  := lt_of_le_of_ne (le_of_not_gt hpre) (Ne.symm hia)
+        have hhi  := lt_of_le_of_ne (le_of_not_gt hpost) hiz
         simp [hi, hpre, hpost, hlo, hhi]
 
 /-- Prefix/suffix ghost endpoints are charged only at their own visits.

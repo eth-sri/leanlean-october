@@ -9,7 +9,7 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff FourierTransform
+open scoped FourierTransform
 open MeasureTheory
 
 namespace Erdos821.P5Energy
@@ -19,7 +19,7 @@ open Blueprint.Analytic
 def phase (x : ℝ) : ℂ := Complex.exp ((x : ℂ) * Complex.I)
 
 @[simp] theorem norm_phase (x : ℝ) : ‖phase x‖ = 1 := by
-  simp [phase, Complex.norm_exp_ofReal_mul_I]
+  simp [phase]
 
 theorem continuous_phase : Continuous phase := by
   unfold phase; fun_prop
@@ -48,7 +48,7 @@ theorem continuous_omega (h : ℝ) (N : ℕ) : Continuous (omega h N) := by
 
 theorem integrable_omega {h : ℝ} (hh : h ≠ 0) {N : ℕ} (hN : 2 ≤ N) :
     Integrable (omega h N) := by
-  have hint : Integrable (fun t : ℝ => (1 + (h * t) ^ 2)⁻¹) :=
+  have hint  :=
     integrable_inv_one_add_sq.comp_mul_left' hh
   refine hint.mono' (continuous_omega h N).aestronglyMeasurable
     (Filter.Eventually.of_forall fun t => ?_)
@@ -104,8 +104,6 @@ theorem Mker_bound (N : ℕ) : ∃ Cm : ℝ, 0 < Cm ∧ ∀ h t t' : ℝ,
   intro h t t'
   set c := h * t / (2 * Real.pi) with hc
   set c' := h * t' / (2 * Real.pi) with hc'
-  have hpc : 0 < (1 + |c|) ^ N := by positivity
-  have hpc' : 0 < (1 + |c'|) ^ N := by positivity
   have hdec := fourier_decay_of_compact (gfun_contDiff c c') (gfun_support c c')
     (A := A / ((1 + |c|) ^ N * (1 + |c'|) ^ N)) (fun i hi u => hg c c' i hi u)
     ((t - t') / (2 * Real.pi))

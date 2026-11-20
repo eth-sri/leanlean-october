@@ -44,7 +44,7 @@ theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
       rw [ha, hb]
       ring
     simp only [mem_filter, mem_Ioc, mem_Icc, hb']
-    have hYw : Y ≤ w := (Nat.ceil_le.1 hw₁)
+    have hYw  := (Nat.ceil_le.1 hw₁)
     refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
     · by_contra h
       have hb1 : b ≤ 1 := by omega
@@ -201,16 +201,16 @@ theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : �
     have h₂ : u % k < k := Nat.mod_lt _ (by omega)
     constructor
     · rintro ⟨-, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
-      exact ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
+      simp
     · rintro ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-      exact ⟨⟨⟨⟨hps, hpl⟩, hu⟩, h₁, h₂⟩, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
+      simp_all
   rw [hfil, singleton_product_singleton, singleton_product_singleton,
     singleton_product_singleton, sum_product, sum_singleton, sum_product, sum_singleton]
   rw [← Erdos821.P5Marked.e_eq_sum_cchi k hk h pl (ps % k * (u % k)) hcop]
   -- periodicity: `p_s u ≡ αβ mod k`
   set a := ps * u
   set b := ps % k * (u % k)
-  have hab : a % k = b % k := Nat.mul_mod ps u k
+  have hab  := Nat.mul_mod ps u k
   have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (show k ≠ 0 by omega)
   have hdecomp : (h : ℝ) * ((ps * pl * u : ℕ) : ℝ) / k =
       (h : ℝ) * ((pl * b : ℕ) : ℝ) / k +
@@ -350,7 +350,7 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
       (Filter.Eventually.of_forall fun ξ => by
         rw [ofReal_cpow_mul_I (div_pos (Nat.cast_pos.2 hn) hY), Complex.norm_exp_ofReal_mul_I])
     simpa only [mul_comm] using h
-  have hn : ∀ ps ∈ sP, ∀ pl ∈ spN, ∀ u ∈ uR, 0 < ps * pl * u := fun ps hps pl hpl u hu =>
+  have hn  := fun ps hps pl hpl u hu =>
     Nat.mul_pos (Nat.mul_pos (hsP ps hps) (hspN pl hpl)) (huR u hu)
   -- expand `ψ₁` and exchange the sums with the integral
   have h₁ : (((Y * V)⁻¹ : ℝ) : ℂ) * ∑ ps ∈ sP, ∑ pl ∈ spN, ∑ u ∈ uR,

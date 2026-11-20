@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondCanonical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalFrequency
 open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT

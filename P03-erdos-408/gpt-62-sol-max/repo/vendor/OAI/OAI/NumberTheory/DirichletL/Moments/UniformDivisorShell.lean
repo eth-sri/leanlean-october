@@ -12,7 +12,6 @@ open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentUniformDivisorShell
 open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
 open CenteredMomentDivisorRaw CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
 
 theorem subset_allowance {ι:Type*} [Fintype ι] [DecidableEq ι]
     (J:Finset ι) (s:Source J) (lo hi:ι→ℝ) (hlo:∀i:J,s.lo i=lo i) (hhi:∀i:J,s.hi i=hi i)

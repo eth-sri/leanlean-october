@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramShell
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
@@ -69,8 +69,8 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   intro D hD
   congr 1
   let D₀ := poolDivisor F D
-  have hd : D₀.val=D := poolDivisor_val F D hD
-  have hdp : λ₀^2∣primaryGenerator D₀.val-1 :=
+  have hd  := poolDivisor_val F D hD
+  have hdp  :=
     (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ D₀.property)).2
   have he := jointExtension_ideal_lattice S hS hbad σ C k (primaryGenerator D₀.val)
     (primary_product C _ hC hdp) u a b r hr P hg c

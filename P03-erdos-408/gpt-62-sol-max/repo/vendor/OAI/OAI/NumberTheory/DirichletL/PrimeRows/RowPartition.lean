@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowCount
 public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalLargeTail
 
@@ -18,8 +19,8 @@ def rowNorm (u : FreeRow) : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
 
 lemma rowNorm_ge_one (u : FreeRow) : 1≤rowNorm u := by
   unfold rowNorm
-  have hn : (Ideal.span {u.val}:Ideal O)≠⊥ := Ideal.span_singleton_eq_bot.not.mpr u.property.1
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hn)
+  have hn  := Ideal.span_singleton_eq_bot.not.mpr u.property.1
+  exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hn)
 
 lemma finite_bounded_freeRows (H : ℝ) : {u : FreeRow | rowNorm u≤H}.Finite := by
   by_contra hs
@@ -80,12 +81,12 @@ def dyadicRowEquiv (A : ℝ) (hA : 0<A) :
     (le_mul_of_one_le_right hA.le (one_le_pow₀ (by norm_num : (1:ℝ)≤2))).trans (mem_dyadicRows.mp p.2.property).2.1⟩) (by
     constructor
     · rintro ⟨m,u⟩ ⟨n,v⟩ heq
-      have huv : u.val=v.val := congrArg Subtype.val heq
+      have huv  := congrArg Subtype.val heq
       have hmn : m=n := by
         by_contra h
         exact (Finset.disjoint_left.mp (dyadicRows_disjoint A hA h)) u.property (huv.symm ▸ v.property)
       subst n
-      exact Sigma.ext rfl (heq_of_eq (Subtype.ext huv))
+      simp_all
     · intro u
       obtain ⟨n,hn⟩ := exists_dyadicRows A hA u.val u.property.1 u.property.2
       exact ⟨⟨n,⟨u.val,hn⟩⟩,rfl⟩)

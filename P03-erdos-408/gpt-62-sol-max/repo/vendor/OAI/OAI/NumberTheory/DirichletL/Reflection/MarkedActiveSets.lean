@@ -37,7 +37,7 @@ theorem inactive_weight_three_blocks (e : α⊕β≃γ) (z : γ⊕σ→ℂ)
         ∏ t∈(Finset.univ:Finset σ)\T,z (Sum.inr t))*F (markedActiveSet e B T) := by
   have he := inactive_weight_nonresidual_subsets (joinedFiberEquiv e) z hz F
   refine Eq.trans ?_ (Eq.trans he ?_)
-  · apply Finset.sum_congr (by ext A; simp only [Finset.mem_univ])
+  · apply Finset.sum_congr (by rfl)
     intro A hA
     congr 1
     apply Finset.prod_congr (by ext x; simp only [Finset.mem_sdiff,Finset.mem_univ])

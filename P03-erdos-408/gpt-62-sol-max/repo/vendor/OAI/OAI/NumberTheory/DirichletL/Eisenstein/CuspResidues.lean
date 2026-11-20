@@ -2,6 +2,8 @@ module
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedHeight
 
+public import OAI.NumberTheory.DirichletL.Eisenstein.UpperStripIdentity
+
 @[expose] public section
 
 namespace OAI
@@ -11,77 +13,18 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace MatrixGroups Matrix
+open scoped InnerProductSpace MatrixGroups Matrix
 
 lemma levelThree_integral_eq_translation (M : CubicKubota.levelThree)
     (hc : (M : SL(2,ActualEisensteinCubic.O)) 1 0=0) :
@@ -93,7 +36,7 @@ lemma levelThree_integral_eq_translation (M : CubicKubota.levelThree)
     have hh : (M : SL(2,ActualEisensteinCubic.O)) 0 0 * (M : SL(2,ActualEisensteinCubic.O)) 1 1-
       (M : SL(2,ActualEisensteinCubic.O)) 0 1 * (M : SL(2,ActualEisensteinCubic.O)) 1 0=1 := by
       simpa only [Matrix.det_fin_two] using (M : SL(2,ActualEisensteinCubic.O)).property
-    simpa only [hc,hd,mul_zero,mul_one,sub_zero] using hh
+    simp_all
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [complexTranslation,ha,hc,hd]
@@ -133,10 +76,8 @@ lemma kernelProjection_cuspPeriodRegion_injective :
     change ConcreteTraceCRT.eisEmbedding ((N:CubicKubota.levelThree).1 0 1)∈periodLattice
     rw [hk,map_mul,map_ofNat]
     exact three_embedding_mem k
-  have hehor : hyperbolicHorizontal u=hyperbolicHorizontal v :=
-    periodDomain_unique_translate _ _ _ hu.1 hv.1 hper (by rw [hul,hvl])
   have hez : z+ConcreteTraceCRT.eisEmbedding ((M:SL(2,ActualEisensteinCubic.O)) 0 1)=z := by
-    simpa only [hul,hvl] using hehor
+    simpa only [hul,hvl] using (periodDomain_unique_translate _ _ _ hu.1 hv.1 hper (by rw [hul,hvl]))
   rw [hua,hez,←hvrep]
 
 def cuspPeriodStrip (a b : ℝ) : Set HyperbolicSpace :=
@@ -162,8 +103,7 @@ lemma kernelProjection_cuspPeriodStrip_measurePreserving (a b : ℝ) (ha : 1<a) 
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace MatrixGroups
+open scoped InnerProductSpace MatrixGroups
 
 def kernelCuspStripSet : Set KernelQuotient :=
   integralOrbitProjection globalKubotaKernel '' cuspPeriodStrip 5 6
@@ -204,11 +144,11 @@ lemma kernelCuspAverageCompact_isCompact : IsCompact kernelCuspAverageCompact :=
 lemma kernelCuspStripSet_subset_compact : kernelCuspStripSet⊆kernelCuspAverageCompact := by
   rintro q ⟨w,hw,rfl⟩
   obtain ⟨z,v,hv,rfl⟩ := upperPoint_surjective w
-  have hfive : 5≤v := by simpa only [hyperbolicHeight_upperPoint] using hw.2.1
-  have hsix : v≤6 := by simpa only [hyperbolicHeight_upperPoint] using hw.2.2
+  have hfive : 5≤v := by simpa [hyperbolicHeight_upperPoint] using hw.2.1
+  have hsix : v≤6 := by simpa [hyperbolicHeight_upperPoint] using hw.2.2
   change cuspBarrier 2 3 (upperPoint z v hv)≤6
   have hh := cuspBarrier_high 2 3 (by norm_num) (by norm_num) 1 z v hv (by linarith)
-  simpa only [map_one,one_smul] using hh.le.trans hsix
+  simp_all
 
 lemma kernelCuspStripAverage_restrict (F : KernelQuotientL2) :
     kernelCuspStripAverage (kernelMassRestrictionCLM kernelCuspAverageCompact
@@ -245,7 +185,7 @@ lemma kernelCuspAverageFamily_actual_integral (a b : ℝ) (ha : 0<a) (hab : a<b)
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace MatrixGroups Matrix
+open scoped InnerProductSpace Matrix
 
 def spatialComplexSplit : EuclideanSpatial ≃ᵐ ℝ × ℂ :=
   spatialHeightSplit.trans ((MeasurableEquiv.refl ℝ).prodCongr Complex.measurableEquivPi.symm)
@@ -261,8 +201,7 @@ lemma spatialComplexSplit_coordinates (w : HyperbolicSpace) :
       (hyperbolicHeight w,hyperbolicHorizontal w) := by
   apply Prod.ext
   · rfl
-  · change (hyperbolicHorizontal w).re+(hyperbolicHorizontal w).im*Complex.I=hyperbolicHorizontal w
-    exact Complex.re_add_im _
+  · exact Complex.re_add_im _
 
 def cuspCoordinateLift (q : ℝ × ℂ) : HyperbolicSpace :=
   euclideanToHyperbolic (spatialComplexSplit.symm q)
@@ -333,10 +272,8 @@ lemma hyperbolicEisenstein_continuous (s : ℂ) (hs : 2<s.re) :
       upperEisenstein p.1.1 p.1.2 p.2 s) := by
     apply continuous_iff_continuousAt.mpr
     intro p
-    have hin : ContinuousAt (fun q : UpperCoordinates => (q,s)) p :=
-      continuousAt_id.prodMk continuousAt_const
     exact ContinuousAt.comp (f := fun q : UpperCoordinates => (q,s))
-      (upperEisenstein_joint_continuousAt (p,s) hs) hin
+      (upperEisenstein_joint_continuousAt (p,s) hs) (continuousAt_id.prodMk continuousAt_const)
   convert hcoord.comp hyperbolicCoordinates_continuous using 1
   ext w
   obtain ⟨z,v,hv,rfl⟩ := upperPoint_surjective w
@@ -359,8 +296,7 @@ lemma spatialComplexSplit_symm_continuous : Continuous spatialComplexSplit.symm 
 lemma cuspCoordinateLift_continuousAt (q : ℝ × ℂ) (hq : 0<q.1) :
     ContinuousAt cuspCoordinateLift q := by
   have hp : 0<(spatialComplexSplit.symm q) 2 := by
-    rw [spatialComplexSplit_symm_eq]
-    exact hq
+    assumption
   exact (euclideanToHyperbolic_contMDiffAt _ hp).continuousAt.comp
     spatialComplexSplit_symm_continuous.continuousAt
 
@@ -384,7 +320,7 @@ lemma hyperbolicEisenstein_cusp_average (s : ℂ) (hs : 2<s.re) :
     (∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s w∂hyperbolicVolume)=
       ∫v in Set.Icc (5:ℝ) 6,
         (((v:ℂ)^s+(v:ℂ)^(2-s)*((Real.pi:ℂ)/(s-1))*scatteringCoefficient s 0)*
-          ((9*Real.sqrt 3/2:ℝ):ℂ))/(v:ℂ)^3 := by
+          (periodCovolume : ℂ))/(v:ℂ)^3 := by
   rw [cuspPeriodStrip_integral_coordinates _
     (hyperbolicEisenstein_continuous s hs).aestronglyMeasurable
     (cuspCoordinateLift_weighted_integrable _ (hyperbolicEisenstein_continuous s hs))]
@@ -392,7 +328,7 @@ lemma hyperbolicEisenstein_cusp_average (s : ℂ) (hs : 2<s.re) :
   intro v hv
   have hpos : 0<v := lt_of_lt_of_le (by norm_num) hv.1
   have hh : (∫z in periodDomain,hyperbolicEisenstein s (cuspCoordinateLift (v,z)))=
-      eisensteinFourierCoefficient v hpos s 0*((9*Real.sqrt 3/2:ℝ):ℂ) := by
+      eisensteinFourierCoefficient v hpos s 0*(periodCovolume : ℂ) := by
     simp_rw [cuspCoordinateLift_positive v _ hpos,hyperbolicEisenstein_upperPoint]
     rw [eisensteinFourierCoefficient]
     simp only [cuspFrequency,map_zero,zero_div,neg_zero,zero_mul,
@@ -403,8 +339,6 @@ lemma hyperbolicEisenstein_cusp_average (s : ℂ) (hs : 2<s.re) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 def cuspMainHeightFactor (s : ℂ) : ℂ :=
   ((6:ℂ)^(s-2)-(5:ℂ)^(s-2))/(s-2)
@@ -451,7 +385,7 @@ lemma cuspScatterHeightFactor_differentiableAt (s : ℂ) (hs : s≠0) :
     (hd.const_cpow (Or.inl (by norm_num)))).div differentiableAt_id hs
 
 def cuspConstantAverage (s : ℂ) : ℂ :=
-  ((9*Real.sqrt 3/2:ℝ):ℂ)*(cuspMainHeightFactor s+
+  (periodCovolume : ℂ)*(cuspMainHeightFactor s+
     ((Real.pi:ℂ)/(s-1))*scatteringCoefficient s 0*cuspScatterHeightFactor s)
 
 lemma hyperbolicEisenstein_cusp_average_eq (s : ℂ) (hs : 2<s.re) :
@@ -462,20 +396,14 @@ lemma hyperbolicEisenstein_cusp_average_eq (s : ℂ) (hs : 2<s.re) :
   rw [hyperbolicEisenstein_cusp_average s hs]
   have heq : (∫v in Set.Icc (5:ℝ) 6,
       (((v:ℂ)^s+(v:ℂ)^(2-s)*((Real.pi:ℂ)/(s-1))*scatteringCoefficient s 0)*
-        ((9*Real.sqrt 3/2:ℝ):ℂ))/(v:ℂ)^3)=
-      ∫v in Set.Icc (5:ℝ) 6,((9*Real.sqrt 3/2:ℝ):ℂ)*
+        (periodCovolume : ℂ))/(v:ℂ)^3)=
+      ∫v in Set.Icc (5:ℝ) 6,(periodCovolume : ℂ)*
         ((v:ℂ)^(s-3)+(((Real.pi:ℂ)/(s-1))*scatteringCoefficient s 0)*(v:ℂ)^(-s-1)) := by
     apply setIntegral_congr_fun measurableSet_Icc
     intro v hv
     have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (by linarith [hv.1])
-    have h1 : (v:ℂ)^(s-3)=(v:ℂ)^s/(v:ℂ)^3 := by
-      rw [Complex.cpow_sub _ _ hv0]
-      congr 1
-      exact Complex.cpow_natCast _ 3
-    have h2 : (v:ℂ)^(-s-1)=(v:ℂ)^(2-s)/(v:ℂ)^3 := by
-      rw [show -s-1=(2-s)-3 by ring,Complex.cpow_sub _ _ hv0]
-      congr 1
-      exact Complex.cpow_natCast _ 3
+    have h1 := cpow_sub_three (s := s) hv0
+    have h2 := cpow_cusp_height (s := s) hv0
     dsimp only
     rw [h1,h2]
     ring
@@ -488,11 +416,9 @@ lemma cuspConstantAverage_differentiableAt (s : ℂ) (hs : 4/3<s.re) (hs2 : s≠
     DifferentiableAt ℂ cuspConstantAverage s := by
   have hs0 : s≠0 := by intro he; subst s; norm_num at hs
   have hs1 : s≠1 := by intro he; subst s; norm_num at hs
-  have hsc : DifferentiableAt ℂ (fun z : ℂ => scatteringCoefficient z 0) s :=
-    (arithmeticDirichletSeries_zero_differentiableAt s hs).div_const _
   exact ((cuspMainHeightFactor_differentiableAt s hs2).add
     ((((differentiableAt_const (Real.pi:ℂ)).div (differentiableAt_id.sub_const 1)
-      (sub_ne_zero.mpr hs1)).mul hsc).mul
+      (sub_ne_zero.mpr hs1)).mul ((arithmeticDirichletSeries_zero_differentiableAt s hs).div_const _)).mul
       (cuspScatterHeightFactor_differentiableAt s hs0))).const_mul _
 
 lemma cuspScatterHeightFactor_center_re_pos :
@@ -511,7 +437,7 @@ lemma cuspScatterHeightFactor_center_re_pos :
   · norm_num
 
 def cuspConstantAverageResidue : ℂ :=
-  ((9*Real.sqrt 3/2:ℝ):ℂ)*(3*(Real.pi:ℂ))*constantArithmeticResidue*
+  (periodCovolume : ℂ)*(3*(Real.pi:ℂ))*constantArithmeticResidue*
     cuspScatterHeightFactor (4/3:ℂ)
 
 lemma cuspConstantAverageResidue_ne_zero : cuspConstantAverageResidue≠0 := by
@@ -521,8 +447,7 @@ lemma cuspConstantAverageResidue_ne_zero : cuspConstantAverageResidue≠0 := by
       constantArithmeticResidue_ne_zero
   · intro he
     have hh := cuspScatterHeightFactor_center_re_pos
-    rw [he,Complex.zero_re] at hh
-    exact lt_irrefl 0 hh
+    simp_all
 
 lemma cuspConstantAverage_oneSidedResidue :
     Tendsto (fun x : ℝ => ((x:ℂ)-(4/3:ℂ))*cuspConstantAverage (x:ℂ))
@@ -538,7 +463,7 @@ lemma cuspConstantAverage_oneSidedResidue :
     convert tendsto_const_nhds.div (harg.sub_const 1) (by norm_num : (4/3:ℂ)-1≠0) using 1 ; ring_nf
   have hall := ((hlinear.mul hm).add
     ((hpi.mul scatteringCoefficient_zero_oneSidedResidue).mul hh)).const_mul
-      ((9*Real.sqrt 3/2:ℝ):ℂ)
+      (periodCovolume : ℂ)
   convert hall using 1
   · ext x
     dsimp only [cuspConstantAverage,Function.comp_def]
@@ -546,8 +471,6 @@ lemma cuspConstantAverage_oneSidedResidue :
   · simp only [zero_mul,zero_add,cuspConstantAverageResidue]
     ring_nf
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 lemma kernelSpectralResolvent_analyticAt_of_isUnit (z : ℂ)
     (hz : IsUnit (kernelSpectralFormOperator z)) :
@@ -594,8 +517,7 @@ lemma cuspUpperParameterRegion_isOpen : IsOpen cuspUpperParameterRegion :=
     (isOpen_lt continuous_const Complex.continuous_im)
 
 lemma cuspUpperParameterRegion_convex : Convex ℝ cuspUpperParameterRegion :=
-  ((convex_Ioi (4/3:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-    ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
+  upperStrip_convex _
 
 lemma cuspConstantAverage_analyticOn_upper : AnalyticOnNhd ℂ cuspConstantAverage cuspUpperParameterRegion := by
   apply (Complex.analyticOnNhd_iff_differentiableOn cuspUpperParameterRegion_isOpen).mpr
@@ -613,16 +535,9 @@ lemma kernelCuspAverageFamily_eq_upper_of_overlap (a b : ℝ) (ha : 0<a) (hab : 
   have hleft : AnalyticOnNhd ℂ (kernelCuspAverageFamily a b ha hab) cuspUpperParameterRegion := by
     intro s hs
     exact kernelCuspAverageFamily_analyticAt_nonreal a b ha hab s (by linarith [hs.1]) hs.2.ne'
-  have hstart : (5+Complex.I:ℂ)∈cuspUpperParameterRegion := by
-    norm_num [cuspUpperParameterRegion]
-  have hV : IsOpen {s : ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hevent : kernelCuspAverageFamily a b ha hab =ᶠ[𝓝 (5+Complex.I:ℂ)] cuspConstantAverage := by
-    filter_upwards [hV.mem_nhds (by norm_num)] with s hs
-    exact (hoverlap s hs.1 hs.2).trans (hyperbolicEisenstein_cusp_average_eq s (by linarith [hs.1]))
-  exact hleft.eqOn_of_preconnected_of_eventuallyEq cuspConstantAverage_analyticOn_upper
-    cuspUpperParameterRegion_convex.isPreconnected hstart hevent
+  exact eqOn_of_upperStrip hleft cuspConstantAverage_analyticOn_upper (by norm_num) (by
+    intro s hre him
+    exact (hoverlap s hre him).trans (hyperbolicEisenstein_cusp_average_eq s (by linarith [hre])))
 
 lemma kernelCuspAverageFamily_eq_real_of_upper (a b : ℝ) (ha : 0<a) (hab : a<b)
     (hupper : Set.EqOn (kernelCuspAverageFamily a b ha hab) cuspConstantAverage cuspUpperParameterRegion)
@@ -630,10 +545,10 @@ lemma kernelCuspAverageFamily_eq_real_of_upper (a b : ℝ) (ha : 0<a) (hab : a<b
     (hunit : IsUnit (kernelSpectralFormOperator (kernelEisensteinSpectralParameter (x:ℂ)))) :
     kernelCuspAverageFamily a b ha hab (x:ℂ)=cuspConstantAverage (x:ℂ) := by
   have hpath : Tendsto (fun t : ℝ => (x:ℂ)+(t:ℂ)*Complex.I) (𝓝[>] (0:ℝ)) (𝓝 (x:ℂ)) := by
-    have hcont : Continuous (fun t : ℝ => (x:ℂ)+(t:ℂ)*Complex.I) :=
+    have hcont  :=
       (Complex.continuous_ofReal.mul_const Complex.I).const_add (x:ℂ)
     have hh := (hcont.tendsto 0).mono_left (show 𝓝[>] (0:ℝ)≤𝓝 0 from nhdsWithin_le_nhds)
-    simpa only [Complex.ofReal_zero,zero_mul,add_zero] using hh
+    simp_all
   have hleft := (kernelCuspAverageFamily_analyticAt_of_isUnit a b ha hab (x:ℂ) hunit).continuousAt.tendsto.comp hpath
   have hx2' : (x:ℂ)≠2 := by exact_mod_cast hx2
   have hright := (cuspConstantAverage_differentiableAt (x:ℂ) hx hx2').continuousAt.tendsto.comp hpath

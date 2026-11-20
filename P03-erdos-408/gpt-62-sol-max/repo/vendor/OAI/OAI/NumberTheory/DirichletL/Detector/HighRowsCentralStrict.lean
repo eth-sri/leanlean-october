@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
 
 @[expose] public section
@@ -34,8 +35,7 @@ lemma squarefree_base_strict_norm (j : ℕ) (hj : j<6) :
   have he := row_squarefree_kone p hp hg hc 0 0 j hj
   norm_num only [Nat.mul_zero,zero_add,mul_zero,add_zero,pow_zero,one_mul] at he
   have hQ : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   have hQ1 : (1:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     have hh := SmoothMobiusCorrection.prime_norm_two_le
       ⟨Ideal.span {p},Ideal.prime_span_singleton_iff.mpr hp⟩

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LowMellin
 
 @[expose] public section
@@ -34,8 +35,7 @@ def lowRowMellinIntegrand (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
 
 lemma calibration_elementNorm_pos (C : CalibrationData) : 0<elementNorm C.generator := by
   unfold elementNorm
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
 
 lemma lowPhysicalScale_pos (C : CalibrationData) (X Y : ℝ) (hX : 0<X) (hY : 0<Y) :
     0<lowPhysicalScale C X Y := mul_pos (mul_pos (calibration_elementNorm_pos C) hX) hY
@@ -59,8 +59,8 @@ lemma lowRowMellinIntegrand_nonzero_form (C : CalibrationData) (W0 W1 Ω : ℝ�
         (((elementNorm r.2/lowPhysicalScale C X Y:ℝ):ℂ)^(-((v:ℂ)*Complex.I))*
           (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)^((v:ℂ)*Complex.I)*mellin W0 ((v:ℂ)*Complex.I)) := by
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
-  have hqc : (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne'
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (r.1.property.1)
+  have hqc  := Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne'
   unfold lowRowMellinIntegrand lowAdditiveCoefficient
   rw [ite_eq_left hc]
   dsimp only
@@ -79,10 +79,10 @@ lemma lowRowMellinIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→�
     exact integrable_zero _ _ _
   by_cases hc : ∀P∈C.excluded,¬P∣r.1.val
   · have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (r.1.property.1)
     have hmpos : 0<elementNorm r.2 := by
       unfold elementNorm
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hm))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hm)
     change Integrable (fun v : ℝ=>lowRowMellinIntegrand C W0 W1 Ω X Y r v)
     simp_rw [lowRowMellinIntegrand_nonzero_form C W0 W1 Ω X Y hY r _ hc]
     exact (low_mellin_ratio_integrable W0 a0 b0 ha0 hW0 hWs _ _
@@ -110,10 +110,10 @@ theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     simp [physicalRowWeight,lowRowMellinIntegrand,hm,elementNorm,hw,hΩ,Ω]
   by_cases hc : ∀P∈C.excluded,¬P∣r.1.val
   · have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (r.1.property.1)
     have hmpos : 0<elementNorm r.2 := by
       unfold elementNorm
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hm))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hm)
     rw [physicalRowWeight_insert_cutoff C W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y hY r]
     unfold physicalRowWeight lowRowMellinIntegrand lowAdditiveCoefficient lowPhysicalScale
     dsimp only
@@ -129,7 +129,7 @@ theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
         (Real.sqrt (Ideal.absNorm r.1.val):ℂ)⁻¹*
         sexticGauss (primaryGenerator r.1.val) (supported_primaryGenerator_ne_zero r.1.val r.1.property) (-r.2))*
         ((Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X):ℂ)⁻¹*
-          W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))) := by dsimp only [Ω]; simp only [div_eq_mul_inv,mul_inv_rev]; ring
+          W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))) := by ring
       _ = _ := by
         rw [hh]
         repeat rw [←integral_const_mul]
@@ -143,7 +143,7 @@ def lowArithmeticCoefficient (C : CalibrationData) (s : {I : Id // Supported I})
   else 0
 
 lemma calibration_residue_inverse_norm (C : CalibrationData) (a : O) : ‖(C.residueMonoid a)⁻¹‖≤1 := by
-  let : Finite (O ⧸ Ideal.span {C.generator}) := Ring.HasFiniteQuotients.finiteQuotient
+  let  := Ring.HasFiniteQuotients.finiteQuotient
     (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
   let : Fintype (O ⧸ Ideal.span {C.generator}) := Fintype.ofFinite _
   change ‖(C.residue (Ideal.Quotient.mk (Ideal.span {C.generator}) a))⁻¹‖≤1

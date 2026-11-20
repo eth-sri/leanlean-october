@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySlots
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CenteredMomentHeckeSlots
+open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
 lemma normalizedSlot_character (η ν : Character) (m A z : O)

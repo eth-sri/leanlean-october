@@ -60,12 +60,7 @@ theorem all_big_group_weights (hMark : SpanMarkWeightTask) (S : LifespanAssignme
       exact hMark F P J m n A Q S hQ hS hk g (hV g)
     _ = _ := by
       simp only [Finset.prod_mul_distrib]
-      have hTarget :
-          (∏ g : P.BigGroup, ∏ i : Fin n,
-            (P.V g.val) ^ (-((A.pattern (Q.pattern i)).t g.val : ℤ))) =
-          ∏ i : Fin n, ∏ g : P.BigGroup,
-            (P.V g.val) ^ (-((A.pattern (Q.pattern i)).t g.val : ℤ)) := Finset.prod_comm
-      rw [hTarget]
+      rw [Finset.prod_comm]
 
 
 end ResiduePath

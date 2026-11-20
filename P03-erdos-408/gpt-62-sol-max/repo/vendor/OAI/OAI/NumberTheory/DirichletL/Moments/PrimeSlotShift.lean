@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimeSlot
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentPrimeSlotShift
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
-open CenteredMomentPrimeSlot
+open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic CenteredMomentHeckeSlots
+open CenteredMomentWholeSlotDeletion CenteredMomentTwist CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
 lemma norm_height_split (N D σ t v:ℝ) (hN:0<N) (hD:0<D) :
@@ -39,8 +38,8 @@ theorem normalizedSlot_eq_ray (M:Ideal O) (H:Subgroup (O⧸M)ˣ)
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro I hI
-  have hp:Prime I := (Finset.mem_filter.mp hI).2.1
-  have hN:0<(I.absNorm:ℝ) := norm_pos ⟨I,hp.ne_zero⟩
+  have hp := (Finset.mem_filter.mp hI).2.1
+  have hN := norm_pos ⟨I,hp.ne_zero⟩
   have hc:=idealCoeff_eq_row η χ m 1 (A*z) hrow I
   simp only [one_pow,mul_one] at hc
   rw [←hc]

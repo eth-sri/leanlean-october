@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.LowPrimeFamily
+public import OAI.NumberTheory.DirichletL.Detector.LowSlotMarks
+public import OAI.NumberTheory.DirichletL.Detector.LowSlotWeights
+public import OAI.NumberTheory.DirichletL.Reflection.Canonical
 
 @[expose] public section
 
@@ -11,7 +13,6 @@ open scoped Classical
 namespace SevenEighths.ProbePhysical
 open RayFourExpansion CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 def lowCorrectionEnergy : ℝ := ∑χ : RayCharacter,‖ProbeCompleted.correctionCoeff χ‖^2
 

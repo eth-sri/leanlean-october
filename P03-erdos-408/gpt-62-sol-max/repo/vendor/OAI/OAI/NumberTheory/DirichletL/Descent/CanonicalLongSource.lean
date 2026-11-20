@@ -1,7 +1,13 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedBins
-public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicFullEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicOriginalBranches
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
+public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
+public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicLiveRadius
 
 @[expose] public section
 
@@ -9,7 +15,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
@@ -28,9 +34,9 @@ theorem long_frequency_profile
 
 theorem long_marked_source_eq
     {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+    (hcop:OAI.PrincipalFamily.Coprime p)
+    (hg:OAI.PrincipalFamily.Avoids p goodLambda)
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(β:(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m f z:O)
     (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
     (V:𝓢(ℝ,ℂ))(A:ℝ)(hV:∀s,V s≠0→|s|≤A)(Z r ξ:ℝ)(hZ:0<Z) :
@@ -73,13 +79,13 @@ theorem long_cube_progress
     cutoff-1/Real.log Z≤ell+V := by
   obtain ⟨v,hv⟩:=hne
   obtain ⟨hv,hlower⟩:=Finset.mem_filter.mp hv
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz:=zero_lt_one.trans hZ
   have he:=Real.log_le_log (Real.rpow_pos_of_pos hz _) (hlower.trans (hupper v hv))
   rw [Real.log_rpow hz,Real.log_mul (Real.exp_pos _).ne' (Real.rpow_pos_of_pos hz _).ne',
     Real.log_exp,Real.log_rpow hz] at he
   have hlog:=Real.log_pos hZ
   have hd: (cutoff-ell-V)*Real.log Z≤1:=by nlinarith
-  have hh:cutoff-ell-V≤1/Real.log Z:=(le_div_iff₀ hlog).mpr hd
+  have hh:=(le_div_iff₀ hlog).mpr hd
   linarith
 
 theorem long_cube_progress_with_slack
@@ -91,7 +97,7 @@ theorem long_cube_progress_with_slack
       Real.exp 1*Z^ell) :
     cutoff-eta≤ell+V := by
   have h:=long_cube_progress S D Q Z cutoff V ell hZ hne hupper
-  have hh:1/Real.log Z≤eta:=(div_le_iff₀ (Real.log_pos hZ)).mpr (by simpa only [mul_comm] using hlog)
+  have hh:=(div_le_iff₀ (Real.log_pos hZ)).mpr (by assumption)
   linarith
 
 theorem short_sum_zero_of_label_large
@@ -100,7 +106,7 @@ theorem short_sum_zero_of_label_large
     markedShortCompletedSum Ψ W X (Z^(cutoff-V)) mark=0 := by
   have ht:Z^(cutoff-V)≤1:=by
     have he:=Real.rpow_le_rpow_of_exponent_le hZ (show cutoff-V≤0 by linarith)
-    simpa only [Real.rpow_zero] using he
+    simp_all
   unfold markedShortCompletedSum
   trans ∑' _ : Ideal O,(0:ℂ)
   · apply tsum_congr

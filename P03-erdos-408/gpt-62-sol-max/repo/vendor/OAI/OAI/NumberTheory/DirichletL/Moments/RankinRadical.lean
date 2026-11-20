@@ -38,10 +38,9 @@ theorem old_mask_dvd_commonRadical (s I J : Ideal O) (hs : Squarefree s)
   have hi : P ∈ primeSupport I := by
     simpa only [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff hI,hp,true_and]
       using hd.trans hsI
-  have hj : P ∈ primeSupport J := by
-    simpa only [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff hJ,hp,true_and]
-      using hd.trans hsJ
-  exact Finset.dvd_prod_of_mem id (Finset.mem_inter.mpr ⟨hi,hj⟩)
+  refine Finset.dvd_prod_of_mem id (Finset.mem_inter.mpr ⟨hi,?_⟩)
+  simpa only [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff hJ,hp,true_and]
+    using hd.trans hsJ
 
 theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal O)
     (s : Ideal O) (hs : Squarefree s) (hs0 : s ≠ 0)

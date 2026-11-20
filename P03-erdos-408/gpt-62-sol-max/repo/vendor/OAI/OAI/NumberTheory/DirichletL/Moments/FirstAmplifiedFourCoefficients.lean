@@ -3,7 +3,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.SecondChildPowerBudget
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPowerBudget
 public import OAI.NumberTheory.DirichletL.Moments.FirstCommonReferencePower
-public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalDeclared
+public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalLow
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedDiagonal
 public import OAI.NumberTheory.DirichletL.Moments.SuccessorPaidParameters
 
@@ -19,11 +19,10 @@ open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic Co
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
 open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal
-open CenteredMomentSuccessorPaidParameters
+open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
+open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstMixedNormalization
+open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedExceptionalLow
+open CenteredMomentFirstMixedDiagonal CenteredMomentSuccessorPaidParameters
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
@@ -57,7 +56,7 @@ lemma actual_valuation_mass : (∑i:Fin 3,16*(errorIndex i+2:ℝ)^2)=1872 := by
 
 theorem actual_error_average (P:Finset (Ideal O))(hne:P.Nonempty)
     (hp:∀Q∈P,Prime Q)(hbad:∀Q∈P,Q∉fixedBadPrimes)
-    (f:elementPool P→Fin 3→Ray→ℝ)(E:ℝ)(_hE:0≤E)
+    (f:elementPool P→Fin 3→Ray→ℝ)(E:ℝ)
     (hf:∀p i χ,f p i χ≤E):
     (1/(P.card:ℝ))*(∑p:elementPool P,∑i:Fin 3,
       16*(errorIndex i+2:ℝ)^2*∑χ:Ray,f p i χ)≤
@@ -117,10 +116,13 @@ lemma error_paid_core (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)
 
 theorem actual_main_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve paid eps saving r Mdecl Mcap:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)(hM:0≤Mdecl)
+    (K V Z sigma delta reserve paid eps saving r Mdecl Mcap credit:ℝ)
+    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
-    (hlow:Real.logb Z V≤5*Mdecl/6)
+    (hVcap:Real.logb Z V≤Mdecl)
+    (hbudget : Real.logb Z V + (Real.logb Z K + Real.logb Z (η.modulus.absNorm : ℝ)) / 6 ≤
+      Mdecl + 2 * credit / 3)
+    (hcredit : credit ≤ Real.logb Z (C.absNorm : ℝ) + max r 0)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
@@ -138,8 +140,7 @@ theorem actual_main_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supp
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve:=by unfold mainCommonRadius;positivity
   have havg:Z^(-sigma/3)≤1:=Real.rpow_le_one_of_one_le_of_nonpos hZ.le (by linarith)
-  have hA:Real.logb Z V≤Mdecl:=by linarith
-  have hAcap:Real.logb Z V≤Mcap:=hA.trans hcap
+  have hAcap := hVcap.trans hcap
   intro j
   fin_cases j
   · have hh:=main_paid_core (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z (allowance C D Z)
@@ -158,7 +159,8 @@ theorem actual_main_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supp
           (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve) (sigma/3)
         (Mdecl-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))) paid eps saving r 1≤
         Z^(Real.logb Z V-5*(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))/6+
-          4*sigma/3+5*(delta+reserve)/6):=by
+          4*sigma/3+5*(delta+reserve)/6
+          - 2*(Real.logb Z (C.absNorm:ℝ) + max r 0)/3):=by
       convert hh using 1 ; dsimp [mainCores,reference] ; ring
     apply ht.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
@@ -202,15 +204,18 @@ theorem actual_main_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supp
 
 theorem actual_error_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve paid eps saving r Mdecl Mcap:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)(hM:0≤Mdecl)
+    (K V Z sigma delta reserve paid eps saving r Mdecl Mcap credit:ℝ)
+    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
-    (hlow:Real.logb Z V≤5*Mdecl/6)
+    (hVcap:Real.logb Z V≤Mdecl)
+    (hbudget : Real.logb Z V + (Real.logb Z K + Real.logb Z (η.modulus.absNorm : ℝ)) / 6 ≤
+      Mdecl + 2 * credit / 3)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))(hbad:fixedBadPrimes⊆Sbad)
     (p:O)(hp:p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
-    (k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
+    (k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)
+    (hcredit : credit ≤ Real.logb Z (C.absNorm : ℝ) + errorRemoval p Z k + max r 0):
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let Kerror:=errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
@@ -228,8 +233,7 @@ theorem actual_error_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Sup
   have hr:0<errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p k:=by unfold errorCommonRadius;positivity
-  have hA:Real.logb Z V≤Mdecl:=by linarith
-  have hAcap:Real.logb Z V≤Mcap:=hA.trans hcap
+  have hAcap := hVcap.trans hcap
   intro j
   fin_cases j
   · have hh:=error_paid_core p hp0 k hk (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z (allowance C D Z)
@@ -248,7 +252,8 @@ theorem actual_error_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Sup
           (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p k)
         (Mdecl-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))) paid eps saving r 1≤
         Z^(Real.logb Z V-5*(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))/6+
-          3*sigma/2+5*(delta+reserve)/6):=by
+          3*sigma/2+5*(delta+reserve)/6
+          - 2*(Real.logb Z (C.absNorm:ℝ) + errorRemoval p Z k + max r 0)/3):=by
       convert hh using 1 ; dsimp [errorCores,reference] ; ring
     apply ht.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
@@ -368,7 +373,7 @@ theorem averaged_coefficients_bound (P:Finset (Ideal O))(hne:P.Nonempty)
       _≤Z^(-ell+primeLoss)*Z^(ell+loss j):=mul_le_mul_of_nonneg_right hinv (by positivity)
       _=Z^(loss j+primeLoss):=by rw [←Real.rpow_add hz];congr 1;ring
   have herr:=actual_error_average P hne hp hbad (fun p i χ=>H j*error p i χ j)
-    (H j*Z^(loss j)) (mul_nonneg (hH j) (Real.rpow_nonneg hz.le _)) (fun p i χ=>mul_le_mul_of_nonneg_left (he p i χ j) (hH j))
+    (H j*Z^(loss j)) (fun p i χ=>mul_le_mul_of_nonneg_left (he p i χ j) (hH j))
   have hl:Z^(loss j)≤Z^(loss j+primeLoss):=
     Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   have herr':(1/(P.card:ℝ))*(∑p:elementPool P,∑i:Fin 3,
@@ -386,20 +391,27 @@ theorem averaged_coefficients_bound (P:Finset (Ideal O))(hne:P.Nonempty)
         (mul_le_mul_of_nonneg_left hmain (mul_nonneg hfactor (hH j))) herr') (by norm_num)
     _=_:=by ring
 
-theorem actual_low_four_coefficients
+theorem actual_four_coefficients
     (M:Ideal O)[NeZero M](Hray:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))
     (hbad:fixedBadPrimes⊆Sbad)
     (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0<sigma)(heps:0≤eps)(hM:0≤Mdecl)
+    (K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss credit:ℝ)
+    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0<sigma)(heps:0≤eps)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
-    (hlow:Real.logb Z V≤5*Mdecl/6)(hloss:0≤primeLoss)(hMamp:0≤Mamp)
+    (hVcap:Real.logb Z V≤Mdecl)
+    (hbudget : Real.logb Z V + (Real.logb Z K + Real.logb Z (η.modulus.absNorm : ℝ)) / 6 ≤
+      Mdecl + 2 * credit / 3)
+    (hloss:0≤primeLoss)(hMamp:0≤Mamp)
     (hcard:Z^(sigma/3-primeLoss)≤(primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))).card)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (H:Fin 4→ℝ)(hH:∀j,0≤H j)(rmain:ℝ)
-    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→Ray→ℝ):
+    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→Ray→ℝ)
+    (hmainCredit : credit ≤ Real.logb Z (C.absNorm : ℝ) + max rmain 0)
+    (herrorCredit : ∀ (p : elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))))
+      (i : Fin 3) (χ : Ray), credit ≤ Real.logb Z (C.absNorm : ℝ) +
+      errorRemoval p Z (errorIndex i + 1) + max (rerror p i χ) 0):
     let P:=primePool M Hray Sbad (1/2) 1 (Z^(sigma/3));
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let K0:=nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z;
@@ -419,20 +431,19 @@ theorem actual_low_four_coefficients
     apply Finset.card_pos.mp
     exact_mod_cast (Real.rpow_pos_of_pos hz (sigma/3-primeLoss)).trans_le hcard
   have hmain:=actual_main_cores η τ C D hC hD hCD E K V Z sigma delta reserve paid eps saving
-    rmain Mdecl Mcap hK hV hZ hs.le heps hM hcap hactual hlow hmod
+    rmain Mdecl Mcap credit hK hV hZ hs.le heps hcap hactual hVcap hbudget hmainCredit hmod
   have herror:=fun (p:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))))
       (i:Fin 3) (χ:Ray)=>
     actual_error_cores η τ C D hC hD hCD E K V Z sigma delta reserve paid eps saving
-      (rerror p i χ) Mdecl Mcap hK hV hZ hs.le heps hM hcap hactual hlow hmod
+      (rerror p i χ) Mdecl Mcap credit hK hV hZ hs.le heps hcap hactual hVcap hbudget hmod
       M Hray Sbad hbad p p.property (errorIndex i+1)
-      (by fin_cases i <;> norm_num [errorIndex])
+      (by fin_cases i <;> norm_num [errorIndex]) (herrorCredit p i χ)
   exact averaged_coefficients_bound _ hne
     (fun Q hQ=>(primePool_data M Hray Sbad hbad _ _ _ Q hQ).1)
     (fun Q hQ=>(primePool_data M Hray Sbad hbad _ _ _ Q hQ).2)
     Z (sigma/3) primeLoss ((Mamp+2*sigma)/(sigma/6)) hZ hloss
     (div_nonneg (by linarith) (by positivity)) hcard H _ _ _ hH
     (by simpa only [neg_div] using hmain) herror
-
 theorem source_normalized_identity (P:Finset (Ideal O))(mainFactor b V C q Z allowance eps:ℝ)
     (N:ℕ)(alpha:Fin 4→ℝ)(amain:Fin 4→ℝ)
     (aerror:elementPool P→Fin 3→Ray→Fin 4→ℝ)

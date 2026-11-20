@@ -65,7 +65,7 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
   have hf_cont : Continuous f := hf_smooth.continuous
   have hf_nonneg : ∀ x, 0 ≤ f x := by
     intro x
-    have hx : f x ∈ Set.Icc (0 : ℝ) 1 := hf_range ⟨x, rfl⟩
+    have hx  := hf_range ⟨x, rfl⟩
     exact hx.1
   have hf0_ne : f (0 : E) ≠ 0 := by
     -- `f 0 = 1`.
@@ -77,19 +77,19 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
       (Continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero (μ := (volume : Measure E))
         hf_cont hf_cs hf_nonneg hf0_ne)
   set I : ℝ := ∫ x, f x ∂(volume : Measure E)
-  have hI0 : I ≠ 0 := ne_of_gt hIpos
-  have hIpos' : 0 < I := by simpa [I] using hIpos
+  have hI0  := ne_of_gt hIpos
+  have hIpos' : 0 < I := by assumption
   -- Normalize: `ψ = I⁻¹ • f`.
-  let ψ : E → ℝ := fun x => I⁻¹ * f x
+  let ψ  := fun x => I⁻¹ * f x
   have hψc : Continuous ψ := by
-    exact (continuous_const.mul hf_cont)
+    fun_prop
   have hψcs : HasCompactSupport ψ := by
     exact
       (HasCompactSupport.smul_left (f := fun _x : E => I⁻¹) (f' := f) hf_cs)
   have hψ0 : ∀ x, 0 ≤ ψ x := by
     intro x
     have hInv : 0 ≤ I⁻¹ := by
-      have : 0 ≤ I := le_of_lt hIpos'
+      have  := le_of_lt hIpos'
       simpa using inv_nonneg.2 this
     simpa [ψ] using mul_nonneg hInv (hf_nonneg x)
   have hψint : ∫ x, ψ x ∂(volume : Measure E) = 1 := by

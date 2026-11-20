@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Tail
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
@@ -22,11 +22,11 @@ lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C�
       paperRadialFourier U (Q*‖eisEmbedding (C*k)‖^2/
         ‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2)) := by
   let t:=Q*‖eisEmbedding C‖^2/‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2
-  have hc : 0<‖eisEmbedding C‖^2 := sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hC))
+  have hc  := sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hC))
   have hd : 0<‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2 :=
     sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (mul_ne_zero
       (supported_primaryGenerator_ne_zero _ I.property) (supported_primaryGenerator_ne_zero _ J.property))))
-  have ht : 0<t := div_pos (mul_pos hQ hc) hd
+  have ht  := div_pos (mul_pos hQ hc) hd
   have hs := paperRadialFourier_lattice_summable_norm U t ht
   let B : ℝ := (Ideal.absNorm I.val:ℝ)*Ideal.absNorm J.val
   have hb (k : O) : ‖actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)

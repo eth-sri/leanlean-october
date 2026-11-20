@@ -24,7 +24,7 @@ def principalCRT (d a : A) (h : IsCoprime d a) :
 @[simp] theorem principalCRT_mk (d a : A) (h : IsCoprime d a) (x : A) :
     principalCRT d a h (Ideal.Quotient.mk _ x) =
       (Ideal.Quotient.mk _ x, Ideal.Quotient.mk _ x) := by
-  ext <;> simp [principalCRT, Ideal.quotEquivOfEq_mk]
+  rfl
 
 lemma coprime_mul_dvd_iff (d a n : A) (h : IsCoprime d a) :
     d * a ∣ n ↔ d ∣ n ∧ a ∣ n := by
@@ -88,14 +88,12 @@ theorem sum_residual_constraints
     constructor
     · intro h
       rw [← h, ← mul_assoc, Units.inv_mul, one_mul]
-    · intro h
-      rw [h, ← mul_assoc, Units.mul_inv, one_mul]
+    simp_all
   have hb (y : T) : (b : T) * y = k ↔ y = (↑b⁻¹ : T) * k := by
     constructor
     · intro h
       rw [← h, ← mul_assoc, Units.inv_mul, one_mul]
-    · intro h
-      rw [h, ← mul_assoc, Units.mul_inv, one_mul]
+    simp_all
   simp only [Fintype.sum_prod_type, ha, hb]
   rw [Finset.sum_mul, Finset.sum_mul]
   apply Finset.sum_congr rfl

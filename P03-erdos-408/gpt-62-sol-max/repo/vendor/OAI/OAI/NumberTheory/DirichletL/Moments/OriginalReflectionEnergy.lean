@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionApproximatio
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentOriginalReflectionEnergy
 open HeckeFamily CenteredMomentOriginalReflectionApproximation CenteredMomentNaturalPrimitive
 

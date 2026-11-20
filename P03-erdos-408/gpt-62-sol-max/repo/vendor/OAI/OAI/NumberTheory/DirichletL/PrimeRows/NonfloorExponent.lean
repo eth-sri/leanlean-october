@@ -21,11 +21,11 @@ lemma adaptive_mixed_saving (N : ℕ) (a q Δ ε εm slotMesh ν ζ μ v d e eps
     mixedSourceExponent a v d (adaptiveRowExponent (2*a-1) q Δ ε εm slotMesh ν) q+
       ProbeCentralExponent.realLoss N v e eps loss mesh+overhead≤3/16+Δ-saving := by
   have hδ : 0<2*a-1 := by linarith
-  have hx : 0≤q/(2*a-1) := div_nonneg hq hδ.le
+  have hx  := div_nonneg hq hδ.le
   have hx' : q/(2*a-1)≤1/2 := (div_le_iff₀ hδ).mpr (by linarith)
   have hl : 0≤159*ε+εm+slotMesh+7*ν := by positivity
   have haeq : (1+(2*a-1))/2=a := by ring
-  have hqeq : (2*a-1)*(q/(2*a-1))=q := mul_div_cancel₀ q hδ.ne'
+  have hqeq  := mul_div_cancel₀ q hδ.ne'
   have hr := ProbeCentralExponent.realLoss_bound N v e eps loss mesh (by linarith) he heps
   by_cases hd : 2*a-1≤5/6
   · have hb := balanced_mixed_saving (2*a-1) (q/(2*a-1)) Δ (159*ε+εm+slotMesh+7*ν)

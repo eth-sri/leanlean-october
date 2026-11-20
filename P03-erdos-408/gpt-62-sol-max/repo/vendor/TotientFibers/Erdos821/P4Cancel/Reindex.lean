@@ -48,9 +48,9 @@ lemma siteSet_patternSide (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ)
     simp only [Finset.mem_image, Finset.mem_map]
     constructor
     · rintro ⟨y, ⟨x, hx, rfl⟩, hy⟩
-      exact ⟨x, hx, by rw [← hy]; rfl⟩
+      exact ⟨x, hx, by assumption⟩
     · rintro ⟨x, hx, hxz⟩
-      exact ⟨_, ⟨x, hx, rfl⟩, by rw [← hxz]; rfl⟩
+      exact ⟨_, ⟨x, hx, rfl⟩, by assumption⟩
   · rw [ite_eq_right_of_eq_false _ _ (eq_false hb)]
     simp [hb]
 
@@ -132,7 +132,7 @@ lemma choice_sum (hj : m ≤ J) (block : P.BigGroup → Bool)
       ψ (siteOf hj block c.val false) (siteOf hj block c.val true)) =
       ∑ U ∈ (sideSites (P := P) (M := J + ell) m block false).powerset.erase ∅,
         ∑ V ∈ (sideSites (P := P) (M := J + ell) m block true).powerset.erase ∅, ψ U V := by
-  have hmM : m ≤ J + ell := hj.trans (Nat.le_add_right J ell)
+  have hmM  := hj.trans (Nat.le_add_right J ell)
   rw [← Finset.sum_product']
   -- membership of the site sets
   have hsub : ∀ (c : ProbeChoice P m block) (side : Bool),
@@ -169,7 +169,6 @@ lemma choice_sum (hj : m ≤ J) (block : P.BigGroup → Bool)
       refine ⟨rowEquiv P z.1, hz'.1, ⟨⟨z.2.val, hz'.2⟩, ?_⟩⟩
       rw [mem_choiceOf, Equiv.symm_apply_apply]
       have : (z.1, Fin.castLE hmM ⟨z.2.val, hz'.2⟩) = z := Prod.ext rfl (Fin.ext rfl)
-      rw [this]
       exact hWp hz
     cases side
     · exact key p.1 hU0 hU Finset.subset_union_left

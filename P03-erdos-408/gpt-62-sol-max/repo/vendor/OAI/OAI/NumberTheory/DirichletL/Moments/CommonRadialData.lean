@@ -1,22 +1,30 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.RadialSourceDictionary
-public import OAI.NumberTheory.DirichletL.Moments.ActiveCanonicalSource
+public import OAI.NumberTheory.DirichletL.Moments.SourceRectangleEnergy
+public import OAI.NumberTheory.DirichletL.Moments.ActiveAllocation
+public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
+public import OAI.NumberTheory.DirichletL.Moments.CanonicalRetainedSource
+public import OAI.NumberTheory.DirichletL.Moments.SecondLiveEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RestrictedSourceNormalization
+public import OAI.NumberTheory.DirichletL.Moments.SourceRectangle
+public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonRadialData
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceRectangle
+open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceLiveColumn
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationLiveMask
+open CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale CenteredMomentRestrictedSource
+open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
+open ConcretePrimeRowBridge CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -59,7 +67,7 @@ lemma alloc_ne (s:Input ι) (C:Ideal O) (B:actualAllocations s.pools C)
 omit [DecidableEq ι] in
 lemma alloc_norm_pos (s:Input ι) (C:Ideal O) (B:actualAllocations s.pools C)
     (j:ι⊕Fin 2) : (0:ℝ)<Ideal.absNorm (B.val j) := by
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (alloc_ne s C B j))
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (alloc_ne s C B j)
 
  def commonData (s:Input ι) (C R:Ideal O) (B:actualAllocations s.pools C) : Data (liveIndices B.val) where
   η:=s.η

@@ -92,8 +92,8 @@ theorem norm_iteratedDeriv_gap_le {X : ℝ} (hX : 2 ≤ X) (j : ℕ) {ζ : ℝ} 
 theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i ≤ 4)
     {p : ℝ × ℝ} (hp : ‖p‖ ≤ 20) :
     ‖iteratedFDeriv ℝ i (logGap X) p‖ ≤ 16 * exp 20 * (20 * exp 10) := by
-  have h1 : ‖p.1‖ ≤ 20 := (le_max_left _ _).trans hp
-  have h2 : ‖p.2‖ ≤ 20 := (le_max_right _ _).trans hp
+  have h1  := (le_max_left _ _).trans hp
+  have h2  := (le_max_right _ _).trans hp
   have hg : ContDiff ℝ ∞ fun ζ => X * (exp (ζ / X) - 1) :=
     contDiff_const.mul ((contDiff_exp.comp (contDiff_id.div_const X)).sub contDiff_const)
   -- `y = (exp ∘ snd) (g ∘ fst)`
@@ -182,7 +182,7 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
         fun i hi1 hi => (norm_iteratedFDeriv_logGap_le hX (hi.trans hj) hp).trans
           (le_self_pow₀ hA1 (by omega))).trans ?_
       have hf : (j.factorial : ℝ) ≤ 24 := by
-        have : j.factorial ≤ (4 : ℕ).factorial := Nat.factorial_le hj
+        have  := Nat.factorial_le hj
         exact_mod_cast this
       have hAj : A ^ j ≤ A ^ 4 := pow_le_pow_right₀ hA1 hj
       calc (j.factorial : ℝ) * K * A ^ j ≤ 24 * K * A ^ 4 := by gcongr
@@ -247,7 +247,7 @@ theorem gapKernel_log {φ : ℝ → ℂ} (hφ : ∀ y, 5 ≤ |y| → φ y = 0) {
     field_simp
   have hz : plateau (log w' / 4) = 1 := by
     refine plateau_eq_one ?_
-    have h0 : 0 ≤ log w' := log_nonneg hw'
+    have h0  := log_nonneg hw'
     have h1 : log w' ≤ w' - 1 := log_le_sub_one_of_pos (by positivity)
     rw [abs_of_nonneg (by positivity)]
     linarith

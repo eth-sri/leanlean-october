@@ -1,7 +1,8 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedCancellation
-public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRegion
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
+public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 @[expose] public section
 
@@ -28,12 +29,12 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
   let D := coordD Q eta v x
   let K := coordK Q eta x w
   let B := star eta*(Q:ℂ)^x
-  have hR : ‖R‖≤Q^(4-6*x.re-6*z.re) := coordR_norm_le Q hQ0 A x z hA
-  have hV : ‖V‖=Q^(-6*z.re) := coordV_norm Q hQ0 z
-  have hD : ‖D‖≤Q^(-x.re) := coordD_norm_le Q hQ0 eta v x heta hv
+  have hR  := coordR_norm_le Q hQ0 A x z hA
+  have hV  := coordV_norm Q hQ0 z
+  have hD  := coordD_norm_le Q hQ0 eta v x heta hv
   have hW : ‖W‖≤1 := (coordW_norm_le Q hQ0 v w hv).trans
     (Real.rpow_le_one_of_one_le_of_nonpos hQ1 (by linarith))
-  have hK : ‖K‖≤Q^(1-x.re-w.re) := coordK_norm_le Q hQ1 eta x w heta
+  have hK  := coordK_norm_le Q hQ1 eta x w heta
   have hB : ‖B‖≤Q^x.re := by
     dsimp only [B]
     rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]

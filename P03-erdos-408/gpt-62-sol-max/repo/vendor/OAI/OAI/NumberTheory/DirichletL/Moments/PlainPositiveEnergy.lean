@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentPlainPositiveEnergy
 open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy
 open CenteredMomentOriginalRadialComparison
@@ -34,8 +34,6 @@ local notation "O"=>HeckeFamily.O
   intro W₁ W₂ hs₁ hs₂ χ r R X₁ X₂ freq₁ freq₂ hR hX₁ hX₂ hχ hmod
   let B₁:=S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁
   let B₂:=S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂
-  have hB₁:0≤B₁:=apply_nonneg _ _
-  have hB₂:0≤B₂:=apply_nonneg _ _
   let B:=C^2*(B₁*B₂)*R^2*(3+|freq₁|)^2*(3+|freq₂|)^2
   have hB:0≤B:=by dsimp [B];positivity
   have hp (z:O)(hz:r.keep z):
@@ -45,7 +43,7 @@ local notation "O"=>HeckeFamily.O
       (hg W₁ hs₁ (χ z) (hχ z hz) X₁ freq₁ hX₁).trans (by gcongr;exact hmod z hz)
     have h₂:‖polynomial (χ z) false W₂ X₂ 0 freq₂‖≤C*B₂*R*(3+|freq₂|)^2:=
       (hg W₂ hs₂ (χ z) (hχ z hz) X₂ freq₂ hX₂).trans (by gcongr;exact hmod z hz)
-    exact (mul_le_mul h₁ h₂ (norm_nonneg _) (by positivity)).trans_eq (by dsimp [B];ring)
+    exact (mul_le_mul h₁ h₂ (norm_nonneg _) (by positivity)).trans_eq (by ring)
   have hh:=radial_bound_on_keep _ r B hB hp
   exact hh.trans_eq (by dsimp [B];ring)
 

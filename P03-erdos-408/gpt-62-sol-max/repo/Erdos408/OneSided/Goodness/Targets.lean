@@ -90,7 +90,7 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
   obtain ⟨hc, h0⟩ := h0
   set D := padProd s.1.2
   set t := det s.1.1 s'.1.1 / D
-  have hD0 : (0 : ℝ) < D := hd₀.trans_le hD₁
+  have hD0  := hd₀.trans_le hD₁
   have hηa : dyadicBump (lastProd s'.1.2 / Y) ≠ 0 := by
     intro h
     apply h0
@@ -119,12 +119,9 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
       dyadicBump (lastProd s'.1.2 / Y) * plateau ((t : ℝ) / Y) *
       q ^ (((bandCount x d s.1.1.1 : ℝ) - K * (padCount x + 1)) / 2 +
         ((bandCount x d s'.1.1.1 : ℝ) - K * (padCount x + 1)) / 2)| ≤ (d.bandMass x)⁻¹ := by
-    have hW : 0 ≤ (d.bandMass x)⁻¹ := inv_nonneg.2 hV.le
-    have hdD : d₀ / D ≤ 1 := (div_le_one hD0).2 hD₁
+    have hdD  := (div_le_one hD0).2 hD₁
     have hψ0 : 0 ≤ plateau ((t : ℝ) / Y) := smoothTransition.nonneg _
     have hψ1 : plateau ((t : ℝ) / Y) ≤ 1 := smoothTransition.le_one _
-    have hq0 := Real.rpow_nonneg hq.le (((bandCount x d s.1.1.1 : ℝ) - K * (padCount x + 1)) / 2 +
-        ((bandCount x d s'.1.1.1 : ℝ) - K * (padCount x + 1)) / 2)
     have hq1 := Real.rpow_le_one hq.le hq₁ hdamp
     have hb0 := dyadicBump_nonneg (lastProd s.1.2 / Y)
     have hb1 := dyadicBump_le_one (lastProd s.1.2 / Y)
@@ -137,13 +134,10 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
             ((bandCount x d s'.1.1.1 : ℝ) - K * (padCount x + 1)) / 2)
         ≤ (d.bandMass x)⁻¹ * 1 * 1 * 1 * 1 * 1 := by gcongr
       _ = (d.bandMass x)⁻¹ := by ring
-  have hkernel : ‖(if t = (lastProd s.1.2 : ℤ) - lastProd s'.1.2 then (1 : ℂ) else 0) -
-      arcIntegral A₀ x Y (t - lastProd s.1.2 + lastProd s'.1.2)‖ ≤
-        (if RawEdge s.1.1 s.1.2 s'.1.1 s'.1.2 then 1 else 0) + 4 * Real.log x ^ (3 * A₀) / Y := by
-    refine (norm_sub_le _ _).trans (add_le_add ?_ (norm_arcIntegral_le A₀ hL hY _))
-    unfold RawEdge
-    split_ifs <;> simp
-  exact mul_le_mul hreal hkernel (norm_nonneg _) (inv_nonneg.2 hV.le)
+  refine mul_le_mul hreal ?_ (norm_nonneg _) (inv_nonneg.2 hV.le)
+  refine (norm_sub_le _ _).trans (add_le_add ?_ (norm_arcIntegral_le A₀ hL hY _))
+  unfold RawEdge
+  split_ifs <;> simp
 
 /-! ### Target positions -/
 
@@ -209,11 +203,10 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
         linarith
       rw [this, mul_zero] at hw
       omega
-    have h₂ : Q.2 = Q'.2 := by
-      rw [h₁] at hdet
-      have : (P.1 : ℤ) * Q.2 = P.1 * Q'.2 := by linarith
-      exact_mod_cast mul_left_cancel₀ (by positivity : (P.1 : ℤ) ≠ 0) this
-    exact Prod.ext h₁ h₂
+    refine Prod.ext h₁ ?_
+    rw [h₁] at hdet
+    have : (P.1 : ℤ) * Q.2 = P.1 * Q'.2 := by linarith
+    exact_mod_cast mul_left_cancel₀ (by positivity : (P.1 : ℤ) ≠ 0) this
   have hm : (m : ℝ) ≤ 5 * Y := Nat.floor_le (by positivity)
   calc (F.card : ℝ)
       ≤ ((Icc (-(m : ℤ)) m ×ˢ range 17).card : ℝ) := by
@@ -355,12 +348,11 @@ theorem card_pairs_le {U V : ℝ} (hU : 0 < U) (hV : 0 ≤ V) (G a : ℕ) (z : �
     have h₁ : PQ.2.1 = PQ'.2.1 := by
       rw [← hP, ← hk] at hQ'
       exact_mod_cast hQ.trans hQ'.symm
-    have h₂ : PQ.2.2 = PQ'.2.2 := by
-      unfold det at hz hz'
-      rw [← hP, ← h₁] at hz'
-      have : (PQ.1.1 : ℤ) * PQ.2.2 = PQ.1.1 * PQ'.2.2 := by linarith
-      exact_mod_cast mul_left_cancel₀ (by positivity : (PQ.1.1 : ℤ) ≠ 0) this
-    exact Prod.ext hP (Prod.ext h₁ h₂)
+    refine Prod.ext hP (Prod.ext h₁ ?_)
+    unfold det at hz hz'
+    rw [← hP, ← h₁] at hz'
+    have : (PQ.1.1 : ℤ) * PQ.2.2 = PQ.1.1 * PQ'.2.2 := by linarith
+    exact_mod_cast mul_left_cancel₀ (by positivity : (PQ.1.1 : ℤ) ≠ 0) this
   have hT : T.card = ∑ k ∈ range 17, #{P ∈ rootBox U V | Φ k P} := by
     rw [card_filter, sum_product, sum_comm]
     exact sum_congr rfl fun k _ => (card_filter _ _).symm
@@ -378,7 +370,7 @@ theorem squarefree_prod_of_injective {ι : Type*} [Fintype ι] {f : ι → ℕ}
 /-- The labels of a source and the new labels of a target are distinct primes, so
 `G a = listProd p · lastProd p'` is squarefree. -/
 theorem squarefree_listProd_mul_lastProd {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
+    (hdisj : d.BandsDisjoint x) {J : ℕ}
     {p p' : Lists K J} (hp : p ∈ lists x d J) (hp' : p' ∈ lists x d J)
     (hban : ∀ i i' h', p' i (Fin.last J) ≠ p i' h') :
     Squarefree (listProd p * lastProd p') := by
@@ -393,7 +385,7 @@ theorem squarefree_listProd_mul_lastProd {x : ℝ} {d : Data K}
     · exact absurd heq (hban i i' h')
     · simp only [f, Sum.elim_inr] at heq
       by_contra hne
-      have hii : i ≠ i' := fun h => hne (congrArg Sum.inr h)
+      have hii  := fun h => hne (congrArg Sum.inr h)
       exact disjoint_left.1 (hdisj i i' hii) (lists_slot_mem_band hp' i _)
         (heq ▸ lists_slot_mem_band hp' i' _)
   have hprime : ∀ e, (f e).Prime := by

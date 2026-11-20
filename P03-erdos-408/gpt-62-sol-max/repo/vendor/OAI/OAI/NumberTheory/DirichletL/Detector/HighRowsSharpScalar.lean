@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
@@ -18,15 +19,13 @@ include hc in
 lemma primeGauss_actual_pow_norm (r : ℕ) (hr : r≠0) (hr6 : r<6) :
     ‖primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg^r) 1‖=
       Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have hn := localGamma_norm_one p hp.ne_zero hg hc r hr hr6
   rw [localGamma,ProbePhase.normalizedTraceGauss_eq_normalizedGauss] at hn
   simp only [ProbeGauss.normalizedGauss,norm_div,Complex.norm_real,
     Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)] at hn
   have hQ : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
   have hcard : (Fintype.card (O ⧸ Ideal.span {p}):ℝ)=Ideal.absNorm (Ideal.span {p}) := by
     rw [←Nat.card_eq_fintype_card];rfl
   rw [hcard] at hn

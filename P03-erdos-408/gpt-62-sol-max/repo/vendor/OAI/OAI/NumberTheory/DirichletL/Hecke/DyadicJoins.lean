@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicEstimates
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
 theorem horizontal_join_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     (D σ freq l r y C K : ℝ) (n : ℕ)
-    (hD : 1≤D) (hlr : l≤r) (hC : 0≤C) (_hK : 0≤K)
+    (hD : 1≤D) (hlr : l≤r) (hC : 0≤C)
     (hm : ∀ x ∈ Icc l r, (1+|y|)^n*‖mellin W ((x : ℂ)+y*I)‖≤C)
     (hs : ∀ x ∈ Icc l r, ‖series χ inverse ((x : ℂ)+y*I+shift σ freq)‖≤K) :
     ‖∫ x : ℝ in l..r, integrand χ inverse W D σ freq ((x : ℂ)+y*I)‖ ≤

@@ -19,9 +19,7 @@ def labelSplitEquiv (P : PrimeGroups) (M : ℕ) :
   let splitInv : SmallLabels P M × BigLabels P M → P.Labels M := fun z g =>
     if h : P.big g = false then z.1 ⟨g, h⟩ else
       z.2 ⟨g, by
-        cases hb : P.big g with
-        | false => exact (h hb).elim
-        | true => exact rfl⟩
+        simp_all⟩
   refine
     { toFun := fun a => (fun g => a g.val, fun g => a g.val)
       invFun := splitInv
@@ -31,9 +29,7 @@ def labelSplitEquiv (P : PrimeGroups) (M : ℕ) :
     funext g
     funext i
     dsimp [splitInv]
-    by_cases h : P.big g = false
-    · simp [h]
-    · cases hb : P.big g <;> simp_all
+    simp
   · rintro ⟨s, b⟩
     apply Prod.ext
     · funext g
@@ -45,23 +41,6 @@ def labelSplitEquiv (P : PrimeGroups) (M : ℕ) :
       dsimp [splitInv]
       simp [g.property]
 
-theorem smallPhysical_split (P : PrimeGroups) (M : ℕ) (y : P.SmallResidues)
-    (s : SmallLabels P M) (b : BigLabels P M) :
-    P.smallPhysical y ((labelSplitEquiv P M).symm (s, b)) ↔
-      ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) := by
-  classical
-  change (∀ g : P.SmallGroup,
-      Function.Injective (fun i => (labelSplitEquiv P M).symm (s, b) g.val i) ∧
-        ∀ i, y g ((labelSplitEquiv P M).symm (s, b) g.val i) = 0) ↔ _
-  have hfun (g : P.SmallGroup) :
-      (fun i => (labelSplitEquiv P M).symm (s, b) g.val i) = s g := by
-    funext i
-    simp [labelSplitEquiv, g.property]
-  change (∀ g : P.SmallGroup,
-      smallLocalGood g (y g)
-        (fun i => (labelSplitEquiv P M).symm (s, b) g.val i)) ↔
-    ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g)
-  constructor <;> intro h g <;> simpa [hfun g] using h g
 
 def bigLabelWeight (F : FixedData) (P : PrimeGroups) (n M : ℕ)
     (a : BigLabels P M) : ℝ :=
@@ -80,9 +59,7 @@ theorem full_label_sum_factor (F : FixedData) (P : PrimeGroups) (n M : ℕ)
   have hphys (a : P.Labels M) :
       P.smallPhysical y a ↔
         ∀ g : P.SmallGroup, smallLocalGood g (y g) ((E a).1 g) := by
-    have hs := smallPhysical_split P M y (E a).1 (E a).2
-    rw [E.symm_apply_apply a] at hs
-    exact hs
+    rfl
   calc
     _ = ∑ z : SmallLabels P M × BigLabels P M,
         if ∀ g : P.SmallGroup, smallLocalGood g (y g) (z.1 g) then

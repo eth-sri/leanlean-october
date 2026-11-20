@@ -8,21 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRoot
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalizationActual
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
+open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
 open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance
-open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
-open CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
+open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance CenteredMomentDescentLedger
+open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale
+open ConcreteTraceCRT CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
 local notation "O"=>HeckeFamily.O
 
 theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
-    (E:Finset (CommonIndex C D))(K Z:ℝ)(_hK:0<K)(_hZ:1<Z)
+    (E:Finset (CommonIndex C D))(K Z:ℝ)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     Real.logb Z K+Real.logb Z (τ.modulus.absNorm:ℝ)-
@@ -61,7 +59,7 @@ theorem actual_exceptional_reference (η τ:Character)(C D:Ideal O)
     (norm_pos _ (subsetGenerator_supported C D hC E).1) (active_norm_pos C D) hK
     (norm_pos _ τ.modulus_ne_bot)
   dsimp only at hh ⊢
-  rw [actual_reference_width η τ C D hC E K Z hK hZ hmod] at hh
+  rw [actual_reference_width η τ C D hC E K Z hmod] at hh
   rw [nominal_equal_support C D _ hC.1 hD.1 hCD K V]
   exact hh
 
@@ -82,7 +80,6 @@ theorem actual_error_reference_le (η τ:Character)(C D:Ideal O)
       ((τ.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z))≤
       Z^(Real.logb Z V-5*M/6-firstSaving c (d+K0-j) (errorRemoval p Z k) q
         (errorMoving p Z k) (allowance C D Z) g 0):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hCpos:=norm_pos C hC.1
   have hqpos:=norm_pos _ τ.modulus_ne_bot
   have hnpos:=normValue_pos p hp

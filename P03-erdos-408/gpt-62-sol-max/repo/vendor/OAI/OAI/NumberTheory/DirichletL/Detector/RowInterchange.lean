@@ -16,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem spectralSummand_norm_eq_of_re (S : Finset (Ideal O)) (D : Ideal O)
     (Ψ : O →* ℂ) (s t : ℂ) (h : s.re = t.re) (I J : Ideal O) :
     ‖spectralSummand S D Ψ s I J‖ = ‖spectralSummand S D Ψ t I J‖ := by
-  have h3 : (3 * s).re = (3 * t).re := by simp [Complex.mul_re, h]
+  have h3 : (3 * s).re = (3 * t).re := by simp_all
   simp only [spectralSummand, norm_mul, fullIdealWeight_norm_eq_of_re _ _ h,
     fullIdealWeight_norm_eq_of_re _ _ h3]
 
@@ -64,7 +64,7 @@ theorem spectralRow_integral_eq_tsum (S : Finset (Ideal O)) (D : Ideal O)
       Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2) *
       spectralRow S D Ψ ((σ : ℂ) + y * Complex.I)) =
       ∑' p, ∫ y : ℝ, mellinSummand S D Ψ σ Z p y := by
-  let : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+  let  := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
   have hs : Summable (fun p => ∫ y : ℝ, ‖mellinSummand S D Ψ σ Z p y‖) := by
     simp only [mellinSummand_integral_norm S D Ψ σ Z hZ]

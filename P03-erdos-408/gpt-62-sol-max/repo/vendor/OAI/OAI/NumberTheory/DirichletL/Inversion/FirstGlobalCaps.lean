@@ -1,20 +1,21 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalParents
-public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsLive
-public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsPhysical
+public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
+
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseFirstGlobalCaps
-open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InverseMomentFirstChildWindows
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
+open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents InverseMomentWholePriorityParents
+open InverseMomentFirstChildWindows ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open FirstCauchyArithmetic
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
 open InverseInitialArithmetic (sourceIdeal)
@@ -73,10 +74,10 @@ theorem sourceCell_outer (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀�
   intro i
   simpa only [sourceIndex,originalNorms_outer] using congrFun hk i.castSucc
 
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 lemma outerNorms_ge_one (x : FirstOriginalOuter ι) : ∀i,1≤outerNorms p x i := by
   intro i
   fin_cases i
@@ -89,7 +90,7 @@ lemma outerNorms_ge_one (x : FirstOriginalOuter ι) : ∀i,1≤outerNorms p x i 
   · exact primeProductNorm_ge_one p hp _
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 lemma outerGate_dyads (k : SourceIndex) (x : FirstOriginalOuter ι) (hx : outerGate p k x) :
     ∀i : Fin 5,dyadScale (k i.castSucc)≤outerNorms p x i ∧
       outerNorms p x i≤2*dyadScale (k i.castSucc) := by
@@ -98,14 +99,14 @@ lemma outerGate_dyads (k : SourceIndex) (x : FirstOriginalOuter ι) (hx : outerG
   rw [hx i] at h
   exact ⟨h.1,h.2.le⟩
 
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 lemma commonSelector_norm (selector : Finset ι→ℂ) (l : ℕ) (D : Finset ι) :
     ‖commonSelector p selector l D‖≤‖selector D‖ := by
   unfold commonSelector
   split_ifs <;> simp
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 lemma live_common_dyads (selector : Finset ι→ℂ) (l : ℕ) (D : Finset ι)
     (hlive : commonSelector p selector l D≠0) :
     dyadScale l≤primeProductNorm p D ∧ primeProductNorm p D≤2*dyadScale l := by
@@ -116,11 +117,11 @@ lemma live_common_dyads (selector : Finset ι→ℂ) (l : ℕ) (D : Finset ι)
   rw [he] at h
   exact ⟨h.1,h.2.le⟩
 
-omit [DecidableEq ι] [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalFamily.Maximal p] in
 lemma sourceIdeal_norm (D : Finset ι) : (Ideal.absNorm (sourceIdeal p D):ℝ)=primeProductNorm p D := by
   simp only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm]
 
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 
 theorem parentCell_cube_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ)
@@ -147,7 +148,7 @@ lemma dyad_power_bounds (Z eta q : ℝ) (hZ : 1<Z) (h2 : 2≤Z^eta) (n : ℕ)
   nlinarith [dyadScale_pos n]
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem parentCell_norm_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ)
     (Z eta : ℝ) (hZ : 1<Z) (h2 : 2≤Z^eta)
@@ -168,7 +169,7 @@ theorem parentCell_norm_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   exact dyad_power_bounds Z eta _ hZ h2 l hd
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem parentCell_ideal_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ)
     (Z eta : ℝ) (hZ : 1<Z) (h2 : 2≤Z^eta)
@@ -196,7 +197,7 @@ def labelParentCell (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   (parentCell p pool Q selector k l).filter (fun x=>dyadIndex (jNorm p (toOriginal x))=j)
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem labelParentCell_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l j : ℕ)
     (Z eta : ℝ) (hZ : 1<Z) (h2 : 2≤Z^eta)

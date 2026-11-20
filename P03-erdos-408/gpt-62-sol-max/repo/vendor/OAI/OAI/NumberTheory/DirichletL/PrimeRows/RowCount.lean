@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalBound
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
 
@@ -50,15 +51,13 @@ lemma dyadic_weighted_rows (a r C U : ℝ) (hC : 0≤C) (hU : 1≤U)
     _ ≤ ∑u∈R,C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r)*U^(a-r) := by
       apply Finset.sum_le_sum
       intro u hu
-      have hN : 0<((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := hU0.trans_le (hR u hu).1
+      have hN  := hU0.trans_le (hR u hu).1
       rw [frequencyWeight_ideal_norm,hz]
       calc
         _ ≤ ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-r)*
             (C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^a) :=
           mul_le_mul_of_nonneg_left (hF u hu) (Real.rpow_nonneg hN.le _)
-        _ = C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(a-r) := by
-          rw [show a-r=(-r)+a by ring,Real.rpow_add hN]
-          ring
+        _ = C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(a-r) := by rpow_ring hN
         _ ≤ _ := by
           have hb := ProbeSelectedPrimeSums.annular_rpow 1 2 U
             ((Ideal.span {u.val}:Ideal O).absNorm:ℝ) (a-r) (by norm_num) (by norm_num) hU0
@@ -67,12 +66,7 @@ lemma dyadic_weighted_rows (a r C U : ℝ) (hC : 0≤C) (hU : 1≤U)
     _ = (R.card:ℝ)*(C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r)*U^(a-r)) := by simp
     _ ≤ (256*U)*(C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r)*U^(a-r)) :=
       mul_le_mul_of_nonneg_right hcard (by positivity)
-    _ = _ := by
-      have hp : U*U^(a-r)=U^(1+a-r) := by
-        rw [show 1+a-r=1+(a-r) by ring,Real.rpow_add hU0,Real.rpow_one]
-      calc
-        _ = (256*C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r))*(U*U^(a-r)) := by ring
-        _ = _ := by rw [hp]
+    _ = _ := by rpow_ring hU0
 
 end SevenEighths.ProbeHighRowFamily
 end

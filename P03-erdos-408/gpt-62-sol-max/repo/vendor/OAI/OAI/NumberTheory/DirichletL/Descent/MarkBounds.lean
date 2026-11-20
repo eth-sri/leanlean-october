@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 
 @[expose] public section
@@ -13,8 +14,8 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
  theorem finite_primeSupport_card {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (U : Finset ι) :
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p) (U : Finset ι) :
     (IdealMobiusDivisorSum.primeSupport (Ideal.span {∏ i ∈ U, p i})).card = U.card := by
   have hc : Pairwise (Function.onFun IsCoprime (fun i : U => Ideal.span {p i.val})) := by
     intro i j hij
@@ -24,8 +25,8 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+      (_hcop : OAI.PrincipalFamily.Coprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) → ∀ U : Finset ι,
@@ -33,19 +34,15 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha U
-  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
-    Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i))
-  have hh := hb (Ideal.span {∏ i ∈ U, p i}) hI
+  have hh := hb (Ideal.span {∏ i ∈ U, p i}) (Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i)))
   rw [finite_primeSupport_card p hcop U] at hh
-  have hn : (Ideal.absNorm (Ideal.span {∏ i ∈ U, p i}) : ℝ) = primeProductNorm p U :=
-    (ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm
-  rw [hn] at hh
+  rw [((ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm)] at hh
   exact (primeMark_norm_le_divisor_count slots lists a U hslots ha).trans hh
 
 theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+      (_hcop : OAI.PrincipalFamily.Coprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) → ∀ A U : Finset ι,
@@ -53,13 +50,9 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha A U
-  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
-    Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i))
-  have hh := hb (Ideal.span {∏ i ∈ U, p i}) hI
+  have hh := hb (Ideal.span {∏ i ∈ U, p i}) (Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i)))
   rw [finite_primeSupport_card p hcop U] at hh
-  have hn : (Ideal.absNorm (Ideal.span {∏ i ∈ U, p i}) : ℝ) = primeProductNorm p U :=
-    (ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm
-  rw [hn] at hh
+  rw [((ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm)] at hh
   calc
     _ ≤ (2:ℝ)^(A ∪ U).card := primeMark_norm_le_divisor_count _ _ _ _ hslots ha
     _ ≤ (2:ℝ)^(A.card+U.card) := pow_le_pow_right₀ (by norm_num) (Finset.card_union_le _ _)

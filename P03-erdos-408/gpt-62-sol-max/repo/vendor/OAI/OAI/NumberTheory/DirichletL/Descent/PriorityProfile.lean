@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.SecondBlockEnergy
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
 
 @[expose] public section
@@ -8,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondPrincipalCaller
+open InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration
 local notation "O" => ActualEisensteinCubic.O
 
 def priorityLogWindow (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
@@ -54,9 +54,9 @@ theorem positiveSource_conjugate_one (g:𝓢(ℝ,ℂ)) (t x:ℝ) :
     logPhase_conjugate,neg_neg,mul_comm]
 
 theorem actualSecondProfileRow_congr_positive {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hcop:OAI.PrincipalFamily.Coprime p)
+    (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ)
     (lists₁ lists₂:σ→Finset ι) (a₁ a₂:σ→ι→ℂ)
     (W₁ W₂ V₁ V₂:ℝ→ℂ) (Φ:𝓢(ℝ,ℂ)) (Y X:ℝ) (hX:0<X)
@@ -82,9 +82,9 @@ theorem actualSecondProfileRow_congr_positive {ι σ:Type*} [DecidableEq ι] [De
       (primeProductNorm_pos p hp _)) hX)]
 
 theorem actual_priority_profile_common {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+    (hcop:OAI.PrincipalFamily.Coprime p)
+    (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ)
     (lists₁ lists₂:σ→Finset ι) (a₁ a₂:σ→ι→ℂ)
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo) (hs:Function.support om⊆Set.Icc lo hi)

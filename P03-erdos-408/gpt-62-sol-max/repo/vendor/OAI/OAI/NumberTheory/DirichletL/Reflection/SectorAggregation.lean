@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
-public import OAI.NumberTheory.DirichletL.Reflection.FixedLevel
+public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 
 @[expose] public section
 

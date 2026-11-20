@@ -9,19 +9,17 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
-open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentAllocatedRayDictionary
 open CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentEligibleEnergy CenteredMomentCommonHeightEnvelope
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open CenteredMomentInductionEnergy CenteredMomentCommonMaskEnergy CenteredMomentEligibleEnergy
+open CenteredMomentCommonHeightEnvelope CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 variable {α : Type*} [Fintype α]
-local instance {β : Type*} : DecidableEq β := Classical.decEq _
 
 lemma active_pools_subset (s : Input α) (j : α⊕Fin 2) :
     (activeInput s).pools j⊆s.pools j := by
@@ -53,8 +51,7 @@ lemma rowSlot_active (s : Input α) (i : α) (η : Character) (m A z : O) (t v :
   apply Finset.sum_subset (Finset.filter_subset _ _)
   intro I hI hn
   have hz : s.W i ((I.absNorm:ℝ)/s.P i)=0 := by
-    by_contra hh
-    exact hn (Finset.mem_filter.mpr ⟨hI,hh⟩)
+    simp_all
   simp only [heightCoefficient,Data.coefficient,activeInput,hz,mul_zero,zero_mul]
 
 def restoredError (s : Input α) (C R : Ideal O) (B : actualAllocations s.pools C)
@@ -72,7 +69,6 @@ lemma error_source_active (s : Input α) (C R : Ideal O) (B : actualAllocations 
 
 section Ray
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 variable {s : Input α} {η₀ : Character} {θ : α→RayQuotient.Characters M H}
   {w σ freq : α→ℝ} {W : ℝ→ℂ} {bslot Z : ℝ}

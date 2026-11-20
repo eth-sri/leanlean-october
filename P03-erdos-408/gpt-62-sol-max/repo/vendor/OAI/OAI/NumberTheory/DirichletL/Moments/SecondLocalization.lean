@@ -38,7 +38,7 @@ theorem secondSourceKernel_split (I J : Ideal O) (hI : Supported I) (hJ : Suppor
       secondDiscardedPair I J hI hJ W K Tsec Z ξ := by
   have hpI := (supported_span_primaryGenerator_iff I).mpr hI
   have hpJ := (supported_span_primaryGenerator_iff J).mpr hJ
-  have hk : 0<K/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)) :=
+  have hk  :=
     div_pos hK (mul_pos (CenteredMomentFirstScale.norm_pos I hI.1) (CenteredMomentFirstScale.norm_pos J hJ.1))
   have hs := lattice_fourier_split W _ hk
     (fun h => actualCorrelation (primaryGenerator I) (primaryGenerator J) hpI hpJ (-h))

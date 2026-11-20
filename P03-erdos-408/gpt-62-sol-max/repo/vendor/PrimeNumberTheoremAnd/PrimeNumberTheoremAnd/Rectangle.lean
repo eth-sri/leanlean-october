@@ -27,19 +27,7 @@ def RectangleBorder (z w : ℂ) : Set ℂ :=
 
 def Square (p : ℂ) (c : ℝ) : Set ℂ := Rectangle (-c - c * I + p) (c + c * I + p)
 
-@[simp]
-theorem preimage_equivRealProdCLM_reProdIm (s t : Set ℝ) :
-    equivRealProdCLM.symm ⁻¹' (s ×ℂ t) = s ×ˢ t :=
-  rfl
 
-@[simp]
-theorem ContinuousLinearEquiv.coe_toLinearEquiv_symm {R : Type*} {S : Type*} [Semiring R]
-    [Semiring S] {σ : R →+* S} {σ' : S →+* R} [RingHomInvPair σ σ'] [RingHomInvPair σ' σ]
-    (M : Type*) [TopologicalSpace M]
-    [AddCommMonoid M] {M₂ : Type*} [TopologicalSpace M₂] [AddCommMonoid M₂] [Module R M]
-    [Module S M₂] (e : M ≃SL[σ] M₂) :
-    ⇑e.toLinearEquiv.symm = e.symm :=
-  rfl
 
 lemma mem_Rect {z w : ℂ} (zRe_lt_wRe : z.re ≤ w.re) (zIm_lt_wIm : z.im ≤ w.im) (p : ℂ) :
     p ∈ Rectangle z w ↔
@@ -175,6 +163,11 @@ theorem not_mem_rectangleBorder_of_rectangle_mem_nhds {z w p : ℂ}
   have h1 := rectangle_mem_nhds_iff.mp hp
   exact ⟨Set.ne_left_of_mem_uIoo h1.1, Set.ne_right_of_mem_uIoo h1.1,
     Set.ne_left_of_mem_uIoo h1.2, Set.ne_right_of_mem_uIoo h1.2⟩
+
+@[simp]
+theorem preimage_equivRealProdCLM_reProdIm (s t : Set ℝ) :
+    equivRealProdCLM.symm ⁻¹' (s ×ℂ t) = s ×ˢ t :=
+  rfl
 
 theorem Complex.nhds_hasBasis_square (p : ℂ) : (𝓝 p).HasBasis (0 < ·) (Square p ·) := by
   suffices

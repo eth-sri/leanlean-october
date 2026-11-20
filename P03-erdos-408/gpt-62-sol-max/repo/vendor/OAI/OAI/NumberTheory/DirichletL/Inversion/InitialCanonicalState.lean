@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerState
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerRanges
 public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
@@ -10,15 +11,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic
+open InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState
+open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
+open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
 def fullPunctureWidth (Z:ℝ)(t:Ideal O)(j:O):ℝ :=
   Real.logb Z (Ideal.absNorm (Ideal.span {j*primaryGenerator t}):ℝ)
@@ -28,8 +27,7 @@ theorem full_puncture_width_exact (Z:ℝ)(hZ:1<Z)(t:Ideal O)(j:O)
     0≤fullPunctureWidth Z t j ∧
       ‖eisEmbedding (j*primaryGenerator t)‖^2=Z^(fullPunctureWidth Z t j) := by
   have hn:(1:ℝ)≤Ideal.absNorm (Ideal.span {j*primaryGenerator t}) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hm))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hm)
   constructor
   · unfold fullPunctureWidth Real.logb
     exact div_nonneg (Real.log_nonneg hn) (Real.log_pos hZ).le
@@ -86,7 +84,7 @@ theorem assigned_label_weight_le {σ:Type*}[DecidableEq σ]
     (slots J₁ J₂:Finset σ)(K:ℕ)(hK:slots.card≤K)
     (h₁:J₁⊆slots)(h₂:J₂⊆slots)(f:Ideal O)(hf:f≠0):
     ((IdealMobiusDivisorSum.idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1)≤secondLabelWeight K f := by
-  have hmem:(1:Ideal O)∈IdealMobiusDivisorSum.idealDivisors f:=
+  have hmem:=
     (IdealMobiusDivisorSum.mem_idealDivisors hf).mpr (one_dvd _)
   have hn:(1:ℝ)≤(IdealMobiusDivisorSum.idealDivisors f).card:=by
     exact_mod_cast Finset.one_le_card.mpr ⟨1,hmem⟩

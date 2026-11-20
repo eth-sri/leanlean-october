@@ -75,7 +75,7 @@ theorem tupleWeight_le {x : ℝ} {j : ℕ} {S : Finset ℕ} (hS : ∀ m ∈ S, 1
       ∏ k, v k (m k) ≤ dampedWeight x j n := by
     intro m hm
     obtain ⟨hmS, hprod⟩ := mem_filter.1 hm
-    have hpos : ∀ k, 1 ≤ m k := fun k => hS _ (Fintype.mem_piFinset.1 hmS k)
+    have hpos  := fun k => hS _ (Fintype.mem_piFinset.1 hmS k)
     calc ∏ k, v k (m k) ≤ ∏ k, dampedWeight x j (m k) :=
           prod_le_prod₀ (fun k _ => hv _ _) fun k _ => hvg k _ (hpos k)
       _ = dampedWeight x j n := by
@@ -141,7 +141,7 @@ theorem unstrippedProxy_le_dampedWeight (hx : 1 < x) (hL : 1 ≤ Real.log x) (h�
   obtain ⟨-, hPiD⟩ := prod_le_dampedDensity hL hj
   have hγL : 0 < γ * Real.log x := by positivity
   have hg := dampedWeight_nonneg x j m
-  have hD1 : 1 ≤ dampedDensity x j * (γ * Real.log x) :=
+  have hD1  :=
     hY.trans (mul_le_mul_of_nonneg_right hPiD hγL.le)
   have hite : (if x ^ γ < m then dampedWeight x j m else 0) ≤ dampedWeight x j m := by
     split_ifs <;> linarith
@@ -193,6 +193,45 @@ theorem sum_primeWeight_div_le (N : ℕ) :
     _ ≤ ∑ p ∈ primesIoc (x ^ γ) N, (1 : ℝ) / p :=
         sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => by positivity
 
+private theorem absorb_damped_normalizer (hL : 1 ≤ Real.log x) (hj : 1 ≤ j)
+    (hY : 1 ≤ (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x))
+    {Q : ℝ} (hQ : 0 ≤ Q) :
+    (dampedDensity x j * (γ * Real.log x))⁻¹ *
+      ((∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹) * Q) ≤ Q := by
+  obtain ⟨hPi, _⟩ := prod_le_dampedDensity hL hj
+  have hD := dampedDensity_pos hL hj
+  unfold dampedDensity at hD
+  have hPc := (pos_of_mul_pos_right hD hPi.le).ne'
+  have cancel (a b c d : ℝ) (hb : b ≠ 0) : (a*b*c)⁻¹*(b*d) = d/(a*c) := by
+    rw [div_eq_mul_inv,mul_inv,mul_inv,mul_inv]
+    field_simp
+  rw [dampedDensity, cancel _ _ _ _ hPc]
+  exact div_le_self hQ hY
+
+/-- A proxy dominated by the normalized damped weight has the same upper
+Euler-product bound, independent of how it was truncated. -/
+theorem sum_proxy_harmonic_le (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j)
+    (hY : 1 ≤ (∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x))
+    (hYP : Real.exp (Real.log x ^ (45 / 100 : ℝ)) < proxyCutoff x) {N : ℕ}
+    (hYN : proxyCutoff x ≤ N) {w : ℕ → ℝ}
+    (hw : ∀ m, w m ≤ dampedWeight x j m / (dampedDensity x j * (γ * Real.log x))) :
+    ∑ m ∈ Icc 1 N, w m * cmul (fun p => (p : ℝ)⁻¹) m ≤
+      ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := by
+  have hD := dampedDensity_pos hL hj
+  let ν := (dampedDensity x j * (γ * Real.log x))⁻¹
+  have hn : 0 ≤ ν := by dsimp [ν]; positivity
+  have hPP : 0 ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ :=
+    prod_nonneg fun p hp => by
+      have : (2 : ℝ) ≤ p := by exact_mod_cast (mem_primesIoc.1 hp).1.two_le
+      rw [inv_nonneg, sub_nonneg, div_le_one (by linarith)]; linarith
+  refine le_trans (b := ν * ∑ m ∈ Icc 1 N, dampedWeight x j m / m) ?_
+    ((mul_le_mul_of_nonneg_left (sum_dampedWeight_div_le hL hYP hYN hj) hn).trans
+      (absorb_damped_normalizer hL hj hY hPP))
+  rw [mul_sum]
+  refine sum_le_sum fun m hm => ?_
+  rw [cmul_inv (by have := (mem_Icc.1 hm).1; omega)]
+  exact (mul_le_mul_of_nonneg_right (hw m) (by positivity)).trans_eq (by dsimp [ν]; ring)
+
 /-- `∑_{m ≤ N} a_j^0(m)/m ≤ ∏_{Y < p ≤ N} (1 - 1/p)⁻¹`. -/
 theorem sum_unstrippedProxy_div_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
     (hj : 1 ≤ j)
@@ -201,46 +240,12 @@ theorem sum_unstrippedProxy_div_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0
     (hYN : proxyCutoff x ≤ N) :
     ∑ m ∈ Icc 1 N, unstrippedProxy x γ j m * cmul (fun p => (p : ℝ)⁻¹) m ≤
       ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := by
-  obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
+  apply sum_proxy_harmonic_le hL hγ hj hY hYP hYN
+  intro m
+  have hm := dampedWeight_nonneg x j m
   have hD := dampedDensity_pos hL hj
-  have hγL : 0 < γ * Real.log x := by positivity
-  set ν := (dampedDensity x j * (γ * Real.log x))⁻¹ with hν
-  have hterm : ∀ m ∈ Icc 1 N, unstrippedProxy x γ j m * cmul (fun p => (p : ℝ)⁻¹) m ≤
-      ν * (dampedWeight x j m / m) := by
-    intro m hm
-    have hm0 : m ≠ 0 := by have := (mem_Icc.1 hm).1; omega
-    rw [cmul_inv hm0]
-    obtain ⟨h0, h1⟩ := unstrippedProxy_le hx hL hγ hj m
-    have hite : (if x ^ γ < m then dampedWeight x j m else 0) ≤ dampedWeight x j m := by
-      have := dampedWeight_nonneg x j m; split_ifs <;> linarith
-    calc unstrippedProxy x γ j m * (m : ℝ)⁻¹
-        ≤ dampedWeight x j m / (dampedDensity x j * (γ * Real.log x)) * (m : ℝ)⁻¹ := by
-          gcongr
-          exact h1.trans (div_le_div_of_nonneg_right hite (by positivity))
-      _ = ν * (dampedWeight x j m / m) := by rw [hν]; ring
-  have hsum := sum_dampedWeight_div_le hL hYP hYN hj
-  have hPP : 0 ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ :=
-    prod_nonneg fun p hp => by
-      have : (2 : ℝ) ≤ p := by exact_mod_cast (mem_primesIoc.1 hp).1.two_le
-      rw [inv_nonneg, sub_nonneg, div_le_one (by linarith)]; linarith
-  calc ∑ m ∈ Icc 1 N, unstrippedProxy x γ j m * cmul (fun p => (p : ℝ)⁻¹) m
-      ≤ ∑ m ∈ Icc 1 N, ν * (dampedWeight x j m / m) := sum_le_sum hterm
-    _ = ν * ∑ m ∈ Icc 1 N, dampedWeight x j m / m := (mul_sum _ _ _).symm
-    _ ≤ ν * ((∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹) *
-          ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹) :=
-        mul_le_mul_of_nonneg_left hsum (by positivity)
-    _ = (∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹) /
-          ((∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x)) := by
-        have hPc : 0 < ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ := by
-          have := hD; unfold dampedDensity at this
-          exact pos_of_mul_pos_right this hPi.le
-        have key : ∀ a b c d : ℝ, b ≠ 0 → (a * b * c)⁻¹ * (b * d) = d / (a * c) := by
-          intro a b c d hb
-          rw [div_eq_mul_inv, mul_inv, mul_inv, mul_inv]
-          field_simp
-        rw [hν, dampedDensity]
-        exact key _ _ _ _ hPc.ne'
-    _ ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - (1 : ℝ) / p)⁻¹ := div_le_self hPP hY
+  exact (unstrippedProxy_le hx hL hγ hj m).2.trans
+    (div_le_div_of_nonneg_right (by split_ifs <;> linarith) (by positivity))
 
 /-- `∑_{m ≤ N} a_j^0(m) g_j(m) r^{Ω(m)}/m ≤ ∏_{Y < p ≤ N} (1 - r/p)⁻¹` for `r ≤ j`. -/
 theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
@@ -250,11 +255,9 @@ theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 
     (hYN : proxyCutoff x ≤ N) {r : ℝ} (hr : 0 ≤ r) (hrj : r ≤ j) (hrY : r < proxyCutoff x) :
     ∑ m ∈ Icc 1 N, unstrippedProxy x γ j m * cmul (fun p => proxyLoc x j p * r / p) m ≤
       ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - r / p)⁻¹ := by
-  obtain ⟨hPi, hPiD⟩ := prod_le_dampedDensity hL hj
   have hD := dampedDensity_pos hL hj
-  have hγL : 0 < γ * Real.log x := by positivity
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
-  set ν := (dampedDensity x j * (γ * Real.log x))⁻¹ with hν
+  let ν := (dampedDensity x j * (γ * Real.log x))⁻¹
   have hterm : ∀ m ∈ Icc 1 N, unstrippedProxy x γ j m * cmul (fun p => proxyLoc x j p * r / p) m ≤
       ν * (dampedWeight x j m ^ 2 * cmul (fun _ => r) m / m) := by
     intro m hm
@@ -266,7 +269,7 @@ theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 
     obtain ⟨h0, h1⟩ := unstrippedProxy_le hx hL hγ hj m
     have hite : (if x ^ γ < m then dampedWeight x j m else 0) ≤ dampedWeight x j m := by
       have := dampedWeight_nonneg x j m; split_ifs <;> linarith
-    have hnn : 0 ≤ dampedWeight x j m * cmul (fun _ => r) m / m :=
+    have hnn  :=
       div_nonneg (mul_nonneg (dampedWeight_nonneg x j m) (cmul_nonneg (fun _ _ => hr) m))
         (Nat.cast_nonneg m)
     calc unstrippedProxy x γ j m * (dampedWeight x j m * cmul (fun _ => r) m / m)
@@ -274,7 +277,7 @@ theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 
             (dampedWeight x j m * cmul (fun _ => r) m / m) := by
           gcongr
           exact h1.trans (div_le_div_of_nonneg_right hite (by positivity))
-      _ = ν * (dampedWeight x j m ^ 2 * cmul (fun _ => r) m / m) := by rw [hν]; ring
+      _ = ν * (dampedWeight x j m ^ 2 * cmul (fun _ => r) m / m) := by ring
   have hsum := sum_dampedWeight_sq_div_le hL hYP hYN hj hr hrj hrY
   have hPP : 0 ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - r / p)⁻¹ :=
     prod_nonneg fun p hp => by
@@ -292,7 +295,7 @@ theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 
         nlinarith [inv_nonneg.2 (show (0 : ℝ) ≤ j by linarith)]
       rw [inv_nonneg, sub_nonneg, div_le_one (by linarith)]; linarith
     · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (mem_candidatePrimes hL hp).1.two_le
-      have ht : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hj'
+      have ht  := inv_le_one_of_one_le₀ hj'
       have ht0 : 0 ≤ (j : ℝ)⁻¹ := by positivity
       have hrt : r * ((j : ℝ)⁻¹) ^ 2 ≤ (j : ℝ)⁻¹ := by
         rw [sq, ← mul_assoc]
@@ -304,10 +307,7 @@ theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 
       have : r * ((j : ℝ)⁻¹) ^ 2 / p ≤ (j : ℝ)⁻¹ / p :=
         div_le_div_of_nonneg_right hrt (by linarith)
       linarith
-  have hPcpos : 0 < ∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹ := by
-    have := hD; unfold dampedDensity at this
-    exact pos_of_mul_pos_right this hPi.le
-  have hν0 : 0 ≤ ν := by positivity
+  have hν0 : 0 ≤ ν := by dsimp [ν]; positivity
   calc ∑ m ∈ Icc 1 N, unstrippedProxy x γ j m * cmul (fun p => proxyLoc x j p * r / p) m
       ≤ ∑ m ∈ Icc 1 N, ν * (dampedWeight x j m ^ 2 * cmul (fun _ => r) m / m) :=
         sum_le_sum hterm
@@ -318,15 +318,7 @@ theorem sum_unstrippedProxy_sq_le (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 
         mul_le_mul_of_nonneg_left hsum hν0
     _ ≤ ν * ((∏ p ∈ candidatePrimes x, (1 - (j : ℝ)⁻¹ / p)⁻¹) *
           ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - r / p)⁻¹) := by gcongr
-    _ = (∏ p ∈ primesIoc (proxyCutoff x) N, (1 - r / p)⁻¹) /
-          ((∏ p ∈ primesIcc 2 (proxyCutoff x), (1 - (1 : ℝ) / p)) * (γ * Real.log x)) := by
-        have key : ∀ a b c d : ℝ, b ≠ 0 → (a * b * c)⁻¹ * (b * d) = d / (a * c) := by
-          intro a b c d hb
-          rw [div_eq_mul_inv, mul_inv, mul_inv, mul_inv]
-          field_simp
-        rw [hν, dampedDensity]
-        exact key _ _ _ _ hPcpos.ne'
-    _ ≤ ∏ p ∈ primesIoc (proxyCutoff x) N, (1 - r / p)⁻¹ := div_le_self hPP hY
+    _ ≤ _ := absorb_damped_normalizer hL hj hY hPP
 
 end Factor
 

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.RawCoefficient
 
 @[expose] public section
@@ -19,7 +20,7 @@ def thetaRawIndex (t : ThetaFullIndex) : Eisˣ×RawTailIndex :=
 
 lemma thetaRawIndex_injective : Function.Injective thetaRawIndex := by
   rintro ⟨u,m,⟨n,hn⟩,⟨b,hb⟩⟩ ⟨v,k,⟨n',hn'⟩,⟨b',hb'⟩⟩ h
-  simpa only [thetaRawIndex,Prod.mk.injEq,Subtype.mk.injEq] using h
+  simpa [thetaRawIndex,Prod.mk.injEq,Subtype.mk.injEq] using h
 
 def literalRawScale (G : PrimeFamily ι)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (X : ℝ) : ℝ :=
@@ -29,8 +30,7 @@ lemma literalRawScale_pos (G : PrimeFamily ι)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (X : ℝ) (hX : 0<X) : 0<literalRawScale G s X := by
   have hn : (0:ℝ)<Ideal.absNorm (Ideal.span {c*∏ i,G.generator i}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero hc (Finset.prod_ne_zero_iff.mpr (fun i _ => G.generator_ne_zero i)))))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero hc (Finset.prod_ne_zero_iff.mpr (fun i _ => G.generator_ne_zero i))))
   have hs := sourceCuspScale_pos s.index
   unfold literalRawScale
   positivity
@@ -66,7 +66,6 @@ theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
   intro t
   have hx : sourceCuspPhaseNumerator s.index (s.upper 0 0) (thetaFullFrequency t)=
       s.modelDualNumerator t.1 t.2.1 t.2.2.1.val t.2.2.2.val := by
-    rw [thetaFullFrequency_eq_fixedCuspArrayIndex]
     rfl
   unfold literalRawSeries rawDualKernelTerm literalRawCoefficient thetaRawIndex literalRawScale
   rw [ite_eq_left ⟨t.2.2.1.property.1,t.2.2.1.property.2,t.2.2.2.property⟩,hx]
@@ -82,7 +81,7 @@ theorem literalRawSeries_summable_norm (G : PrimeFamily ι)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
     (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
     Summable (fun t : Eisˣ×RawTailIndex => ‖literalRawSeries G D s hc j S W X t‖) := by
-  let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
+  let  := PrimaryIdealUnitReindex.finite_units
   let : Fintype Eisˣ := Fintype.ofFinite _
   apply (summable_prod_of_nonneg (fun _ => norm_nonneg _)).mpr
   refine ⟨?_,(hasSum_fintype _).summable⟩

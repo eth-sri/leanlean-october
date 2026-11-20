@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionary
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
 
@@ -8,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-open HeckeDetectorRelativePrime
+open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion CenteredMomentHeckeSlots
+open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckeDetectorRelativePrime
 local notation "O" => HeckeFamily.O
 
 def physicalSlotCoefficient (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ) (P : Ideal O) : ℂ :=
@@ -24,7 +24,7 @@ lemma physicalSlotCoefficient_annular (η : Character) (W : ℝ→ℂ) (D : ℝ)
     physicalSlotCoefficient η W D z P=idealCoeff η.inverse P*
       HeckePrimeAnnular.annularWeight (fun y=>conj (W y)) D (1-z.re) (-z.im) P := by
   have hn : 0<(P.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hP)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hP)
   unfold physicalSlotCoefficient HeckePrimeAnnular.annularWeight
   rw [map_mul,HeckeInverseAmplification.conj_positive_cpow _ (div_pos hn hD)]
   have he : conj (z-1)= -HeckeDyadic.shift (1-z.re) (-z.im) := by

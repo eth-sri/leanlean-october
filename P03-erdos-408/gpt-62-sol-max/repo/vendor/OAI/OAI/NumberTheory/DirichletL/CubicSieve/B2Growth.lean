@@ -19,7 +19,6 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     elementSieveNorm M N ≤ (384*128^2 : ℝ) * A *
       (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 *
       (M*N)^ε * (M^(1/3 : ℝ)*N + M^ξ) := by
-  have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   let R := elementRange M
   have hRne : R.Nonempty := by
@@ -27,7 +26,7 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     rw [mem_elementRange]
     refine ⟨one_ne_zero, ?_⟩
     simpa using hM
-  have hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
+  have hR  :=
     fun z hz => (mem_elementRange M z).mp hz
   apply FiniteSieveOperator.squared_norm_le_of_energy (elementMatrix M N)
   · positivity
@@ -54,7 +53,6 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     · convert mul_le_mul_of_nonneg_left (hb X hX hXM) hY0.le using 1; ring
     · convert mul_le_mul_of_nonneg_left (hb Y hY hYM) hX0.le using 1; ring
   have hopt := extraction_min_two_power M N X Y ξ hM hN0.le hX hY hXY hξ
-  have hH : 0 ≤ (M/(X*Y^2))^(1/3 : ℝ) := Real.rpow_nonneg (by positivity) _
   have hi (z : O) : (∑ j : idealRange N, a j * elementCharacter j.val (mem_idealRange.mp j.property).1.2 z) =
       ∑ j : idealRange N, cubicRow j.val z * a j := by
     apply Finset.sum_congr rfl
@@ -80,10 +78,6 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
       elementSieveNorm M N ≤ C*(M*N)^ε*(M^(1/3 : ℝ)*N + M^ξ) := by
   obtain ⟨A,hA,hb⟩ := h.doubled (ε/2) (by positivity)
   let D : ℝ := 2 + 1/((ε/4)*Real.log 2)
-  have hD : 0 < D := by
-    dsimp [D]
-    have : 0 < Real.log 2 := Real.log_pos (by norm_num)
-    positivity
   refine ⟨(384*128^2 : ℝ)*A*D^2, by positivity, ?_⟩
   intro M N hM hN
   have hM0 : 0 < M := by linarith

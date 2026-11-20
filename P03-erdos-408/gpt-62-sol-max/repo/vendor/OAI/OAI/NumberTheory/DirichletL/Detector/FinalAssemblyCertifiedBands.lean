@@ -11,18 +11,16 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate
+open scoped Classical ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeFinalAssemblyCertifiedBands
 open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open ProbeFinalAssembly ProbeHighRowFamily Parameters
-open CenteredMomentEnergyBands CenteredMomentEnergyState
+open ProbeFinalAssembly ProbeHighRowFamily Parameters CenteredMomentEnergyBands CenteredMomentEnergyState
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters
 open CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource
 open ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
-local notation "O"=>HeckeFamily.O
 
 def detectorMesh (Δ t:ℝ):ℝ:=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
 
@@ -102,7 +100,7 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
   refine ⟨Ci+Cm+Cu,by positivity,?_⟩
   intro τ hτ hτ1
   filter_upwards [hi,hm,hu] with Z hi hm hu
-  have hZ:0<Z:=zero_lt_one.trans hi.1
+  have hZ:=zero_lt_one.trans hi.1
   let height:ℝ:=Z^(2*τ)
   have hh:0≤height:=Real.rpow_nonneg hZ.le _
   have hbase:1≤1+height:=by linarith
@@ -115,7 +113,7 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
   simp only [Real.rpow_natCast]
   intro rows d a hd hdmax ha hamax hrows i z hz hzim q B hB hdata hreverse hslots hwidth
     hprofile hupper hexternal hslotMesh hbinWidth hfamily bin label left right hne
-  have hrows':∀u∈rows,Z^(1/100:ℝ)≤rowNorm u:=fun u hu=>(hrows u hu).2.1
+  have hrows':=fun u hu=>(hrows u hu).2.1
   have hext:∀s,(B.external s).re=17/50:=by intro s;rw [hexternal];exact hz
   have hheight:∀s,|(B.external s).im|≤height:=by intro s;rw [hexternal];exact hzim
   have hinv:=hi.2 d hd a D.ε _ _ _ i B hdata hprofile hupper hwidth hext

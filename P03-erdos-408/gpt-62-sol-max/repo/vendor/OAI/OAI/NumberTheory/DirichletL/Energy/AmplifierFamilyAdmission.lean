@@ -3,7 +3,8 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalAmplifiedUniform
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPowerBudget
 public import OAI.NumberTheory.DirichletL.Moments.FirstCommonReferencePower
-public import OAI.NumberTheory.DirichletL.Moments.FirstMixedMainError
+public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
+public import OAI.NumberTheory.DirichletL.Moments.FirstSourceConductorCaps
 public import OAI.NumberTheory.DirichletL.Energy.FirstLiveAdmission
 public import OAI.NumberTheory.DirichletL.Energy.FirstAnnularAdmission
 
@@ -12,7 +13,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstAnnularAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyAmplifierFamilyAdmission
@@ -22,7 +23,6 @@ open CenteredMomentAmplificationActiveFactor CenteredMomentFirstAmplificationCho
 open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentChildRows
 open CenteredMomentSectorLocalization CenteredMomentFirstAmplifiedFourCoefficients
 local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def referenceCost : ℝ := max 1 rayCost
 

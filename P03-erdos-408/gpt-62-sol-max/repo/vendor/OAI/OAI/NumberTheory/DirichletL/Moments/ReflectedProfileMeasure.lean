@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ComparisonReflection
 public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
@@ -10,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScaleSup
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedProfileMeasure
 open HeckeFamily FourierBridge EisensteinSchwartzPoisson
@@ -63,7 +64,7 @@ theorem finite_annular_separation (V F : ℝ→ℂ) (s X : ℝ) (hX : 0<X)
       ∫v : ℝ,density v*HeckeDyadic.polynomial η false (logWindow V) X 0 (2*Real.pi*v) := by
   have hnorm (I : Ideal O) (hI : I∈S) : 0<(I.absNorm:ℝ)/X := by
     apply div_pos _ hX
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hS I hI))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hS I hI)
   have hi (I : Ideal O) : Integrable (fun v : ℝ=>
       density v*(HeckeDyadic.coefficient η false I*logWindow V ((I.absNorm:ℝ)/X)*
         logPhase v (Real.log ((I.absNorm:ℝ)/X)))) := by
@@ -82,7 +83,7 @@ theorem finite_annular_separation (V F : ℝ→ℂ) (s X : ℝ) (hX : 0<X)
     apply Finset.sum_congr rfl
     intro I hI
     have hm := HeckeDetectorDyadicBridge.norm_phase (I.absNorm:ℝ) X
-      (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hS I hI))) hX 0 v
+      (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hS I hI)) hX 0 v
     simp only [neg_zero,Complex.cpow_zero,one_mul,Complex.zero_re,Complex.zero_im,sub_zero] at hm
     rw [hm]
   rw [HeckeDetectorDyadicBridge.polynomial_eq_finite η false _ X 0 0 S
@@ -116,12 +117,12 @@ lemma logWindow_support (V : ℝ→ℂ) (M : ℝ)
   intro x hx
   change logWindow V x≠0 at hx
   by_cases hxp : 0<x
-  · have hv : V (Real.log x)≠0 := by simpa only [logWindow,ite_eq_left hxp] using hx
+  · have hv : V (Real.log x)≠0 := by simpa [logWindow,ite_eq_left hxp] using hx
     have hh := abs_le.mp (hV _ hv)
     constructor
-    · simpa only [Real.exp_log hxp] using Real.exp_le_exp.mpr hh.1
-    · simpa only [Real.exp_log hxp] using Real.exp_le_exp.mpr hh.2
-  · exact False.elim (hx (by simp only [logWindow,ite_eq_right hxp]))
+    · simpa [Real.exp_log hxp] using Real.exp_le_exp.mpr hh.1
+    · simpa [Real.exp_log hxp] using Real.exp_le_exp.mpr hh.2
+  · exact False.elim (hx (by simp [logWindow,ite_eq_right hxp]))
 
 theorem plain_annular_separation (V F : ℝ→ℂ) (M s X : ℝ) (hX : 0<X)
     (hV : ∀y,V y≠0 → |y|≤M) (density : 𝓢(ℝ,ℂ))
@@ -136,12 +137,11 @@ theorem plain_annular_separation (V F : ℝ→ℂ) (M s X : ℝ) (hX : 0<X)
     intro hz
     subst I
     simp at hi
-  have hc : ∀I : Ideal O,I≠0 → logWindow V ((I.absNorm:ℝ)/X)≠0 → I∈S := by
-    have hh := HeckeInverseAmplification.scaleSupport_cover (logWindow V)
-      (Real.exp (-M)) (Real.exp M) (Real.log X) (Real.log X) (Real.exp_pos M).le
-      (logWindow_support V M hV) le_rfl
-    simpa only [Real.exp_log hX] using hh
-  exact finite_annular_separation V F s X hX density hsep η S hs hc
+  refine finite_annular_separation V F s X hX density hsep η S hs ?_
+  have hh := HeckeInverseAmplification.scaleSupport_cover (logWindow V)
+    (Real.exp (-M)) (Real.exp M) (Real.log X) (Real.log X) (Real.exp_pos M).le
+    (logWindow_support V M hV) le_rfl
+  simpa only [Real.exp_log hX] using hh
 
 end SevenEighths.CenteredMomentReflectedProfileMeasure
 

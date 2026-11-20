@@ -32,7 +32,7 @@ theorem sum_sum_ite_mul_eq_le (A B : Finset ℕ) {N : ℕ} (hN : N ≠ 0) :
     · have hcard : #{n ∈ B | m * n = N} ≤ 1 := by
         refine card_le_one.2 fun n hn n' hn' => ?_
         rw [mem_filter] at hn hn'
-        have hm0 : 0 < m := Nat.pos_of_ne_zero fun h0 => hN (by rw [← hn.2, h0, zero_mul])
+        have hm0 : 0 < m := Nat.pos_of_ne_zero fun h0 => hN (by simp_all)
         exact Nat.eq_of_mul_eq_mul_left hm0 (hn.2.trans hn'.2.symm)
       exact_mod_cast hcard
     · rw [Nat.cast_nonpos, card_eq_zero, filter_eq_empty_iff]
@@ -73,11 +73,11 @@ theorem card_filter_abs_sub_le (s : Finset ℕ) (c : ℝ) {a w : ℝ} (ha : 0 < 
     positivity
   -- every element lies within `2w/a` of the least one
   set l₀ := T.min' hT
-  have hl₀ : |c - a * l₀| ≤ w := (mem_filter.1 (T.min'_mem hT)).2
+  have hl₀  := (mem_filter.1 (T.min'_mem hT)).2
   have hsub : T ⊆ Icc l₀ (l₀ + ⌊2 * w / a⌋₊) := by
     intro l hl
-    have hle : l₀ ≤ l := T.min'_le l hl
-    have hlw : |c - a * l| ≤ w := (mem_filter.1 hl).2
+    have hle  := T.min'_le l hl
+    have hlw  := (mem_filter.1 hl).2
     refine mem_Icc.2 ⟨hle, ?_⟩
     have hdiff : ((l - l₀ : ℕ) : ℝ) ≤ 2 * w / a := by
       rw [Nat.cast_sub hle, le_div_iff₀ ha]
@@ -117,8 +117,8 @@ theorem sum_ite_exists_le (A B : Finset ℕ) {a b Z : ℕ} (ha : 0 < a) (hb : 0 
     intro m hm n hn r s
     split_ifs with hex
     · obtain ⟨h, h1, hmn, hrs⟩ := hex
-      have hah : 1 ≤ a * h := Nat.mul_pos ha h1
-      have hbh : 1 ≤ b * h := Nat.mul_pos hb h1
+      have hah  := Nat.mul_pos ha h1
+      have hbh  := Nat.mul_pos hb h1
       refine le_trans ?_ (single_le_sum (f := fun h => (if m * n = 1 + a * h then (1 : ℝ)
         else 0) * (if r * s = 1 + b * h then 1 else 0)) (fun h _ => by positivity)
         (mem_Icc.2 ⟨h1, hZ m hm n hn h h1 hmn⟩))
@@ -140,7 +140,7 @@ theorem sum_ite_exists_le (A B : Finset ℕ) {a b Z : ℕ} (ha : 0 < a) (hb : 0 
     _ ≤ ∑ h ∈ Icc 1 Z, ((1 + a * h).divisors.card : ℝ) * (1 + b * h).divisors.card := by
         refine sum_le_sum fun h _ => mul_le_mul (sum_sum_ite_mul_eq_le A B (by omega))
           (sum_sum_ite_mul_eq_le A B (by omega)) ?_ (Nat.cast_nonneg _)
-        exact sum_nonneg fun r _ => sum_nonneg fun s _ => by positivity
+        positivity
 
 /-- The near-solutions: the quadruples with `|b mn - a rs| ≤ 5Y` number at most
 `11 ∑_{k ≤ M} τ(k)²`, when `a, b > Y` and every product lies in `[1, M]`. -/
@@ -152,7 +152,7 @@ theorem sum_ite_abs_le (A B : Finset ℕ) {M : ℕ}
       11 * ∑ k ∈ Icc 1 M, (k.divisors.card : ℝ) ^ 2 := by
   set g : ℕ → ℕ → ℝ := fun k l => if |b * (k : ℝ) - a * (l : ℝ)| ≤ 5 * Y then 1 else 0
   set τ : ℕ → ℝ := fun k => (k.divisors.card : ℝ)
-  have hg : ∀ k l, 0 ≤ g k l := fun k l => by simp only [g]; split_ifs <;> norm_num
+  have hg : ∀ k l, 0 ≤ g k l := fun k l => by positivity
   -- each `k` has at most `11` partners `l`, and conversely
   have hrow : ∀ k, ∑ l ∈ Icc 1 M, g k l ≤ 11 := by
     intro k

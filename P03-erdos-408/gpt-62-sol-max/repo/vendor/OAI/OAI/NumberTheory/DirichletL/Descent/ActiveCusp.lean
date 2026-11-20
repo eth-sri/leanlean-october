@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.CuspCongruence
 public import OAI.NumberTheory.DirichletL.Descent.MarkedStratum
 
@@ -18,18 +19,18 @@ noncomputable local instance activeQuotientFintype (P : Ideal Eis) [P.IsMaximal]
 
 variable {ι : Type*} [Fintype ι]
 
-def localInactiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+def localInactiveWeight (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (A : Finset ι) : ℂ :=
   ∏ i ∈ (Finset.univ : Finset ι) \ A,
     finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (F i) 0
 
-def localActiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+def localActiveWeight (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (A : Finset ι) (v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ) : ℂ :=
   ∏ i : A, finiteAdditiveFourierCoeff (quotientTrace (p i.val) (hp i.val)) (F i.val) (v i)
 
 theorem primeFunction_fourier_by_active
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (n : Eis) :
     (∏ i, F i (Ideal.Quotient.mk _ n)) =
       ∑ A : Finset ι, localInactiveWeight p hp F A *
@@ -48,7 +49,7 @@ theorem primeFunction_fourier_by_active
       (fun i => Ideal.Quotient.mk _ n)
 
 theorem activeStratum_function_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     {N a0 c0 : Eis} {mode : Bool}
@@ -81,7 +82,7 @@ theorem activeStratum_function_multiplier
   ring
 
 def fixedActiveFunctionWeight
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
     (φ : Eis →* ℂ) (t : FixedActiveCuspIndex c p) : ℂ :=
@@ -89,7 +90,7 @@ def fixedActiveFunctionWeight
     localActiveWeight p hp F t.2.1 t.2.2
 
 theorem fixedActiveFunction_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]

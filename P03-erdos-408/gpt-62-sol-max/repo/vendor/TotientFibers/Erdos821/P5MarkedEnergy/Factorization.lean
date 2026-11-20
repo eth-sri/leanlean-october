@@ -1,9 +1,13 @@
 module
 
-public import Erdos821.P5MarkedEnergy.MarkRemoval
-public import Erdos821.S56.GroupParts
-public import Erdos821.P5.EndpointInvariance
-public import Erdos821.P5.EndpointBounds
+public import Erdos821.Blueprint.Classical
+public import Mathlib.Data.Nat.Squarefree
+public import Erdos821.Blueprint.Ideal
+public import Erdos821.Blueprint.Analytic
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.Algebra.Order.Ring.Star
+public import Erdos821.P5.Basic
+public import Mathlib.NumberTheory.DirichletCharacter.Bounds
 public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 
@@ -69,7 +73,7 @@ theorem norm_cchi_le (r : ℕ) (u : ℤ) (χ : DirichletCharacter ℂ r) (k : �
           have h2 : ‖e (u * a * k / r)‖ = 1 := by
             unfold e; rw [Complex.norm_exp]; simp
           rw [h2, mul_one]; exact h1
-      _ = Nat.totient r := by rw [Finset.sum_const, hcard]; simp
+      _ = Nat.totient r := by simp_all
 
 /-- Character expansion of the rational phase on units. -/
 theorem e_eq_sum_cchi (r : ℕ) (hr : 1 ≤ r) (u : ℤ) (v k : ℕ) (hv : Nat.Coprime v r) :
@@ -83,7 +87,7 @@ theorem e_eq_sum_cchi (r : ℕ) (hr : 1 ≤ r) (u : ℤ) (v k : ℕ) (hv : Nat.C
         e (u * a * k / r)) * χ (v : ZMod r) =
       if a = v % r then e (u * a * k / r) else 0 := by
     intro a ha
-    have hau : IsUnit (a : ZMod r) :=
+    have hau  :=
       (ZMod.isUnit_iff_coprime a r).mpr (Finset.mem_filter.mp ha).2
     have horth := DirichletCharacter.sum_char_inv_mul_char_eq ℂ hau (v : ZMod r)
     have hrw : ∀ χ : DirichletCharacter ℂ r, ((Nat.totient r : ℂ))⁻¹ * (χ ((a : ZMod r)⁻¹) *

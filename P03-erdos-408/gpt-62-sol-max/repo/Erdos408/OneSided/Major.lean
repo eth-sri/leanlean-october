@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Major.Assembly
 
 /-!
@@ -74,7 +75,6 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
         L ^ (10 * A₀ - P) := by
   have hL0 : 0 < L := by linarith
   set u := L ^ (-P) with hu
-  have hu0 : 0 ≤ u := by positivity
   -- the energy term: `ε E = |C_E| L^{-P}`
   have e₁ : L ^ (A' - P) * L ^ (-A') = u := by
     rw [hu, ← Real.rpow_add hL0]
@@ -113,21 +113,13 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
     linarith
   have hcoef : |C₀| * (2 * L ^ A₀) ^ 4 / X * (X * Y) ^ 2 =
       16 * |C₀| * L ^ (4 * A₀) * X * Y ^ 2 := by
-    rw [mul_pow, show (L ^ A₀) ^ 4 = L ^ (4 * A₀) by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]; congr 1; push_cast; ring]
+    rw [mul_pow, show (L ^ A₀) ^ 4 = L ^ (4 * A₀) by rpow_ring hL0]
     field_simp
     ring
   have hn2 : n ^ 2 ≤ L ^ (6 * A₀) :=
     calc n ^ 2 ≤ (L ^ (3 * A₀)) ^ 2 := pow_le_pow_left₀ hn0 hn 2
-      _ = L ^ (6 * A₀) := by
-        rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-        congr 1
-        push_cast
-        ring
-  have hexp : L ^ (4 * A₀) * L ^ (6 * A₀) * u = L ^ (10 * A₀ - P) := by
-    rw [hu, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
-    congr 1
-    ring
+      _ = L ^ (6 * A₀) := by rpow_ring hL0
+  have hexp : L ^ (4 * A₀) * L ^ (6 * A₀) * u = L ^ (10 * A₀ - P) := by rpow_ring hL0
   rw [hcoef]
   calc 16 * |C₀| * L ^ (4 * A₀) * X * Y ^ 2 *
         (π * ((L ^ (A' - P) * (n ^ 2 * (|CE| * L ^ (-A'))) +
@@ -172,7 +164,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
   have hP0 : 0 < P := by
     simp only [hP, majorPrec, squarePrec]
     linarith
-  have hBP : B = P + C₄ := by simp only [hB, hP, hC₄, hA₀, freqExp]
+  have hBP : B = P + C₄ := by rfl
   have hA'P : A' = 5 * P + 4 * C₄ := by
     simp only [hA', hP, hC₄, hA₀, energyExp, freqExp]
     ring
@@ -189,9 +181,9 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
   have hL0 : 0 < L := by linarith
   have hY : 0 < Y := by positivity
   have hx0 : 0 < x := by linarith
-  have hHm : 0 < d.Hm := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hm_ge
-  have hHn : 0 < d.Hn := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hn_ge
-  have hX : 0 < d.X := mul_pos hHm hHn
+  have hHm  := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hm_ge
+  have hHn  := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hn_ge
+  have hX  := mul_pos hHm hHn
   have hX2 : 2 ≤ d.X := hx2.trans hd.X_ge
   have hlog : Real.log (4 * d.X) ≤ 2 * L := by
     have h₁ : 4 * d.X ≤ 4 * CX * x := by
@@ -209,9 +201,9 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
     obtain ⟨hp, hm, hn⟩ := hmem u hu
     have hl : sideLabel u ≠ 0 := Finset.prod_ne_zero_iff.2 fun i _ =>
       (TypeII.band_prime (Fintype.mem_piFinset.1 hp i)).ne_zero
-    have hm0 : u.2.1 ≠ 0 :=
+    have hm0  :=
       (lt_of_lt_of_le (Nat.ceil_pos.2 hHm) (Finset.mem_Icc.1 hm).1).ne'
-    have hn0 : u.2.2 ≠ 0 :=
+    have hn0  :=
       (lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (Finset.mem_Icc.1 hn).1).ne'
     exact Nat.pos_of_ne_zero (Nat.mul_ne_zero (Nat.mul_ne_zero hl hm0) hn0)
   have hcoeff : ∀ u, sideCoeff x d Y u ≠ 0 → dyadicBump (sideLabel u / Y) ≠ 0 ∧
@@ -245,7 +237,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
       ∀ θ ∈ Set.uIoc (-(2 * L ^ A₀ / Y)) (2 * L ^ A₀ / Y), ‖arcTerm x d Y kh.1 kh.2 θ‖ ≤ U := by
     rintro ⟨k, h⟩ hkh θ hθ
     simp only [arcSet, mem_sigma, mem_Icc, mem_filter, mem_range] at hkh
-    have hk1 : 1 ≤ k := hkh.1.1
+    have hk1  := hkh.1.1
     have hkL : (k : ℝ) ≤ L ^ A₀ :=
       (Nat.cast_le.2 hkh.1.2).trans (Nat.floor_le (by positivity))
     have : NeZero k := ⟨by omega⟩
@@ -253,7 +245,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
     have hδ : 0 ≤ 2 * L ^ A₀ / Y := by positivity
     rw [Set.uIoc_of_le (by linarith), Set.mem_Ioc] at hθ
     have hlam : |lam| ≤ 2 * L ^ A₀ := by
-      have h₁ : |lam / Y| ≤ 2 * L ^ A₀ / Y := abs_le.2 ⟨hθ.1.le, hθ.2⟩
+      have h₁  := abs_le.2 ⟨hθ.1.le, hθ.2⟩
       rw [abs_div, abs_of_pos hY, div_le_div_iff_of_pos_right hY] at h₁
       exact h₁
     have hΛ : 1 ≤ 2 * L ^ A₀ := by
@@ -300,11 +292,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
         (Nat.cast_le.2 (card_dirichletCharacter_le k)).trans hkL
       calc ((Fintype.card (DirichletCharacter ℂ k) : ℝ) ^ 3) ≤ (L ^ A₀) ^ 3 :=
             pow_le_pow_left₀ (Nat.cast_nonneg _) h₁ 3
-        _ = L ^ (3 * A₀) := by
-          rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-          congr 1
-          push_cast
-          ring
+        _ = L ^ (3 * A₀) := by rpow_ring hL0
     have hXT : d.X ≤ d.X * L ^ B :=
       le_mul_of_one_le_right hX.le (Real.one_le_rpow hL (by rw [hBP]; linarith))
     refine (norm_arcTerm_le hY hHm hHn k h lam (c := |C₀| * (2 * L ^ A₀) ^ 4 / d.X) hKi

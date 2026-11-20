@@ -8,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical BigOperators SchwartzMap ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
-open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
-open CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
+open HeckeFamily FourierBridge EisensteinSchwartzPoisson CenteredMomentReflectedProfileMeasure
+open CenteredMomentReflectedPairEnergy CenteredMomentReflectedUniformPair
+open CenteredMomentOneReflectionEnergy
 
 theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
@@ -63,24 +63,21 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     have he : (fun v : ℝ=>(V y*logPhase v y)*(e i*d i v))=
         (fun v=>e i*((V y*logPhase v y)*d i v)) := by funext v;ring
     rw [he,integral_const_mul,←hid i y]
-    dsimp [F]
     ring
   have hsource (i : ι) : HeckeDyadic.polynomial (χ i) false
       (fun x=>logWindow V x*((1+s i)^A:ℂ)*paperRadialFourier (G i) (s i*x))
         (X i) 0 0*P i=∫v : ℝ,(e i • d i) v*φ i v := by
     have hf : (fun x=>logWindow V x*((1+s i)^A:ℂ)*paperRadialFourier (G i) (s i*x))=
-        (fun x=>logWindow V x*F i (s i*x)) := by funext x;dsimp [F,e];ring
+        (fun x=>logWindow V x*F i (s i*x)) := by funext x;ring
     rw [hf,plain_annular_separation V (F i) M (s i) (X i) (hX i) hV (e i • d i) (hsep i),
       ←integral_mul_const]
     apply integral_congr_ae
     filter_upwards [] with v
-    dsimp [φ]
     ring
   have hint (i : ι) : Integrable (fun v : ℝ=>(e i • d i) v*φ i v) := by
     have hh := (plain_density_integrable V M (X i) (hX i) hV (χ i) (e i • d i)).mul_const (P i)
     apply hh.congr
     filter_upwards [] with v
-    dsimp [φ]
     ring
   have hpoint (i : ι) : ∀v,‖(e i • d i) v‖≤envelope (K*D) J v := by
     have hh := normalized_density_bound A 0 J (s i) 0 (K*D) (hs i) (d i)
@@ -100,7 +97,7 @@ lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
       conj (HeckeDyadic.polynomial χ false (logWindow V) X 0 (-2*Real.pi*v)) := by
   have hr (x : ℝ) : conj (logWindow V x)=logWindow V x := by
     unfold logWindow
-    split_ifs <;> simp [hreal]
+    split_ifs <;> simp_all
   have ht : (fun x=>conj (CompletedHeight.normTwistedSource (logWindow V) v x))=
       CompletedHeight.normTwistedSource (logWindow V) (-v) := by
     funext x

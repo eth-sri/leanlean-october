@@ -116,10 +116,7 @@ theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc 
     exact h1 p hp
   have hsum := (EulerProduct.summable_and_hasSum_factoredNumbers_prod_filter_prime_geometric
     hnorm (range (N + 1))).2
-  have hprod : ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - cmul loc p)⁻¹ =
-      ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - loc p)⁻¹ :=
-    prod_congr rfl fun p hp => by rw [cmul_prime loc (mem_filter.1 hp).2]
-  rw [hprod] at hsum
+  rw [(prod_congr rfl fun p hp => by rw [cmul_prime loc (mem_filter.1 hp).2])] at hsum
   have hmem : ∀ m ∈ Icc 1 N, m ∈ Nat.factoredNumbers (range (N + 1)) := by
     intro m hm
     obtain ⟨h1m, hmN⟩ := mem_Icc.1 hm

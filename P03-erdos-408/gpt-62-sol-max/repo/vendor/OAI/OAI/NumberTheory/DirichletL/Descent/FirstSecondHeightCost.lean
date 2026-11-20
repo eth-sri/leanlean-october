@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstSecondHeightCost
 open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
 open InverseMomentFirstOriginalProfile
@@ -61,11 +61,11 @@ lemma log_fourth_small_power (Cbin ε : ℝ) (hε : 0<ε) :
       (1+Cbin*Real.log Z)^4≤Clog*Z^ε := by
   obtain ⟨C,hC,he⟩ := log_eighth_small_power ε hε
   let b := 1+|Cbin|
-  have hb : 0<b := by dsimp [b];positivity
+  have hb : 0<b := by positivity
   refine ⟨b^4*C,mul_pos (pow_pos hb _) hC,?_⟩
   intro Z hZ
   have hZ1 : 1≤Z := by linarith
-  have hl : 0≤Real.log Z := Real.log_nonneg hZ1
+  have hl  := Real.log_nonneg hZ1
   have hn : |1+Cbin*Real.log Z|≤b*(1+Real.log Z) := by
     calc
       _≤1+|Cbin| *Real.log Z := by simpa [abs_mul,abs_of_nonneg hl] using abs_add_le (1:ℝ) (Cbin*Real.log Z)
@@ -99,7 +99,7 @@ theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
       _≤C*A*(Clog*Z^ε)*Z^(F+48*eta+tau+pi+epschild) := by gcongr;exact hlogs Z hZ
       _=_ := by rw [show C*A*(Clog*Z^ε)*Z^(F+48*eta+tau+pi+epschild)=
           C*A*Clog*(Z^ε*Z^(F+48*eta+tau+pi+epschild)) by ring,←Real.rpow_add hZ0];congr 1;congr 1;ring
-  have h2 : Z^(-saving)≤Z^(F+48*eta+tau+pi+epschild+ε) :=
+  have h2  :=
     Real.rpow_le_rpow_of_exponent_le hZ1 hsaving
   have hsum := add_le_add (add_le_add (mul_le_mul_of_nonneg_left h0 hz) h1)
     (mul_le_mul_of_nonneg_left h2 ht)
@@ -107,9 +107,9 @@ theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
   apply hsum.trans
   have hpow : 0≤Z^(F+48*eta+tau+pi+epschild+ε) := Real.rpow_nonneg hZ0.le _
   have hcoef : Czero+C*A*Clog+Ctail≤(1+Czero+C*Clog+Ctail)*(1+A) := by
-    have hza : 0≤Czero*A := mul_nonneg hz hA
-    have hta : 0≤Ctail*A := mul_nonneg ht hA
-    have hc : 0≤C*Clog := mul_nonneg hC hlog.le
+    have hza  := mul_nonneg hz hA
+    have hta  := mul_nonneg ht hA
+    have hc  := mul_nonneg hC hlog.le
     nlinarith
   convert mul_le_mul_of_nonneg_right hcoef hpow using 1 ; ring
 

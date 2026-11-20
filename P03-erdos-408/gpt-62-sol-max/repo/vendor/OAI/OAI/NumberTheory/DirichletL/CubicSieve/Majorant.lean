@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyDyads
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 def frequencyMajorant (M N : ℝ) (j : ℕ) : ℝ :=
@@ -27,11 +27,9 @@ lemma frequencyMajorant_geometric (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) (j : �
   let Q : ℝ := (⌈N⌉₊ : ℝ)^2
   let C : ℝ := QuadraticInitialBound.initialSieveConstant
   have hK : 1 ≤ K := one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 2)
-  have hK0 : 0 < K := by positivity
-  have hN0 : 0 < N := by linarith
-  have hc : 0 < c := by dsimp [c]; positivity
+  have hc : 0 < c := by positivity
   have hQ : 0 ≤ Q := sq_nonneg _
-  have hC : 0 ≤ C := QuadraticInitialBound.initialSieveConstant_pos.le
+  have hC  := QuadraticInitialBound.initialSieveConstant_pos.le
   have hi : elementSieveNorm K N ≤ C * (1 + Q) * K := by
     apply (elementSieveNorm_initial K N hK hN).trans
     dsimp only [C, Q]
@@ -43,7 +41,7 @@ lemma frequencyMajorant_geometric (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) (j : �
     rw [← pow_mul, Nat.mul_comm j 2, pow_mul, ← inv_pow]
     norm_num
   change elementSieveNorm K N / (1 + M*K/N^2)^3 ≤ _
-  rw [show M*K/N^2 = c*K by dsimp [c]; ring]
+  rw [show M*K/N^2 = c*K by ring]
   calc
     _ ≤ (C*(1+Q)*K) / (1+c*K)^3 := div_le_div_of_nonneg_right hi (by positivity)
     _ ≤ (C*(1+Q)*K) / (c*K)^3 :=
@@ -53,9 +51,7 @@ lemma frequencyMajorant_geometric (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) (j : �
 
 theorem frequencyMajorant_summable (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) :
     Summable (frequencyMajorant M N) := by
-  have hg : Summable (fun j : ℕ => (1/4 : ℝ)^j) :=
-    summable_geometric_of_lt_one (by norm_num) (by norm_num)
-  exact (hg.mul_left _).of_nonneg_of_le
+  exact ((summable_geometric_of_lt_one (by norm_num) (by norm_num)).mul_left _).of_nonneg_of_le
     (frequencyMajorant_nonneg M N hM.le) (frequencyMajorant_geometric M N hM hN)
 
 end

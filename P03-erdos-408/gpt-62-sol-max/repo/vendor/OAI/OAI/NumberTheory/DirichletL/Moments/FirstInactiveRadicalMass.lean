@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondBlockRadicalHarmonicMass
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscardedEnergy
 
@@ -11,13 +12,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstInactiveRadicalMass
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonRadialData CenteredMomentRankinRadical
-open CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation
-open ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst
+open CenteredMomentFirstDiscardedEnergy CenteredMomentSecondRetainedAggregate
+open CenteredMomentSecondBlockRadicalHarmonicMass CenteredMomentSourceMass CenteredMomentSourceRow
+open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonRadialData CenteredMomentRankinRadical
+open CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
 local notation "O"=>ActualEisensteinCubic.O
 
 def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):ℝ:=
@@ -37,8 +36,8 @@ lemma inactiveWeight_le_one (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ)(ha:
     simpa only [primeSubsetGenerator,ConcretePrimeRowBridge.span_idealGenerator,
       Ideal.zero_eq_bot] using hh
   have hn:1≤(Ideal.absNorm (∏P∈E,P.val):ℝ):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hE)
-  have hp:1≤(Ideal.absNorm (∏P∈E,P.val):ℝ)^a:=Real.one_le_rpow hn ha
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hE)
+  have hp:=Real.one_le_rpow hn ha
   unfold inactiveWeight
   exact (div_le_self (norm_nonneg _) hp).trans (QuadraticInitialBound.norm_ideal_moebius_le_one _)
 

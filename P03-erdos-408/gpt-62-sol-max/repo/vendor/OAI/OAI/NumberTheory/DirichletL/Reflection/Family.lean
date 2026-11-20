@@ -32,7 +32,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
   let aa : X → Eis := fun x => (D x.1).matrix x.2 0 0
   let rr : X → Eis := fun x => ∏ i, p x.1 i
   let ss : X → Q := fun x => sector x.1
-  have h3N : (3:Eis) ∣ N := (show (3:Eis) ∣ 9 from ⟨3,by norm_num⟩).trans h9N
+  have h3N  := (show (3:Eis) ∣ 9 from ⟨3,by norm_num⟩).trans h9N
   have hacop (x : X) : IsCoprime (aa x) (c*rr x) := by
     refine ⟨(D x.1).matrix x.2 1 1, -(D x.1).matrix x.2 0 1, ?_⟩
     have hd := ((D x.1).matrix x.2).property
@@ -48,7 +48,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
     exact finiteCrossNumerator_fixed_sector N a c ramifiedTraceLambda
       (p x.1) ((D x.1).lift x.2) (p y.1) ((D y.1).lift y.2)
       hcN ((D x.1).lift_period x.2) ((D y.1).lift_period y.2) (hsector x.1 y.1 h)
-  have hrr (x y : X) (h : ss x = ss y) : N ∣ rr x-rr y :=
+  have hrr (x y : X) (h : ss x = ss y)  :=
     (dvd_pow_self N (by decide : (2:ℕ) ≠ 0)).trans (hsector x.1 y.1 h)
   have hex : ∃ (b d : X → Eis) (C : Q → Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N})),
       (∀ x, aa x*d x-b x*(c*rr x)=1) ∧
@@ -71,7 +71,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
     controlledCompletionMatrix (aa ⟨x,v⟩) (b ⟨x,v⟩) (c*rr ⟨x,v⟩) (d ⟨x,v⟩) (hdet ⟨x,v⟩)
   refine ⟨mat,fun _ _ => rfl,fun _ _ => rfl,fun x v => hcond ⟨x,v⟩,?_⟩
   intro x y v w hs i j
-  have hs' : ss ⟨x,v⟩ = ss ⟨y,w⟩ := hs
+  have hs'  := hs
   have he := (hmat ⟨x,v⟩).trans ((congrArg C hs').trans (hmat ⟨y,w⟩).symm)
   have he' := congrArg (fun T : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N}) => T i j) he
   exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp he')

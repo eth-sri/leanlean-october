@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainExceptional
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainStateDictionary
-open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
-open CenteredMomentDetectorPlainSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorDictionary CenteredMomentEnergyState
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular CenteredMomentDetectorPlainExceptional
+open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainSource
+open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentEnergyState
+open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily
+open ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
@@ -56,9 +55,7 @@ theorem retainedSourceEnergy_empty_eq_plainEnergy
   rw [retainedSourceEnergy_eq_energy _ _ _ _ _ _ _ _ _ (zero_lt_one.trans_le hU)]
   simp only [plainProfile_eq_detectorSchwartz]
   unfold NaturalState.plainEnergy energy
-  apply tsum_congr
-  intro z
-  simp [initialState,NaturalState.mask,detectorProfiles,positiveSlotRow]
+  rfl
 
 end SevenEighths.CenteredMomentDetectorPlainStateDictionary
 

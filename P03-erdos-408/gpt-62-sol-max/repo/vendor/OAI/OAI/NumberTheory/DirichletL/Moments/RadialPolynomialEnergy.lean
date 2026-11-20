@@ -10,9 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentRadialPolynomialEnergy
-open HeckeFamily HeckeDyadic CenteredMomentFrequencyScaleSupremum
-open CenteredMomentPositiveSummability ConcreteTraceCRT
-open HeckeInverseAmplification
+open HeckeFamily HeckeDyadic CenteredMomentFrequencyScaleSupremum CenteredMomentPositiveSummability
+open ConcreteTraceCRT HeckeInverseAmplification
 local notation "O" => HeckeFamily.O
 
 lemma polynomial_bounded (W : ℝ→ℂ) (a b X : ℝ) (hb : 0≤b) (hX : 0<X)
@@ -20,8 +19,8 @@ lemma polynomial_bounded (W : ℝ→ℂ) (a b X : ℝ) (hb : 0≤b) (hX : 0<X)
     ∃B : ℝ,0≤B ∧ ∀χ : Character,∀t : ℝ,‖polynomial χ false W X 0 t‖≤B := by
   let l:=Real.log X
   let S:=scaleSupport l b
-  have hx : Real.exp l=X := Real.exp_log hX
-  have hc : ∀I : Ideal O,I≠0 → W ((I.absNorm:ℝ)/Real.exp l)≠0 → I∈S :=
+  have hx  := Real.exp_log hX
+  have hc  :=
     scaleSupport_cover W a b l l hb hs le_rfl
   let B:=‖Complex.exp (-(l:ℂ)/2)‖*∑I∈S,‖W ((I.absNorm:ℝ)*Real.exp (-l))‖
   refine ⟨B,by dsimp [B];positivity,?_⟩

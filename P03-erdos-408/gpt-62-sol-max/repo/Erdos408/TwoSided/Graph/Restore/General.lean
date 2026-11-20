@@ -66,7 +66,7 @@ private lemma ite_exists_le_sum {α : Type*} (t : Finset α) (R : α → Prop) [
       _ ≤ ∑ i ∈ t, if R i then 1 else 0 :=
         single_le_sum (f := fun i => if R i then (1 : ℝ) else 0)
           (fun j _ => by split_ifs <;> norm_num) hi
-  · exact sum_nonneg fun i _ => by split_ifs <;> norm_num
+  norm_num
 
 omit [Fintype ι] [DecidableEq ι] in
 /-- The number of `P g`-primes satisfying `R`, weighted by `μ_g ≤ μ₀`. -/
@@ -83,7 +83,7 @@ lemma sum_labelMass_mul_ite_exists_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < h
     ∑ x ∈ auxLabels P S, labelMass P S x *
         (if ∃ g ∈ univ, ∃ i ∈ S g, R g i (x g i) then 1 else 0) ≤
       ∑ g, ∑ i ∈ S g, ∑ p ∈ (P g).filter (R g i), (harmonicMass (P g) * p)⁻¹ := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
+  have hV'  := fun g => (hV g).ne'
   calc _ ≤ ∑ x ∈ auxLabels P S, labelMass P S x *
         ∑ g, ∑ i ∈ S g, (if R g i (x g i) then 1 else 0) := by
         refine sum_le_sum fun x _ => mul_le_mul_of_nonneg_left ?_ (labelMass_nonneg P S x)
@@ -104,8 +104,8 @@ lemma sum_labelMass_mul_ite_not_injOn_le {P : ι → Finset ℕ}
     ∑ x ∈ auxLabels P S, labelMass P S x *
         (if ∃ g ∈ univ, ∃ i ∈ S g, ∃ j ∈ S g, i ≠ j ∧ x g i = x g j then 1 else 0) ≤
       μ₀ * ∑ g, ((S g).card : ℝ) ^ 2 := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
-  have hsum1 : ∀ g, ∑ p ∈ P g, (harmonicMass (P g) * p)⁻¹ = 1 := fun g =>
+  have hV'  := fun g => (hV g).ne'
+  have hsum1  := fun g =>
     sum_inv_harmonicMass_mul (hV' g)
   calc _ ≤ ∑ x ∈ auxLabels P S, labelMass P S x *
         ∑ g, ∑ i ∈ S g, ∑ j ∈ S g, (if i ≠ j ∧ x g i = x g j then 1 else 0) := by
@@ -138,10 +138,6 @@ lemma sum_labelMass_mul_ite_not_injOn_le {P : ι → Finset ℕ}
         simp only [sum_const, nsmul_eq_mul, mul_sum]
         exact sum_congr rfl fun g _ => by ring
 
-/-- Indicators of equivalent propositions agree, whatever their decision procedures. -/
-private lemma ite_one_zero_congr {p q : Prop} {_ : Decidable p} {_ : Decidable q} (h : p ↔ q) :
-    (if p then (1 : ℝ) else 0) = if q then 1 else 0 := by
-  split_ifs <;> tauto
 
 /-- The number of `P g`-primes dividing `w` or `w'`, or among the free labels of `g`. -/
 private lemma card_filter_or_le (S : Finset ℕ) (w w' : ℕ) (T : Finset ℕ) :
@@ -167,7 +163,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
     ∑ a ∈ auxLabels P C, labelMass P C a * ∑ s ∈ auxLabels P (sharedSlots C),
         labelMass P (sharedSlots C) s * (if Clean C a s w then 0 else 1) ≤
       μ₀ * (Fintype.card ι * J ^ 2 + J * (2 * Ω + m₀ * Fintype.card ι) + m₀ * Ω) := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
+  have hV'  := fun g => (hV g).ne'
   set A : (ι → Fin J → ℕ) → Prop := fun s =>
     ∃ g ∈ univ, ∃ i ∈ sharedSlots C g, ∃ j ∈ sharedSlots C g, i ≠ j ∧ s g i = s g j
   set R : (ι → Fin J → ℕ) → ι → Fin J → ℕ → Prop := fun a g _ v =>
@@ -208,7 +204,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
   have hA : ∑ s ∈ auxLabels P (sharedSlots C), labelMass P (sharedSlots C) s *
       (if A s then 1 else 0) ≤ μ₀ * (Fintype.card ι * J ^ 2) := by
     refine le_trans (le_of_eq (sum_congr rfl fun s _ => by
-      congr 1; exact ite_one_zero_congr Iff.rfl))
+      congr 1; congr))
       ((sum_labelMass_mul_ite_not_injOn_le hV hμ₀ hμ (sharedSlots C)).trans ?_)
     refine mul_le_mul_of_nonneg_left ?_ hμ₀
     rw [← nsmul_eq_mul, ← card_univ, ← sum_const]
@@ -251,7 +247,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
   have hD : ∑ a ∈ auxLabels P C, labelMass P C a * (if D a then 1 else 0) ≤
       μ₀ * (m₀ * Ω) := by
     refine le_trans (le_of_eq (sum_congr rfl fun a _ => by
-      congr 1; exact ite_one_zero_congr Iff.rfl))
+      congr 1; congr))
       ((sum_labelMass_mul_ite_exists_le hV C fun _ _ v => v ∣ w).trans ?_)
     calc _ ≤ ∑ g, ∑ i ∈ C g, μ₀ * (primeCount (P g) w : ℝ) :=
           sum_le_sum fun g _ => sum_le_sum fun i _ => sum_filter_inv_le hμ g _
@@ -320,12 +316,11 @@ lemma sum_norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ 
         else 0‖ ≤
       labelMass P (sharedSlots C) s * labelMass P C a *
         (targetMass P C ^ 2 * κK * M₀ * LF * LG * Λ₀ ^ 2) / w := by
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
-  have hM : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
-  have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
+  have hκ  := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
+  have hM  := (abs_nonneg _).trans (hΨ 0)
+  have hLG  := (abs_nonneg _).trans (hG 0)
   have hμs := labelMass_nonneg P (sharedSlots C) s
   have hμa := labelMass_nonneg P C a
-  have hT := targetMass_nonneg hV C
   set c := labelMass P (sharedSlots C) s * labelMass P C a * targetMass P C ^ 2 * κK * M₀ *
     LF * LG / w
   have hc : 0 ≤ c := by positivity
@@ -357,7 +352,6 @@ lemma sum_norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ 
     _ ≤ c * (Λ₀ * Λ₀) := mul_le_mul_of_nonneg_left
         (mul_le_mul (hΛ _) (hΛ _) hW₂ (hW₁.trans (hΛ _))) hc
     _ = _ := by
-        simp only [c]
         ring
 
 /-- The stripped summands at `(a, s, w)`, summed over the unshared parts. -/
@@ -372,19 +366,15 @@ lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 
         ‖stripTerm x q₀ P C K F G Ψ a s l l' w‖ ≤
       labelMass P (sharedSlots C) s * labelMass P C a *
         (targetMass P C ^ 2 * κK * M₀ * LF * LG * Λ₀ ^ 2) / w := by
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
-  have hM : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
-  have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
+  have hκ  := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
+  have hM  := (abs_nonneg _).trans (hΨ 0)
+  have hLG  := (abs_nonneg _).trans (hG 0)
   have hμs := labelMass_nonneg P (sharedSlots C) s
   have hμa := labelMass_nonneg P C a
-  have hT := targetMass_nonneg hV C
   set c := labelMass P (sharedSlots C) s * labelMass P C a * targetMass P C ^ 2 * κK * M₀ *
     LF * LG / w
   have hc : 0 ≤ c := by positivity
   set DC := slotProduct C a
-  have hq₁ := zpow_nonneg hq₀.le ((groupPrimeCount P w : ℤ) - ((J + 1) * Fintype.card ι : ℕ))
-  have hq₂ := zpow_nonneg hq₀.le
-    ((groupPrimeCount P (w + DC) : ℤ) - ((J + 1) * Fintype.card ι : ℕ))
   have hcount : ∀ n, ((slotLists P (unsharedSlots C) n).card : ℝ) ≤ listCount P C n := by
     intro n
     unfold listCount
@@ -429,7 +419,6 @@ lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 
     _ ≤ c * (Λ₀ * Λ₀) := mul_le_mul_of_nonneg_left
         (mul_le_mul (hΛ _) (hΛ _) hW₂ (hW₁.trans (hΛ _))) hc
     _ = _ := by
-        simp only [c]
         ring
 
 /-! ### Lemma G5 for a general pattern -/
@@ -463,14 +452,12 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
       2 * (targetMass P C ^ 2 * κK * M₀ * LF * LG * Λ₀ ^ 2) *
         (∑ w ∈ Icc 1 ⌊x ^ 2⌋₊, (1 : ℝ) / w) *
         (μ₀ * (Fintype.card ι * J ^ 2 + J * (2 * Ω + m₀ * Fintype.card ι) + m₀ * Ω)) := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
+  have hV'  := fun g => (hV g).ne'
   set N := ⌊x ^ 2⌋₊
   set B := targetMass P C ^ 2 * κK * M₀ * LF * LG * Λ₀ ^ 2
-  have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
-  have hM : 0 ≤ M₀ := (abs_nonneg _).trans (hΨ 0)
-  have hLG : 0 ≤ LG := (abs_nonneg _).trans (hG 0)
-  have hT := targetMass_nonneg hV C
-  have hB : 0 ≤ B := by positivity
+  have hκ  := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
+  have hM  := (abs_nonneg _).trans (hΨ 0)
+  have hLG  := (abs_nonneg _).trans (hG 0)
   set Φ : (ι → Fin J → ℕ) → (ι → Fin J → ℕ) → (ι → Fin (J + 1) → ℕ) →
       (ι → Fin (J + 1) → ℕ) → ℕ → ℂ := fun a s l l' w =>
     (if sharedProduct C s * w ≤ N then

@@ -9,11 +9,11 @@ public import OAI.NumberTheory.DirichletL.Detector.PairPhase
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
+open CubicEisenstein GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentCorrelation
+open CenteredMomentFourier CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :
@@ -104,7 +104,7 @@ theorem gaussTwo_coprime_product (I J : Ideal O)
         rfl
   rw [gaussTwo_eq_elementFourier (I*J) hIJ, gaussTwo_eq_elementFourier I hI,
     gaussTwo_eq_elementFourier J hJ]
-  have hgen : primaryGenerator (I*J)=a*b := primaryGenerator_mul I J
+  have hgen  := primaryGenerator_mul I J
   rw [elementFourier_congr _ (a*b) hIJ.2 (mul_ne_zero hI.2 hJ.2) _ 1 hgen, hfour]
   rw [hgen, map_mul, norm_mul, Complex.ofReal_mul]
   ring

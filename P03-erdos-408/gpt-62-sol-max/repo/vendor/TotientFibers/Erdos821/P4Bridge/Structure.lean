@@ -1,7 +1,15 @@
 module
 
 public import Erdos821.P4Bridge.Sites
-public import Erdos821.P4Bridge.Support
+public import Erdos821.P4Probe.ProductMarginals
+public import Erdos821.P4Probe.PatternMasses
+public import Erdos821.P4Probe.BigAveraging
+public import Erdos821.P4Probe.SharedProducts
+public import Erdos821.P4Probe.PhaseProducts
+public import Erdos821.P4Probe.ConditionalBounds
+public import Erdos821.P4Marg.PatternAveraging
+public import Erdos821.P4Independent.DisjointMarginal
+
 
 @[expose] public section
 
@@ -24,14 +32,14 @@ lemma mem_sideRows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (side : Bool) (g : P.BigGroup) (i : Fin J) :
     i ∈ patternAuxCoordinates ν block side g ↔ block g = side ∧ i ∈ ν.changed g.val := by
   unfold patternAuxCoordinates
-  by_cases hb : block g = side <;> simp [hb]
+  by_cases hb : block g = side <;> simp_all
 
 def rowJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true) :
     P.BigLabels J := fun g i =>
   if hi : i ∈ ν.changed g.val then
     if hb : block g = false then a g ⟨i, (mem_sideRows ν block false g i).mpr ⟨hb, hi⟩⟩
-    else b g ⟨i, (mem_sideRows ν block true g i).mpr ⟨by cases h : block g <;> simp_all, hi⟩⟩
+    else b g ⟨i, (mem_sideRows ν block true g i).mpr ⟨by simp_all, hi⟩⟩
   else s g ⟨i, by simp [sharedRows, hi]⟩
 
 @[simp] lemma rowJoin_shared (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
@@ -63,17 +71,9 @@ def rowSplit (ν : Pattern P J ell m) (block : P.BigGroup → Bool) :
     funext g i
     dsimp only
     unfold rowJoin
-    dsimp only
-    split_ifs <;> rfl
+    simp
   right_inv z := by
-    apply Prod.ext
-    · funext g i
-      exact rowJoin_shared ν block z.1 z.2.1 z.2.2 g i
-    · apply Prod.ext
-      · funext g i
-        exact rowJoin_false ν block z.1 z.2.1 z.2.2 g i
-      · funext g i
-        exact rowJoin_true ν block z.1 z.2.1 z.2.2 g i
+    simp
 
 def rowWeight (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) : ℝ :=
   ∏ g, ∏ i, P.mu g.val (x g i)

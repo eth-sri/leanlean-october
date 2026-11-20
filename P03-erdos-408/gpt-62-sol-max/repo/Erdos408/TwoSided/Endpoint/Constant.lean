@@ -101,7 +101,6 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
       256 * (8 * M₁ 0 ^ 2 * (195 + 18 * (2304 + 629 + 65 * CNN)) +
         2 * (3888 * 258 * M₁ 1 ^ 2)) * Real.log x ^ (-A₀) := by
   obtain ⟨hx2, hL4, hxC, hxD, h38, h47, h27, h4D, -⟩ := hsc
-  have hx0 : 0 < x := by linarith
   have hL0 : 0 < Real.log x := by linarith
   have hL1 : 1 ≤ Real.log x := by linarith
   have hcc : constCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ = fun w : ℕ =>
@@ -117,8 +116,7 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
       Real.log x ^ ((d : ℝ) + 3) := by
     rw [Complex.norm_real, Real.norm_eq_abs]
     have := hκ u v Bc hsl hBc _ (hadm.2.2.2.2.2.1 gs).1
-    push_cast at this
-    exact this
+    simpa using this
   have hH : ∀ n, ‖(markedWeight Finset.univ q (fun i => band x (a i)) n : ℂ) *
       markedListWeight P q₀ (Function.update (unsharedSlots C) gs ∅) b n‖ ≤
         Real.log x ^ (CW + 1) := by
@@ -143,7 +141,7 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
       _ = Real.log x ^ (1 : ℝ) := (Real.rpow_one _).symm
       _ ≤ Real.log x ^ B' := Real.rpow_le_rpow_of_exponent_le hL1 hB'1
   have hσB : |σ| ≤ Real.log x ^ B' / 2 := by
-    have h1 : Real.log x ^ (Cm + 1) ≤ Real.log x ^ B' :=
+    have h1  :=
       Real.rpow_le_rpow_of_exponent_le hL1 hB'Cm
     rw [Real.rpow_add hL0, Real.rpow_one] at h1
     have h2 : 0 ≤ Real.log x ^ Cm := Real.rpow_nonneg hL0.le _
@@ -181,20 +179,8 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
     (halo : 1 / 10 < alo) (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c) (m₀ : ℕ)
     (Cm A₀ : ℝ) (M₁ : ℕ → ℝ) :
     ∃ Bcon : ℝ, ∀ B' : ℝ, Bcon ≤ B' → ∃ CK : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big → ∀ gs ∉ big,
-        ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
-          InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
-        ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
-          (∀ g, (C g).card ≤ m₀) → (∀ g ∉ big, C g = ∅) → (∀ p, ‖b p‖ ≤ 1) →
-          (∀ p p', (∀ g ∈ big, p g = p' g) → b p = b p') →
-        ∀ ψ₁ : ℝ → ℂ, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ₁ →
-          (∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) →
-          (∀ (j : ℕ) (y : ℝ), ‖iteratedDeriv j ψ₁ y‖ ≤ M₁ j) →
-        ∀ (Y σ : ℝ) (k : ℕ) (h : ℤ),
-          x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y →
-          Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ)) →
-          |σ| ≤ Real.log x ^ Cm → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big => ∀ gs ∉ big,
+        ForEndpointTests big K₀ d m₀ CN alo ahi c x Cm M₁ fun r a u v Bc J C b ψ₁ Y σ k h =>
           (∫ t in (Real.log x ^ B')..(x * Real.log x ^ (Cm + 2)),
               ‖twistedPoly Y (constCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ) h k t‖ ^ 2 ≤
             CK * Real.log x ^ (-A₀)) ∧
@@ -221,8 +207,6 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
   have hC8 := le_abs_self C₈
   have hCm := le_abs_self Cm
   have hA0 := le_abs_self A₀
-  have hD0 : 0 ≤ D := by positivity
-  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
   have hD1 : 1 ≤ D := by linarith [abs_nonneg A₀, abs_nonneg CW]
   have hNZ : |Z| + 1 ≤ N := Nat.le_ceil _
   have eA : -(2 * As) + 3 - D + 2 * CW ≤ -(A₀ + 4 + 4 * D + 2 * ((d : ℝ) + 3) + 2 * Cm) := by
@@ -259,15 +243,15 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
       exact Nat.add_le_add_right (hC g) 1
   obtain ⟨A, hA⟩ := hE1x P big hadm r a hin (J + 1) _ b hS' hb
   have hW := hU9x P big hadm (J + 1) _ b hS' hb
-  have hBT : Real.log x ^ B' ≤ x * Real.log x ^ (Cm + 2) := hsc.2.2.2.2.2.2.2.2
+  have hBT  := hsc.2.2.2.2.2.2.2.2
   have hLB : 0 ≤ Real.log x ^ B' := Real.rpow_nonneg (by linarith [hsc.2.1]) _
   constructor
   · refine ConstHigh.integral_constCoeff_side_le halo hD1 hB'1 hB'Cm eA eB eC eE eF hsc hE10x
       h𝒲x hκx hcopx hS16x hadm hgs hin hsl hBc hW hψ hψs hψd hY₁ hY₂ hσ hk₁ hk₂ hA hBT
       (fun t ht => ?_) (by linarith)
-    have h0 : 0 ≤ t := hLB.trans ht.1
+    have h0  := hLB.trans ht.1
     rw [abs_of_nonneg h0]
-    exact ⟨ht.1, ht.2⟩
+    assumption
   · refine ConstHigh.integral_constCoeff_side_le halo hD1 hB'1 hB'Cm eA eB eC eE eF hsc hE10x
       h𝒲x hκx hcopx hS16x hadm hgs hin hsl hBc hW hψ hψs hψd hY₁ hY₂ hσ hk₁ hk₂ hA
       (by linarith) (fun t ht => ?_) (by linarith)

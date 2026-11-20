@@ -114,8 +114,7 @@ theorem chainEdge_eq_parts (N : ℕ) (f : ChainState x d Y d₀ u v r B → ℂ)
         chainEdgeCoef q A₀ x d Y d₀ u v r B N s c * f (chainEdgeOut x d Y d₀ u v r B s c) := by
     rw [chainEdge, choiceOp, ← sum_fiberwise (edgeChoices x d Y d₀ u v r)
       (fun c => (c.2.1, univ.filter fun i => (c.2.2.2.1 i).2 = true))]
-    refine sum_congr rfl fun SI _ => ?_
-    rw [edgePartChoices, filter_congr fun c _ => Prod.ext_iff]
+    rfl
   -- the clean piece keeps the full kernel; each dirty piece splits into raw and comparison
   rw [hfib, ← add_sum_erase _ _ (mem_univ (∅, ∅))]
   simp only [Pi.add_apply, Finset.sum_apply]
@@ -168,9 +167,9 @@ theorem NormLe.sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ
     push Not at hW
     have hc0 : ∀ k ∈ s, c k = 0 := by
       intro k hk
-      have h0 : 0 ≤ c k ^ 2 * wnormSq ν f :=
+      have h0  :=
         (sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)).trans (hT k hk f)
-      have : c k ^ 2 ≤ 0 := nonpos_of_mul_nonneg_left h0 hW
+      have  := nonpos_of_mul_nonneg_left h0 hW
       exact pow_eq_zero_iff (n := 2) (by norm_num) |>.1 (le_antisymm this (sq_nonneg _))
     rw [sum_eq_zero hc0] at hsq ⊢
     simpa using hsq
@@ -197,9 +196,7 @@ box. -/
 theorem eventually_edgeClean_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5)
     (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
         NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
           (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
@@ -211,9 +208,7 @@ theorem eventually_edgeClean_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) 
 theorem eventually_edgeRaw_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (hC : 0 < C) (hD : 0 < Dstar) (halo : 1 / 10 < alo) (hK : bandThreshold Dstar C ≤ K)
     (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ S I : Finset (Fin K), (S, I) ≠ (∅, ∅) →
         NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
@@ -228,9 +223,7 @@ theorem eventually_edgeRaw_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (h
 /-- M8, the dirty comparison parts: for `B ≤ L³`, each has norm at most `L^{-G - 1}`. -/
 theorem eventually_edgeComp_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q < 1)
     (halo : 1 / 10 < alo) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
       ∀ S I : Finset (Fin K), (S, I) ≠ (∅, ∅) →
         NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
@@ -251,8 +244,8 @@ private theorem eventually_edgeParts_le (G M : ℝ) :
       Real.log x ^ (-G) := by
   filter_upwards [Real.tendsto_log_atTop.eventually_ge_atTop (max 4 (4 * M))] with x hL
   set L := Real.log x with hLdef
-  have hL4 : 4 ≤ L := le_of_max_le_left hL
-  have hLM : 4 * M ≤ L := le_of_max_le_right hL
+  have hL4  := le_of_max_le_left hL
+  have hLM  := le_of_max_le_right hL
   have hL0 : 0 < L := by linarith
   -- `L^{-1/2} ≤ 1/2`, as `√L ≥ 2`
   have hhalf : L ^ (-(1 / 2 : ℝ)) ≤ 1 / 2 := by
@@ -279,9 +272,7 @@ dirty pieces, and add their bounds by Minkowski. -/
 theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q)
     (hq₁ : q < 1) (hC : 0 < C) (hD : 0 < Dstar) (hCX : 1 ≤ CX) (halo : 1 / 10 < alo)
     (hahi : ahi < 1 / 5) (hK : bandThreshold Dstar C ≤ K) (hg : 0 < g) :
-    ∀ᶠ x : ℝ in atTop, ∀ d : Data K, Admissible C CX alo ahi g x d → ∀ j k : ℕ,
-      ∀ u v r : ℝ, (2 : ℝ) ^ k * 2 ^ j * d.Hm ≤ u → u ≤ 16 * ((2 : ℝ) ^ k * 2 ^ j * d.Hm) →
-        d.Hn ≤ v → v ≤ 2 * d.Hn → 0 ≤ r → r ≤ 1 →
+    ∀ᶠ x : ℝ in atTop, ForAdmissibleDyads (K := K) C CX alo ahi g x fun d j k u v r =>
       ∀ B N : ℕ, (B : ℝ) ≤ Real.log x ^ 3 → N = 2 * momentPower x →
         NormLe (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)
           (fun s => chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s)

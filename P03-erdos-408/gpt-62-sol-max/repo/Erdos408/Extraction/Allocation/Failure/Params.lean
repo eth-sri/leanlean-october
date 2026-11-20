@@ -29,7 +29,7 @@ lemma exists_sum_one_div_primesIcc_le : ∃ C : ℝ, ∀ Y : ℝ, 2 ≤ Y →
   obtain ⟨E, hE, hM⟩ := mertens_second
   have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   refine ⟨3 / 2 + E / Real.log 2, fun Y hY => ?_⟩
-  have hlY : 0 < Real.log Y := Real.log_pos (by linarith)
+  have hlY  := Real.log_pos (by linarith)
   have hsplit : primesIcc 2 Y ⊆ insert 2 (primesIoc 2 Y) := by
     intro p hp
     obtain ⟨hpr, h1, h2⟩ := mem_primesIcc.1 hp
@@ -71,12 +71,11 @@ lemma sum_powersetCard_le_exp (S : Finset ℕ) (R : ℕ) :
 
 /-- At most `Y` primes up to `Y`. -/
 lemma card_primesIcc_le {Y : ℝ} (hY : 0 ≤ Y) : ((primesIcc 2 Y).card : ℝ) ≤ Y := by
-  have h1 : (primesIcc 2 Y).card ≤ ⌊Y⌋₊ := by
-    refine (card_filter_le _ _).trans ?_
-    rw [Nat.card_Icc]
-    have : ⌈(2 : ℝ)⌉₊ = 2 := by norm_num
-    omega
-  exact (Nat.cast_le.2 h1).trans (Nat.floor_le hY)
+  refine (Nat.cast_le.2 ?_).trans (Nat.floor_le hY)
+  refine (card_filter_le _ _).trans ?_
+  rw [Nat.card_Icc]
+  have : ⌈(2 : ℝ)⌉₊ = 2 := by norm_num
+  omega
 
 /-- `#{u ⊆ S : |u| ≤ m} ≤ (Y + 1)^m` for the primes up to `Y`. -/
 lemma card_filter_powerset_primesIcc_le {Y : ℝ} (hY : 0 ≤ Y) (m : ℕ) :
@@ -101,7 +100,7 @@ lemma sieveDepth_le {Ch x : ℝ} (hT : 1 ≤ logLog x) :
     have := Real.log_le_sub_one_of_pos (show 0 < logLog x by linarith)
     rw [logLogLog]
     linarith
-  have hs0 : 0 ≤ logLogLog x := by rw [logLogLog]; exact Real.log_nonneg hT
+  have hs0 : 0 ≤ logLogLog x := by exact Real.log_nonneg hT
   have hh : (sieveDepth Ch x : ℝ) ≤ 2 * (|Ch| * logLog x + 1) := by
     rw [sieveDepth]
     push_cast
@@ -117,8 +116,6 @@ lemma sieveDepth_le {Ch x : ℝ} (hT : 1 ≤ logLog x) :
 lemma presieveExponent_facts {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
     0 < presieveExponent c Ch x ∧
       1 / presieveExponent c Ch x ≤ 4 * (8 * |Ch| + 11) / c * logLog x ^ 21 := by
-  have hT0 : 0 < logLog x := by linarith
-  have hden : 0 < 4 * (sieveDepth Ch x : ℝ) + 3 := by positivity
   have hγ : presieveExponent c Ch x =
       c / (4 * logLog x ^ 20 * (4 * (sieveDepth Ch x : ℝ) + 3)) := by
     rw [presieveExponent]
@@ -126,7 +123,6 @@ lemma presieveExponent_facts {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
   refine ⟨by rw [hγ]; positivity, ?_⟩
   rw [hγ, one_div_div, div_le_iff₀ hc]
   have := sieveDepth_le (Ch := Ch) hT
-  have h20 : 0 < logLog x ^ 20 := by positivity
   calc 4 * logLog x ^ 20 * (4 * (sieveDepth Ch x : ℝ) + 3)
       ≤ 4 * logLog x ^ 20 * ((8 * |Ch| + 11) * logLog x) := by gcongr
     _ = 4 * (8 * |Ch| + 11) / c * logLog x ^ 21 * c := by field_simp

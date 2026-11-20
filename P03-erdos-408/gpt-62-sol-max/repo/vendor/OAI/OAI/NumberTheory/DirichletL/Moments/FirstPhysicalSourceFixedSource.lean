@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstNonexceptionalPrefactor
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
@@ -21,7 +21,6 @@ open CenteredMomentFirstNonexceptionalPrefactor CenteredMomentCommonSupport Cent
 open CenteredMomentChildAssembly RayFourExpansion CompletedGauss CenteredMomentGaussEnergy FourierBridge
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
-local instance firstFixedSourceDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 variable {η:Character}{C D:Ideal O}{hC:Supported C}
   {E:Finset (CommonIndex C D)}{ξ₁ ξ₂:RayCharacter}

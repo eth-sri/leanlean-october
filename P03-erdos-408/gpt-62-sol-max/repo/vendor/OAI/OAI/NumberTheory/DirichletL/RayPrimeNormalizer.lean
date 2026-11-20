@@ -9,11 +9,10 @@ namespace OAI
 
 noncomputable section
 open Filter MeasureTheory
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.RayPrimeNormalizer
 open HeckeFamily
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 def normalizer (S : Finset (Ideal O)) (W : ℝ → ℝ) (x : ℝ) : ℝ :=

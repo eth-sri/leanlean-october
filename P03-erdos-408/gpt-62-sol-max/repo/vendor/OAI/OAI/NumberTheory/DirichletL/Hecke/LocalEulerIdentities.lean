@@ -9,32 +9,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped ArithmeticFunction.Moebius
 
 namespace ShortDraftHeckeBridge
 
@@ -43,7 +22,7 @@ theorem chiMinusThree_mod_one (n : ℕ) (h : n % 3 = 1) :
   have hc : (n : ZMod 3) = 1 := by
     calc
       (n : ZMod 3) = ((n % 3 : ℕ) : ZMod 3) := by simp
-      _ = 1 := by rw [h]; simp
+      _ = 1 := by simp_all
   change ((quadraticChar (ZMod 3) (n : ZMod 3) : ℤ) : ℂ) = 1
   rw [hc]
   simp
@@ -53,7 +32,7 @@ theorem chiMinusThree_mod_two (n : ℕ) (h : n % 3 = 2) :
   have hc : (n : ZMod 3) = 2 := by
     calc
       (n : ZMod 3) = ((n % 3 : ℕ) : ZMod 3) := by simp
-      _ = 2 := by rw [h]; simp
+      _ = 2 := by simp_all
   change ((quadraticChar (ZMod 3) (n : ZMod 3) : ℤ) : ℂ) = -1
   rw [hc]
   change chiMinusThree (2 : ℕ) = -1
@@ -77,9 +56,9 @@ theorem pairAF_prime_pow_ge_three {q r : ℕ}
   apply Finset.sum_eq_zero
   intro i hi
   have hik : i ≤ k := by
-    simpa only [Finset.mem_range, Nat.lt_succ_iff] using hi
+    simp_all
   have hdiv : p ^ k / p ^ i = p ^ (k - i) := by
-    have heq : k - i + i = k := Nat.sub_add_cancel hik
+    have heq  := Nat.sub_add_cancel hik
     calc
       p ^ k / p ^ i = (p ^ (k - i) * p ^ i) / p ^ i := by rw [← pow_add, heq]
       _ = p ^ (k - i) := by simp [hp.ne_zero]
@@ -108,16 +87,16 @@ theorem baseChangeWeight_zero_of_norm_prime_pow_ge_three {q p k : ℕ}
     exact hμ (UniqueFactorizationMonoid.moebius_of_not_squarefree hnsq)
   have hmem : ((p ^ k : ℕ) : O) ∈ I := by
     simpa only [hI] using Ideal.absNorm_mem I
-  have hspanle : Ideal.span {((p : O) ^ k)} ≤ I :=
+  have hspanle  :=
     (Ideal.span_singleton_le_iff_mem I).mpr (by simpa using hmem)
   have hpowdiv : I ∣ (Ideal.span {(p : O)}) ^ k := by
     rw [Ideal.span_singleton_pow]
     exact Ideal.dvd_iff_le.mpr hspanle
-  have hdiv : I ∣ Ideal.span {(p : O)} :=
+  have hdiv  :=
     (hsq.dvd_pow_iff_dvd (by omega : k ≠ 0)).mp hpowdiv
   have hnormdiv := map_dvd Ideal.absNorm hdiv
   rw [hI, Ideal.absNorm_span_natCast, base_ring_rank_two] at hnormdiv
-  have hk2 : k ≤ 2 := (Nat.pow_dvd_pow_iff_le_right hp.one_lt).mp hnormdiv
+  have hk2  := (Nat.pow_dvd_pow_iff_le_right hp.one_lt).mp hnormdiv
   omega
 
 theorem normFiberCoeff_baseChangeWeight_prime_pow_ge_three {q p k : ℕ}
@@ -127,7 +106,7 @@ theorem normFiberCoeff_baseChangeWeight_prime_pow_ge_three {q p k : ℕ}
   unfold normFiberCoeff
   apply Finset.sum_eq_zero
   intro I hI
-  have hnorm : Ideal.absNorm I = p ^ k := by simpa using hI
+  have hnorm : Ideal.absNorm I = p ^ k := by simp_all
   exact baseChangeWeight_zero_of_norm_prime_pow_ge_three χ hp hk I hnorm
 
 theorem normFiberCoeff_eq_pairAF_prime_pow_ge_three {q p k : ℕ}
@@ -143,14 +122,14 @@ theorem char_prime_zero_of_dvd_level {q p : ℕ}
   have hnot : ¬ IsCoprime (p : ℤ) (q : ℕ) := by
     intro hc
     have hn : p.Coprime q := by
-      simpa [Int.isCoprime_iff_nat_coprime] using hc
+      simpa using hc
     exact (hp.coprime_iff_not_dvd.mp hn) hd
   simpa using (DirichletCharacter.apply_eq_zero_iff χ (p : ℤ)).mpr hnot
 
 theorem baseChangeChar_prime_zero_of_dvd_q {q p : ℕ}
     (χ : DirichletCharacter ℂ q) (hp : p.Prime) (hd : p ∣ q) :
     baseChangeChar χ p = 0 := by
-  have hd' : p ∣ q * 3 := dvd_mul_of_dvd_left hd 3
+  have hd'  := dvd_mul_of_dvd_left hd 3
   exact char_prime_zero_of_dvd_level (baseChangeChar χ) hp hd'
 
 end ShortDraftHeckeBridge
@@ -164,22 +143,22 @@ theorem eq_parts_of_coprime_square_bounds {a b m n : ℕ}
     (Nat.coprime_pow_left_iff (by decide) m n).mpr hcop
   have hmn2 : m.Coprime (n ^ 2) :=
     (Nat.coprime_pow_right_iff (by decide) m n).mpr hcop
-  have han : a.Coprime n := hm2n.coprime_dvd_left ha2
-  have hmb : m.Coprime b := hmn2.coprime_dvd_right hb2
+  have han  := hm2n.coprime_dvd_left ha2
+  have hmb  := hmn2.coprime_dvd_right hb2
   have ha_mn : a ∣ m * n := ⟨b, hprod.symm⟩
   have hm_ab : m ∣ a * b := ⟨n, hprod⟩
   have hn_ab : n ∣ a * b := ⟨m, by rw [hprod, mul_comm]⟩
-  have ha_m : a ∣ m := han.dvd_of_dvd_mul_right ha_mn
-  have hm_a : m ∣ a := hmb.dvd_of_dvd_mul_right hm_ab
+  have ha_m  := han.dvd_of_dvd_mul_right ha_mn
+  have hm_a  := hmb.dvd_of_dvd_mul_right hm_ab
   have hb_n : b ∣ n := by
-    have hbn : b.Coprime m := (hmn2.symm).coprime_dvd_left hb2
+    have hbn  := (hmn2.symm).coprime_dvd_left hb2
     have hb_mn : b ∣ n * m := ⟨a, by
       calc
         n * m = m * n := mul_comm n m
         _ = a * b := hprod.symm
         _ = b * a := mul_comm a b⟩
     exact hbn.dvd_of_dvd_mul_right hb_mn
-  have hn_b : n ∣ b := han.symm.dvd_of_dvd_mul_left hn_ab
+  have hn_b  := han.symm.dvd_of_dvd_mul_left hn_ab
   exact ⟨Nat.dvd_antisymm ha_m hm_a, Nat.dvd_antisymm hb_n hn_b⟩
 
 end NormSplitArithmetic
@@ -200,8 +179,8 @@ private theorem ring_rank_two : Module.finrank ℤ O = 2 := by
 theorem ideal_eq_factors (I : Ideal O) (m n : ℕ)
     (hcop : m.Coprime n) (hI : Ideal.absNorm I = m * n) :
     I = (I ⊔ Ideal.span {(m : O)}) * (I ⊔ Ideal.span {(n : O)}) := by
-  let A : Ideal O := Ideal.span {(m : O)}
-  let B : Ideal O := Ideal.span {(n : O)}
+  let A  := Ideal.span {(m : O)}
+  let B  := Ideal.span {(n : O)}
   have hcast : IsCoprime (m : O) (n : O) := by
     simpa only [map_natCast] using
       (Nat.Coprime.isCoprime hcop).map (Int.castRingHom O)
@@ -253,13 +232,13 @@ private theorem ideal_sup_span_norm_left (I J : Ideal O) (m n : ℕ)
     (hcop : m.Coprime n) (hI : Ideal.absNorm I = m)
     (hJ : Ideal.absNorm J = n) :
     I * J ⊔ Ideal.span {(m : O)} = I := by
-  let A : Ideal O := Ideal.span {(m : O)}
+  let A  := Ideal.span {(m : O)}
   have hmI : A ≤ I := by
     apply (Ideal.span_singleton_le_iff_mem _).mpr
     simpa only [hI] using Ideal.absNorm_mem I
   have hnJ : (n : O) ∈ J := by
     simpa only [hJ] using Ideal.absNorm_mem J
-  have hnspan : Ideal.span {(n : O)} ≤ J :=
+  have hnspan  :=
     (Ideal.span_singleton_le_iff_mem _).mpr hnJ
   have hcast : IsCoprime (m : O) (n : O) := by
     simpa only [map_natCast] using
@@ -298,7 +277,7 @@ theorem weighted_norm_fiber_mul (weight : Ideal O → ℂ)
        weight I) *
     (∑ J ∈ (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset,
        weight J) := by
-  let F (k : ℕ) : Finset (Ideal O) :=
+  let F (k : ℕ)  :=
     (Ideal.finite_setOfPred_absNorm_eq (S := O) k).toFinset
   have hmem (k : ℕ) (I : Ideal O) : I ∈ F k ↔ Ideal.absNorm I = k := by
     simp [F]
@@ -312,18 +291,18 @@ theorem weighted_norm_fiber_mul (weight : Ideal O → ℂ)
                      K ⊔ Ideal.span {(n : O)}))
         (fun p _ => p.1 * p.2) ?_ ?_ ?_ ?_ ?_
       · intro K hK
-        have hKnorm : Ideal.absNorm K = m * n := (hmem _ _).mp hK
+        have hKnorm  := (hmem _ _).mp hK
         obtain ⟨hm, hn⟩ := NormFiberCRT.ideal_factor_norms K m n hcop hKnorm
         simp [Finset.mem_product, hmem, hm, hn]
       · intro p hp
-        have hm : Ideal.absNorm p.1 = m := (hmem _ _).mp (Finset.mem_product.mp hp).1
-        have hn : Ideal.absNorm p.2 = n := (hmem _ _).mp (Finset.mem_product.mp hp).2
+        have hm  := (hmem _ _).mp (Finset.mem_product.mp hp).1
+        have hn  := (hmem _ _).mp (Finset.mem_product.mp hp).2
         exact (hmem _ _).mpr (by rw [map_mul, hm, hn])
       · intro K hK
         exact (NormFiberCRT.ideal_eq_factors K m n hcop ((hmem _ _).mp hK)).symm
       · intro p hp
-        have hm : Ideal.absNorm p.1 = m := (hmem _ _).mp (Finset.mem_product.mp hp).1
-        have hn : Ideal.absNorm p.2 = n := (hmem _ _).mp (Finset.mem_product.mp hp).2
+        have hm  := (hmem _ _).mp (Finset.mem_product.mp hp).1
+        have hn  := (hmem _ _).mp (Finset.mem_product.mp hp).2
         apply Prod.ext
         · exact ideal_sup_span_norm_left p.1 p.2 m n hcop hm hn
         · exact ideal_sup_span_norm_right p.1 p.2 m n hcop hm hn
@@ -333,8 +312,8 @@ theorem weighted_norm_fiber_mul (weight : Ideal O → ℂ)
     _ = ∑ p ∈ (F m).product (F n), weight p.1 * weight p.2 := by
       apply Finset.sum_congr rfl
       intro p hp
-      have hm : Ideal.absNorm p.1 = m := (hmem _ _).mp (Finset.mem_product.mp hp).1
-      have hn : Ideal.absNorm p.2 = n := (hmem _ _).mp (Finset.mem_product.mp hp).2
+      have hm  := (hmem _ _).mp (Finset.mem_product.mp hp).1
+      have hn  := (hmem _ _).mp (Finset.mem_product.mp hp).2
       exact hweight p.1 p.2 (by simpa [hm, hn] using hcop)
     _ = (∑ I ∈ F m, weight I) * (∑ J ∈ F n, weight J) := by
       calc
@@ -361,8 +340,7 @@ theorem normFiberCoeff_baseChangeWeight_one {q : ℕ}
     normFiberCoeff (baseChangeWeight χ) 1 = 1 := by
   have hsingle :
       (Ideal.finite_setOfPred_absNorm_eq (S := O) 1).toFinset = {⊤} := by
-    ext I
-    simp [Ideal.absNorm_eq_one_iff]
+    simp
   unfold normFiberCoeff
   rw [hsingle]
   simp [baseChangeWeight, ← Ideal.one_eq_top]
@@ -374,9 +352,9 @@ theorem baseChange_normFiber_isMultiplicative {q : ℕ}
   · simp [toArithmeticFunction, normFiberCoeff_baseChangeWeight_one]
   · intro m n hcop
     by_cases hm : m = 0
-    · simp [hm, toArithmeticFunction]
+    · simp_all
     by_cases hn : n = 0
-    · simp [hn, toArithmeticFunction]
+    · simp_all
     simpa [toArithmeticFunction, hm, hn, mul_ne_zero hm hn] using
       baseChange_normFiber_mul χ m n hcop
 
@@ -409,7 +387,7 @@ theorem normFiberCoeff_eq_pairAF_prime {q p : ℕ}
   have hlt : p % 3 < 3 := Nat.mod_lt p (by decide)
   have hcase : p % 3 = 0 ∨ p % 3 = 1 ∨ p % 3 = 2 := by omega
   rcases hcase with h0 | h1 | h2
-  · have hdiv : 3 ∣ p := Nat.dvd_of_mod_eq_zero h0
+  · have hdiv  := Nat.dvd_of_mod_eq_zero h0
     have heq : p = 3 := by
       rcases (Nat.dvd_prime hp).1 hdiv with h1' | h3
       · norm_num at h1'
@@ -433,7 +411,7 @@ theorem normFiberCoeff_eq_pairAF_prime_sq {q p : ℕ}
   have hlt : p % 3 < 3 := Nat.mod_lt p (by decide)
   have hcase : p % 3 = 0 ∨ p % 3 = 1 ∨ p % 3 = 2 := by omega
   rcases hcase with h0 | h1 | h2
-  · have hdiv : 3 ∣ p := Nat.dvd_of_mod_eq_zero h0
+  · have hdiv  := Nat.dvd_of_mod_eq_zero h0
     have heq : p = 3 := by
       rcases (Nat.dvd_prime hp).1 hdiv with h1' | h3
       · norm_num at h1'
@@ -492,7 +470,6 @@ theorem normFiberCoeff_baseChange_eq_pairInverseCoeff
     (fun p hp => normFiberCoeff_eq_pairAF_prime_sq χ hp) n hn
 
 end ShortDraftHeckeBridge
-open Filter Asymptotics
 
 namespace ShortDraftHeckeBridge
 

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ActiveAllocation
 public import OAI.NumberTheory.DirichletL.Moments.DivisorBoundary
 
@@ -73,7 +74,7 @@ theorem Source.active_pair_weight {κ:Type*} [Fintype κ] [DecidableEq κ]
   have hv:0<formalReductionFactor D b v.P:=
     mul_pos (selectedNorm_pos D b) (Finset.prod_pos (fun i _=>v.P_pos i))
   have hn:0<(Ideal.absNorm D:ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD.ne_zero)
   rw [reciprocal_sqrt_log Z _ _ hZ hs hv]
   have hl:=s.active_boundary D hD a ha Z hZ
   have hr:=v.active_boundary D hD b hb Z hZ

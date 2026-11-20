@@ -1,7 +1,7 @@
 module
 
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorDynamicSelection
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessRows
 
 @[expose] public section
 

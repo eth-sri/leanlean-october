@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Moments.HeterogeneousCRT
 
 @[expose] public section
@@ -9,23 +10,21 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentProductCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentHeterogeneousCRT
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentHeterogeneousCRT
 variable {A ι : Type*} [CommRing A] [Fintype ι] [DecidableEq ι]
 
 def productCRT (a : ι → A)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i}))) :
+    (hcop : OAI.PrincipalFamily.Coprime a) :
     Residue (∏ i, a i) ≃+* ∀ i, Residue (a i) :=
   (Ideal.quotEquivOfEq (Ideal.prod_span_singleton Finset.univ a).symm).trans
     (IdealGaussCRT.quotientProdEquivPi (fun i => Ideal.span {a i}) hcop)
 
 omit [DecidableEq ι] in
 @[simp] theorem productCRT_mk (a : ι → A)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
+    (hcop : OAI.PrincipalFamily.Coprime a)
     (x : A) (i : ι) :
     productCRT a hcop (Ideal.Quotient.mk _ x) i = Ideal.Quotient.mk _ x := by
-  simp only [productCRT, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
-    IdealGaussCRT.quotientProdEquivPi_mk]
+  rfl
 
 def jointCRT (a b : ι → A)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i}))) :
@@ -39,7 +38,7 @@ omit [DecidableEq ι] in
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (x : A) (i : ι) :
     jointCRT a b hcop (Ideal.Quotient.mk _ x) i = Ideal.Quotient.mk _ x := by
-  simp only [jointCRT, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk, productCRT_mk]
+  rfl
 
 def cofactor (a : ι → A) (i : ι) : A := ∏ j ∈ Finset.univ.erase i, a j
 
@@ -47,7 +46,7 @@ theorem factor_mul_cofactor (a : ι → A) (i : ι) : a i * cofactor a i = ∏ j
   Finset.mul_prod_erase Finset.univ a (Finset.mem_univ i)
 
 theorem left_crt_component (a b : ι → A)
-    (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
+    (ha : OAI.PrincipalFamily.Coprime a)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (x : Residue (∏ i, a i)) (i : ι) :
     jointCRT a b hab
@@ -61,7 +60,7 @@ theorem left_crt_component (a b : ι → A)
   ring
 
 theorem right_crt_component (a b : ι → A)
-    (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (hb : OAI.PrincipalFamily.Coprime b)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (y : Residue (∏ i, b i)) (i : ι) :
     jointCRT a b hab
@@ -75,8 +74,8 @@ theorem right_crt_component (a b : ι → A)
   ring
 
 theorem fullModulusCorrelation_product (a b : ι → A)
-    (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
-    (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (ha : OAI.PrincipalFamily.Coprime a)
+    (hb : OAI.PrincipalFamily.Coprime b)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     [Fintype (Residue (∏ i, a i))] [Fintype (Residue (∏ i, b i))]
     [∀ i, Fintype (Residue (a i))] [∀ i, Fintype (Residue (b i))]
@@ -99,8 +98,7 @@ theorem fullModulusCorrelation_product (a b : ι → A)
       (Ideal.Quotient.mk _ (cofactor a i) * y))
     (left_crt_component a b ha hab) (right_crt_component a b hb hab)
     (fun i => χ i) (fun i => ψ i) (Ideal.Quotient.mk _ h)
-  simpa only [fullModulusCorrelation, fullCorrelation, crtCharacter_apply, jointCRT_mk,
-    RingEquiv.toEquiv_eq_coe, EquivLike.coe_coe] using hcrt
+  assumption
 
 theorem cross_cofactor_coprime (a b : ι → A)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -135,8 +133,8 @@ theorem local_cofactor_norm (a b : ι → A)
   rfl
 
 theorem fullModulusCorrelation_product_norm (a b : ι → A)
-    (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
-    (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (ha : OAI.PrincipalFamily.Coprime a)
+    (hb : OAI.PrincipalFamily.Coprime b)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     [Fintype (Residue (∏ i, a i))] [Fintype (Residue (∏ i, b i))]
     [∀ i, Fintype (Residue (a i))] [∀ i, Fintype (Residue (b i))]
@@ -158,7 +156,7 @@ omit [DecidableEq ι] in
 theorem supported_character_product (a : ι → O)
     (ha : ∀ i, Supported (Ideal.span {a i}))
     (hprod : Supported (Ideal.span {∏ i, a i}))
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i}))) :
+    (hcop : OAI.PrincipalFamily.Coprime a) :
     supportedModulusCharacter (∏ i, a i) hprod =
       crtCharacter (productCRT a hcop) (fun i => supportedModulusCharacter (a i) (ha i)) := by
   apply DFunLike.ext
@@ -172,13 +170,13 @@ theorem actualCorrelation_product_norm (a b : ι → O)
     (hb : ∀ i, Supported (Ideal.span {b i}))
     (hA : Supported (Ideal.span {∏ i, a i}))
     (hB : Supported (Ideal.span {∏ i, b i}))
-    (hca : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
-    (hcb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (hca : OAI.PrincipalFamily.Coprime a)
+    (hcb : OAI.PrincipalFamily.Coprime b)
     (hcab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i}))) (h : O) :
     ‖actualCorrelation (∏ i, a i) (∏ i, b i) hA hB h‖ =
       ∏ i, ‖actualCorrelation (a i) (b i) (ha i) (hb i) h‖ := by
-  let : ∀ i, Finite (Residue (a i)) := fun i => finite_quotient_span (supported_element_ne_zero (a i) (ha i))
-  let : ∀ i, Finite (Residue (b i)) := fun i => finite_quotient_span (supported_element_ne_zero (b i) (hb i))
+  let  := fun i => finite_quotient_span (supported_element_ne_zero (a i) (ha i))
+  let  := fun i => finite_quotient_span (supported_element_ne_zero (b i) (hb i))
   let : ∀ i, Fintype (Residue (a i)) := fun i => Fintype.ofFinite _
   let : ∀ i, Fintype (Residue (b i)) := fun i => Fintype.ofFinite _
   let := finite_quotient_span (supported_element_ne_zero _ hA)

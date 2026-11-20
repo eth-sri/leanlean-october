@@ -9,83 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-
-end
 section
 
 open ActualEisensteinCubic FirstPassCubeLabels
@@ -123,7 +57,7 @@ lemma mem_reopenedCubeFamily (Q : Finset (ι →₀ ℕ)) (b : CubeCoordinates �
   · intro hb
     obtain ⟨v,hv,hb⟩ := Finset.mem_biUnion.mp hb
     obtain ⟨hl,hr,ha⟩ := (mem_reopenedCubeFiber v.2 v.1 b).mp hb
-    exact ⟨hl ▸ (Finset.mem_product.mp hv).2,hr ▸ (Finset.mem_product.mp hv).1,ha⟩
+    simp_all
   · rintro ⟨hl,hr,ha⟩
     exact Finset.mem_biUnion.mpr ⟨(b.rightExponent,b.leftExponent),Finset.mem_product.mpr ⟨hr,hl⟩,
       (mem_reopenedCubeFiber _ _ b).mpr ⟨rfl,rfl,ha⟩⟩
@@ -195,24 +129,6 @@ lemma reopenedPairCoefficient_bound (Q : Finset (ι →₀ ℕ)) (labels : Finse
   simpa only [pow_two] using mul_le_mul (hβ I hI _ hr) (hβ I hI _ hl) (norm_nonneg _) hΓ
 
 end
-section
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open ConcretePrimeRowBridge (idealGenerator)
-
-end
-section
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-
-section
-variable {ι : Type*} [DecidableEq ι]
-
-end
-
-end
 
 open ActualEisensteinCubic FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
@@ -222,14 +138,13 @@ end SecondPassArithmetic
 
 namespace CubicEisenstein
 open MeasureTheory
-open scoped SchwartzMap
 
 lemma euclideanIntegral_borel_transport (m : MeasurableSpace EuclideanSpatial)
     (hm : @BorelSpace EuclideanSpatial inferInstance m) (g : EuclideanSpatial→ℝ) :
-    (letI : MeasurableSpace EuclideanSpatial := m
-     letI : BorelSpace EuclideanSpatial := hm
+    (letI  := m
+     letI  := hm
      ∫p,g p) =
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      ∫p,g p) := by
   have he := hm.measurable_eq
@@ -238,10 +153,10 @@ lemma euclideanIntegral_borel_transport (m : MeasurableSpace EuclideanSpatial)
 
 lemma euclideanIntegrable_borel_transport (m : MeasurableSpace EuclideanSpatial)
     (hm : @BorelSpace EuclideanSpatial inferInstance m) (g : EuclideanSpatial→ℝ) :
-    (letI : MeasurableSpace EuclideanSpatial := m
-     letI : BorelSpace EuclideanSpatial := hm
+    (letI  := m
+     letI  := hm
      Integrable g volume) ↔
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      Integrable g volume) := by
   have he := hm.measurable_eq
@@ -250,24 +165,24 @@ lemma euclideanIntegrable_borel_transport (m : MeasurableSpace EuclideanSpatial)
 
 lemma euclideanNativeIntegral_eq_borel (g : EuclideanSpatial→ℝ) :
     (∫p,g p)=
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      ∫p,g p) :=
   euclideanIntegral_borel_transport inferInstance inferInstance g
 
 lemma euclideanNativeIntegrable_iff_borel (g : EuclideanSpatial→ℝ) :
     Integrable g volume ↔
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      Integrable g volume) :=
   euclideanIntegrable_borel_transport inferInstance inferInstance g
 
 def euclideanLp_borel_transport (m : MeasurableSpace EuclideanSpatial)
     (hm : @BorelSpace EuclideanSpatial inferInstance m) :
-    (letI : MeasurableSpace EuclideanSpatial := m
-     letI : BorelSpace EuclideanSpatial := hm
+    (letI  := m
+     letI  := hm
      Lp ℂ 2 (volume : Measure EuclideanSpatial)) ≃ₗᵢ[ℂ]
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      Lp ℂ 2 (volume : Measure EuclideanSpatial)) := by
   have he := hm.measurable_eq
@@ -275,7 +190,7 @@ def euclideanLp_borel_transport (m : MeasurableSpace EuclideanSpatial)
   exact LinearIsometryEquiv.refl ℂ _
 
 def euclideanNativeLpBorelEquiv : EuclideanL2 ≃ₗᵢ[ℂ]
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      Lp ℂ 2 (volume : Measure EuclideanSpatial)) :=
   euclideanLp_borel_transport inferInstance inferInstance
@@ -283,10 +198,10 @@ def euclideanNativeLpBorelEquiv : EuclideanL2 ≃ₗᵢ[ℂ]
 lemma euclideanLp_borel_transport_schwartz (m : MeasurableSpace EuclideanSpatial)
     (hm : @BorelSpace EuclideanSpatial inferInstance m) (f : 𝓢(EuclideanSpatial,ℂ)) :
     euclideanLp_borel_transport m hm
-      (letI : MeasurableSpace EuclideanSpatial := m
-       letI : BorelSpace EuclideanSpatial := hm
+      (letI  := m
+       letI  := hm
        f.toLp 2 volume)=
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      f.toLp 2 volume) := by
   have he := hm.measurable_eq
@@ -295,15 +210,13 @@ lemma euclideanLp_borel_transport_schwartz (m : MeasurableSpace EuclideanSpatial
 
 lemma euclideanNativeLpBorelEquiv_schwartz (f : 𝓢(EuclideanSpatial,ℂ)) :
     euclideanNativeLpBorelEquiv (f.toLp 2 volume)=
-    (letI : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
+    (letI  := borel EuclideanSpatial
      letI : BorelSpace EuclideanSpatial := ⟨rfl⟩
      f.toLp 2 volume) :=
   euclideanLp_borel_transport_schwartz inferInstance inferInstance f
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap
 
 namespace CubicEisenstein
 open RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean
@@ -401,7 +314,7 @@ theorem kernelLocalizedReal_family_precompact (χ : PositiveChartCutoff)
     (hfamily : ∀f∈family,‖kernelSmoothTestsToL2 f‖^2+kernelDirichletEnergy f≤B) :
     IsCompact (closure ((fun f => toL2 («μ» := volume) (kernelLocalizedRealTest χ f projection)) '' family)) := by
   obtain ⟨C,hC,hbound⟩ := kernelLocalizedH1_bounded χ hinj
-  have hCB : 0≤C*B := mul_nonneg hC hB
+  have hCB  := mul_nonneg hC hB
   have henergy : ∀f∈family,
       ‖toL2 («μ» := volume) (kernelLocalizedRealTest χ f projection)‖^2+
         ‖toL2Grad («μ» := volume) (kernelLocalizedRealTest χ f projection)‖^2≤C*B := by
@@ -466,9 +379,9 @@ theorem kernelLocalizedComplex_family_precompact (χ : PositiveChartCutoff)
     (hfamily : ∀f∈family,‖kernelSmoothTestsToL2 f‖^2+kernelDirichletEnergy f≤B) :
     IsCompact (closure ((fun f => (kernelLocalizedSchwartz χ f).toLp 2 volume) '' family)) := by
   have hr := kernelLocalizedReal_family_precompact χ hinj Complex.reCLM
-    (fun z => by change ‖z.re‖≤‖z‖; simpa only [Real.norm_eq_abs] using Complex.abs_re_le_norm z) family B hB hfamily
+    (fun z => by change ‖z.re‖≤‖z‖; exact Complex.abs_re_le_norm z) family B hB hfamily
   have hi := kernelLocalizedReal_family_precompact χ hinj Complex.imCLM
-    (fun z => by change ‖z.im‖≤‖z‖; simpa only [Real.norm_eq_abs] using Complex.abs_im_le_norm z) family B hB hfamily
+    (fun z => by change ‖z.im‖≤‖z‖; exact Complex.abs_im_le_norm z) family B hB hfamily
   have hc := (hr.prod hi).image kernelComplexL2Assemble.continuous
   apply hc.closure_of_subset
   rintro _ ⟨f,hf,rfl⟩

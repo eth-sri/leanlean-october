@@ -51,15 +51,14 @@ theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported
   intro P hP
   have ha := (Finset.mem_filter.mp hP).2
   by_contra hn
-  have hU : P∉U := fun h=>hn (Finset.mem_union_left _ h)
-  have hV : P∉nonunitPartitionSet C D U := fun h=>hn (Finset.mem_union_right _ h)
+  have hU  := fun h=>hn (Finset.mem_union_left _ h)
+  have hV  := fun h=>hn (Finset.mem_union_right _ h)
   have heq : ¬(leftExponent C D P=rightExponent C D P ∧ ¬6∣leftExponent C D P) := by
     intro he
     exact hV (Finset.mem_sdiff.mpr ⟨Finset.mem_filter.mpr ⟨Finset.mem_univ _,he⟩,hU⟩)
   rw [fixedExponent,ite_eq_right hV,add_zero] at ha
   by_cases hc : leftExponent C D P=rightExponent C D P
-  · rw [hc,min_self] at ha
-    exact heq ⟨hc,by simpa only [hc] using ha⟩
+  · simp_all
   · exact ha (actual_unequal_min_six C D hC hD hCD w hne P hc)
 
 end SevenEighths.CenteredMomentSecondMovingSupport

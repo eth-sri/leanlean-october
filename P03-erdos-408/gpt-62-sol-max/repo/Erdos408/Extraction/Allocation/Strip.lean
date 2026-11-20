@@ -51,8 +51,7 @@ private lemma factorization_prod_filter (q : ℕ → Prop) [DecidablePred q] (n 
       n.factorization.filter q := by
   rw [prod_filter_eq_prod]
   refine Nat.prod_pow_factorization_eq_self fun p hp => ?_
-  rw [Finsupp.support_filter, Nat.support_factorization] at hp
-  exact Nat.prime_of_mem_primeFactors (mem_filter.1 hp).1
+  simp_all
 
 /-- The factorization of `n̄` is that of `n` off `P`. -/
 lemma factorization_stripPrimes (P : Finset ℕ) (n : ℕ) :
@@ -82,7 +81,7 @@ lemma stripPrimes_mul_keepPrimes (P : Finset ℕ) {n : ℕ} (hn : n ≠ 0) :
   rw [Nat.factorization_mul (stripPrimes_ne_zero P n) (keepPrimes_ne_zero P n),
     factorization_stripPrimes, factorization_keepPrimes, Finsupp.add_apply,
     Finsupp.filter_apply, Finsupp.filter_apply]
-  by_cases h : p ∈ P <;> simp [h]
+  by_cases h : p ∈ P <;> simp_all
 
 /-- A number whose factorization is supported off `P` (or on `P`) is
 recovered from its factorization filtered accordingly. -/
@@ -120,13 +119,13 @@ lemma stripPrimes_keepPrimes_mul {P : Finset ℕ} {e c : ℕ} (he : e ≠ 0) (hc
 lemma not_mem_of_mem_primeFactors_stripPrimes {P : Finset ℕ} {n p : ℕ}
     (hp : p ∈ (stripPrimes P n).primeFactors) : p ∉ P := by
   rw [← Nat.support_factorization, factorization_stripPrimes, Finsupp.support_filter] at hp
-  exact (mem_filter.1 hp).2
+  simp_all
 
 /-- The prime factors of `n_P` lie in `P`. -/
 lemma mem_of_mem_primeFactors_keepPrimes {P : Finset ℕ} {n p : ℕ}
     (hp : p ∈ (keepPrimes P n).primeFactors) : p ∈ P := by
   rw [← Nat.support_factorization, factorization_keepPrimes, Finsupp.support_filter] at hp
-  exact (mem_filter.1 hp).2
+  simp_all
 
 /-- The prime factors of a divisor of `n̄` avoid `P`. -/
 lemma not_mem_of_dvd_stripPrimes {P : Finset ℕ} {n e p : ℕ} (he : e ∣ stripPrimes P n)
@@ -166,9 +165,9 @@ lemma stripPrimes_stripPrimes {P Q : Finset ℕ} (hQP : Q ⊆ P) (n : ℕ) :
   rw [factorization_stripPrimes, factorization_stripPrimes, factorization_stripPrimes,
     Finsupp.filter_apply, Finsupp.filter_apply, Finsupp.filter_apply]
   by_cases h : p ∈ P
-  · simp [h]
-  · have hq : p ∉ Q := fun hq => h (hQP hq)
-    simp [h, hq]
+  · simp_all
+  · have hq  := fun hq => h (hQP hq)
+    simp_all
 
 /-! ### Splitting factorizations -/
 
@@ -198,7 +197,7 @@ theorem sum_finMulAntidiag_eq_mul (P : Finset ℕ) (d : ℕ) {n : ℕ} (hn : n �
     exact stripPrimes_mul_keepPrimes P (Nat.ne_zero_of_mem_finMulAntidiag hm i)
   · rintro ⟨e, c⟩ hec
     simp only [mem_product] at hec
-    have h : ∀ i, stripPrimes P (e i * c i) = e i ∧ keepPrimes P (e i * c i) = c i :=
+    have h  :=
       fun i => stripPrimes_keepPrimes_mul (Nat.ne_zero_of_mem_finMulAntidiag hec.1 i)
         (Nat.ne_zero_of_mem_finMulAntidiag hec.2 i)
         (fun p hp => not_mem_of_dvd_stripPrimes (Nat.dvd_of_mem_finMulAntidiag hec.1 i) hp)
@@ -215,12 +214,12 @@ theorem card_finMulAntidiag_le (d : ℕ) :
   | _ n ih =>
     rcases Nat.lt_or_ge n 2 with hn | hn
     · interval_cases n
-      · simp [Nat.finMulAntidiag_zero_right]
+      · simp
       · simp [Nat.finMulAntidiag_one]
     obtain ⟨p, hp, hpn⟩ := Nat.exists_prime_and_dvd (show n ≠ 1 by omega)
     obtain ⟨m, rfl⟩ := hpn
     have hm : m ≠ 0 := by rintro rfl; omega
-    have hlt : m < p * m := lt_mul_left (Nat.pos_of_ne_zero hm) hp.one_lt
+    have hlt  := lt_mul_left (Nat.pos_of_ne_zero hm) hp.one_lt
     rw [ArithmeticFunction.cardFactors_mul hp.ne_zero hm,
       ArithmeticFunction.cardFactors_apply_prime hp, add_comm, pow_succ']
     -- every factorization of `p m` multiplies one factor of a factorization of `m` by `p`

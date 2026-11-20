@@ -46,9 +46,8 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
   have htilt (g : P.BigGroup) (p : P.Prime g.val) :
       0 < tiltedMu F P n g.val p := by
     unfold tiltedMu
-    have hp : 0 < (p.val : ℝ) := by
-      exact_mod_cast (P.prime g.val p.val p.property).pos
-    exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (hbase g p))
+    refine inv_pos.mpr (mul_pos (mul_pos (hV g.val) ?_) (hbase g p))
+    exact_mod_cast (P.prime g.val p.val p.property).pos
   have hweight (b : BigLabels P M) : 0 ≤ bigLabelWeight F P n M b := by
     apply Finset.prod_nonneg
     intro g _
@@ -73,7 +72,7 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
         rfl
       calc
         _ = |C * bigLabelWeight F P n M ((labelSplitEquiv P M a).2)| := by
-          rw [hcoeff, hbig]
+          rfl
         _ = _ := by
           rw [abs_of_nonneg (mul_nonneg hC.le (hweight _)), ite_eq_left hs]
     · simp [hs]
@@ -91,7 +90,7 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
       intro y _
       apply Finset.sum_congr rfl
       intro a _
-      by_cases hs : P.smallPhysical y a <;> simp [hs]
+      simp
     _ = C * ∑ y : P.SmallResidues, ∑ a : P.Labels M,
         if P.smallPhysical y a then
           bigLabelWeight F P n M ((labelSplitEquiv P M a).2) else 0 := by
@@ -122,7 +121,7 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
           exact full_label_sum_factor F P n M y
         _ = _ := by rw [Finset.sum_mul]
     _ = _ := by
-      simp [C, M]
+      rfl
 
 
 end Erdos821.S2Empty

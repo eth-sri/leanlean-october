@@ -67,7 +67,7 @@ theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finse
     have hN : (1 : ℝ)≤P.val.absNorm := by
       exact_mod_cast (show 1≤P.val.absNorm from (SmoothMobiusCorrection.prime_norm_two_le P).trans' (by norm_num))
     have hNp : (0 : ℝ)<P.val.absNorm := by linarith
-    have hlog : Real.log (P.val.absNorm : ℝ)≤Real.log V :=
+    have hlog  :=
       Real.log_le_log hNp (hprimes P hP)
     have hDV : Real.log (D/(P.val.absNorm : ℝ))∈Icc (Real.log D-Real.log V) (Real.log D) := by
       rw [Real.log_div hD.ne' hNp.ne']
@@ -93,7 +93,7 @@ theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finse
         change (primes.card : ℝ) *
           ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2 =
           ∑ _P∈primes, ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2
-        simp only [Finset.sum_const, nsmul_eq_mul]
+        simp
       _ ≤ ∑ p∈rows×ˢprimes, 4*B (primeRowMap p) := by
         apply Finset.sum_le_sum
         intro p hp
@@ -103,7 +103,6 @@ theorem averaged_energy (data : RowData) (rows : Finset FreeRow) (primes : Finse
         dsimp [R]
         rw [Finset.mul_sum,Finset.sum_image]
         exact fun p hp q hq h => primeRowMap_injective h
-  have hh := mul_le_mul_of_nonneg_left henergy (by norm_num : (0 : ℝ)≤4)
   nlinarith
 
 end SevenEighths.HeckeInverseAmplification

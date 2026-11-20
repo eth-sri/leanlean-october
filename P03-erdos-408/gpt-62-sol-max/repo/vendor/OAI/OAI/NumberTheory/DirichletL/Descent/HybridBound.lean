@@ -19,12 +19,12 @@ private theorem hybrid_log_cost_bound (ε : ℝ) (hε : 0 < ε) :
           (columnDyadicLength B + 1 : ℝ) ^ 2 ≤ C * (K * N * B) ^ ε := by
   let δ := ε / 9
   let A := 2 + 1 / (δ * Real.log 2)
-  have hδ : 0 < δ := by dsimp only [δ]; positivity
-  have hA : 0 < A := by dsimp only [A]; positivity
+  have hδ : 0 < δ := by positivity
+  have hA : 0 < A := by positivity
   refine ⟨A ^ 6, pow_pos hA 6, ?_⟩
   intro K N B hK hN hB
   let Q := K * N * B
-  have hQ : 1 ≤ Q := one_le_mul_of_one_le_of_one_le
+  have hQ  := one_le_mul_of_one_le_of_one_le
     (one_le_mul_of_one_le_of_one_le hK hN) hB
   have hQ0 : 0 < Q := by linarith
   have hKQ : K ≤ Q :=
@@ -37,7 +37,7 @@ private theorem hybrid_log_cost_bound (ε : ℝ) (hε : 0 < ε) :
     (one_le_mul_of_one_le_of_one_le hK hN)
   have hquad : K * (N * B) * N ≤ Q ^ 2 := by
     calc
-      _ = Q * N := by dsimp only [Q]; ring
+      _ = Q * N := by ring
       _ ≤ Q * Q := mul_le_mul_of_nonneg_left hNQ hQ0.le
       _ = _ := by ring
   have hlog (Y : ℝ) (hY : 1 ≤ Y) (hYQ : Y ≤ Q) :
@@ -52,7 +52,6 @@ private theorem hybrid_log_cost_bound (ε : ℝ) (hε : 0 < ε) :
   have hpow9 : (Q ^ δ) ^ 9 = Q ^ ε := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hQ0.le]
     congr 1
-    dsimp only [δ]
     ring
   calc
     _ ≤ Q ^ δ * (Q ^ δ) ^ 2 * (A * Q ^ δ) ^ 2 * (A * Q ^ δ) ^ 2 * (A * Q ^ δ) ^ 2 := by

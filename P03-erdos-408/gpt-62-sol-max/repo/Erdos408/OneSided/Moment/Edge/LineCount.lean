@@ -51,7 +51,7 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
     (hη : |q' * β - a'| ≤ η) (hδ : 0 ≤ δ) (t₀ : ℤ) (T : Finset ℤ)
     (hT : ∀ t ∈ T, t₀ ≤ t ∧ t < t₀ + q' ∧ circleDist (t * β) ≤ δ) :
     (T.card : ℝ) ≤ 2 * q' * (δ + η) + 1 := by
-  have hη0 : 0 ≤ η := (abs_nonneg _).trans hη
+  have hη0  := (abs_nonneg _).trans hη
   set e := (q' : ℝ) * β - a' with he
   set R := (q' : ℝ) * (δ + η) with hR
   set g : ℤ → ℤ := fun t => t * a' - q' * round (t * β) with hg
@@ -78,14 +78,14 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
       _ ≤ q' * δ + q' * η :=
           add_le_add (mul_le_mul_of_nonneg_left h₃ (Nat.cast_nonneg _))
             (mul_le_mul hsq hη (abs_nonneg _) (Nat.cast_nonneg _))
-      _ = R := by rw [hR]; ring
+      _ = R := by ring
   -- `g` is injective on the block
   have hinj : Set.InjOn g T := by
     intro t₁ ht₁ t₂ ht₂ h
     simp only [hg] at h
     have hdvd : (q' : ℤ) ∣ (t₁ - t₂) * a' :=
       ⟨round (t₁ * β) - round (t₂ * β), by linear_combination h⟩
-    have hdvd' : (q' : ℤ) ∣ t₁ - t₂ := hcop.symm.dvd_of_dvd_mul_right hdvd
+    have hdvd'  := hcop.symm.dvd_of_dvd_mul_right hdvd
     have hlt : |t₁ - t₂| < q' := by
       obtain ⟨a₁, b₁, -⟩ := hT t₁ ht₁
       obtain ⟨a₂, b₂, -⟩ := hT t₂ ht₂
@@ -110,12 +110,12 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
   have hlo' : -(t₀ * e) - R ≤ (lo : ℝ) := Int.le_ceil _
   have hR0 : 0 ≤ R := by positivity
   calc (T.card : ℝ) ≤ ((hi + 1 - lo).toNat : ℝ) := hcast
-    _ = max ((hi + 1 - lo : ℤ) : ℝ) 0 := by rw [← htoNat]; rfl
+    _ = max ((hi + 1 - lo : ℤ) : ℝ) 0 := by assumption
     _ ≤ 2 * R + 1 := by
         refine max_le ?_ (by linarith)
         push_cast
         linarith
-    _ = 2 * q' * (δ + η) + 1 := by rw [hR]; ring
+    _ = 2 * q' * (δ + η) + 1 := by ring
 
 /-- **The small multiples**: if `|q' β - a'| ≤ η` with `(a', q') = 1`, then at most
 `(2M/q' + 1)(2q'(δ + η) + 1)` integers `|t| ≤ M` have `‖t β‖ ≤ δ`: split `[-M, M]` into
@@ -124,7 +124,7 @@ theorem card_filter_circleDist_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0
     (hcop : IsCoprime a' q') (hη : |q' * β - a'| ≤ η) (hδ : 0 ≤ δ) (M : ℕ) :
     (((Icc (-(M : ℤ)) M).filter fun t : ℤ => circleDist ((t : ℝ) * β) ≤ δ).card : ℝ) ≤
       (2 * M / q' + 1) * (2 * q' * (δ + η) + 1) := by
-  have hη0 : 0 ≤ η := (abs_nonneg _).trans hη
+  have hη0  := (abs_nonneg _).trans hη
   set T := (Icc (-(M : ℤ)) M).filter fun t : ℤ => circleDist ((t : ℝ) * β) ≤ δ with hTdef
   set nb := 2 * M / q' + 1 with hnb
   set f : ℤ → ℕ := fun t => ((t + M) / q').toNat with hf
@@ -187,7 +187,6 @@ theorem exists_approx_of_good {α Y : ℝ} (hY : 1 ≤ Y)
   set β := (c₀ + α) / p with hβ
   have hp' : (0 : ℝ) < p := by exact_mod_cast hp
   have hY0 : 0 < Y := by linarith
-  have hY7 : 0 < Y ^ (7 / 10 : ℝ) := Real.rpow_pos_of_pos hY0 _
   set n := ⌈(p : ℝ) * Y ^ (7 / 10 : ℝ)⌉₊ with hn
   have hn0 : 0 < n := Nat.ceil_pos.2 (by positivity)
   have hnle : (p : ℝ) * Y ^ (7 / 10 : ℝ) ≤ n := Nat.le_ceil _
@@ -251,7 +250,7 @@ theorem exists_lineForm {p : ℕ} (hp : p.Prime) (ℓ : ℕ) :
     rw [Int.natCast_dvd_ofNat]
     exact hp.not_dvd_one
   by_cases hℓ : ℓ < p
-  · refine ⟨ℓ, -1, fun h => hp1 (by simpa using h.2), fun z hz => ?_⟩
+  · refine ⟨ℓ, -1, fun h => hp1 (by simp_all), fun z hz => ?_⟩
     unfold lineOf at hz
     split_ifs at hz with h0
     · omega
@@ -287,7 +286,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
   classical
   set c := complement w with hc
   set α := (D : ℝ) * (tau r c / tau r w) with hα
-  have hp0 : 0 < p := hp.pos
+  have hp0  := hp.pos
   have hp' : (0 : ℝ) < p := by exact_mod_cast hp0
   have hY0 : 0 < Y := by linarith
   have hY45 : 1 ≤ Y ^ (4 / 5 : ℝ) := Real.one_le_rpow hY (by norm_num)
@@ -296,7 +295,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
   unfold rootPositions at hw'
   rw [mem_filter] at hw'
   obtain ⟨-, hgcd, hwU, -⟩ := hw'
-  have huw : 0 < u * tau r w := hU.trans_le hwU
+  have huw  := hU.trans_le hwU
   -- `det(w, c) = 1`
   have hdetc : w.1 * c.2 - w.2 * c.1 = 1 := by
     simp only [hc, complement]
@@ -377,8 +376,8 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           simp only [hAw, hAc]
           linear_combination A₁ * h₁ + A₂ * h₂
         rw [hlin] at hdiv
-        have hpt : (p : ℤ) ∣ D * t * Ac := (dvd_add_right (dvd_mul_of_dvd_right hAw0 _)).1 hdiv
-        have hpp : Prime (p : ℤ) := Nat.prime_iff_prime_int.1 hp
+        have hpt  := (dvd_add_right (dvd_mul_of_dvd_right hAw0 _)).1 hdiv
+        have hpp  := Nat.prime_iff_prime_int.1 hp
         have hpD' : ¬ (p : ℤ) ∣ D := by exact_mod_cast hpD
         obtain ⟨k, hk⟩ : (p : ℤ) ∣ t := by
           rcases hpp.dvd_or_dvd hpt with h | h
@@ -407,7 +406,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           rw [Nat.coprime_comm, Nat.Prime.coprime_iff_not_dvd hp]
           intro h
           exact hAw0 (Int.natCast_dvd.2 h)
-        simpa [Int.gcd] using this
+        assumption
       obtain ⟨μ, κ, hμκ⟩ := hcopw
       set c₀ : ℤ := -(D * Ac * μ) with hc₀
       obtain ⟨a', q', hq0, hcop, happ, hqY, hqp⟩ := exists_approx_of_good (α := α) hY
@@ -451,7 +450,6 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           _ ≤ 16 / p := div_le_div_of_nonneg_right hs₂ hp'.le
       · -- `(2M/q' + 1)(32 q'/p + 3) ≤ 384 Y/p + 103 Y^{0.8}`
         have hq' : (0 : ℝ) < q' := by exact_mod_cast hq0
-        have hY15 : 0 < Y ^ (1 / 5 : ℝ) := Real.rpow_pos_of_pos hY0 _
         have hexp : 2 * (q' : ℝ) * (16 / p + 1 / q') + 1 = 32 * q' / p + 3 := by
           field_simp
           ring

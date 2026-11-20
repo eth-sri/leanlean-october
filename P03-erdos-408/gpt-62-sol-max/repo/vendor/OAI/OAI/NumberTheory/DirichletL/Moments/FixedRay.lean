@@ -91,7 +91,7 @@ theorem primaryRayHom_unit_mul (χ : RayCharacter) (u : Oˣ) (a : O) :
 
 theorem primaryRayHom_periodic (χ : RayCharacter) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {(12 : O)}) (primaryRayHom χ) := by
-  let F : O →* ℂ := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {(4 : O)})).toMonoidHom
+  let F  := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {(4 : O)})).toMonoidHom
   refine periodic_of_primary _ ?_ _ F ?_ (primaryRayHom_unit_mul χ) ?_ ?_
   · apply Ideal.span_singleton_le_span_singleton.mpr
     exact ActualEisensteinCubic.lambda_sq_dvd_three.trans ⟨4, by norm_num⟩
@@ -105,7 +105,7 @@ theorem primaryRayHom_periodic (χ : RayCharacter) :
       by_contra hn
       exact (PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff x).mp hn hx
     change χ (Ideal.Quotient.mk _ (CompletedGauss.primaryGenerator (Ideal.span {x}))) = 0
-    let : Nontrivial RayRing := Fintype.one_lt_card_iff_nontrivial.mp (by rw [rayRing_card]; norm_num)
+    let  := Fintype.one_lt_card_iff_nontrivial.mp (by rw [rayRing_card]; norm_num)
     rw [hz, map_zero, MulChar.map_zero]
   · exact primaryRayHom_primary χ
 

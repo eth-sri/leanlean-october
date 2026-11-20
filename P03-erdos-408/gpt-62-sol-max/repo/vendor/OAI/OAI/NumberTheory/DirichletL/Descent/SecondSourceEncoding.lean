@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 
 @[expose] public section
@@ -7,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -24,7 +24,7 @@ local notation "Eis" => ActualEisensteinCubic.O
   newAssigned : Fin Jn → ι
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalFamily.Maximal p]
 
 def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : SecondOriginalSource ι Jo Jn :=
   cubeSecondSource p x.cube.support x.firstCommon x.firstDivisor
@@ -70,7 +70,7 @@ theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
 
 theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
@@ -86,7 +86,7 @@ theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
 
 theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (ha : ∀ x ∈ source, x.cube.Admissible)

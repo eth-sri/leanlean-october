@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos821.P4Probe.Blocks
 public import Erdos821.P4Probe.Costs
 public import Mathlib.Algebra.Order.Ring.Star
@@ -7,7 +8,6 @@ public import Mathlib.Algebra.Order.Ring.Star
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -28,16 +28,15 @@ lemma exists_small_probe_beta (ell : ℕ) (hell : 1 ≤ ell) (c₀ E : ℝ)
     apply Real.exp_lt_one_iff.mpr
     exact div_neg_of_neg_of_pos (by nlinarith) hc₀
   obtain ⟨m, hm⟩ := exists_nat_gt (max 1 (2 * (ell : ℝ) ^ ell / delta))
-  have hm1 : 1 < (m : ℝ) := (le_max_left ..).trans_lt hm
+  have hm1  := (le_max_left ..).trans_lt hm
   have hmpos : 0 < (m : ℝ) := by linarith
   have hmn : 1 ≤ m := by exact_mod_cast hm1.le
   have hp : 0 < probeBeta ell m := by
     unfold probeBeta
-    have : 0 < (ell : ℝ) := by exact_mod_cast hell
     positivity
   have hbd : probeBeta ell m < delta := by
     have hpow : (m : ℝ) ≤ (m : ℝ) ^ ell := le_self_pow₀ hm1.le (by omega)
-    have hfrac : 2 * (ell : ℝ) ^ ell / delta < (m : ℝ) :=
+    have hfrac  :=
       (le_max_right ..).trans_lt hm
     have hnum : 2 * (ell : ℝ) ^ ell < delta * (m : ℝ) :=
       by simpa only [mul_comm] using (div_lt_iff₀ hd).mp hfrac
@@ -58,9 +57,9 @@ lemma sqrt_beta_power_le (beta c₀ E L : ℝ) (b : ℕ)
     (hlog : c₀ / 6 * Real.log beta ≤ -(E + 2))
     (hsize : c₀ * Real.log L / 3 ≤ (b : ℝ)) :
     Real.sqrt (beta ^ b) ≤ L ^ (-(E + 2)) := by
-  have hlb : Real.log beta < 0 := Real.log_neg hb hb1
-  have hlL : 0 ≤ Real.log L := Real.log_nonneg hL
-  have hLpos : 0 < L := lt_of_lt_of_le zero_lt_one hL
+  have hlb  := Real.log_neg hb hb1
+  have hlL  := Real.log_nonneg hL
+  have hLpos  := lt_of_lt_of_le zero_lt_one hL
   have hsq : Real.sqrt (beta ^ b) = Real.exp (Real.log beta * (b : ℝ) / 2) := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_mul hb.le,
       Real.rpow_def_of_pos hb]
@@ -79,8 +78,8 @@ lemma sqrt_beta_power_le (beta c₀ E L : ℝ) (b : ℕ)
 lemma probe_power_le (a C : ℝ) (m n : ℕ) (L : ℝ)
     (ha : 1 ≤ a) (hL : 1 ≤ L) (hn : (n : ℝ) ≤ C * Real.log L) :
     a ^ (m * n) ≤ L ^ ((m : ℝ) * C * Real.log a) := by
-  have hapos : 0 < a := lt_of_lt_of_le zero_lt_one ha
-  have hLpos : 0 < L := lt_of_lt_of_le zero_lt_one hL
+  have hapos  := lt_of_lt_of_le zero_lt_one ha
+  have hLpos  := lt_of_lt_of_le zero_lt_one hL
   rw [← Real.rpow_natCast, Real.rpow_def_of_pos hapos, Real.rpow_def_of_pos hLpos]
   apply Real.exp_le_exp.mpr
   have h := mul_le_mul_of_nonneg_left hn
@@ -91,15 +90,12 @@ lemma probe_power_le (a C : ℝ) (m n : ℕ) (L : ℝ)
 lemma three_errors_le (L E : ℝ) (hL : 2 ≤ L) :
     3 * L ^ (-(E + 2)) ≤ L ^ (-E) := by
   have hp : 0 < L := by linarith
-  have hLp : 0 ≤ L := hp.le
+  have hLp  := hp.le
   have hpow : (3 : ℝ) ≤ L ^ (2 : ℕ) := by nlinarith
   calc
     _ ≤ L ^ (2 : ℕ) * L ^ (-(E + 2)) :=
       mul_le_mul_of_nonneg_right hpow (Real.rpow_nonneg hLp _)
-    _ = L ^ (-E) := by
-      rw [← Real.rpow_natCast, ← Real.rpow_add hp]
-      congr 1
-      norm_num
+    _ = L ^ (-E) := by rpow_ring hp
 
 end
 end Erdos821.P4Probe

@@ -24,7 +24,7 @@ theorem span_finset_product {ι : Type*} (S : Finset ι) (p : ι→O) :
   | @insert i S hi ih => rw [Finset.prod_insert hi,Finset.prod_insert hi,
       ←Ideal.span_singleton_mul_span_singleton,ih]
 
-theorem commonFrequencyGenerator_span (C D : Ideal O) (_hC : Supported C) :
+theorem commonFrequencyGenerator_span (C D : Ideal O) :
     Ideal.span {commonFrequencyGenerator C D}=
       commonIdeal (commonPrime C D) (leftExponent C D) (rightExponent C D) := by
   simp only [commonFrequencyGenerator,span_finset_product,←Ideal.span_singleton_pow,commonIdeal]
@@ -41,7 +41,7 @@ theorem actual_partitionNormalizer (C D : Ideal O) (hC : Supported C)
       (Ideal.absNorm (Ideal.span {commonFrequencyGenerator C D}):ℝ)/
         Ideal.absNorm (∏ P∈U,P.val) := by
   rw [partitionNormalizer_eq_norm_ratio _ (commonPrime_supported C D hC) _ _
-    (leftExponent_pos C D) (rightExponent_pos C D),←commonFrequencyGenerator_span C D hC]
+    (leftExponent_pos C D) (rightExponent_pos C D),←commonFrequencyGenerator_span C D]
   simp only [unitIdeal,commonPrime_span C D hC]
 
 theorem actual_second_ledger_lower (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -60,7 +60,7 @@ theorem actual_second_ledger_lower (C D : Ideal O) (hC : Supported C) (hD : Supp
   have hh := actual_ideal_secondSaving_lower C D hC hD hCD w Z hZ hne
   rw [secondSaving_eq_norm_ledger _ (commonPrime_supported C D hC)] at hh
   rw [left_ideal_product C D hC hCD,right_ideal_product C D hC hD hCD,
-    ←commonFrequencyGenerator_span C D hC] at hh
+    ←commonFrequencyGenerator_span C D] at hh
   change actualUnitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w=U at hpart
   rw [hpart,←nonunitPartitionSet_eq_actual C D U w hpart,
     ←nonunitFrequencyGenerator_span C D U] at hh

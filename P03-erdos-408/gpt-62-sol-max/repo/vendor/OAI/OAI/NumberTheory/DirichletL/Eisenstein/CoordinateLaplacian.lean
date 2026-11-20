@@ -10,79 +10,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped LineDeriv
 
 def kernelCoordinateLaplacian (f : kernelSmoothTests) (p : EuclideanSpatial) : ℂ :=
   -(p 2:ℂ)^2*(∑j : Fin 3,
@@ -120,7 +59,6 @@ lemma kernelDirichletForm_sum_right {ι : Type*} (f : kernelSmoothTests)
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 lemma kernelL2_inner_toLp_smooth (A : KernelQuotient→ℂ)
     (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel)) (g : kernelSmoothTests) :
@@ -134,49 +72,21 @@ lemma kernelL2_inner_toLp_smooth (A : KernelQuotient→ℂ)
       filter_upwards [hA.coeFn_toLp,(kernelSmoothTests_memLp g).coeFn_toLp] with q hq hg
       change inner ℂ ((hA.toLp A) q) (((kernelSmoothTests_memLp g).toLp g.1) q)=_
       rw [hq,hg,RCLike.inner_apply]
-      simp only [RCLike.star_def,mul_comm]
+      simp [RCLike.star_def,mul_comm]
 
 end CubicEisenstein
 
-section
-
-open scoped BigOperators Classical
-open MeasureTheory
-namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
-
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
-
-end SecondPassIntegration
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels ConcreteTraceCRT
 
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-
-end SecondPassArithmetic
-end
-
-open scoped BigOperators Classical
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct jLabel)
-
-variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
 
 end SecondPassArithmetic
 
 namespace CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
+open ConcretePrimeRowBridge hiding O
 open CanonicalQuadraticSieve hiding O
 
 theorem finite_integral_energy_polynomial {κ : Type*} [Fintype κ]
@@ -198,7 +108,7 @@ theorem finite_integral_energy_polynomial {κ : Type*} [Fintype κ]
     calc
       _ ≤ ‖b t‖^2 * (E*(1+|t|)^(2*d)) :=
         mul_le_mul_of_nonneg_left (hbound t) (sq_nonneg _)
-      _ = _ := by rw [hp]; ring
+      _ = _ := by ring
   have he : (∫ t : ℝ, F t) = e.symm (fun k => ∫ t : ℝ, b t*φ k t) := by
     rw [show F = (fun t => e.symm (fun k => b t*φ k t)) from rfl,
       e.symm.integral_comp_comm]
@@ -230,7 +140,6 @@ theorem norm_add_sum_sq_le {κ : Type*} (s : Finset κ) (a : ℂ) (b : κ → �
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace CanonicalCoefficientClass
 
 section
@@ -243,12 +152,10 @@ def IsBaseRayTwist (base Ψ : ActualEisensteinCubic.O→*ℂ) : Prop :=
   Ψ=base ∨ ∃χ : RayCharacter, Ψ=rayMonoid χ*base
 
 lemma rayMonoid_mul (χ η : RayCharacter) : rayMonoid (χ*η)=rayMonoid χ*rayMonoid η := by
-  ext x
-  simp only [rayMonoid_apply,RayFourExpansion.rayCharacter,MulChar.mul_apply,MonoidHom.mul_apply]
+  rfl
 
 lemma conjugateRayMonoid_eq (χ : RayCharacter) : conjugateRayMonoid χ=rayMonoid (star χ) := by
-  ext x
-  simp only [conjugateRayMonoid_apply,rayMonoid_apply,RayFourExpansion.rayCharacter,MulChar.star_apply]
+  rfl
 
 lemma IsBaseRayTwist.mul_ray {base Ψ : ActualEisensteinCubic.O→*ℂ} (hΨ : IsBaseRayTwist base Ψ) (χ : RayCharacter) :
     IsBaseRayTwist base (rayMonoid χ*Ψ) := by
@@ -276,12 +183,12 @@ lemma IsBaseRayTwist.firstCore {base Ψ : ActualEisensteinCubic.O→*ℂ} (hΨ :
 lemma secondRayMinus_single_ray (Ψ : ActualEisensteinCubic.O→*ℂ) (r : SecondRayIndex) :
     secondRayMinus Ψ r=rayMonoid (star r.2.2*star r.1.2)*Ψ := by
   rw [rayMonoid_mul]
-  simp only [secondRayMinus,conjugateRayMonoid_eq,mul_assoc]
+  simp [secondRayMinus,conjugateRayMonoid_eq,mul_assoc]
 
 lemma secondRayPlus_single_ray (Ψ : ActualEisensteinCubic.O→*ℂ) (r : SecondRayIndex) :
     secondRayPlus Ψ r=rayMonoid (r.2.1*star r.1.1)*Ψ := by
   rw [rayMonoid_mul]
-  simp only [secondRayPlus,conjugateRayMonoid_eq,mul_assoc]
+  simp [secondRayPlus,conjugateRayMonoid_eq,mul_assoc]
 
 lemma IsBaseRayTwist.secondMinus {base Ψ : ActualEisensteinCubic.O→*ℂ} (hΨ : IsBaseRayTwist base Ψ)
     (r : SecondRayIndex) : IsBaseRayTwist base (secondRayMinus Ψ r) := by
@@ -357,7 +264,7 @@ lemma fixedBaseConductor_ne_zero (m : ℕ) (hm : m≠0) : fixedBaseConductor m�
   rw [fixedBaseConductor_principal]
   change Ideal.span {((4*m : ℕ) : ActualEisensteinCubic.O)}≠⊥
   rw [ne_eq,Ideal.span_singleton_eq_bot]
-  exact_mod_cast Nat.mul_ne_zero (by decide : (4:ℕ)≠0) hm
+  simp_all
 
 end CanonicalCoefficientClass
 

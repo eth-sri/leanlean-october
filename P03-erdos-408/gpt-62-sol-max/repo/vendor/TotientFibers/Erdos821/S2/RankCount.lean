@@ -32,18 +32,13 @@ theorem rank_coefficient_eq_card (a r : ℕ) :
     have hr := (Finset.mem_filter.mp hσ).2
     apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_powerset.mpr ?_, cycleBirthBlocks_collection σ, hr⟩
-    intro B _
-    exact Finset.mem_powerset.mpr (Finset.subset_univ _)
+    simp_all
   have hfiber (π : Finset (Finset (Fin a))) (hπ : π ∈ C) :
       (rankPermutations a r).filter (fun σ => cycleBirthBlocks σ = π) = permutationsWithBlocks π := by
     have hr : birthRank π = r := (Finset.mem_filter.mp hπ).2.2
     ext σ
     simp only [rankPermutations, permutationsWithBlocks, Finset.mem_filter, Finset.mem_univ, true_and]
-    constructor
-    · rintro ⟨_, h⟩
-      exact h
-    · intro h
-      exact ⟨by rw [h, hr], h⟩
+    simp_all
   calc
     _ = ∑ π ∈ C, (permutationsWithBlocks π).card := by
       apply Finset.sum_congr rfl

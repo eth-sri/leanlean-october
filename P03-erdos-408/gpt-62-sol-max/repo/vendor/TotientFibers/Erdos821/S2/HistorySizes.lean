@@ -71,7 +71,7 @@ theorem finite_growth_bound (n C : ℕ) (before after births : Fin (n + 1) → �
         intro j _
         by_cases h : j = i
         · subst j; simp
-        · have hv : j.val ≠ i.val := fun hv => h (Fin.ext hv)
+        · have hv  := fun hv => h (Fin.ext hv)
           by_cases hl : j.val < i.val
           · simp [hl, h, Nat.le_of_lt hl]
           · have hle : ¬ j.val ≤ i.val := by omega
@@ -87,8 +87,7 @@ theorem finite_growth_bound (n C : ℕ) (before after births : Fin (n + 1) → �
       have hp : (∑ j : Fin (n + 1), if j.val < i.succ.val then births j else 0) =
           ∑ j : Fin (n + 1), if j.val ≤ i.castSucc.val then births j else 0 := by
         apply Finset.sum_congr rfl
-        intro j _
-        simp only [Fin.val_succ, Fin.val_castSucc, Nat.lt_succ_iff]
+        simp
       have hb : before i.succ ≤
           (∑ j : Fin (n + 1), if j.val < i.succ.val then births j else 0) + i.succ.val * C := by
         calc

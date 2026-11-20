@@ -52,7 +52,7 @@ theorem padList_eq_iff {J : ℕ} {z : Fin K × Fin J → ℕ} {p : Fin K → ℕ
     padList z p = l ↔ (∀ c, z c = l c.1 c.2.castSucc) ∧ ∀ i, p i = l i (Fin.last J) := by
   constructor
   · rintro rfl
-    exact ⟨fun c => (padList_castSucc z p c.1 c.2).symm, fun i => (padList_last z p i).symm⟩
+    simp
   · rintro ⟨hz, hp⟩
     funext i h
     induction h using Fin.lastCases with
@@ -101,10 +101,10 @@ theorem exists_eq_of_prime_dvd_listProd {J : ℕ} {l : Lists K J} (hl : ∀ i h,
 /-- With disjoint bands, the labels of a list in `lists` are distinct primes, so they all
 divide `N` exactly when their product does. -/
 theorem listProd_dvd_of_mem_lists {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
+    (hdisj : d.BandsDisjoint x) {J : ℕ}
     {l : Lists K J} (hl : l ∈ lists x d J) {N : ℕ} (hN : ∀ i h, l i h ∣ N) :
     listProd l ∣ N := by
-  have hprime : ∀ i h, (l i h).Prime := fun i h =>
+  have hprime  := fun i h =>
     (mem_filter.1 (lists_slot_mem_band hl i h)).2
   -- the labels are injective on `Fin K × Fin (J + 1)`
   have hinj : Function.Injective fun c : Fin K × Fin (J + 1) => l c.1 c.2 := by
@@ -129,11 +129,11 @@ theorem listProd_dvd_of_mem_lists {x : ℝ} {d : Data K}
 `(list product) m` with `m` rough is `K (J + 1)`: in band `i` the primes dividing it are the
 labels of group `i`. -/
 theorem bandCount_listProd_mul {x : ℝ} {d : Data K}
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m) {J : ℕ}
     {l : Lists K J} (hl : l ∈ lists x d J) {m : ℕ} (hm : m ≠ 0) (hmr : IsRough x m) :
     bandCount x d (listProd l * m) = K * (J + 1) := by
-  have hprime : ∀ i h, (l i h).Prime := fun i h =>
+  have hprime  := fun i h =>
     (mem_filter.1 (lists_slot_mem_band hl i h)).2
   have hband : ∀ i, primeCount (band x (d.a i)) (listProd l * m) = J + 1 := by
     intro i
@@ -171,8 +171,8 @@ theorem coprime_mul_of_isRough {x : ℝ} {N m s : ℕ} (hN : ∀ r, r.Prime → 
   rcases (Nat.Prime.dvd_mul hr).1 hrNm with hrN | hrm
   · exact hN r hr hrN hrs
   -- a common prime of `m` and `s` exceeds `W > |t|` and divides `t`
-  have hW : roughLevel x < r := hsr r (Nat.mem_primeFactors.2 ⟨hr, hrs, hs⟩)
-  have hle : (r : ℤ) ≤ |t| := Int.le_of_dvd (abs_pos.2 ht) ((dvd_abs _ _).2 (hms r hr hrm hrs))
+  have hW  := hsr r (Nat.mem_primeFactors.2 ⟨hr, hrs, hs⟩)
+  have hle  := Int.le_of_dvd (abs_pos.2 ht) ((dvd_abs _ _).2 (hms r hr hrm hrs))
   have hle' : (r : ℝ) ≤ |(t : ℝ)| := by
     rw [← Int.cast_abs]
     exact_mod_cast hle

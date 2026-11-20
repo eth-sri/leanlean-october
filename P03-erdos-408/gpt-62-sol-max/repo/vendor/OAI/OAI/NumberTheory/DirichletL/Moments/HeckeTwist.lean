@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Height
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped BigOperators Classical ContDiff
 namespace SevenEighths.CenteredMomentHeckeTwist
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
-open CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice
+open CenteredMomentCounting CenteredMomentTwist EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 def twistedIdealSum (χ : Character) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
@@ -131,7 +130,7 @@ theorem actual_twisted_rectangle_saving
   let m₂ := fun X : ℝ => (X : ℂ) ^ (1 + Complex.I * t) * v₂
   have hE₁ := volumeControl_nonneg Q χ V₁
   have hE₂ := volumeControl_nonneg Q χ V₂
-  have hE : 0 ≤ E := add_nonneg hE₁ hE₂
+  have hE  := add_nonneg hE₁ hE₂
   have hC : 0 ≤ C := mul_nonneg (by norm_num) (add_nonneg (mul_nonneg hb₁ hM₁) (mul_nonneg hb₂ hM₂))
   have hC₁ : 128 * b₁ * M₁ ≤ C := by dsimp only [C]; nlinarith [mul_nonneg hb₂ hM₂]
   have hC₂ : 128 * b₂ * M₂ ≤ C := by dsimp only [C]; nlinarith [mul_nonneg hb₁ hM₁]
@@ -153,18 +152,17 @@ theorem actual_twisted_rectangle_saving
     simp only [Complex.add_re, Complex.one_re, Complex.mul_re, Complex.I_re, zero_mul,
       Complex.ofReal_im, mul_zero, sub_self, add_zero, Real.rpow_one]
     nlinarith [mul_le_mul_of_nonneg_left hv (le_trans hL.le hX)]
-  have habs₂ (X : ℝ) (hX : L ≤ X) : ‖twistedIdealSum χ W₂ t X‖ ≤ C * X :=
+  have habs₂ (X : ℝ) (hX : L ≤ X)  :=
     (twistedIdealSum_absolute χ W₂ a₂ b₂ M₂ ha₂ hb₂ hM₂ hs₂ hW₂ hbound₂ t X
       (lt_of_lt_of_le hL hX)).trans (mul_le_mul_of_nonneg_right hC₂ (le_trans hL.le hX))
-  have hmain : m₁ X₁ * m₂ X₂ = m₁ Y₁ * m₂ Y₂ := by
-    have hpow := CenteredMoment.volume_products_eq
-      (1 : ℂ) v₁ v₂ t X₁ X₂ Y₁ Y₂ (le_trans hL.le hX₁) (le_trans hL.le hX₂)
-      (le_trans hL.le hY₁) (le_trans hL.le hY₂) (hprodX.trans hprodY.symm)
-    simpa only [CenteredMoment.volumeTerm, one_mul, m₁, m₂] using hpow
-  exact CenteredMoment.centered_saving_of_approx _ _ _ _ _ _ _ _
-    X₁ X₂ Y₁ Y₂ T L C E hmain hC hE (he₁ X₁ hX₁) (he₂ X₂ hX₂)
+  refine CenteredMoment.centered_saving_of_approx _ _ _ _ _ _ _ _
+    X₁ X₂ Y₁ Y₂ T L C E ?_ hC hE (he₁ X₁ hX₁) (he₂ X₂ hX₂)
     (he₁ Y₁ hY₁) (he₂ Y₂ hY₂) (habs₂ X₂ hX₂) (hmain₁ X₁ hX₁)
     (habs₂ Y₂ hY₂) (hmain₁ Y₁ hY₁) hL hX₁ hX₂ hY₁ hY₂ hprodX hprodY
+  have hpow := CenteredMoment.volume_products_eq
+    (1 : ℂ) v₁ v₂ t X₁ X₂ Y₁ Y₂ (le_trans hL.le hX₁) (le_trans hL.le hX₂)
+    (le_trans hL.le hY₁) (le_trans hL.le hY₂) (hprodX.trans hprodY.symm)
+  simpa only [CenteredMoment.volumeTerm, one_mul, m₁, m₂] using hpow
 
 end SevenEighths.CenteredMomentHeckeTwist
 

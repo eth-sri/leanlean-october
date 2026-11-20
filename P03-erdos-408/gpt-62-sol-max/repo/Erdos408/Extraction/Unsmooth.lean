@@ -296,7 +296,7 @@ lemma eventually_card_dyadicPrimes_ge :
           Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
       _ = 2 := Real.rpow_one 2
   -- the prime powers: `2 √(2x) log (2x) ≤ 8 √x L ≤ x / 4`
-  have hsq : √x * √x = x := Real.mul_self_sqrt hx0.le
+  have hsq := Real.mul_self_sqrt hx0.le
   have hs2 : √2 ≤ 2 := by
     have := Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)
     nlinarith [Real.sqrt_nonneg 2]

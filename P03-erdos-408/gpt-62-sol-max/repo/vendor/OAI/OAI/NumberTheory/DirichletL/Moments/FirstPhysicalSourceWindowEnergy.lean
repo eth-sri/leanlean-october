@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors
-open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
+open CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentGaussEnergy
+open CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
+open CenteredMomentSmoothedWindowEnergy CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow
+open IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
-local instance firstWindowEnergyDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def commonEnergy (s:OriginalData ι)(C:Ideal O)(hC:Supported C)(τ:Character)
     (t:ℝ)(L:Ideal O)(U:𝓢(ℝ,ℂ))(K:ℝ):ℂ:=

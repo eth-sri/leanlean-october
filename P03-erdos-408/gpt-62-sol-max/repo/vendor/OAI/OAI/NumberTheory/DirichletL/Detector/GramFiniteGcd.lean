@@ -10,7 +10,6 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
 
 lemma supportedIdealProduct_injective (C : SupportedIdeal) : Function.Injective (supportedIdealProduct C) := by
   intro I J h
@@ -38,7 +37,7 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
       have hl : supportedIdealProduct (gcdCommon p.1 p.2) (gcdLeft p.1 p.2)=p.1 := Subtype.ext (gcd_common_left _ _)
       have hr : supportedIdealProduct (gcdCommon p.1 p.2) (gcdRight p.1 p.2)=p.2 := Subtype.ext (gcd_common_right _ _)
       simp only [commonTriples,Finset.mem_sigma,Finset.mem_filter,Finset.mem_product,commonColumns_mem]
-      exact ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,⟨by rw [hl];exact (Finset.mem_product.mp hp).1,by rw [hr];exact (Finset.mem_product.mp hp).2⟩,gcd_residual_coprime _ _⟩
+      exact ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,⟨by simp_all,by simp_all⟩,gcd_residual_coprime _ _⟩
     · intro p hp q hq he
       have hc := congrArg Sigma.fst he
       have hl := congrArg (fun t : (C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)=>t.2.1) he
@@ -59,7 +58,7 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
     · intro p hp
       have hl : supportedIdealProduct (gcdCommon p.1 p.2) (gcdLeft p.1 p.2)=p.1 := Subtype.ext (gcd_common_left _ _)
       have hr : supportedIdealProduct (gcdCommon p.1 p.2) (gcdRight p.1 p.2)=p.2 := Subtype.ext (gcd_common_right _ _)
-      simp only [hl,hr]
+      simp_all
   rw [Finset.sum_product] at he
   rw [he,commonTriples,Finset.sum_sigma]
   apply Finset.sum_congr rfl

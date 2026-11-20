@@ -93,11 +93,7 @@ theorem deleteMemoryIndices_empty {g : P.Group} (z : P.Memory g) :
 
 theorem retrievedIndices_empty {M : ℕ} (s : P.MemoryState M) (g : P.BigGroup) :
     retrievedIndices (emptyTransfer s) g = ∅ := by
-  classical
-  apply Finset.eq_empty_iff_forall_notMem.mpr
-  intro i hi
-  obtain ⟨j, _, _⟩ := Finset.mem_image.mp hi
-  exact False.elim (Finset.notMem_empty j.val j.property)
+  rfl
 
 theorem storedMemory_empty {M : ℕ} {g : P.Group} (a : Fin M → P.Prime g) :
     storedMemory a ∅ = 0 := by simp [storedMemory]
@@ -112,7 +108,7 @@ theorem rawEdgeValid_empty (A : Model F P J m) (ν : Pattern P J F.ell m)
         t.2.2 g = translateMemory (edgeDelta A ν forward s.2.1 u) (s.2.2 g) := by
   classical
   unfold rawEdgeValid
-  have hr (g : P.BigGroup) : retrievedIndices (emptyTransfer s) g = ∅ :=
+  have hr (g : P.BigGroup)  :=
     retrievedIndices_empty s g
   simp only [hr]
   simp [emptyTransfer, storedMemory_empty, deleteMemoryIndices_empty, Function.Injective]

@@ -162,14 +162,12 @@ theorem physicalNormSq_Ico_le {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h 
     (hf : ∀ n ∈ Ico a b, ‖f n‖ ≤ B) :
     physicalNormSq P M (Ico a b) f ≤
       B ^ 2 * (Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M) := by
-  have hW : 0 ≤ ∏ g, (harmonicMass (P g))⁻¹ ^ M :=
-    prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV g).le) _
   calc physicalNormSq P M (Ico a b) f
       ≤ ∑ n ∈ Ico a b, B ^ 2 * ((#(physicalLists P M n) : ℝ) *
           ∏ g, (harmonicMass (P g))⁻¹ ^ M) := by
         refine sum_le_sum fun n hn => ?_
         rw [← mul_assoc]
-        refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right ?_ (Nat.cast_nonneg _)) hW
+        refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right ?_ (Nat.cast_nonneg _)) (prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV g).le) _)
         exact pow_le_pow_left₀ (norm_nonneg _) (hf n hn) 2
     _ ≤ B ^ 2 * (Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M) := by
         rw [← mul_sum]
@@ -190,14 +188,13 @@ private theorem card_le_of_subset_primesIcc {S : Finset ℕ} {lo hi : ℝ} (hhi 
 `V_g ≥ v₋` and `s_P ≤ 2C₀T`, while `T L^{0.46} = o(L)`. -/
 theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo) (M : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M ≤ √x := by
   set β := max 1 vlo⁻¹
   set C := max C₀ 0
   set K := M * (2 * C) * (1 + Real.log β)
   have hβ : 1 ≤ β := le_max_left _ _
-  have hlogβ : 0 ≤ Real.log β := Real.log_nonneg hβ
+  have hlogβ  := Real.log_nonneg hβ
   have hK : 0 ≤ K := by positivity
   have hlog := (isLittleO_log_rpow_atTop (show (0 : ℝ) < 0.04 by norm_num)).bound one_pos
   have hL := Real.tendsto_log_atTop
@@ -207,7 +204,7 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
     with x hlogL hL1 hL5 hx0 ι _ _ P big hP
   set L := Real.log x
   set T := Real.log L
-  have hT0 : 0 ≤ T := Real.log_nonneg hL1
+  have hT0  := Real.log_nonneg hL1
   have hL0 : 0 < L := by linarith
   have hT : T ≤ L ^ (0.04 : ℝ) := by
     rw [one_mul, Real.norm_of_nonneg hT0, Real.norm_of_nonneg (Real.rpow_nonneg hL0.le _)]
@@ -236,9 +233,7 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
       · refine (card_le_of_subset_primesIcc (Real.exp_pos _).le
           (hP.2.2.2.2.2.2.1 g hg)).trans (Real.exp_le_exp.2 ?_)
         exact Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num)
-    have hinv : (harmonicMass (P g))⁻¹ ≤ β :=
-      (inv_anti₀ hvlo hV).trans (le_max_right _ _)
-    exact mul_le_mul hcard hinv (inv_nonneg.2 (hvlo.trans_le hV).le) (Real.exp_pos _).le
+    exact mul_le_mul hcard ((inv_anti₀ hvlo hV).trans (le_max_right _ _)) (inv_nonneg.2 (hvlo.trans_le hV).le) (Real.exp_pos _).le
   have hprod : ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M ≤
       E ^ ((M : ℝ) * (2 * C * T)) := by
     calc ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M ≤ ∏ _g : ι, E ^ M :=
@@ -262,10 +257,8 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
   have hhalf : L ^ (0.5 : ℝ) * L ^ (0.5 : ℝ) = L := by
     rw [← Real.rpow_add hL0]
     norm_num
-  have h5 : 1 ≤ L ^ (0.5 : ℝ) := Real.one_le_rpow hL1 (by norm_num)
   have hkey : Real.log 2 + Real.log E * ((M : ℝ) * (2 * C * T)) ≤ L / 2 := by
     have hlog2 : Real.log 2 ≤ 1 := by linarith [Real.log_two_lt_d9]
-    have hC : 0 ≤ C := le_max_right _ _
     have h₁ : Real.log E ≤ (1 + Real.log β) * L ^ (0.46 : ℝ) := by
       rw [hlogE]
       nlinarith

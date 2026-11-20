@@ -6,13 +6,11 @@ public import Erdos821.S2.EdgeTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
@@ -39,9 +37,7 @@ lemma valid_target_small (A : Model F P J m) {n : ℕ} (i : Fin n)
     simpa [edgeChoiceValid] using h.1
   have h3 := h2.2.2.2.2.1
   have ht : ((permuteActive c.2.1 t).1) = t.1 := rfl
-  rw [ht] at h3
-  unfold targetSmall
-  exact h3
+  assumption
 
 lemma valid_target_mem (A : Model F P J m) {n : ℕ} (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
@@ -52,8 +48,6 @@ lemma valid_target_mem (A : Model F P J m) {n : ℕ} (i : Fin n)
     simpa [edgeChoiceValid] using h.1
   have hmem := ((h2.2.2.2.2.2 g).2.2.2.2)
   have ht : ((permuteActive c.2.1 t).2.2 g) = t.2.2 g := rfl
-  rw [ht] at hmem
-  unfold targetMem
-  exact hmem
+  assumption
 
 end Erdos821.P3Edge

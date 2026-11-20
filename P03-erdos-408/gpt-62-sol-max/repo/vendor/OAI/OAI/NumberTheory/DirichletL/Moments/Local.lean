@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Unequal
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentLocal
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentUnequal
 
@@ -33,12 +33,11 @@ theorem fullCorrelation_equal_divided (q k : A) (hq : q ≠ 0)
 end Domain
 
 open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
-open CenteredMomentFourier
+open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss CenteredMomentFourier
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
-theorem powerReduction_multiplicity (p : O) (_hp : p ≠ 0) {i : ℕ} (hi : 1 ≤ i)
+theorem powerReduction_multiplicity (p : O) {i : ℕ} (hi : 1 ≤ i)
     [Fintype (Residue p)] [Fintype (Residue (p ^ i))] :
     reductionMultiplicity (frequencyReduction p (p ^ i) (dvd_pow_self p (by omega))) =
       Ideal.absNorm (Ideal.span {p}) ^ (i - 1) := by
@@ -86,8 +85,7 @@ theorem equal_prime_power_formula (p : O) [(Ideal.span {p}).IsMaximal]
     rw [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
   change fullModulusCorrelation _ _ _ _ _ = _
   rw [fullCorrelation_equal_divided _ _ (pow_ne_zero i hp0)]
-  have hχfun : (supportedModulusCharacter (p ^ i) (supported_power p hp i) :
-      Residue (p ^ i) → ℂ) = (fun x => χ (π x)) := funext hχ
+  have hχfun  := funext hχ
   rw [hχfun, hred]
   have he : fullCorrelation (fun x : Residue p => x) (fun x => x) χ χ
       (π (Ideal.Quotient.mk _ k)) = localCorrelation χ 1 1 (Ideal.Quotient.mk _ k) := by
@@ -96,7 +94,7 @@ theorem equal_prime_power_formula (p : O) [(Ideal.span {p}).IsMaximal]
   rw [localCorrelation_units χ one_ne_zero one_ne_zero, div_self one_ne_zero, map_one, one_mul,
     hk, hpow, hcard]
   have hm : (reductionMultiplicity π : ℂ) = (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ (i - 1) := by
-    rw [powerReduction_multiplicity p hp0 hi, Nat.cast_pow]
+    rw [powerReduction_multiplicity p hi, Nat.cast_pow]
   rw [hm]
   split_ifs <;> rfl
 

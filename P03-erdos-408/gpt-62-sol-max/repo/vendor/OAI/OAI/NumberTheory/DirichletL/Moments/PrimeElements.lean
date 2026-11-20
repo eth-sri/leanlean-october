@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimePool
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentPrimeElements
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentPrimePool CenteredMomentAmplificationGlobal
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentPrimePool
+open CenteredMomentAmplificationGlobal
 local notation "O" => ActualEisensteinCubic.O
 
 def elementPool (P : Finset (Ideal O)) : Finset O := P.image primaryPrime

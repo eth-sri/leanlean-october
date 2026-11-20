@@ -146,7 +146,7 @@ theorem memAt_le_rawMult (S : Particle x d → ℕ) (y : ℕ × ℕ) :
   · exact le_rfl
   · exact absurd (congrArg Prod.fst h₁) h₂
   · positivity
-  · exact le_rfl
+  rfl
 
 /-- The pad product is the omission product of the source lists for the omission tuple of the
 source symmetrization. -/
@@ -155,8 +155,6 @@ theorem edgePad_eq_omitProd (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice 
   unfold edgePad omitProd omitOf
   refine prod_congr rfl fun i _ => ?_
   -- reindex the slots by `σ_i`, and split off the last slot
-  have hD : 0 < ∏ h, s.2.1.1 i h :=
-    prod_pos fun h _ => (TypeII.band_prime (mem_band_of_mem_lists s.2.1.2 i h)).pos
   have h₁ := Fin.prod_univ_castSucc (fun h => edgeSrc s c i h)
   rw [show ∏ h, edgeSrc s c i h = ∏ h, s.2.1.1 i h from
     Equiv.prod_comp (c.1 i) (fun h => s.2.1.1 i h)] at h₁
@@ -201,14 +199,14 @@ theorem card_perm_apply_eq {α : Type*} [Fintype α] [DecidableEq α] (a b : α)
     refine card_nbij' (fun τ => Equiv.swap a c * τ) (fun τ => Equiv.swap a c * τ) ?_ ?_ ?_ ?_
     · intro τ hτ
       simp only [coe_filter, Set.mem_ofPred_eq, mem_univ, true_and] at hτ ⊢
-      simp [Equiv.Perm.mul_apply, hτ]
+      simp_all
     · intro τ hτ
       simp only [coe_filter, Set.mem_ofPred_eq, mem_univ, true_and] at hτ ⊢
-      simp [Equiv.Perm.mul_apply, hτ]
+      simp_all
     · intro τ _
-      simp [← mul_assoc]
+      simp
     · intro τ _
-      simp [← mul_assoc]
+      simp
   have hsum := card_eq_sum_card_fiberwise (f := fun τ : Equiv.Perm α => τ a)
     (s := univ) (t := univ) (fun _ _ => mem_univ _)
   rw [card_univ, Fintype.card_perm] at hsum
@@ -261,7 +259,7 @@ theorem sum_rawChoices (S I : Finset (Fin K)) (F : EdgeChoice x d Y d₀ u v r �
     simp only [labChoices, mem_filter, mem_product, mem_univ, true_and, and_true] at ht
     simp only [rawChoices, edgeChoices, mem_filter, mem_product, mem_univ, true_and,
       and_true]
-    exact ⟨ht.1, ht.2⟩
+    assumption
   · intro c hc
     rw [← (mem_filter.1 hc).2.1]
   · intro t _
@@ -331,7 +329,7 @@ theorem mul_pow_le_dampConst (hq : 0 < q) (hq₁ : q < 1) (n : ℕ) :
 
 /-- With disjoint bands, each particle is promoted by at most one group, so the memory after
 the edge has `S'(x) ≥ S(x) - 1`. -/
-theorem sub_one_le_edgeMem (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem sub_one_le_edgeMem (hdisj : d.BandsDisjoint x)
     {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (xp : Particle x d) :
     s.2.2.1 xp - 1 ≤ edgeMem s c xp := by
@@ -350,7 +348,7 @@ promoted multiplicities `S(x_i)` are absorbed by the outgoing pending damping:
 `ρ^{hits(S', z')} ∏_{i ∈ J} S(x_i) ≤ C_ρ^{|J|}`. The promoted particles `x_i` hit `z'`, are
 distinct, and `S'(x_i) ≥ S(x_i) - 1`. -/
 theorem pow_hits_mul_prod_le (hq : 0 < q) (hq₁ : q < 1)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (J : Finset (Fin K)) :
     pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
@@ -367,7 +365,7 @@ theorem pow_hits_mul_prod_le (hq : 0 < q) (hq₁ : q < 1)
     rw [memAt_eq, memAt_eq]
     split_ifs
     · exact sub_one_le_edgeMem hdisj hc _
-    · exact Nat.zero_le _
+    rfl
   -- the promoted particles are distinct and hit the target
   have hcard : ∀ xp : Particle x d, (J.filter fun i => y i = xp.1).card ≤ 1 := fun xp =>
     card_le_one.2 fun i hi j hj => by
@@ -392,7 +390,7 @@ theorem pow_hits_mul_prod_le (hq : 0 < q) (hq₁ : q < 1)
       calc (J.filter fun i => xp.1 = y i).card * S' xp ≤ 1 * S' xp :=
             Nat.mul_le_mul_right _ this
         _ = S' xp := one_mul _
-  have hexp : ∑ i ∈ J, (memAt x d S (y i) - 1) ≤ pendingHits x d c.2.2.1.1 S' :=
+  have hexp  :=
     (sum_le_sum fun i _ => hmem i).trans hhits
   calc pendingWeight q ^ pendingHits x d c.2.2.1.1 S' * ∏ i ∈ J, (memAt x d S (y i) : ℝ)
       ≤ pendingWeight q ^ (∑ i ∈ J, (memAt x d S (y i) - 1)) *
@@ -416,7 +414,7 @@ variable {q x : ℝ} {d : Data K} {N : ℕ}
 
 /-- With disjoint bands, a prime of band `i` has `V(p) = V_i`. -/
 theorem primeMass_eq_of_mem_band
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {i : Fin K} {p : ℕ}
+    (hdisj : d.BandsDisjoint x) {i : Fin K} {p : ℕ}
     (hp : p ∈ band x (d.a i)) : primeMass x d p = harmonicMass (band x (d.a i)) := by
   unfold primeMass
   rw [Fintype.sum_eq_single i fun j hji =>
@@ -425,7 +423,7 @@ theorem primeMass_eq_of_mem_band
 
 /-- With nonnegative band masses and baselines at least `1/2`, the birth weights are
 nonnegative; off the band primes `V(p) = 0`. -/
-theorem primeWeight_nonneg_of (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+theorem primeWeight_nonneg_of (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (p : ℕ) :
     0 ≤ primeWeight q x d N p := by
   have hV0 : 0 ≤ primeMass x d p :=
@@ -439,52 +437,10 @@ theorem primeWeight_nonneg_of (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i
     rw [h0]
     simp
 
-/-- At a prime of band `i`, `0 < ν(p) ≤ 2 μ_i(p)` with `μ_i(p) = 1/(p V_i)`
-(`mem:measure-masses`). -/
-theorem primeWeight_le_two
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) {i : Fin K} {p : ℕ}
-    (hp : p ∈ band x (d.a i)) :
-    0 < primeWeight q x d N p ∧
-      primeWeight q x d N p ≤ 2 * (1 / (p * harmonicMass (band x (d.a i)))) := by
-  have hVi := hV i
-  have hb₁ := hb p (mem_biUnion.2 ⟨i, mem_univ i, hp⟩)
-  have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hp).pos
-  unfold primeWeight
-  rw [primeMass_eq_of_mem_band hdisj hp]
-  refine ⟨one_div_pos.2 (mul_pos (mul_pos (by linarith) (by positivity)) (by linarith)), ?_⟩
-  rw [show 2 * (1 / (p * harmonicMass (band x (d.a i)))) =
-    1 / (harmonicMass (band x (d.a i)) * p * (1 / 2)) by field_simp]
-  refine one_div_le_one_div_of_le (by positivity) ?_
-  have : (p : ℝ) * (1 / 2) ≤ ((p : ℝ) + 1) * baseline q N p := by nlinarith
-  calc harmonicMass (band x (d.a i)) * p * (1 / 2)
-      = harmonicMass (band x (d.a i)) * ((p : ℝ) * (1 / 2)) := by ring
-    _ ≤ harmonicMass (band x (d.a i)) * (((p : ℝ) + 1) * baseline q N p) :=
-        mul_le_mul_of_nonneg_left this (by linarith)
-    _ = _ := by ring
-
-/-- The birth weights of a band sum to at most `2`. -/
-theorem sum_primeWeight_band_le_two
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
-    (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (i : Fin K) :
-    ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2 := by
-  have hVi : 0 < harmonicMass (band x (d.a i)) := by linarith [hV i]
-  calc ∑ p ∈ band x (d.a i), primeWeight q x d N p
-      ≤ ∑ p ∈ band x (d.a i), 2 * (1 / (p * harmonicMass (band x (d.a i)))) :=
-        sum_le_sum fun p hp => (primeWeight_le_two hdisj hV hb hp).2
-    _ = 2 / harmonicMass (band x (d.a i)) * harmonicMass (band x (d.a i)) := by
-        nth_rewrite 3 [harmonicMass]
-        rw [mul_sum]
-        refine sum_congr rfl fun p _ => ?_
-        field_simp
-    _ = 2 := by field_simp
-
 /-- The fresh draws outside `I` have total birth weight at most `2^K`. -/
 theorem sum_freshDraws_le
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (I : Finset (Fin K)) :
     ∑ T ∈ freshDraws x d I, ∏ i ∈ univ.filter (· ∉ I), primeWeight q x d N (T i) ≤ 2 ^ K := by
   have hν := primeWeight_nonneg_of hV hb (q := q) (N := N)
@@ -502,15 +458,15 @@ theorem sum_freshDraws_le
           exacts [zero_le_one, hν _]
         split_ifs with hi
         · simp
-        · exact sum_primeWeight_band_le_two hdisj hV hb i
+        · exact sum_primeWeight_band_le_two hV hb i
     _ = 2 ^ K := by rw [prod_const, card_univ, Fintype.card_fin]
 
 open scoped Classical in
 /-- **The exceptional fresh draws** (PD `mem:measure-masses` and test (ii)): at a source passing
 the second good-state test, the fresh draws outside `I ≠ ∅` failing the phase separation have
 total birth weight at most `2^K exp(-L^{a_{i_*}}/4)`. -/
-theorem sum_bad_le (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+theorem sum_bad_le
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) {d₀ rr : ℝ} {J : ℕ} {p : Lists K J}
     (hgood : GoodSecond x d d₀ rr p) {I : Finset (Fin K)} (hI : I.Nonempty) :
     ∑ T ∈ (freshDraws x d I).filter (fun T => ¬ Separated x d d₀ I (I.max' hI) rr p T),
@@ -529,7 +485,7 @@ theorem sum_bad_le (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band
               prod_le_prod₀ (fun i _ => hν _) fun i hi => by
                 have hTi := hT' i
                 rw [ite_eq_right (mem_filter.1 hi).2] at hTi
-                exact (primeWeight_le_two hdisj hV hb hTi).2
+                exact (primeWeight_le_two hV hb hTi).2
           _ = 2 ^ (univ.filter (· ∉ I)).card *
                 ∏ i ∈ univ.filter (· ∉ I), 1 / ((T i : ℝ) * harmonicMass (band x (d.a i))) := by
               rw [prod_mul_distrib, prod_const]
@@ -642,8 +598,8 @@ theorem rawDet_iff (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d�
 The pending weights are at most one, and a promotion weight `S(x_i)/V(a_i)` is at most
 `2 S(a_i, ·)`. -/
 theorem rawAmp_le_crude (hq : 0 < q) (hq₁ : q < 1)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (s : ChainState x d Y d₀ u v r B) {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) :
     rawAmp q N s c ≤ (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
@@ -673,7 +629,7 @@ theorem rawAmp_le_crude (hq : 0 < q) (hq₁ : q < 1)
           change (memAt x d s.2.2.1 (edgePromoted c i) : ℝ) ≤ rawMult x d s.2.2.1 (c.2.2.2.1 i).1
             at h₁
           nlinarith
-        · exact le_rfl
+        rfl
     have hW0 : 0 ≤ rawWeight q N s c := prod_nonneg fun i _ => by
       split_ifs
       · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
@@ -713,8 +669,8 @@ coefficients of the piece `(S, I)` whose fresh draw lies in `E` sum to at most
 `16 (2B)^{|I|} ∑_{T ∈ E} ∏_{i ∉ I} ν(T_i)`. The symmetrizations cancel `M!^{-2K}`, each promoted
 group carries `∑_p 2 S(p, ·) ≤ 2B`, and the targets number at most `16`. -/
 theorem sum_rawAmp_fresh_le (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.Hm)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (s : ChainState x d Y d₀ u v r B)
     (S I : Finset (Fin K)) (E : Finset (Fin K → ℕ)) :
     ∑ c ∈ (rawChoices x d Y d₀ u v r S I).filter (fun c => freshOf I c.2.2.2.1 ∈ E),
@@ -819,8 +775,8 @@ open scoped Classical in
 anchor promotion is kept; the other promotions are absorbed by the index damping
 (`pow_hits_mul_prod_le`), and `1/V ≤ 2`. -/
 theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (s : ChainState x d Y d₀ u v r B) {S I : Finset (Fin K)} (hI : I.Nonempty)
     {c : EdgeChoice x d Y d₀ u v r} (hc : c ∈ rawChoices x d Y d₀ u v r S I) :
     rawAmp q N s c ≤ (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 * (2 * dampConst q) ^ K *
@@ -830,7 +786,7 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
   classical
   obtain ⟨hc, -, hflag⟩ := mem_filter.1 hc
   set i₀ := I.max' hI with hi₀
-  have hi₀I : i₀ ∈ I := I.max'_mem hI
+  have hi₀I  := I.max'_mem hI
   have hρ0 := (pendingWeight_pos hq).le
   have hρ1 := (pendingWeight_lt_one hq hq₁).le
   have hdC := one_le_dampConst hq hq₁
@@ -869,8 +825,7 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
         _ = 2 ^ K * (m i₀ * ∏ i ∈ I.erase i₀, m i) := by rw [mul_prod_erase I m hi₀I]
     -- the damping absorbs the other promotions
     have hdamp := pow_hits_mul_prod_le hq hq₁ hdisj (s := s) hc (I.erase i₀)
-    have hdamp' : pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
-        ∏ i ∈ I.erase i₀, m i ≤ dampConst q ^ K :=
+    have hdamp'  :=
       hdamp.trans (pow_le_pow_right₀ hdC ((card_le_univ _).trans (by rw [Fintype.card_fin])))
     have hW0 : 0 ≤ rawWeight q N s c := prod_nonneg fun i _ => by
       split_ifs
@@ -878,9 +833,7 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
           (by linarith [hVa i])
       · exact hν _
     set r₀ := (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 with hr₀
-    have hr0 : 0 ≤ r₀ := by positivity
     set ρh := pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) with hρh
-    have hρh0 : 0 ≤ ρh := pow_nonneg hρ0 _
     calc r₀ * pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 * ρh * rawWeight q N s c
         ≤ r₀ * 1 * ρh * (2 ^ K * (m i₀ * ∏ i ∈ I.erase i₀, m i) * F) := by
           gcongr
@@ -899,7 +852,7 @@ and which satisfy the anchor conditions number at most `16 (M!/M)^K`: the omissi
 the other promoted primes are unique (`anchor_unique`), and then at most `16` targets solve
 the determinant equation. -/
 theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (s : ChainState x d Y d₀ u v r B) {I : Finset (Fin K)} (hI : I.Nonempty) {T : Fin K → ℕ}
     (hsep : Separated x d d₀ I (I.max' hI) (tau r (complement s.1.1) / tau r s.1.1) s.2.1.1 T)
     (xp : Particle x d) :
@@ -913,7 +866,7 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
       16 * (((padCount x + 1).factorial / (padCount x + 1) : ℝ)) ^ K := by
   classical
   set i₀ := I.max' hI with hi₀
-  have hi₀I : i₀ ∈ I := I.max'_mem hI
+  have hi₀I  := I.max'_mem hI
   set F := ((univ : Finset (Fin K → Equiv.Perm (Fin (padCount x + 1)))) ×ˢ
       ((univ : Finset ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r)) ×ˢ labChoices x d I)).filter
       fun t : (Fin K → Equiv.Perm (Fin (padCount x + 1))) ×
@@ -924,7 +877,7 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
   rcases F.eq_empty_or_nonempty with hF | ⟨t₀, ht₀⟩
   · rw [hF, card_empty, Nat.cast_zero]
     positivity
-  have hprime : ∀ i h, (s.2.1.1 i h).Prime := fun i h =>
+  have hprime  := fun i h =>
     TypeII.band_prime (mem_band_of_mem_lists s.2.1.2 i h)
   -- the data of a triple of `F`, in the form of `anchor_unique`
   have hdata : ∀ t ∈ F, t.2.2 ∈ labChoices x d I ∧ freshOf I t.2.2 = T ∧
@@ -957,7 +910,7 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
     intro t ht
     obtain ⟨hlab, hT, hp, hline, hcond⟩ := hdata t ht
     obtain ⟨hlab₀, hT₀, hp₀, hline₀, hcond₀⟩ := hdata t₀ ht₀
-    have hps : xp.1.1 ∈ band x (d.a i₀) := hp ▸ mem_band_of_mem_labChoices hlab i₀
+    have hps  := hp ▸ mem_band_of_mem_labChoices hlab i₀
     obtain ⟨ho, hZ⟩ := anchor_unique hU hu hdisj s.2.1.2 s.1.2 hI hsep hps
       (fun i h => hp ▸ hcond.2.2.1 i₀ i h) (hsel t ht) (hsel t₀ ht₀) (hselban t ht)
       (hselban t₀ ht₀) hcond.1 hcond.2.1 hcond₀.1 hcond₀.2.1 t.2.1.2 t₀.2.1.2
@@ -1010,8 +963,8 @@ open scoped Classical in
 anchor particle (total mass `B`) and the fresh draw (total weight `2^K`), and count the rest by
 `card_anchor_le`. -/
 theorem sum_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (s : ChainState x d Y d₀ u v r B)
     {I : Finset (Fin K)} (hI : I.Nonempty) :
     ∑ t ∈ (univ : Finset (Fin K → Equiv.Perm (Fin (padCount x + 1)))) ×ˢ
@@ -1062,7 +1015,7 @@ theorem sum_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
       _ ≤ C₀ * 2 ^ K := by
           refine mul_le_mul_of_nonneg_left ?_ hC0
           exact (sum_le_sum_of_subset_of_nonneg (filter_subset _ _) fun T _ _ => hνF0 T).trans
-            (sum_freshDraws_le hdisj hV hb I)
+            (sum_freshDraws_le hV hb I)
   calc ∑ t ∈ Ω, (if freshOf I t.2.2 ∈ G then
         (memAt x d s.2.2.1 ((t.2.2 i₀).1, lineOf (t.2.2 i₀).1 t.2.1.1) : ℝ) *
           (∏ i ∈ univ.filter (· ∉ I), primeWeight q x d N (t.2.2 i).1) *
@@ -1102,8 +1055,8 @@ open scoped Classical in
 /-- **The anchored row** (PD §4, dirty raw edges, `I ≠ ∅`): the raw coefficients of the piece
 `(S, I)` whose fresh draw passes the phase separation sum to at most `16 (4 C_ρ)^K B / M^K`. -/
 theorem sum_rawAmp_good_le (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (s : ChainState x d Y d₀ u v r B)
     (S : Finset (Fin K)) {I : Finset (Fin K)} (hI : I.Nonempty) :
     ∑ c ∈ (rawChoices x d Y d₀ u v r S I).filter (fun c => freshOf I c.2.2.2.1 ∈
@@ -1161,8 +1114,6 @@ theorem sum_rawAmp_good_le (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.H
           (B * (16 * (((padCount x + 1).factorial / (padCount x + 1) : ℝ)) ^ K * 2 ^ K)) :=
         mul_le_mul_of_nonneg_left hA (by positivity)
     _ = 16 * (4 * dampConst q) ^ K * B / ((padCount x + 1 : ℕ) : ℝ) ^ K := by
-        have hf : ((padCount x + 1).factorial : ℝ) ≠ 0 := by positivity
-        have hM : ((padCount x : ℝ) + 1) ≠ 0 := by positivity
         rw [hκ, hr₀, div_pow, show (4 * dampConst q) ^ K = 2 ^ K * (2 * dampConst q) ^ K by
           rw [← mul_pow]; ring]
         push_cast
@@ -1188,20 +1139,20 @@ theorem freshOf_mem_freshDraws {S I : Finset (Fin K)} {c : EdgeChoice x d Y d₀
 /-- **The row without promotions** (PD §4, dirty raw edges, `I = ∅`): the raw coefficients of
 the piece `(S, ∅)` sum to at most `16 · 2^K`, independently of `B`. -/
 theorem sum_rawAmp_le_of_empty (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.Hm)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (s : ChainState x d Y d₀ u v r B)
     (S : Finset (Fin K)) :
     ∑ c ∈ rawChoices x d Y d₀ u v r S ∅, rawAmp q N s c ≤ 16 * 2 ^ K := by
   have h := sum_rawAmp_fresh_le hq hq₁ hU hdisj hV hb s S ∅ (freshDraws x d ∅)
   rw [filter_true_of_mem fun c hc => freshOf_mem_freshDraws hc, card_empty, pow_zero,
     mul_one] at h
-  exact h.trans (mul_le_mul_of_nonneg_left (sum_freshDraws_le hdisj hV hb ∅) (by norm_num))
+  exact h.trans (mul_le_mul_of_nonneg_left (sum_freshDraws_le hV hb ∅) (by norm_num))
 
 /-- The raw coefficients are nonnegative. -/
 theorem rawAmp_nonneg (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
+    (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x) (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     (s : ChainState x d Y d₀ u v r B) {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) : 0 ≤ rawAmp q N s c := by
   have hρ0 := (pendingWeight_pos hq).le
@@ -1212,15 +1163,15 @@ theorem rawAmp_nonneg (hq : 0 < q)
     · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
         (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; linarith [hV i])
     · exact hν _
-  · exact le_rfl
+  rfl
 
 /-- **The row with promotions** (PD `mem:epsilon`, `I ≠ ∅`): the raw coefficients of the piece
 `(S, I)` sum to at most `16 (4 C_ρ)^K B / M^K + 16 (2B + 1)^K 2^K exp(-L^{a_{i_*}}/4)`. At a
 source failing the second good-state test the row vanishes; otherwise split the fresh draws by
 the phase separation (`sum_rawAmp_good_le`, `sum_rawAmp_fresh_le` and `sum_bad_le`). -/
 theorem sum_rawAmp_le_of_nonempty (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.Hm)
-    (hu : 0 < u) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
-    (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
+    (hu : 0 < u) (hdisj : d.BandsDisjoint x)
+    (hV : d.BandsLower x)
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (s : ChainState x d Y d₀ u v r B)
     (S : Finset (Fin K)) {I : Finset (Fin K)} (hI : I.Nonempty) :
     ∑ c ∈ rawChoices x d Y d₀ u v r S I, rawAmp q N s c ≤
@@ -1251,7 +1202,7 @@ theorem sum_rawAmp_le_of_nonempty (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * 
         (pow_le_pow_right₀ (by linarith [(Nat.cast_nonneg B : (0 : ℝ) ≤ B)])
           ((card_le_univ I).trans (by rw [Fintype.card_fin])))
     exact mul_le_mul (mul_le_mul_of_nonneg_left hpow (by norm_num))
-      (sum_bad_le hdisj hV hb hgood hI)
+      (sum_bad_le hV hb hgood hI)
       (sum_nonneg fun T _ => prod_nonneg fun i _ => hν _) (by positivity)
   · -- a source failing the second good-state test has no admissible edge
     refine le_trans (le_of_eq (sum_eq_zero fun c _ => ?_)) hR0

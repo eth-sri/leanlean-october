@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import OAI.NumberTheory.PrimeGaps.ConductorBounds
 public import Mathlib.NumberTheory.LSeries.Nonvanishing
 public import Mathlib.Tactic.NormNum.RealSqrt
@@ -12,27 +13,21 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
-open scoped ComplexConjugate
 
-open Filter Topology
 
 theorem exists_vaughan_log_parameters {A : ℝ} (hA : 0 < A) {X : ℕ}
     (hX : 16 ≤ X) (hL : 2 ≤ Real.log (X:ℝ))
@@ -141,13 +136,12 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
   let x : ℝ := X
   let L : ℝ := Real.log x
   have hx1 : 1 ≤ x := by dsimp [x]; exact_mod_cast (by omega : 1 ≤ X)
-  have hx : 0 < x := lt_of_lt_of_le zero_lt_one hx1
   have hL1 : 1 ≤ L := by dsimp [L,x]; linarith
-  have hL0 : 0 < L := lt_of_lt_of_le zero_lt_one hL1
+  have hL0  := lt_of_lt_of_le zero_lt_one hL1
   have hQP : Q ≤ P := by
     change Q ≤ 2^(r+n)
     exact_mod_cast hQ.trans hcover
-  have hH : (harmonic P:ℝ) ≤ 2*L := harmonic_le_twice_log hPX hL1
+  have hH  := harmonic_le_twice_log hPX hL1
   have hH2 : (harmonic P:ℝ)^2 ≤ 4*L^2 := by nlinarith [harmonic_real_nonneg P]
   have hsmallR : (∑ d∈Finset.Icc 1 R,primitiveErrorMass x d/(d.totient:ℝ)) ≤
       (R:ℝ)*(M*x*L^(-2*A-14)) := by
@@ -158,17 +152,14 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
       (d:ℝ) ≤ R := by exact_mod_cast hdR
       _ ≤ 2*L^(A+10) := hRhi
       _ ≤ L*L^(A+10) := mul_le_mul_of_nonneg_right hL (by positivity)
-      _ = L^(A+11) := by rw [show A+11=1+(A+10) by ring,Real.rpow_add hL0 1 (A+10),Real.rpow_one]
+      _ = L^(A+11) := by rpow_ring hL0
   have hsmallTotal : (∑ d∈Finset.Icc 1 R,primitiveErrorMass x d/(d.totient:ℝ)) *
       (harmonic P:ℝ)^2 ≤ 8*M*x*L^(-A) := by
     calc
       _ ≤ (2*L^(A+10)*(M*x*L^(-2*A-14)))*(4*L^2) := by
         apply mul_le_mul (hsmallR.trans (mul_le_mul_of_nonneg_right hRhi (by positivity))) hH2
           (sq_nonneg _) (by positivity)
-      _ = 8*M*x*L^(-A-2) := by
-        conv_rhs => rw [show -A-2=(A+10)+(-2*A-14)+2 by ring,
-          Real.rpow_add hL0,Real.rpow_add hL0,Real.rpow_two]
-        ring
+      _ = 8*M*x*L^(-A-2) := by rpow_ring hL0
       _ ≤ _ := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)) (by positivity)
   have hhi := highConductorBlockBound_log_le hA (show 2 ≤ X by omega) hL1 hPX
@@ -179,10 +170,7 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
       _ ≤ ((6*L)*(8000*x*L^(-A-3)))*(4*L^2) := by
         apply mul_le_mul (mul_le_mul hn hhi (highConductorBlockBound_nonneg _ _ _ _ _) (by positivity))
           hH2 (sq_nonneg _) (by positivity)
-      _ = _ := by
-        conv_rhs => rw [show -A=(-A-3)+1+2 by ring,Real.rpow_add hL0,Real.rpow_add hL0,
-          Real.rpow_one,Real.rpow_two]
-        ring
+      _ = _ := by rpow_ring hL0
   have hlog2 : (Nat.log 2 X:ℝ) ≤ 6*L := by
     have hmono : Nat.log 2 X ≤ dyadicExponent (X+1:ℕ) := by
       unfold dyadicExponent
@@ -190,14 +178,12 @@ theorem endpoint_errors_nat_log_bound {A M : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
       exact (Nat.log_mono_right (Nat.le_succ X)).trans (Nat.le_succ _)
     exact (by exact_mod_cast hmono : (Nat.log 2 X:ℝ) ≤ (dyadicExponent (X+1:ℕ):ℝ)).trans
       (vaughanBinaryExponent_bounds (show 2 ≤ X by omega) hL1).2
-  have hlogP : Real.log (P:ℝ) ≤ L := log_nat_monotone hPX
+  have hlogP  := log_nat_monotone hPX
   have hcost : (P:ℝ)*(Nat.log 2 X:ℝ)*Real.log P ≤ 24*x*L^(-A) := by
     calc
       _ ≤ (4*x^(1/2:ℝ)*L^(-A-10))*(6*L)*L := by
         gcongr
-      _ = 24*x^(1/2:ℝ)*L^(-A-8) := by
-        rw [show -A-8=(-A-10)+1+1 by ring,Real.rpow_add hL0,Real.rpow_add hL0,Real.rpow_one]
-        ring
+      _ = 24*x^(1/2:ℝ)*L^(-A-8) := by rpow_ring hL0
       _ ≤ _ := by
         have hsx : x^(1/2:ℝ) ≤ x := by
           simpa only [Real.rpow_one] using (Real.rpow_le_rpow_of_exponent_le hx1
@@ -224,16 +210,15 @@ theorem endpoint_errors_real_log_bound {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
   let Q : ℕ := ⌊x^(1/2:ℝ)*(Real.log x)^(-(A+10))⌋₊
   let L : ℝ := Real.log (X:ℝ)
   have hX16 : (16:ℝ) ≤ X := by
-    change (16:ℝ) ≤ (⌊x⌋₊:ℝ)
-    exact_mod_cast hX
+    norm_cast
   have hX1 : (1:ℝ) ≤ X := by linarith
   have hX0 : (0:ℝ) < X := by linarith
-  have hfloor : (X:ℝ) ≤ x := Nat.floor_le hx
-  have hceil : x < (X:ℝ)+1 := Nat.lt_floor_add_one x
+  have hfloor  := Nat.floor_le hx
+  have hceil  := Nat.lt_floor_add_one x
   have hL1 : 1 ≤ L := by dsimp [L,X]; linarith
   have hL0 : 0 < L := by linarith
-  have hloglo : L ≤ Real.log x := Real.log_le_log hX0 hfloor
-  have hlogx0 : 0 < Real.log x := hL0.trans_le hloglo
+  have hloglo  := Real.log_le_log hX0 hfloor
+  have hlogx0  := hL0.trans_le hloglo
   have hloghi : Real.log x ≤ 2*L :=
     calc
       _ ≤ Real.log (X+1:ℕ) := Real.log_le_log (hX0.trans_le hfloor) (by push_cast; linarith)
@@ -262,10 +247,10 @@ theorem endpoint_errors_real_log_bound {A M x : ℝ} (hA : 0 < A) (hM : 0 ≤ M)
     have hh₁ : 2*(X:ℝ)^(1/2:ℝ)*L^(-A-10) ≤ 2*(X:ℝ)^(1/2:ℝ) := by
       simpa only [mul_one] using mul_le_mul_of_nonneg_left hneg
         (by positivity : 0 ≤ 2*(X:ℝ)^(1/2:ℝ))
-    have hh : (Q:ℝ) ≤ X := hQ.trans (hh₁.trans hrootsmall)
+    have hh  := hQ.trans (hh₁.trans hrootsmall)
     exact_mod_cast hh
   have hnat := endpoint_errors_nat_log_bound hA hM hX hL hpower hQ hsmall
-  have hH : (harmonic Q:ℝ) ≤ 2*L := harmonic_le_twice_log hQX hL1
+  have hH  := harmonic_le_twice_log hQX hL1
   have habs : L^2 ≤ (X:ℝ)*L^(-A) := by
     convert rpow_absorption_of_exponents (c:=2) hX1 hL1 hpower
       (show A+2 ≤ A+10 by linarith) (show (1/32:ℝ) ≤ 1 by norm_num) using 1 <;> norm_num
@@ -309,11 +294,11 @@ theorem bombieriVinogradov_of_siegelWalfisz (hs : SiegelWalfisz) : BombieriVinog
     congr 1
     ring
   obtain ⟨z,hz⟩ := eventually_atTop.mp he
-  refine ⟨max z 2,by linarith [le_max_right z (2:ℝ)],?_⟩
+  refine ⟨max z 2,by simp,?_⟩
   intro x hx
   exact hz x ((le_max_left z (2:ℝ)).trans hx)
 
-open Complex Filter Topology
+open Complex
 
 noncomputable def poleRemovedL {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) : ℂ → ℂ :=
   if χ = 1 then DirichletCharacter.LFunctionTrivChar₁ q else χ.LFunction
@@ -327,7 +312,7 @@ theorem poleRemovedL_differentiable {q : ℕ} [NeZero q]
   unfold poleRemovedL
   split_ifs with hχ
   · exact DirichletCharacter.differentiable_LFunctionTrivChar₁ q
-  · exact DirichletCharacter.differentiable_LFunction hχ
+  fun_prop
 
 theorem poleRemovedL_ne_zero {q : ℕ} [NeZero q]
     (χ : DirichletCharacter ℂ q) {s : ℂ} (hs : 1 ≤ s.re) :
@@ -352,7 +337,7 @@ theorem primeLogDerivativeRegular_eq {q : ℕ} [NeZero q]
     primeLogDerivativeRegular χ s =
       LSeries (fun n : ℕ => χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) s -
         (if χ = 1 then 1 / (s - 1) else 0) := by
-  have hs1 : s ≠ 1 := by intro h; simp [h] at hs
+  have hs1 : s ≠ 1 := by intro h; simp_all
   have hL := DirichletCharacter.LSeries_twist_vonMangoldt_eq χ hs
   change LSeries (fun n : ℕ => χ (n : ZMod q) * (ArithmeticFunction.vonMangoldt n : ℂ)) s =
     -deriv (LSeries (fun n : ℕ => χ (n : ZMod q))) s /

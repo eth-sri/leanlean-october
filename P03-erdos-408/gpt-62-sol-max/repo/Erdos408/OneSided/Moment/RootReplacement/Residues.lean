@@ -96,8 +96,7 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
     intro P₀ hP₀
     obtain ⟨hbox, hco, -⟩ := mem_filter.1 hP₀
     have h₁ : ⌈a₁ * U⌉₊ ≤ P₀.1 := (mem_Icc.1 (mem_product.1 hbox).1).1
-    have h₂ : 0 < ⌈a₁ * U⌉₊ := Nat.ceil_pos.2 (by nlinarith)
-    exact RootResidue.det_root_matrix (h₂.trans_le h₁) hco
+    exact RootResidue.det_root_matrix ((Nat.ceil_pos.2 (by nlinarith)).trans_le h₁) hco
   have hcls : ∀ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, (cls P₀).1 = mat P₀ := fun P₀ hP₀ => by
     simp only [cls, hdet P₀ hP₀, ↓reduceDIte]
   -- step: the lines of a root are the kernel lines of its matrix modulo `S`
@@ -119,12 +118,9 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
     refine congrArg card (filter_congr fun P₀ hP₀ => ?_)
     constructor
     · rintro ⟨hQ, hg⟩
-      have hP₀' : P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃ := mem_filter.2 ⟨hP₀, hQ⟩
-      exact ⟨hQ.1, hQ.2.1, hQ.2.2.1, hQ.2.2.2.1, hQ.2.2.2.2, by rw [← hg, hcls P₀ hP₀']⟩
+      exact ⟨hQ.1, hQ.2.1, hQ.2.2.1, hQ.2.2.2.1, hQ.2.2.2.2, by rw [← hg, hcls P₀ (mem_filter.2 ⟨hP₀, hQ⟩)]⟩
     · rintro ⟨h₁, h₂, h₃, h₄, h₅, hg⟩
-      have hP₀' : P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃ :=
-        mem_filter.2 ⟨hP₀, h₁, h₂, h₃, h₄, h₅⟩
-      exact ⟨⟨h₁, h₂, h₃, h₄, h₅⟩, Subtype.ext ((hcls P₀ hP₀').trans hg)⟩
+      exact ⟨⟨h₁, h₂, h₃, h₄, h₅⟩, Subtype.ext ((hcls P₀ (mem_filter.2 ⟨hP₀, h₁, h₂, h₃, h₄, h₅⟩)).trans hg)⟩
   -- step: the main term is the average over `SL₂(ℤ/S)`, the independent line average (RR5)
   have hmain := average_matLine_eq_lineAverage x d hP S rfl G hG
   have hdiff : ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, G (rootLines P₀) -
@@ -143,7 +139,6 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
   set E := max C 0 * U * V * min U V ^ (-(1 / 5 : ℝ))
   have hE : 0 ≤ E := by
     have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (by positivity) _
-    have : 0 ≤ max C 0 := le_max_right _ _
     positivity
   have hterm : ∀ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
       ‖(((rootCount U V a₁ b₁ a₂ b₂ a₃ b₃ S g₀ : ℝ) -
@@ -155,7 +150,6 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
     refine mul_le_mul ((hC U V hU hV S hSsq g₀ a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃
       hab₃ hb₃).trans ?_) (hM _) (norm_nonneg _) (by positivity)
     have : 0 ≤ U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ)) := by
-      have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (by positivity) _
       positivity
     calc C * U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))
         = C * (U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))) := by ring
@@ -163,11 +157,11 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
           mul_le_mul_of_nonneg_right (le_max_left _ _) this
       _ = (S : ℝ) ^ 2 * E := by ring
   have hS4 := card_SL_le S
-  have hSR : (∏ p ∈ P, (p : ℝ)) = (S : ℝ) := by rw [hS, Nat.cast_prod]
+  have hSR : (∏ p ∈ P, (p : ℝ)) = (S : ℝ) := by rw [Nat.cast_prod]
   rw [hdiff, hSR]
   refine (norm_sum_le _ _).trans ((sum_le_sum fun g₀ _ => hterm g₀).trans ?_)
   rw [sum_const, card_univ, nsmul_eq_mul]
-  have hEM : 0 ≤ E * M := mul_nonneg hE hM0
+  have hEM  := mul_nonneg hE hM0
   have hS2 : 0 ≤ (S : ℝ) ^ 2 := by positivity
   calc (Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℝ) * ((S : ℝ) ^ 2 * E * M)
       = (Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) : ℝ) * (S : ℝ) ^ 2 *

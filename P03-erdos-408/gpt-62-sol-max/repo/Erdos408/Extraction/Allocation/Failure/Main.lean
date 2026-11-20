@@ -91,7 +91,6 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
       Real.exp (-T))) :
     Real.exp (a / 4 * T) * (S₁ + S₂) ≤ 20 * κ * (x / L) * L ^ (-(a / 2)) := by
   have hL0 : 0 < L := by rw [← hLT]; exact exp_pos T
-  have hxκ : 0 ≤ 2 * κ * x := hX0.trans hX
   -- `e^{-T} ≤ e^{-aT}` and the bracket is at most `5 e^{-3aT/4}`
   have h1 : Real.exp (-T) ≤ Real.exp (-(a * T)) := exp_le_exp.2 (by nlinarith)
   have h2 : Real.exp (-(a * T)) ≤ Real.exp (-(3 * a * T / 4)) := exp_le_exp.2 (by nlinarith)
@@ -100,10 +99,10 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
     have h3 : Real.exp (a * T / 4) * Real.exp (-(a * T)) = Real.exp (-(3 * a * T / 4)) := by
       rw [← exp_add]; ring_nf
     have h4 : 0 ≤ Real.exp (a * T / 4) := (exp_pos _).le
-    have h5 : Real.exp (a * T / 4) * Real.exp (-T) ≤ Real.exp (a * T / 4) * Real.exp (-(a * T)) :=
+    have h5  :=
       mul_le_mul_of_nonneg_left h1 h4
     nlinarith
-  have hXL : 0 ≤ X / L := div_nonneg hX0 hL0.le
+  have hXL  := div_nonneg hX0 hL0.le
   have hsum : S₁ + S₂ ≤ X / L * (10 * Real.exp (-(3 * a * T / 4))) := by
     have := mul_le_mul_of_nonneg_left hB hXL
     linarith

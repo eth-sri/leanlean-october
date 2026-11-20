@@ -1,7 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
-public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalEnergy
+public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
+public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 
 @[expose] public section
@@ -9,13 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentExceptionalCappedAmplitude
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentCounting CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondExceptionalCount
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentCounting
+open CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice
+open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
 open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
@@ -52,8 +52,8 @@ theorem normalized_rectangle_absolute (η : Character) (m A z : O)
       (rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂-
        rowTwistedSum η m A z W₁ t Y₁*rowTwistedSum η m A z W₂ t Y₂)‖≤
       (2*(128*b₁*M₁)*(128*b₂*M₂))*Real.sqrt T := by
-  have hT : 0<T := hpX ▸ mul_pos hX₁ hX₂
-  have hsq : 0<Real.sqrt T := Real.sqrt_pos.2 hT
+  have hT  := hpX ▸ mul_pos hX₁ hX₂
+  have hsq  := Real.sqrt_pos.2 hT
   have hprod (U V : ℝ) (hU : 0<U) (hV : 0<V) :
       ‖rowTwistedSum η m A z W₁ t U*rowTwistedSum η m A z W₂ t V‖≤
         ((128*b₁*M₁)*(128*b₂*M₂))*(U*V) := by
@@ -76,7 +76,7 @@ theorem normalized_rectangle_absolute (η : Character) (m A z : O)
 
 theorem max_raw_reduction (Z Rred r : ℝ) (hZ : 1<Z) (hR : 0<Rred) :
     max 1 (Z^r/Rred)=Z^(max (r-Real.logb Z Rred) 0) := by
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   have he : Z^r/Rred=Z^(r-Real.logb Z Rred) := by
     rw [Real.rpow_sub hz,Real.rpow_logb hz hZ.ne' hR]
   rw [he]

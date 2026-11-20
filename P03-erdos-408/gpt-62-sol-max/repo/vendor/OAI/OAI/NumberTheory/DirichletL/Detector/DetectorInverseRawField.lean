@@ -13,10 +13,9 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeDetectorInverseRawField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform
-open ProbeHighRowFamily ProbeFinalAssembly
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber
+open HeckeDetectorBatch HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
+open DetectorDictionaryInverseClippedUniform ProbeHighRowFamily ProbeFinalAssembly
 
 private theorem raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
     (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by
@@ -41,7 +40,6 @@ theorem fixed_raw_profiles (c κ:ℝ)(hc:0<c)(hκ:0<κ):
   exact ⟨A*C,mul_pos hA hC,hfamily data c κ A hA.le href⟩
 
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
@@ -69,13 +67,13 @@ theorem source_batch_inverse_raw
   let C:ℝ:=1+(∑label,CB label)+(∑label,CH label)
   have hsumB:0≤∑label,CB label:=Finset.sum_nonneg (fun j _=>(hCB j).le)
   have hsumH:0≤∑label,CH label:=Finset.sum_nonneg (fun j _=>(hCH j).le)
-  have hC:0<C:=by dsimp [C];linarith
+  have hC:0<C:=by linarith
   have hCBound (label):CB label≤C:=by
     have he:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hCB j).le) (Finset.mem_univ label)
-    dsimp [C];linarith
+    linarith
   have hCHound (label):CH label≤C:=by
     have he:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hCH j).le) (Finset.mem_univ label)
-    dsimp [C];linarith
+    linarith
   refine ⟨C,hC,?_⟩
   intro Slot U a ε tstar T allowance i hU B hdata bin label left right hne height hheight n hn s hs t ht F W
   have hd:F.rowData=data label:=by

@@ -8,81 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
 open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O columnWeight
+open ConcretePrimeRowBridge hiding O
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
@@ -107,7 +46,7 @@ end
 
 open ActualEisensteinCubic
 open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
+open ConcretePrimeRowBridge hiding O
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open CanonicalCubeSeparation JointLogSeparation
@@ -115,10 +54,8 @@ open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace CanonicalUnitEuler
-open ActualEisensteinCubic
-open CanonicalRowCompletion
+open ActualEisensteinCubic CanonicalRowCompletion
 open CanonicalQuadraticSieve hiding O
 open UniqueFactorizationMonoid
 open ActualEisensteinCoordinates (eval coords eval_coords)
@@ -130,11 +67,11 @@ def unitSupplement (u : ActualEisensteinCubic.Oˣ) : ActualEisensteinCubic.O→*
     have hs : Supported (1:Ideal ActualEisensteinCubic.O):=⟨one_ne_zero,by
       intro P hP
       rw [normalizedFactors_one] at hP
-      exact False.elim (Multiset.notMem_zero P hP)⟩
-    rw [show Ideal.span {(1:ActualEisensteinCubic.O)}=(1:Ideal ActualEisensteinCubic.O) by simp only [Ideal.span_singleton_one,Ideal.one_eq_top],ite_eq_left hs,map_one]
+      simp_all⟩
+    rw [show Ideal.span {(1:ActualEisensteinCubic.O)}=(1:Ideal ActualEisensteinCubic.O) by simp,ite_eq_left hs,map_one]
   map_mul' x y := by
     rw [←Ideal.span_singleton_mul_span_singleton, supported_mul_iff,map_mul]
-    by_cases hx:Supported (Ideal.span {x}) <;> by_cases hy:Supported (Ideal.span {y}) <;> simp [hx,hy]
+    by_cases hx:Supported (Ideal.span {x}) <;> by_cases hy:Supported (Ideal.span {y}) <;> simp_all
 
 private lemma supported_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     ∀P∈normalizedFactors I,P.IsMaximal ∧ lambda∉P ∧ ringChar (ActualEisensteinCubic.O⧸P)≠2 := by
@@ -184,7 +121,7 @@ lemma norm_residue_congruent (m : ℕ) (x y : ActualEisensteinCubic.O)
 lemma supported_span_congruent_mod_thirty_six (x y : ActualEisensteinCubic.O)
     (hxy : x-y∈(Ideal.span {(36:ActualEisensteinCubic.O)} : Ideal ActualEisensteinCubic.O)) :
     Supported (Ideal.span {x})↔Supported (Ideal.span {y}) := by
-  have h36:(36:ActualEisensteinCubic.O)∣x-y:=Ideal.mem_span_singleton.mp hxy
+  have h36:=Ideal.mem_span_singleton.mp hxy
   have hlam : lambda∣(36:ActualEisensteinCubic.O):=
     ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans lambda_sq_dvd_three).trans ⟨12,by norm_num⟩
   have htwo : (2:ActualEisensteinCubic.O)∣(36:ActualEisensteinCubic.O):=⟨18,by norm_num⟩
@@ -206,12 +143,12 @@ theorem unitSupplement_periodic (u : ActualEisensteinCubic.Oˣ) (x y : ActualEis
     rw [ite_eq_left hx,ite_eq_left hy]
     exact idealRowHom_unit_eq_of_norm_mod_thirty_six u _ _ hx.1 hy.1
       (supported_good _ hx) (supported_good _ hy) (norm_residue_congruent 36 x y hxy)
-  · rw [ite_eq_right hx,ite_eq_right (fun hy=>hx (hs.mpr hy))]
+  simp_all
 
 private lemma rowTwist_zero_of_common_prime (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z n : ActualEisensteinCubic.O)
     (P : Ideal ActualEisensteinCubic.O) (hp : Prime P) (hm : m∈P) (hn : n∈P) :
     rowTwist Ψ m f z n=0 := by
-  have hPI:P∣Ideal.span {n}:=Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hn))
+  have hPI:=Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hn))
   have hm6:m^6∈P:=by
     rw [show m^6=m^5*m by ring]
     exact P.mul_mem_left _ hm
@@ -251,7 +188,7 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold MatrixGroups
+open scoped Manifold
 
 lemma kernelBarrier_sublevel_isCompact (T : ℝ) :
     IsCompact {q : KernelQuotient | kernelQuotientBarrier 2 3 q≤T} := by
@@ -268,7 +205,7 @@ lemma kernelBarrier_sublevel_isCompact (T : ℝ) :
     obtain ⟨r,hr⟩ := Set.mem_iUnion.mp htail
     obtain ⟨hrS,htail⟩ := Set.mem_iUnion.mp hr
     obtain ⟨p,hp,rfl⟩ := htail
-    have hh : 3<p.1.2 := (le_max_left 3 T).trans_lt hp.2.2
+    have hh  := (le_max_left 3 T).trans_lt hp.2.2
     change kernelQuotientBarrier 2 3 (fordOrbitChart globalKubotaKernel r p)≤T at hq
     rw [kernelQuotientBarrier_fordCusp 2 3 (by norm_num) (by norm_num) r p hh] at hq
     exact (not_lt_of_ge hq) ((le_max_right 3 T).trans_lt hp.2.2)
@@ -341,7 +278,6 @@ lemma kernelExhaustionCutoff_eventually_one_near (q : KernelQuotient) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
 
 lemma cuspTransition_euler_bounded (a b : ℝ) (hab : a<b) :
     ∃C : ℝ,0≤C ∧ ∀v,|v*deriv (cuspTransition a b) v|≤C := by
@@ -431,15 +367,7 @@ lemma cuspRemainder_row_scaled_deriv_bound (a b : ℝ) (s : ℂ) (C : ℝ)
 
 end CubicEisenstein
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
 
 end CanonicalRowCompletion
 

@@ -26,7 +26,7 @@ lemma subtype_zero_extension_energy {κ : Type*} [DecidableEq κ]
     symm
     apply Finset.sum_subset hs
     intro k hk hks
-    simp only [dite_eq_right hks,norm_zero,zero_pow (by decide : (2:ℕ)≠0)]
+    simp_all
   rw [he,←Finset.sum_coe_sort small]
   apply Finset.sum_congr rfl
   intro k hk

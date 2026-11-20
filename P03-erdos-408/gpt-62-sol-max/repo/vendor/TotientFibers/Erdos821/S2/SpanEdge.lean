@@ -8,7 +8,6 @@ public import Erdos821.S2.PhysicalCompatibility
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -125,8 +124,7 @@ theorem promotion_translated_zero (S : LifespanAssignment P n) (hS : Q.lifespanV
   obtain ⟨p, _, he⟩ := hm
   have hp : p = Q.target i g.val j.val := by
     have hspec := Q.promotionIndex_spec S i g j
-    rw [he] at hspec
-    exact hspec
+    simp_all
   subst p
   dsimp only
   rw [he]

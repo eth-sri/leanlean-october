@@ -1,6 +1,12 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstMixedChild
+public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityDefect
+public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalLedger
+public import OAI.NumberTheory.DirichletL.Moments.SecondCanonical
+public import OAI.NumberTheory.DirichletL.Moments.DescentLedger
+public import OAI.NumberTheory.DirichletL.Moments.FirstSecondLossParameters
+public import OAI.NumberTheory.DirichletL.Moments.FirstChildLower
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 
 @[expose] public section
@@ -8,23 +14,22 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedExceptionalCap
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedChild
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstExceptionalChildPaid
+open CenteredMomentFirstMixedAllowance
+open CenteredMomentFirstMixedNormalizationActual
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstScale
 open CenteredMomentCommonRadiusSaving CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentDescentLedger CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentRankinRadical
-open CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
+open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization CenteredMomentDescentLedger
+open CenteredMomentCompleteCommon CenteredMomentCanonicalFirst CenteredMomentPrimeElements
+open CenteredMomentPrimePool CenteredMomentRankinRadical CenteredMomentSecondHeightFamily
+open CenteredMomentAmplificationErrorEnergy
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 lemma fixed_presentation_log_nonneg (Z:ℝ)(hZ:1<Z):0≤Real.logb Z fixedPresentationCost:=by
   have h₁:(1:ℝ)≤((Ideal.span {fixedBadMask}).absNorm:ℝ):=by

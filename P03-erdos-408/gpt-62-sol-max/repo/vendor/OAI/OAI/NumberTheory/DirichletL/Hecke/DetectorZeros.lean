@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open Set Filter
-open scoped Classical Topology
+open scoped Classical
 namespace SevenEighths.HeckeDetectorZeros
 open HeckeFamily
 
@@ -29,7 +29,7 @@ def zeros (χ : Character) (T : ℝ) : Set ℂ := {s ∈ rectangle T | LFunction
 
 theorem zeros_finite (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) :
     (zeros χ T).Finite := by
-  have ha : AnalyticOnNhd ℂ (LFunction χ) Set.univ :=
+  have ha  :=
     Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ hχ)
   have hcod := ha.preimage_zero_mem_codiscreteWithin
     (LFunction_ne_zero_of_one_lt_re χ (by norm_num : 1 < (2 : ℂ).re))
@@ -88,7 +88,7 @@ theorem maximum_attained (χ : ι → Character) (hχ : ∀ i, (χ i).residue �
     ∃ i s, LFunction (χ i) s = 0 ∧ |s.im| ≤ T ∧ s.re = zeroMaximum χ hχ T := by
   have hm := zeroMaximum_mem χ hχ T
   rcases Finset.mem_insert.mp hm with hm | hm
-  · exact False.elim ((ne_of_gt hmax) hm)
+  · simp_all
   · obtain ⟨⟨i,s⟩, hs, heq⟩ := Finset.mem_image.mp hm
     have hz := (mem_familyZeros χ hχ T i s).mp hs
     exact ⟨i,s,hz.2.2.2,hz.2.2.1,heq⟩

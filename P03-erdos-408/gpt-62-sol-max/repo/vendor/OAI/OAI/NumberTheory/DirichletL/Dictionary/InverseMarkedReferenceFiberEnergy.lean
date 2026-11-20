@@ -9,13 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile
-open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows
-open InverseInitialPhysicalSlots IdealMobiusDivisorSum
+open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile ConcreteTraceCRT
+open ConcretePrimeRowBridge CanonicalRowCompletion DetectorDictionaryInverseRawInitialGates
+open DetectorDictionaryInverseMarkedPhysicalRows InverseInitialPhysicalSlots IdealMobiusDivisorSum
 local notation "O"=>HeckeFamily.O
 
 theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
@@ -54,15 +53,15 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   choose C U₀ hC hU₀ hb using fun b:Bool=>hj b data
   let Tbad:=idealDivisors (∏P∈excluded data,P)
   let Ctotal:ℝ:=((Tbad.card:ℝ)+1)^2*(∑b:Bool,C b)
-  have hCsum:0<∑b:Bool,C b:=Finset.sum_pos (fun b _=>hC b) Finset.univ_nonempty
+  have hCsum:=Finset.sum_pos (fun b _=>hC b) Finset.univ_nonempty
   refine ⟨Ctotal,max (U₀ false) (U₀ true),mul_pos (by positivity) hCsum,
     lt_max_of_lt_left (hU₀ false),?_⟩
   intro U hU M neM H Label Slot a ε tstar T allowance i F selected hdata hK hprofile hupper
     hell hext hdis hlarge hr hfirst hsecond v
   have hUb (b:Bool):U₀ b≤U:=by cases b <;> exact le_trans (by simp) hU
-  have hUone:1<U:=(hU₀ false).trans_le (hUb false)
-  have hpr (s:selected):F.profile s=S.W:=hprofile s s.property
-  have hup (s:selected):F.upper s=2:=hupper s s.property
+  have hUone:=(hU₀ false).trans_le (hUb false)
+  have hpr (s:selected):=hprofile s s.property
+  have hup (s:selected):=hupper s s.property
   have hprof:(fun s:selected=>F.profile s)=(fun _=>(S.W:ℝ→ℂ)):=funext hpr
   have hups:(fun s:selected=>F.upper s)=(fun _=>2):=funext hup
   have hslots:∀s∈selected,∀x,F.profile s x≠0 → x∈Set.Icc (1:ℝ) (F.upper s) := by

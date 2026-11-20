@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceCommonMask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentLiveSupport
 open CenteredMomentSourceLiveColumn CenteredMomentSourceLiveAllocation CenteredMomentRemainingBox

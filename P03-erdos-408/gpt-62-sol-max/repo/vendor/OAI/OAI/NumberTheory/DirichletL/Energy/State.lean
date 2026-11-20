@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.NaturalMaskedFloor
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
 
@@ -8,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentEnergyState
 open HeckeFamily CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-open CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
+open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 structure NaturalState (Z Bmask bΦ:ℝ) where
@@ -61,7 +61,7 @@ lemma radical_bound (s:NaturalState Z Bmask bΦ):
     (s.puncture.radical.absNorm:ℝ)≤Z^Bmask :=by
   apply le_trans _ s.puncture_bound
   exact_mod_cast Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.puncture_ne_zero))
+    (Ideal.absNorm_pos_of_ne_bot (s.puncture_ne_zero))
     (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr (Ideal.le_radical (I:=s.puncture))))
 end NaturalState
 

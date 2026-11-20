@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionMass
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionNegligible
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionNegligible
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionTailMass
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open CenteredMomentComparisonReflection EisensteinSchwartzPoisson
@@ -17,12 +18,12 @@ local notation "O" => HeckeFamily.O
 lemma subset_norm_le (S D : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hD : D⊆S) :
     (Ideal.absNorm (∏P∈D,P):ℝ)≤(Ideal.absNorm (∏P∈S,P):ℝ) := by
   exact_mod_cast Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (subset_product_nonzero S hS)))
+    (Ideal.absNorm_pos_of_ne_bot (subset_product_nonzero S hS))
     (map_dvd Ideal.absNorm (Finset.prod_dvd_prod_of_subset D S (fun P=>P) hD))
 
 lemma restoration_norm_one (S : Finset (Ideal O)) (H : SmoothIdeal S) : 1≤norm H.val := by
   unfold CenteredMomentReflectionDeletion.norm
-  exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr H.val.property))
+  exact_mod_cast (Ideal.one_le_absNorm_of_ne_bot (H.val.property))
 
 lemma dual_scale_bounds (S D : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hD : D⊆S)
     (H : SmoothIdeal S) (Q X U : ℝ) (hQ : 0<Q) (hX : 0<X)

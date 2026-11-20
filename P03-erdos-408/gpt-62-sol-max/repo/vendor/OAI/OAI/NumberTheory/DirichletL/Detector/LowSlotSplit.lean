@@ -21,15 +21,12 @@ def lowSlotTupleEquiv {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K)) 
   toFun p := (fun i=>p i.val,fun i=>p i.val)
   invFun p i := if hi : i∈J then p.1 ⟨i,hi⟩ else p.2 ⟨i,by simp [hi]⟩
   left_inv p := by
-    funext i
-    dsimp only
-    split_ifs <;> rfl
+    simp
   right_inv p := by
     apply Prod.ext
+    · simp
     · funext i
-      simp only [dite_eq_left i.property]
-    · funext i
-      have hi : i.val∉J := (Finset.mem_sdiff.mp i.property).2
+      have hi  := (Finset.mem_sdiff.mp i.property).2
       simp only [dite_eq_right hi]
 
 def lowSlotJoin {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
@@ -49,7 +46,7 @@ lemma lowSlotJoin_unselected {K : ℕ} (slots : Fin K→Finset O) (J : Finset (F
 lemma lowSlotJoin_selected {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
     (a : LowUnselectedTuple slots J) (b : LowSelectedTuple slots J) (i : SelectedSlot J) :
     lowSlotJoin slots J a b i.val=(b i).val := by
-  have hi : i.val∉J := (Finset.mem_sdiff.mp i.property).2
+  have hi  := (Finset.mem_sdiff.mp i.property).2
   simp only [lowSlotJoin,lowSlotTupleEquiv,Equiv.coe_fn_symm_mk,dite_eq_right hi]
 
 lemma lowSlotJoin_unselectedProduct {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))

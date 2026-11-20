@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow
@@ -68,7 +68,6 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
         intro r hr
-        dsimp [A]
         ring
     _ = _ := hh
     _ = _ := by
@@ -85,7 +84,6 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
       rw [hs k hk,Finset.mul_sum,Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro r hr
-      dsimp [A]
       ring
 
 end SevenEighths.ProbePhysical

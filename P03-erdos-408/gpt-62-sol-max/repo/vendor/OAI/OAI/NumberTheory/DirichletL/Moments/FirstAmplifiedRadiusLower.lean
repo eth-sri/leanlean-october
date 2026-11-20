@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedRadiusLower
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale
-open CenteredMomentFirstPhysicalDyadicRows
+open CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale CenteredMomentFirstPhysicalDyadicRows
 local notation "O" => ActualEisensteinCubic.O
 
 lemma base_radius_identity (Z K0 Csec xi : ℝ) (hZ : 1<Z) (hC : 0<Csec) :

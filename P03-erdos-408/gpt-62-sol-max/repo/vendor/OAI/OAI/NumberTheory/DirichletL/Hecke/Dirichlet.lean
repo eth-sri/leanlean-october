@@ -124,8 +124,7 @@ theorem LFunction_eq_dirichlet_product_right (χ : DirichletCharacter ℂ q)
   have hne : LSeries (ShortDraftHeckeBridge.pairInverseCoeff χ
       (ShortDraftHeckeBridge.baseChangeChar χ)) s ≠ 0 := by
     intro h
-    rw [h, zero_mul] at hH
-    exact zero_ne_one hH
+    simp_all
   apply mul_left_cancel₀ hne
   rw [hH, mul_comm, hD]
 
@@ -134,7 +133,7 @@ theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
     LFunction (character χ) s = χ.LFunction s *
       (ShortDraftHeckeBridge.baseChangeChar χ).LFunction s := by
   let U : Set ℂ := {0,1}ᶜ
-  have hU : IsOpen U := (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl
+  have hU  := (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl
   have hpc : IsPreconnected U :=
     ((Set.toFinite ({0,1} : Set ℂ)).countable.isConnected_compl_of_one_lt_rank
       (Complex.rank_real_complex ▸ Nat.one_lt_ofNat)).isPreconnected

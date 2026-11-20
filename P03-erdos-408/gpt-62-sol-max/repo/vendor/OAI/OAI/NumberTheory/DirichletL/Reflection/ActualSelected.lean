@@ -20,12 +20,9 @@ variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
 variable (S : PrimeFamily σ)
-local notation "E" => D.primeFiberEquiv R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask
 local notation "K" => rowResidualPart I (Ideal.span (Set.singleton m)*F)
 local notation "hK" => rowResidualPart_admissible I (Ideal.span (Set.singleton m)*F) hbad
 local notation "Pall" => PrimeFamily.sum (freePrimeFamily D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported) S
-local notation "Jall" => Sum.elim (fun P : FreePrimeIndex D.movingIdeal (Q*Ideal.span {(72:Eis)}) =>
-  Multiset.count (Subtype.val (Subtype.val P)) (UniqueFactorizationMonoid.normalizedFactors D.movingIdeal)%6) (fun _ : σ => 0)
 
 include hR hI hF hm hf hz hbad hcop hpow hmask
 
@@ -61,14 +58,13 @@ theorem actual_marked_selected_reflection
           (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict B).reflected K hK (S.restrict T)).generator_good
           (reflectedExponent (fun b : B => completedLocalExponent R F b.val.val))
           (slotIndices B (PrimeIndex K) T) W X := by
-  have hQ0 : (Q*Ideal.span {(72:Eis)})≠0 := by
-    apply mul_ne_zero hQ
-    simp only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot]
-    norm_num
-  exact (actual_marked_row_eq_joined D S Ψ Q hmLam hm2 W X).trans
+  refine (actual_marked_row_eq_joined D S Ψ Q hmLam hm2 W X).trans
     (original_selected_reflected_expansion D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask S
-      hS hSodd hdis (D.fixedFactor Ψ Q) (D.fixedFactor_norm Ψ Q hΨnorm) hQ0
+      hS hSodd hdis (D.fixedFactor Ψ Q) (D.fixedFactor_norm Ψ Q hΨnorm) ?_
       (D.fixedFactor_periodic Ψ Q hΨperiod) c hc hcQ G N hN hNp C W hWcompact lo hi hlo hsupp hW X hX)
+  apply mul_ne_zero hQ
+  simp only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot]
+  norm_num
 end
 end SevenEighths.InverseReflectedPhase
 

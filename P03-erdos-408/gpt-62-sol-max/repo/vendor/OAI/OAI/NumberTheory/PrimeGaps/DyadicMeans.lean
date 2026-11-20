@@ -10,25 +10,20 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
-open scoped ComplexConjugate
 
 theorem primitiveCharacterMean_sum {ι : Type*} (Q : ℕ) (s : Finset ι)
     (f : ι→(q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ) :
@@ -57,8 +52,8 @@ theorem vaughan_hyperbolaBlock_zero_right {q : ℕ} (X U V D E : ℕ)
       (fun n=>(vaughanSecondCoefficient U n:ℂ)) χ=0 := by
   apply Finset.sum_eq_zero
   intro m hm
-  have hmD: D ≤ m:=(Finset.mem_Ico.mp hm).1
-  have hnU:X/m ≤ U:=(Nat.div_le_div_left hmD hD).trans hU
+  have hmD:=(Finset.mem_Ico.mp hm).1
+  have hnU:=(Nat.div_le_div_left hmD hD).trans hU
   have hz:(∑ n∈Finset.range (X/m+1),(vaughanSecondCoefficient U n:ℂ)*χ (n:ZMod q))=0 := by
     apply Finset.sum_eq_zero
     intro n hn
@@ -157,7 +152,7 @@ theorem sqrt_bilinear_hyperbolic_bound {m n x t z : ℝ}
       _ ≤ (2*Real.sqrt x)*(4*Real.sqrt x) :=
         mul_le_mul hmn' (by linarith) (by positivity) (by positivity)
       _ = _ := by nlinarith [Real.sq_sqrt hx]
-  have hc : m*Real.sqrt n+n*Real.sqrt m ≤ 8*x/Real.sqrt t :=
+  have hc  :=
     (le_div_iff₀ (Real.sqrt_pos.mpr ht)).mpr hcross
   apply (sqrt_bilinear_expansion hm hn hz).trans
   simpa only [mul_assoc] using
@@ -185,7 +180,7 @@ noncomputable def vaughanBilinearBound (Q X T : ℕ) : ℝ :=
 
 theorem harmonic_real_nonneg (n : ℕ) : 0 ≤ (harmonic n:ℝ) := by
   by_cases hn:n=0
-  · simp [hn]
+  · simp_all
   · exact_mod_cast (harmonic_pos hn).le
 
 theorem vaughanBilinearBound_nonneg (Q X T : ℕ) : 0 ≤ vaughanBilinearBound Q X T := by
@@ -233,7 +228,7 @@ theorem vaughan_typeII_equal_cutoff_mean (Q X T k : ℕ) (hk : X+1 ≤ 2^k) :
   · rw [Finset.sum_const,nsmul_eq_mul]
     have hc : (((Finset.range k).filter (fun j=>T+1 < 2^(j+1) ∧ T < X/2^j)).card:ℝ) ≤ k := by
       exact_mod_cast (Finset.card_filter_le (Finset.range k) _).trans_eq (Finset.card_range k)
-    exact (mul_le_mul_of_nonneg_right hc hK).trans_eq (by dsimp [K]; ring)
+    exact (mul_le_mul_of_nonneg_right hc hK).trans_eq (by ring)
 
 theorem primitiveCharacterMean_mono_primitive {Q : ℕ}
     {f g : (q:Fin Q)→DirichletCharacter ℂ (q.val+1)→ℝ}
@@ -254,16 +249,15 @@ theorem primitiveCharacterMean_constant_le (Q : ℕ) {A : ℝ} (hA : 0 ≤ A) :
       apply Finset.sum_le_sum
       intro q _
       let d:=q.val+1
-      have hd:0 < d:=by dsimp [d]; omega
+      have hd:0 < d:=by omega
       let : NeZero d:=⟨by omega⟩
-      have hphi:0 < (d.totient:ℝ):=by exact_mod_cast Nat.totient_pos.mpr hd
       have hcard:Fintype.card (DirichletCharacter ℂ d)=d.totient := by
         simpa only [Nat.card_eq_fintype_card] using
           DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ d
       have hnum:(((Finset.univ : Finset (DirichletCharacter ℂ d)).filter
           DirichletCharacter.IsPrimitive).card:ℝ) ≤ d.totient := by
         exact_mod_cast (Finset.card_filter_le (Finset.univ : Finset (DirichletCharacter ℂ d)) _).trans_eq
-          (by rw [Finset.card_univ,hcard])
+          (by assumption)
       change (d:ℝ)/d.totient*(∑ _χ∈(Finset.univ : Finset (DirichletCharacter ℂ d)).filter
         DirichletCharacter.IsPrimitive,A) ≤ _
       rw [Finset.sum_const,nsmul_eq_mul]
@@ -271,7 +265,7 @@ theorem primitiveCharacterMean_constant_le (Q : ℕ) {A : ℝ} (hA : 0 ≤ A) :
         _ ≤ (d:ℝ)/d.totient*((d.totient:ℝ)*A) :=
           mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hnum hA) (by positivity)
         _ = (d:ℝ)*A := by field_simp
-        _ ≤ (Q:ℝ)*A := mul_le_mul_of_nonneg_right (by exact_mod_cast (show d ≤ Q by dsimp [d]; omega)) hA
+        _ ≤ (Q:ℝ)*A := mul_le_mul_of_nonneg_right (by exact_mod_cast (show d ≤ Q by omega)) hA
     _ = _ := by simp; ring
 
 noncomputable def vaughanShortBound (Q X T : ℕ) : ℝ :=
@@ -280,13 +274,11 @@ noncomputable def vaughanShortBound (Q X T : ℕ) : ℝ :=
     ((T*T:ℕ)*Real.log (T*T:ℕ))*K
 
 theorem log_nat_nonneg (n : ℕ) : 0 ≤ Real.log (n:ℝ) := by
-  simpa using log_nat_monotone (Nat.zero_le n)
+  positivity
 
 theorem vaughanShortBound_nonneg (Q X T : ℕ) : 0 ≤ vaughanShortBound Q X T := by
   have hQ:=log_nat_nonneg Q
   have hT:=log_nat_nonneg T
-  have hX:=log_nat_nonneg (X+1)
-  have hTT:=log_nat_nonneg (T*T)
   unfold vaughanShortBound
   positivity
 
@@ -344,7 +336,7 @@ theorem primitive_ne_one {q : ℕ} (hq : 1 < q) {χ : DirichletCharacter ℂ q}
 
 theorem primeCharacterPrefix_nat {q : ℕ} (X : ℕ) (χ : DirichletCharacter ℂ q) :
     primeCharacterPrefix (X:ℝ) χ=arithmeticCharacterSum X ArithmeticFunction.vonMangoldt χ := by
-  have he : Finset.Ioc 0 X=Finset.Icc 1 X := by ext n; simp; omega
+  have he : Finset.Ioc 0 X=Finset.Icc 1 X := by rfl
   simp only [primeCharacterPrefix,arithmeticCharacterSum,Nat.floor_natCast,he,mul_comm]
 
 theorem primitiveErrorMass_eq_vonMangoldt_sum (X : ℕ) {q : ℕ} (hq : 1 < q) :
@@ -397,7 +389,6 @@ theorem conductor_interval_error_le_vaughan (Q X T k R : ℕ) (hR : 1 ≤ R)
     · have hq1:1 < q.val+1:=by omega
       simp only [ite_eq_left hq,ite_eq_left hq1]
       rw [←primitiveErrorMass_eq_vonMangoldt_sum X hq1]
-      have hrq:(R:ℝ) ≤ q.val+1:=by exact_mod_cast hq.le
       calc
         _ ≤ ((q.val+1:ℕ):ℝ)*(primitiveErrorMass (X:ℝ) (q.val+1)/((q.val+1).totient:ℝ)) :=
           mul_le_mul_of_nonneg_right (by exact_mod_cast hq.le)
@@ -415,7 +406,7 @@ theorem vaughanShortBound_mono {Q P : ℕ} (hQP : Q ≤ P) (X T : ℕ) :
   have hK : Real.sqrt Q*(1+Real.log Q) ≤ Real.sqrt P*(1+Real.log P) :=
     mul_le_mul (Real.sqrt_le_sqrt (by exact_mod_cast hQP))
       (add_le_add le_rfl (log_nat_monotone hQP))
-      (by have h:=log_nat_nonneg Q; positivity) (Real.sqrt_nonneg _)
+      (by positivity) (Real.sqrt_nonneg _)
   unfold vaughanShortBound
   exact add_le_add (add_le_add le_rfl
     (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hK
@@ -426,8 +417,7 @@ noncomputable def conductorHarmonicBound (Q : ℕ) : ℝ := 1+Real.log (Q^2:ℕ)
 
 theorem conductorHarmonicBound_pos (Q : ℕ) : 0 < conductorHarmonicBound Q := by
   unfold conductorHarmonicBound
-  have h:=log_nat_nonneg (Q^2)
-  linarith
+  positivity
 
 theorem conductor_harmonic_le {q Q : ℕ} (hqQ : q ≤ Q) :
     (harmonic (q^2):ℝ) ≤ conductorHarmonicBound Q := by
@@ -444,7 +434,6 @@ theorem highConductorBlockBound_nonneg (Q X T R k : ℕ) :
     0 ≤ highConductorBlockBound Q X T R k := by
   have hs:=vaughanShortBound_nonneg Q X T
   have hh:=(conductorHarmonicBound_pos Q).le
-  have hl:=log_nat_nonneg (X+1)
   unfold highConductorBlockBound
   positivity
 
@@ -453,8 +442,7 @@ theorem vaughanBilinearBound_doubling (Q X T D : ℕ) (hD : 1 ≤ D) (hQ : 2*D �
       (4*(X:ℝ)/(D:ℝ)+16*Real.sqrt (conductorHarmonicBound Q)*(X:ℝ)/Real.sqrt (T+1:ℕ)+
         4*(Q:ℝ)*conductorHarmonicBound Q*Real.sqrt X) := by
   let H:=conductorHarmonicBound Q
-  have hH : 0 ≤ H := (conductorHarmonicBound_pos Q).le
-  have hDr : 0 < (D:ℝ) := by exact_mod_cast (show 0 < D by omega)
+  have hH  := (conductorHarmonicBound_pos Q).le
   have hQr : 2*(D:ℝ) ≤ Q := by exact_mod_cast hQ
   have hz : ((2*D:ℕ):ℝ)^2*(harmonic ((2*D)^2):ℝ) ≤ ((2*D:ℕ):ℝ)^2*H :=
     mul_le_mul_of_nonneg_left (conductor_harmonic_le hQ) (sq_nonneg _)

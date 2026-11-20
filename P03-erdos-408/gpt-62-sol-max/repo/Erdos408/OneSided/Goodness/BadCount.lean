@@ -48,7 +48,6 @@ theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
     exact_mod_cast Int.one_le_abs hn
   have hn0 : (n : ℝ) ≠ 0 := Int.cast_ne_zero.2 hn
   set w := δ / |(n : ℝ)|
-  have hw : 0 ≤ w := by positivity
   set lo : ℤ → ℝ := fun k => max 0 ((k : ℝ) / n - w)
   set hi : ℤ → ℝ := fun k => min 1 ((k : ℝ) / n + w)
   -- each such ratio lies within `δ/|n|` of `k/n` with `k = round (n r)`
@@ -59,8 +58,8 @@ theorem card_circleDist_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P.1)
     rw [mem_filter] at hP
     obtain ⟨hPT, hΦ, hr⟩ := hP
     set r := rootRatio P
-    have hr0 : 0 ≤ r := rootRatio_nonneg P
-    have hr1 : r < 1 := rootRatio_lt_one (hT P hPT)
+    have hr0  := rootRatio_nonneg P
+    have hr1  := rootRatio_lt_one (hT P hPT)
     unfold circleDist at hr
     have hk := abs_sub_round ((n : ℝ) * r)
     have hnr : |(n : ℝ) * r| ≤ |(n : ℝ)| := by
@@ -248,16 +247,13 @@ theorem card_not_goodFirst_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0 < P
     push_cast
     exact hl
   have hδ : 0 ≤ δ := Real.rpow_nonneg hY.le _
-  have hn : (n : ℝ) ≤ Y ^ (1 / 5 : ℝ) := Nat.floor_le (by positivity)
   -- each pair costs `6 A δ + (2 l D + 1) E ≤ 6 A δ + (2 n G + 1) E`
   have hpair : ∀ o, ∀ l ∈ Icc 1 n,
       (#{P ∈ T | Φ P ∧ circleDist ((((l * omitProd p o : ℕ) : ℤ) : ℝ) * rootRatio P) ≤ δ} : ℝ) ≤
         6 * A * δ + (2 * n * listProd p + 1) * E := by
     intro o l hl
     have hl' := mem_Icc.1 hl
-    have hN : ((l * omitProd p o : ℕ) : ℤ) ≠ 0 :=
-      Nat.cast_ne_zero.2 (Nat.mul_ne_zero (by omega) (hD o))
-    refine (card_circleDist_le hT hA hE hI hN hδ).trans ?_
+    refine (card_circleDist_le hT hA hE hI (Nat.cast_ne_zero.2 (Nat.mul_ne_zero (by omega) (hD o))) hδ).trans ?_
     have habs : |((((l * omitProd p o : ℕ) : ℤ)) : ℝ)| ≤ n * listProd p := by
       rw [Int.cast_natCast, Nat.abs_cast, Nat.cast_mul]
       have h₁ : (l : ℝ) ≤ n := by exact_mod_cast hl'.2
@@ -352,9 +348,7 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
       intro q hq
       obtain ⟨hmem, hne⟩ := mem_filter.1 hq
       rw [mem_product, mem_product, mem_product] at hmem
-      have hn0 : n q.1 q.2 ≠ 0 :=
-        mul_ne_zero (sub_ne_zero.2 (by exact_mod_cast hne)) (by exact_mod_cast hTt)
-      refine (card_circleDist_le hT hA hE hI hn0 hδ).trans ?_
+      refine (card_circleDist_le hT hA hE hI (mul_ne_zero (sub_ne_zero.2 (by exact_mod_cast hne)) (by exact_mod_cast hTt)) hδ).trans ?_
       -- `|N| ≤ max (D Z, D' Z') ∏ T ≤ G B · B`
       have hNle : ∀ q' : (Fin K → Fin (J + 1)) × (Fin K → ℕ), q'.2 ∈ S →
           (N q' : ℝ) ≤ G * Bd := by
@@ -397,7 +391,6 @@ theorem card_not_goodSecond_at_le {T : Finset (ℕ × ℕ)} (hT : ∀ P ∈ T, 0
     rw [mem_filter] at hP ⊢
     rw [sum_filter, not_le] at hP
     exact hP
-  have hX : 0 ≤ X := by positivity
   have hQ : (Q.card : ℝ) ≤ (((J : ℝ) + 1) ^ K * S.card) ^ 2 := by
     have := card_filter_le ((univ ×ˢ S) ×ˢ (univ ×ˢ S)) fun q => N q.1 ≠ N q.2
     rw [card_product, card_product, card_univ, Fintype.card_fun, Fintype.card_fin,
@@ -546,8 +539,7 @@ theorem eventually_card_not_isGood_le {C CX alo ahi g : ℝ} (halo : 1 / 10 < al
     set a := d.a (I.max' hI')
     set S := ((selections x d I (I.max' hI')).card : ℝ)
     set θ := Real.exp (-Real.log x ^ a / 4)
-    have ha : alo ≤ a := (hd.window _).1
-    have hLa : Real.log x ^ alo ≤ Real.log x ^ a := Real.rpow_le_rpow_of_exponent_le hL ha
+    have hLa : Real.log x ^ alo ≤ Real.log x ^ a := Real.rpow_le_rpow_of_exponent_le hL ((hd.window _).1)
     have hS := card_selections_le hd hL hI'
     have hSB : S ≤ Bd := card_selections_le_labelBound hL0 d I _
     have hθB : θ⁻¹ ≤ Bd := exp_div_four_le_labelBound hL0 d _

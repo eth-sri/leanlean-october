@@ -26,12 +26,11 @@ theorem polynomialGaussian_even (n : ℕ) (y : ℝ) :
 
 theorem polynomialGaussian_integrable (n : ℕ) : Integrable (polynomialGaussian n) := by
   have hp := (integrable_rpow_mul_exp_neg_mul_sq
-    (by norm_num : (0 : ℝ)<1) (show (-1 : ℝ)<(n : ℝ) by linarith [Nat.cast_nonneg (α := ℝ) n])).norm
+    (by norm_num : (0 : ℝ)<1) (show (-1 : ℝ)<(n : ℝ) by linarith)).norm
   have hg := integrable_exp_neg_mul_sq (b := 1) (by norm_num)
   have he : (fun y : ℝ => ‖y^(n : ℝ)*Real.exp (-1*y^2)‖) =
       fun y : ℝ => |y|^n*Real.exp (-(y^2)) := by
-    funext y
-    simp [Real.rpow_natCast, norm_mul, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+    simp
   rw [he] at hp
   convert hg.add hp using 1
   funext y

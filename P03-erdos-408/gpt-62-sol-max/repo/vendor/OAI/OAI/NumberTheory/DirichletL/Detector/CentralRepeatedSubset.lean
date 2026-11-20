@@ -39,8 +39,8 @@ theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
   refine ⟨C,hC,?_⟩
   intro S hS hmax hbad u hu ι _ η twists T0 a i hT0 ha ha1 hbin T hs hdis hη hQ hsmall W Y hY hWS hW x w z hx hw hz hwi J
   let k := Fintype.card J
-  let E : J≃Fin k := Fintype.equivFin J
-  let idx : Fin k→Fin N := fun j=>(E.symm j).val
+  let E  := Fintype.equivFin J
+  let idx  := fun j=>(E.symm j).val
   have hi : Function.Injective idx := fun j l h=>E.symm.injective (Subtype.ext h)
   have hk : k≤N := by
     dsimp [k]
@@ -49,8 +49,8 @@ theorem actual_repeated_subset (N : ℕ) (e eps c d B : ℝ)
     intro j l heq
     change (P j).val=(P l).val at heq
     by_contra hne
-    have hdiff : idx j≠idx l := fun h=>hne (hi h)
-    exact Finset.disjoint_left.mp (hdis _ _ hdiff) (P j).property (by rw [heq];exact (P l).property)
+    have hdiff  := fun h=>hne (hi h)
+    exact Finset.disjoint_left.mp (hdis _ _ hdiff) (P j).property (by rw [heq];simp)
   have hb := hmain S hS hmax hbad u hu η twists T0 a i hT0 ha ha1 hbin k hk
     (fun j=>T (idx j)) (fun j P hP=>hs (idx j) P hP) hd'
     (fun j P hP=>hη (idx j) P hP) (fun j P hP=>hQ (idx j) P hP)

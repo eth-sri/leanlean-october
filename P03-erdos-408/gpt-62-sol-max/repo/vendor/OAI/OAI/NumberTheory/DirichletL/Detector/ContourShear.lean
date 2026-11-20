@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.InitialFubini
+public import OAI.NumberTheory.DirichletL.Detector.InitialIntegral
+public import OAI.NumberTheory.DirichletL.Detector.InitialScales
 
 @[expose] public section
 
@@ -14,8 +15,8 @@ open ProbeMellinBoundary
 def sourceHeightShear : HeightSpace ≃ᵐ HeightSpace where
   toFun p := ((p.1.1+p.1.2,p.1.2),p.2)
   invFun p := ((p.1.1-p.1.2,p.1.2),p.2)
-  left_inv p := by rcases p with ⟨⟨t,v⟩,w⟩;simp
-  right_inv p := by rcases p with ⟨⟨t,v⟩,w⟩;simp
+  left_inv p := by simp
+  right_inv p := by simp
   measurable_toFun := by
     change Measurable (fun p : HeightSpace=>((p.1.1+p.1.2,p.1.2),p.2))
     fun_prop

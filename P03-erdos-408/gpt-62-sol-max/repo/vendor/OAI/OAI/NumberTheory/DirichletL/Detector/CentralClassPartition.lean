@@ -19,9 +19,8 @@ lemma sum_amplitudeRows {Slot : Type*} (rows : Finset FreeRow) (slots : Finset S
     (f : FreeRow→ℂ) :
     (∑u∈rows,f u)=∑bin : BinLabel slots cap mesh,
       ∑u∈amplitudeRows rows slots U cap mesh hm widths Q bin,f u := by
-  have hmap : ∀u∈rows,amplitudeLabel slots U cap mesh hm widths Q u∈
-      (Finset.univ : Finset (BinLabel slots cap mesh)) := by simp
-  exact (Finset.sum_fiberwise_of_maps_to hmap f).symm
+  refine (Finset.sum_fiberwise_of_maps_to ?_ f).symm
+  simp
 
 lemma cubeArithmeticSum_amplitude_partition {N : ℕ} {Slot : Type*}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)

@@ -35,11 +35,7 @@ theorem cycleFactors_support_injective {a : ℕ} (σ : Equiv.Perm (Fin a)) :
   intro c hc d hd hsd
   by_contra hcd
   have hdis := (σ.cycleFactorsFinset_pairwise_disjoint hc hd hcd).disjoint_support
-  have hempty : c.support = ∅ := by
-    have hdis' : Disjoint c.support c.support := by simpa only [← hsd] using hdis
-    exact disjoint_self.mp hdis'
-  have hcard := (Equiv.Perm.mem_cycleFactorsFinset_iff.mp hc).1.two_le_card_support
-  simp [hempty] at hcard
+  simp_all
 
 theorem cycleBirthBlocks_card {a : ℕ} (σ : Equiv.Perm (Fin a)) :
     (cycleBirthBlocks σ).card = σ.cycleFactorsFinset.card := by

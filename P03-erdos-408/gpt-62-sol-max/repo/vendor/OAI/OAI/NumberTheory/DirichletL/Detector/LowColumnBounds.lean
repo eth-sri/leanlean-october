@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussEnergy
 
 @[expose] public section
@@ -50,7 +51,7 @@ lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : �
       intro I hI
       obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI
       have hw := (hW ((lowGaussColumns_mem W1 hW1 Y _ s).mp hs)).2
-      have hn : (Ideal.absNorm s.val:ℝ)≤b*Y := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
+      have hn  := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
       exact hn.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (le_trans zero_le_one hY)))
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
   simpa only [mul_assoc,F] using hh
@@ -62,7 +63,7 @@ lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     ‖lowGaussColumn (calibrationForSet S hS) W1 Y σ v s‖≤
       B*a^(-(1/2:ℝ))/Y := by
   have hq : (0:ℝ)<Ideal.absNorm s.val := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (s.property.1)
   by_cases hzero : W1 ((Ideal.absNorm s.val:ℝ)/Y)=0
   · simp only [lowGaussColumn,hzero,mul_zero,zero_mul,ite_self,norm_zero]
     positivity
@@ -94,10 +95,10 @@ theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
       (∑s∈lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY),
         ‖lowGaussColumn (calibrationForSet S hS) W1 Y σ v s‖^2)≤C/Y := by
   let C := 128*max 1 b*(B*a^(-(1/2:ℝ)))^2+1
-  have hC : 0<C := by dsimp only [C];positivity
+  have hC : 0<C := by positivity
   refine ⟨C,hC,?_⟩
   intro S hS W1 hW1 hW hWB Y hY σ v
-  have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
+  have hy  := lt_of_lt_of_le zero_lt_one hY
   have hcoef (s : {I : Id // Supported I}) := lowGaussColumn_norm_bound S hS W1 a b B ha hB hW hWB Y hy σ v s
   calc
     _ ≤ ∑_s∈lowGaussColumns W1 hW1 Y hy,(B*a^(-(1/2:ℝ))/Y)^2 := by

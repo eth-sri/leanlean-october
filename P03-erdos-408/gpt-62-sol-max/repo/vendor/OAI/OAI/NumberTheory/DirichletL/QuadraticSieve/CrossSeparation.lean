@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.GaussSum.SquarePhaseFactorization
 public import OAI.NumberTheory.DirichletL.GaussSum.MixedConversion
 
@@ -10,68 +11,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 
 namespace MixedCrossSeparation
 
@@ -138,14 +82,14 @@ private theorem ordered_cross_partition {ι : Type*} [Fintype ι] [DecidableEq �
       simp only [Finset.prod_mul_distrib]
       ring
 
-def crossSymbol {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (i k : ι) : ℂ :=
+def crossSymbol {ι : Type*} (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (i k : ι) : ℂ :=
   canonicalSextic (Ideal.span {p i}) (hg i)
     (Ideal.Quotient.mk (Ideal.span {p i}) (p k))
 
 theorem mixed_cross_eq_quadratic {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (i k : ι)
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (i k : ι)
     (hpi : lambda ^ 2 ∣ p i - 1) (hpk : lambda ^ 2 ∣ p k - 1) :
     crossSymbol p hg i k ^ 5 * crossSymbol p hg k i =
       crossSymbol p hg i k ^ 3 * crossSymbol p hg k i ^ 3 := by
@@ -158,20 +102,20 @@ theorem mixed_cross_eq_quadratic {ι : Type*}
     _ = _ := by rw [hs]; ring
 
 def convertedColumnBlock {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (inverse : Bool) : ℂ :=
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S : Finset ι) (inverse : Bool) : ℂ :=
   ∏ i ∈ S, (∏ k ∈ S.erase i, crossSymbol p hg i k ^ (if inverse then 5 else 1)) *
     convertedLocal (p i) (hp i) (hg i) inverse
 
 def quadraticCrossPhase {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) : ℂ :=
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) : ℂ :=
   ∏ i ∈ A, ∏ k ∈ B, crossSymbol p hg i k ^ 3 * crossSymbol p hg k i ^ 3
 
 theorem mixed_converted_gauss_separation
     {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (inverse : ι → Bool)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (inverse : ι → Bool)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
     (∏ i, ∏ k ∈ Finset.univ.erase i,
       (canonicalSextic (Ideal.span {p i}) (hg i) ^ (if inverse i then 5 else 1))
@@ -195,7 +139,7 @@ theorem mixed_converted_gauss_separation
   have hu : A ∪ B = Finset.univ := by
     ext i
     simp only [Finset.mem_union, hA, hB, Finset.mem_univ, iff_true]
-    cases inverse i <;> simp
+    simp
   have hpow (i k : ι) :
       (canonicalSextic (Ideal.span {p i}) (hg i) ^ (if inverse i then 5 else 1))
         (Ideal.Quotient.mk (Ideal.span {p i}) (p k)) =
@@ -229,12 +173,12 @@ theorem mixed_converted_gauss_separation
 
 theorem activeConvertedGauss_separated
     {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) (S T : Finset ι) :
     let q : activeSupport S T → O := fun i => p i.val
     let hq : ∀ i, q i ≠ 0 := fun i => hp i.val
-    let hgood : ∀ i, lambda ∉ Ideal.span {q i} := fun i => hg i.val
+    let hgood : OAI.PrincipalFamily.Avoids q lambda := fun i => hg i.val
     let A : Finset (activeSupport S T) := Finset.univ.filter fun i => i.val ∈ S \ T
     let B : Finset (activeSupport S T) := Finset.univ.filter fun i => i.val ∉ S \ T
     GaussGeneratorTransport.activeConvertedGauss p hp hg S T =
@@ -252,7 +196,6 @@ theorem activeConvertedGauss_separated
   · ext k; simp
   · intro k hk; rfl
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
 open QuadraticGaussRay ActualEisensteinCoordinates
 
 private theorem prod_subtype_erase {ι M : Type*} [DecidableEq ι] [CommMonoid M]
@@ -260,9 +203,7 @@ private theorem prod_subtype_erase {ι M : Type*} [DecidableEq ι] [CommMonoid M
     (∏ k ∈ (Finset.univ : Finset A).erase i, f k.val) = ∏ k ∈ A.erase i.val, f k := by
   apply Finset.prod_bij (fun k _ => k.val)
   · intro k hk
-    apply Finset.mem_erase.mpr
-    refine ⟨?_, k.property⟩
-    exact fun h => (Finset.mem_erase.mp hk).1 (Subtype.ext h)
+    simpa using fun h => (Finset.mem_erase.mp hk).1 (Subtype.ext h)
   · intro a ha b hb h
     exact Subtype.ext h
   · intro k hk
@@ -273,23 +214,23 @@ private theorem prod_subtype_erase {ι M : Type*} [DecidableEq ι] [CommMonoid M
     rfl
 
 theorem restricted_prime_coprime {ι : Type*} (p : ι → O)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (A : Finset ι) :
     Pairwise (Function.onFun IsCoprime (fun i : A => Ideal.span {p i.val})) := by
   intro i k hik
   exact hcop (fun h => hik (Subtype.ext h))
 
 def quadraticBlock {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A : Finset ι) : ℂ :=
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A : Finset ι) : ℂ :=
   ∏ i ∈ A, (∏ k ∈ A.erase i, crossSymbol p hg i k ^ 3) *
     localGauss (p i) (hp i) (hg i) 3
 
 theorem quadraticBlock_eq_productGauss
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A : Finset ι) :
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A : Finset ι) :
     quadraticBlock p hp hg A =
       canonicalProductGauss (fun i : A => p i.val) (fun i => hp i.val)
         (restricted_prime_coprime p hcop A) (fun i => hg i.val)
@@ -308,9 +249,9 @@ theorem quadraticBlock_eq_productGauss
 
 theorem quadraticBlock_eq_rayValue
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (A : Finset ι) :
     quadraticBlock p hp hg A = quadraticRayValue (residue (∏ i ∈ A, p i)) := by
   rw [quadraticBlock_eq_productGauss p hp hcop hg A,
@@ -320,8 +261,8 @@ theorem quadraticBlock_eq_rayValue
 
 theorem quadraticBlock_union
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) (hd : Disjoint A B) :
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (A B : Finset ι) (hd : Disjoint A B) :
     quadraticBlock p hp hg (A ∪ B) = quadraticBlock p hp hg A *
       quadraticBlock p hp hg B * quadraticCrossPhase p hg A B := by
   let x := crossSymbol p hg
@@ -371,9 +312,9 @@ theorem quadraticBlock_union
 
 theorem norm_quadraticBlock
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (A : Finset ι) :
     ‖quadraticBlock p hp hg A‖ = 1 := by
   rw [quadraticBlock_eq_productGauss p hp hcop hg A]
@@ -387,9 +328,9 @@ def quadraticRayPair (a b : EisensteinEPrimaryPhase.Coord) : ℂ :=
 
 theorem quadraticCrossPhase_eq_rayPair
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (A B : Finset ι) (hd : Disjoint A B) :
     quadraticCrossPhase p hg A B =
@@ -418,7 +359,6 @@ theorem quadraticCrossPhase_eq_rayPair
 
 end MixedCrossSeparation
 
-open scoped BigOperators Classical
 
 namespace CoprimeMobiusExtension
 
@@ -427,22 +367,20 @@ theorem sum_subset_sign {ι : Type*} [DecidableEq ι] (S : Finset ι) :
   have hp := Finset.prod_sub (fun _ : ι => (1 : ℂ)) (fun _ => 1) S
   by_cases hS : S = ∅
   · simp [hS]
-  · have hc : S.card ≠ 0 := Finset.card_ne_zero.mpr (Finset.nonempty_iff_ne_empty.mpr hS)
+  · have hc  := Finset.card_ne_zero.mpr (Finset.nonempty_iff_ne_empty.mpr hS)
     simpa [hS, hc] using hp.symm
 
 theorem disjoint_indicator_expansion {ι : Type*} [DecidableEq ι]
-    (B S T : Finset ι) (hS : S ⊆ B) (_hT : T ⊆ B) :
+    (B S T : Finset ι) (hS : S ⊆ B) :
     (if Disjoint S T then (1 : ℂ) else 0) =
       ∑ D ∈ B.powerset, if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0 := by
-  have hsub : (S ∩ T).powerset ⊆ B.powerset :=
-    Finset.powerset_mono.mpr (Finset.inter_subset_left.trans hS)
   have heq : (∑ D ∈ B.powerset, if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0) =
       ∑ D ∈ (S ∩ T).powerset, (-1 : ℂ) ^ D.card := by
     calc
       _ = ∑ D ∈ (S ∩ T).powerset,
             if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0 := by
         symm
-        apply Finset.sum_subset hsub
+        apply Finset.sum_subset (Finset.powerset_mono.mpr (Finset.inter_subset_left.trans hS))
         intro D hD hnot
         have hn : ¬(D ⊆ S ∧ D ⊆ T) := by
           simpa only [Finset.mem_powerset, Finset.subset_inter_iff] using hnot
@@ -451,7 +389,7 @@ theorem disjoint_indicator_expansion {ι : Type*} [DecidableEq ι]
         apply Finset.sum_congr rfl
         intro D hD
         have hh : D ⊆ S ∧ D ⊆ T := by
-          simpa only [Finset.mem_powerset, Finset.subset_inter_iff] using hD
+          simpa [Finset.mem_powerset, Finset.subset_inter_iff] using hD
         simp [hh]
   rw [heq, sum_subset_sign]
   simp only [Finset.disjoint_iff_inter_eq_empty]
@@ -467,11 +405,11 @@ theorem double_sum_disjoint_expansion {ι : Type*} [DecidableEq ι]
         ∑ D ∈ B.powerset, (-1 : ℂ) ^ D.card *
           if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
     calc
-      _ = (if Disjoint S T then (1 : ℂ) else 0) * Z S T := by split_ifs <;> simp
+      _ = (if Disjoint S T then (1 : ℂ) else 0) * Z S T := by simp
       _ = (∑ D ∈ B.powerset,
           if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0) * Z S T := by
         rw [disjoint_indicator_expansion B S T (Finset.mem_powerset.mp hS)
-          (Finset.mem_powerset.mp hT)]
+          ]
       _ = _ := by
         rw [Finset.sum_mul]
         apply Finset.sum_congr rfl
@@ -507,7 +445,7 @@ theorem sum_supersets {ι : Type*} [DecidableEq ι]
     have he := congrArg (fun U => D ∪ U) heq
     simpa [Finset.union_sdiff_of_subset hS.2, Finset.union_sdiff_of_subset hT.2] using he
   · intro U hU
-    have hUB : U ⊆ B \ D := Finset.mem_powerset.mp hU
+    have hUB  := Finset.mem_powerset.mp hU
     refine ⟨D ∪ U, ?_, ?_⟩
     · simp only [Finset.mem_filter, Finset.mem_powerset]
       exact ⟨Finset.union_subset hD (hUB.trans Finset.sdiff_subset), Finset.subset_union_left⟩
@@ -532,7 +470,7 @@ theorem double_sum_disjoint_reindexed {ι : Type*} [DecidableEq ι]
           (∑ T ∈ B.powerset, if D ⊆ T then Z S T else 0) else 0 := by
       apply Finset.sum_congr rfl
       intro S hS
-      by_cases hh : D ⊆ S <;> simp [hh]
+      by_cases hh : D ⊆ S <;> simp_all
     _ = _ := by
       rw [sum_supersets B D hDB]
       apply Finset.sum_congr rfl

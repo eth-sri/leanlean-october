@@ -57,7 +57,7 @@ lemma Data.child_nonneg (s:Data ι) (D:Ideal O)
 omit [DecidableEq ι] in
 lemma Data.profile_nonneg (s:Data ι) : 0≤s.profileFactor :=by
   unfold Data.profileFactor
-  exact mul_nonneg (by positivity) (sq_nonneg _)
+  positivity
 
 lemma Data.reduction_pos (s:Data ι) (D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) : 0<formalReductionFactor D a s.P :=

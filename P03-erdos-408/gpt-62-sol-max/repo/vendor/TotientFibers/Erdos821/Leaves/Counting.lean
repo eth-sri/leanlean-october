@@ -9,7 +9,6 @@ public import Mathlib.GroupTheory.Nilpotent
 
 @[expose] public section
 
-open scoped BigOperators
 open Filter
 
 attribute [local instance] Classical.propDecidable
@@ -36,15 +35,12 @@ theorem omission_congruence_unique (p : ℕ) (hp : Nat.Prime p)
   have _h₂ : 0 < U₂ := h₂
   have hr : r ≠ 0 := by
     intro h0
-    rw [h0, zero_mul, zero_add] at hc₁
-    exact hA hc₁
+    simp_all
   have e1 : r * (U₁ : ZMod p) = -A := eq_neg_of_add_eq_zero_left hc₁
-  have e2 : r * (U₂ : ZMod p) = -A := eq_neg_of_add_eq_zero_left hc₂
-  have hmul : r * (U₁ : ZMod p) = r * (U₂ : ZMod p) := by rw [e1, e2]
-  have hcast : (U₁ : ZMod p) = (U₂ : ZMod p) := mul_left_cancel₀ hr hmul
+  have hmul : r * (U₁ : ZMod p) = r * (U₂ : ZMod p) := by rw [e1, (eq_neg_of_add_eq_zero_left hc₂)]
   have hv1 : ((U₁ : ZMod p).val) = U₁ := ZMod.val_natCast_of_lt h₁p
   have hv2 : ((U₂ : ZMod p).val) = U₂ := ZMod.val_natCast_of_lt h₂p
-  have hval : ((U₁ : ZMod p).val) = ((U₂ : ZMod p).val) := congrArg ZMod.val hcast
+  have hval : ((U₁ : ZMod p).val) = ((U₂ : ZMod p).val) := congrArg ZMod.val (mul_left_cancel₀ hr hmul)
   rw [hv1, hv2] at hval
   exact hval
 

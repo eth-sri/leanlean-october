@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.Rankin
 
 @[expose] public section
@@ -97,7 +98,7 @@ theorem fixed_support_count (δ : ℝ) (hδ : 0 < δ) :
   intro R S hR hS hs X hX hN
   have hterm (I : Ideal O) (hI : I ∈ S) : (1:ℝ) ≤ X^δ*(Ideal.absNorm I:ℝ)^(-δ) := by
     have hn : (0:ℝ)<Ideal.absNorm I := by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hS I hI))
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hS I hI)
     have hr := mul_le_mul_of_nonneg_right (Real.rpow_le_rpow hn.le (hN I hI) hδ.le)
       (Real.rpow_nonneg hn.le (-δ))
     simpa only [← Real.rpow_add hn,add_neg_cancel,Real.rpow_zero] using hr

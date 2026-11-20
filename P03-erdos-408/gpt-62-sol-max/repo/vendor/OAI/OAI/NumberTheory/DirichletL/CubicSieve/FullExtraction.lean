@@ -35,7 +35,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
           ((firstImage R).card * squaredNorm
             (fun (k : secondImage R) j => idealKernel (cols j) k.val)) *
         ∑ j, ‖coef j‖ ^ 2 := by
-  let : Finite Oˣ := PrimaryIdealUnitReindex.finite_units
+  let  := PrimaryIdealUnitReindex.finite_units
   let : Fintype Oˣ := Fintype.ofFinite _
   let D := Oˣ × CanonicalQuadraticSieve.fixedBadPrimes.powerset ×
     CanonicalQuadraticSieve.fixedBadPrimes.powerset × cubeImage R
@@ -45,7 +45,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
   let E : O → ℝ := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2
   have hcover : R ⊆ Finset.univ.image reconstruct := by
     intro z hz
-    let I : Ideal O := Ideal.span {z}
+    let I  := Ideal.span {z}
     obtain ⟨u, hu⟩ := element_cubic_extraction z (hR z hz)
     obtain ⟨e, he⟩ := badPart_sector (firstPart I)
     obtain ⟨f, hf⟩ := badPart_sector (secondPart I)
@@ -72,7 +72,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
     (sourceFactor R) cols hc coef
   have hcard : Fintype.card D = 96 * (cubeImage R).card := by
     have hu : Fintype.card Oˣ = 6 := by
-      simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
+      simpa using PrimaryIdealUnitReindex.card_units_eq_six
     simp only [D, Fintype.card_prod, Fintype.card_coe, hu,
       CanonicalQuadraticSieve.fixedBadPrimes_powerset_card]
     omega

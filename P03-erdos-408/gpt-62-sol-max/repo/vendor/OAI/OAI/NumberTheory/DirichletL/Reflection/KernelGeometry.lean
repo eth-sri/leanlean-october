@@ -51,7 +51,6 @@ lemma kernelLogCoordinates_exp (QK QP Qn Qb k p n b : ℝ)
     Real.exp_nat_mul,Real.exp_nat_mul,Real.exp_nat_mul,
     Real.exp_log (div_pos hk hQK),Real.exp_log (div_pos hp hQP),
     Real.exp_log (div_pos hn hQn),Real.exp_log (div_pos hb hQb)]
-  simp only [div_eq_mul_inv,mul_inv_rev]
   ring
 
 theorem actual_annular_kernel_identity (C QK QP Qn Qb k p n b : ℝ)

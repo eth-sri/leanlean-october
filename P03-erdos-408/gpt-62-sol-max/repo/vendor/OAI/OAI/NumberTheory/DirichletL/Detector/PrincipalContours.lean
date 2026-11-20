@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.FiniteProductX
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalGrowth
 public import Mathlib.MeasureTheory.Constructions.Polish.Basic
@@ -10,27 +11,26 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical BigOperators
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalContours
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds
+open ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable Id := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
 @[fun_prop] lemma measurable_const_cpow {α : Type*} [MeasurableSpace α] (Q : ℝ) (hQ : 0<Q)
     (f : α → ℂ) (hf : Measurable f) : Measurable (fun x => (Q:ℂ)^f x) := by
-  have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
-  exact ((differentiable_id.const_cpow (Or.inl hn)).continuous.measurable).comp hf
+  refine ((differentiable_id.const_cpow (Or.inl ?_)).continuous.measurable).comp hf
+  exact_mod_cast hQ.ne'
 
 lemma ideal_correction_measurable {α : Type*} [MeasurableSpace α]
     (η : Character) (P : PrimeIdeal) (x w z : α → ℂ)
     (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t => idealClosedCorrection η P (x t) (w t) (z t)) := by
   have hQ : 0<(Ideal.absNorm P.val : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (P.property.ne_zero)
   unfold idealClosedCorrection unramifiedClosed continuedCorrection markedFactor
     coordR coordV coordW coordD coordK
   dsimp only
@@ -48,7 +48,7 @@ lemma local_multiplier_measurable {α : Type*} [MeasurableSpace α]
     (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t => localMultiplier η P (x t) (w t) (z t)) := by
   have hQ : 0<(Ideal.absNorm P.val : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (P.property.ne_zero)
   have hc := ideal_correction_measurable η P x w z hx hw hz
   unfold localMultiplier compensatedReplacement idealMarkedClosed markedFactor
     coordR coordV coordW coordD coordK
@@ -330,35 +330,8 @@ lemma arithmetic_onLines_bound {ι : Type*} (η : Character) (S : Finset Id)
   · exact pole_distance_vertical 1 υ p.2
   · simpa using Complex.abs_re_le_norm (6*((ξ:ℂ)+p.1.2*I)-1)
 
-theorem continued_source_joint_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
-    Integrable (fun p : HeightSpace =>
-      continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z ((a:ℂ)+p.1.1*I)
-        ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
-      LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
-      LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)) heightMeasure := by
-  obtain ⟨C,hC,hR⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound (η.excludePrimes S hS.prime) a hβ
-  have hi := profile_arithmetic_integrable W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 a ξ υ
-    (by linarith) (fun p : HeightSpace => arithmeticMultiplier η S hS.prime J T b X Y Z
-      ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I))
-    (arithmetic_onLines_measurable η S hS.prime J T b X Y Z a ξ υ hX hY hZ hβ
-      (by linarith) hξ1 (by linarith [hυ.1]) hυ1).aestronglyMeasurable
-    (arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1|) 8
-    (arithmetic_onLines_bound η S hS J T b hT X Y Z a a ξ cw a ξ υ C hX hY hZ ha
-      ⟨le_rfl,le_rfl⟩ ⟨hξ,le_rfl⟩ hcw hυ hξ1 hυ1 hC hR)
-  apply hi.congr
-  exact Eventually.of_forall (fun p => arithmetic_profile_eq_source η S hS.prime J T b W0 W1 X Y Z _ _ _)
-
 lemma outer_height_ne_zero_ae : ∀ᵐp : HeightSpace ∂heightMeasure, p.1.1≠0 := by
-  have hh : ∀ᵐp : ℝ×ℝ ∂volume.prod volume, p.1≠0 :=
-    Measure.quasiMeasurePreserving_fst.ae (Measure.ae_ne volume (0:ℝ))
-  exact Measure.quasiMeasurePreserving_fst.ae hh
+  exact Measure.quasiMeasurePreserving_fst.ae (Measure.quasiMeasurePreserving_fst.ae (Measure.ae_ne volume (0:ℝ)))
 
 lemma continued_joint_ae_raw {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀P∈S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -373,52 +346,6 @@ lemma continued_joint_ae_raw {ι : Type*} (η : Character) (S : Finset Id)
   · intro h; exact hp (by simpa using congrArg Complex.im h)
   · intro h; exact hp (by simpa using congrArg Complex.im h)
 
-theorem source_joint_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
-    Integrable (fun p : HeightSpace =>
-      sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+p.1.1*I)
-        (globalClosedCorrection η S ((a:ℂ)+p.1.1*I)) (slotMultiplier η J T b ((a:ℂ)+p.1.1*I))
-        ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
-      LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
-      LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)) heightMeasure := by
-  apply (continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    X Y Z a ξ υ cw hX hY hZ ha hβ hξ hcw hυ hξ1 hυ1).congr
-  filter_upwards [continued_joint_ae_raw η S hS.prime J T b W0 W1 X Y Z a ξ υ] with p hp
-  rw [hp]
-
-theorem source_joint_fubini {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
-    let F := fun p : HeightSpace =>
-      sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+p.1.1*I)
-        (globalClosedCorrection η S ((a:ℂ)+p.1.1*I)) (slotMultiplier η J T b ((a:ℂ)+p.1.1*I))
-        ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
-      LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
-      LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)
-    ((∫p, F p ∂heightMeasure)=∫t : ℝ,∫v : ℝ,∫u : ℝ,F ((t,v),u)) ∧
-    ((∫p, F p ∂heightMeasure)=∫u : ℝ,∫v : ℝ,∫t : ℝ,F ((t,v),u)) := by
-  dsimp only
-  have hi := source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    X Y Z a ξ υ cw hX hY hZ ha hβ hξ hcw hυ hξ1 hυ1
-  constructor
-  · rw [integral_prod _ hi]
-    exact integral_prod _ hi.integral_prod_left
-  · rw [integral_prod_symm _ hi]
-    apply integral_congr_ae
-    filter_upwards [hi.prod_left_ae] with u hu
-    exact integral_prod_symm _ hu
-
 lemma arithmeticAmplitude_nonneg {ι : Type*} (S : Finset Id) (hS : ∀P∈S,Prime P)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
     (X Y Z a Bs Bz cw C δw δz : ℝ) (hcw : 1<cw) (hC : 0≤C) (hw : 0≤δw) (hz : 0≤δz) :
@@ -430,70 +357,6 @@ lemma arithmeticAmplitude_nonneg {ι : Type*} (S : Finset Id) (hS : ∀P∈S,Pri
   have hwa := (wAmplitude_pos (∏P∈S,P) hcw).le
   unfold arithmeticAmplitude
   positivity
-
-theorem continued_source_slices {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) (N : ℕ) :
-    ∃ C K : ℝ, 0≤C ∧ 0<K ∧ ∀axis : SliceAxis,∀R : ℝ,
-      let F := fun p : HeightSpace =>
-        continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z ((a:ℂ)+p.1.1*I)
-          ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
-        LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
-        LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)
-      Integrable (fun q : ℝ×ℝ => F (sliceMap axis R q)) (volume.prod volume) ∧
-      (∫q : ℝ×ℝ,‖F (sliceMap axis R q)‖ ∂volume.prod volume)≤
-        arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1| *K/height R^N := by
-  obtain ⟨C,hC,hR⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound (η.excludePrimes S hS.prime) a hβ
-  obtain ⟨K,hK,hk⟩ := profile_arithmetic_slices W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    a a ξ ξ υ υ (by linarith) 8 N
-  refine ⟨C,K,hC,hK,?_⟩
-  intro axis R
-  let G : HeightSpace → ℂ := fun p => arithmeticMultiplier η S hS.prime J T b X Y Z
-    ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)
-  have hm := arithmetic_onLines_measurable η S hS.prime J T b X Y Z a ξ υ hX hY hZ hβ
-    (by linarith) hξ1 (by linarith [hυ.1]) hυ1
-  have hbound := arithmetic_onLines_bound η S hS J T b hT X Y Z a a ξ cw a ξ υ C hX hY hZ ha
-    ⟨le_rfl,le_rfl⟩ ⟨hξ,le_rfl⟩ hcw hυ hξ1 hυ1 hC hR
-  have hh := hk a ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ υ ⟨le_rfl,le_rfl⟩ axis R
-    (arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1|)
-    (arithmeticAmplitude_nonneg S hS.prime J T b X Y Z a a ξ cw C _ _ hcw hC (abs_nonneg _) (abs_nonneg _))
-    (fun q => G (sliceMap axis R q)) ((hm.comp (sliceMap_continuous axis R).measurable).aestronglyMeasurable)
-    (fun q => hbound (sliceMap axis R q))
-  simpa only [G,onLines,arithmetic_profile_eq_source] using hh
-
-theorem source_w_leftover_outer_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a e t : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e)
-    (hs1 : (a:ℂ)+t*I≠1) :
-    let s : ℂ := (a:ℂ)+t*I
-    let K := sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
-      (globalClosedCorrection η S s) (slotMultiplier η J T b s)
-    Integrable (fun v : ℝ => verticalIntegral (19/20) (fun w =>
-      K w ((1/6+e:ℝ)+v*I)*LFunction (fixedSourcePrincipal S hS.prime)
-        (6*((1/6+e:ℝ)+v*I))*LFunction (fixedSourcePrincipal S hS.prime) w)) := by
-  obtain ⟨C,K,hC,hK,hslice⟩ := continued_source_slices η S hS J T b hT W0 W1 a0 b0 a1 b1
-    ha0 ha1 hW0 hW1 X Y Z a (1/6+e) (19/20) 3 hX hY hZ ha hβ
-    (by linarith) (by norm_num) (by norm_num) (by linarith) (by norm_num) 0
-  have hi := (hslice .s t).1
-  have hs0 : (a:ℂ)+t*I≠0 := by
-    intro h; have hh := congrArg Complex.re h; simp at hh; linarith
-  have hpair : Integrable (fun q : ℝ×ℝ =>
-      sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+t*I)
-        (globalClosedCorrection η S ((a:ℂ)+t*I)) (slotMultiplier η J T b ((a:ℂ)+t*I))
-        ((19/20:ℝ)+q.2*I) ((1/6+e:ℝ)+q.1*I) *
-      LFunction (fixedSourcePrincipal S hS.prime) (6*((1/6+e:ℝ)+q.1*I)) *
-      LFunction (fixedSourcePrincipal S hS.prime) ((19/20:ℝ)+q.2*I)) (volume.prod volume) := by
-    simpa only [sliceMap,continued_source_eq_raw η S hS.prime J T b W0 W1 X Y Z _ _ _ hs0 hs1] using hi
-  simpa only [verticalIntegral] using hpair.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))
 
 theorem source_z_boundary_any {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -519,77 +382,6 @@ theorem source_z_boundary_any {ι : Type*} (η : Character) (S : Finset Id)
       1 ((x:ℂ)+t*I) s.re (1/6+e) ⟨hs,le_rfl⟩ (by norm_num) (by simpa using hx)
   · intro x hx t _
     exact fixed_principal_z_box_growth (∏P∈S,P) (1/6+e) x t hx
-
-theorem source_ordered_at_height {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a e t cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e)
-    (hs1 : (a:ℂ)+t*I≠1) :
-    let s : ℂ := (a:ℂ)+t*I
-    let K := sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
-      (globalClosedCorrection η S s) (slotMultiplier η J T b s)
-    let π := fixedSourcePrincipal S hS.prime
-    verticalIntegral (1/6+e) (fun z => verticalIntegral cw
-      (fun w => K w z*LFunction π (6*z)*LFunction π w)) =
-    verticalIntegral (1/6+e) (fun z => verticalIntegral (19/20)
-      (fun w => K w z*LFunction π (6*z)*LFunction π w)) +
-    HeckeReciprocal.regularizedL π 1*verticalIntegral (33/200) (fun z => K 1 z*LFunction π (6*z)) +
-    (HeckeReciprocal.regularizedL π 1)^2/6*K 1 (1/6) := by
-  dsimp only
-  let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
-  have hs : (7/8 : ℝ)≤(((a:ℂ)+t*I) : ℂ).re := by simpa using ha
-  have hη := HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt (η.excludePrimes S hS.prime)
-    (show HeckeZeroSupremum.beta<(((a:ℂ)+t*I) : ℂ).re by simpa using hβ) (Or.inl hs1)
-  have hzb := source_z_boundary_any η S hS J T b hT W0 W1 a0 b0 ha0 hW0 X Y Z hX hZ
-    ((a:ℂ)+t*I) hs hη he
-  apply source_ordered_double_shift (fixedSourcePrincipal S hS.prime) _ hcw he
-  · intro z hz
-    apply (source_multiplier_differentiable_w η S hS J T b hT W0 W1 a1 b1 ha1 hW1
-      X Y Z hY ((a:ℂ)+t*I) z hs (by rw [hz]; linarith)).mono
-    intro w hw
-    change (9/10 : ℝ)<w.re
-    linarith [hw.1]
-  · intro z hz
-    have hh := ProbeFiniteProductBounds.source_w_boundary η S hS J T b hT W0 W1 a1 b1 ha1 hW1
-      (∏P∈S,P) X Y Z hY ((a:ℂ)+t*I) z hs (by rw [hz]; linarith) hη hcw
-    convert boundary_mul_const _ _ _ hh (LFunction (fixedSourcePrincipal S hS.prime) (6*z)) using 1
-    funext w
-    dsimp only [fixedSourcePrincipal,fixedPrincipal]
-    ring
-  · apply (source_multiplier_differentiable_z η S hS J T b hT W0 W1 X Y Z hX hZ
-      ((a:ℂ)+t*I) 1 hs (by norm_num)).mono
-    intro z hz
-    change (4/25 : ℝ)<z.re
-    linarith [hz.1]
-  · exact hzb
-  · exact source_w_leftover_outer_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-      X Y Z a e t hX hY hZ ha hβ he hs1
-
-theorem source_ordered_ae {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a e cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e) :
-    ∀ᵐt : ℝ, let s : ℂ := (a:ℂ)+t*I
-      let K := sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
-        (globalClosedCorrection η S s) (slotMultiplier η J T b s)
-      let π := fixedSourcePrincipal S hS.prime
-      verticalIntegral (1/6+e) (fun z => verticalIntegral cw
-        (fun w => K w z*LFunction π (6*z)*LFunction π w)) =
-      verticalIntegral (1/6+e) (fun z => verticalIntegral (19/20)
-        (fun w => K w z*LFunction π (6*z)*LFunction π w)) +
-      HeckeReciprocal.regularizedL π 1*verticalIntegral (33/200) (fun z => K 1 z*LFunction π (6*z)) +
-      (HeckeReciprocal.regularizedL π 1)^2/6*K 1 (1/6) := by
-  filter_upwards [Measure.ae_ne volume (0:ℝ)] with t ht
-  apply source_ordered_at_height η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    X Y Z a e t cw hX hY hZ ha hβ hcw he
-  intro h
-  exact ht (by simpa using congrArg Complex.im h)
 
 def residueArithmetic {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀P∈S,Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -690,18 +482,203 @@ lemma residueAmplitude_nonneg {ι : Type*} (S : Finset Id) (hS : ∀P∈S,Prime 
   unfold residueAmplitude
   positivity
 
-theorem continued_residue_pair_integrable {ι : Type*} (η : Character) (S : Finset Id)
+section
+
+variable {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
+variable (X Y Z : ℝ)
+
+include hT ha0 ha1 hW0 hW1
+
+theorem continued_source_joint_integrable
+    (a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
+    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
+    Integrable (fun p : HeightSpace =>
+      continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z ((a:ℂ)+p.1.1*I)
+        ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
+      LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
+      LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)) heightMeasure := by
+  obtain ⟨C,hC,hR⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound (η.excludePrimes S hS.prime) a hβ
+  have hi := profile_arithmetic_integrable ⟨W0, W1, a0, b0, a1, b1, ha0, ha1, hW0, hW1⟩ a ξ υ
+    (by linarith) (fun p : HeightSpace => arithmeticMultiplier η S hS.prime J T b X Y Z
+      ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I))
+    (arithmetic_onLines_measurable η S hS.prime J T b X Y Z a ξ υ hX hY hZ hβ
+      (by linarith) hξ1 (by linarith [hυ.1]) hυ1).aestronglyMeasurable
+    (arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1|) 8
+    (arithmetic_onLines_bound η S hS J T b hT X Y Z a a ξ cw a ξ υ C hX hY hZ ha
+      ⟨le_rfl,le_rfl⟩ ⟨hξ,le_rfl⟩ hcw hυ hξ1 hυ1 hC hR)
+  apply hi.congr
+  exact Eventually.of_forall (fun p => arithmetic_profile_eq_source η S hS.prime J T b W0 W1 X Y Z _ _ _)
+
+theorem source_joint_integrable
+    (a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
+    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
+    Integrable (fun p : HeightSpace =>
+      sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+p.1.1*I)
+        (globalClosedCorrection η S ((a:ℂ)+p.1.1*I)) (slotMultiplier η J T b ((a:ℂ)+p.1.1*I))
+        ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
+      LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
+      LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)) heightMeasure := by
+  apply (continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    X Y Z a ξ υ cw hX hY hZ ha hβ hξ hcw hυ hξ1 hυ1).congr
+  filter_upwards [continued_joint_ae_raw η S hS.prime J T b W0 W1 X Y Z a ξ υ] with p hp
+  rw [hp]
+
+theorem source_joint_fubini
+    (a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
+    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
+    let F := fun p : HeightSpace =>
+      sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+p.1.1*I)
+        (globalClosedCorrection η S ((a:ℂ)+p.1.1*I)) (slotMultiplier η J T b ((a:ℂ)+p.1.1*I))
+        ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
+      LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
+      LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)
+    ((∫p, F p ∂heightMeasure)=∫t : ℝ,∫v : ℝ,∫u : ℝ,F ((t,v),u)) ∧
+    ((∫p, F p ∂heightMeasure)=∫u : ℝ,∫v : ℝ,∫t : ℝ,F ((t,v),u)) := by
+  dsimp only
+  have hi := source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    X Y Z a ξ υ cw hX hY hZ ha hβ hξ hcw hυ hξ1 hυ1
+  constructor
+  · rw [integral_prod _ hi]
+    exact integral_prod _ hi.integral_prod_left
+  · rw [integral_prod_symm _ hi]
+    apply integral_congr_ae
+    filter_upwards [hi.prod_left_ae] with u hu
+    exact integral_prod_symm _ hu
+
+theorem continued_source_slices
+    (a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
+    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) (N : ℕ) :
+    ∃ C K : ℝ, 0≤C ∧ 0<K ∧ ∀axis : SliceAxis,∀R : ℝ,
+      let F := fun p : HeightSpace =>
+        continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z ((a:ℂ)+p.1.1*I)
+          ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) *
+        LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+p.1.2*I)) *
+        LFunction (fixedSourcePrincipal S hS.prime) ((υ:ℂ)+p.2*I)
+      Integrable (fun q : ℝ×ℝ => F (sliceMap axis R q)) (volume.prod volume) ∧
+      (∫q : ℝ×ℝ,‖F (sliceMap axis R q)‖ ∂volume.prod volume)≤
+        arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1| *K/height R^N := by
+  obtain ⟨C,hC,hR⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound (η.excludePrimes S hS.prime) a hβ
+  obtain ⟨K,hK,hk⟩ := profile_arithmetic_slices ⟨W0, W1, a0, b0, a1, b1, ha0, ha1, hW0, hW1⟩
+    a a ξ ξ υ υ (by linarith) 8 N
+  refine ⟨C,K,hC,hK,?_⟩
+  intro axis R
+  let G : HeightSpace → ℂ := fun p => arithmeticMultiplier η S hS.prime J T b X Y Z
+    ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)
+  have hm := arithmetic_onLines_measurable η S hS.prime J T b X Y Z a ξ υ hX hY hZ hβ
+    (by linarith) hξ1 (by linarith [hυ.1]) hυ1
+  have hbound := arithmetic_onLines_bound η S hS J T b hT X Y Z a a ξ cw a ξ υ C hX hY hZ ha
+    ⟨le_rfl,le_rfl⟩ ⟨hξ,le_rfl⟩ hcw hυ hξ1 hυ1 hC hR
+  have hh := hk a ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ υ ⟨le_rfl,le_rfl⟩ axis R
+    (arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1|)
+    (arithmeticAmplitude_nonneg S hS.prime J T b X Y Z a a ξ cw C _ _ hcw hC (abs_nonneg _) (abs_nonneg _))
+    (fun q => G (sliceMap axis R q)) ((hm.comp (sliceMap_continuous axis R).measurable).aestronglyMeasurable)
+    (fun q => hbound (sliceMap axis R q))
+  simpa only [G,onLines,arithmetic_profile_eq_source] using hh
+
+theorem source_w_leftover_outer_integrable
+    (a e t : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e)
+    (hs1 : (a:ℂ)+t*I≠1) :
+    let s : ℂ := (a:ℂ)+t*I
+    let K := sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+      (globalClosedCorrection η S s) (slotMultiplier η J T b s)
+    Integrable (fun v : ℝ => verticalIntegral (19/20) (fun w =>
+      K w ((1/6+e:ℝ)+v*I)*LFunction (fixedSourcePrincipal S hS.prime)
+        (6*((1/6+e:ℝ)+v*I))*LFunction (fixedSourcePrincipal S hS.prime) w)) := by
+  obtain ⟨C,K,hC,hK,hslice⟩ := continued_source_slices η S hS J T b hT W0 W1 a0 b0 a1 b1
+    ha0 ha1 hW0 hW1 X Y Z a (1/6+e) (19/20) 3 hX hY hZ ha hβ
+    (by linarith) (by norm_num) (by norm_num) (by linarith) (by norm_num) 0
+  have hi := (hslice .s t).1
+  have hs0 : (a:ℂ)+t*I≠0 := by
+    intro h; have hh := congrArg Complex.re h; simp at hh; linarith
+  have hpair : Integrable (fun q : ℝ×ℝ =>
+      sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+t*I)
+        (globalClosedCorrection η S ((a:ℂ)+t*I)) (slotMultiplier η J T b ((a:ℂ)+t*I))
+        ((19/20:ℝ)+q.2*I) ((1/6+e:ℝ)+q.1*I) *
+      LFunction (fixedSourcePrincipal S hS.prime) (6*((1/6+e:ℝ)+q.1*I)) *
+      LFunction (fixedSourcePrincipal S hS.prime) ((19/20:ℝ)+q.2*I)) (volume.prod volume) := by
+    simpa only [sliceMap,continued_source_eq_raw η S hS.prime J T b W0 W1 X Y Z _ _ _ hs0 hs1] using hi
+  simpa only [verticalIntegral] using hpair.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))
+
+theorem source_ordered_at_height
+    (a e t cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e)
+    (hs1 : (a:ℂ)+t*I≠1) :
+    let s : ℂ := (a:ℂ)+t*I
+    let K := sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+      (globalClosedCorrection η S s) (slotMultiplier η J T b s)
+    let π := fixedSourcePrincipal S hS.prime
+    verticalIntegral (1/6+e) (fun z => verticalIntegral cw
+      (fun w => K w z*LFunction π (6*z)*LFunction π w)) =
+    verticalIntegral (1/6+e) (fun z => verticalIntegral (19/20)
+      (fun w => K w z*LFunction π (6*z)*LFunction π w)) +
+    HeckeReciprocal.regularizedL π 1*verticalIntegral (33/200) (fun z => K 1 z*LFunction π (6*z)) +
+    (HeckeReciprocal.regularizedL π 1)^2/6*K 1 (1/6) := by
+  dsimp only
+  let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
+  have hs : (7/8 : ℝ)≤(((a:ℂ)+t*I) : ℂ).re := by simpa using ha
+  have hη := HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt (η.excludePrimes S hS.prime)
+    (show HeckeZeroSupremum.beta<(((a:ℂ)+t*I) : ℂ).re by simpa using hβ) (Or.inl hs1)
+  have hzb := source_z_boundary_any η S hS J T b hT W0 W1 a0 b0 ha0 hW0 X Y Z hX hZ
+    ((a:ℂ)+t*I) hs hη he
+  apply source_ordered_double_shift (fixedSourcePrincipal S hS.prime) _ hcw he
+  · intro z hz
+    apply (source_multiplier_differentiable_w η S hS J T b hT W0 W1 a1 b1 ha1 hW1
+      X Y Z hY ((a:ℂ)+t*I) z hs (by rw [hz]; linarith)).mono
+    intro w hw
+    change (9/10 : ℝ)<w.re
+    linarith [hw.1]
+  · intro z hz
+    have hh := ProbeFiniteProductBounds.source_w_boundary η S hS J T b hT W0 W1 a1 b1 ha1 hW1
+      (∏P∈S,P) X Y Z hY ((a:ℂ)+t*I) z hs (by rw [hz]; linarith) hη hcw
+    convert boundary_mul_const _ _ _ hh (LFunction (fixedSourcePrincipal S hS.prime) (6*z)) using 1
+    funext w
+    dsimp only [fixedSourcePrincipal,fixedPrincipal]
+    ring
+  · apply (source_multiplier_differentiable_z η S hS J T b hT W0 W1 X Y Z hX hZ
+      ((a:ℂ)+t*I) 1 hs (by norm_num)).mono
+    intro z hz
+    change (4/25 : ℝ)<z.re
+    linarith [hz.1]
+  · exact hzb
+  · exact source_w_leftover_outer_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+      X Y Z a e t hX hY hZ ha hβ he hs1
+
+theorem source_ordered_ae
+    (a e cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e) :
+    ∀ᵐt : ℝ, let s : ℂ := (a:ℂ)+t*I
+      let K := sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
+        (globalClosedCorrection η S s) (slotMultiplier η J T b s)
+      let π := fixedSourcePrincipal S hS.prime
+      verticalIntegral (1/6+e) (fun z => verticalIntegral cw
+        (fun w => K w z*LFunction π (6*z)*LFunction π w)) =
+      verticalIntegral (1/6+e) (fun z => verticalIntegral (19/20)
+        (fun w => K w z*LFunction π (6*z)*LFunction π w)) +
+      HeckeReciprocal.regularizedL π 1*verticalIntegral (33/200) (fun z => K 1 z*LFunction π (6*z)) +
+      (HeckeReciprocal.regularizedL π 1)^2/6*K 1 (1/6) := by
+  filter_upwards [Measure.ae_ne volume (0:ℝ)] with t ht
+  apply source_ordered_at_height η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    X Y Z a e t cw hX hY hZ ha hβ hcw he
+  intro h
+  exact ht (by simpa using congrArg Complex.im h)
+
+theorem continued_residue_pair_integrable
+    (a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hξ1 : 6*ξ≠1) :
     Integrable (fun q : ℝ×ℝ => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
       ((a:ℂ)+q.1*I) 1 ((ξ:ℂ)+q.2*I)*
         LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+q.2*I))) (volume.prod volume) := by
   obtain ⟨C,hC,hR⟩ := HeckeReciprocalGrowth.polynomial_reciprocal_bound (η.excludePrimes S hS.prime) a hβ
-  obtain ⟨K,hK,hk⟩ := profile_arithmetic_slices W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+  obtain ⟨K,hK,hk⟩ := profile_arithmetic_slices ⟨W0, W1, a0, b0, a1, b1, ha0, ha1, hW0, hW1⟩
     a a ξ ξ 1 1 (by linarith) 5 0
   have hm := residue_arithmetic_measurable η S hS.prime J T b X Z a ξ hX hZ hβ (by linarith) hξ1
   have hb := residue_arithmetic_bound η S hS J T b hT X Z a ξ C hX hZ ha hξ hξ1 hC hR
@@ -716,12 +693,8 @@ theorem continued_residue_pair_integrable {ι : Type*} (η : Character) (S : Fin
   simpa only [sliceMap,onLines,ofReal_one,ofReal_zero,zero_mul,add_zero] using
     residue_profile_eq_source η S hS.prime J T b W0 W1 X Y Z ((a:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I)
 
-theorem residue_pair_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
+theorem residue_pair_integrable
+    (a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hξ1 : 6*ξ≠1) :
     Integrable (fun q : ℝ×ℝ => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime)
       ((a:ℂ)+q.1*I) (globalClosedCorrection η S ((a:ℂ)+q.1*I)) (slotMultiplier η J T b ((a:ℂ)+q.1*I))
@@ -735,12 +708,8 @@ theorem residue_pair_integrable {ι : Type*} (η : Character) (S : Finset Id)
   have h1 : (a:ℂ)+q.1*I≠1 := by intro h; exact hq (by simpa using congrArg Complex.im h)
   rw [continued_source_eq_raw η S hS.prime J T b W0 W1 X Y Z _ _ _ h0 h1]
 
-theorem source_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+theorem source_iterated_integrable
+    (a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
     (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
     Integrable (fun t : ℝ => verticalIntegral ξ (fun z => verticalIntegral υ (fun w =>
@@ -752,12 +721,8 @@ theorem source_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id)
   simpa only [verticalIntegral,integral_const_mul,mul_assoc] using
     (hi.integral_prod_left.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))).const_mul (((1/(2*Real.pi):ℝ):ℂ))
 
-theorem residue_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
+theorem residue_iterated_integrable
+    (a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hξ1 : 6*ξ≠1) :
     Integrable (fun t : ℝ => verticalIntegral ξ (fun z =>
       sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+t*I)
@@ -767,12 +732,8 @@ theorem residue_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id
     X Y Z a ξ hX hZ ha hβ hξ hξ1
   simpa only [verticalIntegral] using hi.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))
 
-theorem source_ordered_outer {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a e cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+theorem source_ordered_outer
+    (a e cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e) :
     let K := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s)
@@ -823,6 +784,8 @@ theorem source_ordered_outer {ι : Type*} (η : Character) (S : Finset Id)
   rw [heq]
   simp only [D,E,verticalIntegral,integral_const_mul]
   ring
+
+end
 
 end SevenEighths.ProbePrincipalContours
 end

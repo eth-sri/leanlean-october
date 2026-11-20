@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Mellin.InverseContour
 
 @[expose] public section
@@ -9,73 +10,19 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped FourierTransform
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicReflectionKernel
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Set
+open MeasureTheory Filter Set SevenEighths.CompactProfileFamily
 
 theorem compact_family_mul_fourier_power_source_bound (F : ℝ → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
@@ -94,27 +41,9 @@ theorem compact_family_mul_fourier_power_source_bound (F : ℝ → ℝ → ℂ)
     exact hsupp σ (mul_ne_zero_iff.mp hu).1
   have hs : ContDiff ℝ ∞ (fun u => F σ u * W u) :=
     hFW.comp (contDiff_const.prodMk contDiff_id)
-  have hfour := Real.fourier_iteratedDeriv (N := (⊤ : ℕ∞)) hs
-    (fun k _ => compact_family_deriv_integrable (fun σ u => F σ u * W u) hFW K hK hsupport σ k)
-    (by simp : (j : ℕ∞) ≤ ⊤)
-  have hid : (2 * Real.pi) ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) =
-      ‖𝓕 (iteratedDeriv j (fun u => F σ u * W u)) w‖ := by
-    rw [hfour]
-    simp only [norm_smul, norm_pow, norm_mul, Complex.norm_I, mul_one,
-      Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
-    norm_num
-    ring
-  have hn : ‖𝓕 (iteratedDeriv j (fun u => F σ u * W u)) w‖ ≤
-      C * (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
-    apply (VectorFourier.norm_fourierIntegral_le_integral_norm
-      Real.fourierChar volume (innerₗ ℝ) (iteratedDeriv j (fun u => F σ u * W u)) w).trans
-    exact hb W σ hσ
   rw [div_mul_eq_mul_div]
-  apply (le_div_iff₀ (by positivity : 0 < (2 * Real.pi) ^ j)).mpr
-  rw [← hid] at hn
-  calc
-    _ = (2 * Real.pi) ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) := mul_comm _ _
-    _ ≤ _ := hn
+  exact fourier_power_le w hs (compact_family_deriv_integrable _ hFW K hK hsupport σ)
+    (hb W σ hσ)
 
 theorem compact_family_mul_fourier_weighted_source_bound (F : ℝ → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
@@ -128,32 +57,16 @@ theorem compact_family_mul_fourier_weighted_source_bound (F : ℝ → ℝ → �
   refine ⟨2 ^ j * (C₀ + Cj), by positivity, ?_⟩
   intro W σ hσ w
   let S := (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
-  have hS : 0 ≤ S := by dsimp [S]; positivity
   have hsubset : Finset.Iic (0, 0) ⊆ Finset.Iic (0, j) := by
-    intro p hp
-    exact Finset.mem_Iic.mpr ((Finset.mem_Iic.mp hp).trans (by simp))
+    simp
   have hseminorm : (Finset.Iic (0, 0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤ S :=
     Seminorm.le_def.mp (Finset.sup_mono hsubset) W
   have hbase : ‖𝓕 (fun u => F σ u * W u) w‖ ≤ C₀ * S := by
     have hh : ‖𝓕 (fun u => F σ u * W u) w‖ ≤ C₀ * (Finset.Iic (0, 0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
       simpa using h0 W σ hσ w
     exact hh.trans (mul_le_mul_of_nonneg_left hseminorm hC₀.le)
-  have hpower : |w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ ≤ Cj * S := hj W σ hσ w
-  by_cases hw : |w| ≤ 1
-  · calc
-      _ ≤ 2 ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ :=
-        mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
-      _ ≤ 2 ^ j * (C₀ * S) := mul_le_mul_of_nonneg_left hbase (by positivity)
-      _ ≤ 2 ^ j * ((C₀ + Cj) * S) := by gcongr; linarith
-      _ = _ := by dsimp [S]; ring
-  · have hw' : 1 ≤ |w| := le_of_lt (lt_of_not_ge hw)
-    calc
-      _ ≤ (2 * |w|) ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ :=
-        mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
-      _ = 2 ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) := by rw [mul_pow, mul_assoc]
-      _ ≤ 2 ^ j * (Cj * S) := mul_le_mul_of_nonneg_left hpower (by positivity)
-      _ ≤ 2 ^ j * ((C₀ + Cj) * S) := by gcongr; linarith
-      _ = _ := by dsimp [S]; ring
+  simpa only [S, ← add_mul, mul_assoc] using
+    inhomogeneous_weight (norm_nonneg _) hbase (hj W σ hσ w)
 
 def negativeLogPullbackCLM (a b : ℝ) : SchwartzMap ℝ ℂ →L[ℝ] SchwartzMap ℝ ℂ :=
   (SchwartzMap.compCLMOfContinuousLinearEquiv ℝ
@@ -207,27 +120,13 @@ theorem mellin_strip_source_bound (a b : ℝ) (ha : 0 < a) (lo hi : ℝ) (j : �
     (negativeLogPullbackCLM a b) (Finset.Iic (0, j))
   refine ⟨s, (1 + 2 * Real.pi) ^ j * C * D, by positivity, ?_⟩
   intro W hsupp σ hσ t
-  have hfun : (fun u => logWeight a b σ u * negativeLogPullbackCLM a b W u) = mellinLogFamily W σ :=
+  have hfun  :=
     funext (logWeight_mul_pullback a b ha W hsupp σ)
   have hfour := hb (negativeLogPullbackCLM a b W) σ hσ (t / (2 * Real.pi))
   rw [hfun] at hfour
-  have ht : |t| = (2 * Real.pi) * |t / (2 * Real.pi)| := by
-    rw [abs_div, abs_of_pos (by positivity : 0 < 2 * Real.pi)]
-    field_simp
-  have hbase : 1 + |t| ≤ (1 + 2 * Real.pi) * (1 + |t / (2 * Real.pi)|) := by
-    rw [ht]
-    nlinarith [Real.pi_pos, abs_nonneg (t / (2 * Real.pi))]
   rw [mellin_eq_logFamily_fourier]
-  calc
-    _ ≤ ((1 + 2 * Real.pi) * (1 + |t / (2 * Real.pi)|)) ^ j *
-        ‖𝓕 (mellinLogFamily W σ) (t / (2 * Real.pi))‖ :=
-      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) hbase j) (norm_nonneg _)
-    _ = (1 + 2 * Real.pi) ^ j * ((1 + |t / (2 * Real.pi)|) ^ j *
-        ‖𝓕 (mellinLogFamily W σ) (t / (2 * Real.pi))‖) := by rw [mul_pow, mul_assoc]
-    _ ≤ (1 + 2 * Real.pi) ^ j * (C *
-        (D * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)) :=
-      mul_le_mul_of_nonneg_left (hfour.trans (mul_le_mul_of_nonneg_left (hDbd W) hC.le)) (by positivity)
-    _ = _ := by ring
+  simpa only [mul_assoc] using mellin_weight (norm_nonneg _)
+    (hfour.trans (mul_le_mul_of_nonneg_left (hDbd W) hC.le))
 
 theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -246,7 +145,7 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     push_cast
     ring
   rw [heq, abs_neg] at hmb
-  have hgb : ‖gammaMultiplier ((σ : ℂ) + t * Complex.I)‖ ≤ Cγ * (1 + |t|) ^ g := hγ σ hσ t
+  have hgb  := hγ σ hσ t
   rw [mellinData, norm_mul]
   calc
     _ = ((1 + |t|) ^ j * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) *
@@ -254,7 +153,6 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     _ ≤ ((1 + |t|) ^ j * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) *
         (Cγ * (1 + |t|) ^ g) := mul_le_mul_of_nonneg_left hgb (by positivity)
     _ = Cγ * ((1 + |t|) ^ (g + j) * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) := by
-      rw [pow_add]
       ring
     _ ≤ Cγ * (CV * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) := mul_le_mul_of_nonneg_left hmb hCγ.le
     _ = _ := by ring
@@ -330,7 +228,6 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
   refine ⟨s, C * B, mul_pos hC hB, ?_⟩
   intro W hsupp x hx
   let Q := s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
-  have hQ : 0 ≤ Q := by dsimp [Q]; positivity
   have hline (σ : ℝ) (hσ : σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ)) :
       ‖LocalLogFourier.eulerDeriv (paperKernel W) j x‖ ≤
         C * Q * (paperScale * x) ^ (-σ) := by
@@ -367,7 +264,6 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase columnPrimeCoprime)
@@ -375,15 +271,15 @@ open FiniteGaussPhase (canonicalProductGauss canonicalProductGauss_cross_factors
 open MixedGaussConversion (localGauss)
 
 def gaussBlock {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e : ι → ℕ) : ℂ :=
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S : Finset ι) (e : ι → ℕ) : ℂ :=
   ∏ i ∈ S, (∏ k ∈ S.erase i, crossSymbol p hg i k ^ e i) *
     localGauss (p i) (hp i) (hg i) (e i)
 
 theorem canonicalProductGauss_eq_gaussBlock {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e : ι → ℕ)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S : Finset ι) (e : ι → ℕ)
     (he : ∀ i ∈ S, e i ≠ 0) :
     canonicalProductGauss (fun i : S => p i.val) (fun i => hp i.val)
       (columnPrimeCoprime p hcop S) (fun i => hg i.val) (fun i => e i.val) =
@@ -417,14 +313,14 @@ theorem canonicalProductGauss_eq_gaussBlock {ι : Type*} [DecidableEq ι]
       (∏ k ∈ S.erase i, crossSymbol p hg i k ^ e i) * localGauss (p i) (hp i) (hg i) (e i))
 
 def blockCross {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S T : Finset ι) (e : ι → ℕ) : ℂ :=
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S T : Finset ι) (e : ι → ℕ) : ℂ :=
   ∏ i ∈ S, ∏ k ∈ T,
     crossSymbol p hg i k ^ e i * crossSymbol p hg k i ^ e k
 
 theorem gaussBlock_union {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S T : Finset ι) (hd : Disjoint S T)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S T : Finset ι) (hd : Disjoint S T)
     (e : ι → ℕ) :
     gaussBlock p hp hg (S ∪ T) e =
       gaussBlock p hp hg S e * gaussBlock p hp hg T e * blockCross p hg S T e := by
@@ -432,14 +328,14 @@ theorem gaussBlock_union {ι : Type*} [DecidableEq ι]
       (∏ k ∈ (S ∪ T).erase i, crossSymbol p hg i k ^ e i) =
       (∏ k ∈ S.erase i, crossSymbol p hg i k ^ e i) *
         ∏ k ∈ T, crossSymbol p hg i k ^ e i := by
-    have hn : i ∉ T := fun h => Finset.disjoint_left.mp hd hi h
+    have hn  := fun h => Finset.disjoint_left.mp hd hi h
     rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hn,
       Finset.prod_union (hd.mono_left (Finset.erase_subset _ _))]
   have hT (i : ι) (hi : i ∈ T) :
       (∏ k ∈ (S ∪ T).erase i, crossSymbol p hg i k ^ e i) =
       (∏ k ∈ T.erase i, crossSymbol p hg i k ^ e i) *
         ∏ k ∈ S, crossSymbol p hg i k ^ e i := by
-    have hn : i ∉ S := fun h => Finset.disjoint_left.mp hd h hi
+    have hn  := fun h => Finset.disjoint_left.mp hd h hi
     rw [Finset.union_comm S T, Finset.erase_union_distrib, Finset.erase_eq_of_notMem hn,
       Finset.prod_union (hd.symm.mono_left (Finset.erase_subset _ _))]
   have hpS : (∏ i ∈ S, (∏ k ∈ (S ∪ T).erase i, crossSymbol p hg i k ^ e i) *
@@ -464,8 +360,8 @@ theorem gaussBlock_union {ι : Type*} [DecidableEq ι]
   ring
 
 theorem gaussBlock_congr {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e f : ι → ℕ)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S : Finset ι) (e f : ι → ℕ)
     (he : ∀ i ∈ S, e i = f i) : gaussBlock p hp hg S e = gaussBlock p hp hg S f := by
   apply Finset.prod_congr rfl
   intro i hi
@@ -475,9 +371,9 @@ def cubeActiveSupport {ι : Type*} (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂
   B.filter (fun k => conductorExponent (parity (v k)) (ε₁ k) (ε₂ k) ≠ 0)
 
 theorem columnCoefficient_eq_gaussBlock {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) :
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda) (S : Finset ι) :
     MixedCrossSeparation.columnCoefficient p hp hcop hg S =
       star (FiniteGaussPhase.angularFactor (∏ i ∈ S, p i)) *
         gaussBlock p hp hg S (fun _ => 2) := by
@@ -486,8 +382,8 @@ theorem columnCoefficient_eq_gaussBlock {ι : Type*} [DecidableEq ι]
   rw [canonicalProductGauss_eq_gaussBlock p hp hcop hg S (fun _ => 2) (fun _ _ => by decide)]
 
 theorem blockCross_two_eq_row_four {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S T : Finset ι) :
     blockCross p hg S T (fun _ => 2) =
       finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (∏ k ∈ T, p k) ^ 4 := by
@@ -504,9 +400,9 @@ theorem blockCross_two_eq_row_four {ι : Type*}
   ring
 
 theorem columnCoefficient_union_row_four {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S T : Finset ι) (hd : Disjoint S T) :
     MixedCrossSeparation.columnCoefficient p hp hcop hg (S ∪ T) =
       MixedCrossSeparation.columnCoefficient p hp hcop hg S *
@@ -525,9 +421,9 @@ theorem columnCoefficient_union_row_four {ι : Type*} [DecidableEq ι]
   ring
 
 theorem gaussBlock_norm_one {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p lambda)
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (S : Finset ι) (e : ι → ℕ) (he : ∀ i ∈ S, e i ≠ 0) (he6 : ∀ i ∈ S, e i < 6) :
     ‖gaussBlock p hp hg S e‖ = 1 := by

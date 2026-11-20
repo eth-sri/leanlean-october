@@ -11,77 +11,16 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 section
 
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -126,7 +65,7 @@ end
 section
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
@@ -152,7 +91,7 @@ lemma cubicSource_period_finTwo (t:Fin 2) (w:HyperbolicSpace) :
   · have hz:complexTranslation 0=1:=by
       apply Matrix.SpecialLinearGroup.ext
       intro i j
-      fin_cases i <;> fin_cases j <;> simp [complexTranslation]
+      fin_cases i <;> fin_cases j <;> rfl
     simp only [Nat.cast_zero,hz,one_smul]
   · simpa using cubicSource_period_one w
 
@@ -164,7 +103,7 @@ lemma cubicSource_cube_period_finTwo (p:Eis) (hp:p≠0) (hprimary:lambda^2∣p-1
   · have hz:complexTranslation 0=1:=by
       apply Matrix.SpecialLinearGroup.ext
       intro i j
-      fin_cases i <;> fin_cases j <;> simp [complexTranslation]
+      fin_cases i <;> fin_cases j <;> rfl
     simp only [Nat.cast_zero,hz,one_smul]
   · simpa using cubeAverage_period_one p hp hprimary cubicSourceResidualFunction
       cubicSource_period_three cubicSource_period_one w
@@ -233,9 +172,6 @@ theorem cubeSource_primary_upper_average (A:levelTwo) (T:SL(2,Eis)) (hT:T 1 0=0)
     rw [←tsum_mul_left]
     apply tsum_congr
     intro r
-    change _=(sourceCuspConstant ((A:SL(2,Eis))*T)*(v:ℂ)^(2/3:ℂ))*
-      (cubeCuspHeightWeight p (d r).exponent*complexCharacter
-        ⟨(d r).matrix*(A:SL(2,Eis))⁻¹,(d r).congruent⟩)
     ring
   rw [hsum]
   calc
@@ -293,15 +229,14 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise
+open scoped MatrixGroups Pointwise
 open Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
 
 lemma integralCoverFiberPoint_continuous (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
     (q : IntegralCoverCosets H K) : Continuous (integralCoverFiberPoint H K q) := by
-  have he : integralCoverFiberPoint H K q=fun w=>
-      integralOrbitProjection H ((integralCoverRep H K q)⁻¹•w) :=
+  have he  :=
     funext (integralCoverFiberPoint_rep H K q)
   rw [he]
   exact (continuous_integralOrbitProjection H).comp
@@ -316,7 +251,7 @@ lemma integralCoverMap_fiber {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (h
   · intro hu
     induction u using Quotient.inductionOn with
     | _ z =>
-      have he : integralOrbitProjection K z=integralOrbitProjection K w := hu
+      have he  := hu
       obtain ⟨k,hk⟩ := Quotient.exact he
       refine ⟨(k : IntegralCoverCosets H K),?_⟩
       change integralCoverFiberPoint H K (k : IntegralCoverCosets H K) w=integralOrbitProjection H z
@@ -344,7 +279,6 @@ lemma integralCoverMap_preimage_image {H K : Subgroup (SL(2,ActualEisensteinCubi
 
 theorem integralCoverMap_isClosedMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤K) [H.IsFiniteRelIndex K] : IsClosedMap (integralCoverMap hHK) := by
-  let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   intro S hS
   have hq : Topology.IsQuotientMap (integralOrbitProjection K) := isQuotientMap_quotient_mk'
   apply hq.isCoinducing.isClosed_preimage.mp
@@ -353,7 +287,6 @@ theorem integralCoverMap_isClosedMap {H K : Subgroup (SL(2,ActualEisensteinCubic
 
 theorem integralCoverMap_isProperMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤K) [H.IsFiniteRelIndex K] : IsProperMap (integralCoverMap hHK) := by
-  let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   apply isProperMap_iff_isClosedMap_and_compact_fibers.mpr
   refine ⟨integralCoverMap_continuous hHK,integralCoverMap_isClosedMap hHK,?_⟩
   intro q
@@ -374,7 +307,7 @@ end
 section
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
@@ -420,7 +353,7 @@ lemma cubeSource_leading_sum (M:SL(2,Eis)) (p:Eis) (hp:Prime p) (hprimary:lambda
       sourceCuspConstant (d r).matrix*cubeCuspHeightWeight p (d r).exponent:=by
     rw [cubeSource_summand_average (d r) hp.ne_zero 1 (by norm_num),
       ←sourceCuspConstant_congruent M (d r).matrix (d r).congruent]
-    simp only [Complex.ofReal_one,Complex.one_cpow,mul_one]
+    simp
   rw [tsum_congr hpoint] at h
   simp only [Complex.ofReal_one,Complex.one_cpow,mul_one] at h
   change (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹^3 *
@@ -431,7 +364,7 @@ lemma cubeSource_leading_sum (M:SL(2,Eis)) (p:Eis) (hp:Prime p) (hprimary:lambda
   calc
     _=((Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹^3 *
       (∑' r:Eis⧸Ideal.span {p^3},sourceCuspConstant (d r).matrix*cubeCuspHeightWeight p (d r).exponent)) /
-        ((9*Real.sqrt 3/2:ℝ):ℂ):=by ring
+        (periodCovolume : ℂ):=by ring
     _=_:=by rw [h];ring
 
 theorem cubeSource_difference_eq_remainders (M:SL(2,Eis)) (p:Eis) (hp:Prime p)
@@ -445,7 +378,7 @@ theorem cubeSource_difference_eq_remainders (M:SL(2,Eis)) (p:Eis) (hp:Prime p)
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*sourceCuspRemainder M z v hv := by
   let d (r:Eis⧸Ideal.span {p^3}):=actualCubeCuspData M p
     (GaussianShiftedPartition.representative (p^3) r) hp hprimary
-  let:Finite (Eis⧸Ideal.span {p^3}):=finite_quotient_span (pow_ne_zero 3 hp.ne_zero)
+  let:=finite_quotient_span (pow_ne_zero 3 hp.ne_zero)
   have hpoint (r:Eis⧸Ideal.span {p^3}):
       cubicSourceResidualFunction (cubeAverageMatrix p hp.ne_zero
         (GaussianShiftedPartition.representative (p^3) r) • (integralComplexMatrix M • upperPoint z v hv))=
@@ -480,7 +413,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma cubePrime_norm_ge_one (p:Eis) (hp:p≠0) : 1≤‖eisEmbedding p‖ := by
   have hn:1≤‖eisEmbedding p‖^2:=by
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    have hq:Ideal.absNorm (Ideal.span {p})≠0:=
+    have hq:=
       (Ideal.absNorm_ne_zero_iff _).mpr (finite_quotient_span hp)
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr hq
   nlinarith [norm_nonneg (eisEmbedding p)]
@@ -492,15 +425,14 @@ lemma cubeReducedRemainder_bound {M:SL(2,Eis)} {p q:Eis}
     (z:ℂ) (v:ℝ) (hv:0<v) (hv1:1≤v) :
     ‖cubeReducedRemainder d hp z v hv‖≤K*‖eisEmbedding p‖^9/v^3 := by
   let D:=‖cubeCuspTriangular d hp 1 1‖^2
-  have hD:0<D:=cubeCuspTriangular_norm_sq_pos d hp
-  have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
-  have hr1:1≤‖eisEmbedding p‖:=cubePrime_norm_ge_one p hp
+  have hD:=cubeCuspTriangular_norm_sq_pos d hp
+  have hr:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
+  have hr1:=cubePrime_norm_ge_one p hp
   have hd:D≤‖eisEmbedding p‖^3:=by
     rw [show D=‖eisEmbedding p‖^(3-2*(d.exponent.val:ℝ)) from cubeCuspTriangular_norm_sq d hp]
     rw [←Real.rpow_natCast ‖eisEmbedding p‖ 3]
     apply Real.rpow_le_rpow_of_exponent_le hr1
     norm_num only [Nat.cast_ofNat]
-    have hj:0≤(d.exponent.val:ℝ):=Nat.cast_nonneg _
     linarith
   have ha:(‖eisEmbedding p‖^3)⁻¹≤v/D:=by
     apply (le_div_iff₀ hD).mpr
@@ -526,8 +458,8 @@ lemma cubeReducedRemainder_bound {M:SL(2,Eis)} {p q:Eis}
 lemma cube_normalized_sum_bound (p:Eis) (hp:p≠0)
     (f:(Eis⧸Ideal.span {p^3})→ℂ) (B:ℝ) (_hB:0≤B) (hf:∀r,‖f r‖≤B) :
     ‖(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹^3*(∑' r,f r)‖≤B := by
-  let:Finite (Eis⧸Ideal.span {p^3}):=finite_quotient_span (pow_ne_zero 3 hp)
-  have hqN:Ideal.absNorm (Ideal.span {p})≠0:=
+  let:=finite_quotient_span (pow_ne_zero 3 hp)
+  have hqN:=
     (Ideal.absNorm_ne_zero_iff _).mpr (finite_quotient_span hp)
   have hq:(Ideal.absNorm (Ideal.span {p}):ℝ)≠0:=by exact_mod_cast hqN
   have hs:‖∑' r,f r‖≤(Ideal.absNorm (Ideal.span {p}):ℝ)^3*B:=by
@@ -552,8 +484,8 @@ theorem cubeSource_difference_decay_from_representatives (p:Eis) (hp:Prime p)
     ‖cubeAverage p hp.ne_zero cubicSourceResidualFunction (integralComplexMatrix M • upperPoint z v hv)-
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*cubicSourceResidualFunction (integralComplexMatrix M • upperPoint z v hv)‖≤
     (K*(‖eisEmbedding p‖^9+(Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹))/v^3 := by
-  have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp.ne_zero)
-  have hr1:1≤‖eisEmbedding p‖:=cubePrime_norm_ge_one p hp.ne_zero
+  have hr:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp.ne_zero)
+  have hr1:=cubePrime_norm_ge_one p hp.ne_zero
   have ha:(‖eisEmbedding p‖^3)⁻¹≤v:=by
     calc
       _≤1:=inv_le_one_of_one_le₀ (one_le_pow₀ hr1)
@@ -577,9 +509,7 @@ theorem cubeSource_difference_decay_from_representatives (p:Eis) (hp:Prime p)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups Pointwise Manifold ENNReal
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -643,7 +573,6 @@ omit [J.IsFiniteRelIndex globalKubotaKernel] in
 lemma kernelCorrespondenceFunction_contMDiff (f : KernelQuotient→ℂ)
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ (kernelCorrespondenceFunction hJK e g he f) := by
-  let : Fintype (IntegralCoverCosets H globalKubotaKernel) := Fintype.ofFinite _
   apply kernel_contMDiff_of_lift
   simp_rw [kernelCorrespondenceFunction_lift]
   apply ContMDiff.sum

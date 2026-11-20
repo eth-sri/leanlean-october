@@ -1,14 +1,19 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Descent.ShortCompletionEnergy
-public import OAI.NumberTheory.DirichletL.Reflection.CubeCompletedEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedCanonicalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.CompletedAggregation
+public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCaps
+public import OAI.NumberTheory.DirichletL.Reflection.PunctureLists
+public import OAI.NumberTheory.DirichletL.Reflection.CubeSlotEnergy
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
@@ -34,7 +39,7 @@ theorem completed_tuple_mark {σ:Type v} [Fintype σ] [DecidableEq σ]
 theorem short_cube_exact_scale (Z N:ℝ) (hZ:1<Z) (H:Ideal Eis) (hH:H≠0):
     Z^(N-3*Real.logb Z (Ideal.absNorm H:ℝ))=Z^N/(Ideal.absNorm H:ℝ)^3 := by
   have hz:0<Z:=zero_lt_one.trans hZ
-  have hn:0<(Ideal.absNorm H:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (fun hn=>hH (Ideal.absNorm_eq_zero_iff.mp hn))
+  have hn:0<(Ideal.absNorm H:ℝ):=by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hH)
   rw [Real.rpow_sub hz,show 3*Real.logb Z (Ideal.absNorm H:ℝ)=Real.logb Z (Ideal.absNorm H:ℝ)*3 by ring,
     show Z^(Real.logb Z (Ideal.absNorm H:ℝ)*3)=(Z^(Real.logb Z (Ideal.absNorm H:ℝ)))^3 from
       Real.rpow_mul_natCast hz.le _ 3,Real.rpow_logb hz (ne_of_gt hZ) hn]

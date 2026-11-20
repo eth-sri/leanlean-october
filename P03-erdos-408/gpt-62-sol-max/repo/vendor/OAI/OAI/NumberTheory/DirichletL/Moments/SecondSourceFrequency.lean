@@ -32,9 +32,9 @@ theorem retained_sector_eq_physical (η : Character) (t : ℝ)
   congr 1
   let c := fun I : sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I
   let d := fun J : sectorPool D hD.1 S=>β (D*J)*heightCoeff η t J
-  have hci (I : sectorPool C hC.1 S) : Supported (C*(I:Ideal O)) :=
+  have hci (I : sectorPool C hC.1 S)  :=
     (supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩
-  have hdj (J : sectorPool D hD.1 S) : Supported (D*(J:Ideal O)) :=
+  have hdj (J : sectorPool D hD.1 S)  :=
     (supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩
   let f := fun (I : sectorPool C hC.1 S) (J : sectorPool D hD.1 S) (j : O)=>
     if IsCoprime (I:Ideal O) (J:Ideal O) then

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindowGeometry
 
 @[expose] public section
@@ -8,18 +9,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialCanonicalDomains
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
-open InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges
-open InverseInitialEnergyCallerSource CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic
+open InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerWindows
+open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerSourceMask
+open InverseInitialEnergyCallerRanges InverseInitialEnergyCallerSource CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem window_power_bounds

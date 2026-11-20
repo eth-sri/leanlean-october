@@ -28,8 +28,7 @@ lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
       calibratedNumerator C A m * sexticGauss s hs (-m) := by
   have hd : (C.generator*A)*s ∣ representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m :=
     Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec _ _))
-  have hA : representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m ∈
-      (Ideal.span {C.generator*A}:Ideal O) :=
+  have hA  :=
     Ideal.mem_span_singleton.mpr ((dvd_mul_right (C.generator*A) s).trans hd)
   have hs' : -representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-(-m) ∈
       (Ideal.span {s}:Ideal O) := by
@@ -48,7 +47,7 @@ theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : 
         ∑' H : O, actualCongruenceCoefficient C A s hA H *
           paperRadialFourier W (K*elementNorm H/elementNorm ((C.generator*A)*s)) := by
   let c := (C.generator*A)*s
-  have hc : c≠0 := mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs
+  have hc  := mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs
   let := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   have ht := actual_compact_radial_paper_poisson_trace W hWc hWs K hK c hc

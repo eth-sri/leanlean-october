@@ -20,17 +20,13 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, hb⟩ := CubicSieve.sieveNorm_sharp (ε / 2) (by positivity)
   refine ⟨2 * C * (2 : ℝ) ^ (ε / 2), by positivity, ?_⟩
   intro K N B L hK hN hB hL
-  have hK0 : 0 < K := by linarith
-  have hN0 : 0 < N := by linarith
-  have hB0 : 0 < B := by linarith
-  have hL0 : 0 < L := by linarith
   let Q := K * N * B * L
-  have hQ0 : 0 < Q := by dsimp only [Q]; positivity
+  have hQ0 : 0 < Q := by positivity
   have hKNB : K * N * B ≤ Q := le_mul_of_one_le_right (by positivity) hL
   have hNL : N * L ≤ Q := by
-    have hKB : 1 ≤ K * B := one_le_mul_of_one_le_of_one_le hK hB
+    have hKB  := one_le_mul_of_one_le_of_one_le hK hB
     have hh := le_mul_of_one_le_left (by positivity : 0 ≤ N * L) hKB
-    convert hh using 1 ; dsimp only [Q] ; ring
+    convert hh using 1 ; ring
   have hdouble (t : ℝ) : (N * (2 * L)) ^ t = (2 : ℝ) ^ t * (N * L) ^ t := by
     rw [show N * (2 * L) = 2 * (N * L) by ring, Real.mul_rpow (by norm_num) (by positivity)]
   have h23 : (2 : ℝ) ^ (2 / 3 : ℝ) ≤ 2 := by

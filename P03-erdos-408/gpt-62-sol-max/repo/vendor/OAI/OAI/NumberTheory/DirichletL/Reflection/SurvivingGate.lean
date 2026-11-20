@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedWidth
 public import OAI.NumberTheory.DirichletL.Reflection.ShellDomains
 public import OAI.NumberTheory.DirichletL.Reflection.Surviving
@@ -9,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.Surviving
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -44,7 +45,7 @@ theorem actual_surviving_retained_gates
     (fun n hn => ⟨(reflectedNDyad_bounds _ n hn).1.2,(reflectedNDyad_bounds _ n hn).2.2⟩)
     (fun b hb => ⟨(reflectedBDyad_bounds _ b hb).1,(reflectedBDyad_bounds _ b hb).2.2⟩) e he
   have hp (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (frozenExtracted_ne_zero F jF e v)
   refine ⟨Real.logb_nonneg hz ((one_le_div (hp 1)).mpr hnorm.1),
     Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),hram Z hz2 i.1,?_⟩
   simpa only [one_mul] using hwidth F jF e Z X QK QP δ i hz1 hX hQK hQP hi

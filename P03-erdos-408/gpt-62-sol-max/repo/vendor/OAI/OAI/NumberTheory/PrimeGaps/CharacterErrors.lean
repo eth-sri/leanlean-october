@@ -1,6 +1,19 @@
 module
 
-public import OAI.NumberTheory.PrimeGaps.DetectorMoments
+public import OAI.NumberTheory.PrimeGaps.MangoldtBounds
+public import Mathlib.Algebra.Ring.IsFormallyReal
+public import Mathlib.Analysis.SpecialFunctions.Log.Summable
+public import Mathlib.NumberTheory.SumPrimeReciprocals
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.Analysis.CStarAlgebra.Classes
+public import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
+public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
+public import Mathlib.Analysis.LocallyConvex.AbsConvexOpen
+public import Mathlib.Data.Nat.GCD.Prime
+public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Algebra.Order.Archimedean.Real.Hom
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Algebra.Order.Chebyshev
 public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.Data.FunLike.Fintype
 public import Mathlib.NumberTheory.DirichletCharacter.Orthogonality
@@ -15,23 +28,19 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 noncomputable def primeCharacterPrefix (x : ℝ) {q : ℕ} (χ : DirichletCharacter ℂ q) : ℂ :=
   ∑ n∈Finset.Ioc 0 ⌊x⌋₊, χ (n:ZMod q)*(ArithmeticFunction.vonMangoldt n:ℂ)
@@ -45,7 +54,7 @@ theorem character_prefix_orthogonality (x : ℝ) {q c : ℕ} (hq : 0<q)
       (q.totient:ℂ)*(residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c:ℂ) := by
   classical
   have : NeZero q := ⟨ne_of_gt hq⟩
-  have hu : IsUnit (c:ZMod q) := (ZMod.isUnit_iff_coprime c q).mpr hcop
+  have hu  := (ZMod.isUnit_iff_coprime c q).mpr hcop
   have he (n : ℕ) : (c:ZMod q)=(n:ZMod q) ↔ n%q=c := by
     rw [ZMod.natCast_eq_natCast_iff',Nat.mod_eq_of_lt hc]
     exact eq_comm
@@ -64,11 +73,11 @@ theorem character_error_orthogonality (x : ℝ) {q c : ℕ} (hq : 0<q)
       (q.totient:ℂ)*((residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c-x/q.totient:ℝ):ℂ) := by
   classical
   have : NeZero q := ⟨ne_of_gt hq⟩
-  have hu : IsUnit (c:ZMod q) := (ZMod.isUnit_iff_coprime c q).mpr hcop
+  have hu  := (ZMod.isUnit_iff_coprime c q).mpr hcop
   have huinv : IsUnit (c:ZMod q)⁻¹ := by
     obtain ⟨u,hu⟩ := hu
     rw [←hu,ZMod.inv_coe_unit]
-    exact (u⁻¹).isUnit
+    simp
   have ht : (q.totient:ℂ)≠0 := by exact_mod_cast ne_of_gt (Nat.totient_pos.mpr hq)
   simp only [primeCharacterError,mul_sub,Finset.sum_sub_distrib]
   rw [character_prefix_orthogonality x hq hc hcop]
@@ -164,7 +173,7 @@ theorem primeCharacterPrefix_primitive_difference (x : ℝ) {q : ℕ} (hq : 0<q)
   have hsame (n : ℕ) (hn : Nat.Coprime n q) :
       χ.primitiveCharacter (n:ZMod χ.conductor)=χ (n:ZMod q) := by
     simpa only [Int.cast_natCast] using χ.primitiveCharacter_apply_of_isCoprime hn.isCoprime
-  have hzero (n : ℕ) (hn : ¬Nat.Coprime n q) : χ (n:ZMod q)=0 :=
+  have hzero (n : ℕ) (hn : ¬Nat.Coprime n q)  :=
     χ.map_nonunit (fun h => hn ((ZMod.isUnit_iff_coprime n q).mp h))
   calc
     _ = ‖∑ n∈Finset.Ioc 0 ⌊x⌋₊,(χ (n:ZMod q)-χ.primitiveCharacter (n:ZMod χ.conductor))*
@@ -245,7 +254,7 @@ theorem induced_primitive_sum_le (x : ℝ) {q : ℕ} (hq : 0<q) :
     rw [dite_eq_left χ.conductor_dvd_level,DirichletCharacter.changeLevel_primitiveCharacter]
   have hi : Function.Injective i := by
     intro χ ψ h
-    simpa only [hleft] using congrArg lift h
+    simpa [hleft] using congrArg lift h
   let S := q.divisors.sigma (fun d =>
     (Finset.univ : Finset (DirichletCharacter ℂ d)).filter DirichletCharacter.IsPrimitive)
   have hsub : Finset.univ.image i⊆S := by
@@ -293,7 +302,7 @@ theorem sum_totient_reciprocal_le (Q : ℕ) :
     (sum_divisorMultiplicity_reciprocal_le 2 Q)
   intro q hq
   have hq0 : (0:ℝ)<q := by exact_mod_cast (Finset.mem_Icc.mp hq).1
-  have hp : (0:ℝ)<q.totient := by exact_mod_cast Nat.totient_pos.mpr (Finset.mem_Icc.mp hq).1
+  have hp : (0:ℝ)<q.totient := by simp_all
   rw [divisorMultiplicity_two,div_le_div_iff₀ hp hq0,one_mul]
   exact_mod_cast nat_le_card_divisors_mul_totient q
 
@@ -311,9 +320,8 @@ theorem reciprocal_totient_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f
     obtain ⟨hdq,hq0⟩ := Nat.mem_divisors.mp hd
     have hd0 : 0 < d := Nat.pos_of_dvd_of_pos hdq hq1
     have hdle : d ≤ q := Nat.le_of_dvd hq1 hdq
-    have hdivpos : 0 < q/d := Nat.div_pos hdle hd0
     exact Finset.mem_product.mpr ⟨Finset.mem_Icc.mpr ⟨hd0, hdle.trans hqQ⟩,
-      Finset.mem_Icc.mpr ⟨hdivpos, (Nat.div_le_self q d).trans hqQ⟩⟩
+      Finset.mem_Icc.mpr ⟨(Nat.div_pos hdle hd0), (Nat.div_le_self q d).trans hqQ⟩⟩
   have he_inj : Set.InjOn e s := by
     rintro ⟨q,d⟩ hx ⟨q',d'⟩ hy he
     obtain ⟨hq,hd⟩ := Finset.mem_sigma.mp hx
@@ -339,7 +347,6 @@ theorem reciprocal_totient_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f
     have hdq := (Nat.mem_divisors.mp hd).1
     have hq0 : 0<q := (Finset.mem_Icc.mp hq).1
     have hd0 : 0<d := Nat.pos_of_dvd_of_pos hdq hq0
-    have hk0 : 0<q/d := Nat.div_pos (Nat.le_of_dvd hq0 hdq) hd0
     have ht : (d.totient:ℝ)*(q/d).totient≤q.totient := by
       have hh := Nat.totient_super_multiplicative d (q/d)
       rw [Nat.mul_div_cancel' hdq] at hh
@@ -347,7 +354,7 @@ theorem reciprocal_totient_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f
     dsimp only [e]
     rw [div_div]
     exact div_le_div_of_nonneg_left (hf d) (mul_pos
-      (by exact_mod_cast Nat.totient_pos.mpr hd0) (by exact_mod_cast Nat.totient_pos.mpr hk0)) ht
+      (by exact_mod_cast Nat.totient_pos.mpr hd0) (by exact_mod_cast Nat.totient_pos.mpr (Nat.div_pos (Nat.le_of_dvd hq0 hdq) hd0))) ht
   apply hsum.trans
   calc
     _ = ∑ x ∈ s.image e, f x.1 / (x.1.totient : ℝ) / (x.2.totient : ℝ) := by
@@ -378,7 +385,7 @@ theorem endpointErrors_le_primitive_weighted_sum (x : ℝ) (Q : ℕ) :
           apply Finset.sum_le_sum
           intro q hq
           exact mul_le_mul_of_nonneg_left (Real.log_le_log
-            (by exact_mod_cast (Finset.mem_Icc.mp hq).1) (by exact_mod_cast (Finset.mem_Icc.mp hq).2))
+            (by exact_mod_cast (Finset.mem_Icc.mp hq).1) (by simp_all))
             (Nat.cast_nonneg _)
         _ = _ := by simp [mul_assoc]
 
@@ -415,13 +422,13 @@ theorem vaughanSecondCoefficient_eq (U n : ℕ) :
   intro d _
   change ArithmeticFunction.vonMangoldt d-(if d≤U then ArithmeticFunction.vonMangoldt d else 0)=_
   by_cases hd : d≤U
-  · simp [hd,not_lt_of_ge hd]
-  · simp [hd,lt_of_not_ge hd]
+  · simp_all
+  simp_all
 
 theorem vaughanSecondCoefficient_nonneg (U n : ℕ) :
     0≤vaughanSecondCoefficient U n := by
   rw [vaughanSecondCoefficient_eq]
-  exact Finset.sum_nonneg (fun _ _ => by split_ifs <;> positivity)
+  positivity
 
 theorem vaughanSecondCoefficient_le_log (U n : ℕ) :
     vaughanSecondCoefficient U n≤Real.log n := by

@@ -5,28 +5,28 @@ public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 
+public import OAI.NumberTheory.DirichletL.Energy.PhysicalRegime
+
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState
+open CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
 open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
+open CenteredMomentEnergyPhysicalRegime
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyPositiveLowBandSource (PhysicalLowAt)
 open CenteredMomentEnergyBandMonotonicity
 
 theorem actual_low_stages_from_physical
@@ -42,7 +42,7 @@ theorem actual_low_stages_from_physical
       1/6≤κ→0≤Cphysical→0≤Cprevious→εdiag≤e→-saving≤e→
       PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q
         J S Cprevious→
-      PhysicalLowAt (α:=α) M H hH W hW aslot bslot lo hi haslot hWs
+      PhysicalAt (α:=α) M H hH false W hW aslot bslot lo hi haslot hWs
         a b bΦ Bmask L Lslot rho Mcap κ ξ e Z ha Ψ η₀ Q S J Cphysical→
       PositiveLowAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap e κ Z η₀ Q
         J (insert (0,0) S) (Cfixed*(Cphysical+1)+Cprevious) ∧
@@ -57,7 +57,7 @@ theorem actual_low_stages_from_physical
   refine ⟨hZ.1,?_⟩
   intro Bmask L Lslot rho κ e η₀ Q S J Cphysical Cprevious hκ hCphysical hCprevious he hsave hold hmass
   let Cm:=Cphysical+Cprevious/Cfixed
-  have hdiv:0≤Cprevious/Cfixed:=div_nonneg hCprevious hCfixed.le
+  have hdiv:=div_nonneg hCprevious hCfixed.le
   have hCm:0≤Cm:=by dsimp [Cm];positivity
   have hcc:Cphysical≤Cm:=by dsimp [Cm];linarith
   have heq:Cfixed*(Cm+1)=Cfixed*(Cphysical+1)+Cprevious:=by
@@ -74,13 +74,15 @@ theorem actual_low_stages_from_physical
       a b bΦ Bmask L rho e η₀ Q J J S (insert (0,0) S) Cprevious (Cfixed*(Cm+1)) hZ.1.le
       le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (Finset.subset_insert _ _)
       hCprevious hprev hold
-  have hmass':PhysicalLowAt (α:=α) M H hH W hW aslot bslot lo hi haslot hWs
+  have hmass':PhysicalAt (α:=α) M H hH false W hW aslot bslot lo hi haslot hWs
       a b bΦ Bmask L Lslot rho Mcap κ ξ e Z ha Ψ η₀ Q S J Cm:=by
     intro T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hlo hs
       p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
+    dsimp only
+    intro _
     have hh:=hmass T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hlo hs
-      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
-    have hz:0≤Z:=zero_le_one.trans hZ.1.le
+      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow trivial
+    have hz:=zero_le_one.trans hZ.1.le
     apply hh.trans
     gcongr
   have hh:=hZ.2 Bmask L Lslot rho κ e η₀ Q S J Cm hκ hCm he hsave hold' hmass'

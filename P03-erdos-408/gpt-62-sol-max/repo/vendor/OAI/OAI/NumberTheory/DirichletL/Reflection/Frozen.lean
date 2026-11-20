@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Static
 
 @[expose] public section
@@ -7,9 +8,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.Static
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
-open LocalReflectionBrackets FiniteGaussPhase
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
+open FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -18,7 +19,7 @@ lemma scalar_phase_power (a b : ℂ) (ha : a ≠ 0) (j : ℕ) :
     a⁻¹^2*b⁻¹^(j+2) = a^j*(a⁻¹*b⁻¹)^(j+2) := by
   symm
   calc
-    _ = (a^j*(a⁻¹)^j)*(a⁻¹)^2*(b⁻¹)^(j+2) := by rw [mul_pow,pow_add]; ring
+    _ = (a^j*(a⁻¹)^j)*(a⁻¹)^2*(b⁻¹)^(j+2) := by ring
     _ = _ := by rw [← mul_pow,mul_inv_cancel₀ ha,one_pow,one_mul]
 
 theorem general_local_phase {F : Type*} [Field F] [Fintype F]
@@ -40,7 +41,6 @@ theorem general_local_phase {F : Type*} [Field F] [Fintype F]
     _ = (tau χ (ψ.mulShift (-1)) j*tau χ ψ (j+2))*((χ σ)⁻¹^2*(χ ε)⁻¹^(j+2)) := by ring
     _ = _ := by
       rw [scalar_phase_power _ _ hs j,hi,hsig]
-      simp only [mul_pow,pow_add,show 2*j=j+j by omega]
       ring
 
 theorem exceptional_local_phase {F : Type*} [Field F] [Fintype F]
@@ -73,9 +73,9 @@ def frozenCofactorCharacter (P : Ideal Eis) [P.IsMaximal]
 
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 
-theorem controlled_frozen_phase [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem controlled_frozen_phase [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι) (j : ℕ) :
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀) (i : ι) (j : ℕ) :
     (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) j (D.epsilon i) =
     frozenPrimeScalar (p i) c (hp i) (hg i) j *

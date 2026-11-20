@@ -26,7 +26,7 @@ theorem sum_fin_through {R : Type*} [AddCommMonoid R] (n : ℕ) (f : Fin n → R
       intro j _
       by_cases he : j = i
       · subst j; simp
-      · have hv : j.val ≠ i.val := fun hv => he (Fin.ext hv)
+      · have hv  := fun hv => he (Fin.ext hv)
         by_cases hl : j.val < i.val
         · simp [he, hl, Nat.le_of_lt hl]
         · have hn : ¬ j.val ≤ i.val := by omega
@@ -45,8 +45,7 @@ theorem finite_multiset_growth (n : ℕ) (initial : Multiset ℕ)
   have hG (i : Fin n) : (∑ j : Fin (n + 1), if j.val < i.succ.val then ghost j else 0) =
       ∑ j : Fin (n + 1), if j.val ≤ i.castSucc.val then ghost j else 0 := by
     apply Finset.sum_congr rfl
-    intro j _
-    simp only [Fin.val_succ, Fin.val_castSucc, Nat.lt_succ_iff]
+    simp
   have hE (i : Fin n) : (∑ e : Fin n, if e.val < i.succ.val then fresh e else 0) =
       (∑ e : Fin n, if e.val < i.castSucc.val then fresh e else 0) + fresh i := by
     simpa only [Fin.val_succ, Fin.val_castSucc, Nat.lt_succ_iff] using sum_fin_through n fresh i
@@ -77,11 +76,10 @@ theorem finite_multiset_growth (n : ℕ) (initial : Multiset ℕ)
 
 theorem groupLivePrimes_nodup {M : ℕ} (s : P.MemoryState M) (hs : (liveValues s).Nodup)
     (g : P.BigGroup) : (groupLivePrimes s g).Nodup := by
-  have hg : (groupLivePrimes s g).map Subtype.val ≤ liveValues s := by
-    unfold liveValues
-    exact Finset.single_le_sum (f := fun h => (groupLivePrimes s h).map Subtype.val)
-      (fun _ _ => zero_le) (Finset.mem_univ g)
-  exact Multiset.Nodup.of_map Subtype.val (Multiset.nodup_of_le hg hs)
+  refine Multiset.Nodup.of_map Subtype.val (Multiset.nodup_of_le ?_ hs)
+  unfold liveValues
+  exact Finset.single_le_sum (f := fun h => (groupLivePrimes s h).map Subtype.val)
+    (fun _ _ => zero_le) (Finset.mem_univ g)
 
 theorem big_live_structure {M : ℕ} (s : P.MemoryState M) (hs : (liveValues s).Nodup) (g : P.BigGroup) :
     Function.Injective (s.2.1 g.val) ∧ (pendingPrimes (s.2.2 g)).Nodup ∧

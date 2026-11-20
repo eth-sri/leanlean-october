@@ -29,12 +29,12 @@ def rightParam (C n₂ a k : A) (t : ResidueQ C) : ResidueQ (C*n₂) :=
 omit [IsDomain A] in
 @[simp] lemma leftParam_mk (C n₁ b k t : A) :
     leftParam C n₁ b k (Ideal.Quotient.mk _ t)=Ideal.Quotient.mk _ (b*k+n₁*t) := by
-  simp only [leftParam,scaledResidue_mk,map_add]
+  rfl
 
 omit [IsDomain A] in
 @[simp] lemma rightParam_mk (C n₂ a k t : A) :
     rightParam C n₂ a k (Ideal.Quotient.mk _ t)=Ideal.Quotient.mk _ (-a*k+n₂*t) := by
-  simp only [rightParam,scaledResidue_mk,map_add]
+  rfl
 
 omit [IsDomain A] in
 lemma param_condition (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) :
@@ -53,7 +53,7 @@ def param (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) : Sol
 lemma param_injective (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (hn₁ : n₁≠0) :
     Function.Injective (param C n₁ n₂ a b k hab) := by
   intro t u he
-  have hl : leftParam C n₁ b k t=leftParam C n₁ b k u := congrArg (fun p=>p.val.1) he
+  have hl  := congrArg (fun p=>p.val.1) he
   apply scaledResidue_injective C n₁ (C*n₁) rfl hn₁
   exact add_left_cancel hl
 
@@ -62,8 +62,8 @@ lemma condition_divided (C n₁ n₂ k x y : A) (hC : C≠0)
     C*n₁*n₂∣n₂*x-n₁*y-k := by
   unfold condition at hc
   rw [scaledResidue_congruence] at hc
-  have hh : C*(C*n₁*n₂)∣C*(n₂*x-n₁*y-k) := by convert hc using 1 <;> ring
-  exact (mul_dvd_mul_iff_left hC).mp hh
+  refine (mul_dvd_mul_iff_left hC).mp ?_
+  convert hc using 1 <;> ring
 
 lemma param_surjective (C n₁ n₂ a b k : A) (hC : C≠0) (hab : a*n₁+b*n₂=1) :
     Function.Surjective (param C n₁ n₂ a b k hab) := by
@@ -101,9 +101,6 @@ def solutionEquiv (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
   Equiv.ofBijective (param C n₁ n₂ a b k hab)
     ⟨param_injective C n₁ n₂ a b k hab hn₁,param_surjective C n₁ n₂ a b k hC hab⟩
 
-@[simp] lemma solutionEquiv_val (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
-    (hab : a*n₁+b*n₂=1) (t : ResidueQ C) :
-    (solutionEquiv C n₁ n₂ a b k hC hn₁ hab t).val=(leftParam C n₁ b k t,rightParam C n₂ a k t) := rfl
 
 end SevenEighths.ProbeGramCommon
 end

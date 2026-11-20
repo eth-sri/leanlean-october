@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical
@@ -36,7 +36,7 @@ theorem power_pools_eventually_disjoint {ι : Type*} [Fintype ι]
   intro j
   by_cases hij : i=j
   · exact Filter.Eventually.of_forall (fun Z hn=>(hn hij).elim)
-  have hne : ell i≠ell j := fun h=>hij (hell h)
+  have hne  := fun h=>hij (hell h)
   rcases lt_or_gt_of_ne hne with hlt|hgt
   · filter_upwards [annular_power_separation (a j) (b i) (ell i) (ell j) (ha j) hlt,
       eventually_gt_atTop (0:ℝ)] with Z hsep hZ _

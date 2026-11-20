@@ -23,7 +23,7 @@ def restrictSmall {M : ℕ} (a : P.Labels M) : SmallLabels P M := fun g => a g.v
 
 def joinLabels {M : ℕ} (a : SmallLabels P M) (b : P.BigLabels M) : P.Labels M :=
   fun g => if hg : P.big g = true then b ⟨g, hg⟩ else a ⟨g, by
-    cases h : P.big g <;> simp_all⟩
+    simp_all⟩
 
 theorem joinLabels_small {M : ℕ} (a : SmallLabels P M) (b : P.BigLabels M)
     (g : P.SmallGroup) : joinLabels a b g.val = a g := by
@@ -54,8 +54,8 @@ theorem prod_group_split {R : Type*} [CommMonoid R] (f : P.Group → R) :
       (∏ g : P.SmallGroup, f g.val) * ∏ g : P.BigGroup, f g.val := by
   classical
   have h (g : P.Group) : ¬ P.big g = false ↔ P.big g = true := by
-    cases P.big g <;> simp
-  let e : {g : P.Group // ¬ P.big g = false} ≃ P.BigGroup :=
+    simp
+  let e  :=
     Equiv.subtypeEquivRight h
   have he : (∏ g : {g : P.Group // ¬ P.big g = false}, f g.val) =
       ∏ g : P.BigGroup, f g.val := Fintype.prod_equiv e _ _ (fun _ => rfl)

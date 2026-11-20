@@ -68,7 +68,7 @@ lemma choiceBase_changed_nonempty (hj : m ≤ J)
     hne.image _
   have heq : (choiceBase hj c : Pattern P J ell m).changed g.val =
       (c g).image (Fin.castLE hj) := by
-    simp [choiceBase, liftChoice, g.property]
+    simp [choiceBase, g.property]
   rw [heq]
   exact himg
 
@@ -76,16 +76,16 @@ lemma kFalse_pos (hj : m ≤ J) (block : P.BigGroup → Bool)
     (c : ProbeChoice P m block) (g : P.BigGroup)
     (hg : block g = false) (hne : (c.val g).Nonempty) :
     0 < kFalse (choiceBase hj c.val : Pattern P J ell m) block g.val := by
-  have hb : P.big g.val = true := g.property
-  have hg' : block ⟨g.val, hb⟩ = false := hg
+  have hb  := g.property
+  have hg'  := hg
   have hne' : ((choiceBase hj c.val : Pattern P J ell m).changed g.val).Nonempty :=
     choiceBase_changed_nonempty hj c.val g hne
-  have hcard : 0 < (((choiceBase hj c.val : Pattern P J ell m).changed g.val).card) :=
+  have hcard  :=
     Finset.card_pos.mpr hne'
   have hkeq : kFalse (choiceBase hj c.val : Pattern P J ell m) block g.val =
       (((choiceBase hj c.val : Pattern P J ell m).changed g.val).card) := by
     unfold kFalse
-    simp [hb, hg']
+    simp_all
   rw [hkeq]
   exact hcard
 
@@ -93,16 +93,16 @@ lemma kTrue_pos (hj : m ≤ J) (block : P.BigGroup → Bool)
     (c : ProbeChoice P m block) (g : P.BigGroup)
     (hg : block g = true) (hne : (c.val g).Nonempty) :
     0 < kTrue (choiceBase hj c.val : Pattern P J ell m) block g.val := by
-  have hb : P.big g.val = true := g.property
-  have hg' : block ⟨g.val, hb⟩ = true := hg
+  have hb  := g.property
+  have hg'  := hg
   have hne' : ((choiceBase hj c.val : Pattern P J ell m).changed g.val).Nonempty :=
     choiceBase_changed_nonempty hj c.val g hne
-  have hcard : 0 < (((choiceBase hj c.val : Pattern P J ell m).changed g.val).card) :=
+  have hcard  :=
     Finset.card_pos.mpr hne'
   have hkeq : kTrue (choiceBase hj c.val : Pattern P J ell m) block g.val =
       (((choiceBase hj c.val : Pattern P J ell m).changed g.val).card) := by
     unfold kTrue
-    simp [hb, hg']
+    simp_all
   rw [hkeq]
   exact hcard
 
@@ -114,11 +114,9 @@ lemma kFalse_bigSlots (hj : m ≤ J) (block : P.BigGroup → Bool)
   refine ⟨?_, fun g => ⟨kFalse_le _ _ g, fun hs => kFalse_small _ _ g hs⟩⟩
   have hpos : 0 < kFalse (choiceBase hj c.val : Pattern P J ell m) block g.val :=
     kFalse_pos hj block c g hg hne
-  have hle : kFalse (choiceBase hj c.val : Pattern P J ell m) block g.val ≤
-      ∑ g, kFalse (choiceBase hj c.val : Pattern P J ell m) block g := by
-    apply Finset.single_le_sum (fun i _ => Nat.zero_le _)
-    exact Finset.mem_univ _
-  exact lt_of_lt_of_le hpos hle
+  refine lt_of_lt_of_le hpos ?_
+  apply Finset.single_le_sum (fun i _ => Nat.zero_le _)
+  exact Finset.mem_univ _
 
 lemma kTrue_bigSlots (hj : m ≤ J) (block : P.BigGroup → Bool)
     (c : ProbeChoice P m block) (g : P.BigGroup)
@@ -128,11 +126,9 @@ lemma kTrue_bigSlots (hj : m ≤ J) (block : P.BigGroup → Bool)
   refine ⟨?_, fun g => ⟨kTrue_le _ _ g, fun hs => kTrue_small _ _ g hs⟩⟩
   have hpos : 0 < kTrue (choiceBase hj c.val : Pattern P J ell m) block g.val :=
     kTrue_pos hj block c g hg hne
-  have hle : kTrue (choiceBase hj c.val : Pattern P J ell m) block g.val ≤
-      ∑ g, kTrue (choiceBase hj c.val : Pattern P J ell m) block g := by
-    apply Finset.single_le_sum (fun i _ => Nat.zero_le _)
-    exact Finset.mem_univ _
-  exact lt_of_lt_of_le hpos hle
+  refine lt_of_lt_of_le hpos ?_
+  apply Finset.single_le_sum (fun i _ => Nat.zero_le _)
+  exact Finset.mem_univ _
 
 lemma sideCounts_false_eq (ν : Pattern P J ell m) (block : P.BigGroup → Bool) :
     selectedCounts (patternAuxCoordinates ν block false) = kFalse ν block := by

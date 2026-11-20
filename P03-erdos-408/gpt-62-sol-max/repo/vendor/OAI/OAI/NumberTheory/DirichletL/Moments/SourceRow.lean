@@ -28,8 +28,8 @@ theorem rowWeight_zero_of_not_supported (η : Character) (m A z : O) (t : ℝ)
   by_cases h0 : I=0
   · rw [h0,map_zero]
   let n := idealGenerator I
-  have hn : n ≠ 0 := idealGenerator_ne_zero I h0
-  have hs : Ideal.span {n}=I := span_idealGenerator I
+  have hn  := idealGenerator_ne_zero I h0
+  have hs  := span_idealGenerator I
   have hz := rowTwist_zero_of_not_supported (HeckeRowClosure.elementHom η) m 1 (A*z) n
     hmLam hm2 (hs ▸ hI)
   have he : rowTwist (HeckeRowClosure.elementHom η) m 1 (A*z) n =
@@ -47,7 +47,7 @@ theorem primary_span_supported (I : Ideal O) (hI : Supported I) : Ideal.span {pr
     have hs : Supported (Ideal.span {idealGenerator I}) := by rw [span_idealGenerator]; exact hI
     have hg := (PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff (idealGenerator I)).mpr
       ((supported_span_iff _).mp hs).1
-    simpa only [span_idealGenerator] using hg
+    simpa [span_idealGenerator] using hg
   exact (primaryGenerator_spec I hn).1
 
 def sourceGenerator (S : Finset (Ideal O)) (I : supportedColumns S) : O := primaryGenerator I

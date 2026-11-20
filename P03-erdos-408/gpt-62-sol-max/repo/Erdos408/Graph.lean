@@ -4,7 +4,8 @@ public import Erdos408.Graph.Assembly
 public import Erdos408.Graph.Family
 public import Erdos821.P3Final.Transference
 public import Erdos821.P3Rare.Proof
-public import Erdos821.S34.IdealInputs
+public import Erdos821.S34.IdealFiniteAssembly
+public import Erdos821.P4Cancel.Proof
 
 /-!
 # The graph transference input
@@ -67,14 +68,14 @@ theorem graphTransference : GraphTransference := by
   refine ⟨m, max J₀ J₀', C₁ + 2 * ξexp + 4 * qexp, K, ?_⟩
   filter_upwards [hev, hIC (max J₀ J₀') (le_max_right _ _), eventually_ge_atTop (Real.exp 1)]
     with x hTPx hICx hx
-  intro ι _ _ P big hdisj hs₁ hs₂ hb₁ hb₂ hV hsmall hbig hint
-  show FamilyBound q₀ m (max J₀ J₀') (C₁ + 2 * ξexp + 4 * qexp) K E C₃ C₄ x P big
+  intro ι _ _ P big hadm
+  obtain ⟨hdisj, hs₁, hs₂, hb₁, hb₂, hV, hsmall, hbig, hint⟩ := hadm
   refine FamilyBound.reindex (Fintype.equivFin ι) ?_
   -- the scales
-  have hx₀ : 0 < x := (Real.exp_pos 1).trans_le hx
-  have hL : 1 ≤ Real.log x := (Real.le_log_iff_exp_le hx₀).mpr hx
-  have hL₀ : 0 < Real.log x := one_pos.trans_le hL
-  have hT : 0 ≤ Real.log (Real.log x) := Real.log_nonneg hL
+  have hx₀  := (Real.exp_pos 1).trans_le hx
+  have hL  := (Real.le_log_iff_exp_le hx₀).mpr hx
+  have hL₀  := one_pos.trans_le hL
+  have hT  := Real.log_nonneg hL
   -- the reindexed groups
   set e := Fintype.equivFin ι
   have hmem : ∀ k, k ∈ big.map e.toEmbedding ↔ e.symm k ∈ big := fun k => by
@@ -105,7 +106,7 @@ theorem graphTransference : GraphTransference := by
   set ξ := Real.log x ^ (-ξexp) with hξdef
   have hξ : 0 < ξ := Real.rpow_pos_of_pos hL₀ _
   have hw₀ : 0 < w := Real.rpow_pos_of_pos hL₀ _
-  have hw₁ : w ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hL (neg_nonpos.mpr hhexp.le)
+  have hw₁  := Real.rpow_le_one_of_one_le_of_nonpos hL (neg_nonpos.mpr hhexp.le)
   have hcoef := fun v hv => (hcomp v hv).2.2
   have hne : ∀ v, v ≠ raw → ∃ g, ((B.pattern v).changed g).Nonempty := fun v hv => by
     obtain ⟨g, -, hg⟩ := (hcomp v hv).2.1 false
@@ -132,38 +133,39 @@ theorem graphTransference : GraphTransference := by
       (famPoint B raw block Q w ξ ν).2.2.2.2,
     fun ν => Real.exp ((famPoint B raw block Q w ξ ν).2.1 * w),
     fun ν => Real.exp ((famPoint B raw block Q w ξ ν).2.2.2.1 * w),
-    fun ν g => ?_, fun ν g hg => ?_, fun ν => ?_, fun ν n => ?_, fun ν n hn => ?_,
-    fun ν n hn => ?_, ?_, ?_⟩
-  · -- disjoint blocks of at most `m` changed slots
-    obtain ⟨h₁, h₂⟩ := blockSlots_disjoint_union (B.pattern (famPoint B raw block Q w ξ ν).1)
-      block g
-    exact ⟨h₁, h₂ ▸ (B.pattern _).bound g⟩
-  · -- no changed slots in small groups
-    have : (B.pattern (famPoint B raw block Q w ξ ν).1).changed g = ∅ :=
-      (B.pattern _).small g (by simpa [G, primeGroups] using hg)
-    simp [blockSlots, this]
-  · -- both blocks are changed
-    obtain ⟨g, hg, hg'⟩ := (hcomp _ (hpt ν)).2.1 false
-    obtain ⟨g', hg₂, hg₂'⟩ := (hcomp _ (hpt ν)).2.1 true
-    exact ⟨⟨g.val, by beta_reduce; rwa [hside g ν false hg]⟩,
-      ⟨g'.val, by beta_reduce; rwa [hside g' ν true hg₂]⟩⟩
-  · exact ⟨norm_cellTest_le _ _ _ _, norm_cellTest_le _ _ _ _, norm_cellMark_le _ _ _ _,
-      norm_cellMark_le _ _ _ _⟩
-  · -- the auxiliary tests live in log cells
-    unfold cellTest at hn
-    by_cases hc : 0 < n ∧ cell w n = (famPoint B raw block Q w ξ ν).2.1
-    · exact mem_cell hw₀ hw₁ hc.1 hc.2
-    · exact absurd (ite_eq_right hc) hn
-  · unfold cellTest at hn
-    by_cases hc : 0 < n ∧ cell w n = (famPoint B raw block Q w ξ ν).2.2.2.1
-    · exact mem_cell hw₀ hw₁ hc.1 hc.2
-    · exact absurd (ite_eq_right hc) hn
+    ?_, ?_, ?_⟩
+  · intro ν
+    refine ⟨fun g => ?_, fun g hg => ?_, ?_, fun n => ?_, fun n hn => ?_, fun n hn => ?_⟩
+    · -- disjoint blocks of at most `m` changed slots
+      obtain ⟨h₁, h₂⟩ := blockSlots_disjoint_union (B.pattern (famPoint B raw block Q w ξ ν).1)
+        block g
+      exact ⟨h₁, h₂ ▸ (B.pattern _).bound g⟩
+    · -- no changed slots in small groups
+      have : (B.pattern (famPoint B raw block Q w ξ ν).1).changed g = ∅ :=
+        (B.pattern _).small g (by simpa [G, primeGroups] using hg)
+      simp [blockSlots, this]
+    · -- both blocks are changed
+      obtain ⟨g, hg, hg'⟩ := (hcomp _ (hpt ν)).2.1 false
+      obtain ⟨g', hg₂, hg₂'⟩ := (hcomp _ (hpt ν)).2.1 true
+      exact ⟨⟨g.val, by beta_reduce; rwa [hside g ν false hg]⟩,
+        ⟨g'.val, by beta_reduce; rwa [hside g' ν true hg₂]⟩⟩
+    · exact ⟨norm_cellTest_le _ _ _ _, norm_cellTest_le _ _ _ _, norm_cellMark_le _ _ _ _,
+        norm_cellMark_le _ _ _ _⟩
+    · -- the auxiliary tests live in log cells
+      unfold cellTest at hn
+      by_cases hc : 0 < n ∧ cell w n = (famPoint B raw block Q w ξ ν).2.1
+      · exact mem_cell hw₀ hw₁ hc.1 hc.2
+      · exact absurd (ite_eq_right hc) hn
+    · unfold cellTest at hn
+      by_cases hc : 0 < n ∧ cell w n = (famPoint B raw block Q w ξ ν).2.2.2.1
+      · exact mem_cell hw₀ hw₁ hc.1 hc.2
+      · exact absurd (ite_eq_right hc) hn
   · -- the term weights
     refine (sum_norm_termWeight_family_le B raw block Q hξ hcoef hne hGV).trans ?_
     have hQ : (Q : ℝ) ≤ Real.log x ^ qexp := Nat.floor_le (by positivity)
     have hξ' : ξ⁻¹ = Real.log x ^ ξexp := by
       rw [hξdef, Real.rpow_neg hL₀.le, inv_inv]
-    have hmass' : (B.model 1 0).patternMass ≤ Real.log x ^ C₁ := hmass
+    have hmass'  := hmass
     have hpm : 0 ≤ (B.model 1 0).patternMass :=
       Finset.sum_nonneg fun v _ => sSup_norm_nonneg (B.pattern v)
     calc ξ⁻¹ ^ 2 * (Q : ℝ) ^ 4 * (B.model 1 0).patternMass
@@ -177,7 +179,7 @@ theorem graphTransference : GraphTransference := by
           ring_nf
   · -- the transferred pairing
     intro ζ hζ X hX₁ hX₂ S S' f g hS hf hg hnf hng
-    have hX : 0 ≤ X := (Real.sqrt_nonneg x).trans hX₁
+    have hX  := (Real.sqrt_nonneg x).trans hX₁
     have hbound := hTPx G (B.model 1 ζ) X (targets (B.model 1 ζ) S') (extend S f)
       (fun z => g z.1.toNat) hadm hmass (by simp [Family.model])
       (by simp [Family.model, Erdos821.Blueprint.Graph.L, hL])

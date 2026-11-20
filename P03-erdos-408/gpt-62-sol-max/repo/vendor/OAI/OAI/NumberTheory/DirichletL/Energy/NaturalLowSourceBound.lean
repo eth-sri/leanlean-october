@@ -13,19 +13,16 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyLowFixedRadialEntry CenteredMomentEnergyInputParentCapacity
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentAmplificationChildInput CenteredMomentInductionEnergy
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData
+open CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyState
+open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
+open CenteredMomentEnergyOriginalProfileControl CenteredMomentEnergyLowFixedRadialEntry
+open CenteredMomentEnergyInputParentCapacity CenteredMomentFirstSourceReduction
+open CenteredMomentSourceInputTailUniform CenteredMomentAmplificationChildInput
+open CenteredMomentInductionEnergy CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
 open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
 local notation "O" => HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=
-  CenteredMomentEnergyOriginalSource.energyOriginalSourceDecidableSum
 
 section Source
 variable (Q:Ideal O)[NeZero Q]
@@ -100,20 +97,20 @@ theorem natural_low_source_bound
     S J Cphysical height e hCphysical hheight he hsave hphysical
   let s:=sourceInput Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
     w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂
-  have hZ:0<Z:=zero_lt_one.trans hz.1
-  have hPi:∀i,1≤s.P i:=fun i=>Real.one_le_rpow hz.1.le (hw i)
+  have hZ:=zero_lt_one.trans hz.1
+  have hPi:=fun i=>Real.one_le_rpow hz.1.le (hw i)
   have hv:volume s≤Z^Mcap:=original_volume_cap s Z κ Mcap hz.1 hκ hPi (by
     change length Z X₁+length Z X₂+6*κ*(∑i,Real.logb Z (Z^(w i)))≤Mcap
     simpa only [Real.logb_rpow hZ hz.1.ne'] using hcap)
   have hscale:1≤state.radial.scale:=by rw [state.scale_eq];exact Real.one_le_rpow hz.1.le state.row_nonneg
-  have hKi:state.radial.scale⁻¹≤Z^Mcap:=
+  have hKi:=
     (inv_le_one_of_one_le₀ hscale).trans (Real.one_le_rpow hz.1.le hMcap)
   have hbound:=hz.2 s (p.profile 0) (p.profile 1) rfl rfl (p.support 0) (p.support 1)
     (fun _=>le_rfl) state.puncture state.radial state.radial_support hv hKi
   have hplain:(plainControl s (p.profile 0) (p.profile 1))^2≤P*(p.control (insert (0,0) S))^2:=
     plain_control_sq_le s p S (Fintype.card ι) _
       (profileBound_ge_one W hW aslot bslot lo hi haslot hWs) le_rfl (fun _=>le_rfl)
-  have hsquare:(p.control S)^2≤(p.control (insert (0,0) S))^2:=
+  have hsquare:=
     pow_le_pow_left₀ (p.control_nonneg S) (control_mono p S) 2
   let F:ℝ:=(p.control (insert (0,0) S))^2*(1+|t|+height)^J*Z^(state.width+e)
   have hF:0≤F:=by dsimp [F];positivity
@@ -127,7 +124,7 @@ theorem natural_low_source_bound
     apply hphysical.trans
     calc
       _≤Cphysical*(p.control (insert (0,0) S))^2*(1+|t|+height)^J*Z^(state.width+e):=by gcongr
-      _=Cphysical*F:=by dsimp [F];ring
+      _=Cphysical*F:=by ring
   have hterm (c A x:ℝ)(hc:0≤c)(hA:0≤A)(hx:x≤e):
       c*(plainControl s (p.profile 0) (p.profile 1))^2*A*state.radial.scale*Z^x≤c*P*A*F:=by
     calc

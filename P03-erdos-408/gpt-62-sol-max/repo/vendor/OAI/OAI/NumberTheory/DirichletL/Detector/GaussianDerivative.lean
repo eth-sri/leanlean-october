@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.GaussianLow
+public import OAI.NumberTheory.DirichletL.Detector.GaussianDecomposition
+public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
 public import Mathlib.Analysis.Complex.Liouville
 public import Mathlib.Analysis.Complex.RealDeriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
@@ -10,7 +11,7 @@ public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology
+open scoped Classical
 open Filter Set Metric
 namespace SevenEighths.ProbePhysical
 
@@ -26,8 +27,8 @@ lemma gaussianLog_analytic (z : ℂ) (hz : 0<z.re) : AnalyticAt ℂ gaussianLog 
 
 lemma gaussianLog_scaled_analytic (r : ℝ) (hr : 0<r) (z : ℂ) (hz : 0<z.re) :
     AnalyticAt ℂ (fun w : ℂ=>gaussianLog ((r:ℂ)*w)) z := by
-  have h : 0<((r:ℂ)*z).re := by simpa using mul_pos hr hz
-  exact (gaussianLog_analytic _ h).comp (analyticAt_const.mul analyticAt_id)
+  refine (gaussianLog_analytic _ ?_).comp (analyticAt_const.mul analyticAt_id)
+  simpa using mul_pos hr hz
 
 end SevenEighths.ProbePhysical
 end

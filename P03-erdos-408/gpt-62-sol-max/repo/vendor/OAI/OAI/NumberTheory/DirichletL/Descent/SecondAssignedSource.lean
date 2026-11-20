@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondCanonicalSplit
 public import OAI.NumberTheory.DirichletL.Descent.SlotAssignments
 
@@ -134,7 +135,7 @@ theorem mem_assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource
       · simpa only [pairedSlotAssignment,Fin.addCases_right] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₂ L₂ _ q₂ hq₂ k)).2
 
-theorem assignedSecondSource_conditions (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem assignedSecondSource_conditions (p : ι → Eis) [OAI.PrincipalFamily.Maximal p]
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
     (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :

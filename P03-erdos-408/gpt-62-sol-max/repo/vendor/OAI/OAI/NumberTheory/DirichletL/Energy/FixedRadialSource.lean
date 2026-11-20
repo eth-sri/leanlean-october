@@ -24,7 +24,7 @@ lemma norm_le_diagonalControl (Φ:𝓢(ℝ,ℂ))(x:ℝ):‖Φ x‖≤diagonalCon
   unfold diagonalControl
   exact le_mul_of_one_le_left (by positivity) (by nlinarith [Real.pi_nonneg])
 
-theorem exists_fixed_bump (b:ℝ)(_hb:0<b):
+theorem exists_fixed_bump (b:ℝ):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (b+1) ∧
       (∀x,0≤(Ψ x).re) ∧ (∀x,(Ψ x).im=0) ∧
       (∀x∈Set.Icc (0:ℝ) b,Ψ x=1):=by
@@ -43,7 +43,7 @@ theorem exists_fixed_bump (b:ℝ)(_hb:0<b):
       exact hx (by simp [v,hz])
     rw [hs] at hn
     exact ⟨hn.1.le,hn.2.le⟩
-  let Ψ:𝓢(ℝ,ℂ):=(HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp).toSchwartzMap hv
+  let Ψ:=(HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp).toSchwartzMap hv
   refine ⟨Ψ,hsupp,?_,?_,?_⟩
   · intro x
     change 0≤(f x)^2
@@ -96,7 +96,7 @@ theorem fixed_source (b:ℝ)(hb:0<b):
       ∀(η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)(K:ℝ),0<K→
       ‖finiteHeckeEnergy η m A t S c Φ K‖≤
         diagonalControl Φ*‖finiteHeckeEnergy η m A t S c Ψ K‖:=by
-  obtain ⟨Ψ,hs,hn,_,hone⟩:=exists_fixed_bump b hb
+  obtain ⟨Ψ,hs,hn,_,hone⟩:=exists_fixed_bump b
   exact ⟨Ψ,hs,hn,fun Φ hΦ η m A t S c K hK=>finite_energy_domination b Ψ hn hone Φ hΦ η m A t S c K hK⟩
 
 end SevenEighths.CenteredMomentEnergyFixedRadialSource

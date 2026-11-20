@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.RootWindows
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
 noncomputable section
 
@@ -15,9 +15,6 @@ def rootSchwartz {ι : Type*} (U : ι → ℝ → ℂ)
     (hU : ∀ i, ContDiff ℝ ∞ (U i)) (hS : ∀ i, HasCompactSupport (U i))
     (i : ι) : 𝓢(ℝ, ℂ) := (hS i).toSchwartzMap (hU i)
 
-@[simp] theorem rootSchwartz_apply {ι : Type*} (U : ι → ℝ → ℂ)
-    (hU : ∀ i, ContDiff ℝ ∞ (U i)) (hS : ∀ i, HasCompactSupport (U i))
-    (i : ι) (y : ℝ) : rootSchwartz U hU hS i y = U i y := rfl
 
 def secondRootSchwartz (V : Fin 6 → ℝ → ℂ)
     (hV : ∀ i, ContDiff ℝ ∞ (V i)) (hS : ∀ i, HasCompactSupport (V i)) :

@@ -10,16 +10,14 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorEnergyInitialState
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy
-open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
-open CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily CenteredMomentEnergyState
+open CenteredMomentRadialEligibleEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge CenteredMomentDetectorPlainFiberSource
+open CenteredMomentDetectorDictionary CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 def initialKeep (η:Character)(Q:Ideal O)(z:O):Prop:=

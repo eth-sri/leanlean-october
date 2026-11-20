@@ -43,8 +43,7 @@ theorem exists_norm_cutoffPairing_raw_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi :
     (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hc : 0 < c)
     (hκ : 1 < κ) (J : ℕ) :
     ∃ Cr : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
           (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
@@ -61,7 +60,7 @@ theorem exists_norm_cutoffPairing_raw_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi :
       hc, eventually_ge_atTop κ]
     with x hx hF hFinv hxκ ι _ _ P big hadm r a u v Bc G Ψ hin hsl hBc hco hcu
   have hx0 : 0 < x := lt_of_lt_of_le (by linarith) hxκ
-  have hΨ : ∀ y, |Ψ y| ≤ M 0 := fun y => by simpa using hcu.2.2 0 y
+  have hΨ  := fun y => by simpa using hcu.2.2 0 y
   have h := hx P big hadm (fun _ => ∅) (fun g => by simp) (fun _ _ _ => 1) 1
     (fun _ _ _ => by simp) (fun p p' a => Restore.pad_invariant_one p p' a)
     (centeredCore x q a u v Bc) G Ψ (hF r a u v Bc hin hsl hBc)
@@ -86,8 +85,7 @@ theorem exists_norm_cutoffPairing_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ
     (hq₀₁ : q₀ < 1) (hvlo : 0 < vlo) (halo : 1 / 10 < alo) (hahi : ahi < 1 / 5) (hc : 0 < c)
     (hκ : 1 < κ) (m₀ J : ℕ) :
     ∃ Cr : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ)
           (G : ℕ → ℝ) (Ψ : ℝ → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
@@ -106,7 +104,7 @@ theorem exists_norm_cutoffPairing_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ
       hc]
     with x hx hF hFinv ι _ _ P big hadm r a u v Bc G Ψ hin hsl hBc hco hcu Aν Bν β φ φ' ψ ψ'
       U U' hpat
-  have hΨ : ∀ y, |Ψ y| ≤ M 0 := fun y => by simpa using hcu.2.2 0 y
+  have hΨ  := fun y => by simpa using hcu.2.2 0 y
   have h := hx P big hadm (fun h => Aν h ∪ Bν h) (fun g => (hpat.1 g).2)
     (comparisonKernel Aν Bν β φ φ' ψ ψ') ‖β‖ (norm_comparisonKernel_le hpat.2.2.2.1)
     (fun p p' a => Restore.pad_invariant_comparison Aν Bν β φ φ' ψ ψ' p p' a)

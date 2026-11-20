@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstScale
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondWholeKernel
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
@@ -51,10 +51,10 @@ theorem common_normalized_kernel (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
   rw [wholeKernel_actual W V k H a b K₀ H₀ A₀ B₀ hk hH ha hb hK₀ hH₀ hA₀ hB₀]
   rw [Real.sqrt_mul hC.le a,Real.sqrt_mul hD.le b]
   simp only [Complex.ofReal_mul,windows]
-  have hc : (Real.sqrt C:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
-  have hd : (Real.sqrt D:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
-  have haa : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hbb : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  have hc  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
+  have hd  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
+  have haa  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
+  have hbb  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
   field_simp
 
 theorem second_frequency_whole_kernel (C D a b : Ideal O)

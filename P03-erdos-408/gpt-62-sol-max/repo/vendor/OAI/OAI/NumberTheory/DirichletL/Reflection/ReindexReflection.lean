@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Reindex
 public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
 
@@ -34,19 +35,19 @@ omit [Fintype ι] in
 lemma mem_reindexMarks (e : κ≃ι) (S : Finset ι) (k : κ) : k∈reindexMarks e S ↔ e k∈S := by
   simp [reindexMarks]
 
-lemma mixedActiveBracket_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
+lemma mixedActiveBracket_reindex [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι)
-    (hp : ∀ i, p i≠0) (hg : ∀ i, λ₀∉Ideal.span {p i})
+    (hp : ∀ i, p i≠0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (j : ι→ℕ) (S : Finset ι) (k : κ) (x : Eis) :
     mixedActiveBracket (fun k => hp (e k)) (fun k => hg (e k)) (fun k => j (e k))
       (reindexMarks e S) (reindexControlled D e) k x =mixedActiveBracket hp hg j S D (e k) x := by
   simp only [mixedActiveBracket,mem_reindexMarks]
   rfl
 
-theorem mixedReflectedValue_reindex [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem mixedReflectedValue_reindex [OAI.PrincipalFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i≠0) (hc : c≠0) (hg : ∀ i, λ₀∉Ideal.span {p i})
+    (hp : ∀ i, p i≠0) (hc : c≠0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue (reindexControlled D e) s (fun k => hp (e k)) hc (fun k => hg (e k))
       (fun k => j (e k)) (reindexMarks e S) W X =mixedReflectedValue D s hp hc hg j S W X := by

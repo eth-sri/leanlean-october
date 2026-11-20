@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.OneSided.Cauchy
 public import Erdos408.OneSided.Decomposition.Count
 
@@ -70,11 +71,9 @@ theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
     _ = (N : ℝ) * N * (4 * L ^ A₀ / Y) := by
         rw [sum_const, nsmul_eq_mul, Nat.card_Icc, Nat.add_sub_cancel, mul_assoc]
     _ ≤ L ^ A₀ * L ^ A₀ * (4 * L ^ A₀ / Y) := by
-        have hN : (N : ℝ) ≤ L ^ A₀ := Nat.floor_le hLA
+        have hN  := Nat.floor_le hLA
         gcongr
-    _ = 4 * L ^ (3 * A₀) / Y := by
-        rw [show 3 * A₀ = A₀ + A₀ + A₀ by ring, Real.rpow_add hL, Real.rpow_add hL]
-        ring
+    _ = 4 * L ^ (3 * A₀) / Y := by rpow_ring hL
 
 /-- `|𝓗_𝔐(t; a, b)| ≤ 4 L^{3A₀}/Y`, and it vanishes unless `|t| ≤ 5Y`. -/
 theorem norm_majorWeight_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY : 0 < Y)
@@ -138,7 +137,6 @@ theorem norm_pairError_le (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 0 < Real.l
   classical
   set L := Real.log x
   set w := 4 * L ^ (3 * A₀) / Y
-  have hw : 0 ≤ w := by positivity
   have ha0 : 0 < a := by exact_mod_cast hY.trans ha
   have hb0 : 0 < b := by exact_mod_cast hY.trans hb
   -- the ranges: `1 ≤ mn ≤ M`, and `mn ≤ 4X`

@@ -54,7 +54,7 @@ theorem residual_ne (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
 theorem residual_one (S : Finset (Ideal O)) (h : (1:Ideal O)≠0) :
     residualPool 1 h S=S := by
   ext I
-  simp only [mem_residualPool,one_mul]
+  simp
 
 theorem residual_coverage (S : Finset (Ideal O)) (W : ℝ→ℂ)
     (B : Ideal O) (hB : B≠0) (X Y : ℝ) (h : PlainCoverage S W 1 X Y) :
@@ -81,14 +81,8 @@ def child (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
   lower_le := fun i=>s.lower_le i.val
   upper_ge := fun i=>s.upper_ge i.val
 
-@[simp] theorem child_modulus (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).m=fixedBadMask*idealGenerator (R*C) := rfl
 
-@[simp] theorem child_character (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).η=τ := rfl
 
-@[simp] theorem child_height (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).t=t := rfl
 
 theorem live_slot_one (B : Tuple ι) (i : liveIndices B) : B (Sum.inl i.val)=1 :=
   (Finset.mem_filter.mp i.property).2
@@ -185,7 +179,7 @@ theorem original_childEnergy_eq_inputs (s : Input ι) (R seed : Ideal O)
       (16*(n+2:ℝ)*localErrorCost p n)*
         ∑χ:RayCharacter,∑B:actualAllocations s.pools ((Ideal.span {p})^(n+1)),
           childNormalizedGaussSource s ((Ideal.span {p})^(n+1)) R seed B (τ χ) t ballProfile K := by
-  have hQ : (Ideal.span {p}:Ideal O)≠0 := Ideal.span_singleton_eq_bot.not.mpr hp
+  have hQ  := Ideal.span_singleton_eq_bot.not.mpr hp
   unfold OriginalData.childEnergy
   simp only [original,Finset.sum_div]
   apply congrArg (fun x : ℝ => (16*(n+2:ℝ)*localErrorCost p n)*x)

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Reflection.ThresholdError
 
 @[expose] public section
@@ -29,13 +30,13 @@ theorem physical_scalar_hybrid_shape (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
   let U := kn*Qn/Ideal.absNorm (frozenExtracted F jF e 1)
   let B := kb*Qb/Ideal.absNorm (frozenExtracted F jF e 2)
   have hp (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
-  have hU : 0<U := div_pos (mul_pos hkn hn) (hp 1)
-  have hB : 0<B := div_pos (mul_pos hkb hb) (hp 2)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (frozenExtracted_ne_zero F jF e v)
+  have hU  := div_pos (mul_pos hkn hn) (hp 1)
+  have hB  := div_pos (mul_pos hkb hb) (hp 2)
   have hs := physical_scalar_extracted F jF e r Qn Qb kn kb R A hr hn hb hkn hkb
   have he := extractedOutsideScalar_log_widths F jF e Z r U B R hZ hr hU hB hR
-  have hz0 : 0<Z := lt_trans zero_lt_one hZ
-  have hpow (Q : ℝ) (hQ : 0<Q) : Z^(Real.logb Z Q)=Q := Real.rpow_logb hz0 (ne_of_gt hZ) hQ
+  have hz0  := lt_trans zero_lt_one hZ
+  have hpow (Q : ℝ) (hQ : 0<Q)  := Real.rpow_logb hz0 (ne_of_gt hZ) hQ
   have hh := normalized_hybrid_shape hZ.le (Real.logb Z X) (Real.logb Z U) (Real.logb Z B)
     (3*Real.logb Z r) (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 0))
     (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 2))

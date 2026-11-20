@@ -55,7 +55,7 @@ theorem regularizedL_analytic (χ : Character) :
     AnalyticOnNhd ℂ (regularizedL χ) {s : ℂ | 0 < s.re} := by
   apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
   intro s hs
-  exact (regularizedL_differentiableAt χ (by intro h; simp [h] at hs)).differentiableWithinAt
+  exact (regularizedL_differentiableAt χ (by intro h; simp_all)).differentiableWithinAt
 
 theorem regularizedL_eq_of_mask (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
@@ -70,7 +70,7 @@ theorem regularizedL_eq_of_mask (χ ψ : Character)
     (regularizedL ψ) (factors χ.modulus ψ) (regularizedL χ)
     (regularizedL_analytic ψ) hf (regularizedL_analytic χ) _ hs
   intro z hz
-  have hz' : 1 < z.re := by simpa using hz
+  have hz' : 1 < z.re := by simp_all
   have h0 : z ≠ 0 := by intro h; norm_num [h] at hz'
   have h1 : z ≠ 1 := by intro h; norm_num [h] at hz'
   rw [regularizedL_eq χ h0 h1, regularizedL_eq ψ h0 h1,
@@ -82,7 +82,7 @@ theorem LFunction_eq_of_mask (χ ψ : Character)
       if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
     {s : ℂ} (hs : 0 < s.re) (h1 : s ≠ 1) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs
+  have h0 : s ≠ 0 := by intro h; simp_all
   have h := regularizedL_eq_of_mask χ ψ hmask hs
   rw [regularizedL_eq χ h0 h1, regularizedL_eq ψ h0 h1, mul_assoc] at h
   exact mul_left_cancel₀ (sub_ne_zero.mpr h1) h
@@ -111,12 +111,12 @@ theorem LFunction_eq_of_mask_nonprincipal (χ ψ : Character)
       if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
     (hχ : χ.residue ≠ 1) {s : ℂ} (hs : 0 < s.re) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
-  have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  have hψ  := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
   have ha (η : Character) (hη : η.residue ≠ 1) :
       AnalyticOnNhd ℂ (LFunction η) {z : ℂ | 0 < z.re} := by
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
     intro z hz
-    exact (LFunction_differentiableAt η (by intro h; simp [h] at hz)
+    exact (LFunction_differentiableAt η (by intro h; simp_all)
       (Or.inr hη)).differentiableWithinAt
   have hf : AnalyticOnNhd ℂ (factors χ.modulus ψ) {z : ℂ | 0 < z.re} := by
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2

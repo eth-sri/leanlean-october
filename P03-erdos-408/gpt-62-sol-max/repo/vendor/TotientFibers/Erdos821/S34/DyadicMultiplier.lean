@@ -8,7 +8,7 @@ public import Erdos821.S34.RationalPhase
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -38,9 +38,9 @@ theorem dyadic_log_multiplier_error (G : PrimeGroups) (a b : Fin G.size → ℕ)
     have ht := mul_le_mul hX.2 hY.2 (ppos b Y).le (by positivity : 0 ≤ 2 * U)
     nlinarith
   have htop : 0 < 16 * (U * V) := by positivity
-  have hlogD : Real.log (product G a D * product G b E) ≤ Real.log (16 * (U * V)) :=
+  have hlogD  :=
     Real.log_le_log (mul_pos (ppos a D) (ppos b E)) hprodD
-  have hlogX : Real.log (product G a X * product G b Y) ≤ Real.log (16 * (U * V)) :=
+  have hlogX  :=
     Real.log_le_log (mul_pos (ppos a X) (ppos b Y)) hprodX
   have hlogdist : |Real.log (product G a D * product G b E) -
       Real.log (product G a X * product G b Y)| ≤ 2 * h := by

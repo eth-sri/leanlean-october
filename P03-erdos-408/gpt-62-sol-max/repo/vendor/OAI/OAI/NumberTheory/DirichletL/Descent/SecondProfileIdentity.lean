@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -57,7 +56,7 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
         ‖eisEmbedding k‖^2, primeProductNorm p N, primeProductNorm p M] := by
   have hs (S : Finset ι) : ‖eisEmbedding (∏ i ∈ S, p i)‖ = Real.sqrt (primeProductNorm p S) := by
     simp only [primeProductNorm, Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)]
-  have hV : 0 ≤ primeProductNorm p V := (primeProductNorm_pos p hp V).le
+  have hV  := (primeProductNorm_pos p hp V).le
   have hroots : Real.sqrt (primeProductNorm p V*primeProductNorm p N) *
       Real.sqrt (primeProductNorm p V*primeProductNorm p M) =
       primeProductNorm p V * Real.sqrt (primeProductNorm p N) * Real.sqrt (primeProductNorm p M) := by
@@ -80,7 +79,7 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
 
 theorem secondNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (G₀ E₀ V₀ K₀ X₀ Y : ℝ)
-    (_hG : 0 < G₀) (hE : 0 < E₀) (hV : 0 < V₀) (hK : 0 < K₀) (hX : 0 < X₀)
+ (hE : 0 < E₀) (hV : 0 < V₀) (hK : 0 < K₀) (hX : 0 < X₀)
     (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i) :
     secondNormProfile (fun x => W₁ (x/(G₀*V₀*X₀)))
       (fun x => W₂ (x/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y q =
@@ -112,9 +111,9 @@ theorem secondNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   rw [show (↑(q 1/E₀):ℂ)*↑(q 2/V₀)*↑(Real.sqrt (q 4/X₀))*↑(Real.sqrt (q 5/X₀)) =
       (↑(q 1/E₀):ℂ)*↑(q 2/V₀)*(↑(Real.sqrt (q 4/X₀))*↑(Real.sqrt (q 5/X₀))) from by ring,
     hrootC]
-  have hEc : (E₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hE.ne'
-  have hVc : (V₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hV.ne'
-  have hXc : (X₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hEc  := Complex.ofReal_ne_zero.mpr hE.ne'
+  have hVc  := Complex.ofReal_ne_zero.mpr hV.ne'
+  have hXc  := Complex.ofReal_ne_zero.mpr hX.ne'
   push_cast
   field_simp [hEc,hVc,hXc]
 

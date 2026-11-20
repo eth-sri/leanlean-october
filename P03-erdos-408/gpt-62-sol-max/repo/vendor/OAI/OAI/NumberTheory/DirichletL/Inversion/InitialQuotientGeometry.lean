@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 public import OAI.NumberTheory.DirichletL.Descent.TripleMass
 public import OAI.NumberTheory.DirichletL.Descent.Basic
@@ -30,10 +32,10 @@ def retained {J : ℕ} (S : Finset (Source (ι:=ι) J))
 def quotientSet {J : ℕ} (S : Finset (Source (ι:=ι) J)) : Finset (Ideal Eis) :=
   S.image (fun x => sourceIdeal p (x.common\x.divisor))
 
-variable (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+variable (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem quotientSet_nonzero {J : ℕ} (S : Finset (Source (ι:=ι) J)) :
     ∀ t ∈ quotientSet p S, t ≠ 0 := by
   intro t ht
@@ -52,7 +54,7 @@ theorem quotientSet_eq_initial {J : ℕ} (S : Finset (Source (ι:=ι) J))
   exact source_quotient p hp x.common x.divisor (hdiv x hx)
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem quotient_norm_eq {J : ℕ} (x : Source (ι:=ι) J) (hdiv : x.divisor ⊆ x.common) :
     (Ideal.absNorm (sourceIdeal p (x.common\x.divisor)) : ℝ) =
       (Ideal.absNorm (sourceIdeal p x.common) : ℝ)/Ideal.absNorm (sourceIdeal p x.divisor) := by
@@ -66,7 +68,7 @@ theorem quotient_norm_eq {J : ℕ} (x : Source (ι:=ι) J) (hdiv : x.divisor ⊆
   apply (eq_div_iff hd).mpr
   simpa only [mul_comm] using hn
 
-omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalFamily.Maximal p] in
 
 theorem retained_norm_windows {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
@@ -77,15 +79,15 @@ theorem retained_norm_windows {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (Ideal.absNorm (sourceIdeal p x.common) : ℝ) ≤ bC*Z^B ∧
       ad*Z^θ ≤ (Ideal.absNorm (sourceIdeal p x.divisor) : ℝ) := by
   have hn := (Finset.mem_filter.mp hx).2
-  have hnC : ψC ((Ideal.absNorm (sourceIdeal p x.common) : ℝ)/Z^B) ≠ 0 :=
+  have hnC  :=
     (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).2
-  have hnd : ψd ((Ideal.absNorm (sourceIdeal p x.divisor) : ℝ)/Z^θ) ≠ 0 :=
+  have hnd  :=
     (mul_ne_zero_iff.mp hn).2
   exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hC hnC).2,
     (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hd hnd).1⟩
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem retained_quotient_bound {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
     (aC bC ad bd Z B θ η : ℝ) (hZ : 0 < Z)
@@ -114,7 +116,7 @@ theorem retained_quotient_bound {J : ℕ} (S : Finset (Source (ι:=ι) J))
     _ = _ := by rw [←Real.rpow_sub hZ]; congr 1; ring
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem nonempty_radius {J : ℕ} (S : Finset (Source (ι:=ι) J)) (Z P η : ℝ)
     (hZ : 1 < Z) (hne : (quotientSet p S).Nonempty)
     (hnorm : ∀ t ∈ quotientSet p S, (Ideal.absNorm t : ℝ) ≤ Z^(P+2*η)) :
@@ -122,7 +124,7 @@ theorem nonempty_radius {J : ℕ} (S : Finset (Source (ι:=ι) J)) (Z P η : ℝ
   obtain ⟨t,ht⟩ := hne
   have ht0 := quotientSet_nonzero p hp S t ht
   have hn : (1:ℝ) ≤ Ideal.absNorm t := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ht0)
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (ht0)
   have hh := hn.trans (hnorm t ht)
   refine ⟨hh,?_⟩
   exact (Real.rpow_le_rpow_left_iff hZ).mp (by simpa only [Real.rpow_zero] using hh)
@@ -143,7 +145,7 @@ theorem normalized_mass_bound (J : ℕ) (ε : ℝ) (hε : 0 < ε) :
     positivity
   have hH1 : 1 ≤ H := by
     have ht1 : (1:ℝ) ≤ Ideal.absNorm t := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hz t ht))
+      exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (hz t ht)
     exact ht1.trans (hn t ht)
   have hw : ∀ t ∈ T, ((idealDivisors t).card : ℝ)^J ≤ C*H^ε := by
     intro t ht
@@ -199,7 +201,7 @@ theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
     _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalFamily.Maximal p] in
 theorem span_source_puncture {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (hpr : ∀ i, λ₀^2 ∣ p i-1) (j : Eis)
     {t : Ideal Eis} (ht : t ∈ quotientSet p S) :

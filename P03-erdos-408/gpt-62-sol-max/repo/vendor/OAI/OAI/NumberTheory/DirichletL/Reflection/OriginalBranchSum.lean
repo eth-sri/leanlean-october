@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.OriginalExponent
+public import OAI.NumberTheory.DirichletL.Reflection.SurvivingGate
+public import OAI.NumberTheory.DirichletL.Reflection.OptionalWidth
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedCaps
 public import OAI.NumberTheory.DirichletL.Reflection.BranchCount
 
@@ -54,7 +55,7 @@ theorem original_surviving_energy_sum
           ε*(H+Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1))+
             Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2))+za)+η/2))≤
         C*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^(F₀-cstar/4-O₀/2) := by
-  obtain ⟨Z₀,hZ₀,hsave⟩ := original_surviving_energy_exponent s hc₀ kK kP η hkK hkP hηpos
+  obtain ⟨Z₀,hZ₀,hgates⟩ := actual_surviving_retained_gates s hc₀ kK kP η hkK hkP hηpos
   obtain ⟨C,hC,hcount⟩ := surviving_branch_count_small_power ρ hρ
   refine ⟨Z₀,C,hZ₀,hC,?_⟩
   intro J I F B R Q₀ hJ hI hF hB hR hpower hmask A column
@@ -66,21 +67,33 @@ theorem original_surviving_energy_sum
   let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
   let j := fun b : A => completedLocalExponent J F b.val.val
   let branches := survivingFrozenBranches G j column (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
-  have hcbr := hcount G ((poolPrimeFamily J (B*F*R) Q₀).restrict_pairwise
-    (poolPrimeFamily_pairwise J (B*F*R) Q₀) A) j column (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
+  have hG := (poolPrimeFamily J (B*F*R) Q₀).restrict_pairwise (poolPrimeFamily_pairwise J (B*F*R) Q₀) A
+  have hcbr := hcount G hG j column (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
   have hz' : 1<Z := lt_of_lt_of_le hZ₀ hZ
-  have hb (e : A→Fin 3) (he : e∈branches) := hsave J I F B R Q₀ hJ hI hF hB hR hpower hmask A e column
-    Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d δ π Ck CO CH Cf X QK QP ε Lscale Lrow Lslot i
-    hZ hCk hCO hCH hCf hX hQK hQP hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
-    heH heza heN hM hO hz hzcap hc hmargin hd hη hτ hπ hε hrowcap hslotcap hconst hbudget hscap hret he
   calc
     _ ≤ (branches.card:ℝ)*∑ _e∈branches,Z^(F₀-cstar/4-O₀/2) := by
       apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
       apply Finset.sum_le_sum
       intro e he
       apply Real.rpow_le_rpow_of_exponent_le hz'.le
-      have hh := hb e he
-      dsimp only at hh
+      obtain ⟨hv,hell,hel,hwidth⟩ := hgates G hG j column e Z X QK QP δ i hZ hX hQK hQP hret he
+      rw [←heH,←heza,←heN] at hwidth
+      have hs := original_optional_terminal_saving J I F B R Q₀ hJ hI hF hB hR hpower hmask A e
+        Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat
+        (Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1)))
+        (Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2)))
+        (ramifiedWidth Z i.1) d η (δ+η) π Ck CO CH Cf
+        (lt_of_lt_of_le hZ₀ hZ) hCk hCO hCH hCf hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
+        hM hO hz hzcap hv hell hel (by simpa only [add_assoc] using hwidth)
+        hc hmargin hd hη hτ hπ
+      have hb := retained_extracted_log_budget (familyRawScale G s X QK QP) Z δ Lscale Lrow Lslot η
+        (kK*QK) (kP*QP) (familyRawScale_pos G s hc₀ X QK QP hX hQK hQP)
+        (lt_of_lt_of_le hZ₀ hZ) (mul_pos hkK hQK) (mul_pos hkP hQP) hscap hconst hrowcap hslotcap i hret
+        (frozenExtracted G j e 1) (frozenExtracted G j e 2)
+        (frozenExtracted_ne_zero G j e 1) (frozenExtracted_ne_zero G j e 2)
+      rw [←heH,←heza] at hb
+      have hBe := mul_le_mul_of_nonneg_left hb hε
+      dsimp only [G,j] at hs hb hBe ⊢
       linarith
     _ = ((branches.card:ℝ)^2)*Z^(F₀-cstar/4-O₀/2) := by
       simp only [Finset.sum_const,nsmul_eq_mul]

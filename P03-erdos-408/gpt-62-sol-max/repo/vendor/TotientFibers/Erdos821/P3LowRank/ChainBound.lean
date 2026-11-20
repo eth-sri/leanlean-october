@@ -17,9 +17,6 @@ variable {β : Type*} [Fintype β]
 /-- Weighted `ℓ²` norm on a finite type. -/
 def wnorm (mass : β → ℝ) (h : β → ℂ) : ℝ := Real.sqrt (∑ s, mass s * ‖h s‖ ^ 2)
 
-/-- Kernel application; the kernel already contains the target integration. -/
-def applyK (K : β → β → ℂ) (h : β → ℂ) : β → ℂ := fun s => ∑ t, K s t * h t
-
 /-- Bilinear operator-norm bound on the whole finite type. -/
 def FinNormBound (mass : β → ℝ) (K : β → β → ℂ) (C : ℝ) : Prop :=
   ∀ f g : β → ℂ, ‖∑ a, ∑ b, (mass a : ℂ) * star (f a) * K a b * g b‖ ≤
@@ -32,6 +29,9 @@ theorem wnorm_sq (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (h : β → ℂ)
   unfold wnorm
   rw [Real.sq_sqrt]
   exact Finset.sum_nonneg fun s _ => mul_nonneg (hm s) (sq_nonneg _)
+
+/-- Kernel application; the kernel already contains the target integration. -/
+def applyK {R : Type*} [CommSemiring R] (K : β → β → R) (h : β → R) : β → R := fun s => ∑ t, K s t * h t
 
 theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → β → ℂ) (C : ℝ)
     (hC : 0 ≤ C) (hK : FinNormBound mass K C) (h : β → ℂ) :
@@ -49,14 +49,11 @@ theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → 
           rw [hxa, Finset.mul_sum]
           apply Finset.sum_congr rfl
           intro b _
-          rw [← hxa]
           ring
   have hle : wnorm mass x ^ 2 ≤ C * wnorm mass x * wnorm mass h := by
     rw [wnorm_sq mass hm x]
-    have hnn : 0 ≤ ∑ s, mass s * ‖x s‖ ^ 2 :=
-      Finset.sum_nonneg fun s _ => mul_nonneg (hm s) (sq_nonneg _)
     calc ∑ s, mass s * ‖x s‖ ^ 2 = ‖((∑ s, mass s * ‖x s‖ ^ 2 : ℝ) : ℂ)‖ := by
-          rw [Complex.norm_real, Real.norm_of_nonneg hnn]
+          rw [Complex.norm_real, Real.norm_of_nonneg (Finset.sum_nonneg fun s _ => mul_nonneg (hm s) (sq_nonneg _))]
       _ = _ := by rw [heq]
       _ ≤ _ := hK x h
   have hw := wnorm_nonneg mass x
@@ -68,14 +65,18 @@ theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → 
       nlinarith
     exact le_of_mul_le_mul_left this hpos
 
+section Paths
+
+variable {R : Type*} [CommSemiring R]
+
 /-- Sum over alternating state paths: ghost kernels on `(b i, a i)`, edges on `(a i, b (i+1))`. -/
-def pathSum (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (u v : β → ℂ) : ℂ :=
+def pathSum (n : ℕ) (G : Fin (n + 1) → β → β → R) (E : Fin n → β → β → R) (u v : β → R) : R :=
   ∑ b : Fin (n + 1) → β, ∑ a : Fin (n + 1) → β,
     u (b 0) * (∏ i, G i (b i) (a i)) * (∏ i : Fin n, E i (a i.castSucc) (b i.succ)) *
       v (a (Fin.last n))
 
 /-- The vector produced by everything after the first ghost kernel. -/
-def tailVec : (n : ℕ) → (Fin (n + 1) → β → β → ℂ) → (Fin n → β → β → ℂ) → (β → ℂ) → β → ℂ
+def tailVec : (n : ℕ) → (Fin (n + 1) → β → β → R) → (Fin n → β → β → R) → (β → R) → β → R
   | 0, _, _, v => v
   | n + 1, G, E, v =>
       applyK (E 0) (applyK (G (Fin.succ 0)) (tailVec n (fun i => G i.succ) (fun i => E i.succ) v))
@@ -85,8 +86,8 @@ theorem sum_fin_cons {M : Type*} [AddCommMonoid M] (n : ℕ) (f : (Fin (n + 1) �
   rw [← (Fin.consEquiv fun _ => β).sum_comp, Fintype.sum_prod_type]
   rfl
 
-theorem pathSum_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ)
-    (u v : β → ℂ), pathSum n G E u v = ∑ s, ∑ t, u s * G 0 s t * tailVec n G E v t := by
+theorem pathSum_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → R) (E : Fin n → β → β → R)
+    (u v : β → R), pathSum n G E u v = ∑ s, ∑ t, u s * G 0 s t * tailVec n G E v t := by
   intro n
   induction n with
   | zero =>
@@ -139,6 +140,8 @@ theorem pathSum_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : 
       intro t' _
       ring
 
+end Paths
+
 theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) (hCG : 0 ≤ CG) :
     ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (c : Fin n → ℝ),
       (∀ i, 0 ≤ c i) → (∀ i, FinNormBound mass (G i) CG) →
@@ -156,7 +159,6 @@ theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
       set w := tailVec n (fun i => G i.succ) (fun i => E i.succ) v
       have h2 := applyK_bound mass hm (G (Fin.succ 0)) CG hCG (hG _) w
       have h3 := applyK_bound mass hm (E 0) (c 0) (hc 0) (hE 0) (applyK (G (Fin.succ 0)) w)
-      have hprod : 0 ≤ ∏ i : Fin n, c i.succ := Finset.prod_nonneg fun i _ => hc i.succ
       change wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w)) ≤ _
       rw [Fin.prod_univ_succ]
       calc wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w))

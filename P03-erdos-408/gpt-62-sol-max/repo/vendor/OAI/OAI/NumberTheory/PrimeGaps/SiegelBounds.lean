@@ -14,7 +14,7 @@ open Complex Filter Topology Set MeasureTheory Finset ArithmeticFunction
 
 lemma quadratic_character_im {q : ℕ} {χ : DirichletCharacter ℂ q} (hχ : χ^2=1)
     (a : ZMod q) : (χ a).im = 0 := by
-  rcases MulChar.isQuadratic_iff_sq_eq_one.mpr hχ a with h|h|h <;> simp [h]
+  rcases MulChar.isQuadratic_iff_sq_eq_one.mpr hχ a with h|h|h <;> simp_all
 
 lemma regularSeries_im_zero {f : ℕ → ℂ} {c : ℂ} {D : ℝ}
     (hf : ∀ n, (f n).im=0) (hc : c.im=0) (hD : 0 ≤ D)
@@ -102,7 +102,7 @@ lemma quadratic_LFunction_re_pos_one {q : ℕ} [NeZero q] {χ : DirichletCharact
   intro he
   apply DirichletCharacter.LFunction_apply_one_ne_zero hχ
   apply Complex.ext
-  · simpa using he.symm
+  · simp_all
   · simpa using quadratic_LFunction_im hχ hχ2 (x:=1) zero_lt_one
 
 lemma quadratic_LFunction_re_pos_of_no_root {q : ℕ} [NeZero q]
@@ -146,7 +146,7 @@ lemma productCharacter_apply {q r n : ℕ} (χ : DirichletCharacter ℂ q)
   · simp only [productCharacter,MulChar.mul_apply,changeLevel_natCast _ _ hn]
   · rw [MulChar.map_nonunit _ (by rwa [ZMod.isUnit_iff_coprime])]
     by_cases hq : n.Coprime q
-    · have hr : ¬n.Coprime r := fun hr => hn (hq.mul_right hr)
+    · have hr  := fun hr => hn (hq.mul_right hr)
       rw [ψ.map_nonunit (by rwa [ZMod.isUnit_iff_coprime]),mul_zero]
     · rw [χ.map_nonunit (by rwa [ZMod.isUnit_iff_coprime]),zero_mul]
 
@@ -199,7 +199,7 @@ lemma zeta_product_residue_lower {P : ℂ → ℂ} {a : ℕ → ℂ} {A B Q β �
     ((1-β)/(2*(2-β)))*Q^(-ε)≤(P 1).re := by
   let H := regularizedZetaProduct P
   have hR : P 1=((P 1).re:ℂ) := by apply Complex.ext <;> simp [hreal]
-  obtain ⟨hf,hbound⟩ := regularizedZetaProduct_bound hP hB hb
+  obtain ⟨hf,hbound⟩ := regularizedZetaProduct_bound hP hb
   have he : H =ᶠ[𝓝 (2:ℂ)] fun s => LSeries a s-((P 1).re:ℂ)/(s-1) := by
     filter_upwards [(continuous_re.tendsto (2:ℂ)).eventually
       (lt_mem_nhds (by norm_num : (1:ℝ)<(2:ℂ).re))] with s hs
@@ -368,11 +368,10 @@ lemma quadratic_siegel_eventual {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
   by_cases hex : ∃ r : ℕ, ∃ ψ : DirichletCharacter ℂ (r+1),
       ψ.IsPrimitive ∧ ψ≠1 ∧ ψ^2=1 ∧ ∃ β ∈ Set.Icc β₀ 1, ψ.LFunction β=0
   · obtain ⟨r,ψ,hψprim,hψ,hψ2,β,hβI,hzero⟩ := hex
-    have hβ1 : β<1 := lt_of_le_of_ne hβI.2 (by
+    have hβ1  := lt_of_le_of_ne hβI.2 (by
       intro he
       apply DirichletCharacter.LFunction_apply_one_ne_zero hψ
       simpa [he] using hzero)
-    have hβ : 99/100≤β := hβ₀.trans hβI.1
     have hβε : 60*(1-β)≤ε/2 := by dsimp [β₀] at hβI; linarith [hβI.1]
     obtain ⟨K,hK,hgrowth⟩ := LFunction_norm_small_power (by linarith : 0<ε/4)
       (by linarith : ε/4≤1/2)
@@ -416,21 +415,19 @@ lemma quadratic_siegel_eventual {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
         U*((q:ℝ)+1)^(ε/2)*‖χ.LFunction 1‖ := by
       calc
         _ ≤ ‖ψ.LFunction 1‖*‖χ.LFunction 1‖*(K*D^(ε/2)*((q:ℝ)+1)^(ε/2)) := by gcongr
-        _ = _ := by dsimp [U]; ring
+        _ = _ := by ring
     have hlow := hl.trans hupper
     have hQp : 0<((q:ℝ)+1)^(ε/2) := Real.rpow_pos_of_pos hQ0 _
     have hexp : ((q:ℝ)+1)^(-ε)*((q:ℝ)+1)^(ε/2)=((q:ℝ)+1)^(-(ε/2)) := by
       rw [←Real.rpow_add hQ0]; congr 1; ring
-    have hfinal : U*(c*((q:ℝ)+1)^(-ε)*((q:ℝ)+1)^(ε/2)) ≤
-        U*(‖χ.LFunction 1‖*((q:ℝ)+1)^(ε/2)) := by
-      calc
-        U*(c*((q:ℝ)+1)^(-ε)*((q:ℝ)+1)^(ε/2)) =
-            ((1-β)/(2*(2-β)))*((q:ℝ)+1)^(-(ε/2)) := by
-          rw [mul_assoc c,hexp]
-          dsimp [c]
-          field_simp
-        _ ≤ U*(‖χ.LFunction 1‖*((q:ℝ)+1)^(ε/2)) := by simpa only [mul_assoc,mul_left_comm,mul_comm] using hlow
-    exact (mul_le_mul_iff_left₀ hQp).mp ((mul_le_mul_iff_right₀ hU).mp hfinal)
+    refine (mul_le_mul_iff_left₀ hQp).mp ((mul_le_mul_iff_right₀ hU).mp ?_)
+    calc
+      U*(c*((q:ℝ)+1)^(-ε)*((q:ℝ)+1)^(ε/2)) =
+          ((1-β)/(2*(2-β)))*((q:ℝ)+1)^(-(ε/2)) := by
+        rw [mul_assoc c,hexp]
+        dsimp [c]
+        field_simp
+      _ ≤ U*(‖χ.LFunction 1‖*((q:ℝ)+1)^(ε/2)) := by simpa only [mul_assoc,mul_left_comm,mul_comm] using hlow
   · refine ⟨(1-β₀)/(2*(2-β₀)),4032,div_pos (by linarith) (by linarith),?_⟩
     intro q hq χ hχprim hχ hχ2 hqbig
     apply quadratic_residue_lower_of_no_root hχ hχ2 hβ₀ hβ₀1
@@ -486,8 +483,7 @@ theorem quadratic_siegel {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
       have := Nat.le_ceil Q₀
       have : (q:ℝ)≤(⌈Q₀⌉₊:ℝ) := by linarith
       exact_mod_cast this
-    have hp : ((q:ℝ)+1)^(-ε)≤1 := Real.rpow_le_one_of_one_le_of_nonpos (by have := Nat.cast_nonneg (α:=ℝ) q; linarith) (by linarith)
-    exact (mul_le_of_le_one_right (le_of_lt (lt_min hc hd)) hp).trans
+    exact (mul_le_of_le_one_right (le_of_lt (lt_min hc hd)) (Real.rpow_le_one_of_one_le_of_nonpos (by have := Nat.cast_nonneg (α:=ℝ) q; linarith) (by linarith))).trans
       ((min_le_right _ _).trans (hdb q χ hqn hχ))
 
 end LargePrimeGaps

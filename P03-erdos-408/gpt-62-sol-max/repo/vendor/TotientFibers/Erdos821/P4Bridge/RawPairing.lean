@@ -73,32 +73,6 @@ lemma rawFullPair_states (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   simp only [Complex.ofReal_mul]
   ring
 
-lemma conditionalF_eq_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (f : P.BigLabels (J + ell) → ℂ)
-    (hf : ∀ s a a' b t, f (labelJoin ν block s a b t) = f (labelJoin ν block s a' b t))
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true) :
-    conditionalF ν block f s b = ∑ t : P.BigLabels ell,
-      (P.idealMass t : ℂ) * f (labelJoin ν block s a b t) := by
-  have hs : (∑ x : SideTuple ν block false,
-      (Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block false) x : ℂ)) = 1 := by
-    exact_mod_cast sideWeight_sum hV (patternAuxCoordinates ν block false)
-  unfold conditionalF
-  simp_rw [hf s _ a b, Complex.ofReal_mul, mul_assoc, ← Finset.mul_sum]
-  rw [← Finset.sum_mul, hs, one_mul]
-
-lemma conditionalG_eq_tail (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
-    (hV : ∀ g, 0 < P.V g) (g : P.BigLabels (J + ell) → ℂ)
-    (hg : ∀ s a b b' t, g (labelJoin ν block s a b t) = g (labelJoin ν block s a b' t))
-    (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true) :
-    conditionalG ν block g s a = ∑ t : P.BigLabels ell,
-      (P.idealMass t : ℂ) * g (labelJoin ν block s a b t) := by
-  have hs : (∑ y : SideTuple ν block true,
-      (Blueprint.Analytic.tupleWeight (analyticGroups P) (sideCounts ν block true) y : ℂ)) = 1 := by
-    exact_mod_cast sideWeight_sum hV (patternAuxCoordinates ν block true)
-  unfold conditionalG
-  simp_rw [hg s a _ b, Complex.ofReal_mul, mul_assoc, ← Finset.mul_sum]
-  rw [← Finset.sum_mul, hs, one_mul]
-
 def rawConditional (ν : Pattern P J ell m) (block : P.BigGroup → Bool) (C : ℕ) (θ ζ : ℝ)
     (f : SideTuple ν block true → ℂ) (g : SideTuple ν block false → ℂ) : ℂ :=
   Blueprint.Analytic.expect (analyticGroups P) (sideCounts ν block true) fun b =>
@@ -130,7 +104,11 @@ lemma rawFullPair_conditional (ν : Pattern P J ell m) (block : P.BigGroup → B
   intro b _
   apply Finset.sum_congr rfl
   intro a _
-  rw [conditionalF_eq_tail ν block hV f hf s a b, conditionalG_eq_tail ν block hV g hg s a b]
+  have hF : conditionalF ν block f s b = ∑ t, (P.idealMass t : ℂ) * f (labelJoin ν block s a b t) :=
+    conditional_eq_tail ν block false hV f s a b (fun a' t => hf s a' a b t)
+  have hG : conditionalG ν block g s a = ∑ t, (P.idealMass t : ℂ) * g (labelJoin ν block s a b t) :=
+    conditional_eq_tail ν block true hV g s b a (fun b' t => hg s a b' b t)
+  rw [hF,hG]
   dsimp only [sideCounts]
   rw [multiplier_factor _ _ _ (rowProduct_pos _ s)
     (sideProduct_pos _ a) (sideProduct_pos _ b) θ ζ]

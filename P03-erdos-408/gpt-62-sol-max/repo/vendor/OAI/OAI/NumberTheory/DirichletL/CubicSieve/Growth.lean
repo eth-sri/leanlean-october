@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ExtractionOptimization
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 def HasCubicExponent (ξ : ℝ) : Prop :=
@@ -18,7 +18,7 @@ def HasCubicExponent (ξ : ℝ) : Prop :=
 theorem hasCubicExponent_initial : HasCubicExponent 2 := by
   intro ε hε
   let C := QuadraticInitialBound.initialSieveConstant
-  have hC : 0 < C := QuadraticInitialBound.initialSieveConstant_pos
+  have hC  := QuadraticInitialBound.initialSieveConstant_pos
   refine ⟨4*C, by positivity, ?_⟩
   intro M N hM hN
   have hN0 : 0 ≤ N := by linarith
@@ -53,7 +53,6 @@ lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
         sieveNorm (2*X) N ≤ C*(X*N)^ε*(X^ξ + N + (X*N)^(2/3 : ℝ)) := by
   obtain ⟨C,hC,hb⟩ := h.swapped ε hε
   let A : ℝ := 1 + (2:ℝ)^ξ + (2:ℝ)^(2/3 : ℝ)
-  have hA : 0 < A := by dsimp [A]; positivity
   refine ⟨C*(2:ℝ)^ε*A, by positivity, ?_⟩
   intro X N hX hN
   have hX0 : 0 ≤ X := by linarith

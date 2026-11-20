@@ -27,8 +27,8 @@ theorem prime_complement (P : Ideal O) (hP : Prime P) (s : Finset ι) (v : ι �
   · rw [ite_eq_right h]
     apply Finset.prod_eq_one
     intro i hi
-    have hd : ¬P∣v i := fun hh => h ((hP.dvd_finsetProd_iff v).mpr ⟨i,hi,hh⟩)
-    simp only [ite_eq_right hd,sub_zero]
+    have hd  := fun hh => h ((hP.dvd_finsetProd_iff v).mpr ⟨i,hi,hh⟩)
+    simp_all
 
 theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
     (s : Finset ι) (v : ι → Ideal O) :
@@ -49,8 +49,6 @@ theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
     rw [← Finset.sum_neg_distrib]
     apply Finset.sum_congr rfl
     intro J hJ
-    dsimp only [f]
-    rw [pow_succ]
     ring
   rw [hn]
   by_cases h : P∣∏ i ∈ s,v i <;> simp only [h,ite_true,ite_false] at he ⊢ <;>

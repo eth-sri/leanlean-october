@@ -132,8 +132,8 @@ theorem liftDet_ne_zero {x : ℝ} {d : Data K}
     {p p' : Fin K → ℕ} (hp : p ∈ d.labels x) (hp' : p' ∈ d.labels x) (hU : Unshared p p')
     (ha : 1 < ∏ i, p i) {m n : ℕ} (hm : m ≠ 0) (hmr : IsRough x m) (hn : n ≠ 0)
     (hnr : IsRough x n) (r s : ℕ) : liftDet p p' m n r s ≠ 0 := by
-  have hprime : ∀ i, (p i).Prime := fun i => (mem_filter.1 (mem_band_of_mem_labels hp i)).2
-  have hprime' : ∀ i, (p' i).Prime := fun i => (mem_filter.1 (mem_band_of_mem_labels hp' i)).2
+  have hprime  := fun i => (mem_filter.1 (mem_band_of_mem_labels hp i)).2
+  have hprime'  := fun i => (mem_filter.1 (mem_band_of_mem_labels hp' i)).2
   -- `a` is coprime to `b`, `m` and `n`
   have hab : Nat.Coprime (∏ i, p i) (∏ i, p' i) :=
     Nat.Coprime.prod_left fun i _ => Nat.Coprime.prod_right fun i' _ =>
@@ -166,9 +166,9 @@ theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C C
     (htW : |(t : ℝ)| < roughLevel x) (hms : ∀ r : ℕ, r.Prime → r ∣ m → r ∣ s → (r : ℤ) ∣ t) :
     ((listProd (padList z p) * m, s), padList z p) ∈ states x d Y (2 ^ k) := by
   set l := padList z p
-  have hlb : ∀ i h, l i h ∈ band x (d.a i) := mem_band_padList hz hp
-  have hlprime : ∀ i h, (l i h).Prime := fun i h => (mem_filter.1 (hlb i h)).2
-  have hl : l ∈ lists x d (padCount x) := padList_mem_lists hz hzinj hp hzp
+  have hlb  := mem_band_padList hz hp
+  have hlprime  := fun i h => (mem_filter.1 (hlb i h)).2
+  have hl  := padList_mem_lists hz hzinj hp hzp
   obtain ⟨hmH, hm2, hmr, -⟩ := hd.α_supp m hm
   obtain ⟨hsH, -, hsr, -⟩ := hd.β_supp s hs
   have hs0 : s ≠ 0 := by
@@ -185,7 +185,6 @@ theorem mem_states_of {C CX alo ahi g x : ℝ} {d : Data K} (hd : Admissible C C
     have : ((∏ c, z c : ℕ) : ℝ) < 2 ^ (k + 1) := by exact_mod_cast hD.2
     rw [pow_succ] at this
     linarith
-  have hm2' : (m : ℝ) ≤ 2 * d.Hm := hm2
   unfold states positions
   refine mem_filter.2 ⟨mem_product.2 ⟨mem_filter.2 ⟨mem_product.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, ?_⟩, ?_⟩,
     hl⟩, ?_⟩
@@ -219,7 +218,7 @@ open scoped Classical in
 weighted coprime-pair error equals the term of `2^{-k} ⟨f, 𝒯 f⟩_{2^k}` at the image. -/
 theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K}
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 0 < d.Hm) (hV : 0 < d.bandMass x) (Y : ℝ) {k : ℕ} {a : LiftIndex K (padCount x)}
     (ha : a ∈ liftIndex x d) (hk : Nat.log 2 (∏ c, a.2.1 c) = k) (hm : d.α a.2.2.1.1 ≠ 0)
@@ -289,7 +288,6 @@ theorem liftTerm_eq_stateTerm (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data 
     Nat.mul_div_cancel_left _ hlpos, Nat.mul_div_cancel_left _ hlpos']
   simp only [padProd_padList, lastProd_padList, hdiv, padWeight_eq, stateMass]
   have hV0 : (d.bandMass x : ℂ) ≠ 0 := by exact_mod_cast hV.ne'
-  have hD0' : ((∏ c, z c : ℕ) : ℂ) ≠ 0 := by exact_mod_cast hD0.ne'
   simp only [star_mul', star_star]
   push_cast
   have h2 : (2 : ℂ) ^ k ≠ 0 := pow_ne_zero _ two_ne_zero
@@ -348,7 +346,7 @@ theorem liftStates_mem {C CX alo ahi g x : ℝ} {d : Data K} (A₀ : ℝ)
   have hm0 : m ≠ 0 := by rintro rfl; rw [Nat.cast_zero] at hmH; linarith
   have hn0 : n ≠ 0 := by rintro rfl; rw [Nat.cast_zero] at hnH; linarith
   -- `t ≠ 0` and `|t| < 5Y ≤ W`
-  have ht : liftDet p p' m n r s ≠ 0 :=
+  have ht  :=
     liftDet_ne_zero hrough hp hp' hU (by exact_mod_cast hY.trans_lt hpY.1) hm0 hmr hn0 hnr r s
   have htW : |(liftDet p p' m n r s : ℝ)| < roughLevel x := by
     have := abs_lt_of_plateau_ne_zero hψ
@@ -392,7 +390,7 @@ open scoped Classical in
 do not vanish at the preimage. -/
 theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (Y : ℝ) {k : ℕ}
+    (hdisj : d.BandsDisjoint x) (Y : ℝ) {k : ℕ}
     {w : ((ℕ × ℕ) × Lists K (padCount x)) × ((ℕ × ℕ) × Lists K (padCount x))}
     (hw : w ∈ states x d Y (2 ^ k) ×ˢ states x d Y (2 ^ k))
     (hne : stateTerm q A₀ x d Y k w ≠ 0) :
@@ -442,7 +440,7 @@ theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
     exact_mod_cast hD₂
   · have hpl : padList (fun c => l c.1 c.2.castSucc) (fun i => l i (Fin.last _)) = l :=
       padList_eq_iff.2 ⟨fun c => rfl, fun i => rfl⟩
-    have hpl' : padList (fun c => l c.1 c.2.castSucc) (fun i => l' i (Fin.last _)) = l' :=
+    have hpl'  :=
       padList_eq_iff.2 ⟨fun c => (hcopy c.1 c.2).symm, fun i => rfl⟩
     simp only [liftStates]
     rw [hpl, hpl', Nat.mul_div_cancel' (listProd_dvd_of_mem_lists hdisj hl hlP),
@@ -454,7 +452,7 @@ theorem exists_liftStates_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ
 with `D ∈ [2^k, 2^{k+1})` is `2^{-k} ⟨f, 𝒯 f⟩_{2^k}`. -/
 theorem sum_liftTerm_dyad_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y)
     (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) (k : ℕ) :
@@ -480,7 +478,7 @@ coprime-pair error is `∑_{k ≤ N} 2^{-k} ⟨f, 𝒯 f⟩_{2^k}`: each pad pro
 dyad. -/
 theorem sum_liftTerm_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     (hd : Admissible C CX alo ahi g x d)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hdisj : d.BandsDisjoint x)
     (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m)
     (hHm : 0 < d.Hm) (hHn : 0 < d.Hn) (hV : 0 < d.bandMass x) {Y : ℝ} (hY : 1 ≤ Y)
     (hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x) {N : ℕ}
@@ -491,9 +489,7 @@ theorem sum_liftTerm_eq {C CX alo ahi g x : ℝ} {d : Data K} (q A₀ : ℝ)
     intro a ha
     simp only [liftIndex, mem_filter, mem_product] at ha
     have hz := ha.1.2.1
-    have hD : ∏ c, a.2.1 c ≠ 0 :=
-      (prod_pos fun c _ => (mem_filter.1 (mem_band_of_mem_padSet hz c)).2.pos).ne'
-    exact mem_range.2 ((Nat.log_lt_iff_lt_pow (by norm_num) hD).2 (hN _ hz))
+    exact mem_range.2 ((Nat.log_lt_iff_lt_pow (by norm_num) ((prod_pos fun c _ => (mem_filter.1 (mem_band_of_mem_padSet hz c)).2.pos).ne')).2 (hN _ hz))
   rw [← sum_fiberwise_of_maps_to hmaps]
   exact sum_congr rfl fun k _ =>
     sum_liftTerm_dyad_eq q A₀ hd hdisj hrough hHm hHn hV hY hYW k

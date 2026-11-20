@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalPair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentExceptionalReflection
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows
-open CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion
-open CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay
+open CenteredMomentExceptionalPair RayFourExpansion CanonicalRowCompletion CanonicalQuadraticSieve
+open CanonicalUnitEuler
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -63,7 +63,7 @@ theorem fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharacter)
     FixedInducingRow (childCharacter η χ) Q m A z ↔
       FixedInducingRow (childCharacter η ξ) Q m A (-z) := by
   constructor
-  · exact fixedInducingRow_reflected η χ ξ Q hQ m A z hmLam hm2
+  · solve_by_elim [fixedInducingRow_reflected]
   · intro hex
     simpa only [neg_neg] using
       fixedInducingRow_reflected η ξ χ Q hQ m A (-z) hmLam hm2 hex

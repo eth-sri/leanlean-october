@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
 
 @[expose] public section
@@ -19,7 +20,7 @@ def cutoffCoefficient (V : ℝ → ℂ) (D : ℝ) (I : Ideal O) : ℂ :=
 theorem fiber_norm_le {I : Ideal O} (hI : I ≠ 0) (p : MulFiber I) :
     Ideal.absNorm p.val.1 ≤ Ideal.absNorm I := by
   apply Nat.le_of_dvd
-    (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
+    (Ideal.absNorm_pos_of_ne_bot (hI))
   exact map_dvd Ideal.absNorm ⟨p.val.2, p.property.symm⟩
 
 theorem cutoffCoefficient_small (V : ℝ → ℂ) (D : ℝ) (hD : 0 < D)

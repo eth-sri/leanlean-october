@@ -36,12 +36,7 @@ theorem slotPrimes_eq_val_map {M : ℕ} {g : P.Group}
 theorem pendingPrimes_translate (delta : ℤ) {g : P.Group} (w : P.Memory g) :
     pendingPrimes (translateMemory delta w) = pendingPrimes w := by
   unfold pendingPrimes translateMemory
-  rw [Multiset.map_map]
-  have h : ((fun u : P.Particle g => u.1) ∘ translateParticle delta)
-      = (fun u : P.Particle g => u.1) := by
-    funext u
-    rfl
-  rw [h]
+  aesop
 
 theorem pendingPrimes_add {g : P.Group} (a b : P.Memory g) :
     pendingPrimes (a + b) = pendingPrimes a + pendingPrimes b :=
@@ -59,7 +54,7 @@ theorem pendingPrimes_stored {M : ℕ} {g : P.Group}
   have hmap : Multiset.map (fun u : P.Particle g => u.1)
       ((B.toList.map (fun i => (⟨a i, 0⟩ : P.Particle g)) : List (P.Particle g)) : Multiset (P.Particle g))
       = ((B.toList.map (fun i => (⟨a i, 0⟩ : P.Particle g))).map (fun u => u.1) : List (P.Prime g)) := by
-    rw [Multiset.map_coe]
+    rfl
   rw [hmap, hlist]
   have hcoe : ((B.toList.map (fun i => a i) : List (P.Prime g)) : Multiset (P.Prime g))
       = B.val.map (fun i => a i) := by
@@ -175,7 +170,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
     have hmem : ν.shared g.val i := by
       rw [hSharedDef] at hi
       simpa using (Finset.mem_filter.mp hi).2
-    have heq : s.2.1 g.val i = t.2.1 g.val i := hcompat g.val i hmem
+    have heq  := hcompat g.val i hmem
     rw [heq]
   have hS_split : slotPrimes (s.2.1 g.val) Shared
         + slotPrimes (s.2.1 g.val) Unshared
@@ -206,7 +201,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
       Finset.sum_sdiff hStoresSub
     rw [hDsEq] at h
     rw [add_comm] at h
-    exact h.symm.trans (by rw [add_comm])
+    exact h.symm.trans (by rfl)
   have hT_unshared : slotPrimes (t.2.1 g.val) Unshared
       = slotPrimes (t.2.1 g.val) (c.2.1 g) + slotPrimes (t.2.1 g.val) Dt := by
     show (∑ i ∈ Unshared, ({t.2.1 g.val i} : Multiset _))
@@ -218,7 +213,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
       Finset.sum_sdiff hPromSub
     rw [hDtEq] at h
     rw [add_comm] at h
-    exact h.symm.trans (by rw [add_comm])
+    exact h.symm.trans (by rfl)
   have hSP : pendingPrimes (s.2.2 g)
       = pendingPrimes (deleteMemoryIndices (s.2.2 g) (retrievedIndices c g))
         + slotPrimes (t.2.1 g.val) (c.2.1 g) := by

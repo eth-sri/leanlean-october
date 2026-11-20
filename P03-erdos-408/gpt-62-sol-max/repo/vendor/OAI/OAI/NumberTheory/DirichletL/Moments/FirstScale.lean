@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CanonicalFirst
 public import OAI.NumberTheory.DirichletL.Moments.Scale
 
@@ -8,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Scale
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve
@@ -19,7 +20,7 @@ def firstNominalScale (I J E : Ideal O) (K X : ℝ) : ℝ :=
     (K*(Ideal.absNorm (commonPart I J):ℝ)*(Ideal.absNorm (commonPart J I):ℝ))
 
 theorem norm_pos (I : Ideal O) (hI : I≠0) : 0<(Ideal.absNorm I:ℝ) := by
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hI)
 
 theorem active_norm_pos (I J : Ideal O) :
     0<(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ) := by

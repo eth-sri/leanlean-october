@@ -67,8 +67,7 @@ theorem marked_large_cube_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
     ((markedExpandedTerm_finite_support Ψ W hW X hX d).subset (by
       intro p hp
       by_contra hn
-      have he : markedExpandedTerm Ψ W X d p.1 p.2.1 p.2.2=0 := not_ne_iff.mp hn
-      exact hp (by simp [F,he])))
+      exact hp (by simp [F,(not_ne_iff.mp hn)])))
   let e : (Ideal O × Ideal O × Ideal O) ≃ (Ideal O × Ideal O × Ideal O) := {
     toFun := fun p => (p.2.1,p.1,p.2.2)
     invFun := fun p => (p.2.1,p.1,p.2.2)

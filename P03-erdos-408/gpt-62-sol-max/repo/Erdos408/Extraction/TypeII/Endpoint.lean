@@ -103,7 +103,6 @@ theorem endpoint_eq_sum (q cw : ℝ) (hq : q ≠ 0) (K : ℕ) (CN x : ℝ) {k : 
     exact prod_congr rfl fun c _ => hsplit c
   rw [hprod, markedWeight_eq_prod hq]
   unfold monoRest monoCoeff distExponent
-  simp only [hw]
   ring
 
 theorem card_clusterSets_le (K N' : ℕ) : ((clusterSets K N').card : ℝ) ≤ 2 ^ (K * N') := by
@@ -178,8 +177,8 @@ theorem monoRest_prime_mul {q cw : ℝ} {K N' : ℕ} {x : ℝ} {k : ℕ} (u v : 
   refine prod_congr rfl fun c _ => prod_congr rfl fun i hi => ?_
   have hsub := ((mem_clusterSets.1 hS) c).2
   have hsub₀ := ((mem_clusterSets.1 hS) c₀).2
-  have hi' : i < N' := mem_range.1 (hsub (mem_of_mem_erase hi))
-  have hd₀ : distIndex S c₀ < N' :=
+  have hi'  := mem_range.1 (hsub (mem_of_mem_erase hi))
+  have hd₀  :=
     mem_range.1 (hsub₀ (distIndex_mem ((mem_clusterSets.1 hS) c₀).1))
   refine bandWeight_prime_mul (hdisj c c₀ i (distIndex S c₀) hi' hd₀ ?_) hp h
   by_cases hc : c = c₀
@@ -211,7 +210,6 @@ theorem inertExponent_mem (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
   have h4 : 0 ≤ (i : ℝ) * (2 / logLog x) := by positivity
   have h5 : 4 / 100 / (K : ℝ) ≤ 8 / 100 / K :=
     div_le_div_of_nonneg_right (by norm_num) (by linarith)
-  have h6 : 0 ≤ 4 / 100 / (K : ℝ) := by positivity
   constructor <;> linarith
 
 /-- Distinct bands of the layout are separated by at least `1 / T`. -/
@@ -230,7 +228,7 @@ theorem inertExponent_sep (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
     nlinarith
   rcases eq_or_ne c c' with hcc | hcc
   · subst hcc
-    have hii : i ≠ i' := hne.resolve_left (fun h => h rfl)
+    have hii  := hne.resolve_left (fun h => h rfl)
     rcases lt_or_gt_of_ne hii with h | h
     · left
       have : (i : ℝ) + 1 ≤ i' := by exact_mod_cast h
@@ -269,7 +267,7 @@ theorem distExponent_gap (hK : 1 ≤ K) {N' : ℕ} (hT : 0 < logLog x)
     distExponent K x S c + 4 / 100 / K ≤ distExponent K x S c' := by
   unfold distExponent inertExponent
   have hK' : (1 : ℝ) ≤ K := by exact_mod_cast hK
-  have hd : ∀ c, distIndex S c < N' := fun c =>
+  have hd  := fun c =>
     mem_range.1 (((mem_clusterSets.1 hS) c).2 (distIndex_mem ((mem_clusterSets.1 hS) c).1))
   have hiT : (distIndex S c : ℝ) * (2 / logLog x) ≤ 4 / 100 / K := by
     have : (distIndex S c : ℝ) ≤ N' := by exact_mod_cast (hd c).le

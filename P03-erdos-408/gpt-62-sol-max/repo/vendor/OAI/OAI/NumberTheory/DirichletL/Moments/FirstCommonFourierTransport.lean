@@ -12,9 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstCommonFourierTransport
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstReduced
-open CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CenteredMomentFirstLocalization CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentFirstCommonTransport
+open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentFirstLocalization
+open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentFirstCommonTransport
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem quotient_function_heq (r r':O)(hr:r'=r)
@@ -78,14 +77,7 @@ theorem canonicalRetainedTerm_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J
     (frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K X) Z ξ)
   exact hh.symm
 
-def inactiveEquiv (I J:Ideal O):
-    CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J ≃
-      CenteredMomentFirstDiscardedEnergy.inactiveSubsets (commonPart I J) (commonPart J I):=
-  (Equiv.finsetCongr (commonEquiv I J)).subtypeEquiv (fun E=>(mappedSubset_inactive I J E).symm)
 
-@[simp] theorem inactiveEquiv_val (I J:Ideal O)
-    (E:CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J):
-    (inactiveEquiv I J E).val=mappedSubset I J E.val:=rfl
 
 theorem canonicalRetainedPair_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):

@@ -25,8 +25,7 @@ theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a :
         simpa only [map_neg,norm_neg] using hmajor w hw)
   rw [Finset.sum_image] at hh
   · exact hh
-  · intro x hx y hy hxy
-    exact neg_injective hxy
+  simp
 
 theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
@@ -75,7 +74,7 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
   calc
     _ ≤ (E₁ * (1 + ‖t‖) ^ J₁) * (E₂ * (1 + ‖t‖) ^ J₂) :=
       mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
-    _ = _ := by rw [pow_add]; ring
+    _ = _ := by ring
 
 end SevenEighths.CenteredMomentReflectedChild
 

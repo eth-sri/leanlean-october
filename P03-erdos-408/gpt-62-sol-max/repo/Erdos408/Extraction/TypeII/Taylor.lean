@@ -21,13 +21,13 @@ theorem abs_sub_le_of_isCutoff {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → 
     (hΦ : IsCutoff κ CΦ M x Φ) (a b : ℝ) :
     |Φ a - Φ b| ≤ M 1 * logLog x ^ (CΦ * 1) * |a - b| := by
   obtain ⟨hsmooth, -, -, hder⟩ := hΦ
-  have hdiff : Differentiable ℝ Φ := hsmooth.differentiable (by simp)
+  have hdiff  := hsmooth.differentiable (by simp)
   have h := Convex.norm_image_sub_le_of_norm_deriv_le (s := Set.univ) (f := Φ)
     (fun y _ => hdiff y) (fun y _ => by
       have := hder 1 y
       rwa [iteratedDeriv_one, ← Real.norm_eq_abs] at this) convex_univ
     (Set.mem_univ b) (Set.mem_univ a)
-  simpa [Real.norm_eq_abs] using h
+  simp_all
 
 /-- The derivative bound of a cutoff is nonnegative. -/
 theorem cutoff_deriv_bound_nonneg {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ}
@@ -43,7 +43,7 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
       (if (m * n : ℝ) ≤ 4 * (κ * x + 1) then
         M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) else 0) := by
   have hsupp := hΦ.2.2.1
-  have hmn1 : lam * mu < (m : ℝ) * n := mul_lt_mul'' hm1 hn1 hlam hmu
+  have hmn1  := mul_lt_mul'' hm1 hn1 hlam hmu
   have hmn2 : (m : ℝ) * n ≤ lam * mu * (1 + δ) ^ 2 := by
     calc (m : ℝ) * n ≤ lam * (1 + δ) * (mu * (1 + δ)) :=
           mul_le_mul hm2 hn2 (by positivity) (by positivity)
@@ -54,10 +54,9 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
     push_cast at h1
     split_ifs
     · have : 0 ≤ (3 * δ * (κ * x + 1) + 1) / x := by
-        have : 0 ≤ κ * x := by positivity
         positivity
       positivity
-    · exact le_rfl
+    rfl
   · -- `λμ ≤ κx + 1`
     have hlm : lam * mu ≤ κ * x + 1 := by
       rcases not_and_or.1 hz with h | h
@@ -84,7 +83,6 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
     rw [abs_le]
     have h3 : (m : ℝ) * n - lam * mu ≤ 3 * δ * (lam * mu) := by
       have : lam * mu * (1 + δ) ^ 2 - lam * mu ≤ 3 * δ * (lam * mu) := by
-        have : 0 ≤ lam * mu := by positivity
         nlinarith
       linarith
     have h4 : 3 * δ * (lam * mu) ≤ 3 * δ * (κ * x + 1) :=

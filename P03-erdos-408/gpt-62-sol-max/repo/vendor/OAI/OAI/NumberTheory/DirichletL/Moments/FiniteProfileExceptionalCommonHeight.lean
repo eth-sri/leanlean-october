@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonSource
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonSymmetry
 public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 
@@ -8,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 open CenteredMomentExceptionalAmplitudePair CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy
-open HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
+open CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy HeckeFamily
+open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 universe u
 
 def mass {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]

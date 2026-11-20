@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceWindowEnerg
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily
+open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
 local notation "O"=>ActualEisensteinCubic.O
 
 def fixedPresentationCost : ℝ:=

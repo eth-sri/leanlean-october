@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
@@ -22,7 +22,7 @@ lemma reciprocal_differentiableAt_of_nonzero (χ : Character) (s : ℂ) (h0 : s�
       · subst s
         exact HeckeReciprocal.regularizedL_ne_zero_at_one χ hχ
       · rw [HeckeReciprocal.regularizedL_eq χ h0 hs]
-        exact mul_ne_zero (sub_ne_zero.mpr hs) (hnz (by simp [hs]))
+        exact mul_ne_zero (sub_ne_zero.mpr hs) (hnz (by simp_all))
     have he : HeckeReciprocal.reciprocal χ=(fun z=>(z-1)/HeckeReciprocal.regularizedL χ z) := by
       funext z
       simp only [HeckeReciprocal.reciprocal,ite_eq_left hχ]
@@ -33,7 +33,7 @@ lemma reciprocal_differentiableAt_of_nonzero (χ : Character) (s : ℂ) (h0 : s�
       funext z
       simp only [HeckeReciprocal.reciprocal,ite_eq_right hχ]
     rw [he]
-    exact (LFunction_differentiableAt χ h0 (Or.inr hχ)).inv (hnz (by simp [hχ]))
+    exact (LFunction_differentiableAt χ h0 (Or.inr hχ)).inv (hnz (by simp_all))
 
 theorem physicalCompensatedRow_buffered_differentiableAt_x
     (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
@@ -60,7 +60,7 @@ theorem physicalCompensatedRow_buffered_differentiableAt_x
 lemma sourceMellinWeight_differentiable_x (W0 W1 : SchwartzMap ℝ ℂ)
     (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) :
     Differentiable ℂ (fun x=>sourceMellinWeight W0 W1 X Y Z x w z) := by
-  have hz : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hz  := Complex.ofReal_ne_zero.mpr hZ.ne'
   unfold sourceMellinWeight
   fun_prop (disch := exact Or.inl hz)
 
@@ -96,8 +96,8 @@ theorem buffered_x_rectangle {K : ℕ}
   let F := fun x=>continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z
   have hh : DifferentiableOn ℂ F (uIcc l r ×ℂ uIcc (-T) T) := by
     intro x hx
-    have hxlo : min l r≤x.re := hx.1.1
-    have hx' : (51/100:ℝ)≤x.re := (le_min hl hr).trans hxlo
+    have hxlo  := hx.1.1
+    have hx'  := (le_min hl hr).trans hxlo
     have hxw : 1+eps≤x.re+w.re := by
       have := (le_min (by linarith : 1+eps-w.re≤l) (by linarith : 1+eps-w.re≤r)).trans hxlo
       linarith

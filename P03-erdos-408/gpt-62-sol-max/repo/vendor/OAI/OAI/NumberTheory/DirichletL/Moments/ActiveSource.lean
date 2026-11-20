@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondLocalization
 
 @[expose] public section
@@ -101,7 +102,7 @@ theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   have hab := hH (C*a) hm hβ
   rw [map_mul,Nat.cast_mul] at hab
   refine ⟨hm,hβ,hsa,ha0,?_,?_⟩
-  · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ha0)
+  · exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (ha0)
   · exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hab)
 
 end SevenEighths.CenteredMomentActiveSource

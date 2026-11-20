@@ -63,7 +63,7 @@ theorem memoryEdgeKernel_rho {J m : ℕ} (A : Model F P J m) (n : ℕ)
     by_cases h : edgeChoiceValid A mode i s t c
     · rw [ite_eq_left h, ite_eq_left h, edgeChoiceCoefficient_rho]
       ring
-    · simp only [ite_eq_right h, mul_zero, zero_mul]
+    simp_all
   simp only [memoryEdgeKernel]
   simp_rw [hc]
   rw [← Finset.sum_mul, ← Finset.mul_sum]
@@ -96,6 +96,6 @@ theorem memoryMass_nonneg (J n : ℕ)
         · exact Finset.prod_nonneg (fun g _ => zpow_nonneg (hV g.val).le _)
       · exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ => ht g _))
     · exact Finset.prod_nonneg (fun g _ => hg g)
-  · exact le_refl 0
+  rfl
 
 end Erdos821.P3Clean

@@ -12,8 +12,6 @@ attribute [local instance] Classical.propDecidable
 namespace Erdos821.S2Root
 
 open Erdos821.Blueprint.Graph
-  hiding MemoryHistory ResiduePath TransferMode absoluteMemoryEdgeKernel
-    absoluteScaledMemoryGhostKernel
 open Erdos821.S2Core
 
 private theorem memoryHistory_norm_le_doubledWeight
@@ -45,11 +43,7 @@ private theorem reconstructed_batch_norm_sum
       ∏ i : Fin (n + 1), ∏ g : P.BigGroup,
         (Q.ghostBirthPrimes S i g).card.factorial := by
     rw [H.batchOrders_card]
-    apply Finset.prod_congr rfl
-    intro i hi
-    apply Finset.prod_congr rfl
-    intro g hg
-    simp [H, ResiduePath.reconstructedHistory, ResiduePath.reconstructedGhostChoice]
+    rfl
   calc
     _ = ∑ sigma : H.BatchOrders, ‖H.Weight rho theta‖ :=
       Finset.sum_congr rfl (fun sigma _ => hweight sigma)
@@ -76,11 +70,10 @@ private theorem path_norm_le_configuration_fiber
           ∑ sigma : (Q.val.reconstructedHistory S.val S.property y.val).BatchOrders,
             ‖((Q.val.reconstructedHistory S.val S.property y.val).reorderBatches sigma).Weight
               rho 0‖ := by
-  have hbpne : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      baselinePrime F n p.val ≠ 0 := fun g p => (hbp g p).ne'
+  have hbpne  := fun g p => (hbp g p).ne'
   have hId := Q.val.memory_fiber_sum hGhost hMark hSpan hRes hn Q.property hk hV hbpne
     rho 0 hrho
-  have hbase : ‖(bigBaseline F P n : ℂ)‖ ≤ 1 :=
+  have hbase  :=
     bigBaseline_norm_le_one F P n (fun g p => (hbp g p).le)
   have htriangle :
       ‖∑ S : {S : LifespanAssignment P n // Q.val.lifespanValid S},
@@ -170,7 +163,7 @@ private theorem validHistory_norm_sum_le_doubled_bound
     (∑ H : ValidDistinctHistory A n, ‖H.val.Weight rho 0‖) ≤
       CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n := by
   classical
-  let S : Finset (MemoryHistory A n) := Finset.univ.image (fun H : ValidDistinctHistory A n => H.val)
+  let S  := Finset.univ.image (fun H : ValidDistinctHistory A n => H.val)
   have hS : ∀ H ∈ S, H.Valid := by
     intro H hH
     obtain ⟨K, hK, rfl⟩ := Finset.mem_image.mp hH

@@ -8,11 +8,11 @@ public import Mathlib.MeasureTheory.Constructions.Polish.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve
+open CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 @[fun_prop] lemma measurable_const_cpow {α : Type*} [MeasurableSpace α]
@@ -97,8 +97,8 @@ lemma LFunction_measurable (χ : Character) : Measurable (LFunction χ) := by
   apply ((Set.finite_singleton (1:ℂ)).insert 0).countable.mono
   intro s hs
   by_contra hn
-  have h0 : s≠0 := fun h=>hn (by simp [h])
-  have h1 : s≠1 := fun h=>hn (by simp [h])
+  have h0 : s≠0 := fun h=>hn (by simp_all)
+  have h1 : s≠1 := fun h=>hn (by simp_all)
   exact hs (LFunction_differentiableAt χ h0 (Or.inl h1)).continuousAt
 
 lemma regularizedL_measurable (χ : Character) : Measurable (HeckeReciprocal.regularizedL χ) := by
@@ -106,7 +106,7 @@ lemma regularizedL_measurable (χ : Character) : Measurable (HeckeReciprocal.reg
   apply (Set.countable_singleton (0:ℂ)).mono
   intro s hs
   by_contra hn
-  exact hs (HeckeReciprocal.regularizedL_differentiableAt χ (by simpa using hn)).continuousAt
+  exact hs (HeckeReciprocal.regularizedL_differentiableAt χ (by simp_all)).continuousAt
 
 lemma reciprocal_measurable (χ : Character) : Measurable (HeckeReciprocal.reciprocal χ) := by
   have hL := LFunction_measurable χ
@@ -130,14 +130,14 @@ lemma physicalCompensatedRow_measurable {α : Type*} [MeasurableSpace α]
   · exact (((LFunction_measurable _).comp (by fun_prop)).mul
       ((continuedL_measurable _).comp hw)).mul ((reciprocal_measurable _).comp hx)
   · apply Measurable.mul
-    · exact continuedCorrection_measurable _ _ η u x w z hx hw hz
+    · solve_by_elim [continuedCorrection_measurable]
     · apply Finset.measurable_prod
       intro P hP
       have hQ : (P.val.val.absNorm:ℂ)≠0 := by
         exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr P.val.property.ne_zero)
       apply continuedCompensatedLocal_measurable _ _ _ _ x w z _ _ hx hw hz
-      · exact (measurable_const_cpow _ hQ x hx).const_mul _
-      · exact measurable_const_cpow _ hQ _ hw.neg
+      · fun_prop
+      fun_prop
 
 lemma calibratedTupleValue_measurable {α : Type*} [MeasurableSpace α] {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -150,9 +150,7 @@ lemma calibratedTupleValue_measurable {α : Type*} [MeasurableSpace α] {K : ℕ
   · apply Measurable.const_mul
     apply Finset.measurable_prod
     intro i hi
-    apply Measurable.const_mul
-    apply measurable_const_cpow _ _ _ (hz.sub measurable_const)
-    exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr (P i).property.ne_zero)
+    fun_prop
   · exact physicalCompensatedRow_measurable S hS _ _ η u x w z hx hw hz
 
 lemma calibratedTupleValue_onLines_aestronglyMeasurable {K : ℕ}

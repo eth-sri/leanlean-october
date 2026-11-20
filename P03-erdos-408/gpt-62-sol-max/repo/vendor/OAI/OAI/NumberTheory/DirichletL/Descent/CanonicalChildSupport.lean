@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalChildren
 
 @[expose] public section
@@ -13,14 +14,14 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
 open InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+variable (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
 
 include hp hg hc in
 omit [DecidableEq ι] in
 lemma canonical_source_prime_supported (i:ι):Supported (Ideal.span {p i}) :=by
-  have hn:(Ideal.span {p i}:Ideal O)≠0:=Ideal.span_singleton_eq_bot.not.mpr (hp i)
+  have hn:=Ideal.span_singleton_eq_bot.not.mpr (hp i)
   refine ⟨hn,?_⟩
   intro P hP
   obtain ⟨hprime,hle⟩:=(Ideal.mem_normalizedFactors_iff hn).mp hP
@@ -37,7 +38,7 @@ lemma canonical_supported_prod {α:Type*}(S:Finset α)(f:α→Ideal O)
     refine ⟨one_ne_zero,?_⟩
     intro P hP
     rw [UniqueFactorizationMonoid.normalizedFactors_one] at hP
-    exact (Multiset.notMem_zero P hP).elim
+    simp_all
   | @insert i S hi ih =>
     rw [Finset.prod_insert hi,supported_mul_iff]
     exact ⟨hf i (Finset.mem_insert_self _ _),ih (fun j hj=>hf j (Finset.mem_insert_of_mem hj))⟩

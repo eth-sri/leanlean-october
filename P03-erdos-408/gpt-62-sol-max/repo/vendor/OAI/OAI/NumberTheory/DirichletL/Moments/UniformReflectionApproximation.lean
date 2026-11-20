@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionApproximation
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionProfile
 
@@ -8,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentUniformReflectionApproximation
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation
-open CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive
-open EisensteinSchwartzPoisson
+open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentRetainedReflection
+open CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
+open CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
@@ -27,7 +27,6 @@ theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
   obtain ⟨K,hK,hKb⟩ := plain_rapid_bound B hB
   refine ⟨H,K*D,mul_pos hK hD,?_⟩
   intro G χ Y R hY hR
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
   have hf : ∀x : ℝ,0<x → x^(B+A)*‖paperRadialFourier G x‖≤
       D*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := by
     intro x hx
@@ -54,8 +53,7 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
   obtain ⟨H,C,hC,hbound⟩ := discarded_bound A 2 (by omega)
   refine ⟨H,C*Cscale^(3/2:ℝ),by positivity,?_⟩
   intro G χ Y Z hZ hY hYZ
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz  := zero_lt_one.trans_le hZ
   have hR : 0<Z^(xi/2) := Real.rpow_pos_of_pos hz _
   have hp : Y^2/Real.sqrt Y≤Cscale^(3/2:ℝ)*Z^(L*(3/2)) := by
     rw [normalized_power_eq Y hY 2]
@@ -97,7 +95,6 @@ theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
   refine ⟨H,D*C,mul_pos hD hC,?_⟩
   intro G S hS η ηi χ Q X Z hZ hQ hX hcap
   dsimp only
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
   have hh := hDb S hS η ηi
     (fun E I=>HeckeDyadic.polynomial χ false
       (fun x=>(discardedWeight (Z^(xi/2)) x:ℂ)*paperRadialFourier G x)
@@ -132,7 +129,7 @@ lemma retainedSchwartz_eq (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) (h
   apply tsum_congr
   intro I
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (ψ.modulus_ne_bot)
   have hN := subset_product_norm_pos D (fun P hP=>redundantSet_prime _ _ P
     ((Finset.mem_powerset.mp hD) hP))
   have hI := norm_pos I.val
@@ -169,7 +166,7 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
   let S := redundantSet χ.modulus ψ.modulus
   have hS : ∀P∈S,Prime P := redundantSet_prime _ _
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (ψ.modulus_ne_bot)
   have hcap' : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈S,P):ℝ)≤Cscale*Z^L*X := by
     have hc : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈S,P):ℝ)≤(χ.modulus.absNorm:ℝ) := by
       exact_mod_cast hcap
@@ -177,7 +174,6 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
   rw [hsplit G X (Z^(xi/2)) hX,mul_add,add_sub_cancel_left,norm_mul,hg,one_mul]
   have hb := (hCb G S hS ψ ψ.inverse χ.inverse _ X Z hZ hQ hX hcap').2
   apply hb.trans
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow (Nat.cast_nonneg _) (radical_le_original χ ψ hcap) hepsilon.le

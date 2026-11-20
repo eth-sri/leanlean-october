@@ -1,6 +1,7 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.HighRowsFiniteBounds
+public import OAI.NumberTheory.DirichletL.Detector.HighRowsTermBounds
+public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 
 @[expose] public section
 

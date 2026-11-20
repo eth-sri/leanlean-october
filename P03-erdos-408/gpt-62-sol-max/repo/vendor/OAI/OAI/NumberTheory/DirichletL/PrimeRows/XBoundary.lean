@@ -40,7 +40,7 @@ lemma coupled_gaussian_bound (z : ℂ) {l r v : ℝ} (hl : 0<l) (hv : v∈Icc l 
   apply Real.exp_le_exp.mpr
   have hre : ((((v:ℂ)+t*I)+z-1)^2).re=(v+z.re-1)^2-(t+z.im)^2 := by simp [pow_two]
   rw [hre]
-  have hvp : 0<v := hl.trans_le hv.1
+  have hvp  := hl.trans_le hv.1
   have hA : |v+z.re-1|≤|z.re|+r+1 := by
     rw [abs_le]
     constructor <;> linarith [neg_abs_le z.re,le_abs_self z.re,hv.2]
@@ -85,7 +85,7 @@ theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
       mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hZb (norm_nonneg _)) hgb
         (norm_nonneg _) (mul_nonneg (norm_nonneg _) (scaleBound_pos _ _ _).le))
         hr (norm_nonneg _) (by unfold scaleBound;positivity)
-    _ = A*(3+|t|)^2*Real.exp (-((t+z.im)^2)) := by dsimp [A];ring
+    _ = A*(3+|t|)^2*Real.exp (-((t+z.im)^2)) := by ring
     _ ≤ A*(2*(3+|z.im|)^2*(1+|t+z.im|^2))*Real.exp (-((t+z.im)^2)) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (Continuation.shifted_height_two t z.im) hA) (Real.exp_pos _).le
     _ = _ := by unfold Continuation.polynomialGaussian;ring

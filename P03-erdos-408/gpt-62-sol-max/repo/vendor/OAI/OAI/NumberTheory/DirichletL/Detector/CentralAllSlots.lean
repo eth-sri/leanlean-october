@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.CentralBranchProduct
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedSubset
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSlotSum
@@ -48,21 +49,20 @@ theorem actual_three_branch_slots (N : ℕ) (e eps c d B : ℝ)
   let L := ‖star ((calibrationForSet S hmax).residueMonoid u.val)*HeckeOrigin.continued (rowCharacter S hS u) w‖
   let U : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
   let R := Ct*rowCost S hS u a e eps ((3*i+2:ℕ)*T0)*U^eps
-  let A : Fin N→ℂ := fun j=>phaseSlot u (T j) (W j) (Y j) z
+  let A  := fun j=>phaseSlot u (T j) (W j) (Y j) z
   let E : Fin N→ℂ := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
     centralRegularError η u P.val (hs j P.val P.property) x w z
   let F : Fin N→ℂ := fun j=>∑P:T j,W j ((P.val.val.absNorm:ℝ)/Y j)*(P.val.val.absNorm:ℂ)^(z-1)*
     centralRepeatedTerm η u P.val (hs j P.val P.property) x w z
-  let yy : Fin N→ℝ := fun j=>(Y j)^(-(4/25:ℝ))
-  have hU : 1≤U := by dsimp [U];exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
-  have hUp : 1≤U^eps := Real.one_le_rpow hU heps.le
+  let yy  := fun j=>(Y j)^(-(4/25:ℝ))
+  have hU : 1≤U := by dsimp [U];exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
+  have hUp  := Real.one_le_rpow hU heps.le
   have hR : 0≤R := by dsimp [R];exact mul_nonneg (mul_nonneg hCt.le (rowCost_nonneg _ _ _ _ _ _ _)) (Real.rpow_nonneg (zero_le_one.trans hU) _)
   have hyy (j : Fin N) : 0≤yy j := Real.rpow_nonneg (zero_le_one.trans (hY j)) _
   have hE (j : Fin N) : ‖E j‖≤yy j*(Cr*U^eps) := by
     have hb := hregular η u (T j) (fun P hP=>⟨hs j P hP,hQ j P hP,hη j P hP⟩)
       (Y j) (hY j) (W j) (hWS j) (hW j) a e x w z ha ha1 he he1.le hx hw hz (hsmall j)
-    exact (norm_sum_le _ _).trans (hb.trans_eq (by dsimp [yy,U];ring))
+    exact (norm_sum_le _ _).trans (hb.trans_eq (by ring))
   have hF (J : Finset (Fin N)) : L*(∏j∈J,‖F j‖)≤R*(∏j∈J,yy j) := by
     have hb := hrepeated S hS hmax hbad u hu η twists T0 a i hT0 ha ha1 hbin T hs hdis hη hQ hsmall
       W Y hY hWS hW x w z hx hw hz hwi J

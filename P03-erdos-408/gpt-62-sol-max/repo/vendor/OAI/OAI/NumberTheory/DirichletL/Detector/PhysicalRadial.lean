@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Detector.RadialSpectral
 public import OAI.NumberTheory.DirichletL.Detector.Transformed
 
@@ -58,7 +59,7 @@ theorem markedPhysicalProbe_eq_radial_mellin (η : HeckeFamily.Character)
       simpa only [calibrationForSet_excluded] using hs
     have hK : 0<elementNorm (calibrationForSet S hS).generator*(Ideal.absNorm s.val:ℝ)*X :=
       mul_pos (mul_pos (elementNorm_pos _ (calibrationForSet S hS).generator_ne_zero)
-        (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1))) hX
+        (by exact_mod_cast Ideal.absNorm_pos_of_ne_bot (s.property.1))) hX
     simpa only [calibrationForSet_excluded] using transformedSpectralTerm_radial_mellin η S hS hSne D
       (primaryGenerator s.val) ((supported_span_primaryGenerator_iff s.val).mpr s.property) hcs
       W0 a b ha hW _ σ hK hσ _ p.1 p.2

@@ -15,7 +15,7 @@ open EisensteinTheta LatticeSummability
 
 @[simp] theorem periodicCoeff_zero {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
     periodicCoeff w (0, 0) = w (0, 0) := by
-  simp [periodicCoeff, residueEquiv, regroup, Int.divModEquiv, Int.natMod]
+  rfl
 
 theorem norm_periodicCoeff_le {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     (n : ℤ × ℤ) : ‖periodicCoeff w n‖ ≤ ∑ a, ‖w a‖ := by
@@ -25,7 +25,7 @@ theorem norm_periodicCoeff_le {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
 private theorem normForm_coordinates_eq_zero (n : ℤ × ℤ) :
     normForm n.1 n.2 = 0 ↔ n = (0, 0) := by
   rw [normForm_eq_zero_iff]
-  simp only [Int.cast_eq_zero, Prod.ext_iff]
+  simp [Int.cast_eq_zero, Prod.ext_iff]
 
 theorem theta_sub_zero_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {t : ℝ} (ht : 0 < t) :
@@ -40,7 +40,7 @@ theorem theta_sub_zero_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
   by_cases hn : n = (0, 0)
   · subst n
     simp [normForm]
-  · simp [hn]
+  simp_all
 
 theorem completed_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs : 1 < s.re) :
@@ -61,7 +61,7 @@ theorem latticeL_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     HasSum (fun n : ℤ × ℤ => periodicCoeff w n / (normForm n.1 n.2 : ℂ) ^ s)
       (latticeL w s) := by
   have hΓ := Complex.Gamma_ne_zero_of_re_pos (by linarith : 0 < s.re)
-  have hπ : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hπ  := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hpow : (Real.pi : ℂ) ^ s ≠ 0 := fun h => hπ ((Complex.cpow_eq_zero_iff _ _).mp h).1
   have h := (completed_hasSum w hs).mul_left ((Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹)
   change HasSum _ ((Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹ * completed w s)

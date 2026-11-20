@@ -11,8 +11,8 @@ noncomputable section
 
 lemma cube_scale_power (M T a : ℝ) (hT : 0 < T) (hTM : T ≤ M) (ha : (1/3 : ℝ) ≤ a) :
     (M/T)^(1/3 : ℝ) * T^a ≤ M^a := by
-  have hM : 0 < M := hT.trans_le hTM
-  have hbase : 1 ≤ M/T := (one_le_div hT).mpr hTM
+  have hM  := hT.trans_le hTM
+  have hbase  := (one_le_div hT).mpr hTM
   calc
     _ ≤ (M/T)^a * T^a := mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow_of_exponent_le hbase ha) (Real.rpow_nonneg hT.le _)
@@ -35,15 +35,14 @@ lemma extracted_linear_le (W T : ℝ) (hW : 0 ≤ W) (hWT : W^3 ≤ T) :
     W ≤ T^(1/3 : ℝ) := by
   have hh := Real.rpow_le_rpow (pow_nonneg hW 3) hWT (by norm_num : (0 : ℝ) ≤ 1/3)
   rw [← Real.rpow_natCast_mul hW] at hh
-  norm_num at hh
-  exact hh
+  simpa using hh
 
 lemma extraction_selected_shape (M N W U T ξ : ℝ) (hN : 0 ≤ N)
     (hW : 1 ≤ W) (hU : 0 ≤ U) (hT : 0 < T) (hTM : T ≤ M)
     (hWT : W^2*U ≤ T) (hWcube : W^3 ≤ T) (hξ : 1 ≤ ξ) :
     (M/T)^(1/3 : ℝ) * W * (U^ξ + N + (U*N)^(2/3 : ℝ)) ≤
       M^ξ + M^(1/3 : ℝ)*N + (M*N)^(2/3 : ℝ) := by
-  have hM0 : 0 < M := hT.trans_le hTM
+  have hM0  := hT.trans_le hTM
   have hH : 0 ≤ (M/T)^(1/3 : ℝ) := Real.rpow_nonneg (by positivity) _
   have hp : (M/T)^(1/3 : ℝ)*W*U^ξ ≤ M^ξ := by
     calc
@@ -77,14 +76,14 @@ theorem extraction_min_shape (M N X Y ξ : ℝ) (hN : 0 ≤ N)
   have hX0 : 0 < X := by linarith
   have hY0 : 0 < Y := by linarith
   have hT : 0 < X*Y^2 := by positivity
-  have hM0 : 0 < M := hT.trans_le hXY
+  have hM0  := hT.trans_le hXY
   have hH : 0 ≤ (M/(X*Y^2))^(1/3 : ℝ) := Real.rpow_nonneg (by positivity) _
   by_cases hyx : Y ≤ X
   · apply (mul_le_mul_of_nonneg_left (min_le_left _ _) hH).trans
     rw [← mul_assoc]
     exact extraction_selected_shape M N Y X (X*Y^2) ξ hN hY hX0.le hT hXY
       (by nlinarith) (by nlinarith [mul_nonneg (sub_nonneg.mpr hyx) (sq_nonneg Y)]) hξ
-  · have hxy : X ≤ Y := (lt_of_not_ge hyx).le
+  · have hxy  := (lt_of_not_ge hyx).le
     apply (mul_le_mul_of_nonneg_left (min_le_right _ _) hH).trans
     rw [← mul_assoc]
     exact extraction_selected_shape M N X Y (X*Y^2) ξ hN hX hY0.le hT hXY
@@ -98,7 +97,7 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
   have hfirst : 0 ≤ M^(1/3 : ℝ)*N := mul_nonneg (Real.rpow_nonneg hM0.le _) hN
   have hsecond : 0 ≤ M^ξ := Real.rpow_nonneg hM0.le _
   by_cases hMN : M ≤ N
-  · have hN0 : 0 < N := hM0.trans_le hMN
+  · have hN0  := hM0.trans_le hMN
     have hh := Real.rpow_le_rpow hM0.le hMN (by norm_num : (0 : ℝ) ≤ 1/3)
     have hm : M^(2/3 : ℝ) = M^(1/3 : ℝ)*M^(1/3 : ℝ) := by
       rw [← Real.rpow_add hM0]
@@ -114,7 +113,7 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg hM0.le _))
           (Real.rpow_nonneg hN _)
       _ = _ := by rw [mul_assoc, hn]
-  · have hNM : N ≤ M := (lt_of_not_ge hMN).le
+  · have hNM  := (lt_of_not_ge hMN).le
     apply le_trans _ (le_add_of_nonneg_left hfirst)
     calc
       _ ≤ (M*M)^(2/3 : ℝ) := Real.rpow_le_rpow (mul_nonneg hM0.le hN)

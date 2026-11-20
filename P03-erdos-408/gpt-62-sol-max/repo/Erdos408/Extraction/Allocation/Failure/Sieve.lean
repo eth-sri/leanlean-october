@@ -80,7 +80,7 @@ private lemma abs_card_cong_dvd_sub_le {U u : Finset ℕ} (hU : ∀ p ∈ U, p.P
     exact ⟨m, by rw [Nat.ModEq, hm, Nat.mod_eq_of_lt (hU p hp).one_lt]⟩
   choose! m hm using hinv
   set a : ℕ → ℕ := fun p => if p ∈ U then m p else 0
-  have hV : ∀ p ∈ U ∪ u, p.Prime := fun p hp => (mem_union.1 hp).elim (hU p) (hu p)
+  have hV := fun p hp => (mem_union.1 hp).elim (hU p) (hu p)
   have h := abs_card_filter_forall_modEq_sub_le (U ∪ u) hV a hAt
   have hfilt : ((Ioc A t).filter fun e => (∀ p ∈ U, e * c ≡ 1 [MOD p]) ∧ ∀ p ∈ u, p ∣ e) =
       (Ioc A t).filter fun e => ∀ p ∈ U ∪ u, e ≡ a p [MOD p] := by
@@ -116,7 +116,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
         ((S.powerset.filter (·.card ≤ R + 1)).card : ℝ) := by
   classical
   set P' := S \ U with hP'
-  have hU : ∀ p ∈ U, p.Prime := fun p hp => hS p (hUS hp)
+  have hU  := fun p hp => hS p (hUS hp)
   have hP'pr : ∀ p ∈ P', p.Prime := fun p hp => hS p (mem_sdiff.1 hp).1
   set cong : ℕ → Prop := fun e => ∀ p ∈ U, e * c ≡ 1 [MOD p] with hcong
   set tA : ℝ := (t : ℝ) - A with htA
@@ -139,7 +139,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
     · exact fun h p hp => h p (mem_sdiff.1 hp).1
     · intro h p hp hpe
       by_cases hpU : p ∈ U
-      · have h1 : e * c ≡ 0 [MOD p] := Nat.modEq_zero_iff_dvd.2 (dvd_mul_of_dvd_left hpe c)
+      · have h1  := Nat.modEq_zero_iff_dvd.2 (dvd_mul_of_dvd_left hpe c)
         have h2 := (he p hpU).symm.trans h1
         rw [Nat.ModEq, Nat.zero_mod, Nat.mod_eq_of_lt (hU p hpU).one_lt] at h2
         exact one_ne_zero h2
@@ -213,7 +213,6 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
   -- assembling
   have hPi : tA / qU * ∏ p ∈ P', (1 - (1 : ℝ) / p) = tA * (∏ p ∈ S, (1 - (1 : ℝ) / p)) / φU := by
     rw [← prod_sdiff hUS, hφU, hqU]
-    have hφ0 : ∏ p ∈ U, ((p : ℝ) - 1) ≠ 0 := by linarith
     have hq0 : ∏ p ∈ U, (p : ℝ) ≠ 0 := by linarith
     have hloc : (∏ p ∈ U, (1 - (1 : ℝ) / p)) * ∏ p ∈ U, (p : ℝ) = ∏ p ∈ U, ((p : ℝ) - 1) := by
       rw [← prod_mul_distrib]
@@ -230,7 +229,6 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
   have hε'ε : ε' ≤ ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p :=
     sum_le_sum_of_subset_of_nonneg (powersetCard_mono sdiff_subset) fun u hu _ =>
       prod_nonneg fun p _ => by positivity
-  have hε'0 : 0 ≤ ε' := sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
   have hcards : ((P'.powerset.filter (·.card ≤ R)).card : ℝ) +
       ((P'.powersetCard (R + 1)).card : ℝ) ≤ ((S.powerset.filter (·.card ≤ R + 1)).card : ℝ) := by
     rw [← Nat.cast_add, ← card_union_of_disjoint]
@@ -308,14 +306,12 @@ lemma abs_sum_Ioc_mul_le {f w : ℕ → ℝ} {A B : ℕ} (hAB : A ≤ B) {η : �
       rw [hsplit]
       refine (abs_add_le _ _).trans ?_
       rw [abs_mul, abs_of_nonneg (sub_nonneg.2 hdec)]
-      have : |F (A + (n + 1))| * (w (A + n + 1) - w (A + n + 1 + 1)) ≤
-          η * (w (A + n + 1) - w (A + n + 1 + 1)) :=
+      have  :=
         mul_le_mul_of_nonneg_right hFb (sub_nonneg.2 hdec)
       rw [show A + (n + 1) + 1 = A + n + 1 + 1 by ring]
       linarith
   obtain ⟨n, rfl⟩ : ∃ n, B = A + n := ⟨B - A, by omega⟩
   have h1 := key n le_rfl
-  have hη : 0 ≤ η := by simpa using hf A le_rfl (by omega)
   have hFB := hf (A + n) (by omega) le_rfl
   have hwB := hw0 (A + n + 1) (by omega)
   calc |∑ e ∈ Ioc A (A + n), f e * w e|
@@ -350,7 +346,6 @@ lemma abs_weighted_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (hUS : 
   have hφU0 : 0 < φU := prod_pos fun p hp => by
     have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p (hUS hp)).two_le
     linarith
-  have hε0 : 0 ≤ ε := sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
   set f : ℕ → ℝ := fun e => (if cond e then 1 else 0) - Pi / φU
   have hpart : ∀ t, A ≤ t → t ≤ B → |∑ e ∈ Ioc A t, f e| ≤ 2 * ((B : ℝ) - A) * ε / φU + N := by
     intro t hAt htB
@@ -380,7 +375,6 @@ lemma abs_weighted_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (hUS : 
       rw [sum_const, Nat.card_Ioc, nsmul_eq_mul, Nat.cast_sub hAB]
     rw [this, mul_sum]
     exact sum_le_sum hK
-  have hwA := hw0 (A + 1) (by omega)
   calc (2 * ((B : ℝ) - A) * ε / φU + N) * w (A + 1)
       = 2 * ε / φU * (((B : ℝ) - A) * w (A + 1)) + N * w (A + 1) := by ring
     _ ≤ 2 * ε / φU * (K * ∑ e ∈ Ioc A B, w e) + N * w (A + 1) := by gcongr
@@ -417,10 +411,8 @@ theorem abs_weighted_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) 
     linarith
   have hφU0 : 0 < φU := by linarith
   have hW0 : 0 ≤ W := sum_nonneg fun e he => hw0 e (mem_Ioc.1 he).1
-  have hN0 : 0 ≤ N := Nat.cast_nonneg _
   have hwA := hw0 (A + 1) (by omega)
-  have hε0 : 0 ≤ ε := sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
-  have h1 : |SU - Pi / φU * W| ≤ 2 * ε * K / φU * W + N * w (A + 1) :=
+  have h1  :=
     abs_weighted_sub_le S U hS hUS hc R hAB hw0 hw hK
   have h2 : |S0 - Pi * W| ≤ 2 * ε * K * W + N * w (A + 1) := by
     have := abs_weighted_sub_le S ∅ hS (empty_subset S) (by simp) R hAB hw0 hw hK (c := c)
@@ -449,24 +441,23 @@ theorem abs_weighted_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) 
   have h3 : |S0 - Pi * W| / φU ≤ δ₁ * (Pi * W) / φU + N * w (A + 1) := by
     rw [div_le_iff₀ hφU0]
     have : N * w (A + 1) ≤ N * w (A + 1) * φU := le_mul_of_one_le_right (by positivity) hφU1
-    have h2' : |S0 - Pi * W| ≤ δ₁ * (Pi * W) + N * w (A + 1) := h2
+    have h2'  := h2
     calc |S0 - Pi * W| ≤ δ₁ * (Pi * W) + N * w (A + 1) := h2'
       _ ≤ δ₁ * (Pi * W) / φU * φU + N * w (A + 1) * φU := by
           rw [div_mul_cancel₀ _ hφU0.ne']
           linarith
       _ = (δ₁ * (Pi * W) / φU + N * w (A + 1)) * φU := by ring
   have h4 : 2 * (δ₁ * (Pi * W) / φU) ≤ 4 * δ₁ * (S0 / φU) + 2 * N * w (A + 1) := by
-    have : δ₁ * (Pi * W) ≤ δ₁ * (2 * (S0 + N * w (A + 1))) :=
+    have  :=
       mul_le_mul_of_nonneg_left hPW hδ₁0
     have h5 : 4 * δ₁ * (N * w (A + 1)) / φU ≤ 2 * N * w (A + 1) := by
       rw [div_le_iff₀ hφU0]
-      have : 4 * δ₁ ≤ 2 := by linarith
       have hNw : 0 ≤ N * w (A + 1) := by positivity
       nlinarith
     calc 2 * (δ₁ * (Pi * W) / φU) ≤ 2 * (δ₁ * (2 * (S0 + N * w (A + 1))) / φU) := by gcongr
       _ = 4 * δ₁ * (S0 / φU) + 4 * δ₁ * (N * w (A + 1)) / φU := by ring
       _ ≤ _ := by linarith
-  have h6 : 8 * ε * K / Pi = 4 * δ₁ := by rw [hδ₁]; ring
+  have h6 : 8 * ε * K / Pi = 4 * δ₁ := by ring
   rw [h6]
   linarith
 

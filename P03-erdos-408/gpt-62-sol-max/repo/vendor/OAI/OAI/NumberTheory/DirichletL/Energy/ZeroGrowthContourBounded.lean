@@ -1,27 +1,29 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthConclusion
-public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
+public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowth
+public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthReserve
+public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthOriginal
+public import OAI.NumberTheory.DirichletL.Energy.WidthRanges
+public import OAI.NumberTheory.DirichletL.Energy.StageReserveBounded
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalRowSource QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
+open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)
     (hA:0≤A)(hB:0≤B)(hP:0≤P):
     P*(A*Z^(w+ell+d+d)+B)≤Z^ell*(P*(A*Z^(w+d+d+d)+B)):=by
-  have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hp:1≤Z^ell:=Real.one_le_rpow hZ hell
+  have hz:=zero_lt_one.trans_le hZ
+  have hp:=Real.one_le_rpow hZ hell
   have hm:Z^(w+ell+d+d)≤Z^ell*Z^(w+d+d+d):=by
     rw [←Real.rpow_add hz]
     exact Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
@@ -50,7 +52,7 @@ theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
   have hd1:d≤1:=min_le_left _ _
   have hdε:d*(Bmask+Mcap+4)≤ε/8:=by
     have hh: d≤ε/(8*(Bmask+Mcap+4)):=min_le_right _ _
-    have he: d*(8*(Bmask+Mcap+4))≤ε:=
+    have he:=
       (le_div_iff₀ (by positivity)).mp hh
     linarith
   have hL:0<L:=by dsimp only [L];linarith [le_max_right Loriginal (Mcap+Bmask+2*d)]
@@ -60,7 +62,7 @@ theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
     dsimp only [saving]
     nlinarith [mul_nonneg hB hd.le,mul_nonneg hM hd.le]
   obtain ⟨C,hC,hbound⟩:=CenteredMomentEnergyZeroGrowthReserve.ledger_bound
-    Mcap Bmask bΦ L d d d d saving ε hM hB hL.le hd hmain herr
+    Mcap Bmask bΦ L d d d d saving ε hL.le hd hmain herr
   refine ⟨d,L,saving,C,hd,hd1,hL,hs,hC,rfl,?_,?_,hbound⟩
   · dsimp only [L];linarith [le_max_left Loriginal (Mcap+Bmask+2*d)]
   · dsimp only [L];linarith [le_max_right Loriginal (Mcap+Bmask+2*d)]
@@ -91,15 +93,15 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
   filter_upwards [hsource] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro ell Q degree K hell hK hgrowth s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
-  have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hscale:Z^Loriginal≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLoriginal
+  have hz:=zero_lt_one.trans hZ.1
+  have hscale:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLoriginal
   have hh:=hZ.2 Bmask L Mcap ell Q degree K hK hgrowth hB hroom
     (by linarith) s hQ hs p t X₁ X₂ hX₁ hX₂ (hc₁.trans hscale) (hc₂.trans hscale)
   let Rcap:=max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)
   let A:=Rcap^d*(1+2*(L*Real.log Z))
   let B:=Rcap^(2*d)*Z^(-2*saving)*max 1 s.radial.scale*Z^L
   let P:=(s.puncture.radical.absNorm:ℝ)^d
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+  have hlog:=(Real.log_pos hZ.1).le
   have hA:0≤A:=by dsimp [A,Rcap];positivity
   have hBb:0≤B:=by dsimp [B,Rcap];positivity
   have hP:0≤P:=by dsimp [P];positivity

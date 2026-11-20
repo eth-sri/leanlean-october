@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.ScalarTable
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CubicEisenstein
+open GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma outerQuotient_prime_power (p : O) [(Ideal.span {p}:Ideal O).IsMaximal]
@@ -81,7 +81,7 @@ lemma bareCongruenceCoefficient_outer_one (A : O) (hA : A≠0) (H : O) :
     bareCongruenceCoefficient A 1 hA H=sexticGauss A hA H := by
   have he := barePhysicalFourier_eq A 1 hA one_ne_zero H
   rw [barePhysicalFourier_outer_one] at he
-  simpa only [Ideal.span_singleton_one, ← Ideal.one_eq_top, map_one, Nat.cast_one, one_mul] using he.symm
+  simp_all
 
 theorem bareCongruenceCoefficient_prime_power (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (n k j : ℕ) :

@@ -17,7 +17,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem frequencyReduction_comp (d n M : O) (hd : d∣n) (hn : n∣M) (x : Residue M) :
     frequencyReduction d n hd (frequencyReduction n M hn x)=frequencyReduction d M (hd.trans hn) x := by
   obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
-  simp only [frequencyReduction_mk]
+  rfl
 
 theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
     (habc : IsCoprime a (b*c)) (hbc : IsCoprime b c)
@@ -35,7 +35,7 @@ theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc
         residueGauss b hb χb (frequencyReduction b (a*(b*c)) (dvd_mul_of_dvd_right (dvd_mul_right _ _) _) h)*
         (∑ y : Residue c,G (Ideal.Quotient.mk _ (a*b)*y)*
           quotientTrace c hc (frequencyReduction c (a*(b*c)) (dvd_mul_of_dvd_right (dvd_mul_left _ _) _) h*y)) := by
-  let F : Residue (b*c) → ℂ := fun y =>
+  let F  := fun y =>
     χb (frequencyReduction b (b*c) (dvd_mul_right _ _) y)*
       G (frequencyReduction c (b*c) (dvd_mul_left _ _) y)
   let h' := frequencyReduction (b*c) (a*(b*c)) (dvd_mul_left _ _) h

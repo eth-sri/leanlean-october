@@ -1,14 +1,17 @@
 module
 
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstNeighborhood
-public import OAI.NumberTheory.DirichletL.PrimeRows.Origin
+public import OAI.NumberTheory.DirichletL.PrimeRows.Agreement
+public import OAI.NumberTheory.DirichletL.Hecke.Reciprocal
+public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
+public import OAI.NumberTheory.DirichletL.Hecke.Origin
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 local notation "O" => HeckeFamily.O

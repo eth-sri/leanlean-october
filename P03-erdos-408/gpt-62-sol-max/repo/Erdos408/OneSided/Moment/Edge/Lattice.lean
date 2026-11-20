@@ -41,7 +41,6 @@ private theorem latQ_pos {α Y : ℝ} (hY : 0 < Y) {h l : ℤ} (hne : (h, l) ≠
   by_cases hl : l = 0
   · have hh : h ≠ 0 := fun hh => hne (by rw [hh, hl])
     subst hl
-    have : (h : ℝ) ≠ 0 := by exact_mod_cast hh
     simp only [Int.cast_zero, zero_mul, add_zero, zero_div, ne_eq, OfNat.ofNat_ne_zero,
       not_false_eq_true, zero_pow]
     positivity
@@ -58,8 +57,7 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
     refine mem_erase.2 ⟨by decide, mem_product.2 ⟨mem_Icc.2 ⟨by omega, ?_⟩, mem_Icc.2 ⟨by omega,
       by omega⟩⟩⟩
     have : (1 : ℕ) ≤ H := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by positivity)).ne'
-    show (1 : ℤ) ≤ H
-    exact_mod_cast this
+    simp_all
   obtain ⟨v, hv, hmin⟩ := S.exists_min_image (fun w => latQ α Y w.1 w.2) ⟨_, h10⟩
   refine ⟨v, (mem_erase.1 hv).1, fun w hw => ?_⟩
   by_cases hwS : w ∈ S
@@ -95,7 +93,7 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
               have := mul_le_mul_of_nonneg_right hy' (abs_nonneg α)
               linarith
       have hH := Nat.le_ceil (1 + Y * |α|)
-      have : |(w.1 : ℝ)| ≤ H := hw1.trans hH
+      have  := hw1.trans hH
       rw [abs_le] at this
       rw [mem_Icc]
       constructor <;> [exact_mod_cast (by linarith : -(H : ℝ) ≤ w.1);
@@ -111,7 +109,7 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
         · have := (le_div_iff₀ hY).1 this.1
           linarith
         · exact (div_le_iff₀ hY).1 this.2 |>.trans (by linarith)
-      have : |(w.2 : ℝ)| ≤ Lb := hy'.trans (Nat.le_ceil Y)
+      have  := hy'.trans (Nat.le_ceil Y)
       rw [abs_le] at this
       rw [mem_Icc]
       constructor <;> [exact_mod_cast (by linarith : -(Lb : ℝ) ≤ w.2);
@@ -120,7 +118,7 @@ private theorem exists_latQ_min (α : ℝ) {Y : ℝ} (hY : 0 < Y) :
 /-- An integer of absolute value at most `r` is at most `⌊r⌋₊` in absolute value. -/
 private theorem int_abs_le_floor {m : ℤ} {r : ℝ} (h : |(m : ℝ)| ≤ r) : |m| ≤ (⌊r⌋₊ : ℤ) := by
   have h1 : ((m.natAbs : ℕ) : ℝ) ≤ r := by rwa [Nat.cast_natAbs, Int.cast_abs]
-  have h2 : m.natAbs ≤ ⌊r⌋₊ := Nat.le_floor h1
+  have h2  := Nat.le_floor h1
   rw [Int.abs_eq_natAbs]
   exact_mod_cast h2
 
@@ -175,7 +173,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
     have hle := hmin _ hne
     have hsY : Real.sqrt Y ≤ n := Nat.le_ceil _
     have hn1 : (n : ℝ) ≤ Real.sqrt Y + 1 := (Nat.ceil_lt_add_one (Real.sqrt_nonneg _)).le
-    have hsq : Real.sqrt Y ^ 2 = Y := Real.sq_sqrt hY0.le
+    have hsq := Real.sq_sqrt hY0.le
     have hs1 : 1 ≤ Real.sqrt Y := by rw [show (1 : ℝ) = Real.sqrt 1 by simp]; exact Real.sqrt_le_sqrt hY
     have hk : (k : ℝ) ≤ n := by exact_mod_cast hkn
     have hk0' : (0 : ℝ) < k := by exact_mod_cast hk0
@@ -333,7 +331,7 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
   -- the box sides
   set lam := Real.sqrt Λ with hlam
   have hlam0 : 0 < lam := Real.sqrt_pos.2 hΛ0
-  have hlam2 : lam ^ 2 = Λ := Real.sq_sqrt hΛ0.le
+  have hlam2 := Real.sq_sqrt hΛ0.le
   refine ⟨h₁, l₁, h₂, l₂, hdet, ⌊4 * c / lam⌋₊, ⌊3 / 2 * c * Y * lam⌋₊, ?_, ?_, ?_, ?_⟩
   · -- `A' B' ≤ (4c/λ)(3cYλ/2) = 6c²Y`
     calc (⌊4 * c / lam⌋₊ : ℝ) * ⌊3 / 2 * c * Y * lam⌋₊ ≤ (4 * c / lam) * (3 / 2 * c * Y * lam) :=
@@ -341,41 +339,39 @@ theorem exists_lattice_box {α Y c : ℝ} (hY : 1 ≤ Y) (hc : 0 < c)
             (Nat.cast_nonneg _) (by positivity)
       _ = 6 * c ^ 2 * Y := by field_simp; ring
   · -- `(4c/λ)² = 16c²/Λ ≤ 16 c² t^16 ≤ t^18`
-    have hA : (4 * c / lam) ^ 2 ≤ (t ^ 9) ^ 2 := by
-      rw [div_pow, hlam2, div_le_iff₀ hΛ0]
-      have h1 : (4 * c) ^ 2 ≤ t ^ 2 / 4 := by
-        have := pow_le_pow_left₀ (by positivity) hYc 2
-        linarith
-      have h2 : t ^ 2 * 1 ≤ t ^ 2 * (t ^ 16 * Λ) :=
-        mul_le_mul_of_nonneg_left hΛlow (by positivity)
-      have e : (t ^ 9) ^ 2 * Λ = t ^ 2 * (t ^ 16 * Λ) := by ring
-      rw [e]
-      have : 0 ≤ t ^ 2 := by positivity
+    refine (Nat.floor_le (by positivity)).trans
+      ((pow_le_pow_iff_left₀ (by positivity) (by positivity) two_ne_zero).1 ?_)
+    rw [div_pow, hlam2, div_le_iff₀ hΛ0]
+    have h1 : (4 * c) ^ 2 ≤ t ^ 2 / 4 := by
+      have := pow_le_pow_left₀ (by positivity) hYc 2
       linarith
-    exact (Nat.floor_le (by positivity)).trans
-      ((pow_le_pow_iff_left₀ (by positivity) (by positivity) two_ne_zero).1 hA)
+    have h2 : t ^ 2 * 1 ≤ t ^ 2 * (t ^ 16 * Λ) :=
+      mul_le_mul_of_nonneg_left hΛlow (by positivity)
+    have e : (t ^ 9) ^ 2 * Λ = t ^ 2 * (t ^ 16 * Λ) := by ring
+    rw [e]
+    have : 0 ≤ t ^ 2 := by positivity
+    linarith
   · -- `(3cYλ/2)² = 9c²Y²Λ/4 ≤ 45 c² Y/4 ≤ t^18`
-    have hB : (3 / 2 * c * Y * lam) ^ 2 ≤ (t ^ 9) ^ 2 := by
-      have e : (3 / 2 * c * Y * lam) ^ 2 = 9 / 4 * c ^ 2 * Y * (Y * Λ) := by
-        rw [← hlam2]
-        ring
-      rw [e]
-      have h1 : c ^ 2 ≤ t ^ 2 / 64 := by
-        have := pow_le_pow_left₀ (by positivity) hYc 2
-        linarith
-      have h2 : 9 / 4 * c ^ 2 * Y * (Y * Λ) ≤ 9 / 4 * c ^ 2 * Y * 5 :=
-        mul_le_mul_of_nonneg_left hΛup (by positivity)
-      have h3 : 9 / 4 * c ^ 2 * Y * 5 ≤ 9 / 4 * (t ^ 2 / 64) * Y * 5 := by
-        have : 0 ≤ Y := hY0.le
-        gcongr
-      have h4 : t ^ 12 ≤ t ^ 18 := pow_le_pow_right₀ ht1 (by norm_num)
-      have e2 : 9 / 4 * (t ^ 2 / 64) * Y * 5 = 45 / 256 * t ^ 12 := by rw [hYt]; ring
-      have e3 : (t ^ 9) ^ 2 = t ^ 18 := by ring
-      have h5 : 0 ≤ t ^ 12 := by positivity
-      rw [e3]
+    refine (Nat.floor_le (by positivity)).trans
+      ((pow_le_pow_iff_left₀ (by positivity) (by positivity) two_ne_zero).1 ?_)
+    have e : (3 / 2 * c * Y * lam) ^ 2 = 9 / 4 * c ^ 2 * Y * (Y * Λ) := by
+      rw [← hlam2]
+      ring
+    rw [e]
+    have h1 : c ^ 2 ≤ t ^ 2 / 64 := by
+      have := pow_le_pow_left₀ (by positivity) hYc 2
       linarith
-    exact (Nat.floor_le (by positivity)).trans
-      ((pow_le_pow_iff_left₀ (by positivity) (by positivity) two_ne_zero).1 hB)
+    have h2 : 9 / 4 * c ^ 2 * Y * (Y * Λ) ≤ 9 / 4 * c ^ 2 * Y * 5 :=
+      mul_le_mul_of_nonneg_left hΛup (by positivity)
+    have h3 : 9 / 4 * c ^ 2 * Y * 5 ≤ 9 / 4 * (t ^ 2 / 64) * Y * 5 := by
+      have : 0 ≤ Y := hY0.le
+      gcongr
+    have h4 : t ^ 12 ≤ t ^ 18 := pow_le_pow_right₀ ht1 (by norm_num)
+    have e2 : 9 / 4 * (t ^ 2 / 64) * Y * 5 = 45 / 256 * t ^ 12 := by rw [hYt]; ring
+    have e3 : (t ^ 9) ^ 2 = t ^ 18 := by ring
+    have h5 : 0 ≤ t ^ 12 := by positivity
+    rw [e3]
+    linarith
   · -- the relevant vectors lie in the box
     intro h l hl hhl
     set X := (h : ℝ) + l * α

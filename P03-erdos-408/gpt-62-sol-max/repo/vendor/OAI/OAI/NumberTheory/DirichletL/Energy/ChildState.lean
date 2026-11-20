@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Energy.State
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalChosenBlock
 public import OAI.NumberTheory.DirichletL.Moments.SecondChildRadialWidth
@@ -10,15 +11,13 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyChildState
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentEnergyState CenteredMomentSecondNonexceptionalChosenBlock
-open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentEnergyState
+open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondHeightFamily
+open CenteredMomentFirstAmplificationChoice CenteredMomentSecondExceptionalFamily
+open CenteredMomentSecondChildRadialWidth CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
+open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
 local notation "O" => HeckeFamily.O
 
 lemma ball_support : Function.support (ballProfile:ℝ→ℂ)⊆Set.Iic (2:ℝ):=by
@@ -49,31 +48,18 @@ def canonicalState (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
   base_ge_one:=hZ.le
   row_nonneg:=Real.logb_nonneg hZ hn
   character_nonneg:=Real.logb_nonneg hZ (by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot))
+    exact_mod_cast Ideal.one_le_absNorm_of_ne_bot (τ.modulus_ne_bot))
   scale_eq:=(Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (dyadicScale_pos _)).symm
   modulus_bound:=by
     rw [Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (show 0<(τ.modulus.absNorm:ℝ) by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot))]
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot (τ.modulus_ne_bot))]
   puncture_ne_zero:=hR
   puncture_bound:=hRN
   radial_support:=ball_support
   row_ne_zero:=fun _ hz=>hz.1
   nonexceptional:=canonical_mask_nonexceptional τ Q R hR n
 
-lemma canonicalState_width (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
-    (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)(hn:1≤dyadicScale (n 1)):
-    (canonicalState Z Bmask hZ τ Q R hR hRN n hn).width=
-      Real.logb Z (dyadicScale (n 1))+Real.logb Z (τ.modulus.absNorm:ℝ):=rfl
 
-lemma canonicalState_power (Z Bmask:ℝ)(hZ:1<Z)(τ:Character)(Q R:Ideal O)
-    (hR:R≠0)(hRN:(R.absNorm:ℝ)≤Z^Bmask)(n:Fin 4→ℤ)(hn:1≤dyadicScale (n 1)):
-    Z^(canonicalState Z Bmask hZ τ Q R hR hRN n hn).width=
-      (τ.modulus.absNorm:ℝ)*dyadicScale (n 1):=by
-  rw [canonicalState_width,Real.rpow_add (zero_lt_one.trans hZ),
-    Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (dyadicScale_pos _),
-    Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' (show 0<(τ.modulus.absNorm:ℝ) by
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot))]
-  ring
 
 section Actual
 variable {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroMode
 
 @[expose] public section
@@ -10,15 +11,14 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT
+open EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment FirstCauchyArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,λ₀∉Ideal.span {p i})(hinj:Function.Injective (fun i=>Ideal.span {p i}))
+  [OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p λ₀)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
   (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)(hpr:∀i,λ₀^2∣p i-1)
 
 include hinj hc hpr
@@ -50,7 +50,6 @@ theorem physical_zero_empty
     change (UniqueFactorizationMonoid.moebius (1:Ideal O):ℂ)=1
     exact_mod_cast UniqueFactorizationMonoid.moebius_one
   simp only [overlapPairWeight,hcoef,hμ,one_mul,Finset.union_empty]
-  have hempty:activeSupport (∅:Finset ι) ∅=∅:=by simp [activeSupport]
   let:IsEmpty (activeSupport (∅:Finset ι) ∅):=⟨fun ⟨x,hx⟩=>by
     simp only [activeSupport,Finset.sdiff_self,Finset.union_self,Finset.notMem_empty] at hx⟩
   simp only [Fintype.prod_empty,map_one,norm_one,Complex.ofReal_one,div_one,map_zero,norm_zero,
@@ -91,13 +90,12 @@ theorem physical_zero_sum
     split_ifs with hUT
     · apply Finset.sum_eq_zero
       intro E hE
-      have hneq:U≠T:=by
-        intro he
-        subst T
-        exact hne (by simpa using Finset.disjoint_iff_inter_eq_empty.mp hUT)
-      exact physical_zero_off_diagonal p hp hcop hg hinj hc hpr Ψ j σ W Φ Z D m G U T E
+      refine physical_zero_off_diagonal p hp hcop hg hinj hc hpr Ψ j σ W Φ Z D m G U T E
         (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hU) Finset.disjoint_sdiff)
-        (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hT) Finset.disjoint_sdiff) hUT hneq
+        (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hT) Finset.disjoint_sdiff) hUT ?_
+      intro he
+      subst T
+      exact hne (by simpa using Finset.disjoint_iff_inter_eq_empty.mp hUT)
     · rfl
   · simp
 

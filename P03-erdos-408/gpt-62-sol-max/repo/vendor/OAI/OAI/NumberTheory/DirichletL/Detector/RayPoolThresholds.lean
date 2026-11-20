@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical PrincipalSignalComparison ProbePrincipalResidueActual
@@ -30,16 +30,15 @@ theorem power_pool_thresholds {ι : Type*} [Fintype ι]
     ht.eventually (eventually_gt_atTop (η.modulus.absNorm:ℝ)),
     hs.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1))] with Z hZ h480 hmod hsmall
   have hZ0 : 0<Z := by linarith
-  have hmono (j : ι) : c*Z^ellMin≤c*Z^(ell j) := mul_le_mul_of_nonneg_left
+  have hmono (j : ι)  := mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le hZ (hell j)) hc.le
   refine ⟨hZ,h480,hsmall.le,fun j=>⟨h480.trans (hmono j),hmod.trans_le (hmono j)⟩,?_⟩
   intro j P hP
   have hp := pool_norm_bounds C S hc.le hd (Real.rpow_pos_of_pos hZ0 _) P hP
-  have hn : c*Z^ellMin<(P.val.absNorm:ℝ) := (hmono j).trans_lt (by simpa only [mul_comm] using hp.1)
+  have hn  := (hmono j).trans_lt (by simpa only [mul_comm] using hp.1)
   exact ⟨hn.le,prime_coprime_of_norm_gt η P (hmod.trans hn),(mem_pool C S c d _ P).mp hP |>.2.2.2⟩
 
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 

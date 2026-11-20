@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceCharacter
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainRelativeClass
-open HeckeFamily CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentInductionEnergy
+open HeckeFamily CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentHeckeSlots
+open CenteredMomentRetainedEnergy CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 local instance:IsPrincipalIdealRing O:=IsCyclotomicExtension.Rat.three_pid K
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 

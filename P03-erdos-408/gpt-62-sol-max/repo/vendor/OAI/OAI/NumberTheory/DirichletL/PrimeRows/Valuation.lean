@@ -32,8 +32,8 @@ theorem unitPart_ne_zero (u : FreeRow) (p : O) (hp : Prime p) : unitPart u p hp�
 theorem multiplicity_lt_six (u : FreeRow) (p : O) (hp : Prime p) : multiplicity p u.val<6 := by
   let P : Ideal O := Ideal.span {p}
   have hP0 : P≠0 := Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero
-  have hP : Prime P := Ideal.prime_of_isPrime hP0 (Ideal.isPrime_span_singleton_of_prime hp)
-  have hb : (Ideal.span {unitPart u p hp}:Ideal O)≠0 :=
+  have hP  := Ideal.prime_of_isPrime hP0 (Ideal.isPrime_span_singleton_of_prime hp)
+  have hb  :=
     Ideal.span_singleton_eq_bot.not.mpr (unitPart_ne_zero u p hp)
   have he : (Ideal.span {u.val}:Ideal O)=P^(multiplicity p u.val)*Ideal.span {unitPart u p hp} := by
     conv_lhs => rw [(unitPart_spec u p hp).1]

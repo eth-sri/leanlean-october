@@ -1,6 +1,7 @@
 module
 
-public import Erdos821.S2.Births
+public import Erdos821.S2.Definitions
+public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 
 /-! Distinctness on performed addresses as a signed permutation sum. -/
 
@@ -60,8 +61,8 @@ theorem performed_value_preserving_sign_sum {α : Type*} [Fintype α] [Decidable
       constructor
       · intro i hi
         by_contra hn
-        have hfix : σ i = i := by simpa only [cond, ite_eq_right hn] using h i
-        exact Equiv.Perm.mem_support.mp hi hfix
+        refine Equiv.Perm.mem_support.mp hi ?_
+        simpa only [cond, ite_eq_right hn] using h i
       · intro i
         by_cases hi : i ∈ performed
         · exact (show σ i ∈ performed ∧ value (σ i) = value i from by
@@ -90,7 +91,7 @@ theorem performed_value_preserving_sign_sum {α : Type*} [Fintype α] [Decidable
       intro i _
       rw [hentry]
       exact ite_eq_left (hc i)
-    · have hc : ¬ ∀ i, cond σ i := fun h => he ((hcond σ).mp h)
+    · have hc  := fun h => he ((hcond σ).mp h)
       obtain ⟨i, hi⟩ := not_forall.mp hc
       rw [ite_eq_right he]
       apply Finset.prod_eq_zero (Finset.mem_univ i)

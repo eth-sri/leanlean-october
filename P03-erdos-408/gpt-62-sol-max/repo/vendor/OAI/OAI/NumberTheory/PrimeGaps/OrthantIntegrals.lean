@@ -1,6 +1,12 @@
 module
 
-public import OAI.NumberTheory.PrimeGaps.LevelMoments
+public import OAI.NumberTheory.PrimeGaps.Indices
+public import Mathlib.Data.Nat.ChineseRemainder
+public import Mathlib.NumberTheory.Harmonic.Bounds
+public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
+public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+public import Mathlib.MeasureTheory.Integral.Pi
+public import Mathlib.Topology.UniformSpace.Uniformizable
 public import Mathlib.Data.Int.Star
 
 @[expose] public section
@@ -11,9 +17,8 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
 
 def divisorMultiplicity (k n : ℕ) : ℕ := (ArithmeticFunction.zeta ^ k) n
 
@@ -35,9 +40,8 @@ theorem reciprocal_divisor_sum_le (f : ℕ → ℝ) (hf : ∀ n, 0 ≤ f n) (Q :
     obtain ⟨hdq,hq0⟩ := Nat.mem_divisors.mp hd
     have hd0 : 0 < d := Nat.pos_of_dvd_of_pos hdq hq1
     have hdle : d ≤ q := Nat.le_of_dvd hq1 hdq
-    have hdivpos : 0 < q/d := Nat.div_pos hdle hd0
     exact Finset.mem_product.mpr ⟨Finset.mem_Icc.mpr ⟨hd0, hdle.trans hqQ⟩,
-      Finset.mem_Icc.mpr ⟨hdivpos, (Nat.div_le_self q d).trans hqQ⟩⟩
+      Finset.mem_Icc.mpr ⟨(Nat.div_pos hdle hd0), (Nat.div_le_self q d).trans hqQ⟩⟩
   have he_inj : Set.InjOn e s := by
     rintro ⟨q,d⟩ hx ⟨q',d'⟩ hy he
     obtain ⟨hq,hd⟩ := Finset.mem_sigma.mp hx
@@ -82,7 +86,7 @@ theorem sum_divisorMultiplicity_reciprocal_le (k Q : ℕ) :
   | zero =>
     by_cases hQ : Q = 0
     · subst Q; simp
-    · have hQ1 : 1 ≤ Q := Nat.one_le_iff_ne_zero.mpr hQ
+    · have hQ1  := Nat.one_le_iff_ne_zero.mpr hQ
       simp [divisorMultiplicity, ArithmeticFunction.one_apply, ite_div, hQ1]
   | succ k ih =>
     have h := reciprocal_divisor_sum_le (fun n => (divisorMultiplicity k n : ℝ))

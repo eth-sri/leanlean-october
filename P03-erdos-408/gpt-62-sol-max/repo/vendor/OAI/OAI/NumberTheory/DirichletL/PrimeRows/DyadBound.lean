@@ -39,7 +39,7 @@ theorem calibrated_physical_row_dyad (K : ℕ) (e δ a b r B : ℝ)
     simpa only [A,ProbeSelectedPrimeSums.annularPower,Real.one_rpow] using (lt_of_lt_of_le zero_lt_one hh)
   refine ⟨256*C*A,by positivity,?_⟩
   intro η U hU R hR T hT hdis Y hY W hWS hWB x w z hx hxβ hw hz
-  let F : FreeRow→ℝ := fun u=>∑P:(∀i,T i),‖calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
+  let F  := fun u=>∑P:(∀i,T i),‖calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
     (fun i=>hT i (P i).val (P i).property) W Y x w z‖
   let D : ℝ := C*(η.modulus.absNorm:ℝ)^δ*(∏i,(Y i)^r)*(3+|x.im|)^2*(3+|w.im|)^2
   have hYP : 0≤∏i,(Y i)^r := Finset.prod_nonneg fun i _=>Real.rpow_nonneg (by linarith [hY i]) _
@@ -47,7 +47,6 @@ theorem calibrated_physical_row_dyad (K : ℕ) (e δ a b r B : ℝ)
   have hF (u : FreeRow) (hu : u∈R) : F u≤D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(3/5+δ) := by
     have hh := hmain η u (hR u hu).1 T hT hdis Y hY W hWS hWB x w z hx hxβ hw hz
     apply hh.trans_eq
-    dsimp [D]
     ring
   have heq (u : FreeRow) :
       (∑P:(∀i,T i),‖frequencyWeight z ⟨u.val,u.property.1⟩*

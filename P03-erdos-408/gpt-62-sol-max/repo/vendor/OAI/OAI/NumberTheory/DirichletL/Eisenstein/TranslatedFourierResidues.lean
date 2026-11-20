@@ -2,6 +2,8 @@ module
 
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspAverage
 
+public import OAI.NumberTheory.DirichletL.Eisenstein.UpperStripIdentity
+
 @[expose] public section
 
 namespace OAI
@@ -11,77 +13,16 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
 open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
@@ -92,7 +33,7 @@ lemma period_integral_fourier_translation (f:ℂ→ℂ)
     (∫z in periodDomain,f (z+b)*ShortDraftTrace.breveE (-cuspFrequency h*z))=
       ShortDraftTrace.breveE (cuspFrequency h*b)*
         ∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency h*z) := by
-  let g : ℂ→ℂ := fun z=>f z*ShortDraftTrace.breveE (-cuspFrequency h*z)
+  let g  := fun z=>f z*ShortDraftTrace.breveE (-cuspFrequency h*z)
   have hg : ∀(n:Eis)(z:ℂ),g (z+3*eisEmbedding n)=g z := by
     intro n z
     dsimp only [g]
@@ -145,27 +86,19 @@ lemma translatedCuspFourier_residue_scaled_of_initial (h:Eis) (M N:levelTwo) (c:
       c*∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (sourceComplexMatrix N • w)*cuspFourierPhase h w∂hyperbolicVolume) :
     translatedCuspFourier h M cubicEisensteinResidue=
       c*translatedCuspFourier h N cubicEisensteinResidue := by
-  let f : ℂ→ℂ := translatedCuspFamily h M 2 3 (by norm_num) (by norm_num)
-  let g : ℂ→ℂ := fun s=>c*translatedCuspFamily h N 2 3 (by norm_num) (by norm_num) s
+  let f  := translatedCuspFamily h M 2 3 (by norm_num) (by norm_num)
+  let g  := fun s=>c*translatedCuspFamily h N 2 3 (by norm_num) (by norm_num) s
   let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
   have hf : AnalyticOnNhd ℂ f domain := fun s hs=>
     translatedCuspFamily_analyticAt_nonreal h M 2 3 (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne'
   have hg : AnalyticOnNhd ℂ g domain := fun s hs=>analyticAt_const.mul
     (translatedCuspFamily_analyticAt_nonreal h N 2 3 (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne')
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s:ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hev : f=ᶠ[𝓝 (5+Complex.I:ℂ)]g := by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
+  have heq := eqOn_of_upperStrip hf hg (by norm_num) (by
+    intro s hre him
     dsimp only [f,g]
-    rw [translatedCuspFamily_initial h M 2 3 (by norm_num) (by norm_num) (by norm_num) s hs.1 hs.2,
-      translatedCuspFamily_initial h N 2 3 (by norm_num) (by norm_num) (by norm_num) s hs.1 hs.2]
-    exact he s hs.1 hs.2
-  have heq := hf.eqOn_of_preconnected_of_eventuallyEq hg hconvex.isPreconnected hstart hev
+    rw [translatedCuspFamily_initial h M 2 3 (by norm_num) (by norm_num) (by norm_num) s hre him,
+      translatedCuspFamily_initial h N 2 3 (by norm_num) (by norm_num) (by norm_num) s hre him]
+    exact he s hre him)
   have hl := (translatedCuspFamily_residue_limit h M 2 3 (by norm_num) (by norm_num)).comp
     upperVertical_tendsto_cubic_punctured
   have hr := ((translatedCuspFamily_residue_limit h N 2 3 (by norm_num) (by norm_num)).const_mul c).comp
@@ -256,9 +189,6 @@ lemma oppositeFrequency_cross_identity (h:Eis) :
       (fun s=>translatedCuspFamily (3*(9*h)) oppositeSource 2 3 (by norm_num) (by norm_num) s*
         cuspWhittakerHeightFactor s h) {s:ℂ|1<s.re ∧ 0<s.im} := by
   let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
   have hf : AnalyticOnNhd ℂ (fun s=>translatedCuspFamily h oppositeSource 2 3
       (by norm_num) (by norm_num) s*cuspWhittakerHeightFactor s (3*(9*h))) domain := by
     intro s hs
@@ -271,20 +201,12 @@ lemma oppositeFrequency_cross_identity (h:Eis) :
     exact (translatedCuspFamily_analyticAt_nonreal (3*(9*h)) oppositeSource 2 3
       (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne').mul
       (cuspWhittakerHeightFactor_analyticAt h s hs.1)
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s:ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
-  have hev : (fun s=>translatedCuspFamily h oppositeSource 2 3 (by norm_num) (by norm_num) s*
-      cuspWhittakerHeightFactor s (3*(9*h)))=ᶠ[𝓝 (5+Complex.I:ℂ)]
-      (fun s=>translatedCuspFamily (3*(9*h)) oppositeSource 2 3 (by norm_num) (by norm_num) s*
-        cuspWhittakerHeightFactor s h) := by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
+  exact eqOn_of_upperStrip hf hg (by norm_num) (by
+    intro s hre him
     rw [translatedCuspFamily_initial h oppositeSource 2 3 (by norm_num) (by norm_num)
-      (by norm_num) s hs.1 hs.2,opposite_cusp_fourier_average s (by linarith [hs.1]),
-      translatedCuspFamily_opposite_initial (9*h) s hs.1 hs.2]
-    ring
-  exact hf.eqOn_of_preconnected_of_eventuallyEq hg hconvex.isPreconnected hstart hev
+      (by norm_num) s hre him,opposite_cusp_fourier_average s (by linarith),
+      translatedCuspFamily_opposite_initial (9*h) s hre him]
+    ring)
 
 theorem translatedCuspFourier_unramified_residue (h:Eis) :
     translatedCuspFourier h oppositeSource cubicEisensteinResidue=
@@ -309,20 +231,16 @@ theorem translatedCuspFourier_unramified_residue (h:Eis) :
       · norm_num
       · simpa using ht)
     linear_combination (((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*he
-  have heq : translatedCuspFourier h oppositeSource cubicEisensteinResidue*
-      cuspWhittakerHeightFactor (4/3:ℂ) (3*(9*h))=
-      translatedCuspFourier (3*(9*h)) oppositeSource cubicEisensteinResidue*
-        cuspWhittakerHeightFactor (4/3:ℂ) h := tendsto_nhds_unique_of_eventuallyEq hl hr hev
   unfold unramifiedGaussResidue
   rw [div_mul_eq_mul_div]
-  exact (eq_div_iff (cuspWhittakerHeightFactor_center_ne_zero (3*(9*h)))).mpr heq
+  exact (eq_div_iff (cuspWhittakerHeightFactor_center_ne_zero (3*(9*h)))).mpr (tendsto_nhds_unique_of_eventuallyEq hl hr hev)
 
 def principalArithmeticResidue (h:Eis) : ℂ :=
   if h=0 then constantArithmeticResidue else nonzeroScatteringResidue h
 
 lemma kernelCuspFourier_principal_residue (h:Eis) :
     kernelCuspFourier h cubicEisensteinResidue=
-      ((9*Real.sqrt 3/2:ℝ):ℂ)*principalArithmeticResidue h*
+      (periodCovolume : ℂ)*principalArithmeticResidue h*
         cuspWhittakerHeightFactor (4/3:ℂ) h := by
   by_cases hh:h=0
   · subst h
@@ -335,11 +253,11 @@ lemma kernelCuspFourier_principal_residue (h:Eis) :
 def sourceArithmeticResidue (h:Eis) : ℂ :=
   if ShortDraftTrace.breveE (cuspFrequency h)=1 then
     (4:ℂ)⁻¹*(principalArithmeticResidue h+
-      3*unramifiedGaussResidue (9*h)/((9*Real.sqrt 3/2:ℝ):ℂ))
+      3*unramifiedGaussResidue (9*h)/(periodCovolume : ℂ))
   else 0
 
 lemma unramifiedGaussResidue_zero :
-    unramifiedGaussResidue 0=((9*Real.sqrt 3/2:ℝ):ℂ)*constantArithmeticResidue := by
+    unramifiedGaussResidue 0=(periodCovolume : ℂ)*constantArithmeticResidue := by
   apply mul_right_cancel₀ (cuspWhittakerHeightFactor_center_ne_zero (0:Eis))
   have ht:=translatedCuspFourier_unramified_residue (0:Eis)
   simp only [mul_zero] at ht
@@ -358,9 +276,7 @@ lemma sourceArithmeticResidue_zero : sourceArithmeticResidue 0=constantArithmeti
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open Filter MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 def horizontalPhaseMultiplier (freq direction : ℂ) : ℂ :=
   (2*Real.pi*Complex.I)*(freq*direction+star (freq*direction))
@@ -383,7 +299,7 @@ lemma brevePhase_hasDerivAt (freq z direction : ℂ) (t : ℝ) :
 lemma horizontalPhaseMultiplier_norm (freq direction : ℂ) :
     ‖horizontalPhaseMultiplier freq direction‖≤4*Real.pi*‖freq‖*‖direction‖ := by
   have hc : ‖(2*Real.pi*Complex.I:ℂ)‖=2*Real.pi := by
-    norm_num [norm_mul,abs_of_pos Real.pi_pos]
+    norm_num
   unfold horizontalPhaseMultiplier
   rw [norm_mul,hc]
   calc
@@ -413,9 +329,6 @@ local notation "O" => ActualEisensteinCubic.O
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
 

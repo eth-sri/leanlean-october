@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Detector.FinalAssembly
+public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyFixedHigh
 public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
 
 @[expose] public section

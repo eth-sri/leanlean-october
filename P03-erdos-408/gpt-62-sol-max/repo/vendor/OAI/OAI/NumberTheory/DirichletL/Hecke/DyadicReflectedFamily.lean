@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ComplexConjugate
+open scoped Classical ComplexConjugate
 open Complex Set
 namespace SevenEighths.HeckeDyadicReflection
 open HeckeFamily HeckePresentation HeckeFiniteDeletion
@@ -37,7 +37,7 @@ theorem LFunction_eq_of_mask_entire (χ ψ : Character) (hχ : χ.residue≠1)
     (hmask : ∀ J : Ideal O, idealCoeff χ J=
       if IsCoprime J χ.modulus then idealCoeff ψ J else 0) (s : ℂ) :
     LFunction χ s=LFunction ψ s*factors χ.modulus ψ s := by
-  have hψ : ψ.residue≠1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  have hψ  := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
   have ha := LFunction_entire_nonprincipal χ hχ
   have hb : Differentiable ℂ (fun z => LFunction ψ z*factors χ.modulus ψ z) :=
     (LFunction_entire_nonprincipal ψ hψ).mul (factors_differentiable _ _)
@@ -59,7 +59,7 @@ theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
   obtain ⟨C,hC,hbound⟩ := family_reflected_bound
   refine ⟨C,hC,?_⟩
   intro χ ψ hp hχ hmask s hl hr
-  have hψ : ψ.residue≠1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  have hψ  := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
   have h := hbound ψ hp hψ s hl hr
   have hd : factors χ.modulus ψ (1-conj s)≠0 := factors_ne_zero _ _ (by simp; linarith)
   have he : LFunction ψ (1-conj s)=LFunction χ (1-conj s)*(factors χ.modulus ψ (1-conj s))⁻¹ := by

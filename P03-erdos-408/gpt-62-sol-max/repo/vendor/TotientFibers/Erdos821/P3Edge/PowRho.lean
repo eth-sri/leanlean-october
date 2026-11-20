@@ -6,7 +6,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -15,8 +14,8 @@ lemma pow_mul_rho_bound_aux (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (A :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℕ, (z : ℝ) ^ A * rho ^ z ≤ C := by
   classical
   have hlog : Real.log rho < 0 := by
-    have h1 : Real.log rho < Real.log 1 := Real.log_lt_log hrho0 hrho1
-    simpa using h1
+    have h1  := Real.log_lt_log hrho0 hrho1
+    simp_all
   let δ : ℝ := -Real.log rho / 2
   have hδ : 0 < δ := by
     unfold δ
@@ -26,7 +25,7 @@ lemma pow_mul_rho_bound_aux (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (A :
     have h := Real.add_one_le_exp 1
     norm_num at h
     linarith
-  have he1pos : 0 < e1 := lt_trans zero_lt_one he1
+  have he1pos  := lt_trans zero_lt_one he1
   let C0 : ℝ := (A / (e1 * δ)) ^ A
   have hC0pos : 0 < C0 := by
     unfold C0
@@ -56,10 +55,6 @@ lemma pow_mul_rho_bound_aux (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (A :
       rw [lhs, rhs] at h1
       exact h1
     have hz_nonneg : (0:ℝ) ≤ (z : ℝ) := Nat.cast_nonneg _
-    have hC_nonneg : (0:ℝ) ≤ (A / (e1 * δ)) * Real.exp (δ * (z : ℝ) / (A : ℝ)) := by
-      apply mul_nonneg
-      · apply div_nonneg hApos.le (mul_nonneg he1pos.le hδ.le)
-      · exact (Real.exp_pos _).le
     have hpow := pow_le_pow_left₀ hz_nonneg hz_le A
     have hexpA : ((A / (e1 * δ)) * Real.exp (δ * (z : ℝ) / (A : ℝ))) ^ A =
         C0 * Real.exp (δ * (z : ℝ)) := by
@@ -76,10 +71,7 @@ lemma pow_mul_rho_bound_aux (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (A :
   have rho_eq : ∀ z : ℕ, rho ^ z = Real.exp (Real.log rho * (z : ℝ)) := by
     intro z
     have h1 : rho ^ ((z : ℝ)) = Real.exp (Real.log rho * (z : ℝ)) := Real.rpow_def_of_pos hrho0 _
-    have h2 : rho ^ ((z : ℝ)) = rho ^ z := Real.rpow_natCast rho z
-    rw [h2] at h1
-    -- h1 : rho^z (Nat pow, via rpow_natCast? Actually h2 says rpow = Nat pow, so rw h2 at h1 replaces rpow with Nat pow? Wait h1 LHS is rpow, h2 LHS is rpow, RHS Nat pow. rw h2 at h1 replaces rpow in h1 with Nat pow, giving Nat pow = exp. Good.
-    exact h1
+    simp_all
   -- Combine: z^A * rho^z ≤ C0 * exp(δz) * exp(log rho * z) = C0 * exp((δ+log rho)z) = C0 * exp(log rho/2 * z) ≤ C0
   refine ⟨C0, hC0pos, fun z => ?_⟩
   have hz := key z
@@ -98,8 +90,7 @@ lemma pow_mul_rho_bound_aux (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (A :
         -- exp((δ+log rho)z) ≤ 1 since (δ+log rho) = log rho/2 <0 and z≥0 => exponent ≤0
         have hexp_nonpos : (δ + Real.log rho) * (z : ℝ) ≤ 0 := by
           have hsum : δ + Real.log rho = Real.log rho / 2 := by
-            unfold δ
-            ring_nf
+            ring
           rw [hsum]
           apply mul_nonpos_of_nonpos_of_nonneg
           · linarith
@@ -123,14 +114,14 @@ lemma pow_mul_rho_bound (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (Amax : 
   by_cases hMax : Amax = 0
   · subst hMax
     refine ⟨1, zero_lt_one, fun a ha z => ?_⟩
-    have ha0 : a = 0 := Nat.le_zero.mp ha
+    have ha0  := Nat.le_zero.mp ha
     subst ha0
     simp
     -- 1*rho^z ≤1 since rho^z ≤1 (as 0<rho≤1? Actually rho<1, rho^z ≤1)
     have hrho_le : rho ^ z ≤ (1:ℝ) := pow_le_one₀ hrho0.le hrho1.le
-    simpa using hrho_le
+    simp_all
   · -- Amax ≥1
-    have hAmax_pos : 1 ≤ Amax := Nat.one_le_iff_ne_zero.mpr hMax
+    have hAmax_pos  := Nat.one_le_iff_ne_zero.mpr hMax
     obtain ⟨Cmax, hCmax_pos, hCmax⟩ := pow_mul_rho_bound_aux rho hrho0 hrho1 Amax hAmax_pos
     refine ⟨1 + Cmax, by linarith, fun a ha z => ?_⟩
     have hz_a_le : (z : ℝ) ^ a ≤ 1 + (z : ℝ) ^ Amax := by
@@ -141,14 +132,12 @@ lemma pow_mul_rho_bound (rho : ℝ) (hrho0 : 0 < rho) (hrho1 : rho < 1) (Amax : 
           exact pow_le_one₀ le_rfl zero_le_one
         have hnonneg : (0:ℝ) ≤ (z : ℝ) ^ Amax := pow_nonneg (Nat.cast_nonneg _) _
           -- Actually z=0 here, but still nonneg; use generic nonneg with hz0? No, (z:ℝ)=0, so (z)^Amax ≥0 via pow_nonneg of 0? Still holds via Nat.cast_nonneg? Wait (z:ℝ)=0, but pow_nonneg needs 0≤base, which holds since base=0 (via hz0? Actually base is (z:ℝ)=0, 0≤0 true). Use le_of_eq hz0.symm? Simpler: exact pow_nonneg _ _ with base nonneg via le_of_eq? Let's just use positivity of 1+...: 1+... ≥1 ≥0^a? Actually h0a gives ≤1, and 1 ≤1+... since ...≥0? Need ...≥0 to get 1 ≤1+... . ... = (z)^Amax ≥0 (since base≥0? Base is (z:ℝ), which could be 0, still ≥0? Since (z:ℝ)≥0 always via Nat.cast_nonneg, even if =0, still ≥0. Good, so ...≥0 via pow_nonneg of Nat.cast_nonneg, independent of hz0. Good.
-        have h1A : (0:ℝ) ≤ (z : ℝ) ^ Amax := pow_nonneg (Nat.cast_nonneg _) _
         linarith
       · -- z≠0, so z≥1 as Nat? Actually (z:ℝ)≠0 => z≠0 => z≥1 => (z:ℝ)≥1
         have hz_ge : (1:ℝ) ≤ (z : ℝ) := by
-          have hzn : 1 ≤ z := Nat.one_le_iff_ne_zero.mpr (fun h => hz0 (by simp [h]))
+          have hzn : 1 ≤ z := Nat.one_le_iff_ne_zero.mpr (fun h => hz0 (by simp_all))
           exact Nat.one_le_cast.mpr hzn
-        have hpow_le : (z : ℝ) ^ a ≤ (z : ℝ) ^ Amax := pow_le_pow_right₀ hz_ge ha
-        have h1A : (0:ℝ) ≤ (z : ℝ) ^ Amax := pow_nonneg (Nat.cast_nonneg _) _
+        have hpow_le  := pow_le_pow_right₀ hz_ge ha
         linarith
     have hrho_le_one : rho ^ z ≤ (1:ℝ) := pow_le_one₀ hrho0.le hrho1.le
     calc (z : ℝ) ^ a * rho ^ z

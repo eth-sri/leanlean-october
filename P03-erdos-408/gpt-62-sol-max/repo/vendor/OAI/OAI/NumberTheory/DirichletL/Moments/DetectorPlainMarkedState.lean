@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate Topology ContDiff
+open scoped Classical BigOperators SchwartzMap ComplexConjugate
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMarkedState
@@ -21,8 +21,8 @@ open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainCapacity
 open CenteredMomentDetectorPlainSlotProfile CenteredMomentDetectorEnergyInitialState
 open CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
-open ConcretePrimeRowBridge ProbeHighRowFamily
+open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge
+open ProbeHighRowFamily
 local notation "O" => HeckeFamily.O
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
@@ -78,7 +78,7 @@ theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
 theorem plain_length_eq [NeZero M]
     (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U):
     length U (U^F.m)=F.m := by
-  have hm:0≤F.m:=(F.lengths hU).2.2.2.2
+  have hm:=(F.lengths hU).2.2.2.2
   rw [length,max_eq_right (Real.one_le_rpow hU.le hm),
     Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
 
@@ -134,8 +134,8 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
   intro rows hrows d hd a ε tstar T allowance i B hB hdata hprofile hwidth hupper hreal
     bin label J K hne selected hselected F hcap η₀
   have hdpos:0<d:=by linarith
-  have hU:1<Z^d:=Real.one_lt_rpow hz.1 hdpos
-  have hη:(η₀.modulus.absNorm:ℝ)≤(Z^d)^δ:=hz.2 label d hd
+  have hU:=Real.one_lt_rpow hz.1 hdpos
+  have hη:=hz.2 label d hd
   let state:=initialState η₀ (internalQ (sourceFixedIdeal S) η₀) radialMajorant bΦ
     (Z^d) δ hU.le hδ.le hs radialMajorant_nonneg hη
   refine ⟨state,rfl,rfl,rfl,rfl,rfl,rfl,rfl,?_,?_,?_⟩

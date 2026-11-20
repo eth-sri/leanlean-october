@@ -38,9 +38,7 @@ theorem sum_interval_extension {E : Type*} [AddCommMonoid E]
       symm
       calc
         _ = ∑ n ∈ s, if n ∈ s then f n else 0 := by
-          apply Finset.sum_congr rfl
-          intro n hn
-          simp [hn]
+          simp
         _ = _ := Finset.sum_subset him (fun n _ hn => by simp [hn])
 
 /-- The prebuilt additive large sieve on an arbitrary integer interval, with

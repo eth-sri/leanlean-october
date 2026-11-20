@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
@@ -24,6 +24,12 @@ def Profiles.control {lo hi:ℝ} (p:Profiles lo hi) (R:Finset (ℕ×ℕ)) : ℝ 
 
 lemma Profiles.control_nonneg {lo hi:ℝ} (p:Profiles lo hi) (R:Finset (ℕ×ℕ)) : 0≤p.control R :=
   mul_nonneg (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+
+lemma Profiles.control_mono {lo hi : ℝ} (p : Profiles lo hi) {S T : Finset (ℕ × ℕ)}
+    (h : S ⊆ T) : p.control S ≤ p.control T :=
+  mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
+    (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
+    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
 
 variable {lo hi:ℝ}
 def ProfileAdmissible {ι:Type u} [Fintype ι] (s:Data ι) (p:Profiles lo hi)

@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyInputParentCapacity
-open CenteredMomentEnergyBands CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyBands CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
 variable {ι:Type*} [Fintype ι]
 
 lemma raw_log_le_length (Z X:ℝ)(hZ:1<Z)(hX:0<X):
@@ -23,7 +22,7 @@ lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
     length Z X=max 0 (Real.logb Z X) := by
   by_cases hx:1≤X
   · rw [length,max_eq_right hx,max_eq_right (Real.logb_nonneg hZ hx)]
-  · have hh:X≤1:=le_of_not_ge hx
+  · have hh:=le_of_not_ge hx
     have hl:Real.logb Z X≤0 := by
       simpa using Real.logb_le_logb_of_le hZ hX hh
     rw [length,max_eq_left hh,Real.logb_one,max_eq_left hl]
@@ -31,7 +30,7 @@ lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
 theorem postmask_length (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
     length Z (max 1 X/D)=length Z X-min (Real.logb Z D) (length Z X) := by
   have hp:0<max 1 X:=lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd:0<D:=zero_lt_one.trans_le hD
+  have hd:=zero_lt_one.trans_le hD
   rw [length_eq_max_log Z _ hZ (div_pos hp hd),Real.logb_div hp.ne' hd.ne']
   change max 0 (length Z X-Real.logb Z D)=_
   by_cases h:Real.logb Z D≤length Z X
@@ -41,7 +40,7 @@ theorem postmask_length (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
 lemma postmask_length_le (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
     length Z (max 1 X/D)≤length Z X := by
   rw [postmask_length Z X D hZ hD]
-  have hm:0≤min (Real.logb Z D) (length Z X):=
+  have hm:=
     le_min (Real.logb_nonneg hZ hD) (length_nonneg Z X hZ)
   linarith
 

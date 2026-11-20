@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityParents
 public import OAI.NumberTheory.DirichletL.Inversion.PrioritySecondSource
 
@@ -11,15 +12,14 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityPhysical
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InversePrioritySecondSource
-open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment
+open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
+open InversePrioritySecondSource InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
-variable {Jo : ℕ} (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable {Jo : ℕ} (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
@@ -88,10 +88,9 @@ theorem whole_signed_source_full
     (mem_wholeAssignedParents p (fun x=>extra x.cube) source negative J lists y).mp hy
   rw [forget_attach]
   apply congrArg (coefficient p J a w (attach p J (x,q))* ·)
-  have hquot : (attach p J (x,q)).quotient=sourceIdeal p (quotientSupport p (attach p J (x,q))) := by
-    rw [quotientSupport_attach p hinj];rfl
-  exact whole_parent_full p hp hcop hg hinj hc hpr extra pool negative Ψ m slots J lists a
-    om lo hi hlo hs X t Y hX hY r core R label (attach p J (x,q)) hquot
+  refine whole_parent_full p hp hcop hg hinj hc hpr extra pool negative Ψ m slots J lists a
+    om lo hi hlo hs X t Y hX hY r core R label (attach p J (x,q)) ?_
+  rw [quotientSupport_attach p hinj];rfl
 
 end SevenEighths.InverseMomentWholePriorityPhysical
 

@@ -13,9 +13,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Phys
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
-open Erdos821.S2Phys
+open Erdos821.Blueprint.Graph Erdos821.S2Core Erdos821.S2Phys
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
@@ -49,20 +47,19 @@ theorem offset_succ_eq_step_sub_tail {A : Model F P J m} {n : ℕ}
     simp only [Fin.val_succ, Nat.add_lt_add_iff_right]
     split_ifs <;> simp
   rw [Finset.sum_congr rfl (fun e _ => h e), Finset.sum_neg_distrib]
-  simp [sub_eq_add_neg]
+  rfl
 
 theorem pathEdgeDelta_head {A : Model F P J m} {n : ℕ} (Q : ResiduePath A (n + 1))
     (f : Bool) (x : ℤ) :
     pathEdgeDelta A f (x, Q.labels 0) (edgeOf Q 0) = cond f (Q.step 0) (-Q.step 0) := by
-  cases f <;> simp [pathEdgeDelta, pathEdgeSource, edgeOf, ResiduePath.step,
-    ResiduePath.source, edgeForward, edgeDelta]
+  cases f <;> rfl
 
 theorem orient_zero (f : Bool) (n : ℕ) : orient f (0 : Fin (n + 1)) = f := by
-  cases f <;> simp [orient, edgeForward]
+  cases f <;> rfl
 
 theorem orient_succ (f : Bool) {n : ℕ} (i : Fin n) : orient f i.succ = orient (!f) i := by
   have h := edgeForward_succ_flip i
-  have h2 : edgeForward i.castSucc = edgeForward i := by simp [edgeForward]
+  have h2 : edgeForward i.castSucc = edgeForward i := by rfl
   cases f <;> simp [orient, h, h2]
 
 theorem vtx_zero {A : Model F P J m} {n : ℕ} (f : Bool) (x : ℤ) (Q : ResiduePath A n) :
@@ -87,7 +84,6 @@ theorem kernelProduct_succ_unfold (A : Model F P J m) (n : ℕ) (Q : ResiduePath
           (x + pathEdgeDelta A f (x, Q.labels 0) (edgeOf Q 0), (residuePathTail Q).labels 0) := by
   rw [← pathDataHead_residuePathToPathData A n (residuePathTail Q)]
   simp only [residuePathToPathData, pathDataKernelProduct]
-  rw [ite_eq_left trivial]
   rfl
 
 theorem kernelProduct_eq_prod (A : Model F P J m) :
@@ -95,7 +91,7 @@ theorem kernelProduct_eq_prod (A : Model F P J m) :
       pathDataKernelProduct A f n (residuePathToPathData A n Q) (x, Q.labels 0) =
         ∏ i : Fin n, pathEdgeTerm A (orient f i) (vtx f x Q i.castSucc) (vtx f x Q i.succ)
           (edgeOf Q i)
-  | 0, Q, f, x => by simp [pathDataKernelProduct]
+  | 0, Q, f, x => by rfl
   | n + 1, Q, f, x => by
       have ih := kernelProduct_eq_prod A n (residuePathTail Q) (!f)
         (x + cond f (Q.step 0) (-Q.step 0))
@@ -281,11 +277,11 @@ theorem damping_prod_eq_pathFactor (A : Model F P J m) {n : ℕ} (Q : ResiduePat
     (z : ℤ) (hV : ∀ j, vertexPhysical Q z j) :
     ∏ i : Fin (n + 1), A.damping (z + Q.offset i.castSucc) * A.damping (z + Q.offset i.succ) =
       P.pathFactor (n + 1) (visitQ F.q (n + 1)) Q.offset Q.active z := by
-  let a : Fin (n + 2) → ℝ := fun j => A.damping (z + Q.offset j)
+  let a  := fun j => A.damping (z + Q.offset j)
   have h1 : ∏ i : Fin (n + 1), a i.castSucc =
       ∏ j : Fin (n + 2), a j ^ (if j = Fin.last (n + 1) then 0 else 1) := by
     rw [Fin.prod_univ_castSucc (fun j => a j ^ (if j = Fin.last (n + 1) then 0 else 1))]
-    simp [Fin.castSucc_lt_last, ne_of_lt]
+    simp
   have h2 : ∏ i : Fin (n + 1), a i.succ =
       ∏ j : Fin (n + 2), a j ^ (if j = 0 then 0 else 1) := by
     rw [Fin.prod_univ_succ (fun j => a j ^ (if j = 0 then 0 else 1))]
@@ -303,14 +299,10 @@ theorem damping_prod_eq_pathFactor (A : Model F P J m) {n : ℕ} (Q : ResiduePat
   unfold visitQ
   by_cases h0 : j = 0
   · subst h0
-    have hl : (0 : Fin (n + 2)) ≠ Fin.last (n + 1) := by
-      intro h
-      have := congrArg Fin.val h
-      simp at this
-    simp [hl]
+    simp
   · by_cases hl : j = Fin.last (n + 1)
     · subst hl
-      simp [h0]
+      simp
     · have hv : ¬ (j.val = 0 ∨ j.val = n + 1) := by
         rintro (h | h)
         · exact h0 (Fin.ext h)
@@ -341,9 +333,8 @@ theorem term_eq_succ (A : Model F P J m) {n : ℕ} (Q : ResiduePath A (n + 1)) (
       vertexPhysical Q z i.succ) → ∀ j, vertexPhysical Q z j := by
     intro h j
     rcases Fin.eq_castSucc_or_eq_last j with ⟨i, rfl⟩ | rfl
-    · exact (h i).1
-    · rw [← Fin.succ_last]
-      exact (h (Fin.last n)).2
+    · simp_all
+    · exact (h (Fin.last n)).2
   by_cases hV : ∀ j, vertexPhysical Q z j
   · have hmass : A.stateMass (z, Q.labels 0) = P.markMass (J + F.ell) := by
       unfold Model.stateMass

@@ -25,8 +25,8 @@ theorem prime_norm_ge_two (P : Ideal O) (hp : Prime P) : 2 ≤ Ideal.absNorm P :
 theorem primeMass_nonneg (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) :
     0 ≤ primeMass P δ := by
   apply inv_nonneg.mpr
-  have hn : (1:ℝ) < Ideal.absNorm P := by exact_mod_cast (prime_norm_ge_two P hp)
-  exact (sub_pos.mpr (Real.one_lt_rpow hn hδ)).le
+  refine (sub_pos.mpr (Real.one_lt_rpow ?_ hδ)).le
+  exact_mod_cast (prime_norm_ge_two P hp)
 
 theorem primeMass_le_fixed (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) :
     primeMass P δ ≤ ((2:ℝ)^δ-1)⁻¹ := by
@@ -68,9 +68,7 @@ theorem uniform_primeMass_product (δ : ℝ) (hδ : 0 < δ) :
         (fun P hP => primeMass_nonneg P (hp P (Finset.mem_inter.mp hP).1) δ hδ) hs
       _ = B^(S∩small).card := by simp
       _ ≤ _ := pow_le_pow_right₀ hB (Finset.card_le_card Finset.inter_subset_right)
-  have hright : (∏ P ∈ S\small,primeMass P δ) ≤ 1 :=
-    Finset.prod_le_one₀ (fun P hP => primeMass_nonneg P (hp P (Finset.mem_sdiff.mp hP).1) δ hδ) hl
-  exact (mul_le_mul hleft hright (Finset.prod_nonneg
+  exact (mul_le_mul hleft (Finset.prod_le_one₀ (fun P hP => primeMass_nonneg P (hp P (Finset.mem_sdiff.mp hP).1) δ hδ) hl) (Finset.prod_nonneg
     (fun P hP => primeMass_nonneg P (hp P (Finset.mem_sdiff.mp hP).1) δ hδ)) (by positivity)).trans_eq (mul_one _)
 
 theorem local_power_sum (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) (K : ℕ) :
@@ -78,16 +76,15 @@ theorem local_power_sum (P : Ideal O) (hp : Prime P) (δ : ℝ) (hδ : 0 < δ) (
   let q : ℝ := (Ideal.absNorm P:ℝ)^δ
   have hNP : (1:ℝ)<Ideal.absNorm P := by exact_mod_cast prime_norm_ge_two P hp
   have hq : 1 < q := Real.one_lt_rpow hNP hδ
-  have hq0 : 0 < q := zero_lt_one.trans hq
-  have hr0 : 0 ≤ q⁻¹ := inv_nonneg.mpr hq0.le
-  have hr1 : q⁻¹ < 1 := inv_lt_one_of_one_lt₀ hq
+  have hq0  := zero_lt_one.trans hq
+  have hr0  := inv_nonneg.mpr hq0.le
+  have hr1  := inv_lt_one_of_one_lt₀ hq
   have hsum := ((hasSum_geometric_of_lt_one hr0 hr1).mul_left q⁻¹).summable.sum_le_tsum
     (Finset.range K) (fun n _ => mul_nonneg hr0 (pow_nonneg hr0 n))
   rw [((hasSum_geometric_of_lt_one hr0 hr1).mul_left q⁻¹).tsum_eq] at hsum
   have he (n : ℕ) : ((Ideal.absNorm P:ℝ)^(n+1))^(-δ)=q⁻¹*(q⁻¹)^n := by
     rw [← Real.rpow_natCast_mul (by linarith : (0:ℝ)≤Ideal.absNorm P),mul_comm,
       Real.rpow_mul_natCast (by linarith : (0:ℝ)≤Ideal.absNorm P),Real.rpow_neg (by linarith),pow_succ]
-    dsimp only [q]
     ring
   simp_rw [he]
   apply hsum.trans_eq

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set MeasureTheory Complex
 namespace SevenEighths.CenteredMomentPlainGlobalBound
 open HeckeFamily HeckeDyadic
@@ -48,7 +48,7 @@ open HeckeFamily HeckeDyadic
       ‖series χ false ((x:ℂ)+t*I+shift 0 freq)‖≤K*(1+|t|)^2):
     ‖polynomial χ false W D 0 freq‖≤(1/(2*Real.pi))*
       (C*K*Real.pi+3*C*K+C*HeckeReciprocalBound.bound 2*Real.pi):=by
-  have hD0:0<D:=zero_lt_one.trans_le hD
+  have hD0:=zero_lt_one.trans_le hD
   have hm4 (x:ℝ)(hx:x∈Icc (1/2:ℝ) 2)(t:ℝ):
       (1+|t|)^4*‖mellin W ((x:ℂ)+t*I)‖≤C:=by
     apply le_trans _ (hm x hx t)
@@ -61,10 +61,10 @@ open HeckeFamily HeckeDyadic
       ‖series χ false ((x:ℂ)+y*I+shift 0 freq)‖≤K*(1+D)^2:=by
     simpa only [hy] using hs x hx y
   have hlo:=horizontal_join_bound χ false W D 0 freq (1/2) 2 (-D) C (K*(1+D)^2) 4
-    hD (by norm_num) hC (by positivity) (fun x hx=>hm4 x hx (-D))
+    hD (by norm_num) hC (fun x hx=>hm4 x hx (-D))
     (fun x hx=>hg x hx (-D) (by simp [abs_of_nonneg hD0.le]))
   have hhi:=horizontal_join_bound χ false W D 0 freq (1/2) 2 D C (K*(1+D)^2) 4
-    hD (by norm_num) hC (by positivity) (fun x hx=>hm4 x hx D)
+    hD (by norm_num) hC (fun x hx=>hm4 x hx D)
     (fun x hx=>hg x hx D (abs_of_nonneg hD0.le))
   have htail:=absolute_tail_bound χ false W D 2 0 freq C D 4 hD0 (by norm_num) hC hD0.le
     (hm _ (by norm_num))
@@ -72,7 +72,7 @@ open HeckeFamily HeckeDyadic
     have hp:D^(3/2:ℝ)≤D^(2:ℝ):=Real.rpow_le_rpow_of_exponent_le hD (by norm_num)
     rw [Real.rpow_two] at hp
     nlinarith
-  have hratio:D^(3/2:ℝ)/(1+D)^2≤1:=(div_le_one (by positivity)).mpr hpower
+  have hratio:=(div_le_one (by positivity)).mpr hpower
   have hratio4:D^(3/2:ℝ)/(1+D)^4≤1:=by
     apply (div_le_one (by positivity)).mpr
     apply hpower.trans

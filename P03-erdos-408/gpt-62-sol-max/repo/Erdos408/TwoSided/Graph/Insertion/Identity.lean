@@ -98,7 +98,6 @@ theorem integrable_and_integral_mul_term {x q₀ : ℝ} (hx : 0 < x) (hq₀ : 0 
           q₀ ^ (groupPrimeCount P (n + D) - (J + 1) * Fintype.card ι) : ℝ) : ℂ)) := by
   obtain ⟨hn₁, -⟩ := mem_dyadSource hn
   have hn0 : (0 : ℝ) < n := by linarith
-  have hD' : (0 : ℝ) < D := by exact_mod_cast hD
   set y : ℝ := n / (x * D) with hy
   have hy0 : 0 < y := by positivity
   set e₁ := groupPrimeCount P n - (J + 1) * Fintype.card ι
@@ -199,7 +198,7 @@ theorem pairwiseDisjoint_dyadSource (s : Finset ℕ) :
 theorem exists_mem_dyads {x : ℝ} (hx : 0 < x) {n : ℕ} (hn₁ : 2 * √x ≤ n) (hn₂ : (n : ℝ) ≤ x ^ 2)
     (hn₀ : 0 < n) : ∃ m ∈ dyads x, n ∈ dyadSource ((2 : ℝ) ^ m) := by
   set m := Nat.log 2 n
-  have h₁ : 2 ^ m ≤ n := Nat.pow_log_le_self 2 hn₀.ne'
+  have h₁  := Nat.pow_log_le_self 2 hn₀.ne'
   have h₂ : n < 2 ^ (m + 1) := Nat.lt_pow_succ_log_self (by norm_num) n
   have h₁' : (2 : ℝ) ^ m ≤ n := by exact_mod_cast h₁
   have h₂' : (n : ℝ) < 2 * 2 ^ m := by
@@ -266,13 +265,13 @@ theorem sum_Icc_cutoffTerm_eq_sum_dyads {x q₀ κ : ℝ} (hx : 0 < x) (hκ : 0 
     intro n hn hn'
     by_contra hne
     obtain ⟨h₁, h₂⟩ := hsupp n hne
-    have hn0 : (0 : ℝ) < n := hpos.trans_le h₁
+    have hn0  := hpos.trans_le h₁
     refine hn' (Finset.mem_inter.2 ⟨Finset.mem_Icc.2 ⟨by exact_mod_cast hn0, ?_⟩, hn⟩)
     exact Nat.le_floor h₂
   · intro n hn hn'
     by_contra hne
     obtain ⟨h₁, h₂⟩ := hsupp n hne
-    have hn0 : (0 : ℝ) < n := hpos.trans_le h₁
+    have hn0  := hpos.trans_le h₁
     obtain ⟨m, hm, hnm⟩ := exists_mem_dyads hx (hxκ.trans h₁) h₂ (by exact_mod_cast hn0)
     exact hn' (Finset.mem_inter.2 ⟨hn, Finset.mem_biUnion.2 ⟨m, hm, hnm⟩⟩)
 
@@ -306,7 +305,6 @@ theorem integrable_and_integral_mul_patternPairing {x q₀ κ : ℝ} (hx : 0 < x
   -- the target `n + D` lies in `S'_X`
   obtain ⟨h₁, -⟩ := hΨ _ hne
   obtain ⟨-, hn₂⟩ := mem_dyadSource hn
-  have hD' : (0 : ℝ) < edgeProduct C p b := by exact_mod_cast hD
   have hxD : 0 < x * edgeProduct C p b := by positivity
   rw [le_div_iff₀ hxD] at h₁
   have h₃ : x * edgeProduct C p b ≤ κ * n := by
@@ -314,7 +312,6 @@ theorem integrable_and_integral_mul_patternPairing {x q₀ κ : ℝ} (hx : 0 < x
     rwa [← mul_assoc, mul_inv_cancel₀ hκ.ne', one_mul] at this
   have h₄ : (edgeProduct C p b : ℝ) < X := by
     by_contra h
-    have h' := not_lt.1 h
     nlinarith
   rw [dyadTarget, Finset.mem_Ico]
   refine ⟨(Finset.mem_Ico.1 hn).1.trans (Nat.le_add_right _ _), Nat.lt_ceil.2 ?_⟩
@@ -340,7 +337,7 @@ theorem eventually_insertion_conditions (C₀ κ : ℝ) (hκ : 1 < κ) (J : ℕ)
     Real.tendsto_log_atTop.eventually_ge_atTop (2 * |Real.log κ|),
     Real.tendsto_log_atTop.eventually ho] with x hx h2κ h4κ hL1 hLκ hlo
   set L := Real.log x
-  have hT0 : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hT0  := Real.log_nonneg hL1
   refine ⟨hx, h2κ, ?_, hL1, hT0, ?_⟩
   · have hs : 2 * κ ≤ √x := Real.le_sqrt_of_sq_le (by nlinarith)
     rw [le_div_iff₀ hκ0]
@@ -367,8 +364,7 @@ theorem eventually_insertion_conditions (C₀ κ : ℝ) (hκ : 1 < κ) (J : ℕ)
 theorem eventually_sum_cutoffTerm_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 0 < q₀) (hκ : 1 < κ)
     (J : ℕ) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big =>
         ∀ (N : ℕ) (C : Fin N → ι → Finset (Fin J))
           (K : Fin N → (ι → Fin (J + 1) → ℕ) → (ι → Fin (J + 1) → ℕ) → (ι → Fin J → ℕ) → ℂ)
           (F G : ℕ → ℝ) (Ψ : ℝ → ℝ) (a : ℝ → ℂ),
@@ -415,8 +411,6 @@ theorem eventually_sum_cutoffTerm_eq (q₀ c₀ C₀ vlo vhi κ : ℝ) (hq₀ : 
   have hB : B ^ (Fintype.card ι * J) ≤ x / κ := by
     rw [← Real.exp_nat_mul, ← Real.exp_log hx, ← Real.exp_log hκ0, ← Real.exp_sub]
     refine Real.exp_le_exp.2 ?_
-    have hp : 0 ≤ L ^ (0.46 : ℝ) := Real.rpow_nonneg (by linarith) _
-    have hJ : (0 : ℝ) ≤ J := Nat.cast_nonneg J
     have h₁ : (Fintype.card ι : ℝ) * J * L ^ (0.46 : ℝ) ≤
         2 * C₀ * T * J * L ^ (0.46 : ℝ) := by gcongr
     have h₂ : 2 * C₀ * T * J * L ^ (0.46 : ℝ) ≤ 2 * J * |C₀| * T * L ^ (0.46 : ℝ) := by

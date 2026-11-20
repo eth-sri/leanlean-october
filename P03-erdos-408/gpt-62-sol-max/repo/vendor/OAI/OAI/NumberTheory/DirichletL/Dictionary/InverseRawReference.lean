@@ -12,14 +12,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical BigOperators SchwartzMap
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve
-open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod
-open InverseInitialRayAttachment InverseInitialProfileBounds
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment ActualEisensteinCubic
+open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalCoefficientClass
+open CanonicalQuadraticSieve InverseInitialRawDictionary InverseInitialConjugateEnergy
+open InverseInitialExcludedPeriod InverseInitialRayAttachment InverseInitialProfileBounds
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy
 open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
 open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
@@ -55,9 +54,9 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
   let Ctotal:=((T.card:ℝ)+1)^2*C
   refine ⟨Ctotal,max Hq Hg,by dsimp [Ctotal];positivity,lt_max_of_lt_left hHq,?_⟩
   intro t H D hH hD hcapacity rows hrows
-  have hHq':Hq≤H:=(le_max_left _ _).trans hH
+  have hHq':=(le_max_left _ _).trans hH
   obtain ⟨hHp,hgeom⟩:=hg H ((le_max_right _ _).trans hH)
-  have hHpos:0<H:=zero_lt_one.trans hHp
+  have hHpos:=zero_lt_one.trans hHp
   have hWt:∀x,childLogTest W t x≠0→x≤b:=by
     intro x hx
     exact (hs ((mul_ne_zero_iff.mp hx).1)).2
@@ -84,8 +83,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
       (reflectionExcludedPrimes_bad (deletedPeriod (basePeriod data)))
-    let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by
-      rw [poolPrimary_span F hF i];infer_instance
+    let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=poolPrimary_maximal F hF
     have hf:initialFunction data (childLogTest W t) H b Btree 2 D 0 0 j=
         originalTotalPolynomial F 1 (idealCoeff (deletedBase data)).toMonoidHom
           (fun _=>1) (childLogTest W t) H r 0:=by

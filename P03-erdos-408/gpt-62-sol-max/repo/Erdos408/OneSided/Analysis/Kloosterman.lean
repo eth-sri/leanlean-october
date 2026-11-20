@@ -52,7 +52,7 @@ theorem add_one_le_rpow_pow {ε : ℝ} (hε : 0 < ε) :
       ((a : ℝ) + 1 ≤ B * ((p : ℝ) ^ ε) ^ a) ∧
       ((2 : ℝ) ^ (1 / ε) ≤ p → (a : ℝ) + 1 ≤ ((p : ℝ) ^ ε) ^ a) := by
   set c := Real.log 2 * ε
-  have hc : 0 < c := mul_pos (Real.log_pos one_lt_two) hε
+  have hc  := mul_pos (Real.log_pos one_lt_two) hε
   refine ⟨max 1 c⁻¹, le_max_left _ _, fun p a hp => ⟨?_, fun hP => ?_⟩⟩
   · -- `p^ε ≥ 2^ε = e^c`, and `(e^c)^a ≥ 1 + a c`
     have h2 : Real.exp c ≤ (p : ℝ) ^ ε := by
@@ -161,7 +161,7 @@ theorem card_filter_natCast_mul_eq_zero_le (n : ℕ) :
     #{C : ZMod m | (n : ZMod m) * C = 0} ≤ Nat.gcd n m := by
   have hm := NeZero.ne m
   have hg : 0 < Nat.gcd n m := Nat.gcd_pos_of_pos_right _ (Nat.pos_of_ne_zero hm)
-  have hgm : m / Nat.gcd n m ∣ m := Nat.div_dvd_of_dvd (Nat.gcd_dvd_right n m)
+  have hgm  := Nat.div_dvd_of_dvd (Nat.gcd_dvd_right n m)
   calc #{C : ZMod m | (n : ZMod m) * C = 0}
       ≤ #{C : ZMod m | m / Nat.gcd n m ∣ C.val} := by
         refine card_le_card fun C hC => mem_filter.2 ⟨mem_univ _, ?_⟩
@@ -323,7 +323,7 @@ theorem kloosterman_eq_kloostermanZMod (h k : ℕ) :
   · have hu : (h : ZMod m) * (u : ZMod m) + k * ((u⁻¹ : (ZMod m)ˣ) : ZMod m) =
         ((h * (u : ZMod m).val + k * (((u : ZMod m).val : ZMod m)⁻¹).val : ℕ) : ZMod m) := by
       push_cast
-      simp only [ZMod.natCast_zmod_val, ZMod.inv_coe_unit]
+      simp
     rw [hu, ZMod.stdAddChar_apply, ZMod.toCircle_natCast]
     push_cast
     ring_nf
@@ -404,9 +404,7 @@ theorem totient_mul_norm_pow_four_le (h k : ℕ) :
       · linear_combination e₁
       · linear_combination (-((s : ZMod m) * s₀)) * e₂ + (k * s₀ : ZMod m) * hs -
           (k * s : ZMod m) * hs₀
-    · simp only [not_exists] at hp
-      rw [filter_false_of_mem fun s _ => hp s, card_empty]
-      exact Nat.zero_le _
+    simp_all
   have hF : ∀ p, 0 ≤ F p := fun p => by positivity
   calc (m.totient : ℝ) * ‖kloostermanZMod m h k‖ ^ 4 = ∑ s, F (f s) := by
         simp only [F, f, kloostermanZMod_mul_units, sum_const, card_univ,

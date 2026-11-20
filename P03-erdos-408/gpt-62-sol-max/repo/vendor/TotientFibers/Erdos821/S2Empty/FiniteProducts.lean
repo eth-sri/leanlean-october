@@ -17,7 +17,7 @@ theorem sum_pi_prod {ι : Type*} [Fintype ι] [DecidableEq ι] {β : ι → Type
   classical
   calc
     _ = ∑ x ∈ Fintype.piFinset (fun i => (Finset.univ : Finset (β i))),
-        ∏ i, f i (x i) := by simp [Fintype.piFinset_univ]
+        ∏ i, f i (x i) := by rfl
     _ = _ := by
       rw [← Finset.prod_univ_sum (fun i => (Finset.univ : Finset (β i))) f]
 
@@ -31,17 +31,14 @@ def zeroCoordinatesEquiv {α : Type*} [DecidableEq α] {β : α → Type*}
   toFun x := (Equiv.piEquivPiSubtypeProd S β x.1).2
   invFun z := ⟨(Equiv.piEquivPiSubtypeProd S β).symm ((fun _ => 0), z), by
     intro a ha
-    simp [Equiv.piEquivPiSubtypeProd, ha]
+    simp_all
   ⟩
   left_inv x := by
     apply Subtype.ext
     funext a
-    by_cases ha : S a
-    · simp [Equiv.piEquivPiSubtypeProd, ha, x.2 a ha]
-    · simp [Equiv.piEquivPiSubtypeProd, ha]
+    aesop
   right_inv z := by
-    funext a
-    simp [Equiv.piEquivPiSubtypeProd, a.2]
+    simp
 
 
 end Erdos821.S2Empty

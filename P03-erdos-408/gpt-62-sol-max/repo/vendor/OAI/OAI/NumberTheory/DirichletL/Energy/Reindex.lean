@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.SlotHeight
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyReindex
 open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
 local notation "O"=>HeckeFamily.O

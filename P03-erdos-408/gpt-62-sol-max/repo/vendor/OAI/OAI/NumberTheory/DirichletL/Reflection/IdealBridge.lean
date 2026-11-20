@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.Branch
+public import OAI.NumberTheory.DirichletL.Reflection.Brackets
 
 @[expose] public section
 
@@ -19,7 +19,7 @@ theorem admissible_primeIndex_product (K : Ideal Eis) (hK : Admissible K) :
     (∏ P : PrimeIndex K, P.val) = K := by
   have hn := (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hK.1).mp hK.2.1
   have hv : (CompletedGauss.primeSupport K).val = UniqueFactorizationMonoid.normalizedFactors K := by
-    simpa only [CompletedGauss.primeSupport, Multiset.toFinset_val] using hn.dedup
+    exact hn.dedup
   calc
     _ = ∏ P ∈ CompletedGauss.primeSupport K, P := Finset.prod_coe_sort _ _
     _ = (CompletedGauss.primeSupport K).val.prod := (Finset.prod_val _).symm

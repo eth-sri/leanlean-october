@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentScale
 open CenteredMomentSmooth EisensteinSchwartzPoisson
 

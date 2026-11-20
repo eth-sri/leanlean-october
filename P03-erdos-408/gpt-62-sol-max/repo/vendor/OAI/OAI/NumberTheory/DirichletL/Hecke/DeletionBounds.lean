@@ -52,7 +52,6 @@ theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
     ‖EulerFactors.factor N a s‖ ≤ localBound σ ∧
       ‖(EulerFactors.factor N a s)⁻¹‖ ≤ localBound σ := by
   have hδ : (2 : ℝ)^(-σ) < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  have hδ0 : 0 ≤ (2 : ℝ)^(-σ) := Real.rpow_nonneg (by norm_num) _
   have ht := term_bound hσ hN ha hs
   have hl : 1-(2 : ℝ)^(-σ) ≤ ‖EulerFactors.factor N a s‖ := by
     have hh := norm_sub_le (1-a*(N : ℂ)^(-s)) (-a*(N : ℂ)^(-s))
@@ -165,7 +164,7 @@ theorem primeSet_card (M : Ideal O) :
   unfold SmoothMobiusCorrection.primeSet
   rw [Finset.card_image_iff.mpr ?_, Finset.card_attach]
   intro P hP Q hQ h
-  exact Subtype.ext (congrArg (fun R : SmoothMobiusCorrection.PrimeIdeal => R.val) h)
+  simp_all
 
 theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (M : Ideal O) (ψ : Character) (s : ℂ),

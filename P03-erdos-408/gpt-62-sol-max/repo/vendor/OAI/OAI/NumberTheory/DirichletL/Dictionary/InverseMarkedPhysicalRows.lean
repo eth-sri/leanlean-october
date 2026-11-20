@@ -94,7 +94,7 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
   rw [actual_rows_sum]
   apply Finset.sum_congr rfl
   intro u hu
-  have hjpos:0<(j.absNorm:ℝ):=zero_lt_one.trans_le (excluded_divisor_norm F.rowData j hj).1
+  have hjpos:=zero_lt_one.trans_le (excluded_divisor_norm F.rowData j hj).1
   have hr:U^(shiftedExponent F.rowData U F.r j)=U^F.r/(j.absNorm:ℝ):=
     by rw [shiftedExponent,Real.rpow_sub hU0,Real.rpow_logb hU0 (ne_of_gt hU) hjpos]
   have hn:=deleted_physical_slots_norm_initial F.rowData (actualRow u) M H

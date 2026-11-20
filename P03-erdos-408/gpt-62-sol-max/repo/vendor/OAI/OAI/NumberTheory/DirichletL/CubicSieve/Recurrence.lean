@@ -1,10 +1,12 @@
 module
 
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AdmissibleBand
 public import OAI.NumberTheory.DirichletL.CubicSieve.Smoothed
 public import OAI.NumberTheory.DirichletL.CubicSieve.Majorant
 public import OAI.NumberTheory.DirichletL.CubicSieve.ZeroMode
 
 @[expose] public section
+
 
 namespace OAI
 
@@ -20,8 +22,7 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
       ∀ {n : Type*} [Fintype n] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M N : ℝ) (_hM : 0 < M) (_hN : 1 ≤ N)
         (cols : n → Ideal O) (_hc : Function.Injective cols)
-        (_hcols : ∀ j, Admissible (cols j) ∧ N / 2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧
-          (Ideal.absNorm (cols j) : ℝ) ≤ N)
+        (_hcols : OAI.IdealFamilyBand Admissible cols (N / 2) N)
         (a : n → ℂ),
         ‖cubicSmoothedCoprime cols a W M‖ ≤
           M * (((2 / N) * ∑ j, ‖a j‖^2) * ‖paperRadialFourier W 0‖ + C * (IdealCoprimeSieveOperator.supportConstant ε hε * N^ε) *
@@ -50,7 +51,7 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
       apply (le_div_iff₀ hd).mpr
       simpa only [mul_comm] using hp
     exact (norm_sum_le _ _).trans hs
-  have hg : Summable (fun l => B * frequencyMajorant M N l) :=
+  have hg  :=
     (frequencyMajorant_summable M N hM hN).mul_left B
   have hb := (hg.of_norm_bounded hblock).hasSum.norm_le_of_bounded hg.hasSum hblock
   rw [tsum_mul_left] at hb

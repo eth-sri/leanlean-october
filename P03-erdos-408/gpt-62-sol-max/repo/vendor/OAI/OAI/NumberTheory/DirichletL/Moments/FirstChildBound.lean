@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Moments.FirstWholeAssembly
+public import OAI.NumberTheory.DirichletL.Moments.FirstWholeKernel
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedChild
 
 @[expose] public section

@@ -63,7 +63,7 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
     intro i
     have h1 : ‖choiceOp cs a out f i‖ ≤ ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ := by
       refine (norm_sum_le _ _).trans (le_of_eq ?_)
-      exact sum_congr rfl fun c _ => norm_mul _ _
+      simp
     have h2 : (∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖) ^ 2 ≤
         (∑ c ∈ cs, ‖a i c‖ * h' (out i c)) *
           ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c) := by

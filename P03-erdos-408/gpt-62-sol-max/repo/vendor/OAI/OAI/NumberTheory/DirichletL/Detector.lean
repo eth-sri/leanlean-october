@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.Complex.Norm
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -30,7 +31,7 @@ theorem exists_small_increment (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
 theorem exists_grid_rounding {base x e : ℝ} (he : 0 < e) (hx : base ≤ x) :
     ∃ k : ℕ, base + e * k ≤ x ∧ x < base + e * k + e := by
   let k := ⌊(x - base) / e⌋₊
-  have hnonneg : 0 ≤ (x - base) / e := div_nonneg (sub_nonneg.mpr hx) he.le
+  have hnonneg  := div_nonneg (sub_nonneg.mpr hx) he.le
   have hlo := Nat.floor_le hnonneg
   have hhi := Nat.lt_floor_add_one ((x - base) / e)
   have hlo' := (le_div_iff₀ he).mp hlo
@@ -81,21 +82,20 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
     have hp : U ^ (δ * r - 2 * ε) * U ^ (δ * m + ε) ≤
         A * U ^ (δ * m + ε) := by
       calc
-        _ = U ^ (δ * (r + m) - ε) := by rw [← Real.rpow_add hU0]; congr 1; ring
+        _ = U ^ (δ * (r + m) - ε) := by rpow_ring hU0
         _ ≤ A * B := hprod
         _ ≤ _ := mul_le_mul_of_nonneg_left hBcoarse hA
     have hpos := Real.rpow_pos_of_pos hU0 (δ * m + ε)
     nlinarith
-  have hlowerB : U ^ (δ * m - 2 * ε) ≤ B := by
-    have hp : U ^ (δ * m - 2 * ε) * U ^ (δ * r + ε) ≤
-        B * U ^ (δ * r + ε) := by
-      calc
-        _ = U ^ (δ * (r + m) - ε) := by rw [← Real.rpow_add hU0]; congr 1; ring
-        _ ≤ A * B := hprod
-        _ ≤ _ := by simpa [mul_comm] using mul_le_mul_of_nonneg_right hupperA hB
-    have hpos := Real.rpow_pos_of_pos hU0 (δ * r + ε)
-    nlinarith
-  exact ⟨hlength, hlowerA, hlowerB⟩
+  refine ⟨hlength, hlowerA, ?_⟩
+  have hp : U ^ (δ * m - 2 * ε) * U ^ (δ * r + ε) ≤
+      B * U ^ (δ * r + ε) := by
+    calc
+      _ = U ^ (δ * (r + m) - ε) := by rpow_ring hU0
+      _ ≤ A * B := hprod
+      _ ≤ _ := by simpa [mul_comm] using mul_le_mul_of_nonneg_right hupperA hB
+  have hpos := Real.rpow_pos_of_pos hU0 (δ * r + ε)
+  nlinarith
 
 end SevenEighths.Detector
 

@@ -24,7 +24,7 @@ def lowInverseMass (C : CalibrationData) (a b : ℝ) (ha : 0<a) (hb : 0<b)
   ∑σ : RayRing,Real.sqrt (∑m∈lowNumeratorRows a b ha hb (lowPhysicalScale C X Y)
     (lowPhysicalScale_pos C X Y hX hY),‖B σ m‖^2)
 
-lemma low_mellin_normalizer_norm (Q : ℝ) (_hQ : 0<Q) :
+lemma low_mellin_normalizer_norm (Q : ℝ) :
     ‖(Real.sqrt Q:ℂ)⁻¹*(1/(2*Real.pi):ℂ)‖=(Real.sqrt Q)⁻¹/(2*Real.pi) := by
   rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)]
   rw [norm_div,norm_one,norm_mul]
@@ -79,7 +79,7 @@ theorem compensation_tuple_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (div_pos hX hL) (hYs a)
     (lowSelectedInverseRow Finset.univ (lowSelectedWeight η slots J W P t)
       η S hS (lowSelectedIdeal slots J) T t) (hPs a)
-  rw [norm_mul,norm_mul,low_mellin_normalizer_norm _ (lowPhysicalScale_pos _ _ _ (div_pos hX hL) (div_pos hY hL))]
+  rw [norm_mul,norm_mul,low_mellin_normalizer_norm _]
   calc
     _≤‖lowUnselectedWeight slots J W P a‖*
       ((Real.sqrt (lowPhysicalScale (calibrationForSet S hS)

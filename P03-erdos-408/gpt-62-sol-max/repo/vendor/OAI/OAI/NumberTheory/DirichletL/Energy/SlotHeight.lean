@@ -10,9 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergySlotHeight
-open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentHeckeSlots CenteredMomentCommonMaskEnergy
-open HeckePrimeAnnular CenteredMomentPrimeSlotShift
+open HeckeFamily CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
+open CenteredMomentCommonMaskEnergy HeckePrimeAnnular CenteredMomentPrimeSlotShift
 local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}[Fintype α]
@@ -45,8 +44,7 @@ lemma positive_row_phase (η:Character)(m A z:O)(W₁ W₂:ℝ→ℂ)
     (t X₁ X₂:ℝ)(he:∀i I,I∈pool i→β i I=phase i*γ i I):
     positiveSlotRow η m A z W₁ W₂ pool β P t X₁ X₂=
       (∏i,phase i)*positiveSlotRow η m A z W₁ W₂ pool γ P t X₁ X₂:=by
-  have hs (i:α):rowSlot η m A z (pool i) (β i) t=
-      phase i*rowSlot η m A z (pool i) (γ i) t:=
+  have hs (i:α):=
     row_slot_phase η m A z (pool i) (β i) (γ i) (phase i) t (he i)
   unfold positiveSlotRow
   simp_rw [hs]

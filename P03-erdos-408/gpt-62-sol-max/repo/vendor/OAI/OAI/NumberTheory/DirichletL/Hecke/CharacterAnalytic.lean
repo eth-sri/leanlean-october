@@ -52,7 +52,7 @@ def finCastEquiv (N : ℕ) [NeZero N] : Fin N ≃ ZMod N where
 theorem coefficients_sum_eq_zero (χ : HeckeFamily.Character) (hχ : χ.residue ≠ 1) :
     (∑ a, HeckeFamily.coefficients χ a) = 0 := by
   classical
-  let : Finite (HeckeFamily.O ⧸ χ.modulus) :=
+  let  :=
     Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   let : Fintype (HeckeFamily.O ⧸ χ.modulus) := Fintype.ofFinite _
   let e := Equiv.prodCongr (finCastEquiv χ.period) (finCastEquiv χ.period)
@@ -84,9 +84,8 @@ theorem residue_zero_of_nonprincipal (χ : HeckeFamily.Character) (hχ : χ.resi
     apply MulChar.ext'
     intro a
     have ha : a = 1 := Subsingleton.elim _ _
-    simp [ha]
-  · let := h
-    exact χ.residue.map_zero
+    simp_all
+  · exact χ.residue.map_zero
 
 theorem coefficients_zero_of_nonprincipal (χ : HeckeFamily.Character) (hχ : χ.residue ≠ 1) :
     HeckeFamily.coefficients χ (0, 0) = 0 := by

@@ -51,7 +51,7 @@ theorem sourceLower_pos (C D : Ideal O) (hC : C≠0) (hD : D≠0)
   · exact secondEffectiveScale_pos C D hC hD A hA K hK
   all_goals norm_num [sourceLower]
 
-theorem active_physical_kernel_partition (_η : Character)
+theorem active_physical_kernel_partition
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -70,18 +70,15 @@ theorem active_physical_kernel_partition (_η : Character)
   have hrow : normValue h≤4*R/normValue A := by
     apply (le_div_iff₀ (normValue_pos A hA)).mpr
     simpa only [normValue_mul,mul_comm] using he.2
-  have hb : ∀i, (![secondEffectiveScale C D A K,normValue h,
-      (Ideal.absNorm (I:Ideal O):ℝ),(Ideal.absNorm (J:Ideal O):ℝ)] : Fin 4→ℝ) i∈
-        Set.Icc (sourceLower C D A K i) (sourceUpper C D A K R H i) := by
-    intro i
-    fin_cases i
-    · exact ⟨le_rfl,le_rfl⟩
-    · exact ⟨normValue_ge_one h hh,hrow.trans (le_max_right _ _)⟩
-    · exact active_sector_norm S β H hH C hC.1 I
-    · exact active_sector_norm S β H hH D hD.1 J
-  exact physical_kernel_dyadic_partition C D I J hC hD
+  refine physical_kernel_dyadic_partition C D I J hC hD
     (sectorPool_supported C hC.1 _ I) (sectorPool_supported D hD.1 _ J)
-    A h hA hh W K R hK _ _ (sourceLower_pos C D hC.1 hD.1 A hA K hK) hb
+    A h hA hh W K R hK _ _ (sourceLower_pos C D hC.1 hD.1 A hA K hK) ?_
+  intro i
+  fin_cases i
+  · exact ⟨le_rfl,le_rfl⟩
+  · exact ⟨normValue_ge_one h hh,hrow.trans (le_max_right _ _)⟩
+  · exact active_sector_norm S β H hH C hC.1 I
+  · exact active_sector_norm S β H hH D hD.1 J
 
 end SevenEighths.CenteredMomentSecondActiveDyadic
 

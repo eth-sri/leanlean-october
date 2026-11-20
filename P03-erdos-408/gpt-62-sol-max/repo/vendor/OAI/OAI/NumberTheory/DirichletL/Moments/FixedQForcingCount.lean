@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 
@@ -11,12 +12,10 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedQForcingCount
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSupport
-open CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentForcing
+open CenteredMomentChildRows CenteredMomentRankinRadical CenteredMomentSecondExceptionalCount
+open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalLedger CenteredMomentSupport CenteredMomentSourceRow
 open UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -106,7 +105,7 @@ lemma forcing_norm_le (Q : Ideal O) (hQ : Q ≠ 0)
   have hd := map_dvd Ideal.absNorm (forcing_dvd_good_mul_radical Q hQ P hp hinj c d V)
   have hn : (goodIdeal Q P c d V) * commonRadical Q Q ≠ 0 :=
     mul_ne_zero (goodIdeal_ne_zero Q P hp c d V) (commonRadical_ne_zero Q Q)
-  have hh := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) hd
+  have hh := Nat.le_of_dvd (Ideal.absNorm_pos_of_ne_bot (hn)) hd
   exact_mod_cast (show Ideal.absNorm (forcingIdeal P c d V) ≤
     Ideal.absNorm (goodIdeal Q P c d V) * Ideal.absNorm (commonRadical Q Q) by simpa using hh)
 
@@ -114,7 +113,7 @@ lemma fixed_radical_power_loss (Z M f g r : ℝ) (hZ : 1 < Z)
     (hf : 0 < f) (hg : 0 < g) (hr : 0 < r) (hfg : f ≤ g*r) :
     Z ^ ((M-4*Real.logb Z g)/6) ≤
       r^(2/3:ℝ) * Z^((M-4*Real.logb Z f)/6) := by
-  have hz : 0 < Z := zero_lt_one.trans hZ
+  have hz  := zero_lt_one.trans hZ
   have hl := Real.logb_le_logb_of_le hZ hf hfg
   rw [Real.logb_mul hg.ne' hr.ne'] at hl
   calc
@@ -141,14 +140,14 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
       (768 * (6 : ℝ) ^ (normalizedFactors Q).toFinset.card * Cr^(1/6:ℝ) *
         Z^((M-4*Real.logb Z (Ideal.absNorm
           (forcingIdeal (fun i => Ideal.span {p i}) c d V):ℝ))/6)) := by
-  let P : ι → Ideal O := fun i => Ideal.span {p i}
+  let P  := fun i => Ideal.span {p i}
   let G := goodIdeal Q P c d V
   have hA : movingElement p c d V ≠ 0 := by
     apply Ideal.span_singleton_eq_bot.not.mp
     rw [movingElement_span]
     exact movingIdeal_ne_zero _ hp c d V
-  have hG0 : G ≠ 0 := goodIdeal_ne_zero Q P hp c d V
-  have hGn : (0:ℝ) < Ideal.absNorm G := CenteredExceptionalCount.norm_pos hG0
+  have hG0  := goodIdeal_ne_zero Q P hp c d V
+  have hGn  := CenteredExceptionalCount.norm_pos hG0
   have hb := separated_exceptional_count η χ Q hQ0 hQ hQ72
     m (movingElement p c d V) e hm hA hmLam hm2 he rows hrows hex G
     (goodIdeal_squarefree Q P hp hinj c d V) (by
@@ -169,7 +168,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
   have hf : (0:ℝ) < Ideal.absNorm (forcingIdeal P c d V) := by
     apply CenteredExceptionalCount.norm_pos
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
-  have hr : (0:ℝ) < Ideal.absNorm (commonRadical Q Q) :=
+  have hr  :=
     CenteredExceptionalCount.norm_pos (commonRadical_ne_zero Q Q)
   have hs := fixed_radical_power_loss Z M _ _ _ hZ hf hGn hr
     (forcing_norm_le Q hQ0 P hp hinj c d V)

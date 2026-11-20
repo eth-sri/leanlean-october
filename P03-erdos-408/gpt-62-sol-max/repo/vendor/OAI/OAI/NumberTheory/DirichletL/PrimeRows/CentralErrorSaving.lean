@@ -17,13 +17,13 @@ variable {ι : Type*} [Fintype ι]
 lemma central_source_crude_scale {Z a e : ℝ} (hZ : 1≤Z) (ha : 0≤a) (he : 0≤e) :
     (Z^(17/48:ℝ))^(1/2-(17/50:ℝ))*Z^(2+(17/50:ℝ)-1)*
       (Z^(23/48:ℝ))^((1-a-6*e)-1)≤Z^(2:ℝ) := by
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZ0  := lt_of_lt_of_le zero_lt_one hZ
   simp_rw [←Real.rpow_mul hZ0.le]
   rw [←Real.rpow_add hZ0,←Real.rpow_add hZ0]
   exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
 
 lemma central_prime_product_bound {K : ℕ} (P : Fin K→PrimeIdeal)
-    (Z b : ℝ) (hZ : 0<Z) (_hb : 0≤b) (length : Fin K→ℝ)
+    (Z b : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
     (hlength : ∑j,length j=(1/6:ℝ)) (hP : ∀j,((P j).val.absNorm:ℝ)≤b*Z^(length j)) :
     (∏j,((P j).val.absNorm:ℝ))≤b^K*Z^(1/6:ℝ) := by
   calc
@@ -36,10 +36,10 @@ lemma central_arithmetic_cost_bound {K : ℕ} (η : Character) (u : FreeRow) (P 
     (length : Fin K→ℝ) (hlength : ∑j,length j=(1/6:ℝ))
     (hP : ∀j,((P j).val.absNorm:ℝ)≤b*Z^(length j)) :
     contourArithmeticCost η u P≤(η.modulus.absNorm:ℝ)^2*(b^K)^3*Z^(13/2:ℝ) := by
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZ0  := lt_of_lt_of_le zero_lt_one hZ
   have hu' : ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z :=
     hu.trans (by simpa using Real.rpow_le_rpow_of_exponent_le hZ (show (13/16:ℝ)+ζ≤1 by linarith))
-  have hp := central_prime_product_bound P Z b hZ0 hb length hlength hP
+  have hp := central_prime_product_bound P Z b hZ0 length hlength hP
   have hp0 : 0≤∏j,((P j).val.absNorm:ℝ) := Finset.prod_nonneg (fun j _=>Nat.cast_nonneg _)
   unfold contourArithmeticCost
   calc

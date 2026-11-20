@@ -31,7 +31,6 @@ noncomputable section
 most `T⁻³⁰⁰`. -/
 lemma le_inv_pow_of_le {T C A : ℝ} {a b : ℕ} (hT : 1 ≤ T) (hC : |C| ≤ T) (hA0 : 0 ≤ A)
     (hA : A ≤ (T ^ b)⁻¹) (hab : a + 301 ≤ b) : C * T ^ a * A ≤ (T ^ 300)⁻¹ := by
-  have hT0 : 0 < T := by linarith
   have h1 : C * T ^ a * A ≤ T * T ^ a * (T ^ b)⁻¹ := by
     have : C * T ^ a ≤ T * T ^ a :=
       mul_le_mul_of_nonneg_right ((le_abs_self C).trans hC) (by positivity)
@@ -58,7 +57,6 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
       Real.log x / x ^ presieveExponent c 200 x ≤ (logLog x ^ 400)⁻¹ ∧
       Real.log x ^ (-c') ≤ (logLog x ^ 400)⁻¹ ∧
       (compositeCutoff 1001 x : ℝ) ≤ logLog x := by
-  have hK0 : (0 : ℝ) < K := by exact_mod_cast hK
   filter_upwards [tendsto_logLog.eventually_ge_atTop 1,
     eventually_sieveDepth (Ch := 200) (by norm_num) 0,
     eventually_presieveExponent hc (by norm_num : (0 : ℝ) < 200),
@@ -69,9 +67,8 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
   set T := logLog x
   have hT0 : 0 < T := by linarith
   have hs0 : 0 ≤ logLogLog x := by
-    rw [logLogLog]
     exact log_nonneg hT
-  have hpow : ∀ n : ℕ, T ^ (n : ℝ) = T ^ n := fun n => rpow_natCast T n
+  have hpow  := fun n => rpow_natCast T n
   rw [one_mul, rpow_one, show (400 : ℝ) = ((400 : ℕ) : ℝ) by norm_num, hpow] at hL400
   rw [one_mul, show (400 : ℝ) = ((400 : ℕ) : ℝ) by norm_num, hpow] at hLc
   rw [rpow_one, show (23 : ℝ) = ((23 : ℕ) : ℝ) by norm_num, hpow] at hL23
@@ -89,7 +86,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
       rw [h'] at this
       rw [h']
       exact this
-    have he : exp 1 < 3 := exp_one_lt_three
+    have he  := exp_one_lt_three
     have h1 : 600 * logLogLog x ≤ inertPerCluster K (30000 * K) x / (12 * exp 1) := by
       rw [le_div_iff₀ (by positivity)]
       nlinarith
@@ -102,9 +99,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
   · -- `z = exp(γ L) ≥ exp(2T) = L²` and `L ≥ T⁴⁰⁰`
     have hγL : 2 * T ≤ presieveExponent c 200 x * Real.log x := by
       rw [one_div, inv_le_iff_one_le_mul₀ hγ0] at hγinv
-      have h1 : 2 * T ^ 23 * presieveExponent c 200 x ≤
-          Real.log x * presieveExponent c 200 x := mul_le_mul_of_nonneg_right hL23 hγ0.le
-      have h2 : T ^ 23 = T * T ^ 22 := by ring
+      have h1  := mul_le_mul_of_nonneg_right hL23 hγ0.le
       nlinarith
     have hz : Real.log x ^ 2 ≤ x ^ presieveExponent c 200 x := by
       rw [rpow_def_of_pos hx0, show Real.log x ^ 2 = exp (2 * T) by

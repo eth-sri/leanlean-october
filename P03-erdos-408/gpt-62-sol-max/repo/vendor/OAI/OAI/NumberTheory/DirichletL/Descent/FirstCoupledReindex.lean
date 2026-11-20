@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 
 @[expose] public section
@@ -62,9 +63,9 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
     _ = _ := by rw [hm,hz]; ring
 
 theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2) (B : Finset ι)
     (C₁ C₂ : Finset ι → ℂ) (H : Finset ι → Finset ι → ℂ) (h : Eis) :
     (∑ S ∈ B.powerset, ∑ T ∈ B.powerset, if Disjoint S T then

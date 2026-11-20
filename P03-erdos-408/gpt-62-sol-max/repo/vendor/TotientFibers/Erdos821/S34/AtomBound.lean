@@ -58,7 +58,7 @@ theorem product_atom_group_count (G : S34.Core.PrimeGroups) (k : Fin G.size → 
     (hcap : ∀ g, k g ≤ m) (hinactive : ∀ g, g ∉ S → k g = 0) (n : ℕ) :
     S34.Core.rho G k n ≤
       ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ S.card / n := by
-  let cost : Fin G.size → ℝ := fun g =>
+  let cost  := fun g =>
     (Nat.factorial (k g) : ℝ) * (S34.Core.mass G g)⁻¹ ^ k g
   have hcost₀ (g : Fin G.size) : 0 ≤ cost g := by
     exact mul_nonneg (Nat.cast_nonneg _) (pow_nonneg
@@ -69,7 +69,7 @@ theorem product_atom_group_count (G : S34.Core.PrimeGroups) (k : Fin G.size → 
       exact_mod_cast Nat.factorial_le (hcap g)
     have hinv : (S34.Core.mass G g)⁻¹ ≤ v⁻¹ := by
       simpa only [one_div] using one_div_le_one_div_of_le hv (hmass g hg)
-    have hp : (S34.Core.mass G g)⁻¹ ^ k g ≤ (max 1 v⁻¹) ^ m :=
+    have hp  :=
       (pow_le_pow_left₀ (inv_nonneg.mpr (S34.Proofs.mass_nonneg G g))
         (hinv.trans (le_max_right _ _)) (k g)).trans
           (pow_le_pow_right₀ (le_max_left _ _) (hcap g))
@@ -82,15 +82,13 @@ theorem product_atom_group_count (G : S34.Core.PrimeGroups) (k : Fin G.size → 
     dsimp [cost]
     rw [hinactive g hg]
     simp
-  have hprod : (∏ g, cost g) ≤
-      ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ S.card := by
-    rw [hdrop]
-    calc
-      _ ≤ ∏ _ ∈ S, (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m :=
-        Finset.prod_le_prod₀ (fun g _ => hcost₀ g) hcost
-      _ = _ := by simp
-  exact (product_atom_finite G k n).trans
-    (div_le_div_of_nonneg_right hprod (Nat.cast_nonneg _))
+  refine (product_atom_finite G k n).trans
+    (div_le_div_of_nonneg_right ?_ (Nat.cast_nonneg _))
+  rw [hdrop]
+  calc
+    _ ≤ ∏ _ ∈ S, (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m :=
+      Finset.prod_le_prod₀ (fun g _ => hcost₀ g) hcost
+    _ = _ := by simp
 
 theorem group_cost_log_power (m s : ℕ) (v C L : ℝ)
     (hL : 1 ≤ L) (hs : (s : ℝ) ≤ C * Real.log L) :
@@ -103,8 +101,8 @@ theorem group_cost_log_power (m s : ℕ) (v C L : ℝ)
   have hpow : (1 : ℝ) ≤ (max 1 v⁻¹) ^ m := one_le_pow₀ hmax
   have hbase : 1 ≤ (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m := by
     simpa only [one_mul] using mul_le_mul hfac hpow (by norm_num : (0 : ℝ) ≤ 1) (Nat.cast_nonneg _)
-  have hbasepos : 0 < (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m := lt_of_lt_of_le zero_lt_one hbase
-  have hLpos : 0 < L := lt_of_lt_of_le zero_lt_one hL
+  have hbasepos  := lt_of_lt_of_le zero_lt_one hbase
+  have hLpos  := lt_of_lt_of_le zero_lt_one hL
   calc
     _ = ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ (s : ℝ) := (Real.rpow_natCast _ _).symm
     _ ≤ ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ (C * Real.log L) :=

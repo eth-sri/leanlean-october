@@ -52,6 +52,13 @@ def freeRootModel (d : Data K) (Y d₀ u v r : ℝ) : PosModel where
 between. -/
 def dampDefect (q : ℝ) (N j : ℕ) : ℝ := if j = 0 ∨ j = N then 1 - Real.sqrt q else 1 - q
 
+/-- The damping defects are in `[0, 1]`. -/
+theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
+    0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
+  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  unfold dampDefect
+  split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
+
 /-- The line-free weight `∏_{j < N} A⁰(s_j, s_{j+1})` of a path. -/
 def pathWeight (A₀ x : ℝ) (d : Data K) (Y d₀ u v r : ℝ) {N : ℕ}
     (path : Fin (N + 1) → (freeRootModel d Y d₀ u v r).State x d) : ℂ :=
@@ -251,7 +258,7 @@ def inactiveHits (ℓ : ℕ → ℕ) (s : (freeRootModel d Y d₀ u v r).State x
     fun p => ℓ p = lineOf p s.1.1.1).card
 
 /-- With disjoint bands, the list primes of a state are `KM` distinct band primes. -/
-theorem card_filter_listed (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem card_filter_listed (hdisj : d.BandsDisjoint x)
     (s : (freeRootModel d Y d₀ u v r).State x d) :
     ((bandPrimes x d).filter fun p => ∃ i h, s.1.2 i h = p).card = K * (padCount x + 1) := by
   classical
@@ -269,7 +276,7 @@ theorem card_filter_listed (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i
     Fintype.card_fin, sum_const, smul_eq_mul]
 
 /-- For a valid state, `ω_ℓ(z) = KM + #(inactive hits)`. -/
-theorem bandCount_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem bandCount_eq (hdisj : d.BandsDisjoint x)
     (ℓ : ℕ → ℕ) {s : (freeRootModel d Y d₀ u v r).State x d} (hs : RootValid ℓ s) :
     (rootModel d Y d₀ u v r ℓ).bandCount x d s.1.1 = inactiveHits ℓ s + K * (padCount x + 1) := by
   classical
@@ -293,7 +300,7 @@ theorem bandCount_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (ba
 
 /-- The line weight of a valid state is `√q^{#(inactive hits)}`. -/
 theorem lineWeight_of_valid {q : ℝ} (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) (ℓ : ℕ → ℕ)
+    (hdisj : d.BandsDisjoint x) (ℓ : ℕ → ℕ)
     {s : (freeRootModel d Y d₀ u v r).State x d} (hs : RootValid ℓ s) :
     lineWeight q ℓ s = ((Real.sqrt q ^ inactiveHits ℓ s : ℝ) : ℂ) := by
   rw [lineWeight, ite_eq_left hs, bandCount_eq hdisj ℓ hs]
@@ -363,7 +370,7 @@ theorem lineFactor_eq_prod {N : ℕ} (q : ℝ) (p : ℕ)
 /-- The line weights along a path give the line factors: interior visits carry both half
 weights `√q^h`, the ends one. -/
 theorem prod_lineWeight_eq {q : ℝ} (hq : 0 < q)
-    (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {N : ℕ} (hN : 0 < N)
+    (hdisj : d.BandsDisjoint x) {N : ℕ} (hN : 0 < N)
     (ℓ : ℕ → ℕ) (path : Fin (N + 1) → (freeRootModel d Y d₀ u v r).State x d) :
     ∏ j : Fin N, lineWeight q ℓ (path j.castSucc) * lineWeight q ℓ (path j.succ) =
       ((∏ p ∈ bandPrimes x d, lineFactor q p path (ℓ p) : ℝ) : ℂ) := by
@@ -417,7 +424,7 @@ theorem star_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
   · exact star_zero _
 
 /-- With disjoint bands, `d_ℓ A⁰ d_ℓ` is Hermitian. -/
-theorem conjTranspose_lineEdge (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+theorem conjTranspose_lineEdge (hdisj : d.BandsDisjoint x)
     (q A₀ : ℝ) (ℓ : ℕ → ℕ) :
     (Matrix.diagonal (lineWeight q ℓ) * (freeRootModel d Y d₀ u v r).edgeOp 1 A₀ x d Y d₀ *
       Matrix.diagonal (lineWeight q ℓ))ᴴ =
@@ -436,7 +443,7 @@ end Root
 `σ ∑_paths A⁰-weight ∏_p λ_p(ℓ_p)`, over the paths of line-free states from `e₁` to `e₁` with
 `N = 2R` edges. -/
 theorem rootMoment_eq_sum_lineFactor {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ u v r : ℝ}
-    (hR : 0 < momentPower x) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
+    (hR : 0 < momentPower x) (hdisj : d.BandsDisjoint x)
     (ℓ : ℕ → ℕ) :
     rootMoment q A₀ x d Y d₀ u v r ℓ =
       (stateMass x d : ℂ) *
@@ -510,7 +517,7 @@ theorem rootMoment_eq_sum_lineFactor {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} 
 `σ ∑_paths A⁰-weight ∏_p primeFactor_p`, over the paths of line-free states from `e₁` to
 `e₁` with `N = 2R` edges. -/
 theorem lineAverage_rootMoment_eq {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ u v r : ℝ}
-    (hR : 0 < momentPower x) (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) :
+    (hR : 0 < momentPower x) (hdisj : d.BandsDisjoint x) :
     lineAverage x d (rootMoment q A₀ x d Y d₀ u v r) =
       (stateMass x d : ℂ) *
         ∑ path : Fin (2 * momentPower x + 1) → (freeRootModel d Y d₀ u v r).State x d,

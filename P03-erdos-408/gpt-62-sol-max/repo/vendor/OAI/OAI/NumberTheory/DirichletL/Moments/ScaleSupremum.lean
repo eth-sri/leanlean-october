@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScaleSup
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.CenteredMomentScaleSupremum
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorDyadicBridge

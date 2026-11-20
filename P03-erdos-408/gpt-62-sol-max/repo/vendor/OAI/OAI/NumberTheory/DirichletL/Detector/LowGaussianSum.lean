@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianCentral
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff SchwartzMap
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
@@ -19,7 +19,7 @@ lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
     Summable f ∧ ‖∑'j,f j‖≤(∑'j,if p j then 0 else ‖f j‖)+(∑'j,if p j then ‖f j‖ else 0) := by
   have he (j : ℕ) : ‖f j‖=(if p j then 0 else ‖f j‖)+(if p j then ‖f j‖ else 0) := by
     split_ifs <;>ring
-  have hn : Summable (fun j=>‖f j‖) := (hc.add hr).congr (fun j=>(he j).symm)
+  have hn  := (hc.add hr).congr (fun j=>(he j).symm)
   refine ⟨hn.of_norm,?_⟩
   apply (norm_tsum_le_tsum_norm hn).trans_eq
   exact (tsum_congr he).trans (hc.tsum_add hr)

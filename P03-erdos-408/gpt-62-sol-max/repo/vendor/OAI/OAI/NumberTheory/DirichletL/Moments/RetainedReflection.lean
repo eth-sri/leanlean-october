@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionTailMass
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
 public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
@@ -9,15 +10,13 @@ public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentRetainedReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
-open EisensteinSchwartzPoisson
+open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentSectorLocalization
+open CenteredMomentReflectedTruncation CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
+open CenteredMomentNaturalReflection EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
     (hw : ∀x,0≤w x ∧ w x≤1) : DecayTwo (fun x=>(w x:ℂ)*F x) := by
@@ -101,7 +100,7 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
   intro D hD
   have hS := redundantSet_prime χ.modulus ψ.modulus
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (ψ.modulus_ne_bot)
   have hF := reflected_decayTwo W
   have hr := reflected_column_summable _ hS ψ ψ.inverse χ.inverse _
     (masked_decayTwo _ hF _ (retainedWeight_bounds R)) _ X hQ hX D hD

@@ -63,7 +63,7 @@ theorem phase_eq_one_imp (t : ℝ) (h : phase t = 1) : ∃ k : ℤ, t = k := by
   obtain ⟨k, hk⟩ := h
   refine ⟨k, ?_⟩
   have h2 : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    simp [Real.pi_ne_zero, Complex.I_ne_zero]
+    simp
   have : (t : ℂ) = k := by
     apply mul_right_cancel₀ h2
     linear_combination hk
@@ -103,9 +103,7 @@ theorem dvd_sub_iff_eq (Q x y : ℕ) (hx : x < Q) (hy : y < Q) :
   · intro h
     have h0 := Int.eq_zero_of_abs_lt_dvd h (by rw [abs_sub_lt_iff]; constructor <;> omega)
     omega
-  · intro h
-    subst h
-    simp
+  simp_all
 
 /-- The averaged-product representation of a birth event. -/
 def Represents {a : ℕ} (π : Finset (Finset (Fin a))) (Q : ℕ) (Ξ : Type) [Fintype Ξ]
@@ -120,8 +118,7 @@ theorem prod_ite_mem_univ {α M : Type*} [Fintype α] [CommMonoid M] (s : Finset
     ∏ k, (if k ∈ s then f k else 1) = ∏ k ∈ s, f k := by
   rw [← Finset.prod_filter]
   congr 1
-  ext k
-  simp
+  simp_all
 
 /-- A performed-address gate, kept opaque so decidability instances never need to agree. -/
 def gate (P : Prop) (z : ℂ) : ℂ := if P then z else 0
@@ -153,7 +150,7 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
   dsimp only
   have hQ' : (Q : ℂ) ≠ 0 := by exact_mod_cast hQ.ne'
   by_cases hsub : B ⊆ perf
-  · let D : Fin a → ℝ := fun k => (((value k : ℤ) - (value p : ℤ) : ℤ) : ℝ) / Q
+  · let D  := fun k => (((value k : ℤ) - (value p : ℤ) : ℤ) : ℝ) / Q
     have hprod : ∀ ξ : Fin a → Fin Q,
         ∏ j ∈ B, gate (j ∈ perf) (phase ((cf ξ j : ℝ) * (value j : ℝ) / Q)) =
           ∏ k, (if k ∈ B.erase p then phase (((ξ k : ℕ) : ℝ) * D k) else 1) := by
@@ -171,10 +168,7 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
         simp only [cf, ite_eq_right (Finset.ne_of_mem_erase hk)]
         push_cast
         rfl
-      have e1 : ∑ x ∈ B.erase p, ((cf ξ x : ℤ) : ℝ) * ((value x : ℕ) : ℝ) / (Q : ℝ) =
-          ∑ x ∈ B.erase p, ((ξ x : ℕ) : ℝ) * ((value x : ℕ) : ℝ) / (Q : ℝ) :=
-        Finset.sum_congr rfl (fun k hk => by rw [hcf k hk])
-      rw [e1, hcp]
+      rw [(Finset.sum_congr rfl (fun k hk => by rw [hcf k hk])), hcp]
       simp only [D]
       push_cast
       rw [neg_mul, neg_div, Finset.sum_mul, Finset.sum_div, ← Finset.sum_neg_distrib,
@@ -291,7 +285,6 @@ theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset 
         rw [← Finset.sum_mul_sum, Fintype.card_prod, Fintype.card_fun]
         simp only [Fintype.card_fin]
         push_cast
-        rw [mul_inv]
         ring
 
 end Erdos821.P3Lowrank

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScale
 
 @[expose] public section
@@ -7,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical BigOperators ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise
@@ -20,7 +21,7 @@ theorem scaleSupport_cover (W : ℝ→ℂ) (a b upper l : ℝ) (hb : 0≤b)
     ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈scaleSupport upper b := by
   intro J hJ hw
   apply mem_idealsUpTo.mpr
-  refine ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ),?_⟩
+  refine ⟨Ideal.one_le_absNorm_of_ne_bot (hJ),?_⟩
   have hh := (div_le_iff₀ (Real.exp_pos l)).mp (hWs hw).2
   have hm := mul_le_mul_of_nonneg_right (Real.exp_le_exp.mpr hl) hb
   have hn : (J.absNorm : ℝ)≤Real.exp upper*b := by nlinarith

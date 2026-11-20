@@ -26,7 +26,7 @@ theorem sum_Icc_ite_Ioc_real {mu δ : ℝ} (hmu : 0 ≤ mu) (hδ : δ ≤ 1) (f 
   have hsub : Ioc ⌊mu⌋₊ ⌊mu * (1 + δ)⌋₊ ⊆ Icc ⌈mu⌉₊ ⌊2 * mu⌋₊ := by
     intro n hn
     obtain ⟨h1, h2⟩ := mem_Ioc.1 hn
-    have : mu < n := (Nat.floor_lt hmu).1 h1
+    have  := (Nat.floor_lt hmu).1 h1
     exact mem_Icc.2 ⟨Nat.ceil_le.2 this.le, h2.trans (Nat.floor_le_floor (by nlinarith))⟩
   rw [← sum_subset hsub fun n _ hn => by simp only [hn, ↓reduceIte]]
   exact sum_congr rfl fun n hn => by simp only [hn, ↓reduceIte]
@@ -64,8 +64,6 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
   set γ := presieveExponent c Ch x
   set N' := inertPerCluster K CN x
   set 𝒮 := clusterSets K N'
-  have hlam0 : 1 ≤ lam := hxγ.trans hlam
-  have hmu0 : 1 ≤ mu := hxγ.trans hmu
   -- the companion restricted to the `n`-cell
   set βb : ℕ → ℝ := fun n => if n ∈ Ioc ⌊mu⌋₊ ⌊mu * (1 + δ)⌋₊ then βc n else 0 with hβb
   have hn_range : ∀ m ∈ Ioc ⌊lam⌋₊ ⌊lam * (1 + δ)⌋₊, ∀ n ∈ Icc ⌈mu⌉₊ ⌊2 * mu⌋₊,
@@ -77,7 +75,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
     have hm2' : (m : ℝ) ≤ lam * (1 + δ) := (Nat.le_floor_iff' (by
       have : (0 : ℝ) < m := by linarith
       exact_mod_cast this.ne')).1 hm2
-    have hmun : mu ≤ n := Nat.ceil_le.1 hn1
+    have hmun  := Nat.ceil_le.1 hn1
     have hn2' : (n : ℝ) ≤ 2 * mu := (Nat.le_floor_iff (by linarith)).1 hn2
     have hm2 : 2 ≤ m := by
       have : (1 : ℝ) < m := by linarith
@@ -85,7 +83,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
     have hn1' : 1 ≤ n := by
       have : (1 : ℝ) ≤ n := by linarith
       exact_mod_cast this
-    have hm2n' : 2 ≤ m * n := le_trans hm2 (Nat.le_mul_of_pos_right m hn1')
+    have hm2n'  := le_trans hm2 (Nat.le_mul_of_pos_right m hn1')
     refine ⟨by omega, ?_⟩
     rw [Nat.cast_sub (by omega)]
     push_cast
@@ -102,9 +100,9 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
         markedWeight Finset.univ q (fun i => band x (distExponent K x S i)) (m * n - 1)| ≤
       C₂ * (lam * mu) * Real.log x ^ (-12 : ℝ) := by
     intro S hS
-    have hd : ∀ c, distIndex S c < N' := fun c =>
+    have hd  := fun c =>
       mem_range.1 (((mem_clusterSets.1 hS) c).2 (distIndex_mem ((mem_clusterSets.1 hS) c).1))
-    have hwin : ∀ i, 11 / 100 ≤ distExponent K x S i ∧ distExponent K x S i ≤ 19 / 100 :=
+    have hwin  :=
       fun i => inertExponent_mem hE.one_le_K hE.logLog_pos hE.layout i.isLt (hd i)
     have hgap : ∀ i i' : Fin K, i < i' →
         distExponent K x S i + 4 / 100 / K ≤ distExponent K x S i' := fun i i' h =>
@@ -129,7 +127,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
       have hne : βc n ≠ 0 := fun h => hn (by rw [h, Complex.ofReal_zero])
       obtain ⟨hpf, h0, h3⟩ := hβc n hne
       obtain ⟨hn1, hn2⟩ := mem_Ioc.1 hnI
-      have hn2' : (n : ℝ) ≤ mu * (1 + δ) := (Nat.le_floor_iff' (by omega)).1 hn2
+      have hn2'  := (Nat.le_floor_iff' (by omega)).1 hn2
       refine ⟨(Nat.floor_lt (by linarith)).1 hn1, by nlinarith, hpf, ?_⟩
       rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg h0]
       exact h3
@@ -178,7 +176,6 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
         field_simp [hE.norm_pos.ne']
       generalize clampOne (monoRest q cw K x u v B S (m * n - 1) / 𝒩) = C at hcl ⊢
       rw [← hcl]
-      unfold distExponent
       ring
     rw [sum_congr rfl fun m hm => sum_congr rfl fun n hn => hpt m hm n hn]
     simp only [mul_sum]

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedModeEnergy
 
@@ -8,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedModeEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMomentWholeRetainedSource
 open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic
 open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→O) [OAI.PrincipalFamily.Maximal p]
 
 def deleted (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
     (x : MarkedSecondSource ι Jo 0) : Finset ι :=

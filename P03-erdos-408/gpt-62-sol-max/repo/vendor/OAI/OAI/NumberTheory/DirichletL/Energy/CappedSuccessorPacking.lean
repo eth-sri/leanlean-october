@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
@@ -21,7 +21,6 @@ open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySo
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem certified_from_stages
@@ -33,20 +32,17 @@ theorem certified_from_stages
     (heh:eh≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
     (hold:CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε k)
-    (hzero:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+    (hzero:∃J:ℕ,∃S:Finset (ℕ×ℕ),ForSmallInternalConductors M fun η₀ Q =>
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
         ZeroAt (internalQ Q η₀) (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (lengthAt Mcap Bmask L ε (k+1))
           (bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1)) ez Z J S C)
-    (hlow:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+    (hlow:∃J:ℕ,∃S:Finset (ℕ×ℕ),ForSmallInternalConductors M fun η₀ Q =>
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
         PositiveLowAt (α:=α) M H hH W bslot (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (lengthAt Mcap Bmask L ε (k+1)) (fineMesh Mcap Bmask L κ ε) lo hi
           (bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1)) el κ Z η₀ Q J S C)
-    (hhigh:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+    (hhigh:∃J:ℕ,∃S:Finset (ℕ×ℕ),ForSmallInternalConductors M fun η₀ Q =>
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
         PositiveHighAt (α:=α) M H hH W bslot (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (lengthAt Mcap Bmask L ε (k+1)) (fineMesh Mcap Bmask L κ ε) lo hi
@@ -56,7 +52,7 @@ theorem certified_from_stages
       W bslot a b radial Bmask L lo hi Mcap κ ε (k+1):=by
   let Bs:=finalSourceCap Mcap Bmask L ε
   have hBs:0≤Bs:=sourceCap_nonneg Mcap Bmask L hMcap hmask _
-  have hr:0<reserve Mcap Bs ε:=(bounds Mcap Bs κ ε hMcap hBs hκ hε).2.2.2.1
+  have hr:=(bounds Mcap Bs κ ε hMcap hBs hκ hε).2.2.2.1
   have hlower:lowerAt a b Mcap ε k≤lowerAt a b Mcap ε (k+1):=
     CenteredMomentEnergyProfiles.lower_antitone a b ha (by unfold remaining;omega)
   have hlength:lengthAt Mcap Bmask L ε (k+1)≤lengthAt Mcap Bmask L ε k:=
@@ -71,10 +67,10 @@ theorem certified_from_stages
   obtain ⟨Jh,Sh,hhigh⟩:=hhigh
   let J:=Jold+Jz+Jl+Jh
   let S:=Sold∪Sz∪Sl∪Sh
-  have hJo:Jold≤J:=by dsimp [J];omega
-  have hJz:Jz≤J:=by dsimp [J];omega
-  have hJl:Jl≤J:=by dsimp [J];omega
-  have hJh:Jh≤J:=by dsimp [J];omega
+  have hJo:Jold≤J:=by omega
+  have hJz:Jz≤J:=by omega
+  have hJl:Jl≤J:=by omega
+  have hJh:Jh≤J:=by omega
   have hSo:Sold⊆S:=by intro x hx;simp [S,hx]
   have hSz:Sz⊆S:=by intro x hx;simp [S,hx]
   have hSl:Sl⊆S:=by intro x hx;simp [S,hx]

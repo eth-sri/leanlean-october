@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthHighBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthSource
@@ -18,7 +18,6 @@ open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
 open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
 open CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 def PhysicalGrowthAt (Q:Ideal O)(a b bΦ Bmask L rho Mcap ξ e Z:ℝ)(ha:0<a)
     (Ψ:𝓢(ℝ,ℂ))(S:Finset (ℕ×ℕ))(J:ℕ)(C:ℝ):Prop:=

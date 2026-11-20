@@ -18,7 +18,7 @@ lemma hasSum_geometric_tail (f : ℕ → ℂ) (a : ℕ) (B V : ℂ) (hV : ‖V�
     HasSum f (B/(1-V)) := by
   have ht : HasSum (fun n => f (n+a)) (B/(1-V)) := by
     simpa only [hf, div_eq_mul_inv] using (hasSum_geometric_of_norm_lt_one hV).mul_left B
-  have hs : (∑ i ∈ Finset.range a, f i) = 0 :=
+  have hs  :=
     Finset.sum_eq_zero (fun i hi => hz i (Finset.mem_range.mp hi))
   simpa only [hs, zero_add] using ht.sum_range_add
 
@@ -121,7 +121,7 @@ lemma principalInner_odd (eta a X W V : ℂ) (e r : ℕ) (he : e≤1) :
 omit hc in
 @[simp] lemma principalInner_zero (eta a X W V : ℂ) :
     principalInner p hp hg eta a X W V 0 0 = 0 := by
-  simp only [principalInner, markedTerm_zero_index p hp hg, tsum_zero]
+  simp [principalInner, markedTerm_zero_index p hp hg, tsum_zero]
 
 lemma principalInner_squarefree_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
     (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1) :
@@ -137,7 +137,6 @@ lemma principalInner_squarefree_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
     simp only [principalInner_odd p hp hg hc eta a X W V 1 _ (by omega)]
     exact hasSum_zero
   convert he.even_add_odd ho using 1
-  simp only [add_zero, div_eq_mul_inv, B]
   ring
 
 lemma principalInner_even_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
@@ -153,9 +152,7 @@ lemma principalInner_even_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
   have he : HasSum (fun r => principalInner p hp hg eta a X W V 0 (2*r))
       (B/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
     apply hasSum_geometric_tail _ 1 B _ hR
-    · intro m hm
-      have hm0 : m=0 := by omega
-      simp [hm0, principalInner_zero p hp hg]
+    · simp
     · intro r
       rw [show 2*(r+1)=2*r+2 by ring, principalInner_even p hp hg hc _ _ _ _ _ hV]
       ring
@@ -179,7 +176,6 @@ theorem principalMarkedSeries_eq (eta a X W V : ℂ) (hV : ‖V‖<1)
   rw [(principalInner_even_hasSum p hp hg hc eta a X W V hV hR).tsum_eq,
     (principalInner_squarefree_hasSum p hp hg hc eta a X W V hV hR).tsum_eq]
   unfold markedFactor
-  simp only [pow_one]
   ring
 
 end SevenEighths.ProbeEuler

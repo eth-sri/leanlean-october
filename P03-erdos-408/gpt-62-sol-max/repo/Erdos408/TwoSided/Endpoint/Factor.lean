@@ -1,5 +1,6 @@
 module
 
+import OAI.RpowArithmetic
 public import Erdos408.TwoSided.Endpoint.Factor.Bounds
 public import Erdos408.TwoSided.Endpoint.Low
 public import Mathlib.Data.Fin.Tuple.Finset
@@ -120,14 +121,13 @@ theorem slotCount_eq_sum_sparePrimes {x : ℝ} (hx : 0 ≤ x) {d : ℕ} (u v : F
     rw [Finset.mem_product] at hy
     rw [Fin.mem_piFinset_iff_last_init, Fin.snoc_last, Fin.init_snoc]
     exact hy
-  · intro Q _
-    exact Fin.snoc_init_self Q
+  · simpa using Fin.snoc_init_self Q
   · intro y _
-    simp only [Fin.snoc_last, Fin.init_snoc]
+    simp
   · intro Q _
     rw [Fin.prod_univ_castSucc]
     refine if_congr ⟨fun h => ?_, fun h => ?_⟩ rfl rfl
-    · have hl : Q (Fin.last d) ∣ w := (dvd_mul_left _ _).trans h
+    · have hl  := (dvd_mul_left _ _).trans h
       refine ⟨hl, (Nat.dvd_div_iff_mul_dvd hl).2 ?_⟩
       rw [mul_comm]
       exact h
@@ -153,7 +153,7 @@ theorem abs_weightedSlotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {d : �
       lt_of_le_of_lt (Real.rpow_le_rpow_of_exponent_le hx.le (hu i.castSucc)) hlt⟩
   calc |weightedSlotCount x u v Bc n| ≤ ∑ Q ∈ T.filter (fun Q => ∏ i, Q i ∣ n), |Bc Q| :=
         Finset.abs_sum_le_sum_abs _ _
-    _ ≤ ∑ Q ∈ T.filter (fun Q => ∏ i, Q i ∣ n), (1 : ℝ) := Finset.sum_le_sum fun _ _ => hB _
+    _ ≤ ∑ Q ∈ T.filter (fun Q => ∏ i, Q i ∣ n), (1) := Finset.sum_le_sum fun _ _ => hB _
     _ ≤ (Fintype.piFinset fun _ : Fin d => F).card := by
         rw [Finset.sum_const, nsmul_one]
         exact_mod_cast Finset.card_le_card hsub
@@ -171,8 +171,7 @@ spare primes (U3, U8). This is PD (6.30)–(6.31), with the spare slot as `p_l`.
 theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
     (K₀ : ℕ) (CN c : ℝ) (d : ℕ) (hahi : ahi < 1 / 5) (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big → ∀ gs ∉ big,
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big => ∀ gs ∉ big,
         ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
           InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v →
         ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
@@ -252,7 +251,7 @@ theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi al
     intro ps hps' pl hpl'
     obtain ⟨hpsp, -, hps46, hdvd⟩ := hps ps hps'
     obtain ⟨hplp, hpl46, hpldvd⟩ := hpl pl hpl'
-    have hpsl : ps ∣ w / pl := (FactorAux.dvd_div_iff_of_coprime hpldvd
+    have hpsl  := (FactorAux.dvd_div_iff_of_coprime hpldvd
       (FactorAux.coprime_of_prime_ne hpsp hplp (hne (hps46.trans_lt hpl46)))).2 hdvd
     rw [Nat.div_div_eq_div_mul, mul_comm, ← Nat.div_div_eq_div_mul]
     unfold weightedSlotCount
@@ -288,7 +287,7 @@ theorem eventually_endpointCoeff_eq_tuple_sub_const (q q₀ c₀ C₀ vlo vhi al
   have hcon : constCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ w =
       ψ₁ (w / Y) * (w : ℂ) ^ ((σ : ℂ) * Complex.I) *
         ((slotMean x u v Bc / harmonicMass (P gs) : ℝ) : ℂ) *
-        ((markedWeight Finset.univ q (fun i => band x (a i)) w : ℝ) *
+        ((markedWeight Finset.univ q (fun i => band x (a i)) w) *
           ∑ ps ∈ Fs, markedListWeight P q₀ S' b (w / ps)) := by
     rw [Finset.mul_sum]
     unfold constCoeff
@@ -312,20 +311,8 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     (halo : 1 / 10 < alo) (hal : alo ≤ ahi) (hahi : ahi < 1 / 5) (hc : 0 < c) (m₀ : ℕ)
     (Cm : ℝ) (M₁ : ℕ → ℝ) :
     ∃ CR : ℝ, ∀ᶠ x : ℝ in atTop,
-      ∀ {ι : Type} [Fintype ι] [DecidableEq ι] (P : ι → Finset ℕ) (big : Finset ι),
-        GroupAdmissible c₀ C₀ vlo vhi x P big → ∀ gs ∉ big,
-        ∀ (r : ℕ) (a : Fin r → ℝ) (u v : Fin (d + 1) → ℝ) (Bc : (Fin d → ℕ) → ℝ),
-          InertAdmissible K₀ CN alo ahi x a → AdmissibleSlots c x u v → (∀ Q, |Bc Q| ≤ 1) →
-        ∀ (J : ℕ) (C : ι → Finset (Fin J)) (b : (ι → Fin (J + 1) → ℕ) → ℂ),
-          (∀ g, (C g).card ≤ m₀) → (∀ g ∉ big, C g = ∅) → (∀ p, ‖b p‖ ≤ 1) →
-          (∀ p p', (∀ g ∈ big, p g = p' g) → b p = b p') →
-        ∀ ψ₁ : ℝ → ℂ, ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ψ₁ →
-          (∀ y, ψ₁ y ≠ 0 → 1 ≤ y ∧ y ≤ 2) →
-          (∀ (j : ℕ) (y : ℝ), ‖iteratedDeriv j ψ₁ y‖ ≤ M₁ j) →
-        ∀ (Y σ : ℝ) (k : ℕ) (h : ℤ),
-          x * Real.exp (Real.log x ^ (0.38 : ℝ)) ≤ Y →
-          Y ≤ x * Real.exp (Real.log x ^ (0.47 : ℝ)) →
-          |σ| ≤ Real.log x ^ Cm → 1 ≤ k → (k : ℝ) ≤ Real.log x ^ Cm →
+      ForAdmissibleGroups c₀ C₀ vlo vhi x fun ι _ _ P big => ∀ gs ∉ big,
+        ForEndpointTests big K₀ d m₀ CN alo ahi c x Cm M₁ fun r a u v Bc J C b ψ₁ Y σ k h =>
           ∫ t in -(x * Real.log x ^ (Cm + 2))..(x * Real.log x ^ (Cm + 2)),
               ‖twistedPoly Y (fun w => endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ w -
                   tupleCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ w +
@@ -354,10 +341,9 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hx0 : 0 < x := by linarith
   set ε := c / T ^ 20 with hεdef
   have hε : 0 < ε := by positivity
-  have hu : ∀ i, ε ≤ u i := fun i => by
+  have hu  := fun i => by
     have := hsl.1 i
-    unfold logLog at this
-    exact this
+    assumption
   have hv1 : ∑ i, v i ≤ 1 := by
     have := hsl.2
     unfold logLog at this
@@ -382,8 +368,8 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hpowΛ : ∀ y : ℝ, 0 ≤ y → y ≤ 4 * L → ∀ n ≤ d + 2, y ^ n ≤ Λ := fun y hy hyL n hn =>
     (pow_le_pow_left₀ hy hyL n).trans (pow_le_pow_right₀ h4L hn)
   have hratio : 2 / ε ≤ 4 * L := by linarith
-  have hM0 : 0 ≤ M₁ 0 := (norm_nonneg _).trans (hψd 0 0)
-  have hψb : ∀ y, ‖ψ₁ y‖ ≤ M₁ 0 := fun y => by simpa using hψd 0 y
+  have hM0  := (norm_nonneg _).trans (hψd 0 0)
+  have hψb  := fun y => by simpa using hψd 0 y
   have hcpow : ∀ w : ℕ, 0 < w → ‖(w : ℂ) ^ ((σ : ℂ) * Complex.I)‖ = 1 := by
     intro w hw
     rw [Complex.norm_natCast_cpow_of_pos hw]
@@ -399,7 +385,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     calc (2 / (1 - q)) ^ r ≤ L ^ (1 * Real.log (2 / (1 - q))) :=
           pow_le_rpow_mul_log hK hL0 (by rw [one_mul]; linarith [hin.1])
       _ ≤ L ^ a₁ :=
-          Real.rpow_le_rpow_of_exponent_le hL.le (by rw [one_mul]; exact le_abs_self _)
+          Real.rpow_le_rpow_of_exponent_le hL.le (by simpa using le_abs_self _)
   -- U9: the marked list weights
   have hcardι : (Fintype.card ι : ℝ) ≤ 2 * C₀ * T := by
     have h₁ := hadm.2.2.1
@@ -421,8 +407,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hS' : ∀ g, (Function.update (unsharedSlots C) gs ∅ g).card ≤ m₀ + 1 := by
     intro g
     rcases eq_or_ne g gs with rfl | hg
-    · rw [Function.update_self, Finset.card_empty]
-      exact Nat.zero_le _
+    · simp
     · rw [Function.update_of_ne hg]
       exact hS g
   -- the slot statistics and the prime factor counts
@@ -454,9 +439,9 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     refine le_trans ?_ (hω n hn hnx)
     exact_mod_cast Finset.card_le_card fun p hp => Nat.mem_primeFactors.2
       ⟨hspare p (Finset.mem_filter.1 hp).1, (Finset.mem_filter.1 hp).2, hn.ne'⟩
-  have hV : vlo ≤ harmonicMass (P gs) := (hadm.2.2.2.2.2.1 gs).1
-  have hV0 : 0 < harmonicMass (P gs) := hvlo.trans_le hV
-  have hVinv : (harmonicMass (P gs))⁻¹ ≤ vlo⁻¹ := inv_anti₀ hvlo hV
+  have hV  := (hadm.2.2.2.2.2.1 gs).1
+  have hV0  := hvlo.trans_le hV
+  have hVinv  := inv_anti₀ hvlo hV
   -- the coefficient bound `|𝒰 - 𝒰_tup + 𝒰_con| ≤ B₀`
   set U := endpointCoeff x q q₀ a u v Bc P C b ψ₁ Y σ with hUdef
   set Ut := tupleCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ with hUtdef
@@ -466,9 +451,8 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   set B₀ : ℝ := Z * ((2 + 2 / vlo) * Λ ^ 3) with hB₀
   have hcoef : ∀ w : ℕ, 1 ≤ w → (w : ℝ) ≤ x ^ 2 → ‖U w - Ut w + Uc w‖ ≤ B₀ := by
     intro w hw hwx
-    have hw0 : 0 < w := hw
+    have hw0  := hw
     have hLa₁ : 0 ≤ L ^ a₁ := by positivity
-    have hLa₂ : 0 ≤ L ^ a₂ := by positivity
     -- the endpoint
     have hU : ‖U w‖ ≤ Z * (2 * Λ) := by
       rw [hUdef]
@@ -488,7 +472,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
           ≤ M₁ 0 * (L ^ a₁ * (2 * Λ)) * L ^ a₂ :=
             mul_le_mul (mul_le_mul (hψb _) hcc (abs_nonneg _) hM0) (hMW _ hS w)
               (norm_nonneg _) (by positivity)
-        _ = Z * (2 * Λ) := by rw [hZ]; ring
+        _ = Z * (2 * Λ) := by ring
     -- the tuple part
     have hUt : ‖Ut w‖ ≤ Z * (vlo⁻¹ * Λ ^ 3) := by
       rw [hUtdef]
@@ -504,14 +488,14 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
         refine (Finset.sum_le_card_nsmul _ _ (Λ * (L ^ a₁ * Λ * L ^ a₂)) fun ps hps => ?_).trans
           ?_
         · obtain ⟨hpsP, hpsd⟩ := Finset.mem_filter.1 hps
-          have hps0 : 0 < w / ps := Nat.div_pos (Nat.le_of_dvd hw0 hpsd) (hPpr ps hpsP).pos
+          have hps0  := Nat.div_pos (Nat.le_of_dvd hw0 hpsd) (hPpr ps hpsP).pos
           have hpsx : ((w / ps : ℕ) : ℝ) ≤ x ^ 2 :=
             (Nat.cast_le.2 (Nat.div_le_self _ _)).trans hwx
           refine (norm_sum_le _ _).trans ?_
           refine (Finset.sum_le_card_nsmul _ _ (L ^ a₁ * Λ * L ^ a₂) fun pl hpl => ?_).trans ?_
           · obtain ⟨hplS, hpld⟩ := Finset.mem_filter.1 hpl
             have hplp : pl.Prime := hspare pl hplS
-            have hpl0 : 0 < w / ps / pl := Nat.div_pos (Nat.le_of_dvd hps0 hpld) hplp.pos
+            have hpl0  := Nat.div_pos (Nat.le_of_dvd hps0 hpld) hplp.pos
             have hplx : ((w / ps / pl : ℕ) : ℝ) ≤ x ^ 2 :=
               (Nat.cast_le.2 (Nat.div_le_self _ _)).trans hpsx
             rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_mul, abs_of_nonneg (hW _).1]
@@ -525,7 +509,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
           ≤ M₁ 0 * vlo⁻¹ * (Λ * (Λ * (L ^ a₁ * Λ * L ^ a₂))) :=
             mul_le_mul (mul_le_mul (hψb _) hVinv (inv_nonneg.2 hV0.le) hM0) hsum
               (norm_nonneg _) (by positivity)
-        _ = Z * (vlo⁻¹ * Λ ^ 3) := by rw [hZ]; ring
+        _ = Z * (vlo⁻¹ * Λ ^ 3) := by ring
     -- the constant part
     have hUc : ‖Uc w‖ ≤ Z * (vlo⁻¹ * Λ ^ 2) := by
       rw [hUcdef]
@@ -549,13 +533,13 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
           ≤ M₁ 0 * (Λ * vlo⁻¹) * (Λ * (L ^ a₁ * L ^ a₂)) :=
             mul_le_mul (mul_le_mul (hψb _) hCV (by positivity) hM0) hsum
               (norm_nonneg _) (by positivity)
-        _ = Z * (vlo⁻¹ * Λ ^ 2) := by rw [hZ]; ring
+        _ = Z * (vlo⁻¹ * Λ ^ 2) := by ring
     -- combine
     have hΛ3 : Λ ≤ Λ ^ 3 := by
       calc Λ = Λ ^ 1 := (pow_one Λ).symm
         _ ≤ Λ ^ 3 := pow_le_pow_right₀ hΛ1 (by norm_num)
     have hΛ2 : Λ ^ 2 ≤ Λ ^ 3 := pow_le_pow_right₀ hΛ1 (by norm_num)
-    have hvi : 0 ≤ vlo⁻¹ := inv_nonneg.2 hvlo.le
+    have hvi  := inv_nonneg.2 hvlo.le
     calc ‖U w - Ut w + Uc w‖ ≤ ‖U w‖ + ‖Ut w‖ + ‖Uc w‖ :=
           (norm_add_le _ _).trans (add_le_add_left (norm_sub_le _ _) _)
       _ ≤ Z * (2 * Λ) + Z * (vlo⁻¹ * Λ ^ 3) + Z * (vlo⁻¹ * Λ ^ 2) := by
@@ -582,11 +566,8 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
   have hpt : ∀ w ∈ Finset.Icc ⌈Y⌉₊ N, ‖U w - Ut w + Uc w‖ ^ 2 ≤ B₀ ^ 2 * ind w := by
     intro w hw
     obtain ⟨hw₁, hw₂⟩ := Finset.mem_Icc.1 hw
-    have hw1 : 1 ≤ w := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hY0).ne') hw₁
+    have hw1  := le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hY0).ne') hw₁
     have hwx : (w : ℝ) ≤ x ^ 2 := le_trans (by exact_mod_cast hw₂) (hN.trans h2Y)
-    have hind0 : 0 ≤ ind w := by
-      rw [hind]
-      positivity
     by_cases hex : (∃ p ∈ P gs, p ^ 2 ∣ w) ∨
         ∃ p : ℕ, p.Prime ∧ (∃ i, x ^ u i < p ∧ (p : ℝ) ≤ x ^ v i) ∧ p ^ 2 ∣ w
     · have h1 : 1 ≤ ind w := by
@@ -605,7 +586,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
             · have : (m : ℝ) < p := lt_of_le_of_lt (Nat.floor_le (by positivity))
                 (lt_of_le_of_lt (Real.rpow_le_rpow_of_exponent_le hx.le (hu i)) hpi)
               exact_mod_cast this
-            · have hpw' : p ≤ w := (Nat.le_self_pow two_ne_zero p).trans
+            · have hpw'  := (Nat.le_self_pow two_ne_zero p).trans
                 (Nat.le_of_dvd hw1 hpw)
               omega
           have := Finset.single_le_sum (f := fun p => if p ^ 2 ∣ w then (1 : ℝ) else 0)
@@ -629,20 +610,19 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     intro w hw
     rw [Finset.mem_Icc] at hw ⊢
     exact ⟨le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hY0).ne') hw.1, hw.2⟩
-  have hvhi : 0 < vhi := hV0.trans_le (hadm.2.2.2.2.2.1 gs).2
+  have hvhi  := hV0.trans_le (hadm.2.2.2.2.2.1 gs).2
   have hcnt₁ : ∑ p ∈ P gs, ∑ w ∈ Finset.Icc 1 N, (if p ^ 2 ∣ w then (1 : ℝ) else 0) ≤
       N * (vhi * e₁) := by
     calc ∑ p ∈ P gs, ∑ w ∈ Finset.Icc 1 N, (if p ^ 2 ∣ w then (1 : ℝ) else 0)
         ≤ ∑ p ∈ P gs, (N : ℝ) * e₁ * (1 / p) := by
           refine Finset.sum_le_sum fun p hp => ?_
-          have hp0 : 0 < p := (hPpr p hp).pos
+          have hp0  := (hPpr p hp).pos
           rw [Finset.sum_boole]
           refine (FactorAux.card_filter_dvd_le N (pow_pos hp0 2)).trans ?_
           have hp1 : 1 / (p : ℝ) ≤ e₁ := by
             rw [he₁, Real.exp_neg, one_div]
             exact inv_anti₀ (Real.exp_pos _)
               (mem_primesIcc.1 (hadm.2.2.2.2.2.2.1 gs hgs hp)).2.1
-          have hpp : (0 : ℝ) < p := by exact_mod_cast hp0
           rw [Nat.cast_pow, div_eq_mul_inv, ← inv_pow, pow_two]
           calc (N : ℝ) * ((p : ℝ)⁻¹ * (p : ℝ)⁻¹) = N * (1 / p) * (1 / p) := by ring
             _ ≤ N * e₁ * (1 / p) := by
@@ -656,7 +636,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     calc ∑ q' ∈ Finset.Ioo m (N + 1), ∑ w ∈ Finset.Icc 1 N, (if q' ^ 2 ∣ w then (1 : ℝ) else 0)
         ≤ ∑ q' ∈ Finset.Ioo m (N + 1), (N : ℝ) * ((q' : ℝ) ^ 2)⁻¹ := by
           refine Finset.sum_le_sum fun q' hq' => ?_
-          have hq0 : 0 < q' := lt_of_le_of_lt (Nat.zero_le m) (Finset.mem_Ioo.1 hq').1
+          have hq0  := lt_of_le_of_lt (Nat.zero_le m) (Finset.mem_Ioo.1 hq').1
           rw [Finset.sum_boole]
           refine (FactorAux.card_filter_dvd_le N (pow_pos hq0 2)).trans ?_
           rw [Nat.cast_pow, div_eq_mul_inv]
@@ -689,9 +669,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
           linarith
   -- `B₀² ≤ L^E`
   have hB₀sq : B₀ ^ 2 ≤ L ^ E := by
-    have hsq : ∀ a' : ℝ, (L ^ a') ^ 2 = L ^ (2 * a') := fun a' => by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-      ring_nf
+    have hsq : ∀ a' : ℝ, (L ^ a') ^ 2 = L ^ (2 * a') := fun a' => by rpow_ring hL0
     have hexpand : B₀ ^ 2 = D * (L ^ (6 * (d + 2)) * (L ^ a₁) ^ 2 * (L ^ a₂) ^ 2) := by
       rw [hB₀, hZ, hΛ, hD]
       ring
@@ -699,10 +677,7 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     calc D * (L ^ (6 * (d + 2)) * L ^ (2 * a₁) * L ^ (2 * a₂))
         ≤ L * (L ^ (6 * (d + 2)) * L ^ (2 * a₁) * L ^ (2 * a₂)) :=
           mul_le_mul_of_nonneg_right hDL (by positivity)
-      _ = L ^ E := by
-          rw [hE, Real.rpow_add hL0, Real.rpow_add hL0, Real.rpow_add hL0, Real.rpow_one,
-            Real.rpow_natCast]
-          ring
+      _ = L ^ E := by rpow_ring hL0
   -- the mean value theorem over `[-T₀, T₀]`
   have hT₀0 : 0 ≤ x * L ^ (Cm + 2) := by positivity
   refine (FactorAux.integral_norm_twistedPoly_sq_le hY1 (fun w => U w - Ut w + Uc w) h k
@@ -744,20 +719,12 @@ theorem exists_integral_removal_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
           (inv_nonneg.2 hY2.le)
     _ ≤ (Y ^ 2)⁻¹ * ((50 * Y * L ^ (|Cm| + 2)) *
           (L ^ E * ((2 * Y) * (max vhi 2 * (e₁ + e₂))))) := by
-        have hG0 : 0 ≤ vhi * e₁ + 2 * e₂ := by positivity
         gcongr
     _ = 100 * max vhi 2 * (L ^ (|Cm| + 2) * L ^ E) * (e₁ + e₂) := by
         field_simp
         ring
     _ ≤ L * (L ^ (|Cm| + 2) * L ^ E) * (e₁ + e₂) := by
         gcongr
-    _ = L ^ (|Cm| + 3 + E) * (e₁ + e₂) := by
-        have hfin : L * (L ^ (|Cm| + 2) * L ^ E) = L ^ (|Cm| + 3 + E) := by
-          calc L * (L ^ (|Cm| + 2) * L ^ E) = L ^ (1 : ℝ) * (L ^ (|Cm| + 2) * L ^ E) := by
-                rw [Real.rpow_one]
-            _ = L ^ (1 + ((|Cm| + 2) + E)) := by
-                rw [Real.rpow_add hL0 1, Real.rpow_add hL0 (|Cm| + 2) E]
-            _ = L ^ (|Cm| + 3 + E) := by ring_nf
-        rw [hfin]
+    _ = L ^ (|Cm| + 3 + E) * (e₁ + e₂) := by rpow_ring hL0
 
 end Erdos408.TwoSided

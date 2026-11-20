@@ -8,17 +8,15 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyPaidBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentPrimeSlot
+open CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource QuadraticInitialBound
 local notation "O" => HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] in
@@ -62,12 +60,10 @@ lemma remaining_energy_bound
     rw [hid]
     apply he.trans
     simp only [Real.norm_eq_abs]
-    have hpow:(1+|t|)^degree≤(1+|t|+height)^degree :=
-      pow_le_pow_left₀ (by positivity) (by linarith) degree
     exact mul_le_mul_of_nonneg_right (mul_le_mul
       (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hC₁) hd) hp)
-      hpow (by positivity) (mul_nonneg (mul_nonneg (add_nonneg hC₀ hC₁) hd) hp)) hz
+      (pow_le_pow_left₀ (by positivity) (by linarith) degree) (by positivity) (mul_nonneg (mul_nonneg (add_nonneg hC₀ hC₁) hd) hp)) hz
   · have he:=hpositive (J\R) (fun i=>θ i) (fun i=>w i) (fun i=>σ i) (fun i=>v i)
       t height (fun i=>hw i) (fun i=>hwL i) (fun i=>hσlo i) (fun i=>hσhi i)
       hheight (fun i=>hv i) s hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂

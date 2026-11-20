@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceDomain
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePool
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain
-open CenteredMomentSourceRow CenteredMomentLiveDomain CenteredMomentFirstSectors
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal
+open CenteredMomentAmplificationAllocation CenteredMomentAmplificationSourceDomain CenteredMomentSourceRow
+open CenteredMomentLiveDomain CenteredMomentFirstSectors CenteredMomentSupportedCorrelation
+open CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 theorem residualIdeal_coprime (p : O) (hp : Prime p) (I : Ideal O) (hI : Supported I) :

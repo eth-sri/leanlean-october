@@ -83,7 +83,7 @@ lemma sum_powerset_prod_mul_ite_subset (S u : Finset α) (hu : u ⊆ S) (x : α 
   congr 2
   rw [show (∏ i ∈ S \ T, if i ∈ u then (0 : ℝ) else 1) =
       ∏ i ∈ S \ T, if i ∉ u then (1 : ℝ) else 0 from prod_congr rfl fun i _ => by
-        split_ifs <;> simp_all, prod_ite_zero, prod_const_one]
+        simp, prod_ite_zero, prod_const_one]
   congr 1
   apply propext
   constructor
@@ -104,8 +104,7 @@ lemma abs_prod_one_sub_sub_sum_le (S : Finset α) (R : ℕ) (x : α → ℝ)
     mul_nonneg (prod_nonneg fun i hi => (hx i (mem_powerset.1 hT hi)).1)
       (prod_nonneg fun i hi => sub_nonneg.2 (hx i (mem_sdiff.1 hi).1).2)
   -- each sum is an average against `w`
-  have hav : ∀ u ∈ S.powerset, ∏ i ∈ u, x i =
-      ∑ T ∈ S.powerset, w T * (if u ⊆ T then 1 else 0) := fun u hu =>
+  have hav := fun u hu =>
     (sum_powerset_prod_mul_ite_subset S u (mem_powerset.1 hu) x).symm
   have h1 : ∏ i ∈ S, (1 - x i) = ∑ T ∈ S.powerset, w T * (if T = ∅ then 1 else 0) := by
     simp only [mul_ite, mul_one, mul_zero, sum_ite_eq', mem_powerset, empty_subset, ite_true, hw,
@@ -161,12 +160,10 @@ lemma sum_powersetCard_two_prod_le (S : Finset α) {x : α → ℝ} (hx : ∀ i 
     ∑ u ∈ S.powersetCard 2, ∏ i ∈ u, x i ≤ (∑ i ∈ S, x i) ^ 2 / 2 := by
   induction S using Finset.induction_on with
   | empty =>
-    rw [powersetCard_eq_empty.2 (by simp)]
-    simp
+    positivity
   | insert a S ha ih =>
-    have hxS : ∀ i ∈ S, 0 ≤ x i := fun i hi => hx i (mem_insert_of_mem hi)
+    have hxS := fun i hi => hx i (mem_insert_of_mem hi)
     have hxa : 0 ≤ x a := hx a (mem_insert_self a S)
-    have hS0 : 0 ≤ ∑ i ∈ S, x i := sum_nonneg hxS
     rw [powersetCard_succ_insert ha, sum_insert ha]
     have hu := sum_union_inter (s₁ := S.powersetCard 2)
       (s₂ := (S.powersetCard 1).image (insert a)) (f := fun u => ∏ i ∈ u, x i)
@@ -202,7 +199,7 @@ lemma card_filter_powerset_card_le (S : Finset α) (m : ℕ) :
   rw [add_pow]
   refine sum_le_sum fun k hk => ?_
   rw [card_powersetCard, one_pow, mul_one]
-  have h1 : 1 ≤ m.choose k := Nat.choose_pos (by have := mem_range.1 hk; omega)
+  have h1 : 1 ≤ m.choose k := Nat.choose_pos (by simp_all)
   calc S.card.choose k ≤ S.card ^ k := Nat.choose_le_pow _ _
     _ ≤ S.card ^ k * m.choose k := Nat.le_mul_of_pos_right _ h1
 

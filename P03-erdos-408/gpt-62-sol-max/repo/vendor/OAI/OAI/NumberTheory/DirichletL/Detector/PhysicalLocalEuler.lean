@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceLocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ProbeEuler ProbeLocal
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CubicEisenstein
+open GaussianShiftedPartition ProbePrimePower ProbeEuler ProbeLocal
 local notation "O" => ActualEisensteinCubic.O
 
 lemma outerQuotient_mk (s H : O) :
@@ -37,8 +37,7 @@ theorem bareCongruenceCoefficient_all_prime_powers (p : O) (hp : Prime p)
         MulChar.pow_apply' _ hk]
   | succ n =>
     rw [bareCongruenceCoefficient_prime_power p hp hg n k j]
-    simp only [sourceScalar, Nat.add_eq_zero_iff, Nat.one_ne_zero, and_false, ite_false,
-      Nat.add_sub_cancel]
+    rfl
 
 end SevenEighths.ProbePhysical
 end

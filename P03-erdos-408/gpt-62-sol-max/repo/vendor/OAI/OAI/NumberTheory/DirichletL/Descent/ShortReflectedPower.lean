@@ -7,22 +7,21 @@ public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open InverseTerminalWidths InverseReflectedPhase CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
 universe v
 
 theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
     ∃C:ℝ,0<C ∧ ∀Z h:ℝ,1≤Z → 0≤h → h≤L →
       (256*(columnDyadicLength (Z^h)+1:ℝ))^2≤C*Z^e := by
   let a:=e/(2*(L+1))
-  have ha:0<a:=by dsimp [a]; positivity
+  have ha:0<a:=by positivity
   let B:=256*(2+1/(a*Real.log 2))
   have hlog:0<Real.log 2:=Real.log_pos (by norm_num)
-  have hB:0<B:=by dsimp [B]; positivity
+  have hB:0<B:=by positivity
   refine ⟨B^2,pow_pos hB _,?_⟩
   intro Z h hZ hh hhL
   have hz:0<Z:=zero_lt_one.trans_le hZ

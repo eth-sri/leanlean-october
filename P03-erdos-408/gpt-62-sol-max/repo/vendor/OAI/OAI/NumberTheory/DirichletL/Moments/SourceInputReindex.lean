@@ -8,18 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice
+open CenteredMomentOriginalChildEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
+open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
-local instance : DecidableEq (α⊕Fin 2) := Classical.decEq _
 local instance : DecidableEq (β⊕Fin 2) := Classical.decEq _
 
 def reindex (e : α≃β) (s : Input α) : Input β where

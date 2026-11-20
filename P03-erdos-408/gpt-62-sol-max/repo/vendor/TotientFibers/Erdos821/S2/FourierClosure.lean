@@ -51,13 +51,12 @@ theorem integral_phase_int (n : ℤ) :
       push_cast
       ring
     have hexp : Complex.exp c = 1 := by
-      have he : c = (n : ℂ) * (2 * Real.pi * Complex.I) := by dsimp only [c]; ring
+      have he : c = (n : ℂ) * (2 * Real.pi * Complex.I) := by ring
       rw [he]
       exact Complex.exp_int_mul_two_pi_mul_I n
     simp_rw [hf]
     rw [integral_exp_mul_complex hc]
-    simp only [Complex.ofReal_one, Complex.ofReal_zero, mul_one, mul_zero, hexp,
-      Complex.exp_zero, sub_self, zero_div]
+    simp_all
 
 namespace ResiduePath
 
@@ -68,7 +67,7 @@ theorem offset_last : Q.offset (Fin.last n) = ∑ i : Fin n, Q.step i := by
   unfold offset
   apply Finset.sum_congr rfl
   intro i _
-  simp only [Fin.val_last, ite_eq_left i.isLt]
+  simp
 
 theorem edgeCoefficient_phase (theta : ℝ) (i : Fin n) :
     Q.edgeCoefficient theta i = Q.edgeCoefficient 0 i * phase (theta * (Q.step i : ℝ)) := by
@@ -86,8 +85,7 @@ theorem weight_phase_factor (theta : ℝ) :
   ac_rfl
 
 theorem weight_continuous : Continuous (fun theta : ℝ => Q.Weight theta) := by
-  have he : (fun theta : ℝ => Q.Weight theta) =
-      (fun theta : ℝ => Q.Weight 0 * phase (theta * (Q.offset (Fin.last n) : ℝ))) :=
+  have he  :=
     funext Q.weight_phase_factor
   rw [he]
   exact continuous_const.mul (continuous_phase_int _)

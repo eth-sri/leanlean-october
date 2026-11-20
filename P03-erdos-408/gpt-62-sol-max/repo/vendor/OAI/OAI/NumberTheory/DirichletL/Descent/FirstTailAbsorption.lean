@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalTail
+public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedColumns
 
 @[expose] public section
 
@@ -17,7 +17,7 @@ lemma first_tail_fixed_cap (K D E U₁ U₂ B G₁ G₂ P H : ℝ) (A : ℕ)
     (128*U₁)*(128*U₂)*(G₁*G₂*K)*
       (P/((min 1 (K/(D*E*U₁*U₂)))^2*(1+H)^A)) ≤
     65536*G₁*G₂*P*B^19/(1+H)^A := by
-  have hB0 : 0≤B := zero_le_one.trans hB
+  have hB0  := zero_le_one.trans hB
   have hB2 : B≤B^2 := by nlinarith
   have hB3 : B≤B*B^2 := le_mul_of_one_le_right hB0 (one_le_pow₀ hB)
   have hb := firstTail_scalar_bound K D E U₁ U₂ B B G₁ G₂ P H A hK hD hE hU₁ hU₂
@@ -42,7 +42,7 @@ theorem choose_first_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau : 
   obtain ⟨A,hA⟩ := exists_nat_gt ((19*Lcap+saving)/tau)
   refine ⟨A,?_⟩
   intro Z K D E U₁ U₂ G₁ G₂ P hZ hK hD hE hU₁ hU₂ hG₁ hG₂ hP hKb hKi hDb hEb h₁ h₂
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz  := zero_lt_one.trans_le hZ
   have hb := first_tail_fixed_cap K D E U₁ U₂ (Z^Lcap) G₁ G₂ P (Z^tau) A
     hK hD hE hU₁ hU₂ (Real.one_le_rpow hZ hL) hG₁ hG₂ hP
     (Real.rpow_pos_of_pos hz _).le hKb hKi hDb hEb h₁ h₂

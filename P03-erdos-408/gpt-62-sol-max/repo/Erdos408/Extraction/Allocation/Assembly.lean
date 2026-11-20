@@ -41,7 +41,6 @@ lemma abs_endpoint_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw
   have hκ0 : 0 < κ := by linarith
   intro w hw
   obtain ⟨hw1, hwN⟩ := mem_Icc.1 hw
-  have hwx : (w : ℝ) ≤ κ * x := (Nat.le_floor_iff (by positivity)).1 hwN
   have hΦ0 : |Φ (w / x)| ≤ |M 0| := by
     have := hΦ.2.2.2 0 (w / x)
     simp only [iteratedDeriv_zero, Nat.cast_zero, mul_zero, rpow_zero, mul_one] at this
@@ -50,8 +49,8 @@ lemma abs_endpoint_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw
   have hslot := abs_slotCount_sub_slotMean_le hx
     (Real.log_le_log hκ0 hxκ) hκ0 hε hH hT hk hadm.1
     (by
-      have : 0 < c / T ^ 20 := hε
-      linarith [hadm.2]) hB hw1 hwx
+      have  := hε
+      linarith [hadm.2]) hB hw1 ((Nat.le_floor_iff (by positivity)).1 hwN)
   have h2ε : 2 / (c / T ^ 20) = 2 * T ^ 20 / c := by
     field_simp
   rw [h2ε] at hslot
@@ -129,9 +128,7 @@ lemma abs_expansion_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < c
       obtain ⟨hP, hQ⟩ := mem_sigma.1 hi
       obtain ⟨hP, hmany⟩ := mem_filter.1 hP
       obtain ⟨hU, hS⟩ := mem_sigma.1 hm
-      have hPQ : i.1 ∪ i.2 ⊆ candidateGroups x :=
-        union_subset (mem_powerset.1 hP) ((mem_powerset.1 hQ).trans sdiff_subset)
-      refine abs_twoSidedSum_le hbody hgroups hbands hx hT hγ hj1 hκ hadm hB hΦ hPQ ?_ ?_ ?_
+      refine abs_twoSidedSum_le hbody hgroups hbands hx hT hγ hj1 hκ hadm hB hΦ (union_subset (mem_powerset.1 hP) ((mem_powerset.1 hQ).trans sdiff_subset)) ?_ ?_ ?_
       · refine hmany.1.trans ?_
         exact_mod_cast card_le_card (inter_subset_inter_right subset_union_left)
       · refine hmany.2.trans ?_
@@ -139,7 +136,7 @@ lemma abs_expansion_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < c
       · exact (mem_powerset.1 hS).trans
           (product_subset_product_left (by simpa using mem_powerset.1 hU)))
   set X := x / L * L ^ (-c') with hX
-  have hrp : ∀ a b : ℝ, L ^ a * L ^ b = L ^ (a + b) := fun a b => (rpow_add hL a b).symm
+  have hrp := fun a b => (rpow_add hL a b).symm
   have hXe : ∀ a : ℝ, a = -c' - 1 → x * L ^ a = X := by
     intro a ha
     rw [ha, rpow_sub_one hL.ne', hX]
@@ -184,7 +181,7 @@ lemma card_squares_le_at {x κ c' C₅ : ℝ} (hgroups : GroupFacts x) (hx : 1 <
       ((N : ℝ) + 1) / (p * p) ≤ (κ * x + 1) * e * (1 / p) := by
     intro p hp
     have hp1 : Real.exp (L ^ (28 / 100 : ℝ)) ≤ p := hgroups.2.2.2.2.2.2 p hp
-    have hp0 : (0 : ℝ) < p := lt_of_lt_of_le (exp_pos _) hp1
+    have hp0 := lt_of_lt_of_le (exp_pos _) hp1
     have hinv : 1 / (p : ℝ) ≤ e := by
       rw [one_div, he, exp_neg]
       exact inv_anti₀ (exp_pos _) hp1
@@ -241,11 +238,11 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
   have hγ0 : 0 ≤ γ := by
     simp only [γ, presieveExponent]
     positivity
-  have hγ : 1 ≤ x ^ γ := one_le_rpow hx.le hγ0
+  have hγ := one_le_rpow hx.le hγ0
   have hj1 : 1 ≤ j := by omega
   have hΛ : 0 < Λ := rpow_pos_of_pos hL _
   have hBd0 : 0 ≤ Bd := by positivity
-  have hBdL : Bd ≤ L ^ c' := hBd
+  have hBdL := hBd
   have hE := abs_endpoint_le_at hq hq₁ hcw hcw₁ hκ hc hbands hmassband hH hx hxκ hT hk hadm hB hΦ
   -- the cutoff vanishes below `x/κ`
   have hFz : ∀ w ∈ Icc 1 N, ¬ x / κ ≤ (w : ℝ) →
@@ -271,8 +268,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
     by_contra h
     exact hw (exists_sq_dvd_of_not_squarefree x (by omega) h)
   -- the coins lie in `[0, 1]`
-  have hcoin : ∀ w : ℕ, ∀ g ∈ candidateGroups x,
-      0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 :=
+  have hcoin :=
     fun w g hg => successCoin_mem hc₁.le hc₁' (hgroups.1 g hg).1 w
   -- the decomposition
   rw [proxySum_eq_sum q cw K CN γ j u v B hx0 hκ0 hΦ.2.2.1]
@@ -288,7 +284,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
     hj1 hterms hadm hB hΦ (j := j)
   set X := x / L * L ^ (-c') with hX
   have hX0 : 0 ≤ X := by positivity
-  have hrp : ∀ a b : ℝ, L ^ a * L ^ b = L ^ (a + b) := fun a b => (rpow_add hL a b).symm
+  have hrp := fun a b => (rpow_add hL a b).symm
   have hXe : ∀ a : ℝ, a = -c' - 1 → x * L ^ a = X := by
     intro a ha
     rw [ha, rpow_sub_one hL.ne', hX]
@@ -309,11 +305,9 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
       (fun w => ∃ p ∈ candidatePrimes x, p * p ∣ w + 1)
     set Y := x * L ^ (-1 - 2 * c') with hYdef
     have hY : 0 ≤ Y := by positivity
-    have hcore0 : 0 ≤ ∑ w ∈ Icc 1 N, proxyCore x γ j (w + 1) ^ 2 :=
-      sum_nonneg fun w _ => sq_nonneg _
     have hprod : (((Icc 1 N).filter fun w => ∃ p ∈ candidatePrimes x, p * p ∣ w + 1).card : ℝ) *
         ∑ w ∈ Icc 1 N, proxyCore x γ j (w + 1) ^ 2 ≤ Y ^ 2 := by
-      have h1 := mul_le_mul hbadc hcore hcore0 (by positivity)
+      have h1 := mul_le_mul hbadc hcore (sum_nonneg fun w _ => sq_nonneg _) (by positivity)
       refine h1.trans (le_of_eq ?_)
       rw [show Y ^ 2 = x * x * (L ^ (-1 - 2 * c') * L ^ (-1 - 2 * c')) by rw [hYdef]; ring,
         show x * L ^ (-(2 + 4 * c' + C₅)) * (x * L ^ C₅) =
@@ -336,9 +330,8 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
         proxyCoeff x γ j (w + 1) * failureProb c₁ c₂ x w :=
       sum_nonneg fun w hw => mul_nonneg (hA w (mem_filter.1 hw).1).1
         (failureProb_nonneg (hcoin w))
-    have hxL : 0 ≤ x / L := div_nonneg hx0.le hL.le
     have h1 : C₃ * (x / L) * L ^ (-(2 * c')) ≤ |C₃| * (x / L) * L ^ (-(2 * c')) :=
-      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self _) hxL)
+      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self _) (div_nonneg hx0.le hL.le))
         (rpow_pos_of_pos hL _).le
     calc Bd * _ ≤ L ^ c' * (|C₃| * (x / L) * L ^ (-(2 * c'))) :=
           mul_le_mul hBdL (hfail.trans h1) hnn (rpow_pos_of_pos hL _).le

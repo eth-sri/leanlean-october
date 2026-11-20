@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification
@@ -22,8 +22,8 @@ theorem cube_height_budget_eventually (n : ℕ) (τ dmin cost : ℝ)
     ((3*(n:ℝ)+5)^2) (dmin*cost-2*τ) (by linarith)
   filter_upwards [habs,eventually_ge_atTop (1:ℝ)] with Z hC hZ
   intro i hi d hd
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
-  have hpow : 1≤Z^τ := Real.one_le_rpow hZ hτ.le
+  have hZp  := zero_lt_one.trans_le hZ
+  have hpow  := Real.one_le_rpow hZ hτ.le
   have hi' : (i:ℝ)≤n := by exact_mod_cast hi
   have hx : 3+(3*i+2:ℕ)*Z^τ≤(3*(n:ℝ)+5)*Z^τ := by
     push_cast

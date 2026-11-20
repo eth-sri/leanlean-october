@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalAmplitudePair
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
@@ -17,13 +17,6 @@ open CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 universe u
 
-structure Tests where
-  reverse : Fin 2→Bool
-  index : Fin 2→ℕ
-  index_le : ∀j,index j≤2
-  sigma : Fin 2→ℝ
-  sigma_mem : ∀j,sigma j∈Set.Icc (0:ℝ) 1
-  height : Fin 2→ℝ
 
 def volume {ι:Type u} [Fintype ι] (s:Data ι):ℝ:=s.X₁*s.X₂*∏i,s.P i
 

@@ -40,9 +40,9 @@ theorem valuation_prime (P Q : Ideal O) (hP : Prime P) :
     valuation P Q = if P = Q then 1 else 0 := by
   have hf : normalizedFactors P = {P} := by
     simpa using (normalizedFactors_prod_of_prime (m := ({P} : Multiset (Ideal O)))
-      (by intro R hR; simpa only [Multiset.mem_singleton.mp hR] using hP))
+      (by simp_all))
   simp only [valuation,hf,Multiset.count_singleton]
-  simp only [eq_comm]
+  simp [eq_comm]
 
 omit [Fintype ι] in
 theorem valuation_prime_product (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
@@ -87,11 +87,10 @@ theorem forcingIdeal_squarefree (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
     Squarefree (forcingIdeal P c d V) := by
   apply Finset.squarefree_prod_of_pairwise_isCoprime
   · intro i hi j hj hij
-    let : (P i).IsMaximal := (Ideal.isPrime_of_prime (hp i)).isMaximal (hp i).ne_zero
-    let : (P j).IsMaximal := (Ideal.isPrime_of_prime (hp j)).isMaximal (hp j).ne_zero
+    let  := (Ideal.isPrime_of_prime (hp i)).isMaximal (hp i).ne_zero
+    let  := (Ideal.isPrime_of_prime (hp j)).isMaximal (hp j).ne_zero
     exact (Ideal.isCoprime_of_isMaximal (hinj.ne hij)).isRelPrime
-  · intro i hi
-    exact (hp i).squarefree
+  simp_all
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem forcing_prime_mem (P : ι → Ideal O) (hp : ∀ i, Prime (P i))

@@ -61,9 +61,9 @@ private theorem mem_blockSystemsIn {S : Finset α} {𝒞 : Finset (Finset α)} :
   simp only [blockSystemsIn, blockSystems, mem_filter, mem_univ, true_and, and_assoc]
   constructor
   · rintro ⟨hd, h2, hS⟩
-    exact ⟨hd, fun C hC => ⟨h2 C hC, hS C hC⟩⟩
+    simp_all
   · rintro ⟨hd, h⟩
-    exact ⟨hd, fun C hC => (h C hC).1, fun C hC => (h C hC).2⟩
+    simp_all
 
 /-- Every block system lies in `univ`. -/
 private theorem blockSystemsIn_univ : blockSystemsIn (univ : Finset α) = blockSystems α :=
@@ -79,8 +79,7 @@ private theorem blockSystemsIn_empty : blockSystemsIn (∅ : Finset α) = {∅} 
     have h2 := (h C hC).1
     rw [subset_empty.1 (h C hC).2, card_empty] at h2
     omega
-  · rintro rfl
-    simp
+  simp_all
 
 /-- A block system inside `T \ B` has no block through an address outside `T`. -/
 private theorem insert_notMem_of_mem_blockSystemsIn {a : α} {T B B' : Finset α}
@@ -116,7 +115,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
       simp only [mem_sigma, mem_filter, mem_powerset] at hx
       obtain ⟨⟨hBT, hB⟩, h𝒞⟩ := hx
       obtain ⟨hd, h⟩ := mem_blockSystemsIn.1 h𝒞
-      have haB : a ∉ B := fun h => ha (hBT h)
+      have haB  := fun h => ha (hBT h)
       refine mem_filter.2 ⟨mem_blockSystemsIn.2 ⟨?_, ?_⟩,
         insert a B, mem_insert_self _ _, mem_insert_self _ _⟩
       · rw [coe_insert]
@@ -127,9 +126,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
           ⟨fun h => ha (mem_sdiff.1 (hCT h)).1, disjoint_sdiff.mono_right hCT⟩
       · refine (forall_mem_insert _ _ _).2 ⟨⟨?_, insert_subset_insert a hBT⟩, fun C hC =>
           ⟨(h C hC).1, (h C hC).2.trans (sdiff_subset.trans (subset_insert a T))⟩⟩
-        rw [card_insert_of_notMem haB]
-        have := hB.card_pos
-        omega
+        simp_all
     · rintro ⟨B₁, 𝒞₁⟩ hx₁ ⟨B₂, 𝒞₂⟩ hx₂ h
       dsimp only at h
       simp only [mem_sigma, mem_filter, mem_powerset] at hx₁ hx₂
@@ -159,7 +156,7 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
           have := (h C hC).1
           omega
         · obtain ⟨hne, hC'⟩ := mem_erase.1 hC'
-          have hdisj : Disjoint C' C := hd hC' hC hne
+          have hdisj  := hd hC' hC hne
           refine ⟨(h C' hC').1, subset_sdiff.2 ⟨?_, hdisj.mono_right (erase_subset a C)⟩⟩
           exact (subset_insert_iff_of_notMem (disjoint_right.1 hdisj haC)).1 (h C' hC').2
       · dsimp only
@@ -192,11 +189,11 @@ private theorem distinctOn_sdiff_iff {β : α → Option ℕ} {T P B : Finset α
   · rintro ⟨hd, hc⟩ x hx x' hx' q hq hq'
     simp only [mem_sdiff] at hx hx'
     by_cases hxp : β x = some p
-    · have hqp : q = p := Option.some_inj.1 (hq.symm.trans hxp)
+    · have hqp  := Option.some_inj.1 (hq.symm.trans hxp)
       rw [hqp] at hq hq'
       exact card_le_one.1 hc x (mem_sdiff.2 ⟨mem_filter.2 ⟨hx.1, hq⟩, hx.2⟩)
         x' (mem_sdiff.2 ⟨mem_filter.2 ⟨hx'.1, hq'⟩, hx'.2⟩)
-    · have hx'p : β x' ≠ some p := fun h => hxp (hq.trans (hq'.symm.trans h))
+    · have hx'p  := fun h => hxp (hq.trans (hq'.symm.trans h))
       exact hd x (mem_sdiff.2 ⟨hx.1, fun h => hxp (mem_filter.1 h).2⟩)
         x' (mem_sdiff.2 ⟨hx'.1, fun h => hx'p (mem_filter.1 h).2⟩) q hq hq'
 
@@ -237,14 +234,13 @@ private theorem indicator_card_eq_zero (P : Finset α) :
   generalize #P = m
   match m with
   | 0 => simp
-  | 1 => simp [sum_range_succ]
+  | 1 => rfl
   | j + 2 =>
     rw [sum_range_succ, sum_range_succ, sum_eq_zero fun k hk => ?_]
-    · have h₁ : (j + 2).choose (j + 1) = j + 2 := Nat.choose_succ_self_right (j + 1)
+    · have h₁  := Nat.choose_succ_self_right (j + 1)
       have h₂ : j + 2 - (j + 1) = 1 := by omega
       have h₃ : ((j + 2).factorial : ℤ) = (j + 2) * (j + 1).factorial := by
-        push_cast [Nat.factorial_succ]
-        ring
+        rfl
       simp only [h₁, h₂, h₃, Nat.choose_self, Nat.sub_self, nsmul_eq_mul]
       simp
       ring
@@ -385,8 +381,7 @@ private theorem rank_step_le (n r : ℕ) :
         refine Nat.add_le_add_left ?_ _
         rw [← sum_filter_of_ne (p := (· ≤ r)) fun k _ hk => ?_]
         · exact sum_le_sum_of_subset fun k hk => mem_range.2 (by
-            have := (mem_filter.1 hk).2
-            omega)
+            simp_all)
         · by_contra h
           simp_all
     _ = ∑ k ∈ range (r + 1), n ^ (2 * r - k) := by

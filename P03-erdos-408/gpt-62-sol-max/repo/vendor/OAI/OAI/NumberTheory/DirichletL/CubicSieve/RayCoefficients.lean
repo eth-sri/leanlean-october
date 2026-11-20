@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstPassage
 
 @[expose] public section
@@ -9,71 +10,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
@@ -96,9 +37,9 @@ def conjugateRayMonoid (χ : RayCharacter) : O →* ℂ :=
     conjugateRayMonoid χ a = star (rayCharacter χ a) := rfl
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 theorem columnG_eq_ray_sum
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
@@ -198,9 +139,9 @@ def secondRayPlus (Ψ : O →* ℂ) (r : SecondRayIndex) : O →* ℂ :=
   rayMonoid r.2.1 * (conjugateRayMonoid r.1.1 * Ψ)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def secondTotalWeight (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
     (z : SecondRayIndex × Finset ι) : ℂ :=
@@ -213,9 +154,9 @@ end
 open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 end SecondPassArithmetic
 
@@ -265,7 +206,7 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
   have hA : lambda ^ 2 ∣ productA-1 := by
     have h := dvd_add (primary_mul a e ha he)
       (dvd_mul_of_dvd_left (lambda_sq_dvd_three.trans hb) g)
-    convert h using 1 ; dsimp [productA] ; ring
+    convert h using 1 ; ring
   have hrelation : a*productC-c*productA=g := by
     dsimp [productA,productC]
     linear_combination g*hdet
@@ -314,12 +255,12 @@ theorem exists_coprime_three_shift (a c g : O)
   let s := (UniqueFactorizationMonoid.normalizedFactors g).filter (fun p => ¬p ∣ a)
   refine ⟨s.prod, ?_⟩
   apply IsCoprime.symm
-  apply isCoprime_of_prime_dvd (by rintro ⟨h,-⟩; exact hg0 h)
+  apply isCoprime_of_prime_dvd (by simp_all)
   intro p hp hpg hpnew
   by_cases hpa : p ∣ a
   · have hp3 : ¬p ∣ (3 : O) := by
       intro h3
-      have hsub : p ∣ a-1 := h3.trans (three_dvd_primary_sub_one a ha)
+      have hsub  := h3.trans (three_dvd_primary_sub_one a ha)
       have hone : p ∣ (1 : O) := by
         convert dvd_sub hpa hsub using 1 ; ring
       exact hp.not_dvd_one hone
@@ -329,10 +270,10 @@ theorem exists_coprime_three_shift (a c g : O)
     have hps : ¬p ∣ s.prod := by
       intro hdiv
       obtain ⟨q,hqs,hpq⟩ := hp.exists_mem_multiset_dvd hdiv
-      have hqs' : q ∈ UniqueFactorizationMonoid.normalizedFactors g ∧ ¬q ∣ a :=
+      have hqs'  :=
         Multiset.mem_filter.mp hqs
       have hqprime := UniqueFactorizationMonoid.prime_of_normalized_factor q hqs'.1
-      have hqp : q ∣ p := (hp.associated_of_dvd hqprime hpq).dvd'
+      have hqp  := (hp.associated_of_dvd hqprime hpq).dvd'
       exact hqs'.2 (hqp.trans hpa)
     have hpterm : p ∣ 3*s.prod*c := by
       convert dvd_sub hpnew hpa using 1 ; ring
@@ -343,10 +284,10 @@ theorem exists_coprime_three_shift (a c g : O)
     · exact hpc hright
   · obtain ⟨q,hq,hpq⟩ := UniqueFactorizationMonoid.exists_mem_normalizedFactors_of_dvd
       hg0 hp.irreducible hpg
-    have hqa : ¬q ∣ a := fun hqa => hpa (hpq.dvd.trans hqa)
+    have hqa  := fun hqa => hpa (hpq.dvd.trans hqa)
     have hqs : q ∈ s := Multiset.mem_filter.mpr ⟨hq,hqa⟩
-    have hps : p ∣ s.prod := hpq.dvd.trans (Multiset.dvd_prod hqs)
-    have hpterm : p ∣ 3*s.prod*c :=
+    have hps  := hpq.dvd.trans (Multiset.dvd_prod hqs)
+    have hpterm  :=
       dvd_mul_of_dvd_left (dvd_mul_of_dvd_right hps 3) c
     have hpa' : p ∣ a := by
       convert dvd_sub hpnew hpterm using 1 ; ring
@@ -368,18 +309,18 @@ theorem kubota_mul (a b c d e f g h : O)
     symbol (c*e+d*g) (a*e+b*g) = symbol c a * symbol g e := by
   by_cases hg0 : g = 0
   · have heh : e*h=1 := by simpa only [hg0,mul_zero,sub_zero] using hdet'
-    have he1 : e=1 := A3_primary_unit_eq_one e (IsUnit.of_mul_eq_one h heh) he
+    have he1  := A3_primary_unit_eq_one e (IsUnit.of_mul_eq_one h heh) he
     simp only [hg0,he1,mul_one,mul_zero,add_zero,symbol_one]
   have hac : IsCoprime a c := by
     refine ⟨d,-b,?_⟩
     linear_combination hdet
   obtain ⟨t,ht⟩ := exists_coprime_three_shift a c g ha hac hg0
   have hdetShift : (a+3*t*c)*d-(b+3*t*d)*c=1 := by linear_combination hdet
-  have hbShift : (3 : O) ∣ b+3*t*d :=
+  have hbShift  :=
     dvd_add hb (dvd_mul_of_dvd_left (dvd_mul_right 3 t) d)
   have hcalc := kubota_mul_of_isCoprime (a+3*t*c) (b+3*t*d) c d e g
     hdetShift (primary_add_multiple_three a c t ha) he hbShift hg ht
-  have hC : (3 : O) ∣ c*e+d*g :=
+  have hC  :=
     dvd_add (dvd_mul_of_dvd_left hc e) (dvd_mul_of_dvd_right hg d)
   have hA : lambda ^ 2 ∣ (a*e+b*g)-1 := by
     have hh := dvd_add (primary_mul a e ha he)
@@ -395,7 +336,7 @@ theorem kubota_mul (a b c d e f g h : O)
 
 end CubicJacobiGlobal
 
-open scoped BigOperators Classical MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicJacobiGlobal
 open ActualEisensteinCubic CubicRamified
@@ -435,8 +376,7 @@ def levelThree : Subgroup (SL(2, O)) :=
 
 lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
     (3 : O) ∣ (M : SL(2,O)) i j - (if i=j then 1 else 0) := by
-  have hm : Matrix.SpecialLinearGroup.map (n := Fin 2)
-      (Ideal.Quotient.mk (Ideal.span {(3 : O)})) (M : SL(2,O)) = 1 := M.property
+  have hm  := M.property
   have h := congrArg (fun N : SL(2, O ⧸ (Ideal.span {(3 : O)})) => N i j) hm
   change (Ideal.Quotient.mk (Ideal.span {(3 : O)})) ((M : SL(2,O)) i j) =
     (1 : Matrix (Fin 2) (Fin 2) (O ⧸ (Ideal.span {(3 : O)}))) i j at h
@@ -446,7 +386,7 @@ lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
 
 lemma levelThree_primary (M : levelThree) :
     lambda ^ 2 ∣ (M : SL(2,O)) 0 0 - 1 := by
-  exact lambda_sq_dvd_three.trans (by simpa using levelThree_entry M 0 0)
+  exact lambda_sq_dvd_three.trans (by exact levelThree_entry M 0 0)
 lemma levelThree_upper (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 0 1 := by
   simpa using levelThree_entry M 0 1
 lemma levelThree_lower (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 1 0 := by

@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.CommonHarmonicMass
 
 @[expose] public section
@@ -42,9 +43,9 @@ theorem shell_bound (e : ℝ) (he : 0<e) :
   obtain ⟨C,hC,hcount⟩ := partitioned_common_pair_count e e he he
   refine ⟨C*2^(1+e),by positivity,?_⟩
   intro s hs hs0 S hS Y T hT hTY hN hshell
-  have hY : 0<Y := hT.trans_le hTY
+  have hY  := hT.trans_le hTY
   have hsn : 0<(s.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs0)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hs0)
   have hc := hcount s hs hs0 S (fun v hv=>⟨(hS v hv).1,(hS v hv).2.1⟩)
     (fun v hv=>(hS v hv).2.2.1) (fun v hv=>⟨(hS v hv).2.2.2.1,(hS v hv).2.2.2.2.1⟩)
     (fun v hv=>(hS v hv).2.2.2.2.2) Y Y (2*T) hY hY (by positivity) hN
@@ -77,7 +78,7 @@ lemma keys_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
     (h0 : ∀v∈S,v.1.1≠0 ∧ v.1.2≠0)
     (hN : ∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) :
     ((keys S).card:ℝ)≤(3+B/Real.log 2)*(1+Real.log Z) := by
-  have hY : 1≤Z^B := Real.one_le_rpow hZ hB
+  have hY  := Real.one_le_rpow hZ hB
   have hsub : keys S ⊆ indices 1 (Z^B) := by
     intro n hn
     obtain ⟨v,hv,rfl⟩ := Finset.mem_image.mp hn
@@ -99,24 +100,22 @@ theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
       (∑v∈S,weight v)≤C*Z^(3*B*e)*(1+Real.log Z)/(s.absNorm:ℝ) := by
   obtain ⟨C,hC,hbound⟩ := shell_bound e he
   let K : ℝ := 3+B/Real.log 2
-  have hK : 0<K := by dsimp [K]; positivity
   refine ⟨C*K,by positivity,?_⟩
   intro Z hZ s hs hs0 S hS hN
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz  := zero_lt_one.trans_le hZ
   have hsn : 0<(s.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs0)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hs0)
   have hb (n : ℤ) (hn : n∈keys S) :
       (∑v∈shell S n,weight v)≤C*(Z^B)^(3*e)/(s.absNorm:ℝ) := by
     obtain ⟨v,hv,hkey⟩ := Finset.mem_image.mp hn
     have hr := (commonRadical_norm_le _ _ (hS v hv).1 (hS v hv).2.1).trans
       ((min_le_left _ _).trans (hN v hv).1)
     have hc := norm_scale_bounds _ (radical_ne_zero v) (Z^B) hr
-    have hm : dyadicScale n≤Z^B := by
-      exact hkey ▸ hc.2
-    exact hbound s hs hs0 (shell S n) (fun w hw=>hS w (Finset.mem_filter.mp hw).1)
-      (Z^B) (dyadicScale n) (dyadicScale_pos _) hm
+    refine hbound s hs hs0 (shell S n) (fun w hw=>hS w (Finset.mem_filter.mp hw).1)
+      (Z^B) (dyadicScale n) (dyadicScale_pos _) ?_
       (fun w hw=>hN w (Finset.mem_filter.mp hw).1)
       (fun w hw=>shell_norm_bounds S n w hw)
+    exact hkey ▸ hc.2
   have hk := keys_card_log B Z hB hZ S (fun v hv=>⟨(hS v hv).1,(hS v hv).2.1⟩) hN
   rw [sum_shells]
   calc
@@ -134,7 +133,7 @@ theorem common_radical_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,1/(Ideal.absNorm (commonRadical v.1.1 v.1.2):ℝ))≤C*Z^δ/(s.absNorm:ℝ) := by
   let e : ℝ := δ/(6*(B+1))
-  have he : 0<e := by dsimp [e]; positivity
+  have he : 0<e := by positivity
   have hbudget : 3*B*e+δ/2≤δ := by
     have hh : e*(6*(B+1))=δ := div_mul_cancel₀ δ (by positivity)
     nlinarith
@@ -145,7 +144,7 @@ theorem common_radical_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
   have hz : 0<Z := by linarith
   have hZ1 : 1≤Z := by linarith
   have hsn : 0<(s.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs0)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hs0)
   have hl : 1+Real.log Z≤D*Z^(δ/2) := by
     have hn := Real.log_nonneg hZ1
     exact (show 1+Real.log Z≤(1+Real.log Z)^2 by nlinarith).trans (hlog Z hZ1)

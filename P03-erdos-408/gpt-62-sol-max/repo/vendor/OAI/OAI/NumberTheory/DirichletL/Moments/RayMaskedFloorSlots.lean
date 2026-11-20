@@ -11,9 +11,8 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource
-open CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion
+open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
+open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion
 open CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile
 open CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
@@ -31,7 +30,6 @@ lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
   ring
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_slot_product {α : Type*} [DecidableEq α]
@@ -61,8 +59,7 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
   intro η₀
   filter_upwards [hbound η₀,eventually_gt_atTop (1:ℝ)] with Z hz hZ
   intro θ w σ v t T hw hwL hσlo hσhi hT hv η z hz0 N hmod Q hQM hex A hAF
-  have hZ0 : 0<Z := zero_lt_one.trans hZ
-  have hk : 0≤κ := by linarith
+  have hZ0  := zero_lt_one.trans hZ
   have hh : 1≤1+|t|+T := by linarith [abs_nonneg t]
   have hslot (i : α) (hi : i∈A) :
       ‖naturalSlot N.character (primePool M H b (Z^(w i)))
@@ -93,8 +90,7 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
         _ = _ := by dsimp [el]; field_simp
     have hs := Finset.sum_le_sum_of_subset_of_nonneg hAF (fun i hi _=>hw i hi)
     nlinarith
-  have hp : 1≤C₀*(1+|t|+T)^J := one_le_mul_of_one_le_of_one_le hC₀ (one_le_pow₀ hh)
-  apply (mul_le_mul (pow_le_pow_right₀ hp (Finset.card_le_card hAF))
+  apply (mul_le_mul (pow_le_pow_right₀ (one_le_mul_of_one_le_of_one_le hC₀ (one_le_pow₀ hh)) (Finset.card_le_card hAF))
     (Real.rpow_le_rpow_of_exponent_le hZ.le hexp) (by positivity) (by positivity)).trans_eq
   rw [mul_pow,←pow_mul]
 

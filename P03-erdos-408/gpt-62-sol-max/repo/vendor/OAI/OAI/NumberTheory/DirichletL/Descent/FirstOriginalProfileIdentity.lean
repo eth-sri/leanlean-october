@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileData
 
 @[expose] public section
@@ -7,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open CompletedHeight FourierBridge
-open InverseMomentFirstProfileUniform
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedHeight
+open FourierBridge InverseMomentFirstProfileUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
+variable (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp in
 lemma physical_rows_congr_positive (F : Finset ι) (selector C₁ C₂ : Finset ι→ℂ)

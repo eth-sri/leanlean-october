@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGates
 
 @[expose] public section
@@ -15,11 +16,11 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecon
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalFamily.Maximal p]
 
 lemma actual_profile_zero_of_geometry
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
     (lists₁ lists₂ : σ→Finset ι) (a₁ a₂ : σ→ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y X b : ℝ) (hX : 0<X)
@@ -41,8 +42,8 @@ lemma actual_profile_zero_of_geometry
   simp [secondNormProfile,secondActualNorms,hzero]
 
 lemma wholeRow_zero_of_geometry
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     {Jo : ℕ} (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (X Y b : ℝ) (hX : 0<X) (hW : ∀y,W y≠0 → y≤b)
@@ -55,17 +56,17 @@ lemma wholeRow_zero_of_geometry
     (fun i=>lists i\InverseMomentWholeRetainedSource.deleted p extra negative x) a a W W rowMajorant Y X b hX hW hgeom
   rw [hh,mul_zero]
 
-omit hp [∀i,(Ideal.span {p i}).IsMaximal] in
+omit hp [OAI.PrincipalFamily.Maximal p] in
 def geometrySource {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (b X : ℝ) :
     Finset (MarkedSecondSource ι Jo Jn) :=
   source.filter (fun x=>primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤b*X)
 
-omit hp [∀i,(Ideal.span {p i}).IsMaximal] in
+omit hp [OAI.PrincipalFamily.Maximal p] in
 omit [DecidableEq ι] in
 lemma geometrySource_subset {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (b X : ℝ) :
     geometrySource p source b X⊆source := Finset.filter_subset _ _
 
-omit hp [∀i,(Ideal.span {p i}).IsMaximal] in
+omit hp [OAI.PrincipalFamily.Maximal p] in
 omit [DecidableEq ι] in
 lemma geometrySource_gate {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (b X : ℝ) :
     ∀x∈geometrySource p source b X,
@@ -73,8 +74,8 @@ lemma geometrySource_gate {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι 
   fun _x hx=>(Finset.mem_filter.mp hx).2
 
 lemma original_retained_geometry_sum
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     {Jo : ℕ} (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (source : Finset (MarkedSecondSource ι Jo 0)) (w : MarkedSecondSource ι Jo 0→ℂ)
     (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)

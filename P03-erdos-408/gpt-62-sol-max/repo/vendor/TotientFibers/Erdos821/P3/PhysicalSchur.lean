@@ -9,8 +9,7 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
-open scoped Topology
+open scoped BigOperators Topology
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -18,11 +17,15 @@ namespace Erdos821.P3Core
 
 open Erdos821.Blueprint.Graph
 
-lemma omegaGroup_ge_of_physical {P : PrimeGroups} {M : ℕ} (n : ℤ)
-    (a : P.Labels M) (ha : P.physical M n a) (g : P.Group) :
+section
+
+variable {P : PrimeGroups} {M : ℕ} (n : ℤ)
+  (a : P.Labels M)
+
+lemma omegaGroup_ge_of_physical (ha : P.physical M n a) (g : P.Group) :
     M ≤ P.omegaGroup g n := by
   classical
-  let S : Finset ℕ := Finset.univ.image fun i : Fin M => (a g i).val
+  let S  := Finset.univ.image fun i : Fin M => (a g i).val
   have hsub : S ⊆ (P.primes g).filter (fun p => (p : ℤ) ∣ n) := by
     intro p hp
     rcases Finset.mem_image.mp hp with ⟨i, hi, rfl⟩
@@ -40,8 +43,7 @@ lemma omegaGroup_ge_of_physical {P : PrimeGroups} {M : ℕ} (n : ℤ)
       Finset.card_le_card hsub
     _ = P.omegaGroup g n := by rfl
 
-lemma omega_ge_card_mul_of_physical {P : PrimeGroups} {M : ℕ} (n : ℤ)
-    (a : P.Labels M) (ha : P.physical M n a) :
+lemma omega_ge_card_mul_of_physical (ha : P.physical M n a) :
     M * P.count ≤ P.omega n := by
   classical
   calc
@@ -49,6 +51,8 @@ lemma omega_ge_card_mul_of_physical {P : PrimeGroups} {M : ℕ} (n : ℤ)
     _ ≤ ∑ g : P.Group, P.omegaGroup g n :=
       Finset.sum_le_sum fun g hg => omegaGroup_ge_of_physical n a ha g
     _ = P.omega n := rfl
+
+end
 
 lemma damping_le_one_of_physical {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (n : ℤ) (a : P.Labels (J + F.ell))
@@ -60,24 +64,28 @@ lemma damping_le_one_of_physical {F : FixedData} {P : PrimeGroups}
   change F.q ^ (((P.omega n : ℝ) - (J + F.ell) * P.count) / 2) ≤ 1
   exact Real.rpow_le_one F.q_pos.le F.q_lt.le he
 
-lemma V_pos_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
+section
+
+variable {F : FixedData} {P : PrimeGroups} {x : ℝ}
+
+lemma V_pos_of_admissible
     (hP : P.Admissible F x) (g : P.Group) : 0 < P.V g := by
   rcases hP with ⟨_, _, _, _, hV, _⟩
   exact lt_of_lt_of_le F.vMin_pos (hV g).1
 
-lemma V_lower_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
+lemma V_lower_of_admissible
     (hP : P.Admissible F x) (g : P.Group) : F.vMin ≤ P.V g := by
   rcases hP with ⟨_, _, _, _, hV, _⟩
   exact (hV g).1
 
-lemma mu_pos_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
+lemma mu_pos_of_admissible
     (hP : P.Admissible F x) (g : P.Group) (p : P.Prime g) : 0 < P.mu g p := by
   have hp : 0 < (p.val : ℝ) := by
     exact_mod_cast (P.prime g p.val p.property).pos
   simp only [PrimeGroups.mu]
   exact inv_pos.mpr (mul_pos (V_pos_of_admissible hP g) hp)
 
-lemma auxMass_pos_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
+lemma auxMass_pos_of_admissible
     {J m : ℕ} (ν : Pattern P J F.ell m) (u : P.Aux J)
     (hP : P.Admissible F x) : 0 < ν.auxMass u := by
   classical
@@ -88,6 +96,8 @@ lemma auxMass_pos_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
   intro i hi
   exact mu_pos_of_admissible hP g (u g i)
 
+end
+
 lemma physicalTargetMass_pos_of_admissible {P : PrimeGroups}
     {J ell m : ℕ} (ν : Pattern P J ell m) (hP : ∀ g : P.Group, 0 < P.V g) :
     0 < ν.physicalTargetMass := by
@@ -97,16 +107,19 @@ lemma physicalTargetMass_pos_of_admissible {P : PrimeGroups}
   intro g hg
   exact zpow_pos (hP g) _
 
-lemma damping_pos {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+section
+
+variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+
+lemma damping_pos
     (A : Model F P J m) (n : ℤ) : 0 < A.damping n :=
   Real.rpow_pos_of_pos F.q_pos _
 
-lemma damping_eq_group_product_of_physical {F : FixedData} {P : PrimeGroups}
-    {J m : ℕ} (A : Model F P J m) (n : ℤ) (a : P.Labels (J + F.ell))
+lemma damping_eq_group_product_of_physical (A : Model F P J m) (n : ℤ) (a : P.Labels (J + F.ell))
     (ha : P.physical (J + F.ell) n a) :
     A.damping n = ∏ g : P.Group,
       F.q ^ (((P.omegaGroup g n - (J + F.ell) : ℕ) : ℝ) / 2) := by
-  have hM : ∀ g : P.Group, J + F.ell ≤ P.omegaGroup g n :=
+  have hM  :=
     fun g => omegaGroup_ge_of_physical n a ha g
   have hOmega : (P.omega n : ℝ) = ∑ g : P.Group, (P.omegaGroup g n : ℝ) := by
     rw [PrimeGroups.omega, Nat.cast_sum]
@@ -127,14 +140,16 @@ lemma damping_eq_group_product_of_physical {F : FixedData} {P : PrimeGroups}
   apply Finset.prod_congr rfl
   intro g hg
   rw [Nat.cast_sub (hM g)]
-  simp [Nat.cast_add]
+  simp
+
+end
 
 lemma shifted_polynomial_geometric_bound (q : ℝ) (hq : 0 < q) (hq' : q < 1)
     (K : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℕ,
       ((z + K : ℕ) : ℝ) ^ K * q ^ ((z : ℝ) / 2) ≤ C := by
   let r : ℝ := Real.sqrt q
-  have hr0 : 0 ≤ r := Real.sqrt_nonneg q
+  have hr0  := Real.sqrt_nonneg q
   have hr1 : r < 1 := by
     dsimp [r]
     have hs := Real.sq_sqrt hq.le
@@ -142,13 +157,10 @@ lemma shifted_polynomial_geometric_bound (q : ℝ) (hq : 0 < q) (hq' : q < 1)
   have hqpow (z : ℕ) : q ^ ((z : ℝ) / 2) = r ^ z := by
     rw [Real.rpow_div_two_eq_sqrt (z : ℝ) hq.le]
     dsimp [r]
-    exact Real.rpow_natCast (Real.sqrt q) z
-  have hbase : Tendsto (fun z : ℕ => (z : ℝ) ^ K * r ^ z) atTop (𝓝 0) :=
+    norm_cast
+  have hbase  :=
     tendsto_pow_const_mul_const_pow_of_lt_one K hr0 hr1
   let c : ℝ := ((K : ℝ) + 1) ^ K
-  have hc : 0 < c := by
-    dsimp [c]
-    positivity
   have hscaled : Tendsto (fun z : ℕ => c * ((z : ℝ) ^ K * r ^ z)) atTop (𝓝 0) := by
     simpa using (tendsto_const_nhds.mul hbase)
   have hev : ∀ᶠ z : ℕ in atTop, c * ((z : ℝ) ^ K * r ^ z) < 1 :=
@@ -193,7 +205,7 @@ lemma shifted_polynomial_geometric_bound (q : ℝ) (hq : 0 < q) (hq' : q < 1)
     have hsum : 0 ≤ ∑ n ∈ Finset.range Z₀,
         |((n + K : ℕ) : ℝ) ^ K * r ^ n| := Finset.sum_nonneg fun n hn => abs_nonneg _
     linarith
-  · have hzlt : z < Z₀ := Nat.lt_of_not_ge hz
+  · have hzlt  := Nat.lt_of_not_ge hz
     have hnonneg : 0 ≤ ((z + K : ℕ) : ℝ) ^ K * r ^ z := by positivity
     have hsingle : |((z + K : ℕ) : ℝ) ^ K * r ^ z| ≤
         ∑ n ∈ Finset.range Z₀, |((n + K : ℕ) : ℝ) ^ K * r ^ n| := by
@@ -206,21 +218,19 @@ lemma shifted_polynomial_geometric_bound (q : ℝ) (hq : 0 < q) (hq' : q < 1)
           |((z + K : ℕ) : ℝ) ^ K * r ^ z| := (abs_of_nonneg hnonneg).symm
       _ ≤ ∑ n ∈ Finset.range Z₀, |((n + K : ℕ) : ℝ) ^ K * r ^ n| := hsingle
       _ ≤ (∑ n ∈ Finset.range Z₀, |((n + K : ℕ) : ℝ) ^ K * r ^ n|) + 1 := by
-        have hs : 0 ≤ ∑ n ∈ Finset.range Z₀,
-            |((n + K : ℕ) : ℝ) ^ K * r ^ n| := Finset.sum_nonneg fun n hn => abs_nonneg _
         linarith
 
 lemma negative_power_le_max_pow {vMin V : ℝ} (hv : 0 < vMin) (hV : vMin ≤ V)
     (t K : ℕ) (ht : t ≤ K) :
     V ^ (-(t : ℤ)) ≤ (max 1 vMin⁻¹) ^ K := by
-  have hVpos : 0 < V := lt_of_lt_of_le hv hV
+  have hVpos  := lt_of_lt_of_le hv hV
   have hInv : V⁻¹ ≤ vMin⁻¹ := by
     simpa [one_div] using one_div_le_one_div_of_le hv hV
   have hbase : V⁻¹ ≤ max 1 vMin⁻¹ := le_trans hInv (le_max_right _ _)
-  have hbase0 : 0 ≤ V⁻¹ := inv_nonneg.mpr hVpos.le
+  have hbase0  := inv_nonneg.mpr hVpos.le
   calc
     V ^ (-(t : ℤ)) = (V⁻¹) ^ t := by
-      rw [zpow_neg, zpow_natCast, inv_pow]
+      simp
     _ ≤ (max 1 vMin⁻¹) ^ t := pow_le_pow_left₀ hbase0 hbase t
     _ ≤ (max 1 vMin⁻¹) ^ K := pow_le_pow_right₀ (le_max_left _ _) ht
 
@@ -237,12 +247,11 @@ lemma damped_polynomial_factor_bound (q vMin : ℝ) (hq : 0 < q) (hq' : q < 1)
   intro z t V ht hV
   have hVbound : V ^ (-(t : ℤ)) ≤ Cv := by
     simpa [Cv] using negative_power_le_max_pow hv hV t K ht
-  have hVpos : 0 < V := lt_of_lt_of_le hv hV
-  have hVnonneg : 0 ≤ V ^ (-(t : ℤ)) := (zpow_pos hVpos _).le
+  have hVpos  := lt_of_lt_of_le hv hV
   have hpoly_nonneg : 0 ≤ ((z + K : ℕ) : ℝ) ^ K * q ^ ((z : ℝ) / 2) := by
     exact mul_nonneg (pow_nonneg (Nat.cast_nonneg _) _)
       (Real.rpow_nonneg hq.le _)
-  have hpoly_bound : ((z + K : ℕ) : ℝ) ^ K * q ^ ((z : ℝ) / 2) ≤ Cq :=
+  have hpoly_bound  :=
     hqbound z
   calc
     V ^ (-(t : ℤ)) * ((z + K : ℕ) : ℝ) ^ K * q ^ ((z : ℝ) / 2) =
@@ -376,19 +385,22 @@ def labelsActEquiv {P : PrimeGroups} {M : ℕ} (π : P.Permutations M) :
     funext g i
     simp [PrimeGroups.act]
 
-lemma physical_act {P : PrimeGroups} {M : ℕ} (π : P.Permutations M)
-    (n : ℤ) (a : P.Labels M) (ha : P.physical M n a) :
+section
+
+variable {P : PrimeGroups} {M : ℕ} (π : P.Permutations M)
+  (n : ℤ) (a : P.Labels M)
+
+lemma physical_act (ha : P.physical M n a) :
     P.physical M n (P.act π a) := by
   intro g
   refine ⟨?_, ?_⟩
   · intro i j hij
-    have h : a g (π g i) = a g (π g j) := by simpa [PrimeGroups.act] using hij
+    have h : a g (π g i) = a g (π g j) := by assumption
     exact (π g).injective ((ha g).1 h)
   · intro i
     exact (ha g).2 (π g i)
 
-lemma physical_act_iff {P : PrimeGroups} {M : ℕ} (π : P.Permutations M)
-    (n : ℤ) (a : P.Labels M) :
+lemma physical_act_iff :
     P.physical M n (P.act π a) ↔ P.physical M n a := by
   constructor
   · intro h
@@ -396,10 +408,16 @@ lemma physical_act_iff {P : PrimeGroups} {M : ℕ} (π : P.Permutations M)
     have hlabels : P.act (fun g => (π g).symm) (P.act π a) = a := by
       funext g i
       simp [PrimeGroups.act]
-    simpa [hlabels] using h'
+    simp_all
   · exact physical_act π n a
 
-lemma sum_possibleTargets_act {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+end
+
+section
+
+variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+
+lemma sum_possibleTargets_act
     (A : Model F P J m) (n : ℤ) (π : P.Permutations (J + F.ell))
     (f : A.State → ℝ) :
     (∑ z' ∈ possiblePhysicalTargets A n, f (z'.1, P.act π z'.2)) =
@@ -413,7 +431,7 @@ lemma sum_possibleTargets_act {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   intro n' hn'
   exact Equiv.sum_comp (labelsActEquiv π) (fun b => f (n', b))
 
-lemma physicalKernel_zero_outside_targets {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma physicalKernel_zero_outside_targets
     (A : Model F P J m) (n : ℤ) (a : A.Labels) (z' : A.State)
     (hz' : z' ∉ possiblePhysicalTargets A n) :
     A.physicalKernel true (n, a) z' = 0 := by
@@ -431,6 +449,8 @@ lemma physicalKernel_zero_outside_targets {F : FixedData} {P : PrimeGroups} {J m
     · exact Finset.mem_univ _
   simp [Model.physicalKernel, Model.physicalRaw, hpos]
 
+end
+
 lemma tsum_norm_finite_average {α ι : Type*} [Fintype ι]
     (S : Finset α) (c : ℂ) (K : ι → α → ℂ)
     (hsupp : ∀ i a, a ∉ S → K i a = 0) :
@@ -439,7 +459,7 @@ lemma tsum_norm_finite_average {α ι : Type*} [Fintype ι]
   classical
   rw [tsum_eq_sum (s := S) (by
     intro a ha
-    have hzero : ∀ i, K i a = 0 := fun i => hsupp i a ha
+    have hzero  := fun i => hsupp i a ha
     simp [hzero])]
   calc
     (∑ a ∈ S, ‖c * ∑ i, K i a‖) ≤
@@ -470,7 +490,7 @@ lemma coefficient_norm_le_patternSup {F : FixedData} {P : PrimeGroups} {J m : �
   classical
   let cfun : A.BigLabels × A.BigLabels × P.BigAux J → ℝ := fun z =>
     ‖(A.pattern v).coefficient z.1 z.2.1 z.2.2‖
-  have hbdd : BddAbove (Set.range cfun) := (Set.finite_range cfun).bddAbove
+  have hbdd  := (Set.finite_range cfun).bddAbove
   apply le_csSup hbdd
   exact ⟨(a, b, u), rfl⟩
 
@@ -478,9 +498,9 @@ lemma nonshared_slot_count_le {P : PrimeGroups} {J ell m : ℕ}
     (ν : Pattern P J ell m) (g : P.Group) :
     (Finset.univ.filter (fun i : Fin (J + ell) => ¬ ν.shared g i)).card ≤ ell + m := by
   classical
-  let sharedWitnesses : Finset (Fin (J + ell)) :=
+  let sharedWitnesses  :=
     (Finset.univ \ ν.changed g).image ν.slot
-  let freeSlots : Finset (Fin (J + ell)) :=
+  let freeSlots  :=
     Finset.univ.filter (fun i : Fin (J + ell) => ¬ ν.shared g i)
   have hslot : Function.Injective ν.slot := by
     intro i j hij
@@ -517,7 +537,7 @@ lemma omegaGroup_ge_of_injective_dividing {P : PrimeGroups} {M : ℕ} (g : P.Gro
     (n : ℤ) (a : Fin M → P.Prime g) (ha : Function.Injective a)
     (hdiv : ∀ i, ((a i).val : ℤ) ∣ n) : M ≤ P.omegaGroup g n := by
   classical
-  let S : Finset ℕ := Finset.univ.image fun i : Fin M => (a i).val
+  let S  := Finset.univ.image fun i : Fin M => (a i).val
   have hS : S ⊆ (P.primes g).filter (fun p => (p : ℤ) ∣ n) := by
     intro p hp
     rcases Finset.mem_image.mp hp with ⟨i, hi, rfl⟩
@@ -534,8 +554,12 @@ lemma omegaGroup_ge_of_injective_dividing {P : PrimeGroups} {M : ℕ} (g : P.Gro
     _ ≤ ((P.primes g).filter (fun p : ℕ => (p : ℤ) ∣ n)).card := Finset.card_le_card hS
     _ = P.omegaGroup g n := rfl
 
-lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
-    (ν : Pattern P J ell m) (hell : 1 ≤ ell) (g : P.Group) (a : P.Labels (J + ell))
+section
+
+variable {P : PrimeGroups} {J ell m : ℕ}
+  (ν : Pattern P J ell m)
+
+lemma group_target_list_count_le (hell : 1 ≤ ell) (g : P.Group) (a : P.Labels (J + ell))
     (n₀ n₁ : ℤ) (ha : P.physical (J + ell) n₀ a) :
     Fintype.card {b : Fin (J + ell) → P.Prime g //
       Function.Injective b ∧ (∀ i, ((b i).val : ℤ) ∣ n₁) ∧
@@ -545,13 +569,13 @@ lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
   let Good : Type := {b : Fin (J + ell) → P.Prime g //
     Function.Injective b ∧ (∀ i, ((b i).val : ℤ) ∣ n₁) ∧
       (∀ i, ν.shared g i → a g i = b i)}
-  let freeSlots : Finset (Fin (J + ell)) :=
+  let freeSlots  :=
     Finset.univ.filter (fun i => ¬ ν.shared g i)
   let Free := {i : Fin (J + ell) // i ∈ freeSlots}
   let divisors : Finset ℕ := (P.primes g).filter (fun p => (p : ℤ) ∣ n₁)
-  let sharedValues : Finset ℕ :=
+  let sharedValues  :=
     (Finset.univ \ ν.changed g).image fun j => (a g (ν.slot j)).val
-  let remaining : Finset ℕ := divisors \ sharedValues
+  let remaining  := divisors \ sharedValues
   have hchangedJ : (ν.changed g).card ≤ J := by
     simpa using (Finset.card_le_card (Finset.subset_univ (ν.changed g)))
   have hslot : Function.Injective ν.slot := by
@@ -574,7 +598,7 @@ lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
     exact nonshared_slot_count_le ν g
   by_cases hGood : Nonempty Good
   · let b₀ : Good := Classical.choice hGood
-    have hM : J + ell ≤ P.omegaGroup g n₁ :=
+    have hM  :=
       omegaGroup_ge_of_injective_dividing g n₁ b₀.1 b₀.2.1 b₀.2.2.1
     have hsharedSubset : sharedValues ⊆ divisors := by
       intro p hp
@@ -589,7 +613,7 @@ lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
         rw [Finset.card_sdiff_of_subset hsharedSubset, hsharedValuesCard]
         rfl
       rw [hcard]
-      have hchangedm : (ν.changed g).card ≤ m := ν.bound g
+      have hchangedm  := ν.bound g
       omega
     let targetMap : Good → Free → {p : ℕ // p ∈ remaining} := fun b i =>
       ⟨(b.1 i.1).val, by
@@ -604,7 +628,7 @@ lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
           calc
             (b.1 i.1).val = (a g (ν.slot j)).val := hval.symm
             _ = (b.1 (ν.slot j)).val := congrArg Subtype.val hmatch
-        have hidx : i.1 = ν.slot j := b.2.1 hEq
+        have hidx  := b.2.1 hEq
         exact (Finset.mem_filter.mp i.2).2 (hidx ▸ hshared)⟩
     have htargetMapInj : Function.Injective targetMap := by
       intro b c hbc
@@ -617,7 +641,7 @@ lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
         have hvval : (b.1 i).val = (c.1 i).val := by
           simpa [targetMap] using congrArg (fun q : {p : ℕ // p ∈ remaining} => q.val) hv
         exact Subtype.ext hvval
-    have hcards : Fintype.card Good ≤ Fintype.card (Free → {p : ℕ // p ∈ remaining}) :=
+    have hcards  :=
       Fintype.card_le_of_injective targetMap htargetMapInj
     have hbound : Fintype.card (Free → {p : ℕ // p ∈ remaining}) ≤
         (P.omegaGroup g n₁ - (J + ell) + (ell + m)) ^ (ell + m) := by
@@ -635,12 +659,11 @@ lemma group_target_list_count_le {P : PrimeGroups} {J ell m : ℕ}
           Nat.pow_le_pow_right hbase hfreeCard
     exact hcards.trans hbound
   · have hEmpty : IsEmpty Good := ⟨fun b => hGood ⟨b⟩⟩
-    have hcard : Fintype.card Good = 0 := Fintype.card_eq_zero_iff.mpr hEmpty
+    have hcard  := Fintype.card_eq_zero_iff.mpr hEmpty
     rw [hcard]
     exact Nat.zero_le _
 
-lemma target_label_count_le {P : PrimeGroups} {J ell m : ℕ}
-    (ν : Pattern P J ell m) (hell : 1 ≤ ell) (a : P.Labels (J + ell))
+lemma target_label_count_le (hell : 1 ≤ ell) (a : P.Labels (J + ell))
     (n₀ n₁ : ℤ) (ha : P.physical (J + ell) n₀ a) :
     Fintype.card {b : P.Labels (J + ell) //
       P.physical (J + ell) n₁ b ∧ ν.compatible a b} ≤
@@ -661,13 +684,9 @@ lemma target_label_count_le {P : PrimeGroups} {J ell m : ℕ}
         exact (b g).2.2.2 i hi⟩
     left_inv := by
       intro b
-      apply Subtype.ext
-      funext g
       rfl
     right_inv := by
       intro b
-      funext g
-      apply Subtype.ext
       rfl
   }
   have hcard : Fintype.card AllGood = ∏ g : P.Group, Fintype.card (Good g) := by
@@ -680,7 +699,13 @@ lemma target_label_count_le {P : PrimeGroups} {J ell m : ℕ}
       intro g hg
       exact group_target_list_count_le ν hell g a n₀ n₁ ha
 
-lemma product_target_weight_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+end
+
+section
+
+variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+
+lemma product_target_weight_bound_of_C
     (ν : Pattern P J F.ell m) (n : ℤ) (hV : ∀ g : P.Group, F.vMin ≤ P.V g)
     (C : ℝ)
     (hgroupBound : ∀ (z t : ℕ) (V : ℝ), t ≤ F.ell + m → F.vMin ≤ V →
@@ -699,7 +724,7 @@ lemma product_target_weight_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : 
         ∏ _g : P.Group, C := by
       apply Finset.prod_le_prod₀
       · intro g hg
-        have hVpos : 0 < P.V g := lt_of_lt_of_le F.vMin_pos (hV g)
+        have hVpos  := lt_of_lt_of_le F.vMin_pos (hV g)
         exact mul_nonneg
           (mul_nonneg (zpow_pos hVpos _).le (pow_nonneg (Nat.cast_nonneg _) _))
           (Real.rpow_nonneg F.q_pos.le _)
@@ -711,8 +736,7 @@ lemma product_target_weight_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : 
         (P.omegaGroup g n - (J + F.ell)) (ν.t g) (P.V g) ht (hV g)
     _ = C ^ P.count := by simp
 
-lemma physical_target_mass_damping_count_le {F : FixedData} {P : PrimeGroups}
-    {J m : ℕ} (A : Model F P J m) (ν : Pattern P J F.ell m) (n : ℤ)
+lemma physical_target_mass_damping_count_le (A : Model F P J m) (ν : Pattern P J F.ell m) (n : ℤ)
     (b : P.Labels (J + F.ell)) (hb : P.physical (J + F.ell) n b)
     (hV : ∀ g : P.Group, F.vMin ≤ P.V g) (C : ℝ)
     (hgroupBound : ∀ (z t : ℕ) (V : ℝ), t ≤ F.ell + m → F.vMin ≤ V →
@@ -740,7 +764,7 @@ lemma physical_target_mass_damping_count_le {F : FixedData} {P : PrimeGroups}
       simpa [mul_assoc, mul_left_comm, mul_comm] using
         product_target_weight_bound_of_C ν n hV C hgroupBound
 
-lemma sum_target_coefficient_norm_le {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma sum_target_coefficient_norm_le
     (A : Model F P J m) (v : Fin A.patternCount) (u : P.Aux J)
     (n₀ n₁ : ℤ) (a : P.Labels (J + F.ell))
     (ha : P.physical (J + F.ell) n₀ a) :
@@ -752,16 +776,16 @@ lemma sum_target_coefficient_norm_le {F : FixedData} {P : PrimeGroups} {J m : �
           ‖(A.pattern v).coefficient z.1 z.2.1 z.2.2‖)) * ∏ g : P.Group,
         (P.omegaGroup g n₁ - (J + F.ell) + (F.ell + m)) ^ (F.ell + m) := by
   classical
-  let good : P.Labels (J + F.ell) → Prop := fun b =>
+  let good  := fun b =>
     P.physical (J + F.ell) n₁ b ∧ (A.pattern v).compatible a b
-  let coeff : P.Labels (J + F.ell) → ℝ := fun b =>
+  let coeff  := fun b =>
     ‖(A.pattern v).coefficient (P.restrictBig a) (P.restrictBig b) (fun g => u g.val)‖
   let csup : ℝ := sSup (Set.range (fun z : A.BigLabels × A.BigLabels × P.BigAux J =>
     ‖(A.pattern v).coefficient z.1 z.2.1 z.2.2‖))
   have hsupNonneg : 0 ≤ csup := by
     have hle := coefficient_norm_le_patternSup A v (P.restrictBig a) (P.restrictBig a)
       (fun g => u g.val)
-    exact (norm_nonneg _).trans (by simpa [csup] using hle)
+    exact (norm_nonneg _).trans (by assumption)
   have hsum : (∑ b : P.Labels (J + F.ell), if good b then coeff b else 0) ≤
       ∑ b : P.Labels (J + F.ell), if good b then csup else 0 := by
     apply Finset.sum_le_sum
@@ -785,7 +809,7 @@ lemma sum_target_coefficient_norm_le {F : FixedData} {P : PrimeGroups} {J m : �
         ∏ g : P.Group, (P.omegaGroup g n₁ - (J + F.ell) + (F.ell + m)) ^ (F.ell + m) :=
       mul_le_mul_of_nonneg_left (by exact_mod_cast hcount) hsupNonneg
 
-lemma physicalRaw_norm_le_terms {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma physicalRaw_norm_le_terms
     (A : Model F P J m) (x : ℝ) (hP : P.Admissible F x)
     (z z' : A.State) (hz : P.physical (J + F.ell) z.1 z.2) :
     ‖A.physicalRaw true z z'‖ ≤
@@ -800,7 +824,7 @@ lemma physicalRaw_norm_le_terms {F : FixedData} {P : PrimeGroups} {J m : ℕ}
         else 0 := by
   classical
   by_cases hz' : P.physical (J + F.ell) z'.1 z'.2
-  · have hV : ∀ g : P.Group, 0 < P.V g := fun g => V_pos_of_admissible hP g
+  · have hV  := fun g => V_pos_of_admissible hP g
     rw [Model.physicalRaw, ite_eq_left ⟨hz, hz'⟩]
     calc
       ‖∑ v : Fin A.patternCount, ∑ u : P.Aux J,
@@ -863,9 +887,7 @@ lemma physicalRaw_norm_le_terms {F : FixedData} {P : PrimeGroups} {J m : ℕ}
               (z.1 + A.k * ((A.pattern v).D z.2 u : ℤ)) z'.2 := by
             rw [← hcond.2.2]
             exact hz'
-          have hweightAtPos : 0 < (A.pattern v).auxMass u *
-              (A.pattern v).physicalTargetMass * A.damping z.1 *
-              A.damping (z.1 + A.k * ((A.pattern v).D z.2 u : ℤ)) :=
+          have hweightAtPos  :=
             mul_pos (mul_pos (mul_pos (auxMass_pos_of_admissible (A.pattern v) u hP)
               (physicalTargetMass_pos_of_admissible (A.pattern v) hV))
               (damping_pos A z.1))
@@ -891,14 +913,20 @@ lemma physicalRaw_norm_le_terms {F : FixedData} {P : PrimeGroups} {J m : ℕ}
             damping_pos A z.1,
             damping_pos A (z.1 + A.k * ((A.pattern v).D z.2 u : ℤ)),
             norm_imaginaryPower, abs_of_nonneg (norm_nonneg _), hcond, htargetAtPos] using hnorm
-        · simp [hz', hcond]
+        · simp [hcond]
   · have hnot : ¬ (P.physical (J + F.ell) z.1 z.2 ∧
         P.physical (J + F.ell) z'.1 z'.2) := fun h => hz' h.2
     rw [Model.physicalRaw, ite_eq_right hnot]
     simp [hz']
 
-lemma raw_transition_target_sum_le {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (A : Model F P J m) (x : ℝ) (hP : P.Admissible F x)
+end
+
+section
+
+variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+  (A : Model F P J m) (x : ℝ)
+
+lemma raw_transition_target_sum_le (hP : P.Admissible F x)
     (n : ℤ) (a : P.Labels (J + F.ell)) (ha : P.physical (J + F.ell) n a)
     (v : Fin A.patternCount) (u : P.Aux J) (C : ℝ) (hC : 0 < C)
     (hgroupBound : ∀ (z t : ℕ) (V : ℝ), t ≤ F.ell + m → F.vMin ≤ V →
@@ -919,9 +947,9 @@ lemma raw_transition_target_sum_le {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   classical
   let ν := A.pattern v
   let n' := n + A.k * (ν.D a u : ℤ)
-  let good : P.Labels (J + F.ell) → Prop := fun b =>
+  let good  := fun b =>
     P.physical (J + F.ell) n' b ∧ ν.compatible a b
-  let coeff : P.Labels (J + F.ell) → ℝ := fun b =>
+  let coeff  := fun b =>
     ‖ν.coefficient (P.restrictBig a) (P.restrictBig b) (fun g => u g.val)‖
   let csup : ℝ := sSup (Set.range (fun z : A.BigLabels × A.BigLabels × P.BigAux J =>
     ‖ν.coefficient z.1 z.2.1 z.2.2‖))
@@ -949,7 +977,7 @@ lemma raw_transition_target_sum_le {F : FixedData} {P : PrimeGroups} {J m : ℕ}
           else 0 := by
     simpa [f, good, coeff, n', and_assoc] using
       finset_sum_supported_at_position (possiblePhysicalTargets A n) n' f hlabels hzero
-  have hweight : 0 < ν.auxMass u * ν.physicalTargetMass * A.damping n * A.damping n' :=
+  have hweight  :=
     mul_pos (mul_pos (mul_pos (auxMass_pos_of_admissible ν u hP)
       (physicalTargetMass_pos_of_admissible ν (fun g => V_pos_of_admissible hP g)))
       (damping_pos A n)) (damping_pos A n')
@@ -983,24 +1011,24 @@ lemma raw_transition_target_sum_le {F : FixedData} {P : PrimeGroups} {J m : ℕ}
           rw [Finset.mul_sum]
           apply Finset.sum_congr rfl
           intro b hb
-          by_cases hg : good b <;> simp [hg]
+          simp
   have hcoefNonneg : 0 ≤ csup := by
     have hle := coefficient_norm_le_patternSup A v (P.restrictBig a) (P.restrictBig a)
       (fun g => u g.val)
-    exact (norm_nonneg _).trans (by simpa [ν, csup] using hle)
+    exact (norm_nonneg _).trans (by assumption)
   have hgoodSum' : (∑ b : P.Labels (J + F.ell), if good b then coeff b else 0) ≤
       csup * (∏ g : P.Group,
         (((P.omegaGroup g n' - (J + F.ell) + (F.ell + m) : ℕ) ^ (F.ell + m) : ℕ) : ℝ)) := by
     simpa only [Nat.cast_prod, Nat.cast_pow] using hgoodSum
-  have hsourceWeightNonneg : 0 ≤ ν.auxMass u * A.damping n :=
+  have hsourceWeightNonneg  :=
     mul_nonneg (auxMass_pos_of_admissible ν u hP).le (damping_pos A n).le
-  have htailNonneg : 0 ≤ ν.physicalTargetMass * A.damping n' :=
+  have htailNonneg  :=
     mul_nonneg (physicalTargetMass_pos_of_admissible ν
       (fun g => V_pos_of_admissible hP g)).le (damping_pos A n').le
   change (∑ z' ∈ possiblePhysicalTargets A n, f z') ≤
     (ν.auxMass u * A.damping n) * csup * C ^ P.count
   by_cases hGood : Nonempty {b : P.Labels (J + F.ell) // good b}
-  · let b₀ : {b : P.Labels (J + F.ell) // good b} := Classical.choice hGood
+  · let b₀  := Classical.choice hGood
     have hweightCount := physical_target_mass_damping_count_le A ν n' b₀.1 b₀.2.1
       (V_lower_of_admissible hP) C hgroupBound
     calc
@@ -1046,8 +1074,7 @@ lemma raw_transition_target_sum_le {F : FixedData} {P : PrimeGroups} {J m : ℕ}
         (pow_nonneg hC.le _)
     exact hsumZero.trans hright
 
-lemma physicalRaw_row_sum_bound {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (A : Model F P J m) (x : ℝ) (hP : P.Admissible F x)
+lemma physicalRaw_row_sum_bound (hP : P.Admissible F x)
     (n : ℤ) (a : P.Labels (J + F.ell))
     (ha : P.physical (J + F.ell) n a) (C : ℝ) (hC : 0 < C)
     (hgroupBound : ∀ (z t : ℕ) (V : ℝ), t ≤ F.ell + m → F.vMin ≤ V →
@@ -1056,19 +1083,17 @@ lemma physicalRaw_row_sum_bound {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (∑ z' ∈ possiblePhysicalTargets A n, ‖A.physicalRaw true (n, a) z'‖) ≤
       A.patternMass * C ^ P.count := by
   classical
-  have hV : ∀ g : P.Group, 0 < P.V g := fun g => V_pos_of_admissible hP g
-  have hVne : ∀ g : P.Group, P.V g ≠ 0 := fun g => (hV g).ne'
+  have hV  := fun g => V_pos_of_admissible hP g
+  have hVne  := fun g => (hV g).ne'
   have hAux (v : Fin A.patternCount) :
       (∑ u : P.Aux J, (A.pattern v).auxMass u) = 1 := by
     simpa [Pattern.auxMass] using sum_auxiliary_mass_eq_one P J hVne
-  let supv : Fin A.patternCount → ℝ := fun v =>
+  let supv  := fun v =>
     sSup (Set.range (fun z : A.BigLabels × A.BigLabels × P.BigAux J =>
       ‖(A.pattern v).coefficient z.1 z.2.1 z.2.2‖))
-  have hsourceDamp : A.damping n ≤ 1 := damping_le_one_of_physical A n a ha
-  have hsourceDampNonneg : 0 ≤ A.damping n := (damping_pos A n).le
+  have hsourceDamp  := damping_le_one_of_physical A n a ha
   have hpatternSups : (∑ v : Fin A.patternCount, supv v) = A.patternMass := rfl
-  have hpatternNonneg : 0 ≤ A.patternMass := patternMass_nonneg A
-  have hCpow : 0 ≤ C ^ P.count := pow_nonneg hC.le _
+  have hpatternNonneg  := patternMass_nonneg A
   have hrawBound :
       (∑ z' ∈ possiblePhysicalTargets A n, ‖A.physicalRaw true (n, a) z'‖) ≤
         ∑ v : Fin A.patternCount, ∑ u : P.Aux J,
@@ -1136,15 +1161,14 @@ lemma physicalRaw_row_sum_bound {F : FixedData} {P : PrimeGroups} {J m : ℕ}
               ring
         _ = A.damping n * C ^ P.count * (∑ v : Fin A.patternCount, supv v) := by
           rw [← Finset.mul_sum]
-        _ = A.damping n * C ^ P.count * A.patternMass := by rw [hpatternSups]
+        _ = A.damping n * C ^ P.count * A.patternMass := by rfl
     _ ≤ A.patternMass * C ^ P.count := by
       calc
         A.damping n * C ^ P.count * A.patternMass ≤ 1 * C ^ P.count * A.patternMass := by
           gcongr
         _ = A.patternMass * C ^ P.count := by ring
 
-lemma physicalRaw_row_sum_perm_bound {F : FixedData} {P : PrimeGroups} {J m : ℕ}
-    (A : Model F P J m) (x : ℝ) (hP : P.Admissible F x)
+lemma physicalRaw_row_sum_perm_bound (hP : P.Admissible F x)
     (n : ℤ) (a : P.Labels (J + F.ell)) (ha : P.physical (J + F.ell) n a)
     (π : P.Permutations (J + F.ell)) (τ : P.Permutations (J + F.ell))
     (C : ℝ) (hC : 0 < C)
@@ -1157,6 +1181,8 @@ lemma physicalRaw_row_sum_perm_bound {F : FixedData} {P : PrimeGroups} {J m : �
   rw [sum_possibleTargets_act A n τ (fun z' => ‖A.physicalRaw true (n, P.act π a) z'‖)]
   exact physicalRaw_row_sum_bound A x hP n (P.act π a)
     (physical_act π n a ha) C hC hgroupBound
+
+end
 
 def swapPatternCoefficient {P : PrimeGroups} {J ell m : ℕ}
     (ν : Pattern P J ell m) : Pattern P J ell m where
@@ -1189,7 +1215,11 @@ lemma pattern_D_eq_of_compatible {P : PrimeGroups} {J ell m : ℕ}
   · have hshared : ν.shared g (ν.slot i) := ⟨i, rfl, hchanged⟩
     simp [hchanged, hab g (ν.slot i) hshared]
 
-lemma reversePhysicalModel_patternMass {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+section
+
+variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+
+lemma reversePhysicalModel_patternMass
     (A : Model F P J m) : (reversePhysicalModel A).patternMass = A.patternMass := by
   classical
   unfold Model.patternMass reversePhysicalModel
@@ -1205,7 +1235,7 @@ lemma reversePhysicalModel_patternMass {F : FixedData} {P : PrimeGroups} {J m : 
     refine ⟨(z.2.1, z.1, z.2.2), ?_⟩
     rfl
 
-lemma physicalRaw_reverse_eq {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma physicalRaw_reverse_eq
     (A : Model F P J m) (n n' : ℤ) (a b : A.Labels) :
     A.physicalRaw true (n', b) (n, a) =
       (reversePhysicalModel A).physicalRaw true (n, a) (n', b) := by
@@ -1277,14 +1307,14 @@ lemma physicalRaw_reverse_eq {F : FixedData} {P : PrimeGroups} {J m : ℕ}
       · have hR : ¬(νrev.compatible a b ∧ νrev.ban a b u ∧
             n' = n + (-A.k) * (νrev.D a u : ℤ)) := by
           intro hr
-          have hc : ν.compatible b a := hcompatible.mpr hr.1
+          have hc  := hcompatible.mpr hr.1
           have hD := pattern_D_eq_of_compatible ν b a u hc
           exact hL ((hcond hD).mpr hr)
         rw [ite_eq_right hL, ite_eq_right hR]
     · simp [Model.physicalRaw, htgt]
   · simp [Model.physicalRaw, hsrc]
 
-lemma physicalKernel_reverse_eq {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma physicalKernel_reverse_eq
     (A : Model F P J m) (n n' : ℤ) (a b : A.Labels) :
     A.physicalKernel true (n', b) (n, a) =
       (reversePhysicalModel A).physicalKernel true (n, a) (n', b) := by
@@ -1298,7 +1328,7 @@ lemma physicalKernel_reverse_eq {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   intro τ hτ
   exact physicalRaw_reverse_eq A n n' (P.act π a) (P.act τ b)
 
-lemma physicalKernel_row_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma physicalKernel_row_bound_of_C
     (A : Model F P J m) (x : ℝ) (hP : P.Admissible F x)
     (n : ℤ) (a : P.Labels (J + F.ell)) (ha : P.physical (J + F.ell) n a)
     (C : ℝ) (hC : 0 < C)
@@ -1352,8 +1382,6 @@ lemma physicalKernel_row_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : ℕ
         exact physicalRaw_row_sum_perm_bound A x hP n a ha π τ C hC hgroupBound
       _ = (Fintype.card Idx : ℝ) * (A.patternMass * C ^ P.count) := by simp
   have hpermNonempty : Nonempty Perm := ⟨fun _ => Equiv.refl _⟩
-  have hpermPos : 0 < (Fintype.card Perm : ℝ) := by
-    exact_mod_cast (Fintype.card_pos_iff.mpr hpermNonempty)
   have hcancel : ‖c‖ * (Fintype.card Idx : ℝ) = 1 := by
     dsimp [c, Idx, Perm]
     rw [norm_inv, norm_pow, Complex.norm_natCast, Fintype.card_prod, Nat.cast_mul]
@@ -1385,7 +1413,7 @@ lemma physicalKernel_row_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : ℕ
     _ = ∑' z' : A.State, ‖A.physicalKernel true (n, a) z'‖ := hsumNorm.symm
     _ ≤ A.patternMass * C ^ P.count := hnormBound
 
-lemma physicalKernel_column_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : ℕ}
+lemma physicalKernel_column_bound_of_C
     (A : Model F P J m) (x : ℝ) (hP : P.Admissible F x)
     (n : ℤ) (a : P.Labels (J + F.ell)) (ha : P.physical (J + F.ell) n a)
     (C : ℝ) (hC : 0 < C)
@@ -1406,7 +1434,13 @@ lemma physicalKernel_column_bound_of_C {F : FixedData} {P : PrimeGroups} {J m : 
       physicalKernel_row_bound_of_C (reversePhysicalModel A) x hP n a ha C hC hgroupBound
     _ = A.patternMass * C ^ P.count := by rw [reversePhysicalModel_patternMass]
 
-lemma primeGroupCount_le_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
+end
+
+section
+
+variable {F : FixedData} {P : PrimeGroups} {x : ℝ}
+
+lemma primeGroupCount_le_of_admissible
     (hP : P.Admissible F x) : (P.count : ℝ) ≤ 2 * F.C₀ * T x := by
   classical
   rcases hP with ⟨_, hsmall, _, hbig, _, _⟩
@@ -1420,13 +1454,13 @@ lemma primeGroupCount_le_of_admissible {F : FixedData} {P : PrimeGroups} {x : �
   rw [hcount]
   linarith
 
-lemma constant_group_power_le_log_power {F : FixedData} {P : PrimeGroups} {x : ℝ}
+lemma constant_group_power_le_log_power
     (hP : P.Admissible F x) (hL : 1 ≤ L x) (C : ℝ) (hC : 0 < C) :
     C ^ P.count ≤ (L x) ^ (2 * F.C₀ * Real.log (max 1 C)) := by
   let Cbar : ℝ := max 1 C
   have hCbarOne : 1 ≤ Cbar := le_max_left _ _
-  have hCbarPos : 0 < Cbar := lt_of_lt_of_le zero_lt_one hCbarOne
-  have hlogNonneg : 0 ≤ Real.log Cbar := Real.log_nonneg hCbarOne
+  have hCbarPos  := lt_of_lt_of_le zero_lt_one hCbarOne
+  have hlogNonneg  := Real.log_nonneg hCbarOne
   have hcount := primeGroupCount_le_of_admissible hP
   have hCpow : C ^ P.count ≤ Cbar ^ P.count :=
     pow_le_pow_left₀ hC.le (le_max_right _ _) _
@@ -1448,6 +1482,8 @@ lemma constant_group_power_le_log_power {F : FixedData} {P : PrimeGroups} {x : �
       congr 1
       simp [T]
       ring
+
+end
 
 theorem physical_schur_proof (F : FixedData) (m : ℕ) (C₁ : ℝ) :
     ∃ Cabs : ℝ, ∀ J : ℕ, ∃ x₀ : ℝ, ∀ x ≥ x₀, ∀ (P : PrimeGroups),
@@ -1473,20 +1509,16 @@ theorem physical_schur_proof (F : FixedData) (m : ℕ) (C₁ : ℝ) :
   have hL : 1 ≤ L x := by
     have h1 : 1 ≤ Real.exp 1 := Real.one_le_exp_iff.mpr (by norm_num)
     exact h1.trans hlog
-  have hLpos : 0 < L x := lt_of_lt_of_le zero_lt_one hL
+  have hLpos  := lt_of_lt_of_le zero_lt_one hL
   have hCbar1 : 1 ≤ Cbar := le_max_left _ _
-  have hCbarC : C ≤ Cbar := le_max_right _ _
-  have hCbarPos : 0 < Cbar := lt_of_lt_of_le zero_lt_one hCbar1
-  have hlogCbar : 0 ≤ Real.log Cbar := Real.log_nonneg hCbar1
   have hgroupPow : C ^ P.count ≤ (L x) ^ E := by
     dsimp [Cbar, E]
     exact constant_group_power_le_log_power hP hL C hC
-  have hC₁pow : (L x) ^ C₁ ≤ (L x) ^ C₁bar :=
+  have hC₁pow  :=
     Real.rpow_le_rpow_of_exponent_le hL (le_max_left C₁ 0)
-  have hmassPow : A.patternMass ≤ (L x) ^ C₁bar := hmass.trans hC₁pow
+  have hmassPow  := hmass.trans hC₁pow
   have hbound : A.patternMass * C ^ P.count ≤ (L x) ^ Cabs := by
-    have hmassNonneg : 0 ≤ A.patternMass := patternMass_nonneg A
-    have hLpowNonneg (t : ℝ) : 0 ≤ (L x) ^ t := Real.rpow_nonneg hLpos.le t
+    have hLpowNonneg (t : ℝ)  := Real.rpow_nonneg hLpos.le t
     have hExp : C₁bar + E ≤ Cabs := by
       dsimp [Cabs]
       linarith
@@ -1506,7 +1538,7 @@ theorem physical_schur_proof (F : FixedData) (m : ℕ) (C₁ : ℝ) :
       have hzero (z' : A.State) : A.physicalKernel true z z' = 0 := by
         simp [Model.physicalKernel, Model.physicalRaw, hnot]
       simp [hzero]
-      exact Real.rpow_nonneg hLpos.le _
+      positivity
   have hcol (z : A.State) :
       ∑' z', (A.physicalKernel true z' z).re ≤ (L x) ^ Cabs := by
     by_cases hz : P.physical (J + F.ell) z.1 z.2
@@ -1518,7 +1550,7 @@ theorem physical_schur_proof (F : FixedData) (m : ℕ) (C₁ : ℝ) :
       have hzero (z' : A.State) : A.physicalKernel true z' z = 0 := by
         simp [Model.physicalKernel, Model.physicalRaw, hnot]
       simp [hzero]
-      exact Real.rpow_nonneg hLpos.le _
+      positivity
   exact ⟨hrow, hcol⟩
 
 end Erdos821.P3Core

@@ -27,9 +27,7 @@ lemma bareIdealHighCoefficient_sixth (η : HeckeFamily.Character)
     simp only [primaryGenerator_one,one_pow,mul_one]
   · have h1 : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal O)) :=
       fun hh=>h ⟨hh.1,hh.2.1,hh.2.2.1,hh.2.2.2.1⟩
-    have h2 : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported p.2.val) :=
-      fun hh=>h ⟨hh.1,hh.2.1,hh.2.2.1,hh.2.2.2.1⟩
-    rw [dite_eq_right h1,dite_eq_right h2]
+    rw [dite_eq_right h1,dite_eq_right (fun hh=>h ⟨hh.1,hh.2.1,hh.2.2.1,hh.2.2.2.1⟩)]
 
 lemma rawHighCoefficient_sixth (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
     (hprime : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S)

@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActiveReflection
 
 @[expose] public section
@@ -20,12 +21,12 @@ noncomputable local instance controlledFintype (P : Ideal Eis) [P.IsMaximal] :
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
 theorem controlled_phase_product (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) (x : Eis) :
     star (complexCharacter (D.relativeGamma hN hr hbase v)) *
       ShortDraftTrace.breveE (-(eisEmbedding (D.matrix v 1 1) * (eisEmbedding x / eisLam ^ 4)) /
@@ -47,18 +48,18 @@ theorem controlled_phase_product (D : ControlledStratumArithmetic p N a0 c0 mode
           (eisEmbedding c0 * eisEmbedding (∏ i, p i)))) := by ring
     _ = _ := by rw [hlocal, hbad]; ring
 
-def fullLocalFourierWeight [∀ i, (Ideal.span {p i}).IsMaximal]
+def fullLocalFourierWeight [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) : ℂ :=
   ∏ i, finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (F i) (v i)
 
 theorem controlled_local_multiplier (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (x : Eis) :
     (∑ v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ, fullLocalFourierWeight hp F v *
       star (complexCharacter (D.relativeGamma hN hr hbase v)) *
@@ -76,8 +77,8 @@ theorem controlled_local_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
   simp only [fullLocalFourierWeight, Finset.prod_mul_distrib]
   ring
 
-def mixedActiveBracket [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+def mixedActiveBracket [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
     (i : ι) (x : Eis) : ℂ :=
   if i ∈ S then
@@ -90,8 +91,8 @@ def mixedActiveBracket [∀ i, (Ideal.span {p i}).IsMaximal]
     phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) (j i) (D.epsilon i) *
       bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i) (Ideal.Quotient.mk _ x)
 
-theorem mixedActiveBracket_eq_units [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+theorem mixedActiveBracket_eq_units [OAI.PrincipalFamily.Maximal p]
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalFamily.Avoids p λ₀)
     (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι)
     (D : ControlledStratumArithmetic p N a0 c0 mode) (i : ι) (x : Eis) :
@@ -114,12 +115,12 @@ theorem mixedActiveBracket_eq_units [∀ i, (Ideal.span {p i}).IsMaximal]
       Bool.false_eq_true, ite_false, frequencyRow] using hh
 
 theorem controlled_mixed_multiplier (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hcop : OAI.PrincipalFamily.Coprime p)
+    (hg : OAI.PrincipalFamily.Avoids p λ₀) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
     (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι) (x : Eis) :
     (∑ v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ,
       fullLocalFourierWeight hp (mixedPrimeFunction p hg j S) v *

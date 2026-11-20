@@ -10,75 +10,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace CubicEisenstein
 
 section
@@ -121,12 +57,11 @@ theorem ramified_arithmetic_affine (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
   intro x
   let a:=u.val*lambda^n
   let d:=1+3*GaussianShiftedPartition.representative a x
-  have hd:(3:Eis)∣d-1:=⟨_,by dsimp [d];ring⟩
   have hrep:3*a∣denominatorRep a ((ramifiedAffineEquiv u n) x).val-d:=
     denominatorRep_mk_congr a d
   change eisEmbedding (symbol a (denominatorRep a ((ramifiedAffineEquiv u n) x).val))*
     residueAdditive h a (denominatorRep a ((ramifiedAffineEquiv u n) x).val)=_
-  rw [row_symbol_congr_modulus a _ d (ramifiedElement_level u n hn) hd hrep,
+  rw [row_symbol_congr_modulus a _ d (ramifiedElement_level u n hn) (⟨_,by dsimp [d];ring⟩) hrep,
     residueAdditive_congr h a _ d (ramifiedElement_ne_zero u n) hrep]
 
 def ramifiedReduction (u:Eisˣ) (n:ℕ) (hn:2≤n) :
@@ -155,7 +90,7 @@ lemma residueAdditive_ramified_scale (h k a d:Eis) (ha:a≠0) (hk:3*h=a*k) :
   congr 1
   have he:=congrArg eisEmbedding hk
   simp only [map_mul,map_ofNat] at he
-  have ha':eisEmbedding a≠0:=eisEmbedding_ne_zero ha
+  have ha':=eisEmbedding_ne_zero ha
   simp only [map_ofNat]
   field_simp
   linear_combination eisLam⁻¹*eisEmbedding d*he
@@ -195,15 +130,14 @@ theorem ramified_arithmetic_nine_sum (h k:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n)
     let d:=1+3*GaussianShiftedPartition.representative a x
     let e:=1+3*GaussianShiftedPartition.representative 3 (f x)
     have hd:(3:Eis)∣d-1:=⟨_,by dsimp [d];ring⟩
-    have he:(3:Eis)∣e-1:=⟨_,by dsimp [e];ring⟩
     have h9:(9:Eis)∣d-e:=by
       obtain ⟨w,hw⟩:=ramifiedReduction_rep u n hn x
       exact ⟨w,by dsimp [d,e,f,a] at *;linear_combination 3*hw⟩
     change eisEmbedding (symbol a d)*residueAdditive h a d=F (f x)
-    rw [ramified_symbol_congr_mod_nine u n d e hd he h9,
+    rw [ramified_symbol_congr_mod_nine u n d e hd (⟨_,by dsimp [e];ring⟩) h9,
       residueAdditive_ramified_scale h k a d (ramifiedElement_ne_zero u n) hk,
       residueAdditive_congr k 3 d e (by norm_num) (by convert h9 using 1 ;norm_num)]
-  let:Finite (Eis⧸Ideal.span {a}):=finite_quotient_span (ramifiedElement_ne_zero u n)
+  let:=finite_quotient_span (ramifiedElement_ne_zero u n)
   let:Finite (Eis⧸Ideal.span {(3:Eis)}):=finite_quotient_span (by norm_num)
   rw [ramified_arithmetic_affine h u n hn]
   calc
@@ -223,9 +157,8 @@ def ramifiedLinearChar (u:Eisˣ) (n:ℕ):AddChar Eis ℂ where
   map_add_eq_mul':=by
     intro x y
     have hp (z:Eis):(3:Eis)∣1+3*z-1:=⟨z,by ring⟩
-    have hprod:(3:Eis)∣(1+3*x)*(1+3*y)-1:=⟨x+y+3*x*y,by ring⟩
     rw [ramified_symbol_congr_mod_nine u n (1+3*(x+y))
-      ((1+3*x)*(1+3*y)) (hp _) hprod ⟨-x*y,by ring⟩,
+      ((1+3*x)*(1+3*y)) (hp _) (⟨x+y+3*x*y,by ring⟩) ⟨-x*y,by ring⟩,
       symbol_mul_denominator,map_mul]
 
 lemma ramifiedLinearChar_period (u:Eisˣ) (n:ℕ) (x:Eis)
@@ -274,8 +207,7 @@ theorem ramifiedNineSum_eq_character_test (k:Eis) (u:Eisˣ) (n:ℕ) :
   have hcard:(Fintype.card (Eis⧸Ideal.span {(3:Eis)}):ℂ)=9:=by
     have hh:=three_absNorm
     change Nat.card (Eis⧸Ideal.span {(3:Eis)})=9 at hh
-    exact_mod_cast (show Fintype.card (Eis⧸Ideal.span {(3:Eis)})=9 by
-      simpa only [Nat.card_eq_fintype_card] using hh)
+    simp_all
   have he:ramifiedNineSum k u n=residueAdditive k 3 1*
       ∑'x:Eis⧸Ideal.span {(3:Eis)},ramifiedFrequencyChar k u n x:=by
     rw [ramifiedNineSum,←tsum_mul_left]
@@ -309,11 +241,10 @@ end CubicEisenstein
 
 namespace CubicKubota
 
-open scoped Classical MatrixGroups
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic
-open CubicEisenstein
+open ActualEisensteinCubic CubicEisenstein
 
 def levelThreeInTwo : Subgroup levelTwo := levelThree.comap levelTwo.subtype
 
@@ -349,22 +280,12 @@ theorem rationalQuotient_surjective : Function.Surjective rationalQuotient := by
 
 def rationalCongruenceThree : Subgroup (SL(2,ℤ)) := rationalQuotient.ker
 
-instance rationalCongruenceThree_normal : rationalCongruenceThree.Normal := by
-  unfold rationalCongruenceThree
-  infer_instance
 
 theorem mem_rationalCongruenceThree (r : SL(2,ℤ)) :
     r∈rationalCongruenceThree ↔ rationalEmbedding r∈levelThree := by
   change QuotientGroup.mk' levelThreeInTwo (rationalLift r)=1 ↔ _
   exact QuotientGroup.eq_one_iff _
 
-instance rationalCongruenceThree_finiteIndex : rationalCongruenceThree.FiniteIndex := by
-  have he : rationalCongruenceThree=levelThree.comap rationalEmbedding := by
-    ext r
-    exact mem_rationalCongruenceThree r
-  rw [he]
-  let : levelThree.FiniteIndex := levelThree_finiteIndex
-  infer_instance
 
 end
 
@@ -382,8 +303,7 @@ lemma three_dvd_intCast_iff (a : ℤ) : (3:ActualEisensteinCubic.O)∣(a:ActualE
       ring
     exact ⟨u,(ActualEisensteinCoordinates.unique_coordinates he).1⟩
   · rintro ⟨b,hb⟩
-    refine ⟨(b:ActualEisensteinCubic.O),?_⟩
-    simpa only [Int.cast_mul,Int.cast_ofNat] using congrArg (fun z : ℤ => (z:ActualEisensteinCubic.O)) hb
+    simp_all
 
 lemma mem_levelThree_iff_entries (g : SL(2,ActualEisensteinCubic.O)) : g∈levelThree ↔
     ∀i j,(3:ActualEisensteinCubic.O)∣g i j-(if i=j then 1 else 0) := by
@@ -456,10 +376,9 @@ lemma rationalBruhat_injective : Function.Injective
 
 end CubicKubota
 
-open scoped BigOperators Classical MatrixGroups
+open scoped MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic
-open CubicEisenstein
+open ActualEisensteinCubic CubicEisenstein
 
 lemma rationalQuotient_eq_iff_reduction (r s : SL(2,ℤ)) :
     rationalQuotient r=rationalQuotient s ↔

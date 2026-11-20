@@ -31,7 +31,6 @@ theorem first_phase_columns (e r a b : O) (ρ : O → ℂ)
       (idealRowHom (b*r) (Ideal.span {a})*star (idealRowHom (a*r) (Ideal.span {b}))*ρ (a*b)) =
       ρ e*sexticReciprocityPhase a b*leftCoefficient e r ρ a*star (rightCoefficient e r ρ b) := by
   let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero a ha)
-  let : Fintype (CenteredMomentCommonSupport.Residue a) := Fintype.ofFinite _
   let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero b hb)
   let : Fintype (CenteredMomentCommonSupport.Residue b) := Fintype.ofFinite _
   have hp := supported_opposite_phase b a hb ha hpb hpa hab.symm
@@ -49,7 +48,7 @@ def firstPhaseTable (r s : RayRing) : ℂ :=
 
 theorem firstPhaseTable_mk (a b : O) :
     firstPhaseTable (Ideal.Quotient.mk _ a) (Ideal.Quotient.mk _ b)=sexticReciprocityPhase a b := by
-  simp only [firstPhaseTable,QuadraticGaussRay.residueQuotientFour_mk,sexticReciprocityPhase]
+  rfl
 
 theorem firstPhaseTable_expansion (a b : O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b})) :

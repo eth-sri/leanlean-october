@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem cube_height_power_eventually (n : ℕ) (τ p loss : ℝ)
     (hτ : 0<τ) (hp : 0≤p) (hgap : τ*p<loss) :

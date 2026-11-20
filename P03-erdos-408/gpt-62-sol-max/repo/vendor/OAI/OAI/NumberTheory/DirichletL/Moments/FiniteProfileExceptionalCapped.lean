@@ -6,11 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalRow
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeTwist
+open CenteredMomentExceptionalCappedAmplitude
 local notation "O" => HeckeFamily.O
 theorem capped_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
@@ -41,8 +41,8 @@ theorem capped_rectangle_source_control
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
   let P₁ := sourceControl S W₁
   let P₂ := sourceControl S W₂
-  have hP₁ : 0≤P₁ := sourceControl_nonneg S W₁
-  have hP₂ : 0≤P₂ := sourceControl_nonneg S W₂
+  have hP₁  := sourceControl_nonneg S W₁
+  have hP₂  := sourceControl_nonneg S W₂
   have hw₁ (x:ℝ) : ‖W₁ x‖≤P₁ :=
     (SchwartzMap.norm_le_seminorm ℝ W₁ x).trans
       (Seminorm.le_finset_sup_apply (p:=schwartzSeminormFamily ℝ ℝ ℂ)
@@ -69,10 +69,10 @@ theorem capped_rectangle_source_control
         _ ≤ _ := le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by linarith [norm_nonneg t]))
     apply habs.trans
     calc
-      _ = D*(P₁*P₂)*Real.sqrt T := by dsimp [D]; ring
+      _ = D*(P₁*P₂)*Real.sqrt T := by ring
       _ ≤ ((C+D)*Z^ε*(1+‖t‖)^J)*(P₁*P₂)*Real.sqrt T := by
         gcongr
-      _ = _ := by dsimp [P₁,P₂]; ring
+      _ = _ := by ring
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 
 end

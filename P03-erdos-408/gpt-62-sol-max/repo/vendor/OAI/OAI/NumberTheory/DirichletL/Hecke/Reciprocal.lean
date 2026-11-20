@@ -13,7 +13,7 @@ open HeckeFamily HeckeCharacterAnalytic HeckeCoordinates
 
 theorem coefficients_sum_ne_zero_of_principal (χ : Character) (hχ : χ.residue = 1) :
     (∑ a, coefficients χ a) ≠ 0 := by
-  let : Finite (O ⧸ χ.modulus) :=
+  let  :=
     Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   let : Fintype (O ⧸ χ.modulus) := Fintype.ofFinite _
   let e := Equiv.prodCongr (finCastEquiv χ.period) (finCastEquiv χ.period)

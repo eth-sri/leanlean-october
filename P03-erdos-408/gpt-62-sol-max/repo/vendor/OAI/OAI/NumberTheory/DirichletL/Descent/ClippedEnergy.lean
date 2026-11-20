@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Descent.ClippedFourier
 public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 
@@ -8,16 +9,16 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped BigOperators Classical FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns InverseInitialOverlapFourier CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+  (hcop:OAI.PrincipalFamily.Coprime p)
+  (hg:OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem normalized_energy_vector
     (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
@@ -57,7 +58,6 @@ theorem canonical_clipped_energy
     convert (canonical_clipped_mode_integrable p hp hcop hg hpr pool Ψ m (primaryGenerator v.1) v.2
       slots lists a g wFresh c θ X).const_mul ((Real.sqrt (D v.1):ℂ)*((Z^(-F/2):ℝ):ℂ)) using 1
     funext t
-    dsimp [b,phi]
     ring
   have hbound(t:ℝ):(∑v:labels×rows,‖phi v t‖^2)≤
       (E*(1+‖θ‖)^(2*J))*((1+‖t‖)^J)^2:=by
@@ -83,7 +83,6 @@ theorem canonical_clipped_energy
       slots lists a W lo hi hlo hs hW wFresh c θ X hc hX hw,←integral_const_mul]
     apply integral_congr_ae
     filter_upwards with t
-    dsimp [b,phi,g]
     ring
   simp_rw [heq] at hh
   rw [normalized_energy_vector p hp hcop hg pool Ψ m slots lists a labels rows D hD] at hh

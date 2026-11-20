@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
 
 @[expose] public section
@@ -37,7 +38,7 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
   refine ⟨C₁*C₂,by positivity,?_⟩
   intro s r D hD E Z hE hZ hc
   have hn:0<(Ideal.absNorm D:ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
+    exact_mod_cast Ideal.absNorm_pos_of_ne_bot (hD.ne_zero)
   have hp:0≤(Ideal.absNorm D:ℝ)^ε:=Real.rpow_nonneg hn.le _
   have hsz:((s.toSource.active D).card:ℝ)≤C₂*(Ideal.absNorm D:ℝ)^ε:=by
     apply (show ((s.toSource.active D).card:ℝ)≤Fintype.card (Allocation D (Finset.univ:Finset (ι⊕Fin 2))) by

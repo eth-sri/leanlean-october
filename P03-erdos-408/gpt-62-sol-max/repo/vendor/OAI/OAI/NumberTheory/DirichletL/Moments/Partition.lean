@@ -1,5 +1,7 @@
 module
 
+public import OAI.IdealNorm
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.Moments.ProductCRT
 
 @[expose] public section
@@ -34,9 +36,8 @@ theorem fullModulusCorrelation_swap (u v h : A)
   · simp only [hc, (not_congr he).mp hc, ite_false, star_zero]
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal
-open CenteredMomentProductCRT
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
+open CenteredMomentUnequal CenteredMomentLocal CenteredMomentProductCRT
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
@@ -57,13 +58,13 @@ theorem prime_power_norm_le_min (p : O) [(Ideal.span {p}).IsMaximal]
     ‖actualCorrelation (p ^ c) (p ^ d) (supported_power p hp c) (supported_power p hp d)
       (p ^ min c d * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ min c d := by
   rcases lt_trichotomy c d with hcd | heq | hdc
-  · have he : c + (d - c) = d := Nat.add_sub_of_le hcd.le
+  · have he  := Nat.add_sub_of_le hcd.le
     have h := unequal_prime_power_norm_le p hp hg hc (show 1 ≤ d - c by omega) (-k)
     rw [actualCorrelation_norm_swap]
     simpa only [← pow_add, he, min_eq_left hcd.le, mul_neg] using h
   · subst d
     simpa only [min_self] using equal_prime_power_norm_le p hp hg hchar hc k
-  · have he : d + (c - d) = c := Nat.add_sub_of_le hdc.le
+  · have he  := Nat.add_sub_of_le hdc.le
     have h := unequal_prime_power_norm_le p hp hg hd (show 1 ≤ c - d by omega) k
     simpa only [← pow_add, he, min_eq_right hdc.le] using h
 
@@ -111,9 +112,9 @@ theorem commonFrequency_factor (p : ι → O) (c d : ι → ℕ) (w : O) (i : ι
     (∏ j, p j ^ min (c j) (d j)) * w = p i ^ min (c i) (d i) * dividedFrequency p c d w i := by
   rw [dividedFrequency, ← mul_assoc, factor_mul_cofactor (fun j => p j ^ min (c j) (d j)) i]
 
-theorem actual_partition_norm_le (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem actual_partition_norm_le (p : ι → O) [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, Supported (Ideal.span {p i}))
-    (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
+    (hg : OAI.PrincipalFamily.Avoids p goodLambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hcop : Pairwise (Function.onFun IsCoprime p))
     (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)
@@ -149,9 +150,9 @@ theorem actual_partition_norm_le (p : ι → O) [∀ i, (Ideal.span {p i}).IsMax
     (dividedFrequency p c d w i) (i ∈ U) (hU i)
 
 theorem normalized_partition_norm_le_one (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalFamily.Maximal p]
     (hp : ∀ i, Supported (Ideal.span {p i}))
-    (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
+    (hg : OAI.PrincipalFamily.Avoids p goodLambda)
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hcop : Pairwise (Function.onFun IsCoprime p))
     (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)
@@ -170,7 +171,7 @@ theorem normalized_partition_norm_le_one (p : ι → O)
       apply Finset.prod_pos
       intro i hi
       apply pow_pos
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+      exact_mod_cast Ideal.absNorm_pos_of_ne_bot ((hp i).1)
     rw [Real.norm_of_nonneg hN.le]
     exact (div_le_one hN).mpr (actual_partition_norm_le p hp hg hchar hcop c d hc hd U w (hpart hw))
   · simp only [ite_eq_right hw, norm_zero, zero_le_one]

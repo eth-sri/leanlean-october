@@ -10,14 +10,14 @@ noncomputable section
 namespace SevenEighths.HeckeDyadic
 
 theorem central_squared_exponents (R a e κ η ε r m : ℝ)
-    (hR : 0≤R) (he : 0≤e) (hκ : 0≤κ) (_hη : 0≤η)
+    (hR : 0≤R) (he : 0≤e) (hκ : 0≤κ)
     (hr : r≤R) (hm : 0≤m)
     (hbudget : 12*e*(R+2)+8*κ+2*η≤ε) :
     2*((a-1/2+6*e)*r+2*κ+η)≤(2*a-1)*r+ε ∧
     2*((a-1/2)*(1-m)+6*e*(2-m)+4*κ+η)≤(2*a-1)*(1-m)+ε := by
-  have hEr : e*r≤e*R := mul_le_mul_of_nonneg_left hr he
-  have hEm : 0≤e*m := mul_nonneg he hm
-  have hER : 0≤e*R := mul_nonneg he hR
+  have hEr  := mul_le_mul_of_nonneg_left hr he
+  have hEm  := mul_nonneg he hm
+  have hER  := mul_nonneg he hR
   constructor <;> nlinarith
 
 theorem indexed_height_bound (i I : ℕ) (hi : i≤I) (T : ℝ) (hT : 0≤T) :
@@ -34,15 +34,15 @@ theorem min_plain_bound (X C U δ m ε : ℝ)
     (h₁ : X≤C*U^(δ*m+ε)) (h₂ : X≤C*U^(δ*(1-m)+ε)) :
     X≤C*U^(δ*min m (1-m)+ε) := by
   rcases le_total m (1-m) with h | h
-  · simpa only [min_eq_left h] using h₁
-  · simpa only [min_eq_right h] using h₂
+  · simp_all
+  simp_all
 
 theorem squared_bound_of_central_and_error (z : ℂ) (U C E p b ε : ℝ)
     (hU : 1≤U) (hC : 0≤C) (hE : 0≤E) (hε : 0≤ε)
     (hb : 2*b≤ε)
     (hz : ‖z‖≤C*U^(p+b)+E*U^p) :
     ‖z‖^2≤(C+E)^2*U^(2*p+ε) := by
-  have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
+  have hUp  := lt_of_lt_of_le zero_lt_one hU
   have hp₁ : U^(p+b)≤U^(p+ε/2) :=
     Real.rpow_le_rpow_of_exponent_le hU (by linarith)
   have hp₂ : U^p≤U^(p+ε/2) :=

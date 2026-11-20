@@ -11,13 +11,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondBlockHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst
+open CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass CenteredMomentSecondBlockAggregate
+open CenteredMomentSecondBlockCount CenteredMomentSecondActiveCount CenteredMomentActiveSource
+open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSecondCanonicalNonunit
+open CenteredMomentRankinRadical CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ActiveSubsets (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
@@ -38,9 +36,9 @@ def activeSubsetLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ)
 lemma activeSubsetLabel_injective (S : Finset (Ideal O)) (β : Ideal O→ℂ) :
     Function.Injective (activeSubsetLabel S β) := by
   rintro ⟨p,U⟩ ⟨q,V⟩ he
-  have hp : p=q := Subtype.ext (congrArg (fun x=>x.1) he)
+  have hp  := Subtype.ext (congrArg (fun x=>x.1) he)
   cases hp
-  have hU : U=V := Finset.image_injective Subtype.val_injective
+  have hU  := Finset.image_injective Subtype.val_injective
     (congrArg (fun x=>x.2) he)
   cases hU
   rfl

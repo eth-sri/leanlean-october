@@ -1,5 +1,6 @@
 module
 
+public import OAI.IdealNorm
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedSeries
 
 @[expose] public section
@@ -7,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedSeries
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectedTruncation
 open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
-open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open CenteredMomentReflectedSeries EisensteinSchwartzPoisson
+open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion CenteredMomentReflectedSeries
+open EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 theorem normalized_subseries (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
@@ -62,7 +63,7 @@ lemma retainedAnnuli_mem (R Y : ℝ) (hY : 0<Y) (n : ℤ) :
 lemma original_norm_lower (I : NI) (Y : ℝ) (hY : 0<Y) :
     Y⁻¹≤(I.val.absNorm:ℝ)/Y := by
   have hn : (1:ℝ)≤I.val.absNorm := by
-    exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr I.property))
+    exact_mod_cast (Ideal.one_le_absNorm_of_ne_bot (I.property))
   simpa only [one_div] using div_le_div_of_nonneg_right hn hY.le
 
 theorem retained_finite_series (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)

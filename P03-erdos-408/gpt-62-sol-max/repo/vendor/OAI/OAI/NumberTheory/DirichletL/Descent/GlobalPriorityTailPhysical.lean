@@ -1,6 +1,8 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailAggregate
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailMass
+public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailCollapse
 
 @[expose] public section
 
@@ -10,10 +12,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseMomentGlobalPrincipalMass InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels
+open SecondPassArithmetic RayFourExpansion InversePrioritySecondSource InverseSecondPrincipalCaller
+open InversePrincipalEnergy InverseWholePriorityRetainedSource FirstCauchyArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -21,10 +22,10 @@ theorem global_physical_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃(s : Finset (ℕ×ℕ))(C : ℝ),0<C ∧
     ∀{ι σ : Type*}[DecidableEq ι][DecidableEq σ]
-      (p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p : ι→O)(hp : ∀i,p i≠0)[OAI.PrincipalFamily.Maximal p]
+      (hg : OAI.PrincipalFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (_hcop : OAI.PrincipalFamily.Coprime p)
       (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
       (Jo : ℕ),Jo≤Jmax → ∀(extra : CubeCoordinates ι→Finset ι)(pool : Finset ι)
       (source : Finset (Source ι Jo))(negative : Bool)(Ψ : O→*ℂ)(m : O)
@@ -55,15 +56,101 @@ theorem global_physical_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
           m slots J lists a (principalWindow om lo hi hlo hs negative height) X Y R y‖))≤
       C*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
         (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-saving) := by
-  obtain ⟨s,C,hC,hbound⟩ := global_parent_tail_aggregate_rapid Jmax Lcap tau (saving+Lcap) hLcap htau
-  refine ⟨s,C,hC,?_⟩
+  let saving' := saving + Lcap
+  obtain ⟨s,Ct,hCt,htail⟩ := priority_tail_parent_uniform Lcap tau (saving'+13*Lcap) hLcap htau
+  obtain ⟨Cm,hCm,hmark⟩ := finite_primeMark_small_power (1/2) (by norm_num)
+  obtain ⟨Cs,hCs,hmass⟩ := original_tail_mass Jmax
+  have hCb  := coefficientBound_pos
+  let C := coefficientBound*Cm^2*Ct*Cs
+  let N : ℝ := (Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)
+  refine ⟨s,(32*512)*N*C,by positivity,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a
     hslots ha hΨ hw om lo hi hlo hs X M Y Z height kappa eta R hkappa hX hhi hZ hY hscale hy hyi hXcap
     hsource hextra hb₁ hb₂ hactive hcommon hquot hR
   have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hh := hbound p hp hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a
-    hslots ha hΨ hw om lo hi hlo hs X M Y Z height R hX hhi hZ hY hscale hy hyi hXcap
-    hsource hextra hb₁ hb₂ hactive hcommon hquot hR
+  let B := C*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
+    (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-saving')
+  have hsum : (∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
+      ‖∑y∈wholeAssignedParents p (fun x=>extra x.cube) source negative J lists,
+        coefficient p J a (globalPriorityOuter p hg negative Ψ m ray core w) y*
+        priorityTailParent p hg hp hinj extra pool negative
+          (firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core)
+          m slots J lists a (principalWindow om lo hi hlo hs negative height) X Y R y‖)
+      ≤N*(2:ℝ)^slots.card*B := by
+    calc
+      _ ≤ ∑_ray:RayCharacter×RayCharacter,∑_core:FirstCoreIndex,∑_J∈slots.powerset,B := by
+        apply Finset.sum_le_sum
+        intro ray hr
+        apply Finset.sum_le_sum
+        intro core hc₀
+        apply Finset.sum_le_sum
+        intro J hJ
+        have hJ := Finset.mem_powerset.mp hJ
+        dsimp only [B,C]
+        have hz  := zero_lt_one.trans_le hZ
+        let Ψ₀ := firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core
+        let V := principalWindow om lo hi hlo hs negative height
+        let Q := (s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*(SchwartzMap.seminorm ℝ 0 0 om)^2
+        let T := Ct*Q*Z^(-(saving'+13*Lcap))
+        have hΨ₀ : ∀u,‖Ψ₀ u‖≤1 := fun u=>(firstCoreTwist_norm_le negative _ Ψ core u).trans (hΨ u)
+        have hout (x : Source ι Jo) (hx : x∈source) :
+            ‖globalPriorityOuter p hg negative Ψ m ray core w x‖≤coefficientBound := by
+          rw [globalPriorityOuter,norm_mul]
+          exact (mul_le_mul (hw x hx)
+            (priorityOuter_norm p hg x.cube negative Ψ m (fun _=>1) ray core x.quotientSupport
+              (by simp) (hΨ _)) (norm_nonneg _) zero_le_one).trans_eq (one_mul _)
+        have hm (x : Source ι Jo) :
+            ‖primeMark J lists a (wholeExtractedSupport (fun x=>extra x.cube) negative x)‖^2≤
+              Cm^2*primeProductNorm p (principalSupport extra negative x) := by
+          have hh := hmark p hp hcop J lists a
+            (fun i hi j hj hij=>hslots (hJ hi) (hJ hj) hij) (fun i hi=>ha i (hJ hi))
+            (principalSupport extra negative x)
+          have he : ((primeProductNorm p (principalSupport extra negative x))^(1/2:ℝ))^2=
+              primeProductNorm p (principalSupport extra negative x) := by
+            rw [←Real.rpow_natCast,←Real.rpow_mul (primeProductNorm_pos p hp _).le]
+            norm_num
+          have hsupp : wholeExtractedSupport (fun x=>extra x.cube) negative x=principalSupport extra negative x := by
+            simp only [wholeExtractedSupport,extractedSupport,principalSupport,Finset.union_assoc]
+          rw [hsupp]
+          exact (pow_le_pow_left₀ (norm_nonneg _) hh 2).trans_eq (by rw [mul_pow,he])
+        have ht (x : Source ι Jo) (hx : x∈source) :
+            ‖priorityTailParent p hg hp hinj extra pool negative Ψ₀ m slots J lists a V X Y R (parent p x)‖≤T := by
+          simpa only [T,Q,mul_assoc] using htail p hp hg hinj hcop hc extra pool negative Ψ₀ m slots J lists a
+            hslots ha hΨ₀ om lo hi hlo hs X M Y Z height R hX hhi hZ hY hscale hy hyi hXcap
+            (parent p x) (hR x hx)
+        have hmass₀ := hmass p hp hinj Jo hJo source Z Lcap hZ hLcap hsource hb₁ hb₂ hactive hcommon hquot extra negative hextra
+        rw [original_paired_tail p hg hp hinj]
+        calc
+          _ ≤ ∑x∈source,‖globalPriorityOuter p hg negative Ψ m ray core w x*
+            (‖primeMark J lists a (wholeExtractedSupport (fun x=>extra x.cube) negative x)‖^2:ℝ)*
+            priorityTailParent p hg hp hinj extra pool negative Ψ₀ m slots J lists a V X Y R (parent p x)‖ := norm_sum_le _ _
+          _ ≤ ∑x∈source,coefficientBound*(Cm^2*primeProductNorm p (principalSupport extra negative x))*T := by
+            apply Finset.sum_le_sum
+            intro x hx
+            rw [norm_mul,norm_mul,Complex.norm_real,Real.norm_of_nonneg (sq_nonneg _)]
+            exact mul_le_mul (mul_le_mul (hout x hx) (hm x) (sq_nonneg _) coefficientBound_pos.le)
+              (ht x hx) (norm_nonneg _)
+              (mul_nonneg hCb.le (mul_nonneg (sq_nonneg _) (primeProductNorm_pos p hp _).le))
+          _ = coefficientBound*Cm^2*T*(∑x∈source,primeProductNorm p (principalSupport extra negative x)) := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intros
+            ring
+          _ ≤ coefficientBound*Cm^2*T*(Cs*Z^(13*Lcap)) :=
+            mul_le_mul_of_nonneg_left hmass₀ (by positivity)
+          _ = _ := by
+            have he : Z^(-(saving'+13*Lcap))*Z^(13*Lcap)=Z^(-saving') := by
+              rw [←Real.rpow_add hz]
+              congr 1
+              ring
+            dsimp only [T,Q]
+            calc
+              _ = coefficientBound*Cm^2*Ct*Cs*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
+                (SchwartzMap.seminorm ℝ 0 0 om)^2*(Z^(-(saving'+13*Lcap))*Z^(13*Lcap)) := by ring
+              _ = _ := by rw [he]
+      _ = _ := by
+        simp only [Finset.sum_const,Finset.card_powerset,Finset.card_univ,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
+        ring
   have he : Z^kappa*Real.exp ((9/2:ℝ)*(eta*Real.log Z))=Z^(kappa+(9/2:ℝ)*eta) := by
     rw [Real.rpow_add hz,Real.rpow_def_of_pos hz ((9/2:ℝ)*eta)]
     congr 2
@@ -71,20 +158,23 @@ theorem global_physical_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
   have hP : Z^kappa*Real.exp ((9/2:ℝ)*(eta*Real.log Z))≤Z^Lcap := by
     rw [he]
     exact Real.rpow_le_rpow_of_exponent_le hZ hkappa
-  apply (mul_le_mul_of_nonneg_left hh (by positivity)).trans
+  have hscale' := mul_le_mul_of_nonneg_left hsum
+    (show 0≤(32*512)*(2:ℝ)^slots.card by positivity)
+  apply (mul_le_mul_of_nonneg_left hscale' (by positivity)).trans
+  apply (mul_le_mul_of_nonneg_right hP (by positivity)).trans_eq
+  have hp : Z^Lcap * Z^(-saving') = Z^(-saving) := by
+    rw [← Real.rpow_add hz]
+    congr 1
+    dsimp [saving']
+    ring
+  have hb : ((2:ℝ)^slots.card)^2 = (4:ℝ)^slots.card := by
+    rw [←pow_mul,pow_mul']
+    norm_num
+  dsimp only [B]
   calc
-    _ ≤ Z^Lcap*(C*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
-      (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-(saving+Lcap))) :=
-      mul_le_mul_of_nonneg_right hP (by positivity)
-    _ = _ := by
-      have he₂ : Z^Lcap*Z^(-(saving+Lcap))=Z^(-saving) := by
-        rw [←Real.rpow_add hz]
-        congr 1
-        ring
-      calc
-        _ = C*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
-          (SchwartzMap.seminorm ℝ 0 0 om)^2*(Z^Lcap*Z^(-(saving+Lcap))) := by ring
-        _ = _ := by rw [he₂]
+    _ = (32*512)*N*C*((2:ℝ)^slots.card)^2*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
+      (SchwartzMap.seminorm ℝ 0 0 om)^2*(Z^Lcap*Z^(-saving')) := by ring
+    _ = _ := by rw [hp,hb]
 
 end SevenEighths.InverseMomentGlobalPriorityTail
 end

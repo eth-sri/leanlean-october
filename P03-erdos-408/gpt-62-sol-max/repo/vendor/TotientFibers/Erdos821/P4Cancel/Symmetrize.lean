@@ -28,8 +28,7 @@ lemma actBig_actBig_inv (π : P.BigPermutations M) (a : P.BigLabels M) :
 
 lemma actBig_actBig (π ρ : P.BigPermutations M) (a : P.BigLabels M) :
     P.actBig π (P.actBig ρ a) = P.actBig (ρ * π) a := by
-  funext g i
-  simp [PrimeGroups.actBig]
+  rfl
 
 /-- The action of one permutation tuple, as an equivalence of label tuples. -/
 def actEquiv (π : P.BigPermutations M) : P.BigLabels M ≃ P.BigLabels M where
@@ -153,7 +152,7 @@ lemma symTest_sqNorm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
         (N : ℝ) * ∑ π : P.BigPermutations M, ‖f (P.actBig π a)‖ ^ 2 := by
       have := sq_sum_le_card_mul_sum_sq (s := (Finset.univ : Finset (P.BigPermutations M)))
         (f := fun π => ‖f (P.actBig π a)‖)
-      simpa [hN] using this
+      assumption
     calc ‖symTest P M f a‖ ^ 2
         ≤ ((N : ℝ)⁻¹ * ∑ π : P.BigPermutations M, ‖f (P.actBig π a)‖) ^ 2 :=
           pow_le_pow_left₀ (norm_nonneg _) h1 2
@@ -161,7 +160,7 @@ lemma symTest_sqNorm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
       _ ≤ (N : ℝ)⁻¹ ^ 2 * ((N : ℝ) * ∑ π : P.BigPermutations M, ‖f (P.actBig π a)‖ ^ 2) :=
           mul_le_mul_of_nonneg_left h2 (by positivity)
       _ = _ := by field_simp
-  have hmass : ∀ a, 0 ≤ P.idealMass a := fun a => (idealMass_pos P M hV a).le
+  have hmass  := fun a => (idealMass_pos P M hV a).le
   calc (∑ a, P.idealMass a * ‖symTest P M f a‖ ^ 2)
       ≤ ∑ a, P.idealMass a * ((N : ℝ)⁻¹ * ∑ π : P.BigPermutations M, ‖f (P.actBig π a)‖ ^ 2) :=
         Finset.sum_le_sum (fun a _ => mul_le_mul_of_nonneg_left (hpt a) (hmass a))

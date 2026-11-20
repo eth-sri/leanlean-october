@@ -1,23 +1,21 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowEmpty
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyLowBandEmpty
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
+open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [DecidableEq α] in
@@ -34,7 +32,7 @@ theorem positive_low_zero
     simp only [T,w,Finset.sum_const_zero,mul_zero,add_zero]
     linarith [s.width_nonneg]
   have hl:length Z X₁+length Z X₂+(∑i:T,w i)≤5*s.width/6:=by
-    simpa only [w,Finset.sum_const_zero,add_zero] using hsmall
+    simp_all
   have hh:=h T θ w w w t 0 (fun _=>le_rfl)
     (fun i=>False.elim (Finset.notMem_empty _ i.property))
     (fun i=>False.elim (Finset.notMem_empty _ i.property))
@@ -46,8 +44,7 @@ theorem positive_low_zero
         HeckePrimeAnnular.annularWeight Wslot (Z^(w i)) (w i) (w i) I)
       (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale=
       s.plainEnergy p t X₁ X₂:=by
-    simp only [T,energy,positiveSlotRow,NaturalState.plainEnergy,Finset.univ_eq_empty,
-      Finset.prod_empty,mul_one]
+    rfl
   rw [hid] at hh
   simpa only [add_zero,Real.norm_eq_abs] using hh
 

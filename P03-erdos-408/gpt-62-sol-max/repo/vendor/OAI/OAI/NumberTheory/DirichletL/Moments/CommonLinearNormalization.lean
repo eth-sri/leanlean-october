@@ -14,8 +14,7 @@ namespace SevenEighths.CenteredMomentCommonLinearNormalization
 open HeckeFamily CenteredMomentCommonLinearSource CenteredMomentCommonRadialData
 open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentEligibleEnergy
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
-open CanonicalQuadraticSieve
+open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

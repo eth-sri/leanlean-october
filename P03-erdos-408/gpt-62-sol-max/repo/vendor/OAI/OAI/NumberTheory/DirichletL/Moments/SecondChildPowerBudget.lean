@@ -38,7 +38,7 @@ lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
       (2*(b₁*b₂)*b^N*A^2)*(b^N*b₁*b₂)*
         CenteredMomentAmplificationChildInput.volume s*mass s^2 := by
   have hg:=CenteredMomentAmplificationChildSourceCaps.radius_le N b b₁ b₂ hb
-    (zero_le_one.trans h₁) (zero_le_one.trans h₂) s hc hhi
+    (zero_le_one.trans h₁) s hc hhi
     (fun i=>(s.upper_ge i).trans hu) hs₁ hs₂ hb₁ hb₂
   have hp:=profile_cost_bound s N b A hb hu hc hm
   have he : max 1 s.b₁*max 1 s.b₂≤b₁*b₂ :=

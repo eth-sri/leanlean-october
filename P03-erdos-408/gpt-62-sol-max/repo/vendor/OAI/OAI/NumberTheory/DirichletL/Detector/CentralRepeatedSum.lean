@@ -10,9 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedSum
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve ProbeCentralRepeatedProduct ProbeCentralRepeatedChoices
-open ProbeSelectedPrimeSums
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve
+open ProbeCentralRepeatedProduct ProbeCentralRepeatedChoices ProbeSelectedPrimeSums
 local notation "O" => HeckeFamily.O
 
 theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
@@ -42,13 +41,12 @@ theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
   let A := annularPower c d (-(4/25:ℝ))
   let E := (max 1 (812*B*A))^N
   have hA : 0≤A := annularPower_nonneg c d _ hc
-  have hE : 0<E := by dsimp [E];positivity
   refine ⟨D*C*E,by positivity,?_⟩
   intro S hS hmax hbad u hu ι _ η twists T0 a i hT0 ha ha1 hbin k hk T hs hdis hη hQ hsmall W Y hY hWS hW x w z hx hw hz hwi
   let R := rowCost S hS u a e eps ((3*i+2:ℕ)*T0)
   let L := ‖star ((calibrationForSet S hmax).residueMonoid u.val)*HeckeOrigin.continued (rowCharacter S hS u) w‖
   have hR : 0≤R := rowCost_nonneg _ _ _ _ _ _ _
-  have hY0 (j : Fin k) : 0<Y j := zero_lt_one.trans_le (hY j)
+  have hY0 (j : Fin k)  := zero_lt_one.trans_le (hY j)
   have hYY : 0≤∏j,(Y j)^(-(4/25:ℝ)) := Finset.prod_nonneg (fun j _=>Real.rpow_nonneg (hY0 j).le _)
   have hterm (P : ∀j,T j) (hP : P∈activeChoices u T W Y) :
       L*(∏j,‖W j (((P j).val.val.absNorm:ℝ)/Y j)*((P j).val.val.absNorm:ℂ)^(z-1)*
@@ -84,7 +82,7 @@ theorem actual_repeated_sum (N : ℕ) (e eps c d B : ℝ)
   calc
     _ ≤ (D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps)*(C*E*R*∏j,(Y j)^(-(4/25:ℝ))) :=
       mul_le_mul_of_nonneg_right (hcount k hk u T W Y) (by positivity)
-    _ = _ := by dsimp [R];ring
+    _ = _ := by ring
 end SevenEighths.ProbeCentralRepeatedSum
 
 end

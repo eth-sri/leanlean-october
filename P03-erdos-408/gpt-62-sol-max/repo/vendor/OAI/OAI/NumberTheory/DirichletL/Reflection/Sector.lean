@@ -1,6 +1,6 @@
 module
 
-public import OAI.NumberTheory.DirichletL.Reflection.Split
+public import OAI.NumberTheory.DirichletL.Reflection.Cofactor
 
 @[expose] public section
 

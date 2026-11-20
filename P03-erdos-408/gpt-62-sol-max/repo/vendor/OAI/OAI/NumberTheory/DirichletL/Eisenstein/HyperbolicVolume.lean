@@ -9,74 +9,23 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT
+open scoped LSeries.notation
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
 namespace CubicEisenstein
 open Filter MeasureTheory EuclideanGeometry
-open scoped BigOperators Classical Topology InnerProductSpace ENNReal Matrix
+open scoped InnerProductSpace ENNReal Matrix
+
+/-- Dividing by the cubic height weight shifts each complex exponent by three. -/
+lemma cpow_sub_three {v s : ℂ} (hv : v ≠ 0) : v ^ (s - 3) = v ^ s / v ^ 3 := by
+  rw [Complex.cpow_sub _ _ hv, Complex.cpow_ofNat]
+
+lemma cpow_cusp_height {v s : ℂ} (hv : v ≠ 0) : v ^ (-s - 1) = v ^ (2 - s) / v ^ 3 := by
+  rw [show -s - 1 = (2 - s) - 3 by ring, cpow_sub_three hv]
 
 lemma linear_preserves_hyperbolicVolume (A : EuclideanSpatial →L[ℝ] EuclideanSpatial)
     (k : ℝ) (hk : 0<k) (hh : ∀p,(A p) 2=k*p 2) (hd : |A.det|=k^3) :
@@ -85,7 +34,7 @@ lemma linear_preserves_hyperbolicVolume (A : EuclideanSpatial →L[ℝ] Euclidea
   have hker : LinearMap.ker A.toLinearMap=⊥ := by
     by_contra hn
     exact hdet (LinearMap.det_eq_zero_iff_ker_ne_bot.mpr hn)
-  have hinj : Function.Injective A := LinearMap.ker_eq_bot.mp hker
+  have hinj  := LinearMap.ker_eq_bot.mp hker
   have hsurj : Function.Surjective A := (LinearMap.injective_iff_surjective).mp hinj
   apply hyperbolic_volume_map_of_jacobian A (fun _ => A) A.continuous.measurable
     (fun p hp => A.hasFDerivAt) hinj.injOn
@@ -177,8 +126,7 @@ lemma euclideanComplexDilation_preserves_hyperbolicVolume (β : ℂ) (hβ : β�
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
 
@@ -217,7 +165,7 @@ lemma euclideanToHyperbolic_measurable : Measurable euclideanToHyperbolic :=
 lemma euclideanToHyperbolic_positive (p : EuclideanSpatial) (hp : 0<p 2) :
     euclideanToHyperbolic p=upperPoint ((p 0:ℂ)+Complex.I*(p 1:ℂ)) (p 2) hp := by
   unfold euclideanToHyperbolic euclideanToUpperCoordinates positiveCoordinateHeight
-  simp only [ite_eq_left hp]
+  simp_all
 
 def hyperbolicVolume : Measure HyperbolicSpace :=
   Measure.map euclideanToHyperbolic hyperbolicEuclideanVolume
@@ -238,7 +186,7 @@ lemma hyperbolicVolume_map_of_coordinate_action (g : SL(2,ℂ))
     _ = Measure.map (euclideanToHyperbolic ∘ f) hyperbolicEuclideanVolume := by
       apply Measure.map_congr
       filter_upwards [hyperbolicEuclideanVolume_ae_positive] with p hp
-      exact (hcompat p hp).symm
+      simp_all
     _ = _ := by rw [←Measure.map_map euclideanToHyperbolic_measurable hf,hvol]
 
 lemma matrix_point_coordinates (g : SL(2,ℂ)) :
@@ -257,7 +205,7 @@ lemma matrix_point_coordinates (g : SL(2,ℂ)) :
   rwa [hcancel]
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped Matrix
 
 def matrixCross (g : SL(2,ℂ)) : ℂ := g 0 0*star (g 1 0)+g 0 1*star (g 1 1)
 
@@ -271,7 +219,7 @@ lemma matrixCross_upperSection (g : SL(2,ℂ)) (z : ℂ) (v : ℝ) (hv : 0<v) :
     matrixCross (g*upperSection z v hv)=
       ((g 0 0*z+g 0 1)*star (g 1 0*z+g 1 1)+
         g 0 0*star (g 1 0)*(v:ℂ)^2)/(v:ℂ) := by
-  have hr : (Real.sqrt v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hv).ne'
+  have hr  := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hv).ne'
   have hrs : (Real.sqrt v:ℂ)^2=(v:ℂ) := by exact_mod_cast Real.sq_sqrt hv.le
   simp only [matrixCross,Matrix.SpecialLinearGroup.coe_mul,Matrix.mul_apply,Fin.sum_univ_two]
   change (g 0 0*(Real.sqrt v:ℂ)+g 0 1*0)*star (g 1 0*(Real.sqrt v:ℂ)+g 1 1*0)+
@@ -310,10 +258,10 @@ theorem mobius_upperPoint (g : SL(2,ℂ)) (z : ℂ) (v : ℝ) (hv : 0<v) :
   have hvc : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
   field_simp
 
-def complexTranslation (b : ℂ) : SL(2,ℂ) := ⟨!![1,b;0,1],by simp [Matrix.det_fin_two]⟩
+def complexTranslation (b : ℂ) : SL(2,ℂ) := ⟨!![1,b;0,1],by simp⟩
 def complexDiagonal (b : ℂ) (hb : b≠0) : SL(2,ℂ) :=
   ⟨!![b,0;0,b⁻¹],by simp [Matrix.det_fin_two,hb]⟩
-def complexWeyl : SL(2,ℂ) := ⟨!![0,-1;1,0],by simp [Matrix.det_fin_two]⟩
+def complexWeyl : SL(2,ℂ) := ⟨!![0,-1;1,0],by simp⟩
 
 lemma complexTranslation_action (b z : ℂ) (v : ℝ) (hv : 0<v) :
     complexTranslation b • upperPoint z v hv=upperPoint (z+b) v hv := by
@@ -351,7 +299,7 @@ lemma complexDiagonal_action (b : ℂ) (hb : b≠0) (z : ℂ) (v : ℝ) (hv : 0<
     have hq : ((‖b‖^2:ℝ):ℂ)=b*star b := by
       simpa [Complex.normSq_eq_norm_sq,Complex.star_def] using (Complex.mul_conj b).symm
     rw [hq]
-    have hbs : star b≠0 := star_ne_zero.mpr hb
+    have hbs  := star_ne_zero.mpr hb
     simp only [Complex.star_def] at hbs ⊢
     field_simp
 
@@ -378,7 +326,7 @@ lemma complex_bruhat_nonzero (g : SL(2,ℂ)) (hc : g 1 0≠0) :
 lemma complex_bruhat_zero (g : SL(2,ℂ)) (hc : g 1 0=0) :
     ∃ha : g 0 0≠0,g=complexDiagonal (g 0 0) ha*complexTranslation (g 0 1/g 0 0) := by
   have hd : g 0 0*g 1 1=1 := by simpa only [Matrix.det_fin_two,hc,mul_zero,sub_zero] using g.property
-  have ha : g 0 0≠0 := by intro h; simp [h] at hd
+  have ha : g 0 0≠0 := by intro h; simp_all
   refine ⟨ha,?_⟩
   apply Subtype.ext
   change (g : Matrix (Fin 2) (Fin 2) ℂ) =
@@ -410,7 +358,7 @@ lemma complexDiagonal_preserves_hyperbolicVolume (b : ℂ) (hb : b≠0) :
     (euclideanComplexDilation_preserves_hyperbolicVolume b hb)
   intro p hp
   obtain ⟨h0,h1,h2⟩ := euclideanComplexDilation_apply b p
-  have hq : 0<(euclideanComplexDilation b p) 2 := by rw [h2]; exact mul_pos (Complex.normSq_pos.mpr hb) hp
+  have hq : 0<(euclideanComplexDilation b p) 2 := by simp_all
   rw [euclideanToHyperbolic_positive _ hq,euclideanToHyperbolic_positive _ hp,complexDiagonal_action]
   apply upperPoint_congr
   · rw [h0,h1]
@@ -446,8 +394,8 @@ lemma complexWeyl_preserves_hyperbolicVolume :
   apply hyperbolicVolume_map_of_coordinate_action complexWeyl euclideanWeylAction
     euclideanWeylAction_measurable euclideanWeylAction_preserves_hyperbolicVolume
   intro p hp
-  have hn : ‖p‖≠0 := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
-  have hnc : (‖p‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn
+  have hn  := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
+  have hnc  := Complex.ofReal_ne_zero.mpr hn
   obtain ⟨h0,h1,h2⟩ := euclideanWeylAction_apply p
   have hq : 0<euclideanWeylAction p 2 := by
     rw [h2]
@@ -488,14 +436,8 @@ theorem hyperbolicVolume_invariant (g : SL(2,ℂ)) :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct primeProductNorm)
-open ConcreteTraceCRT (eisEmbedding)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 end SecondPassArithmetic
 

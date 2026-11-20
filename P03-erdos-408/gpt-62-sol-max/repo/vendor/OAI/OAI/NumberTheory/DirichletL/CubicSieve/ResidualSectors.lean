@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SquareParts
 
 @[expose] public section
@@ -9,85 +10,25 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
 open ActualEisensteinCubic
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
   (hinj : Function.Injective (fun i => Ideal.span {p i}))
 
 def secondSourcePairKernel (e k : O) (H₁ H₂ : Finset ι → ℂ)
@@ -117,7 +58,7 @@ theorem secondFrequencyKernel_eq_kernelPair (F : Finset ι)
   · simp [hd]
 
 theorem secondFrequencyKernel_eq_child_sectors
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
@@ -186,7 +127,7 @@ theorem inputConjugateRow_eq_truncated_add_tail
   ring_nf
 
 theorem truncatedSecondSource_eq_child_sectors
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+    (hcop : OAI.PrincipalFamily.Coprime p)
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
@@ -233,11 +174,6 @@ open ConcreteTraceCRT (eisEmbedding)
   frequency : O
   deriving DecidableEq
 
-section
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-
-end
 
 theorem rowCoprimeMask_eq_of_span_eq {ι : Type*} (P : ι → Ideal O)
     (S : Finset ι) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
@@ -254,48 +190,20 @@ theorem rowCoprimeMask_mul_eq_of_span_eq {ι : Type*} (P : ι → Ideal O)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassIntegration
-open ActualEisensteinCubic FirstPassCubeLabels
-open SecondPassArithmetic (SecondSupportData)
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (jLabel)
-open SecondPassIntegration (elementNorm)
 
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-
-end
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
-open FirstPassCubeLabels (b0Label)
-open JointLogSeparation
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm)
-open SecondPassIntegration (conjugateProfile)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace UnrestrictedIdealReindex
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open PrimaryIdealUnitReindex CanonicalQuadraticSieve
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge PrimaryIdealUnitReindex
+open CanonicalQuadraticSieve
 
 abbrev NonzeroIdeal := {I : Ideal O // I ≠ 0}
 abbrev NonzeroElement := {z : O // z ≠ 0}
@@ -314,16 +222,13 @@ theorem unitIdealToElement_bijective : Function.Bijective unitIdealToElement := 
     have hi : p.2 = q.2 := by
       apply Subtype.ext
       simpa only [span_unit_generator] using congrArg (fun z : O => Ideal.span {z}) he
-    have hu : p.1 = q.1 := by
-      apply Units.ext
-      rw [hi] at he
-      exact mul_right_cancel₀ (idealGenerator_ne_zero q.2.val q.2.property) he
-    exact Prod.ext hu hi
+    refine Prod.ext ?_ hi
+    apply Units.ext
+    rw [hi] at he
+    exact mul_right_cancel₀ (idealGenerator_ne_zero q.2.val q.2.property) he
   · intro z
     let I : NonzeroIdeal := ⟨Ideal.span {z.val}, Ideal.span_singleton_eq_bot.not.mpr z.property⟩
-    have ha : Associated (idealGenerator I.val) z.val :=
-      Ideal.span_singleton_eq_span_singleton.mp (span_idealGenerator I.val)
-    obtain ⟨u, hu⟩ := ha
+    obtain ⟨u, hu⟩ := (Ideal.span_singleton_eq_span_singleton.mp (span_idealGenerator I.val))
     refine ⟨(u, I), Subtype.ext ?_⟩
     change u.val * idealGenerator I.val = z.val
     simpa only [mul_comm] using hu

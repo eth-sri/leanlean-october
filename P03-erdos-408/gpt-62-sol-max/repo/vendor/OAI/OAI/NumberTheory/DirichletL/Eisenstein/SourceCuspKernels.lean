@@ -9,80 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical MatrixGroups
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 open CubicKubota EisensteinCuspModThree ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
@@ -148,9 +85,7 @@ lemma sourceCuspZTerm_bessel (j : Fin 3) (z : ℂ) (v : ℝ) (hv : 0<v)
 
 end
 
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 open ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
@@ -204,8 +139,8 @@ theorem sourceCuspZTerm_eq_radial (j : Fin 3) (z : ℂ) (v : ℝ) (hv : 0<v) (h 
       unfold sourceCuspRadialScale
       ring
     rw [ha]
-    have hs0 : (sourceCuspScale j:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (sourceCuspScale_pos j).ne'
-    have hl0 : (sourceCuspRadialLength h:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (sourceCuspRadialLength_pos h).ne'
+    have hs0  := Complex.ofReal_ne_zero.mpr (sourceCuspScale_pos j).ne'
+    have hl0  := Complex.ofReal_ne_zero.mpr (sourceCuspRadialLength_pos h).ne'
     simp only [sourceCuspRadialCoefficient,sourceCuspRadialBaseCoefficient,Complex.ofReal_div]
     field_simp [hs0,hl0]
 
@@ -217,8 +152,6 @@ theorem sourceCuspZFamily_eq_radialBesselProfile (j : Fin 3) (z : ℂ) (v : ℝ)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CompletedGauss
 
@@ -235,11 +168,11 @@ lemma positive_reflection_powers (Q u d X r:ℝ)
     (Q:ℂ)^(1+2*w)*(u:ℂ)^(2-2*w)*(2:ℂ)^(4*w)/(d:ℂ)^(2+2*w)*
       (X:ℂ)^(-w)*(r:ℂ)^(-w)=
       ((Q*(u/d)^2:ℝ):ℂ)*((u^2*d^2*X*r/(16*Q^2):ℝ):ℂ)^(-w) := by
-  have hQ0:(Q:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hQ.ne'
-  have hu0:(u:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hu.ne'
-  have hd0:(d:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hd.ne'
-  have hX0:(X:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hX.ne'
-  have hr0:(r:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hr.ne'
+  have hQ0:=Complex.ofReal_ne_zero.mpr hQ.ne'
+  have hu0:=Complex.ofReal_ne_zero.mpr hu.ne'
+  have hd0:=Complex.ofReal_ne_zero.mpr hd.ne'
+  have hX0:=Complex.ofReal_ne_zero.mpr hX.ne'
+  have hr0:=Complex.ofReal_ne_zero.mpr hr.ne'
   have hQp:(Q:ℂ)^w≠0:=Complex.cpow_ne_zero_iff.mpr (Or.inl hQ0)
   have hup:(u:ℂ)^w≠0:=Complex.cpow_ne_zero_iff.mpr (Or.inl hu0)
   have hdp:(d:ℂ)^w≠0:=Complex.cpow_ne_zero_iff.mpr (Or.inl hd0)
@@ -287,8 +220,6 @@ theorem bessel_reflection_scale (q d Q X r:ℝ)
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 namespace CubicReflectionKernel
 
@@ -360,7 +291,6 @@ theorem paperKernel_weighted_mellin {α:Type*} [Countable α]
     filter_upwards with t
     rw [show paperScale*(c*r i)=(paperScale*c)*r i by ring,
       Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg (mul_pos paperScale_pos hc).le (hr i).le]
-    dsimp only [M]
     ring
   simp_rw [hi]
   rw [tsum_mul_left]
@@ -388,9 +318,9 @@ lemma besselSmoothingIntegrand_reflected_kernel_line {α:Type*} [Countable α]
   have hs:s.re-1/2=-(3/2:ℝ):=by dsimp [s];norm_num
   have hslt:s.re<4/3:=by dsimp [s];norm_num
   have hsum:Summable (fun i=>‖a i‖*(r i)^(s.re-1/2)):=by simpa only [hs] using has
-  have hsw:1/2-w=s:=by dsimp [s,w];ring
-  have hw:1/2-s=w:=by rw [←hsw];ring
-  have hsw':s-1/2=-w:=by rw [←hsw];ring
+  have hsw:1/2-w=s:=by ring
+  have hw:1/2-s=w:=by ring
+  have hsw':s-1/2=-w:=by ring
   have hp:=bessel_reflection_scale q d Q X 1 hq hd hQ hX (by norm_num) w
   simp only [hsw,Complex.ofReal_one,Complex.one_cpow,mul_one] at hp
   have he:=continuedBesselDirichlet_reflection F r hr a q d Q hd hQ A hreflect s hslt hsum
@@ -407,8 +337,6 @@ lemma besselSmoothingIntegrand_reflected_kernel_line {α:Type*} [Countable α]
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 namespace CompletedGauss
 open CubicEisenstein CubicReflectionKernel
@@ -425,7 +353,7 @@ theorem besselSmoothingIntegral_reflected_kernel {α:Type*} [Countable α]
       (A*(Q:ℂ)*((q/d:ℝ):ℂ)^2)*
         ∑'i,a i*paperKernel V (27*q^2*d^2*X*r i/Q^2) := by
   let c:ℝ:=27*q^2*d^2*X/Q^2
-  have hc:0<c:=by dsimp [c];positivity
+  have hc:0<c:=by positivity
   let M:ℝ→ℂ:=fun t=>(∑'i,a i*(r i:ℂ)^(-((3/2:ℂ)+t*Complex.I)))*
     (((paperScale*c:ℝ):ℂ)^(-((3/2:ℂ)+t*Complex.I))*
       mellinEulerData V 0 ((3/2:ℂ)+t*Complex.I))
@@ -454,7 +382,6 @@ theorem besselSmoothingIntegral_reflected_kernel {α:Type*} [Countable α]
       · apply tsum_congr
         intro i
         congr 2
-        dsimp [c]
         ring
 
 theorem paperKernel_weighted_norm_summable {α:Type*}

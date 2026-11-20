@@ -1,5 +1,6 @@
 module
 
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.IntegratedTransfer
 
 @[expose] public section
@@ -9,85 +10,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding
+open ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
 
-end
-section
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
@@ -97,10 +33,9 @@ theorem exists_rowMajorant : ∃ W : 𝓢(ℝ, ℂ),
     (∀ s : ℝ, 2 < s → W s = 0) := by
   obtain ⟨U, hUc, hUs, hUone, hUts, hUzero⟩ :=
     FourierBridge.exists_complex_smooth_cutoff 1 (by norm_num)
-  let f : ℝ → ℂ := fun s => U s * star (U s)
+  let f  := fun s => U s * star (U s)
   have hfc : HasCompactSupport f := hUc.mul_right
-  have hfs : ContDiff ℝ ∞ f := hUs.mul (Complex.conjCLE.contDiff.comp hUs)
-  refine ⟨hfc.toSchwartzMap hfs, ?_, ?_, ?_⟩
+  refine ⟨hfc.toSchwartzMap (hUs.mul (Complex.conjCLE.contDiff.comp hUs)), ?_, ?_, ?_⟩
   · intro s
     change 0 ≤ (U s * star (U s)).re
     simp only [Complex.mul_re, Complex.star_def, Complex.conj_re, Complex.conj_im]
@@ -115,7 +50,7 @@ theorem exists_rowMajorant : ∃ W : 𝓢(ℝ, ℂ),
       by_contra hne
       have hu := hUts (subset_tsupport U (by exact hne))
       norm_num at hu
-      linarith [hu.2]
+      linarith
     simp [hUz]
 
 def rowMajorant : 𝓢(ℝ, ℂ) := Classical.choose exists_rowMajorant
@@ -180,8 +115,8 @@ theorem finite_row_energy_le_rowMajorant (P : O → ℂ) (T : Finset O)
       exact mul_nonneg (rowMajorant_nonneg _) (sq_nonneg _)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalFamily.Maximal p]
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 theorem firstCoreInputRow_finite_le_second_poisson
     (hp : ∀ i, p i ≠ 0)
@@ -211,9 +146,9 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalFamily.Maximal p]
+  (hcop : OAI.PrincipalFamily.Coprime p)
+  (hg : OAI.PrincipalFamily.Avoids p lambda)
 
 def secondPreKernelPair (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
     (m r c d e k₁ k₂ : O) (K : Finset ι → Finset ι → ℂ) : ℂ :=
@@ -319,7 +254,7 @@ theorem secondKernelPair_eq_children
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
 
@@ -343,12 +278,11 @@ lemma row_symbol_shift (c d n : O) (hc : (3 : O) ∣ c) (hd : (3 : O) ∣ d-1) :
     symbol c (d+3*c*n)=symbol c d := by
   have hdn : (3 : O) ∣ d+3*c*n-1 := by
     convert dvd_add hd (show (3 : O) ∣ 3*c*n from ⟨c*n,by ring⟩) using 1 ; ring
-  have h9 : (9 : O) ∣ d+3*c*n-d := by
-    obtain ⟨c0,rfl⟩ := hc
-    exact ⟨c0*n,by ring⟩
-  exact symbol_denominator_congr c (d+3*c*n) d
-    (lambda_sq_dvd_three.trans hdn) (lambda_sq_dvd_three.trans hd) h9
+  refine symbol_denominator_congr c (d+3*c*n) d
+    (lambda_sq_dvd_three.trans hdn) (lambda_sq_dvd_three.trans hd) ?_
     ⟨3*n,by ring⟩
+  obtain ⟨c0,rfl⟩ := hc
+  exact ⟨c0*n,by ring⟩
 
 def primitiveSigmaEquiv : PrimitiveRow ≃ Σ c : LevelLower, AdmissibleDenominator c.1 where
   toFun r := ⟨⟨r.1 0,r.2.2.1⟩,⟨r.1 1,r.2.1,r.2.2.2⟩⟩
@@ -391,12 +325,12 @@ lemma residueDenominatorMap_bijective (c : O) (hc : c ≠ 0) :
       apply Subtype.ext
       simpa only [hq] using congrArg (Ideal.Quotient.mk (Ideal.span {3*c})) h
     subst t
-    have hnm : n=m := mul_left_cancel₀ h3c (add_left_cancel h)
+    have hnm  := mul_left_cancel₀ h3c (add_left_cancel h)
     subst m
     rfl
   · intro d
-    let r : DenominatorResidue c := Ideal.Quotient.mk (Ideal.span {3*c}) d.1
-    have hr : Ideal.Quotient.mk (Ideal.span {3*c}) (denominatorRep c r)=r := denominatorRep_spec c r
+    let r  := Ideal.Quotient.mk (Ideal.span {3*c}) d.1
+    have hr  := denominatorRep_spec c r
     have hdiv : 3*c ∣ d.1-denominatorRep c r := by
       apply Ideal.mem_span_singleton.mp
       apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
@@ -441,12 +375,12 @@ lemma primitiveTerm_shift (z : ℂ) (v : ℝ) (s : ℂ) (c d n : O)
 
 lemma denominator_zero_unique (d : AdmissibleDenominator 0) : d.1=1 := by
   apply A3_primary_unit_eq_one _ _ (lambda_sq_dvd_three.trans d.2.2)
-  simpa only [isCoprime_zero_left] using d.2.1
+  simpa [isCoprime_zero_left] using d.2.1
 
 end CubicEisenstein
 
-open MeasureTheory Set Module
-open scoped BigOperators Classical ENNReal
+open Module
+open scoped ENNReal
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinEmbedding EisensteinSchwartzPoisson
@@ -473,14 +407,12 @@ lemma periodDomain_measurable : MeasurableSet periodDomain :=
 
 lemma three_embedding_mem (n : O) : 3*eisEmbedding n ∈ periodLattice := by
   have hzero : periodBasis 0 ∈ periodLattice := Submodule.subset_span ⟨0,rfl⟩
-  have hone : periodBasis 1 ∈ periodLattice := Submodule.subset_span ⟨1,rfl⟩
   have h := periodLattice.add_mem
     (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).1 hzero)
-    (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).2 hone)
+    (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).2 (Submodule.subset_span ⟨1,rfl⟩))
   rw [periodBasis_zero,periodBasis_one] at h
   convert h using 1
   conv_lhs => rw [← ActualEisensteinCoordinates.eval_coords n,eisEmbedding_eval]
-  simp only [zsmul_eq_mul,]
   ring
 
 def periodPoint (n : O) : periodLattice := ⟨3*eisEmbedding n,three_embedding_mem n⟩
@@ -527,7 +459,13 @@ theorem lintegral_eq_period_lintegrals (f : ℂ → ℝ≥0∞) :
   change f (3*eisEmbedding n+z)=f (z+3*eisEmbedding n)
   rw [add_comm]
 
-lemma periodDomain_volume : volume periodDomain=ENNReal.ofReal (9*Real.sqrt 3/2) := by
+/-- The real area of the period parallelogram. -/
+abbrev periodCovolume : ℝ := 9 * Real.sqrt 3 / 2
+
+lemma cusp_volume_ne_zero : (periodCovolume : ℂ) ≠ 0 :=
+  Complex.ofReal_ne_zero.mpr (by positivity)
+
+lemma periodDomain_volume : volume periodDomain=ENNReal.ofReal (periodCovolume) := by
   have hunit : volume (ZSpan.fundamentalDomain Complex.basisOneI)=1 := by
     rw [measure_congr (ZSpan.fundamentalDomain_ae_parallelepiped Complex.basisOneI volume)]
     exact Complex.orthonormalBasisOneI.volume_parallelepiped
