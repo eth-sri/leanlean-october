@@ -32,12 +32,15 @@ def IsNonpositiveFourierSupport (h : ℤ → ℂ) : Prop :=
 def IsStrictNegativeFourierSupport (a : ℤ → ℂ) : Prop :=
   ∀ n, 0 ≤ n → a n = 0
 
+section
+
+variable {a h : ℤ → ℂ} (ha : IsStrictNegativeFourierSupport a) (hh : IsNonpositiveFourierSupport h)
+include a h ha hh
+
 /-- A strictly negative multiplier and a nonpositive input have no
 nonnegative convolution coefficients. Every summand is zero, so no
 summability hypothesis is needed for this support statement. -/
-theorem seqConv_eq_zero_of_strictNegative_nonpositive {a h : ℤ → ℂ}
-    (ha : IsStrictNegativeFourierSupport a)
-    (hh : IsNonpositiveFourierSupport h) {n : ℤ} (hn : 0 ≤ n) :
+theorem seqConv_eq_zero_of_strictNegative_nonpositive  {n : ℤ} (hn : 0 ≤ n) :
     seqConv a h n = 0 := by
   unfold seqConv
   calc
@@ -45,31 +48,25 @@ theorem seqConv_eq_zero_of_strictNegative_nonpositive {a h : ℤ → ℂ}
       apply tsum_congr
       intro k
       by_cases hk : 0 ≤ k
-      · rw [ha k hk, zero_mul]
+      aesop
       · rw [hh (n - k) (by omega), mul_zero]
     _ = 0 := tsum_zero
 
 /-- In particular, the product has zero mean, as required by a periodic
 antiderivative. -/
-theorem seqConv_zero_of_strictNegative_nonpositive {a h : ℤ → ℂ}
-    (ha : IsStrictNegativeFourierSupport a)
-    (hh : IsNonpositiveFourierSupport h) : seqConv a h 0 = 0 :=
+theorem seqConv_zero_of_strictNegative_nonpositive  : seqConv a h 0 = 0 :=
   seqConv_eq_zero_of_strictNegative_nonpositive ha hh le_rfl
 
 /-- The normalization changes only the constant coefficient and hence
 preserves the nonpositive Fourier sector. -/
-theorem antiPrim_nonpositive {a h : ℤ → ℂ}
-    (ha : IsStrictNegativeFourierSupport a)
-    (hh : IsNonpositiveFourierSupport h) :
+theorem antiPrim_nonpositive  :
     IsNonpositiveFourierSupport (antiPrim a h) := by
   intro n hn
   rw [antiPrim, if_neg (ne_of_gt hn), primSeq,
     seqConv_eq_zero_of_strictNegative_nonpositive ha hh hn.le, zero_div]
 
 /-- Every iterated normalized primitive remains in the same Fourier sector. -/
-theorem antiPrimIter_nonpositive {a h : ℤ → ℂ}
-    (ha : IsStrictNegativeFourierSupport a)
-    (hh : IsNonpositiveFourierSupport h) (j : ℕ) :
+theorem antiPrimIter_nonpositive  (j : ℕ) :
     IsNonpositiveFourierSupport (antiPrimIter a j h) := by
   induction j with
   | zero => exact hh
@@ -77,6 +74,8 @@ theorem antiPrimIter_nonpositive {a h : ℤ → ℂ}
       change IsNonpositiveFourierSupport ((antiPrim a)^[j + 1] h)
       rw [Function.iterate_succ_apply']
       exact antiPrim_nonpositive ha ih
+
+end
 
 end PolyaNeumann
 

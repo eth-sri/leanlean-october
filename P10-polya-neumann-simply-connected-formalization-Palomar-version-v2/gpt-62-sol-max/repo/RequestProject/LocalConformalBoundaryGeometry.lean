@@ -36,7 +36,7 @@ injectivity or holomorphicity is needed for this topological identity. -/
 theorem unitDisk_closed_image_eq_closure (F : ℂ → ℂ)
     (hF : ContinuousOn F (closedBall (0 : ℂ) 1)) :
     F '' closedBall (0 : ℂ) 1 = closure (F '' ball (0 : ℂ) 1) := by
-  have hclosure : closure (ball (0 : ℂ) 1) = closedBall (0 : ℂ) 1 :=
+  have hclosure :=
     closure_ball (0 : ℂ) (by norm_num : (1 : ℝ) ≠ 0)
   have hFc : ContinuousOn F (closure (ball (0 : ℂ) 1)) := by
     simpa only [hclosure] using hF
@@ -45,7 +45,7 @@ theorem unitDisk_closed_image_eq_closure (F : ℂ → ℂ)
   · apply closure_minimal
     · rintro w ⟨z, hz, rfl⟩
       exact ⟨z, ball_subset_closedBall hz, rfl⟩
-    · exact ((isCompact_closedBall (0 : ℂ) 1).image_of_continuousOn hF).isClosed
+    exact IsCompact.isClosed (IsCompact.image_of_continuousOn (isCompact_closedBall 0 1) hF)
 
 /-- For an injective closed-disk map, removing the open-disk image removes
 exactly the interior source points. Openness of the image identifies the
@@ -57,42 +57,42 @@ theorem unitDisk_sphere_image_eq_frontier (F : ℂ → ℂ)
     F '' sphere (0 : ℂ) 1 = frontier (F '' ball (0 : ℂ) 1) := by
   calc
     F '' sphere (0 : ℂ) 1 =
-        F '' (closedBall (0 : ℂ) 1 \ ball (0 : ℂ) 1) := by
-      rw [closedBall_diff_ball]
+        F '' (closedBall (0 : ℂ) 1 \ ball (0 : ℂ) 1) := by simp
     _ = F '' closedBall (0 : ℂ) 1 \ F '' ball (0 : ℂ) 1 :=
       hinj.image_diff_subset ball_subset_closedBall
     _ = closure (F '' ball (0 : ℂ) 1) \ F '' ball (0 : ℂ) 1 := by
       rw [unitDisk_closed_image_eq_closure F hF]
     _ = frontier (F '' ball (0 : ℂ) 1) := hΩ.frontier_eq.symm
 
-theorem localConformal_closedDisk_image_eq_closure {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+include R hR F hFs
+
+theorem localConformal_closedDisk_image_eq_closure  :
     F '' closedBall (0 : ℂ) 1 = closure (F '' ball (0 : ℂ) 1) :=
   unitDisk_closed_image_eq_closure F
     (hFs.continuousOn.mono (closedBall_subset_ball hR))
 
-theorem localConformal_unitSphere_image_eq_frontier {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformal_unitSphere_image_eq_frontier 
     (hinj : InjOn F (closedBall (0 : ℂ) 1))
     (hΩ : IsOpen (F '' ball (0 : ℂ) 1)) :
     F '' sphere (0 : ℂ) 1 = frontier (F '' ball (0 : ℂ) 1) :=
   unitDisk_sphere_image_eq_frontier F
     (hFs.continuousOn.mono (closedBall_subset_ball hR)) hinj hΩ
 
+end
+
 /-- The closed angular interval has exactly the unit-circle image, including
 both representations of its common endpoint. -/
 theorem unitCircleMap_image_Icc :
     circleMap 0 1 '' Icc (0 : ℝ) (2 * Real.pi) = sphere (0 : ℂ) 1 := by
   have hIoc : circleMap 0 1 '' Ioc (0 : ℝ) (2 * Real.pi) = sphere (0 : ℂ) 1 := by
-    simpa only [abs_one] using image_circleMap_Ioc 0 1
+    simp
   apply Subset.antisymm
   · intro w hw
-    have hwr : w ∈ range (circleMap 0 1) :=
-      image_subset_range (circleMap 0 1) (Icc 0 (2 * Real.pi)) hw
-    simpa only [range_circleMap, abs_one] using hwr
-  · rw [← hIoc]
-    rintro w ⟨θ, hθ, rfl⟩
-    exact ⟨θ, ⟨hθ.1.le, hθ.2⟩, rfl⟩
+    aesop
+  grind
 
 theorem physicalCircleTrace_image_Icc (F : ℂ → ℂ) :
     physicalCircleTrace F '' Icc (0 : ℝ) (2 * Real.pi) = F '' sphere (0 : ℂ) 1 := by

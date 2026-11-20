@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.CircleFourier
 public import RequestProject.HardyPrimitiveTrace
 public import RequestProject.VolterraIterateBound
 
@@ -32,29 +33,29 @@ namespace PolyaNeumann
 open MeasureTheory
 open scoped InnerProductSpace
 
-local instance hardyVolterraTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
-
 /-- Uniform Fourier synthesis as an actual continuous circle function. -/
 def hardyCircleReconstruction (c : ℤ → ℂ) : C(AddCircle (2 * Real.pi), ℂ) :=
   ∑' n, c n • fourier (T := 2 * Real.pi) n
 
-private theorem summable_hardyCircleReconstruction_terms {c : ℤ → ℂ}
-    (hc : Summable fun n => ‖c n‖) :
+section
+
+variable {c : ℤ → ℂ} (hc : Summable fun n => ‖c n‖)
+include c hc
+
+private theorem summable_hardyCircleReconstruction_terms  :
     Summable (fun n => c n • fourier (T := 2 * Real.pi) n) := by
   apply Summable.of_norm
-  simpa only [norm_smul, fourier_norm, mul_one] using hc
+  simp_all [norm_smul, fourier_norm]
 
 /-- Uniform synthesis has the same pointwise values as the actual Fourier trace. -/
-theorem hardyCircleReconstruction_coe {c : ℤ → ℂ}
-    (hc : Summable fun n => ‖c n‖) (θ : ℝ) :
+theorem hardyCircleReconstruction_coe  (θ : ℝ) :
     hardyCircleReconstruction c (θ : AddCircle (2 * Real.pi)) =
       hardyFourierTrace c θ := by
   have hs := (ContinuousMap.evalCLM ℂ (θ : AddCircle (2 * Real.pi))).hasSum
     (summable_hardyCircleReconstruction_terms hc).hasSum
-  change HasSum (fun n => c n • fourier (T := 2 * Real.pi) n
-      (θ : AddCircle (2 * Real.pi)))
-    (hardyCircleReconstruction c (θ : AddCircle (2 * Real.pi))) at hs
-  simpa only [hardyFourierTrace, smul_eq_mul] using hs.tsum_eq.symm
+  exact id (fun hs => id (Eq.symm (HasSum.tsum_eq hs))) hs
+
+end
 
 private def hardyVolterraCoefficientCLM (n : ℤ) :
     C(AddCircle (2 * Real.pi), ℂ) →L[ℂ] ℂ :=
@@ -80,10 +81,7 @@ theorem hardyCircleReconstruction_fourierCoeff {c : ℤ → ℂ}
     rw [hardyVolterraCoefficientCLM_apply]
     change fourierCoeff (fun x => c k * fourier (T := 2 * Real.pi) k x) n = _
     rw [fourierCoeff.const_mul, fourierCoeff_fourier]
-    by_cases hkn : k = n
-    · subst k
-      simp
-    · simp [hkn, Ne.symm hkn]
+    grind
   have hs := (hardyVolterraCoefficientCLM n).hasSum
     (summable_hardyCircleReconstruction_terms hc).hasSum
   change HasSum
@@ -92,6 +90,12 @@ theorem hardyCircleReconstruction_fourierCoeff {c : ℤ → ℂ}
   simp_rw [hterm] at hs
   rw [hardyVolterraCoefficientCLM_apply] at hs
   simpa only [tsum_ite_eq] using hs.tsum_eq.symm
+
+theorem fourierCoeffOn_hardyFourierTrace {c : ℤ → ℂ} (hc : Summable fun n => ‖c n‖) :
+    fourierCoeffOn Real.two_pi_pos (hardyFourierTrace c) = c := by
+  have h : (fun θ : ℝ => hardyCircleReconstruction c (θ : AddCircle (2 * Real.pi))) =
+      hardyFourierTrace c := funext (hardyCircleReconstruction_coe hc)
+  rw [← h, ← fourierCoeff_eq_on_circle, hardyCircleReconstruction_fourierCoeff hc]
 
 /-- The one-step integral identity for an arbitrary absolutely summable input sequence. -/
 theorem hardyFourierTrace_antiPrim_eq_integral_seq
@@ -106,24 +110,20 @@ theorem hardyFourierTrace_antiPrim_eq_integral_seq
   let H := hardyCircleReconstruction h
   have hcoef : fourierCoeff H = h := hardyCircleReconstruction_fourierCoeff hh
   have hH : Summable fun n => ‖fourierCoeff H n‖ := by
-    rw [hcoef]
-    exact hh
+    simp_all
   have hHn : IsNonpositiveFourierSupport (fourierCoeff H) := by
-    rw [hcoef]
-    exact hhn
+    simp_all
   have hval (s : ℝ) : H (s : AddCircle (2 * Real.pi)) = hardyFourierTrace h s :=
     hardyCircleReconstruction_coe hh s
-  simpa only [hcoef, hval] using
-    hardyFourierTrace_antiPrim_eq_integral A H hA hH hAn hHn θ
+  simpa [hcoef, hval] using hardyFourierTrace_antiPrim_eq_integral A H hA hH hAn hHn θ
 
 /-- One weighted ℓ¹ derivative in particular gives absolute summability. -/
 theorem summable_norm_of_isWL1_one {a : ℤ → ℂ} (ha : IsWL1 1 a) :
     Summable fun n => ‖a n‖ := by
   have hw : Summable fun n => sobWeight n * ‖a n‖ := by
-    simpa only [IsWL1, Real.rpow_one] using ha
+    simp_all [IsWL1]
   refine Summable.of_nonneg_of_le (fun n => norm_nonneg (a n)) (fun n => ?_) hw
-  simpa only [one_mul] using
-    mul_le_mul_of_nonneg_right (one_le_sobWeight n) (norm_nonneg (a n))
+  simpa using mul_le_mul_of_nonneg_right (one_le_sobWeight n) (norm_nonneg (a n))
 
 /-- Every actual primitive iterate of an H¹ input has absolutely summable coefficients. -/
 theorem summable_norm_antiPrimIter_of_H1 {a h : ℤ → ℂ}
@@ -132,21 +132,22 @@ theorem summable_norm_antiPrimIter_of_H1 {a h : ℤ → ℂ}
   have hj := (antiPrimIter_bound (by norm_num : (0 : ℝ) ≤ 1) ha hh j).1
   exact (sq_tsum_norm_le (s := 0) (by norm_num) (by simpa using hj)).1
 
+section
+
+variable (A : C(AddCircle (2 * Real.pi), ℂ)) (hA : IsWL1 1 (fourierCoeff A)) {h : ℤ → ℂ} (hh : IsSobolevSeq 1 h) (hAn : IsStrictNegativeFourierSupport (fourierCoeff A)) (hhn : IsNonpositiveFourierSupport h)
+include A hA h hh hAn hhn
+
 /-- Iteration of the actual normalized Fourier primitive agrees with iteration of
 the actual interval primitive, at every real parameter. -/
 theorem hardyFourierTrace_antiPrimIter_eq_volterraPrimitiveIterate
-    (A : C(AddCircle (2 * Real.pi), ℂ))
-    (hA : IsWL1 1 (fourierCoeff A)) {h : ℤ → ℂ} (hh : IsSobolevSeq 1 h)
-    (hAn : IsStrictNegativeFourierSupport (fourierCoeff A))
-    (hhn : IsNonpositiveFourierSupport h) :
+     :
     ∀ j θ, hardyFourierTrace (antiPrimIter (fourierCoeff A) j h) θ =
       volterraPrimitiveIterate (fun s => A (s : AddCircle (2 * Real.pi)))
         (hardyFourierTrace h) j θ := by
   intro j
   induction j with
   | zero =>
-      intro θ
-      simp only [antiPrimIter, Function.iterate_zero, id_eq, volterraPrimitiveIterate]
+      tauto
   | succ j ih =>
       intro θ
       have hj : antiPrimIter (fourierCoeff A) (j + 1) h =
@@ -161,22 +162,16 @@ theorem hardyFourierTrace_antiPrimIter_eq_volterraPrimitiveIterate
       rw [hardyFourierTrace_antiPrim_eq_integral_seq A
         (summable_norm_of_isWL1_one hA) (summable_norm_antiPrimIter_of_H1 hA hh j)
         hAn (antiPrimIter_nonpositive hAn hhn j) θ]
-      apply intervalIntegral.integral_congr
-      intro s _
-      dsimp only
-      rw [ih s]
+      simp_all
 
 /-- The genuine derivative of each reconstructed successor iterate. -/
 theorem hasDerivAt_hardyFourierTrace_antiPrimIter_succ
-    (A : C(AddCircle (2 * Real.pi), ℂ))
-    (hA : IsWL1 1 (fourierCoeff A)) {h : ℤ → ℂ} (hh : IsSobolevSeq 1 h)
-    (hAn : IsStrictNegativeFourierSupport (fourierCoeff A))
-    (hhn : IsNonpositiveFourierSupport h) (j : ℕ) (θ : ℝ) :
+     (j : ℕ) (θ : ℝ) :
     HasDerivAt (hardyFourierTrace (antiPrimIter (fourierCoeff A) (j + 1) h))
       (A (θ : AddCircle (2 * Real.pi)) *
         hardyFourierTrace (antiPrimIter (fourierCoeff A) j h) θ) θ := by
   have hhs : Summable fun n => ‖h n‖ :=
-    (sq_tsum_norm_le (s := 0) (by norm_num) (by simpa using hh)).1
+    (sq_tsum_norm_le (s := 0) (by norm_num) (by simp_all)).1
   have hfun : hardyFourierTrace (antiPrimIter (fourierCoeff A) (j + 1) h) =
       volterraPrimitiveIterate (fun s => A (s : AddCircle (2 * Real.pi)))
         (hardyFourierTrace h) (j + 1) := by
@@ -186,6 +181,8 @@ theorem hasDerivAt_hardyFourierTrace_antiPrimIter_succ
   exact hasDerivAt_volterraPrimitiveIterate_succ
     (A.continuous.comp (AddCircle.continuous_mk' _))
     (continuous_hardyFourierTrace hhs) j θ
+
+end
 
 end PolyaNeumann
 

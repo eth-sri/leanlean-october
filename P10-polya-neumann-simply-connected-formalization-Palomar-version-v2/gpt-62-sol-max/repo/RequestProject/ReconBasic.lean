@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 public import RequestProject.FixedSpace
 public import RequestProject.ChainRule
 public import RequestProject.WeakCompact
@@ -27,6 +28,23 @@ namespace PolyaNeumann
 
 /-- The directional derivative `z ↦ Dφ(z) v`. -/
 def dirD (φ : ℂ → ℂ) (v : ℂ) : ℂ → ℂ := fun z => fderiv ℝ φ z v
+
+theorem dirD_contDiff {u : ℂ → ℂ} (hu : ContDiff ℝ (⊤ : ℕ∞) u) (v : ℂ) :
+    ContDiff ℝ (⊤ : ℕ∞) (dirD u v) :=
+  (hu.fderiv_right le_rfl).clm_apply contDiff_const
+
+
+/-- Symmetry of the real mixed directional derivatives. -/
+theorem dirD_comm_at {u : ℂ → ℂ} {z : ℂ} (hu : ContDiffAt ℝ (⊤ : ℕ∞) u z) (v w : ℂ) :
+    dirD (dirD u v) w z = dirD (dirD u w) v z := by
+  have hd := (hu.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).differentiableAt (by simp)
+  have h (v w : ℂ) : dirD (dirD u v) w z = fderiv ℝ (fderiv ℝ u) z w v := by
+    change fderiv ℝ (fun x => fderiv ℝ u x v) z w = _
+    rw [fderiv_clm_apply hd (differentiableAt_const v)]
+    simp
+  rw [h, h]
+  exact (hu.isSymmSndFDerivAt (by simp)).eq w v
+
 
 /-- The Laplacian `∂ₓ²φ + ∂ᵧ²φ`. -/
 def lap (φ : ℂ → ℂ) : ℂ → ℂ := fun z => dirD (dirD φ 1) 1 z + dirD (dirD φ Complex.I) Complex.I z
@@ -63,19 +81,7 @@ lemma TestFunction.univ' {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D 
 
 /-- Directional derivatives of test functions are test functions. -/
 lemma TestFunction.dirD {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) (v : ℂ) :
-    TestFunction D (dirD φ v) := by
-  refine ⟨?_, ?_, ?_⟩
-  · exact (hφ.1.fderiv_right (m := (⊤ : ℕ∞)) le_rfl).clm_apply contDiff_const
-  · exact hφ.2.1.fderiv_apply (𝕜 := ℝ) v
-  · exact (tsupport_fderiv_apply_subset ℝ v).trans hφ.2.2
-
-lemma TestFunction.add {D : Set ℂ} {φ ψ : ℂ → ℂ} (hφ : TestFunction D φ)
-    (hψ : TestFunction D ψ) : TestFunction D (fun z => φ z + ψ z) :=
-  ⟨hφ.1.add hψ.1, hφ.2.1.add hψ.2.1, (tsupport_add φ ψ).trans (union_subset hφ.2.2 hψ.2.2)⟩
-
-lemma TestFunction.const_mul {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) (c : ℂ) :
-    TestFunction D (fun z => c * φ z) :=
-  ⟨contDiff_const.mul hφ.1, hφ.2.1.mul_left, (tsupport_mul_subset_right).trans hφ.2.2⟩
+    TestFunction D (dirD φ v) := ⟨dirD_contDiff hφ.left v, ⟨HasCompactSupport.fderiv_apply ℝ hφ.right.left v, LE.le.trans (tsupport_fderiv_apply_subset ℝ v) hφ.right.right⟩⟩
 
 /-- The Laplacian of a test function is a test function. -/
 lemma TestFunction.lap {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) :
@@ -86,12 +92,6 @@ lemma TestFunction.lap {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ
 lemma TestFunction.helm {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) (E : ℝ) :
     TestFunction D (fun z => PolyaNeumann.lap φ z + E * φ z) :=
   hφ.lap.add (hφ.const_mul _)
-
-/-- Complex conjugates of test functions are test functions. -/
-lemma TestFunction.conj {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) :
-    TestFunction D (fun z => conj (φ z)) := by
-  refine ⟨Complex.conjCLE.contDiff.comp hφ.1, hφ.2.1.comp_left (by simp), ?_⟩
-  exact (tsupport_comp_subset (g := fun z : ℂ => conj z) (by simp) φ).trans hφ.2.2
 
 lemma dirD_conj {φ : ℂ → ℂ} (hφ : ContDiff ℝ 1 φ) (v z : ℂ) :
     dirD (fun z => conj (φ z)) v z = conj (dirD φ v z) := by
@@ -107,27 +107,19 @@ lemma integrable_mul_test {u : ℂ → ℂ} {μ : Measure ℂ} [IsFiniteMeasureO
     Integrable (fun z => u z * φ z) μ :=
   hu.integrable_mul (hφ.memLp' 2)
 
-/-- Fundamental lemma of the calculus of variations on an open set, for complex functions. -/
 lemma ae_eq_zero_of_integral_mul_test {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ}
     (hf : LocallyIntegrable f volume)
     (h : ∀ φ : ℂ → ℂ, TestFunction U φ → ∫ z, f z * φ z = 0) :
-    ∀ᵐ z ∂(volume.restrict U), f z = 0 := by
-  have h0 := hU.ae_eq_zero_of_integral_contDiff_smul_eq_zero (hf.locallyIntegrableOn U)
-    (fun ψ hψ hψc hψs => by
-      have ht : TestFunction U (fun w => ((ψ w : ℝ) : ℂ)) :=
-        ⟨Complex.ofRealCLM.contDiff.comp hψ, hψc.comp_left Complex.ofReal_zero,
-          (tsupport_comp_subset Complex.ofReal_zero ψ).trans hψs⟩
-      have e := h _ ht
-      simp_rw [Complex.real_smul, mul_comm]
-      exact e)
-  exact (ae_restrict_iff' hU.measurableSet).mpr h0
+    ∀ᵐ z ∂(volume.restrict U), f z = 0 :=
+  (ae_restrict_iff' hU.measurableSet).mpr
+    (ae_eq_zero_on_of_integral_mul_test hU (hf.locallyIntegrableOn U) h)
 
 /-- A product of bounded Lipschitz functions is Lipschitz. -/
 lemma lipschitzWith_mul_of_bounded {f g : ℂ → ℂ} {Kf Kg : NNReal} (hf : LipschitzWith Kf f)
     (hg : LipschitzWith Kg g) {Cf Cg : ℝ} (hCf : ∀ z, ‖f z‖ ≤ Cf) (hCg : ∀ z, ‖g z‖ ≤ Cg) :
     ∃ K : NNReal, LipschitzWith K (fun z => f z * g z) := by
-  have hCf0 : 0 ≤ Cf := (norm_nonneg _).trans (hCf 0)
-  have hCg0 : 0 ≤ Cg := (norm_nonneg _).trans (hCg 0)
+  have hCf0 := (norm_nonneg _).trans (hCf 0)
+  have hCg0 := (norm_nonneg _).trans (hCg 0)
   refine ⟨⟨Cf * Kg + Cg * Kf, by positivity⟩, LipschitzWith.of_dist_le_mul fun x y => ?_⟩
   rw [dist_eq_norm, dist_eq_norm]
   change _ ≤ (Cf * Kg + Cg * Kf) * _
@@ -136,14 +128,21 @@ lemma lipschitzWith_mul_of_bounded {f g : ℂ → ℂ} {Kf Kg : NNReal} (hf : Li
   calc ‖f x * (g x - g y) + g y * (f x - f y)‖
       ≤ ‖f x‖ * ‖g x - g y‖ + ‖g y‖ * ‖f x - f y‖ := by
         refine (norm_add_le _ _).trans ?_
-        rw [norm_mul, norm_mul]
+        simp
     _ ≤ Cf * (Kg * ‖x - y‖) + Cg * (Kf * ‖x - y‖) := by
         have h1 := hg.dist_le_mul x y
         have h2 := hf.dist_le_mul x y
         rw [dist_eq_norm, dist_eq_norm] at h1 h2
         gcongr
-        · exact hCf x
-        · exact hCg y
+        tauto
+        tauto
     _ = (Cf * Kg + Cg * Kf) * ‖x - y‖ := by ring
+
+lemma intervalIntegrable_lipschitz_deriv {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
+    (a b : ℝ) : IntervalIntegrable (deriv γ) volume a b := by
+  apply intervalIntegrable_iff.mpr
+  exact Measure.integrableOn_of_bounded (M := K) measure_Ioc_lt_top.ne
+    (measurable_deriv γ).aestronglyMeasurable
+    (.of_forall fun _ => norm_deriv_le_of_lipschitz hK)
 
 end PolyaNeumann

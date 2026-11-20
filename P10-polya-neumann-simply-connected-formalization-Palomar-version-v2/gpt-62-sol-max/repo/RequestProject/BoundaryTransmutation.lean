@@ -49,7 +49,7 @@ def antiPrim (a h : ℤ → ℂ) (n : ℤ) : ℂ :=
 def primConst (s : ℝ) (a : ℤ → ℂ) : ℝ := 4 * (evalConst + 1) * wl1Norm s a ^ 2
 
 lemma evalConst_nonneg : 0 ≤ evalConst :=
-  tsum_nonneg fun n => by have := sobWeight_pos n; positivity
+  tsum_nonneg fun n => by positivity
 
 lemma primConst_nonneg (s : ℝ) (a : ℤ → ℂ) : 0 ≤ primConst s a := by
   have := evalConst_nonneg; unfold primConst; positivity
@@ -71,15 +71,14 @@ theorem antiPrim_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 
     by_cases hn : n = 0
     · subst hn
       have hw : sobWeight 0 = 1 := by simp [sobWeight]
-      simp only [antiPrim, if_true, hw, Real.one_rpow, one_mul, norm_neg]
-      have h1 : ‖∑' m, p m‖ ≤ P := norm_tsum_le_tsum_norm hps
+      simp  [antiPrim, hw, one_mul, norm_neg]
+      have h1 := norm_tsum_le_tsum_norm hps
       have h2 := sq_nonneg ‖p 0‖
       nlinarith [norm_nonneg (∑' m, p m)]
-    · simp [antiPrim, hn, hpdef]
+    simp [antiPrim, hn, hpdef]
   have hind : Summable fun n : ℤ => if n = 0 then P ^ 2 else 0 :=
-    summable_of_ne_finset_zero (s := {0}) fun n hn => by
-      simp only [Finset.mem_singleton] at hn; simp [hn]
-  have hsum : IsSobolevSeq (s + 1) (antiPrim a h) :=
+    summable_of_ne_finset_zero (s := {0}) fun n hn => by simp_all
+  have hsum :=
     Summable.of_nonneg_of_le (fun n => sq_nonneg _) hpt (hp.add hind)
   refine ⟨hsum, ?_⟩
   calc sobNormSq (s + 1) (antiPrim a h)
@@ -95,14 +94,18 @@ theorem antiPrim_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 
 /-- The iterates `J^j h`. -/
 def antiPrimIter (a : ℤ → ℂ) (j : ℕ) (h : ℤ → ℂ) : ℤ → ℂ := (antiPrim a)^[j] h
 
+section
+
+variable {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 s a) (hh : IsSobolevSeq s h) (j : ℕ)
+include s hs a h ha hh j
+
 /-- **Iterated primitive bound** (Lemma 5.2, last assertion): for `j ≥ 1`,
 `‖J^j h‖²_{H^{s+1}} ≤ K^j ‖h‖²_{H^s}`; for all `j`, `‖J^j h‖²_{H^s} ≤ K^j ‖h‖²_{H^s}`. -/
-theorem antiPrimIter_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 s a)
-    (hh : IsSobolevSeq s h) (j : ℕ) :
+theorem antiPrimIter_bound  :
     IsSobolevSeq s (antiPrimIter a j h) ∧
       sobNormSq s (antiPrimIter a j h) ≤ primConst s a ^ j * sobNormSq s h := by
   induction j with
-  | zero => simp [antiPrimIter, hh]
+  | zero => aesop
   | succ j ih =>
     have e : antiPrimIter a (j + 1) h = antiPrim a (antiPrimIter a j h) :=
       Function.iterate_succ_apply' _ _ _
@@ -113,8 +116,7 @@ theorem antiPrimIter_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : Is
     rw [pow_succ', mul_assoc]
     exact mul_le_mul_of_nonneg_left ih.2 (primConst_nonneg s a)
 
-theorem antiPrimIter_succ_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha : IsWL1 s a)
-    (hh : IsSobolevSeq s h) (j : ℕ) :
+theorem antiPrimIter_succ_bound  :
     IsSobolevSeq (s + 1) (antiPrimIter a (j + 1) h) ∧
       sobNormSq (s + 1) (antiPrimIter a (j + 1) h) ≤
         primConst s a ^ (j + 1) * sobNormSq s h := by
@@ -126,6 +128,8 @@ theorem antiPrimIter_succ_bound {s : ℝ} (hs : 0 ≤ s) {a h : ℤ → ℂ} (ha
   refine ⟨h1, h2.trans ?_⟩
   rw [pow_succ', mul_assoc]
   exact mul_le_mul_of_nonneg_left ih2 (primConst_nonneg s a)
+
+end
 
 /-! ### The boundary transmutation series -/
 
@@ -154,23 +158,28 @@ theorem vekuaBdryTerm_bound {s : ℝ} (hs : 0 ≤ s) {g a h : ℤ → ℂ} (hg :
         gcongr
     _ = _ := by ring
 
+section
+
+variable (s : ℝ) (f : ℤ → ℂ) (hf : IsSobolevSeq s f)
+include s f hf
+
 /-- The element of `ℓ²(ℤ)` representing `f ∈ H^s` in normalized coordinates
 (`(λₙ^s fₙ)ₙ`); its norm is the `H^s` norm. -/
-def sobVec (s : ℝ) (f : ℤ → ℂ) (hf : IsSobolevSeq s f) : L2Z :=
+def sobVec  : L2Z :=
   ⟨fun n => ((sobWeight n ^ s : ℝ) : ℂ) * f n, by
     refine memℓp_two_iff_summable.mpr ?_
     refine hf.congr fun n => ?_
-    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (by have := sobWeight_pos n; positivity)]⟩
+    grind [norm_mul, Complex.norm_real, Real.norm_eq_abs]⟩
 
-lemma norm_sobVec (s : ℝ) (f : ℤ → ℂ) (hf : IsSobolevSeq s f) :
+lemma norm_sobVec  :
     ‖sobVec s f hf‖ = Real.sqrt (sobNormSq s f) := by
   rw [← Real.sqrt_sq (norm_nonneg (sobVec s f hf)), norm_sq_L2Z]
   congr 1
   refine tsum_congr fun n => ?_
   change ‖((sobWeight n ^ s : ℝ) : ℂ) * f n‖ ^ 2 = _
-  rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (by have := sobWeight_pos n; positivity)]
+  grind [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+
+end
 
 /-- **Lemma 5.3, boundary part of `𝒱_E − I` (Fourier form).** Let `s ≥ 0`, let `g`
 (coefficients of `γ`) satisfy `∑ λₖ^{s+1} |gₖ| = R < ∞`, `a` (coefficients of `conj γ'`)
@@ -186,15 +195,15 @@ theorem vekuaBdry_sub_one_bound {s : ℝ} (hs : 0 ≤ s) {g a h : ℤ → ℂ} (
       ‖∑' j, ((-E / 4) ^ (j + 1) / (j + 1).factorial) • sobVec (s + 1) _ (hT j)‖ ≤
         (Real.exp (‖E‖ * wl1Norm (s + 1) g * Real.sqrt (primConst s a) / 4) - 1) *
           Real.sqrt (sobNormSq s h) := by
-  have hT : ∀ j, IsSobolevSeq (s + 1) (vekuaBdryTerm g a h (j + 1)) :=
+  have hT :=
     fun j => (vekuaBdryTerm_bound hs hg ha hh j).1
   refine ⟨hT, ?_⟩
   set R := wl1Norm (s + 1) g with hR
   set K := primConst s a with hK
   set S := sobNormSq s h with hS
   have hR0 : 0 ≤ R := tsum_nonneg fun k => by have := sobWeight_pos k; positivity
-  have hK0 : 0 ≤ K := primConst_nonneg s a
-  have hS0 : 0 ≤ S := sobNormSq_nonneg s h
+  have hK0 := primConst_nonneg s a
+  have hS0 := sobNormSq_nonneg s h
   set x := ‖E‖ * R * Real.sqrt K / 4 with hx
   have hx0 : 0 ≤ x := by positivity
   have hterm : ∀ j : ℕ, ‖((-E / 4) ^ (j + 1) / (j + 1).factorial) •
@@ -216,7 +225,7 @@ theorem vekuaBdry_sub_one_bound {s : ℝ} (hs : 0 ≤ s) {g a h : ℤ → ℂ} (
           Real.sqrt (sobNormSq (s + 1) (vekuaBdryTerm g a h (j + 1)))
         ≤ (‖E‖ / 4) ^ (j + 1) / ((j + 1).factorial : ℝ) *
           ((R * Real.sqrt K) ^ (j + 1) * Real.sqrt S) := by gcongr
-      _ = _ := by rw [hx]; ring
+      _ = _ := by ring
   have hsumx : Summable fun j : ℕ => x ^ (j + 1) / (j + 1).factorial * Real.sqrt S :=
     ((summable_nat_add_iff 1).mpr (Real.summable_pow_div_factorial x)).mul_right _
   have hsumN := Summable.of_nonneg_of_le (fun j => norm_nonneg _) hterm hsumx

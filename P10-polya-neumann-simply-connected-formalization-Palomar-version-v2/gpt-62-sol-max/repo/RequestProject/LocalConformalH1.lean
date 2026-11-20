@@ -30,39 +30,32 @@ open scoped Real ContDiff ComplexConjugate Topology ENNReal
 
 private theorem abs_det_complex_deriv (c : ℂ) :
     |((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) c).restrictScalars ℝ).det| =
-      ‖c‖ ^ 2 := by
-  rw [ContinuousLinearMap.det, ContinuousLinearMap.coe_restrictScalars,
-    LinearMap.det_restrictScalars]
-  simp [Algebra.norm_complex_apply, Complex.normSq_eq_norm_sq]
+      ‖c‖ ^ 2 := by simp_all [ContinuousLinearMap.det, LinearMap.det_restrictScalars, Algebra.norm_complex_apply, Complex.normSq_eq_norm_sq]
+
+private theorem complex_deriv_within {U : Set ℂ} (hU : IsOpen U) {F : ℂ → ℂ}
+    (hF : DifferentiableOn ℂ F U) (z : ℂ) (hz : z ∈ U) :
+    HasFDerivWithinAt F ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ)
+      (deriv F z)).restrictScalars ℝ) U z :=
+  ((hF.differentiableAt (hU.mem_nhds hz)).hasDerivAt.hasFDerivAt.restrictScalars ℝ).hasFDerivWithinAt
 
 theorem localConformal_integral_image {U : Set ℂ} (hU : IsOpen U) {F : ℂ → ℂ}
     (hF : DifferentiableOn ℂ F U) (hinj : InjOn F U) (a : ℂ → ℝ) :
     (∫ w in F '' U, a w) = ∫ z in U, ‖deriv F z‖ ^ 2 * a (F z) := by
-  have hfd : ∀ z ∈ U, HasFDerivWithinAt F
-      ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (deriv F z)).restrictScalars ℝ) U z :=
-    fun z hz => ((hF.differentiableAt (hU.mem_nhds hz)).hasDerivAt.hasFDerivAt
-      |>.restrictScalars ℝ).hasFDerivWithinAt
-  rw [integral_image_eq_integral_abs_det_fderiv_smul volume hU.measurableSet hfd hinj a]
-  simp only [abs_det_complex_deriv, smul_eq_mul]
+  rw [integral_image_eq_integral_abs_det_fderiv_smul volume hU.measurableSet (complex_deriv_within hU hF) hinj a]
+  simp [abs_det_complex_deriv]
 
 theorem localConformal_integrable_weight {U : Set ℂ} (hU : IsOpen U) {F : ℂ → ℂ}
     (hF : DifferentiableOn ℂ F U) (hinj : InjOn F U) {a : ℂ → ℝ}
     (ha : IntegrableOn a (F '' U)) :
     IntegrableOn (fun z => ‖deriv F z‖ ^ 2 * a (F z)) U := by
-  have hfd : ∀ z ∈ U, HasFDerivWithinAt F
-      ((ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (deriv F z)).restrictScalars ℝ) U z :=
-    fun z hz => ((hF.differentiableAt (hU.mem_nhds hz)).hasDerivAt.hasFDerivAt
-      |>.restrictScalars ℝ).hasFDerivWithinAt
   have h := (integrableOn_image_iff_integrableOn_abs_det_fderiv_smul volume
-    hU.measurableSet hfd hinj a).1 ha
-  simpa only [abs_det_complex_deriv, smul_eq_mul] using h
+    hU.measurableSet (complex_deriv_within hU hF) hinj a).1 ha
+  simp_all [abs_det_complex_deriv]
 
-private theorem realCLM_apply_complex (A : ℂ →L[ℝ] ℂ) (w : ℂ) :
+theorem realCLM_apply_complex (A : ℂ →L[ℝ] ℂ) (w : ℂ) :
     A w = (w.re : ℂ) * A 1 + (w.im : ℂ) * A Complex.I := by
   calc
-    A w = A (w.re • (1 : ℂ) + w.im • Complex.I) := by
-      congr 1
-      simpa only [Complex.real_smul, mul_one] using (Complex.re_add_im w).symm
+    A w = A (w.re • (1 : ℂ) + w.im • Complex.I) := by simp
     _ = _ := by rw [map_add, map_smul, map_smul]; rfl
 
 private theorem realCLM_conformal_energy (A : ℂ →L[ℝ] ℂ) (c : ℂ) :
@@ -83,11 +76,10 @@ theorem gradSq_smoothDiskComposition {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
   have hfd : ∀ v : ℂ, fderiv ℝ F z v = deriv F z * v := by
     intro v
     rw [(hhol.differentiableAt (isOpen_ball.mem_nhds hz)).fderiv_restrictScalars ℝ]
-    change fderiv ℂ F z v = _
-    exact fderiv_eq_deriv_mul
+    exact id fderiv_eq_deriv_mul
   unfold gradSq
   rw [fderiv_smoothDiskCompositionLin hR F hFs f (ball_subset_closedBall hz)]
-  simp only [ContinuousLinearMap.comp_apply, hfd, mul_one]
+  simp  [ContinuousLinearMap.comp_apply, hfd, mul_one]
   exact realCLM_conformal_energy _ _
 
 theorem integral_gradSq_smoothDiskComposition {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
@@ -119,7 +111,7 @@ theorem integral_valueSq_smoothDiskComposition_le {R : ℝ} (hR : 1 < R)
   filter_upwards [ae_restrict_mem measurableSet_ball] with z hz
   rw [smoothDiskCompositionLin_eq_closedDisk hR F hFs f (ball_subset_closedBall hz)]
   have h := mul_le_mul_of_nonneg_right (hC z hz) (sq_nonneg ‖f (F z)‖)
-  simpa only [one_mul, mul_assoc] using h
+  linarith
 
 theorem norm_smoothDiskCompositionH1_le {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
     (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))

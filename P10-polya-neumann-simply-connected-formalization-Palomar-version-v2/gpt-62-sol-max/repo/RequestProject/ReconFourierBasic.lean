@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Analysis.Fourier.LpSpace
+public import Mathlib.Analysis.Fourier.FourierTransformDeriv
 public import RequestProject.ReconBasic
 
 /-!
@@ -31,16 +32,12 @@ lemma real_inner_eq_re (z w : ℂ) : inner ℝ z w = (conj z * w).re := by
   rw [Complex.inner, mul_comm]
 
 lemma ePlane_eq_fourierChar (ξ x : ℂ) : ePlane ξ x = ((𝐞 (-inner ℝ x ξ) : Circle) : ℂ) := by
-  rw [Real.fourierChar_apply, ePlane, real_inner_eq_re]
+  rw [ePlane, real_inner_eq_re]
   congr 1
   push_cast
   ring
 
-lemma fourier_eq_ePlane (f : ℂ → ℂ) (ξ : ℂ) : 𝓕 f ξ = ∫ x, ePlane ξ x * f x := by
-  rw [Real.fourier_eq]
-  congr 1
-  funext x
-  rw [ePlane_eq_fourierChar, Circle.smul_def, smul_eq_mul]
+lemma fourier_eq_ePlane (f : ℂ → ℂ) (ξ : ℂ) : 𝓕 f ξ = ∫ x, ePlane ξ x * f x := by simp [Real.fourier_eq, ePlane_eq_fourierChar, Circle.smul_def]
 
 lemma conj_ePlane (ξ x : ℂ) : conj (ePlane ξ x) = ePlane (-ξ) x := by
   unfold ePlane
@@ -50,21 +47,11 @@ lemma conj_ePlane (ξ x : ℂ) : conj (ePlane ξ x) = ePlane (-ξ) x := by
     Complex.neg_re, Complex.ofReal_neg]
   ring
 
-lemma fourierInv_eq_ePlane (f : ℂ → ℂ) (ξ : ℂ) : 𝓕⁻ f ξ = ∫ x, conj (ePlane ξ x) * f x := by
-  rw [Real.fourierInv_eq]
-  congr 1
-  funext x
-  rw [Circle.smul_def, smul_eq_mul, conj_ePlane, ePlane_eq_fourierChar]
-  congr 3
-  rw [inner_neg_right, neg_neg]
+lemma fourierInv_eq_ePlane (f : ℂ → ℂ) (ξ : ℂ) : 𝓕⁻ f ξ = ∫ x, conj (ePlane ξ x) * f x := by simp [Real.fourierInv_eq, Circle.smul_def, ePlane_eq_fourierChar]
 
-lemma ePlane_comm (ξ x : ℂ) : ePlane ξ x = ePlane x ξ := by
-  unfold ePlane
-  rw [← Complex.conj_re (conj x * ξ)]
-  simp [mul_comm]
+lemma ePlane_comm (ξ x : ℂ) : ePlane ξ x = ePlane x ξ := by simp [ePlane, mul_comm]
 
-lemma norm_ePlane (ξ x : ℂ) : ‖ePlane ξ x‖ = 1 := by
-  rw [ePlane_eq_fourierChar]; exact Circle.norm_coe _
+lemma norm_ePlane (ξ x : ℂ) : ‖ePlane ξ x‖ = 1 := by simp [ePlane_eq_fourierChar]
 
 lemma continuous_ePlane_prod : Continuous fun p : ℂ × ℂ => ePlane p.2 p.1 := by
   unfold ePlane; fun_prop
@@ -82,36 +69,14 @@ lemma norm_ePlane_sub_le (ξ η x : ℂ) : ‖ePlane ξ x - ePlane η x‖ ≤ 2
   refine Real.norm_exp_I_mul_ofReal_sub_one_le.trans ?_
   rw [Real.norm_eq_abs, abs_neg, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 2 * π)]
   have h1 : |(conj x * (ξ - η)).re| ≤ ‖x‖ * ‖ξ - η‖ :=
-    (Complex.abs_re_le_norm _).trans (by rw [norm_mul, Complex.norm_conj])
+    (Complex.abs_re_le_norm _).trans (by simp)
   have h2 := mul_le_mul_of_nonneg_left h1 (by positivity : (0 : ℝ) ≤ 2 * π)
   linarith
 
 lemma norm_fourier_le (f : ℂ → ℂ) (ξ : ℂ) : ‖𝓕 f ξ‖ ≤ ∫ x, ‖f x‖ := by
   rw [fourier_eq_ePlane]
   refine (norm_integral_le_integral_norm _).trans (le_of_eq ?_)
-  congr 1; funext x; rw [norm_mul, norm_ePlane, one_mul]
-
-/-- The Fourier transform of an integrable `f` with `∫ ‖x‖ ‖f x‖ < ∞` is Lipschitz. -/
-lemma norm_fourier_sub_le {f : ℂ → ℂ} (hf : Integrable f)
-    (hf' : Integrable fun x => ‖x‖ * ‖f x‖) (ξ η : ℂ) :
-    ‖𝓕 f ξ - 𝓕 f η‖ ≤ 2 * π * (∫ x, ‖x‖ * ‖f x‖) * ‖ξ - η‖ := by
-  have hi : ∀ ζ : ℂ, Integrable fun x => ePlane ζ x * f x := fun ζ =>
-    hf.bdd_mul (c := 1) ((continuous_ePlane_prod.comp
-      (continuous_id.prodMk continuous_const)).aestronglyMeasurable)
-      (Eventually.of_forall fun x => (norm_ePlane ζ x).le)
-  rw [fourier_eq_ePlane, fourier_eq_ePlane, ← integral_sub (hi ξ) (hi η)]
-  refine (norm_integral_le_integral_norm _).trans ?_
-  have e : 2 * π * (∫ x, ‖x‖ * ‖f x‖) * ‖ξ - η‖ =
-      ∫ x, 2 * π * (‖x‖ * ‖f x‖) * ‖ξ - η‖ := by
-    rw [integral_mul_const, integral_const_mul]
-  rw [e]
-  refine integral_mono_of_nonneg (Eventually.of_forall fun x => norm_nonneg _)
-    ((hf'.const_mul _).mul_const _) (Eventually.of_forall fun x => ?_)
-  simp only
-  rw [← sub_mul, norm_mul]
-  calc ‖ePlane ξ x - ePlane η x‖ * ‖f x‖ ≤ (2 * π * ‖x‖ * ‖ξ - η‖) * ‖f x‖ := by
-        gcongr; exact norm_ePlane_sub_le ξ η x
-    _ = 2 * π * (‖x‖ * ‖f x‖) * ‖ξ - η‖ := by ring
+  simp [norm_ePlane]
 
 /-- The multiplication formula `∫ 𝓕 g · h = ∫ g · 𝓕 h`. -/
 lemma integral_fourier_mul {g h : ℂ → ℂ} (hg : Integrable g) (hh : Integrable h) :
@@ -121,37 +86,45 @@ lemma integral_fourier_mul {g h : ℂ → ℂ} (hg : Integrable g) (hh : Integra
     refine (hg.norm.mul_prod hh.norm).mono' ?_ (Eventually.of_forall fun p => ?_)
     · exact ((continuous_ePlane_prod.aestronglyMeasurable.mul hg.aestronglyMeasurable.comp_fst).mul
         hh.aestronglyMeasurable.comp_snd)
-    · rw [norm_mul, norm_mul, norm_ePlane, one_mul]
+    simp [norm_ePlane]
   have e1 : ∀ ξ, (∫ x, ePlane ξ x * g x) * h ξ = ∫ x, ePlane ξ x * g x * h ξ := fun ξ =>
     (integral_mul_const _ _).symm
-  have e2 : ∀ x, g x * (∫ ξ, ePlane x ξ * h ξ) = ∫ ξ, ePlane ξ x * g x * h ξ := fun x => by
-    rw [← integral_const_mul]; congr 1; funext ξ; rw [ePlane_comm]; ring
+  have e2 : ∀ x, g x * (∫ ξ, ePlane x ξ * h ξ) = ∫ ξ, ePlane ξ x * g x * h ξ := fun x => by grind [integral_const_mul, ePlane_comm]
   have L : ∫ ξ, 𝓕 g ξ * h ξ = ∫ ξ, ∫ x, ePlane ξ x * g x * h ξ := integral_congr_ae
-      (Eventually.of_forall fun ξ => by simp only; rw [fourier_eq_ePlane, e1])
+      (Eventually.of_forall fun ξ => by simp [fourier_eq_ePlane, e1])
   have R : ∫ x, g x * 𝓕 h x = ∫ x, ∫ ξ, ePlane ξ x * g x * h ξ := integral_congr_ae
-      (Eventually.of_forall fun x => by simp only; rw [fourier_eq_ePlane, e2])
+      (Eventually.of_forall fun x => by simp [fourier_eq_ePlane, e2])
   rw [L, R]
   exact (integral_integral_swap (f := fun x ξ => ePlane ξ x * g x * h ξ) hint).symm
 
+section
+
+variable {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ)
+include D φ hφ
+
 /-- A test function as a Schwartz map. -/
-def TestFunction.schwartz {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ) : SchwartzMap ℂ ℂ :=
+def TestFunction.schwartz  : SchwartzMap ℂ ℂ :=
   hφ.2.1.toSchwartzMap hφ.1
 
-@[simp] lemma TestFunction.schwartz_apply {D : Set ℂ} {φ : ℂ → ℂ} (hφ : TestFunction D φ)
+@[simp] lemma TestFunction.schwartz_apply 
     (x : ℂ) : hφ.schwartz x = φ x := rfl
+
+end
 
 lemma inner_toLp_eq_integral {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
     (B : Lp ℂ 2 (volume : Measure ℂ)) :
     inner ℂ ((hφ.conj).schwartz.toLp 2 volume) B = ∫ x, φ x * B x := by
   rw [L2.inner_def]
   refine integral_congr_ae ?_
-  filter_upwards [SchwartzMap.coeFn_toLp (hφ.conj).schwartz 2 volume] with x hx
-  rw [hx, TestFunction.schwartz_apply, RCLike.inner_apply, Complex.conj_conj]
-  exact mul_comm _ _
+  filter_upwards [SchwartzMap.coeFn_toLp (hφ.conj).schwartz 2 volume] with x; simp_all [mul_assoc, mul_comm, mul_left_comm]
+
+section
+
+variable (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
+include A φ hφ
 
 /-- Pairing of an inverse `L²` Fourier transform with a test function. -/
-lemma integral_fourierInv_Lp_mul (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) :
+lemma integral_fourierInv_Lp_mul  :
     ∫ x, (𝓕⁻ A : Lp ℂ 2 (volume : Measure ℂ)) x * φ x = ∫ ξ, A ξ * 𝓕⁻ φ ξ := by
   set s := (hφ.conj).schwartz
   have h1 := inner_toLp_eq_integral hφ (𝓕⁻ A)
@@ -159,7 +132,7 @@ lemma integral_fourierInv_Lp_mul (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ
     rw [← Lp.inner_fourier_eq (s.toLp 2 volume) (𝓕⁻ A), fourier_fourierInv_eq,
       SchwartzMap.toLp_fourier_eq]
   rw [show (∫ x, _ * φ x) = ∫ x, φ x * _ from
-    integral_congr_ae (Eventually.of_forall fun x => mul_comm _ _), ← h1, h2, L2.inner_def]
+    integral_congr_ae (Eventually.of_forall fun x => mul_comm _ _), ← h1, h2]
   refine integral_congr_ae ?_
   filter_upwards [SchwartzMap.coeFn_toLp (𝓕 s) 2 volume] with ξ hξ
   rw [hξ, RCLike.inner_apply, SchwartzMap.fourier_coe, fourier_eq_ePlane, fourierInv_eq_ePlane,
@@ -167,11 +140,10 @@ lemma integral_fourierInv_Lp_mul (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ
   congr 1
   congr 1
   funext x
-  simp [s, map_mul]
+  aesop
 
 /-- Pairing of an `L²` Fourier transform with a test function. -/
-lemma integral_fourier_Lp_mul (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) :
+lemma integral_fourier_Lp_mul  :
     ∫ x, (𝓕 A : Lp ℂ 2 (volume : Measure ℂ)) x * φ x = ∫ ξ, A ξ * 𝓕 φ ξ := by
   set s := (hφ.conj).schwartz
   have h1 := inner_toLp_eq_integral hφ (𝓕 A)
@@ -180,7 +152,7 @@ lemma integral_fourier_Lp_mul (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ �
       (F := Lp ℂ 2 (volume : Measure ℂ)) (s.toLp 2 volume)]
     rw [Lp.inner_fourier_eq, SchwartzMap.toLp_fourierInv_eq]
   rw [show (∫ x, _ * φ x) = ∫ x, φ x * _ from
-    integral_congr_ae (Eventually.of_forall fun x => mul_comm _ _), ← h1, h2, L2.inner_def]
+    integral_congr_ae (Eventually.of_forall fun x => mul_comm _ _), ← h1, h2]
   refine integral_congr_ae ?_
   filter_upwards [SchwartzMap.coeFn_toLp (𝓕⁻ s) 2 volume] with ξ hξ
   rw [hξ, RCLike.inner_apply, SchwartzMap.fourierInv_coe, fourier_eq_ePlane,
@@ -188,18 +160,25 @@ lemma integral_fourier_Lp_mul (A : Lp ℂ 2 (volume : Measure ℂ)) {φ : ℂ �
   congr 1
   congr 1
   funext x
-  simp [s, map_mul]
+  aesop
+
+end
 
 /-! ### Compactly supported `L²` functions -/
 
-lemma integrable_of_memLp_two_hasCompactSupport {G : ℂ → ℂ} (hG : MemLp G 2 volume)
+section
+
+variable {G : ℂ → ℂ}
+include G
+
+lemma integrable_of_memLp_two_hasCompactSupport  (hG : MemLp G 2 volume)
     (hc : HasCompactSupport G) : Integrable G := by
   haveI : IsFiniteMeasure (volume.restrict (tsupport G)) :=
     isFiniteMeasure_restrict.mpr hc.isCompact.measure_lt_top.ne
   have : IntegrableOn G (tsupport G) := (hG.restrict _).integrable (by norm_num)
   exact (integrableOn_iff_integrable_of_support_subset (subset_tsupport G)).mp this
 
-lemma integrable_norm_mul_of_hasCompactSupport {G : ℂ → ℂ} (hG : Integrable G)
+lemma integrable_norm_mul_of_hasCompactSupport  (hG : Integrable G)
     (hc : HasCompactSupport G) : Integrable fun x => ‖x‖ * ‖G x‖ := by
   obtain ⟨R, hR⟩ := hc.isCompact.isBounded.subset_closedBall (0 : ℂ)
   refine (hG.norm.const_mul R).mono' (continuous_norm.aestronglyMeasurable.mul
@@ -208,23 +187,31 @@ lemma integrable_norm_mul_of_hasCompactSupport {G : ℂ → ℂ} (hG : Integrabl
   by_cases hx : x ∈ tsupport G
   · have := hR hx
     rw [Metric.mem_closedBall, dist_zero_right] at this
-    exact mul_le_mul_of_nonneg_right this (norm_nonneg _)
+    gcongr
   · rw [image_eq_zero_of_notMem_tsupport hx, norm_zero, mul_zero, mul_zero]
 
-lemma continuous_fourier_of_moment {f : ℂ → ℂ} (hf : Integrable f)
-    (hf' : Integrable fun x => ‖x‖ * ‖f x‖) : Continuous (𝓕 f) := by
-  refine LipschitzWith.continuous (K := ⟨2 * π * ∫ x, ‖x‖ * ‖f x‖, by
-    have : 0 ≤ ∫ x, ‖x‖ * ‖f x‖ := integral_nonneg fun x => by positivity
-    positivity⟩) (LipschitzWith.of_dist_le_mul fun ξ η => ?_)
-  rw [dist_eq_norm, dist_eq_norm]
-  exact norm_fourier_sub_le hf hf' ξ η
+end
 
-/-- The `L²` and the integral Fourier transforms agree on `L¹ ∩ L²` (with a first moment). -/
-lemma fourier_toLp_ae_eq {G : ℂ → ℂ} (hG2 : MemLp G 2 volume) (hG1 : Integrable G)
-    (hG' : Integrable fun x => ‖x‖ * ‖G x‖) :
+lemma contDiff_fourier_of_compact {f : ℂ → ℂ} (hf : Integrable f) (hc : HasCompactSupport f) :
+    ContDiff ℝ 1 (𝓕 f) := by
+  apply Real.contDiff_fourier
+  intro n hn
+  have hn' : n ≤ 1 := by exact_mod_cast hn
+  interval_cases n
+  · simpa using hf.norm
+  · simpa using integrable_norm_mul_of_hasCompactSupport hf hc
+
+section
+
+variable {G : ℂ → ℂ} (hG2 : MemLp G 2 volume) (hG1 : Integrable G)
+include G hG2 hG1
+
+/-- The `L²` and the integral Fourier transforms agree on `L¹ ∩ L²`. -/
+lemma fourier_toLp_ae_eq  :
     ((𝓕 (hG2.toLp G) : Lp ℂ 2 (volume : Measure ℂ)) : ℂ → ℂ) =ᵐ[volume] 𝓕 G := by
   set A := hG2.toLp G
-  have hc := continuous_fourier_of_moment hG1 hG'
+  have hc : Continuous (𝓕 G) := Real.fourierTransform_toLp (memLp_one_iff_integrable.mpr hG1) ▸
+    (Real.Lp.fourierTransform (memLp_one_iff_integrable.mpr hG1).toLp).continuous
   have hb : ∀ ξ, ‖𝓕 G ξ‖ ≤ ∫ x, ‖G x‖ := norm_fourier_le G
   have hloc : LocallyIntegrable (fun ξ => (𝓕 A : Lp ℂ 2 (volume : Measure ℂ)) ξ - 𝓕 G ξ)
       volume :=
@@ -240,14 +227,15 @@ lemma fourier_toLp_ae_eq {G : ℂ → ℂ} (hG2 : MemLp G 2 volume) (hG1 : Integ
     rw [sub_eq_zero]
     refine integral_congr_ae ?_
     filter_upwards [hG2.coeFn_toLp] with x hx
-    rw [hx])
+    tauto)
   rw [Measure.restrict_univ] at h0
   filter_upwards [h0] with ξ hξ
-  exact sub_eq_zero.mp hξ
+  grind
 
-lemma memLp_fourier {G : ℂ → ℂ} (hG2 : MemLp G 2 volume) (hG1 : Integrable G)
-    (hG' : Integrable fun x => ‖x‖ * ‖G x‖) : MemLp (𝓕 G) 2 volume :=
-  (Lp.memLp _).ae_eq (fourier_toLp_ae_eq hG2 hG1 hG')
+lemma memLp_fourier  : MemLp (𝓕 G) 2 volume :=
+  (Lp.memLp _).ae_eq (fourier_toLp_ae_eq hG2 hG1)
+
+end
 
 /-! ### Derivatives of plane waves and of test functions -/
 
@@ -263,16 +251,15 @@ lemma hasFDerivAt_ePlane (ξ z : ℂ) :
   have h1 : HasFDerivAt (fun z : ℂ => -(2 * π * Complex.I) * ((conj z * ξ).re : ℂ))
       ((-(2 * π * Complex.I)) • L) z := by
     have := (L.hasFDerivAt (x := z)).const_mul (-(2 * π * Complex.I))
-    simpa only [hL] using this
+    assumption
   have := h1.cexp
   rw [smul_smul] at this
-  exact this
+  assumption
 
 lemma fderiv_ePlane_apply' (ξ z v : ℂ) :
     fderiv ℝ (ePlane ξ) z v = -(2 * π * Complex.I) * (conj v * ξ).re * ePlane ξ z := by
   rw [(hasFDerivAt_ePlane ξ z).fderiv]
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.comp_apply, smul_eq_mul]
-  simp [mul_comm, mul_left_comm, mul_assoc]
+  simp [smul_eq_mul, mul_comm, mul_left_comm, mul_assoc]
 
 lemma dirD_ePlane (ξ v : ℂ) :
     dirD (ePlane ξ) v = fun z => -(2 * π * Complex.I) * (conj v * ξ).re * ePlane ξ z :=
@@ -285,29 +272,30 @@ lemma lap_ePlane (ξ z : ℂ) : lap (ePlane ξ) z = -(4 * π ^ 2 * ‖ξ‖ ^ 2)
     rw [dirD_ePlane]
     unfold dirD
     rw [fderiv_const_mul ((hasFDerivAt_ePlane ξ z).differentiableAt), ContinuousLinearMap.smul_apply,
-      fderiv_ePlane_apply', smul_eq_mul]
+      fderiv_ePlane_apply']
     ring
   rw [lap, h, h]
   have hn : (‖ξ‖ : ℂ) ^ 2 = (ξ.re : ℂ) ^ 2 + (ξ.im : ℂ) ^ 2 := by
     rw [← Complex.ofReal_pow, Complex.sq_norm, Complex.normSq_apply]; push_cast; ring
   simp only [map_one, one_mul, Complex.conj_I]
   rw [hn]
-  simp only [Complex.mul_re, Complex.neg_re, Complex.I_re, Complex.I_im, Complex.neg_im]
-  ring_nf
-  rw [Complex.I_sq]
-  ring
+  grind [Complex.mul_re, Complex.neg_re, Complex.I_re, Complex.I_im, Complex.neg_im, Complex.I_sq]
+
+section
+
+variable {φ : ℂ → ℂ} (hφ : TestFunction univ φ)
+include φ hφ
 
 /-- `𝓕⁻ (∂ᵥ φ)(ξ) = -2πi ⟨v, ξ⟩ 𝓕⁻ φ(ξ)` for test functions. -/
-lemma fourierInv_dirD {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (v ξ : ℂ) :
+lemma fourierInv_dirD  (v ξ : ℂ) :
     𝓕⁻ (dirD φ v) ξ = -(2 * π * Complex.I) * (conj v * ξ).re * 𝓕⁻ φ ξ := by
   have hlip : LipschitzWith ⟨2 * π * ‖ξ‖, by positivity⟩ (ePlane (-ξ)) := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_
     rw [dist_eq_norm, dist_eq_norm, ePlane_comm (-ξ) x, ePlane_comm (-ξ) y]
     change _ ≤ (2 * π * ‖ξ‖) * _
     have := norm_ePlane_sub_le x y (-ξ)
-    rw [norm_neg] at this
-    linarith
-  have hibp := integral_mul_fderiv_of_lipschitz hlip (hφ.1.of_le (by exact_mod_cast le_top))
+    simp_all
+  have hibp := integral_mul_fderiv_of_lipschitz hlip (hφ.1.of_le (by trivial))
     hφ.2.1 v
   rw [fourierInv_eq_ePlane, fourierInv_eq_ePlane]
   simp_rw [conj_ePlane]
@@ -319,30 +307,7 @@ lemma fourierInv_dirD {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (v ξ : �
   simp only [mul_neg, Complex.neg_re, Complex.ofReal_neg]
   ring
 
-lemma fourierInv_lap {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (ξ : ℂ) :
-    𝓕⁻ (lap φ) ξ = -(4 * π ^ 2 * ‖ξ‖ ^ 2) * 𝓕⁻ φ ξ := by
-  have hi : ∀ v : ℂ, Integrable (dirD (dirD φ v) v) := fun v =>
-    ((hφ.dirD v).dirD v).1.continuous.integrable_of_hasCompactSupport ((hφ.dirD v).dirD v).2.1
-  have hsplit : 𝓕⁻ (lap φ) ξ = 𝓕⁻ (dirD (dirD φ 1) 1) ξ +
-      𝓕⁻ (dirD (dirD φ Complex.I) Complex.I) ξ := by
-    rw [fourierInv_eq_ePlane, fourierInv_eq_ePlane, fourierInv_eq_ePlane, ← integral_add]
-    · congr 1; funext x; rw [lap]; ring
-    · exact (hi 1).bdd_mul (c := 1) ((Complex.continuous_conj.comp (continuous_ePlane_prod.comp
-        (continuous_id.prodMk continuous_const))).aestronglyMeasurable)
-        (Eventually.of_forall fun x => by rw [Complex.norm_conj, norm_ePlane])
-    · exact (hi _).bdd_mul (c := 1) ((Complex.continuous_conj.comp (continuous_ePlane_prod.comp
-        (continuous_id.prodMk continuous_const))).aestronglyMeasurable)
-        (Eventually.of_forall fun x => by rw [Complex.norm_conj, norm_ePlane])
-  rw [hsplit, fourierInv_dirD (hφ.dirD 1), fourierInv_dirD hφ, fourierInv_dirD (hφ.dirD _),
-    fourierInv_dirD hφ]
-  have hn : (‖ξ‖ : ℂ) ^ 2 = (ξ.re : ℂ) ^ 2 + (ξ.im : ℂ) ^ 2 := by
-    rw [← Complex.ofReal_pow, Complex.sq_norm, Complex.normSq_apply]; push_cast; ring
-  rw [hn]
-  simp only [map_one, one_mul, Complex.conj_I, Complex.mul_re, Complex.neg_re, Complex.I_re,
-    Complex.I_im, Complex.neg_im]
-  ring_nf
-  rw [Complex.I_sq]
-  ring
+end
 
 /-- Fourier inversion `∫ 𝓕 g · 𝓕⁻ φ = ∫ g φ` for integrable `g` and test functions `φ`. -/
 lemma integral_fourier_mul_fourierInv {g : ℂ → ℂ} (hg : Integrable g) {φ : ℂ → ℂ}
@@ -350,7 +315,7 @@ lemma integral_fourier_mul_fourierInv {g : ℂ → ℂ} (hg : Integrable g) {φ 
   have hs : (hφ.schwartz : ℂ → ℂ) = φ := rfl
   have hinv : 𝓕⁻ φ = ((𝓕⁻ hφ.schwartz : SchwartzMap ℂ ℂ) : ℂ → ℂ) := by
     rw [SchwartzMap.fourierInv_coe, hs]
-  rw [integral_fourier_mul hg (by rw [hinv]; exact (𝓕⁻ hφ.schwartz).integrable)]
+  rw [integral_fourier_mul hg (by rw [hinv]; fun_prop)]
   congr 1
   funext x
   rw [hinv, ← SchwartzMap.fourier_coe, fourier_fourierInv_eq, hs]

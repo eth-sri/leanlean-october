@@ -36,33 +36,54 @@ private theorem boundaryLoad_reparam_image_Icc {τ : ℝ → ℝ} {c : ℝ}
     hτ.continuous.continuousOn.image_Icc_of_monotoneOn two_pi_pos.le
       (hτ.monotone.monotoneOn _)
 
+section
+
+variable {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
+include hτ
+
+private theorem traceReparam_deriv (θ : ℝ) :
+    HasDerivWithinAt τ (deriv τ θ) (Icc 0 (2 * π)) θ :=
+  (hτ.contDiff.differentiable_one θ).hasDerivAt.hasDerivWithinAt
+
 private theorem boundaryLoad_integrable_reparam_weight
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c) {q : ℝ → V}
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] {q : ℝ → V}
     (hq : IntegrableOn q (Ioc (0 : ℝ) (2 * π))) :
     IntegrableOn (fun θ => deriv τ θ • q (τ θ)) (Ioc (0 : ℝ) (2 * π)) := by
-  have hq' : IntegrableOn q (Icc (0 : ℝ) (2 * π)) :=
-    (integrableOn_Icc_iff_integrableOn_Ioc (f := q) (by finiteness)).mpr hq
-  have hi := (integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn
-    measurableSet_Icc
-    (fun θ _ => (hτ.contDiff.differentiable_one θ).hasDerivAt.hasDerivWithinAt)
-    (hτ.monotone.monotoneOn (Icc (0 : ℝ) (2 * π))) q).mp
-      (by simpa only [boundaryLoad_reparam_image_Icc hτ] using hq')
-  exact (integrableOn_Icc_iff_integrableOn_Ioc
-    (f := fun θ => deriv τ θ • q (τ θ)) (by finiteness)).mp hi
+  have h := integrableOn_image_iff_integrableOn_deriv_smul_of_monotoneOn
+    measurableSet_Icc (fun θ _ => traceReparam_deriv hτ θ) (hτ.monotone.monotoneOn _) q
+  rw [boundaryLoad_reparam_image_Icc hτ, integrableOn_Icc_iff_integrableOn_Ioc enorm_ne_top,
+    integrableOn_Icc_iff_integrableOn_Ioc enorm_ne_top] at h
+  exact h.mp hq
 
-/-- Change of variables for an arbitrary complex integrand, with ordinary
-coordinate measure on both cuts. -/
-theorem integral_traceReparam_conormal {τ : ℝ → ℝ} {c : ℝ}
-    (hτ : IsC1TraceReparam τ c) (q : ℝ → ℂ) :
+/-- Change of variables with ordinary coordinate measure on both cuts. -/
+theorem integral_traceReparam_conormal {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+    (q : ℝ → V) :
     (∫ θ in Ioc (0 : ℝ) (2 * π), deriv τ θ • q (τ θ)) =
       ∫ s in Ioc (0 : ℝ) (2 * π), q s := by
-  have h := integral_image_eq_integral_deriv_smul_of_monotoneOn
-    measurableSet_Icc
-    (fun θ _ => (hτ.contDiff.differentiable_one θ).hasDerivAt.hasDerivWithinAt)
-    (hτ.monotone.monotoneOn (Icc (0 : ℝ) (2 * π))) q
-  simpa only [boundaryLoad_reparam_image_Icc hτ, integral_Icc_eq_integral_Ioc]
-    using h.symm
+  simpa only [boundaryLoad_reparam_image_Icc hτ, integral_Icc_eq_integral_Ioc] using
+    (integral_image_eq_integral_deriv_smul_of_monotoneOn measurableSet_Icc
+      (fun θ _ => traceReparam_deriv hτ θ) (hτ.monotone.monotoneOn _) q).symm
+
+/-- The positive Jacobian preserves null sets in the cut. -/
+theorem isC1TraceReparam_ae_comp {p : ℝ → Prop}
+    (hp : ∀ᵐ s ∂volume.restrict (Ioc 0 (2 * π)), p s) :
+    ∀ᵐ θ ∂volume.restrict (Ioc 0 (2 * π)), p (τ θ) := by
+  classical
+  let q : ℝ → ℝ := fun s => if p s then 0 else 1
+  have hz : q =ᵐ[volume.restrict (Ioc 0 (2 * π))] 0 := hp.mono fun s hs => by simp [q, hs]
+  have hq : IntegrableOn q (Ioc 0 (2 * π)) := (integrable_zero _ _ _).congr hz.symm
+  have hj := boundaryLoad_integrable_reparam_weight hτ hq
+  have hn : 0 ≤ᵐ[volume.restrict (Ioc 0 (2 * π))] (fun θ => deriv τ θ • q (τ θ)) :=
+    Eventually.of_forall fun θ => mul_nonneg hτ.monotone.deriv_nonneg (by positivity)
+  have he := (integral_eq_zero_iff_of_nonneg_ae hn hj).mp (by
+    rw [integral_traceReparam_conormal hτ q, integral_congr_ae hz]; simp)
+  filter_upwards [he, ae_restrict_of_ae_restrict_of_subset Ioc_subset_Icc_self hτ.lower_ae]
+    with θ hθ hlo
+  by_contra hbad
+  have hd : 0 < deriv τ θ := hτ.lower_pos.trans_le hlo
+  simp [q, hbad, hd.ne', smul_eq_mul] at hθ
+
+end
 
 private theorem boundaryLoad_weighted_norm_sq_le (d K : ℝ) (z : ℂ)
     (hd : 0 ≤ d) (hdK : d ≤ K) : ‖d • z‖ ^ 2 ≤ K * (d * ‖z‖ ^ 2) := by
@@ -76,14 +97,14 @@ theorem traceReparamConormal_memLp {τ : ℝ → ℝ} {c : ℝ}
     (hτ : IsC1TraceReparam τ c) (g : BoundaryL2) :
     MemLp (fun θ => deriv τ θ • g (τ θ)) 2
       (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
-  have hg : IntegrableOn (g : ℝ → ℂ) (Ioc (0 : ℝ) (2 * π)) :=
+  have hg :=
     (Lp.memLp g).integrable (by norm_num)
   have hG := boundaryLoad_integrable_reparam_weight hτ hg
-  have hg2 : IntegrableOn (fun θ => ‖g θ‖ ^ 2) (Ioc (0 : ℝ) (2 * π)) :=
+  have hg2 :=
     (memLp_two_iff_integrable_sq_norm (Lp.memLp g).aestronglyMeasurable).mp (Lp.memLp g)
   have hweight : IntegrableOn (fun θ => deriv τ θ * ‖g (τ θ)‖ ^ 2)
       (Ioc (0 : ℝ) (2 * π)) := by
-    simpa only [smul_eq_mul] using boundaryLoad_integrable_reparam_weight hτ hg2
+    exact boundaryLoad_integrable_reparam_weight hτ hg2
   obtain ⟨K, hK⟩ := hτ.lipschitz
   apply (memLp_two_iff_integrable_sq_norm hG.aestronglyMeasurable).mpr
   have hmeas : AEStronglyMeasurable (fun θ => ‖deriv τ θ • g (τ θ)‖ ^ 2)
@@ -94,25 +115,27 @@ theorem traceReparamConormal_memLp {τ : ℝ → ℝ} {c : ℝ}
   rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
   exact boundaryLoad_weighted_norm_sq_le (deriv τ θ) (K : ℝ) (g (τ θ))
     hτ.monotone.deriv_nonneg
-    ((le_abs_self _).trans (by simpa only [Real.norm_eq_abs] using
-      (norm_deriv_le_of_lipschitz hK : ‖deriv τ θ‖ ≤ (K : ℝ))))
+    ((le_abs_self _).trans (norm_deriv_le_of_lipschitz hK))
+
+section
+
+variable {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c) (g : BoundaryL2)
+include τ c hτ g
 
 /-- The transformed conormal density in the actual ordinary boundary L²
 space. Multiplication by the real derivative is the physical Jacobian. -/
-def traceReparamConormalL2 {τ : ℝ → ℝ} {c : ℝ}
-    (hτ : IsC1TraceReparam τ c) (g : BoundaryL2) : BoundaryL2 :=
+def traceReparamConormalL2  : BoundaryL2 :=
   (traceReparamConormal_memLp hτ g).toLp (fun θ => deriv τ θ • g (τ θ))
 
-theorem traceReparamConormalL2_ae {τ : ℝ → ℝ} {c : ℝ}
-    (hτ : IsC1TraceReparam τ c) (g : BoundaryL2) :
+theorem traceReparamConormalL2_ae  :
     (traceReparamConormalL2 hτ g : ℝ → ℂ)
       =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] fun θ => deriv τ θ • g (τ θ) :=
   (traceReparamConormal_memLp hτ g).coeFn_toLp
 
+end
+
 private theorem boundaryLoad_complex_pairing_weight (a z : ℂ) (d : ℝ) :
-    a * (d • z) = d • (a * z) := by
-  simp only [Complex.real_smul]
-  ring
+    a * (d • z) = d • (a * z) := by grind [Complex.real_smul]
 
 /-- Reparametrization preserves the actual physical load pairing against
 every H¹ vector. The identity is proved from Jacobian substitution on the
@@ -132,8 +155,7 @@ theorem h1ReparamBoundaryTrace_inner_conormalL2 {Ω : Set ℂ}
       ((h1ReparamBoundaryTrace hL hγ hτ).continuous.inner continuous_const)
       ((h1BoundaryTrace hb hL hγ).continuous.inner continuous_const)
   · intro f
-    rw [smoothTraceH1Lin_apply, h1BoundaryTrace_inner_smooth hb hL hγ f g,
-      L2.inner_def]
+    rw [smoothTraceH1Lin_apply, h1BoundaryTrace_inner_smooth hb hL hγ f g]
     calc
       _ = ∫ θ in Ioc (0 : ℝ) (2 * π),
           conj (f (γ (τ θ))) * (deriv τ θ • g (τ θ)) := by
@@ -147,24 +169,6 @@ theorem h1ReparamBoundaryTrace_inner_conormalL2 {Ω : Set ℂ}
         exact Eventually.of_forall fun θ => boundaryLoad_complex_pairing_weight _ _ _
       _ = _ := integral_traceReparam_conormal hτ (fun θ => conj (f (γ θ)) * g θ)
 
-private theorem boundaryLoad_sqrt_weight_cancel (w : ℝ) (hw : 0 < w) :
-    (Real.sqrt w : ℂ) * ((w ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) = 1 := by
-  rw [Real.rpow_neg hw.le, ← Real.sqrt_eq_rpow, Complex.ofReal_inv]
-  exact mul_inv_cancel₀ (by exact_mod_cast (Real.sqrt_pos.mpr hw).ne')
-
-private theorem boundaryLoad_half_pairing (q t b : L2Z)
-    (hq : ∀ n, q n = (Real.sqrt (sobWeight n) : ℂ) * t n) :
-    ⟪q, sobolevSmoothing (1 / 2 : ℝ) (by norm_num) b⟫_ℂ = ⟪t, b⟫_ℂ := by
-  rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
-  apply tsum_congr
-  intro n
-  simp only [RCLike.inner_apply', hq, sobolevSmoothing, diagOp_apply,
-    map_mul, Complex.conj_ofReal]
-  calc
-    _ = ((Real.sqrt (sobWeight n) : ℂ) *
-        ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ)) * (conj (t n) * b n) := by ring
-    _ = _ := by rw [boundaryLoad_sqrt_weight_cancel _ (sobWeight_pos n), one_mul]
-
 /-- The genuine weak load for the actual conformal half trace. Its unitary
 Fourier normalization is `sqrt (2π) Λ⁻¹ᐟ² Ĝ`, including frequency zero. -/
 def localConformalBoundaryLoad {τ : ℝ → ℝ} {c : ℝ}
@@ -174,48 +178,41 @@ def localConformalBoundaryLoad {τ : ℝ → ℝ} {c : ℝ}
 
 section LocalConformal
 
-variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (Metric.ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' Metric.ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' Metric.ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (Metric.ball (0 : ℂ) 1))
-    (hinj : InjOn F (Metric.ball (0 : ℂ) 1)) {C : ℝ}
-    (hC : ∀ z ∈ Metric.ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
     {γ : ℝ → ℂ} (hγ : IsBoundaryParam (F '' Metric.ball (0 : ℂ) 1) γ)
     {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
     (hcoord : ∀ θ, F (circleMap 0 1 θ) = γ (τ θ))
 
-include hhol hinj hC hcoord
+include hcoord
 
 /-- Pairing the actual conformal half trace with the constructed weak load
 is exactly the ordinary physical boundary pairing, for all H¹ vectors. -/
 theorem localConformalBoundaryLoad_inner
     (u : NeumannH1 (F '' Metric.ball (0 : ℂ) 1)) (g : BoundaryL2) :
-    ⟪localConformalDiskHalfTrace hR F hFs hL u, localConformalBoundaryLoad hτ g⟫_ℂ =
-      ⟪h1BoundaryTrace hb hL hγ u, g⟫_ℂ := by
-  have hhalf := boundaryLoad_half_pairing
-    (localConformalDiskHalfTrace hR F hFs hL u)
-    (boundaryFourier (localConformalDiskH1Trace hR F hFs hL u))
+    ⟪coords.halfTrace u, localConformalBoundaryLoad hτ g⟫_ℂ =
+      ⟪h1BoundaryTrace coords.bounded coords.lipschitz hγ u, g⟫_ℂ := by
+  have hhalf := inner_sobolevSmoothing_half
+    (coords.halfTrace u)
+    (boundaryFourier (coords.trace u))
     (boundaryFourier (traceReparamConormalL2 hτ g))
-    (fun n => by simpa only [sobWeight] using
-      localConformalDiskHalfTrace_apply hR F hFs hL u n)
+    (fun n => by rfl)
   have hordinary :
-      ⟪localConformalDiskH1Trace hR F hFs hL u, traceReparamConormalL2 hτ g⟫_ℂ =
-        ⟪h1BoundaryTrace hb hL hγ u, g⟫_ℂ := by
-    rw [← localConformalDiskH1Trace_eq_reparam hR F hFs hb hL hhol hinj hC hγ hτ hcoord]
-    exact h1ReparamBoundaryTrace_inner_conormalL2 hb hL hγ hτ u g
+      ⟪coords.trace u, traceReparamConormalL2 hτ g⟫_ℂ =
+        ⟪h1BoundaryTrace coords.bounded coords.lipschitz hγ u, g⟫_ℂ := by
+    rw [← localConformalDiskH1Trace_eq_reparam coords hγ hτ hcoord]
+    exact h1ReparamBoundaryTrace_inner_conormalL2 coords.bounded coords.lipschitz hγ hτ u g
   exact hhalf.trans ((boundaryFourier.inner_map_map _ _).trans hordinary)
 
 /-- An actual physical weak Neumann solution is the actual normalized
 solution with the constructed conformal weak load. -/
 theorem isBoundaryNeumannSolution_isNormalizedNeumannSolution {E : ℝ}
     (g : BoundaryL2) (u : NeumannH1 (F '' Metric.ball (0 : ℂ) 1))
-    (hu : IsBoundaryNeumannSolution hb hL hγ E g u) :
-    IsNormalizedNeumannSolution (localConformalDiskHalfTrace hR F hFs hL) E
+    (hu : IsBoundaryNeumannSolution coords.bounded coords.lipschitz hγ E g u) :
+    IsNormalizedNeumannSolution (coords.halfTrace) E
       (localConformalBoundaryLoad hτ g) u := by
   intro v
   exact (hu v).trans
-    (localConformalBoundaryLoad_inner hR F hFs hb hL hhol hinj hC hγ hτ hcoord v g).symm
+    (localConformalBoundaryLoad_inner coords hγ hτ hcoord v g).symm
 
 end LocalConformal
 

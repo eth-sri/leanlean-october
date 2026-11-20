@@ -25,7 +25,7 @@ lemma herglotzCoeff_zero_eq_herglotzVec {a : ℝ → ℂ} (ha : IsDirDensity a) 
   unfold herglotzSeq
   rw [if_pos rfl]
   have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0:ℝ) < 2)).ne'
+    simp
   field_simp
 
 /-- The mean functional `v ↦ ∫_Ω u_{a_v}`. -/
@@ -44,7 +44,7 @@ lemma synthMean_add (hb : Bornology.IsBounded Ω) (k : ℝ) (z₁ : ℂ) (v w : 
     herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ v),
     herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ w),
     herglotzVec_synthDens_add]
-  simp only [lp.coeFn_add, Pi.add_apply]
+  simp  
   ring
 
 lemma synthMean_smul (k : ℝ) (z₁ : ℂ) (c : ℂ) (v : Ell2) :
@@ -56,7 +56,7 @@ lemma synthMean_smul (k : ℝ) (z₁ : ℂ) (c : ℂ) (v : Ell2) :
   rw [herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ _),
     herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ v),
     herglotzVec_synthDens_smul]
-  simp only [lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+  simp  [lp.coeFn_smul, Pi.smul_apply]
   ring
 
 lemma norm_synthMean_sub_le (hb : Bornology.IsBounded Ω) {R : ℝ} {z₁ : ℂ}
@@ -66,14 +66,14 @@ lemma norm_synthMean_sub_le (hb : Bornology.IsBounded Ω) {R : ℝ} {z₁ : ℂ}
   have hint := integrableOn_herglotzCoeff hb (isDirDensity_synthDens k z₁ v).intervalIntegrable k 0
   have hc : ∫ _ in Ω, (Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0 =
       (volume Ω).toReal * ((Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0) := by
-    rw [setIntegral_const, Complex.real_smul, Measure.real_def]
-  haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by simpa using hb.measure_lt_top (μ := volume)⟩
+    aesop
+  haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by simpa using Bornology.IsBounded.measure_lt_top hb⟩
   unfold synthMean
   rw [← hc, ← integral_sub hint (integrable_const _)]
   have := norm_setIntegral_le_of_norm_le_const_ae' (C := 2 * |k| * ‖v‖ * R)
     (f := fun z => herglotzCoeff k (synthDens k z₁ v) 0 z - (Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0)
     (hb.measure_lt_top (μ := volume)) (Eventually.of_forall fun z hz => ?_)
-  · simpa [Measure.real_def] using this
+  assumption
   show ‖herglotzCoeff k (synthDens k z₁ v) 0 z - (Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0‖ ≤ _
   rw [herglotzCoeff_zero_eq_herglotzVec (isDirDensity_synthDens k z₁ v), ← mul_sub, norm_mul,
     Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
@@ -81,7 +81,7 @@ lemma norm_synthMean_sub_le (hb : Bornology.IsBounded Ω) {R : ℝ} {z₁ : ℂ}
       ‖herglotzVec (isDirDensity_synthDens k z₁ v) k z - v‖ := by
     have := lp.norm_apply_le_norm (p := 2) (by norm_num)
       (herglotzVec (isDirDensity_synthDens k z₁ v) k z - v) 0
-    simpa using this
+    assumption
   have h2 := norm_herglotzVec_synthDens_sub_le k z₁ z v
   have h3 : ‖z - z₁‖ ≤ R := by simpa [dist_eq_norm] using hR hz
   have hs2 : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num)
@@ -111,20 +111,20 @@ theorem exists_admissible_herglotzVec (hb : Bornology.IsBounded Ω)
   have hs2 : 0 < Real.sqrt 2 := Real.sqrt_pos.mpr (by norm_num)
   refine ⟨min (1 / (4 * Real.sqrt 2 * (d + 1))) (1 / (4 * (R + 1))), by positivity,
     fun k hk w => ?_⟩
-  have hk1 : |k| ≤ 1 / (4 * Real.sqrt 2 * (d + 1)) := (hk.trans_le (min_le_left _ _)).le
-  have hk2 : |k| ≤ 1 / (4 * (R + 1)) := (hk.trans_le (min_le_right _ _)).le
+  have hk1 := (hk.trans_le (min_le_left _ _)).le
+  have hk2 := (hk.trans_le (min_le_right _ _)).le
   have hε : |k| * Real.sqrt 2 * d ≤ 1 / 4 := by
     rw [le_div_iff₀ (by positivity)] at hk1
     nlinarith [abs_nonneg k]
   have hkR : |k| * R ≤ 1 / 4 := by
     rw [le_div_iff₀ (by positivity)] at hk2
-    nlinarith [abs_nonneg k]
+    grind
   have hsurj := synthOp_surjective (k := k) (z₁ := z₁) (z₀ := z₀) (by rw [← hd]; linarith)
   -- the preimage of `e₀`
   obtain ⟨v₂, hv₂⟩ := hsurj (basisVec 0)
   have hT2 := norm_herglotzVec_synthDens_sub_le k z₁ z₀ v₂
-  rw [← synthOp_apply, hv₂, ← hd] at hT2
-  have he0 : ‖basisVec 0‖ = 1 := by simp [basisVec, lp.norm_single]
+  rw [← synthOp_apply, hv₂] at hT2
+  have he0 : ‖basisVec 0‖ = 1 := by simp [basisVec]
   have hv2n : ‖v₂‖ ≤ 4 / 3 := by
     have := norm_le_insert' v₂ (basisVec 0)
     rw [he0, norm_sub_rev] at this
@@ -132,7 +132,7 @@ theorem exists_admissible_herglotzVec (hb : Bornology.IsBounded Ω)
   have hv20 : ‖(v₂ : ℕ → ℂ) 0 - 1‖ ≤ 1 / 3 := by
     have h1 := lp.norm_apply_le_norm (p := 2) (by norm_num) (v₂ - basisVec 0) 0
     have h2 : ((v₂ - basisVec 0 : Ell2) : ℕ → ℂ) 0 = (v₂ : ℕ → ℂ) 0 - 1 := by
-      simp [basisVec]
+      rfl
     rw [h2, norm_sub_rev v₂] at h1
     nlinarith [norm_nonneg v₂]
   have hlam2 : synthMean Ω k z₁ v₂ ≠ 0 := by

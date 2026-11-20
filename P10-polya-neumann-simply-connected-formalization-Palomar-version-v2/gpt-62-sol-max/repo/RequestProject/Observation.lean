@@ -30,22 +30,10 @@ lemma ae_eq_zero_of_primitive_eq_zero {g : ℝ → ℂ} {L : ℝ}
     (h : ∀ θ ∈ Icc 0 L, ∫ s in (0 : ℝ)..θ, g s = 0) :
     ∀ᵐ s, s ∈ Ioo 0 L → g s = 0 := by
   rcases lt_or_ge L 0 with hL | hL
-  · exact Filter.Eventually.of_forall fun s hs => absurd (hs.1.trans hs.2) (not_lt.mpr hL.le)
-  set G := (Ioc 0 L).indicator g with hG
-  have hGi : Integrable G volume :=
-    (integrable_indicator_iff measurableSet_Ioc).mpr
-      ((intervalIntegrable_iff_integrableOn_Ioc_of_le hL).mp hg)
-  filter_upwards [ae_hasDerivAt_integral_of_locallyIntegrable hGi.locallyIntegrable] with x hx hxI
-  have hF : (fun y => ∫ t in (0 : ℝ)..y, G t) =ᶠ[nhds x] fun _ => (0 : ℂ) := by
-    filter_upwards [Ioo_mem_nhds hxI.1 hxI.2] with y hy
-    rw [← h y ⟨hy.1.le, hy.2.le⟩]
-    refine intervalIntegral.integral_congr_ae (Filter.Eventually.of_forall fun t ht => ?_)
-    rw [uIoc_of_le hy.1.le] at ht
-    exact indicator_of_mem (show t ∈ Ioc 0 L from ⟨ht.1, ht.2.trans hy.2.le⟩) g
-  have h0 : HasDerivAt (fun y => ∫ t in (0 : ℝ)..y, G t) 0 x :=
-    (hasDerivAt_const x (0 : ℂ)).congr_of_eventuallyEq hF
-  have := (hx 0).unique h0
-  rwa [hG, indicator_of_mem (Ioo_subset_Ioc_self hxI)] at this
+  exact Filter.Eventually.of_forall fun s hs => absurd (hs.1.trans hs.2) (not_lt.mpr hL.le)
+  filter_upwards [ae_hasDerivAt_intervalIntegral_banach hL hg] with x hx hm
+  refine (hx hm).unique ((hasDerivAt_const x (0 : ℂ)).congr_of_eventuallyEq ?_)
+  filter_upwards [Ioo_mem_nhds hm.1 hm.2] with x; grind
 
 /-- The `n`-th coordinate of `C_E(s) g`. -/
 lemma transportCoeff_apply_coord (γ : ℝ → ℂ) (E s : ℝ) (g : Ell2) (n : ℕ) :
@@ -54,38 +42,35 @@ lemma transportCoeff_apply_coord (γ : ℝ → ℂ) (E s : ℝ) (g : Ell2) (n : 
         (deriv γ s * (shiftWeight n * (g : ℕ → ℂ) (n + 1)) +
           conj (deriv γ s) * (shiftN g : ℕ → ℂ) n) := by
   unfold transportCoeff
-  rw [← shiftNAdj_eq_adjoint]
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply, lp.coeFn_smul,
-    lp.coeFn_add, Pi.smul_apply, Pi.add_apply, smul_eq_mul, shiftNAdj_apply]
+  simp only [← shiftNAdj_eq_adjoint, ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply,
+    lp.coeFn_smul, lp.coeFn_add, Pi.smul_apply, Pi.add_apply, smul_eq_mul, shiftNAdj_apply]
+
+local notation "evalCoord" => lp.evalCLM ℂ (fun _ : ℕ => ℂ) 2
+
+section
+
+variable {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (v : Ell2) (n : ℕ)
+include γ K hK E W hW v n
 
 /-- The rows of the transport equation, in integral form. -/
-lemma transport_coord_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (v : Ell2) (n : ℕ)
-    {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
+lemma transport_coord_eq {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
     (W θ v : ℕ → ℂ) n = (v : ℕ → ℂ) n +
       ∫ s in (0 : ℝ)..θ, (transportCoeff γ E s (W s v) : ℕ → ℂ) n := by
-  set Φ : (Ell2 →L[ℂ] Ell2) →L[ℂ] ℂ :=
-    (innerSL ℂ (basisVec n)).comp (ContinuousLinearMap.apply ℂ Ell2 v) with hΦ
-  have hΦa : ∀ X : Ell2 →L[ℂ] Ell2, Φ X = (X v : ℕ → ℂ) n := fun X => by
-    simp [hΦ, basisVec, inner_single]
+  let Φ := (evalCoord n).comp (ContinuousLinearMap.apply ℂ Ell2 v)
   have hint := intervalIntegrable_mul_of_continuousOn (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) hW.1 hθ
-  rw [← hΦa, hW.2 θ hθ, map_add, hΦa, ← Φ.intervalIntegral_comp_comm hint]
-  simp only [hΦa, ContinuousLinearMap.one_apply, ContinuousLinearMap.mul_apply]
+  have h := congrArg Φ (hW.2 θ hθ)
+  rw [map_add, ← Φ.intervalIntegral_comp_comm hint] at h
+  exact h
 
 /-- The rows of the transport equation have integrable right-hand sides. -/
-lemma transport_coord_intervalIntegrable {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (v : Ell2) (n : ℕ) :
-    IntervalIntegrable (fun s => (transportCoeff γ E s (W s v) : ℕ → ℂ) n) volume 0 (2 * π) := by
-  set Φ : (Ell2 →L[ℂ] Ell2) →L[ℂ] ℂ :=
-    (innerSL ℂ (basisVec n)).comp (ContinuousLinearMap.apply ℂ Ell2 v) with hΦ
-  have hΦa : ∀ X : Ell2 →L[ℂ] Ell2, Φ X = (X v : ℕ → ℂ) n := fun X => by
-    simp [hΦ, basisVec, inner_single]
-  have hint := intervalIntegrable_mul_of_continuousOn (transportCoeff_aestronglyMeasurable γ E)
-    (transportCoeff_norm_le γ E hK) hW.1 (θ := 2 * π) ⟨by positivity, le_rfl⟩
-  have : IntervalIntegrable (fun s => Φ (transportCoeff γ E s * W s)) volume 0 (2 * π) :=
-    ⟨Φ.integrable_comp hint.1, Φ.integrable_comp hint.2⟩
-  simpa [hΦa] using this
+lemma transport_coord_intervalIntegrable {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
+    IntervalIntegrable (fun s => (transportCoeff γ E s (W s v) : ℕ → ℂ) n) volume 0 θ := by
+  have hint := intervalIntegrable_transportCoeff_apply hK E (y := fun s => W s v)
+     ((hW.1.clm_apply continuousOn_const).mono (uIcc_subset_Icc ⟨le_rfl, Real.two_pi_pos.le⟩ hθ))
+  exact ⟨(evalCoord n).integrable_comp hint.1, (evalCoord n).integrable_comp hint.2⟩
+
+end
 
 /-- Lemma 10.4: injectivity of the observation map on a Lipschitz curve with nonvanishing
 derivative. -/
@@ -97,15 +82,13 @@ theorem observation_injective {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
   set f : ℕ → ℝ → ℂ := fun n θ => (W θ v : ℕ → ℂ) n with hf
   have hfi : ∀ n θ, f n θ = inner ℂ (basisVec n) (W θ v) := fun n θ => by
     simp [hf, basisVec, inner_single]
-  have hcont : ∀ n, ContinuousOn (f n) (Icc 0 (2 * π)) := fun n => by
-    have : ContinuousOn (fun θ => inner ℂ (basisVec n) (W θ v)) (Icc 0 (2 * π)) :=
-      continuousOn_const.inner (hW.1.clm_apply continuousOn_const)
-    exact this.congr fun θ _ => hfi n θ
+  have hcont (n : ℕ) : ContinuousOn (f n) (Icc 0 (2 * π)) :=
+    (evalCoord n).continuous.comp_continuousOn (hW.1.clm_apply continuousOn_const)
   have hW0 : W 0 = 1 := by simpa using hW.2 0 ⟨le_rfl, hπ⟩
   have hf0 : ∀ n, f n 0 = (v : ℕ → ℂ) n := fun n => by simp [hf, hW0]
   have ha : (-(Complex.I * (Real.sqrt E : ℂ)) / 2) ≠ 0 := by
     have : (Real.sqrt E : ℂ) ≠ 0 := by exact_mod_cast (Real.sqrt_pos.mpr hE).ne'
-    simp [this, Complex.I_ne_zero]
+    simp_all
   have hw : ∀ n, shiftWeight n ≠ 0 := fun n => by
     unfold shiftWeight; split_ifs <;> simp
   have step : ∀ n, (∀ θ ∈ Icc 0 (2 * π), f n θ = 0) →
@@ -119,8 +102,8 @@ theorem observation_injective {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
       rw [← hf0 n] at this
       change f n θ = f n 0 + _ at this
       rw [hn θ hθ, hn 0 ⟨le_rfl, hπ⟩, zero_add] at this
-      exact this.symm
-    have hae := ae_eq_zero_of_primitive_eq_zero (transport_coord_intervalIntegrable hK hW v n)
+      gcongr
+    have hae := ae_eq_zero_of_primitive_eq_zero (transport_coord_intervalIntegrable hK hW v n ⟨hπ, le_rfl⟩)
       hprim
     have hae' : ∀ᵐ s, s ∈ Ioo 0 (2 * π) → f (n + 1) s = 0 := by
       filter_upwards [hae, hγ'] with s hs hs' hsI
@@ -136,7 +119,7 @@ theorem observation_injective {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
     intro n
     induction n with
     | zero =>
-      have h0 : ∀ θ ∈ Icc 0 (2 * π), f 0 θ = 0 := fun θ hθ => by rw [hfi]; exact hv θ hθ
+      have h0 : ∀ θ ∈ Icc 0 (2 * π), f 0 θ = 0 := fun θ hθ => by rw [hfi]; tauto
       exact ⟨h0, step 0 h0 fun θ _ => shiftN_apply_zero _⟩
     | succ n ih =>
       refine ⟨ih.2, step (n + 1) ih.2 fun θ hθ => ?_⟩
@@ -158,9 +141,7 @@ theorem observation_injective_of_boundaryParam {Ω : Set ℂ} {γ : ℝ → ℂ}
   obtain ⟨K, hK⟩ := hγ.lipschitz
   obtain ⟨c, hc, hspeed⟩ := hγ.const_speed
   have hγ' : ∀ᵐ θ, deriv γ θ ≠ 0 := by
-    filter_upwards [hspeed] with θ hθ h0
-    rw [h0, norm_zero] at hθ
-    exact hc.ne hθ
+    filter_upwards [hspeed] with x; aesop
   refine observation_injective hK hγ' hE hW v ?_
   have hcont : ContinuousOn (fun θ => inner ℂ (basisVec 0) (W θ v)) (Icc 0 (2 * π)) :=
     continuousOn_const.inner (hW.1.clm_apply continuousOn_const)

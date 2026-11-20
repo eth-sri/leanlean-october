@@ -31,63 +31,77 @@ section Loop
 
 variable {Ω : Set ℂ} {ρ H : ℝ} {K : NNReal} {ch : ℂ → ℂ × (ℝ → ℝ)} {ℓ : ℝ} {p₀ : ℂ}
 
-lemma WalkData.ρ_pos (hw : WalkData Ω ρ H K ch ℓ p₀) : 0 < ρ := hw.ℓ_pos.trans hw.ℓ_lt
+section
+
+variable (hw : WalkData Ω ρ H K ch ℓ p₀)
+include hw
+
+lemma WalkData.ρ_pos  : 0 < ρ := hw.ℓ_pos.trans hw.ℓ_lt
 
 /-- The walk stays in an open box for nearby times. -/
-lemma WalkData.eventually_box (hw : WalkData Ω ρ H K ch ℓ p₀) {s : ℝ} {p c : ℂ} {r h : ℝ}
+lemma WalkData.eventually_box  {s : ℝ} {p c : ℂ} {r h : ℝ}
     (hbox : walk ch ℓ p₀ s ∈ chartBox p c r h) :
     ∃ ε > 0, ∀ s' ∈ Icc (s - ε) (s + ε), walk ch ℓ p₀ s' ∈ chartBox p c r h := by
   obtain ⟨δ, hδ, hball⟩ := Metric.isOpen_iff.mp
     ((isOpen_chartBox p c r h).preimage hw.continuous_walk) s hbox
   refine ⟨δ / 2, by positivity, fun s' hs' => hball ?_⟩
-  rw [mem_ball, Real.dist_eq, abs_lt]; constructor <;> linarith [hs'.1, hs'.2]
+  grind [mem_ball, Real.dist_eq, abs_lt]
+
+private lemma WalkData.local_chart_interval {s δ : ℝ} (hs : 0 ≤ s) (hδ : 0 < δ)
+    {p c : ℂ} {r h : ℝ} {K' : NNReal} {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K' f)
+    (hbox : walk ch ℓ p₀ s ∈ chartBox p c r h) :
+    ∃ ε, 0 < ε ∧ ε ≤ δ ∧ StrictMonoOn (walkX ch ℓ p₀ p c) (Icc (s - ε) (s + ε)) ∧
+      MapsTo (walk ch ℓ p₀) (Icc (s - ε) (s + ε)) (chartBox p c r h) := by
+  obtain ⟨a, ha, hm⟩ := hw.walk_local_strictMono hs hch hbox
+  obtain ⟨b, hb, hB⟩ := hw.eventually_box hbox
+  refine ⟨min δ (min a b), by positivity, min_le_left _ _, hm.mono ?_, fun x hx => hB x ?_⟩ <;> grind
 
 /-- The walk is locally injective. -/
-lemma WalkData.locally_injective (hw : WalkData Ω ρ H K ch ℓ p₀) {s : ℝ} (hs : 0 ≤ s) :
+lemma WalkData.locally_injective  {s : ℝ} (hs : 0 ≤ s) :
     ∃ ε > 0, InjOn (walk ch ℓ p₀) (Icc (s - ε) (s + ε)) := by
   have hP := hw.walk_mem_frontier (t := s) (by linarith [hw.ρ_pos])
   have hch := hw.chart _ hP
   obtain ⟨ε, hε, hmono⟩ := hw.walk_local_strictMono hs hch hch.center_mem_box
   refine ⟨ε, hε, fun a ha b hb hab => hmono.injOn ha hb ?_⟩
-  simp only [walkX, hab]
+  simp [walkX, hab]
 
 /-- **Return to the start.** If the walk revisits a point, it returns to its starting point. -/
-theorem WalkData.exists_return (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ : ℝ} (hs₀ : 0 ≤ s₀)
+theorem WalkData.exists_return  {s₀ t₀ : ℝ} (hs₀ : 0 ≤ s₀)
     (hst : s₀ < t₀) (heq : walk ch ℓ p₀ s₀ = walk ch ℓ p₀ t₀) :
     ∃ T, 0 < T ∧ T ≤ t₀ ∧ walk ch ℓ p₀ T = walk ch ℓ p₀ 0 := by
   have hρ := hw.ρ_pos
-  set γ := walk ch ℓ p₀ with hγ
-  have hγc : Continuous γ := hw.continuous_walk
-  set A : Set ℝ := {s | 0 ≤ s ∧ ∃ t, s < t ∧ t ≤ t₀ ∧ γ s = γ t} with hA
-  have hs₀A : s₀ ∈ A := ⟨hs₀, t₀, hst, le_rfl, heq⟩
-  have hbdd : BddBelow A := ⟨0, fun s hs => hs.1⟩
-  set s₁ := sInf A with hs₁
-  have hs₁0 : 0 ≤ s₁ := le_csInf ⟨s₀, hs₀A⟩ fun s hs => hs.1
-  obtain ⟨u, -, hu, huA⟩ := exists_seq_tendsto_sInf ⟨s₀, hs₀A⟩ hbdd
-  choose t ht using fun n => (huA n).2
-  have htI : ∀ n, t n ∈ Icc 0 t₀ := fun n => ⟨by linarith [(huA n).1, (ht n).1], (ht n).2.1⟩
-  obtain ⟨t₁, ht₁I, φ, hφ, htφ⟩ := isCompact_Icc.tendsto_subseq htI
-  have huφ : Tendsto (u ∘ φ) atTop (𝓝 s₁) := hu.comp hφ.tendsto_atTop
-  have hγeq : γ s₁ = γ t₁ := by
-    have h1 := (hγc.tendsto s₁).comp huφ
-    have h2 := (hγc.tendsto t₁).comp htφ
-    have : (γ ∘ (u ∘ φ)) = (γ ∘ (t ∘ φ)) := funext fun n => (ht (φ n)).2.2
-    rw [this] at h1
-    exact tendsto_nhds_unique h1 h2
-  have hle : s₁ ≤ t₁ := le_of_tendsto_of_tendsto' huφ htφ fun n => (ht (φ n)).1.le
-  have hlt : s₁ < t₁ := by
-    refine lt_of_le_of_ne hle fun hEq => ?_
-    obtain ⟨ε, hε, hinj⟩ := hw.locally_injective hs₁0
-    have hI : Icc (s₁ - ε) (s₁ + ε) ∈ 𝓝 s₁ := Icc_mem_nhds (by linarith) (by linarith)
-    rw [← hEq] at htφ
-    have e1 : ∀ᶠ n in atTop, (u ∘ φ) n ∈ Icc (s₁ - ε) (s₁ + ε) := huφ hI
-    have e2 : ∀ᶠ n in atTop, (t ∘ φ) n ∈ Icc (s₁ - ε) (s₁ + ε) := htφ hI
-    obtain ⟨n, hn1, hn2⟩ := (e1.and e2).exists
-    have := hinj hn1 hn2 (ht (φ n)).2.2
-    exact absurd this (ht (φ n)).1.ne
-  rcases lt_or_eq_of_le hs₁0 with hs₁pos | hs₁0'
+  let γ := walk ch ℓ p₀
+  have hc : Continuous γ := hw.continuous_walk
+  let S : Set (ℝ × ℝ) := (Icc 0 t₀ ×ˢ Icc 0 t₀) ∩ {p | p.1 ≤ p.2 ∧ γ p.1 = γ p.2}
+  have hS : IsClosed S := (isClosed_Icc.prod isClosed_Icc).inter
+    ((isClosed_le continuous_fst continuous_snd).inter
+      (isClosed_eq (hc.comp continuous_fst) (hc.comp continuous_snd)))
+  let A : Set (ℝ × ℝ) := {p | p ∈ S ∧ p.1 ≠ p.2}
+  have hAc : IsClosed A := by
+    refine isClosed_of_closure_subset fun ⟨s,t⟩ hp => ?_
+    have hs := closure_minimal (show A ⊆ S from fun p hp => hp.1) hS hp
+    refine ⟨hs, ?_⟩
+    intro he
+    change s = t at he
+    subst t
+    have hs0 : 0 ≤ s := hs.1.1.1
+    obtain ⟨ε, hε, hinj⟩ := hw.locally_injective hs0
+    have hN : Icc (s - ε) (s + ε) ∈ 𝓝 s := Icc_mem_nhds (by linarith) (by linarith)
+    obtain ⟨p, hpp, hpA⟩ := (mem_closure_iff_nhds.mp hp _ (prod_mem_nhds hN hN))
+    exact hpA.2 (hinj hpp.1 hpp.2 hpA.1.2.2)
+  have hAK : IsCompact A := (isCompact_Icc.prod isCompact_Icc).of_isClosed_subset hAc
+    (fun p hp => hp.1.1)
+  obtain ⟨⟨s₁,t₁⟩, hp, hmin⟩ := hAK.exists_isMinOn
+    (show A.Nonempty from ⟨(s₀,t₀), ⟨⟨⟨hs₀,hst.le⟩,⟨hs₀.trans hst.le,le_rfl⟩⟩, hst.le, heq⟩, hst.ne⟩)
+    continuous_fst.continuousOn
+  have hs₁0 : 0 ≤ s₁ := hp.1.1.1.1
+  have ht₁t : t₁ ≤ t₀ := hp.1.1.2.2
+  have hlt : s₁ < t₁ := lt_of_le_of_ne hp.1.2.1 hp.2
+  have hγeq : γ s₁ = γ t₁ := hp.1.2.2
+  by_cases hs₁pos : 0 < s₁
   swap
-  · exact ⟨t₁, by linarith, ht₁I.2, by rw [← hγeq, ← hs₁0']⟩
+  · have hs : s₁ = 0 := by linarith
+    exact ⟨t₁, hs ▸ hlt, ht₁t, (hs ▸ hγeq).symm⟩
   exfalso
   -- backward step at the pair `(s₁, t₁)`
   set P := γ s₁ with hP
@@ -95,50 +109,32 @@ theorem WalkData.exists_return (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ 
   have hch := hw.chart P hPf
   set c := (ch P).1
   have hboxs : γ s₁ ∈ chartBox P c ρ H := hch.center_mem_box
-  have hboxt : γ t₁ ∈ chartBox P c ρ H := by rw [← hγeq]; exact hboxs
-  obtain ⟨ε₁, hε₁, hm₁⟩ := hw.walk_local_strictMono hs₁0 hch hboxs
-  obtain ⟨ε₂, hε₂, hm₂⟩ := hw.walk_local_strictMono (by linarith) hch hboxt
-  obtain ⟨ε₃, hε₃, hb₃⟩ := hw.eventually_box hboxs
-  obtain ⟨ε₄, hε₄, hb₄⟩ := hw.eventually_box hboxt
-  set ε := min (min ε₁ ε₂) (min (min ε₃ ε₄) (min (s₁ / 2) ((t₁ - s₁) / 2))) with hε
-  have hεpos : 0 < ε := lt_min (lt_min hε₁ hε₂)
-    (lt_min (lt_min hε₃ hε₄) (lt_min (by linarith) (by linarith)))
-  have hε1 : ε ≤ ε₁ := le_trans (min_le_left _ _) (min_le_left _ _)
-  have hε2 : ε ≤ ε₂ := le_trans (min_le_left _ _) (min_le_right _ _)
-  have hε3 : ε ≤ ε₃ := le_trans (min_le_right _ _) (le_trans (min_le_left _ _) (min_le_left _ _))
-  have hε4 : ε ≤ ε₄ := le_trans (min_le_right _ _) (le_trans (min_le_left _ _) (min_le_right _ _))
-  have hε5 : ε ≤ s₁ / 2 :=
-    le_trans (min_le_right _ _) (le_trans (min_le_right _ _) (min_le_left _ _))
-  have hε6 : ε ≤ (t₁ - s₁) / 2 :=
-    le_trans (min_le_right _ _) (le_trans (min_le_right _ _) (min_le_right _ _))
-  set g := walkX ch ℓ p₀ P c with hg
-  have hgc : Continuous g := hw.continuous_walkX P c
-  have hgst : g s₁ = g t₁ := by
-    change (c * (γ s₁ - P)).re = (c * (γ t₁ - P)).re; rw [← hγeq, ← hP]
-  set L := g (t₁ - ε)
-  have hLt : L < g t₁ := hm₂ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩
-    (by linarith)
-  have hev1 : ∀ᶠ s in 𝓝 s₁, L < g s :=
-    (hgc.tendsto s₁).eventually (lt_mem_nhds (by rw [hgst]; exact hLt))
-  have hev2 : ∀ᶠ s in 𝓝[<] s₁, s ∈ Ioo (s₁ - ε) s₁ := Ioo_mem_nhdsLT (by linarith)
-  have hev : ∀ᶠ s in 𝓝[<] s₁, L < g s ∧ s ∈ Ioo (s₁ - ε) s₁ :=
-    (eventually_nhdsWithin_of_eventually_nhds hev1).and hev2
-  obtain ⟨s', hs'L, hs'I⟩ := hev.exists
-  have hgs' : g s' < g s₁ := hm₁ ⟨by linarith [hs'I.1], by linarith [hs'I.2]⟩
-    ⟨by linarith, by linarith⟩ hs'I.2
-  have hs'f : γ s' ∈ frontier Ω := hw.walk_mem_frontier (by linarith [hs'I.1])
-  have hs'b : γ s' ∈ chartBox P c ρ H := hb₃ s' ⟨by linarith [hs'I.1], by linarith [hs'I.2]⟩
-  obtain ⟨t', ht'I, ht'eq⟩ := hw.capture (α := t₁ - ε) (β := t₁) (by linarith) (by linarith)
-    hch (fun s hs => hb₄ s ⟨by linarith [hs.1], by linarith [hs.2]⟩) hs'f hs'b hs'L.le
-    (by change g s' ≤ g t₁; rw [← hgst]; exact hgs'.le)
-  have hs'A : s' ∈ A := ⟨by linarith [hs'I.1], t', by linarith [ht'I.1, hs'I.2], by
-    linarith [ht'I.2, ht₁I.2], ht'eq.symm⟩
-  have := csInf_le hbdd hs'A
-  linarith [hs'I.2]
+  have hboxt : γ t₁ ∈ chartBox P c ρ H := by simp_all
+  obtain ⟨a, ha, ha', hm, hb⟩ := hw.local_chart_interval hs₁0 (show 0 < s₁ / 2 by linarith) hch hboxs
+  obtain ⟨b, hb0, hb', hn, hbox⟩ := hw.local_chart_interval (by linarith)
+    (show 0 < (t₁ - s₁) / 2 by linarith) hch hboxt
+  let g := walkX ch ℓ p₀ P c
+  have hgst : g s₁ = g t₁ := congrArg (fun z => (c * (z - P)).re) hγeq
+  have hL : g (t₁ - b) < g s₁ := by
+    rw [hgst]; exact hn ⟨le_rfl, by linarith⟩ ⟨by linarith, by linarith⟩ (by linarith)
+  have hev : ∀ᶠ s in 𝓝 s₁, g (t₁ - b) < g s :=
+    continuousAt_const.eventually_lt (hw.continuous_walkX P c).continuousAt hL
+  obtain ⟨s, hsL, hs⟩ := ((eventually_nhdsWithin_of_eventually_nhds hev).and
+    (Ioo_mem_nhdsLT (show s₁ - a < s₁ by linarith))).exists
+  have hsi : s ∈ Icc (s₁ - a) (s₁ + a) := ⟨hs.1.le, by linarith [hs.2]⟩
+  have hs0 : 0 ≤ s := by linarith [hs.1]
+  obtain ⟨t, ht, htγ⟩ := hw.capture (α := t₁ - b) (β := t₁) (by linarith) (by linarith) hch
+    (fun u hu => hbox ⟨hu.1, by linarith [hu.2]⟩) (hw.walk_mem_frontier (by linarith))
+    (hb hsi) hsL.le (by change g s ≤ g t₁; rw [← hgst]; exact (hm hsi ⟨by linarith, by linarith⟩ hs.2).le)
+  have hst' : s < t := by linarith [hs.2, ht.1]
+  have htt₀ := ht.2.trans ht₁t
+  have hpair : (s,t) ∈ A := ⟨⟨⟨⟨hs0,hst'.le.trans htt₀⟩,⟨hs0.trans hst'.le,htt₀⟩⟩,
+    hst'.le, htγ.symm⟩, hst'.ne⟩
+  exact (not_lt_of_ge (hmin hpair)) hs.2
 
 /-- **The first return.** If the walk revisits a point, there is a first return time `T > 0` to
 the starting point, and the walk is injective on `[0, T)`. -/
-theorem WalkData.exists_loop (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ : ℝ} (hs₀ : 0 ≤ s₀)
+theorem WalkData.exists_loop  {s₀ t₀ : ℝ} (hs₀ : 0 ≤ s₀)
     (hst : s₀ < t₀) (heq : walk ch ℓ p₀ s₀ = walk ch ℓ p₀ t₀) :
     ∃ T, 0 < T ∧ walk ch ℓ p₀ T = walk ch ℓ p₀ 0 ∧ InjOn (walk ch ℓ p₀) (Ico 0 T) := by
   obtain ⟨ε₀, hε₀, hinj₀⟩ := hw.locally_injective (s := 0) le_rfl
@@ -154,20 +150,20 @@ theorem WalkData.exists_loop (hw : WalkData Ω ρ H K ch ℓ p₀) {s₀ t₀ : 
     (isClosed_le continuous_const continuous_id).inter
       (isClosed_eq hw.continuous_walk continuous_const)
   set T := sInf S
-  have hTS : T ∈ S := hScl.csInf_mem hSne hSbdd
-  refine ⟨T, by linarith [hTS.1], hTS.2, fun a ha b hb hab => ?_⟩
+  have hTS := hScl.csInf_mem hSne hSbdd
+  refine ⟨T, by grind, hTS.2, fun a ha b hb hab => ?_⟩
   by_contra hne
   rcases lt_or_gt_of_ne hne with hlt | hlt
   · obtain ⟨T', hT', hT'b, hT'eq⟩ := hw.exists_return ha.1 hlt hab
     have := csInf_le hSbdd (hmemS T' hT' hT'eq)
-    linarith [hb.2]
+    grind
   · obtain ⟨T', hT', hT'a, hT'eq⟩ := hw.exists_return hb.1 hlt hab.symm
     have := csInf_le hSbdd (hmemS T' hT' hT'eq)
-    linarith [ha.2]
+    grind
 
 /-- **The walk revisits a point**, by compactness of the boundary. Here the step `ℓ` is small
 compared with the uniform chart size. -/
-theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCompact (frontier Ω))
+theorem WalkData.exists_pair  (hcpt : IsCompact (frontier Ω))
     (hℓsmall : (1 + K) * ℓ ≤ min ρ H / 2) :
     ∃ s₀ t₀, 0 ≤ s₀ ∧ s₀ < t₀ ∧ walk ch ℓ p₀ s₀ = walk ch ℓ p₀ t₀ := by
   have hℓ := hw.ℓ_pos
@@ -208,9 +204,9 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
     refine hball ?_
     rw [mem_ball]
     have h1 : dist (walk ch ℓ p₀ s) (walk ch ℓ p₀ (n * ℓ)) ≤ (1 + K) * dist s (n * ℓ) := by
-      have := hL.dist_le_mul s (n * ℓ); push_cast at this; exact this
+      have := hL.dist_le_mul s (n * ℓ); assumption
     have h2 : dist s (n * ℓ) ≤ ℓ := by
-      rw [Real.dist_eq, abs_le]; constructor <;> linarith [hs.1, hs.2]
+      rw [Real.dist_eq, abs_le]; grind
     calc dist (walk ch ℓ p₀ s) P ≤ dist (walk ch ℓ p₀ s) (walk ch ℓ p₀ (n * ℓ)) +
           dist (walk ch ℓ p₀ (n * ℓ)) P := dist_triangle _ _ _
       _ < (1 + K) * ℓ + m₀ / 4 := by
@@ -220,12 +216,12 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
           linarith
       _ < m₀ := by linarith
   have hα : (0 : ℝ) ≤ n * ℓ - ℓ := by
-    have : (1 : ℝ) ≤ n := by exact_mod_cast hn1
+    have : (1 : ℝ) ≤ n := by norm_cast
     nlinarith
   have hmono := hw.strictMonoOn_walkX hα hch hbox
   set g := walkX ch ℓ p₀ P c with hg
   have hfr : ∀ s, 0 ≤ s → walk ch ℓ p₀ s ∈ frontier Ω := fun s hs =>
-    hw.walk_mem_frontier (by linarith [hw.ρ_pos])
+    hw.walk_mem_frontier (by grind)
   -- abscissa increments over one step on each side
   have hdist : ∀ s₁ s₂, s₁ ∈ Icc ((n : ℝ) * ℓ - ℓ) (n * ℓ + ℓ) →
       s₂ ∈ Icc ((n : ℝ) * ℓ - ℓ) (n * ℓ + ℓ) → s₁ < s₂ →
@@ -234,7 +230,7 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
     have := norm_sub_le_of_frontier hw.isOpen hch (hfr s₂ (by linarith [hs₂.1]))
       (hfr s₁ (by linarith [hs₁.1])) (hbox s₂ hs₂) (hbox s₁ hs₁)
     have hlt : g s₁ < g s₂ := hmono hs₁ hs₂ h12
-    rwa [abs_of_pos (by simp only [hg, walkX] at hlt ⊢; linarith)] at this
+    rwa [abs_of_pos (by positivity)] at this
   have hright : ℓ / (1 + K) ≤ g (n * ℓ + ℓ) - g (n * ℓ) := by
     have h1 := hw.le_norm_walk_sub n (u := 0) (u' := ℓ) ⟨le_rfl, hℓ.le⟩ ⟨hℓ.le, le_rfl⟩
     rw [add_zero, sub_zero, abs_of_pos hℓ] at h1
@@ -272,23 +268,13 @@ theorem WalkData.exists_pair (hw : WalkData Ω ρ H K ch ℓ p₀) (hcpt : IsCom
     (by linarith [hw.ρ_pos]) (by linarith) hch hbox hqmf hqmb
     (by linarith) (by linarith)
   refine ⟨s, m * ℓ, by linarith [hs.1], ?_, by rw [hseq, hwm]⟩
-  have : ((n : ℝ) + 2) ≤ m := by exact_mod_cast hmn
+  have : ((n : ℝ) + 2) ≤ m := by norm_cast
   nlinarith [hs.2]
 
-/-- Near a point of the walk where the abscissa is strictly increasing and the walk is in the
-box, boundary points with abscissa in the corresponding range are on the walk. -/
-lemma WalkData.exists_nhd_subset (hw : WalkData Ω ρ H K ch ℓ p₀) {α β : ℝ} (hα : 0 ≤ α)
-    (hαβ : α ≤ β) {p c : ℂ} {r h : ℝ} {K' : NNReal} {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K' f)
-    (hbox : ∀ s ∈ Icc α β, walk ch ℓ p₀ s ∈ chartBox p c r h) :
-    ∀ w ∈ frontier Ω ∩ (chartBox p c r h ∩ {w | walkX ch ℓ p₀ p c α < (c * (w - p)).re ∧
-      (c * (w - p)).re < walkX ch ℓ p₀ p c β}), ∃ s ∈ Icc α β, walk ch ℓ p₀ s = w :=
-  fun w ⟨hwf, hwb, h1, h2⟩ =>
-    hw.capture (by linarith [hw.ρ_pos]) hαβ hch hbox hwf hwb h1.le h2.le
+end
 
 lemma isOpen_abscissa_band (p c : ℂ) (a b : ℝ) :
-    IsOpen {w : ℂ | a < (c * (w - p)).re ∧ (c * (w - p)).re < b} := by
-  have hg : Continuous fun w : ℂ => (c * (w - p)).re := by fun_prop
-  exact (isOpen_lt continuous_const hg).inter (isOpen_lt hg continuous_const)
+    IsOpen {w : ℂ | a < (c * (w - p)).re ∧ (c * (w - p)).re < b} := have hg := Continuous.comp' Complex.continuous_re (Continuous.const_mul (Continuous.fun_sub continuous_id' continuous_const) c); IsOpen.inter (isOpen_lt continuous_const hg) (isOpen_lt hg continuous_const)
 
 /-- **The loop fills the boundary.** If `∂Ω` is preconnected and the walk returns to its start at
 time `T > 0`, then the walk on `[0, T]` covers `∂Ω`. -/
@@ -299,85 +285,51 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
   set γ := walk ch ℓ p₀ with hγ
   set Im := γ '' Icc 0 T with hIm
   have hsub : Im ⊆ frontier Ω := by
-    rintro _ ⟨t, ht, rfl⟩; exact hw.walk_mem_frontier (by linarith [ht.1])
+    rintro _ ⟨t, ht, rfl⟩; exact hw.walk_mem_frontier (by grind)
   refine subset_antisymm hsub ?_
   have hImc : IsClosed Im := (isCompact_Icc.image hw.continuous_walk).isClosed
   -- every point of the loop has a neighbourhood whose boundary points are on the loop
   have hloc : ∀ t ∈ Icc 0 T, ∃ V : Set ℂ, IsOpen V ∧ γ t ∈ V ∧ frontier Ω ∩ V ⊆ Im := by
     intro t ht
-    have hPf : γ t ∈ frontier Ω := hsub ⟨t, ht, rfl⟩
+    have hPf := hsub ⟨t, ht, rfl⟩
     set P := γ t
     have hch := hw.chart P hPf
     set c := (ch P).1
     set g := walkX ch ℓ p₀ P c with hg
-    have hPb : P ∈ chartBox P c ρ H := hch.center_mem_box
-    by_cases hend : t = 0 ∨ t = T
-    · -- the starting point: forward from `0` and backward from `T`
-      have hP0 : γ 0 = P := by rcases hend with h | h <;> simp only [P, h, hTeq]
-      have hb0 : γ 0 ∈ chartBox P c ρ H := by rw [hP0]; exact hPb
-      have hbT : γ T ∈ chartBox P c ρ H := by rw [hTeq, hP0]; exact hPb
-      obtain ⟨ε₁, hε₁, hm₁⟩ := hw.walk_local_strictMono le_rfl hch hb0
-      obtain ⟨ε₂, hε₂, hb₂⟩ := hw.eventually_box hb0
-      obtain ⟨ε₃, hε₃, hm₃⟩ := hw.walk_local_strictMono hT.le hch hbT
-      obtain ⟨ε₄, hε₄, hb₄⟩ := hw.eventually_box hbT
-      set ε := min (min ε₁ ε₂) (min (min ε₃ ε₄) T) with hε
-      have hεpos : 0 < ε := lt_min (lt_min hε₁ hε₂) (lt_min (lt_min hε₃ hε₄) hT)
-      have hε1 : ε ≤ ε₁ := le_trans (min_le_left _ _) (min_le_left _ _)
-      have hε2 : ε ≤ ε₂ := le_trans (min_le_left _ _) (min_le_right _ _)
-      have hε3 : ε ≤ ε₃ :=
-        le_trans (min_le_right _ _) (le_trans (min_le_left _ _) (min_le_left _ _))
-      have hε4 : ε ≤ ε₄ :=
-        le_trans (min_le_right _ _) (le_trans (min_le_left _ _) (min_le_right _ _))
-      have hεT : ε ≤ T := le_trans (min_le_right _ _) (min_le_right _ _)
-      have hg0 : g 0 = g T := by simp only [hg, walkX, ← hγ, hTeq]
-      have hgε : g 0 < g ε := hm₁ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ hεpos
-      have hgT : g (T - ε) < g T := hm₃ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩
-        (by linarith)
-      have hgP : g 0 = (c * (P - P)).re := by simp only [hg, walkX, ← hγ, hP0]
-      refine ⟨chartBox P c ρ H ∩ {w | g (T - ε) < (c * (w - P)).re ∧ (c * (w - P)).re < g ε},
-        (isOpen_chartBox _ _ _ _).inter (isOpen_abscissa_band _ _ _ _), ⟨hPb, ?_, ?_⟩, ?_⟩
-      · rw [← hgP, hg0]; exact hgT
-      · rw [← hgP]; exact hgε
-      · rintro w ⟨hwf, hwb, h1, h2⟩
-        rcases le_or_gt (g 0) (c * (w - P)).re with hle | hlt
-        · obtain ⟨s, hs, hseq⟩ := hw.capture (α := 0) (β := ε) (by linarith) hεpos.le hch
-            (fun s hs => hb₂ s ⟨by linarith [hs.1], by linarith [hs.2]⟩) hwf hwb hle h2.le
-          exact ⟨s, ⟨hs.1, by linarith [hs.2]⟩, hseq⟩
-        · obtain ⟨s, hs, hseq⟩ := hw.capture (α := T - ε) (β := T) (by linarith) (by linarith)
-            hch (fun s hs => hb₄ s ⟨by linarith [hs.1], by linarith [hs.2]⟩) hwf hwb h1.le
-            (by change _ ≤ g T; rw [← hg0]; exact hlt.le)
-          exact ⟨s, ⟨by linarith [hs.1], hs.2⟩, hseq⟩
-    · push_neg at hend
-      have ht0 : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm hend.1)
-      have htT : t < T := lt_of_le_of_ne ht.2 hend.2
-      obtain ⟨ε₁, hε₁, hm₁⟩ := hw.walk_local_strictMono ht.1 hch hPb
-      obtain ⟨ε₂, hε₂, hb₂⟩ := hw.eventually_box (s := t) hPb
-      set ε := min (min ε₁ ε₂) (min t (T - t)) with hε
-      have hεpos : 0 < ε := lt_min (lt_min hε₁ hε₂) (lt_min ht0 (by linarith))
-      have hε1 : ε ≤ ε₁ := le_trans (min_le_left _ _) (min_le_left _ _)
-      have hε2 : ε ≤ ε₂ := le_trans (min_le_left _ _) (min_le_right _ _)
-      have hε3 : ε ≤ t := le_trans (min_le_right _ _) (min_le_left _ _)
-      have hε4 : ε ≤ T - t := le_trans (min_le_right _ _) (min_le_right _ _)
-      have hgP : g t = (c * (P - P)).re := rfl
-      refine ⟨chartBox P c ρ H ∩ {w | g (t - ε) < (c * (w - P)).re ∧
-        (c * (w - P)).re < g (t + ε)},
-        (isOpen_chartBox _ _ _ _).inter (isOpen_abscissa_band _ _ _ _), ⟨hPb, ?_, ?_⟩, ?_⟩
-      · rw [← hgP]
-        exact hm₁ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ (by linarith)
-      · rw [← hgP]
-        exact hm₁ ⟨by linarith, by linarith⟩ ⟨by linarith, by linarith⟩ (by linarith)
-      · intro w hw'
-        obtain ⟨s, hs, hseq⟩ := hw.exists_nhd_subset (α := t - ε) (β := t + ε) (by linarith)
-          (by linarith) hch (fun s hs => hb₂ s ⟨by linarith [hs.1], by linarith [hs.2]⟩) w hw'
-        exact ⟨s, ⟨by linarith [hs.1], by linarith [hs.2]⟩, hseq⟩
+    have hPb := hch.center_mem_box
+    let tL := if t = 0 then T else t
+    let tR := if t = T then 0 else t
+    have hL : tL ∈ Ioc 0 T ∧ γ tL = P := by
+      by_cases he : t = 0 <;> simp only [tL, if_pos, he, P] <;> grind
+    have hR : tR ∈ Ico 0 T ∧ γ tR = P := by
+      by_cases he : t = T <;> simp only [tR, if_pos, he, P] <;> grind
+    obtain ⟨a, ha, ha', hm, hboxL⟩ := hw.local_chart_interval hL.1.1.le hL.1.1 hch (hL.2 ▸ hPb)
+    obtain ⟨b, hb, hb', hn, hboxR⟩ := hw.local_chart_interval hR.1.1 (sub_pos.mpr hR.1.2) hch (hR.2 ▸ hPb)
+    let x (w : ℂ) := (c * (w - P)).re
+    have eL : g tL = x P := congrArg x hL.2
+    have eR : g tR = x P := congrArg x hR.2
+    have hlt : g (tL - a) < x P := by
+      rw [← eL]; exact hm ⟨le_rfl, by linarith⟩ ⟨by linarith, by linarith⟩ (by linarith)
+    have hgt : x P < g (tR + b) := by
+      rw [← eR]; exact hn ⟨by linarith, by linarith⟩ ⟨by linarith, le_rfl⟩ (by linarith)
+    refine ⟨chartBox P c ρ H ∩ {w | g (tL - a) < x w ∧ x w < g (tR + b)},
+      (isOpen_chartBox _ _ _ _).inter (isOpen_abscissa_band _ _ _ _), ⟨hPb, hlt, hgt⟩, ?_⟩
+    rintro w ⟨hwf, hwb, h1, h2⟩
+    rcases le_total (x w) (x P) with h | h
+    · obtain ⟨s, hs, heq⟩ := hw.capture (α := tL - a) (β := tL) (by linarith) (by linarith) hch
+        (fun u hu => hboxL ⟨hu.1, by linarith [hu.2]⟩) hwf hwb h1.le (by change x w ≤ g tL; rwa [eL])
+      exact ⟨s, ⟨by linarith [hs.1], hs.2.trans hL.1.2⟩, heq⟩
+    · obtain ⟨s, hs, heq⟩ := hw.capture (α := tR) (β := tR + b) (by linarith [hR.1.1]) (by linarith) hch
+        (fun u hu => hboxR ⟨by linarith [hu.1], hu.2⟩) hwf hwb (by change g tR ≤ x w; rwa [eR]) h2.le
+      exact ⟨s, ⟨hR.1.1.trans hs.1, by linarith [hs.2]⟩, heq⟩
   choose! V hVo hVmem hVsub using hloc
   set U := ⋃ t ∈ Icc 0 T, V t with hU
-  have hUo : IsOpen U := isOpen_biUnion fun t ht => hVo t ht
+  have hUo := isOpen_biUnion fun t ht => hVo t ht
   have hcover : frontier Ω ⊆ U ∪ Imᶜ := fun x hx => by
     by_cases hxI : x ∈ Im
     · obtain ⟨t, ht, rfl⟩ := hxI
       exact Or.inl (mem_biUnion ht (hVmem t ht))
-    · exact Or.inr hxI
+    tauto
   have hdisj : frontier Ω ∩ (U ∩ Imᶜ) = ∅ := by
     ext x
     simp only [mem_inter_iff, mem_empty_iff_false, iff_false, not_and]
@@ -388,10 +340,10 @@ theorem WalkData.image_eq (hw : WalkData Ω ρ H K ch ℓ p₀) {T : ℝ} (hT : 
     hdisj with h | h
   · intro x hx
     obtain ⟨t, ht, hxV⟩ := mem_iUnion₂.mp (h hx)
-    exact hVsub t ht ⟨hx, hxV⟩
+    tauto
   · exfalso
     have h0 : γ 0 ∈ Im := ⟨0, ⟨le_rfl, hT.le⟩, rfl⟩
-    exact h (hsub h0) h0
+    tauto
 
 end Loop
 
@@ -402,69 +354,33 @@ theorem exists_periodic_of_loop {Γ : ℝ → ℂ} {K : NNReal} (hΓ : Lipschitz
     (hT : 0 < T) (hcl : Γ T = Γ 0) (hinj : InjOn Γ (Ico 0 T)) :
     ∃ γ : ℝ → ℂ, (∃ K', LipschitzWith K' γ) ∧ Function.Periodic γ (2 * π) ∧
       InjOn γ (Ico 0 (2 * π)) ∧ γ '' Icc 0 (2 * π) = Γ '' Icc 0 T := by
-  have h2π : (0 : ℝ) < 2 * π := by positivity
-  set a : ℝ := T / (2 * π) with ha
-  have ha0 : 0 < a := by positivity
-  set G : ℝ → ℂ := fun θ => Γ (a * θ) with hG
-  have hGL : LipschitzWith (K * ⟨a, ha0.le⟩) G := by
-    refine LipschitzWith.of_dist_le_mul fun x y => ?_
-    have := hΓ.dist_le_mul (a * x) (a * y)
-    simp only [hG, Real.dist_eq] at this ⊢
-    rw [← mul_sub, abs_mul, abs_of_pos ha0] at this
-    change _ ≤ ((K : ℝ) * a) * _; linarith
-  have hG2π : G (2 * π) = G 0 := by
-    simp only [hG, mul_zero, ha]; rw [div_mul_cancel₀ _ h2π.ne', hcl]
-  set γ : ℝ → ℂ := fun θ => G (toIcoMod h2π 0 θ) with hγ
-  have hγ_Ico : ∀ θ ∈ Ico 0 (2 * π), γ θ = G θ := fun θ hθ => by
-    simp only [hγ]; rw [(toIcoMod_eq_self h2π).mpr (by simpa using hθ)]
-  have hγ_piece : ∀ n : ℤ, ∀ θ ∈ Icc (n * (2 * π)) ((n + 1) * (2 * π)),
-      γ θ = G (θ - n * (2 * π)) := by
-    intro n θ hθ
-    rcases lt_or_eq_of_le hθ.2 with hlt | heq
-    · simp only [hγ]
-      rw [← toIcoMod_sub_zsmul h2π 0 θ n, zsmul_eq_mul,
-        (toIcoMod_eq_self h2π).mpr ⟨by linarith [hθ.1], by linarith⟩]
-    · have h1 : γ θ = G 0 := by
-        simp only [hγ]
-        rw [← toIcoMod_sub_zsmul h2π 0 θ (n + 1), zsmul_eq_mul, heq]
-        push_cast
-        rw [sub_self, (toIcoMod_eq_self h2π).mpr ⟨le_rfl, by linarith⟩]
-      rw [h1, heq, show ((n : ℝ) + 1) * (2 * π) - n * (2 * π) = 2 * π by ring, hG2π]
-  refine ⟨γ, ⟨K * ⟨a, ha0.le⟩, ?_⟩, ?_, ?_, ?_⟩
-  · refine lipschitzWith_of_pieces h2π fun n => LipschitzOnWith.of_dist_le_mul
-      fun x hx y hy => ?_
-    rw [hγ_piece n x hx, hγ_piece n y hy]
-    have := hGL.dist_le_mul (x - n * (2 * π)) (y - n * (2 * π))
-    rwa [Real.dist_eq, sub_sub_sub_cancel_right, ← Real.dist_eq] at this
-  · intro θ
-    simp only [hγ, toIcoMod_add_right]
-  · intro x hx y hy hxy
-    rw [hγ_Ico x hx, hγ_Ico y hy] at hxy
-    have := hinj ⟨by have := hx.1; positivity, by
-        have := hx.2; rw [ha]; rw [div_mul_eq_mul_div, div_lt_iff₀ h2π]; nlinarith⟩
-      ⟨by have := hy.1; positivity, by
-        have := hy.2; rw [ha]; rw [div_mul_eq_mul_div, div_lt_iff₀ h2π]; nlinarith⟩ hxy
-    exact mul_left_cancel₀ ha0.ne' this
-  · have hγ_Icc : ∀ θ ∈ Icc 0 (2 * π), γ θ = Γ (a * θ) := fun θ hθ => by
-      have := hγ_piece 0 θ ⟨by simpa using hθ.1, by simpa using hθ.2⟩
-      simpa using this
-    ext w
-    constructor
-    · rintro ⟨θ, hθ, rfl⟩
-      refine ⟨a * θ, ⟨by have := hθ.1; positivity, ?_⟩, (hγ_Icc θ hθ).symm⟩
-      have := hθ.2; rw [ha, div_mul_eq_mul_div, div_le_iff₀ h2π]; nlinarith
-    · rintro ⟨t, ht, rfl⟩
-      refine ⟨t / a, ⟨div_nonneg ht.1 ha0.le, ?_⟩, ?_⟩
-      · rw [div_le_iff₀ ha0, ha, mul_div_cancel₀ _ h2π.ne']; exact ht.2
-      · rw [hγ_Icc _ ⟨div_nonneg ht.1 ha0.le, by
-          rw [div_le_iff₀ ha0, ha, mul_div_cancel₀ _ h2π.ne']; exact ht.2⟩,
-          mul_div_cancel₀ _ ha0.ne']
+  let a : ℝ := T / (2 * π)
+  have ha : 0 < a := div_pos hT Real.two_pi_pos
+  have haT : a * (2 * π) = T := div_mul_cancel₀ _ Real.two_pi_pos.ne'
+  let G : ℝ → ℂ := Γ ∘ (a * ·)
+  have hGL : LipschitzWith (K * ‖a‖₊) G := hΓ.comp (lipschitzWith_smul a)
+  have he : G (2 * π) = G 0 := by simp [G, haT, hcl]
+  refine ⟨periodize G, ⟨_, lipschitzWith_periodizeOn hGL.lipschitzOnWith he⟩,
+    periodic_periodize G, ?_, ?_⟩
+  · have hm : MapsTo (a * ·) (Ico 0 (2 * π)) (Ico 0 T) := fun x hx =>
+      ⟨mul_nonneg ha.le hx.1, haT ▸ mul_lt_mul_of_pos_left hx.2 ha⟩
+    exact ((hinj.comp (OrderIso.mulLeft₀ a ha).injective.injOn hm).congr fun x hx =>
+      (periodize_apply_of_mem hx).symm)
+  · let e := OrderIso.mulLeft₀ a ha
+    calc
+      _ = G '' Icc 0 (2 * π) := image_congr (periodize_eqOn_Icc he)
+      _ = Γ '' (e '' Icc 0 (2 * π)) := (image_image Γ (e : ℝ → ℝ) _).symm
+      _ = _ := by rw [e.image_Icc]; simp [e, haT]
+
+section
+
+variable {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
+include Ω hb hL
 
 /-- **A Lipschitz Jordan loop in the boundary.** A bounded Lipschitz domain has a Lipschitz
 `2π`-periodic curve `γ`, injective on `[0, 2π)`, with image in `∂Ω`; if `∂Ω` is connected, the
 image is all of `∂Ω`. -/
-theorem exists_jordanLoop_frontier {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) :
+theorem exists_jordanLoop_frontier  :
     ∃ γ : ℝ → ℂ, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ (2 * π) ∧
       InjOn γ (Ico 0 (2 * π)) ∧ γ '' Icc 0 (2 * π) ⊆ frontier Ω ∧
       (IsPreconnected (frontier Ω) → γ '' Icc 0 (2 * π) = frontier Ω) := by
@@ -478,34 +394,34 @@ theorem exists_jordanLoop_frontier {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     exact NormedSpace.unbounded_univ ℝ ℂ this
   have hK1 : (0 : ℝ) < 1 + K := by positivity
   set ℓ : ℝ := min ρ H / (2 * (1 + K)) with hℓ
-  have hm : 0 < min ρ H := lt_min hρ hH
+  have hm := lt_min hρ hH
   have hℓpos : 0 < ℓ := by positivity
   have hℓρ : ℓ < ρ := by
     have : ℓ ≤ min ρ H / 2 := by
-      rw [hℓ]; apply div_le_div_of_nonneg_left hm.le (by norm_num); linarith [NNReal.coe_nonneg K]
-    have := min_le_left ρ H
-    linarith
+      rw [hℓ]; apply div_le_div_of_nonneg_left hm.le (by norm_num); simp
+    grind
   have hw : WalkData Ω ρ H K ch ℓ p₀ :=
     ⟨hL.1.1, fun p hp => hcf p hp, hℓpos, hℓρ, hp₀⟩
   have hsmall : (1 + K) * ℓ ≤ min ρ H / 2 := by
-    rw [hℓ, mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
+    rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
   obtain ⟨s₀, t₀, hs₀, hst, heq⟩ := hw.exists_pair (frontier_isCompact hb) hsmall
   obtain ⟨T, hT, hTeq, hinj⟩ := hw.exists_loop hs₀ hst heq
   obtain ⟨γ, hγL, hγp, hγi, hγim⟩ := exists_periodic_of_loop hw.lipschitzWith_walk hT hTeq hinj
   refine ⟨γ, hγL, hγp, hγi, ?_, fun hconn => by rw [hγim, hw.image_eq hT hTeq hconn]⟩
   rw [hγim]
   rintro _ ⟨t, ht, rfl⟩
-  exact hw.walk_mem_frontier (by linarith [ht.1])
+  exact hw.walk_mem_frontier (by grind)
 
 /-- **External theorem E3, boundary description, for connected boundaries.** If `Ω` is a bounded
 Lipschitz domain whose boundary is connected, then `∂Ω` is a single Lipschitz Jordan curve: it
 has a Lipschitz `2π`-periodic parametrization, injective on `[0, 2π)`, with image `∂Ω`. -/
-theorem exists_jordanParam_of_isPreconnected_frontier {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
+theorem exists_jordanParam_of_isPreconnected_frontier 
     (hconn : IsPreconnected (frontier Ω)) :
     ∃ γ : ℝ → ℂ, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ (2 * π) ∧
       InjOn γ (Ico 0 (2 * π)) ∧ γ '' Icc 0 (2 * π) = frontier Ω := by
   obtain ⟨γ, hγL, hγp, hγi, -, hγim⟩ := exists_jordanLoop_frontier hb hL
-  exact ⟨γ, hγL, hγp, hγi, hγim hconn⟩
+  tauto
+
+end
 
 end PolyaNeumann

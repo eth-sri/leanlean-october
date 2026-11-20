@@ -29,31 +29,34 @@ open scoped ComplexConjugate InnerProductSpace Topology ENNReal
 
 abbrev DiskHardyCoefficients := lp (fun _ : ℕ => ℂ) 2
 
+section
+
+variable (m : ℕ)
+include m
+
 /-- The full physical H¹ mass of the mode `conj(z)^m`. -/
-def diskAntiholomorphicH1Weight (m : ℕ) : ℝ :=
+def diskAntiholomorphicH1Weight  : ℝ :=
   π / ((m + 1 : ℕ) : ℝ) + 2 * π * (m : ℝ)
 
-theorem diskAntiholomorphicH1Weight_pos (m : ℕ) :
+theorem diskAntiholomorphicH1Weight_pos  :
     0 < diskAntiholomorphicH1Weight m := by
   unfold diskAntiholomorphicH1Weight
   positivity
 
-private theorem hardy_value_antiholomorphicTest (m : ℕ) :
+private theorem hardy_value_antiholomorphicTest  :
     h1Value (ball (0 : ℂ) 1) (diskAntiholomorphicH1Test m) =
       diskAntiholomorphicArea m :=
   h1Value_smoothTraceH1 (ball (0 : ℂ) 1)
     ⟨diskHarmonicCutoff (diskAntiholomorphicMode m),
       diskHarmonicCutoff_testFunction (contDiff_diskAntiholomorphicMode m)⟩
 
+end
+
 private theorem hardy_gradient_antiholomorphicTest (m n : ℕ) :
     (∑ i : Fin 2,
       ⟪h1Gradient (ball (0 : ℂ) 1) i (diskAntiholomorphicH1Test m),
         h1Gradient (ball (0 : ℂ) 1) i (diskAntiholomorphicH1Test n)⟫_ℂ) =
-      if m = n then (2 * π : ℂ) * (m : ℂ) else 0 := by
-  have h := inner_diskAntiholomorphicGradient m n
-  rw [← diskH1Gradient_antiholomorphicTest m,
-    ← diskH1Gradient_antiholomorphicTest n, PiLp.inner_apply] at h
-  exact h
+      if m = n then (2 * π : ℂ) * (m : ℂ) else 0 := inner_diskAntiholomorphicGradient m n
 
 /-- The true H¹ Gram matrix; the zero mode has weight `π`. -/
 theorem inner_diskAntiholomorphicH1Test (m n : ℕ) :
@@ -63,24 +66,17 @@ theorem inner_diskAntiholomorphicH1Test (m n : ℕ) :
     hardy_value_antiholomorphicTest, inner_diskAntiholomorphicArea,
     hardy_gradient_antiholomorphicTest]
   by_cases hmn : m = n
-  · simp only [hmn, ite_true, diskAntiholomorphicH1Weight]
-    push_cast
-    ring
-  · simp [hmn]
+  simp [hmn, diskAntiholomorphicH1Weight]
+  simp_all
 
 private theorem hardy_sqrt_inverse_normalizes {w : ℝ} (hw : 0 < w) :
     conj ((Real.sqrt w : ℂ)⁻¹) *
       ((Real.sqrt w : ℂ)⁻¹ * (w : ℂ)) = 1 := by
-  have hs : Real.sqrt w ≠ 0 := (Real.sqrt_pos.mpr hw).ne'
+  have hs := (Real.sqrt_pos.mpr hw).ne'
   have hr : (Real.sqrt w)⁻¹ * ((Real.sqrt w)⁻¹ * w) = 1 := by
-    have hsq : Real.sqrt w * Real.sqrt w = w := by
-      simpa only [pow_two] using Real.sq_sqrt hw.le
-    calc
-      _ = (Real.sqrt w)⁻¹ *
-          ((Real.sqrt w)⁻¹ * (Real.sqrt w * Real.sqrt w)) := by rw [hsq]
-      _ = 1 := by field_simp [hs]
-  simp only [map_inv₀, Complex.conj_ofReal]
-  exact_mod_cast hr
+    grind
+  simp  
+  norm_cast
 
 private theorem hardy_orthonormal_of_gram
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -98,7 +94,7 @@ private theorem hardy_orthonormal_of_gram
       _ = conj ((Real.sqrt (w m) : ℂ)⁻¹) *
           ((Real.sqrt (w m) : ℂ)⁻¹ * (w m : ℂ)) := by ring
       _ = 1 := hardy_sqrt_inverse_normalizes (hw m)
-  · simp [inner_smul_left, inner_smul_right, hgram, hmn]
+  simp [inner_smul_left, inner_smul_right, hgram, hmn]
 
 /-- Unit vectors in actual disk H¹, with the constant mode retained. -/
 def diskUnitAntiholomorphicH1Test (m : ℕ) : NeumannH1 (ball (0 : ℂ) 1) :=
@@ -111,29 +107,28 @@ theorem orthonormal_diskUnitAntiholomorphicH1Test :
     diskAntiholomorphicH1Weight diskAntiholomorphicH1Weight_pos
     inner_diskAntiholomorphicH1Test
 
+section
+
+variable (m : ℕ)
+include m
+
 /-- The half-trace amplitude of an unscaled antiholomorphic monomial. -/
-def diskHardyTraceScale (m : ℕ) : ℝ :=
+def diskHardyTraceScale  : ℝ :=
   Real.sqrt (sobWeight (-(m : ℤ))) * Real.sqrt (2 * π)
 
-theorem diskHardyTraceScale_pos (m : ℕ) : 0 < diskHardyTraceScale m := by
+theorem diskHardyTraceScale_pos  : 0 < diskHardyTraceScale m := by
   exact mul_pos (Real.sqrt_pos.mpr (sobWeight_pos _))
     (Real.sqrt_pos.mpr (by positivity))
 
-private theorem hardy_sobWeight_neg_nat (m : ℕ) :
-    sobWeight (-(m : ℤ)) = ((m + 1 : ℕ) : ℝ) := by
-  simp only [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
-    abs_of_nonneg (Nat.cast_nonneg m : (0 : ℝ) ≤ m), Nat.cast_add, Nat.cast_one]
-  ring
-
-theorem diskHardyTraceScale_sq (m : ℕ) :
+theorem diskHardyTraceScale_sq  :
     diskHardyTraceScale m ^ 2 = 2 * π * ((m + 1 : ℕ) : ℝ) := by
   rw [diskHardyTraceScale, mul_pow, Real.sq_sqrt (sobWeight_pos _).le,
-    Real.sq_sqrt (by positivity : 0 ≤ 2 * π), hardy_sobWeight_neg_nat]
+    Real.sq_sqrt (by positivity : 0 ≤ 2 * π), sobWeight_neg_nat]
   ring
 
-theorem diskAntiholomorphicH1Weight_le_traceScale_sq (m : ℕ) :
+theorem diskAntiholomorphicH1Weight_le_traceScale_sq  :
     diskAntiholomorphicH1Weight m ≤ diskHardyTraceScale m ^ 2 := by
-  have hm : (1 : ℝ) ≤ ((m + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.succ_le_succ (Nat.zero_le m)
+  have hm : (1 : ℝ) ≤ ((m + 1 : ℕ) : ℝ) := by simp
   have hdiv : π / ((m + 1 : ℕ) : ℝ) ≤ π := by
     rw [div_le_iff₀ (by positivity)]
     nlinarith [Real.pi_pos]
@@ -142,20 +137,20 @@ theorem diskAntiholomorphicH1Weight_le_traceScale_sq (m : ℕ) :
   nlinarith [Real.pi_pos]
 
 /-- The ratio between unit H¹ coordinates and normalized trace coordinates. -/
-def diskHardySynthesisWeight (m : ℕ) : ℝ :=
+def diskHardySynthesisWeight  : ℝ :=
   Real.sqrt (diskAntiholomorphicH1Weight m) / diskHardyTraceScale m
 
-theorem diskHardySynthesisWeight_nonneg (m : ℕ) :
-    0 ≤ diskHardySynthesisWeight m := by
-  unfold diskHardySynthesisWeight
-  exact div_nonneg (Real.sqrt_nonneg _) (diskHardyTraceScale_pos _).le
+theorem diskHardySynthesisWeight_nonneg  :
+    0 ≤ diskHardySynthesisWeight m := div_nonneg (Real.sqrt_nonneg _) (diskHardyTraceScale_pos _).le
 
-theorem diskHardySynthesisWeight_le_one (m : ℕ) :
+theorem diskHardySynthesisWeight_le_one  :
     diskHardySynthesisWeight m ≤ 1 := by
   rw [diskHardySynthesisWeight, div_le_one (diskHardyTraceScale_pos m)]
   apply (sq_le_sq₀ (Real.sqrt_nonneg _) (diskHardyTraceScale_pos m).le).mp
   rw [Real.sq_sqrt (diskAntiholomorphicH1Weight_pos m).le]
   exact diskAntiholomorphicH1Weight_le_traceScale_sq m
+
+end
 
 private theorem hardy_nat_memℓp_two_iff_summable {f : ℕ → ℂ} :
     Memℓp f 2 ↔ Summable (fun m => ‖f m‖ ^ 2) := by
@@ -165,11 +160,15 @@ private theorem hardy_nat_memℓp_two_iff_summable {f : ℕ → ℂ} :
 private theorem hardy_negative_index_injective :
     Function.Injective (fun m : ℕ => -(m : ℤ)) := by
   intro m n h
-  change -(m : ℤ) = -(n : ℤ) at h
-  exact_mod_cast neg_injective h
+  simp_all
+
+section
+
+variable (w : ℕ → ℂ) (hw : ∀ m, ‖w m‖ ≤ 1)
+include w hw
 
 theorem hardy_weighted_coefficients_memℓp
-    (w : ℕ → ℂ) (hw : ∀ m, ‖w m‖ ≤ 1) (b : L2Z) :
+     (b : L2Z) :
     Memℓp (fun m => w m * b (-(m : ℤ))) 2 := by
   refine hardy_nat_memℓp_two_iff_summable.mpr ?_
   have hs : Summable (fun m : ℕ => ‖b (-(m : ℤ))‖ ^ 2) :=
@@ -177,31 +176,31 @@ theorem hardy_weighted_coefficients_memℓp
   refine Summable.of_nonneg_of_le (fun _ => sq_nonneg _) (fun m => ?_) hs
   rw [norm_mul, mul_pow]
   calc
-    _ ≤ 1 ^ 2 * ‖b (-(m : ℤ))‖ ^ 2 := by gcongr; exact hw m
+    _ ≤ 1 ^ 2 * ‖b (-(m : ℤ))‖ ^ 2 := by gcongr; tauto
     _ = _ := by ring
 
 def hardyWeightedCoefficientsLin
-    (w : ℕ → ℂ) (hw : ∀ m, ‖w m‖ ≤ 1) : L2Z →ₗ[ℂ] DiskHardyCoefficients where
+     : L2Z →ₗ[ℂ] DiskHardyCoefficients where
   toFun b := ⟨fun m => w m * b (-(m : ℤ)), hardy_weighted_coefficients_memℓp w hw b⟩
   map_add' b c := by
     ext m
-    simp [mul_add, Pi.add_apply]
+    simp [mul_add]
     rfl
   map_smul' a b := by
     ext m
-    simp only [lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
+    simp only [lp.coeFn_smul, Pi.smul_apply, RingHom.id_apply]
     ring
 
 private theorem hardy_weighted_coefficients_norm_le
-    (w : ℕ → ℂ) (hw : ∀ m, ‖w m‖ ≤ 1) (b : L2Z) :
+     (b : L2Z) :
     ‖hardyWeightedCoefficientsLin w hw b‖ ≤ ‖b‖ := by
   have hsq : ‖hardyWeightedCoefficientsLin w hw b‖ ^ 2 ≤ ‖b‖ ^ 2 := by
     have hn : ‖hardyWeightedCoefficientsLin w hw b‖ ^ 2 =
         ∑' m : ℕ, ‖w m * b (-(m : ℤ))‖ ^ 2 := by
       have h := lp.norm_rpow_eq_tsum (p := 2) (by norm_num)
         (hardyWeightedCoefficientsLin w hw b)
-      simp only [ENNReal.toReal_ofNat, Real.rpow_two] at h
-      exact h
+      simp  [ENNReal.toReal_ofNat, Real.rpow_two] at h
+      assumption
     rw [hn, norm_sq_L2Z]
     calc
       _ ≤ ∑' m : ℕ, ‖b (-(m : ℤ))‖ ^ 2 := by
@@ -212,16 +211,18 @@ private theorem hardy_weighted_coefficients_norm_le
         change ‖w m * b (-(m : ℤ))‖ ^ 2 ≤ _
         rw [norm_mul, mul_pow]
         calc
-          _ ≤ 1 ^ 2 * ‖b (-(m : ℤ))‖ ^ 2 := by gcongr; exact hw m
+          _ ≤ 1 ^ 2 * ‖b (-(m : ℤ))‖ ^ 2 := by gcongr; tauto
           _ = _ := by ring
       _ ≤ _ := tsum_comp_le_tsum_of_inj (summable_norm_sq_L2Z b)
         (fun n => sq_nonneg ‖b n‖) hardy_negative_index_injective
   exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp hsq
 
 def hardyWeightedCoefficients
-    (w : ℕ → ℂ) (hw : ∀ m, ‖w m‖ ≤ 1) : L2Z →L[ℂ] DiskHardyCoefficients :=
+     : L2Z →L[ℂ] DiskHardyCoefficients :=
   (hardyWeightedCoefficientsLin w hw).mkContinuous 1
     (fun b => by simpa using hardy_weighted_coefficients_norm_le w hw b)
+
+end
 
 theorem hardy_synthesis_weight_bound (m : ℕ) :
     ‖(diskHardySynthesisWeight m : ℂ)‖ ≤ 1 := by
@@ -252,17 +253,17 @@ private theorem hardy_raw_synthesis_scalar (m : ℕ) (a : ℂ) :
       a / (diskHardyTraceScale m : ℂ) := by
   have hs : (Real.sqrt (diskAntiholomorphicH1Weight m) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr (diskAntiholomorphicH1Weight_pos m)).ne'
-  rw [diskHardySynthesisWeight, Complex.ofReal_div, div_eq_mul_inv, div_eq_mul_inv]
-  calc
-    _ = ((Real.sqrt (diskAntiholomorphicH1Weight m) : ℂ) *
-        (Real.sqrt (diskAntiholomorphicH1Weight m) : ℂ)⁻¹) *
-        (a * (diskHardyTraceScale m : ℂ)⁻¹) := by ring
-    _ = _ := by rw [mul_inv_cancel₀ hs, one_mul]
+  grind [diskHardySynthesisWeight, Complex.ofReal_div, div_eq_mul_inv, one_mul]
+
+section
+
+variable (b : L2Z)
+include b
 
 /-- Convergence of smooth harmonic partial sums in genuine H¹. The ordinary
 boundary coefficient is the normalized coefficient divided by
 `sqrt(2π) * sqrt(λ)`, including frequency zero. -/
-theorem diskHardyExtension_hasSum (b : L2Z) :
+theorem diskHardyExtension_hasSum  :
     HasSum (fun m : ℕ => (b (-(m : ℤ)) / (diskHardyTraceScale m : ℂ)) •
       diskAntiholomorphicH1Test m) (diskHardyExtension b) := by
   have hs := (orthonormal_diskUnitAntiholomorphicH1Test.orthogonalFamily).hasSum_linearIsometry
@@ -275,7 +276,7 @@ theorem diskHardyExtension_hasSum (b : L2Z) :
   rw [diskHardyCoefficientMap_apply, diskUnitAntiholomorphicH1Test, smul_smul,
     hardy_raw_synthesis_scalar]
 
-private theorem hardy_trace_term (b : L2Z) (m : ℕ) :
+private theorem hardy_trace_term  (m : ℕ) :
     diskHalfTrace ((b (-(m : ℤ)) / (diskHardyTraceScale m : ℂ)) •
       diskAntiholomorphicH1Test m) =
         b (-(m : ℤ)) • stdBasisZ (-(m : ℤ)) := by
@@ -284,18 +285,15 @@ private theorem hardy_trace_term (b : L2Z) (m : ℕ) :
   rw [map_smul, diskHalfTrace_antiholomorphicTest, smul_smul]
   have hc : (Real.sqrt (sobWeight (-(m : ℤ))) : ℂ) *
       (Real.sqrt (2 * π) : ℂ) = (diskHardyTraceScale m : ℂ) := by
-    simp only [diskHardyTraceScale, Complex.ofReal_mul]
-  rw [hc, div_mul_cancel₀ _ ht]
+    norm_cast
+  simp_all
 
-theorem diskHardyExtension_halfTrace_hasSum (b : L2Z) :
+theorem diskHardyExtension_halfTrace_hasSum  :
     HasSum (fun m : ℕ => b (-(m : ℤ)) • stdBasisZ (-(m : ℤ)))
       (diskHalfTrace (diskHardyExtension b)) := by
   simpa only [hardy_trace_term] using diskHalfTrace.hasSum (diskHardyExtension_hasSum b)
 
-private theorem hardy_inner_stdBasisZ (n : ℤ) (b : L2Z) :
-    ⟪stdBasisZ n, b⟫_ℂ = b n := by
-  rw [stdBasisZ_apply, lp.inner_single_left]
-  simp
+end
 
 private theorem hardy_nonpositive_series_coordinate
     (b x : L2Z)
@@ -308,54 +306,62 @@ private theorem hardy_nonpositive_series_coordinate
         if n = -(m : ℤ) then b (-(m : ℤ)) else 0 := by
     simp only [innerSL_apply_apply, inner_smul_right,
       orthonormal_iff_ite.mp stdBasisZ.orthonormal]
-    split_ifs <;> simp
-  simp only [hbasis, innerSL_apply_apply, hardy_inner_stdBasisZ] at hcoord
+    simp
+  simp  [hbasis, innerSL_apply_apply, inner_stdBasisZ] at hcoord
   rw [← hcoord.tsum_eq]
   by_cases hn : 0 < n
-  · simp only [hn, ite_true]
+  · simp  [hn]
     have hz : (fun m : ℕ => if n = -(m : ℤ) then b (-(m : ℤ)) else 0) =
         (fun _ : ℕ => (0 : ℂ)) := by
       funext m
       have hnm : n ≠ -(m : ℤ) := by omega
-      simp [hnm]
+      simp_all
     rw [hz]
     simp
-  · simp only [hn, ite_false]
+  · simp  [hn]
     have hn0 : 0 ≤ -n := by omega
-    let k : ℕ := Int.toNat (-n)
+    let k := Int.toNat (-n)
     have hk : n = -(k : ℤ) := by
-      have hc : (k : ℤ) = -n := Int.toNat_of_nonneg hn0
       omega
     rw [tsum_eq_single k]
     · simp [← hk]
     · intro m hm
       have hnm : n ≠ -(m : ℤ) := by omega
-      simp [hnm]
+      simp_all
+
+section
+
+variable (b : L2Z)
+include b
 
 /-- The extension has precisely the nonpositive normalized half trace. -/
-theorem diskHalfTrace_diskHardyExtension_apply (b : L2Z) (n : ℤ) :
+theorem diskHalfTrace_diskHardyExtension_apply  (n : ℤ) :
     diskHalfTrace (diskHardyExtension b) n = if 0 < n then 0 else b n :=
   hardy_nonpositive_series_coordinate b _ (diskHardyExtension_halfTrace_hasSum b) n
 
-theorem diskHalfTrace_diskHardyExtension (b : L2Z) :
+theorem diskHalfTrace_diskHardyExtension  :
     diskHalfTrace (diskHardyExtension b) = (1 - posProj) b := by
   ext n
   rw [diskHalfTrace_diskHardyExtension_apply]
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-    lp.coeFn_sub, Pi.sub_apply, posProj, diagOp_apply]
-  split_ifs <;> simp
+  simp only [ContinuousLinearMap.sub_apply, lp.coeFn_sub, Pi.sub_apply, posProj, diagOp_apply]
+  grind
 
 /-- A bounded genuine H¹ right inverse on the nonpositive Fourier subspace. -/
-theorem diskHalfTrace_diskHardyExtension_eq_of_nonpositive (b : L2Z)
+theorem diskHalfTrace_diskHardyExtension_eq_of_nonpositive 
     (hb : ∀ n : ℤ, 0 < n → b n = 0) :
     diskHalfTrace (diskHardyExtension b) = b := by
   ext n
   rw [diskHalfTrace_diskHardyExtension_apply]
-  by_cases hn : 0 < n
-  · simp [hn, hb n hn]
-  · simp [hn]
+  simp_all
 
-private theorem hardy_antiholomorphic_gradient_components (m : ℕ) :
+end
+
+section
+
+variable (m : ℕ)
+include m
+
+private theorem hardy_antiholomorphic_gradient_components  :
     diskAntiholomorphicGradient m 0 =
       Complex.I • diskAntiholomorphicGradient m 1 := by
   apply Lp.ext
@@ -371,22 +377,14 @@ private theorem hardy_antiholomorphic_gradient_components (m : ℕ) :
     show coordDir 1 = Complex.I from rfl,
     map_one, Complex.conj_I, mul_one]
   ring_nf
-  rw [Complex.I_sq]
-  ring
+  simp
 
-private theorem hardy_gradient_component_antiholomorphicTest (m : ℕ) (i : Fin 2) :
-    h1Gradient (ball (0 : ℂ) 1) i (diskAntiholomorphicH1Test m) =
-      diskAntiholomorphicGradient m i := by
-  have h := congrArg (fun G : DiskGradientSpace => G i)
-    (diskH1Gradient_antiholomorphicTest m)
-  simpa only [diskH1Gradient, PiLp.toLp_apply] using h
 
-theorem diskAntiholomorphicH1Test_cauchyRiemann (m : ℕ) :
+theorem diskAntiholomorphicH1Test_cauchyRiemann  :
     h1Gradient (ball (0 : ℂ) 1) 0 (diskAntiholomorphicH1Test m) =
-      Complex.I • h1Gradient (ball (0 : ℂ) 1) 1 (diskAntiholomorphicH1Test m) := by
-  rw [hardy_gradient_component_antiholomorphicTest,
-    hardy_gradient_component_antiholomorphicTest]
-  exact hardy_antiholomorphic_gradient_components m
+      Complex.I • h1Gradient (ball (0 : ℂ) 1) 1 (diskAntiholomorphicH1Test m) := hardy_antiholomorphic_gradient_components m
+
+end
 
 /-- The weak antiholomorphic derivative, without an inessential scalar factor. -/
 def diskAntiholomorphicDefect :
@@ -395,10 +393,7 @@ def diskAntiholomorphicDefect :
     Complex.I • h1Gradient (ball (0 : ℂ) 1) 1
 
 private theorem hardy_antiholomorphic_defect_test (m : ℕ) :
-    diskAntiholomorphicDefect (diskAntiholomorphicH1Test m) = 0 := by
-  simp only [diskAntiholomorphicDefect, ContinuousLinearMap.sub_apply,
-    ContinuousLinearMap.smul_apply, diskAntiholomorphicH1Test_cauchyRiemann,
-    sub_self]
+    diskAntiholomorphicDefect (diskAntiholomorphicH1Test m) = 0 := by simp [diskAntiholomorphicDefect, diskAntiholomorphicH1Test_cauchyRiemann]
 
 theorem diskAntiholomorphicDefect_diskHardyExtension (b : L2Z) :
     diskAntiholomorphicDefect (diskHardyExtension b) = 0 := by

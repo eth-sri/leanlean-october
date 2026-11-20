@@ -39,7 +39,7 @@ lemma inner_adjoint_sub_eq {V : Ell2 →L[ℂ] Ell2} (hV : V ∈ unitary (Ell2 �
     ⟪e, (ContinuousLinearMap.adjoint V - V) v⟫_ℂ =
       ⟪e + ContinuousLinearMap.adjoint V e, (ContinuousLinearMap.adjoint V - 1) v⟫_ℂ := by
   have hVV : V * ContinuousLinearMap.adjoint V = 1 := by
-    rw [← ContinuousLinearMap.star_eq_adjoint]; exact (Unitary.mem_iff.mp hV).2
+    rw [← ContinuousLinearMap.star_eq_adjoint]; simp_all
   have h1 : ⟪ContinuousLinearMap.adjoint V e, (ContinuousLinearMap.adjoint V - 1) v⟫_ℂ =
       ⟪e, v - V v⟫_ℂ := by
     rw [ContinuousLinearMap.adjoint_inner_left, ContinuousLinearMap.sub_apply, map_sub,
@@ -49,34 +49,37 @@ lemma inner_adjoint_sub_eq {V : Ell2 →L[ℂ] Ell2} (hV : V ∈ unitary (Ell2 �
     ContinuousLinearMap.one_apply, inner_sub_right, inner_sub_right, inner_sub_right]
   ring
 
+section
+
+variable {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (hclosed : γ (2 * π) = γ 0) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) {a : ℝ → ℂ} (ha : IsDirDensity a)
+include γ K hK hclosed E W hW a ha
+
 /-- **The Schur pairing on Herglotz data.** `B(e₀, v_a) = √2 ∫₀^L conj(b_E) g_a`. -/
-theorem imPair_herglotzVec {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) :
+theorem imPair_herglotzVec  :
     imPair (monodromy W) (basisVec 0) (herglotzVec ha (Real.sqrt E) (γ 0)) =
       (Real.sqrt 2 : ℂ) *
         ∫ θ in (0 : ℝ)..(2 * π), conj (smallB W θ) * herglotzConormal (Real.sqrt E) a γ θ := by
-  obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable (Real.sqrt E) hK
-  obtain ⟨hO, -⟩ := herglotzForm_eq hK hclosed hW ha
+  have hO := (herglotz_driven_boundary hK hclosed hW ha).1
   set g := herglotzConormal (Real.sqrt E) a γ with hgdef
   set V := W (2 * π) with hVdef
   set v := herglotzVec ha (Real.sqrt E) (γ 0) with hvdef
-  have hV : V ∈ unitary (Ell2 →L[ℂ] Ell2) :=
+  have hV :=
     transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
-  have hR := inner_observationAdj_right hW.1 hgm hgB (radialVec W)
+  have hR := inner_observationAdj_right hW.1
+    (intervalIntegrable_herglotzConormal ha.intervalIntegrable (Real.sqrt E) hK _ _) (radialVec W)
   rw [hO, inner_smul_right] at hR
   have hint : l2Inner (observation W (radialVec W)) g =
       ∫ θ in (0 : ℝ)..(2 * π), conj (smallB W θ) * g θ := by
     unfold l2Inner
     refine intervalIntegral.integral_congr fun θ _ => ?_
-    simp only [observation_radialVec]
+    simp  [observation_radialVec]
   rw [hint] at hR
   have hrad : radialVec W = basisVec 0 + ContinuousLinearMap.adjoint V (basisVec 0) := rfl
   have hkey := inner_adjoint_sub_eq hV (basisVec 0) v
   rw [← hrad] at hkey
   have hU : monodromy W - ContinuousLinearMap.adjoint (monodromy W) =
       ContinuousLinearMap.adjoint V - V := by
-    simp only [monodromy, ContinuousLinearMap.adjoint_adjoint, hVdef]
+    simp  [monodromy, ContinuousLinearMap.adjoint_adjoint, hVdef]
   unfold imPair
   rw [hU, hkey, ← hR]
   have h2 : ((Real.sqrt 2 : ℂ)) * (Real.sqrt 2 : ℂ) = 2 := by
@@ -85,9 +88,7 @@ theorem imPair_herglotzVec {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
 
 /-- **The Schur complement on Herglotz data.**
 `C(v_a) = herglotzForm W γ E a - |∫₀^L conj(b_E) g_a|² / a_E`. -/
-theorem imSchur_herglotzVec {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) :
+theorem imSchur_herglotzVec  :
     imSchur (monodromy W) (basisVec 0) (herglotzVec ha (Real.sqrt E) (γ 0)) =
       herglotzForm W γ E a -
         ‖∫ θ in (0 : ℝ)..(2 * π), conj (smallB W θ) * herglotzConormal (Real.sqrt E) a γ θ‖ ^ 2 /
@@ -97,7 +98,9 @@ theorem imSchur_herglotzVec {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
     ← herglotzForm_eq_im hK hclosed hW ha, norm_mul, mul_pow, Complex.norm_real,
     Real.norm_eq_abs, sq_abs, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
   rcases eq_or_ne (smallA W) 0 with h | h
-  · simp [h]
+  ring
   · field_simp
+
+end
 
 end PolyaNeumann

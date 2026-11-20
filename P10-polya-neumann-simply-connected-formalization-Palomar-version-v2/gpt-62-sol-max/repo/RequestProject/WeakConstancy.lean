@@ -24,6 +24,46 @@ noncomputable section
 
 namespace PolyaNeumann
 
+/-- The extension by zero of an element of `L²(Ω)` to a function on `ℂ`. -/
+def extZero (Ω : Set ℂ) (u : L2 Ω) : ℂ → ℂ := Ω.indicator (fun z => u z)
+
+/-- Mollification `(ρ ⋆ U)(x) = ∫ ρ(z) U(x - z) dz`. -/
+def mollify (ρ : ℂ → ℝ) (U : ℂ → ℂ) : ℂ → ℂ :=
+  convolution ρ U (ContinuousLinearMap.lsmul ℝ ℝ) volume
+
+lemma mollify_eq_flip (ρ : ℂ → ℝ) (U : ℂ → ℂ) (x : ℂ) :
+    mollify ρ U x = ∫ t, ρ (x - t) • U t := by
+  rw [mollify, convolution_def]
+  simp only [ContinuousLinearMap.lsmul_apply]
+  rw [← integral_sub_left_eq_self (fun t => ρ t • U (x - t)) (μ := volume) x]
+  simp
+
+/-- The directional derivative of the real convolution kernel. -/
+def kerD (ρ : ℂ → ℝ) (v : ℂ) : ℂ → ℝ := fun t => fderiv ℝ ρ t v
+
+lemma fderiv_mollify_kernel {ρ : ℂ → ℝ} (hρ : ContDiff ℝ 1 ρ) (hρs : HasCompactSupport ρ)
+    {U : ℂ → ℂ} (hU : LocallyIntegrable U volume) (x v : ℂ) :
+    fderiv ℝ (mollify ρ U) x v = mollify (kerD ρ v) U x := by
+  let B : ℝ →L[ℝ] ℂ →L[ℝ] ℂ := ContinuousLinearMap.lsmul ℝ ℝ
+  have h := HasCompactSupport.hasFDerivAt_convolution_left B hρs hρ hU x
+  have hi := HasCompactSupport.convolutionExists_left (B.precompL ℂ)
+    (hρs.fderiv ℝ) (hρ.continuous_fderiv one_ne_zero) hU x
+  unfold mollify
+  rw [h.fderiv, convolution_def, ContinuousLinearMap.integral_apply hi, convolution_def]
+  rfl
+
+/-- A reflected and translated real kernel, viewed as a complex test function. -/
+def reflK (ρ : ℂ → ℝ) (x : ℂ) : ℂ → ℂ := fun t => (ρ (x - t) : ℂ)
+
+lemma fderiv_reflK {ρ : ℂ → ℝ} (hρ : ContDiff ℝ 1 ρ) (x t v : ℂ) :
+    fderiv ℝ (reflK ρ x) t v = -(kerD ρ v (x - t) : ℂ) := by
+  have hd := ((hρ.differentiable one_ne_zero) (x - t)).hasFDerivAt.comp t
+    ((hasFDerivAt_id t).const_sub x)
+  have h := Complex.ofRealCLM.hasFDerivAt.comp t hd
+  change fderiv ℝ (Complex.ofRealCLM ∘ ρ ∘ (fun t => x - t)) t v = _
+  rw [h.fderiv]
+  simp [kerD]
+
 /-- The extension by zero of an `L²(Ω)` function is locally integrable on `ℂ`. -/
 lemma locallyIntegrable_indicator_L2 {Ω : Set ℂ} (hΩ : MeasurableSet Ω) (u : L2 Ω) :
     LocallyIntegrable (Ω.indicator (fun z => u z)) volume :=
@@ -34,92 +74,98 @@ lemma clm_eq_zero_of_one_I {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E
     (T : ℂ →L[ℝ] E) (h1 : T 1 = 0) (hI : T Complex.I = 0) : T = 0 := by
   ext v
   have hv : v = v.re • (1 : ℂ) + v.im • Complex.I := by
-    apply Complex.ext <;> simp
+    simp
   rw [hv, map_add, map_smul, map_smul, h1, hI]
   simp
 
-/-- The reflected, translated bump `t ↦ ρ(x - t)` as a complex test function. -/
-def reflBump (φ : ContDiffBump (0 : ℂ)) (x : ℂ) : ℂ → ℂ :=
-  fun t => ((φ.normed volume (x - t) : ℝ) : ℂ)
+section
 
-lemma reflBump_eq_zero (φ : ContDiffBump (0 : ℂ)) (x t : ℂ) (ht : t ∉ closedBall x φ.rOut) :
+variable (φ : ContDiffBump (0 : ℂ))
+include φ
+
+/-- The reflected, translated bump `t ↦ ρ(x - t)` as a complex test function. -/
+def reflBump  (x : ℂ) : ℂ → ℂ :=
+  reflK (φ.normed volume) x
+
+lemma reflBump_eq_zero  (x t : ℂ) (ht : t ∉ closedBall x φ.rOut) :
     reflBump φ x t = 0 := by
   have : x - t ∉ tsupport (φ.normed volume) := by
-    rw [φ.tsupport_normed_eq]
-    simpa [dist_comm, dist_eq_norm] using ht
-  simp [reflBump, image_eq_zero_of_notMem_tsupport this]
+    simp_all [φ.tsupport_normed_eq, dist_comm, dist_eq_norm]
+  simp [reflBump, reflK, image_eq_zero_of_notMem_tsupport this]
 
-lemma tsupport_reflBump_subset (φ : ContDiffBump (0 : ℂ)) (x : ℂ) :
+lemma tsupport_reflBump_subset  (x : ℂ) :
     tsupport (reflBump φ x) ⊆ closedBall x φ.rOut := by
   refine closure_minimal (fun t ht => ?_) isClosed_closedBall
   by_contra h
   exact ht (reflBump_eq_zero φ x t h)
 
+end
+
 lemma testFunction_reflBump {Ω : Set ℂ} (φ : ContDiffBump (0 : ℂ)) (x : ℂ)
     (hx : closedBall x φ.rOut ⊆ Ω) : TestFunction Ω (reflBump φ x) := by
   refine ⟨?_, ?_, (tsupport_reflBump_subset φ x).trans hx⟩
-  · exact Complex.ofRealCLM.contDiff.comp (φ.contDiff_normed.comp (contDiff_const.sub contDiff_id))
-  · exact HasCompactSupport.intro (isCompact_closedBall x φ.rOut) (reflBump_eq_zero φ x)
+  exact Complex.ofRealCLM.contDiff.comp (φ.contDiff_normed.comp (contDiff_const.sub contDiff_id))
+  exact HasCompactSupport.intro (isCompact_closedBall x φ.rOut) (reflBump_eq_zero φ x)
 
-lemma fderiv_reflBump (φ : ContDiffBump (0 : ℂ)) (x t v : ℂ) :
-    fderiv ℝ (reflBump φ x) t v = -((fderiv ℝ (φ.normed volume) (x - t) v : ℝ) : ℂ) := by
-  have hρ : HasFDerivAt (φ.normed volume) (fderiv ℝ (φ.normed volume) (x - t)) (x - t) :=
-    ((φ.contDiff_normed (n := 1)).differentiable (by simp) _).hasFDerivAt
-  have h := (Complex.ofRealCLM.hasFDerivAt).comp t (hρ.comp t ((hasFDerivAt_id t).const_sub x))
-  have : reflBump φ x = Complex.ofRealCLM ∘ (φ.normed volume) ∘ (fun t => x - t) := rfl
-  rw [this, h.fderiv]
-  simp
+section
 
-/-- The derivative of the mollified function vanishes, tested in the coordinate directions. -/
-lemma integral_fderiv_bump_smul_eq_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u : L2 Ω)
-    (hu : IsWeakGradient Ω u 0) (φ : ContDiffBump (0 : ℂ)) (x : ℂ)
-    (hx : closedBall x φ.rOut ⊆ Ω) (i : Fin 2) :
-    ∫ t, fderiv ℝ (φ.normed volume) (x - t) (coordDir i) • Ω.indicator (fun z => u z) t = 0 := by
-  have h := hu (reflBump φ x) (testFunction_reflBump φ x hx) i
-  have h0 : ∫ w in Ω, (0 : Fin 2 → L2 Ω) i w * reflBump φ x w = 0 := by
-    rw [integral_congr_ae (g := fun _ => (0 : ℂ))]
-    · simp
-    · filter_upwards [Lp.coeFn_zero ℂ 2 (volume.restrict Ω)] with w hw
-      simp only [Pi.zero_apply]
-      rw [hw]
-      simp
-  rw [h0, neg_zero] at h
-  simp_rw [fderiv_reflBump] at h
-  have e : ∀ t, fderiv ℝ (φ.normed volume) (x - t) (coordDir i) • Ω.indicator (fun z => u z) t =
-      Ω.indicator (fun t => -(u t * -((fderiv ℝ (φ.normed volume) (x - t) (coordDir i) : ℝ) : ℂ))) t := by
+variable {Ω : Set ℂ} (hΩ : IsOpen Ω) {v : L2 Ω} {G : Fin 2 → L2 Ω} (hG : IsWeakGradient Ω v G) (φ : ContDiffBump (0 : ℂ)) (x : ℂ) (hx : closedBall x φ.rOut ⊆ Ω) (i : Fin 2)
+include Ω hΩ v G hG φ x hx i
+
+/-- The weak gradient identity tested against the reflected bump `t ↦ ρ(x - t)`. -/
+lemma integral_fderiv_bump_smul_eq  :
+    ∫ t, fderiv ℝ (φ.normed volume) (x - t) (coordDir i) • extZero Ω v t =
+      ∫ t, φ.normed volume (x - t) • extZero Ω (G i) t := by
+  have h := hG (reflBump φ x) (testFunction_reflBump φ x hx) i
+  change (∫ t in Ω, v t * fderiv ℝ (reflK (φ.normed volume) x) t (coordDir i)) = _ at h
+  simp_rw [fderiv_reflK (φ.contDiff_normed (n := 1)), kerD] at h
+  have e1 : ∀ t, fderiv ℝ (φ.normed volume) (x - t) (coordDir i) • extZero Ω v t =
+      Ω.indicator (fun t => -((v : ℂ → ℂ) t *
+        -((fderiv ℝ (φ.normed volume) (x - t) (coordDir i) : ℝ) : ℂ))) t := by
     intro t
     by_cases ht : t ∈ Ω
-    · simp [ht, Complex.real_smul, mul_comm]
-    · simp [ht]
-  simp_rw [e]
-  rw [integral_indicator hΩ.measurableSet, integral_neg, h, neg_zero]
+    · simp [extZero, ht, mul_comm]
+    · simp [extZero, ht]
+  have e2 : ∀ t, φ.normed volume (x - t) • extZero Ω (G i) t =
+      Ω.indicator (fun t => (G i : ℂ → ℂ) t * reflBump φ x t) t := by
+    intro t
+    by_cases ht : t ∈ Ω <;> simp [extZero, ht, reflBump, reflK, Complex.real_smul, mul_comm]
+  simp_rw [e1, e2]
+  rw [integral_indicator hΩ.measurableSet, integral_indicator hΩ.measurableSet, integral_neg, h,
+    neg_neg]
 
-/-- The bilinear map `(f, s) ↦ s • f` used for mollification. -/
-abbrev smulFlip : ℂ →L[ℝ] ℝ →L[ℝ] ℂ :=
-  (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ).flip
+/-- Near an interior bump support, convolution commutes with the weak gradient. -/
+lemma fderiv_mollify_extZero :
+    fderiv ℝ (mollify (φ.normed volume) (extZero Ω v)) x (coordDir i) =
+      mollify (φ.normed volume) (extZero Ω (G i)) x := by
+  rw [fderiv_mollify_kernel (U := extZero Ω v) φ.contDiff_normed φ.hasCompactSupport_normed
+    (locallyIntegrable_indicator_L2 hΩ.measurableSet v), mollify_eq_flip, mollify_eq_flip]
+  exact integral_fderiv_bump_smul_eq hΩ hG φ x hx i
 
-/-- The mollification `u ⋆ ρ` has zero derivative at every `x` with `B̄(x, rOut) ⊆ Ω`. -/
+end
+
+/-- The mollification of a weakly constant function has zero derivative. -/
 lemma hasFDerivAt_mollify_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u : L2 Ω)
     (hu : IsWeakGradient Ω u 0) (φ : ContDiffBump (0 : ℂ)) (x : ℂ)
     (hx : closedBall x φ.rOut ⊆ Ω) :
-    HasFDerivAt (convolution (Ω.indicator (fun z => u z)) (φ.normed volume) smulFlip volume)
-      (0 : ℂ →L[ℝ] ℂ) x := by
-  have hU := locallyIntegrable_indicator_L2 hΩ.measurableSet u
-  have hd := HasCompactSupport.hasFDerivAt_convolution_right smulFlip
-    (φ.hasCompactSupport_normed (μ := volume)) hU (φ.contDiff_normed (n := 1)) x
-  convert hd using 1
-  symm
-  have hint : Integrable (fun t => ContinuousLinearMap.precompR ℂ smulFlip
-      (Ω.indicator (fun z => u z) t) (fderiv ℝ (φ.normed volume) (x - t))) volume :=
-    HasCompactSupport.convolutionExists_right (ContinuousLinearMap.precompR ℂ smulFlip)
-      ((φ.hasCompactSupport_normed (μ := volume)).fderiv ℝ) hU
-      ((φ.contDiff_normed (n := 1)).continuous_fderiv (by simp)) x
-  have key : ∀ i : Fin 2, convolution (Ω.indicator (fun z => u z)) (fderiv ℝ (φ.normed volume))
-      (ContinuousLinearMap.precompR ℂ smulFlip) volume x (coordDir i) = 0 := by
-    intro i
-    rw [convolution_def, ContinuousLinearMap.integral_apply hint]
-    simpa using integral_fderiv_bump_smul_eq_zero hΩ u hu φ x hx i
-  exact clm_eq_zero_of_one_I _ (by simpa [coordDir] using key 0) (by simpa [coordDir] using key 1)
+    HasFDerivAt (mollify (φ.normed volume) (extZero Ω u)) (0 : ℂ →L[ℝ] ℂ) x := by
+  have hd := (HasCompactSupport.hasFDerivAt_convolution_left (ContinuousLinearMap.lsmul ℝ ℝ)
+    (φ.hasCompactSupport_normed (μ := volume)) (φ.contDiff_normed (n := 1))
+    (locallyIntegrable_indicator_L2 hΩ.measurableSet u) x).differentiableAt.hasFDerivAt
+  have hz : extZero Ω (0 : L2 Ω) =ᵐ[volume] 0 := by
+    filter_upwards [(ae_restrict_iff' hΩ.measurableSet).mp (Lp.coeFn_zero ℂ 2 (volume.restrict Ω))] with t ht
+    by_cases h : t ∈ Ω
+    · simpa [extZero, h] using ht h
+    · simp [extZero, h]
+  have h (i : Fin 2) : fderiv ℝ (mollify (φ.normed volume) (extZero Ω u)) x (coordDir i) = 0 := by
+    rw [fderiv_mollify_extZero hΩ hu φ x hx i, mollify_eq_flip]
+    apply integral_eq_zero_of_ae
+    filter_upwards [hz] with t ht
+    simp [ht]
+  have hzero := clm_eq_zero_of_one_I _ (h 0) (by simpa [coordDir] using h 1)
+  change HasFDerivAt (mollify (φ.normed volume) (extZero Ω u))
+    (fderiv ℝ (mollify (φ.normed volume) (extZero Ω u)) x) x at hd
+  rwa [hzero] at hd
 
 /-- On every ball `B(x₀, r)` with `B̄(x₀, 2r) ⊆ Ω`, a function with zero weak gradient is a.e.
 constant. -/
@@ -127,14 +173,14 @@ lemma ae_const_on_ball_of_weakGradient_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u 
     (hu : IsWeakGradient Ω u 0) {x₀ : ℂ} {r : ℝ} (hr : 0 < r)
     (hsub : closedBall x₀ (2 * r) ⊆ Ω) :
     ∃ c : ℂ, ∀ᵐ z ∂(volume.restrict (ball x₀ r)), u z = c := by
-  set U := Ω.indicator (fun z => u z) with hUdef
+  set U := extZero Ω u with hUdef
   have hU := locallyIntegrable_indicator_L2 hΩ.measurableSet u
   have hε : ∀ n : ℕ, 0 < r / (n + 1) := fun n => by positivity
   let φ : ℕ → ContDiffBump (0 : ℂ) := fun n =>
-    ⟨r / (n + 1) / 2, r / (n + 1), by linarith [hε n], by linarith [hε n]⟩
+    ⟨r / (n + 1) / 2, r / (n + 1), by positivity, by simp_all⟩
   have hεr : ∀ n : ℕ, r / (n + 1) ≤ r := fun n =>
-    div_le_self hr.le (by linarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n)])
-  set conv := fun n => convolution U ((φ n).normed volume) smulFlip volume with hconv
+    div_le_self hr.le (by simp)
+  set conv := fun n => mollify ((φ n).normed volume) U with hconv
   -- the mollifications are constant on `B(x₀, r)`
   have hconst : ∀ n, ∀ x ∈ ball x₀ r, conv n x = conv n x₀ := by
     intro n x hx
@@ -145,7 +191,7 @@ lemma ae_const_on_ball_of_weakGradient_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u 
       have h2 : dist y x₀ < r := hy
       have := dist_triangle z y x₀
       show dist z x₀ ≤ 2 * r
-      linarith [hεr n]
+      grind
     have hd : ∀ y ∈ ball x₀ r, HasFDerivAt (conv n) (0 : ℂ →L[ℝ] ℂ) y := fun y hy =>
       hasFDerivAt_mollify_zero hΩ u hu (φ n) y (hsub y hy)
     exact isOpen_ball.is_const_of_fderiv_eq_zero (convex_ball x₀ r).isPreconnected
@@ -155,20 +201,20 @@ lemma ae_const_on_ball_of_weakGradient_zero {Ω : Set ℂ} (hΩ : IsOpen Ω) (u 
   have hlim : ∀ᵐ x ∂volume, Tendsto (fun n => conv n x) atTop (𝓝 (U x)) := by
     have h0 : Tendsto (fun n => (φ n).rOut) atTop (𝓝 0) := by
       have := (tendsto_const_div_atTop_nhds_zero_nat r).comp (tendsto_add_atTop_nat 1)
-      simpa [Function.comp_def, φ] using this
+      simp_all [Function.comp_def, φ]
     have hK : ∀ᶠ n in atTop, (φ n).rOut ≤ 2 * (φ n).rIn :=
-      Eventually.of_forall fun n => by simp only [φ]; linarith
+      Eventually.of_forall fun n => by grind
     have := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable h0 hK hU
     filter_upwards [this] with x hx
-    simpa [hconv, convolution_flip] using hx
+    simpa [hconv, mollify, hUdef, extZero] using hx
   have hlim' : ∀ᵐ x ∂(volume.restrict (ball x₀ r)),
       Tendsto (fun n => conv n x₀) atTop (𝓝 (u x)) := by
     filter_upwards [ae_restrict_of_ae hlim, ae_restrict_mem measurableSet_ball] with x hx hxb
     have hxU : U x = u x := by
-      rw [hUdef, Set.indicator_of_mem]
+      rw [hUdef, extZero, Set.indicator_of_mem]
       exact hsub (ball_subset_closedBall.trans (closedBall_subset_closedBall (by linarith)) hxb)
     rw [← hxU]
-    exact hx.congr fun n => hconst n x hxb
+    simp_all
   haveI : (ae (volume.restrict (ball x₀ r))).NeBot := by
     rw [ae_neBot, Ne, Measure.restrict_eq_zero]
     exact (isOpen_ball.measure_pos volume ⟨x₀, mem_ball_self hr⟩).ne'
@@ -185,9 +231,9 @@ lemma eq_of_ae_const_inter {f : ℂ → ℂ} {B B' : Set ℂ} (hB : IsOpen B) (h
   have h1 := ae_restrict_of_ae_restrict_of_subset (Set.inter_subset_left (s := B) (t := B')) h
   have h2 := ae_restrict_of_ae_restrict_of_subset (Set.inter_subset_right (s := B) (t := B')) h'
   have h3 : ∀ᵐ z ∂(volume.restrict (B ∩ B')), False := by
-    filter_upwards [h1, h2] with z hz hz' using hcc (hz ▸ hz')
+    filter_upwards [h1, h2] with x; simp_all
   rw [ae_iff, Measure.restrict_apply' (hB.inter hB').measurableSet] at h3
-  simp only [not_false_eq_true, Set.setOf_true, Set.univ_inter] at h3
+  simp   at h3
   exact ((hB.inter hB').measure_pos volume hne).ne' h3
 
 /-- A function that is a.e. constant near every point of a domain is a.e. constant. -/
@@ -202,15 +248,15 @@ lemma ae_const_of_locally_ae_const {Ω : Set ℂ} (hΩ : IsDomain Ω) (f : ℂ �
     rw [Metric.isOpen_iff]
     rintro x ⟨r, hr, hb, hPx⟩
     refine ⟨r, hr, fun y hy => ?_⟩
-    have hs : 0 < r - dist y x := sub_pos.mpr (mem_ball.mp hy)
+    have hs := sub_pos.mpr (mem_ball.mp hy)
     have hsub : ball y (r - dist y x) ⊆ ball x r := ball_subset_ball' (by linarith)
-    exact ⟨_, hs, hsub.trans hb, hP _ _ hsub hPx⟩
+    grind
   set S := {x | ∃ r > 0, ball x r ⊆ Ω ∧ ∀ᵐ z ∂(volume.restrict (ball x r)), f z = c₀}
   set T := {x | ∃ r > 0, ball x r ⊆ Ω ∧
     ∃ c ≠ c₀, ∀ᵐ z ∂(volume.restrict (ball x r)), f z = c}
-  have hS : IsOpen S := hopen (fun B => ∀ᵐ z ∂(volume.restrict B), f z = c₀)
+  have hS := hopen (fun B => ∀ᵐ z ∂(volume.restrict B), f z = c₀)
     (fun B B' h hB => ae_restrict_of_ae_restrict_of_subset h hB)
-  have hT : IsOpen T := hopen (fun B => ∃ c ≠ c₀, ∀ᵐ z ∂(volume.restrict B), f z = c)
+  have hT := hopen (fun B => ∃ c ≠ c₀, ∀ᵐ z ∂(volume.restrict B), f z = c)
     (fun B B' h ⟨c, hc, hB⟩ => ⟨c, hc, ae_restrict_of_ae_restrict_of_subset h hB⟩)
   have hdisj : Disjoint S T := by
     rw [Set.disjoint_left]
@@ -223,7 +269,7 @@ lemma ae_const_of_locally_ae_const {Ω : Set ℂ} (hΩ : IsDomain Ω) (f : ℂ �
     by_cases h : c = c₀
     · exact Or.inl ⟨r, hr, hb, h ▸ hc⟩
     · exact Or.inr ⟨r, hr, hb, c, h, hc⟩
-  have hΩS : Ω ⊆ S := IsPreconnected.subset_left_of_subset_union hS hT hdisj hcover
+  have hΩS := IsPreconnected.subset_left_of_subset_union hS hT hdisj hcover
     ⟨x₀, hx₀, r₀, hr₀, hb₀, hc₀⟩ hΩ.2.isPreconnected
   have hΩS' : ∀ x ∈ Ω, ∃ r > 0, ball x r ⊆ Ω ∧
       ∀ᵐ z ∂(volume.restrict (ball x r)), f z = c₀ := hΩS

@@ -4,6 +4,7 @@ public import RequestProject.BZField
 public import RequestProject.BZMono
 public import RequestProject.BZLevel
 public import RequestProject.BZCollar
+public import RequestProject.PolynomialSmoothing
 
 /-!
 # The flow collar of a Lipschitz domain (towards External theorem BZ)
@@ -53,7 +54,7 @@ theorem exists_bzSetting {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLi
     (hΩne : Ω.Nonempty) (hΩu : Ωᶜ.Nonempty) : Nonempty (BZSetting Ω) := by
   obtain ⟨X, LX, M, r₀, τ, κ, hX, hM, hr₀, hτ, hκ, hQ⟩ :=
     exists_transversalField hb hL hΩne hΩu
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   obtain ⟨Φ, hΦ⟩ := exists_isShortFlow hX hM
   exact ⟨⟨X, LX, M + κ, r₀, τ, κ, Φ, hX, fun z => (hM z).trans (by linarith), hκ,
     by linarith, hr₀, hτ, fun z hz t ht0 htτ => hQ z hz t ht0 htτ, hΦ⟩⟩
@@ -89,8 +90,7 @@ lemma abs_signedDist_flow_sub_le (x : ℂ) {u : ℝ} (hu : u ∈ Ioo (-3 : ℝ) 
   linarith
 
 lemma hQ₁ : IsTransversalOn (signedDist Ω) S.X S.U₁ S.τ₀ S.κ₀ :=
-  S.hQ.mono (fun z (hz : |signedDist Ω z| < S.r₀ / 2) => by
-    show |signedDist Ω z| < S.r₀; linarith [S.hr₀]) le_rfl
+  S.hQ.mono (fun z (hz : |signedDist Ω z| < S.r₀ / 2) => by grind) le_rfl
 
 /-- Lipschitz constant of the flow time from the boundary. -/
 def La : ℝ := 4 * Real.exp S.LX / S.κ₀
@@ -103,44 +103,86 @@ lemma Lb_nonneg : 0 ≤ S.Lb := by unfold Lb; have := S.hκ₀; positivity
 
 end BZSetting
 
+section
+
+variable {Ω : Set ℂ} (S : BZSetting Ω)
+include Ω S
+
 /-- The level data for the parameter `T`: a smooth function `ρ`, `ε/2`-close to the signed
 distance (`ε = κ₀ T / 24`) and transversal to `X` on `{|d| < r₀/2}`. -/
-structure BZLevelData {Ω : Set ℂ} (S : BZSetting Ω) where
+structure BZLevelData  where
   T : ℝ
   ρ : ℂ → ℝ
   T_pos : 0 < T
   T_le : T ≤ S.T₀
   smooth : ContDiff ℝ ∞ ρ
+  analytic : ∀ p ∈ S.U₁, AnalyticAt ℝ ρ p
   lip : LipschitzWith 2 ρ
   close : ∀ x, |ρ x - signedDist Ω x| ≤ S.κ₀ * T / 48
   trans : IsTransversalOn ρ S.X S.U₁ S.τ₀ (S.κ₀ / 2)
 
-theorem exists_bzLevelData {Ω : Set ℂ} (S : BZSetting Ω) {T : ℝ} (hT : 0 < T)
-    (hT₀ : T ≤ S.T₀) : ∃ D : BZLevelData S, D.T = T := by
+theorem exists_bzLevelData (hb : Bornology.IsBounded Ω) (hne : Ω.Nonempty)
+    {T : ℝ} (hT : 0 < T) (hT₀ : T ≤ S.T₀) : ∃ D : BZLevelData S, D.T = T := by
   have hκ := S.hκ₀
   have hr := S.hr₀
-  set δ : ℝ := min (S.κ₀ * T / 96) (min (S.r₀ / 4) (S.κ₀ / (8 * S.LX + 8)))
+  let δ := min (S.κ₀ * T / 96) (min (S.r₀ / 4) (S.κ₀ / (4 * S.LX + 4)))
   have hδ : 0 < δ := lt_min (by positivity) (lt_min (by positivity) (by positivity))
   have hδ1 : δ ≤ S.κ₀ * T / 96 := min_le_left _ _
   have hδ2 : δ ≤ S.r₀ / 4 := (min_le_right _ _).trans (min_le_left _ _)
-  have hδ3 : δ ≤ S.κ₀ / (8 * S.LX + 8) := (min_le_right _ _).trans (min_le_right _ _)
-  obtain ⟨ρ, hρs, hρl, hρc, hρt⟩ :=
-    exists_smooth_transversal (lipschitzWith_signedDist Ω) S.hX S.hQ hδ
-  refine ⟨⟨T, ρ, hT, hT₀, hρs, hρl, fun x => (hρc x).trans (by linarith), ?_⟩, rfl⟩
-  refine hρt.mono (fun z hz t ht => ?_) ?_
-  · have h1 := (lipschitzWith_signedDist Ω).dist_le_mul (z - t) z
-    rw [Real.dist_eq, dist_eq_norm, show z - t - z = -t by ring, norm_neg] at h1
-    have hz' : |signedDist Ω z| < S.r₀ / 2 := hz
-    show |signedDist Ω (z - t)| < S.r₀
-    have := abs_sub_abs_le_abs_sub (signedDist Ω (z - t)) (signedDist Ω z)
-    push_cast at h1
-    linarith
-  · have hLX := S.LX.2
-    have : 2 * S.LX * δ ≤ S.κ₀ / 4 := by
-      have h1 : (S.LX : ℝ) * (S.κ₀ / (8 * S.LX + 8)) ≤ S.κ₀ / 8 := by
+  have hδ3 : δ ≤ S.κ₀ / (4 * S.LX + 4) := (min_le_right _ _).trans (min_le_right _ _)
+  obtain ⟨f, hfs, hfl, hfc, hft⟩ := exists_smooth_transversal (signedDist_lipschitz Ω) S.hX S.hQ hδ
+  simp  [NNReal.coe_one, one_mul] at hfc hft
+  have hft' : IsTransversalOn f S.X S.U₁ S.τ₀ (3 * S.κ₀ / 4) := by
+    refine hft.mono (fun z hz t ht => ?_) ?_
+    · have h1 := (signedDist_lipschitz Ω).dist_le_mul (z - t) z
+      rw [Real.dist_eq, dist_eq_norm, sub_sub_cancel_left, norm_neg, NNReal.coe_one, one_mul] at h1
+      have hz' : |signedDist Ω z| < S.r₀ / 2 := hz
+      show |signedDist Ω (z - t)| < S.r₀
+      linarith [abs_sub_abs_le_abs_sub (signedDist Ω (z - t)) (signedDist Ω z)]
+    · have hLX := S.LX.2
+      have h₁ : (S.LX : ℝ) * (S.κ₀ / (4 * S.LX + 4)) ≤ S.κ₀ / 4 := by
         rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
+      nlinarith [mul_le_mul_of_nonneg_left hδ3 hLX]
+  obtain ⟨R, hR⟩ := hb.subset_closedBall 0
+  have hU : S.U₁ ⊆ closedBall 0 (R + S.r₀ / 2) := by
+    intro z hz
+    rw [mem_closedBall_zero_iff]
+    by_cases hzΩ : z ∈ Ω
+    · linarith [mem_closedBall_zero_iff.mp (hR hzΩ)]
+    · have h : |signedDist Ω z| < S.r₀ / 2 := hz
+      rw [signedDist_of_notMem hzΩ, abs_neg, abs_of_nonneg infDist_nonneg] at h
+      obtain ⟨x, hx, hzx⟩ := (infDist_lt_iff hne).mp h
+      rw [dist_eq_norm] at hzx
+      linarith [norm_le_norm_sub_add z x, mem_closedBall_zero_iff.mp (hR hx)]
+  let e := min 1 (min (S.κ₀ * T / 96) (S.κ₀ / (4 * (S.M + 1))))
+  have he : 0 < e := lt_min one_pos (lt_min (by positivity) (by have := S.M_pos; positivity))
+  obtain ⟨ρ, hρs, hρa, hρc, hρl⟩ := exists_analytic_perturbation hfs (isCompact_closedBall _ _) he
+  have hρeq : ρ = (ρ - f) + f := by abel
+  refine ⟨⟨T, ρ, hT, hT₀, hρs, fun z hz => hρa z (hU hz), ?_, ?_, ?_⟩, rfl⟩
+  · rw [hρeq]
+    apply (hρl.add hfl).weaken
+    have h : e ≤ 1 := min_le_left _ _
+    exact_mod_cast (show (e.toNNReal : ℝ) + 1 ≤ 2 by rw [Real.coe_toNNReal _ he.le]; linarith)
+  · intro z
+    have h : e ≤ S.κ₀ * T / 96 := (min_le_right _ _).trans (min_le_left _ _)
+    linarith [abs_sub_le (ρ z) (f z) (signedDist Ω z), hρc z, hfc z]
+  · intro z hz t ht0 htτ
+    have h := hρl.dist_le_mul (z + t * S.X z) z
+    rw [Real.dist_eq, dist_eq_norm, add_sub_cancel_left, norm_mul, Complex.norm_real,
+      Real.norm_of_nonneg ht0, Real.coe_toNNReal _ he.le] at h
+    have h₁ : e * S.M ≤ S.κ₀ / 4 := by
+      have heM : e ≤ S.κ₀ / (4 * (S.M + 1)) := (min_le_right _ _).trans (min_le_right _ _)
+      rw [le_div_iff₀ (by have := S.M_pos; positivity)] at heM
       nlinarith
-    linarith
+    have h₂ : e * (t * ‖S.X z‖) ≤ S.κ₀ / 4 * t := by
+      rw [mul_left_comm, mul_comm (_ / 4) t]
+      gcongr
+      exact (mul_le_mul_of_nonneg_left (S.hM z) he.le).trans h₁
+    have h₃ := hft' z hz t ht0 htτ
+    simp  [Pi.sub_apply] at h
+    linarith [(abs_le.mp (h.trans h₂)).1]
+
+end
 
 open Classical in
 /-- The crossing time of the level `l` of `φ` along the flow line of `x`, within `[-T₁, T₁]`
@@ -148,15 +190,21 @@ open Classical in
 def crossTime (Φ : ℝ → ℂ → ℂ) (T₁ : ℝ) (φ : ℂ → ℝ) (l : ℝ) (x : ℂ) : ℝ :=
   if h : ∃ u, u ∈ Icc (-T₁) T₁ ∧ φ (Φ u x) = l then h.choose else 0
 
-lemma crossTime_spec {Φ : ℝ → ℂ → ℂ} {T₁ : ℝ} {φ : ℂ → ℝ} {l : ℝ} {x : ℂ}
-    (h : ∃ u, u ∈ Icc (-T₁) T₁ ∧ φ (Φ u x) = l) :
-    crossTime Φ T₁ φ l x ∈ Icc (-T₁) T₁ ∧ φ (Φ (crossTime Φ T₁ φ l x) x) = l := by
-  simp only [crossTime, dif_pos h]; exact h.choose_spec
+section
 
-lemma crossTime_eq {Φ : ℝ → ℂ → ℂ} {T₁ : ℝ} {φ : ℂ → ℝ} {l : ℝ} {x : ℂ}
+variable {Φ : ℝ → ℂ → ℂ} {T₁ : ℝ} {φ : ℂ → ℝ} {l : ℝ} {x : ℂ}
+include Φ T₁ φ l x
+
+lemma crossTime_spec 
+    (h : ∃ u, u ∈ Icc (-T₁) T₁ ∧ φ (Φ u x) = l) :
+    crossTime Φ T₁ φ l x ∈ Icc (-T₁) T₁ ∧ φ (Φ (crossTime Φ T₁ φ l x) x) = l := by grind [crossTime]
+
+lemma crossTime_eq 
     (h : ∃! u, u ∈ Icc (-T₁) T₁ ∧ φ (Φ u x) = l) {u : ℝ}
     (hu : u ∈ Icc (-T₁) T₁ ∧ φ (Φ u x) = l) : crossTime Φ T₁ φ l x = u :=
   h.unique (crossTime_spec h.exists) hu
+
+end
 
 namespace BZLevelData
 
@@ -171,21 +219,28 @@ def ε : ℝ := S.κ₀ * D.T / 24
 /-- The collar `C = {|d| < 4 M D.T}`. -/
 def C : Set ℂ := {x | |signedDist Ω x| < 4 * S.M * D.T}
 
+section
+
+variable (x : ℂ)
+include x
+
 /-- The flow time from the boundary. -/
-def a (x : ℂ) : ℝ := -crossTime S.Φ D.T₁ (signedDist Ω) 0 x
+def a  : ℝ := -crossTime S.Φ D.T₁ (signedDist Ω) 0 x
 
 /-- The flow time to the level `ρ = ε`. -/
-def s (x : ℂ) : ℝ := crossTime S.Φ D.T₁ D.ρ D.ε x
+def s  : ℝ := crossTime S.Φ D.T₁ D.ρ D.ε x
 
 /-- The flow time from the boundary to the level `ρ = ε`. -/
-def b (x : ℂ) : ℝ := D.a x + D.s x
+def b  : ℝ := D.a x + D.s x
+
+end
 
 lemma T₁_pos : 0 < D.T₁ := by
   have := S.A₁_ge; have := D.T_pos; unfold T₁; positivity
 
 lemma T₁_le : D.T₁ ≤ 1 / 8 := by
   have hA := S.A₁_ge
-  have h1 : D.T ≤ 1 / (8 * S.A₁) := D.T_le.trans (min_le_left _ _)
+  have h1 := D.T_le.trans (min_le_left _ _)
   unfold T₁
   rw [le_div_iff₀ (by positivity)] at h1
   nlinarith
@@ -199,7 +254,7 @@ lemma κT₁ : S.κ₀ * D.T₁ = 64 * S.M * D.T := by
 lemma path_bound : 4 * S.M * D.T + 2 * (S.M * (2 * D.T₁)) < S.r₀ / 2 := by
   have hA := S.A₁_ge
   have hMp := S.M_pos
-  have h1 : D.T ≤ S.r₀ / (16 * S.M * (1 + S.A₁)) := D.T_le.trans (min_le_right _ _)
+  have h1 := D.T_le.trans (min_le_right _ _)
   rw [le_div_iff₀ (by positivity)] at h1
   unfold T₁
   have e : 4 * S.M * D.T + 2 * (S.M * (2 * (S.A₁ * D.T))) =
@@ -212,13 +267,12 @@ lemma flow_mem_U₁ {x : ℂ} (hx : |signedDist Ω x| < 4 * S.M * D.T) {u : ℝ}
     (hu : |u| ≤ 2 * D.T₁) : S.Φ u x ∈ S.U₁ := by
   have h1 := D.T₁_le
   have h2 := S.abs_signedDist_flow_sub_le x (u := u)
-    ⟨by linarith [(abs_le.mp hu).1], by linarith [(abs_le.mp hu).2]⟩
+    ⟨by grind, by grind⟩
   have h3 := D.path_bound
   have hM := S.M_pos
   show |signedDist Ω (S.Φ u x)| < S.r₀ / 2
   have := abs_sub_abs_le_abs_sub (signedDist Ω (S.Φ u x)) (signedDist Ω x)
-  have : S.M * |u| ≤ S.M * (2 * D.T₁) := mul_le_mul_of_nonneg_left hu hM.le
-  linarith
+  nlinarith
 
 lemma existsUnique_cross_d {x : ℂ} (hx : x ∈ D.C) :
     ∃! u, u ∈ Icc (-D.T₁) D.T₁ ∧ signedDist Ω (S.Φ u x) = 0 := by
@@ -228,26 +282,21 @@ lemma existsUnique_cross_d {x : ℂ} (hx : x ∈ D.C) :
   have hT := D.T_pos
   refine S.hΦ.existsUnique_crossing S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁
     D.T₁_pos (by linarith [D.T₁_le]) x
-    (fun u hu => D.flow_mem_U₁ hx' (abs_le.mpr ⟨by linarith [hu.1, D.T₁_pos],
-      by linarith [hu.2, D.T₁_pos]⟩)) ?_ ?_
-  · have := (abs_lt.mp hx').1; nlinarith
-  · have := (abs_lt.mp hx').2; nlinarith
+    (fun u hu => D.flow_mem_U₁ hx' (abs_le.mpr ⟨by grind,
+      by grind⟩)) ?_ ?_
+  all_goals grind
 
 lemma abs_ρ_sub_ε_le (x : ℂ) : |D.ρ x - D.ε| ≤ |signedDist Ω x| + S.κ₀ * D.T / 16 := by
   have h1 := D.close x
   unfold ε
-  have : |D.ρ x - S.κ₀ * D.T / 24| ≤ |D.ρ x - signedDist Ω x| + |signedDist Ω x| +
-      |S.κ₀ * D.T / 24| := by
-    calc |D.ρ x - S.κ₀ * D.T / 24| = |(D.ρ x - signedDist Ω x) + signedDist Ω x -
-          S.κ₀ * D.T / 24| := by ring_nf
-      _ ≤ |(D.ρ x - signedDist Ω x) + signedDist Ω x| + |S.κ₀ * D.T / 24| := abs_sub _ _
-      _ ≤ |D.ρ x - signedDist Ω x| + |signedDist Ω x| + |S.κ₀ * D.T / 24| := by
-          gcongr; exact abs_add_le _ _
-  have hκ := S.hκ₀; have hT := D.T_pos
-  rw [abs_of_pos (by positivity : 0 < S.κ₀ * D.T / 24)] at this
-  linarith
+  grind
 
-lemma existsUnique_cross_ρ {x : ℂ} (hx : x ∈ D.C) :
+section
+
+variable {x : ℂ} (hx : x ∈ D.C)
+include x hx
+
+lemma existsUnique_cross_ρ  :
     ∃! u, u ∈ Icc (-D.T₁) D.T₁ ∧ D.ρ (S.Φ u x) = D.ε := by
   have hx' : |signedDist Ω x| < 4 * S.M * D.T := hx
   have hκT := D.κT₁
@@ -257,60 +306,59 @@ lemma existsUnique_cross_ρ {x : ℂ} (hx : x ∈ D.C) :
   have h1 := D.abs_ρ_sub_ε_le x
   refine S.hΦ.existsUnique_crossing S.hX S.hM D.lip S.hτ₀ (by linarith [S.hκ₀]) D.trans
     D.T₁_pos (by linarith [D.T₁_le]) x
-    (fun u hu => D.flow_mem_U₁ hx' (abs_le.mpr ⟨by linarith [hu.1, D.T₁_pos],
-      by linarith [hu.2, D.T₁_pos]⟩)) ?_ ?_
+    (fun u hu => D.flow_mem_U₁ hx' (abs_le.mpr ⟨by grind,
+      by grind⟩)) ?_ ?_
   · have := (abs_le.mp h1).1; nlinarith
   · have := (abs_le.mp h1).2; nlinarith
 
-lemma cross_d_spec {x : ℂ} (hx : x ∈ D.C) :
-    -D.a x ∈ Icc (-D.T₁) D.T₁ ∧ signedDist Ω (S.Φ (-D.a x) x) = 0 := by
-  simp only [a, neg_neg]; exact crossTime_spec (D.existsUnique_cross_d hx).exists
+lemma cross_d_spec  :
+    -D.a x ∈ Icc (-D.T₁) D.T₁ ∧ signedDist Ω (S.Φ (-D.a x) x) = 0 := by simpa [a, neg_neg] using crossTime_spec (D.existsUnique_cross_d hx).exists
 
-lemma cross_ρ_spec {x : ℂ} (hx : x ∈ D.C) :
+lemma cross_ρ_spec  :
     D.s x ∈ Icc (-D.T₁) D.T₁ ∧ D.ρ (S.Φ (D.s x) x) = D.ε :=
   crossTime_spec (D.existsUnique_cross_ρ hx).exists
 
-lemma a_eq {x : ℂ} (hx : x ∈ D.C) {u : ℝ} (hu : u ∈ Icc (-D.T₁) D.T₁)
+lemma a_eq  {u : ℝ} (hu : u ∈ Icc (-D.T₁) D.T₁)
     (hdu : signedDist Ω (S.Φ u x) = 0) : D.a x = -u := by
-  simp only [a, crossTime_eq (D.existsUnique_cross_d hx) ⟨hu, hdu⟩]
+  simp  [a, crossTime_eq (D.existsUnique_cross_d hx) ⟨hu, hdu⟩]
 
-lemma s_eq {x : ℂ} (hx : x ∈ D.C) {u : ℝ} (hu : u ∈ Icc (-D.T₁) D.T₁)
+lemma s_eq  {u : ℝ} (hu : u ∈ Icc (-D.T₁) D.T₁)
     (hdu : D.ρ (S.Φ u x) = D.ε) : D.s x = u :=
   crossTime_eq (D.existsUnique_cross_ρ hx) ⟨hu, hdu⟩
 
 /-- `|d(x)| ≤ 2 M |a(x)|`. -/
-lemma abs_d_le {x : ℂ} (hx : x ∈ D.C) : |signedDist Ω x| ≤ 2 * (S.M * |D.a x|) := by
+lemma abs_d_le  : |signedDist Ω x| ≤ 2 * (S.M * |D.a x|) := by
   obtain ⟨hu, h0⟩ := D.cross_d_spec hx
   have h1 := D.T₁_le
   have := S.abs_signedDist_flow_sub_le x (u := -D.a x)
-    ⟨by linarith [hu.1, D.T₁_pos], by linarith [hu.2]⟩
-  rw [h0, zero_sub, abs_neg, abs_neg] at this
-  exact this
+    ⟨by grind, by grind⟩
+  simp_all
+
+end
 
 /-- Points of the collar are in `Ω` exactly when their flow time from the boundary is positive. -/
 lemma mem_iff_a_pos (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {x : ℂ} (hx : x ∈ D.C) :
     x ∈ Ω ↔ 0 < D.a x := by
   obtain ⟨hu, h0⟩ := D.cross_d_spec hx
-  have hx' : |signedDist Ω x| < 4 * S.M * D.T := hx
+  have hx' := hx
   have hT1 := D.T₁_le
   have hpath : ∀ v, |v| ≤ D.T₁ → S.Φ v x ∈ S.U₁ := fun v hv =>
-    D.flow_mem_U₁ hx' (by linarith [D.T₁_pos])
+    D.flow_mem_U₁ hx' (by grind)
   rw [← signedDist_pos_iff hΩo hΩu]
   rcases lt_trichotomy (D.a x) 0 with hneg | hzero | hpos
   · -- the crossing time `-a x` is positive: `d x < 0`
     have := S.hΦ.lt_of_transversal S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁ x
-      (s := 0) (t := -D.a x) (by norm_num) (by linarith) (by linarith [hu.2])
-      (fun v hv => hpath v (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos], by linarith [hv.2, hu.2]⟩))
+      (s := 0) (t := -D.a x) (by norm_num) (by linarith) (by grind)
+      (fun v hv => hpath v (abs_le.mpr ⟨by grind, by grind⟩))
     rw [S.hΦ.zero, h0] at this
-    constructor <;> intro h <;> linarith
-  · have : -D.a x = 0 := by rw [hzero, neg_zero]
+    grind
+  · have : -D.a x = 0 := by simp_all
     rw [this, S.hΦ.zero] at h0
-    rw [h0, hzero]
+    simp_all
   · have := S.hΦ.lt_of_transversal S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁ x
-      (s := -D.a x) (t := 0) (by linarith [hu.1]) (by linarith) (by norm_num)
-      (fun v hv => hpath v (abs_le.mpr ⟨by linarith [hv.1, hu.1], by linarith [hv.2, D.T₁_pos]⟩))
-    rw [S.hΦ.zero, h0] at this
-    constructor <;> intro _ <;> linarith
+      (s := -D.a x) (t := 0) (by grind) (by linarith) (by norm_num)
+      (fun v hv => hpath v (abs_le.mpr ⟨by grind, by grind⟩))
+    simp_all [S.hΦ.zero]
 
 lemma T_lt : D.T < 1 / 2 := by
   have := D.T_le_T₁; have := D.T₁_le; linarith
@@ -319,11 +367,16 @@ lemma T_lt : D.T < 1 / 2 := by
 lemma flow_add (x : ℂ) {u v : ℝ} (hu : |u| ≤ 4 * D.T₁) (hv : |v| ≤ 2 * D.T₁) :
     S.Φ u (S.Φ v x) = S.Φ (u + v) x := by
   have h := D.T₁_le
-  exact S.hΦ.add S.hX x ⟨by linarith [(abs_le.mp hu).1], by linarith [(abs_le.mp hu).2]⟩
-    ⟨by linarith [(abs_le.mp hv).1], by linarith [(abs_le.mp hv).2]⟩
+  exact S.hΦ.add S.hX x ⟨by grind, by grind⟩
+    ⟨by grind, by grind⟩
+
+section
+
+variable {x : ℂ} (hx : x ∈ D.C)
+include x hx
 
 /-- The flow time from the boundary to the level `ρ = ε` lies in `[0, T/8]`. -/
-lemma b_mem {x : ℂ} (hx : x ∈ D.C) : 0 ≤ D.b x ∧ D.b x ≤ D.T / 8 := by
+lemma b_mem  : 0 ≤ D.b x ∧ D.b x ≤ D.T / 8 := by
   obtain ⟨ht, hd⟩ := D.cross_d_spec hx
   obtain ⟨hs, hρ⟩ := D.cross_ρ_spec hx
   have hT1 := D.T₁_le
@@ -331,12 +384,12 @@ lemma b_mem {x : ℂ} (hx : x ∈ D.C) : 0 ≤ D.b x ∧ D.b x ≤ D.T / 8 := by
   set t₀ := -D.a x
   set p := S.Φ t₀ x
   have hq : S.Φ (D.b x) p = S.Φ (D.s x) x := by
-    simp only [p]
-    rw [D.flow_add x (abs_le.mpr ⟨by simp only [b]; linarith [hs.1, ht.2],
-      by simp only [b]; linarith [hs.2, ht.1]⟩) (abs_le.mpr ⟨by linarith [ht.1], by linarith [ht.2]⟩)]
-    congr 1; simp only [b, t₀]; ring
-  have hbq : |D.b x| ≤ 2 * D.T₁ := abs_le.mpr ⟨by simp only [b]; linarith [hs.1, ht.2],
-    by simp only [b]; linarith [hs.2, ht.1]⟩
+    simp  [p]
+    rw [D.flow_add x (abs_le.mpr ⟨by grind [b],
+      by grind [b]⟩) (abs_le.mpr ⟨by grind, by grind⟩)]
+    simp [b, t₀]
+  have hbq : |D.b x| ≤ 2 * D.T₁ := abs_le.mpr ⟨by grind [b],
+    by grind [b]⟩
   have hdq : D.ε / 2 ≤ signedDist Ω (S.Φ (D.b x) p) ∧
       signedDist Ω (S.Φ (D.b x) p) ≤ 3 * D.ε / 2 := by
     rw [hq]
@@ -344,7 +397,7 @@ lemma b_mem {x : ℂ} (hx : x ∈ D.C) : 0 ≤ D.b x ∧ D.b x ≤ D.T / 8 := by
     rw [hρ] at this
     have h1 := abs_le.mp this
     unfold ε at *
-    constructor <;> linarith [h1.1, h1.2]
+    grind
   have hp0 : |signedDist Ω p| < 4 * S.M * D.T := by
     rw [hd, abs_zero]; have := S.M_pos; have := D.T_pos; positivity
   have hpath : ∀ v, |v| ≤ 2 * D.T₁ → S.Φ v p ∈ S.U₁ := fun v hv => D.flow_mem_U₁ hp0 hv
@@ -353,15 +406,14 @@ lemma b_mem {x : ℂ} (hx : x ∈ D.C) : 0 ≤ D.b x ∧ D.b x ≤ D.T / 8 := by
     by_contra hle
     push_neg at hle
     have := S.hΦ.le_of_transversal S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁ p
-      (s := D.b x) (t := 0) (by linarith [(abs_le.mp hbq).1]) hle (by norm_num)
-      (fun v hv => hpath v (abs_le.mpr ⟨by linarith [hv.1, (abs_le.mp hbq).1], by
-        linarith [hv.2]⟩))
+      (s := D.b x) (t := 0) (by grind) hle (by norm_num)
+      (fun v hv => hpath v (abs_le.mpr ⟨by grind, by grind⟩))
     rw [S.hΦ.zero, hd] at this
     have := S.hκ₀
     nlinarith [hdq.1]
   have := S.hΦ.le_of_transversal S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁ p
-    (s := 0) (t := D.b x) (by norm_num) hb0.le (by linarith [(abs_le.mp hbq).2])
-    (fun v hv => hpath v (abs_le.mpr ⟨by linarith [hv.1], by linarith [hv.2, (abs_le.mp hbq).2]⟩))
+    (s := 0) (t := D.b x) (by norm_num) hb0.le (by grind)
+    (fun v hv => hpath v (abs_le.mpr ⟨by grind, by grind⟩))
   rw [S.hΦ.zero, hd] at this
   refine ⟨hb0.le, ?_⟩
   have h2 := hdq.2
@@ -371,7 +423,7 @@ lemma b_mem {x : ℂ} (hx : x ∈ D.C) : 0 ≤ D.b x ∧ D.b x ≤ D.T / 8 := by
   nlinarith
 
 /-- Flow invariance of the collar coordinates. -/
-lemma flow_collar {x : ℂ} (hx : x ∈ D.C) (hax : |D.a x| < D.T) {u : ℝ} (hu : |u| ≤ D.T) :
+lemma flow_collar  (hax : |D.a x| < D.T) {u : ℝ} (hu : |u| ≤ D.T) :
     S.Φ u x ∈ D.C ∧ D.a (S.Φ u x) = D.a x + u ∧ D.b (S.Φ u x) = D.b x := by
   obtain ⟨ht, hd⟩ := D.cross_d_spec hx
   obtain ⟨hs, hρ⟩ := D.cross_ρ_spec hx
@@ -385,7 +437,7 @@ lemma flow_collar {x : ℂ} (hx : x ∈ D.C) (hax : |D.a x| < D.T) {u : ℝ} (hu
   have hyp : S.Φ (D.a x + u) (S.Φ (-D.a x) x) = S.Φ u x := by
     rw [D.flow_add x (abs_le.mpr ⟨by linarith, by linarith⟩)
       (abs_le.mpr ⟨by linarith, by linarith⟩)]
-    congr 1; ring
+    simp
   have hyC : S.Φ u x ∈ D.C := by
     have := S.abs_signedDist_flow_sub_le (S.Φ (-D.a x) x) (u := D.a x + u)
       ⟨by linarith, by linarith⟩
@@ -394,31 +446,38 @@ lemma flow_collar {x : ℂ} (hx : x ∈ D.C) (hax : |D.a x| < D.T) {u : ℝ} (hu
     have hM := S.M_pos
     have : S.M * |D.a x + u| < S.M * (2 * D.T) := by
       apply mul_lt_mul_of_pos_left _ hM
-      rw [abs_lt]; constructor <;> linarith
+      grind
     linarith
   have ha : D.a (S.Φ u x) = D.a x + u := by
     have h1 : S.Φ (-(D.a x + u)) (S.Φ u x) = S.Φ (-D.a x) x := by
       rw [D.flow_add x (abs_le.mpr ⟨by linarith, by linarith⟩)
         (abs_le.mpr ⟨by linarith, by linarith⟩)]
-      congr 1; ring
-    rw [D.a_eq hyC (u := -(D.a x + u)) ⟨by linarith, by linarith⟩ (by rw [h1, hd]), neg_neg]
+      simp
+    rw [D.a_eq hyC (u := -(D.a x + u)) ⟨by linarith, by linarith⟩ (by simp_all), neg_neg]
   have hsu : D.s (S.Φ u x) = D.s x - u := by
-    have hsx : D.s x = D.b x - D.a x := by simp only [b]; ring
+    have hsx : D.s x = D.b x - D.a x := by simp [b]
     have h1 : S.Φ (D.s x - u) (S.Φ u x) = S.Φ (D.s x) x := by
-      rw [D.flow_add x (abs_le.mpr ⟨by rw [hsx]; linarith, by rw [hsx]; linarith⟩)
+      rw [D.flow_add x (abs_le.mpr ⟨by linarith, by linarith⟩)
         (abs_le.mpr ⟨by linarith, by linarith⟩)]
-      congr 1; ring
-    exact D.s_eq hyC ⟨by rw [hsx]; linarith, by rw [hsx]; linarith⟩ (by rw [h1, hρ])
+      simp
+    exact D.s_eq hyC ⟨by linarith, by linarith⟩ (by simp_all)
   refine ⟨hyC, ha, ?_⟩
-  simp only [b, ha, hsu]; ring
+  simp_all [b]
 
-lemma a_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
+end
+
+section
+
+variable {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C)
+include x hx y hy
+
+lemma a_lip  :
     |D.a x - D.a y| ≤ S.La * ‖x - y‖ := by
-  have hy' : |signedDist Ω y| < 4 * S.M * D.T := hy
+  have hy' := hy
   have := S.hΦ.abs_crossing_sub_le S.hX S.hM (lipschitzWith_signedDist Ω) S.hτ₀ S.hκ₀ S.hQ₁
     (by linarith [D.T₁_le]) (x := x) (y := y)
-    (fun v hv => D.flow_mem_U₁ hy' (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos],
-      by linarith [hv.2, D.T₁_pos]⟩))
+    (fun v hv => D.flow_mem_U₁ hy' (abs_le.mpr ⟨by grind,
+      by grind⟩))
     (D.cross_d_spec hx).1 (D.cross_d_spec hy).1 (D.cross_d_spec hx).2 (D.cross_d_spec hy).2
   rw [show -D.a x - -D.a y = -(D.a x - D.a y) by ring, abs_neg] at this
   unfold BZSetting.La
@@ -427,30 +486,30 @@ lemma a_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
   push_cast at this
   nlinarith
 
-lemma s_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
+lemma s_lip  :
     |D.s x - D.s y| ≤ 8 * Real.exp S.LX / S.κ₀ * ‖x - y‖ := by
-  have hy' : |signedDist Ω y| < 4 * S.M * D.T := hy
+  have hy' := hy
   have := S.hΦ.abs_crossing_sub_le S.hX S.hM D.lip S.hτ₀ (by linarith [S.hκ₀]) D.trans
     (by linarith [D.T₁_le]) (x := x) (y := y)
-    (fun v hv => D.flow_mem_U₁ hy' (abs_le.mpr ⟨by linarith [hv.1, D.T₁_pos],
-      by linarith [hv.2, D.T₁_pos]⟩))
+    (fun v hv => D.flow_mem_U₁ hy' (abs_le.mpr ⟨by grind,
+      by grind⟩))
     (D.cross_ρ_spec hx).1 (D.cross_ρ_spec hy).1 (D.cross_ρ_spec hx).2 (D.cross_ρ_spec hy).2
   have hκ := S.hκ₀
   rw [div_mul_eq_mul_div, le_div_iff₀ hκ]
   push_cast at this
   nlinarith
 
-lemma b_lip {x : ℂ} (hx : x ∈ D.C) {y : ℂ} (hy : y ∈ D.C) :
+lemma b_lip  :
     |D.b x - D.b y| ≤ S.Lb * ‖x - y‖ := by
   have h1 := D.a_lip hx hy
   have h2 := D.s_lip hx hy
   have : |D.b x - D.b y| ≤ |D.a x - D.a y| + |D.s x - D.s y| := by
-    simp only [b]
-    rw [show D.a x + D.s x - (D.a y + D.s y) = (D.a x - D.a y) + (D.s x - D.s y) by ring]
-    exact abs_add_le _ _
+    grind [b]
   have e : S.Lb = S.La + 8 * Real.exp S.LX / S.κ₀ := by unfold BZSetting.Lb BZSetting.La; ring
   rw [e, add_mul]
   linarith
+
+end
 
 lemma gap {x : ℂ} (hx : x ∈ D.C) (hax : |D.a x| < D.T) {y : ℂ} (hy : y ∉ D.C) :
     S.M * D.T ≤ ‖x - y‖ := by
@@ -460,7 +519,7 @@ lemma gap {x : ℂ} (hx : x ∈ D.C) (hax : |D.a x| < D.T) {y : ℂ} (hy : y ∉
   rw [Real.dist_eq, dist_eq_norm, norm_sub_rev] at h2
   have h3 := abs_sub_abs_le_abs_sub (signedDist Ω y) (signedDist Ω x)
   have hM := S.M_pos
-  have : S.M * |D.a x| ≤ S.M * D.T := mul_le_mul_of_nonneg_left hax.le hM.le
+  have := mul_le_mul_of_nonneg_left hax.le hM.le
   push_cast at h2
   linarith
 
@@ -474,7 +533,7 @@ theorem isFlowCollar : IsFlowCollar S.Φ D.C D.a D.b D.T S.La S.Lb (S.M * D.T) w
   flow := fun x hx hax u hu => D.flow_collar hx hax hu
   b_le := fun x hx => by
     obtain ⟨h0, h8⟩ := D.b_mem hx
-    rw [abs_of_nonneg h0]; linarith [D.T_pos]
+    grind
   a_lip := fun x hx y hy => D.a_lip hx hy
   b_lip := fun x hx y hy => D.b_lip hx hy
   gap := fun x hx hax y hy => D.gap hx hax hy

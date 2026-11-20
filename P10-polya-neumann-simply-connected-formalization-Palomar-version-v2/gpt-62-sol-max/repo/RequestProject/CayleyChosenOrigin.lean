@@ -41,7 +41,7 @@ theorem uniform_cayley_rank_bound_of_chosen_origin
     ∃ A δ : ℝ, 0 < δ ∧ ∀ E, 0 < E → |E - E₀| < δ → P E →
       CayleyRankBound (monodromyAt γ E) A m := by
   obtain ⟨t, ht, A, δ, hδ, hA⟩ := hbound
-  have hKt : LipschitzWith K (fun θ => γ (θ + t)) :=
+  have hKt :=
     LipschitzWith.of_dist_le_mul fun x y => by
       simpa only [dist_add_right] using hK.dist_le_mul (x + t) (y + t)
   have hclosedt : (fun θ => γ (θ + t)) (2 * π) =
@@ -54,7 +54,7 @@ theorem uniform_cayley_rank_bound_of_chosen_origin
   obtain ⟨W, hW⟩ := transport_exists_of_lipschitz γ hK E
   obtain ⟨W', hW'⟩ := transport_exists_of_lipschitz (fun θ => γ (θ + t)) hKt E
   obtain ⟨L, hL⟩ := hA E hE hEδ hPE W' hW'
-  have hshift : CayleyRankBound (monodromy W') A m :=
+  have hshift :=
     cayleyRankBound_of_herglotzForm_bound hKt hclosedt hW' A A le_rfl L hL
   rw [monodromyAt_eq hK hW]
   exact cayleyRankBound_of_rebased_transport hK hper hW ht hW' hshift

@@ -1,15 +1,16 @@
 module
 
 public import RequestProject.LocalConformalMass
+public import RequestProject.ConformalDiskCoordinates
 public import RequestProject.ChainRule
 
 /-!
-# Genuine componentwise conformal transport
+# Weak Wirtinger derivatives in conformal coordinates
 
-The checked physical mass identity extends through the dense H¹ inclusion
-to a norm-preserving weighted L² pullback. Bounded coordinate ratios of the
-actual Jacobian then transport each actual weak gradient component.
-This uses the supplied local conformal map and no plane homeomorphism.
+The Jacobian-weighted L² pullback preserves norm. The two weak Wirtinger
+components transform by its composition with multiplication by the appropriate
+unit phase of the conformal derivative. The pointwise chain rule on smooth
+restrictions extends to all of H¹ by density.
 -/
 
 @[expose] public section
@@ -21,403 +22,199 @@ noncomputable section
 namespace PolyaNeumann
 
 open MeasureTheory Set Metric Filter
+open scoped ComplexConjugate
 open scoped Topology
 
-private theorem gradient_extendOfNorm_eq
-    {H X Y : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
-    [NormedAddCommGroup X] [NormedSpace ℂ X]
-    [NormedAddCommGroup Y] [NormedSpace ℂ Y] [CompleteSpace Y]
-    (V : H →L[ℂ] X) (M : H →L[ℂ] Y) (hd : DenseRange V)
-    (hn : ∀ u, ‖M u‖ = ‖V u‖) (u : H) :
-    M.toLinearMap.extendOfNorm V.toLinearMap (V u) = M u := by
-  exact LinearMap.extendOfNorm_eq (f := M.toLinearMap) (e := V.toLinearMap) hd
-    ⟨1, fun w => by rw [one_mul]; exact (hn w).le⟩ u
+local notation "D" => ball (0 : ℂ) 1
 
-private theorem gradient_norm_extendOfNorm
-    {H X Y : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
-    [NormedAddCommGroup X] [NormedSpace ℂ X]
-    [NormedAddCommGroup Y] [NormedSpace ℂ Y] [CompleteSpace Y]
-    (V : H →L[ℂ] X) (M : H →L[ℂ] Y) (hd : DenseRange V)
-    (hn : ∀ u, ‖M u‖ = ‖V u‖) (v : X) :
-    ‖M.toLinearMap.extendOfNorm V.toLinearMap v‖ = ‖v‖ := by
-  let A : X →L[ℂ] Y := M.toLinearMap.extendOfNorm V.toLinearMap
-  refine hd.induction_on (p := fun w => ‖A w‖ = ‖w‖) v ?_ ?_
-  · exact isClosed_eq A.continuous.norm continuous_norm
-  · intro u
-    exact (congrArg norm (gradient_extendOfNorm_eq V M hd hn u)).trans (hn u)
+section
 
-private theorem gradient_eq_of_dense
-    {S H Y : Type*} [TopologicalSpace H] [TopologicalSpace Y] [T2Space Y]
-    (ι : S → H) (hd : DenseRange ι) (A B : H → Y)
-    (hA : Continuous A) (hB : Continuous B)
-    (he : ∀ s, A (ι s) = B (ι s)) (u : H) : A u = B u := by
-  exact hd.induction_on u (isClosed_eq hA hB) he
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
+include coords
 
-section Coordinates
+local notation "Ω" => F '' D
+local notation "P" => coords.pullback
+local notation "M" => localConformalMassPullback coords
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
+/-- The Jacobian-weighted pullback on all of physical L². -/
+def localConformalWeightedL2Pullback : L2 Ω →L[ℂ] L2 D :=
+  (M).toLinearMap.extendOfNorm (h1Value Ω).toLinearMap
 
-include hb hhol hinj hC in
-private theorem mass_norm_eq_value (u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    ‖localConformalMassPullback hR F hFs hL hK u‖ =
-      ‖h1Value (F '' ball (0 : ℂ) 1) u‖ :=
+private theorem mass_norm_eq_value (u : NeumannH1 Ω) : ‖M u‖ = ‖h1Value Ω u‖ :=
   (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-    (norm_sq_localConformalMassPullback hR F hFs hb hL hhol hinj hC hK u)
+    (norm_sq_localConformalMassPullback coords u)
 
-/-- The actual Jacobian-weighted pullback on the whole physical L² space. -/
-def localConformalWeightedL2Pullback :
-    L2 (F '' ball (0 : ℂ) 1) →L[ℂ] L2 (ball (0 : ℂ) 1) :=
-  (localConformalMassPullback hR F hFs hL hK).toLinearMap.extendOfNorm
-    (h1Value (F '' ball (0 : ℂ) 1)).toLinearMap
+theorem localConformalWeightedL2Pullback_h1Value (u : NeumannH1 Ω) :
+    localConformalWeightedL2Pullback coords (h1Value Ω u) = M u :=
+  LinearMap.extendOfNorm_eq (f := (M).toLinearMap) (e := (h1Value Ω).toLinearMap)
+    (h1Value_denseRange coords.lipschitz.1.1) ⟨1, fun w => by simp [mass_norm_eq_value coords w]⟩ u
 
-include hb hhol hinj hC in
-theorem localConformalWeightedL2Pullback_h1Value
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
-    localConformalWeightedL2Pullback hR F hFs hL hK
-      (h1Value (F '' ball (0 : ℂ) 1) u) =
-        localConformalMassPullback hR F hFs hL hK u :=
-  gradient_extendOfNorm_eq
-    (h1Value (F '' ball (0 : ℂ) 1))
-    (localConformalMassPullback hR F hFs hL hK)
-    (h1Value_denseRange hL.1.1)
-    (mass_norm_eq_value hR F hFs hb hL hhol hinj hC hK) u
+private theorem norm_localConformalWeightedL2Pullback (v : L2 Ω) :
+    ‖localConformalWeightedL2Pullback coords v‖ = ‖v‖ :=
+  (h1Value_denseRange coords.lipschitz.1.1).induction_on v
+    (isClosed_eq (localConformalWeightedL2Pullback coords).continuous.norm continuous_norm)
+    fun u => by rw [localConformalWeightedL2Pullback_h1Value, mass_norm_eq_value]
 
-include hb hhol hinj hC in
-theorem norm_localConformalWeightedL2Pullback
-    (v : L2 (F '' ball (0 : ℂ) 1)) :
-    ‖localConformalWeightedL2Pullback hR F hFs hL hK v‖ = ‖v‖ :=
-  gradient_norm_extendOfNorm
-    (h1Value (F '' ball (0 : ℂ) 1))
-    (localConformalMassPullback hR F hFs hL hK)
-    (h1Value_denseRange hL.1.1)
-    (mass_norm_eq_value hR F hFs hb hL hhol hinj hC hK) v
-
-include hb hhol hinj hC in
 theorem localConformalWeightedL2Pullback_injective :
-    Function.Injective (localConformalWeightedL2Pullback hR F hFs hL hK) := by
+    Function.Injective (localConformalWeightedL2Pullback coords) := by
   intro u v huv
   apply sub_eq_zero.mp
   apply norm_eq_zero.mp
-  rw [← norm_localConformalWeightedL2Pullback hR F hFs hb hL hhol hinj hC hK (u - v),
-    map_sub, huv, sub_self, norm_zero]
+  rw [← norm_localConformalWeightedL2Pullback coords, map_sub, huv, sub_self, norm_zero]
 
-include hb hhol hinj hC in
 theorem localConformalWeightedL2Pullback_smooth_ae (f : smoothTraceTests) :
-    (localConformalWeightedL2Pullback hR F hFs hL hK
-      (h1Value (F '' ball (0 : ℂ) 1) (smoothTraceH1 (F '' ball (0 : ℂ) 1) f)) : ℂ → ℂ)
-      =ᵐ[volume.restrict (ball (0 : ℂ) 1)]
-        fun z => localConformalMassDensity F z * f (F z) := by
-  rw [localConformalWeightedL2Pullback_h1Value hR F hFs hb hL hhol hinj hC hK,
-    localConformalMassPullback_smooth_eq hR F hFs hb hL hhol hinj hC hK f]
-  filter_upwards [lpBoundedMultiplier_ae (localConformalMassDensity F)
-    (localConformalMassDensity_aemeasurable hR F hFs)
-    (localConformalMassDensity_ae_bound F hK)
-    ((smoothTraceTests_memLp (ball (0 : ℂ) 1) (smoothDiskCompositionLin hR F hFs f)).toLp _),
-    (smoothTraceTests_memLp (ball (0 : ℂ) 1) (smoothDiskCompositionLin hR F hFs f)).coeFn_toLp,
-    ae_restrict_mem measurableSet_ball] with z hm hv hz
-  rw [hm, hv, smoothDiskCompositionLin_eq_closedDisk hR F hFs f (ball_subset_closedBall hz)]
+    (localConformalWeightedL2Pullback coords (h1Value Ω (smoothTraceH1 Ω f)) : ℂ → ℂ) =ᵐ[
+      volume.restrict D] fun z => localConformalMassDensity F z * f (F z) := by
+  rw [localConformalWeightedL2Pullback_h1Value]
+  exact localConformalMassPullback_smooth_ae coords f
 
-end Coordinates
+private theorem coordinate_fderiv_one_ne_zero {z : ℂ} (hz : z ∈ D) : fderiv ℝ F z 1 ≠ 0 := by
+  simpa only [coords.real_fderiv_apply (ball_subset_closedBall hz), mul_one] using coords.deriv_ne_zero_closed (ball_subset_closedBall hz)
 
-/-- A real Jacobian coordinate divided by the actual conformal scale. -/
-def localConformalChainRatio (F : ℂ → ℂ) (i j : Fin 2) (z : ℂ) : ℂ :=
-  (coordRe j (fderiv ℝ F z (coordDir i)) / ‖fderiv ℝ F z 1‖ : ℝ)
+end
 
-private theorem real_fderiv_eq_complex_deriv {F : ℂ → ℂ} {z : ℂ}
-    (hF : DifferentiableAt ℂ F z) (v : ℂ) :
-    fderiv ℝ F z v = deriv F z * v := by
-  rw [hF.fderiv_restrictScalars ℝ]
-  change fderiv ℂ F z v = _
-  exact fderiv_eq_deriv_mul
+/-- The unit phase for each of the two Wirtinger components. The `true` component
+uses the conjugate derivative. -/
+def localConformalPhase (F : ℂ → ℂ) (s : Bool) (z : ℂ) : ℂ :=
+  (if s then conj (fderiv ℝ F z 1) else fderiv ℝ F z 1) / (‖fderiv ℝ F z 1‖ : ℂ)
 
-private theorem scale_ne_zero {C : ℝ} {F : ℂ → ℂ}
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) : ‖fderiv ℝ F z 1‖ ≠ 0 := by
-  rw [real_fderiv_eq_complex_deriv (hhol.differentiableAt (isOpen_ball.mem_nhds hz)), mul_one]
-  intro hzero
-  have h := hC z hz
-  rw [hzero] at h
-  norm_num at h
-
-theorem norm_localConformalChainRatio_le_one {F : ℂ → ℂ}
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (i j : Fin 2)
-    {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) : ‖localConformalChainRatio F i j z‖ ≤ 1 := by
-  have hn : ‖fderiv ℝ F z (coordDir i)‖ = ‖fderiv ℝ F z 1‖ := by
-    simp only [real_fderiv_eq_complex_deriv (hhol.differentiableAt (isOpen_ball.mem_nhds hz)),
-      norm_mul, norm_coordDir, mul_one]
-  have hb := abs_coordRe_le j (fderiv ℝ F z (coordDir i))
-  rw [hn] at hb
-  unfold localConformalChainRatio
-  rw [Complex.norm_real, Real.norm_eq_abs, abs_div, abs_of_nonneg (norm_nonneg _)]
-  by_cases hs : ‖fderiv ℝ F z 1‖ = 0
-  · simp [hs]
-  · exact (div_le_one (lt_of_le_of_ne (norm_nonneg _) (Ne.symm hs))).mpr hb
-
-theorem localConformalChainRatio_aestronglyMeasurable (F : ℂ → ℂ) (i j : Fin 2) :
-    AEStronglyMeasurable (localConformalChainRatio F i j)
-      (volume.restrict (ball (0 : ℂ) 1)) := by
-  have hn : Measurable (fun z => ‖fderiv ℝ F z 1‖) :=
-    (measurable_fderiv_apply_const ℝ F (1 : ℂ)).norm
-  exact (Complex.measurable_ofReal.comp ((measurable_coordRe_fderiv F i j).div hn)).aestronglyMeasurable
-
-def localConformalChainRatioMultiplier (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (i j : Fin 2) :
-    L2 (ball (0 : ℂ) 1) →L[ℂ] L2 (ball (0 : ℂ) 1) :=
-  lpBoundedMultiplier (C := (1 : ℝ)) (localConformalChainRatio F i j)
-    (localConformalChainRatio_aestronglyMeasurable F i j)
-    (by filter_upwards [ae_restrict_mem measurableSet_ball] with z hz
-        exact norm_localConformalChainRatio_le_one hhol i j hz)
-
-theorem localConformalChainRatioMultiplier_ae (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (i j : Fin 2)
-    (v : L2 (ball (0 : ℂ) 1)) :
-    (localConformalChainRatioMultiplier F hhol i j v : ℂ → ℂ)
-      =ᵐ[volume.restrict (ball (0 : ℂ) 1)] fun z => localConformalChainRatio F i j z * v z :=
-  lpBoundedMultiplier_ae (C := (1 : ℝ)) (localConformalChainRatio F i j)
-    (localConformalChainRatio_aestronglyMeasurable F i j)
-    (by filter_upwards [ae_restrict_mem measurableSet_ball] with z hz
-        exact norm_localConformalChainRatio_le_one hhol i j hz) v
-
-private theorem chainRatio_mul_massDensity {C : ℝ} (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (i j : Fin 2) {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) :
-    localConformalChainRatio F i j z * localConformalMassDensity F z =
-      (coordRe j (fderiv ℝ F z (coordDir i)) : ℂ) := by
-  unfold localConformalChainRatio localConformalMassDensity
-  rw [← Complex.ofReal_mul, div_mul_cancel₀ _ (scale_ne_zero hhol hC hz)]
-
-private def smoothTraceDirectionalTest (f : smoothTraceTests) (j : Fin 2) : smoothTraceTests :=
-  ⟨dirD (f : ℂ → ℂ) (coordDir j), f.property.dirD (coordDir j)⟩
-
-private theorem smoothTraceDirectionalTest_value (Ω : Set ℂ) (f : smoothTraceTests) (j : Fin 2) :
-    h1Value Ω (smoothTraceH1 Ω (smoothTraceDirectionalTest f j)) =
-      h1Gradient Ω j (smoothTraceH1 Ω f) := by
-  rw [h1Value_smoothTraceH1, h1Gradient_smoothTraceH1]
-  exact MemLp.toLp_congr (smoothTraceTests_memLp Ω (smoothTraceDirectionalTest f j))
-    (smoothTraceTests_memLp_deriv Ω f j) (Eventually.of_forall fun _ => rfl)
-
-section Components
-
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-
-def localConformalGradientComponent (i : Fin 2) :
-    NeumannH1 (F '' ball (0 : ℂ) 1) →L[ℂ] L2 (ball (0 : ℂ) 1) :=
-  ∑ j : Fin 2, (localConformalChainRatioMultiplier F hhol i j).comp
-    ((localConformalWeightedL2Pullback hR F hFs hL hK).comp
-      (h1Gradient (F '' ball (0 : ℂ) 1) j))
-
-include hb hinj hC in
-private theorem localConformalGradientComponent_smooth (i : Fin 2) (f : smoothTraceTests) :
-    h1Gradient (ball (0 : ℂ) 1) i
-      (localConformalH1Pullback hR F hFs hL (smoothTraceH1 (F '' ball (0 : ℂ) 1) f)) =
-      localConformalGradientComponent hR F hFs hL hhol hK i
-        (smoothTraceH1 (F '' ball (0 : ℂ) 1) f) := by
-  rw [localConformalH1Pullback_smooth hR F hFs hb hL hhol hinj hC f,
-    h1Gradient_smoothTraceH1]
-  let v (j : Fin 2) := localConformalWeightedL2Pullback hR F hFs hL hK
-    (h1Gradient (F '' ball (0 : ℂ) 1) j (smoothTraceH1 (F '' ball (0 : ℂ) 1) f))
-  have hv (j : Fin 2) : (v j : ℂ → ℂ) =ᵐ[volume.restrict (ball (0 : ℂ) 1)]
-      fun z => localConformalMassDensity F z * dirD (f : ℂ → ℂ) (coordDir j) (F z) := by
-    dsimp only [v]
-    rw [← smoothTraceDirectionalTest_value]
-    exact localConformalWeightedL2Pullback_smooth_ae hR F hFs hb hL hhol hinj hC hK
-      (smoothTraceDirectionalTest f j)
-  simp only [localConformalGradientComponent, Fin.sum_univ_two,
-    ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply]
-  change (smoothTraceTests_memLp_deriv (ball (0 : ℂ) 1)
-    (smoothDiskCompositionLin hR F hFs f) i).toLp _ =
-      localConformalChainRatioMultiplier F hhol i 0 (v 0) +
-        localConformalChainRatioMultiplier F hhol i 1 (v 1)
-  apply Lp.ext
-  filter_upwards [(smoothTraceTests_memLp_deriv (ball (0 : ℂ) 1)
-    (smoothDiskCompositionLin hR F hFs f) i).coeFn_toLp,
-    Lp.coeFn_add (localConformalChainRatioMultiplier F hhol i 0 (v 0))
-      (localConformalChainRatioMultiplier F hhol i 1 (v 1)),
-    localConformalChainRatioMultiplier_ae F hhol i 0 (v 0),
-    localConformalChainRatioMultiplier_ae F hhol i 1 (v 1), hv 0, hv 1,
-    ae_restrict_mem measurableSet_ball] with z hd ha h₀ h₁ hv₀ hv₁ hz
-  rw [hd, ha]
-  simp only [Pi.add_apply]
-  rw [h₀, h₁, hv₀, hv₁, ← mul_assoc, ← mul_assoc,
-    chainRatio_mul_massDensity F hhol hC i 0 hz, chainRatio_mul_massDensity F hhol hC i 1 hz,
-    fderiv_smoothDiskCompositionLin hR F hFs f (ball_subset_closedBall hz)]
-  change (fderiv ℝ (f : ℂ → ℂ) (F z)) (fderiv ℝ F z (coordDir i)) = _
-  simpa only [Fin.sum_univ_two, smul_eq_mul, dirD] using
-    (clm_apply_eq_sum_coordRe (fderiv ℝ (f : ℂ → ℂ) (F z))
-      (fderiv ℝ F z (coordDir i)))
-
-include hb hinj hC in
-/-- The full componentwise chain rule for every genuine physical H¹ input. -/
-theorem localConformalH1Pullback_gradient_component
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) (i : Fin 2) :
-    h1Gradient (ball (0 : ℂ) 1) i (localConformalH1Pullback hR F hFs hL u) =
-      localConformalGradientComponent hR F hFs hL hhol hK i u := by
-  have hd : DenseRange (fun f : smoothTraceTests =>
-      smoothTraceH1 (F '' ball (0 : ℂ) 1) f) :=
-    denseRange_smoothTraceH1Lin hb hL
-  exact gradient_eq_of_dense
-    (S := smoothTraceTests) (H := NeumannH1 (F '' ball (0 : ℂ) 1))
-    (Y := L2 (ball (0 : ℂ) 1))
-    (fun f => smoothTraceH1 (F '' ball (0 : ℂ) 1) f) hd
-    (fun v => h1Gradient (ball (0 : ℂ) 1) i (localConformalH1Pullback hR F hFs hL v))
-    (fun v => localConformalGradientComponent hR F hFs hL hhol hK i v)
-    ((h1Gradient (ball (0 : ℂ) 1) i).continuous.comp
-      (localConformalH1Pullback hR F hFs hL).continuous)
-    (localConformalGradientComponent hR F hFs hL hhol hK i).continuous
-    (localConformalGradientComponent_smooth hR F hFs hb hL hhol hinj hC hK i) u
-
-end Components
-
-/-- The actual unit phase converting the antiholomorphic physical derivative
-to its conformal-coordinate derivative. -/
-def localConformalAntiholomorphicPhase (F : ℂ → ℂ) (z : ℂ) : ℂ :=
-  star (fderiv ℝ F z 1) / (‖fderiv ℝ F z 1‖ : ℂ)
-
-theorem antiholomorphicPhase_measurable (F : ℂ → ℂ) :
-    Measurable (localConformalAntiholomorphicPhase F) := by
+theorem phase_measurable (F : ℂ → ℂ) (s : Bool) : Measurable (localConformalPhase F s) := by
   have hd := measurable_fderiv_apply_const ℝ F (1 : ℂ)
-  exact (Complex.continuous_conj.measurable.comp hd).div (Complex.measurable_ofReal.comp hd.norm)
+  have hn := Complex.measurable_ofReal.comp hd.norm
+  cases s
+  · exact hd.div hn
+  · exact (Complex.continuous_conj.measurable.comp hd).div hn
 
-theorem norm_antiholomorphicPhase_le_one (F : ℂ → ℂ) (z : ℂ) :
-    ‖localConformalAntiholomorphicPhase F z‖ ≤ 1 := by
-  unfold localConformalAntiholomorphicPhase
-  rw [norm_div, norm_star, Complex.norm_of_nonneg (norm_nonneg _)]
-  by_cases h : ‖fderiv ℝ F z 1‖ = 0
-  · simp [h]
-  · simp [div_self h]
+private theorem norm_phase (F : ℂ → ℂ) (s : Bool) (z : ℂ) :
+    ‖localConformalPhase F s z‖ = ‖fderiv ℝ F z 1‖ / ‖fderiv ℝ F z 1‖ := by
+  cases s <;> simp [localConformalPhase, norm_div]
 
-def localConformalAntiholomorphicPhaseMultiplier (F : ℂ → ℂ) :
-    L2 (ball (0 : ℂ) 1) →L[ℂ] L2 (ball (0 : ℂ) 1) :=
-  lpBoundedMultiplier (localConformalAntiholomorphicPhase F)
-    (antiholomorphicPhase_measurable F).aestronglyMeasurable
-    (Eventually.of_forall (norm_antiholomorphicPhase_le_one F))
+theorem phase_bound (F : ℂ → ℂ) (s : Bool) (z : ℂ) : ‖localConformalPhase F s z‖ ≤ 1 := by
+  rw [norm_phase]
+  by_cases h : ‖fderiv ℝ F z 1‖ = 0 <;> simp [h]
 
-theorem localConformalAntiholomorphicPhaseMultiplier_ae (F : ℂ → ℂ)
-    (v : L2 (ball (0 : ℂ) 1)) :
-    (localConformalAntiholomorphicPhaseMultiplier F v : ℂ → ℂ)
-      =ᵐ[volume.restrict (ball (0 : ℂ) 1)]
-        fun z => localConformalAntiholomorphicPhase F z * v z :=
-  lpBoundedMultiplier_ae (localConformalAntiholomorphicPhase F)
-    (antiholomorphicPhase_measurable F).aestronglyMeasurable
-    (Eventually.of_forall (norm_antiholomorphicPhase_le_one F)) v
+def localConformalPhaseMultiplier (F : ℂ → ℂ) (s : Bool) : L2 D →L[ℂ] L2 D :=
+  lpBoundedMultiplier (localConformalPhase F s) (phase_measurable F s).aestronglyMeasurable
+    (.of_forall (phase_bound F s))
 
-private def antiholomorphicPhaseInverseMultiplier (F : ℂ → ℂ) :
-    L2 (ball (0 : ℂ) 1) →L[ℂ] L2 (ball (0 : ℂ) 1) :=
-  lpBoundedMultiplier (C := (1 : ℝ)) (fun z => star (localConformalAntiholomorphicPhase F z))
-    (Complex.continuous_conj.measurable.comp (antiholomorphicPhase_measurable F)).aestronglyMeasurable
-    (Eventually.of_forall (fun z : ℂ => by
-      rw [norm_star]
-      exact norm_antiholomorphicPhase_le_one F z))
+theorem localConformalPhaseMultiplier_ae (F : ℂ → ℂ) (s : Bool) (v : L2 D) :
+    (localConformalPhaseMultiplier F s v : ℂ → ℂ) =ᵐ[volume.restrict D]
+      fun z => localConformalPhase F s z * v z :=
+  lpBoundedMultiplier_ae (localConformalPhase F s) (phase_measurable F s).aestronglyMeasurable
+    (.of_forall (phase_bound F s)) v
+private def wirtingerSign (s : Bool) : ℂ := if s then Complex.I else -Complex.I
 
-private theorem antiholomorphicPhaseInverseMultiplier_ae (F : ℂ → ℂ)
-    (v : L2 (ball (0 : ℂ) 1)) :
-    (antiholomorphicPhaseInverseMultiplier F v : ℂ → ℂ)
-      =ᵐ[volume.restrict (ball (0 : ℂ) 1)]
-        fun z => star (localConformalAntiholomorphicPhase F z) * v z :=
-  lpBoundedMultiplier_ae (C := (1 : ℝ)) (fun z => star (localConformalAntiholomorphicPhase F z))
-    (Complex.continuous_conj.measurable.comp (antiholomorphicPhase_measurable F)).aestronglyMeasurable
-    (Eventually.of_forall (fun z : ℂ => by
-      rw [norm_star]
-      exact norm_antiholomorphicPhase_le_one F z)) v
+private def h1Wirtinger (s : Bool) (U : Set ℂ) : NeumannH1 U →L[ℂ] L2 U :=
+  h1Gradient U 0 + wirtingerSign s • h1Gradient U 1
 
-private theorem norm_antiholomorphicPhase_eq_one {C : ℝ} (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) :
-    ‖localConformalAntiholomorphicPhase F z‖ = 1 := by
-  unfold localConformalAntiholomorphicPhase
-  rw [norm_div, norm_star, Complex.norm_of_nonneg (norm_nonneg _),
-    div_self (scale_ne_zero hhol hC hz)]
+private def wirtingerTest (s : Bool) (f : smoothTraceTests) : smoothTraceTests :=
+  ⟨fun z => dirD (f : ℂ → ℂ) 1 z + wirtingerSign s * dirD (f : ℂ → ℂ) Complex.I z,
+    (f.property.dirD 1).add ((f.property.dirD Complex.I).const_mul _)⟩
 
-/-- Cancellation of this genuine Jacobian phase on the actual disk L² space. -/
-theorem localConformalAntiholomorphicPhaseMultiplier_injective {C : ℝ} (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2) :
-    Function.Injective (localConformalAntiholomorphicPhaseMultiplier F) := by
-  have hinv : Function.LeftInverse (antiholomorphicPhaseInverseMultiplier F)
-      (localConformalAntiholomorphicPhaseMultiplier F) := by
-    intro v
-    apply Lp.ext
-    filter_upwards [antiholomorphicPhaseInverseMultiplier_ae F
-      (localConformalAntiholomorphicPhaseMultiplier F v),
-      localConformalAntiholomorphicPhaseMultiplier_ae F v,
-      ae_restrict_mem measurableSet_ball] with z hi hd hz
-    rw [hi, hd, ← mul_assoc]
-    change star (localConformalAntiholomorphicPhase F z) *
-      localConformalAntiholomorphicPhase F z * v z = v z
-    simp only [Complex.star_def]
-    rw [Complex.conj_mul', norm_antiholomorphicPhase_eq_one F hhol hC hz]
-    simp
-  exact hinv.injective
+private theorem h1Wirtinger_smooth_ae (s : Bool) (U : Set ℂ) (f : smoothTraceTests) :
+    (h1Wirtinger s U (smoothTraceH1 U f) : ℂ → ℂ) =ᵐ[volume.restrict U] wirtingerTest s f := by
+  let g (i : Fin 2) := h1Gradient U i (smoothTraceH1 U f)
+  have hg (i : Fin 2) : (g i : ℂ → ℂ) =ᵐ[volume.restrict U] dirD (f : ℂ → ℂ) (coordDir i) :=
+    (smoothTraceTests_memLp_deriv U f i).coeFn_toLp
+  change ((g 0 + wirtingerSign s • g 1 : L2 U) : ℂ → ℂ) =ᵐ[volume.restrict U] _
+  filter_upwards [Lp.coeFn_add (g 0) (wirtingerSign s • g 1), Lp.coeFn_smul (wirtingerSign s) (g 1),
+    hg 0, hg 1] with z ha hm h0 h1
+  rw [ha, Pi.add_apply, hm, Pi.smul_apply, h0, h1]
+  rfl
 
-private theorem antiholomorphicPhase_eq_ratios (F : ℂ → ℂ) (z : ℂ) :
-    localConformalAntiholomorphicPhase F z = localConformalChainRatio F 0 0 z +
-      (-Complex.I) * localConformalChainRatio F 0 1 z := by
-  apply Complex.ext <;>
-    simp [localConformalAntiholomorphicPhase, localConformalChainRatio,
-      coordDir, coordRe, Complex.div_ofReal_re, Complex.div_ofReal_im, neg_div]
-
-private theorem antiholomorphicPhaseMultiplier_eq_ratios (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (v : L2 (ball (0 : ℂ) 1)) :
-    localConformalAntiholomorphicPhaseMultiplier F v =
-      localConformalChainRatioMultiplier F hhol 0 0 v +
-        (-Complex.I) • localConformalChainRatioMultiplier F hhol 0 1 v := by
+private theorem h1Wirtinger_smooth_eq_value (s : Bool) (U : Set ℂ) (f : smoothTraceTests) :
+    h1Wirtinger s U (smoothTraceH1 U f) = h1Value U (smoothTraceH1 U (wirtingerTest s f)) := by
   apply Lp.ext
-  filter_upwards [localConformalAntiholomorphicPhaseMultiplier_ae F v,
-    localConformalChainRatioMultiplier_ae F hhol 0 0 v,
-    localConformalChainRatioMultiplier_ae F hhol 0 1 v,
-    Lp.coeFn_add (localConformalChainRatioMultiplier F hhol 0 0 v)
-      ((-Complex.I) • localConformalChainRatioMultiplier F hhol 0 1 v),
-    Lp.coeFn_smul (-Complex.I) (localConformalChainRatioMultiplier F hhol 0 1 v)]
-    with z hd h₀ h₁ ha hs
-  rw [hd, ha]
-  simp only [Pi.add_apply]
-  rw [hs]
-  simp only [Pi.smul_apply, smul_eq_mul]
-  rw [h₀, h₁, antiholomorphicPhase_eq_ratios]
-  ring
+  exact (h1Wirtinger_smooth_ae s U f).trans (smoothTraceTests_memLp U (wirtingerTest s f)).coeFn_toLp.symm
 
-/-- The true chain rule specialized to an actual weak antiholomorphic vector. -/
-theorem localConformalH1Pullback_gradient_antiholomorphic {R C K : ℝ}
-    (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1))
-    (hu : h1Gradient (F '' ball (0 : ℂ) 1) 0 u =
-      Complex.I • h1Gradient (F '' ball (0 : ℂ) 1) 1 u) :
-    h1Gradient (ball (0 : ℂ) 1) 0 (localConformalH1Pullback hR F hFs hL u) =
-      localConformalAntiholomorphicPhaseMultiplier F
-        (localConformalWeightedL2Pullback hR F hFs hL hK
-          (h1Gradient (F '' ball (0 : ℂ) 1) 0 u)) := by
-  have hy : h1Gradient (F '' ball (0 : ℂ) 1) 1 u =
-      (-Complex.I) • h1Gradient (F '' ball (0 : ℂ) 1) 0 u := by
-    rw [hu, smul_smul]
-    simp
-  rw [localConformalH1Pullback_gradient_component hR F hFs hb hL hhol hinj hC hK u 0,
-    antiholomorphicPhaseMultiplier_eq_ratios F hhol]
-  simp only [localConformalGradientComponent, Fin.sum_univ_two,
-    ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply, hy, map_smul]
+private theorem wirtinger_factor (s : Bool) (A : ℂ →L[ℝ] ℂ) (c : ℂ) :
+    A c + wirtingerSign s * A (c * Complex.I) =
+      (if s then conj c else c) * (A 1 + wirtingerSign s * A Complex.I) := by
+  rw [realCLM_apply_complex A c, realCLM_apply_complex A (c * Complex.I)]
+  cases s <;> apply Complex.ext <;>
+    simp [wirtingerSign, Complex.mul_re, Complex.mul_im] <;> ring
+
+
+section
+
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
+include coords
+
+local notation "Ω" => F '' D
+local notation "P" => coords.pullback
+
+theorem localConformalPhase_mul_massDensity (s : Bool) {z : ℂ} (hz : z ∈ D) :
+    localConformalPhase F s z * localConformalMassDensity F z =
+      if s then conj (fderiv ℝ F z 1) else fderiv ℝ F z 1 :=
+  div_mul_cancel₀ _ (by simpa using coordinate_fderiv_one_ne_zero coords hz)
+
+theorem localConformalPhaseMultiplier_injective (s : Bool) :
+    Function.Injective (localConformalPhaseMultiplier F s) := by
+  intro u v h
+  apply Lp.ext
+  filter_upwards [localConformalPhaseMultiplier_ae F s u, localConformalPhaseMultiplier_ae F s v,
+    ae_restrict_mem measurableSet_ball] with z hu hv hz
+  have hn : ‖localConformalPhase F s z‖ = 1 := by
+    rw [norm_phase, div_self (norm_ne_zero_iff.mpr (coordinate_fderiv_one_ne_zero coords hz))]
+  apply mul_left_cancel₀ (norm_ne_zero_iff.mp (by rw [hn]; exact one_ne_zero))
+  rw [← hu, ← hv, h]
+
+private theorem wirtingerTest_pullback (s : Bool) (f : smoothTraceTests) {z : ℂ} (hz : z ∈ D) :
+    wirtingerTest s (smoothDiskCompositionLin coords.one_lt_radius F coords.smooth f) z =
+      (if s then conj (fderiv ℝ F z 1) else fderiv ℝ F z 1) * wirtingerTest s f (F z) := by
+  change (fderiv ℝ _ z) 1 + wirtingerSign s * (fderiv ℝ _ z) Complex.I = _ *
+    ((fderiv ℝ (f : ℂ → ℂ) (F z)) 1 + wirtingerSign s * (fderiv ℝ (f : ℂ → ℂ) (F z)) Complex.I)
+  rw [fderiv_smoothDiskCompositionLin coords.one_lt_radius F coords.smooth f (ball_subset_closedBall hz)]
+  simpa only [ContinuousLinearMap.comp_apply, coords.real_fderiv_apply (ball_subset_closedBall hz), mul_one] using
+    wirtinger_factor s (fderiv ℝ (f : ℂ → ℂ) (F z)) (deriv F z)
+
+/-- Both actual weak Wirtinger derivatives satisfy the conformal chain rule. -/
+private theorem h1Wirtinger_pullback (s : Bool) (u : NeumannH1 Ω) :
+    h1Wirtinger s D (P u) = localConformalPhaseMultiplier F s
+      (localConformalWeightedL2Pullback coords (h1Wirtinger s Ω u)) := by
+  let A := (h1Wirtinger s D).comp P
+  let B := (localConformalPhaseMultiplier F s).comp ((localConformalWeightedL2Pullback coords).comp (h1Wirtinger s Ω))
+  refine (denseRange_smoothTraceH1Lin coords.bounded coords.lipschitz).induction_on u
+    (isClosed_eq A.continuous B.continuous) fun f => ?_
+  change h1Wirtinger s D (P (smoothTraceH1 Ω f)) = localConformalPhaseMultiplier F s
+    (localConformalWeightedL2Pullback coords (h1Wirtinger s Ω (smoothTraceH1 Ω f)))
+  rw [localConformalH1Pullback_smooth coords.one_lt_radius F coords.smooth coords.bounded
+    coords.lipschitz coords.holomorphic coords.injOn coords.lower,
+    h1Wirtinger_smooth_eq_value s Ω]
+  apply Lp.ext
+  filter_upwards [h1Wirtinger_smooth_ae s D (smoothDiskCompositionLin coords.one_lt_radius F coords.smooth f),
+    localConformalPhaseMultiplier_ae F s (localConformalWeightedL2Pullback coords
+      (h1Value Ω (smoothTraceH1 Ω (wirtingerTest s f)))),
+    localConformalWeightedL2Pullback_smooth_ae coords (wirtingerTest s f),
+    ae_restrict_mem measurableSet_ball] with z ha hb hc hz
+  rw [ha, hb, hc, ← mul_assoc, localConformalPhase_mul_massDensity coords s hz]
+  exact wirtingerTest_pullback coords s f hz
+
+theorem localConformalH1Pullback_antiholomorphic_iff (u : NeumannH1 Ω) :
+    h1Gradient D 0 (P u) = Complex.I • h1Gradient D 1 (P u) ↔
+      h1Gradient Ω 0 u = Complex.I • h1Gradient Ω 1 u := by
+  have hs : h1Wirtinger false D (P u) = 0 ↔ h1Wirtinger false Ω u = 0 := by
+    rw [h1Wirtinger_pullback coords, ← map_zero (localConformalPhaseMultiplier F false),
+      (localConformalPhaseMultiplier_injective coords false).eq_iff,
+      ← map_zero (localConformalWeightedL2Pullback coords),
+      (localConformalWeightedL2Pullback_injective coords).eq_iff]
+  simpa only [h1Wirtinger, wirtingerSign, Bool.false_eq_true, ite_false, add_apply,
+    ContinuousLinearMap.smul_apply, neg_smul, ← sub_eq_add_neg, sub_eq_zero] using hs
+
+/-- For antiholomorphic vectors the positive Wirtinger component is twice the x derivative. -/
+theorem localConformalH1Pullback_gradient_antiholomorphic (u : NeumannH1 Ω)
+    (hu : h1Gradient Ω 0 u = Complex.I • h1Gradient Ω 1 u) :
+    h1Gradient D 0 (P u) = localConformalPhaseMultiplier F true
+      (localConformalWeightedL2Pullback coords (h1Gradient Ω 0 u)) := by
+  have h2 {U : Set ℂ} {v : NeumannH1 U} (hv : h1Gradient U 0 v = Complex.I • h1Gradient U 1 v) :
+      h1Wirtinger true U v = (2 : ℂ) • h1Gradient U 0 v := by
+    change h1Gradient U 0 v + Complex.I • h1Gradient U 1 v = _
+    rw [← hv, two_smul]
+  have h := h1Wirtinger_pullback coords true u
+  rw [h2 ((localConformalH1Pullback_antiholomorphic_iff coords u).mpr hu), h2 hu, map_smul, map_smul] at h
+  exact smul_right_injective _ (two_ne_zero : (2 : ℂ) ≠ 0) h
+
+end
 
 end PolyaNeumann
 

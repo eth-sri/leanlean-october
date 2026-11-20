@@ -31,19 +31,15 @@ theorem disk_gradient_pair_succ_eq_area_monomial (m n : ℕ) (z : ℂ) :
   simp only [show coordDir 0 = (1 : ℂ) from rfl,
     show coordDir 1 = Complex.I from rfl, dirD_diskHolomorphicMode, dirD_diskAntiholomorphicMode,
     Nat.add_sub_cancel, map_one, mul_one, Complex.conj_I]
-  calc
-    _ = ((m + 1 : ℕ) : ℂ) * ((n + 1 : ℕ) : ℂ) * (z ^ m * conj z ^ n) *
-        (1 - Complex.I ^ 2) := by ring
-    _ = _ := by rw [Complex.I_sq]; ring
+  grind [Complex.I_sq]
 
 theorem integral_disk_area_monomials (m n : ℕ) :
     (∫ z in ball (0 : ℂ) 1, z ^ m * conj z ^ n) =
       if m = n then (π : ℂ) / ((m + 1 : ℕ) : ℂ) else 0 := by
-  let c : ℂ := 2 * ((m + 1 : ℕ) : ℂ) * ((n + 1 : ℕ) : ℂ)
+  let c := 2 * ((m + 1 : ℕ) : ℂ) * ((n + 1 : ℕ) : ℂ)
   have hc : c ≠ 0 := by
     dsimp [c]
-    exact mul_ne_zero (mul_ne_zero (by norm_num)
-      (Nat.cast_ne_zero.mpr (by omega))) (Nat.cast_ne_zero.mpr (by omega))
+    norm_cast
   have hgreen : c * (∫ z in ball (0 : ℂ) 1, z ^ m * conj z ^ n) =
       if m + 1 = n + 1 then (2 * π : ℂ) * ((n + 1 : ℕ) : ℂ) else 0 := by
     calc
@@ -53,21 +49,12 @@ theorem integral_disk_area_monomials (m n : ℕ) :
         rw [← integral_const_mul]
         apply setIntegral_congr_fun measurableSet_ball
         intro z _
-        dsimp only
+        dsimp 
         exact (disk_gradient_pair_succ_eq_area_monomial m n z).symm
       _ = _ := integral_disk_holomorphic_antiholomorphic_gradients (m + 1) (n + 1)
   by_cases hmn : m = n
-  · subst n
-    rw [if_pos rfl] at hgreen ⊢
-    apply mul_left_cancel₀ hc
-    rw [hgreen]
-    dsimp [c]
-    have hm : ((m + 1 : ℕ) : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
-    field_simp [hm]
-  · have hmn' : m + 1 ≠ n + 1 := by omega
-    rw [if_neg hmn'] at hgreen
-    rw [if_neg hmn]
-    exact (mul_eq_zero.mp hgreen).resolve_left hc
+  grind
+  grind
 
 end PolyaNeumann
 

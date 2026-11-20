@@ -9,7 +9,7 @@ public import RequestProject.HerglotzAdmissible
 Combining the Schur complement reduction (`SmallEnergyForm.lean`), Lemma 8.2
 (`small_energy_imForm_basisVec_neg`), Lemma 8.5 on Herglotz data (`herglotz_imSchur_nonneg`) and
 the construction of admissible Herglotz data (`exists_admissible_herglotzVec`), we prove the
-analytic core `small_energy_schur_core` and hence Lemma 8.6 (`small_energy_herglotz_bound'`).
+analytic core `small_energy_schur_core` and hence Lemma 8.6 (`small_energy_herglotz_bound`).
 -/
 
 @[expose] public section
@@ -20,16 +20,20 @@ open scoped ComplexConjugate Real InnerProductSpace
 noncomputable section
 namespace PolyaNeumann
 
+section
+
+variable {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
+include Ω hb hL γ hγ
+
 /-- **Analytic core of Lemma 8.6** (Lemmas 8.3–8.5): for small `E > 0`, every finitely supported
 vector can be moved along `e₀` to a vector on which the Schur complement is nonnegative. -/
-theorem small_energy_schur_core {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
+theorem small_energy_schur_core  :
     ∃ δ > 0, ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
       ∀ v : Ell2, (∃ N : ℕ, ∀ n, N ≤ n → (v : ℕ → ℂ) n = 0) →
         ∃ t : ℂ, 0 ≤ imSchur (monodromy W) (basisVec 0) (v + t • basisVec 0) := by
   obtain ⟨z₁, hz₁⟩ := hL.1.2.nonempty
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.mp hL.1.1 z₁ hz₁
-  have hΩ : 0 < (volume Ω).toReal := ENNReal.toReal_pos
+  have hΩ := ENNReal.toReal_pos
     (hL.1.1.measure_pos volume hL.1.2.nonempty).ne' hb.measure_lt_top.ne
   obtain ⟨δ₅, hδ₅, h₅⟩ := herglotz_imSchur_nonneg hb hL hγ hr hball
   obtain ⟨δa, hδa, hadm⟩ := exists_admissible_herglotzVec hb hΩ (γ 0) z₁
@@ -45,8 +49,7 @@ theorem small_energy_schur_core {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 
 /-- **Lemma 8.6 on `ℓ²`.** For small `E > 0`, `-Im ⟨v, U_E v⟩ ≥ 0` on the closed hyperplane
 `{B(e₀, ·) = 0}`. -/
-theorem small_energy_imForm_nonneg {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
+theorem small_energy_imForm_nonneg  :
     ∃ δ > 0, ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
       ∀ v : Ell2, imPair (monodromy W) (basisVec 0) v = 0 → 0 ≤ imForm (monodromy W) v := by
   obtain ⟨δ₁, hδ₁, h₁⟩ := small_energy_imForm_basisVec_neg hb hL hγ
@@ -59,8 +62,7 @@ theorem small_energy_imForm_nonneg {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   rwa [imSchur_add_smul _ hneg.ne] at ht
 
 /-- **Lemma 8.6 on Herglotz data.** -/
-theorem small_energy_herglotz_bound' {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
+theorem small_energy_herglotz_bound  :
     ∃ δ > 0, ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
       ∃ L : (ℝ → ℂ) →ₗ[ℂ] (Fin 1 → ℂ), ∀ a, IsDirDensity a → L a = 0 →
         0 ≤ herglotzForm W γ E a := by
@@ -85,6 +87,8 @@ theorem small_energy_herglotz_bound' {Ω : Set ℂ} (hb : Bornology.IsBounded Ω
   have := h E hE hEδ W hW (herglotzVec ha (Real.sqrt E) (γ 0)) (by rw [← hga, h0])
   unfold imForm at this
   exact this
+
+end
 
 end PolyaNeumann
 

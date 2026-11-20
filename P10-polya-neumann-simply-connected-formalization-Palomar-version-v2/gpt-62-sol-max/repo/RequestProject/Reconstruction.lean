@@ -5,7 +5,7 @@ public import RequestProject.ReconChordArc
 public import RequestProject.ReconCompat
 public import RequestProject.ReconFourier
 public import RequestProject.ReconVanish
-public import RequestProject.ReconDensity
+public import RequestProject.TraceH1
 public import RequestProject.ReconTrace
 
 /-!
@@ -68,14 +68,8 @@ lemma exists_exterior_radius (hb : Bornology.IsBounded Ω) :
 lemma ae_mem_or_mem_exterior (hγ : IsBoundaryParam Ω γ) (hΩo : IsOpen Ω) :
     ∀ᵐ z ∂(volume : Measure ℂ), z ∈ Ω ∨ z ∈ (closure Ω)ᶜ := by
   have h0 := volume_frontier_eq_zero hγ
-  have : ∀ᵐ z ∂(volume : Measure ℂ), z ∉ frontier Ω := measure_eq_zero_iff_ae_notMem.mp h0
-  filter_upwards [this] with z hz
-  by_cases hzc : z ∈ closure Ω
-  · left
-    rw [frontier, hΩo.interior_eq] at hz
-    by_contra hzΩ
-    exact hz ⟨hzc, hzΩ⟩
-  · right; exact hzc
+  have := measure_eq_zero_iff_ae_notMem.mp h0
+  grind [frontier, hΩo.interior_eq]
 
 end Geometry
 
@@ -94,7 +88,7 @@ lemma intervalIntegrable_fderiv_comp {K : NNReal} (hK : LipschitzWith K γ) {φ 
     (hφ : ContDiff ℝ 1 φ) :
     IntervalIntegrable (fun θ => fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ))) volume 0
       (2 * π) := by
-  have hc : Continuous (fun θ => fderiv ℝ φ (γ θ)) :=
+  have hc :=
     (hφ.continuous_fderiv one_ne_zero).comp hK.continuous
   obtain ⟨M, hM⟩ := (isCompact_Icc (a := (0:ℝ)) (b := 2 * π)).exists_bound_of_continuousOn
     hc.continuousOn
@@ -109,10 +103,9 @@ lemma intervalIntegrable_fderiv_comp {K : NNReal} (hK : LipschitzWith K γ) {φ 
       ≤ ‖fderiv ℝ φ (γ θ)‖ * ‖-(Complex.I * deriv γ θ)‖ := ContinuousLinearMap.le_opNorm _ _
     _ ≤ M * K := by
         gcongr
-        · exact (norm_nonneg _).trans (hM 0 ⟨le_rfl, by positivity⟩)
-        · exact hM θ (Ioc_subset_Icc_self hθ)
-        · rw [norm_neg, norm_mul, Complex.norm_I, one_mul]
-          exact norm_deriv_le_of_lipschitz hK
+        exact (norm_nonneg _).trans (hM 0 ⟨le_rfl, by positivity⟩)
+        grind
+        simpa using norm_deriv_le_of_lipschitz hK
 
 lemma intervalIntegrable_doubleLayer {K : NNReal} (hK : LipschitzWith K γ) {h : ℝ → ℂ}
     (hc : ContinuousOn h (Icc 0 (2 * π))) {φ : ℂ → ℂ} (hφ : ContDiff ℝ 1 φ) :
@@ -131,17 +124,10 @@ lemma doubleLayer_add {K : NNReal} (hK : LipschitzWith K γ) {h₁ h₂ : ℝ �
     (intervalIntegrable_doubleLayer hK h₂c hφ)]
   congr 1
   funext θ
-  simp only [Pi.add_apply]
-  ring
+  grind [Pi.add_apply]
 
 lemma doubleLayer_smul (c : ℂ) (h : ℝ → ℂ) (φ : ℂ → ℂ) :
-    doubleLayer γ (c • h) φ = c * doubleLayer γ h φ := by
-  unfold doubleLayer
-  rw [← intervalIntegral.integral_const_mul]
-  congr 1
-  funext θ
-  simp only [Pi.smul_apply, smul_eq_mul]
-  ring
+    doubleLayer γ (c • h) φ = c * doubleLayer γ h φ := by grind [doubleLayer, intervalIntegral.integral_const_mul, Pi.smul_apply, smul_eq_mul]
 
 /-- Uniqueness of the reconstruction. -/
 lemma IsReconSol.unique (hE : 0 < E) {h : ℝ → ℂ} {u u' : Lp ℂ 2 (volume : Measure ℂ)}
@@ -159,7 +145,7 @@ lemma IsReconSol.unique (hE : 0 < E) {h : ℝ → ℂ} {u u' : Lp ℂ 2 (volume 
   rw [← sub_eq_zero]
   apply Lp.ext
   filter_upwards [hz, Lp.coeFn_zero ℂ 2 (volume : Measure ℂ)] with z h1 h2
-  rw [h1, h2]; rfl
+  simp_all
 
 /-- The reconstruction vanishes outside `Ω̄`. -/
 lemma IsReconSol.ae_eq_zero_exterior (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
@@ -173,8 +159,8 @@ lemma IsReconSol.ae_eq_zero_exterior (hb : Bornology.IsBounded Ω) (hL : IsLipsc
   rw [intervalIntegral.integral_congr (g := fun _ => (0 : ℂ)), intervalIntegral.integral_zero]
   intro θ hθ
   rw [uIcc_of_le (by positivity)] at hθ
-  have hmem : γ θ ∈ closure Ω := frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ)
-  have hnot : γ θ ∉ tsupport φ := fun h' => hφ.2.2 h' hmem
+  have hmem := frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ)
+  have hnot := fun h' => hφ.2.2 h' hmem
   simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) hnot]
 
 lemma contDiff_ePlane (ξ : ℂ) : ContDiff ℝ (⊤ : ℕ∞) (ePlane ξ) := by
@@ -186,8 +172,7 @@ lemma memLp_indicator_of_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hΩ
     {f : ℂ → ℂ} (hf : AEStronglyMeasurable f volume) {C : ℝ} (hC : ∀ z, ‖f z‖ ≤ C) :
     MemLp (Ω.indicator f) 2 volume := by
   rw [memLp_indicator_iff_restrict hΩ]
-  haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by
-    rw [Measure.restrict_apply_univ]; exact hb.measure_lt_top⟩
+  haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by simpa using hb.measure_lt_top⟩
   exact MemLp.of_bound hf.restrict C (Eventually.of_forall hC)
 
 lemma hasCompactSupport_indicator_of_bounded {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
@@ -204,6 +189,21 @@ lemma integral_indicator_combo {Ω : Set ℂ} (hΩ : MeasurableSet Ω) (V : ℂ 
   funext z
   by_cases hz : z ∈ Ω <;> simp [hz]
 
+private lemma integral_mul_congr_ae {μ : Measure ℂ} {f g k : ℂ → ℂ} (h : f =ᵐ[μ] g) :
+    (∫ z, f z * k z ∂μ) = ∫ z, g z * k z ∂μ :=
+  integral_congr_ae (h.mul .rfl)
+
+private lemma integral_mul_lap_of_weakGrad {w : ℂ → ℂ} {gw : Fin 2 → ℂ → ℂ}
+    (hw : MemLp w 2 volume) (hwg : IsWeakGradOn univ w gw) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
+    ∫ z, w z * lap φ z = -∑ i : Fin 2, ∫ z, gw i z * dirD φ (coordDir i) z := by
+  have h (i : Fin 2) := hwg (dirD φ (coordDir i)) (hφ.dirD _) i
+  simp only [lap, mul_add, Fin.sum_univ_two]
+  rw [integral_add (integrable_mul_test hw ((hφ.dirD 1).dirD 1))
+      (integrable_mul_test hw ((hφ.dirD Complex.I).dirD Complex.I))]
+  change (∫ z, w z * fderiv ℝ (dirD φ (coordDir 0)) z (coordDir 0)) +
+      (∫ z, w z * fderiv ℝ (dirD φ (coordDir 1)) z (coordDir 1)) = _
+  rw [h 0, h 1, neg_add]
+
 /-- Existence of the reconstruction, with its structure `u = 1_Ω V + w`, `w ∈ H¹(ℝ²)`. -/
 theorem exists_reconSol (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     (hγ : IsBoundaryParam Ω γ) (hE : 0 < E) {h : ℝ → ℂ}
@@ -212,14 +212,17 @@ theorem exists_reconSol (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω
       ∃ (V : ℂ → ℂ) (K : NNReal) (w : ℂ → ℂ) (gw : Fin 2 → ℂ → ℂ), LipschitzWith K V ∧
         HasCompactSupport V ∧ (∀ θ ∈ Icc 0 (2 * π), V (γ θ) = h θ) ∧ MemLp w 2 volume ∧
         (∀ i, MemLp (gw i) 2 volume) ∧ IsWeakGradOn univ w gw ∧
-        (u : ℂ → ℂ) =ᵐ[volume] fun z => Ω.indicator V z + w z := by
-  have hΩm : MeasurableSet Ω := hL.1.1.measurableSet
+        ((u : ℂ → ℂ) =ᵐ[volume] fun z => Ω.indicator V z + w z) ∧
+        ∀ φ : ℂ → ℂ, TestFunction univ φ →
+          ∑ i : Fin 2, ∫ z, (Ω.indicator (dirD V (coordDir i)) z + gw i z) * dirD φ (coordDir i) z =
+            (E : ℂ) * ∫ z, u z * φ z := by
+  have hΩm := hL.1.1.measurableSet
   obtain ⟨⟨Kh, hKh⟩, hper, -⟩ := id hh
   obtain ⟨V, ⟨KV, hV⟩, hVc, hVh⟩ := exists_lipschitz_extension_of_trace hL hγ hKh hper
   obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
   set G : ℂ → ℂ := Ω.indicator V with hG
   set G' : Fin 2 → ℂ → ℂ := fun i => Ω.indicator (dirD V (coordDir i)) with hG'
-  have hGm : MemLp G 2 volume :=
+  have hGm :=
     memLp_indicator_of_bound hb hΩm hV.continuous.aestronglyMeasurable hCV
   have hG'm : ∀ i, MemLp (G' i) 2 volume := fun i =>
     memLp_indicator_of_bound hb hΩm (C := KV * ‖coordDir i‖)
@@ -239,30 +242,45 @@ theorem exists_reconSol (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω
     (fun ξ hξ => by
       rw [hgreen _ (contDiff_ePlane ξ)]
       exact doubleLayer_ePlane_eq_zero hK hE hh hξ)
-  refine ⟨(hGm.add hw).toLp _, fun φ hφ => ?_, V, KV, w, gw, hV, hVc, hVh, hw, hgw, hwg,
-    MemLp.coeFn_toLp _⟩
-  rw [integral_congr_ae (g := fun z => (G z + w z) * (lap φ z + E * φ z)), heq φ hφ,
-    hgreen φ hφ.1]
-  filter_upwards [MemLp.coeFn_toLp (hGm.add hw)] with z hz
-  rw [hz]; rfl
+  have hu := (hGm.add hw).coeFn_toLp
+  refine ⟨_, ?_, V, KV, w, gw, hV, hVc, hVh, hw, hgw, hwg, hu,
+    fun φ hφ => (heq φ hφ).trans (congrArg ((E : ℂ) * ·) (integral_mul_congr_ae hu).symm)⟩
+  intro φ hφ
+  have hL := integral_mul_lap_of_weakGrad hw hwg hφ
+  have hG'd (i : Fin 2) := integrable_mul_test (hG'm i) (hφ.dirD (coordDir i))
+  have hgd (i : Fin 2) := integrable_mul_test (hgw i) (hφ.dirD (coordDir i))
+  have hsum (i : Fin 2) := integral_add (hG'd i) (hgd i)
+  have hEq := heq φ hφ
+  simp_rw [add_mul, hsum, Finset.sum_add_distrib] at hEq
+  rw [integral_mul_congr_ae hu, ← hgreen _ hφ.1]
+  simp_rw [mul_add]
+  rw [integral_add (integrable_mul_test (hGm.add hw) hφ.lap)
+    (integrable_mul_test (hGm.add hw) (hφ.const_mul _))]
+  have hmass : (∫ z, (G z + w z) * ((E : ℂ) * φ z)) = (E : ℂ) * ∫ z, (G z + w z) * φ z := by
+    rw [← integral_const_mul]
+    exact integral_congr_ae (.of_forall fun z => mul_left_comm _ _ _)
+  have hLap : (∫ z, (G z + w z) * lap φ z) =
+      (∫ z, G z * lap φ z) - ∑ i : Fin 2, ∫ z, gw i z * dirD φ (coordDir i) z := by
+    simp_rw [add_mul]
+    rw [integral_add (integrable_mul_test hGm hφ.lap) (integrable_mul_test hw hφ.lap), hL, sub_eq_add_neg]
+  change (∫ z, (G z + w z) * lap φ z) + (∫ z, (G z + w z) * ((E : ℂ) * φ z)) = _
+  rw [hmass, hLap,
+    integral_add (integrable_mul_test hGm hφ.lap) (integrable_finset_sum _ fun i _ => hG'd i),
+    integral_finset_sum _ fun i _ => hG'd i]
+  simp_rw [add_mul]
+  linear_combination -hEq
 
 /-- The restriction of an `L²(ℝ²)` function to `Ω`. -/
 def restrictL2 (Ω : Set ℂ) : Lp ℂ 2 (volume : Measure ℂ) →ₗ[ℂ] L2 Ω where
   toFun u := MemLp.toLp u ((Lp.memLp u).restrict Ω)
   map_add' u v := by
     apply Lp.ext
-    filter_upwards [MemLp.coeFn_toLp ((Lp.memLp (u + v)).restrict Ω),
-      Lp.coeFn_add (MemLp.toLp u ((Lp.memLp u).restrict Ω)) (MemLp.toLp v ((Lp.memLp v).restrict Ω)),
-      MemLp.coeFn_toLp ((Lp.memLp u).restrict Ω), MemLp.coeFn_toLp ((Lp.memLp v).restrict Ω),
-      ae_restrict_of_ae (Lp.coeFn_add u v)] with z h1 h2 h3 h4 h5
-    rw [h1, h2, Pi.add_apply, h3, h4, h5, Pi.add_apply]
+    grw [MemLp.coeFn_toLp, Lp.coeFn_add, MemLp.coeFn_toLp, MemLp.coeFn_toLp]
+    exact ae_restrict_of_ae (Lp.coeFn_add u v)
   map_smul' c u := by
     apply Lp.ext
-    filter_upwards [MemLp.coeFn_toLp ((Lp.memLp (c • u)).restrict Ω),
-      Lp.coeFn_smul c (MemLp.toLp u ((Lp.memLp u).restrict Ω)),
-      MemLp.coeFn_toLp ((Lp.memLp u).restrict Ω),
-      ae_restrict_of_ae (Lp.coeFn_smul c u)] with z h1 h2 h3 h4
-    rw [h1, RingHom.id_apply, h2, Pi.smul_apply, h3, h4, Pi.smul_apply]
+    grw [MemLp.coeFn_toLp, Lp.coeFn_smul, MemLp.coeFn_toLp]
+    exact ae_restrict_of_ae (Lp.coeFn_smul c u)
 
 lemma restrictL2_coeFn (Ω : Set ℂ) (u : Lp ℂ 2 (volume : Measure ℂ)) :
     (restrictL2 Ω u : ℂ → ℂ) =ᵐ[volume.restrict Ω] u :=
@@ -283,10 +301,7 @@ lemma integral_eq_setIntegral_of_exterior (hγ : IsBoundaryParam Ω γ) (hΩo : 
     ∫ z, f z = ∫ z in Ω, f z := by
   refine (setIntegral_eq_integral_of_ae_compl_eq_zero ?_).symm
   have hf' := (ae_restrict_iff' isClosed_closure.isOpen_compl.measurableSet).mp hf
-  filter_upwards [hf', ae_mem_or_mem_exterior hγ hΩo] with z h1 h2 h3
-  rcases h2 with h2 | h2
-  · exact absurd h2 h3
-  · exact h1 h2
+  filter_upwards [hf', ae_mem_or_mem_exterior hγ hΩo] with x; grind
 
 /-- `L²` functions are locally integrable. -/
 lemma MemLp.locallyIntegrable_two {f : ℂ → ℂ} (hf : MemLp f 2 volume) :
@@ -329,127 +344,32 @@ lemma gw_ae_eq_zero_exterior (hwg : IsWeakGradOn univ w gw) (hgw : ∀ i, MemLp 
     have hw0' := (ae_restrict_iff' hU.measurableSet).mp hw0
     filter_upwards [hw0'] with z hz
     by_cases hzU : z ∈ (closure Ω)ᶜ
-    · rw [hz hzU, zero_mul]
-    · have : z ∉ tsupport φ := fun h' => hzU (hφ.2.2 h')
+    simp_all
+    · have := fun h' => hzU (hφ.2.2 h')
       simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) this]
-  rw [hz, eq_comm, neg_eq_zero] at e
-  exact e
-
-/-- The key identity: `∑ᵢ ∫_Ω ∂ᵢψ (∂ᵢV + gwᵢ) = E ∫_Ω ψ u` for test functions `ψ`. -/
-lemma recon_key_identity (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hγ : IsBoundaryParam Ω γ) {h : ℝ → ℂ}
-    (hV : LipschitzWith KV V) (hVc : HasCompactSupport V)
-    (hVh : ∀ θ ∈ Icc 0 (2 * π), V (γ θ) = h θ) (hw : MemLp w 2 volume)
-    (hgw : ∀ i, MemLp (gw i) 2 volume) (hwg : IsWeakGradOn univ w gw)
-    {u : Lp ℂ 2 (volume : Measure ℂ)} (hu : IsReconSol γ E h u)
-    (hue : (u : ℂ → ℂ) =ᵐ[volume] fun z => Ω.indicator V z + w z)
-    (hext : ∀ᵐ z ∂(volume.restrict (closure Ω)ᶜ), u z = 0)
-    (hgw0 : ∀ i, ∀ᵐ z ∂(volume.restrict (closure Ω)ᶜ), gw i z = 0)
-    {ψ : ℂ → ℂ} (hψ : TestFunction univ ψ) :
-    ∑ i : Fin 2, ∫ z in Ω, dirD ψ (coordDir i) z * (dirD V (coordDir i) z + gw i z) =
-      E * ∫ z in Ω, ψ z * u z := by
-  have hΩo : IsOpen Ω := hL.1.1
-  have hΩm : MeasurableSet Ω := hΩo.measurableSet
-  have hU : MeasurableSet (closure Ω)ᶜ := isClosed_closure.isOpen_compl.measurableSet
-  obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
-  have h1 := hu ψ hψ
-  rw [doubleLayer_eq_integral hb hL hγ hV hVc hVh hψ.1] at h1
-  -- split the left side
-  have hiu : Integrable (fun z => u z * lap ψ z) := integrable_mul_test (Lp.memLp u) hψ.lap
-  have hiu' : Integrable (fun z => u z * (E * ψ z)) :=
-    integrable_mul_test (Lp.memLp u) (hψ.const_mul _)
-  rw [show (fun z => u z * (lap ψ z + E * ψ z)) =
-      fun z => u z * lap ψ z + u z * (E * ψ z) from funext fun z => mul_add _ _ _,
-    integral_add hiu hiu'] at h1
-  -- the Laplacian term
-  have hlap : ∫ z, u z * lap ψ z =
-      (∫ z in Ω, V z * lap ψ z) - ∑ i : Fin 2, ∫ z in Ω, gw i z * dirD ψ (coordDir i) z := by
-    have hiV : Integrable (fun z => Ω.indicator V z * lap ψ z) :=
-      integrable_bdd_mul_test (hV.continuous.aestronglyMeasurable.indicator hΩm)
-        (C := CV) (fun z => by
-          by_cases hz : z ∈ Ω
-          · simp [hz, hCV z]
-          · simp [hz]; exact (norm_nonneg _).trans (hCV z)) hψ.lap
-    have hiw : Integrable (fun z => w z * lap ψ z) := integrable_mul_test hw hψ.lap
-    rw [integral_congr_ae (g := fun z => Ω.indicator V z * lap ψ z + w z * lap ψ z),
-      integral_add hiV hiw]
-    swap
-    · filter_upwards [hue] with z hz
-      rw [hz, add_mul]
-    have hVΩ : ∫ z, Ω.indicator V z * lap ψ z = ∫ z in Ω, V z * lap ψ z := by
-      rw [← integral_indicator hΩm]
-      congr 1; funext z
-      by_cases hz : z ∈ Ω <;> simp [hz]
-    have hwl : ∫ z, w z * lap ψ z =
-        -∑ i : Fin 2, ∫ z, gw i z * dirD ψ (coordDir i) z := by
-      have e0 := hwg (dirD ψ 1) (hψ.dirD 1) 0
-      have e1 := hwg (dirD ψ Complex.I) (hψ.dirD Complex.I) 1
-      rw [coordDir_zero] at e0
-      rw [coordDir_one] at e1
-      have hi0 : Integrable (fun z => w z * dirD (dirD ψ 1) 1 z) :=
-        integrable_mul_test hw ((hψ.dirD 1).dirD 1)
-      have hi1 : Integrable (fun z => w z * dirD (dirD ψ Complex.I) Complex.I z) :=
-        integrable_mul_test hw ((hψ.dirD _).dirD _)
-      unfold lap
-      simp_rw [mul_add]
-      rw [integral_add hi0 hi1, Fin.sum_univ_two, coordDir_zero, coordDir_one]
-      unfold dirD at e0 e1 ⊢
-      rw [e0, e1]
-      ring
-    rw [hVΩ, hwl, ← sub_eq_add_neg]
-    congr 1
-    refine Finset.sum_congr rfl fun i _ => ?_
-    refine integral_eq_setIntegral_of_exterior hγ hΩo ?_
-    filter_upwards [hgw0 i] with z hz
-    rw [hz, zero_mul]
-  have hEu : ∫ z, u z * (E * ψ z) = E * ∫ z in Ω, ψ z * u z := by
-    rw [integral_eq_setIntegral_of_exterior hγ hΩo, ← integral_const_mul]
-    · congr 1; funext z; ring
-    · filter_upwards [hext] with z hz
-      rw [hz, zero_mul]
-  have hiVl : Integrable (fun z => V z * lap ψ z) (volume.restrict Ω) :=
-    integrable_bdd_mul_test hV.continuous.aestronglyMeasurable hCV hψ.lap
-  have hiVd : ∀ i : Fin 2, Integrable (fun z => dirD V (coordDir i) z * dirD ψ (coordDir i) z)
-      (volume.restrict Ω) := fun i =>
-    integrable_bdd_mul_test (aestronglyMeasurable_dirD V _)
-      (norm_dirD_le_of_lipschitz hV _) (hψ.dirD _)
-  have hig : ∀ i : Fin 2, Integrable (fun z => gw i z * dirD ψ (coordDir i) z)
-      (volume.restrict Ω) := fun i => integrable_mul_test ((hgw i).restrict Ω) (hψ.dirD _)
-  rw [hlap, hEu, integral_add hiVl (integrable_finset_sum _ fun i _ => hiVd i),
-    integral_finset_sum _ fun i _ => hiVd i] at h1
-  have hsplit : ∀ i : Fin 2, ∫ z in Ω, dirD ψ (coordDir i) z * (dirD V (coordDir i) z + gw i z) =
-      (∫ z in Ω, dirD V (coordDir i) z * dirD ψ (coordDir i) z) +
-        ∫ z in Ω, gw i z * dirD ψ (coordDir i) z := by
-    intro i
-    rw [integral_congr_ae (g := fun z => dirD V (coordDir i) z * dirD ψ (coordDir i) z +
-      gw i z * dirD ψ (coordDir i) z)]
-    · exact integral_add (hiVd i) (hig i)
-    · exact Eventually.of_forall fun z => by simp only; ring
-  simp only [hsplit, Finset.sum_add_distrib]
-  linear_combination -h1
+  simp_all
 
 end Structure
 
 /-- The restriction of the reconstruction to `Ω` is a Neumann eigenfunction. -/
-theorem IsReconSol.restrict_mem (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
+theorem IsReconSol.restrict_spec (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     (hγ : IsBoundaryParam Ω γ) (hE : 0 < E) {h : ℝ → ℂ}
     (hh : h ∈ compatibleTraces γ E) {u : Lp ℂ 2 (volume : Measure ℂ)}
-    (hu : IsReconSol γ E h u) : restrictL2 Ω u ∈ neumannEigenspace Ω E := by
-  have hΩo : IsOpen Ω := hL.1.1
-  have hΩm : MeasurableSet Ω := hΩo.measurableSet
+    (hu : IsReconSol γ E h u) : restrictL2 Ω u ∈ neumannEigenspace Ω E ∧
+      (restrictL2 Ω u = 0 → ∀ θ ∈ Icc 0 (2 * π), h θ = 0) := by
+  have hΩo := hL.1.1
+  have hΩm := hΩo.measurableSet
   have hUm : MeasurableSet (closure Ω)ᶜ := isClosed_closure.isOpen_compl.measurableSet
-  haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by
-    rw [Measure.restrict_apply_univ]; exact hb.measure_lt_top⟩
-  obtain ⟨u', hu', V, KV, w, gw, hV, hVc, hVh, hw, hgw, hwg, hue⟩ :=
+  haveI : IsFiniteMeasure (volume.restrict Ω) := ⟨by simpa using hb.measure_lt_top⟩
+  obtain ⟨u', hu', V, KV, w, gw, hV, hVc, hVh, hw, hgw, hwg, hue, hweak⟩ :=
     exists_reconSol hb hL hγ hE hh
   obtain rfl := hu'.unique hE hu
   obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
   have hext := hu'.ae_eq_zero_exterior hb hL hγ hE
   have hw0 : ∀ᵐ z ∂(volume.restrict (closure Ω)ᶜ), w z = 0 := by
     filter_upwards [hext, ae_restrict_of_ae hue, ae_restrict_mem hUm] with z h1 h2 h3
-    have hzΩ : z ∉ Ω := fun h' => h3 (subset_closure h')
-    rw [h2] at h1
-    simpa [hzΩ] using h1
+    have hzΩ := fun h' => h3 (subset_closure h')
+    simp_all
   have hgw0 := gw_ae_eq_zero_exterior hwg hgw hw0
   have hgm : ∀ i, MemLp (fun z => dirD V (coordDir i) z + gw i z) 2 (volume.restrict Ω) :=
     fun i => (MemLp.of_bound (aestronglyMeasurable_dirD V _) _
@@ -458,211 +378,114 @@ theorem IsReconSol.restrict_mem (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
   have hUe : (restrictL2 Ω u' : ℂ → ℂ) =ᵐ[volume.restrict Ω] fun z => V z + w z := by
     filter_upwards [restrictL2_coeFn Ω u', ae_restrict_of_ae hue, ae_restrict_mem hΩm]
       with z h1 h2 h3
-    rw [h1, h2, indicator_of_mem h3]
-  refine ⟨g, ?_, ?_⟩
-  · -- the weak gradient
+    simp_all
+  have testIntegral {a b φ : ℂ → ℂ} (ha : a =ᵐ[volume.restrict Ω] b)
+      (hφ : TestFunction Ω φ) : (∫ z in Ω, a z * φ z) = ∫ z, b z * φ z :=
+    (integral_mul_congr_ae ha).trans (setIntegral_eq_integral_of_forall_compl_eq_zero fun z hz =>
+      by rw [image_eq_zero_of_notMem_tsupport (fun ht => hz (hφ.2.2 ht)), mul_zero])
+  have hg : IsWeakGradient Ω (restrictL2 Ω u') g := by
     intro φ hφ i
-    have hφ' := hφ.univ'
-    have hoff : ∀ z, z ∉ Ω → fderiv ℝ φ z (coordDir i) = 0 := fun z hz => by
-      have : z ∉ tsupport φ := fun h' => hz (hφ.2.2 h')
-      simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) this]
-    have hoff' : ∀ z, z ∉ Ω → φ z = 0 := fun z hz =>
-      image_eq_zero_of_notMem_tsupport (fun h' => hz (hφ.2.2 h'))
-    have hiV : Integrable (fun z => V z * fderiv ℝ φ z (coordDir i)) :=
-      integrable_bdd_mul_test hV.continuous.aestronglyMeasurable hCV (hφ'.dirD (coordDir i))
-    have hiw : Integrable (fun z => w z * fderiv ℝ φ z (coordDir i)) :=
-      integrable_mul_test hw (hφ'.dirD (coordDir i))
-    have hiDV : Integrable (fun z => dirD V (coordDir i) z * φ z) :=
-      integrable_bdd_mul_test (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV _) hφ'
-    have hig : Integrable (fun z => gw i z * φ z) := integrable_mul_test (hgw i) hφ'
-    have e1 : ∫ z in Ω, (restrictL2 Ω u' : ℂ → ℂ) z * fderiv ℝ φ z (coordDir i) =
-        ∫ z, (V z * fderiv ℝ φ z (coordDir i) + w z * fderiv ℝ φ z (coordDir i)) := by
-      rw [integral_congr_ae (g := fun z => V z * fderiv ℝ φ z (coordDir i) +
-          w z * fderiv ℝ φ z (coordDir i))]
-      · exact setIntegral_eq_integral_of_forall_compl_eq_zero fun z hz => by simp [hoff z hz]
-      · filter_upwards [hUe] with z hz
-        rw [hz, add_mul]
-    have e2 : ∫ z in Ω, (g i : ℂ → ℂ) z * φ z =
-        ∫ z, (dirD V (coordDir i) z * φ z + gw i z * φ z) := by
-      rw [integral_congr_ae (g := fun z => dirD V (coordDir i) z * φ z + gw i z * φ z)]
-      · exact setIntegral_eq_integral_of_forall_compl_eq_zero fun z hz => by simp [hoff' z hz]
-      · filter_upwards [MemLp.coeFn_toLp (hgm i)] with z hz
-        rw [hgdef]
-        simp only
-        rw [hz, add_mul]
-    rw [e1, e2, integral_add hiV hiw, integral_add hiDV hig,
-      integral_mul_fderiv_of_lipschitz hV (hφ.1.of_le (by exact_mod_cast le_top)) hφ.2.1,
-      hwg φ hφ' i, neg_add]
-    rfl
+    let d := dirD φ (coordDir i)
+    change (∫ z in Ω, restrictL2 Ω u' z * d z) = -∫ z in Ω, g i z * φ z
+    rw [testIntegral hUe (hφ.dirD _), testIntegral (hgm i).coeFn_toLp hφ]
+    simp_rw [add_mul]
+    rw [integral_add (integrable_bdd_mul_test hV.continuous.aestronglyMeasurable hCV
+      (hφ.univ'.dirD _)) (integrable_mul_test hw (hφ.univ'.dirD _)),
+      integral_add (integrable_bdd_mul_test (aestronglyMeasurable_dirD V _)
+        (norm_dirD_le_of_lipschitz hV _) hφ.univ') (integrable_mul_test (hgw i) hφ.univ')]
+    unfold dirD
+    rw [integral_mul_fderiv_of_lipschitz hV (hφ.1.of_le (by trivial)) hφ.2.1, hwg φ hφ.univ' i, neg_add]
+  refine ⟨⟨g, hg, ?_⟩, ?_⟩
   · -- the eigenvalue equation, by density of smooth functions
     intro v hv hvg
-    obtain ⟨φ, hφ, hconv, hdconv⟩ := exists_testFunction_approx hb hL hvg
-    set Φ : ℕ → L2 Ω := fun n => ((hφ n).memLp' 2).toLp (φ n) with hΦ
-    set DΦ : ℕ → Fin 2 → L2 Ω := fun n i => (((hφ n).dirD (coordDir i)).memLp' 2).toLp _
-      with hDΦ
-    have hkey : ∀ n, ∑ i, inner ℂ (DΦ n i) (g i) = (E : ℂ) * inner ℂ (Φ n) (restrictL2 Ω u') := by
-      intro n
-      have hψ := (hφ n).conj
-      have k := recon_key_identity hb hL hγ hV hVc hVh hw hgw hwg hu' hue hext hgw0 hψ
-      simp only [L2.inner_def, RCLike.inner_apply']
-      convert k using 1
+    let L (u : NeumannH1 Ω) := ∑ i, inner ℂ (h1Gradient Ω i u) (g i)
+    let R (u : NeumannH1 Ω) := (E : ℂ) * inner ℂ (h1Value Ω u) (restrictL2 Ω u')
+    have hL' : Continuous L := continuous_finset_sum _ fun i _ =>
+      (h1Gradient Ω i).continuous.inner continuous_const
+    have hR' : Continuous R := continuous_const.mul ((h1Value Ω).continuous.inner continuous_const)
+    have hkey (φ : ℂ → ℂ) (hφ : TestFunction univ φ) :
+        ∑ i : Fin 2, ∫ z in Ω, (dirD V (coordDir i) z + gw i z) * dirD φ (coordDir i) z =
+          (E : ℂ) * ∫ z in Ω, u' z * φ z := by
+      have hext' : ∀ᵐ z ∂(volume.restrict (closure Ω)ᶜ), u' z * φ z = 0 := by
+        filter_upwards [hext] with z hz using by simp [hz]
+      rw [← integral_eq_setIntegral_of_exterior hγ hΩo hext']
+      refine (Finset.sum_congr rfl fun i _ => ?_).trans (hweak φ hφ)
+      rw [integral_eq_setIntegral_of_exterior hγ hΩo (f := fun z =>
+        (Ω.indicator (dirD V (coordDir i)) z + gw i z) * dirD φ (coordDir i) z)]
+      · exact setIntegral_congr_fun hΩm fun z hz => by simp [hz]
+      · filter_upwards [hgw0 i, ae_restrict_mem hUm] with z hz hzc
+        simp [hz, Set.indicator_of_notMem (fun h => hzc (subset_closure h))]
+    have hEq := (denseRange_smoothTraceH1Lin hb hL).equalizer hL' hR' (funext fun φ => by
+      simp only [Function.comp_apply, L, R, smoothTraceH1Lin_apply, h1Gradient_smoothTraceH1,
+        h1Value_smoothTraceH1, L2.inner_def, RCLike.inner_apply']
+      convert hkey _ φ.property.conj using 1
       · refine Finset.sum_congr rfl fun i _ => integral_congr_ae ?_
-        filter_upwards [MemLp.coeFn_toLp (((hφ n).dirD (coordDir i)).memLp' 2 (μ := volume.restrict Ω)),
-          MemLp.coeFn_toLp (hgm i)] with z h1 h2
-        rw [h1, h2, dirD_conj ((hφ n).1.of_le (by exact_mod_cast le_top))]
+        filter_upwards [(smoothTraceTests_memLp_deriv Ω φ i).coeFn_toLp, (hgm i).coeFn_toLp] with z h1 h2
+        rw [h1, h2, dirD_conj (φ.property.1.of_le (by trivial)), mul_comm]
+        rfl
       · congr 1
         refine integral_congr_ae ?_
-        filter_upwards [MemLp.coeFn_toLp ((hφ n).memLp' 2 (μ := volume.restrict Ω)),
-          restrictL2_coeFn Ω u'] with z h1 h2
-        rw [h1, h2]
-    have hΦt : Tendsto Φ atTop (𝓝 v) := by
-      rw [Lp.tendsto_Lp_iff_tendsto_eLpNorm']
-      refine hconv.congr fun n => eLpNorm_congr_ae ?_
-      filter_upwards [MemLp.coeFn_toLp ((hφ n).memLp' 2 (μ := volume.restrict Ω))] with z hz
-      simp only [Pi.sub_apply, hΦ, hz]
-    have hDΦt : ∀ i, Tendsto (fun n => DΦ n i) atTop (𝓝 (hv i)) := by
-      intro i
-      rw [Lp.tendsto_Lp_iff_tendsto_eLpNorm']
-      refine (hdconv i).congr fun n => eLpNorm_congr_ae ?_
-      filter_upwards [MemLp.coeFn_toLp (((hφ n).dirD (coordDir i)).memLp' 2
-        (μ := volume.restrict Ω))] with z hz
-      simp only [Pi.sub_apply, hDΦ, hz]
-      rfl
-    have hL1 : Tendsto (fun n => ∑ i, inner ℂ (DΦ n i) (g i)) atTop
-        (𝓝 (∑ i, inner ℂ (hv i) (g i))) :=
-      tendsto_finset_sum _ fun i _ => (hDΦt i).inner tendsto_const_nhds
-    have hL2 : Tendsto (fun n => (E : ℂ) * inner ℂ (Φ n) (restrictL2 Ω u')) atTop
-        (𝓝 ((E : ℂ) * inner ℂ v (restrictL2 Ω u'))) :=
-      (hΦt.inner tendsto_const_nhds).const_mul _
-    exact tendsto_nhds_unique (hL1.congr hkey) hL2
+        filter_upwards [(smoothTraceTests_memLp Ω φ).coeFn_toLp, restrictL2_coeFn Ω u'] with z h1 h2
+        simp [h1, h2, mul_comm])
+    exact congrFun hEq (h1Vector hvg)
 
-/-- If the reconstruction vanishes on `Ω`, the trace vanishes. -/
-theorem IsReconSol.trace_eq_zero (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hγ : IsBoundaryParam Ω γ) (hE : 0 < E) {h : ℝ → ℂ}
-    (hh : h ∈ compatibleTraces γ E) {u : Lp ℂ 2 (volume : Measure ℂ)}
-    (hu : IsReconSol γ E h u) (h0 : restrictL2 Ω u = 0) :
-    ∀ θ ∈ Icc 0 (2 * π), h θ = 0 := by
-  have hΩo : IsOpen Ω := hL.1.1
-  have hΩm : MeasurableSet Ω := hΩo.measurableSet
-  have hUm : MeasurableSet (closure Ω)ᶜ := isClosed_closure.isOpen_compl.measurableSet
-  obtain ⟨u', hu', V, KV, w, gw, hV, hVc, hVh, hw, hgw, hwg, hue⟩ :=
-    exists_reconSol hb hL hγ hE hh
-  obtain rfl := hu'.unique hE hu
-  obtain ⟨CV, hCV⟩ := hVc.exists_bound_of_continuous hV.continuous
-  have hext := hu'.ae_eq_zero_exterior hb hL hγ hE
-  have hw0 : ∀ᵐ z ∂(volume.restrict (closure Ω)ᶜ), w z = 0 := by
-    filter_upwards [hext, ae_restrict_of_ae hue, ae_restrict_mem hUm] with z h1 h2 h3
-    have hzΩ : z ∉ Ω := fun h' => h3 (subset_closure h')
-    rw [h2] at h1
-    simpa [hzΩ] using h1
-  have hgw0 := gw_ae_eq_zero_exterior hwg hgw hw0
-  -- `u = 0` a.e.
-  have hΩ0 : ∀ᵐ z ∂(volume.restrict Ω), u' z = 0 := by
-    filter_upwards [restrictL2_coeFn Ω u', (Lp.coeFn_zero ℂ 2 (volume.restrict Ω))] with z h1 h2
-    rw [← h1, h0, h2]; rfl
-  have hu0 : ∀ᵐ z ∂(volume : Measure ℂ), u' z = 0 := by
-    filter_upwards [(ae_restrict_iff' hΩm).mp hΩ0, (ae_restrict_iff' hUm).mp hext,
-      ae_mem_or_mem_exterior hγ hΩo] with z h1 h2 h3
-    rcases h3 with h3 | h3
-    · exact h1 h3
-    · exact h2 h3
-  have hwV : ∀ᵐ z ∂(volume : Measure ℂ), w z = -Ω.indicator V z := by
-    filter_upwards [hu0, hue] with z h1 h2
-    rw [h2] at h1
-    linear_combination h1
-  -- `gwᵢ = -∂ᵢV` on `Ω`
-  have hgV : ∀ i, ∀ᵐ z ∂(volume.restrict Ω), gw i z + dirD V (coordDir i) z = 0 := by
-    intro i
-    have hloc : LocallyIntegrable (fun z => gw i z + dirD V (coordDir i) z) volume :=
-      (MemLp.locallyIntegrable_two (hgw i)).add ((memLp_top_of_bound
-        (aestronglyMeasurable_dirD V _) _ (Eventually.of_forall
-          (norm_dirD_le_of_lipschitz hV _))).locallyIntegrable le_top)
-    refine ae_eq_zero_of_integral_mul_test hΩo hloc (fun χ hχ => ?_)
-    have hχ' := hχ.univ'
-    have e1 := hwg χ hχ' i
-    have e2 := integral_mul_fderiv_of_lipschitz hV (hχ.1.of_le (by exact_mod_cast le_top))
-      hχ.2.1 (coordDir i)
-    have e3 : ∫ z, w z * fderiv ℝ χ z (coordDir i) = -∫ z, V z * fderiv ℝ χ z (coordDir i) := by
-      rw [← integral_neg]
-      refine integral_congr_ae ?_
-      filter_upwards [hwV] with z hz
-      rw [hz]
-      by_cases hzΩ : z ∈ Ω
-      · simp [hzΩ]
-      · have : z ∉ tsupport χ := fun h' => hzΩ (hχ.2.2 h')
-        simp [fderiv_of_notMem_tsupport (𝕜 := ℝ) this]
-    have hig : Integrable (fun z => gw i z * χ z) := integrable_mul_test (hgw i) hχ'
-    have hiV : Integrable (fun z => dirD V (coordDir i) z * χ z) :=
-      integrable_bdd_mul_test (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV _)
-        hχ'
-    rw [show (fun z => (gw i z + dirD V (coordDir i) z) * χ z) =
-        fun z => gw i z * χ z + dirD V (coordDir i) z * χ z from funext fun z => add_mul _ _ _,
-      integral_add hig hiV]
-    unfold dirD
-    rw [e3, e2, neg_neg] at e1
-    linear_combination e1
-  -- integration by parts against `1_Ω V`
-  have hstar : ∀ φ : ℂ → ℂ, TestFunction univ φ → ∀ i : Fin 2,
-      ∫ z in Ω, (V z * fderiv ℝ φ z (coordDir i) + dirD V (coordDir i) z * φ z) = 0 := by
-    intro φ hφ i
-    have e1 := hwg φ hφ i
-    have hiV : Integrable (fun z => V z * fderiv ℝ φ z (coordDir i)) (volume.restrict Ω) :=
-      integrable_bdd_mul_test hV.continuous.aestronglyMeasurable hCV (hφ.dirD (coordDir i))
-    have hiD : Integrable (fun z => dirD V (coordDir i) z * φ z) (volume.restrict Ω) :=
-      integrable_bdd_mul_test (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV _) hφ
-    have e2 : ∫ z, w z * fderiv ℝ φ z (coordDir i) = -∫ z in Ω, V z * fderiv ℝ φ z (coordDir i) := by
-      rw [← integral_neg, ← integral_indicator hΩm]
-      refine integral_congr_ae ?_
-      filter_upwards [hwV] with z hz
-      rw [hz]
-      by_cases hzΩ : z ∈ Ω <;> simp [hzΩ]
-    have e3 : ∫ z, gw i z * φ z = -∫ z in Ω, dirD V (coordDir i) z * φ z := by
-      rw [integral_eq_setIntegral_of_exterior hγ hΩo, ← integral_neg]
-      · refine integral_congr_ae ?_
-        filter_upwards [hgV i] with z hz
-        rw [show gw i z = -dirD V (coordDir i) z from eq_neg_of_add_eq_zero_left hz]
+  · intro h0
+    have hg0 : g = 0 := IsWeakGradient.eq_zero_of_zero hΩo (h0 ▸ hg)
+    have hwV : w =ᵐ[volume.restrict Ω] fun z => -V z := by
+      filter_upwards [h0 ▸ hUe, Lp.coeFn_zero ℂ 2 (volume.restrict Ω)] with z h1 h2
+      simp only [h2, Pi.zero_apply] at h1
+      linear_combination -h1
+    have hgwV (i : Fin 2) : gw i =ᵐ[volume.restrict Ω] fun z => -dirD V (coordDir i) z := by
+      have hge : (g i : ℂ → ℂ) =ᵐ[volume.restrict Ω] fun z => dirD V (coordDir i) z + gw i z :=
+        (hgm i).coeFn_toLp
+      filter_upwards [hg0 ▸ hge, Lp.coeFn_zero ℂ 2 (volume.restrict Ω)] with z h1 h2
+      simp only [Pi.zero_apply, h2] at h1
+      linear_combination -h1
+    have hstar {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (i : Fin 2) :
+        Integrable (fun z => V z * dirD φ (coordDir i) z + dirD V (coordDir i) z * φ z)
+          (volume.restrict Ω) ∧
+        (∫ z in Ω, V z * dirD φ (coordDir i) z + dirD V (coordDir i) z * φ z) = 0 := by
+      have hA := integrable_bdd_mul_test (μ := volume.restrict Ω)
+        hV.continuous.aestronglyMeasurable hCV (hφ.dirD (coordDir i))
+      have hB := integrable_bdd_mul_test (μ := volume.restrict Ω)
+        (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV (coordDir i)) hφ
+      refine ⟨hA.add hB, ?_⟩
+      have e := hwg φ hφ i
+      rw [integral_eq_setIntegral_of_exterior hγ hΩo (f := fun z => w z * _)
+          (hw0.mono fun z hz => by simp [hz]),
+        integral_eq_setIntegral_of_exterior hγ hΩo (f := fun z => gw i z * _)
+          ((hgw0 i).mono fun z hz => by simp [hz]), integral_mul_congr_ae hwV,
+        integral_mul_congr_ae (hgwV i)] at e
+      rw [integral_add hA hB]
+      simp only [neg_mul, integral_neg, neg_neg] at e
+      exact neg_eq_iff_add_eq_zero.mp e
+    have hdbar (φ : ℂ → ℂ) (hφ : TestFunction univ φ) :
+        ∫ z in Ω, dbar (fun z => V z * φ z) z = 0 := by
+      let q (i : Fin 2) z := V z * dirD φ (coordDir i) z + dirD V (coordDir i) z * φ z
+      have he : dbar (fun z => V z * φ z) =ᵐ[volume.restrict Ω]
+          fun z => (q 0 z + Complex.I * q 1 z) / 2 := by
+        refine ae_restrict_of_ae ?_
+        filter_upwards [hV.ae_differentiableAt] with z hz
+        simp only [dbar, q, dirD, fderiv_fun_mul hz ((hφ.1.differentiable (by simp)) z),
+          ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, coordDir_zero, coordDir_one]
         ring
-      · filter_upwards [hgw0 i] with z hz
-        rw [hz, zero_mul]
-    rw [integral_add hiV hiD]
-    rw [e2, e3] at e1
-    linear_combination -e1
-  -- `∫_Ω ∂̄(Vφ) = 0`
-  have hdbar : ∀ φ : ℂ → ℂ, TestFunction univ φ → ∫ z in Ω, dbar (fun z => V z * φ z) z = 0 := by
-    intro φ hφ
-    have hiV : ∀ i : Fin 2, Integrable (fun z => V z * fderiv ℝ φ z (coordDir i) +
-        dirD V (coordDir i) z * φ z) (volume.restrict Ω) := fun i =>
-      (integrable_bdd_mul_test hV.continuous.aestronglyMeasurable hCV
-        (hφ.dirD (coordDir i))).add
-      (integrable_bdd_mul_test (aestronglyMeasurable_dirD V _) (norm_dirD_le_of_lipschitz hV _) hφ)
-    rw [integral_congr_ae (g := fun z => ((V z * fderiv ℝ φ z (coordDir 0) +
-        dirD V (coordDir 0) z * φ z) + Complex.I * (V z * fderiv ℝ φ z (coordDir 1) +
-        dirD V (coordDir 1) z * φ z)) / 2)]
-    · rw [integral_div, integral_add (hiV 0) ((hiV 1).const_mul _), integral_const_mul,
-        hstar φ hφ 0, hstar φ hφ 1]
+      rw [integral_congr_ae he, integral_div, integral_add (hstar hφ 0).1 ((hstar hφ 1).1.const_mul _),
+        integral_const_mul, (hstar hφ 0).2, (hstar hφ 1).2]
       simp
-    · refine ae_restrict_of_ae ?_
-      filter_upwards [hV.ae_differentiableAt] with z hz
-      have hφd : DifferentiableAt ℝ φ z := (hφ.1.differentiable (by simp)) z
-      unfold dbar dirD
-      rw [fderiv_fun_mul hz hφd]
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
-        coordDir_zero, coordDir_one]
-      ring
-  -- Green's formula
-  have hint : ∀ φ : ℂ → ℂ, TestFunction univ φ →
-      ∫ θ in (0 : ℝ)..(2 * π), h θ * φ (γ θ) * deriv γ θ = 0 := by
-    intro φ hφ
-    obtain ⟨Cφ, hCφ⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
-    obtain ⟨Kφ, hKφ⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hφ.2.1 hφ.1 (by simp)
-    obtain ⟨Kp, hKp⟩ := lipschitzWith_mul_of_bounded hV hKφ hCV hCφ
-    have hg := integral_boundary_eq_dbar hb hL hγ hKp (hVc.mul_right)
-    rw [hdbar φ hφ, mul_zero] at hg
-    rw [← hg]
-    refine intervalIntegral.integral_congr fun θ hθ => ?_
-    rw [uIcc_of_le (by positivity)] at hθ
-    simp only [hVh θ hθ]
-  exact eq_zero_of_integral_comp_mul_deriv hγ (continuousOn_of_mem_compatibleTraces hh) hint
+    -- Green's formula
+    have hint : ∀ φ : ℂ → ℂ, TestFunction univ φ →
+        ∫ θ in (0 : ℝ)..(2 * π), h θ * φ (γ θ) * deriv γ θ = 0 := by
+      intro φ hφ
+      obtain ⟨Cφ, hCφ⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
+      obtain ⟨Kφ, hKφ⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hφ.2.1 hφ.1 (by simp)
+      obtain ⟨Kp, hKp⟩ := lipschitzWith_mul_of_bounded hV hKφ hCV hCφ
+      have hg := integral_boundary_eq_dbar hb hL hγ hKp (hVc.mul_right)
+      rw [hdbar φ hφ, mul_zero] at hg
+      rw [← hg]
+      refine intervalIntegral.integral_congr fun θ hθ => ?_
+      rw [uIcc_of_le (by positivity)] at hθ
+      simp_all
+    exact eq_zero_of_integral_comp_mul_deriv hγ (continuousOn_of_mem_compatibleTraces hh) hint
 
 /-- The reconstruction map `h ↦ u`, as a function on compatible traces. -/
 def reconFun (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
@@ -695,12 +518,11 @@ theorem neumann_reconstruction_of_compatible (hb : Bornology.IsBounded Ω)
     have hi : ∀ u : Lp ℂ 2 (volume : Measure ℂ),
         Integrable (fun z => u z * (lap φ z + E * φ z)) := fun u =>
       integrable_mul_test (Lp.memLp u)
-        (⟨hφ.lap.1.add (contDiff_const.mul hφ.1), (hφ.lap.2.1.add
-          (hφ.2.1.mul_left)), subset_univ _⟩ : TestFunction univ (fun z => lap φ z + E * φ z))
+        (hφ.helm E)
     rw [integral_congr_ae (g := fun z => F h₁ z * (lap φ z + E * φ z) +
         F h₂ z * (lap φ z + E * φ z)), integral_add (hi _) (hi _), e1, e2,
       Submodule.coe_add, doubleLayer_add hK (continuousOn_of_mem_compatibleTraces h₁.2)
-        (continuousOn_of_mem_compatibleTraces h₂.2) (hφ.1.of_le (by exact_mod_cast le_top))]
+        (continuousOn_of_mem_compatibleTraces h₂.2) (hφ.1.of_le (by trivial))]
     filter_upwards [Lp.coeFn_add (F h₁) (F h₂)] with z hz
     rw [hz, Pi.add_apply, add_mul]
   have hsmul : ∀ (c : ℂ) (h : compatibleTraces γ E), F (c • h) = c • F h := by
@@ -714,11 +536,11 @@ theorem neumann_reconstruction_of_compatible (hb : Bornology.IsBounded Ω)
   let Flin : compatibleTraces γ E →ₗ[ℂ] Lp ℂ 2 (volume : Measure ℂ) :=
     { toFun := F, map_add' := hadd, map_smul' := hsmul }
   refine ⟨((restrictL2 Ω).comp Flin).codRestrict (neumannEigenspace Ω E)
-    (fun h => (hspec h).restrict_mem hb hL hγ hE h.2), fun h h0 => ?_⟩
+    (fun h => ((hspec h).restrict_spec hb hL hγ hE h.2).1), fun h h0 => ?_⟩
   have h0' : restrictL2 Ω (F h) = 0 := by
     have := congrArg Subtype.val h0
-    exact this
-  exact (hspec h).trace_eq_zero hb hL hγ hE h.2 h0'
+    assumption
+  exact ((hspec h).restrict_spec hb hL hγ hE h.2).2 h0'
 
 end Recon
 

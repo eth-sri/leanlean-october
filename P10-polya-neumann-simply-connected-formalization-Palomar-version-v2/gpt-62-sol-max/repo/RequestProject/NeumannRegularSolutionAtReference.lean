@@ -32,20 +32,20 @@ private theorem regular_inverse_apply_form
     (hunit : IsUnit B) (u : H) :
     ((Ring.inverse B) (Sᗮ.orthogonalProjection (A u)) : H) =
       (Sᗮ.orthogonalProjection u : H) := by
-  let v : Sᗮ := Sᗮ.orthogonalProjection u
+  let v := Sᗮ.orthogonalProjection u
   have hAu : A u = A (v : H) := by
     have h := congrArg A (S.starProjection_add_starProjection_orthogonal u)
     simp only [map_add, Submodule.starProjection_apply] at h
     rw [hzero _ (S.orthogonalProjection u).property, zero_add] at h
-    exact h.symm
+    gcongr
   have hproj : Sᗮ.orthogonalProjection (A u) = B v := by
     rw [hAu, ← hcoe v]
-    exact Sᗮ.orthogonalProjection_mem_subspace_eq_self (B v)
+    simp
   rw [hproj]
   have hinv : Ring.inverse B (B v) = v := by
     simpa only [ContinuousLinearMap.mul_apply, ContinuousLinearMap.one_apply] using
       congrArg (fun T : Sᗮ →L[ℂ] Sᗮ => T v) (Ring.inverse_mul_cancel B hunit)
-  exact congrArg (fun w : Sᗮ => (w : H)) hinv
+  grind
 
 /-- The original regular resolvent removes the original Neumann
 resonance component at the reference energy itself. -/

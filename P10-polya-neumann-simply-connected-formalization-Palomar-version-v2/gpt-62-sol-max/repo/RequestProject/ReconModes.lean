@@ -35,11 +35,11 @@ lemma hasDerivAt_intervalIntegral_param {F F' : ℝ → ℝ → ℂ}
     intervalIntegrable_const ?_).2
   · exact Eventually.of_forall fun r =>
       (hFc.comp (continuous_const.prodMk continuous_id)).aestronglyMeasurable
-  · exact (hFc.comp (continuous_const.prodMk continuous_id)).intervalIntegrable _ _
-  · exact (hF'c.comp (continuous_const.prodMk continuous_id)).aestronglyMeasurable
+  exact (hFc.comp (continuous_const.prodMk continuous_id)).intervalIntegrable _ _
+  fun_prop
   · exact Eventually.of_forall fun θ hθ r hr =>
       hC (r, θ) ⟨⟨hr.1.le, hr.2.le⟩, uIoc_subset_uIcc hθ⟩
-  · exact Eventually.of_forall fun θ _ r _ => hF r θ
+  simp_all
 
 /-! ### The modes -/
 
@@ -51,57 +51,78 @@ lemma continuous_eI : Continuous eI := by unfold eI; fun_prop
 lemma hasDerivAt_eI (θ : ℝ) : HasDerivAt eI (Complex.I * eI θ) θ := by
   have h := ((hasDerivAt_id θ).ofReal_comp.mul_const Complex.I).cexp
   convert h using 1
-  · funext x; simp [eI]
+  rfl
   · simp [eI]; ring
 
 lemma eI_two_pi : eI (2 * π) = eI 0 := by
   simp [eI]
 
+section
+
+variable (n : ℤ)
+include n
+
 /-- The angular character `e^{-inθ}`. -/
-def angChar (n : ℤ) (θ : ℝ) : ℂ := Complex.exp (-(n * θ * Complex.I))
+def angChar  (θ : ℝ) : ℂ := Complex.exp (-(n * θ * Complex.I))
 
-lemma continuous_angChar (n : ℤ) : Continuous (angChar n) := by unfold angChar; fun_prop
+lemma continuous_angChar  : Continuous (angChar n) := by unfold angChar; fun_prop
 
-lemma hasDerivAt_angChar (n : ℤ) (θ : ℝ) :
+lemma hasDerivAt_angChar  (θ : ℝ) :
     HasDerivAt (angChar n) (-(n * Complex.I) * angChar n θ) θ := by
   have h := (((hasDerivAt_id θ).ofReal_comp.const_mul (n : ℂ)).mul_const Complex.I).neg.cexp
   convert h using 1
-  · funext x; simp [angChar]
-  · simp only [angChar, Pi.neg_apply, id, Complex.ofReal_one]; ring
+  rfl
+  grind [angChar, Pi.neg_apply, id, Complex.ofReal_one]
 
-lemma angChar_two_pi (n : ℤ) : angChar n (2 * π) = angChar n 0 := by
+lemma angChar_two_pi  : angChar n (2 * π) = angChar n 0 := by
   simp only [angChar, Complex.ofReal_zero, mul_zero, zero_mul, neg_zero, Complex.exp_zero]
   rw [Complex.exp_eq_one_iff]
   exact ⟨-n, by push_cast; ring⟩
 
-/-- The point `x₀ + r e^{iθ}`. -/
-def circPt (x₀ : ℂ) (r θ : ℝ) : ℂ := x₀ + r * eI θ
+end
 
-lemma continuous_circPt (x₀ : ℂ) : Continuous (Function.uncurry (circPt x₀)) := by
+section
+
+variable (x₀ : ℂ)
+include x₀
+
+/-- The point `x₀ + r e^{iθ}`. -/
+def circPt  (r θ : ℝ) : ℂ := x₀ + r * eI θ
+
+lemma continuous_circPt  : Continuous (Function.uncurry (circPt x₀)) := by
   unfold circPt; exact continuous_const.add
     ((Complex.continuous_ofReal.comp continuous_fst).mul (continuous_eI.comp continuous_snd))
 
-lemma hasDerivAt_circPt_r (x₀ : ℂ) (r θ : ℝ) :
+lemma hasDerivAt_circPt_r  (r θ : ℝ) :
     HasDerivAt (fun r => circPt x₀ r θ) (eI θ) r := by
   have h := ((hasDerivAt_id r).ofReal_comp.mul_const (eI θ)).const_add x₀
-  simpa [circPt] using h
+  simp_all [circPt]
 
-lemma hasDerivAt_circPt_θ (x₀ : ℂ) (r θ : ℝ) :
+lemma hasDerivAt_circPt_θ  (r θ : ℝ) :
     HasDerivAt (fun θ => circPt x₀ r θ) (r * (Complex.I * eI θ)) θ := by
   have h := ((hasDerivAt_eI θ).const_mul (r : ℂ)).const_add x₀
-  simpa [circPt] using h
+  assumption
+
+end
+
+section
+
+variable (v : ℂ → ℂ) (x₀ : ℂ) (n : ℤ) (r : ℝ)
+include v x₀ n r
 
 /-- The angular mode `m(r) = ∫₀^{2π} e^{-inθ} v(x₀ + r e^{iθ}) dθ`. -/
-def angMode (v : ℂ → ℂ) (x₀ : ℂ) (n : ℤ) (r : ℝ) : ℂ :=
+def angMode  : ℂ :=
   ∫ θ in (0 : ℝ)..2 * π, angChar n θ * v (circPt x₀ r θ)
 
 /-- The radial derivative of the mode. -/
-def angMode1 (v : ℂ → ℂ) (x₀ : ℂ) (n : ℤ) (r : ℝ) : ℂ :=
+def angMode1  : ℂ :=
   ∫ θ in (0 : ℝ)..2 * π, angChar n θ * fderiv ℝ v (circPt x₀ r θ) (eI θ)
 
 /-- The second radial derivative of the mode. -/
-def angMode2 (v : ℂ → ℂ) (x₀ : ℂ) (n : ℤ) (r : ℝ) : ℂ :=
+def angMode2  : ℂ :=
   ∫ θ in (0 : ℝ)..2 * π, angChar n θ * fderiv ℝ (fderiv ℝ v) (circPt x₀ r θ) (eI θ) (eI θ)
+
+end
 
 section Smooth
 
@@ -115,24 +136,24 @@ lemma continuous_fderiv_fderiv_of_two : Continuous (fderiv ℝ (fderiv ℝ v)) :
   (contDiff_fderiv_of_two hv).continuous_fderiv one_ne_zero
 
 lemma hasDerivAt_angMode (r : ℝ) : HasDerivAt (angMode v x₀ n) (angMode1 v x₀ n r) r := by
-  have hd : Differentiable ℝ v := hv.differentiable (by norm_num)
+  have hd := hv.differentiable (by norm_num)
   refine hasDerivAt_intervalIntegral_param (F := fun r θ => angChar n θ * v (circPt x₀ r θ))
     (F' := fun r θ => angChar n θ * fderiv ℝ v (circPt x₀ r θ) (eI θ)) (fun r θ => ?_) ?_ ?_ _ _ r
-  · exact ((hd _).hasFDerivAt.comp_hasDerivAt r (hasDerivAt_circPt_r x₀ r θ)).const_mul _
-  · exact ((continuous_angChar n).comp continuous_snd).mul (hv.continuous.comp (continuous_circPt x₀))
+  exact ((hd _).hasFDerivAt.comp_hasDerivAt r (hasDerivAt_circPt_r x₀ r θ)).const_mul _
+  exact ((continuous_angChar n).comp continuous_snd).mul (hv.continuous.comp (continuous_circPt x₀))
   · exact ((continuous_angChar n).comp continuous_snd).mul
       (((hv.continuous_fderiv (by norm_num)).comp (continuous_circPt x₀)).clm_apply
         (continuous_eI.comp continuous_snd))
 
 lemma hasDerivAt_angMode1 (r : ℝ) : HasDerivAt (angMode1 v x₀ n) (angMode2 v x₀ n r) r := by
-  have hd : Differentiable ℝ (fderiv ℝ v) := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
+  have hd := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
   refine hasDerivAt_intervalIntegral_param
     (F := fun r θ => angChar n θ * fderiv ℝ v (circPt x₀ r θ) (eI θ))
     (F' := fun r θ => angChar n θ * fderiv ℝ (fderiv ℝ v) (circPt x₀ r θ) (eI θ) (eI θ))
     (fun r θ => ?_) ?_ ?_ _ _ r
   · have h1 := (hd _).hasFDerivAt.comp_hasDerivAt r (hasDerivAt_circPt_r x₀ r θ)
     have h2 := h1.clm_apply (hasDerivAt_const r (eI θ))
-    simp only [ContinuousLinearMap.map_zero, add_zero] at h2
+    simp   at h2
     exact h2.const_mul _
   · exact ((continuous_angChar n).comp continuous_snd).mul
       (((hv.continuous_fderiv (by norm_num)).comp (continuous_circPt x₀)).clm_apply
@@ -144,12 +165,12 @@ lemma hasDerivAt_angMode1 (r : ℝ) : HasDerivAt (angMode1 v x₀ n) (angMode2 v
 /-- `Δv = D²v(1,1) + D²v(i,i)`. -/
 lemma lap_eq_fderiv_fderiv (p : ℂ) :
     lap v p = fderiv ℝ (fderiv ℝ v) p 1 1 + fderiv ℝ (fderiv ℝ v) p Complex.I Complex.I := by
-  have hd : Differentiable ℝ (fderiv ℝ v) := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
+  have hd := (contDiff_fderiv_of_two hv).differentiable one_ne_zero
   have key : ∀ w : ℂ, dirD (dirD v w) w p = fderiv ℝ (fderiv ℝ v) p w w := fun w => by
     unfold dirD
     rw [fderiv_clm_apply (hd p) (differentiableAt_const w)]
     simp
-  rw [lap, key, key]
+  simp [lap, key]
 
 omit hv in
 /-- Rotation invariance of the Laplacian: `D²v(e,e) + D²v(ie,ie) = D²v(1,1) + D²v(i,i)` for
@@ -160,19 +181,16 @@ lemma fderiv_fderiv_rot (p : ℂ) (θ : ℝ) :
     fderiv ℝ (fderiv ℝ v) p 1 1 + fderiv ℝ (fderiv ℝ v) p Complex.I Complex.I := by
   set D := fderiv ℝ (fderiv ℝ v) p
   have he : eI θ = (Real.cos θ) • (1 : ℂ) + (Real.sin θ) • Complex.I := by
-    simp only [eI, Complex.exp_mul_I, Complex.real_smul, mul_one, ← Complex.ofReal_cos,
-      ← Complex.ofReal_sin]
+    simp [eI, Complex.exp_mul_I, Complex.real_smul, Complex.ofReal_sin]
   have hie : Complex.I * eI θ = (-Real.sin θ) • (1 : ℂ) + (Real.cos θ) • Complex.I := by
     rw [he]
-    simp only [Complex.real_smul, mul_one, Complex.ofReal_neg]
-    ring_nf
-    rw [Complex.I_sq]; ring
+    grind [Complex.real_smul, mul_one, Complex.ofReal_neg, Complex.I_sq]
   rw [hie, he]
   simp only [map_add, map_smul, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
   simp only [Complex.real_smul, Complex.ofReal_neg]
   have h1 : ((Real.cos θ : ℂ)) ^ 2 + (Real.sin θ : ℂ) ^ 2 = 1 := by
-    exact_mod_cast Real.cos_sq_add_sin_sq θ
-  linear_combination (D 1 1 + D Complex.I Complex.I) * h1
+    simp
+  grind
 
 omit hv in
 /-- Periodic integration by parts against the angular character. -/
@@ -187,7 +205,7 @@ lemma integral_angChar_mul_deriv {h h' : ℝ → ℂ} (hh : ∀ θ, HasDerivAt h
     (hh'c.intervalIntegrable _ _)
   rw [hibp, angChar_two_pi, hper, sub_self, zero_sub, ← intervalIntegral.integral_const_mul,
     ← intervalIntegral.integral_neg]
-  congr 1; funext θ; ring
+  ring
 
 omit hv in
 lemma continuous_angChar_mul {f : ℝ → ℂ} (hf : Continuous f) :
@@ -217,7 +235,7 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
         (r * (Complex.I * (Complex.I * eI θ))) θ :=
       ((hasDerivAt_eI θ).const_mul Complex.I).const_mul (r : ℂ)
     have h3 := h1.clm_apply h2
-    convert h3 using 1 <;> rfl
+    assumption
   have hg1c : Continuous g1 :=
     (hc1.comp hcp).clm_apply (continuous_const.mul (continuous_const.mul continuous_eI))
   have hg2c : Continuous g2 :=
@@ -226,8 +244,8 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
       ((hc1.comp hcp).clm_apply (continuous_const.mul (continuous_const.mul
         (continuous_const.mul continuous_eI))))
   have hper : ∀ f : ℂ → ℂ, (fun θ => f (circPt x₀ r θ)) (2 * π) =
-      (fun θ => f (circPt x₀ r θ)) 0 := fun f => by simp only [circPt, eI_two_pi]
-  have hg1per : g1 (2 * π) = g1 0 := by simp only [g1, circPt, eI_two_pi]
+      (fun θ => f (circPt x₀ r θ)) 0 := fun f => by grind [circPt, eI_two_pi]
+  have hg1per : g1 (2 * π) = g1 0 := by simp_all [g1, circPt, eI_two_pi]
   -- two periodic integrations by parts
   have hI2 : ∫ θ in (0 : ℝ)..2 * π, angChar n θ * g2 θ =
       -((n : ℂ) ^ 2) * angMode v x₀ n r := by
@@ -235,9 +253,9 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
       integral_angChar_mul_deriv n hg hg1c (hper v)]
     simp only [angMode]
     ring_nf
-    rw [Complex.I_sq]; ring
+    aesop
   -- the pointwise identity
-  have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr
+  have hrC : (r : ℂ) ≠ 0 := by norm_cast
   have hpt : ∀ θ, angChar n θ * lap v (circPt x₀ r θ) =
       angChar n θ * D (circPt x₀ r θ) (eI θ) (eI θ) +
         (angChar n θ * fderiv ℝ v (circPt x₀ r θ) (eI θ)) / r +
@@ -267,8 +285,7 @@ theorem angMode_lap {r : ℝ} (hr : r ≠ 0) :
   rw [intervalIntegral.integral_congr (fun θ _ => hpt θ), intervalIntegral.integral_add
     (hi1.add hi2) hi3, intervalIntegral.integral_add hi1 hi2, intervalIntegral.integral_div,
     intervalIntegral.integral_div, hI2]
-  simp only [angMode2, angMode1, D]
-  field_simp
+  simp only [angMode2, angMode1]
   ring
 
 /-- Bessel's equation for the modes of a solution of `(Δ + E) v = 0` on a circle. -/
@@ -280,10 +297,7 @@ theorem angMode_bessel {E r : ℝ} (hr : r ≠ 0)
   have h2 : ∫ θ in (0 : ℝ)..2 * π, angChar n θ * lap v (circPt x₀ r θ) =
       -(E : ℂ) * angMode v x₀ n r := by
     simp only [angMode]
-    rw [← intervalIntegral.integral_const_mul]
-    congr 1; funext θ
-    have := hhelm θ
-    linear_combination angChar n θ * this
+    grind [intervalIntegral.integral_const_mul]
   rw [h2] at h
   push_cast
   linear_combination h

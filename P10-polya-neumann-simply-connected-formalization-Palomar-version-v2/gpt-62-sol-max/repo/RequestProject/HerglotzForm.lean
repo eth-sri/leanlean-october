@@ -2,6 +2,7 @@ module
 
 public import RequestProject.FixedSpace
 public import RequestProject.CutPhase
+public import RequestProject.PeriodicForm
 
 /-!
 # The Herglotz form and the Cayley rank bound (Proposition 7.10, Lemma 8.7)
@@ -17,7 +18,7 @@ large Cayley eigenvalue `cot(t/2)` from a lower bound on this form on a subspace
 codimension. We prove this deduction (`cayleyRankBound_of_herglotzForm_bound`):
 
 * every vector of `ℓ²` is a Herglotz vector `y_a(z)` at any base point `z`
-  (`exists_herglotzVec_eq`), and `a ↦ y_a(z)` is linear (`herglotzVec_sum`);
+  (`herglotzVec_synthDens`), and `a ↦ y_a(z)` is linear (`herglotzVecLin`);
 * the Herglotz form is `Re ⟨O_E^* g_a, √2 (y + V_E^* y)⟩` with `O_E^* g_a = √2 i (V_E^* - I) y`,
   `y = y_a(γ(0))` (`herglotzForm_eq`; the Cayley factorization of Lemma 4.17, written without
   inverting `I - V_E`); equivalently it is `-4 Im ⟨y, U_E y⟩` (`herglotzForm_eq_im`), so on
@@ -45,8 +46,13 @@ def herglotzForm (W : ℝ → Ell2 →L[ℂ] Ell2) (γ : ℝ → ℂ) (E : ℝ) 
       Complex.I * (volterraOp W (herglotzConormal (Real.sqrt E) a γ) θ -
         volterraOpAdj W (herglotzConormal (Real.sqrt E) a γ) θ))).re
 
+section
+
+variable (k : ℝ)
+include k
+
 /-- Plane waves are multiplicative in the base point. -/
-lemma planeWave_add (k : ℝ) (z w : ℂ) (φ : ℝ) :
+lemma planeWave_add  (z w : ℂ) (φ : ℝ) :
     planeWave k (z + w) φ = planeWave k z φ * planeWave k w φ := by
   unfold planeWave
   rw [← Complex.exp_add]
@@ -56,81 +62,153 @@ lemma planeWave_add (k : ℝ) (z w : ℂ) (φ : ℝ) :
   ring
 
 /-- Moving the base point of the Herglotz coefficients into the density. -/
-lemma herglotzCoeff_shift (k : ℝ) (a : ℝ → ℂ) (m : ℤ) (z : ℂ) :
+lemma herglotzCoeff_shift  (a : ℝ → ℂ) (m : ℤ) (z : ℂ) :
     herglotzCoeff k (fun φ => a φ * planeWave k (-z) φ) m z = herglotzCoeff k a m 0 := by
   unfold herglotzCoeff
   congr 2
   funext φ
   have h := planeWave_add k (-z) z φ
-  rw [neg_add_cancel] at h
-  rw [mul_assoc (a φ), ← h]
+  grind
 
-/-- Every vector of `ℓ²` is the Herglotz vector `y_a(z)` of some `L²` density, at any base
-point `z`. -/
-theorem exists_herglotzVec_eq (k : ℝ) (z : ℂ) (v : Ell2) :
-    ∃ (a : ℝ → ℂ) (ha : IsDirDensity a), herglotzVec ha k z = v := by
-  obtain ⟨a₀, ha₀, hv⟩ := exists_herglotzVec_zero_eq k v
-  have ha : IsDirDensity fun φ => a₀ φ * planeWave k (-z) φ :=
-    ha₀.of_le (ha₀.aestronglyMeasurable.mul (continuous_planeWave k (-z)).aestronglyMeasurable)
-      (Eventually.of_forall fun φ => by rw [norm_mul, norm_planeWave, mul_one])
-  refine ⟨_, ha, ?_⟩
-  rw [← hv]
-  refine lp.ext (funext fun n => ?_)
-  rw [herglotzVec_apply, herglotzVec_apply]
-  unfold herglotzSeq
-  simp only [herglotzCoeff_shift]
+end
 
-/-- Linearity of the Herglotz vector in the density. -/
-theorem herglotzVec_sum {n : ℕ} (c : Fin n → ℂ) (a : Fin n → ℝ → ℂ)
-    (ha : ∀ i, IsDirDensity (a i)) (hs : IsDirDensity (∑ i, c i • a i)) (k : ℝ) (z : ℂ) :
-    herglotzVec hs k z = ∑ i, c i • herglotzVec (ha i) k z := by
-  have hcoef : ∀ m : ℤ, herglotzCoeff k (∑ i, c i • a i) m z =
-      ∑ i, c i * herglotzCoeff k (a i) m z := fun m => by
-    unfold herglotzCoeff
-    have hint : ∀ i ∈ Finset.univ, IntervalIntegrable (fun φ : ℝ => c i *
-        (Complex.exp (-((m : ℂ) * φ * Complex.I)) * (a i φ * planeWave k z φ))) volume 0
-          (2 * π) := fun i _ =>
-      (intervalIntegrable_herglotz (ha i).intervalIntegrable k m z).const_mul _
-    have heq : (fun φ : ℝ => Complex.exp (-((m : ℂ) * φ * Complex.I)) *
-        ((∑ i, c i • a i) φ * planeWave k z φ)) = fun φ : ℝ => ∑ i, c i *
-          (Complex.exp (-((m : ℂ) * φ * Complex.I)) * (a i φ * planeWave k z φ)) := by
-      funext φ
-      simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul, Finset.sum_mul, Finset.mul_sum]
-      refine Finset.sum_congr rfl fun i _ => by ring
-    rw [heq, intervalIntegral.integral_finset_sum hint, Finset.mul_sum]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [intervalIntegral.integral_const_mul]
-    ring
+/-- The Fourier coefficients of the synthesized density: `c₀ = √2 v₀`, `c_n = v_n` (`n ≥ 1`),
+`c_n = 0` (`n < 0`). -/
+def synthCoeff (v : Ell2) (m : ℤ) : ℂ :=
+  if m = 0 then (Real.sqrt 2 : ℂ) * (v : ℕ → ℂ) 0 else if 0 < m then (v : ℕ → ℂ) m.toNat else 0
+
+lemma synthCoeff_add (v w : Ell2) (m : ℤ) :
+    synthCoeff (v + w) m = synthCoeff v m + synthCoeff w m := by
+  unfold synthCoeff; split_ifs <;> simp [mul_add]
+
+lemma synthCoeff_smul (c : ℂ) (v : Ell2) (m : ℤ) :
+    synthCoeff (c • v) m = c * synthCoeff v m := by
+  unfold synthCoeff; split_ifs <;> simp; ring
+
+lemma hasSum_sq_synthCoeff (v : Ell2) :
+    HasSum (fun m => ‖synthCoeff v m‖ ^ 2) (‖v‖ ^ 2 + ‖(v : ℕ → ℂ) 0‖ ^ 2) := by
+  have hv : HasSum (fun n : ℕ => ‖(v : ℕ → ℂ) n‖ ^ 2) (‖v‖ ^ 2) := by
+    have := lp.hasSum_norm (p := 2) (by norm_num) v
+    simp_all
+  have hpos : HasSum (fun n : ℕ => ‖synthCoeff v n‖ ^ 2) (‖v‖ ^ 2 + ‖(v : ℕ → ℂ) 0‖ ^ 2) := by
+    have h2 := hv.add (hasSum_ite_eq 0 (‖(v : ℕ → ℂ) 0‖ ^ 2))
+    refine h2.congr_fun fun n => ?_
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · have hr : ‖(Real.sqrt 2 : ℂ)‖ ^ 2 = 2 := by
+        simp
+      simp [synthCoeff, mul_pow]
+      ring
+    grind [synthCoeff, Int.toNat_natCast, add_zero]
+  have hneg : HasSum (fun n : ℕ => ‖synthCoeff v (-((n : ℤ) + 1))‖ ^ 2) 0 := by
+    have : ∀ n : ℕ, ‖synthCoeff v (-((n : ℤ) + 1))‖ ^ 2 = 0 := fun n => by grind [synthCoeff, norm_zero]
+    simp only [this]; exact hasSum_zero
+  have := HasSum.of_nat_of_neg_add_one (f := fun m => ‖synthCoeff v m‖ ^ 2) hpos hneg
+  simp_all
+
+lemma memℓp_synthCoeff (v : Ell2) : Memℓp (synthCoeff v) 2 := by
+  rw [memℓp_gen_iff (by simp)]
+  simpa using (hasSum_sq_synthCoeff v).summable
+
+/-- The synthesized `L²` function on the circle. -/
+def synthL2 (v : Ell2) : Lp ℂ 2 (@AddCircle.haarAddCircle (2 * π) _) :=
+  fourierBasis.repr.symm ⟨synthCoeff v, memℓp_synthCoeff v⟩
+
+lemma synthL2_add (v w : Ell2) : synthL2 (v + w) = synthL2 v + synthL2 w := by
+  unfold synthL2
+  rw [← map_add]
+  congr 1
+  exact lp.ext (funext fun m => synthCoeff_add v w m)
+
+lemma synthL2_smul (c : ℂ) (v : Ell2) : synthL2 (c • v) = c • synthL2 v := by
+  unfold synthL2
+  rw [← map_smul]
+  congr 1
+  exact lp.ext (funext fun m => synthCoeff_smul c v m)
+
+lemma fourierCoeff_synthL2 (v : Ell2) (m : ℤ) : fourierCoeff (synthL2 v) m = synthCoeff v m := by
+  rw [← fourierBasis_repr, synthL2, LinearIsometryEquiv.apply_symm_apply]
+
+/-- The synthesized density, shifted to the base point `z₁`. -/
+def synthDens (k : ℝ) (z₁ : ℂ) (v : Ell2) (φ : ℝ) : ℂ :=
+  (synthL2 v : AddCircle (2 * π) → ℂ) φ * planeWave k (-z₁) φ
+
+lemma isDirDensity_synthDens (k : ℝ) (z₁ : ℂ) (v : Ell2) : IsDirDensity (synthDens k z₁ v) := by
+  have hfm : MemLp (synthL2 v : AddCircle (2 * π) → ℂ) 2 :=
+    memLp_haarAddCircle_iff.mp (Lp.memLp _)
+  have ha₀ : IsDirDensity fun φ : ℝ => (synthL2 v : AddCircle (2 * π) → ℂ) φ := by
+    have := hfm.comp_measurePreserving (AddCircle.measurePreserving_mk (2 * π) 0)
+    rw [zero_add] at this
+    exact this
+  exact ha₀.of_le ((MemLp.aestronglyMeasurable ha₀).mul (continuous_planeWave k (-z₁)).aestronglyMeasurable)
+    (Eventually.of_forall fun φ => by rw [synthDens, norm_mul, norm_planeWave, mul_one])
+
+lemma herglotzCoeff_synthDens (k : ℝ) (z₁ : ℂ) (v : Ell2) (m : ℤ) :
+    herglotzCoeff k (synthDens k z₁ v) m z₁ = synthCoeff v m := by
+  unfold synthDens
+  rw [herglotzCoeff_shift, herglotzCoeff_zero_eq_fourierCoeff, fourierCoeff_synthL2]
+
+lemma herglotzCoeff_synthDens_neg (k : ℝ) (z₁ : ℂ) (v : Ell2) (j : ℕ) (hj : 1 ≤ j) :
+    herglotzCoeff k (synthDens k z₁ v) (-(j : ℤ)) z₁ = 0 := by grind [herglotzCoeff_synthDens, synthCoeff]
+
+lemma herglotzVec_synthDens (k : ℝ) (z₁ : ℂ) (v : Ell2) :
+    herglotzVec (isDirDensity_synthDens k z₁ v) k z₁ = v := by
   refine lp.ext (funext fun n => ?_)
-  simp only [AddSubgroup.val_finset_sum]
-  erw [Finset.sum_apply]
   rw [herglotzVec_apply]
-  simp only [lp.coeFn_smul, Pi.smul_apply, herglotzVec_apply, smul_eq_mul]
   unfold herglotzSeq
-  split_ifs
-  · rw [hcoef, Finset.sum_div]
-    refine Finset.sum_congr rfl fun i _ => by ring
-  · rw [hcoef]
+  split_ifs with hn
+  simp_all [herglotzCoeff_synthDens, synthCoeff]
+  grind [herglotzCoeff_synthDens, synthCoeff, Int.toNat_natCast]
 
-/-- `e^{it} ≠ 1` for `0 < t < 2π`. -/
-lemma exp_mul_I_ne_one {t : ℝ} (h0 : 0 < t) (h1 : t < 2 * π) :
-    Complex.exp (t * Complex.I) ≠ 1 := by
-  intro h
-  obtain ⟨n, hn⟩ := Complex.exp_eq_one_iff.mp h
-  have htn : t = n * (2 * π) := by
-    have := congrArg Complex.im hn
-    simpa [Complex.mul_im] using this
-  have hp := Real.pi_pos
-  have hn1 : (0 : ℝ) < n := by
-    by_contra hcon; push_neg at hcon; nlinarith
-  have hn2 : (n : ℝ) < 1 := by
-    by_contra hcon; push_neg at hcon; nlinarith
-  have h1' : (0 : ℤ) < n := by exact_mod_cast hn1
-  have h2' : n < (1 : ℤ) := by exact_mod_cast hn2
-  omega
+lemma herglotzCoeff_add_density {a b : ℝ → ℂ} (ha : IsDirDensity a)
+    (hb : IsDirDensity b) (k : ℝ) (m : ℤ) (z : ℂ) :
+    herglotzCoeff k (a + b) m z = herglotzCoeff k a m z + herglotzCoeff k b m z := by
+  unfold herglotzCoeff
+  simp only [Pi.add_apply, add_mul, mul_add]
+  rw [intervalIntegral.integral_add
+    (intervalIntegrable_herglotz ha.intervalIntegrable k m z)
+    (intervalIntegrable_herglotz hb.intervalIntegrable k m z), mul_add]
+
+lemma herglotzCoeff_smul_density (a : ℝ → ℂ) (c : ℂ) (k : ℝ) (m : ℤ) (z : ℂ) :
+    herglotzCoeff k (c • a) m z = c * herglotzCoeff k a m z := by
+  unfold herglotzCoeff
+  simp only [Pi.smul_apply, smul_eq_mul]
+  have h : (fun φ : ℝ => Complex.exp (-((m : ℂ) * φ * Complex.I)) *
+      (c * a φ * planeWave k z φ)) = fun φ : ℝ => c *
+        (Complex.exp (-((m : ℂ) * φ * Complex.I)) * (a φ * planeWave k z φ)) := by
+    grind
+  rw [h, intervalIntegral.integral_const_mul]
+  ring
+
+lemma herglotzVec_add {a b : ℝ → ℂ} (ha : IsDirDensity a) (hb : IsDirDensity b)
+    (k : ℝ) (z : ℂ) :
+    herglotzVec (ha.add hb) k z = herglotzVec ha k z + herglotzVec hb k z := by
+  refine lp.ext (funext fun n => ?_)
+  simp only [lp.coeFn_add, Pi.add_apply, herglotzVec_apply, herglotzSeq,
+    herglotzCoeff_add_density ha hb]
+  split_ifs <;> simp [add_div]
+
+lemma herglotzVec_smul {a : ℝ → ℂ} (ha : IsDirDensity a) (c : ℂ) (k : ℝ) (z : ℂ) :
+    herglotzVec (ha.const_smul c) k z = c • herglotzVec ha k z := by
+  refine lp.ext (funext fun n => ?_)
+  simp only [lp.coeFn_smul, Pi.smul_apply, herglotzVec_apply, herglotzSeq,
+    herglotzCoeff_smul_density, smul_eq_mul]
+  split_ifs <;> simp [mul_div_assoc]
+
+/-- The `L²` direction densities, as a submodule of all functions. -/
+def dirDensities : Submodule ℂ (ℝ → ℂ) where
+  carrier := {a | IsDirDensity a}
+  add_mem' ha hb := MemLp.add ha hb
+  zero_mem' := MemLp.zero
+  smul_mem' c _ ha := MemLp.const_smul ha c
+
+/-- `a ↦ y_a(z)` as a linear map on direction densities. -/
+def herglotzVecLin (k : ℝ) (z : ℂ) : dirDensities →ₗ[ℂ] Ell2 where
+  toFun a := herglotzVec (a.2 : IsDirDensity a.1) k z
+  map_add' a b := herglotzVec_add a.2 b.2 k z
+  map_smul' c a := herglotzVec_smul a.2 c k z
 
 lemma sqrt_two_mul_I_ne_zero : ((Real.sqrt 2 : ℂ) * Complex.I) ≠ 0 :=
-  mul_ne_zero (by exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne')
+  mul_ne_zero (by simp)
     Complex.I_ne_zero
 
 /-- `cot(t/2) = i (e^{it} + 1)/(e^{it} - 1)` for `0 < t < 2π`. -/
@@ -141,26 +219,52 @@ lemma cot_half_eq {t : ℝ} (h0 : 0 < t) (h1 : t < 2 * π) :
   set w : ℂ := Complex.exp (((t / 2 : ℝ) : ℂ) * Complex.I) with hwdef
   have hw0 : w ≠ 0 := Complex.exp_ne_zero _
   have hew : Complex.exp (t * Complex.I) = w * w := by
-    rw [hwdef, ← Complex.exp_add]; congr 1; push_cast; ring
+    rw [← Complex.exp_add]; congr 1; push_cast; ring
   rw [hew] at he1 ⊢
-  have hd2 : w * w - 1 ≠ 0 := sub_ne_zero.mpr he1
+  have hd2 := sub_ne_zero.mpr he1
   have hd3 : w⁻¹ - w ≠ 0 := by
-    rw [show w⁻¹ - w = -(w * w - 1) / w by field_simp; ring]
-    exact div_ne_zero (neg_ne_zero.mpr hd2) hw0
-  rw [Complex.ofReal_cot, Complex.cot_eq_cos_div_sin, Complex.cos, Complex.sin, ← hwdef,
-      neg_mul, Complex.exp_neg, ← hwdef]
+    grind
+  rw [Complex.ofReal_cot, Complex.cot_eq_cos_div_sin, Complex.cos, Complex.sin, neg_mul, Complex.exp_neg]
   rw [div_div_div_cancel_right₀ (two_ne_zero), eq_comm, mul_div_assoc',
     div_eq_div_iff hd2 (mul_ne_zero hd3 Complex.I_ne_zero)]
-  field_simp
-  rw [Complex.I_sq]
-  ring
+  grind [Complex.I_sq]
+
+section
+
+variable {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (hclosed : γ (2 * π) = γ 0) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) {a : ℝ → ℂ} (ha : IsDirDensity a)
+include γ K hK hclosed E W hW a ha
+
+/-- Cayley factorization of the adjoint observation and of the uncorrected pointwise form. -/
+theorem herglotz_cayley_factorization :
+    observationAdj W (herglotzConormal (Real.sqrt E) a γ) =
+        ((Real.sqrt 2 : ℂ) * Complex.I) • (ContinuousLinearMap.adjoint (W (2 * π)) - 1)
+          (herglotzVec ha (Real.sqrt E) (γ 0)) ∧
+      EqOn (periodicA W (fun θ => herglotzWave (Real.sqrt E) a (γ θ))
+        (herglotzConormal (Real.sqrt E) a γ))
+        (observation W ((Real.sqrt 2 : ℂ) • (herglotzVec ha (Real.sqrt E) (γ 0) +
+            ContinuousLinearMap.adjoint (W (2 * π)) (herglotzVec ha (Real.sqrt E) (γ 0))))) (Icc 0 (2 * π)) := by
+  obtain ⟨hO, htrace⟩ := herglotz_driven_boundary hK hclosed hW ha
+  refine ⟨hO, ?_⟩
+  set g := herglotzConormal (Real.sqrt E) a γ
+  set V := W (2 * π)
+  set v := herglotzVec ha (Real.sqrt E) (γ 0)
+  intro θ hθ
+  have htr := htrace θ hθ
+  have hadd := volterraOp_add_adj_of_intervalIntegrable hW.1
+    (intervalIntegrable_herglotzConormal ha.intervalIntegrable (Real.sqrt E) hK _ _) hθ
+  rw [hO] at hadd
+  rw [periodicA]
+  simp only [observation, map_smul, map_add, map_sub, ContinuousLinearMap.sub_apply,
+    ContinuousLinearMap.one_apply, inner_smul_right, inner_add_right, inner_sub_right]
+    at htr hadd ⊢
+  linear_combination 2 * htr - Complex.I * hadd +
+    ((Real.sqrt 2 : ℂ) * (inner ℂ (basisVec 0) ((W θ) v) -
+      inner ℂ (basisVec 0) ((W θ) ((ContinuousLinearMap.adjoint V) v)))) * Complex.I_sq
 
 /-- The Herglotz form through the Cayley factorization (Lemma 4.17, without inverting
 `I - V_E`): with `y = y_a(γ(0))`, `O_E^* g_a = √2 i (V_E^* - I) y` and the form is
 `Re ⟨O_E^* g_a, √2 (y + V_E^* y)⟩`. -/
-theorem herglotzForm_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) :
+theorem herglotzForm_eq  :
     observationAdj W (herglotzConormal (Real.sqrt E) a γ) =
         ((Real.sqrt 2 : ℂ) * Complex.I) • (ContinuousLinearMap.adjoint (W (2 * π)) - 1)
           (herglotzVec ha (Real.sqrt E) (γ 0)) ∧
@@ -168,60 +272,24 @@ theorem herglotzForm_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ
         (⟪observationAdj W (herglotzConormal (Real.sqrt E) a γ),
           (Real.sqrt 2 : ℂ) • (herglotzVec ha (Real.sqrt E) (γ 0) +
             ContinuousLinearMap.adjoint (W (2 * π)) (herglotzVec ha (Real.sqrt E) (γ 0)))⟫_ℂ).re := by
-  obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable (Real.sqrt E) hK
-  have hy : ContinuousOn (fun s => herglotzVec ha (Real.sqrt E) (γ s)) (Icc 0 (2 * π)) :=
-    ((continuous_herglotzVec ha _).comp hK.continuous).continuousOn
-  have hper : herglotzVec ha (Real.sqrt E) (γ (2 * π)) =
-      herglotzVec ha (Real.sqrt E) (γ 0) := by rw [hclosed]
-  have ey := fun θ (_ : θ ∈ Icc 0 (2 * π)) => herglotz_driven ha hK E θ
-  obtain ⟨-, hO⟩ := driven_endpoint hK hW hgm hgB hy ey hper
+  obtain ⟨hO, hpt⟩ := herglotz_cayley_factorization hK hclosed hW ha
   refine ⟨hO, ?_⟩
-  set g := herglotzConormal (Real.sqrt E) a γ with hgdef
-  set V := W (2 * π) with hVdef
-  set v := herglotzVec ha (Real.sqrt E) (γ 0) with hvdef
-  have hpt : ∀ θ ∈ Icc 0 (2 * π), 2 * herglotzWave (Real.sqrt E) a (γ θ) +
-      Complex.I * (volterraOp W g θ - volterraOpAdj W g θ) =
-        observation W ((Real.sqrt 2 : ℂ) • (v + ContinuousLinearMap.adjoint V v)) θ := by
-    intro θ hθ
-    have htr := driven_trace hK hW hgm hgB hy ey θ hθ
-    have hadd := volterraOp_add_adj hW.1 hgm hgB hθ
-    rw [hO] at hadd
-    have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-      exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
-    have hw : herglotzWave (Real.sqrt E) a (γ θ) =
-        (Real.sqrt 2 : ℂ) * inner ℂ (basisVec 0) (herglotzVec ha (Real.sqrt E) (γ θ)) := by
-      simp only [basisVec, inner_single, herglotzVec_apply, herglotzSeq, if_true,
-        herglotzWave_eq]
-      field_simp
-    rw [hw]
-    simp only [observation, map_smul, map_add, map_sub, ContinuousLinearMap.sub_apply,
-      ContinuousLinearMap.one_apply, inner_smul_right, inner_add_right, inner_sub_right]
-      at htr hadd ⊢
-    linear_combination 2 * htr - Complex.I * hadd +
-      ((Real.sqrt 2 : ℂ) * (inner ℂ (basisVec 0) ((W θ) v) -
-        inner ℂ (basisVec 0) ((W θ) ((ContinuousLinearMap.adjoint V) v)))) * Complex.I_sq
-  unfold herglotzForm
-  rw [← hgdef]
-  have hL : (0 : ℝ) ≤ 2 * π := by positivity
-  rw [intervalIntegral.integral_congr (g := fun θ => conj (g θ) *
-      observation W ((Real.sqrt 2 : ℂ) • (v + ContinuousLinearMap.adjoint V v)) θ)
-      (fun θ hθ => by
-        rw [uIcc_of_le hL] at hθ
-        simp only [hpt θ hθ]),
-    ← inner_observationAdj hW.1 hgm hgB]
+  rw [herglotzForm, inner_observationAdj hW.1 (intervalIntegrable_herglotzConormal ha.intervalIntegrable _ hK _ _)]
+  congr 1
+  refine intervalIntegral.integral_congr fun θ hθ => ?_
+  rw [uIcc_of_le Real.two_pi_pos.le] at hθ
+  exact congrArg (conj (herglotzConormal (Real.sqrt E) a γ θ) * ·) (hpt hθ)
 
 /-- On Herglotz data the form depends only on the monodromy `U_E = V_E^*`:
 `herglotzForm W γ E a = -4 Im ⟨y, U_E y⟩` with `y = y_a(γ(0))`. -/
-theorem herglotzForm_eq_im {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) :
+theorem herglotzForm_eq_im  :
     herglotzForm W γ E a = -4 * (⟪herglotzVec ha (Real.sqrt E) (γ 0),
       monodromy W (herglotzVec ha (Real.sqrt E) (γ 0))⟫_ℂ).im := by
   obtain ⟨hO, hF⟩ := herglotzForm_eq hK hclosed hW ha
   rw [hF, hO]
   set y := herglotzVec ha (Real.sqrt E) (γ 0)
   have hU : monodromy W ∈ unitary (Ell2 →L[ℂ] Ell2) := by
-    rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
+    rw [monodromy]
     exact Unitary.star_mem (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩)
   have hnorm : ⟪monodromy W y, monodromy W y⟫_ℂ = ⟪y, y⟫_ℂ := by
     rw [← ContinuousLinearMap.adjoint_inner_right, ← ContinuousLinearMap.mul_apply,
@@ -240,8 +308,10 @@ theorem herglotzForm_eq_im {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
       (conj w + ⟪y, y⟫_ℂ - (⟪y, y⟫_ℂ + w))) = -(2 * Complex.I) * (conj w - w) := by
     linear_combination (-(Complex.I) * (conj w - w)) * h2
   rw [show ((Real.sqrt 2 : ℂ)) * -Complex.I = -(((Real.sqrt 2 : ℂ)) * Complex.I) by ring, e]
-  simp [Complex.mul_re, Complex.sub_re, Complex.sub_im, Complex.conj_re, Complex.conj_im]
+  simp [Complex.mul_re, Complex.sub_im, Complex.conj_re, Complex.conj_im]
   ring
+
+end
 
 /-- On combinations of eigenvectors of `U = V^*` with eigenvalues `e^{it_k}`, the Cayley pairing
 is `-∑ |c_k|² cot(t_k/2)`. -/
@@ -268,11 +338,11 @@ theorem re_inner_eigen_sum {H : Type*} [NormedAddCommGroup H] [InnerProductSpace
   rw [hsum, hv.inner_sum c _ Finset.univ, Complex.re_sum, ← Finset.sum_neg_distrib]
   refine Finset.sum_congr rfl fun k _ => ?_
   have hcot := cot_half_eq (ht k).1 (ht k).2
-  have hμ1 : μ k - 1 ≠ 0 := sub_ne_zero.mpr (exp_mul_I_ne_one (ht k).1 (ht k).2)
+  have hμ1 := sub_ne_zero.mpr (exp_mul_I_ne_one (ht k).1 (ht k).2)
   have hr : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+    simp
   have hc : conj (c k) * c k = ((‖c k‖ ^ 2 : ℝ) : ℂ) := by
-    rw [Complex.conj_mul']; push_cast; ring
+    rw [Complex.conj_mul']; simp
   have key : conj (c k) * ((Real.sqrt 2 : ℂ) * (c k * (s * (μ k - 1))⁻¹ * (1 + μ k))) =
       ((-(‖c k‖ ^ 2 * Real.cot (t k / 2)) : ℝ) : ℂ) := by
     have e1 : conj (c k) * ((Real.sqrt 2 : ℂ) * (c k * (s * (μ k - 1))⁻¹ * (1 + μ k))) =
@@ -282,8 +352,7 @@ theorem re_inner_eigen_sum {H : Type*} [NormedAddCommGroup H] [InnerProductSpace
       rw [Complex.I_sq]
       ring
     rw [e1, hc, ← hcot]
-    push_cast
-    ring
+    simp
   rw [key, Complex.ofReal_re]
 
 /-- **Proposition 7.10 / Lemma 8.7 (Cayley rank bound from a lower bound on the Herglotz
@@ -307,20 +376,18 @@ theorem cayleyRankBound_of_herglotzForm_bound {γ : ℝ → ℂ} {K : NNReal}
   set s : ℂ := (Real.sqrt 2 : ℂ) * Complex.I with hs
   set μ : Fin n → ℂ := fun k => Complex.exp (t k * Complex.I) with hμ
   set y : Fin n → Ell2 := fun k => (s * (μ k - 1))⁻¹ • v k with hydef
-  have hlift : ∀ k, ∃ (a : ℝ → ℂ) (ha : IsDirDensity a),
-      herglotzVec ha (Real.sqrt E) (γ 0) = y k := fun k => exists_herglotzVec_eq _ _ _
-  choose as has hasy using hlift
-  let φ : (Fin n → ℂ) →ₗ[ℂ] (Fin m → ℂ) := L ∘ₗ Fintype.linearCombination ℂ as
+  let as (i : Fin n) : dirDensities := ⟨synthDens (Real.sqrt E) (γ 0) (y i),
+    isDirDensity_synthDens _ _ _⟩
+  let φ := L ∘ₗ dirDensities.subtype ∘ₗ Fintype.linearCombination ℂ as
   have hker : LinearMap.ker φ ≠ ⊥ := LinearMap.ker_ne_bot_of_finrank_lt (by simpa using hlt)
   obtain ⟨c, hc, hc0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hker
-  set a : ℝ → ℂ := ∑ k, c k • as k with hadef
-  have ha : IsDirDensity a := memLp_finset_sum' _ fun k _ => (has k).const_smul (c k)
-  have hLa : L a = 0 := by
-    simpa [φ, Fintype.linearCombination_apply, hadef] using hc
+  let a : dirDensities := ∑ i, c i • as i
+  have ha : IsDirDensity a := a.property
+  have hLa : L a = 0 := hc
   obtain ⟨hO, hF⟩ := herglotzForm_eq hK hclosed hW ha
-  have hy : herglotzVec ha (Real.sqrt E) (γ 0) = ∑ k, c k • y k := by
-    rw [herglotzVec_sum c as has ha]
-    simp only [hasy]
+  have hy : herglotzVec ha (Real.sqrt E) (γ 0) = ∑ i, c i • y i := by
+    change herglotzVecLin _ _ (∑ i, c i • as i) = _
+    simp [map_sum, as, herglotzVecLin, herglotzVec_synthDens]
   have hμ1 : ∀ k, μ k - 1 ≠ 0 := fun k =>
     sub_ne_zero.mpr (exp_mul_I_ne_one (ht k).1 (ht k).2)
   have hs0 : s ≠ 0 := sqrt_two_mul_I_ne_zero

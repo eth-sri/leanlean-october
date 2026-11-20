@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.LocalConformalRegularPrincipal
-public import RequestProject.CorrectedKernelSobolevGain
+public import RequestProject.CorrectedKernelEnergy
 
 /-!
 # The Fourier operator assembled from the genuine regular Neumann map
@@ -25,7 +25,7 @@ open Set Metric
 private theorem normalizedAbs_symbol_sub_one {n : ℤ} (hn : n ≠ 0) :
     normalizedInverseAbsSymbol n - 1 =
       ((sobWeight n ^ (-(1 : ℝ)) : ℝ) : ℂ) * normalizedInverseAbsSymbol n := by
-  have hw : sobWeight n ≠ 0 := (sobWeight_pos n).ne'
+  have hw := (sobWeight_pos n).ne'
   have habs : |(n : ℝ)| ≠ 0 := abs_ne_zero.mpr (Int.cast_ne_zero.mpr hn)
   have hr : sobWeight n / |(n : ℝ)| - 1 =
       sobWeight n ^ (-(1 : ℝ)) * (sobWeight n / |(n : ℝ)|) := by
@@ -44,14 +44,13 @@ theorem normalizedInverseAbsOperator_sub_one_factorization :
   intro b
   apply lp.ext
   funext n
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
+  simp only [ContinuousLinearMap.one_apply,
     ContinuousLinearMap.comp_apply, lp.coeFn_sub, Pi.sub_apply,
     normalizedInverseAbsOperator_apply, sobolevSmoothing, diagOp_apply,
     zeroModeProjection_apply]
   by_cases hn : n = 0
-  · subst n
-    simp [normalizedInverseAbsSymbol]
-  · simp only [if_neg hn, zero_mul, sub_zero]
+  simp_all [normalizedInverseAbsSymbol]
+  · simp  [if_neg hn, zero_mul, sub_zero]
     calc
       _ = (normalizedInverseAbsSymbol n - 1) * b n := by ring
       _ = _ := by rw [normalizedAbs_symbol_sub_one hn]; ring
@@ -65,15 +64,15 @@ theorem isCompactOperator_normalizedInverseAbsOperator_sub_one :
 def normalizedPeriodicRegularOperator {Ω : Set ℂ}
     (Q : NeumannH1 Ω →L[ℂ] L2Z) (E₀ E : ℝ)
     (W : ℝ → Ell2 →L[ℂ] Ell2)
-    (hbase : Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2) :
+    (hbase : Summable fun p => ‖correctedRemainderMatrix W p‖ ^ 2) :
     L2Z →L[ℂ] L2Z :=
   (2 : ℂ) • (normalizedNeumannRegular Q E₀ E - normalizedInverseAbsOperator) +
-    principalNormalized + hsMatrixOp (correctedRemainderMatrix W 0 0) hbase
+    principalNormalized + hsMatrixOp (correctedRemainderMatrix W) hbase
 
 theorem normalizedPeriodicRegularOperator_sub_four_posProj_compact
     {Ω : Set ℂ} (Q : NeumannH1 Ω →L[ℂ] L2Z) (E₀ E : ℝ)
     (W : ℝ → Ell2 →L[ℂ] Ell2)
-    (hbase : Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2)
+    (hbase : Summable fun p => ‖correctedRemainderMatrix W p‖ ^ 2)
     (hN : IsCompactOperator (normalizedNeumannRegular Q E₀ E - (1 : L2Z →L[ℂ] L2Z))) :
     IsCompactOperator (normalizedPeriodicRegularOperator Q E₀ E W hbase -
       (4 : ℂ) • posProj) := by
@@ -86,7 +85,7 @@ theorem normalizedPeriodicRegularOperator_sub_four_posProj_compact
   have heq : normalizedPeriodicRegularOperator Q E₀ E W hbase - (4 : ℂ) • posProj =
       (2 : ℂ) • (normalizedNeumannRegular Q E₀ E - normalizedInverseAbsOperator) +
         (principalNormalized - (4 : ℂ) • posProj) +
-          hsMatrixOp (correctedRemainderMatrix W 0 0) hbase := by
+          hsMatrixOp (correctedRemainderMatrix W) hbase := by
     unfold normalizedPeriodicRegularOperator
     abel
   rw [heq]
@@ -95,29 +94,20 @@ theorem normalizedPeriodicRegularOperator_sub_four_posProj_compact
 
 section PhysicalCoordinates
 
-variable {R C : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
+include coords
 
-include hb hhol hinj hC e he hsource hes in
 theorem localConformal_normalizedPeriodicRegular_sub_four_posProj_compact
     {E₀ E : ℝ} (hE₀ : 0 ≤ E₀)
     (hunit : IsUnit (h1ComplementForm (F '' ball (0 : ℂ) 1) E₀ E))
     (W : ℝ → Ell2 →L[ℂ] Ell2)
-    (hbase : Summable fun p => ‖correctedRemainderMatrix W 0 0 p‖ ^ 2) :
+    (hbase : Summable fun p => ‖correctedRemainderMatrix W p‖ ^ 2) :
     IsCompactOperator (normalizedPeriodicRegularOperator
-      (localConformalDiskHalfTrace hR F hFs hL) E₀ E W hbase - (4 : ℂ) • posProj) := by
+      (coords.halfTrace) E₀ E W hbase - (4 : ℂ) • posProj) := by
   exact normalizedPeriodicRegularOperator_sub_four_posProj_compact
-    (localConformalDiskHalfTrace hR F hFs hL) E₀ E W hbase
+    (coords.halfTrace) E₀ E W hbase
     (isCompactOperator_localConformal_normalizedNeumannRegular_sub_one
-      hR F hFs hb hL hhol hinj hC e he hsource hes hE₀ hunit)
+      coords hE₀ hunit)
 
 end PhysicalCoordinates
 

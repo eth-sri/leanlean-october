@@ -31,6 +31,18 @@ namespace PolyaNeumann
 open Set MeasureTheory
 open scoped Real InnerProductSpace ComplexConjugate
 
+/-- The actual compact mass operator in the shifted-energy H¹ space. -/
+def h1MassOperator (Ω : Set ℂ) : NeumannH1 Ω →L[ℂ] NeumannH1 Ω :=
+  (ContinuousLinearMap.adjoint (h1Value Ω)).comp (h1Value Ω)
+
+theorem h1MassOperator_isSelfAdjoint (Ω : Set ℂ) :
+    IsSelfAdjoint (h1MassOperator Ω) :=
+  (ContinuousLinearMap.isPositive_adjoint_comp_self (h1Value Ω)).isSelfAdjoint
+
+theorem h1MassOperator_isCompactOperator {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
+    (hL : IsLipschitzDomain Ω) : IsCompactOperator (h1MassOperator Ω) :=
+  (h1Value_isCompactOperator hb hL).clm_comp (ContinuousLinearMap.adjoint (h1Value Ω))
+
 /-- The actual Helmholtz form operator on the shifted-energy H¹ space. -/
 def h1HelmholtzForm (Ω : Set ℂ) (E : ℝ) : NeumannH1 Ω →L[ℂ] NeumannH1 Ω :=
   1 - ((E + 1 : ℝ) : ℂ) •
@@ -55,7 +67,7 @@ theorem h1HelmholtzForm_isSelfAdjoint (Ω : Set ℂ) (E : ℝ) :
     IsSelfAdjoint (h1HelmholtzForm Ω E) := by
   have hc : IsSelfAdjoint ((E + 1 : ℝ) : ℂ) := by
     simp [IsSelfAdjoint]
-  have hId : IsSelfAdjoint (1 : NeumannH1 Ω →L[ℂ] NeumannH1 Ω) :=
+  have hId :=
     IsSelfAdjoint.one (NeumannH1 Ω →L[ℂ] NeumannH1 Ω)
   exact hId.sub
     (hc.smul (ContinuousLinearMap.isPositive_adjoint_comp_self (h1Value Ω)).isSelfAdjoint)
@@ -66,7 +78,7 @@ theorem h1HelmholtzForm_kernel_mem (Ω : Set ℂ) (E : ℝ) (u : NeumannH1 Ω)
   refine ⟨fun i => h1Gradient Ω i u, h1Value_weakGradient Ω u, ?_⟩
   intro v g hg
   have h := h1HelmholtzForm_inner Ω E (h1Vector hg) u
-  rw [hu, inner_zero_right, h1Value_h1Vector] at h
+  rw [hu, inner_zero_right] at h
   simp only [h1Gradient_h1Vector] at h
   exact sub_eq_zero.mp h.symm
 
@@ -79,15 +91,9 @@ theorem neumannEigenspace_eq_bot_of_nonresonant {Ω : Set ℂ}
   haveI : FiniteDimensional ℂ (neumannEigenspace Ω E) :=
     finiteDimensional_neumannEigenspace hb hL E
   have hempty : {j : ℕ | neumannEigenvalue Ω j = ENNReal.ofReal E} = ∅ := by
-    ext j
-    simp [hnr j]
+    simp_all
   have hr := finrank_neumannEigenspace_le hb hL hE
-  rw [hempty, Set.encard_empty] at hr
-  have hr0 : (Module.finrank ℂ (neumannEigenspace Ω E) : ℕ∞) = 0 :=
-    le_antisymm hr (zero_le)
-  have hrnat : Module.finrank ℂ (neumannEigenspace Ω E) = 0 := by
-    exact_mod_cast hr0
-  exact Submodule.finrank_eq_zero.mp hrnat
+  simp_all
 
 theorem h1HelmholtzForm_injective {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {E : ℝ} (hE : 0 ≤ E)
@@ -96,18 +102,25 @@ theorem h1HelmholtzForm_injective {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   rw [injective_iff_map_eq_zero]
   intro u hu
   have hm := h1HelmholtzForm_kernel_mem Ω E u hu
-  rw [neumannEigenspace_eq_bot_of_nonresonant hb hL hE hnr, Submodule.mem_bot] at hm
+  rw [neumannEigenspace_eq_bot_of_nonresonant hb hL hE hnr] at hm
   apply h1Value_injective hL.1.1
-  simpa using hm
+  assumption
 
 /-- Rellich compactness supplies the compact perturbation in the form operator. -/
 theorem h1HelmholtzForm_compact_part {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) (E : ℝ) :
     IsCompactOperator (-((E + 1 : ℝ) : ℂ) •
       ((ContinuousLinearMap.adjoint (h1Value Ω)).comp (h1Value Ω))) := by
-  have h := ((h1Value_isCompactOperator hb hL).clm_comp
-    (ContinuousLinearMap.adjoint (h1Value Ω))).smul (-((E + 1 : ℝ) : ℂ))
-  exact h
+  exact (h1MassOperator_isCompactOperator hb hL).smul (-((E + 1 : ℝ) : ℂ))
+
+lemma isUnit_one_sub_smul_of_compact
+    {X : Type*} [NormedAddCommGroup X] [NormedSpace ℂ X] [CompleteSpace X]
+    (M : X →L[ℂ] X) (hM : IsCompactOperator M) (c : ℂ)
+    (hinj : Function.Injective ((1 : X →L[ℂ] X) - c • M)) :
+    IsUnit ((1 : X →L[ℂ] X) - c • M) := by
+  rw [sub_eq_add_neg, ← neg_smul] at hinj ⊢
+  exact ContinuousLinearMap.isUnit_iff_bijective.mpr
+    ⟨hinj, surjective_of_injective_one_add (hM.smul (-c)) hinj⟩
 
 /-- Nonresonance implies a bounded inverse of the actual form operator, by
 the proved identity-plus-compact Fredholm alternative. -/
@@ -115,19 +128,8 @@ theorem h1HelmholtzForm_isUnit {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) {E : ℝ} (hE : 0 ≤ E)
     (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) :
     IsUnit (h1HelmholtzForm Ω E) := by
-  let C : NeumannH1 Ω →L[ℂ] NeumannH1 Ω := -((E + 1 : ℝ) : ℂ) •
-    ((ContinuousLinearMap.adjoint (h1Value Ω)).comp (h1Value Ω))
-  have hC : IsCompactOperator C := h1HelmholtzForm_compact_part hb hL E
-  have heq : (1 : NeumannH1 Ω →L[ℂ] NeumannH1 Ω) + C = h1HelmholtzForm Ω E := by
-    simpa only [C, h1HelmholtzForm, sub_eq_add_neg] using
-      congrArg (fun T : NeumannH1 Ω →L[ℂ] NeumannH1 Ω => 1 + T)
-        (_root_.neg_smul ((E + 1 : ℝ) : ℂ)
-          ((ContinuousLinearMap.adjoint (h1Value Ω)).comp (h1Value Ω)))
-  have hinj : Function.Injective ((1 : NeumannH1 Ω →L[ℂ] NeumannH1 Ω) + C) := by
-    rw [heq]
-    exact h1HelmholtzForm_injective hb hL hE hnr
-  rw [← heq]
-  exact isUnit_of_bijective _ ⟨hinj, (injective_iff_surjective_one_add hC).mp hinj⟩
+  exact isUnit_one_sub_smul_of_compact _ (h1MassOperator_isCompactOperator hb hL) _
+    (h1HelmholtzForm_injective hb hL hE hnr)
 
 /-- A globally defined inverse; its solution properties below are asserted
 only at energies whose nonresonance has been established. -/
@@ -137,9 +139,7 @@ def h1HelmholtzResolvent (Ω : Set ℂ) (E : ℝ) : NeumannH1 Ω →L[ℂ] Neuma
 theorem h1HelmholtzResolvent_isSelfAdjoint (Ω : Set ℂ) (E : ℝ) :
     IsSelfAdjoint (h1HelmholtzResolvent Ω E) := by
   rw [isSelfAdjoint_iff]
-  change star (Ring.inverse (h1HelmholtzForm Ω E)) = Ring.inverse (h1HelmholtzForm Ω E)
-  exact (Ring.inverse_star (h1HelmholtzForm Ω E)).symm.trans
-    (congrArg Ring.inverse (h1HelmholtzForm_isSelfAdjoint Ω E).star_eq)
+  exact id (Eq.trans (Eq.symm (Ring.inverse_star (h1HelmholtzForm Ω E))) (congrArg Ring.inverse (IsSelfAdjoint.star_eq (h1HelmholtzForm_isSelfAdjoint Ω E))))
 
 /-- The actual H¹ solution with prescribed L² conormal density. -/
 def neumannBoundaryPoisson {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
@@ -167,22 +167,11 @@ theorem isBoundaryNeumannSolution_iff_form_eq {Ω : Set ℂ} (hb : Bornology.IsB
     apply ext_inner_left ℂ
     intro v
     rw [h1HelmholtzForm_inner, h1BoundaryLoad_inner]
-    exact hu v
+    tauto
   · intro hu v
     rw [← h1HelmholtzForm_inner, hu, h1BoundaryLoad_inner]
 
-/-- The genuine L² Neumann-to-Dirichlet map is the actual trace of the unique
-variational solution at nonresonant energies. -/
-def neumannToDirichletL2 {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ) :
-    BoundaryL2 →L[ℂ] BoundaryL2 :=
-  (h1BoundaryTrace hb hL hγ).comp (neumannBoundaryPoisson hb hL hγ E)
 
-@[simp] theorem neumannToDirichletL2_apply {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    (E : ℝ) (g : BoundaryL2) :
-    neumannToDirichletL2 hb hL hγ E g =
-      h1BoundaryTrace hb hL hγ (neumannBoundaryPoisson hb hL hγ E g) := rfl
 
 end PolyaNeumann
 

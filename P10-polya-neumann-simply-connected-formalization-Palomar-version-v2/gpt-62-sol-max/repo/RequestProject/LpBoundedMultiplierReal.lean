@@ -23,12 +23,9 @@ theorem inner_lpBoundedMultiplier_real
     (v w : Lp ℂ 2 μ) :
     ⟪lpBoundedMultiplier a ha hbound v, w⟫_ℂ =
       ⟪v, lpBoundedMultiplier a ha hbound w⟫_ℂ := by
-  rw [L2.inner_def, L2.inner_def]
+  rw [L2.inner_def]
   apply integral_congr_ae
-  filter_upwards [lpBoundedMultiplier_ae a ha hbound v,
-    lpBoundedMultiplier_ae a ha hbound w, hreal] with x hv hw hr
-  simp only [RCLike.inner_apply', hv, hw, map_mul, hr]
-  ring
+  filter_upwards [lpBoundedMultiplier_ae a ha hbound v, lpBoundedMultiplier_ae a ha hbound w, hreal] with x; simp_all [smul_eq_mul, mul_assoc, mul_comm, mul_left_comm]
 
 end PolyaNeumann
 

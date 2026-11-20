@@ -37,17 +37,15 @@ def herglotzQd (k : ℝ) (a : ℝ → ℂ) (γ : ℝ → ℂ) (θ : ℝ) : ℂ :
 def herglotzQ (k : ℝ) (a : ℝ → ℂ) (γ : ℝ → ℂ) (θ : ℝ) : ℂ :=
   ∫ t in (0 : ℝ)..θ, herglotzQd k a γ t
 
-lemma herglotzQd_bounded (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ) {K : NNReal}
-    (hK : LipschitzWith K γ) :
-    AEStronglyMeasurable (herglotzQd k a γ) volume ∧
-      ∀ θ, ‖herglotzQd k a γ θ‖ ≤ K * ((2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖) := by
-  refine ⟨?_, fun θ => ?_⟩
-  · exact (Complex.continuous_conj.comp_aestronglyMeasurable
-      (measurable_deriv γ).aestronglyMeasurable).mul
-      ((continuous_herglotzCoeff ha k (-1)).comp hK.continuous).aestronglyMeasurable
-  · rw [herglotzQd, norm_mul, Complex.norm_conj]
-    exact mul_le_mul (norm_deriv_le_of_lipschitz hK) (norm_herglotzCoeff_le k _ _)
-      (norm_nonneg _) K.2
+lemma intervalIntegrable_herglotzQd (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
+    {K : NNReal} (hK : LipschitzWith K γ) (u v : ℝ) :
+    IntervalIntegrable (herglotzQd k a γ) volume u v :=
+  (intervalIntegrable_conj' (intervalIntegrable_lipschitz_deriv hK u v)).mul_continuousOn
+    (((continuous_herglotzCoeff ha k (-1)).comp hK.continuous).continuousOn)
+
+lemma continuous_herglotzQ (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
+    {K : NNReal} (hK : LipschitzWith K γ) : Continuous (herglotzQ k a γ) :=
+  intervalIntegral.continuous_primitive (intervalIntegrable_herglotzQd ha k hK) 0
 
 /-- Along the boundary, `g_a = -i (u_a ∘ γ)' + k q` almost everywhere. -/
 lemma herglotzConormal_ae_eq (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
@@ -73,12 +71,8 @@ lemma primitive_herglotzConormal_eq (ha : IntervalIntegrable a volume 0 (2 * π)
         k * herglotzQ k a γ θ := by
   obtain ⟨C, hC⟩ := lipschitzWith_herglotzCoeff ha k 0
   have hh : LipschitzWith (C * K) (fun s => herglotzCoeff k a 0 (γ s)) := hC.comp hK
-  have hdi : IntervalIntegrable (deriv fun s => herglotzCoeff k a 0 (γ s)) volume 0 θ :=
-    intervalIntegrable_of_norm_le (measurable_deriv _).aestronglyMeasurable
-      (fun t => norm_deriv_le_of_lipschitz hh) 0 θ
-  obtain ⟨hqm, hqB⟩ := herglotzQd_bounded ha k hK
-  have hqi : IntervalIntegrable (herglotzQd k a γ) volume 0 θ :=
-    intervalIntegrable_of_norm_le hqm (fun t => hqB t) 0 θ
+  have hdi := intervalIntegrable_lipschitz_deriv hh 0 θ
+  have hqi := intervalIntegrable_herglotzQd ha k hK 0 θ
   rw [intervalIntegral.integral_congr_ae (g := fun s => -Complex.I *
       deriv (fun s => herglotzCoeff k a 0 (γ s)) s + k * herglotzQd k a γ s)
       ((herglotzConormal_ae_eq ha k hK).mono fun s hs _ => hs),
@@ -94,39 +88,16 @@ lemma integral_conj_deriv_mul_herglotzQ (ha : IntervalIntegrable a volume 0 (2 *
         herglotzQ k a γ θ =
       conj (herglotzCoeff k a 0 (γ (2 * π))) * herglotzQ k a γ (2 * π) -
         ∫ θ in (0 : ℝ)..(2 * π), conj (herglotzCoeff k a 0 (γ θ)) * herglotzQd k a γ θ := by
-  have h2π : (0 : ℝ) ≤ 2 * π := by positivity
   obtain ⟨C, hC⟩ := lipschitzWith_herglotzCoeff ha k 0
-  have hh : LipschitzWith (C * K) (fun s => herglotzCoeff k a 0 (γ s)) := hC.comp hK
-  obtain ⟨hqm, hqB⟩ := herglotzQd_bounded ha k hK
-  set B := K * ((2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖)
-  have hdm : AEStronglyMeasurable (fun θ => conj (deriv (fun s => herglotzCoeff k a 0 (γ s)) θ))
-      (volume.restrict (Icc 0 (2 * π))) :=
-    (Complex.continuous_conj.comp_aestronglyMeasurable
-      (measurable_deriv _).aestronglyMeasurable)
-  have key := integral_primitive_mul_eq h2π hqm.restrict hdm (Bf := B) (Bg := C * K)
-    (fun t _ => hqB t) (fun t _ => by
-      rw [Complex.norm_conj]; exact norm_deriv_le_of_lipschitz hh)
-  have hin : ∀ t, ∫ s in t..(2 * π), conj (deriv (fun s => herglotzCoeff k a 0 (γ s)) s) =
-      conj (herglotzCoeff k a 0 (γ (2 * π))) - conj (herglotzCoeff k a 0 (γ t)) := fun t => by
-    rw [intervalIntegral_conj, integral_deriv_of_lipschitz hh, map_sub]
-  have hl : ∫ θ in (0 : ℝ)..(2 * π), conj (deriv (fun s => herglotzCoeff k a 0 (γ s)) θ) *
-        herglotzQ k a γ θ =
-      ∫ s in (0 : ℝ)..(2 * π), (∫ t in (0 : ℝ)..s, herglotzQd k a γ t) *
-        conj (deriv (fun s => herglotzCoeff k a 0 (γ s)) s) :=
-    intervalIntegral.integral_congr fun θ _ => by rw [herglotzQ, mul_comm]
-  have hqi : IntervalIntegrable (herglotzQd k a γ) volume 0 (2 * π) :=
-    intervalIntegrable_of_norm_le hqm (fun t => hqB t) 0 (2 * π)
-  have hci : IntervalIntegrable (fun t => herglotzQd k a γ t *
-      conj (herglotzCoeff k a 0 (γ t))) volume 0 (2 * π) :=
-    hqi.mul_continuousOn ((Complex.continuous_conj.comp
-      ((continuous_herglotzCoeff ha k 0).comp hK.continuous)).continuousOn)
-  rw [hl, key]
-  simp_rw [hin, mul_sub]
-  rw [intervalIntegral.integral_sub (hqi.mul_const _) hci, intervalIntegral.integral_mul_const,
-    herglotzQ]
-  congr 1
-  · ring
-  · exact intervalIntegral.integral_congr fun θ _ => by ring
+  let h (t : ℝ) := herglotzCoeff k a 0 (γ t)
+  have hh : LipschitzWith (C * K) h := hC.comp hK
+  have eq (t : ℝ) : conj (h 0) + (∫ s in (0 : ℝ)..t, conj (deriv h s)) = conj (h t) := by
+    rw [intervalIntegral.intervalIntegral_conj, integral_deriv_of_lipschitz hh, map_sub]
+    ring
+  have hi := integral_primitives_by_parts (intervalIntegrable_herglotzQd ha k hK 0 (2 * π))
+    (intervalIntegrable_conj' (intervalIntegrable_lipschitz_deriv hh 0 (2 * π))) 0 (conj (h 0))
+  simp only [zero_add, eq, zero_mul, sub_zero] at hi
+  simpa only [h, mul_comm, herglotzQ] using hi
 
 /-- **Principal part of the Herglotz form.** If `∫_Ω u_a = 0`, then with `G = ∫₀^θ g_a`,
 
@@ -150,15 +121,9 @@ theorem re_integral_herglotz_principal (hb : Bornology.IsBounded Ω)
   set h : ℝ → ℂ := fun s => herglotzCoeff k a 0 (γ s) with hhdef
   set q := herglotzQd k a γ with hqdef
   set Q := herglotzQ k a γ with hQdef
-  obtain ⟨hgm, Bg, hgB⟩ := herglotzConormal_bounded ha k hK
-  obtain ⟨hqm, hqB⟩ := herglotzQd_bounded ha k hK
-  have hgi : IntervalIntegrable g volume 0 (2 * π) := intervalIntegrable_of_norm_le hgm hgB _ _
-  have hcgi : IntervalIntegrable (fun θ => conj (g θ)) volume 0 (2 * π) :=
-    intervalIntegrable_of_norm_le (Complex.continuous_conj.comp_aestronglyMeasurable hgm)
-      (fun t => by rw [Complex.norm_conj]; exact hgB t) _ _
+  have hcgi := intervalIntegrable_conj' (intervalIntegrable_herglotzConormal ha k hK 0 (2 * π))
   have hhc : Continuous h := (continuous_herglotzCoeff ha k 0).comp hK.continuous
-  have hQc : ContinuousOn Q (Icc 0 (2 * π)) :=
-    continuousOn_primitive_of_bound h2π hqm.restrict (fun t _ => hqB t)
+  have hQc : Continuous Q := continuous_herglotzQ ha k hK
   -- vanishing of the endpoint values
   have hgint : ∫ θ in (0 : ℝ)..(2 * π), g θ = 0 := by
     rw [hgdef, integral_herglotzConormal hb hL hγ ha, h0, mul_zero]
@@ -179,26 +144,17 @@ theorem re_integral_herglotz_principal (hb : Bornology.IsBounded Ω)
       show herglotzQ k a γ (2 * π) = 0 from hQL]
     ring
   have hcg0 : ∫ θ in (0 : ℝ)..(2 * π), conj (g θ) = 0 := by
-    rw [intervalIntegral_conj, hgint, map_zero]
+    rw [intervalIntegral.intervalIntegral_conj, hgint, map_zero]
   -- `∫ conj(g) Q`
   have hgQ : ∫ θ in (0 : ℝ)..(2 * π), conj (g θ) * Q θ =
       Complex.I * (∫ θ in (0 : ℝ)..(2 * π), conj (deriv h θ) * Q θ) +
         k * ∫ θ in (0 : ℝ)..(2 * π), conj (q θ) * Q θ := by
     obtain ⟨C, hC⟩ := lipschitzWith_herglotzCoeff ha k 0
     have hh : LipschitzWith (C * K) h := hC.comp hK
-    have hdi : IntervalIntegrable (fun θ => conj (deriv h θ) * Q θ) volume 0 (2 * π) := by
-      refine (intervalIntegrable_of_norm_le (B := C * K)
-        (Complex.continuous_conj.comp_aestronglyMeasurable
-        (measurable_deriv h).aestronglyMeasurable) (fun t => ?_) 0 (2 * π)).mul_continuousOn ?_
-      · rw [Complex.norm_conj]; exact norm_deriv_le_of_lipschitz hh
-      · rwa [uIcc_of_le h2π]
-    have hqi : IntervalIntegrable (fun θ => conj (q θ) * Q θ) volume 0 (2 * π) := by
-      refine (intervalIntegrable_of_norm_le
-        (B := K * ((2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖))
-        (Complex.continuous_conj.comp_aestronglyMeasurable
-        hqm) (fun t => ?_) 0 (2 * π)).mul_continuousOn ?_
-      · rw [Complex.norm_conj]; exact hqB t
-      · rwa [uIcc_of_le h2π]
+    have hdi := (intervalIntegrable_conj' (intervalIntegrable_lipschitz_deriv hh 0 (2 * π))).mul_continuousOn
+      hQc.continuousOn
+    have hqi := (intervalIntegrable_conj' (intervalIntegrable_herglotzQd ha k hK 0 (2 * π))).mul_continuousOn
+      hQc.continuousOn
     have hae : ∫ θ in (0 : ℝ)..(2 * π), conj (g θ) * Q θ = ∫ θ in (0 : ℝ)..(2 * π),
         (Complex.I * (conj (deriv h θ) * Q θ) + (k : ℂ) * (conj (q θ) * Q θ)) := by
       refine intervalIntegral.integral_congr_ae ?_
@@ -224,41 +180,17 @@ theorem re_integral_herglotz_principal (hb : Bornology.IsBounded Ω)
       rw [this]
       exact ((continuous_herglotzCoeff ha k 0).comp hK.continuous).continuousOn)
   have hi3 : IntervalIntegrable (fun θ => conj (g θ) * Q θ) volume 0 (2 * π) :=
-    hcgi.mul_continuousOn (by rwa [uIcc_of_le h2π])
+    hcgi.mul_continuousOn hQc.continuousOn
   simp_rw [hpt]
   rw [intervalIntegral.integral_add ((hi1.const_mul _).sub (hcgi.const_mul _))
       (hi3.const_mul _), intervalIntegral.integral_sub (hi1.const_mul _) (hcgi.const_mul _),
     intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
     intervalIntegral.integral_const_mul, hcg0, hgQ, hibp, hR1, hX]
   -- the interior integrals
-  set A := (2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖
-  have hFb : ∀ m z, ‖herglotzCoeff k a m z‖ ≤ A := fun m z => norm_herglotzCoeff_le k m z
-  have hI : ∀ m, IntegrableOn (fun z => ‖herglotzCoeff k a m z‖ ^ 2) Ω := fun m =>
-    integrableOn_of_continuous_bounded hb ((continuous_herglotzCoeff ha k m).norm.pow 2)
-      (fun z => by
-        rw [abs_of_nonneg (by positivity)]
-        exact pow_le_pow_left₀ (norm_nonneg _) (hFb m z) 2)
-  have e1 : ∫ z in Ω, (‖herglotzCoeff k a 1 z‖ ^ 2 + ‖herglotzCoeff k a (-1) z‖ ^ 2 -
-      2 * ‖herglotzCoeff k a 0 z‖ ^ 2) = (∫ z in Ω, ‖herglotzCoeff k a 1 z‖ ^ 2) +
-      (∫ z in Ω, ‖herglotzCoeff k a (-1) z‖ ^ 2) - 2 * ∫ z in Ω, ‖herglotzCoeff k a 0 z‖ ^ 2 := by
-    rw [integral_sub, integral_add, integral_const_mul]
-    · exact hI 1
-    · exact hI (-1)
-    · exact (hI 1).add (hI (-1))
-    · exact (hI 0).const_mul 2
-  have e2 : ∫ z in Ω, (‖herglotzCoeff k a (-1) z‖ ^ 2 - ‖herglotzCoeff k a 0 z‖ ^ 2) =
-      (∫ z in Ω, ‖herglotzCoeff k a (-1) z‖ ^ 2) - ∫ z in Ω, ‖herglotzCoeff k a 0 z‖ ^ 2 :=
-    integral_sub (hI (-1)) (hI 0)
-  have e3 : ∫ z in Ω, (‖herglotzCoeff k a 1 z‖ ^ 2 + 2 * ‖herglotzCoeff k a (-1) z‖ ^ 2 -
-      3 * ‖herglotzCoeff k a 0 z‖ ^ 2) = (∫ z in Ω, ‖herglotzCoeff k a 1 z‖ ^ 2) +
-      2 * (∫ z in Ω, ‖herglotzCoeff k a (-1) z‖ ^ 2) -
-        3 * ∫ z in Ω, ‖herglotzCoeff k a 0 z‖ ^ 2 := by
-    rw [integral_sub, integral_add, integral_const_mul, integral_const_mul]
-    · exact hI 1
-    · exact (hI (-1)).const_mul 2
-    · exact (hI 1).add ((hI (-1)).const_mul 2)
-    · exact (hI 0).const_mul 3
-  rw [e1, e2, e3]
+  have e1 := integral_herglotzCoeff_main hb ha k 1 2
+  simp only [one_mul] at e1
+  rw [e1, integral_sub (integrable_herglotzCoeff_sq hb ha k (-1))
+    (integrable_herglotzCoeff_sq hb ha k 0), integral_herglotzCoeff_main hb ha k 2 3]
   set Y := ∫ θ in (0 : ℝ)..(2 * π), conj (q θ) * Q θ
   simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.re_ofNat, Complex.im_ofNat,

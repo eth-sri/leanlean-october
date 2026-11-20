@@ -40,7 +40,7 @@ theorem isSobolevSeq_posProj {s : ℝ} {b : L2Z}
     IsSobolevSeq s (posProj b : ℤ → ℂ) := by
   refine Summable.of_nonneg_of_le (fun n => sq_nonneg _) (fun n => ?_) hb
   by_cases hn : 0 < n
-  · simp [posProj, diagOp_apply, hn]
+  simp_all [posProj, hn]
   · simpa [posProj, diagOp_apply, hn] using sq_nonneg (sobWeight n ^ s * ‖b n‖)
 
 theorem nonpositive_orthogonal_starProjection :
@@ -55,12 +55,6 @@ theorem nonpositive_orthogonal_starProjection :
       simpa only [add_comm] using h
     _ = _ := by abel
 
-instance (priority := 1000) finiteFourierCompatibilityOrthogonalProjection {m : ℕ}
-    (η : Fin m → nonpositiveFourierSubspaceᗮ) :
-    ((Submodule.span ℂ (range η))ᗮ).HasOrthogonalProjection := by
-  letI : CompleteSpace ((Submodule.span ℂ (range η))ᗮ) :=
-    (Submodule.span ℂ (range η)).isClosed_orthogonal.completeSpace_coe
-  exact Submodule.HasOrthogonalProjection.ofCompleteSpace _
 
 end PolyaNeumann
 

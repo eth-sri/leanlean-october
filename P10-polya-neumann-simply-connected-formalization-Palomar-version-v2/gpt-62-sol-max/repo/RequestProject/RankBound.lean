@@ -51,11 +51,11 @@ theorem reduced_lower_bound (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : 
   refine ⟨A, hA, ?_⟩
   have h1 : ∀ᶠ E in 𝓝 E₀, ‖R E - R E₀‖ < δ := by
     have := (hR.sub_const (R E₀)).norm
-    simp only [sub_self, norm_zero] at this
+    simp   at this
     exact this.eventually (gt_mem_nhds hδ)
   have h2 : ∀ᶠ E in 𝓝 E₀, ‖S E - S E₀‖ < δ := by
     have := (hS.sub_const (S E₀)).norm
-    simp only [sub_self, norm_zero] at this
+    simp   at this
     exact this.eventually (gt_mem_nhds hδ)
   filter_upwards [h1, h2] with E hE1 hE2 z
   rw [hR₀] at hE1
@@ -67,21 +67,8 @@ end Reduced
 
 /-! ### Lemma 7.9 -/
 
-section Boundary
-
-variable {G X W : Type*} [NormedAddCommGroup G] [InnerProductSpace ℂ G]
-  [NormedAddCommGroup X] [InnerProductSpace ℂ X]
-  [NormedAddCommGroup W] [InnerProductSpace ℂ W]
-
-end Boundary
 
 /-! ### Proposition 7.10 -/
 
-section Rank
-
-variable {G X : Type*} [NormedAddCommGroup G] [InnerProductSpace ℂ G]
-  [NormedAddCommGroup X] [InnerProductSpace ℂ X]
-
-end Rank
 
 end PolyaNeumann

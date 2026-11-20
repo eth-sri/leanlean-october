@@ -1,9 +1,11 @@
 module
 
+public import RequestProject.ConformalDiskCoordinates
+
 public import RequestProject.DiskHardyExtension
 public import RequestProject.LocalConformalH1Equiv
 public import RequestProject.LocalConformalTrace
-public import RequestProject.LocalConformalCauchyRiemann
+public import RequestProject.LocalConformalGradientComponents
 
 /-!
 # The genuine supplied-coordinate Hardy extension in the physical domain
@@ -25,48 +27,39 @@ namespace PolyaNeumann
 
 open MeasureTheory Set Metric
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
+include coords
 
 /-- The actual disk extension followed by the actual physical H¹ pushforward. -/
 def localConformalHardyH1Extension :
     L2Z →L[ℂ] NeumannH1 (F '' ball (0 : ℂ) 1) :=
-  (localConformalH1Pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes).comp
+  (localConformalH1Pushforward coords).comp
     diskHardyExtension
 
 @[simp] theorem localConformalH1Pullback_hardyExtension (b : L2Z) :
-    localConformalH1Pullback hR F hFs hL
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
+    coords.pullback
+      (localConformalHardyH1Extension coords b) =
         diskHardyExtension b := by
-  exact localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
+  exact localConformalH1Pullback_pushforward coords
     (diskHardyExtension b)
 
 theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive (b : L2Z)
     (hneg : ∀ n : ℤ, 0 < n → b n = 0) :
-    localConformalDiskHalfTrace hR F hFs hL
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) = b := by
-  change diskHalfTrace (localConformalH1Pullback hR F hFs hL
-    (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)) = _
+    coords.halfTrace
+      (localConformalHardyH1Extension coords b) = b := by
+  change diskHalfTrace (coords.pullback
+    (localConformalHardyH1Extension coords b)) = _
   rw [localConformalH1Pullback_hardyExtension]
   exact diskHalfTrace_diskHardyExtension_eq_of_nonpositive b hneg
 
 /-- The transported vector satisfies the actual physical weak CR equation. -/
 theorem localConformalHardyH1Extension_cauchyRiemann (b : L2Z) :
     h1Gradient (F '' ball (0 : ℂ) 1) 0
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
+        (localConformalHardyH1Extension coords b) =
       Complex.I • h1Gradient (F '' ball (0 : ℂ) 1) 1
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) := by
-  apply (localConformalH1Pullback_antiholomorphic_iff hR F hFs hb hL hhol hinj hC
-    (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)).mp
+        (localConformalHardyH1Extension coords b) := by
+  apply (localConformalH1Pullback_antiholomorphic_iff coords
+    (localConformalHardyH1Extension coords b)).mp
   rw [localConformalH1Pullback_hardyExtension]
   exact diskHardyExtension_cauchyRiemann b
 

@@ -34,82 +34,94 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology
 
+section
+
+variable (γ : ℝ → ℂ)
+include γ
+
 /-- The precise normalized arclength change of parameter. -/
-def normalizedArcReparam (γ : ℝ → ℂ) (θ : ℝ) : ℝ :=
+def normalizedArcReparam  (θ : ℝ) : ℝ :=
   (2 * Real.pi / arcLen γ (2 * Real.pi)) * arcLen γ θ
 
-@[simp] theorem normalizedArcReparam_zero (γ : ℝ → ℂ) :
+@[simp] theorem normalizedArcReparam_zero  :
     normalizedArcReparam γ 0 = 0 := by
   simp [normalizedArcReparam, arcLen]
 
+end
+
+section
+
+variable {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ)
+include γ hγ
+
 /-- Actual pointwise FTC, including the endpoints and every other real input. -/
-theorem hasDerivAt_normalizedArcReparam {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) (θ : ℝ) :
+theorem hasDerivAt_normalizedArcReparam  (θ : ℝ) :
     HasDerivAt (normalizedArcReparam γ)
       ((2 * Real.pi / arcLen γ (2 * Real.pi)) * ‖deriv γ θ‖) θ :=
   ((hγ.continuous_deriv_one.norm.integral_hasStrictDerivAt 0 θ).hasDerivAt).const_mul _
 
-theorem deriv_normalizedArcReparam {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) (θ : ℝ) :
+theorem deriv_normalizedArcReparam  (θ : ℝ) :
     deriv (normalizedArcReparam γ) θ =
       (2 * Real.pi / arcLen γ (2 * Real.pi)) * ‖deriv γ θ‖ :=
   (hasDerivAt_normalizedArcReparam hγ θ).deriv
 
-theorem contDiff_normalizedArcReparam {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ) :
-    ContDiff ℝ 1 (normalizedArcReparam γ) := by
-  apply contDiff_one_iff_deriv.mpr
-  refine ⟨fun θ => (hasDerivAt_normalizedArcReparam hγ θ).differentiableAt, ?_⟩
-  have heq : deriv (normalizedArcReparam γ) =
-      fun θ => (2 * Real.pi / arcLen γ (2 * Real.pi)) * ‖deriv γ θ‖ :=
-    funext (deriv_normalizedArcReparam hγ)
-  rw [heq]
-  exact continuous_const.mul hγ.continuous_deriv_one.norm
+theorem contDiff_normalizedArcReparam  :
+    ContDiff ℝ 1 (normalizedArcReparam γ) := contDiff_one_iff_deriv.mpr ⟨fun θ => HasDerivAt.differentiableAt (hasDerivAt_normalizedArcReparam hγ θ), have heq := funext (deriv_normalizedArcReparam hγ); Eq.mpr (id (congrArg (fun _a => Continuous _a) heq)) (Continuous.mul continuous_const (Continuous.norm (ContDiff.continuous_deriv_one hγ)))⟩
 
-/-- Compactness supplies true lower and upper velocity bounds on the whole
-real line, using exact periodicity to extend one period's bounds. -/
-theorem exists_regular_periodic_speed_bounds {γ : ℝ → ℂ}
-    (hγ : ContDiff ℝ 1 γ) (hper : Function.Periodic γ (2 * Real.pi))
+private theorem compact_periodic_speed_range (hper : Function.Periodic γ (2 * Real.pi)) :
+    IsCompact (range fun θ => ‖deriv γ θ‖) :=
+  ((deriv_periodic hper).comp norm).compact_of_continuous
+    Real.two_pi_pos.ne' hγ.continuous_deriv_one.norm
+
+omit γ hγ in
+/-- A C¹ periodic curve has a uniformly bounded derivative and is globally Lipschitz. -/
+theorem exists_periodic_C1_density_lipschitz (K : ℝ → ℂ)
+    (hK : ContDiff ℝ 1 K) (hper : Function.Periodic K (2 * Real.pi)) :
+    ∃ L : NNReal, LipschitzWith L K := by
+  obtain ⟨M, hM⟩ := (compact_periodic_speed_range hK hper).bddAbove
+  refine ⟨⟨M, (norm_nonneg (deriv K 0)).trans (hM ⟨0, rfl⟩)⟩,
+    lipschitzWith_of_nnnorm_deriv_le hK.differentiable_one fun θ => ?_⟩
+  exact NNReal.coe_le_coe.mp (hM ⟨θ, rfl⟩)
+
+/-- Compactness supplies true positive lower and finite upper velocity bounds. -/
+theorem exists_regular_periodic_speed_bounds (hper : Function.Periodic γ (2 * Real.pi))
     (hnz : ∀ θ, deriv γ θ ≠ 0) :
-    ∃ m M : ℝ, 0 < m ∧ 0 ≤ M ∧
-      ∀ θ, m ≤ ‖deriv γ θ‖ ∧ ‖deriv γ θ‖ ≤ M := by
-  have hs : Continuous (fun θ => ‖deriv γ θ‖) := hγ.continuous_deriv_one.norm
-  have hsp : Function.Periodic (fun θ => ‖deriv γ θ‖) (2 * Real.pi) := by
-    intro θ
-    change ‖deriv γ (θ + 2 * Real.pi)‖ = ‖deriv γ θ‖
-    rw [deriv_periodic hper θ]
-  obtain ⟨m, hm, hmlocal⟩ := isCompact_Icc.exists_forall_le' hs.continuousOn
-    (fun θ (_ : θ ∈ Icc (0 : ℝ) (2 * Real.pi)) => norm_pos_iff.mpr (hnz θ))
-  obtain ⟨θ₀, hθ₀, hmax⟩ := isCompact_Icc.exists_isMaxOn
-    (show (Icc (0 : ℝ) (2 * Real.pi)).Nonempty from
-      ⟨0, le_refl 0, Real.two_pi_pos.le⟩) hs.continuousOn
-  refine ⟨m, ‖deriv γ θ₀‖, hm, norm_nonneg _, fun θ => ?_⟩
-  let θ' := toIcoMod Real.two_pi_pos 0 θ
-  have hθ' : θ' ∈ Ico 0 (2 * Real.pi) := by
-    simpa only [zero_add, θ'] using toIcoMod_mem_Ico Real.two_pi_pos 0 θ
-  have heq : ‖deriv γ θ'‖ = ‖deriv γ θ‖ := by
-    dsimp only [θ']
-    rw [toIcoMod, hsp.sub_zsmul_eq]
-  rw [← heq]
-  exact ⟨hmlocal θ' (Ico_subset_Icc_self hθ'), hmax (Ico_subset_Icc_self hθ')⟩
+    ∃ m M : ℝ, 0 < m ∧ 0 ≤ M ∧ ∀ θ, m ≤ ‖deriv γ θ‖ ∧ ‖deriv γ θ‖ ≤ M := by
+  have hs := compact_periodic_speed_range hγ hper
+  obtain ⟨m, hm, hlo⟩ := hs.exists_forall_le' continuous_id.continuousOn
+    (fun y hy => by rcases hy with ⟨θ, rfl⟩; exact norm_pos_iff.mpr (hnz θ))
+  obtain ⟨M, hM⟩ := hs.bddAbove
+  exact ⟨m, M, hm, (norm_nonneg (deriv γ 0)).trans (hM ⟨0, rfl⟩),
+    fun θ => ⟨hlo _ ⟨θ, rfl⟩, hM ⟨θ, rfl⟩⟩⟩
 
-theorem arcLen_period_pos_of_regular {γ : ℝ → ℂ}
-    (hγ : ContDiff ℝ 1 γ) (hnz : ∀ θ, deriv γ θ ≠ 0) :
+theorem arcLen_period_pos_of_regular  (hnz : ∀ θ, deriv γ θ ≠ 0) :
     0 < arcLen γ (2 * Real.pi) := by
   apply intervalIntegral.integral_pos Real.two_pi_pos hγ.continuous_deriv_one.norm.continuousOn
     (fun _ _ => norm_nonneg _)
   exact ⟨0, ⟨le_refl 0, Real.two_pi_pos.le⟩, norm_pos_iff.mpr (hnz 0)⟩
 
-theorem normalizedArcReparam_endpoint {γ : ℝ → ℂ}
+end
+
+section
+
+variable {γ : ℝ → ℂ}
+include γ
+
+theorem normalizedArcReparam_endpoint 
     (hL : 0 < arcLen γ (2 * Real.pi)) :
     normalizedArcReparam γ (2 * Real.pi) = 2 * Real.pi := by
   unfold normalizedArcReparam
-  exact div_mul_cancel₀ _ hL.ne'
+  grind
 
-theorem normalizedArcReparam_add_period {γ : ℝ → ℂ} {K : NNReal}
+theorem normalizedArcReparam_add_period  {K : NNReal}
     (hK : LipschitzWith K γ) (hper : Function.Periodic γ (2 * Real.pi))
     (hL : 0 < arcLen γ (2 * Real.pi)) (θ : ℝ) :
     normalizedArcReparam γ (θ + 2 * Real.pi) =
       normalizedArcReparam γ θ + 2 * Real.pi := by
-  simp only [normalizedArcReparam]
+  simp  [normalizedArcReparam]
   rw [arcLen_add_period hK hper, mul_add, div_mul_cancel₀ _ hL.ne']
+
+end
 
 /-- Construction of all seven fields of the genuine trace-reparametrization
 structure. The returned lower bound also holds pointwise on the whole line. -/
@@ -125,12 +137,10 @@ theorem exists_isC1TraceReparam_normalizedArc {γ : ℝ → ℂ}
     apply lipschitzWith_of_nnnorm_deriv_le hγ.differentiable_one
     intro θ
     apply NNReal.coe_le_coe.mp
-    change ‖deriv γ θ‖ ≤ (Real.toNNReal M : ℝ)
-    rw [Real.coe_toNNReal _ hM]
-    exact (hbounds θ).2
+    simp_all
   have hL := arcLen_period_pos_of_regular hγ hnz
   let a := 2 * Real.pi / arcLen γ (2 * Real.pi)
-  have ha : 0 < a := div_pos Real.two_pi_pos hL
+  have ha := div_pos Real.two_pi_pos hL
   have hτlip : LipschitzWith (Real.toNNReal a * Real.toNNReal M)
       (normalizedArcReparam γ) := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_
@@ -139,11 +149,11 @@ theorem exists_isC1TraceReparam_normalizedArc {γ : ℝ → ℂ}
     change |a * arcLen γ x - a * arcLen γ y| ≤ _
     rw [← mul_sub, abs_mul, abs_of_pos ha, NNReal.coe_mul,
       Real.coe_toNNReal _ ha.le, mul_assoc]
-    exact mul_le_mul_of_nonneg_left h ha.le
+    gcongr
   have hlower (θ : ℝ) : a * m ≤ deriv (normalizedArcReparam γ) θ := by
     rw [deriv_normalizedArcReparam hγ]
-    exact mul_le_mul_of_nonneg_left (hbounds θ).1 ha.le
-  have hsm : StrictMono (normalizedArcReparam γ) :=
+    aesop
+  have hsm :=
     strictMono_of_deriv_pos fun θ => (mul_pos ha hm).trans_le (hlower θ)
   refine ⟨a * m, ?_, hlower, normalizedArcReparam_add_period hγlip hper hL⟩
   exact ⟨hsm.monotone, ⟨_, hτlip⟩, contDiff_normalizedArcReparam hγ,
@@ -164,26 +174,18 @@ theorem localConformal_circleTrace_hasDerivAt (θ : ℝ) :
       (fderiv ℝ F (circleMap 0 1 θ) 1 * (circleMap 0 1 θ * Complex.I)) θ := by
   have hz : circleMap 0 1 θ ∈ closedBall (0 : ℂ) 1 :=
     circleMap_mem_closedBall 0 (by norm_num) θ
-  have hfd : HasFDerivAt F (fderiv ℝ F (circleMap 0 1 θ)) (circleMap 0 1 θ) :=
+  have hfd :=
     ((hFs.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))).differentiableAt
       (by simp)).hasFDerivAt
   have hd := hfd.comp_hasDerivAt θ (hasDerivAt_circleMap 0 1 θ)
   rw [localConformal_fderiv_closedDisk hR F hFs hhol hz] at hd
-  exact hd
+  assumption
 
 include hR hFs hhol in
 theorem localConformal_circleTrace_deriv (θ : ℝ) :
     deriv (physicalCircleTrace F) θ =
       fderiv ℝ F (circleMap 0 1 θ) 1 * (circleMap 0 1 θ * Complex.I) :=
   (localConformal_circleTrace_hasDerivAt hR F hFs hhol θ).deriv
-
-include hR hFs hhol in
-theorem localConformal_circleTrace_deriv_ne_zero
-    (hnz : ∀ z ∈ sphere (0 : ℂ) 1, fderiv ℝ F z 1 ≠ 0) (θ : ℝ) :
-    deriv (physicalCircleTrace F) θ ≠ 0 := by
-  rw [localConformal_circleTrace_deriv hR F hFs hhol]
-  exact mul_ne_zero (hnz _ (circleMap_mem_sphere 0 (by norm_num) θ))
-    (mul_ne_zero (circleMap_ne_center (by norm_num)) Complex.I_ne_zero)
 
 end SuppliedCoordinates
 

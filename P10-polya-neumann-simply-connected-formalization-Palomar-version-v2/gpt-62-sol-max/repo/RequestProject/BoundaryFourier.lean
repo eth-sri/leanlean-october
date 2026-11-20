@@ -1,5 +1,6 @@
 module
 
+public import RequestProject.CircleFourier
 public import RequestProject.TraceH1
 public import RequestProject.SobolevCircle
 public import Mathlib.Analysis.Fourier.AddCircle
@@ -23,18 +24,16 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Real
 open scoped InnerProductSpace ComplexConjugate
 
-local instance boundaryFourierTwoPiPos : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
-
 /-- Circle L² with Haar measure of total mass one. -/
 abbrev BoundaryCircleHaarL2 := Lp ℂ 2
-  (@AddCircle.haarAddCircle (2 * π) boundaryFourierTwoPiPos)
+  (@AddCircle.haarAddCircle (2 * π) instTwoPiPeriod)
 
 private theorem boundaryCircle_ae_volume_iff {p : AddCircle (2 * π) → Prop} :
     (∀ᵐ q ∂(volume : Measure (AddCircle (2 * π))), p q) ↔
       ∀ᵐ q ∂AddCircle.haarAddCircle, p q := by
   rw [AddCircle.volume_eq_smul_haarAddCircle]
   have hs : ENNReal.ofReal (2 * π) ≠ 0 := by positivity
-  simp only [ae_iff, Measure.smul_apply, smul_eq_mul, mul_eq_zero, hs, false_or]
+  simp_all
 
 /-- Transport an a.e. equality on the interval through its actual representative map. -/
 theorem boundary_liftIoc_congr_ae {f g : ℝ → ℂ}
@@ -56,7 +55,7 @@ theorem boundaryCircleLift_memLp (g : BoundaryL2) :
     MemLp (AddCircle.liftIoc (2 * π) 0 (g : ℝ → ℂ)) 2
       AddCircle.haarAddCircle := by
   have hg : MemLp (g : ℝ → ℂ) 2 (volume.restrict (Ioc 0 (0 + 2 * π))) := by
-    simpa only [zero_add] using Lp.memLp g
+    aesop
   exact hg.memLp_liftIoc.haarAddCircle
 
 /-- The unscaled circle lift; its squared norm is divided by `2π`. -/
@@ -94,54 +93,38 @@ def boundaryCircleLiftLin : BoundaryL2 →ₗ[ℂ] BoundaryCircleHaarL2 where
     rw [hg, hlift]
     rfl
 
-private theorem boundary_integral_norm_sq {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} (f : Lp ℂ 2 μ) : ∫ x, ‖f x‖ ^ 2 ∂μ = ‖f‖ ^ 2 := by
-  have h := congrArg RCLike.re (L2.inner_def (𝕜 := ℂ) f f)
-  rw [inner_self_eq_norm_sq, ← integral_re (L2.integrable_inner f f)] at h
-  simp_rw [inner_self_eq_norm_sq] at h
-  exact h.symm
-
 theorem boundaryCircleLift_norm_sq (g : BoundaryL2) :
     ‖boundaryCircleLift g‖ ^ 2 = (2 * π)⁻¹ * ‖g‖ ^ 2 := by
   calc
     ‖boundaryCircleLift g‖ ^ 2 =
         ∫ q : AddCircle (2 * π), ‖boundaryCircleLift g q‖ ^ 2
-          ∂AddCircle.haarAddCircle := (boundary_integral_norm_sq _).symm
+          ∂AddCircle.haarAddCircle := (integral_norm_sq_lp _).symm
     _ = ∫ q : AddCircle (2 * π),
         ‖AddCircle.liftIoc (2 * π) 0 (g : ℝ → ℂ) q‖ ^ 2
           ∂AddCircle.haarAddCircle := by
       apply integral_congr_ae
-      filter_upwards [boundaryCircleLift_coe g] with q hq
-      rw [hq]
+      filter_upwards [boundaryCircleLift_coe g] with x; simp_all
     _ = (2 * π)⁻¹ * ∫ θ in Ioc 0 (2 * π), ‖g θ‖ ^ 2 := by
       rw [AddCircle.integral_haarAddCircle]
       change (2 * π)⁻¹ • (∫ q : AddCircle (2 * π),
         AddCircle.liftIoc (2 * π) 0 (fun θ => ‖g θ‖ ^ 2) q) = _
       rw [AddCircle.integral_liftIoc_eq_intervalIntegral, zero_add,
         intervalIntegral.integral_of_le two_pi_pos.le, smul_eq_mul]
-    _ = (2 * π)⁻¹ * ‖g‖ ^ 2 := by rw [boundary_integral_norm_sq]
-
-private theorem boundary_liftIoc_pullback (f : AddCircle (2 * π) → ℂ) :
-    AddCircle.liftIoc (2 * π) 0 (fun θ : ℝ => f (θ : AddCircle (2 * π))) = f := by
-  funext q
-  have hrep : ((AddCircle.equivIoc (2 * π) 0 q : ℝ) : AddCircle (2 * π)) = q :=
-    (AddCircle.equivIoc (2 * π) 0).symm_apply_apply q
-  exact congrArg f hrep
+    _ = (2 * π)⁻¹ * ‖g‖ ^ 2 := by rw [integral_norm_sq_lp]
 
 /-- Circle functions can all be recovered from actual L² functions on the parameter interval. -/
 theorem boundaryCircleLift_surjective : Function.Surjective boundaryCircleLift := by
   intro f
-  have hf : MemLp (f : AddCircle (2 * π) → ℂ) 2
-      (volume : Measure (AddCircle (2 * π))) := (Lp.memLp f).of_haarAddCircle
+  have hf := (Lp.memLp f).of_haarAddCircle
   have hgp : MemLp (fun θ : ℝ => f (θ : AddCircle (2 * π))) 2
       (volume.restrict (Ioc 0 (2 * π))) := by
     simpa only [zero_add, Function.comp_def] using
       hf.comp_measurePreserving (AddCircle.measurePreserving_mk (2 * π) 0)
-  let g : BoundaryL2 := hgp.toLp (fun θ : ℝ => f (θ : AddCircle (2 * π)))
+  let g := hgp.toLp (fun θ : ℝ => f (θ : AddCircle (2 * π)))
   refine ⟨g, Lp.ext ?_⟩
   exact (boundaryCircleLift_coe g).trans
     ((boundary_liftIoc_congr_ae hgp.coeFn_toLp).trans
-      (Eventually.of_forall fun q => congrFun (boundary_liftIoc_pullback f) q))
+      (Eventually.of_forall fun q => congrFun (liftIoc_circle_coe f) q))
 
 /-- Scaling the circle lift converts ordinary boundary measure to normalized Haar measure. -/
 def boundaryCircleUnitaryLin : BoundaryL2 →ₗ[ℂ] BoundaryCircleHaarL2 :=
@@ -186,7 +169,12 @@ theorem boundaryFourier_apply (g : BoundaryL2) (n : ℤ) :
     fourierCoeff_congr_ae (Lp.coeFn_smul (√(2 * π) : ℂ) (boundaryCircleLift g)),
     fourierCoeff.const_smul,
     fourierCoeff_congr_ae (boundaryCircleLift_coe g), fourierCoeff_liftIoc_eq]
-  simp only [zero_add, smul_eq_mul]
+  simp
+
+theorem boundaryFourier_apply_of_ae (v : BoundaryL2) {f : ℝ → ℂ}
+    (hv : (v : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * π))] f) (n : ℤ) :
+    boundaryFourier v n = (√(2 * π) : ℂ) * fourierCoeffOn two_pi_pos f n := by
+  rw [boundaryFourier_apply, fourierCoeffOn_congr_ae two_pi_pos hv]
 
 /-- The half-open representatives differ only at the identified endpoint, a Haar-null point. -/
 theorem boundary_liftIoc_eq_liftIco_ae (f : ℝ → ℂ) :
@@ -194,18 +182,17 @@ theorem boundary_liftIoc_eq_liftIco_ae (f : ℝ → ℂ) :
       AddCircle.liftIco (2 * π) 0 f := by
   have hv : (volume : Measure (AddCircle (2 * π))) {0} = 0 := by
     have h := AddCircle.volume_closedBall (T := 2 * π) (x := 0) 0
-    simpa only [Metric.closedBall_zero, mul_zero, min_eq_right two_pi_pos.le,
-      ENNReal.ofReal_zero] using h
+    simp_all
   have hh : (@AddCircle.haarAddCircle (2 * π) _) {0} = 0 := by
-    rw [AddCircle.volume_eq_smul_haarAddCircle, Measure.smul_apply, smul_eq_mul] at hv
+    rw [AddCircle.volume_eq_smul_haarAddCircle, Measure.smul_apply] at hv
     exact (mul_eq_zero.mp hv).resolve_left (by positivity)
   have hne : ∀ᵐ q : AddCircle (2 * π) ∂AddCircle.haarAddCircle, q ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, Set.setOf_eq_eq_singleton] using hh
+    simp_all
   filter_upwards [hne] with q hq
   obtain ⟨θ, hθ, rfl⟩ := AddCircle.eq_coe_Ico q
-  have hθ0 : θ ≠ 0 := fun h => hq (by rw [h]; rfl)
-  have hθpos : 0 < θ := lt_of_le_of_ne hθ.1 hθ0.symm
+  have hθ0 : θ ≠ 0 := fun h => hq (by tauto)
+  have hθpos := lt_of_le_of_ne hθ.1 hθ0.symm
   rw [AddCircle.liftIoc_zero_coe_apply ⟨hθpos, hθ.2.le⟩,
     AddCircle.liftIco_zero_coe_apply hθ]
 

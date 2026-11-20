@@ -21,9 +21,13 @@ namespace PolyaNeumann
 
 open Set Metric
 
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+include R hR F hF
+
 /-- A global smooth test representing composition in a disk neighbourhood. -/
-def smoothDiskCompositionLin {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
+def smoothDiskCompositionLin  :
     smoothTraceTests →ₗ[ℂ] smoothTraceTests where
   toFun f := ⟨smoothDiskCutoff R hR ((f : ℂ → ℂ) ∘ F),
     smoothDiskCutoff_testFunction hR (f.property.1.comp_contDiffOn hF)⟩
@@ -41,14 +45,12 @@ def smoothDiskCompositionLin {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
       c * ((smoothDiskCutoffBump R hR z : ℂ) * f (F z))
     ring
 
-theorem smoothDiskCompositionLin_eq_closedDisk {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem smoothDiskCompositionLin_eq_closedDisk 
     (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
     smoothDiskCompositionLin hR F hF f z = f (F z) :=
   smoothDiskCutoff_eq_closedDisk hR ((f : ℂ → ℂ) ∘ F) hz
 
-theorem fderiv_smoothDiskCompositionLin {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem fderiv_smoothDiskCompositionLin 
     (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
     fderiv ℝ (smoothDiskCompositionLin hR F hF f : ℂ → ℂ) z =
       (fderiv ℝ (f : ℂ → ℂ) (F z)).comp (fderiv ℝ F z) := by
@@ -57,6 +59,8 @@ theorem fderiv_smoothDiskCompositionLin {R : ℝ} (hR : 1 < R)
   exact fderiv_comp z (f.property.1.differentiable (by simp) (F z))
     ((hF.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))).differentiableAt
       (by simp))
+
+end
 
 end PolyaNeumann
 

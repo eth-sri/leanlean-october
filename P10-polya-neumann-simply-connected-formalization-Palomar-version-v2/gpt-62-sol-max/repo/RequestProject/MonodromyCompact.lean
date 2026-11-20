@@ -31,14 +31,12 @@ subspace. -/
 theorem intervalIntegral_mem_of_isClosed (K : Submodule ℂ X) (hK : IsClosed (K : Set X))
     {f : ℝ → X} (hf : ∀ t, f t ∈ K) (a b : ℝ) : ∫ t in a..b, f t ∈ K := by
   haveI : IsClosed (K : Set X) := hK
-  let p : X →L[ℂ] X ⧸ K := { toLinearMap := K.mkQ, cont := continuous_quot_mk }
-  have hp : ∀ x, p x = 0 ↔ x ∈ K := fun x => Submodule.Quotient.mk_eq_zero K
   by_cases hi : IntervalIntegrable f volume a b
-  · have h := p.intervalIntegral_comp_comm hi
-    have h0 : ∀ t, p (f t) = 0 := fun t => (hp _).mpr (hf t)
-    simp only [h0, intervalIntegral.integral_zero] at h
-    exact (hp _).mp h.symm
-  · rw [intervalIntegral.integral_undef hi]; exact K.zero_mem
+  · apply (Submodule.Quotient.mk_eq_zero K).mp
+    have hz (t : ℝ) : K.mkQL (f t) = 0 := (Submodule.Quotient.mk_eq_zero K).mpr (hf t)
+    simpa only [hz, intervalIntegral.integral_zero, Submodule.mkQL_apply, Submodule.mkQ_apply]
+      using (K.mkQL.intervalIntegral_comp_comm hi).symm
+  · rw [intervalIntegral.integral_undef hi]; simp
 
 omit [CompleteSpace X] in
 /-- If the derivative of `f` takes values in a closed subspace on `[a, b]`, then
@@ -47,14 +45,16 @@ theorem sub_mem_of_hasDerivAt (K : Submodule ℂ X) (hK : IsClosed (K : Set X)) 
     {a b : ℝ} (hab : a ≤ b) (hf : ∀ t ∈ Icc a b, HasDerivAt f (f' t) t)
     (hf' : ∀ t ∈ Icc a b, f' t ∈ K) : f b - f a ∈ K := by
   haveI : IsClosed (K : Set X) := hK
-  let p : X →L[ℂ] X ⧸ K := { toLinearMap := K.mkQ, cont := continuous_quot_mk }
-  have hp : ∀ x, p x = 0 ↔ x ∈ K := fun x => Submodule.Quotient.mk_eq_zero K
-  have hd : ∀ t ∈ Icc a b, HasDerivWithinAt (fun t => p (f t)) (p (f' t)) (Icc a b) t :=
-    fun t ht => ((p.restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt t (hf t ht)).hasDerivWithinAt
+  have hd (t) (ht : t ∈ Icc a b) :
+      HasDerivWithinAt (fun t => K.mkQL (f t)) (0 : X ⧸ K) (Icc a b) t := by
+    have hz : K.mkQL (f' t) = 0 := (Submodule.Quotient.mk_eq_zero K).mpr (hf' t ht)
+    rw [← hz]
+    exact ((K.mkQL.restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt t (hf t ht)).hasDerivWithinAt
   have hb := norm_image_sub_le_of_norm_deriv_le_segment' hd
-    (fun t ht => by rw [(hp _).mpr (hf' t (Ico_subset_Icc_self ht)), norm_zero]) b ⟨hab, le_rfl⟩
-  rw [zero_mul, norm_le_zero_iff, ← map_sub] at hb
-  exact (hp _).mp hb
+    (fun _ _ => le_rfl (a := ‖(0 : X ⧸ K)‖)) b ⟨hab, le_rfl⟩
+  rw [norm_zero, zero_mul, norm_le_zero_iff, ← map_sub,
+    Submodule.mkQL_apply, Submodule.mkQ_apply] at hb
+  exact (Submodule.Quotient.mk_eq_zero K).mp hb
 
 end ClosedSubspace
 
@@ -77,7 +77,7 @@ theorem isCompactOperator_diagN : IsCompactOperator diagN := by
 /-- The curvature operator `Q_E = (1/4) ∫ b W^* D_N W dθ` is compact. -/
 theorem isCompactOperator_curvatureOp (γ : ℝ → ℂ) (W : ℝ → Ell2 →L[ℂ] Ell2) :
     IsCompactOperator (curvatureOp γ W) := by
-  rw [← mem_compactOps, curvatureOp]
+  rw [curvatureOp]
   refine compactOps.smul_of_tower_mem _ ?_
   refine intervalIntegral_mem_of_isClosed _ isClosed_compactOps (fun θ => ?_) _ _
   refine compactOps.smul_of_tower_mem _ ?_
@@ -89,20 +89,23 @@ theorem transport_zero_energy {γ : ℝ → ℂ} {W : ℝ → Ell2 →L[ℂ] Ell
     W (2 * π) = 1 := by
   have h := hW.2 (2 * π) ⟨by positivity, le_rfl⟩
   have h0 : ∀ s, transportCoeff γ 0 s = 0 := fun s => by simp [transportCoeff]
-  simpa [h0] using h
+  simp_all
+
+section
+
+variable {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (hclosed : γ (2 * π) = γ 0) {E : ℝ} (hE : 0 ≤ E) {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
+include γ K hK hclosed E hE W hW
 
 /-- **Lemma 4.7 (compactness of `V_E - I`).** For a closed Lipschitz curve and `E ≥ 0`, the
 endpoint `V_E = W_E(L)` of the transport satisfies: `V_E - I` is compact. -/
-theorem isCompactOperator_transport_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {E : ℝ} (hE : 0 ≤ E) {W : ℝ → Ell2 →L[ℂ] Ell2}
-    (hW : IsTransport γ E W) : IsCompactOperator ⇑(W (2 * π) - 1) := by
+theorem isCompactOperator_transport_sub_one  : IsCompactOperator ⇑(W (2 * π) - 1) := by
   rw [← mem_compactOps]
   have h2π : (2 * π) ∈ Icc 0 (2 * π) := ⟨by positivity, le_rfl⟩
   choose Ws hWs using fun E' : ℝ => transport_exists_of_lipschitz γ hK E'
-  have hWE : W (2 * π) = Ws E (2 * π) := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
+  have hWE := transport_unique_of_lipschitz γ hK E hW (hWs E) h2π
   rw [hWE]
   rcases eq_or_lt_of_le hE with rfl | hEpos
-  · rw [transport_zero_energy (hWs 0), sub_self]; exact compactOps.zero_mem
+  · rw [transport_zero_energy (hWs 0), sub_self]; simp
   -- increments `V_E - V_δ` are compact for `0 < δ ≤ E`
   have hinc : ∀ δ ∈ Ioc 0 E, Ws E (2 * π) - Ws δ (2 * π) ∈ compactOps := by
     intro δ hδ
@@ -124,15 +127,15 @@ theorem isCompactOperator_transport_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK 
 
 /-- **Lemma 4.7 (compactness of `U_E - I`).** For a closed Lipschitz curve and `E ≥ 0`, the
 monodromy `U_E = V_E^*` satisfies: `U_E - I` is compact. -/
-theorem isCompactOperator_monodromy_sub_one {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {E : ℝ} (hE : 0 ≤ E) {W : ℝ → Ell2 →L[ℂ] Ell2}
-    (hW : IsTransport γ E W) : IsCompactOperator ⇑(monodromy W - 1) := by
+theorem isCompactOperator_monodromy_sub_one  : IsCompactOperator ⇑(monodromy W - 1) := by
   have hU := transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
-  have hVV : star (W (2 * π)) * W (2 * π) = 1 := (Unitary.mem_iff.mp hU).1
+  have hVV := (Unitary.mem_iff.mp hU).1
   have heq : monodromy W - 1 = -(star (W (2 * π)) * (W (2 * π) - 1)) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint, mul_sub, hVV, mul_one, neg_sub]
   rw [heq]
   exact ((isCompactOperator_transport_sub_one hK hclosed hE hW).clm_comp _).neg
+
+end
 
 end PolyaNeumann
 

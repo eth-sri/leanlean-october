@@ -30,7 +30,12 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology
 
-theorem normalizedArcReparam_strictMono {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ)
+section
+
+variable {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1 γ)
+include γ hγ
+
+theorem normalizedArcReparam_strictMono 
     (hnz : ∀ θ, deriv γ θ ≠ 0) : StrictMono (normalizedArcReparam γ) := by
   apply strictMono_of_deriv_pos
   intro θ
@@ -40,35 +45,25 @@ theorem normalizedArcReparam_strictMono {γ : ℝ → ℂ} (hγ : ContDiff ℝ 1
 
 /-- The period increment prevents either end of the normalized arclength map
 from remaining bounded, and continuity then proves actual surjectivity. -/
-theorem normalizedArcReparam_surjective {γ : ℝ → ℂ}
-    (hγ : ContDiff ℝ 1 γ) (hper : Function.Periodic γ (2 * Real.pi))
+theorem normalizedArcReparam_surjective  (hper : Function.Periodic γ (2 * Real.pi))
     (hnz : ∀ θ, deriv γ θ ≠ 0) : Function.Surjective (normalizedArcReparam γ) := by
   obtain ⟨c, hτ, _, hperiod⟩ := exists_isC1TraceReparam_normalizedArc hγ hper hnz
   have hbound : ∀ θ, |normalizedArcReparam γ θ - θ| ≤ 2 * Real.pi := by
     refine abs_le_of_periodic
       (g := fun θ => normalizedArcReparam γ θ - θ) (fun θ => ?_) (fun x hx => ?_)
-    · simp only
-      rw [hperiod]
-      ring
+    simp_all
     · have h0 := hτ.monotone hx.1
       have h2 := hτ.monotone hx.2.le
-      rw [hτ.zero] at h0
-      rw [hτ.endpoint] at h2
-      rw [abs_le]
-      constructor <;> linarith [hx.1, hx.2]
+      grind [hτ.zero, hτ.endpoint, abs_le]
   refine hτ.continuous.surjective ?_ ?_
   · refine tendsto_atTop_mono (fun θ => ?_)
       (tendsto_atTop_add_const_right _ (-(2 * Real.pi)) tendsto_id)
-    have h := hbound θ
-    rw [abs_le] at h
-    simp only [id]
-    linarith
+    grind
   · refine tendsto_atBot_mono (fun θ => ?_)
       (tendsto_atBot_add_const_right _ (2 * Real.pi) tendsto_id)
-    have h := hbound θ
-    rw [abs_le] at h
-    simp only [id]
-    linarith
+    grind
+
+end
 
 section RegularCurve
 
@@ -80,8 +75,6 @@ def normalizedArcOrderIso : ℝ ≃o ℝ :=
   StrictMono.orderIsoOfSurjective (normalizedArcReparam γ)
     (normalizedArcReparam_strictMono hγ hnz) (normalizedArcReparam_surjective hγ hper hnz)
 
-@[simp] theorem normalizedArcOrderIso_apply (θ : ℝ) :
-    normalizedArcOrderIso hγ hper hnz θ = normalizedArcReparam γ θ := rfl
 
 @[simp] theorem normalizedArcOrderIso_zero : normalizedArcOrderIso hγ hper hnz 0 = 0 :=
   normalizedArcReparam_zero γ
@@ -93,25 +86,24 @@ def normalizedArcOrderIso : ℝ ≃o ℝ :=
 @[simp] theorem normalizedArcOrderIso_symm_zero :
     (normalizedArcOrderIso hγ hper hnz).symm 0 = 0 := by
   apply (normalizedArcOrderIso hγ hper hnz).injective
-  rw [OrderIso.apply_symm_apply, normalizedArcOrderIso_zero]
+  simp
 
 @[simp] theorem normalizedArcOrderIso_symm_endpoint :
     (normalizedArcOrderIso hγ hper hnz).symm (2 * Real.pi) = 2 * Real.pi := by
   apply (normalizedArcOrderIso hγ hper hnz).injective
-  rw [OrderIso.apply_symm_apply, normalizedArcOrderIso_endpoint]
+  simp
 
 theorem normalizedArcOrderIso_add_period (θ : ℝ) :
     normalizedArcOrderIso hγ hper hnz (θ + 2 * Real.pi) =
       normalizedArcOrderIso hγ hper hnz θ + 2 * Real.pi := by
   obtain ⟨c, _, _, hperiod⟩ := exists_isC1TraceReparam_normalizedArc hγ hper hnz
-  exact hperiod θ
+  tauto
 
 theorem normalizedArcOrderIso_symm_add_period (t : ℝ) :
     (normalizedArcOrderIso hγ hper hnz).symm (t + 2 * Real.pi) =
       (normalizedArcOrderIso hγ hper hnz).symm t + 2 * Real.pi := by
   apply (normalizedArcOrderIso hγ hper hnz).injective
-  rw [OrderIso.apply_symm_apply, normalizedArcOrderIso_add_period,
-    OrderIso.apply_symm_apply]
+  grind [OrderIso.apply_symm_apply, normalizedArcOrderIso_add_period]
 
 /-- The actual curve in its normalized arclength parameter. -/
 def normalizedArcCurve (t : ℝ) : ℂ := γ ((normalizedArcOrderIso hγ hper hnz).symm t)
@@ -121,28 +113,20 @@ theorem normalizedArcCurve_factorization (θ : ℝ) :
     γ θ = normalizedArcCurve hγ hper hnz (normalizedArcReparam γ θ) := by
   change γ θ = γ ((normalizedArcOrderIso hγ hper hnz).symm
     (normalizedArcOrderIso hγ hper hnz θ))
-  rw [OrderIso.symm_apply_apply]
+  simp
 
 theorem normalizedArcCurve_periodic :
     Function.Periodic (normalizedArcCurve hγ hper hnz) (2 * Real.pi) := by
   intro t
-  simp only [normalizedArcCurve, normalizedArcOrderIso_symm_add_period]
-  exact hper _
+  simp  [normalizedArcCurve, normalizedArcOrderIso_symm_add_period]
+  tauto
 
 /-- The true derivative of the inverse map, obtained from its proved inverse
 identity and continuity, not assumed as an auxiliary transfer formula. -/
 theorem normalizedArcOrderIso_symm_hasDerivAt (t : ℝ) :
     HasDerivAt (normalizedArcOrderIso hγ hper hnz).symm
       (((2 * Real.pi / arcLen γ (2 * Real.pi)) *
-        ‖deriv γ ((normalizedArcOrderIso hγ hper hnz).symm t)‖)⁻¹) t := by
-  have hL := arcLen_period_pos_of_regular hγ hnz
-  have hpos : 0 < (2 * Real.pi / arcLen γ (2 * Real.pi)) *
-      ‖deriv γ ((normalizedArcOrderIso hγ hper hnz).symm t)‖ :=
-    mul_pos (div_pos Real.two_pi_pos hL) (norm_pos_iff.mpr (hnz _))
-  apply HasDerivAt.of_local_left_inverse
-    (normalizedArcOrderIso hγ hper hnz).symm.continuous.continuousAt
-    (hasDerivAt_normalizedArcReparam hγ _) hpos.ne'
-  exact Eventually.of_forall (normalizedArcOrderIso hγ hper hnz).apply_symm_apply
+        ‖deriv γ ((normalizedArcOrderIso hγ hper hnz).symm t)‖)⁻¹) t := have hpos := mul_pos (div_pos Real.two_pi_pos (arcLen_period_pos_of_regular hγ hnz)) (norm_pos_iff.mpr (hnz ((normalizedArcOrderIso hγ hper hnz).symm t))); HasDerivAt.of_local_left_inverse (Continuous.continuousAt (OrderIso.continuous (normalizedArcOrderIso hγ hper hnz).symm)) (hasDerivAt_normalizedArcReparam hγ ((normalizedArcOrderIso hγ hper hnz).symm t)) (LT.lt.ne' hpos) (Eventually.of_forall (OrderIso.apply_symm_apply (normalizedArcOrderIso hγ hper hnz)))
 
 theorem normalizedArcCurve_hasDerivAt (t : ℝ) :
     HasDerivAt (normalizedArcCurve hγ hper hnz)
@@ -159,12 +143,11 @@ theorem normalizedArcCurve_speed (t : ℝ) :
   have hL := arcLen_period_pos_of_regular hγ hnz
   have hv : 0 < ‖deriv γ ((normalizedArcOrderIso hγ hper hnz).symm t)‖ :=
     norm_pos_iff.mpr (hnz _)
-  have hp : 0 < ((2 * Real.pi / arcLen γ (2 * Real.pi)) *
-      ‖deriv γ ((normalizedArcOrderIso hγ hper hnz).symm t)‖)⁻¹ :=
+  have hp :=
     inv_pos.mpr (mul_pos (div_pos Real.two_pi_pos hL) hv)
   rw [(normalizedArcCurve_hasDerivAt hγ hper hnz t).deriv, norm_smul,
     Real.norm_eq_abs, abs_of_pos hp]
-  field_simp [hL.ne', hv.ne', Real.two_pi_pos.ne']
+  grind
 
 theorem normalizedArcCurve_lipschitz :
     LipschitzWith (Real.toNNReal (arcLen γ (2 * Real.pi) / (2 * Real.pi)))
@@ -190,10 +173,8 @@ theorem normalizedArcCurve_injOn (hinj : InjOn γ (Ico 0 (2 * Real.pi))) :
       (normalizedArcOrderIso hγ hper hnz).symm x ∈ Ico 0 (2 * Real.pi) := by
     intro x hx
     constructor
-    · simpa only [normalizedArcOrderIso_symm_zero] using
-        (normalizedArcOrderIso hγ hper hnz).symm.monotone hx.1
-    · simpa only [normalizedArcOrderIso_symm_endpoint] using
-        (normalizedArcOrderIso hγ hper hnz).symm.strictMono hx.2
+    simpa using OrderIso.monotone (normalizedArcOrderIso hγ hper hnz).symm hx.left
+    simpa using OrderIso.strictMono (normalizedArcOrderIso hγ hper hnz).symm hx.right
   intro x hx y hy hxy
   exact (normalizedArcOrderIso hγ hper hnz).symm.injective (hinj (hm x hx) (hm y hy) hxy)
 

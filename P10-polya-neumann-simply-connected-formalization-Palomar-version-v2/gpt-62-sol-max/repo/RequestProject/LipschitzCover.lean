@@ -36,45 +36,44 @@ lemma chart_segment {Ω : Set ℂ} {p c : ℂ} {r h : ℝ} {K : NNReal} {f : ℝ
   have hK0 : (0 : ℝ) ≤ K := K.2
   have hr'0 : 0 ≤ r' := by positivity
   have hr'δ : ((K : ℝ) + 1) * r' = δ / 2 := by
-    simp only [r']; field_simp
+    grind
   have hr'2 : r' ≤ δ / 2 := by nlinarith
   set e : ℂ := c * (z - a)
   have he : ‖e‖ ≤ r' := by
-    simp only [e, norm_mul, hc, one_mul]; rw [← dist_eq_norm]; exact hz
+    simp  [e, hc, one_mul]; simp_all [dist_eq_norm]
   have hcc : c * (starRingEnd ℂ c) = 1 := by
-    rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, hc]; norm_num
+    simp_all [Complex.mul_conj, Complex.normSq_eq_norm_sq]
   have hcz : c * z = -Complex.I * δ + e := by
-    simp only [e, a]
-    linear_combination (-(Complex.I * δ)) * hcc
+    grind
   have hζ : c * (t - s • z - p) = c * (t - p) + s * (Complex.I * δ - e) := by
     rw [Complex.real_smul]
-    linear_combination (-(s:ℂ)) * hcz
+    grind
   set X := (c * (t - p)).re
   set Y := (c * (t - p)).im
   have hX' : (c * (t - s • z - p)).re = X - s * e.re := by
     rw [hζ]; simp [X]; ring
   have hY' : (c * (t - s • z - p)).im = Y + s * (δ - e.im) := by
-    rw [hζ]; simp [Y]
-  have hre : |e.re| ≤ r' := (Complex.abs_re_le_norm e).trans he
-  have him : |e.im| ≤ r' := (Complex.abs_im_le_norm e).trans he
+    aesop
+  have hre := (Complex.abs_re_le_norm e).trans he
+  have him := (Complex.abs_im_le_norm e).trans he
   obtain ⟨hs0, hs1⟩ := hs
-  have hfX : f X < Y := (hΩ t (by linarith [abs_nonneg X]) (by linarith [abs_nonneg Y])).mp ht
+  have hfX := (hΩ t (by linarith) (by linarith)).mp ht
   have hsre : |s * e.re| ≤ s * r' := by
-    rw [abs_mul, abs_of_nonneg hs0]; exact mul_le_mul_of_nonneg_left hre hs0
-  have hsr : s * r' ≤ r' := mul_le_of_le_one_left hr'0 hs1
+    rw [abs_mul, abs_of_nonneg hs0]; gcongr
+  have hsr := mul_le_of_le_one_left hr'0 hs1
   have hXa := abs_le.mp hsre
   have hXb := abs_lt.mp htX
   have hYb := abs_lt.mp htY
   have heim := abs_le.mp him
   have hd1 : 0 ≤ δ - e.im := by linarith
   have hd2 : δ - e.im ≤ 3 * δ / 2 := by linarith
-  have hsd1 : 0 ≤ s * (δ - e.im) := mul_nonneg hs0 hd1
+  have hsd1 := mul_nonneg hs0 hd1
   have hsd2 : s * (δ - e.im) ≤ 3 * δ / 2 := (mul_le_of_le_one_left hd1 hs1).trans hd2
   have hmemX : |X - s * e.re| < r := by
-    rw [abs_lt]; constructor <;> linarith
+    grind
   have hmemY : |Y + s * (δ - e.im)| < h := by
-    rw [abs_lt]; constructor <;> linarith
-  rw [hΩ _ (by rwa [hX']) (by rwa [hY']), hX', hY']
+    grind
+  rw [hΩ _ (by simp_all) (by simp_all), hX', hY']
   have hlip : f (X - s * e.re) ≤ f X + K * (s * r') := by
     have h1 := hf.dist_le_mul (X - s * e.re) X
     rw [Real.dist_eq, Real.dist_eq] at h1
@@ -95,7 +94,7 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
       Ω ⊆ ⋃ j, W j ∧ ∀ η > 0, ∀ j, ∃ a : ℂ, ∃ r > 0, ‖a‖ + r ≤ η ∧
         ∀ t ∈ W j, ∀ z ∈ closedBall a r, ∀ s ∈ Icc (0 : ℝ) 1, t - s • z ∈ Ω := by
   classical
-  have hΩo : IsOpen Ω := hL.1.1
+  have hΩo := hL.1.1
   choose! c r h K f hc hr hh hf _ _ hΩ using hL.2
   set O : ℂ → Set ℂ := fun p =>
     {w | |(c p * (w - p)).re| < r p / 2 ∧ |(c p * (w - p)).im| < h p / 2}
@@ -103,12 +102,12 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
     have h1 : Continuous fun w : ℂ => |(c p * (w - p)).re| := by fun_prop
     have h2 : Continuous fun w : ℂ => |(c p * (w - p)).im| := by fun_prop
     exact (isOpen_lt h1 continuous_const).inter (isOpen_lt h2 continuous_const)
-  have hfr : IsCompact (frontier Ω) :=
+  have hfr :=
     hb.isCompact_closure.of_isClosed_subset isClosed_frontier frontier_subset_closure
   obtain ⟨T, hT⟩ := hfr.elim_finite_subcover (fun q : frontier Ω => O q) (fun q => hOo q)
     (fun p hp => mem_iUnion.mpr ⟨⟨p, hp⟩, by
-      have h1 := hr p hp; have h2 := hh p hp
-      simp [O, h1, h2]⟩)
+      have h2 := hh p hp
+      simp [O, (hr p hp), h2]⟩)
   set K0 := closure Ω \ ⋃ q ∈ T, O q
   have hK0c : IsCompact K0 :=
     hb.isCompact_closure.diff (isOpen_biUnion fun q _ => hOo q)
@@ -116,7 +115,7 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
     intro x ⟨hx1, hx2⟩
     by_contra hx
     have : x ∈ frontier Ω := by
-      rw [frontier, hΩo.interior_eq]; exact ⟨hx1, hx⟩
+      rw [frontier, hΩo.interior_eq]; trivial
     exact hx2 (hT this)
   obtain ⟨δ0, hδ0, hδ0Ω⟩ := hK0c.exists_cthickening_subset_open hΩo hK0Ω
   let W : Option T → Set ℂ := fun j => match j with
@@ -139,7 +138,7 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
     rcases j with _ | ⟨q, hq⟩
     · refine ⟨0, min (δ0 / 2) (η / 2), by positivity, ?_, ?_⟩
       · simp only [norm_zero, zero_add]
-        exact (min_le_right _ _).trans (by linarith)
+        grind
       · intro t ht z hz s hs
         obtain ⟨y, hy, hty⟩ := mem_thickening_iff.mp ht
         apply hδ0Ω
@@ -152,14 +151,14 @@ lemma lipschitz_cover_aux {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsL
           exact (mul_le_of_le_one_left (norm_nonneg _) hs.2).trans hz'
         calc dist (t - s • z) y ≤ dist t y + ‖s • z‖ := by
               rw [dist_eq_norm, dist_eq_norm]
-              calc ‖t - s • z - y‖ = ‖(t - y) - s • z‖ := by congr 1; abel
+              calc ‖t - s • z - y‖ = ‖(t - y) - s • z‖ := by ring
                 _ ≤ ‖t - y‖ + ‖s • z‖ := norm_sub_le _ _
           _ < δ0 / 2 + δ0 / 2 := by linarith
           _ = δ0 := by ring
-    · have hqf : q.1 ∈ frontier Ω := q.2
+    · have hqf := q.2
       set δ := min (min (r q) (h q / 3)) (η / 2)
-      have hδ : 0 < δ := lt_min (lt_min (hr _ hqf) (by linarith [hh _ hqf])) (by linarith)
-      have hK0 : (0 : ℝ) ≤ K q := (K q).2
+      have hδ : 0 < δ := lt_min (lt_min (hr _ hqf) (by simp_all)) (by linarith)
+      have hK0 := (K q).2
       refine ⟨-(starRingEnd ℂ (c q)) * Complex.I * δ, δ / (2 * (K q + 1)), by positivity, ?_, ?_⟩
       · have hn : ‖-(starRingEnd ℂ (c q)) * Complex.I * (δ : ℂ)‖ = δ := by
           rw [norm_mul, norm_mul, norm_neg, Complex.norm_conj, hc _ hqf, Complex.norm_I,

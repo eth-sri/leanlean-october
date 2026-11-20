@@ -57,44 +57,14 @@ theorem imSchur_herglotzVec_eq (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDo
   have hhc : ContinuousOn (fun θ => herglotzWave (Real.sqrt E) a (γ θ)) (uIcc 0 (2 * π)) := by
     have : (fun θ => herglotzWave (Real.sqrt E) a (γ θ)) =
         fun θ => herglotzCoeff (Real.sqrt E) a 0 (γ θ) := by
-      funext θ; rw [herglotzWave_eq]
+      simp [herglotzWave_eq]
     rw [this]
     exact ((continuous_herglotzCoeff hai _ 0).comp hK.continuous).continuousOn
-  have hh : IntervalIntegrable (fun θ => conj (herglotzConormal (Real.sqrt E) a γ θ) *
-      herglotzWave (Real.sqrt E) a (γ θ)) volume 0 (2 * π) :=
+  have hh :=
     (intervalIntegrable_conj' hgi).mul_continuousOn hhc
   rw [imSchur_herglotzVec hK hclosed hW ha, herglotzForm,
     re_volterra_sub_schur_eq hK hE hW ha0 hgm hgB hG hh,
     re_integral_herglotz_principal hb hL hγ hai _ h0, herglotzPrincipal]
-
-/-- Quantitative form of Lemma 8.2: `a_E ≤ -|Ω| E` for small `E > 0`. -/
-theorem smallA_le_neg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hγ : IsBoundaryParam Ω γ) :
-    ∃ δ > 0, δ ≤ 1 ∧ ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
-      smallA W ≤ -((volume Ω).toReal * E) := by
-  obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
-  obtain ⟨C, hC0, hC⟩ := smallA_approx hK
-  set v := (volume Ω).toReal with hv
-  have hvpos : 0 < v := ENNReal.toReal_pos
-    (hL.1.1.measure_pos volume hL.1.2.nonempty).ne' hb.measure_lt_top.ne
-  have harea : ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ = 2 * v := by
-    rw [integral_areaDensity_eq hK hclosed]; exact hγ.area
-  refine ⟨min 1 ((v / (C + 1)) ^ 2), lt_min one_pos (by positivity), min_le_left _ _,
-    fun E hE hEδ W hW => ?_⟩
-  have hE1 : E ≤ 1 := (hEδ.trans_le (min_le_left _ _)).le
-  have hE2 : E < (v / (C + 1)) ^ 2 := hEδ.trans_le (min_le_right _ _)
-  have hs : Real.sqrt E < v / (C + 1) := by
-    rw [show v / (C + 1) = Real.sqrt ((v / (C + 1)) ^ 2) from
-      (Real.sqrt_sq (by positivity)).symm]
-    exact Real.sqrt_lt_sqrt hE.le hE2
-  have hs' : (C + 1) * Real.sqrt E < v := by
-    rw [lt_div_iff₀ (by positivity)] at hs; linarith
-  have h := hC E hE.le hE1 W hW
-  rw [harea] at h
-  have h2 := (abs_le.mp h).2
-  have hsq := Real.sqrt_nonneg E
-  nlinarith [mul_lt_mul_of_pos_left hs' hE]
 
 /-- **The Schur complement on Herglotz data, up to `O(E)`.** For small `E > 0`, if the Herglotz
 wave of `a` has zero mean over `Ω`, then for every constant `c`
@@ -121,7 +91,7 @@ theorem imSchur_herglotzVec_sub_principal_le (hb : Bornology.IsBounded Ω)
   have hE1 : E ≤ 1 := (hEδ.trans_le hδ1).le
   have hAE := hA E hE hEδ W hW
   have hApos : v * E ≤ |smallA W| := by
-    rw [abs_of_neg (by nlinarith)]; linarith
+    grind
   have ha0 : smallA W ≠ 0 := by intro h; rw [h] at hAE; nlinarith
   obtain ⟨hgm, Bg, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable (Real.sqrt E) hK
   have hG : ∫ θ in (0 : ℝ)..(2 * π), herglotzConormal (Real.sqrt E) a γ θ = 0 := by

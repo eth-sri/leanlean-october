@@ -37,27 +37,25 @@ lemma exists_exterior_box {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) {q : ℂ}
       V ∩ (closure Ω)ᶜ ⊆ B ∧ ∀ q' ∈ frontier Ω ∩ V, q' ∈ closure B := by
   obtain ⟨c, r, h, K, f, hc, hr, hh, hf, -, hfb, hΩ⟩ := hL.2 q hq
   have hc0 : c ≠ 0 := by
-    intro h0; rw [h0, norm_zero] at hc; exact zero_ne_one hc
+    aesop
   set g : ℂ → ℂ := fun w => c * (w - q) with hg
   have hgc : Continuous g := by fun_prop
-  have hginv : ∀ u : ℂ, g (q + c⁻¹ * u) = u := fun u => by
-    simp only [hg]; field_simp; ring
-  have hgadd : ∀ (w : ℂ) (t : ℝ) (e : ℂ), g (w + t * (c⁻¹ * e)) = g w + t * e := fun w t e => by
-    simp only [hg]; field_simp; ring
+  have hginv : ∀ u : ℂ, g (q + c⁻¹ * u) = u := fun u => by simp_all
+  have hgadd : ∀ (w : ℂ) (t : ℝ) (e : ℂ), g (w + t * (c⁻¹ * e)) = g w + t * e := fun w t e => by grind
   set V : Set ℂ := {w | |(g w).re| < r ∧ |(g w).im| < h} with hV
   set B : Set ℂ := {w | (|(g w).re| < r ∧ |(g w).im| < h) ∧ (g w).im < f (g w).re} with hB
   refine ⟨V, B, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact (isOpen_lt (Complex.continuous_re.comp hgc).abs continuous_const).inter
       (isOpen_lt (Complex.continuous_im.comp hgc).abs continuous_const)
-  · simp [hV, hg, hr, hh]
+  simp_all
   · set Φ : ℝ × ℝ → ℂ := fun p =>
       q + c⁻¹ * ((p.1 : ℂ) + ((-h + p.2 * (f p.1 + h) : ℝ) : ℂ) * Complex.I) with hΦ
     have hBΦ : B = Φ '' (Ioo (-r) r ×ˢ Ioo 0 1) := by
       ext w
       constructor
       · rintro ⟨⟨h1, h2⟩, h3⟩
-        have hfx : -h < f (g w).re := (abs_lt.mp (hfb _ h1)).1
-        have hy : -h < (g w).im := (abs_lt.mp h2).1
+        have hfx := (abs_lt.mp (hfb _ h1)).1
+        have hy := (abs_lt.mp h2).1
         refine ⟨((g w).re, ((g w).im + h) / (f (g w).re + h)),
           ⟨abs_lt.mp h1, div_pos (by linarith) (by linarith),
             (div_lt_one (by linarith)).mpr (by linarith)⟩, ?_⟩
@@ -65,21 +63,21 @@ lemma exists_exterior_box {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) {q : ℂ}
           rw [div_mul_cancel₀ _ (show f (g w).re + h ≠ 0 by linarith)]
           ring
         simp only [hΦ, h4, Complex.re_add_im]
-        simp only [hg]
+        simp  [hg]
         field_simp
         ring
       · rintro ⟨⟨x, t⟩, ⟨hx, ht⟩, rfl⟩
-        have hfx : -h < f x := (abs_lt.mp (hfb x (abs_lt.mpr hx))).1
-        have hfx' : f x < h := (abs_lt.mp (hfb x (abs_lt.mpr hx))).2
+        have hfx := (abs_lt.mp (hfb x (abs_lt.mpr hx))).1
+        have hfx' := (abs_lt.mp (hfb x (abs_lt.mpr hx))).2
         have hgΦ : g (Φ (x, t)) = (x : ℂ) + ((-h + t * (f x + h) : ℝ) : ℂ) * Complex.I :=
           hginv _
-        have hre : (g (Φ (x, t))).re = x := by rw [hgΦ]; simp
-        have him : (g (Φ (x, t))).im = -h + t * (f x + h) := by rw [hgΦ]; simp
+        have hre : (g (Φ (x, t))).re = x := by simp_all
+        have him : (g (Φ (x, t))).im = -h + t * (f x + h) := by simp_all
         have h5 : t * (f x + h) < f x + h := by nlinarith [ht.1, ht.2]
         have h6 : 0 < t * (f x + h) := mul_pos ht.1 (by linarith)
         refine ⟨⟨?_, ?_⟩, ?_⟩
-        · rw [hre]; exact abs_lt.mpr hx
-        · rw [him]; exact abs_lt.mpr ⟨by linarith, by linarith⟩
+        · rw [hre]; grind
+        grind
         · rw [hre, him]; linarith
     rw [hBΦ]
     refine (isPreconnected_Ioo.prod isPreconnected_Ioo).image _ (Continuous.continuousOn ?_)
@@ -89,34 +87,34 @@ lemma exists_exterior_box {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) {q : ℂ}
     exact chart_notMem_closure hf hΩ h1 h2 h3
   · rintro w ⟨⟨h1, h2⟩, hwE⟩
     refine ⟨⟨h1, h2⟩, ?_⟩
-    have hle : (g w).im ≤ f (g w).re :=
+    have hle :=
       not_lt.mp fun hlt => hwE (subset_closure ((hΩ w h1 h2).mpr hlt))
     rcases hle.lt_or_eq with hlt | heq
-    · exact hlt
+    assumption
     · exfalso
       apply hwE
       refine mem_closure_of_tendsto (tendsto_add_mul_nhdsGT w (c⁻¹ * Complex.I)) ?_
-      filter_upwards [Ioo_mem_nhdsGT (show 0 < h - (g w).im by linarith [(abs_lt.mp h2).2])]
+      filter_upwards [Ioo_mem_nhdsGT (show 0 < h - (g w).im by grind)]
         with t ht
-      have hre : (g (w + t * (c⁻¹ * Complex.I))).re = (g w).re := by rw [hgadd]; simp
-      have him : (g (w + t * (c⁻¹ * Complex.I))).im = (g w).im + t := by rw [hgadd]; simp
-      rw [hΩ _ (by rw [hre]; exact h1)
-        (by rw [him]; exact abs_lt.mpr ⟨by linarith [(abs_lt.mp h2).1, ht.1], by linarith [ht.2]⟩),
+      have hre : (g (w + t * (c⁻¹ * Complex.I))).re = (g w).re := by simp_all
+      have him : (g (w + t * (c⁻¹ * Complex.I))).im = (g w).im + t := by simp_all
+      rw [hΩ _ (by simp_all)
+        (by grind),
         hre, him]
-      linarith [ht.1]
+      simp_all
   · rintro q' ⟨hq', h1, h2⟩
     have hgraph := chart_frontier_graph hL.1.1 hf hΩ hq' h1 h2
-    have hfx : -h < f (g q').re := (abs_lt.mp (hfb _ h1)).1
-    have hfx' : f (g q').re < h := (abs_lt.mp (hfb _ h1)).2
+    have hfx := (abs_lt.mp (hfb _ h1)).1
+    have hfx' := (abs_lt.mp (hfb _ h1)).2
     refine mem_closure_of_tendsto (tendsto_add_mul_nhdsGT q' (c⁻¹ * -Complex.I)) ?_
     filter_upwards [Ioo_mem_nhdsGT (show 0 < f (g q').re + h by linarith)] with t ht
     have hre : (g (q' + t * (c⁻¹ * -Complex.I))).re = (g q').re := by rw [hgadd]; simp
     have him : (g (q' + t * (c⁻¹ * -Complex.I))).im = (g q').im - t := by
       rw [hgadd]; simp; ring
     refine ⟨⟨?_, ?_⟩, ?_⟩
-    · rw [hre]; exact h1
-    · rw [him, hgraph]; exact abs_lt.mpr ⟨by linarith [ht.2], by linarith [ht.1]⟩
-    · rw [hre, him, hgraph]; linarith [ht.1]
+    · rw [hre]; assumption
+    grind
+    grind
 
 /-- Every exterior component of a bounded domain accumulates at a boundary point. -/
 lemma exists_frontier_mem_closure_connectedComponentIn {Ω : Set ℂ}
@@ -126,19 +124,19 @@ lemma exists_frontier_mem_closure_connectedComponentIn {Ω : Set ℂ}
   have hEo : IsOpen E := isClosed_closure.isOpen_compl
   set C := connectedComponentIn E x with hC
   have hCo : IsOpen C := hEo.connectedComponentIn
-  have hxC : x ∈ C := mem_connectedComponentIn hx
+  have hxC := mem_connectedComponentIn hx
   obtain ⟨z₀, hz₀⟩ := hne
   have hCne : C ≠ univ := fun h => by
-    have hz : z₀ ∈ C := by rw [h]; exact mem_univ z₀
+    have hz : z₀ ∈ C := by grind
     exact (connectedComponentIn_subset E x hz) (subset_closure hz₀)
   obtain ⟨z, hz⟩ := nonempty_frontier_iff.mpr ⟨⟨x, hxC⟩, hCne⟩
-  have hzcl : z ∈ closure C := frontier_subset_closure hz
+  have hzcl := frontier_subset_closure hz
   have hzC : z ∉ C := by rw [hCo.frontier_eq] at hz; exact hz.2
   have hzE : z ∉ E := by
     intro hzE
     have hzo : IsOpen (connectedComponentIn E z) := hEo.connectedComponentIn
     obtain ⟨w, hw1, hw2⟩ := mem_closure_iff.mp hzcl _ hzo (mem_connectedComponentIn hzE)
-    have h1 : connectedComponentIn E z = connectedComponentIn E w := connectedComponentIn_eq hw1
+    have h1 := connectedComponentIn_eq hw1
     have h2 : C = connectedComponentIn E w := connectedComponentIn_eq hw2
     exact hzC (h2 ▸ h1 ▸ mem_connectedComponentIn hzE)
   have hzΩ : z ∉ Ω := by
@@ -155,8 +153,8 @@ theorem isConnected_compl_closure_of_frontier {Ω : Set ℂ} (hb : Bornology.IsB
     (hL : IsLipschitzDomain Ω) (hfc : IsPreconnected (frontier Ω)) :
     IsConnected (closure Ω)ᶜ := by
   set E := (closure Ω)ᶜ with hE
-  have hΩo : IsOpen Ω := hL.1.1
-  have hne : Ω.Nonempty := hL.1.2.nonempty
+  have hΩo := hL.1.1
+  have hne := hL.1.2.nonempty
   choose! V B hVo hqV hBpre hBE hVB hcl using
     fun q (hq : q ∈ frontier Ω) => exists_exterior_box hL hq
   -- a box meeting the closure of an exterior component has its exterior piece inside it
@@ -164,8 +162,8 @@ theorem isConnected_compl_closure_of_frontier {Ω : Set ℂ} (hb : Bornology.IsB
       B q ⊆ connectedComponentIn E x := by
     intro x hx q hq w hwV hwcl
     obtain ⟨v, hv1, hv2⟩ := mem_closure_iff.mp hwcl _ (hVo q hq) hwV
-    have hvE : v ∈ E := connectedComponentIn_subset E x hv2
-    have hvB : v ∈ B q := hVB q hq ⟨hv1, hvE⟩
+    have hvE := connectedComponentIn_subset E x hv2
+    have hvB := hVB q hq ⟨hv1, hvE⟩
     rw [connectedComponentIn_eq hv2]
     exact (hBpre q hq).subset_connectedComponentIn hvB (hBE q hq)
   have hiff : ∀ x ∈ E, ∀ q ∈ frontier Ω, ∀ q' ∈ frontier Ω ∩ V q,
@@ -191,27 +189,27 @@ theorem isConnected_compl_closure_of_frontier {Ω : Set ℂ} (hb : Bornology.IsB
       · exact Or.inr (mem_biUnion ⟨hq, h⟩ (hqV q hq))
     have hdisj : frontier Ω ∩ (u ∩ v) = ∅ := by
       ext p
-      simp only [mem_inter_iff, mem_empty_iff_false, iff_false, not_and]
+      simp  
       intro hp hpu hpv
       obtain ⟨q₁, hq₁, hp₁⟩ := mem_iUnion₂.mp hpu
       obtain ⟨q₂, hq₂, hp₂⟩ := mem_iUnion₂.mp hpv
-      have h1 : p ∈ closure C := (hiff x hx q₁ hq₁.1 p ⟨hp, hp₁⟩).mp hq₁.2
-      exact hq₂.2 ((hiff x hx q₂ hq₂.1 p ⟨hp, hp₂⟩).mpr h1)
+      have h1 := (hiff x hx q₁ hq₁.1 p ⟨hp, hp₁⟩).mp hq₁.2
+      grind
     rcases isPreconnected_iff_subset_of_disjoint.mp hfc u v huo hvo hcov hdisj with h | h
     · intro p hp
       obtain ⟨q₁, hq₁, hp₁⟩ := mem_iUnion₂.mp (h hp)
-      exact (hiff x hx q₁ hq₁.1 p ⟨hp, hp₁⟩).mp hq₁.2
+      grind
     · exfalso
       obtain ⟨q₀, hq₀, hq₀cl⟩ := exists_frontier_mem_closure_connectedComponentIn hΩo hne hx
       obtain ⟨q₂, hq₂, hp₂⟩ := mem_iUnion₂.mp (h hq₀)
-      exact hq₂.2 ((hiff x hx q₂ hq₂.1 q₀ ⟨hq₀, hp₂⟩).mpr hq₀cl)
+      grind
   -- a point of the exterior
   obtain ⟨R, hR⟩ := hb.closure.subset_ball (0 : ℂ)
   set x₀ : ℂ := ((|R| + 1 : ℝ) : ℂ) with hx₀
   have hx₀E : x₀ ∈ E := by
     intro h
     have h1 := mem_ball_zero_iff.mp (hR h)
-    rw [hx₀, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)] at h1
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)] at h1
     linarith [le_abs_self R]
   have hsub : E ⊆ connectedComponentIn E x₀ := by
     intro y hy
@@ -222,7 +220,7 @@ theorem isConnected_compl_closure_of_frontier {Ω : Set ℂ} (hb : Bornology.IsB
       closure_nonempty_iff.mp ⟨q, hcl q hq q ⟨hq, hqV q hq⟩⟩
     rw [connectedComponentIn_eq (h1 hb), ← connectedComponentIn_eq (h2 hb)]
     exact mem_connectedComponentIn hy
-  have heq : E = connectedComponentIn E x₀ :=
+  have heq :=
     Subset.antisymm hsub (connectedComponentIn_subset E x₀)
   refine ⟨⟨x₀, hx₀E⟩, ?_⟩
   rw [heq]

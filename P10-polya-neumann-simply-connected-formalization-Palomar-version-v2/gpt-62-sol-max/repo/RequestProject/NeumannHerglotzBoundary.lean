@@ -39,30 +39,24 @@ theorem contDiff_herglotzCoeff_infty {a : ℝ → ℂ}
         rw [show ((n + 1 : ℕ) : WithTop ℕ∞) = (n : WithTop ℕ∞) + 1 by simp,
           contDiff_succ_iff_fderiv]
         refine ⟨differentiable_herglotzCoeff ha k m, by simp, ?_⟩
-        have hfd : fderiv ℝ (herglotzCoeff k a m) = fun z =>
-            (-(Complex.I * k / 2) * herglotzCoeff k a (m + 1) z) • ContinuousLinearMap.id ℝ ℂ +
-            (-(Complex.I * k / 2) * herglotzCoeff k a (m - 1) z) •
-              Complex.conjCLE.toContinuousLinearMap := by
-          funext z
-          ext1 w
-          rw [fderiv_herglotzCoeff_apply ha]
-          simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-            ContinuousLinearMap.id_apply, ContinuousLinearEquiv.coe_coe,
-            Complex.conjCLE_apply, smul_eq_mul]
-          ring
-        rw [hfd]
+        rw [show fderiv ℝ (herglotzCoeff k a m) = herglotzCoeffDeriv (a := a) k m from
+          funext fun z => (hasFDerivAt_herglotzCoeff ha k m z).fderiv]
+        unfold herglotzCoeffDeriv
         exact ((contDiff_const.mul (ih (m + 1))).smul_const _).add
           ((contDiff_const.mul (ih (m - 1))).smul_const _)
-  exact contDiff_infty.2 (fun n => hn n m)
+  exact contDiff_infty.mpr fun n => hn n m
 
-lemma herglotzCoeff_memLp_domain {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (m : ℤ) :
+section
+
+variable {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ)
+include Ω hb a ha k
+
+lemma herglotzCoeff_memLp_domain  (m : ℤ) :
     MemLp (herglotzCoeff k a m) 2 (volume.restrict Ω) :=
   memLp_of_continuous_bounded hb (continuous_herglotzCoeff ha.intervalIntegrable k m)
     (fun z => norm_herglotzCoeff_le k m z)
 
-lemma herglotzCoeff_memLp_deriv_domain {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (m : ℤ) (i : Fin 2) :
+lemma herglotzCoeff_memLp_deriv_domain  (m : ℤ) (i : Fin 2) :
     MemLp (fun z => fderiv ℝ (herglotzCoeff k a m) z (coordDir i)) 2 (volume.restrict Ω) := by
   have hc : Continuous (fun z => fderiv ℝ (herglotzCoeff k a m) z (coordDir i)) :=
     ((contDiff_herglotzCoeff ha.intervalIntegrable k m).continuous_fderiv (by simp)).clm_apply
@@ -75,25 +69,24 @@ lemma herglotzCoeff_memLp_deriv_domain {Ω : Set ℂ} (hb : Bornology.IsBounded 
 
 /-- The actual Herglotz wave in the weak-gradient H¹ space. Coefficient zero
 is exactly `herglotzWave`, and its classical derivatives are retained. -/
-def herglotzWaveH1 {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) : NeumannH1 Ω :=
+def herglotzWaveH1  : NeumannH1 Ω :=
   h1Vector (isWeakGradient_of_contDiff_one (contDiff_herglotzCoeff ha.intervalIntegrable k 0)
     (herglotzCoeff_memLp_domain hb ha k 0)
     (herglotzCoeff_memLp_deriv_domain hb ha k 0))
 
-@[simp] theorem h1Value_herglotzWaveH1 {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
+@[simp] theorem h1Value_herglotzWaveH1  :
     h1Value Ω (herglotzWaveH1 hb ha k) =
       (herglotzCoeff_memLp_domain hb ha k 0).toLp (herglotzCoeff k a 0) := rfl
 
-@[simp] theorem h1Gradient_herglotzWaveH1 {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (i : Fin 2) :
-    h1Gradient Ω i (herglotzWaveH1 hb ha k) =
-      (herglotzCoeff_memLp_deriv_domain hb ha k 0 i).toLp
-        (fun z => fderiv ℝ (herglotzCoeff k a 0) z (coordDir i)) := rfl
 
-lemma herglotzConormal_memLp_boundary {Ω : Set ℂ} {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
+end
+
+section
+
+variable {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ)
+include Ω γ hγ a ha k
+
+lemma herglotzConormal_memLp_boundary  :
     MemLp (herglotzConormal k a γ) 2 (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
   obtain ⟨hgm, B, hgB⟩ := herglotzConormal_bounded ha.intervalIntegrable k hK
@@ -101,15 +94,15 @@ lemma herglotzConormal_memLp_boundary {Ω : Set ℂ} {γ : ℝ → ℂ}
 
 /-- The actual density `D u(γ θ)(-i γ'(θ))`, not the unweighted unit-normal
 derivative. Its boundary measure is ordinary `dθ`. -/
-def herglotzConormalL2 {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) : BoundaryL2 :=
+def herglotzConormalL2  : BoundaryL2 :=
   (herglotzConormal_memLp_boundary hγ ha k).toLp (herglotzConormal k a γ)
 
-theorem herglotzConormalL2_ae {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
+theorem herglotzConormalL2_ae  :
     (herglotzConormalL2 hγ ha k : ℝ → ℂ)
       =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] herglotzConormal k a γ :=
   (herglotzConormal_memLp_boundary hγ ha k).coeFn_toLp
+
+end
 
 /-- A smooth compactly supported representative equal to the actual wave
 near the closure of the domain identifies its genuine trace. -/
@@ -118,26 +111,17 @@ theorem exists_smoothTraceTest_herglotz {Ω : Set ℂ} (hb : Bornology.IsBounded
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) :
     ∃ f : smoothTraceTests, smoothTraceH1 Ω f = herglotzWaveH1 hb ha k ∧
       ∀ θ ∈ Icc (0 : ℝ) (2 * π), f (γ θ) = herglotzCoeff k a 0 (γ θ) := by
-  obtain ⟨R, hR0, hR⟩ : ∃ R : ℝ, 0 < R ∧ closure Ω ⊆ ball (0 : ℂ) R := by
-    obtain ⟨R, hR⟩ := hb.closure.subset_ball (0 : ℂ)
-    exact ⟨max R 1, by positivity, hR.trans (ball_subset_ball (le_max_left _ _))⟩
-  obtain ⟨χ, hχs, hχc, hχ1⟩ := exists_cutoff_one_on_ball R hR0
-  let f : smoothTraceTests := ⟨fun z => (χ z : ℂ) * herglotzCoeff k a 0 z,
-    ⟨(Complex.ofRealCLM.contDiff.comp hχs).mul
-      (contDiff_herglotzCoeff_infty ha.intervalIntegrable k 0),
-      (hχc.comp_left (g := fun x : ℝ => (x : ℂ)) Complex.ofReal_zero).mul_right,
-      subset_univ _⟩⟩
-  have hf : ∀ z ∈ closure Ω, f z = herglotzCoeff k a 0 z := by
-    intro z hz
-    simp [f, hχ1 z (ball_subset_closedBall (hR hz))]
+  obtain ⟨φ, hφ, hf⟩ := exists_smooth_test_eqOn_bounded hb.closure
+    (contDiff_herglotzCoeff_infty ha.intervalIntegrable k 0)
+  let f : smoothTraceTests := ⟨φ, hφ⟩
   refine ⟨f, ?_, ?_⟩
   · apply h1Value_injective hL.1.1
     rw [h1Value_smoothTraceH1, h1Value_herglotzWaveH1]
     apply MemLp.toLp_congr
     filter_upwards [ae_restrict_mem hL.1.1.measurableSet] with z hz
-    exact hf z (subset_closure hz)
+    exact hf (subset_closure hz)
   · intro θ hθ
-    exact hf _ (frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ))
+    exact hf (frontier_subset_closure (hγ.image ▸ mem_image_of_mem γ hθ))
 
 private lemma mixedHerglotzGreen_pointwise {a : ℝ → ℂ}
     (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ) (f : smoothTraceTests) (z : ℂ) :
@@ -184,17 +168,15 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
   obtain ⟨Km, hKm⟩ := lipschitzWith_herglotzCoeff ha.intervalIntegrable k (-1)
   let A := (2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖
   have hA : ∀ m z, ‖herglotzCoeff k a m z‖ ≤ A := fun m z => norm_herglotzCoeff_le k m z
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB 0)
-  have hcfB : ∀ z, ‖conj (f z)‖ ≤ B := fun z => by rw [Complex.norm_conj]; exact hB z
-  have hcmB : ∀ z, ‖conj (herglotzCoeff k a (-1) z)‖ ≤ A := fun z => by
-    rw [Complex.norm_conj]
-    exact hA (-1) z
+  have hB0 := (norm_nonneg _).trans (hB 0)
+  have hcfB : ∀ z, ‖conj (f z)‖ ≤ B := fun z => by simp_all
+  have hcmB : ∀ z, ‖conj (herglotzCoeff k a (-1) z)‖ ≤ A := fun z => by simp_all
   obtain ⟨KP, hKP⟩ := lipschitzWith_mul_of_bounded
     (Complex.isometry_conj.lipschitz.comp hKf) hK1 hcfB (hA 1)
   obtain ⟨KQ, hKQ⟩ := lipschitzWith_mul_of_bounded hKf
     (Complex.isometry_conj.lipschitz.comp hKm) hB hcmB
-  let P : ℂ → ℂ := fun z => conj (f z) * herglotzCoeff k a 1 z
-  let Q : ℂ → ℂ := fun z => f z * conj (herglotzCoeff k a (-1) z)
+  let P := fun z => conj (f z) * herglotzCoeff k a 1 z
+  let Q := fun z => f z * conj (herglotzCoeff k a (-1) z)
   have hPB : ∀ z, ‖P z‖ ≤ B * A := fun z => by
     rw [norm_mul]
     exact mul_le_mul (hcfB z) (hA 1 z) (norm_nonneg _) hB0
@@ -214,12 +196,12 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
   have hiQc : IntervalIntegrable (fun θ => conj (Q (γ θ) * deriv γ θ)) volume 0 (2 * π) := by
     rw [intervalIntegrable_iff] at hiQ ⊢
     exact hiQ.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
-      hiQ.aestronglyMeasurable) (Eventually.of_forall fun θ => by simp [Q])
+      hiQ.aestronglyMeasurable) (Eventually.of_forall fun θ => by simp)
   have hpt : ∀ θ, conj (f (γ θ)) * herglotzConormal k a γ θ =
       (k / 2 : ℂ) * (conj (Q (γ θ) * deriv γ θ) - P (γ θ) * deriv γ θ) := by
     intro θ
     rw [herglotzConormal_eq ha.intervalIntegrable]
-    simp only [P, Q, map_mul, Complex.conj_conj]
+    simp  [Q, map_mul, Complex.conj_conj]
     ring
   have hconj : ∫ θ in (0 : ℝ)..(2 * π), conj (Q (γ θ) * deriv γ θ) =
       conj (∫ θ in (0 : ℝ)..(2 * π), Q (γ θ) * deriv γ θ) := by
@@ -231,7 +213,7 @@ theorem integral_test_mul_herglotzConormal {Ω : Set ℂ} (hb : Bornology.IsBoun
   have hQd : IntegrableOn (dbar Q) Ω :=
     Measure.integrableOn_of_bounded (M := (KQ : ℝ)) hb.measure_lt_top.ne
       (measurable_dbar Q).aestronglyMeasurable (Eventually.of_forall (norm_dbar_le hKQ))
-  have hQc : IntegrableOn (fun z => conj (dbar Q z)) Ω :=
+  have hQc :=
     hQd.norm.mono' (Complex.continuous_conj.comp_aestronglyMeasurable
       hQd.aestronglyMeasurable) (Eventually.of_forall fun z => by simp)
   calc
@@ -270,24 +252,22 @@ theorem herglotzWaveH1_green_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     {a : ℝ → ℂ} (ha : IsDirDensity a) (k : ℝ) (f : smoothTraceTests) :
     ⟪smoothTraceH1 Ω f, h1HelmholtzForm Ω (k ^ 2) (herglotzWaveH1 hb ha k)⟫_ℂ =
       ⟪h1BoundaryTrace hb hL hγ (smoothTraceH1 Ω f), herglotzConormalL2 hγ ha k⟫_ℂ := by
-  have hi : ∀ i : Fin 2, IntegrableOn
-      (fun z => conj (fderiv ℝ (f : ℂ → ℂ) z (coordDir i)) *
-        fderiv ℝ (herglotzCoeff k a 0) z (coordDir i)) Ω := fun i =>
+  have hi := fun i =>
     integrable_conj_mul_of_memLp ((f.property.dirD (coordDir i)).memLp' 2)
       (herglotzCoeff_memLp_deriv_domain hb ha k 0 i)
-  have hm : IntegrableOn (fun z => conj (f z) * herglotzCoeff k a 0 z) Ω :=
+  have hm :=
     integrable_conj_mul_of_memLp (f.property.memLp' 2)
       (herglotzCoeff_memLp_domain hb ha k 0)
   rw [h1HelmholtzForm_inner, h1BoundaryTrace_inner_smooth]
   simp only [h1Value_smoothTraceH1, h1Gradient_smoothTraceH1,
-    h1Value_herglotzWaveH1, h1Gradient_herglotzWaveH1, inner_toLp_pair]
+    herglotzWaveH1, h1Value_h1Vector, h1Gradient_h1Vector, inner_toLp_pair]
   have hboundary : (∫ θ in Ioc (0 : ℝ) (2 * π),
       conj (f (γ θ)) * (herglotzConormalL2 hγ ha k : ℝ → ℂ) θ) =
       ∫ θ in (0 : ℝ)..(2 * π), conj (f (γ θ)) * herglotzConormal k a γ θ := by
     rw [intervalIntegral.integral_of_le (by positivity)]
     apply integral_congr_ae
     filter_upwards [herglotzConormalL2_ae hγ ha k] with θ hθ
-    rw [hθ]
+    tauto
   rw [hboundary, integral_test_mul_herglotzConormal hb hL hγ ha k f]
   simp only [Fin.sum_univ_two] at hi ⊢
   symm
@@ -297,13 +277,15 @@ theorem herglotzWaveH1_green_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     (integral_add (hi 0) (hi 1))
     (integral_const_mul ((k ^ 2 : ℝ) : ℂ) (fun z => conj (f z) * herglotzCoeff k a 0 z))
 
+section
+
+variable {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ} (ha : IsDirDensity a)
+include Ω hb hL γ hγ a ha
+
 /-- Every genuine Herglotz wave solves the weak Helmholtz equation with its
 own actual conormal data. Smooth Green's formula extends to all H¹ tests
 through the already established density theorem. -/
-theorem herglotzWaveH1_isBoundaryNeumannSolution {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ}
-    (ha : IsDirDensity a) (k : ℝ) :
+theorem herglotzWaveH1_isBoundaryNeumannSolution  (k : ℝ) :
     IsBoundaryNeumannSolution hb hL hγ (k ^ 2)
       (herglotzConormalL2 hγ ha k) (herglotzWaveH1 hb ha k) := by
   apply (isBoundaryNeumannSolution_iff_form_eq hb hL hγ (k ^ 2) _ _).2
@@ -313,18 +295,17 @@ theorem herglotzWaveH1_isBoundaryNeumannSolution {Ω : Set ℂ}
     (isClosed_eq (continuous_id.inner continuous_const)
       (continuous_id.inner continuous_const)) ?_
   intro f
-  rw [smoothTraceH1Lin_apply, h1BoundaryLoad_inner]
+  rw [h1BoundaryLoad_inner]
   exact herglotzWaveH1_green_smooth hb hL hγ ha k f
 
-theorem herglotzWaveH1_sqrt_isBoundaryNeumannSolution {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {a : ℝ → ℂ}
-    (ha : IsDirDensity a) {E : ℝ} (hE : 0 ≤ E) :
+theorem herglotzWaveH1_sqrt_isBoundaryNeumannSolution  {E : ℝ} (hE : 0 ≤ E) :
     IsBoundaryNeumannSolution hb hL hγ E
       (herglotzConormalL2 hγ ha (Real.sqrt E))
       (herglotzWaveH1 hb ha (Real.sqrt E)) := by
   simpa only [Real.sq_sqrt hE] using
     herglotzWaveH1_isBoundaryNeumannSolution hb hL hγ ha (Real.sqrt E)
+
+end
 
 end PolyaNeumann
 

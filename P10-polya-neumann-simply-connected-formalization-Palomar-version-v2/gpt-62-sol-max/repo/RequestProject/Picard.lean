@@ -33,15 +33,18 @@ def picardTerm (C : ℝ → A) : ℕ → ℝ → A
 
 variable {C : ℝ → A} {M : ℝ}
 
+/-- A bounded strongly measurable function is interval integrable. -/
+lemma intervalIntegrable_of_bounded {G : Type*} [NormedAddCommGroup G] {f : ℝ → G}
+    (hf : AEStronglyMeasurable f volume) {B : ℝ} (hB : ∀ s, ‖f s‖ ≤ B) (a b : ℝ) :
+    IntervalIntegrable f volume a b :=
+  IntervalIntegrable.mono_fun' (g := fun _ => B) intervalIntegrable_const hf.restrict
+    (Filter.Eventually.of_forall hB)
+
 omit [NormedSpace ℝ A] [CompleteSpace A] in
 lemma picardTerm_intervalIntegrable (hC : AEStronglyMeasurable C volume)
     (hM : ∀ s, ‖C s‖ ≤ M) {p : ℝ → A} (hp : Continuous p) (a b : ℝ) :
-    IntervalIntegrable (fun s => C s * p s) volume a b := by
-  refine IntervalIntegrable.mono_fun' (g := fun s => M * ‖p s‖)
-    (by exact (continuous_const.mul hp.norm).intervalIntegrable a b)
-    ((hC.mul hp.aestronglyMeasurable).restrict) ?_
-  refine Filter.Eventually.of_forall fun s => ?_
-  exact (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right (hM s) (norm_nonneg _))
+    IntervalIntegrable (fun s => C s * p s) volume a b :=
+  (intervalIntegrable_of_bounded hC hM a b).mul_continuousOn hp.continuousOn
 
 omit [CompleteSpace A] in
 lemma picardTerm_continuous (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M) :
@@ -53,12 +56,12 @@ lemma picardTerm_continuous (hC : AEStronglyMeasurable C volume) (hM : ∀ s, �
 omit [CompleteSpace A] in
 lemma picardTerm_bound (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M) :
     ∀ n θ, 0 ≤ θ → ‖picardTerm C n θ‖ ≤ ‖(1 : A)‖ * (M * θ) ^ n / n.factorial
-  | 0, θ, _ => by simp [picardTerm]
+  | 0, θ, _ => by aesop
   | n + 1, θ, hθ => by
-    have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-    simp only [picardTerm]
+    have hM0 := (norm_nonneg _).trans (hM 0)
+    simp  
     refine (intervalIntegral.norm_integral_le_integral_norm hθ).trans ?_
-    have hint1 : IntervalIntegrable (fun s => ‖C s * picardTerm C n s‖) volume 0 θ :=
+    have hint1 :=
       (picardTerm_intervalIntegrable hC hM (picardTerm_continuous hC hM n) 0 θ).norm
     have hint2 : IntervalIntegrable
         (fun s => M * (‖(1 : A)‖ * (M * s) ^ n / n.factorial)) volume 0 θ := by
@@ -68,7 +71,7 @@ lemma picardTerm_bound (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s�
       exact picardTerm_bound hC hM n s hs.1
     · have : (fun s : ℝ => M * (‖(1 : A)‖ * (M * s) ^ n / n.factorial)) =
           fun s => (M * ‖(1 : A)‖ * M ^ n / n.factorial) * s ^ n := by
-        funext s; rw [mul_pow]; ring
+        grind [mul_pow]
       rw [this, intervalIntegral.integral_const_mul, integral_pow, Nat.factorial_succ]
       push_cast
       field_simp
@@ -78,11 +81,11 @@ omit [CompleteSpace A] in
 lemma picardTerm_bound' (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M)
     (L : ℝ) (n : ℕ) (θ : ℝ) (hθ : θ ∈ Set.Icc 0 L) :
     ‖picardTerm C n θ‖ ≤ ‖(1 : A)‖ * (M * L) ^ n / n.factorial := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   refine (picardTerm_bound hC hM n θ hθ.1).trans ?_
   gcongr
-  · exact mul_nonneg hM0 hθ.1
-  · exact hθ.2
+  exact mul_nonneg hM0 hθ.left
+  simp_all
 
 omit [NormedSpace ℝ A] [CompleteSpace A] in
 lemma summable_picard_bound (L : ℝ) :
@@ -98,15 +101,13 @@ theorem exists_volterra_solution (hC : AEStronglyMeasurable C volume) (hM : ∀ 
   set W : ℝ → A := fun θ => ∑' n, picardTerm C n θ
   have hsum : ∀ θ ∈ Set.Icc 0 L, HasSum (fun n => picardTerm C n θ) (W θ) := by
     intro θ hθ
-    exact (Summable.of_norm_bounded (summable_picard_bound (A := A) (M := M) L)
-      fun n => picardTerm_bound' hC hM L n θ hθ).hasSum
+    exact Summable.hasSum (Summable.of_norm_bounded (summable_picard_bound L) fun n => picardTerm_bound' hC hM L n θ hθ)
   refine ⟨W, continuousOn_tsum (fun n => (picardTerm_continuous hC hM n).continuousOn)
     (summable_picard_bound L) (fun n θ hθ => picardTerm_bound' hC hM L n θ hθ), ?_⟩
   intro θ hθ
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   have hsub : Set.uIoc 0 θ ⊆ Set.Icc 0 L := by
-    rw [Set.uIoc_of_le hθ.1]
-    exact fun s hs => ⟨hs.1.le, hs.2.trans hθ.2⟩
+    grind
   have key : HasSum (fun n => ∫ s in (0 : ℝ)..θ, C s * picardTerm C n s)
       (∫ s in (0 : ℝ)..θ, C s * W s) := by
     refine intervalIntegral.hasSum_integral_of_dominated_convergence
@@ -116,27 +117,23 @@ theorem exists_volterra_solution (hC : AEStronglyMeasurable C volume) (hM : ∀ 
     · refine Filter.Eventually.of_forall fun s hs => ?_
       exact (norm_mul_le _ _).trans
         (mul_le_mul (hM s) (picardTerm_bound' hC hM L n s (hsub hs)) (norm_nonneg _) hM0)
-    · exact Filter.Eventually.of_forall fun s _ => (summable_picard_bound L).mul_left M
-    · exact intervalIntegrable_const
-    · exact Filter.Eventually.of_forall fun s hs => (hsum s (hsub hs)).mul_left (C s)
+    exact Filter.Eventually.of_forall fun s _ => (summable_picard_bound L).mul_left M
+    simp
+    exact Filter.Eventually.of_forall fun s hs => (hsum s (hsub hs)).mul_left (C s)
   have h2 : HasSum (fun n => picardTerm C (n + 1) θ) (W θ - 1) := by
     have := (hasSum_nat_add_iff' 1).mpr (hsum θ hθ)
     simpa [picardTerm] using this
   have h3 := key.unique h2
-  rw [h3]; abel
+  simp_all
+
 
 omit [NormedSpace ℝ A] [CompleteSpace A] in
 lemma intervalIntegrable_mul_of_continuousOn (hC : AEStronglyMeasurable C volume)
     (hM : ∀ s, ‖C s‖ ≤ M) {L : ℝ} {p : ℝ → A} (hp : ContinuousOn p (Set.Icc 0 L)) {θ : ℝ}
     (hθ : θ ∈ Set.Icc 0 L) : IntervalIntegrable (fun s => C s * p s) volume 0 θ := by
-  have hsub : Set.uIcc 0 θ ⊆ Set.Icc 0 L := by
-    rw [Set.uIcc_of_le hθ.1]; exact Set.Icc_subset_Icc le_rfl hθ.2
-  refine IntervalIntegrable.mono_fun' (g := fun s => M * ‖p s‖)
-    (ContinuousOn.intervalIntegrable ((continuousOn_const.mul (hp.mono hsub).norm)))
-    (hC.restrict.mul ((hp.mono (Set.uIoc_subset_uIcc.trans hsub)).aestronglyMeasurable
-      measurableSet_uIoc)) ?_
-  refine Filter.Eventually.of_forall fun s => ?_
-  exact (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_right (hM s) (norm_nonneg _))
+  refine (intervalIntegrable_of_bounded hC hM 0 θ).mul_continuousOn (hp.mono ?_)
+  rw [Set.uIcc_of_le hθ.1]
+  exact Set.Icc_subset_Icc_right hθ.2
 
 omit [CompleteSpace A] in
 /-- Uniqueness for the linear Volterra equation on `[0, L]`. -/
@@ -146,14 +143,14 @@ theorem volterra_unique (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s
     (eW : ∀ θ ∈ Set.Icc 0 L, W θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W s)
     (eW' : ∀ θ ∈ Set.Icc 0 L, W' θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W' s) :
     Set.EqOn W W' (Set.Icc 0 L) := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0 := (norm_nonneg _).trans (hM 0)
   set D : ℝ → A := fun θ => W θ - W' θ
-  have hD : ContinuousOn D (Set.Icc 0 L) := hW.sub hW'
+  have hD := hW.sub hW'
   obtain ⟨S, hS⟩ := isCompact_Icc.exists_bound_of_continuousOn hD
-  have hS0 : ∀ θ ∈ Set.Icc 0 L, 0 ≤ S := fun θ hθ => (norm_nonneg _).trans (hS θ hθ)
+  have hS0 := fun θ hθ => (norm_nonneg _).trans (hS θ hθ)
   have hDeq : ∀ θ ∈ Set.Icc 0 L, D θ = ∫ s in (0 : ℝ)..θ, C s * D s := by
     intro θ hθ
-    simp only [D, mul_sub]
+    simp  [D, mul_sub]
     rw [intervalIntegral.integral_sub (intervalIntegrable_mul_of_continuousOn hC hM hW hθ)
       (intervalIntegrable_mul_of_continuousOn hC hM hW' hθ), eW θ hθ, eW' θ hθ]
     abel
@@ -165,7 +162,7 @@ theorem volterra_unique (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s
       intro θ hθ
       rw [hDeq θ hθ]
       refine (intervalIntegral.norm_integral_le_integral_norm hθ.1).trans ?_
-      have hint1 : IntervalIntegrable (fun s => ‖C s * D s‖) volume 0 θ :=
+      have hint1 :=
         (intervalIntegrable_mul_of_continuousOn hC hM hD hθ).norm
       have hint2 : IntervalIntegrable
           (fun s => M * (S * (M * s) ^ n / n.factorial)) volume 0 θ := by
@@ -175,7 +172,7 @@ theorem volterra_unique (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s
         exact (norm_mul_le _ _).trans (mul_le_mul (hM s) (ih s hs') (norm_nonneg _) hM0)
       · have : (fun s : ℝ => M * (S * (M * s) ^ n / n.factorial)) =
             fun s => (M * S * M ^ n / n.factorial) * s ^ n := by
-          funext s; rw [mul_pow]; ring
+          funext s; ring
         rw [this, intervalIntegral.integral_const_mul, integral_pow, Nat.factorial_succ]
         push_cast
         field_simp
@@ -185,8 +182,8 @@ theorem volterra_unique (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s
       (nhds 0) := by
     have := (FloorSemiring.tendsto_pow_div_factorial_atTop (M * θ)).const_mul S
     simpa [mul_div_assoc] using this
-  have h0 : ‖D θ‖ ≤ 0 := ge_of_tendsto' hlim fun n => hbound n θ hθ
-  have : D θ = 0 := norm_le_zero_iff.mp h0
+  have h0 := ge_of_tendsto' hlim fun n => hbound n θ hθ
+  have := norm_le_zero_iff.mp h0
   exact sub_eq_zero.mp this
 
 end PolyaNeumann

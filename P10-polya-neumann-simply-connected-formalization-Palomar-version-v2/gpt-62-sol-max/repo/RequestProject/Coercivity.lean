@@ -45,7 +45,7 @@ is weakly null. -/
 lemma tendsto_inner_of_dense {u : ℕ → Z} {R : ℝ} (hu : ∀ n, ‖u n‖ ≤ R) {D : Set Z}
     (hD : Dense D) (h : ∀ y ∈ D, Tendsto (fun n => ⟪y, u n⟫_ℂ) atTop (𝓝 0)) (y : Z) :
     Tendsto (fun n => ⟪y, u n⟫_ℂ) atTop (𝓝 0) := by
-  have hR : 0 ≤ R := (norm_nonneg _).trans (hu 0)
+  have hR := (norm_nonneg _).trans (hu 0)
   rw [Metric.tendsto_atTop]
   intro ε hε
   obtain ⟨d, hd, hdD⟩ := Metric.dense_iff.1 hD y (ε / (2 * (R + 1))) (by positivity)
@@ -56,11 +56,11 @@ lemma tendsto_inner_of_dense {u : ℕ → Z} {R : ℝ} (hu : ∀ n, ‖u n‖ �
   rw [Metric.mem_ball, dist_comm, dist_eq_norm] at hd
   have h2 : ‖⟪y - d, u n⟫_ℂ‖ ≤ ‖y - d‖ * R :=
     (norm_inner_le_norm _ _).trans (mul_le_mul_of_nonneg_left (hu n) (norm_nonneg _))
-  have h3 : ‖y - d‖ * R ≤ ε / (2 * (R + 1)) * R := mul_le_mul_of_nonneg_right hd.le hR
+  have h3 := mul_le_mul_of_nonneg_right hd.le hR
   have h4 : ε / (2 * (R + 1)) * R ≤ ε / 2 := by
     rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by positivity)]
     nlinarith
-  have : ⟪y, u n⟫_ℂ = ⟪y - d, u n⟫_ℂ + ⟪d, u n⟫_ℂ := by rw [inner_sub_left]; ring
+  have : ⟪y, u n⟫_ℂ = ⟪y - d, u n⟫_ℂ + ⟪d, u n⟫_ℂ := by grind [inner_sub_left]
   rw [this]
   calc _ ≤ ‖⟪y - d, u n⟫_ℂ‖ + ‖⟪d, u n⟫_ℂ‖ := norm_add_le _ _
     _ < ε / 2 + ε / 2 := by linarith
@@ -75,8 +75,8 @@ lemma IsCompactOperator.tendsto_of_weak {C : Z →L[ℂ] Y} (hC : IsCompactOpera
   intro ns hns
   have hK := hC.isCompact_closure_image_closedBall R
   obtain ⟨a, -, φ, hφ, ha⟩ := hK.tendsto_subseq (x := fun n => C (u (ns n)))
-    (fun n => subset_closure ⟨u (ns n), by simpa using hu (ns n), rfl⟩)
-  have hsub : Tendsto (ns ∘ φ) atTop atTop := hns.comp hφ.tendsto_atTop
+    (fun n => subset_closure ⟨u (ns n), by simp_all, rfl⟩)
+  have hsub := hns.comp hφ.tendsto_atTop
   have ha0 : a = 0 := by
     have hy : ∀ y, ⟪y, a⟫_ℂ = 0 := by
       intro y
@@ -100,12 +100,12 @@ lemma tendsto_inner_of_injective {S : Z →L[ℂ] Y} (hS : Function.Injective S)
       intro v hv
       have h0 := (Submodule.mem_orthogonal _ _).1 hv (adjoint S (S v)) ⟨S v, rfl⟩
       rw [adjoint_inner_left, inner_self_eq_zero] at h0
-      exact hS (by rw [h0, map_zero])
+      aesop
     exact Submodule.dense_iff_topologicalClosure_eq_top.2 this
   · rintro _ ⟨x, rfl⟩
-    simp only [ContinuousLinearMap.coe_coe, adjoint_inner_left]
+    simp  [adjoint_inner_left]
     have := ((innerSL ℂ x).continuous.tendsto 0).comp h
-    simpa [Function.comp_def] using this
+    aesop
 
 /-- The coercivity inequality of Lemma 7.6 (without the perturbation statement). -/
 lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsCompactOperator C)
@@ -125,7 +125,7 @@ lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsComp
     intro t v
     constructor
     · rw [map_smul, inner_smul_left, inner_smul_right]
-      simp [Complex.conj_ofReal]
+      simp 
       ring
     · rw [map_smul, norm_smul, mul_pow]
       simp
@@ -145,7 +145,7 @@ lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsComp
     nlinarith
   have hHb : ∀ n, -‖H‖ ≤ (⟪w n, H (w n)⟫_ℂ).re := by
     intro n
-    have h1 : |(⟪w n, H (w n)⟫_ℂ).re| ≤ ‖H‖ :=
+    have h1 :=
       calc |(⟪w n, H (w n)⟫_ℂ).re| ≤ ‖⟪w n, H (w n)⟫_ℂ‖ := Complex.abs_re_le_norm _
         _ ≤ ‖w n‖ * ‖H (w n)‖ := norm_inner_le_norm _ _
         _ ≤ ‖w n‖ * (‖H‖ * ‖w n‖) := by gcongr; exact H.le_opNorm _
@@ -180,7 +180,7 @@ lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsComp
   have hHw : ∀ n, (⟪w n, H (w n)⟫_ℂ).re = α + (⟪w n, C (w n)⟫_ℂ).re := by
     intro n
     simp only [hHdef, add_apply, smul_apply, id_apply, inner_add_right, inner_smul_right,
-      inner_self_eq_norm_sq_to_K, hwn, Complex.add_re]
+      inner_self_eq_norm_sq_to_K, hwn]
     simp
   have hle : α + 0 ≤ 0 := by
     refine le_of_tendsto_of_tendsto' (tendsto_const_nhds.add hre) h1n (fun n => ?_)
@@ -192,12 +192,12 @@ lemma exists_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsComp
 
 omit [CompleteSpace Z] in
 lemma re_inner_ge_neg (T : Z →L[ℂ] Z) (z : Z) : -(‖T‖ * ‖z‖ ^ 2) ≤ (⟪z, T z⟫_ℂ).re := by
-  have h1 : |(⟪z, T z⟫_ℂ).re| ≤ ‖T‖ * ‖z‖ ^ 2 :=
+  have h1 :=
     calc |(⟪z, T z⟫_ℂ).re| ≤ ‖⟪z, T z⟫_ℂ‖ := Complex.abs_re_le_norm _
       _ ≤ ‖z‖ * ‖T z‖ := norm_inner_le_norm _ _
       _ ≤ ‖z‖ * (‖T‖ * ‖z‖) := by gcongr; exact T.le_opNorm _
       _ = ‖T‖ * ‖z‖ ^ 2 := by ring
-  linarith [neg_abs_le (⟪z, T z⟫_ℂ).re]
+  grind
 
 lemma norm_sq_eq_re_inner_adjoint (S : Z →L[ℂ] Y) (z : Z) :
     ‖S z‖ ^ 2 = (⟪z, (adjoint S ∘L S) z⟫_ℂ).re := by
@@ -232,7 +232,7 @@ theorem compact_perturbation_coercive (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ]
   have hz := h z
   have hz2 : 0 ≤ ‖z‖ ^ 2 := by positivity
   rw [e1, e2]
-  have : (‖H' - H‖ + A * ‖adjoint S' ∘L S' - adjoint S ∘L S‖) * ‖z‖ ^ 2 ≤ ε / 2 * ‖z‖ ^ 2 :=
+  have :=
     mul_le_mul_of_nonneg_right hsmall.le hz2
   nlinarith
 
@@ -251,11 +251,11 @@ theorem compact_perturbation_coercive_nhds (α : ℝ) (hα : 0 < α) (C : Z →L
   have hδ1 : min 1 (ε / (4 * K)) ≤ 1 := min_le_left _ _
   have hδ2 : min 1 (ε / (4 * K)) ≤ ε / (4 * K) := min_le_right _ _
   set δ := min 1 (ε / (4 * K))
-  have hδ0 : 0 ≤ δ := le_trans (norm_nonneg _) hS'.le
+  have hδ0 := le_trans (norm_nonneg _) hS'.le
   have hadj : ‖adjoint S' ∘L S' - adjoint S ∘L S‖ ≤ (2 * ‖S‖ + 1) * δ := by
     have e : adjoint S' ∘L S' - adjoint S ∘L S =
         adjoint S' ∘L (S' - S) + (adjoint (S' - S)) ∘L S := by
-      rw [map_sub]; simp [comp_sub, sub_comp]
+      rw [map_sub]; simp
     rw [e]
     have hS'n : ‖S'‖ ≤ ‖S‖ + δ := by
       have := norm_sub_norm_le S' S; linarith

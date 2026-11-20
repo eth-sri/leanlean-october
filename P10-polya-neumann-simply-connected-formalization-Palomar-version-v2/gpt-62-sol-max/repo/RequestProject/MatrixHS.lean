@@ -28,14 +28,11 @@ include ha
 
 /-- The (conjugated) `m`-th row of a square-summable matrix, as a vector of `ℓ²(ℤ)`. -/
 def hsRow (m : ℤ) : L2Z :=
-  ⟨fun n => conj (a (m, n)), memℓp_two_iff_summable.mpr (by
-    simpa [Complex.norm_conj] using ha.prod_factor m)⟩
+  ⟨fun n => conj (a (m, n)), memℓp_two_iff_summable.mpr (by simpa using Summable.prod_factor ha m)⟩
 
 lemma hsRow_apply (m n : ℤ) : (hsRow a ha m : ℤ → ℂ) n = conj (a (m, n)) := rfl
 
-lemma norm_hsRow_sq (m : ℤ) : ‖hsRow a ha m‖ ^ 2 = ∑' n, ‖a (m, n)‖ ^ 2 := by
-  rw [norm_sq_L2Z]
-  simp [hsRow_apply]
+lemma norm_hsRow_sq (m : ℤ) : ‖hsRow a ha m‖ ^ 2 = ∑' n, ‖a (m, n)‖ ^ 2 := by simp_all [norm_sq_L2Z, hsRow_apply]
 
 lemma summable_norm_hsRow_sq : Summable fun m => ‖hsRow a ha m‖ ^ 2 := by
   simp_rw [norm_hsRow_sq a ha]
@@ -65,8 +62,6 @@ def hsMatrixLin : L2Z →ₗ[ℂ] L2Z where
     ext m
     simp [inner_smul_right]
 
-lemma hsMatrixLin_apply (f : L2Z) (m : ℤ) :
-    (hsMatrixLin a ha f : ℤ → ℂ) m = ⟪hsRow a ha m, f⟫_ℂ := rfl
 
 lemma norm_hsMatrixLin_le (f : L2Z) :
     ‖hsMatrixLin a ha f‖ ≤ Real.sqrt (∑' p, ‖a p‖ ^ 2) * ‖f‖ := by
@@ -75,7 +70,7 @@ lemma norm_hsMatrixLin_le (f : L2Z) :
     rw [norm_sq_L2Z, ← tsum_norm_hsRow_sq a ha, ← tsum_mul_right]
     refine (summable_norm_sq_L2Z _).tsum_le_tsum (fun m => ?_)
       ((summable_norm_hsRow_sq a ha).mul_right _)
-    rw [hsMatrixLin_apply, ← mul_pow]
+    rw [← mul_pow]
     gcongr
     exact norm_inner_le_norm _ _
   have := Real.sqrt_le_sqrt h2
@@ -99,9 +94,8 @@ lemma hsMatrixOp_stdBasisZ (n : ℤ) :
     (hsMatrixOp a ha (stdBasisZ n) : ℤ → ℂ) = fun m => a (m, n) := by
   funext m
   rw [hsMatrixOp_apply, stdBasisZ_apply, tsum_eq_single n]
-  · simp [lp.single_apply]
-  · intro k hk
-    simp [lp.single_apply, hk]
+  simp
+  simp_all
 
 /-- **Hilbert–Schmidt matrices are compact.** -/
 theorem isCompactOperator_hsMatrixOp : IsCompactOperator (hsMatrixOp a ha) := by
@@ -110,7 +104,7 @@ theorem isCompactOperator_hsMatrixOp : IsCompactOperator (hsMatrixOp a ha) := by
     intro n
     rw [norm_sq_L2Z, hsMatrixOp_stdBasisZ]
   simp_rw [hcol]
-  have hswap : Summable fun p : ℤ × ℤ => ‖a p.swap‖ ^ 2 :=
+  have hswap :=
     (Equiv.prodComm ℤ ℤ).summable_iff.mpr ha
   exact hswap.prod
 

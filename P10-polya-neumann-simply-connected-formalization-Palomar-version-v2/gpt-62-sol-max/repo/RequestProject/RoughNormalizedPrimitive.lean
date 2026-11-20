@@ -36,7 +36,7 @@ def roughPrimitivePhase (n : ℤ) : ℂ :=
 
 theorem norm_roughPrimitivePhase (n : ℤ) : ‖roughPrimitivePhase n‖ = 1 := by
   unfold roughPrimitivePhase
-  split_ifs <;> simp
+  aesop
 
 def roughPrimitivePhaseOperator : L2Z →L[ℂ] L2Z :=
   diagOp roughPrimitivePhase 1 (fun n => (norm_roughPrimitivePhase n).le)
@@ -47,8 +47,7 @@ def roughNormalizedPrimitiveCore : L2Z →L[ℂ] L2Z :=
 @[simp] theorem roughNormalizedPrimitiveCore_apply (y : L2Z) (n : ℤ) :
     roughNormalizedPrimitiveCore y n =
       roughPrimitivePhase n * normalizedInverseAbsSymbol n * y n := by
-  simp only [roughNormalizedPrimitiveCore, ContinuousLinearMap.comp_apply,
-    roughPrimitivePhaseOperator, diagOp_apply, normalizedInverseAbsOperator_apply]
+  simp  [roughNormalizedPrimitiveCore, roughPrimitivePhaseOperator, diagOp_apply, normalizedInverseAbsOperator_apply]
   ring
 
 /-- Actual Fourier synthesis of the mean-zero periodic primitive. -/
@@ -60,71 +59,73 @@ def roughNormalizedPrimitive : L2Z →L[ℂ] BoundaryL2 :=
   boundaryFourier.symm.toLinearIsometry.toContinuousLinearMap.comp
     roughNormalizedPrimitiveFourier
 
-@[simp] theorem boundaryFourier_roughNormalizedPrimitive (y : L2Z) :
+section
+
+variable (y : L2Z)
+include y
+
+@[simp] theorem boundaryFourier_roughNormalizedPrimitive  :
     boundaryFourier (roughNormalizedPrimitive y) = roughNormalizedPrimitiveFourier y := by
   exact boundaryFourier.apply_symm_apply _
 
-theorem roughNormalizedPrimitiveFourier_apply (y : L2Z) (n : ℤ) :
+theorem roughNormalizedPrimitiveFourier_apply  (n : ℤ) :
     roughNormalizedPrimitiveFourier y n =
       ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *
         (roughPrimitivePhase n * normalizedInverseAbsSymbol n * y n) := by
   change fromL2 (1 / 2 : ℝ) (roughNormalizedPrimitiveCore y) n = _
   rw [fromL2, roughNormalizedPrimitiveCore_apply]
 
-@[simp] theorem roughNormalizedPrimitive_zero_mode (y : L2Z) :
-    boundaryFourier (roughNormalizedPrimitive y) 0 = 0 := by
-  rw [boundaryFourier_roughNormalizedPrimitive, roughNormalizedPrimitiveFourier_apply]
-  simp [normalizedInverseAbsSymbol]
 
 /-- Genuine negative-half-order load coefficients, in unitary Fourier
 normalization. This definition makes no ordinary L2 load assertion. -/
-def roughNormalizedLoadCoeff (y : L2Z) : ℤ → ℂ := fromL2 (-(1 / 2 : ℝ)) y
+def roughNormalizedLoadCoeff  : ℤ → ℂ := fromL2 (-(1 / 2 : ℝ)) y
 
-theorem roughNormalizedLoadCoeff_apply (y : L2Z) (n : ℤ) :
+theorem roughNormalizedLoadCoeff_apply  (n : ℤ) :
     roughNormalizedLoadCoeff y n = (Real.sqrt (sobWeight n) : ℂ) * y n := by
   unfold roughNormalizedLoadCoeff fromL2
-  rw [neg_neg, ← Real.sqrt_eq_rpow]
+  simp [Real.sqrt_eq_rpow]
 
-@[simp] theorem roughNormalizedLoadCoeff_zero (y : L2Z) :
+@[simp] theorem roughNormalizedLoadCoeff_zero  :
     roughNormalizedLoadCoeff y 0 = y 0 := by
   simp [roughNormalizedLoadCoeff, fromL2, sobWeight]
 
-private theorem rough_frequency_phase (n : ℤ) :
+end
+
+section
+
+variable (n : ℤ)
+include n
+
+private theorem rough_frequency_phase  :
     (Complex.I * (n : ℂ)) * roughPrimitivePhase n = ((|(n : ℝ)| : ℝ) : ℂ) := by
   by_cases hn : 0 < n
-  · have hnr : (0 : ℝ) < n := by exact_mod_cast hn
-    rw [roughPrimitivePhase, if_pos hn, abs_of_pos hnr, Complex.ofReal_intCast]
-    calc
-      (Complex.I * (n : ℂ)) * -Complex.I =
-          -(Complex.I * Complex.I) * (n : ℂ) := by ring
-      _ = _ := by rw [Complex.I_mul_I]; ring
-  · have hnr : (n : ℝ) ≤ 0 := by exact_mod_cast (le_of_not_gt hn)
-    rw [roughPrimitivePhase, if_neg hn, abs_of_nonpos hnr, Complex.ofReal_neg,
-      Complex.ofReal_intCast]
-    calc
-      (Complex.I * (n : ℂ)) * Complex.I =
-          (Complex.I * Complex.I) * (n : ℂ) := by ring
-      _ = _ := by rw [Complex.I_mul_I]; ring
+  · have hnr : (0 : ℝ) < n := by positivity
+    grind [roughPrimitivePhase, Complex.ofReal_intCast, Complex.I_mul_I]
+  · have hnr : (n : ℝ) ≤ 0 := by simp_all
+    grind [roughPrimitivePhase, Complex.ofReal_neg, Complex.ofReal_intCast, Complex.I_mul_I]
 
-private theorem rough_primitive_core_derivative (n : ℤ) (hn : n ≠ 0) :
+private theorem rough_primitive_core_derivative  (hn : n ≠ 0) :
     (Complex.I * (n : ℂ)) *
       (roughPrimitivePhase n * normalizedInverseAbsSymbol n) = (sobWeight n : ℂ) := by
   have habs : ((|(n : ℝ)| : ℝ) : ℂ) ≠ 0 := by
-    rw [Complex.ofReal_ne_zero, abs_ne_zero]
-    exact_mod_cast hn
-  rw [← mul_assoc, rough_frequency_phase, normalizedInverseAbsSymbol, if_neg hn,
-    Complex.ofReal_div]
-  exact mul_div_cancel₀ _ habs
+    simp_all
+  grind [mul_assoc, rough_frequency_phase, normalizedInverseAbsSymbol, Complex.ofReal_div]
 
-private theorem rough_weight_half (n : ℤ) :
+private theorem rough_weight_half  :
     sobWeight n ^ (-(1 / 2 : ℝ)) * sobWeight n = sobWeight n ^ (1 / 2 : ℝ) := by
   conv_lhs => rhs; rw [← Real.rpow_one (sobWeight n)]
   rw [← Real.rpow_add (sobWeight_pos n)]
-  congr 1
-  norm_num
+  ring
+
+end
+
+section
+
+variable (y : L2Z) (n : ℤ)
+include y n
 
 /-- The true derivative coefficients at every nonzero frequency. -/
-theorem roughNormalizedPrimitive_derivative_ne_zero (y : L2Z) (n : ℤ) (hn : n ≠ 0) :
+theorem roughNormalizedPrimitive_derivative_ne_zero  (hn : n ≠ 0) :
     (Complex.I * (n : ℂ)) * boundaryFourier (roughNormalizedPrimitive y) n =
       roughNormalizedLoadCoeff y n := by
   rw [boundaryFourier_roughNormalizedPrimitive, roughNormalizedPrimitiveFourier_apply]
@@ -136,37 +137,43 @@ theorem roughNormalizedPrimitive_derivative_ne_zero (y : L2Z) (n : ℤ) (hn : n 
       rw [rough_primitive_core_derivative n hn]
     _ = roughNormalizedLoadCoeff y n := by
       rw [← Complex.ofReal_mul, rough_weight_half]
-      simp only [roughNormalizedLoadCoeff, fromL2, neg_neg]
+      simp [roughNormalizedLoadCoeff, fromL2]
 
 /-- The constant load is separate: a periodic primitive differentiates to
 the load minus its actual constant Fourier coefficient. -/
-theorem roughNormalizedPrimitive_derivative (y : L2Z) (n : ℤ) :
+theorem roughNormalizedPrimitive_derivative  :
     (Complex.I * (n : ℂ)) * boundaryFourier (roughNormalizedPrimitive y) n =
       roughNormalizedLoadCoeff (y - zeroModeProjection y) n := by
   by_cases hn : n = 0
-  · subst n
-    simp [roughNormalizedLoadCoeff, fromL2, zeroModeProjection_apply]
+  simp_all
   · rw [roughNormalizedPrimitive_derivative_ne_zero y n hn]
-    simp only [roughNormalizedLoadCoeff, fromL2, lp.coeFn_sub, Pi.sub_apply,
+    simp  [roughNormalizedLoadCoeff, fromL2, lp.coeFn_sub, Pi.sub_apply,
       zeroModeProjection_apply, if_neg hn, zero_mul, sub_zero]
 
-theorem rough_test_derivative_memℓp (t : L2Z)
-    (ht : IsSobolevSeq 1 (t : ℤ → ℂ)) :
+end
+
+section
+
+variable (t : L2Z) (ht : IsSobolevSeq 1 (t : ℤ → ℂ))
+include t ht
+
+theorem rough_test_derivative_memℓp  :
     Memℓp (fun n : ℤ => (Complex.I * (n : ℂ)) * t n) 2 := by
   refine memℓp_two_iff_summable.mpr ?_
   refine Summable.of_nonneg_of_le (fun n => sq_nonneg _) (fun n => ?_) ht
-  simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast, Real.rpow_one]
+  simp  [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast, Real.rpow_one]
   exact pow_le_pow_left₀ (by positivity)
-    (mul_le_mul_of_nonneg_right (by unfold sobWeight; linarith [abs_nonneg (n : ℝ)])
+    (mul_le_mul_of_nonneg_right (by simp [sobWeight])
       (norm_nonneg _)) 2
 
 /-- The actual L2 Fourier derivative of a genuinely H1 test sequence. -/
-def roughFourierTestDerivative (t : L2Z) (ht : IsSobolevSeq 1 (t : ℤ → ℂ)) : L2Z :=
+def roughFourierTestDerivative  : L2Z :=
   ⟨fun n => (Complex.I * (n : ℂ)) * t n, rough_test_derivative_memℓp t ht⟩
 
-@[simp] theorem roughFourierTestDerivative_apply (t : L2Z)
-    (ht : IsSobolevSeq 1 (t : ℤ → ℂ)) (n : ℤ) :
+@[simp] theorem roughFourierTestDerivative_apply  (n : ℤ) :
     roughFourierTestDerivative t ht n = (Complex.I * (n : ℂ)) * t n := rfl
+
+end
 
 /-- A true weak derivative identity, tested against every H1 Fourier
 vector. Both pairings are actual L2 inner products, and the mean load
@@ -181,7 +188,7 @@ theorem roughNormalizedPrimitive_weak_pairing (y t : L2Z)
   rw [lp.inner_eq_tsum, lp.inner_eq_tsum, ← tsum_neg]
   apply tsum_congr
   intro n
-  simp only [RCLike.inner_apply', roughFourierTestDerivative_apply, sobVec_apply]
+  simp only [RCLike.inner_apply']
   change conj ((Complex.I * (n : ℂ)) * t n) *
       boundaryFourier (roughNormalizedPrimitive y) n =
     -(conj (((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) * t n) *
@@ -189,14 +196,13 @@ theorem roughNormalizedPrimitive_weak_pairing (y t : L2Z)
   have hd := roughNormalizedPrimitive_derivative y n
   have he : roughNormalizedLoadCoeff (y - zeroModeProjection y) n =
       ((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) * (y - zeroModeProjection y) n := by
-    simp only [roughNormalizedLoadCoeff, fromL2, neg_neg]
+    simp  [roughNormalizedLoadCoeff, fromL2]
   simp only [map_mul, Complex.conj_I, map_intCast, Complex.conj_ofReal]
   calc
     _ = -(conj (t n) * ((Complex.I * (n : ℂ)) *
         boundaryFourier (roughNormalizedPrimitive y) n)) := by ring
     _ = -(conj (t n) *
-        (((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) * (y - zeroModeProjection y) n)) := by
-      rw [hd, he]
+        (((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) * (y - zeroModeProjection y) n)) := by simp_all
     _ = _ := by ring
 
 /-- A regular positive primitive controls the positive normalized load.
@@ -214,10 +220,10 @@ theorem roughNormalizedLoad_pos_half_of_primitive_pos_one (y : L2Z)
     simp only [posProj, diagOp_apply, if_pos hn, one_mul, Real.rpow_one]
     rw [← Real.sqrt_eq_rpow, ← he]
     exact pow_le_pow_left₀ (by positivity)
-      (mul_le_mul_of_nonneg_right (by unfold sobWeight; linarith [abs_nonneg (n : ℝ)])
+      (mul_le_mul_of_nonneg_right (by unfold sobWeight; simp)
         (norm_nonneg _)) 2
   · simp only [posProj, diagOp_apply, if_neg hn, zero_mul, norm_zero, mul_zero]
-    exact le_rfl
+    rfl
 
 /-- When the other Fourier sector has finite support, positive primitive
 regularity proves half-order regularity of the full normalized input. -/
@@ -229,8 +235,7 @@ theorem roughNormalizedLoad_half_of_primitive_pos_one (y : L2Z)
   have hypos := roughNormalizedLoad_pos_half_of_primitive_pos_one y hp
   have hyneg := isSobolevSeq_of_finite_fourier_support (1 / 2 : ℝ) hfin
   have heq : posProj y + (1 - posProj) y = y := by
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply]
-    abel
+    simp
   change y ∈ fourierSobolevSubmodule (1 / 2 : ℝ)
   rw [← heq]
   exact (fourierSobolevSubmodule (1 / 2 : ℝ)).add_mem hypos hyneg
@@ -241,16 +246,17 @@ private theorem rough_nonpositive_part_support {b : L2Z}
   refine hb.subset ?_
   intro n hn
   by_contra hb0
-  have hbz : b n = 0 := not_not.mp hb0
-  exact hn (by simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-    posProj, diagOp_apply, hbz])
+  have hbz := not_not.mp hb0
+  exact hn (by simp [posProj, hbz])
+
+section
+
+variable {d : ℕ} (u : Fin d → nonpositiveFourierSubspaceᗮ) (v : Fin d → L2Z) (hv : ∀ r, (Function.support (v r : ℤ → ℂ)).Finite) (z : nonpositiveFourierSubspaceᗮ)
+include d u v hv z
 
 /-- The genuine finite Fourier chart has only finitely many nonpositive
 output coefficients, regardless of the regularity of its input. -/
-theorem finiteFourierChart_nonpositive_part_finite {d : ℕ}
-    (u : Fin d → nonpositiveFourierSubspaceᗮ) (v : Fin d → L2Z)
-    (hv : ∀ r, (Function.support (v r : ℤ → ℂ)).Finite)
-    (z : nonpositiveFourierSubspaceᗮ) :
+theorem finiteFourierChart_nonpositive_part_finite  :
     (Function.support
       (((1 - posProj) (finiteFourierChart u v z) : L2Z) : ℤ → ℂ)).Finite := by
   have hfin : finiteFourierChart u v z - (z : L2Z) ∈ finiteFourierSubmodule := by
@@ -263,9 +269,9 @@ theorem finiteFourierChart_nonpositive_part_finite {d : ℕ}
     exact finiteFourierSubmodule.smul_mem _ (hv r)
   have hzpos : posProj (z : L2Z) = (z : L2Z) := by
     rw [← nonpositive_orthogonal_starProjection]
-    exact Submodule.starProjection_mem_subspace_eq_self z
+    simp
   have hzero : (1 - posProj) (z : L2Z) = 0 := by
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, hzpos, sub_self]
+    simp_all
   have heq : (1 - posProj) (finiteFourierChart u v z) =
       (1 - posProj) (finiteFourierChart u v z - (z : L2Z)) := by
     rw [map_sub, hzero, sub_zero]
@@ -274,10 +280,7 @@ theorem finiteFourierChart_nonpositive_part_finite {d : ℕ}
 
 /-- The rough chart bootstrap has a genuine, checkable primitive premise.
 It does not assume that the normalized load is already half regular. -/
-theorem finiteFourierChart_half_of_rough_primitive_pos_one {d : ℕ}
-    (u : Fin d → nonpositiveFourierSubspaceᗮ) (v : Fin d → L2Z)
-    (hv : ∀ r, (Function.support (v r : ℤ → ℂ)).Finite)
-    (z : nonpositiveFourierSubspaceᗮ)
+theorem finiteFourierChart_half_of_rough_primitive_pos_one 
     (hp : IsSobolevSeq 1
       (posProj (boundaryFourier (roughNormalizedPrimitive (finiteFourierChart u v z))) :
         ℤ → ℂ)) :
@@ -292,6 +295,8 @@ theorem finiteFourierChart_half_of_rough_primitive_pos_one {d : ℕ}
   change (z : L2Z) ∈ fourierSobolevSubmodule (1 / 2 : ℝ)
   rw [heq]
   exact (fourierSobolevSubmodule (1 / 2 : ℝ)).sub_mem hy hc
+
+end
 
 end PolyaNeumann
 

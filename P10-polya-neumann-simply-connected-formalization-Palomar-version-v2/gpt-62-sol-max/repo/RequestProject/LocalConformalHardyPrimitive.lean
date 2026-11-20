@@ -1,5 +1,8 @@
 module
 
+public import RequestProject.CircleFourier
+public import RequestProject.ConformalDiskCoordinates
+
 public import RequestProject.ConormalNormalization
 public import RequestProject.PhysicalHardyWeights
 public import RequestProject.HardyPrimitiveTrace
@@ -36,88 +39,94 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Topology ComplexConjugate
 
-local instance hardyPrimitiveCircleTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
-
 /-- Averaged coefficients of an actual half-trace vector. -/
 def normalizedHardyAverage (b : L2Z) (n : ℤ) : ℂ :=
   (Real.sqrt (2 * Real.pi) : ℂ)⁻¹ * fromL2 (1 / 2 : ℝ) b n
 
-private theorem hardy_toCLM_apply {s t C : ℝ}
-    {Φ : (ℤ → ℂ) → (ℤ → ℂ)} (H : SeqOpBound s t C Φ) (b : L2Z) (n : ℤ) :
-    H.toCLM b n = ((sobWeight n ^ t : ℝ) : ℂ) * Φ (fromL2 s b) n := rfl
+section
+
+variable (c : ℤ → ℂ) (hc : IsWL1 (1 / 2 : ℝ) c)
+include c hc
 
 /-- Bounded multiplication on normalized half-order Fourier coordinates.
 The multiplier coefficients use the averaged convention. -/
-def normalizedHardyMultiplier (c : ℤ → ℂ) (hc : IsWL1 (1 / 2 : ℝ) c) :
+def normalizedHardyMultiplier  :
     L2Z →L[ℂ] L2Z :=
   (seqOpBound_seqConv (by norm_num : (0 : ℝ) ≤ 1 / 2) hc).toCLM
 
-theorem normalizedHardyMultiplier_apply (c : ℤ → ℂ)
-    (hc : IsWL1 (1 / 2 : ℝ) c) (b : L2Z) (n : ℤ) :
+theorem normalizedHardyMultiplier_apply  (b : L2Z) (n : ℤ) :
     normalizedHardyMultiplier c hc b n =
       ((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) * seqConv c (fromL2 (1 / 2 : ℝ) b) n :=
-  hardy_toCLM_apply _ b n
+  SeqOpBound.toCLM_apply _ b n
+
+theorem fromL2_normalizedHardyMultiplier (b : L2Z) :
+    fromL2 (1 / 2) (normalizedHardyMultiplier c hc b) = seqConv c (fromL2 (1 / 2) b) :=
+  SeqOpBound.fromL2_toCLM _ b
+
+end
+
+section
+
+variable (a : ℤ → ℂ) (ha : IsWL1 (1 / 2 : ℝ) a)
+include a ha
 
 /-- The primitive in the stronger normalized coordinates of order 3/2. -/
-def normalizedHardyPrimitiveGain (a : ℤ → ℂ) (ha : IsWL1 (1 / 2 : ℝ) a) :
+def normalizedHardyPrimitiveGain  :
     L2Z →L[ℂ] L2Z :=
   (seqOpBound_antiPrim (by norm_num : (0 : ℝ) ≤ 1 / 2) ha).toCLM
 
-theorem normalizedHardyPrimitiveGain_apply (a : ℤ → ℂ)
-    (ha : IsWL1 (1 / 2 : ℝ) a) (b : L2Z) (n : ℤ) :
+theorem normalizedHardyPrimitiveGain_apply  (b : L2Z) (n : ℤ) :
     normalizedHardyPrimitiveGain a ha b n =
       ((sobWeight n ^ ((1 / 2 : ℝ) + 1) : ℝ) : ℂ) *
         antiPrim a (fromL2 (1 / 2 : ℝ) b) n :=
-  hardy_toCLM_apply _ b n
+  SeqOpBound.toCLM_apply _ b n
 
 /-- The actual normalized primitive at order 1/2, retaining the constant
 chosen by `antiPrim` at the same boundary origin. -/
-def normalizedHardyPrimitive (a : ℤ → ℂ) (ha : IsWL1 (1 / 2 : ℝ) a) :
+def normalizedHardyPrimitive  :
     L2Z →L[ℂ] L2Z :=
   (sobolevSmoothing 1 (by norm_num)).comp (normalizedHardyPrimitiveGain a ha)
 
-theorem normalizedHardyPrimitive_apply (a : ℤ → ℂ)
-    (ha : IsWL1 (1 / 2 : ℝ) a) (b : L2Z) (n : ℤ) :
+theorem normalizedHardyPrimitive_apply  (b : L2Z) (n : ℤ) :
     normalizedHardyPrimitive a ha b n =
       ((sobWeight n ^ (1 / 2 : ℝ) : ℝ) : ℂ) * antiPrim a (fromL2 (1 / 2 : ℝ) b) n := by
   change sobolevSmoothing 1 (by norm_num) (normalizedHardyPrimitiveGain a ha b) n = _
   simp only [sobolevSmoothing, diagOp_apply, normalizedHardyPrimitiveGain_apply]
   rw [← mul_assoc, ← Complex.ofReal_mul, ← Real.rpow_add (sobWeight_pos n)]
-  have he : -(1 : ℝ) + ((1 / 2 : ℝ) + 1) = 1 / 2 := by ring
-  rw [he]
+  simp
 
-theorem normalizedHardyPrimitive_nonpositive (a : ℤ → ℂ)
-    (ha : IsWL1 (1 / 2 : ℝ) a) (han : IsStrictNegativeFourierSupport a)
+theorem normalizedHardyPrimitive_nonpositive  (han : IsStrictNegativeFourierSupport a)
     (b : L2Z) (hbn : IsNonpositiveFourierSupport b) :
     IsNonpositiveFourierSupport (normalizedHardyPrimitive a ha b) := by
   have hb : IsNonpositiveFourierSupport (fromL2 (1 / 2 : ℝ) b) := by
     intro n hn
-    simp only [fromL2, hbn n hn, mul_zero]
+    simp  [fromL2, hbn n hn, mul_zero]
   intro n hn
   rw [normalizedHardyPrimitive_apply, antiPrim_nonpositive han hb n hn, mul_zero]
 
 /-- Actual L² derivative of the completed disk primitive. This identifies
 the derivative with the completed derivative data, before a product is
 identified using the genuine Hardy trace uniqueness theorem. -/
-theorem diskHardyExtension_normalizedPrimitive_gradient (a : ℤ → ℂ)
-    (ha : IsWL1 (1 / 2 : ℝ) a) (b : L2Z) :
+theorem diskHardyExtension_normalizedPrimitive_gradient  (b : L2Z) :
     h1Gradient (ball (0 : ℂ) 1) 0 (diskHardyExtension (normalizedHardyPrimitive a ha b)) =
       h1Value (ball (0 : ℂ) 1)
         (diskHardyExtension (diskHardyDerivativeData (normalizedHardyPrimitiveGain a ha b))) :=
   diskHardyExtension_smoothing_gradient (normalizedHardyPrimitiveGain a ha b)
 
+end
+
+section
+
+variable (a : SmoothH1Coefficient)
+include a
+
 /-- Genuine disk H¹ multiplication of the actual completed Hardy extension. -/
-def diskHardySmoothProduct (a : SmoothH1Coefficient) :
+def diskHardySmoothProduct  :
     L2Z →L[ℂ] NeumannH1 (ball (0 : ℂ) 1) :=
   (neumannH1SmoothMultiplier (ball (0 : ℂ) 1) a).comp diskHardyExtension
 
-theorem h1Value_diskHardySmoothProduct (a : SmoothH1Coefficient) (b : L2Z) :
-    h1Value (ball (0 : ℂ) 1) (diskHardySmoothProduct a b) =
-      h1SmoothCoefficientL2 (ball (0 : ℂ) 1) a
-        (h1Value (ball (0 : ℂ) 1) (diskHardyExtension b)) :=
-  h1Value_neumannH1SmoothMultiplier _ a _
 
-theorem h1Gradient_diskHardySmoothProduct (a : SmoothH1Coefficient) (b : L2Z) (i : Fin 2) :
+theorem h1Gradient_diskHardySmoothProduct  (b : L2Z) (i : Fin 2) :
     h1Gradient (ball (0 : ℂ) 1) i (diskHardySmoothProduct a b) =
       h1SmoothCoefficientL2 (ball (0 : ℂ) 1) a
           (h1Gradient (ball (0 : ℂ) 1) i (diskHardyExtension b)) +
@@ -125,7 +134,7 @@ theorem h1Gradient_diskHardySmoothProduct (a : SmoothH1Coefficient) (b : L2Z) (i
           (h1Value (ball (0 : ℂ) 1) (diskHardyExtension b)) :=
   h1Gradient_neumannH1SmoothMultiplier _ a _ i
 
-private theorem hardy_coefficient_derivative_CR (a : SmoothH1Coefficient)
+private theorem hardy_coefficient_derivative_CR 
     (hCR : ∀ z ∈ ball (0 : ℂ) 1,
       fderiv ℝ (a : ℂ → ℂ) z 1 = Complex.I * fderiv ℝ (a : ℂ → ℂ) z Complex.I)
     (u : L2 (ball (0 : ℂ) 1)) :
@@ -137,7 +146,7 @@ private theorem hardy_coefficient_derivative_CR (a : SmoothH1Coefficient)
     Lp.coeFn_smul Complex.I (h1SmoothCoefficientDerivativeL2 (ball (0 : ℂ) 1) a 1 u),
     ae_restrict_mem measurableSet_ball] with z hx hy hs hz
   rw [hx, hs]
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp only [Pi.smul_apply]
   rw [hy]
   change fderiv ℝ (a : ℂ → ℂ) z 1 * u z =
     Complex.I * (fderiv ℝ (a : ℂ → ℂ) z Complex.I * u z)
@@ -146,7 +155,7 @@ private theorem hardy_coefficient_derivative_CR (a : SmoothH1Coefficient)
 
 /-- An actual smooth antiholomorphic coefficient preserves the genuine
 weak CR equation of the completed disk Hardy extension. -/
-theorem diskHardySmoothProduct_cauchyRiemann (a : SmoothH1Coefficient)
+theorem diskHardySmoothProduct_cauchyRiemann 
     (hCR : ∀ z ∈ ball (0 : ℂ) 1,
       fderiv ℝ (a : ℂ → ℂ) z 1 = Complex.I * fderiv ℝ (a : ℂ → ℂ) z Complex.I)
     (b : L2Z) :
@@ -156,35 +165,44 @@ theorem diskHardySmoothProduct_cauchyRiemann (a : SmoothH1Coefficient)
     diskHardyExtension_cauchyRiemann, map_smul,
     hardy_coefficient_derivative_CR a hCR, smul_add]
 
+end
+
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+include R hR F hFs
+
 /-- The actual compact coefficient conjugate to the supplied conformal
 derivative. It is smooth globally because the actual F is cut off first. -/
-def localConformalHardyDerivativeTest {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) : smoothTraceTests :=
+def localConformalHardyDerivativeTest  : smoothTraceTests :=
   ⟨fun z => conj (dirD (smoothDiskCutoff R hR F) 1 z),
     ((smoothDiskCutoff_testFunction hR hFs).dirD 1).conj⟩
 
-def localConformalHardyDerivativeCoefficient {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) : SmoothH1Coefficient :=
+def localConformalHardyDerivativeCoefficient  : SmoothH1Coefficient :=
   smoothTraceTestsH1Coefficient (localConformalHardyDerivativeTest hR F hFs)
 
-theorem localConformalHardyDerivativeCoefficient_closedDisk {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformalHardyDerivativeCoefficient_closedDisk 
     {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
     localConformalHardyDerivativeCoefficient hR F hFs z = conj (fderiv ℝ F z 1) := by
   change conj (fderiv ℝ (smoothDiskCutoff R hR F) z 1) = _
   rw [fderiv_smoothDiskCutoff_eq hR F hz]
 
+end
+
 private theorem hardy_real_derivative_of_holomorphic {U : Set ℂ} (hU : IsOpen U)
     {F : ℂ → ℂ} (hF : DifferentiableOn ℂ F U) {z : ℂ} (hz : z ∈ U) (v : ℂ) :
     fderiv ℝ F z v = deriv F z * v := by
   rw [(hF.differentiableAt (hU.mem_nhds hz)).fderiv_restrictScalars ℝ]
-  change fderiv ℂ F z v = _
-  exact fderiv_eq_deriv_mul
+  exact id fderiv_eq_deriv_mul
+
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+include R hR F hFs
 
 /-- The actual cutoff coefficient has the derivative of conj(F′) in the
 interior, derived from holomorphic F′ and its real chain rule. -/
-theorem localConformalHardyDerivativeCoefficient_fderiv {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformalHardyDerivativeCoefficient_fderiv 
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
     {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) (v : ℂ) :
     fderiv ℝ (localConformalHardyDerivativeCoefficient hR F hFs : ℂ → ℂ) z v =
@@ -201,57 +219,56 @@ theorem localConformalHardyDerivativeCoefficient_fderiv {R : ℝ} (hR : 1 < R)
   change conj (fderiv ℝ (deriv F) z v) = _
   rw [hardy_real_derivative_of_holomorphic isOpen_ball (hhol.deriv isOpen_ball) hz v]
 
-theorem localConformalHardyDerivativeCoefficient_cauchyRiemann {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformalHardyDerivativeCoefficient_cauchyRiemann 
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) :
     fderiv ℝ (localConformalHardyDerivativeCoefficient hR F hFs : ℂ → ℂ) z 1 =
       Complex.I * fderiv ℝ
         (localConformalHardyDerivativeCoefficient hR F hFs : ℂ → ℂ) z Complex.I := by
   rw [localConformalHardyDerivativeCoefficient_fderiv hR F hFs hhol hz 1,
     localConformalHardyDerivativeCoefficient_fderiv hR F hFs hhol hz Complex.I]
-  simp only [mul_one, map_mul, Complex.conj_I]
-  calc
-    conj (deriv (deriv F) z) = -(Complex.I * Complex.I) * conj (deriv (deriv F) z) := by
-      rw [Complex.I_mul_I]
-      simp
-    _ = _ := by ring
+  grind [mul_one, map_mul, Complex.conj_I, Complex.I_mul_I]
 
 /-- The genuine disk product needed for the interior physical primitive. -/
-def localConformalHardyDerivativeProduct {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
+def localConformalHardyDerivativeProduct  :
     L2Z →L[ℂ] NeumannH1 (ball (0 : ℂ) 1) :=
   diskHardySmoothProduct (localConformalHardyDerivativeCoefficient hR F hFs)
+
+end
 
 /-- Actual angular-velocity multiplier data for the primitive. -/
 def localConformalHardyPrimitiveMultiplier (F : ℂ → ℂ) : ℤ → ℂ :=
   fourierCoeffOn Real.two_pi_pos (fun θ => conj (deriv (physicalCircleTrace F) θ))
 
-theorem localConformalHardyPrimitiveMultiplier_isWL1 {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+include R hR F hFs
+
+theorem localConformalHardyPrimitiveMultiplier_isWL1  :
     IsWL1 (1 / 2 : ℝ) (localConformalHardyPrimitiveMultiplier F) := by
   have h1 := (physicalCircleTrace_fourier_weights_of_smooth_neighborhood hR F hFs).1
   refine h1.of_nonneg_of_le (fun n => ?_) (fun n => ?_)
-  · exact mul_nonneg (Real.rpow_nonneg (sobWeight_pos n).le _) (norm_nonneg _)
+  exact mul_nonneg (Real.rpow_nonneg (sobWeight_pos n).le _) (norm_nonneg _)
   · exact mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow_of_exponent_le (one_le_sobWeight n) (by norm_num)) (norm_nonneg _)
 
-theorem localConformalHardyPrimitiveMultiplier_strictNegative {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
+theorem localConformalHardyPrimitiveMultiplier_strictNegative 
     (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) :
     IsStrictNegativeFourierSupport (localConformalHardyPrimitiveMultiplier F) :=
   physicalCircleTrace_conj_deriv_strictNegative_of_neighborhood hR F
     (hFs.of_le (by simp)) hhol
 
 /-- The actual supplied-coordinate primitive on normalized half-trace data. -/
-def localConformalHardyPrimitive {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) : L2Z →L[ℂ] L2Z :=
+def localConformalHardyPrimitive  : L2Z →L[ℂ] L2Z :=
   normalizedHardyPrimitive (localConformalHardyPrimitiveMultiplier F)
     (localConformalHardyPrimitiveMultiplier_isWL1 hR F hFs)
+
+end
 
 private theorem hardy_fourier_one_circle (θ : ℝ) :
     fourier (T := 2 * Real.pi) 1 (θ : AddCircle (2 * Real.pi)) = circleMap 0 1 θ := by
   rw [fourier_coe_two_pi, circleMap_zero]
-  simp only [Int.cast_one, one_mul, Complex.ofReal_one]
+  simp
 
 /-- The actual boundary coefficient as a continuous circle function. -/
 def diskSmoothCoefficientCircle (a : SmoothH1Coefficient) :
@@ -271,14 +288,10 @@ private theorem hardy_fourierCoeffOn_circle (A : C(AddCircle (2 * Real.pi), ℂ)
       (fun θ : ℝ => A (θ : AddCircle (2 * Real.pi))) = (A : AddCircle (2 * Real.pi) → ℂ) := by
     funext q
     change A ((AddCircle.equivIoc (2 * Real.pi) 0 q : ℝ) : AddCircle (2 * Real.pi)) = A q
-    have hrep : ((AddCircle.equivIoc (2 * Real.pi) 0 q : ℝ) :
-        AddCircle (2 * Real.pi)) = q :=
-      (AddCircle.equivIoc (2 * Real.pi) 0).symm_apply_apply q
-    rw [hrep]
+    simp
   have h := fourierCoeff_liftIoc_eq (T := 2 * Real.pi) (a := 0)
     (fun θ : ℝ => A (θ : AddCircle (2 * Real.pi))) n
-  rw [he] at h
-  simpa only [zero_add] using h.symm
+  simp_all
 
 theorem diskSmoothCoefficientCircle_coeff (a : SmoothH1Coefficient) (n : ℤ) :
     fourierCoeff (diskSmoothCoefficientCircle a) n =
@@ -292,35 +305,32 @@ theorem diskSmoothCoefficientCircle_isWL1 (a : SmoothH1Coefficient) :
     IsWL1 (1 / 2 : ℝ) (fourierCoeff (diskSmoothCoefficientCircle a)) := by
   have hf : ContDiff ℝ 4 (fun θ : ℝ => a (circleMap 0 1 θ)) :=
     (a.smooth.of_le (WithTop.coe_le_coe.mpr le_top)).comp (contDiff_circleMap 0 1)
-  have hp : Function.Periodic (fun θ : ℝ => a (circleMap 0 1 θ)) (2 * Real.pi) :=
+  have hp :=
     (periodic_circleMap 0 1).comp (a : ℂ → ℂ)
   have h2 := (periodic_contDiff_four_fourier_weights hf hp).2
   change Summable (fun n => sobWeight n ^ (1 / 2 : ℝ) *
     ‖fourierCoeff (diskSmoothCoefficientCircle a) n‖)
   simp_rw [diskSmoothCoefficientCircle_coeff]
   refine h2.of_nonneg_of_le (fun n => ?_) (fun n => ?_)
-  · exact mul_nonneg (Real.rpow_nonneg (sobWeight_pos n).le _) (norm_nonneg _)
+  exact mul_nonneg (Real.rpow_nonneg (sobWeight_pos n).le _) (norm_nonneg _)
   · exact mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow_of_exponent_le (one_le_sobWeight n) (by norm_num)) (norm_nonneg _)
 
 private theorem hardy_fourierCoeff_shift (C : C(AddCircle (2 * Real.pi), ℂ)) (n : ℤ) :
     fourierCoeff (fun q => fourier (T := 2 * Real.pi) (-1) q * C q) n =
       fourierCoeff C (n + 1) := by
-  simp only [fourierCoeff, smul_eq_mul]
+  simp only [fourierCoeff]
   apply integral_congr_ae
-  exact Eventually.of_forall (fun q => by
-    change fourier (T := 2 * Real.pi) (-n) q *
-      (fourier (T := 2 * Real.pi) (-1) q * C q) =
-        fourier (T := 2 * Real.pi) (-(n + 1)) q * C q
-    rw [← mul_assoc, ← fourier_add]
-    have hi : -n + (-1 : ℤ) = -(n + 1) := by omega
-    rw [hi])
+  exact Eventually.of_forall (fun q => by simp [mul_assoc] <;> ring)
+
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
+include R hR F hFs hhol
 
 /-- The conjugated angular velocity has precisely the shifted coefficient
 of conj(F′), including its phase -i. -/
-theorem localConformalHardyPrimitiveMultiplier_shift {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (n : ℤ) :
+theorem localConformalHardyPrimitiveMultiplier_shift  (n : ℤ) :
     localConformalHardyPrimitiveMultiplier F n = (-Complex.I) *
       fourierCoeff (diskSmoothCoefficientCircle
         (localConformalHardyDerivativeCoefficient hR F hFs)) (n + 1) := by
@@ -331,7 +341,7 @@ theorem localConformalHardyPrimitiveMultiplier_shift {R : ℝ} (hR : 1 < R)
       B (θ : AddCircle (2 * Real.pi)) := by
     rw [localConformal_circleTrace_deriv hR F hFs hhol]
     simp only [map_mul, Complex.conj_I]
-    simp only [B, ContinuousMap.smul_apply, ContinuousMap.mul_apply, smul_eq_mul]
+    simp only [B, ContinuousMap.smul_apply, ContinuousMap.mul_apply]
     rw [fourier_neg, hardy_fourier_one_circle, diskSmoothCoefficientCircle_apply,
       localConformalHardyDerivativeCoefficient_closedDisk hR F hFs
         (circleMap_mem_closedBall 0 (by norm_num) θ)]
@@ -343,13 +353,9 @@ theorem localConformalHardyPrimitiveMultiplier_shift {R : ℝ} (hR : 1 < R)
     hardy_fourierCoeffOn_circle]
   change fourierCoeff ((-Complex.I) •
     (fun q => fourier (T := 2 * Real.pi) (-1) q * C q)) n = _
-  rw [fourierCoeff.const_smul]
-  simp only [smul_eq_mul]
-  rw [hardy_fourierCoeff_shift]
+  grind [fourierCoeff.const_smul, smul_eq_mul, hardy_fourierCoeff_shift]
 
-theorem localConformalHardyDerivativeCoefficient_nonpositive {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) :
+theorem localConformalHardyDerivativeCoefficient_nonpositive  :
     IsNonpositiveFourierSupport (fourierCoeff (diskSmoothCoefficientCircle
       (localConformalHardyDerivativeCoefficient hR F hFs))) := by
   intro n hn
@@ -357,7 +363,9 @@ theorem localConformalHardyDerivativeCoefficient_nonpositive {R : ℝ} (hR : 1 <
     (n - 1) (by omega)
   rw [localConformalHardyPrimitiveMultiplier_shift hR F hFs hhol,
     sub_add_cancel] at ha
-  exact (mul_eq_zero.mp ha).resolve_left (neg_ne_zero.mpr Complex.I_ne_zero)
+  simp_all
+
+end
 
 private theorem hardy_seqConv_nonpositive {c h : ℤ → ℂ}
     (hc : IsNonpositiveFourierSupport c) (hh : IsNonpositiveFourierSupport h) :
@@ -367,32 +375,18 @@ private theorem hardy_seqConv_nonpositive {c h : ℤ → ℂ}
   have he : (fun k => c k * h (n - k)) = (fun _ : ℤ => (0 : ℂ)) := by
     funext k
     by_cases hk : 0 < k
-    · rw [hc k hk, zero_mul]
+    aesop
     · rw [hh (n - k) (by omega), mul_zero]
-  rw [he, tsum_zero]
+  simp_all
 
 private theorem hardy_seqConv_shift {a c : ℤ → ℂ}
     (hshift : ∀ n : ℤ, a n = (-Complex.I) * c (n + 1)) (h : ℤ → ℂ) (n : ℤ) :
     seqConv a h (n - 1) = (-Complex.I) * seqConv c h n := by
   unfold seqConv
   calc
-    _ = (-Complex.I) * ∑' k : ℤ, c (k + 1) * h (n - (k + 1)) := by
-      rw [← tsum_mul_left]
-      apply tsum_congr
-      intro k
-      rw [hshift k]
-      have hi : n - 1 - k = n - (k + 1) := by omega
-      rw [hi]
-      ring
+    _ = (-Complex.I) * ∑' k : ℤ, c (k + 1) * h (n - (k + 1)) := by grind [tsum_mul_left]
     _ = _ := congrArg (fun x : ℂ => (-Complex.I) * x)
       ((Equiv.addRight (1 : ℤ)).tsum_eq (fun k => c k * h (n - k)))
-
-private theorem hardy_sobWeight_neg_nat (k : ℕ) :
-    sobWeight (-(k : ℤ)) = ((k + 1 : ℕ) : ℝ) := by
-  simp only [sobWeight, Int.cast_neg, Int.cast_natCast, abs_neg,
-    abs_of_nonneg (show (0 : ℝ) ≤ (k : ℝ) from Nat.cast_nonneg k),
-    Nat.cast_add, Nat.cast_one]
-  ring
 
 private theorem hardy_primitive_derivative_scalar (x y sx sy : ℂ)
     (hx : x ≠ 0) (hy : y ≠ 0) (hsy : sy ≠ 0) :
@@ -404,21 +398,18 @@ private theorem hardy_primitive_derivative_scale (k : ℕ) :
         (((sobWeight (-((k + 1 : ℕ) : ℤ)) ^ ((1 / 2 : ℝ) + 1) : ℝ) : ℂ) /
           (Complex.I * (-((k + 1 : ℕ) : ℂ)))) * (-Complex.I) =
       ((sobWeight (-(k : ℤ)) ^ (1 / 2 : ℝ) : ℝ) : ℂ) := by
-  rw [hardy_sobWeight_neg_nat, hardy_sobWeight_neg_nat]
+  rw [sobWeight_neg_nat, sobWeight_neg_nat]
   have hy : (((k + 1 + 1 : ℕ) : ℝ) ^ ((1 / 2 : ℝ) + 1)) =
       Real.sqrt ((k + 2 : ℕ) : ℝ) * ((k + 2 : ℕ) : ℝ) := by
     have hi : k + 1 + 1 = k + 2 := by omega
-    rw [hi, Real.rpow_add (by positivity), Real.rpow_one, ← Real.sqrt_eq_rpow]
+    rw [Real.rpow_add (by positivity), Real.rpow_one, ← Real.sqrt_eq_rpow]
   rw [hy, ← Real.sqrt_eq_rpow]
   simp only [diskHardyDerivativeWeight, Real.sqrt_div (by positivity : (0 : ℝ) ≤ ((k + 1 : ℕ) : ℝ))]
-  have hx : ((k + 1 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : k + 1 ≠ 0)
-  have hy0 : ((k + 2 : ℕ) : ℂ) ≠ 0 := by exact_mod_cast (by omega : k + 2 ≠ 0)
+  have hx : ((k + 1 : ℕ) : ℂ) ≠ 0 := by norm_cast
+  have hy0 : ((k + 2 : ℕ) : ℂ) ≠ 0 := by norm_cast
   have hsy : (Real.sqrt ((k + 2 : ℕ) : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr (by positivity : (0 : ℝ) < ((k + 2 : ℕ) : ℝ))).ne'
-  simpa only [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_natCast] using
-    hardy_primitive_derivative_scalar ((k + 1 : ℕ) : ℂ) ((k + 2 : ℕ) : ℂ)
-      (Real.sqrt ((k + 1 : ℕ) : ℝ) : ℂ) (Real.sqrt ((k + 2 : ℕ) : ℝ) : ℂ)
-      hx hy0 hsy
+  simpa using hardy_primitive_derivative_scalar (↑(k + 1)) (↑(k + 2)) (↑√↑(k + 1)) (↑√↑(k + 2)) hx hy0 hsy
 
 /-- The actual derivative-data operator on a normalized primitive is the
 actual normalized product data. The input and product retain frequency zero. -/
@@ -437,7 +428,7 @@ theorem diskHardyDerivativeData_normalizedPrimitiveGain
   · rw [diskHardyDerivativeData_apply_pos _ hn, normalizedHardyMultiplier_apply,
       hardy_seqConv_nonpositive hcn hb n hn, mul_zero]
   · let k : ℕ := Int.toNat (-n)
-    have hnk : n = -(k : ℤ) := by dsimp [k]; omega
+    have hnk : n = -(k : ℤ) := by omega
     rw [hnk, diskHardyDerivativeData_apply_neg, normalizedHardyPrimitiveGain_apply,
       normalizedHardyMultiplier_apply]
     have hne : -((k + 1 : ℕ) : ℤ) ≠ 0 := by omega
@@ -460,7 +451,7 @@ theorem normalizedHardyMultiplier_nonpositive (c : ℤ → ℂ)
     IsNonpositiveFourierSupport (normalizedHardyMultiplier c hc b) := by
   have hb : IsNonpositiveFourierSupport (fromL2 (1 / 2 : ℝ) b) := by
     intro n hn
-    simp only [fromL2, hbn n hn, mul_zero]
+    simp  [fromL2, hbn n hn]
   intro n hn
   rw [normalizedHardyMultiplier_apply, hardy_seqConv_nonpositive hcn hb n hn, mul_zero]
 
@@ -496,12 +487,14 @@ theorem diskHardySmoothProduct_eq_extension (a : SmoothH1Coefficient)
     rw [diskHalfTrace_diskHardyExtension_eq_of_nonpositive b hbn] at hp
     rw [diskHalfTrace_diskHardyExtension_eq_of_nonpositive _
       (normalizedHardyMultiplier_nonpositive _ _ hcn b hbn)]
-    exact hp
+    assumption
 
-theorem localConformalHardyDerivativeProduct_eq_extension {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (b : L2Z) (hbn : IsNonpositiveFourierSupport b) :
+section
+
+variable {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1)) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+include R hR F hFs hhol b hbn
+
+theorem localConformalHardyDerivativeProduct_eq_extension  :
     localConformalHardyDerivativeProduct hR F hFs b = diskHardyExtension
       (normalizedHardyMultiplier
         (fourierCoeff (diskSmoothCoefficientCircle
@@ -514,10 +507,7 @@ theorem localConformalHardyDerivativeProduct_eq_extension {R : ℝ} (hR : 1 < R)
 
 /-- Actual disk x derivative of the normalized physical primitive. The
 derivative multiplier is the compact smooth representative of conj(F′). -/
-theorem diskHardyExtension_localConformalPrimitive_gradient {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (b : L2Z) (hbn : IsNonpositiveFourierSupport b) :
+theorem diskHardyExtension_localConformalPrimitive_gradient  :
     h1Gradient (ball (0 : ℂ) 1) 0
         (diskHardyExtension (localConformalHardyPrimitive hR F hFs b)) =
       h1SmoothCoefficientL2 (ball (0 : ℂ) 1)
@@ -532,19 +522,22 @@ theorem diskHardyExtension_localConformalPrimitive_gradient {R : ℝ} (hR : 1 < 
       (localConformalHardyPrimitiveMultiplier_shift hR F hFs hhol)
       (localConformalHardyDerivativeCoefficient_nonpositive hR F hFs hhol) b hbn,
     ← localConformalHardyDerivativeProduct_eq_extension hR F hFs hhol b hbn]
-  exact h1Value_diskHardySmoothProduct _ b
+  rfl
 
 /-- The normalized primitive preserves the entire Hardy subspace. -/
-theorem localConformalHardyPrimitive_nonpositive {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (b : L2Z) (hbn : IsNonpositiveFourierSupport b) :
+theorem localConformalHardyPrimitive_nonpositive  :
     IsNonpositiveFourierSupport (localConformalHardyPrimitive hR F hFs b) :=
   normalizedHardyPrimitive_nonpositive _ _
     (localConformalHardyPrimitiveMultiplier_strictNegative hR F hFs hhol) b hbn
 
-theorem fromL2_normalizedHardyPrimitive (a : ℤ → ℂ)
-    (ha : IsWL1 (1 / 2 : ℝ) a) (b : L2Z) :
+end
+
+section
+
+variable (a : ℤ → ℂ) (ha : IsWL1 (1 / 2 : ℝ) a) (b : L2Z)
+include a ha b
+
+theorem fromL2_normalizedHardyPrimitive  :
     fromL2 (1 / 2 : ℝ) (normalizedHardyPrimitive a ha b) =
       antiPrim a (fromL2 (1 / 2 : ℝ) b) := by
   funext n
@@ -554,8 +547,7 @@ theorem fromL2_normalizedHardyPrimitive (a : ℤ → ℂ)
 
 /-- Averaged coefficients of the normalized primitive are the same `antiPrim`
 coefficients, including its prescribed zero coefficient. -/
-theorem normalizedHardyAverage_primitive (a : ℤ → ℂ)
-    (ha : IsWL1 (1 / 2 : ℝ) a) (b : L2Z) :
+theorem normalizedHardyAverage_primitive  :
     normalizedHardyAverage (normalizedHardyPrimitive a ha b) =
       antiPrim a (normalizedHardyAverage b) := by
   change (Real.sqrt (2 * Real.pi) : ℂ)⁻¹ •
@@ -565,126 +557,86 @@ theorem normalizedHardyAverage_primitive (a : ℤ → ℂ)
     (seqOpBound_antiPrim (by norm_num : (0 : ℝ) ≤ 1 / 2) ha).map_smul _ _
       (isSobolevSeq_fromL2 (1 / 2 : ℝ) b)]
 
-private theorem hardy_phase_mul_massDensity {C : ℝ} (F : ℂ → ℂ)
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    {z : ℂ} (hz : z ∈ ball (0 : ℂ) 1) :
-    localConformalAntiholomorphicPhase F z * localConformalMassDensity F z =
-      conj (fderiv ℝ F z 1) := by
-  have hd : deriv F z ≠ 0 := by
-    intro he
-    have h := hC z hz
-    rw [he, norm_zero] at h
-    norm_num at h
-  have hs : (‖fderiv ℝ F z 1‖ : ℂ) ≠ 0 := by
-    apply Complex.ofReal_ne_zero.mpr
-    rw [hardy_real_derivative_of_holomorphic isOpen_ball hhol hz 1, mul_one]
-    exact norm_ne_zero_iff.mpr hd
-  change (conj (fderiv ℝ F z 1) / (‖fderiv ℝ F z 1‖ : ℂ)) *
-    (‖fderiv ℝ F z 1‖ : ℂ) = _
-  exact div_mul_cancel₀ _ hs
+end
 
 /-- Multiplication by actual conj(F′) on pullback values equals the actual
 Jacobian phase times the genuine weighted L² pullback of physical values. -/
-theorem localConformalHardyDerivativeCoefficient_pullback_value {R C K : ℝ}
-    (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
+theorem localConformalHardyDerivativeCoefficient_pullback_value {F : ℂ → ℂ}
+    (coords : ConformalDiskCoordinates F)
     (u : NeumannH1 (F '' ball (0 : ℂ) 1)) :
     h1SmoothCoefficientL2 (ball (0 : ℂ) 1)
-      (localConformalHardyDerivativeCoefficient hR F hFs)
-        (h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL u)) =
-      localConformalAntiholomorphicPhaseMultiplier F
-        (localConformalWeightedL2Pullback hR F hFs hL hK
+      (localConformalHardyDerivativeCoefficient coords.one_lt_radius F coords.smooth)
+        (h1Value (ball (0 : ℂ) 1) (coords.pullback u)) =
+      localConformalPhaseMultiplier F true
+        (localConformalWeightedL2Pullback coords
           (h1Value (F '' ball (0 : ℂ) 1) u)) := by
-  rw [localConformalWeightedL2Pullback_h1Value hR F hFs hb hL hhol hinj hC hK,
-    localConformalMassPullback_apply]
+  rw [localConformalWeightedL2Pullback_h1Value coords]
+  let v := h1Value (ball (0 : ℂ) 1) (coords.pullback u)
+  change h1SmoothCoefficientL2 _ _ v = localConformalPhaseMultiplier F true
+    (localConformalMassMultiplier coords v)
   apply Lp.ext
-  filter_upwards [h1SmoothCoefficientL2_ae (ball (0 : ℂ) 1)
-    (localConformalHardyDerivativeCoefficient hR F hFs)
-    (h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL u)),
-    localConformalAntiholomorphicPhaseMultiplier_ae F
-      (lpBoundedMultiplier (localConformalMassDensity F)
-        (localConformalMassDensity_aemeasurable hR F hFs)
-        (localConformalMassDensity_ae_bound F hK)
-        (h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL u))),
-    lpBoundedMultiplier_ae (localConformalMassDensity F)
-      (localConformalMassDensity_aemeasurable hR F hFs)
-      (localConformalMassDensity_ae_bound F hK)
-      (h1Value (ball (0 : ℂ) 1) (localConformalH1Pullback hR F hFs hL u)),
-    ae_restrict_mem measurableSet_ball] with z ha hp hm hz
+  filter_upwards [h1SmoothCoefficientL2_ae _ (localConformalHardyDerivativeCoefficient coords.one_lt_radius F coords.smooth) v,
+    localConformalPhaseMultiplier_ae F true (localConformalMassMultiplier coords v),
+    localConformalMassMultiplier_ae coords v, ae_restrict_mem measurableSet_ball] with z ha hp hm hz
   rw [ha, hp, hm,
-    localConformalHardyDerivativeCoefficient_closedDisk hR F hFs (ball_subset_closedBall hz),
-    ← mul_assoc, hardy_phase_mul_massDensity F hhol hC hz]
+    localConformalHardyDerivativeCoefficient_closedDisk coords.one_lt_radius F coords.smooth (ball_subset_closedBall hz),
+    ← mul_assoc, localConformalPhase_mul_massDensity coords true hz]
+  rfl
 
 section PhysicalPrimitive
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
+include coords
+
+section
+
+variable (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+include b hbn
 
 /-- The primitive has the actual physical x derivative U(b), proved from
 the disk derivative identity and cancellation of the genuine Jacobian phase
 and the norm-preserving physical L² pullback. -/
-theorem localConformalHardyH1Extension_primitive_gradient (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) :
+theorem localConformalHardyH1Extension_primitive_gradient  :
     h1Gradient (F '' ball (0 : ℂ) 1) 0
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
-        (localConformalHardyPrimitive hR F hFs b)) =
+      (localConformalHardyH1Extension coords
+        (localConformalHardyPrimitive coords.one_lt_radius F coords.smooth b)) =
       h1Value (F '' ball (0 : ℂ) 1)
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) := by
-  apply localConformalWeightedL2Pullback_injective hR F hFs hb hL hhol hinj hC hK
-  apply localConformalAntiholomorphicPhaseMultiplier_injective F hhol hC
+        (localConformalHardyH1Extension coords b) := by
+  apply localConformalWeightedL2Pullback_injective coords
+  apply localConformalPhaseMultiplier_injective coords true
   calc
-    _ = h1Gradient (ball (0 : ℂ) 1) 0 (localConformalH1Pullback hR F hFs hL
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
-        (localConformalHardyPrimitive hR F hFs b))) :=
-      (localConformalH1Pullback_gradient_antiholomorphic hR F hFs hb hL hhol hinj hC hK _
-        (localConformalHardyH1Extension_cauchyRiemann hR F hFs hb hL hhol hinj hC hK
-          e he hsource hes _)).symm
+    _ = h1Gradient (ball (0 : ℂ) 1) 0 (coords.pullback
+      (localConformalHardyH1Extension coords
+        (localConformalHardyPrimitive coords.one_lt_radius F coords.smooth b))) :=
+      (localConformalH1Pullback_gradient_antiholomorphic coords _
+        (localConformalHardyH1Extension_cauchyRiemann coords _)).symm
     _ = h1Gradient (ball (0 : ℂ) 1) 0
-      (diskHardyExtension (localConformalHardyPrimitive hR F hFs b)) := by
-        rw [localConformalH1Pullback_hardyExtension]
+      (diskHardyExtension (localConformalHardyPrimitive coords.one_lt_radius F coords.smooth b)) := by simp
     _ = h1SmoothCoefficientL2 (ball (0 : ℂ) 1)
-      (localConformalHardyDerivativeCoefficient hR F hFs)
+      (localConformalHardyDerivativeCoefficient coords.one_lt_radius F coords.smooth)
         (h1Value (ball (0 : ℂ) 1) (diskHardyExtension b)) :=
-      diskHardyExtension_localConformalPrimitive_gradient hR F hFs hhol b hbn
+      diskHardyExtension_localConformalPrimitive_gradient coords.one_lt_radius F coords.smooth coords.holomorphic b hbn
     _ = _ := by
-      have h := localConformalHardyDerivativeCoefficient_pullback_value hR F hFs hb hL
-        hhol hinj hC hK
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)
-      rw [localConformalH1Pullback_hardyExtension] at h
-      exact h
+      have h := localConformalHardyDerivativeCoefficient_pullback_value coords
+        (localConformalHardyH1Extension coords b)
+      simp_all
 
 /-- The physical y derivative has the true antiholomorphic sign. -/
-theorem localConformalHardyH1Extension_primitive_gradient_y (b : L2Z)
-    (hbn : IsNonpositiveFourierSupport b) :
+theorem localConformalHardyH1Extension_primitive_gradient_y  :
     h1Gradient (F '' ball (0 : ℂ) 1) 1
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
-        (localConformalHardyPrimitive hR F hFs b)) =
+      (localConformalHardyH1Extension coords
+        (localConformalHardyPrimitive coords.one_lt_radius F coords.smooth b)) =
       (-Complex.I) • h1Value (F '' ball (0 : ℂ) 1)
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) := by
+        (localConformalHardyH1Extension coords b) := by
   calc
     _ = (-Complex.I) • h1Gradient (F '' ball (0 : ℂ) 1) 0
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
-        (localConformalHardyPrimitive hR F hFs b)) := by
+      (localConformalHardyH1Extension coords
+        (localConformalHardyPrimitive coords.one_lt_radius F coords.smooth b)) := by
       rw [localConformalHardyH1Extension_cauchyRiemann, smul_smul]
       simp
-    _ = _ := by rw [localConformalHardyH1Extension_primitive_gradient hR F hFs hb hL
-      hhol hinj hC hK e he hsource hes b hbn]
+    _ = _ := by rw [localConformalHardyH1Extension_primitive_gradient coords b hbn]
+
+end
 
 end PhysicalPrimitive
 

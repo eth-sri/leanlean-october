@@ -76,12 +76,12 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
     exact congrFun hy j
   have hyx : y = J E a + R z := by
     have h1 : (u : H →L[ℂ] H) x = y := by
-      rw [hx, ← ContinuousLinearMap.mul_apply, Units.mul_inv, ContinuousLinearMap.one_apply]
+      rw [← ContinuousLinearMap.mul_apply, Units.mul_inv, ContinuousLinearMap.one_apply]
     rw [← h1, hu]
     rfl
   have hSy : S E y = S E (R z) := by
     have := congrArg (fun T => T a) (hnullS E hEU)
-    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply] at this
+    simp   at this
     rw [hyx, map_add, this, zero_add]
   have hPJa : P E (J E a) = 0 := by
     have := congrArg (fun T => T a) (hnullP E hEU)

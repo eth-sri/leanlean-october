@@ -6,6 +6,7 @@ public import Mathlib.MeasureTheory.Integral.CircleIntegral
 public import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 public import Mathlib.Topology.MetricSpace.Bounded
 public import Mathlib.Tactic
+public import Mathlib.Analysis.SpecialFunctions.Sqrt
 public import RequestProject.BZLevel
 public import RequestProject.SmoothDomain
 public import RequestProject.Transport
@@ -34,59 +35,40 @@ private lemma exists_unitDisk_graph :
       (∀ x : ℝ, |x| < 1 / 8 → |F x| < 1 / 2) ∧
       (∀ x : ℝ, |x| < 1 / 8 → ∀ y : ℝ, |y| < 1 / 2 →
         (0 < 2 * y - y ^ 2 - x ^ 2 ↔ F x < y)) := by
-  let G : ℝ → ℝ → ℝ := fun x y => 2 * y - y ^ 2 - x ^ 2
-  have hG : ContDiff ℝ ∞ (fun q : ℝ × ℝ => G q.1 q.2) := by
-    dsimp only [G]
-    fun_prop
-  have hmono : ∀ x : ℝ, |x| < 1 / 4 → ∀ y₁ y₂ : ℝ,
-      -(1 / 2) < y₁ → y₁ ≤ y₂ → y₂ < 1 / 2 →
-      G x y₁ + 1 * (y₂ - y₁) ≤ G x y₂ := by
-    intro x _ y₁ y₂ _ hle hhi
-    have hp : 0 ≤ (y₂ - y₁) * (1 - y₁ - y₂) :=
-      mul_nonneg (sub_nonneg.mpr hle) (by linarith)
-    dsimp only [G]
-    nlinarith [hp]
-  have hlo : ∀ x : ℝ, |x| < 1 / 4 → G x (-(1 / 4)) < 0 := by
-    intro x _
-    dsimp only [G]
-    nlinarith [sq_nonneg x]
-  have hhi : ∀ x : ℝ, |x| < 1 / 4 → 0 < G x (1 / 4) := by
-    intro x hx
-    have hxp : 0 < x + 1 / 4 := by linarith [(abs_lt.mp hx).1]
-    have hxm : 0 < 1 / 4 - x := by linarith [(abs_lt.mp hx).2]
-    have hp := mul_pos hxp hxm
-    dsimp only [G]
-    nlinarith [hp]
-  obtain ⟨f₀, hf₀, hf₀iff, hf₀c⟩ :=
-    exists_level_graph (r₂ := (1 / 4 : ℝ)) (h := (1 / 2 : ℝ))
-      (h' := (1 / 4 : ℝ)) (κ := (1 : ℝ)) (ε := (0 : ℝ))
-      hG (by norm_num) (by norm_num) (by norm_num) hmono hlo hhi
-  obtain ⟨F, hFc, ⟨K, hFl⟩, hFf⟩ :=
-    exists_smooth_extension (r := (1 / 8 : ℝ)) (r₂ := (1 / 4 : ℝ))
-      (by norm_num) (by norm_num) hf₀c
-  have hf00 : f₀ 0 = 0 := by
-    obtain ⟨hb, he⟩ := hf₀ 0 (by norm_num)
-    have hb' := (abs_lt.mp hb).2
-    have hfac : f₀ 0 * (2 - f₀ 0) = 0 := by
-      dsimp only [G] at he
-      nlinarith [he]
-    exact (mul_eq_zero.mp hfac).resolve_right (by linarith)
+  let f (x : ℝ) := 1 - Real.sqrt (1 - x ^ 2)
+  have hx2 (x : ℝ) (hx : |x| < 1 / 4) : x ^ 2 < 1 / 16 := by
+    nlinarith [mul_pos (show 0 < 1 / 4 - x by grind)
+      (show 0 < 1 / 4 + x by grind)]
+  obtain ⟨F, hFc, ⟨K, hFl⟩, hFf⟩ := exists_smooth_extension (f₀ := f)
+    (r := (1 / 8 : ℝ)) (r₂ := (1 / 4 : ℝ)) (by norm_num) (by norm_num)
+    (fun x hx => contDiffAt_const.sub ((contDiffAt_const.sub (contDiffAt_id.pow 2)).sqrt
+      (by grind)))
   refine ⟨K, F, hFc, hFl, ?_, ?_, ?_⟩
-  · rw [hFf 0 (by norm_num), hf00]
+  grind
   · intro x hx
+    have h := hx2 x (by linarith)
+    have hs := (Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 1 / 2)).mpr
+      (show (1 / 2 : ℝ) ^ 2 < 1 - x ^ 2 by linarith)
+    have ht := (Real.sqrt_le_left zero_le_one).mpr (show 1 - x ^ 2 ≤ 1 ^ 2 by nlinarith)
     rw [hFf x hx.le]
-    have hb := (hf₀ x (by linarith : |x| < 1 / 4)).1
-    linarith
+    change |1 - Real.sqrt (1 - x ^ 2)| < 1 / 2
+    exact abs_lt.mpr ⟨by linarith, by linarith⟩
   · intro x hx y hy
+    have hs := Real.sq_sqrt (show 0 ≤ 1 - x ^ 2 by linarith [hx2 x (by linarith)])
+    have hp := Real.sqrt_nonneg (1 - x ^ 2)
+    have hy' : 0 ≤ 1 - y := by linarith [(abs_lt.mp hy).2]
     rw [hFf x hx.le]
-    exact hf₀iff x (by linarith : |x| < 1 / 4) y hy
+    change 0 < 2 * y - y ^ 2 - x ^ 2 ↔ 1 - Real.sqrt (1 - x ^ 2) < y
+    have hsq := sq_lt_sq₀ hy' hp
+    rw [← sub_lt_comm, ← hsq, hs]
+    constructor <;> intro h <;> nlinarith
 
 /-- The unit disk has actual globally smooth and Lipschitz local graph charts. -/
 theorem isSmoothDomain_unitDisk : IsSmoothDomain (ball (0 : ℂ) 1) := by
   refine ⟨⟨isOpen_ball, isConnected_ball (by norm_num)⟩, fun p hp => ?_⟩
   rw [frontier_ball (0 : ℂ) (by norm_num : (1 : ℝ) ≠ 0)] at hp
   have hp1 : ‖p‖ = 1 := by
-    simpa only [mem_sphere, dist_zero_right] using hp
+    simp_all
   obtain ⟨K, F, hFc, hFl, hF0, hFb, hFiff⟩ := exists_unitDisk_graph
   let c : ℂ := -Complex.I * conj p
   have hc : ‖c‖ = 1 := by simp [c, hp1]
@@ -95,7 +77,7 @@ theorem isSmoothDomain_unitDisk : IsSmoothDomain (ball (0 : ℂ) 1) := by
       rw [← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, hp1]
       norm_num
     dsimp only [c]
-    rw [mul_assoc, hpp, mul_one]
+    grind
   refine ⟨c, 1 / 8, 1 / 2, K, F, hc, by norm_num, by norm_num,
     hFc, hFl, hF0, hFb, ?_⟩
   intro w hwx hwy
@@ -125,9 +107,7 @@ theorem isLipschitzDomain_unitDisk : IsLipschitzDomain (ball (0 : ℂ) 1) :=
 theorem unitDisk_bounded : Bornology.IsBounded (ball (0 : ℂ) 1) :=
   Metric.isBounded_ball
 
-theorem unitDisk_volume_toReal : (volume (ball (0 : ℂ) 1)).toReal = π := by
-  simp only [Complex.volume_ball, ENNReal.ofReal_one, one_pow, one_mul,
-    ENNReal.coe_toReal, NNReal.coe_real_pi]
+theorem unitDisk_volume_toReal : (volume (ball (0 : ℂ) 1)).toReal = π := by simp
 
 /-- The standard positively oriented circle is a genuine boundary parameter for the disk. -/
 theorem unitCircle_isBoundaryParam :
@@ -143,13 +123,9 @@ theorem unitCircle_isBoundaryParam :
   · rw [frontier_ball (0 : ℂ) (by norm_num : (1 : ℝ) ≠ 0)]
     apply Subset.antisymm
     · rintro w ⟨θ, _, rfl⟩
-      exact circleMap_mem_sphere (0 : ℂ) (by norm_num : (0 : ℝ) ≤ 1) θ
-    · intro w hw
-      have hw' : w ∈ circleMap (0 : ℂ) 1 '' Ioc 0 (2 * π) := by
-        simpa only [image_circleMap_Ioc, abs_one] using hw
-      exact (image_mono Ioc_subset_Icc_self) hw'
-  · refine ⟨1, by norm_num, ae_of_all _ fun θ => ?_⟩
-    simp [deriv_circleMap]
+      simp
+    grind [image_circleMap_Ioc, abs_one]
+  simp
   · have him : ∀ θ : ℝ,
         (conj (circleMap 0 1 θ) * deriv (circleMap 0 1) θ).im = 1 := by
       intro θ

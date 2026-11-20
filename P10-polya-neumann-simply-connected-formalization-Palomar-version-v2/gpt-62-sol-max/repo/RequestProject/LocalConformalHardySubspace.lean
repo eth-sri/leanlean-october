@@ -26,7 +26,7 @@ open scoped InnerProductSpace
 /-- The full nonpositive Fourier input space, including frequency zero. -/
 def nonpositiveFourierSubspace : Submodule ℂ L2Z where
   carrier := {b | IsNonpositiveFourierSupport b}
-  zero_mem' := by simp [IsNonpositiveFourierSupport]
+  zero_mem' := by tauto
   add_mem' := by
     intro b d hb hd n hn
     simp [hb n hn, hd n hn]
@@ -44,8 +44,8 @@ theorem nonpositiveFourierSubspace_eq_ker_posProj :
     apply lp.ext
     funext n
     by_cases hn : 0 < n
-    · simp [posProj, diagOp_apply, hn, hb n hn]
-    · simp [posProj, diagOp_apply, hn]
+    · simp [posProj, hn, hb n hn]
+    · simp [posProj, hn]
   · intro hb n hn
     have h := congrArg (fun v : L2Z => v n) hb
     simpa [posProj, diagOp_apply, hn] using h
@@ -66,7 +66,7 @@ instance nonpositiveFourierComplementCompleteSpace :
 theorem one_sub_posProj_mem_nonpositive (b : L2Z) :
     (1 - posProj) b ∈ nonpositiveFourierSubspace := by
   intro n hn
-  simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
+  simp [ContinuousLinearMap.one_apply,
     posProj, diagOp_apply, hn]
 
 theorem posProj_mem_nonpositive_orthogonal (b : L2Z) :
@@ -78,8 +78,8 @@ theorem posProj_mem_nonpositive_orthogonal (b : L2Z) :
   have hterms : (fun n => ⟪a n, posProj b n⟫_ℂ) = fun _ => (0 : ℂ) := by
     funext n
     by_cases hn : 0 < n
-    · simp [ha n hn]
-    · simp [posProj, diagOp_apply, hn]
+    aesop
+    simp_all [posProj, diagOp_apply, hn]
   rw [hterms]
   exact tsum_zero
 
@@ -95,6 +95,38 @@ theorem nonpositiveFourierSubspace_starProjection :
     abel
   rw [heq]
   exact posProj_mem_nonpositive_orthogonal b
+
+theorem posProj_stdBasisZ (n : ℤ) :
+    posProj (stdBasisZ n) = if 0 < n then stdBasisZ n else 0 := by
+  rw [posProj, diagOp_stdBasisZ]
+  by_cases hn : 0 < n <;> simp [stdBasisZ_apply, hn]
+
+theorem stdBasisZ_mem_nonpositive {n : ℤ} (hn : n ≤ 0) :
+    stdBasisZ n ∈ nonpositiveFourierSubspace := by
+  rw [nonpositiveFourierSubspace_eq_ker_posProj]
+  change posProj (stdBasisZ n) = 0
+  simp [posProj_stdBasisZ, hn.not_gt]
+
+theorem stdBasisZ_isSobolevSeq (s : ℝ) (n : ℤ) : IsSobolevSeq s (stdBasisZ n : ℤ → ℂ) := by
+  refine summable_of_ne_finset_zero (s := {n}) fun k hk => ?_
+  have hkn : k ≠ n := by simpa using hk
+  simp [stdBasisZ_apply, lp.single_apply, hkn]
+
+/-- A bounded operator on Fourier sequences vanishes on the closed nonpositive
+subspace if it vanishes on each nonpositive mode. -/
+theorem eq_zero_of_nonpositive_modes {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+    (A : L2Z →L[ℂ] V) (h : ∀ n ≤ 0, A (stdBasisZ n) = 0)
+    {b : L2Z} (hb : b ∈ nonpositiveFourierSubspace) : A b = 0 := by
+  have hzero : A.comp (1 - posProj) = 0 := by
+    apply ContinuousLinearMap.ext_on
+      ((Submodule.dense_iff_topologicalClosure_eq_top).2 stdBasisZ.dense_span)
+    rintro _ ⟨n, rfl⟩
+    by_cases hn : 0 < n
+    · simp [posProj_stdBasisZ, hn]
+    · simpa [posProj_stdBasisZ, hn] using h n (le_of_not_gt hn)
+  rw [nonpositiveFourierSubspace_eq_ker_posProj] at hb
+  change posProj b = 0 at hb
+  simpa [hb] using DFunLike.congr_fun hzero b
 
 end PolyaNeumann
 

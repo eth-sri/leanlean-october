@@ -29,7 +29,7 @@ lemma norm_adjoint_unitary_basisVec {U : Ell2 →L[ℂ] Ell2}
     (hU : U ∈ unitary (Ell2 →L[ℂ] Ell2)) (k : ℕ) :
     ‖ContinuousLinearMap.adjoint U (basisVec k)‖ = 1 := by
   have h1 : U * ContinuousLinearMap.adjoint U = 1 := by
-    rw [← ContinuousLinearMap.star_eq_adjoint]; exact (Unitary.mem_iff.mp hU).2
+    rw [← ContinuousLinearMap.star_eq_adjoint]; simp_all
   have h2 : ‖ContinuousLinearMap.adjoint U (basisVec k)‖ ^ 2 = ‖basisVec k‖ ^ 2 := by
     rw [← inner_self_eq_norm_sq (𝕜 := ℂ), ← inner_self_eq_norm_sq (𝕜 := ℂ),
       ContinuousLinearMap.adjoint_inner_left, ← ContinuousLinearMap.mul_apply, h1,

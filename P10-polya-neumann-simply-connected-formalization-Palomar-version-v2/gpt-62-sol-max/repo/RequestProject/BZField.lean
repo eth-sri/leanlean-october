@@ -26,12 +26,7 @@ lemma exists_frontier_mem_segment {Ω : Set ℂ} {a b : ℂ} (ha : a ∈ Ω) (hb
   by_contra hno
   push_neg at hno
   have hsub : segment ℝ a b ⊆ interior Ω ∪ (closure Ω)ᶜ := by
-    intro q hq
-    by_cases h1 : q ∈ interior Ω
-    · exact Or.inl h1
-    · right
-      intro h2
-      exact hno q ⟨h2, h1⟩ hq
+    tauto
   rcases (convex_segment a b).isPreconnected.subset_or_subset isOpen_interior
       isClosed_closure.isOpen_compl
       (disjoint_compl_right.mono_left interior_subset_closure) hsub with h | h
@@ -48,15 +43,14 @@ lemma exists_frontier_near_of_abs_signedDist_lt {Ω : Set ℂ} (hΩne : Ω.Nonem
     obtain ⟨q, hq, hqs⟩ := exists_frontier_mem_segment hzΩ hy
     refine ⟨q, hq, ?_⟩
     have := segment_subset_closedBall_left z y hqs
-    rw [mem_closedBall, dist_comm] at this
-    rw [← dist_eq_norm]; linarith
+    grind [mem_closedBall, dist_comm, dist_eq_norm]
   · rw [signedDist_of_notMem hzΩ, abs_neg, abs_of_nonneg infDist_nonneg] at hz
     obtain ⟨y, hy, hzy⟩ := (infDist_lt_iff hΩne).mp hz
     obtain ⟨q, hq, hqs⟩ := exists_frontier_mem_segment hy hzΩ
     refine ⟨q, hq, ?_⟩
     have := segment_subset_closedBall_right y z hqs
     rw [mem_closedBall, dist_comm y z, dist_comm q z] at this
-    rw [← dist_eq_norm]; linarith
+    grind [dist_eq_norm]
 
 /-- Chaining increments along the summands of a convex-type combination. -/
 lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι → ℝ) (v : ι → ℂ)
@@ -69,7 +63,7 @@ lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι �
       φ (z + (t : ℂ) * ∑ i ∈ G, (w i : ℂ) * v i) := by
     intro G
     induction G using Finset.induction_on with
-    | empty => intro _; simp
+    | empty => simp
     | insert a G ha ih =>
       intro hGF
       have haF : a ∈ F := hGF (Finset.mem_insert_self a G)
@@ -80,11 +74,10 @@ lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι �
       · rw [← h0]; simpa using ih'
       set y := z + (t : ℂ) * ∑ i ∈ G, (w i : ℂ) * v i
       have hy : ‖y - z‖ ≤ t * ∑ j ∈ F, w j * ‖v j‖ := by
-        simp only [y, add_sub_cancel_left, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-          abs_of_nonneg ht]
+        simp  [y, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht]
         refine mul_le_mul_of_nonneg_left ?_ ht
         refine (norm_sum_le _ _).trans ?_
-        simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+        simp  [norm_mul, Complex.norm_real]
         calc ∑ i ∈ G, |w i| * ‖v i‖ = ∑ i ∈ G, w i * ‖v i‖ :=
               Finset.sum_congr rfl fun i hi => by rw [abs_of_nonneg (hw i (hG hi))]
           _ ≤ ∑ j ∈ F, w j * ‖v j‖ := Finset.sum_le_sum_of_subset_of_nonneg hG
@@ -95,36 +88,48 @@ lemma le_comp_add_sum {ι : Type*} (φ : ℂ → ℝ) (F : Finset ι) (w : ι �
         simp only [y]; push_cast; ring
       rw [heq] at hs
       nlinarith
-  exact key F (Finset.Subset.refl F)
+  tauto
+
+section
+
+variable (p : ℂ) (s : ℝ) (z : ℂ)
+include p s z
 
 /-- The Lipschitz bump `max(0, 1 - ‖z - p‖/s)`. -/
-def tentBump (p : ℂ) (s : ℝ) (z : ℂ) : ℝ := max 0 (1 - ‖z - p‖ / s)
+def tentBump  : ℝ := max 0 (1 - ‖z - p‖ / s)
 
-lemma tentBump_nonneg (p : ℂ) (s : ℝ) (z : ℂ) : 0 ≤ tentBump p s z := le_max_left _ _
+lemma tentBump_nonneg  : 0 ≤ tentBump p s z := le_max_left _ _
 
-lemma tentBump_le_one {p : ℂ} {s : ℝ} (hs : 0 < s) (z : ℂ) : tentBump p s z ≤ 1 :=
+end
+
+section
+
+variable {p : ℂ} {s : ℝ} (hs : 0 < s)
+include p s hs
+
+lemma tentBump_le_one  (z : ℂ) : tentBump p s z ≤ 1 :=
   max_le zero_le_one (by have : 0 ≤ ‖z - p‖ / s := by positivity
                          linarith)
 
-lemma norm_sub_lt_of_tentBump_pos {p : ℂ} {s : ℝ} (hs : 0 < s) {z : ℂ}
+lemma norm_sub_lt_of_tentBump_pos  {z : ℂ}
     (h : 0 < tentBump p s z) : ‖z - p‖ < s := by
   unfold tentBump at h
   rcases lt_max_iff.mp h with h | h
-  · exact absurd h (lt_irrefl 0)
+  simp_all
   · have : ‖z - p‖ / s < 1 := by linarith
     rwa [div_lt_one hs] at this
 
-lemma half_lt_tentBump {p : ℂ} {s : ℝ} (hs : 0 < s) {z : ℂ} (h : ‖z - p‖ < s / 2) :
+lemma half_lt_tentBump  {z : ℂ} (h : ‖z - p‖ < s / 2) :
     1 / 2 < tentBump p s z := by
   unfold tentBump
   refine lt_max_of_lt_right ?_
   have : ‖z - p‖ / s < 1 / 2 := by rw [div_lt_iff₀ hs]; linarith
   linarith
 
-lemma abs_tentBump_sub_le {p : ℂ} {s : ℝ} (hs : 0 < s) (z y : ℂ) :
+lemma abs_tentBump_sub_le  (z y : ℂ) :
     |tentBump p s z - tentBump p s y| ≤ (1 / s) * ‖z - y‖ := by
   unfold tentBump
-  refine (abs_max_sub_max_le_max _ _ _ _).trans (max_le (by simp; positivity) ?_)
+  refine (abs_max_sub_max_le_max _ _ _ _).trans (max_le (by simp_all) ?_)
   have h1 : |(1 - ‖z - p‖ / s) - (1 - ‖y - p‖ / s)| = |‖y - p‖ - ‖z - p‖| / s := by
     rw [show (1 - ‖z - p‖ / s) - (1 - ‖y - p‖ / s) = (‖y - p‖ - ‖z - p‖) / s by ring,
       abs_div, abs_of_pos hs]
@@ -132,6 +137,8 @@ lemma abs_tentBump_sub_le {p : ℂ} {s : ℝ} (hs : 0 < s) (z y : ℂ) :
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)
   have := abs_norm_sub_norm_le (y - p) (z - p)
   rwa [show y - p - (z - p) = y - z by ring, norm_sub_rev y z] at this
+
+end
 
 /-- **Transversal vector field.** A bounded Lipschitz domain carries a bounded Lipschitz vector
 field `X` such that, near the boundary, the signed distance increases along `X` at a definite
@@ -151,7 +158,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   obtain ⟨T, hTsub, hTfin, hTcov⟩ :=
     finite_cover_balls_of_compact (frontier_isCompact hb) (show 0 < R / 16 by positivity)
   set F := hTfin.toFinset
-  have hFsub : ∀ p ∈ F, p ∈ frontier Ω := fun p hp => hTsub (by simpa [F] using hp)
+  have hFsub : ∀ p ∈ F, p ∈ frontier Ω := fun p hp => hTsub (by aesop)
   set n : ℂ → ℂ := fun p => conj (c p) * Complex.I
   have hn1 : ∀ p ∈ F, ‖n p‖ = 1 := fun p hp => by
     simp [n, (hcf p (hFsub p hp)).1]
@@ -168,7 +175,7 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
           rw [norm_mul, hn1 p hp, mul_one, Complex.norm_real, Real.norm_eq_abs,
             abs_of_nonneg (tentBump_nonneg _ _ _)]
           exact tentBump_le_one hR2 z
-      _ = m := by simp [m]
+      _ = m := by aesop
   -- Lipschitz
   have hXl : LipschitzWith (Real.toNNReal (m * (1 / (R / 2)))) X := by
     refine LipschitzWith.of_dist_le_mul fun z y => ?_
@@ -181,11 +188,11 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     refine (norm_sum_le _ _).trans ?_
     calc ∑ p ∈ F, ‖((ψ p z - ψ p y : ℝ) : ℂ) * n p‖
         ≤ ∑ p ∈ F, (1 / (R / 2)) * ‖z - y‖ := Finset.sum_le_sum fun p hp => by
-          rw [norm_mul, hn1 p hp, mul_one, Complex.norm_real, Real.norm_eq_abs]
+          rw [norm_mul, hn1 p hp, mul_one, Complex.norm_real]
           exact abs_tentBump_sub_le hR2 z y
-      _ = m * (1 / (R / 2)) * ‖z - y‖ := by simp [m]; ring
+      _ = m * (1 / (R / 2)) * ‖z - y‖ := by simp ; ring
   set κ : ℝ := 1 / (2 * (K + 1))
-  have hK0 : (0 : ℝ) ≤ K := K.2
+  have hK0 := K.2
   have hκ0 : 0 < κ := by positivity
   set τ : ℝ := R / (2 * m + 2)
   have hτ0 : 0 < τ := by positivity
@@ -205,14 +212,14 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     linarith
   have hτm : t * m ≤ R / 2 := by
     have : τ * m ≤ R / 2 := by
-      simp only [τ]
+      simp  [τ]
       rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
       nlinarith
     nlinarith
   have hchain := le_comp_add_sum (signedDist Ω) F (fun p => ψ p z) n κ z ht0
     (fun p _ => tentBump_nonneg _ _ _) (by
       intro p hp hpos y hy
-      have hzp : ‖z - p‖ < R / 2 := norm_sub_lt_of_tentBump_pos hR2 hpos
+      have hzp := norm_sub_lt_of_tentBump_pos hR2 hpos
       have hyz : ‖y - z‖ ≤ R / 2 := by
         refine hy.trans ?_
         calc t * ∑ j ∈ F, ψ j z * ‖n j‖ ≤ t * m := by
@@ -230,15 +237,15 @@ theorem exists_transversalField {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
       have htw : t * ψ p z ≤ min ρ H / 10 := by
         have h1 : t * ψ p z ≤ t := mul_le_of_le_one_right ht0 (tentBump_le_one hR2 z)
         have h2 : τ ≤ R := by
-          simp only [τ]; rw [div_le_iff₀ (by positivity)]; nlinarith
+          simp  [τ]; rw [div_le_iff₀ (by positivity)]; nlinarith
         rw [← hR]; linarith
       have := signedDist_add_le_of_chart hΩo hΩne hΩu (hcf p (hFsub p hp)) (hFsub p hp) hyp
         htw0 htw
       convert this using 2
-      simp only [κ]; ring)
+      ring)
   have : κ / 2 * t ≤ κ * t * ∑ p ∈ F, ψ p z := by
     nlinarith [mul_nonneg (mul_nonneg hκ0.le ht0) (sub_nonneg.mpr hsum)]
-  simp only [X] at hchain ⊢
+  simp   at hchain ⊢
   linarith
 
 end PolyaNeumann

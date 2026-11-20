@@ -1,6 +1,13 @@
 module
 
-public import RequestProject.LocalConformalReducedCoercivity
+public import RequestProject.CircleFourier
+public import RequestProject.ConformalDiskCoordinates
+
+public import RequestProject.LocalConformalVekuaTransport
+public import RequestProject.ObservationLp
+public import RequestProject.PeriodicFourierDerivative
+public import RequestProject.PhysicalDrivenKernelRealization
+public import RequestProject.ReducedForm
 public import RequestProject.PeriodicForm
 
 /-!
@@ -30,7 +37,27 @@ namespace PolyaNeumann
 open Set MeasureTheory Filter Metric
 open scoped Topology ComplexConjugate InnerProductSpace
 
-local instance forwardTwoPiPos : Fact (0 < 2 * Real.pi) := ⟨Real.two_pi_pos⟩
+section
+
+variable (y : L2Z) (hy : IsSobolevSeq (1 / 2 : ℝ) (y : ℤ → ℂ))
+include y hy
+
+/-- The genuine ordinary boundary L2 load represented by a half-regular
+normalized Fourier vector. -/
+def halfRegularCoordinateLoad  : BoundaryL2 :=
+  boundaryFourier.symm (sobVec (1 / 2 : ℝ) (y : ℤ → ℂ) hy)
+
+/-- The unitary Fourier normalization is exact, including frequency zero. -/
+theorem halfRegularCoordinateLoad_normalized  :
+    sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
+      (boundaryFourier (halfRegularCoordinateLoad y hy)) = y := by
+  rw [halfRegularCoordinateLoad, boundaryFourier.apply_symm_apply]
+  apply lp.ext
+  funext n
+  change fromL2 (1 / 2 : ℝ) (sobVec (1 / 2 : ℝ) (y : ℤ → ℂ) hy) n = y n
+  rw [fromL2_sobVec]
+
+end
 
 /-- Fourier inversion for an actual L2 derivative. No absolute continuity
 or differentiability of the original continuous function is assumed. -/
@@ -41,16 +68,16 @@ theorem eq_add_integral_of_L2_periodic_fourier_derivative
       (Complex.I * (n : ℂ)) * fourierCoeffOn Real.two_pi_pos v n)
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     v θ = v 0 + ∫ s in (0 : ℝ)..θ, d s := by
-  let P : ℝ → ℂ := fun t => ∫ s in (0 : ℝ)..t, d s
+  let P := fun t => ∫ s in (0 : ℝ)..t, d s
   have hPi := intervalIntegrable_boundaryL2 d
   have hPAC : AbsolutelyContinuousOnInterval P 0 (2 * Real.pi) :=
     absolutelyContinuousOnInterval_intervalIntegral_banach hPi
-      (by rw [uIcc_of_le Real.two_pi_pos.le]; exact ⟨le_rfl, Real.two_pi_pos.le⟩)
+      (by simp)
   have hPC : ContinuousOn P (Icc 0 (2 * Real.pi)) := by
     simpa only [uIcc_of_le Real.two_pi_pos.le] using hPAC.continuousOn
-  have hPD : ∀ᵐ t, t ∈ Ioo 0 (2 * Real.pi) → HasDerivAt P (d t) t :=
+  have hPD :=
     ae_hasDerivAt_intervalIntegral_banach Real.two_pi_pos.le hPi
-  have hP0 : P 0 = 0 := by simp [P]
+  have hP0 : P 0 = 0 := by aesop
   have hPT : P (2 * Real.pi) = 0 :=
     integral_eq_zero_of_periodic_fourier_derivative hcoeff
   have hPc (n : ℤ) : fourierCoeffOn Real.two_pi_pos (d : ℝ → ℂ) n =
@@ -73,17 +100,8 @@ theorem eq_add_integral_of_L2_periodic_fourier_derivative
   have hFp : Function.Periodic F (2 * Real.pi) := by
     intro t
     dsimp only [F]
-    rw [AddCircle.coe_add_period]
-  have hFf : EqOn F f (Icc 0 (2 * Real.pi)) := by
-    intro t ht
-    by_cases htT : t = 2 * Real.pi
-    · subst t
-      have hzero : AddCircle.liftIco (2 * Real.pi) 0 f
-          (0 : AddCircle (2 * Real.pi)) = f 0 :=
-        AddCircle.liftIco_zero_coe_apply ⟨le_rfl, Real.two_pi_pos⟩
-      dsimp only [F]
-      rw [AddCircle.coe_period, hzero, hfe]
-    · exact AddCircle.liftIco_zero_coe_apply ⟨ht.1, lt_of_le_of_ne ht.2 htT⟩
+    simp
+  have hFf : EqOn F f (Icc 0 (2 * Real.pi)) := liftIco_zero_eqOn_Icc hfe
   have hcoeffF (n : ℤ) (hn : n ≠ 0) : fourierCoeffOn Real.two_pi_pos F n = 0 := by
     rw [fourierCoeffOn_congr_Icc hFf n]
     rw [fourierCoeffOn_sub_of_continuousOn hv.continuousOn hPC n, hncoeff n hn, sub_self]
@@ -91,28 +109,19 @@ theorem eq_add_integral_of_L2_periodic_fourier_derivative
   rw [hFf hθ, hFf ⟨le_rfl, Real.two_pi_pos.le⟩] at hconst
   change v θ - P θ = v 0 - P 0 at hconst
   rw [hP0, sub_zero] at hconst
-  simpa only [add_comm] using sub_eq_iff_eq_add.mp hconst
+  grind
 
-/-- Exact shift of the genuine Fourier Sobolev weights. -/
-theorem isSobolevSeq_fromL2_shift_iff (s t : ℝ) (b : L2Z) :
-    IsSobolevSeq (s + t) (fromL2 t b) ↔ IsSobolevSeq s (b : ℤ → ℂ) := by
-  have he (n : ℤ) :
-      (sobWeight n ^ (s + t) * ‖fromL2 t b n‖) ^ 2 =
-        (sobWeight n ^ s * ‖b n‖) ^ 2 := by
-    rw [fromL2, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos (Real.rpow_pos_of_pos (sobWeight_pos n) (-t)),
+/-- The normalization changes raw order one to normalized order one half. -/
+theorem isSobolevSeq_one_fromL2_half_iff (b : L2Z) :
+    IsSobolevSeq 1 (fromL2 (1 / 2) b) ↔ IsSobolevSeq (1 / 2) (b : ℤ → ℂ) := by
+  have he (n : ℤ) : sobWeight n ^ (1 : ℝ) * ‖fromL2 (1 / 2) b n‖ =
+      sobWeight n ^ (1 / 2 : ℝ) * ‖b n‖ := by
+    rw [fromL2, norm_mul, Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (sobWeight_pos n).le _),
       ← mul_assoc, ← Real.rpow_add (sobWeight_pos n)]
-    rw [show (s + t) + -t = s by ring]
+    norm_num
   simp only [IsSobolevSeq, he]
 
-theorem isSobolevSeq_one_fromL2_half_of_half_regular (b : L2Z)
-    (hb : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) :
-    IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-  simpa only [show (1 / 2 : ℝ) + (1 / 2 : ℝ) = 1 by norm_num] using
-    (isSobolevSeq_fromL2_shift_iff (1 / 2 : ℝ) (1 / 2 : ℝ) b).mpr hb
-
-/-- The normalized conormal preserves true half-order regularity because
-its difference from inclusion is the actual one-order smoothing map. -/
+/-- The conormal preserves one additional half derivative of the input. -/
 theorem normalizedConormal_preserves_half_regular
     {β a g : ℤ → ℂ} (hβ : IsWL1 (1 / 2 : ℝ) β)
     (ha : IsWL1 (1 / 2 : ℝ) a) (hg : IsWL1 (1 / 2 : ℝ) g)
@@ -132,14 +141,11 @@ theorem normalizedConormal_preserves_half_regular
     rw [← he]
     abel
   rw [heq]
-  simpa only [lp.coeFn_add] using hsum
+  assumption
 
-/-- Variation of constants for actual ordinary L2 scalar forcing. The
-inhomogeneous part is the genuine Duhamel construction. Uniqueness is
-applied only to the homogeneous difference, whose forcing is zero. -/
+/-- The forced transport equation with an ordinary boundary `L²` load. -/
 theorem driven_eq_transport_add_physicalDrivenVector_boundaryL2
-    {γ : ℝ → ℂ} {L : NNReal} (hγLip : LipschitzWith L γ)
-    (hγ : ContDiff ℝ 1 γ) {E : ℝ}
+    {γ : ℝ → ℂ} {L : NNReal} (hγLip : LipschitzWith L γ) {E : ℝ}
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
     (g : BoundaryL2) {y : ℝ → Ell2} (hy : ContinuousOn y (Icc 0 (2 * Real.pi)))
     (hyint : ∀ θ ∈ Icc 0 (2 * Real.pi),
@@ -147,437 +153,218 @@ theorem driven_eq_transport_add_physicalDrivenVector_boundaryL2
         (-(Complex.I / (Real.sqrt 2 : ℂ)) * g s) • basisVec 0)
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     y θ = W θ (y 0) + physicalDrivenVector W (g : ℝ → ℂ) θ := by
-  let Y := physicalDrivenVector W (g : ℝ → ℂ)
-  let f : ℝ → Ell2 := fun s => (-(Complex.I / (Real.sqrt 2 : ℂ)) * g s) • basisVec 0
-  have hg := intervalIntegrable_boundaryL2 g
-  have hY := physicalDrivenVector_continuousOn_of_intervalIntegrable hW.1
-    (g : ℝ → ℂ) hg
-  have hC : Continuous (transportCoeff γ E) := by
-    have hd := hγ.continuous_deriv_one
-    have hc := Complex.continuous_conj.comp hd
-    unfold transportCoeff
-    fun_prop
-  have hfi : IntegrableOn f (Icc 0 (2 * Real.pi)) := by
-    have hgi : IntegrableOn (g : ℝ → ℂ) (Icc 0 (2 * Real.pi)) := by
-      rw [integrableOn_Icc_iff_integrableOn_Ioc]
-      exact (intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le).mp hg
-    exact (hgi.const_mul (-(Complex.I / (Real.sqrt 2 : ℂ)))).smul_const _
-  have hyi := ((hC.continuousOn.clm_apply hy).integrableOn_Icc).add hfi
-  have hYi := ((hC.continuousOn.clm_apply hY).integrableOn_Icc).add hfi
-  have hdiff (t : ℝ) (ht : t ∈ Icc 0 (2 * Real.pi)) :
-      (y t - Y t) = (y 0 - Y 0) + ∫ s in (0 : ℝ)..t,
-        transportCoeff γ E s (y s - Y s) + (0 : Ell2) := by
-    have hs : uIcc 0 t ⊆ Icc 0 (2 * Real.pi) := by
-      rw [uIcc_of_le ht.1]
-      exact Icc_subset_Icc le_rfl ht.2
-    have hi1 : IntervalIntegrable (fun s => transportCoeff γ E s (y s) + f s)
-        volume 0 t := by
-      apply intervalIntegrable_iff.mpr
-      apply MeasureTheory.IntegrableOn.mono_set hyi
-      intro s hs'
-      rw [uIoc_of_le ht.1] at hs'
-      rw [uIcc_of_le ht.1] at hs
-      exact hs ⟨hs'.1.le, hs'.2⟩
-    have hi2 : IntervalIntegrable (fun s => transportCoeff γ E s (Y s) + f s)
-        volume 0 t := by
-      apply intervalIntegrable_iff.mpr
-      apply MeasureTheory.IntegrableOn.mono_set hYi
-      intro s hs'
-      rw [uIoc_of_le ht.1] at hs'
-      rw [uIcc_of_le ht.1] at hs
-      exact hs ⟨hs'.1.le, hs'.2⟩
-    dsimp only [Y]
-    rw [hyint t ht, physicalDrivenVector_integral_eq_of_intervalIntegrable hγLip hγ hW
-      (g : ℝ → ℂ) hg ht]
-    simp only [physicalDrivenVector_zero, sub_zero]
-    rw [show (fun s => transportCoeff γ E s (y s - Y s) + (0 : Ell2)) =
-      fun s => (transportCoeff γ E s (y s) + f s) -
-        (transportCoeff γ E s (Y s) + f s) by funext s; rw [map_sub]; abel,
-      intervalIntegral.integral_sub hi1 hi2]
-    abel
-  have hd := driven_eq_transport hγLip hW
-    (continuous_const.aestronglyMeasurable : AEStronglyMeasurable (fun _ : ℝ => (0 : Ell2)) volume)
-    (B := 0) (fun _ => by simp) (hy.sub hY) hdiff θ hθ
-  have heq : y θ - Y θ = W θ (y 0) := by
-    simpa only [Y, physicalDrivenVector_zero, sub_zero, map_zero, Pi.sub_apply,
-      intervalIntegral.integral_zero, add_zero] using hd
-  simpa only [Y, add_comm] using sub_eq_iff_eq_add.mp heq
+  let c := -(Complex.I / (Real.sqrt 2 : ℂ))
+  have hi := (intervalIntegrable_boundaryL2 g).const_mul c |>.smul_continuousOn
+    (continuousOn_const (c := basisVec 0))
+  rw [driven_eq_transport hγLip hW hi hy hyint θ hθ, map_add, physicalDrivenVector, ← map_smul,
+    ← intervalIntegral.integral_smul]
+  congr 2
+  exact intervalIntegral.integral_congr fun _ _ => by simp [c, smul_smul]
 
-/-- The actual observation integral and Volterra trace agree for every
-ordinary L2 input, including unbounded representatives. -/
-theorem inner_transport_integral_boundaryL2
-    {γ : ℝ → ℂ} {L : NNReal} (hγLip : LipschitzWith L γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (g : BoundaryL2)
-    {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
-    ⟪basisVec 0, W θ (∫ s in (0 : ℝ)..θ,
-      g s • ContinuousLinearMap.adjoint (W s) (basisVec 0))⟫_ℂ =
-        volterraOp W (g : ℝ → ℂ) θ := by
-  have hi : IntervalIntegrable
-      (fun s => g s • ContinuousLinearMap.adjoint (W s) (basisVec 0))
-      volume 0 θ := by
-    apply intervalIntegrable_iff.mpr
-    apply MeasureTheory.IntegrableOn.mono_set
-      (integrable_boundary_observation_load hγLip hW g)
-    rw [uIoc_of_le hθ.1]
-    exact Ioc_subset_Ioc le_rfl hθ.2
-  have h := ((innerSL ℂ (basisVec 0)).comp (W θ)).intervalIntegral_comp_comm hi
-  simp only [ContinuousLinearMap.comp_apply, innerSL_apply_apply] at h
-  rw [← h, volterraOp]
-  apply intervalIntegral.integral_congr
-  intro s hs
-  simp only [map_smul, inner_smul_right, volterraKernel]
-  ring
-
-/-- The true Volterra plus adjoint identity holds for ordinary L2 inputs. -/
-theorem volterraOp_add_adj_boundaryL2
-    {γ : ℝ → ℂ} {L : NNReal} (hγLip : LipschitzWith L γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) (g : BoundaryL2)
-    {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
-    volterraOp W (g : ℝ → ℂ) θ + volterraOpAdj W (g : ℝ → ℂ) θ =
-      observation W (observationAdj W (g : ℝ → ℂ)) θ := by
-  have hk (s : ℝ) : conj (volterraKernel W s θ) = volterraKernel W θ s := by
-    simp only [volterraKernel]
-    rw [inner_conj_symm, ← ContinuousLinearMap.adjoint_inner_right,
-      ContinuousLinearMap.adjoint_inner_left]
-  have hkc : ContinuousOn (fun s => volterraKernel W θ s) (Icc 0 (2 * Real.pi)) :=
-    ((innerSL ℂ (basisVec 0)).comp (W θ)).continuous.comp_continuousOn
-      (continuousOn_adjoint_apply hW.1 (basisVec 0))
-  have hg := intervalIntegrable_boundaryL2 g
-  have hint : IntervalIntegrable (fun s => volterraKernel W θ s * g s)
-      volume 0 (2 * Real.pi) := by
-    exact hg.continuousOn_mul
-      (by simpa only [uIcc_of_le Real.two_pi_pos.le] using hkc)
-  have hi0 : IntervalIntegrable (fun s => volterraKernel W θ s * g s) volume 0 θ :=
-    hint.mono_set' (by simp only [uIoc_of_le hθ.1, uIoc_of_le Real.two_pi_pos.le]
-                       exact Ioc_subset_Ioc le_rfl hθ.2)
-  have hi1 : IntervalIntegrable (fun s => volterraKernel W θ s * g s)
-      volume θ (2 * Real.pi) :=
-    hint.mono_set' (by simp only [uIoc_of_le hθ.2, uIoc_of_le Real.two_pi_pos.le]
-                       exact Ioc_subset_Ioc hθ.1 le_rfl)
-  simp only [volterraOp, volterraOpAdj, hk]
-  rw [intervalIntegral.integral_add_adjacent_intervals hi0 hi1, observation, observationAdj]
-  have hi : IntervalIntegrable
-      (fun s => g s • ContinuousLinearMap.adjoint (W s) (basisVec 0))
-      volume 0 (2 * Real.pi) :=
-    by
-      apply intervalIntegrable_iff.mpr
-      simpa only [IntegrableOn, uIoc_of_le Real.two_pi_pos.le] using
-        (integrable_boundary_observation_load hγLip hW g)
-  have h := ((innerSL ℂ (basisVec 0)).comp (W θ)).intervalIntegral_comp_comm hi
-  simp only [ContinuousLinearMap.comp_apply, innerSL_apply_apply] at h
-  rw [← h]
-  apply intervalIntegral.integral_congr
-  intro s hs
-  simp only [map_smul, inner_smul_right, volterraKernel]
-  ring
 
 section PhysicalCoordinates
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
+variable {F : ℂ → ℂ} (coords : ConformalDiskCoordinates F)
+include coords
 
-local notation "JF" => localConformalHardyPrimitive hR F hFs
-local notation "VF" => localConformalVekuaH1 hR F hFs hb hL hhol hinj hC hK e he hsource hes
-local notation "TF" => localConformalDiskH1Trace hR F hFs hL
-local notation "UR" => localConformalVekuaTraceRow hR F hFs hb hL hhol hinj hC hK e he hsource hes
-local notation "YF" => localConformalVekuaTransportVector hR F hFs hb hL hhol hinj hC hK e he hsource hes
-local notation "hβF" => localConformalVelocityCircle_isWL1_half hR F hFs
-local notation "haF" => localConformalHardyPrimitiveMultiplier_isWL1 hR F hFs
-local notation "hgF" => localConformalCenteredCircle_isWL1_half hR F hFs
+local notation "JF" => localConformalHardyPrimitive coords.one_lt_radius F coords.smooth
+local notation "VF" => localConformalVekuaH1 coords
+local notation "TF" => coords.trace
+local notation "UR" => localConformalVekuaTraceRow coords
+local notation "YF" => localConformalVekuaTransportVector coords
+local notation "hβF" => localConformalVelocityCircle_isWL1_half coords.one_lt_radius F coords.smooth
+local notation "haF" => localConformalHardyPrimitiveMultiplier_isWL1 coords.one_lt_radius F coords.smooth
+local notation "hgF" => localConformalCenteredCircle_isWL1_half coords.one_lt_radius F coords.smooth
 local notation "NF" => normalizedConormal hβF haF hgF
+section
+
+variable (E : ℂ) (b : L2Z) (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
+include E b hbhalf
 
 /-- The ordinary coordinate load exists here as a conclusion of genuine
 half-order input regularity and the proved normalized smoothing formula. -/
-def localConformalVekuaForwardLoad (E : ℂ) (b : L2Z)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) : BoundaryL2 :=
+def localConformalVekuaForwardLoad  : BoundaryL2 :=
   halfRegularCoordinateLoad (NF E b)
     (normalizedConormal_preserves_half_regular hβF haF hgF E b hbhalf)
 
-theorem localConformalVekuaForwardLoad_normalized (E : ℂ) (b : L2Z)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) :
+theorem localConformalVekuaForwardLoad_normalized  :
     sobolevSmoothing (1 / 2 : ℝ) (by norm_num)
-      (boundaryFourier (localConformalVekuaForwardLoad hR F hFs E b hbhalf)) = NF E b :=
+      (boundaryFourier (localConformalVekuaForwardLoad coords E b hbhalf)) = NF E b :=
   halfRegularCoordinateLoad_normalized _ _
 
-private theorem forward_fourier_coeff_ae {f : ℝ → ℂ} (v : BoundaryL2)
-    (hv : (v : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] f) (n : ℤ) :
-    boundaryFourier v n = (Real.sqrt (2 * Real.pi) : ℂ) *
-      fourierCoeffOn Real.two_pi_pos f n := by
-  rw [boundaryFourier_apply, fourierCoeffOn_congr_ae Real.two_pi_pos hv]
+end
+
+section
+
+variable (E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b) (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
+include E b hbn hbhalf
+
+local notation "G0" => boundaryContinuousMultiplier (localConformalVelocityCircle F) (TF (VF (F 1) E (JF b)))
+local notation "g0" => localConformalVekuaForwardLoad coords E b hbhalf
+
+/-- The ordinary L² right side of the zeroth row equation. -/
+def forwardZeroDerivative : BoundaryL2 := (2 * (-E / 4)) • G0 - Complex.I • g0
 
 /-- Actual Fourier inversion of the exceptional zeroth row with its
 genuine coordinate L2 conormal forcing. The zeroth coefficient is used. -/
 theorem localConformalVekuaForward_zero_fourier_derivative
-    (E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) (n : ℤ) :
-    fourierCoeffOn Real.two_pi_pos
-      (((2 * (-E / 4)) •
-        boundaryContinuousMultiplier (localConformalVelocityCircle F)
-          (TF (VF (F 1) E (JF b))) -
-        Complex.I • localConformalVekuaForwardLoad hR F hFs E b hbhalf : BoundaryL2) : ℝ → ℂ) n =
+     (n : ℤ) :
+    fourierCoeffOn Real.two_pi_pos (forwardZeroDerivative coords E b hbhalf : ℝ → ℂ) n =
       (Complex.I * (n : ℂ)) * fourierCoeffOn Real.two_pi_pos (UR E b 0) n := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
-  let G : BoundaryL2 := boundaryContinuousMultiplier (localConformalVelocityCircle F)
-    (TF (VF (F 1) E (JF b)))
-  let g := localConformalVekuaForwardLoad hR F hFs E b hbhalf
-  let L : BoundaryL2 := (2 * (-E / 4)) • G - Complex.I • g
+  have hb1 := (isSobolevSeq_one_fromL2_half_iff b).2 hbhalf
   have ht0 : (TF (VF (F 1) E b) : ℝ → ℂ)
       =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))] UR E b 0 := by
-    unfold localConformalVekuaTraceRow
     simpa only [pow_zero, ContinuousLinearMap.one_apply] using
-      localConformalVekua_coordinate_trace_reconstruction_ae hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes E b hbn hb1
-  have hNC := localConformalVekua_normalizedConormal_fourier hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes E b hbn hb1 n
+      localConformalVekuaTraceRow_ae coords E b hbn hb1 0
+  have hNC := localConformalVekua_normalizedConormal_fourier coords E b hbn hb1 n
   have hload := congrArg (fun v : L2Z => v n)
-    (localConformalVekuaForwardLoad_normalized hR F hFs E b hbhalf)
-  change ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * boundaryFourier g n = NF E b n at hload
+    (localConformalVekuaForwardLoad_normalized coords E b hbhalf)
+  change ((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) * boundaryFourier g0 n = NF E b n at hload
   simp only [localConformalVekuaGradientA_apply, map_smul, lp.coeFn_smul,
-    Pi.smul_apply, smul_eq_mul] at hNC
+    Pi.smul_apply] at hNC
   have hw : (((sobWeight n ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ)) ≠ 0 := by
     exact_mod_cast (Real.rpow_pos_of_pos (sobWeight_pos n) (-(1 / 2 : ℝ))).ne'
   have hn : -(n : ℂ) * boundaryFourier (TF (VF (F 1) E b)) n -
-      2 * Complex.I * ((-E / 4) * boundaryFourier G n) = boundaryFourier g n :=
+      2 * Complex.I * ((-E / 4) * boundaryFourier G0 n) = boundaryFourier g0 n :=
     mul_left_cancel₀ hw (hNC.symm.trans hload.symm)
   have hs0 : (Real.sqrt (2 * Real.pi) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.sqrt_pos.mpr Real.two_pi_pos).ne'
   apply mul_left_cancel₀ hs0
   calc
-    _ = boundaryFourier L n := (boundaryFourier_apply L n).symm
+    _ = boundaryFourier (forwardZeroDerivative coords E b hbhalf) n := (boundaryFourier_apply _ n).symm
     _ = (Complex.I * (n : ℂ)) * boundaryFourier (TF (VF (F 1) E b)) n := by
-      simp only [L, map_sub, map_smul, lp.coeFn_sub, Pi.sub_apply,
-        lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]
+      simp only [forwardZeroDerivative, map_sub, map_smul, lp.coeFn_sub, Pi.sub_apply,
+        lp.coeFn_smul, Pi.smul_apply]
       rw [← hn]
       ring_nf
-      simp [Complex.I_sq]
-    _ = _ := by rw [forward_fourier_coeff_ae _ ht0]; ring
+      simp
+    _ = _ := by rw [boundaryFourier_apply_of_ae _ ht0]; ring
 
-private theorem forward_zero_derivative_ae
-    (E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) :
-    (((2 * (-E / 4)) •
-      boundaryContinuousMultiplier (localConformalVelocityCircle F)
-        (TF (VF (F 1) E (JF b))) -
-      Complex.I • localConformalVekuaForwardLoad hR F hFs E b hbhalf : BoundaryL2) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
-        fun t => 2 * (-E / 4) * deriv (physicalCircleTrace F) t * UR E b 1 t -
-          Complex.I * localConformalVekuaForwardLoad hR F hFs E b hbhalf t := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
-  let G : BoundaryL2 := boundaryContinuousMultiplier (localConformalVelocityCircle F)
-    (TF (VF (F 1) E (JF b)))
-  let g := localConformalVekuaForwardLoad hR F hFs E b hbhalf
-  have hJbn := localConformalHardyPrimitive_nonpositive hR F hFs hhol b hbn
-  have hJ1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) (JF b)) := by
-    simpa only [pow_one] using localConformalHardyPrimitive_pow_raw_H1 hR F hFs b hb1 1
-  have ht1 := localConformalVekua_coordinate_trace_reconstruction_ae hR F hFs hb hL hhol
-    hinj hC hK e he hsource hes E (JF b) hJbn hJ1
-  filter_upwards [Lp.coeFn_sub ((2 * (-E / 4)) • G) (Complex.I • g),
-    Lp.coeFn_smul (2 * (-E / 4)) G, Lp.coeFn_smul Complex.I g,
-    boundaryContinuousMultiplier_ae (localConformalVelocityCircle F)
-      (TF (VF (F 1) E (JF b))), ht1] with t hsub hs ht hG htrace
-  rw [hsub]
-  simp only [Pi.sub_apply]
-  rw [hs, ht]
-  simp only [Pi.smul_apply, smul_eq_mul, G, g, hG, htrace,
-    localConformalVelocityCircle_apply hR F hFs, localConformalVekuaTraceRow, pow_one]
+private theorem forward_zero_derivative_ae :
+    (forwardZeroDerivative coords E b hbhalf : ℝ → ℂ) =ᵐ[volume.restrict (Ioc 0 (2 * Real.pi))]
+      fun t => 2 * (-E / 4) * deriv (physicalCircleTrace F) t * UR E b 1 t - Complex.I * g0 t := by
+  have ht := localConformalVekuaTraceRow_ae coords E b hbn ((isSobolevSeq_one_fromL2_half_iff b).2 hbhalf) 1
+  rw [pow_one] at ht
+  filter_upwards [Lp.coeFn_sub ((2 * (-E / 4)) • G0) (Complex.I • g0),
+    Lp.coeFn_smul (2 * (-E / 4)) G0, Lp.coeFn_smul Complex.I g0,
+    boundaryContinuousMultiplier_ae (localConformalVelocityCircle F) (TF (VF (F 1) E (JF b))), ht]
+    with t hsub hs hg hG htrace
+  change (((2 * (-E / 4)) • G0 - Complex.I • g0 : BoundaryL2) : ℝ → ℂ) t = _
+  simp only [hsub, Pi.sub_apply, hs, hg, Pi.smul_apply, smul_eq_mul, hG, htrace,
+    localConformalVelocityCircle_apply coords.one_lt_radius F coords.smooth]
   ring
 
 /-- The exceptional zero row has its true inhomogeneous primitive
 formula, with the actual initial constant and ordinary L2 coordinate load. -/
 theorem localConformalVekuaForward_zero_integral_eq
-    (E : ℂ) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
+    
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     UR E b 0 θ = UR E b 0 0 + ∫ t in (0 : ℝ)..θ,
       2 * (-E / 4) * deriv (physicalCircleTrace F) t * UR E b 1 t -
-        Complex.I * localConformalVekuaForwardLoad hR F hFs E b hbhalf t := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
-  let L : BoundaryL2 := (2 * (-E / 4)) •
-    boundaryContinuousMultiplier (localConformalVelocityCircle F) (TF (VF (F 1) E (JF b))) -
-      Complex.I • localConformalVekuaForwardLoad hR F hFs E b hbhalf
-  have hprimitive := eq_add_integral_of_L2_periodic_fourier_derivative
-    (localConformalVekuaTraceRow_continuous hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hb1 0)
-    (localConformalVekuaTraceRow_periodic hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b 0) L
-    (localConformalVekuaForward_zero_fourier_derivative hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hbhalf) hθ
-  rw [hprimitive]
+        Complex.I * localConformalVekuaForwardLoad coords E b hbhalf t := by
+  have hb1 := (isSobolevSeq_one_fromL2_half_iff b).2 hbhalf
+  rw [eq_add_integral_of_L2_periodic_fourier_derivative
+    (localConformalVekuaTraceRow_continuous coords E b hbn hb1 0)
+    (localConformalVekuaTraceRow_periodic coords E b 0) (forwardZeroDerivative coords E b hbhalf)
+    (localConformalVekuaForward_zero_fourier_derivative coords E b hbn hbhalf) hθ]
   congr 1
-  apply intervalIntegral.integral_congr_ae
-  have hAE := (ae_restrict_iff' measurableSet_Ioc).mp
-    (forward_zero_derivative_ae hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hbhalf)
-  filter_upwards [hAE] with t ht hmem
-  rw [uIoc_of_le hθ.1] at hmem
-  exact ht ⟨hmem.1, hmem.2.trans hθ.2⟩
+  exact intervalIntegral.integral_congr_ae_restrict
+    ((forward_zero_derivative_ae coords E b hbn hbhalf).filter_mono (ae_mono
+      (Measure.restrict_mono (by rw [uIoc_of_le hθ.1]; exact Ioc_subset_Ioc le_rfl hθ.2) le_rfl)))
 
-private theorem forward_zero_transportCoeff
-    (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b))
-    {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
-    (2 * (-(E : ℂ) / 4) * deriv (physicalCircleTrace F) θ * UR (E : ℂ) b 1 θ) /
-        (Real.sqrt 2 : ℂ) =
-      (transportCoeff (physicalCircleTrace F) E θ (YF E b θ) : ℕ → ℂ) 0 := by
-  rw [transportCoeff_coord_zero,
-    localConformalVekuaTransportVector_coord hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hb1 hθ 1]
-  simp only [localConformalVekuaTransportCoordinate, if_false, Nat.one_ne_zero, pow_one]
-  change _ = physicalDrivenQ E * _
-  rw [← physicalDrivenQ_sq hE]
-  have hs : (Real.sqrt 2 : ℂ) ^ 2 = 2 := by
-    exact_mod_cast Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)
-  have hs0 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
-  field_simp [hs0]
-  linear_combination -(physicalDrivenQ E ^ 2 * deriv (physicalCircleTrace F) θ *
-    UR (E : ℂ) b 1 θ) * hs
+end
 
-/-- The full actual Ell2 trace vector obeys the driven integral equation.
-Positive rows come from the genuine factorial series; only the exceptional
-zeroth row uses the actual L2 primitive inversion. -/
+section
+
+variable (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+include E hE b hbn
+
+/-- Integrating the zeroth scalar row and the positive vector rows gives the full equation. -/
 theorem localConformalVekuaForward_transport_integral_eq
-    (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
     (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     YF E b θ = YF E b 0 + ∫ s in (0 : ℝ)..θ,
       transportCoeff (physicalCircleTrace F) E s (YF E b s) +
         (-(Complex.I / (Real.sqrt 2 : ℂ)) *
-          localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf s) • basisVec 0 := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
+          localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf s) • basisVec 0 := by
+  have hb1 := (isSobolevSeq_one_fromL2_half_iff b).2 hbhalf
   let y := YF E b
-  let p := localConformalVekuaPositiveTransportVector hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes E b
-  let z : ℝ → ℂ := fun s => UR (E : ℂ) b 0 s / (Real.sqrt 2 : ℂ)
-  let g := localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf
-  let Cg := fun s => transportCoeff (physicalCircleTrace F) E s (y s)
-  let a : ℝ → ℂ := fun s =>
-    (2 * (-(E : ℂ) / 4) * deriv (physicalCircleTrace F) s * UR (E : ℂ) b 1 s -
-      Complex.I * g s) / (Real.sqrt 2 : ℂ)
-  have hy := localConformalVekuaTransportVector_continuousOn hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes E b hbn hb1
-  have hΓ : ContDiff ℝ 1 (physicalCircleTrace F) :=
-    contDiff_physicalCircleTrace_of_neighborhood hR F (hFs.of_le (WithTop.coe_le_coe.mpr le_top))
+  let P := vekuaPositivePart
+  let g := localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf
+  let f := fun s => transportCoeff (physicalCircleTrace F) E s (y s)
+  let a := fun s => -(Complex.I / (Real.sqrt 2 : ℂ)) * g s
+  have hΓ :=
+    contDiff_physicalCircleTrace_of_neighborhood coords.one_lt_radius F (coords.smooth.of_le (WithTop.coe_le_coe.mpr le_top))
   have hCoeff : Continuous (transportCoeff (physicalCircleTrace F) E) := by
     have hd := hΓ.continuous_deriv_one
     have hc := Complex.continuous_conj.comp hd
-    unfold transportCoeff
-    fun_prop
-  have hCg : ContinuousOn Cg (Icc 0 (2 * Real.pi)) := hCoeff.continuousOn.clm_apply hy
-  have hC0 : ContinuousOn (fun s => (Cg s : ℕ → ℂ) 0) (Icc 0 (2 * Real.pi)) := by
-    have h := (innerSL ℂ (basisVec 0)).continuous.continuousOn.comp hCg
-      (fun _ _ => Set.mem_univ _)
-    convert h using 1
-    · funext s
-      simp only [Function.comp_apply, innerSL_apply_apply, inner_basisVec]
-  have hpd : ContinuousOn (fun s => Cg s - ((Cg s : ℕ → ℂ) 0) • basisVec 0)
-      (Icc 0 (2 * Real.pi)) := hCg.sub (hC0.smul continuousOn_const)
-  have hz : Continuous z :=
-    (localConformalVekuaTraceRow_continuous hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes (E : ℂ) b hbn hb1 0).div_const _
-  have hsplit (s : ℝ) (hs : s ∈ Icc 0 (2 * Real.pi)) : y s = z s • basisVec 0 + p s :=
-    localConformalVekuaTransportVector_zero_add_positive hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hb1 hs
-  have hp : ContinuousOn p (Icc 0 (2 * Real.pi)) := by
-    apply (hy.sub (hz.continuousOn.smul
-      (continuousOn_const : ContinuousOn (fun _ : ℝ => basisVec 0)
-        (Icc 0 (2 * Real.pi))))).congr
-    intro s hs
-    change p s = y s - z s • basisVec 0
-    rw [hsplit s hs]
+    unfold transportCoeff; fun_prop
+  have hf := hCoeff.clm_apply (localConformalVekuaTransportVector_continuous coords E b hb1)
+  have ha : IntervalIntegrable a volume 0 θ := ((intervalIntegrable_boundaryL2 g).mono_set' (by
+    simpa only [uIoc_of_le hθ.1, uIoc_of_le Real.two_pi_pos.le] using Ioc_subset_Ioc le_rfl hθ.2)).const_mul _
+  let ev := lp.evalCLM ℂ (fun _ : ℕ => ℂ) 2 0
+  have he (s : ℝ) : ev (y s) = UR (E : ℂ) b 0 s / (Real.sqrt 2 : ℂ) :=
+    localConformalVekuaTransportVector_coord coords E hE b hbn hb1 s 0
+  have hz : ev (y θ) = ev (y 0) + ∫ s in (0 : ℝ)..θ, ev (f s) + a s := by
+    rw [he, he, localConformalVekuaForward_zero_integral_eq coords (E : ℂ) b hbn hbhalf hθ,
+      add_div, ← intervalIntegral.integral_div]
+    congr 1
+    apply intervalIntegral.integral_congr
+    intro s _
+    change (2 * (-(E : ℂ) / 4) * deriv (physicalCircleTrace F) s * UR (E : ℂ) b 1 s -
+      Complex.I * g s) / (Real.sqrt 2 : ℂ) = (f s : ℕ → ℂ) 0 + a s
+    rw [sub_div, localConformalVekuaTransport_zeroCoeff coords E hE b hbn hb1]
+    simp only 
+    ring
+  have hPc : Continuous P := by
+    change Continuous (fun x : Ell2 => x - ev x • basisVec 0)
+    exact continuous_id.sub (ev.continuous.smul continuous_const)
+  have hpI : IntervalIntegrable (fun s => P (f s)) volume 0 θ :=
+    (hPc.comp hf).intervalIntegrable 0 θ
+  have hp := intervalIntegral.integral_eq_sub_of_hasDerivAt
+    (fun s _ => localConformalVekuaPositive_hasDerivAt coords E b hb1 s) hpI
+  have hzI := ((ev.continuous.comp hf).intervalIntegrable (μ := volume) 0 θ).add ha
+  have hzI' : IntervalIntegrable (fun s => (ev (f s) + a s) • basisVec 0) volume 0 θ :=
+    ⟨hzI.1.smul_const _, hzI.2.smul_const _⟩
+  have hsplit (x : Ell2) : ev x • basisVec 0 + P x = x := by
+    change _ + (x - ev x • basisVec 0) = x
     abel
-  have hsub : Icc 0 θ ⊆ Icc 0 (2 * Real.pi) := Icc_subset_Icc le_rfl hθ.2
-  have hpi : IntervalIntegrable (fun s => Cg s - ((Cg s : ℕ → ℂ) 0) • basisVec 0)
-      volume 0 θ := by
-    exact (hpd.mono (by simpa only [uIcc_of_le hθ.1] using hsub)).intervalIntegrable
-  have hip := intervalIntegral.integral_eq_sub_of_hasDerivAt_of_le hθ.1 (hp.mono hsub)
-    (fun s hs => (localConformalVekuaPositiveTransportVector_hasDerivAt hR F hFs hb hL
-      hhol hinj hC hK e he hsource hes E b hbn hb1 ⟨hs.1, hs.2.trans_le hθ.2⟩).congr_deriv (localConformalVekuaPositiveTransportDerivative_tsum_eq hR F hFs hb hL
-        hhol hinj hC hK e he hsource hes E hE b hbn hb1 ⟨hs.1.le, hs.2.le.trans hθ.2⟩)) hpi
-  have hzp : z θ = z 0 + ∫ s in (0 : ℝ)..θ, a s := by
-    have h := congrArg (fun v : ℂ => v / (Real.sqrt 2 : ℂ))
-      (localConformalVekuaForward_zero_integral_eq hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes (E : ℂ) b hbn hbhalf hθ)
-    simpa only [z, a, g, add_div, intervalIntegral.integral_div] using h
-  have hac : Continuous (fun s => 2 * (-(E : ℂ) / 4) * deriv (physicalCircleTrace F) s *
-      UR (E : ℂ) b 1 s) := (continuous_const.mul hΓ.continuous_deriv_one).mul
-        (localConformalVekuaTraceRow_continuous hR F hFs hb hL hhol hinj hC hK
-          e he hsource hes (E : ℂ) b hbn hb1 1)
-  have hgi : IntervalIntegrable (g : ℝ → ℂ) volume 0 θ :=
-    (intervalIntegrable_boundaryL2 g).mono_set' (by
-      simp only [uIoc_of_le hθ.1, uIoc_of_le Real.two_pi_pos.le]
-      exact Ioc_subset_Ioc le_rfl hθ.2)
-  have hai : IntervalIntegrable a volume 0 θ :=
-    ((hac.intervalIntegrable 0 θ).sub (hgi.const_mul Complex.I)).div_const _
+  change y θ = y 0 + ∫ s in (0 : ℝ)..θ, f s + a s • basisVec 0
   calc
-    y θ = z θ • basisVec 0 + p θ := hsplit θ hθ
-    _ = (z 0 • basisVec 0 + p 0) +
-        ((∫ s in (0 : ℝ)..θ, a s) • basisVec 0 +
-          ∫ s in (0 : ℝ)..θ, Cg s - ((Cg s : ℕ → ℂ) 0) • basisVec 0) := by
-      rw [hzp, sub_eq_iff_eq_add.mp hip.symm, add_smul]
+    _ = ev (y θ) • basisVec 0 + P (y θ) := (hsplit _).symm
+    _ = y 0 + ∫ s in (0 : ℝ)..θ, (ev (f s) + a s) • basisVec 0 + P (f s) := by
+      rw [hz, add_smul, ← intervalIntegral.integral_smul_const,
+        intervalIntegral.integral_add hzI' hpI, hp]
+      conv_rhs => lhs; rw [← hsplit (y 0)]
+      change _ = (ev (y 0) • basisVec 0 + P (y 0)) +
+        ((∫ s in (0 : ℝ)..θ, (ev (f s) + a s) • basisVec 0) + (P (y θ) - P (y 0)))
       abel
-    _ = y 0 + ∫ s in (0 : ℝ)..θ,
-        (a s • basisVec 0 + (Cg s - ((Cg s : ℕ → ℂ) 0) • basisVec 0)) := by
-      have hai' : IntervalIntegrable (fun s => a s • basisVec 0)
-          volume 0 θ := by
-        exact ⟨MeasureTheory.Integrable.smul_const hai.1 _,
-          MeasureTheory.Integrable.smul_const hai.2 _⟩
-      rw [← hsplit 0 ⟨le_rfl, Real.two_pi_pos.le⟩,
-        ← intervalIntegral.integral_smul_const,
-        ← intervalIntegral.integral_add hai' hpi]
     _ = _ := by
       congr 1
       apply intervalIntegral.integral_congr
-      intro s hs
-      rw [uIcc_of_le hθ.1] at hs
-      have hsc : s ∈ Icc 0 (2 * Real.pi) := ⟨hs.1, hs.2.trans hθ.2⟩
-      have hzero := forward_zero_transportCoeff hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes E hE b hbn hb1 hsc
-      have haeq : a s = (Cg s : ℕ → ℂ) 0 - (Complex.I / (Real.sqrt 2 : ℂ)) * g s := by
-        dsimp only [a]
-        rw [sub_div, hzero]
-        ring
-      change a s • basisVec 0 + (Cg s - ((Cg s : ℕ → ℂ) 0) • basisVec 0) =
-        Cg s + (-(Complex.I / (Real.sqrt 2 : ℂ)) * g s) • basisVec 0
-      rw [haeq, sub_smul]
-      simp only [neg_mul, neg_smul]
-      abel
+      intro s _
+      change (ev (f s) + a s) • basisVec 0 + P (f s) = f s + a s • basisVec 0
+      rw [add_smul, add_right_comm, hsplit]
 
 /-- The actual forward vector equals genuine homogeneous transport plus
 the true L2 Duhamel vector. No forced ODE is assumed. -/
 theorem localConformalVekuaForward_transport_eq
-    (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+    
     (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
     {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     YF E b θ = W θ (YF E b 0) +
-      physicalDrivenVector W (localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf : ℝ → ℂ) θ := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
+      physicalDrivenVector W (localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf : ℝ → ℂ) θ := by
+  have hb1 := (isSobolevSeq_one_fromL2_half_iff b).2 hbhalf
   exact driven_eq_transport_add_physicalDrivenVector_boundaryL2 hΓLip
-    (contDiff_physicalCircleTrace_of_neighborhood hR F
-      (hFs.of_le (WithTop.coe_le_coe.mpr le_top))) hW
-    (localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf)
-    (localConformalVekuaTransportVector_continuousOn hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hb1)
-    (fun t ht => localConformalVekuaForward_transport_integral_eq hR F hFs hb hL hhol
-      hinj hC hK e he hsource hes E hE b hbn hbhalf ht) hθ
+    hW
+    (localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf)
+    ((localConformalVekuaTransportVector_continuous coords E b hb1).continuousOn)
+    (fun t ht => localConformalVekuaForward_transport_integral_eq coords E hE b hbn hbhalf ht) hθ
 
-include hb hL hhol hinj hC hK e he hsource hes in
+end
+
 /-- The periodic endpoint of the actual trace vector determines its true
 adjoint observation, with the original initial constant and sqrt(2) scale. -/
 theorem localConformalVekuaForward_observationAdj_eq_cut
@@ -586,24 +373,20 @@ theorem localConformalVekuaForward_observationAdj_eq_cut
     {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W) :
     observationAdj W
-      (localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf : ℝ → ℂ) =
+      (localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf : ℝ → ℂ) =
         (Complex.I * hardyFourierTrace (normalizedHardyAverage b) 0) •
           cutC (W (2 * Real.pi)) (basisVec 0) := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
+  have hb1 := (isSobolevSeq_one_fromL2_half_iff b).2 hbhalf
   let y := YF E b
-  let g := localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf
+  let g := localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf
   let h0 := hardyFourierTrace (normalizedHardyAverage b) 0
   let s := h0 / (Real.sqrt 2 : ℂ)
   have hinit : y 0 = s • basisVec 0 :=
-    localConformalVekuaTransportVector_origin hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hb1
+    localConformalVekuaTransportVector_origin coords E b
   have hper : y (2 * Real.pi) = y 0 := by
-    simpa only [zero_add] using localConformalVekuaTransportVector_periodic hR F hFs
-      hb hL hhol hinj hC hK e he hsource hes E b 0
+    simpa only [zero_add] using localConformalVekuaTransportVector_periodic coords E hE b hbn hb1 0
   have hT : (2 * Real.pi) ∈ Icc 0 (2 * Real.pi) := ⟨Real.two_pi_pos.le, le_rfl⟩
-  have hform := localConformalVekuaForward_transport_eq hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes E hE b hbn hbhalf hΓLip hW hT
+  have hform := localConformalVekuaForward_transport_eq coords E hE b hbn hbhalf hΓLip hW hT
   change y (2 * Real.pi) = W (2 * Real.pi) (y 0) +
     (-(Complex.I / (Real.sqrt 2 : ℂ))) • W (2 * Real.pi)
       (observationAdj W (g : ℝ → ℂ)) at hform
@@ -611,7 +394,7 @@ theorem localConformalVekuaForward_observationAdj_eq_cut
   have hu : ContinuousLinearMap.adjoint (W (2 * Real.pi)) * W (2 * Real.pi) = 1 := by
     have hm := transport_mem_unitary hΓLip hW hT
     rw [Unitary.mem_iff, ContinuousLinearMap.star_eq_adjoint] at hm
-    exact hm.1
+    tauto
   have hadj := congrArg (fun z : Ell2 => ContinuousLinearMap.adjoint (W (2 * Real.pi)) z) hform
   change ContinuousLinearMap.adjoint (W (2 * Real.pi)) (y 0) =
     ContinuousLinearMap.adjoint (W (2 * Real.pi))
@@ -626,9 +409,9 @@ theorem localConformalVekuaForward_observationAdj_eq_cut
     rw [hadj]
     abel
   have hs0 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+    simp
   have hcancel : (Real.sqrt 2 : ℂ) * Complex.I * -(Complex.I / (Real.sqrt 2 : ℂ)) = 1 := by
-    field_simp [hs0] ; simp [Complex.I_sq]
+    field_simp [hs0] ; simp
   have hO : observationAdj W (g : ℝ → ℂ) = ((Real.sqrt 2 : ℂ) * Complex.I) •
       (ContinuousLinearMap.adjoint (W (2 * Real.pi)) (y 0) - y 0) := by
     rw [hsub, smul_smul, hcancel, one_smul]
@@ -636,9 +419,8 @@ theorem localConformalVekuaForward_observationAdj_eq_cut
   have hscalar : ((Real.sqrt 2 : ℂ) * Complex.I) * s = Complex.I * h0 := by
     dsimp only [s]
     field_simp [hs0]
-  simp only [hscalar, h0, cutC]
+  tauto
 
-include hb hL hhol hinj hC hK e he hsource hes in
 /-- The projected observation annihilates the genuine normalized conormal
 range on every half-regular full Hardy input, including frequency zero. -/
 theorem localConformalVekuaForward_projObsDual_eq_zero_of_half_regular
@@ -648,103 +430,90 @@ theorem localConformalVekuaForward_projObsDual_eq_zero_of_half_regular
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W) :
     projObsDual W (NF (E : ℂ) b) = 0 := by
   have h := projObsDual_boundary_normalized hΓLip hW
-    (localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf)
+    (localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf)
   rw [localConformalVekuaForwardLoad_normalized, map_smul,
-    localConformalVekuaForward_observationAdj_eq_cut hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E hE b hbn hbhalf hΓLip hW,
+    localConformalVekuaForward_observationAdj_eq_cut coords E hE b hbn hbhalf hΓLip hW,
     map_smul, cutProj_eq_starProjection,
     Submodule.starProjection_orthogonal_apply_eq_zero (Submodule.mem_span_singleton_self _),
     smul_zero] at h
   exact (smul_eq_zero.mp h).resolve_left (by
     exact_mod_cast (Real.sqrt_pos.mpr Real.two_pi_pos).ne')
 
+section
+
+variable (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b) (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ)) {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F)) {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
+include E hE b hbn hbhalf L hΓLip W hW
+
 /-- The actual coordinate trace obeys the true forward observation and
 Volterra identity for its derived ordinary L2 conormal load. -/
 theorem localConformalVekuaForward_trace_eq
-    (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
-    {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
+    
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     UR (E : ℂ) b 0 θ = hardyFourierTrace (normalizedHardyAverage b) 0 *
       observation W (basisVec 0) θ - Complex.I *
-        volterraOp W (localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf : ℝ → ℂ) θ := by
-  have hb1 : IsSobolevSeq 1 (fromL2 (1 / 2 : ℝ) b) := by
-    exact isSobolevSeq_one_fromL2_half_of_half_regular b hbhalf
-  let g := localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf
-  have hform := localConformalVekuaForward_transport_eq hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes E hE b hbn hbhalf hΓLip hW hθ
+        volterraOp W (localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf : ℝ → ℂ) θ := by
+  have hb1 := (isSobolevSeq_one_fromL2_half_iff b).2 hbhalf
+  let g := localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf
+  have hform := localConformalVekuaForward_transport_eq coords E hE b hbn hbhalf hΓLip hW hθ
   have hinner := congrArg (fun v : Ell2 => ⟪basisVec 0, v⟫_ℂ) hform
-  simp only [inner_add_right] at hinner
+  simp  [inner_add_right] at hinner
   have hleft : ⟪basisVec 0, YF E b θ⟫_ℂ = UR (E : ℂ) b 0 θ / (Real.sqrt 2 : ℂ) := by
     simpa only [inner_basisVec, localConformalVekuaTransportCoordinate, if_true] using
-      localConformalVekuaTransportVector_coord hR F hFs hb hL hhol hinj hC hK
-        e he hsource hes E b hbn hb1 hθ 0
+      localConformalVekuaTransportVector_coord coords E hE b hbn hb1 θ 0
   have hinit : ⟪basisVec 0, W θ (YF E b 0)⟫_ℂ =
       (hardyFourierTrace (normalizedHardyAverage b) 0 / (Real.sqrt 2 : ℂ)) *
         observation W (basisVec 0) θ := by
     change ⟪basisVec 0, W θ (YF E b 0)⟫_ℂ =
       (hardyFourierTrace (normalizedHardyAverage b) 0 / (Real.sqrt 2 : ℂ)) *
         ⟪basisVec 0, W θ (basisVec 0)⟫_ℂ
-    rw [localConformalVekuaTransportVector_origin hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E b hbn hb1, map_smul, inner_smul_right]
+    rw [localConformalVekuaTransportVector_origin coords E b, map_smul, inner_smul_right]
   have hforced : ⟪basisVec 0, physicalDrivenVector W (g : ℝ → ℂ) θ⟫_ℂ =
       -(Complex.I / (Real.sqrt 2 : ℂ)) * volterraOp W (g : ℝ → ℂ) θ := by
-    rw [physicalDrivenVector, inner_smul_right, inner_transport_integral_boundaryL2 hΓLip hW g hθ]
+    rw [physicalDrivenVector, inner_smul_right, inner_transport_integral hW.1 θ ((intervalIntegrable_boundaryL2 g).mono_set' (by grind))
+      (uIcc_subset_Icc ⟨le_rfl, Real.two_pi_pos.le⟩ hθ)]
+    rfl
   rw [hleft, hinit, hforced] at hinner
   have hs0 : (Real.sqrt 2 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 2)).ne'
+    simp
   apply (div_left_inj' hs0).mp
   rw [hinner]
-  dsimp only [g]
   ring
 
 /-- The genuine periodic form vanishes on the actual forward Vekua trace
 and its actual L2 load. A nonzero cut is used only by the correction B. -/
 theorem localConformalVekuaForward_periodicP_eq_zero
-    (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
-    (hbhalf : IsSobolevSeq (1 / 2 : ℝ) (b : ℤ → ℂ))
-    {L : NNReal} (hΓLip : LipschitzWith L (physicalCircleTrace F))
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
+    
     (hc : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0)
     {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
     periodicP W (UR (E : ℂ) b 0)
-      (localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf : ℝ → ℂ) θ = 0 := by
-  let g := localConformalVekuaForwardLoad hR F hFs (E : ℂ) b hbhalf
+      (localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf : ℝ → ℂ) θ = 0 := by
+  let g := localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf
   let h0 := hardyFourierTrace (normalizedHardyAverage b) 0
-  have hsum := volterraOp_add_adj_boundaryL2 hΓLip hW g hθ
-  have hO := localConformalVekuaForward_observationAdj_eq_cut hR F hFs hb hL hhol hinj hC hK
-    e he hsource hes E hE b hbn hbhalf hΓLip hW
+  have hsum := volterraOp_add_adj_of_intervalIntegrable hW.1 (intervalIntegrable_boundaryL2 g) hθ
+  have hO := localConformalVekuaForward_observationAdj_eq_cut coords E hE b hbn hbhalf hΓLip hW
   change observationAdj W (g : ℝ → ℂ) = (Complex.I * h0) •
     cutC (W (2 * Real.pi)) (basisVec 0) at hO
   have hS : cutS (W (2 * Real.pi)) (basisVec 0) =
       (2 : ℂ) • basisVec 0 + cutC (W (2 * Real.pi)) (basisVec 0) := by
-    simp only [cutS, cutC]
+    simp  [cutS, cutC]
     rw [two_smul]
     abel
   have hA : periodicA W (UR (E : ℂ) b 0) (g : ℝ → ℂ) θ =
       h0 * observation W (cutS (W (2 * Real.pi)) (basisVec 0)) θ := by
     rw [hO] at hsum
-    rw [periodicA, localConformalVekuaForward_trace_eq hR F hFs hb hL hhol hinj hC hK
-      e he hsource hes E hE b hbn hbhalf hΓLip hW hθ, hS]
+    rw [periodicA, localConformalVekuaForward_trace_eq coords E hE b hbn hbhalf hΓLip hW hθ, hS]
     simp only [observation, map_add, map_smul, inner_add_right, inner_smul_right] at hsum ⊢
     linear_combination (-Complex.I) * hsum - Complex.I_sq *
       (h0 * ⟪basisVec 0, W θ (cutC (W (2 * Real.pi)) (basisVec 0))⟫_ℂ)
   have hBc := (cutB_transport (transport_mem_unitary hΓLip hW
     ⟨Real.two_pi_pos.le, le_rfl⟩) (basisVec 0) hc).2
   rw [periodicP, hA, hO, map_smul, hBc, smul_smul]
-  simp only [observation, map_smul, inner_smul_right]
+  simp  [observation, map_smul, inner_smul_right]
   linear_combination Complex.I_sq *
     (h0 * ⟪basisVec 0, W θ (cutS (W (2 * Real.pi)) (basisVec 0))⟫_ℂ)
 
-private theorem forward_half_regular_stdBasis (n : ℤ) :
-    IsSobolevSeq (1 / 2 : ℝ) (stdBasisZ n : ℤ → ℂ) := by
-  apply summable_of_ne_finset_zero (s := {n})
-  intro k hk
-  have hkn : k ≠ n := by simpa only [Finset.mem_singleton] using hk
-  simp [stdBasisZ_apply, lp.single_apply, hkn]
+end
 
-include hb hL hhol hinj hC hK e he hsource hes in
 /-- Genuine finite Fourier density extends the bounded projected-null
 identity to every normalized full Hardy input. No L2 load for those
 possibly rough inputs is asserted by this extension. -/
@@ -754,48 +523,128 @@ theorem localConformalVekuaForward_projObsDual_eq_zero
     {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
     (b : L2Z) (hbn : IsNonpositiveFourierSupport b) :
     projObsDual W (NF (E : ℂ) b) = 0 := by
-  have hop : (projObsDual W).comp ((NF (E : ℂ)).comp (1 - posProj)) = 0 := by
-    apply ContinuousLinearMap.ext_on
-      ((Submodule.dense_iff_topologicalClosure_eq_top).2 stdBasisZ.dense_span)
-    rintro _ ⟨n, rfl⟩
-    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply]
-    by_cases hn : 0 < n
-    · have hzero : (1 - posProj) (stdBasisZ n) = 0 := by
-        apply lp.ext
-        funext k
-        by_cases hkn : k = n
-        · subst k
-          simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-            posProj, diagOp_apply, stdBasisZ_apply, lp.single_apply, hn]
-        · simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-            posProj, diagOp_apply, stdBasisZ_apply, lp.single_apply, hkn]
-      rw [hzero, map_zero, map_zero]
-    · have hkeep : (1 - posProj) (stdBasisZ n) = stdBasisZ n := by
-        apply lp.ext
-        funext k
-        by_cases hkn : k = n
-        · subst k
-          simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-            posProj, diagOp_apply, stdBasisZ_apply, lp.single_apply, hn]
-        · simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-            posProj, diagOp_apply, stdBasisZ_apply, lp.single_apply, hkn]
-      rw [hkeep]
-      apply localConformalVekuaForward_projObsDual_eq_zero_of_half_regular hR F hFs hb hL
-        hhol hinj hC hK e he hsource hes E hE (stdBasisZ n) _
-        (forward_half_regular_stdBasis n) hΓLip hW
-      intro k hk
-      have hkn : k ≠ n := by omega
-      simp [stdBasisZ_apply, lp.single_apply, hkn]
-  have hkeep : (1 - posProj) b = b := by
-    apply lp.ext
-    funext n
-    by_cases hn : 0 < n
-    · simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-        posProj, diagOp_apply, hn, hbn n hn]
-    · simp [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply,
-        posProj, diagOp_apply, hn]
-  have h := congrArg (fun A : L2Z →L[ℂ] Ell2 => A b) hop
-  simpa only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply, hkeep] using h
+  exact eq_zero_of_nonpositive_modes ((projObsDual W).comp (NF (E : ℂ))) (fun n hn =>
+    localConformalVekuaForward_projObsDual_eq_zero_of_half_regular coords E hE (stdBasisZ n)
+      (stdBasisZ_mem_nonpositive hn) (stdBasisZ_isSobolevSeq _ n) hΓLip hW) hbn
+
+/-- The forward load of the Hardy input obtained by the inverse gauge is exactly the given load. -/
+theorem conormal_eq_of_observationAdj_eq_zero
+    {L : NNReal} (hLip : LipschitzWith L (physicalCircleTrace F))
+    {E : ℝ} (hE : 0 < E) {W : ℝ → Ell2 →L[ℂ] Ell2}
+    (hW : IsTransport (physicalCircleTrace F) E W) (g : BoundaryL2)
+    (hO : observationAdj W (g : ℝ → ℂ) = 0) :
+    ∃ b : L2Z, IsNonpositiveFourierSupport b ∧ NF (E : ℂ) b =
+      sobolevSmoothing (1 / 2 : ℝ) (by norm_num) (boundaryFourier g) := by
+  let γ := physicalCircleTrace F
+  have hγ := contDiff_physicalCircleTrace_of_neighborhood coords.one_lt_radius F
+    (coords.smooth.of_le (by simp))
+  let b := physicalDrivenKernelInput hLip hγ hW g (Lp.memLp g) hO
+  have hb := physicalDrivenKernelInput_nonpositive coords hLip hE hW g hO
+  have hb1 := fromL2_physicalDrivenKernelInput_isSobolevSeq_one hLip hγ hW g (Lp.memLp g) hO
+  have hbhalf :=
+    (isSobolevSeq_one_fromL2_half_iff b).1 hb1
+  let r := localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf
+  have hreg : IsSobolevSeq (0 + 1 : ℝ) (normalizedHardyAverage b) := by
+    simpa only [zero_add] using (show IsSobolevSeq 1 (normalizedHardyAverage b) from
+      isSobolevSeq_smul ((Real.sqrt (2 * Real.pi) : ℂ)⁻¹) hb1)
+  have hc := continuous_hardyFourierTrace (sq_tsum_norm_le (s := 0) (by norm_num) hreg).1
+  have hy : EqOn (YF E b) (physicalDrivenVector W (g : ℝ → ℂ)) (Icc 0 (2 * Real.pi)) := by
+    apply vekuaTowerVector_eq_driven hγ hc hLip hW _ (intervalIntegrable_boundaryL2 g)
+    intro t ht
+    rw [hardyFourierTrace_physicalDrivenKernelInput, physicalDrivenPeriodicGauge_eqOn _ E W g hO 0 ht]
+  have hd : EqOn (physicalDrivenVector W (r : ℝ → ℂ)) (physicalDrivenVector W (g : ℝ → ℂ))
+      (Icc 0 (2 * Real.pi)) := by
+    intro t ht
+    have h := localConformalVekuaForward_transport_eq coords E hE.le b hb hbhalf hLip hW ht
+    rw [hy ht, hy (show (0 : ℝ) ∈ Icc 0 (2 * Real.pi) from ⟨le_rfl, Real.two_pi_pos.le⟩),
+      physicalDrivenVector_zero, map_zero, zero_add] at h
+    exact h.symm
+  have hr : r = g := by
+    apply Lp.ext
+    apply (ae_restrict_iff' measurableSet_Ioc).mpr
+    have hT : ∀ᵐ t : ℝ, t ≠ 2 * Real.pi := by simp [ae_iff]
+    filter_upwards [hT,
+      physicalDrivenVector_ae_hasDerivAt_of_intervalIntegrable hLip hγ hW r (intervalIntegrable_boundaryL2 r),
+      physicalDrivenVector_ae_hasDerivAt_of_intervalIntegrable hLip hγ hW g (intervalIntegrable_boundaryL2 g)]
+      with t hT hr hg ht
+    have hi : t ∈ Ioo 0 (2 * Real.pi) := ⟨ht.1, lt_of_le_of_ne ht.2 hT⟩
+    have hf : physicalDrivenVector W (r : ℝ → ℂ) =ᶠ[𝓝 t] physicalDrivenVector W (g : ℝ → ℂ) :=
+      Filter.Eventually.mono (Ioo_mem_nhds hi.1 hi.2) fun s hs => hd (Ioo_subset_Icc_self hs)
+    have h := ((hr hi).congr_of_eventuallyEq hf.symm).unique (hg hi)
+    rw [hd (Ioo_subset_Icc_self hi), add_right_inj] at h
+    have h0 := congrArg (fun x : Ell2 => x 0) h
+    simp only [lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, basisVec_coord, if_true, mul_one] at h0
+    exact mul_left_cancel₀ (by simp ) h0
+  exact ⟨b, hb, hr ▸ (localConformalVekuaForwardLoad_normalized coords (E : ℂ) b hbhalf).symm⟩
+
+/-- A nonzero boundary cut rules out the conormal kernel. Use the same
+forced transport as for general inputs, with the ordinary load now zero. -/
+theorem localConformalVekuaConormal_eq_zero_imp_of_cutC_ne_zero
+    (E : ℝ) (hE : 0 ≤ E) (b : L2Z) (hbn : IsNonpositiveFourierSupport b)
+    (hker : NF (E : ℂ) b = 0)
+    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport (physicalCircleTrace F) E W)
+    (hcut : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0) : b = 0 := by
+  have hb1 := localConformalVekuaConormal_kernel_raw_H1 coords.one_lt_radius F coords.smooth (E : ℂ) b hker
+  have hbhalf :=
+    (isSobolevSeq_one_fromL2_half_iff b).1 hb1
+  let g := localConformalVekuaForwardLoad coords (E : ℂ) b hbhalf
+  have hg : g = 0 := by
+    apply boundaryFourier.injective
+    apply sobolevSmoothing_injective (1 / 2 : ℝ) (by norm_num)
+    simpa only [map_zero] using
+      (localConformalVekuaForwardLoad_normalized coords (E : ℂ) b hbhalf).trans hker
+  have hga :=
+    (ae_restrict_iff' measurableSet_Ioc).mp (hg.symm ▸ Lp.coeFn_zero ℂ 2 (volume.restrict (Ioc 0 (2 * Real.pi))))
+  have hi {t : ℝ} (ht : t ∈ Icc 0 (2 * Real.pi)) :
+      (∫ s in (0 : ℝ)..t, g s • ContinuousLinearMap.adjoint (W s) (basisVec 0)) = 0 := by
+    apply intervalIntegral.integral_zero_ae
+    filter_upwards [hga] with s hs hmem
+    rw [uIoc_of_le ht.1] at hmem
+    simp [hs ⟨hmem.1, hmem.2.trans ht.2⟩]
+  obtain ⟨L, hL⟩ := exists_periodic_C1_density_lipschitz (physicalCircleTrace F)
+    (contDiff_physicalCircleTrace_of_neighborhood coords.one_lt_radius F
+      (coords.smooth.of_le (WithTop.coe_le_coe.mpr le_top))) (physicalCircleTrace_periodic F)
+  have hO : observationAdj W (g : ℝ → ℂ) = 0 := hi ⟨Real.two_pi_pos.le, le_rfl⟩
+  have hobs := localConformalVekuaForward_observationAdj_eq_cut coords E hE b hbn hbhalf hL hW
+  change observationAdj W (g : ℝ → ℂ) = _ at hobs
+  rw [hO, eq_comm, smul_eq_zero, mul_eq_zero] at hobs
+  have h0 : hardyFourierTrace (normalizedHardyAverage b) 0 = 0 := by
+    grind [Complex.I_ne_zero]
+  have hy {t : ℝ} (ht : t ∈ Icc 0 (2 * Real.pi)) : YF E b t = 0 := by
+    rw [localConformalVekuaForward_transport_eq coords E hE b hbn hbhalf hL hW ht,
+      localConformalVekuaTransportVector_origin coords E b, h0]
+    change W t ((0 / (Real.sqrt 2 : ℂ)) • basisVec 0) + physicalDrivenVector W (g : ℝ → ℂ) t = 0
+    simp [physicalDrivenVector, hi ht]
+  have ha : IsSobolevSeq 1 (normalizedHardyAverage b) := isSobolevSeq_smul _ hb1
+  have hs := (sq_tsum_norm_le (s := 0) (by norm_num) (by simpa using ha)).1
+  have hzero : EqOn (hardyFourierTrace (normalizedHardyAverage b)) 0 (Icc 0 (2 * Real.pi)) :=
+    fun t ht => vekuaTowerVector_eq_zero_imp
+      (contDiff_physicalCircleTrace_of_neighborhood coords.one_lt_radius F
+        (coords.smooth.of_le (by simp))) (continuous_hardyFourierTrace hs) t (hy ht)
+  apply fromL2_injective (1 / 2 : ℝ)
+  funext n
+  have hn : normalizedHardyAverage b n = 0 := by
+    rw [← fourierCoeffOn_hardyFourierTrace hs, fourierCoeffOn_congr_Icc hzero]
+    simp [fourierCoeffOn_eq_integral]
+  have hscale := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.2 Real.two_pi_pos).ne'
+  simpa [fromL2] using (mul_eq_zero.mp hn).resolve_left (inv_ne_zero hscale)
+
+/-- Reference-energy injectivity on the original full nonpositive space,
+obtained from a genuine nonzero cut, without a nonresonance premise. -/
+theorem localConformalVekuaConormal_injective_on_nonpositive_of_cutC_ne_zero
+    (E : ℝ) (hE : 0 ≤ E) {W : ℝ → Ell2 →L[ℂ] Ell2}
+    (hW : IsTransport (physicalCircleTrace F) E W)
+    (hcut : cutC (W (2 * Real.pi)) (basisVec 0) ≠ 0) :
+    InjOn (NF (E : ℂ))
+      {b : L2Z | IsNonpositiveFourierSupport b} := by
+  intro b hb' d hd' hbd
+  have hn : IsNonpositiveFourierSupport (b - d) := by
+    intro n hn
+    simp [hb' n hn, hd' n hn]
+  have hzero : NF (E : ℂ) (b - d) = 0 := by
+    rw [map_sub, hbd, sub_self]
+  exact sub_eq_zero.mp
+    (localConformalVekuaConormal_eq_zero_imp_of_cutC_ne_zero coords E hE (b - d) hn hzero hW hcut)
 
 end PhysicalCoordinates
 

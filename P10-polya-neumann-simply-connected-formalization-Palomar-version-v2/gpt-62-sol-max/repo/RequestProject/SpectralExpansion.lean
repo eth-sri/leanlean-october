@@ -25,55 +25,6 @@ namespace PolyaNeumann
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
-/-- The index set listing the eigenvalues `z ≠ 1` of `U` with multiplicity. -/
-abbrev EigIdx (U : H →L[ℂ] H) : Type := Σ z : {z : ℂ // z ≠ 1}, Fin (eigenMult U z)
-
-/-- An orthonormal basis of each eigenspace, glued together: the eigenvector `e_p`. -/
-def eigVec (U : H →L[ℂ] H) (p : EigIdx U) : H :=
-  haveI : FiniteDimensional ℂ (Module.End.eigenspace (U : H →ₗ[ℂ] H) (p.1 : ℂ)) :=
-    Module.finite_of_finrank_pos (Fin.pos p.2)
-  ((stdOrthonormalBasis ℂ (Module.End.eigenspace (U : H →ₗ[ℂ] H) (p.1 : ℂ))) p.2 : H)
-
-omit [CompleteSpace H] in
-lemma eigVec_mem (U : H →L[ℂ] H) (p : EigIdx U) :
-    eigVec U p ∈ Module.End.eigenspace (U : H →ₗ[ℂ] H) (p.1 : ℂ) := by
-  unfold eigVec
-  exact Submodule.coe_mem _
-
-omit [CompleteSpace H] in
-lemma eigVec_eigen (U : H →L[ℂ] H) (p : EigIdx U) :
-    U (eigVec U p) = (p.1 : ℂ) • eigVec U p :=
-  Module.End.mem_eigenspace_iff.mp (eigVec_mem U p)
-
-lemma orthonormal_eigVec {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H)) :
-    Orthonormal ℂ (eigVec U) := by
-  rw [orthonormal_iff_ite]
-  rintro ⟨⟨z, hz⟩, k⟩ ⟨⟨z', hz'⟩, k'⟩
-  by_cases hzz : z = z'
-  · subst hzz
-    haveI : FiniteDimensional ℂ (Module.End.eigenspace (U : H →ₗ[ℂ] H) z) :=
-      Module.finite_of_finrank_pos (Fin.pos k)
-    have := (orthonormal_iff_ite.mp
-      (stdOrthonormalBasis ℂ (Module.End.eigenspace (U : H →ₗ[ℂ] H) z)).orthonormal) k k'
-    simp only [eigVec]
-    rw [← Submodule.coe_inner, this]
-    congr 1
-    exact propext ⟨fun h => by subst h; rfl, fun h => by cases h; rfl⟩
-  · have hv : eigVec U ⟨⟨z, hz⟩, k⟩ ≠ 0 := by
-      haveI : FiniteDimensional ℂ (Module.End.eigenspace (U : H →ₗ[ℂ] H) z) :=
-        Module.finite_of_finrank_pos (Fin.pos k)
-      have := (stdOrthonormalBasis ℂ
-        (Module.End.eigenspace (U : H →ₗ[ℂ] H) z)).orthonormal.ne_zero k
-      simpa [eigVec] using this
-    have hz1 : ‖(z : ℂ)‖ = 1 := norm_eq_one_of_eigen hU hv (eigVec_eigen U _)
-    rw [inner_eq_zero_of_eigen_unitary hU (eigVec_eigen U _) (eigVec_eigen U ⟨⟨z', hz'⟩, k'⟩)
-      (fun h => hzz h) hz1, if_neg]
-    intro h; apply hzz; exact congrArg (fun p : EigIdx U => (p.1 : ℂ)) h
-
-lemma norm_eigVal {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H)) (p : EigIdx U) :
-    ‖(p.1 : ℂ)‖ = 1 :=
-  norm_eq_one_of_eigen hU ((orthonormal_eigVec hU).ne_zero p) (eigVec_eigen U p)
-
 omit [CompleteSpace H] in
 /-- An eigenvector for `z ≠ 1` orthogonal to all `e_p` vanishes. -/
 lemma eq_zero_of_eigen_of_orth {U : H →L[ℂ] H} (hC : IsCompactOperator ⇑(U - 1)) {z : ℂ}
@@ -81,13 +32,13 @@ lemma eq_zero_of_eigen_of_orth {U : H →L[ℂ] H} (hC : IsCompactOperator ⇑(U
     v = 0 := by
   haveI := finiteDimensional_eigenspace hC hz
   set b := stdOrthonormalBasis ℂ (Module.End.eigenspace (U : H →ₗ[ℂ] H) z)
-  have hvm : v ∈ Module.End.eigenspace (U : H →ₗ[ℂ] H) z := Module.End.mem_eigenspace_iff.mpr hv
+  have hvm := Module.End.mem_eigenspace_iff.mpr hv
   have h := b.sum_repr' ⟨v, hvm⟩
   have h0 : ∀ j, inner ℂ (b j) (⟨v, hvm⟩ : Module.End.eigenspace (U : H →ₗ[ℂ] H) z) = 0 := by
     intro j
     rw [Submodule.coe_inner]
     exact horth ⟨⟨z, hz⟩, j⟩
-  simp only [h0, zero_smul, Finset.sum_const_zero] at h
+  simp  [h0, Finset.sum_const_zero] at h
   exact congrArg Subtype.val h.symm
 
 /-- The adjoint of a unitary operator acts on an eigenvector by the conjugate eigenvalue. -/
@@ -98,8 +49,8 @@ lemma star_apply_of_eigen {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H
       ContinuousLinearMap.one_apply]
   rw [hv, map_smul] at h1
   have hzc : conj z * z = 1 := by
-    rw [mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, hz]; simp
-  calc star U v = (conj z * z) • star U v := by rw [hzc, one_smul]
+    simp [mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, hz]
+  calc star U v = (conj z * z) • star U v := by simp_all
     _ = conj z • v := by rw [mul_smul, h1]
 
 /-- **Completeness of the eigenvector family.** If `U` is unitary and `U - I` is compact, every
@@ -107,20 +58,12 @@ vector orthogonal to all eigenvectors `e_p` (eigenvalues `≠ 1`) is fixed by `U
 theorem eigVec_complete {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
     (hC : IsCompactOperator ⇑(U - 1)) {v : H} (hv : ∀ p, inner ℂ (eigVec U p) v = 0) :
     U v = v := by
-  set K : Submodule ℂ H := (Submodule.span ℂ (Set.range (eigVec U)))ᗮ with hKdef
-  have memK : ∀ w, w ∈ K ↔ ∀ p, inner ℂ (eigVec U p) w = 0 := by
-    intro w
-    rw [hKdef, Submodule.mem_orthogonal]
-    constructor
-    · intro h p
-      exact h _ (Submodule.subset_span ⟨p, rfl⟩)
-    · intro h u hu
-      induction hu using Submodule.span_induction with
-      | mem x hx => obtain ⟨p, rfl⟩ := hx; exact h p
-      | zero => simp
-      | add x y _ _ hx hy => rw [inner_add_left, hx, hy, add_zero]
-      | smul a x _ hx => rw [inner_smul_left, hx, mul_zero]
-  have hstar_e : ∀ p, star U (eigVec U p) = conj (p.1 : ℂ) • eigVec U p := fun p =>
+  set K : Submodule ℂ H := (Submodule.span ℂ (Set.range (eigVec U)))ᗮ
+  have memK (w : H) : w ∈ K ↔ ∀ p, inner ℂ (eigVec U p) w = 0 := by
+    rw [Submodule.mem_orthogonal']
+    change (Submodule.span ℂ (Set.range (eigVec U)) ≤ (innerSL ℂ w).ker) ↔ _
+    simp [Submodule.span_le, Set.range_subset_iff, inner_eq_zero_symm]
+  have hstar_e := fun p =>
     star_apply_of_eigen hU (norm_eigVal hU p) (eigVec_eigen U p)
   have hUK : ∀ w ∈ K, U w ∈ K := by
     intro w hw
@@ -134,109 +77,54 @@ theorem eigVec_complete {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
     intro p
     rw [ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_inner_right,
       eigVec_eigen, inner_smul_left, hw p, mul_zero]
-  set P := K.starProjection with hPdef
-  -- `P` commutes with any operator `A` such that `A` and `A^*` preserve `K`
-  have hcomm : ∀ A : H →L[ℂ] H, (∀ w ∈ K, A w ∈ K) → (∀ w ∈ K, star A w ∈ K) →
-      P * A = A * P := by
-    intro A hA hAs
-    ext x
-    simp only [ContinuousLinearMap.mul_apply]
-    refine Submodule.eq_starProjection_of_mem_of_inner_eq_zero (hA _ (K.starProjection_apply_mem x))
-      (fun w hw => ?_)
-    rw [← map_sub, ← ContinuousLinearMap.adjoint_inner_right, ← ContinuousLinearMap.star_eq_adjoint]
-    exact Submodule.inner_left_of_mem_orthogonal (hAs w hw)
-      (Submodule.sub_starProjection_mem_orthogonal x)
-  have hPU : P * U = U * P := hcomm U hUK hUsK
-  have hPUs : P * star U = star U * P := hcomm (star U) hUsK (by simpa using hUK)
-  have hPs : star P = P :=
-    ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mpr K.starProjection_isSymmetric
-  have hPP : P * P = P := by
-    ext x
-    simp only [ContinuousLinearMap.mul_apply, hPdef]
-    exact Submodule.starProjection_eq_self_iff.mpr (K.starProjection_apply_mem x)
-  set T : H →L[ℂ] H := (U - 1) * P with hTdef
-  have hPA : P * (U - 1) = (U - 1) * P := by rw [mul_sub, sub_mul, hPU, mul_one, one_mul]
-  have hPAs : P * (star U - 1) = (star U - 1) * P := by
-    rw [mul_sub, sub_mul, hPUs, mul_one, one_mul]
-  have hN : (star U - 1) * (U - 1) = (U - 1) * (star U - 1) := by
-    have h1 := Unitary.star_mul_self_of_mem hU
-    have h2 := Unitary.mul_star_self_of_mem hU
-    simp only [sub_mul, mul_sub, h1, h2, one_mul, mul_one]
-    abel
-  have hTn : IsStarNormal T := by
-    constructor
-    have e1 : star T * T = (star U - 1) * (U - 1) * P := by
-      rw [hTdef, star_mul, hPs, star_sub, star_one]
-      calc P * (star U - 1) * ((U - 1) * P) = (star U - 1) * P * ((U - 1) * P) := by rw [hPAs]
-        _ = (star U - 1) * (P * (U - 1)) * P := by simp only [mul_assoc]
-        _ = (star U - 1) * ((U - 1) * P) * P := by rw [hPA]
-        _ = (star U - 1) * (U - 1) * (P * P) := by simp only [mul_assoc]
-        _ = (star U - 1) * (U - 1) * P := by rw [hPP]
-    have e2 : T * star T = (U - 1) * (star U - 1) * P := by
-      rw [hTdef, star_mul, hPs, star_sub, star_one]
-      calc (U - 1) * P * (P * (star U - 1)) = (U - 1) * ((P * P) * (star U - 1)) := by
-              simp only [mul_assoc]
-        _ = (U - 1) * ((star U - 1) * P) := by rw [hPP, hPAs]
-        _ = (U - 1) * (star U - 1) * P := by rw [mul_assoc]
-    rw [Commute, SemiconjBy, e1, e2, hN]
-  have hTc : IsCompactOperator T := hC.comp_clm P
-  by_cases hT0 : T = 0
-  · have hPv : P v = v := Submodule.starProjection_eq_self_iff.mpr ((memK v).mpr hv)
-    have : T v = 0 := by rw [hT0]; rfl
-    rw [hTdef, ContinuousLinearMap.mul_apply, hPv, ContinuousLinearMap.sub_apply,
-      ContinuousLinearMap.one_apply, sub_eq_zero] at this
-    exact this
-  · exfalso
-    haveI : Nontrivial H := by
-      by_contra hH
-      rw [not_nontrivial_iff_subsingleton] at hH
-      exact hT0 (ContinuousLinearMap.ext fun x => Subsingleton.elim _ _)
-    obtain ⟨k, hk, hkn⟩ := spectrum.exists_nnnorm_eq_spectralRadius T
-    rw [IsStarNormal.spectralRadius_eq_nnnorm, ENNReal.coe_inj] at hkn
-    have hkn' : ‖k‖ = ‖T‖ := congrArg NNReal.toReal hkn
-    have hk0 : k ≠ 0 := by
-      rintro rfl
-      rw [norm_zero, eq_comm, norm_eq_zero] at hkn'
-      exact hT0 hkn'
-    obtain ⟨w, hw0, hw⟩ := exists_eigenvector_of_mem_spectrum hTc hk hk0
-    have hTK : T w ∈ K := by
-      rw [hTdef, ContinuousLinearMap.mul_apply]
-      have : (U - 1) (P w) = P ((U - 1) w) := by
-        rw [← ContinuousLinearMap.mul_apply, ← ContinuousLinearMap.mul_apply, mul_sub, sub_mul,
-          hPU, mul_one, one_mul]
-      rw [this]
-      exact K.starProjection_apply_mem _
-    have hwK : w ∈ K := by
-      have : w = k⁻¹ • T w := by rw [hw, smul_smul, inv_mul_cancel₀ hk0, one_smul]
-      rw [this]
-      exact K.smul_mem _ hTK
-    have hPw : P w = w := Submodule.starProjection_eq_self_iff.mpr hwK
-    have hUw : U w = (1 + k) • w := by
-      rw [hTdef, ContinuousLinearMap.mul_apply, hPw, ContinuousLinearMap.sub_apply,
-        ContinuousLinearMap.one_apply] at hw
-      rw [add_smul, one_smul, ← hw]; abel
-    have hk1 : (1 + k) ≠ 1 := by intro h; apply hk0; linear_combination h
-    exact hw0 (eq_zero_of_eigen_of_orth hC hk1 hUw ((memK w).mp hwK))
+  have hK : IsClosed (K : Set H) := Submodule.isClosed_orthogonal _
+  letI : CompleteSpace K := hK.completeSpace_coe
+  let A := U.restrict hUK
+  let B := (star U).restrict hUsK
+  have hstar : star A = B := ((ContinuousLinearMap.eq_adjoint_iff B A).mpr
+    (fun x y => ContinuousLinearMap.adjoint_inner_left U (y : H) (x : H))).symm
+  have hAu : A ∈ unitary (K →L[ℂ] K) := by
+    refine ⟨?_, ?_⟩ <;> rw [hstar] <;> ext1 x <;> apply Subtype.ext
+    · exact congrArg (fun X : H →L[ℂ] H => X (x : H)) (Unitary.star_mul_self_of_mem hU)
+    · exact congrArg (fun X : H →L[ℂ] H => X (x : H)) (Unitary.mul_star_self_of_mem hU)
+  have hAc :=
+    IsCompactOperator.restrict (show IsCompactOperator ⇑(U - 1).toLinearMap from hC)
+      (fun w hw => K.sub_mem (hUK w hw) hw) hK
+  by_contra hv'
+  have hA1 : A ≠ 1 := fun h => hv' (congrArg (fun X : K →L[ℂ] K =>
+    (X ⟨v, (memK v).mpr hv⟩ : H)) h)
+  obtain ⟨z, w, hw0, hw, hz, _⟩ := exists_eigenvalue_norm_sub_one hAu hAc hA1
+  exact hw0 (Subtype.ext (eq_zero_of_eigen_of_orth hC hz
+    (congrArg Subtype.val hw) ((memK w).mp w.property)))
 
-/-- The orthogonal series `∑_p ⟨e_p, x⟩ e_p` is summable. -/
-lemma summable_inner_smul_eigVec {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H)) (x : H) :
-    Summable (fun p => inner ℂ (eigVec U p) x • eigVec U p) :=
-  ((orthonormal_eigVec hU).orthogonalFamily.summable_iff_norm_sq_summable
-    (fun p => inner ℂ (eigVec U p) x)).mpr ((orthonormal_eigVec hU).inner_products_summable x)
+lemma hasSum_norm_inner_sq {ι : Type*} (b : HilbertBasis ι ℂ H) (v : H) :
+    HasSum (fun i => ‖inner ℂ (b i) v‖ ^ 2) (‖v‖ ^ 2) := by
+  simpa only [ENNReal.toReal_ofNat, Real.rpow_two, b.repr_apply_apply, LinearIsometryEquiv.norm_map] using
+    lp.hasSum_norm (p := 2) (by norm_num) (b.repr v)
 
-/-- **Spectral expansion.** For `U` unitary with `U - I` compact and every `k`,
-`(U^k - I) x = ∑_p (z_p^k - 1) ⟨e_p, x⟩ e_p`. -/
-theorem hasSum_pow_sub_one_apply {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
-    (hC : IsCompactOperator ⇑(U - 1)) (k : ℕ) (x : H) :
-    HasSum (fun p : EigIdx U => (((p.1 : ℂ) ^ k - 1) * inner ℂ (eigVec U p) x) • eigVec U p)
-      ((U ^ k - 1) x) := by
+lemma clm_pow_apply_of_eigen {A : H →L[ℂ] H} {z : ℂ} {x : H}
+    (hx : A x = z • x) (n : ℕ) : (A ^ n) x = z ^ n • x := by
+  induction n with
+  | zero => simp
+  | succ n ih => rw [pow_succ', ContinuousLinearMap.mul_apply, ih, map_smul, hx, smul_smul, pow_succ]
+
+section
+
+variable {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
+include U hU
+
+/-- The orthogonal eigenvector series leaves a remainder fixed by `U`. -/
+lemma eigVec_decomposition (hC : IsCompactOperator ⇑(U - 1)) (x : H) :
+    ∃ s, HasSum (fun p => inner ℂ (eigVec U p) x • eigVec U p) s ∧ U (x - s) = x - s := by
   have he := orthonormal_eigVec hU
-  set s := ∑' p, inner ℂ (eigVec U p) x • eigVec U p with hs
-  have hsum := (summable_inner_smul_eigVec hU x).hasSum
+  have h : Summable (fun p => inner ℂ (eigVec U p) x • eigVec U p) :=
+    (he.orthogonalFamily.summable_iff_norm_sq_summable _).mpr (he.inner_products_summable x)
+  let s := ∑' p, inner ℂ (eigVec U p) x • eigVec U p
+  have hsum : HasSum _ s := h.hasSum
   have horth : ∀ q, inner ℂ (eigVec U q) (x - s) = 0 := by
     intro q
     have h1 := hsum.mapL (innerSL ℂ (eigVec U q))
-    simp only [innerSL_apply_apply, inner_smul_right] at h1
+    simp  [innerSL_apply_apply, inner_smul_right] at h1
     have h2 : HasSum (fun p => inner ℂ (eigVec U p) x * inner ℂ (eigVec U q) (eigVec U p))
         (inner ℂ (eigVec U q) x) := by
       have : (fun p => inner ℂ (eigVec U p) x * inner ℂ (eigVec U q) (eigVec U p)) =
@@ -244,45 +132,50 @@ theorem hasSum_pow_sub_one_apply {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L
         funext p
         rw [orthonormal_iff_ite.mp he q p]
         by_cases h : p = q
-        · subst h; simp
-        · rw [if_neg (Ne.symm h), if_neg h, mul_zero]
+        simp_all
+        grind
       rw [this]
       exact hasSum_ite_eq q _
     rw [inner_sub_right, h1.unique h2, sub_self]
-  have hfix : ∀ n : ℕ, (U ^ n) (x - s) = x - s := by
-    intro n
-    induction n with
-    | zero => simp
-    | succ n ih =>
-      rw [pow_succ', ContinuousLinearMap.mul_apply, ih, eigVec_complete hU hC horth]
-  have hpow : ∀ (n : ℕ) (p : EigIdx U), (U ^ n) (eigVec U p) = ((p.1 : ℂ) ^ n) • eigVec U p := by
-    intro n p
-    induction n with
-    | zero => simp
-    | succ n ih =>
-      rw [pow_succ', ContinuousLinearMap.mul_apply, ih, map_smul, eigVec_eigen, smul_smul,
-        pow_succ', mul_comm]
-  have h1 : (U ^ k - 1) x = (U ^ k - 1) s := by
-    have := hfix k
-    rw [ContinuousLinearMap.sub_apply, ContinuousLinearMap.sub_apply,
-      ContinuousLinearMap.one_apply, ContinuousLinearMap.one_apply]
-    rw [map_sub] at this
-    rw [sub_eq_sub_iff_sub_eq_sub]
-    exact this
-  rw [h1]
+  exact ⟨s, hsum, eigVec_complete hU hC horth⟩
+
+/-- A bounded operator is determined by its action on the eigenvectors and the fixed space. -/
+lemma eq_of_eigVec_and_fixed (hC : IsCompactOperator ⇑(U - 1)) {A B : H →L[ℂ] H}
+    (h_eig : ∀ p, A (eigVec U p) = B (eigVec U p)) (h_fix : ∀ x, U x = x → A x = B x) : A = B := by
+  ext1 x
+  obtain ⟨s, hs, hf⟩ := eigVec_decomposition hU hC x
+  have he := (hs.mapL A).unique (by simpa only [map_smul, h_eig] using hs.mapL B)
+  simpa only [map_sub, he, sub_left_inj] using h_fix (x - s) hf
+
+/-- **Spectral expansion.** For `U` unitary with `U - I` compact and every `k`,
+`(U^k - I) x = ∑_p (z_p^k - 1) ⟨e_p, x⟩ e_p`. -/
+theorem hasSum_pow_sub_one_apply 
+    (hC : IsCompactOperator ⇑(U - 1)) (k : ℕ) (x : H) :
+    HasSum (fun p : EigIdx U => (((p.1 : ℂ) ^ k - 1) * inner ℂ (eigVec U p) x) • eigVec U p)
+      ((U ^ k - 1) x) := by
+  obtain ⟨s, hsum, hfix⟩ := eigVec_decomposition hU hC x
+  have hfix : (U ^ k) (x - s) = x - s := by
+    simpa only [one_pow, one_smul] using
+      clm_pow_apply_of_eigen (A := U) (x := x - s) (z := 1)
+        (by simpa only [one_smul] using hfix) k
+  have h := map_sub (U ^ k - 1) x s
+  have h1 : (U ^ k - 1) (x - s) = 0 := by simp [hfix]
+  rw [sub_eq_zero.mp (h.symm.trans h1)]
   have := hsum.mapL (U ^ k - 1)
   convert this using 1
   funext p
-  rw [map_smul, ContinuousLinearMap.sub_apply, hpow, ContinuousLinearMap.one_apply, smul_sub,
+  rw [map_smul, ContinuousLinearMap.sub_apply, clm_pow_apply_of_eigen (eigVec_eigen U p), ContinuousLinearMap.one_apply, smul_sub,
     smul_smul, sub_mul, one_mul, sub_smul, mul_comm]
 
 /-- The quadratic form of `U^k - I`: `⟨y, (U^k - I) x⟩ = ∑_p (z_p^k - 1) ⟨e_p, x⟩ ⟨y, e_p⟩`. -/
-theorem hasSum_inner_pow_sub_one {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
+theorem hasSum_inner_pow_sub_one 
     (hC : IsCompactOperator ⇑(U - 1)) (k : ℕ) (x y : H) :
     HasSum (fun p : EigIdx U => ((p.1 : ℂ) ^ k - 1) * inner ℂ (eigVec U p) x *
       inner ℂ y (eigVec U p)) (inner ℂ y ((U ^ k - 1) x)) := by
   have := (hasSum_pow_sub_one_apply hU hC k x).mapL (innerSL ℂ y)
   simpa only [innerSL_apply_apply, inner_smul_right] using this
+
+end
 
 /-- **Trace of `U^k - I`.** If `∑_p |z_p^k - 1| < ∞`, the diagonal sum of `U^k - I` in any
 Hilbert basis is `∑_p (z_p^k - 1)`. -/
@@ -302,36 +195,28 @@ theorem hasSum_trace_pow_sub_one {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L
   have hnorm : ∀ q, ‖F q‖ = ‖(q.1.1 : ℂ) ^ k - 1‖ * ‖inner ℂ (b q.2) (eigVec U q.1)‖ ^ 2 := by
     intro q
     rw [hF]
-    simp only [norm_mul]
+    simp  
     rw [← inner_conj_symm, RCLike.norm_conj]
     ring
   have hfibn : ∀ p : EigIdx U, HasSum (fun n => ‖F (p, n)‖) ‖(p.1 : ℂ) ^ k - 1‖ := by
     intro p
-    simp only [hnorm]
-    have h1 := (b.hasSum_inner_mul_inner (eigVec U p) (eigVec U p))
-    rw [inner_self_eq_norm_sq_to_K, he.1 p] at h1
-    have h2 : HasSum (fun n => ‖inner ℂ (b n) (eigVec U p)‖ ^ 2) 1 := by
-      have := Complex.hasSum_re h1
-      convert this using 1
-      · funext n
-        rw [← inner_conj_symm (b n) (eigVec U p), RCLike.norm_conj, Complex.mul_conj,
-          Complex.ofReal_re, Complex.normSq_eq_norm_sq]
-      · simp
-    simpa using h2.mul_left ‖(p.1 : ℂ) ^ k - 1‖
+    simp  [hnorm]
+    simpa only [he.1 p, one_pow, mul_one] using
+      (hasSum_norm_inner_sq b (eigVec U p)).mul_left ‖(p.1 : ℂ) ^ k - 1‖
   have hFs : Summable F := by
     refine Summable.of_norm ?_
     rw [summable_prod_of_nonneg (fun _ => norm_nonneg _)]
     exact ⟨fun p => (hfibn p).summable, by simpa only [(hfibn _).tsum_eq] using hs⟩
   have hA := hFs.hasSum
-  have h1 : HasSum (fun p : EigIdx U => ((p.1 : ℂ) ^ k - 1)) (∑' q, F q) :=
+  have h1 :=
     hA.prod_fiberwise hfib
-  have hn : ∀ n, HasSum (fun p => F (p, n)) (inner ℂ (b n) ((U ^ k - 1) (b n))) := fun n =>
+  have hn := fun n =>
     hasSum_inner_pow_sub_one hU hC k (b n) (b n)
-  have hA' : HasSum (F ∘ Prod.swap) (∑' q, F q) :=
+  have hA' :=
     (Equiv.prodComm ι (EigIdx U)).hasSum_iff.mpr hA
   have h2 := hA'.prod_fiberwise (fun n => hn n)
   rw [h1.tsum_eq]
-  exact h2
+  assumption
 
 end PolyaNeumann
 
