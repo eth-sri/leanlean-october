@@ -36,10 +36,6 @@ def sortPos (kf : ℕ → ℕ) (N j : ℕ) : ℕ := cntLt kf (kf j) N + cntEq kf
 section
 variable (kf : ℕ → ℕ)
 
-@[simp] theorem cntEq_zero (t : ℕ) : cntEq kf t 0 = 0 := rfl
-
-@[simp] theorem cntLt_zero_right (t : ℕ) : cntLt kf t 0 = 0 := rfl
-
 @[simp] theorem cntLt_zero_left (j : ℕ) : cntLt kf 0 j = 0 := by simp [cntLt]
 
 /-- One more item: it is counted if its key is `t`. -/
@@ -56,7 +52,7 @@ theorem cntLt_succ_left (t j : ℕ) : cntLt kf (t + 1) j = cntLt kf t j + cntEq 
   | zero => rfl
   | succ j ih =>
     rw [cntLt_succ_right, cntLt_succ_right, cntEq_succ, ih]
-    split_ifs <;> omega
+    lia
 
 /-- A larger bound counts more keys. -/
 theorem cntLt_mono_left {s t : ℕ} (h : s ≤ t) (j : ℕ) : cntLt kf s j ≤ cntLt kf t j :=
@@ -117,8 +113,8 @@ theorem eq_of_sortPos_eq {i j : ℕ} (hi : i < N) (hj : j < N)
 /-- Every place is taken. -/
 theorem exists_sortPos_eq (kf : ℕ → ℕ) {q : ℕ} (hq : q < N) : ∃ j < N, sortPos kf N j = q := by
   have hsurj := Finset.surjOn_of_injOn_of_card_le (s := Finset.range N) (t := Finset.range N)
-    (sortPos kf N) (fun j hj => by simpa using sortPos_lt kf (by simpa using hj))
-    (fun i hi j hj => eq_of_sortPos_eq (by simpa using hi) (by simpa using hj)) le_rfl
-  simpa using hsurj (by simpa using hq)
+    (sortPos kf N) (fun j hj => by simpa using sortPos_lt kf (by simp_all))
+    (fun i hi j hj => eq_of_sortPos_eq (by simp_all) (by simp_all)) le_rfl
+  aesop
 
 end ThreeSumApsp

@@ -21,8 +21,6 @@ establishes all of them (`SharedReady.dirCells`).
 
 namespace Light.Sec4
 
-open ThreeSumApsp
-
 /-- What the cells of the directory that the routines of Section 4 read hold. -/
 structure DirCells (p : Sec2.Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
   levels : μ b0 = (p.L : ℕ)

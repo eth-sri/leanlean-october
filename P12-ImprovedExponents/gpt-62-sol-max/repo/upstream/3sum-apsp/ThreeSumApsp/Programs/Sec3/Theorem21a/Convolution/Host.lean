@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Lang.Lib.Sqrt
 public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.Convolution.Fill
@@ -42,16 +44,7 @@ namespace ConvHost
 /-- The local variables of c3: the arguments N (Len; as local 0 it also takes the result), U
 (Bound), x (Input), fr (Free); then t (Side), the number s of the instance (Inst), the answer so far
 (Found), the result of a call (Answer), t² (Area) and the filler 2U + 1 (Filler). -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Bound : ℕ := 1
-@[inherit_doc Len] abbrev Input : ℕ := 2
-@[inherit_doc Len] abbrev Free : ℕ := 3
-@[inherit_doc Len] abbrev Side : ℕ := 4
-@[inherit_doc Len] abbrev Inst : ℕ := 5
-@[inherit_doc Len] abbrev Found : ℕ := 6
-@[inherit_doc Len] abbrev Answer : ℕ := 7
-@[inherit_doc Len] abbrev Area : ℕ := 8
-@[inherit_doc Len] abbrev Filler : ℕ := 9
+registers [Len, Bound, Input, Free, Side, Inst, Found, Answer, Area, Filler]
 
 end ConvHost
 
@@ -141,13 +134,11 @@ private theorem Ready.one_le (H : Ready lim r d x μ fr t) : 1 ≤ t :=
 
 /-- The numbers of the input are bounded by 2U + 1. -/
 private theorem Ready.input_le (H : Ready lim r d x μ fr t) : AbsLe x.X ((2 * x.U + 1 : ℕ) : ℤ) :=
-  fun e he => (H.pre.le e he).trans (by push_cast; omega)
+  fun e he => (H.pre.le e he).trans (by omega)
 
 /-- The filler is bounded by 2U + 1. -/
 private theorem abs_filler_le (x : VecInst) : |2 * (x.U : ℤ) + 1| ≤ ((2 * x.U + 1 : ℕ) : ℤ) := by
-  rw [abs_of_nonneg (by positivity)]
-  push_cast
-  exact le_rfl
+  rfl
 
 /-- convFill can be called in every round. -/
 private theorem fill_ctx (H : Ready lim r d x μ fr t) (hk : Kept μ μ' fr) (hs : s < 2 * t) :
@@ -158,36 +149,27 @@ private theorem fill_ctx (H : Ready lim r d x μ fr t) (hk : Kept μ μ' fr) (hs
   len := H.pre.len
   belowAB := H.pre.below
   belowBC := le_rfl
-  belowAC := by simp only [fillArgs]; omega
+  belowAC := by grind [fillArgs]
   space := by have := H.cells; simp only [fillArgs]; omega
   inputLe := H.input_le
   fillerLe := abs_filler_le x
-  valueLe := by have := H.word; have := mul_self_nonneg (t : ℤ); push_cast; omega
-  indexLe := by have := H.word; simp only [fillArgs]; push_cast; omega
+  valueLe := by have := H.word; lia
+  indexLe := by have := H.word; simp only [fillArgs]; omega
 
 /-- After convFill the instance lies in the memory. -/
 private theorem inst_pre {μ₁ : ℕ → ℤ} (H : Ready lim r d x μ fr t)
     (hpost : ConvFill.Post (fillArgs x fr t s) μ' μ₁) :
     (inst x fr t s).Pre μ₁ (fr + 3 * (t * t)) where
   n_pos := H.one_le
-  U_pos := by simp [inst]
-  lenAB := by simp [inst]
-  lenBC := by simp [inst]
-  lenAC := by simp [inst]
-  segAB := hpost.segAB
-  segBC := hpost.segBC
-  segAC := hpost.segAC
-  leAB := abs_convAB_le H.input_le (abs_filler_le x)
-  leBC := abs_convBC_le H.input_le (abs_filler_le x)
-  leAC := abs_convAC_le H.input_le (abs_filler_le x)
-  belowAB := by simp only [inst]; omega
-  belowBC := by simp only [inst]; omega
-  belowAC := by simp only [inst]; omega
+  U_pos := by exact Nat.le_of_ble_eq_true rfl
+  arrAB := ⟨by simp [inst], hpost.segAB, abs_convAB_le H.input_le (abs_filler_le x), by grind [inst]⟩
+  arrBC := ⟨by simp [inst], hpost.segBC, abs_convBC_le H.input_le (abs_filler_le x), by grind [inst]⟩
+  arrAC := ⟨by simp [inst], hpost.segAC, abs_convAC_le H.input_le (abs_filler_le x), by grind [inst]⟩
 
 /-- The limits allow for the solver, after the three matrices and one level of calls down. -/
 private theorem solver_ok (H : Ready lim r d x μ fr t) :
     (r t (2 * x.U + 1)).Ok lim (fr + 3 * (t * t)) (d + 1) where
-  word := by have := H.word; have := mul_self_nonneg (t : ℤ); omega
+  word := by have := H.word; lia
   cells := by have := H.cells; omega
   space := H.addr
   depth := by have := H.depth; omega
@@ -203,7 +185,6 @@ private theorem round_spec (C : Ctx P R pET pSqrt pFill T r) (H : Ready lim r d 
           Kept μ μ'' fr := by
   obtain ⟨hword, hcells, haddr, hdepth⟩ := And.intro H.word (And.intro H.cells
     (And.intro H.addr H.depth))
-  have harea := mul_self_nonneg (t : ℤ)
   unfold c3Round c3RoundTime
   -- Answer := convFill(t, N, s, 2U + 1, x, fr, fr + t², fr + 2t²)
   refine Ends.callToThen (T' := convFillTime t) (convFill_meets C.fill (fill_ctx H hk hs)) ?_
@@ -220,7 +201,7 @@ private theorem round_spec (C : Ctx P R pET pSqrt pFill T r) (H : Ready lim r d 
   -- if Answer = 1
   refine Ends.iteLast (fun hyes => ?_) (fun hno => ?_)
   · -- Found := 1
-    have hit : Hit x t s := flag_eq_one_iff.1 (by simpa [hres] using hyes)
+    have hit : Hit x t s := flag_eq_one_iff.1 (by simp_all)
     exact Ends.setTo 1
       ⟨res', μ₂, by rw [flag_of (Nat.exists_lt_succ_right.2 (Or.inr hit))]; rfl, hkept⟩
   · have miss : ¬ Hit x t s := fun hit => hno (by simp [hres, flag_of hit])
@@ -240,14 +221,13 @@ private theorem ready (hpre : x.Pre μ fr) (hok : (c3Need r x.N x.U).Ok lim fr d
     Ready lim r d x μ fr (Nat.sqrt x.N + 1) where
   pre := hpre
   lenLt := Nat.lt_succ_sqrt x.N
-  word := by have := hok.word; simp only [c3Need] at this; push_cast at this ⊢; omega
+  word := by have := hok.word; assumption
   cells := hok.cells
   addr := hok.space
   depth := hok.depth
 
 end ConvHost
 
-open ConvHost in
 /-- **The host is correct**, in every program that begins with the solver's and contains the two
 helpers. -/
 private theorem c3_spec {P R : Program} {pET pSqrt pFill : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
@@ -265,7 +245,7 @@ private theorem c3_spec {P R : Program} {pET pSqrt pFill : ℕ} {T : ℕ → ℕ
   have harea := mul_self_nonneg (t : ℤ)
   unfold c3Body
   -- Side := sqrt(N)
-  light_call (sqrt_meets (K := x.N) C.sqrt μ (by push_cast; omega)) with _ μ₀ ⟨rfl, hμ⟩
+  light_call (sqrt_meets (K := x.N) C.sqrt μ (by omega)) with _ μ₀ ⟨rfl, hμ⟩
   obtain rfl := hμ.symm
   -- Side := Side + 1; Area := Side * Side; Filler := 2 * Bound + 1; Found := 0
   light_set t

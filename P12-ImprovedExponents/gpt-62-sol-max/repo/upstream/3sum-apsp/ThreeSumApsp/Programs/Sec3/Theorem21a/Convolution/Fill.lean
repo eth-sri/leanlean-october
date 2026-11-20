@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Lib.NextPair
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
@@ -42,21 +46,8 @@ namespace ConvFill
 (Input), ab, bc, ac (MatAB, MatBC, MatAC); the row, the column and the number of the current cell
 (Row, Col, Cell); an index into x and what is picked there (Index, Value); -F (NegFiller) and t²
 (Area). -/
-abbrev Side : ℕ := 0
-@[inherit_doc Side] abbrev Len : ℕ := 1
-@[inherit_doc Side] abbrev Inst : ℕ := 2
-@[inherit_doc Side] abbrev Filler : ℕ := 3
-@[inherit_doc Side] abbrev Input : ℕ := 4
-@[inherit_doc Side] abbrev MatAB : ℕ := 5
-@[inherit_doc Side] abbrev MatBC : ℕ := 6
-@[inherit_doc Side] abbrev MatAC : ℕ := 7
-@[inherit_doc Side] abbrev Row : ℕ := 8
-@[inherit_doc Side] abbrev Col : ℕ := 9
-@[inherit_doc Side] abbrev Cell : ℕ := 10
-@[inherit_doc Side] abbrev Index : ℕ := 11
-@[inherit_doc Side] abbrev Value : ℕ := 12
-@[inherit_doc Side] abbrev NegFiller : ℕ := 13
-@[inherit_doc Side] abbrev Area : ℕ := 14
+registers [Side, Len, Inst, Filler, Input, MatAB, MatBC, MatAC, Row, Col, Cell, Index, Value,
+  NegFiller, Area]
 
 end ConvFill
 
@@ -125,17 +116,16 @@ private theorem pick_runs {loc : ℕ → ℤ} {f : ℕ} (z : ℤ)
   by_cases hneg : z < 0
   · -- if Index < 0
     rw [cellOr_of_not (by omega)] at h
-    exact .ite_pos ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz] using hneg) (by simp; omega)
-  refine .ite_neg ?_ (by simpa [hz] using hneg) (by simp; omega)
+    exact .ite_pos ⟨trivial, by simp_all⟩ (by simp_all) (by simp; omega)
+  refine .ite_neg ?_ (by simp_all) (by simp; omega)
   by_cases hlt : z < N
   · -- if Index < N: Value := x[Index]
     obtain ⟨i, rfl⟩ := Int.eq_ofNat_of_zero_le (not_lt.1 hneg)
     rw [cellOr_of_lt rfl (by omega), ← hseg.getD (by omega)] at h
-    refine .ite_pos ⟨?_, by simpa [hz, hx] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
-    simp [hz, hx, Limits.Addr, abs_le]
-    omega
+    refine .ite_pos ⟨?_, by simp_all⟩ (by simp_all) (by simp)
+    light_side
   · rw [cellOr_of_not (by omega)] at h
-    exact .ite_neg ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
+    exact .ite_neg ⟨trivial, by simp_all⟩ (by simp_all) (by simp)
 
 /-- putStmt stores `cellOr N F X z`, or minus it, into cell q of the matrix at D.  Of the locals it
 changes only Index and Value. -/
@@ -161,14 +151,9 @@ private theorem put_runs {l : List ℤ} {ze : Expr} {f dst : ℕ} {neg : Bool} (
   refine .seq (pick_runs z ?_ hX (by simp [hval]) (by simpa using hN) (by simpa using hx)
     (by simpa [hfI] using hf))
   -- dst[Cell] := Value or -Value
-  cases neg
-  · refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩
-    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le]
-    omega
-  · refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩
-    rw [abs_le] at hV
-    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le]
-    omega
+  have hV' := abs_le.mp hV
+  cases neg <;> refine ⟨?_, by simpa [hval, hdI, hdV, hdst, hq] using h⟩ <;>
+    simp [hdI, hdV, hdst, hq, Limits.Addr, abs_le] <;> omega
 
 end parts
 
@@ -250,7 +235,6 @@ private theorem sameOutside_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
     SameOutside μ (A.filled μ q) A.ab (A.ac + A.t * A.t - A.ab) := fun b hb => by
   obtain ⟨hBC, hAC⟩ := And.intro C.belowBC C.belowAC
   have off (dst : ℕ) (h₁ : A.ab ≤ dst) (h₂ : dst ≤ A.ac) : b < dst ∨ dst + q ≤ b := by
-    unfold Outside at hb
     omega
   rw [Args.filled, wrote_rest (off _ (by omega) le_rfl), wrote_rest (off _ (by omega) (by omega)),
     wrote_rest (off _ le_rfl (by omega))]
@@ -279,10 +263,7 @@ private theorem inputAt_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
   seg := C.input.keep (by light_keep [sameOutside_filled C hq, C.len, C.belowAB])
   len := C.len
   space := by
-    have hAB := C.belowAB
-    have hBC := C.belowBC
-    have hAC := C.belowAC
-    have hspace := C.space
+    light_facts C
     omega
   addr := C.addr
 
@@ -316,13 +297,13 @@ private structure IndexBounds (t q : ℕ) : Prop where
 
 private theorem indexBounds {t : ℕ} (hq : q < t * t) : IndexBounds t q := by
   have hrow : q / t < t := Nat.div_lt_of_lt_mul hq
-  have hcol : q % t < t := Nat.mod_lt _ (Nat.pos_of_ne_zero fun h => by simp [h] at hq)
-  exact ⟨by exact_mod_cast And.intro (Nat.zero_le _) hrow,
-    by exact_mod_cast And.intro (Nat.zero_le _) hcol,
+  have hcol : q % t < t := Nat.mod_lt _ (Nat.pos_of_ne_zero fun h => by simp_all)
+  exact ⟨by lia,
+    by omega,
     by exact_mod_cast And.intro (Nat.zero_le _) (Nat.mul_le_mul_right t hcol.le),
     by exact_mod_cast And.intro (Nat.zero_le _) ((Nat.mul_le_mul_right t
       (show q / t + q % t ≤ 2 * t by omega)).trans_eq (Nat.mul_assoc ..)),
-    by exact_mod_cast Nat.le_mul_self t⟩
+    by nlinarith⟩
 
 /-- fillCells writes cell q of each matrix. -/
 private theorem cells_runs {R : State → Prop} (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
@@ -359,10 +340,10 @@ private theorem round_spec (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
   -- the three cells
   refine Ends.next _ (Ends.block (cells_runs C hq z w ?_) le_rfl)
   -- Cell := Cell + 1
-  refine Ends.setToThen ((q + 1 : ℕ) : ℤ) ?_ (by light_side) (by simp [nextPair])
+  light_step
   -- on to the next row and column
   exact Ends.nextPair ⟨_, _, rfl⟩ C.side (by omega) (by omega) rfl rfl rfl
-    (hT := by simp [nextPair])
+    (hT := by rfl)
 
 end loop
 
@@ -379,12 +360,7 @@ theorem convFill_meets {p : ℕ} (hp : P[p]? = some convFillBody) {μ : ℕ → 
   refine .of_body hp ?_
   unfold convFillBody convFillTime
   -- NegFiller := 0 - Filler; Area := Side * Side
-  light_set (-A.F)
-  light_set (A.t * A.t : ℕ)
-  -- Row := 0; Col := 0; Cell := 0
-  light_set 0
-  light_set 0
-  light_set 0
+  light_steps
   -- while Cell < Area
   refine Ends.whileConst (LoopInv A μ) (A.t * A.t) fillRound.blockCost ?start ?round ?done
     (by simp [fillRound, fillCells, putStmt, pickStmt, nextPair]; omega)

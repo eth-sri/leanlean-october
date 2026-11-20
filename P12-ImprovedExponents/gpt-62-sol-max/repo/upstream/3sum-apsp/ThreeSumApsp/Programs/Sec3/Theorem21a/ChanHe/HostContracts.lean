@@ -53,26 +53,20 @@ def cnt : ℕ := a.pr + a.m
 def srt : ℕ := a.cnt + a.m * a.m
 /-- The distinct values, `n` cells. -/
 def val : ℕ := a.srt + a.n
-/-- How often they occur, `n` cells. -/
-def mul : ℕ := a.val + a.n
 /-- The binary digits of the labels, `n Λ` cells. -/
-def bt : ℕ := a.mul + a.n
+def bt : ℕ := a.val + a.n
 /-- The three sets of a splitting, `3n` cells. -/
 def A : ℕ := a.bt + a.n * a.Λ
-/-- The doubles of the repeated values, `n` cells. -/
-def tw : ℕ := a.A + 3 * a.n
-/-- One cell that holds 0: the set {0}. -/
-def one : ℕ := a.tw + a.n
 /-- The free pointer behind the arrays. -/
-def top : ℕ := a.one + 1
+def top : ℕ := a.A + 3 * a.n
 
 /-- The arrays stand one after the other: each address is the one before plus the length of the
 array that stands there.  A proof begins with `have hmap := a.layout`, which states the whole
 map. -/
 theorem layout : a.cx = a.b ∧ a.pr = a.cx + 6 ∧ a.cnt = a.pr + a.m ∧ a.srt = a.cnt + a.m * a.m ∧
-    a.val = a.srt + a.n ∧ a.mul = a.val + a.n ∧ a.bt = a.mul + a.n ∧ a.A = a.bt + a.n * a.Λ ∧
-    a.tw = a.A + 3 * a.n ∧ a.one = a.tw + a.n ∧ a.top = a.one + 1 :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+    a.val = a.srt + a.n ∧ a.bt = a.val + a.n ∧ a.A = a.bt + a.n * a.Λ ∧
+    a.top = a.A + 3 * a.n :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 end Map
 
@@ -134,8 +128,8 @@ of distinct values. -/
 def PrepSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
   ∀ (d : ℕ) (a : Map) (V x : ℕ) (X : List ℤ) (μ : ℕ → ℤ), Prep.Ctx lim d a V x X → Seg μ x X →
     Meets lim P p d [a.n, V, a.Λ, a.m, x, a.b] μ (tPrep a.n a.Λ a.m) fun res μ' =>
-      (∃ D C : List ℤ, res = (D.length : ℤ) ∧ Values a.n X D C ∧ Seg μ' a.mul C ∧ μ' a.one = 0 ∧
-        FrontMem μ' (a.front V D)) ∧
+      (∃ D L : List ℤ, res = (D.length : ℤ) ∧ D.toFinset = univ.image (vecOf a.n X) ∧
+        FrontMem μ' (a.front V D) ∧ Seg μ' a.srt L ∧ L.Perm X ∧ L.Pairwise (· ≤ ·)) ∧
       Kept μ μ' a.b
 
 /-! ## core -/

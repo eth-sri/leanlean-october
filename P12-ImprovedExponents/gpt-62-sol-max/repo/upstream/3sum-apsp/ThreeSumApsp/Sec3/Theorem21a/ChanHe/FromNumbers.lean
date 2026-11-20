@@ -9,30 +9,8 @@ public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Recursion
 public import ThreeSumApsp.Util.List
 public import Mathlib.Data.Nat.Bitwise
 
-/-!
-# Theorem 21(a), the reduction of Chan and He: from n numbers to one-array Convolution-3SUM
-
-We read the 3SUM of the paper as: three of `n` numbers, at different positions, sum to 0.  Its
-Convolution-3SUM has one array (Section 1.2).  The proof of [CH20, Theorem 5.1] is
-about three sets and three arrays.  This file passes from the one to the other by elementary
-devices, which are not from that proof, and shows that the whole reduction, `instances`, is correct.
-
-* Three distinct values.  The label of a number `x` in `[-U, U]` is `x + U`.  The labels of two
-  distinct numbers differ in a binary digit, so splitting the set of values by two binary digits of
-  the labels, in all possible ways, separates any three distinct values into three sets
-  (`distinct_iff_split`).
-* A repeated value.  A solution that repeats a value is `a, a, -2a` or `0, 0, 0`
-  (`threeSum_iff_distinct_or_degenerate`), and two further three-set inputs detect these
-  (`degenerate_iff`).
-* Three arrays in one.  `oneArray` interleaves the three arrays and adds multiples of a large number
-  `G`, which cancel only in equations `X i + Y j = Z (i + j)` (`oneArray_correct`).
-* The whole reduction.  `IsInput` lists the three-set inputs.  There is a solution iff one of them
-  has one (`threeSum_iff_exists_input`), each of them meets the hypotheses of `reduction_correct`
-  (`IsInput.admissible`), and the nodes of the reduction are the nodes of their trees
-  (`mem_allNodes_iff`).  With `reduction_correct` this gives `instances_correct`.  The number of
-  instances, their entries and the count for the searches are bounded in `length_instances_le`,
-  `abs_instances_le` and `scanPairs_le`.
--/
+/-! Binary-label splitting for distinct values, the characterization of repeated-value
+solutions, and interleaving the three convolution arrays into one. -/
 
 @[expose] public section
 
@@ -50,7 +28,7 @@ variable {U : ℕ} {S : Finset ℤ}
 
 /-- On `[-U, U]` the label of `x` is `x + U`. -/
 private theorem lab_cast {x : ℤ} (hx : |x| ≤ (U : ℤ)) : ((lab U x : ℕ) : ℤ) = x + U :=
-  Int.toNat_of_nonneg (by have := (abs_le.mp hx).1; omega)
+  Int.toNat_of_nonneg (by grind)
 
 /-- The label of an element of `[-U, U]` has at most `Lam U` binary digits. -/
 private theorem lab_lt {x : ℤ} (hx : |x| ≤ (U : ℤ)) : lab U x < 2 ^ Lam U := by
@@ -81,8 +59,8 @@ private theorem exists_split_of_testBit (h : Bdd U S) {x y z : ℤ} (hx : x ∈ 
   refine ⟨β, hβ, β', hβ', (lab U x).testBit β, x, mem_filter.mpr ⟨hx, rfl⟩, ?_⟩
   cases hyβ' : (lab U y).testBit β'
   · exact ⟨y, mem_filter.mpr ⟨hy, hxy, hyβ'⟩,
-      z, mem_filter.mpr ⟨hz, hxz, by simpa [hyβ'] using hne.symm⟩, hs⟩
-  · exact ⟨z, mem_filter.mpr ⟨hz, hxz, by simpa [hyβ'] using hne.symm⟩,
+      z, mem_filter.mpr ⟨hz, hxz, by simp_all⟩, hs⟩
+  · exact ⟨z, mem_filter.mpr ⟨hz, hxz, by simp_all⟩,
       y, mem_filter.mpr ⟨hy, hxy, hyβ'⟩, by omega⟩
 
 /-- A set has three distinct elements with sum 0 iff one of the `2 (Lam U)²` three-set inputs,
@@ -104,13 +82,7 @@ theorem distinct_iff_split (h : Bdd U S) :
     obtain ⟨haS, haβ⟩ := mem_filter.mp ha
     obtain ⟨hbS, hbβ, hbβ'⟩ := mem_filter.mp hb
     obtain ⟨hcS, hcβ, hcβ'⟩ := mem_filter.mp hc
-    refine ⟨a, haS, b, hbS, c, hcS, ?_, ?_, ?_, hs⟩
-    · rintro rfl
-      simp [haβ] at hbβ
-    · rintro rfl
-      simp [hbβ'] at hcβ'
-    · rintro rfl
-      simp [haβ] at hcβ
+    grind
 
 end distinct
 
@@ -129,9 +101,9 @@ def Degenerate (x : Fin n → ℤ) : Prop :=
 private theorem degenerate_of_eq {i j k : Fin n} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k)
     (he : x i = x j) (hs : x i + x j + x k = 0) : Degenerate x := by
   by_cases h0 : x i = 0
-  · exact .inr (two_lt_card.mpr ⟨i, by simpa using h0, j, by simpa using he ▸ h0,
-      k, by simp only [mem_filter, mem_univ, true_and]; omega, hij, hik, hjk⟩)
-  · exact .inl ⟨x i, h0, one_lt_card.mpr ⟨i, by simp, j, by simp [he], hij⟩, k, by omega⟩
+  · exact .inr (two_lt_card.mpr ⟨i, by simp_all, j, by simp_all,
+      k, by grind, hij, hik, hjk⟩)
+  · exact .inl ⟨x i, h0, one_lt_card.mpr ⟨i, by simp, j, by simp_all, hij⟩, k, by omega⟩
 
 /-- Three different positions with sum 0: either the three values are distinct, or the solution
 repeats a value. -/
@@ -156,36 +128,11 @@ theorem threeSum_iff_distinct_or_degenerate (x : Fin n → ℤ) :
     · obtain ⟨i, hi, j, hj, hij⟩ := one_lt_card.mp h2
       simp only [mem_filter, mem_univ, true_and] at hi hj
       have hne : ∀ t : Fin n, x t = a → t ≠ k := by
-        rintro t ht rfl
-        omega
+        lia
       exact ⟨i, j, k, hij, hne j hj, hne i hi, by omega⟩
     · obtain ⟨i, hi, j, hj, k, hk, hij, hik, hjk⟩ := two_lt_card.mp h3
       simp only [mem_filter, mem_univ, true_and] at hi hj hk
       exact ⟨i, j, k, hij, hjk, hik, by omega⟩
-
-/-- There is a solution that repeats a value iff one of two three-set inputs has a solution.  The
-first input leaves the search for `-2a` to the reduction.  The second already contains the answer
-for `0, 0, 0`; see `zeroSet`. -/
-theorem degenerate_iff (x : Fin n → ℤ) :
-    Degenerate x ↔ HasSol (twiceSet x) {0} (univ.image x) ∨ HasSol (zeroSet x) {0} {0} := by
-  refine or_congr ⟨?_, ?_⟩ ⟨fun h3 => ?_, ?_⟩
-  · rintro ⟨a, ha0, h2, k, hk⟩
-    obtain ⟨i, hi, -⟩ := one_lt_card.mp h2
-    have ha : a ∈ univ.image x := mem_image.mpr ⟨i, mem_univ i, (mem_filter.mp hi).2⟩
-    exact ⟨2 * a, mem_image.mpr ⟨a, mem_filter.mpr ⟨ha, ha0, h2⟩, rfl⟩, 0, mem_singleton_self 0,
-      x k, mem_image_of_mem x (mem_univ k), by omega⟩
-  · rintro ⟨_, ha', b, hb, _, hc, hs⟩
-    obtain ⟨a, ha, rfl⟩ := mem_image.mp ha'
-    obtain ⟨-, ha0, h2⟩ := mem_filter.mp ha
-    obtain ⟨k, -, rfl⟩ := mem_image.mp hc
-    rw [mem_singleton.mp hb] at hs
-    exact ⟨a, ha0, h2, k, by omega⟩
-  · rw [zeroSet, if_pos h3]
-    exact ⟨0, mem_singleton_self 0, 0, mem_singleton_self 0, 0, mem_singleton_self 0, rfl⟩
-  · rintro ⟨a, ha, -⟩
-    by_contra h3
-    rw [zeroSet, if_neg h3] at ha
-    exact notMem_empty a ha
 
 end positions
 
@@ -206,11 +153,7 @@ array. -/
 private theorem oneArray_sol (W : ℕ) {i j : ℕ} (h : X i + Y j = Z (i + j)) :
     oneArray W X Y Z (4 * i + 1) + oneArray W X Y Z (4 * j + 2) =
       oneArray W X Y Z (4 * i + 1 + (4 * j + 2)) := by
-  simp only [oneArray_val, show (4 * i + 1) % 4 = 1 by omega, show (4 * j + 2) % 4 = 2 by omega,
-    show (4 * i + 1 + (4 * j + 2)) % 4 = 3 by omega, ↓reduceIte, Nat.reduceEqDiff]
-  rw [show (4 * i + 1) / 4 = i by omega, show (4 * j + 2) / 4 = j by omega,
-    show (4 * i + 1 + (4 * j + 2)) / 4 = i + j by omega]
-  omega
+  grind [oneArray_val]
 
 /-- A solution of the one array is a solution of the three arrays: the multiples of `G = 3W + 1`
 cancel only if the two indices have the remainders 1 and 2 modulo 4. -/
@@ -248,11 +191,7 @@ theorem oneArray_correct (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : ∀ i < N, 
 theorem abs_oneArray_le (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : ∀ i < N, |Y i| ≤ (W : ℤ))
     (hZ : ∀ i < N, |Z i| ≤ (W : ℤ)) {u : ℕ} (hu : u < 4 * N) :
     |oneArray W X Y Z u| ≤ 30 * (W : ℤ) + 10 := by
-  have := abs_le.mp (hX (u / 4) (by omega))
-  have := abs_le.mp (hY (u / 4) (by omega))
-  have := abs_le.mp (hZ (u / 4) (by omega))
-  rw [oneArray_val, abs_le]
-  split_ifs <;> constructor <;> omega
+  grind [oneArray_val]
 
 end oneArray
 
@@ -283,8 +222,7 @@ theorem Node.abs_oneArray_le (b₁ : Bdd U ν.S₁) (b₂ : Bdd U ν.S₂) (b₃
   obtain ⟨hX, hY, hZ⟩ := Node.abs_arr_le b₁ b₂ b₃
   refine (ChanHe.abs_oneArray_le (N := u + 1) (fun i _ => hX i) (fun i _ => hY i)
     (fun i _ => hZ i) (by omega)).trans_eq ?_
-  push_cast
-  ring
+  omega
 
 /-- `reduction_correct` with one-array instances, read at length `8 * mPar n U ^ 2`. -/
 theorem reduction_correct_oneArray (hn : 1 ≤ n) {T₁ T₂ T₃ : Finset ℤ}
@@ -298,132 +236,9 @@ theorem reduction_correct_oneArray (hn : 1 ≤ n) {T₁ T₂ T₃ : Finset ℤ}
 
 end node
 
-/-! ## The three-set inputs of the whole reduction -/
-
-section inputs
-
-variable {n U : ℕ} {x : Fin n → ℤ}
-
-/-- The values of `x` are bounded by `2U`. -/
-private theorem bdd_image (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (univ.image x) := by
-  intro a ha
-  obtain ⟨i, -, rfl⟩ := mem_image.mp ha
-  exact (hx i).trans (by omega)
-
-/-- The elements of `twiceSet x` are bounded by `2U`. -/
-theorem bdd_twiceSet (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (twiceSet x) := by
-  intro a' ha'
-  obtain ⟨a, ha, rfl⟩ := mem_image.mp ha'
-  obtain ⟨i, -, rfl⟩ := mem_image.mp (mem_filter.mp ha).1
-  rw [abs_mul, abs_two, Nat.cast_mul, Nat.cast_two]
-  exact mul_le_mul_of_nonneg_left (hx i) (by norm_num)
-
-/-- The set `{0}` is bounded by anything. -/
-theorem bdd_zero (U : ℕ) : Bdd U {0} := by
-  intro a ha
-  rw [mem_singleton.mp ha, abs_zero]
-  exact Nat.cast_nonneg U
-
-/-- The set `zeroSet x` is bounded by anything. -/
-theorem bdd_zeroSet (U : ℕ) (x : Fin n → ℤ) : Bdd U (zeroSet x) := by
-  unfold zeroSet
-  split_ifs
-  · exact bdd_zero U
-  · exact fun a ha => absurd ha (notMem_empty a)
-
-/-- `n` numbers have at most `n` values. -/
-theorem card_image_univ_le (x : Fin n → ℤ) : #(univ.image x) ≤ n :=
+/-- The values of an `n`-element array form a set of size at most `n`. -/
+theorem card_image_univ_le {n : ℕ} (x : Fin n → ℤ) : #(univ.image x) ≤ n :=
   card_image_le.trans_eq (card_fin n)
 
-/-- `twiceSet x` has at most `n` elements. -/
-private theorem card_twiceSet_le (x : Fin n → ℤ) : #(twiceSet x) ≤ n :=
-  card_image_le.trans ((card_filter_le _ _).trans (card_image_univ_le x))
-
-/-- `zeroSet x` has at most one element. -/
-private theorem card_zeroSet_le (x : Fin n → ℤ) : #(zeroSet x) ≤ 1 := by
-  unfold zeroSet
-  split_ifs <;> simp
-
-/-- The three-set inputs on which the whole reduction runs `reduction n (2 * U)`. -/
-inductive IsInput (U : ℕ) (x : Fin n → ℤ) : Finset ℤ → Finset ℤ → Finset ℤ → Prop
-  /-- The set of values, split by two binary digits: for the solutions with three distinct
-  values. -/
-  | split {β β' : ℕ} (hβ : β < Lam (2 * U)) (hβ' : β' < Lam (2 * U)) (v : Bool) :
-    IsInput U x (splitA (2 * U) β v (univ.image x)) (splitB (2 * U) β β' v false (univ.image x))
-      (splitB (2 * U) β β' v true (univ.image x))
-  /-- For the solutions `a, a, -2a`. -/
-  | twice : IsInput U x (twiceSet x) {0} (univ.image x)
-  /-- For the solution `0, 0, 0`. -/
-  | zero : IsInput U x (zeroSet x) {0} {0}
-
-/-- A property holds for one of the three-set inputs iff it holds for one of the splittings or for
-one of the two further inputs. -/
-private theorem exists_isInput_iff (P : Finset ℤ → Finset ℤ → Finset ℤ → Prop) :
-    (∃ T₁ T₂ T₃, IsInput U x T₁ T₂ T₃ ∧ P T₁ T₂ T₃) ↔
-      (∃ β < Lam (2 * U), ∃ β' < Lam (2 * U), ∃ v : Bool,
-        P (splitA (2 * U) β v (univ.image x)) (splitB (2 * U) β β' v false (univ.image x))
-          (splitB (2 * U) β β' v true (univ.image x))) ∨
-      P (twiceSet x) {0} (univ.image x) ∨ P (zeroSet x) {0} {0} := by
-  constructor
-  · rintro ⟨_, _, _, ⟨hβ, hβ', v⟩ | _ | _, h⟩
-    · exact .inl ⟨_, hβ, _, hβ', v, h⟩
-    · exact .inr (.inl h)
-    · exact .inr (.inr h)
-  · rintro (⟨β, hβ, β', hβ', v, h⟩ | h | h)
-    · exact ⟨_, _, _, .split hβ hβ' v, h⟩
-    · exact ⟨_, _, _, .twice, h⟩
-    · exact ⟨_, _, _, .zero, h⟩
-
-/-- Three entries of `x` at different positions sum to 0 iff one of the three-set inputs has a
-solution. -/
-theorem threeSum_iff_exists_input (hx : ∀ i, |x i| ≤ (U : ℤ)) :
-    ThreeSum x ↔ ∃ T₁ T₂ T₃, IsInput U x T₁ T₂ T₃ ∧ HasSol T₁ T₂ T₃ := by
-  rw [threeSum_iff_distinct_or_degenerate, distinct_iff_split (bdd_image hx), degenerate_iff,
-    exists_isInput_iff]
-
-/-- The nodes of the whole reduction are the nodes of the trees of the three-set inputs. -/
-theorem mem_allNodes_iff {ν : Node} :
-    ν ∈ allNodes n U x ↔ ∃ T₁ T₂ T₃, IsInput U x T₁ T₂ T₃ ∧ ν ∈ reduction n (2 * U) T₁ T₂ T₃ := by
-  rw [exists_isInput_iff fun T₁ T₂ T₃ => ν ∈ reduction n (2 * U) T₁ T₂ T₃]
-  simp [allNodes]
-
-/-- Each three-set input has at most `n` elements in each set, of absolute value at most `2U`. -/
-theorem IsInput.admissible (hn : 1 ≤ n) (hx : ∀ i, |x i| ≤ (U : ℤ)) {T₁ T₂ T₃ : Finset ℤ}
-    (h : IsInput U x T₁ T₂ T₃) : Admissible n (2 * U) T₁ T₂ T₃ := by
-  have hb := bdd_image hx
-  have hc := card_image_univ_le x
-  have hc0 : #({0} : Finset ℤ) ≤ n := hn
-  cases h with
-  | split hβ hβ' v =>
-    exact ⟨(card_filter_le _ _).trans hc, (card_filter_le _ _).trans hc,
-      (card_filter_le _ _).trans hc, hb.mono (filter_subset _ _), hb.mono (filter_subset _ _),
-      hb.mono (filter_subset _ _)⟩
-  | twice => exact ⟨card_twiceSet_le x, hc0, hc, bdd_twiceSet hx, bdd_zero _, hb⟩
-  | zero => exact ⟨(card_zeroSet_le x).trans hn, hc0, hc0, bdd_zeroSet _ x, bdd_zero _, bdd_zero _⟩
-
-end inputs
-
-/-! ## The whole reduction -/
-
-/-- **Correctness of the whole reduction.**  Let `x` consist of `n ≥ 1` integers of absolute value
-at most `U`.  Then three entries of `x` at different positions sum to 0 iff one of the instances,
-read at length `8 * mPar n (2 * U) ^ 2`, has a solution. -/
-theorem instances_correct (n U : ℕ) (hn : 1 ≤ n) (x : Fin n → ℤ) (hx : ∀ i, |x i| ≤ (U : ℤ)) :
-    ThreeSum x ↔ ∃ y ∈ instances n U x, ConvOne (8 * mPar n (2 * U) ^ 2) y :=
-  calc ThreeSum x
-      ↔ ∃ T₁ T₂ T₃, IsInput U x T₁ T₂ T₃ ∧ HasSol T₁ T₂ T₃ := threeSum_iff_exists_input hx
-    _ ↔ ∃ T₁ T₂ T₃, IsInput U x T₁ T₂ T₃ ∧ ∃ ν ∈ reduction n (2 * U) T₁ T₂ T₃,
-          ConvOne (8 * mPar n (2 * U) ^ 2) (ν.oneArray (2 * U)) :=
-        exists₃_congr fun _ _ _ => and_congr_right fun hT =>
-          reduction_correct_oneArray hn (hT.admissible hn hx)
-    _ ↔ ∃ ν ∈ allNodes n U x, ConvOne (8 * mPar n (2 * U) ^ 2) (ν.oneArray (2 * U)) :=
-        ⟨fun ⟨T₁, T₂, T₃, hT, ν, hν, h⟩ => ⟨ν, mem_allNodes_iff.mpr ⟨T₁, T₂, T₃, hT, hν⟩, h⟩,
-          fun ⟨ν, hν, h⟩ =>
-            let ⟨T₁, T₂, T₃, hT, hν'⟩ := mem_allNodes_iff.mp hν
-            ⟨T₁, T₂, T₃, hT, ν, hν', h⟩⟩
-    _ ↔ ∃ y ∈ instances n U x, ConvOne (8 * mPar n (2 * U) ^ 2) y := by
-        simp only [instances, List.mem_map, exists_exists_and_eq_and]
-
 end ChanHe
-
 end ThreeSumApsp

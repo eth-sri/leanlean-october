@@ -22,7 +22,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Memory.lean` (Apache
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 /-- **The block from b0 on holds the data structure for X and Y**, with the encodings right at the
 leaves with at most `m` symbols `P₀`.  The pruned preprocessing establishes this, and every query
@@ -111,7 +111,7 @@ variable {p : Sec2.Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Areas.lean (dir_cell)
 theorem dir_cellP (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ) {j : ℕ} (hj : j < 31) :
     μ (b0 + j) = (((Sec2.dirList p aX aY b0).getD j 0 : ℕ) : ℤ) :=
-  h.dir.read (by simpa [Sec2.dirList] using hj)
+  h.dir.read (by assumption)
 
 /-- Cell j of the directory, with the address in the form in which the evaluation of mem[b0 + j]
 meets it. -/
@@ -120,8 +120,7 @@ meets it. -/
 theorem _root_.Light.Sec2.SharedReadyP.dir_read (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ)
     {j : ℕ} (hj : j < 31) :
     μ ((b0 : ℤ) + j).toNat = ((Sec2.dirList p aX aY b0).getD j 0 : ℕ) := by
-  rw [toNat_natCast_add_natCast]
-  exact dir_cellP h hj
+  grind [dir_cellP]
 
 /-- After the pruned shared stage the directory holds what `DirCells` says. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Directory.lean

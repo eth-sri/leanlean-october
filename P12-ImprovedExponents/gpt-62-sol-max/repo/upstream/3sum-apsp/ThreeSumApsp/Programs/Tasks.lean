@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Lang.Lib.ArrayAt
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Lang.Tasks
@@ -45,36 +47,36 @@ structure TriInst : Type where
   BC : List ℤ
   AC : List ℤ
 
-/-- The three matrices lie below the free pointer, and their entries are bounded by `U`. -/
-structure TriInst.Pre (x : TriInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
+/-- The three bounded weight matrices in memory. -/
+structure TriInst.Arrays (x : TriInst) (μ : ℕ → ℤ) (top : ℕ) : Prop where
+  arrAB : ArrayAt μ x.ab x.AB (x.n * x.n) x.U top
+  arrBC : ArrayAt μ x.bc x.BC (x.n * x.n) x.U top
+  arrAC : ArrayAt μ x.ac x.AC (x.n * x.n) x.U top
+
+/-- The task also requires positive dimensions and weight bound. -/
+structure TriInst.Pre (x : TriInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop extends x.Arrays μ fr where
   n_pos : 1 ≤ x.n
   U_pos : 1 ≤ x.U
-  lenAB : x.AB.length = x.n * x.n
-  lenBC : x.BC.length = x.n * x.n
-  lenAC : x.AC.length = x.n * x.n
-  segAB : Seg μ x.ab x.AB
-  segBC : Seg μ x.bc x.BC
-  segAC : Seg μ x.ac x.AC
-  leAB : AbsLe x.AB x.U
-  leBC : AbsLe x.BC x.U
-  leAC : AbsLe x.AC x.U
-  belowAB : x.ab + x.n * x.n ≤ fr
-  belowBC : x.bc + x.n * x.n ≤ fr
-  belowAC : x.ac + x.n * x.n ≤ fr
+
+/-- The arrays stay put if the memory below them does not change. -/
+theorem TriInst.Arrays.keep {x : TriInst} {μ μ' : ℕ → ℤ} {fr : ℕ} (h : x.Arrays μ fr)
+    (hs : Kept μ μ' fr) : x.Arrays μ' fr := by
+  light_facts h.arrAB h.arrBC h.arrAC
+  exact ⟨h.arrAB.keep, h.arrBC.keep, h.arrAC.keep⟩
+
+/-- The free pointer may grow. -/
+theorem TriInst.Arrays.mono {x : TriInst} {μ : ℕ → ℤ} {fr fr' : ℕ} (h : x.Arrays μ fr)
+    (hfr : fr ≤ fr') : x.Arrays μ fr' :=
+  ⟨h.arrAB.mono le_rfl hfr, h.arrBC.mono le_rfl hfr, h.arrAC.mono le_rfl hfr⟩
 
 /-- An instance stays where it is if no cell below the free pointer changes. -/
 theorem TriInst.Pre.keep {x : TriInst} {μ μ' : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr)
-    (hs : Kept μ μ' fr := by light_keep) : x.Pre μ' fr := by
-  light_facts h
-  exact { h with segAB := h.segAB.keep, segBC := h.segBC.keep, segAC := h.segAC.keep }
+    (hs : Kept μ μ' fr := by light_keep) : x.Pre μ' fr :=
+  { h with toArrays := h.toArrays.keep hs }
 
 /-- The free pointer may grow. -/
 theorem TriInst.Pre.mono {x : TriInst} {μ : ℕ → ℤ} {fr fr' : ℕ} (h : x.Pre μ fr) (hfr : fr ≤ fr') :
-    x.Pre μ fr' :=
-  { h with
-    belowAB := h.belowAB.trans hfr
-    belowBC := h.belowBC.trans hfr
-    belowAC := h.belowAC.trans hfr }
+    x.Pre μ fr' := { h with toArrays := h.toArrays.mono hfr }
 
 /-- Three matrices one after the other, with the free pointer behind them, are an instance. -/
 theorem triPre_of_arrays {n U base : ℕ} {AB BC AC : List ℤ} {μ : ℕ → ℤ} (hn : 1 ≤ n) (hU : 1 ≤ U)
@@ -83,8 +85,7 @@ theorem triPre_of_arrays {n U base : ℕ} {AB BC AC : List ℤ} {μ : ℕ → �
     (hAC : ArrayAt μ (base + 2 * (n * n)) AC (n * n) U (base + 3 * (n * n))) :
     (⟨n, U, base, base + n * n, base + 2 * (n * n), AB, BC, AC⟩ : TriInst).Pre μ
       (base + 3 * (n * n)) :=
-  ⟨hn, hU, hAB.len, hBC.len, hAC.len, hAB.seg, hBC.seg, hAC.seg, hAB.bound, hBC.bound, hAC.bound,
-    hAB.below, hBC.below, hAC.below⟩
+  ⟨⟨hAB, hBC, hAC⟩, hn, hU⟩
 
 /-- **Exact Triangle**: et(n, U, ab, bc, ac, fr) returns 1 if there is a zero triangle and 0 if not.
 -/
@@ -292,25 +293,16 @@ structure ThinInst.Pre (x : ThinInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
 namespace ThinArg
 
 /-- N. -/
-abbrev Rows : ℕ := 0
-/-- D. -/
-abbrev Cols : ℕ := 1
-/-- The number w of wanted positions. -/
-abbrev Wanted : ℕ := 2
-/-- The bound U on the entries. -/
-abbrev Bound : ℕ := 3
-/-- The address of X. -/
-abbrev AdrX : ℕ := 4
-/-- The address of Y. -/
-abbrev AdrY : ℕ := 5
-/-- The address of the rows of the wanted positions. -/
-abbrev AdrWI : ℕ := 6
-/-- The address of their columns. -/
-abbrev AdrWJ : ℕ := 7
-/-- The address of the output. -/
-abbrev AdrOut : ℕ := 8
-/-- The free pointer. -/
-abbrev Free : ℕ := 9
+registers [
+  Rows,
+  /- D. -/ Cols,
+  /- The number w of wanted positions. -/ Wanted,
+  _,
+  /- The address of X. -/ AdrX,
+  /- The address of Y. -/ AdrY,
+  /- The address of the rows of the wanted positions. -/ AdrWI,
+  /- The address of their columns. -/ AdrWJ,
+  /- The address of the output. -/ AdrOut]
 
 end ThinArg
 

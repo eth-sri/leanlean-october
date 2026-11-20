@@ -48,14 +48,14 @@ theorem ctrAt_succ {k₀ n₀ : ℕ} (hk : 0 < k₀) (hn : 0 < n₀) (I : ℕ) :
   split_ifs with hoff hlt
   · -- The next row of the same block.
     obtain ⟨hdiv, hmod⟩ := Nat.succ_div_mod_of_lt hoff
-    rw [hdiv, hmod]
+    simp_all
   · -- The first row of the next block of the same band.
     obtain ⟨hdiv, hmod⟩ := Nat.succ_div_mod_of_eq (show I % n₀ + 1 = n₀ by omega)
     obtain ⟨hband, hblock⟩ := Nat.succ_div_mod_of_lt hlt
-    rw [hdiv, hmod, hband, hblock]
+    simp_all
   · -- The first row of the first block of the next band.
     obtain ⟨hdiv, hmod⟩ := Nat.succ_div_mod_of_eq (show I % n₀ + 1 = n₀ by omega)
     obtain ⟨hband, hblock⟩ := Nat.succ_div_mod_of_eq (show I / n₀ % k₀ + 1 = k₀ by omega)
-    rw [hdiv, hmod, hband, hblock]
+    simp_all
 
 end ThreeSumApsp.Spec

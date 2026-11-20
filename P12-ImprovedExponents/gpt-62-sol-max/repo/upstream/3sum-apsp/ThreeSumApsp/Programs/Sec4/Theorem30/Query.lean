@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
 public import ThreeSumApsp.Programs.Sec4.Theorem30.RoutineFacts
 public import ThreeSumApsp.Spec.Sec4.Theorem30.PartialSums
@@ -39,27 +43,8 @@ namespace QueryAt
 the addresses of the tables BAND, BLOCK, DIG3 and of the area WD; the bands of I and J; the
 addresses of the areas BOX, SS, ROOTS, TR; and a local for the result of outDigits, which is not
 used. -/
-abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Base : ℕ := 2
-@[inherit_doc Row] abbrev Levels : ℕ := 3
-@[inherit_doc Row] abbrev Inner : ℕ := 4
-@[inherit_doc Row] abbrev Switch : ℕ := 5
-@[inherit_doc Row] abbrev Outer : ℕ := 6
-@[inherit_doc Row] abbrev Blocks : ℕ := 7
-@[inherit_doc Row] abbrev Bands : ℕ := 8
-@[inherit_doc Row] abbrev Leaves : ℕ := 9
-@[inherit_doc Row] abbrev BandTab : ℕ := 10
-@[inherit_doc Row] abbrev BlockTab : ℕ := 11
-@[inherit_doc Row] abbrev DigitTab : ℕ := 12
-@[inherit_doc Row] abbrev Digits : ℕ := 13
-@[inherit_doc Row] abbrev BandI : ℕ := 14
-@[inherit_doc Row] abbrev BandJ : ℕ := 15
-@[inherit_doc Row] abbrev Box : ℕ := 16
-@[inherit_doc Row] abbrev Str : ℕ := 17
-@[inherit_doc Row] abbrev Roots : ℕ := 18
-@[inherit_doc Row] abbrev Tries : ℕ := 19
-@[inherit_doc Row] abbrev Void : ℕ := 20
+registers [Row, Col, Base, Levels, Inner, Switch, Outer, Blocks, Bands, Leaves, BandTab, BlockTab,
+  DigitTab, Digits, BandI, BandJ, Box, Str, Roots, Tries, Void]
 
 end QueryAt
 
@@ -119,9 +104,7 @@ def queryAtLocals (p : Sec2.Par) (t b0 I J : ℕ) : List ℤ :=
 
 section Proof
 
-variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L}
-  {aX aY b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
-  {U : ℤ} {μ : ℕ → ℤ}
+variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {U : ℤ} {μ : ℕ → ℤ}
 
 /-! ## The first two parts -/
 
@@ -134,15 +117,11 @@ theorem queryAtAreas_spec (hlim : Lim30 lim p t b0 U) (I J : ℕ) :
   unfold queryAtLocals queryAtRead
   -- the product nB², in the integers
   have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
-    exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
+    rfl
   have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
   push_cast at htr
   -- box := digits + L + L; str := box + L; roots := str + m + 1
-  light_set (aBOX p b0 : ℕ)
-  light_set (aSS p b0 : ℕ)
-  light_set (aROOTS p b0 : ℕ)
-  -- tries := roots + nB nB
-  light_set (aTR p b0 : ℕ)
+  light_steps
   rfl
 
 /-! ## The call of outDigits -/
@@ -154,8 +133,7 @@ theorem segN_of_segB {μ : ℕ → ℤ} {a : ℕ} {l : List Bool} (h : Sec2.SegB
   unfold SegN
   rw [List.map_map]
   convert h using 2
-  funext b
-  cases b <;> simp
+  trivial
 
 /-- The arguments of the call of outDigits, and the data behind them. -/
 def outArgs (p : Sec2.Par) (b0 I J : ℕ) : OutDigitsArgs :=

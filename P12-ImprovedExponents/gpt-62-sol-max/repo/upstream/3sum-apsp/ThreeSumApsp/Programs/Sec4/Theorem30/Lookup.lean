@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
@@ -27,19 +31,14 @@ step down does to both facts.  `lookup_spec` is the specification.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace Lookup
 
 /-- The local variables of lookup: the arguments (the base of the trie area, the root, which becomes
 the current vertex, the address of the string and its length) and the level.  Local 0 also takes the
 result. -/
-abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Result : ℕ := 0
-@[inherit_doc Area] abbrev Vertex : ℕ := 1
-@[inherit_doc Area] abbrev Key : ℕ := 2
-@[inherit_doc Area] abbrev Len : ℕ := 3
-@[inherit_doc Area] abbrev Level : ℕ := 4
+registers [Area / Result, Vertex, Key, Len, Level]
 
 end Lookup
 
@@ -83,7 +82,7 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
   light_facts hs
   unfold tLookup
   -- level := 0
-  light_set (0 : ℕ)
+  light_step
   -- while level < len
   refine Ends.next _ (Ends.whileBlock (Inv tr root key T kl μ) kl.length ?start ?round ?done
     (hT := le_rfl))
@@ -107,9 +106,7 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
     have hread : μ (tr + p) = T.getD p 0 := hT.getD (by omega) 0
     refine ⟨by light_side, by light_side, ?_⟩
     -- return mem[area + vertex]
-    light_set (T.getD p 0) using hread
-    refine ⟨?_, rfl⟩
-    rw [trieLookup, hwk]
-    rfl
+    light_step using hread
+    aesop
 
 end Light.Sec4

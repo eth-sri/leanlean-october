@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
@@ -29,7 +31,7 @@ so far, followed by what is still to be written, are the whole string.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace Scatter
 
@@ -60,7 +62,7 @@ private theorem scatter_step {w s : List ℕ} {i o : ℕ} (run : ℕ) (hi : i < 
     generalize s.getD o 0 = y
     by_cases hy : y = 9
     · rw [hy, starRunIf_nine_cons, scatter_nine_cons]
-      by_cases hrun : run = 1 <;> simp [outDigit, nextRun, nextPtr, hrun]
+      light_side [outDigit, nextRun, nextPtr]
     · rw [starRunIf_cons_of_ne hy, scatter_nine_cons]
       simp [outDigit, nextRun, nextPtr, hy]
   · rw [scatter_cons_of_ne hx]
@@ -77,7 +79,7 @@ structure Progress (star : Bool) (wl sl : List ℕ) (i run o : ℕ) (done : List
 
 theorem Progress.zero (star : Bool) (wl sl : List ℕ) :
     Progress star wl sl 0 (if star then 1 else 0) 0 [] :=
-  ⟨rfl, rfl, by cases star <;> rfl⟩
+  ⟨rfl, rfl, by simp⟩
 
 section
 
@@ -99,7 +101,7 @@ theorem Progress.succ (h : Progress star wl sl i run o done) (hi : i < wl.length
   length := by rw [List.length_append, h.length, List.length_singleton]
   ptr := by
     rw [List.count_take_succ_getD wl 9 hi 0, ← h.ptr, nextPtr]
-    split_ifs <;> rfl
+    lia
   rest := by
     rw [List.append_assoc, List.singleton_append, ← scatter_step run hi (h.ptr_lt hi hsl)]
     exact h.rest
@@ -111,14 +113,7 @@ end
 /-- The local variables of scatter: the arguments (the addresses of the two strings and of the
 copy, the length, and the flag, whose first value is the argument star), the position, the pointer
 into the second string, and the digit to be written. -/
-abbrev First : ℕ := 0
-@[inherit_doc First] abbrev Second : ℕ := 1
-@[inherit_doc First] abbrev Dst : ℕ := 2
-@[inherit_doc First] abbrev Len : ℕ := 3
-@[inherit_doc First] abbrev Run : ℕ := 4
-@[inherit_doc First] abbrev Pos : ℕ := 5
-@[inherit_doc First] abbrev Ptr : ℕ := 6
-@[inherit_doc First] abbrev Digit : ℕ := 7
+registers [First, Second, Dst, Len, Run, Pos, Ptr, Digit]
 
 end Scatter
 
@@ -191,7 +186,7 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
   case start =>
     refine ⟨μ, _, 0, 0, [], ?_, Progress.zero star wl sl, Seg.nil, .refl⟩
     refine congrArg (State.mk · μ) ((frame_append_zeros _ 3).symm.trans ?_)
-    cases star <;> rfl
+    simp
   case round =>
     rintro i _ hi ⟨μ', run, o, dg, done, rfl, hprog, hdone, hsame⟩
     have hx : μ' (w + i) = (wl.getD i 0 : ℕ) :=
@@ -200,7 +195,7 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
       fun h9 => by
         have hptr := hprog.ptr_lt hi hsl h9
         exact ⟨(hsame _ (by omega)).trans (hsecond.read hptr), by omega⟩
-    refine ⟨by simp, by simp; omega, (round_runs hs hw_in hout_in hi hx hy).mono fun σ' hσ' =>
+    refine ⟨by simp, by simp_all, (round_runs hs hw_in hout_in hi hx hy).mono fun σ' hσ' =>
       ⟨_, _, _, _, _, hσ', hprog.succ hi hsl, ?_, hsame.update ⟨by omega, by omega⟩ _⟩⟩
     have hsnoc := hdone.snoc (outDigit (wl.getD i 0) (sl.getD o 0) run)
     rwa [hprog.length] at hsnoc
@@ -209,6 +204,6 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
     have hall : done = scatter wl (starRunIf star sl) := by
       have hrest := hprog.rest
       rwa [List.drop_length, scatter, List.append_nil] at hrest
-    exact ⟨by simp, by simp, hall ▸ hdone, hsame⟩
+    simp_all
 
 end Light.Sec4

@@ -33,8 +33,8 @@ variable {W : ℕ} {F : ℕ}
 /-- Every expression uses at least one temporary. -/
 private theorem _root_.Light.Expr.height_pos (e : Expr) : 0 < e.height := by
   induction e with
-  | const n => simp [Expr.height]
-  | var x => simp [Expr.height]
+  | const n => solve_by_elim
+  | var x => solve_by_elim
   | op o a b iha _ => exact lt_of_lt_of_le iha (le_max_left _ _)
   | load a ih => exact ih
 
@@ -51,7 +51,7 @@ private theorem straight_digitsCode (c : ℤ) : ∀ L : List ℕ, ∀ i ∈ digi
   | [] => by simp [digitsCode, Straight]
   | d :: L => by
     have := straight_digitsCode c L
-    by_cases hd : d = 0 <;> simpa [digitsCode, hd, Straight, or_imp, forall_and] using this
+    by_cases hd : d = 0 <;> grind [digitsCode, Straight]
 
 /-- The code for a constant: the cell c receives the number with the given binary digits, and
 nothing else changes. -/
@@ -66,24 +66,20 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
       effect_sub c (wd_toInt (m c)).symm (wd_toInt (m c)).symm, sub_self]
     exact ⟨by simp, (AgreeOutside.refl _ m).update (Set.mem_singleton c) _⟩
   | cons d L ih =>
-    obtain ⟨val, A⟩ := ih fun x hx => hL x (by simp [hx])
+    obtain ⟨val, A⟩ := ih fun x hx => hL x (by simp_all)
     -- c := c + c
     rw [digitsCode, effects_append, effects_append, effects_cons, effects_nil, effect_add c val val]
-    have hd : d = 0 ∨ d = 1 := by have := hL d (by simp); omega
+    have hd : d = 0 ∨ d = 1 := by simp_all <;> omega
     obtain rfl | rfl := hd
     · refine ⟨?_, A.update (Set.mem_singleton c) _⟩
       rw [if_pos rfl, effects_nil, Function.update_self, Nat.ofDigits_cons]
-      congr 1
-      push_cast
-      ring
+      lia
     · -- c := c + 1
       rw [if_neg one_ne_zero, effects_cons, effects_nil, effect_add c (Function.update_self _ _ _)
         ((Function.update_of_ne hc _ _).trans (A.read hc hone))]
       refine ⟨?_, (A.update (Set.mem_singleton c) _).update (Set.mem_singleton c) _⟩
       rw [Function.update_self, Nat.ofDigits_cons]
-      congr 1
-      push_cast
-      ring
+      lia
 
 /-! ## Expressions -/
 

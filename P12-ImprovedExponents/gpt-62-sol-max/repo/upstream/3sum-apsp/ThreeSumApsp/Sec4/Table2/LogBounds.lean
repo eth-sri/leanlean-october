@@ -44,12 +44,6 @@ noncomputable def logThreeLo : ℝ := 1.0986122881
 /-- An upper bound on `ln 3 = 1.098612288668…`. -/
 noncomputable def logThreeHi : ℝ := 1.0986122892
 
-/-- A lower bound on `ln 10 = 2.302585092994…`. -/
-noncomputable def logTenLo : ℝ := 2.3025850922
-
-/-- An upper bound on `ln 10 = 2.302585092994…`. -/
-noncomputable def logTenHi : ℝ := 2.3025850938
-
 /-- The `x` with `θ = 2^k (1 + x)/(1 - x)`. It is small when `2^k` is near `θ`. -/
 noncomputable def seriesArg (k : ℤ) (θ : ℝ) : ℝ := (θ - 2 ^ k) / (θ + 2 ^ k)
 
@@ -68,7 +62,7 @@ noncomputable def logErr (k : ℤ) (n : ℕ) (θ : ℝ) : ℝ :=
 after unfolding the approximations of logarithms. -/
 macro "numerics" : tactic =>
   `(tactic| norm_num [logApprox, logErr, seriesArg, logTwoLo, logTwoHi, logThreeLo, logThreeHi,
-    logTenLo, logTenHi, Finset.sum_range_succ, rhoC])
+    Finset.sum_range_succ, rhoC])
 
 private lemma log_two_mem : Real.log 2 ∈ Set.Icc logTwoLo logTwoHi :=
   ⟨Real.log_two_gt_d9.le, Real.log_two_lt_d9.le⟩
@@ -103,7 +97,7 @@ theorem log_mem (k : ℤ) (n : ℕ) {θ : ℝ} (hθ : 0 < θ := by numerics) :
   rw [(even_two_mul n).pow_abs] at hseries
   rw [abs_le] at htwo hseries
   rw [hlog, logApprox, logErr]
-  constructor <;> linarith [htwo.1, htwo.2, hseries.1, hseries.2]
+  grind
 
 private lemma log_three_mem : Real.log 3 ∈ Set.Icc logThreeLo logThreeHi :=
   ⟨le_trans (by numerics) (log_mem 2 7).1, (log_mem 2 7).2.trans (by numerics)⟩
@@ -132,22 +126,7 @@ theorem qOf_le (k : ℤ) {θ r : ℝ} (h0 : 0 < θ := by numerics) (h1 : θ < 1 
   have hlogc := mul_le_mul_of_nonneg_left (log_mem 0 4 hcompl).1 hcompl.le
   have hthree := mul_le_mul_of_nonneg_left log_three_mem.2 h0.le
   have htwo := mul_le_mul_of_nonneg_left log_two_mem.1 hr
-  linarith [h, hlog, hlogc, hthree, htwo]
-
-/-- A lower bound on `q(θ)` at a rational `θ`, computed as in `qOf_le`. -/
-theorem le_qOf (k : ℤ) {θ r : ℝ} (h0 : 0 < θ := by numerics) (h1 : θ < 1 := by numerics)
-    (hr : 0 ≤ r := by numerics)
-    (h : r * (2 * logTwoHi)
-      ≤ -θ * (logApprox k 4 θ + logErr k 4 θ)
-        - (1 - θ) * (logApprox 0 4 (1 - θ) + logErr 0 4 (1 - θ)) + θ * (2 * logThreeLo) := by
-      numerics) : r ≤ qOf θ := by
-  have hcompl : 0 < 1 - θ := sub_pos.2 h1
-  rw [qOf_eq_div, le_div_iff₀ (mul_pos two_pos (Real.log_pos one_lt_two))]
-  have hlog := mul_le_mul_of_nonneg_left (log_mem k 4 h0).2 h0.le
-  have hlogc := mul_le_mul_of_nonneg_left (log_mem 0 4 hcompl).2 hcompl.le
-  have hthree := mul_le_mul_of_nonneg_left log_three_mem.1 h0.le
-  have htwo := mul_le_mul_of_nonneg_left log_two_mem.2 hr
-  linarith [h, hlog, hlogc, hthree, htwo]
+  linarith
 
 /-! ## The exponent `γ` (Corollary 31) -/
 

@@ -79,9 +79,9 @@ private theorem steps_tail {code : List Instr} {pos : ℕ} {dec : Bool}
     have rest : CodeAt code (pos + 1)
       [.sub cD cZERO (cStack mainFrame), .bltz cD (pos + 4), .reject, .accept] := hcode.tail
     -- D := 0 - the result; go to accept if D < 0; reject
-    have run := (copy.trans (steps_sub rest (by cell_read using hzero)
-      (by cell_read using hres))).trans
-      (steps_bltz rest.tail (Function.update_self ..) (by rwa [zero_sub]))
+    have run := (copy.trans (steps_sub rest (by assumption)
+      (by assumption))).trans
+      (steps_bltz rest.tail (Function.update_self ..) (by simp_all))
     have keep : AgreeOutside {cRESULT, cD} m
         (Function.update (Function.update m cRESULT (wd W r)) cD (wd W (0 - r))) :=
       ((AgreeOutside.refl _ m).update (by simp) _).update (by simp) _
@@ -119,9 +119,7 @@ def lowCell (P : Program) (dec : Bool) (lim : Limits) : ℕ :=
 
 private theorem frame_le_stackCells (P : Program) (lim : Limits) :
     mainFrame + frameSize P + 1 ≤ stackCells P lim := by
-  have := Nat.le_mul_of_pos_right (frameSize P + 1) (show 0 < lim.depth + 1 by omega)
-  unfold stackCells
-  omega
+  grind [stackCells]
 
 /-! ## The setting of the simulation theorem -/
 
@@ -164,8 +162,7 @@ private theorem start_mainStmt {σ : State} {m : ℤ → BitVec W} (hσ : σ.Bou
   width := (width_mainStmt p0).trans_le (three_le_frameSize P)
   bounded := hσ
   room := by
-    simp only [setting, codeLayout, stackCells, Nat.sub_zero, Nat.mul_succ]
-    omega
+    grind [setting, codeLayout, stackCells]
 
 /-- The cells below `-lowCell` and the cells from `lim.space` on are not among those that the
 start-up code, the outermost statement or the code for the verdict may change. -/
@@ -173,7 +170,6 @@ private theorem not_mem_of_far {a : ℤ}
     (ha : a < -(lowCell P dec lim : ℤ) ∨ (lim.space : ℤ) ≤ a) :
     a ∉ Constants (dispPos P dec) ∪ ({cFP} ∪ MainFrame (frameSize P)) ∪
       Writable (setting P p0 dec hfit).toSizes mainFrame ∪ {cRESULT, cD} := by
-  have hframe := frame_le_stackCells P lim
   have htemps := two_mul_frameSize_add_le_dispPos P dec
   have hstack : 2 * stackCells P lim ≤ lowCell P dec lim := le_max_left _ _
   have hpool : 25 + 4 * dispPos P dec ≤ lowCell P dec lim := le_max_right _ _
@@ -237,11 +233,11 @@ theorem compileProgram_correct {lim : Limits} {P : Program} {p0 : ℕ} {dec : Bo
   have keep₁ := agreeOutside_startMem hF (dispPos P dec) m
   -- the outermost statement
   obtain ⟨m', n, fin⟩ := sim (setting P p0 dec hfit) h mainPos mainFrame _ (start_mainStmt hfit hσ
-    (rel_startMem _ hF (by simp only [setting, codeLayout, mainFrame]; omega)
+    (rel_startMem _ hF (by simp_all [setting, codeLayout, mainFrame] <;> omega)
       (fun a _ => hm.rep a) hm.arg1 hm.arg2))
   have hn : n ≤ stepsPerStep (dispPos P dec) * c := fin.le
   have run₂ := fin.run.cast_pos (p' := tailPos (frameSize P))
-    (by simp only [tailPos, size_mainStmt, setting, codeLayout])
+    (by rfl)
   -- the verdict
   obtain ⟨k, cfg, hk, run₃, tail⟩ := steps_tail (codeAt_tailCode P p0 dec)
     (fin.rel.loc 0 (show 0 < frameSize P by omega)) fin.rel.zero
@@ -259,7 +255,7 @@ theorem compileProgram_correct {lim : Limits} {P : Program} {p0 : ℕ} {dec : Bo
     omega
   · by_cases ha : a < lim.space
     · exact tail.agree.read (by cells) (fin.rel.mem a ha)
-    · rw [far _ (Or.inr (by exact_mod_cast not_lt.1 ha)), h.mem_outside a (not_lt.1 ha)]
+    · rw [far _ (Or.inr (by simp_all)), h.mem_outside a (not_lt.1 ha)]
       exact hm.rep a
 
 end Light.Compiler

@@ -26,7 +26,7 @@ polynomially bounded.
 
 namespace Light
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp
 
 /-- The reading of "is solved in time T" by programs of the light language. -/
 noncomputable def lightModel : DetTimeModel where

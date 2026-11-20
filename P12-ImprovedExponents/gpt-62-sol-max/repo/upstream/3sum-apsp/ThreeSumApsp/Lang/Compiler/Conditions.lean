@@ -58,26 +58,13 @@ theorem steps_pair (I : Framed Z σ q m)
 
 /-! ## Tests -/
 
+open Classical in
 /-- What the code of a test does, if it has size instructions, begins at pos, and tests p: in at
 most size steps the machine reaches the position after the code if p holds, and the position l if
 not.  Only scratch cells change. -/
 def Decides (code : List Instr) (F pos size l : ℕ) (m : ℤ → BitVec W) (p : Prop) : Prop :=
   ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
-    (p → Steps code n ⟨pos, m⟩ ⟨pos + size, m'⟩) ∧ (¬ p → Steps code n ⟨pos, m⟩ ⟨l, m'⟩)
-
-/-- The test holds. -/
-theorem Decides.of_holds {F size : ℕ} {p : Prop} (h : Decides code F pos size l m p) (hp : p) :
-    ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
-      Steps code n ⟨pos, m⟩ ⟨pos + size, m'⟩ :=
-  let ⟨m', n, le, A, run, _⟩ := h
-  ⟨m', n, le, A, run hp⟩
-
-/-- The test fails. -/
-theorem Decides.of_fails {F size : ℕ} {p : Prop} (h : Decides code F pos size l m p) (hp : ¬ p) :
-    ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
-      Steps code n ⟨pos, m⟩ ⟨l, m'⟩ :=
-  let ⟨m', n, le, A, _, run⟩ := h
-  ⟨m', n, le, A, run hp⟩
+    Steps code n ⟨pos, m⟩ ⟨if p then pos + size else l, m'⟩
 
 /-- No overflow: the difference of two values fits in a word, and so does one less. -/
 private theorem inRange_sub (Z : Sizes W) {x y : ℤ} (hx : |x| ≤ Z.lim.word)
@@ -102,8 +89,8 @@ private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   -- leave if D < 0
   have run₄ := run₃.trans (steps_bltz restCode.tail.tail (Function.update_self _ _ _)
     (inRange_sub Z (Expr.abs_val_le hσ b hsb) (Expr.abs_val_le hσ a hsa)).2)
-  exact ⟨_, _, by rw [Cond.size], (A₁.update (by cells) _).update (by cells) _,
-    run₄.branch (by omega) (by rw [Cond.size]; omega)⟩
+  exact ⟨_, _, by rfl, (A₁.update (by cells) _).update (by cells) _,
+    run₄.branch (by omega) (by rfl)⟩
 
 /-- The test a = b. -/
 private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
@@ -123,8 +110,8 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₃ := run₂.trans (steps_bltz restCode.tail (Function.update_self _ _ _)
     (inRange_sub Z ha hb).1)
   by_cases hlt : a.val σ - b.val σ < 0
-  · rw [if_pos hlt] at run₃
-    exact ⟨_, _, by rw [Cond.size]; omega, A₂, fun h => absurd h (by omega), fun _ => run₃⟩
+  · refine ⟨_, _, by solve_by_elim, A₂, run₃.cast_pos ?_⟩
+    split_ifs <;> omega
   rw [if_neg hlt] at run₃
   -- D := 0 - D
   have run₄ := run₃.trans (steps_sub restCode.tail.tail
@@ -134,8 +121,8 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   -- leave if D < 0
   have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail (Function.update_self _ _ _)
     (inRange_sub Z hb ha).1)
-  exact ⟨_, _, by rw [Cond.size], A₂.update (by cells) _,
-    run₅.branch (by omega) (by rw [Cond.size]; omega)⟩
+  exact ⟨_, _, by rfl, A₂.update (by cells) _,
+    run₅.branch (by omega) (by rfl)⟩
 
 /-- The code of a test decides the test. -/
 theorem decides_compileCond (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim) (c : Cond)

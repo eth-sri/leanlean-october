@@ -35,7 +35,7 @@ are proved for any two arrays in place of the two encodings.
 
 @[expose] public section
 
-open Finset
+
 
 namespace ThreeSumApsp
 
@@ -58,28 +58,9 @@ theorem computeEncoding_eq_encodeWith {α : Type} [Fintype α] (c : Term → α 
   | zero => rw [computeEncoding, encodeWith_zero]
   | succ n ih => rw [computeEncoding, ih, ← encodeWith_cons, Fin.cons_self_tail]
 
-/-- The procedure of Section 2.4.1 computes the encoding of `a`. -/
-theorem computeEncoding_phi {L : ℕ} (a : LeftStr L → ℤ) : computeEncoding phi L a = encodingL a :=
-  funext (computeEncoding_eq_encodeWith phi a)
-
-/-- The procedure of Section 2.4.1 computes the encoding of `b`. -/
-theorem computeEncoding_psi {L : ℕ} (b : RightStr L → ℤ) : computeEncoding psi L b = encodingR b :=
-  funext (computeEncoding_eq_encodeWith psi b)
-
 /-! ### Section 2.4.2: the sets `S_λ` of step (2) -/
 
-/-- Membership in a slice of a set of output strings. -/
-@[simp]
-theorem mem_sliceSet {n : ℕ} (S : Finset (OutStr (n + 1))) (z : OutVar) (w' : OutStr n) :
-    w' ∈ sliceSet S z ↔ (Fin.cons z w' : OutStr (n + 1)) ∈ S := by
-  simp [sliceSet]
-
 /-! ### Lemma 10, first claim: the values -/
-
-/-- An array restricted to the empty set is the zero array. -/
-@[simp]
-theorem restrictTo_empty {n : ℕ} (c : OutStr n → ℤ) : restrictTo ∅ c = 0 :=
-  rfl
 
 /-! ### Lemma 10, second claim: the calls that are made and the sets passed to them -/
 

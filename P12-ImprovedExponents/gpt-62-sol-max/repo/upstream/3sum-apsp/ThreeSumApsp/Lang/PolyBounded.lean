@@ -97,7 +97,7 @@ theorem polyNeed {need : ℕ → ℕ → Need} (hw : PolyBounded fun n U => (nee
   have hpoly : K * ((n + 1) * (U + 1)) ^ e ≤ Light.polyBound (Nat.size K) e [n, U] := by
     simp only [Light.polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
     exact Nat.mul_le_mul_right _ (Nat.lt_size_self K).le
-  exact ⟨by omega, by omega, by omega⟩
+  omega
 
 end PolyBounded
 

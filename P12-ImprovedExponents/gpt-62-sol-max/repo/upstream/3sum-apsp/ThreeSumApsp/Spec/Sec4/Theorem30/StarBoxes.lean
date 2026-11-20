@@ -83,8 +83,7 @@ theorem mem_starBoxes {L : ℕ} (m t e : ℕ) (π : Cube L) :
 /-- Every member of the list is a cube. -/
 theorem exists_of_mem_starBoxes {L m t e : ℕ} (l : List ℕ) (h : l ∈ starBoxes L m t e) :
     ∃ π : Cube L, digitsC π = l := by
-  obtain ⟨τ, -, -, hτ⟩ := exists_leaf_of_mem_starBoxes h
-  exact ⟨_, hτ⟩
+  grind [exists_leaf_of_mem_starBoxes]
 
 /-- The number of stars can be read off a member of the list: the star is a symbol of its own, the
 digit 10.  So boxes with different numbers of stars are different strings. -/
@@ -106,12 +105,11 @@ box. -/
 theorem isBoxDigits_digitsC {L : ℕ} (m t : ℕ) (π : Cube L) :
     IsBoxDigits L m t (digitsC π) ↔ π ∈ boxes L m t := by
   rw [IsBoxDigits, ← card_starLevels, mem_starBoxes, mem_boxesWithStars, mem_boxes]
-  exact and_iff_left rfl
+  simp
 
 /-- There are boxes with e stars only for e ≤ m - t. -/
 theorem le_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ} (h : l ∈ starBoxes L m t e) : e ≤ m - t := by
-  obtain ⟨τ, hlo, hhi, -⟩ := exists_leaf_of_mem_starBoxes h
-  exact hlo.trans hhi
+  grind [exists_leaf_of_mem_starBoxes]
 
 /-- The members of the lists are strings of L digits below 11. -/
 theorem starBoxes_digits {L m t e : ℕ} {l : List ℕ} (h : l ∈ starBoxes L m t e) :
@@ -133,7 +131,7 @@ theorem exists_lastStar_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ}
   rw [← mem_starBoxes, digitsC_replace] at hsplit
   have hidx : ((termIdx (termEquiv.symm ⟨d, hd⟩) : Fin 10) : ℕ) = d :=
     congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, hd⟩)
-  rwa [hidx] at hsplit
+  simp_all
 
 /-- No box occurs twice in the list: turning the stars back into nines gives the leaf. -/
 theorem starBoxes_nodup (L m t e : ℕ) : (starBoxes L m t e).Nodup := by
@@ -165,12 +163,10 @@ theorem sum_length_starBoxes (L m t : ℕ) :
       ((boxes L m t).filter fun π => (Cube.starLevels π).card = e).card := by
     refine Finset.card_eq_sum_card_fiberwise fun π hπ => ?_
     have := (mem_boxes.1 (Finset.mem_coe.1 hπ)).1
-    simp only [Finset.coe_range, Set.mem_Iio]
-    omega
+    grind
   rw [List.sum_map_range, hfibres]
   refine Finset.sum_congr rfl fun e _ => ?_
   rw [length_starBoxes]
-  refine congrArg Finset.card (Finset.ext fun π => ?_)
-  rw [mem_boxesWithStars, Finset.mem_filter, mem_boxes]
+  rfl
 
 end ThreeSumApsp.Spec

@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.NegativeTriangle
@@ -40,17 +42,13 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 namespace Aff
 
 /-- The number of cells. -/
-abbrev Len : ℕ := 0
-/-- The address of the source. -/
-abbrev Src : ℕ := 1
-/-- The factor m. -/
-abbrev Factor : ℕ := 2
-/-- The summand c. -/
-abbrev Shift : ℕ := 3
-/-- The address of the destination. -/
-abbrev Dst : ℕ := 4
-/-- The counter i. -/
-abbrev Idx : ℕ := 5
+registers [
+  Len,
+  /- The address of the source. -/ Src,
+  /- The factor m. -/ Factor,
+  /- The summand c. -/ Shift,
+  /- The address of the destination. -/ Dst,
+  /- The counter i. -/ Idx]
 
 end Aff
 
@@ -63,17 +61,13 @@ def affineBody : Stmt := pass Idx (v Len) (v Dst) (v Factor *' M (v Src +' v Idx
 namespace PrefDown
 
 /-- The number of pairs. -/
-abbrev Len : ℕ := 0
-/-- The address of the array q. -/
-abbrev ArrQ : ℕ := 1
-/-- The address of the array r. -/
-abbrev ArrR : ℕ := 2
-/-- The number P with which 2 r[i] is compared (a power of two in the reduction). -/
-abbrev Power : ℕ := 3
-/-- The counter i. -/
-abbrev Idx : ℕ := 4
-/-- 2 r[i]. -/
-abbrev Twice : ℕ := 5
+registers [
+  Len,
+  /- The address of the array q. -/ ArrQ,
+  /- The address of the array r. -/ ArrR,
+  /- The number P with which 2 r[i] is compared (a power of two in the reduction). -/ Power,
+  /- The counter i. -/ Idx,
+  /- 2 r[i]. -/ Twice]
 
 end PrefDown
 
@@ -106,14 +100,7 @@ theorem affine_meets {p : ℕ} (hp : P[p]? = some affineBody) {μ : ℕ → ℤ}
     have hread : wrote μ dst (fun i => m * l.getD i 0 + c) j (src + j) = l[j] :=
       (wrote_rest (by omega)).trans (hl j hj)
     obtain ⟨hfits, haddr⟩ := Limits.addr_of_lt hw (x := src + j) (by omega)
-    push_cast at hfits haddr
-    obtain ⟨hprod, hsum⟩ := hb _ (List.getElem_mem hj)
-    have hsrcLoc : frame [(l.length : ℤ), src, m, c, dst] 1 = src := rfl
-    have hfactor : frame [(l.length : ℤ), src, m, c, dst] 2 = m := rfl
-    have hshift : frame [(l.length : ℤ), src, m, c, dst] 3 = c := rfl
-    light_norm
-        [hsrcLoc, hfactor, hshift, toNat_natCast_add_natCast, hread, List.getD_eq_getElem _ _ hj]
-    exact ⟨⟨⟨haddr, hfits⟩, hprod⟩, hsum⟩
+    simp_all
   · dsimp only
     exact ⟨seg_wrote_map (fun x => m * x + c) l, sameOutside_wrote le_rfl⟩
 
@@ -198,22 +185,22 @@ private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q 
   refine Ends.setToThen (2 * y) ?_ (by simp [Limits.Addr, abs_le, hreadR]; omega)
   -- if Twice < Power
   refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
-  · have hc' : 2 * y < Pw := by simpa using hc
+  · have hc' : 2 * y < Pw := by assumption
     rw [shiftQ, shiftR, if_pos hc', if_pos hc'] at hnext
     -- mem[ArrQ + Idx] := 2 * mem[ArrQ + Idx]
     refine Ends.storeToThen (q + j) (2 * x) ?_
       (by simp [Limits.Addr, abs_le, hreadQ]; omega)
     -- mem[ArrR + Idx] := Twice
     light_store (r + j) (2 * y)
-    exact by rw [hnext]; rfl
-  · have hc' : ¬ 2 * y < Pw := by simpa using hc
+    simp_all
+  · have hc' : ¬ 2 * y < Pw := by assumption
     rw [shiftQ, shiftR, if_neg hc', if_neg hc'] at hnext
     -- mem[ArrQ + Idx] := 2 * mem[ArrQ + Idx] + 1
     refine Ends.storeToThen (q + j) (2 * x + 1) ?_
       (by simp [Limits.Addr, abs_le, hreadQ]; omega)
     -- mem[ArrR + Idx] := Twice - Power
     light_store (r + j) (2 * y - Pw)
-    exact by rw [hnext]; rfl
+    simp_all
 
 /-- **prefDown** makes one step on every pair (q[i], r[i]), and changes nothing else. -/
 theorem prefDown_meets {p : ℕ} (hp : P[p]? = some prefDownBody) {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ}
@@ -227,7 +214,7 @@ theorem prefDown_meets {p : ℕ} (hp : P[p]? = some prefDownBody) {μ : ℕ → 
   have hfits : (Q.length : ℤ) ≤ lim.word :=
     le_trans (by exact_mod_cast (Nat.le_add_left _ q).trans C.inQ) C.space
   refine Ends.forShape (fun j s μ' => ⟨frame [Q.length, q, r, Pw, j, s], μ'⟩)
-    (fun j μ' => μ' = prefMem μ q r Pw Q R j) Q.length prefDownRound.blockCost 0
+    (fun j _ μ' => μ' = prefMem μ q r Pw Q R j) Q.length prefDownRound.blockCost 0
     (by rw [prefMem, wrote_zero, wrote_zero]) ?round ?done
     (first := by
       rw [update_frame_setLocal]
@@ -239,13 +226,12 @@ theorem prefDown_meets {p : ℕ} (hp : P[p]? = some prefDownBody) {μ : ℕ → 
   case done =>
     rintro s _ rfl
     refine ⟨fun i hi => ?_, fun i hi => ?_, fun a ha hb => prefMem_rest ha hb⟩
-    · have hi' : i < Q.length := by simp at hi; omega
+    · have hi' : i < Q.length := by simp_all
       change prefMem μ q r Pw Q R Q.length (q + i) = _
-      rw [prefMem_q_done hsep le_rfl hi', List.getElem_zipWith, List.getD_eq_getElem _ _ hi',
-        List.getD_eq_getElem _ _ (hlen ▸ hi')]
-    · have hi' : i < Q.length := by simp at hi; omega
+      light_side [prefMem_q_done, hsep, hi', hlen]
+    · have hi' : i < Q.length := by simp_all
       change prefMem μ q r Pw Q R Q.length (r + i) = _
-      rw [prefMem_r_done hi', List.getElem_map, List.getD_eq_getElem _ _ (hlen ▸ hi')]
+      light_side [prefMem_r_done, hi', hlen]
 
 /-! ## affine with the factor ± 1 on a list with bounded entries -/
 

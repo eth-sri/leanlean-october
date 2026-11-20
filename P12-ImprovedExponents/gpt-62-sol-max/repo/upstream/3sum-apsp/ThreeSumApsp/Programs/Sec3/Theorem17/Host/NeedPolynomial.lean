@@ -40,18 +40,17 @@ namespace HostPoly
 private theorem queryCapNat_le_sq (n D : ℕ) : queryCapNat n D ≤ n ^ 2 := by
   unfold queryCapNat
   calc Nat.sqrt (n ^ 4 / D) ≤ Nat.sqrt (n ^ 4) := Nat.sqrt_le_sqrt (Nat.div_le_self _ _)
-    _ = Nat.sqrt (n ^ 2 * n ^ 2) := by rw [← pow_add]
+    _ = Nat.sqrt (n ^ 2 * n ^ 2) := by ring
     _ = n ^ 2 := Nat.sqrt_eq _
 
 /-- `2^{len + 1} ≤ 4(U + 1)` for the number `len` of binary digits of `U`. -/
 private theorem two_pow_bitLen_le (U : ℕ) : 2 ^ (bitLen U + 1) ≤ 4 * (U + 1) := by
   rcases Nat.eq_zero_or_pos U with rfl | hU
-  · simp [bitLen]
+  · trivial
   · have hlen : 0 < bitLen U := Nat.size_pos.2 hU
     obtain ⟨b, hb⟩ : ∃ b, bitLen U = b + 1 := ⟨bitLen U - 1, by omega⟩
     have hpow : 2 ^ b ≤ U := Nat.lt_size.1 (by unfold bitLen at hb; omega)
-    rw [hb, pow_succ, pow_succ]
-    omega
+    lia
 
 /-- `2^⌈log₂ n⌉ ≤ 2(n + 1)`. -/
 private theorem two_pow_clog_le (n : ℕ) : 2 ^ Nat.clog 2 n ≤ 2 * (n + 1) := by
@@ -99,7 +98,7 @@ include hD
 private theorem polyBounded_hostWord {a b : ℕ → ℕ} (ha : PolyBounded fun n _ => a n)
     (hb : PolyBounded fun n _ => b n) (hg : PolyBounded fun n _ => g n) :
     PolyBounded fun n U => hostWord (a n) (b n) n U (D n) (g n) := by
-  have hring : PolyBounded fun n _ => 16 ^ Nat.clog 2 n := polyBounded_pow_clog 4
+  have hring : PolyBounded fun n _ => 32 ^ Nat.clog 2 n := polyBounded_pow_clog 5
   unfold hostWord pieceSizeNat
   growth_poly [ha, hb, hD, hg, polyBounded_two_pow_bitLen, hring, Scale.SoftO.ceilDiv]
 
@@ -118,15 +117,15 @@ private theorem polyBounded_chooseCells : PolyBounded fun n U => chooseCells n U
 
 /-- A polynomially bounded function of the parameters `n`, `D`, `w` of an instance, at its largest
 over the instances of the host, which have at most `⌊n²/√D⌋` query pairs. -/
-private theorem polyBounded_sup {f : List ℕ → ℕ} {s k : ℕ} (hf : ∀ ps, f ps ≤ polyBound s k ps) :
-    PolyBounded fun n _ => (Finset.range (queryCapNat n (D n) + 1)).sup fun w => f [n, D n, w] := by
+private theorem polyBounded_sup (D' : ℕ → ℕ) (hD' : ∀ n, D' n ≤ D n) {f : List ℕ → ℕ} {s k : ℕ} (hf : ∀ ps, f ps ≤ polyBound s k ps) :
+    PolyBounded fun n _ => (Finset.range (queryCapNat n (D n) + 1)).sup fun w => f [n, D' n, w] := by
   have hbound :
       PolyBounded fun n _ => 2 ^ s * ((n + 1) * ((D n + 1) * (queryCapNat n (D n) + 1))) ^ k := by
     growth_poly [hD, polyBounded_queryCapNat]
   refine hbound.of_le fun n _ => Finset.sup_le fun w hw => (hf _).trans ?_
   have hw' : w ≤ queryCapNat n (D n) := Nat.lt_succ_iff.1 (Finset.mem_range.1 hw)
   simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
-  gcongr
+  gcongr <;> apply hD'
 
 end parts
 
@@ -135,15 +134,18 @@ end HostPoly
 open HostPoly in
 /-- **The need of the host stays polynomial**, if the parameters, the numbers that the parameter
 procedures form, and the need of the solver are polynomially bounded. -/
-theorem hostNeed_poly {Dfun Gfun wD wG : ℕ → ℕ} {need : List ℕ → Need}
+theorem hostNeed_poly {levels : ℕ} {Dfun Gfun wD wG : ℕ → ℕ} {need : List ℕ → Need}
     (hD : PolyBounded fun n _ => Dfun n) (hG : PolyBounded fun n _ => Gfun (Dfun n))
     (hwD : PolyBounded fun n _ => wD n) (hwG : PolyBounded fun n _ => wG (Dfun n))
     (h : PolyNeedN need) :
-    PolyNeed (hostNeed Dfun Gfun wD wG need) := by
+    PolyNeed fun n U => hostNeed Dfun Gfun wD wG need n U levels := by
   obtain ⟨s, k, hle⟩ := h
+  let D' n := midSize (Dfun n) (Gfun (Dfun n))
+  have hs {f : List ℕ → ℕ} (hf : ∀ ps, f ps ≤ polyBound s k ps) :=
+    polyBounded_sup hD D' (fun n => midSize_le _ _) hf
   unfold hostNeed hostNeedAt supNeed
   poly_need [polyBounded_hostWord hD hwD hwG hG, polyBounded_chooseCells hD,
-    polyBounded_hostLayout hD, polyBounded_clog, polyBounded_sup hD fun ps => (hle ps).1,
-    polyBounded_sup hD fun ps => (hle ps).2.1, polyBounded_sup hD fun ps => (hle ps).2.2]
+    polyBounded_hostLayout hD, polyBounded_clog, hs fun ps => (hle ps).1,
+    hs fun ps => (hle ps).2.1, hs fun ps => (hle ps).2.2]
 
 end Light.Sec3

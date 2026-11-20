@@ -61,7 +61,7 @@ theorem card_heavy_le_coll (S : Finset ℤ) (M : ℕ) : #(heavy S M) ≤ coll S 
 theorem coll_le_sq (S : Finset ℤ) (M : ℕ) : coll S M ≤ #S ^ 2 :=
   calc coll S M ≤ #S.offDiag := card_filter_le _ _
     _ = #S * #S - #S := offDiag_card S
-    _ ≤ #S ^ 2 := by rw [sq]; omega
+    _ ≤ #S ^ 2 := by lia
 
 /-- The collision count is determined by the sizes of the buckets: an element collides with the
 other members of its bucket. -/
@@ -78,10 +78,9 @@ theorem coll_eq_sum (S : Finset ℤ) (M : ℕ) :
     tauto
   have hpairs : {p ∈ S.offDiag | (M : ℤ) ∣ p.1 - p.2} =
       {p ∈ S ×ˢ S | p.1 ≠ p.2 ∧ (M : ℤ) ∣ p.1 - p.2} := by
-    ext p
-    simp only [mem_filter, mem_offDiag, mem_product, and_assoc]
+    grind
   rw [sum_congr rfl hfiber, coll, hpairs, card_filter, sum_product]
-  simp only [card_filter]
+  simp
 
 /-- `Lam U` is at least 1. -/
 private theorem Lam_pos (U : ℕ) : 1 ≤ Lam U := Nat.succ_pos _
@@ -98,7 +97,7 @@ private theorem card_prime_divisors_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Pri
     calc 2 ^ #T ≤ ∏ p ∈ T, p := pow_card_le_prod _ _ _ fun p hp => (hprime p hp).two_le
       _ ≤ d.natAbs := Nat.le_of_dvd (Int.natAbs_pos.mpr hd)
           ((prod_dvd_prod_of_subset _ _ _ hsub).trans (Nat.prod_primeFactors_dvd _))
-      _ ≤ 2 * U := by have := abs_le.mp hb; omega
+      _ ≤ 2 * U := by linarith
   exact (Nat.le_log_of_pow_le (by norm_num) hpow).trans (Nat.le_succ _)
 
 /-- Double counting.  Summed over the candidates `q ∈ Q`, the pairs that collide modulo `M₀ q`
@@ -191,9 +190,8 @@ theorem modulus_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U
   refine ⟨hp, hq, fun S hS => ?_⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false] at hS
   rcases hS with rfl | rfl | rfl
-  · exact hmul p₁ q₁
-  · exact hmul p₂ q₂
-  · exact hmul p₃ q₃
+  · solve_by_elim
+  all_goals (solve_by_elim)
 
 /-- The modulus lies between 1 and `m²` when all primes in `Q` are at most `m`. -/
 theorem modulus_bounds (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) {m : ℕ} (hm : ∀ p ∈ Q, p ≤ m)

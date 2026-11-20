@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Tactics
 public import Mathlib.Tactic.Positivity
 
@@ -25,9 +29,7 @@ namespace Sqrt
 
 /-- The local variables of sqrt: the argument K, which the result replaces, the candidate k, and the
 square (k + 1)². -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Cand : ℕ := 1
-@[inherit_doc Arg] abbrev Square : ℕ := 2
+registers [Arg, Cand, Square]
 
 end Sqrt
 
@@ -54,8 +56,7 @@ theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
   refine .of_body hp ?_
   unfold sqrtBody sqrtTime
   -- k := 0; sq := 1
-  light_set 0
-  light_set 1
+  light_steps
   -- while sq ≤ K.  Before round i, k = i and sq = (i + 1)².
   refine Ends.next _ (Ends.whileBlock
     (fun i σ => σ = ⟨frame [K, i, ((i + 1) * (i + 1) : ℕ)], μ⟩) (Nat.sqrt K) (by simp) ?round ?done
@@ -73,7 +74,7 @@ theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
     generalize (Nat.sqrt K + 1) * (Nat.sqrt K + 1) = q at hlt
     refine ⟨by light_side, by light_side, ?_⟩
     -- the result is k
-    light_set (Nat.sqrt K)
-    exact ⟨rfl, rfl⟩
+    light_step
+    trivial
 
 end Light

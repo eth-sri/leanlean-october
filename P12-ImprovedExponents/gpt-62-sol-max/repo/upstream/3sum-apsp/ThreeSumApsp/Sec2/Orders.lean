@@ -147,7 +147,7 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
       have hQS := prod_ite_ite_subset (innerSetO w) S 9
       rw [hw, (mem_powersetCard.mp hS).2, Nat.sub_sub_self hd] at hQS
       rw [← hQS]
-      exact prod_congr rfl fun ℓ _ => by simp
+      simp
     -- There are `binom(m, m - d) = binom(m, d)` sets `S ⊆ Q`.
     rw [sum_congr rfl hgiven, sum_powersetCard_ite_subset, hw, Nat.choose_symm hd] at hcount
     -- These strings are the leaves of order `d` that contribute to `w`.
@@ -177,14 +177,5 @@ theorem card_filter_order_eq {L m : ℕ} (hmL : m ≤ L) (d : ℕ) (hd : d ≤ m
   rw [hsort, Finset.card_places_card (fun lam : Term => lam = Term.P0) (m - d), card_term_P0,
     card_term_ne_P0, one_pow, one_mul, Fintype.card_fin, beta,
     show L - (m - d) = L - m + d by omega]
-
-/-- Section 2.4.3: "In particular, β₀ = binom(L, m) 9^{L-m}". -/
-theorem beta_zero (L m : ℕ) : beta L m 0 = L.choose m * 9 ^ (L - m) := by
-  simp [beta]
-
-/-- Section 2.4.3: "β₀ = binom(L, m) 9^{L-m} = M". -/
-theorem beta_zero_eq_M (L m : ℕ) : beta L m 0 = M L m := by
-  rw [beta_zero, M, K, N0, ← pow_mul, mul_comm (L - m) 2, pow_mul]
-  norm_num
 
 end ThreeSumApsp

@@ -26,7 +26,7 @@ public section
 
 namespace ThreeSumApsp
 
-variable {n : ℕ} {S : Finset (Fin n × Fin n)} {cap : ℕ}
+variable {n : ℕ}
 
 /-! ### Ranks -/
 

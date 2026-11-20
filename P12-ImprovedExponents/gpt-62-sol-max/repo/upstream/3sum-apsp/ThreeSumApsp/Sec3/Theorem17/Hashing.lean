@@ -10,7 +10,8 @@ public import PaperStatements
 public import ThreeSumApsp.Util.Index
 public import ThreeSumApsp.Util.PrimesInWindow
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
-public import Mathlib.RingTheory.AdjoinRoot
+public import Mathlib.Algebra.MonoidAlgebra.Module
+public import Mathlib.Data.ZMod.Basic
 
 /-!
 # Theorem 17, first step: hashing modulo a prime
@@ -51,53 +52,35 @@ theorem mem_primesInRange {D p : ℕ} :
   refine ⟨fun h => h.2, fun h => ⟨?_, h⟩⟩
   -- From `p < √D` we get `p ≤ p² < D`.
   have hsq : p ^ 2 < D := by exact_mod_cast (Real.lt_sqrt (Nat.cast_nonneg p)).1 h.2.2
-  exact (Nat.le_self_pow two_ne_zero p).trans_lt hsq
+  nlinarith
 
 /-! ### The ring `ℤ[x]/(x^p − 1)` -/
 
-open Polynomial in
-/-- Proof of Theorem 17: "the ring ℤ[x]/(x^p − 1)".  (`Polynomial.C 1` is the constant polynomial
-1.) -/
-abbrev CyclicRing (p : ℕ) : Type := AdjoinRoot ((X : ℤ[X]) ^ p - C 1)
+/-- Use the integral group algebra of the cyclic group for cyclic coefficients. Multiplication
+adds the exponents modulo `p`. -/
+abbrev CyclicRing (p : ℕ) : Type := AddMonoidAlgebra ℤ (ZMod p)
 
 namespace CyclicRing
 
-open Polynomial
-
 variable {p : ℕ}
 
-/-- The element `x` of `ℤ[x]/(x^p − 1)`. -/
-noncomputable def x (p : ℕ) : CyclicRing p := AdjoinRoot.root _
+noncomputable def x (p : ℕ) : CyclicRing p := AddMonoidAlgebra.single 1 1
 
-/-- Proof of Theorem 17: "the coefficient of x^r" in an element `z` of `ℤ[x]/(x^p − 1)`, for `0 ≤ r
-< p`, as a linear map: the coefficient of `x^r` in the unique polynomial of degree less than `p`
-that represents `z` (Mathlib's `AdjoinRoot.modByMonicHom` gives that polynomial; it asks for the
-fact that `x^p − 1` is monic, which holds as `p ≠ 0`). -/
-noncomputable def coeff (hp : p ≠ 0) (r : ℕ) : CyclicRing p →ₗ[ℤ] ℤ :=
-  lcoeff ℤ r ∘ₗ AdjoinRoot.modByMonicHom (monic_X_pow_sub_C (1 : ℤ) hp)
+/-- Extract one coefficient, with zero outside the range of residues. -/
+noncomputable def coeff (_hp : p ≠ 0) (r : ℕ) : CyclicRing p →ₗ[ℤ] ℤ :=
+  if r < p then Finsupp.lapply (r : ZMod p) ∘ₗ (AddMonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap else 0
 
-/-- The coefficient, in terms of the representing polynomial. -/
-theorem coeff_apply (hp : p ≠ 0) (r : ℕ) (z : CyclicRing p) :
-    coeff hp r z = (AdjoinRoot.modByMonicHom (monic_X_pow_sub_C (1 : ℤ) hp) z).coeff r :=
-  rfl
+theorem coeff_apply (hp : p ≠ 0) {r : ℕ} (hr : r < p) (z : CyclicRing p) :
+    coeff hp r z = AddMonoidAlgebra.coeff z (r : ZMod p) := by simp [coeff, hr]
 
-/-- In `ℤ[x]/(x^p − 1)` we have `x^p = 1`. -/
-private theorem x_pow_self (p : ℕ) : x p ^ p = 1 := by
-  have h : AdjoinRoot.mk ((X : ℤ[X]) ^ p - C 1) ((X : ℤ[X]) ^ p - C 1) = 0 := AdjoinRoot.mk_self
-  rw [map_sub, map_pow, AdjoinRoot.mk_X, C_1, map_one] at h
-  exact sub_eq_zero.1 h
-
-/-- The coefficient of `x^r` in the power `x^k` of `ℤ[x]/(x^p − 1)` is 1 if `r = k mod p` and 0
-otherwise. -/
 theorem coeff_x_pow (hp : p ≠ 0) (k r : ℕ) :
     coeff hp r (x p ^ k) = if r = k % p then 1 else 0 := by
-  have hred : x p ^ k = x p ^ (k % p) := by
-    conv_lhs => rw [← Nat.div_add_mod k p, pow_add, pow_mul, x_pow_self, one_pow, one_mul]
-  have hdeg : ((X : ℤ[X]) ^ (k % p)).degree < ((X : ℤ[X]) ^ p - C 1).degree := by
-    rw [degree_X_pow, degree_X_pow_sub_C (Nat.pos_of_ne_zero hp)]
-    exact_mod_cast Nat.mod_lt k (Nat.pos_of_ne_zero hp)
-  rw [coeff_apply, hred, x, ← AdjoinRoot.mk_X, ← map_pow, AdjoinRoot.modByMonicHom_mk,
-    (modByMonic_eq_self_iff (monic_X_pow_sub_C (1 : ℤ) hp)).2 hdeg, coeff_X_pow]
+  by_cases hr : r < p
+  · rw [coeff_apply hp hr, x, AddMonoidAlgebra.single_pow]
+    simp only [nsmul_eq_mul, mul_one, one_pow, AddMonoidAlgebra.coeff_single_apply,
+      ZMod.natCast_eq_natCast_iff', Nat.mod_eq_of_lt hr, eq_comm]
+  · have : r ≠ k % p := by have := Nat.mod_lt k (Nat.pos_of_ne_zero hp); omega
+    simp [coeff, hr, this]
 
 end CyclicRing
 
@@ -200,7 +183,7 @@ theorem F_add_Z₀_eq_sum_coeff {p : ℕ} (hp : p ≠ 0) :
       Int.modEq_iff_dvd, Int.modEq_iff_dvd,
       show 0 - T.S a b c = -T.wAB a b - (T.wAC a c + T.wBC b c) by
         simp only [S]; ring]
-  simp only [hiff]
+  lia
 
 end TriangleInstance
 
@@ -235,7 +218,7 @@ theorem abs_S_le (hT : T.WeightsPolyBounded κ) (a b c : Fin n) :
   have hcast : ((|T.S a b c| : ℤ) : ℝ)
       ≤ ((|T.wAB a b| : ℤ) : ℝ) + ((|T.wBC b c| : ℤ) : ℝ) + ((|T.wAC a c| : ℤ) : ℝ) := by
     exact_mod_cast habs
-  linarith [hAB a b, hBC b c, hAC a c]
+  grind
 
 open Classical in
 /-- Proof of Theorem 17: "a triple with S(a,b,c) ≠ 0 is a false positive exactly of the primes in
@@ -252,7 +235,7 @@ theorem card_falsePositive_primes_le (hD : 16 ≤ D) (hT : T.WeightsPolyBounded 
     intro p hp
     obtain ⟨hrange, -, hdvd⟩ := Finset.mem_filter.1 hp
     obtain ⟨hprime, hge, -⟩ := mem_primesInRange.1 hrange
-    exact ⟨hprime, hge, hdvd⟩
+    trivial
   -- The product of these primes divides `S(a,b,c)`, so it is at most `|S(a,b,c)| ≤ 3n^κ`.
   have hdvd : ∏ p ∈ divisors, p ∣ (T.S t.1 t.2.1 t.2.2).natAbs :=
     Finset.prod_primes_dvd _ (fun p hp => (hmem p hp).1.prime)
@@ -269,7 +252,7 @@ theorem card_falsePositive_primes_le (hD : 16 ≤ D) (hT : T.WeightsPolyBounded 
     exact Finset.prod_le_prod₀ (fun _ _ => by linarith) fun p hp => (hmem p hp).2.1
   have hY : 0 < 3 * (n : ℝ) ^ κ := lt_of_lt_of_le (by positivity) (hpow.trans hprod)
   rw [Real.le_logb_iff_rpow_le (by linarith) hY, Real.rpow_natCast]
-  exact hpow.trans hprod
+  linarith
 
 /-- Proof of Theorem 17: "Hence the numbers of false positives of all the primes in the range add up
 to at most n³ log_{√D/2}(3n^ν)." -/
@@ -331,14 +314,13 @@ theorem TriangleInstance.IsSelectedPrime.F_mul_card_le_sum {n D p : ℕ} {T : Tr
 theorem log_le_four_mul_log_sqrt_div_two (D : ℕ) (hD : 16 ≤ D) :
     Real.log D ≤ 4 * Real.log (Real.sqrt D / 2) := by
   have hD16 : (16 : ℝ) ≤ D := by exact_mod_cast hD
-  have hsqrt : 0 < Real.sqrt D := by linarith [Real.four_le_sqrt_natCast_of_sixteen_le hD]
+  have hsqrt : 0 < Real.sqrt D := by positivity
   -- `log(√D/2) = (log D)/2 - log 2`, and `4 log 2 = log 16 ≤ log D`.
   have hlog16 : 4 * Real.log 2 ≤ Real.log D := by
     have h := Real.log_le_log (by norm_num) (show (2 : ℝ) ^ 4 ≤ D by linarith)
-    rw [Real.log_pow] at h
-    exact_mod_cast h
+    simp_all
   rw [Real.log_div hsqrt.ne' (by norm_num), Real.log_sqrt (by linarith)]
-  linarith [hlog16]
+  linarith
 
 /-- Proof of Theorem 17: "F(p) is at most the average over them, so [...] F(p) = O(n³
 log(3n^ν)/√D)": if there are at least `c √D/log D` primes in the range, then `F(p) ≤ (4/c) n³
@@ -359,7 +341,7 @@ theorem TriangleInstance.F_le_of_le_card_primesInRange {n D p : ℕ} {κ c : ℝ
   have hlogr_pos : 0 < Real.log (r / 2) := Real.log_pos (by linarith)
   have hlogY_nonneg : 0 ≤ Real.log Y := by
     have : 1 ≤ (n : ℝ) ^ κ := Real.one_le_rpow (by linarith) (by linarith)
-    exact Real.log_nonneg (by rw [hY]; linarith)
+    exact Real.log_nonneg (by linarith)
   -- "F(p) is at most the average", multiplied out; the false positives of all the primes in the
   -- range add up to at most `n³ log_{r/2} Y`.
   have average : (T.F p : ℝ) * numPrimes ≤ (n : ℝ) ^ 3 * Real.logb (r / 2) Y :=
@@ -391,7 +373,7 @@ theorem TriangleInstance.exists_F_le :
     have hlog3 : Real.log 3 ≤ κ * Real.log n :=
       (Real.log_le_log (by norm_num) (by linarith)).trans (le_mul_of_one_le_left hlogn hκ)
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_rpow (by linarith)]
-    linarith [hlog3]
+    linarith
   calc (T.F p : ℝ) ≤ 4 / c * ((n : ℝ) ^ 3 * Real.log (3 * (n : ℝ) ^ κ) / Real.sqrt D) :=
         T.F_le_of_le_card_primesInRange hc (hcard D hD) hD hDn hκ hT hp
     _ ≤ 4 / c * ((n : ℝ) ^ 3 * (2 * κ * Real.log n) / Real.sqrt D) := by gcongr

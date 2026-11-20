@@ -38,7 +38,7 @@ theorem emodSpec_of (hP : P[p]? = some emodBody) : EmodSpec lim P p := by
   have hcells := hok.cells
   simp only [emodNeed] at hword hcells
   push_cast at hword
-  have hrounds := emodRounds_le (M := M) (show x.natAbs ≤ V by have := abs_le.mp hx; omega)
+  have hrounds := emodRounds_le (M := M) (show x.natAbs ≤ V by linarith)
   refine (emod_meets hP ⟨hM, hok.space, hword, hcells⟩ hx).mono_time ?_
   unfold tEmod emodTime
   omega
@@ -46,7 +46,7 @@ theorem emodSpec_of (hP : P[p]? = some emodBody) : EmodSpec lim P p := by
 /-- The logarithm, rounded down. -/
 theorem log2Spec_of (hP : P[p]? = some log2Body) : Log2Spec lim P p := by
   intro d x μ hword
-  refine (log2_meets hP μ (by push_cast; omega)).mono_time ?_
+  refine (log2_meets hP μ (by omega)).mono_time ?_
   unfold tLog2 log2Time
   omega
 
@@ -54,7 +54,7 @@ theorem log2Spec_of (hP : P[p]? = some log2Body) : Log2Spec lim P p := by
 theorem clog2Spec_of (hP : P[p]? = some clog2Body) : Clog2Spec lim P p := by
   intro d x μ hword
   have := clog_le_log_succ x
-  refine (clog2_meets hP μ (by push_cast; omega)).mono_time ?_
+  refine (clog2_meets hP μ (by omega)).mono_time ?_
   unfold tLog2 clog2Time
   omega
 
@@ -65,12 +65,11 @@ theorem primesSpec_of (hP : P[p]? = some sieveBody) : PrimesSpec lim P p := by
   have hcells := hok.cells
   simp only [primesNeed] at hword hcells
   push_cast at hword
-  refine (sieve_meets hP ⟨hok.space, by push_cast; omega, hout, hcells⟩).mono ?_
+  refine (sieve_meets hP ⟨hok.space, by omega, hout, hcells⟩).mono ?_
     fun _ _ ⟨hcount, hseg, hkept⟩ => ⟨hcount, hseg, hkept.mono fun _ ha => ⟨ha.2, Or.inl ha.1⟩⟩
   -- `15 m (⌊log₂ m⌋ + 5) + …` against `60 m (⌊log₂ m⌋ + 2) + 60`
   unfold tPrimes sieveTime
-  rw [mul_assoc 15, mul_assoc 60, mul_add m, mul_add m]
-  omega
+  lia
 
 /-- Sorting.  The program holds sort at the number p, and half, merge and copy, which sort
 calls. -/
@@ -87,7 +86,6 @@ theorem sortSpec_of {pHalf pMerge pCopy : ℕ} (C : MergeSort.Procs P p pHalf pM
   -- `n ⌈log₂ n⌉ ≤ n (⌊log₂ n⌋ + 1)`
   have hmul := Nat.mul_le_mul_left L.length hclog
   unfold tSort sortTime
-  rw [mul_assoc 80, mul_add L.length] at *
-  omega
+  lia
 
 end Light.Sec3.ChanHe

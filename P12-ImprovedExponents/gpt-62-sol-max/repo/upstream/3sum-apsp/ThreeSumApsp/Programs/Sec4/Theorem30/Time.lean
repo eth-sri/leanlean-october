@@ -48,12 +48,6 @@ theorem Hyp30.L_pos {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) : 1 ≤ p.L := by
   have := h.m_pos
   omega
 
-namespace Within8
-
-variable {f g : Sec2.Par → ℕ → ℕ}
-
-end Within8
-
 /-! ## The tiles -/
 
 /-- For every e ≤ m - t with e ≤ L there is a box with e stars. -/
@@ -61,9 +55,7 @@ theorem one_le_length_starBoxes {L m t e : ℕ} (he : e ≤ m - t) (hL : e ≤ L
     1 ≤ (starBoxes L m t e).length := by
   have hhead := head?_nineStrs (n := L) (lo := e) (hi := m - t) hL he
   rw [starBoxes, List.length_map]
-  cases hl : nineStrs L e (m - t) with
-  | nil => rw [hl] at hhead; simp at hhead
-  | cons a l => simp
+  grind
 
 /-- There are at least m - t + 1 boxes: one for each number of stars. -/
 theorem succ_le_card_boxes {L m t : ℕ} (hL : m ≤ L) : m - t + 1 ≤ (boxes L m t).card := by
@@ -104,11 +96,7 @@ private theorem exists_tTile_le : ∃ c : ℕ, ∀ L m t : ℕ, 1 ≤ L → m �
   simp only [tFillStep, tFillRound, tStarFirst, tHorner, tSumTen, tLookup, tInsert, tNineNext,
     tNewRoot, tNineFirst] at hstarts ⊢
   generalize (boxes L m t).card = b at *
-  have hb : b ≤ L * b := Nat.le_mul_of_pos_left _ hL1
-  rw [show b * (30 * L + 30 + 120) = 30 * (L * b) + 150 * b by ring] at hstarts
-  rw [show b * (50 * L + 30 + (20 * L + 10) + (10 * (20 * L + 12 + 40) + 30) + (220 * L + 20)
-    + (90 * L + 60) + 120) = 580 * (L * b) + 790 * b by ring]
-  omega
+  nlinarith
 
 /-! ## A query -/
 
@@ -132,12 +120,7 @@ theorem exists_tQueryCore_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ L m t : ℕ, 1 ≤ L
     generalize alpha m t = a at *
     have hlow : low * (60 * L + 30 + (20 * L + 10) + (90 * m + 60) + 90) ≤ low * (360 * L) :=
       Nat.mul_le_mul_left _ (by omega)
-    have hboxes : a * (60 * L + 30 + (20 * L + 12) + (90 * m + 60) + 90) ≤ a * (362 * L) :=
-      Nat.mul_le_mul_left _ (by omega)
-    have hL : L ≤ a * L := Nat.le_mul_of_pos_left _ hpos
-    rw [show 900 * (L * (low + a))
-      = low * (360 * L) + a * (362 * L) + 540 * (low * L) + 538 * (a * L) by ring]
-    omega
+    nlinarith
   unfold costQuery
   exact_mod_cast hnat
 

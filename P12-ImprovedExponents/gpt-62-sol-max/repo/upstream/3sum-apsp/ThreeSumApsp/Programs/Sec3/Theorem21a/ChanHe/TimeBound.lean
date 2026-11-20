@@ -53,8 +53,7 @@ def magAt (k n : ℕ) : ℕ := 60 * boundAt k n + 40
 and with one bound. -/
 theorem chTime_eq {k n U : ℕ} (hU : U ≤ n ^ k) (Tn : ℕ → ℕ → ℕ) :
     chTime k Tn n U = ownAt k n + callsAt k n * Tn (lenOf k n) (magAt k n) := by
-  simp only [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, max_eq_right hU]
-  omega
+  light_side [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, hU]
 
 namespace ClaimF
 
@@ -80,24 +79,24 @@ theorem softO_tEmod : SoftOSqrtPow (fun n => tEmod (boundAt k n)) 0 := by
   growth_sqrt []
 
 /-- The remainders of `n` numbers. -/
-theorem softO_tResid : SoftOSqrtPow (fun n => tResid n (boundAt k n)) 2 := by
-  unfold tResid
+theorem softO_tCount : SoftOSqrtPow (fun n => tCount n (boundAt k n)) 2 := by
+  unfold tCount
   growth_sqrt [softO_tEmod k]
 
 /-- One pass over `n` remainders. -/
-theorem softO_tTally : SoftOSqrtPow (fun n => tTally n) 2 := by
-  unfold tTally
+theorem softO_tClear : SoftOSqrtPow (fun n => tClear n) 2 := by
+  unfold tClear
   growth_sqrt []
 
 /-- The colliding pairs of a set of `n` numbers modulo one prime. -/
 theorem softO_tColl : SoftOSqrtPow (fun n => tColl n (boundAt k n)) 2 := by
   unfold tColl
-  growth_sqrt [softO_tResid k, softO_tTally]
+  growth_sqrt [softO_tCount k, softO_tClear]
 
 /-- The heavy elements of a set of `n` numbers. -/
 theorem softO_tHeavy : SoftOSqrtPow (fun n => tHeavy n (boundAt k n)) 2 := by
   unfold tHeavy
-  growth_sqrt [softO_tResid k, softO_tTally]
+  growth_sqrt [softO_tCount k, softO_tClear]
 
 /-- One search goes through the `Õ(√n)` candidate primes, at `Õ(n)` steps each. -/
 theorem softO_tSearch : SoftOSqrtPow (fun n => tSearch (numPrimes k n) n n n (boundAt k n)) 3 := by
@@ -114,7 +113,7 @@ theorem softO_tModulus :
 theorem softO_tNodeArray :
     SoftOSqrtPow (fun n => tNodeArray (mPar n (boundAt k n)) n n n (boundAt k n)) 2 := by
   unfold tNodeArray
-  growth_sqrt [softO_mPar k, softO_tResid k, softO_tTally]
+  growth_sqrt [softO_mPar k, softO_tCount k, softO_tClear]
 
 /-- One call of the recursive procedure, without the call of the solver. -/
 theorem softO_nodeOwn :
@@ -134,7 +133,7 @@ theorem softO_tSetup : SoftOSqrtPow (fun n => tSetup n (boundAt k n)) 2 := by
 
 /-- The host's own work is `Õ(n^{3/2})`. -/
 theorem softO_ownAt : SoftOSqrtPow (ownAt k) 3 := by
-  unfold ownAt coreOwn inputsB tPick tTwice tZeroThree
+  unfold ownAt coreOwn inputsB tPick tRepeated
   growth_sqrt [softO_tSetup k, softO_nodeOwn k, softO_callsB, softO_Lam k]
 
 /-- The host calls the solver polylogarithmically often. -/

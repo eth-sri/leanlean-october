@@ -38,7 +38,7 @@ namespace ThreeSumApsp.Spec
 
 /-- The digit of a symbol of a cube: a term keeps its digit, the star has 10. -/
 def cubeIdx : CubeSymbol → Fin 11
-  | .term lam => ⟨termIdx lam, by have := (termIdx lam).isLt; omega⟩
+  | .term lam => ⟨termIdx lam, by omega⟩
   | .star => 10
 
 /-- The symbol with a given digit. -/
@@ -50,16 +50,9 @@ def cubeEquiv : CubeSymbol ≃ Fin 11 where
   toFun := cubeIdx
   invFun := cubeOfIdx
   left_inv := by
-    intro s
-    cases s with
-    | term lam =>
-      cases lam with
-      | P i j => fin_cases i <;> fin_cases j <;> rfl
-      | P0 => rfl
-    | star => rfl
+    trivial
   right_inv := by
-    intro k
-    fin_cases k <;> rfl
+    trivial
 
 /-- The digits of a cube, level 1 first. -/
 def digitsC {L : ℕ} (π : Cube L) : List ℕ := digitsStr cubeEquiv π
@@ -109,26 +102,15 @@ theorem exists_digitsT {L : ℕ} (l : List ℕ) (hl : l.length = L) (hd : ∀ d 
 /-- The number of stars in a list of digits: the star has the digit 10. -/
 abbrev starCount (l : List ℕ) : ℕ := l.count 10
 
-private theorem cubeIdx_star : (cubeIdx .star : ℕ) = 10 := rfl
-
 theorem cubeIdx_term (lam : Term) : (cubeIdx (.term lam) : ℕ) = termIdx lam := rfl
 
 /-- The star is the only symbol with the digit 10. -/
 private theorem cubeIdx_eq_ten (s : CubeSymbol) : (cubeIdx s : ℕ) = 10 ↔ s = .star := by
-  cases s with
-  | term lam =>
-    have := (termIdx lam).isLt
-    simp only [cubeIdx, reduceCtorEq, iff_false]
-    omega
-  | star => simp [cubeIdx]
+  simp_all [termIdx, cubeIdx] <;> grind
 
 /-- P₀ is the only term with the digit 9. -/
 theorem termIdx_eq_nine (lam : Term) : (termIdx lam : ℕ) = 9 ↔ lam = .P0 := by
-  cases lam with
-  | P i j =>
-    simp only [termIdx, reduceCtorEq, iff_false]
-    omega
-  | P0 => simp [termIdx]
+  simp_all [termIdx] <;> grind
 
 section
 
@@ -206,8 +188,8 @@ theorem digitsC_starLowest {L : ℕ} (e : ℕ) (τ : Leaf L) :
       Finset.mem_filter_univ]
   rw [getD_starFirst, starLowest, Cube.starAt]
   by_cases hc : ℓ ∈ lowest e (P0Levels τ)
-  · rw [if_pos hc, if_pos (hmem.mp hc), cubeIdx_star]
-  · rw [if_neg hc, if_neg fun h => hc (hmem.mpr h), getD_digitsT, cubeIdx_term]
+  · aesop
+  grind [getD_digitsT, cubeIdx_term]
 
 /-! ## Stars turned into P₀, and a symbol replaced by a term -/
 
@@ -229,7 +211,7 @@ theorem starsToNines_starFirst (e : ℕ) {l : List ℕ} (h : 10 ∉ l) :
   | case3 e l ih => simp_all [starsToNines]
   | case4 e d l hd ih =>
     rw [starsToNines, List.map_cons, if_neg fun h10 : d = 10 => h (h10 ▸ List.mem_cons_self)]
-    exact congrArg (d :: ·) (ih fun h' => h (List.mem_cons_of_mem _ h'))
+    aesop
 
 /-- Replacing the stars of a cube with P₀ is `starsToNines` on its digits. -/
 private theorem digitsT_starsToP0 {L : ℕ} (π : Cube L) :
@@ -266,11 +248,11 @@ def lastStar : List ℕ → Option ℕ
 /-- `lastStar` finds nothing exactly if the digit 10 does not occur. -/
 private theorem lastStar_eq_none_iff (l : List ℕ) : lastStar l = none ↔ ∀ j, l.getD j 0 ≠ 10 := by
   induction l with
-  | nil => simp [lastStar]
+  | nil => aesop
   | cons d l ih =>
     rw [← Nat.and_forall_add_one, lastStar]
     simp only [List.getD_cons_zero, List.getD_cons_succ, ← ih]
-    cases lastStar l <;> simp
+    lia
 
 /-- `lastStar` finds the last position of the digit 10. -/
 theorem lastStar_eq_some_iff (l : List ℕ) (p : ℕ) :
@@ -283,11 +265,11 @@ theorem lastStar_eq_some_iff (l : List ℕ) (p : ℕ) :
     | zero =>
       simp only [List.getD_cons_zero, List.getD_cons_succ, lt_irrefl, false_imp_iff, true_and,
         Nat.zero_lt_succ, forall_true_left, ← lastStar_eq_none_iff]
-      cases lastStar l <;> simp
+      lia
     | succ p =>
       simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.not_lt_zero, false_imp_iff,
         true_and, Nat.add_lt_add_iff_right, ← ih]
-      cases lastStar l <;> simp
+      grind
 
 /-- On the digits of a cube with a star, `lastStar` finds the highest level at which it has a
 star. -/

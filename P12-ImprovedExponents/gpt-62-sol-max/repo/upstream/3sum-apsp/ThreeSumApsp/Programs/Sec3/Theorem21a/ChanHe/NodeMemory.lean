@@ -19,7 +19,7 @@ Theorem 21(a)).
   `CtxAt.kept`).
 * Each of the three sets, with the count table, is what coll and heavy ask for (`Slot.Ok.bucket`).
 * A child of a node has the heavy elements of one of the three sets in place of that set
-  (`NodeArgs.child₁`, `child₂`, `child₃`; `NodeMem.child₁`, `child₂`, `child₃`).
+  (`NodeArgs.child`, `NodeMem.child`).
 * The bound `wordNeed` on the words is monotone in n and M (`wordNeed_mono`) and covers every
   product of a number up to (n + 1)², a number up to M + 1 and a number up to 64 (V + 1)
   (`mul_le_wordNeed`; `mul_le_word` and `le_word_of_le` are the forms that the routines use).
@@ -31,6 +31,9 @@ namespace Light.Sec3.ChanHe
 
 open ThreeSumApsp ThreeSumApsp.ChanHe Finset
 
+theorem slot_cases (i : Fin 3) : i = 0 ∨ i = 1 ∨ i = 2 := by
+  omega
+
 /-! ## The memory -/
 
 section memory
@@ -38,11 +41,15 @@ section memory
 variable {μ μ' : ℕ → ℤ} {fr V m np pr cnt s len : ℕ} {S : Finset ℤ} {e : Env} {X : Slot}
   {a : NodeArgs}
 
+/-- A set is preserved if the cells holding it are preserved. -/
+theorem SetAt.of_sameOn {R : ℕ → Prop} (h : SetAt μ s len S) (hk : SameOn R μ μ')
+    (hR : ∀ i < len, R (s + i)) : SetAt μ' s len S := by
+  obtain ⟨L, rfl, hs, hn, ht⟩ := h
+  exact ⟨L, rfl, hs.of_sameOn hk hR, hn, ht⟩
+
 /-- A set below the free pointer is still there if no cell below the free pointer has changed. -/
 theorem SetAt.kept (h : SetAt μ s len S) (hb : s + len ≤ fr) (hk : Kept μ μ' fr) :
-    SetAt μ' s len S := by
-  obtain ⟨L, hL, hs, hn, ht⟩ := h
-  exact ⟨L, hL, hs.congr fun i hi => hk _ (by omega), hn, ht⟩
+    SetAt μ' s len S := h.of_sameOn hk fun i hi => by omega
 
 /-- The length of a set in the memory is its number of elements. -/
 theorem SetAt.card (h : SetAt μ s len S) : #S = len := by
@@ -63,8 +70,7 @@ theorem Env.Ok.kept (h : e.Ok μ) (hk : Kept μ μ' e.fr) : e.Ok μ' :=
     primes := ⟨h.primes.1, h.primes.2.congr fun i hi => hk _ (by
       have hbelow := h.belowPr
       have hnp := h.primes.1
-      simp only [List.length_map, Finset.length_sort] at hi
-      omega)⟩
+      simp_all <;> omega)⟩
     zero := fun r hr => (hk _ (by have := h.belowCnt; omega)).trans (h.zero r hr) }
 
 /-- A set of a node only depends on the cells below the free pointer. -/
@@ -73,7 +79,7 @@ theorem Slot.Ok.kept (h : X.Ok μ e) (hk : Kept μ μ' e.fr) : X.Ok μ' e :=
 
 /-- What a node needs in the memory only depends on the cells below the free pointer. -/
 theorem NodeMem.kept (h : NodeMem μ a) (hk : Kept μ μ' a.fr) : NodeMem μ' a :=
-  ⟨h.envOk.kept hk, h.set₁.kept hk, h.set₂.kept hk, h.set₃.kept hk⟩
+  ⟨h.envOk.kept hk, fun i => (h.slotOk i).kept hk⟩
 
 /-- A set of a node with the count table, as coll and heavy want them. -/
 theorem Slot.Ok.bucket (h : X.Ok μ e) (he : e.Ok μ) {M : ℕ} (hM : 1 ≤ M) (hMm : M ≤ e.m * e.m) :
@@ -96,13 +102,9 @@ the free pointer, which moves on by the length of the set. -/
 @[simp] def NodeArgs.push (a : NodeArgs) (len : ℕ) : NodeArgs :=
   { a with toEnv := a.toEnv.push len }
 
-/-- The three children of a node with the modulus `M`. -/
-@[simp] def NodeArgs.child₁ (a : NodeArgs) (M : ℕ) : NodeArgs :=
-  { a with toEnv := a.toEnv.push a.X₁.len, X₁ := a.X₁.heavy a.fr M }
-@[inherit_doc NodeArgs.child₁, simp] def NodeArgs.child₂ (a : NodeArgs) (M : ℕ) : NodeArgs :=
-  { a with toEnv := a.toEnv.push a.X₂.len, X₂ := a.X₂.heavy a.fr M }
-@[inherit_doc NodeArgs.child₁, simp] def NodeArgs.child₃ (a : NodeArgs) (M : ℕ) : NodeArgs :=
-  { a with toEnv := a.toEnv.push a.X₃.len, X₃ := a.X₃.heavy a.fr M }
+/-- A child replaces one set by its heavy elements. -/
+def NodeArgs.child (a : NodeArgs) (i : Fin 3) (M : ℕ) : NodeArgs :=
+  ⟨a.toEnv.push (a.slot i).len, Function.update a.slot i ((a.slot i).heavy a.fr M)⟩
 
 /-- The primes and the count table are not touched when cells from the free pointer on are
 written. -/
@@ -119,7 +121,7 @@ theorem Slot.Ok.push (h : X.Ok μ e) (hk : KeptBut μ μ' (e.fr + len) e.fr len)
 /-- A node is not touched when cells from the free pointer on are written. -/
 theorem NodeMem.push (h : NodeMem μ a) (hk : KeptBut μ μ' (a.fr + len) a.fr len) :
     NodeMem μ' (a.push len) :=
-  ⟨h.envOk.push hk, h.set₁.push hk, h.set₂.push hk, h.set₃.push hk⟩
+  ⟨h.envOk.push hk, fun i => (h.slotOk i).push hk⟩
 
 /-- The heavy elements of a set of a node, written at the free pointer, are a set of the child. -/
 theorem Slot.Ok.heavy (h : X.Ok μ e) (he : e.Ok μ) {M : ℕ}
@@ -131,33 +133,22 @@ theorem Slot.Ok.heavy (h : X.Ok μ e) (he : e.Ok μ) {M : ℕ}
   below := Nat.add_le_add_left (card_heavy_le h.set M) _
   apart := Or.inr he.belowCnt
 
-/-- The first child: the heavy elements of the first set, written at the free pointer, in place of
-the first set. -/
-theorem NodeMem.child₁ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr + a.X₁.len) a.fr a.X₁.len)
-    (hs : SetAt μ' a.fr #(ChanHe.heavy a.X₁.set M) (ChanHe.heavy a.X₁.set M)) :
-    NodeMem μ' (a.child₁ M) :=
-  ⟨h.envOk.push hk, h.set₁.heavy h.envOk hs, h.set₂.push hk, h.set₃.push hk⟩
+/-- The new set lies in the space just allocated and the other sets are preserved. -/
+theorem NodeMem.child (h : NodeMem μ a) (i : Fin 3) {M : ℕ}
+    (hk : KeptBut μ μ' (a.fr + (a.slot i).len) a.fr (a.slot i).len)
+    (hs : SetAt μ' a.fr #(ChanHe.heavy (a.slot i).set M) (ChanHe.heavy (a.slot i).set M)) :
+    NodeMem μ' (a.child i M) := by
+  refine ⟨h.envOk.push hk, fun j => ?_⟩
+  by_cases hji : j = i
+  · subst j
+    simpa [NodeArgs.child] using (h.slotOk i).heavy h.envOk hs
+  · simpa [NodeArgs.child, Function.update_of_ne hji] using (h.slotOk j).push hk
 
-/-- The second child: the heavy elements of the second set in place of the second set. -/
-theorem NodeMem.child₂ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr + a.X₂.len) a.fr a.X₂.len)
-    (hs : SetAt μ' a.fr #(ChanHe.heavy a.X₂.set M) (ChanHe.heavy a.X₂.set M)) :
-    NodeMem μ' (a.child₂ M) :=
-  ⟨h.envOk.push hk, h.set₁.push hk, h.set₂.heavy h.envOk hs, h.set₃.push hk⟩
-
-/-- The third child: the heavy elements of the third set in place of the third set. -/
-theorem NodeMem.child₃ (h : NodeMem μ a) {M : ℕ} (hk : KeptBut μ μ' (a.fr + a.X₃.len) a.fr a.X₃.len)
-    (hs : SetAt μ' a.fr #(ChanHe.heavy a.X₃.set M) (ChanHe.heavy a.X₃.set M)) :
-    NodeMem μ' (a.child₃ M) :=
-  ⟨h.envOk.push hk, h.set₁.push hk, h.set₂.push hk, h.set₃.heavy h.envOk hs⟩
-
-/-- The block of parameters, below the free pointer, is still there if no cell below the free
-pointer has changed. -/
 theorem CtxAt.kept {cx Λ : ℕ} (h : CtxAt μ cx V m Λ np pr cnt) (hb : cx + 6 ≤ fr)
     (hk : Kept μ μ' fr) : CtxAt μ' cx V m Λ np pr cnt :=
-  Seg.congr h fun i hi => hk _ (by simp only [List.length_cons, List.length_nil] at hi; omega)
+  Seg.congr h fun i hi => hk _ (by grind)
 
 end memory
-
 
 /-! ## Words -/
 

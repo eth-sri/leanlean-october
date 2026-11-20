@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Lib.NextPair
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ZOrderFacts
 public import ThreeSumApsp.Programs.Tasks
@@ -25,15 +29,14 @@ coefficients each, in Z-order, where 2^K ≥ n; the cells from rab hold the resi
 w(a,b) mod p, that of (a, b) at place a n + b; the cells from mort hold the table of `spread`, from
 which the place of a pair in Z-order is formed.  The routine goes through the pairs (a, b) in the
 order of their places a n + b, reads the residue ϱ of w(a,b), forms (p - ϱ) mod p by one test, and
-adds the coefficient number (p - ϱ) mod p of the vector of (a, b) (`countTerm`,
-`countZeroAdd_spec`); then it steps to the next pair.  The loop is `countZero_spec`.
+adds the coefficient number (p - ϱ) mod p of the vector of (a, b) (`countTerm`); then it steps to the next pair.  The loop is `countZero_meets`.
 -/
 
 @[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -42,17 +45,7 @@ namespace CountZero
 /-- The local variables of countZero.  The arguments: Mat = rm, Residues = rab, Places = mort,
 Num = n, Prime = p.  Then Square = n²; Idx = t = a n + b, the number of the pair; Row = a; Col = b;
 Total, the sum; Expo, the exponent (p - ϱ) mod p. -/
-abbrev Mat : ℕ := 0
-@[inherit_doc Mat] abbrev Residues : ℕ := 1
-@[inherit_doc Mat] abbrev Places : ℕ := 2
-@[inherit_doc Mat] abbrev Num : ℕ := 3
-@[inherit_doc Mat] abbrev Prime : ℕ := 4
-@[inherit_doc Mat] abbrev Square : ℕ := 5
-@[inherit_doc Mat] abbrev Idx : ℕ := 6
-@[inherit_doc Mat] abbrev Row : ℕ := 7
-@[inherit_doc Mat] abbrev Col : ℕ := 8
-@[inherit_doc Mat] abbrev Total : ℕ := 9
-@[inherit_doc Mat] abbrev Expo : ℕ := 10
+registers [Mat, Residues, Places, Num, Prime, Square, Idx, Row, Col, Total, Expo]
 
 end CountZero
 
@@ -121,111 +114,82 @@ end CountZeroPre
 variable {μ : ℕ → ℤ} {rm rab mort n K p : ℕ} {RM : List ℤ} {RAB : List ℕ} {V : ℤ}
 
 open CountZero in
-/-- **The term of the pair number t is added.** -/
-theorem countZeroAdd_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) {t : ℕ}
-    (ht : t < n * n) (S ex : ℤ) (hfits : |S + countTerm n p RM RAB t| ≤ lim.word) :
-    Ends lim P d countZeroAdd
-      ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, (t / n : ℕ), (t % n : ℕ), S, ex], μ⟩ 34
-      fun σ' => ∃ ex' : ℤ, σ' = ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, (t / n : ℕ),
-        (t % n : ℕ), S + countTerm n p RM RAB t, ex'], μ⟩ := by
-  light_facts pre pre.mat pre.res pre.table
-  have hrow : t / n < n := Nat.div_lt_of_lt_mul' ht
-  have hcol : t % n < n := Nat.mod_lt_of_lt_mul ht
-  have hreadA : μ (mort + t / n) = (spread (t / n) : ℕ) :=
-    seg_spreadList_get pre.table.seg (by omega)
-  have hreadB : μ (mort + t % n) = (spread (t % n) : ℕ) :=
-    seg_spreadList_get pre.table.seg (by omega)
-  have hreadR := pre.res.read ht
-  have hrho := pre.res.getD_lt ht
-  have hidx := pre.index_lt ht
-  have hterm := pre.readTerm ht
-  have hp : p ≤ 4 ^ K * p := Nat.le_mul_of_pos_left p (by positivity)
-  replace hfits := abs_le.1 hfits
-  generalize countTerm n p RM RAB t = term at *
-  generalize RAB.getD t 0 = rho at *
-  unfold zIdx at hidx hterm
-  generalize t / n = a at *
-  generalize t % n = b at *
-  generalize spread a = sa at *
-  generalize spread b = sb at *
-  -- ex := rab[t]
-  light_set (rho : ℕ) using hreadR
-  -- if ex ≠ 0 then ex := p - ex
-  have label : Ends lim P d (.ite (v Expo =' k 0) .skip (.set Expo (v Prime -' v Expo)))
-      ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, a, b, S, (rho : ℕ)], μ⟩ 8 fun σ' =>
-        σ' = ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, a, b, S, ((p - rho) % p : ℕ)], μ⟩ := by
-    refine Ends.iteLast (fun h0 => Ends.skip ?_) fun h0 => Ends.setTo (p - rho : ℕ) ?_
-    · obtain rfl : rho = 0 := by simpa using h0
-      rw [Nat.sub_zero, Nat.mod_self]
-    · have h0 : rho ≠ 0 := by simpa using h0
-      rw [Nat.mod_eq_of_lt (by omega)]
-      rfl
-  refine Ends.next 8 (label.mono le_rfl ?_)
-  rintro _ rfl
-  generalize (p - rho) % p = s at hidx hterm
-  -- sum := sum + rm[(2 mort[a] + mort[b]) p + ex]
-  have hidxZ : (2 * (sa : ℤ) + sb) * p + s < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
-  have hle : 2 * (sa : ℤ) + sb ≤ (2 * (sa : ℤ) + sb) * p :=
-    le_mul_of_one_le_right (by positivity) (by exact_mod_cast (by omega : 1 ≤ p))
-  have haddr : ((rm : ℤ) + (2 * (sa : ℤ) + sb) * p + s).toNat = rm + ((2 * sa + sb) * p + s) := by
-    rw [show (rm : ℤ) + (2 * (sa : ℤ) + sb) * p + s = ((rm + ((2 * sa + sb) * p + s) : ℕ) : ℤ) by
-      push_cast; ring, Int.toNat_natCast]
-  light_set (S + term) using hreadA, hreadB, haddr, hterm
-  exact ⟨_, rfl⟩
-
-open CountZero in
 /-- **countZero** returns the count and leaves the memory as it was. -/
-theorem countZero_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) :
-    Ends lim P d countZeroBody ⟨frame [rm, rab, mort, n, p], μ⟩ (countZeroTime n) fun σ' =>
-      σ'.loc 0 = countBy n p RM RAB ∧ σ'.mem = μ := by
-  light_facts pre pre.mat pre.res pre.table
-  unfold countZeroTime
-  -- nn := n n; a := 0; b := 0; sum := 0
-  light_set (n * n : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  -- for t < nn
-  refine Ends.next _ (Ends.for (fun t σ => ∃ ex : ℤ,
-      σ = ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, (t / n : ℕ), (t % n : ℕ),
-        ∑ i ∈ Finset.range t, countTerm n p RM RAB i, ex], μ⟩ ∧
-      |∑ i ∈ Finset.range t, countTerm n p RM RAB i| ≤ t * V) (n * n) 48
-    ?start ?round ?done ?bound (hT := le_rfl))
-  case start =>
-    refine ⟨0, ?_, by simp⟩
-    rw [update_frame_setLocal, ← frame_append_zeros _ 1, Nat.zero_div, Nat.zero_mod]
-    rfl
-  case bound =>
-    rintro t _ - - ⟨ex, rfl, -⟩
-    simp
-  case round =>
-    rintro t _ ht - ⟨ex, rfl, hsum⟩
-    have hV := pre.abs_countTerm_le ht
-    -- The new sum fits in a word.
-    have hnew : |∑ i ∈ Finset.range (t + 1), countTerm n p RM RAB i| ≤ ((t + 1 : ℕ) : ℤ) * V := by
-      rw [Finset.sum_range_succ]
-      refine (abs_add_le _ _).trans ?_
-      push_cast
-      linarith
-    have hfits := hnew.trans ((mul_le_mul_of_nonneg_right (by exact_mod_cast ht)
-      ((abs_nonneg _).trans hV)).trans pre.sum_le)
-    rw [Finset.sum_range_succ] at hfits
-    refine Ends.next 34 ((countZeroAdd_spec pre ht _ ex hfits).mono le_rfl ?_)
-    rintro _ ⟨ex', rfl⟩
-    have hn : 0 < n := Nat.pos_of_ne_zero fun e => by simp [e] at ht
-    refine Ends.nextPair ?_ hn (by omega) (by omega) rfl rfl rfl
-    exact ⟨by simp, ex', by rw [update_frame_setLocal, Finset.sum_range_succ]; rfl, hnew⟩
-  case done =>
-    rintro _ - ⟨ex, rfl, -⟩
-    -- return sum
-    light_set (∑ i ∈ Finset.range (n * n), countTerm n p RM RAB i)
-    exact ⟨(List.sum_map_range _ _).symm, rfl⟩
-
-/-- **countZero** as a procedure. -/
 theorem countZero_meets {μ : ℕ → ℤ} {q rm rab mort n K p : ℕ} {RM : List ℤ} {RAB : List ℕ} {V : ℤ}
     (hP : P[q]? = some countZeroBody) (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) :
     Meets lim P q d [rm, rab, mort, n, p] μ (countZeroTime n) fun r μ' =>
-      r = countBy n p RM RAB ∧ μ' = μ :=
-  Meets.of_body hP (countZero_spec pre)
+      r = countBy n p RM RAB ∧ μ' = μ := by
+  refine .of_body hP ?_;
+  light_facts pre pre.mat pre.res pre.table
+  unfold countZeroTime
+  -- nn := n n; a := 0; b := 0; sum := 0
+  light_steps
+  let total (t : ℕ) := ∑ i ∈ Finset.range t, countTerm n p RM RAB i
+  have hbound (t : ℕ) (ht : t ≤ n * n) : |total t| ≤ t * V := by
+    refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
+    simpa using Finset.sum_le_sum fun i hi => pre.abs_countTerm_le ((Finset.mem_range.mp hi).trans_le ht)
+  refine Ends.next _ (Ends.forShape (fun t (z : ℕ × ℕ × ℤ × ℤ) ν =>
+    ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, z.1, z.2.1, z.2.2.1, z.2.2.2], ν⟩)
+    (fun t z ν => z.1 = t / n ∧ z.2.1 = t % n ∧ z.2.2.1 = total t ∧ ν = μ)
+    (n * n) 48 (0, 0, 0, 0) ⟨by simp, by simp, by simp [total], rfl⟩ ?_ ?_ (first := ?_) (hT := le_rfl))
+  · rintro t ⟨a, b, S, ex⟩ ν ht ⟨ha, hb, hS, hm⟩
+    dsimp only at ha hb hS
+    subst a b S ν
+    let S := total t
+    have hV := (abs_nonneg _).trans (pre.abs_countTerm_le ht)
+    have hfits := abs_le.mp ((hbound (t + 1) (by omega)).trans
+      ((mul_le_mul_of_nonneg_right (by exact_mod_cast ht) hV).trans pre.sum_le))
+    have ht' : total (t + 1) = total t + countTerm n p RM RAB t := Finset.sum_range_succ ..
+    rw [ht'] at hfits
+    change -lim.word ≤ S + _ ∧ S + _ ≤ lim.word at hfits
+    have hn : 0 < n := Nat.pos_of_ne_zero fun e => by simp_all
+    unfold countZeroAdd
+    have hrow : t / n < n := Nat.div_lt_of_lt_mul' ht
+    have hcol : t % n < n := Nat.mod_lt_of_lt_mul ht
+    have hreadA : μ (mort + t / n) = (spread (t / n) : ℕ) :=
+      seg_spreadList_get pre.table.seg (by omega)
+    have hreadB : μ (mort + t % n) = (spread (t % n) : ℕ) :=
+      seg_spreadList_get pre.table.seg (by omega)
+    have hreadR := pre.res.read ht
+    have hrho := pre.res.getD_lt ht
+    have hidx := pre.index_lt ht
+    have hterm := pre.readTerm ht
+    have hp : p ≤ 4 ^ K * p := Nat.le_mul_of_pos_left p (by positivity)
+    generalize countTerm n p RM RAB t = term at *
+    generalize RAB.getD t 0 = rho at *
+    unfold zIdx at hidx hterm
+    generalize ha : t / n = a at *
+    generalize hb : t % n = b at *
+    generalize spread a = sa at *
+    generalize spread b = sb at *
+    -- ex := rab[t]
+    light_step using hreadR
+    -- if ex ≠ 0 then ex := p - ex
+    light_head
+    refine Ends.pieceThen (T₁ := 8) (R := (· =
+      ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, a, b, S, ((p - rho) % p : ℕ)], μ⟩)) ?_ ?_
+    · refine Ends.iteIffLast (rho = 0) (fun h0 => Ends.skip ?_) (fun h0 => Ends.setTo (p - rho : ℕ) ?_)
+      · simp [h0, S]
+      · rw [Nat.mod_eq_of_lt (by omega)]
+        rfl
+    rintro _ rfl
+    generalize (p - rho) % p = s at hidx hterm
+    -- sum := sum + rm[(2 mort[a] + mort[b]) p + ex]
+    have hidxZ : (2 * (sa : ℤ) + sb) * p + s < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
+    have hle : 2 * (sa : ℤ) + sb ≤ (2 * (sa : ℤ) + sb) * p :=
+      le_mul_of_one_le_right (by positivity) (by omega)
+    have haddr : ((rm : ℤ) + (2 * (sa : ℤ) + sb) * p + s).toNat = rm + ((2 * sa + sb) * p + s) := by
+      lia
+    light_step using hreadA, hreadB, haddr, hterm
+    refine Ends.nextPair (t := t) ?_ hn (by omega) (by omega) (by simp [ha]) (by simp [hb]) rfl
+    exact ⟨((t + 1) / n, (t + 1) % n, S + term, s), μ, rfl, rfl, rfl, ht'.symm, rfl⟩
+  · rintro ⟨a, b, S, ex⟩ ν ⟨-, -, hS, hm⟩
+    change S = total (n * n) at hS
+    subst ν S
+    light_step
+    trivial
+  · rw [update_frame_setLocal, ← frame_append_zeros _ 1]
+    rfl
+
 
 end Light.Sec3

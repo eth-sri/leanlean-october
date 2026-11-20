@@ -5,6 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.WhileShape
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Spec.Sec2.Theorem5.SubsetTable
 
@@ -20,7 +25,7 @@ old row finds the last 1 that is followed by a 0 (`scan_spec`), and one pass wri
 (`write_spec`).  There is no arithmetic on the entries, and a row takes O(L) steps.  What the two
 passes compute is described without a program by `scanAt` and `newCell`, with the facts
 `bit_unrank_succ` and `scanAt_fits`; here each pass is connected with this description,
-`tableRow_spec` treats one row, and `subsetTable_spec` runs through the rows.  `subsets_entry` is
+`subsetTable_spec` runs through the rows.  `subsets_entry` is
 the specification that the callers of the procedure assume.
 -/
 
@@ -39,16 +44,7 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 /-- The local variables of subsets: Levels = L, Size = m, Rows = KK, Table = mask (the arguments);
 Row is the number of the current row and Addr its address; Phase, Ones and Pos are the state of the
 scan (phase, number of ones at the end, position found); Cell is the counter of the inner loops. -/
-abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Size : ℕ := 1
-@[inherit_doc Levels] abbrev Rows : ℕ := 2
-@[inherit_doc Levels] abbrev Table : ℕ := 3
-@[inherit_doc Levels] abbrev Row : ℕ := 4
-@[inherit_doc Levels] abbrev Addr : ℕ := 5
-@[inherit_doc Levels] abbrev Phase : ℕ := 6
-@[inherit_doc Levels] abbrev Ones : ℕ := 7
-@[inherit_doc Levels] abbrev Pos : ℕ := 8
-@[inherit_doc Levels] abbrev Cell : ℕ := 9
+registers [Levels, Size, Rows, Table, Row, Addr, Phase, Ones, Pos, Cell]
 
 /-- One cell of the first row: 1 for the first m cells, then 0. -/
 def firstRowRound : Stmt :=
@@ -119,11 +115,11 @@ theorem firstRow_spec (std : Std lim) (ha : a + L ≤ lim.space)
   rintro j _ hj rfl
   unfold firstRowRound
   -- if Cell < m then mem[Addr + Cell] := 1 else mem[Addr + Cell] := 0
-  refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
+  refine Ends.iteIffLast (j < m) (fun h => ?_) (fun h => ?_) (by light_side)
   · light_store (a + j) 1
-    exact ⟨rfl, by rw [← wrote_succ, if_pos (by simpa using hc)]⟩
+    simp [← wrote_succ, h]
   · light_store (a + j) 0
-    exact ⟨rfl, by rw [← wrote_succ, if_neg (by simpa using hc)]⟩
+    simp [← wrote_succ, h]
 
 /-- One round of the scan does to the local variables what `scanStep` says of the cell number j from
 the end of the row of L cells that ends just before the address a. -/
@@ -132,31 +128,19 @@ theorem scanRound_runs (std : Std lim) (hLa : L ≤ a) (ha : a ≤ lim.space) {j
     scanRound.Runs lim ⟨frame (locals L m KK mask s a S j), μ⟩ fun σ' => σ' =
       ⟨frame (locals L m KK mask s a (scanStep (μ (a - 1 - j)) ((L : ℤ) - 1 - j) S) j), μ⟩ := by
   light_facts std
-  have haddr : ((a : ℤ) - 1 - j).toNat = a - 1 - j := by omega
   unfold scanRound scanStep
-  by_cases hcount : S.phase < 1
-  · -- Phase 0: a zero ends the counting, a one is counted.
-    rw [if_pos hcount]
-    refine .ite_pos ?_
-    by_cases hx : μ (a - 1 - j) < 1
-    · rw [if_pos hx]
-      exact .ite_pos ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa [haddr] using hx)
-    · rw [if_neg hx]
-      exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa [haddr] using hx)
-  · rw [if_neg hcount]
-    refine .ite_neg ?_
-    by_cases hpass : S.phase < 2
-    · -- Phase 1: a zero is passed, a one is what the scan looks for.
-      rw [if_pos hpass]
-      refine .ite_pos ?_
-      by_cases hx : μ (a - 1 - j) < 1
-      · rw [if_pos hx]
-        exact .ite_pos ⟨trivial, rfl⟩ (by simpa [haddr] using hx)
-      · rw [if_neg hx]
-        exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simpa [haddr] using hx)
-    · -- Phase 2: nothing is left to do.
-      rw [if_neg hpass]
-      exact .ite_neg ⟨trivial, rfl⟩
+  split <;> rename_i hphase
+  · refine .ite_pos ?_
+    split <;> rename_i hx
+    · exact .ite_pos ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simp_all)
+    · exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simp_all)
+  · refine .ite_neg ?_
+    split <;> rename_i hpass
+    · refine .ite_pos ?_
+      split <;> rename_i hx
+      · exact .ite_pos ⟨trivial, rfl⟩ (by simp_all)
+      · exact .ite_neg ⟨by light_side, by simp [update_frame_setLocal]⟩ (by simp_all)
+    · exact .ite_neg ⟨trivial, rfl⟩
 
 /-- **The scan** of the row of L cells that ends just before the address a changes no cell and
 leaves its result in the local variables. -/
@@ -166,9 +150,7 @@ theorem scan_spec (std : Std lim) (hLa : L ≤ a) (ha : a ≤ lim.space)
     Ends lim P d scanLoop ⟨frame (locals L m KK mask s a S j₀), μ⟩ T Q := by
   light_facts std
   -- Phase := 0; Ones := 0; Pos := 0
-  light_set 0
-  light_set 0
-  light_set 0
+  iterate 3 light_step
   -- for Cell < L
   refine Ends.for (fun j σ =>
       σ = ⟨frame (locals L m KK mask s a (scanAt (prevRow μ a L) L j) j), μ⟩)
@@ -181,8 +163,7 @@ theorem scan_spec (std : Std lim) (hLa : L ≤ a) (ha : a ≤ lim.space)
     rintro _ rfl
     rw [scanAt, prevRow, show a - L + (L - 1 - j) = a - 1 - j by omega]
     simp [update_frame_setLocal]
-  case done => exact fun _ _ h => h ▸ done
-  case bound => exact fun j _ _ _ h => h ▸ by light_side
+  all_goals (simp_all)
 
 /-- **The writing pass** writes the new row to the L cells from a, from the row of L cells before
 it and the result S of the scan. -/
@@ -204,18 +185,17 @@ theorem write_spec (std : Std lim) (hLa : L ≤ a) (ha : a + L ≤ lim.space)
   rw [← wrote_succ, newRow, newCell]
   -- if Cell < Pos then mem[Addr + Cell] := mem[Addr - L + Cell] else if Cell < Pos + 1 then 0
   -- else if Cell < Pos + 2 + Ones then 1 else 0: the four cases of newCell
-  refine Ends.iteLast (fun c₁ => ?_) fun c₁ => Ends.iteLast (fun c₂ => ?_) fun c₂ =>
-    Ends.iteLast (fun c₃ => ?_) fun c₃ => ?_
+  refine Ends.iteIffLast ((j : ℤ) < S.pos) (fun h₁ => ?_) (fun h₁ => ?_)
   · light_store (a + j) (μ (a - L + j)) using haddr, hold
-    exact ⟨rfl, by rw [if_pos (by simpa using c₁)]⟩
+    simp_all
+  refine Ends.iteIffLast ((j : ℤ) < S.pos + 1) (fun h₂ => ?_) (fun h₂ => ?_)
   · light_store (a + j) 0
-    exact ⟨rfl, by rw [if_neg (by simpa using c₁), if_pos (by simpa using c₂)]⟩
+    simp [h₁, h₂]
+  refine Ends.iteIffLast ((j : ℤ) < S.pos + 2 + S.ones) (fun h₃ => ?_) (fun h₃ => ?_)
   · light_store (a + j) 1
-    exact ⟨rfl, by
-      rw [if_neg (by simpa using c₁), if_neg (by simpa using c₂), if_pos (by simpa using c₃)]⟩
+    simp [h₁, h₂, h₃]
   · light_store (a + j) 0
-    exact ⟨rfl, by
-      rw [if_neg (by simpa using c₁), if_neg (by simpa using c₂), if_neg (by simpa using c₃)]⟩
+    simp [h₁, h₂, h₃]
 
 /-- **A further row**: the two passes write the new row to the L cells from a, from the row of L
 cells before it, if the result of the scan leaves room. -/
@@ -227,76 +207,6 @@ theorem nextRow_spec (std : Std lim) (hLa : L ≤ a) (ha : a + L ≤ lim.space)
     Ends lim P d nextRow ⟨frame (locals L m KK mask s a S j₀), μ⟩ T Q :=
   Ends.next _ (scan_spec std hLa (by omega) (write_spec std hLa ha hroom done (by omega)) le_rfl)
 
-/-! ## The loop over the rows -/
-
-/-- The state before row number s is written: the rows before it stand in the table, and no cell
-outside the table has changed. -/
-def RowsDone (μ : ℕ → ℤ) (L m KK mask s : ℕ) (σ : State) : Prop :=
-  ∃ (S : Scan) (j : ℤ) (μ' : ℕ → ℤ), σ = ⟨frame (locals L m KK mask s (mask + s * L) S j), μ'⟩ ∧
-    (∀ t < s, SegB μ' (mask + t * L) (Spec.unrank L m t)) ∧ SameOutside μ μ' mask (KK * L)
-
-/-- The time of one round of the loop over the rows. -/
-def tRow (L : ℕ) : ℕ := 64 * L + 30
-
-/-- The end of a round: row number s has been written, and the number and the address of the row
-move on. -/
-private theorem rowDone_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space)
-    (hKK : (KK : ℤ) ≤ lim.word) (hs : s < KK) {μ' : ℕ → ℤ} {f : ℕ → ℤ} {j : ℤ}
-    (hrows : ∀ t < s, SegB μ' (mask + t * L) (Spec.unrank L m t))
-    (same : SameOutside μ μ' mask (KK * L))
-    (hf : ∀ r < L, f r = bit ((Spec.unrank L m s).getD r false))
-    (hT : 8 ≤ T := by light_time) :
-    Ends lim P d (.set Row (v Row +' k 1) ;; .set Addr (v Addr +' v Levels))
-      ⟨frame (locals L m KK mask s (mask + s * L) S j), wrote μ' (mask + s * L) f L⟩ T
-      (RowsDone μ L m KK mask (s + 1)) := by
-  light_facts std
-  have hroom : s * L + L ≤ KK * L := Nat.mul_add_le_mul hs le_rfl
-  -- Row := Row + 1; Addr := Addr + L
-  light_set (s + 1 : ℕ)
-  light_set (mask + (s + 1) * L : ℕ) using Nat.succ_mul
-  refine ⟨S, j, _, rfl, fun t ht => ?_,
-      same.trans ((sameOutside_wrote le_rfl).mono (by omega) (by omega))⟩
-  rcases Nat.lt_succ_iff_lt_or_eq.mp ht with ht | rfl
-  · -- An earlier row lies before the cells that were written.
-    have hbefore : t * L + L ≤ s * L := Nat.mul_add_le_mul ht le_rfl
-    refine Seg.of_sameOutside (hrows t ht) (sameOutside_wrote le_rfl) (Or.inl ?_)
-    rw [List.length_map, Spec.length_unrank]
-    omega
-  · -- The new row.
-    intro r hr
-    rw [List.length_map, Spec.length_unrank] at hr
-    rw [wrote_done hr, hf r hr, List.getElem_map,
-      List.getD_eq_getElem _ _ (by rwa [Spec.length_unrank])]
-    rfl
-
-/-- **One round of the loop over the rows** writes row number `s`, the mask number `s`. -/
-theorem tableRow_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (hm : m ≤ L)
-    (hKK : KK ≤ L.choose m) (hKL : ((KK + L : ℕ) : ℤ) ≤ lim.word) (hs : s < KK) {σ : State}
-    (h : RowsDone μ L m KK mask s σ) :
-    Ends lim P d tableRow σ (tRow L) (RowsDone μ L m KK mask (s + 1)) := by
-  obtain ⟨S, j, μ', rfl, hrows, same⟩ := h
-  light_facts std
-  push_cast at hKL
-  have hroom : s * L + L ≤ KK * L := Nat.mul_add_le_mul hs le_rfl
-  unfold tableRow tRow
-  -- if Row < 1
-  refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)
-  · -- The first row.
-    obtain rfl : s = 0 := by simp at hc; omega
-    refine Ends.next _ (firstRow_spec std (by omega) ?_ le_rfl)
-    exact rowDone_spec std hmask (by omega) hs hrows same fun r hr => (bit_unrank_zero hm hr).symm
-  · -- A further row, from the row before it.
-    obtain ⟨p, rfl⟩ : ∃ p, s = p + 1 := ⟨s - 1, by simp at hc; omega⟩
-    have hsucc : (p + 1) * L = p * L + L := Nat.succ_mul p L
-    have hprev : ∀ q < L, prevRow μ' (mask + (p + 1) * L) L q
-        = bit ((Spec.unrank L m p).getD q false) := fun q hq => by
-      rw [prevRow, show mask + (p + 1) * L - L + q = mask + p * L + q by omega]
-      exact SegB.get (hrows p (by omega)) (by rwa [Spec.length_unrank])
-    have hnext : p + 1 < L.choose m := by omega
-    refine Ends.next _ (nextRow_spec std (by omega) (by omega) (scanAt_fits hnext hprev) ?_ le_rfl)
-    exact rowDone_spec std hmask (by omega) hs hrows same fun r hr =>
-      (bit_unrank_succ hnext hprev hr).symm
-
 /-- **subsets** writes the table and changes nothing else. -/
 theorem subsetTable_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (hm : m ≤ L)
     (hKK : KK ≤ L.choose m) (hKL : ((KK + L : ℕ) : ℤ) ≤ lim.word) :
@@ -304,34 +214,59 @@ theorem subsetTable_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (
       (∀ s < KK, SegB σ'.mem (mask + s * L) (Spec.unrank L m s)) ∧
         SameOutside μ σ'.mem mask (KK * L) := by
   light_facts std
-  -- Row := 0; Addr := mask
-  light_set 0
-  light_set mask
-  -- while Row < KK; the KK rounds take KK (64 L + 34) steps
-  refine Ends.whileConst (RowsDone μ L m KK mask) KK (tRow L) ?start ?round ?done
-    (by simp [tRow]; ring_nf; omega)
-  case start =>
-    refine ⟨⟨0, 0, 0⟩, 0, μ, ?_, fun t ht => absurd ht (by omega), .refl⟩
-    -- The state of the scan and the counter of the inner loops start at 0.
-    simp only [setLocal, Nat.zero_mul, Nat.add_zero]
-    rw [← frame_append_zeros _ 4]
+  push_cast at hKL
+  light_steps
+  refine Ends.whileShape (fun s (z : Scan × ℤ) ν =>
+      ⟨frame (locals L m KK mask s (mask + s * L) z.1 z.2), ν⟩)
+    (fun s _ ν => (∀ t < s, SegB ν (mask + t * L) (Spec.unrank L m t)) ∧
+      SameOutside μ ν mask (KK * L)) KK (64 * L + 30) (⟨0, 0, 0⟩, 0) μ
+    ⟨by simp, .refl⟩ ?_ (fun _ _ h => h)
+    (first := by
+      simp only [setLocal, Nat.zero_mul, Nat.add_zero]
+      rw [← frame_append_zeros _ 4]; rfl)
+  rintro s ⟨S, j⟩ ν hs ⟨hrows, same⟩
+  have hroom : s * L + L ≤ KK * L := Nat.mul_add_le_mul hs le_rfl
+  let a := mask + s * L
+  let R (σ : State) := ∃ S' j' η,
+    σ = ⟨frame (locals L m KK mask s a S' j'), η⟩ ∧
+      SegB η a (Spec.unrank L m s) ∧ SameOutside ν η a L
+  have writes (S' : Scan) (f : ℕ → ℤ) (hf : ∀ r < L, f r = bit ((Spec.unrank L m s).getD r false)) :
+      R ⟨frame (locals L m KK mask s a S' L), wrote ν a f L⟩ := by
+    refine ⟨S', L, _, rfl, fun r hr => ?_, sameOutside_wrote le_rfl⟩
+    rw [List.length_map, Spec.length_unrank] at hr
+    rw [wrote_done hr, hf r hr, List.getElem_map, List.getD_eq_getElem _ _ (by simp_all)]
     rfl
-  case round =>
-    intro s σ hs h
-    have hrow := tableRow_spec (P := P) (d := d) std hmask hm hKK hKL hs h
-    obtain ⟨S, j, μ', rfl, -⟩ := h
-    push_cast at hKL
-    exact ⟨by light_side, by light_side, hrow⟩
-  case done =>
-    rintro _ ⟨S, j, μ', rfl, hrows, same⟩
-    push_cast at hKL
-    exact ⟨by light_side, by light_side, hrows, same⟩
+  unfold tableRow
+  refine Ends.pieceThen (T₁ := 64 * L + 22) (R := R) ?_ ?_
+  · refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
+    · obtain rfl : s = 0 := by simp_all
+      exact firstRow_spec std (by simp [a] at *; omega)
+        (writes S _ (fun r hr => (bit_unrank_zero hm hr).symm)) (by light_time)
+    · obtain ⟨p, rfl⟩ : ∃ p, s = p + 1 := ⟨s - 1, by simp at hc; omega⟩
+      have hspace : mask + (p + 1) * L + L ≤ lim.space := by
+        have := Nat.mul_add_le_mul hs (le_refl L)
+        omega
+      have hprev : ∀ q < L, prevRow ν a L q = bit ((Spec.unrank L m p).getD q false) := by
+        intro q hq
+        rw [prevRow, show a - L + q = mask + p * L + q by simp only [a, Nat.add_mul, Nat.one_mul]; omega]
+        exact SegB.get (hrows p (by omega)) (by simp_all)
+      have hnext : p + 1 < L.choose m := by omega
+      exact nextRow_spec std (by simp only [Nat.add_mul, Nat.one_mul]; omega) hspace (scanAt_fits hnext hprev)
+        (writes _ _ (fun r hr => (bit_unrank_succ hnext hprev hr).symm)) (by light_time)
+  · rintro _ ⟨S', j', η, rfl, hrow, hkeep⟩
+    light_set (s + 1 : ℕ)
+    light_set (mask + (s + 1) * L : ℕ) using a, Nat.succ_mul
+    refine ⟨(S', j'), η, rfl, fun t ht => ?_, same.trans (hkeep.mono (by omega) (by dsimp [a]; omega))⟩
+    rcases Nat.lt_succ_iff_lt_or_eq.mp ht with ht | rfl
+    · have hbefore := Nat.mul_add_le_mul ht (le_refl L)
+      exact (hrows t ht).of_sameOutside hkeep (.inl (by rw [List.length_map, Spec.length_unrank]; dsimp [a]; omega))
+    · exact hrow
 
 end Light.Sec2.Subsets
 
 namespace Light.Sec2
 
-open ThreeSumApsp Subsets
+open Subsets
 
 variable {lim : Limits} {P : Program}
 

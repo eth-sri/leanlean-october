@@ -28,7 +28,7 @@ theorem length_classStarts (n p : ℕ) (RAB : List ℕ) : (classStarts n p RAB).
 /-- A class starts at a place of the list of all n² pairs, or at its end. -/
 theorem classStart_le_sq (n : ℕ) (RAB : List ℕ) (rho : ℕ) : classStart n RAB rho ≤ n * n := by
   rw [classStart_eq_length_filter]
-  exact (List.length_filter_le _ _).trans (List.length_range).le
+  grind
 
 /-- No entry of the list of the starts of the classes is above n². -/
 theorem le_of_mem_classStarts {n p : ℕ} {RAB : List ℕ} {x : ℕ} (hx : x ∈ classStarts n p RAB) :

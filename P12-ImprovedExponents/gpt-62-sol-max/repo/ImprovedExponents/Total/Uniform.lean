@@ -57,13 +57,9 @@ theorem dominated_bruteForce {δ : ℝ} (e n₀ : ℕ) (hδ0 : 0 ≤ δ) :
 /-- Weights up to `u` are weights up to `s^κ` for `κ = max 1 (log u / log s)`. -/
 theorem le_rpow_max_log_div {s : ℕ} {u : ℝ} (hs : 3 ≤ s) (hu : 1 ≤ u) :
     u ≤ (s : ℝ) ^ max 1 (Real.log u / Real.log s) := by
-  have hs0 : (0 : ℝ) < s := Nat.cast_pos.2 (by omega)
-  have hlogs : 1 ≤ Real.log s := Real.one_le_log_natCast_of_three_le hs
-  calc u = (s : ℝ) ^ (Real.log u / Real.log s) := by
-        rw [Real.rpow_def_of_pos hs0, mul_div_cancel₀ _ (by linarith),
-          Real.exp_log (zero_lt_one.trans_le hu)]
-    _ ≤ (s : ℝ) ^ max 1 (Real.log u / Real.log s) :=
-        Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.2 (by omega)) (le_max_right _ _)
+  have hs1 : (1 : ℝ) < s := by exact_mod_cast (show 1 < s by omega)
+  exact (Real.rpow_logb (zero_lt_one.trans hs1) hs1.ne' (by linarith : 0 < u)).symm.trans_le
+    (Real.rpow_le_rpow_of_exponent_le hs1.le (le_max_right _ _))
 
 /-- The exponent `max 1 (log u / log s)` is at most `1 + log u`. -/
 theorem max_log_div_le {s : ℕ} {u : ℝ} (hs : 3 ≤ s) (hu : 1 ≤ u) :
@@ -76,8 +72,7 @@ theorem max_log_div_le {s : ℕ} {u : ℝ} (hs : 3 ≤ s) (hu : 1 ≤ u) :
 `κ = max 1 (log u / log s)`. -/
 theorem dominated_explicitFrom {T : ℕ → ℝ → ℝ} {K δ : ℝ} {e n₀ n₁ : ℕ} (h0 : n₀ ≤ n₁)
     (h3 : 3 ≤ n₁)
-    (hb : ∀ (n : ℕ) (κ u : ℝ), n₀ ≤ n → 1 ≤ κ → u ≤ (n : ℝ) ^ κ →
-      T n u ≤ K * (κ * ((n : ℝ) ^ (3 - δ) * Real.log n ^ e))) :
+    (hb : ExplicitBound δ e n₀ K T) :
     Dominated (fun p : SizeBound => (1 ≤ p.s ∧ 1 ≤ p.u) ∧ ¬ p.s < n₁) (fun p => T p.s p.u)
       (uniformShape δ e) := by
   have h3' : ∀ p : SizeBound, ¬ p.s < n₁ → 3 ≤ p.s := fun p hp => h3.trans (not_lt.1 hp)
@@ -88,7 +83,6 @@ theorem dominated_explicitFrom {T : ℕ → ℝ → ℝ} {K δ : ℝ} {e n₀ n�
       (le_rpow_max_log_div (h3' p hp.2) hp.1.2)
   · positivity
   · have hκ := max_log_div_le (h3' p hp.2) hp.1.2
-    have hlog := Real.log_natCast_nonneg p.s
     have hwords := le_self_pow₀ (one_le_one_add_logU p.u) two_ne_zero
     calc max 1 (Real.log p.u / Real.log p.s) * ((p.s : ℝ) ^ (3 - δ) * Real.log p.s ^ e)
         ≤ (1 + logU p.u) ^ 2 * ((p.s : ℝ) ^ (3 - δ) * (Real.log p.s + 1) ^ e) := by

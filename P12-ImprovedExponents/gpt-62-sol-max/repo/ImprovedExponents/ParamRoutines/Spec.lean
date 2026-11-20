@@ -28,7 +28,7 @@ Upstream instantiates the reduction of Theorem 17 with `D := ⌊n^{1/18}⌋` and
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The parameters, with real powers -/
 
@@ -74,7 +74,7 @@ theorem paramGRatNat_paramDRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) {n : ℕ}
 /-- `⌊n^{a/b}⌋ ≥ 1` for `n ≥ 1`. -/
 theorem one_le_paramDRatNat {b : ℕ} (hb : b ≠ 0) (a : ℕ) {n : ℕ} (hn : 1 ≤ n) :
     1 ≤ paramDRatNat a b n :=
-  le_rootFloor hb (by simpa using Nat.one_le_pow a n hn)
+  le_rootFloor hb (by grind)
 
 /-- `⌊n^{a/b}⌋ ≥ 1` for `n ≥ 1`, with the real power. -/
 theorem one_le_paramDRat {b : ℕ} (hb : b ≠ 0) (a : ℕ) {n : ℕ} (hn : 1 ≤ n) :

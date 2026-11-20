@@ -98,7 +98,7 @@ theorem classStart_eq_length_filter (n : ℕ) (RAB : List ℕ) (p : ℕ) :
     classStart n RAB p =
       ((List.range (n * n)).filter fun i => decide (RAB.getD i 0 < p)).length := by
   induction p with
-  | zero => simp [classStart]
+  | zero => aesop
   | succ p ih =>
     rw [classStart_succ, ih, List.length_filter_lt_succ fun i => RAB.getD i 0]
     rfl
@@ -106,18 +106,15 @@ theorem classStart_eq_length_filter (n : ℕ) (RAB : List ℕ) (p : ℕ) :
 /-- All the pairs are listed if all the residues are below `p`. -/
 theorem classStart_eq_sq (hlt : ∀ i < n * n, RAB.getD i 0 < p) : classStart n RAB p = n * n := by
   rw [classStart_eq_length_filter, List.filter_eq_self.2, List.length_range]
-  exact fun i hi => decide_eq_true (hlt i (List.mem_range.1 hi))
+  simp_all
 
 /-- A place below the start of the class `p` lies in one of the classes before. -/
 theorem exists_class {j : ℕ} (hj : j < classStart n RAB p) :
     ∃ rho < p, classStart n RAB rho ≤ j ∧ j < classStart n RAB (rho + 1) := by
   induction p with
-  | zero => exact absurd hj (Nat.not_lt_zero j)
+  | zero => trivial
   | succ p ih =>
-    by_cases h : j < classStart n RAB p
-    · obtain ⟨rho, hrho, hseg⟩ := ih h
-      exact ⟨rho, by omega, hseg⟩
-    · exact ⟨p, by omega, by omega, hj⟩
+    grind
 
 /-- The places from the start of the class `rho` to the start of the next class hold pairs with the
 residue `rho`. -/
@@ -183,7 +180,7 @@ theorem chunkTab_eq (n p cap : ℕ) (RAB : List ℕ) :
 theorem mem_chunkTab (x : Chunk) :
     x ∈ chunkTab n p cap RAB ↔
       ∃ rho < p, ∃ i < (classIdx n RAB rho).length ⌈/⌉ cap, x = chunkAt n cap RAB rho i := by
-  simp only [chunkTab_eq, List.mem_flatMap, List.mem_range, List.mem_map, eq_comm (a := x)]
+  grind [chunkTab_eq]
 
 /-- An entry of the table has a residue below `p`, and it is a nonempty segment of at most `cap`
 places of the list. -/
@@ -249,19 +246,13 @@ theorem chunkTab_unique (hcap : 1 ≤ cap) {j k k' : ℕ} (h : k < (chunkTab n p
   have hpair := List.pairwise_iff_getElem.1 (chunkTab_pairwise (n := n) (p := p) (RAB := RAB) hcap)
   obtain ⟨hlo, hhi⟩ := hj
   obtain ⟨hlo', hhi'⟩ := hj'
-  rcases Nat.lt_trichotomy k k' with hlt | heq | hgt
-  · have := hpair k k' h h' hlt
-    omega
-  · exact heq
-  · have := hpair k' k h' h hgt
-    omega
+  grind
 
 /-- The number of chunks, class by class. -/
 theorem length_chunkTab (n p cap : ℕ) (RAB : List ℕ) :
     (chunkTab n p cap RAB).length =
       ((List.range p).map fun rho => (classIdx n RAB rho).length ⌈/⌉ cap).sum := by
-  rw [chunkTab_eq, List.length_flatMap]
-  simp
+  simp [chunkTab_eq]
 
 /-- Proof of Theorem 17: "There are at most p + √D ≤ 2√D chunks in all", in the form: at most `p +
 n²/cap`. -/

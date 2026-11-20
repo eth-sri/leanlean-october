@@ -51,8 +51,7 @@ private lemma card_leaves_P0 {L m f : ℕ} (hmL : m ≤ L) (hf : f ≤ m) :
   congr 1
   ext τ
   rw [mem_filter, mem_filter, order]
-  simp only [mem_univ, true_and]
-  omega
+  simp_all
 
 /-- Proof of Lemma 29, "The count": "There are hence (f+1) binom(L, f) 9^{L-f} = (f+1) β_{m-f} such
 boxes", namely boxes with `f` symbols `P₀` or stars, for `f ≤ m - t`. -/
@@ -97,15 +96,12 @@ theorem lemma_29_count (L m t : ℕ) (hL : 10 * m ≤ L) (ht : t ≤ m) :
         fun π => (Cube.starLevels π).card + (Cube.P0Levels π).card = f).card := by
     refine card_eq_sum_card_fiberwise fun π hπ => ?_
     have hi := (mem_boxes.1 (mem_coe.1 hπ)).1
-    simp only [coe_range, Set.mem_Iio]
-    omega
+    simp_all
   -- The order `d = m - f` runs from `t` to `m`.
   have hreflect : ∑ f ∈ range (m - t + 1), beta L m (m - f) = ∑ d ∈ Finset.Icc t m, beta L m d := by
     rw [range_eq_Ico, sum_Ico_reflect _ _ (by omega)]
     congr 1
-    ext d
-    simp only [mem_Ico, mem_Icc]
-    omega
+    grind
   -- "summing over f ≤ m - t gives the upper bound on the number of boxes", since `f + 1 ≤ m + 1`
   rw [hsort, ← hreflect, mul_sum]
   refine sum_le_sum fun f hf => ?_
@@ -128,7 +124,7 @@ theorem Lemma29.no_stars {L : ℕ} (m t : ℕ) (π : Cube L) :
     exact hbox.1
   · rintro ⟨τ, hτ, rfl⟩
     rw [IsBox, Cube.starLevels_ofLeaf, Cube.P0Levels_ofLeaf]
-    simpa using hτ
+    simp_all
 
 /-- Proof of Lemma 29, "The values": "the value of each of them is the product of its two numbers in
 the encodings." -/
@@ -155,7 +151,7 @@ theorem lemma_29_split {L m t e : ℕ} {π : Cube L} (hπ : π ∈ boxesWithStar
     rw [Cube.starLevels_replace, mem_erase] at hk
     rcases mem_insert.1 (hP0 hk') with hnew | hold
     · exact hnew ▸ lt_of_le_of_ne (le_max' _ k hk.2) hk.1
-    · exact hbelow k hk.2 k' hold
+    simp_all
 
 /-- Proof of Lemma 29, "The values", the displayed recurrence: "val(π) = ∑_λ val(π[ℓ ← λ])", because
 "The leaves of π are the leaves of the ten strings π[ℓ ← λ]". It holds for a star at any level `ℓ`

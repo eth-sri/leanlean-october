@@ -6,10 +6,18 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Syntax
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
-public import Mathlib.Tactic.Ring
 
 /-!
 # Proof rules for the light language
@@ -42,29 +50,20 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 procedures appended. -/
 theorem getElem?_append_of_eq_some {P : Program} {p : ℕ} {body : Stmt} (h : P[p]? = some body)
     (R : Program) : (P ++ R)[p]? = some body := by
-  rw [List.getElem?_append_left (List.getElem?_eq_some_iff.1 h).1]
-  exact h
+  grind
 
 /-- Procedure number i of a list that is appended to the program P₀ has the number |P₀| + i,
 whatever is appended after the list. -/
 theorem getElem?_append_append {P₀ B : Program} (R : Program) {i : ℕ} {body : Stmt}
     (h : B[i]? = some body) : (P₀ ++ (B ++ R))[P₀.length + i]? = some body := by
-  rw [List.getElem?_append_right (by omega), Nat.add_sub_cancel_left]
-  exact getElem?_append_of_eq_some h R
+  grind
 
 /-- A run stays a run when procedures are appended to the program. -/
 theorem Exec.append {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d s σ σ' c) (R : Program) :
     Exec lim (P ++ R) d s σ σ' c := by
-  induction h with
-  | skip => exact .skip
-  | set h => exact .set h
-  | store h₁ h₂ h₃ => exact .store h₁ h₂ h₃
-  | seq _ _ ih₁ ih₂ => exact .seq ih₁ ih₂
-  | iteTrue h₁ h₂ _ ih => exact .iteTrue h₁ h₂ ih
-  | iteFalse h₁ h₂ _ ih => exact .iteFalse h₁ h₂ ih
-  | whileFalse h₁ h₂ => exact .whileFalse h₁ h₂
-  | whileTrue h₁ h₂ _ _ ih₁ ih₂ => exact .whileTrue h₁ h₂ ih₁ ih₂
-  | call h₁ h₂ h₃ _ ih => exact .call h₁ (getElem?_append_of_eq_some h₂ R) h₃ ih
+  induction h <;> try solve | constructor! <;> assumption | solve_by_elim
+  case iteFalse a b _ ih => exact .iteFalse a b ih
+  case call h₁ h₂ h₃ _ ih => exact .call h₁ (getElem?_append_of_eq_some h₂ R) h₃ ih
 
 /-! ## The rules -/
 
@@ -113,18 +112,6 @@ theorem Ends.ite {σ T c s₁ s₂} {Q : State → Prop} (T' : ℕ) (hs : c.Safe
   · obtain ⟨σ', k, he, hk, hq⟩ := h₂ hv
     exact ⟨σ', _, .iteFalse hs hv he, by omega, hq⟩
 
-/-- A loop whose test holds: one round, then the loop again. -/
-theorem Ends.whileStep {σ c s T} {Q : State → Prop} (T₁ T₂ : ℕ) (hs : c.Safe lim σ) (hc : c.Holds σ)
-    (h : Ends lim P d s σ T₁ fun σ' => Ends lim P d (.while c s) σ' T₂ Q)
-    (hT : c.cost + 1 + T₁ + T₂ ≤ T) : Ends lim P d (.while c s) σ T Q := by
-  obtain ⟨σ', c₁, he₁, hc₁, σ'', c₂, he₂, hc₂, hq⟩ := h
-  exact ⟨σ'', _, .whileTrue hs hc he₁ he₂, by omega, hq⟩
-
-/-- A loop whose test fails. -/
-theorem Ends.whileDone {σ c s T} {Q : State → Prop} (hs : c.Safe lim σ) (hc : ¬ c.Holds σ)
-    (hQ : Q σ) (hT : c.cost + 1 ≤ T) : Ends lim P d (.while c s) σ T Q :=
-  ⟨σ, _, .whileFalse hs hc, hT, hQ⟩
-
 /-- Loops.  I i is the invariant before round number i (counted from 0) of n rounds, and b i bounds
 the cost of that round. -/
 theorem Ends.while {σ c s} {Q : State → Prop} (I : ℕ → State → Prop) (n : ℕ) (b : ℕ → ℕ)
@@ -148,49 +135,15 @@ theorem Ends.while {σ c s} {Q : State → Prop} (I : ℕ → State → Prop) (n
       obtain ⟨σ'', k₂, he₂, hk₂, hq⟩ := ih (i + 1) σ' (by omega) hi'
       refine ⟨σ'', _, .whileTrue h1 h2 he₁ he₂, ?_, hq⟩
       rw [Finset.sum_range_succ']
-      have : ∀ k, i + 1 + k = i + (k + 1) := fun k => by omega
-      simp only [this] at hk₂
-      simp only [Nat.add_zero]
-      omega
-  simpa using aux n 0 σ (by omega) hI
+      lia
+  grind
 
 /-- Loops in which every round costs at most b. -/
 theorem Ends.whileConst {σ c s T} {Q : State → Prop} (I : ℕ → State → Prop) (n b : ℕ) (hI : I 0 σ)
     (hs : ∀ i σ, i < n → I i σ → c.Safe lim σ ∧ c.Holds σ ∧ Ends lim P d s σ b (I (i + 1)))
     (hn : ∀ σ, I n σ → c.Safe lim σ ∧ ¬ c.Holds σ ∧ Q σ)
     (hT : n * (c.cost + 1 + b) + (c.cost + 1) ≤ T) : Ends lim P d (.while c s) σ T Q :=
-  (Ends.while I n (fun _ => b) hI hs hn).mono (by simpa using hT) fun _ h => h
-
-/-- Loops whose number of rounds depends on the data.  I is the invariant, m a quantity that every
-round decreases, and b bounds the cost of a round. -/
-theorem Ends.whileVariant {σ c s T} {Q : State → Prop} (I : State → Prop) (m : State → ℕ) (b : ℕ)
-    (hI : I σ) (hsafe : ∀ σ, I σ → c.Safe lim σ)
-    (hs : ∀ σ, I σ → c.Holds σ → Ends lim P d s σ b fun σ' => I σ' ∧ m σ' < m σ)
-    (hn : ∀ σ, I σ → ¬ c.Holds σ → Q σ) (hT : m σ * (c.cost + 1 + b) + (c.cost + 1) ≤ T) :
-    Ends lim P d (.while c s) σ T Q := by
-  have key : ∀ n σ, I σ → m σ ≤ n →
-      Ends lim P d (.while c s) σ (m σ * (c.cost + 1 + b) + (c.cost + 1)) Q := by
-    intro n
-    induction n with
-    | zero =>
-      intro σ h hm
-      by_cases hc : c.Holds σ
-      · obtain ⟨σ₁, k₁, -, -, -, hlt⟩ := hs σ h hc
-        omega
-      · exact ⟨σ, _, .whileFalse (hsafe _ h) hc, by omega, hn σ h hc⟩
-    | succ n ih =>
-      intro σ h hm
-      by_cases hc : c.Holds σ
-      · obtain ⟨σ₁, k₁, he₁, hk₁, hI₁, hlt⟩ := hs σ h hc
-        obtain ⟨σ₂, k₂, he₂, hk₂, hq⟩ := ih σ₁ hI₁ (by omega)
-        refine ⟨σ₂, _, .whileTrue (hsafe _ h) hc he₁ he₂, ?_, hq⟩
-        have h1 : (m σ₁ + 1) * (c.cost + 1 + b) ≤ m σ * (c.cost + 1 + b) :=
-          Nat.mul_le_mul_right _ hlt
-        have h2 : (m σ₁ + 1) * (c.cost + 1 + b) = m σ₁ * (c.cost + 1 + b) + (c.cost + 1 + b) := by
-          ring
-        omega
-      · exact ⟨σ, _, .whileFalse (hsafe _ h) hc, by omega, hn σ h hc⟩
-  exact (key _ σ hI le_rfl).mono hT fun _ h => h
+  (Ends.while I n (fun _ => b) hI hs hn).mono (by simp_all) fun _ h => h
 
 /-- Calls: verify the body from the frame made of the arguments. -/
 theorem Ends.call {σ T p args x body} {Q : State → Prop} (T' : ℕ) (ha : ∀ e ∈ args, e.Safe lim σ)
@@ -249,7 +202,7 @@ macro "light_norm" : tactic => `(tactic| light_norm [])
 
 /-- The natural number behind an address that is a sum of two natural numbers. -/
 @[simp] theorem toNat_natCast_add_natCast (a b : ℕ) : ((a : ℤ) + (b : ℤ)).toNat = a + b := by
-  rw [← Nat.cast_add, Int.toNat_natCast]
+  rfl
 
 /-! ## The limits -/
 
@@ -259,15 +212,10 @@ structure Std (lim : Limits) : Prop where
   space_le : (lim.space : ℤ) ≤ lim.word
   const_le : (100 : ℤ) ≤ lim.word
 
-/-- An address fits in a word if the memory is not larger than the largest word. -/
-theorem Limits.Addr.abs_le {a : ℤ} (h : lim.Addr a) (hw : (lim.space : ℤ) ≤ lim.word) :
-    |a| ≤ lim.word := by
-  rw [abs_of_nonneg h.1]; exact h.2.le.trans hw
-
 /-- A natural number below the size of the memory is an address, and fits in a word. -/
 theorem Limits.addr_of_lt (hw : (lim.space : ℤ) ≤ lim.word) {x : ℕ} (hx : x < lim.space) :
     lim.Addr (x : ℤ) ∧ |(x : ℤ)| ≤ lim.word := by
   have h : lim.Addr (x : ℤ) := ⟨Int.natCast_nonneg x, by exact_mod_cast hx⟩
-  exact ⟨h, h.abs_le hw⟩
+  grind
 
 end Light

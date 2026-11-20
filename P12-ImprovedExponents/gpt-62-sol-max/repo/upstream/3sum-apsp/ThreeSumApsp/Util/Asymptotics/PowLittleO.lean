@@ -26,7 +26,7 @@ rules for `O`:
 
 public section
 
-open Filter Asymptotics
+open Filter
 
 namespace ThreeSumApsp
 
@@ -58,19 +58,19 @@ theorem IsPowLittleO.of_eventually_abs_le
     obtain ⟨hn1, hpos⟩ := hbase n hn
     have hge : a ≤ Real.logb n (max |f n| ((n : ℝ) ^ a)) :=
       (Real.le_logb_iff_rpow_le hn1 hpos).2 (le_max_right _ _)
-    linarith [hδ, hge]
+    linarith
   · -- `ε(n) ≤ δ/2` as soon as `|f(n)| ≤ n^{a+δ/2}`.
     filter_upwards [h (δ / 2) (half_pos hδ), eventually_ge_atTop 2] with n hfn hn
     obtain ⟨hn1, hpos⟩ := hbase n hn
     have hle : Real.logb n (max |f n| ((n : ℝ) ^ a)) ≤ a + δ / 2 :=
       (Real.logb_le_iff_le_rpow hn1 hpos).2
         (max_le hfn (Real.rpow_le_rpow_of_exponent_le hn1.le (by linarith)))
-    linarith [hδ, hle]
+    linarith
   · -- `n^{a+ε(n)}` is the maximum.
     filter_upwards [eventually_ge_atTop 2] with n hn
     obtain ⟨hn1, hpos⟩ := hbase n hn
     rw [add_sub_cancel, Real.rpow_logb (zero_lt_one.trans hn1) hn1.ne' hpos]
-    exact le_max_left _ _
+    simp
 
 /-- `f(n) = n^{a+o(1)}` if and only if `f(n) = O(n^{a+η})` for every `η > 0`. -/
 theorem isPowLittleO_iff : IsPowLittleO f a ↔ ∀ η : ℝ, 0 < η → IsBigOPow f (a + η) :=
@@ -126,7 +126,7 @@ private theorem exists_pos_add_mul_add_le (hc : 0 ≤ c) (hd : 0 ≤ d) (hη : 0
   have hsq : t * t ≤ t * 1 := mul_le_mul_of_nonneg_left (min_le_left _ _) ht.le
   have hlin : t * (c + d + 1) ≤ η := (le_div_iff₀ hcd).1 (min_le_right _ _)
   -- `(c + t)(d + t) = cd + t(c + d) + t² ≤ cd + t(c + d + 1) ≤ cd + η`
-  linarith [hsq, hlin]
+  linarith
 
 /-- `(n^{d+o(1)})^{c+o(1)} = n^{cd+o(1)}`: if `T(s) = s^{c+o(1)}` and `size(n) = n^{d+o(1)}` then
 `T(size(n)) = n^{cd+o(1)}`, for `c, d ≥ 0`. The sizes need not tend to infinity. -/

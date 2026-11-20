@@ -35,7 +35,7 @@ theorem nine_mul_prefCount_le (k m : ℕ) : 9 * prefCount k m ≤ prefCount (k +
   rw [mul_sum]
   refine sum_le_sum fun j _ => ?_
   rcases Nat.lt_or_ge k j with hj | hj
-  · simp [Nat.choose_eq_zero_of_lt hj]
+  · grind
   · have h1 : k + 1 - j = (k - j) + 1 := by omega
     rw [h1, pow_succ]
     nlinarith [Nat.choose_le_succ k j, Nat.zero_le (9 ^ (k - j)),
@@ -64,48 +64,27 @@ theorem prefCount_term_ratio (L j : ℕ) :
   rcases Nat.lt_or_ge j L with hj | hj
   · have h1 : L - j = (L - (j + 1)) + 1 := by omega
     have h2 := Nat.choose_succ_right_eq L j
-    rw [h1, pow_succ, ← h1]
-    calc (L - j) * (L.choose j * (9 ^ (L - (j + 1)) * 9))
-        = 9 * (L.choose j * (L - j)) * 9 ^ (L - (j + 1)) := by ring
-      _ = 9 * (L.choose (j + 1) * (j + 1)) * 9 ^ (L - (j + 1)) := by rw [h2]
-      _ = 9 * (j + 1) * (L.choose (j + 1) * 9 ^ (L - (j + 1))) := by ring
-  · rw [Nat.sub_eq_zero_of_le hj, Nat.choose_eq_zero_of_lt (by omega : L < j + 1)]
-    simp
+    grind
+  grind
 
 /-- The terms of `prefCount L m` decay at rate `ρ = 9m/(L-m+1)` below the last one, so the sum is
 at most `1/(1 - ρ)` times the last term. Without fractions:
 `(L - m + 1 - 9m) ∑_{i ≤ j} C(L, i) 9^{L-i} ≤ (L - m + 1) C(L, j) 9^{L-j}` for `j ≤ m`. -/
 theorem sub_mul_prefCount_le_aux (L m : ℕ) (h : 9 * m ≤ L - m + 1) :
     ∀ j ≤ m, (L - m + 1 - 9 * m) * prefCount L j ≤ (L - m + 1) * (L.choose j * 9 ^ (L - j)) := by
-  intro j
+  let a k := L.choose k * 9 ^ (L - k)
+  intro j hj
+  change (L - m + 1 - 9 * m) * ∑ k ∈ range (j + 1), a k ≤ (L - m + 1) * a j
   induction j with
   | zero =>
-    intro _
-    simp only [prefCount, zero_add, range_one, sum_singleton]
-    exact Nat.mul_le_mul_right _ (Nat.sub_le _ _)
+    simpa only [Nat.zero_add, sum_range_one] using Nat.mul_le_mul_right (a 0) (Nat.sub_le ..)
   | succ j ih =>
-    intro hj
-    have ih' := ih (by omega)
-    have hratio := prefCount_term_ratio L j
-    have hstep : (L - m + 1) * (L.choose j * 9 ^ (L - j))
-        ≤ 9 * m * (L.choose (j + 1) * 9 ^ (L - (j + 1))) := calc
-      (L - m + 1) * (L.choose j * 9 ^ (L - j)) ≤ (L - j) * (L.choose j * 9 ^ (L - j)) :=
-        Nat.mul_le_mul_right _ (by omega)
-      _ = 9 * (j + 1) * (L.choose (j + 1) * 9 ^ (L - (j + 1))) := hratio
-      _ ≤ 9 * m * (L.choose (j + 1) * 9 ^ (L - (j + 1))) :=
-        Nat.mul_le_mul_right _ (by omega)
-    have hsplit : prefCount L (j + 1)
-        = prefCount L j + L.choose (j + 1) * 9 ^ (L - (j + 1)) := by
-      unfold prefCount
-      rw [sum_range_succ]
-    rw [hsplit, mul_add]
-    calc (L - m + 1 - 9 * m) * prefCount L j
-          + (L - m + 1 - 9 * m) * (L.choose (j + 1) * 9 ^ (L - (j + 1)))
-        ≤ 9 * m * (L.choose (j + 1) * 9 ^ (L - (j + 1)))
-          + (L - m + 1 - 9 * m) * (L.choose (j + 1) * 9 ^ (L - (j + 1))) :=
-          Nat.add_le_add_right (ih'.trans hstep) _
-      _ = (L - m + 1) * (L.choose (j + 1) * 9 ^ (L - (j + 1))) := by
-          rw [← add_mul, Nat.add_sub_cancel' h]
+    have hstep : (L - m + 1) * a j ≤ 9 * m * a (j + 1) :=
+      (Nat.mul_le_mul_right _ (show L - m + 1 ≤ L - j by omega)).trans
+        ((prefCount_term_ratio L j).le.trans (Nat.mul_le_mul_right _ (by omega)))
+    rw [sum_range_succ, mul_add]
+    apply (Nat.add_le_add_right ((ih (by omega)).trans hstep) _).trans
+    rw [← add_mul, Nat.add_sub_cancel' h]
 
 /-- `|P_L| ≤ M/(1 - ρ)` without fractions: `(L - m + 1 - 9m) |P_L| ≤ (L - m + 1) M` for
 `10 m ≤ L`. (Here `L - m + 1 - 9m` is positive.) -/
@@ -123,7 +102,7 @@ theorem prefCount_le_M_div {L m : ℕ} (h : 10 * m ≤ L) :
     have := (Nat.cast_le (α := ℝ)).mpr hnat
     rw [Nat.cast_mul, Nat.cast_mul, Nat.cast_sub (by omega), Nat.cast_add, Nat.cast_sub (by omega)]
       at this
-    simpa using this
+    simp_all
   have hpos : (0 : ℝ) < (L : ℝ) - m + 1 := by linarith
   have hrho : 1 - rho L m = ((L : ℝ) - m + 1 - 9 * m) / ((L : ℝ) - m + 1) := by
     unfold rho

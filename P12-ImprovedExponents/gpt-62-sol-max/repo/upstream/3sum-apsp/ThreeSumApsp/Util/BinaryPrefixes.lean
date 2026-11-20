@@ -69,17 +69,15 @@ theorem pref_step {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℤ) :
   generalize z / (2 * m) = a at hz
   generalize z % (2 * m) = b at hz hb0 hb2
   by_cases hb : b < m
-  · have hcond : 2 * (b * s) < 2 * m * s := by linarith [mul_pos (sub_pos.2 hb) hs]
+  · have hcond : 2 * (b * s) < 2 * m * s := by nlinarith
     obtain ⟨hq, hr⟩ := (Int.ediv_emod_unique hm (a := z) (q := 2 * a) (r := b)).2
       ⟨by linarith, hb0, hb⟩
-    rw [if_pos hcond, if_pos hcond, hq, hr]
-    exact ⟨rfl, by ring⟩
+    grind
   · have hcond : ¬ 2 * (b * s) < 2 * m * s := by
-      linarith [mul_nonneg (sub_nonneg.2 (not_lt.1 hb)) hs.le]
+      nlinarith
     obtain ⟨hq, hr⟩ := (Int.ediv_emod_unique hm (a := z) (q := 2 * a + 1) (r := b - m)).2
       ⟨by linarith, by omega, by omega⟩
-    rw [if_neg hcond, if_neg hcond, hq, hr]
-    exact ⟨rfl, by ring⟩
+    grind
 
 /-- The prefixes of a nonnegative number are nonnegative. -/
 theorem prefQ_nonneg {z : ℤ} (h0 : 0 ≤ z) (ℓ : ℕ) : 0 ≤ prefQ ℓ z :=
@@ -96,11 +94,11 @@ theorem prefR_nonneg (L ℓ : ℕ) (z : ℤ) : 0 ≤ prefR L ℓ z :=
 theorem prefR_lt {L ℓ : ℕ} (h : ℓ ≤ L) (z : ℤ) : prefR L ℓ z < 2 ^ L := by
   have hmod : z % 2 ^ ℓ < 2 ^ ℓ := Int.emod_lt_of_pos _ (by positivity)
   rw [prefR, ← Nat.add_sub_cancel' h, pow_add, Nat.add_sub_cancel' h]
-  exact mul_lt_mul_of_pos_right hmod (by positivity)
+  simp_all
 
 /-- The prefix of a natural number is the quotient of natural numbers. -/
 theorem prefQ_natCast (ℓ z : ℕ) : prefQ ℓ (z : ℤ) = ((z / 2 ^ ℓ : ℕ) : ℤ) := by
-  simp [prefQ]
+  rfl
 
 /-- The bit that a step moves from the rest to the prefix is the binary digit number `ℓ`. -/
 theorem testBit_iff_shift {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℕ) :
@@ -108,9 +106,7 @@ theorem testBit_iff_shift {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℕ) :
   have hstep := (pref_step h (z : ℤ)).1
   rw [prefQ_natCast, prefQ_natCast, shiftQ] at hstep
   rw [Nat.testBit_eq_decide_div_mod_eq, decide_eq_true_eq]
-  split_ifs at hstep with hc
-  · exact iff_of_false (by omega) (not_not.2 hc)
-  · exact iff_of_true (by omega) hc
+  omega
 
 /-! ## The lists of the prefixes and of the rests -/
 

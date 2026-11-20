@@ -31,10 +31,7 @@ open ThreeSumApsp
 theorem natSqrt_succ_le {N : ℕ} (hN : 1 ≤ N) :
     ((Nat.sqrt N + 1 : ℕ) : ℝ) ≤ 2 * (N : ℝ) ^ (1 / 2 : ℝ) := by
   rw [← Real.sqrt_eq_rpow]
-  have hfloor : ((Nat.sqrt N : ℕ) : ℝ) ≤ Real.sqrt N := Real.nat_sqrt_le_real_sqrt
-  have hone : (1 : ℝ) ≤ Real.sqrt N := Real.one_le_sqrt.2 (by exact_mod_cast hN)
-  push_cast
-  linarith
+  exact ThreeSumApsp.natSqrt_succ_le hN
 
 /-- `⌊√N⌋ + 1 = O(N^{1/2})`. -/
 private theorem isBigOPow_natSqrt_succ :
@@ -58,7 +55,7 @@ theorem exists_c3Own_le :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ N : ℕ, 1 ≤ N → (c3Own N : ℝ) ≤ C * (N : ℝ) ^ (3 / 2 : ℝ) := by
   -- powers of 2 √N
   let s : Scale ℕ (Fin 1) := .ofBases (1 ≤ ·) (fun _ N => 2 * (N : ℝ) ^ (1 / 2 : ℝ)) fun _ N hN =>
-    le_trans (by exact_mod_cast Nat.le_add_left 1 (Nat.sqrt N)) (natSqrt_succ_le hN)
+    le_trans (by simp) (natSqrt_succ_le hN)
   have hside : s.SoftO (fun N => Nat.sqrt N + 1) _ := .of_le_base 0 fun _ hN => natSqrt_succ_le hN
   have hown : s.SoftO c3Own ![3] := by
     unfold c3Own c3Time c3RoundTime convFillTime

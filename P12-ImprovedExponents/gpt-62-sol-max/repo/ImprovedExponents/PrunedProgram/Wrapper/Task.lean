@@ -17,7 +17,7 @@ layout and forms the same numbers, so `lim31_of_need` applies verbatim.
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4
+open Light Light.Sec4
 
 /-- **Where the hypotheses of Theorem 30 hold from the threshold on**, the pruned offline routine
 solves the task. -/
@@ -59,7 +59,6 @@ theorem offline32P_meets_thinTask {lim : Limits} {P : Program} {G : RatParams} {
 theorem tOffline32P_mono (c : ℕ) (G : RatParams) (N D₀ : ℕ) {w w' : ℕ} (hw : w ≤ w') :
     tOffline32P c G N D₀ w ≤ tOffline32P c G N D₀ w' := by
   unfold tOffline32P
-  have := Nat.mul_le_mul_right (tQuery31 G D₀ + 30) hw
-  omega
+  simp_all
 
 end ImprovedExponents

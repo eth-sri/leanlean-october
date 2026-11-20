@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Parameters
 
 /-!
@@ -19,16 +23,13 @@ up to a m. The numbers a and b are constants of the program text.
 
 namespace Light.Sec4
 
-open ThreeSumApsp
+
 
 namespace CeilMul
 
 /-- The locals of ceilMul: the argument m, which the result replaces; the product a m; a counter
 that goes up in steps of b; and the number of its steps. -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Goal : ℕ := 1
-@[inherit_doc Arg] abbrev Reached : ℕ := 2
-@[inherit_doc Arg] abbrev Steps : ℕ := 3
+registers [Arg, Goal, Reached, Steps]
 
 end CeilMul
 
@@ -50,11 +51,11 @@ theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
   -- if m = 0
   refine Ends.iteLast (fun h0 => ?_) (fun h0 => ?_)
   · -- return m
-    obtain rfl : m = 0 := by simpa using h0
+    obtain rfl : m = 0 := by simp_all
     exact Ends.skip ⟨by simp [Nat.div_eq_of_lt (by omega : b - 1 < b)], rfl⟩
-  · have hm : m ≠ 0 := by simpa using h0
+  · have hm : m ≠ 0 := by simp_all
     have hax : a ≤ a * m := Nat.le_mul_of_pos_right a (by omega)
-    have hxZ : (a : ℤ) * m = (a * m : ℕ) := by push_cast; rfl
+    have hxZ : (a : ℤ) * m = (a * m : ℕ) := by rfl
     generalize a * m = x at hw hax hxZ ⊢
     have hlt : ∀ i, i < (x + b - 1) / b ↔ i * b < x := fun i => Nat.lt_ceilDiv_iff hb
     have hnx : (x + b - 1) / b ≤ x := by
@@ -64,9 +65,7 @@ theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
       omega
     generalize (x + b - 1) / b = n at hlt hnx ⊢
     -- am := a * m ; c := 0 ; steps := 0
-    light_set x using hxZ
-    light_set 0
-    light_set 0
+    light_steps using hxZ
     -- while c < am: c := c + b ; steps := steps + 1.  Before round i, c = i b and steps = i.
     refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [m, x, ((i * b : ℕ) : ℤ), i], μ⟩) n
       (by simp) ?round ?done (hT := le_rfl))
@@ -75,12 +74,12 @@ theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
       have hbi := (hlt i).1 hi
       rw [Nat.succ_mul]
       generalize i * b = c at hbi ⊢
-      exact ⟨by light_side, by simp; omega, by light_side, by simp [update_frame_setLocal]⟩
+      exact ⟨by light_side, by simp_all, by light_side, by simp [update_frame_setLocal]⟩
     case done =>
       rintro _ rfl
       have hbn := mt (hlt n).2 (lt_irrefl n)
       generalize n * b = c at hbn ⊢
       -- return steps
-      exact ⟨by light_side, by simp; omega, Ends.setTo (n : ℤ) ⟨rfl, rfl⟩⟩
+      exact ⟨by light_side, by simp_all, Ends.setTo (n : ℤ) ⟨rfl, rfl⟩⟩
 
 end Light.Sec4

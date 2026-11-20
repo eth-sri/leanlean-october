@@ -45,7 +45,7 @@ def rootCeil (e t : ℕ) : ℕ := Nat.findGreatest (fun g => g ^ e < t) t + 1
 
 /-- The power of `rootFloor e t` does not exceed `t`. -/
 theorem rootFloor_pow_le {e : ℕ} (he : e ≠ 0) (t : ℕ) : rootFloor e t ^ e ≤ t :=
-  Nat.findGreatest_spec (P := fun x => x ^ e ≤ t) (Nat.zero_le t) (by simp [he])
+  Nat.findGreatest_spec (P := fun x => x ^ e ≤ t) (Nat.zero_le t) (by simp_all)
 
 /-- `rootFloor e t` is the greatest `x` with `x^e ≤ t`. -/
 theorem le_rootFloor {e : ℕ} (he : e ≠ 0) {t x : ℕ} (h : x ^ e ≤ t) : x ≤ rootFloor e t :=
@@ -74,7 +74,7 @@ theorem rootCeil_le {e : ℕ} (he : e ≠ 0) {t g : ℕ} (ht : 1 ≤ t) (h : t �
     rootCeil e t ≤ g := by
   have hspec : Nat.findGreatest (fun g => g ^ e < t) t ^ e < t :=
     Nat.findGreatest_spec (P := fun g => g ^ e < t) (Nat.zero_le t)
-      (show 0 ^ e < t by rw [zero_pow he]; exact ht)
+      (show 0 ^ e < t by aesop)
   exact lt_of_pow_lt_pow_left₀ e (Nat.zero_le g) (hspec.trans_le h)
 
 /-- The characterisation of `rootCeil` by which a program finds it. -/
@@ -121,15 +121,11 @@ theorem queryCapNat_succ_le_iff {n D : ℕ} (hD : 1 ≤ D) (c : ℕ) :
 theorem queryCapNat_succ_sq_mul_le {n D : ℕ} (hD : 1 ≤ D) :
     (queryCapNat n D + 1) * (queryCapNat n D + 1) * D ≤ 4 * n ^ 4 + D := by
   rcases Nat.eq_zero_or_pos (queryCapNat n D) with h | h
-  · rw [h]
-    omega
+  · simp_all
   · obtain ⟨c, hc⟩ : ∃ c, queryCapNat n D = c + 1 := ⟨queryCapNat n D - 1, by omega⟩
     have hle := (queryCapNat_succ_le_iff hD c).1 hc.ge
     rw [hc]
-    calc (c + 1 + 1) * (c + 1 + 1) * D ≤ (2 * (c + 1)) * (2 * (c + 1)) * D :=
-          Nat.mul_le_mul_right _ (Nat.mul_le_mul (by omega) (by omega))
-      _ = 4 * ((c + 1) * (c + 1) * D) := by ring
-      _ ≤ 4 * n ^ 4 + D := by omega
+    lia
 
 /-- `s = ⌊√D⌋` is the integer square root. -/
 theorem sOf_eq_sqrt (D : ℕ) : sOf D = Nat.sqrt D := Real.nat_floor_real_sqrt_eq_nat_sqrt

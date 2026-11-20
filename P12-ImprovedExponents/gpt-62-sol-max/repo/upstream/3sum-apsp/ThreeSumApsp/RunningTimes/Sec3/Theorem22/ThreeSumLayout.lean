@@ -63,14 +63,11 @@ noncomputable def wrap3Sum : Wrap EndStatement.ThreeSum s3Task true where
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by
-    have := Nat.le_mul_self x.n
-    omega
-  vals x σ hn hU _ := by simp [s3Task, threeSumInst, hn, hU]
+    nlinarith
+  vals x σ hn hU _ := by aesop
   safe x lim σ hn _ _ hw := by
-    have hnn : (x.n : ℤ) ≤ (x.n : ℤ) * x.n := by exact_mod_cast Nat.le_mul_self x.n
-    push_cast at hw
-    simp [hn, abs_le]
-    omega
+    have hnn : (x.n : ℤ) ≤ (x.n : ℤ) * x.n := by nlinarith
+    simp <;> grind
   zero x hn _ := ⟨⟨fun h => absurd h (by simp), fun ⟨i, _⟩ => absurd i.isLt (by omega)⟩, trivial⟩
   pre := pre_threeSum
   post x r μ' _ h := post_threeSum x r μ' h

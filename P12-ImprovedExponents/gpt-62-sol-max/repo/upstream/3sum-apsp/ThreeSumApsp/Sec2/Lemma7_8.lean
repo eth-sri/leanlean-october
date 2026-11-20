@@ -66,14 +66,7 @@ theorem Leaf.filter_contributes_eq_piFinset {L : ℕ} (w : OutStr L) :
     (univ.filter fun τ : Leaf L => Leaf.Contributes τ w)
       = Fintype.piFinset fun ℓ => univ.filter fun lam : Term => lam.Contributes (w ℓ) := by
   ext τ
-  simp only [mem_filter, mem_univ, true_and, Fintype.mem_piFinset]
-  rfl
-
-/-- Membership in `Leaves(U)`. -/
-@[simp]
-theorem mem_Leaves {L : ℕ} {U : Finset (OutStr L)} {τ : Leaf L} :
-    τ ∈ Leaves U ↔ ∃ w ∈ U, Leaf.Contributes τ w := by
-  simp [Leaves]
+  aesop
 
 /-! ### The two encodings at once -/
 
@@ -97,7 +90,7 @@ theorem encodeWith_cons (lam : Term) (τ' : Leaf L) (a : (Fin (L + 1) → α) �
   simp only [encodeWith, sum_strings_succ, Fin.prod_univ_succ, Fin.cons_zero, Fin.cons_succ,
     sliceAt, sum_mul]
   rw [sum_comm]
-  exact sum_congr rfl fun u' _ => sum_congr rfl fun s _ => by ring
+  grind
 
 end encodeWith
 
@@ -176,6 +169,6 @@ theorem lemma_8 {L : ℕ} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) (w : 
   rw [sum_comm]
   refine sum_congr rfl fun v _ => ?_
   rw [prod_gamma_eq_sum_contributes, sum_mul, sum_mul]
-  exact sum_congr rfl fun τ _ => by ring
+  grind
 
 end ThreeSumApsp

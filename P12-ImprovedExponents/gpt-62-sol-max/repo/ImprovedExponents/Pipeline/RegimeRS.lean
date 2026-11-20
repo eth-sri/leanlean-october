@@ -1,5 +1,9 @@
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Sizes
 public import ImprovedExponents.Pipeline.ThinClaim
 
@@ -23,19 +27,16 @@ routine of `ImprovedExponents.PrunedProgram`, whose solver is `allBody Proc.test
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4
+open Light Light.Sec3 Light.Sec4
 
 /-! ## The procedures -/
 
 namespace Proc
 
 /-- The number of `powLt` in `programRS`. -/
-abbrev powRS : ℕ := 74
-/-- The number of `testRS r s` in `programRS`. -/
-abbrev testRS : ℕ := 75
-/-- The number of the solver in `programRS`. -/
-abbrev allRS : ℕ := 76
-
+registers from 74 [
+  powRS,
+  /- The number of `testRS r s` in `programRS`. -/ testRS]
 end Proc
 
 /-- testRS(N, D) returns 1 if `D^r ≤ N^s` and 0 if not. Local 2 counts, local 3 is `N^count`. -/
@@ -48,13 +49,9 @@ def testRSBody (r s : ℕ) : Stmt :=
   .set 3 (v 3 +' k 1) ;;
   .call Proc.powRS [v 1, k r, v 3] 0
 
-/-- The solver with the test `testRS` and upstream's routine `offline32`: `allInstances26Body`
-pointed at `testRS`. -/
-def allRSBody : Stmt := allBody Proc.testRS Proc.offline32
-
-/-- `program31 G` followed by `powLt`, `testRS r s` and the solver. -/
+/-- Append the test and its bounded power routine, leaving slot 76 vacant. -/
 def programRS (G : RatParams) (r s : ℕ) : Program :=
-  program31 G ++ [powLtBody, testRSBody r s, allRSBody]
+  program31 G ++ [powLtBody, testRSBody r s, .skip]
 
 /-- The largest number that `testRS r s` forms on `N`, `D`. -/
 def wordRS (r s N D : ℕ) : ℕ := N ^ s * D + N ^ s + D + r + s + 100
@@ -62,19 +59,12 @@ def wordRS (r s N D : ℕ) : ℕ := N ^ s * D + N ^ s + D + r + s + 100
 /-- The running time of `testRS r s`. -/
 def tTestRS (r s : ℕ) : ℕ := 12 * s + 16 * r + 40
 
-/-- `program31 G` has 74 procedures. -/
-theorem length_program31 (G : RatParams) : (program31 G).length = 74 := rfl
-
 /-- The three new procedures stand at their numbers. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Program.lean (program31_at)
 theorem programRS_at (G : RatParams) (r s : ℕ) :
     (programRS G r s)[Proc.powRS]? = some powLtBody ∧
-      (programRS G r s)[Proc.testRS]? = some (testRSBody r s) ∧
-      (programRS G r s)[Proc.allRS]? = some allRSBody := by
-  refine ⟨?_, ?_, ?_⟩ <;>
-  · rw [programRS, List.getElem?_append_right (by norm_num [length_program31]),
-      length_program31]
-    rfl
+      (programRS G r s)[Proc.testRS]? = some (testRSBody r s) :=
+  ⟨rfl, rfl⟩
 
 /-! ## The test -/
 
@@ -94,8 +84,7 @@ theorem testRS_meets {lim : Limits} {P : Program} {d : ℕ} (r s : ℕ)
   have hNs : (0 : ℤ) ≤ (N : ℤ) ^ s := by positivity
   unfold testRSBody tTestRS
   -- cnt := 0; acc := 1
-  light_set (0 : ℕ)
-  light_set (1 : ℕ)
+  light_steps
   -- while cnt < s: acc := acc * N; cnt := cnt + 1.  Before round i, cnt = i and acc = N^i.
   refine Ends.next _ (Ends.whileBlock
     (fun i σ => σ = ⟨frame [N, D, i, ((N ^ i : ℕ) : ℤ)], μ⟩) s (by simp) ?round ?done
@@ -113,48 +102,15 @@ theorem testRS_meets {lim : Limits} {P : Program} {d : ℕ} (r s : ℕ)
     rintro _ rfl
     refine ⟨by light_side, by light_side, ?_⟩
     -- acc := acc + 1
-    light_set (N ^ s + 1 : ℕ)
+    light_step
     -- powLt(D, r, N^s + 1)
     have hcall := powLt_meets (lim := lim) (P := P) (d := d + 1) (μ := μ) (g := D) (e := r)
       (t := N ^ s + 1) hpow hD (by push_cast; nlinarith)
     refine Ends.callTo hcall (fun r' μ' h => ?_) (hT := by simp; omega)
     obtain ⟨hr', hμ'⟩ := h
-    refine ⟨hμ', ?_⟩
-    simp only [frame, setLocal, List.getD_cons_zero]
-    rw [hr']
-    split_ifs with h
-    · exact Or.inl ⟨rfl, by omega⟩
-    · exact Or.inr ⟨rfl, by omega⟩
+    aesop
 
 /-! ## The regime test and the claim -/
-
-/-- The number `testRS r s` forms is polynomial in `N`, `D`. -/
-theorem wordRS_poly (r s N D : ℕ) :
-    wordRS r s N D ≤ 2 ^ (8 + r + s) * ((N + 1) * (D + 1)) ^ (s + 1) := by
-  set Q := (N + 1) * (D + 1) with hQ
-  have hQ1 : 1 ≤ Q := Nat.mul_pos (Nat.succ_pos _) (Nat.succ_pos _)
-  have hNQ : N ≤ Q := by nlinarith
-  have hDQ : D ≤ Q := by nlinarith
-  have hQp : 1 ≤ Q ^ (s + 1) := Nat.one_le_pow _ _ hQ1
-  have hNs : N ^ s ≤ Q ^ (s + 1) :=
-    (Nat.pow_le_pow_left hNQ s).trans (Nat.pow_le_pow_right hQ1 (by omega))
-  have h1 : N ^ s * D ≤ Q ^ (s + 1) := by
-    calc N ^ s * D ≤ Q ^ s * Q := Nat.mul_le_mul (Nat.pow_le_pow_left hNQ s) hDQ
-      _ = Q ^ (s + 1) := (pow_succ Q s).symm
-  have h2 : D ≤ Q ^ (s + 1) := hDQ.trans (Nat.le_self_pow (by omega) Q)
-  have hrs : r + s + 100 ≤ 128 * 2 ^ (r + s) := by
-    have := Nat.lt_two_pow_self (n := r + s)
-    omega
-  have hpow : 2 ^ (8 + r + s) * Q ^ (s + 1) = 256 * (2 ^ (r + s) * Q ^ (s + 1)) := by
-    rw [show 8 + r + s = 8 + (r + s) by ring, pow_add]
-    ring
-  have hX1 : Q ^ (s + 1) ≤ 2 ^ (r + s) * Q ^ (s + 1) :=
-    Nat.le_mul_of_pos_left _ (Nat.two_pow_pos _)
-  have hX2 : 128 * 2 ^ (r + s) ≤ 128 * (2 ^ (r + s) * Q ^ (s + 1)) :=
-    Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_right _ hQp)
-  unfold wordRS
-  rw [hpow]
-  omega
 
 /-- **The regime test `D^r ≤ N^s`**, as a `RegimeTest`. -/
 def regimeRS (r s : ℕ) : RegimeTest where
@@ -165,7 +121,7 @@ def regimeRS (r s : ℕ) : RegimeTest where
   aux_append _ Q h := getElem?_append_of_eq_some h Q
   time := tTestRS r s
   word := wordRS r s
-  word_poly := ⟨8 + r + s, s + 1, wordRS_poly r s⟩
+  word_poly := by unfold wordRS; growth_poly []
   meets haux hP hd N D hN hD hword μ :=
     (testRS_meets r s hP haux hd N D hN hD hword μ).mono le_rfl fun r' μ' h =>
       ⟨h.1, h.2.imp id fun h' => ⟨h'.1, by omega⟩⟩
@@ -186,10 +142,10 @@ theorem thinClaimRS_of_offlineWithinT {P : Program} {G : RatParams} {O : Offline
     (hoff : P[O.proc]? = some O.body) (hauxO : O.aux P) (hε : ε ≤ (s : ℝ) / r)
     (h : OfflineWithinT O.time ε γ q) : ThinClaim lightModel ε γ q := by
   obtain ⟨Q, rfl⟩ := hP
-  obtain ⟨hpow, htest, -⟩ := programRS_at G r s
+  obtain ⟨hpow, htest⟩ := programRS_at G r s
   exact thinClaimR_of_offlineWithin (R := regimeRS r s) hfit hall
     (getElem?_append_of_eq_some htest Q) (getElem?_append_of_eq_some hpow Q) hoff hauxO
-    (by rw [programRS, List.append_assoc]; exact at_base58 rfl _)
+    (by rfl)
     (fun N D₀ hN _ hDN => pow_le_pow_of_le_rpow hr hε hN hDN) h
 
 end ImprovedExponents

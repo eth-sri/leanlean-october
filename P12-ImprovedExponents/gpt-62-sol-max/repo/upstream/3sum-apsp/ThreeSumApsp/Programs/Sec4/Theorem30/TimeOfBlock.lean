@@ -25,7 +25,7 @@ two bounds together.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec Finset
+open ThreeSumApsp
 
 /-! ## The shared stage, in natural numbers -/
 
@@ -35,12 +35,7 @@ theorem succ_sq_le_ten_pow (L : ℕ) : (L + 1) ^ 2 ≤ 10 ^ L := by
     induction L with
     | zero => simp
     | succ L ih =>
-      calc (L + 1 + 1) ^ 2 ≤ 4 * (L + 1) ^ 2 := by
-            rw [show (L + 1 + 1) ^ 2 = L * L + 4 * L + 4 by ring,
-              show 4 * (L + 1) ^ 2 = 4 * (L * L) + 8 * L + 4 by ring]
-            omega
-        _ ≤ 4 * 4 ^ L := Nat.mul_le_mul_left _ ih
-        _ = 4 ^ (L + 1) := by ring
+      lia
   exact hfour.trans (Nat.pow_le_pow_left (by norm_num) L)
 
 /-- The facts about the sizes that the two estimates below use; T is `10^L` and S7 is `7^L`. -/
@@ -84,13 +79,11 @@ theorem sharedEnd_sub_le (p : Sec2.Par) (b0 : ℕ) (hL1 : 1 ≤ p.L) (hmL : p.m 
   generalize p.N = N at *
   generalize p.L = L at *
   generalize p.m = m at *
-  have hLT : L + 1 ≤ T := (Nat.le_self_pow (by norm_num) _).trans sq
   have hDS : D ≤ S7 := le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND
   have hmask : KK * L ≤ K * L := Nat.mul_le_mul_right _ KKle
   have hdig3 : N * Lo ≤ N * L := Nat.mul_le_mul_left _ hLo
   have hdig4 : D * m ≤ L * S7 := (Nat.mul_le_mul hDS mL).trans (le_of_eq (Nat.mul_comm _ _))
-  rw [Nat.mul_add_one N L]
-  omega
+  lia
 
 /-! ## Within (8) -/
 
@@ -100,8 +93,7 @@ theorem top_sub_eq (p : Sec2.Par) (t b0 : ℕ) :
     top p t b0 - b0 = (p.sharedEnd b0 - b0) + (3 * p.L + p.m + 2)
       + (1 + p.nB * p.nB * (11 * (1 + p.L * (boxes p.L p.m t).card)) + p.nB * p.nB) := by
   have := base_le_sharedEnd p b0
-  simp only [top, aTR, aROOTS, aFP, aSS, aBOX, aCUR, aWD, trieCap]
-  omega
+  light_side [top, aTR, aROOTS, aFP, aSS, aBOX, aCUR, aWD, trieCap]
 
 /-- **A query** takes `O(L ∑_{d ≤ t} α_d)` steps. -/
 theorem exists_tQueryAt_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ (p : Sec2.Par) (t : ℕ), Hyp30 p t →

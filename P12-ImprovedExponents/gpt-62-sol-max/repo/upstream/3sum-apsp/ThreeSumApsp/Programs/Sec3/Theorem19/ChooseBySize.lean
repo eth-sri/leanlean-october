@@ -28,7 +28,7 @@ the second one from the threshold on (`bySize_spec`).  The need stays polynomial
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 variable {lim : Limits} {d : ℕ}
 
@@ -83,9 +83,9 @@ theorem bySize_spec {P₀ R : Program} {n₀ p₁ p₂ : ℕ} {T₁ T₂ : ℕ �
   unfold bySizeTime
   -- if n < n₀ then the first solver else the second
   refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
-  · rw [if_pos (show x.n < n₀ by simp at hc; omega)]
+  · rw [if_pos (show x.n < n₀ by simp_all)]
     exact Ends.callTo hm₁ fun _ _ h => h
-  · rw [if_neg (show ¬ x.n < n₀ by simp at hc; omega)]
+  · rw [if_neg (show ¬ x.n < n₀ by simp_all)]
     exact Ends.callTo hm₂ fun _ _ h => h
 
 /-- The need of choose is polynomially bounded if the needs of the two solvers are. -/
@@ -112,9 +112,6 @@ theorem closure_chooseBySize : Closure.ChooseBySize lightModel := by
     rw [List.append_assoc]
     exact bySize_spec g₁ g₂ hpre hok
   · simp only [bySizeTime]
-    push_cast
-    split_ifs
-    · linarith [ht₁ n U u hn hU hu]
-    · linarith [ht₂ n U u hn hU hu]
+    grind
 
 end Light.Sec3

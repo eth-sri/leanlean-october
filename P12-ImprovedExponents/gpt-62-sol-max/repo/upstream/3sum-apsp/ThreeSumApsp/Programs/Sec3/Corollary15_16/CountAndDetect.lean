@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Programs.LightModel
 
@@ -28,7 +30,7 @@ Two steps of the proof of Corollary 15, with "the problem is solved in time T" r
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 variable {lim : Limits} {d : ℕ}
 
@@ -42,8 +44,7 @@ theorem polyBound_snoc_one (s e : ℕ) (ps : List ℕ) :
   simp only [polyBound, List.map_append, List.map_cons, List.map_nil, List.prod_append,
     List.prod_cons, List.prod_nil, mul_one,
     mul_pow, pow_add]
-  norm_num
-  ring
+  lia
 
 /-- Twice the bound leaves room for one more. -/
 theorem polyBound_le_succ (s e : ℕ) (ps : List ℕ) :
@@ -62,8 +63,7 @@ theorem solvesN_count_of_thin {P : Program} {p : ℕ} {Tn : List ℕ → ℕ} {n
   refine ⟨body, hp, fun R lim d x μ fr hpre hok => ?_⟩
   obtain ⟨h1, -, h3⟩ := hpre
   have hpars : thinTask.pars x = lopCountTask.pars x ++ [1] := by
-    simp only [thinTask, lopCountTask, List.cons_append, List.nil_append]
-    rw [h3]
+    light_side [thinTask, lopCountTask]
   have hrun := hb R lim d x μ fr h1 (hpars ▸ hok)
   rwa [hpars] at hrun
 
@@ -73,7 +73,7 @@ theorem polyNeedN_snoc_one {need : List ℕ → Need} (h : PolyNeedN need) :
   obtain ⟨s, e, h⟩ := h
   refine ⟨s + e, e, fun ps => ?_⟩
   rw [← polyBound_snoc_one]
-  exact h _
+  simp_all
 
 end LopHosts
 
@@ -85,8 +85,7 @@ theorem claim_lopCountFromThinProduct : Claim.LopCountFromThinProduct lightModel
   obtain ⟨P, p, Tn, need, hneed, hsol, htime⟩ := hT
   refine ⟨P, p, _, _, polyNeedN_snoc_one hneed, solvesN_count_of_thin hsol,
     fun n D w w' hn hD hw => ?_⟩
-  have := htime n D w w' 1 1 hn hD le_rfl hw (by norm_num)
-  simpa using this
+  simp_all
 
 /-! ## Detecting with counting -/
 
@@ -94,16 +93,7 @@ namespace LopArgs
 
 /-- The local variables that hold the arguments of a solver of the thin matrix product or of a
 lopsided triangle problem: N, D, w, U, x, y, wi, wj, out, fr. -/
-abbrev N : ℕ := 0
-@[inherit_doc N] abbrev DD : ℕ := 1
-@[inherit_doc N] abbrev W : ℕ := 2
-@[inherit_doc N] abbrev U : ℕ := 3
-@[inherit_doc N] abbrev X : ℕ := 4
-@[inherit_doc N] abbrev Y : ℕ := 5
-@[inherit_doc N] abbrev WI : ℕ := 6
-@[inherit_doc N] abbrev WJ : ℕ := 7
-@[inherit_doc N] abbrev OUT : ℕ := 8
-@[inherit_doc N] abbrev FR : ℕ := 9
+registers [N, DD, W, U, X, Y, WI, WJ, OUT, FR]
 
 end LopArgs
 
@@ -164,15 +154,11 @@ theorem detect_spec {P₀ R : Program} {p : ℕ} {Tn : List ℕ → ℕ} {need :
     -- if out[i] ≠ 0 then out[i] := 1
     refine Ends.iteLast (fun hc => Ends.skip ⟨rfl, ?_⟩) fun hc =>
       Ends.storeTo (x.out + j) 1 ⟨rfl, ?_⟩
-    · have hc : μ₁ (x.out + j) = 0 := by simpa [hread] using hc
-      have e : f j = wrote μ₁ x.out f j (x.out + j) := by rw [hf, if_pos hc, hread, hc]
-      rw [e, Function.update_eq_self]
-    · have hc : μ₁ (x.out + j) ≠ 0 := by simpa [hread] using hc
-      rw [hf, if_neg hc]
+    all_goals (simp_all)
   case done =>
     rintro _ rfl
     refine ⟨fun i hi => ?_, fun a ha => (wrote_rest ha.2).trans (hk a ha)⟩
-    have hi' : i < x.w := by simpa [hlen] using hi
+    have hi' : i < x.w := by simp_all
     rw [List.getElem_map, ← hseg i (by omega), ← hf]
     exact wrote_done hi'
 
@@ -188,7 +174,7 @@ theorem polyNeedN_detect {need : List ℕ → Need} (h : PolyNeedN need) :
 
 end LopHosts
 
-open LopHosts
+
 
 /-- **Detection from counting** (proof of Corollary 15). -/
 theorem claim_lopDetectFromCount : Claim.LopDetectFromCount lightModel := by

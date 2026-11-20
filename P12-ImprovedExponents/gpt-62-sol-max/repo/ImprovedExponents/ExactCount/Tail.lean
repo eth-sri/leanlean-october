@@ -1,5 +1,7 @@
 module
 
+import ImprovedExponents.PrunedEncoding.Counts
+
 public import ThreeSumApsp.Sec4.Corollary31
 public import ImprovedExponents.ExactCount.G2
 
@@ -14,18 +16,13 @@ its true exponential rate:
 
   `∑_{d=t}^{m} β_d ≤ (m + 1)(L + 1) M e^{m g₂(L/m, t/m)}`   (`sum_beta_le_exp`).
 
-The proof compares integers. For `d ≥ t`,
-
-  `β_d (m-t)^{m-t} (L-m+t)^{L-m+t} ≤ (L + 1) M 9^t m^m (L-m)^{L-m}`   (`beta_mul_le`),
-
-because binomial coefficients `binom(L, j)` grow by a factor of at least 9 per step for `j ≤ L/10`,
-one term of the expansion of `L^L = ((m-t) + (L-m+t))^L` is at most the sum, and the term with
-`binom(L, m)` is the largest of the `L + 1` terms of `L^L = (m + (L-m))^L`.
+Binomial coefficients `binom(L, j)` grow by a factor of at least 9 per step for `j ≤ L/10`.
+Thus the largest summand is at `d = t`. The entropy bounds for the coefficients at `m - t`
+and `m` bound its ratio to `M` (`beta_le_exp`).
 
 With `L = ⌈cm⌉` and `t = ⌈θm⌉` the rate is at most `g₂(c, θ)`, so the tail is at most
 `(m + 1)(L + 1) M D^{-γX(c, θ)}` with `γX(c, θ) := -g₂(c, θ)/ln 4` (`sum_beta_le_rpow`). The paper's
-exponent `γ = θ ln(1/ρ_c)/ln 4` is smaller (`gammaOf_le_gammaX`), strictly for `θ > 0`
-(`gammaOf_lt_gammaX`).
+exponent `γ = θ ln(1/ρ_c)/ln 4` does not use this sharper count.
 -/
 
 namespace ImprovedExponents
@@ -51,68 +48,28 @@ theorem choose_mul_nine_pow_le {L j j₀ : ℕ} (hj : j ≤ j₀) (hL : 10 * j�
       _ ≤ L.choose (k + 1) * 9 ^ (j₀ - (k + 1)) := Nat.mul_le_mul_right _ hstep
       _ ≤ L.choose j₀ := ih
 
-/-- `M = binom(L, m) 9^{L-m}`. -/
-theorem M_eq (L m : ℕ) : M L m = L.choose m * 9 ^ (L - m) := by
-  rw [← beta_zero_eq_M, beta_zero]
-
-/-- The leaves of order `d ≥ t`, without fractions:
-`β_d (m-t)^{m-t} (L-m+t)^{L-m+t} ≤ (L + 1) M 9^t m^m (L-m)^{L-m}`. -/
-theorem beta_mul_le {L m t d : ℕ} (hL : 10 * m ≤ L) (htd : t ≤ d) (hdm : d ≤ m) :
-    beta L m d * ((m - t) ^ (m - t) * (L - m + t) ^ (L - m + t))
-      ≤ (L + 1) * (M L m * (9 ^ t * (m ^ m * (L - m) ^ (L - m)))) := by
-  have hmL : m ≤ L := by omega
-  have h1 : L.choose (m - d) * 9 ^ (d - t) ≤ L.choose (m - t) := by
-    have h := choose_mul_nine_pow_le (L := L) (j := m - d) (j₀ := m - t) (by omega) (by omega)
-    rwa [show m - t - (m - d) = d - t by omega] at h
-  have h2 : L.choose (m - t) * (m - t) ^ (m - t) * (L - m + t) ^ (L - m + t) ≤ L ^ L := by
-    have h := Nat.choose_mul_pow_mul_pow_le (m - t) (L - m + t) L (m - t)
-    rwa [show L - (m - t) = L - m + t by omega, show m - t + (L - m + t) = L by omega] at h
-  have h3 := Nat.pow_self_le_mul_choose_mul_pow_mul_pow hmL
-  have hb : beta L m d = L.choose (m - d) * 9 ^ (d - t) * (9 ^ t * 9 ^ (L - m)) := by
-    rw [beta, mul_assoc, ← pow_add, ← pow_add]
-    congr 2
-    omega
-  calc beta L m d * ((m - t) ^ (m - t) * (L - m + t) ^ (L - m + t))
-      = L.choose (m - d) * 9 ^ (d - t) * ((m - t) ^ (m - t) * (L - m + t) ^ (L - m + t)
-          * (9 ^ t * 9 ^ (L - m))) := by
-        rw [hb]
-        ring
-    _ ≤ L.choose (m - t) * ((m - t) ^ (m - t) * (L - m + t) ^ (L - m + t)
-          * (9 ^ t * 9 ^ (L - m))) := Nat.mul_le_mul_right _ h1
-    _ = L.choose (m - t) * (m - t) ^ (m - t) * (L - m + t) ^ (L - m + t)
-          * (9 ^ t * 9 ^ (L - m)) := by ring
-    _ ≤ L ^ L * (9 ^ t * 9 ^ (L - m)) := Nat.mul_le_mul_right _ h2
-    _ ≤ (L + 1) * (L.choose m * m ^ m * (L - m) ^ (L - m)) * (9 ^ t * 9 ^ (L - m)) :=
-        Nat.mul_le_mul_right _ h3
-    _ = (L + 1) * (M L m * (9 ^ t * (m ^ m * (L - m) ^ (L - m)))) := by
-        rw [M_eq]
-        ring
-
-/-! ### The exponential rate -/
-
-/-- The leaves of order `d ≥ t`: `β_d ≤ (L + 1) M e^{m g₂(L/m, t/m)}`. -/
+/-- The largest leaf count of the tail occurs at its first order; apply the entropy
+sandwich to the coefficients at `m - t` and `m`. -/
 theorem beta_le_exp {L m t d : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (htd : t ≤ d) (hdm : d ≤ m) :
     (beta L m d : ℝ) ≤ ((L : ℝ) + 1) * (M L m : ℝ) * exp ((m : ℝ) * g2 (L / m) (t / m)) := by
-  have hmL : m ≤ L := by omega
+  have hd : L.choose (m - d) * 9 ^ (d - t) ≤ L.choose (m - t) := by
+    simpa [show (m - t) - (m - d) = d - t by omega] using
+      choose_mul_nine_pow_le (L := L) (j := m - d) (j₀ := m - t) (by omega) (by omega)
   have ht : t ≤ m := htd.trans hdm
-  have hX : (0 : ℝ) < ((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t) := by
-    have h : 0 < (m - t) ^ (m - t) * (L - m + t) ^ (L - m + t) :=
-      Nat.mul_pos (Nat.pow_self_pos) (Nat.pow_pos (by omega))
-    exact_mod_cast h
-  have hcast : (beta L m d : ℝ)
-      * (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t))
-      ≤ ((L : ℝ) + 1) * ((M L m : ℝ)
-        * ((9 : ℝ) ^ t * ((m : ℝ) ^ m * ((L - m : ℕ) : ℝ) ^ (L - m)))) := by
-    exact_mod_cast beta_mul_le hL htd hdm
-  rw [exp_mul_g2_div hm hmL ht]
-  calc (beta L m d : ℝ)
-      = (beta L m d : ℝ) * (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t))
-          / (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t)) :=
-        (mul_div_cancel_right₀ _ hX.ne').symm
-    _ ≤ ((L : ℝ) + 1) * ((M L m : ℝ) * ((9 : ℝ) ^ t * ((m : ℝ) ^ m * ((L - m : ℕ) : ℝ) ^ (L - m))))
-          / (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t)) :=
-        div_le_div_of_nonneg_right hcast hX.le
-    _ = _ := by ring
+  calc
+    _ ≤ (L.choose (m - t) : ℝ) * 9 ^ t * 9 ^ (L - m) := by
+      have h := Nat.mul_le_mul_right (9 ^ t * 9 ^ (L - m)) hd
+      rw [mul_assoc, ← pow_add, ← pow_add, show d - t + (t + (L - m)) = L - m + d by omega,
+        ← beta] at h
+      exact_mod_cast (by simpa [pow_add, mul_assoc] using h : beta L m d ≤ _)
+    _ ≤ exp (chooseEntropy L (m - t)) * 9 ^ t * 9 ^ (L - m) := by
+      gcongr
+      exact (choose_entropyBounds (by omega : m - t ≤ L)).1
+    _ ≤ _ := by
+      rw [entropy_drop hm (by omega) ht, M_eq_choose_mul, Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat]
+      have h := mul_le_mul_of_nonneg_left (choose_entropyBounds (by omega : m ≤ L)).2
+        (exp_pos ((m : ℝ) * g2 (L / m) (t / m))).le
+      convert mul_le_mul_of_nonneg_right h (by positivity : 0 ≤ (9 : ℝ) ^ (L - m)) using 1 <;> ring
 
 /-- **The tail of the leaf counts**: `∑_{d=t}^{m} β_d ≤ (m + 1)(L + 1) M e^{m g₂(L/m, t/m)}`. -/
 theorem sum_beta_le_exp {L m t : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) :
@@ -125,7 +82,7 @@ theorem sum_beta_le_exp {L m t : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) :
         sum_le_sum fun d hd => beta_le_exp hm hL (mem_Icc.1 hd).1 (mem_Icc.1 hd).2
     _ = ((m + 1 - t : ℕ) : ℝ)
           * (((L : ℝ) + 1) * (M L m : ℝ) * exp ((m : ℝ) * g2 (L / m) (t / m))) := by
-        rw [sum_const, Nat.card_Icc, nsmul_eq_mul]
+        simp
     _ ≤ ((m : ℝ) + 1) * (((L : ℝ) + 1) * (M L m : ℝ) * exp ((m : ℝ) * g2 (L / m) (t / m))) := by
         refine mul_le_mul_of_nonneg_right ?_ hnonneg
         exact_mod_cast Nat.sub_le (m + 1) t
@@ -135,17 +92,6 @@ theorem sum_beta_le_exp {L m t : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) :
 /-- The exact exponent of the boxes: `γX(c, θ) := -g₂(c, θ)/ln 4`. It takes the place of the paper's
 `γ = θ ln(1/ρ_c)/ln 4` (`ThreeSumApsp.gammaOf`). -/
 noncomputable def gammaX (c θ : ℝ) : ℝ := -g2 c θ / log 4
-
-@[simp] theorem gammaX_zero (c : ℝ) : gammaX c 0 = 0 := by simp [gammaX]
-
-/-- `γX(c, θ) > 0` for `c > 10` and `0 < θ ≤ 1`. -/
-theorem gammaX_pos {c θ : ℝ} (hc : 10 < c) (hθ0 : 0 < θ) (hθ1 : θ ≤ 1) : 0 < gammaX c θ :=
-  div_pos (neg_pos.2 (g2_neg hc hθ0 hθ1)) log_four_pos
-
-/-- `γX(c, ·)` increases strictly on `[0, 1]`, for `c > 10`. -/
-theorem gammaX_strictMonoOn {c : ℝ} (hc : 10 < c) : StrictMonoOn (gammaX c) (Set.Icc 0 1) :=
-  fun _ hx _ hy hxy =>
-    div_lt_div_of_pos_right (neg_lt_neg (g2_strictAntiOn_right hc hx hy hxy)) log_four_pos
 
 /-- `e^{m g₂(c, θ)} = D^{-γX(c, θ)}` with `D = 4^m`. -/
 theorem exp_mul_g2_eq_D_rpow (c θ : ℝ) (m : ℕ) :

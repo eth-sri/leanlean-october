@@ -41,8 +41,7 @@ theorem length_arrStr : (arrStr e a).length = b ^ n := by
 /-- The entry of the list at a number below `b^n`. -/
 theorem getD_arrStr_of_lt {c : ℕ} (hc : c < b ^ n) :
     (arrStr e a).getD c 0 = a (decodeStr e n c) := by
-  rw [List.getD_eq_getElem _ _ (by rwa [length_arrStr])]
-  simp [arrStr]
+  grind [= arrStr]
 
 /-- The entry at a string is the entry of the list at its code. -/
 theorem getD_arrStr (u : Fin n → α) : (arrStr e a).getD (codeStr e u) 0 = a u := by
@@ -68,18 +67,6 @@ def arrR {n : ℕ} (b : RightStr n → ℤ) : List ℤ := arrStr rightEquiv b
 
 /-- An array on the leaves (for example an encoding), as the list of its `10^n` entries. -/
 def arrT {n : ℕ} (enc : Leaf n → ℤ) : List ℤ := arrStr termEquiv enc
-
-/-- The list of an array on the left strings has `7^n` entries. -/
-theorem length_arrL {n : ℕ} (a : LeftStr n → ℤ) : (arrL a).length = 7 ^ n :=
-  length_arrStr leftEquiv a
-
-/-- The list of an array on the right strings has `7^n` entries. -/
-theorem length_arrR {n : ℕ} (b : RightStr n → ℤ) : (arrR b).length = 7 ^ n :=
-  length_arrStr rightEquiv b
-
-/-- The list of an array on the leaves has `10^n` entries. -/
-theorem length_arrT {n : ℕ} (enc : Leaf n → ℤ) : (arrT enc).length = 10 ^ n :=
-  length_arrStr termEquiv enc
 
 /-- The entry at a left string is the entry of the list at its code. -/
 theorem getD_arrL {n : ℕ} (a : LeftStr n → ℤ) (u : LeftStr n) : (arrL a).getD (codeL u) 0 = a u :=

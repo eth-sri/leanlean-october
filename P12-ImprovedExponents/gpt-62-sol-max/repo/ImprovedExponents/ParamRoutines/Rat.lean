@@ -32,7 +32,7 @@ For `c = 0` the parameter `g` is 1 (`paramGRat_zero`).
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open ThreeSumApsp Light Light.Sec3
 
 /-! ## The routines as parameter procedures -/
 
@@ -92,8 +92,7 @@ theorem steps_tDRat_pow {a b k : ℕ} (hb : b ≠ 0) (hab : a ≤ k * b) :
   unfold tDRat
   apply Scale.SoftO.mono
   · growth_rules [hD]
-  · intro i
-    fin_cases i <;> simp
+  simp
 
 /-- `dRatBody` takes `O(n²)` steps if `a ≤ 2 b`. -/
 theorem steps_tDRat {a b : ℕ} (hb : b ≠ 0) (hab : a ≤ 2 * b) :

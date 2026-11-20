@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Lang.Assigns
+public import ThreeSumApsp.Lang.Logic
 public import ThreeSumApsp.Lang.Rules
 
 /-!
@@ -55,32 +55,18 @@ up with zeros. -/
   | a :: l, x + 1, z => a :: setLocal l x z
 
 /-- Reading a local after an assignment. -/
-theorem frame_setLocal : ∀ (l : List ℤ) (x : ℕ) (z : ℤ) (y : ℕ),
-    frame (setLocal l x z) y = if y = x then z else frame l y
-  | [], 0, z, 0 => by simp
-  | [], 0, z, y + 1 => by simp
-  | [], x + 1, z, 0 => by simp
-  | [], x + 1, z, y + 1 => by simpa using frame_setLocal [] x z y
-  | a :: l, 0, z, 0 => by simp
-  | a :: l, 0, z, y + 1 => by simp
-  | a :: l, x + 1, z, 0 => by simp
-  | a :: l, x + 1, z, y + 1 => by simpa using frame_setLocal l x z y
+theorem frame_setLocal (l : List ℤ) (x : ℕ) (z : ℤ) (y : ℕ) :
+    frame (setLocal l x z) y = if y = x then z else frame l y := by
+  induction x generalizing l y <;> cases l <;> cases y <;> simp_all
 
 /-- An assignment to a local, in terms of the list. -/
 theorem update_frame_setLocal (l : List ℤ) (x : ℕ) (z : ℤ) :
     Function.update (frame l) x z = frame (setLocal l x z) := by
-  funext y
-  rw [frame_setLocal, Function.update_apply]
+  grind [frame_setLocal]
 
 /-- Zeros at the end of the list do not matter. -/
 theorem frame_append_zeros (l : List ℤ) (n : ℕ) : frame (l ++ List.replicate n 0) = frame l := by
-  funext y
-  simp only [frame, List.getD_eq_getElem?_getD, List.getElem?_append, List.getElem?_replicate]
-  split_ifs with h1 h2
-  · rfl
-  · rw [List.getElem?_eq_none (by omega)]
-    rfl
-  · rw [List.getElem?_eq_none (by omega)]
+  funext y; grind [frame]
 
 /-! ## The value of an expression -/
 
@@ -100,9 +86,7 @@ theorem Ends.setTo {x : ℕ} {e : Expr} (z : ℤ) (h : Q ⟨frame (setLocal l x 
     (hT : e.cost + 1 ≤ T := by light_time) :
     Ends lim P d (.set x e) ⟨frame l, μ⟩ T Q := by
   refine Ends.set he.1 hT ?_
-  rw [he.2]
-  simp only [update_frame_setLocal]
-  exact h
+  simp_all [update_frame_setLocal]
 
 /-- `x := e ; s`, where e gives z.  The rest s of the text gets the steps that are left. -/
 theorem Ends.setToThen {x : ℕ} {e : Expr} {s : Stmt} (z : ℤ)
@@ -120,10 +104,8 @@ theorem Ends.storeTo {a e : Expr} (b : ℕ) (z : ℤ) (h : Q ⟨frame l, Functio
     Ends lim P d (.store a e) ⟨frame l, μ⟩ T Q := by
   obtain ⟨⟨ha, hav⟩, ⟨he, hev⟩, hb⟩ := he
   refine Ends.store ha he ?_ hT ?_
-  · rw [hav]
-    exact ⟨Int.natCast_nonneg b, by exact_mod_cast hb⟩
-  · rw [hav, hev, Int.toNat_natCast]
-    exact h
+  · light_side
+  simp_all
 
 /-- `mem[a] := e ; s`, where a gives the address b, which lies in the memory, and e gives z. -/
 theorem Ends.storeToThen {a e : Expr} {s : Stmt} (b : ℕ) (z : ℤ)
@@ -151,29 +133,21 @@ theorem Ends.forFrame {i : ℕ} {hi : Expr} {body : Stmt} (I : ℕ → (ℕ → 
     (hT : n * (hi.cost + body.blockCost + 7) + hi.cost + 5 ≤ T := by light_time) :
     Ends lim P d (Stmt.for i hi body) ⟨frame l, μ⟩ T Q := by
   refine Ends.forMem I n body.blockCost start ?_ ?_ ?_ hn hT
-  · intro j μ' hj hI
-    rw [update_frame_setLocal]
-    exact round j μ' hj hI
-  · intro μ' hI
-    rw [update_frame_setLocal]
-    exact done μ' hI
-  · intro j μ' hj hI
-    rw [update_frame_setLocal]
-    exact bound j μ' hj hI
+  all_goals (simp_all [update_frame_setLocal])
 
 /-- **Counting loops whose body may change scratch variables.**  S j s μ' is the state before round
-j, with the values s of the scratch variables and the memory μ'; I j holds of the memory.  The
+j, with the values s of the scratch variables and the memory μ'; `I j s μ'` is the invariant.  The
 counter of S j s μ' holds j, and S (j + 1) s μ' is S j s μ' with the counter increased; for a shape
 fun j s μ' => ⟨frame [.., j, s], μ'⟩ both are proved by default.  The bound hi gives n, n fits in a
 word, and the body keeps the shape and takes at most b steps. -/
 theorem Ends.forShape {β : Type} {loc : ℕ → ℤ} {i : ℕ} {hi : Expr} {body : Stmt}
-    (S : ℕ → β → (ℕ → ℤ) → State) (I : ℕ → (ℕ → ℤ) → Prop) (n b : ℕ) (s₀ : β) (start : I 0 μ)
-    (round : ∀ (j : ℕ) (s : β) (μ' : ℕ → ℤ), j < n → I j μ' →
-      Ends lim P d body (S j s μ') b fun σ' => ∃ s' μ'', σ' = S j s' μ'' ∧ I (j + 1) μ'')
-    (done : ∀ (s : β) (μ' : ℕ → ℤ), I n μ' → Q (S n s μ'))
+    (S : ℕ → β → (ℕ → ℤ) → State) (I : ℕ → β → (ℕ → ℤ) → Prop) (n b : ℕ) (s₀ : β) (start : I 0 s₀ μ)
+    (round : ∀ (j : ℕ) (s : β) (μ' : ℕ → ℤ), j < n → I j s μ' →
+      Ends lim P d body (S j s μ') b fun σ' => ∃ s' μ'', σ' = S j s' μ'' ∧ I (j + 1) s' μ'')
+    (done : ∀ (s : β) (μ' : ℕ → ℤ), I n s μ' → Q (S n s μ'))
     (first : (⟨Function.update loc i 0, μ⟩ : State) = S 0 s₀ μ := by
       first | (simp only [update_frame_setLocal]; rfl) | simp [update_frame_setLocal])
-    (bound : ∀ (j : ℕ) (s : β) (μ' : ℕ → ℤ), j ≤ n → I j μ' → hi.Gives lim (S j s μ') n := by
+    (bound : ∀ (j : ℕ) (s : β) (μ' : ℕ → ℤ), j ≤ n → I j s μ' → hi.Gives lim (S j s μ') n := by
       intros; light_side)
     (counter : ∀ (j : ℕ) (s : β) (μ' : ℕ → ℤ), (S j s μ').loc i = j := by intros; simp)
     (next : ∀ (j : ℕ) (s : β) (μ' : ℕ → ℤ),
@@ -183,85 +157,18 @@ theorem Ends.forShape {β : Type} {loc : ℕ → ℤ} {i : ℕ} {hi : Expr} {bod
     (hn : (n : ℤ) ≤ lim.word := by omega)
     (hT : n * (hi.cost + b + 7) + hi.cost + 5 ≤ T := by light_time) :
     Ends lim P d (Stmt.for i hi body) ⟨loc, μ⟩ T Q := by
-  refine Ends.for (fun j σ' => ∃ s μ', σ' = S j s μ' ∧ I j μ') n b ⟨s₀, μ, first, start⟩ ?_ ?_ ?_
+  refine Ends.for (fun j σ' => ∃ s μ', σ' = S j s μ' ∧ I j s μ') n b ⟨s₀, μ, first, start⟩ ?_ ?_ ?_
     hn hT
   · rintro j _ hj - ⟨s, μ', rfl, hI⟩
     refine (round j s μ' hj hI).mono le_rfl ?_
-    rintro _ ⟨s', μ'', rfl, hI'⟩
-    exact ⟨counter j s' μ'', s', μ'', next j s' μ'', hI'⟩
-  · rintro _ - ⟨s, μ', rfl, hI⟩
-    exact done s μ' hI
-  · rintro j _ hj - ⟨s, μ', rfl, hI⟩
-    exact bound j s μ' hj hI
+    grind
+  · simp_all
+  simp_all
+
 
 end rules
 
 /-! ## Locals by name, and locals whose values do not matter -/
 
-/-- The list of the locals after several assignments, each given as a local and its value. -/
-@[simp] def setLocals (l : List ℤ) : List (ℕ × ℤ) → List ℤ
-  | [] => l
-  | p :: ps => setLocals (setLocal l p.1 p.2) ps
-
-/-- The local variables after several assignments, each given as a local and its value. -/
-@[simp] def updateLocals (loc : ℕ → ℤ) : List (ℕ × ℤ) → ℕ → ℤ
-  | [] => loc
-  | p :: ps => updateLocals (Function.update loc p.1 p.2) ps
-
-/-- The list `l` of the locals, with the entries `xs` read from `loc`. -/
-@[simp] def refreshLocals (l : List ℤ) (loc : ℕ → ℤ) : List ℕ → List ℤ
-  | [] => l
-  | x :: xs => refreshLocals (setLocal l x (loc x)) loc xs
-
-/-- Two lists give the same local variables: they are equal up to zeros at the end. -/
-def SameFrame (l m : List ℤ) : Prop := frame l = frame m
-
-/-- The empty list gives the same locals as itself. -/
-@[simp] theorem sameFrame_nil : SameFrame [] [] := rfl
-
-/-- Two lists give the same locals if their heads are equal and their tails give the same locals. -/
-@[simp] theorem sameFrame_cons_cons {a b : ℤ} {l m : List ℤ} :
-    SameFrame (a :: l) (b :: m) ↔ a = b ∧ SameFrame l m :=
-  ⟨fun h => ⟨congrFun h 0, funext fun i => congrFun h (i + 1)⟩, fun h => funext fun i => by
-    cases i with
-    | zero => exact h.1
-    | succ i => exact congrFun h.2 i⟩
-
-/-- A list gives the same locals as the empty list if all its entries are 0. -/
-@[simp] theorem sameFrame_cons_nil {a : ℤ} {l : List ℤ} :
-    SameFrame (a :: l) [] ↔ a = 0 ∧ SameFrame l [] :=
-  ⟨fun h => ⟨congrFun h 0, funext fun i => congrFun h (i + 1)⟩, fun h => funext fun i => by
-    cases i with
-    | zero => exact h.1
-    | succ i => exact congrFun h.2 i⟩
-
-/-- The empty list gives the same locals as a list all of whose entries are 0. -/
-@[simp] theorem sameFrame_nil_cons {b : ℤ} {m : List ℤ} :
-    SameFrame [] (b :: m) ↔ b = 0 ∧ SameFrame [] m :=
-  ⟨fun h => ⟨(congrFun h 0).symm, funext fun i => congrFun h (i + 1)⟩, fun h => funext fun i => by
-    cases i with
-    | zero => exact h.1.symm
-    | succ i => exact congrFun h.2 i⟩
-
-/-- The local variables `loc` are those of the list `l`, except perhaps the locals `xs`. -/
-def LocalsBut (xs : List ℕ) (l : List ℤ) (loc : ℕ → ℤ) : Prop :=
-  ∀ y ∉ xs, loc y = frame l y
-
-section
-variable {xs : List ℕ} {l l' : List ℤ} {loc μ : ℕ → ℤ}
-
-/-- An assignment, on both sides. -/
-theorem LocalsBut.update (h : LocalsBut xs l loc) (x : ℕ) (z : ℤ) :
-    LocalsBut xs (setLocal l x z) (Function.update loc x z) := by
-  intro y hy
-  rw [frame_setLocal, Function.update_apply, h y hy]
-
-/-! ## A piece of program text with a lemma of its own -/
-
-variable {T T₁ : ℕ} {s s₁ s₂ : Stmt} {Q R : State → Prop}
-
-/-! ## Counting loops with scratch variables -/
-
-end
 
 end Light

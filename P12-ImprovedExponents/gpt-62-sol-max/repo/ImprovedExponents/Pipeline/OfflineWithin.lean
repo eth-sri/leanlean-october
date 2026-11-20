@@ -27,7 +27,7 @@ restatement of `Light.Sec4.exists_ratParams` for parameters that are given rathe
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4
+open Light.Sec4
 
 /-- A routine with the running time `t N D w` takes at most a constant times
 `N² (log D + 1)²/D^γ + w D^q (log D + 1)` steps (400 further steps included) on every instance with
@@ -42,14 +42,6 @@ variable {N D₀ : ℕ}
 
 -- The next six lemmas are adapted from upstream
 -- `ThreeSumApsp/Programs/Sec4/ChoosingParameters/RealParameters.lean`, where they are private.
-
-/-- `D ≤ N^ε` with `ε ≤ 1` gives `D ≤ N`. -/
-theorem le_of_le_rpow {ε : ℝ} (hN : 1 ≤ N) (hε : ε ≤ 1) (h : (D₀ : ℝ) ≤ (N : ℝ) ^ ε) :
-    D₀ ≤ N := by
-  have hNR : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have : (D₀ : ℝ) ≤ (N : ℝ) :=
-    h.trans ((Real.rpow_le_rpow_of_exponent_le hNR hε).trans_eq (Real.rpow_one _))
-  exact_mod_cast this
 
 /-- `D ≤ N^ε` with `ε γ ≤ 1` gives `D^γ ≤ N²`. -/
 theorem rpow_le_sq {ε γ : ℝ} (hN : 1 ≤ N) (hγ : 0 ≤ γ) (hεγ : ε * γ ≤ 1)

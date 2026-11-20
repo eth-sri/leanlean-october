@@ -1,5 +1,7 @@
 module
 
+import ThreeSumApsp.Lang.Lib.Rect
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 public import ImprovedExponents.PrunedProgram.Tiles.Contracts
@@ -10,14 +12,8 @@ import all ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 /-!
 # The tries of all tiles, on pruned encodings
 
-Upstream's `allTiles_spec` proves `allTilesBody` (procedure 51) under `AllTilesPre`, with the
-encodings of all bands as full arrays, calling `tile` under `TileSpec`.  The routine reads no
-encoding cell; it only computes the addresses of the two encodings of each tile and hands them
-on.  So the same body meets the same specification with the encodings right at the leaves with
-at most `m` symbols `P₀` only (`AllTilesPreP`, `allTilesP_spec`), given `tile` under `TileSpecP`.
-The proof is upstream's; only `tileArgs_pre` changes, which carries the encodings of the two
-bands (`SegOn.keep` in place of `Seg.keep`).  The invariant `AllTiles.Mem` and the lemmas
-`AllTiles.triesBefore`, `AllTiles.tileArgs` are reused.
+The rectangular traversal calls `tile` with the addresses of its two encodings, but does not
+read those encodings itself. Its invariant `AllTiles.Mem` tracks the trie and roots in memory.
 
 Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/AllTiles.lean` (Apache-2.0).
 -/
@@ -26,14 +22,14 @@ namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.Spec
 
-open private length_roots_triesBefore tries_tileArgs time_le
+open private length_roots_triesBefore tries_tileArgs
   from ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 
 namespace AllTilesP
 
 open AllTiles
 
-variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {x : AllTilesArgs} {β β' : ℕ} {σ : State}
+variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {x : AllTilesArgs} {β β' : ℕ}
 
 /-- The surroundings of the tile (β, β'). -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/AllTiles.lean (AllTiles.tileCtx)
@@ -99,114 +95,52 @@ private theorem tile_meets (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x)
     ⟨tries_tileArgs x β β' ▸ htrie, tries_tileArgs x β β' ▸ hroots,
       M.same.then same fun c hc => ⟨hc, ?_⟩⟩
   -- a cell below cur or behind the trie area is none of those that tile may change
-  have hc' : c < x.cur ∨ x.tr + x.cap ≤ c := hc
-  simp only [TileArgs.Kept, tileArgs, Outside]
-  omega
-
-/-- One tile: the call, and the pointers move on. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/AllTiles.lean (AllTiles.step_spec)
-private theorem step_spec (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x) (hβ : β < x.nB)
-    (hβ' : β' < x.nB) (hd : d + 4 ≤ lim.depth) (h : Inv μ x β β' σ) :
-    Ends lim P d allTilesStep σ (tTile x.L x.m x.t + 23) (Inv μ x β (β' + 1)) := by
-  obtain ⟨void, μ₁, rfl, M⟩ := h
-  light_facts C C.std
-  -- tile(rowEnc, colEnc, rootPtr, …)
-  light_call (tile_meets hTile C hβ hβ' (by omega) M) with void' μ₂ M₂
-  -- rootPtr := rootPtr + 1; colEnc := colEnc + leaves; colBand := colBand + 1
-  have hptr : x.aR + (β * x.nB + (β' + 1)) = x.aR + (β * x.nB + β') + 1 := by ring
-  have hcol : x.aENCB + (β' + 1) * 10 ^ x.L = x.aENCB + β' * 10 ^ x.L + 10 ^ x.L := by ring
-  have hi := Nat.mul_add_lt_mul hβ hβ'
-  have hcolS := Nat.mul_add_le_mul hβ' (le_refl (10 ^ x.L))
-  have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
-  unfold AllTiles.Inv
-  rw [hptr, hcol]
-  -- names for the products
-  generalize β * x.nB + β' = ptr at *
-  generalize x.aENCA + β * 10 ^ x.L = row at *
-  generalize β' * 10 ^ x.L = off at *
-  generalize x.nB * 10 ^ x.L = all at *
-  generalize 10 ^ x.L = leaves at *
-  light_set (x.aR + ptr + 1 : ℕ)
-  light_set (x.aENCB + off + leaves : ℕ)
-  light_set (β' + 1 : ℕ)
-  exact ⟨void', μ₂, rfl, M₂⟩
-
-/-- One row of tiles. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/AllTiles.lean (AllTiles.row_spec)
-private theorem row_spec (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x) (hβ : β < x.nB)
-    (hd : d + 4 ≤ lim.depth) (h : Inv μ x β 0 σ) :
-    Ends lim P d allTilesRow σ (x.nB * (tTile x.L x.m x.t + 27) + 16) (Inv μ x (β + 1) 0) := by
-  light_facts C C.std
-  -- while β' < nB: one tile
-  refine Ends.next _ (Ends.whileConst (Inv μ x β) x.nB (tTile x.L x.m x.t + 23) h ?round ?done
-    le_rfl) (by simp; ring_nf; omega)
-  case round =>
-    rintro β' σ hβ' hI
-    have hstep := step_spec hTile C hβ hβ' hd hI
-    obtain ⟨void, μ', rfl, -⟩ := hI
-    exact ⟨by simp, by simpa using hβ', hstep⟩
-  case done =>
-    rintro _ ⟨void, μ', rfl, M⟩
-    refine ⟨by simp, by simp, ?_⟩
-    -- rowEnc := rowEnc + leaves; rowBand := rowBand + 1; colBand := 0; colEnc := encB
-    have hptr : x.aR + ((β + 1) * x.nB + 0) = x.aR + (β * x.nB + x.nB) := by ring
-    have hrow : x.aENCA + (β + 1) * 10 ^ x.L = x.aENCA + β * 10 ^ x.L + 10 ^ x.L := by ring
-    have hcol : x.aENCB + 0 * 10 ^ x.L = x.aENCB := by ring
-    have hrowS := Nat.mul_add_le_mul hβ (le_refl (10 ^ x.L))
-    have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
-    have hbefore : triesBefore x β x.nB = triesBefore x (β + 1) 0 := by
-      rw [triesBefore, tilesBefore_row, triesBefore]
-    have M' : Mem μ μ' x (β + 1) 0 := ⟨hbefore ▸ M.trie, hbefore ▸ M.roots, M.same⟩
-    unfold AllTiles.Inv
-    rw [hptr, hrow, hcol]
-    -- names for the products
-    generalize x.aR + (β * x.nB + x.nB) = ptr at *
-    generalize β * 10 ^ x.L = off at *
-    generalize x.nB * 10 ^ x.L = all at *
-    generalize 10 ^ x.L = leaves at *
-    light_set (x.aENCA + off + leaves : ℕ)
-    light_set (β + 1 : ℕ)
-    light_set (0 : ℕ)
-    light_set (x.aENCB : ℕ)
-    exact ⟨void, μ', rfl, M'⟩
+  light_side [hc, TileArgs.Kept, tileArgs, Outside]
 
 end AllTilesP
 
 open AllTiles AllTilesP in
-/-- **allTiles on pruned encodings** meets its specification. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/AllTiles.lean (allTiles_spec)
+/-- Build all tile tries on pruned encodings. -/
 theorem allTilesP_spec {lim : Limits} {P : Program} (hP : P[Proc.allTiles]? = some allTilesBody)
     (hTile : TileSpecP lim P) : AllTilesSpecP lim P := by
-  intro x μ C
-  refine fun d hd => ⟨allTilesBody, hP, ?_⟩
-  light_facts C.std
-  have htime := time_le x.nB (tTile x.L x.m x.t)
-  unfold tAllTiles
-  -- β := 0; β' := 0; the three pointers at the first tile
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set (x.aR : ℕ)
-  light_set (x.aENCA : ℕ)
-  light_set (x.aENCB : ℕ)
-  light_set 0
-  -- while β < nB: one row
-  refine Ends.whileConst (fun β => Inv μ x β 0) x.nB (x.nB * (tTile x.L x.m x.t + 27) + 16) ?start
-    ?round ?done (by simp; omega)
-  case start =>
-    refine ⟨0, μ, by simp, ?_, ?_, .refl⟩
-    · rw [triesBefore, tilesBefore_zero]
-      exact C.trie
-    · rw [triesBefore, tilesBefore_zero]
-      simp [allTries, SegN, Seg]
-  case round =>
-    rintro β σ hβ hI
-    have hrow := row_spec hTile C hβ hd hI
-    obtain ⟨void, μ', rfl, -⟩ := hI
-    exact ⟨by simp, by simpa using hβ, hrow⟩
-  case done =>
-    rintro _ ⟨void, μ', rfl, M⟩
+  intro x μ C d hd
+  refine ⟨allTilesBody, hP, ?_⟩
+  light_facts C C.std
+  have hnB : x.nB ≤ x.nB * x.nB := Nat.le_mul_self _
+  let args : List ℤ := [x.aENCA, x.aENCB, x.nB, (10 ^ x.L : ℕ), x.aR, x.tr, x.fp,
+    x.cur, x.box, x.L, (x.m - x.t : ℕ)]
+  change Ends _ _ _ _ ⟨frame args, μ⟩ _ _
+  rw [← frame_append_zeros args 3]
+  unfold allTilesBody tAllTiles
+  refine Ends.forRect (fun r : ℤ => frame (args ++ [0, 0, r])) (fun i j _ η => Mem μ η x i j)
+    (n := x.nB) (m := x.nB) (b := tTile x.L x.m x.t + 40) 0 ?_ (by omega) (by omega) (by simp [args]) (by simp [args]) ?_ ?_ ?_
+    (hT := by
+      have h := Nat.mul_le_mul_left x.nB (show tTile x.L x.m x.t + 40 + 8 ≤ tTile x.L x.m x.t + 80 by omega)
+      exact Nat.add_le_add (Nat.mul_le_mul_left _ (Nat.add_le_add h (by decide))) (by decide))
+  · refine ⟨?_, ?_, .refl⟩ <;> rw [triesBefore, tilesBefore_zero]
+    · exact C.trie
+    · simp [allTries, SegN, Seg]
+  · intro i j r η hi hj I
+    have hb (k : ℕ) (hk : k < x.nB) : (k : ℤ) * 10 ^ x.L + 10 ^ x.L ≤ (x.nB : ℤ) * 10 ^ x.L := by
+      exact_mod_cast Nat.mul_add_le_mul hk (le_refl (10 ^ x.L))
+    have hrow := hb i hi
+    have hpow0 : (0 : ℤ) ≤ 10 ^ x.L := by positivity
+    have hi₀ : 0 ≤ (i : ℤ) * (10 : ℤ) ^ x.L := by positivity
+    have hj₀ : 0 ≤ (j : ℤ) * (10 : ℤ) ^ x.L := by positivity
+    have hcol := hb j hj
+    have hA : (x.aENCA : ℤ) + (x.nB : ℤ) * 10 ^ x.L ≤ x.aENCB := by exact_mod_cast C.order.1
+    have hB : (x.aENCB : ℤ) + (x.nB : ℤ) * 10 ^ x.L ≤ x.cur := by exact_mod_cast C.order.2.1
+    have hij := Nat.mul_add_lt_mul hi hj
+    simp only [rectLoc, update_frame_setLocal]
+    refine Ends.callTo (tile_meets hTile C hi hj (by omega) I) ?_ (ha := by light_side [args])
+    exact fun v η' hv => ⟨v, rfl, hv⟩
+  · intro i r η hi I
+    have hb : triesBefore x i x.nB = triesBefore x (i + 1) 0 := by
+      rw [triesBefore, tilesBefore_row, triesBefore]
+    exact ⟨hb ▸ I.trie, hb ▸ I.roots, I.same⟩
+  · intro r j η I
     have hall : triesBefore x x.nB 0 = x.tries := by
       rw [triesBefore, tilesBefore_all, AllTilesArgs.tries]
-    exact ⟨by simp, by simp, hall ▸ M.trie, hall ▸ M.roots, M.same⟩
+    exact ⟨hall ▸ I.trie, hall ▸ I.roots, I.same⟩
 
 end Light.Sec4

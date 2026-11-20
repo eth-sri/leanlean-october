@@ -65,7 +65,7 @@ theorem convTemplate_AC {t N s : ℕ} {x : Fin N → ℤ} {fill : ℤ} (a c : Fi
 private theorem exists_hasZeroTriangle {t N : ℕ} {x : Fin N → ℤ} {fill : ℤ} (hNt : N < t * t)
     {i j : Fin N} (hij : i.val + j.val < N) (h : x i + x j = x ⟨i.val + j.val, hij⟩) :
     ∃ s < 2 * t, ((convTemplate t N s).instantiate x fill).HasZeroTriangle := by
-  have ht : 0 < t := Nat.pos_of_ne_zero (by rintro rfl; omega)
+  have ht : 0 < t := Nat.pos_of_ne_zero (by lia)
   have hit := Nat.mod_lt i.val ht
   have hjt := Nat.mod_lt j.val ht
   have hj := Nat.div_add_mod' j.val t
@@ -73,24 +73,20 @@ private theorem exists_hasZeroTriangle {t N : ℕ} {x : Fin N → ℤ} {fill : �
   have hAB : i.val / t * t + i.val % t = i.val := Nat.div_add_mod' i.val t
   have hBC : j.val / t * t + (j.val % t + i.val % t) - i.val % t = j.val := by omega
   have hAC : (i.val / t + j.val / t) * t + (j.val % t + i.val % t) = i.val + j.val := by
-    rw [Nat.add_mul]
-    omega
+    lia
   refine ⟨j.val % t + i.val % t, by omega, ⟨i.val / t, Nat.div_lt_of_lt_mul (i.isLt.trans hNt)⟩,
     ⟨i.val % t, hit⟩, ⟨j.val / t, Nat.div_lt_of_lt_mul (j.isLt.trans hNt)⟩, ?_⟩
   simp only [TriangleInstance.IsZeroTriangle, TriangleInstance.S, TriangleTemplate.instantiate,
     convTemplate_AB, convTemplate_BC, convTemplate_AC]
   rw [dif_pos (hAB.trans_lt i.isLt), dif_pos ⟨by omega, hBC.trans_lt j.isLt⟩,
     dif_pos (hAC.trans_lt hij)]
-  simp only [hAB, hBC, hAC, Fin.eta, h]
-  ring
+  simp_all
 
 /-- With the filler `2U + 1`, every weight is at least `-U`. -/
 private theorem neg_le_templateWeight {N : ℕ} {x : Fin N → ℤ} {U : ℤ} (hU : 0 ≤ U)
     (hx : ∀ i, |x i| ≤ U) (o : Option (Bool × Fin N)) : -U ≤ templateWeight x (2 * U + 1) o := by
   rcases o with _ | ⟨_ | _, i⟩ <;> simp only [templateWeight]
-  · omega
-  · exact (abs_le.mp (hx i)).1
-  · exact neg_le_neg (abs_le.mp (hx i)).2
+  all_goals (grind)
 
 /-- A zero triangle of an instance with the filler `2U + 1` is a solution. -/
 private theorem convolution3SUM_of_isZeroTriangle {t N s : ℕ} {x : Fin N → ℤ} {U : ℤ} (hU : 0 ≤ U)
@@ -118,12 +114,9 @@ private theorem convolution3SUM_of_isZeroTriangle {t N s : ℕ} {x : Fin N → �
   rw [convTemplate_AB, convTemplate_BC, convTemplate_AC, dif_pos hAB, dif_pos hBC, dif_pos hAC] at h
   -- The triangle stands for `i = at + b` and `j = ct + s - b`, and `i + j = (a + c)t + s`.
   have hsum : a.val * t + b.val + (c.val * t + s - b.val) = (a.val + c.val) * t + s := by
-    rw [Nat.add_mul]
-    omega
+    lia
   refine ⟨⟨a.val * t + b.val, hAB⟩, ⟨c.val * t + s - b.val, hBC.2⟩, hsum ▸ hAC, ?_⟩
-  simp only [hsum]
-  -- `h` says `x_i + x_j - x_{i+j} = 0`.
-  linarith [h]
+  lia
 
 /-- The reduction of [VW13, Theorem 4.3], for `N < t²` numbers of absolute value at most `U`: there
 are `i`, `j` with `x_i + x_j = x_{i+j}` if and only if one of the instances `s < 2t`, with the

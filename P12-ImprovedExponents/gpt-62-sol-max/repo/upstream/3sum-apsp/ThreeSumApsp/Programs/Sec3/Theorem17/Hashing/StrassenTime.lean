@@ -22,11 +22,10 @@ namespace Light.Sec3
 /-- The scratch space, exactly. -/
 theorem strScr_add (p j : ℕ) : strScr p j + p = 4 ^ j * p := by
   induction j with
-  | zero => simp [strScr]
+  | zero => aesop
   | succ j ih =>
     rw [strScr, pow_succ]
-    have : 4 ^ j * 4 * p = 4 * (4 ^ j * p) := by ring
-    omega
+    lia
 
 /-- The scratch space is at most the size of an operand. -/
 theorem strScr_le (p j : ℕ) : strScr p j ≤ 4 ^ j * p := by
@@ -36,7 +35,7 @@ theorem strScr_le (p j : ℕ) : strScr p j ≤ 4 ^ j * p := by
 /-- The scratch space grows with p. -/
 theorem strScr_mono {p q : ℕ} (h : p ≤ q) (j : ℕ) : strScr p j ≤ strScr q j := by
   induction j with
-  | zero => simp [strScr]
+  | zero => rfl
   | succ j ih =>
     rw [strScr, strScr]
     have := Nat.mul_le_mul_left (4 ^ j) h
@@ -47,10 +46,7 @@ theorem strSteps_mono {p q : ℕ} (h : p ≤ q) (j : ℕ) : strSteps p j ≤ str
   induction j with
   | zero =>
     rw [strSteps, strSteps]
-    have h2 : p * p ≤ q * q := Nat.mul_le_mul h h
-    have e1 : 32 * p * p = 32 * (p * p) := by ring
-    have e2 : 32 * q * q = 32 * (q * q) := by ring
-    omega
+    nlinarith
   | succ j ih =>
     rw [strSteps, strSteps]
     have := Nat.mul_le_mul_left (4 ^ j) h

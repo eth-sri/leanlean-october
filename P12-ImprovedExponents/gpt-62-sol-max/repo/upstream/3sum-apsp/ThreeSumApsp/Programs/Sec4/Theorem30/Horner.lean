@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
@@ -26,17 +30,13 @@ open ThreeSumApsp
 
 namespace Light.Sec4
 
-open ThreeSumApsp.Spec
+
 
 namespace Horner
 
 /-- The local variables of horner: the arguments (the address of the string and its length), the
 level, and the number formed so far.  Local 0 also takes the result. -/
-abbrev Str : ℕ := 0
-@[inherit_doc Str] abbrev Result : ℕ := 0
-@[inherit_doc Str] abbrev Len : ℕ := 1
-@[inherit_doc Str] abbrev Level : ℕ := 2
-@[inherit_doc Str] abbrev Acc : ℕ := 3
+registers [Str / Result, Len, Level, Acc]
 
 /-- Before round i the number formed by the first i digits has been computed.  The memory is not
 changed. -/
@@ -68,11 +68,10 @@ theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some ho
     have hlt := ofDigitList_lt (b := 10) (l.take i) fun x hx => hd x (List.mem_of_mem_take hx)
     have hpow' : 10 ^ (l.take i).length ≤ 10 ^ l.length :=
       Nat.pow_le_pow_right (by norm_num) (List.length_take_le' _ _)
-    exact lt_of_lt_of_le (by exact_mod_cast hlt.trans_le hpow') hpow
+    lia
   unfold tHorner
   -- level := 0; acc := 0
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
+  light_steps
   -- while level < len
   refine Ends.next _ (Ends.whileBlock (Inv a l μ) l.length ?start ?round ?done (hT := le_rfl))
   case start => rfl
@@ -91,7 +90,7 @@ theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some ho
     rintro _ rfl
     refine ⟨by light_side, by light_side, ?_⟩
     -- return acc
-    light_set (ofDigitList 10 l : ℕ) using List.take_length
-    exact ⟨rfl, rfl⟩
+    light_step using List.take_length
+    trivial
 
 end Light.Sec4

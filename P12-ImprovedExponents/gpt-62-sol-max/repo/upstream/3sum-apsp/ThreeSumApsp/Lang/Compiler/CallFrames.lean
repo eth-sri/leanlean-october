@@ -146,6 +146,6 @@ theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) 
   · cell_read using hargs i h
   · cell_read
     rw [R.zero]
-    simp [frame, List.getElem?_eq_none (not_lt.1 h)]
+    simp [frame, h]
 
 end Light.Compiler

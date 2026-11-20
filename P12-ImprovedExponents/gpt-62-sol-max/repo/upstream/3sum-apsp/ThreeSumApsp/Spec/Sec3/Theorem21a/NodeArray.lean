@@ -42,27 +42,19 @@ theorem keys_lt {M : ℕ} (hM : 1 ≤ M) (L : List ℤ) : ∀ r ∈ keys M L, r 
   obtain ⟨x, -, rfl⟩ := List.mem_map.1 hr
   exact Int.toNat_emod_lt hM x
 
-/-- The list of the remainders, as integers. -/
-theorem map_cast_keys {M : ℕ} (hM : 1 ≤ M) (L : List ℤ) :
-    (keys M L).map (fun r : ℕ => (r : ℤ)) = L.map fun x => x % (M : ℤ) := by
-  rw [keys, List.map_map]
-  exact List.map_congr_left fun x _ => Int.natCast_toNat_emod hM x
-
 /-- The size of a bucket is the number of times its remainder occurs in the list of the
 remainders. -/
 theorem card_bucket {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (r : ℕ) :
     #(bucket L.toFinset M r) = (keys M L).count r := by
   have hfilter : bucket L.toFinset M (r : ℤ) =
       (L.filter fun x => decide (x % (M : ℤ) = (r : ℤ))).toFinset := by
-    ext x
-    simp [bucket]
+    aesop
   rw [hfilter, List.toFinset_card_of_nodup (hL.filter _), keys, List.count_eq_countP,
     List.countP_map, List.countP_eq_length_filter]
   congr 1
   refine List.filter_congr fun x _ => ?_
   have hcast := Int.natCast_toNat_emod hM x
-  change decide (x % (M : ℤ) = (r : ℤ)) = decide ((x % (M : ℤ)).toNat = r)
-  exact decide_eq_decide.2 (by omega)
+  lia
 
 /-- A cell whose remainder occurs once holds the number with that remainder. -/
 theorem arr_of_count_eq_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (pd : ℤ) {j : ℕ}
@@ -74,8 +66,7 @@ theorem arr_of_count_eq_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodu
   have hmem : L[j] ∈ bucket L.toFinset M ((L[j] % (M : ℤ)).toNat : ℕ) := by
     rw [bucket, mem_filter, List.mem_toFinset]
     exact ⟨List.getElem_mem hj, (Int.natCast_toNat_emod hM _).symm⟩
-  rw [ha] at hmem ⊢
-  rw [sum_singleton, mem_singleton.1 hmem]
+  simp_all
 
 /-- A cell whose remainder does not occur exactly once holds the padding value. -/
 theorem arr_of_count_ne_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (pd : ℤ) {r : ℕ}
@@ -90,7 +81,7 @@ theorem arr_of_le {M : ℕ} (hM : 1 ≤ M) (S : Finset ℤ) (pd : ℤ) {i : ℕ}
     intro x _ hx
     have hlt : x % (M : ℤ) < M := Int.emod_lt_of_pos _ (by exact_mod_cast hM)
     omega
-  rw [arr, hempty, if_neg (by simp)]
+  simp [arr, hempty]
 
 /-- The four kinds of cells of the one-array instance of a node.  Here `6V + 4` is the number
 `G = 3W + 1` for `W = 2V + 1`. -/
@@ -100,9 +91,6 @@ theorem oneArray_cells (ν : Node) (V i : ℕ) :
       ν.oneArray V (4 * i + 2) = arr ν.S₂ ν.M (2 * V + 1) i + 3 * (6 * V + 4) ∧
       ν.oneArray V (4 * i + 3) = arrZ ν.S₃ ν.M V i + 4 * (6 * V + 4) := by
   have hcell : ∀ r < 4, (4 * i + r) % 4 = r ∧ (4 * i + r) / 4 = i := fun r hr => by omega
-  have hzero : 4 * i % 4 = 0 := Nat.mul_mod_right 4 i
-  refine ⟨?_, ?_, ?_, ?_⟩ <;>
-    simp only [Node.oneArray, ChanHe.oneArray, arrXY, pad, hzero, hcell 1 (by norm_num),
-      hcell 2 (by norm_num), hcell 3 (by norm_num)] <;> norm_num <;> ring
+  simp_all [Node.oneArray, ChanHe.oneArray, arrXY, pad] <;> omega
 
 end ThreeSumApsp.Spec.ChanHeArray

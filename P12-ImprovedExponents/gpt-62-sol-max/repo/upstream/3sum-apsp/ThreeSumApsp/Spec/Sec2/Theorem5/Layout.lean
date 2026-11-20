@@ -58,7 +58,7 @@ def stdLayout {L m : ℕ} (hmL : m ≤ L) : Layout L m where
   table_injective gh gh' h := by
     obtain ⟨hg, hh⟩ := Nat.mul_add_inj_of_lt gh.2.isLt gh'.2.isLt
       (eq_of_maskSet_unrank_eq (tableIndex_lt L m gh) (tableIndex_lt L m gh') h)
-    exact Prod.ext (Fin.ext hg) (Fin.ext hh)
+    grind
 
 section
 variable {L m : ℕ} (hmL : m ≤ L)

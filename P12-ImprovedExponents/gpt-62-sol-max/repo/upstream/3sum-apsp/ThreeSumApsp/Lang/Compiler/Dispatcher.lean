@@ -40,7 +40,7 @@ theorem length_dispatcher (n : ℕ) : (dispatcher n).length = 2 * n := by
 /-- A shorter dispatcher is the beginning of a longer one. -/
 private theorem dispatcher_prefix {j n : ℕ} (h : j ≤ n) : dispatcher j <+: dispatcher n := by
   induction n, h using Nat.le_induction with
-  | base => exact List.prefix_refl _
+  | base => rfl
   | succ n _ ih => exact ih.trans (dispatcher_succ n ▸ List.prefix_append _ _)
 
 /-- The two instructions for the position j. -/
@@ -59,7 +59,7 @@ private theorem steps_dispatcher_pair {j : ℕ} (hcode : CodeAt code disp (dispa
   have pairCode := codeAt_dispatcher hcode hj
   -- RR := RR - 1
   have run₁ := steps_sub pairCode (Function.update_self cRR (wd W v) m)
-    (by cell_read using hone)
+    (by assumption)
   rw [Function.update_idem] at run₁
   -- if RR < 0 go to j
   exact run₁.trans (steps_bltz pairCode.tail (Function.update_self _ _ _) hv)

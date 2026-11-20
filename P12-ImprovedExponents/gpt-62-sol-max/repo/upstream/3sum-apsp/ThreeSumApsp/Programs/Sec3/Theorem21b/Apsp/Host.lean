@@ -5,280 +5,194 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+import ThreeSumApsp.Lang.WhileShape
+
 public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.Passes
 public import ThreeSumApsp.Programs.Tasks
 
-/-!
-# APSP from the (min,+)-product
-
-For Theorem 21(b): if no closed walk has negative weight, then squaring the weight matrix ⌈log₂ n⌉
-times in the (min,+)-product yields the distance matrix, and all finite entries that occur have
-absolute value at most nU, where U bounds the edge weights.  The host below does this over an
-arbitrary solver of the (min,+)-product.
-
-ap(n, U, adj, w, out, fr) keeps the current matrix in the `n²` cells from `fr`, with `3nU` for `+∞`;
-the product is written to the next `n²` cells, and the solver gets the free pointer `fr + 2n²`.
-After each product the entries above `nU` are set back to `3nU` while the matrix is copied back.
-The rounds are counted by doubling a number that starts at 1, as long as it is below `n`: these are
-`⌈log₂ n⌉` rounds.
-
-The proof follows the text: one round squares the matrix (`ApspHost.round_spec`), the last call
-writes the answer (`ApspHost.out_spec`, `ApspHost.answer_correct`), and `ap_spec` puts the parts
-together.  The result is `isHost_ap : IsHost mpTask apTask apTime apNeed`.
--/
+/-! Repeated squaring alternates between two buffers. Missing edges receive a large finite
+sentinel at initialization; no clipping is needed between products. -/
 
 @[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace ApspHost
 
-/-- The number n of vertices. -/
-abbrev Verts : ℕ := 0
-/-- The bound U on the weights. -/
-abbrev Bound : ℕ := 1
-/-- The address of the adjacency matrix. -/
-abbrev AdjAt : ℕ := 2
-/-- The address of the weights. -/
-abbrev WtsAt : ℕ := 3
-/-- The address of the answer. -/
-abbrev Out : ℕ := 4
-/-- The free pointer, where the current matrix is kept. -/
-abbrev Free : ℕ := 5
-/-- n². -/
-abbrev Cells : ℕ := 6
-/-- nU. -/
-abbrev Thresh : ℕ := 7
-/-- 3nU, which stands for +∞. -/
-abbrev Big : ℕ := 8
-/-- fr + n², where the product is written. -/
-abbrev ProdAt : ℕ := 10
-/-- fr + 2n², the free pointer of the solver. -/
-abbrev SolverFree : ℕ := 11
-/-- The power of two that counts the rounds. -/
-abbrev Power : ℕ := 12
-/-- Takes the results of the calls. -/
-abbrev Res : ℕ := 13
+registers [Verts, Bound, Adj, Wts, Out, Src, Cells, Thresh, Big, EntryBound, Dst, Free, Power, Res, Tmp]
+
+private def swap : Stmt :=
+  .set Tmp (v Src) ;; .set Src (v Dst) ;; .set Dst (v Tmp) ;; .set Power (v Power +' v Power)
+
+private def round (pMP : ℕ) : Stmt :=
+  .call pMP [v Verts, v EntryBound, v Src, v Src, v Dst, v Free] Res ;; swap
+
+private def setup : Stmt :=
+  .set Cells (v Verts *' v Verts) ;; .set Thresh (k 2 *' (v Verts *' v Bound)) ;;
+  .set Big (k 8 *' (v Verts *' v Bound)) ;; .set EntryBound (k 2 *' v Verts *' v Big) ;;
+  .set Dst (v Src +' v Cells) ;; .set Free (v Dst +' v Cells)
+
+private abbrev initial (x : GraphInst) (src : ℕ) : List ℤ := [x.n, x.U, x.adj, x.w, x.out, src]
+private abbrev cells (x : GraphInst) : ℕ := x.n * x.n
+private abbrev cut (x : GraphInst) : ℕ := 2 * (x.n * x.U)
+private abbrev locs (x : GraphInst) (fr src dst : ℕ) (pw res tmp : ℤ) : List ℤ :=
+  initial x src ++ [(cells x : ℤ), (cut x : ℕ), (sentinel x.n x.U : ℕ), (apspBound x.n x.U : ℕ),
+    dst, (fr + 2 * cells x : ℕ), pw, res, tmp]
+
+private def Buffers (fr w src dst : ℕ) : Prop :=
+  (src = fr ∧ dst = fr + w) ∨ (dst = fr ∧ src = fr + w)
 
 end ApspHost
 
-open ApspHost in
-/-- One round: the product of the matrix with itself, clipped and copied back. -/
-def apRound (pMP pClip : ℕ) : Stmt :=
-  .call pMP [v Verts, v Big, v Free, v Free, v ProdAt, v SolverFree] Res ;;
-  .call pClip [v Cells, v Thresh, v Big, v ProdAt, v Free] Res ;;
-  .set Power (v Power +' v Power)
+open ApspHost
 
-open ApspHost in
-/-- ap(n, U, adj, w, out, fr), over the procedures number pMP (a solver of the (min,+)-product),
-pInit, pClip and pOut (the three passes). -/
-def apBody (pMP pInit pClip pOut : ℕ) : Stmt :=
-  .set Cells (v Verts *' v Verts) ;;
-  .set Thresh (v Verts *' v Bound) ;;
-  .set Big (k 3 *' v Thresh) ;;
-  .set ProdAt (v Free +' v Cells) ;;
-  .set SolverFree (v ProdAt +' v Cells) ;;
-  .call pInit [v Verts, v Big, v AdjAt, v WtsAt, v Free] Res ;;
-  .set Power (k 1) ;;
-  .while (v Power <' v Verts) (apRound pMP pClip) ;;
-  .call pOut [v Cells, v Big, v Free, v Out] Res
+private def apBody (pMP pInit pOut : ℕ) : Stmt :=
+  setup ;; .call pInit [v Verts, v Big, v Adj, v Wts, v Src] Res ;;
+  .set Power (k 1) ;; .while (v Power <' v Verts) (round pMP) ;;
+  .call pOut [v Cells, v Thresh, v Src, v Out] Res
 
-/-- The time of the host, given the time of the solver: `⌈log₂ n⌉` products at the bound `3nU`, and
-`O(n²)` steps for each product and at both ends. -/
 def apTime (T : ℕ → ℕ → ℕ) (n U : ℕ) : ℕ :=
-  Nat.clog 2 n * (T n (3 * (n * U)) + 23 * (n * n) + 29) + 53 * (n * n) + 17 * n + 65
+  Nat.clog 2 n * (T n (apspBound n U) + 32) + 90 * (n * n) + 100
 
-/-- The need of the host, given the need of the solver. -/
-def apNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need where
-  word := max (r n (3 * (n * U))).word (3 * (n * U))
-  cells := 2 * (n * n) + (r n (3 * (n * U))).cells
-  depth := (r n (3 * (n * U))).depth + 1
+def apNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need :=
+  ⟨max (r n (apspBound n U)).word (apspBound n U),
+    2 * (n * n) + (r n (apspBound n U)).cells, (r n (apspBound n U)).depth + 1⟩
 
 namespace ApspHost
 
-/-- The locals of the host during the loop; pw is the power of two that counts the rounds, res the
-result of the last call.  Local 9 is not used and stays 0. -/
-abbrev locals (x : GraphInst) (fr : ℕ) (pw res : ℤ) : List ℤ :=
-  [x.n, x.U, x.adj, x.w, x.out, fr, (x.n * x.n : ℕ), (x.n * x.U : ℕ), 3 * (x.n * x.U : ℕ), 0,
-    (fr + x.n * x.n : ℕ), (fr + 2 * (x.n * x.n) : ℕ), pw, res]
+variable {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need} {P R : Program} {pMP pInit pOut : ℕ}
+  {lim : Limits} {d fr : ℕ} {x : GraphInst} {μ : ℕ → ℤ}
 
-/-- The invariant of the loop before round t: the matrix after t squarings stands at the free
-pointer, and nothing below it has changed. -/
-def Inv (x : GraphInst) (μ : ℕ → ℤ) (fr t : ℕ) (σ : State) : Prop :=
-  ∃ (res : ℤ) (μ' : ℕ → ℤ), σ = ⟨frame (locals x fr (2 ^ t : ℕ) res), μ'⟩ ∧
-    Seg μ' fr (squareList x.n x.U x.ADJ x.W t) ∧ Kept μ μ' fr
-
-/-- The program has the solver and the three passes, the instance is as the task prescribes, and the
-limits allow for the need of the host. -/
-structure Ctx (P₀ R₀ : Program) (pMP pInit pClip pOut : ℕ) (T : ℕ → ℕ → ℕ) (r : ℕ → ℕ → Need)
+private structure Ctx (P R : Program) (pMP pInit pOut : ℕ) (T : ℕ → ℕ → ℕ) (r : ℕ → ℕ → Need)
     (lim : Limits) (d : ℕ) (x : GraphInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
-  solver : Solves mpTask P₀ pMP T r
-  init : (P₀ ++ R₀)[pInit]? = some apInitBody
-  clip : (P₀ ++ R₀)[pClip]? = some clipBody
-  out : (P₀ ++ R₀)[pOut]? = some apOutBody
+  sol : Solves mpTask P pMP T r
+  init : (P ++ R)[pInit]? = some apInitBody
+  out : (P ++ R)[pOut]? = some apOutBody
   pre : x.Pre μ fr
   ok : (apNeed r x.n x.U).Ok lim fr d
 
-variable {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
-  {lim : Limits} {d : ℕ} {x : GraphInst} {μ : ℕ → ℤ} {fr : ℕ}
+private theorem Ctx.aux (C : Ctx P R pMP pInit pOut T r lim d x μ fr) :
+    (r x.n (apspBound x.n x.U)).Ok lim (fr + 2 * cells x) (d + 1) :=
+  C.ok.mono (le_max_left ..) (by simp [apNeed, cells]; omega) (by simp [apNeed]; omega)
 
-/-- The arithmetic facts of the hypotheses as one conjunction: what the limits allow and what the
-instance satisfies. -/
-private theorem Ctx.places (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) :
-    ((lim.space : ℤ) ≤ lim.word ∧ 3 * ((x.n : ℤ) * x.U) ≤ lim.word ∧
-      ((r x.n (3 * (x.n * x.U))).word : ℤ) ≤ lim.word ∧
-      fr + (2 * (x.n * x.n) + (r x.n (3 * (x.n * x.U))).cells) ≤ lim.space ∧
-      d + ((r x.n (3 * (x.n * x.U))).depth + 1) ≤ lim.depth) ∧
-      x.n ≤ x.n * x.n ∧ 1 ≤ x.n * x.U ∧ x.adj + x.n * x.n ≤ fr ∧ x.w + x.n * x.n ≤ fr ∧
-      x.out + 2 * (x.n * x.n) ≤ fr :=
-  ⟨⟨C.ok.space, by exact_mod_cast le_trans (Nat.cast_le.2 (le_max_right _ _)) C.ok.word,
-    le_trans (by exact_mod_cast le_max_left _ _) C.ok.word, C.ok.cells, C.ok.depth⟩,
-    Nat.le_mul_of_pos_left _ C.pre.n_pos, Nat.mul_pos C.pre.n_pos C.pre.U_pos, C.pre.belowADJ,
-    C.pre.belowW, C.pre.belowOut⟩
+private theorem Ctx.bounds (C : Ctx P R pMP pInit pOut T r lim d x μ fr) :
+    (lim.space : ℤ) ≤ lim.word ∧ fr + 2 * cells x ≤ lim.space ∧ d < lim.depth ∧
+      (apspBound x.n x.U : ℕ) ≤ lim.word :=
+  ⟨C.ok.space, by have h := C.aux.cells; omega, by have h := C.aux.depth; omega,
+    (Nat.cast_le.2 (le_max_right ..)).trans C.ok.word⟩
 
-/-- The pairs that apOut writes for the matrix after ⌈log₂ n⌉ squarings are the answer. -/
-private theorem answer_correct (hpre : x.Pre μ fr) {μ' : ℕ → ℤ}
-    (hans : PairsAt μ' x.out (3 * (x.n * x.U : ℕ))
-      (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n))) :
-    ∃ dist : Fin x.n → Fin x.n → WithTop ℤ, IsDistanceMatrix (graphOf x.n x.ADJ x.W) dist ∧
-      ∀ i j : Fin x.n, (dist i j = ⊤ → μ' (x.out + 2 * (i.val * x.n + j.val)) = 0) ∧
-        ∀ z : ℤ, dist i j = (z : WithTop ℤ) → μ' (x.out + 2 * (i.val * x.n + j.val)) = 1 ∧
-          μ' (x.out + 2 * (i.val * x.n + j.val) + 1) = z := by
-  obtain ⟨dist, hdist, hentries⟩ :=
-    squareList_distances hpre.n_pos hpre.U_pos hpre.leW hpre.noNegativeCycle
-  refine ⟨dist, hdist, fun i j => ?_⟩
-  have hq : i.val * x.n + j.val < (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)).length := by
-    rw [length_squareList]
-    exact Nat.mul_add_lt_mul i.isLt j.isLt
-  obtain ⟨htop, hfin⟩ := hentries i j
+private theorem answer_correct (hpre : x.Pre μ fr) {ν : ℕ → ℤ} {res : ℤ}
+    (h : PairsAt ν x.out (cut x) (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)))
+    (hk : KeptBut μ ν fr x.out (2 * cells x)) : apTask.Post x μ fr res ν := by
+  obtain ⟨dist, hdist, he⟩ := squareList_distances hpre.U_pos hpre.leW hpre.noNegativeCycle
+  refine ⟨⟨dist, hdist, fun i j => ?_⟩, hk⟩
+  have hq : i.val * x.n + j.val < (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)).length :=
+    length_squareList _ _ _ _ _ ▸ Nat.mul_add_lt_mul i.isLt j.isLt
+  obtain ⟨htop, hfin⟩ := he i j
   rw [entry, List.getD_eq_getElem _ _ hq] at htop hfin
-  obtain ⟨hzero, hone⟩ := hans _ hq
-  refine ⟨fun h => hzero (htop h), fun z hz => ?_⟩
-  obtain ⟨hval, hne⟩ := hfin z hz
-  exact hval ▸ hone (hval ▸ hne)
+  obtain ⟨hzero, hone⟩ := h _ hq
+  simp_all
 
-/-- **One round of the host** squares the matrix at the free pointer: a (min,+)-product, the
-clipping of the large entries, and the doubling of Power. -/
-private theorem round_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) {t : ℕ}
-    (ht : 2 ^ t < x.n) {σ : State} (hσ : Inv x μ fr t σ) :
-    Ends lim (P₀ ++ R₀) d (apRound pMP pClip) σ (T x.n (3 * (x.n * x.U)) + 23 * (x.n * x.n) + 25)
-      (Inv x μ fr (t + 1)) := by
-  obtain ⟨res, μ', rfl, hseg, hkept⟩ := hσ
-  have hplaces := C.places
-  have hw := C.ok.space
-  set L := squareList x.n x.U x.ADJ x.W t
-  have hlen : L.length = x.n * x.n := length_squareList _ _ _ _ _
-  have hlenP : (minPlusList x.n L L).length = x.n * x.n := length_minPlusList _ _ _
-  have hle : AbsLe L ((3 * (x.n * x.U) : ℕ) : ℤ) :=
-    abs_squareList_le C.pre.n_pos C.pre.U_pos C.pre.leW C.pre.noNegativeCycle t
-  unfold apRound
-  -- Res := pMP(Verts, Big, Free, Free, ProdAt, SolverFree)
-  refine Ends.callToThen (C.solver.meets R₀
-    (⟨x.n, 3 * (x.n * x.U), fr, fr, fr + x.n * x.n, L, L⟩ : MatInst) (fr + 2 * (x.n * x.n))
-    ⟨C.pre.n_pos, by simp only; omega, hlen, hlen, hseg, hseg, hle, hle, by simp only; omega,
-      by simp only; omega, by simp only; omega, Or.inl le_rfl, Or.inl le_rfl⟩
-    { word := by simp only [mpTask]; omega
-      cells := by simp only [mpTask]; omega
-      space := hw
-      depth := by simp only [mpTask]; omega }) ?_ (by simp [mpTask]) (by omega)
-        (by simp [mpTask]; omega)
-  rintro r₁ μ₁ ⟨hprod, hkept₁⟩
-  simp only at hprod hkept₁
-  -- Res := pClip(Cells, Thresh, Big, ProdAt, Free)
-  refine Ends.callToThen (clip_meets C.clip (thr := (x.n * x.U : ℕ)) (INF := 3 * (x.n * x.U : ℕ))
-    (dst := fr) hprod hw (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlenP])
-    (by omega) (by simp [mpTask, hlenP]; omega)
-  rintro r₂ μ₂ ⟨hseg₂, hsame₂⟩
-  rw [hlenP] at hsame₂
-  -- Power := Power + Power
-  refine Ends.setTo (2 ^ (t + 1) : ℕ) ⟨r₂, μ₂, rfl, hseg₂, fun a ha => ?_⟩ ?_
-    (by simp [mpTask, hlenP]; omega)
-  · light_keep
-  · have hpow : (2 : ℤ) ^ t < x.n := by exact_mod_cast ht
-    have hpos : (0 : ℤ) ≤ 2 ^ t := by positivity
-    simp [abs_le, pow_succ]
-    omega
-
-/-- **The end of the host**: the answer is written. -/
-private theorem out_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) {σ : State}
-    (hσ : Inv x μ fr (Nat.clog 2 x.n) σ) :
-    Ends lim (P₀ ++ R₀) d (.call pOut [v Cells, v Big, v Free, v Out] Res) σ (30 * (x.n * x.n) + 14)
-      fun σ' => apTask.Post x μ fr (σ'.loc 0) σ'.mem := by
-  obtain ⟨res, μ', rfl, hseg, hkept⟩ := hσ
-  have hplaces := C.places
-  have hw := C.ok.space
-  have hlen : (squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)).length = x.n * x.n :=
-    length_squareList _ _ _ _ _
-  -- Res := pOut(Cells, Big, Free, Out)
-  refine Ends.callTo (apOut_meets C.out (INF := 3 * (x.n * x.U : ℕ)) (out := x.out) hseg hw
-    (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlen]) (hT := by rw [hlen]; light_time)
-  rintro r₂ μ₂ ⟨hans, hsame₂⟩
-  rw [hlen] at hsame₂
-  exact ⟨answer_correct C.pre hans, fun a ⟨ha, hout⟩ => (hsame₂ a hout).trans (hkept a ha)⟩
+private theorem body_spec (C : Ctx P R pMP pInit pOut T r lim d x μ fr) :
+    Ends lim (P ++ R) d (apBody pMP pInit pOut) ⟨frame (apTask.args x ++ [(fr : ℤ)]), μ⟩
+      (apTime T x.n x.U) fun σ => apTask.Post x μ fr (σ.loc 0) σ.mem := by
+  obtain ⟨hs, hf, hd, hw⟩ := C.bounds
+  dsimp only [cells] at hf
+  have hn := C.pre.n_pos
+  have hu := C.pre.U_pos
+  have ha := C.pre.belowADJ
+  have hb := C.pre.belowW
+  have hn₂ : x.n ≤ x.n ^ 2 := by nlinarith
+  have hB : 2 * x.n ≤ apspBound x.n x.U := Nat.le_mul_of_pos_right _ (by positivity)
+  have hI : sentinel x.n x.U ≤ apspBound x.n x.U := Nat.le_mul_of_pos_left _ (by omega)
+  have hC : cut x ≤ sentinel x.n x.U := by dsimp [cut, sentinel]; omega
+  have hI' : (sentinel x.n x.U : ℕ) ≤ lim.word := (Nat.cast_le.2 hI).trans hw
+  have hB' : (2 : ℤ) * x.n ≤ lim.word := by exact_mod_cast (Nat.cast_le.2 hB).trans hw
+  have hC' : (cut x : ℕ) ≤ lim.word := (Nat.cast_le.2 hC).trans hI'
+  have hU' : (1 : ℤ) ≤ x.n * x.U := by exact_mod_cast Nat.mul_pos hn hu
+  push_cast at hI' hC' hw
+  have hB₀ : (0 : ℤ) ≤ 2 * x.n * (8 * ((x.n : ℤ) * x.U)) := by positivity
+  change Ends lim (P ++ R) d (apBody pMP pInit pOut) ⟨frame (initial x fr), μ⟩ _ _
+  unfold apBody apTime setup
+  light_step using initial, cells
+  light_step
+  light_step
+  light_set (apspBound x.n x.U : ℕ) using apspBound, sentinel
+  light_set ((fr + cells x : ℕ) : ℤ) using initial, cells, Nat.cast_add, Nat.cast_mul
+  light_set ((fr + 2 * cells x : ℕ) : ℤ) using initial, cells, Nat.cast_add, Nat.cast_mul
+  light_call (apInit_meets C.init (INF := sentinel x.n x.U) (A := fr) hn C.pre.lenADJ C.pre.lenW
+    C.pre.segADJ C.pre.segW hs (by omega) (by omega) (by omega) (Or.inl ha) (Or.inl hb))
+    using sentinel, cells with r₀ ν₀ ⟨hseg, hk⟩
+  light_set (2 ^ 0 : ℤ)
+  let S t (z : ℕ × ℕ × ℤ × ℤ) ν : State :=
+    ⟨frame (locs x fr z.1 z.2.1 (2 ^ t) z.2.2.1 z.2.2.2), ν⟩
+  let I t (z : ℕ × ℕ × ℤ × ℤ) ν := Buffers fr (cells x) z.1 z.2.1 ∧
+    Seg ν z.1 (squareList x.n x.U x.ADJ x.W t) ∧ Kept μ ν fr
+  refine Ends.next _ (Ends.whileShape S I (Nat.clog 2 x.n) (T x.n (apspBound x.n x.U) + 28)
+    (fr, fr + cells x, r₀, 0) ν₀ ⟨Or.inl ⟨rfl, rfl⟩, hseg, fun _ hb => hk _ (.inl hb)⟩
+    ?_ ?_ (first := ?hfirst) (step := ?guard) (stop := ?last) (hT := le_rfl)) (by light_time [cells, apspBound])
+  case hfirst =>
+    simp [S, locs, initial, sentinel, apspBound, cells, cut, mul_assoc]
+    ring_nf
+    exact (frame_append_zeros _ 1).symm
+  case guard =>
+    intro j z ν hj _
+    exact ⟨by simp, by simpa [S] using (show (2 : ℤ) ^ j < x.n by exact_mod_cast Nat.pow_lt_of_lt_clog hj)⟩
+  case last =>
+    intro z ν _
+    exact ⟨by simp, by simpa [S] using (show (x.n : ℤ) ≤ 2 ^ Nat.clog 2 x.n by
+      exact_mod_cast Nat.le_pow_clog (by decide : 1 < 2) x.n)⟩
+  · rintro t ⟨src, dst, res, tmp⟩ ν ht ⟨hp, hseg, hk⟩
+    dsimp only [S] at *
+    dsimp only [Buffers, cells] at hp
+    have hpow : (2 : ℤ) ^ t < x.n := by exact_mod_cast Nat.pow_lt_of_lt_clog ht
+    have hpow₀ : (0 : ℤ) ≤ 2 ^ t := by positivity
+    have hn₂ : x.n ≤ x.n * x.n := Nat.le_mul_of_pos_left _ C.pre.n_pos
+    have hlen := length_squareList x.n x.U x.ADJ x.W t
+    have hn := C.pre.n_pos
+    have hu := C.pre.U_pos
+    have hB : 1 ≤ apspBound x.n x.U := by
+      change 0 < apspBound x.n x.U
+      positivity
+    have h₁ := abs_squareList_le (ADJ := x.ADJ) C.pre.leW ht.le
+    let L := squareList x.n x.U x.ADJ x.W t
+    let y : MatInst := ⟨x.n, apspBound x.n x.U, src, src, dst, L, L⟩
+    have hpre : y.Pre ν (fr + 2 * cells x) := by
+      refine ⟨hn, hB, hlen, hlen, hseg, hseg, h₁, h₁, ?_, ?_, ?_, ?_, ?_⟩ <;>
+        simp only [y, cells] <;> omega
+    unfold round
+    light_call (C.sol.meets R y (fr + 2 * cells x) hpre C.aux) using y, mpTask, locs, apspBound, sentinel
+      with r₁ ν₁ ⟨hm, hkeep⟩
+    have hkeep : KeptBut ν ν₁ (fr + 2 * cells x) dst (cells x) := hkeep
+    refine Ends.pieceLast (T₁ := swap.blockCost)
+      (R := (· = S (t + 1) (dst, src, r₁, (src : ℤ)) ν₁)) ?_
+      (fun _ h => ?_) (by light_time [swap, y, mpTask])
+    · light_block using S, swap, locs, pow_succ'
+    · exact ⟨(dst, src, r₁, src), ν₁, h, hp.symm, hm, hk.then hkeep fun _ hb =>
+        ⟨hb, by omega, Or.inl (by omega)⟩⟩
+  · rintro ⟨src, dst, res, tmp⟩ ν ⟨hp, hseg, hk⟩
+    dsimp only [S]
+    dsimp only [Buffers, cells] at hp
+    have hlen := length_squareList x.n x.U x.ADJ x.W (Nat.clog 2 x.n)
+    have hOut := C.pre.belowOut
+    light_call (apOut_meets C.out (thr := cut x) (out := x.out) hseg hs (by omega) (by omega)
+      (Or.inr (by omega))) using locs, hlen, cells with _ ν₁ ⟨hans, hkeep⟩
+    exact answer_correct C.pre hans (hk.then hkeep fun _ hb =>
+      ⟨hb.1, by simpa only [hlen] using hb.2⟩)
 
 end ApspHost
 
-open ApspHost in
-/-- **The host is correct**, in every program that begins with the solver's program and has the
-three passes. -/
-theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
-    {lim : Limits} {d : ℕ} {x : GraphInst} {μ : ℕ → ℤ} {fr : ℕ}
-    (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ fr) :
-    Ends lim (P₀ ++ R₀) d (apBody pMP pInit pClip pOut) ⟨frame (apTask.args x ++ [(fr : ℤ)]), μ⟩
-      (apTime T x.n x.U) fun σ' => apTask.Post x μ fr (σ'.loc 0) σ'.mem := by
-  have hplaces := C.places
-  have hw := C.ok.space
-  have hpre := C.pre
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
-  have hthresh : (0 : ℤ) ≤ (x.n : ℤ) * x.U := by positivity
-  unfold apBody apTime
-  change Ends _ _ _ _ ⟨frame [(x.n : ℤ), x.U, x.adj, x.w, x.out, fr], μ⟩ _ _
-  -- Cells := Verts * Verts ; Thresh := Verts * Bound ; Big := 3 * Thresh
-  light_set (x.n * x.n : ℕ)
-  light_set (x.n * x.U : ℕ)
-  light_set (3 * (x.n * x.U : ℕ))
-  -- ProdAt := Free + Cells ; SolverFree := ProdAt + Cells
-  light_set (fr + x.n * x.n : ℕ)
-  light_set (fr + 2 * (x.n * x.n) : ℕ)
-  -- Res := pInit(Verts, Big, AdjAt, WtsAt, Free)
-  light_call (apInit_meets C.init (INF := 3 * (x.n * x.U : ℕ)) (A := fr) hpre.n_pos
-    hpre.lenADJ hpre.lenW hpre.segADJ hpre.segW hw (by omega) (by omega) (by omega)
-    (Or.inl hpre.belowADJ) (Or.inl hpre.belowW)) with r₁ μ₁ ⟨hseg₁, hsame₁⟩
-  -- Power := 1
-  light_set (2 ^ 0 : ℕ)
-  -- while Power < Verts: the rounds
-  refine Ends.next _ (Ends.whileConst (Inv x μ fr) (Nat.clog 2 x.n)
-    (T x.n (3 * (x.n * x.U)) + 23 * (x.n * x.n) + 25)
-    ⟨r₁, μ₁, rfl, hseg₁, fun a ha => hsame₁ a (Or.inl ha)⟩ ?round ?done le_rfl)
-  case round =>
-    rintro t σ ht hσ
-    have hpow : 2 ^ t < x.n := Nat.pow_lt_of_lt_clog ht
-    refine ⟨?_, ?_, round_spec C hpow hσ⟩ <;> obtain ⟨res, μ', rfl, -, -⟩ := hσ
-    · exact ⟨trivial, trivial⟩
-    · simpa using (by exact_mod_cast hpow : ((2 : ℤ) ^ t < x.n))
-  case done =>
-    intro σ hσ
-    have hpow : x.n ≤ 2 ^ Nat.clog 2 x.n := Nat.le_pow_clog (by norm_num) x.n
-    refine ⟨?_, ?_, (out_spec C hσ).mono (by light_time) fun _ h => h⟩ <;>
-      obtain ⟨res, μ', rfl, -, -⟩ := hσ
-    · exact ⟨trivial, trivial⟩
-    · simpa using (by exact_mod_cast hpow : ((x.n : ℤ) ≤ 2 ^ Nat.clog 2 x.n))
-
-/-- The need of the host is polynomially bounded if the need of the solver is. -/
-theorem polyNeed_apNeed {r : ℕ → ℕ → Need} (hr : PolyNeed r) : PolyNeed (apNeed r) := by
-  unfold apNeed
-  poly_need [hr.word, hr.cells, hr.depth]
-
-/-- **APSP from the (min,+)-product**, as a host. -/
 theorem isHost_ap : IsHost mpTask apTask apTime apNeed := by
-  refine ⟨fun P p T r hs => ?_, fun r hr => polyNeed_apNeed hr⟩
-  refine ⟨[apInitBody, clipBody, apOutBody, apBody p P.length (P.length + 1) (P.length + 2)],
-    P.length + 3, apBody p P.length (P.length + 1) (P.length + 2), by simp,
-    fun R lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact ap_spec ⟨hs, by simp, by simp, by simp, hpre, hok⟩
+  refine ⟨fun P p T r hs => ?_, fun r hr => ?_⟩
+  · let body := apBody p P.length (P.length + 1)
+    refine ⟨[apInitBody, apOutBody, body], P.length + 2, body, by simp, fun R lim d x μ fr hpre hok => ?_⟩
+    rw [List.append_assoc]
+    exact body_spec ⟨hs, by simp, by simp, hpre, hok⟩
+  · unfold apNeed apspBound sentinel
+    poly_need [hr.word, hr.cells, hr.depth]
 
 end Light.Sec3

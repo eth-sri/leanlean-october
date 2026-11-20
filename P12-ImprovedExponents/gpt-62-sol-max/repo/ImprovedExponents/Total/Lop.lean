@@ -16,7 +16,7 @@ bound `n² (log D + 1)²/D^γ + w D^q (log D + 1)` when `D ≤ n^ε` with `ε (1
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4
+open ThreeSumApsp Light.Sec4
 
 /-- For `1 ≤ D ≤ n^ε` with `ε (1 + γ) ≤ 1`, the size `n D` of the two matrices is at most the bound
 on the preprocessing. -/
@@ -68,8 +68,6 @@ theorem lopClaim_of_thinClaim (M : DetTimeModel) {ε γ q : ℝ} (hγ : 0 ≤ γ
   have h3 : C₃ * ((w : ℝ) + 1) ≤ |C₃| * (preBound31 γ n D + w * queryBound31 q D) :=
     (mul_le_mul_of_nonneg_right (le_abs_self C₃) (by linarith)).trans
       (mul_le_mul_of_nonneg_left (by linarith) (abs_nonneg _))
-  change T n D w 1 + C₁ * ((n : ℝ) * D + w + 1) + C₃ * ((w : ℝ) + 1)
-    ≤ (|C| + 2 * |C₁| + |C₃|) * (preBound31 γ n D + w * queryBound31 q D)
   linarith
 
 end ImprovedExponents

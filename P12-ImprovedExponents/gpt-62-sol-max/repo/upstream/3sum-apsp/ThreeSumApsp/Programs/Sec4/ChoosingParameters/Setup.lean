@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Contracts
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
 public import ThreeSumApsp.Sec4.Corollary31
@@ -23,7 +25,7 @@ specification is `QuerySpec31`, proved in `query31_meets`.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## Parameters and map -/
 
@@ -40,13 +42,7 @@ def blockAt (N D₀ fr : ℕ) : ℕ := fr + 3 + N * D (logFour D₀) + N * D (lo
 namespace Query31
 
 /-- The locals of query31 are its arguments I, J, N, D, aX, aY, fr; the answer replaces I. -/
-abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Size : ℕ := 2
-@[inherit_doc Row] abbrev Dim : ℕ := 3
-@[inherit_doc Row] abbrev MatX : ℕ := 4
-@[inherit_doc Row] abbrev MatY : ℕ := 5
-@[inherit_doc Row] abbrev Free : ℕ := 6
+registers [Row, Col, Size, Dim, MatX, MatY, Free]
 
 end Query31
 
@@ -61,24 +57,19 @@ theorem abs_padInnerCols_le {N D₀ D' : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ
     (h : ∀ i j, |X i j| ≤ U) (hU : 0 ≤ U) (i : Fin N) (j : Fin D') :
     |padInnerCols D' X i j| ≤ U := by
   unfold padInnerCols
-  split_ifs
-  · exact h _ _
-  · simpa using hU
+  grind
 
 theorem abs_padInnerRows_le {N D₀ D' : ℕ} {Y : Matrix (Fin D₀) (Fin N) ℤ} {U : ℤ}
     (h : ∀ i j, |Y i j| ≤ U) (hU : 0 ≤ U) (i : Fin D') (j : Fin N) :
     |padInnerRows D' Y i j| ≤ U := by
   unfold padInnerRows
-  split_ifs
-  · exact h _ _
-  · simpa using hU
+  grind
 
 theorem le_D_logFour (D₀ : ℕ) : D₀ ≤ D (logFour D₀) := Nat.le_pow_clog (by norm_num) D₀
 
 /-- The ceiling ⌈log₄ D⌉ in natural numbers. -/
 theorem ceil_logb_four (D₀ : ℕ) : ⌈Real.logb 4 (D₀ : ℝ)⌉₊ = logFour D₀ := by
-  have := Real.natCeil_logb_natCast 4 D₀
-  simpa [logFour] using this
+  norm_cast
 
 /-- m ≤ 4 D, because m ≤ 4^m ≤ 4 D. -/
 theorem logFour_le_four_mul {D₀ : ℕ} (hD : 1 ≤ D₀) : logFour D₀ ≤ 4 * D₀ :=

@@ -35,9 +35,7 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 /-- Writing a bounded number into a bounded function. -/
 private theorem abs_update_le {f : ℕ → ℤ} {B v : ℤ} (hf : ∀ y, |f y| ≤ B) (hv : |v| ≤ B)
     (x y : ℕ) : |Function.update f x v y| ≤ B := by
-  rw [Function.update_apply]
-  split_ifs
-  exacts [hv, hf y]
+  grind
 
 /-- The value of a safe expression in a bounded state fits in a word. -/
 theorem Expr.abs_val_le {σ : State} (hσ : σ.Bounded lim) :
@@ -69,11 +67,11 @@ theorem Exec.bounded {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d s �
   | skip => exact hσ
   | set hs => exact ⟨abs_update_le hσ.1 (Expr.abs_val_le hσ _ hs) _, hσ.2⟩
   | store _ he _ => exact ⟨hσ.1, abs_update_le hσ.2 (Expr.abs_val_le hσ _ he) _⟩
-  | seq _ _ ih₁ ih₂ => exact ih₂ (ih₁ hσ)
-  | iteTrue _ _ _ ih => exact ih hσ
-  | iteFalse _ _ _ ih => exact ih hσ
+  | seq _ _ ih₁ ih₂ => simp_all
+  | iteTrue _ _ _ ih => simp_all
+  | iteFalse _ _ _ ih => simp_all
   | whileFalse _ _ => exact hσ
-  | whileTrue _ _ _ _ ih₁ ih₂ => exact ih₂ (ih₁ hσ)
+  | whileTrue _ _ _ _ ih₁ ih₂ => simp_all
   | call ha _ _ _ ih =>
     have hbody := ih (bounded_callFrame hσ _ ha)
     exact ⟨abs_update_le hσ.1 (hbody.1 0) _, hbody.2⟩
@@ -86,12 +84,12 @@ theorem Exec.mem_outside {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d
   | set _ => rfl
   | store _ _ haddr =>
     obtain ⟨h0, hlt⟩ := haddr
-    exact Function.update_of_ne (by omega) _ _
-  | seq _ _ ih₁ ih₂ => rw [ih₂, ih₁]
+    grind
+  | seq _ _ ih₁ ih₂ => simp_all
   | iteTrue _ _ _ ih => exact ih
   | iteFalse _ _ _ ih => exact ih
   | whileFalse _ _ => rfl
-  | whileTrue _ _ _ _ ih₁ ih₂ => rw [ih₂, ih₁]
+  | whileTrue _ _ _ _ ih₁ ih₂ => simp_all
   | call _ _ _ _ ih => exact ih
 
 end Light

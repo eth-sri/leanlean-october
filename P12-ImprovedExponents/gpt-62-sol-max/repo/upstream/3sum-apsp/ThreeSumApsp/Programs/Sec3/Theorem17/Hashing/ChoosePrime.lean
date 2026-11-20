@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.CountPrime
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Primes
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Choice
@@ -26,14 +30,14 @@ if it is the first one or its count is smaller than the best so far (`chKeep_spe
 
 On the pure side, `bestOf f L i` is the first of the first i primes with the smallest count, one
 more prime changes it as the program does (`BestSoFar.step`), and at the end it is the chosen prime
-(`bestOf_length`).  `choosePrime_spec` is the whole routine.
+(`bestOf_length`).  `choosePrime_meets` is the whole routine.
 -/
 
 @[expose] public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -61,23 +65,8 @@ namespace ChoosePrime
 /-- The local variables of choosePrime: the arguments n, U, ab, bc, ac, D, w; the number of primes;
 len; K; 2^K; the address of the work area of countPrime; the number of the prime; the prime; its
 count; the best prime so far; its count. -/
-abbrev Num : ℕ := 0
-@[inherit_doc Num] abbrev Bound : ℕ := 1
-@[inherit_doc Num] abbrev ListAB : ℕ := 2
-@[inherit_doc Num] abbrev ListBC : ℕ := 3
-@[inherit_doc Num] abbrev ListAC : ℕ := 4
-@[inherit_doc Num] abbrev Range : ℕ := 5
-@[inherit_doc Num] abbrev Work : ℕ := 6
-@[inherit_doc Num] abbrev Primes : ℕ := 7
-@[inherit_doc Num] abbrev Len : ℕ := 8
-@[inherit_doc Num] abbrev Level : ℕ := 9
-@[inherit_doc Num] abbrev Rows : ℕ := 10
-@[inherit_doc Num] abbrev Area : ℕ := 11
-@[inherit_doc Num] abbrev Idx : ℕ := 12
-@[inherit_doc Num] abbrev Prime : ℕ := 13
-@[inherit_doc Num] abbrev Count : ℕ := 14
-@[inherit_doc Num] abbrev Best : ℕ := 15
-@[inherit_doc Num] abbrev BestCount : ℕ := 16
+registers [Num, Bound, ListAB, ListBC, ListAC, Range, Work, Primes, Len, Level, Rows, Area, Idx,
+  Prime, Count, Best, BestCount]
 
 end ChoosePrime
 
@@ -101,7 +90,7 @@ open ChoosePrime in
 def chRound (ν : ChNums) : Stmt :=
   .set Prime (M (v Work +' v Idx)) ;;
   .call ν.pCountPrime
-    [v Num, v ListAB, v ListBC, v ListAC, v Prime, v Len, v Level, v Rows, v Area] Count ;;
+    [v Num, v Level, v ListAB, v ListBC, v ListAC, v Area, v Prime, v Len, v Rows] Count ;;
   chKeep
 
 open ChoosePrime in
@@ -136,8 +125,8 @@ structure ChoosePrimePre (lim : Limits) (d : ℕ) (μ : ℕ → ℤ) (x : TriIns
   wordU : ((2 * x.U + 2 : ℕ) : ℤ) ≤ lim.word
   wordN : ((2 * x.n + 1 : ℕ) : ℤ) ≤ lim.word
   wordDbl : ((Nat.sqrt D * 2 ^ (bitLen x.U + 1) : ℕ) : ℤ) ≤ lim.word
-  wordStr : ((4 * (16 ^ Nat.clog 2 x.n * Nat.sqrt D) : ℕ) : ℤ) ≤ lim.word
-  wordSum : ((x.n * x.n * (16 ^ Nat.clog 2 x.n * Nat.sqrt D) : ℕ) : ℤ) ≤ lim.word
+  wordStr : ((4 * (32 ^ Nat.clog 2 x.n * Nat.sqrt D) : ℕ) : ℤ) ≤ lim.word
+  wordSum : ((x.n * x.n * (32 ^ Nat.clog 2 x.n * Nat.sqrt D) : ℕ) : ℤ) ≤ lim.word
   depth : d + 2 * Nat.clog 2 x.n + 3 ≤ lim.depth
 
 /-! ## The pure side: the best prime so far -/
@@ -146,7 +135,7 @@ structure ChoosePrimePre (lim : Limits) (d : ℕ) (μ : ℕ → ℤ) (x : TriIns
 theorem countOf_nonneg (n : ℕ) {p : ℕ} (hp : 1 ≤ p) (AB BC AC : List ℤ) :
     0 ≤ countOf n p AB BC AC := by
   rw [countOf_eq n AB BC AC (by omega)]
-  exact Int.natCast_nonneg _
+  simp
 
 /-- What the locals best and cnt hold after i primes: nothing yet, or the best prime so far and its
 count c, where c q is the count for the prime q. -/
@@ -164,12 +153,11 @@ theorem BestSoFar.step {c : ℕ → ℤ} {L : List ℕ} {i : ℕ} {best cnt : �
   obtain ⟨rfl, -⟩ | ⟨hi1, rfl, rfl, hcnt⟩ := h
   · rw [show bestOf (fun q => (c q).toNat) L (0 + 1) = L[0] from
       (bestOf_one _ L).trans (List.getD_eq_getElem _ _ hi)]
-    simp [hc]
+    trivial
   · have hcmp : (c L[i]).toNat < (c (bestOf (fun q => (c q).toNat) L i)).toNat ↔
         c L[i] < c (bestOf (fun q => (c q).toNat) L i) := by omega
     rw [bestOf_succ _ L hi1 hi]
-    simp only [hcmp, show i ≠ 0 by omega, false_or]
-    split_ifs <;> simp [hc, hcnt]
+    lia
 
 /-! ## The parts of the program -/
 
@@ -191,8 +179,7 @@ theorem chLevel_spec (hword : ((2 * n + 1 : ℕ) : ℤ) ≤ lim.word) :
   generalize Nat.clog 2 n = L at test
   push_cast at hword
   -- level := 0; rows := 1
-  light_set (0 : ℕ)
-  light_set (1 : ℕ)
+  light_steps
   -- while rows < n: rows := rows + rows; level := level + 1.  Before round j, rows = 2^j.
   refine Ends.whileBlock
     (fun j σ => σ = ⟨frame [n, U, ab, bc, ac, D, w, nP, len, j, (2 ^ j : ℕ)], μ⟩) L (by simp) ?round
@@ -208,14 +195,14 @@ theorem chLevel_spec (hword : ((2 * n + 1 : ℕ) : ℤ) ≤ lim.word) :
     rintro _ rfl
     have hnot := mt (test L).1 (lt_irrefl L)
     generalize 2 ^ L = q at hnot
-    exact ⟨by light_side, by light_side, rfl⟩
+    simp_all
 
 /-- **Keeping the better prime.** -/
 theorem chKeep_spec (h0 : 0 ≤ lim.word) (i : ℕ) (q c best cnt : ℤ) :
     Ends lim P d chKeep ⟨frame (chFrame n U ab bc ac D w nP len K i q c best cnt), μ⟩ 12 fun σ' =>
       σ' = ⟨frame (chFrame n U ab bc ac D w nP len K i q c
         (if i = 0 ∨ c < cnt then q else best) (if i = 0 ∨ c < cnt then c else cnt)), μ⟩ := by
-  refine Ends.block ⟨by simp [chKeep, h0], ?_⟩ (by simp [chKeep])
+  refine Ends.block ⟨by simp [chKeep, h0], ?_⟩ (by rfl)
   by_cases hi : i = 0 <;> by_cases hc : c < cnt <;>
     simp [chKeep, update_frame_setLocal, hi, hc]
 
@@ -241,9 +228,9 @@ theorem ChoosePrimePre.countPre (pre : ChoosePrimePre lim d μ x D w)
     { space_le := pre.space_le, inst := pre.inst.keep.mono (Nat.le_add_right _ _)
       p_pos := (mem_primesList.1 hq).1.one_le, hK := rfl, hU := Nat.lt_size_self x.U
       cells := by omega
-      wordDbl := le_trans (by exact_mod_cast Nat.mul_le_mul_right _ hqS) pre.wordDbl
+      wordDbl := le_trans (by simp_all) pre.wordDbl
       wordStr := le_trans
-        (by exact_mod_cast Nat.mul_le_mul_left 4 (Nat.mul_le_mul_left _ hqS)) pre.wordStr
+        (by simp_all) pre.wordStr
       wordSum := le_trans
         (by exact_mod_cast Nat.mul_le_mul_left (x.n * x.n) (Nat.mul_le_mul_left _ hqS)) pre.wordSum
       depth := by omega }
@@ -274,9 +261,9 @@ theorem chRound_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) {i
   have hcells :=
     countCells_mono (le_sqrt_of_mem_primesList hmem) x.n (bitLen x.U) (Nat.clog 2 x.n)
   have hread : μ' (w + i) = ((primesList D)[i] : ℕ) := by
-    rw [seg i (by simpa using hi), List.getElem_map]
+    rw [seg i (by simp_all), List.getElem_map]
   -- prime := w[i]
-  light_set ((primesList D)[i] : ℕ) using hread
+  light_step using hread
   -- count := countPrime(n, ab, bc, ac, prime, len, K, 2^K, area)
   refine Ends.callToThen (countPrime_meets ctx.hCountPrime ctx.cp (pre.countPre rest hmem)) ?_
     (hT := by simp; omega)
@@ -291,30 +278,13 @@ theorem chRound_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) {i
   unfold chooseCells
   omega
 
-/-- **primes** as a procedure. -/
-theorem primes_meets {q dst pSqrt pSieve : ℕ} (hP : P[q]? = some (primesBody pSqrt pSieve))
-    (C : Primes.Ctx P pSqrt pSieve) (hw : (lim.space : ℤ) ≤ lim.word)
-    (hD : ((4 * D + 4 : ℕ) : ℤ) ≤ lim.word) (hdst : dst + (2 * Nat.sqrt D + 1) ≤ lim.space)
-    (hd : d < lim.depth) :
-    Meets lim P q d [dst, D] μ (tPrimes D) fun r μ' =>
-      r = ((primesList D).length : ℕ) ∧ SegN μ' dst (primesList D) ∧
-        SameOutside μ μ' dst (2 * Nat.sqrt D + 1) :=
-  Meets.of_body hP (primes_spec C hw hD hdst hd)
-
-/-- **bitLen** as a procedure. -/
-theorem bitLen_meets {q : ℕ} (hP : P[q]? = some bitLenBody)
-    (hU : ((2 * U + 2 : ℕ) : ℤ) ≤ lim.word) :
-    Meets lim P q d [U] μ (tBitLen U) fun r μ' => r = (bitLen U : ℕ) ∧ μ' = μ :=
-  Meets.of_body hP (bitLen_spec hU)
-
-open ChoosePrime in
 /-- **choosePrime** returns the first prime of the range with the smallest count (0 if the range has
 no prime), and changes only cells of its work area. -/
-theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) :
-    Ends lim P d (choosePrimeBody ν) ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, D, w], μ⟩
-      (chooseTime x.n x.U D) fun σ' =>
-        σ'.loc 0 = (chosenPrime x.n D x.AB x.BC x.AC : ℕ) ∧
-          SameOutside μ σ'.mem w (chooseCells x.n x.U D) := by
+theorem choosePrime_meets {q : ℕ} (hP : P[q]? = some (choosePrimeBody ν)) (ctx : ChCtx P ν)
+    (pre : ChoosePrimePre lim d μ x D w) :
+    Meets lim P q d [x.n, x.U, x.ab, x.bc, x.ac, D, w] μ (chooseTime x.n x.U D) fun r μ' =>
+      r = (chosenPrime x.n D x.AB x.BC x.AC : ℕ) ∧ SameOutside μ μ' w (chooseCells x.n x.U D) := by
+  refine .of_body hP ?_;
   have hw := pre.space_le
   have cells := pre.cells_le
   have depth := pre.depth
@@ -323,9 +293,7 @@ theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w
     have hle : Nat.sqrt D ≤ 4 ^ Nat.clog 2 x.n * Nat.sqrt D :=
       Nat.le_mul_of_pos_left _ (by positivity)
     unfold countCells
-    generalize 4 ^ Nat.clog 2 x.n * Nat.sqrt D = A at hle ⊢
-    generalize 2 ^ Nat.clog 2 x.n = B
-    omega
+    lia
   have hloop : (primesList D).length *
       (countTime x.n (Nat.sqrt D) (bitLen x.U) (Nat.clog 2 x.n) + 36) ≤
       Nat.sqrt D * (countTime x.n (Nat.sqrt D) (bitLen x.U) (Nat.clog 2 x.n) + 50) :=
@@ -340,16 +308,14 @@ theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w
   -- K and 2^K
   light_piece (chLevel_spec pre.wordN) with _ rfl
   -- area := w + primes; best := 0; bestCount := 0
-  light_set (w + (primesList D).length : ℕ)
-  light_set 0
-  light_set 0
+  iterate 3 light_step
   -- for i < primes: one round
   refine Ends.next _ (Ends.for (ChInv μ x D w) (primesList D).length
     (countTime x.n (Nat.sqrt D) (bitLen x.U) (Nat.clog 2 x.n) + 28) ?start
     (fun i σ hi _ h => chRound_spec ctx pre hi h) ?done ?bound (hT := le_rfl))
-    (by simp; ring_nf at hloop ⊢; omega)
+    (by simp; lia)
   case start =>
-    exact ⟨0, 0, 0, 0, μ₁, by simp [update_frame_setLocal], Or.inl ⟨rfl, rfl⟩, seg,
+    exact ⟨0, 0, 0, 0, μ₁, by simp, Or.inl ⟨rfl, rfl⟩, seg,
       rest.mono le_rfl (by unfold chooseCells; omega)⟩
   case bound =>
     rintro i _ - - ⟨q, c, best, cnt, μ', rfl, -⟩
@@ -357,19 +323,11 @@ theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w
   case done =>
     rintro _ - ⟨q, c, best, cnt, μ', rfl, hbest, -, rest'⟩
     -- return best
-    refine Ends.setTo best ⟨?_, rest'⟩ (hT := by simp; ring_nf at hloop ⊢; omega)
+    refine Ends.setTo best ⟨?_, rest'⟩ (hT := by simp; lia)
     change best = (((primesList D).argmin fun q => (countOf x.n q x.AB x.BC x.AC).toNat).getD 0 : ℕ)
     obtain ⟨hnil, rfl⟩ | ⟨hpos, rfl, -, -⟩ := hbest
-    · rw [List.eq_nil_of_length_eq_zero hnil]
-      rfl
+    · simp_all
     · rw [bestOf_length]
-
-/-- **choosePrime** as a procedure. -/
-theorem choosePrime_meets {q : ℕ} (hP : P[q]? = some (choosePrimeBody ν)) (ctx : ChCtx P ν)
-    (pre : ChoosePrimePre lim d μ x D w) :
-    Meets lim P q d [x.n, x.U, x.ab, x.bc, x.ac, D, w] μ (chooseTime x.n x.U D) fun r μ' =>
-      r = (chosenPrime x.n D x.AB x.BC x.AC : ℕ) ∧ SameOutside μ μ' w (chooseCells x.n x.U D) :=
-  Meets.of_body hP (choosePrime_spec ctx pre)
 
 end parts
 

@@ -23,7 +23,7 @@ namespace ThreeSumApsp
 
 namespace ChanHe
 
-open Finset
+
 
 /-- 3SUM on three sets (Definition 2.1 of [CH20], without the requirement that the sets have the
 same size). -/

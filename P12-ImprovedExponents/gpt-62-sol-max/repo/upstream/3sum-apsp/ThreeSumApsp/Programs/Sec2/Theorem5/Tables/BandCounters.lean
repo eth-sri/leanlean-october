@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Counters
 
@@ -34,14 +38,7 @@ namespace Counters
 
 /-- The local variables of counters: Total = N, Blocks = K0, Width = N0, Dest = dst (the arguments);
 Row is the current row, and Band, Block, Offset are its band, its block and its offset. -/
-abbrev Total : ℕ := 0
-@[inherit_doc Total] abbrev Blocks : ℕ := 1
-@[inherit_doc Total] abbrev Width : ℕ := 2
-@[inherit_doc Total] abbrev Dest : ℕ := 3
-@[inherit_doc Total] abbrev Row : ℕ := 4
-@[inherit_doc Total] abbrev Band : ℕ := 5
-@[inherit_doc Total] abbrev Block : ℕ := 6
-@[inherit_doc Total] abbrev Offset : ℕ := 7
+registers [Total, Blocks, Width, Dest, Row, Band, Block, Offset]
 
 end Counters
 
@@ -85,7 +82,7 @@ theorem Counted.step (h : Counted μ N K0 N0 dst i μ') (hi : i < N) :
       Function.update_of_ne (by omega), Function.update_of_ne (by omega)]
     exact h.1 I hI
   · rw [Function.update_of_ne (by omega), Function.update_self, Function.update_self]
-    exact ⟨rfl, rfl⟩
+    trivial
 
 /-- The state before round i: the counters are those of row i. -/
 def Inv (μ : ℕ → ℤ) (N K0 N0 dst i : ℕ) (σ : State) : Prop :=
@@ -116,18 +113,14 @@ theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK
   unfold countersRound
   rw [Spec.stepCtr] at hnext
   -- mem[dst + Row] := Band; mem[dst + N + Row] := Block; Row := Row + 1; Offset := Offset + 1
-  light_store (dst + i) c.band
-  light_store (dst + N + i) c.block
-  light_set (i + 1 : ℕ)
-  light_set (c.off + 1 : ℕ)
+  iterate 4 light_step
   -- if Offset < N0
   refine Ends.iteLast (fun hc => Ends.skip ⟨_, ?_, hstep⟩) fun hc => ?_
   · -- The next row of the same block.
     rw [hnext, if_pos (by simp at hc; omega)]
     rfl
   -- Offset := 0; Block := Block + 1; if Block < K0
-  light_set 0
-  light_set (c.block + 1 : ℕ)
+  iterate 2 light_step
   refine Ends.iteLast (fun hc' => Ends.skip ⟨_, ?_, hstep⟩) fun hc' => ?_
   · -- The first row of the next block of the same band.
     rw [hnext, if_neg (by simp at hc; omega), if_pos (by simp at hc'; omega)]
@@ -143,7 +136,6 @@ theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 
     Ends lim P d countersBody ⟨frame [N, K0, N0, dst], μ⟩ (44 * (N + 1)) fun σ' =>
       (∀ I < N, σ'.mem (dst + I) = (I / (K0 * N0) : ℕ) ∧
         σ'.mem (dst + N + I) = (I / N0 % K0 : ℕ)) ∧ SameOutside μ σ'.mem dst (2 * N) := by
-  have hspace := std.space_le
   -- while Row < N; a round takes at most 40 steps
   refine Ends.whileConst (Inv μ N K0 N0 dst) N countersRound.blockCost ?start ?round ?done
     (by simp [countersRound]; omega)
@@ -156,10 +148,10 @@ theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 
     intro i σ hi h
     have hround := countersRound_spec (P := P) (d := d) std hsp hK hN0 hw hi h
     obtain ⟨μ', rfl, -⟩ := h
-    exact ⟨by light_side, by light_side, hround⟩
+    simp_all
   case done =>
     rintro _ ⟨μ', rfl, hcells, same⟩
-    exact ⟨by light_side, by light_side, hcells, same⟩
+    simp_all
 
 /-- **The specification that the callers of counters assume.** -/
 theorem counters_entry (std : Std lim) (hP : P[pCounters]? = some countersBody) {c : ℕ}

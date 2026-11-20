@@ -8,7 +8,16 @@ module
 public import ThreeSumApsp.Sec2.Tiling
 public import ThreeSumApsp.Sec4.Lemma27_28
 public import ThreeSumApsp.Sec4.Lemma29
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
 public import Mathlib.Algebra.Order.Field.GeomSum
 
 /-!
@@ -53,14 +62,12 @@ namespace ThreeSumApsp
 /-- Section 4.3: `ρ = 9m/(L-m+1)` "is less than 1 since L ≥ 10m". -/
 theorem sec4_rho_lt_one (L m : ℕ) (hL : 10 * m ≤ L) : rho L m < 1 := by
   have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   rw [rho, div_lt_one (by linarith)]
   linarith
 
 /-- The decay rate `ρ` is not negative when `L ≥ 10m`. -/
 theorem rho_nonneg {L m : ℕ} (hL : 10 * m ≤ L) : 0 ≤ rho L m := by
   have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   exact div_nonneg (by positivity) (by linarith)
 
 /-! ### Theorem 30, "Preprocessing": the count behind (8) -/
@@ -77,7 +84,7 @@ theorem sqrtKN0_pos {L m : ℕ} (hmL : m ≤ L) : 0 < sqrtKN0 L m := by
 /-- `(√K N₀)² = K N₀² = M`. -/
 theorem sqrtKN0_sq (L m : ℕ) : sqrtKN0 L m ^ 2 = (M L m : ℝ) := by
   rw [sqrtKN0, mul_pow, Real.sq_sqrt (Nat.cast_nonneg _)]
-  simp [M]
+  norm_cast
 
 /-- Proof of Theorem 30, "Preprocessing": "we store the K₀² subsets, in O(KL) ≤ O(10^L) operations".
 Read as the inequality `K L ≤ 10^L` (constant 1). -/
@@ -91,7 +98,7 @@ theorem Theorem30.subsets (L m : ℕ) : K L m * L ≤ 10 ^ L := by
 private lemma le_choose_of_le_half (L : ℕ) : ∀ r, 1 ≤ r → r ≤ L / 2 → L ≤ L.choose r := by
   intro r h1
   induction r, h1 using Nat.le_induction with
-  | base => intro _; simp
+  | base => simp
   | succ r hr ih =>
     intro h
     exact (ih (by omega)).trans (Nat.choose_le_succ_of_lt_half_left (by omega))
@@ -246,7 +253,7 @@ theorem Theorem30.ten_pow_le (L m N : ℕ) (hL : 10 * m ≤ L) (hN : N0 L m ≤ 
       _ ≤ 19683 ^ L := Nat.pow_le_pow_left (by norm_num) L
       _ = 3 ^ (9 * L) := by rw [pow_mul]; norm_num
       _ ≤ 3 ^ ((L - m) * 5 * 2) := Nat.pow_le_pow_right (by norm_num) (by omega)
-      _ = ((3 ^ (L - m)) ^ 5) ^ 2 := by rw [pow_mul, pow_mul]
+      _ = ((3 ^ (L - m)) ^ 5) ^ 2 := by ring
   exact ((Nat.pow_le_pow_iff_left (by norm_num)).mp hsq).trans (Nat.pow_le_pow_left hN 5)
 
 end ThreeSumApsp

@@ -25,7 +25,7 @@ from them.
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe Finset
 
 /-- An upper bound on the number of calls of the recursive procedure for one three-set input. -/
 def callsB (n : ℕ) : ℕ := 2 * 3 ^ fuel n
@@ -52,7 +52,7 @@ def tPrep (n Λ m : ℕ) : ℕ :=
 def tSetup (n V : ℕ) : ℕ := tParams n V + tPrep n (Lam V) (mPar n V)
 
 /-- The number of three-set inputs. -/
-def inputsB (V : ℕ) : ℕ := 2 * Lam V ^ 2 + 2
+def inputsB (V : ℕ) : ℕ := 2 * Lam V ^ 2
 
 /-- The number of calls of the solver, for the bound `V = 2U`. -/
 def coreCalls (n V : ℕ) : ℕ := inputsB V * callsB n
@@ -60,7 +60,7 @@ def coreCalls (n V : ℕ) : ℕ := inputsB V * callsB n
 /-- The host's own work, for the bound `V = 2U`. -/
 def coreOwn (n V : ℕ) : ℕ :=
   tSetup n V + inputsB V * (callsB n * nodeOwn n V (mPar n V) #(Nat.primesLE (mPar n V)) + 3 *
-    tPick n + 300) + tTwice n + tZeroThree n + 400
+    tPick n + 300) + tRepeated n + 400
 
 /-- The time of the host after the bound has been fixed. -/
 def coreTime (T : ℕ → ℕ → ℕ) (n V : ℕ) : ℕ :=
@@ -72,7 +72,7 @@ def chTime (κ : ℕ) (T : ℕ → ℕ → ℕ) (n U : ℕ) : ℕ := 20 * κ + 4
 /-- The cells of the host's own arrays: the block of parameters, the primes, the count table, the
 sorted copy, values and multiplicities, the binary digits, three sets for a splitting, the doubles,
 and one cell for the set {0}. -/
-def coreCells (n V : ℕ) : ℕ := 6 + mPar n V + mPar n V * mPar n V + 7 * n + n * Lam V + 1
+def coreCells (n V : ℕ) : ℕ := 6 + mPar n V + mPar n V * mPar n V + 5 * n + n * Lam V
 
 /-- The need of the host after the bound has been fixed. -/
 def coreNeed (r : ℕ → ℕ → Need) (n V : ℕ) : Need :=

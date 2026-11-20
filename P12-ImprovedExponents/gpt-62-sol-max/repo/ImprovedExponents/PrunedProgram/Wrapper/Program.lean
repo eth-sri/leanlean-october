@@ -30,7 +30,7 @@ Adapted from upstream (Apache-2.0).
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4
+open Light Light.Sec3 Light.Sec4
 
 /-- The bodies of the procedures number 77 to 83. -/
 def procsP (G : RatParams) : List Stmt :=
@@ -47,29 +47,23 @@ theorem length_programRS (G : RatParams) (r s : ℕ) : (programRS G r s).length 
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Program.lean (program31_at)
 theorem programP_at (G : RatParams) (r s n : ℕ) {body : Stmt} (hn : 77 ≤ n := by norm_num)
     (h : (procsP G)[n - 77]? = some body := by rfl) : (programP G r s)[n]? = some body := by
-  rw [programP, List.getElem?_append_right (by rw [length_programRS]; exact hn),
-    length_programRS]
-  exact h
+  grind [programP, length_programRS]
 
 /-- A procedure of `program31 G` is one of `programP G r s`, with the same number. -/
 theorem programP_at_low (G : RatParams) (r s : ℕ) {n : ℕ} {body : Stmt}
     (h : (program31 G)[n]? = some body) : (programP G r s)[n]? = some body := by
-  rw [programP, programRS, List.append_assoc]
-  exact getElem?_append_of_eq_some h _
+  grind [programP, programRS]
 
 /-- The pruned solver begins with `base58`. -/
 theorem programP_eq_base58 (G : RatParams) (r s : ℕ) :
     programP G r s = base58 ++
-      (procs31 G ++ [powLtBody, testRSBody r s, allRSBody] ++ procsP G) := by
-  simp only [programP, programRS, program31, List.append_assoc]
+      (procs31 G ++ [powLtBody, testRSBody r s, .skip] ++ procsP G) := by
+  rfl
 
 /-- The pruned solver begins with Section 2's `program5`. -/
 theorem programP_eq_program5 (G : RatParams) (r s : ℕ) :
-    programP G r s = Sec2.program5 ++
-      ([Sec2.regimeBody, Sec2.thinBruteBody, Sec2.thinBody] ++ List.replicate 11 .skip ++ procs40
-        ++ [preCoreBody, queryAtBody, wantedCoreBody, wantedMainBody] ++ procs31 G
-        ++ [powLtBody, testRSBody r s, allRSBody] ++ procsP G) := by
-  simp only [programP, programRS, program31, base58, Sec2.programThin, List.append_assoc]
+    ∃ R, programP G r s = Sec2.program5 ++ R := by
+  aesop
 
 /-! ## The entries -/
 
@@ -77,12 +71,12 @@ theorem programP_eq_program5 (G : RatParams) (r s : ℕ) :
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Program.lean (shared_base58)
 theorem sharedP_programP (G : RatParams) (r s : ℕ) (lim : Limits) (std : Std lim) :
     Sec2.SharedSpecP lim (programP G r s) cShared30 := by
-  have e := programP_eq_program5 G r s
+  obtain ⟨_, e⟩ := programP_eq_program5 G r s
   refine Sec2.sharedP_entry std (programP_at G r s Proc.sharedP)
     (programP_at G r s Proc.encodeBandsP) ?_ ?_ (programP_at G r s Proc.encodeP)
-    (c := Sec2.cShared5) ?_ (by norm_num [Sec2.cShared5, Sec2.cBandArray, Sec2.cEncP]) le_rfl
-  · rw [e]; exact Sec2.at_prefix rfl _
-  · rw [e]; exact Sec2.at_prefix rfl _
+    (c := Sec2.cShared5) ?_ (by trivial) le_rfl
+  · rfl
+  · rfl
   · rw [e]; exact Sec2.sharedCallees_of_prefix _ lim std
 
 /-- **The pruned preprocessing of Theorem 30**, in `programP G r s`, for all limits. -/
@@ -160,7 +154,7 @@ def offline32PRoutine (G : RatParams) (r s : ℕ) : OfflineRoutine where
   proc := Proc.offline32P
   body := offline32PBody
   aux P := ∃ Q, P = programP G r s ++ Q
-  aux_append _ Q := fun ⟨R, h⟩ => ⟨R ++ Q, by rw [h, List.append_assoc]⟩
+  aux_append _ Q := fun ⟨R, h⟩ => ⟨R ++ Q, by simp_all⟩
   time := tOffline32P cShared30 G
   time_mono N D _ _ hw := tOffline32P_mono cShared30 G N D hw
   need := offline32Need G

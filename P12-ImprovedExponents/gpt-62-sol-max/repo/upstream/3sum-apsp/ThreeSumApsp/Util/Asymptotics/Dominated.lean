@@ -78,7 +78,7 @@ theorem of_le_const_mul {C : ℝ} (hC : 0 ≤ C) (hfg : ∀ x, dom x → f x ≤
 
 /-- A bound with constant one. -/
 theorem of_le (hfg : ∀ x, dom x → f x ≤ g x) : Dominated dom f g :=
-  ⟨1, zero_le_one, fun x hx => by simpa only [one_mul] using hfg x hx⟩
+  ⟨1, zero_le_one, fun x hx => by simp_all⟩
 
 /-- Every function is bounded by itself. -/
 protected theorem refl (dom : α → Prop) (f : α → ℝ) : Dominated dom f f :=
@@ -141,8 +141,7 @@ protected theorem congr (hfg : Dominated dom f g) (hf : ∀ x, dom x → f x = f
 that `φ` maps into `dom`. -/
 protected theorem comp (hfg : Dominated dom f g) (φ : β → α) {dom' : β → Prop}
     (hφ : ∀ y, dom' y → dom (φ y)) : Dominated dom' (fun y => f (φ y)) fun y => g (φ y) := by
-  obtain ⟨C, hC, hf⟩ := hfg
-  exact ⟨C, hC, fun y hy => hf (φ y) (hφ y hy)⟩
+  grind [= Dominated]
 
 /-! ### Sums and case distinctions -/
 
@@ -152,8 +151,7 @@ protected theorem add (hf : Dominated dom f h) (hg : Dominated dom g h) :
   obtain ⟨C, hC, hf⟩ := hf
   obtain ⟨D, hD, hg⟩ := hg
   refine ⟨C + D, add_nonneg hC hD, fun x hx => ?_⟩
-  rw [add_mul]
-  exact add_le_add (hf x hx) (hg x hx)
+  grind
 
 /-- A case distinction: a bound on `f₁` where `p` holds and a bound on `f₂` where it does not, both
 by the same nonnegative `g`. -/
@@ -179,11 +177,6 @@ theorem const_mul (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
   refine ⟨c * C, mul_nonneg hc hC, fun x hx => ?_⟩
   rw [mul_assoc]
   exact mul_le_mul_of_nonneg_left (hf x hx) hc
-
-/-- A nonnegative constant factor on the left side is absorbed. -/
-theorem mul_const (hfg : Dominated dom f g) {c : ℝ} (hc : 0 ≤ c) :
-    Dominated dom (fun x => f x * c) g := by
-  simpa only [mul_comm] using hfg.const_mul hc
 
 /-- A constant factor of any sign in front of a function that is nonnegative on the domain is
 absorbed. -/

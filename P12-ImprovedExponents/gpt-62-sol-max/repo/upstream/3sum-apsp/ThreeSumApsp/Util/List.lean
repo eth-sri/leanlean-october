@@ -45,64 +45,42 @@ variable {α β : Type*}
 /-- What holds for the default and for every member of a list holds for every `getD`. -/
 theorem getD_of_forall_mem {p : α → Prop} {l : List α} {d : α} (hd : p d) (h : ∀ x ∈ l, p x)
     (i : ℕ) : p (l.getD i d) := by
-  rcases Nat.lt_or_ge i l.length with hi | hi
-  · rw [List.getD_eq_getElem l d hi]
-    exact h _ (List.getElem_mem hi)
-  · rwa [List.getD_eq_default l d hi]
+  grind
 
 /-- Entry `j` of the second of two lists put together. -/
 theorem getD_append_add (l l' : List α) (j : ℕ) (d : α) :
     (l ++ l').getD (l.length + j) d = l'.getD j d := by
-  rw [List.getD_append_right l l' d _ (Nat.le_add_right _ _), Nat.add_sub_cancel_left]
+  grind
 
 /-- Entry `j` of a list without its first `a` entries. -/
 theorem getD_drop (l : List α) (a j : ℕ) (d : α) : (l.drop a).getD j d = l.getD (a + j) d := by
-  simp only [List.getD_eq_getElem?_getD, List.getElem?_drop]
+  simp
 
 /-- Entry `j < n` of the first `n` entries. -/
 theorem getD_take_of_lt (l : List α) {n j : ℕ} (hj : j < n) (d : α) :
     (l.take n).getD j d = l.getD j d := by
-  simp only [List.getD_eq_getElem?_getD, List.getElem?_take_of_lt hj]
+  simp_all
 
 /-- Entry `i < n` of the table `f 0, …, f (n - 1)`. -/
 theorem getD_map_range (f : ℕ → α) {n i : ℕ} (hi : i < n) (d : α) :
     ((List.range n).map f).getD i d = f i := by
-  rw [List.getD_eq_getElem _ _ (by simpa using hi)]
-  simp
+  simp_all
 
 /-- Entry `i < l.length` of `l.map f`, whatever the two defaults. Mathlib's `List.getD_map` is for
 all `i`, with the default `f d`. -/
 theorem getD_map_of_lt (f : α → β) {l : List α} {i : ℕ} (hi : i < l.length) (d : α) (d' : β) :
     (l.map f).getD i d' = f (l.getD i d) := by
-  rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getD_eq_getElem _ _ hi,
-    List.getElem_map]
-
-/-- The entries of a list in which entry `q < l.length` was replaced by `a`. -/
-theorem getD_set_of_lt {l : List α} {q : ℕ} (hq : q < l.length) (a d : α) (q' : ℕ) :
-    (l.set q a).getD q' d = if q' = q then a else l.getD q' d := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_set]
-  split_ifs with h1 h2 h3
-  · rfl
-  · exact absurd h1.symm h2
-  · exact absurd (h3 ▸ hq) (by omega)
-  · rfl
+  simp_all
 
 /-- One more member at the end changes the entry number `l.length` only. -/
 theorem getD_append_singleton (l : List α) (a d : α) :
     (fun e => (l ++ [a]).getD e d) = Function.update (fun e => l.getD e d) l.length a := by
-  funext e
-  rcases Nat.lt_trichotomy e l.length with he | rfl | he
-  · rw [Function.update_of_ne he.ne, List.getD_append _ _ _ _ he]
-  · rw [Function.update_self, List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self,
-      List.getD_cons_zero]
-  · rw [Function.update_of_ne he.ne', List.getD_eq_default _ _ (by simp; omega),
-      List.getD_eq_default _ _ he.le]
+  grind
 
 /-- The first `i + 1` entries are the first `i` entries and entry `i`. -/
 theorem take_succ_getD (l : List α) {i : ℕ} (hi : i < l.length) (d : α) :
     l.take (i + 1) = l.take i ++ [l.getD i d] := by
-  rw [List.take_add_one, List.getD_eq_getElem l d hi, List.getElem?_eq_getElem hi,
-    Option.toList_some]
+  simp_all
 
 /-! ## Blocks one after the other -/
 
@@ -114,7 +92,7 @@ theorem getD_flatMap_range_sum (f : ℕ → List α) {n r o : ℕ} (hr : r < n) 
   obtain ⟨c, rfl⟩ := Nat.exists_eq_add_of_lt hr
   rw [Nat.add_assoc, List.range_add, List.flatMap_append, ← List.length_flatMap, getD_append_add,
     Nat.add_comm c 1, List.range_add, List.map_append, List.flatMap_append,
-    List.getD_append _ _ _ _ (by simpa using ho)]
+    List.getD_append _ _ _ _ (by simp_all)]
   simp
 
 /-- The length of `n` blocks of length `k`. -/
@@ -152,7 +130,7 @@ theorem zipWith_flatMap_range {γ : Type*} {k : ℕ} (g : α → β → γ) (n :
   | zero => rfl
   | succ n ih =>
     have hlen : ((List.range n).flatMap f).length = ((List.range n).flatMap f').length := by
-      rw [length_flatMap_range n f fun z _ => hf z, length_flatMap_range n f' fun z _ => hf' z]
+      simp_all
     rw [List.range_succ, List.flatMap_append, List.flatMap_append, List.flatMap_append,
       List.zipWith_append hlen, ih]
     simp
@@ -170,21 +148,21 @@ theorem sum_map_range_mono (g : ℕ → ℕ) {a b : ℕ} (h : a ≤ b) :
     ((List.range a).map g).sum ≤ ((List.range b).map g).sum := by
   obtain ⟨c, rfl⟩ := Nat.exists_eq_add_of_le h
   rw [List.range_add, List.map_append, List.sum_append]
-  exact Nat.le_add_right _ _
+  simp
 
 /-- One more term of a partial sum; beyond the end of the list the term is `0`. Within the list,
 `List.sum_take_succ` has `l[j]` in place of `l.getD j 0`. -/
 theorem sum_take_succ_getD {M : Type*} [AddMonoid M] (l : List M) (j : ℕ) :
     (l.take (j + 1)).sum = (l.take j).sum + l.getD j 0 := by
   rcases Nat.lt_or_ge j l.length with hj | hj
-  · rw [List.sum_take_succ l j hj, List.getD_eq_getElem l 0 hj]
+  · simp_all
   · rw [List.getD_eq_default l 0 hj, List.take_of_length_le hj,
       List.take_of_length_le (Nat.le_succ_of_le hj), add_zero]
 
 /-- One more term of a partial sum of the table `f 0, …, f (n - 1)`. -/
 theorem sum_take_map_range_succ {M : Type*} [AddMonoid M] (f : ℕ → M) {n j : ℕ} (hj : j < n) :
     (((List.range n).map f).take (j + 1)).sum = (((List.range n).map f).take j).sum + f j := by
-  rw [sum_take_succ_getD, getD_map_range f hj]
+  simp_all
 
 section
 
@@ -200,8 +178,7 @@ theorem abs_sum_take_le_sum_abs (l : List R) (k : ℕ) :
     |(l.take k).sum| ≤ (l.map fun x => |x|).sum := by
   refine (abs_sum_le_sum_abs _).trans ?_
   refine Sublist.sum_le_sum ((take_sublist k l).map _) fun a ha => ?_
-  obtain ⟨x, -, rfl⟩ := mem_map.mp ha
-  exact abs_nonneg x
+  aesop
 
 end
 
@@ -210,7 +187,7 @@ absolute value at most `l.length * B`. -/
 theorem abs_sum_take_map_le (l : List α) (f : α → ℤ) {B : ℤ} (h : ∀ x ∈ l, |f x| ≤ B) (k : ℕ) :
     |((l.map f).take k).sum| ≤ l.length * B := by
   refine (List.abs_sum_take_le_sum_abs _ k).trans ?_
-  simpa using List.sum_le_card_nsmul ((l.map f).map fun x => |x|) B (by simpa using h)
+  simpa using List.sum_le_card_nsmul ((l.map f).map fun x => |x|) B (by simp_all)
 
 /-- If `|f x| ≤ B` for all `x ∈ l`, then `|(l.map f).sum| ≤ l.length * B`. -/
 theorem abs_sum_map_le (l : List α) (f : α → ℤ) {B : ℤ} (h : ∀ x ∈ l, |f x| ≤ B) :
@@ -226,8 +203,7 @@ theorem toFinset_eq_image_of_length_eq_card [DecidableEq β] (l : List β) (hl :
     (hinj : Function.Injective g) (hsub : ∀ y ∈ l, ∃ x ∈ S, g x = y) (hcard : l.length = S.card) :
     l.toFinset = S.image g := by
   refine Finset.eq_of_subset_of_card_le (fun y hy => ?_) ?_
-  · obtain ⟨x, hx, rfl⟩ := hsub y (List.mem_toFinset.mp hy)
-    exact Finset.mem_image_of_mem g hx
+  · simp_all
   · rw [Finset.card_image_of_injective S hinj, List.toFinset_card_of_nodup hl, hcard]
 
 /-- Under the same hypotheses, a sum over `l` is a sum over `S`. -/
@@ -245,24 +221,20 @@ theorem sum_map_eq_sum_of_length_eq_card {M : Type*} [AddCommMonoid M] (l : List
 theorem foldl_min_le [LinearOrder β] (f : ℕ → β) (m : ℕ) {k : ℕ} (hk : k ≤ m) :
     (List.range m).foldl (fun acc j => min acc (f (j + 1))) (f 0) ≤ f k := by
   induction m with
-  | zero => exact (Nat.le_zero.1 hk ▸ le_rfl : f 0 ≤ f k)
+  | zero => simp_all
   | succ m ih =>
     rw [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
-    rcases Nat.le_succ_iff.1 hk with h | rfl
-    · exact (min_le_left _ _).trans (ih h)
-    · exact min_le_right _ _
+    grind
 
 /-- A running minimum over `f 0, …, f m` is one of these values. -/
 theorem exists_foldl_min_eq [LinearOrder β] (f : ℕ → β) (m : ℕ) :
     ∃ k ≤ m, (List.range m).foldl (fun acc j => min acc (f (j + 1))) (f 0) = f k := by
   induction m with
-  | zero => exact ⟨0, le_rfl, rfl⟩
+  | zero => simp
   | succ m ih =>
     obtain ⟨k, hk, he⟩ := ih
     rw [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil, he]
-    rcases le_total (f k) (f (m + 1)) with h | h
-    · exact ⟨k, Nat.le_succ_of_le hk, min_eq_left h⟩
-    · exact ⟨m + 1, le_rfl, min_eq_right h⟩
+    grind
 
 /-! ## Counting -/
 
@@ -296,8 +268,7 @@ theorem length_filter_lt_succ (t : α → ℕ) (z : ℕ) (l : List α) :
   induction l with
   | nil => rfl
   | cons a l ih =>
-    simp only [List.countP_cons, ih, decide_eq_true_eq]
-    split_ifs <;> omega
+    grind
 
 /-- The list of the `j < n` with `q j` has `Nat.count q n` members. -/
 theorem length_filter_range (q : ℕ → Prop) [DecidablePred q] (n : ℕ) :
@@ -317,10 +288,10 @@ theorem getD_filter_range_count (q : ℕ → Prop) [DecidablePred q] (n : ℕ) {
     · rw [List.getD_append _ _ _ _ (by
         rw [List.length_filter_range]
         exact (Nat.count_lt_count_succ_iff.2 hq).trans_le (Nat.count_monotone q h))]
-      exact ih h
+      simp_all
     · rw [List.getD_append_right _ _ _ _ (List.length_filter_range q i).le,
         List.length_filter_range, Nat.sub_self]
-      simp [hq]
+      simp_all
 
 /-- How often a value occurs among the first `i` values of a function on `Fin n`. -/
 theorem count_take_ofFn [DecidableEq α] {n : ℕ} (f : Fin n → α) (a : α) (i : ℕ) :
@@ -363,9 +334,9 @@ theorem getD_notMem_take_of_sorted {l : List α} (hs : l.Pairwise (· ≤ ·)) {
   have hle : l[j] ≤ l[i - 1] := by
     rcases Nat.lt_or_ge j (i - 1) with hlt | hge
     · exact List.pairwise_iff_getElem.1 hs _ _ _ _ hlt
-    · exact le_of_eq (by congr 1; omega)
+    grind
   -- `l[j] ≤ l[i - 1] ≤ l[i] = l[j]`, so `l[i - 1] = l[i]`
-  exact hne (le_antisymm (hsame ▸ hle) hpred)
+  grind
 
 end Sorted
 
@@ -388,7 +359,7 @@ theorem AbsLe.getElem {l : List ℤ} {U : ℤ} (h : AbsLe l U) {i : ℕ} (hi : i
 /-- A bound on the absolute values of all members bounds every `getD` with default `0`. -/
 theorem AbsLe.abs_getD_le {l : List ℤ} {U : ℤ} (hU : 0 ≤ U) (h : AbsLe l U) (i : ℕ) :
     |l.getD i 0| ≤ U :=
-  List.getD_of_forall_mem (p := fun x => |x| ≤ U) (by rwa [abs_zero]) h i
+  List.getD_of_forall_mem (p := fun x => |x| ≤ U) (by assumption) h i
 
 /-! ## The entrywise sum of lists -/
 

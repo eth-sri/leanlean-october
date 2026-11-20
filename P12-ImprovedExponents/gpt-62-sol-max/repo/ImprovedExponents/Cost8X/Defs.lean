@@ -48,8 +48,6 @@ theorem boxes_totalX {L m t N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (ht : t 
   have hboxes : ((boxes L m t).card : ℝ)
       ≤ ((m : ℝ) + 1) * ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ) := by
     exact_mod_cast lemma_29_count L m t hL ht
-  have hsum : (0 : ℝ) ≤ ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ) :=
-    sum_nonneg fun _ _ => Nat.cast_nonneg _
   calc ((numBands L m N : ℝ)) ^ 2 * ((boxes L m t).card : ℝ)
       ≤ (4 * (N : ℝ) ^ 2 / (M L m : ℝ))
           * (((m : ℝ) + 1) * ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ)) :=

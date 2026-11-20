@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.HostContracts
 public import ThreeSumApsp.Programs.Tasks
 
@@ -34,15 +38,12 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 namespace Host
 
 /-- The number n of numbers, and at the end the answer. -/
-abbrev Num : ℕ := 0
-/-- The bound U. -/
-abbrev Bound : ℕ := 1
-/-- The address of the numbers. -/
-abbrev Addr : ℕ := 2
-/-- The free pointer. -/
-abbrev Free : ℕ := 3
-/-- n^κ, and then max U (n^κ). -/
-abbrev Power : ℕ := 4
+registers [
+  Num,
+  /- The bound U. -/ Bound,
+  /- The address of the numbers. -/ Addr,
+  /- The free pointer. -/ Free,
+  /- n^κ, and then max U (n^κ). -/ Power]
 
 end Host
 
@@ -75,9 +76,9 @@ theorem hostPow_ends {n B : ℕ} {U a fr : ℤ} {μ : ℕ → ℤ} (hB : (B : �
     have hpos : 0 ≤ (n : ℤ) ^ j * n := by positivity
     unfold hostPow
     -- Power := Power * Num
-    light_set (n ^ (j + 1) : ℕ) using pow_succ
+    light_step using pow_succ
     rw [show j + (κ + 1) = j + 1 + κ by omega]
-    exact (ih (j + 1) fun i hi => hb i (by omega)).mono (by simp; omega) fun _ h => h
+    exact (ih (j + 1) fun i hi => hb i (by omega)).mono (by rfl) fun _ h => h
 
 /-- **The call of core**, with max U (n^κ) in Power. -/
 theorem hostCall_ends {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
@@ -97,7 +98,7 @@ theorem hostCall_ends {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → �
   generalize max x.U (x.N ^ κ) = U' at *
   have hentries : AbsLe x.X U' := fun y hy => (hpre.le y hy).trans (by exact_mod_cast hUle)
   have hneed : (coreNeed r x.N (2 * U')).Ok lim fr (d + 1) :=
-    { word := le_trans (by exact_mod_cast (by omega)) hword
+    { word := le_trans (by omega) hword
       cells := hcells
       space := hok.space
       depth := by omega }
@@ -114,11 +115,11 @@ theorem host_spec {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ �
   have hword := hok.word
   simp only [chNeed] at hword
   have hpow : 1 ≤ x.N ^ κ := Nat.one_le_pow _ _ hpre.N_pos
-  have hB : ((x.N ^ κ : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
+  have hB : ((x.N ^ κ : ℕ) : ℤ) ≤ lim.word := le_trans (by omega) hword
   have hcall := hostCall_ends hC hpre hok
   unfold hostBody chTime
   -- Power := 1
-  light_set (x.N ^ 0 : ℕ)
+  light_step
   -- the κ multiplications
   light_piece (hostPow_ends hB κ 0 fun i hi =>
     Nat.pow_le_pow_right hpre.N_pos (by omega)) with _ rfl
@@ -128,7 +129,7 @@ theorem host_spec {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ �
   · have hc' : x.N ^ κ < x.U := by exact_mod_cast (show ((x.N ^ κ : ℕ) : ℤ) < x.U from hc)
     rw [max_eq_left hc'.le] at hcall ⊢
     -- Power := Bound, and the call
-    light_set x.U
+    light_step
     exact hcall.mono (by light_time) fun _ h => h
   · have hc' : ¬ x.N ^ κ < x.U := fun h => hc (show ((x.N ^ κ : ℕ) : ℤ) < x.U by exact_mod_cast h)
     rw [max_eq_right (not_lt.1 hc')] at hcall ⊢

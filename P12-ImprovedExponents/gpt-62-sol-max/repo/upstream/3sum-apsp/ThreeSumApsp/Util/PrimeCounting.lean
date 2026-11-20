@@ -43,7 +43,7 @@ theorem le_log_mul_card_primesLE (m : ℕ) : m ≤ (Nat.log 2 m + 1) * (#(Nat.pr
     _ = (m + 1) * ∏ p ∈ Nat.primesLE m, p ^ p.log m := by rw [Nat.lcmUpto_eq_prod_pow_log]
     _ ≤ 2 ^ (l + 1) * (2 ^ (l + 1)) ^ #(Nat.primesLE m) := Nat.mul_le_mul hlt
         (prod_le_pow_card _ _ _ fun p _ => (Nat.pow_log_le_self p hm.ne').trans hlt.le)
-    _ = 2 ^ ((l + 1) * (#(Nat.primesLE m) + 1)) := by rw [← pow_succ', ← pow_mul]
+    _ = 2 ^ ((l + 1) * (#(Nat.primesLE m) + 1)) := by ring
 
 /-- There are at least `w` primes up to `(w + 1)(2⌊log₂(w + 1)⌋ + 4)`. -/
 theorem le_card_primesLE_mul_log (w : ℕ) :
@@ -53,11 +53,10 @@ theorem le_card_primesLE_mul_log (w : ℕ) :
   have hw : w + 1 < 2 ^ (a + 1) := Nat.lt_pow_succ_log_self (by norm_num) _
   have ha : 2 * a + 4 ≤ 2 ^ (a + 2) := by
     have := Nat.lt_two_pow_self (n := a + 1)
-    rw [pow_succ]
-    omega
+    lia
   have hlog : Nat.log 2 m < 2 * a + 3 := Nat.log_lt_of_lt_pow (by positivity) <|
     calc m < 2 ^ (a + 1) * 2 ^ (a + 2) := Nat.mul_lt_mul_of_lt_of_le hw ha (by positivity)
-      _ = 2 ^ (2 * a + 3) := by rw [← pow_add]; congr 1; omega
+      _ = 2 ^ (2 * a + 3) := by ring
   have hlt : (2 * a + 3) * (w + 1) < (2 * a + 3) * (#(Nat.primesLE m) + 1) :=
     calc (2 * a + 3) * (w + 1) < (2 * a + 4) * (w + 1) :=
           Nat.mul_lt_mul_of_pos_right (by omega) (by omega)

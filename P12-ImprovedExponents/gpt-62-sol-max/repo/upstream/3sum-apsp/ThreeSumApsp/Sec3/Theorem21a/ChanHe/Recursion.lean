@@ -124,7 +124,7 @@ private theorem arrZ_of_light {c : ℤ} (hc : c ∈ light S M) (U : ℕ) {k : �
 
 /-- The padding value has absolute value `2U + 1`. -/
 private theorem abs_pad (U : ℕ) : |pad U| = 2 * (U : ℤ) + 1 :=
-  abs_of_nonneg (by unfold pad; positivity)
+  abs_of_nonneg (by solve_by_elim)
 
 /-- The entries of the array made from the first or the second set of a node have absolute value at
 most `2U + 1`. -/
@@ -224,7 +224,7 @@ variable {n U j : ℕ} {T : Finset ℤ}
 
 /-- At the root no set has been replaced. -/
 theorem zero (hb : Bdd U T) (hc : #T ≤ n) : Replaced n U 0 T :=
-  ⟨hb, by rwa [dSeq, pow_zero, Nat.sub_self, pow_zero, mul_one]⟩
+  ⟨hb, by simp_all [dSeq]⟩
 
 /-- One more replacement: if at most `|T|²/(2n)` elements of `T` are heavy, then these are at most
 `n / d_{j+1}`. -/
@@ -353,7 +353,7 @@ theorem nodes_correct {n U N m : ℕ} (hn : 1 ≤ n) {Q : Finset ℕ} (hQ : Cand
     (hf : 3 * height n - 2 ≤ f + j₁ + j₂ + j₃) :
     HasSol T₁ T₂ T₃ ↔ ∃ ν ∈ nodes Q (Lam U) f T₁ T₂ T₃, ν.Conv U N := by
   induction f generalizing T₁ T₂ T₃ j₁ j₂ j₃ with
-  | zero => simp [nodes, not_hasSol_of_empty (exists_eq_empty r₁ r₂ r₃ (by omega))]
+  | zero => grind [nodes, not_hasSol_of_empty, exists_eq_empty]
   | succ f ih =>
     unfold nodes
     split_ifs with he

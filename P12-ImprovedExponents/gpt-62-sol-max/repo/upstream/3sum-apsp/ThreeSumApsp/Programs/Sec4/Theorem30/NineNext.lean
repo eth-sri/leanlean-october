@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec4.Theorem30.NineFirst
 public import ThreeSumApsp.Spec.Sec4.Theorem30.NineScan
 
@@ -30,7 +34,7 @@ There are two passes, as in `Spec.nineNext_eq_scan`.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -39,12 +43,7 @@ namespace Nine
 /-- The further local variables of nineNext: the largest number of nines, the state of the scan
 (whether a position that can be raised has been found, the last such position, the number of nines
 before it, the number of nines seen so far), and a digit. -/
-abbrev MaxNines : ℕ := 3
-@[inherit_doc MaxNines] abbrev Found : ℕ := 5
-@[inherit_doc MaxNines] abbrev Best : ℕ := 6
-@[inherit_doc MaxNines] abbrev Before : ℕ := 7
-@[inherit_doc MaxNines] abbrev Nines : ℕ := 8
-@[inherit_doc MaxNines] abbrev Digit : ℕ := 9
+registers from 3 [MaxNines, _, Found, Best, Before, Nines, Digit]
 
 end Nine
 
@@ -145,10 +144,10 @@ private theorem segN_raiseAt {μ μ' : ℕ → ℤ} {a lo p c : ℕ} {l : List �
       (nineFirst (l.length - (p + 1)) (lo - c - if l.getD p 0 = 8 then 1 else 0))) :
     SegN μ' a (raiseAt lo p c l) := by
   have hlen : a + (List.map (fun x : ℕ => (x : ℤ)) (l.take p)).length = a + p := by
-    rw [List.length_map, List.length_take, min_eq_left hp.le]
+    grind
   rw [raiseAt, SegN, List.map_append, seg_append, List.map_cons, seg_cons, hlen, Nat.sub_sub,
     List.map_take]
-  exact ⟨(hseg.take p).congr fun i hi => hkeep _ (by simp at hi; omega), hdigit, htail⟩
+  exact ⟨(hseg.take p).congr fun i hi => hkeep _ (by simp_all), hdigit, htail⟩
 
 /-- The second pass: raise the digit at the position found, and write the least admissible filling
 behind it. -/
@@ -198,11 +197,11 @@ private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : 
   light_piece (fillTail_spec hs (i₀ := s.pos + 1) (need := need) ha (by omega) _ rfl rfl rfl
     rfl) with ⟨_, μ'⟩ ⟨rfl, htail, hsame⟩
   -- return 1
-  refine Ends.setLast ⟨segN_raiseAt hseg hp (fun b hb => ?_) ?_ (by rw [hdg, hneed]; exact htail),
+  refine Ends.setLast ⟨segN_raiseAt hseg hp (fun b hb => ?_) ?_ (by simp_all),
     by simp, ?_⟩
   · rw [hsame b (Or.inl (by omega)), Function.update_of_ne (by omega)]
   · rw [hsame _ (Or.inl (by omega)), Function.update_self, hdg]
-  · exact (SameOutside.refl.update ⟨by omega, by omega⟩ _).trans (hsame.mono (by omega) (by omega))
+  light_keep
 
 /-! ## The routine -/
 
@@ -223,7 +222,7 @@ theorem nineNext_spec (hP : P[Proc.nineNext]? = some nineNextBody) (hs : Std lim
   light_facts hs
   unfold tNineNext
   -- pos := 0
-  light_set (0 : ℕ)
+  light_step
   -- while pos < len
   refine Ends.next _ (Ends.whileBlock (ScanInv a lo hi l μ) l.length ?start ?round ?done
     (hT := le_rfl)) (by simp [scanRound_cost]; omega)
@@ -238,7 +237,7 @@ theorem nineNext_spec (hP : P[Proc.nineNext]? = some nineNextBody) (hs : Std lim
         ⟨l.getD i 0, by rw [hσ', nineScan_succ hi l hi']⟩⟩
   case done =>
     rintro _ ⟨dg', rfl⟩
-    refine ⟨by simp, by simp [scanFrame], ?_⟩
+    refine ⟨by simp, by aesop, ?_⟩
     simp only [scanRound_cost]
     rw [nineNext_eq_scan]
     -- if found = 1

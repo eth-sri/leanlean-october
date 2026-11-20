@@ -50,7 +50,7 @@ private theorem effects_headStraight_consts (m : ℤ → BitVec W) :
     effects headStraight m cONE = wd W 1 ∧ effects headStraight m cZERO = wd W 0 ∧
       effects headStraight m cNEG = wd W (-1) := by
   rw [effects_headStraight]
-  refine ⟨?_, ?_, ?_⟩ <;> cell_read
+  trivial
 
 /-! ## The pool -/
 
@@ -83,9 +83,7 @@ private theorem effects_poolCode (hone : m cONE = wd W 1) (N : ℕ) :
     rw [poolCode_succ, effects_append, effects_cons, effects_nil,
       effect_add _ (ih N le_rfl) ((agreeOutside_poolCode N m).read (by cells) hone)]
     obtain rfl | hlt := hn.eq_or_lt
-    · rw [Function.update_self]
-      push_cast
-      rfl
+    · simp
     · rw [Function.update_of_ne (by cells), ih n (by omega)]
 
 /-- The memory after the first three instructions and the code for the pool. -/
@@ -118,23 +116,18 @@ private theorem zeroCode_succ (F : ℕ) :
 /-- The instructions of `zeroCode` write into the outermost frame. -/
 private theorem writesIn_zeroCode (F : ℕ) : ∀ i ∈ zeroCode F, WritesIn (MainFrame F) i :=
   List.forall_mem_map.2 fun x hx => by
-    have := List.mem_range.1 hx
-    show cStack (mainFrame + x) ∈ MainFrame F
-    cells
+    constructor <;> aesop
 
 /-- The local variables of the outermost frame hold zeros. -/
 private theorem effects_zeroCode (hone : m cONE = wd W 1) (F : ℕ) :
     ∀ x < F, effects (zeroCode F) m (cStack (mainFrame + x)) = wd W 0 := by
   induction F with
-  | zero => exact fun x hx => absurd hx x.not_lt_zero
+  | zero => simp
   | succ F ih =>
     intro x hx
     have hone' := (agreeOutside_effects (writesIn_zeroCode F) m).read (by cells) hone
     rw [zeroCode_succ, effects_append, effects_cons, effects_nil, effect_sub _ hone' hone']
-    obtain rfl | hlt := (Nat.lt_succ_iff.1 hx).eq_or_lt
-    · rw [Function.update_self]
-      rfl
-    · rw [Function.update_of_ne (by cells), ih x hlt]
+    grind
 
 private theorem agreeOutside_frameCode (h3 : 3 ≤ F) (m : ℤ → BitVec W) :
     AgreeOutside ({cFP} ∪ MainFrame F) m (effects (frameCode F) m) := by
@@ -173,7 +166,7 @@ private theorem effects_frameCode {i j : ℤ} (hzero : m cZERO = wd W 0)
   -- after the zeros: local variable 1 := the first argument + 0
   rw [effect_add _ arg1 zero, add_zero]
   -- local variable 2 := the second argument + 0
-  rw [effect_add _ (by cell_read using arg2) (by cell_read using zero), add_zero]
+  rw [effect_add _ (by assumption) (by assumption), add_zero]
 
 /-! ## The memory in which the outermost statement starts -/
 
@@ -205,7 +198,7 @@ theorem rel_startMem (Z : Sizes W) (h3 : 3 ≤ Z.F) (hpool : 2 * mainFrame ≤ Z
   have zeros (x : ℕ) (hx : x < Z.F) (h1 : x ≠ 1) (h2 : x ≠ 2) :
       effects (frameCode Z.F) (poolMem Z.disp m) (cStack (mainFrame + x)) = wd W 0 := by
     rw [written, Function.update_of_ne (by cells), Function.update_of_ne (by cells)]
-    exact effects_zeroCode (by cell_read using one) Z.F x hx
+    exact effects_zeroCode (by assumption) Z.F x hx
   rw [startMem_eq]
   exact {
     one := keep₂.read (by cells) one
@@ -217,8 +210,8 @@ theorem rel_startMem (Z : Sizes W) (h3 : 3 ≤ Z.F) (hpool : 2 * mainFrame ≤ Z
         (agreeOutside_effects (writesIn_zeroCode Z.F) _).cell (by cells), Function.update_self]
     loc := fun x hx => match x with
       | 0 => zeros 0 hx (by omega) (by omega)
-      | 1 => by rw [written, Function.update_of_ne (by cells)]; exact Function.update_self ..
-      | 2 => by rw [written]; exact Function.update_self ..
+      | 1 => by aesop
+      | 2 => by rw [written]; rfl
       | x + 3 => zeros (x + 3) hx (by omega) (by omega)
     mem := fun a ha => keep₂.read (by cells) (keep₁.read (by cells) (hm a ha)) }
 

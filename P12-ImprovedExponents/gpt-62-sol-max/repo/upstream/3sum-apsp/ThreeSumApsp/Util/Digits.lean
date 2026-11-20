@@ -56,16 +56,11 @@ def digitList (b n c : ℕ) : List ℕ := (List.range n).map (digit b n c)
 /-- Horner's rule: the number with the given list of digits, most significant first. -/
 def ofDigitList (b : ℕ) (l : List ℕ) : ℕ := l.foldl (fun acc x => acc * b + x) 0
 
-/-- The code of the digit `s` followed by the string `d`. -/
-theorem code_cons (b : ℕ) {n : ℕ} (s : ℕ) (d : Fin n → ℕ) :
-    code b (Fin.cons s d : Fin (n + 1) → ℕ) = s * b ^ n + code b d := by
-  rw [code, Fin.cons_zero, Fin.tail_cons]
-
 /-- Horner's rule, started with `acc`, shifts `acc` by `n` digits and adds the code. -/
 private theorem foldl_ofFn (b : ℕ) {n : ℕ} (d : Fin n → ℕ) (acc : ℕ) :
     (List.ofFn d).foldl (fun acc x => acc * b + x) acc = acc * b ^ n + code b d := by
   induction n generalizing acc with
-  | zero => simp [code]
+  | zero => aesop
   | succ n ih =>
     rw [List.ofFn_succ, List.foldl_cons, ih, code, pow_succ, Fin.tail_def]
     ring
@@ -79,7 +74,7 @@ theorem code_eq_ofDigitList (b : ℕ) {n : ℕ} (d : Fin n → ℕ) :
 /-- An `n`-digit number is less than `b^n`. -/
 theorem code_lt {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) : code b d < b ^ n := by
   induction n with
-  | zero => simp [code]
+  | zero => aesop
   | succ n ih =>
     have hrest : code b (Fin.tail d) < b ^ n := ih fun ℓ => hd _
     have hfirst : d 0 * b ^ n + b ^ n ≤ b * b ^ n := by
@@ -115,7 +110,7 @@ theorem digit_code {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) (�
     refine Fin.cases ?_ (fun k => ?_) ℓ
     · rw [digit, Fin.val_zero, Nat.sub_zero, Nat.add_sub_cancel, hdiv, Nat.mod_eq_of_lt (hd 0)]
     · rw [Fin.val_succ, digit_succ b n _ k k.isLt, hmod]
-      exact ih (d := Fin.tail d) (fun ℓ => hd _) k
+      aesop
 
 /-- A digit is less than the base. -/
 theorem digit_lt {b : ℕ} (hb : 0 < b) (n c ℓ : ℕ) : digit b n c ℓ < b :=
@@ -125,8 +120,7 @@ theorem digit_lt {b : ℕ} (hb : 0 < b) (n c ℓ : ℕ) : digit b n c ℓ < b :=
 theorem code_digit {b n c : ℕ} (hc : c < b ^ n) : code b (fun ℓ : Fin n => digit b n c ℓ) = c := by
   induction n generalizing c with
   | zero =>
-    rw [pow_zero, Nat.lt_one_iff] at hc
-    rw [hc, code]
+    aesop
   | succ n ih =>
     rw [pow_succ'] at hc
     have hpos : 0 < b ^ n := Nat.pos_of_mul_pos_left (Nat.zero_lt_of_lt hc)
@@ -142,8 +136,7 @@ theorem code_digit {b n c : ℕ} (hc : c < b ^ n) : code b (fun ℓ : Fin n => d
 /-- If some number is below `b^n` and `n` is not 0, the base is not 0. -/
 theorem pos_of_lt_pow {b n c : ℕ} (hc : c < b ^ n) (hn : n ≠ 0) : 0 < b := by
   refine Nat.pos_of_ne_zero fun hb => ?_
-  rw [hb, zero_pow hn] at hc
-  exact Nat.not_lt_zero _ hc
+  simp_all
 
 /-- The strings of `n` digits in base `b` correspond to the numbers below `b^n`. -/
 def codeEquiv (b n : ℕ) : (Fin n → Fin b) ≃ Fin (b ^ n) where
@@ -176,12 +169,7 @@ theorem lt_of_mem_digitList {b : ℕ} (hb : 0 < b) {n c x : ℕ} (hx : x ∈ dig
 theorem digitList_code {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) :
     digitList b n (code b d) = List.ofFn d := by
   refine List.ext_getElem (by simp) fun i hi _ => ?_
-  simpa using digit_code hd ⟨i, by simpa using hi⟩
-
-/-- The empty list of digits has the value `0`. -/
-@[simp]
-theorem ofDigitList_nil (b : ℕ) : ofDigitList b [] = 0 :=
-  rfl
+  simpa using digit_code hd ⟨i, by simp_all⟩
 
 /-- One more digit at the end multiplies the value by `b` and adds the digit. -/
 theorem ofDigitList_append_singleton (b : ℕ) (l : List ℕ) (x : ℕ) :
@@ -207,8 +195,7 @@ theorem ofDigitList_lt {b : ℕ} (l : List ℕ) (hd : ∀ d ∈ l, d < b) :
 /-- The digits of the value of a list of digits below `b` are the list. -/
 theorem digitList_ofDigitList {b : ℕ} (l : List ℕ) (hd : ∀ d ∈ l, d < b) :
     digitList b l.length (ofDigitList b l) = l := by
-  rw [ofDigitList_eq_code, digitList_code fun ℓ => hd _ (List.getElem_mem ℓ.isLt),
-    List.ofFn_getElem]
+  simp_all [ofDigitList_eq_code, digitList_code] <;> omega
 
 /-! ## Strings over a numbered alphabet -/
 
@@ -225,10 +212,7 @@ def decodeStr [NeZero b] (n c : ℕ) : Fin n → α :=
 /-- The code of the letter `s` followed by the string `u'`. -/
 theorem codeStr_cons {n : ℕ} (s : α) (u' : Fin n → α) :
     codeStr e (Fin.cons s u' : Fin (n + 1) → α) = e s * b ^ n + codeStr e u' := by
-  rw [codeStr, codeStr, ← code_cons]
-  congr 1
-  funext ℓ
-  refine Fin.cases ?_ (fun k => ?_) ℓ <;> simp
+  rfl
 
 /-- The code of a string of length `n` is less than `b^n`. -/
 theorem codeStr_lt {n : ℕ} (u : Fin n → α) : codeStr e u < b ^ n :=
@@ -280,7 +264,7 @@ theorem length_digitsStr (u : Fin n → α) : (digitsStr e u).length = n := List
 theorem digitsStr_lt (u : Fin n → α) : ∀ d ∈ digitsStr e u, d < b := by
   intro d hd
   obtain ⟨ℓ, rfl⟩ := List.mem_ofFn.mp hd
-  exact (e _).isLt
+  simp
 
 theorem digitsStr_injective : Function.Injective (digitsStr e : (Fin n → α) → List ℕ) :=
   fun _ _ h => funext fun ℓ => e.injective (Fin.ext (congrFun (List.ofFn_injective h) ℓ))
@@ -310,12 +294,7 @@ theorem digitsStr_eq_of_getD (u : Fin n → α) {l : List ℕ} (hl : l.length = 
 list `getD` gives 0, so a position of the digit a is a level). -/
 theorem forall_getD_digitsStr (u : Fin n → α) {a : ℕ} (ha : a ≠ 0) (P : ℕ → Prop) :
     (∀ j, (digitsStr e u).getD j 0 = a → P j) ↔ ∀ ℓ : Fin n, (e (u ℓ) : ℕ) = a → P ℓ := by
-  refine ⟨fun h ℓ hℓ => h ℓ ((getD_digitsStr e u ℓ).trans hℓ), fun h j hj => ?_⟩
-  have hjn : j < n := by
-    by_contra hc
-    rw [List.getD_eq_default _ _ (by rw [length_digitsStr]; omega)] at hj
-    exact ha hj.symm
-  exact h ⟨j, hjn⟩ ((getD_digitsStr e u ⟨j, hjn⟩).symm.trans hj)
+  grind [= digitsStr]
 
 /-- The code is computed from the digits by Horner's rule. -/
 theorem ofDigitList_digitsStr (u : Fin n → α) : ofDigitList b (digitsStr e u) = codeStr e u :=

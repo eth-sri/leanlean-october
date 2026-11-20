@@ -57,8 +57,6 @@ def K0 (p : Par) : ℕ := ThreeSumApsp.K0 p.L p.m
 def KK (p : Par) : ℕ := p.K0 * p.K0
 /-- The number of row bands, and of column bands. -/
 def nB (p : Par) : ℕ := numBands p.L p.m p.N
-/-- The number of tiles. -/
-def nT (p : Par) : ℕ := p.nB * p.nB
 /-- The number `10^L` of leaves: the length of an encoding. -/
 def T (p : Par) : ℕ := 10 ^ p.L
 /-- The number `7^L` of left strings: the length of an input array. -/
@@ -125,10 +123,6 @@ and of the output, and as last argument the free pointer `fr`. All inputs and th
 `fr`. The solver may write the output and the cells from `fr` on, and nothing is assumed about these
 cells: a routine clears what it needs cleared. The shared block starts at `fr`, the private block
 follows it. -/
-
-namespace Par
-
-end Par
 
 /-! ## The places and the sizes, as equations and inequalities -/
 

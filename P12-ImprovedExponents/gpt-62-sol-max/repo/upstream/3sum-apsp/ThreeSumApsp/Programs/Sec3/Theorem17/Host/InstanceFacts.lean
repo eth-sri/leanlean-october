@@ -256,7 +256,7 @@ theorem Valid.exists_query (hv : X.Valid) {a b c : ℕ} (ha : a < X.n) (hb : b <
     rw [chunk, hmod]
     exact List.getD_eq_getElem _ _ hk
   have hlo' : X.lo t ≤ j := by rw [lo, hentry]; exact hlo
-  have hhi' : j < X.lo t + X.w t := by rw [lo, w, hentry]; exact hhi
+  have hhi' : j < X.lo t + X.w t := by light_side [lo, w, hentry, hhi]
   have hpair : X.place t (j - X.lo t) = a * X.n + b := by
     rw [place, Nat.add_sub_cancel' hlo', hplace]
   have hdivmod := Nat.div_add_mod' c X.q
@@ -264,8 +264,7 @@ theorem Valid.exists_query (hv : X.Valid) {a b c : ℕ} (ha : a < X.n) (hb : b <
   · rw [rowOf, hpair, Nat.mul_add_div_of_lt hb]
   · rw [colOf, hpair, Nat.mul_add_mod_of_lt hb]
   · have := Nat.mod_lt c hv.q_pos
-    rw [len, c0, hdiv]
-    omega
+    light_side [len, c0, hdiv]
   · rw [c0, hdiv, hdivmod]
 
 /-! ## Acceptance -/
@@ -279,16 +278,9 @@ def sumAt (X : HostData) (a b c : ℕ) : ℤ :=
 private theorem sum_ne_zero_iff (f : ℕ → ℤ) (N : ℕ) (h01 : ∀ k < N, f k = 0 ∨ f k = 1) :
     ((List.range N).map f).sum ≠ 0 ↔ ∃ k < N, f k = 1 := by
   have hnonneg : ∀ k ∈ Finset.range N, 0 ≤ f k := fun k hk => by
-    rcases h01 k (Finset.mem_range.1 hk) with h | h <;> omega
+    grind
   rw [List.sum_map_range, Ne, Finset.sum_eq_zero_iff_of_nonneg hnonneg]
-  constructor
-  · intro hne
-    by_contra hnone
-    exact hne fun k hk => (h01 k (Finset.mem_range.1 hk)).resolve_right
-      fun hone => hnone ⟨k, Finset.mem_range.1 hk, hone⟩
-  · rintro ⟨k, hk, hone⟩ hall
-    have := hall k (Finset.mem_range.2 hk)
-    omega
+  grind
 
 /-- Proof of Theorem 17: "the condition S(a,b,c) ≡ 0 (mod p) has become the equality w(a,c) + ϱ ≡
 −w(b,c) of a label of (a,c) and a label of (b,c)".  Here `wAC`, `wAB` and `wBC` are the three
@@ -334,9 +326,7 @@ private theorem thinEntry_ne_zero_iff {n D p c0 len rho : ℕ} {RAC RBC : List �
     · -- The column `k` is the middle vertex `(c, σ)` with `c = k / p` and `σ = k % p`.
       rintro ⟨k, hk, hone⟩
       rw [getD_xList ha hk, getD_yList hb hk] at hone
-      split_ifs at hone with hX hY
-      · exact ⟨k / p, hX.1, hX.2.symm.trans hY.2⟩
-      all_goals simp at hone
+      grind
     · -- The middle vertex `(c, σ)` with the common label `σ` is the column `c p + σ`.
       rintro ⟨c, hc, hlabel⟩
       have hσ : (RAC.getD (a * n + c0 + c) 0 + rho) % p < p := Nat.mod_lt _ (Nat.pos_of_ne_zero hp)
@@ -384,67 +374,11 @@ theorem hit_iff {t i : ℕ} (hi : i < X.w t) :
 
 /-! ## Correctness -/
 
-/-- Brute force finds a zero triangle if and only if there is one. -/
-private theorem hasZero_iff_sumAt (X : HostData) :
-    hasZero X.n X.AB X.BC X.AC = true ↔ ∃ a < X.n, ∃ b < X.n, ∃ c < X.n, X.sumAt a b c = 0 := by
-  simp [hasZero, scanHit, sumAt]
-
-/-- A zero triangle has been found before instance `T` if and only if some accepted query pair of an
-earlier instance has a successful scan. -/
-theorem found_iff (X : HostData) (T : ℕ) :
-    X.found T = true ↔ ∃ t < T, ∃ i < X.w t, X.acc t i = true ∧ X.hit t i = true := by
-  induction T with
-  | zero => simp [found]
-  | succ T ih =>
-    rw [found, foundAt, Bool.or_eq_true, ih, List.any_eq_true]
-    constructor
-    · rintro (⟨t, ht, h⟩ | ⟨i, hi, h⟩)
-      · exact ⟨t, by omega, h⟩
-      · exact ⟨T, by omega, i, List.mem_range.1 hi, Bool.and_eq_true _ _ ▸ h⟩
-    · rintro ⟨t, ht, i, hi, h⟩
-      rcases Nat.lt_succ_iff_lt_or_eq.1 ht with hlt | rfl
-      · exact Or.inl ⟨t, hlt, i, hi, h⟩
-      · exact Or.inr ⟨i, List.mem_range.2 hi, by rw [Bool.and_eq_true]; exact h⟩
-
-/-- Proof of Theorem 17: "A zero triangle is always found, since its c lies in some piece and makes
-the oracle accept its pair."  After all instances a zero triangle has been found if and only if
-there is one.
--/
-theorem found_m (hv : X.Valid) : X.found X.m = hasZero X.n X.AB X.BC X.AC := by
-  rw [Bool.eq_iff_iff, found_iff, hasZero_iff_sumAt]
-  constructor
-  · rintro ⟨t, ht, i, hi, -, hhit⟩
-    obtain ⟨c, hc, hzero⟩ := (hit_iff hi).1 hhit
-    have hpiece := hv.piece_le ht
-    exact ⟨_, hv.rowOf_lt ht hi, _, hv.colOf_lt ht hi, _, by omega, hzero⟩
-  · rintro ⟨a, ha, b, hb, c, hc, hzero⟩
-    obtain ⟨t, ht, i, hi, rfl, rfl, c', hc', rfl⟩ := hv.exists_query ha hb hc
-    exact ⟨t, ht, i, hi, (acc_iff hv ht hi).2 ⟨c', hc', hzero ▸ dvd_zero _⟩,
-      (hit_iff hi).2 ⟨c', hc', hzero⟩⟩
-
-/-- Proof of Theorem 17: "We stop as soon as a zero triangle is found", so all scans but one fail.
--/
-theorem sum_execs_le (X : HostData) :
-    ∑ t ∈ Finset.range X.m, X.execs t ≤ ∑ t ∈ Finset.range X.m, X.fails t + 1 := by
-  have key : ∀ T, ∑ t ∈ Finset.range T, X.execs t
-      ≤ ∑ t ∈ Finset.range T, X.fails t + (X.found T).toNat := by
-    intro T
-    induction T with
-    | zero => simp
-    | succ T ih =>
-      have hstep : X.execs T + (X.found T).toNat ≤ X.fails T + (X.found (T + 1)).toNat :=
-        execsUpto_le (X.acc T) (X.hit T) (X.found T) (X.w T)
-      rw [Finset.sum_range_succ, Finset.sum_range_succ]
-      omega
-  have hone : (X.found X.m).toNat ≤ 1 := Bool.toNat_le _
-  have := key X.m
-  omega
-
 /-- The parameters of Theorem 17 give valid data. -/
-theorem valid_of_params {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g)
+theorem valid_of_params {n D D' g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g)
     (hp : p ∈ primesInRange D) (lenAB : AB.length = n * n) (lenBC : BC.length = n * n)
-    (lenAC : AC.length = n * n) :
-    (⟨n, D, p, pieceSizeNat D g, queryCapNat n D, AB, BC, AC⟩ : HostData).Valid where
+    (lenAC : AC.length = n * n) (hsize : pieceSizeNat D g * p ≤ D') :
+    (⟨n, D', p, pieceSizeNat D g, queryCapNat n D, AB, BC, AC⟩ : HostData).Valid where
   n_pos := le_trans (by norm_num) (h.sixteen_le.trans h.le_n)
   p_pos := (mem_primesInRange.mp hp).1.one_le
   q_pos := by
@@ -458,10 +392,7 @@ theorem valid_of_params {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g
     rw [queryCapNat, Nat.le_sqrt, Nat.le_div_iff_mul_le (by omega)]
     have : n ≤ n ^ 4 := Nat.le_self_pow (by norm_num) n
     omega
-  qp_le := by
-    simp only
-    rw [pieceSizeNat_eq D h.one_le_g]
-    exact (pieceSize_mul_le h.sixteen_le h.one_le_g hp).2
+  qp_le := hsize
   lenAB := lenAB
   lenBC := lenBC
   lenAC := lenAC

@@ -23,7 +23,7 @@ holds for every `γ ≥ 0` and `ε < R_c(γ)` (`eq_10X`).
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Finset
+open ThreeSumApsp Real
 
 open private levelsOf_le from ThreeSumApsp.Sec4.Corollary31
 
@@ -43,13 +43,10 @@ theorem tailX_le_rpow {c θ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 : θ �
 /-- `m² D^{-δ} ≤ 2/(δ ln 4)²` for `δ > 0` and `D = 4^m`: a power of `D` pays for `log² D`. -/
 theorem sq_mul_D_rpow_le {δ : ℝ} (hδ : 0 < δ) (m : ℕ) :
     (m : ℝ) ^ 2 * (D m : ℝ) ^ (-δ) ≤ 2 / (δ * log 4) ^ 2 := by
-  have hlog := log_four_pos
   have hx : 0 ≤ δ * ((m : ℝ) * log 4) := by positivity
   have hexp := quadratic_le_exp_of_nonneg hx
   rw [cast_D_rpow, show -δ * ((m : ℝ) * log 4) = -(δ * ((m : ℝ) * log 4)) by ring, exp_neg,
     ← div_eq_mul_inv, div_le_div_iff₀ (exp_pos _) (by positivity)]
-  have hsq : (m : ℝ) ^ 2 * (δ * log 4) ^ 2 = (δ * ((m : ℝ) * log 4)) ^ 2 := by ring
-  rw [hsq]
   linarith
 
 /-- **The first term of `cost8X`** for general `c` and `θ`, and every `γ` below the exact exponent
@@ -60,9 +57,7 @@ theorem first_termX {c θ γ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 : θ �
     Dominated (fun m : ℕ => 1 ≤ m)
       (fun m => (levelsOf c m : ℝ) * m * tailX (levelsOf c m) m (switchOf θ m))
       fun m => (D m : ℝ) ^ (-γ) * Real.log (D m) ^ 2 := by
-  have hc0 : (0 : ℝ) < c := by linarith
   have hδ : 0 < gammaX c θ - γ := sub_pos.2 hγ
-  have hlog4 := log_four_pos
   refine .of_le_const_mul (C := 2 * (c + 1) * (c + 2) * (2 / ((gammaX c θ - γ) * log 4) ^ 2))
     (by positivity) fun m hm => ?_
   have hm' : (1 : ℝ) ≤ m := by exact_mod_cast hm
@@ -71,10 +66,7 @@ theorem first_termX {c θ γ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 : θ �
   have hsplit : (D m : ℝ) ^ (-gammaX c θ)
       = (D m : ℝ) ^ (-(gammaX c θ - γ)) * (D m : ℝ) ^ (-γ) := by
     rw [← rpow_add (cast_D_pos m)]
-    congr 1
     ring
-  have hpow : (0 : ℝ) ≤ (D m : ℝ) ^ (-gammaX c θ) := rpow_nonneg (Nat.cast_nonneg _) _
-  have hpow' : (0 : ℝ) ≤ (D m : ℝ) ^ (-γ) := rpow_nonneg (Nat.cast_nonneg _) _
   have hmlog : (m : ℝ) ≤ Real.log (D m) := cast_le_log_cast_D m
   calc (levelsOf c m : ℝ) * m * tailX (levelsOf c m) m (switchOf θ m)
       ≤ (c + 1) * m * m * (((m : ℝ) + 1) * (((levelsOf c m : ℝ) + 1)
@@ -85,8 +77,7 @@ theorem first_termX {c θ γ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 : θ �
         gcongr <;> linarith
     _ = 2 * (c + 1) * (c + 2) * ((m : ℝ) ^ 2 * (D m : ℝ) ^ (-(gammaX c θ - γ)))
           * ((D m : ℝ) ^ (-γ) * (m : ℝ) ^ 2) := by
-        rw [hsplit]
-        ring
+        grind
     _ ≤ 2 * (c + 1) * (c + 2) * (2 / ((gammaX c θ - γ) * log 4) ^ 2)
           * ((D m : ℝ) ^ (-γ) * Real.log (D m) ^ 2) := by
         have h := sq_mul_D_rpow_le hδ m

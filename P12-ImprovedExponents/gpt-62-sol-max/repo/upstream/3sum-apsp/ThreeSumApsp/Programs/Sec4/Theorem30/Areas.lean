@@ -27,9 +27,7 @@ namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.Spec
 
-variable {lim : Limits} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
-  {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {U : ℤ}
-  {μ μ' : ℕ → ℤ}
+variable {lim : Limits} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {U : ℤ}
 
 /-! ## The directory -/
 
@@ -53,8 +51,7 @@ theorem length_dsTries_le (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L)
 /-- The number 10^L of leaves fits in a word. -/
 theorem Lim30.pow_le (h : Lim30 lim p t b0 U) : (10 : ℤ) ^ p.L ≤ lim.word := by
   refine le_trans ?_ h.pow
-  push_cast
-  exact pow_le_pow_right₀ (by norm_num) (by omega)
+  lia
 
 /-- Proof of Theorem 30, "Word size": the encoded numbers are at most 7^L U in absolute value. -/
 theorem abs_enc_le (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)

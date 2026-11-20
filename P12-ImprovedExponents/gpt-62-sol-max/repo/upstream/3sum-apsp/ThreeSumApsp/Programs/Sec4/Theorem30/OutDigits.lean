@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 public import Mathlib.Data.Bool.Count
@@ -25,7 +29,7 @@ from l to l + 1 (OutDigits.inner, OutDigits.outer).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The program -/
 
@@ -33,17 +37,7 @@ namespace OutDigits
 
 /-- The local variables of outDigits: the arguments gI, gJ, dI, dJ, aMASK, K0, L, wd, then the
 address of the mask of the subset, the level, and the number of levels outside the subset so far. -/
-abbrev BlockI : ℕ := 0
-@[inherit_doc BlockI] abbrev BlockJ : ℕ := 1
-@[inherit_doc BlockI] abbrev DigitsI : ℕ := 2
-@[inherit_doc BlockI] abbrev DigitsJ : ℕ := 3
-@[inherit_doc BlockI] abbrev Masks : ℕ := 4
-@[inherit_doc BlockI] abbrev Blocks : ℕ := 5
-@[inherit_doc BlockI] abbrev Levels : ℕ := 6
-@[inherit_doc BlockI] abbrev Dest : ℕ := 7
-@[inherit_doc BlockI] abbrev Mask : ℕ := 8
-@[inherit_doc BlockI] abbrev Level : ℕ := 9
-@[inherit_doc BlockI] abbrev Outer : ℕ := 10
+registers [BlockI, BlockJ, DigitsI, DigitsJ, Masks, Blocks, Levels, Dest, Mask, Level, Outer]
 
 end OutDigits
 
@@ -124,10 +118,10 @@ theorem read_mask (C : OutDigitsPre lim μ x) {μ' : ℕ → ℤ} (same : SameOu
     (hl : l < x.L) : μ' (x.base + l) = if x.mask.getD l false then 1 else 0 := by
   have hlen := length_mask (x := x)
   have hap := C.apartMask
-  rw [same (x.base + l) (by omega), C.segMask.read (by simp [hlen, hl]),
-    List.getD_eq_getElem _ _ (by simp [hlen, hl]), List.getElem_map,
+  rw [same (x.base + l) (by omega), C.segMask.read (by simp_all),
+    List.getD_eq_getElem _ _ (by simp_all), List.getElem_map,
     List.getD_eq_getElem _ _ (by omega)]
-  split_ifs <;> rfl
+  simp
 
 /-- wd[level] := 9; level := level + 1. -/
 theorem inner (C : OutDigitsPre lim μ x) (h : Inv μ x l σ) (hl : l < x.L)
@@ -154,12 +148,12 @@ theorem outer (C : OutDigitsPre lim μ x) (h : Inv μ x l σ) (hl : l < x.L)
       = ((x.rI.getD ((x.mask.take l).count false) 0 : ℕ) : ℤ) := by
     have hap := C.apartI
     rw [same _ (by omega)]
-    exact C.segI.read (by have := C.lenI; omega)
+    exact C.segI.read (by simp_all)
   have hreadJ : μ' (x.dJ + (x.mask.take l).count false)
       = ((x.rJ.getD ((x.mask.take l).count false) 0 : ℕ) : ℤ) := by
     have hap := C.apartJ
     rw [same _ (by omega)]
-    exact C.segJ.read (by have := C.lenJ; omega)
+    exact C.segJ.read (by simp_all)
   have hI3 : x.rI.getD ((x.mask.take l).count false) 0 < 3 :=
     List.getD_of_forall_mem (by norm_num) C.ltI _
   have hJ3 : x.rJ.getD ((x.mask.take l).count false) 0 < 3 :=
@@ -190,18 +184,18 @@ theorem walk {P : Program} {d : ℕ} (C : OutDigitsPre lim μ x) :
     have houter := outer C hI hl
     obtain ⟨μ', rfl, -, same⟩ := hI
     have hread := read_mask C same hl
-    refine ⟨by simp, by simpa using hl, ?_⟩
+    refine ⟨by simp, by simp_all, ?_⟩
     -- if mask[level] = 1
     by_cases hb : x.mask.getD l false = true
     · rw [if_pos hb] at hread
-      exact .ite_pos (hinner hb) (by simp [hread]) (by light_side)
+      exact .ite_pos (hinner hb) (by assumption) (by light_side)
     · rw [if_neg hb] at hread
-      exact .ite_neg (houter (by simpa using hb)) (by simp [hread])
+      exact .ite_neg (houter (by simp_all)) (by simp_all)
         (by light_side)
   case done =>
     rintro _ ⟨μ', rfl, seg, same⟩
     rw [List.take_of_length_le length_digits.le] at seg
-    exact ⟨by simp, by simp, seg, same⟩
+    simp_all
 
 /-- The numbers on the way to the address of the mask fit in a word. -/
 theorem index_le (C : OutDigitsPre lim μ x) : x.gI * x.k0 + x.gJ ≤ lim.space := by
@@ -209,10 +203,9 @@ theorem index_le (C : OutDigitsPre lim μ x) : x.gI * x.k0 + x.gJ ≤ lim.space 
   have hbase := base_add_le C
   unfold OutDigitsArgs.base at hbase
   rcases Nat.eq_zero_or_pos x.L with h0 | hL
-  · have hm : x.m = 0 := by have := C.m_le; omega
-    rw [h0, hm, Nat.choose_self] at hidx
-    omega
-  · exact (Nat.le_mul_of_pos_right _ hL).trans (by omega)
+  · have hm : x.m = 0 := by grind
+    grind
+  nlinarith
 
 end OutDigits
 
@@ -226,18 +219,14 @@ theorem outDigits_spec {lim : Limits} {P : Program}
   have hidx := index_le C
   have hbase := base_add_le C
   have hprod : ((x.gI * x.k0 : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : x.gI * x.k0 ≤ lim.space)
-  have haddr : ((x.base : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega : x.base ≤ lim.space)
-  have hprod0 : (0 : ℤ) ≤ (x.gI : ℤ) * x.k0 := by positivity
+    omega
+  have haddr : ((x.base : ℕ) : ℤ) ≤ lim.space := by omega
   have hoff0 : (0 : ℤ) ≤ ((x.gI : ℤ) * x.k0 + x.gJ) * x.L := by positivity
   unfold OutDigitsArgs.base at haddr
   push_cast at hprod haddr
   unfold tOutDigits
   -- mask := aMASK + (gI K0 + gJ) L
-  light_set x.base using OutDigitsArgs.base
-  -- level := 0; outer := 0; the walk
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
+  light_steps using OutDigitsArgs.base
   exact (walk C).mono (by simp; omega) fun _ h => h
 
 end Light.Sec4

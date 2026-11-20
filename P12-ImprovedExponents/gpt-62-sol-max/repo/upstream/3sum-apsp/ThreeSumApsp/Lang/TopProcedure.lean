@@ -33,7 +33,7 @@ constant times T.
 
 namespace Light
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -64,18 +64,13 @@ theorem pow_spec {n : ℕ} (hn : 1 ≤ n) (a : ℤ) (μ : ℕ → ℤ) : ∀ κ 
     have hle : ((n ^ κ : ℕ) : ℤ) ≤ ((n ^ (κ + 1) : ℕ) : ℤ) := by
       exact_mod_cast Nat.pow_le_pow_right hn (by omega)
     have hval : ((n ^ κ : ℕ) : ℤ) * n = ((n ^ (κ + 1) : ℕ) : ℤ) := by
-      push_cast
-      ring
+      rfl
     unfold powStmt
     refine Ends.next (4 * κ) ((pow_spec hn a μ κ (hle.trans hw)).mono le_rfl ?_)
     rintro _ rfl
     -- U := U * n
     refine Ends.setTo ((n ^ (κ + 1) : ℕ) : ℤ) rfl ⟨?_, ?_⟩
-    · light_norm
-      change |((n ^ κ : ℕ) : ℤ) * n| ≤ lim.word
-      rw [hval, abs_of_nonneg (Int.natCast_nonneg _)]
-      exact hw
-    · exact hval
+    all_goals (simp_all)
 
 /-- The arguments n, U and four addresses 1, 1 + n², 1 + 2n², 1 + c n² are safe. -/
 theorem safe_fourAddresses {c : ℕ} (hc : c ≤ 4) {n : ℕ} {lim : Limits} {σ : State}
@@ -85,21 +80,15 @@ theorem safe_fourAddresses {c : ℕ} (hc : c ≤ 4) {n : ℕ} {lim : Limits} {σ
   have hcn : (c : ℤ) * ((n : ℤ) * n) ≤ 4 * ((n : ℤ) * n) :=
     mul_le_mul_of_nonneg_right (by exact_mod_cast hc) hnn
   have hcn0 : (0 : ℤ) ≤ (c : ℤ) * ((n : ℤ) * n) := by positivity
-  have hc' : (c : ℤ) ≤ 4 := by exact_mod_cast hc
-  push_cast at hw h3
-  simp only [List.forall_mem_cons, List.not_mem_nil, false_imp_iff, implies_true, and_true]
-  simp only [Expr.Safe, Expr.val, Op.eval, h3, true_and, Nat.cast_ofNat, Nat.cast_one]
-  refine ⟨by omega, ⟨by omega, abs_le.2 ⟨by omega, by omega⟩⟩,
-    ⟨by omega, ⟨by omega, abs_le.2 ⟨by omega, by omega⟩⟩, abs_le.2 ⟨by omega, by omega⟩⟩,
-    by omega, ⟨by omega, abs_le.2 ⟨by omega, by omega⟩⟩, abs_le.2 ⟨by omega, by omega⟩⟩
+  light_side [hw, h3, Expr.Safe, Expr.val, Op.eval]
 
 /-- The verdict that belongs to the result of a decision procedure. -/
 theorem verdictOf_flag (p : Prop) : verdictOf true (ThreeSumApsp.flag p) = true ↔ p := by
   by_cases h : p
   · rw [ThreeSumApsp.flag_of h]
-    simp [verdictOf, h]
+    aesop
   · rw [ThreeSumApsp.flag_of_not h]
-    simp [verdictOf, h]
+    aesop
 
 /-! ## The problems of `EndStatement` -/
 
@@ -109,24 +98,20 @@ variable {Q : EndStatement.Problem} (x : Bounded Q)
 
 /-- Cell 0 holds the size. -/
 theorem ofEnd_cell0 (loc : ℕ → ℤ) : (M (k 0)).val ⟨loc, memOf ((ofEnd Q).input x)⟩ = x.n := by
-  simp [memOf]
+  rfl
 
 /-- All cells of the input are within the size and the bound. -/
 theorem ofEnd_input_le : ∀ a ∈ (ofEnd Q).input x, |a| ≤ ((x.n + x.U + 1 : ℕ) : ℤ) := by
   intro a ha
   rcases List.mem_cons.1 ha with rfl | ha
-  · rw [abs_of_nonneg (by positivity)]
-    push_cast
-    omega
+  · grind
   · have := Bounded.abs_le ha
-    push_cast
     omega
 
 /-- Cell 0 may be read. -/
 theorem safe_cell0 {lim : Limits} {σ : State} (h0 : 0 ≤ lim.word) (h1 : 1 ≤ lim.space) :
     (M (k 0)).Safe lim σ := by
-  light_norm
-  exact ⟨h0, le_rfl, by omega⟩
+  light_side
 
 end OfEnd
 
@@ -138,8 +123,7 @@ private theorem polyBound_pow_le (s k κ n : ℕ) {r : ℕ} (hr : (κ + 1) * k �
   have hpos : 1 ≤ n + 1 := by omega
   have hU : n ^ κ + 1 ≤ 2 * (n + 1) ^ κ := by
     have h1 : n ^ κ ≤ (n + 1) ^ κ := Nat.pow_le_pow_left (by omega) κ
-    have h2 : 1 ≤ (n + 1) ^ κ := Nat.one_le_pow _ _ hpos
-    omega
+    grind
   unfold polyBound
   simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
   calc 2 ^ s * ((n + 1) * (n ^ κ + 1)) ^ k
@@ -242,11 +226,11 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   -- n := mem[0]
   refine Ends.setToThen (x.n : ℤ) ?_ ⟨safe_cell0 (by omega) hroom.space, ofEnd_cell0 x _⟩
   -- if n ≠ 0
-  refine Ends.iteLast (fun h => absurd h (by simp; omega)) (fun _ => ?_)
+  refine Ends.iteLast (fun h => absurd h (by simp_all)) (fun _ => ?_)
   -- U := 1
   light_set 1
   -- U := U * n, κ times
-  refine Ends.next (4 * κ) ((pow_spec hn 0 _ κ (by rw [← hU]; omega)).mono le_rfl ?_)
+  refine Ends.next (4 * κ) ((pow_spec hn 0 _ κ (by omega)).mono le_rfl ?_)
   rintro _ rfl
   rw [← hU]
   -- local 3 := n * n
@@ -261,8 +245,8 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   have hanswer := w.post x r μ' hn hpost
   -- for a problem with an output: result := 1
   cases dec
-  · exact Ends.set (by light_norm; omega) (by light_time) (by simpa [Answered] using hanswer)
-  · exact Ends.skip (by simpa [Answered] using hanswer)
+  · exact Ends.set (by light_norm; omega) (by light_time) (by assumption)
+  · exact Ends.skip (by assumption)
 
 /-- The run of the outermost procedure on an instance of size 0. -/
 theorem body_ends_zero (w : Wrap Q task dec) (P : Program) (p κ : ℕ) (x : Bounded Q) (hn : x.n = 0)
@@ -275,10 +259,10 @@ theorem body_ends_zero (w : Wrap Q task dec) (P : Program) (p κ : ℕ) (x : Bou
   -- n := mem[0]
   refine Ends.setToThen (x.n : ℤ) ?_ ⟨safe_cell0 (by omega) hroom.space, ofEnd_cell0 x _⟩
   -- if n ≠ 0 … else result := 0 or 1
-  refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp [hn]) h)
+  refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp_all) h)
   have hanswer := w.zero x hn
   cases dec <;>
-    exact Ends.set (by simp; omega) (by light_time) (by simpa [Answered, verdictOf] using hanswer _)
+    exact Ends.set (by simp; omega) (by light_time) (by solve_by_elim)
 
 /-- The outermost call, from the run of its procedure. -/
 theorem ends_of_body (w : Wrap Q task dec) {P : Program} {p κ T : ℕ} (x : Bounded Q)
@@ -287,8 +271,8 @@ theorem ends_of_body (w : Wrap Q task dec) {P : Program} {p κ T : ℕ} (x : Bou
       ⟨frame [0, 0], memOf ((ofEnd Q).input x)⟩ T (Answered x dec)) :
     Ends (w.limits need x) (P ++ [topBody κ p w.args dec]) 0 (mainStmt P.length)
       ⟨frame [0, 0, 0], memOf ((ofEnd Q).input x)⟩ (T + 4) (Answered x dec) :=
-  Ends.call T (by simp) (by simp) (by simp only [limits]; omega)
-    (h.mono le_rfl fun _ hσ => by simpa [Answered] using hσ) (by light_time)
+  Ends.call T (by simp) (by simp) (by constructor <;> simp_all)
+    (h.mono le_rfl fun _ hσ => by assumption) (by light_time)
 
 /-- The limits are polynomial in the size. -/
 theorem small (w : Wrap Q task dec) {need : ℕ → ℕ → Need} (hpoly : PolyNeed need) (κ : ℕ) :
@@ -311,9 +295,7 @@ theorem small (w : Wrap Q task dec) {need : ℕ → ℕ → Need} (hpoly : PolyN
   have hgoal : polyBound (s + k + 5 + Nat.size w.cst) r [x.n] =
       32 * (2 ^ Nat.size w.cst * (2 ^ (s + k) * (x.n + 1) ^ r)) := by
     unfold polyBound
-    simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
-    rw [pow_add 2 (s + k + 5) (Nat.size w.cst), pow_add 2 (s + k) 5]
-    ring
+    grind
   generalize 2 ^ (s + k) * (x.n + 1) ^ r = Z at *
   generalize (x.n + 1) ^ r = X at *
   -- `Y ≥ Z` takes in the constant of the layout
@@ -337,14 +319,14 @@ theorem topSolves (w : Wrap Q task dec) {T : ℕ → ℝ → ℝ} {P : Program} 
   · obtain ⟨σ', c, hrun, hc, hanswer⟩ :=
       w.ends_of_body x (w.body_ends_zero P p κ x hn (w.room need x))
     have hc' : (c : ℝ) ≤ w.extra κ := by exact_mod_cast hc.trans (by unfold extra bodySteps; omega)
-    exact ⟨w.limits need x, σ', c, hrun, by linarith [le_max_right (T x.n x.U) 0], hinput,
+    exact ⟨w.limits need x, σ', c, hrun, by grind, hinput,
       hsmall x hU, hanswer⟩
   · obtain ⟨σ', c, hrun, hc, hanswer⟩ :=
       w.ends_of_body x (w.body_ends hsol κ x hn hU (w.room need x))
     have hc' : (c : ℝ) ≤ (Tn x.n x.U : ℝ) + w.extra κ := by
       exact_mod_cast hc.trans (by unfold extra; omega)
     have hTn := hT x.n x.U x.U hn (hU ▸ Nat.one_le_pow _ _ hn) le_rfl
-    exact ⟨w.limits need x, σ', c, hrun, by linarith [le_max_left (T x.n x.U) 0], hinput,
+    exact ⟨w.limits need x, σ', c, hrun, by grind, hinput,
       hsmall x hU, hanswer⟩
 
 /-- **If the task is solved in time T, the problem is solved on the word RAM within a constant times

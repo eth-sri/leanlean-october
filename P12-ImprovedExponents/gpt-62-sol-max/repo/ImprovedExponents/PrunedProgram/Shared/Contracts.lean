@@ -24,7 +24,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean` and
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {p : Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
   {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
@@ -57,7 +57,7 @@ theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
   have henc : ∀ {a β i : ℕ}, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
       i < p.T → μ' (a + β * p.T + i) = μ (a + β * p.T + i) := fun ha hend hβ hi => by
     have := Nat.mul_add_lt_mul hβ hi
-    exact hag _ (by omega) (by omega) (by omega)
+    grind
   have hT : p.T = 10 ^ p.L := rfl
   refine
     { tb with
@@ -66,8 +66,7 @@ theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
       encB := fun β hβ => (h.encB β hβ).congr fun i hi =>
         henc (by omega) (by omega) hβ (hT ▸ hi) }
   simp only [dirList, List.length_map, List.length_cons, List.length_nil] at hi
-  simp only [Par.aDIR]
-  exact hag _ (by omega) (by omega) (by omega)
+  grind
 
 /-- What the pruned shared stage leaves behind is kept by a memory that agrees on all cells below
 the end of the shared block, but for cell 31 of the directory. -/

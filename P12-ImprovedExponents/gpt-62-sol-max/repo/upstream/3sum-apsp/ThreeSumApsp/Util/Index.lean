@@ -65,15 +65,6 @@ theorem mod_lt_of_lt_mul {t m n : ℕ} (h : t < m * n) : t % n < n :=
 theorem exists_eq_mul_add_of_lt_mul {t m n : ℕ} (h : t < m * n) : ∃ a < m, ∃ b < n, t = a * n + b :=
   ⟨t / n, div_lt_of_lt_mul' h, t % n, mod_lt_of_lt_mul h, (Nat.div_add_mod' t n).symm⟩
 
-/-- The indices of the diagonal are the multiples of `n + 1`. -/
-theorem eq_mul_succ_iff {n i t : ℕ} (hi : i < n) : t = i * (n + 1) ↔ t / n = i ∧ t % n = i := by
-  constructor
-  · rintro rfl
-    rw [Nat.mul_succ]
-    exact ⟨mul_add_div_of_lt hi, Nat.mul_add_mod_of_lt hi⟩
-  · rintro ⟨hdiv, hmod⟩
-    rw [Nat.mul_succ, ← Nat.div_add_mod' t n, hdiv, hmod]
-
 /-! ## The next index -/
 
 /-- The next index, if it is in the same row. -/
@@ -93,10 +84,8 @@ theorem succ_div_mod_of_eq {n i : ℕ} (h : i % n + 1 = n) :
   have hn : 0 < n := h ▸ Nat.succ_pos _
   have hsucc : i + 1 = (i / n + 1) * n + 0 := by
     have hdivmod := Nat.div_add_mod' i n
-    rw [Nat.succ_mul]
-    -- `i = i / n * n + i % n` and `i % n + 1 = n`
-    omega
-  exact ⟨by rw [hsucc, mul_add_div_of_lt hn], by rw [hsucc, Nat.mul_add_mod_of_lt hn]⟩
+    lia
+  simp_all
 
 end Nat
 

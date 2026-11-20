@@ -1,5 +1,7 @@
 module
 
+import ThreeSumApsp.Lang.Symbolic
+
 public import ImprovedExponents.PrunedProgram.Wrapper.Preprocessing
 
 @[expose] public section
@@ -18,7 +20,7 @@ Adapted from upstream (Apache-2.0).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ImprovedExponents
 
 variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
@@ -37,24 +39,11 @@ theorem ready31P_congr (h : Ready31P G X Y aX aY fr μ)
     (hX : ∀ a, aX ≤ a → a < aX + N * D₀ → μ' a = μ a)
     (hY : ∀ a, aY ≤ a → a < aY + D₀ * N → μ' a = μ a) (hfr : ∀ a, fr ≤ a → μ' a = μ a) :
     Ready31P G X Y aX aY fr μ' := by
-  refine ⟨fun i j => ?_, fun i j => ?_, fun hs => ?_, fun hl => ?_⟩
-  · rw [hX _ (by omega) ?_]
-    · exact h.matX i j
-    · have := Nat.mul_add_le_mul i.isLt (le_refl D₀)
-      have := j.isLt
-      omega
-  · rw [hY _ (by omega) ?_]
-    · exact h.matY i j
-    · have := Nat.mul_add_le_mul i.isLt (le_refl N)
-      have := j.isLt
-      omega
-  · rw [hfr _ le_rfl]
-    exact h.small hs
+  refine ⟨h.matX.congr hX, h.matY.congr hY, fun hs => ?_, fun hl => ?_⟩
+  · simpa only [hfr _ le_rfl] using h.small hs
   · obtain ⟨h1, h2, h3⟩ := h.large hl
-    refine ⟨by rw [hfr _ le_rfl]; exact h1, by rw [hfr _ (by omega)]; exact h2,
-      dsReadyP_congr h3 fun a ha => hfr a ?_⟩
-    unfold blockAt at ha
-    omega
+    exact ⟨by rwa [hfr _ le_rfl], by rwa [hfr _ (by omega)],
+      dsReadyP_congr h3 fun a ha => hfr a (by unfold blockAt at ha; omega)⟩
 
 /-- offline32P writes the wanted entries of XY to out. Below fr it changes only the output; nothing
 is assumed about the cells from fr on. -/
@@ -76,52 +65,6 @@ theorem OfflineSpec32P.append {c : ℕ} (h : OfflineSpec32P lim P c G) (R : Prog
   fun N D₀ aX aY aI aJ out fr X Y U u μ WI WJ hg hin d hd =>
     (h N D₀ aX aY aI aJ out fr X Y U u μ WI WJ hg hin d hd).append R
 
-/-- **One round**: the answer for position i joins the answers that are there. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean
--- (offlineAsk32_ends)
-theorem offlineAsk32P_ends (hq : QuerySpec31P lim P G) {aI aJ out d : ℕ}
-    {u : ℤ} {WI WJ : List ℕ} (hg : Input31 lim G X Y aX aY fr U)
-    (hin : OfflineInput32 X Y aX aY aI aJ out fr WI WJ μ) (hd : d + 4 ≤ lim.depth) {i : ℕ}
-    (hi : i < WI.length) (r : ℤ)
-    (hinv : Answered (Ready31P G X Y aX aY fr) (· < fr) out
-      ((WI.zip WJ).map fun q => entryN X Y q.1 q.2) μ i μ') :
-    Ends lim P d offlineAsk32 ⟨frame [N, D₀, WI.length, u, aX, aY, aI, aJ, out, fr, i, r], μ'⟩
-      (tQuery31 G D₀ + 20) fun σ' => ∃ (r' : ℤ) (μ'' : ℕ → ℤ),
-        σ' = ⟨frame [N, D₀, WI.length, u, aX, aY, aI, aJ, out, fr, i, r'], μ''⟩ ∧
-        Answered (Ready31P G X Y aX aY fr) (· < fr) out
-          ((WI.zip WJ).map fun q => entryN X Y q.1 q.2) μ (i + 1) μ'' := by
-  have hw := hg.lim.std.space_le
-  have hspace := hg.lim.space
-  have hfr3 := add_three_le_structEnd G N D₀ fr
-  have hlen := hin.length_eq
-  have hrows := hin.rows_le
-  have hcols := hin.cols_le
-  have hout := hin.out_le
-  have hiJ : i < WJ.length := by omega
-  have hIN : WI[i] < N := hin.rows_lt _ (List.getElem_mem hi)
-  have hJN : WJ[i] < N := hin.cols_lt _ (List.getElem_mem hiJ)
-  -- the two indices are still in place
-  have hrow : μ' (aI + i) = ((WI[i] : ℕ) : ℤ) :=
-    (hinv.read hin.rows (j := i) (by simpa using hi)
-      (by rcases hin.out_rows with h | h <;> omega) (by omega)).trans (List.getElem_map _)
-  have hcol : μ' (aJ + i) = ((WJ[i] : ℕ) : ℤ) :=
-    (hinv.read hin.cols (j := i) (by simpa using hiJ)
-      (by rcases hin.out_cols with h | h <;> omega) (by omega)).trans (List.getElem_map _)
-  -- Res := query31(mem[Rows + Pos], mem[Cols + Pos], N, D, x, y, fr)
-  refine Ends.callToThen (hq N D₀ aX aY fr X Y U μ' ⟨WI[i], hIN⟩ ⟨WJ[i], hJN⟩ hg hinv.ready _
-    (by omega)) ?_
-    (ha := by light_side [hrow, hcol])
-  rintro _ μ₂ ⟨rfl, hready, hquery⟩
-  -- mem[Out + Pos] := Res
-  light_store (out + i) ((X * Y) ⟨WI[i], hIN⟩ ⟨WJ[i], hJN⟩)
-  have hstep := hinv.step (by simpa [hlen] using hi) hquery (fun j hj => Or.inl (by omega))
-    (fun a ha => Or.inl (by omega)) (ready31P_congr hready
-      (fun a h1 h2 => Function.update_of_ne (by rcases hin.out_matX with h | h <;> omega) _ _)
-      (fun a h1 h2 => Function.update_of_ne (by rcases hin.out_matY with h | h <;> omega) _ _)
-      fun a ha => Function.update_of_ne (by omega) _ _)
-  rw [List.getElem_map, List.getElem_zip, entryN, dite_eq_left ⟨hIN, hJN⟩] at hstep
-  exact ⟨_, _, rfl, hstep⟩
-
 /-- offline32P meets its specification if the pruned preprocessing and the query meet theirs. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean
 -- (offline32_meets)
@@ -134,33 +77,42 @@ theorem offline32P_meets {c : ℕ} (hP : P[Proc.offline32P]? = some offline32PBo
   have hfr3 := add_three_le_structEnd G N D₀ fr
   have hlen := hin.length_eq
   have hout := hin.out_le
-  have hzip : (WI.zip WJ).length = WI.length := by simp [hlen]
   -- Res := pre31P(N, D, x, y, fr)
   refine Ends.callToThen (hpre N D₀ aX aY fr X Y U μ hg hin.matX hin.matY _ (by omega)) ?_
     (hT := by simp [tOffline32P]; omega)
   rintro r μ₁ ⟨hready, hblock⟩
-  -- for Pos < Count: offlineAsk32
-  refine Ends.for (fun i σ => ∃ (r : ℤ) (μ' : ℕ → ℤ),
-      σ = ⟨frame [N, D₀, WI.length, u, aX, aY, aI, aJ, out, fr, i, r], μ'⟩ ∧
-      Answered (Ready31P G X Y aX aY fr) (· < fr) out
-        ((WI.zip WJ).map fun q => entryN X Y q.1 q.2) μ i μ')
-    WI.length (tQuery31 G D₀ + 20) ?start ?round ?done ?bound
-    (hT := by simp [tOffline32P]; ring_nf; omega)
-  case start =>
-    exact ⟨r, μ₁, by rw [update_frame_setLocal]; rfl, hready, Seg.nil,
-      SameOn.mono hblock fun a ha => Or.inl ha.2⟩
-  case bound =>
-    rintro i _ - - ⟨r, μ', rfl, -⟩
-    simp
-  case done =>
-    rintro _ - ⟨r, μ', rfl, hinv⟩
-    rw [← hzip, ← List.length_map (as := WI.zip WJ) fun q => entryN X Y q.1 q.2] at hinv
-    refine ⟨hinv.all, fun a ha hoff => hinv.same a ⟨?_, ha⟩⟩
-    simpa [hlen] using hoff
-  case round =>
-    rintro i _ hi - ⟨r, μ', rfl, hinv⟩
-    refine (offlineAsk32P_ends hq hg hin (by omega) hi r hinv).mono le_rfl ?_
-    rintro _ ⟨r', μ'', rfl, hinv'⟩
-    exact ⟨by simp, r', μ'', by rw [update_frame_setLocal]; rfl, hinv'⟩
+  let ans := (WI.zip WJ).map fun q => entryN X Y q.1 q.2
+  have hlenAns : ans.length = WI.length := by simp [ans, hlen]
+  refine Ends.forShape (fun i r ν => ⟨frame [N, D₀, WI.length, u, aX, aY, aI, aJ, out, fr, i, r], ν⟩)
+    (fun i _ => Answered (Ready31P G X Y aX aY fr) (· < fr) out ans μ i) WI.length
+    (tQuery31 G D₀ + 20) r ⟨hready, Seg.nil, SameOn.mono hblock fun a ha => Or.inl ha.2⟩ ?_ ?_
+    (hT := by light_time [tOffline32P])
+  case refine_2 =>
+    intro _ ν hinv
+    exact ⟨(hlenAns ▸ hinv : Answered _ _ out ans μ ans.length ν).all,
+      fun a ha hoff => hinv.same a ⟨hoff, ha⟩⟩
+  intro i _ ν hi hinv
+  have hiJ : i < WJ.length := by omega
+  have hrows := hin.rows_le
+  have hcols := hin.cols_le
+  have hIN : WI[i] < N := hin.rows_lt _ (List.getElem_mem hi)
+  have hJN : WJ[i] < N := hin.cols_lt _ (List.getElem_mem hiJ)
+  have read {l : List ℕ} {a : ℕ} (hs : SegN μ a l) (hl : i < l.length)
+      (ha : a + l.length ≤ fr) (hd : Apart out WI.length a l.length) : ν (a + i) = (l[i] : ℕ) :=
+    (hinv.read hs (by simpa using hl) (by omega) (by omega)).trans (List.getElem_map _)
+  unfold offlineAsk32
+  light_call (hq N D₀ aX aY fr X Y U ν ⟨WI[i], hIN⟩ ⟨WJ[i], hJN⟩ hg hinv.ready _ (by omega))
+    using read hin.rows hi hin.rows_le hin.out_rows,
+      read hin.cols hiJ (by rw [hlen]; exact hin.cols_le) (by rw [hlen]; exact hin.out_cols)
+    with _ ν' ⟨rfl, hready', hquery⟩
+  light_step
+  have hstep := hinv.step (by omega) hquery (fun j hj => Or.inl (by omega))
+    (fun a ha => Or.inl (by omega)) (ready31P_congr hready'
+      (fun a h1 h2 => Function.update_of_ne (by have := hin.out_matX; omega) _ _)
+      (fun a h1 h2 => Function.update_of_ne (by have := hin.out_matY; omega) _ _)
+      fun a ha => Function.update_of_ne (by omega) _ _)
+  dsimp only [ans] at hstep
+  rw [List.getElem_map, List.getElem_zip, entryN, dite_eq_left ⟨hIN, hJN⟩] at hstep
+  exact ⟨_, _, rfl, hstep⟩
 
 end Light.Sec4

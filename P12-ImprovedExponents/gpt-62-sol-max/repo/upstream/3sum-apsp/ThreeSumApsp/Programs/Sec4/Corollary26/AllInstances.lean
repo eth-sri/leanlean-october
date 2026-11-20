@@ -6,7 +6,12 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
-public import ThreeSumApsp.Programs.Sec4.Corollary26.Regime
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
+public import ThreeSumApsp.Sec4.Corollary31.RationalParameters
+public import ThreeSumApsp.Sec4.ParameterSteps
+public import ThreeSumApsp.Sec4.Table2.LogBounds
+public import ThreeSumApsp.Util.Asymptotics.Dominated
+public import ThreeSumApsp.Util.Log
 
 /-!
 # Corollary 26, the offline form, on all instances
@@ -35,7 +40,7 @@ offline routine offline32 if so and the brute force if not. The texts are `allIn
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+
 
 /-! ## Time and need -/
 
@@ -43,11 +48,6 @@ open ThreeSumApsp ThreeSumApsp.Spec
 
 /-! ## The limits -/
 
-section need
-
-variable {lim : Limits} {N D₀ w U fr d : ℕ}
-
-end need
 
 /-! ## The matrices of an instance -/
 
@@ -63,7 +63,6 @@ theorem matAt_thinMX {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ 
   have hlt : (i : ℕ) * x.D + j < x.X.length := by
     rw [h.lenX]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.D)
-    have := j.isLt
     omega
   rw [Nat.add_assoc, h.segX.getD hlt 0]
   rfl
@@ -74,7 +73,6 @@ theorem matAt_thinMY {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ 
   have hlt : (i : ℕ) * x.N + j < x.Y.length := by
     rw [h.lenY]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.N)
-    have := j.isLt
     omega
   rw [Nat.add_assoc, h.segY.getD hlt 0]
   rfl
@@ -98,10 +96,5 @@ theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre 
 
 /-! ## The need is polynomial in the parameters -/
 
-section summands
-
-variable {N D U Q : ℕ}
-
-end summands
 
 end Light.Sec4

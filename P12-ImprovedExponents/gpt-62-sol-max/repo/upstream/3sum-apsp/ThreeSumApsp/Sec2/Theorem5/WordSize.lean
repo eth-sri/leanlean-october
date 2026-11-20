@@ -7,7 +7,12 @@ module
 
 public import ThreeSumApsp.Sec2.Lemma10
 public import ThreeSumApsp.Sec2.Recursion
-public import ThreeSumApsp.Sec2.Theorem5.Equation6
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import ThreeSumApsp.Sec2.Orders
+public import ThreeSumApsp.Sec2.Tiling
+public import ThreeSumApsp.Util.Choose
+public import ThreeSumApsp.Util.Sum
 
 /-!
 # Section 2.4.4: the remaining minutiae and the word size
@@ -55,13 +60,11 @@ theorem abs_bandArrayL_le {L m N : ℕ} (lay : Layout L m) {X : Matrix (Fin N) (
   · rcases sum_table_eq_zero_or lay (fun gh => rowBlock lay X (β * K0 L m + gh.1)) (innerSetL u)
       with hzero | ⟨gh, hgh⟩
     · rw [hzero]
-      simpa using hA
+      assumption
     · rw [hgh]
       unfold rowBlock padRows
-      split_ifs
-      · exact hX _ _
-      · simpa using hA
-  · simpa using hA
+      grind
+  assumption
 
 /-- Section 2.4.4, word size: "The input entries are of this size, by assumption." Every entry of
 the input array of a column band is an entry of `Y` or 0.
@@ -75,13 +78,11 @@ theorem abs_bandArrayR_le {L m N : ℕ} (lay : Layout L m) {Y : Matrix (Fin (D m
   · rcases sum_table_eq_zero_or lay (fun gh => colBlock lay Y (β * K0 L m + gh.2)) (innerSetR v)
       with hzero | ⟨gh, hgh⟩
     · rw [hzero]
-      simpa using hB
+      assumption
     · rw [hgh]
       unfold colBlock padCols
-      split_ifs
-      · exact hY _ _
-      · simpa using hB
-  · simpa using hB
+      grind
+  assumption
 
 /-- A combination of the entries of an array, with a product of coefficients 0, 1 or -1 for each
 entry, is at most the number of entries times the largest absolute value of an entry. -/

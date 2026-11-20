@@ -34,7 +34,7 @@ def bit (b : Bool) : ℤ := if b then 1 else 0
 theorem bit_unrank_zero {L m q : ℕ} (hm : m ≤ L) (hq : q < L) :
     bit ((Spec.unrank L m 0).getD q false) = if q < m then 1 else 0 := by
   rw [Spec.unrank_zero hm]
-  grind [bit]
+  aesop
 
 /-- The entries of a list of the form `pre ++ x :: y :: (u^a ++ v^b)`. -/
 private theorem getD_shape (pre : List Bool) (x y u v : Bool) (a b q : ℕ) :
@@ -80,17 +80,16 @@ def scanAt (row : ℕ → ℤ) (L : ℕ) : ℕ → Scan
 private theorem scanStep_ones (x q : ℤ) (S : Scan) :
     (scanStep x q S).ones = S.ones ∨ (scanStep x q S).ones = S.ones + 1 := by
   unfold scanStep
-  split_ifs <;> simp
+  lia
 
 /-- After `j` rounds at most `j` ones have been counted. -/
 theorem scanAt_ones_le (row : ℕ → ℤ) (L j : ℕ) :
     0 ≤ (scanAt row L j).ones ∧ (scanAt row L j).ones ≤ j := by
   induction j with
-  | zero => simp [scanAt]
+  | zero => trivial
   | succ j ih =>
     have hstep := scanStep_ones (row (L - 1 - j)) ((L : ℤ) - 1 - (j : ℤ)) (scanAt row L j)
     rw [scanAt]
-    push_cast
     omega
 
 section shape
@@ -103,7 +102,6 @@ include hL hrow
 before them, and 1 for the cell before these. -/
 private theorem row_sub (j : ℕ) (hj : j ≤ b + a + 1) :
     row (L - 1 - j) = if j < b then 1 else if j < b + a + 1 then 0 else 1 := by
-  rw [hrow _ (by omega), getD_shape]
   grind [bit]
 
 /-- Phase 0: the `b` ones at the end of the row are counted. -/
@@ -112,7 +110,7 @@ private theorem scanAt_count (j : ℕ) (hj : j ≤ b) : scanAt row L j = ⟨0, j
   | zero => rfl
   | succ j ih =>
     rw [scanAt, ih (by omega), row_sub hL hrow j (by omega), if_pos (by omega)]
-    simp [scanStep]
+    rfl
 
 /-- Phase 1: the `a + 1` zeros before the ones are passed. -/
 private theorem scanAt_pass (i : ℕ) (hi : i ≤ a) : scanAt row L (b + 1 + i) = ⟨1, b, 0⟩ := by
@@ -120,11 +118,11 @@ private theorem scanAt_pass (i : ℕ) (hi : i ≤ a) : scanAt row L (b + 1 + i) 
   | zero =>
     rw [Nat.add_zero, scanAt, scanAt_count hL hrow b le_rfl, row_sub hL hrow b (by omega),
       if_neg (by omega), if_pos (by omega)]
-    simp [scanStep]
+    rfl
   | succ i ih =>
     rw [← Nat.add_assoc, scanAt, ih (by omega), row_sub hL hrow _ (by omega), if_neg (by omega),
       if_pos (by omega)]
-    simp [scanStep]
+    rfl
 
 /-- Phase 2: the 1 before the `a + 1` zeros is found, at the position after `pre`, and from then on
 the state stays as it is. -/
@@ -135,16 +133,14 @@ private theorem scanAt_found (i : ℕ) (hi : i ≤ pre.length) :
     rw [Nat.add_zero, scanAt, scanAt_pass hL hrow a le_rfl, row_sub hL hrow _ (by omega),
       if_neg (by omega), if_neg (by omega),
       show (L : ℤ) - 1 - ((b + 1 + a : ℕ) : ℤ) = pre.length by omega]
-    simp [scanStep]
+    rfl
   | succ i ih =>
     rw [← Nat.add_assoc, scanAt, ih (by omega)]
     rfl
 
 /-- The scan of a row of the shape `pre 1 0 0^a 1^b` finds `b` and the length of `pre`. -/
 private theorem scanAt_shape : scanAt row L L = ⟨2, b, pre.length⟩ := by
-  rw [← scanAt_found hL hrow pre.length le_rfl]
-  congr 1
-  omega
+  grind [scanAt_found]
 
 end shape
 
@@ -174,8 +170,7 @@ theorem scanAt_fits : (scanAt row L L).Fits L := by
   obtain ⟨pre, a, b, hL, hthis, -⟩ := Spec.unrank_succ_shape hs
   rw [hthis] at hrow
   rw [scanAt_shape hL hrow, Scan.Fits]
-  dsimp only
-  omega
+  simp_all
 
 end next
 

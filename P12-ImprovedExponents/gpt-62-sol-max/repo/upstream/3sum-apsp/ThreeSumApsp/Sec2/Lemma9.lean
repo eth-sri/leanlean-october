@@ -84,8 +84,8 @@ private theorem eq_x_y_of_gamma_ne_zero {s : LeftVar} {t : RightVar} {i j : Fin 
     · by_contra hne
       exact h ((gamma_x_y_z i' j' i j).trans
         (if_neg fun ⟨hi, hj⟩ => hne ⟨hi ▸ rfl, hj ▸ rfl⟩))
-    · exact (ht trivial).elim
-  · exact (hs trivial).elim
+    solve_by_elim
+  solve_by_elim
 
 /-- The summands of Lemma 8 that can be nonzero. Let `w` be the output string with inner
 set `Q`, row `r` and column `c`. If `γ(u_ℓ, v_ℓ, w_ℓ) ≠ 0` at every level and the inner sets of `u`
@@ -127,7 +127,7 @@ private theorem prod_gamma_eq_one {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card 
       glue_outerLevel]
     exact ⟨fun _ => (gamma_z0 _ _).trans (if_pos ⟨_, _, rfl, rfl⟩),
       fun _ => (gamma_x_y_z _ _ _ _).trans (if_pos ⟨rfl, rfl⟩)⟩
-  exact prod_eq_one fun ℓ _ => hone ℓ
+  simp_all
 
 /-- Lemma 9 for the output string with inner set `Q`, row `r` and column `c`: by Lemma 8 the entry
 is a sum over all pairs `(u, v)`, and the summands that remain are those of the matrix product. -/
@@ -148,11 +148,11 @@ theorem Mult_arrays_eq_mul {L m : ℕ} (X : Finset (Fin L) → LeftMat L m)
     by_contra hne
     obtain ⟨⟨hγ, ha⟩, hb⟩ : ((∏ ℓ, gamma (u ℓ) (v ℓ) (outStrOf Q hQ r c ℓ)) ≠ 0
         ∧ arrayL m X u ≠ 0) ∧ arrayR m Y v ≠ 0 := by
-      simpa only [mul_ne_zero_iff] using hne
+      simp_all
     obtain ⟨π, rfl, rfl⟩ := exists_of_summand_ne_zero Q hQ r c
       (fun ℓ => prod_ne_zero_iff.mp hγ ℓ (mem_univ ℓ))
       (by_contra fun h => ha (dif_neg h)) (by_contra fun h => hb (dif_neg h))
-    exact hnot ⟨π, rfl⟩
+    grind
   · -- The summand of `π` is `1 · X_Q[r, π] · Y_Q[π, c]`.
     intro π
     rw [prod_gamma_eq_one, one_mul, arrayL_leftStrOf, arrayR_rightStrOf]

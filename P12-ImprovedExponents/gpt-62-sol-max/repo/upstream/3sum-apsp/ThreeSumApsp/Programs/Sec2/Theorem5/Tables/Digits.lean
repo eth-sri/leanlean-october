@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+import ThreeSumApsp.Lang.WhileShape
+public import ThreeSumApsp.Lang.Lib.Pass
+
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 
 /-!
@@ -19,14 +23,12 @@ row x + 1 is row x plus one, formed from the least significant digit on with a c
 * The pure side: `carryInto b j x` is the carry into the place of weight b^j when 1 is added to x,
   defined as the routine computes it, and `placeDigit_succ` says that a place of x plus its carry,
   reduced if it reaches b, is the place of x + 1.
-* `digitsPlace_spec` treats one place, `digitsInner_spec` one row, `digitsZero_spec` row 0, and
-  `digits_spec` runs through the rows; `digits_entry` is the specification that the callers of the
-  procedure assume.
+* `digits_spec` verifies both traversals; `digits_entry` is the specification used by callers.
 -/
 
 @[expose] public section
 
-open ThreeSumApsp
+
 
 namespace Light.Sec2
 
@@ -49,11 +51,7 @@ private theorem placeDigit_lt {b : ℕ} (hb : 0 < b) (j x : ℕ) : placeDigit b 
 
 /-- A carry is 0 or 1. -/
 private theorem carryInto_le_one (b j x : ℕ) : carryInto b j x ≤ 1 := by
-  cases j with
-  | zero => exact le_rfl
-  | succ j =>
-    rw [carryInto]
-    split_ifs <;> omega
+  cases j <;> grind [carryInto]
 
 /-- Adding a carry c to q: the last digit of q grows by c, or becomes 0 and gives a carry. -/
 private theorem add_carry {b : ℕ} (hb : 0 < b) (q : ℕ) {c : ℕ} (hc : c ≤ 1) :
@@ -61,7 +59,7 @@ private theorem add_carry {b : ℕ} (hb : 0 < b) (q : ℕ) {c : ℕ} (hc : c ≤
       (q + c) % b = if q % b + c < b then q % b + c else 0 := by
   have hlt : q % b < b := Nat.mod_lt q hb
   obtain rfl | rfl : c = 0 ∨ c = 1 := by omega
-  · simp [hlt]
+  · simp_all
   · split_ifs with h
     · exact Nat.succ_div_mod_of_lt h
     · exact Nat.succ_div_mod_of_eq (by omega)
@@ -70,7 +68,7 @@ private theorem add_carry {b : ℕ} (hb : 0 < b) (q : ℕ) {c : ℕ} (hc : c ≤
 private theorem succ_div_pow {b : ℕ} (hb : 0 < b) (j x : ℕ) :
     (x + 1) / b ^ j = x / b ^ j + carryInto b j x := by
   induction j with
-  | zero => simp [carryInto]
+  | zero => aesop
   | succ j ih =>
     rw [pow_succ, ← Nat.div_div_eq_div_mul, ih, (add_carry hb _ (carryInto_le_one b j x)).1,
       Nat.div_div_eq_div_mul]
@@ -81,8 +79,7 @@ this reaches b. -/
 theorem placeDigit_succ {b : ℕ} (hb : 0 < b) (j x : ℕ) :
     placeDigit b j (x + 1) =
       if placeDigit b j x + carryInto b j x < b then placeDigit b j x + carryInto b j x else 0 := by
-  rw [placeDigit, succ_div_pow hb, (add_carry hb _ (carryInto_le_one b j x)).2]
-  rfl
+  grind [placeDigit, succ_div_pow, add_carry, carryInto_le_one]
 
 /-- The digits below place len do not change when the number is reduced modulo b^len. -/
 private theorem mod_pow_div_mod (b c : ℕ) {j len : ℕ} (hj : j < len) :
@@ -94,24 +91,14 @@ private theorem mod_pow_div_mod (b c : ℕ) {j len : ℕ} (hj : j < len) :
 private theorem getElem_digitList {b len x q : ℕ} (hq : q < len)
     (h : q < (ThreeSumApsp.digitList b len (x % b ^ len)).length) :
     (ThreeSumApsp.digitList b len (x % b ^ len))[q] = placeDigit b (len - 1 - q) x := by
-  simp [ThreeSumApsp.digitList, ThreeSumApsp.digit, placeDigit,
-    mod_pow_div_mod b x (show len - 1 - q < len by omega)]
+  grind [ThreeSumApsp.digitList, ThreeSumApsp.digit, placeDigit, mod_pow_div_mod]
 
 /-! ## The program -/
 
 /-- The local variables of digits: Total = n, Base = b, Len = len, Dest = dst (the arguments); Row
 is the number of the row being written, Cur its address and Prev the address of the row before it;
 Place is the place, Carry the carry into it, and Digit the new digit. -/
-abbrev Total : ℕ := 0
-@[inherit_doc Total] abbrev Base : ℕ := 1
-@[inherit_doc Total] abbrev Len : ℕ := 2
-@[inherit_doc Total] abbrev Dest : ℕ := 3
-@[inherit_doc Total] abbrev Row : ℕ := 4
-@[inherit_doc Total] abbrev Cur : ℕ := 5
-@[inherit_doc Total] abbrev Prev : ℕ := 6
-@[inherit_doc Total] abbrev Place : ℕ := 7
-@[inherit_doc Total] abbrev Carry : ℕ := 8
-@[inherit_doc Total] abbrev Digit : ℕ := 9
+registers [Total, Base, Len, Dest, Row, Cur, Prev, Place, Carry, Digit]
 
 end Digits
 
@@ -141,12 +128,8 @@ def digitsRow : Stmt :=
   .set Prev (v Cur) ;;
   .set Cur (v Cur +' v Len)
 
-/-- Row 0 is zero.  The place is not set at the beginning: local variables that are not arguments
-start at 0. -/
-def digitsZero : Stmt :=
-  .while (v Place <' v Len) (
-    .store (v Dest +' v Place) (k 0) ;;
-    .set Place (v Place +' k 1))
+/-- Row 0 is zero. -/
+def digitsZero : Stmt := pass Place (v Len) (v Dest) (k 0)
 
 /-- digits(n, b, len, dst). -/
 def digitsBody : Stmt :=
@@ -175,147 +158,7 @@ theorem Placed.step {μ μ' : ℕ → ℤ} {b len cur y r : ℕ} (h : Placed μ 
   rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
   · rw [Function.update_of_ne (by omega)]
     exact h.1 j hj
-  · exact Function.update_self ..
-
-/-- The state after r places: the place is len - r, and the carry is the carry into place r. -/
-def Inv (μ : ℕ → ℤ) (n b len dst row cur prev y r : ℕ) (σ : State) : Prop :=
-  ∃ (x : ℤ) (μ' : ℕ → ℤ),
-    σ = ⟨frame [n, b, len, dst, row, cur, prev, (len - r : ℕ), carryInto b r y, x], μ'⟩ ∧
-      Placed μ b len cur y r μ'
-
-variable {μ : ℕ → ℤ} {n b len dst row cur prev y : ℕ} {T : ℕ} {Q : State → Prop}
-
-/-- **One place** of the new row is written, and the carry into the next place is formed. -/
-theorem digitsPlace_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim.word)
-    (hcur : cur + len ≤ lim.space) (hprev : prev + len ≤ cur)
-    (hrow : ∀ q < len, μ (prev + q) = (placeDigit b (len - 1 - q) y : ℕ)) {r : ℕ} (hr : r < len)
-    {σ : State} (h : Inv μ n b len dst row cur prev y r σ) :
-    Ends lim P d digitsPlace σ digitsPlace.blockCost
-      (Inv μ n b len dst row cur prev y (r + 1)) := by
-  obtain ⟨x, μ', rfl, hI⟩ := h
-  light_facts std
-  have hdigit := placeDigit_lt (show 0 < b by omega) r y
-  have hcarry := carryInto_le_one b r y
-  have hnew := placeDigit_succ (show 0 < b by omega) r y
-  have hstep := hI.step hr
-  rw [show len - 1 - r = len - (r + 1) by omega, hnew] at hstep
-  -- The digit of the row before has not been overwritten.
-  have hread : μ' (prev + (len - (r + 1))) = (placeDigit b r y : ℕ) := by
-    rw [hI.2 _ (Or.inl (by omega)), hrow _ (by omega), show len - 1 - (len - (r + 1)) = r by omega]
-  unfold digitsPlace
-  -- Place := Place - 1; Digit := mem[Prev + Place] + Carry
-  light_set (len - (r + 1) : ℕ)
-  light_set (placeDigit b r y + carryInto b r y : ℕ) using hread
-  -- if Digit < b
-  refine Ends.iteLast (fun hc => ?_) fun hc => ?_
-  · -- No carry out of this place: mem[Cur + Place] := Digit; Carry := 0
-    have hlt : placeDigit b r y + carryInto b r y < b := by simp at hc; omega
-    rw [if_pos hlt] at hstep
-    refine Ends.storeToThen (cur + (len - (r + 1))) ((placeDigit b r y + carryInto b r y : ℕ) : ℤ)
-      (Ends.setTo ((0 : ℕ) : ℤ) ⟨((placeDigit b r y + carryInto b r y : ℕ) : ℤ), _, ?_, hstep⟩)
-    rw [carryInto, if_pos hlt]
-    rfl
-  · -- A carry out of this place, so the carry into it was 1 and stays: mem[Cur + Place] := 0
-    have hlt : ¬ placeDigit b r y + carryInto b r y < b := by simp at hc; omega
-    rw [if_neg hlt] at hstep
-    refine Ends.storeTo (cur + (len - (r + 1))) ((0 : ℕ) : ℤ)
-      ⟨((placeDigit b r y + carryInto b r y : ℕ) : ℤ), _, ?_, hstep⟩
-    rw [carryInto, if_neg hlt, show carryInto b r y = 1 by omega]
-    rfl
-
-/-- **One row**: the loop over the places writes the row of y + 1 to the len cells from cur, from
-the row of y in the len cells from prev. -/
-theorem digitsInner_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim.word)
-    (hcur : cur + len ≤ lim.space) (hprev : prev + len ≤ cur)
-    (hrow : ∀ q < len, μ (prev + q) = (placeDigit b (len - 1 - q) y : ℕ)) {x₀ : ℤ}
-    (done : ∀ (c x : ℤ) (μ' : ℕ → ℤ),
-      (∀ q < len, μ' (cur + q) = (placeDigit b (len - 1 - q) (y + 1) : ℕ)) →
-      SameOutside μ μ' cur len → Q ⟨frame [n, b, len, dst, row, cur, prev, 0, c, x], μ'⟩)
-    (hT : 26 * len + 4 ≤ T) :
-    Ends lim P d digitsInner ⟨frame [n, b, len, dst, row, cur, prev, len, 1, x₀], μ⟩ T Q := by
-  have h100 := std.const_le
-  -- while 0 < Place
-  refine Ends.whileConst (Inv μ n b len dst row cur prev y) len digitsPlace.blockCost ?start ?round
-    ?done
-    (by simp [digitsPlace]; omega)
-  case start => exact ⟨x₀, μ, rfl, fun j hj => absurd hj (by omega), .refl⟩
-  case round =>
-    intro r σ hr h
-    have hplace := digitsPlace_spec (P := P) (d := d) std hb hbw hcur hprev hrow hr h
-    obtain ⟨x, μ', rfl, -⟩ := h
-    exact ⟨by light_side, by light_side, hplace⟩
-  case done =>
-    rintro _ ⟨x, μ', rfl, hcells, same⟩
-    refine ⟨by light_side, by light_side, ?_⟩
-    have hdone := done (carryInto b len y) x μ' (fun q hq => ?_) same
-    · simpa using hdone
-    · rw [← hcells (len - 1 - q) (by omega), show len - 1 - (len - 1 - q) = q by omega]
-
-/-! ## The loop over the rows -/
-
-/-- The state after the rows 0, …, i have been written: they stand in the table, and no cell outside
-the table has changed. -/
-def RowsDone (μ : ℕ → ℤ) (n b len dst i : ℕ) (σ : State) : Prop :=
-  ∃ (p c x : ℤ) (μ' : ℕ → ℤ), σ = ⟨frame [n, b, len, dst, (i + 1 : ℕ), (dst + (i + 1) * len : ℕ),
-      (dst + i * len : ℕ), p, c, x], μ'⟩ ∧
-    (∀ y < i + 1, ∀ q < len, μ' (dst + y * len + q) = (placeDigit b (len - 1 - q) y : ℕ)) ∧
-    SameOutside μ μ' dst (n * len)
-
-/-- The time of one round of the loop over the rows. -/
-def tRow (len : ℕ) : ℕ := 26 * len + 18
-
-/-- **One round of the loop over the rows** writes row `i + 1`, the digits of `i + 1`, from row
-`i`. -/
-theorem digitsRow_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim.word)
-    (hsp : dst + n * len ≤ lim.space) (hnw : (n : ℤ) ≤ lim.word) {i : ℕ} (hi : i + 1 < n)
-    {σ : State} (h : RowsDone μ n b len dst i σ) :
-    Ends lim P d digitsRow σ (tRow len) (RowsDone μ n b len dst (i + 1)) := by
-  obtain ⟨p, c, x, μ', rfl, hrows, same⟩ := h
-  light_facts std
-  have hroom : (i + 1) * len + len ≤ n * len := Nat.mul_add_le_mul hi le_rfl
-  have hsucc : (i + 1) * len = i * len + len := Nat.succ_mul i len
-  unfold digitsRow tRow
-  -- Place := len; Carry := 1
-  light_set len
-  light_set 1
-  -- while 0 < Place
-  refine Ends.next _ (digitsInner_spec (y := i) std hb hbw (by omega) (by omega)
-    (fun q hq => hrows i (by omega) q hq) ?_ le_rfl)
-  intro c' x' μ'' hnew same'
-  -- Row := Row + 1; Prev := Cur; Cur := Cur + len
-  light_set (i + 1 + 1 : ℕ)
-  light_set (dst + (i + 1) * len : ℕ)
-  light_set (dst + (i + 1 + 1) * len : ℕ) using Nat.succ_mul
-  refine ⟨_, _, _, _, rfl, fun y hy q hq => ?_,
-      same.trans (same'.mono (by omega) (by omega))⟩
-  rcases Nat.lt_succ_iff_lt_or_eq.1 hy with hy | rfl
-  · -- An earlier row lies before the cells that were written.
-    have hbefore : y * len + len ≤ (i + 1) * len := Nat.mul_add_le_mul hy le_rfl
-    rw [same' _ (Or.inl (by omega))]
-    exact hrows y hy q hq
-  · exact hnew q hq
-
-/-- **Row 0** is zero. -/
-theorem digitsZero_spec (std : Std lim) (hsp : dst + len ≤ lim.space)
-    (done : Q ⟨frame [n, b, len, dst, 0, 0, 0, len], wrote μ dst (fun _ => 0) len⟩)
-    (hT : 13 * len + 4 ≤ T) :
-    Ends lim P d digitsZero ⟨frame [n, b, len, dst], μ⟩ T Q := by
-  light_facts std
-  -- while Place < len
-  refine Ends.whileBlock (fun q σ => σ =
-    ⟨frame [n, b, len, dst, 0, 0, 0, q], wrote μ dst (fun _ => 0) q⟩) len ?start ?round ?done
-  case start =>
-    -- The place starts at 0.
-    rw [wrote_zero, ← frame_append_zeros _ 4]
-    rfl
-  case round =>
-    rintro q _ hq rfl
-    -- mem[dst + Place] := 0; Place := Place + 1
-    exact ⟨by light_side, by light_side, by light_side,
-      by simp [update_frame_setLocal, ← wrote_succ]⟩
-  case done =>
-    rintro _ rfl
-    exact ⟨by light_side, by light_side, done⟩
+  simp
 
 end Digits
 
@@ -330,38 +173,85 @@ theorem digits_spec (std : Std lim) (hsp : dst + n * len ≤ lim.space) (hb : 2 
   light_facts std
   -- if 0 < n
   refine Ends.iteLast (fun hpos => ?_) fun hzero => Ends.skip
-    ⟨fun x hx => absurd hx (by simp at hzero; omega), .refl⟩
+    ⟨fun x hx => absurd hx (by simp_all), .refl⟩
   obtain ⟨t, rfl⟩ : ∃ t, n = t + 1 := ⟨n - 1, by simp at hpos; omega⟩
   have hlen : (t + 1) * len = t * len + len := Nat.succ_mul t len
-  -- Row 0.
-  refine Ends.next _ (digitsZero_spec std (by omega) ?_ le_rfl) (by simp; ring_nf; omega)
-  -- Row := 1; Prev := dst; Cur := dst + len, written as the invariant at i = 0 has them
+  unfold digitsZero
+  refine Ends.next (13 * len + 6) (Ends.pass (dst := dst) (n := len) (fun _ => 0)
+    (by intros; light_side) ?_ std.space_le (by omega) rfl rfl (hT := by light_time))
+    (by light_time)
+  rw [update_frame_setLocal]
   light_set (0 + 1 : ℕ)
   light_set (dst + 0 * len : ℕ)
   light_set (dst + (0 + 1) * len : ℕ)
-  -- while Row < n; the n - 1 rounds take (n - 1) (26 len + 22) steps
-  refine Ends.whileConst (RowsDone μ (t + 1) b len dst) t (tRow len) ?start ?round ?done
-    (by simp [tRow]; ring_nf; omega)
-  case start =>
-    refine ⟨len, 0, 0, wrote μ dst (fun _ => 0) len, ?_, fun y hy q hq => ?_,
-      sameOutside_wrote (hlen ▸ Nat.le_add_left ..)⟩
-    · -- The carry and the digit start at 0.
-      rw [← frame_append_zeros _ 2]
-      rfl
-    · obtain rfl : y = 0 := by omega
-      rw [Nat.zero_mul, Nat.add_zero, wrote_done hq]
-      simp [placeDigit]
-  case round =>
-    intro i σ hi h
-    have hrow := digitsRow_spec (P := P) (d := d) std hb hbw hsp hnw (by omega) h
-    obtain ⟨p, c, x, μ', rfl, -⟩ := h
-    exact ⟨by light_side, by light_side, hrow⟩
-  case done =>
-    rintro _ ⟨p, c, x, μ', rfl, hrows, same⟩
-    refine ⟨by light_side, by light_side, fun y hy q hq => ?_, same⟩
-    have hq' : q < len := by simpa [ThreeSumApsp.digitList] using hq
+  refine Ends.whileShape (fun i (z : ℤ × ℤ × ℤ) ν =>
+      ⟨frame [t + 1, b, len, dst, (i + 1 : ℕ), (dst + (i + 1) * len : ℕ),
+        (dst + i * len : ℕ), z.1, z.2.1, z.2.2], ν⟩)
+    (fun i _ ν => (∀ y < i + 1, ∀ q < len, ν (dst + y * len + q) = (placeDigit b (len - 1 - q) y : ℕ)) ∧
+      SameOutside μ ν dst ((t + 1) * len)) t (26 * len + 18) (len, 0, 0) _ ?_ ?_ ?_
+    (first := by rw [← frame_append_zeros _ 2]; rfl) (hT := by light_time)
+  · refine ⟨fun y hy q hq => ?_, sameOutside_wrote (by omega)⟩
+    obtain rfl : y = 0 := by omega
+    rw [Nat.zero_mul, Nat.add_zero, wrote_done hq]
+    simp [placeDigit]
+  · rintro i ⟨p, c, x⟩ ν hi ⟨hrows, same⟩
+    have hroom := Nat.mul_add_le_mul (show i + 1 < t + 1 by omega) (le_refl len)
+    have hsucc := Nat.succ_mul i len
+    let cur := dst + (i + 1) * len
+    let prev := dst + i * len
+    have hc : cur + len ≤ lim.space := by dsimp [cur]; omega
+    have hp : prev + len ≤ cur := by simp [prev, cur, hsucc, Nat.add_assoc]
+    unfold digitsRow digitsInner
+    iterate 2 light_step
+    refine Ends.next (26 * len + 4) (Ends.whileShape (fun r digit ξ =>
+        ⟨frame [t + 1, b, len, dst, (i + 1 : ℕ), cur, prev, (len - r : ℕ), carryInto b r i, digit], ξ⟩)
+      (fun r _ => Placed ν b len cur i r) len digitsPlace.blockCost x ν
+      ⟨by simp, .refl⟩ ?_ ?_ (hT := by light_time [digitsPlace])) (by light_time)
+    · intro r digit ξ hr hI
+      have hdigit := placeDigit_lt (show 0 < b by omega) r i
+      have hcarry := carryInto_le_one b r i
+      have hnew := placeDigit_succ (show 0 < b by omega) r i
+      have hstep := hI.step hr
+      rw [show len - 1 - r = len - (r + 1) by omega, hnew] at hstep
+      -- The digit of the row before has not been overwritten.
+      have hread : ξ (prev + (len - (r + 1))) = (placeDigit b r i : ℕ) := by
+        rw [hI.2 _ (Or.inl (by omega)), hrows i (by omega) _ (by omega), show len - 1 - (len - (r + 1)) = r by omega]
+      unfold digitsPlace
+      -- Place := Place - 1; Digit := mem[Prev + Place] + Carry
+      light_set (len - (r + 1) : ℕ)
+      light_set (placeDigit b r i + carryInto b r i : ℕ) using hread
+      -- if Digit < b
+      refine Ends.iteLast (fun hc => ?_) fun hc => ?_
+      · -- No carry out of this place: mem[Cur + Place] := Digit; Carry := 0
+        have hlt : placeDigit b r i + carryInto b r i < b := by simp at hc; omega
+        rw [if_pos hlt] at hstep
+        refine Ends.storeToThen (cur + (len - (r + 1))) ((placeDigit b r i + carryInto b r i : ℕ) : ℤ)
+          (Ends.setTo ((0 : ℕ) : ℤ) ⟨((placeDigit b r i + carryInto b r i : ℕ) : ℤ), _, ?_, hstep⟩)
+        rw [carryInto, if_pos hlt]
+        rfl
+      · -- A carry out of this place, so the carry into it was 1 and stays: mem[Cur + Place] := 0
+        have hlt : ¬ placeDigit b r i + carryInto b r i < b := by simp at hc; omega
+        rw [if_neg hlt] at hstep
+        refine Ends.storeTo (cur + (len - (r + 1))) ((0 : ℕ) : ℤ)
+          ⟨((placeDigit b r i + carryInto b r i : ℕ) : ℤ), _, ?_, hstep⟩
+        rw [carryInto, if_neg hlt, show carryInto b r i = 1 by omega]
+        rfl
+    · intro digit ξ ⟨hcells, same'⟩
+      light_set (i + 1 + 1 : ℕ)
+      light_set (dst + (i + 1) * len : ℕ) using cur
+      light_set (dst + (i + 1 + 1) * len : ℕ) using cur, Nat.succ_mul
+      refine ⟨(_, _, _), ξ, rfl, fun y hy q hq => ?_, same.trans (same'.mono (by omega) (by omega))⟩
+      rcases Nat.lt_succ_iff_lt_or_eq.1 hy with hy | rfl
+      · have := Nat.mul_add_le_mul hy (le_refl len)
+        rw [same' _ (.inl (by dsimp [cur]; omega))]
+        exact hrows y hy q hq
+      · have hs := hcells (len - 1 - q) (by omega)
+        rwa [show len - 1 - (len - 1 - q) = q by omega] at hs
+  · rintro z ν ⟨hrows, same⟩
+    refine ⟨fun y hy q hq => ?_, same⟩
+    have hq' : q < len := by simp_all
     rw [List.getElem_map, getElem_digitList hq']
-    exact hrows y hy q hq'
+    simp_all
 
 /-- **The specification that the callers of digits assume.** -/
 theorem digits_entry (std : Std lim) (hP : P[pDigits]? = some digitsBody) {c : ℕ} (hc : 60 ≤ c) :

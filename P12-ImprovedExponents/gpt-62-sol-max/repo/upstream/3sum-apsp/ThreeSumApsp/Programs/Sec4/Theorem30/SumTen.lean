@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 
@@ -29,23 +33,14 @@ specification.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace SumTen
 
 /-- The local variables of sumTen: the arguments (the base of the trie area, the root of the trie,
 the address of the box, its length, the position of the star), the digit that stood at that
 position, the digit written, the sum, and a value looked up.  Local 0 also takes the result. -/
-abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Result : ℕ := 0
-@[inherit_doc Area] abbrev Root : ℕ := 1
-@[inherit_doc Area] abbrev Box : ℕ := 2
-@[inherit_doc Area] abbrev Len : ℕ := 3
-@[inherit_doc Area] abbrev Star : ℕ := 4
-@[inherit_doc Area] abbrev Saved : ℕ := 5
-@[inherit_doc Area] abbrev Digit : ℕ := 6
-@[inherit_doc Area] abbrev Sum : ℕ := 7
-@[inherit_doc Area] abbrev Val : ℕ := 8
+registers [Area / Result, Root, Box, Len, Star, Saved, Digit, Sum, Val]
 
 end SumTen
 
@@ -106,13 +101,11 @@ private theorem round_spec {lim : Limits} {P : Program} {d : ℕ} (hLookup : Loo
   have hsum := C.sums (j + 1) (by omega)
   unfold tRound
   -- mem[box + star] := digit
-  light_store (x.box + x.p) j
+  light_step
   have hsame₁ : SameOn (· ≠ x.box + x.p) μ (Function.update μ' (x.box + x.p) j) :=
     hsame.write (by simp) _
   have hdigits : ∀ d ∈ x.l.set x.p j, d < 11 := fun d hd => by
-    rcases List.mem_or_eq_of_mem_set hd with h | h
-    · exact C.digits d h
-    · omega
+    grind
   -- val := lookup(area, root, box, len)
   light_call (hLookup x.tr x.root x.box x.l.length x.T (x.l.set x.p j) _
     C.area.keep
@@ -148,9 +141,7 @@ theorem sumTen_spec {lim : Limits} {P : Program} (hP : P[Proc.sumTen]? = some su
     (hT := le_rfl)) (by simp [tRound]; omega)
   case start => exact ⟨0, μ, by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl, .refl⟩
   case bound =>
-    rintro j _ - - ⟨val, μ', rfl, -⟩
-    simp
-    omega
+    light_side
   case round =>
     rintro j _ hj - ⟨val, μ', rfl, hsame⟩
     exact round_spec hLookup hs pre hdep hj hsame
@@ -160,11 +151,10 @@ theorem sumTen_spec {lim : Limits} {P : Program} (hP : P[Proc.sumTen]? = some su
     -- mem[box + star] := saved
     light_store (x.box + x.p) (x.l[x.p] : ℕ)
     -- return sum
-    refine Ends.setTo _ ⟨by rw [List.take_of_length_le (by simp [tenValues])]; rfl,
+    refine Ends.setTo _ ⟨by rfl,
       funext fun b => ?_⟩ ⟨by simp, rfl⟩
     dsimp only
     by_cases hb : b = x.box + x.p
-    · rw [hb, Function.update_self, hsaved]
-    · rw [Function.update_of_ne hb, hsame b hb]
+    all_goals (aesop)
 
 end Light.Sec4

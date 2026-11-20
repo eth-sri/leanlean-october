@@ -65,7 +65,7 @@ structure Fits (W : ℕ) (lim : Limits) (N Q : ℕ) : Prop where
 /-- A number within the limit on words is in the range of words. -/
 theorem Fits.inRange {W : ℕ} {lim : Limits} {N Q : ℕ} (hfit : Fits W lim N Q) {v : ℤ}
     (h : |v| ≤ lim.word) : InRange W v :=
-  inRange_of_abs_le (by have := hfit.word; have := (abs_nonneg v).trans h; omega) h
+  inRange_of_abs_le (by have := hfit.word; lia) h
 
 /-- The numbers on which the proofs about compiled code depend: the layout of the code, the limits
 on the runs of the light program, and the number of stack cells.  The pool holds the numbers from 0
@@ -114,25 +114,19 @@ theorem mem_temps_iff {k F : ℕ} {a : ℤ} :
     a ∈ Temps k F ↔ a = cADDR ∨ cT (2 * F) ≤ a ∧ a ≤ cT k ∧ 4 ∣ cT 0 - a := by
   simp only [Temps, cT, Set.mem_ofPred_eq]
   refine or_congr_right ⟨?_, fun h => ⟨((-23 - a) / 4).toNat, ?_⟩⟩
-  · rintro ⟨j, hk, hj, rfl⟩
-    omega
-  · omega
+  all_goals (omega)
 
 theorem mem_stack_iff {q Q : ℕ} {a : ℤ} :
     a ∈ Stack q Q ↔ cStack Q < a ∧ a ≤ cStack q ∧ 2 ∣ a := by
   simp only [Stack, cStack, Set.mem_ofPred_eq]
   refine ⟨?_, fun h => ⟨(-a / 2).toNat, ?_⟩⟩
-  · rintro ⟨j, hq, hj, rfl⟩
-    omega
-  · omega
+  all_goals (omega)
 
 theorem mem_pool_iff {N : ℕ} {a : ℤ} :
     a ∈ Pool N ↔ cPool N ≤ a ∧ a ≤ cPool 0 ∧ 4 ∣ cPool 0 - a := by
   simp only [Pool, cPool, Set.mem_ofPred_eq]
   refine ⟨?_, fun h => ⟨((-25 - a) / 4).toNat, ?_⟩⟩
-  · rintro ⟨n, hn, rfl⟩
-    omega
-  · omega
+  all_goals (omega)
 
 /-- Proves that two cells of the compiled code are different, that a cell is or is not in one of the
 sets above, or that one of these sets lies in another or in its complement.  A cell is given by its
@@ -182,21 +176,18 @@ theorem mem_writable_of_addr {q : ℕ} {a : ℤ} (h : Z.lim.Addr a) : a ∈ Writ
 /-- The cell of the local variable x of the frame q, computed from FP and the pool. -/
 theorem cStack_sub (q x : ℕ) : cStack q - ((2 * x : ℕ) : ℤ) = cStack (q + x) := by
   simp only [cStack]
-  push_cast
-  ring
+  omega
 
 /-- Back from the frame q + x to the frame q. -/
 theorem cStack_add (q x : ℕ) : cStack (q + x) + ((2 * x : ℕ) : ℤ) = cStack q := by
   simp only [cStack]
-  push_cast
-  ring
+  omega
 
 /-- The stack cell before the cell q + 1. -/
 theorem cStack_succ_add (q : ℕ) : cStack (q + 1) + ((2 : ℕ) : ℤ) = cStack q := cStack_add q 1
 
 /-- The addresses of the stack fit in a word. -/
 theorem Sizes.inRange_stack (Z : Sizes W) {j : ℕ} (hj : j ≤ Z.Q) : InRange W (cStack j) := by
-  have hjQ : (j : ℤ) ≤ Z.Q := by exact_mod_cast hj
   constructor <;> simp only [cStack] <;> linarith [Z.fits.stack]
 
 /-- The addresses of the memory fit in a word. -/
@@ -262,7 +253,7 @@ private theorem Rel.setLoc (R : Rel Z σ q m) (hq : 1 ≤ q) (x : ℕ) (v : ℤ)
   obtain rfl | hxy := eq_or_ne y x
   · simp
   · rw [Function.update_of_ne (by cells)]
-    exact (R.loc y hy).trans (by simp [hxy])
+    exact (R.loc y hy).trans (by simp_all)
 
 /-- Writing a memory cell. -/
 theorem Rel.setMem (R : Rel Z σ q m) (hq : 1 ≤ q) {a : ℤ} (ha : Z.lim.Addr a) (v : ℤ) :
@@ -272,9 +263,9 @@ theorem Rel.setMem (R : Rel Z σ q m) (hq : 1 ≤ q) {a : ℤ} (ha : Z.lim.Addr 
   refine R.of_agreeOutside ((AgreeOutside.refl {a} m).update rfl _) (by cells)
     (by cell_read using R.fp) (fun x hx => by cell_read using R.loc x hx) fun b hb => ?_
   obtain rfl | hab := eq_or_ne b a.toNat
-  · simp [Int.toNat_of_nonneg hnonneg]
+  · simp_all
   · rw [Function.update_of_ne (by omega)]
-    exact (R.mem b hb).trans (by simp [hab])
+    exact (R.mem b hb).trans (by simp_all)
 
 /-- Reading a memory cell. -/
 theorem Rel.read (R : Rel Z σ q m) {a : ℤ} (ha : Z.lim.Addr a) : m a = wd W (σ.mem a.toNat) := by

@@ -127,21 +127,13 @@ private theorem le_stepsPerStep_mul {a c n : ℕ} (h : a ≤ n) (hc : 1 ≤ c) :
   calc a ≤ stepsPerStep n * 1 := by rw [stepsPerStep]; omega
     _ ≤ stepsPerStep n * c := Nat.mul_le_mul_left _ hc
 
-/-- At most n machine steps, followed by b machine steps that are within the bound for k steps, are
-within the bound for c + k steps if c ≥ 1. -/
-private theorem add_le_stepsPerStep_mul {a b c k n : ℕ} (h : a ≤ n) (hc : 1 ≤ c)
-    (hb : b ≤ stepsPerStep n * k) : a + b ≤ stepsPerStep n * (c + k) :=
-  Nat.mul_add _ c k ▸ Nat.add_le_add (le_stepsPerStep_mul h hc) hb
-
 /-- The count for a call whose code is at pos and has size + 2 instructions: size steps to enter, b
 for the body, r + 2 (pos + size + 1) to leave, where r is the length of the return sequence, and 2
 to store the result.  The cost a of the arguments is not needed. -/
 private theorem call_le_stepsPerStep_mul {pos size b r a k n : ℕ} (hpos : pos + (size + 2) ≤ n)
     (hr : r ≤ n) (hb : b ≤ stepsPerStep n * k) :
     size + b + (r + 2 * (pos + size + 1)) + 2 ≤ stepsPerStep n * (a + 2 + k) := by
-  rw [Nat.mul_add (stepsPerStep n), Nat.mul_add (stepsPerStep n)]
-  have hK : stepsPerStep n * 2 = 4 * n := by rw [stepsPerStep]; omega
-  omega
+  grind [stepsPerStep]
 
 variable {W : ℕ} (S : Setting W)
 
@@ -160,17 +152,16 @@ structure Start (d : ℕ) (s : Stmt) (σ : State) (pos q : ℕ) (m : ℤ → Bit
   /-- The stack has room for this frame and for F + 1 cells for each further level of calls. -/
   room : q + S.F + (S.F + 1) * (S.lim.depth - d) ≤ S.Q
 
-/-- The code of s, started as in `Start`, has matched a run of c steps that ends in σ': it has
-taken n machine steps and left the memory m'. -/
-structure Finished (s : Stmt) (σ' : State) (c pos q : ℕ) (m m' : ℤ → BitVec W) (n : ℕ) : Prop where
-  /-- The machine has reached the position after the code. -/
-  run : Steps S.code n ⟨pos, m⟩ ⟨pos + s.size S.F, m'⟩
-  /-- It took at most stepsPerStep machine steps for each step of the language. -/
-  le : n ≤ stepsPerStep S.disp * c
-  /-- The memory represents σ' in the same frame. -/
+/-- A machine run in a single frame, with a machine-step budget independent of its
+source statement. -/
+structure Segment (σ' : State) (T pos stop q : ℕ) (m m' : ℤ → BitVec W) (n : ℕ) : Prop where
+  run : Steps S.code n ⟨pos, m⟩ ⟨stop, m'⟩
+  le : n ≤ T
   rel : Rel S.toSizes σ' q m'
-  /-- Only cells that a statement in the frame q may write have changed. -/
   agree : AgreeOutside (Writable S.toSizes q) m m'
+
+abbrev Finished (s : Stmt) (σ' : State) (c pos q : ℕ) (m m' : ℤ → BitVec W) (n : ℕ) :=
+  Segment S σ' (stepsPerStep S.disp * c) pos (pos + s.size S.F) q m m' n
 
 /-- The code of s matches the run of s from σ to σ' in c steps. -/
 def Simulates (d : ℕ) (s : Stmt) (σ σ' : State) (c : ℕ) : Prop :=
@@ -194,11 +185,47 @@ private theorem Start.room_succ (B : Start S d s σ pos q m) (hd : d < S.lim.dep
   rw [show S.lim.depth - d = S.lim.depth - (d + 1) + 1 by omega, Nat.mul_succ] at this
   omega
 
-/-- The test of an if or a while that is at pos. -/
+section segment
+
+variable {q₁ q₂ : ℕ} {m₁ m₂ : ℤ → BitVec W} {k₁ k₂ n₁ n₂ : ℕ}
+
+private theorem Segment.thenRun (a : Segment S σ₁ k₁ pos q₁ q m m₁ n₁)
+    (b : Segment S σ₂ k₂ q₁ q₂ q m₁ m₂ n₂) :
+    Segment S σ₂ (k₁ + k₂) pos q₂ q m m₂ (n₁ + n₂) :=
+  ⟨a.run.trans b.run, Nat.add_le_add a.le b.le, b.rel, a.agree.trans b.agree⟩
+
+private theorem Segment.finish (h : Segment S σ' k₁ pos q₁ q m m₁ n₁) {t c}
+    (hp : q₁ = pos + Stmt.size S.F t) (hk : k₁ ≤ stepsPerStep S.disp * c) :
+    Finished S t σ' c pos q m m₁ n₁ :=
+  ⟨h.run.cast_pos hp, h.le.trans hk, h.rel, h.agree⟩
+
+private theorem Segment.jump (h : Segment S σ' k₁ pos q₁ q m m₁ n₁)
+    (code : CodeAt S.code q₁ [.bltz cNEG q₂]) : Segment S σ' (k₁ + 1) pos q₂ q m m₁ (n₁ + 1) :=
+  ⟨h.run.trans (steps_jump code h.rel.neg S.inRange_neg_one), Nat.succ_le_succ h.le, h.rel, h.agree⟩
+
+end segment
+
+open Classical in
+/-- Both control-flow constructs use the same branching test. -/
 private theorem Start.test (B : Start S d s σ pos q m) {c : Cond} {l : ℕ}
-    (hcode : CodeAt S.code pos (compileCond c l)) (hw : c.width ≤ S.F) (hs : c.Safe S.lim σ) :
-    Decides S.code S.F pos c.size l m (c.Holds σ) :=
-  decides_compileCond B.toFramed B.bounded c hcode hw hs
+    (code : CodeAt S.code pos (compileCond c l)) (hw : c.width ≤ S.F) (hs : c.Safe S.lim σ) :
+    ∃ m' n, Segment S σ c.size pos (if c.Holds σ then pos + c.size else l) q m m' n := by
+  obtain ⟨m', n, hn, A, run⟩ := decides_compileCond B.toFramed B.bounded c code hw hs
+  exact ⟨m', n, run, hn, B.rel.same A, A.mono scratch_subset_writable⟩
+
+/-- The true branch of an `ite` and one iteration of a `while` share the test, body and jump. -/
+private theorem Start.runTrue (B : Start S d s σ pos q m) {c : Cond} {l dst : ℕ} {t : Stmt} {k : ℕ}
+    (hs : c.Safe S.lim σ) (hc : c.Holds σ) (hcw : c.width ≤ S.F) (hw : t.width ≤ S.F)
+    (ht : pos + c.size + t.size S.F ≤ S.disp)
+    (test : CodeAt S.code pos (compileCond c l))
+    (body : CodeAt S.code (pos + c.size) (compileStmt S.toCodeLayout t (pos + c.size)))
+    (jump : CodeAt S.code (pos + c.size + t.size S.F) [.bltz cNEG dst])
+    (ih : Simulates S d t σ σ' k) :
+    ∃ m' n, Segment S σ' (c.size + stepsPerStep S.disp * k + 1) pos dst q m m' n := by
+  obtain ⟨m₀, n₀, a⟩ := B.test test hcw hs
+  rw [if_pos hc] at a
+  obtain ⟨m₁, n₁, b⟩ := ih _ _ _ (B.sub body ht hw B.bounded a.rel)
+  exact ⟨m₁, _, (a.thenRun b).jump jump⟩
 
 /-! ## Statements without calls -/
 
@@ -222,7 +249,7 @@ private theorem sim_set {x : ℕ} {e : Expr} (hs : e.Safe S.lim σ) :
   -- x := T₀
   obtain ⟨m₂, run₂, R₂, A₂⟩ := steps_setVar (B.toFramed.same A₁) hx setCode val (by cells)
   exact ⟨m₂, _, {
-    run := (run₁.trans run₂).cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := (run₁.trans run₂).cast_pos (by rfl)
     le := le_stepsPerStep_mul (by omega) (by omega)
     rel := R₂
     agree := (A₁.mono scratch_subset_writable).trans A₂ }⟩
@@ -242,7 +269,7 @@ private theorem sim_store {a e : Expr} (hsa : a.Safe S.lim σ) (hse : e.Safe S.l
   have run₂ := run₁.trans (steps_store (codeAt_after_pair B.codeAt) va (S.inRange_addr haddr))
   rw [ve] at run₂
   exact ⟨_, _, {
-    run := run₂.cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := run₂.cast_pos (by rfl)
     le := le_stepsPerStep_mul (by omega) (by omega)
     rel := (B.rel.same A₁).setMem B.low haddr _
     agree := (A₁.mono scratch_subset_writable).update (mem_writable_of_addr haddr) _ }⟩
@@ -255,14 +282,9 @@ private theorem sim_seq {c₁ c₂ : ℕ} (h₁ : Exec S.lim S.P d s₁ σ σ₁
   obtain ⟨hw₁, hw₂⟩ := Stmt.width_seq_le_iff.1 B.width
   obtain ⟨firstCode, secondCode⟩ := codeAt_seq B.codeAt
   have hpos : pos + (s₁.size S.F + s₂.size S.F) ≤ S.disp := B.below
-  obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih₁ _ _ _ (B.sub firstCode (by omega) hw₁ B.bounded B.rel)
-  obtain ⟨m₂, n₂, run₂, le₂, R₂, A₂⟩ := ih₂ _ _ _
-    (B.sub secondCode (by omega) hw₂ (h₁.bounded B.bounded) R₁)
-  exact ⟨m₂, n₁ + n₂, {
-    run := (run₁.trans run₂).cast_pos (by rw [Stmt.size, Nat.add_assoc])
-    le := Nat.mul_add _ c₁ c₂ ▸ Nat.add_le_add le₁ le₂
-    rel := R₂
-    agree := A₁.trans A₂ }⟩
+  obtain ⟨m₁, n₁, a⟩ := ih₁ _ _ _ (B.sub firstCode (by omega) hw₁ B.bounded B.rel)
+  obtain ⟨m₂, n₂, b⟩ := ih₂ _ _ _ (B.sub secondCode (by omega) hw₂ (h₁.bounded B.bounded) a.rel)
+  exact ⟨m₂, _, (a.thenRun b).finish (by simp [Stmt.size, Nat.add_assoc]) (by rw [Nat.mul_add])⟩
 
 /-- if c then s₁ else s₂, when c holds: the test goes on to the code of s₁, and a jump leads over
 the code of s₂. -/
@@ -272,18 +294,8 @@ private theorem sim_iteTrue {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (holds :
   obtain ⟨hwc, hw₁, -⟩ := Stmt.width_ite_le_iff.1 B.width
   obtain ⟨testCode, thenCode, jumpCode, -⟩ := codeAt_ite B.codeAt
   have hpos : pos + (c.size + s₁.size S.F + 1 + s₂.size S.F) ≤ S.disp := B.below
-  -- the test
-  obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_holds holds
-  -- the first branch
-  obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih _ _ _
-    (B.sub thenCode (by omega) hw₁ B.bounded (B.rel.same A₀))
-  -- the jump over the second branch
-  have run₂ := (run₀.trans run₁).trans (steps_jump jumpCode R₁.neg S.inRange_neg_one)
-  exact ⟨m₁, n₀ + 1 + n₁, {
-    run := (run₂.cast_count (by omega)).cast_pos (by rw [Stmt.size]; omega)
-    le := add_le_stepsPerStep_mul (by omega) (by omega) le₁
-    rel := R₁
-    agree := (A₀.mono scratch_subset_writable).trans A₁ }⟩
+  obtain ⟨m', n, h⟩ := B.runTrue hs holds hwc hw₁ (by omega) testCode thenCode jumpCode ih
+  exact ⟨m', n, h.finish (by rw [Stmt.size]; omega) (by grind [stepsPerStep])⟩
 
 /-- if c then s₁ else s₂, when c fails: the test jumps to the code of s₂. -/
 private theorem sim_iteFalse {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (fails : ¬ c.Holds σ)
@@ -292,16 +304,10 @@ private theorem sim_iteFalse {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (fails 
   obtain ⟨hwc, -, hw₂⟩ := Stmt.width_ite_le_iff.1 B.width
   obtain ⟨testCode, -, -, elseCode⟩ := codeAt_ite B.codeAt
   have hpos : pos + (c.size + s₁.size S.F + 1 + s₂.size S.F) ≤ S.disp := B.below
-  -- the test
-  obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_fails fails
-  -- the second branch
-  obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih _ _ _
-    (B.sub elseCode (by omega) hw₂ B.bounded (B.rel.same A₀))
-  exact ⟨m₁, n₀ + n₁, {
-    run := (run₀.trans run₁).cast_pos (by rw [Stmt.size]; omega)
-    le := add_le_stepsPerStep_mul (by omega) (by omega) le₁
-    rel := R₁
-    agree := (A₀.mono scratch_subset_writable).trans A₁ }⟩
+  obtain ⟨m₀, n₀, a⟩ := B.test testCode hwc hs
+  rw [if_neg fails] at a
+  obtain ⟨m₁, n₁, b⟩ := ih _ _ _ (B.sub elseCode (by omega) hw₂ B.bounded a.rel)
+  exact ⟨m₁, _, (a.thenRun b).finish (by rw [Stmt.size]; omega) (by grind [stepsPerStep])⟩
 
 /-- while c do s, when c fails: the test jumps to the position after the loop. -/
 private theorem sim_whileFalse {c : Cond} (hs : c.Safe S.lim σ) (fails : ¬ c.Holds σ) :
@@ -310,12 +316,9 @@ private theorem sim_whileFalse {c : Cond} (hs : c.Safe S.lim σ) (fails : ¬ c.H
   obtain ⟨hwc, -⟩ := Stmt.width_while_le_iff.1 B.width
   obtain ⟨testCode, -, -⟩ := codeAt_while B.codeAt
   have hpos : pos + (c.size + s.size S.F + 1) ≤ S.disp := B.below
-  obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_fails fails
-  exact ⟨m₀, n₀, {
-    run := run₀.cast_pos (by rw [Stmt.size]; omega)
-    le := le_stepsPerStep_mul (by omega) (by omega)
-    rel := B.rel.same A₀
-    agree := A₀.mono scratch_subset_writable }⟩
+  obtain ⟨m', n, a⟩ := B.test testCode hwc hs
+  rw [if_neg fails] at a
+  exact ⟨m', n, a.finish (by rw [Stmt.size]; omega) (le_stepsPerStep_mul (by omega) (by omega))⟩
 
 /-- while c do s, when c holds: the test goes on to the code of s, a jump leads back to the test,
 and the loop runs again. -/
@@ -327,22 +330,9 @@ private theorem sim_whileTrue {c : Cond} {k₁ k₂ : ℕ} (hs : c.Safe S.lim σ
   obtain ⟨hwc, hw⟩ := Stmt.width_while_le_iff.1 B.width
   obtain ⟨testCode, bodyCode, jumpCode⟩ := codeAt_while B.codeAt
   have hpos : pos + (c.size + s.size S.F + 1) ≤ S.disp := B.below
-  -- the test
-  obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_holds holds
-  -- the body
-  obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih₁ _ _ _
-    (B.sub bodyCode (by omega) hw B.bounded (B.rel.same A₀))
-  -- the jump back
-  have run₂ := (run₀.trans run₁).trans (steps_jump jumpCode R₁.neg S.inRange_neg_one)
-  -- the loop again
-  obtain ⟨m₃, n₃, run₃, le₃, R₃, A₃⟩ := ih₂ _ _ _
-    (B.sub B.codeAt B.below B.width (h₁.bounded B.bounded) R₁)
-  exact ⟨m₃, n₀ + 1 + n₁ + n₃, {
-    run := (run₂.trans run₃).cast_count (by omega)
-    le := Nat.mul_add _ _ k₂ ▸ Nat.add_le_add (add_le_stepsPerStep_mul (by omega) (by omega) le₁)
-        le₃
-    rel := R₃
-    agree := ((A₀.mono scratch_subset_writable).trans A₁).trans A₃ }⟩
+  obtain ⟨m₁, n₁, a⟩ := B.runTrue hs holds hwc hw (by omega) testCode bodyCode jumpCode ih₁
+  obtain ⟨m₂, n₂, b⟩ := ih₂ _ _ _ (B.sub B.codeAt B.below B.width (h₁.bounded B.bounded) a.rel)
+  exact ⟨m₂, _, (a.thenRun b).finish rfl (by grind [stepsPerStep])⟩
 
 /-! ## Calls -/
 
@@ -370,7 +360,7 @@ private theorem steps_callEnter (B : Start S d (.call p args x) σ pos q m)
   have A₁ := A.mono temps_subset_scratch
   -- the new frame
   obtain ⟨R₂, hret, A₂⟩ := effects_newFrame (B.toFramed.same A₁)
-    ((Nat.le_add_right _ _).trans (B.room_succ hd)) args (by simpa using vals)
+    ((Nat.le_add_right _ _).trans (B.room_succ hd)) args (by simp_all)
     (ret := pos + callSize S.F args) (by omega)
   have run₂ := steps_straight _ pos m frameCode
     (List.forall_mem_append.2 ⟨straight_argsCode _ _, straight_newFrame _ _ _⟩)

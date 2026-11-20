@@ -62,18 +62,18 @@ theorem pre_exactTriangle (x : Bounded EndStatement.ExactTriangle) (hn : 1 ≤ x
     { len := hAB
       seg := by
         have := seg_first (x.n : ℤ) (rowMajor x.x.1) (rowMajor x.x.2.1 ++ rowMajor x.x.2.2)
-        rwa [← List.append_assoc] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+        simp_all
+      bound := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_exactTriangle x (by simp_all) }
     { len := hBC
       seg := by
         have := seg_memOf ((x.n : ℤ) :: rowMajor x.x.1) (rowMajor x.x.2.1) (rowMajor x.x.2.2)
-        rwa [List.length_cons, hAB, Nat.add_comm] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.2.1) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+        grind
+      bound := fun a (ha : a ∈ rowMajor x.x.2.1) => abs_le_of_mem_exactTriangle x (by simp_all) }
     { len := length_rowMajor _
       seg := by
         have := seg_second (x.n : ℤ) (rowMajor x.x.1 ++ rowMajor x.x.2.1) (rowMajor x.x.2.2)
-        rwa [List.length_append, hAB, hBC, ← Nat.two_mul] at this
-      bound := fun a (ha : a ∈ rowMajor x.x.2.2) => abs_le_of_mem_exactTriangle x (by simp [ha]) }
+        grind
+      bound := fun a (ha : a ∈ rowMajor x.x.2.2) => abs_le_of_mem_exactTriangle x (by simp_all) }
 
 /-- The result of a solver of the task is the right verdict of the end statement's Exact
 Triangle. -/
@@ -95,7 +95,7 @@ noncomputable def wrapTriangle : Wrap EndStatement.ExactTriangle etTask true whe
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by omega
-  vals x σ hn hU hnn := by simp [etTask, triangleInst, hn, hU, hnn]
+  vals x σ hn hU hnn := by aesop
   safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
   zero x hn _ := ⟨⟨fun h => absurd h (by simp), fun ⟨a, _⟩ => absurd a.isLt (by omega)⟩, trivial⟩
   pre := pre_exactTriangle

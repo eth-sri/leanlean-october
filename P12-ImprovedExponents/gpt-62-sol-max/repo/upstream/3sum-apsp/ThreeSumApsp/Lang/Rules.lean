@@ -127,13 +127,13 @@ theorem Stmt.Runs.seq {s t : Stmt} {σ : State} {R : State → Prop}
 theorem Stmt.Runs.ite_pos {c : Cond} {s t : Stmt} {σ : State} {R : State → Prop}
     (h : s.Runs lim σ R) (hc : c.Holds σ := by light_side) (hs : c.Safe lim σ := by light_side) :
     (Stmt.ite c s t).Runs lim σ R :=
-  ⟨⟨hs, fun _ => h.1, fun hn => absurd hc hn⟩, by simpa only [Stmt.after, if_pos hc] using h.2⟩
+  ⟨⟨hs, fun _ => h.1, fun hn => absurd hc hn⟩, by simp_all⟩
 
 /-- A branch whose test fails. -/
 theorem Stmt.Runs.ite_neg {c : Cond} {s t : Stmt} {σ : State} {R : State → Prop}
     (h : t.Runs lim σ R) (hc : ¬ c.Holds σ := by light_side) (hs : c.Safe lim σ := by light_side) :
     (Stmt.ite c s t).Runs lim σ R :=
-  ⟨⟨hs, fun hp => absurd hp hc, fun _ => h.1⟩, by simpa only [Stmt.after, if_neg hc] using h.2⟩
+  ⟨⟨hs, fun hp => absurd hp hc, fun _ => h.1⟩, by simp_all⟩
 
 theorem Ends.of_blockSafe : ∀ {s : Stmt} {σ : State} {T : ℕ} {Q : State → Prop}, s.BlockSafe lim σ →
     s.blockCost ≤ T → Q (s.after σ) → Ends lim P d s σ T Q
@@ -146,9 +146,9 @@ theorem Ends.of_blockSafe : ∀ {s : Stmt} {σ : State} {T : ℕ} {Q : State →
   | .ite c s t, σ, _, _, hs, hT, h =>
     Ends.ite (max s.blockCost t.blockCost) hs.1
       (fun hc => Ends.of_blockSafe (hs.2.1 hc) (le_max_left _ _)
-        (by simpa only [Stmt.after, if_pos hc] using h))
+        (by simp_all))
       (fun hc => Ends.of_blockSafe (hs.2.2 hc) (le_max_right _ _)
-        (by simpa only [Stmt.after, if_neg hc] using h))
+        (by simp_all))
       hT
   | .while _ _, _, _, _, hs, _, _ => hs.elim
   | .call _ _ _, _, _, _, hs, _, _ => hs.elim
@@ -189,7 +189,7 @@ theorem Ends.skipLast {σ : State} {T : ℕ} {s : Stmt} {Q : State → Prop}
   cases he with
   | seq he₁ he₂ =>
     cases he₂
-    exact ⟨σ', _, he₁, by omega, hq⟩
+    constructor <;> aesop
 
 /-- A program that is defined as a sequence may be treated as the sequence. -/
 theorem Ends.seqSelf {σ : State} {T : ℕ} {s₁ s₂ : Stmt} {Q : State → Prop}
@@ -246,6 +246,15 @@ theorem Ends.iteLast {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ : Stmt} {Q : S
     (hs : c.Safe lim σ := by light_side) (hT : c.cost + 1 ≤ T := by light_time) :
     Ends lim P d (.ite c s₁ s₂) σ T Q :=
   Ends.ite _ hs h₁ h₂ (by omega)
+
+/-- A final branch, with the machine condition expressed as a proposition about the data. -/
+theorem Ends.iteIffLast {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ : Stmt} {Q : State → Prop}
+    (p : Prop) (h₁ : p → Ends lim P d s₁ σ (T - (c.cost + 1)) Q)
+    (h₂ : ¬ p → Ends lim P d s₂ σ (T - (c.cost + 1)) Q)
+    (hs : c.Safe lim σ ∧ (c.Holds σ ↔ p) := by light_side)
+    (hT : c.cost + 1 ≤ T := by light_time) :
+    Ends lim P d (.ite c s₁ s₂) σ T Q :=
+  Ends.iteLast (fun hc => h₁ (hs.2.1 hc)) (fun hc => h₂ (hc ∘ hs.2.2)) hs.1 hT
 
 /-- A branch, followed by the rest of the program: each side, with the rest of the program behind
 it, gets the steps that the test leaves. -/
@@ -308,34 +317,20 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
     Ends lim P d (Stmt.for i hi body) σ T Q := by
   have h0 : (0 : ℤ) ≤ lim.word := le_trans (Int.natCast_nonneg n) hn
   refine Ends.seq 2 (n * (hi.cost + b + 7) + hi.cost + 3)
-    (Ends.set (by simpa using h0) (by simp) ?_) (by omega)
-  refine Ends.whileConst (fun j σ => σ.loc i = j ∧ I j σ) n (b + 4) ⟨by simp, by simpa using start⟩
+    (Ends.set (by assumption) (by simp) ?_) (by omega)
+  refine Ends.whileConst (fun j σ => σ.loc i = j ∧ I j σ) n (b + 4) ⟨by simp, by assumption⟩
     ?_ ?_ (le_of_eq (by simp only [Cond.cost, Expr.cost]; ring))
   · rintro j σ hj ⟨hc, hI⟩
     obtain ⟨hs, hv⟩ := bound j σ hj.le hc hI
     refine ⟨⟨trivial, hs⟩, ?_, Ends.seq b 4 ((round j σ hj hc hI).mono le_rfl ?_) le_rfl⟩
-    · change σ.loc i < hi.val σ
-      rw [hc, hv]
-      exact_mod_cast hj
+    · simp_all
     · rintro σ' ⟨hc', hI'⟩
-      have hval : (v i +' k 1).val σ' = (j : ℤ) + 1 := by simp [hc']
-      have hj' : (j : ℤ) + 1 ≤ n := by exact_mod_cast hj
+      have hval : (v i +' k 1).val σ' = (j : ℤ) + 1 := by simp_all
       refine Ends.set ⟨trivial, ?_, ?_⟩ (by simp) ⟨?_, ?_⟩
-      · change ((1 : ℕ) : ℤ) ≤ lim.word
-        push_cast
-        omega
-      · change |(v i +' k 1).val σ'| ≤ lim.word
-        rw [hval, abs_of_nonneg (by omega)]
-        omega
-      · simp [hc']
-      · rw [hval]
-        exact hI'
-  · rintro σ ⟨hc, hI⟩
-    obtain ⟨hs, hv⟩ := bound n σ le_rfl hc hI
-    refine ⟨⟨trivial, hs⟩, ?_, done σ hc hI⟩
-    change ¬ σ.loc i < hi.val σ
-    rw [hc, hv]
-    exact lt_irrefl _
+      · light_side
+      · light_side
+      all_goals (simp_all)
+  simp <;> grind
 
 /-- **Counting loops whose body changes no local variable.**  Before round j the local variables are
 the given ones with j in the counter, and I j holds of the memory.  The bound hi has the value n
@@ -355,11 +350,10 @@ theorem Ends.forMem {loc : ℕ → ℤ} {μ : ℕ → ℤ} {i : ℕ} {hi : Expr}
     ⟨by simp, start⟩ ?_ ?_ ?_ hn hT
   · rintro j ⟨_, μ'⟩ hj - ⟨rfl, hI⟩
     refine (round j μ' hj hI).mono le_rfl ?_
-    rintro ⟨_, μ''⟩ ⟨rfl, hI'⟩
-    exact ⟨by simp, by simp, hI'⟩
+    simp_all
   · rintro ⟨_, μ'⟩ - ⟨rfl, hI⟩
-    exact done μ' hI
+    simp_all
   · rintro j ⟨_, μ'⟩ hj - ⟨rfl, hI⟩
-    exact bound j μ' hj hI
+    simp_all
 
 end Light

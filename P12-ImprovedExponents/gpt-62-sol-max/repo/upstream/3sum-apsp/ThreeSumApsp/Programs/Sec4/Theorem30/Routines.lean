@@ -56,11 +56,7 @@ structure Specs40 (lim : Limits) (P : Program) : Prop where
   insert : InsertSpec lim P
   newRoot : NewRootSpec lim P
   sumTen : SumTenSpec lim P
-  fillList : FillListSpec lim P
-  tile : TileSpec lim P
-  allTiles : AllTilesSpec lim P
   outDigits : OutDigitsSpec lim P
-  queryCore : QueryCoreSpec lim P
 
 /-- **Every program that holds the routines of Section 4 at their numbers meets all their
 specifications.** -/
@@ -74,23 +70,14 @@ theorem specs40 {lim : Limits} {P : Program} (h : Has40 P) (hs : Std lim) : Spec
   have insert : InsertSpec lim P := insert_spec (h 6 (by omega)) hs
   have newRoot : NewRootSpec lim P := newRoot_spec (h 7 (by omega)) hs
   have sumTen : SumTenSpec lim P := sumTen_spec (h 8 (by omega)) lookup hs
-  have fillList : FillListSpec lim P := fillList_spec
-    (h 9 (by omega)) nineFirst nineNext starFirst horner insert sumTen
-  have tile : TileSpec lim P := tile_spec (h 10 (by omega)) newRoot fillList
-  have allTiles : AllTilesSpec lim P := allTiles_spec (h 11 (by omega)) tile
   have outDigits : OutDigitsSpec lim P := outDigits_spec (h 12 (by omega))
-  have queryCore : QueryCoreSpec lim P :=
-    queryCore_spec (h 13 (by omega)) ⟨nineFirst, nineNext, scatter, horner, lookup⟩
-  exact ⟨nineFirst, nineNext, scatter, starFirst, horner, lookup, insert, newRoot, sumTen,
-    fillList, tile, allTiles,
-    outDigits, queryCore⟩
+  exact ⟨nineFirst, nineNext, scatter, starFirst, horner, lookup, insert, newRoot, sumTen, outDigits⟩
 
 /-- A list that has forty procedures, then the routines of Section 4, then anything, holds them at
 their numbers. -/
 theorem has40_of_append {A B : List Stmt} (hA : A.length = 40) : Has40 (A ++ procs40 ++ B) := by
   intro i hi
   have hlen : procs40.length = 14 := rfl
-  rw [List.append_assoc, List.getElem?_append_right (by omega), hA, Nat.add_sub_cancel_left,
-    List.getElem?_append_left (by omega)]
+  grind
 
 end Light.Sec4

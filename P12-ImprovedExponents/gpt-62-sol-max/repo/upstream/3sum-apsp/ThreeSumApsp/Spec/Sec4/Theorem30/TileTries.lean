@@ -153,7 +153,7 @@ private theorem fillTrie_cons (encA encB : List ℤ) (root e : ℕ) (l : List �
 /-- The trie of one more tile is built on top of the tries of the tiles before it. -/
 theorem allTries_snoc (L m t : ℕ) (tiles : List TileEnc) (ab : TileEnc) :
     allTries L m t (tiles ++ [ab]) = tileTrie ab.encA ab.encB L m t (allTries L m t tiles) := by
-  simp [allTries, List.foldl_append]
+  simp [allTries]
 
 /-- Every box that a query reads is a box of the tile. -/
 private theorem boxesOf_mem_starBoxes {L : ℕ} (m t : ℕ) (ht : t ≤ m) (η : OutStr L)
@@ -209,11 +209,7 @@ private theorem storedUpTo_snoc {e : ℕ} (pre : List (List ℕ)) {l : List ℕ}
   by_cases hx : (n, l') = (i, l)
   · obtain ⟨rfl, rfl⟩ := Prod.mk.inj hx
     simp [storedUpTo, storedD, starCount_of_mem_starBoxes hl]
-  · rw [Function.update_of_ne hx]
-    have hne : ¬ (n = i ∧ l' = l) := fun ⟨hn, hl'⟩ => hx (by rw [hn, hl'])
-    simp only [storedUpTo, List.mem_append, List.mem_singleton]
-    -- the two conditions differ only at the key (i, l)
-    exact if_congr (by tauto) rfl rfl
+  grind [storedUpTo]
 
 /-- The state after all boxes with k stars is the state before the first box with k + 1 stars. -/
 private theorem storedUpTo_succ (k : ℕ) :
@@ -232,7 +228,7 @@ end
 private theorem storedAll_of_mem {L m t : ℕ} {tiles : List TileEnc} {i : ℕ} {ab : TileEnc}
     {l : List ℕ} (hi : tiles[i]? = some ab) (hl : IsBoxDigits L m t l) :
     storedAll L m t tiles (i, l) = some (storedD ab.encA ab.encB l) := by
-  simp [storedAll, hl, hi]
+  grind [storedAll]
 
 /-- One more tile: what is stored then was stored before or belongs to the new tile. -/
 private theorem storedAll_snoc {L m t : ℕ} (tiles : List TileEnc) (ab : TileEnc)
@@ -250,9 +246,7 @@ private theorem storedAll_snoc {L m t : ℕ} (tiles : List TileEnc) (ab : TileEn
   · -- the new tile
     rw [if_pos ⟨hn, Or.inl ⟨Nat.lt_succ_of_le (le_of_mem_starBoxes hl), hl⟩⟩, ← h, hn]
     simp
-  · -- there is no such tile
-    rw [List.getElem?_eq_none (by simp; omega)] at h
-    simp at h
+  simp_all
 
 /-! ## The array represents what it should hold -/
 
@@ -282,14 +276,14 @@ theorem fillTrie_rep (hi : roots i ≠ 0) (rest pre : List (List ℕ)) (T : List
     TrieRep L lo (fillTrie encA encB (roots i) e rest T) roots
       (storedUpTo old i encA encB L m t e (pre ++ rest)) := by
   induction rest generalizing pre T with
-  | nil => rwa [List.append_nil]
+  | nil => aesop
   | cons l rest ih =>
     have hl : l ∈ starBoxes L m t e := hmem l (by simp)
     have hins := hrep.insert i hi l (starBoxes_digits hl).1 (starBoxes_digits hl).2
       (boxValue encA encB T (roots i) e l)
     rw [boxValue_eq hrep hl, ← storedUpTo_snoc pre hl] at hins
     rw [fillTrie_cons, List.append_cons, boxValue_eq hrep hl]
-    exact ih (pre ++ [l]) _ (fun x hx => hmem x (by simp [hx])) hins
+    grind
 
 end
 
@@ -353,7 +347,7 @@ theorem length_fillTrie_le (root e L : ℕ) (boxes : List (List ℕ))
   induction boxes generalizing T with
   | nil => exact le_rfl
   | cons l boxes ih =>
-    have hrest := ih (fun x hx => hb x (by simp [hx]))
+    have hrest := ih (fun x hx => hb x (by simp_all))
       (trieInsert T root l (boxValue encA encB T root e l))
     have hins := length_trieInsert_le T root l (boxValue encA encB T root e l)
     rw [hb l (by simp)] at hins
@@ -387,7 +381,7 @@ theorem length_allTries_le (tiles : List TileEnc) :
     (allTries L m t tiles).cells.length
       ≤ 1 + tiles.length * (11 * (1 + L * (boxes L m t).card)) := by
   induction tiles using List.reverseRecOn with
-  | nil => simp [allTries]
+  | nil => aesop
   | append_singleton tiles ab ih =>
     rw [allTries_snoc]
     refine (length_tileTrie_le _ _ L m t _).trans ?_
@@ -426,7 +420,7 @@ def tilesBefore (β β' : ℕ) : List TileEnc :=
 
 /-- No tile stands before the first one. -/
 theorem tilesBefore_zero : tilesBefore nB encA encB 0 0 = [] := by
-  simp [tilesBefore]
+  rfl
 
 /-- The tiles before the next tile of the row are the tiles before the tile, and the tile. -/
 theorem tilesBefore_succ (β β' : ℕ) :
@@ -446,7 +440,7 @@ theorem tilesBefore_all : tilesBefore nB encA encB nB 0 = tileList nB encA encB 
 /-- β nB + β' tiles stand before the tile (β, β'). -/
 theorem length_tilesBefore (β β' : ℕ) :
     (tilesBefore nB encA encB β β').length = β * nB + β' := by
-  simp [tilesBefore, List.length_flatMap]
+  simp [tilesBefore]
 
 end
 

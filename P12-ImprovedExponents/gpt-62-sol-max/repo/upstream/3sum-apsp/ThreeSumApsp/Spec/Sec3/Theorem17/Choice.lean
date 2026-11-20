@@ -100,11 +100,11 @@ theorem bestOf_succ (f : ℕ → ℕ) (L : List ℕ) {i : ℕ} (hi : 1 ≤ i) (h
   rw [bestOf, bestOf, List.take_succ_eq_append_getElem hiL, List.argmin_concat]
   cases h : (L.take i).argmin f with
   | none => exact absurd (List.argmin_eq_none.1 h) (List.ne_nil_of_length_pos (by simp; omega))
-  | some c => simp only [Option.getD_some]; split_ifs <;> rfl
+  | some c => grind
 
 /-- The best of all the elements is what `List.argmin` returns. -/
 theorem bestOf_length (f : ℕ → ℕ) (L : List ℕ) : (L.argmin f).getD 0 = bestOf f L L.length := by
-  rw [bestOf, List.take_length]
+  simp [bestOf]
 
 /-! ## False positives, in terms of a bound on the weights -/
 

@@ -94,8 +94,7 @@ private theorem prod_middle_le {n : ℕ} (hn : 2 < n) (s : Finset ℕ)
     _ ≤ primorial (2 * n / 3) := by
         refine prod_le_prod_of_subset_of_one_le' (fun p hp => ?_)
           fun p hp _ => (mem_filter.1 hp).2.one_lt.le
-        obtain ⟨hps, hp3⟩ := mem_filter.1 hp
-        exact mem_filter.2 ⟨mem_range.2 (by omega), (hs p hps).1⟩
+        simp_all
     _ ≤ 4 ^ (2 * n / 3) := primorial_le_four_pow _
 
 /-- Erdős's bound, keeping the primes of `(n, 2n]`:
@@ -111,7 +110,7 @@ private theorem centralBinom_le (n : ℕ) (hn : 2 < n) :
   have hprod : ∏ p ∈ T, p ^ n.centralBinom.factorization p = n.centralBinom :=
     (prod_filter_of_ne fun p _ h => by
       contrapose h
-      rw [Nat.factorization_eq_zero_of_not_prime _ h, pow_zero]).trans
+      simp_all).trans
       n.prod_pow_factorization_centralBinom
   -- Split the primes at `n`, and those up to `n` at `√(2n)`.
   rw [← hprod, ← prod_filter_mul_prod_filter_not T (· ≤ n),
@@ -124,12 +123,10 @@ private theorem centralBinom_le (n : ℕ) (hn : 2 < n) :
       obtain ⟨⟨⟨-, hprime⟩, -⟩, hsqrt⟩ := hp
       exact mem_Icc.mpr ⟨hprime.one_lt.le, hsqrt⟩
     exact (prod_pow_factorization_le (by omega) _).trans (pow_right_mono₀ (by omega)
-      ((card_le_card hsub).trans_eq (by rw [Nat.card_Icc, Nat.add_sub_cancel])))
+      ((card_le_card hsub).trans_eq (by simp)))
   · -- The primes in `(√(2n), n]`.
     refine prod_middle_le hn _ fun p hp => ?_
-    simp only [hT, mem_filter, mem_range, not_le] at hp
-    obtain ⟨⟨⟨-, hprime⟩, hpn⟩, hsqrt⟩ := hp
-    exact ⟨hprime, hsqrt, hpn⟩
+    simp_all
   · -- The primes above `n` are those of `(n, 2n]`.
     refine (prod_pow_factorization_le (by omega) _).trans
       (pow_right_mono₀ (by omega) (card_le_card fun p hp => ?_))
@@ -155,7 +152,7 @@ private theorem concaveOn_log_add_sqrt_mul_log_sub (a : ℝ) (ha : 0 ≤ a) :
         ext x
         simp only [Set.mem_Ioi, Set.mem_preimage, LinearMap.smul_apply, LinearMap.id_coe, id_eq,
           smul_eq_mul]
-        constructor <;> intro h <;> linarith
+        grind
       rw [hset] at h
       exact h
   · exact ConvexOn.smul ha (convexOn_id (convex_Ioi _))
@@ -176,8 +173,7 @@ private theorem log_add_sqrt_mul_log_le {x : ℝ} (hx : 16562 ≤ x) :
       - Real.log 2 / 6 * 16562 ≤ 0 := by
     have hlog91 : 13 * Real.log 91 ≤ 85 * Real.log 2 := by
       have h := Real.log_le_log (by positivity) (show (91 : ℝ) ^ 13 ≤ 2 ^ 85 by norm_num)
-      rw [Real.log_pow, Real.log_pow] at h
-      exact_mod_cast h
+      simp_all
     have hlogx : Real.log 16562 = Real.log 2 + 2 * Real.log 91 := by
       rw [show (16562 : ℝ) = 2 * 91 ^ 2 by norm_num, Real.log_mul (by norm_num) (by norm_num),
         Real.log_pow]
@@ -189,12 +185,12 @@ private theorem log_add_sqrt_mul_log_le {x : ℝ} (hx : 16562 ≤ x) :
     rw [show (2 * 16562 : ℝ) = 182 * 182 by norm_num, Real.sqrt_mul_self (by norm_num), hlogx,
       hlog2x]
     -- `366 log 91 ≤ 366 · (85/13) log 2 < (16562/6 - 365) log 2`
-    linarith only [hlog91, hlog2]
+    linarith
   have hconcave := concaveOn_log_add_sqrt_mul_log_sub (Real.log 2 / 6) (by positivity)
   have hatx := hconcave.right_le_of_le_left''
-    (x := 2) (y := 16562) (z := x) (by norm_num [Set.mem_Ioi]) (by rw [Set.mem_Ioi]; linarith)
+    (x := 2) (y := 16562) (z := x) (by norm_num) (by grind)
     (by norm_num) hx (hat16562.trans hat2)
-  linarith only [hatx, hat16562]
+  linarith
 
 /-- The same estimate for natural numbers, without logarithms. -/
 private theorem pow_mul_pow_sqrt_le_two_pow {n : ℕ} (hn : 16562 ≤ n) :
@@ -204,14 +200,13 @@ private theorem pow_mul_pow_sqrt_le_two_pow {n : ℕ} (hn : 16562 ≤ n) :
   have hsqrt : (Nat.sqrt (2 * n) : ℝ) ≤ √(2 * n) := by
     exact_mod_cast Real.nat_sqrt_le_real_sqrt (a := 2 * n)
   have hlog : 0 ≤ Real.log (2 * n) := Real.log_nonneg (by linarith)
-  have hpos : (0 : ℝ) < n := by linarith
   rw [← Nat.cast_le (α := ℝ)]
   push_cast
   rw [← Real.log_le_log_iff (by positivity) (by positivity),
     Real.log_mul (by positivity) (by positivity), Real.log_pow, Real.log_pow, Real.log_pow]
   push_cast
   -- `6 log n + 6 ⌊√(2n)⌋ log(2n) ≤ 6 (log n + √(2n) log(2n)) ≤ n log 2`
-  linarith [hreal, mul_le_mul_of_nonneg_right hsqrt hlog]
+  nlinarith
 
 /-! ## 3. The count for `n ≥ 16562` -/
 
@@ -246,8 +241,7 @@ private theorem mul_log_two_le_card_bertrandPrimes_mul_log {n : ℕ} (hn : 16562
   have hpow : (2 : ℝ) ^ n ≤ (2 * (n : ℝ)) ^ (2 * (bertrandPrimes n).card) := by
     exact_mod_cast two_pow_le_of_large hn
   have hlog := Real.log_le_log (by positivity) hpow
-  rw [Real.log_pow, Real.log_pow] at hlog
-  exact_mod_cast hlog
+  simp_all
 
 /-! ## 4. Half-open windows `[x/2, x)` with real endpoints -/
 
@@ -281,7 +275,6 @@ private theorem div_log_le_card_of_large {x : ℝ} {n : ℕ} {S : Finset ℕ} (h
     (hn : 16562 ≤ n) (hn4 : x / 4 ≤ (n : ℝ)) (h2n : 2 * (n : ℝ) < x) (hsub : bertrandPrimes n ⊆ S) :
     x / (12 * Real.log x) ≤ (S.card : ℝ) := by
   have hcard : ((bertrandPrimes n).card : ℝ) ≤ S.card := by exact_mod_cast card_le_card hsub
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast (by omega : 1 ≤ n)
   have hlog : Real.log (2 * n) ≤ Real.log x := Real.log_le_log (by linarith) h2n.le
   have hlog0 : 0 ≤ Real.log (2 * n) := Real.log_nonneg (by linarith)
   have hlog2 : 2 / 3 ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]

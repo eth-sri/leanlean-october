@@ -75,7 +75,7 @@ private theorem rank_unrank {L m r : ℕ} (hr : r < L.choose m) : rank (unrank L
     simp_all [rank, count_unrank]
   | case3 L m r h ih =>
     -- Level 1 belongs to the set.
-    simpa [rank] using ih h
+    aesop
   | case4 L m r h ih =>
     -- Level 1 does not belong to the set: the `(L choose m)` masks with level 1 come before.
     rw [Nat.choose_succ_succ'] at hr
@@ -87,7 +87,7 @@ private theorem rank_unrank {L m r : ℕ} (hr : r < L.choose m) : rank (unrank L
 /-- Different numbers give different masks. -/
 private theorem eq_of_unrank_eq {L m r r' : ℕ} (hr : r < L.choose m) (hr' : r' < L.choose m)
     (h : unrank L m r = unrank L m r') : r = r' := by
-  rw [← rank_unrank hr, ← rank_unrank hr', h]
+  grind [rank_unrank]
 
 /-! ## Masks and sets of levels -/
 
@@ -112,20 +112,19 @@ private theorem card_maskSet {L : ℕ} (mask : List Bool) (h : mask.length = L) 
     (maskSet L mask).card = mask.count true := by
   induction mask generalizing L with
   | nil =>
-    subst h
-    simp [maskSet]
+    aesop
   | cons x l ih =>
     -- Split off level 1.
     subst h
     have hrest := ih rfl
     unfold maskSet at hrest ⊢
     rw [List.length_cons, Fin.card_filter_univ_succ]
-    cases x <;> simpa using hrest
+    aesop
 
 /-- The set of levels of a mask of the enumeration has `m` elements. -/
 theorem card_maskSet_unrank {L m r : ℕ} (hr : r < L.choose m) :
     (maskSet L (unrank L m r)).card = m := by
-  rw [card_maskSet _ (length_unrank L m r), count_unrank hr]
+  grind [card_maskSet, length_unrank, count_unrank]
 
 /-- The mask of the set of levels of a mask of length `L` is that mask. -/
 theorem maskOf_maskSet {L : ℕ} (mask : List Bool) (h : mask.length = L) :
@@ -146,7 +145,7 @@ theorem eq_of_maskSet_unrank_eq {L m r r' : ℕ} (hr : r < L.choose m) (hr' : r'
 theorem unrank_zero {L m : ℕ} (hm : m ≤ L) :
     unrank L m 0 = List.replicate m true ++ List.replicate (L - m) false := by
   induction L generalizing m with
-  | zero => simp [unrank, Nat.le_zero.mp hm]
+  | zero => aesop
   | succ L ih =>
     cases m with
     | zero => simpa [unrank, List.replicate_succ] using ih (Nat.zero_le L)
@@ -158,7 +157,7 @@ theorem unrank_zero {L m : ℕ} (hm : m ≤ L) :
 private theorem unrank_last {L m : ℕ} (hm : m ≤ L) :
     unrank L m (L.choose m - 1) = List.replicate (L - m) false ++ List.replicate m true := by
   induction L generalizing m with
-  | zero => simp [unrank, Nat.le_zero.mp hm]
+  | zero => aesop
   | succ L ih =>
     cases m with
     | zero => simpa [unrank, List.replicate_succ] using ih (Nat.zero_le L)
@@ -166,11 +165,9 @@ private theorem unrank_last {L m : ℕ} (hm : m ≤ L) :
       rcases Nat.lt_or_ge m L with hlt | hge
       · have hpos : 0 < L.choose (m + 1) := Nat.choose_pos hlt
         have hnot : ¬ (L + 1).choose (m + 1) - 1 < L.choose m := by
-          rw [Nat.choose_succ_succ']
-          omega
+          grind
         have hrank : (L + 1).choose (m + 1) - 1 - L.choose m = L.choose (m + 1) - 1 := by
-          rw [Nat.choose_succ_succ']
-          omega
+          grind
         rw [unrank, if_neg hnot, hrank, ih hlt, show L + 1 - (m + 1) = L - (m + 1) + 1 by omega]
         -- `replicate (a + 1) false` is `false :: replicate a false`.
         rfl
@@ -189,21 +186,19 @@ theorem unrank_succ_shape {L m r : ℕ} (hr : r + 1 < L.choose m) :
   | zero => cases m <;> simp at hr
   | succ L ih =>
     cases m with
-    | zero => simp at hr
+    | zero => trivial
     | succ m =>
       rw [Nat.choose_succ_succ'] at hr
       rcases Nat.lt_trichotomy (r + 1) (L.choose m) with hboth | hlast | hneither
       · -- Both masks contain the first level.
         obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih hboth
-        refine ⟨true :: pre, a, b, by rw [List.length_cons]; omega, ?_, ?_⟩
+        refine ⟨true :: pre, a, b, by grind, ?_, ?_⟩
         · rw [unrank, if_pos (by omega), hthis, List.cons_append]
         · rw [unrank, if_pos hboth, hnext, List.cons_append]
       · -- The last mask with the first level, and the first one without it.
         have hmL : m + 1 ≤ L := by
-          by_contra hcon
-          rw [Nat.choose_eq_zero_of_lt (by omega : L < m + 1)] at hr
-          omega
-        refine ⟨[], L - m - 1, m, by rw [List.length_nil]; omega, ?_, ?_⟩
+          grind
+        refine ⟨[], L - m - 1, m, by grind, ?_, ?_⟩
         · rw [unrank, if_pos (by omega), show r = L.choose m - 1 by omega, unrank_last (by omega),
             show L - m = L - m - 1 + 1 by omega]
           rfl
@@ -211,7 +206,7 @@ theorem unrank_succ_shape {L m r : ℕ} (hr : r + 1 < L.choose m) :
           rfl
       · -- Neither mask contains the first level.
         obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih (m := m + 1) (r := r - L.choose m) (by omega)
-        refine ⟨false :: pre, a, b, by rw [List.length_cons]; omega, ?_, ?_⟩
+        refine ⟨false :: pre, a, b, by grind, ?_, ?_⟩
         · rw [unrank, if_neg (by omega), hthis, List.cons_append]
         · rw [unrank, if_neg (by omega), show r + 1 - L.choose m = r - L.choose m + 1 by omega,
             hnext, List.cons_append]

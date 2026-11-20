@@ -5,33 +5,19 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
+public import ThreeSumApsp.Lang.Lib.Filter
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Recursion
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.NodeArray
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.Passes
 
-/-!
-# 3SUM from Convolution-3SUM: remainders, counts, collisions, heavy elements
-
-Four routines of the reduction of [CH20, Theorem 5.1] (for Theorem 21(a)).
-They hash a set of integers modulo M.
-
-* resid writes the remainders of the elements of a set (`resid_spec`).
-* tally adds the remainders to a table of counts, or removes them from it (`tally_spec`).
-* coll returns the number of colliding ordered pairs (`coll_spec`): by `coll_eq_list` it is the sum,
-  over the elements, of the size of the element's bucket minus 1.
-* heavy extracts the elements that are not alone in their bucket (`heavy_spec`,
-  `heavyList_toFinset`).
-
-In the statements the modulus is Mo, since in a program text M (…) reads a cell of the memory.
-`keys M L` is the list of the remainders x % M of the numbers of L, as natural numbers, and `SegN`
-is `Seg` for a list of natural numbers.
-
-coll and heavy begin and end in the same way: resid writes the remainders to the free pointer, tally
-counts them (`Counted`), a loop reads the counts, and tally removes them, so that the table holds
-zeros again.  The three calls are `BucketPre.resid_meets`, `count_meets` and `uncount_meets`.
--/
+/-! Count residues in one pass, use the counts for collisions or heavy elements, then clear the
+count cells touched by the recorded keys. -/
 
 @[expose] public section
 
@@ -41,168 +27,41 @@ open ThreeSumApsp ThreeSumApsp.ChanHe ThreeSumApsp.Spec.ChanHeArray Finset
 
 variable {lim : Limits} {P : Program}
 
-/-! ## resid -/
+/-- Ordered pairs of distinct positions with equal keys. -/
+def equalPairs : List ℕ → ℕ
+  | [] => 0
+  | r :: K => equalPairs K + 2 * K.count r
 
-namespace Resid
+private theorem equalPairs_snoc (K : List ℕ) (r : ℕ) :
+    equalPairs (K ++ [r]) = equalPairs K + 2 * K.count r := by
+  induction K <;> grind [equalPairs, cons]
 
-/-- The local variables of resid: the arguments len, s, sg, M, key, fr, the counter i, and the
-remainder. -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Sign : ℕ := 2
-@[inherit_doc Len] abbrev Modulus : ℕ := 3
-@[inherit_doc Len] abbrev Key : ℕ := 4
-@[inherit_doc Len] abbrev Free : ℕ := 5
-@[inherit_doc Len] abbrev Idx : ℕ := 6
-@[inherit_doc Len] abbrev Rem : ℕ := 7
+private theorem equalPairs_bound (K : List ℕ) : equalPairs K ≤ K.length * K.length := by
+  induction K with
+  | nil => decide
+  | cons r K ih =>
+    simp_all [equalPairs] <;> grind
 
-end Resid
+private theorem equalPairs_eq_sum (K : List ℕ) :
+    (equalPairs K : ℤ) = (K.map fun q => (K.count q : ℤ) - 1).sum := by
+  induction K with
+  | nil => rfl
+  | cons r K ih =>
+    have h (S : List ℕ) : ((S.map fun q => ((r :: K).count q : ℤ) - 1).sum) =
+        ((S.map fun q => (K.count q : ℤ) - 1).sum) + S.count r := by
+      induction S <;> grind
+    grind [equalPairs]
 
-open Resid in
-/-- resid(len, s, sg, M, key, fr): for i < len, mem[key + i] := emod(sg * mem[s + i], M, fr). -/
-def residBody (pEmod : ℕ) : Stmt :=
-  .for Idx (v Len) (
-    .call pEmod [v Sign *' M (v Src +' v Idx), v Modulus, v Free] Rem ;;
-    .store (v Key +' v Idx) (v Rem))
-
-/-- What is allowed for resid covers what emod needs one level of calls further down. -/
-theorem emodNeed_ok {len V Mo fr d : ℕ} (h : (residNeed len V Mo).Ok lim fr d) :
-    (emodNeed V Mo).Ok lim fr (d + 1) := by
-  refine h.mono ?_ le_rfl le_rfl
-  have hlen : 1 ≤ (len + 1) ^ 2 := Nat.one_le_pow _ _ (by omega)
-  -- 4 V + 4 M + 16 ≤ 64 (M + 1) (V + 1) ≤ 64 (len + 1)² (M + 1) (V + 1)
-  calc 4 * V + 4 * Mo + 16 ≤ 64 * 1 * (Mo + 1) * (V + 1) := by nlinarith [Nat.zero_le (V * Mo)]
-    _ ≤ 64 * (len + 1) ^ 2 * (Mo + 1) * (V + 1) := by gcongr
-
-/-- The memory before round i of resid: the first i remainders are written, and below the free
-pointer no cell outside the len cells from key has changed. -/
-def ResidInv (μ : ℕ → ℤ) (fr key Mo : ℕ) (sg : ℤ) (L : List ℤ) (i : ℕ) (μ' : ℕ → ℤ) : Prop :=
-  (∀ j (hj : j < L.length), j < i → μ' (key + j) = (sg * L[j]) % (Mo : ℤ)) ∧
-    KeptBut μ μ' fr key L.length
-
-/-- A round of resid: emod has changed no cell below the free pointer, and remainder number i is
-written. -/
-theorem ResidInv.succ {μ μ' μ'' : ℕ → ℤ} {fr key Mo i : ℕ} {sg : ℤ} {L : List ℤ}
-    (h : ResidInv μ fr key Mo sg L i μ') (hi : i < L.length) (hkey : key + L.length ≤ fr)
-    (hkept : Kept μ' μ'' fr) :
-    ResidInv μ fr key Mo sg L (i + 1)
-      (Function.update μ'' (key + i) ((sg * L[i]) % (Mo : ℤ))) := by
-  refine ⟨fun j hj hji => ?_, (h.2.then hkept fun b hb => ⟨hb, hb.1⟩).write (by omega) _⟩
-  rcases Nat.lt_succ_iff_lt_or_eq.1 hji with hji | rfl
-  · rw [Function.update_of_ne (by omega), hkept _ (by omega), h.1 j hj hji]
-  · exact Function.update_self ..
-
-/-- **resid** meets its specification. -/
-theorem resid_spec {p pEmod : ℕ} (hP : P[p]? = some (residBody pEmod))
-    (hEmod : EmodSpec lim P pEmod) : ResidSpec lim P p := by
-  intro d fr V Mo s key sg L μ hM hsg hL hseg hs hkey hap hok
-  refine ⟨_, hP, ?_⟩
-  have hw := hok.space
-  have hcells := hok.cells
-  have hdepth := hok.depth
-  have hword := (emodNeed_ok hok).word
-  simp only [residNeed, emodNeed] at hword hdepth
-  -- for i < len; the local Rem holds anything
-  refine Ends.forShape (fun i (r : ℤ) μ' => ⟨frame [L.length, s, sg, Mo, key, fr, i, r], μ'⟩)
-    (ResidInv μ fr key Mo sg L) L.length (tEmod V + 15) 0
-    ⟨fun j _ hj => absurd hj (by omega), .refl⟩ ?round ?done
-    (first := by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
-    (hT := by simp [tResid]; ring_nf; omega)
-  case round =>
-    intro i r μ' hi inv
-    -- The number is still in its cell, and its product with the sign is at most V in absolute
-    -- value; habs: |sg * x| = |sg| * |x|.
-    have hread : μ' (s + i) = L[i] := by
-      rw [inv.2 _ (by omega), hseg i hi]
-    have hprod : |sg * L[i]| ≤ (V : ℤ) := by
-      rcases hsg with rfl | rfl <;> simpa using hL.getElem hi
-    have habs := abs_mul sg L[i]
-    -- r := emod(sg * mem[s + i], M, fr)
-    refine Ends.callToThen (hEmod (d + 1) fr V Mo (sg * L[i]) μ' hM hprod (emodNeed_ok hok)) ?_
-      (by simp [Limits.Addr, abs_le, hread]; omega)
-    rintro _ μ'' ⟨rfl, hkept⟩
-    -- mem[key + i] := r
-    light_store (key + i) ((sg * L[i]) % (Mo : ℤ))
-    exact ⟨_, _, rfl, inv.succ hi hkey hkept⟩
-  case done =>
-    rintro r μ' ⟨written, kept⟩
-    exact ⟨fun j hj => (written j (by simpa using hj) (by simpa using hj)).trans (by simp), kept⟩
-
-/-! ## tally -/
-
-namespace Tally
-
-/-- The local variables of tally: the arguments len, key, cnt, δ, and the counter i. -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Key : ℕ := 1
-@[inherit_doc Len] abbrev Count : ℕ := 2
-@[inherit_doc Len] abbrev Delta : ℕ := 3
-@[inherit_doc Len] abbrev Idx : ℕ := 4
-
-end Tally
-
-open Tally in
-/-- tally(len, key, cnt, δ): for i < len, mem[cnt + mem[key + i]] += δ. -/
-def tallyBody : Stmt :=
-  .for Idx (v Len) (
-    .store (v Count +' M (v Key +' v Idx)) (M (v Count +' M (v Key +' v Idx)) +' v Delta))
-
-/-- The memory before round i of tally: the first i keys have been counted, and no cell outside the
-count table has changed. -/
-def TallyInv (μ : ℕ → ℤ) (cnt cap : ℕ) (δ : ℤ) (K : List ℕ) (i : ℕ) (μ' : ℕ → ℤ) : Prop :=
-  (∀ r < cap, μ' (cnt + r) = μ (cnt + r) + δ * ((K.take i).count r : ℤ)) ∧ SameOutside μ μ' cnt cap
-
-/-- A round of tally counts the key number i. -/
-theorem TallyInv.succ {μ μ' : ℕ → ℤ} {cnt cap i : ℕ} {δ : ℤ} {K : List ℕ}
-    (h : TallyInv μ cnt cap δ K i μ') (hi : i < K.length) (hk : K[i] < cap) :
-    TallyInv μ cnt cap δ K (i + 1) (Function.update μ' (cnt + K[i]) (μ' (cnt + K[i]) + δ)) := by
-  refine ⟨fun r hr => ?_, h.2.write (by omega) _⟩
-  rw [List.count_take_succ K r hi]
-  by_cases hrk : K[i] = r
-  · subst hrk
-    rw [Function.update_self, h.1 _ hk, if_pos rfl]
-    push_cast
-    ring
-  · rw [Function.update_of_ne (by omega), h.1 r hr, if_neg hrk, Nat.add_zero]
-
-/-- **tally** meets its specification. -/
-theorem tally_spec {p : ℕ} (hP : P[p]? = some tallyBody) : TallySpec lim P p := by
-  intro d key cnt cap δ K μ hK hδ hseg hap hbd hkey hcnt hw hword
-  refine ⟨_, hP, ?_⟩
-  -- for i < len
-  refine Ends.forFrame (TallyInv μ cnt cap δ K) K.length ⟨fun r _ => by simp, .refl⟩
-    ?round ?done (hT := by simp [tTally]; omega)
-  case round =>
-    intro i μ' hi inv
-    have hk : K[i] < cap := hK _ (List.getElem_mem hi)
-    -- The key is still in its cell, and the count that is changed is at most len + i in absolute
-    -- value.
-    have hread : μ' (key + i) = (K[i] : ℕ) := by
-      rw [inv.2 _ (by omega), SegN.getElem hseg hi]
-    have hcount : (K.take i).count K[i] ≤ i := List.count_le_length.trans (by simp)
-    have hcell := inv.1 _ hk
-    have hold := abs_le.1 (hbd _ hk)
-    -- mem[cnt + mem[key + i]] += δ
-    refine Ends.storeTo (cnt + K[i]) (μ' (cnt + K[i]) + δ) ⟨rfl, inv.succ hi hk⟩ ?_
-    rcases hδ with rfl | rfl <;> simp [Limits.Addr, abs_le, hread] <;> omega
-  case done =>
-    exact fun μ' inv => ⟨fun r hr => (inv.1 r hr).trans (by rw [List.take_length]), inv.2⟩
-
-/-! ## The pure side: buckets, collisions and heavy elements from the list of the remainders -/
-
-/-- The number of colliding pairs, from the list of the remainders. -/
 theorem coll_eq_list {L : List ℤ} (hL : L.Nodup) {Mo : ℕ} (hM : 1 ≤ Mo) :
-    (coll L.toFinset Mo : ℤ)
-      = ((keys Mo L).map fun q => ((keys Mo L).count q : ℤ) - 1).sum := by
-  rw [coll_eq_sum, List.sum_toFinset _ hL]
+    (coll L.toFinset Mo : ℤ) = equalPairs (keys Mo L) := by
+  rw [equalPairs_eq_sum, coll_eq_sum, List.sum_toFinset _ hL]
   have h : ∀ x ∈ L, ((#(bucket L.toFinset Mo (x % (Mo : ℤ))) - 1 : ℕ) : ℤ)
       = ((keys Mo L).count (x % (Mo : ℤ)).toNat : ℤ) - 1 := by
     intro x hx
     rw [← Int.natCast_toNat_emod hM x, card_bucket hM hL]
     have : 1 ≤ (keys Mo L).count (x % (Mo : ℤ)).toNat :=
       List.count_pos_iff.2 (List.mem_map.2 ⟨x, hx, rfl⟩)
-    rw [Int.natCast_toNat_emod hM x]
-    omega
+    grind
   rw [Nat.cast_list_sum, List.map_map]
   conv_rhs => rw [keys, List.map_map]
   exact congrArg List.sum (List.map_congr_left fun x hx => h x hx)
@@ -258,8 +117,7 @@ structure BucketPre (lim : Limits) (μ : ℕ → ℤ) (d fr V Mo s cnt cap : ℕ
   apart : Apart s L.length cnt cap
   ok : (collNeed L.length V Mo).Ok lim fr d
 
-/-- Between the two calls of tally: the remainders stand at the free pointer, and the table holds
-how often each of them occurs. -/
+/-- The remainders stand at the free pointer, and the table holds their multiplicities. -/
 structure Counted (μ : ℕ → ℤ) (fr cnt cap : ℕ) (K : List ℕ) : Prop where
   keys : SegN μ fr K
   counts : ∀ q < cap, μ (cnt + q) = (K.count q : ℤ)
@@ -273,14 +131,166 @@ theorem sq_add_le_word {n V Mo : ℕ} (h : ((wordNeed n V Mo : ℕ) : ℤ) ≤ l
     calc n * n + 4 * n + 17 ≤ 64 * (n + 1) ^ 2 * 1 := by nlinarith
       _ ≤ 64 * (n + 1) ^ 2 * ((Mo + 1) * (V + 1)) := Nat.mul_le_mul_left _ hMV
       _ = wordNeed n V Mo := by unfold wordNeed; ring
-  exact le_trans (by exact_mod_cast hle) h
+  omega
+
+/-- Clear the touched buckets by traversing the keys again. -/
+def ClearSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
+  ∀ {d fr cnt cap : ℕ} {K : List ℕ} {μ : ℕ → ℤ}, Counted μ fr cnt cap K → (∀ k ∈ K, k < cap) →
+    cnt + cap ≤ fr → fr + K.length ≤ lim.space → (lim.space : ℤ) ≤ lim.word →
+    Meets lim P p d [K.length, fr, cnt] μ (tClear K.length) fun _ ν =>
+      ZeroAt ν cnt cap ∧ SameOutside μ ν cnt cap
+
+namespace ClearBuckets
+registers [Len, Key, Table, Idx]
+end ClearBuckets
+
+open ClearBuckets in
+def clearBucketsBody : Stmt :=
+  .for Idx (v Len) (.store (v Table +' M (v Key +' v Idx)) (k 0))
+
+theorem clearBuckets_spec {p : ℕ} (hp : P[p]? = some clearBucketsBody) : ClearSpec lim P p := by
+  intro d fr cnt cap K μ h hK hc hf hw
+  refine .of_body hp ?_
+  refine Ends.forFrame (fun i ν => (∀ r < cap, ν (cnt + r) = if r ∈ K.take i then 0 else μ (cnt + r)) ∧
+    SameOutside μ ν cnt cap) K.length ⟨by simp, .refl⟩ ?_ ?_ (hT := by light_time [tClear])
+  · intro i ν hi inv
+    have hk : K[i] < cap := hK _ (List.getElem_mem hi)
+    have hr : ν (fr + i) = (K[i] : ℕ) := (inv.2 _ (by omega)).trans (h.keys.getElem hi)
+    refine Ends.storeTo (cnt + K[i]) 0 ⟨rfl, ?_, inv.2.update ⟨by omega, by omega⟩ _⟩ (by light_side [hr])
+    intro r hr'
+    simp only [List.take_succ_eq_append_getElem hi, List.mem_append, List.mem_singleton]
+    by_cases he : r = K[i]
+    · simp [he]
+    · rw [Function.update_of_ne (by omega), inv.1 r hr']
+      simp [he]
+  · rintro ν ⟨hz, hs⟩
+    refine ⟨fun r hr => ?_, hs⟩
+    change ν (cnt + r) = 0
+    rw [hz r hr, List.take_length, h.counts r hr]
+    by_cases he : r ∈ K <;> simp [he, List.count_eq_zero_of_not_mem]
+
+private theorem emodNeed_ok {len V Mo fr d : ℕ} (h : (collNeed len V Mo).Ok lim fr d) :
+    (emodNeed V Mo).Ok lim (fr + len) (d + 2) := by
+  refine h.mono ?_ (by simp [collNeed, emodNeed]; omega) le_rfl
+  have hlen : 1 ≤ (len + 1) ^ 2 := Nat.one_le_pow _ _ (by omega)
+  calc 4 * V + 4 * Mo + 16 ≤ 64 * 1 * (Mo + 1) * (V + 1) := by lia
+    _ ≤ 64 * (len + 1) ^ 2 * (Mo + 1) * (V + 1) := by gcongr
+
+/-- Form and count the keys in one traversal. Only the key buffer at `fr` and the count
+ table below `fr` are written; the remainder procedure uses scratch past the keys. -/
+def CountSpec (lim : Limits) (P : Program) (p : ℕ) : Prop :=
+  ∀ {μ d fr V Mo s cnt cap L}, BucketPre lim μ d fr V Mo s cnt cap L → ∀ {sg : ℤ},
+    sg = 1 ∨ sg = -1 →
+    Meets lim P p (d + 1) [L.length, s, sg, Mo, fr, cnt] μ (tCount L.length V)
+      fun r ν => r = equalPairs (keys Mo (L.map (sg * ·))) ∧
+        Counted ν fr cnt cap (keys Mo (L.map (sg * ·))) ∧ KeptBut μ ν fr cnt cap
+
+namespace CountLocals
+registers [Len, Src, Sign, Modulus, Key, Table, Free, Idx, Rem, Pairs]
+end CountLocals
+
+open CountLocals in
+def countRound (pEmod : ℕ) : Stmt :=
+  .call pEmod [v Sign *' M (v Src +' v Idx), v Modulus, v Free] Rem ;;
+  .store (v Key +' v Idx) (v Rem) ;;
+  .set Pairs (v Pairs +' k 2 *' M (v Table +' v Rem)) ;;
+  .store (v Table +' v Rem) (M (v Table +' v Rem) +' k 1)
+
+open CountLocals in
+def countBody (pEmod : ℕ) : Stmt :=
+  .set Free (v Key +' v Len) ;; .for Idx (v Len) (countRound pEmod) ;; .set Len (v Pairs)
+
+theorem count_spec {p pEmod : ℕ} (hp : P[p]? = some (countBody pEmod))
+    (hE : EmodSpec lim P pEmod) : CountSpec lim P p := by
+  intro μ d fr V Mo s cnt cap L C sg hsg
+  let K := keys Mo (L.map (sg * ·))
+  have hklen : K.length = L.length := by simp [K]
+  have hK := keys_lt C.modulus_pos (L.map (sg * ·))
+  have hen : (emodNeed V Mo).Ok lim (fr + K.length) (d + 2) :=
+    by simpa only [hklen] using emodNeed_ok C.ok
+  have hw := C.ok.space
+  have hspace := hen.cells
+  have hd := hen.depth
+  have hw' := hen.word
+  have hword := sq_add_le_word C.ok.word
+  simp only [emodNeed] at hspace hd hw'
+  have hcnt := C.belowTable
+  have hsrc := C.belowList
+  have hap := C.apart
+  let ls (i : ℕ) (z : ℤ × ℤ) : List ℤ :=
+    [L.length, s, sg, Mo, fr, cnt, (fr + L.length : ℕ), i, z.1, z.2]
+  refine .of_body hp ?_
+  unfold countBody
+  light_set (fr + L.length : ℕ) using tCount
+  let I (i : ℕ) (z : ℤ × ℤ) (ν : ℕ → ℤ) :=
+    Counted ν fr cnt cap (K.take i) ∧ KeptBut μ ν fr cnt cap ∧ z.2 = equalPairs (K.take i)
+  refine Ends.next _ (Ends.forShape (fun i z ν => ⟨frame (ls i z), ν⟩) I K.length
+    (tEmod V + 44) (0, 0) ⟨⟨by simp [SegN], by simpa using fun r hr => C.zero r hr⟩, .refl, rfl⟩ ?_ ?_
+    (first := by rw [update_frame_setLocal, ← frame_append_zeros _ 2]; rfl)
+    (bound := by intros; light_side [ls, hklen]) (counter := by intros; rfl)
+    (next := by intros; simp only [update_frame_setLocal]; rfl) (hT := le_rfl))
+    (by light_time [ls, tCount, hklen])
+  · rintro i ⟨old, val⟩ ν hi ⟨h, hkeep, hv⟩
+    change val = (equalPairs (K.take i) : ℤ) at hv
+    have hiL : i < L.length := by omega
+    have hr₁ : ν (s + i) = L[i] := (hkeep _ (by omega)).trans (C.list i hiL)
+    have hkey : (K[i] : ℕ) = (sg * L[i]) % (Mo : ℤ) :=
+      by simpa [K, keys] using Int.natCast_toNat_emod C.modulus_pos (sg * L[i])
+    have hki := (hK K[i] (List.getElem_mem hi)).trans_le C.modulus_le
+    have hm : |sg * L[i]| ≤ (V : ℤ) := by
+      rcases hsg with rfl | rfl <;> simpa using C.bounded.getElem hiL
+    have hpm := abs_le.1 hm
+    have ha := abs_le.1 (C.bounded.getElem hiL)
+    have hval : 0 ≤ val ∧ val ≤ (L.length : ℤ) * L.length := by
+      rw [hv]
+      refine ⟨by positivity, ?_⟩
+      exact_mod_cast (equalPairs_bound _).trans (Nat.mul_le_mul (by simp [hklen]) (by simp [hklen]))
+    unfold countRound
+    light_call (hE (d + 2) (fr + K.length) V Mo (sg * L[i]) ν C.modulus_pos hm hen)
+      using ls, hklen, hr₁ with _ ν' ⟨rfl, hk⟩
+    rw [← hkey]
+    have hb : cnt + K[i] < fr + K.length := by omega
+    have hc : Function.update ν' (fr + i) (K[i] : ℕ) (cnt + K[i]) = (K.take i).count K[i] := by
+      rw [Function.update_of_ne (by omega), hk _ hb, h.counts _ hki]
+    have hn : (K.take i).count K[i] ≤ i := List.count_le_length.trans (by simp)
+    light_steps using ls, hc
+    refine ⟨⟨_, _⟩, _, rfl, ⟨?_, ?_⟩, ?_, ?_⟩
+    · have hn : (K.take (i + 1)).length ≤ K.length := by simp
+      have hstep := SegN.take_succ (h.keys.keep (fun b hb => hk b (by
+        have := List.length_take_le i K
+        omega))) hi
+      simpa only [List.getD_eq_getElem _ _ hi] using
+        Seg.update_out (b := cnt + K[i]) hstep (Or.inl (by omega)) (((K.take i).count K[i] : ℤ) + 1)
+    · intro r hr
+      rw [List.count_take_succ K r hi]
+      by_cases e : r = K[i]
+      · subst r; simp
+      · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega), hk _ (by omega)]
+        simpa [Ne.symm e] using h.counts r hr
+    · exact ((hkeep.then hk (by omega)).write (b := fr + i) (by omega) _).write
+        (b := cnt + K[i]) (by omega) _
+    · change val + 2 * ((K.take i).count K[i] : ℤ) = (equalPairs (K.take (i + 1)) : ℤ)
+      rw [List.take_succ_eq_append_getElem hi, equalPairs_snoc, hv]
+      push_cast
+      rfl
+  · rintro ⟨r, val⟩ ν ⟨hc, hkeep, hv⟩
+    rw [List.take_length] at hc hv
+    light_set val using ls, tCount, hklen
+    exact ⟨hv, hc, hkeep⟩
+
+/-- The unsigned call is used by the collision and heavy-element routines. -/
+theorem BucketPre.count_unsigned {μ d fr V Mo s cnt cap L p}
+    (C : BucketPre lim μ d fr V Mo s cnt cap L) (h : CountSpec lim P p) :
+    Meets lim P p (d + 1) [L.length, s, 1, Mo, fr, cnt] μ (tCount L.length V)
+      fun r ν => r = equalPairs (keys Mo L) ∧ Counted ν fr cnt cap (keys Mo L) ∧ KeptBut μ ν fr cnt cap := by
+  simpa using h C (Or.inl (Eq.refl (1 : ℤ)))
 
 /-- A table that held zeros and holds zeros again has not changed. -/
 theorem sameOn_of_zeroAt {R : ℕ → Prop} {μ μ' : ℕ → ℤ} {cnt cap : ℕ}
     (h : SameOn (fun b => R b ∧ Outside cnt cap b) μ μ') (hz : ZeroAt μ cnt cap)
     (hz' : ZeroAt μ' cnt cap) : SameOn R μ μ' := fun b hb => by
   by_cases hin : Outside cnt cap b
-  · exact h b ⟨hb, hin⟩
+  · aesop
   · obtain ⟨q, rfl⟩ : ∃ q, b = cnt + q := ⟨b - cnt, by omega⟩
     rw [hz q (by omega), hz' q (by omega)]
 
@@ -305,187 +315,36 @@ theorem BucketMem.exists_pre {μ : ℕ → ℤ} {d fr V Mo s len cnt cap : ℕ} 
 
 namespace BucketPre
 
-variable {μ μ₁ : ℕ → ℤ} {d fr V Mo s cnt cap pResid pTally : ℕ} {L : List ℤ} {K : List ℕ}
+variable {μ μ₁ : ℕ → ℤ} {d fr V Mo s cnt cap pCount pClear : ℕ} {L : List ℤ} {K : List ℕ}
 
-/-- resid(len, s, sg, M, fr, fr + len) writes the remainders of the numbers sg · x to the free
-pointer. -/
-theorem resid_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hResid : ResidSpec lim P pResid)
-    {sg : ℤ} (hsg : sg = 1 ∨ sg = -1) :
-    Meets lim P pResid (d + 1) [L.length, s, sg, Mo, fr, (fr + L.length : ℕ)] μ (tResid L.length V)
-      fun _ μ₁ => SegN μ₁ fr (keys Mo (L.map (sg * ·))) ∧ Kept μ μ₁ fr := by
-  have hlist := C.belowList
-  refine (hResid (d + 1) (fr + L.length) V Mo s fr sg L μ C.modulus_pos hsg C.bounded C.list
-    (by omega) le_rfl (Or.inl hlist) (C.ok.mono le_rfl ?_ ?_)).mono le_rfl ?_
-  · simp only [residNeed, collNeed]
-    omega
-  · simp only [residNeed, collNeed]
-    omega
-  · rintro _ μ₁ ⟨written, kept⟩
-    refine ⟨?_, kept.mono fun b hb => ⟨by omega, Or.inl hb⟩⟩
-    rwa [SegN, map_cast_keys C.modulus_pos, List.map_map]
-
-/-- resid(len, s, 1, M, fr, fr + len) writes the remainders of the numbers of L to the free
-pointer. -/
-theorem keys_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hResid : ResidSpec lim P pResid) :
-    Meets lim P pResid (d + 1) [L.length, s, 1, Mo, fr, (fr + L.length : ℕ)] μ (tResid L.length V)
-      fun _ μ₁ => SegN μ₁ fr (keys Mo L) ∧ Kept μ μ₁ fr := by
-  simpa using C.resid_meets hResid (Or.inl rfl)
-
-/-- tally(len, fr, cnt, δ), run on the remainders K at the free pointer, adds δ times the number of
-occurrences of q in K to cell q of the table.  Of the hypotheses of `TallySpec` only the bound on
-the table is left. -/
-theorem tally_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hTally : TallySpec lim P pTally)
-    (hlen : K.length = L.length) (hlt : ∀ q ∈ K, q < Mo) {δ : ℤ} (hδ : δ = 1 ∨ δ = -1)
-    (hkeys : SegN μ₁ fr K) (hbd : ∀ q < cap, |μ₁ (cnt + q)| ≤ (L.length : ℤ)) :
-    Meets lim P pTally (d + 1) [L.length, fr, cnt, δ] μ₁ (tTally L.length) fun _ μ₂ =>
-      (∀ q < cap, μ₂ (cnt + q) = μ₁ (cnt + q) + δ * (K.count q : ℤ)) ∧
-        SameOutside μ₁ μ₂ cnt cap := by
-  have hcells := C.ok.cells
-  have htable := C.belowTable
-  have hword := sq_add_le_word C.ok.word
-  have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
-  simp only [collNeed] at hcells
-  have h := hTally (d + 1) fr cnt cap δ K μ₁ (fun q hq => (hlt q hq).trans_le C.modulus_le) hδ hkeys
-    (Or.inr htable)
-  rw [hlen] at h
-  exact h hbd (by omega) (by omega) C.ok.space (by omega)
-
-/-- tally(len, fr, cnt, 1) counts the remainders. -/
-theorem count_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hTally : TallySpec lim P pTally)
-    (hlen : K.length = L.length) (hlt : ∀ q ∈ K, q < Mo) (hkeys : SegN μ₁ fr K)
-    (kept : Kept μ μ₁ fr) :
-    Meets lim P pTally (d + 1) [L.length, fr, cnt, 1] μ₁ (tTally L.length) fun _ μ₂ =>
-      Counted μ₂ fr cnt cap K ∧ KeptBut μ μ₂ fr cnt cap := by
-  have htable := C.belowTable
-  have hzero : ZeroAt μ₁ cnt cap := fun q hq => (kept _ (by omega)).trans (C.zero q hq)
-  refine (C.tally_meets hTally hlen hlt (Or.inl rfl) hkeys fun q hq => by simp [hzero q hq]).mono
-    le_rfl ?_
-  rintro _ μ₂ ⟨counts, same⟩
-  exact ⟨⟨hkeys.of_sameOutside same (Or.inr htable),
-    fun q hq => by rw [counts q hq, hzero q hq]; ring⟩, kept.then same fun b hb => hb⟩
-
-/-- tally(len, fr, cnt, -1) removes the remainders from the table. -/
-theorem uncount_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hTally : TallySpec lim P pTally)
+/-- Clear the counts, leaving the rest of the memory alone. -/
+theorem clear_meets (C : BucketPre lim μ d fr V Mo s cnt cap L) (hClear : ClearSpec lim P pClear)
     (hlen : K.length = L.length) (hlt : ∀ q ∈ K, q < Mo) (h : Counted μ₁ fr cnt cap K) :
-    Meets lim P pTally (d + 1) [L.length, fr, cnt, -1] μ₁ (tTally L.length) fun _ μ₂ =>
+    Meets lim P pClear (d + 1) [L.length, fr, cnt] μ₁ (tClear L.length) fun _ μ₂ =>
       ZeroAt μ₂ cnt cap ∧ SameOutside μ₁ μ₂ cnt cap := by
-  refine (C.tally_meets hTally hlen hlt (Or.inr rfl) h.keys fun q hq => ?_).mono le_rfl ?_
-  · rw [h.counts q hq, abs_of_nonneg (by positivity), ← hlen]
-    exact_mod_cast List.count_le_length
-  · rintro _ μ₂ ⟨counts, same⟩
-    exact ⟨fun q hq => by rw [counts q hq, h.counts q hq]; ring, same⟩
+  have hc := C.ok.cells
+  simp only [collNeed] at hc
+  simpa only [hlen] using hClear (d := d + 1) h (fun q hq => (hlt q hq).trans_le C.modulus_le)
+    C.belowTable (by omega) C.ok.space
 
 end BucketPre
 
 /-! ## coll -/
 
 namespace Coll
-
-/-- The local variables of coll: the arguments len, s, M, cnt, fr, the results of the calls, which
-are not used, the counter i, and the sum.  Local 0 also takes the result. -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Result : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Modulus : ℕ := 2
-@[inherit_doc Len] abbrev Count : ℕ := 3
-@[inherit_doc Len] abbrev Free : ℕ := 4
-@[inherit_doc Len] abbrev Res : ℕ := 5
-@[inherit_doc Len] abbrev Idx : ℕ := 6
-@[inherit_doc Len] abbrev Total : ℕ := 7
-
+registers [Len / Result, Src, Modulus, Count, Free, Pairs, Unread]
 end Coll
 
 open Coll in
-/-- The part of coll that adds up: sum := 0; for i < len, sum += mem[cnt + mem[fr + i]] - 1. -/
-def collSum : Stmt :=
-  .set Total (k 0) ;;
-  .for Idx (v Len) (.set Total (v Total +' M (v Count +' M (v Free +' v Idx)) -' k 1))
-
-open Coll in
-/-- coll(len, s, M, cnt, fr) writes the remainders to fr, counts them, adds up, removes them from
-the table, and returns the sum. -/
-def collBody (pResid pTally : ℕ) : Stmt :=
-  .call pResid [v Len, v Src, k 1, v Modulus, v Free, v Free +' v Len] Res ;;
-  .call pTally [v Len, v Free, v Count, k 1] Res ;;
-  collSum ;;
-  .call pTally [v Len, v Free, v Count, k 0 -' k 1] Res ;;
-  .set Result (v Total)
-
-/-- The sum over the first `i` remainders. -/
-def collPart (K : List ℕ) (i : ℕ) : ℤ := ((K.take i).map fun q => (K.count q : ℤ) - 1).sum
-
-/-- The sum over the first i + 1 remainders is that over the first i, plus the term of remainder
-i. -/
-theorem collPart_succ (K : List ℕ) {i : ℕ} (hi : i < K.length) :
-    collPart K (i + 1) = collPart K i + ((K.count K[i] : ℤ) - 1) := by
-  unfold collPart
-  rw [List.take_add_one, List.getElem?_eq_getElem hi, List.map_append, List.sum_append]
-  simp
-
-/-- The sum over the first `i` remainders lies between 0 and `i` times the number of remainders. -/
-theorem collPart_bounds (K : List ℕ) :
-    ∀ i, i ≤ K.length → 0 ≤ collPart K i ∧ collPart K i ≤ (i : ℤ) * (K.length : ℤ) := by
-  intro i
-  induction i with
-  | zero => intro _; simp [collPart]
-  | succ i ih =>
-    intro hi
-    obtain ⟨hlow, hhigh⟩ := ih (by omega)
-    have hone : 1 ≤ K.count K[i] := List.count_pos_iff.2 (List.getElem_mem _)
-    have hlen : K.count K[i] ≤ K.length := List.count_le_length
-    rw [collPart_succ K (by omega)]
-    push_cast
-    exact ⟨by omega, by nlinarith⟩
-
-/-- **The loop of coll** leaves the sum over all remainders in the local Total and writes no
-cell. -/
-theorem collSum_ends {d V s Mo cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ → ℤ} {L : List ℤ}
-    (C : BucketPre lim μ₀ d fr V Mo s cnt cap L) (counted : Counted μ fr cnt cap (keys Mo L)) :
-    Ends lim P d collSum ⟨frame [L.length, s, Mo, cnt, fr, r], μ⟩ (20 * L.length + 10) fun σ' =>
-      σ' = ⟨frame [L.length, s, Mo, cnt, fr, r, L.length, collPart (keys Mo L) L.length], μ⟩ := by
-  have hw := C.ok.space
-  have hword := sq_add_le_word C.ok.word
-  have hcells := C.ok.cells
-  have htable := C.belowTable
-  simp only [collNeed] at hcells
-  have hn := length_keys Mo L
-  have hK : ∀ q ∈ keys Mo L, q < cap := fun q hq =>
-    (keys_lt C.modulus_pos _ q hq).trans_le C.modulus_le
-  clear C
-  generalize keys Mo L = K at *
-  generalize L.length = n at *
-  have hsq : (0 : ℤ) ≤ (n : ℤ) * n := by positivity
-  -- sum := 0
-  light_set 0
-  -- for i < len
-  refine Ends.for (fun i σ => σ = ⟨frame [n, s, Mo, cnt, fr, r, i, collPart K i], μ⟩) n 12
-    ?start ?round ?done ?bound
-  case start => simp [update_frame_setLocal, collPart]
-  case done => exact fun _ _ hσ => hσ
-  case bound =>
-    rintro i _ - - rfl
-    simp
-  case round =>
-    rintro i _ hi - rfl
-    have hiK : i < K.length := by omega
-    have hq : K[i] < cap := hK _ (List.getElem_mem hiK)
-    -- The two cells that the round reads, and the bounds on the old and the new sum.
-    have hkey : μ (fr + i) = (K[i] : ℕ) := counted.keys.getElem hiK
-    have hcount := counted.counts _ hq
-    have hone : 1 ≤ K.count K[i] := List.count_pos_iff.2 (List.getElem_mem _)
-    have hlen : K.count K[i] ≤ n := hn ▸ List.count_le_length
-    obtain ⟨hlow, hhigh⟩ := collPart_bounds K i hiK.le
-    have hhigh' : collPart K i ≤ (n : ℤ) * n :=
-      hhigh.trans (hn ▸ mul_le_mul_of_nonneg_right (by exact_mod_cast hiK.le) (by positivity))
-    -- sum += mem[cnt + mem[fr + i]] - 1
-    refine Ends.setTo (collPart K (i + 1)) ⟨by simp, by rw [update_frame_setLocal]; rfl⟩ ?_
-    rw [collPart_succ K hiK]
-    simp [Limits.Addr, abs_le, hkey, hcount]
-    omega
+/-- Count equal-key pairs while filling the buckets, then restore the zero table. -/
+def collBody (pCount pClear : ℕ) : Stmt :=
+  .call pCount [v Len, v Src, k 1, v Modulus, v Free, v Count] Pairs ;;
+  .call pClear [v Len, v Free, v Count] Unread ;;
+  .set Result (v Pairs)
 
 /-- **coll** meets its specification. -/
-theorem coll_spec {p pResid pTally : ℕ} (hP : P[p]? = some (collBody pResid pTally))
-    (hResid : ResidSpec lim P pResid) (hTally : TallySpec lim P pTally) : CollSpec lim P p := by
+theorem coll_spec {p pCount pClear : ℕ} (hP : P[p]? = some (collBody pCount pClear))
+    (hCount : CountSpec lim P pCount) (hClear : ClearSpec lim P pClear) : CollSpec lim P p := by
   intro d fr V Mo s len cnt cap S μ hmem hok
   obtain ⟨L, rfl, hnd, rfl, C⟩ := hmem.exists_pre hok
   refine ⟨_, hP, ?_⟩
@@ -496,22 +355,13 @@ theorem coll_spec {p pResid pTally : ℕ} (hP : P[p]? = some (collBody pResid pT
   have hdepth := hok.depth
   have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
   simp only [collNeed] at hcells hdepth
-  -- resid(len, s, 1, M, fr, fr + len)
-  light_call (C.keys_meets hResid) using tColl with _ μ₁ ⟨hkeys, kept₁⟩
-  -- tally(len, fr, cnt, 1)
-  light_call (C.count_meets hTally (length_keys Mo L) (keys_lt hM L) hkeys kept₁)
-    using tColl with r μ₂ ⟨counted, kept₂⟩
-  -- the sum
-  light_piece (collSum_ends C counted) using tColl with _ rfl
-  -- tally(len, fr, cnt, -1)
-  light_call (C.uncount_meets hTally (length_keys Mo L) (keys_lt hM L) counted)
+  light_call (C.count_unsigned hCount) using tColl with r μ₂ ⟨hr, counted, kept₂⟩
+  -- Clear the count table.
+  light_call (C.clear_meets hClear (length_keys Mo L) (keys_lt hM L) counted)
     using tColl with _ μ₃ ⟨zero₃, same₃⟩
-  -- return the sum
-  refine Ends.setTo (coll L.toFinset Mo : ℤ)
-    ⟨by simp, sameOn_of_zeroAt (kept₂.then same₃ fun b hb => ⟨hb, hb.2⟩) C.zero zero₃⟩ ?_
-    (by simp [tColl]; omega)
-  rw [coll_eq_list hnd hM, collPart, ← length_keys Mo L, List.take_length]
-  simp
+  light_set r using tColl
+  exact ⟨hr.trans (coll_eq_list hnd hM).symm,
+    sameOn_of_zeroAt (kept₂.then same₃ fun b hb => ⟨hb, hb.2⟩) C.zero zero₃⟩
 
 /-! ## heavy -/
 
@@ -520,40 +370,23 @@ namespace Heavy
 /-- The local variables of heavy: the arguments len, s, M, out, cnt, fr, the results of the calls,
 which are not used, the counter i, and the number j of elements written.  Local 0 also takes the
 result. -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Result : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Modulus : ℕ := 2
-@[inherit_doc Len] abbrev Out : ℕ := 3
-@[inherit_doc Len] abbrev Count : ℕ := 4
-@[inherit_doc Len] abbrev Free : ℕ := 5
-@[inherit_doc Len] abbrev Res : ℕ := 6
-@[inherit_doc Len] abbrev Idx : ℕ := 7
-@[inherit_doc Len] abbrev Written : ℕ := 8
+registers [Len / Result, Src, Modulus, Out, Count, Free, Res, Idx, Written]
 
 end Heavy
 
 open Heavy in
-/-- A round of the loop of heavy: if 1 < mem[cnt + mem[fr + i]] then mem[out + j] := mem[s + i] and
-j := j + 1. -/
-def heavyRound : Stmt :=
-  .ite (k 1 <' M (v Count +' M (v Free +' v Idx)))
-    (.store (v Out +' v Written) (M (v Src +' v Idx)) ;; .set Written (v Written +' k 1)) .skip
+def heavyTest : Guard := .atom (k 1 <' M (v Count +' M (v Free +' v Idx)))
 
 open Heavy in
-/-- The part of heavy that copies: j := 0; a round for each i < len. -/
-def heavyCopy : Stmt :=
-  .set Written (k 0) ;;
-  .for Idx (v Len) heavyRound
+def heavyCopy : Stmt := filterPass Idx Len Out Written heavyTest (M (v Src +' v Idx))
 
 open Heavy in
 /-- heavy(len, s, M, out, cnt, fr) writes the remainders to fr, counts them, copies the heavy
 elements, removes the remainders from the table, and returns the number of heavy elements. -/
-def heavyBody (pResid pTally : ℕ) : Stmt :=
-  .call pResid [v Len, v Src, k 1, v Modulus, v Free, v Free +' v Len] Res ;;
-  .call pTally [v Len, v Free, v Count, k 1] Res ;;
+def heavyBody (pCount pClear : ℕ) : Stmt :=
+  .call pCount [v Len, v Src, k 1, v Modulus, v Free, v Count] Res ;;
   heavyCopy ;;
-  .call pTally [v Len, v Free, v Count, k 0 -' k 1] Res ;;
+  .call pClear [v Len, v Free, v Count] Res ;;
   .set Result (v Written)
 
 /-- The test of heavy: the remainder of `x` occurs at least twice among the remainders. -/
@@ -568,80 +401,45 @@ theorem heavyPart_length (Mo : ℕ) (L : List ℤ) : heavyPart Mo L L.length = h
   rw [heavyPart, Spec.passList_length, List.map_id]
   rfl
 
-/-- The state before round i of the loop of heavy: the heavy elements among the first i elements
-are written, and no cell outside the output has changed. -/
-def HeavyInv (μ : ℕ → ℤ) (s Mo out cnt fr : ℕ) (r : ℤ) (L : List ℤ) (i : ℕ) (σ : State) : Prop :=
-  ∃ μ' : ℕ → ℤ,
-    σ = ⟨frame [L.length, s, Mo, out, cnt, fr, r, i, (heavyPart Mo L i).length], μ'⟩ ∧
-      Seg μ' out (heavyPart Mo L i) ∧ SameOutside μ μ' out L.length
-
-/-- **A round of the loop of heavy** copies element i if it is heavy.  μ₀ is the memory at the start
-of heavy (of C only the layout and the limits are used), μ the memory at the start of the loop.  The
-conclusion has the form that `Ends.for` asks of a round. -/
-theorem heavyRound_ends {d V s Mo out cnt cap fr i : ℕ} {r : ℤ} {μ₀ μ : ℕ → ℤ} {L : List ℤ}
-    (C : BucketPre lim μ₀ d fr V Mo s cnt cap L) (counted : Counted μ fr cnt cap (keys Mo L))
-    (hL : Seg μ s L) (O : HeavyOut fr s cnt cap out L.length) (hi : i < L.length) {σ : State}
-    (hσ : HeavyInv μ s Mo out cnt fr r L i σ) :
-    Ends lim P d heavyRound σ 22 fun σ' => σ'.loc Heavy.Idx = i ∧
-      HeavyInv μ s Mo out cnt fr r L (i + 1)
-        { σ' with loc := Function.update σ'.loc Heavy.Idx ((i : ℤ) + 1) } := by
-  obtain ⟨μ', rfl, written, same⟩ := hσ
-  have hcells := C.ok.cells
-  light_facts C O C.ok
-  simp only [collNeed] at hcells
-  have hiK : i < (keys Mo L).length := by rwa [length_keys]
-  have hq : (keys Mo L)[i] < Mo := keys_lt C.modulus_pos _ _ (List.getElem_mem hiK)
-  have hqi : (keys Mo L)[i] = (L[i] % (Mo : ℤ)).toNat := by simp [keys]
-  -- The three cells that the round reads have not changed.
-  have hkey : μ' (fr + i) = ((keys Mo L)[i] : ℕ) :=
-    (same _ (Or.inr (by omega))).trans (counted.keys.getElem hiK)
-  have hcount : μ' (cnt + (keys Mo L)[i]) = ((keys Mo L).count (keys Mo L)[i] : ℤ) :=
-    (same _ (by omega)).trans (counted.counts _ (by omega))
-  have hread : μ' (s + i) = L[i] := (same _ (by omega)).trans (hL i hi)
-  have hj : (heavyPart Mo L i).length ≤ i := Spec.length_passList_le _ _ _ _
-  -- if 1 < mem[cnt + mem[fr + i]]
-  refine Ends.iteLast (fun hheavy => ?_) (fun hlight => ?_)
-    (by light_side [hkey])
-  · have htwo : 2 ≤ (keys Mo L).count (keys Mo L)[i] :=
-      Nat.succ_le_of_lt (by simpa [hkey, hcount] using hheavy)
-    have hsucc : heavyPart Mo L (i + 1) = heavyPart Mo L i ++ [L[i]] :=
-      Spec.passList_succ_of id hi (by simpa [isHeavy, ← hqi] using htwo)
-    -- mem[out + j] := mem[s + i]
-    light_store (out + (heavyPart Mo L i).length) L[i] using hread
-    -- j := j + 1
-    light_set ((heavyPart Mo L (i + 1)).length : ℤ) using hsucc
-    exact ⟨by simp, Function.update μ' (out + (heavyPart Mo L i).length) L[i],
-        by rw [update_frame_setLocal]; rfl, hsucc ▸ written.snoc _,
-        same.update ⟨by omega, by omega⟩ _⟩
-  · have hnottwo : ¬ 2 ≤ (keys Mo L).count (keys Mo L)[i] := fun htwo =>
-      hlight (by simpa [hkey, hcount] using Nat.lt_of_succ_le htwo)
-    have hsucc : heavyPart Mo L (i + 1) = heavyPart Mo L i :=
-      Spec.passList_succ_of_not id hi (by simpa [isHeavy, ← hqi] using hnottwo)
-    exact Ends.skip
-      ⟨by simp, μ', by rw [update_frame_setLocal, hsucc]; rfl, hsucc ▸ written, same⟩
-
-/-- **The loop of heavy** writes the heavy elements and leaves their number in the local Written. -/
-theorem heavyCopy_ends {d V s Mo out cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ → ℤ} {L : List ℤ}
+private theorem heavyCopy_ends {d V s Mo out cnt cap fr : ℕ} {r : ℤ} {μ₀ μ : ℕ → ℤ} {L : List ℤ}
     (C : BucketPre lim μ₀ d fr V Mo s cnt cap L) (counted : Counted μ fr cnt cap (keys Mo L))
     (hL : Seg μ s L) (O : HeavyOut fr s cnt cap out L.length) :
     Ends lim P d heavyCopy ⟨frame [L.length, s, Mo, out, cnt, fr, r], μ⟩ (30 * L.length + 10)
-      (HeavyInv μ s Mo out cnt fr r L L.length) := by
+      fun σ => ∃ ν, σ = ⟨frame [L.length, s, Mo, out, cnt, fr, r, L.length, (heavyList Mo L).length], ν⟩ ∧
+        Seg ν out (heavyList Mo L) ∧ SameOutside μ ν out L.length := by
+  have hcells := C.ok.cells
+  light_facts C O C.ok
+  simp only [collNeed] at hcells
   have hword := sq_add_le_word C.ok.word
   have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
-  -- j := 0
-  light_set 0
-  -- for i < len
-  refine Ends.for (HeavyInv μ s Mo out cnt fr r L) L.length 22 ?start ?round ?done ?bound
-  case start => exact ⟨μ, by simp [update_frame_setLocal], by simp, .refl⟩
-  case round => exact fun i σ hi _ hσ => heavyRound_ends C counted hL O hi hσ
-  case done => exact fun _ _ hσ => hσ
-  case bound =>
-    rintro i _ - - ⟨μ', rfl, -⟩
-    simp
+  unfold heavyCopy
+  refine Ends.filterPass _ _ (fun i D => D = heavyPart Mo L i) rfl ?_ ?_ C.ok.space
+    (by omega) rfl rfl (hT := by light_time [filterStep, heavyTest])
+  · intro i D ν hi hD H
+    have hh := H.size
+    have hiK : i < (keys Mo L).length := by rwa [length_keys]
+    have hq : (keys Mo L)[i] < Mo := keys_lt C.modulus_pos _ _ (List.getElem_mem hiK)
+    have hkey := (H.same (fr + i) (by omega)).trans (counted.keys.getElem hiK)
+    have hcount := (H.same (cnt + (keys Mo L)[i]) (by omega)).trans (counted.counts _ (by omega))
+    have hread := (H.same (s + i) (by omega)).trans (hL i hi)
+    have hqi : (keys Mo L)[i] = (L[i] % (Mo : ℤ)).toNat := by simp [keys]
+    subst D
+    refine ⟨by light_side [heavyTest, hkey], by light_side, ?_, ?_⟩
+    · intro hs
+      have ht : 2 ≤ (keys Mo L).count (keys Mo L)[i] := Nat.succ_le_of_lt (by simpa [heavyTest, hkey, hcount] using hs)
+      simpa [List.getD_eq_getElem _ _ hi, hread] using
+        (Spec.passList_succ_of id hi (by simpa [isHeavy, ← hqi] using ht)).symm
+    · intro hs
+      have ht : ¬ 2 ≤ (keys Mo L).count (keys Mo L)[i] := fun he =>
+        hs (by simpa [heavyTest, hkey, hcount] using Nat.lt_of_succ_le he)
+      exact (Spec.passList_succ_of_not id hi (by simpa [isHeavy, ← hqi] using ht)).symm
+  · rintro D ν rfl H
+    simp only [heavyPart_length] at H ⊢
+    exact ⟨ν, by simp [filterState, update_frame_setLocal], H.seg, H.same.mono le_rfl (Nat.add_le_add_left H.size _)⟩
 
 /-- **heavy** meets its specification. -/
-theorem heavy_spec {p pResid pTally : ℕ} (hP : P[p]? = some (heavyBody pResid pTally))
-    (hResid : ResidSpec lim P pResid) (hTally : TallySpec lim P pTally) : HeavySpec lim P p := by
+theorem heavy_spec {p pCount pClear : ℕ} (hP : P[p]? = some (heavyBody pCount pClear))
+    (hCount : CountSpec lim P pCount) (hClear : ClearSpec lim P pClear) : HeavySpec lim P p := by
   intro d fr V Mo s len out cnt cap S μ hmem O hok
   obtain ⟨L, rfl, hnd, rfl, C⟩ := hmem.exists_pre hok
   refine ⟨_, hP, ?_⟩
@@ -654,17 +452,12 @@ theorem heavy_spec {p pResid pTally : ℕ} (hP : P[p]? = some (heavyBody pResid 
   have hdepth := hok.depth
   have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
   simp only [collNeed] at hcells hdepth
-  -- resid(len, s, 1, M, fr, fr + len)
-  light_call (C.keys_meets hResid) using tHeavy with _ μ₁ ⟨hkeys, kept₁⟩
-  -- tally(len, fr, cnt, 1)
-  light_call (C.count_meets hTally (length_keys Mo L) (keys_lt hM L) hkeys kept₁)
-    using tHeavy with r μ₂ ⟨counted, kept₂⟩
+  light_call (C.count_unsigned hCount) using tHeavy with r μ₂ ⟨-, counted, kept₂⟩
   have hseg₂ : Seg μ₂ s L := C.list.keep
   -- the heavy elements are copied
   light_piece (heavyCopy_ends C counted hseg₂ O) using tHeavy with _ ⟨μ₃, rfl, written, same₃⟩
-  rw [heavyPart_length] at written
-  -- tally(len, fr, cnt, -1)
-  light_call (C.uncount_meets hTally (length_keys Mo L) (keys_lt hM L)
+  -- Clear the count table.
+  light_call (C.clear_meets hClear (length_keys Mo L) (keys_lt hM L)
     (counted.of_sameOutside same₃ hout hapc)) using tHeavy with _ μ₄ ⟨zero₄, same₄⟩
   have hnd' : (heavyList Mo L).Nodup := hnd.filter _
   have hcard : #(heavy L.toFinset Mo) = (heavyList Mo L).length := by
@@ -673,7 +466,7 @@ theorem heavy_spec {p pResid pTally : ℕ} (hP : P[p]? = some (heavyBody pResid 
   -- return the number of heavy elements
   refine Ends.setTo (#(heavy L.toFinset Mo) : ℤ) ⟨by simp,
     ⟨heavyList Mo L, hcard.symm, written.keep,
-      hnd', heavyList_toFinset hnd hM⟩, ?_⟩ (by simp [hcard, heavyPart_length])
+      hnd', heavyList_toFinset hnd hM⟩, ?_⟩ (by simp [hcard])
     (by simp [tHeavy]; omega)
   exact sameOn_of_zeroAt ((kept₂.then same₃ fun b hb => ⟨⟨hb.1.1, hb.2⟩, hb.1.2⟩).then same₄
     fun b hb => ⟨hb, hb.2⟩) C.zero zero₄

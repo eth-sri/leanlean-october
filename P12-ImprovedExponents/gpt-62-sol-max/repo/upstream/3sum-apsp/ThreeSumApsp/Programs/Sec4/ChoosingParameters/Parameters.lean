@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Setup
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Time
 
@@ -27,7 +29,7 @@ proof (`QuerySpec31`, `query31_meets`), and the text and the specification of th
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## Parameters -/
 
@@ -69,11 +71,7 @@ theorem RatParams.t_le (G : RatParams) (m : ℕ) : G.t m ≤ m := by
   have hq := G.hq
   rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
   have h1 : 10 * G.p * m ≤ 9 * G.q * m := Nat.mul_le_mul_right _ G.hθ.le
-  have h2 : G.p * m ≤ G.q * m := by
-    have e1 : 10 * G.p * m = 10 * (G.p * m) := by ring
-    have e2 : 9 * G.q * m = 9 * (G.q * m) := by ring
-    omega
-  omega
+  lia
 
 /-- a m ≤ b L. -/
 theorem RatParams.am_le (G : RatParams) (m : ℕ) : G.a * m ≤ G.b * G.L m := by
@@ -93,9 +91,6 @@ def parOf (G : RatParams) (N D₀ : ℕ) : Sec2.Par := ⟨G.L (logFour D₀), lo
 def switchOf31 (G : RatParams) (D₀ : ℕ) : ℕ := G.t (logFour D₀)
 /-- The hypotheses of Theorem 30 at these parameters. -/
 abbrev RatParams.Hyp (G : RatParams) (N D₀ : ℕ) : Prop := Hyp30 (parOf G N D₀) (switchOf31 G D₀)
-/-- The cost (8) of the preprocessing of Theorem 30 at these parameters. -/
-noncomputable abbrev RatParams.preCost (G : RatParams) (N D₀ : ℕ) : ℝ :=
-  cost8 (G.L (logFour D₀)) (logFour D₀) (switchOf31 G D₀) N
 /-- The cost L ∑ α_d of a query of Theorem 30 at these parameters. -/
 noncomputable abbrev RatParams.queryCost (G : RatParams) (D₀ : ℕ) : ℝ :=
   costQuery (G.L (logFour D₀)) (logFour D₀) (switchOf31 G D₀)
@@ -136,10 +131,7 @@ theorem RatParams.scratch_in_block (G : RatParams) (N D₀ fr : ℕ) :
 theorem add_three_le_structEnd (G : RatParams) (N D₀ fr : ℕ) : fr + 3 ≤ structEnd G N D₀ fr := by
   have hblock := add_three_le_blockAt N D₀ fr
   have hend := G.blockAt_lt_blockEnd N D₀ fr
-  by_cases h : logFour D₀ < G.m₀
-  · rw [structEnd_small h]
-  · rw [structEnd_large (not_lt.1 h)]
-    omega
+  by_cases h : logFour D₀ < G.m₀ <;> grind [logFour, structEnd_small, structEnd_large]
 
 /-- m ≤ L. -/
 theorem logFour_le_levels (G : RatParams) (N D₀ : ℕ) : (parOf G N D₀).m ≤ (parOf G N D₀).L := by
@@ -160,13 +152,11 @@ structure Lim31 (lim : Limits) (G : RatParams) (N D₀ fr : ℕ) (U : ℤ) : Pro
 
 /-- The numbers formed on the way to L fit in a word. -/
 theorem Lim31.wordL (h : Lim31 lim G N D₀ fr U) : ((G.a * logFour D₀ + G.b : ℕ) : ℤ) ≤ lim.word :=
-  le_trans (by exact_mod_cast (by omega :
-    G.a * logFour D₀ + G.b ≤ G.a * logFour D₀ + G.b + G.p * logFour D₀ + G.q)) h.mword
+  le_trans (by omega) h.mword
 
 /-- The numbers formed on the way to t fit in a word. -/
 theorem Lim31.wordT (h : Lim31 lim G N D₀ fr U) : ((G.p * logFour D₀ + G.q : ℕ) : ℤ) ≤ lim.word :=
-  le_trans (by exact_mod_cast (by omega :
-    G.p * logFour D₀ + G.q ≤ G.a * logFour D₀ + G.b + G.p * logFour D₀ + G.q)) h.mword
+  le_trans (by omega) h.mword
 
 /-- **What both routines are given**: matrices X and Y with entries bounded by U, the addresses aX
 and aY of their cells, which lie below the free pointer fr, and limits that suffice. -/
@@ -205,20 +195,7 @@ namespace Pre31
 /-- The locals of pre31. The first five are its arguments N, D, aX, aY, fr. Then come m, 4^m, L, t,
 the addresses of the padded matrices, the base address b0 of the block of Theorem 30, a result that
 is not used, and the product N 4^m. -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev MatX : ℕ := 2
-@[inherit_doc Size] abbrev MatY : ℕ := 3
-@[inherit_doc Size] abbrev Free : ℕ := 4
-@[inherit_doc Size] abbrev Log : ℕ := 5
-@[inherit_doc Size] abbrev Padded : ℕ := 6
-@[inherit_doc Size] abbrev Levels : ℕ := 7
-@[inherit_doc Size] abbrev Switch : ℕ := 8
-@[inherit_doc Size] abbrev PadX : ℕ := 9
-@[inherit_doc Size] abbrev PadY : ℕ := 10
-@[inherit_doc Size] abbrev Block : ℕ := 11
-@[inherit_doc Size] abbrev Res : ℕ := 12
-@[inherit_doc Size] abbrev Area : ℕ := 13
+registers [Size, Dim, MatX, MatY, Free, Log, Padded, Levels, Switch, PadX, PadY, Block, Res, Area]
 
 end Pre31
 
@@ -235,29 +212,5 @@ def prePad31 : Stmt :=
   .call Proc.padX [v Size, v Dim, v Padded, v MatX, v PadX] Res ;;
   .call Proc.copy [v MatY, v PadY, v Dim *' v Size] Res ;;
   .call Proc.fill [v PadY +' v Dim *' v Size, (v Padded -' v Dim) *' v Size, k 0] Res
-
-open Pre31 in
-/-- The second part: the preprocessing of Theorem 30, the base address and the flag 1. -/
-def preBuild31 : Stmt :=
-  .call Proc.preCore [v Levels, v Log, v Switch, v Size, v Padded, v PadX, v PadY, v Block] Res ;;
-  .store (v Free +' k 1) (v Block) ;;
-  .store (v Free) (k 1)
-
-/-- The part of pre31 for m ≥ m₀. -/
-def preLarge31 : Stmt := prePad31 ;; preBuild31
-
-open Pre31 in
-/-- pre31(N, D, aX, aY, fr): m and 4^m; for m < m₀ the flag 0, for m ≥ m₀ preLarge31. -/
-def pre31Body (G : RatParams) : Stmt :=
-  .call Proc.log4 [v Dim, v Free +' k 2] Log ;;
-  .ite (v Log <' k G.m₀) (.store (v Free) (k 0)) preLarge31
-
-/-- The time of the preprocessing; c is the constant of the shared stage. -/
-def tPre31 (c : ℕ) (G : RatParams) (N D₀ : ℕ) : ℕ :=
-  tLog4 (logFour D₀) + 30 +
-    if logFour D₀ < G.m₀ then 0 else
-      tCeilMul G.a (logFour D₀) + tCeilMul G.p (logFour D₀) + tPadX N (D (logFour D₀))
-        + tCopy (D₀ * N) + tFill ((D (logFour D₀) - D₀) * N)
-        + tPreCore c (parOf G N D₀) (switchOf31 G D₀) + 120
 
 end Light.Sec4

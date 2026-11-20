@@ -5,7 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec3.Theorem21
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import ThreeSumApsp.Util.Asymptotics.PowLittleO
 public import ThreeSumApsp.Sec3.Theorem21a.Convolution
 public import ThreeSumApsp.Spec.Sec3.Problems
 
@@ -64,8 +65,7 @@ def convAC (t N s : ℕ) (F : ℤ) (X : List ℤ) : List ℤ :=
 /-- At an index in range `cellOr` reads the cell. -/
 theorem cellOr_of_lt {N : ℕ} {F : ℤ} {X : List ℤ} {z : ℤ} {i : ℕ} (hz : z = i) (hi : i < N) :
     cellOr N F X z = X.getD i 0 := by
-  subst hz
-  rw [cellOr, if_pos ⟨Int.natCast_nonneg i, Int.ofNat_lt.2 hi⟩, Int.toNat_natCast]
+  grind [cellOr]
 
 /-- At an index out of range `cellOr` returns the filler. -/
 theorem cellOr_of_not {N : ℕ} {F : ℤ} {X : List ℤ} {z : ℤ} (hz : ¬ (0 ≤ z ∧ z < N)) :
@@ -78,7 +78,7 @@ theorem abs_cellOr_le {N : ℕ} {F V : ℤ} {X : List ℤ} (hX : AbsLe X V) (hF 
   unfold cellOr
   split_ifs
   · exact AbsLe.abs_getD_le ((abs_nonneg F).trans hF) hX _
-  · exact hF
+  assumption
 
 /-- The three lists are the instance that the template of the reduction produces. -/
 theorem triOf_conv (t N s : ℕ) (F : ℤ) (X : List ℤ) :
@@ -90,21 +90,21 @@ theorem triOf_conv (t N s : ℕ) (F : ℤ) (X : List ℤ) :
     rw [convAB, List.getD_map_range _ (Nat.mul_add_lt_mul a.isLt b.isLt), Theorem21.convTemplate_AB]
     split_ifs with h
     · exact cellOr_of_lt rfl h
-    · exact cellOr_of_not fun h' => h (by exact_mod_cast h'.2)
+    · exact cellOr_of_not fun h' => h (by omega)
   · funext b c
     rw [convBC, List.getD_map_range _ (Nat.mul_add_lt_mul b.isLt c.isLt),
       Nat.mul_add_div_of_lt c.isLt,
       Nat.mul_add_mod_of_lt c.isLt, Theorem21.convTemplate_BC]
     split_ifs with h
-    · exact cellOr_of_lt (by push_cast [h.1]; ring) h.2
+    · exact cellOr_of_lt (by simp_all) h.2
     · exact cellOr_of_not fun h' => h (by omega)
   · funext a c
     rw [convAC, List.getD_map_range _ (Nat.mul_add_lt_mul a.isLt c.isLt),
       Nat.mul_add_div_of_lt c.isLt,
       Nat.mul_add_mod_of_lt c.isLt, Theorem21.convTemplate_AC]
     split_ifs with h
-    · exact congrArg Neg.neg (cellOr_of_lt (by push_cast; ring) h)
-    · rw [cellOr_of_not fun h' => h (by exact_mod_cast h'.2), neg_neg]
+    · exact congrArg Neg.neg (cellOr_of_lt (by rfl) h)
+    · rw [cellOr_of_not fun h' => h (by lia), neg_neg]
 
 section Bounds
 
@@ -120,7 +120,7 @@ theorem abs_convBC_le (hX : AbsLe X V) (hF : |F| ≤ V) : AbsLe (convBC t N s F 
 
 /-- The weights `w(a,c)` are bounded by a bound for the numbers and the filler. -/
 theorem abs_convAC_le (hX : AbsLe X V) (hF : |F| ≤ V) : AbsLe (convAC t N s F X) V :=
-  List.forall_mem_map.2 fun _ _ => (abs_neg _).trans_le (abs_cellOr_le hX (by rwa [abs_neg]) _)
+  List.forall_mem_map.2 fun _ _ => (abs_neg _).trans_le (abs_cellOr_le hX (by simp_all) _)
 
 end Bounds
 

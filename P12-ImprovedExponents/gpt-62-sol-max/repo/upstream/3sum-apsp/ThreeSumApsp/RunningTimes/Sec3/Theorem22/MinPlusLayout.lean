@@ -27,7 +27,7 @@ attained, and it is a lower bound (`post_minPlusProduct`).
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
+open ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The input: the size and the two matrices, row by row. -/
 theorem input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
@@ -66,9 +66,9 @@ theorem pre_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (hn : 1 ≤
     segA := seg_first _ _ _
     segB := by
       have := seg_second (x.n : ℤ) (rowMajor x.x.1) (rowMajor x.x.2)
-      rwa [hA] at this
-    leA := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_minPlusProduct x (by simp [ha])
-    leB := fun a (ha : a ∈ rowMajor x.x.2) => abs_le_of_mem_minPlusProduct x (by simp [ha])
+      aesop
+    leA := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_minPlusProduct x (by simp_all)
+    leB := fun a (ha : a ∈ rowMajor x.x.2) => abs_le_of_mem_minPlusProduct x (by simp_all)
     belowA := by simp only [minPlusInst]; omega
     belowB := by simp only [minPlusInst]; omega
     belowC := by simp only [minPlusInst]; omega
@@ -85,7 +85,7 @@ theorem post_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (r : ℤ) 
       μ' (((ofEnd EndStatement.MinPlusProduct).input x).length + i) := by
   have hseg : Seg μ' (1 + 2 * (x.n * x.n)) (minPlusList x.n (rowMajor x.x.1) (rowMajor x.x.2)) :=
     h.1
-  refine ⟨by simp [verdictOf, EndStatement.MinPlusProduct], fun i j => ?_⟩
+  refine ⟨by solve_by_elim, fun i j => ?_⟩
   -- the output cell of the pair (i, j) holds the entry of the list
   have hcell : μ' (((ofEnd EndStatement.MinPlusProduct).input x).length +
       ((i : ℕ) * x.n + (j : ℕ))) = minPlusEntry x.n (rowMajor x.x.1) (rowMajor x.x.2) i j := by
@@ -110,7 +110,7 @@ def wrapMinPlus : Wrap EndStatement.MinPlusProduct mpTask false where
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by omega
-  vals x σ hn hU hnn := by simp [mpTask, minPlusInst, hn, hU, hnn]
+  vals x σ hn hU hnn := by aesop
   safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
   zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt (by omega)⟩
   pre := pre_minPlusProduct

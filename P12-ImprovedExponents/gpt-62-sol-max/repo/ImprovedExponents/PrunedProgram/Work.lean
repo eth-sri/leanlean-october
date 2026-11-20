@@ -52,13 +52,11 @@ theorem encWorkP_le (L m : ℕ) : (encWorkP L m : ℝ) ≤ 9 / 2 * prefCount L m
     have hrefl : ∑ k ∈ range (L + 1), ((7 : ℝ) / 9) ^ (L - k)
         = ∑ d ∈ range (L + 1), ((7 : ℝ) / 9) ^ d := by
       rw [← sum_range_reflect (fun d => ((7 : ℝ) / 9) ^ d) (L + 1)]
-      refine sum_congr rfl fun k _ => ?_
-      simp only [Nat.add_sub_cancel]
+      rfl
     rw [hrefl, geom_sum_seven_ninths_real]
-    have : (0 : ℝ) ≤ (7 / 9) ^ (L + 1) := by positivity
-    linarith
+    norm_num
   calc (encWorkP L m : ℝ) = ∑ k ∈ range (L + 1), ((prefCount k m * 7 ^ (L - k) : ℕ) : ℝ) := by
-        unfold encWorkP; push_cast; rfl
+        norm_cast
     _ ≤ ∑ k ∈ range (L + 1), (prefCount L m : ℝ) * ((7 : ℝ) / 9) ^ (L - k) := sum_le_sum hterm
     _ = prefCount L m * ∑ k ∈ range (L + 1), ((7 : ℝ) / 9) ^ (L - k) := by rw [mul_sum]
     _ ≤ prefCount L m * (9 / 2) := by gcongr
@@ -69,8 +67,7 @@ theorem encWorkP_le_M_div {L m : ℕ} (h : 10 * m ≤ L) :
     (encWorkP L m : ℝ) ≤ 9 / 2 * (M L m : ℝ) / (1 - rho L m) := by
   have h1 := encWorkP_le L m
   have h2 := prefCount_le_M_div h
-  rw [mul_div_assoc]
-  linarith
+  grind
 
 /-- `7^L ≤ encWorkP L m`: the slice at the root alone. -/
 theorem pow_seven_le_encWorkP (L m : ℕ) : 7 ^ L ≤ encWorkP L m := by

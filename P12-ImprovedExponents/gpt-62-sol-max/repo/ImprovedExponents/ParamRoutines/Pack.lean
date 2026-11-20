@@ -32,7 +32,7 @@ assembly once, for arbitrary routines.
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open Light Light.Sec3
 
 /-- The procedure number `i` of a list `L` that is placed behind a program `Q` stands at the place
 `Q.length + i` of every program that continues `Q ++ L`. -/
@@ -40,8 +40,7 @@ open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
 -- (`paramProcs_get`, private there; here for an arbitrary list)
 theorem getElem?_behind (Q L R : Program) {i : ℕ} {body : Stmt} (h : L[i]? = some body) :
     (Q ++ L ++ R)[Q.length + i]? = some body := by
-  rw [List.append_assoc, List.getElem?_append_right (by omega), Nat.add_sub_cancel_left]
-  exact getElem?_append_of_eq_some h R
+  grind
 
 /-- **The routine-specific part of Theorem 17 for programs**: two parameter routines for the
 parameters `D n` and `g n` of the claim, with everything that a host of Theorem 17 needs to know

@@ -93,16 +93,6 @@ theorem Ends.callLast (hp : Meets lim P p (d + 1) vals μ T' R)
   obtain ⟨hs, rfl⟩ := ha
   exact Ends.call T' hs hb hd (he.mono le_rfl fun _ hR => h _ _ hR) hT
 
-/-- `x := p(args) ; s`.  The rest s of the text gets the steps that are left. -/
-theorem Ends.callThen (hp : Meets lim P p (d + 1) vals μ T' R)
-    (h : ∀ r μ', R r μ' → Ends lim P d s ⟨Function.update loc x r, μ'⟩
-      (T - ((args.map Expr.cost).sum + 2 + T')) Q)
-    (ha : (∀ e ∈ args, e.Safe lim ⟨loc, μ⟩) ∧ args.map (·.val ⟨loc, μ⟩) = vals := by light_side)
-    (hd : d < lim.depth := by omega)
-    (hT : (args.map Expr.cost).sum + 2 + T' ≤ T := by light_time) :
-    Ends lim P d (.call p args x ;; s) ⟨loc, μ⟩ T Q :=
-  Ends.next _ (Ends.callLast hp h ha hd le_rfl) hT
-
 /-- `x := p(args)`, with the local variables as a list.  The procedure runs at depth d + 1. -/
 theorem Ends.callTo (hp : Meets lim P p (d + 1) vals μ T' R)
     (h : ∀ r μ', R r μ' → Q ⟨frame (setLocal l x r), μ'⟩)

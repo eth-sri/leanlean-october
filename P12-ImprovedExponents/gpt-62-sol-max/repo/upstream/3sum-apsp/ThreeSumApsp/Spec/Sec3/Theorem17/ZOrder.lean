@@ -49,46 +49,39 @@ def zCol (z : ℕ) : ℕ := Nat.ofDigits 2 ((Nat.digits 4 z).map (· % 2))
 /-- The last binary digit goes to the last digit in base 4. -/
 theorem spread_eq (i : ℕ) : spread i = i % 2 + 4 * spread (i / 2) := by
   rcases Nat.eq_zero_or_pos i with rfl | hi
-  · simp [spread]
+  · rfl
   · unfold spread
-    rw [Nat.digits_eq_cons_digits_div (by norm_num) hi.ne', Nat.ofDigits_cons]
-
-/-- The number 0 has no digits to move. -/
-theorem spread_zero : spread 0 = 0 := by simp [spread]
+    aesop
 
 /-- The row, one digit in base 4 at a time. -/
 theorem zRow_eq (z : ℕ) : zRow z = z % 4 / 2 + 2 * zRow (z / 4) := by
   rcases Nat.eq_zero_or_pos z with rfl | hz
-  · simp [zRow]
+  · rfl
   · unfold zRow
-    rw [Nat.digits_eq_cons_digits_div (by norm_num) hz.ne', List.map_cons, Nat.ofDigits_cons]
+    aesop
 
 /-- The column, one digit in base 4 at a time. -/
 theorem zCol_eq (z : ℕ) : zCol z = z % 4 % 2 + 2 * zCol (z / 4) := by
   rcases Nat.eq_zero_or_pos z with rfl | hz
-  · simp [zCol]
+  · rfl
   · unfold zCol
-    rw [Nat.digits_eq_cons_digits_div (by norm_num) hz.ne', List.map_cons, Nat.ofDigits_cons]
+    aesop
 
 /-- The place 0 is in row 0. -/
-theorem zRow_zero : zRow 0 = 0 := by simp [zRow]
+theorem zRow_zero : zRow 0 = 0 := by rfl
 
 /-- The place 0 is in column 0. -/
-theorem zCol_zero : zCol 0 = 0 := by simp [zCol]
+theorem zCol_zero : zCol 0 = 0 := by rfl
 
 /-- The place, one digit in base 4 at a time. -/
 theorem zIdx_eq (a c : ℕ) : zIdx a c = (2 * (a % 2) + c % 2) + 4 * zIdx (a / 2) (c / 2) := by
-  unfold zIdx
-  rw [spread_eq a, spread_eq c]
-  ring
+  grind [zIdx, spread_eq]
 
 /-- The places of a `2^K × 2^K` matrix are below `4^K`. -/
 theorem zIdx_lt {K a c : ℕ} (ha : a < 2 ^ K) (hc : c < 2 ^ K) : zIdx a c < 4 ^ K := by
   induction K generalizing a c with
   | zero =>
-    obtain rfl : a = 0 := by simpa using ha
-    obtain rfl : c = 0 := by simpa using hc
-    simp [zIdx, spread_zero]
+    aesop
   | succ K ih =>
     rw [pow_succ] at ha hc
     have h := ih (a := a / 2) (c := c / 2) (by omega) (by omega)
@@ -100,13 +93,10 @@ private theorem zRow_zCol_zIdx (a c : ℕ) : zRow (zIdx a c) = a ∧ zCol (zIdx 
   induction hm : a + c using Nat.strong_induction_on generalizing a c with
   | _ m ih =>
     rcases Nat.eq_zero_or_pos (a + c) with h0 | hpos
-    · obtain ⟨rfl, rfl⟩ : a = 0 ∧ c = 0 := by omega
-      simp [zIdx, spread_zero, zRow_zero, zCol_zero]
+    · aesop
     · obtain ⟨hrow, hcol⟩ := ih (a / 2 + c / 2) (by omega) (a / 2) (c / 2) rfl
       rw [zRow_eq, zCol_eq, zIdx_eq]
-      generalize zIdx (a / 2) (c / 2) = z at hrow hcol
-      rw [show (2 * (a % 2) + c % 2 + 4 * z) / 4 = z by omega, hrow, hcol]
-      omega
+      grind
 
 /-- The row of the place of `(a, c)` is `a`. -/
 theorem zRow_zIdx (a c : ℕ) : zRow (zIdx a c) = a := (zRow_zCol_zIdx a c).1
@@ -119,13 +109,10 @@ theorem zIdx_zRow_zCol (z : ℕ) : zIdx (zRow z) (zCol z) = z := by
   induction z using Nat.strong_induction_on with
   | _ z ih =>
     rcases Nat.eq_zero_or_pos z with rfl | hz
-    · simp [zRow_zero, zCol_zero, zIdx, spread_zero]
+    · rfl
     · have h := ih (z / 4) (by omega)
       rw [zIdx_eq, zRow_eq z, zCol_eq z]
-      generalize zRow (z / 4) = a at h
-      generalize zCol (z / 4) = c at h
-      rw [show (z % 4 / 2 + 2 * a) / 2 = a by omega, show (z % 4 % 2 + 2 * c) / 2 = c by omega, h]
-      omega
+      grind
 
 /-- The places of the quadrant number `t`: their rows and columns are those of the first quadrant,
 moved by `2^K` down if `t ≥ 2` and to the right if `t` is odd. -/
@@ -134,17 +121,17 @@ theorem zRow_zCol_quadrant {K t z : ℕ} (ht : t < 4) (hz : z < 4 ^ K) :
       zCol (t * 4 ^ K + z) = zCol z + t % 2 * 2 ^ K := by
   induction K generalizing z with
   | zero =>
-    obtain rfl : z = 0 := by simpa using hz
+    obtain rfl : z = 0 := by simp_all
     rw [zRow_eq, zCol_eq, pow_zero, pow_zero, Nat.mul_one, Nat.add_zero, Nat.mod_eq_of_lt ht,
       Nat.div_eq_of_lt ht, zRow_zero, zCol_zero]
     omega
   | succ K ih =>
-    obtain ⟨hrow, hcol⟩ := ih (z := z / 4) (by rw [pow_succ] at hz; omega)
-    have hpow : t * 4 ^ (K + 1) = 4 * (t * 4 ^ K) := by rw [pow_succ]; ring
+    obtain ⟨hrow, hcol⟩ := ih (z := z / 4) (by omega)
+    have hpow : t * 4 ^ (K + 1) = 4 * (t * 4 ^ K) := by ring
     rw [zRow_eq, zCol_eq, zRow_eq z, zCol_eq z, hpow,
       show (4 * (t * 4 ^ K) + z) % 4 = z % 4 by omega,
       show (4 * (t * 4 ^ K) + z) / 4 = t * 4 ^ K + z / 4 by omega, hrow, hcol, pow_succ 2]
-    constructor <;> ring
+    lia
 
 /-! ## Matrices as lists -/
 
@@ -173,23 +160,20 @@ theorem quarter_zList {p K t : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c
       zList K fun a c => M (a + t / 2 * 2 ^ K) (c + t % 2 * 2 ^ K) := by
   have hsplit : 4 ^ (K + 1) = t * 4 ^ K + 4 ^ K + (3 - t) * 4 ^ K := by
     calc 4 ^ (K + 1) = (t + 1 + (3 - t)) * 4 ^ K := by
-          rw [show t + 1 + (3 - t) = 4 by omega, pow_succ, Nat.mul_comm]
+          grind
       _ = _ := by ring
   rw [quarter, zList, hsplit, ← Nat.mul_assoc,
     List.take_drop_flatMap_range _ _ _ _ fun _ _ => hM _ _,
     zList]
   refine List.flatMap_congr fun z hz => ?_
-  obtain ⟨hrow, hcol⟩ := zRow_zCol_quadrant ht (List.mem_range.1 hz)
-  rw [hrow, hcol]
+  simp_all [zRow_zCol_quadrant] <;> omega
 
 /-- A list of length `4 q` is put together from its four quarters. -/
 private theorem eq_append_quarters {q : ℕ} {l : List ℤ} (hl : l.length = 4 * q) :
     l = quarter q 0 l ++ quarter q 1 l ++ quarter q 2 l ++ quarter q 3 l := by
   unfold quarter
   refine List.ext_getElem (by simp; omega) fun i _ _ => ?_
-  simp only [List.getElem_append, List.length_append, List.length_take, List.length_drop,
-    List.getElem_take, List.getElem_drop]
-  split_ifs <;> congr 1 <;> omega
+  grind
 
 /-- A matrix is put together from its four quadrants. -/
 theorem zList_succ {p K : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c, (M a c).length = p) :
@@ -199,8 +183,6 @@ theorem zList_succ {p K : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c, (M 
     rw [length_zList _ _ hM, pow_succ]
     ring
   conv_lhs => rw [eq_append_quarters hlen]
-  rw [quarter_zList M hM (by norm_num), quarter_zList M hM (by norm_num),
-    quarter_zList M hM (by norm_num), quarter_zList M hM (by norm_num)]
-  simp only [Nat.reduceDiv, Nat.reduceMod, Nat.zero_mul, Nat.one_mul, Nat.add_zero]
+  simp [quarter_zList, hM]
 
 end ThreeSumApsp.Spec

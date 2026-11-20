@@ -55,7 +55,7 @@ theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q :
     convert h using 2
     funext y
     simp only [frame_setLocal]
-    split_ifs <;> rfl
+    simp_all
   · have he : b + 1 ≠ n := fun e => he (by
       simp only [Cond.Holds, Expr.val, frame_setLocal, if_pos, if_neg hBN, hN]
       exact_mod_cast e)
@@ -64,10 +64,6 @@ theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q :
     convert h using 2
     funext y
     simp only [frame_setLocal]
-    split_ifs with h1 h2 h2
-    · exact absurd (h2.symm.trans h1) hAB
-    · rfl
-    · rw [h2, hA]
-    · rfl
+    simp_all
 
 end Light

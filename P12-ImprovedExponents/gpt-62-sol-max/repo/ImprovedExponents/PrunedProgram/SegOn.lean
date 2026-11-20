@@ -23,7 +23,7 @@ namespace Light
 
 open ThreeSumApsp ThreeSumApsp.Spec Finset
 
-variable {L m m' : ℕ} {μ μ' : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
+variable {L m : ℕ} {μ μ' : ℕ → ℤ} {a : ℕ} {enc : Leaf L → ℤ}
 
 /-- The cells from `a` on hold the encoding `enc` at every leaf with at most `m` symbols `P₀`: the
 cell `a + codeT τ` holds `enc τ`.  Nothing is said about the other cells. -/
@@ -58,7 +58,7 @@ theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contribu
   · exact hin
   · rw [hℓ.2] at hpriv
     cases hz : η ℓ with
-    | z i j => rw [hz] at hpriv; exact absurd hpriv (by simp [OutVar.privateTerm])
+    | z i j => rw [hz] at hpriv; trivial
     | z0 => trivial
 
 /-- A leaf that contributes to an output string with `m` inner levels has at most `m` symbols

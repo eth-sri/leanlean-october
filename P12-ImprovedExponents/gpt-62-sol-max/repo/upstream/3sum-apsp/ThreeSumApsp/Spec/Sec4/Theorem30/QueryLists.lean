@@ -96,14 +96,12 @@ private theorem scatter_nil_right (w : List ℕ) : scatter w [] = w := by
 /-- A digit other than 9 is kept. -/
 theorem scatter_cons_of_ne {x : ℕ} (hx : x ≠ 9) (w s : List ℕ) :
     scatter (x :: w) s = x :: scatter w s := by
-  cases s with
-  | nil => rw [scatter_nil_right, scatter_nil_right]
-  | cons d s => simp [scatter, hx]
+  cases s <;> simp_all [scatter_nil_right, scatter]
 
 /-- A digit 9 is replaced by the next digit of the string. -/
 theorem scatter_nine_cons (w : List ℕ) (d : ℕ) (s : List ℕ) :
     scatter (9 :: w) (d :: s) = d :: scatter w s := by
-  simp [scatter]
+  rfl
 
 /-- The string has the length of w. -/
 theorem length_scatter (w s : List ℕ) : (scatter w s).length = w.length := by
@@ -148,12 +146,12 @@ def starRunIf (flag : Bool) (s : List ℕ) : List ℕ := if flag then starRun s 
 /-- A digit other than 9 ends the run. -/
 theorem starRunIf_cons_of_ne {d : ℕ} (hd : d ≠ 9) (flag : Bool) (s : List ℕ) :
     starRunIf flag (d :: s) = d :: starRunIf false s := by
-  cases flag <;> simp [starRunIf, starRun, hd]
+  grind [starRunIf, starRun]
 
 /-- A digit 9 becomes a star while the run goes on, and the run goes on. -/
 theorem starRunIf_nine_cons (flag : Bool) (s : List ℕ) :
     starRunIf flag (9 :: s) = (if flag then 10 else 9) :: starRunIf flag s := by
-  cases flag <;> simp [starRunIf, starRun]
+  aesop
 
 /-- Position i is one of "the levels that we have not reached" (F_V, Section 4.2).  Here w is the
 list of digits of the output string, so its nines are the levels of Q, and u is the list of digits
@@ -165,17 +163,14 @@ private def Unreached (w u : List ℕ) (i : ℕ) : Prop :=
 /-- The first position is not reached if it is a level of V. -/
 private theorem unreached_cons_zero (x y : ℕ) (w u : List ℕ) :
     Unreached (x :: w) (y :: u) 0 ↔ x = 9 ∧ y = 9 := by
-  rw [Unreached, ← Nat.and_forall_add_one]
-  simp only [List.getD_cons_zero, lt_irrefl, Nat.zero_lt_succ, implies_true, and_true]
-  tauto
+  grind [Unreached]
 
 /-- A later position is not reached if the first position is no level of Q ∖ V and the position is
 not reached in the rest. -/
 private theorem unreached_cons_succ (x y : ℕ) (w u : List ℕ) (i : ℕ) :
     Unreached (x :: w) (y :: u) (i + 1) ↔ (x = 9 → y = 9) ∧ Unreached w u i := by
   rw [Unreached, Unreached, ← Nat.and_forall_add_one]
-  simp only [List.getD_cons_zero, List.getD_cons_succ, Nat.not_lt_zero, Nat.add_lt_add_iff_right]
-  tauto
+  grind
 
 /-- Turning the leading nines of s into stars puts stars at the positions given by the formula for
 F_V, and changes nothing else. -/
@@ -195,7 +190,7 @@ private theorem getD_scatter_starRun (w s : List ℕ) (hs : s.length = w.count 9
         rw [starRun, if_pos rfl, scatter_nine_cons, scatter_nine_cons]
         cases i with
         | zero => simp [unreached_cons_zero]
-        | succ i => simpa [unreached_cons_succ] using ih s (by simpa using hs) i
+        | succ i => simpa [unreached_cons_succ] using ih s (by simp_all) i
       · rw [starRun, if_neg hd, scatter_nine_cons]
         exact ⟨fun h => absurd (h.2 0 rfl hd) (Nat.not_lt_zero i), fun _ => rfl⟩
     · rw [List.count_cons_of_ne hx] at hs
@@ -227,7 +222,7 @@ private theorem exists_leaf_scatter {s : List ℕ} (hlen : s.length = (digitsO �
   refine ⟨τ, hτ, fun ℓ => ?_, ?_⟩
   · rw [contributes_iff, ← getD_digitsO, ← getD_digitsT, hτ]
     by_cases h9 : (digitsO η).getD ℓ 0 = 9
-    · exact Or.inl h9
+    · simp_all
     · exact Or.inr (getD_scatter_of_ne _ _ _ h9)
   · rw [card_P0Levels, hτ, count_nine_scatter _ _ hlen]
 
@@ -255,10 +250,7 @@ theorem length_lowList (ht : t ≤ m) (w : List ℕ) :
   -- a string with f nines gives a leaf of order d = m - f: reflect the sum
   refine Finset.sum_nbij' (fun f => m - f) (fun d => m - d) ?_ ?_ ?_ ?_
     fun f hf => by rw [alpha, Nat.choose_symm (Finset.mem_Icc.mp hf).2]
-  all_goals
-    simp only [Finset.mem_Icc, Finset.mem_range]
-    intro a ha
-    omega
+  all_goals (grind)
 
 /-- **The first sum of a query**: a sum over the list is the sum over the leaves of order below t
 contributing to η. -/

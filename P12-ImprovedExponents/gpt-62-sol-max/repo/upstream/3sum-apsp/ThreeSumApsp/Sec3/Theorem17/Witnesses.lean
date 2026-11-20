@@ -39,7 +39,7 @@ no theorem about programs rests on another lemma of this file.
 
 namespace ThreeSumApsp
 
-variable {n D g p : ℕ}
+variable {n p : ℕ}
 
 namespace TriangleInstance
 
@@ -49,7 +49,7 @@ variable {T : TriangleInstance ℤ n}
 
 variable (T) (D g)
 
-variable (p) (ans : InstanceIndex p → Fin n × Fin n → Bool)
+variable (p)
 
 variable {T D g p ans}
 
@@ -67,8 +67,7 @@ theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ : Type*} (s
   classical
   refine Finset.card_le_card_of_forall_subsingleton contains (fun x hx => ?_)
     fun t _ x hx y hy => hdistinct t x hx.1 y hy.1 hx.2 hy.2
-  obtain ⟨t, ht, hfp⟩ := hfalse x hx
-  exact ⟨t, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hfp⟩, ht⟩
+  grind
 
 end TriangleInstance
 

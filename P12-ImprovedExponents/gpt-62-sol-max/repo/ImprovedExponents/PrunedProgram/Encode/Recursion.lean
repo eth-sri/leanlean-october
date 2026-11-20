@@ -1,5 +1,9 @@
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Recursion
 public import ImprovedExponents.PrunedProgram.SegOn
 public import ImprovedExponents.PrunedProgram.Work
@@ -20,7 +24,7 @@ encodings only at the leaves with at most `m` symbols `P₀`.  The pruned encode
 is the same recursion with the budget `j` as its second argument: the first nine terms are treated
 as upstream (the recursive call keeps the budget `j`), and the term `P₀` (digit 9, the last one) is
 entered with the budget `j - 1` if `j ≥ 1`, and skipped if `j = 0`.  Called with the budget `j`, it
-writes exactly the leaves with at most `j` digits `9` (`EncodePostP`, `encodeP_spec`); the other
+writes exactly the leaves with at most `j` digits `9` (`EncodePostP`, `encodeP_meets`); the other
 cells of the output keep whatever the memory had.  Its time `tEncP L j` is at most
 `cEncP * encWorkP L j` (`tEncP_le`), where `encWorkP L j = ∑_{k ≤ L} prefCount k j · 7^{L-k}` is
 the number of entries of all the slices it forms.
@@ -29,7 +33,7 @@ The text differs from upstream's in two ways: the loop runs over the nine terms 
 the term `λ = 9` follows as an `.ite` on the budget (the loop rules of the language give every round
 the same time, which would not let the budget `j - 1` of the last term show in the bound).  The
 proofs follow upstream's: `EncodePre.toStep`/`toRec` give the hypotheses of the callees,
-`TermsDoneP` is the invariant of the loop stated on leaves, and `encodeP_spec` is the induction.
+`TermsDoneP` is the invariant of the loop stated on leaves, and `encodeP_meets` is the induction.
 The recursions `prefCount (k+1) j = 9 prefCount k j + prefCount k (j-1)` and
 `encWorkP (n+1) j = 7^(n+1) + 9 encWorkP n j + encWorkP n (j-1)` are proved in the first section.
 
@@ -57,8 +61,8 @@ private theorem choose_succ_mul_pow (k i : ℕ) :
     k.choose (i + 1) * 9 ^ (k - i) = 9 * (k.choose (i + 1) * 9 ^ (k - (i + 1))) := by
   rcases Nat.lt_or_ge i k with h | h
   · have : k - i = (k - (i + 1)) + 1 := by omega
-    rw [this, pow_succ]; ring
-  · rw [Nat.choose_eq_zero_of_lt (by omega)]; simp
+    grind
+  grind
 
 /-- Pascal's rule for the counts of prefixes: a prefix of length `k + 1` with at most `j + 1`
 symbols `P₀` is one of length `k` with at most `j + 1` of them followed by one of the nine other
@@ -70,10 +74,7 @@ theorem prefCount_succ_succ (k j : ℕ) :
     sum_range_succ' (fun i => k.choose i * 9 ^ (k - i)) (j + 1)]
   simp only [Nat.choose_zero_right, Nat.sub_zero, one_mul, Nat.choose_succ_succ, add_mul,
     Nat.succ_sub_succ_eq_sub, sum_add_distrib, mul_add, mul_sum]
-  have h : ∀ i ∈ range (j + 1), k.choose (i + 1) * 9 ^ (k - i)
-      = 9 * (k.choose (i + 1) * 9 ^ (k - (i + 1))) := fun i _ => choose_succ_mul_pow k i
-  rw [sum_congr rfl h, pow_succ]
-  ring
+  grind [choose_succ_mul_pow]
 
 /-- `prefCount (k+1) j = 9 prefCount k j + prefCount k (j-1)` for `1 ≤ j`. -/
 theorem prefCount_succ_left (k : ℕ) {j : ℕ} (hj : 1 ≤ j) :
@@ -120,8 +121,8 @@ end Counts
 /-- The digit of a term is `9` exactly for `P₀`. -/
 theorem termIdx_eq_nine_iff (lam : Term) : ((termIdx lam : Fin 10) : ℕ) = 9 ↔ lam = .P0 := by
   cases lam with
-  | P i j => simp only [termIdx]; constructor <;> intro h <;> [omega; cases h]
-  | P0 => simp [termIdx_P0]
+  | P i j => simp only [termIdx]; lia
+  | P0 => trivial
 
 /-- The number of symbols `P₀` of a leaf, by its first symbol. -/
 theorem card_P0Levels_cons {n : ℕ} (lam : Term) (τ' : Leaf n) :
@@ -135,18 +136,7 @@ namespace EncodeP
 
 /-- The local variables of encodeP: the arguments L, j, src, out, scr, tab, p7, p10; the lengths
 7^{L-1} and 10^{L-1}; the number of the term; the result of a call, which is not used. -/
-abbrev Level : ℕ := 0
-@[inherit_doc Level] abbrev Budget : ℕ := 1
-@[inherit_doc Level] abbrev Src : ℕ := 2
-@[inherit_doc Level] abbrev Out : ℕ := 3
-@[inherit_doc Level] abbrev Scr : ℕ := 4
-@[inherit_doc Level] abbrev Table : ℕ := 5
-@[inherit_doc Level] abbrev Pow7 : ℕ := 6
-@[inherit_doc Level] abbrev Pow10 : ℕ := 7
-@[inherit_doc Level] abbrev Len7 : ℕ := 8
-@[inherit_doc Level] abbrev Len10 : ℕ := 9
-@[inherit_doc Level] abbrev TermNo : ℕ := 10
-@[inherit_doc Level] abbrev Res : ℕ := 11
+registers [Level, Budget, Src, Out, Scr, Table, Pow7, Pow10, Len7, Len10, TermNo, Res]
 
 end EncodeP
 
@@ -206,15 +196,12 @@ theorem tEncP_le_aux (L : ℕ) : ∀ j, tEncP L j + 724 * 7 ^ L + 46 ≤ cEncP *
     | zero =>
       have h0 := ih 0
       have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ (by norm_num)
-      simp only [tEncP, tEncStep, encWorkP_succ_zero, pow_succ]
-      omega
+      light_side [tEncP, tEncStep, encWorkP_succ_zero]
     | succ j =>
       have h1 := ih (j + 1)
       have h0 := ih j
       have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ (by norm_num)
-      rw [encWorkP_succ_left L (by omega), Nat.add_sub_cancel]
-      simp only [tEncP, tEncStep, pow_succ]
-      omega
+      light_side [encWorkP_succ_left, tEncP, tEncStep]
 
 /-- The time of the pruned encoder is at most `cEncP` times its work. -/
 theorem tEncP_le (L j : ℕ) : tEncP L j ≤ cEncP * encWorkP L j := by
@@ -237,18 +224,10 @@ variable {lim : Limits} {P : Program} {d : ℕ} {μ μ' μ₁ μ₂ : ℕ → �
 open private EncodePre.toStep EncodePre.toRec
   from ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Recursion
 
-/-- The part of the encoding below the term number lam is the encoding of A_lam. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Recursion.lean (encIdx_succ)
-private theorem encIdx_succ' (c a : ℕ → ℤ) (L lam : ℕ) {i : ℕ} (hi : i < 10 ^ L) :
-    encIdx c (L + 1) a (lam * 10 ^ L + i) = encIdx c L (encSlice c a L lam) i := by
-  rw [encIdx, Nat.mul_add_div_of_lt hi, Nat.mul_add_mod_of_lt hi]
-
-/-- What has not changed at level `L + 1`, with the sizes in terms of `10^L`, `7^L` and
-`scrSize L`. -/
-private theorem sameOutside2_succ'
-    (h : SameOutside2 μ μ' out (10 ^ (L + 1)) scr (scrSize (L + 1))) :
-    SameOutside2 μ μ' out (10 * 10 ^ L) scr (7 ^ L + scrSize L) := by
-  simpa only [pow_succ', scrSize] using h
+private theorem card_P0Levels_tail (τ : Leaf (L + 1)) :
+    (P0Levels τ).card = (if (termIdx (τ 0)).val = 9 then 1 else 0) +
+      (P0Levels (Fin.tail τ)).card := by
+  simpa only [Fin.cons_self_tail, termIdx_eq_nine_iff] using card_P0Levels_cons (τ 0) (Fin.tail τ)
 
 /-! ## One term -/
 
@@ -268,16 +247,15 @@ theorem TermsDoneP.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) 
     (hj' : j ≤ j' + if lam = 9 then 1 else 0)
     (hpost : EncodePostP μ₁ (out + lam * 10 ^ L) (scr + 7 ^ L) L (encSlice c a L lam) c j' μ₂) :
     TermsDoneP μ out scr L a c j (lam + 1) μ₂ := by
-  have hplaces := lay.places_succ
+  encode_facts lay
   have hpart : lam * 10 ^ L + 10 ^ L ≤ 10 * 10 ^ L := Nat.mul_add_le_mul hlam le_rfl
   obtain ⟨hdone, same⟩ := h
   obtain ⟨hnew, same₂⟩ := hpost
-  have hkept := sameOutside2_succ' same
+  simp only [pow_succ', scrSize] at same
   refine ⟨fun τ hτ hlt => ?_, ?_⟩
   · have hcode := codeT_lt τ
-    have hcons : (Fin.cons (τ 0) (Fin.tail τ) : Leaf (L + 1)) = τ := Fin.cons_self_tail τ
     have hcodeT : codeT τ = ((termIdx (τ 0) : Fin 10) : ℕ) * 10 ^ L + codeT (Fin.tail τ) := by
-      rw [← hcons, codeT_cons, Fin.cons_zero, Fin.tail_cons]
+      rfl
     have htail := codeT_lt (Fin.tail τ)
     by_cases hold : ((termIdx (τ 0) : Fin 10) : ℕ) < lam
     · -- The leaves below the earlier terms are not touched.
@@ -286,35 +264,19 @@ theorem TermsDoneP.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) 
       rw [same₂ _ (by omega), same₁ _ (by omega), hdone τ hτ hold]
     · -- The leaves below this term.
       have heq : ((termIdx (τ 0) : Fin 10) : ℕ) = lam := by omega
-      have hcard : (P0Levels τ).card
-          = (if τ 0 = .P0 then 1 else 0) + (P0Levels (Fin.tail τ)).card := by
-        rw [← card_P0Levels_cons, hcons]
+      rw [card_P0Levels_tail, heq] at hτ
       have hbud : (P0Levels (Fin.tail τ)).card ≤ j' := by
-        by_cases h9 : lam = 9
-        · have : τ 0 = .P0 := (termIdx_eq_nine_iff _).1 (heq.trans h9)
-          simp only [this, ite_true, h9] at hcard hj'
-          omega
-        · have : τ 0 ≠ .P0 := fun h => h9 (heq.symm.trans ((termIdx_eq_nine_iff _).2 h))
-          simp only [this, ite_false, h9] at hcard hj'
-          omega
-      rw [hcodeT, heq, ← Nat.add_assoc, hnew _ hbud, encIdx_succ' c a L lam htail]
-  · simp only [pow_succ', scrSize]
-    clear same
-    light_keep
+        by_cases h9 : lam = 9 <;> simp [h9] at hτ hj' <;> omega
+      rw [hcodeT, heq, ← Nat.add_assoc, hnew _ hbud, encIdx, Nat.mul_add_div_of_lt htail,
+        Nat.mul_add_mod_of_lt htail]
+  · light_keep [pow_succ', scrSize]
 
 /-- With the budget `0`, the term `P₀` is skipped: no leaf with no symbol `P₀` lies below it. -/
 theorem TermsDoneP.skip (h : TermsDoneP μ out scr L a c 0 9 μ') :
     TermsDoneP μ out scr L a c 0 10 μ' := by
   refine ⟨fun τ hτ hlt => h.1 τ hτ ?_, h.2⟩
-  rcases Nat.lt_or_ge ((termIdx (τ 0) : Fin 10) : ℕ) 9 with h9 | h9
-  · exact h9
-  · exfalso
-    have heq : ((termIdx (τ 0) : Fin 10) : ℕ) = 9 := by omega
-    have hmem : (0 : Fin (L + 1)) ∈ P0Levels τ := by
-      rw [P0Levels, mem_filter]
-      exact ⟨mem_univ _, (termIdx_eq_nine_iff _).1 heq⟩
-    have := card_pos.2 ⟨_, hmem⟩
-    omega
+  rw [card_P0Levels_tail] at hτ
+  split at hτ <;> have := (termIdx (τ 0)).isLt <;> omega
 
 /-- After all ten terms, the output is as `encodeP` guarantees. -/
 theorem TermsDoneP.done (h : TermsDoneP μ out scr L a c j 10 μ') :
@@ -325,12 +287,12 @@ theorem TermsDoneP.done (h : TermsDoneP μ out scr L a c j 10 μ') :
 abbrev EncodeP.locals (L j src out scr tab p7 p10 lam : ℕ) (r : ℤ) : List ℤ :=
   [(L + 1 : ℕ), j, src, out, scr, tab, p7, p10, (7 ^ L : ℕ), (10 ^ L : ℕ), lam, r]
 
-/-- The specification of encodeP at level L with every budget, for a caller at depth d. -/
+/-- The specification of encodeP at level L with every budget. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Recursion.lean (EncodeMeets)
 def EncodeMeetsP (lim : Limits) (P : Program) (pE d tab p7 p10 L : ℕ) (c : ℕ → ℤ) : Prop :=
   ∀ (j : ℕ) (μ : ℕ → ℤ) (src out scr : ℕ) (V : ℤ) (a : ℕ → ℤ), (j : ℤ) ≤ lim.word →
     EncodePre lim μ src out scr tab p7 p10 V L a c →
-    Meets lim P pE (d + 1) [L, j, src, out, scr, tab, p7, p10] μ (tEncP L j) fun _ μ' =>
+    Meets lim P pE d [L, j, src, out, scr, tab, p7, p10] μ (tEncP L j) fun _ μ' =>
       EncodePostP μ out scr L a c j μ'
 
 variable {pS pE : ℕ}
@@ -339,7 +301,7 @@ variable {pS pE : ℕ}
 symbols `P₀`, with the budget `j - dec` below, where `dec ≤ min j 1` and `dec = 0` if `lam ≠ 9`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Recursion.lean (encodeTerm_spec)
 theorem encodeTermP_spec (hS : P[pS]? = some encStepBody)
-    (hrec : EncodeMeetsP lim P pE d tab p7 p10 L c)
+    (hrec : EncodeMeetsP lim P pE (d + 1) tab p7 p10 L c)
     (pre : EncodePre lim μ src out scr tab p7 p10 V (L + 1) a c) (hd : d < lim.depth)
     (hj : (j : ℤ) ≤ lim.word) (hlam : lam < 10) {dec : ℕ} (hdec : dec ≤ j) (hdec1 : dec ≤ 1)
     (hdec' : lam ≠ 9 → dec = 0) (h : TermsDoneP μ out scr L a c j lam μ') (r : ℤ) :
@@ -347,16 +309,14 @@ theorem encodeTermP_spec (hS : P[pS]? = some encStepBody)
       (tTermP L (j - dec) tEncP) fun σ' => ∃ (r' : ℤ) (μ'' : ℕ → ℤ),
         σ' = ⟨frame (locals L j src out scr tab p7 p10 lam r'), μ''⟩ ∧
           TermsDoneP μ out scr L a c j (lam + 1) μ'' := by
-  have hplaces := pre.lay.places_succ
+  encode_facts pre.lay
   -- The arguments of the two calls fit in a word, by the layout and the next facts.
   have hpart : lam * 10 ^ L + 10 ^ L ≤ 10 * 10 ^ L := Nat.mul_add_le_mul hlam le_rfl
-  have hprod : ((lam * 10 ^ L : ℕ) : ℤ) = lam * 10 ^ L := by push_cast; rfl
-  have hpow : ((7 ^ L : ℕ) : ℤ) = 7 ^ L := by push_cast; rfl
+  have hprod : ((lam * 10 ^ L : ℕ) : ℤ) = lam * 10 ^ L := by rfl
+  have hpow : ((7 ^ L : ℕ) : ℤ) = 7 ^ L := by rfl
   have hsub : ((j - dec : ℕ) : ℤ) = j - dec := by omega
   have hj' : j ≤ (j - dec) + if lam = 9 then 1 else 0 := by
-    split_ifs with h9
-    · omega
-    · rw [hdec' h9]; omega
+    lia
   unfold encodeTermP tTermP
   -- Res := encStep(src, scr, 7^L, lam, tab)
   light_call (encStep_meets hS (EncodePre.toStep pre hlam h.2)) with r₁ μ₁ ⟨hstep, same₁⟩
@@ -367,82 +327,62 @@ theorem encodeTermP_spec (hS : P[pS]? = some encStepBody)
 
 /-! ## The recursion -/
 
-/-- **A leaf**: the number is copied, whatever the budget. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Recursion.lean (encode_leaf)
-theorem encodeP_leaf (pre : EncodePre lim μ src out scr tab p7 p10 V 0 a c) :
-    Ends lim P d (encodePBody pS pE) ⟨frame [(0 : ℕ), j, src, out, scr, tab, p7, p10], μ⟩
-      (tEncP 0 j) fun σ' => EncodePostP μ out scr 0 a c j σ'.mem := by
-  light_facts pre.lay pre.lay.std
-  have hread : μ src = a 0 := pre.srcV 0 (by norm_num)
-  -- if Level = 0 then mem[Out] := mem[Src]
-  refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp) h) (hT := by simp [tEncP])
-  refine Ends.storeTo out (a 0) ⟨fun τ _ => ?_, by light_keep⟩
-    (by light_side [hread]) (by simp [tEncP])
-  have h0 : codeT τ = 0 := by have := codeT_lt τ; simpa using this
-  rw [h0, Nat.add_zero]
-  exact Function.update_self ..
-
-/-- **An inner vertex**: the two lengths are read from the tables, the loop runs through the nine
-terms `λ < 9`, and the term `P₀` is entered if the budget allows it. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Recursion.lean (encode_node)
-theorem encodeP_node (hS : P[pS]? = some encStepBody)
-    (hrec : EncodeMeetsP lim P pE d tab p7 p10 L c)
-    (pre : EncodePre lim μ src out scr tab p7 p10 V (L + 1) a c) (hd : d < lim.depth)
-    (hj : (j : ℤ) ≤ lim.word) :
-    Ends lim P d (encodePBody pS pE) ⟨frame [(L + 1 : ℕ), j, src, out, scr, tab, p7, p10], μ⟩
-      (tEncP (L + 1) j) fun σ' => EncodePostP μ out scr (L + 1) a c j σ'.mem := by
-  have hplaces := pre.lay.places_succ
-  have haddr7 : ((p7 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p7 + L := by omega
-  have haddr10 : ((p10 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p10 + L := by omega
-  have hread7 := pre.p7V L (by omega)
-  have hread10 := pre.p10V L (by omega)
-  -- The time at this level, in both cases of the budget.
-  have htime : tEncP (L + 1) j = 104 + 9 * tTermP L j tEncP
-      + (4 + if j = 0 then 0 else tTermP L (j - 1) tEncP) := by
-    cases j with
-    | zero => simp [tEncP, tTermP]
-    | succ j => simp [tEncP, tTermP]; omega
-  rw [htime]
-  -- if Level = 0
-  refine Ends.iteLast (fun h => absurd h (by simp; omega)) (fun _ => ?_)
-  -- Len7 := mem[Pow7 + Level - 1]; Len10 := mem[Pow10 + Level - 1]
-  light_set (7 ^ L : ℕ) using haddr7, hread7
-  light_set (10 ^ L : ℕ) using haddr10, hread10
-  -- for TermNo < 9: the leaves below the earlier terms are filled
-  refine Ends.next (9 * (1 + tTermP L j tEncP + 7) + 1 + 5) ?_
-  refine Ends.forShape (fun lam r μ' => ⟨frame (locals L j src out scr tab p7 p10 lam r), μ'⟩)
-    (TermsDoneP μ out scr L a c j) 9 (tTermP L j tEncP) 0
-    ⟨fun τ _ h => absurd h (by omega), .refl⟩
-    (fun lam r μ' hlam h => by
-      simpa using encodeTermP_spec hS hrec pre hd hj (by omega) (Nat.zero_le j) (Nat.zero_le 1)
-        (fun _ => rfl) h r)
-    (fun r μ' h => ?_) (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
-  -- if Budget = 0 then skip else the two calls for P₀ with the budget j - 1
-  refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
-  · -- the budget is exhausted: nothing to do for P₀
-    have hj : j = 0 := by simpa using hc
-    subst hj
-    exact Ends.skip h.skip.done
-  · have hjne : j ≠ 0 := by simpa using hc
-    have hj1 : 1 ≤ j := Nat.one_le_iff_ne_zero.2 hjne
-    refine (encodeTermP_spec hS hrec pre hd hj (by omega) hj1 le_rfl (fun h => absurd rfl h)
-      h r).mono
-      (by simp [hjne]; omega) ?_
-    rintro σ' ⟨r', μ'', rfl, h'⟩
-    exact h'.done
-
-/-- **encodeP** is correct and takes at most `tEncP L j` steps, in every program whose procedures
-number pS and pE are encStep and encodeP.  It nests calls at most L deep. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Recursion.lean (encode_spec)
-theorem encodeP_spec (hS : P[pS]? = some encStepBody) (hE : P[pE]? = some (encodePBody pS pE))
-    (hd : d + L ≤ lim.depth) (hj : (j : ℤ) ≤ lim.word)
-    (pre : EncodePre lim μ src out scr tab p7 p10 V L a c) :
-    Ends lim P d (encodePBody pS pE) ⟨frame [L, j, src, out, scr, tab, p7, p10], μ⟩ (tEncP L j)
-      fun σ' => EncodePostP μ out scr L a c j σ'.mem := by
-  induction L generalizing d μ src out scr V a j with
-  | zero => exact encodeP_leaf pre
+/-- The pruned encoder meets its specification. The recursive calls have smaller level and
+use the same or a smaller budget. -/
+theorem encodeP_meets (hS : P[pS]? = some encStepBody) (hE : P[pE]? = some (encodePBody pS pE))
+    (hd : d + L ≤ lim.depth) : EncodeMeetsP lim P pE d tab p7 p10 L c := by
+  induction L generalizing d with
+  | zero =>
+    intro j μ src out scr V a hj pre
+    refine .of_body hE ?_
+    light_facts pre.lay pre.lay.std
+    have hread : μ src = a 0 := pre.srcV 0 (by norm_num)
+    -- if Level = 0 then mem[Out] := mem[Src]
+    refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp) h) (hT := by solve_by_elim)
+    refine Ends.storeTo out (a 0) ⟨fun τ _ => ?_, by light_keep⟩
+      (by light_side [hread]) (by rfl)
+    have h0 : codeT τ = 0 := by rfl
+    aesop
   | succ L ih =>
-    exact encodeP_node hS
-      (fun _ _ _ _ _ _ _ hj' pre' => Meets.of_body hE (ih (by omega) hj' pre')) pre (by omega) hj
+    intro j μ src out scr V a hj pre
+    refine .of_body hE ?_
+    have hrec := ih (d := d + 1) (by omega)
+    have hd' : d < lim.depth := by omega
+    encode_facts pre.lay
+    have haddr7 : ((p7 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p7 + L := by omega
+    have haddr10 : ((p10 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p10 + L := by omega
+    have hread7 := pre.p7V L (by omega)
+    have hread10 := pre.p10V L (by omega)
+    -- The time at this level, in both cases of the budget.
+    have htime : tEncP (L + 1) j = 104 + 9 * tTermP L j tEncP
+        + (4 + if j = 0 then 0 else tTermP L (j - 1) tEncP) := by
+      cases j <;> simp [tEncP, tTermP] <;> omega
+    rw [htime]
+    -- if Level = 0
+    refine Ends.iteLast (fun h => absurd h (by simp; omega)) (fun _ => ?_)
+    -- Len7 := mem[Pow7 + Level - 1]; Len10 := mem[Pow10 + Level - 1]
+    light_steps using haddr7, hread7, haddr10, hread10
+    -- for TermNo < 9: the leaves below the earlier terms are filled
+    refine Ends.next (9 * (1 + tTermP L j tEncP + 7) + 1 + 5) ?_
+    refine Ends.forShape (fun lam r μ' => ⟨frame (locals L j src out scr tab p7 p10 lam r), μ'⟩)
+      (fun i _ => TermsDoneP μ out scr L a c j i) 9 (tTermP L j tEncP) 0
+      ⟨fun τ _ h => absurd h (by omega), .refl⟩
+      (fun lam r μ' hlam h => by
+        simpa using encodeTermP_spec hS hrec pre hd' hj (by omega) (Nat.zero_le j) (Nat.zero_le 1)
+          (fun _ => rfl) h r)
+      (fun r μ' h => ?_) (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
+    -- if Budget = 0 then skip else the two calls for P₀ with the budget j - 1
+    refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
+    · -- the budget is exhausted: nothing to do for P₀
+      have hj : j = 0 := by simp_all
+      subst hj
+      exact Ends.skip h.skip.done
+    · have hjne : j ≠ 0 := by simp_all
+      have hj1 : 1 ≤ j := Nat.one_le_iff_ne_zero.2 hjne
+      refine (encodeTermP_spec hS hrec pre hd' hj (by omega) hj1 le_rfl (fun h => absurd rfl h)
+        h r).mono
+        (by simp [hjne]; omega) ?_
+      rintro σ' ⟨r', μ'', rfl, h'⟩
+      exact h'.done
 
 end Light.Sec2

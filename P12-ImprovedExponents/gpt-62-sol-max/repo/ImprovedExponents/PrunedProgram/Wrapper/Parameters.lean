@@ -20,7 +20,7 @@ Adapted from upstream (Apache-2.0).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
@@ -78,8 +78,7 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
   have bX := hin.belowX
   have bY := hin.belowY
   refine fun d hd => ⟨query31Body, hP, ?_⟩
-  have hw := hlim.std.space_le
-  have h100 := hlim.std.const_le
+  light_facts hlim.std
   have hU0 := hin.zero_le_U
   have hfr3 := add_three_le_structEnd G N D₀ fr
   have hsp := hlim.space
@@ -90,8 +89,7 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
     have hlarge : G.m₀ ≤ logFour D₀ := by
       by_contra hc
       have hzero := hR.small (by omega)
-      have hone : μ fr = 1 := by simpa using hflag
-      omega
+      simp_all
     obtain ⟨-, hbase, hDS⟩ := hR.large hlarge
     have haddr : ((fr : ℤ) + 1).toNat = fr + 1 := by omega
     refine Ends.callTo

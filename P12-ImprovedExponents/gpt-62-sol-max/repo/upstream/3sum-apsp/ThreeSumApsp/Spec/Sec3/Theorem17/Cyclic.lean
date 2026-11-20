@@ -17,9 +17,7 @@ operations of the ring are operations on lists that use no division:
 
 * zero, sums and differences are entrywise (`cycVec_zero`, `cycVec_add`, `cycVec_sub`);
 * a power of `x` is a unit vector (`cycVec_x_pow`);
-* multiplication is cyclic convolution, "O(p²) word operations" (`cycVec_mul`).  For the proof both
-  factors are expanded in powers of `x` (`eq_sum_coeff`), and `x^i x^j` contributes to the
-  coefficient of `x^r` exactly if `i + j ≡ r (mod p)`.
+* multiplication is cyclic convolution, "O(p²) word operations" (`cycVec_mul`).
 -/
 
 @[expose] public section
@@ -47,43 +45,6 @@ def cconv (p : ℕ) (u v : List ℤ) : List ℤ :=
 
 variable {p : ℕ} (hp : p ≠ 0)
 
-/-! ## Coefficients -/
-
-/-- The representative of degree less than `p` has no coefficients from `p` on. -/
-theorem coeff_eq_zero_of_le (z : CyclicRing p) {r : ℕ} (hr : p ≤ r) :
-    CyclicRing.coeff hp r z = 0 := by
-  obtain ⟨f, rfl⟩ := AdjoinRoot.mk_surjective z
-  rw [CyclicRing.coeff_apply, AdjoinRoot.modByMonicHom_mk]
-  refine Polynomial.coeff_eq_zero_of_degree_lt (lt_of_lt_of_le
-    (Polynomial.degree_modByMonic_lt f (Polynomial.monic_X_pow_sub_C (1 : ℤ) hp)) ?_)
-  rw [Polynomial.degree_X_pow_sub_C (Nat.pos_of_ne_zero hp)]
-  exact_mod_cast hr
-
-/-- An element of the ring is the combination of the powers of `x` with its coefficients. -/
-theorem eq_sum_coeff (z : CyclicRing p) :
-    z = ∑ i ∈ Finset.range p, CyclicRing.coeff hp i z • CyclicRing.x p ^ i := by
-  have hmk := AdjoinRoot.mk_leftInverse (Polynomial.monic_X_pow_sub_C (1 : ℤ) hp) z
-  set f := AdjoinRoot.modByMonicHom (Polynomial.monic_X_pow_sub_C (1 : ℤ) hp) z with hf
-  have hdeg : f.natDegree < p := by
-    by_contra hc
-    have hlead : f.coeff f.natDegree = 0 := coeff_eq_zero_of_le hp z (not_lt.mp hc)
-    rw [Polynomial.leadingCoeff_eq_zero.mp hlead, Polynomial.natDegree_zero] at hc
-    exact hc (Nat.pos_of_ne_zero hp)
-  conv_lhs => rw [← hmk, Polynomial.as_sum_range' f p hdeg, map_sum]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [← Polynomial.C_mul_X_pow_eq_monomial, map_mul, map_pow, AdjoinRoot.mk_X, AdjoinRoot.mk_C,
-    zsmul_eq_mul]
-  simp [CyclicRing.coeff_apply, CyclicRing.x, hf]
-
-/-- For `i, j, r < p`: `i + j ≡ r (mod p)` exactly if `j` is `r - i` or `r + p - i`. -/
-private theorem eq_add_mod_iff {p i j r : ℕ} (hi : i < p) (hj : j < p) (hr : r < p) :
-    r = (i + j) % p ↔ j = if i ≤ r then r - i else r + p - i := by
-  by_cases h : i + j < p
-  · rw [Nat.mod_eq_of_lt h]
-    split_ifs <;> omega
-  · rw [Nat.mod_eq_sub_mod (not_lt.mp h), Nat.mod_eq_of_lt (by omega)]
-    split_ifs <;> omega
-
 /-! ## Vectors -/
 
 /-- A vector has `p` entries. -/
@@ -98,23 +59,21 @@ theorem getD_cycVec (z : CyclicRing p) {r : ℕ} (hr : r < p) :
 /-- The vector of 0. -/
 theorem cycVec_zero : cycVec hp 0 = List.replicate p 0 := by
   rw [cycVec, List.eq_replicate_iff]
-  refine ⟨by simp, fun b hb => ?_⟩
-  obtain ⟨r, -, rfl⟩ := List.mem_map.mp hb
-  exact map_zero (CyclicRing.coeff hp r)
+  simp
 
 /-- The vector of a sum. -/
 theorem cycVec_add (z w : CyclicRing p) :
     cycVec hp (z + w) = vadd (cycVec hp z) (cycVec hp w) := by
   refine List.ext_getElem (by simp [vadd, length_cycVec]) fun r _ _ => ?_
   simp only [vadd, cycVec, List.getElem_zipWith, List.getElem_map, List.getElem_range]
-  exact map_add (CyclicRing.coeff hp r) z w
+  simp
 
 /-- The vector of a difference. -/
 theorem cycVec_sub (z w : CyclicRing p) :
     cycVec hp (z - w) = vsub (cycVec hp z) (cycVec hp w) := by
   refine List.ext_getElem (by simp [vsub, length_cycVec]) fun r _ _ => ?_
   simp only [vsub, cycVec, List.getElem_zipWith, List.getElem_map, List.getElem_range]
-  exact map_sub (CyclicRing.coeff hp r) z w
+  simp
 
 /-- The vector of a power of `x`. -/
 theorem cycVec_x_pow (k : ℕ) : cycVec hp (CyclicRing.x p ^ k) = vunit p (k % p) :=
@@ -123,21 +82,30 @@ theorem cycVec_x_pow (k : ℕ) : cycVec hp (CyclicRing.x p ^ k) = vunit p (k % p
 /-- Multiplication in the ring is cyclic convolution. -/
 theorem cycVec_mul (z w : CyclicRing p) :
     cycVec hp (z * w) = cconv p (cycVec hp z) (cycVec hp w) := by
+  let : NeZero p := ⟨hp⟩
   refine List.map_congr_left fun r hr => ?_
-  have hr' := List.mem_range.mp hr
-  -- Expand both factors in powers of x.
-  conv_lhs => rw [eq_sum_coeff hp z, eq_sum_coeff hp w, Finset.sum_mul_sum]
-  rw [map_sum, List.sum_map_range]
-  refine Finset.sum_congr rfl fun i hi => ?_
-  have hi' := Finset.mem_range.mp hi
-  -- For each i, only one j contributes to the coefficient of x^r.
-  have hj : (if i ≤ r then r - i else r + p - i) < p := by split_ifs <;> omega
-  rw [getD_cycVec hp z hi', getD_cycVec hp w hj, map_sum]
-  simp only [smul_mul_smul_comm, ← pow_add, map_zsmul, CyclicRing.coeff_x_pow, smul_eq_mul]
-  rw [Finset.sum_eq_single (if i ≤ r then r - i else r + p - i)]
-  · rw [if_pos ((eq_add_mod_iff hi' hj hr').mpr rfl), mul_one]
-  · intro j hj' hne
-    rw [if_neg fun h => hne ((eq_add_mod_iff hi' (Finset.mem_range.mp hj') hr').mp h), mul_zero]
-  · exact fun h => absurd (Finset.mem_range.mpr hj) h
+  have hr' := List.mem_range.1 hr
+  rw [CyclicRing.coeff_apply hp hr', AddMonoidAlgebra.coeff_mul_apply_left,
+    Finsupp.sum_fintype _ _ (by simp), List.sum_map_range, ← Fin.sum_univ_eq_sum_range]
+  symm
+  refine Fintype.sum_equiv (ZMod.finEquiv p).toEquiv _ _ fun i => ?_
+  have hi : (i : ℕ) < p := i.isLt
+  let j := if (i : ℕ) ≤ r then r - i else r + p - i
+  have hj : j < p := by dsimp [j]; split <;> omega
+  have he : ZMod.finEquiv p i = (i.val : ZMod p) := by
+    rw [← ZMod.natCast_zmod_val (ZMod.finEquiv p i)]
+    congr 1
+    cases p with
+    | zero => exact (Nat.not_lt_zero _ hi).elim
+    | succ p => rfl
+  have hj' : (j : ZMod p) = -(i.val : ZMod p) + r := by
+    dsimp only [j]
+    split_ifs with h
+    · rw [Nat.cast_sub h, sub_eq_neg_add]
+    · rw [Nat.cast_sub (by omega), Nat.cast_add, ZMod.natCast_self, add_zero, sub_eq_neg_add]
+  change _ = AddMonoidAlgebra.coeff z (ZMod.finEquiv p i) *
+    AddMonoidAlgebra.coeff w (-(ZMod.finEquiv p i) + (r : ZMod p))
+  rw [he, ← hj', getD_cycVec hp z hi, getD_cycVec hp w hj,
+    CyclicRing.coeff_apply hp hi, CyclicRing.coeff_apply hp hj]
 
 end ThreeSumApsp.Spec

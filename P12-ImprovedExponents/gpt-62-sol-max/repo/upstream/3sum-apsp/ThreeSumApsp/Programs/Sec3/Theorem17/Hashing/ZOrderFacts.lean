@@ -25,21 +25,19 @@ public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The number whose digits in base 4 are the binary digits of i is at most i². -/
 theorem spread_le_sq (i : ℕ) : spread i ≤ i * i := by
   induction i using Nat.strong_induction_on with
   | _ i ih =>
     rcases Nat.eq_zero_or_pos i with rfl | hi
-    · simp [spread_zero]
+    · rfl
     · have h := ih (i / 2) (by omega)
       rw [spread_eq]
       obtain ⟨q, b, hb, rfl⟩ : ∃ q b, b < 2 ∧ i = 2 * q + b :=
         ⟨i / 2, i % 2, Nat.mod_lt _ (by norm_num), by omega⟩
-      rw [show (2 * q + b) / 2 = q by omega] at h ⊢
-      rw [show (2 * q + b) % 2 = b by omega]
-      nlinarith
+      grind
 
 theorem spreadList_succ (i : ℕ) : spreadList (i + 1) = spreadList i ++ [((spread i : ℕ) : ℤ)] := by
   simp [spreadList, List.range_succ]

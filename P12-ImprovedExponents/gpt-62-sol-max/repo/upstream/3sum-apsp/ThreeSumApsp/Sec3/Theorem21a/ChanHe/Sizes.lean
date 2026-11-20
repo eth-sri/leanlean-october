@@ -34,7 +34,7 @@ namespace ThreeSumApsp
 
 namespace ChanHe
 
-open Finset
+
 
 /-! ## The parameters -/
 
@@ -55,13 +55,13 @@ theorem softO_mPar (κ : ℕ) : SoftOSqrtPow (fun n => mPar n (2 * n ^ κ)) 1 :=
 
 /-- The instances are not empty arrays. -/
 theorem one_le_lenOf (κ n : ℕ) : 1 ≤ lenOf κ n :=
-  Nat.succ_le_of_lt (by unfold lenOf mPar; positivity)
+  Nat.succ_le_of_lt (by constructor <;> simp_all)
 
 /-! ## Correctness, the number of instances, their entries, and the count for the searches -/
 
 section input
 
-variable {κ n : ℕ} {x : Fin n → ℤ}
+variable {κ n : ℕ}
 
 /-- `Convolution3SUM` on the first `N` cells of an array `y : ℕ → ℤ` is the problem
 `ConvOne N y`. -/

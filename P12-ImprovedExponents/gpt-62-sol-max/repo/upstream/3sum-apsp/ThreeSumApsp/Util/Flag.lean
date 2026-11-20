@@ -36,7 +36,7 @@ theorem flag_eq_one_iff {p : Prop} : flag p = 1 ↔ p := by
 
 /-- Equivalent questions have the same answer. -/
 theorem flag_congr {p q : Prop} (h : p ↔ q) : flag p = flag q := by
-  rw [propext h]
+  simp_all
 
 /-- An answer is 0 or 1. -/
 theorem flag_mem (p : Prop) : 0 ≤ flag p ∧ flag p < 2 := by

@@ -43,7 +43,7 @@ theorem exists_walk_of_path {i j : Fin n} {d : ℤ} (h : Path w i j d) :
     ∃ rest : List (Fin n), walkEnd i rest = j ∧
       walkWeight (fun a b => toTop (w a b)) i rest = (d : WithTop ℤ) := by
   induction h with
-  | nil i => exact ⟨[], rfl, rfl⟩
+  | nil i => solve_by_elim
   | @cons i j k d e hd _ ih =>
     obtain ⟨rest, hend, hw⟩ := ih
     refine ⟨j :: rest, hend, ?_⟩
@@ -64,7 +64,7 @@ theorem path_of_walk : ∀ (rest : List (Fin n)) (i : Fin n) (d : ℤ),
     | none => simp [hk, toTop] at h
     | some a =>
       cases hr : walkWeight (fun a b => toTop (w a b)) k rest with
-      | top => simp [hr] at h
+      | top => simp_all
       | coe b =>
         rw [hk, hr] at h
         obtain rfl : d = a + b := by
@@ -80,8 +80,7 @@ theorem noNegativeCycle_toTop (hneg : ∀ i d, Path w i i d → 0 ≤ d) :
   | top => exact le_top
   | coe z =>
     have hp := path_of_walk rest i z hw
-    rw [hend] at hp
-    exact_mod_cast hneg i z hp
+    aesop
 
 variable {dist : Fin n → Fin n → WithTop ℤ}
 
@@ -95,8 +94,7 @@ theorem not_path_of_dist_eq_top (hdist : IsDistanceMatrix (fun i j => toTop (w i
     {i j : Fin n} (htop : dist i j = ⊤) (d : ℤ) : ¬ Path w i j d := by
   intro hp
   have hle := dist_le_of_path hdist hp
-  rw [htop] at hle
-  exact absurd hle (by simp)
+  simp_all
 
 /-- A finite distance is the weight of a path, and no path is lighter. -/
 theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)
@@ -108,8 +106,7 @@ theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop 
   rw [hend] at hp
   refine ⟨hp, fun e he => ?_⟩
   have hle := dist_le_of_path hdist he
-  rw [hz] at hle
-  exact_mod_cast hle
+  simp_all
 
 /-- Two numbers written down for the pair `(i, j)` as APSP asks: 0 if the distance is `⊤`, and 1 and
 the distance otherwise.  Then either the first is 1 and the second is the least weight of a path, or

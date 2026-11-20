@@ -77,30 +77,99 @@ end Ring
 
 /-! ## Strassen's algorithm -/
 
-/-- Strassen's algorithm [Str69] for `2^j × 2^j` matrices over `ℤ[x]/(x^p - 1)` in Z-order. -/
+/-- The zero vector. -/
+abbrev zeros (len : ℕ) : List ℤ := List.replicate len 0
+
+/-- The list that vlin writes. -/
+def vlinList (s : ℤ) (A B : List ℤ) : List ℤ := List.zipWith (fun x y => x + s * y) A B
+
+/-- With s = 1 it is the sum. -/
+theorem vlinList_one (A B : List ℤ) : vlinList 1 A B = vadd A B := by
+  simp [vlinList, vadd]
+
+/-- With s = -1 it is the difference. -/
+theorem vlinList_neg_one (A B : List ℤ) : vlinList (-1) A B = vsub A B := by
+  unfold vlinList vsub
+  lia
+
+/-- The list that vlin writes is as long as its operands. -/
+theorem length_vlinList (s : ℤ) {A B : List ℤ} {n : ℕ} (hA : A.length = n) (hB : B.length = n) :
+    (vlinList s A B).length = n := by
+  simp [vlinList, hA, hB]
+
+/-- With the sign 0 the first operand is kept. -/
+theorem vlinList_zero {A B : List ℤ} (h : A.length = B.length) : vlinList 0 A B = A := by
+  apply List.ext_getElem
+  · simp [vlinList, h]
+  · intro i h1 h2
+    simp [vlinList]
+
+/-- Adding a list to zeros gives the list. -/
+theorem vlinList_zeros_left {q : ℕ} {B : List ℤ} (h : B.length = q) :
+    vlinList 1 (zeros q) B = B := by
+  apply List.ext_getElem <;> simp [vlinList, h]
+
+/-- A row of the table of Strassen's seven products.  With a[t], b[t] and c[t] for the quarters
+number t of the operands and of the result, the product is
+M = (a[a1] + sA a[a2]) · (b[b1] + sB b[b2]), and s1 M is added to c[c1] and s2 M to c[c2]. -/
+structure PhaseRow : Type where
+  (a1 a2 : ℕ) (sA : ℤ) (b1 b2 : ℕ) (sB : ℤ) (c1 : ℕ) (s1 : ℤ) (c2 : ℕ) (s2 : ℤ)
+
+/-- The entries of a row are numbers of quarters and signs, and the two results are different
+quarters. -/
+structure PhaseRow.Ok (row : PhaseRow) : Prop where
+  a1 : row.a1 < 4
+  a2 : row.a2 < 4
+  b1 : row.b1 < 4
+  b2 : row.b2 < 4
+  c1 : row.c1 < 4
+  c2 : row.c2 < 4
+  ne : row.c1 ≠ row.c2
+  sA : |row.sA| ≤ 1
+  sB : |row.sB| ≤ 1
+  s1 : |row.s1| ≤ 1
+  s2 : |row.s2| ≤ 1
+
+/-- The operands and updates for each of Strassen's seven products. -/
+def phaseTable : List PhaseRow :=
+  [⟨0, 3, 1, 0, 3, 1, 0, 1, 3, 1⟩, ⟨2, 3, 1, 0, 0, 0, 2, 1, 3, -1⟩,
+   ⟨0, 0, 0, 1, 3, -1, 1, 1, 3, 1⟩, ⟨3, 3, 0, 2, 0, -1, 0, 1, 2, 1⟩,
+   ⟨0, 1, 1, 3, 3, 0, 0, -1, 1, 1⟩, ⟨2, 0, -1, 0, 1, 1, 3, 1, 0, 0⟩,
+   ⟨1, 3, -1, 2, 3, 1, 0, 1, 3, 0⟩]
+
+theorem PhaseRow.of_mem {row : PhaseRow} (h : row ∈ phaseTable) : row.Ok := by
+  simp [phaseTable] at h
+  rcases h with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> constructor <;> decide
+
+/-- The two linear combinations fed to one recursive product. -/
+def phaseProduct (mul : List ℤ → List ℤ → List ℤ) (q : ℕ) (A B : List ℤ) (row : PhaseRow) :
+    List ℤ :=
+  mul (vlinList row.sA (quarter q row.a1 A) (quarter q row.a2 A))
+    (vlinList row.sB (quarter q row.b1 B) (quarter q row.b2 B))
+
+/-- Accumulate a phase into its two destination quarters. -/
+def PhaseRow.accum (row : PhaseRow) (L : ℕ → List ℤ) (M : List ℤ) : ℕ → List ℤ :=
+  Function.update (Function.update L row.c1 (vlinList row.s1 (L row.c1) M))
+    row.c2 (vlinList row.s2 (L row.c2) M)
+
+/-- Strassen's algorithm [Str69] in Z-order, over `ℤ[x]/(x^p - 1)`. -/
 def strassenList (p : ℕ) : ℕ → List ℤ → List ℤ → List ℤ
   | 0, A, B => cconv p A B
   | j + 1, A, B =>
     let q := 4 ^ j * p
-    let a11 := quarter q 0 A; let a12 := quarter q 1 A
-    let a21 := quarter q 2 A; let a22 := quarter q 3 A
-    let b11 := quarter q 0 B; let b12 := quarter q 1 B
-    let b21 := quarter q 2 B; let b22 := quarter q 3 B
-    let m1 := strassenList p j (vadd a11 a22) (vadd b11 b22)
-    let m2 := strassenList p j (vadd a21 a22) b11
-    let m3 := strassenList p j a11 (vsub b12 b22)
-    let m4 := strassenList p j a22 (vsub b21 b11)
-    let m5 := strassenList p j (vadd a11 a12) b22
-    let m6 := strassenList p j (vsub a21 a11) (vadd b11 b12)
-    let m7 := strassenList p j (vsub a12 a22) (vadd b21 b22)
-    vadd (vsub (vadd m1 m4) m5) m7 ++ vadd m3 m5 ++ vadd m2 m4 ++ vadd (vadd (vsub m1 m2) m3) m6
+    let C := phaseTable.foldl (fun L row => row.accum L (phaseProduct (strassenList p j) q A B row))
+      (fun _ => zeros q)
+    C 0 ++ C 1 ++ C 2 ++ C 3
+
+private theorem length_zRing {p : ℕ} (hp : p ≠ 0) (j : ℕ) (α : ℕ → ℕ → CyclicRing p) :
+    (zRing hp j α).length = 4 ^ j * p := length_zList _ _ fun _ _ => length_cycVec hp _
 
 /-- A sum over twice as many indices. -/
 private theorem sum_range_two_pow_succ {R : Type} [AddCommMonoid R] (K : ℕ) (f : ℕ → R) :
     ∑ c ∈ range (2 ^ (K + 1)), f c =
       ∑ c ∈ range (2 ^ K), f c + ∑ c ∈ range (2 ^ K), f (c + 2 ^ K) := by
   rw [pow_succ, Nat.mul_two, Finset.sum_range_add]
-  simp only [Nat.add_comm]
+  lia
 
 /-- **Strassen's algorithm computes the product**, for matrices over the ring. -/
 theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → ℕ → CyclicRing p) :
@@ -116,7 +185,16 @@ theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → �
     have hq3 := fun γ => quarter_zRing hp K γ (show 3 < 4 by norm_num)
     simp only [Nat.reduceDiv, Nat.reduceMod, Nat.zero_mul, Nat.one_mul, Nat.add_zero]
       at hq0 hq1 hq2 hq3
-    simp only [strassenList, hq0, hq1, hq2, hq3, zRing_add, zRing_sub, ih]
+    have lin0 (α β : ℕ → ℕ → CyclicRing p) :
+        vlinList 0 (zRing hp K α) (zRing hp K β) = zRing hp K α :=
+      vlinList_zero (by simp only [length_zRing])
+    have linz (α : ℕ → ℕ → CyclicRing p) := vlinList_zeros_left (length_zRing hp K α)
+    simp only [strassenList, phaseTable, List.foldl_cons, List.foldl_nil, PhaseRow.accum,
+      Function.update_apply, phaseProduct,
+      Nat.reduceEqDiff, reduceIte, OfNat.zero_ne_ofNat, OfNat.ofNat_ne_zero,
+      OfNat.one_ne_ofNat, OfNat.ofNat_ne_one, zero_ne_one, one_ne_zero,
+      hq0, hq1, hq2, hq3, lin0, linz, vlinList_one, vlinList_neg_one,
+      zRing_add, zRing_sub, ih]
     -- Strassen's identities, one for each quadrant of the product, summand by summand.
     rw [zRing_succ]
     refine congrArg₂ (· ++ ·) (congrArg₂ (· ++ ·) (congrArg₂ (· ++ ·) ?_ ?_) ?_) ?_ <;>
@@ -133,17 +211,13 @@ theorem seven_pow_clog_le {n : ℕ} (hn : 1 ≤ n) :
 
 /-! ## The count of the proof of Theorem 17 -/
 
-/-- The zero vector. -/
-abbrev zeros (len : ℕ) : List ℤ := List.replicate len 0
+/-- A padded matrix of residue monomials, in ordinary or transposed orientation. -/
+def matList (tr : Bool) (n p K : ℕ) (R : List ℕ) : List ℤ :=
+  zList K fun a c => if a < n ∧ c < n then
+    vunit p (R.getD (if tr then c * n + a else a * n + c) 0) else zeros p
 
-/-- Proof of Theorem 17: `P[a,c] := x^{w(a,c) mod p}`, padded with zeros to `2^K` rows and columns;
-`RAC` holds the residues. -/
-def matPList (n p K : ℕ) (RAC : List ℕ) : List ℤ :=
-  zList K fun a c => if a < n ∧ c < n then vunit p (RAC.getD (a * n + c) 0) else zeros p
-
-/-- Proof of Theorem 17: `Q[c,b] := x^{w(b,c) mod p}`. -/
-def matQList (n p K : ℕ) (RBC : List ℕ) : List ℤ :=
-  zList K fun c b => if c < n ∧ b < n then vunit p (RBC.getD (b * n + c) 0) else zeros p
+abbrev matPList := matList false
+abbrev matQList := matList true
 
 /-- Proof of Theorem 17: "the sum over the pairs (a,b) ∈ A × B of the coefficient of x^{-w(a,b) mod
 p} in (PQ)[a,b]"; `RM` is `PQ` in Z-order. -/
@@ -186,6 +260,7 @@ theorem matPList_eq_zRing (hp : p ≠ 0) (K : ℕ) :
     matPList n p K (residList p AC) = zRing hp K (padP (triOf n AB BC AC) p) := by
   refine congrArg (zList K) (funext₂ fun a c => ?_)
   rw [padP]
+  simp only [Bool.false_eq_true, if_false]
   split_ifs with h
   · rw [cycVec_matP, getD_residList]
     rfl
@@ -196,6 +271,7 @@ theorem matQList_eq_zRing (hp : p ≠ 0) (K : ℕ) :
     matQList n p K (residList p BC) = zRing hp K (padQ (triOf n AB BC AC) p) := by
   refine congrArg (zList K) (funext₂ fun c b => ?_)
   rw [padQ]
+  simp only [if_true]
   split_ifs with h
   · rw [cycVec_matQ, getD_residList]
     rfl

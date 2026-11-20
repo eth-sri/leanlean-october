@@ -32,13 +32,11 @@ theorem natLog_succ_le {n : ℕ} (hn : 2 ≤ n) : ((Nat.log 2 n + 1 : ℕ) : ℝ
   have hlog2 : Real.log 2 ≤ Real.log n := Real.log_le_log (by norm_num) (by exact_mod_cast hn)
   have hfloor : Nat.log 2 n * Real.log 2 ≤ Real.log n :=
     calc Nat.log 2 n * Real.log 2 = Real.log ((2 ^ Nat.log 2 n : ℕ) : ℝ) := by
-          rw [Nat.cast_pow, Real.log_pow, Nat.cast_two]
+          simp
       _ ≤ Real.log n := Real.log_le_log (by positivity)
           (by exact_mod_cast Nat.pow_log_le_self 2 (by omega))
   have hmul := mul_le_mul_of_nonneg_left hhalf (Nat.cast_nonneg (α := ℝ) (Nat.log 2 n))
-  push_cast
-  -- `⌊log₂ n⌋ ≤ 2 ⌊log₂ n⌋ ln 2 ≤ 2 ln n` and `1 ≤ 2 ln 2 ≤ 2 ln n`
-  linarith [hmul, hfloor, hhalf, hlog2]
+  grind
 
 /-- `⌊√n⌋ + 1 ≤ 2 √n` for `n ≥ 1`. -/
 theorem natSqrt_succ_le {n : ℕ} (hn : 1 ≤ n) : ((Nat.sqrt n + 1 : ℕ) : ℝ) ≤ 2 * √(n : ℝ) := by
@@ -93,7 +91,6 @@ theorem isPowPolylog (hF : SoftOSqrtPow F i) {a : ℝ} (ha : a = i / 2) :
   refine .of_abs_le (K * 4 ^ e * 2 ^ i) e 2 fun n hn => ?_
   have hsqrt : √(n : ℝ) ^ i = (n : ℝ) ^ a := by
     rw [ha, Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_mul (Nat.cast_nonneg n)]
-    congr 1
     ring
   rw [abs_of_nonneg (Nat.cast_nonneg _)]
   calc (F n : ℝ)

@@ -45,7 +45,7 @@ theorem getD_weaveList (mask : List Bool) (outer inner : List ℕ) (ℓ : ℕ) :
         else outer.getD ((mask.take ℓ).count false) 0
       else 0 := by
   induction mask generalizing outer inner ℓ with
-  | nil => simp [weaveList]
+  | nil => rfl
   | cons x mask ih =>
     cases ℓ with
     | zero =>
@@ -71,6 +71,6 @@ theorem lt_of_mem_weaveList {b : ℕ} (hb : 0 < b) {mask : List Bool} {outer inn
   split_ifs
   · exact List.getD_of_forall_mem (p := (· < b)) hb hinner _
   · exact List.getD_of_forall_mem (p := (· < b)) hb houter _
-  · exact hb
+  assumption
 
 end ThreeSumApsp

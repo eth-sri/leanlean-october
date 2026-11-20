@@ -156,7 +156,7 @@ theorem width_mainStmt (p0 : ℕ) : (mainStmt p0).width = 3 := rfl
 
 private theorem length_tailCode (dec : Bool) (pos : ℕ) :
     (tailCode dec pos).length = if dec then 5 else 2 := by
-  cases dec <;> rfl
+  aesop
 
 /-- The dispatcher comes after four instructions, the 2 F + 11 instructions of the outermost
 statement and at least two for the verdict.  So the pool also holds the distance 2 (F + 1) between
@@ -165,9 +165,8 @@ pointer, and it reaches further down than the 2 F + 1 temporaries. -/
 theorem two_mul_frameSize_add_le_dispPos (P : Program) (dec : Bool) :
     2 * frameSize P + 17 ≤ dispPos P dec := by
   have : firstBody (frameSize P) dec ≤ dispPos P dec := le_endPos _ _ _
-  have htail : 2 ≤ if dec then 5 else 2 := by split_ifs <;> omega
-  simp only [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] at this
-  omega
+  have htail : 2 ≤ if dec then 5 else 2 := by lia
+  simp_all [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] <;> omega
 
 private theorem length_bodiesCode (G : CodeLayout) :
     ∀ (bs : List Stmt) (pos : ℕ), pos + (bodiesCode G bs pos).length = endPos G.F bs pos
@@ -246,14 +245,14 @@ theorem codeAt_bodies {code : List Instr} (G : CodeLayout) :
       ∀ (p : ℕ) (b : Stmt), bs[p]? = some b → ∃ e, (entries G.F bs pos)[p]? = some e ∧
         CodeAt code e (compileStmt G b e ++ epilogue G) ∧
         e + b.size G.F + epilogueSize ≤ endPos G.F bs pos
-  | [], _, _, p, b, h => by simp at h
+  | [], _, _, p, b, h => by trivial
   | b₀ :: bs, pos, hc, 0, b, h => by
-    obtain rfl : b₀ = b := by simpa using h
+    obtain rfl : b₀ = b := by simp_all
     exact ⟨pos, rfl, hc.left, le_endPos _ _ _⟩
   | b₀ :: bs, pos, hc, p + 1, b, h =>
     codeAt_bodies G bs _
       (hc.right.cast_pos (by
         rw [List.length_append, length_compileStmt, length_epilogue, Nat.add_assoc])) p b
-      (by simpa using h)
+      (by assumption)
 
 end Light.Compiler

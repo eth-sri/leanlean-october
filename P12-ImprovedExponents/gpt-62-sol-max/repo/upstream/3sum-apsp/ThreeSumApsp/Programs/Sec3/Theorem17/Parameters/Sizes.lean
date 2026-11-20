@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
 
@@ -34,7 +38,7 @@ No routine touches the memory.
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -54,29 +58,23 @@ theorem capPow_succ (g t i : ℕ) :
 theorem capPow_spec {g : ℕ} (hg : 1 ≤ g) (t i : ℕ) :
     (capPow g t i < t → capPow g t i = g ^ i) ∧ (t ≤ capPow g t i → t ≤ g ^ i) := by
   induction i with
-  | zero => simp [capPow]
+  | zero => aesop
   | succ i ih =>
     rw [capPow_succ]
     split_ifs with h
-    · rw [ih.1 h, pow_succ]
-      exact ⟨fun _ => rfl, fun h' => h'⟩
+    · lia
     · exact ⟨fun h' => absurd h' h,
         fun _ => (ih.2 (not_lt.1 h)).trans (Nat.pow_le_pow_right hg (Nat.le_succ i))⟩
 
 /-- The value is below t exactly if the power is. -/
 theorem capPow_lt_iff {g : ℕ} (hg : 1 ≤ g) (t i : ℕ) : capPow g t i < t ↔ g ^ i < t := by
-  obtain ⟨hlow, hhigh⟩ := capPow_spec hg t i
-  exact ⟨fun h => hlow h ▸ h, fun h => not_le.1 fun hc => absurd (hhigh hc) (not_le.2 h)⟩
+  grind [capPow_spec]
 
 namespace PowLt
 
 /-- The local variables of powLt: the arguments g, e, t; the number of factors so far; their
 product (Acc). -/
-abbrev Base : ℕ := 0
-@[inherit_doc Base] abbrev Exp : ℕ := 1
-@[inherit_doc Base] abbrev Bound : ℕ := 2
-@[inherit_doc Base] abbrev Cnt : ℕ := 3
-@[inherit_doc Base] abbrev Acc : ℕ := 4
+registers [Base, Exp, Bound, Cnt, Acc]
 
 end PowLt
 
@@ -100,11 +98,10 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
   push_cast at hword
   have htg : (0 : ℤ) ≤ (t : ℤ) * g := by positivity
   -- cnt := 0; prod := 1
-  light_set (0 : ℕ)
-  light_set (1 : ℕ)
+  light_steps
   -- while cnt < e.  Before round i, cnt = i and prod = capPow g t i.
   refine Ends.next _ (Ends.whileBlock
-    (fun i σ => σ = ⟨frame [g, e, t, i, (capPow g t i : ℕ)], μ⟩) e (by simp [capPow]) ?round ?done
+    (fun i σ => σ = ⟨frame [g, e, t, i, (capPow g t i : ℕ)], μ⟩) e (by rfl) ?round ?done
     le_rfl) (by simp; omega)
   case round =>
     rintro i _ hi rfl
@@ -112,7 +109,7 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
     generalize capPow g t i = c
     -- if prod < t then prod := prod * g; cnt := cnt + 1
     by_cases hlt : c < t
-    · have hmul : (c : ℤ) * g ≤ t * g := by exact_mod_cast Nat.mul_le_mul_right g hlt.le
+    · have hmul : (c : ℤ) * g ≤ t * g := by nlinarith
       have hmul0 : (0 : ℤ) ≤ (c : ℤ) * g := by positivity
       exact ⟨by light_side, by light_side, by light_side [hlt],
         by simp [update_frame_setLocal, hlt]⟩
@@ -124,20 +121,17 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
     -- return 1 if prod < t, and 0 if not
     refine ⟨by light_side, by light_side,
       Ends.iteLast (fun h => ?_) (fun h => ?_) (hT := by simp; omega)⟩
-    · have hlt : g ^ e < t := hiff.1 (by simpa using h)
-      exact Ends.setTo 1 (by simp [hlt]) (hT := by simp; omega)
-    · have hlt : ¬ g ^ e < t := fun h' => h (by simpa using hiff.2 h')
-      exact Ends.setTo 0 (by simp [hlt]) (hT := by simp; omega)
+    · have hlt : g ^ e < t := hiff.1 (by simp_all)
+      exact Ends.setTo 1 (by simp_all) (hT := by simp; omega)
+    · have hlt : ¬ g ^ e < t := fun h' => h (by simp_all)
+      exact Ends.setTo 0 (by simp_all) (hT := by simp; omega)
 
 /-! ## Roots, rounded up -/
 
 namespace RootCeil
 
 /-- The local variables of rootCeil: the arguments e, t; the candidate g; whether g^e < t. -/
-abbrev Exp : ℕ := 0
-@[inherit_doc Exp] abbrev Bound : ℕ := 1
-@[inherit_doc Exp] abbrev Cand : ℕ := 2
-@[inherit_doc Exp] abbrev More : ℕ := 3
+registers [Exp, Bound, Cand, More]
 
 end RootCeil
 
@@ -176,24 +170,23 @@ theorem rootCeil_meets {μ : ℕ → ℤ} {pRoot pPow e t : ℕ} (hR : P[pRoot]?
       omega
     simpa only [key] using powLt_meets hP hg ((Int.ofNat_le.2 hle).trans hword)
   -- cand := 1; more := powLt(cand, e, t)
-  light_set (1 : ℕ)
+  light_step
   light_call (test 1 le_rfl hpos) with _ μ' ⟨rfl, hμ⟩
   rw [hμ]
   -- while more = 1.  Before round i, cand = i + 1.
   refine Ends.next _ (Ends.whileConst
     (fun i σ => σ = ⟨frame [e, t, (i + 1 : ℕ), if i + 1 < y + 1 then 1 else 0], μ⟩) y (16 * e + 23)
-    (by simp) ?round ?done le_rfl) (by simp; ring_nf; omega)
+    (by simp) ?round ?done le_rfl) (by simp; lia)
   case round =>
     rintro i _ hi rfl
     -- cand := cand + 1; more := powLt(cand, e, t)
-    refine ⟨by light_side, by simp [hi], Ends.setToThen (i + 1 + 1 : ℕ)
+    refine ⟨by light_side, by simp_all, Ends.setToThen (i + 1 + 1 : ℕ)
       (Ends.callTo (test (i + 1 + 1) (by omega) (by omega)) ?_)⟩
-    rintro _ μ' ⟨rfl, hμ⟩
-    simp [hμ]
+    simp
   case done =>
     rintro _ rfl
     -- return cand
-    exact ⟨by light_side, by simp, Ends.setTo (y + 1 : ℕ) (by simp) (hT := by simp; ring_nf; omega)⟩
+    exact ⟨by light_side, by simp, Ends.setTo (y + 1 : ℕ) (by simp) (hT := by simp; lia)⟩
 
 /-- Rounding a root down is rounding the root of the next number up, minus one. -/
 theorem rootCeil_succ {e : ℕ} (he : e ≠ 0) (t : ℕ) : rootCeil e (t + 1) = rootFloor e t + 1 := by
@@ -225,9 +218,9 @@ private theorem queryCapNat_test_bounds {n D C c : ℕ} (hD : 1 ≤ D)
       ((c : ℤ) + 1) * ((c : ℤ) + 1) * D ≤ 4 * ((n ^ 4 : ℕ) : ℤ) + D := by
   have hmono : (c + 1) * (c + 1) * D ≤ (C + 1) * (C + 1) * D :=
     Nat.mul_le_mul_right _ (Nat.mul_le_mul (by omega) (by omega))
-  exact ⟨by exact_mod_cast Nat.le_mul_of_pos_right (c + 1) (Nat.succ_pos c),
-    by exact_mod_cast Nat.le_mul_of_pos_right ((c + 1) * (c + 1)) hD,
-    by exact_mod_cast hmono.trans hmax⟩
+  exact ⟨by simp,
+    by simp_all,
+    by lia⟩
 
 /-- **queryCapNat** returns ⌊n²/√D⌋, for D ≥ 1. -/
 theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some queryCapNatBody) (hD : 1 ≤ D)
@@ -241,22 +234,21 @@ theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some qu
     queryCapNat_test_bounds (c := c) hD (queryCapNat_succ_sq_mul_le (n := n) hD)
   unfold tQueryCapNat
   generalize queryCapNat n D = C at test bounds
-  rw [show ((4 * n ^ 4 + D + 2 : ℕ) : ℤ) = 4 * ((n ^ 4 : ℕ) : ℤ) + D + 2 by push_cast; ring]
+  rw [show ((4 * n ^ 4 + D + 2 : ℕ) : ℤ) = 4 * ((n ^ 4 : ℕ) : ℤ) + D + 2 by rfl]
     at hword
   have hsq : (n : ℤ) * n ≤ ((n ^ 4 : ℕ) : ℤ) := by
     exact_mod_cast (show n * n ≤ n ^ 4 by
-      rw [show n ^ 4 = n * n * (n * n) by ring]; exact Nat.le_mul_self (n * n))
+      rw [show n ^ 4 = n * n * (n * n) by ring]; nlinarith)
   have hcube : (n : ℤ) * n * n ≤ ((n ^ 4 : ℕ) : ℤ) := by
     exact_mod_cast (show n * n * n ≤ n ^ 4 by
       rw [show n ^ 4 = n * n * (n * n) by ring]
-      exact Nat.mul_le_mul_left _ (Nat.le_mul_self n))
+      nlinarith)
   have hfour : (n : ℤ) * n * n * n = ((n ^ 4 : ℕ) : ℤ) := by push_cast; ring
   have hsq0 : (0 : ℤ) ≤ (n : ℤ) * n := by positivity
   have hcube0 : (0 : ℤ) ≤ (n : ℤ) * n * n := by positivity
   generalize ((n ^ 4 : ℕ) : ℤ) = N at *
   -- n4 := n⁴; cand := 0
-  light_set N using hfour
-  light_set (0 : ℕ)
+  light_steps using hfour
   -- while (cand + 1)² D ≤ n4: cand := cand + 1
   refine Ends.next _ (Ends.whileBlock (fun c σ => σ = ⟨frame [n, D, N, c], μ⟩) C (by simp) ?round
     ?done le_rfl)
@@ -294,8 +286,7 @@ theorem ceilDiv_meets {μ : ℕ → ℤ} {q a b : ℕ} (hP : P[q]? = some ceilDi
   unfold tCeilDiv
   generalize a ⌈/⌉ b = q at test
   -- cand := 0; prod := 0
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
+  light_steps
   -- while prod < a: prod := prod + b; cand := cand + 1.  Before round i, prod = i b.
   refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [a, b, i, (i * b : ℕ)], μ⟩) q (by simp)
     ?round ?done le_rfl)

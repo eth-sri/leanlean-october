@@ -62,7 +62,7 @@ theorem bigO_stepBound (C : ℝ) {r : ℚ} (hr0 : 0 ≤ r) : EndStatement.BigO (
   have hceil : (stepBound C r n : ℝ) < |C| * ((n : ℝ) ^ (r : ℝ) + 1) + 1 :=
     (Nat.cast_le.2 (Nat.ceil_le_ceil habs)).trans_lt (Nat.ceil_lt_add_one (by positivity))
   -- `|C| (X + 1) + 1 ≤ (2 |C| + 1) X` for `X ≥ 1`
-  nlinarith [mul_nonneg (abs_nonneg C) (sub_nonneg.2 hone)]
+  nlinarith
 
 /-- **A bound `O(n^a)` of an item statement, with `a` the rational `r`, is the bound `O(n^r)` of the
 end statement**, with the same program and the same slope. -/

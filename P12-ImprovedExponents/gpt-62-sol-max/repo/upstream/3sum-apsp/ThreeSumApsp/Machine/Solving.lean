@@ -78,11 +78,11 @@ theorem solvesWithin_iff {Q : EndStatement.Problem} {κ : ℕ} {P : List Instr} 
   constructor
   · intro h x hx bits hbits
     obtain ⟨t, ht, verdict, m, hexec, hyes, hout⟩ :=
-      h x.n x.x (hx ▸ x.bounded) bits (by simpa [Admissible] using hbits)
+      h x.n x.x (hx ▸ x.bounded) bits (by assumption)
     exact ⟨t, verdict, m, ht, hexec, hyes, output_cons m x.n (Q.input x.x) ▸ hout⟩
   · intro h n x hx W hW
     obtain ⟨t, verdict, c, ht, hrun, hyes, hout⟩ :=
-      h ⟨n, n ^ κ, x, hx⟩ rfl W (by simpa [Admissible] using hW)
+      h ⟨n, n ^ κ, x, hx⟩ rfl W (by assumption)
     exact ⟨t, ht, verdict, c, hrun, hyes, (output_cons c n (Q.input x)).symm ▸ hout⟩
 
 /-- `SolvedInTimeAt` in terms of `Solves`. -/
@@ -101,7 +101,7 @@ theorem Solves.mono {prob : Problem} {P : List Instr} {b b' : ℕ} {dom dom' : p
   intro x hx bits hadm
   obtain ⟨t, verdict, c, ht, he, ha⟩ :=
     h x (hdom x hx) bits (le_trans (Nat.mul_le_mul_right _ hb) hadm)
-  exact ⟨t, verdict, c, ht.trans (hT x hx), he, ha⟩
+  grind
 
 /-! ## Bounds up to a constant -/
 

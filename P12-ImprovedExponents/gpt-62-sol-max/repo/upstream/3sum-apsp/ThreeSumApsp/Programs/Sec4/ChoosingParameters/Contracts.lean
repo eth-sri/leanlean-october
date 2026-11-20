@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
@@ -31,20 +35,11 @@ inner products. Nothing is assumed about the cells from fr on.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 namespace Proc
-abbrev copy : ℕ := 58
-abbrev fill : ℕ := 59
-abbrev log4 : ℕ := 60
-abbrev padX : ℕ := 62
-abbrev ipAt : ℕ := 63
-abbrev pre31 : ℕ := 64
-abbrev query31 : ℕ := 65
-abbrev offline32 : ℕ := 68
-abbrev regimeTest26 : ℕ := 71
-abbrev levels31 : ℕ := 72
-abbrev switch31 : ℕ := 73
+registers from 58 [copy, fill, log4, _, padX, ipAt, _, query31]
+registers from 72 [levels31, switch31]
 end Proc
 
 /-! ## Time functions -/
@@ -108,8 +103,8 @@ theorem fill_ok {lim : Limits} {P : Program} (hP : P[Proc.fill]? = some fillBody
     (hstd : Std lim) : FillSpec lim P := by
   intro dst n x μ h1 _ d _
   refine (fill_meets hP hstd.space_le h1).mono le_rfl fun _ μ' h => ⟨fun i hi => ?_, h.2⟩
-  have := h.1 i (by simpa using hi)
-  simpa using this
+  have := h.1 i (by simp_all)
+  simp_all
 
 /-! ### ⌈log₄ D⌉ -/
 
@@ -117,10 +112,7 @@ namespace Log4
 
 /-- The locals of log4: the argument D, which the result replaces; the address a; the power of 4;
 and its exponent. -/
-abbrev Dim : ℕ := 0
-@[inherit_doc Dim] abbrev Cell : ℕ := 1
-@[inherit_doc Dim] abbrev Power : ℕ := 2
-@[inherit_doc Dim] abbrev Exp : ℕ := 3
+registers [Dim, Cell, Power, Exp]
 
 end Log4
 
@@ -141,8 +133,7 @@ theorem log4_meets {lim : Limits} {P : Program} (hP : P[Proc.log4]? = some log4B
   rw [← hF] at hw ⊢
   unfold log4Body tLog4
   -- pow := 1 ; exp := 0
-  light_set 1
-  light_set 0
+  light_steps
   -- while pow < D: pow := pow * 4 ; exp := exp + 1.  Before round i, pow = 4^i and exp = i.
   refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [D₀, a, ((4 ^ i : ℕ) : ℤ), i], μ⟩)
     (Nat.clog 4 D₀) rfl ?round ?done (hT := le_rfl))
@@ -154,14 +145,13 @@ theorem log4_meets {lim : Limits} {P : Program} (hP : P[Proc.log4]? = some log4B
       exact Nat.pow_le_pow_right (by norm_num) hi
     rw [pow_succ]
     generalize 4 ^ i = p at hlt hpow ⊢
-    exact ⟨by light_side, by simp; omega, by light_side, by simp [update_frame_setLocal]⟩
+    exact ⟨by light_side, by simp_all, by light_side, by simp [update_frame_setLocal]⟩
   case done =>
     rintro _ rfl
     rw [← hF]
     refine ⟨by light_side, by simp; omega, ?_⟩
     -- mem[a] := pow ; return exp
-    light_store a F
-    light_set (Nat.clog 4 D₀ : ℤ)
-    exact ⟨rfl, rfl⟩
+    light_steps
+    trivial
 
 end Light.Sec4

@@ -99,8 +99,7 @@ theorem Sizes.SetUp.m_pos {p : Sizes} (h : p.SetUp) : 1 ≤ p.m :=
   Nat.pos_of_ne_zero fun h0 => by
     have hle := h.le
     have htwo := h.two_le
-    rw [h0, D, pow_zero] at hle
-    omega
+    grind [D]
 
 /-- Proof of Corollary 26, "Setting up": padding "changes D by a factor less than 4, which only
 affects the constants". A bound `D^a log^k D` in the padded `D = 4^m` is, up to a constant, the same
@@ -131,7 +130,6 @@ theorem padded_le (a : ℝ) (k : ℕ) :
       ≤ 4 ^ |a| * (D₀ : ℝ) ^ a * (3 * Real.log D₀) ^ k :=
         mul_le_mul hpow (pow_le_pow_left₀ (by positivity) hlog k) (by positivity) (by positivity)
     _ = 4 ^ |a| * 3 ^ k * ((D₀ : ℝ) ^ a * Real.log D₀ ^ k) := by
-        rw [mul_pow]
         ring
 
 /-- The switching order `t = ⌈θm⌉`: "t := ⌈m/9⌉" in the proof of Corollary 26, where `θ = 1/9`, and
@@ -156,7 +154,7 @@ theorem sum_alpha_le {x : ℝ} (hx : 0 < x) (h9x : 1 ≤ 9 * x) {m t : ℕ} (htm
       (alpha m d : ℝ) ≤ (9 * x) ^ t * ((1 / x) ^ d * 1 ^ (m - d) * (m.choose d : ℝ)) := by
     intro d hd
     have hpow : (9 * x) ^ d ≤ (9 * x) ^ t :=
-      pow_le_pow_right₀ h9x (by rw [mem_range] at hd; omega)
+      pow_le_pow_right₀ h9x (by simp_all)
     calc (alpha m d : ℝ) = (9 * x) ^ d * ((1 / x) ^ d * 1 ^ (m - d) * (m.choose d : ℝ)) := by
           rw [alpha, one_pow, mul_one, ← mul_assoc, ← mul_pow,
             show 9 * x * (1 / x) = 9 by field_simp]
@@ -181,7 +179,6 @@ theorem rpow_mul_pow_eq_D_rpow_qOf {θ : ℝ} (hθ0 : 0 < θ) (hθ1 : θ < 1) (m
   rw [← exp_entropy_eq_D_rpow_qOf, hinv, Real.rpow_def_of_pos (by positivity),
     ← Real.rpow_natCast, Real.rpow_def_of_pos (by positivity), ← Real.exp_add, Real.log_inv,
     Real.log_mul (by norm_num) (by positivity), Real.log_div h1θ.ne' hθ0.ne', entropy]
-  congr 1
   ring
 
 /-! ### Encodings -/

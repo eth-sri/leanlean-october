@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import ThreeSumApsp.Util.Choose
 
 @[expose] public section
 
@@ -28,8 +29,6 @@ open Real Set
 written with Mathlib's `Real.negMulLog x = -x ln x`. -/
 noncomputable def g2 (c δ : ℝ) : ℝ :=
   negMulLog (c - 1 + δ) - negMulLog (c - 1) + negMulLog (1 - δ) + δ * log 9
-
-@[simp] theorem g2_zero (c : ℝ) : g2 c 0 = 0 := by simp [g2]
 
 /-- `g₂(c, ·)` is continuous. -/
 theorem continuous_g2_right (c : ℝ) : Continuous (g2 c) := by
@@ -86,18 +85,6 @@ theorem g2_antitoneOn_right {c : ℝ} (hc : 10 ≤ c) : AntitoneOn (g2 c) (Icc 0
     rw [div_le_one hpos]
     linarith
 
-/-- `g₂(c, ·)` decreases strictly on `[0, 1]` when `c > 10`. -/
-theorem g2_strictAntiOn_right {c : ℝ} (hc : 10 < c) : StrictAntiOn (g2 c) (Icc 0 1) := by
-  refine strictAntiOn_of_deriv_neg (convex_Icc 0 1) (continuous_g2_right c).continuousOn ?_
-  intro δ hδ
-  rw [interior_Icc] at hδ
-  obtain ⟨hδ0, hδ1⟩ := hδ
-  rw [(hasDerivAt_g2_right (by linarith) hδ0 hδ1).deriv]
-  have hpos : 0 < c - 1 + δ := by linarith
-  refine log_neg (div_pos (by nlinarith) hpos) ?_
-  rw [div_lt_one hpos]
-  linarith
-
 /-- `g₂(·, δ)` decreases on `[1, ∞)` for `δ ≥ 0`: its derivative is
 `ln((c - 1)/(c - 1 + δ)) ≤ 0`. -/
 theorem g2_antitoneOn_left {δ : ℝ} (hδ : 0 ≤ δ) : AntitoneOn (fun c => g2 c δ) (Ici 1) := by
@@ -113,11 +100,6 @@ theorem g2_antitoneOn_left {δ : ℝ} (hδ : 0 ≤ δ) : AntitoneOn (fun c => g2
     refine log_nonpos (div_nonneg (by linarith) hpos.le) ?_
     rw [div_le_one hpos]
     linarith
-
-/-- `g₂(c, δ) < 0` for `c > 10` and `0 < δ ≤ 1`. -/
-theorem g2_neg {c δ : ℝ} (hc : 10 < c) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) : g2 c δ < 0 := by
-  have h := g2_strictAntiOn_right hc (left_mem_Icc.2 zero_le_one) ⟨hδ0.le, hδ1⟩ hδ0
-  rwa [g2_zero] at h
 
 /-! ### The value at the parameters of a recursion -/
 
@@ -145,35 +127,47 @@ theorem mul_g2_div {L m t : ℕ} (hm : 1 ≤ m) (hmL : m ≤ L) (ht : t ≤ m) :
     push_cast [Nat.cast_sub hmL]
     field_simp
   have e2 : (L : ℝ) / m - 1 = ((L - m : ℕ) : ℝ) / m := by
-    push_cast [Nat.cast_sub hmL]
-    field_simp
+    grind
   have e3 : 1 - (t : ℝ) / m = ((m - t : ℕ) : ℝ) / m := by
     push_cast [Nat.cast_sub ht]
     field_simp
   have hsum : ((L - m + t : ℕ) : ℝ) - ((L - m : ℕ) : ℝ) + ((m - t : ℕ) : ℝ) = m := by
-    push_cast [Nat.cast_sub hmL, Nat.cast_sub ht]
-    ring
+    simp_all
   have hlog : negMulLog (m : ℝ) = -((m : ℝ) * log m) := by rw [negMulLog]; ring
   rw [g2, e1, e2, e3, mul_add, mul_add, mul_sub, mul_negMulLog_div hm0, mul_negMulLog_div hm0,
     mul_negMulLog_div hm0, hlog]
-  have ht9 : (m : ℝ) * ((t : ℝ) / m * log 9) = t * log 9 := by field_simp
-  rw [ht9]
-  linear_combination (log (m : ℝ)) * hsum
+  grind
 
-/-- `e^{m g₂(L/m, t/m)}` is a quotient of powers of natural numbers. -/
-theorem exp_mul_g2_div {L m t : ℕ} (hm : 1 ≤ m) (hmL : m ≤ L) (ht : t ≤ m) :
-    exp ((m : ℝ) * g2 (L / m) (t / m))
-      = (9 : ℝ) ^ t * ((m : ℝ) ^ m * ((L - m : ℕ) : ℝ) ^ (L - m))
-        / (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t)) := by
-  have h9 : exp ((t : ℝ) * log 9) = (9 : ℝ) ^ t := by
-    rw [exp_nat_mul, exp_log (by norm_num)]
-  have hA := exp_neg_negMulLog_natCast (L - m + t)
-  have hB := exp_neg_negMulLog_natCast (L - m)
-  have hC := exp_neg_negMulLog_natCast (m - t)
-  have hD := exp_neg_negMulLog_natCast m
-  rw [mul_g2_div hm hmL ht, ← hA, ← hB, ← hC, ← hD, ← h9, ← exp_add, ← exp_add, ← exp_add,
-    ← exp_sub]
+/-- The entropy exponent for one binomial coefficient, written in homogeneous form. -/
+noncomputable def chooseEntropy (n k : ℕ) : ℝ :=
+  negMulLog (k : ℝ) + negMulLog ((n - k : ℕ) : ℝ) - negMulLog (n : ℝ)
+
+/-- The largest term of the binomial expansion is within a factor `n + 1` of the sum. -/
+theorem choose_entropyBounds {n k : ℕ} (hk : k ≤ n) :
+    (n.choose k : ℝ) ≤ exp (chooseEntropy n k) ∧
+      exp (chooseEntropy n k) ≤ ((n : ℝ) + 1) * n.choose k := by
+  have hval : exp (chooseEntropy n k) =
+      (n : ℝ)^n / ((k : ℝ)^k * ((n - k : ℕ) : ℝ)^(n - k)) := by
+    simp only [chooseEntropy, exp_sub, exp_add, ← exp_neg_negMulLog_natCast]
+    simp [exp_neg, div_eq_mul_inv, mul_comm]
+  have hp : (0 : ℝ) < (k : ℝ)^k * ((n - k : ℕ) : ℝ)^(n - k) := by
+    exact_mod_cast Nat.mul_pos (Nat.pow_self_pos (n := k)) (Nat.pow_self_pos (n := n - k))
+  rw [hval, le_div_iff₀ hp, div_le_iff₀ hp]
+  constructor
+  · have h := Nat.choose_mul_pow_mul_pow_le k (n - k) n k
+    rw [Nat.add_sub_of_le hk, mul_assoc] at h
+    exact_mod_cast h
+  · have h := Nat.pow_self_le_mul_choose_mul_pow_mul_pow hk
+    exact_mod_cast (show n ^ n ≤ (n + 1) * n.choose k * (k ^ k * (n - k) ^ (n - k)) by
+      simpa only [mul_assoc] using h)
+
+/-- The entropy difference at the two relevant levels accounts for the exact decay rate. -/
+theorem entropy_drop {L m t : ℕ} (hm : 1 ≤ m) (hmL : m ≤ L) (ht : t ≤ m) :
+    exp (chooseEntropy L (m - t)) * (9 : ℝ) ^ t =
+      exp ((m : ℝ) * g2 (L / m) (t / m)) * exp (chooseEntropy L m) := by
+  rw [← exp_log (by norm_num : 0 < (9 : ℝ)), ← exp_nat_mul, ← exp_add, ← exp_add]
   congr 1
+  rw [mul_g2_div hm hmL ht, chooseEntropy, chooseEntropy, show L - (m - t) = L - m + t by omega]
   ring
 
 end ImprovedExponents

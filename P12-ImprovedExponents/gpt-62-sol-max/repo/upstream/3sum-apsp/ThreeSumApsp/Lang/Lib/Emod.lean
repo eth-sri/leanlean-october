@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Tactics
 public import Mathlib.Data.Nat.Log
@@ -30,12 +34,7 @@ namespace Emod
 
 /-- The local variables of emod: the arguments x, M and fr (the result replaces x), what is left
 of |x|, the number of entries of the table, and the next multiple of M. -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Modulus : ℕ := 1
-@[inherit_doc Arg] abbrev Free : ℕ := 2
-@[inherit_doc Arg] abbrev Rest : ℕ := 3
-@[inherit_doc Arg] abbrev Count : ℕ := 4
-@[inherit_doc Arg] abbrev Mult : ℕ := 5
+registers [Arg, Modulus, Free, Rest, Count, Mult]
 
 end Emod
 
@@ -103,11 +102,9 @@ theorem neg_emod_nat (a M : ℕ) (hM : 1 ≤ M) :
   split_ifs with h0
   · rw [h0] at h
     rw [h, Nat.cast_zero, add_zero, ← mul_neg]
-    exact Int.mul_emod_right _ _
+    simp
   · have e : -(a : ℤ) = ((M : ℤ) - ((a % M : ℕ) : ℤ)) + (M : ℤ) * (-((a / M : ℕ) : ℤ) - 1) := by
-      rw [h]
-      push_cast
-      ring
+      lia
     rw [e, Int.add_mul_emod_self_left]
     exact Int.emod_eq_of_lt (by omega) (by omega)
 namespace Emod
@@ -142,8 +139,7 @@ theorem table_ends (F : Pre lim Mo V fr) (haV : a ≤ V) :
     rintro _ ⟨μ', rfl, tab⟩
     have hgt : ¬ Mo * 2 ^ emodRounds a Mo ≤ a := fun h =>
       absurd ((mul_two_pow_le_iff F.mod_pos).1 h) (lt_irrefl _)
-    generalize Mo * 2 ^ emodRounds a Mo = t at hgt
-    exact ⟨by light_side, by simp; omega, μ', rfl, tab⟩
+    light_block <;> first | rfl | simp | grind
   case round =>
     rintro i _ hi ⟨μ', rfl, tab, below⟩
     have hle : Mo * 2 ^ i ≤ a := (mul_two_pow_le_iff F.mod_pos).2 hi
@@ -153,16 +149,11 @@ theorem table_ends (F : Pre lim Mo V fr) (haV : a ≤ V) :
     refine ⟨by light_side, by simp; omega, ?_⟩
     unfold emodTableRound
     -- table[count] := mult; count := count + 1; mult := mult + mult
-    light_store (fr + i) t
-    light_set (i + 1 : ℕ)
-    light_set (t + t : ℕ)
+    light_steps
     refine ⟨_, rfl, fun j hj => ?_, fun b hb => ?_⟩
-    · rcases Nat.lt_succ_iff_lt_or_eq.1 hj with h | rfl
-      · rw [Function.update_of_ne (by omega)]
-        exact tab j h
-      · rw [Function.update_self, ht]
+    · grind
     · rw [Function.update_of_ne (by omega)]
-      exact below b hb
+      aesop
 
 /-- **The subtractions.**  What is left of a after the multiples M 2^j have been subtracted, from
 the largest down, where possible, is the remainder of a. -/
@@ -178,12 +169,12 @@ theorem reduce_ends (F : Pre lim Mo V fr) (haV : a ≤ V) {μ' : ℕ → ℤ} {t
     σ = ⟨frame [x, Mo, fr, r, (emodRounds a Mo - i : ℕ), t], μ'⟩ ∧
       r < Mo * 2 ^ (emodRounds a Mo - i) ∧ r % Mo = a % Mo) (emodRounds a Mo)
     emodReduceRound.blockCost ?start ?round ?done (by simp [emodReduceRound]; omega)
-  case start => exact ⟨a, by simp, by simpa using hgt, rfl⟩
+  case start => lia
   case done =>
     rintro _ ⟨r, rfl, hr, hmod⟩
     rw [Nat.sub_self] at hr ⊢
-    have hra : r = a % Mo := by rw [← hmod, Nat.mod_eq_of_lt (by simpa using hr)]
-    exact ⟨by simp; omega, by simp, by rw [hra]; rfl⟩
+    have hra : r = a % Mo := by rw [← hmod, Nat.mod_eq_of_lt (by simp_all)]
+    subst_vars; light_side
   case round =>
     rintro i _ hi ⟨r, rfl, hr, hmod⟩
     obtain ⟨c, hc⟩ : ∃ c, emodRounds a Mo - i = c + 1 := ⟨emodRounds a Mo - i - 1, by omega⟩
@@ -198,13 +189,12 @@ theorem reduce_ends (F : Pre lim Mo V fr) (haV : a ≤ V) {μ' : ℕ → ℤ} {t
     refine ⟨by light_side, by light_side, ?_⟩
     unfold emodReduceRound
     -- count := count - 1; if table[count] ≤ rest then rest := rest - table[count]
-    light_set (c : ℕ)
+    light_step
     refine Ends.iteLast (fun h => ?_) (fun h => ?_)
     · have hmr : m ≤ r := by
         simp [hcell] at h
         omega
-      exact Ends.setTo (r - m : ℕ) ⟨r - m, rfl, by omega, by rw [hsub r hmr, hmod]⟩
-        (by light_side [hcell])
+      light_block <;> first | rfl | simp | grind
     · have hrm : r < m := by
         simp [hcell] at h
         omega
@@ -218,18 +208,16 @@ theorem sign_ends (F : Pre lim Mo V fr) (hax : (a : ℤ) = |x|) {μ' : ℕ → �
   have hr : a % Mo < Mo := Nat.mod_lt _ F.mod_pos
   generalize hrem : a % Mo = r at hr
   refine Ends.iteLast (fun hneg => ?_) (fun hpos => ?_)
-  · have hneg : x < 0 := by simpa using hneg
+  · have hneg : x < 0 := by assumption
     have hmod := neg_emod_nat a Mo F.mod_pos
-    rw [hrem, show -(a : ℤ) = x by rw [hax, abs_of_neg hneg]; ring] at hmod
+    rw [hrem, show -(a : ℤ) = x by grind] at hmod
     refine Ends.iteLast (fun hz => ?_) (fun hz => ?_)
-    · have hz : r = 0 := by simpa using hz
-      exact Ends.setTo 0 ⟨by rw [hmod, if_pos hz]; rfl, rfl⟩
-    · have hz : ¬ r = 0 := by simpa using hz
-      exact Ends.setTo ((Mo : ℤ) - r) ⟨by rw [hmod, if_neg hz]; rfl, rfl⟩
-  · have hpos : 0 ≤ x := by simpa using hpos
-    refine Ends.setTo (r : ℤ) ⟨?_, rfl⟩
-    rw [← abs_of_nonneg hpos, ← hax, ← hrem]
-    exact (Int.natCast_mod a Mo)
+    · have hz : r = 0 := by simp_all
+      exact Ends.setTo 0 ⟨by simp_all, rfl⟩
+    · have hz : ¬ r = 0 := by simp_all
+      light_block <;> first | rfl | simp | grind
+  · have hpos : 0 ≤ x := by simp_all
+    light_block <;> first | rfl | simp | grind
 
 /-- **emod(x, M, fr)** returns the remainder of x modulo M and changes no cell below the free
 pointer. -/
@@ -256,10 +244,10 @@ theorem _root_.Light.emod_meets {p : ℕ} (hp : P[p]? = some emodBody) (F : Pre 
       ⟨h.1, fun b hb => by rw [h.2]; exact tab.2 b hb⟩
   -- rest := |x|
   refine Ends.iteThen (fun hneg => ?_) (fun hpos => ?_)
-  · have hneg : x < 0 := by simpa using hneg
+  · have hneg : x < 0 := by assumption
     rw [abs_of_neg hneg] at hax
     exact Ends.setToThen (a : ℕ) (tail.mono (by light_time) fun _ h => h)
-  · have hpos : 0 ≤ x := by simpa using hpos
+  · have hpos : 0 ≤ x := by simp_all
     rw [abs_of_nonneg hpos] at hax
     exact Ends.setToThen (a : ℕ) (tail.mono (by light_time) fun _ h => h)
 

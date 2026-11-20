@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Claim
+public import ThreeSumApsp.Programs.LightModel
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ChoosePrime
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.Chunks
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.WriteMatrices
@@ -207,7 +207,7 @@ theorem steps_sqrt : StepsMon (fun θ => Nat.sqrt θ.D) 0 1 0 :=
 /-- `D = (√D)²`. -/
 theorem steps_D : StepsMon (fun θ => θ.D) 0 2 0 :=
   .of_dominated <| .of_le fun θ _ => by
-    simp only [mon_eq, pow_zero, mul_one, one_mul, Real.sq_sqrt θ.D.cast_nonneg, le_refl]
+    light_side [mon_eq]
 
 /-- `g ≤ √D`. -/
 private theorem steps_g : StepsMon (fun θ => θ.g) 0 1 0 :=
@@ -229,8 +229,7 @@ private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
   simp only [mon_eq, pow_zero, one_mul, pow_one]
   have hΛ : 1 ≤ θ.κ * Real.log θ.n := hθ.one_le_κ_mul_log
   rcases Nat.eq_zero_or_pos θ.U with hU | hU
-  · rw [hU, bitLen, Nat.size_zero, Nat.cast_zero]
-    linarith [hΛ]
+  · simp_all [bitLen] <;> grind
   · have hlen : 1 ≤ bitLen θ.U := Nat.size_pos.2 hU
     have hpow : 2 ^ (bitLen θ.U - 1) ≤ θ.U := Nat.lt_size.1 (Nat.sub_lt hlen one_pos)
     have hlog := Real.log_le_log (by positivity)
@@ -240,7 +239,7 @@ private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
     have hhalf := mul_le_mul_of_nonneg_left Real.one_half_lt_log_two.le
       (sub_nonneg.2 (Nat.one_le_cast.2 hlen : (1 : ℝ) ≤ bitLen θ.U))
     -- `(len - 1)/2 ≤ (len - 1) log 2 ≤ κ log n` and `1 ≤ κ log n`.
-    linarith [hlog, hhalf, hΛ]
+    linarith
 
 /-- A piece has `⌈s/g⌉ ≤ s` vertices. -/
 private theorem steps_pieceSizeNat : StepsMon (fun θ => pieceSizeNat θ.D θ.g) 0 1 0 :=
@@ -289,14 +288,9 @@ private theorem steps_tPrimes : StepsMon (fun θ => tPrimes θ.D) 0 3 0 := by
   unfold tPrimes
   growth [steps_sqrt]
 
-/-- Writing the matrix `X` of an instance takes `O(nD)` steps. -/
-theorem steps_tWriteX : StepsMon (fun θ => tWriteX θ.n θ.D (pieceSizeNat θ.D θ.g)) 1 2 0 := by
-  unfold tWriteX
-  growth [steps_n, steps_D, steps_pieceSizeNat]
-
-/-- Writing the matrix `Y` of an instance takes `O(nD)` steps. -/
-theorem steps_tWriteY : StepsMon (fun θ => tWriteY θ.n θ.D (pieceSizeNat θ.D θ.g)) 1 2 0 := by
-  unfold tWriteY
+/-- Writing one matrix of an instance takes `O(nD)` steps. -/
+theorem steps_tWrite : StepsMon (fun θ => tWrite θ.n θ.D (pieceSizeNat θ.D θ.g)) 1 2 0 := by
+  unfold tWrite
   growth [steps_n, steps_D, steps_pieceSizeNat]
 
 /-- The table of the sizes of the blocks. -/
@@ -331,7 +325,7 @@ theorem steps_tCeilDiv_num : StepsMon (fun θ => tCeilDiv θ.n (pieceSizeNat θ.
   have hnum : StepsMon (fun θ => θ.n ⌈/⌉ pieceSizeNat θ.D θ.g) 1 0 0 :=
     steps_n.of_le fun θ hθ => by
       have hsqrt : 0 < Nat.sqrt θ.D := Nat.sqrt_pos.2 ((by norm_num : 0 < 16).trans_le hθ.hD16)
-      have hpiece : 0 < pieceSizeNat θ.D θ.g := (Nat.lt_ceilDiv_iff hθ.hg).2 (by rwa [zero_mul])
+      have hpiece : 0 < pieceSizeNat θ.D θ.g := (Nat.lt_ceilDiv_iff hθ.hg).2 (by simp_all)
       exact (Nat.ceilDiv_le_iff hpiece).2 (Nat.le_mul_of_pos_right _ hpiece)
   unfold tCeilDiv
   growth [hnum]
@@ -457,12 +451,11 @@ private theorem le_mul_seven_pow {a : ℕ → ℕ} {b c x : ℕ}
     a j + b * (4 ^ j * x) + c ≤ (a 0 + a 1) * 7 ^ j := by
   induction j with
   | zero =>
-    rw [h 0]
-    omega
+    grind
   | succ j ih =>
     rw [h j, pow_succ 4, pow_succ 7]
     -- `7 a(j) + 5 b 4^j x + 2c ≤ 7 (a(j) + b 4^j x + c)`.
-    linarith [ih, Nat.zero_le (b * (4 ^ j * x)), Nat.zero_le c]
+    lia
 
 /-- `7^⌈log₂ n⌉ = O(n^{log₂ 7})`. -/
 private theorem steps_seven_pow_clog :

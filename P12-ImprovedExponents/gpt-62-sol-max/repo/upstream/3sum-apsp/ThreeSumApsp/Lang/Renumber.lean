@@ -43,24 +43,15 @@ def Program.behind (Q P : Program) : Program := Q ++ P.map (Stmt.shift Q.length)
 shifted. -/
 theorem Program.getElem?_behind_right (Q : Program) {p : ℕ} {body : Stmt} (h : P[p]? = some body) :
     (Program.behind Q P)[p + Q.length]? = some (body.shift Q.length) := by
-  rw [Program.behind, List.getElem?_append_right (Nat.le_add_left _ _), Nat.add_sub_cancel,
-    List.getElem?_map, h]
-  rfl
+  grind [Program.behind]
 
 /-- **Relocation.**  A run in P is a run, with the same states and the same number of steps, of
 the shifted statement in P placed behind Q. -/
 theorem Exec.shift {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d s σ σ' c) (Q : Program) :
     Exec lim (Program.behind Q P) d (s.shift Q.length) σ σ' c := by
-  induction h with
-  | skip => exact .skip
-  | set h => exact .set h
-  | store h₁ h₂ h₃ => exact .store h₁ h₂ h₃
-  | seq _ _ ih₁ ih₂ => exact .seq ih₁ ih₂
-  | iteTrue h₁ h₂ _ ih => exact .iteTrue h₁ h₂ ih
-  | iteFalse h₁ h₂ _ ih => exact .iteFalse h₁ h₂ ih
-  | whileFalse h₁ h₂ => exact .whileFalse h₁ h₂
-  | whileTrue h₁ h₂ _ _ ih₁ ih₂ => exact .whileTrue h₁ h₂ ih₁ ih₂
-  | call h₁ h₂ h₃ _ ih => exact .call h₁ (Program.getElem?_behind_right Q h₂) h₃ ih
+  induction h <;> try solve | constructor! <;> assumption | solve_by_elim
+  case iteFalse a b _ ih => exact .iteFalse a b ih
+  case call h₁ h₂ h₃ _ ih => exact .call h₁ (Program.getElem?_behind_right Q h₂) h₃ ih
 
 /-- What is proved about a statement in P holds for the shifted statement in P placed behind
 Q. -/

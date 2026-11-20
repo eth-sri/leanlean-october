@@ -36,8 +36,6 @@ the same notions with a list of parameters.
 
 namespace Light
 
-open ThreeSumApsp
-
 /-! ## Limits -/
 
 /-- What a run needs: the largest absolute value it forms, the number of cells it uses from the free
@@ -104,8 +102,7 @@ theorem Solves.append {task : Task} {P : Program} {p : ℕ} {T : ℕ → ℕ →
     (h : Solves task P p T need) (R : Program) : Solves task (P ++ R) p T need := by
   obtain ⟨body, hp, hb⟩ := h
   refine ⟨body, getElem?_append_of_eq_some hp R, fun R' lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact hb (R ++ R') lim d x μ fr hpre hok
+  simp_all
 
 /-- **A solver meets the specification that its task prescribes**, in every program that begins with
 its program. -/
@@ -153,7 +150,7 @@ theorem timeUpTo_le {Tn : ℕ → ℕ → ℕ} {n : ℕ} {u B : ℝ}
   rcases le_total 0 u with hu | hu
   · exact (Nat.floor_le hu).trans (le_max_left u 0)
   · rw [Nat.floor_of_nonpos hu, Nat.cast_zero]
-    exact le_max_right u 0
+    simp
 
 /-- A solver with a polynomially bounded need solves its task in its own time. -/
 theorem Solves.solvedIn {task : Task} {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
@@ -212,8 +209,7 @@ theorem SolvesN.append {task : TaskN} {P : Program} {p : ℕ} {T : List ℕ → 
     (h : SolvesN task P p T need) (R : Program) : SolvesN task (P ++ R) p T need := by
   obtain ⟨body, hp, hb⟩ := h
   refine ⟨body, getElem?_append_of_eq_some hp R, fun R' lim d x μ fr hpre hok => ?_⟩
-  rw [List.append_assoc]
-  exact hb (R ++ R') lim d x μ fr hpre hok
+  simp_all
 
 /-- A solver meets the specification of its task, at the depth d at which it runs. -/
 theorem SolvesN.meets {task : TaskN} {P₀ : Program} {p : ℕ} {T₀ : List ℕ → ℕ}

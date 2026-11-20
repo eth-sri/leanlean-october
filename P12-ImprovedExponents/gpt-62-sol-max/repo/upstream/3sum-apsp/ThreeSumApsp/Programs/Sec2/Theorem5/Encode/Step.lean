@@ -5,6 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 
@@ -26,20 +30,13 @@ cells.
 
 namespace Light.Sec2
 
-open Finset ThreeSumApsp
+open Finset
 
 namespace EncStep
 
 /-- The local variables of encStep: the arguments src, dst, n, lam, tab; the cell j of dst; the sum;
 the number s of the summand. -/
-abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Dest : ℕ := 1
-@[inherit_doc Src] abbrev Len : ℕ := 2
-@[inherit_doc Src] abbrev TermNo : ℕ := 3
-@[inherit_doc Src] abbrev Table : ℕ := 4
-@[inherit_doc Src] abbrev Cell : ℕ := 5
-@[inherit_doc Src] abbrev Acc : ℕ := 6
-@[inherit_doc Src] abbrev Var : ℕ := 7
+registers [Src, Dest, Len, TermNo, Table, Cell, Acc, Var]
 
 end EncStep
 
@@ -92,7 +89,7 @@ variable {lim : Limits} {P : Program} {d : ℕ} {μ μ' : ℕ → ℤ} {src dst 
 theorem enc_coef_mul_bound {x y V : ℤ} (hx : -1 ≤ x ∧ x ≤ 1) (hy : -V ≤ y ∧ y ≤ V) :
     -V ≤ x * y ∧ x * y ≤ V := by
   have h : x = -1 ∨ x = 0 ∨ x = 1 := by omega
-  rcases h with rfl | rfl | rfl <;> constructor <;> omega
+  lia
 
 /-- A sum of `s` numbers of absolute value at most `V` is at most `s V` in absolute value. -/
 theorem enc_sum_bound {f : ℕ → ℤ} {V : ℤ} (s : ℕ) (h : ∀ i < s, -V ≤ f i ∧ f i ≤ V) :
@@ -126,8 +123,8 @@ theorem keep (pre : EncStepPre lim μ src dst n lam tab V) (same : SameOutside �
     EncStepPre lim μ' src dst n lam tab V := by
   light_facts pre
   exact { pre with
-    coef := fun i hi => by rw [same _ (by omega)]; exact pre.coef i hi
-    vals := fun i hi => by rw [same _ (by omega)]; exact pre.vals i hi }
+    coef := fun i hi => by rw [same _ (by omega)]; simp_all
+    vals := fun i hi => by rw [same _ (by omega)]; simp_all }
 
 /-- The sums do not change when cells of `dst` are written. -/
 private theorem val_congr (pre : EncStepPre lim μ src dst n lam tab V)
@@ -154,31 +151,28 @@ theorem encStepSum_spec (pre : EncStepPre lim μ src dst n lam tab V) (hj : j < 
   -- for Var < 7
   refine Ends.for (fun s σ => σ =
       ⟨frame [src, dst, n, lam, tab, j, encStepVal μ src lam tab n j s, s], μ⟩) 7
-    encStepAdd.blockCost ?start ?round ?done ?bound (by omega) (by simp [encStepAdd]; omega)
+    encStepAdd.blockCost ?start ?round ?done ?bound (by omega) (by assumption)
   case start => simp [update_frame_setLocal, encStepVal]
-  case done => exact fun _ _ h => h ▸ done
-  case bound => exact fun s _ _ _ h => h ▸ by light_side
+  case done => simp_all
+  case bound => light_side
   case round =>
     rintro s _ hs - rfl
     -- The two cells that are read, and the sizes of the numbers.
     have hlt : s * n + j < 7 * n := Nat.mul_add_lt_mul hs hj
-    have hsum := pre.val_bounds hj (show s ≤ 7 by omega)
     have hnew := pre.summand_bounds hj hs
     have hnext := pre.val_bounds hj (show s + 1 ≤ 7 by omega)
     have hsV : ((s + 1 : ℕ) : ℤ) * V ≤ 7 * V := by
-      have hV : 0 ≤ V := by have := pre.vals 0 (by omega); omega
+      have hV : 0 ≤ V := by omega
       exact mul_le_mul_of_nonneg_right (by exact_mod_cast hs) hV
     have hcoef : ((tab : ℤ) + 7 * lam + s).toNat = tab + 7 * lam + s := by omega
     have hcell : ((src : ℤ) + s * n + j).toNat = src + s * n + j := by
-      rw [← Nat.cast_mul, ← Nat.cast_add, ← Nat.cast_add, Int.toNat_natCast]
-    have hprod : ((s * n : ℕ) : ℤ) = s * n := Nat.cast_mul s n
+      rfl
     -- Acc := Acc + tab[7 lam + Var] * src[Var n + Cell]
     unfold encStepAdd
     refine Ends.setTo (encStepVal μ src lam tab n j (s + 1)) ⟨by simp, ?_⟩ ?_
     · simp [update_frame_setLocal]
     · rw [encStepVal_succ] at hnext ⊢
-      simp [Limits.Addr, abs_le, hcoef, hcell, -abs_mul]
-      omega
+      light_block using Limits.Addr, hcoef, hcell
 
 /-- A bound on the number of steps of `encStep` on `n` cells. -/
 def tEncStep (n : ℕ) : ℕ := 217 * n + 6
@@ -194,7 +188,7 @@ theorem encStep_meets {p : ℕ} (hp : P[p]? = some encStepBody)
   -- for Cell < n: the first Cell cells of dst have been written
   refine Ends.forShape
     (fun j (s : ℤ × ℤ) μ' => ⟨frame [src, dst, n, lam, tab, j, s.1, s.2], μ'⟩)
-    (fun j μ' => μ' = wrote μ dst (encStepOut μ src lam tab n) j) n 209 (0, 0) wrote_zero.symm
+    (fun j _ μ' => μ' = wrote μ dst (encStepOut μ src lam tab n) j) n 209 (0, 0) wrote_zero.symm
     ?round ?done (by rw [update_frame_setLocal, ← frame_append_zeros _ 2]; rfl)
     (hT := by simp [tEncStep]; omega)
   case done =>
@@ -207,10 +201,10 @@ theorem encStep_meets {p : ℕ} (hp : P[p]? = some encStepBody)
       sameOutside_wrote hj.le
     unfold encStepCell
     -- Acc := 0; the sum; mem[dst + Cell] := Acc
-    light_set 0
+    light_step
     refine Ends.next _ (encStepSum_spec (pre.keep same) hj ?_ le_rfl)
     rw [pre.val_congr same hj]
-    light_store (dst + j) (encStepVal μ src lam tab n j 7)
+    light_step
     exact ⟨(encStepVal μ src lam tab n j 7, (7 : ℕ)), _, rfl, wrote_succ⟩
 
 end Light.Sec2

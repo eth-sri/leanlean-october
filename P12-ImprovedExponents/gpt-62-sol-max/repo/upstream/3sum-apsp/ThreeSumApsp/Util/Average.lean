@@ -34,8 +34,7 @@ theorem mul_card_above_average_lt {ι : Type*} {Q : Finset ι} (hQ : Q.Nonempty)
     (f : ι → ℕ) : k * #{p ∈ Q | k * ∑ p' ∈ Q, f p' < f p * #Q} < #Q := by
   set B := {p ∈ Q | k * ∑ p' ∈ Q, f p' < f p * #Q}
   rcases B.eq_empty_or_nonempty with he | hne
-  · rw [he, card_empty, mul_zero]
-    exact hQ.card_pos
+  · simp_all
   refine lt_of_mul_lt_mul_right (a := ∑ p ∈ Q, f p) ?_ (Nat.zero_le _)
   calc k * #B * ∑ p ∈ Q, f p = ∑ _p ∈ B, k * ∑ p' ∈ Q, f p' := by
         rw [sum_const, smul_eq_mul]; ring
@@ -62,6 +61,6 @@ theorem exists_forall_mul_card_le_mul_sum {ι : Type*} {Q : Finset ι} (hQ : Q.N
     _ = ∑ i, k * #(B i) := mul_sum ..
     _ < ∑ _i : Fin k, #Q :=
         sum_lt_sum_of_nonempty ⟨i₀, mem_univ i₀⟩ fun i _ => mul_card_above_average_lt hQ k (f i)
-    _ = k * #Q := by rw [sum_const, card_univ, Fintype.card_fin, smul_eq_mul]
+    _ = k * #Q := by simp
 
 end Finset

@@ -74,13 +74,11 @@ theorem pre_apsp (x : Bounded EndStatement.APSP) (hn : 1 ≤ x.n) (hU : 1 ≤ x.
     segADJ := seg_first _ _ _
     segW := by
       have := seg_second (x.n : ℤ) (apspAdj x) (apspWeights x)
-      rwa [hA] at this
+      aesop
     zeroOne := by
       intro a ha
       obtain ⟨i, j, rfl⟩ := mem_rowMajor ha
-      split_ifs
-      · exact Or.inr rfl
-      · exact Or.inl rfl
+      omega
     leW := fun a ha => abs_le_of_mem_apspWeights x ha
     belowADJ := by simp only [apspInst]; omega
     belowW := by simp only [apspInst]; omega
@@ -104,7 +102,7 @@ theorem post_apsp (x : Bounded EndStatement.APSP) (r : ℤ) (μ' : ℕ → ℤ)
     have hB : (apspWeights x).length = x.n * x.n := length_rowMajor _
     rw [input_apsp, List.length_cons, List.length_append, hA, hB]
     omega
-  refine ⟨by simp [verdictOf, EndStatement.APSP], output_apsp x.x _ fun i j => ?_⟩
+  refine ⟨by solve_by_elim, output_apsp x.x _ fun i j => ?_⟩
   rw [hlen]
   exact reachable_or_not hdist' (hcells i j).1 (hcells i j).2
 
@@ -118,7 +116,7 @@ def wrapApsp : Wrap EndStatement.APSP apTask false where
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by omega
-  vals x σ hn hU hnn := by simp [apTask, apspInst, hn, hU, hnn]
+  vals x σ hn hU hnn := by aesop
   safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
   zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt (by omega)⟩
   pre := pre_apsp

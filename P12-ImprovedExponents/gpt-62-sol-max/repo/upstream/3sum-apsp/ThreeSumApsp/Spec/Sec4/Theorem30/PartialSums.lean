@@ -59,10 +59,8 @@ theorem abs_dpValue_le (e : ℕ) (π : Cube L) : |dpValue encA encB e π| ≤ 10
         _ ≤ ∑ _lam : Term, 10 ^ e * (A * B) := Finset.sum_le_sum fun lam _ => ih _
         _ = 10 ^ (e + 1) * (A * B) := by
             rw [Finset.sum_const, Finset.card_univ, card_term, nsmul_eq_mul]
-            push_cast
             ring
-    · rw [abs_zero]
-      positivity
+    positivity
 
 /-- What the dynamic program on digits computes for a cube at depth e is at most 10^e A B in
 absolute value. -/
@@ -87,9 +85,7 @@ theorem abs_dp_partial_sum_le (e : ℕ) (π : Cube L) (ℓ : Fin L) (k : ℕ) :
       exact congrArg _ (congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, hd'⟩).symm)
     rw [hcube]
     exact abs_dpValueD_le hA hB e _
-  · rw [List.length_range]
-    push_cast
-    ring
+  grind
 
 /-! ## A query -/
 

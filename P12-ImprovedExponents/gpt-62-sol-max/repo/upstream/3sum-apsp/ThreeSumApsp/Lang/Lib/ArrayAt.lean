@@ -124,8 +124,7 @@ theorem keep (h : IndexAt μ a l N p top)
     seg := Seg.congr h.seg fun i hi => hs _ (by
       have := h.len
       have := h.below
-      rw [List.length_map] at hi
-      omega) }
+      grind) }
 
 /-- Reading a cell. -/
 theorem read (h : IndexAt μ a l N p top) (hi : i < N) : μ (a + i) = (l.getD i 0 : ℕ) :=

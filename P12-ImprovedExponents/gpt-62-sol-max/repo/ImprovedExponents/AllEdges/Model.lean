@@ -1,49 +1,31 @@
 module
 
 public import ImprovedExponents.AllEdges.Task
-public import ImprovedExponents.HostMid.Claim
+public import ImprovedExponents.Pipeline.HostBound
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Text
 
 @[expose] public section
 
-/-!
-# The time model in which "Exact Triangle" is the all-edges version
-
-Upstream's deductions between running-time claims are made for an arbitrary reading
-`M : DetTimeModel` of "is solved in time `T`", and so are ours (`HostBound`, `Claim17Mid`,
-`ExplicitFrom`, `explicitFrom_mid`).  `lightModelAE` is upstream's `lightModel` with one field
-changed: `exactTriangle T` says that some procedure solves the all-edges version (`aeTask`) within
-`T`.  The other fields are those of `lightModel`, definitionally; in particular a solver of
-Lop-AE-SparseTri is the same thing in both models.
-
-So a host that solves `aeTask` from a solver of Lop-AE-SparseTri within the bound of Theorem 17
-(charged at the true size of the middle part) gives `Claim17Mid lightModelAE …`
-(`claim17MidAE_of_host`), and the arithmetic of `ImprovedExponents.Total` then gives
-`ExplicitFrom lightModelAE δ 1`: all-edges Exact Triangle in time `n^{3-δ} log n`.
--/
+/-! The time model in which Exact Triangle means its all-edges version. -/
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec HostMid
+open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 
 /-- Upstream's `lightModel`, with "Exact Triangle" read as all-edges Exact Triangle. -/
 noncomputable def lightModelAE : DetTimeModel :=
   { lightModel with exactTriangle := SolvedIn aeTask }
 
-@[simp] theorem lightModelAE_exactTriangle :
-    lightModelAE.exactTriangle = SolvedIn aeTask := rfl
-
-@[simp] theorem lightModelAE_lopDetect : lightModelAE.lopDetect = lightModel.lopDetect := rfl
-
-@[simp] theorem lightModelAE_thinProduct :
-    lightModelAE.thinProduct = lightModel.thinProduct := rfl
-
-@[simp] theorem lightModelAE_minPlusProduct :
-    lightModelAE.minPlusProduct = lightModel.minPlusProduct := rfl
-
-@[simp] theorem lightModelAE_apsp : lightModelAE.apsp = lightModel.apsp := rfl
+/-- The host's time bound for every solver, expressed as a function of the solver's time. -/
+def ObeysBound17Mid (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (List ℕ → ℕ) → ℕ → ℕ → ℕ) : Prop :=
+  ∃ C : ℝ, 0 ≤ C ∧ ∀ (Tn : List ℕ → ℕ) (T : ℕ → ℕ → ℕ → ℝ),
+    (∀ m d w w' : ℕ, 1 ≤ m → 1 ≤ d → w ≤ w' → (Tn [m, d, w] : ℝ) ≤ T m d w') →
+    ∀ (n U : ℕ) (κ : ℝ), 16 ≤ D n → D n ≤ n → 1 ≤ g n → (g n : ℝ) ≤ Real.sqrt (D n) → 1 ≤ κ →
+      (U : ℝ) ≤ (n : ℝ) ^ κ → (time Tn n U : ℝ) ≤
+        hostCharge MM n (D n) (g n) (midSize (D n) (g n)) C κ T
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Claim.lean
-/-- **From an all-edges host to the claim**, as `ImprovedExponents.HostMid.claim17Mid_of_host`:
+/-- **From an all-edges host to the claim.**
 `time` and `need` are the host's time and need as functions of those of the solver. -/
 theorem claim17MidAE_of_host (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (List ℕ → ℕ) → ℕ → ℕ → ℕ)
     (need : (List ℕ → Need) → ℕ → ℕ → Need)
@@ -51,7 +33,7 @@ theorem claim17MidAE_of_host (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (Lis
       SolvesN lopDetectTask Q pS Tn r →
       ∃ (R : Program) (p' : ℕ), Solves aeTask (Q ++ R) p' (time Tn) (need r) ∧ PolyNeed (need r))
     (bound : ObeysBound17Mid MM D g time) :
-    Claim17Mid lightModelAE MM D g := by
+    HostBound lightModelAE MM D g (fun n => midSize (D n) (g n)) := by
   obtain ⟨C, hC, bound⟩ := bound
   refine ⟨C, hC, fun T hT => ?_⟩
   obtain ⟨Q, pS, Tn, r, hpoly, hsolves, hle⟩ := hT

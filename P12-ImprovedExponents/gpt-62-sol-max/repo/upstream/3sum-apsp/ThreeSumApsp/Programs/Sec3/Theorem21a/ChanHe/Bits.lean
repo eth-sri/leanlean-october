@@ -5,6 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+import ThreeSumApsp.Lang.Registers
+
+import ThreeSumApsp.Lang.Symbolic
+
+public import ThreeSumApsp.Lang.Lib.Filter
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.Passes
@@ -37,185 +42,61 @@ open ThreeSumApsp
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp.Spec ThreeSumApsp.ChanHe
+open ThreeSumApsp.ChanHe
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
 /-! ## pick -/
 
-/-- What pick has written after it has seen the first i elements. -/
-def pickPart (Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) (i : ℕ) : List ℤ :=
-  passList
-    (fun i => decide (BT.getD (i * Λ + β) 0 = x ∧ (two = 0 ∨ BT.getD (i * Λ + β') 0 = x')))
-    (fun i => L.getD i 0) (List.range L.length) i
-
-/-- One more element: it is written if its digit β is x and, in case two is not 0, its digit β' is
-x'. -/
-theorem pickPart_succ (Λ β β' : ℕ) (x x' two : ℤ) {L : List ℤ} (BT : List ℤ) {i : ℕ}
-    (hi : i < L.length) :
-    pickPart Λ β β' x x' two L BT (i + 1) =
-      if BT.getD (i * Λ + β) 0 = x ∧ (two = 0 ∨ BT.getD (i * Λ + β') 0 = x') then
-        pickPart Λ β β' x x' two L BT i ++ [L.getD i 0]
-      else pickPart Λ β β' x x' two L BT i := by
-  have hi' : i < (List.range L.length).length := by simpa using hi
-  split_ifs with h
-  · exact (passList_succ_of _ hi' (by simpa using h)).trans (by simp [pickPart])
-  · exact passList_succ_of_not _ hi' (by simpa using h)
-
-/-- At the end all the selected elements are written. -/
-theorem pickPart_length (Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) :
-    pickPart Λ β β' x x' two L BT L.length = pickList Λ β β' x x' two L BT := by
-  have h := passList_length
-    (fun i => decide (BT.getD (i * Λ + β) 0 = x ∧ (two = 0 ∨ BT.getD (i * Λ + β') 0 = x')))
-    (fun i => L.getD i 0) (List.range L.length)
-  rwa [List.length_range] at h
-
 namespace Pick
+registers [Len, Src, Table, Width, PosA, DigitA, PosB, DigitB, Two, Out, Idx, Written]
 
-/-- The locals of pick.  The arguments: len, s, bt, Λ, the first position β and digit x, the second
-position β' and digit x', the number two, which is 0 if only the first digit counts, and out.  Then
-the counter, the number of cells written, and the address of the digits of the current element. -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Table : ℕ := 2
-@[inherit_doc Len] abbrev Width : ℕ := 3
-@[inherit_doc Len] abbrev PosA : ℕ := 4
-@[inherit_doc Len] abbrev DigitA : ℕ := 5
-@[inherit_doc Len] abbrev PosB : ℕ := 6
-@[inherit_doc Len] abbrev DigitB : ℕ := 7
-@[inherit_doc Len] abbrev Two : ℕ := 8
-@[inherit_doc Len] abbrev Out : ℕ := 9
-@[inherit_doc Len] abbrev Idx : ℕ := 10
-@[inherit_doc Len] abbrev Written : ℕ := 11
-@[inherit_doc Len] abbrev Row : ℕ := 12
-
+def test : Guard :=
+  let row := v Table +' v Idx *' v Width
+  .both (.atom (M (row +' v PosA) =' v DigitA))
+    (.either (.atom (v Two =' k 0)) (.atom (M (row +' v PosB) =' v DigitB)))
 end Pick
 
 open Pick in
-/-- The current element is selected. -/
-def pickTake : Stmt :=
-  .store (v Out +' v Written) (M (v Src +' v Idx)) ;;
-  .set Written (v Written +' k 1)
-
-open Pick in
-/-- The end of a round of pick. -/
-def pickNext : Stmt :=
-  .set Row (v Row +' v Width) ;;
-  .set Idx (v Idx +' k 1)
-
-open Pick in
-/-- One round of pick. -/
-def pickRound : Stmt :=
-  .ite (M (v Row +' v PosA) =' v DigitA)
-    (.ite (v Two =' k 0) pickTake (.ite (M (v Row +' v PosB) =' v DigitB) pickTake .skip))
-    .skip ;;
-  pickNext
-
-open Pick in
-/-- pick(len, s, bt, Λ, β, x, β', x', two, out): len numbers stand at s, and the table of their
-digits at bt.  Copies to out the numbers whose digit β is x and, unless two is 0, whose digit β' is
-x', and returns how many there are. -/
 def pickBody : Stmt :=
-  .set Idx (k 0) ;;
-  .set Written (k 0) ;;
-  .set Row (v Table) ;;
-  .while (v Idx <' v Len) pickRound ;;
-  .set Len (v Written)
+  filterPass Idx Len Out Written test (M (v Src +' v Idx)) ;; .set Len (v Written)
 
-/-- One more element, in terms of the cells that the program reads. -/
-theorem Pick.Ctx.step {μ μ' : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {L BT : List ℤ}
-    (C : Pick.Ctx lim μ s bt out Λ β β' L BT) (hsame : SameOutside μ μ' out L.length)
-    (hi : i < L.length) (x x' two : ℤ) :
-    pickPart Λ β β' x x' two L BT (i + 1) =
-      if μ' (bt + i * Λ + β) = x ∧ (two = 0 ∨ μ' (bt + i * Λ + β') = x') then
-        pickPart Λ β β' x x' two L BT i ++ [μ' (s + i)]
-      else pickPart Λ β β' x x' two L BT i := by
-  light_facts C
-  have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
-  have hread : ∀ γ < Λ, μ' (bt + i * Λ + γ) = BT.getD (i * Λ + γ) 0 := fun γ hγ => by
-    rw [hsame _ (by omega), Nat.add_assoc]
-    exact C.segTable.getD (by have := C.lenTable; omega) 0
-  rw [hread β C.posA, hread β' C.posB, hsame (s + i) (by omega), C.segSrc.getD hi 0]
-  exact pickPart_succ Λ β β' x x' two BT hi
-
-/-- The invariant of the loop of pick before round number i: the elements selected among the first i
-stand at out, no cell outside the output has changed, and Row holds the address bt + iΛ of the
-digits of element i, which is called row. -/
-def PickInv (μ : ℕ → ℤ) (s bt out Λ β β' : ℕ) (x x' two : ℤ) (L BT : List ℤ) (i : ℕ)
-    (σ : State) : Prop :=
-  ∃ (μ' : ℕ → ℤ) (row : ℕ), row = bt + i * Λ ∧
-    σ = ⟨frame [L.length, s, bt, Λ, β, x, β', x', two, out, i,
-      (pickPart Λ β β' x x' two L BT i).length, row], μ'⟩ ∧
-    Seg μ' out (pickPart Λ β β' x x' two L BT i) ∧ SameOutside μ μ' out L.length
-
-/-- One round of pick keeps the invariant. -/
-theorem pickRound_runs {μ : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {x x' two : ℤ} {L BT : List ℤ}
-    (C : Pick.Ctx lim μ s bt out Λ β β' L BT) (hi : i < L.length) {σ : State}
-    (hI : PickInv μ s bt out Λ β β' x x' two L BT i σ) :
-    pickRound.Runs lim σ (PickInv μ s bt out Λ β β' x x' two L BT (i + 1)) := by
-  obtain ⟨μ', row, hrow, rfl, hseg, hsame⟩ := hI
-  have hstep := C.step hsame hi x x' two
-  rw [← hrow] at hstep
-  have hnext : row + Λ = bt + (i + 1) * Λ := by rw [hrow, Nat.add_mul, Nat.one_mul, Nat.add_assoc]
-  -- what the addresses are compared with
-  light_facts C
-  have hle : (pickPart Λ β β' x x' two L BT i).length ≤ i := length_passList_le _ _ _ _
-  have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
-  by_cases hA : μ' (row + β) ≠ x
-  · -- the first digit differs: pickNext
-    rw [if_neg (by simp [hA])] at hstep
-    exact ⟨by light_side [pickRound, pickNext, hA], μ', row + Λ, hnext,
-      by simp [pickRound, pickNext, update_frame_setLocal, hA, hstep], hstep ▸ hseg, hsame⟩
-  rw [not_not] at hA
-  by_cases hsel : two = 0 ∨ μ' (row + β') = x'
-  · -- selected, by the test of Two or by the second digit: pickTake ; pickNext
-    rw [if_pos ⟨hA, hsel⟩] at hstep
-    refine ⟨?safe, Function.update μ' (out + (pickPart Λ β β' x x' two L BT i).length) (μ' (s + i)),
-      row + Λ, hnext, ?state, hstep ▸ hseg.snoc _, hsame.write (by omega) _⟩
-    -- the two cases of the test `two = 0`
-    case safe =>
-      by_cases h2 : two = 0
-      · simp [pickRound, pickTake, pickNext, hA, eq_true h2, Limits.Addr, abs_le]; omega
-      · simp [pickRound, pickTake, pickNext, hA, h2, hsel.resolve_left h2, Limits.Addr, abs_le]
-        omega
-    case state =>
-      by_cases h2 : two = 0
-      · simp [pickRound, pickTake, pickNext, update_frame_setLocal, hA, eq_true h2, hstep]
-      · simp [pickRound, pickTake, pickNext, update_frame_setLocal, hA, h2,
-          hsel.resolve_left h2, hstep]
-  · -- the second digit differs: pickNext
-    rw [if_neg (by simp [hsel])] at hstep
-    rw [not_or] at hsel
-    exact ⟨by light_side [pickRound, pickNext, hA, hsel.1, hsel.2], μ',
-      row + Λ, hnext,
-      by simp [pickRound, pickNext, update_frame_setLocal, hA, hsel.1, hsel.2, hstep],
-      hstep ▸ hseg, hsame⟩
-
-/-- **pick** meets its specification. -/
+open Pick in
 theorem pick_spec {p : ℕ} (hP : P[p]? = some pickBody) : PickSpec lim P p := by
   intro d s bt out Λ β β' x x' two L BT μ C
+  let good i := decide (BT.getD (i * Λ + β) 0 = x ∧ (two = 0 ∨ BT.getD (i * Λ + β') 0 = x'))
+  let part i := ((List.range i).filter good).map (fun i => L.getD i 0)
   light_facts C
   refine Meets.of_body hP ?_
-  unfold tPick pickBody
-  -- Idx := 0 ; Written := 0 ; Row := Table
-  light_set (0 : ℕ)
-  light_set (0 : ℕ)
-  light_set bt
-  -- while Idx < Len
-  refine Ends.next _ (Ends.whileBlock (PickInv μ s bt out Λ β β' x x' two L BT) L.length
-    ?start ?round ?done (hT := le_rfl)) (by simp [pickRound, pickTake, pickNext]; omega)
-  case start => exact ⟨μ, bt, by simp, by simp [pickPart], by simp [pickPart], .refl⟩
-  case round =>
-    intro i σ hi hI
-    obtain ⟨μ', row, -, rfl, -⟩ := id hI
-    exact ⟨by light_side, by light_side, pickRound_runs C hi hI⟩
-  case done =>
-    -- Len := Written
-    rintro _ ⟨μ', row, -, rfl, hseg, hsame⟩
-    rw [pickPart_length] at hseg
-    exact ⟨by light_side, by light_side, Ends.setTo ((pickList Λ β β' x x' two L BT).length : ℕ)
-      ⟨rfl, hseg, hsame⟩ (by simp [pickPart_length])
-      (by simp [pickRound, pickTake, pickNext]; omega)⟩
+  unfold pickBody
+  refine Ends.next _ (Ends.filterPass _ _ (fun i D => D = part i) rfl ?_ ?_
+    C.space_le C.spaceOut rfl rfl (hT := le_rfl)) (by light_time [filterStep, test, tPick])
+  · intro i D ν hi hD H
+    have il := Nat.mul_add_le_mul hi (le_refl Λ)
+    have hread := (H.same (s + i) (by have := H.size; omega)).trans (C.segSrc.getD hi 0)
+    have htab γ (hγ : γ < Λ) : ν (bt + i * Λ + γ) = BT.getD (i * Λ + γ) 0 := by
+      rw [H.same _ (by have := H.size; omega), Nat.add_assoc]
+      exact C.segTable.getD (by omega) 0
+    have haddr (γ : ℕ) : ((bt : ℤ) + i * (Λ : ℤ) + γ).toNat = bt + i * Λ + γ := by
+      simp only [← Int.natCast_mul, ← Int.natCast_add, Int.toNat_natCast]
+    have h₁ := htab β C.posA
+    have h₂ := htab β' C.posB
+    suffices ∀ {ok : Bool}, ok = good i → part (i + 1) =
+        if ok then part i ++ [L.getD i 0] else part i by
+      subst D
+      refine ⟨by light_side [test], by light_side, ?_, ?_⟩
+      · intro h
+        have he : good i = true := by simpa [test, good, haddr, h₁, h₂] using h
+        simpa [hread] using (this he.symm).symm
+      · intro h
+        have he : good i = false := by simpa [test, good, haddr, h₁, h₂] using h
+        simpa using (this he.symm).symm
+    rintro ok rfl
+    simp [part, List.range_succ, List.filter_append, List.map_append]
+    split <;> simp_all
+  · rintro D ν rfl H
+    exact Ends.setLast ⟨rfl, H.seg, H.same.mono le_rfl (Nat.add_le_add_left H.size _)⟩
+      (hT := by light_time [filterStep, test, tPick])
 
 /-! ## bits -/
 
@@ -248,18 +129,7 @@ namespace Bits
 /-- The locals of bits.  The arguments: len, s, V, Λ, bt and the free pointer, which is not used.
 Then the counter, the power 2^Λ, the address of the digits of the current element, the address of
 the current digit, the rest of the label, and the counter of the loop that computes the power. -/
-abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Bound : ℕ := 2
-@[inherit_doc Len] abbrev Width : ℕ := 3
-@[inherit_doc Len] abbrev Table : ℕ := 4
-@[inherit_doc Len] abbrev Free : ℕ := 5
-@[inherit_doc Len] abbrev Idx : ℕ := 6
-@[inherit_doc Len] abbrev Pow : ℕ := 7
-@[inherit_doc Len] abbrev Row : ℕ := 8
-@[inherit_doc Len] abbrev Cur : ℕ := 9
-@[inherit_doc Len] abbrev Rest : ℕ := 10
-@[inherit_doc Len] abbrev Cnt : ℕ := 11
+registers [Len, Src, Bound, Width, Table, _, Idx, Pow, Row, Cur, Rest, Cnt]
 
 end Bits
 
@@ -310,8 +180,7 @@ theorem bitsPow_ends {μ : ℕ → ℤ} {len s V bt fr : ℤ} {Λ B : ℕ} (hB :
   have hB1 : (1 : ℤ) ≤ B := by exact_mod_cast Nat.one_le_two_pow.trans hB
   unfold bitsPow
   -- Pow := 1 ; Cnt := 0
-  light_set 1
-  light_set (0 : ℕ)
+  light_steps
   -- while Cnt < Width
   refine Ends.whileBlock (BitsPowInv μ len s V bt fr Λ) Λ ?start ?round ?done
   case start => simp [BitsPowInv]
@@ -437,7 +306,7 @@ theorem bits_spec {p : ℕ} (hP : P[p]? = some bitsBody) : BitsSpec lim P p := b
   light_piece (bitsPow_ends (lim := lim) (B := 4 * V + 4) C.pow_le
     (by push_cast; omega)) with _ rfl
   -- Row := Table
-  light_set bt
+  light_step
   -- for Idx < Len
   have htime := Nat.mul_le_mul_left L.length (show 1 + (23 * Λ + 19) + 7 ≤ 60 * Λ + 40 by omega)
   refine Ends.for (BitsInv μ s V Λ bt fr L) L.length (23 * Λ + 19) ?start ?round ?done ?bound

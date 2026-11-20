@@ -57,16 +57,6 @@ private theorem sOf_pos (hD : 16 ≤ D) : (0 : ℝ) < sOf D := by
 theorem pieceSize_pos (hD : 16 ≤ D) (hg1 : 1 ≤ g) : 0 < pieceSize D g :=
   Nat.ceil_pos.mpr (div_pos (sOf_pos hD) (by exact_mod_cast hg1))
 
-/-- `⌈s/g⌉ ≤ s` because `g ≥ 1`. -/
-private theorem pieceSize_le_sOf (hg1 : 1 ≤ g) : pieceSize D g ≤ sOf D :=
-  Nat.ceil_le.mpr (div_le_self (Nat.cast_nonneg _) (by exact_mod_cast hg1))
-
-/-- Proof of Theorem 17, "pieces [...] of at most ⌈s/g⌉ vertices each": `|C_k| ≤ ⌈s/g⌉`, because the
-numbers of the vertices of the piece number `k` lie in `[k ⌈s/g⌉, (k + 1) ⌈s/g⌉)`. -/
-theorem card_piece_le (hD : 16 ≤ D) (hg1 : 1 ≤ g) (n k : ℕ) :
-    (piece n D g k).card ≤ pieceSize D g :=
-  Finset.univ.card_filter_div_eq_le (fun _ _ _ _ h => Fin.ext h) (pieceSize_pos hD hg1) k
-
 /-- Proof of Theorem 17: "so that h ≤ ⌈ng/s⌉". -/
 theorem numPieces_le (hD : 16 ≤ D) (hg1 : 1 ≤ g) :
     numPieces n D g ≤ ⌈(n : ℝ) * (g : ℝ) / (sOf D : ℝ)⌉₊ := by
@@ -76,8 +66,7 @@ theorem numPieces_le (hD : 16 ≤ D) (hg1 : 1 ≤ g) :
   have hs : (sOf D : ℝ) ≤ (pieceSize D g : ℝ) * (g : ℝ) := (div_le_iff₀ hg).mp (Nat.le_ceil _)
   refine Nat.ceil_mono ?_
   rw [div_le_div_iff₀ hsize (sOf_pos hD)]
-  calc (n : ℝ) * (sOf D : ℝ) ≤ (n : ℝ) * ((pieceSize D g : ℝ) * (g : ℝ)) := by gcongr
-    _ = (n : ℝ) * (g : ℝ) * (pieceSize D g : ℝ) := by ring
+  nlinarith
 
 /-! ### Residues -/
 
@@ -119,10 +108,7 @@ private theorem one_le_gap_mul (D : ℕ) :
       hsq ▸ pow_lt_pow_left₀ hlt (Real.sqrt_nonneg _) two_ne_zero
     have hnat : D < (sOf D + 1) ^ 2 := by exact_mod_cast hreal
     exact_mod_cast hnat
-  calc (1 : ℝ) ≤ ((sOf D : ℝ) + 1) ^ 2 - Real.sqrt D ^ 2 := by linarith [hinteger, hsq]
-    _ = ((sOf D : ℝ) + 1 - Real.sqrt D) * ((sOf D : ℝ) + 1 + Real.sqrt D) := by ring
-    _ ≤ ((sOf D : ℝ) + 1 - Real.sqrt D) * (2 * Real.sqrt D + 1) :=
-        mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+  nlinarith
 
 /-- The inequality behind "at most p + √D [...] chunks": `n² < (s + 1) ⌊n²/√D⌋ + p`.
 
@@ -141,7 +127,7 @@ private theorem sq_lt_mul_queryCap_add (hD : 16 ≤ D) (hDn : D ≤ n)
   have hx3 : r ^ 3 ≤ x := by
     rw [hx, le_div_iff₀ (by linarith)]
     calc r ^ 3 * r = (r ^ 2) ^ 2 := by ring
-      _ = (D : ℝ) ^ 2 := by rw [hr, Real.sq_sqrt (Nat.cast_nonneg D)]
+      _ = (D : ℝ) ^ 2 := by simp_all
       _ ≤ (n : ℝ) ^ 2 := by gcongr
   have hxδ : r / 2 + 1 ≤ x * δ := by
     refine le_of_mul_le_mul_right ?_ (show 0 < 2 * r + 1 by linarith)
@@ -149,7 +135,7 @@ private theorem sq_lt_mul_queryCap_add (hD : 16 ≤ D) (hDn : D ≤ n)
           -- `r³ ≥ 4r²` and `r² ≥ 4r`
           linarith [mul_le_mul_of_nonneg_right hr4 (sq_nonneg r),
             mul_le_mul_of_nonneg_right hr4 (show 0 ≤ r by linarith)]
-      _ ≤ x * 1 := by rw [mul_one]; exact hx3
+      _ ≤ x * 1 := by simp_all
       _ ≤ x * (δ * (2 * r + 1)) :=
           mul_le_mul_of_nonneg_left hgap (le_trans (by positivity) hx3)
       _ = x * δ * (2 * r + 1) := by ring
@@ -158,10 +144,10 @@ private theorem sq_lt_mul_queryCap_add (hD : 16 ≤ D) (hDn : D ≤ n)
     calc (n : ℝ) ^ 2 = x * r := hxr.symm
       _ ≤ x * r + x * δ - ((sOf D : ℝ) + 1) + r / 2 := by
           -- `s + 1 ≤ r + 1 ≤ xδ + r/2`
-          linarith [hxδ, hs]
-      _ = ((sOf D : ℝ) + 1) * (x - 1) + r / 2 := by rw [hδ]; ring
+          linarith
+      _ = ((sOf D : ℝ) + 1) * (x - 1) + r / 2 := by ring
       _ < ((sOf D : ℝ) + 1) * (queryCap n D : ℝ) + p :=
-          add_lt_add_of_lt_of_le (mul_lt_mul_of_pos_left (by linarith [hfloor]) (by positivity)) hp
+          add_lt_add_of_lt_of_le (mul_lt_mul_of_pos_left (by linarith) (by positivity)) hp
   exact_mod_cast hmain
 
 /-- Proof of Theorem 17: the two facts used for the count of the instances, "s ≥ √D − 1 ≥ 3√D/4
@@ -190,7 +176,7 @@ theorem mem_residueClass (hp : p ≠ 0) (ϱ : Fin p) (q : Fin n × Fin n) :
     q ∈ T.residueClass p ϱ ↔ ϱ = resFin hp (T.wAB q.1 q.2) := by
   rw [← modEq_iff_eq_resFin]
   simp only [residueClass, Finset.mem_filter, Finset.mem_univ, true_and]
-  exact ⟨Int.ModEq.symm, Int.ModEq.symm⟩
+  solve_by_elim
 
 /-- The sets `W_ϱ` have `n²` pairs in all. -/
 private theorem sum_card_residueClass (hp : p ≠ 0) :
@@ -201,7 +187,7 @@ private theorem sum_card_residueClass (hp : p ≠ 0) :
         refine Finset.sum_congr rfl fun ϱ _ => congrArg Finset.card ?_
         ext q
         rw [T.mem_residueClass hp]
-        simp [eq_comm]
+        grind
     _ = (Finset.univ : Finset (Fin n × Fin n)).card :=
         (Finset.card_eq_sum_card_fiberwise fun _ _ => Finset.mem_coe.mpr (Finset.mem_univ _)).symm
     _ = n ^ 2 := by simp [sq]
@@ -222,10 +208,7 @@ private theorem totalChunks_le_add_sOf (hD : 16 ≤ D) (hDn : D ≤ n) (hp0 : p 
   by_contra hmany
   have hmul : (p + sOf D + 1) * queryCap n D ≤ T.totalChunks D p * queryCap n D :=
     Nat.mul_le_mul_right _ (by omega)
-  rw [show (p + sOf D + 1) * queryCap n D = p * queryCap n D + (sOf D + 1) * queryCap n D by
-    ring] at hmul
-  -- `hsum` and `hmul` give `(s + 1) cap + p ≤ n²`, against `hpairs`.
-  omega
+  lia
 
 /-- Proof of Theorem 17: "There are at most p + √D ≤ 2√D chunks in all."
 
@@ -242,33 +225,6 @@ theorem totalChunks_le (hD : 16 ≤ D) (hDn : D ≤ n) (hp : p ∈ primesInRange
 
 /-! ### The instances -/
 
-/-- Proof of Theorem 17: "middle part C_k × ℤ_p, of size at most sp ≤ D".  So each instance is an
-instance of Lop-AE-SparseTri(n, D). -/
-theorem middleAtMost_lopInstance (hD : 16 ≤ D) (hg1 : 1 ≤ g) (hp : p ∈ primesInRange D)
-    (ι : InstanceIndex p) : (T.lopInstance D g p ι).MiddleAtMost D := by
-  obtain ⟨-, -, hlt⟩ := mem_primesInRange.mp hp
-  have hsp : (sOf D : ℝ) * (p : ℝ) ≤ D :=
-    calc (sOf D : ℝ) * (p : ℝ) ≤ Real.sqrt D * Real.sqrt D :=
-          mul_le_mul (sOf_le_sqrt D) hlt.le (Nat.cast_nonneg p) (Real.sqrt_nonneg _)
-      _ = D := Real.mul_self_sqrt (Nat.cast_nonneg D)
-  calc Fintype.card ({c : Fin n // c ∈ piece n D g ι.2.2} × Fin p)
-      = (piece n D g ι.2.2).card * p := by
-        rw [Fintype.card_prod, Fintype.card_coe, Fintype.card_fin]
-    _ ≤ sOf D * p := Nat.mul_le_mul_right p
-        ((card_piece_le hD hg1 n ι.2.2).trans (pieceSize_le_sOf hg1))
-    _ ≤ D := by exact_mod_cast hsp
-
-/-- Proof of Theorem 17, "For each chunk 𝒬 ⊆ W_ϱ and each piece C_k": `(ϱ, j, k)` is the index of an
-instance exactly if `j` is the number of a chunk of `W_ϱ` and `k` the number of a piece. -/
-theorem mem_instanceIndices (ι : InstanceIndex p) :
-    ι ∈ T.instanceIndices D g p ↔
-      ι.2.1 < numChunks (T.residueClass p ι.1) (queryCap n D) ∧ ι.2.2 < numPieces n D g := by
-  obtain ⟨ϱ, j, k⟩ := ι
-  simp only [instanceIndices, Finset.mem_biUnion, Finset.mem_univ, true_and,
-    Finset.mem_image, Finset.mem_product, Finset.mem_range, Prod.mk.injEq, Prod.exists]
-  exact ⟨fun ⟨_, _, _, h, h1, h2, h3⟩ => by subst h1 h2 h3; exact h,
-    fun h => ⟨ϱ, j, k, h, rfl, rfl, rfl⟩⟩
-
 /-- There are as many instances as chunks times pieces. -/
 theorem card_instanceIndices (D g p : ℕ) :
     (T.instanceIndices D g p).card = T.totalChunks D p * numPieces n D g := by
@@ -279,10 +235,7 @@ theorem card_instanceIndices (D g p : ℕ) :
       Finset.card_range, Finset.card_range]
   · intro ϱ _ ϱ' _ hne
     rw [Function.onFun, Finset.disjoint_left]
-    intro x hx hx'
-    obtain ⟨_, _, rfl⟩ := Finset.mem_image.mp hx
-    obtain ⟨_, _, h⟩ := Finset.mem_image.mp hx'
-    exact hne (congrArg Prod.fst h).symm
+    grind
 
 /-- Proof of Theorem 17: "There are at most 2√D h ≤ 2√D(ng/s + 1) ≤ 4ng instances". -/
 theorem card_instanceIndices_le (hD : 16 ≤ D) (hDn : D ≤ n) (hg1 : 1 ≤ g)
@@ -307,49 +260,12 @@ theorem card_instanceIndices_le (hD : 16 ≤ D) (hDn : D ≤ n) (hg1 : 1 ≤ g)
   calc ((T.instanceIndices D g p).card : ℝ)
       = (T.totalChunks D p : ℝ) * (numPieces n D g : ℝ) := by
         rw [card_instanceIndices, Nat.cast_mul]
-    _ ≤ 2 * Real.sqrt D * (numPieces n D g : ℝ) := by gcongr; exact hchunks.trans hchunks'
+    _ ≤ 2 * Real.sqrt D * (numPieces n D g : ℝ) := by gcongr; linarith
     _ ≤ 2 * Real.sqrt D * ((n : ℝ) * (g : ℝ) / (sOf D : ℝ) + 1) := by gcongr
-    _ ≤ 4 * (n : ℝ) * (g : ℝ) := by linarith [hmain, hng, hsqrt]
+    _ ≤ 4 * (n : ℝ) * (g : ℝ) := by linarith
 
 end TriangleInstance
 
 /-! ### The neighborhoods in an instance -/
-
-/-- Section 3.1, offline Set Disjointness: "the sets are the neighborhoods in M of the vertices of A
-and B".  The set of `a ∈ A`. -/
-def LopInstance.nbrA (I : LopInstance n) (a : Fin n) : Set I.M := {v | I.adjA a v}
-
-/-- Section 3.1, offline Set Disjointness: the set of `b ∈ B`. -/
-def LopInstance.nbrB (I : LopInstance n) (b : Fin n) : Set I.M := {v | I.adjB v b}
-
-/-- The graph of a function into `Fin p` has as many points as the domain. -/
-private theorem ncard_graph {α : Type} [Fintype α] (f : α → Fin p) :
-    {v : α × Fin p | v.2 = f v.1}.ncard = Fintype.card α := by
-  have h : {v : α × Fin p | v.2 = f v.1} = Set.range fun c : α => (c, f c) := by
-    ext ⟨c, σ⟩
-    simp [eq_comm]
-  rw [h, ← Set.image_univ, Set.ncard_image_of_injective _ fun c c' hc => congrArg Prod.fst hc,
-    Set.ncard_univ, Nat.card_eq_fintype_card]
-
-/-- Section 3.1, "The reductions below [...] produce at most n²/√D query pairs and sets of at most
-√D elements", and Remark 20, "every vertex of A has O(√D/g) neighbors in the middle part": in an
-instance of the reduction, a vertex of `A` or of `B` has exactly one neighbor `(c, σ)` for every
-`c ∈ C_k`, hence at most `⌈s/g⌉` neighbors.  (And `⌈s/g⌉ ≤ s ≤ √D`; for `g ≤ √D` also
-`⌈s/g⌉ ≤ 2√D/g`, `pieceSize_le_two_mul_sqrt_div`.) -/
-theorem TriangleInstance.ncard_nbr_lopInstance_le (T : TriangleInstance ℤ n) (hD : 16 ≤ D)
-    (hg1 : 1 ≤ g) (hp : p ≠ 0) (ι : InstanceIndex p) :
-    (∀ a, ((T.lopInstance D g p ι).nbrA a).ncard ≤ pieceSize D g) ∧
-    (∀ b, ((T.lopInstance D g p ι).nbrB b).ncard ≤ pieceSize D g) := by
-  -- The neighbors of a vertex are the graph of the function that sends `c` to its label.
-  have hgraph : ∀ (f : {c : Fin n // c ∈ piece n D g ι.2.2} → ℤ),
-      {v : {c : Fin n // c ∈ piece n D g ι.2.2} × Fin p |
-        ((v.2 : ℕ) : ℤ) ≡ f v.1 [ZMOD (p : ℤ)]}.ncard ≤ pieceSize D g := by
-    intro f
-    refine le_trans (le_of_eq ?_) (card_piece_le hD hg1 n ι.2.2)
-    rw [← Fintype.card_coe, ← ncard_graph fun c => resFin hp (f c)]
-    congr 1
-    ext v
-    exact modEq_iff_eq_resFin hp v.2 _
-  exact ⟨fun a => hgraph fun c => T.wAC a c + ((ι.1 : ℕ) : ℤ), fun b => hgraph fun c => -T.wBC b c⟩
 
 end ThreeSumApsp

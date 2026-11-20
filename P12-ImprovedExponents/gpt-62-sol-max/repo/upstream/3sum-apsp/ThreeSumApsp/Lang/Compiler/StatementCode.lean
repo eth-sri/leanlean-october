@@ -227,19 +227,11 @@ def dispatcher (n : ℕ) : List Instr :=
 /-! ## Lengths -/
 
 private theorem length_digitsCode (c : ℤ) (L : List ℕ) : (digitsCode c L).length = digitsLen L := by
-  induction L with
-  | nil => rfl
-  | cons d L ih =>
-    simp only [digitsCode, digitsLen, List.length_append, ih, List.length_singleton]
-    split_ifs <;> rfl
+  induction L <;> grind [digitsCode, digitsLen]
 
 /-- The code of an expression has the length defined on the text. -/
 theorem length_compileExpr (e : Expr) (k : ℕ) : (compileExpr e k).length = e.size := by
-  induction e generalizing k with
-  | const n => exact length_digitsCode _ _
-  | var x => rfl
-  | op o a b iha ihb => simp +arith [compileExpr, Expr.size, iha, ihb]
-  | load a ih => simp [compileExpr, Expr.size, ih]
+  induction e generalizing k <;> grind [length_digitsCode, compileExpr, Expr.size]
 
 /-- The code of a test has the length defined on the text. -/
 theorem length_compileCond (c : Cond) (l : ℕ) : (compileCond c l).length = c.size := by
@@ -247,9 +239,7 @@ theorem length_compileCond (c : Cond) (l : ℕ) : (compileCond c l).length = c.s
 
 /-- The code for the arguments of a call has the length defined on the text. -/
 theorem length_argsCode (es : List Expr) (k : ℕ) : (argsCode es k).length = argsSize es := by
-  induction es generalizing k with
-  | nil => rfl
-  | cons e es ih => simp [argsCode, argsSize, length_compileExpr, ih]
+  induction es generalizing k <;> simp_all [argsCode, argsSize, length_compileExpr]
 
 /-- Two instructions for each local variable of the new frame. -/
 private theorem length_frameInit (F n : ℕ) : (frameInit F n).length = 2 * F := by
@@ -274,8 +264,8 @@ theorem length_compileStmt (G : CodeLayout) (s : Stmt) (pos : ℕ) :
   | set x e => simp [compileStmt, Stmt.size, length_compileExpr]
   | store a e => simp +arith [compileStmt, Stmt.size, length_compileExpr]
   | seq s t ihs iht => simp [compileStmt, Stmt.size, ihs, iht]
-  | ite c s t ihs iht => simp +arith [compileStmt, Stmt.size, ihs, iht, length_compileCond]
-  | «while» c s ih => simp +arith [compileStmt, Stmt.size, ih, length_compileCond]
+  | ite c s t ihs iht => grind [compileStmt, Stmt.size, length_compileCond]
+  | «while» c s ih => grind [compileStmt, Stmt.size, length_compileCond]
   | call p args x => simp [compileStmt, Stmt.size, length_callCode]
 
 end Compiler
@@ -357,7 +347,7 @@ theorem Stmt.width_while_le_iff : (Stmt.while c s).width ≤ F ↔ c.width ≤ F
 
 theorem Stmt.width_call_le_iff :
     (Stmt.call p args x).width ≤ F ↔ x < F ∧ args.length ≤ F ∧ ∀ e ∈ args, e.width ≤ F := by
-  simp only [Stmt.width, max_le_iff, maxOf_le_iff, Nat.succ_le_iff]
+  simp_all [Stmt.width, maxOf_le_iff] <;> omega
 
 end width
 

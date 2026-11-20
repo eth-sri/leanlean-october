@@ -7,40 +7,44 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArray
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Contract
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Pruned.Contract
+public import ThreeSumApsp.Programs.Sec2.Theorem5.LibraryContracts
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.Sec2.Theorem5.WordSize
 public import ThreeSumApsp.Programs.Sec2.Theorem5.SharedStage
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Solver
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
+public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.Sec2.Lemma10
+public import ThreeSumApsp.Sec2.Orders
+public import ThreeSumApsp.Sec2.Tiling
+public import ThreeSumApsp.Util.Choose
+public import ThreeSumApsp.Util.Sum
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.BandCounters
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Binomials
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Coefficients
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Digits
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Subsets
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Codes
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Gather
-public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Sort
+public import Mathlib.Data.List.GetD
+public import Mathlib.Tactic.Linarith
+public import ThreeSumApsp.Lang.Lib.Copy
+public import ThreeSumApsp.Lang.Lib.Seg
+public import ThreeSumApsp.Lang.Tactics
+public import ThreeSumApsp.Util.CountingSort
 
-/-!
-# Theorem 5: the program
-
-The list of the procedures of Theorem 5's program, in the order of their numbers.  An entry is the
-specification of a procedure together with a bound on its time, a constant times a shape.  In every
-program that begins with this list, the procedures that the shared stage calls meet their entries
-with the constant cShared5 (sharedCallees_of_prefix), and those that the solver calls with the
-constant cMain5 (mainCallees_of_prefix).
--/
+/-! Shared tables and encoding operations used by the pruned solver. -/
 
 @[expose] public section
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.WordRam
 
-/-- The program of Theorem 5.  The numbers of the procedures begin with 1; number 0 is empty. -/
+
+/-- The retained procedures of Theorem 5, at their original numbers. -/
 def program5 : Program :=
-  [.skip, sharedBody, powBody, binomBody, sqrtBody, Subsets.subsetTableBody, countersBody,
-   digitsBody, coefBody, bandArrayBody, encStepBody, encodeBody pEncStep pEncode, encodeBandsBody,
-   Wanted.wantedBody, countSortBody, sortWantedBody, segBoundsBody, unionBody, pickBody, prunedBody,
-   runTilesBody, reportBody, fillBody, copyBody, gatherBody, thm5Body]
+  [.skip, .skip, powBody, binomBody, sqrtBody, Subsets.subsetTableBody, countersBody,
+    digitsBody, coefBody, bandArrayBody, encStepBody] ++ List.replicate 15 .skip
 
 /-- A procedure of program5 is a procedure, with the same number, of every program that begins with
 program5. -/
@@ -63,9 +67,5 @@ theorem sharedCallees_of_prefix (R : Program) (lim : Limits) (std : Std lim) :
   subsets := subsets_entry std (at_prefix rfl R) (by decide)
   counters := counters_entry std (at_prefix rfl R) (by decide)
   digits := digits_entry std (at_prefix rfl R) (by decide)
-  bandsL := encodeBandsL_entry std (at_prefix rfl R) (bandArrayL_entry std (at_prefix rfl R))
-    (encodeL_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
-  bandsR := encodeBandsR_entry std (at_prefix rfl R) (bandArrayR_entry std (at_prefix rfl R))
-    (encodeR_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
 
 end Light.Sec2

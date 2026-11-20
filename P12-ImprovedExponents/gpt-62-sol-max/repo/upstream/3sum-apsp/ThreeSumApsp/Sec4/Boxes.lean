@@ -49,13 +49,12 @@ variable {L : ℕ}
 @[simp]
 theorem Cube.mem_leaves {π : Cube L} {τ : Leaf L} :
     τ ∈ Cube.leaves π ↔ ∀ ℓ, π ℓ = CubeSymbol.star ∨ π ℓ = CubeSymbol.term (τ ℓ) := by
-  simp only [Cube.leaves, mem_filter, mem_univ, true_and]
-  rfl
+  simp [Cube.leaves] <;> aesop
 
 /-- Where a cube has a term, its leaves have that term. -/
 theorem Cube.eq_of_mem_leaves {π : Cube L} {τ : Leaf L} (hτ : τ ∈ Cube.leaves π) {ℓ : Fin L}
     {lam : Term} (h : π ℓ = CubeSymbol.term lam) : τ ℓ = lam := by
-  simpa [h, eq_comm] using Cube.mem_leaves.1 hτ ℓ
+  simp_all <;> grind
 
 /-- Membership in the set of star levels of a cube. -/
 @[simp]
@@ -73,10 +72,7 @@ theorem Cube.mem_P0Levels {π : Cube L} {ℓ : Fin L} :
 theorem Cube.disjoint_starLevels_P0Levels (π : Cube L) :
     Disjoint (Cube.starLevels π) (Cube.P0Levels π) := by
   rw [disjoint_left]
-  intro ℓ hstar hP0
-  rw [Cube.mem_starLevels] at hstar
-  rw [Cube.mem_P0Levels, hstar] at hP0
-  cases hP0
+  simp_all
 
 /-- The terms that a leaf of a cube may have at a level with the given symbol. -/
 private def symbolTerms : CubeSymbol → Finset Term
@@ -87,16 +83,13 @@ private def symbolTerms : CubeSymbol → Finset Term
 private lemma leaves_eq_piFinset (π : Cube L) :
     Cube.leaves π = Fintype.piFinset fun ℓ => symbolTerms (π ℓ) := by
   ext τ
-  rw [Cube.mem_leaves, Fintype.mem_piFinset]
-  refine forall_congr' fun ℓ => ?_
-  cases h : π ℓ <;> simp [symbolTerms, eq_comm]
+  simp_all [Cube.mem_leaves, symbolTerms] <;> grind
 
 /-- Section 4.2: "a cube with e stars has 10^e leaves". -/
 theorem Cube.card_leaves (π : Cube L) :
     (Cube.leaves π).card = 10 ^ (Cube.starLevels π).card := by
   have hcard : ∀ ℓ, (symbolTerms (π ℓ)).card = if ℓ ∈ Cube.starLevels π then 10 else 1 := by
-    intro ℓ
-    cases h : π ℓ <;> simp [symbolTerms, h, card_term]
+    simp [symbolTerms] <;> aesop
   rw [leaves_eq_piFinset, Fintype.card_piFinset]
   simp only [hcard]
   rw [prod_ite_mem_const, one_pow, mul_one]
@@ -133,31 +126,20 @@ at level `ℓ`. -/
 theorem Cube.mem_leaves_replace {π : Cube L} {ℓ : Fin L} (hℓ : π ℓ = CubeSymbol.star)
     (lam : Term) (τ : Leaf L) :
     τ ∈ Cube.leaves (Cube.replace π ℓ lam) ↔ τ ∈ Cube.leaves π ∧ τ ℓ = lam := by
-  rw [Cube.mem_leaves, Cube.mem_leaves, Cube.replace,
-    Function.forall_update_iff π fun k s => s = CubeSymbol.star ∨ s = CubeSymbol.term (τ k)]
-  constructor
-  · rintro ⟨hlam, h⟩
-    refine ⟨fun k => ?_, by simpa [eq_comm] using hlam⟩
-    by_cases hk : k = ℓ
-    · exact Or.inl (hk ▸ hℓ)
-    · exact h k hk
-  · rintro ⟨h, rfl⟩
-    exact ⟨Or.inr rfl, fun k _ => h k⟩
+  simp_all [Cube.mem_leaves, Cube.replace] <;> grind
 
 /-- Replacing a star by a term removes its level from the star levels. -/
 theorem Cube.starLevels_replace (π : Cube L) (ℓ : Fin L) (lam : Term) :
     Cube.starLevels (Cube.replace π ℓ lam) = (Cube.starLevels π).erase ℓ := by
   ext k
-  by_cases hk : k = ℓ <;> simp [Cube.replace, hk]
+  simp_all [Cube.replace] <;> grind
 
 /-- After a star is replaced by a term, the symbols `P₀` are at the old levels and possibly at the
 level of that star. -/
 theorem Cube.P0Levels_replace_subset (π : Cube L) (ℓ : Fin L) (lam : Term) :
     Cube.P0Levels (Cube.replace π ℓ lam) ⊆ insert ℓ (Cube.P0Levels π) := by
   intro k hk
-  by_cases hkl : k = ℓ
-  · exact mem_insert.2 (Or.inl hkl)
-  · simpa [Cube.replace, hkl] using hk
+  simp_all [Cube.replace] <;> grind
 
 /-! ### Putting stars into a leaf (Section 4.2) -/
 
@@ -174,8 +156,7 @@ theorem Cube.mem_leaves_starAt (F : Finset (Fin L)) (τ : Leaf L) :
 @[simp]
 theorem Cube.starLevels_starAt (F : Finset (Fin L)) (τ : Leaf L) :
     Cube.starLevels (Cube.starAt F τ) = F := by
-  ext ℓ
-  by_cases h : ℓ ∈ F <;> simp [Cube.starAt, h]
+  ext <;> simp [Cube.starAt]
 
 /-- The symbols `P₀` of `Cube.starAt F τ` are at the levels outside `F` at which `τ` chooses `P₀`.
 -/
@@ -183,7 +164,7 @@ theorem Cube.starLevels_starAt (F : Finset (Fin L)) (τ : Leaf L) :
 theorem Cube.P0Levels_starAt (F : Finset (Fin L)) (τ : Leaf L) :
     Cube.P0Levels (Cube.starAt F τ) = ThreeSumApsp.P0Levels τ \ F := by
   ext ℓ
-  by_cases h : ℓ ∈ F <;> simp [Cube.starAt, h]
+  simp [Cube.starAt] <;> aesop
 
 /-- If `τ` chooses `P₀` at the levels of `F`, then replacing the stars of `Cube.starAt F τ` with
 `P₀` gives back `τ`. -/
@@ -208,29 +189,26 @@ theorem Cube.starAt_starLevels_starsToP0 (π : Cube L) :
     Cube.starAt (Cube.starLevels π) (Cube.starsToP0 π) = π := by
   funext ℓ
   unfold Cube.starAt Cube.starsToP0
-  cases h : π ℓ <;> simp [h]
+  aesop
 
 /-- Section 4.2: "a cube without stars is a single leaf", namely the leaf `Cube.starsToP0 π`. -/
 theorem Cube.eq_ofLeaf_of_starLevels_eq_empty (π : Cube L) (hπ : Cube.starLevels π = ∅) :
     π = Cube.ofLeaf (Cube.starsToP0 π) := by
   conv_lhs => rw [← Cube.starAt_starLevels_starsToP0 π, hπ]
-  funext ℓ
-  simp [Cube.starAt, Cube.ofLeaf]
+  rfl
 
 /-- The leaf obtained by replacing the stars of a cube with `P₀` chooses `P₀` where the cube has a
 star or `P₀`. -/
 theorem P0Levels_starsToP0 (π : Cube L) :
     P0Levels (Cube.starsToP0 π) = Cube.starLevels π ∪ Cube.P0Levels π := by
   ext ℓ
-  rw [mem_P0Levels, mem_union, Cube.mem_starLevels, Cube.mem_P0Levels]
-  unfold Cube.starsToP0
-  cases h : π ℓ <;> simp
+  simp [Cube.mem_starLevels, Cube.mem_P0Levels, Cube.starsToP0] <;> aesop
 
 /-- Proof of Lemma 29: the leaf obtained by replacing the stars of a cube with `P₀` chooses `P₀` at
 as many levels as the cube has symbols `P₀` or stars. -/
 theorem card_P0Levels_starsToP0 (π : Cube L) :
     (P0Levels (Cube.starsToP0 π)).card = (Cube.starLevels π).card + (Cube.P0Levels π).card := by
-  rw [P0Levels_starsToP0, card_union_of_disjoint (Cube.disjoint_starLevels_P0Levels π)]
+  simp [P0Levels_starsToP0, Cube.disjoint_starLevels_P0Levels]
 
 /-! ### A box only contains leaves of order at least `t` (Section 4.2) -/
 
@@ -246,9 +224,7 @@ its e star levels", and nowhere else. -/
 theorem P0Levels_subset_of_mem_leaves {π : Cube L} {τ : Leaf L} (hτ : τ ∈ Cube.leaves π) :
     P0Levels τ ⊆ Cube.P0Levels π ∪ Cube.starLevels π := by
   intro ℓ hℓ
-  rw [mem_P0Levels] at hℓ
-  rw [mem_union, Cube.mem_P0Levels, Cube.mem_starLevels, ← hℓ]
-  exact (Cube.mem_leaves.1 hτ ℓ).symm
+  simp_all <;> grind
 
 /-- Section 4.2: "so a box only contains leaves of order at least t". -/
 theorem le_order_of_mem_leaves {m t : ℕ} (ht : t ≤ m) {π : Cube L} (hπ : IsBox m t π)
@@ -275,7 +251,7 @@ private lemma card_below_strictMonoOn (S : Finset (Fin L)) :
     StrictMonoOn (fun ℓ => (S.filter fun x => x < ℓ).card) S := by
   intro ℓ hℓ ℓ' _ hlt
   refine card_lt_card ⟨fun x hx => ?_, fun hsub => ?_⟩
-  · exact mem_filter.2 ⟨(mem_filter.1 hx).1, (mem_filter.1 hx).2.trans hlt⟩
+  · grind
   · exact lt_irrefl ℓ (mem_filter.1 (hsub (mem_filter.2 ⟨hℓ, hlt⟩))).2
 
 /-- Each of the `k` lowest levels of `S` is below every other level of `S`. -/
@@ -299,12 +275,12 @@ theorem eq_lowest_of_lt {S T : Finset (Fin L)} (hT : T ⊆ S)
     refine fun hℓ => ⟨hT hℓ, card_lt_card ⟨fun x hx => ?_, fun hsub => ?_⟩⟩
     · by_contra hxT
       exact lt_asymm (mem_filter.1 hx).2 (h ℓ hℓ x (mem_sdiff.2 ⟨(mem_filter.1 hx).1, hxT⟩))
-    · exact lt_irrefl ℓ (mem_filter.1 (hsub hℓ)).2
+    grind
   · -- All of `T` is below a level of `S` outside `T`.
     rintro ⟨hℓS, hcard⟩
     by_contra hℓT
     refine absurd (card_le_card fun x hx => ?_) (not_le.2 hcard)
-    exact mem_filter.2 ⟨hT hx, h x hx ℓ (mem_sdiff.2 ⟨hℓS, hℓT⟩)⟩
+    grind
 
 /-- The numbers of levels of `S` below the levels of `S` are `0, …, |S| - 1`. -/
 private lemma image_card_below (S : Finset (Fin L)) :
@@ -321,8 +297,7 @@ theorem card_lowest (k : ℕ) (S : Finset (Fin L)) : (lowest k S).card = min k S
   -- `{0, …, |S| - 1}`, and by definition `lowest k S` is the preimage of the numbers below `k`.
   have hinj := (card_below_strictMonoOn S).injOn.mono (coe_subset.2 (lowest_subset k S))
   have hrange : ((range S.card).filter fun n => n < k) = range (min k S.card) := by
-    ext n
-    simp only [mem_filter, mem_range, lt_min_iff, and_comm]
+    grind
   rw [← card_image_of_injOn hinj, ← card_range (min k S.card), ← hrange, ← image_card_below,
     filter_image]
   rfl
