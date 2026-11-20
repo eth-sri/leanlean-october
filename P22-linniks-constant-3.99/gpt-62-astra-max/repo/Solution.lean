@@ -1,26 +1,14 @@
 module
 import GradedNear.Builder
-import GradedNear.BurgessReduction
-import GradedNear.Cert.Bins
 import GradedNear.Cert.Sound
-import GradedNear.Conj
-import GradedNear.Entry
-import GradedNear.Interval.Sound
-import GradedNear.Parabolic
-import GradedNear.Response
-import GradedNear.Row
-import GradedNear.Row.CheckSound
-import GradedNear.Statement
-import GradedNear.ZeroForm
-import IntervalCore
-import LeafNumCore
+import GradedNear.Cert.Bins
 
 
 /-!
 # The graded near lemma and the leaf-certificate checker (Palomar Solution)
 
 The compared theorems (see `comparator.json`) are proved in the library:
-* `GradedNear.graded_near_lemma`: `GradedNear/Statement.lean`, assembled in `GradedNear/Main.lean`;
+* `GradedNear.graded_near_lemma`: assembled in `GradedNear/Main.lean`;
 * `GradedNear.response_lemma`: `GradedNear/Response.lean`;
 * `GradedNear.graded_near_threshold`: `GradedNear/ZeroForm.lean`;
 * `GradedNear.keptBound_single`, `GradedNear.keptBound_pair` and
@@ -31,4 +19,3 @@ The compared theorems (see `comparator.json`) are proved in the library:
   `GradedNear/Cert/Relax.lean`.
 -/
 
-@[expose] public section

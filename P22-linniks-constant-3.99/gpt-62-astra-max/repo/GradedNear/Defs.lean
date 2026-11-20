@@ -5,9 +5,8 @@ public import Mathlib
 /-!
 # Definitions: the graded near lemma, its zero form, and the leaf-LP certificates
 
-All definitions that the compared theorems use are in this one module, so that the Palomar
-Challenge (`scripts/make_challenge.py`) is a verbatim copy that Lean elaborates identically
-(including the auxiliary proof constants it abstracts from definitions).
+The literature inputs, the statement-side data and the executable certificate checker
+are collected here. The proof modules use the same normalizations as `Challenge.lean`.
 
 References:
 * [HB] D. R. Heath-Brown, *Zero-free regions for Dirichlet L-functions, and the least prime
@@ -79,6 +78,13 @@ structure Condition2 (f : ℝ → ℝ) : Prop where
 
 /-! ## Prime sums and zero sums -/
 
+/-- Cartesian coordinates for the shifted Laplace arguments. -/
+scoped notation "xy[" x "," y "]" => ((x : ℝ) : ℂ) + ((y : ℝ) : ℂ) * I
+/-- Normalized horizontal distance of a zero from the one-line. -/
+scoped notation "λρ[" q "]" ρ:arg => (1 - Complex.re ρ) * Real.log q
+/-- Membership of the local disc at height `γ`. -/
+scoped notation "inDisc[" γ "," δ "]" ρ:arg => ‖(1 + (γ : ℂ) * Complex.I) - ρ‖ ≤ δ
+
 /-- The smoothed prime sum `Σ_{n ≥ 1} Λ(n) χ(n) n^{-s} f(log n / log q)` of [X, Lemmas 3.1–3.2]
 (Heath-Brown's `K(s, χ)` is its real part). -/
 def primeSum {q : ℕ} (χ : DirichletCharacter ℂ q) (f : ℝ → ℝ) (s : ℂ) : ℂ :=
@@ -91,7 +97,7 @@ in `Re ρ > 0`, so only nontrivial zeros enter; there Mathlib's `LFunction χ` (
 character inducing `χ`. For `χ ≠ 1` it is entire and not identically zero, so the zero set in the
 disc is finite and the `finsum` is a genuine finite sum. -/
 def zeroSum {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (f : ℝ → ℝ) (s : ℂ) (δ : ℝ) : ℝ :=
-  ∑ᶠ ρ ∈ {ρ : ℂ | ‖(1 + (s.im : ℂ) * I) - ρ‖ ≤ δ ∧ DirichletCharacter.LFunction χ ρ = 0},
+  ∑ᶠ ρ ∈ {ρ : ℂ | inDisc[s.im, δ] ρ ∧ DirichletCharacter.LFunction χ ρ = 0},
     (analyticOrderNatAt (DirichletCharacter.LFunction χ) ρ : ℝ) *
       (laplace f ((s - ρ) * (Real.log q : ℂ))).re
 
@@ -127,6 +133,10 @@ def XylourisLemma32 : Prop :=
         (primeSum χ f s).re ≤
           -(Real.log q * zeroSum χ f s δ) + f 0 / 6 * Real.log q + ε * Real.log q
 
+/-- The common numerical estimate in the two statements of Burgess's bound. -/
+local notation "BurgessEstimate " χ:arg q:arg N:arg H:arg C:arg ε:arg =>
+  ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤ C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+
 /-- Burgess's bound with `r = 3`: for every `ε > 0`, every non-principal character `χ` mod `q`,
 every `N ≥ 0` and every `1 ≤ H ≤ q`, `|Σ_{N < n ≤ N + H} χ(n)| ≪_ε q^{1/9 + ε} H^{2/3}`.
 [HB, Lemma 2.1, k = 3, p. 7] states this for primitive `χ` and `N ≥ 1`; the remark after it notes
@@ -137,8 +147,7 @@ primitive. The form below also follows from [HB, Lemma 2.1] by Möbius inversion
 def BurgessBound : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q, χ ≠ 1 →
     ∀ N H : ℕ, 1 ≤ H → H ≤ q →
-      ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+      BurgessEstimate χ q N H C ε
 
 /-- [HB, Lemma 2.1, p. 7], the case `k = 3`, as printed: "Let `q ≥ 1` and let `χ` be a primitive
 character modulo `q`. Let `N ≥ 1` and `1 ≤ H ≤ q`. Then for any `ε > 0` we have
@@ -154,19 +163,21 @@ statement in `burgessBound_of_primitive`. -/
 def BurgessPrimitive : Prop :=
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ q : ℕ, 1 ≤ q → ∀ χ : DirichletCharacter ℂ q, χ.IsPrimitive →
     ∀ N H : ℕ, 1 ≤ N → 1 ≤ H → H ≤ q →
-      ‖∑ n ∈ Finset.Ioc N (N + H), χ n‖ ≤
-        C * (q : ℝ) ^ ((1 : ℝ) / 9 + ε) * (H : ℝ) ^ ((2 : ℝ) / 3)
+      BurgessEstimate χ q N H C ε
 
 /-- The Selberg weights `ψ_d = μ(d) log(V/d) / log V` for `d ≤ V`, and `0` otherwise
 ([HB, (11.6)] with `U = 1`). -/
 def grahamWeight (V : ℝ) (d : ℕ) : ℝ :=
   if (d : ℝ) ≤ V then (μ d : ℝ) * Real.log (V / d) / Real.log V else 0
 
+/-- The Selberg majorant in Graham's estimate and in the cell measures. -/
+scoped notation "sieveNu " V:arg n:arg => ((∑ d ∈ Nat.divisors n, grahamWeight V d)^2 : ℝ)
+
 /-- Graham's estimate ([G, p. 84]; [HB, (11.13)] with `U = 1`, in the range `N ≥ V`):
 `Σ_{n ≤ N} (Σ_{d ∣ n} ψ_d)² = N / log V + O(N / log² V)`. -/
 def GrahamEstimate : Prop :=
   ∃ C V₀ : ℝ, ∀ V N : ℝ, V₀ ≤ V → V ≤ N →
-    |∑ n ∈ Finset.Icc 1 ⌊N⌋₊, (∑ d ∈ n.divisors, grahamWeight V d) ^ 2 - N / Real.log V| ≤
+    |∑ n ∈ Finset.Icc 1 ⌊N⌋₊, sieveNu V n - N / Real.log V| ≤
       C * N / Real.log V ^ 2
 
 /-! ## The data of the graded near lemma -/
@@ -178,16 +189,11 @@ of the paper's Definition 8.1; Heath-Brown's Lemma 12.1 corresponds to the limit
 anchor offsets. -/
 structure NearData where
   f : ℝ → ℝ
-  xf : ℝ
-  Bf : ℝ
+  (xf Bf : ℝ)
   g : ℝ → ℝ
-  xg : ℝ
-  Bg : ℝ
-  s₁ : ℝ
-  s : ℝ
+  (xg Bg s₁ s : ℝ)
   m : ℕ
-  t : ℕ → ℝ
-  h : ℕ → ℝ
+  (t h : ℕ → ℝ)
   ε' : ℝ
   Δ : Finset ℝ
 
@@ -202,17 +208,25 @@ def sieveH (u : ℝ) : ℝ :=
 /-- The Cauchy–Schwarz weight `ω(u) = g(u) e^{s₁ u} + H(u)`. -/
 def omega (u : ℝ) : ℝ := D.g u * Real.exp (D.s₁ * u) + D.sieveH u
 
+/-- Detector density in the first Cauchy–Schwarz factor. -/
+scoped[GradedNear] notation "density " D:arg u:arg =>
+  Real.exp (2 * NearData.s D * u) * NearData.f D u ^ 2 / NearData.omega D u
+
 /-- `I_B(s) = ∫ e^{2su} f(u)² / ω(u) du`. -/
-def IB : ℝ := ∫ u in Set.Ioi (0 : ℝ), Real.exp (2 * D.s * u) * D.f u ^ 2 / D.omega u
+def IB : ℝ := ∫ u in Set.Ioi (0 : ℝ), density D u
 
 /-- The sieve level exponent `δ_k = (t_k - 1/3)/2 - ε'` (the level is `q^{δ_k}`). -/
 def level (k : ℕ) : ℝ := (D.t k - 1 / 3) / 2 - D.ε'
 
+/-- Contributions of the pole and of the sieve cells to the diagonal. -/
+scoped[GradedNear] notation "gramDiag " D:arg δ:arg =>
+  ∫ u in Set.Ioi (0 : ℝ), NearData.g D u * Real.exp ((NearData.s₁ D - 2*δ)*u)
+scoped[GradedNear] notation "sieveDiag " D:arg δ:arg =>
+  ∑ k ∈ Finset.range (NearData.m D), NearData.h D k * Real.exp (-2 * δ * NearData.t D k) * (NearData.t D (k+1)^2 - NearData.t D k^2) / (2*NearData.level D k)
+
 /-- `D(δ) = ∫ g(u) e^{(s₁ - 2δ)u} du + Σ_k h_k e^{-2δ t_k} (t_{k+1}² - t_k²) / (2 δ_k)`. -/
 def Dδ (δ : ℝ) : ℝ :=
-  (∫ u in Set.Ioi (0 : ℝ), D.g u * Real.exp ((D.s₁ - 2 * δ) * u)) +
-    ∑ k ∈ Finset.range D.m,
-      D.h k * Real.exp (-2 * δ * D.t k) * (D.t (k + 1) ^ 2 - D.t k ^ 2) / (2 * D.level k)
+  gramDiag D δ + sieveDiag D δ
 
 /-- `d₁ = g(0)/6`, the conductor charge of an off-diagonal Gram entry. -/
 def d₁ : ℝ := D.g 0 / 6
@@ -238,30 +252,36 @@ end NearData
 offsets; the response anchor of entry `j` is `s_j = s - δ_j`. -/
 structure Entries (q : ℕ) (ι : Type*) where
   χ : ι → DirichletCharacter ℂ q
-  γ : ι → ℝ
-  δ : ι → ℝ
+  (γ δ : ι → ℝ)
 
 variable {q : ℕ} {ι : Type*}
 
+/-- The anchor of an individual detector entry. -/
+scoped notation "anchorOf " D:arg E:arg j:arg => NearData.s D - Entries.δ E j
+/-- Test point with normalized real displacement `σ` and height `γ`. -/
+scoped notation "testPoint " q:arg σ:arg γ:arg => xy[1 - σ / Real.log q, γ]
+local notation "primeResponse " χ:arg f:arg q:arg σ:arg γ:arg =>
+  -Complex.re (primeSum χ f (testPoint q σ γ)) / Real.log q
+
 /-- The response `R_j = -𝓛⁻¹ Σ Λ(n) Re(χ_j(n) n^{-(1 - s_j/𝓛 + iγ_j)}) f(log n / 𝓛)`. -/
 def response (D : NearData) (E : Entries q ι) (j : ι) : ℝ :=
-  -(primeSum (E.χ j) D.f
-      (((1 - (D.s - E.δ j) / Real.log q : ℝ) : ℂ) + (E.γ j : ℂ) * I)).re / Real.log q
+  primeResponse (E.χ j) D.f q (anchorOf D E j) (E.γ j)
+
+/-- Same-character Gram value at the signed displacement and height gap. -/
+scoped notation "gramAt[" q "]" D:arg E:arg j:arg k:arg => Complex.re (laplace (NearData.g D)
+  xy[-(NearData.s₁ D - Entries.δ E j - Entries.δ E k), (Entries.γ E j - Entries.γ E k)*Real.log q])
 
 /-- The pair excess `e_j = Σ_{k ≠ j, χ_k = χ_j} (Re G(-σ_{jk} + i y_{jk}) - d₁)_+`, where
 `G` is the Laplace transform of `g`, `σ_{jk} = s₁ - δ_j - δ_k` and `y_{jk} = (γ_j - γ_k) log q`. -/
 def pairExcess [Fintype ι] (D : NearData) (E : Entries q ι) (j : ι) : ℝ :=
   ∑ k ∈ sameCharOthers E.χ j,
-    max 0 ((laplace D.g (((-(D.s₁ - E.δ j - E.δ k)) : ℝ) +
-      (((E.γ j - E.γ k) * Real.log q : ℝ) : ℂ) * I)).re - D.d₁)
+    max 0 (gramAt[q] D E j k - D.d₁)
 
 /-- The safe-anchor hypothesis at height `T'`: no non-principal `L(s, ψ)` mod `q` vanishes
 at a point `ρ` with `|Im ρ| ≤ T'` and `Re ρ > 1 - s₁ / log q`. -/
 def SafeAnchor (q : ℕ) [NeZero q] (s₁ T' : ℝ) : Prop :=
   ∀ ψ : DirichletCharacter ℂ q, ψ ≠ 1 → ∀ ρ : ℂ, DirichletCharacter.LFunction ψ ρ = 0 →
     |ρ.im| ≤ T' → ρ.re ≤ 1 - s₁ / Real.log q
-
-end GradedNear
 
 /-!
 ## The zero form: responses, zero terms, multiplicities, kept bounds
@@ -272,29 +292,24 @@ end GradedNear
 * `keptBound D E S η j`: the lower bound for the response of entry `j` from its kept zeros.
 -/
 
-namespace GradedNear
-
 /-- The response of an entry `(χ, γ, σ)`: `-𝓛⁻¹ Re primeSum(χ, f, (1 - σ/𝓛) + iγ)`. -/
 def responseAt {q : ℕ} (χ : DirichletCharacter ℂ q) (f : ℝ → ℝ) (σ γ : ℝ) : ℝ :=
-  -(primeSum χ f (((1 - σ / Real.log q : ℝ) : ℂ) + (γ : ℂ) * I)).re / Real.log q
+  primeResponse χ f q σ γ
 
 /-- The term of a zero `ρ` in the response of `(σ, γ)`:
 `Re F((1 - Re ρ) 𝓛 - σ + i (γ - Im ρ) 𝓛)`. -/
 def zeroTerm (f : ℝ → ℝ) (q : ℕ) (σ γ : ℝ) (ρ : ℂ) : ℝ :=
-  (laplace f ((((1 - ρ.re) * Real.log q - σ : ℝ)) +
-    (((γ - ρ.im) * Real.log q : ℝ) : ℂ) * I)).re
+  (laplace f xy[λρ[q] ρ - σ, (γ - ρ.im)*Real.log q]).re
 
 /-- The multiplicity of `ρ` as a zero of `L(s, χ)`, as a real number. -/
 abbrev zmult {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (ρ : ℂ) : ℝ :=
   (analyticOrderNatAt (DirichletCharacter.LFunction χ) ρ : ℝ)
 
-variable {q : ℕ} {ι : Type*}
-
 /-- The lower bound for the response of entry `j` given by its kept zeros `S_j`:
 `Σ_{ρ ∈ S_j} m_ρ Re F((λ_ρ - s_j) + i(γ_j - Im ρ)𝓛) - f(0)/6 - η`. -/
 def keptBound [NeZero q] (D : NearData) (E : Entries q ι) (Sz : ι → Finset ℂ) (η : ℝ)
     (j : ι) : ℝ :=
-  ∑ ρ ∈ Sz j, zmult (E.χ j) ρ * zeroTerm D.f q (D.s - E.δ j) (E.γ j) ρ - D.f 0 / 6 - η
+  ∑ ρ ∈ Sz j, zmult (E.χ j) ρ * zeroTerm D.f q (anchorOf D E j) (E.γ j) ρ - D.f 0 / 6 - η
 
 end GradedNear
 
@@ -341,31 +356,19 @@ def HS : ℤ := 5 * 10 ^ 9
 /-- A column: objective, far weight, count cost, hidden-count cost, second-family indicator,
 and per-row feature and diagonal. -/
 structure Col where
-  G : ℤ
-  W : ℤ
-  C : ℤ
-  NH : ℤ
-  E : ℤ
-  v : List ℤ
-  D : List ℤ
-deriving Repr
+  (G W C NH E : ℤ)
+  (v D : List ℤ)
 
 /-- A near row: its radius `d` and its fixed family terms `(n, v, D)`. -/
 structure RowHead where
   d : ℤ
   fam : List (ℤ × ℤ × ℤ)
-deriving Repr
 
 /-- The integer data of a leaf. -/
 structure Leaf where
   cols : List Col
   rows : List RowHead
-  F : ℤ
-  ng : ℤ
-  n2 : ℤ
-  first : ℤ
-  final : ℤ
-deriving Repr
+  (F ng n2 first final : ℤ)
 
 /-! ## The checker -/
 
@@ -421,30 +424,27 @@ def budgets (L : Leaf) (box : List (ℤ × ℤ)) (cs : List ℕ) : List ℤ :=
 /-- Nonnegative integer duals: far `Y`, count `V`, hidden count `U`, the free dual `P - M` of the
 second-family equality, and one multiplier per near row. -/
 structure Duals where
-  Y : ℕ
-  V : ℕ
-  U : ℕ
-  P : ℕ
-  M : ℕ
+  (Y V U P M : ℕ)
   Z : List ℕ
-deriving Repr
 
 /-- The certificate of one case. -/
 inductive CaseCert where
   | excluded
   | duals (du : Duals)
-deriving Repr
+
+/-- Pair a dual certificate with either a column or the right-hand sides. The
+multiplier of the equality row is the signed difference `P - M`. -/
+local notation "dualDot " du:arg w:arg c:arg n:arg e:arg z:arg =>
+  ((Duals.Y du : ℤ) * w + (Duals.V du : ℤ) * c + (Duals.U du : ℤ) * n +
+    ((Duals.P du : ℤ) - Duals.M du) * e +
+    List.sum (List.zipWith (fun k v => (k : ℤ) * v) (Duals.Z du) z))
 
 /-- The value certified by duals for one case (`none` if a column inequality fails). -/
 def caseValue (L : Leaf) (box : List (ℤ × ℤ)) (cs : List ℕ) (du : Duals) : Option ℤ :=
   if du.Z.length = L.rows.length ∧
       L.cols.all (fun col => decide (DS * col.G ≤
-        (du.Y : ℤ) * col.W + (du.V : ℤ) * col.C + (du.U : ℤ) * col.NH +
-          ((du.P : ℤ) - du.M) * col.E +
-          (List.zipWith (fun z c => (z : ℤ) * c) du.Z (colCosts col box cs)).sum)) then
-    some (ceilDiv ((du.Y : ℤ) * L.F + (du.V : ℤ) * (2 * S) + (du.U : ℤ) * (L.ng * S) +
-      ((du.P : ℤ) - du.M) * (L.n2 * S) +
-      (List.zipWith (fun z b => (z : ℤ) * b) du.Z (budgets L box cs)).sum) DS + L.first + L.final)
+        dualDot du col.W col.C col.NH col.E (colCosts col box cs))) then
+    some (ceilDiv (dualDot du L.F (2*S) (L.ng*S) (L.n2*S) (budgets L box cs)) DS + L.first + L.final)
   else none
 
 /-- A case may be excluded if some row has all column costs `≥ 0` and a negative budget. -/
@@ -478,7 +478,6 @@ and case certificates. -/
 inductive Tree where
   | split (k : ℕ) (mid : ℤ) (left right : Tree)
   | node (orders : List ℕ) (certs : List CaseCert)
-deriving Repr
 
 /-- Checks a tree on a box; returns the maximum certified value, each node's value `< S`. -/
 def verifyTree (L : Leaf) : Tree → List (ℤ × ℤ) → Option ℤ
@@ -511,25 +510,28 @@ def checkLeaf (L : Leaf) (T : Tree) : Option ℤ :=
 
 /-! ## Semantics -/
 
+scoped notation "rowAt " L:arg k:arg => List.getD (Leaf.rows L) k ⟨1, []⟩
+scoped notation "featureAt " c:arg k:arg => List.getD (Col.v c) k 0
+scoped notation "diagonalAt " c:arg k:arg => List.getD (Col.D c) k 1
+scoped notation "inUnits " v:arg => ((v : ℤ) : ℝ) / S
+
+variable (L : Leaf) (x : Fin L.cols.length → ℝ)
+local notation "moment " f:arg => ∑ j, ((f (L.cols.get j) : ℤ) : ℝ) * x j
+
 /-- The left side of near row `k` at real column values `x` and threshold `τ`. -/
-noncomputable def rowLHS (L : Leaf) (x : Fin L.cols.length → ℝ) (k : ℕ) (τ : ℝ) : ℝ :=
-  (∑ j, x j * (max 0 (((L.cols.get j).v.getD k 0 : ℝ) / S - τ)) ^ 2 /
-      (((L.cols.get j).D.getD k 1 : ℝ) / S)) +
-    (((L.rows.getD k ⟨1, []⟩).fam).map fun t =>
-      (t.1 : ℝ) * (max 0 ((t.2.1 : ℝ) / S - τ)) ^ 2 / ((t.2.2 : ℝ) / S)).sum
+noncomputable def rowLHS (k : ℕ) (τ : ℝ) : ℝ :=
+  (∑ j, x j * (max 0 (inUnits (featureAt (L.cols.get j) k) - τ))^2 / inUnits (diagonalAt (L.cols.get j) k)) +
+    ((rowAt L k).fam.map fun t =>
+      (t.1 : ℝ) * (max 0 (inUnits t.2.1 - τ))^2 / inUnits t.2.2).sum
 
 /-- The constraints of the leaf LP at real column values `x` and real thresholds `τ`. -/
-def Feasible (L : Leaf) (x : Fin L.cols.length → ℝ) (τ : ℕ → ℝ) : Prop :=
-  (∀ j, 0 ≤ x j) ∧
-  (∑ j, ((L.cols.get j).W : ℝ) * x j ≤ L.F) ∧
-  (∑ j, ((L.cols.get j).C : ℝ) * x j ≤ 2 * S) ∧
-  (∑ j, ((L.cols.get j).NH : ℝ) * x j ≤ L.ng * S) ∧
-  (∑ j, ((L.cols.get j).E : ℝ) * x j = L.n2 * S) ∧
-  ∀ k < L.rows.length, 0 ≤ τ k ∧ τ k ^ 2 ≤ ((L.rows.getD k ⟨1, []⟩).d : ℝ) / S ∧
-    rowLHS L x k (τ k) ≤ 1 - τ k ^ 2 / (((L.rows.getD k ⟨1, []⟩).d : ℝ) / S)
+def Feasible (τ : ℕ → ℝ) : Prop :=
+  (∀ j, 0 ≤ x j) ∧ moment Col.W ≤ L.F ∧ moment Col.C ≤ 2*S ∧
+    moment Col.NH ≤ L.ng*S ∧ moment Col.E = L.n2*S ∧
+    ∀ k < L.rows.length, 0 ≤ τ k ∧ τ k^2 ≤ inUnits (rowAt L k).d ∧
+      rowLHS L x k (τ k) ≤ 1 - τ k^2 / inUnits (rowAt L k).d
 
 /-- The objective (scaled by `S`). -/
-noncomputable def objective (L : Leaf) (x : Fin L.cols.length → ℝ) : ℝ :=
-  L.first + L.final + ∑ j, ((L.cols.get j).G : ℝ) * x j
+noncomputable def objective : ℝ := L.first + L.final + moment Col.G
 
 end GradedNear.Cert

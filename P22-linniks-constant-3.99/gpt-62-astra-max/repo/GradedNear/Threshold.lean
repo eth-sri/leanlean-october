@@ -8,7 +8,6 @@ public import Mathlib
 If `(Σ a_j v_j)_+² ≤ Σ D_j a_j² + d (Σ a_j)²` for all `a ≥ 0`, with every `D_j > 0` and `d > 0`,
 then some `τ ∈ [0, √d]` satisfies `Σ_j (v_j - τ)_+² / D_j ≤ 1 - τ² / d`.
 
-The helpers in `GradedNear.ThresholdAux` prove this direction, "quadratic ⇒ threshold".
 The threshold is a zero of the continuous scalar function `t ↦ d Σ_j (v_j - t)_+ / D_j - t` on
 `[0, b]`, found by the intermediate value theorem; the test vector
 `a_j = (v_j - t)_+ / D_j` then turns the quadratic hypothesis into the threshold bound.
@@ -18,132 +17,49 @@ The threshold is a zero of the continuous scalar function `t ↦ d Σ_j (v_j - t
 
 namespace GradedNear
 
-namespace ThresholdAux
+/-- Threshold form (T), with squared radius `d` and per-entry feature and diagonal `(v,D)`. -/
+scoped macro "HasThreshold[" d:term "] " j:ident " ↦ " "(" v:term ", " D:term ")" : term =>
+  `(∃ τ : ℝ, 0 ≤ τ ∧ τ ≤ Real.sqrt $d ∧ ∑ $j:ident, (max 0 ($v - τ))^2 / $D ≤ 1 - τ^2 / $d)
 
-open Finset
-
-noncomputable section
-
-/-- The positive part, with the order of arguments fixed for the formulas below. -/
-def pos (x : ℝ) : ℝ := max x 0
-
-lemma pos_nonneg (x : ℝ) : 0 ≤ pos x := le_max_right _ _
-
-lemma pos_mul (x : ℝ) : pos x * x = (pos x) ^ 2 := by
-  rcases le_total x 0 with hx | hx
-  · simp [pos, max_eq_right hx]
-  · simp [pos, max_eq_left hx, pow_two]
-
-lemma pos_mono {x y : ℝ} (hxy : x ≤ y) : pos x ≤ pos y :=
-  max_le_max hxy le_rfl
-
-/-- The resource quadratic form in the scalar two-test inequality. -/
-def resource {ι : Type*} [Fintype ι] (D : ι → ℝ) (d : ℝ) (a : ι → ℝ) : ℝ :=
-  (∑ i, D i * (a i) ^ 2) + d * (∑ i, a i) ^ 2
-
-lemma resource_nonneg {ι : Type*} [Fintype ι] (D : ι → ℝ) (d : ℝ) (a : ι → ℝ)
-    (hD : ∀ i, 0 < D i) (hd : 0 < d) : 0 ≤ resource D d a :=
-  add_nonneg
-    (Finset.sum_nonneg (fun i _ => mul_nonneg (le_of_lt (hD i)) (sq_nonneg _)))
-    (mul_nonneg (le_of_lt hd) (sq_nonneg _))
-
-/-- The common-threshold scalar cost. -/
-def thresholdCost {ι : Type*} [Fintype ι]
-    (v D : ι → ℝ) (d t : ℝ) : ℝ :=
-  t ^ 2 / d + ∑ i, (pos (v i - t)) ^ 2 / D i
-
-/-- Existence of the common threshold, by a continuous scalar fixed-point equation. -/
-theorem exists_common_threshold {ι : Type*} [Fintype ι]
-    (v D : ι → ℝ) (d : ℝ) (hD : ∀ i, 0 < D i) (hd : 0 < d)
-    (hquad : ∀ a : ι → ℝ, (∀ i, 0 ≤ a i) →
-      (pos (∑ i, a i * v i)) ^ 2 ≤ resource D d a) :
-    ∃ t : ℝ, 0 ≤ t ∧ t ≤ Real.sqrt d ∧ thresholdCost v D d t ≤ 1 := by
-  let b : ℝ := d * ∑ i, pos (v i) / D i
-  let f : ℝ → ℝ := fun t => d * (∑ i, pos (v i - t) / D i) - t
-  have hb : 0 ≤ b := by
-    dsimp [b]
-    exact mul_nonneg (le_of_lt hd)
-      (Finset.sum_nonneg (fun i _ => div_nonneg (pos_nonneg _) (le_of_lt (hD i))))
-  have hf : Continuous f := by
-    dsimp [f, pos]
-    fun_prop
-  have hf₀ : 0 ≤ f 0 := by simpa [f, b] using hb
-  have hfb : f b ≤ 0 := by
-    have hp : (∑ i, pos (v i - b) / D i) ≤ ∑ i, pos (v i) / D i := by
-      apply Finset.sum_le_sum
-      intro i _
-      exact div_le_div_of_nonneg_right (pos_mono (by linarith)) (le_of_lt (hD i))
-    have hm := mul_le_mul_of_nonneg_left hp (le_of_lt hd)
-    dsimp [f, b] at *
-    linarith
-  obtain ⟨t, ht, hft⟩ := intermediate_value_Icc' hb hf.continuousOn ⟨hfb, hf₀⟩
-  let a : ι → ℝ := fun i => pos (v i - t) / D i
-  have ha : ∀ i, 0 ≤ a i := by
-    intro i
-    exact div_nonneg (pos_nonneg _) (le_of_lt (hD i))
-  have htfix : t = d * ∑ i, a i := by
-    change d * (∑ i, a i) - t = 0 at hft
-    linarith
-  have hcoord : ∀ i, a i * v i = D i * (a i) ^ 2 + t * a i := by
-    intro i
-    have hi := ne_of_gt (hD i)
-    have hp := pos_mul (v i - t)
-    dsimp [a]
-    field_simp
-    nlinarith
-  have hdot : (∑ i, a i * v i) = resource D d a := by
-    simp_rw [hcoord]
-    rw [Finset.sum_add_distrib, ← Finset.mul_sum]
-    dsimp [resource]
-    rw [htfix]
-    ring
-  have hres : 0 ≤ resource D d a := resource_nonneg D d a hD hd
-  have hres₁ : resource D d a ≤ 1 := by
-    have hq := hquad a ha
-    rw [hdot, pos, max_eq_left hres] at hq
-    nlinarith
-  have hcost : thresholdCost v D d t = resource D d a := by
-    unfold thresholdCost resource
-    have he : ∀ i, (pos (v i - t)) ^ 2 / D i = D i * (a i) ^ 2 := by
-      intro i
-      dsimp [a]
-      field_simp
-    simp_rw [he]
-    rw [htfix]
-    field_simp
-    ring
-  have ht₂ : t ^ 2 ≤ d := by
-    have hsum : 0 ≤ ∑ i, (pos (v i - t)) ^ 2 / D i :=
-      Finset.sum_nonneg (fun i _ => div_nonneg (sq_nonneg _) (le_of_lt (hD i)))
-    have hdiv : t ^ 2 / d ≤ 1 := by
-      rw [← hcost] at hres₁
-      dsimp [thresholdCost] at hres₁
-      linarith
-    exact (div_le_one hd).1 hdiv
-  refine ⟨t, ht.1, ?_, hcost ▸ hres₁⟩
-  exact Real.le_sqrt_of_sq_le ht₂
-
-end
-
-end ThresholdAux
+/-- Decreasing a feature (or making it nonpositive), increasing a diagonal,
+or increasing the squared radius preserves the same threshold witness. -/
+lemma threshold_weaken {ι : Type*} [Fintype ι] {v v' D D' : ι → ℝ} {d d' : ℝ}
+    (hD : ∀ j, 0 < D j) (hDD : ∀ j, D j ≤ D' j) (hv : ∀ j, v' j ≤ v j ∨ v' j ≤ 0)
+    (hd : 0 < d) (hdd : d ≤ d') : (HasThreshold[d] j ↦ (v j, D j)) → HasThreshold[d'] j ↦ (v' j, D' j) := by
+  rintro ⟨τ, hτ, hb, h⟩
+  refine ⟨τ, hτ, hb.trans (Real.sqrt_le_sqrt hdd), (Finset.sum_le_sum fun j _ => ?_).trans (h.trans ?_)⟩
+  · have := hv j; bound
+  · gcongr
 
 theorem threshold_of_quadratic {ι : Type*} [Fintype ι] (v D : ι → ℝ) (d : ℝ)
     (hD : ∀ j, 0 < D j) (hd : 0 < d)
     (hq : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
       (max 0 (∑ j, a j * v j)) ^ 2 ≤ ∑ j, D j * a j ^ 2 + d * (∑ j, a j) ^ 2) :
-    ∃ τ : ℝ, 0 ≤ τ ∧ τ ≤ Real.sqrt d ∧
-      ∑ j, (max 0 (v j - τ)) ^ 2 / D j ≤ 1 - τ ^ 2 / d := by
-  have hquad : ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
-      (ThresholdAux.pos (∑ j, a j * v j)) ^ 2 ≤ ThresholdAux.resource D d a := by
-    intro a ha
-    have h := hq a ha
-    rw [ThresholdAux.pos, max_comm]
-    exact h
-  obtain ⟨τ, hτ0, hτd, hcost⟩ := ThresholdAux.exists_common_threshold v D d hD hd hquad
-  refine ⟨τ, hτ0, hτd, ?_⟩
-  have hmax : ∀ j, max 0 (v j - τ) = ThresholdAux.pos (v j - τ) := fun j => max_comm _ _
-  simp only [hmax]
-  unfold ThresholdAux.thresholdCost at hcost
-  linarith
+    HasThreshold[d] j ↦ (v j, D j) := by
+  let p t i := max 0 (v i - t)
+  let a t i := p t i / D i
+  let f t := d * ∑ i, a t i
+  have ha t i : 0 ≤ a t i := div_nonneg (le_max_left ..) (hD i).le
+  have hb : 0 ≤ f 0 := mul_nonneg hd.le (Finset.sum_nonneg fun i _ => ha 0 i)
+  obtain ⟨t, ht, hft⟩ := exists_mem_Icc_isFixedPt (f := f) (by dsimp [f,a,p]; fun_prop) hb hb (by
+    dsimp [f,a,p]; gcongr with i <;> first | positivity | linarith [hD i])
+  have hfix : d * (∑ i, a t i) = t := hft
+  let c := ∑ i, p t i^2 / D i
+  have hc : 0 ≤ c := Finset.sum_nonneg fun i _ => div_nonneg (sq_nonneg _) (hD i).le
+  have h := hq (a t) (ha t)
+  have hdiag : ∑ i, D i * a t i^2 = c := by
+    apply Finset.sum_congr rfl; intro i _; dsimp [a]; field_simp
+  have hdot : ∑ i, a t i * v i = c + t * ∑ i, a t i := by
+    dsimp [c]; rw [Finset.mul_sum, ← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    dsimp [a,p]; field_simp; rcases le_total 0 (v i - t) with h | h
+    · rw [max_eq_right h]; ring
+    · simp [max_eq_left h]
+  have hval : c + t^2/d ≤ 1 := by
+    have e : t^2/d = d * (∑ i, a t i)^2 := by nth_rw 1 [← hfix]; field_simp
+    have e' : t * (∑ i, a t i) = d * (∑ i, a t i)^2 := by linear_combination (∑ i, a t i) * -hfix
+    rw [hdot, hdiag, e', max_eq_right (by positivity)] at h
+    nlinarith
+  exact ⟨t, ht.1, Real.le_sqrt_of_sq_le ((div_le_one hd).mp (by linarith)), by linarith⟩
 
 end GradedNear
